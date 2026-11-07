@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Platform.Storage;
 using Trendo.Core;
 using Trendo.Core.Office;
 
@@ -82,13 +83,50 @@ public partial class MainWindow
     }
 
     /// <summary>M3: eigene Aufnahme (gekaufte Datei, eigener Mitschnitt) in die Bibliothek – zum Analysieren und für ein Cover in anderem Stil.</summary>
+    /// <summary>Alle gängigen Musik- und Videoformate (Wunsch 07.11.2026: „egal welche Art von Musik“). Was Trendo nicht selbst liest, wandelt FFmpeg beim Hochladen in WAV.</summary>
+    public static readonly string[] MusicImportExt = ["mp3", "wav", "flac", "m4a", "aac", "ogg", "opus", "wma", "aif", "aiff", "alac", "mp4", "m4v", "mov", "mkv", "webm", "avi"];
+    static readonly string[] MusicDirect = [".mp3", ".wav", ".flac"];
+
+    /// <summary>Dateiauswahl für Musik: startet im Musik-Ordner, zeigt alle Musik- und Videoformate (plus „Alle Dateien“).</summary>
+    async Task<string?> MsPickMusic()
+    {
+        var req = new PickRequest("ms-import", false, false, MusicImportExt);
+        if (PickOverride is { } fake) return (await fake(req)) is [var f, ..] ? f : null;
+        var start = await StorageProvider.TryGetWellKnownFolderAsync(Avalonia.Platform.Storage.WellKnownFolder.Music);
+        var got = await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions
+        {
+            Title = "Musik oder Video wählen", SuggestedStartLocation = start,
+            FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Musik und Videos (MP3, WAV, FLAC, M4A, AAC, OGG, OPUS, WMA, MP4 …)") { Patterns = [.. MusicImportExt.Select(e => "*." + e)] },
+                              new Avalonia.Platform.Storage.FilePickerFileType("Alle Dateien") { Patterns = ["*"] }],
+        });
+        return got.Select(f => f.TryGetLocalPath()).OfType<string>().FirstOrDefault();
+    }
+
     public async Task<MusicSong?> MsImport(string? file = null)
     {
-        file ??= await PickMedia("ms-import", ["*.mp3", "*.wav", "*.flac", "*.m4a", "*.ogg"]);
+        file ??= await MsPickMusic();
         if (file is null || !File.Exists(file)) return null;
-        var dir = WorkFolder("Musik"); var target = Path.Combine(dir, Path.GetFileName(file));
-        for (var n = 2; File.Exists(target); n++) target = Path.Combine(dir, $"{Path.GetFileNameWithoutExtension(file)} ({n}){Path.GetExtension(file)}");
-        File.Copy(file, target);
+        var dir = WorkFolder("Musik");
+        var ext = Path.GetExtension(file).ToLowerInvariant(); var convert = !MusicDirect.Contains(ext);
+        var target = Path.Combine(dir, Path.GetFileNameWithoutExtension(file) + (convert ? ".wav" : ext));
+        for (var n = 2; File.Exists(target); n++) target = Path.Combine(dir, $"{Path.GetFileNameWithoutExtension(file)} ({n}){(convert ? ".wav" : ext)}");
+        if (convert)
+        {
+            // M4A, AAC, OPUS, WMA, Videos …: nur die Tonspur als WAV (44,1 kHz, Stereo) – damit funktionieren Analyse, Spuren trennen und Bearbeiten
+            Func<IReadOnlyList<string>, Cli.Result> run;
+            if (FfmpegRunOverride is { } fake) run = fake;
+            else if (FfmpegPath is not { } ff) { _msMsg = $"„{ext}“ braucht FFmpeg zum Umwandeln – unter Zusatzprogramme einrichten (MP3, WAV und FLAC gehen ohne)."; Show(MS); return null; }
+            else if (_opt.Isolated) { _msMsg = "Im abgeschotteten Testmodus startet Trendo kein FFmpeg."; Show(MS); return null; }
+            else run = a => Cli.Run(ff, a, dir, 600_000);
+            var src = file; var dst = target;
+            var r = await Task.Run(() => run(["-hide_banner", "-loglevel", "error", "-y", "-i", src, "-vn", "-ac", "2", "-ar", "44100", "-c:a", "pcm_s16le", dst]));
+            if (!r.Ok || !File.Exists(target) || new FileInfo(target).Length < 100)
+            {
+                try { File.Delete(target); } catch (IOException) { }
+                _msMsg = $"„{Path.GetFileName(file)}“ hat keine lesbare Tonspur." + (r.Err.Length > 0 ? " (" + r.Err.Trim().Split('\n')[^1] + ")" : ""); Show(MS); return null;
+            }
+        }
+        else File.Copy(file, target);
         var s = Songs.Add(new MusicSong { Title = Path.GetFileNameWithoutExtension(file), Style = "", File = target, Kind = "eigen", Seconds = 0 });
         _msSel = s.Id; _msMsg = "✓ Aufnahme hinzugefügt – jetzt analysieren oder rechts „In anderem Stil“ ein Cover machen (nur privat).";
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.import", Path.GetFileName(target));
