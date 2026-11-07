@@ -1,2 +1,2 @@
 # Fahrplan
-Runde 1 umsetzen in dieser Reihenfolge (Nutzen/Aufwand): 1) basic-pitch Audio→MIDI (Musik), 2) f3d Vorschaubilder + assimp-Import (3D), 3) PMTiles+MapLibre Offline-Vektorkarten (Karten), 4) MLT-Timeline (Video). Danach Runde 2: SPEC-09 Scannen, SPEC-15 Streamen, STUDIO-TV-01, SYS-10 Office, CORE-03 KI-Team.
+Runde 1 umsetzen in dieser Reihenfolge (Nutzen/Aufwand): 1) basic-pitch Audio→MIDI (Musik), 2) f3d Vorschaubilder + assimp-Import (3D), 3) PMTiles+MapLibre Offline-Vektorkarten (Karten), 4) MLT-Timeline (Video). Runde 2 (bewertet): Open3D (Scannen), mediamtx (Streamen), Tests + streamlink (TV), typst (Office). Runde 3: CORE-03 KI-Team, SYS-05 Automatisieren, X-03 Apps, SPEC-01 Wohnung, SPEC-13 Feinschliff.

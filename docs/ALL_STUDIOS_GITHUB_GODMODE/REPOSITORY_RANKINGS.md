@@ -1,4 +1,4 @@
-# Rangliste Runde 1 (gewichtete Matrix)
+# Rangliste Runden 1 und 2 (gewichtete Matrix)
 
 Gewichte: Funktion 25 %, Integration 20 %, Code 15 %, Lizenz 15 %, Leistung 10 %, Sicherheit 10 %, Gemeinschaft 5 %. Lizenzverstöße/unvertretbare Risiken sind Ausschluss unabhängig von Punkten.
 
@@ -46,3 +46,48 @@ Bestand: Blender-Anbindung (58 Dateien), eigener 3D-Betrachter, TripoSR (3D aus 
 | blender/blender | 10 | 7 | 8 | 6 | 8 | 8 | 10 | 8.1 | VORHANDEN | bereits integriert (externes Programm, GPL – getrennter Prozess) |
 | isl-org/Open3D | 8 | 6 | 8 | 10 | 8 | 8 | 8 | 7.9 | OPTIONAL | Netz-/Punktwolken-Verarbeitung (MIT), auch für SPEC-09 Scannen |
 | MeshInspector/MeshLib | 8 | 6 | 8 | 0 | 8 | 8 | 4 | 6.2 | AUSGESCHLOSSEN | nur nicht-kommerziell – ausgeschlossen |
+
+## SPEC-09 – Gegenstände einscannen
+Bestand: COLMAP (BSD-3, mit Prüfsumme im Katalog) und Meshroom (Anleitung) sind angebunden; Abdeckungsansicht vorhanden.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| colmap/colmap | 9 | 8 | 8 | 10 | 7 | 8 | 9 | 8.5 | VORHANDEN | bereits integriert |
+| isl-org/Open3D | 8 | 7 | 8 | 10 | 8 | 8 | 8 | 8.1 | AUSWAHL | Python-Adapter: Punktwolke/Netz aufräumen, Löcher schließen, Maße und Volumen messen (MIT) |
+| nerfstudio-project/gsplat | 8 | 5 | 8 | 10 | 7 | 8 | 7 | 7.55 | OPTIONAL | Gaussian Splatting aus COLMAP-Ergebnis (Apache-2.0), nur mit NVIDIA-GPU – optional |
+| openMVG/openMVG | 8 | 6 | 8 | 7 | 7 | 8 | 7 | 7.3 | VERWORFEN | MPL-2.0, Überschneidung mit COLMAP – nicht nötig |
+| cdcseacave/openMVS | 9 | 5 | 8 | 2 | 7 | 8 | 7 | 6.6 | AUSGESCHLOSSEN | AGPL-3.0 – als Einbau ausgeschlossen |
+| graphdeco-inria/gaussian-splatting | 9 | 5 | 7 | 0 | 7 | 8 | 9 | 6.25 | AUSGESCHLOSSEN | nur nicht-kommerziell – ausgeschlossen |
+
+## SPEC-15 – Live streamen
+Bestand: FFmpeg als Kodier-Kern vorhanden, OBS als externes Programm erwähnt.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| bluenviron/mediamtx | 8 | 9 | 8 | 10 | 9 | 8 | 9 | 8.65 | AUSWAHL | Einzelprogramm (MIT): lokaler RTMP/SRT/WebRTC-Server für Vorschau, Weiterleitung und Aufnahme |
+| ossrs/srs | 8 | 6 | 8 | 10 | 9 | 8 | 8 | 8.0 | OPTIONAL | MIT, mächtiger als nötig – Alternative |
+| obsproject/obs-studio | 10 | 4 | 8 | 5 | 8 | 8 | 10 | 7.35 | ÜBERGABE | GPL-Anwendung, Steuerung über obs-websocket – externe Übergabe |
+| Haivision/srt | 7 | 6 | 8 | 7 | 9 | 8 | 6 | 7.2 | VORHANDEN | Protokoll-Bibliothek, über FFmpeg bereits nutzbar |
+| arut/nginx-rtmp-module | 6 | 4 | 7 | 10 | 8 | 6 | 3 | 6.4 | VERWORFEN | letzter Push 2024-12, nur RTMP – verworfen |
+
+## STUDIO-TV-01 – TV & Live
+Bestand: Senderlisten, Programmführer, Aufnahmen; mpv als Abspieler; **keine eigenen Tests** – zuerst Tests nachziehen. Nur legale Quellen (Mediatheken, frei empfangbar).
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| streamlink/streamlink | 8 | 8 | 8 | 10 | 8 | 8 | 8 | 8.3 | AUSWAHL | Python-Adapter (BSD-2): Live-Seiten öffentlich-rechtlicher Mediatheken in einen Abspielstrom wandeln – nur legale Quellen |
+| mpv-player/mpv | 9 | 8 | 8 | 6 | 9 | 8 | 9 | 8.1 | VORHANDEN | bereits integriert (externes Programm, GPL) |
+| iptv-org/iptv | 7 | 8 | 6 | 9 | 9 | 3 | 9 | 7.25 | AUSGESCHLOSSEN | Sammelliste mit ungeprüften Quellen – widerspricht „nur legale Quellen“; nicht übernommen |
+| jellyfin/jellyfin | 9 | 4 | 8 | 5 | 7 | 8 | 9 | 6.95 | ÜBERGABE | GPL-Medienserver, nur als externe Anbindung |
+| tvheadend/tvheadend | 8 | 3 | 7 | 5 | 8 | 7 | 6 | 6.2 | SPÄTER | für DVB-Hardware, Linux-lastig – später |
+
+## SYS-10 – Texte & Tabellen
+Bestand: Eigene Text-, Tabellen- und Präsentationsprogramme vorhanden (154 Tests), PDF über qpdf.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| typst/typst | 9 | 9 | 9 | 10 | 9 | 9 | 9 | 9.15 | AUSWAHL | Einzelprogramm (Apache-2.0): professioneller Schriftsatz und PDF aus Vorlagen |
+| excalidraw/excalidraw | 8 | 8 | 9 | 10 | 8 | 8 | 9 | 8.5 | OPTIONAL | Whiteboard/Skizzen im WebView (MIT), wie der Web-Editor gebündelt |
+| jgm/pandoc | 9 | 7 | 9 | 5 | 9 | 8 | 9 | 7.9 | OPTIONAL | GPL, als getrenntes Programm für Formatwandlung (DOCX/ODT/Markdown) |
+| LibreOffice/core | 10 | 4 | 7 | 5 | 6 | 8 | 9 | 6.95 | ÜBERGABE | GPL/MPL-Anwendung, Umwandlung per soffice --headless als externe Übergabe |
+| ONLYOFFICE/DocumentServer | 9 | 3 | 7 | 2 | 6 | 7 | 8 | 5.9 | AUSGESCHLOSSEN | AGPL-3.0 und Server – ausgeschlossen |

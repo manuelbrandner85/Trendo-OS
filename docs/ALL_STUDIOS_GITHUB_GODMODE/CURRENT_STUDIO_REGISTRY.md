@@ -6,23 +6,23 @@ Auffällig: STUDIO-TV-01 „TV & Live“ ohne eigene Tests.
 | Studio | Name | Quelldateien | Testdateien | Status Runde 1 |
 |---|---|---|---|---|
 | STUDIO-LETTER-01 | Briefe schreiben | 16 | 7 | NOT RUN – folgt in späteren Runden |
-| SYS-10 | Texte & Tabellen | 20 | 14 | NOT RUN – folgt in späteren Runden |
+| SYS-10 | Texte & Tabellen | 20 | 14 | bewertet (Runde 2) |
 | SYS-09 | E-Mails & Termine | 13 | 1 | NOT RUN – folgt in späteren Runden |
 | X-11 | Neues Projekt starten | 8 | 2 | NOT RUN – folgt in späteren Runden |
 | SYS-02 | Kleine Helfer & Musik | 11 | 1 | NOT RUN – folgt in späteren Runden |
 | STUDIO-ONLINE-BUSINESS-01 | Online verkaufen | 13 | 5 | NOT RUN – folgt in späteren Runden |
 | SPEC-11 | Geld & Rechnungen | 9 | 3 | NOT RUN – folgt in späteren Runden |
 | CORE-08 | Videos & Fotos bearbeiten | 18 | 6 | bewertet (Runde 1) |
-| SPEC-15 | Live streamen | 10 | 4 | NOT RUN – folgt in späteren Runden |
+| SPEC-15 | Live streamen | 10 | 4 | bewertet (Runde 2) |
 | STUDIO-MUSIK-01 | Trendo Musik | 10 | 3 | bewertet (Runde 1) |
-| STUDIO-TV-01 | TV & Live | 8 | 0 | NOT RUN – folgt in späteren Runden |
+| STUDIO-TV-01 | TV & Live | 8 | 0 | bewertet (Runde 2) |
 | SPEC-08 | Kleidung & Produkte entwerfen | 9 | 7 | NOT RUN – folgt in späteren Runden |
 | X-07 | Freie Bilder & Klänge finden | 9 | 2 | NOT RUN – folgt in späteren Runden |
 | CORE-12 | KI-Anweisungen schreiben | 9 | 1 | NOT RUN – folgt in späteren Runden |
 | CORE-05 | 3D-Modelle erstellen | 17 | 17 | bewertet (Runde 1) |
 | CORE-06 | Spiele bauen | 18 | 20 | NOT RUN – folgt in späteren Runden |
 | SPEC-04 | VR & AR gestalten | 10 | 3 | NOT RUN – folgt in späteren Runden |
-| SPEC-09 | Gegenstände einscannen | 10 | 3 | NOT RUN – folgt in späteren Runden |
+| SPEC-09 | Gegenstände einscannen | 10 | 3 | bewertet (Runde 2) |
 | SPEC-01 | Wohnung planen | 11 | 10 | NOT RUN – folgt in späteren Runden |
 | SPEC-02 | Schaltungen berechnen | 9 | 3 | NOT RUN – folgt in späteren Runden |
 | SPEC-03 | Statik nachrechnen | 8 | 4 | NOT RUN – folgt in späteren Runden |

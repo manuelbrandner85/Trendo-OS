@@ -1,4 +1,4 @@
-# GitHub-Katalog – Runde 1 (API-Abfrage 07.11.2026; Lizenzen bei NOASSERTION aus der Lizenzdatei gelesen)
+# GitHub-Katalog – Runden 1 und 2 (API-Abfrage 07./08.11.2026; Lizenzen bei NOASSERTION aus der Lizenzdatei gelesen)
 
 ## CORE-08
 | Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
@@ -55,5 +55,44 @@
 | MeshInspector/MeshLib | nicht-kommerziell → ausgeschlossen | 2026-11-07 | nein | 842 | C++ |
 | isl-org/Open3D | MIT | 2026-11-05 | nein | 14181 | C++ |
 | cnr-isti-vclab/meshlab | GPL-3.0 | 2026-11-02 | nein | 5905 | C++ |
+## SPEC-09
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| colmap/colmap | BSD-3-Clause | 2026-11-07 | nein | 13174 | C++ |
+| openMVG/openMVG | MPL-2.0 | 2026-11-07 | nein | 6591 | C++ |
+| cdcseacave/openMVS | AGPL-3.0 | 2026-11-06 | nein | 4188 | C++ |
+| isl-org/Open3D | MIT | 2026-11-05 | nein | 14181 | C++ |
+| nerfstudio-project/nerfstudio | Apache-2.0 | 2025-07-29 | nein | 12160 | Python |
+| alicevision/Meshroom | MPL-2.0 | 2026-11-07 | nein | 13067 | Python |
+| graphdeco-inria/gaussian-splatting | nur nicht-kommerziell (Inria/MPII) → ausgeschlossen | 2025-10-17 | nein | 24432 | Python |
+| PointCloudLibrary/pcl | BSD-3-Clause | 2026-11-04 | nein | 11208 | C++ |
+| nerfstudio-project/gsplat | Apache-2.0 | 2026-09-19 | nein | 5872 | Python |
+## SPEC-15
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| obsproject/obs-studio | GPL-2.0 | 2026-11-06 | nein | 79124 | C |
+| FFmpeg/FFmpeg | LGPL-2.1+ (Teile GPL) | 2026-11-07 | nein | 66713 | C |
+| bluenviron/mediamtx | MIT | 2026-11-07 | nein | 20641 | Go |
+| ossrs/srs | MIT | 2026-10-31 | nein | 29433 | C++ |
+| Haivision/srt | MPL-2.0 | 2026-11-05 | nein | 3626 | C++ |
+| arut/nginx-rtmp-module | BSD-2-Clause | 2024-12-24 | nein | 14023 | C |
+## STUDIO-TV-01
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| mpv-player/mpv | GPL-2.0+ (Teile LGPL) | 2026-11-07 | nein | 37981 | C |
+| videolan/vlc | GPL-2.0 | 2026-11-07 | nein | 20353 | C |
+| iptv-org/iptv | Unlicense | 2026-11-07 | nein | 143515 | TypeScript |
+| jellyfin/jellyfin | GPL-2.0 | 2026-11-06 | nein | 59105 | C# |
+| tvheadend/tvheadend | GPL-3.0 | 2026-11-06 | nein | 3578 | C |
+| streamlink/streamlink | BSD-2-Clause | 2026-11-07 | nein | 11900 | Python |
+## SYS-10
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| LibreOffice/core | GPL-3.0 | 2026-11-07 | nein | 4617 | C++ |
+| ONLYOFFICE/DocumentServer | AGPL-3.0 | 2026-10-26 | nein | 7098 | Shell |
+| typst/typst | Apache-2.0 | 2026-11-06 | nein | 57035 | Rust |
+| jgm/pandoc | GPL-2.0 | 2026-11-07 | nein | 46849 | Haskell |
+| excalidraw/excalidraw | MIT | 2026-11-07 | nein | 135298 | TypeScript |
+| marktext/marktext | MIT | 2026-11-06 | nein | 63707 | TypeScript |
 
 Korrigiert: PhotoDemon → tannerhelland/PhotoDemon (BSD-ähnlich), Shotcut → mltframework/shotcut (GPL-3.0).
