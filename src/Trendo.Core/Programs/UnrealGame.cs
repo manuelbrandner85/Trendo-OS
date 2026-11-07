@@ -487,6 +487,46 @@ def dress(ch, gender, items):
     eal.save_loaded_asset(ch, False)
     return wi.get_name()
 
+# Abtrennbare Glieder (nur für Spiele mit Gewalt-Stufe „brutal“ genutzt): Unreals Geometrie-Skript schneidet Unterarme und Unterschenkel
+# aus Körper und Kleidung heraus (Punkte nach ihrem stärksten Knochen), schließt die Schnittkante, legt den Drehpunkt ans Gelenk
+# und speichert jedes Stück als eigenes Modell mit Materialien und Physik-Kollision.
+LIMBS = ["lowerarm_l", "lowerarm_r", "calf_l", "calf_r"]
+def cut_limbs(name):
+    G = unreal; AU, BW, ME, MQ = G.GeometryScript_AssetUtils, G.GeometryScript_BoneWeights, G.GeometryScript_MeshEdits, G.GeometryScript_MeshQueries
+    parts = [(k, p) for k, p in (("Koerper", f"{ROOT}/{name}/Bau/{name}/Body/SKM_{name}_BodyMesh"), ("Kleidung", f"{ROOT}/{name}/Bau/{name}/Clothing/{name}_Outfits")) if eal.does_asset_exist(p)]
+    made = 0
+    for part, path in parts:
+        skm = unreal.load_asset(path); mats = [m.get_editor_property("material_interface") for m in skm.get_editor_property("materials")]
+        base = unreal.DynamicMesh()
+        base, _ = AU.copy_mesh_from_skeletal_mesh(skm, base, G.GeometryScriptCopyMeshFromAssetOptions(), G.GeometryScriptMeshReadLOD())
+        n = MQ.get_vertex_count(base); bones = []
+        for v in range(n):
+            r = BW.get_largest_vertex_bone_weight(base, v); bones.append(r[1].bone_index if r[2] else -1)
+        for limb in LIMBS:
+            r = BW.get_bone_index(base, limb)
+            if not r[1]: continue
+            keep = {r[2]} | {k.get_editor_property("index") for k in BW.get_bone_children(base, limb, True)[2]}
+            drop = [v for v, b in enumerate(bones) if b not in keep]
+            if n - len(drop) < 50: continue   # z. B. kurzer Ärmel: an diesem Glied keine Kleidung
+            dm = unreal.DynamicMesh()
+            dm, _ = AU.copy_mesh_from_skeletal_mesh(skm, dm, G.GeometryScriptCopyMeshFromAssetOptions(), G.GeometryScriptMeshReadLOD())
+            ME.delete_vertices_from_mesh(dm, G.GeometryScript_List.convert_array_to_index_list(drop, G.GeometryScriptIndexType.VERTEX))
+            G.GeometryScript_MeshRepair.fill_all_mesh_holes(dm, G.GeometryScriptFillHolesOptions())
+            # Drehpunkt ans Gelenk: Stück in den Knochenraum (Grundhaltung) legen – im Spiel sitzt es dann genau am Knochen
+            wt = BW.get_bone_info(dm, limb)[2].get_editor_property("world_transform")
+            G.GeometryScript_MeshTransforms.transform_mesh(dm, wt.inverse())
+            dest = f"{ROOT}/{name}/Glieder/Glied_{limb}_{part}"
+            if eal.does_asset_exist(dest): eal.delete_asset(dest)
+            sm, _ = G.GeometryScript_NewAssetUtils.create_new_static_mesh_asset_from_mesh(dm, dest, G.GeometryScriptCreateNewStaticMeshAssetOptions())
+            if not sm: continue
+            for i, m in enumerate(mats):
+                try: sm.set_material(i, m)
+                except Exception: break
+            try: G.GeometryScript_Collision.set_static_mesh_collision_from_mesh(dm, sm, G.GeometryScriptCollisionFromMeshOptions())
+            except Exception as e: log("Hinweis Kollision %s: %s" % (limb, str(e)[:120]))
+            eal.save_loaded_asset(sm); made += 1
+    return made
+
 def build_one(sub, name, preset, gender, clothes):
     ch = eal.duplicate_asset(PRESETS + preset, f"{ROOT}/{name}/{name}")
     def edit(fn):
@@ -545,6 +585,9 @@ def build_one(sub, name, preset, gender, clothes):
     save_all()
     have = [a for a in ("MM_Idle", "MM_Jump", "MM_Fall_Loop", "BS_MM_WalkRun") if eal.does_asset_exist(f"{dest}/MH_{a}")]
     if len(have) < 4: return "Bewegungen nicht vollständig übertragen: " + ", ".join(have)
+    if name == "Gegner":
+        try: log("Glieder: %d abtrennbare Stücke" % cut_limbs(name))
+        except Exception: log("Hinweis Glieder: " + traceback.format_exc().strip().splitlines()[-1][:200])
     log(f"{name} ({preset}) gebaut: {parts.get('SkeletalMesh', 0)} Körperteile, {parts.get('GroomAsset', 0)} Haar-Arten, Kleidung {cloth}, Bewegungen übertragen")
     return ""
 
@@ -800,6 +843,8 @@ public:
 	void Knock(const FVector& Push);
 	/** Tod: Körper fällt als Ragdoll (Physik, Gewicht) mit Stoß; false, wenn kein Körper mit Physik da ist. */
 	bool Ragdoll(const FVector& Impulse);
+	/** Brutale Spiele: ein Glied (Unterarm/Unterschenkel) abtrennen – am Körper ausblenden, ausgeschnittenes Stück fliegt als Physikteil; false ohne Glieder. */
+	bool Sever(const FVector& Push);
 	float Stun = 0; bool bDead = false;
 	/** Sekunden, die der Gegner nach dem letzten Sichtkontakt noch sucht (> 0 = alarmiert). */
 	float Alert = 0;
@@ -857,6 +902,8 @@ bool TrendoSetupFigure(USkeletalMeshComponent* Figure, float FootZ, const FLinea
 #include "Animation/Skeleton.h"
 #include "PhysicsEngine/PhysicsAsset.h"
 #include "AIController.h"
+#include "Engine/StaticMeshActor.h"
+#include "Components/DecalComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -1112,6 +1159,34 @@ bool ATrendoEnemy::Ragdoll(const FVector& Impulse)
 	Body3D->SetAllUseCCD(true); // schnelle Körperteile rutschen nicht durchs Gelände
 	Body3D->SetAllBodiesSimulatePhysics(true); Body3D->SetSimulatePhysics(true); Body3D->WakeAllRigidBodies(); Body3D->bBlendPhysics = true;
 	Body3D->AddImpulse((Impulse.GetSafeNormal() + FVector(0, 0, 0.15f)) * 260.f, TEXT("spine_03"), true); // Stoß in Schlagrichtung (Geschwindigkeit), Körper kippt
+	return true;
+}
+
+bool ATrendoEnemy::Sever(const FVector& Push)
+{
+	const FString Dir = MetaDirOf(Body3D); if (Dir.IsEmpty() || !Body3D->GetOwner()) return false;
+	static const TCHAR* Limbs[] = { TEXT("lowerarm_l"), TEXT("lowerarm_r"), TEXT("calf_l"), TEXT("calf_r") };
+	const FString Bone = Limbs[FMath::RandRange(0, 3)];
+	auto Piece = [&](const TCHAR* Part) { const FString N = FString::Printf(TEXT("Glied_%s_%s"), *Bone, Part); return LoadObject<UStaticMesh>(nullptr, *FString::Printf(TEXT("%sGlieder/%s.%s"), *Dir, *N, *N)); };
+	UStaticMesh* Flesh = Piece(TEXT("Koerper")); if (!Flesh) return false;
+	UStaticMesh* Cloth = Piece(TEXT("Kleidung"));
+	const FTransform At = Body3D->GetSocketTransform(FName(*Bone), RTS_World);
+	// am Körper (und an Kleidung, Gesicht) ausblenden: das Glied ist ab hier weg
+	TArray<USkeletalMeshComponent*> Parts; Body3D->GetOwner()->GetComponents(Parts);
+	for (USkeletalMeshComponent* P : Parts) if (P->GetBoneIndex(FName(*Bone)) != INDEX_NONE) P->HideBoneByName(FName(*Bone), EPhysBodyOp::PBO_Term);
+	// ausgeschnittenes Stück genau an der Stelle des Knochens, fliegt in Schlagrichtung weg
+	FActorSpawnParameters SP; SP.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	AStaticMeshActor* A = GetWorld()->SpawnActor<AStaticMeshActor>(At.GetLocation(), At.Rotator(), SP); if (!A) return false;
+	UStaticMeshComponent* M = A->GetStaticMeshComponent(); M->SetMobility(EComponentMobility::Movable); M->SetStaticMesh(Flesh); A->SetActorScale3D(At.GetScale3D());
+	if (Cloth) { UStaticMeshComponent* C = NewObject<UStaticMeshComponent>(A, TEXT("Kleidung")); C->SetStaticMesh(Cloth); C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->SetupAttachment(M); C->RegisterComponent(); }
+	M->SetCollisionProfileName(TEXT("PhysicsActor")); M->SetUseCCD(true); M->SetSimulatePhysics(true);
+	M->AddImpulse(Push.GetSafeNormal() * 520.f + FVector(0, 0, 320.f), NAME_None, true);
+	M->AddAngularImpulseInDegrees(FVector(FMath::FRandRange(-600.f, 600.f), FMath::FRandRange(-600.f, 600.f), FMath::FRandRange(-300.f, 300.f)), NAME_None, true);
+	A->SetLifeSpan(90.f);
+	// Blut am Stumpf
+	if (UMaterialInterface* Blood = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Trendo/Natur/M_TrendoBlut.M_TrendoBlut")))
+		UGameplayStatics::SpawnDecalAttached(Blood, FVector(18, 14, 14), Body3D, Body3D->GetParentBone(FName(*Bone)), FVector::ZeroVector, FRotator(-90, 0, 0), EAttachLocation::SnapToTarget, 120.f);
+	UE_LOG(LogTemp, Display, TEXT("TRENDO-GLIED abgetrennt=%s Kleidung=%s"), *Bone, Cloth ? TEXT("ja") : TEXT("nein"));
 	return true;
 }
 
@@ -1738,7 +1813,7 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 private:
-	float CheckSeconds = -1; bool bShotTaken = false; bool bCloseShot = false; bool bCloseDone = false; bool bProbe = false; bool bProbeDone = false; float ProbeStart = 0; int32 ProbeLives = 0; bool bCarProbe = false; bool bCarDone = false; int32 BloodCount = 0; bool bFight = false; bool bFightDone = false; UPROPERTY() ATrendoEnemy* FightEnemy = nullptr; FVector CarStart = FVector::ZeroVector; float WheelTurn = 0; TMap<FString, FQuat> WheelLast;
+	float CheckSeconds = -1; bool bShotTaken = false; bool bCloseShot = false; bool bCloseDone = false; bool bProbe = false; bool bProbeDone = false; float ProbeStart = 0; int32 ProbeLives = 0; bool bCarProbe = false; bool bCarDone = false; int32 BloodCount = 0; int32 Severed = 0; float FightShotDelay = 0; bool bFight = false; bool bFightDone = false; UPROPERTY() ATrendoEnemy* FightEnemy = nullptr; FVector CarStart = FVector::ZeroVector; float WheelTurn = 0; TMap<FString, FQuat> WheelLast;
 	static float WheelAngle(AActor* Car, TMap<FString, FQuat>& Last);
 	static void VehicleAxis(AActor* Car, FName Input, float Value);
 	static void VehicleCall(AActor* Car, const TCHAR* Func, FName Input, int32 Value);
@@ -1958,6 +2033,7 @@ void ATrendoGameMode::Damage(ATrendoEnemy* E)
 	if (E->Hp > 0) { E->Knock(From * (bBrutal ? 260.f : 180.f)); return; } // Treffer: taumelt zurück, kurz benommen
 	State.Defeated++; State.Score += E->MaxHp > 1 ? 10 : 2; if (E->MaxHp > 1) State.Note = TEXT("Boss besiegt!");
 	Enemies.Remove(E);
+	if (bBrutal && E->Sever(From)) Severed++; // brutale Spiele: ein Glied wird abgetrennt
 	if (bNone || !E->Ragdoll(From * (bBrutal ? 32000.f : 18000.f))) { E->Destroy(); return; } // ohne Gewalt verschwindet er, sonst fällt er als Körper
 	if (!bNone) SpawnBlood(E->GetActorLocation(), bBrutal ? 1.6f : 1.f);
 	E->SetLifeSpan(30.f);
@@ -2134,10 +2210,20 @@ void ATrendoGameMode::Tick(float DeltaSeconds)
 				if (GetWorld()->LineTraceSingleByObjectType(G, FVector(Pelvis.X, Pelvis.Y, Pelvis.Z + 3000), FVector(Pelvis.X, Pelvis.Y, Pelvis.Z - 3000), Land, Q)) Lie = Pelvis.Z - G.Location.Z;
 				UE_LOG(LogTrendo, Display, TEXT("TRENDO-KAMPF Körper: Becken Z=%.0f, Gegner Z=%.0f, Simulation=%s, Physik-Körper=%d"), Pelvis.Z, FightEnemy->GetActorLocation().Z, FightEnemy->Body3D->IsSimulatingPhysics() ? TEXT("ja") : TEXT("nein"), FightEnemy->Body3D->Bodies.Num());
 			}
-			UE_LOG(LogTrendo, Display, TEXT("TRENDO-KAMPF Gegner besiegt=%s Ragdoll=%s Becken über Boden=%.0f cm (%s) Blut=%d Gewalt=%s"), Enemies.Contains(FightEnemy) ? TEXT("nein") : TEXT("ja"),
-				IsValid(FightEnemy) && FightEnemy->bDead ? TEXT("ja") : TEXT("nein"), Lie, Lie < -20.f ? TEXT("unter dem Boden") : Lie < 45.f ? TEXT("liegt") : TEXT("steht"), BloodCount, *Data.Violence);
-			FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("Screenshots/trendo-kampf.png"), false, false);
+			UE_LOG(LogTrendo, Display, TEXT("TRENDO-KAMPF Gegner besiegt=%s Ragdoll=%s Becken über Boden=%.0f cm (%s) Blut=%d abgetrennt=%d Gewalt=%s"), Enemies.Contains(FightEnemy) ? TEXT("nein") : TEXT("ja"),
+				IsValid(FightEnemy) && FightEnemy->bDead ? TEXT("ja") : TEXT("nein"), Lie, Lie < -20.f ? TEXT("unter dem Boden") : Lie < 45.f ? TEXT("liegt") : TEXT("steht"), BloodCount, Severed, *Data.Violence);
+			// Blick auf den Kampfort: Figur seitlich daneben, Kamera schräg von oben auf den liegenden Gegner
+			if (IsValid(FightEnemy) && FightEnemy->Body3D && Hero())
+			{
+				const FVector Pel = FightEnemy->Body3D->GetBoneLocation(TEXT("pelvis")); const FVector Side = FVector(260.f, -330.f, 0);
+				Hero()->SetActorLocation(FVector(Pel.X + Side.X, Pel.Y + Side.Y, Hero()->GetActorLocation().Z + 40.f), false, nullptr, ETeleportType::TeleportPhysics);
+				const FRotator Look = (Pel - Hero()->GetActorLocation()).Rotation();
+				if (AController* Co = Hero()->GetController()) Co->SetControlRotation(FRotator(-32.f, Look.Yaw + 18.f, 0));
+			}
+			FightShotDelay = 0.6f;
+
 		}
+		else if (bFightDone && FightShotDelay > 0.f) { FightShotDelay = 0.f; CheckSeconds = 1.f; FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("Screenshots/trendo-kampf.png"), false, false); }
 		else if (bFightDone && !bCarProbe)
 		{
 			// Wagen-Probe: einsteigen (der Wagen wird gesteuert), Bild aus der Fahrzeugkamera, danach aussteigen
