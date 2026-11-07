@@ -446,21 +446,16 @@ def dress(ch, sub, edit):
     if not items: log("Kleidung: Grundkleidung von Epic (kein Outfit in Trendo/Kleidung)")
     wi = unreal.load_asset(items[0]) if items else None
     col = ch.internal_collection; inst = col.default_instance
-    key = None
+    keys = list(col.get_item_keys_for_slot("Outfits"))
     if wi:
         key = col.try_add_item_from_wardrobe_item("Outfits", wi)
-        inst.try_add_slot_selection(unreal.MetaHumanPipelineSlotSelection(slot_name="Outfits", selected_item=key))
-        # nur das neue Outfit tragen: übrige Auswahl im Kleidungsplatz entfernen
-        for s in list(inst.get_editor_property("slot_selections")) if hasattr(inst, "get_editor_property") else []:
-            try:
-                if str(s.get_editor_property("slot_name")) == "Outfits" and s.get_editor_property("selected_item") != key and hasattr(inst, "try_remove_slot_selection"): inst.try_remove_slot_selection(s)
-            except Exception as e: log("Hinweis Auswahl: " + str(e)[:150])
+        # nur das neue Outfit tragen: ersetzt die Grundkleidung der Vorlage im Kleidungsplatz
+        inst.set_single_slot_selection("Outfits", key); keys = [key]
     def colors():
         sub.assemble_for_preview(character=ch)
         n = 0
-        for s in list(inst.get_editor_property("slot_selections")):
-            if str(s.get_editor_property("slot_name")) != "Outfits": continue
-            ps = inst.get_instance_parameters(item_path=unreal.MetaHumanPaletteItemPath(item_key=s.get_editor_property("selected_item")))
+        for k in keys:
+            ps = inst.get_instance_parameters(item_path=unreal.MetaHumanPaletteItemPath(item_key=k))
             log("Kleidungs-Parameter: " + ", ".join(str(p.name) for p in ps)[:400])
             for p in ps:
                 name = str(p.name).lower()
