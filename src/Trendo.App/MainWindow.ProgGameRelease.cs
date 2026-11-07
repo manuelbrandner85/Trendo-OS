@@ -95,9 +95,46 @@ public partial class MainWindow
         var outDir = Path.Combine(WorkFolder("Spiele"), "Veröffentlicht", GameRelease.Slug(d.Text("title", "Spiel")));
         var (files, notes) = GameRelease.Pack(d.Data, built, outDir, GameRelease.TargetsOf(d.Data));
         _gamePackages = files;
+        // Unreal-Spiel für Windows: Trendo packt selbst mit Unreals Paketierer (ein Klick statt „von Hand in Unreal packen“)
+        var unreal = Directory.GetFiles(built, "*.uproject").Length > 0 && GameRelease.TargetsOf(d.Data).Contains("windows");
+        if (unreal) notes.RemoveAll(n => n.StartsWith("Windows:", StringComparison.Ordinal));
         _core.Audit.Append(Principal.LocalOwner.Name, "game.release.pack", $"{files.Count} Pakete");
-        _progMsg[GK] = (files.Count > 0 ? $"{files.Count} Pakete fertig in „Veröffentlicht“." : "Keine Pakete gebaut.") + (notes.Count > 0 ? "\n" + string.Join("\n", notes) : "");
+        _progMsg[GK] = (files.Count > 0 ? $"{files.Count} Pakete fertig in „Veröffentlicht“." : unreal ? "" : "Keine Pakete gebaut.") + (notes.Count > 0 ? "\n" + string.Join("\n", notes) : "");
         if (files.Count > 0) Toast("Pakete fertig.", ("Ordner öffnen", () => Launch(outDir)));
+        if (unreal) _ = GameUnrealPackage(d, outDir);
+    }
+
+    /// <summary>Vorschlag 12: fertiges Windows-Spiel aus dem Unreal-Projekt – Unreals Paketierer (BuildCookRun, Shipping) und ein ZIP zum Weitergeben.</summary>
+    public async Task GameUnrealPackage(ProgramDocument d, string outDir)
+    {
+        var built = d.Text("built");
+        var uproject = built.Length > 0 && Directory.Exists(built) ? Directory.GetFiles(built, "*.uproject").FirstOrDefault() : null;
+        if (uproject is null) { _progMsg[GK] = "Zuerst „Bauen“ – dann packt Trendo das Unreal-Spiel."; Show(GK); return; }
+        if (UnrealEngineDir() is not { } engine) { _progMsg[GK] = "Für das Windows-Paket braucht es Unreal Engine 5 (kostenlos über den Epic Games Launcher)."; Show(GK); return; }
+        if (UnrealBusy) { _progMsg[GK] = "Unreal arbeitet gerade – bitte warten, bis die Prüfung fertig ist."; Show(GK); return; }
+        UnrealBusy = true;
+        void Step(string t) { _progMsg[GK] = t; _ui.Post(() => { if (CurrentView == GK) Show(GK); }); }
+        var slug = GameRelease.Slug(d.Text("title", "Spiel")); var archive = Path.Combine(outDir, "unreal-paket");
+        var logs = Path.Combine(built, "Trendo-Pruefung"); Directory.CreateDirectory(logs);
+        string msg;
+        try
+        {
+            Step("📦 Unreal baut das fertige Windows-Spiel: Code (Shipping), Inhalte kochen und packen … beim ersten Mal kann das lange dauern.");
+            var (code, log) = await Task.Run(() => UnrealRun(UnrealPackage.RunUat(engine), UnrealPackage.Args(uproject, archive), Path.Combine(logs, "paket.txt"), 14_400_000));
+            if (!UnrealPackage.Ok(log)) msg = $"✗ Windows-Spiel nicht fertig (Exitcode {code}): {UnrealPackage.Reason(log)}";
+            else
+            {
+                Step("📦 Windows-Spiel fertig – Trendo packt es als ZIP …");
+                var zip = await Task.Run(() => UnrealPackage.Zip(archive, Path.Combine(outDir, slug + "-windows.zip")));
+                _gamePackages.Add(zip);
+                msg = $"✓ Windows-Spiel fertig: {Path.GetFileName(zip)} ({new FileInfo(zip).Length / 1048576.0:0} MB) – entpacken und {Path.GetFileName(UnrealPackage.Exe(archive) ?? "das Spiel")} starten.";
+                _ui.Post(() => Toast("Windows-Spiel fertig.", ("Ordner öffnen", () => Launch(outDir))));
+            }
+        }
+        catch (Exception e) when (e is IOException or InvalidOperationException or System.ComponentModel.Win32Exception or UnauthorizedAccessException) { msg = "✗ Windows-Spiel nicht gepackt: " + e.Message; }
+        finally { UnrealBusy = false; }
+        _core.Audit.Append(Principal.LocalOwner.Name, "game.release.unreal", msg.StartsWith('✓') ? "ok" : "fehler");
+        Step(msg);
     }
 
     /// <summary>Hochladen nach Ja: sichtbares Fenster mit butler bzw. SteamCMD – die Anmeldung macht der Nutzer dort selbst.</summary>

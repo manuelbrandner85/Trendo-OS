@@ -27,7 +27,7 @@ public class UnrealGameTests
             Assert.Equal("Waldlaeufer", Path.GetFileName(dir));
             var up = JsonNode.Parse(File.ReadAllText(Path.Combine(dir, "Waldlaeufer.uproject")))!;
             Assert.Equal("Waldlaeufer", up["Modules"]![0]!["Name"]!.GetValue<string>());
-            foreach (var f in new[] { "Source/Waldlaeufer.Target.cs", "Source/WaldlaeuferEditor.Target.cs", "Source/Waldlaeufer/Waldlaeufer.Build.cs", "Source/Waldlaeufer/TrendoCharacter.cpp", "Source/Waldlaeufer/TrendoGameMode.cpp", "Source/Waldlaeufer/TrendoActors.cpp", "Source/Waldlaeufer/TrendoTypes.cpp", "Source/Waldlaeufer/TrendoTests.cpp", "Content/Trendo/level.json", "Design/Spielbibel.md" })
+            foreach (var f in new[] { "Source/Waldlaeufer.Target.cs", "Source/WaldlaeuferEditor.Target.cs", "Source/Waldlaeufer/Waldlaeufer.Build.cs", "Source/Waldlaeufer/TrendoCharacter.cpp", "Source/Waldlaeufer/TrendoGameMode.cpp", "Source/Waldlaeufer/TrendoActors.cpp", "Source/Waldlaeufer/TrendoTypes.cpp", "Source/Waldlaeufer/TrendoTests.cpp", "Content/TrendoDaten/level.json", "Design/Spielbibel.md" })
                 Assert.True(File.Exists(Path.Combine(dir, f)), f);
             Assert.Contains("EnhancedInput", File.ReadAllText(Path.Combine(dir, "Source", "Waldlaeufer", "Waldlaeufer.Build.cs")));
             Assert.Contains("IMPLEMENT_SIMPLE_AUTOMATION_TEST(FTrendoRegelnTest", File.ReadAllText(Path.Combine(dir, "Source", "Waldlaeufer", "TrendoTests.cpp")));
@@ -36,7 +36,7 @@ public class UnrealGameTests
             Assert.Contains("r.DynamicGlobalIlluminationMethod=1", ini); // AAA+: Lumen bleibt
             Assert.Single(ini.Split('\n').Where(l => l.StartsWith("GameDefaultMap=")));
             Assert.Contains("DirectoriesToAlwaysStageAsNonUFS", File.ReadAllText(Path.Combine(dir, "Config", "DefaultGame.ini")));
-            var lv = JsonNode.Parse(File.ReadAllText(Path.Combine(dir, "Content", "Trendo", "level.json")))!;
+            var lv = JsonNode.Parse(File.ReadAllText(Path.Combine(dir, "Content", "TrendoDaten", "level.json")))!;
             Assert.Equal(("openworld", "schwert", "Sammler", "Waldläufer"), (lv["world"]!.GetValue<string>(), lv["weapon"]!.GetValue<string>(), lv["rules"]![0]!["title"]!.GetValue<string>(), lv["name"]!.GetValue<string>()));
             Assert.DoesNotContain("\r", File.ReadAllText(Path.Combine(dir, "Source", "Waldlaeufer", "TrendoGameMode.cpp")));
             // Echte Modelle statt Grundformen: Menschfigur mit Animationen, Sportwagen, Fotomodelle je Rolle – Grundform nur als Rückfall

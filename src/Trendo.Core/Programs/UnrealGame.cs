@@ -50,13 +50,20 @@ public static class UnrealGame
         Put("Config/DefaultInput.ini", "[/Script/Engine.InputSettings]\nDefaultPlayerInputClass=/Script/EnhancedInput.EnhancedPlayerInput\nDefaultInputComponentClass=/Script/EnhancedInput.EnhancedInputComponent\n");
         var game = Path.Combine(projectDir, "Config", "DefaultGame.ini");
         var g = File.Exists(game) ? File.ReadAllText(game) : "";
-        if (!g.Contains("DirectoriesToAlwaysStageAsNonUFS")) File.WriteAllText(game, g.TrimEnd() + "\n\n[/Script/UnrealEd.ProjectPackagingSettings]\n+DirectoriesToAlwaysStageAsNonUFS=(Path=\"Trendo\")\n");
+        g = g.Replace("+DirectoriesToAlwaysStageAsNonUFS=(Path=\"Trendo\")", "+DirectoriesToAlwaysStageAsNonUFS=(Path=\"TrendoDaten\")"); // ältere Projekte: nur noch die Spieldaten lose
+        if (!g.Contains("DirectoriesToAlwaysStageAsNonUFS")) g = g.TrimEnd() + "\n\n[/Script/UnrealEd.ProjectPackagingSettings]\n+DirectoriesToAlwaysStageAsNonUFS=(Path=\"TrendoDaten\")\n";
+        // Inhalte, die das Spiel erst zur Laufzeit über ihren Pfad lädt (Menschen, Natur, Modelle, Bewegungen, Wagen), immer mitkochen –
+        // sonst fehlen sie im fertigen Paket und das Spiel zeigt nur Platzhalter-Formen
+        const string pack = "[/Script/UnrealEd.ProjectPackagingSettings]";
+        foreach (var c in AlwaysCook)
+            if (!g.Contains($"+DirectoriesToAlwaysCook=(Path=\"{c}\")")) g = g.Replace(pack, pack + $"\n+DirectoriesToAlwaysCook=(Path=\"{c}\")");
+        File.WriteAllText(game, g);
         // Fahrzeuge (Chaos Modular Vehicle) brauchen die asynchrone Physik-Berechnung
         var eng = File.ReadAllText(ini);
         if (!eng.Contains("bTickPhysicsAsync")) File.WriteAllText(ini, (eng = eng.TrimEnd() + "\n\n[/Script/Engine.PhysicsSettings]\nbTickPhysicsAsync=True\n"));
         // Wegfindung: Wegnetz entsteht zur Laufzeit rund um die Gegner (große Welten bleiben schnell)
         if (!eng.Contains("RuntimeGeneration")) File.WriteAllText(ini, eng.TrimEnd() + "\n\n[/Script/NavigationSystem.RecastNavMesh]\nRuntimeGeneration=Dynamic\n\n[/Script/NavigationSystem.NavigationSystemV1]\nbGenerateNavigationOnlyAroundNavigationInvokers=True\n");
-        Put("Content/Trendo/level.json", level);
+        Put("Content/TrendoDaten/level.json", level);
         Put(WeltScriptRel, WeltScript + "\n");
         Put(MenschScriptRel, MenschScript + "\n");
     }
@@ -72,6 +79,8 @@ public static class UnrealGame
     /// <summary>Plugins, die Trendo im Projekt einschaltet: Python/Interchange zum Einrichten der Welt, dazu die Engine-Beispielinhalte
     /// mit Menschfigur samt Geh-/Lauf-/Sprung-Animationen (MoverExamples) und Sportwagen (ChaosModularVehicleExamples) – Teil jeder Unreal-Installation –
     /// und der MetaHuman Creator für den echten Menschen als Spielfigur.</summary>
+    /// <summary>Inhaltsordner, die immer ins fertige Spiel gekocht werden (zur Laufzeit per Pfad geladen).</summary>
+    public static readonly string[] AlwaysCook = ["/Game/Trendo", "/MoverExamples/Characters/Mannequins", "/ChaosModularVehicleExamples/Models/SportsCar"];
     public static readonly string[] Plugins = ["PythonScriptPlugin", "EditorScriptingUtilities", "Interchange", "InterchangeEditor", "MoverExamples", "ChaosModularVehicleExamples", "ChaosModularVehicle", "ChaosVehiclesPlugin", "MetaHumanCharacter", "GeometryScripting"];
     /// <summary>Eigene Karte, die das Welt-Skript aus der Open-World-Vorlage anlegt.</summary>
     public const string WeltMap = "/Game/Trendo/Welt";
@@ -162,7 +171,7 @@ public static class UnrealGame
     public const string WeltScript = """
 # Von Trendo erzeugt: richtet die Welt in Unreal ein (läuft ohne Fenster über -ExecutePythonScript).
 # Importiert freie Fotomaterialien und Modelle (Poly Haven, CC0) aus Content/Trendo/Quellen, baut das Bodenmaterial,
-# legt die eigene Open-World-Karte /Game/Trendo/Welt aus der Engine-Vorlage an und schreibt Content/Trendo/natur.json.
+# legt die eigene Open-World-Karte /Game/Trendo/Welt aus der Engine-Vorlage an und schreibt Content/TrendoDaten/natur.json.
 import json, os, unreal
 
 ROOT = unreal.Paths.project_content_dir()
@@ -452,7 +461,7 @@ les.save_current_level()
 unreal.EditorLoadingAndSavingUtils.save_dirty_packages(True, True)
 log.append(f"Karte {world}: Bodenmaterial auf {count} Gelände-Teil(e)")
 
-json.dump({"map": world, "ground": mat.get_path_name() if mat else "", "nature": nature, "objects": objects}, open(os.path.join(ROOT, "Trendo", "natur.json"), "w", encoding="utf-8"), indent=2)
+json.dump({"map": world, "ground": mat.get_path_name() if mat else "", "nature": nature, "objects": objects}, open(os.path.join(os.makedirs(os.path.join(ROOT, "TrendoDaten"), exist_ok=True) or ROOT, "TrendoDaten", "natur.json"), "w", encoding="utf-8"), indent=2)
 for l in log: unreal.log("TRENDO-WELT " + l)
 unreal.log("TRENDO-WELT-OK %d Pflanzen/Felsen-Modelle, %d Spielobjekt-Modelle" % (len(nature), len(objects)))
 """;
@@ -2004,7 +2013,7 @@ ATrendoGameMode::ATrendoGameMode()
 
 bool ATrendoGameMode::LoadData(FString& Error)
 {
-	FString Json; const FString File = FPaths::ProjectContentDir() / TEXT("Trendo/level.json");
+	FString Json; const FString File = FPaths::ProjectContentDir() / TEXT("TrendoDaten/level.json");
 	if (!FFileHelper::LoadFileToString(Json, *File)) { Error = TEXT("level.json fehlt: ") + File; return false; }
 	return FTrendoData::Parse(Json, Data, Error);
 }
@@ -2563,11 +2572,11 @@ void ATrendoGameMode::SpawnBlood(const FVector& Pos, float Size)
 	}
 }
 
-/** Echte Modelle für Spielobjekte aus Content/Trendo/natur.json („objects“: Rolle → Modellpfad). */
+/** Echte Modelle für Spielobjekte aus Content/TrendoDaten/natur.json („objects“: Rolle → Modellpfad). */
 void ATrendoGameMode::LoadModels()
 {
 	Models.Empty();
-	FString Json; if (!FFileHelper::LoadFileToString(Json, *(FPaths::ProjectContentDir() / TEXT("Trendo/natur.json")))) return;
+	FString Json; if (!FFileHelper::LoadFileToString(Json, *(FPaths::ProjectContentDir() / TEXT("TrendoDaten/natur.json")))) return;
 	TSharedPtr<FJsonObject> O; if (!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json), O) || !O.IsValid()) return;
 	const TSharedPtr<FJsonObject>* Obj; if (!O->TryGetObjectField(TEXT("objects"), Obj)) return;
 	for (const auto& KV : (*Obj)->Values)
@@ -2575,10 +2584,10 @@ void ATrendoGameMode::LoadModels()
 	UE_LOG(LogTrendo, Display, TEXT("TRENDO-MODELLE %d Spielobjekt-Modelle, Mensch=%s, Wagen=%s"), Models.Num(), TrendoHuman() ? TEXT("ja") : TEXT("nein"), TrendoCar() ? TEXT("ja") : TEXT("nein"));
 }
 
-/** Pflanzen, Bäume, Felsen und Holz aus Content/Trendo/natur.json (von Trendo eingerichtet) auf dem Gelände verteilen – feste Zufallsfolge, Spielweg bleibt frei. */
+/** Pflanzen, Bäume, Felsen und Holz aus Content/TrendoDaten/natur.json (von Trendo eingerichtet) auf dem Gelände verteilen – feste Zufallsfolge, Spielweg bleibt frei. */
 void ATrendoGameMode::SpawnNature()
 {
-	FString Json; if (!FFileHelper::LoadFileToString(Json, *(FPaths::ProjectContentDir() / TEXT("Trendo/natur.json")))) return;
+	FString Json; if (!FFileHelper::LoadFileToString(Json, *(FPaths::ProjectContentDir() / TEXT("TrendoDaten/natur.json")))) return;
 	TSharedPtr<FJsonObject> O; if (!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json), O) || !O.IsValid()) return;
 	TMap<FString, TArray<UStaticMesh*>> Kinds;
 	const TArray<TSharedPtr<FJsonValue>>* Arr; if (!O->TryGetArrayField(TEXT("nature"), Arr)) return;

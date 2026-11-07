@@ -27,7 +27,8 @@ public class GameUnreal_Ui
         Assert.Equal("openworld", UnrealGame.WorldOf(d.Data));
         w.Find<Button>("game-build").Press(); Pump();
         var built = d.Text("built");
-        Assert.True(File.Exists(Path.Combine(built, "Content", "Trendo", "level.json")));
+        Assert.True(File.Exists(Path.Combine(built, "Content", "TrendoDaten", "level.json"))); Assert.Contains("Path=\"TrendoDaten\"", File.ReadAllText(Path.Combine(built, "Config", "DefaultGame.ini"))); // nur die Spieldaten lose im Paket
+        Assert.Contains("+DirectoriesToAlwaysCook=(Path=\"/Game/Trendo\")", File.ReadAllText(Path.Combine(built, "Config", "DefaultGame.ini"))); // zur Laufzeit geladene Inhalte kommen ins Paket
         Assert.Contains("OpenWorld", File.ReadAllText(Path.Combine(built, "Config", "DefaultEngine.ini")));
         // ohne Unreal (Testmodus): klare Anleitung, nichts gestartet
         await w.GameUnrealCheck(d); Pump();
