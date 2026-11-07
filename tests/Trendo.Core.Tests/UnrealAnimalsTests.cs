@@ -34,6 +34,7 @@ public class UnrealAnimalsTests
     {
         Assert.Contains("def import_animal", UnrealGame.WeltScript); Assert.Contains("lizenzen.txt", UnrealGame.WeltScript); Assert.Contains("\"tiere\": tiere", UnrealGame.WeltScript);
         Assert.Contains("get_bone_pose_for_time", UnrealGame.WeltScript); // echte Länge statt gehaltener Schlusspose
+        Assert.Contains("used_with_skeletal_mesh", UnrealGame.WeltScript); Assert.Contains("\"materials\":", UnrealGame.WeltScript); // Material wirkt im Spiel; Fell-Varianten
         var dir = Path.Combine(Path.GetTempPath(), "trendo-tiere-spiel-" + Guid.NewGuid().ToString("N"));
         try
         {
@@ -41,7 +42,7 @@ public class UnrealAnimalsTests
             var built = GameDesign.BuildUnreal(d, dir, "5.8");
             string Src(string f) => File.ReadAllText(Directory.GetFiles(Path.Combine(built, "Source"), f, SearchOption.AllDirectories).Single());
             var actors = Src("TrendoActors.cpp");
-            Assert.Contains("ATrendoAnimal::Kill", actors); Assert.Contains("flieht", actors); Assert.Contains("GetRandomReachablePointInRadius", actors);
+            Assert.Contains("ATrendoAnimal::Kill", actors); Assert.Contains("flieht", actors); Assert.Contains("GetRandomReachablePointInRadius", actors); Assert.Contains("FurVariant", actors); // jedes Tier eigenes Fell
             Assert.Contains("TRENDO-TIER", Src("TrendoGameMode.cpp")); Assert.Contains("class ATrendoAnimal", Src("TrendoActors.h"));
         }
         finally { if (Directory.Exists(dir)) Directory.Delete(dir, true); }

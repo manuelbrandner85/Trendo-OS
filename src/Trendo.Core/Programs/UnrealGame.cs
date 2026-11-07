@@ -479,50 +479,59 @@ def import_animal(name, base):
     mesh = next((a for a in assets if isinstance(a, unreal.SkeletalMesh)), None)
     if not mesh: return None
     # Fotomaterial: Farbe × Umgebungsverdeckung, Normalen, matte Fellrauheit, Fellkarten über die Deckkraft-Maske (zweiseitig)
-    texs = {}
-    for r, _, fs in os.walk(base):
-        for f in fs:
-            if not f.lower().endswith((".png", ".jpg", ".tga")): continue
-            k = f.rsplit(".", 1)[0].lower()
-            kind = "normal" if "normal" in k else "ao" if k.endswith("_ao") else "opacity" if "opacity" in k else "disp" if "displacement" in k else "color"
-            if kind not in texs: texs[kind] = os.path.join(r, f)
-    imported = {}
-    for kind, path in texs.items():
-        if kind == "disp": continue
-        # klassischer Textur-Importer mit eindeutigem Namen: Interchange legte für FBX-Verweise gleichnamige 32×32-Platzhalter an
-        tname = "T_%s_%s" % (name, kind)
-        ti = unreal.AssetImportTask(); ti.filename = path; ti.destination_path = dest + "/Texturen"; ti.destination_name = tname; ti.automated = True; ti.save = True; ti.replace_existing = True
-        ti.factory = unreal.TextureFactory()
-        tools.import_asset_tasks([ti])
-        tex = unreal.load_asset(dest + "/Texturen/" + tname)
-        if tex:
-            if kind == "normal": tex.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_NORMALMAP); tex.set_editor_property("srgb", False)
-            if kind in ("ao", "opacity"): tex.set_editor_property("srgb", False)
-            eal.save_loaded_asset(tex)   # sonst lädt die Textur mit alter Kompression – Material passt nicht und wird grau
-            imported[kind] = tex
-    log.append("Tier %s: Texturen %s" % (name, ", ".join("%s=%s %dpx" % (k, v.get_name(), v.blueprint_get_size_x()) for k, v in sorted(imported.items()))))
-    m = tools.create_asset("M_" + name, dest, unreal.Material, unreal.MaterialFactoryNew())
-    mel = unreal.MaterialEditingLibrary
-    m.set_editor_property("two_sided", True)
-    if "opacity" in imported: m.set_editor_property("blend_mode", unreal.BlendMode.BLEND_MASKED)
-    def samp(kind, x, y, normal=False):
-        s = mel.create_material_expression(m, unreal.MaterialExpressionTextureSample, x, y); s.set_editor_property("texture", imported[kind])
-        if normal: s.set_editor_property("sampler_type", unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL)
-        elif kind in ("ao", "opacity"): s.set_editor_property("sampler_type", unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR)
-        return s
-    if "color" in imported:
-        c = samp("color", -700, -200)
-        if "ao" in imported:
-            mul = mel.create_material_expression(m, unreal.MaterialExpressionMultiply, -350, -200); mel.connect_material_expressions(c, "RGB", mul, "A"); mel.connect_material_expressions(samp("ao", -700, 0), "R", mul, "B")
-            mel.connect_material_property(mul, "", unreal.MaterialProperty.MP_BASE_COLOR)
-        else: mel.connect_material_property(c, "RGB", unreal.MaterialProperty.MP_BASE_COLOR)
-    if "normal" in imported: mel.connect_material_property(samp("normal", -700, 200, True), "RGB", unreal.MaterialProperty.MP_NORMAL)
-    if "opacity" in imported: mel.connect_material_property(samp("opacity", -700, 400), "R", unreal.MaterialProperty.MP_OPACITY_MASK)
-    rough = mel.create_material_expression(m, unreal.MaterialExpressionConstant, -350, 100); rough.set_editor_property("r", 0.78); mel.connect_material_property(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
-    spec = mel.create_material_expression(m, unreal.MaterialExpressionConstant, -350, 160); spec.set_editor_property("r", 0.3); mel.connect_material_property(spec, "", unreal.MaterialProperty.MP_SPECULAR)
-    mel.recompile_material(m); eal.save_loaded_asset(m)
-    errs = [str(e) for e in (unreal.MaterialEditingLibrary.get_material_compile_errors(m) if hasattr(unreal.MaterialEditingLibrary, "get_material_compile_errors") else [])]
-    if errs: log.append("Tier %s: Material-Fehler %s" % (name, errs[:2]))
+    def make_mat(label, tdir, skip_variants):
+        texs = {}
+        for r, dirs, fs in os.walk(tdir):
+            if skip_variants: dirs[:] = [x for x in dirs if x != "Varianten"]
+            for f in fs:
+                if not f.lower().endswith((".png", ".jpg", ".tga")): continue
+                k = f.rsplit(".", 1)[0].lower()
+                kind = "normal" if "normal" in k else "ao" if k.endswith("_ao") else "opacity" if "opacity" in k else "disp" if "displacement" in k else "color"
+                if kind not in texs: texs[kind] = os.path.join(r, f)
+        imported = {}
+        for kind, path in texs.items():
+            if kind == "disp": continue
+            # klassischer Textur-Importer mit eindeutigem Namen: Interchange legte für FBX-Verweise gleichnamige 32×32-Platzhalter an
+            tname = "T_%s_%s" % (label, kind)
+            ti = unreal.AssetImportTask(); ti.filename = path; ti.destination_path = dest + "/Texturen"; ti.destination_name = tname; ti.automated = True; ti.save = True; ti.replace_existing = True
+            ti.factory = unreal.TextureFactory()
+            tools.import_asset_tasks([ti])
+            tex = unreal.load_asset(dest + "/Texturen/" + tname)
+            if tex:
+                if kind == "normal": tex.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_NORMALMAP); tex.set_editor_property("srgb", False)
+                if kind in ("ao", "opacity"): tex.set_editor_property("srgb", False)
+                eal.save_loaded_asset(tex)   # sonst lädt die Textur mit alter Kompression – Material passt nicht und wird grau
+                imported[kind] = tex
+        log.append("Tier %s: Texturen %s" % (label, ", ".join("%s=%s %dpx" % (k, v.get_name(), v.blueprint_get_size_x()) for k, v in sorted(imported.items()))))
+        m = tools.create_asset("M_" + label, dest, unreal.Material, unreal.MaterialFactoryNew())
+        mel = unreal.MaterialEditingLibrary
+        m.set_editor_property("two_sided", True)
+        m.set_editor_property("used_with_skeletal_mesh", True)   # sonst fällt es im Spiel (ohne Editor) auf das graue Standardmaterial zurück
+        if "opacity" in imported: m.set_editor_property("blend_mode", unreal.BlendMode.BLEND_MASKED)
+        def samp(kind, x, y, normal=False):
+            s = mel.create_material_expression(m, unreal.MaterialExpressionTextureSample, x, y); s.set_editor_property("texture", imported[kind])
+            if normal: s.set_editor_property("sampler_type", unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL)
+            elif kind in ("ao", "opacity"): s.set_editor_property("sampler_type", unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR)
+            return s
+        if "color" in imported:
+            c = samp("color", -700, -200)
+            if "ao" in imported:
+                mul = mel.create_material_expression(m, unreal.MaterialExpressionMultiply, -350, -200); mel.connect_material_expressions(c, "RGB", mul, "A"); mel.connect_material_expressions(samp("ao", -700, 0), "R", mul, "B")
+                mel.connect_material_property(mul, "", unreal.MaterialProperty.MP_BASE_COLOR)
+            else: mel.connect_material_property(c, "RGB", unreal.MaterialProperty.MP_BASE_COLOR)
+        if "normal" in imported: mel.connect_material_property(samp("normal", -700, 200, True), "RGB", unreal.MaterialProperty.MP_NORMAL)
+        if "opacity" in imported: mel.connect_material_property(samp("opacity", -700, 400), "R", unreal.MaterialProperty.MP_OPACITY_MASK)
+        rough = mel.create_material_expression(m, unreal.MaterialExpressionConstant, -350, 100); rough.set_editor_property("r", 0.78); mel.connect_material_property(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
+        spec = mel.create_material_expression(m, unreal.MaterialExpressionConstant, -350, 160); spec.set_editor_property("r", 0.3); mel.connect_material_property(spec, "", unreal.MaterialProperty.MP_SPECULAR)
+        mel.recompile_material(m); eal.save_loaded_asset(m)
+        errs = [str(e) for e in (unreal.MaterialEditingLibrary.get_material_compile_errors(m) if hasattr(unreal.MaterialEditingLibrary, "get_material_compile_errors") else [])]
+        if errs: log.append("Tier %s: Material-Fehler %s" % (label, errs[:2]))
+        return m
+    # Grundfell plus Fell-Varianten (Ordner Varianten/<Name>, gleiches Modell): jedes Tier bekommt sein eigenes Fell – keine identischen Kopien
+    m = make_mat(name, base, True); variants = [m]
+    vroot = next((os.path.join(r, "Varianten") for r, ds, _ in os.walk(base) if "Varianten" in ds), None)
+    for v in (sorted(os.listdir(vroot)) if vroot else []):
+        if os.path.isdir(os.path.join(vroot, v)): variants.append(make_mat(name + "_" + v, os.path.join(vroot, v), False))
     mats = mesh.get_editor_property("materials")
     for sm in mats: sm.set_editor_property("material_interface", m)
     mesh.set_editor_property("materials", mats); eal.save_loaded_asset(mesh)
@@ -545,7 +554,7 @@ def import_animal(name, base):
     lic = open(os.path.join(base, "LIZENZ.txt"), encoding="utf-8").read().strip() if os.path.isfile(os.path.join(base, "LIZENZ.txt")) else ""
     if lic: lizenzen.append(lic)
     b = mesh.get_bounds()
-    return {"name": name, "mesh": mesh.get_path_name(), "material": m.get_path_name(), "anims": anims, "license": lic.splitlines()[0] if lic else "", "size": [round(b.box_extent.x * 2), round(b.box_extent.y * 2), round(b.box_extent.z * 2)]}
+    return {"name": name, "mesh": mesh.get_path_name(), "material": m.get_path_name(), "materials": [x.get_path_name() for x in variants], "anims": anims, "license": lic.splitlines()[0] if lic else "", "size": [round(b.box_extent.x * 2), round(b.box_extent.y * 2), round(b.box_extent.z * 2)]}
 try:
     TSRC = os.path.join(unreal.Paths.project_dir(), "Trendo", "Tiere")
     for name in (sorted(os.listdir(TSRC)) if os.path.isdir(TSRC) else []):
@@ -1106,7 +1115,7 @@ public:
 	/** Aus der natur.json-Beschreibung: Netz, Material, Bewegungen mit Länge. false, wenn das Netz fehlt. */
 	bool Setup(const TSharedPtr<class FJsonObject>& Def, const FVector& InHome);
 	void Kill();
-	bool bDead = false; FString Kind; FString Doing = TEXT("ruht"); FString Playing; FVector Home = FVector::ZeroVector; float Moved = 0; int32 Flights = 0;
+	bool bDead = false; FString Kind; FString FurVariant; FString Doing = TEXT("ruht"); FString Playing; FVector Home = FVector::ZeroVector; float Moved = 0; int32 Flights = 0;
 	UPROPERTY() TArray<UAnimSequenceBase*> Keep;
 private:
 	TMap<FString, TPair<UAnimSequenceBase*, float>> Moves; float PlayT = 0; bool bLoop = true; float Rate = 1;
@@ -1551,7 +1560,10 @@ bool ATrendoAnimal::Setup(const TSharedPtr<FJsonObject>& Def, const FVector& InH
 	USkeletalMesh* SkM = LoadObject<USkeletalMesh>(nullptr, *Def->GetStringField(TEXT("mesh"))); if (!SkM) return false;
 	Kind = Def->GetStringField(TEXT("name")); Home = InHome; LastPos = GetActorLocation();
 	USkeletalMeshComponent* Sk = GetMesh(); Sk->SetSkeletalMesh(SkM);
-	if (UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr, *Def->GetStringField(TEXT("material")))) for (int32 i = 0; i < Sk->GetNumMaterials(); i++) Sk->SetMaterial(i, Mat); // Fotomaterial (Import behält sonst die leere Vorgabe)
+	// Fotomaterial (der Import behält sonst die leere Vorgabe); gibt es Fell-Varianten, bekommt jedes Tier ein anderes – keine identischen Kopien
+	FString MatPath = Def->GetStringField(TEXT("material")); const TArray<TSharedPtr<FJsonValue>>* Mats;
+	if (Def->TryGetArrayField(TEXT("materials"), Mats) && Mats->Num() > 0) { static int32 Next = 0; MatPath = (*Mats)[Next++ % Mats->Num()]->AsString(); FurVariant = MatPath; }
+	if (UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr, *MatPath)) for (int32 i = 0; i < Sk->GetNumMaterials(); i++) Sk->SetMaterial(i, Mat);
 	// Tier-FBX liegen mit Blick entlang +Y und Füßen bei Z 0: Netz um −90° drehen und auf den Kapselboden setzen
 	Sk->SetRelativeLocationAndRotation(FVector(0, 0, -GetCapsuleComponent()->GetScaledCapsuleHalfHeight()), FRotator(0, -90, 0));
 	Sk->SetAnimationMode(EAnimationMode::AnimationSingleNode);
@@ -2988,7 +3000,8 @@ void ATrendoGameMode::SpawnAnimals()
 			Animals.Add(A); N++;
 		}
 	}
-	UE_LOG(LogTrendo, Display, TEXT("TRENDO-TIER %d Tiere gesetzt"), N);
+	TSet<FString> Furs; for (ATrendoAnimal* A : Animals) if (IsValid(A)) Furs.Add(A->FurVariant);
+	UE_LOG(LogTrendo, Display, TEXT("TRENDO-TIER %d Tiere gesetzt, %d verschiedene Felle"), N, Furs.Num());
 }
 """,
         ["TrendoTests.cpp"] = """
