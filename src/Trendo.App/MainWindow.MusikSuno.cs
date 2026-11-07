@@ -177,7 +177,7 @@ public partial class MainWindow
     }
 
     /// <summary>V3: Regler, deren Wirkung gemessen ist (reports/musik-suno/v3-regler-messung.md). Nicht gemessene oder unwirksame erscheinen nicht.</summary>
-    public static readonly HashSet<string> MsMeasuredSliders = ["weirdness", "style", "audio", "variety"];
+    public static readonly HashSet<string> MsMeasuredSliders = ["variety"]; // V3-Messung 07.11.2026 (reports/musik-suno/v3-regler-messung.md): nur Vielfalt wirkt nachweisbar
 
     /// <summary>V3: „Mehr Optionen“ wie Suno – Stile ausschließen, Stimme, Dauer genau, Regler.</summary>
     Control MsAdvancedOptions(Action sync)
