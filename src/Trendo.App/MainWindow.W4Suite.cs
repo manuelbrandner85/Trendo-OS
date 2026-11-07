@@ -102,8 +102,20 @@ public partial class MainWindow
         foreach (var k in CreationSuite.Kits)
         {
             var kit = k;
-            var b = new Button { Name = "suite-kit-" + k.Id, Margin = new Thickness(0, 0, 8, 8), Width = 200, Background = TileBg, Content = new StackPanel { Children = {
-                new TextBlock { Text = k.Label, Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold }, P(k.Goal, null, 10.5), P($"{k.Steps.Length} Schritte · etwa {CreationSuite.Days(k.Id)} Tage", null, 10) } } };
+            // A4 (07.11.2026): Ziel-Karten mit farbigem Symbol, Kurzbeschreibung und Umfang als Abzeichen
+            var (ic, c1, c2) = k.Id switch
+            {
+                "video" => (Mdi.PlayBox, "#FCA5A5", "#B91C1C"), "web" => (Mdi.Web, "#8FC2FF", "#2F6FE0"), "app" => (Mdi.CodeBraces, "#C4B5FD", "#6D28D9"),
+                "game" => (Mdi.GamepadVariant, "#86EFAC", "#15803D"), "print3d" => (Mdi.CubeOutline, "#FDBA74", "#C2410C"), "event" => (Mdi.CalendarMonth, "#F5D27A", "#9C7419"), _ => (Mdi.RocketLaunch, "#CBD5E1", "#475569"),
+            };
+            var b = new Button { Name = "suite-kit-" + k.Id, Margin = new Thickness(0, 0, 12, 12), Width = 230, Height = 150, Padding = new Thickness(14, 12), CornerRadius = new CornerRadius(14), Background = TileBg,
+                BorderBrush = EdgeLit, BorderThickness = new Thickness(1), HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalContentAlignment = VerticalAlignment.Stretch,
+                Content = new StackPanel { Spacing = 6, Children = { Chip(ic, c1, c2, 38),
+                    new TextBlock { Text = k.Label, Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
+                    new TextBlock { Text = k.Goal, Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap, MaxHeight = 32 },
+                    new Border { HorizontalAlignment = HorizontalAlignment.Left, CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 2), Background = Brush.Parse("#1AFFFFFF"),
+                        Child = new TextBlock { Text = $"{k.Steps.Length} Schritte · etwa {CreationSuite.Days(k.Id)} Tage", Foreground = Text, FontSize = 10.5 } } } } };
+            Hover(b);
             b.Click += (_, _) =>
             {
                 try

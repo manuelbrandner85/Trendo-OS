@@ -15,28 +15,35 @@ public partial class MainWindow
         var sp = new StackPanel { Spacing = 5 };
         if (_w45Msg.Length > 0) sp.Children.Add(ResultCard(_w45Msg));
         var msg = P(""); msg.Name = "office-msg";
-        var row = new WrapPanel();
-        foreach (var (file, label) in new[] { ("DIN5008-Privatbrief-FormB.docx", "Neuer Privatbrief (Vorlage)"), ("DIN5008-Geschaeftsbrief-FormB.docx", "Neuer Geschäftsbrief (Vorlage)") })
+        // A2 (07.11.2026): Startseite wie in einem modernen Office-Paket – große „Neu“-Karten mit Symbol, darunter „Zuletzt bearbeitet“
+        var row = new WrapPanel { Name = "office-new-cards" };
+        Button NewCard(string name, string icon, string c1, string c2, string title, string sub, Action run)
         {
-            var b = new Button { Name = "office-new-" + (file.Contains("Privat") ? "privat" : "geschaeft"), Content = label, Margin = new Thickness(0, 0, 6, 6) };
-            b.Click += (_, _) =>
+            var b = new Button { Name = name, Width = 210, Height = 124, Margin = new Thickness(0, 0, 12, 12), Padding = new Thickness(14, 12), CornerRadius = new CornerRadius(14),
+                HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalContentAlignment = VerticalAlignment.Stretch, Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1),
+                Content = new StackPanel { Spacing = 6, Children = { Chip(icon, c1, c2, 38),
+                    new TextBlock { Text = title, Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
+                    new TextBlock { Text = sub, Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap } } } };
+            b.Click += (_, _) => run(); Hover(b); return b;
+        }
+        row.Children.Add(NewCard("office-text", Mdi.FileDocumentEdit, "#8FC2FF", "#2F6FE0", "Dokument", "Texte schreiben und gestalten – Trendo Text", () => Show("text")));
+        row.Children.Add(NewCard("office-tabelle", Mdi.ViewGrid, "#86EFAC", "#15803D", "Tabelle", "Rechnen, Listen, Diagramme", () => Show("tabelle")));
+        row.Children.Add(NewCard("office-deck", Mdi.PlayBox, "#FDBA74", "#C2410C", "Präsentation", "Folien mit Vorlagen", () => Show("praesentation")));
+        row.Children.Add(NewCard("office-pdf", Mdi.FileDocument, "#FCA5A5", "#B91C1C", "PDF", "Ansehen, ausfüllen, zusammenführen", () => Show("pdf")));
+        row.Children.Add(NewCard("office-brief", Mdi.EmailEdit, "#F5D27A", "#9C7419", "Brief", "Mit Vorlagen und A4-Vorschau", () => Show("brief")));
+        foreach (var (file, label) in new[] { ("DIN5008-Privatbrief-FormB.docx", "Privatbrief (Word)"), ("DIN5008-Geschaeftsbrief-FormB.docx", "Geschäftsbrief (Word)") })
+            row.Children.Add(NewCard("office-new-" + (file.Contains("Privat") ? "privat" : "geschaeft"), Mdi.FileDocumentOutline, "#CBD5E1", "#475569", label, "DIN-5008-Vorlage als .docx", () =>
             {
                 var dir = Path.Combine(ProjectsRoot, "Dokumente"); Directory.CreateDirectory(dir);
                 var target = Path.Combine(dir, $"{DateTime.Now:yyyy-MM-dd-HHmm}-{Path.GetFileNameWithoutExtension(file)}.docx");
                 using (var s = Avalonia.Platform.AssetLoader.Open(new Uri($"avares://TrendoOS/Assets/templates/{file}"))) using (var f = File.Create(target)) s.CopyTo(f);
                 _core.Audit.Append(Principal.LocalOwner.Name, "office.new", Path.GetFileName(target));
                 msg.Text = $"Angelegt: {Path.GetFileName(target)}"; Launch(target);
-            };
-            row.Children.Add(b);
-        }
-        var textBtn = new Button { Name = "office-text", Content = "Trendo Text", Margin = new Thickness(0, 0, 6, 6), Background = Accent };
-        textBtn.Click += (_, _) => Show("text"); row.Children.Add(textBtn);
-        var pdfBtn = new Button { Name = "office-pdf", Content = "Trendo PDF", Margin = new Thickness(0, 0, 6, 6), Background = Accent };
-        pdfBtn.Click += (_, _) => Show("pdf"); row.Children.Add(pdfBtn);
-        var letter = new Button { Name = "office-brief", Content = "Briefe schreiben", Margin = new Thickness(0, 0, 6, 6), Background = Accent };
-        letter.Click += (_, _) => Show("brief"); row.Children.Add(letter);
-        row.Children.Add(OpenInButton("libreoffice", () => LatestOfficeDoc(), "office"));
-        sp.Children.Add(row); sp.Children.Add(msg);
+            }));
+        sp.Children.Add(new TextBlock { Text = "NEU", Foreground = Muted, FontSize = 11, FontWeight = FontWeight.Bold, LetterSpacing = 0.6, Margin = new Thickness(2, 4, 0, 4) });
+        var openIn = OpenInButton("libreoffice", () => LatestOfficeDoc(), "office");
+        sp.Children.Add(row); sp.Children.Add(new WrapPanel { Children = { openIn } }); sp.Children.Add(msg);
+        sp.Children.Add(new TextBlock { Text = "ZULETZT BEARBEITET", Foreground = Muted, FontSize = 11, FontWeight = FontWeight.Bold, LetterSpacing = 0.6, Margin = new Thickness(2, 10, 0, 4) });
         var soffice = ToolPath("libreoffice");
         sp.Children.Add(P(soffice is null ? "LibreOffice ist nicht installiert – Öffnen nutzt dein Standardprogramm, PDF-Export ist aus." : "Zuletzt bearbeitet (Projektordner und Dokumente). „PDF“ wandelt mit LibreOffice im Hintergrund um.", null, 11));
         var docs = UserFolder(Environment.SpecialFolder.MyDocuments);
@@ -56,7 +63,7 @@ public partial class MainWindow
             }
             sp.Children.Add(r); i++;
         }
-        if (i == 0) sp.Children.Add(P("Noch keine Dokumente gefunden.", Text));
+        if (i == 0) sp.Children.Add(EmptyState("office-empty", "ordner", "Noch keine Dokumente", "Oben ein neues Dokument, eine Tabelle oder Präsentation anlegen – zuletzt bearbeitete Dateien erscheinen dann hier.")); // G6
         return AppsPage("Dokumente", sp);
     }
 

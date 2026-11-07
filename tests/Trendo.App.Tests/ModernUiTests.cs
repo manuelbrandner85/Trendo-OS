@@ -121,6 +121,24 @@ public class Modern_Ui
         finally { w.Close(); }
     }
 
+    [AvaloniaFact(DisplayName = "A2/A4: Texte & Tabellen mit Neu-Karten (Dokument, Tabelle, Präsentation, PDF, Brief, Word-Vorlagen) und Leerzustand; Neues Projekt mit Ziel-Karten")]
+    public void Office_and_project_cards()
+    {
+        var (w, _, _) = Ui.Open();
+        try
+        {
+            w.Show("office"); Pump();
+            foreach (var n in new[] { "office-text", "office-tabelle", "office-deck", "office-pdf", "office-brief", "office-new-privat", "office-new-geschaeft" }) Assert.NotNull(w.TryFind<Button>(n));
+            Assert.Equal(7, w.Find<WrapPanel>("office-new-cards").Children.Count);
+            Assert.NotNull(w.TryFind<Border>("office-empty"));
+            w.Find<Button>("office-tabelle").Press(); Pump(); Assert.Equal("tabelle", w.CurrentView);
+            w.Show(w.PageForStudio("X-11")!); Pump();
+            var kit = w.Find<Button>("suite-kit-video");
+            Assert.Contains("Schritte", string.Join(" ", kit.GetLogicalDescendants().OfType<TextBlock>().Select(t => t.Text)));
+        }
+        finally { w.Close(); }
+    }
+
     [AvaloniaFact(DisplayName = "G10: KI-Aufträge der Grafikkarten-Warteschlange als Karten – läuft mit Laufzeit, wartet mit Platz; fertig = Karte weg")]
     public async Task Task_cards()
     {
