@@ -50,12 +50,23 @@ public static class StudioMcp
         if (doc["mcpServers"] is not JsonObject servers) doc["mcpServers"] = servers = new JsonObject();
         foreach (var key in servers.Select(kv => kv.Key).Where(k => k.StartsWith(Prefix, StringComparison.Ordinal)).ToList()) servers.Remove(key); // nur eigene ersetzen
         userConfig ??= ReadUserConfig();
+        engine ??= EngineOfProject(projectDir); // Spiele: Engine aus den Projektdateien, wenn der Aufrufer sie nicht kennt
         var added = new List<string>(); var missing = new List<string>();
         foreach (var p in Needs(studioId, engine))
             if (FindServer(userConfig, p) is { } s) { servers[Prefix + p] = s; added.Add(p); }
             else missing.Add(p);
         File.WriteAllText(file, doc.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
         return new(projectDir, added, missing);
+    }
+
+    /// <summary>Engine eines Spielprojekts aus seinen Dateien: .uproject → unreal, project.godot → godot, ProjectSettings/ProjectVersion.txt → unity, sonst null.</summary>
+    public static string? EngineOfProject(string projectDir)
+    {
+        if (!Directory.Exists(projectDir)) return null;
+        if (Directory.EnumerateFiles(projectDir, "*.uproject", SearchOption.TopDirectoryOnly).Any()) return "unreal";
+        if (File.Exists(Path.Combine(projectDir, "project.godot"))) return "godot";
+        if (File.Exists(Path.Combine(projectDir, "ProjectSettings", "ProjectVersion.txt"))) return "unity";
+        return null;
     }
 
     /// <summary>Argumente zum sichtbaren Start eines Programms mit dem Projekt: Unreal mit der .uproject-Datei, Godot im Editor mit dem Projektordner,

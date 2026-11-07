@@ -72,6 +72,21 @@ public class StudioMcpTests
         Assert.Equal(["blender"], StudioMcp.Needs("CORE-06", "Unity 6"));
     }
 
+    [Fact(DisplayName = "MCP +6: Engine wird aus dem Projektordner erkannt und für Spiele genutzt, wenn der Aufrufer keine angibt")]
+    public void Engine_from_project()
+    {
+        var d = Dir(); try
+        {
+            Assert.Null(StudioMcp.EngineOfProject(d));
+            File.WriteAllText(Path.Combine(d, "project.godot"), ""); Assert.Equal("godot", StudioMcp.EngineOfProject(d));
+            Assert.Equal(["godot", "blender"], StudioMcp.EnsureProjectConfig(d, "CORE-06", userConfig: User).Added);
+            File.WriteAllText(Path.Combine(d, "Spiel.uproject"), "{}"); Assert.Equal("unreal", StudioMcp.EngineOfProject(d));
+            var u = Dir(); Directory.CreateDirectory(Path.Combine(u, "ProjectSettings")); File.WriteAllText(Path.Combine(u, "ProjectSettings", "ProjectVersion.txt"), "m_EditorVersion: 6000.0");
+            Assert.Equal("unity", StudioMcp.EngineOfProject(u)); Assert.Equal(["blender"], StudioMcp.EnsureProjectConfig(u, "CORE-06", userConfig: User).Added); Directory.Delete(u, true);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
     [Fact(DisplayName = "MCP −1: fehlender Server wird gemeldet statt erfunden")]
     public void Missing_server()
     {
