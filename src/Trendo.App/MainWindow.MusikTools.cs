@@ -131,6 +131,8 @@ public partial class MainWindow
         _msSel = s.Id; _msMsg = "✓ Aufnahme hinzugefügt – jetzt analysieren oder rechts „In anderem Stil“ ein Cover machen (nur privat).";
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.import", Path.GetFileName(target));
         if (AnalyseReady) _ = MsAnalyse(target, s.Id);
+        if (MsAutoSplit && StemsReady) { _msMsg = "✓ Aufnahme hinzugefügt – Gesang und Begleitung werden gleich getrennt …"; _ = MsSplit(s.Id); } // V1: gleich trennen
+        else if (MsAutoSplit) _msMsg += " Zum Trennen von Stimme und Musik rechts „Spuren trennen einrichten“ (einmalig).";
         Show(MS);
         return s;
     }

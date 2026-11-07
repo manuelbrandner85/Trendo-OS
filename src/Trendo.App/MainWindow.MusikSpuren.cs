@@ -35,14 +35,15 @@ public partial class MainWindow
         {
             bool ok; string err = "";
             if (StemSplitOverride is { } o) ok = await o(s.File, dir);
-            else { var r = await KiPyRun(KiRuntime.Spuren, [s.File, dir]); ok = r.Ok; err = Short(r.Err.Length > 0 ? r.Err : r.Out); }
+            else { var r = await KiPyRun(KiRuntime.Spuren, [.. MsStemModel == "htdemucs_ft" ? new[] { "--modell", "htdemucs_ft" } : [], s.File, dir]); ok = r.Ok; err = Short(r.Err.Length > 0 ? r.Err : r.Out); } // V7: Modellwahl
             if (ok && StemSongs.All(x => File.Exists(Path.Combine(dir, x.File))))
             {
                 foreach (var (file, kind, title) in StemSongs)
                     made.Add(Songs.Add(new MusicSong { Title = $"{s.Title} – {title}", Style = s.Style, Lyrics = kind == "gesang" ? s.Lyrics : "[Instrumental]", Language = s.Language,
                         Seconds = s.Seconds, Bpm = s.Bpm, Key = s.Key, TimeSignature = s.TimeSignature, File = Path.Combine(dir, file), Kind = kind, ParentId = s.Id }));
                 _msSel = made[0].Id;
-                _msMsg = "✓ Getrennt: Begleitung und Gesang sind jetzt eigene Lieder, Schlagzeug, Bass und Rest liegen im Spuren-Ordner.";
+                _msMsg = "✓ Getrennt: Begleitung und Gesang sind jetzt eigene Lieder, Schlagzeug, Bass und Rest liegen im Spuren-Ordner – unten im Spuren-Mischer einzeln anhören.";
+                await Task.Run(() => MsMeasureStems(s, dir)); // V7: Qualität messen (im Hintergrund)
                 _core.Audit.Append(Principal.LocalOwner.Name, "musik.spuren", Path.GetFileName(s.File));
             }
             else _msMsg = "Trennen ging nicht" + (err.Length > 0 ? ": " + err : ".");
@@ -62,6 +63,7 @@ public partial class MainWindow
             var dir = Path.GetDirectoryName(s.File)!;
             sp.Children.Add(P("Diese Spur stammt aus „Spuren trennen“. Alle Spuren (Gesang, Schlagzeug, Bass, Rest, Begleitung) liegen im Spuren-Ordner.", Muted, 11));
             sp.Children.Add(Act("ms-stems-folder", "Spuren-Ordner öffnen", () => Launch(dir)));
+            sp.Children.Add(MsStemMixer(s)); // V2
             return sp;
         }
         if (!StemsReady)
@@ -77,9 +79,11 @@ public partial class MainWindow
         }
         sp.Children.Add(P("Begleitung ohne Gesang und Gesang allein werden eigene Lieder, Schlagzeug, Bass und Rest kommen in den Spuren-Ordner." +
             (s.Kind == "eigen" ? " Fremde Lieder nur privat nutzen." : ""), Muted, 11));
-        var go = Act("ms-stems", _msSplitting ? "Wird getrennt …" : "🎚 Spuren trennen", () => _ = MsSplit(s.Id));
+        var go = Act("ms-stems", _msSplitting ? "Wird getrennt …" : MsStemDir(s) is null ? "🎚 Spuren trennen" : "🎚 Neu trennen", () => _ = MsSplit(s.Id));
         go.IsEnabled = !_msSplitting;
+        sp.Children.Add(MsStemModelBox()); // V7
         sp.Children.Add(go);
+        sp.Children.Add(MsStemMixer(s)); // V2
         return sp;
     }
 }

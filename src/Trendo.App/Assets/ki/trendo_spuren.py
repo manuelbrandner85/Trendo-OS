@@ -21,9 +21,16 @@ NAMES = {"vocals": "gesang", "drums": "schlagzeug", "bass": "bass", "other": "re
 
 def main():
     src, out = sys.argv[-2], sys.argv[-1]
+    # Modellwahl (V7, 07.11.2026): „htdemucs“ schnell, „htdemucs_ft“ genauer (vier Modelle, etwa 4× langsamer, einmal ca. 320 MB laden)
+    name = "htdemucs"
+    if "--modell" in sys.argv:
+        name = sys.argv[sys.argv.index("--modell") + 1]
+    if name not in ("htdemucs", "htdemucs_ft"):
+        print("Unbekanntes Modell: " + name, file=sys.stderr)
+        sys.exit(2)
     os.makedirs(out, exist_ok=True)
-    print("Modell laden …", flush=True)
-    model = get_model("htdemucs")
+    print("Modell laden: " + name + " …", flush=True)
+    model = get_model(name)
     model.eval()
     data, sr = sf.read(src, dtype="float32", always_2d=True)
     wav = torch.from_numpy(data.T.copy())
