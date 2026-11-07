@@ -51,6 +51,9 @@ public static class UnrealGame
         var game = Path.Combine(projectDir, "Config", "DefaultGame.ini");
         var g = File.Exists(game) ? File.ReadAllText(game) : "";
         if (!g.Contains("DirectoriesToAlwaysStageAsNonUFS")) File.WriteAllText(game, g.TrimEnd() + "\n\n[/Script/UnrealEd.ProjectPackagingSettings]\n+DirectoriesToAlwaysStageAsNonUFS=(Path=\"Trendo\")\n");
+        // Fahrzeuge (Chaos Modular Vehicle) brauchen die asynchrone Physik-Berechnung
+        var eng = File.ReadAllText(ini);
+        if (!eng.Contains("bTickPhysicsAsync")) File.WriteAllText(ini, eng.TrimEnd() + "\n\n[/Script/Engine.PhysicsSettings]\nbTickPhysicsAsync=True\n");
         Put("Content/Trendo/level.json", level);
         Put(WeltScriptRel, WeltScript + "\n");
         Put(MenschScriptRel, MenschScript + "\n");
@@ -983,7 +986,7 @@ void ATrendoThing::Setup(TCHAR InTile, int32 X, int32 Y, const FLinearColor& Col
 		{
 			// echter Wagen: Gas, Bremse, Lenkung, Federung und Reifen über Chaos; Einsteigen mit E (oder Berühren), Aussteigen mit E
 			FActorSpawnParameters SP; SP.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-			Car = GetWorld()->SpawnActor<APawn>(CC, GetActorLocation() + FVector(0, 0, 60), FRotator(0, (X * 37) % 360, 0), SP);
+			Car = GetWorld()->SpawnActor<APawn>(CC, GetActorLocation() + FVector(0, 0, 60), FRotator(0, GM->PathYaw(), 0), SP); // in Wegrichtung: dort ist frei
 			if (Car) bModel = true;
 		}
 	if (InTile == 'V' && Kind != TEXT("ufo") && !Car)
@@ -1533,6 +1536,8 @@ public:
 	void Choose(const FString& Item);
 	void MenuKey(const FString& Key);
 	ATrendoCharacter* Hero() const;
+	/** Richtung des freien Spielwegs (Startpunkt) – Fahrzeuge stehen in Fahrtrichtung. */
+	float PathYaw() const { return StartRot.Yaw; }
 
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 	virtual void BeginPlay() override;
