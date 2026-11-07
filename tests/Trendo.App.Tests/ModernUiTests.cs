@@ -197,6 +197,30 @@ public class Modern_Ui
         finally { w.Close(); }
     }
 
+    [AvaloniaFact(DisplayName = "W3: Wissensnetz – Seiten als Punkte, [[Verweise]] als Linien (ungerichtet, ohne Doppelte, fehlende Ziele nicht), Klick öffnet die Seite; leer mit Leerzustand")]
+    public void Knowledge_graph()
+    {
+        var (w, _, _) = Ui.Open();
+        try
+        {
+            w.Show("ki-wissen"); Pump();
+            w.Find<Button>("wissen-graph-open").Press(); Pump();
+            Assert.NotNull(w.TryFind<Border>("wissen-graph-empty"));
+            w.Wissen.Add("Stadtwerke", "Kundennummer 12345, siehe [[Strom]] und [[Gas]]");
+            w.Wissen.Add("Strom", "Zählerstand im Januar, gehört zu [[Stadtwerke]]");
+            w.Wissen.Add("Urlaub", "Packliste, verweist auf [[Fehlt noch]]");
+            var edges = MainWindow.WikiEdges(w.Wissen.All(), w.Wissen);
+            Assert.Single(edges); // Stadtwerke–Strom einmal, „Gas“ und „Fehlt noch“ gibt es nicht
+            w.Show("ki-wissen"); Pump();
+            var canvas = w.Find<Canvas>("wissen-graph");
+            Assert.Single(canvas.Children.OfType<Avalonia.Controls.Shapes.Line>());
+            Assert.Equal(3, canvas.Children.OfType<Button>().Count());
+            w.Find<Button>("wissen-node-0").Press(); Pump();
+            Assert.Null(w.TryFind<Canvas>("wissen-graph"));
+        }
+        finally { w.Close(); }
+    }
+
     [AvaloniaFact(DisplayName = "G10: KI-Aufträge der Grafikkarten-Warteschlange als Karten – läuft mit Laufzeit, wartet mit Platz; fertig = Karte weg")]
     public async Task Task_cards()
     {
