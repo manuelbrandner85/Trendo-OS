@@ -156,6 +156,19 @@ public static class GameDesign
     /// <summary>Waffe der Spielfigur aus dem Dokument („weapon“), unbekannt = keine.</summary>
     public static string Weapon(JsonObject d) => S(d["weapon"]) is var w && GameStudio.Weapons.Any(x => x.Id == w) ? w : "";
 
+    /// <summary>Landschaft des Spiels aus Titel, Idee, Stil, Genre und Regionen: „savanne“, „hof“ oder „wald“ (gemäßigt, Standard).
+    /// Bestimmt z. B., welche Tiere dort leben – Hyänen in der Savanne, Hirsch, Fuchs und Wolf im Wald, Schweine auf dem Hof.</summary>
+    public static string Biome(JsonObject d)
+    {
+        if (S(d["biome"]) is "savanne" or "wald" or "hof") return S(d["biome"]); // ausdrücklich gewählt
+        var t = string.Join(" ", new[] { S(d["title"]), S(d["logline"]), S(d["style"]), S(d["genre"]) }.Concat(Objs(d, "world").Select(w => S(w["name"]) + " " + S(w["text"])))).ToLowerInvariant();
+        int Hits(params string[] k) => k.Count(t.Contains);
+        var sav = Hits("savanne", "steppe", "afrika", "safari", "wüste", "serengeti", "trockenland", "dürre");
+        var hof = Hits("bauernhof", "farm", "hof ", "dorf", "weide", "stall", "acker");
+        var wald = Hits("wald", "forst", "förster", "gebirge", "berg", "tanne", "see", "wiese", "jäger");
+        return sav > wald && sav >= hof ? "savanne" : hof > wald && hof > sav ? "hof" : "wald";
+    }
+
     /// <summary>Objekt-Texte (Gegenstand, sprechende Figur) aus dem Dokument („texts“).</summary>
     public static Dictionary<string, string> Texts(JsonObject d) => (d["texts"] as JsonObject ?? []).Where(kv => S(kv.Value).Length > 0).ToDictionary(kv => kv.Key, kv => S(kv.Value));
 
@@ -228,6 +241,7 @@ public static class GameDesign
         var world = UnrealGame.WorldOf(d);
         var level = JsonNode.Parse(UnrealGame.LevelJson(S(d["title"]) is { Length: > 0 } t ? t : "Spiel", SettingsOf(d), world))!.AsObject();
         level["violence"] = S(d["violence"]) is "keine" or "brutal" ? S(d["violence"]) : "normal"; // Gewalt-Darstellung passend zur Altersfreigabe
+        level["biome"] = Biome(d); // Landschaft: welche Tiere dort leben (alles muss zusammenpassen)
         UnrealGame.Write(dir, level.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }), world);
         if (S(d["scale"]) is "aa" or "aaa")
             File.AppendAllText(Path.Combine(dir, "Config", "DefaultEngine.ini"),

@@ -80,7 +80,7 @@ public static class UnrealGame
     /// mit Menschfigur samt Geh-/Lauf-/Sprung-Animationen (MoverExamples) und Sportwagen (ChaosModularVehicleExamples) – Teil jeder Unreal-Installation –
     /// und der MetaHuman Creator für den echten Menschen als Spielfigur.</summary>
     /// <summary>Inhaltsordner, die immer ins fertige Spiel gekocht werden (zur Laufzeit per Pfad geladen).</summary>
-    public static readonly string[] AlwaysCook = ["/Game/Trendo", "/MoverExamples/Characters/Mannequins", "/ChaosModularVehicleExamples/Models/SportsCar"];
+    public static readonly string[] AlwaysCook = ["/Game/Trendo", "/MoverExamples/Characters/Mannequins", "/ChaosModularVehicleExamples/Models/SportsCar", "/Game/AnimalVarietyPack"];
     public static readonly string[] Plugins = ["PythonScriptPlugin", "EditorScriptingUtilities", "Interchange", "InterchangeEditor", "MoverExamples", "ChaosModularVehicleExamples", "ChaosModularVehicle", "ChaosVehiclesPlugin", "MetaHumanCharacter", "GeometryScripting"];
     /// <summary>Eigene Karte, die das Welt-Skript aus der Open-World-Vorlage anlegt.</summary>
     public const string WeltMap = "/Game/Trendo/Welt";
@@ -142,6 +142,27 @@ public static class UnrealGame
             foreach (var f in files)
             {
                 var t = Path.Combine(dest, Path.GetRelativePath(dir, f)); Directory.CreateDirectory(Path.GetDirectoryName(t)!);
+                if (!File.Exists(t) || new FileInfo(t).Length != new FileInfo(f).Length) File.Copy(f, t, true);
+            }
+            n++;
+        }
+        return n;
+    }
+
+    /// <summary>Fertige Unreal-Tierpakete (z. B. ANIMAL VARIETY PACK von Fab) im Zwischenspeicher: je Paket ein Ordner mit .uasset-Dateien.</summary>
+    public static string AnimalPacksDir(string toolsRoot) => Path.Combine(toolsRoot, "assets", "tiere-pakete");
+
+    /// <summary>Tierpakete nach Content/&lt;Paket&gt; legen (nur geänderte Dateien); der Welt-Bau trägt die Tiere ein. Gibt die Anzahl der Pakete zurück.</summary>
+    public static int CopyAnimalPacks(string packsDir, string projectDir)
+    {
+        if (!Directory.Exists(packsDir)) return 0;
+        var n = 0;
+        foreach (var dir in Directory.EnumerateDirectories(packsDir))
+        {
+            var files = Directory.EnumerateFiles(dir, "*.uasset", SearchOption.AllDirectories).ToList(); if (files.Count == 0) continue;
+            foreach (var f in Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories).Where(f => f.EndsWith(".uasset", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".ubulk", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".uexp", StringComparison.OrdinalIgnoreCase)))
+            {
+                var t = Path.Combine(projectDir, "Content", Path.GetFileName(dir), Path.GetRelativePath(dir, f)); Directory.CreateDirectory(Path.GetDirectoryName(t)!);
                 if (!File.Exists(t) || new FileInfo(t).Length != new FileInfo(f).Length) File.Copy(f, t, true);
             }
             n++;
@@ -564,6 +585,37 @@ try:
         else: log.append("Tier %s: kein Modell gefunden" % name)
 except Exception as e:
     log.append("Tiere nicht eingerichtet: " + str(e)[:200])
+
+# 4d) Fertige Unreal-Tierpakete im Projekt (z. B. ANIMAL VARIETY PACK, kostenlos von Fab): Netze mit eigenen Materialien und Bewegungen in echter Länge.
+#     Lebensraum je Art, damit nur passende Tiere in die Landschaft kommen; Vögel (fliegen) bleiben weg – das Tier läuft am Boden.
+HABITAT = [("hyen", "savanne"), ("hyaen", "savanne"), ("hyän", "savanne"), ("deer", "wald"), ("stag", "wald"), ("doe", "wald"), ("fox", "wald"), ("wolf", "wald"), ("pig", "hof")]
+PACK_KEYS = [("idle", ["IdleBreathe"]), ("idle2", ["IdleLookAround"]), ("smell", ["IdleGraze", "SniffleforFood", "IdleChew", "Chew"]), ("walk", ["Walk"]), ("run", ["Run"]),
+             ("die", ["Death"]), ("atk", ["Bite", "AntlersAttack", "attack"])]
+for t in tiere: t["habitat"] = next((h for k, h in HABITAT if k in t["name"].lower()), "wald")
+try:
+    for pack in ("/Game/AnimalVarietyPack",):
+        if not eal.does_directory_exist(pack): continue
+        paths = eal.list_assets(pack, recursive=True)
+        anims = {p.split(".")[0].rsplit("/", 1)[-1]: p for p in paths if "/Animations/ANIM_" in p}
+        for p in paths:
+            if "/Meshes/SK_" not in p: continue
+            species = p.split(".")[0].rsplit("/", 1)[-1][3:]   # SK_DeerStag → DeerStag
+            if species.lower() in ("crow",): continue
+            mesh = unreal.load_asset(p)
+            if not isinstance(mesh, unreal.SkeletalMesh): continue
+            moves = {}
+            for key, names in PACK_KEYS:
+                for n in names:
+                    a = anims.get("ANIM_%s_%s" % (species, n))
+                    if a: moves[key] = {"path": a.split(".")[0] + "." + a.split(".")[0].rsplit("/", 1)[-1], "len": round(unreal.load_asset(a).get_play_length(), 3)}; break
+            if "walk" not in moves or "idle" not in moves: continue
+            b = mesh.get_bounds()
+            tiere.append({"name": species, "mesh": mesh.get_path_name(), "material": "", "anims": moves, "license": "ANIMAL VARIETY PACK (PROTOFACTOR INC, Fab, kostenlos)",
+                          "size": [round(b.box_extent.x * 2), round(b.box_extent.y * 2), round(b.box_extent.z * 2)], "habitat": next((h for k, h in HABITAT if k in species.lower()), "wald")})
+            log.append("Tier %s (Paket): %d Bewegungen, Lebensraum %s" % (species, len(moves), tiere[-1]["habitat"]))
+        if any(t["mesh"].startswith(pack) for t in tiere): lizenzen.append("ANIMAL VARIETY PACK von PROTOFACTOR INC – kostenlos über Fab (Unreal Engine Permanent Collection), https://www.fab.com/listings/2dd7964c-a601-4264-a53d-465dcae1644c")
+except Exception as e:
+    log.append("Tier-Pakete nicht eingerichtet: " + str(e)[:200])
 
 # 5) Eigene Open-World-Karte mit Bodenmaterial
 les = unreal.get_editor_subsystem(unreal.LevelEditorSubsystem)
@@ -1563,7 +1615,7 @@ bool ATrendoAnimal::Setup(const TSharedPtr<FJsonObject>& Def, const FVector& InH
 	// Fotomaterial (der Import behält sonst die leere Vorgabe); gibt es Fell-Varianten, bekommt jedes Tier ein anderes – keine identischen Kopien
 	FString MatPath = Def->GetStringField(TEXT("material")); const TArray<TSharedPtr<FJsonValue>>* Mats;
 	if (Def->TryGetArrayField(TEXT("materials"), Mats) && Mats->Num() > 0) { static int32 Next = 0; MatPath = (*Mats)[Next++ % Mats->Num()]->AsString(); FurVariant = MatPath; }
-	if (UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr, *MatPath)) for (int32 i = 0; i < Sk->GetNumMaterials(); i++) Sk->SetMaterial(i, Mat);
+	if (UMaterialInterface* Mat = MatPath.IsEmpty() ? nullptr : LoadObject<UMaterialInterface>(nullptr, *MatPath)) for (int32 i = 0; i < Sk->GetNumMaterials(); i++) Sk->SetMaterial(i, Mat);
 	// Tier-FBX liegen mit Blick entlang +Y und Füßen bei Z 0: Netz um −90° drehen und auf den Kapselboden setzen
 	Sk->SetRelativeLocationAndRotation(FVector(0, 0, -GetCapsuleComponent()->GetScaledCapsuleHalfHeight()), FRotator(0, -90, 0));
 	Sk->SetAnimationMode(EAnimationMode::AnimationSingleNode);
@@ -2988,24 +3040,31 @@ void ATrendoGameMode::SpawnAnimals()
 	TSharedPtr<FJsonObject> O; if (!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json), O) || !O.IsValid()) return;
 	const TArray<TSharedPtr<FJsonValue>>* Arr; if (!O->TryGetArrayField(TEXT("tiere"), Arr) || Arr->Num() == 0) return;
 	const FVector Fwd = StartRot.Vector(), Right = FRotationMatrix(StartRot).GetUnitAxis(EAxis::Y);
-	FRandomStream R(2711); int32 N = 0;
+	// Landschaft des Spiels (level.json „biome“): nur Tiere mit passendem Lebensraum – Hyäne in der Savanne, Hirsch/Fuchs/Wolf im Wald, Schwein auf dem Hof
+	FString Biome = TEXT("wald"); { FString LJ; TSharedPtr<FJsonObject> L; if (FFileHelper::LoadFileToString(LJ, *(FPaths::ProjectContentDir() / TEXT("TrendoDaten/level.json"))) && FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(LJ), L) && L.IsValid() && L->HasField(TEXT("biome"))) Biome = L->GetStringField(TEXT("biome")); }
+	FRandomStream R(2711); int32 N = 0, Group = 0;
 	for (int32 k = 0; k < Arr->Num(); k++)
 	{
 		const TSharedPtr<FJsonObject> Def = (*Arr)[k]->AsObject(); if (!Def.IsValid()) continue;
-		const FVector Group = Origin + Fwd * (1800.f + 900.f * k) + Right * (k % 2 ? -2200.f : 2200.f); // seitlich vom Spielweg, sichtbar vom Weg aus
-		for (int32 i = 0; i < 3; i++)
+		if (Def->HasField(TEXT("habitat")) && Def->GetStringField(TEXT("habitat")) != Biome) continue;
+		const FString Name = Def->GetStringField(TEXT("name")).ToLower();
+		const int32 Count = Name.Contains(TEXT("wolf")) ? 3 : Name.Contains(TEXT("fox")) ? 1 : Name.Contains(TEXT("hyaene")) || Name.Contains(TEXT("hyena")) ? 3 : 2; // Rudel, Einzelgänger, Paare
+		const int32 g = Group++;
+		const FVector GroupAt = Origin + Fwd * (1800.f + 900.f * g) + Right * (g % 2 ? -2200.f : 2200.f); // seitlich vom Spielweg, sichtbar vom Weg aus
+		for (int32 i = 0; i < Count; i++)
 		{
-			FVector P = Group + FVector(R.FRandRange(-350.f, 350.f), R.FRandRange(-350.f, 350.f), 0); FHitResult G; FCollisionQueryParams Q;
+			FVector P = GroupAt + FVector(R.FRandRange(-350.f, 350.f), R.FRandRange(-350.f, 350.f), 0); FHitResult G; FCollisionQueryParams Q;
 			if (!GetWorld()->LineTraceSingleByObjectType(G, P + FVector(0, 0, 20000), P - FVector(0, 0, 20000), FCollisionObjectQueryParams(ECC_WorldStatic), Q)) continue;
 			FActorSpawnParameters SP; SP.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 			ATrendoAnimal* A = GetWorld()->SpawnActor<ATrendoAnimal>(G.Location + FVector(0, 0, 60), FRotator(0, R.FRandRange(0, 360), 0), SP);
 			if (!A) continue;
-			if (!A->Setup(Def, Group)) { A->Destroy(); continue; }
+			if (!A->Setup(Def, GroupAt)) { A->Destroy(); continue; }
 			Animals.Add(A); N++;
 		}
 	}
 	TSet<FString> Furs; for (ATrendoAnimal* A : Animals) if (IsValid(A)) Furs.Add(A->FurVariant);
-	UE_LOG(LogTrendo, Display, TEXT("TRENDO-TIER %d Tiere gesetzt, %d verschiedene Felle"), N, Furs.Num());
+	TSet<FString> Kinds; for (ATrendoAnimal* A : Animals) if (IsValid(A)) Kinds.Add(A->Kind);
+	UE_LOG(LogTrendo, Display, TEXT("TRENDO-TIER %d Tiere gesetzt (Landschaft %s: %s), %d verschiedene Felle"), N, *Biome, *FString::Join(Kinds.Array(), TEXT(", ")), Furs.Num());
 }
 """,
         ["TrendoTests.cpp"] = """

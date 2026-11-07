@@ -110,7 +110,10 @@ public partial class MainWindow
         }
         // Tiere (freie, geriggte Modelle mit Lizenz) legt der Welt-Bau mit an – sie leben dann in der offenen Welt
         var animals = UnrealGame.CopyAnimals(_opt.Isolated ? Path.Combine(_core.DataRoot, "tiere") : UnrealGame.AnimalsDir(_deps.ToolsRoot), built);
-        if (animals > 0) lines.Add($"✓ Tiere bereit: {animals} Art(en) aus freien Modellen (Lizenz liegt dem Spiel bei)");
+        var packs = UnrealGame.CopyAnimalPacks(_opt.Isolated ? Path.Combine(_core.DataRoot, "tiere-pakete") : UnrealGame.AnimalPacksDir(_deps.ToolsRoot), built);
+        var biome = "wald";
+        try { biome = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(Path.Combine(built, "Content", "TrendoDaten", "level.json")))?["biome"]?.GetValue<string>() ?? biome; } catch (Exception e) when (e is IOException or System.Text.Json.JsonException or InvalidOperationException) { }
+        if (animals + packs > 0) lines.Add($"✓ Tiere bereit: {animals} Modell(e) und {packs} Tierpaket(e) – im Spiel nur die, die zur Landschaft „{biome}“ passen (Lizenz liegt dem Spiel bei)");
         step("Unreal richtet die Welt ein (Boden, Pflanzen, Felsen, Tiere, Licht) … einige Minuten.");
         var (we, wlog) = await Task.Run(() => UnrealRun(UnrealGame.EditorCmd(engine), UnrealGame.WeltArgs(uproject, Path.Combine(logs, "welt.txt")), Path.Combine(logs, "welt.txt"), 1_800_000));
         var (wok, models, info) = UnrealGame.ParseWelt(wlog);

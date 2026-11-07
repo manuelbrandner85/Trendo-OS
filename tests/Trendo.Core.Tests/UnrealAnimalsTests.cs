@@ -48,6 +48,35 @@ public class UnrealAnimalsTests
         finally { if (Directory.Exists(dir)) Directory.Delete(dir, true); }
     }
 
+    [Fact(DisplayName = "Landschaft aus der Spielbibel: Savanne, Hof oder Wald (Standard); ausdrücklich gewählt gewinnt; level.json trägt sie fürs Spiel")]
+    public void Biome_from_bible()
+    {
+        Assert.Equal("savanne", GameDesign.Biome(new System.Text.Json.Nodes.JsonObject { ["title"] = "Löwenland", ["logline"] = "Eine Safari durch die Savanne Afrikas" }));
+        Assert.Equal("wald", GameDesign.Biome(new System.Text.Json.Nodes.JsonObject { ["title"] = "Waldläufer", ["logline"] = "Eine Försterin im Bergwald" }));
+        Assert.Equal("hof", GameDesign.Biome(new System.Text.Json.Nodes.JsonObject { ["title"] = "Mein Bauernhof", ["logline"] = "Tiere im Stall und auf der Weide" }));
+        Assert.Equal("wald", GameDesign.Biome(new System.Text.Json.Nodes.JsonObject { ["title"] = "Ohne Hinweis" }));
+        Assert.Equal("hof", GameDesign.Biome(new System.Text.Json.Nodes.JsonObject { ["title"] = "Waldläufer", ["biome"] = "hof" }));
+        Assert.Contains("HABITAT = [(\"hyen\", \"savanne\")", UnrealGame.WeltScript); Assert.Contains("/Game/AnimalVarietyPack", UnrealGame.WeltScript);
+        Assert.Contains("/Game/AnimalVarietyPack", UnrealGame.AlwaysCook); // Tiere auch im fertigen Spiel
+    }
+
+    [Fact(DisplayName = "Tierpakete (.uasset) aus dem Zwischenspeicher nach Content/<Paket>, nur Unreal-Dateien")]
+    public void Copy_packs()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "trendo-pakete-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var src = Directory.CreateDirectory(Path.Combine(root, "pakete", "AnimalVarietyPack", "Fox", "Meshes")).FullName;
+            File.WriteAllBytes(Path.Combine(src, "SK_Fox.uasset"), [1]); File.WriteAllText(Path.Combine(src, "notiz.txt"), "x");
+            Directory.CreateDirectory(Path.Combine(root, "pakete", "leer"));
+            Assert.Equal(1, UnrealGame.CopyAnimalPacks(Path.Combine(root, "pakete"), Path.Combine(root, "Spiel")));
+            Assert.True(File.Exists(Path.Combine(root, "Spiel", "Content", "AnimalVarietyPack", "Fox", "Meshes", "SK_Fox.uasset")));
+            Assert.False(File.Exists(Path.Combine(root, "Spiel", "Content", "AnimalVarietyPack", "Fox", "Meshes", "notiz.txt")));
+            Assert.Equal(0, UnrealGame.CopyAnimalPacks(Path.Combine(root, "fehlt"), Path.Combine(root, "Spiel")));
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    }
+
     [Fact(DisplayName = "Testspieler-Bot: Prüfpunkt Tiere aus der Messzeile (flieht ja/nein) und Bild „Tiere“")]
     public void Playtest_animals()
     {
