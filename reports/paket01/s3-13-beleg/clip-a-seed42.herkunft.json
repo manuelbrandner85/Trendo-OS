@@ -1,0 +1,42 @@
+{
+  "art": "KI-erzeugtes Video",
+  "hinweis": "Dieser Clip wurde vollständig von einer KI erzeugt und zeigt keine echte Aufnahme.",
+  "erstellt": "2026-11-07T11:38:07Z",
+  "beschreibung": "a steaming cup of coffee on a wooden table, morning sunlight through a window, slow camera push in, photorealistic",
+  "ausschluss": "blurry, low quality, distorted, deformed hands, extra fingers, watermark, text, logo, flicker, jpeg artifacts",
+  "zufallswert": 42,
+  "startbild": null,
+  "qualitaet": "vorschau",
+  "breite": 1280,
+  "hoehe": 704,
+  "bilder": 13,
+  "bilder_pro_s": 24,
+  "schritte": 12,
+  "sekunden": 0.5,
+  "modell": {
+    "id": "wan2.2-szenen",
+    "name": "Wan 2.2 – Filmszenen (5B)",
+    "lizenz": "Apache-2.0",
+    "dateien": [
+      {
+        "datei": "Wan2.2-TI2V-5B-Q6_K.gguf",
+        "bytes": 4211683680
+      },
+      {
+        "datei": "umt5-xxl-encoder-Q8_0.gguf",
+        "bytes": 6043068256
+      },
+      {
+        "datei": "wan2.2_vae.safetensors",
+        "bytes": 1409400960
+      }
+    ]
+  },
+  "programm": {
+    "name": "stable-diffusion.cpp",
+    "fassung": "master-1015-e41fbcf"
+  },
+  "roh_sha256": "759fc1f57865612baec5e81a51febe87e98daba917f8466f1c0608360bab1a34",
+  "clip": "clip-a-seed42.mp4",
+  "clip_sha256": "000d3b503553646225fc50f2c3ac914f5e8c70bc001c40869e8454311e377eb5"
+}

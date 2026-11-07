@@ -1,0 +1,6 @@
+EXIT 0 719s
+Index file for thorsten generated successfully.
+Model thorsten trained successfully.
+{"ok": true, "pth": "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-echt-stimme\\repo\\logs\\thorsten\\thorsten_30e_270s.pth", "index": "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-echt-stimme\\repo\\logs\\thorsten\\thorsten.index"}
+
+[exited with code 0]

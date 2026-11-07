@@ -105,3 +105,14 @@ Weiter offen: S3-01/03 Shot-Plan, S3-02 Proxy/Multicam, S3-17 Abspann-Vorlage, S
 Nach den Nachträgen sind auch umgesetzt (je mit Beleg unter `reports/paket01/`): S3-02 Proxy und Multicam, S3-17 Abspann, S3-18 Warteschlange, S4-01 Automation und Aufnahme als Spur, S4-09 Busse/Sends/Sidechain, S4-12 Tempo/Tonhöhe mit Messung, S3-01/S3-03 Shotliste und Storyboard; dazu Trendo Musik V1–V8 (Hochladen → Trennen, Spuren-Mischer, Stimmen mit Einwilligung, Karaoke).
 
 Offen aus S3/S4 nur noch: S4-06 Plugin-Host (gesperrt bis Sandbox, REA-Bewertung und Freigabe), S3-09 Lip-Sync und S3-13 Video-KI (brauchen Modelle → Freigabe), S3-04/06/07/08/10 und S4-15 (Sitzung B).
+
+### Nachtrag 07.11.2026 (nach Release 0.9.80, Freigabe „ja mach“)
+
+| Punkt | Was neu ist | Beleg | Status |
+|---|---|---|---|
+| S3-13 | KI-Video im Videoschnitt: Beschreibung, Zufallswert, Herkunftsnachweis je Clip (Prüfsumme, Modell, Lizenz, „KI-erzeugt“); echter Lauf mit dem eingerichteten Wan 2.2 (1280 × 704) – gleicher Zufallswert praktisch gleich (1,2/255), anderer deutlich anders (52,5/255); ohne Modell kein Bild | `reports/paket01/s3-13-ki-video-lauf.md` | TESTED (positiv echt + negativ) |
+| S3-09 | Lippensynchron: Mundbilder (Papagayo-Satz) aus Sprache + Whisper-Wortzeiten (am Ton ausgerichtet), JSON und Moho-Datei, Prüfung ±80 ms, Vergleichsvorschau, Gesichtsvideo per MediaPipe; echter Lauf: Versatz +10 ms OK, 200 ms verschoben → FAIL | `reports/paket01/s3-09-lipsync-lauf.md` | TESTED; OK-Fall mit echtem Gesichtsvideo offen |
+
+Dazu echt geprüft (bisher nur mit Testdaten): Stimmtrennung (Demucs, Gesang 14,5/16,1 dB SI-SDR) und Stimm-Lernen mit Singen (Applio, Melodie 0,84, Tonhöhe exakt, Klangfarbe 77 % näher) – `reports/musik-echt/BERICHT.md`.
+
+Offen aus S3/S4: S4-06 Plugin-Host (gesperrt bis Sandbox, REA-Bewertung und Freigabe), S3-04/06/07/08/10 und S4-15 (Sitzung B).

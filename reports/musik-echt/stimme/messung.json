@@ -1,0 +1,10 @@
+{
+ "laenge_eingang_s": 15.0,
+ "laenge_ausgang_s": 14.98,
+ "stimmhafte_bilder_gemeinsam": 1237,
+ "melodie_korrelation": 0.841,
+ "tonhoehe_median_abweichung_cent": -1200.0,
+ "klangfarbe_abstand_zur_gelernten_stimme_vorher": 104.58,
+ "klangfarbe_abstand_nachher": 24.38,
+ "klangfarbe_naeher_um_prozent": 76.7
+}

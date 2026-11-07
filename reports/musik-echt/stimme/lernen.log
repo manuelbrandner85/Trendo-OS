@@ -1,0 +1,64 @@
+Prerequisites downloaded and installed successfully.
+Starting preprocess with 14 processes...
+Preprocess completed in 72.37 seconds on 00:01:39 seconds of audio.
+Model thorsten preprocessed successfully.
+Model thorsten preprocessed successfully.
+Starting pitch extraction on cuda:0 using rmvpe...
+Pitch extraction completed in 44.50 seconds (48/48 files successful).
+Starting embedding extraction with 14 cores on cuda:0...
+Embedding extraction completed in 90.01 seconds.
+Model thorsten extracted successfully.
+Model thorsten extracted successfully.
+Dataset has 1 speakers.
+Initializing the generator with 1 speakers.
+Using HiFi-GAN vocoder
+Using AdamW optimizer
+Using Single-Scale Mel loss function
+Using Float16 for training.
+Starting training...
+Loaded pretrained (G) 'C:\Users\<user>\AppData\Local\Temp\trendo-echt-stimme\repo\rvc\models\pretraineds\hifi-gan\f0G40k.pth'
+Overriding the pretrain speaker embedding size to 1 speakers.
+Loaded pretrained (D) 'C:\Users\<user>\AppData\Local\Temp\trendo-echt-stimme\repo\rvc\models\pretraineds\hifi-gan\f0D40k.pth'
+Using contentvec reference set for validation
+thorsten | epoch=1 | step=9 | time=12:43:16 | training_speed=0:01:23
+thorsten | epoch=2 | step=18 | time=12:43:22 | training_speed=0:00:06 | lowest_value=37.13 (epoch 2 and step 14)
+thorsten | epoch=3 | step=27 | time=12:43:28 | training_speed=0:00:06 | lowest_value=33.938 (epoch 3 and step 21)
+thorsten | epoch=4 | step=36 | time=12:43:31 | training_speed=0:00:02 | lowest_value=28.833 (epoch 4 and step 30)
+thorsten | epoch=5 | step=45 | time=12:43:37 | training_speed=0:00:06 | lowest_value=28.833 (epoch 4 and step 30)
+thorsten | epoch=6 | step=54 | time=12:43:40 | training_speed=0:00:02 | lowest_value=28.833 (epoch 4 and step 30)
+thorsten | epoch=7 | step=63 | time=12:43:43 | training_speed=0:00:03 | lowest_value=25.634 (epoch 7 and step 61)
+thorsten | epoch=8 | step=72 | time=12:43:50 | training_speed=0:00:06 | lowest_value=25.634 (epoch 7 and step 61)
+thorsten | epoch=9 | step=81 | time=12:43:56 | training_speed=0:00:06 | lowest_value=24.327 (epoch 9 and step 77)
+thorsten | epoch=10 | step=90 | time=12:43:59 | training_speed=0:00:03 | lowest_value=24.327 (epoch 9 and step 77)
+thorsten | epoch=11 | step=99 | time=12:44:02 | training_speed=0:00:02 | lowest_value=24.327 (epoch 9 and step 77)
+thorsten | epoch=12 | step=108 | time=12:44:05 | training_speed=0:00:03 | lowest_value=24.327 (epoch 9 and step 77)
+thorsten | epoch=13 | step=117 | time=12:44:08 | training_speed=0:00:02 | lowest_value=24.327 (epoch 9 and step 77)
+thorsten | epoch=14 | step=126 | time=12:44:11 | training_speed=0:00:02 | lowest_value=24.327 (epoch 9 and step 77)
+thorsten | epoch=15 | step=135 | time=12:44:42 | training_speed=0:00:31 | lowest_value=24.327 (epoch 9 and step 77)
+Saved model 'C:\Users\<user>\AppData\Local\Temp\trendo-echt-stimme\repo\logs\thorsten\G_2333333.pth' (epoch 15)
+Saved model 'C:\Users\<user>\AppData\Local\Temp\trendo-echt-stimme\repo\logs\thorsten\D_2333333.pth' (epoch 15)
+Saved model 'C:\Users\<user>\AppData\Local\Temp\trendo-echt-stimme\repo\logs\thorsten\thorsten_15e_135s.pth' (epoch 15 and step 135)
+thorsten | epoch=16 | step=144 | time=12:44:46 | training_speed=0:00:02 | lowest_value=24.327 (epoch 9 and step 77)
+thorsten | epoch=17 | step=153 | time=12:44:49 | training_speed=0:00:03 | lowest_value=24.327 (epoch 9 and step 77)
+thorsten | epoch=18 | step=162 | time=12:44:52 | training_speed=0:00:02 | lowest_value=23.876 (epoch 18 and step 158)
+thorsten | epoch=19 | step=171 | time=12:44:56 | training_speed=0:00:03 | lowest_value=23.876 (epoch 18 and step 158)
+thorsten | epoch=20 | step=180 | time=12:44:58 | training_speed=0:00:02 | lowest_value=23.876 (epoch 18 and step 158)
+thorsten | epoch=21 | step=189 | time=12:45:01 | training_speed=0:00:02 | lowest_value=23.876 (epoch 18 and step 158)
+thorsten | epoch=22 | step=198 | time=12:45:08 | training_speed=0:00:06 | lowest_value=23.876 (epoch 18 and step 158)
+thorsten | epoch=23 | step=207 | time=12:45:10 | training_speed=0:00:02 | lowest_value=23.876 (epoch 18 and step 158)
+thorsten | epoch=24 | step=216 | time=12:45:13 | training_speed=0:00:02 | lowest_value=23.876 (epoch 18 and step 158)
+thorsten | epoch=25 | step=225 | time=12:45:16 | training_speed=0:00:02 | lowest_value=23.876 (epoch 18 and step 158)
+thorsten | epoch=26 | step=234 | time=12:45:19 | training_speed=0:00:02 | lowest_value=23.876 (epoch 18 and step 158)
+thorsten | epoch=27 | step=243 | time=12:45:25 | training_speed=0:00:06 | lowest_value=23.876 (epoch 18 and step 158)
+thorsten | epoch=28 | step=252 | time=12:45:28 | training_speed=0:00:03 | lowest_value=23.876 (epoch 18 and step 158)
+thorsten | epoch=29 | step=261 | time=12:45:31 | training_speed=0:00:02 | lowest_value=23.876 (epoch 18 and step 158)
+thorsten | epoch=30 | step=270 | time=12:45:34 | training_speed=0:00:03 | lowest_value=23.876 (epoch 18 and step 158)
+Saved model 'C:\Users\<user>\AppData\Local\Temp\trendo-echt-stimme\repo\logs\thorsten\G_2333333.pth' (epoch 30)
+Saved model 'C:\Users\<user>\AppData\Local\Temp\trendo-echt-stimme\repo\logs\thorsten\D_2333333.pth' (epoch 30)
+Training has been successfully completed with 30 epoch, 270 steps and 36.3 loss gen.
+Lowest generator loss: 23.876 at epoch 18, step 158
+Generating index for 'thorsten', this may take a while...
+Saved index file 'C:\Users\<user>\AppData\Local\Temp\trendo-echt-stimme\repo\logs\thorsten\thorsten.index'
+Index file for thorsten generated successfully.
+Model thorsten trained successfully.
+{"ok": true, "pth": "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-echt-stimme\\repo\\logs\\thorsten\\thorsten_30e_270s.pth", "index": "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-echt-stimme\\repo\\logs\\thorsten\\thorsten.index"}

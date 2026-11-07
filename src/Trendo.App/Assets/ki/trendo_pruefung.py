@@ -154,8 +154,25 @@ def main(video, out):
     json.dump({'ok': len(issues) == 0, 'issues': issues, 'stats': stats}, open(out, 'w', encoding='utf-8'), ensure_ascii=False)
 
 
+def mouth(video, out):
+    """Lippensynchron (Paket 01 S3-09): Mundöffnung (Blendshape jawOpen, 0 … 1) für jedes Bild – fehlt das Gesicht, steht null."""
+    models = arg('--modelle', os.path.dirname(os.path.abspath(__file__)))
+    frames, fps = frames_of(video, step=1, maxn=25 * 120)
+    faces = vision.FaceLandmarker.create_from_options(vision.FaceLandmarkerOptions(base_options=BaseOptions(model_asset_path=os.path.join(models, 'face_landmarker.task')), running_mode=vision.RunningMode.IMAGE, num_faces=1, output_face_blendshapes=True, min_face_detection_confidence=0.5))
+    vals = []
+    for _, f in frames:
+        r = faces.detect(mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(f, cv2.COLOR_BGR2RGB)))
+        vals.append(round(float(next((b.score for b in r.face_blendshapes[0] if b.category_name == 'jawOpen'), 0.0)), 4) if r.face_blendshapes else None)
+    json.dump({'fps': fps, 'mund': vals, 'gesicht': sum(v is not None for v in vals)}, open(out, 'w', encoding='utf-8'))
+
+
 if __name__ == '__main__':
     pos = [a for a in sys.argv[1:] if not a.startswith('--')]
+    if '--mund' in sys.argv:
+        skip = {sys.argv[sys.argv.index('--modelle') + 1]} if '--modelle' in sys.argv else set()
+        p = [a for a in pos if a not in skip]
+        mouth(p[-2], p[-1])
+        sys.exit(0)
     # Werte hinter Schaltern sind keine Dateien
     skip = set()
     for k in ('--modelle', '--personen', '--gesang', '--referenz'):

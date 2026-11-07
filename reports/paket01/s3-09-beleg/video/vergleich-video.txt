@@ -1,0 +1,3 @@
+Bilder 48, 16 Bilder/s
+Video wie erzeugt: FAIL: Die Mundbewegung im Video folgt der Sprache nicht (Zusammenhang 0,28).
+Mund 3 Bilder (~200 ms) später: FAIL: Die Mundbewegung im Video folgt der Sprache nicht (Zusammenhang 0,26).

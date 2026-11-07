@@ -1,0 +1,9 @@
+  Wiederherzustellende Projekte werden ermittelt...
+  Alle Projekte sind für die Wiederherstellung auf dem neuesten Stand.
+  Trendo.Core -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.Core\bin\Release\net10.0\Trendo.Core.dll
+  Trendo.Companion -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.Companion\bin\Release\net10.0\trendo-companion.dll
+  Trendo.Core.Tests -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+Testlauf für "C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+
+Bestanden!   : Fehler:     0, erfolgreich:     3, übersprungen:     0, gesamt:     3, Dauer: 5 m 31 s - Trendo.Core.Tests.dll (net10.0)

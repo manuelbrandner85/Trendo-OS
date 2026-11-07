@@ -1,0 +1,13 @@
+60a287d586a2f8c4cb54abc36bcdfab730103964f8d51ff360b28b3fe8fe5cc5 *./SHA256-ausgaben.txt
+9dd98ea416ab897cf86f56554e6fc895e2cc3310f2b500c55c2092a9f856dee2 *./ki-lied-begleitung-htdemucs-10s.mp3
+2bae88f07252aceb6f2c8e7a4912b54809605fd1288b144fec465c44ac64f047 *./ki-lied-begleitung-htdemucs_ft-10s.mp3
+8d495209014484110c2f76f0921efce4b86ef4d38b8d753620c483c9a13e02f7 *./ki-lied-gesang-htdemucs-10s.mp3
+4d8baff76eb0d8e167df415e015b68617fb0cfb79b64582b406017935e97f266 *./ki-lied-gesang-htdemucs_ft-10s.mp3
+e9ea0edaefd436143ff9b5d4257ca67b43faa727ae8bb854f532aaa137a90c81 *./ki-lied-original-10s.mp3
+7009f6bc6fc07819067b77149e3e60d9bbad1aed306732b2bb1e39f34cd3c4d9 *./messung.json
+6d1f4a0c8790f2c21be15bb54cde405ac7dcf31412956eff4b6ade4216d8492c *./out-htdemucs-lied-ace.log
+6d1f4a0c8790f2c21be15bb54cde405ac7dcf31412956eff4b6ade4216d8492c *./out-htdemucs-mix.log
+a5efe253bd4a6cad1981d6834f3862f0ac1ea025f0ca32b0dbfaf6a9261b59f0 *./out-htdemucs_ft-lied-ace.log
+fc7a3c5a7af0d1be042f888b8a5d19a5915be4d9feeb9582277ed2a6420447f5 *./out-htdemucs_ft-mix.log
+339c9f4a3de959e383b4fd451345f3771f9f26fd6914f7ef1ca2a9ed5c4e38aa *./testmix-gesang-htdemucs_ft.mp3
+4a30875c42fdaadc264873a9c7b1bff973abfe76e4249905bf4d4db382eced4c *./testmix.mp3

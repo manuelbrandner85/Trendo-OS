@@ -1,0 +1,660 @@
+{
+  "quelle": "Whisper base (whisper.cpp b5454)",
+  "satz": "Preston Blair (Papagayo): AI, E, O, U, L, WQ, etc, FV, MBP, rest",
+  "pruefung": {
+    "ok": true,
+    "versatz_ms": 10,
+    "zusammenhang": 0.418,
+    "text": "OK: Versatz +10 ms, Zusammenhang 0,42."
+  },
+  "spur": [
+    {
+      "zeit": 0,
+      "mund": "rest"
+    },
+    {
+      "zeit": 0.07,
+      "mund": "etc"
+    },
+    {
+      "zeit": 0.111,
+      "mund": "U"
+    },
+    {
+      "zeit": 0.194,
+      "mund": "etc"
+    },
+    {
+      "zeit": 0.236,
+      "mund": "E"
+    },
+    {
+      "zeit": 0.319,
+      "mund": "etc"
+    },
+    {
+      "zeit": 0.35,
+      "mund": "MBP"
+    },
+    {
+      "zeit": 0.444,
+      "mund": "O"
+    },
+    {
+      "zeit": 0.633,
+      "mund": "etc"
+    },
+    {
+      "zeit": 0.727,
+      "mund": "E"
+    },
+    {
+      "zeit": 0.916,
+      "mund": "etc"
+    },
+    {
+      "zeit": 1.034,
+      "mund": "O"
+    },
+    {
+      "zeit": 1.101,
+      "mund": "E"
+    },
+    {
+      "zeit": 1.169,
+      "mund": "etc"
+    },
+    {
+      "zeit": 1.202,
+      "mund": "E"
+    },
+    {
+      "zeit": 1.26,
+      "mund": "etc"
+    },
+    {
+      "zeit": 1.292,
+      "mund": "AI"
+    },
+    {
+      "zeit": 1.358,
+      "mund": "E"
+    },
+    {
+      "zeit": 1.422,
+      "mund": "etc"
+    },
+    {
+      "zeit": 1.455,
+      "mund": "E"
+    },
+    {
+      "zeit": 1.637,
+      "mund": "etc"
+    },
+    {
+      "zeit": 1.69,
+      "mund": "O"
+    },
+    {
+      "zeit": 1.79,
+      "mund": "E"
+    },
+    {
+      "zeit": 1.89,
+      "mund": "etc"
+    },
+    {
+      "zeit": 1.93,
+      "mund": "FV"
+    },
+    {
+      "zeit": 1.957,
+      "mund": "E"
+    },
+    {
+      "zeit": 2.01,
+      "mund": "rest"
+    },
+    {
+      "zeit": 2.38,
+      "mund": "MBP"
+    },
+    {
+      "zeit": 2.382,
+      "mund": "AI"
+    },
+    {
+      "zeit": 2.388,
+      "mund": "etc"
+    },
+    {
+      "zeit": 2.39,
+      "mund": "E"
+    },
+    {
+      "zeit": 2.477,
+      "mund": "etc"
+    },
+    {
+      "zeit": 2.5,
+      "mund": "FV"
+    },
+    {
+      "zeit": 2.547,
+      "mund": "E"
+    },
+    {
+      "zeit": 2.641,
+      "mund": "etc"
+    },
+    {
+      "zeit": 2.688,
+      "mund": "E"
+    },
+    {
+      "zeit": 2.782,
+      "mund": "etc"
+    },
+    {
+      "zeit": 2.829,
+      "mund": "E"
+    },
+    {
+      "zeit": 2.923,
+      "mund": "etc"
+    },
+    {
+      "zeit": 2.96,
+      "mund": "MBP"
+    },
+    {
+      "zeit": 3.013,
+      "mund": "E"
+    },
+    {
+      "zeit": 3.119,
+      "mund": "etc"
+    },
+    {
+      "zeit": 3.172,
+      "mund": "U"
+    },
+    {
+      "zeit": 3.278,
+      "mund": "etc"
+    },
+    {
+      "zeit": 3.331,
+      "mund": "E"
+    },
+    {
+      "zeit": 3.437,
+      "mund": "etc"
+    },
+    {
+      "zeit": 3.48,
+      "mund": "AI"
+    },
+    {
+      "zeit": 3.538,
+      "mund": "E"
+    },
+    {
+      "zeit": 3.595,
+      "mund": "etc"
+    },
+    {
+      "zeit": 3.624,
+      "mund": "E"
+    },
+    {
+      "zeit": 3.681,
+      "mund": "etc"
+    },
+    {
+      "zeit": 3.7,
+      "mund": "FV"
+    },
+    {
+      "zeit": 3.759,
+      "mund": "etc"
+    },
+    {
+      "zeit": 3.818,
+      "mund": "E"
+    },
+    {
+      "zeit": 3.935,
+      "mund": "etc"
+    },
+    {
+      "zeit": 3.994,
+      "mund": "E"
+    },
+    {
+      "zeit": 4.111,
+      "mund": "etc"
+    },
+    {
+      "zeit": 4.16,
+      "mund": "O"
+    },
+    {
+      "zeit": 4.222,
+      "mund": "MBP"
+    },
+    {
+      "zeit": 4.253,
+      "mund": "etc"
+    },
+    {
+      "zeit": 4.284,
+      "mund": "AI"
+    },
+    {
+      "zeit": 4.346,
+      "mund": "L"
+    },
+    {
+      "zeit": 4.377,
+      "mund": "AI"
+    },
+    {
+      "zeit": 4.439,
+      "mund": "etc"
+    },
+    {
+      "zeit": 4.52,
+      "mund": "U"
+    },
+    {
+      "zeit": 4.62,
+      "mund": "MBP"
+    },
+    {
+      "zeit": 4.654,
+      "mund": "E"
+    },
+    {
+      "zeit": 4.722,
+      "mund": "etc"
+    },
+    {
+      "zeit": 4.757,
+      "mund": "AI"
+    },
+    {
+      "zeit": 4.825,
+      "mund": "E"
+    },
+    {
+      "zeit": 4.893,
+      "mund": "etc"
+    },
+    {
+      "zeit": 4.928,
+      "mund": "E"
+    },
+    {
+      "zeit": 4.996,
+      "mund": "etc"
+    },
+    {
+      "zeit": 5.03,
+      "mund": "rest"
+    },
+    {
+      "zeit": 5.5,
+      "mund": "etc"
+    },
+    {
+      "zeit": 5.532,
+      "mund": "U"
+    },
+    {
+      "zeit": 5.595,
+      "mund": "E"
+    },
+    {
+      "zeit": 5.658,
+      "mund": "etc"
+    },
+    {
+      "zeit": 5.744,
+      "mund": "AI"
+    },
+    {
+      "zeit": 5.873,
+      "mund": "E"
+    },
+    {
+      "zeit": 6.002,
+      "mund": "etc"
+    },
+    {
+      "zeit": 6.067,
+      "mund": "E"
+    },
+    {
+      "zeit": 6.196,
+      "mund": "etc"
+    },
+    {
+      "zeit": 6.25,
+      "mund": "FV"
+    },
+    {
+      "zeit": 6.302,
+      "mund": "E"
+    },
+    {
+      "zeit": 6.408,
+      "mund": "etc"
+    },
+    {
+      "zeit": 6.45,
+      "mund": "AI"
+    },
+    {
+      "zeit": 6.564,
+      "mund": "MBP"
+    },
+    {
+      "zeit": 6.621,
+      "mund": "FV"
+    },
+    {
+      "zeit": 6.679,
+      "mund": "E"
+    },
+    {
+      "zeit": 6.793,
+      "mund": "L"
+    },
+    {
+      "zeit": 6.85,
+      "mund": "rest"
+    },
+    {
+      "zeit": 7.1,
+      "mund": "MBP"
+    },
+    {
+      "zeit": 7.127,
+      "mund": "AI"
+    },
+    {
+      "zeit": 7.181,
+      "mund": "etc"
+    },
+    {
+      "zeit": 7.208,
+      "mund": "AI"
+    },
+    {
+      "zeit": 7.262,
+      "mund": "etc"
+    },
+    {
+      "zeit": 7.289,
+      "mund": "E"
+    },
+    {
+      "zeit": 7.343,
+      "mund": "etc"
+    },
+    {
+      "zeit": 7.36,
+      "mund": "U"
+    },
+    {
+      "zeit": 7.5,
+      "mund": "etc"
+    },
+    {
+      "zeit": 7.56,
+      "mund": "O"
+    },
+    {
+      "zeit": 7.676,
+      "mund": "etc"
+    },
+    {
+      "zeit": 7.733,
+      "mund": "AI"
+    },
+    {
+      "zeit": 7.849,
+      "mund": "etc"
+    },
+    {
+      "zeit": 7.907,
+      "mund": "E"
+    },
+    {
+      "zeit": 8.022,
+      "mund": "etc"
+    },
+    {
+      "zeit": 8.07,
+      "mund": "E"
+    },
+    {
+      "zeit": 8.123,
+      "mund": "etc"
+    },
+    {
+      "zeit": 8.162,
+      "mund": "L"
+    },
+    {
+      "zeit": 8.184,
+      "mund": "AI"
+    },
+    {
+      "zeit": 8.229,
+      "mund": "E"
+    },
+    {
+      "zeit": 8.273,
+      "mund": "etc"
+    },
+    {
+      "zeit": 8.296,
+      "mund": "E"
+    },
+    {
+      "zeit": 8.33,
+      "mund": "etc"
+    },
+    {
+      "zeit": 8.402,
+      "mund": "U"
+    },
+    {
+      "zeit": 8.548,
+      "mund": "etc"
+    },
+    {
+      "zeit": 8.62,
+      "mund": "rest"
+    },
+    {
+      "zeit": 8.88,
+      "mund": "etc"
+    },
+    {
+      "zeit": 8.892,
+      "mund": "AI"
+    },
+    {
+      "zeit": 8.918,
+      "mund": "etc"
+    },
+    {
+      "zeit": 8.986,
+      "mund": "O"
+    },
+    {
+      "zeit": 9.118,
+      "mund": "MBP"
+    },
+    {
+      "zeit": 9.184,
+      "mund": "etc"
+    },
+    {
+      "zeit": 9.24,
+      "mund": "AI"
+    },
+    {
+      "zeit": 9.328,
+      "mund": "E"
+    },
+    {
+      "zeit": 9.416,
+      "mund": "etc"
+    },
+    {
+      "zeit": 9.482,
+      "mund": "MBP"
+    },
+    {
+      "zeit": 9.525,
+      "mund": "AI"
+    },
+    {
+      "zeit": 9.61,
+      "mund": "etc"
+    },
+    {
+      "zeit": 9.652,
+      "mund": "E"
+    },
+    {
+      "zeit": 9.738,
+      "mund": "etc"
+    },
+    {
+      "zeit": 9.814,
+      "mund": "E"
+    },
+    {
+      "zeit": 9.903,
+      "mund": "etc"
+    },
+    {
+      "zeit": 9.948,
+      "mund": "O"
+    },
+    {
+      "zeit": 10.037,
+      "mund": "etc"
+    },
+    {
+      "zeit": 10.081,
+      "mund": "E"
+    },
+    {
+      "zeit": 10.16,
+      "mund": "etc"
+    },
+    {
+      "zeit": 10.213,
+      "mund": "AI"
+    },
+    {
+      "zeit": 10.319,
+      "mund": "etc"
+    },
+    {
+      "zeit": 10.372,
+      "mund": "U"
+    },
+    {
+      "zeit": 10.478,
+      "mund": "MBP"
+    },
+    {
+      "zeit": 10.531,
+      "mund": "E"
+    },
+    {
+      "zeit": 10.637,
+      "mund": "etc"
+    },
+    {
+      "zeit": 10.691,
+      "mund": "AI"
+    },
+    {
+      "zeit": 10.714,
+      "mund": "MBP"
+    },
+    {
+      "zeit": 10.726,
+      "mund": "E"
+    },
+    {
+      "zeit": 10.749,
+      "mund": "etc"
+    },
+    {
+      "zeit": 10.76,
+      "mund": "rest"
+    },
+    {
+      "zeit": 10.99,
+      "mund": "etc"
+    },
+    {
+      "zeit": 11.038,
+      "mund": "E"
+    },
+    {
+      "zeit": 11.132,
+      "mund": "etc"
+    },
+    {
+      "zeit": 11.27,
+      "mund": "MBP"
+    },
+    {
+      "zeit": 11.304,
+      "mund": "etc"
+    },
+    {
+      "zeit": 11.339,
+      "mund": "AI"
+    },
+    {
+      "zeit": 11.407,
+      "mund": "U"
+    },
+    {
+      "zeit": 11.476,
+      "mund": "etc"
+    },
+    {
+      "zeit": 11.51,
+      "mund": "rest"
+    },
+    {
+      "zeit": 11.65,
+      "mund": "FV"
+    },
+    {
+      "zeit": 11.72,
+      "mund": "E"
+    },
+    {
+      "zeit": 11.86,
+      "mund": "etc"
+    },
+    {
+      "zeit": 11.93,
+      "mund": "rest"
+    }
+  ]
+}

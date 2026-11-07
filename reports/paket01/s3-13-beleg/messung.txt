@@ -1,0 +1,4 @@
+clip-a-seed42: Zufallswert 42, Exitcode 0, 107 s
+clip-b-seed42: Zufallswert 42, Exitcode 0, 116 s
+clip-c-seed4711: Zufallswert 4711, Exitcode 0, 106 s
+Mittlere Bildabweichung gleicher Zufallswert: 1,222 (0–255), anderer Zufallswert: 52,531

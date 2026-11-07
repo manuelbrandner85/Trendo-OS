@@ -43,6 +43,7 @@ public class KiPyAppsTests
 
             var env = KiPyApps.UvEnv(store.RuntimeDir(KiRuntime.Uv));
             Assert.Equal("1", env["UV_NO_MODIFY_PATH"]); Assert.Equal("only-managed", env["UV_PYTHON_PREFERENCE"]);
+            Assert.Equal(("1", "utf-8"), (env["PYTHONUTF8"], env["PYTHONIOENCODING"])); // Meldungen der KIs mit Umlauten lesbar (Befund 07.11.2026)
             var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             foreach (var k in new[] { "UV_CACHE_DIR", "UV_PYTHON_INSTALL_DIR", "UV_PYTHON_BIN_DIR", "UV_TOOL_DIR", "HF_HOME" }) Assert.StartsWith(Path.GetFullPath(root), Path.GetFullPath(env[k]));
             Assert.DoesNotContain(env.Values, v => v.Equals(Path.Combine(home, ".local", "bin"), StringComparison.OrdinalIgnoreCase));

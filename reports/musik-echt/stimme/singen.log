@@ -1,0 +1,8 @@
+Using HiFi-GAN vocoder
+Converting audio 'C:\Users\<user>\AppData\Local\Temp\trendo-echt-stimme\gesang-ki-15s.wav'...
+
+Loading weights:   0%|          | 0/213 [00:00<?, ?it/s]
+Loading weights: 100%|██████████| 213/213 [00:00<00:00, 34855.71it/s]
+Conversion completed at 'C:\Users\<user>\AppData\Local\Temp\trendo-echt-stimme\gesang-thorsten.wav' in 27.53 seconds.
+File C:\Users\<user>\AppData\Local\Temp\trendo-echt-stimme\gesang-ki-15s.wav inferred successfully.
+{"ok": true, "out": "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-echt-stimme\\gesang-thorsten.wav"}

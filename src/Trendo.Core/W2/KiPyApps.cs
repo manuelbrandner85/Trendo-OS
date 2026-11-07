@@ -58,6 +58,10 @@ public static class KiPyApps
         ["UV_NO_MODIFY_PATH"] = "1",
         ["UV_PYTHON_PREFERENCE"] = "only-managed",
         ["HF_HOME"] = Path.GetFullPath(Path.Combine(uvHome, "..", "huggingface")), // Modelle der KIs bleiben im Werkzeugordner
+        // Befund 07.11.2026 (echter Demucs-Lauf): ohne diese Schalter schreibt Python unter Windows umgeleitet in cp1252 – Trendo liest UTF-8,
+        // aus „…“, „ä“ und „–“ in Meldungen wurde „�“. So kommen Meldungen und Fehlertexte der KIs lesbar an.
+        ["PYTHONUTF8"] = "1",
+        ["PYTHONIOENCODING"] = "utf-8",
     };
 
     public sealed record Step(string Text, string Exe, string[] Args, string Cwd);

@@ -1,0 +1,12 @@
+v640s20: [I] sampling completed, taking 13.23s --- video.cpp:1776
+v640s20: [I] decode_first_stage completed, taking 14.75s --- video.cpp:1290
+v640s20: [I] generate_video completed in 35.20s --- video.cpp:2008
+v832s25: [I] sampling completed, taking 32.48s --- video.cpp:1776
+v832s25: [I] decode_first_stage completed, taking 35.71s --- video.cpp:1290
+v832s25: [I] generate_video completed in 74.90s --- video.cpp:2008
+v1280s12: [I] sampling completed, taking 43.42s --- video.cpp:1776
+v1280s12: [I] decode_first_stage completed, taking 282.35s --- video.cpp:1290
+v1280s12: [I] generate_video completed in 332.26s --- video.cpp:2008
+final: [I] sampling completed, taking 120.43s --- video.cpp:1776
+final: [I] decode_first_stage completed, taking 117.80s --- video.cpp:1290
+final: [I] generate_video completed in 244.66s --- video.cpp:2008

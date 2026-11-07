@@ -1,0 +1,9 @@
+760eb73218271216b159c47ba7993dc9c9f6865e9c4e8ccb17e79f0f55eeeead *./SHA256-ausgaben.txt
+2322968e6104cd3162a27f1e758bca124a728b47924a85d8efb6ef0783f31965 *./ausgang-gelernte-stimme-15s.mp3
+48fa2b22222adf72261f96bb9e9fee85a9867fb0c17eab77fdbd43ec3de98ce5 *./eingang-ki-gesang-15s.mp3
+2ef142f84360ce3e8ab0cb7c3facd415fb224176d0ea370b3ea60f440f3c50e8 *./einrichten.log
+4bfbca3ee13e82ac70dfa80b765330b24e63eb2eaf6293bcdfb350d59a2e65f3 *./lernen-ergebnis.txt
+3fdf4094787227c1ab8e625935afc12090ae8a278fe305c60415d37fd9d61244 *./lernen.log
+e0ad4d7de3ee1ef9e53340a6eeb54bf5de57a7171cdea071a4fe7395903cd442 *./messung.json
+65c90563a7b3a2e985ab32d085cec23ef7f869648f52a98dbf3c0d1662e4c14c *./singen.log
+8e1aa33a2dbd37a3d83e72eebc09c41857477f32edf588d1b48e9b8748c624ac *./trainingsbeispiel-satz01.mp3

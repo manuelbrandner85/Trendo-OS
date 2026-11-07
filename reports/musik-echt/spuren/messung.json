@@ -1,0 +1,26 @@
+{
+ "ohne_trennung": {
+  "gesang_si_sdr": -5.64,
+  "begleitung_si_sdr": 5.62
+ },
+ "htdemucs": {
+  "gesang_si_sdr": 14.53,
+  "gesang_sdr": 14.53,
+  "begleitung_si_sdr": 19.87
+ },
+ "htdemucs_ace": {
+  "rekonstruktion_db": 35.11,
+  "gesang_anteil_energie": 0.371,
+  "laenge_s": 60.0
+ },
+ "htdemucs_ft": {
+  "gesang_si_sdr": 16.06,
+  "gesang_sdr": 16.06,
+  "begleitung_si_sdr": 19.76
+ },
+ "htdemucs_ft_ace": {
+  "rekonstruktion_db": 21.38,
+  "gesang_anteil_energie": 0.36,
+  "laenge_s": 60.0
+ }
+}
