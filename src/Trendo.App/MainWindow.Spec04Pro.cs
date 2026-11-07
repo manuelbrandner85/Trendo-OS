@@ -12,6 +12,29 @@ public partial class MainWindow
     bool _xrEye;
     /// <summary>Vorschau aus Augenhöhe an/aus.</summary>
     public bool XrEye { get => _xrEye; set => _xrEye = value; }
+    bool _xrHmd;
+    /// <summary>S3: Brillen-Ansicht (beide Augen wie in der Brille) an/aus.</summary>
+    public bool XrHeadset { get => _xrHmd; set => _xrHmd = value; }
+
+    /// <summary>S3 (Modernisierung 07.11.2026): Raumvorschau mit Brillen-Ansicht – linkes und rechtes Auge nebeneinander in Linsenform, auf Augenhöhe,
+    /// mit Augenabstand und senkrechtem Sichtfeld des Zielgeräts. Ziehen im linken Auge dreht beide gleich.</summary>
+    (MeshView Left, Control Panel) XrHeadsetView(Mesh mesh, XrPro.Headset hs, MeshView old)
+    {
+        MeshView Eye(string name, double sign) => new() { Name = name, Model = mesh, Wire = old.Wire, Yaw = old.Yaw, EyeHeightCm = XrPro.EyeCm, EyeDistanceCm = XrPro.ViewDistanceCm,
+            EyeOffsetCm = sign * hs.IpdMm / 20.0, FovDeg = hs.VFovDeg, ShowEyeInfo = false };
+        var left = Eye("xr-eye-left", -1); var right = Eye("xr-eye-right", +1); right.IsHitTestVisible = false;
+        left.Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.SizeAll);
+        void Sync() { right.Yaw = left.Yaw; right.Zoom = left.Zoom; right.InvalidateVisual(); }
+        left.PointerMoved += (_, _) => Sync(); left.PointerWheelChanged += (_, _) => Sync(); left.DoubleTapped += (_, _) => Sync();
+        Control Lens(MeshView v, string label) => new Panel { Margin = new Thickness(6), Children = {
+            new Border { CornerRadius = new CornerRadius(140, 110, 110, 140), ClipToBounds = true, BorderBrush = Brush.Parse("#2A2A2A"), BorderThickness = new Thickness(2), Child = v },
+            new TextBlock { Text = label, Foreground = Brush.Parse("#9CA3AF"), FontSize = 11, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Bottom, Margin = new Thickness(0, 0, 0, 10) } } };
+        var eyes = new Grid { ColumnDefinitions = new ColumnDefinitions("*,*"), Children = { Lens(left, "Linkes Auge"), Pos(Lens(right, "Rechtes Auge"), 1) } };
+        var info = new TextBlock { Name = "xr-hmd-info", Text = $"{hs.Name}: Sichtfeld {hs.HFovDeg:0}° × {hs.VFovDeg:0}° · Augenabstand {hs.IpdMm:0} mm · Augenhöhe {XrPro.EyeCm / 100:0.00} m",
+            Foreground = Brush.Parse("#D1D5DB"), FontSize = 11.5, Margin = new Thickness(10, 6, 0, 0) };
+        var dp = new DockPanel(); DockPanel.SetDock(info, Avalonia.Controls.Dock.Top); dp.Children.Add(info); dp.Children.Add(eyes);
+        return (left, new Border { Name = "xr-hmd", CornerRadius = new CornerRadius(10), Background = Brush.Parse("#050505"), ClipToBounds = true, Child = dp });
+    }
     /// <summary>Für Tests: statt Blender (Eingabe, Ausgabe, Skript) → erfolgreich?</summary>
     public Func<string, string, string, Task<bool>>? XrFixOverride { get; set; }
 

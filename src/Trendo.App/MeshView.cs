@@ -19,6 +19,11 @@ public sealed class MeshView : Control
     /// <summary>Vorschau aus Augenhöhe (cm über dem Boden, Modell in Zentimetern): Perspektive wie mit einer Brille, waagrechter Blick, Abstand <see cref="EyeDistanceCm"/>. null = normale Ansicht.</summary>
     public double? EyeHeightCm { get; set; }
     public double EyeDistanceCm { get; set; } = 200;
+    /// <summary>Brillen-Ansicht (S3): seitlicher Versatz des Auges in cm (links negativ, rechts positiv, halber Augenabstand) und senkrechtes Sichtfeld in Grad.</summary>
+    public double EyeOffsetCm { get; set; }
+    public double FovDeg { get; set; } = 90;
+    /// <summary>Infozeile „Augenhöhe … · Abstand …“ zeichnen (in der Brillen-Ansicht steht sie einmal über beiden Augen).</summary>
+    public bool ShowEyeInfo { get; set; } = true;
     /// <summary>Zusätzliche Punkte (z. B. Kamerapositionen beim Scan), als kleine goldene Kameras gezeichnet.</summary>
     public IReadOnlyList<Vec3>? Markers { get; set; }
     Point? _drag;
@@ -41,9 +46,9 @@ public sealed class MeshView : Control
         {
             // Kamera steht vor dem Objekt auf Augenhöhe und schaut waagrecht (Drehen per Maus umrundet das Objekt), Bildwinkel 90° senkrecht wie eine Brille
             double ya0 = Yaw * Math.PI / 180, dist = Math.Max(EyeDistanceCm, f.r * 1.6);
-            var cam = new Vec3(f.cx - Math.Sin(ya0) * dist, f.cy - Math.Cos(ya0) * dist, f.minZ + eye);
+            var cam = new Vec3(f.cx - Math.Sin(ya0) * dist + Math.Cos(ya0) * EyeOffsetCm, f.cy - Math.Cos(ya0) * dist - Math.Sin(ya0) * EyeOffsetCm, f.minZ + eye); // Auge seitlich versetzt (Brille)
             var q0 = p - cam; double right = q0.X * Math.Cos(ya0) - q0.Y * Math.Sin(ya0), fwd = q0.X * Math.Sin(ya0) + q0.Y * Math.Cos(ya0);
-            var z = Math.Max(1, fwd); var focal = Bounds.Height / (2 * Math.Tan(45 * Math.PI / 180)) * Zoom;
+            var z = Math.Max(1, fwd); var focal = Bounds.Height / (2 * Math.Tan(Math.Clamp(FovDeg, 20, 150) / 2 * Math.PI / 180)) * Zoom;
             return (Bounds.Width / 2 + right * focal / z, Bounds.Height / 2 - q0.Z * focal / z, -fwd);
         }
         double qx = p.X - f.cx, qy = p.Y - f.cy, qz = p.Z - f.cz, ya = Yaw * Math.PI / 180, pa = Pitch * Math.PI / 180;
@@ -124,7 +129,7 @@ public sealed class MeshView : Control
             var gold = new SolidColorBrush(Color.Parse("#FACC15")); var dark = new Pen(new SolidColorBrush(Color.Parse("#AA000000")), 1);
             foreach (var v in mk) { var c = S(v); ctx.DrawGeometry(gold, dark, new PolylineGeometry([new Point(c.X - 6, c.Y - 4), new Point(c.X + 6, c.Y - 4), new Point(c.X + 6, c.Y + 4), new Point(c.X - 6, c.Y + 4)], true)); ctx.DrawEllipse(Brushes.Black, null, c, 2, 2); }
         }
-        if (EyeHeightCm is { } eh)
+        if (EyeHeightCm is { } eh && ShowEyeInfo)
             ctx.DrawText(new FormattedText($"Augenhöhe {eh / 100:0.00} m · Abstand {Math.Max(EyeDistanceCm, f.r * 1.6) / 100:0.0} m", System.Globalization.CultureInfo.GetCultureInfo("de-DE"), FlowDirection.LeftToRight, new Typeface("Inter"), 12, Brushes.White), new Point(10, 8));
     }
 

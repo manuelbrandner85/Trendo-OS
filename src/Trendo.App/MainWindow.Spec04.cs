@@ -63,13 +63,19 @@ public partial class MainWindow
         else
         {
             var view = new MeshView { Name = "xr-view", Model = mesh, Wire = _xrWire, EyeHeightCm = _xrEye ? XrPro.EyeCm : null, EyeDistanceCm = XrPro.ViewDistanceCm, Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.SizeAll) };
+            Control? headset = null;
             var tools = new WrapPanel { Margin = new Thickness(0, 6, 0, 0) };
             foreach (var (id, label) in new[] { ("iso", "Schräg"), ("vorne", "Vorne"), ("seite", "Seite"), ("oben", "Oben") }) { var v = id; tools.Children.Add(Btn("xr-v-" + id, label, () => view.SetView(v))); }
             tools.Children.Add(Btn("xr-wire", _xrWire ? "Drahtgitter aus" : "Drahtgitter an", () => { _xrWire = !_xrWire; Show("xr"); }));
             tools.Children.Add(Btn("xr-eye", _xrEye ? "👁 Augenhöhe aus" : "👁 Aus Augenhöhe", () => { _xrEye = !_xrEye; Show("xr"); }, _xrEye)); // wie mit der Brille: 1,60 m, 2 m Abstand
+            if (XrPro.HeadsetOf(XrDevice) is { } hs) // S3: beide Augen wie in der Brille (Sichtfeld und Augenabstand des Zielgeräts)
+            {
+                tools.Children.Add(Btn("xr-hmd", _xrHmd ? "🥽 Brillen-Ansicht aus" : "🥽 Brillen-Ansicht", () => { _xrHmd = !_xrHmd; Show("xr"); }, _xrHmd));
+                if (_xrHmd) { var hv = XrHeadsetView(mesh, hs, view); view = hv.Left; headset = hv.Panel; }
+            }
             var size = det is null ? "" : XrPlus.ScaleVerdict(det);
             tools.Children.Add(new TextBlock { Name = "xr-size", Text = size, Foreground = Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 4), TextWrapping = TextWrapping.Wrap, MaxWidth = 520 });
-            var dp = new DockPanel(); DockPanel.SetDock(tools, Avalonia.Controls.Dock.Bottom); dp.Children.Add(tools); dp.Children.Add(new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, Child = view });
+            var dp = new DockPanel(); DockPanel.SetDock(tools, Avalonia.Controls.Dock.Bottom); dp.Children.Add(tools); dp.Children.Add(headset ?? new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, Child = view });
             center = dp;
         }
         var mid = new Border { CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(10), Child = center };

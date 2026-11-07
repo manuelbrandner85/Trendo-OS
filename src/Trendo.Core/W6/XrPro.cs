@@ -12,6 +12,17 @@ public static class XrPro
     /// <summary>Augenhöhe stehend (cm) und Abstand zum Objekt für die Vorschau.</summary>
     public const double EyeCm = 160, ViewDistanceCm = 200;
 
+    /// <summary>S3 (Modernisierung 07.11.2026): Brillen-Ansicht – Sichtfeld (waagrecht × senkrecht, Grad) und Augenabstand (mm) je Zielgerät,
+    /// Herstellerangaben gerundet (Meta Quest 3 110° × 96°, Quest 2 97° × 93°, PC-VR typisch 108° × 100°); Handy-AR hat keine Brille → null.</summary>
+    public sealed record Headset(string Name, double HFovDeg, double VFovDeg, double IpdMm);
+    public static Headset? HeadsetOf(int device) => device switch
+    {
+        0 => new("Meta Quest 3 / Pico 4", 110, 96, 63),
+        1 => new("Meta Quest 2", 97, 93, 63),
+        3 => new("PC-VR", 108, 100, 63),
+        _ => null,
+    };
+
     public sealed record FixPlan(double DecimateRatio, int MaxTexture, double ScaleToMeters, IReadOnlyList<string> Steps)
     {
         public bool Needed => DecimateRatio < 0.999 || ScaleToMeters is < 0.999 or > 1.001 || Steps.Any(s => s.StartsWith("Texturen", StringComparison.Ordinal));

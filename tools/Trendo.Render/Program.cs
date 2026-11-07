@@ -112,6 +112,7 @@ if (Environment.GetEnvironmentVariable("TRENDO_XR_EYE") is { Length: > 0 }) { wi
 if (Environment.GetEnvironmentVariable("TRENDO_N8N_PRO") is { Length: > 0 }) { win.WfPro = true; win.Show("ablaeufe"); } // Abläufe Profi: n8n-Agenten-Arbeitsplatz
 if (Environment.GetEnvironmentVariable("TRENDO_GAME_ENGINES") is { Length: > 0 }) { win.EngineProbeOverride = win.EngineDetect; var ed = win.ProgramNew("spiele-programm", Environment.GetEnvironmentVariable("TRENDO_GAME_ENGINES") == "openworld" ? "openworld" : "retro-plattform"); win.GameSection = "Bauen"; win.Show("spiele-programm"); } // Spiele: Engines (Unreal, Unity, Godot, Blender) im Bereich Bauen
 if (Environment.GetEnvironmentVariable("TRENDO_3D_ENGINE") is { Length: > 0 }) { win.Show("3d"); } // 3D: Knöpfe „Für Engine“
+if (Environment.GetEnvironmentVariable("TRENDO_XR_HMD") is { Length: > 0 }) { win.Show("xr"); win.XrFile = Trendo.Core.XrSample.Write(Path.Combine(root, "beispiel.glb")); win.XrHeadset = true; win.Show("xr"); } // S3: Brillen-Ansicht
 if (Environment.GetEnvironmentVariable("TRENDO_GAME_BOARD") is { Length: > 0 }) // S2: Spiele-Dashboard mit Vorschau und Aufgaben-Board
 { var gb = win.ProgramNew("spiele-programm", Trendo.Core.Programs.GameDesign.Templates.First(t => t.Scale == "aa").Id);
   gb.Edit("Aufgaben", x => { Trendo.Core.Programs.GameBoard.Add(x, "Boss-Arena bauen", "eigene"); Trendo.Core.Programs.GameBoard.Seed(x); Trendo.Core.Programs.GameBoard.Move(x, 0, 1); Trendo.Core.Programs.GameBoard.Move(x, 1, 2); });
