@@ -1,6 +1,6 @@
 # KI-Vorlagen – Testergebnisse
 
-Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-vorlagen` · Stand: 0.9.36 (Stand 5e46a94)
+Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-vorlagen` · Stand: 0.9.36 (Stand 0893360)
 
 Lauf: `api.trx, app.trx, core.trx`
 

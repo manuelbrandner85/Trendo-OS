@@ -1,6 +1,6 @@
 # Dateien – Funktionsmatrix
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `dateien` · Stand: 0.9.36 (Stand 5e46a94)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `dateien` · Stand: 0.9.36 (Stand 0893360)
 
 Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 
@@ -60,4 +60,4 @@ Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 - Bilder
 - Musik
 - Videos
-- Lokaler Datenträger (C:\Users\manue\AppData\Local\Temp\trendo-render\dateien-test)
+- Lokaler Datenträger (C:\Users\<user>\AppData\Local\Temp\trendo-render\dateien-test)

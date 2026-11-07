@@ -1,6 +1,6 @@
 # Spiele bauen – Umsetzungsstand
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.36 (Stand 5e46a94)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.36 (Stand 0893360)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 
@@ -43,5 +43,6 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | SP-35 | Spielmenüs (Paket 01 S1-14): Startmenü (Fortsetzen, Spielen, Einstellungen, Steuerung), Pause mit Esc/P, Einstellungen je Spiel gespeichert (Lautstärke, hoher Kontrast, große Schrift, ruhige Effekte, Karte), Karte mit Figur, Controller (Gamepad), kein Seiten-Scrollen durch Pfeiltasten, Spielfeld passt sich an; im Editor abschaltbar | Implementiert | `GameMenusTests, GameMenus_Ui` |
 | SP-36 | Spielmenüs im Unity- und Godot-Export (Paket 01 S1-14): Startmenü, Pause, Einstellungen (PlayerPrefs bzw. user://), Karte, Controller; im Menü stehen Eingaben, Gegner und Regeln still | Implementiert | `EngineTargetsTests, GameEngines_Ui` |
 | SP-37 | 3D-Spiel in Unreal ohne Fachwissen (Paket 01 S1-01/S1-04/S1-05, Wunsch 07.11.2026): „Bauen“ schreibt ein C++-Spiel (Figur mit Kamera, Steuerung inkl. Controller, Gegner/Boss, Münzen, Gegenstände, Figuren, Fahrzeuge, Regeln/Aufgaben, Spielstand, Menü); Welt als 3D-Level oder Open World; „Kompilieren und prüfen“: Build.bat, Unreal-Tests, Startlauf mit Bild, Bericht | Implementiert | `UnrealGameTests, GameUnreal_Ui` |
+| SP-38 | Fotoreale Open World in Unreal (Wunsch 07.11.2026 „fotorealistisch, ohne Fachwissen“): „Kompilieren und prüfen“ lädt freie Fotomaterialien und Pflanzen/Felsen von Poly Haven (CC0, offizielle API, Größenprüfung, Lizenzdatei, Zwischenspeicher im Werkzeugordner), Unreal richtet die Welt per Python ein (Wiesen-/Waldboden mit Fernmischung, Blatt-Material mit Durchleuchtung, Nanite mit Flächenerhalt, eigene Karte), das Spiel verteilt rund 126 000 Pflanzen und Felsen, Sonne und Dunst; Prüfstart ohne echte Eingaben, Controller mit Totzone | Implementiert | `UnrealNatureTests, GameUnreal_Ui` |
 
-0 von 37 Funktionen getestet.
+0 von 38 Funktionen getestet.

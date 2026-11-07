@@ -263,7 +263,16 @@ public static class ProgramCatalog
             $"- Seite `{e.Id}` im Studio „{e.StudioName}“ ({e.Area}) – erreichbar über Startmenü, Suche und Programmkatalog\n" +
             $"- Programm-Hülle: {(e.Shell ? "ja (Dokumente .tdoc, Zuletzt, Wiederherstellen, Bedienstufen)" : "nein")}\n" +
             (e.Tabs.Count > 1 ? $"- Reiter: {string.Join(", ", e.Tabs)}\n" : "") + "- Quelltext: " + string.Join(", ", e.SourceFiles.Select(f => $"`{f}`")) + "\n";
+        foreach (var k in d.Keys.ToList()) d[k] = NoPersonalPaths(d[k]);
         return d;
+    }
+
+    /// <summary>Der Katalog geht ins öffentliche Repo: Pfade im Benutzerordner (z. B. Testordner aus der Oberfläche) werden zu C:\Users\&lt;user&gt;.</summary>
+    public static string NoPersonalPaths(string text)
+    {
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        if (home.Length > 3) text = text.Replace(home, Path.Combine(Path.GetDirectoryName(home) ?? "", "<user>"), StringComparison.OrdinalIgnoreCase);
+        return System.Text.RegularExpressions.Regex.Replace(text, @"([A-Za-z]:\\Users\\)(?!<user>)[^\\\s]+", "$1<user>");
     }
 
     /// <summary>Testergebnisse aus TRX-Dateien (Name = DisplayName).</summary>

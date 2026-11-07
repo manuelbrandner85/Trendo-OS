@@ -1,6 +1,6 @@
 # Videoschnitt – Architektur
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `schnitt` · Stand: 0.9.36 (Stand 5e46a94)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `schnitt` · Stand: 0.9.36 (Stand 0893360)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.AudioEditor.cs`
@@ -9,6 +9,7 @@ Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seit
 - `src/Trendo.App/MainWindow.W4Media.cs`
 
 ## Bedienelemente der Arbeitsfläche
+- Texteditor
 - Video-Zeitleiste
 - Menüband
 - Eigenschaften

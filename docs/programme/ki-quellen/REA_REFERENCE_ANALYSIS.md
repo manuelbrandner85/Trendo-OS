@@ -1,6 +1,6 @@
 # KI-Quellen – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.36 (Stand 5e46a94)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.36 (Stand 0893360)
 
 Analyse: [Vorbild-Analyse Kostenlose KI finden: Ollama, LM Studio, Pinokio, Hugging Face, OpenRouter (Clean-Room)](../../../docs/claude/vorbilder/ki-bibliothek-ollama-lmstudio.md)
 

@@ -1,6 +1,6 @@
 # Posteingang – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `posteingang` · Stand: 0.9.36 (Stand 5e46a94)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `posteingang` · Stand: 0.9.36 (Stand 0893360)
 
 Analyse: [Vorbild-Analyse E-Mail: Mozilla Thunderbird, Microsoft Outlook (Clean-Room)](../../../docs/claude/vorbilder/mail-thunderbird-outlook.md)
 

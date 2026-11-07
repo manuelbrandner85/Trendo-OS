@@ -1,6 +1,6 @@
 # Geräte & Laufwerke – Testplan
 
-Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.36 (Stand 5e46a94)
+Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.36 (Stand 0893360)
 
 15 Tests sprechen dieses Programm an.
 

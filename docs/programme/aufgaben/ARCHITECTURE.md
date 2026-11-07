@@ -1,6 +1,6 @@
 # Aufgaben – Architektur
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `aufgaben` · Stand: 0.9.36 (Stand 5e46a94)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `aufgaben` · Stand: 0.9.36 (Stand 0893360)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

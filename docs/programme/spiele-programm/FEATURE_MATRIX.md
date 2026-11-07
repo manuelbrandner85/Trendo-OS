@@ -1,6 +1,6 @@
 # Spiele bauen – Funktionsmatrix
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.36 (Stand 5e46a94)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.36 (Stand 0893360)
 
 Quelle: `docs/spec/kataloge/CORE-06_KATALOG.md`
 
@@ -43,6 +43,7 @@ Quelle: `docs/spec/kataloge/CORE-06_KATALOG.md`
 | SP-35 | Spielmenüs (Paket 01 S1-14): Startmenü (Fortsetzen, Spielen, Einstellungen, Steuerung), Pause mit Esc/P, Einstellungen je Spiel gespeichert (Lautstärke, hoher Kontrast, große Schrift, ruhige Effekte, Karte), Karte mit Figur, Controller (Gamepad), kein Seiten-Scrollen durch Pfeiltasten, Spielfeld passt sich an; im Editor abschaltbar | Vorhanden | umgesetzt, im echten Browser angesehen |
 | SP-36 | Spielmenüs im Unity- und Godot-Export (Paket 01 S1-14): Startmenü, Pause, Einstellungen (PlayerPrefs bzw. user://), Karte, Controller; im Menü stehen Eingaben, Gegner und Regeln still | Vorhanden | umgesetzt, PC-Lauf Unity 6.6 (PlayMode 8/8, Build ok) und Godot 4.7.2 (5 Prüfungen) |
 | SP-37 | 3D-Spiel in Unreal ohne Fachwissen (Paket 01 S1-01/S1-04/S1-05, Wunsch 07.11.2026): „Bauen“ schreibt ein C++-Spiel (Figur mit Kamera, Steuerung inkl. Controller, Gegner/Boss, Münzen, Gegenstände, Figuren, Fahrzeuge, Regeln/Aufgaben, Spielstand, Menü); Welt als 3D-Level oder Open World; „Kompilieren und prüfen“: Build.bat, Unreal-Tests, Startlauf mit Bild, Bericht | Vorhanden | umgesetzt, PC-Lauf UE 5.8 (beide Welten: kompiliert, 3/3 Tests, Startlauf ok); Aussehen noch Graubox |
+| SP-38 | Fotoreale Open World in Unreal (Wunsch 07.11.2026 „fotorealistisch, ohne Fachwissen“): „Kompilieren und prüfen“ lädt freie Fotomaterialien und Pflanzen/Felsen von Poly Haven (CC0, offizielle API, Größenprüfung, Lizenzdatei, Zwischenspeicher im Werkzeugordner), Unreal richtet die Welt per Python ein (Wiesen-/Waldboden mit Fernmischung, Blatt-Material mit Durchleuchtung, Nanite mit Flächenerhalt, eigene Karte), das Spiel verteilt rund 126 000 Pflanzen und Felsen, Sonne und Dunst; Prüfstart ohne echte Eingaben, Controller mit Totzone | Vorhanden | umgesetzt, PC-Lauf UE 5.8 (73 Dateien geladen, Welt eingerichtet, 3/3 Tests, Startlauf ok, Bild); Figur und Spielobjekte noch Grundformen |
 
 ## Werkzeuge der Oberfläche
 - Spiel prüfen (Spiel)

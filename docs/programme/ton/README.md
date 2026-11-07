@@ -1,6 +1,6 @@
 # Audio bearbeiten – Produktionspaket
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `ton` · Stand: 0.9.36 (Stand 5e46a94)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `ton` · Stand: 0.9.36 (Stand 0893360)
 
 Arbeitsfläche: Wellenform-Editor (Auswahl, Schnitt, Effekte – wie Audacity)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  
