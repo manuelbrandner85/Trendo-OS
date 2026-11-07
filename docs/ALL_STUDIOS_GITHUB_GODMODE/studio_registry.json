@@ -1,0 +1,730 @@
+[
+ {
+  "id": "STUDIO-LETTER-01",
+  "name": "Briefe schreiben",
+  "quelldateien": 16,
+  "testdateien": 7,
+  "tests": 162,
+  "beispiele": [
+   "MainWindow.axaml.cs",
+   "MainWindow.ClaudeLetter.cs",
+   "MainWindow.PromptChips.cs",
+   "MainWindow.Shell.cs"
+  ]
+ },
+ {
+  "id": "SYS-10",
+  "name": "Texte & Tabellen",
+  "quelldateien": 20,
+  "testdateien": 14,
+  "tests": 154,
+  "beispiele": [
+   "MainWindow.axaml.cs",
+   "MainWindow.Pdf.cs",
+   "MainWindow.Praesentation.cs",
+   "MainWindow.PromptChips.cs"
+  ]
+ },
+ {
+  "id": "SYS-09",
+  "name": "E-Mails & Termine",
+  "quelldateien": 13,
+  "testdateien": 1,
+  "tests": 82,
+  "beispiele": [
+   "MainWindow.AddressBook.cs",
+   "MainWindow.axaml.cs",
+   "MainWindow.Mail.cs",
+   "MainWindow.Pim.cs"
+  ]
+ },
+ {
+  "id": "X-11",
+  "name": "Neues Projekt starten",
+  "quelldateien": 8,
+  "testdateien": 2,
+  "tests": 94,
+  "beispiele": [
+   "MainWindow.W4Suite.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs",
+   "CapabilityCatalog.cs"
+  ]
+ },
+ {
+  "id": "SYS-02",
+  "name": "Kleine Helfer & Musik",
+  "quelldateien": 11,
+  "testdateien": 1,
+  "tests": 82,
+  "beispiele": [
+   "MainWindow.Helfer.cs",
+   "MainWindow.Sys02.cs",
+   "MainWindow.Sys13.cs",
+   "StudioCatalog.cs"
+  ]
+ },
+ {
+  "id": "STUDIO-ONLINE-BUSINESS-01",
+  "name": "Online verkaufen",
+  "quelldateien": 13,
+  "testdateien": 5,
+  "tests": 117,
+  "beispiele": [
+   "MainWindow.axaml.cs",
+   "MainWindow.PromptAction.cs",
+   "MainWindow.PromptChips.cs",
+   "MainWindow.W5Business.cs"
+  ]
+ },
+ {
+  "id": "SPEC-11",
+  "name": "Geld & Rechnungen",
+  "quelldateien": 9,
+  "testdateien": 3,
+  "tests": 93,
+  "beispiele": [
+   "MainWindow.PromptChips.cs",
+   "MainWindow.W5Finance.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs"
+  ]
+ },
+ {
+  "id": "CORE-08",
+  "name": "Videos & Fotos bearbeiten",
+  "quelldateien": 18,
+  "testdateien": 6,
+  "tests": 117,
+  "beispiele": [
+   "MainWindow.AudioEditor.cs",
+   "MainWindow.axaml.cs",
+   "MainWindow.Bildbearbeitung.cs",
+   "MainWindow.PromptChips.cs"
+  ]
+ },
+ {
+  "id": "SPEC-15",
+  "name": "Live streamen",
+  "quelldateien": 10,
+  "testdateien": 4,
+  "tests": 86,
+  "beispiele": [
+   "MainWindow.PromptChips.cs",
+   "MainWindow.Spec15.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs"
+  ]
+ },
+ {
+  "id": "STUDIO-MUSIK-01",
+  "name": "Trendo Musik",
+  "quelldateien": 10,
+  "testdateien": 3,
+  "tests": 95,
+  "beispiele": [
+   "MainWindow.MusikStudio.cs",
+   "MainWindow.PromptChips.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs"
+  ]
+ },
+ {
+  "id": "STUDIO-TV-01",
+  "name": "TV & Live",
+  "quelldateien": 8,
+  "testdateien": 0,
+  "tests": 0,
+  "beispiele": [
+   "MainWindow.Tv.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs",
+   "CapabilityCatalog.cs"
+  ]
+ },
+ {
+  "id": "SPEC-08",
+  "name": "Kleidung & Produkte entwerfen",
+  "quelldateien": 9,
+  "testdateien": 7,
+  "tests": 98,
+  "beispiele": [
+   "MainWindow.ProgMode.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs",
+   "CapabilityCatalog.cs"
+  ]
+ },
+ {
+  "id": "X-07",
+  "name": "Freie Bilder & Klänge finden",
+  "quelldateien": 9,
+  "testdateien": 2,
+  "tests": 83,
+  "beispiele": [
+   "MainWindow.W4Assets.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs",
+   "CapabilityCatalog.cs"
+  ]
+ },
+ {
+  "id": "CORE-12",
+  "name": "KI-Anweisungen schreiben",
+  "quelldateien": 9,
+  "testdateien": 1,
+  "tests": 82,
+  "beispiele": [
+   "MainWindow.Prompts.cs",
+   "MainWindow.Skills.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs"
+  ]
+ },
+ {
+  "id": "CORE-05",
+  "name": "3D-Modelle erstellen",
+  "quelldateien": 17,
+  "testdateien": 17,
+  "tests": 195,
+  "beispiele": [
+   "MainWindow.axaml.cs",
+   "MainWindow.Cad.cs",
+   "MainWindow.Print3D.cs",
+   "MainWindow.Shell.cs"
+  ]
+ },
+ {
+  "id": "CORE-06",
+  "name": "Spiele bauen",
+  "quelldateien": 18,
+  "testdateien": 20,
+  "tests": 169,
+  "beispiele": [
+   "MainWindow.axaml.cs",
+   "MainWindow.Claude.cs",
+   "MainWindow.ClaudeChat.cs",
+   "MainWindow.ProgGame.cs"
+  ]
+ },
+ {
+  "id": "SPEC-04",
+  "name": "VR & AR gestalten",
+  "quelldateien": 10,
+  "testdateien": 3,
+  "tests": 85,
+  "beispiele": [
+   "MainWindow.Library3D.cs",
+   "MainWindow.Spec04.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs"
+  ]
+ },
+ {
+  "id": "SPEC-09",
+  "name": "Gegenstände einscannen",
+  "quelldateien": 10,
+  "testdateien": 3,
+  "tests": 85,
+  "beispiele": [
+   "MainWindow.Spec09.cs",
+   "MainWindow.Spec09Scan.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs"
+  ]
+ },
+ {
+  "id": "SPEC-01",
+  "name": "Wohnung planen",
+  "quelldateien": 11,
+  "testdateien": 10,
+  "tests": 113,
+  "beispiele": [
+   "MainWindow.PromptChips.cs",
+   "MainWindow.Shell.cs",
+   "MainWindow.Spec01.cs",
+   "StudioCatalog.cs"
+  ]
+ },
+ {
+  "id": "SPEC-02",
+  "name": "Schaltungen berechnen",
+  "quelldateien": 9,
+  "testdateien": 3,
+  "tests": 88,
+  "beispiele": [
+   "MainWindow.PromptChips.cs",
+   "MainWindow.Spec02.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs"
+  ]
+ },
+ {
+  "id": "SPEC-03",
+  "name": "Statik nachrechnen",
+  "quelldateien": 8,
+  "testdateien": 4,
+  "tests": 90,
+  "beispiele": [
+   "MainWindow.Spec03.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs",
+   "CapabilityCatalog.cs"
+  ]
+ },
+ {
+  "id": "SPEC-10",
+  "name": "Geräte überwachen",
+  "quelldateien": 8,
+  "testdateien": 5,
+  "tests": 102,
+  "beispiele": [
+   "MainWindow.Spec10.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs",
+   "CapabilityCatalog.cs"
+  ]
+ },
+ {
+  "id": "SPEC-13",
+  "name": "Routen & Karten",
+  "quelldateien": 9,
+  "testdateien": 4,
+  "tests": 92,
+  "beispiele": [
+   "MainWindow.PromptChips.cs",
+   "MainWindow.Spec13.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs"
+  ]
+ },
+ {
+  "id": "SPEC-14",
+  "name": "Fräsen & Fertigen",
+  "quelldateien": 8,
+  "testdateien": 3,
+  "tests": 85,
+  "beispiele": [
+   "MainWindow.Spec14.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs",
+   "CapabilityCatalog.cs"
+  ]
+ },
+ {
+  "id": "SPEC-16",
+  "name": "Auto & Fahrten",
+  "quelldateien": 8,
+  "testdateien": 5,
+  "tests": 101,
+  "beispiele": [
+   "MainWindow.Spec16.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs",
+   "CapabilityCatalog.cs"
+  ]
+ },
+ {
+  "id": "CORE-09",
+  "name": "Kameras & Roboter steuern",
+  "quelldateien": 11,
+  "testdateien": 5,
+  "tests": 113,
+  "beispiele": [
+   "MainWindow.Core09.cs",
+   "MainWindow.Core09Cam.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs"
+  ]
+ },
+ {
+  "id": "SPEC-05",
+  "name": "Messwerte auswerten",
+  "quelldateien": 8,
+  "testdateien": 4,
+  "tests": 87,
+  "beispiele": [
+   "MainWindow.Spec05.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs",
+   "CapabilityCatalog.cs"
+  ]
+ },
+ {
+  "id": "SPEC-06",
+  "name": "Lernen mit Karteikarten",
+  "quelldateien": 10,
+  "testdateien": 4,
+  "tests": 90,
+  "beispiele": [
+   "MainWindow.PromptChips.cs",
+   "MainWindow.Spec06.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs"
+  ]
+ },
+ {
+  "id": "SPEC-07",
+  "name": "Texte übersetzen",
+  "quelldateien": 6,
+  "testdateien": 8,
+  "tests": 151,
+  "beispiele": [
+   "StudioCatalog.cs",
+   "StudioIcons.cs",
+   "CapabilityCatalog.cs",
+   "SystemPromptAdapter.cs"
+  ]
+ },
+ {
+  "id": "CORE-10",
+  "name": "Wissen merken",
+  "quelldateien": 10,
+  "testdateien": 1,
+  "tests": 82,
+  "beispiele": [
+   "MainWindow.StudiosView.cs",
+   "MainWindow.Wissen.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs"
+  ]
+ },
+ {
+  "id": "SYS-08",
+  "name": "Sicher recherchieren",
+  "quelldateien": 10,
+  "testdateien": 2,
+  "tests": 105,
+  "beispiele": [
+   "MainWindow.PromptChips.cs",
+   "MainWindow.Research.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs"
+  ]
+ },
+ {
+  "id": "CORE-02",
+  "name": "KI fragen",
+  "quelldateien": 19,
+  "testdateien": 6,
+  "tests": 152,
+  "beispiele": [
+   "MainWindow.axaml.cs",
+   "MainWindow.ClaudeLearn.cs",
+   "MainWindow.Connections.cs",
+   "MainWindow.N8n.cs"
+  ]
+ },
+ {
+  "id": "CORE-03",
+  "name": "KI-Team einsetzen",
+  "quelldateien": 9,
+  "testdateien": 2,
+  "tests": 105,
+  "beispiele": [
+   "MainWindow.Agents.cs",
+   "MainWindow.StudiosView.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs"
+  ]
+ },
+ {
+  "id": "X-05",
+  "name": "Kostenlose KI finden",
+  "quelldateien": 12,
+  "testdateien": 2,
+  "tests": 105,
+  "beispiele": [
+   "MainWindow.KiLibrary.cs",
+   "MainWindow.StudiosView.cs",
+   "MainWindow.Sys13.cs",
+   "MainWindow.X05.cs"
+  ]
+ },
+ {
+  "id": "SYS-05",
+  "name": "Aufgaben automatisieren",
+  "quelldateien": 10,
+  "testdateien": 1,
+  "tests": 82,
+  "beispiele": [
+   "MainWindow.PromptChips.cs",
+   "MainWindow.StudiosView.cs",
+   "MainWindow.Workflows.cs",
+   "StudioCatalog.cs"
+  ]
+ },
+ {
+  "id": "X-01",
+  "name": "Großprojekte umsetzen",
+  "quelldateien": 8,
+  "testdateien": 2,
+  "tests": 116,
+  "beispiele": [
+   "MainWindow.W5Fusion.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs",
+   "CapabilityCatalog.cs"
+  ]
+ },
+ {
+  "id": "CORE-07",
+  "name": "Webseite bauen",
+  "quelldateien": 19,
+  "testdateien": 20,
+  "tests": 181,
+  "beispiele": [
+   "MainWindow.axaml.cs",
+   "MainWindow.Claude.cs",
+   "MainWindow.ClaudeChat.cs",
+   "MainWindow.CodeEditor.cs"
+  ]
+ },
+ {
+  "id": "X-03",
+  "name": "Apps zusammenklicken",
+  "quelldateien": 11,
+  "testdateien": 6,
+  "tests": 126,
+  "beispiele": [
+   "MainWindow.Claude.cs",
+   "MainWindow.PromptChips.cs",
+   "MainWindow.W4Builder.cs",
+   "StudioCatalog.cs"
+  ]
+ },
+ {
+  "id": "X-06",
+  "name": "Projekte von GitHub holen",
+  "quelldateien": 10,
+  "testdateien": 1,
+  "tests": 82,
+  "beispiele": [
+   "MainWindow.SourceApps.cs",
+   "MainWindow.StudiosView.cs",
+   "MainWindow.W4Oss.cs",
+   "StudioCatalog.cs"
+  ]
+ },
+ {
+  "id": "X-04",
+  "name": "Trendo erweitern",
+  "quelldateien": 9,
+  "testdateien": 3,
+  "tests": 124,
+  "beispiele": [
+   "MainWindow.Claude.cs",
+   "MainWindow.W5Ext.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs"
+  ]
+ },
+ {
+  "id": "X-10",
+  "name": "Programme nachbauen",
+  "quelldateien": 9,
+  "testdateien": 1,
+  "tests": 82,
+  "beispiele": [
+   "MainWindow.Claude.cs",
+   "MainWindow.W5CleanRoom.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs"
+  ]
+ },
+ {
+  "id": "CORE-01",
+  "name": "Desktop einrichten",
+  "quelldateien": 10,
+  "testdateien": 4,
+  "tests": 141,
+  "beispiele": [
+   "MainWindow.Dateien.cs",
+   "MainWindow.Sys13.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs"
+  ]
+ },
+ {
+  "id": "SYS-01",
+  "name": "Startmodus wählen",
+  "quelldateien": 8,
+  "testdateien": 1,
+  "tests": 82,
+  "beispiele": [
+   "MainWindow.W7.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs",
+   "CapabilityCatalog.cs"
+  ]
+ },
+ {
+  "id": "CORE-11",
+  "name": "Daten schützen",
+  "quelldateien": 11,
+  "testdateien": 6,
+  "tests": 150,
+  "beispiele": [
+   "MainWindow.axaml.cs",
+   "MainWindow.Sys13.cs",
+   "MainWindow.W3.cs",
+   "StudioCatalog.cs"
+  ]
+ },
+ {
+  "id": "SPEC-12",
+  "name": "System auf Gefahren prüfen",
+  "quelldateien": 8,
+  "testdateien": 1,
+  "tests": 82,
+  "beispiele": [
+   "MainWindow.Forensik.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs",
+   "CapabilityCatalog.cs"
+  ]
+ },
+ {
+  "id": "SYS-03",
+  "name": "Surfen & Herunterladen",
+  "quelldateien": 10,
+  "testdateien": 2,
+  "tests": 105,
+  "beispiele": [
+   "MainWindow.Sys03.cs",
+   "MainWindow.Sys13.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs"
+  ]
+ },
+ {
+  "id": "SYS-04",
+  "name": "Programme installieren",
+  "quelldateien": 8,
+  "testdateien": 2,
+  "tests": 105,
+  "beispiele": [
+   "MainWindow.AppCenter.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs",
+   "CapabilityCatalog.cs"
+  ]
+ },
+ {
+  "id": "SYS-06",
+  "name": "Dateien teilen",
+  "quelldateien": 8,
+  "testdateien": 2,
+  "tests": 105,
+  "beispiele": [
+   "MainWindow.Share.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs",
+   "CapabilityCatalog.cs"
+  ]
+ },
+ {
+  "id": "SYS-07",
+  "name": "Geräte erkennen",
+  "quelldateien": 9,
+  "testdateien": 2,
+  "tests": 105,
+  "beispiele": [
+   "MainWindow.Devices.cs",
+   "MainWindow.Sys13.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs"
+  ]
+ },
+ {
+  "id": "SYS-11",
+  "name": "Programme starten",
+  "quelldateien": 9,
+  "testdateien": 2,
+  "tests": 105,
+  "beispiele": [
+   "MainWindow.Sys11.cs",
+   "MainWindow.Sys13.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs"
+  ]
+ },
+ {
+  "id": "SYS-12",
+  "name": "Schrift & Farben anpassen",
+  "quelldateien": 10,
+  "testdateien": 2,
+  "tests": 105,
+  "beispiele": [
+   "MainWindow.Sys12.cs",
+   "MainWindow.Sys13.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs"
+  ]
+ },
+ {
+  "id": "SYS-13",
+  "name": "Qualität prüfen",
+  "quelldateien": 10,
+  "testdateien": 2,
+  "tests": 105,
+  "beispiele": [
+   "MainWindow.ProgramCatalog.cs",
+   "MainWindow.Sys13.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs"
+  ]
+ },
+ {
+  "id": "X-02",
+  "name": "Einrichten & Reparieren",
+  "quelldateien": 9,
+  "testdateien": 3,
+  "tests": 139,
+  "beispiele": [
+   "MainWindow.Heal.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs",
+   "CapabilityCatalog.cs"
+  ]
+ },
+ {
+  "id": "X-08",
+  "name": "Handy verbinden",
+  "quelldateien": 9,
+  "testdateien": 2,
+  "tests": 105,
+  "beispiele": [
+   "MainWindow.W7.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs",
+   "CapabilityCatalog.cs"
+  ]
+ },
+ {
+  "id": "CORE-04",
+  "name": "PC, Pi & Handy verbinden",
+  "quelldateien": 10,
+  "testdateien": 2,
+  "tests": 105,
+  "beispiele": [
+   "MainWindow.StudiosView.cs",
+   "MainWindow.W7.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs"
+  ]
+ },
+ {
+  "id": "X-09",
+  "name": "Leistung anzeigen",
+  "quelldateien": 8,
+  "testdateien": 1,
+  "tests": 82,
+  "beispiele": [
+   "MainWindow.W1.cs",
+   "StudioCatalog.cs",
+   "StudioIcons.cs",
+   "CapabilityCatalog.cs"
+  ]
+ }
+]

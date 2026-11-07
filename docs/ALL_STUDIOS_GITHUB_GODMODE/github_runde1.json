@@ -1,0 +1,387 @@
+{
+ "CORE-08": [
+  {
+   "repo": "mltframework/mlt",
+   "lizenz": "LGPL-2.1",
+   "sterne": 1871,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C",
+   "beschreibung": "MLT Multimedia Framework"
+  },
+  {
+   "repo": "olive-editor/olive",
+   "lizenz": "GPL-3.0",
+   "sterne": 9150,
+   "zuletzt": "2024-12-05",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Free open-source non-linear video editor"
+  },
+  {
+   "repo": "OpenShot/openshot-qt",
+   "lizenz": "NOASSERTION",
+   "sterne": 6752,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "OpenShot Video Editor is an award-winning free and open-source video editor for Linux, Mac, and Windows, and i"
+  },
+  {
+   "repo": "OpenShot/libopenshot",
+   "lizenz": "LGPL-3.0",
+   "sterne": 1582,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "OpenShot Video Library (libopenshot) is a free, open-source project dedicated to delivering high quality video"
+  },
+  {
+   "repo": "jliljebl/flowblade",
+   "lizenz": "GPL-3.0",
+   "sterne": 3105,
+   "zuletzt": "2026-10-29",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Video Editor for Linux"
+  },
+  {
+   "repo": "FFmpeg/FFmpeg",
+   "lizenz": "NOASSERTION",
+   "sterne": 66713,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C",
+   "beschreibung": "Mirror of https://git.ffmpeg.org/ffmpeg.git"
+  },
+  {
+   "repo": "KDE/kdenlive",
+   "lizenz": "GPL-3.0",
+   "sterne": 6066,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Free and open source video editor, based on MLT Framework and KDE Frameworks"
+  },
+  {
+   "repo": "darktable-org/darktable",
+   "lizenz": "GPL-3.0",
+   "sterne": 13406,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C",
+   "beschreibung": "darktable is an open source photography workflow application and raw developer"
+  },
+  {
+   "repo": "GNOME/gimp",
+   "lizenz": "NOASSERTION",
+   "sterne": 6568,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C",
+   "beschreibung": "Read-only mirror of https://gitlab.gnome.org/GNOME/gimp"
+  },
+  {
+   "repo": "KDE/krita",
+   "lizenz": "GPL-3.0",
+   "sterne": 10710,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Krita is a free and open source cross-platform application that offers an end-to-end solution for creating dig"
+  },
+  {
+   "repo": "PhotoDemon/PhotoDemon",
+   "fehler": "HTTP Error 404: Not Found"
+  },
+  {
+   "repo": "Shotcut/shotcut",
+   "fehler": "HTTP Error 404: Not Found"
+  }
+ ],
+ "STUDIO-MUSIK-01": [
+  {
+   "repo": "LMMS/lmms",
+   "lizenz": "GPL-2.0",
+   "sterne": 10621,
+   "zuletzt": "2026-11-05",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Cross-platform music production software"
+  },
+  {
+   "repo": "Ardour/ardour",
+   "lizenz": "NOASSERTION",
+   "sterne": 5414,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Mirror of Ardour Source Code"
+  },
+  {
+   "repo": "audacity/audacity",
+   "lizenz": "NOASSERTION",
+   "sterne": 18985,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Audio Editor                                     "
+  },
+  {
+   "repo": "musescore/MuseScore",
+   "lizenz": "NOASSERTION",
+   "sterne": 15373,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "MuseScore is an open source and free music notation software. For support, contribution, bug reports, visit Mu"
+  },
+  {
+   "repo": "spotify/basic-pitch",
+   "lizenz": "Apache-2.0",
+   "sterne": 6032,
+   "zuletzt": "2025-11-13",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "A lightweight yet powerful audio-to-MIDI converter with pitch bend detection"
+  },
+  {
+   "repo": "ace-step/ACE-Step",
+   "lizenz": "Apache-2.0",
+   "sterne": 5034,
+   "zuletzt": "2026-02-15",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "ACE-Step: A Step Towards Music Generation Foundation Model"
+  },
+  {
+   "repo": "facebookresearch/demucs",
+   "lizenz": "MIT",
+   "sterne": 10405,
+   "zuletzt": "2024-04-24",
+   "archiviert": true,
+   "sprache": "Python",
+   "beschreibung": "Code for the paper Hybrid Spectrogram and Waveform Source Separation"
+  },
+  {
+   "repo": "zynaddsubfx/zynaddsubfx",
+   "lizenz": "GPL-2.0",
+   "sterne": 1184,
+   "zuletzt": "2026-09-10",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "ZynAddSubFX open source synthesizer"
+  },
+  {
+   "repo": "surge-synthesizer/surge",
+   "lizenz": "GPL-3.0",
+   "sterne": 4103,
+   "zuletzt": "2026-11-05",
+   "archiviert": false,
+   "sprache": "C",
+   "beschreibung": "Free and open source hybrid synthesizer as a virtual instrument (previously released by Vember Audio as Surge)"
+  },
+  {
+   "repo": "Tracktion/tracktion_engine",
+   "lizenz": "NOASSERTION",
+   "sterne": 1466,
+   "zuletzt": "2026-10-24",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Tracktion Engine module"
+  },
+  {
+   "repo": "Tracktion/tracktion_engine",
+   "lizenz": "NOASSERTION",
+   "sterne": 1466,
+   "zuletzt": "2026-10-24",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Tracktion Engine module"
+  }
+ ],
+ "SPEC-13": [
+  {
+   "repo": "maplibre/maplibre-gl-js",
+   "lizenz": "NOASSERTION",
+   "sterne": 12037,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "MapLibre GL JS - Interactive vector tile maps in the browser"
+  },
+  {
+   "repo": "Leaflet/Leaflet",
+   "lizenz": "BSD-2-Clause",
+   "sterne": 45877,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "JavaScript",
+   "beschreibung": "🍃 number one JavaScript library for interactive maps 🇺🇦"
+  },
+  {
+   "repo": "OSGeo/gdal",
+   "lizenz": "NOASSERTION",
+   "sterne": 6136,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "GDAL is an open source MIT licensed translator library for raster and vector geospatial data formats."
+  },
+  {
+   "repo": "qgis/QGIS",
+   "lizenz": "GPL-2.0",
+   "sterne": 14797,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "QGIS is a free, open source, cross platform (lin/win/mac) geographical information system (GIS)"
+  },
+  {
+   "repo": "pgRouting/pgrouting",
+   "lizenz": "GPL-2.0",
+   "sterne": 1446,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Repository contains pgRouting library. Development branch is \"develop\", stable branch is \"master\""
+  },
+  {
+   "repo": "Project-OSRM/osrm-backend",
+   "lizenz": "BSD-2-Clause",
+   "sterne": 8196,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Open Source Routing Machine - C++ backend"
+  },
+  {
+   "repo": "valhalla/valhalla",
+   "lizenz": "NOASSERTION",
+   "sterne": 6425,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Open Source Routing Engine for OpenStreetMap"
+  },
+  {
+   "repo": "graphhopper/graphhopper",
+   "lizenz": "Apache-2.0",
+   "sterne": 6760,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "Java",
+   "beschreibung": "Open source routing engine for OpenStreetMap. Use it as Java library or standalone web server."
+  },
+  {
+   "repo": "openlayers/openlayers",
+   "lizenz": "BSD-2-Clause",
+   "sterne": 12647,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "JavaScript",
+   "beschreibung": "OpenLayers"
+  },
+  {
+   "repo": "protomaps/PMTiles",
+   "lizenz": "NOASSERTION",
+   "sterne": 3104,
+   "zuletzt": "2026-09-16",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "Pyramids of map tiles in a single file on static storage"
+  }
+ ],
+ "CORE-05": [
+  {
+   "repo": "blender/blender",
+   "lizenz": "NOASSERTION",
+   "sterne": 21736,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Official mirror of Blender"
+  },
+  {
+   "repo": "assimp/assimp",
+   "lizenz": "NOASSERTION",
+   "sterne": 13312,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "The official Open-Asset-Importer-Library Repository. Loads 40+ 3D-file-formats into one unified and clean data"
+  },
+  {
+   "repo": "mrdoob/three.js",
+   "lizenz": "MIT",
+   "sterne": 117817,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "JavaScript",
+   "beschreibung": "JavaScript 3D Library."
+  },
+  {
+   "repo": "godotengine/godot",
+   "lizenz": "MIT",
+   "sterne": 119747,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Godot Engine – Multi-platform 2D and 3D game engine"
+  },
+  {
+   "repo": "FreeCAD/FreeCAD",
+   "lizenz": "LGPL-2.1",
+   "sterne": 35231,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Official source code of FreeCAD, a free and opensource multiplatform 3D parametric modeler."
+  },
+  {
+   "repo": "KhronosGroup/glTF-Sample-Viewer",
+   "lizenz": "Apache-2.0",
+   "sterne": 1484,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "JavaScript",
+   "beschreibung": "Physically-Based Rendering in glTF 2.0 using WebGL"
+  },
+  {
+   "repo": "f3d-app/f3d",
+   "lizenz": "BSD-3-Clause",
+   "sterne": 5011,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Fast and minimalist 3D viewer."
+  },
+  {
+   "repo": "MeshInspector/MeshLib",
+   "lizenz": "NOASSERTION",
+   "sterne": 842,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "3D geometry processing SDK: fast mesh boolean, mesh repair, decimation, remeshing, offset, point cloud triangu"
+  },
+  {
+   "repo": "isl-org/Open3D",
+   "lizenz": "NOASSERTION",
+   "sterne": 14181,
+   "zuletzt": "2026-11-05",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Open3D: A Modern Library for 3D Data Processing"
+  },
+  {
+   "repo": "cnr-isti-vclab/meshlab",
+   "lizenz": "GPL-3.0",
+   "sterne": 5905,
+   "zuletzt": "2026-11-02",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "The open source mesh processing system"
+  }
+ ]
+}
