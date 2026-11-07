@@ -39,7 +39,7 @@ public static class UnrealGame
         string Target(string type, string suffix) => $"using UnrealBuildTool;\n\npublic class {name}{suffix}Target : TargetRules\n{{\n\tpublic {name}{suffix}Target(TargetInfo Target) : base(Target)\n\t{{\n\t\tType = TargetType.{type};\n\t\tDefaultBuildSettings = BuildSettingsVersion.Latest;\n\t\tIncludeOrderVersion = EngineIncludeOrderVersion.Latest;\n\t\tExtraModuleNames.Add(\"{name}\");\n\t}}\n}}\n";
         Put($"Source/{name}.Target.cs", Target("Game", ""));
         Put($"Source/{name}Editor.Target.cs", Target("Editor", "Editor"));
-        Put($"Source/{name}/{name}.Build.cs", $"using UnrealBuildTool;\n\npublic class {name} : ModuleRules\n{{\n\tpublic {name}(ReadOnlyTargetRules Target) : base(Target)\n\t{{\n\t\tPCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;\n\t\tPublicDependencyModuleNames.AddRange(new[] {{ \"Core\", \"CoreUObject\", \"Engine\", \"InputCore\", \"EnhancedInput\", \"Json\" }});\n\t}}\n}}\n");
+        Put($"Source/{name}/{name}.Build.cs", $"using UnrealBuildTool;\n\npublic class {name} : ModuleRules\n{{\n\tpublic {name}(ReadOnlyTargetRules Target) : base(Target)\n\t{{\n\t\tPCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;\n\t\tPublicDependencyModuleNames.AddRange(new[] {{ \"Core\", \"CoreUObject\", \"Engine\", \"InputCore\", \"EnhancedInput\", \"Json\", \"AIModule\" }});\n\t}}\n}}\n");
         Put($"Source/{name}/{name}.cpp", $"// Von Trendo erzeugt.\n#include \"Modules/ModuleManager.h\"\n\nIMPLEMENT_PRIMARY_GAME_MODULE(FDefaultGameModuleImpl, {name}, \"{name}\");\n");
         foreach (var (file, text) in Sources) Put($"Source/{name}/{file}", text + "\n");
         var map = Worlds.FirstOrDefault(w => w.Id == world).Map ?? Worlds[0].Map;
@@ -381,6 +381,37 @@ for role, asset in PROPS.items():
     ms = bring(asset, f"/Game/Trendo/Modelle/{asset}", "fest" if role in SOLID else "objekt", combine=True)
     if ms: objects[role] = ref(ms[0])
 
+# 4b) Blut als Boden-Decal (nur genutzt, wenn das Spiel Gewalt darstellt): dunkles, nasses Rot, unregelmäßiger Rand aus Rauschen statt runder Klecks
+try:
+    bp = DEST + "/M_TrendoBlut"
+    if eal.does_asset_exist(bp): eal.delete_asset(bp)
+    bm = tools.create_asset("M_TrendoBlut", DEST, unreal.Material, unreal.MaterialFactoryNew())
+    mel = unreal.MaterialEditingLibrary
+    bm.set_editor_property("material_domain", unreal.MaterialDomain.MD_DEFERRED_DECAL)
+    bm.set_editor_property("blend_mode", unreal.BlendMode.BLEND_TRANSLUCENT)
+    col = mel.create_material_expression(bm, unreal.MaterialExpressionConstant3Vector, -600, -200); col.set_editor_property("constant", unreal.LinearColor(0.045, 0.002, 0.0015, 1))
+    mel.connect_material_property(col, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    rough = mel.create_material_expression(bm, unreal.MaterialExpressionConstant, -600, 0); rough.set_editor_property("r", 0.62)
+    mel.connect_material_property(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
+    spec = mel.create_material_expression(bm, unreal.MaterialExpressionConstant, -600, 100); spec.set_editor_property("r", 0.25)
+    mel.connect_material_property(spec, "", unreal.MaterialProperty.MP_SPECULAR)
+    uv = mel.create_material_expression(bm, unreal.MaterialExpressionTextureCoordinate, -1200, 200)
+    mid = mel.create_material_expression(bm, unreal.MaterialExpressionConstant2Vector, -1200, 320); mid.set_editor_property("r", 0.5); mid.set_editor_property("g", 0.5)
+    dist = mel.create_material_expression(bm, unreal.MaterialExpressionDistance, -1000, 250)
+    mel.connect_material_expressions(uv, "", dist, "A"); mel.connect_material_expressions(mid, "", dist, "B")
+    inv = mel.create_material_expression(bm, unreal.MaterialExpressionOneMinus, -850, 250); mel.connect_material_expressions(dist, "", inv, "")
+    noise = mel.create_material_expression(bm, unreal.MaterialExpressionNoise, -1000, 450)
+    noise.set_editor_property("scale", 0.012); noise.set_editor_property("levels", 5); noise.set_editor_property("output_min", -0.55); noise.set_editor_property("output_max", 0.35)
+    add = mel.create_material_expression(bm, unreal.MaterialExpressionAdd, -700, 300); mel.connect_material_expressions(inv, "", add, "A"); mel.connect_material_expressions(noise, "", add, "B")
+    sub_ = mel.create_material_expression(bm, unreal.MaterialExpressionSubtract, -600, 300); sub_.set_editor_property("const_b", 0.72); mel.connect_material_expressions(add, "", sub_, "A")
+    mul = mel.create_material_expression(bm, unreal.MaterialExpressionMultiply, -500, 300); mul.set_editor_property("const_b", 6.0); mel.connect_material_expressions(sub_, "", mul, "A")
+    sat = mel.create_material_expression(bm, unreal.MaterialExpressionSaturate, -400, 300); mel.connect_material_expressions(mul, "", sat, "")
+    mel.connect_material_property(sat, "", unreal.MaterialProperty.MP_OPACITY)
+    mel.recompile_material(bm); eal.save_loaded_asset(bm)
+    log.append("Blut-Decal: " + bm.get_path_name())
+except Exception as e:
+    log.append("Blut-Decal nicht angelegt: " + str(e)[:200])
+
 # 5) Eigene Open-World-Karte mit Bodenmaterial
 les = unreal.get_editor_subsystem(unreal.LevelEditorSubsystem)
 world = "/Game/Trendo/Welt"
@@ -413,7 +444,7 @@ import os, traceback, unreal
 ROOT = "/Game/Trendo/Mensch"
 # (Name im Spiel, Epic-Vorlage, Geschlecht für die Kleidung) – Vorlagen bringen Haut, Haare, Augenbrauen, Wimpern mit; jede Figur sieht anders aus
 CAST = [("Waldlaeuferin", "Ada", "F"), ("Gegner", "Victor", "M"), ("Figur", "Walter", "M")]
-MOVES = ["MM_Idle", "MM_Jump", "MM_Fall_Loop", "MM_Walk_Fwd", "MM_Run_Fwd", "MM_Walk_InPlace", "BS_MM_WalkRun"]
+MOVES = ["MM_Idle", "MM_Jump", "MM_Fall_Loop", "MM_Walk_Fwd", "MM_Run_Fwd", "MM_Walk_InPlace", "BS_MM_WalkRun", "MM_Death_Front_03_ExtractedRM"]
 SRC = "/MoverExamples/Characters/Mannequins/"
 PRESETS = "/MetaHumanCharacter/Optional/Presets/"
 eal = unreal.EditorAssetLibrary
@@ -554,6 +585,8 @@ struct FTrendoData
 {
 	FString Name = TEXT("Spiel"); FString World = TEXT("level");
 	int32 Speed = 5; int32 Lives = 3; FString Weapon; bool bMenu = true;
+	/** Gewalt-Darstellung: keine (kein Blut, Gegner verschwinden), normal (Blut, Ragdoll), brutal (zusätzlich stärkere Treffer). */
+	FString Violence = TEXT("normal");
 	TArray<FString> Abilities; TArray<FTrendoLevelRows> Levels; TArray<FTrendoRule> Rules;
 	TMap<FString, FString> Texts; TMap<FString, float> Props;
 
@@ -619,6 +652,7 @@ bool FTrendoData::Parse(const FString& Json, FTrendoData& Out, FString& Error)
 	O->TryGetNumberField(TEXT("lives"), Out.Lives);
 	O->TryGetStringField(TEXT("weapon"), Out.Weapon);
 	O->TryGetBoolField(TEXT("menu"), Out.bMenu);
+	O->TryGetStringField(TEXT("violence"), Out.Violence); if (Out.Violence != TEXT("keine") && Out.Violence != TEXT("brutal")) Out.Violence = TEXT("normal");
 	const TArray<TSharedPtr<FJsonValue>>* A;
 	if (O->TryGetArrayField(TEXT("abilities"), A)) for (const auto& V : *A) Out.Abilities.Add(V->AsString());
 	if (O->TryGetArrayField(TEXT("levels"), A))
@@ -705,6 +739,7 @@ void FTrendoState::TalkTo(const FTrendoData& D, int32 X, int32 Y)
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/Character.h"
 #include "TrendoActors.generated.h"
 
 class UStaticMeshComponent; class USkeletalMeshComponent; class USphereComponent; class UStaticMesh; class USkeletalMesh;
@@ -734,14 +769,16 @@ public:
 	UPROPERTY() APawn* Car = nullptr;
 };
 
-/** Gegner läuft hin und her; Trefferpunkte wie in Trendo, ab 2 ein Boss. Mit Menschmodell geht er mit echter Geh-Animation. */
+/** Gegner als echter Charakter (Nutzerwunsch 07.11.2026: nie durch Boden oder Objekte, echtes Laufen, kein Flackern): Kollisionskapsel, Schwerkraft,
+ *  Bodenkontakt und Stufen über die Charakter-Bewegung von Unreal, gesteuert von einem KI-Controller; Trefferpunkte wie in Trendo, ab 2 ein Boss. */
 UCLASS()
-class ATrendoEnemy : public AActor
+class ATrendoEnemy : public ACharacter
 {
 	GENERATED_BODY()
 public:
 	ATrendoEnemy();
-	UPROPERTY(VisibleAnywhere) UStaticMeshComponent* Mesh;
+	/** Grundform (ohne Menschmodell) und Berührungsfühler für die Spielfigur. */
+	UPROPERTY(VisibleAnywhere) UStaticMeshComponent* Shape;
 	UPROPERTY(VisibleAnywhere) USkeletalMeshComponent* Figure;
 	/** Animierter Körper: MetaHuman, sonst Gliederpuppe (Figure). */
 	UPROPERTY() USkeletalMeshComponent* Body3D = nullptr;
@@ -754,12 +791,20 @@ public:
 	void Init(int32 InHp, float Ground);
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;
-	/** Open World: Streife, Sehen (Blickfeld, freie Sicht), Verfolgen, Angreifen, Suchen am letzten Ort, Rückzug des angeschlagenen Bosses. */
+	/** Open World: Streife, Sehen (Blickfeld, freie Sicht), Verfolgen, Angreifen, Suchen am letzten Ort, Rückzug des angeschlagenen Bosses, Hindernissen ausweichen. */
 	void ThinkOpenWorld(float Dt, class ATrendoGameMode* GM);
+	/** Treffer: physikalisch zurückgestoßen, kurz benommen. */
+	void Knock(const FVector& Push);
+	/** Tod: Körper fällt als Ragdoll (Physik, Gewicht) mit Stoß; false, wenn kein Körper mit Physik da ist. */
+	bool Ragdoll(const FVector& Impulse);
+	float Stun = 0; bool bDead = false;
 	/** Sekunden, die der Gegner nach dem letzten Sichtkontakt noch sucht (> 0 = alarmiert). */
 	float Alert = 0;
 private:
 	FVector Start; float T = 0; float Attack = 0; FVector LastSeen = FVector::ZeroVector;
+	float Stuck = 0, Detour = 0, DetourSign = 1;
+	/** In Richtung Goal gehen (Tempo in cm/s) – die Charakter-Bewegung sorgt für Boden, Stufen und Kollision. */
+	void WalkTo(const FVector& Goal, float Speed, float Dt);
 };
 
 /** Geschoss der Waffe „Werfen“ (mit Modell: geworfenes Beil, das sich dreht). */
@@ -805,6 +850,10 @@ bool TrendoSetupFigure(USkeletalMeshComponent* Figure, float FootZ, const FLinea
 #include "Kismet/GameplayStatics.h"
 #include "Components/ChildActorComponent.h"
 #include "Animation/Skeleton.h"
+#include "PhysicsEngine/PhysicsAsset.h"
+#include "AIController.h"
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 static UStaticMesh* TrendoShape(const TCHAR* Path) { return LoadObject<UStaticMesh>(nullptr, Path); }
 static const TCHAR* HumanPath = TEXT("/MoverExamples/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple");
@@ -854,6 +903,7 @@ USkeletalMeshComponent* TrendoSetupMetaHuman(AActor* Owner, USceneComponent* Par
 	for (USkeletalMeshComponent* P : Parts) if (IsMeta(P) && (!Body || P->GetName().Contains(TEXT("Body")))) Body = P;
 	if (!Body || !Anim(TEXT("MM_Idle"), Dir)) { CA->DestroyComponent(); return nullptr; }
 	Body->ComponentTags.Add(FName(*(TEXT("TrendoMensch:") + Dir)));
+	for (USkeletalMeshComponent* P : Parts) { P->bEnableUpdateRateOptimizations = false; P->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones; }
 	Body->SetAnimationMode(EAnimationMode::AnimationSingleNode);
 	Body->PlayAnimation(Anim(TEXT("MM_Idle"), Dir), true);
 	return Body;
@@ -970,13 +1020,21 @@ void ATrendoThing::Setup(TCHAR InTile, int32 X, int32 Y, const FLinearColor& Col
 ATrendoEnemy::ATrendoEnemy()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Form"));
-	RootComponent = Mesh;
-	Mesh->SetStaticMesh(TrendoShape(TEXT("/Engine/BasicShapes/Cube.Cube")));
-	Mesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
-	Mesh->SetGenerateOverlapEvents(true);
+	GetCapsuleComponent()->InitCapsuleSize(38.f, 90.f);
+	bUseControllerRotationYaw = false;
+	UCharacterMovementComponent* M = GetCharacterMovement();
+	M->bOrientRotationToMovement = true; M->RotationRate = FRotator(0, 320, 0); M->MaxWalkSpeed = 380.f; M->MaxStepHeight = 45.f;
+	M->SetWalkableFloorAngle(50.f); M->bUseRVOAvoidance = true; M->AvoidanceConsiderationRadius = 300.f; M->BrakingDecelerationWalking = 900.f;
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned; AIControllerClass = AAIController::StaticClass();
+	// Grundform (Rückfall ohne Menschmodell) und Fühler: Berührt die Spielfigur den Gegner, merkt das Spiel es (Kapsel blockt, Fühler überlappt)
+	Shape = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Form"));
+	Shape->SetupAttachment(GetCapsuleComponent());
+	Shape->SetStaticMesh(TrendoShape(TEXT("/Engine/BasicShapes/Cube.Cube")));
+	Shape->SetRelativeScale3D(FVector(0.9f, 0.9f, 1.9f));
+	Shape->SetCollisionProfileName(TEXT("OverlapAllDynamic")); Shape->SetGenerateOverlapEvents(true);
 	Figure = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Figur"));
-	Figure->SetupAttachment(Mesh); Figure->SetVisibility(false); Figure->SetUsingAbsoluteScale(true);
+	Figure->SetupAttachment(GetCapsuleComponent()); Figure->SetVisibility(false); Figure->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetVisibility(false);
 }
 
 void ATrendoEnemy::BeginPlay() { Super::BeginPlay(); Start = GetActorLocation(); }
@@ -984,48 +1042,83 @@ void ATrendoEnemy::BeginPlay() { Super::BeginPlay(); Start = GetActorLocation();
 void ATrendoEnemy::Init(int32 InHp, float Ground)
 {
 	MaxHp = Hp = InHp;
-	const float K = MaxHp > 1 ? 1.25f : 1.f; // Boss größer
-	SetActorScale3D(FVector(0.8f * K, 0.8f * K, 1.8f * K)); // Trefferkörper so groß wie ein Mensch
-	Body3D = TrendoSetupMetaHuman(this, Mesh, -50.f, TEXT("Gegner"), K);
-	if (!Body3D && TrendoSetupFigure(Figure, -50.f, MaxHp > 1 ? FLinearColor(0.16f, 0.05f, 0.04f) : FLinearColor(0.38f, 0.14f, 0.1f))) Body3D = Figure;
-	if (Body3D)
-	{
-		// Menschmodell: unsichtbarer Trefferkörper so groß wie die Figur, Füße auf dem Boden
-		bModel = true; Mesh->SetHiddenInGame(true); Mesh->SetCastShadow(false);
-		SetActorScale3D(FVector(0.8f * K, 0.8f * K, 1.8f * K)); Figure->SetWorldScale3D(FVector(K));
-		Start = FVector(GetActorLocation().X, GetActorLocation().Y, Ground + 90.f * K); SetActorLocation(Start);
-		return;
-	}
-	SetActorScale3D(FVector(MaxHp > 1 ? 1.4f : 0.9f));
-	TrendoPaint(Mesh, MaxHp > 1 ? FLinearColor(0.6f, 0.05f, 0.3f) : FLinearColor(0.8f, 0.2f, 0.6f));
+	const float K = MaxHp > 1 ? 1.25f : 1.f; // Boss größer – Kapsel, Körper und Fühler wachsen mit
+	SetActorScale3D(FVector(K));
+	Body3D = TrendoSetupMetaHuman(this, GetCapsuleComponent(), -90.f, TEXT("Gegner"), K);
+	if (!Body3D && TrendoSetupFigure(Figure, -90.f, MaxHp > 1 ? FLinearColor(0.16f, 0.05f, 0.04f) : FLinearColor(0.38f, 0.14f, 0.1f))) Body3D = Figure;
+	bModel = Body3D != nullptr;
+	if (bModel) { Shape->SetHiddenInGame(true); Shape->SetCastShadow(false); }
+	else TrendoPaint(Shape, MaxHp > 1 ? FLinearColor(0.6f, 0.05f, 0.3f) : FLinearColor(0.8f, 0.2f, 0.6f));
+	// Füße auf den Boden: Kapselmitte 90 cm (mal Größe) darüber, dann übernimmt die Schwerkraft
+	Start = FVector(GetActorLocation().X, GetActorLocation().Y, Ground + 92.f * K);
+	SetActorLocation(Start, false, nullptr, ETeleportType::TeleportPhysics);
+}
+
+void ATrendoEnemy::WalkTo(const FVector& Goal, float Speed, float Dt)
+{
+	FVector Dir = Goal - GetActorLocation(); Dir.Z = 0;
+	if (Dir.Size() < 40.f || Speed <= 0.f) return;
+	Dir.Normalize();
+	// Hindernis (Baum, Fels, Kiste): kommt er trotz Gehen nicht voran, weicht er eine Weile seitlich aus
+	if (Detour > 0) { Detour -= Dt; Dir = Dir.RotateAngleAxis(65.f * DetourSign, FVector::UpVector); }
+	else if (GetVelocity().Size2D() < Speed * 0.25f) { if ((Stuck += Dt) > 0.6f) { Stuck = 0; Detour = 1.2f; DetourSign = FMath::RandBool() ? 1.f : -1.f; } }
+	else Stuck = 0;
+	GetCharacterMovement()->MaxWalkSpeed = Speed;
+	AddMovementInput(Dir, 1.f);
 }
 
 void ATrendoEnemy::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	if (bFrozen) { TrendoAnimate(Body3D, FVector::ZeroVector, false); return; }
+	if (bDead) return;
+	TrendoAnimate(Body3D, GetVelocity(), GetCharacterMovement()->IsFalling()); // Bewegung aus der echten Geschwindigkeit: Füße passen zum Boden
+	if (bFrozen) return;
 	T += DeltaSeconds;
 	ATrendoGameMode* GM = Cast<ATrendoGameMode>(UGameplayStatics::GetGameMode(this));
 	if (GM && GM->Data.World == TEXT("openworld")) { ThinkOpenWorld(DeltaSeconds, GM); return; }
-	// Level-Spiel: hin und her gehen (Wendepunkte mit Abbremsen), Blick in Gehrichtung
-	const float Vx = FMath::Cos(T * 1.5f) * 225.f;
-	SetActorLocation(Start + FVector(FMath::Sin(T * 1.5f) * 150.f, 0, 0));
-	if (bModel)
+	// Level-Spiel: hin und her gehen
+	WalkTo(Start + FVector(FMath::Sin(T * 0.8f) > 0 ? 160.f : -160.f, 0, 0), 200.f, DeltaSeconds);
+}
+
+void ATrendoEnemy::Knock(const FVector& Push)
+{
+	LaunchCharacter(Push * 3.f + FVector(0, 0, 160), true, true); Stun = 0.6f; Alert = 4.f; // Treffer stößt ihn physikalisch zurück
+}
+
+bool ATrendoEnemy::Ragdoll(const FVector& Impulse)
+{
+	if (!Body3D) return false;
+	bDead = true; GetCharacterMovement()->DisableMovement();
+	// Echte Sturz-Animation (auf das eigene Skelett übertragen): fällt glaubwürdig zu Boden und bleibt liegen
+	if (UAnimationAsset* Death = Anim(TEXT("MM_Death_Front_03_ExtractedRM"), MetaDirOf(Body3D)))
 	{
-		if (FMath::Abs(Vx) > 20.f) SetActorRotation(FMath::RInterpTo(GetActorRotation(), FRotator(0, Vx > 0 ? 0.f : 180.f, 0), DeltaSeconds, 6.f));
-		TrendoAnimate(Body3D, FVector(Vx, 0, 0), false);
+		SetActorRotation(FRotator(0, Impulse.Rotation().Yaw + 180.f, 0)); // fällt in Schlagrichtung nach vorn weg
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision); Shape->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		Body3D->PlayAnimation(Death, false); return true;
 	}
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision); Shape->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	if (AActor* Part = Body3D->GetOwner(); Part && Part != this) Part->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform); // MetaHuman fällt frei
+	Body3D->Stop(); Body3D->SetAnimationMode(EAnimationMode::AnimationCustomMode);
+	// Physik-Hülle des Engine-Mannequins (gleiche Körperknochen wie MetaHuman, Kollision mit Gelände und Objekten erprobt)
+	if (UPhysicsAsset* PA = LoadObject<UPhysicsAsset>(nullptr, TEXT("/MoverExamples/Characters/Mannequins/Rigs/PA_Mannequin.PA_Mannequin"))) Body3D->SetPhysicsAsset(PA, true);
+	Body3D->SetCollisionObjectType(ECC_PhysicsBody); Body3D->SetCollisionResponseToAllChannels(ECR_Block); Body3D->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore); Body3D->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
+	Body3D->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	Body3D->SetAllUseCCD(true); // schnelle Körperteile rutschen nicht durchs Gelände
+	Body3D->SetAllBodiesSimulatePhysics(true); Body3D->SetSimulatePhysics(true); Body3D->WakeAllRigidBodies(); Body3D->bBlendPhysics = true;
+	Body3D->AddImpulse((Impulse.GetSafeNormal() + FVector(0, 0, 0.15f)) * 260.f, TEXT("spine_03"), true); // Stoß in Schlagrichtung (Geschwindigkeit), Körper kippt
+	return true;
 }
 
 /** Gegner-KI in der Open World: Streife um den Startpunkt, sieht die Spielfigur (Sichtweite, Blickfeld, freie Sicht), verfolgt sie, greift aus der Nähe an,
- *  sucht sie nach Sichtverlust noch eine Weile am letzten Ort; ein angeschlagener Boss weicht zurück. Läuft dem Gelände nach (Boden per Strahl), schaut in Gehrichtung. */
+ *  sucht sie nach Sichtverlust noch eine Weile am letzten Ort; ein angeschlagener Boss weicht zurück. Laufen, Boden und Kollision über die Charakter-Bewegung. */
 void ATrendoEnemy::ThinkOpenWorld(float Dt, ATrendoGameMode* GM)
 {
 	const FVector Me = GetActorLocation();
 	const float K = MaxHp > 1 ? 1.25f : 1.f;
+	if (Stun > 0) { Stun -= Dt; return; } // benommen nach einem Treffer
 	FVector Goal = Start + FVector(FMath::Sin(T * 0.35f) * 450.f, FMath::Sin(T * 0.23f + 1.3f) * 300.f, 0); float Speed = 150.f; // Streife, gemächlich
 	Attack = FMath::Max(0.f, Attack - Dt);
-	if (APawn* H = UGameplayStatics::GetPlayerPawn(this, 0); H && GM->Playing())
+	if (APawn* H = UGameplayStatics::GetPlayerPawn(this, 0); H && GM->Playing() && !H->IsHidden())
 	{
 		const FVector To = H->GetActorLocation() - Me; const float Dist = To.Size2D();
 		const bool bInView = Dist < 2600.f && (Dist < 600.f || FVector::DotProduct(GetActorForwardVector(), To.GetSafeNormal2D()) > 0.3f); // ~145° Blickfeld, aus der Nähe hört er
@@ -1033,7 +1126,8 @@ void ATrendoEnemy::ThinkOpenWorld(float Dt, ATrendoGameMode* GM)
 		if (bInView)
 		{
 			FHitResult Hit; FCollisionQueryParams Q(TEXT("TrendoSicht"), false, this);
-			bSees = !GetWorld()->LineTraceSingleByChannel(Hit, Me + FVector(0, 0, 60.f * K), H->GetActorLocation() + FVector(0, 0, 60), ECC_Visibility, Q) || Hit.GetActor() == H;
+			TArray<AActor*> Kids; GetAllChildActors(Kids); Q.AddIgnoredActors(Kids); // eigener Körper versperrt nicht die Sicht
+			bSees = !GetWorld()->LineTraceSingleByChannel(Hit, Me + FVector(0, 0, 70.f * K), H->GetActorLocation() + FVector(0, 0, 60), ECC_Visibility, Q) || Hit.GetActor() == H;
 		}
 		if (bSees) { Alert = 4.f; LastSeen = H->GetActorLocation(); } else Alert = FMath::Max(0.f, Alert - Dt);
 		if (Alert > 0)
@@ -1043,21 +1137,12 @@ void ATrendoEnemy::ThinkOpenWorld(float Dt, ATrendoGameMode* GM)
 			else
 			{
 				Goal = bSees ? H->GetActorLocation() : LastSeen; Speed = Dist < 170.f ? 0.f : 380.f * (MaxHp > 1 ? 0.85f : 1.f);
+				if (Dist < 170.f) SetActorRotation(FMath::RInterpTo(GetActorRotation(), FRotator(0, To.Rotation().Yaw, 0), Dt, 8.f)); // dem Gegner zuwenden
 				if (bSees && Dist < 190.f && Attack <= 0.f) { Attack = 1.4f; GM->Hit(); } // Schlag aus der Nähe, dann kurz Pause
 			}
 		}
 	}
-	FVector Dir = Goal - Me; Dir.Z = 0; const float Len = Dir.Size();
-	const FVector Vel = Len > 25.f && Speed > 0.f ? Dir / Len * FMath::Min(Speed, Len / FMath::Max(Dt, 0.001f)) : FVector::ZeroVector;
-	FVector Next = Me + Vel * Dt;
-	// dem Gelände folgen: Boden unter dem nächsten Schritt suchen (Spielfigur und eigene Teile ignorieren)
-	FHitResult Ground; FCollisionQueryParams Q(TEXT("TrendoBoden"), false, this);
-	if (APawn* H = UGameplayStatics::GetPlayerPawn(this, 0)) Q.AddIgnoredActor(H);
-	if (GetWorld()->LineTraceSingleByChannel(Ground, Next + FVector(0, 0, 400), Next - FVector(0, 0, 2000), ECC_WorldStatic, Q))
-		Next.Z = FMath::FInterpTo(Me.Z, Ground.Location.Z + (bModel ? 90.f * K : 50.f * GetActorScale3D().Z), Dt, 12.f);
-	SetActorLocation(Next);
-	if (Vel.SizeSquared2D() > 400.f) SetActorRotation(FMath::RInterpTo(GetActorRotation(), FRotator(0, Vel.Rotation().Yaw, 0), Dt, 5.f));
-	if (bModel) TrendoAnimate(Body3D, Vel, false);
+	WalkTo(Goal, Speed, Dt);
 }
 
 ATrendoShot::ATrendoShot()
@@ -1220,7 +1305,7 @@ void ATrendoCharacter::BeginPlay()
 	Figure = TrendoSetupMetaHuman(this, RootComponent, -90.f);
 	if (Figure) { bHuman = true; GetMesh()->SetVisibility(false); }
 	else { bHuman = TrendoSetupFigure(GetMesh(), -90.f); Figure = GetMesh(); }
-	UE_LOG(LogTemp, Display, TEXT("TRENDO-FIGUR MetaHuman=%s Mensch=%s"), Figure && Figure != GetMesh() ? TEXT("ja") : TEXT("nein"), bHuman ? TEXT("ja") : TEXT("nein"));
+	UE_LOG(LogTemp, Display, TEXT("TRENDO-FIGUR MetaHuman=%s (%s) Mensch=%s"), Figure && Figure != GetMesh() ? TEXT("ja") : TEXT("nein"), Figure && Figure->GetOwner() ? *Figure->GetOwner()->GetClass()->GetName() : TEXT("-"), bHuman ? TEXT("ja") : TEXT("nein"));
 	if (bHuman) Body->SetVisibility(false); else TrendoPaint(Body, FLinearColor(0.31f, 0.7f, 1.f));
 	if (USkeletalMesh* Car = TrendoCar()) CarMesh->SetSkeletalMesh(Car);
 	if (const ATrendoGameMode* G = Cast<ATrendoGameMode>(UGameplayStatics::GetGameMode(this)); bHuman && G)
@@ -1432,6 +1517,8 @@ public:
 	void BuildWorld(int32 Level);
 	void Touch(AActor* Other);
 	void Damage(ATrendoEnemy* E);
+	/** Blutfleck auf dem Boden unter Pos (Material M_TrendoBlut aus der Welt-Einrichtung), Größe 1 = normal. */
+	void SpawnBlood(const FVector& Pos, float Size);
 	void Attack();
 	void Dismount();
 	/** In den fahrbaren Wagen steigen bzw. aussteigen (E oder Controller-B). */
@@ -1451,7 +1538,10 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 private:
-	float CheckSeconds = -1; bool bShotTaken = false; bool bCloseShot = false; bool bCloseDone = false; bool bProbe = false; bool bProbeDone = false; float ProbeStart = 0; int32 ProbeLives = 0; bool bCarProbe = false; bool bCarDone = false;
+	float CheckSeconds = -1; bool bShotTaken = false; bool bCloseShot = false; bool bCloseDone = false; bool bProbe = false; bool bProbeDone = false; float ProbeStart = 0; int32 ProbeLives = 0; bool bCarProbe = false; bool bCarDone = false; int32 BloodCount = 0; bool bFight = false; bool bFightDone = false; UPROPERTY() ATrendoEnemy* FightEnemy = nullptr; FVector CarStart = FVector::ZeroVector; float WheelTurn = 0; TMap<FString, FQuat> WheelLast;
+	static float WheelAngle(AActor* Car, TMap<FString, FQuat>& Last);
+	static void VehicleAxis(AActor* Car, FName Input, float Value);
+	static void VehicleCall(AActor* Car, const TCHAR* Func, FName Input, int32 Value);
 	FVector Origin = FVector::ZeroVector; FRotator StartRot = FRotator::ZeroRotator;
 	FVector Place(int32 X, int32 Y) const;
 	void Freeze();
@@ -1479,6 +1569,11 @@ private:
 #include "UnrealClient.h"
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
+#include "Components/DecalComponent.h"
+#include "Engine/DecalActor.h"
+#include "Components/CapsuleComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "InputAction.h"
 #include "Engine/SkeletalMesh.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/DirectionalLight.h"
@@ -1652,9 +1747,15 @@ void ATrendoGameMode::Touch(AActor* Other)
 void ATrendoGameMode::Damage(ATrendoEnemy* E)
 {
 	if (!IsValid(E) || E->Hp <= 0) return;
-	E->Hp--; if (E->Hp > 0) return;
+	const bool bBrutal = Data.Violence == TEXT("brutal"), bNone = Data.Violence == TEXT("keine");
+	FVector From = Hero() ? (E->GetActorLocation() - Hero()->GetActorLocation()).GetSafeNormal2D() : -E->GetActorForwardVector();
+	E->Hp--;
+	if (E->Hp > 0) { E->Knock(From * (bBrutal ? 260.f : 180.f)); return; } // Treffer: taumelt zurück, kurz benommen
 	State.Defeated++; State.Score += E->MaxHp > 1 ? 10 : 2; if (E->MaxHp > 1) State.Note = TEXT("Boss besiegt!");
-	Enemies.Remove(E); E->Destroy();
+	Enemies.Remove(E);
+	if (bNone || !E->Ragdoll(From * (bBrutal ? 32000.f : 18000.f))) { E->Destroy(); return; } // ohne Gewalt verschwindet er, sonst fällt er als Körper
+	if (!bNone) SpawnBlood(E->GetActorLocation(), bBrutal ? 1.6f : 1.f);
+	E->SetLifeSpan(30.f);
 }
 
 void ATrendoGameMode::Attack()
@@ -1753,6 +1854,15 @@ void ATrendoGameMode::Tick(float DeltaSeconds)
 	Freeze();
 	// im Wagen: E (Tastatur) bzw. B (Controller) steigt aus – der Wagen hat eigene Steuerung, die Figur ist dann nicht aktiv
 	if (DrivenCar) if (APlayerController* PC = GetWorld()->GetFirstPlayerController(); PC && (PC->WasInputKeyJustPressed(EKeys::E) || PC->WasInputKeyJustPressed(EKeys::Gamepad_FaceButton_Right))) ExitCar();
+	if (DrivenCar && bCarProbe && !bCarDone)
+	{
+		if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+			if (auto* Sub = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
+				if (UInputAction* Gas = LoadObject<UInputAction>(nullptr, TEXT("/ChaosModularVehicleExamples/Input/Throttle.Throttle"))) Sub->InjectInputForAction(Gas, FInputActionValue(1.f), {}, {});
+		VehicleAxis(DrivenCar, TEXT("Throttle"), 1.f); // Gas direkt am Fahrzeug-Simulationsbauteil (wie die Gas-Taste)
+		VehicleAxis(DrivenCar, TEXT("Brake"), 0.f); VehicleCall(DrivenCar, TEXT("SetInputBool"), TEXT("Handbrake"), 0); VehicleCall(DrivenCar, TEXT("SetGearInput"), NAME_None, 1);
+		WheelTurn += WheelAngle(DrivenCar, WheelLast);
+	}
 	if (Playing() && !State.bWon && !State.bOver)
 	{
 		State.Seconds += DeltaSeconds; State.CheckRules(Data);
@@ -1794,28 +1904,124 @@ void ATrendoGameMode::Tick(float DeltaSeconds)
 			bProbeDone = true; CheckSeconds = 1.5f;
 			const float Now = FVector::Dist2D(Enemies[0]->GetActorLocation(), Hero()->GetActorLocation());
 			const bool bHit = State.Lives < ProbeLives; // Treffer setzt die Figur an den Speicherpunkt zurück – dann zählt der Angriff
+			{
+				ATrendoEnemy* E = Enemies[0]; FHitResult G; FCollisionQueryParams Q(TEXT("TrendoProbe"), false, E); TArray<AActor*> Kids; E->GetAllChildActors(Kids); Q.AddIgnoredActors(Kids);
+				const float Bottom = E->GetActorLocation().Z - E->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+				const bool bG = GetWorld()->LineTraceSingleByChannel(G, E->GetActorLocation(), E->GetActorLocation() - FVector(0, 0, 2000), ECC_WorldStatic, Q);
+				UE_LOG(LogTrendo, Display, TEXT("TRENDO-BODEN Gegner geht=%s Abstand Füße–Boden=%.1f cm"), E->GetCharacterMovement()->IsMovingOnGround() ? TEXT("ja") : TEXT("nein"), bG ? Bottom - G.Location.Z : -1.f);
+			}
 			UE_LOG(LogTrendo, Display, TEXT("TRENDO-GEGNER alarmiert=%s Abstand vorher=%.0f nachher=%.0f Leben %d→%d %s"), Enemies[0]->Alert > 0 ? TEXT("ja") : TEXT("nein"), ProbeStart, Now, ProbeLives, State.Lives,
 				bHit ? TEXT("verfolgt und angegriffen") : Enemies[0]->Alert > 0 && Now < ProbeStart - 300.f ? TEXT("verfolgt") : TEXT("reagiert nicht"));
 			FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("Screenshots/trendo-gegner.png"), false, false);
 		}
-		else if (bProbeDone && !bCarProbe)
+		else if (bProbeDone && !bFight && Enemies.Num() > 0 && IsValid(Enemies[0]) && Hero())
+		{
+			bFight = true; CheckSeconds = 3.5f; ATrendoEnemy* E = Enemies[0]; ATrendoCharacter* H = Hero(); E->bFrozen = true;
+			const FVector At = E->GetActorLocation() - E->GetActorForwardVector() * 120.f;
+			H->SetActorLocation(FVector(At.X, At.Y, E->GetActorLocation().Z + 10.f), false, nullptr, ETeleportType::TeleportPhysics);
+			const FRotator Look = (E->GetActorLocation() - H->GetActorLocation()).Rotation(); H->SetActorRotation(FRotator(0, Look.Yaw, 0));
+			if (AController* Co = H->GetController()) Co->SetControlRotation(FRotator(-15, Look.Yaw + 25.f, 0));
+			const FString Old = Data.Weapon; Data.Weapon = TEXT("schwert"); const int32 N = E->MaxHp; for (int32 i = 0; i < N; i++) Attack(); Data.Weapon = Old;
+			FightEnemy = E;
+		}
+		else if (bFight && !bFightDone)
+		{
+			bFightDone = true; CheckSeconds = 1.5f; // 2 s nach dem letzten Hieb: Körper muss liegen
+			float Lie = 9999.f;
+			if (IsValid(FightEnemy) && FightEnemy->Body3D)
+			{
+				const FVector Pelvis = FightEnemy->Body3D->GetBoneLocation(TEXT("pelvis")); FHitResult G; FCollisionQueryParams Q(TEXT("TrendoLiegt"), false, FightEnemy);
+				TArray<AActor*> Kids; FightEnemy->GetAllChildActors(Kids); Q.AddIgnoredActors(Kids); if (AActor* Part = FightEnemy->Body3D->GetOwner()) Q.AddIgnoredActor(Part);
+				FCollisionObjectQueryParams Land(ECC_WorldStatic); // nur Gelände/Statik, von weit oben: auch ein Körper unter dem Boden wird erkannt
+				if (GetWorld()->LineTraceSingleByObjectType(G, FVector(Pelvis.X, Pelvis.Y, Pelvis.Z + 3000), FVector(Pelvis.X, Pelvis.Y, Pelvis.Z - 3000), Land, Q)) Lie = Pelvis.Z - G.Location.Z;
+				UE_LOG(LogTrendo, Display, TEXT("TRENDO-KAMPF Körper: Becken Z=%.0f, Gegner Z=%.0f, Simulation=%s, Physik-Körper=%d"), Pelvis.Z, FightEnemy->GetActorLocation().Z, FightEnemy->Body3D->IsSimulatingPhysics() ? TEXT("ja") : TEXT("nein"), FightEnemy->Body3D->Bodies.Num());
+			}
+			UE_LOG(LogTrendo, Display, TEXT("TRENDO-KAMPF Gegner besiegt=%s Ragdoll=%s Becken über Boden=%.0f cm (%s) Blut=%d Gewalt=%s"), Enemies.Contains(FightEnemy) ? TEXT("nein") : TEXT("ja"),
+				IsValid(FightEnemy) && FightEnemy->bDead ? TEXT("ja") : TEXT("nein"), Lie, Lie < -20.f ? TEXT("unter dem Boden") : Lie < 45.f ? TEXT("liegt") : TEXT("steht"), BloodCount, *Data.Violence);
+			FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("Screenshots/trendo-kampf.png"), false, false);
+		}
+		else if (bFightDone && !bCarProbe)
 		{
 			// Wagen-Probe: einsteigen (der Wagen wird gesteuert), Bild aus der Fahrzeugkamera, danach aussteigen
-			bCarProbe = true; CheckSeconds = 2.5f;
-			for (AActor* A : Spawned) if (ATrendoThing* T = Cast<ATrendoThing>(A); IsValid(T) && IsValid(T->Car)) { for (ATrendoEnemy* E : Enemies) if (IsValid(E)) E->bFrozen = true; EnterCar(T->Car); break; }
+			bCarProbe = true; CheckSeconds = 5.f;
+			for (AActor* A : Spawned) if (ATrendoThing* T = Cast<ATrendoThing>(A); IsValid(T) && IsValid(T->Car)) { for (ATrendoEnemy* E : Enemies) if (IsValid(E)) E->bFrozen = true; EnterCar(T->Car); CarStart = T->Car->GetActorLocation(); WheelTurn = 0; WheelLast.Empty(); break; }
 		}
 		else if (bCarProbe && !bCarDone)
 		{
 			bCarDone = true; CheckSeconds = 1.5f;
 			if (DrivenCar)
 			{
-				UE_LOG(LogTrendo, Display, TEXT("TRENDO-WAGEN gesteuert=%s Klasse=%s"), GetWorld()->GetFirstPlayerController()->GetPawn() == DrivenCar ? TEXT("ja") : TEXT("nein"), *DrivenCar->GetClass()->GetName());
+				UE_LOG(LogTrendo, Display, TEXT("TRENDO-WAGEN gesteuert=%s Klasse=%s Tempo=%.0f km/h Strecke=%.1f m Raddrehung=%.0f° (%s)"), GetWorld()->GetFirstPlayerController()->GetPawn() == DrivenCar ? TEXT("ja") : TEXT("nein"), *DrivenCar->GetClass()->GetName(),
+					DrivenCar->GetVelocity().Size() * 0.036f, FVector::Dist2D(DrivenCar->GetActorLocation(), CarStart) / 100.f, WheelTurn, WheelTurn > 90.f ? TEXT("Reifen drehen sich") : TEXT("Reifen stehen"));
 				FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("Screenshots/trendo-wagen.png"), false, false);
 			}
 			else UE_LOG(LogTrendo, Display, TEXT("TRENDO-WAGEN kein fahrbarer Wagen"));
 		}
 		else if (bCarDone && DrivenCar) { ExitCar(); CheckSeconds = 1.5f; UE_LOG(LogTrendo, Display, TEXT("TRENDO-WAGEN ausgestiegen, Figur=%s"), Hero() && !Hero()->IsHidden() ? TEXT("sichtbar") : TEXT("fehlt")); }
 		else Report();
+	}
+}
+
+/** Eingabe an Epics Fahrzeug-Simulation (ModularVehicleBaseComponent.SetInputAxis1D) – über Reflexion, ohne Abhängigkeit vom Plugin-Code. */
+void ATrendoGameMode::VehicleAxis(AActor* Car, FName Input, float Value)
+{
+	TArray<UActorComponent*> Comps; Car->GetComponents(Comps);
+	for (UActorComponent* C : Comps)
+	{
+		UFunction* F = C ? C->FindFunction(TEXT("SetInputAxis1D")) : nullptr; if (!F) continue;
+		uint8* Buf = (uint8*)FMemory_Alloca(F->ParmsSize); FMemory::Memzero(Buf, F->ParmsSize);
+		for (TFieldIterator<FProperty> It(F); It && It->HasAnyPropertyFlags(CPF_Parm); ++It)
+			if (FNameProperty* N = CastField<FNameProperty>(*It)) N->SetPropertyValue_InContainer(Buf, Input);
+			else if (FDoubleProperty* D = CastField<FDoubleProperty>(*It)) D->SetPropertyValue_InContainer(Buf, Value);
+			else if (FFloatProperty* Fl = CastField<FFloatProperty>(*It)) Fl->SetPropertyValue_InContainer(Buf, Value);
+		C->ProcessEvent(F, Buf); return;
+	}
+}
+
+/** Weitere Fahrzeug-Eingaben über Reflexion (Bool bzw. Gang): Name (optional) und ganzzahliger Wert. */
+void ATrendoGameMode::VehicleCall(AActor* Car, const TCHAR* Func, FName Input, int32 Value)
+{
+	TArray<UActorComponent*> Comps; Car->GetComponents(Comps);
+	for (UActorComponent* C : Comps)
+	{
+		UFunction* F = C ? C->FindFunction(Func) : nullptr; if (!F) continue;
+		uint8* Buf = (uint8*)FMemory_Alloca(F->ParmsSize); FMemory::Memzero(Buf, F->ParmsSize);
+		for (TFieldIterator<FProperty> It(F); It && It->HasAnyPropertyFlags(CPF_Parm); ++It)
+			if (FNameProperty* N = CastField<FNameProperty>(*It)) N->SetPropertyValue_InContainer(Buf, Input);
+			else if (FBoolProperty* B = CastField<FBoolProperty>(*It)) B->SetPropertyValue_InContainer(Buf, Value != 0);
+			else if (FIntProperty* I = CastField<FIntProperty>(*It)) I->SetPropertyValue_InContainer(Buf, Value);
+		C->ProcessEvent(F, Buf); return;
+	}
+}
+
+/** Drehung eines Rads seit dem letzten Bild (Grad): erster Knochen mit „wheel“ im Namen am Fahrzeug-Skelett. */
+float ATrendoGameMode::WheelAngle(AActor* Car, TMap<FString, FQuat>& Last)
+{
+	// größte Drehung seit dem letzten Bild über alle Rad-Knochen aller Skelette des Fahrzeugs (Grad)
+	float Max = 0.f; TArray<USkeletalMeshComponent*> Meshes; Car->GetComponents(Meshes);
+	for (USkeletalMeshComponent* M : Meshes)
+		for (int32 i = 0; i < M->GetNumBones(); i++)
+		{
+			const FName B = M->GetBoneName(i); if (!B.ToString().Contains(TEXT("wheel"), ESearchCase::IgnoreCase)) continue;
+			const FString Key = M->GetName() + TEXT("/") + B.ToString();
+			const FQuat Q = M->GetBoneQuaternion(B, EBoneSpaces::ComponentSpace);
+			if (const FQuat* P = Last.Find(Key)) Max = FMath::Max(Max, FMath::RadiansToDegrees(P->AngularDistance(Q)));
+			Last.Add(Key, Q);
+		}
+	return Max;
+}
+
+void ATrendoGameMode::SpawnBlood(const FVector& Pos, float Size)
+{
+	UMaterialInterface* M = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Trendo/Natur/M_TrendoBlut.M_TrendoBlut")); if (!M) return;
+	FHitResult Hit; FCollisionQueryParams Q; for (ATrendoEnemy* E : Enemies) Q.AddIgnoredActor(E);
+	if (!GetWorld()->LineTraceSingleByChannel(Hit, Pos + FVector(0, 0, 50), Pos - FVector(0, 0, 400), ECC_WorldStatic, Q)) return;
+	FRandomStream R(static_cast<int32>(Pos.X * 7 + Pos.Y));
+	for (int32 i = 0; i < 3; i++) // ein großer Fleck und zwei Spritzer daneben
+	{
+		const float S = (i == 0 ? 60.f : 22.f) * Size * R.FRandRange(0.8f, 1.2f);
+		const FVector At = Hit.Location + (i == 0 ? FVector::ZeroVector : FVector(R.FRandRange(-90, 90), R.FRandRange(-90, 90), 0) * Size);
+		if (UGameplayStatics::SpawnDecalAtLocation(this, M, FVector(40, S, S), At, FRotator(-90, R.FRandRange(0, 360), 0), 120.f)) BloodCount++;
 	}
 }
 

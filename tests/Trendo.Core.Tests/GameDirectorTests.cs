@@ -42,6 +42,11 @@ public class GameDirectorTests
         var open = GameDirector.Normalize(new JsonObject { ["genre"] = "Open World RPG" });
         Assert.Equal("aaa", open["scale"]!.ToString()); Assert.Equal("openworld", open["world3d"]!.ToString()); Assert.Equal("Neues Spiel", open["title"]!.ToString());
         Assert.Equal("openworld", UnrealGame.WorldOf(open)); // Bauen nutzt die Wahl
+        // Gewalt-Stufe: ausdrücklich gewählt, sonst nach Zielgruppe (Kinder → keine), Unsinn → normal
+        Assert.Equal("keine", GameDirector.Normalize(new JsonObject { ["audience"] = "Kinder ab 6" })["violence"]!.ToString());
+        Assert.Equal("brutal", GameDirector.Normalize(new JsonObject { ["violence"] = "brutal", ["audience"] = "Erwachsene" })["violence"]!.ToString());
+        Assert.Equal("normal", GameDirector.Normalize(new JsonObject { ["violence"] = "extrem" })["violence"]!.ToString());
+        Assert.Contains("violence", GameDirector.Instructions(false)); Assert.Contains("Geländewagen", GameDirector.Instructions(false)); // passend zur Welt
     }
 
     [Fact(DisplayName = "Ändern per Satz: weggelassene Felder bleiben, Vorschau zeigt Änderungen, Auftrag enthält die aktuelle Spielbibel")]

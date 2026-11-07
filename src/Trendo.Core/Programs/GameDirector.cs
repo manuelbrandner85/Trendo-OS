@@ -31,7 +31,7 @@ public static class GameDirector
     ];
 
     static readonly string[] Keys = ["title", "scale", "genre", "logline", "loop", "controls", "style", "audience", "platforms", "sound", "menus", "systems", "browser", "world3d",
-        "mechanics", "characters", "world", "quests", "level", "weapon", "abilities"];
+        "mechanics", "characters", "world", "quests", "level", "weapon", "abilities", "violence"];
 
     /// <summary>Anweisungen für die KI (lokal oder Claude): Profi-Team, Liefer-Format (eine Spielbibel als JSON), Rückfragen und Vorschläge.</summary>
     public static string Instructions(bool claude)
@@ -47,7 +47,9 @@ public static class GameDirector
                "title, scale, genre, logline (ein Satz), loop (Kernschleife), mechanics (Liste), controls, style, audience, platforms, sound, menus, systems, browser, world3d, " +
                "characters (Liste: name, role = Held|Begleiter|Gegner|Boss|Nebenfigur, text, phases = Zahl, Bosse 2–4), world (Liste: name, text), " +
                "quests (Liste: title, kind = Haupt|Neben, goal, needs, gives, giver = Name einer Figur), level (nur Browser: Zeilen aus # . o E ^ S Z F C K D G N), " +
-               "weapon (schwert|werfen oder leer), abilities (doppelsprung, sprint …).\n" +
+               "weapon (schwert|werfen oder leer), abilities (doppelsprung, sprint …), " +
+               "violence = keine (Kinder, ab 0/6) | normal (ab 12: Treffer, Blut am Boden, Körper fallen) | brutal (ab 18: harte Treffer, Blut, abgetrennte Körperteile) – passend zu Zielgruppe und Spielart.\n" +
+               "Alles muss zur Welt passen: Fahrzeuge, Häuser und Gegenstände nach Ort und Zeit (Wald: Geländewagen, Hütte; Stadt: Autos, Hochhäuser; Mittelalter: Pferde, Burg).\n" +
                "Regeln: Missionen ohne Sackgassen (was eine Mission braucht, gibt eine andere), jeder Auftraggeber ist eine Figur, mindestens eine Hauptmission, " +
                "AAA+ mindestens drei Regionen, keine echten Personen, Marken oder fremde Spielfiguren nachbauen – alles eigene Ideen.\n" +
                "Fehlt etwas Wichtiges, entscheide sinnvoll selbst UND stelle höchstens drei Rückfragen als Zeilen „Frage: … [Antwort A | Antwort B | Antwort C]“.\n" +
@@ -137,6 +139,9 @@ public static class GameDirector
             o["world3d"] = S(o["world3d"]) is "level" or "openworld" ? S(o["world3d"]) : scale is "aaa" || genre.Contains("open world") ? "openworld" : "level";
         }
         o["weapon"] = S(o["weapon"]) is "schwert" or "werfen" ? S(o["weapon"]) : "";
+        // Gewalt-Darstellung: ausdrücklich gewählt, sonst nach Zielgruppe (Kinder → keine)
+        var aud = S(o["audience"]).ToLowerInvariant();
+        o["violence"] = S(o["violence"]) is "keine" or "normal" or "brutal" ? S(o["violence"]) : aud.Contains("kind") || aud.Contains("ab 6") || aud.Contains("familie") ? "keine" : "normal";
         o["abilities"] = new JsonArray([.. Arr(o["abilities"]).Select(S).Where(a => GameStudio.Abilities.Any(x => x.Id == a)).Distinct().Select(a => (JsonNode)a)]);
         if (o["milestones"] is not JsonArray ms || ms.Count == 0)
             o["milestones"] = new JsonArray([.. GameDesign.Milestones(scale).Select(m => (JsonNode)new JsonObject { ["name"] = m, ["done"] = false })]);
@@ -148,7 +153,7 @@ public static class GameDirector
     {
         var lines = new List<string>();
         var labels = new Dictionary<string, string> { ["title"] = "Titel", ["scale"] = "Umfang", ["genre"] = "Genre", ["logline"] = "Idee", ["loop"] = "Kernschleife", ["controls"] = "Steuerung",
-            ["style"] = "Stil", ["sound"] = "Ton", ["browser"] = "Spielart", ["world3d"] = "Welt", ["weapon"] = "Waffe" };
+            ["style"] = "Stil", ["sound"] = "Ton", ["browser"] = "Spielart", ["world3d"] = "Welt", ["weapon"] = "Waffe", ["violence"] = "Gewalt" };
         foreach (var (k, l) in labels)
             if (S(old[k]) != S(neu[k])) lines.Add($"{l}: {Short(S(old[k]))} → {Short(S(neu[k]))}");
         void Named(string key, string label, string nameKey)

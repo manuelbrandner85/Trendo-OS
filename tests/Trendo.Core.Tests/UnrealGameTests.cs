@@ -51,6 +51,12 @@ public class UnrealGameTests
             Assert.Contains("ThinkOpenWorld", actors); Assert.Contains("LineTraceSingleByChannel", actors); // Gegner-KI: sehen, verfolgen, Gelände
             Assert.Contains("BP_ModularVehicleSimplifiedSkeletalSetup", actors); Assert.Contains("PC->Possess(Car)", gm); // fahrbarer Wagen mit Chaos-Physik
             Assert.Contains("TRENDO-GEGNER", gm); Assert.Contains("TRENDO-WAGEN", gm); // Probe im Prüflauf
+            // Gegner als echter Charakter (Kapsel, Schwerkraft, Boden, Kollision), Messung von Bodenkontakt und Kampf; Sturz-Animation beim Tod
+            Assert.Contains("class ATrendoEnemy : public ACharacter", File.ReadAllText(Path.Combine(dir, "Source", "Waldlaeufer", "TrendoActors.h")));
+            Assert.Contains("AIModule", File.ReadAllText(Path.Combine(dir, "Source", "Waldlaeufer", "Waldlaeufer.Build.cs")));
+            Assert.Contains("TRENDO-BODEN", gm); Assert.Contains("TRENDO-KAMPF", gm); Assert.Contains("MM_Death_Front_03_ExtractedRM", actors);
+            Assert.Contains("bEnableUpdateRateOptimizations = false", actors); // kein Ruckeln/Flackern in der Ferne
+            Assert.Equal("normal", lv["violence"]!.GetValue<string>()); // Gewalt-Stufe im Level (Standard normal)
         }
         finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
     }

@@ -226,7 +226,9 @@ public static class GameDesign
         File.WriteAllText(Path.Combine(dir, "Design", "Spielbibel.md"), BibleMarkdown(d));
         // Paket 01: spielbares C++-Spiel mit Welt aus Trendo (3D-Level oder Open World)
         var world = UnrealGame.WorldOf(d);
-        UnrealGame.Write(dir, UnrealGame.LevelJson(S(d["title"]) is { Length: > 0 } t ? t : "Spiel", SettingsOf(d), world), world);
+        var level = JsonNode.Parse(UnrealGame.LevelJson(S(d["title"]) is { Length: > 0 } t ? t : "Spiel", SettingsOf(d), world))!.AsObject();
+        level["violence"] = S(d["violence"]) is "keine" or "brutal" ? S(d["violence"]) : "normal"; // Gewalt-Darstellung passend zur Altersfreigabe
+        UnrealGame.Write(dir, level.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }), world);
         if (S(d["scale"]) is "aa" or "aaa")
             File.AppendAllText(Path.Combine(dir, "Config", "DefaultEngine.ini"),
                 "\n[/Script/Engine.RendererSettings]\nr.DynamicGlobalIlluminationMethod=1\nr.ReflectionMethod=1\nr.Shadow.Virtual.Enable=1\nr.AllowStaticLighting=False\nr.GenerateMeshDistanceFields=True\n");
