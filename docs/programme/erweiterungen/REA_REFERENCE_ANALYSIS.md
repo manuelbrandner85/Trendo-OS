@@ -1,6 +1,6 @@
 # Erweiterungen – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Trendo erweitern (X-04) · Bereich: Entwickeln · Seite: `erweiterungen` · Stand: 0.9.36 (Stand df8e056)
+Studio: Trendo erweitern (X-04) · Bereich: Entwickeln · Seite: `erweiterungen` · Stand: 0.9.36 (Stand 66211cf)
 
 Analyse: [Vorbild-Analyse Erweitern: VS Code Erweiterungen, GitHub Desktop, Pinokio, Obsidian-Plugins (Clean-Room)](../../../docs/claude/vorbilder/erweitern-vscode-github-desktop.md)
 

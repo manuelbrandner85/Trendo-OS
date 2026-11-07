@@ -1,6 +1,6 @@
 # Audio bearbeiten – Architektur
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `ton` · Stand: 0.9.36 (Stand df8e056)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `ton` · Stand: 0.9.36 (Stand 66211cf)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.AudioEditor.cs`
@@ -24,8 +24,8 @@ Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seit
 - `AudioMulti`
 - `ImageOps`
 - `Rect`
+- `VideoExport`
 - `FileShelf`
-- `AudioDsp`
 
 ## Dateiformate (im Code belegt)
 - .csv

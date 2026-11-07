@@ -1,6 +1,6 @@
 # Bildbearbeitung – Funktionsmatrix
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.36 (Stand df8e056)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.36 (Stand 66211cf)
 
 Quelle: `docs/spec/kataloge/CORE-08_KATALOG.md`
 

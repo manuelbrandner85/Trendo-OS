@@ -1,6 +1,6 @@
 # Trendo CAD – Funktionsmatrix
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.36 (Stand df8e056)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.36 (Stand 66211cf)
 
 Quelle: `docs/spec/kataloge/CORE-05_KATALOG.md`
 
@@ -45,6 +45,8 @@ Quelle: `docs/spec/kataloge/CORE-05_KATALOG.md`
 | DR-13 | Live-Kamera, Fertig-Meldung, Zeitraffer aufnehmen und holen | Vorhanden | umgesetzt (Kamera/FTPS nur am echten Drucker) |
 | DR-14 | Direkt aus Trendo vorbereiten (Bambu Studio im Hintergrund) und drucken | Vorhanden | umgesetzt (echter Slicer-Lauf nicht im Test) |
 | DR-15 | Mehrere Drucker mit Zustand, Auswählen, Entfernen | Vorhanden | umgesetzt |
+| D3-15 | Export für Unity (FBX), Unreal (FBX), Godot (GLB), Web (GLB) über Blender mit Engine-Einstellungen | Vorhanden | umgesetzt, PC-Lauf mit Blender 5.2.3 (reports/paket01) |
+| D3-16 | Rundlauf-Prüfung: Export wieder einlesen und vergleichen (Teile, Dreiecke, Materialien, UV, Knochen, Animationen, Formschlüssel, Maße); Verlust = Fehler, gewollte Änderung = Hinweis; Bericht neben der Datei | Vorhanden | umgesetzt |
 
 ## Werkzeuge der Oberfläche
 - Los

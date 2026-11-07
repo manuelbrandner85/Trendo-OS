@@ -199,7 +199,7 @@
       "Ohne Unterschrift",
       "Brief prüfen",
       "Text von der KI verbessern lassen",
-      "6. November 2026",
+      "7. November 2026",
       "Alle 20 Vorlagen zeigen …",
       "Fertig – Brief speichern",
       "Als verschickt eintragen",
@@ -271,7 +271,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
     "WarmMs": 79,
     "WindowsOnly": []
@@ -430,9 +430,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 43,
+    "WarmMs": 39,
     "WindowsOnly": []
   },
   {
@@ -582,9 +582,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 43,
+    "WarmMs": 41,
     "WindowsOnly": []
   },
   {
@@ -782,9 +782,9 @@
       "src/Trendo.App/MainWindow.Pim.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 56,
+    "WarmMs": 51,
     "WindowsOnly": []
   },
   {
@@ -944,9 +944,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 28,
+    "WarmMs": 35,
     "WindowsOnly": []
   },
   {
@@ -1108,9 +1108,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -1348,9 +1348,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -1603,7 +1603,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -1846,9 +1846,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -1935,9 +1935,9 @@
       "src/Trendo.App/MainWindow.W4Suite.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -2188,9 +2188,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -2419,9 +2419,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 8,
+    "WarmMs": 7,
     "WindowsOnly": []
   },
   {
@@ -2680,9 +2680,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -2959,7 +2959,7 @@
       "src/Trendo.App/MainWindow.Tabelle.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
     "WarmMs": 14,
     "WindowsOnly": []
@@ -3255,9 +3255,9 @@
       "src/Trendo.App/MainWindow.Text.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 17,
+    "WarmMs": 24,
     "WindowsOnly": []
   },
   {
@@ -3333,9 +3333,9 @@
       "src/Trendo.App/MainWindow.W5Finance.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 43,
+    "WarmMs": 33,
     "WindowsOnly": []
   },
   {
@@ -3479,7 +3479,7 @@
       "src/Trendo.App/MainWindow.W5Business.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -3645,7 +3645,7 @@
       "src/Trendo.App/MainWindow.W4Assets.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -3712,7 +3712,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -3790,9 +3790,9 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -3980,7 +3980,7 @@
       "src/Trendo.App/MainWindow.ProgMode.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": true,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -4241,9 +4241,9 @@
       "src/Trendo.App/MainWindow.Spec15.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 66,
+    "WarmMs": 54,
     "WindowsOnly": []
   },
   {
@@ -4413,6 +4413,8 @@
       "✨ Erstellen",
       "Einfach",
       "Profi",
+      "Beat",
+      "Noten",
       "Instrumental (ohne Gesang)",
       "\uD83C\uDFBC Genre wählen (181)",
       "Klavier",
@@ -4489,6 +4491,8 @@
       "Profi: „KI-Floskeln prüfen“ unter dem Liedtext nennt gefundene Phrasen oder meldet „keine gefunden“",
       "S1: 20 s aufnehmen → Analyse → Profil „Erika“ mit Zusammenfassung, Aufnahme wird gelöscht; „Für mein nächstes Lied“ setzt Stimme, Tonlage, Tonart und Stimmklang",
       "S1: zu wenig gesungen → ehrlicher Hinweis, kein Profil",
+      "S4-04 Trendo Musik: Noten per Mausklick in die Piano-Roll, quantisieren, transponieren, als MIDI speichern und identisch öffnen; kaputte Datei → Warnung, Stück bleibt",
+      "S4-13 Trendo Musik: Beat-Modus – Raster klicken (an → betont → aus), Tempo 140, Arpeggio ab; als Lied gespeichert (WAV 24 Bit + Muster); 600 BPM wird abgelehnt, nichts gespeichert",
       "S5: Mitsingen spielt die Begleitung, zeigt live Ziel/gesungener Ton und Treffer; S6: Mischen (Versatz, Hall) und Mastern ergeben „– mit meiner Stimme“",
       "S5: ohne getrennte Spuren ehrlicher Hinweis „zuerst Spuren trennen“, kein Start",
       "STUDIO-MUSIK-01: Claude als Produzent – Briefing mit Silben und Reimen, Plan mit Rhythmus vorher/nachher, Ausführen füllt den Entwurf, Erstellen hängt die Fassung ans Original, Mastering-Ziel „laut“",
@@ -4505,9 +4509,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 17,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -4577,7 +4581,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
     "WarmMs": 7,
     "WindowsOnly": []
@@ -4843,8 +4847,8 @@
       "AudioMulti",
       "ImageOps",
       "Rect",
-      "FileShelf",
-      "AudioDsp"
+      "VideoExport",
+      "FileShelf"
     ],
     "Tools": [
       "✂ Ausschneiden (Bearbeiten)",
@@ -4883,6 +4887,9 @@
       "Spektrogramm (Abspielen)",
       "⏺ Aufnehmen (10 s) (Abspielen)",
       "⤓ Abmischen (Abspielen)",
+      "✅ Prüfen (Prüfen)",
+      "\uD83D\uDCE6 Freigeben (Prüfen)",
+      "\uD83D\uDD0C Plugins prüfen (Prüfen)",
       "WAV (16 Bit) (Exportieren)",
       "WAV (24 Bit, Studio) (Exportieren)",
       "MP3 (Exportieren)",
@@ -4949,6 +4956,9 @@
       "Einfachheit: jede Seite höchstens drei Reiterleisten auf einmal, Aufklapper und Scrollbereiche höchstens zwei Ebenen tief; Bericht der verschachteltsten Seiten",
       "Programm: Startseite → Vorlage → bearbeiten → Rückgängig → Speichern → Zuletzt → wieder öffnen; Reiter für zwei Dokumente",
       "Programm: ungespeichertes Dokument wird automatisch gesichert und auf der Startseite wiederhergestellt",
+      "S4-06 Audioeditor: „Plugins prüfen“ findet VST3 und schreibt einen Bericht – ohne Plugin zu laden; leerer Ordner: klare Meldung",
+      "S4-17 Audioeditor: Schritte erzeugen und öffnen, mit Ereignis-Tag in die Bibliothek; Fremdgeräusch ohne Lizenz wird im Paket ausgeschlossen und genannt",
+      "S4-20 Audioeditor: ohne Lizenz und bei Übersteuerung keine Freigabe (Grund steht da, kein Ordner); mit Angabe Freigabe mit WAV 24 Bit und Prüfbericht",
       "X17 Versionen: nach dem zweiten Speichern zeigt die Datei-Gruppe „Versionen (1)“, Wiederherstellen holt den alten Stand (rückgängig machbar)"
     ],
     "SourceFiles": [
@@ -4958,9 +4968,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -5224,8 +5234,8 @@
       "AudioMulti",
       "ImageOps",
       "Rect",
-      "FileShelf",
-      "AudioDsp"
+      "VideoExport",
+      "FileShelf"
     ],
     "Tools": [
       "＋ Mal-Ebene (Ebene)",
@@ -5313,7 +5323,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": true,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -5580,8 +5590,8 @@
       "AudioMulti",
       "ImageOps",
       "Rect",
-      "FileShelf",
-      "AudioDsp"
+      "VideoExport",
+      "FileShelf"
     ],
     "Tools": [
       "Los",
@@ -5670,9 +5680,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 36,
+    "WarmMs": 50,
     "WindowsOnly": []
   },
   {
@@ -5936,8 +5946,8 @@
       "AudioMulti",
       "ImageOps",
       "Rect",
-      "FileShelf",
-      "AudioDsp"
+      "VideoExport",
+      "FileShelf"
     ],
     "Tools": [
       "Teilen (S) (Schneiden)",
@@ -5947,6 +5957,7 @@
       "◀ Nach vorn (Schneiden)",
       "Nach hinten ▶ (Schneiden)",
       "⬇ Video exportieren (Ausgabe)",
+      "\uD83D\uDCE6 Film ausliefern (Ausgabe)",
       "＋ Zoom (Ansicht)",
       "－ Zoom (Ansicht)",
       "⏮ Anfang (Ansicht)",
@@ -6003,6 +6014,9 @@
       "CORE-08 Videoschnitt: Farbe, Tonpegel, Übergang und Titellage je Stück landen im Export-Befehl; alte Projekte ohne Zusatzwerte bleiben gleich",
       "CORE-08: Alle Aufgaben laufen mit echtem FFmpeg, Original bleibt, nichts wird überschrieben",
       "CORE-08: Fehlende Datei gibt verständliche Meldung, Argumente ohne Shell",
+      "S3-11 Videoschnitt: LUT setzen (beschädigte abgelehnt, Stück unverändert), Scopes mit Messwerten und Vergleich mit einem anderen Stück",
+      "S3-12 Videoschnitt: Bild verbessern berechnet eine Fassung mit Messwerten; „verwenden“ tauscht die Datei, Rückgängig holt das Original; Hochskalieren mit Artefakten bietet kein Übernehmen an",
+      "S3-18/S3-20 Videoschnitt: „Film ausliefern“ legt einen Ordner mit Film, Stems, EDL, OTIO, Cue-Liste und Prüfbericht an; fehlendes Medium wird gemeldet statt verschleiert",
       "Videoschnitt Export X1/X11/X16: Vorlage Hochformat per Klick, Bereich und Lautheit gehen an den Export, Dateiname mit Vorlage, EDL und FCPXML werden geschrieben",
       "Videoschnitt UI: Medien auf die Spuren, Stück ziehen ordnet um, Kante ziehen kürzt, Lineal setzt Abspielkopf, S teilt, Strg+Z, Entf, Export, Einfach-Stufe",
       "Videoschnitt UI: falsche Dateien und leere Bildspur geben klare Meldungen",
@@ -6021,7 +6035,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": true,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -6269,6 +6283,18 @@
         "Name": "Mehrere Drucker mit Zustand, Auswählen, Entfernen",
         "State": "umgesetzt",
         "Test": "BambuProTests, BambuPro_Ui"
+      },
+      {
+        "Nr": "D3-15",
+        "Name": "Export für Unity (FBX), Unreal (FBX), Godot (GLB), Web (GLB) über Blender mit Engine-Einstellungen",
+        "State": "umgesetzt, PC-Lauf mit Blender 5.2.3 (reports/paket01)",
+        "Test": "Studio3DEnginesTests, Studio3DEngines_Ui"
+      },
+      {
+        "Nr": "D3-16",
+        "Name": "Rundlauf-Prüfung: Export wieder einlesen und vergleichen (Teile, Dreiecke, Materialien, UV, Knochen, Animationen, Formschlüssel, Maße); Verlust = Fehler, gewollte Änderung = Hinweis; Bericht neben der Datei",
+        "State": "umgesetzt",
+        "Test": "Studio3DEnginesTests, Studio3DEngines_Ui"
       }
     ],
     "FunctionCatalog": "docs/spec/kataloge/CORE-05_KATALOG.md",
@@ -6300,6 +6326,10 @@
       "Speichern",
       "Neues Objekt",
       "Rückgängig",
+      "Unity",
+      "Unreal Engine",
+      "Godot",
+      "Web",
       "Würfel",
       "Kugel",
       "Zylinder",
@@ -6380,6 +6410,7 @@
       "3D"
     ],
     "Tests": [
+      "3D Für Engine: ohne Teil Hinweis; vier Ziele; Unity-Export mit Bericht-Datei; Verlust (Material) wird als Fehler gemeldet",
       "3D aus Bild: TripoSR nach Klick einrichten (Stand geprüft, eigene Umgebung), Foto wählen → GLB → „Im 3D-Studio öffnen“; falscher Stand wird nicht eingerichtet",
       "3D-Arbeitsfläche: Formen einsetzen (auf dem Boden), Teil anklicken, mit der Maus verschieben (Raster), Pfeiltasten, Verdoppeln, Entf, Rückgängig",
       "3D-Arbeitsfläche: „Auf den Boden“ setzt die Unterkante auf 0, Text und Ebene stehen auf dem Boden",
@@ -6435,9 +6466,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 52,
+    "WarmMs": 49,
     "WindowsOnly": []
   },
   {
@@ -6683,6 +6714,18 @@
         "Name": "Mehrere Drucker mit Zustand, Auswählen, Entfernen",
         "State": "umgesetzt",
         "Test": "BambuProTests, BambuPro_Ui"
+      },
+      {
+        "Nr": "D3-15",
+        "Name": "Export für Unity (FBX), Unreal (FBX), Godot (GLB), Web (GLB) über Blender mit Engine-Einstellungen",
+        "State": "umgesetzt, PC-Lauf mit Blender 5.2.3 (reports/paket01)",
+        "Test": "Studio3DEnginesTests, Studio3DEngines_Ui"
+      },
+      {
+        "Nr": "D3-16",
+        "Name": "Rundlauf-Prüfung: Export wieder einlesen und vergleichen (Teile, Dreiecke, Materialien, UV, Knochen, Animationen, Formschlüssel, Maße); Verlust = Fehler, gewollte Änderung = Hinweis; Bericht neben der Datei",
+        "State": "umgesetzt",
+        "Test": "Studio3DEnginesTests, Studio3DEngines_Ui"
       }
     ],
     "FunctionCatalog": "docs/spec/kataloge/CORE-05_KATALOG.md",
@@ -6791,7 +6834,7 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -7039,6 +7082,18 @@
         "Name": "Mehrere Drucker mit Zustand, Auswählen, Entfernen",
         "State": "umgesetzt",
         "Test": "BambuProTests, BambuPro_Ui"
+      },
+      {
+        "Nr": "D3-15",
+        "Name": "Export für Unity (FBX), Unreal (FBX), Godot (GLB), Web (GLB) über Blender mit Engine-Einstellungen",
+        "State": "umgesetzt, PC-Lauf mit Blender 5.2.3 (reports/paket01)",
+        "Test": "Studio3DEnginesTests, Studio3DEngines_Ui"
+      },
+      {
+        "Nr": "D3-16",
+        "Name": "Rundlauf-Prüfung: Export wieder einlesen und vergleichen (Teile, Dreiecke, Materialien, UV, Knochen, Animationen, Formschlüssel, Maße); Verlust = Fehler, gewollte Änderung = Hinweis; Bericht neben der Datei",
+        "State": "umgesetzt",
+        "Test": "Studio3DEnginesTests, Studio3DEngines_Ui"
       }
     ],
     "FunctionCatalog": "docs/spec/kataloge/CORE-05_KATALOG.md",
@@ -7169,9 +7224,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 57,
+    "WarmMs": 55,
     "WindowsOnly": []
   },
   {
@@ -7382,9 +7437,9 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -7598,7 +7653,7 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": true,
     "WarmMs": 7,
     "WindowsOnly": []
@@ -7750,12 +7805,91 @@
         "Name": "Asset-Liste mit Quelle, Lizenz, Urheber; Abspann als CREDITS.txt im gebauten Spiel; Lizenzprüfung vor dem Veröffentlichen",
         "State": "umgesetzt",
         "Test": "GameAssetsTests, GameAssets_Ui"
+      },
+      {
+        "Nr": "SP-24",
+        "Name": "Engines ehrlich prüfen (Paket 01 S1-01): Unreal, Unity, Godot, Blender mit Version und Zustand aus Dateien, nichts angenommen; Unity ohne Editor „blockiert“",
+        "State": "umgesetzt",
+        "Test": "EngineTargetsTests, GameEngines_Ui"
+      },
+      {
+        "Nr": "SP-25",
+        "Name": "Plattformer als Unity-Projekt (Paket 01 S1-01 + Unity-Freigabe): C#-Spiel, Editor-Build-Skript, EditMode- und PlayMode-Tests, Szene legt Unity selbst an",
+        "State": "umgesetzt, PC-Lauf mit Unity 6.6 (reports/paket01)",
+        "Test": "EngineTargetsTests, GameEngines_Ui"
+      },
+      {
+        "Nr": "SP-26",
+        "Name": "Plattformer als Godot-4-Projekt: GDScript-Spiel, Level-Prüfung und Spiel-Prüfung ohne Fenster",
+        "State": "umgesetzt, PC-Lauf mit Godot 4.7.2 (reports/paket01)",
+        "Test": "EngineTargetsTests, GameEngines_Ui"
+      },
+      {
+        "Nr": "SP-27",
+        "Name": "Engine-Tests aus Trendo starten (nur wenn die Engine da ist), Bericht mit Exitcode und Protokoll im Projektordner",
+        "State": "umgesetzt",
+        "Test": "GameEngines_Ui"
+      },
+      {
+        "Nr": "SP-28",
+        "Name": "Spielstände (Paket 01 S1-15): ein versioniertes Format für Browser-Spiel, Probespiel, Unity und Godot – Speicherpunkt und Level speichern, Fortsetzen, alte Stände heben, neuere/kaputte/unpassende ablehnen, Spielende löscht",
+        "State": "umgesetzt, PC-Lauf Unity 6.6 und Godot 4.7.2 (reports/paket01)",
+        "Test": "GameSavesTests, GameSaves_Ui"
+      },
+      {
+        "Nr": "SP-29",
+        "Name": "Fähigkeiten der Figur (Paket 01 S1-05): Doppelsprung (neuer Tastendruck in der Luft, einmal) und Sprint (Umschalt, 1,6-fach) – gleich im Probespiel und im Browser-Spiel, Schalter mit Rückgängig",
+        "State": "umgesetzt",
+        "Test": "GameplayTests, Gameplay_Ui"
+      },
+      {
+        "Nr": "SP-30",
+        "Name": "Aufgaben (Paket 01 S1-05): Regel mit Titel wird Aufgabe mit Fortschritt („Sammler: Münzen 1/3“, „✓ Sammler“) im Probespiel und als Anzeige im Spiel",
+        "State": "umgesetzt",
+        "Test": "GameplayTests, Gameplay_Ui"
+      },
+      {
+        "Nr": "SP-31",
+        "Name": "Inventar und sprechende Figuren (Paket 01 S1-05): Gegenstand (G, benennbar) kommt ins Inventar; Figur (N) sagt Text, wünscht sich einen Gegenstand und belohnt (Leben, Türen, Punkte, Tempo, Sieg); Regel „Gegenstände gesammelt“; Inventar im Spielstand – Probespiel und Browser-Spiel gleich",
+        "State": "umgesetzt",
+        "Test": "GameInventoryTests, GameInventory_Ui"
+      },
+      {
+        "Nr": "SP-32",
+        "Name": "Kampf mit Waffen (Paket 01 S1-05): Schwert (Nahkampf vor der Figur) oder Werfen (Geschoss bis Wand/Gegner), Angriff X/J mit Abklingzeit; Gegner mit 1–9 Trefferpunkten, ab 2 Boss mit Lebensbalken (10 Punkte, „Boss besiegt!“); Draufspringen kostet einen Trefferpunkt – Probespiel und Browser-Spiel gleich",
+        "State": "umgesetzt",
+        "Test": "GameCombatTests, GameCombat_Ui"
+      },
+      {
+        "Nr": "SP-33",
+        "Name": "Fahrzeuge (Paket 01 S1-05): Kachel V, Berühren = einsteigen, E = aussteigen (bleibt stehen, wieder nehmbar); Wagen 1,8-fach schnell und fängt einen Treffer ab; Ufo fliegt mit gehaltener Sprungtaste (10 s Treibstoff); Absturz trifft immer – Probespiel und Browser-Spiel gleich",
+        "State": "umgesetzt",
+        "Test": "GameVehicleTests, GameVehicle_Ui"
+      },
+      {
+        "Nr": "SP-34",
+        "Name": "Gameplay im Unity- und Godot-Export (Paket 01 S1-05): Fähigkeiten, Regeln/Aufgaben, Inventar und Figuren, Kampf mit Bossen, Fahrzeuge in C# bzw. GDScript; Unity-Tests und Godot-Prüfskript aus Trendo startbar",
+        "State": "umgesetzt, PC-Lauf Unity 6.6 (EditMode 5/5, PlayMode 6/6) und Godot 4.7.2 (4 Prüfungen)",
+        "Test": "EngineTargetsTests, GameEngines_Ui"
+      },
+      {
+        "Nr": "SP-35",
+        "Name": "Spielmenüs (Paket 01 S1-14): Startmenü (Fortsetzen, Spielen, Einstellungen, Steuerung), Pause mit Esc/P, Einstellungen je Spiel gespeichert (Lautstärke, hoher Kontrast, große Schrift, ruhige Effekte, Karte), Karte mit Figur, Controller (Gamepad), kein Seiten-Scrollen durch Pfeiltasten, Spielfeld passt sich an; im Editor abschaltbar",
+        "State": "umgesetzt, im echten Browser angesehen",
+        "Test": "GameMenusTests, GameMenus_Ui"
+      },
+      {
+        "Nr": "SP-36",
+        "Name": "Spielmenüs im Unity- und Godot-Export (Paket 01 S1-14): Startmenü, Pause, Einstellungen (PlayerPrefs bzw. user://), Karte, Controller; im Menü stehen Eingaben, Gegner und Regeln still",
+        "State": "umgesetzt, PC-Lauf Unity 6.6 (PlayMode 8/8, Build ok) und Godot 4.7.2 (5 Prüfungen)",
+        "Test": "EngineTargetsTests, GameEngines_Ui"
       }
     ],
     "FunctionCatalog": "docs/spec/kataloge/CORE-06_KATALOG.md",
     "Engine": [
       "GameStudio",
       "GameDesign",
+      "GameSaves",
       "PlatformSim"
     ],
     "Tools": [
@@ -7831,7 +7965,7 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": true,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -7984,12 +8118,91 @@
         "Name": "Asset-Liste mit Quelle, Lizenz, Urheber; Abspann als CREDITS.txt im gebauten Spiel; Lizenzprüfung vor dem Veröffentlichen",
         "State": "umgesetzt",
         "Test": "GameAssetsTests, GameAssets_Ui"
+      },
+      {
+        "Nr": "SP-24",
+        "Name": "Engines ehrlich prüfen (Paket 01 S1-01): Unreal, Unity, Godot, Blender mit Version und Zustand aus Dateien, nichts angenommen; Unity ohne Editor „blockiert“",
+        "State": "umgesetzt",
+        "Test": "EngineTargetsTests, GameEngines_Ui"
+      },
+      {
+        "Nr": "SP-25",
+        "Name": "Plattformer als Unity-Projekt (Paket 01 S1-01 + Unity-Freigabe): C#-Spiel, Editor-Build-Skript, EditMode- und PlayMode-Tests, Szene legt Unity selbst an",
+        "State": "umgesetzt, PC-Lauf mit Unity 6.6 (reports/paket01)",
+        "Test": "EngineTargetsTests, GameEngines_Ui"
+      },
+      {
+        "Nr": "SP-26",
+        "Name": "Plattformer als Godot-4-Projekt: GDScript-Spiel, Level-Prüfung und Spiel-Prüfung ohne Fenster",
+        "State": "umgesetzt, PC-Lauf mit Godot 4.7.2 (reports/paket01)",
+        "Test": "EngineTargetsTests, GameEngines_Ui"
+      },
+      {
+        "Nr": "SP-27",
+        "Name": "Engine-Tests aus Trendo starten (nur wenn die Engine da ist), Bericht mit Exitcode und Protokoll im Projektordner",
+        "State": "umgesetzt",
+        "Test": "GameEngines_Ui"
+      },
+      {
+        "Nr": "SP-28",
+        "Name": "Spielstände (Paket 01 S1-15): ein versioniertes Format für Browser-Spiel, Probespiel, Unity und Godot – Speicherpunkt und Level speichern, Fortsetzen, alte Stände heben, neuere/kaputte/unpassende ablehnen, Spielende löscht",
+        "State": "umgesetzt, PC-Lauf Unity 6.6 und Godot 4.7.2 (reports/paket01)",
+        "Test": "GameSavesTests, GameSaves_Ui"
+      },
+      {
+        "Nr": "SP-29",
+        "Name": "Fähigkeiten der Figur (Paket 01 S1-05): Doppelsprung (neuer Tastendruck in der Luft, einmal) und Sprint (Umschalt, 1,6-fach) – gleich im Probespiel und im Browser-Spiel, Schalter mit Rückgängig",
+        "State": "umgesetzt",
+        "Test": "GameplayTests, Gameplay_Ui"
+      },
+      {
+        "Nr": "SP-30",
+        "Name": "Aufgaben (Paket 01 S1-05): Regel mit Titel wird Aufgabe mit Fortschritt („Sammler: Münzen 1/3“, „✓ Sammler“) im Probespiel und als Anzeige im Spiel",
+        "State": "umgesetzt",
+        "Test": "GameplayTests, Gameplay_Ui"
+      },
+      {
+        "Nr": "SP-31",
+        "Name": "Inventar und sprechende Figuren (Paket 01 S1-05): Gegenstand (G, benennbar) kommt ins Inventar; Figur (N) sagt Text, wünscht sich einen Gegenstand und belohnt (Leben, Türen, Punkte, Tempo, Sieg); Regel „Gegenstände gesammelt“; Inventar im Spielstand – Probespiel und Browser-Spiel gleich",
+        "State": "umgesetzt",
+        "Test": "GameInventoryTests, GameInventory_Ui"
+      },
+      {
+        "Nr": "SP-32",
+        "Name": "Kampf mit Waffen (Paket 01 S1-05): Schwert (Nahkampf vor der Figur) oder Werfen (Geschoss bis Wand/Gegner), Angriff X/J mit Abklingzeit; Gegner mit 1–9 Trefferpunkten, ab 2 Boss mit Lebensbalken (10 Punkte, „Boss besiegt!“); Draufspringen kostet einen Trefferpunkt – Probespiel und Browser-Spiel gleich",
+        "State": "umgesetzt",
+        "Test": "GameCombatTests, GameCombat_Ui"
+      },
+      {
+        "Nr": "SP-33",
+        "Name": "Fahrzeuge (Paket 01 S1-05): Kachel V, Berühren = einsteigen, E = aussteigen (bleibt stehen, wieder nehmbar); Wagen 1,8-fach schnell und fängt einen Treffer ab; Ufo fliegt mit gehaltener Sprungtaste (10 s Treibstoff); Absturz trifft immer – Probespiel und Browser-Spiel gleich",
+        "State": "umgesetzt",
+        "Test": "GameVehicleTests, GameVehicle_Ui"
+      },
+      {
+        "Nr": "SP-34",
+        "Name": "Gameplay im Unity- und Godot-Export (Paket 01 S1-05): Fähigkeiten, Regeln/Aufgaben, Inventar und Figuren, Kampf mit Bossen, Fahrzeuge in C# bzw. GDScript; Unity-Tests und Godot-Prüfskript aus Trendo startbar",
+        "State": "umgesetzt, PC-Lauf Unity 6.6 (EditMode 5/5, PlayMode 6/6) und Godot 4.7.2 (4 Prüfungen)",
+        "Test": "EngineTargetsTests, GameEngines_Ui"
+      },
+      {
+        "Nr": "SP-35",
+        "Name": "Spielmenüs (Paket 01 S1-14): Startmenü (Fortsetzen, Spielen, Einstellungen, Steuerung), Pause mit Esc/P, Einstellungen je Spiel gespeichert (Lautstärke, hoher Kontrast, große Schrift, ruhige Effekte, Karte), Karte mit Figur, Controller (Gamepad), kein Seiten-Scrollen durch Pfeiltasten, Spielfeld passt sich an; im Editor abschaltbar",
+        "State": "umgesetzt, im echten Browser angesehen",
+        "Test": "GameMenusTests, GameMenus_Ui"
+      },
+      {
+        "Nr": "SP-36",
+        "Name": "Spielmenüs im Unity- und Godot-Export (Paket 01 S1-14): Startmenü, Pause, Einstellungen (PlayerPrefs bzw. user://), Karte, Controller; im Menü stehen Eingaben, Gegner und Regeln still",
+        "State": "umgesetzt, PC-Lauf Unity 6.6 (PlayMode 8/8, Build ok) und Godot 4.7.2 (5 Prüfungen)",
+        "Test": "EngineTargetsTests, GameEngines_Ui"
       }
     ],
     "FunctionCatalog": "docs/spec/kataloge/CORE-06_KATALOG.md",
     "Engine": [
       "GameStudio",
       "GameDesign",
+      "GameSaves",
       "PlatformSim"
     ],
     "Tools": [
@@ -8097,9 +8310,9 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 35,
+    "WarmMs": 28,
     "WindowsOnly": []
   },
   {
@@ -8297,9 +8510,9 @@
       "src/Trendo.App/MainWindow.Spec04.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 36,
+    "WarmMs": 37,
     "WindowsOnly": []
   },
   {
@@ -8496,9 +8709,9 @@
       "src/Trendo.App/MainWindow.Spec16.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 80,
+    "WarmMs": 64,
     "WindowsOnly": []
   },
   {
@@ -8687,7 +8900,7 @@
       "src/Trendo.App/MainWindow.Spec14.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": true,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -8895,9 +9108,9 @@
       "src/Trendo.App/MainWindow.Spec10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 42,
+    "WarmMs": 21,
     "WindowsOnly": []
   },
   {
@@ -9115,7 +9328,7 @@
       "src/Trendo.App/MainWindow.Core09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
     "WarmMs": 44,
     "WindowsOnly": []
@@ -9311,7 +9524,7 @@
       "src/Trendo.App/MainWindow.Spec13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": true,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -9493,7 +9706,7 @@
       "src/Trendo.App/MainWindow.Spec02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": true,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -9675,9 +9888,9 @@
       "src/Trendo.App/MainWindow.Spec03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": true,
-    "WarmMs": 10,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -9866,7 +10079,7 @@
       "src/Trendo.App/MainWindow.Spec01.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": true,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -10036,9 +10249,9 @@
       "src/Trendo.App/MainWindow.Spec06.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 7,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -10176,24 +10389,12 @@
     ],
     "Formats": [
       ".csv",
-      ".docx",
-      ".ics",
-      ".json",
       ".md",
-      ".odt",
-      ".pdf",
-      ".png",
       ".svg",
-      ".tdoc",
-      ".txt",
-      ".xml"
+      ".tdoc"
     ],
     "Dependencies": [
-      "LibreOffice (optional)",
-      "qpdf",
-      "Tesseract OCR",
-      "PDFsharp (MIT)",
-      "Hunspell-Wörterbücher"
+      "FFmpeg"
     ],
     "Rea": "docs/claude/vorbilder/messdaten-origin-scidavis.md",
     "ReaSummary": "Vorbild-Analyse Messdaten: Origin, SciDAVis, LabPlot (Clean-Room)",
@@ -10237,9 +10438,9 @@
       "src/Trendo.App/MainWindow.Spec05.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 7,
     "WindowsOnly": []
   },
   {
@@ -10294,9 +10495,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -10358,9 +10559,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -10478,9 +10679,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -10552,7 +10753,7 @@
       "src/Trendo.App/MainWindow.W5Fusion.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -10649,9 +10850,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -10733,9 +10934,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -10812,9 +11013,9 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -10909,9 +11110,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 21,
+    "WarmMs": 30,
     "WindowsOnly": []
   },
   {
@@ -11020,9 +11221,9 @@
       "src/Trendo.App/MainWindow.Connections.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -11096,7 +11297,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
     "WarmMs": 12,
     "WindowsOnly": []
@@ -11202,9 +11403,9 @@
       "src/Trendo.App/MainWindow.KiLibrary.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -11305,7 +11506,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
     "WarmMs": 31,
     "WindowsOnly": []
@@ -11370,7 +11571,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
     "WarmMs": 12,
     "WindowsOnly": []
@@ -11464,9 +11665,9 @@
       "src/Trendo.App/MainWindow.W4Builder.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -11515,7 +11716,7 @@
       "src/Trendo.App/MainWindow.W5CleanRoom.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -11616,9 +11817,9 @@
       "src/Trendo.App/MainWindow.W4Oss.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -11685,7 +11886,7 @@
       "src/Trendo.App/MainWindow.W5Ext.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -11816,9 +12017,9 @@
       "src/Trendo.App/MainWindow.W4Dev.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 32,
+    "WarmMs": 44,
     "WindowsOnly": []
   },
   {
@@ -11894,9 +12095,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 25,
+    "WarmMs": 23,
     "WindowsOnly": []
   },
   {
@@ -11968,9 +12169,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -12050,9 +12251,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -12120,9 +12321,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -12426,9 +12627,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 53,
+    "WarmMs": 48,
     "WindowsOnly": []
   },
   {
@@ -12687,9 +12888,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -12977,9 +13178,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 36,
     "WindowsOnly": []
   },
   {
@@ -13220,7 +13421,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
     "WarmMs": 7,
     "WindowsOnly": []
@@ -13489,7 +13690,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
     "WarmMs": 7,
     "WindowsOnly": []
@@ -13813,7 +14014,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
     "WarmMs": 5,
     "WindowsOnly": []
@@ -13890,9 +14091,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -13967,7 +14168,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -14064,9 +14265,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 41,
+    "WarmMs": 37,
     "WindowsOnly": []
   },
   {
@@ -14164,9 +14365,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -14247,9 +14448,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -14325,9 +14526,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -14594,9 +14795,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 32,
+    "WarmMs": 18,
     "WindowsOnly": []
   },
   {
@@ -14841,9 +15042,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 31,
     "WindowsOnly": []
   },
   {
@@ -15097,9 +15298,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 31,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -15386,9 +15587,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 50,
+    "WarmMs": 49,
     "WindowsOnly": []
   },
   {
@@ -15564,11 +15765,12 @@
       "Verstanden"
     ],
     "Formats": [
-      ".json",
       ".md",
       ".txt"
     ],
-    "Dependencies": [],
+    "Dependencies": [
+      "FFmpeg"
+    ],
     "Rea": "docs/claude/vorbilder/system-einstellungen-windows-gnome.md",
     "ReaSummary": "Vorbild-Analyse System: Windows-Einstellungen, GNOME-Einstellungen, macOS Systemeinstellungen, Windows-Kurzhelfer (Clean-Room)",
     "Ui": [
@@ -15596,9 +15798,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 32,
+    "WarmMs": 31,
     "WindowsOnly": []
   },
   {
@@ -15779,11 +15981,12 @@
       "Kette prüfen"
     ],
     "Formats": [
-      ".json",
       ".md",
       ".txt"
     ],
-    "Dependencies": [],
+    "Dependencies": [
+      "FFmpeg"
+    ],
     "Rea": "docs/claude/vorbilder/system-einstellungen-windows-gnome.md",
     "ReaSummary": "Vorbild-Analyse System: Windows-Einstellungen, GNOME-Einstellungen, macOS Systemeinstellungen, Windows-Kurzhelfer (Clean-Room)",
     "Ui": [
@@ -15812,7 +16015,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
     "WarmMs": 11,
     "WindowsOnly": []
@@ -15990,11 +16193,12 @@
       "Verstanden"
     ],
     "Formats": [
-      ".json",
       ".md",
       ".txt"
     ],
-    "Dependencies": [],
+    "Dependencies": [
+      "FFmpeg"
+    ],
     "Rea": "docs/claude/vorbilder/system-einstellungen-windows-gnome.md",
     "ReaSummary": "Vorbild-Analyse System: Windows-Einstellungen, GNOME-Einstellungen, macOS Systemeinstellungen, Windows-Kurzhelfer (Clean-Room)",
     "Ui": [
@@ -16035,9 +16239,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -16213,11 +16417,12 @@
       "Verstanden"
     ],
     "Formats": [
-      ".json",
       ".md",
       ".txt"
     ],
-    "Dependencies": [],
+    "Dependencies": [
+      "FFmpeg"
+    ],
     "Rea": "docs/claude/vorbilder/system-einstellungen-windows-gnome.md",
     "ReaSummary": "Vorbild-Analyse System: Windows-Einstellungen, GNOME-Einstellungen, macOS Systemeinstellungen, Windows-Kurzhelfer (Clean-Room)",
     "Ui": [
@@ -16249,9 +16454,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -16550,9 +16755,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 105,
+    "WarmMs": 98,
     "WindowsOnly": []
   },
   {
@@ -16767,7 +16972,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
     "WarmMs": 12,
     "WindowsOnly": []
@@ -16994,9 +17199,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -17209,9 +17414,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -17286,7 +17491,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
     "WarmMs": 11,
     "WindowsOnly": []
@@ -17565,7 +17770,7 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
     "WarmMs": 19,
     "WindowsOnly": []
@@ -17820,9 +18025,9 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 29,
     "WindowsOnly": []
   },
   {
@@ -17903,7 +18108,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand df8e056)",
+    "Version": "0.9.36 (Stand 66211cf)",
     "Shell": false,
     "WarmMs": 13,
     "WindowsOnly": []

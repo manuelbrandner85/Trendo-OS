@@ -1,6 +1,6 @@
 # Trendo CAD – Umsetzungsstand
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.36 (Stand df8e056)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.36 (Stand 66211cf)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 
@@ -45,5 +45,7 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | DR-13 | Live-Kamera, Fertig-Meldung, Zeitraffer aufnehmen und holen | Implementiert | `BambuProTests, BambuPro_Ui` |
 | DR-14 | Direkt aus Trendo vorbereiten (Bambu Studio im Hintergrund) und drucken | Implementiert | `BambuProTests, BambuPro_Ui` |
 | DR-15 | Mehrere Drucker mit Zustand, Auswählen, Entfernen | Implementiert | `BambuProTests, BambuPro_Ui` |
+| D3-15 | Export für Unity (FBX), Unreal (FBX), Godot (GLB), Web (GLB) über Blender mit Engine-Einstellungen | Implementiert | `Studio3DEnginesTests, Studio3DEngines_Ui` |
+| D3-16 | Rundlauf-Prüfung: Export wieder einlesen und vergleichen (Teile, Dreiecke, Materialien, UV, Knochen, Animationen, Formschlüssel, Maße); Verlust = Fehler, gewollte Änderung = Hinweis; Bericht neben der Datei | Implementiert | `Studio3DEnginesTests, Studio3DEngines_Ui` |
 
-0 von 39 Funktionen getestet.
+0 von 41 Funktionen getestet.

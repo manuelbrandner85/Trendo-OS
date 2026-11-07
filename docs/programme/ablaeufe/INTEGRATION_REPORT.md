@@ -1,6 +1,6 @@
 # Abläufe (Automatisch erledigen) – Einbindung in Trendo OS
 
-Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.36 (Stand df8e056)
+Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.36 (Stand 66211cf)
 
 - Seite `ablaeufe` im Studio „Aufgaben automatisieren“ (KI & Automatik) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

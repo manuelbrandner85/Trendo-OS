@@ -1,6 +1,6 @@
 # Leistung – Architektur
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `qual-leistung` · Stand: 0.9.36 (Stand df8e056)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `qual-leistung` · Stand: 0.9.36 (Stand 66211cf)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Sys13.cs`
@@ -17,12 +17,11 @@ Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `qu
 - `CrashLog`
 
 ## Dateiformate (im Code belegt)
-- .json
 - .md
 - .txt
 
 ## Externe Programme und Dienste
-– keine
+- FFmpeg
 
 ## Bausteine (Masterprompt 131 / 5)
 Eigene Arbeitsseite ohne die gemeinsame Programm-Hülle – Dokumentmodell, Rückgängig und Bedienstufen sind hier nicht einheitlich.
