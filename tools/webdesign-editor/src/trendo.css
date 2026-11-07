@@ -1,0 +1,21 @@
+/* Trendo-Look für den Web-Editor: dunkel, Gold als Leitfarbe (Trendo Dunkel-Gold). Seiten-Bausteine bleiben neutral (Kundenseite). */
+:root { --t-gold: #d4a73a; --t-gold-hi: #f0c75e; --t-bg: #0f1115; --t-panel: #171a21; --t-edge: #2a2f3a; --t-text: #e8e6e1; }
+body { margin: 0; background: #fff; font-family: "Segoe UI", Inter, system-ui, sans-serif; } /* gilt auch in der Leinwand: weißes Blatt */
+.t-page { min-height: 100vh; container-type: inline-size; } /* Handy/Tablet richten sich nach der Blattbreite (auch ohne iframe im Editor) */
+.t-tool, .t-back { background: linear-gradient(180deg, var(--t-gold-hi), var(--t-gold)); color: #1a1406; border: 0; border-radius: 8px; padding: 6px 12px; font-weight: 600; cursor: pointer; margin-left: 8px; box-shadow: 0 1px 0 rgba(255,255,255,.35) inset, 0 4px 14px rgba(212,167,58,.25); }
+.t-preview { background: #fff; color: #1d1d1f; min-height: 100vh; }
+.t-back { position: fixed; right: 16px; top: 16px; z-index: 10; }
+.t-page { font-family: "Segoe UI", Helvetica, Arial, sans-serif; color: #1d1d1f; background: #fff; }
+.t-hero { padding: 96px 24px; text-align: center; background: radial-gradient(1200px 400px at 50% 0%, #f6efe0, #fff); }
+.t-hero h1 { font-size: clamp(32px, 6vw, 64px); margin: 0 0 12px; letter-spacing: -0.02em; }
+.t-hero p { font-size: clamp(16px, 2.2vw, 22px); color: #3a3a3c; max-width: 720px; margin: 0 auto 28px; }
+.t-btn { display: inline-block; background: #1d1d1f; color: #fff; padding: 12px 22px; border-radius: 999px; text-decoration: none; font-weight: 600; }
+.t-h { padding: 24px 24px 0; margin: 0; }
+.t-text { padding: 8px 24px; line-height: 1.6; max-width: 820px; }
+.t-img { display: block; width: 100%; max-width: 1200px; margin: 16px auto; border-radius: 12px; }
+.t-empty { height: 220px; display: grid; place-items: center; background: #f2f2f4; color: #8a8a8e; }
+.t-section { padding: 48px 0; }
+.t-dunkel { background: #111; color: #eee; }
+.t-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 0 24px; }
+@container (max-width: 700px) { .t-cols { grid-template-columns: 1fr; } .t-hero { padding: 56px 16px; } }
+.t-scene { width: 100%; }

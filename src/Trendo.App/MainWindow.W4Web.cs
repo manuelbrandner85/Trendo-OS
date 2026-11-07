@@ -82,6 +82,7 @@ public partial class MainWindow
         grid.Children.Add(preview);
 
         var root = new StackPanel { Spacing = 8 };
+        root.Children.Add(Card(VisualEditorPane())); // Web Design Studio: visueller Editor
         root.Children.Add(Card(grid));
         root.Children.Add(Card(ToolsPane()));
         root.Children.Add(Card(CodePane()));
