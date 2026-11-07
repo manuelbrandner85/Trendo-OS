@@ -87,6 +87,40 @@ public class UnrealNatureTests
         finally { try { Directory.Delete(dir, true); } catch (IOException) { } }
     }
 
+    [Fact(DisplayName = "Echter Mensch: Ergebnis, Fehlergrund mit dem einen Schritt, Befehl mit Grafik ohne Fenster, Skript im Projekt")]
+    public void Mensch_parse_and_args()
+    {
+        var (ok, lines, err) = UnrealGame.ParseMensch("[x]LogPython: TRENDO-MENSCH gebaut: 3 Körperteile\n[x]LogPython: TRENDO-MENSCH-OK 10\n");
+        Assert.True(ok); Assert.Equal("", err); Assert.Contains("gebaut: 3 Körperteile", lines);
+        var bad = UnrealGame.ParseMensch("LogPython: TRENDO-MENSCH-FEHLER MetaHuman Creator-Kerndaten fehlen – Epic Games Launcher → Optionen\n");
+        Assert.False(bad.Ok); Assert.StartsWith("MetaHuman Creator-Kerndaten fehlen", bad.Error);
+        Assert.False(UnrealGame.ParseMensch("abgestürzt").Ok);
+        var a = UnrealGame.MenschArgs(@"C:\Spiele\Wald\Wald.uproject", @"C:\Spiele\Wald\Trendo-Pruefung\mensch.txt");
+        Assert.Contains("-RenderOffscreen", a); Assert.DoesNotContain("-nullrhi", a); Assert.Contains(a, x => x.EndsWith("trendo_mensch.py"));
+        var s = UnrealGame.MenschScript;
+        Assert.Contains("request_auto_rigging", s); Assert.Contains("build_meta_human", s); Assert.Contains("duplicate_and_retarget", s); Assert.Contains("TRENDO-MENSCH-OK", s);
+        Assert.Contains("MetaHumanCharacter", UnrealGame.Plugins);
+        Assert.Contains("MetaHumanWardrobeItem", s); Assert.Contains("try_add_item_from_wardrobe_item", s); // Kleidung aus Trendo/Kleidung
+    }
+
+    [Fact(DisplayName = "Kleidung: Outfits (.mhpkg) aus dem Werkzeugordner ins Projekt, nur geänderte, andere Dateien bleiben draußen")]
+    public void Clothes_copy()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "trendo-kleidung-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var src = Path.Combine(root, "werkzeuge", "assets", "kleidung"); Directory.CreateDirectory(src);
+            Assert.Equal(src, UnrealGame.ClothesDir(Path.Combine(root, "werkzeuge")));
+            File.WriteAllBytes(Path.Combine(src, "outfit.mhpkg"), new byte[3]); File.WriteAllText(Path.Combine(src, "notiz.txt"), "x");
+            var proj = Path.Combine(root, "Spiel");
+            Assert.Equal(1, UnrealGame.CopyClothes(src, proj));
+            Assert.True(File.Exists(Path.Combine(proj, "Trendo", "Kleidung", "outfit.mhpkg")));
+            Assert.False(File.Exists(Path.Combine(proj, "Trendo", "Kleidung", "notiz.txt")));
+            Assert.Equal(0, UnrealGame.CopyClothes(Path.Combine(root, "fehlt"), proj));
+        }
+        finally { try { Directory.Delete(root, true); } catch (IOException) { } }
+    }
+
     [Fact(DisplayName = "Welt-Skript: Nanite mit Flächenerhalt für Pflanzen, eigene Materialien mit Instanz-Nutzung, Alpha-Karten, Fernmischung; Befehl mit -nullrhi")]
     public void Welt_script()
     {

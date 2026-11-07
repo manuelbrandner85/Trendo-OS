@@ -45,7 +45,7 @@ public partial class MainWindow
         var lines = new List<string>(); var ok = true;
         void Step(string t) { _progMsg[GK] = t; _ui.Post(() => { if (CurrentView == GK) Show(GK); }); }
         var open = UnrealGame.WorldOf(d.Data) == "openworld";
-        var total = open ? 5 : 3; var n = 0;
+        var total = open ? 6 : 3; var n = 0;
         string No() => $"{++n}/{total}";
         try
         {
@@ -55,7 +55,11 @@ public partial class MainWindow
             else
             {
                 lines.Add($"✓ Kompiliert (Exitcode {ce})");
-                if (open) ok &= await GameUnrealWelt(built, uproject, engine, logs, lines, t => Step(No() + " " + t), () => n++);
+                var welt = open && await GameUnrealWelt(built, uproject, engine, logs, lines, t => Step(No() + " " + t), () => n++);
+                ok &= !open || welt;
+                // Echter Mensch als Spielfigur (MetaHuman); gelingt es nicht, bleibt die Gliederpuppe – das Spiel läuft trotzdem
+                if (welt) await GameUnrealMensch(uproject, engine, logs, lines, t => Step(No() + " " + t));
+                else if (open) n++;
                 Step(No() + " Unreal-Tests laufen (Daten, Regeln, Spielstand) …");
                 var (_, tlog) = await Task.Run(() => UnrealRun(UnrealGame.EditorCmd(engine), UnrealGame.TestArgs(uproject, Path.Combine(logs, "tests.txt")), Path.Combine(logs, "tests.txt"), 900_000));
                 var tests = UnrealGame.ParseTests(tlog);
@@ -102,6 +106,23 @@ public partial class MainWindow
         UnrealGame.UseWeltMap(built);
         lines.Add($"✓ Welt eingerichtet: {models} Pflanzen- und Felsmodelle, " + (info.Any(l => l.StartsWith("Bodenmaterial")) ? "fotorealer Boden" : "Boden") + ", Karte " + UnrealGame.WeltMap);
         return true;
+    }
+
+    /// <summary>Spielfigur als echter Mensch (MetaHuman): Unreal baut ihn aus einer Epic-Vorlage (Rig und 4K-Hauttexturen aus dem MetaHuman-Dienst
+    /// mit der Anmeldung des Epic Games Launchers) und überträgt die Bewegungen auf sein Skelett. Fehlt etwas, nennt Trendo genau den einen Schritt.</summary>
+    async Task GameUnrealMensch(string uproject, string engine, string logs, List<string> lines, Action<string> step)
+    {
+        if (_opt.Isolated && UnrealRunOverride is null) { lines.Add("• Echter Mensch: im Testmodus nicht gebaut"); return; }
+        // Kleidung: Outfits aus dem Werkzeugordner (im Testmodus aus dem Testordner) ins Projekt legen
+        var clothes = UnrealGame.CopyClothes(_opt.Isolated ? Path.Combine(_core.DataRoot, "kleidung") : UnrealGame.ClothesDir(_deps.ToolsRoot), Path.GetDirectoryName(uproject)!);
+        step("Unreal baut die Spielfigur als echten Menschen (MetaHuman: Haut, Haare, Gesicht, Bewegungen) … einige Minuten.");
+        var (me, mlog) = await Task.Run(() => UnrealRun(UnrealGame.EditorCmd(engine), UnrealGame.MenschArgs(uproject, Path.Combine(logs, "mensch.txt")), Path.Combine(logs, "mensch.txt"), 2_400_000));
+        var (mok, info, err) = UnrealGame.ParseMensch(mlog);
+        _core.Audit.Append(Principal.LocalOwner.Name, "game.unreal.mensch", mok ? "ok" : "fehler");
+        lines.Add(mok ? "✓ Echter Mensch als Spielfigur (MetaHuman" + (info.FirstOrDefault(l => l.StartsWith("gebaut")) is { } g ? ", " + g : "") + ")"
+                      + (info.FirstOrDefault(l => l.StartsWith("Kleidung:")) is { } k ? " – " + k : "")
+                      + (clothes == 0 ? " – eigene Kleidung: kostenloses MetaHuman-Outfit (.mhpkg) von Fab in den Ordner „" + (_opt.Isolated ? "kleidung" : UnrealGame.ClothesDir(_deps.ToolsRoot)) + "“ legen" : "")
+                      : $"• Spielfigur bleibt die Gliederpuppe (Exitcode {me}): {err}");
     }
 
     /// <summary>Abruf über die offizielle Poly-Haven-API (Netzzugriff nur in der App; Ziele auf dl.polyhaven.org beschränkt).</summary>

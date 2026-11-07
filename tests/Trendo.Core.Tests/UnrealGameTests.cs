@@ -43,7 +43,9 @@ public class UnrealGameTests
             var actors = File.ReadAllText(Path.Combine(dir, "Source", "Waldlaeufer", "TrendoActors.cpp"));
             Assert.Contains("SKM_Manny_Simple", actors); Assert.Contains("BS_MM_WalkRun", actors); Assert.Contains("SKM_SportsCar", actors);
             Assert.Contains("SetBlendSpacePosition", actors); Assert.Contains("Ohne Modell: Grundform", actors);
-            Assert.Contains("TrendoSetupFigure(GetMesh()", File.ReadAllText(Path.Combine(dir, "Source", "Waldlaeufer", "TrendoCharacter.cpp")));
+            var character = File.ReadAllText(Path.Combine(dir, "Source", "Waldlaeufer", "TrendoCharacter.cpp"));
+            Assert.Contains("TrendoSetupFigure(GetMesh()", character); Assert.Contains("TrendoSetupMetaHuman(this", character); // MetaHuman zuerst, Gliederpuppe als Rückfall
+            Assert.True(File.Exists(Path.Combine(dir, "Trendo", "trendo_mensch.py")));
             Assert.Contains("\"objects\"", File.ReadAllText(Path.Combine(dir, "Source", "Waldlaeufer", "TrendoGameMode.cpp")));
         }
         finally { if (Directory.Exists(root)) Directory.Delete(root, true); }

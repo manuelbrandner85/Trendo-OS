@@ -43,12 +43,16 @@ public class GameUnreal_Ui
         {
             runs.Add(Path.GetFileName(exe));
             if (exe.EndsWith("Build.bat")) return (0, "Result: Succeeded");
+            if (args.Any(a => a.StartsWith("-ExecutePythonScript=") && a.EndsWith("trendo_mensch.py")))
+                return (0, args.Contains("-RenderOffscreen") ? "LogPython: TRENDO-MENSCH gebaut: 3 Körperteile, 3 Haar-Arten, 39 Texturen\nLogPython: TRENDO-MENSCH-OK 10" : "ohne Grafik");
             if (args.Any(a => a.StartsWith("-ExecutePythonScript="))) return (0, "LogPython: TRENDO-WELT Bodenmaterial: /Game/Trendo/Natur/M_TrendoBoden\nLogPython: TRENDO-WELT-OK 39 Pflanzen/Felsen-Modelle");
             if (args.Any(a => a.Contains("Automation RunTests"))) return (0, string.Join("\n", new[] { "Daten", "Regeln", "Spielstand" }.Select(t => $"Test Completed. Result={{Success}} Name={{{t}}} Path={{Trendo.{t}}}")));
             return (0, "TRENDO-SPIEL Welt=openworld Level=0 Objekte=7 Gegner=1 Figur=ja Boden=ja Z=92\nTRENDO-OK Spiel läuft, Figur steht");
         };
         await w.GameUnrealCheck(d, screenshot: false); Pump();
-        Assert.Equal(["Build.bat", "UnrealEditor-Cmd.exe", "UnrealEditor-Cmd.exe", "UnrealEditor.exe"], runs);
+        Assert.Equal(["Build.bat", "UnrealEditor-Cmd.exe", "UnrealEditor-Cmd.exe", "UnrealEditor-Cmd.exe", "UnrealEditor.exe"], runs);
+        Assert.Contains("Echter Mensch als Spielfigur (MetaHuman, gebaut: 3 Körperteile", w.LastUnrealReport);
+        Assert.Contains("eigene Kleidung: kostenloses MetaHuman-Outfit (.mhpkg) von Fab", w.LastUnrealReport); // ohne Outfit: genau ein Hinweis
         Assert.Single(fetched);
         Assert.StartsWith("Alles bereit", w.LastUnrealReport);
         Assert.Contains("Welt eingerichtet: 39", w.LastUnrealReport);
