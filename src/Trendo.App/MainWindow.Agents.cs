@@ -62,7 +62,18 @@ public partial class MainWindow
         var roles = new WrapPanel();
         foreach (var r in roleList)
         {
-            var b = new Button { Name = "role-" + r.Id, Content = (r.Id.StartsWith("eigen.") ? "✎ " : "") + r.Name, Margin = new Thickness(0, 0, 6, 6), Background = _agentRole == r.Id ? Accent : Brushes.Transparent };
+            // I2 (07.11.2026): Rollen als Karten mit Anfangsbuchstaben-Abzeichen, Auftrag und Schreibrecht
+            var on = _agentRole == r.Id;
+            var b = new Button { Name = "role-" + r.Id, Width = 196, Height = 92, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(10, 8), CornerRadius = new CornerRadius(12),
+                HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalContentAlignment = VerticalAlignment.Stretch, Background = on ? Brush.Parse("#33C9A227") : TileBg, BorderBrush = on ? Accent : EdgeLit, BorderThickness = new Thickness(on ? 2 : 1),
+                Content = new StackPanel { Spacing = 3, Children = {
+                    new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = {
+                        new Border { Width = 26, Height = 26, CornerRadius = new CornerRadius(13), Background = on ? Accent : Brush.Parse("#2AFFFFFF"),
+                            Child = new TextBlock { Text = r.Name.Length > 0 ? r.Name[..1].ToUpperInvariant() : "?", Foreground = Brushes.White, FontWeight = FontWeight.Bold, FontSize = 12, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } },
+                        new TextBlock { Text = (r.Id.StartsWith("eigen.") ? "✎ " : "") + r.Name, Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis } } },
+                    new TextBlock { Text = r.Does, Foreground = Muted, FontSize = 10.5, TextWrapping = TextWrapping.Wrap, MaxHeight = 28, TextTrimming = TextTrimming.CharacterEllipsis },
+                    new TextBlock { Text = r.MayWriteFiles ? "darf nach Freigabe speichern" : "nur Vorschläge", Foreground = r.MayWriteFiles ? Brush.Parse("#FACC15") : Muted, FontSize = 9.5 } } } };
+            Hover(b);
             ToolTip.SetTip(b, r.Does + (r.Studio is { } rs ? $" · gehört zu „{StudioCatalog.For(rs)?.Name}“" : ""));
             b.Click += (_, _) => { _agentRole = r.Id; Show("ki-rollen"); };
             roles.Children.Add(b);

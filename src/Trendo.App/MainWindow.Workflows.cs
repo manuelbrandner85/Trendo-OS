@@ -77,7 +77,19 @@ public partial class MainWindow
         var tpl = new WrapPanel();
         foreach (var (id, name, make) in WorkflowEngine.Templates)
         {
-            var b = new Button { Name = "wf-tpl-" + id, Content = "+ " + name, Margin = new Thickness(0, 0, 6, 6) };
+            // I4 (07.11.2026): Vorlagen als Karten mit Symbol und Auslöser
+            var (ic, c1, c2, trig) = id switch
+            {
+                "pdf" => (Mdi.Folder, "#F5D27A", "#9C7419", "neue Datei"), "notiz" => (Mdi.NoteEdit, "#8FC2FF", "#2F6FE0", "täglich"),
+                "fotos" => (Mdi.Image, "#86EFAC", "#15803D", "von Hand"), "archiv" => (Mdi.ShieldCheck, "#C4B5FD", "#6D28D9", "wöchentlich"), _ => (Mdi.Cogs, "#CBD5E1", "#475569", ""),
+            };
+            var b = new Button { Name = "wf-tpl-" + id, Width = 280, Margin = new Thickness(0, 0, 0, 8), Padding = new Thickness(10, 8), CornerRadius = new CornerRadius(12), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1),
+                HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                Content = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), ColumnSpacing = 10, Children = { Chip(ic, c1, c2, 32),
+                    Pos(new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = {
+                        new TextBlock { Text = name, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
+                        new TextBlock { Text = "Vorlage · startet " + trig, Foreground = Muted, FontSize = 10.5 } } }, 1) } } };
+            ToolTip.SetTip(b, "Als neuen Ablauf anlegen"); Hover(b);
             b.Click += (_, _) => { var w = Workflows.Add(make(WorkflowHome)); WfSelected = w.Id; WfNode = -1; _wfMsg = $"„{w.Name}“ angelegt. Mach zuerst einen Probelauf."; Show("ablaeufe"); };
             tpl.Children.Add(b);
         }
@@ -110,7 +122,7 @@ public partial class MainWindow
             if (on && card is Border cb) { cb.BorderBrush = Brush.Parse("#FACC15"); cb.BorderThickness = new Thickness(1.5); }
             left.Children.Add(card);
         }
-        if (all.Count == 0) left.Children.Add(P("Noch keine Abläufe. Starte mit einer Vorlage oben."));
+        if (all.Count == 0) left.Children.Add(P("Noch keine eigenen Abläufe – oben eine Vorlage antippen.", null, 12)); // Leerzustand groß in der Mitte (G6)
 
         var center = new StackPanel { Spacing = 8 };
         var undo = new Button { Name = "wf-undo", Content = "↶ Rückgängig", IsEnabled = _wfUndo.Count > 0 }; undo.Click += (_, _) => { WfUndo(); Show("ablaeufe"); };
@@ -119,6 +131,7 @@ public partial class MainWindow
         var selW = WfSelected is { } sid ? Workflows.Get(sid) : null;
         if (_wfNew) center.Children.Add(WorkflowEditor());
         else if (selW is not null) center.Children.Add(WfFlow(selW));
+        else center.Children.Add(EmptyState("wf-empty", "neu-laden", "Noch kein Ablauf", "Abläufe erledigen Wiederkehrendes von allein: Downloads sortieren, Notizen anlegen, Ordner sichern. Links eine Vorlage antippen – du siehst den Ablauf dann hier als Kette aus Auslöser und Schritten."));
         if (LastWfRun is { } lr)
         {
             var box = new StackPanel { Name = "wf-run", Spacing = 2, Children = { new TextBlock { Text = lr.DryRun ? "Probelauf – nichts wurde geändert:" : lr.Ok ? "Ausgeführt:" : "Nicht ganz geklappt:", Foreground = lr.Ok ? Text : Brush.Parse("#FACC15"), FontWeight = FontWeight.SemiBold } } };

@@ -139,6 +139,26 @@ public class Modern_Ui
         finally { w.Close(); }
     }
 
+    [AvaloniaFact(DisplayName = "I2/I4: KI-Rollen als Karten (Auftrag, Schreibrecht), Wahl markiert; Ablauf-Vorlagen als Karten, ohne Ablauf Leerzustand, Vorlage legt Ablauf an")]
+    public void Agents_and_workflow_cards()
+    {
+        var (w, _, _) = Ui.Open();
+        try
+        {
+            w.Show("ki-rollen"); Pump();
+            var role = w.Find<Button>("role-pruefer");
+            Assert.Contains("nur Vorschläge", string.Join(" ", role.GetLogicalDescendants().OfType<TextBlock>().Select(t => t.Text)));
+            role.Press(); Pump();
+            Assert.Equal(2, w.Find<Button>("role-pruefer").BorderThickness.Left);
+            w.Show("ablaeufe"); Pump();
+            Assert.NotNull(w.TryFind<Border>("wf-empty"));
+            w.Find<Button>("wf-tpl-notiz").Press(); Pump();
+            Assert.Null(w.TryFind<Border>("wf-empty"));
+            Assert.Contains("Tagesnotiz", w.Find<TextBlock>("wf-msg").Text);
+        }
+        finally { w.Close(); }
+    }
+
     [AvaloniaFact(DisplayName = "G10: KI-Aufträge der Grafikkarten-Warteschlange als Karten – läuft mit Laufzeit, wartet mit Platz; fertig = Karte weg")]
     public async Task Task_cards()
     {
