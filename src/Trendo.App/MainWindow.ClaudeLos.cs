@@ -8,6 +8,28 @@ namespace Trendo.App;
 /// Ohne Claude, ohne Abo oder während einer Abo-Pause arbeitet wie bisher die Trendo-Planung mit der KI auf dem PC.</summary>
 public partial class MainWindow
 {
+    /// <summary>Für Tests: Projekt-MCP-Vorbereitung auch im abgeschotteten Testmodus ausführen.</summary>
+    public static Func<string, string, StudioMcp.Result>? StudioMcpOverride { get; set; }
+
+    /// <summary>C5: MCP-Server, die das Studio braucht (Blender, Unreal, Godot), in die .mcp.json des Projekts – Pfad der Datei oder null, wenn nichts eingetragen ist.
+    /// Claude Code lädt Projekt-Server im Druckmodus nicht von selbst; darum gibt Trendo die Datei ausdrücklich mit (--mcp-config).</summary>
+    string? ClaudeStudioMcp(string folder, string? studio)
+    {
+        if (studio is null) return null;
+        try
+        {
+            StudioMcp.Result r;
+            if (StudioMcpOverride is { } o) r = o(folder, studio);
+            else if (_opt.Isolated) return null;
+            else r = StudioMcpPrepare(folder, studio);
+            var file = Path.Combine(folder, ".mcp.json");
+            return r.Added.Count > 0 && File.Exists(file) ? file : null;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Text.Json.JsonException) { return null; }
+    }
+
+    static IReadOnlyList<string> ClaudeWithMcp(IReadOnlyList<string> args, string? mcpFile) => mcpFile is null ? args : [.. args, "--mcp-config", mcpFile];
+
     /// <summary>Übernimmt Claude die Aufträge der Studio-Zeile? (verbunden über das Abo, als Haupt-KI eingeschaltet, kein Abo-Limit gerade)</summary>
     public bool ClaudeTakesStudioPrompts =>
         (!_opt.Isolated || ClaudeStatusOverride is not null) && _claude.Ready && KiSourceSettings.Load(_core.DataRoot).ClaudeMain && !CLimit.Active(DateTimeOffset.Now);

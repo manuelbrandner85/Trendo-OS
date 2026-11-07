@@ -259,6 +259,7 @@ public class Modern_Ui
                 line(J(new { type = "result", subtype = "success", is_error = false, result = "Erledigt.", session_id = "s1", num_turns = 1 }));
                 return Task.FromResult(0);
             };
+            MainWindow.StudioMcpOverride = (dir, studio) => { File.WriteAllText(Path.Combine(dir, ".mcp.json"), "{\"mcpServers\":{}}"); return new Trendo.Core.StudioMcp.Result(dir, ["trendo-blender"], []); };
             await w.ClaudeCheck(true); Pump();
             Assert.True(w.ClaudeTakesStudioPrompts);
             w.Show("musik-studio"); Pump();
@@ -269,6 +270,7 @@ public class Modern_Ui
             var sys = calls[0][calls[0].ToList().IndexOf("--append-system-prompt") + 1];
             Assert.Contains("Mach ein Sommerlied", string.Join(" ", calls[0]));
             Assert.Contains("fragst du zuerst", sys); // C4: Rückfrage bei Wirkung nach außen
+            var mi = calls[0].ToList().IndexOf("--mcp-config"); Assert.True(mi > 0); Assert.EndsWith(".mcp.json", calls[0][mi + 1]); // C5: Projekt-Server werden mitgegeben
             Assert.True(w.ClaudeDockOpen(w.ActiveWindowId!)); Assert.False(w.ClaudeDockIsMax(w.ActiveWindowId!)); // Studio bleibt sichtbar
             for (var i = 0; i < 100 && w.ClaudeChatRunning(); i++) { Pump(); await Task.Delay(20); }
             // zweiter Auftrag: dieselbe Sitzung
@@ -278,7 +280,7 @@ public class Modern_Ui
             for (var i = 0; i < 100 && calls.Count < 2; i++) { Pump(); await Task.Delay(20); }
             Assert.Equal(2, calls.Count); Assert.Contains("--resume", calls[1]); Assert.Contains("s1", calls[1]);
         }
-        finally { MainWindow.ClaudeStatusOverride = null; MainWindow.ClaudeRunOverride = null; w.Close(); }
+        finally { MainWindow.ClaudeStatusOverride = null; MainWindow.ClaudeRunOverride = null; MainWindow.StudioMcpOverride = null; w.Close(); }
     }
 
     [AvaloniaFact(DisplayName = "G10: KI-Aufträge der Grafikkarten-Warteschlange als Karten – läuft mit Laufzeit, wartet mit Platz; fertig = Karte weg")]

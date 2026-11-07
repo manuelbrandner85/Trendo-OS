@@ -491,7 +491,8 @@ public partial class MainWindow
         {
             try
             {
-                await Task.Run(() => ClaudeRun(ClaudeCode.Args(prompt, ClaudeCode.Phase.Chat, chat.Session, system, model is { Length: > 0 } ? model : null, chat.FullWith(ClaudeAlways) ? ClaudeCode.Level.Voll : ClaudeCode.Level.Sicher), folder, OnLine, ui.Cts.Token));
+                var mcpFile = chat.FullWith(ClaudeAlways) ? ClaudeStudioMcp(folder, dock.Studio) : null; // C5 (08.11.2026): Blender/Unreal/Godot direkt aus Claude
+                await Task.Run(() => ClaudeRun(ClaudeWithMcp(ClaudeCode.Args(prompt, ClaudeCode.Phase.Chat, chat.Session, system, model is { Length: > 0 } ? model : null, chat.FullWith(ClaudeAlways) ? ClaudeCode.Level.Voll : ClaudeCode.Level.Sicher), mcpFile), folder, OnLine, ui.Cts.Token));
             }
             catch (OperationCanceledException) { error = "Angehalten."; }
             catch (InvalidOperationException e) { error = e.Message; }
