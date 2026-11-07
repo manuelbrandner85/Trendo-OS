@@ -8,7 +8,8 @@
 | CORE-05/CORE-06 Claude in Blender/Unreal/Godot (C5/C6) | MCP je Projekt + sichtbarer Start eingebaut, 10 Kern- und 1 Oberflächentest; Zusammenspiel mit dem Claude-Chat (Sitzung A, C1–C4) NOT RUN |
 | Runde 1 übrige (MLT, basic-pitch, PMTiles/MapLibre, assimp) | geplant, NOT RUN – brauchen je eine Freigabe zum Ausführen fremden Codes |
 | Runde 2 (Open3D, mediamtx, streamlink, typst) | geplant, NOT RUN |
-| Runde 3 Umsetzung (Node-RED-Anbindung, IFC-Ansicht/-Export, Konzepte für das KI-Team) | geplant, NOT RUN |
+| CORE-03 KI-Team: Team-Lauf fortsetzen (Konzept LangGraph, eigener Code) | eingebaut (5d45824cd), 3 Kerntests grün, KI-Team-Oberflächentests grün; echter Lauf mit Claude NOT RUN |
+| Runde 3 übrige Umsetzung (Node-RED-Anbindung, IFC-Ansicht/-Export, weitere KI-Team-Konzepte) | geplant, NOT RUN |
 | Runden 4+ (44 Studios) | NOT RUN |
 | Web Design Studio Modul 05 (Design-Tokens) | eingebaut, 2 Tests, im Browser geprüft (docs/web-design-godmode) |
 | Volltest nach den Änderungen | grün: Api 16, Core 1546, App 829 (reports/alle-studios/volltest-2026-11-08.md) |
