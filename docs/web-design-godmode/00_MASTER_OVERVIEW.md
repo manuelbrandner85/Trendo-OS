@@ -26,7 +26,7 @@ Freigabe des Nutzers: „Ja, so bauen“ (Aufteilung Puck + React Three Fiber + 
 | 02 | Visual Drag-and-Drop Builder | umgesetzt (Grundstock) | Puck: Ziehen (echte Maus im Trendo-Fenster geprüft), Doppelklick/Eingabetaste zum Einfügen, Ebenen, Eigenschaften, Rückgängig; 8 Bausteine |
 | 03 | AI Website Architect | vorhanden (Altbestand) | WebsiteStudio/WebsitePlan aus Beschreibung; Anbindung an den visuellen Editor offen |
 | 04 | Responsive Design Engine | teilweise | Ansichten Handy 390/Tablet 820/Desktop 1440 (im Browser); unter file:// Container-Abfragen; frei definierbare Breakpoints offen |
-| 05 | Design System Studio | geplant | Trendo-Farben im Editor-CSS; globale Tokens offen (Webstudio-Konzept clean-room) |
+| 05 | Design System Studio | teilweise (Tokens umgesetzt) | Seitenweite Tokens Akzent-/Text-/Hintergrundfarbe, Schrift, Rundung, Abstand als CSS-Variablen in allen Bausteinen; Trendo prüft sie beim Speichern (nur #RRGGBB, bekannte Schriften, Grenzen) – 2 Tests; im Browser geprüft. Komponenten-Stile/Bibliotheken offen |
 | 06 | Component & Template Factory | geplant | Baustein-Bibliothek erweiterbar über config; eigene Vorlagen offen |
 | 07 | HTML/CSS/JS/React Editor | vorhanden (Altbestand) | Code-Editor im Studio (Dateien der gebauten Seite); Synchronisierung mit dem visuellen Editor offen |
 | 08 | 3D Web Experience Studio | umgesetzt (Grundstock) | Baustein 3D-Szene (R3F): Form, Farbe, Drehung, Höhe, Licht, Schatten; GLB-Modelle offen |

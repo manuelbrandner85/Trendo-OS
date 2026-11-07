@@ -71,6 +71,23 @@ public class WebDesignTests
         Assert.Null(WebDesign.Validate(WebDesign.Empty("Test")).Error);
     }
 
+    [Fact(DisplayName = "Web Design +6 (Modul 05): gültige Design-Tokens bleiben unverändert (Farben, Schrift, Rundung, Abstand)")]
+    public void Tokens_kept()
+    {
+        var (ok, _) = WebDesign.Validate("""{"root":{"props":{"title":"x","accent":"#C0392B","ink":"#111111","paper":"#FAF7F0","font":"serif","radius":20,"space":32}},"content":[]}""");
+        var p = JsonNode.Parse(ok!)!["root"]!["props"]!;
+        Assert.Equal("#C0392B", p["accent"]!.ToString()); Assert.Equal("serif", p["font"]!.ToString()); Assert.Equal(20, p["radius"]!.GetValue<double>()); Assert.Equal(32, p["space"]!.GetValue<double>());
+    }
+
+    [Fact(DisplayName = "Web Design −6 (Modul 05): CSS-Einschleusung über Farbe/Schrift wird verhindert, Zahlen werden begrenzt")]
+    public void Tokens_sanitized()
+    {
+        var (ok, _) = WebDesign.Validate("""{"root":{"props":{"accent":"red;background:url(javascript:alert(1))","ink":"#12345","paper":"expression(1)","font":"Comic\"};body{display:none","radius":999,"space":"-5"}},"content":[]}""");
+        var p = JsonNode.Parse(ok!)!["root"]!["props"]!;
+        Assert.Equal("#1d1d1f", p["accent"]!.ToString()); Assert.Equal("#1d1d1f", p["ink"]!.ToString()); Assert.Equal("#ffffff", p["paper"]!.ToString()); Assert.Equal("klar", p["font"]!.ToString());
+        Assert.Equal(40, p["radius"]!.GetValue<double>()); Assert.Equal(4, p["space"]!.GetValue<double>());
+    }
+
     [Fact(DisplayName = "Web Design −1: kein JSON, fehlendes root/content oder Baustein ohne Typ wird abgelehnt, nichts geschrieben")]
     public void Reject_invalid()
     {

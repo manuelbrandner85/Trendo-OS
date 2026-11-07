@@ -28,7 +28,23 @@ public static partial class WebDesign
         if (n is not JsonObject o || o["root"] is not JsonObject || o["content"] is not JsonArray content) return (null, "Seitendaten unvollständig (root/content fehlt).");
         foreach (var c in content) if (c is not JsonObject co || string.IsNullOrWhiteSpace(co["type"]?.ToString())) return (null, "Ein Baustein hat keinen Typ.");
         Sanitize(o);
+        SanitizeTokens(o["root"]?["props"] as JsonObject);
         return (o.ToJsonString(), null);
+    }
+
+    [GeneratedRegex("^#[0-9a-fA-F]{6}$")] private static partial Regex HexColor();
+    public static readonly string[] Fonts = ["klar", "serif", "rund", "mono"];
+
+    /// <summary>Modul 05 Design-Tokens: nur #RRGGBB-Farben, bekannte Schriften, Rundung 0–40 und Abstand 4–48 px – sonst Standardwert. So kann kein fremder CSS-Code über die Seiteneinstellungen in die Seite gelangen.</summary>
+    static void SanitizeTokens(JsonObject? p)
+    {
+        if (p is null) return;
+        foreach (var (k, d) in new[] { ("accent", "#1d1d1f"), ("ink", "#1d1d1f"), ("paper", "#ffffff") })
+            if (p[k] is not null && !(p[k] is JsonValue v && v.TryGetValue(out string? s) && HexColor().IsMatch(s))) p[k] = d;
+        if (p["font"] is not null && !(p["font"] is JsonValue f && f.TryGetValue(out string? fs) && Fonts.Contains(fs))) p["font"] = "klar";
+        static double? Num(JsonNode? n) => n is JsonValue v && v.TryGetValue(out double d) ? d : n is JsonValue s && s.TryGetValue(out string? t) && double.TryParse(t, System.Globalization.CultureInfo.InvariantCulture, out var x) ? x : null;
+        if (p["radius"] is not null) p["radius"] = Math.Clamp(Num(p["radius"]) ?? 12, 0, 40);
+        if (p["space"] is not null) p["space"] = Math.Clamp(Num(p["space"]) ?? 24, 4, 48);
     }
 
     [GeneratedRegex(@"^\s*(javascript|vbscript|data)\s*:", RegexOptions.IgnoreCase)] private static partial Regex DangerousUrl();

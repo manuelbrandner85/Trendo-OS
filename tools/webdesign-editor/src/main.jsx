@@ -52,6 +52,15 @@ const motionFields = {
   seconds: { type: "number", label: "Dauer (s)", min: 0.2, max: 5, step: 0.1 },
 };
 
+// ---------- Design-Tokens (Modul 05) ----------
+const FONTS = { klar: '"Segoe UI", Helvetica, Arial, sans-serif', serif: 'Georgia, "Times New Roman", serif', rund: '"Trebuchet MS", "Segoe UI", sans-serif', mono: 'Consolas, "Courier New", monospace' };
+const hex = (v, d) => (typeof v === "string" && /^#[0-9a-fA-F]{6}$/.test(v) ? v : d);
+const num = (v, d, lo, hi) => (Number.isFinite(+v) ? Math.min(hi, Math.max(lo, +v)) : d);
+export function tokens(t) {
+  return { "--t-accent": hex(t.accent, "#1d1d1f"), "--t-ink": hex(t.ink, "#1d1d1f"), "--t-paper": hex(t.paper, "#ffffff"), "--t-font": FONTS[t.font] || FONTS.klar,
+    "--t-radius": num(t.radius, 12, 0, 40) + "px", "--t-space": num(t.space, 24, 4, 48) + "px" };
+}
+
 // ---------- Bausteine ----------
 export const config = {
   categories: {
@@ -59,8 +68,17 @@ export const config = {
     inhalt: { title: "Inhalt", components: ["Kopfbereich", "Ueberschrift", "Text", "Bild", "Knopf"] },
     effekte: { title: "3D & Bewegung", components: ["Szene3D"] },
   },
-  root: { fields: { title: { type: "text", label: "Seitentitel" }, description: { type: "textarea", label: "Beschreibung (Suchmaschinen)" } },
-    render: ({ children }) => <div className="t-page">{children}</div> },
+  // Modul 05 Design-System: seitenweite Werte als CSS-Variablen – jeder Baustein nutzt sie; Trendo prüft die Werte beim Speichern (nur #Farben, sichere Schriftnamen)
+  root: {
+    fields: {
+      title: { type: "text", label: "Seitentitel" }, description: { type: "textarea", label: "Beschreibung (Suchmaschinen)" },
+      accent: { type: "text", label: "Akzentfarbe (#RRGGBB)" }, ink: { type: "text", label: "Textfarbe (#RRGGBB)" }, paper: { type: "text", label: "Hintergrund (#RRGGBB)" },
+      font: { type: "select", label: "Schrift", options: [{ label: "Klar (Segoe/Helvetica)", value: "klar" }, { label: "Serif (Georgia)", value: "serif" }, { label: "Rund (Trebuchet)", value: "rund" }, { label: "Technisch (Consolas)", value: "mono" }] },
+      radius: { type: "number", label: "Rundung (px)", min: 0, max: 40 }, space: { type: "number", label: "Abstand-Grundwert (px)", min: 4, max: 48 },
+    },
+    defaultProps: { title: "Neue Seite", description: "", accent: "#1d1d1f", ink: "#1d1d1f", paper: "#ffffff", font: "klar", radius: 12, space: 24 },
+    render: ({ children, accent, ink, paper, font, radius, space }) => <div className="t-page" style={tokens({ accent, ink, paper, font, radius, space })}>{children}</div>,
+  },
   components: {
     Kopfbereich: {
       label: "Kopfbereich",
