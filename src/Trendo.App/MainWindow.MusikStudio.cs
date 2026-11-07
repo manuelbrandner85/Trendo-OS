@@ -507,6 +507,7 @@ public partial class MainWindow
 
         edit.Children.Add(MsExtendPanel(s)); // M10: Verlängern mit dem Grundmodell
         edit.Children.Add(MsCropPanel(s)); // V5: Zuschneiden / Abschnitt entfernen
+        edit.Children.Add(MsMashupSamplePanel(s)); // V10: Mashup und Sample
         spuren.Children.Add(MsStemsPanel(s)); // Spuren trennen mit Demucs
         spuren.Children.Add(MsSingPanel(s)); // S5/S6: Mitsingen, Aufnahme mischen
         video.Children.Add(MsUnderstandPanel(s)); // KI-Musikvideo A: Lied verstehen (wer singt wann, Zeilen, Thema)

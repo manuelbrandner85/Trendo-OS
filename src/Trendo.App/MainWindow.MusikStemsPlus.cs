@@ -92,9 +92,15 @@ public partial class MainWindow
             Button T(string name, string text, bool on, Func<StemTools.Channel> next) { var b = new Button { Name = name, Content = text, Width = 26, Height = 22, Padding = new Thickness(0), FontSize = 10.5, FontWeight = FontWeight.Bold, HorizontalContentAlignment = HorizontalAlignment.Center, Background = on ? Brush.Parse(text == "S" ? "#FACC15" : "#EF4444") : DawButton, Foreground = on ? Brushes.Black : Text, BorderThickness = new Thickness(0) }; b.Click += (_, _) => MsStemSet(s, stem, next()); return b; }
             var vol = new Slider { Name = $"ms-stem-vol-{id}", Minimum = -30, Maximum = 6, Value = ch.GainDb, Width = 110, Margin = new Thickness(4, -8, 0, -8) };
             vol.PointerCaptureLost += (_, _) => MsStemSet(s, stem, (mix.GetValueOrDefault(stem) ?? new StemTools.Channel()) with { GainDb = Math.Round(vol.Value) });
+            var get = new Button { Name = $"ms-stem-get-{id}", Content = "Holen", FontSize = 10.5, Padding = new Thickness(6, 1), Height = 22 };
+            ToolTip.SetTip(get, $"{label} allein und „ohne {label}“ als zwei eigene Lieder (wie Sunos „Split from Mix“)");
+            get.Click += (_, _) => MsIsolate(s, stem);
+            var midi = new Button { Name = $"ms-stem-midi-{id}", Content = "MIDI", FontSize = 10.5, Padding = new Thickness(6, 1), Height = 22 };
+            ToolTip.SetTip(midi, $"Noten der Spur „{label}“ als MIDI-Datei (mit Unsicherheitsbericht)");
+            midi.Click += (_, _) => _ = MsStemMidi(s, stem);
             sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 3, Children = {
                 new TextBlock { Text = label, Width = 110, Foreground = ch.Mute ? Muted : Text, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center },
-                T($"ms-stem-mute-{id}", "M", ch.Mute, () => ch with { Mute = !ch.Mute }), T($"ms-stem-solo-{id}", "S", ch.Solo, () => ch with { Solo = !ch.Solo }), vol } });
+                T($"ms-stem-mute-{id}", "M", ch.Mute, () => ch with { Mute = !ch.Mute }), T($"ms-stem-solo-{id}", "S", ch.Solo, () => ch with { Solo = !ch.Solo }), vol, get, midi } });
         }
         var play = Act("ms-stem-play", "▶ Mischung anhören", () => MsStemPlay(s));
         var save = Act("ms-stem-save", "Als Lied speichern", () => MsStemSave(s));
@@ -102,6 +108,40 @@ public partial class MainWindow
         sp.Children.Add(new WrapPanel { Children = { play, new Border { Width = 4 }, save, new Border { Width = 4 }, karaoke } });
         if (MsStemQuality is { } q) sp.Children.Add(P($"Letzte Trennung: {q.Reconstruction:0.0} dB Rekonstruktion, Übersprechen {q.Bleed:0.00}.", Muted, 10.5));
         return sp;
+    }
+
+    /// <summary>Suno V9 „Split from Mix“: eine Spur allein und alles andere („ohne …“) als zwei eigene Lieder.</summary>
+    public List<MusicSong> MsIsolate(MusicSong s, string stemId)
+    {
+        var dir = MsStemDir(s); if (dir is null) { _msMsg = "Erst „Spuren trennen“."; Show(MS); return []; }
+        var files = StemTools.Files(dir);
+        if (!files.ContainsKey(stemId)) { _msMsg = "Diese Spur gibt es in der Trennung nicht – für Gitarre und Klavier „6 Spuren“ wählen."; Show(MS); return []; }
+        var root = Songs.Get(MsStemRoot(s)) ?? s; var label = StemTools.Stems.First(x => x.Id == stemId).Label;
+        var (alone, rest) = StemTools.Isolate(files, stemId);
+        var fa = Path.Combine(dir, $"nur-{stemId}.wav"); var fr = Path.Combine(dir, $"ohne-{stemId}.wav");
+        AudioFile.WriteWav(alone, fa, 24); AudioFile.WriteWav(rest, fr, 24);
+        MusicSong Add(string file, string title, string kind, bool voice) => Songs.Add(new MusicSong { Title = $"{root.Title} – {title}", Style = root.Style, Lyrics = voice ? root.Lyrics : "[Instrumental]",
+            Language = root.Language, Seconds = Math.Round(alone.Seconds, 2), Bpm = root.Bpm, Key = root.Key, TimeSignature = root.TimeSignature, File = file, Kind = kind, ParentId = root.Id });
+        var made = new List<MusicSong> { Add(fa, label, "spur-" + stemId, stemId == "gesang"), Add(fr, "ohne " + label, "ohne-" + stemId, stemId != "gesang" && !string.IsNullOrWhiteSpace(root.Lyrics)) };
+        _msSel = made[0].Id; _msMsg = $"✓ „{label}“ allein und „ohne {label}“ sind jetzt eigene Lieder.";
+        _core.Audit.Append(Principal.LocalOwner.Name, "musik.spur.geholt", $"{root.Id} {stemId}");
+        Show(MS);
+        return made;
+    }
+
+    /// <summary>Suno V9 „Get MIDI“ je Spur: Noten der Spur (Melodie → Noten mit Unsicherheitsbericht, siehe AudioToMidi).</summary>
+    public async Task<string?> MsStemMidi(MusicSong s, string stemId)
+    {
+        var dir = MsStemDir(s); if (dir is null || !StemTools.Files(dir).TryGetValue(stemId, out var f)) { _msMsg = "Erst „Spuren trennen“."; Show(MS); return null; }
+        var root = Songs.Get(MsStemRoot(s)) ?? s; var label = StemTools.Stems.First(x => x.Id == stemId).Label;
+        var r = await Task.Run(() => AudioToMidi.Transcribe(AudioFile.Read(f)));
+        if (r.Notes.Count == 0) { _msMsg = $"In der Spur „{label}“ wurden keine Noten erkannt."; Show(MS); return null; }
+        var mid = Path.Combine(dir, $"{stemId}.mid");
+        await File.WriteAllBytesAsync(mid, PianoRoll.ToMidi(AudioToMidi.ToSong(r, root.Bpm ?? 120, $"{root.Title} – {label}")));
+        await File.WriteAllTextAsync(Path.Combine(dir, $"{stemId} – Unsicherheitsbericht.md"), AudioToMidi.Report($"{root.Title} – {label}", r));
+        _msMsg = $"✓ MIDI „{label}“: {r.Notes.Count} Noten{(r.Exact ? "" : " (geschätzt – mehrstimmig, siehe Unsicherheitsbericht)")} – {Path.GetFileName(mid)} im Spuren-Ordner.";
+        Show(MS);
+        return mid;
     }
 
     /// <summary>V8 Karaoke: Liedtext-Zeilen auf die Gesangsphrasen legen (aus der Gesangsspur), als LRC neben die Begleitung schreiben und die Begleitung abspielen.</summary>
@@ -128,7 +168,7 @@ public partial class MainWindow
 
     Control MsStemModelBox()
     {
-        var models = new[] { ("htdemucs", "Schnell (Standard)"), ("htdemucs_ft", "Genau – etwa 4× langsamer, lädt einmal ca. 320 MB") };
+        var models = new[] { ("htdemucs", "Schnell (Standard)"), ("htdemucs_ft", "Genau – etwa 4× langsamer, lädt einmal ca. 320 MB"), ("htdemucs_6s", "6 Spuren – zusätzlich Gitarre und Klavier") };
         var box = new ComboBox { Name = "ms-stem-model", ItemsSource = models.Select(m => "Trennung: " + m.Item2).ToList(), SelectedIndex = Math.Max(0, Array.FindIndex(models, m => m.Item1 == MsStemModel)), FontSize = 11.5, HorizontalAlignment = HorizontalAlignment.Stretch };
         box.SelectionChanged += (_, _) => { if (box.SelectedIndex >= 0) MsStemModel = models[box.SelectedIndex].Item1; };
         return box;

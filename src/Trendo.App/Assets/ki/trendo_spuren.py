@@ -16,7 +16,7 @@ import julius
 from demucs.apply import apply_model
 from demucs.pretrained import get_model
 
-NAMES = {"vocals": "gesang", "drums": "schlagzeug", "bass": "bass", "other": "rest"}
+NAMES = {"vocals": "gesang", "drums": "schlagzeug", "bass": "bass", "other": "rest", "guitar": "gitarre", "piano": "klavier"}
 
 
 def main():
@@ -25,7 +25,8 @@ def main():
     name = "htdemucs"
     if "--modell" in sys.argv:
         name = sys.argv[sys.argv.index("--modell") + 1]
-    if name not in ("htdemucs", "htdemucs_ft"):
+    # Suno V9 (07.11.2026): „htdemucs_6s“ – sechs Spuren, zusätzlich Gitarre und Klavier
+    if name not in ("htdemucs", "htdemucs_ft", "htdemucs_6s"):
         print("Unbekanntes Modell: " + name, file=sys.stderr)
         sys.exit(2)
     os.makedirs(out, exist_ok=True)

@@ -20,7 +20,8 @@ public partial class MainWindow
     {
         "neu" => "", "cover" => " · Cover", "abschnitt" => " · neuer Abschnitt", "laenger" => " · länger", "eigen" => " · eigene Aufnahme",
         "begleitung" => " · Begleitung", "gesang" => " · Gesang", "aufnahme" => " · mit meiner Stimme", "remaster" => " · Remaster", "gekuerzt" => " · gekürzt",
-        "mashup" => " · Mashup", "sample" => " · aus Sample", "sound" => " · Sound", "sprache" => " · Sprache", _ => "",
+        "mashup" => " · Mashup", "sample" => " · aus Sample", "sound" => " · Sound", "sprache" => " · Sprache",
+        var k when k.StartsWith("spur-") => " · Spur", var k when k.StartsWith("ohne-") => " · ohne Spur", _ => "",
     };
 
     /// <summary>Lied in Gesang, Schlagzeug, Bass und Rest trennen; Begleitung (alles ohne Gesang) und Gesang kommen als Lieder in die Bibliothek.</summary>
@@ -36,7 +37,7 @@ public partial class MainWindow
         {
             bool ok; string err = "";
             if (StemSplitOverride is { } o) ok = await o(s.File, dir);
-            else { var r = await KiPyRun(KiRuntime.Spuren, [.. MsStemModel == "htdemucs_ft" ? new[] { "--modell", "htdemucs_ft" } : [], s.File, dir]); ok = r.Ok; err = Short(r.Err.Length > 0 ? r.Err : r.Out); } // V7: Modellwahl
+            else { var r = await KiPyRun(KiRuntime.Spuren, [.. MsStemModel != "htdemucs" ? new[] { "--modell", MsStemModel } : [], s.File, dir]); ok = r.Ok; err = Short(r.Err.Length > 0 ? r.Err : r.Out); } // V7: Modellwahl
             if (ok && StemSongs.All(x => File.Exists(Path.Combine(dir, x.File))))
             {
                 foreach (var (file, kind, title) in StemSongs)

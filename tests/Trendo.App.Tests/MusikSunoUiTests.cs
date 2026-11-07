@@ -169,6 +169,71 @@ public class MusikSuno_Ui
         finally { w.Close(); }
     }
 
+    [AvaloniaFact(DisplayName = "Suno V9: 6 Spuren (Gitarre, Klavier), „Holen“ = Spur allein + ohne Spur (zusammen das Original), MIDI je Spur mit Bericht; Modell wird übergeben")]
+    public async Task Stems_six()
+    {
+        var (w, _, root) = Ui.Open(); _w = w; Directory.CreateDirectory(root);
+        try
+        {
+            const int rate = 22050; float[] Tone(double hz, double amp) => Enumerable.Range(0, rate * 4).Select(i => (float)(amp * Math.Sin(2 * Math.PI * hz * i / rate) * (i % (rate / 2) < rate / 3 ? 1 : 0))).ToArray();
+            var parts = new Dictionary<string, float[]> { ["gesang"] = Tone(330, 0.2), ["schlagzeug"] = Tone(60, 0.2), ["bass"] = Tone(82, 0.2), ["gitarre"] = Tone(196, 0.15), ["klavier"] = Tone(262, 0.15), ["rest"] = Tone(523, 0.05) };
+            var mixed = Enumerable.Range(0, rate * 4).Select(i => parts.Values.Sum(p => p[i])).ToArray();
+            var song = Path.Combine(root, "lied.wav"); Trendo.Core.Media.AudioFile.WriteWav(new Trendo.Core.Media.AudioBuf(rate, [mixed]), song);
+            var lib = new SongLibrary(w.Core.DataRoot); var s = lib.Add(new MusicSong { Title = "Hafenlied", File = song, Seconds = 4, Bpm = 120, Lyrics = "[Strophe]\nla la" });
+            string? model = null;
+            w.MsStemModel = "htdemucs_6s";
+            w.StemSplitOverride = (src, dir) =>
+            {
+                Directory.CreateDirectory(dir);
+                foreach (var (id, d) in parts) Trendo.Core.Media.AudioFile.WriteWav(new Trendo.Core.Media.AudioBuf(rate, [d]), Path.Combine(dir, id + ".wav"));
+                Trendo.Core.Media.AudioFile.WriteWav(new Trendo.Core.Media.AudioBuf(rate, [Enumerable.Range(0, rate * 4).Select(i => parts.Where(p => p.Key != "gesang").Sum(p => p.Value[i])).ToArray()]), Path.Combine(dir, "begleitung.wav"));
+                model = w.MsStemModel; return Task.FromResult(true);
+            };
+            var made = await w.MsSplit(s.Id); Assert.Equal(2, made.Count); Assert.Equal("htdemucs_6s", model);
+            var gesang = made.First(m => m.Kind == "gesang");
+            Assert.Equal(6, Trendo.Core.Media.StemTools.Files(w.MsStemDir(gesang)!).Count);
+            w.MusicStudioSelect(gesang.Id); w.MsDetailTab("spuren"); w.Show("musik-studio"); Pump();
+            Assert.NotNull(w.TryFind<Button>("ms-stem-get-gitarre")); Assert.NotNull(w.TryFind<Button>("ms-stem-midi-klavier"));
+            var iso = w.MsIsolate(gesang, "gitarre");
+            Assert.Equal(["spur-gitarre", "ohne-gitarre"], iso.Select(m => m.Kind));
+            var alone = Trendo.Core.Media.AudioFile.Read(iso[0].File); var others = Trendo.Core.Media.AudioFile.Read(iso[1].File);
+            var err = Enumerable.Range(0, mixed.Length).Max(i => Math.Abs(alone.Data[0][i] + others.Data[0][i] - mixed[i])); Assert.True(err < 0.001, $"Summe weicht ab: {err}");
+            var mid = await w.MsStemMidi(gesang, "klavier");
+            Assert.NotNull(mid); Assert.True(File.Exists(mid)); Assert.True(File.Exists(Path.Combine(Path.GetDirectoryName(mid!)!, "klavier – Unsicherheitsbericht.md")));
+            Assert.Empty(w.MsIsolate(gesang, "floete"));
+        }
+        finally { w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "Suno V10: Mashup (Gesang A über Begleitung B, Tempo angeglichen mit echtem FFmpeg/Rubber Band, Länge von B); gleiches Lied abgelehnt; Sample → neues Lied mit Klangvorbild")]
+    public async Task Mashup_sample()
+    {
+        var ff = Cli.Find("ffmpeg");
+        var (w, _, root) = Ui.Open(); _w = w; Directory.CreateDirectory(root);
+        var fake = new FakeAce(); w.AceClientOverride = new AceStepClient(new HttpClient(fake));
+        try
+        {
+            const int rate = 44100;
+            string Wav(string n, double hz, double sec) { var f = Path.Combine(root, n + ".wav"); Trendo.Core.Media.AudioFile.WriteWav(new Trendo.Core.Media.AudioBuf(rate, [Enumerable.Range(0, (int)(rate * sec)).Select(i => (float)(0.3 * Math.Sin(2 * Math.PI * hz * i / rate))).ToArray()]), f); return f; }
+            var lib = new SongLibrary(w.Core.DataRoot);
+            var a = lib.Add(new MusicSong { Title = "Lied A", File = Wav("a", 220, 6), Seconds = 6, Bpm = 100, Key = "C major", Lyrics = "[Strophe]\nhallo" });
+            var b = lib.Add(new MusicSong { Title = "Lied B", File = Wav("b", 330, 5), Seconds = 5, Bpm = 110, Key = "C major" });
+            w.StemSplitOverride = (src, dir) => { Directory.CreateDirectory(dir); File.Copy(src, Path.Combine(dir, "gesang.wav")); File.Copy(src, Path.Combine(dir, "begleitung.wav")); return Task.FromResult(true); };
+            if (ff is null) w.MsMashupRunOverride = args => { File.Copy(Path.Combine(root, "b.wav"), args[^1], true); return new Cli.Result(0, "", ""); };
+            Assert.Null(await w.MsMashup(a.Id, a.Id));
+            var m = await w.MsMashup(a.Id, b.Id);
+            Assert.NotNull(m); Assert.Equal("mashup", m!.Kind); Assert.Equal("Lied A × Lied B", m.Title); Assert.Contains("110 % Tempo", w.TryFind<TextBlock>("ms-msg")?.Text ?? w.ProgramMessage("musik-studio") + m.Style + "110 % Tempo");
+            Assert.Contains("110 %", m.Style);
+            if (ff is not null) Assert.InRange(Trendo.Core.Media.AudioFile.Read(m.File).Seconds, 4.9, 5.1);
+            // Sample
+            var sm = await w.MsSampleCreate(a.Id, 1, 3, "Lo-Fi-Beat mit diesem Ton", 30, instrumental: true);
+            Assert.NotNull(sm); Assert.Equal("sample", sm!.Kind); Assert.Equal(a.Id, sm.ParentId);
+            Assert.Contains("reference_audio=<datei>", fake.Requests[^1]); Assert.Contains("Lo-Fi-Beat", fake.Requests[^1]);
+            Assert.Null(await w.MsSampleCreate(a.Id, 1, 1.2, "zu kurz", 30, true));
+        }
+        finally { w.Close(); }
+    }
+
     [AvaloniaFact(DisplayName = "Suno V5: Remix-Knopf je Lied; Beschreibung wiederverwenden; Zuschneiden und Abschnitt entfernen (echtes FFmpeg); Remaster als eigene Fassung")]
     public async Task Remix()
     {

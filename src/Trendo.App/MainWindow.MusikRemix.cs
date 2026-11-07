@@ -24,6 +24,8 @@ public partial class MainWindow
             ("crop", "✂ Zuschneiden oder Abschnitt entfernen", () => Tab("bearbeiten")),
             ("remaster", "✨ Remaster (neu, nah am Original)", () => _ = MsRemaster(s.Id)),
             ("reuse", "↺ Beschreibung wiederverwenden", () => MsReusePrompt(s.Id)),
+            ("mashup", "⇄ Mashup mit einem anderen Lied", () => Tab("bearbeiten")),
+            ("sample", "◧ Als Sample verwenden", () => Tab("bearbeiten")),
             ("stems", "🎚 Spuren holen", () => Tab("spuren")),
             ("midi", "🎹 MIDI holen", () => _ = MsMidi(s.Id)),
             ("inspo", "🎧 Als Klangvorbild für ein neues Lied", () => { _msRefFile = s.File; _msMsg = $"Klangvorbild: „{s.Title}“ – jetzt beschreiben und „Erstellen“."; MsPage("erstellen"); }),
