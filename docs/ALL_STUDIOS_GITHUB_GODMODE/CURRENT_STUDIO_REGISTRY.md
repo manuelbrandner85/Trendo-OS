@@ -1,7 +1,7 @@
 # Studio-Registry (aus dem Code erzeugt, 07.11.2026)
 Quelle: `src/Trendo.App/StudioCatalog.cs` – 56 registrierte Studios. Zählung: Dateien in `src/` und `tests/`, die die Studio-Kennung nennen (Näherung, kein Funktionsnachweis).
 Funktionsstatus wird erst je Studio in seiner Runde geprüft; ohne Prüfung steht „NOT RUN“ – nichts wird aus Planungsnummern abgeleitet.
-Auffällig: STUDIO-TV-01 „TV & Live“ ohne eigene Tests.
+Korrektur 08.11.2026: Die Zählung sucht nur die Studio-Kennung – „TV & Live“ hat trotzdem 24 eigene Tests (IpTv, LegalSources, TvCommands, TvFilter, Tv*Ui). Die Spalten sind nur eine grobe Näherung.
 
 | Studio | Name | Quelldateien | Testdateien | Status Runde 1 |
 |---|---|---|---|---|

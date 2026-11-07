@@ -71,7 +71,7 @@ Bestand: FFmpeg als Kodier-Kern vorhanden, OBS als externes Programm erwähnt.
 | arut/nginx-rtmp-module | 6 | 4 | 7 | 10 | 8 | 6 | 3 | 6.4 | VERWORFEN | letzter Push 2024-12, nur RTMP – verworfen |
 
 ## STUDIO-TV-01 – TV & Live
-Bestand: Senderlisten, Programmführer, Aufnahmen; mpv als Abspieler; **keine eigenen Tests** – zuerst Tests nachziehen. Nur legale Quellen (Mediatheken, frei empfangbar).
+Bestand: Senderlisten, Programmführer, Aufnahmen; mpv als Abspieler (24 eigene Tests vorhanden). Nur legale Quellen (Mediatheken, frei empfangbar).
 
 | Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
 |---|---|---|---|---|---|---|---|---|---|---|
