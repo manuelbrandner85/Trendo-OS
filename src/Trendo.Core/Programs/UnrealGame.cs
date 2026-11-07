@@ -67,7 +67,7 @@ public static class UnrealGame
     /// <summary>Plugins, die Trendo im Projekt einschaltet: Python/Interchange zum Einrichten der Welt, dazu die Engine-Beispielinhalte
     /// mit Menschfigur samt Geh-/Lauf-/Sprung-Animationen (MoverExamples) und Sportwagen (ChaosModularVehicleExamples) – Teil jeder Unreal-Installation –
     /// und der MetaHuman Creator für den echten Menschen als Spielfigur.</summary>
-    public static readonly string[] Plugins = ["PythonScriptPlugin", "EditorScriptingUtilities", "Interchange", "InterchangeEditor", "MoverExamples", "ChaosModularVehicleExamples", "MetaHumanCharacter"];
+    public static readonly string[] Plugins = ["PythonScriptPlugin", "EditorScriptingUtilities", "Interchange", "InterchangeEditor", "MoverExamples", "ChaosModularVehicleExamples", "ChaosModularVehicle", "MetaHumanCharacter"];
     /// <summary>Eigene Karte, die das Welt-Skript aus der Open-World-Vorlage anlegt.</summary>
     public const string WeltMap = "/Game/Trendo/Welt";
     public const string WeltScriptRel = "Trendo/trendo_welt.py";
@@ -730,6 +730,8 @@ public:
 	void Setup(TCHAR InTile, int32 X, int32 Y, const FLinearColor& Color, float Size, bool bSolid);
 	/** true, wenn ein echtes Modell statt einer Grundform verwendet wird. */
 	bool bModel = false;
+	/** Fahrbarer Wagen (Chaos-Fahrphysik aus dem Engine-Beispiel), wenn vorhanden. */
+	UPROPERTY() APawn* Car = nullptr;
 };
 
 /** Gegner läuft hin und her; Trefferpunkte wie in Trendo, ab 2 ein Boss. Mit Menschmodell geht er mit echter Geh-Animation. */
@@ -926,8 +928,16 @@ void ATrendoThing::Setup(TCHAR InTile, int32 X, int32 Y, const FLinearColor& Col
 	const float Foot = GM && GM->Data.World == TEXT("openworld") ? -60.f : -50.f * Size; // Abstand Mitte → Boden
 	// 1) Figur (N) als Mensch, Fahrzeug (V „wagen“) als Sportwagen
 	if (InTile == 'N') { Body3D = TrendoSetupMetaHuman(this, Catch, Foot, TEXT("Figur")); if (Body3D) bModel = true; else if (TrendoSetupFigure(Figure, Foot, FLinearColor(0.42f, 0.33f, 0.22f))) { bModel = true; Body3D = Figure; } }
-	if (InTile == 'V' && Kind != TEXT("ufo"))
-		if (USkeletalMesh* Car = TrendoCar()) { Figure->SetSkeletalMesh(Car); Figure->SetRelativeLocation(FVector(0, 0, Foot)); Figure->SetVisibility(true); Figure->SetCastShadow(true); bModel = true; }
+	if (InTile == 'V' && Kind != TEXT("ufo") && GM && GM->Data.World == TEXT("openworld"))
+		if (UClass* CC = LoadClass<APawn>(nullptr, TEXT("/ChaosModularVehicleExamples/Vehicles/ModularVehicle/SportsCar/BP_ModularVehicleSimplifiedSkeletalSetup.BP_ModularVehicleSimplifiedSkeletalSetup_C")))
+		{
+			// echter Wagen: Gas, Bremse, Lenkung, Federung und Reifen über Chaos; Einsteigen mit E (oder Berühren), Aussteigen mit E
+			FActorSpawnParameters SP; SP.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+			Car = GetWorld()->SpawnActor<APawn>(CC, GetActorLocation() + FVector(0, 0, 60), FRotator(0, (X * 37) % 360, 0), SP);
+			if (Car) bModel = true;
+		}
+	if (InTile == 'V' && Kind != TEXT("ufo") && !Car)
+		if (USkeletalMesh* CarModel = TrendoCar()) { Figure->SetSkeletalMesh(CarModel); Figure->SetRelativeLocation(FVector(0, 0, Foot)); Figure->SetVisibility(true); Figure->SetCastShadow(true); bModel = true; }
 	// 2) Gegenstände, Ziel, Speicherpunkt, Kiste … als Fotomodell (echte Größe, zufällig gedreht)
 	if (!bModel)
 		if (UStaticMesh* M = TrendoModel(this, Tile))
@@ -940,11 +950,12 @@ void ATrendoThing::Setup(TCHAR InTile, int32 X, int32 Y, const FLinearColor& Col
 	{
 		if (!bSolid)
 		{
-			Catch->SetSphereRadius(InTile == 'V' ? 260.f : InTile == 'Z' ? 110.f : InTile == 'N' ? 90.f : 70.f);
+			Catch->SetSphereRadius(InTile == 'V' ? (Car ? 1.f : 260.f) : InTile == 'Z' ? 110.f : InTile == 'N' ? 90.f : 70.f);
 			Catch->SetCollisionProfileName(TEXT("OverlapAllDynamic")); Catch->SetGenerateOverlapEvents(true);
 		}
 		if (InTile != 'N' && InTile != 'V' && !Mesh->GetStaticMesh()) Mesh->SetVisibility(false);
 		if (InTile == 'N' || InTile == 'V') Mesh->SetVisibility(false);
+		if (Car) { Figure->SetVisibility(false); Catch->SetCollisionEnabled(ECollisionEnabled::NoCollision); }
 		return;
 	}
 	// 3) Ohne Modell: Grundform wie bisher
@@ -1423,6 +1434,11 @@ public:
 	void Damage(ATrendoEnemy* E);
 	void Attack();
 	void Dismount();
+	/** In den fahrbaren Wagen steigen bzw. aussteigen (E oder Controller-B). */
+	bool EnterCar(APawn* Car);
+	void ExitCar();
+	UPROPERTY() APawn* DrivenCar = nullptr;
+	UPROPERTY() ATrendoCharacter* DrivenHero = nullptr;
 	void Hit(bool bFall = false);
 	void NewGame();
 	void SaveGame();
@@ -1435,7 +1451,7 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 private:
-	float CheckSeconds = -1; bool bShotTaken = false; bool bCloseShot = false; bool bCloseDone = false;
+	float CheckSeconds = -1; bool bShotTaken = false; bool bCloseShot = false; bool bCloseDone = false; bool bProbe = false; bool bProbeDone = false; float ProbeStart = 0; int32 ProbeLives = 0; bool bCarProbe = false; bool bCarDone = false;
 	FVector Origin = FVector::ZeroVector; FRotator StartRot = FRotator::ZeroRotator;
 	FVector Place(int32 X, int32 Y) const;
 	void Freeze();
@@ -1494,7 +1510,30 @@ void ATrendoGameMode::InitGame(const FString& MapName, const FString& Options, F
 	FString Error; if (!LoadData(Error)) UE_LOG(LogTrendo, Error, TEXT("TRENDO-FEHLER %s"), *Error);
 }
 
-ATrendoCharacter* ATrendoGameMode::Hero() const { return Cast<ATrendoCharacter>(UGameplayStatics::GetPlayerPawn(this, 0)); }
+ATrendoCharacter* ATrendoGameMode::Hero() const { return DrivenHero ? DrivenHero : Cast<ATrendoCharacter>(UGameplayStatics::GetPlayerPawn(this, 0)); }
+
+bool ATrendoGameMode::EnterCar(APawn* Car)
+{
+	ATrendoCharacter* H = Hero(); APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (!H || !PC || !IsValid(Car) || DrivenCar) return false;
+	DrivenHero = H; DrivenCar = Car;
+	H->SetActorHiddenInGame(true); H->SetActorEnableCollision(false); H->GetCharacterMovement()->DisableMovement();
+	H->AttachToActor(Car, FAttachmentTransformRules::KeepWorldTransform);
+	PC->Possess(Car); State.Note = TEXT("Wagen: W/S oder Trigger Gas und Bremse, A/D lenken – E steigt aus");
+	UE_LOG(LogTrendo, Display, TEXT("TRENDO-WAGEN eingestiegen"));
+	return true;
+}
+
+void ATrendoGameMode::ExitCar()
+{
+	APlayerController* PC = GetWorld()->GetFirstPlayerController(); ATrendoCharacter* H = DrivenHero;
+	if (!PC || !H || !IsValid(DrivenCar)) { DrivenCar = nullptr; DrivenHero = nullptr; return; }
+	H->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	H->SetActorLocation(DrivenCar->GetActorLocation() + DrivenCar->GetActorRightVector() * -260.f + FVector(0, 0, 120), false, nullptr, ETeleportType::TeleportPhysics);
+	H->SetActorRotation(FRotator(0, DrivenCar->GetActorRotation().Yaw, 0));
+	H->SetActorHiddenInGame(false); H->SetActorEnableCollision(true); H->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	DrivenCar = nullptr; DrivenHero = nullptr; PC->Possess(H); H->NoEnter = 0.5f; State.Note = TEXT("Ausgestiegen");
+}
 
 void ATrendoGameMode::BeginPlay()
 {
@@ -1568,7 +1607,7 @@ void ATrendoGameMode::BuildWorld(int32 Level)
 			}
 			if (C == 'V') T->Kind = Data.Text(Level, X, Y, TEXT("kind"), TEXT("wagen"));
 			T->Setup(C, X, Y, Col, Size, bSolid);
-			Spawned.Add(T);
+			Spawned.Add(T); if (IsValid(T->Car)) Spawned.Add(T->Car);
 		}
 	if (ATrendoCharacter* H = Hero())
 	{
@@ -1599,7 +1638,8 @@ void ATrendoGameMode::Touch(AActor* Other)
 	case 'C': if (!H->Checkpoint.Equals(T->GetActorLocation() + FVector(0, 0, 100), 1.f)) { H->Checkpoint = T->GetActorLocation() + FVector(0, 0, 100); SaveGame(); } break;
 	case 'G': { const FString N = Data.Text(State.Level, T->TileX, T->TileY, TEXT("name"), TEXT("Kristall")); State.Inventory.Add(N); State.Items++; State.Note = N + TEXT(" eingesammelt"); T->Destroy(); break; }
 	case 'N': State.TalkTo(Data, T->TileX, T->TileY); break;
-	case 'V': if (H->Vehicle.IsEmpty() && H->NoEnter <= 0) { H->SetVehicle(T->Kind == TEXT("ufo") ? TEXT("ufo") : TEXT("wagen")); State.Note = H->Vehicle == TEXT("ufo") ? TEXT("Ufo: Leertaste halten – E steigt aus") : TEXT("Wagen: schnell, fängt einen Treffer ab – E steigt aus"); T->Destroy(); } break;
+	case 'V': if (IsValid(T->Car)) break; // fahrbarer Wagen: Einsteigen mit E
+		if (H->Vehicle.IsEmpty() && H->NoEnter <= 0) { H->SetVehicle(T->Kind == TEXT("ufo") ? TEXT("ufo") : TEXT("wagen")); State.Note = H->Vehicle == TEXT("ufo") ? TEXT("Ufo: Leertaste halten – E steigt aus") : TEXT("Wagen: schnell, fängt einen Treffer ab – E steigt aus"); T->Destroy(); } break;
 	case 'Z':
 		State.Score += 10;
 		if (State.Level + 1 < Data.Levels.Num()) { BuildWorld(State.Level + 1); SaveGame(); }
@@ -1638,7 +1678,12 @@ void ATrendoGameMode::Attack()
 
 void ATrendoGameMode::Dismount()
 {
-	ATrendoCharacter* H = Hero(); if (!H || H->Vehicle.IsEmpty()) return;
+	ATrendoCharacter* H = Hero(); if (!H) return;
+	if (H->Vehicle.IsEmpty())
+	{
+		for (AActor* A : Spawned) if (ATrendoThing* T = Cast<ATrendoThing>(A); IsValid(T) && IsValid(T->Car) && FVector::Dist(T->Car->GetActorLocation(), H->GetActorLocation()) < 450.f) { EnterCar(T->Car); return; }
+		return;
+	}
 	FActorSpawnParameters SP; SP.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	ATrendoThing* T = GetWorld()->SpawnActor<ATrendoThing>(H->GetActorLocation() - H->GetActorForwardVector() * 150.f, FRotator::ZeroRotator, SP);
 	T->Kind = H->Vehicle; T->Setup('V', -1, -1, FLinearColor(0.98f, 0.45f, 0.09f), 0.9f, false); Spawned.Add(T);
@@ -1706,6 +1751,8 @@ void ATrendoGameMode::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	Freeze();
+	// im Wagen: E (Tastatur) bzw. B (Controller) steigt aus – der Wagen hat eigene Steuerung, die Figur ist dann nicht aktiv
+	if (DrivenCar) if (APlayerController* PC = GetWorld()->GetFirstPlayerController(); PC && (PC->WasInputKeyJustPressed(EKeys::E) || PC->WasInputKeyJustPressed(EKeys::Gamepad_FaceButton_Right))) ExitCar();
 	if (Playing() && !State.bWon && !State.bOver)
 	{
 		State.Seconds += DeltaSeconds; State.CheckRules(Data);
@@ -1731,6 +1778,43 @@ void ATrendoGameMode::Tick(float DeltaSeconds)
 			}
 		}
 		else if (bCloseShot && !bCloseDone) { bCloseDone = true; FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("Screenshots/trendo-objekte.png"), false, false); CheckSeconds = 1.5f; }
+		else if (bCloseDone && !bProbe && Enemies.Num() > 0 && IsValid(Enemies[0]) && Hero())
+		{
+			// Gegner-Probe: Figur 11 m vor den ersten Gegner stellen (in sein Blickfeld) – nach 3 s muss er sie bemerkt haben und näher gekommen sein
+			bProbe = true; CheckSeconds = 3.f;
+			ATrendoEnemy* E = Enemies[0]; ATrendoCharacter* H = Hero();
+			const FVector At = E->GetActorLocation() + E->GetActorForwardVector() * 1100.f;
+			H->SetActorLocation(FVector(At.X, At.Y, E->GetActorLocation().Z + 150.f), false, nullptr, ETeleportType::TeleportPhysics);
+			const FRotator Look = (E->GetActorLocation() - H->GetActorLocation()).Rotation();
+			H->SetActorRotation(FRotator(0, Look.Yaw, 0)); if (AController* C = H->GetController()) C->SetControlRotation(FRotator(-10, Look.Yaw, 0));
+			ProbeStart = FVector::Dist2D(E->GetActorLocation(), H->GetActorLocation()); ProbeLives = State.Lives;
+		}
+		else if (bProbe && !bProbeDone && Enemies.Num() > 0 && IsValid(Enemies[0]) && Hero())
+		{
+			bProbeDone = true; CheckSeconds = 1.5f;
+			const float Now = FVector::Dist2D(Enemies[0]->GetActorLocation(), Hero()->GetActorLocation());
+			const bool bHit = State.Lives < ProbeLives; // Treffer setzt die Figur an den Speicherpunkt zurück – dann zählt der Angriff
+			UE_LOG(LogTrendo, Display, TEXT("TRENDO-GEGNER alarmiert=%s Abstand vorher=%.0f nachher=%.0f Leben %d→%d %s"), Enemies[0]->Alert > 0 ? TEXT("ja") : TEXT("nein"), ProbeStart, Now, ProbeLives, State.Lives,
+				bHit ? TEXT("verfolgt und angegriffen") : Enemies[0]->Alert > 0 && Now < ProbeStart - 300.f ? TEXT("verfolgt") : TEXT("reagiert nicht"));
+			FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("Screenshots/trendo-gegner.png"), false, false);
+		}
+		else if (bProbeDone && !bCarProbe)
+		{
+			// Wagen-Probe: einsteigen (der Wagen wird gesteuert), Bild aus der Fahrzeugkamera, danach aussteigen
+			bCarProbe = true; CheckSeconds = 2.5f;
+			for (AActor* A : Spawned) if (ATrendoThing* T = Cast<ATrendoThing>(A); IsValid(T) && IsValid(T->Car)) { for (ATrendoEnemy* E : Enemies) if (IsValid(E)) E->bFrozen = true; EnterCar(T->Car); break; }
+		}
+		else if (bCarProbe && !bCarDone)
+		{
+			bCarDone = true; CheckSeconds = 1.5f;
+			if (DrivenCar)
+			{
+				UE_LOG(LogTrendo, Display, TEXT("TRENDO-WAGEN gesteuert=%s Klasse=%s"), GetWorld()->GetFirstPlayerController()->GetPawn() == DrivenCar ? TEXT("ja") : TEXT("nein"), *DrivenCar->GetClass()->GetName());
+				FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("Screenshots/trendo-wagen.png"), false, false);
+			}
+			else UE_LOG(LogTrendo, Display, TEXT("TRENDO-WAGEN kein fahrbarer Wagen"));
+		}
+		else if (bCarDone && DrivenCar) { ExitCar(); CheckSeconds = 1.5f; UE_LOG(LogTrendo, Display, TEXT("TRENDO-WAGEN ausgestiegen, Figur=%s"), Hero() && !Hero()->IsHidden() ? TEXT("sichtbar") : TEXT("fehlt")); }
 		else Report();
 	}
 }

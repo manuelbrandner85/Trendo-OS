@@ -33,7 +33,7 @@ public class GameUnreal_Ui
         await w.GameUnrealCheck(d); Pump();
         Assert.Contains("Epic Games Launcher", w.ProgramMessage(GK));
         var upj = File.ReadAllText(Directory.GetFiles(built, "*.uproject").Single());
-        Assert.Contains("PythonScriptPlugin", upj); Assert.Contains("MoverExamples", upj); Assert.Contains("ChaosModularVehicleExamples", upj);
+        Assert.Contains("PythonScriptPlugin", upj); Assert.Contains("MoverExamples", upj); Assert.Contains("ChaosModularVehicleExamples", upj); Assert.Contains("\"ChaosModularVehicle\"", upj);
         Assert.True(File.Exists(Path.Combine(built, "Trendo", "trendo_welt.py")));
         // mit Unreal (Testersatz für die Läufe): Fotomaterialien aus dem Testersatz, Welt einrichten, dann Tests und Start
         var runs = new List<string>(); var fetched = new List<string>();
