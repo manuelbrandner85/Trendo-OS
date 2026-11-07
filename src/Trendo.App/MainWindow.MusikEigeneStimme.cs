@@ -97,20 +97,24 @@ public partial class MainWindow
     }
 
     /// <summary>Cover in der eigenen Stimme: Spuren trennen, Gesang umwandeln, mit der Begleitung mischen → neue Fassung.</summary>
-    public async Task<MusicSong?> MsOwnVoiceSing(MusicSong s, int semitones = 0)
+    /// <param name="voice">V4/V6: Stimme aus der Bibliothek (Id) – leer = die eigene Mikrofon-Stimme.</param>
+    public async Task<MusicSong?> MsOwnVoiceSing(MusicSong s, int semitones = 0, string? voice = null)
     {
-        if (!OwnVoiceReady) { OvSay("Zuerst deine Stimme lernen."); return null; }
+        var bankVoice = voice is null ? null : Bank.Get(voice);
+        if (voice is null && !OwnVoiceReady) { OvSay("Zuerst deine Stimme lernen."); return null; }
+        if (voice is not null && bankVoice is not { Ready: true }) { OvSay("Diese Stimme ist noch nicht gelernt."); return null; }
+        var model = voice ?? OwnVoiceName; var label = bankVoice is null ? "deine Stimme" : "Stimme " + bankVoice.Name;
         OvSay("Gesang und Begleitung werden getrennt …");
         var stems = await MsSplit(s.Id);
         var vocal = stems.FirstOrDefault(x => x.Kind == "gesang"); var acc = stems.FirstOrDefault(x => x.Kind == "begleitung");
         if (vocal is null || acc is null) { OvSay("Trennen ging nicht: " + _msMsg); return null; }
-        OvSay("🎙 Der Gesang wird in deiner Stimme gesungen …");
+        OvSay($"🎙 Der Gesang wird in {(bankVoice is null ? "deiner Stimme" : "der Stimme „" + bankVoice.Name + "“")} gesungen …");
         var dir = Path.GetDirectoryName(s.File)!;
-        var voc = Path.Combine(dir, Path.GetFileNameWithoutExtension(s.File) + " – Gesang (deine Stimme).wav");
-        var r = await OvRun(["singen", OwnVoiceName, vocal.File, voc, semitones.ToString(System.Globalization.CultureInfo.InvariantCulture)], 1_800_000);
+        var voc = Path.Combine(dir, Path.GetFileNameWithoutExtension(s.File) + $" – Gesang ({label}).wav");
+        var r = await OvRun(["singen", model, vocal.File, voc, semitones.ToString(System.Globalization.CultureInfo.InvariantCulture)], 1_800_000);
         if (OwnVoiceRunOverride is not null && r.Ok && !File.Exists(voc)) File.WriteAllBytes(voc, [1]);
         if (!r.Ok || !File.Exists(voc)) { OvSay("Umwandeln ging nicht: " + Short(r.Err.Length > 0 ? r.Err : r.Out)); return null; }
-        var mix = Path.Combine(dir, Path.GetFileNameWithoutExtension(s.File) + " (deine Stimme).mp3");
+        var mix = Path.Combine(dir, Path.GetFileNameWithoutExtension(s.File) + $" ({label}).mp3");
         bool ok;
         if (OwnVoiceMixOverride is { } m) ok = await m(voc, acc.File, mix);
         else
@@ -120,12 +124,12 @@ public partial class MainWindow
                 "-filter_complex", "[0:a]aresample=44100,volume=1.1[v];[1:a]aresample=44100[b];[v][b]amix=inputs=2:duration=longest:normalize=0,loudnorm=I=-14:TP=-1:LRA=11", "-c:a", "libmp3lame", "-q:a", "2", mix], timeoutMs: 600_000))).Ok;
         }
         if (!ok || !File.Exists(mix)) { OvSay("Mischen ging nicht."); return null; }
-        var v = await MsImport(mix);
+        var v = await MsImport(mix, split: false);
         if (v is null) return null;
-        Songs.Update(v.Id, x => { x.Title = s.Title + " (deine Stimme)"; x.Lyrics = s.Lyrics; x.Style = s.Style; });
+        Songs.Update(v.Id, x => { x.Title = s.Title + $" ({label})"; x.Lyrics = s.Lyrics; x.Style = s.Style; });
         TryDelete(mix);
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.stimme.eigen.gesungen", v.Id);
-        OvSay($"✓ „{s.Title}“ in deiner Stimme ist fertig.");
+        OvSay($"✓ „{s.Title}“ in {(bankVoice is null ? "deiner Stimme" : "der Stimme „" + bankVoice.Name + "“")} ist fertig.");
         return Songs.Get(v.Id);
     }
 

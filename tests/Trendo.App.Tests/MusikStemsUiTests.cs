@@ -37,7 +37,10 @@ public class MusikStems_Ui
             w.StemSplitOverride = (file, dir) => { Directory.CreateDirectory(dir); foreach (var (n, x) in stems) Wav(Path.Combine(dir, n + ".wav"), x); Wav(Path.Combine(dir, "begleitung.wav"), Enumerable.Range(0, Rate * 2).Select(i => stems["schlagzeug"][i] + stems["bass"][i] + stems["rest"][i]).ToArray()); return Task.FromResult(true); };
             var fake = new FakeAudio(); w.AudioOverride = () => fake;
             w.Show("musik-studio"); Settle();
-            var s = await w.MsImport(src);
+            w.PickOverride = _ => Task.FromResult<string[]?>([src]);
+            w.Find<Button>("ms-import").Press(); // „＋ Eigene Aufnahme“ → gleich trennen
+            for (var i = 0; i < 100 && w.Songs.All().Count == 0; i++) { await Task.Delay(20); Settle(); }
+            var s = w.Songs.All().First(x => x.Kind == "eigen");
             for (var i = 0; i < 100 && w.Songs.All().Count < 3; i++) { await Task.Delay(20); Settle(); }
             var all = w.Songs.All();
             Assert.Contains(all, x => x.Kind == "begleitung"); Assert.Contains(all, x => x.Kind == "gesang"); // V1: gleich getrennt
@@ -65,7 +68,9 @@ public class MusikStems_Ui
             // ohne Auto-Trennen
             w.MsAutoSplit = false; var count = w.Songs.All().Count;
             var src2 = Path.Combine(root, "Zweites.wav"); Wav(src2, mixData);
-            await w.MsImport(src2); await Task.Delay(100); Settle();
+            w.PickOverride = _ => Task.FromResult<string[]?>([src2]); w.Show("musik-studio"); Settle(); w.Find<Button>("ms-import").Press();
+            for (var i = 0; i < 50 && w.Songs.All().Count == count; i++) { await Task.Delay(20); Settle(); }
+            await Task.Delay(100); Settle();
             Assert.Equal(count + 1, w.Songs.All().Count);
         }
         finally { w.Close(); }

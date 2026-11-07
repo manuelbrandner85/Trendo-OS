@@ -98,6 +98,7 @@ public partial class MainWindow
                     if (CoverImageOverride is not null || (!_opt.Isolated && CoverModel() is not null)) _ = MsMakeCover(made[0].Id, auto: true); // gleich ein passendes Cover dazu
                     _msMsg = (made.Count > 1 ? $"✓ {made.Count} Varianten fertig – anhören und die schönere behalten." : "✓ Fertig.") + (mastered > 0 ? " Gemastert auf −14 LUFS." : "");
                     _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.fertig", $"{kind} {made.Count}");
+                    if (MsSingVoice.Length > 0 && kind is "neu" or "cover") _ = MsApplySingVoice(made); // V4: in der gewählten Stimme singen
                     return made;
                 }
                 if (DateTime.UtcNow - t0 > MusicTimeout(job.SampleQuery is null ? job.Seconds : 600)) throw new InvalidOperationException("Das dauert ungewöhnlich lange – bitte erneut versuchen.");
@@ -331,6 +332,7 @@ public partial class MainWindow
         moreBox.PropertyChanged += (_, e) => { if (e.Property == Expander.IsExpandedProperty) _msMoreOpen = moreBox.IsExpanded; };
         sp.Children.Add(moreBox);
         sp.Children.Add(MsCoverWorkshopBox()); // M1–M8: Cover nach dem eigenen Original
+        if (MsVoiceChoices().Count > 1) sp.Children.Add(MsSingVoiceBox()); // V4: neue Lieder in einer gelernten Stimme
         var go = new Button { Name = "ms-create", Content = "✨ Erstellen", FontSize = 15, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Center,
             Padding = new Thickness(0, 10), CornerRadius = new CornerRadius(12), Background = Accent, Foreground = Brushes.White, BorderThickness = new Thickness(0), Margin = new Thickness(0, 6, 0, 0) };
         go.Click += (_, _) =>

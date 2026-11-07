@@ -64,6 +64,7 @@ public partial class MainWindow
             sp.Children.Add(P("Diese Spur stammt aus „Spuren trennen“. Alle Spuren (Gesang, Schlagzeug, Bass, Rest, Begleitung) liegen im Spuren-Ordner.", Muted, 11));
             sp.Children.Add(Act("ms-stems-folder", "Spuren-Ordner öffnen", () => Launch(dir)));
             sp.Children.Add(MsStemMixer(s)); // V2
+            sp.Children.Add(MsVoicePanel(s)); // V3/V5/V6
             return sp;
         }
         if (!StemsReady)
@@ -84,6 +85,7 @@ public partial class MainWindow
         sp.Children.Add(MsStemModelBox()); // V7
         sp.Children.Add(go);
         sp.Children.Add(MsStemMixer(s)); // V2
+        if (MsStemDir(s) is not null) sp.Children.Add(MsVoicePanel(s)); // V3/V5/V6
         return sp;
     }
 }
