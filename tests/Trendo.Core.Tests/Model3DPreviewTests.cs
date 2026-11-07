@@ -13,7 +13,7 @@ public class Model3DPreviewTests
         var e = Path.Combine(d, "f3d-console.exe"); File.WriteAllBytes(e, [0]);
         return (d, m, e);
     }
-    static Cli.Result Fake(string exe, IReadOnlyList<string> a, int t) { File.WriteAllBytes(a[0]["--output=".Length..], [137, 80, 78, 71]); return new(0, "", ""); }
+    static Cli.Result Fake(string exe, IReadOnlyList<string> a, int t) { File.WriteAllBytes(a.First(x => x.StartsWith("--output=", StringComparison.Ordinal))["--output=".Length..], [137, 80, 78, 71]); return new(0, "", ""); }
 
     [Fact(DisplayName = "f3d +1: gültiges Modell → PNG im Projekt")]
     public void Renders()
@@ -26,7 +26,7 @@ public class Model3DPreviewTests
     public void Arguments()
     {
         var a = Model3DPreview.Args(@"C:\p\haus & hof.glb", @"C:\p\v.png", 800);
-        Assert.Equal(["--output=C:\\p\\v.png", "--resolution=800,800", "--anti-aliasing", "--tone-mapping", "--ambient-occlusion", @"C:\p\haus & hof.glb"], a);
+        Assert.Equal(["--no-config", "--output=C:\\p\\v.png", "--resolution=800,800", "--anti-aliasing", "--tone-mapping", "--ambient-occlusion", "--hdri-ambient", @"C:\p\haus & hof.glb"], a);
     }
 
     [Fact(DisplayName = "f3d +3: gängige Formate werden erkannt (Groß/Klein egal)")]

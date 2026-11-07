@@ -25,7 +25,9 @@ public static class Model3DPreview
     /// <summary>f3d-Argumente (geprüft gegen doc/user/03-OPTIONS.md von v4.0.1): Bild statt Fenster, quadratisch, Kantenglättung (FXAA), Tone-Mapping und
     /// Umgebungsverdeckung für glaubwürdige Kontaktschatten; Dateiname, Gitter und Achsen sind in f3d standardmäßig aus. Dateinamen bleiben eigene Argumente (keine Befehlseinschleusung).</summary>
     public static IReadOnlyList<string> Args(string input, string output, int size) =>
-        ["--output=" + output, $"--resolution={size},{size}", "--anti-aliasing", "--tone-mapping", "--ambient-occlusion", input];
+        ["--no-config", "--output=" + output, $"--resolution={size},{size}", "--anti-aliasing", "--tone-mapping", "--ambient-occlusion", "--hdri-ambient", input];
+    // --hdri-ambient: ohne Grundeinstellung fehlt das Umgebungslicht – das Modell wirkt dunkel und flach; mit HDRI glaubwürdige Farben und Materialglanz (im echten Lauf verglichen)
+    // --no-config: echter Lauf (07.11.2026) zeigte, dass die mitgelieferte f3d-Grundeinstellung Dateiname, Achsenkreuz, Gitter, Spiegelboden und Bildschirm-Skalierung (2304 statt 768 px) einschaltet
 
     /// <summary>Erzeugt das Vorschaubild. <paramref name="run"/> ist für Tests austauschbar (Standard: <see cref="Cli.Run"/> mit Zeitlimit).</summary>
     public static (bool Ok, string Message) Render(string f3dExe, string input, string output, int size = 512, int timeoutMs = 60000,

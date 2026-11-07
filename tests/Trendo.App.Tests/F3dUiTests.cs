@@ -22,7 +22,7 @@ public class F3d_Ui
             MainWindow.F3dExeOverride = ""; w.Show("3d"); Pump(); // nicht eingerichtet
             Assert.NotNull(w.Find<Button>("3d-f3d-setup"));
             MainWindow.F3dExeOverride = exe;
-            MainWindow.F3dRunOverride = (e, a, t) => { File.WriteAllBytes(a[0]["--output=".Length..], Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==")); return new(0, "", ""); };
+            MainWindow.F3dRunOverride = (e, a, t) => { File.WriteAllBytes(a.First(x => x.StartsWith("--output=", StringComparison.Ordinal))["--output=".Length..], Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==")); return new(0, "", ""); };
             Directory.CreateDirectory(w.Folder3D); var model = Path.Combine(w.Folder3D, "wuerfel.glb"); File.WriteAllBytes(model, [1, 2, 3]);
             w.Show("3d"); Pump();
             w.Find<Button>("3d-f3d-0").Press(); Pump();
