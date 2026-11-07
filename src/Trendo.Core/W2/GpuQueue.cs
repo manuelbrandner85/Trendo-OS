@@ -12,6 +12,8 @@ public sealed class GpuQueue
         public string Title { get; } = title;
         public bool Running { get; internal set; }
         public DateTimeOffset Queued { get; } = DateTimeOffset.Now;
+        /// <summary>Seit wann der Auftrag läuft (null = wartet noch).</summary>
+        public DateTimeOffset? Started { get; internal set; }
     }
 
     readonly SemaphoreSlim _gate = new(1, 1);
@@ -42,7 +44,7 @@ public sealed class GpuQueue
             }
             try
             {
-                t.Running = true; Changed?.Invoke();
+                t.Running = true; t.Started = DateTimeOffset.Now; Changed?.Invoke();
                 return await job(ct);
             }
             finally { _gate.Release(); }
@@ -65,7 +67,7 @@ public sealed class GpuQueue
             if (!_gate.Wait(0)) { onWait?.Invoke(Ahead(t)); await _gate.WaitAsync(ct); }
         }
         catch { lock (_items) _items.Remove(t); Changed?.Invoke(); throw; }
-        t.Running = true; Changed?.Invoke();
+        t.Running = true; t.Started = DateTimeOffset.Now; Changed?.Invoke();
         return new Slot(() => { _gate.Release(); lock (_items) _items.Remove(t); Changed?.Invoke(); });
     }
 

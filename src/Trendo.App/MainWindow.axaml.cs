@@ -127,6 +127,7 @@ public sealed partial class MainWindow : Window
         InitSetupOverlay(root);
         InitNewsShow(root);
         InitToasts(root);
+        InitTaskCards(root); // G10 (07.11.2026): laufende und wartende KI-Aufträge als Karten
         InitKiProgress(root);
         InitPhoneSurface(root);
         InitCommandPalette(root);
