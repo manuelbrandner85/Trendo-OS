@@ -65,7 +65,10 @@ public partial class MainWindow
             tabs.Children.Add(b);
         }
         if (_carMsg.Length > 0) tabs.Children.Add(new TextBlock { Name = "car-msg", Text = _carMsg, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 4), TextWrapping = TextWrapping.Wrap, MaxWidth = 560, FontSize = 12, Foreground = Brush.Parse(_carMsg.StartsWith('⚠') ? "#F87171" : "#4ADE80") });
-        Control content = car is null ? P("Links ein Fahrzeug anlegen – oder das Beispielfahrzeug laden.", null, 13) : CarTab switch { "tank" => CarFuel(car), "fahrten" => CarTrips(car), _ => CarOverview(car) };
+        Control content = car is null ? EmptyState("car-empty", "diagramm", "Noch kein Fahrzeug", // T7 (07.11.2026)
+                "Links ein Fahrzeug anlegen – dann siehst du hier Verbrauch, Kosten je Monat, Tankbuch und Fahrtenbuch.",
+                Act("car-empty-demo", "Beispielfahrzeug laden", () => CarRun(() => { var v = VehiclePlus.SeedDemo(Cars, DateTime.Today); CarSel = v.Name; _carMsg = "Beispielfahrzeug mit erfundenen Werten geladen."; }), true))
+            : CarTab switch { "tank" => CarFuel(car), "fahrten" => CarTrips(car), _ => CarOverview(car) };
         var center = new DockPanel(); DockPanel.SetDock(tabs, Avalonia.Controls.Dock.Top); center.Children.Add(tabs); center.Children.Add(new ScrollViewer { Content = content });
         var mid = new Border { CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(12), Child = center };
         var right = new Border { Name = "car-side", Width = 320, CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(12), Child = new ScrollViewer { Content = CarSide(car) } };

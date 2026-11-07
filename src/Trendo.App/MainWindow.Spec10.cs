@@ -132,6 +132,12 @@ public partial class MainWindow
             tiles.Children.Add(tile);
         }
         DockPanel.SetDock(tiles, Avalonia.Controls.Dock.Top); center.Children.Add(tiles);
+        // T4 (07.11.2026): ohne Anlage ein Leerzustand mit den beiden Startwegen statt leerer Fläche
+        if (Twin.Model.Assets.Count == 0)
+            center.Children.Add(EmptyState("twin-empty", "diagramm", "Noch nichts zu überwachen",
+                "Trendo zeigt hier je Sensor eine Kachel mit aktuellem Wert, Verlauf und Ampel – und darunter das große Diagramm mit Vorhersage.",
+                Act("twin-empty-pc", "Diesen PC jetzt messen", () => TwinRun(() => { MeasureThisPc(); TwinAsset = "Dieser PC"; }), true),
+                Act("twin-empty-demo", "Beispielanlagen laden", () => TwinRun(() => { var n = TwinDemo.Seed(Twin, DateTime.Now); TwinAsset = "Kühlraum"; TwinSensor = "Temperatur"; _twMsg = $"{Fach.F(n, 0)} Beispielwerte geladen (erfunden)."; }))));
         if (TwinAsset is { } ca && TwinSensor is { } cs)
             center.Children.Add(new Border { Name = "twin-chart", CornerRadius = new CornerRadius(12), ClipToBounds = true, MinHeight = 220, Child = new ShapeView((w, h) => TwinChart.Build(Twin.Model, ca, cs, w, h, TwinRange, _twForecast), "#212121") });
         var mid = new Border { CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(12), Child = center };
