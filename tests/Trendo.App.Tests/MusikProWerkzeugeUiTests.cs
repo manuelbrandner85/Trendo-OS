@@ -57,6 +57,9 @@ public class MusikProWerkzeuge_Ui
             Assert.Contains(calls[^1], x => x.Contains("loudnorm=I=-16") && x.Contains("equalizer=f=6000"));
             var p = await w.MsPractice(id, 0.75, -2, true);
             Assert.Contains("Üben 75 %, -2 Halbtöne, mit Klick", p!.Title); Assert.Contains(calls[^1], x => x.Contains("rubberband=tempo=0.75"));
+            // Paket 01 S4-12: extreme Werte werden abgelehnt (nicht still begrenzt), es wird nichts gerechnet
+            var n = calls.Count;
+            Assert.Null(await w.MsPractice(id, 3.0, 0, false)); Assert.Equal(n, calls.Count);
             w.MelodyOverride = _ => Task.FromResult<string?>("{\"hop\":0.05,\"midi\":[60,60,60,62,62,62,null,64,64]}");
             var midi = await w.MsMidi(id);
             Assert.True(File.Exists(midi)); Assert.Equal("MThd", Encoding.ASCII.GetString(File.ReadAllBytes(midi!), 0, 4));

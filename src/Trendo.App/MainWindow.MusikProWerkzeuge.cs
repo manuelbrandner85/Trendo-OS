@@ -69,13 +69,19 @@ public partial class MainWindow
     public async Task<MusicSong?> MsPractice(string songId, double tempo, int semitones, bool click)
     {
         if (Songs.Get(songId) is not { } s || !File.Exists(s.File)) return null;
+        // Paket 01 S4-12: nicht still begrenzen – extreme Werte ablehnen, starke mit Artefakt-Warnung
+        var check = TimePitch.Assess(tempo, semitones);
+        if (check.Light == "rot") { MpSay(check.Text); return null; }
         var ff = await MasterFfmpeg(); if (ff is null) { MpSay("Zum Üben braucht Trendo FFmpeg – unter „Programme“ einrichten."); return null; }
         _mpBusy = true; MpSay("Übe-Fassung entsteht …");
         try
         {
             var dir = Path.GetDirectoryName(s.File)!; var outFile = Path.Combine(dir, $".trendo-ueben-{Guid.NewGuid():N}.wav");
-            var r = await MasterRun(ff, MusicPro.PracticeArgs(s.File, outFile, tempo, semitones));
+            var r = await MasterRun(ff, TimePitch.Args(s.File, outFile, tempo, semitones));
             if (!r.Ok || !File.Exists(outFile)) { MpSay("Ging nicht: " + Short(r.Err)); return null; }
+            string quality = "";
+            try { var m = TimePitch.Compare(AudioFile.Read(s.File), AudioFile.Read(outFile)); quality = " " + TimePitch.Verify(m, tempo, semitones).Text; }
+            catch (Exception e) when (e is InvalidOperationException or IOException or InvalidDataException or ArgumentException) { } // Messung nur, wenn lesbar
             if (click)
             {
                 // Takt der neuen Fassung selbst erkennen (ohne Python) und eine Klickspur dazumischen
@@ -88,7 +94,7 @@ public partial class MainWindow
             var label = $"Üben {tempo * 100:0} %" + (semitones != 0 ? $", {(semitones > 0 ? "+" : "")}{semitones} Halbtöne" : "") + (click ? ", mit Klick" : "");
             var v = await MpAddVersion(s, outFile, label);
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.ueben", label);
-            MpSay(v is null ? "Ging nicht." : $"✓ Übe-Fassung „{label}“ ist fertig.");
+            MpSay(v is null ? "Ging nicht." : $"✓ Übe-Fassung „{label}“ ist fertig." + quality + (check.Light == "gelb" ? " ⚠ " + check.Text : ""));
             return v;
         }
         finally { _mpBusy = false; if (CurrentView == MS) Show(MS); }
