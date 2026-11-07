@@ -1,5 +1,8 @@
 # Trendo Musik ↔ Suno – Abgleich jeder Funktion und der Oberfläche (07.11.2026)
 
+- Programme: „Trendo Musik“
+- Vorbilder: Suno
+
 Auftrag: „bei trendo musik prüfe exakt jede einzelne funktion was suno hat im bestenfall auch die ui und anordnung usw und gleiche ab … fehlende funktionen und die ui von suno übernehmen … baue exakt nach mit rea“.
 
 ## Arbeitsweise (Clean-Room)
