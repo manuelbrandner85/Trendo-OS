@@ -113,6 +113,7 @@ public partial class MainWindow
         if (OwnVoiceReady) sp.Children.Add(P("• Meine Stimme (Mikrofon) – gelernt", Text, 12));
         foreach (var v in voices) sp.Children.Add(P($"• {v.Name} – {(v.Ready ? "gelernt" : "noch nicht gelernt")} · {(v.Consent.Kind == "eigen" ? "eigene Stimme" : "Einwilligung: " + v.Consent.Person)}", Text, 12));
         if (voices.Count == 0 && !OwnVoiceReady) sp.Children.Add(P("Noch keine Stimme – im Lied unter „Spuren & Mitsingen“ aus einem Gesang lernen oder oben deine Stimme aufnehmen.", Muted, 12));
+        sp.Children.Add(MsPersonasPanel()); // V11: Personas
         return MsCard("ms-voices-page", new ScrollViewer { Content = sp });
     }
 
@@ -145,6 +146,7 @@ public partial class MainWindow
         }));
         var voiceLabel = MsVoiceChoices().FirstOrDefault(c => c.Id == MsSingVoice).Label;
         row.Children.Add(B("ms-ref-voice", MsSingVoice.Length == 0 ? "+ Stimme" : "✓ " + voiceLabel, "In welcher Stimme gesungen wird – eigene Stimme oder eine Stimme mit Einwilligung.", () => { MsPage("stimmen"); return Task.CompletedTask; }));
+        row.Children.Add(MsPersonaChip(B)); // V11
         row.Children.Add(B("ms-ref-image", "+ Bild", "Ein Foto bestimmt die Stimmung: Farben, Helligkeit und Lebhaftigkeit werden zu Stil-Wörtern.", async () =>
         {
             var f = await PickMedia("ms-ref-image", ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp"]);

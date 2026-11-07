@@ -28,6 +28,7 @@ public partial class MainWindow
             ("sample", "◧ Als Sample verwenden", () => Tab("bearbeiten")),
             ("stems", "🎚 Spuren holen", () => Tab("spuren")),
             ("midi", "🎹 MIDI holen", () => _ = MsMidi(s.Id)),
+            ("persona", "👤 Persona aus diesem Lied", () => Tab("bearbeiten")),
             ("inspo", "🎧 Als Klangvorbild für ein neues Lied", () => { _msRefFile = s.File; _msMsg = $"Klangvorbild: „{s.Title}“ – jetzt beschreiben und „Erstellen“."; MsPage("erstellen"); }),
             ("speak", "💬 Teil per Sprache ändern (Produzent)", () => Tab("profi")),
         ];

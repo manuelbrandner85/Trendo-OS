@@ -234,6 +234,41 @@ public class MusikSuno_Ui
         finally { w.Close(); }
     }
 
+    [AvaloniaFact(DisplayName = "Suno V11: Persona aus erstelltem Lied (Kopie der Tondatei), nicht aus eingeführter Datei; auf „Stimmen“ wählen; beim Erstellen Klangvorbild + Persona-Stil")]
+    public async Task Persona()
+    {
+        var (w, _, root) = Ui.Open(); _w = w; Directory.CreateDirectory(root);
+        var fake = new FakeAce(); w.AceClientOverride = new AceStepClient(new HttpClient(fake)); w.AceBaseReadyOverride = false;
+        try
+        {
+            const int rate = 44100;
+            string Wav(string n) { var f = Path.Combine(root, n + ".wav"); Trendo.Core.Media.AudioFile.WriteWav(new Trendo.Core.Media.AudioBuf(rate, [Enumerable.Range(0, rate * 6).Select(i => (float)(0.2 * Math.Sin(2 * Math.PI * 220 * i / rate))).ToArray()]), f); return f; }
+            var lib = new SongLibrary(w.Core.DataRoot);
+            var own = lib.Add(new MusicSong { Title = "Hafenlied", Style = "Indie-Pop, warme Frauenstimme", File = Wav("a"), Seconds = 6, Kind = "neu" });
+            var imp = lib.Add(new MusicSong { Title = "Eingeführt", File = Wav("b"), Seconds = 6, Kind = "eigen" });
+            Assert.Contains("in Trendo erstellt", MusicPersonas.Problem(imp));
+            Assert.Null(w.MsMakePersona(imp.Id, "X"));
+            // Über das Formular im Reiter Bearbeiten
+            w.MusicStudioSelect(own.Id); w.MsRemixActions(lib.Get(own.Id)!).First(a => a.Id == "persona").Run(); Pump();
+            w.Find<TextBox>("ms-persona-name").Text = "Sommerstimme"; w.Find<Button>("ms-persona-go").Press(); Pump();
+            var p = Assert.Single(w.Personas.All()); Assert.Equal("Sommerstimme", p.Name); Assert.True(File.Exists(p.File)); Assert.NotEqual(own.File, p.File);
+            Assert.Null(w.MsMakePersona(own.Id, "sommerstimme")); Assert.Contains("gibt es schon", w.Find<TextBlock>("ms-msg").Text);
+            // Auf „Stimmen“ wählen → Erstellen mit Persona
+            w.MsPage("stimmen"); Pump(); Assert.NotNull(w.TryFind<Control>("ms-persona-0"));
+            w.Find<Button>("ms-persona-use-0").Press(); Pump();
+            Assert.Equal("erstellen", w.MsCurrentPage); Assert.Equal(p.Id, w.MsPersona); Assert.Contains("Sommerstimme", w.Find<Button>("ms-ref-persona").Content!.ToString());
+            w.MsModelChoice = "schnell"; w.Find<TextBox>("ms-desc").Text = "Lied über den Sommer, Indie-Pop"; w.Find<Button>("ms-create").Press();
+            await Until(() => fake.Requests.Count > 0 && lib.Visible().Count > 2);
+            var req = fake.Requests[^1];
+            Assert.Contains("reference_audio=<datei>", req); Assert.Contains("warme Frauenstimme", req);
+            Assert.Equal(1, w.Personas.Get(p.Id)!.Uses);
+            // Löschen lässt das Lied stehen
+            w.MsPage("stimmen"); Pump(); w.Find<Button>("ms-persona-del-0").Press(); Pump();
+            Assert.Empty(w.Personas.All()); Assert.False(File.Exists(p.File)); Assert.NotNull(lib.Get(own.Id)); Assert.Null(w.MsPersona);
+        }
+        finally { w.Close(); }
+    }
+
     [AvaloniaFact(DisplayName = "Suno V5: Remix-Knopf je Lied; Beschreibung wiederverwenden; Zuschneiden und Abschnitt entfernen (echtes FFmpeg); Remaster als eigene Fassung")]
     public async Task Remix()
     {

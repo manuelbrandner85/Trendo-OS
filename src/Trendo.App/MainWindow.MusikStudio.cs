@@ -136,17 +136,18 @@ public partial class MainWindow
     {
         var lang = AceStepClient.Languages[Math.Clamp(_msLang, 0, AceStepClient.Languages.Length - 1)].Code;
         var secs = _msOpt.Seconds ?? MusicLengths[Math.Clamp(_msLen, 0, MusicLengths.Length - 1)].Seconds; // V3: Dauer genau (Regler) vor der Auswahlliste
-        var extra = MusicSuno.AceFields(_msOpt with { Max = _msOpt.Max || MsModelFor().Max }, _msRefFile is not null);
+        var (refFile, _) = MsPersonaApply(""); // V11: Persona als Klangvorbild
+        var extra = MusicSuno.AceFields(_msOpt with { Max = _msOpt.Max || MsModelFor().Max }, refFile is not null);
         if (!_msPro)
         {
             if (string.IsNullOrWhiteSpace(_msDesc) && _msGenres.Count == 0) throw new ArgumentException("Beschreibe zuerst dein Lied – z. B. „fröhliches Sommerlied über einen Roadtrip“.");
-            return new(MusicSuno.ApplyToStyle(MsWithExtras(_msDesc), _msOpt), _msInstr ? "[Instrumental]" : "", secs, lang, _msVariants, ReferenceAudio: _msRefFile, Extra: extra);
+            return new(MusicSuno.ApplyToStyle(MsPersonaApply(MsWithExtras(_msDesc)).Style, _msOpt), _msInstr ? "[Instrumental]" : "", secs, lang, _msVariants, ReferenceAudio: refFile, Extra: extra);
         }
         if (string.IsNullOrWhiteSpace(_msStyle) && _msGenres.Count == 0) throw new ArgumentException("Gib zuerst den Stil an – z. B. „Pop, Akustikgitarre, Frauenstimme“.");
         int? bpm = int.TryParse(_msBpm, out var b) ? b : null;
         if (_msBpm.Length > 0 && bpm is null or < 30 or > 300) throw new ArgumentException("Tempo bitte zwischen 30 und 300 BPM (oder leer für automatisch).");
-        return new(MusicSuno.ApplyToStyle(MsWithExtras(_msStyle), _msOpt), _msInstr ? "[Instrumental]" : SongLibrary.ToAceLyrics(_msLyrics), secs, lang, _msVariants, bpm,
-            _msKey.Length > 0 ? _msKey : null, _msTime.Length > 0 ? _msTime : null, ReferenceAudio: _msRefFile, Extra: extra);
+        return new(MusicSuno.ApplyToStyle(MsPersonaApply(MsWithExtras(_msStyle)).Style, _msOpt), _msInstr ? "[Instrumental]" : SongLibrary.ToAceLyrics(_msLyrics), secs, lang, _msVariants, bpm,
+            _msKey.Length > 0 ? _msKey : null, _msTime.Length > 0 ? _msTime : null, ReferenceAudio: refFile, Extra: extra);
     }
 
     /// <summary>Wunsch 03.11.2026: Im Einfach-Modus mit Gesang (nicht nur instrumental). Zuerst schreibt die Text-KI von Trendo den Liedtext
@@ -154,6 +155,7 @@ public partial class MainWindow
     public async Task<List<MusicSong>> MsCreateWithVoice(AceStepClient.Job j, string title)
     {
         var model = MsModelFor().Model; // V2: Schnell / Gründlich / Max
+        if (_msPersona is { } pid && Personas.Get(pid) is not null) Personas.Used(pid); // V11
         if (model == AceStepClient.BaseModel && !AceBaseReady) { _msMsg = "„Gründlich“ und „Max“ brauchen das Grundmodell der Musik-KI – im Lied unter „Bearbeiten → Verlängern“ einmal laden, oder „Schnell“ wählen."; Show(MS); return []; }
         if (_msPro || j.Lyrics.Trim().Length > 0 || j.Task != "text2music") return MsLinkProducerDraft(await MusicStudioCreate(j, title, model: model)); // Claude 26: Produzenten-Fassung hängt am Ausgangslied
         var langName = AceStepClient.Languages.FirstOrDefault(x => x.Code == j.Language).Name ?? j.Language;
@@ -508,6 +510,7 @@ public partial class MainWindow
         edit.Children.Add(MsExtendPanel(s)); // M10: Verlängern mit dem Grundmodell
         edit.Children.Add(MsCropPanel(s)); // V5: Zuschneiden / Abschnitt entfernen
         edit.Children.Add(MsMashupSamplePanel(s)); // V10: Mashup und Sample
+        edit.Children.Add(MsPersonaForm(s)); // V11: Persona
         spuren.Children.Add(MsStemsPanel(s)); // Spuren trennen mit Demucs
         spuren.Children.Add(MsSingPanel(s)); // S5/S6: Mitsingen, Aufnahme mischen
         video.Children.Add(MsUnderstandPanel(s)); // KI-Musikvideo A: Lied verstehen (wer singt wann, Zeilen, Thema)
