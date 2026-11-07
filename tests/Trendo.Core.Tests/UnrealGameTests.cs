@@ -49,7 +49,9 @@ public class UnrealGameTests
             var gm = File.ReadAllText(Path.Combine(dir, "Source", "Waldlaeufer", "TrendoGameMode.cpp"));
             Assert.Contains("\"objects\"", gm);
             Assert.Contains("ThinkOpenWorld", actors); Assert.Contains("LineTraceSingleByChannel", actors); // Gegner-KI: sehen, verfolgen, Gelände
-            Assert.Contains("BP_ModularVehicleSimplifiedSkeletalSetup", actors); Assert.Contains("PC->Possess(Car)", gm); // fahrbarer Wagen mit Chaos-Physik
+            Assert.Contains("ATrendoCar", actors); Assert.Contains("PC->Possess(Car)", gm); // fahrbarer Wagen mit Chaos-Physik
+            var car = File.ReadAllText(Path.Combine(dir, "Source", "Waldlaeufer", "TrendoCar.cpp"));
+            Assert.Contains("SportsCar_AnimBP", car); Assert.Contains("bUseAutomaticGears = true", car); Assert.Contains("Phys_Wheel_FL", car); // drehende Räder, Automatik
             Assert.Contains("TRENDO-GEGNER", gm); Assert.Contains("TRENDO-WAGEN", gm); // Probe im Prüflauf
             // Gegner als echter Charakter (Kapsel, Schwerkraft, Boden, Kollision), Messung von Bodenkontakt und Kampf; Sturz-Animation beim Tod
             Assert.Contains("class ATrendoEnemy : public ACharacter", File.ReadAllText(Path.Combine(dir, "Source", "Waldlaeufer", "TrendoActors.h")));

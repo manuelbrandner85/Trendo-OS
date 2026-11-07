@@ -39,7 +39,7 @@ public static class UnrealGame
         string Target(string type, string suffix) => $"using UnrealBuildTool;\n\npublic class {name}{suffix}Target : TargetRules\n{{\n\tpublic {name}{suffix}Target(TargetInfo Target) : base(Target)\n\t{{\n\t\tType = TargetType.{type};\n\t\tDefaultBuildSettings = BuildSettingsVersion.Latest;\n\t\tIncludeOrderVersion = EngineIncludeOrderVersion.Latest;\n\t\tExtraModuleNames.Add(\"{name}\");\n\t}}\n}}\n";
         Put($"Source/{name}.Target.cs", Target("Game", ""));
         Put($"Source/{name}Editor.Target.cs", Target("Editor", "Editor"));
-        Put($"Source/{name}/{name}.Build.cs", $"using UnrealBuildTool;\n\npublic class {name} : ModuleRules\n{{\n\tpublic {name}(ReadOnlyTargetRules Target) : base(Target)\n\t{{\n\t\tPCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;\n\t\tPublicDependencyModuleNames.AddRange(new[] {{ \"Core\", \"CoreUObject\", \"Engine\", \"InputCore\", \"EnhancedInput\", \"Json\", \"AIModule\" }});\n\t}}\n}}\n");
+        Put($"Source/{name}/{name}.Build.cs", $"using UnrealBuildTool;\n\npublic class {name} : ModuleRules\n{{\n\tpublic {name}(ReadOnlyTargetRules Target) : base(Target)\n\t{{\n\t\tPCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;\n\t\tPublicDependencyModuleNames.AddRange(new[] {{ \"Core\", \"CoreUObject\", \"Engine\", \"InputCore\", \"EnhancedInput\", \"Json\", \"AIModule\", \"ChaosVehicles\", \"PhysicsCore\" }});\n\t}}\n}}\n");
         Put($"Source/{name}/{name}.cpp", $"// Von Trendo erzeugt.\n#include \"Modules/ModuleManager.h\"\n\nIMPLEMENT_PRIMARY_GAME_MODULE(FDefaultGameModuleImpl, {name}, \"{name}\");\n");
         foreach (var (file, text) in Sources) Put($"Source/{name}/{file}", text + "\n");
         var map = Worlds.FirstOrDefault(w => w.Id == world).Map ?? Worlds[0].Map;
@@ -70,7 +70,7 @@ public static class UnrealGame
     /// <summary>Plugins, die Trendo im Projekt einschaltet: Python/Interchange zum Einrichten der Welt, dazu die Engine-Beispielinhalte
     /// mit Menschfigur samt Geh-/Lauf-/Sprung-Animationen (MoverExamples) und Sportwagen (ChaosModularVehicleExamples) – Teil jeder Unreal-Installation –
     /// und der MetaHuman Creator für den echten Menschen als Spielfigur.</summary>
-    public static readonly string[] Plugins = ["PythonScriptPlugin", "EditorScriptingUtilities", "Interchange", "InterchangeEditor", "MoverExamples", "ChaosModularVehicleExamples", "ChaosModularVehicle", "MetaHumanCharacter"];
+    public static readonly string[] Plugins = ["PythonScriptPlugin", "EditorScriptingUtilities", "Interchange", "InterchangeEditor", "MoverExamples", "ChaosModularVehicleExamples", "ChaosModularVehicle", "ChaosVehiclesPlugin", "MetaHumanCharacter"];
     /// <summary>Eigene Karte, die das Welt-Skript aus der Open-World-Vorlage anlegt.</summary>
     public const string WeltMap = "/Game/Trendo/Welt";
     public const string WeltScriptRel = "Trendo/trendo_welt.py";
@@ -842,6 +842,7 @@ bool TrendoSetupFigure(USkeletalMeshComponent* Figure, float FootZ, const FLinea
 // Von Trendo erzeugt: Spielobjekte – echte Modelle (Poly Haven, CC0; Epic-Mannequin und Sportwagen aus Engine-Plugins), sonst Grundformen.
 #include "TrendoActors.h"
 #include "TrendoGameMode.h"
+#include "TrendoCar.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -982,12 +983,11 @@ void ATrendoThing::Setup(TCHAR InTile, int32 X, int32 Y, const FLinearColor& Col
 	// 1) Figur (N) als Mensch, Fahrzeug (V „wagen“) als Sportwagen
 	if (InTile == 'N') { Body3D = TrendoSetupMetaHuman(this, Catch, Foot, TEXT("Figur")); if (Body3D) bModel = true; else if (TrendoSetupFigure(Figure, Foot, FLinearColor(0.42f, 0.33f, 0.22f))) { bModel = true; Body3D = Figure; } }
 	if (InTile == 'V' && Kind != TEXT("ufo") && GM && GM->Data.World == TEXT("openworld"))
-		if (UClass* CC = LoadClass<APawn>(nullptr, TEXT("/ChaosModularVehicleExamples/Vehicles/ModularVehicle/SportsCar/BP_ModularVehicleSimplifiedSkeletalSetup.BP_ModularVehicleSimplifiedSkeletalSetup_C")))
 		{
-			// echter Wagen: Gas, Bremse, Lenkung, Federung und Reifen über Chaos; Einsteigen mit E (oder Berühren), Aussteigen mit E
+			// echter Wagen (Chaos Vehicles): Motor, Automatik, Federung, Reifen, Lenkung, drehende Räder; Einsteigen mit E (oder Berühren), Aussteigen mit E
 			FActorSpawnParameters SP; SP.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-			Car = GetWorld()->SpawnActor<APawn>(CC, GetActorLocation() + FVector(0, 0, 60), FRotator(0, GM->PathYaw(), 0), SP); // in Wegrichtung: dort ist frei
-			if (Car) bModel = true;
+			ATrendoCar* NewCar = GetWorld()->SpawnActor<ATrendoCar>(GetActorLocation() + FVector(0, 0, 80), FRotator(0, GM->PathYaw(), 0), SP); // in Wegrichtung: dort ist frei
+			if (NewCar && NewCar->bReady) { Car = NewCar; bModel = true; } else if (NewCar) NewCar->Destroy();
 		}
 	if (InTile == 'V' && Kind != TEXT("ufo") && !Car)
 		if (USkeletalMesh* CarModel = TrendoCar()) { Figure->SetSkeletalMesh(CarModel); Figure->SetRelativeLocation(FVector(0, 0, Foot)); Figure->SetVisibility(true); Figure->SetCastShadow(true); bModel = true; }
@@ -1179,6 +1179,198 @@ void ATrendoShot::Tick(float DeltaSeconds)
 	SetActorLocation(To);
 	SetActorRotation(FRotator(-Life * 900.f, Dir.Rotation().Yaw, 0)); // geworfenes Beil überschlägt sich
 }
+""",
+        ["TrendoCar.h"] = """
+// Von Trendo erzeugt: fahrbarer Wagen mit Chaos-Fahrphysik (Motor, Automatik, Federung, Reifenreibung, Lenkung) – Modell und Rad-Animation aus Epics Fahrzeug-Beispiel.
+#pragma once
+
+#include "CoreMinimal.h"
+#include "WheeledVehiclePawn.h"
+#include "ChaosVehicleWheel.h"
+#include "InputActionValue.h"
+#include "TrendoCar.generated.h"
+
+class USpringArmComponent; class UCameraComponent; class UInputAction; class UInputMappingContext;
+
+/** Vorderrad: lenkt, bremst. */
+UCLASS()
+class UTrendoWheelFront : public UChaosVehicleWheel
+{
+	GENERATED_BODY()
+public:
+	UTrendoWheelFront();
+};
+
+/** Hinterrad: angetrieben, Handbremse. */
+UCLASS()
+class UTrendoWheelRear : public UChaosVehicleWheel
+{
+	GENERATED_BODY()
+public:
+	UTrendoWheelRear();
+};
+
+/** Sportwagen: W/S bzw. rechter/linker Trigger Gas und Bremse (Bremse im Stand = Rückwärts), A/D bzw. linker Stick lenken, Leertaste/A Handbremse, E/B aussteigen. */
+UCLASS()
+class ATrendoCar : public AWheeledVehiclePawn
+{
+	GENERATED_BODY()
+public:
+	ATrendoCar();
+	UPROPERTY(VisibleAnywhere) USpringArmComponent* Arm;
+	UPROPERTY(VisibleAnywhere) UCameraComponent* Camera;
+	/** true, wenn Modell, Physik-Hülle und Rad-Animation gefunden wurden (sonst nicht fahrbar). */
+	bool bReady = false;
+	/** Gas/Bremse/Lenkung direkt setzen (für den Prüflauf und die KI). */
+	void Drive(float Throttle, float Steer, float Brake);
+	/** Größte Raddrehung (Grad) aller Räder seit Fahrtbeginn. */
+	float WheelSpin() const;
+	virtual void BeginPlay() override;
+	virtual void SetupPlayerInputComponent(UInputComponent* Input) override;
+private:
+	UPROPERTY() UInputMappingContext* Mapping;
+	UPROPERTY() UInputAction* ThrottleAction;
+	UPROPERTY() UInputAction* BrakeAction;
+	UPROPERTY() UInputAction* SteerAction;
+	UPROPERTY() UInputAction* HandbrakeAction;
+	UPROPERTY() UInputAction* ExitAction;
+	void BuildInput();
+	void Throttle(const FInputActionValue& V);
+	void Brake(const FInputActionValue& V);
+	void Steer(const FInputActionValue& V);
+	void Handbrake(const FInputActionValue& V);
+	void Exit();
+};
+""",
+        ["TrendoCar.cpp"] = """
+// Von Trendo erzeugt: fahrbarer Wagen (Chaos Vehicles) – Federung, Reifen, Motor mit Drehmomentkurve, Automatikgetriebe, sich drehende Räder.
+#include "TrendoCar.h"
+#include "TrendoGameMode.h"
+#include "ChaosWheeledVehicleMovementComponent.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Engine/SkeletalMesh.h"
+#include "PhysicsEngine/PhysicsAsset.h"
+#include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "InputAction.h"
+#include "InputMappingContext.h"
+#include "InputModifiers.h"
+#include "Kismet/GameplayStatics.h"
+
+static const TCHAR* CarDir = TEXT("/ChaosModularVehicleExamples/Models/SportsCar/");
+
+UTrendoWheelFront::UTrendoWheelFront()
+{
+	WheelRadius = 36.f; WheelWidth = 24.f; bAffectedBySteering = true; MaxSteerAngle = 38.f;
+	bAffectedByHandbrake = false; bAffectedByEngine = false; FrictionForceMultiplier = 3.f; CorneringStiffness = 1000.f;
+	SuspensionMaxRaise = 8.f; SuspensionMaxDrop = 12.f; SpringRate = 250.f; SpringPreload = 50.f; SuspensionDampingRatio = 0.5f;
+	MaxBrakeTorque = 3000.f;
+}
+
+UTrendoWheelRear::UTrendoWheelRear()
+{
+	WheelRadius = 36.f; WheelWidth = 28.f; bAffectedBySteering = false; bAffectedByHandbrake = true; bAffectedByEngine = true;
+	FrictionForceMultiplier = 3.f; CorneringStiffness = 1000.f; MaxHandBrakeTorque = 6000.f; MaxBrakeTorque = 3000.f;
+	SuspensionMaxRaise = 8.f; SuspensionMaxDrop = 12.f; SpringRate = 250.f; SpringPreload = 50.f; SuspensionDampingRatio = 0.5f;
+}
+
+ATrendoCar::ATrendoCar()
+{
+	PrimaryActorTick.bCanEverTick = true;
+	UChaosWheeledVehicleMovementComponent* M = CastChecked<UChaosWheeledVehicleMovementComponent>(GetVehicleMovementComponent());
+	M->ChassisHeight = 140.f; M->DragCoefficient = 0.31f; M->DownforceCoefficient = 0.3f; M->Mass = 1450.f; // Sportwagen um 1,45 t
+	M->WheelSetups.SetNum(4);
+	const TCHAR* Bones[4] = { TEXT("Phys_Wheel_FL"), TEXT("Phys_Wheel_FR"), TEXT("Phys_Wheel_BL"), TEXT("Phys_Wheel_BR") };
+	for (int32 i = 0; i < 4; i++) { M->WheelSetups[i].BoneName = Bones[i]; M->WheelSetups[i].WheelClass = i < 2 ? UTrendoWheelFront::StaticClass() : UTrendoWheelRear::StaticClass(); }
+	// Motor: Drehmomentkurve über die Drehzahl, Automatik mit sechs Gängen
+	M->EngineSetup.MaxTorque = 750.f; M->EngineSetup.MaxRPM = 7000.f; M->EngineSetup.EngineIdleRPM = 900.f; M->EngineSetup.EngineBrakeEffect = 0.2f;
+	M->EngineSetup.TorqueCurve.GetRichCurve()->Reset();
+	M->EngineSetup.TorqueCurve.GetRichCurve()->AddKey(0.f, 400.f); M->EngineSetup.TorqueCurve.GetRichCurve()->AddKey(1890.f, 500.f);
+	M->EngineSetup.TorqueCurve.GetRichCurve()->AddKey(5730.f, 750.f); M->EngineSetup.TorqueCurve.GetRichCurve()->AddKey(7000.f, 600.f);
+	M->TransmissionSetup.bUseAutomaticGears = true; M->TransmissionSetup.bUseAutoReverse = true; M->TransmissionSetup.FinalRatio = 3.7f;
+	M->TransmissionSetup.ForwardGearRatios = { 4.25f, 2.52f, 1.66f, 1.22f, 1.0f, 0.86f };
+	M->TransmissionSetup.ReverseGearRatios = { 4.04f };
+	M->TransmissionSetup.ChangeUpRPM = 6000.f; M->TransmissionSetup.ChangeDownRPM = 2000.f; M->TransmissionSetup.GearChangeTime = 0.2f;
+	M->DifferentialSetup.DifferentialType = EVehicleDifferential::RearWheelDrive;
+	M->SteeringSetup.SteeringType = ESteeringType::AngleRatio; M->SteeringSetup.AngleRatio = 0.7f;
+	GetMesh()->SetCollisionProfileName(TEXT("Vehicle")); GetMesh()->BodyInstance.bSimulatePhysics = true;
+	Arm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Kameraarm"));
+	Arm->SetupAttachment(GetMesh()); Arm->TargetArmLength = 650.f; Arm->SocketOffset = FVector(0, 0, 180); Arm->bEnableCameraLag = true; Arm->CameraLagSpeed = 6.f;
+	Arm->bEnableCameraRotationLag = true; Arm->CameraRotationLagSpeed = 4.f; Arm->bInheritPitch = false; Arm->bInheritRoll = false;
+	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Kamera")); Camera->SetupAttachment(Arm); Camera->SetRelativeRotation(FRotator(-10, 0, 0));
+}
+
+void ATrendoCar::BeginPlay()
+{
+	// Modell, Physik-Hülle (Räder als Kugeln) und Rad-Animation (dreht und federt die Räder) aus Epics Fahrzeug-Beispiel
+	USkeletalMesh* CarModel = LoadObject<USkeletalMesh>(nullptr, *FString::Printf(TEXT("%sSKM_SportsCar.SKM_SportsCar"), CarDir));
+	UPhysicsAsset* PA = LoadObject<UPhysicsAsset>(nullptr, *FString::Printf(TEXT("%sSportsCar_PhysicsAsset.SportsCar_PhysicsAsset"), CarDir));
+	UClass* Anim = LoadClass<UAnimInstance>(nullptr, *FString::Printf(TEXT("%sSportsCar_AnimBP.SportsCar_AnimBP_C"), CarDir));
+	if (CarModel && PA)
+	{
+		GetMesh()->SetSkeletalMesh(CarModel); GetMesh()->SetPhysicsAsset(PA, true);
+		if (Anim) GetMesh()->SetAnimInstanceClass(Anim);
+		GetMesh()->SetSimulatePhysics(true);
+		GetVehicleMovementComponent()->RecreatePhysicsState();
+		bReady = true;
+	}
+	Super::BeginPlay();
+}
+
+void ATrendoCar::Drive(float Throttle, float Steer, float Brake)
+{
+	UChaosVehicleMovementComponent* M = GetVehicleMovementComponent(); if (!M) return;
+	M->SetThrottleInput(Throttle); M->SetSteeringInput(Steer); M->SetBrakeInput(Brake); M->SetHandbrakeInput(false);
+}
+
+float ATrendoCar::WheelSpin() const
+{
+	float Max = 0.f;
+	if (const UChaosWheeledVehicleMovementComponent* M = Cast<UChaosWheeledVehicleMovementComponent>(GetVehicleMovementComponent()))
+		for (const UChaosVehicleWheel* W : M->Wheels) if (W) Max = FMath::Max(Max, FMath::Abs(W->GetRotationAngle()));
+	return Max;
+}
+
+static UInputAction* CarAction(UObject* Outer, const TCHAR* Name, EInputActionValueType Type) { UInputAction* A = NewObject<UInputAction>(Outer, Name); A->ValueType = Type; return A; }
+
+void ATrendoCar::BuildInput()
+{
+	if (Mapping) return;
+	Mapping = NewObject<UInputMappingContext>(this, TEXT("TrendoWagen"));
+	ThrottleAction = CarAction(this, TEXT("Gas"), EInputActionValueType::Axis1D); BrakeAction = CarAction(this, TEXT("Bremse"), EInputActionValueType::Axis1D);
+	SteerAction = CarAction(this, TEXT("Lenken"), EInputActionValueType::Axis1D); HandbrakeAction = CarAction(this, TEXT("Handbremse"), EInputActionValueType::Boolean);
+	ExitAction = CarAction(this, TEXT("Aussteigen"), EInputActionValueType::Boolean);
+	for (const FKey& K : { EKeys::W, EKeys::Up, EKeys::Gamepad_RightTriggerAxis }) Mapping->MapKey(ThrottleAction, K);
+	for (const FKey& K : { EKeys::S, EKeys::Down, EKeys::Gamepad_LeftTriggerAxis }) Mapping->MapKey(BrakeAction, K);
+	for (const FKey& K : { EKeys::D, EKeys::Right, EKeys::Gamepad_LeftX }) Mapping->MapKey(SteerAction, K);
+	for (const FKey& K : { EKeys::A, EKeys::Left }) Mapping->MapKey(SteerAction, K).Modifiers.Add(NewObject<UInputModifierNegate>(Mapping));
+	for (const FKey& K : { EKeys::SpaceBar, EKeys::Gamepad_FaceButton_Bottom }) Mapping->MapKey(HandbrakeAction, K);
+	for (const FKey& K : { EKeys::E, EKeys::Gamepad_FaceButton_Right }) Mapping->MapKey(ExitAction, K);
+}
+
+void ATrendoCar::SetupPlayerInputComponent(UInputComponent* Input)
+{
+	Super::SetupPlayerInputComponent(Input);
+	BuildInput();
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+		if (auto* Sub = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer())) Sub->AddMappingContext(Mapping, 1);
+	if (UEnhancedInputComponent* EI = Cast<UEnhancedInputComponent>(Input))
+	{
+		EI->BindAction(ThrottleAction, ETriggerEvent::Triggered, this, &ATrendoCar::Throttle); EI->BindAction(ThrottleAction, ETriggerEvent::Completed, this, &ATrendoCar::Throttle);
+		EI->BindAction(BrakeAction, ETriggerEvent::Triggered, this, &ATrendoCar::Brake); EI->BindAction(BrakeAction, ETriggerEvent::Completed, this, &ATrendoCar::Brake);
+		EI->BindAction(SteerAction, ETriggerEvent::Triggered, this, &ATrendoCar::Steer); EI->BindAction(SteerAction, ETriggerEvent::Completed, this, &ATrendoCar::Steer);
+		EI->BindAction(HandbrakeAction, ETriggerEvent::Started, this, &ATrendoCar::Handbrake); EI->BindAction(HandbrakeAction, ETriggerEvent::Completed, this, &ATrendoCar::Handbrake);
+		EI->BindAction(ExitAction, ETriggerEvent::Started, this, &ATrendoCar::Exit);
+	}
+}
+
+void ATrendoCar::Throttle(const FInputActionValue& V) { GetVehicleMovementComponent()->SetThrottleInput(V.Get<float>()); }
+void ATrendoCar::Brake(const FInputActionValue& V) { GetVehicleMovementComponent()->SetBrakeInput(V.Get<float>()); }
+void ATrendoCar::Steer(const FInputActionValue& V) { GetVehicleMovementComponent()->SetSteeringInput(V.Get<float>()); }
+void ATrendoCar::Handbrake(const FInputActionValue& V) { GetVehicleMovementComponent()->SetHandbrakeInput(V.Get<bool>()); }
+void ATrendoCar::Exit() { if (ATrendoGameMode* GM = Cast<ATrendoGameMode>(UGameplayStatics::GetGameMode(this))) GM->ExitCar(); }
 """,
         ["TrendoCharacter.h"] = """
 // Von Trendo erzeugt: Spielfigur mit Kamera (dritte Person).
@@ -1547,6 +1739,8 @@ private:
 	static float WheelAngle(AActor* Car, TMap<FString, FQuat>& Last);
 	static void VehicleAxis(AActor* Car, FName Input, float Value);
 	static void VehicleCall(AActor* Car, const TCHAR* Func, FName Input, int32 Value);
+	static int32 VehicleGear(AActor* Car);
+	float GearCool = 0;
 	FVector Origin = FVector::ZeroVector; FRotator StartRot = FRotator::ZeroRotator;
 	FVector Place(int32 X, int32 Y) const;
 	void Freeze();
@@ -1561,6 +1755,8 @@ private:
 #include "TrendoGameMode.h"
 #include "TrendoActors.h"
 #include "TrendoCharacter.h"
+#include "TrendoCar.h"
+#include "ChaosVehicleMovementComponent.h"
 #include "Engine/Canvas.h"
 #include "Engine/Engine.h"
 #include "Engine/Font.h"
@@ -1619,7 +1815,8 @@ bool ATrendoGameMode::EnterCar(APawn* Car)
 	DrivenHero = H; DrivenCar = Car;
 	H->SetActorHiddenInGame(true); H->SetActorEnableCollision(false); H->GetCharacterMovement()->DisableMovement();
 	H->AttachToActor(Car, FAttachmentTransformRules::KeepWorldTransform);
-	PC->Possess(Car); State.Note = TEXT("Wagen: W/S oder Trigger Gas und Bremse, A/D lenken – E steigt aus");
+	PC->Possess(Car);
+	State.Note = TEXT("Wagen: W/S oder Trigger Gas und Bremse, A/D lenken – E steigt aus");
 	UE_LOG(LogTrendo, Display, TEXT("TRENDO-WAGEN eingestiegen"));
 	return true;
 }
@@ -1860,14 +2057,7 @@ void ATrendoGameMode::Tick(float DeltaSeconds)
 	// im Wagen: E (Tastatur) bzw. B (Controller) steigt aus – der Wagen hat eigene Steuerung, die Figur ist dann nicht aktiv
 	if (DrivenCar) if (APlayerController* PC = GetWorld()->GetFirstPlayerController(); PC && (PC->WasInputKeyJustPressed(EKeys::E) || PC->WasInputKeyJustPressed(EKeys::Gamepad_FaceButton_Right))) ExitCar();
 	if (DrivenCar && bCarProbe && !bCarDone)
-	{
-		if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
-			if (auto* Sub = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
-				if (UInputAction* Gas = LoadObject<UInputAction>(nullptr, TEXT("/ChaosModularVehicleExamples/Input/Throttle.Throttle"))) Sub->InjectInputForAction(Gas, FInputActionValue(1.f), {}, {});
-		VehicleAxis(DrivenCar, TEXT("Throttle"), 1.f); // Gas direkt am Fahrzeug-Simulationsbauteil (wie die Gas-Taste)
-		VehicleAxis(DrivenCar, TEXT("Brake"), 0.f); VehicleCall(DrivenCar, TEXT("SetInputBool"), TEXT("Handbrake"), 0); VehicleCall(DrivenCar, TEXT("SetGearInput"), NAME_None, 1);
-		WheelTurn += WheelAngle(DrivenCar, WheelLast);
-	}
+		if (ATrendoCar* TC = Cast<ATrendoCar>(DrivenCar)) { TC->Drive(1.f, 0.f, 0.f); WheelTurn = TC->WheelSpin(); } // Vollgas geradeaus wie ein Spieler
 	if (Playing() && !State.bWon && !State.bOver)
 	{
 		State.Seconds += DeltaSeconds; State.CheckRules(Data);
@@ -1956,8 +2146,8 @@ void ATrendoGameMode::Tick(float DeltaSeconds)
 			bCarDone = true; CheckSeconds = 1.5f;
 			if (DrivenCar)
 			{
-				UE_LOG(LogTrendo, Display, TEXT("TRENDO-WAGEN gesteuert=%s Klasse=%s Tempo=%.0f km/h Strecke=%.1f m Raddrehung=%.0f° (%s)"), GetWorld()->GetFirstPlayerController()->GetPawn() == DrivenCar ? TEXT("ja") : TEXT("nein"), *DrivenCar->GetClass()->GetName(),
-					DrivenCar->GetVelocity().Size() * 0.036f, FVector::Dist2D(DrivenCar->GetActorLocation(), CarStart) / 100.f, WheelTurn, WheelTurn > 90.f ? TEXT("Reifen drehen sich") : TEXT("Reifen stehen"));
+				UE_LOG(LogTrendo, Display, TEXT("TRENDO-WAGEN gesteuert=%s Klasse=%s Tempo=%.0f km/h Strecke=%.1f m Raddrehung=%.0f° (%s) Gang=%d"), GetWorld()->GetFirstPlayerController()->GetPawn() == DrivenCar ? TEXT("ja") : TEXT("nein"), *DrivenCar->GetClass()->GetName(),
+					DrivenCar->GetVelocity().Size() * 0.036f, FVector::Dist2D(DrivenCar->GetActorLocation(), CarStart) / 100.f, WheelTurn, WheelTurn > 90.f ? TEXT("Reifen drehen sich") : TEXT("Reifen stehen"), Cast<ATrendoCar>(DrivenCar) ? Cast<ATrendoCar>(DrivenCar)->GetVehicleMovementComponent()->GetCurrentGear() : -99);
 				FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("Screenshots/trendo-wagen.png"), false, false);
 			}
 			else UE_LOG(LogTrendo, Display, TEXT("TRENDO-WAGEN kein fahrbarer Wagen"));
@@ -1997,6 +2187,19 @@ void ATrendoGameMode::VehicleCall(AActor* Car, const TCHAR* Func, FName Input, i
 			else if (FIntProperty* I = CastField<FIntProperty>(*It)) I->SetPropertyValue_InContainer(Buf, Value);
 		C->ProcessEvent(F, Buf); return;
 	}
+}
+
+/** Aktueller Gang der Fahrzeug-Simulation (GetCurrentGear über Reflexion), −99 wenn unbekannt. */
+int32 ATrendoGameMode::VehicleGear(AActor* Car)
+{
+	TArray<UActorComponent*> Comps; Car->GetComponents(Comps);
+	for (UActorComponent* C : Comps)
+	{
+		UFunction* F = C ? C->FindFunction(TEXT("GetCurrentGear")) : nullptr; if (!F) continue;
+		uint8* Buf = (uint8*)FMemory_Alloca(F->ParmsSize); FMemory::Memzero(Buf, F->ParmsSize); C->ProcessEvent(F, Buf);
+		if (FIntProperty* R = CastField<FIntProperty>(F->GetReturnProperty())) return R->GetPropertyValue_InContainer(Buf);
+	}
+	return -99;
 }
 
 /** Drehung eines Rads seit dem letzten Bild (Grad): erster Knochen mit „wheel“ im Namen am Fahrzeug-Skelett. */
