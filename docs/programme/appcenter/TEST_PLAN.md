@@ -1,6 +1,6 @@
 # Programme verwalten – Testplan
 
-Studio: Programme installieren (SYS-04) · Bereich: System & Sicherheit · Seite: `appcenter` · Stand: 0.9.36 (Stand 63090ad)
+Studio: Programme installieren (SYS-04) · Bereich: System & Sicherheit · Seite: `appcenter` · Stand: 0.9.36 (Stand 6da70dc)
 
 15 Tests sprechen dieses Programm an.
 

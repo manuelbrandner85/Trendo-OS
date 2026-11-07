@@ -1,6 +1,6 @@
 # Dateien – Produktionspaket
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `dateien` · Stand: 0.9.36 (Stand 63090ad)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `dateien` · Stand: 0.9.36 (Stand 6da70dc)
 
 Arbeitsfläche: Dateimanager (Seitenleiste, Ordner, Laufwerke, Registerkarten – wie Explorer, Finder, Dateien)  
 Modulstatus (requirements.yaml): IN_PROGRESS / Test PC_VERIFIED  

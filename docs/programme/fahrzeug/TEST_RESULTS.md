@@ -1,6 +1,6 @@
 # Auto & Fahrten – Testergebnisse
 
-Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.36 (Stand 63090ad)
+Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.36 (Stand 6da70dc)
 
 Lauf: `api.trx, app.trx, core.trx`
 
