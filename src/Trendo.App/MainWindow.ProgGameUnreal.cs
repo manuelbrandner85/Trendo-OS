@@ -108,7 +108,10 @@ public partial class MainWindow
         {
             lines.Add("✗ Fotomaterialien nicht geladen: " + e.Message + " – das Spiel bleibt in der einfachen Open World."); skip(); return false;
         }
-        step("Unreal richtet die Welt ein (Boden, Pflanzen, Felsen, Licht) … einige Minuten.");
+        // Tiere (freie, geriggte Modelle mit Lizenz) legt der Welt-Bau mit an – sie leben dann in der offenen Welt
+        var animals = UnrealGame.CopyAnimals(_opt.Isolated ? Path.Combine(_core.DataRoot, "tiere") : UnrealGame.AnimalsDir(_deps.ToolsRoot), built);
+        if (animals > 0) lines.Add($"✓ Tiere bereit: {animals} Art(en) aus freien Modellen (Lizenz liegt dem Spiel bei)");
+        step("Unreal richtet die Welt ein (Boden, Pflanzen, Felsen, Tiere, Licht) … einige Minuten.");
         var (we, wlog) = await Task.Run(() => UnrealRun(UnrealGame.EditorCmd(engine), UnrealGame.WeltArgs(uproject, Path.Combine(logs, "welt.txt")), Path.Combine(logs, "welt.txt"), 1_800_000));
         var (wok, models, info) = UnrealGame.ParseWelt(wlog);
         if (!wok) { lines.Add($"✗ Welt nicht eingerichtet (Exitcode {we}) – Protokoll welt.txt" + (info.LastOrDefault(l => l.StartsWith("Fehler")) is { } er ? ": " + er : "")); return false; }

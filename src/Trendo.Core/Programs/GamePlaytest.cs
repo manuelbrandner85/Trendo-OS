@@ -41,6 +41,11 @@ public static class GamePlaytest
             var ok = ka.Contains("besiegt=ja") && ka.Contains("(liegt)");
             f.Add(new("Kampf", ok, ok ? "Gegner besiegt, fällt und bleibt liegen" + (ka.Contains("abgetrennt=1") ? ", ein Glied abgetrennt" : "") : ka.Contains("unter dem Boden") ? "Besiegter Gegner fällt durch den Boden" : ka.Contains("besiegt=nein") ? "Gegner ließ sich nicht besiegen" : "Besiegter Gegner bleibt stehen"));
         }
+        if (Last("TRENDO-TIER ", "flieht=") is { } ti)
+        {
+            var ok = ti.Contains("flieht=ja");
+            f.Add(new("Tiere", ok, ok ? "Tier flieht vor der Spielfigur: " + After(ti, "Abstand").Split(" Fluchten")[0] : "Tier reagiert nicht auf die Spielfigur"));
+        }
         if (Last("TRENDO-BLUT ") is { } bl) f.Add(new("Blut", Num(bl, @"min: (\d+)") > 0, "Blutflecken trocknen mit der Zeit ein"));
         if (Last("TRENDO-WAGEN ", "gesteuert=") is { } wa)
         {
@@ -54,7 +59,7 @@ public static class GamePlaytest
     }
 
     static readonly (string File, string Label)[] ShotNames =
-        [("trendo-start.png", "Start"), ("trendo-objekte.png", "Objekte"), ("trendo-gegner.png", "Gegner"), ("trendo-kampf.png", "Kampf"), ("trendo-glied.png", "Nahaufnahme"), ("trendo-blut-alt.png", "5 Minuten später"), ("trendo-wagen.png", "Wagen")];
+        [("trendo-start.png", "Start"), ("trendo-objekte.png", "Objekte"), ("trendo-gegner.png", "Gegner"), ("trendo-tier.png", "Tiere"), ("trendo-kampf.png", "Kampf"), ("trendo-glied.png", "Nahaufnahme"), ("trendo-blut-alt.png", "5 Minuten später"), ("trendo-wagen.png", "Wagen")];
 
     /// <summary>Bilder des Testspielers aus Saved/Screenshots in Spielreihenfolge (nur vorhandene).</summary>
     public static List<(string Path, string Label)> Shots(string built)

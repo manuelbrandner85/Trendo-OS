@@ -125,6 +125,30 @@ public static class UnrealGame
         return n;
     }
 
+    /// <summary>Ordner für freie, geriggte Tiermodelle (je Tier ein Unterordner mit FBX, Texturen und LIZENZ.txt – z. B. kostenlos von Fab).</summary>
+    public static string AnimalsDir(string toolsRoot) => Path.Combine(toolsRoot, "assets", "tiere");
+
+    /// <summary>Tiere ins Projekt legen (Trendo/Tiere/&lt;Name&gt;: FBX, Texturen, LIZENZ.txt); der Welt-Bau importiert sie. Gibt die Anzahl der Tiere zurück.</summary>
+    public static int CopyAnimals(string animalsDir, string projectDir)
+    {
+        if (!Directory.Exists(animalsDir)) return 0;
+        var n = 0;
+        foreach (var dir in Directory.EnumerateDirectories(animalsDir))
+        {
+            var files = Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories)
+                .Where(f => f.EndsWith(".fbx", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".png", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || Path.GetFileName(f) == "LIZENZ.txt").ToList();
+            if (!files.Any(f => f.EndsWith(".fbx", StringComparison.OrdinalIgnoreCase))) continue;
+            var dest = Path.Combine(projectDir, "Trendo", "Tiere", Path.GetFileName(dir));
+            foreach (var f in files)
+            {
+                var t = Path.Combine(dest, Path.GetRelativePath(dir, f)); Directory.CreateDirectory(Path.GetDirectoryName(t)!);
+                if (!File.Exists(t) || new FileInfo(t).Length != new FileInfo(f).Length) File.Copy(f, t, true);
+            }
+            n++;
+        }
+        return n;
+    }
+
     /// <summary>Echter Mensch: Ergebnis aus dem Protokoll („TRENDO-MENSCH-OK“, Zeilen „TRENDO-MENSCH …“, Grund bei „TRENDO-MENSCH-FEHLER“).</summary>
     public static (bool Ok, List<string> Lines, string Error) ParseMensch(string log)
     {
@@ -438,6 +462,100 @@ try:
 except Exception as e:
     log.append("Blut-Decal nicht angelegt: " + str(e)[:200])
 
+# 4c) Tiere: freie, geriggte Tiermodelle (z. B. von Fab, Lizenz in LIZENZ.txt) aus Trendo/Tiere/<Name> – Netz, Bewegungen, Fotomaterial.
+#     Viele Tier-FBX halten nach der eigentlichen Bewegung die letzte Pose bis zum Ende der Datei: die echte Länge wird gemessen (letztes Bild mit Bewegung).
+tiere = []; lizenzen = []
+MOTION_KEYS = ["idle", "idle2", "walk", "run", "die", "atk", "smell", "sleep", "sit", "roar", "bark", "up"]
+def import_animal(name, base):
+    fbx = next((os.path.join(r, f) for r, _, fs in os.walk(base) for f in sorted(fs) if f.lower().endswith(".fbx")), None)
+    if not fbx: return None
+    dest = "/Game/Trendo/Tiere/" + name
+    if eal.does_directory_exist(dest): eal.delete_directory(dest)
+    t = unreal.AssetImportTask(); t.filename = fbx; t.destination_path = dest; t.automated = True; t.save = True; t.replace_existing = True
+    o = unreal.FbxImportUI(); o.import_mesh = True; o.import_as_skeletal = True; o.import_animations = True; o.import_materials = False; o.import_textures = False
+    o.create_physics_asset = True; o.mesh_type_to_import = unreal.FBXImportType.FBXIT_SKELETAL_MESH; t.options = o
+    tools.import_asset_tasks([t])
+    assets = [unreal.load_asset(p) for p in eal.list_assets(dest, recursive=True)]
+    mesh = next((a for a in assets if isinstance(a, unreal.SkeletalMesh)), None)
+    if not mesh: return None
+    # Fotomaterial: Farbe × Umgebungsverdeckung, Normalen, matte Fellrauheit, Fellkarten über die Deckkraft-Maske (zweiseitig)
+    texs = {}
+    for r, _, fs in os.walk(base):
+        for f in fs:
+            if not f.lower().endswith((".png", ".jpg", ".tga")): continue
+            k = f.rsplit(".", 1)[0].lower()
+            kind = "normal" if "normal" in k else "ao" if k.endswith("_ao") else "opacity" if "opacity" in k else "disp" if "displacement" in k else "color"
+            if kind not in texs: texs[kind] = os.path.join(r, f)
+    imported = {}
+    for kind, path in texs.items():
+        if kind == "disp": continue
+        # klassischer Textur-Importer mit eindeutigem Namen: Interchange legte für FBX-Verweise gleichnamige 32×32-Platzhalter an
+        tname = "T_%s_%s" % (name, kind)
+        ti = unreal.AssetImportTask(); ti.filename = path; ti.destination_path = dest + "/Texturen"; ti.destination_name = tname; ti.automated = True; ti.save = True; ti.replace_existing = True
+        ti.factory = unreal.TextureFactory()
+        tools.import_asset_tasks([ti])
+        tex = unreal.load_asset(dest + "/Texturen/" + tname)
+        if tex:
+            if kind == "normal": tex.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_NORMALMAP); tex.set_editor_property("srgb", False)
+            if kind in ("ao", "opacity"): tex.set_editor_property("srgb", False)
+            eal.save_loaded_asset(tex)   # sonst lädt die Textur mit alter Kompression – Material passt nicht und wird grau
+            imported[kind] = tex
+    log.append("Tier %s: Texturen %s" % (name, ", ".join("%s=%s %dpx" % (k, v.get_name(), v.blueprint_get_size_x()) for k, v in sorted(imported.items()))))
+    m = tools.create_asset("M_" + name, dest, unreal.Material, unreal.MaterialFactoryNew())
+    mel = unreal.MaterialEditingLibrary
+    m.set_editor_property("two_sided", True)
+    if "opacity" in imported: m.set_editor_property("blend_mode", unreal.BlendMode.BLEND_MASKED)
+    def samp(kind, x, y, normal=False):
+        s = mel.create_material_expression(m, unreal.MaterialExpressionTextureSample, x, y); s.set_editor_property("texture", imported[kind])
+        if normal: s.set_editor_property("sampler_type", unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL)
+        elif kind in ("ao", "opacity"): s.set_editor_property("sampler_type", unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR)
+        return s
+    if "color" in imported:
+        c = samp("color", -700, -200)
+        if "ao" in imported:
+            mul = mel.create_material_expression(m, unreal.MaterialExpressionMultiply, -350, -200); mel.connect_material_expressions(c, "RGB", mul, "A"); mel.connect_material_expressions(samp("ao", -700, 0), "R", mul, "B")
+            mel.connect_material_property(mul, "", unreal.MaterialProperty.MP_BASE_COLOR)
+        else: mel.connect_material_property(c, "RGB", unreal.MaterialProperty.MP_BASE_COLOR)
+    if "normal" in imported: mel.connect_material_property(samp("normal", -700, 200, True), "RGB", unreal.MaterialProperty.MP_NORMAL)
+    if "opacity" in imported: mel.connect_material_property(samp("opacity", -700, 400), "R", unreal.MaterialProperty.MP_OPACITY_MASK)
+    rough = mel.create_material_expression(m, unreal.MaterialExpressionConstant, -350, 100); rough.set_editor_property("r", 0.78); mel.connect_material_property(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
+    spec = mel.create_material_expression(m, unreal.MaterialExpressionConstant, -350, 160); spec.set_editor_property("r", 0.3); mel.connect_material_property(spec, "", unreal.MaterialProperty.MP_SPECULAR)
+    mel.recompile_material(m); eal.save_loaded_asset(m)
+    errs = [str(e) for e in (unreal.MaterialEditingLibrary.get_material_compile_errors(m) if hasattr(unreal.MaterialEditingLibrary, "get_material_compile_errors") else [])]
+    if errs: log.append("Tier %s: Material-Fehler %s" % (name, errs[:2]))
+    mats = mesh.get_editor_property("materials")
+    for sm in mats: sm.set_editor_property("material_interface", m)
+    mesh.set_editor_property("materials", mats); eal.save_loaded_asset(mesh)
+    # Bewegungen: Schlüssel aus dem Namensende (…_Walk → walk), echte Länge gemessen
+    AL = unreal.AnimationLibrary; anims = {}
+    for a in assets:
+        if not isinstance(a, unreal.AnimSequence): continue
+        key = a.get_name().rsplit("_", 1)[-1].lower()
+        if key not in MOTION_KEYS or key in anims: continue
+        tracks = [str(n) for n in AL.get_animation_track_names(a)]
+        probe = [b for b in tracks if any(s in b for s in ("pelvis", "spine2", "head", "calf", "foot", "tail"))][:8] or tracks[:8]
+        frames = max(1, AL.get_num_frames(a)); total = a.get_play_length(); last = 0.0; prev = None
+        for fr in range(0, frames + 1, 3):
+            tt = min(total, total * fr / frames)
+            pose = [AL.get_bone_pose_for_time(a, b, tt, False) for b in probe]
+            cur = [(p.translation.x, p.translation.y, p.translation.z, p.rotation.x, p.rotation.y, p.rotation.z) for p in pose]
+            if prev is not None and max(abs(x - y) for c1, c2 in zip(cur, prev) for x, y in zip(c1, c2)) > 0.02: last = tt
+            prev = cur
+        anims[key] = {"path": a.get_path_name(), "len": round(max(0.4, min(total, last + 3.0 / 60.0)), 3)}
+    lic = open(os.path.join(base, "LIZENZ.txt"), encoding="utf-8").read().strip() if os.path.isfile(os.path.join(base, "LIZENZ.txt")) else ""
+    if lic: lizenzen.append(lic)
+    b = mesh.get_bounds()
+    return {"name": name, "mesh": mesh.get_path_name(), "material": m.get_path_name(), "anims": anims, "license": lic.splitlines()[0] if lic else "", "size": [round(b.box_extent.x * 2), round(b.box_extent.y * 2), round(b.box_extent.z * 2)]}
+try:
+    TSRC = os.path.join(unreal.Paths.project_dir(), "Trendo", "Tiere")
+    for name in (sorted(os.listdir(TSRC)) if os.path.isdir(TSRC) else []):
+        if not os.path.isdir(os.path.join(TSRC, name)): continue
+        a = import_animal(name, os.path.join(TSRC, name))
+        if a: tiere.append(a); log.append("Tier %s: %d Bewegungen (%s)" % (name, len(a["anims"]), ", ".join("%s %.1f s" % (k, v["len"]) for k, v in sorted(a["anims"].items()))))
+        else: log.append("Tier %s: kein Modell gefunden" % name)
+except Exception as e:
+    log.append("Tiere nicht eingerichtet: " + str(e)[:200])
+
 # 5) Eigene Open-World-Karte mit Bodenmaterial
 les = unreal.get_editor_subsystem(unreal.LevelEditorSubsystem)
 world = "/Game/Trendo/Welt"
@@ -461,7 +579,8 @@ les.save_current_level()
 unreal.EditorLoadingAndSavingUtils.save_dirty_packages(True, True)
 log.append(f"Karte {world}: Bodenmaterial auf {count} Gelände-Teil(e)")
 
-json.dump({"map": world, "ground": mat.get_path_name() if mat else "", "nature": nature, "objects": objects}, open(os.path.join(os.makedirs(os.path.join(ROOT, "TrendoDaten"), exist_ok=True) or ROOT, "TrendoDaten", "natur.json"), "w", encoding="utf-8"), indent=2)
+json.dump({"map": world, "ground": mat.get_path_name() if mat else "", "nature": nature, "objects": objects, "tiere": tiere}, open(os.path.join(os.makedirs(os.path.join(ROOT, "TrendoDaten"), exist_ok=True) or ROOT, "TrendoDaten", "natur.json"), "w", encoding="utf-8"), indent=2)
+if lizenzen: open(os.path.join(ROOT, "TrendoDaten", "lizenzen.txt"), "w", encoding="utf-8").write("Verwendete freie Inhalte (Namensnennung)" + chr(10) * 2 + (chr(10) * 2).join(lizenzen) + chr(10))  # kommt mit ins fertige Spiel
 for l in log: unreal.log("TRENDO-WELT " + l)
 unreal.log("TRENDO-WELT-OK %d Pflanzen/Felsen-Modelle, %d Spielobjekt-Modelle" % (len(nature), len(objects)))
 """;
@@ -974,6 +1093,27 @@ void TrendoAnimate(USkeletalMeshComponent* Figure, const FVector& Velocity, bool
 USkeletalMeshComponent* TrendoSetupMetaHuman(AActor* Owner, USceneComponent* Parent, float FootZ, const TCHAR* Who = TEXT("Waldlaeuferin"), float Scale = 1.f);
 /** Figur einrichten: Modell, Blickrichtung (Mannequin schaut entlang Y), Füße auf FootZ, matte Farbe (Tint) statt Chrom. */
 bool TrendoSetupFigure(USkeletalMeshComponent* Figure, float FootZ, const FLinearColor& Tint = FLinearColor(0.32f, 0.36f, 0.27f));
+
+/** Tier in der offenen Welt (freies, geriggtes Modell aus natur.json „tiere“): streift umher, ruht und schnüffelt, flieht vor der Spielfigur,
+ *  kann im Kampf sterben. Bewegungen werden nur in ihrer gemessenen echten Länge gespielt (viele Tier-Dateien halten danach die letzte Pose). */
+UCLASS()
+class ATrendoAnimal : public ACharacter
+{
+	GENERATED_BODY()
+public:
+	ATrendoAnimal();
+	virtual void Tick(float DeltaSeconds) override;
+	/** Aus der natur.json-Beschreibung: Netz, Material, Bewegungen mit Länge. false, wenn das Netz fehlt. */
+	bool Setup(const TSharedPtr<class FJsonObject>& Def, const FVector& InHome);
+	void Kill();
+	bool bDead = false; FString Kind; FString Doing = TEXT("ruht"); FString Playing; FVector Home = FVector::ZeroVector; float Moved = 0; int32 Flights = 0;
+	UPROPERTY() TArray<UAnimSequenceBase*> Keep;
+private:
+	TMap<FString, TPair<UAnimSequenceBase*, float>> Moves; float PlayT = 0; bool bLoop = true; float Rate = 1;
+	FVector Target = FVector::ZeroVector; float Wait = 0; float Flee = 0; float Stuck = 0; FVector LastPos = FVector::ZeroVector; int32 RestPick = 0;
+	void Play(const FString& Key, bool bLoopIt, float InRate = 1.f);
+	UAnimSequenceBase* Move(const FString& Key) const { const auto* M = Moves.Find(Key); return M ? M->Key : nullptr; }
+};
 """,
         ["TrendoActors.cpp"] = """
 // Von Trendo erzeugt: Spielobjekte – echte Modelle (Poly Haven, CC0; Epic-Mannequin und Sportwagen aus Engine-Plugins), sonst Grundformen.
@@ -1001,6 +1141,9 @@ bool TrendoSetupFigure(USkeletalMeshComponent* Figure, float FootZ, const FLinea
 #include "NavigationSystem.h"
 #include "NavigationPath.h"
 #include "NavigationInvokerComponent.h"
+#include "Animation/AnimSingleNodeInstance.h"
+#include "Animation/AnimSequenceBase.h"
+#include "Dom/JsonObject.h"
 
 static UStaticMesh* TrendoShape(const TCHAR* Path) { return LoadObject<UStaticMesh>(nullptr, Path); }
 static const TCHAR* HumanPath = TEXT("/MoverExamples/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple");
@@ -1387,6 +1530,103 @@ void ATrendoShot::Tick(float DeltaSeconds)
 	if (GetWorld()->LineTraceSingleByChannel(Hit, From, To, ECC_Visibility, Q) || Life <= 0) { Destroy(); return; }
 	SetActorLocation(To);
 	SetActorRotation(FRotator(-Life * 900.f, Dir.Rotation().Yaw, 0)); // geworfenes Beil überschlägt sich
+}
+
+ATrendoAnimal::ATrendoAnimal()
+{
+	PrimaryActorTick.bCanEverTick = true;
+	GetCapsuleComponent()->InitCapsuleSize(38.f, 42.f);
+	bUseControllerRotationYaw = false;
+	UCharacterMovementComponent* M = GetCharacterMovement();
+	M->bOrientRotationToMovement = true; M->RotationRate = FRotator(0, 220, 0); M->MaxWalkSpeed = 140.f; M->MaxStepHeight = 35.f; M->BrakingDecelerationWalking = 500.f; M->SetWalkableFloorAngle(45.f);
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned; AIControllerClass = AAIController::StaticClass();
+	UNavigationInvokerComponent* Inv = CreateDefaultSubobject<UNavigationInvokerComponent>(TEXT("Wegnetz")); Inv->SetGenerationRadii(2000.f, 3500.f);
+	USkeletalMeshComponent* Sk = GetMesh(); Sk->SetCollisionEnabled(ECollisionEnabled::QueryOnly); Sk->SetCollisionResponseToAllChannels(ECR_Ignore); Sk->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	Sk->bEnableUpdateRateOptimizations = false; Sk->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::AlwaysTickPoseAndRefreshBones; // kein Flackern in der Ferne
+}
+
+bool ATrendoAnimal::Setup(const TSharedPtr<FJsonObject>& Def, const FVector& InHome)
+{
+	if (!Def.IsValid()) return false;
+	USkeletalMesh* SkM = LoadObject<USkeletalMesh>(nullptr, *Def->GetStringField(TEXT("mesh"))); if (!SkM) return false;
+	Kind = Def->GetStringField(TEXT("name")); Home = InHome; LastPos = GetActorLocation();
+	USkeletalMeshComponent* Sk = GetMesh(); Sk->SetSkeletalMesh(SkM);
+	if (UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr, *Def->GetStringField(TEXT("material")))) for (int32 i = 0; i < Sk->GetNumMaterials(); i++) Sk->SetMaterial(i, Mat); // Fotomaterial (Import behält sonst die leere Vorgabe)
+	// Tier-FBX liegen mit Blick entlang +Y und Füßen bei Z 0: Netz um −90° drehen und auf den Kapselboden setzen
+	Sk->SetRelativeLocationAndRotation(FVector(0, 0, -GetCapsuleComponent()->GetScaledCapsuleHalfHeight()), FRotator(0, -90, 0));
+	Sk->SetAnimationMode(EAnimationMode::AnimationSingleNode);
+	if (const TSharedPtr<FJsonObject>* A; Def->TryGetObjectField(TEXT("anims"), A))
+		for (const auto& KV : (*A)->Values)
+			if (const TSharedPtr<FJsonObject> O = KV.Value->AsObject())
+				if (UAnimSequenceBase* Seq = LoadObject<UAnimSequenceBase>(nullptr, *O->GetStringField(TEXT("path"))))
+				{ Moves.Add(FString(KV.Key), TPair<UAnimSequenceBase*, float>(Seq, (float)O->GetNumberField(TEXT("len")))); Keep.Add(Seq); }
+	Play(TEXT("idle"), true);
+	RestPick = FMath::RandRange(0, 3); Wait = FMath::FRandRange(1.f, 4.f);
+	return true;
+}
+
+void ATrendoAnimal::Play(const FString& Key, bool bLoopIt, float InRate)
+{
+	UAnimSequenceBase* A = Move(Key); if (!A) A = Move(TEXT("idle")); if (!A) return;
+	Rate = InRate;
+	if (Playing == Key && GetMesh()->GetSingleNodeInstance()) { GetMesh()->GetSingleNodeInstance()->SetPlayRate(Rate); return; }
+	Playing = Key; bLoop = bLoopIt; PlayT = 0;
+	GetMesh()->PlayAnimation(A, false); // eigene Schleife über die echte Länge
+	if (UAnimSingleNodeInstance* I = GetMesh()->GetSingleNodeInstance()) I->SetPlayRate(Rate);
+}
+
+void ATrendoAnimal::Kill()
+{
+	if (bDead) return;
+	bDead = true; Doing = TEXT("stirbt"); GetCharacterMovement()->StopMovementImmediately(); GetCharacterMovement()->DisableMovement();
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+	Play(TEXT("die"), false); SetLifeSpan(90.f);
+	UE_LOG(LogTemp, Display, TEXT("TRENDO-TIER %s besiegt – Sterbe-Bewegung %s"), *Kind, Move(TEXT("die")) ? TEXT("ja") : TEXT("nein"));
+}
+
+void ATrendoAnimal::Tick(float Dt)
+{
+	Super::Tick(Dt);
+	// Bewegung nur in ihrer echten Länge: Schleifen springen an den Anfang, Einmaliges (Sterben) hält am Ende an
+	if (UAnimSingleNodeInstance* I = GetMesh()->GetSingleNodeInstance())
+		if (const auto* M = Moves.Find(Playing))
+		{
+			PlayT += Dt * Rate;
+			if (PlayT >= M->Value) { if (bLoop) { PlayT = 0; I->SetPosition(0.f, false); } else { I->SetPosition(M->Value, false); I->SetPlaying(false); } }
+		}
+	if (bDead) return;
+	const FVector Me = GetActorLocation(); Moved += FVector::Dist2D(Me, LastPos); LastPos = Me;
+	UCharacterMovementComponent* CM = GetCharacterMovement();
+	// Fluchttier: kommt die Spielfigur näher als 9 m, rennt es ein Stück weg (wie Wild in der Savanne)
+	if (APawn* H = UGameplayStatics::GetPlayerPawn(this, 0); H && !H->IsHidden() && FVector::Dist2D(H->GetActorLocation(), Me) < 900.f && Flee <= 0.f)
+	{ Flee = 4.5f; Flights++; Target = Me + (Me - H->GetActorLocation()).GetSafeNormal2D() * 1800.f; }
+	if (Flee > 0.f) { Flee -= Dt; Doing = TEXT("flieht"); CM->MaxWalkSpeed = 620.f; }
+	else if (Wait > 0.f)
+	{
+		Wait -= Dt; Doing = TEXT("ruht");
+		if (Wait <= 0.f) // nächster Wegpunkt im Wegnetz um den Heimatort
+		{
+			FVector P = Home + FVector(FMath::FRandRange(-1200.f, 1200.f), FMath::FRandRange(-1200.f, 1200.f), 0);
+			if (UNavigationSystemV1* Nav = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld())) { FNavLocation L; if (Nav->GetRandomReachablePointInRadius(Home, 1200.f, L)) P = L.Location; }
+			Target = P; Stuck = 0;
+		}
+	}
+	else { Doing = TEXT("geht"); CM->MaxWalkSpeed = 140.f; }
+	if (Flee > 0.f || Wait <= 0.f)
+	{
+		FVector D = Target - Me; D.Z = 0;
+		if (D.Size() < 120.f) { if (Flee <= 0.f) { Wait = FMath::FRandRange(3.f, 7.f); RestPick++; } CM->StopMovementImmediately(); }
+		else
+		{
+			AddMovementInput(D.GetSafeNormal(), 1.f);
+			if (GetVelocity().Size2D() < 25.f) { if ((Stuck += Dt) > 2.f) { Wait = 0.5f; Stuck = 0; } } else Stuck = 0; // hängt fest: neuen Weg suchen
+		}
+	}
+	// Bewegung passend zum echten Tempo (Füße rutschen nicht): ruhen → stehen/schnüffeln, gehen → Gehen, schnell → Laufen
+	const float V = GetVelocity().Size2D();
+	if (V > 330.f) Play(TEXT("run"), true, FMath::Clamp(V / 600.f, 0.7f, 1.4f));
+	else if (V > 25.f) Play(TEXT("walk"), true, FMath::Clamp(V / 140.f, 0.6f, 1.5f));
+	else Play(RestPick % 3 == 1 && Move(TEXT("smell")) ? TEXT("smell") : RestPick % 3 == 2 && Move(TEXT("idle2")) ? TEXT("idle2") : TEXT("idle"), true);
 }
 """,
         ["TrendoCar.h"] = """
@@ -1877,7 +2117,7 @@ void ATrendoCharacter::NotifyActorBeginOverlap(AActor* Other)
 
 class UDecalComponent;
 
-class ATrendoThing; class ATrendoEnemy; class ATrendoCharacter; class UStaticMesh;
+class ATrendoThing; class ATrendoEnemy; class ATrendoCharacter; class UStaticMesh; class ATrendoAnimal;
 
 /** Spielstand – gleiche Inhalte wie in Trendo (Format 1). */
 UCLASS()
@@ -1957,7 +2197,7 @@ private:
 	FVector Place(int32 X, int32 Y) const;
 	void Freeze();
 	void Report();
-	void SpawnNature();
+	void SpawnNature(); void SpawnAnimals(); UPROPERTY() TArray<ATrendoAnimal*> Animals; bool bTierProbe = false; bool bTierShot = false; bool bTierDone = false; bool bTierClose = false; float TierFrom = 0; UPROPERTY() ATrendoAnimal* TierProbe = nullptr;
 	void LoadModels();
 	int32 NatureCount = 0;
 };
@@ -2062,6 +2302,7 @@ void ATrendoGameMode::BeginPlay()
 	LoadModels();
 	if (Data.Levels.Num() > 0) BuildWorld(State.Level);
 	SpawnNature();
+	SpawnAnimals();
 	if (FParse::Param(FCommandLine::Get(), TEXT("trendocheck"))) { CheckSeconds = FParse::Param(FCommandLine::Get(), TEXT("trendoshot")) ? 12.f : 4.f; Mode = TEXT("play"); } // Bild erst, wenn Texturen geladen sind
 }
 
@@ -2200,6 +2441,8 @@ void ATrendoGameMode::Attack()
 			const FVector D = E->GetActorLocation() - At;
 			if (FVector(D.X, D.Y, 0).Size() < 180.f && FMath::Abs(D.Z) < 120.f && FVector::DotProduct(D.GetSafeNormal2D(), Fwd) > 0.2f) Damage(E);
 		}
+		for (ATrendoAnimal* A : Animals) // Tiere in Reichweite (Jagd); Blut je nach Gewaltstufe
+			if (IsValid(A) && !A->bDead) { const FVector D = A->GetActorLocation() - At; if (FVector(D.X, D.Y, 0).Size() < 190.f && FVector::DotProduct(D.GetSafeNormal2D(), Fwd) > 0.2f) { A->Kill(); if (Data.Violence != TEXT("keine")) SpawnBlood(A->GetActorLocation(), 0.6f); } }
 	}
 	else
 	{
@@ -2388,6 +2631,48 @@ void ATrendoGameMode::Tick(float DeltaSeconds)
 			UE_LOG(LogTrendo, Display, TEXT("TRENDO-FLACKERN Gegner in der Ferne bis %.0f m: %d Bilder, ohne Posen-Update %d (%.0f%%), Sprünge über 12 cm %d (dazu %d beim Erscheinen), größter Sprung je Bild %.1f cm (%s)"), FarDist / 100.f, FarFrames, FarStill,
 				FarFrames ? 100.f * FarStill / FarFrames : 0.f, FarJumps, FarStartJumps, FarMaxJump, FarFrames == 0 ? TEXT("nicht gemessen") : FarStill * 20 < FarFrames && FarJumps * 200 < FarFrames ? TEXT("ruhig") : TEXT("flackert"));
 			FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("Screenshots/trendo-gegner.png"), false, false);
+		}
+		else if (bProbeDone && !bTierProbe && Animals.Num() > 0 && Hero())
+		{
+			// Tier-Probe: erst Bild aus 10 m auf der Sonnenseite (Tier ruhig, von vorn beleuchtet), dann auf 5 m heran – ein Fluchttier muss wegrennen
+			bTierProbe = true; CheckSeconds = 0.9f;
+			for (ATrendoAnimal* A : Animals) if (IsValid(A) && !A->bDead && (!TierProbe || FVector::Dist(A->GetActorLocation(), Hero()->GetActorLocation()) < FVector::Dist(TierProbe->GetActorLocation(), Hero()->GetActorLocation()))) TierProbe = A;
+			if (TierProbe)
+			{
+				const FVector At = TierProbe->GetActorLocation(); FVector Sun = FRotator(-38.f, StartRot.Yaw + 35.f, 0).Vector(); // Richtung, in die das Sonnenlicht fällt
+				for (TActorIterator<ADirectionalLight> L(GetWorld()); L; ++L) { Sun = L->GetActorForwardVector(); break; }
+				// Figur steht zwischen Sonne und Tier (Licht über die Schulter); Winkel um die Sonnenseite durchprobieren, bis Sicht und Kameraplatz frei sind
+				FVector Side = -Sun.GetSafeNormal2D() * 1000.f; FCollisionQueryParams Free(TEXT("TrendoTierBlick"), false, TierProbe); Free.AddIgnoredActor(Hero());
+				for (const float Turn : { 0.f, 30.f, -30.f, 60.f, -60.f, 90.f, -90.f })
+				{
+					const FVector Dir = (-Sun.GetSafeNormal2D()).RotateAngleAxis(Turn, FVector::UpVector), Stand = At + Dir * 1000.f + FVector(0, 0, 120.f), Cam = Stand + Dir * 650.f + FVector(0, 0, 250.f);
+					FHitResult H1, H2;
+					if (!GetWorld()->LineTraceSingleByChannel(H1, Stand, At + FVector(0, 0, 40.f), ECC_Visibility, Free) && !GetWorld()->SweepSingleByChannel(H2, Stand, Cam, FQuat::Identity, ECC_Camera, FCollisionShape::MakeSphere(25.f), Free))
+					{ Side = Dir * 1000.f; break; }
+				}
+				UE_LOG(LogTrendo, Display, TEXT("TRENDO-TIER vorher: %d Tiere, %s %s, %s, gelaufen %.0f m"), Animals.Num(), *TierProbe->Kind, *TierProbe->Doing, *TierProbe->Playing, TierProbe->Moved / 100.f);
+				Hero()->SetActorLocation(FVector(At.X + Side.X, At.Y + Side.Y, Hero()->GetActorLocation().Z + 40.f), false, nullptr, ETeleportType::TeleportPhysics);
+				if (AController* Co = Hero()->GetController()) Co->SetControlRotation(FRotator(-12.f, (At - Hero()->GetActorLocation()).Rotation().Yaw, 0));
+				TierFrom = FVector::Dist2D(At, Hero()->GetActorLocation());
+			}
+		}
+		else if (bTierProbe && !bTierShot && IsValid(TierProbe) && Hero())
+		{
+			bTierShot = true; CheckSeconds = 0.6f; FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("Screenshots/trendo-tier.png"), false, false);
+		}
+		else if (bTierShot && !bTierClose && IsValid(TierProbe) && Hero())
+		{
+			// erst nach dem Bild auf 5 m heran (sonst verwischt der Kamerasprung das Bild): jetzt muss es fliehen
+			bTierClose = true; CheckSeconds = 2.2f;
+			const FVector At = TierProbe->GetActorLocation(), H = Hero()->GetActorLocation(); const FVector Close = At + (H - At).GetSafeNormal2D() * 500.f;
+			Hero()->SetActorLocation(FVector(Close.X, Close.Y, H.Z + 20.f), false, nullptr, ETeleportType::TeleportPhysics);
+			TierFrom = FVector::Dist2D(At, Hero()->GetActorLocation());
+		}
+		else if (bTierClose && !bTierDone && IsValid(TierProbe) && Hero())
+		{
+			bTierDone = true; CheckSeconds = 1.f;
+			UE_LOG(LogTrendo, Display, TEXT("TRENDO-TIER %s flieht=%s Abstand %.1f → %.1f m Bewegung=%s Tempo %.0f km/h Fluchten=%d"), *TierProbe->Kind, TierProbe->Doing == TEXT("flieht") ? TEXT("ja") : TEXT("nein"),
+				TierFrom / 100.f, FVector::Dist2D(TierProbe->GetActorLocation(), Hero()->GetActorLocation()) / 100.f, *TierProbe->Playing, TierProbe->GetVelocity().Size2D() * 0.036f, TierProbe->Flights);
 		}
 		else if (bProbeDone && !bFight && Enemies.Num() > 0 && IsValid(Enemies[0]) && Hero())
 		{
@@ -2677,6 +2962,33 @@ void ATrendoHUD::DrawHUD()
 		DrawText(It[i], i == GM->Sel ? FLinearColor::Black : FLinearColor::White, (Canvas->SizeX - W) / 2, Y, Font, S * 1.3f);
 		Y += Hh + 22;
 	}
+}
+
+/** Tiere aus natur.json („tiere“) in kleinen Gruppen abseits des Spielwegs setzen – auf den Boden, wo frei ist. */
+void ATrendoGameMode::SpawnAnimals()
+{
+	if (Data.World != TEXT("openworld")) return;
+	FString Json; if (!FFileHelper::LoadFileToString(Json, *(FPaths::ProjectContentDir() / TEXT("TrendoDaten/natur.json")))) return;
+	TSharedPtr<FJsonObject> O; if (!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json), O) || !O.IsValid()) return;
+	const TArray<TSharedPtr<FJsonValue>>* Arr; if (!O->TryGetArrayField(TEXT("tiere"), Arr) || Arr->Num() == 0) return;
+	const FVector Fwd = StartRot.Vector(), Right = FRotationMatrix(StartRot).GetUnitAxis(EAxis::Y);
+	FRandomStream R(2711); int32 N = 0;
+	for (int32 k = 0; k < Arr->Num(); k++)
+	{
+		const TSharedPtr<FJsonObject> Def = (*Arr)[k]->AsObject(); if (!Def.IsValid()) continue;
+		const FVector Group = Origin + Fwd * (1800.f + 900.f * k) + Right * (k % 2 ? -2200.f : 2200.f); // seitlich vom Spielweg, sichtbar vom Weg aus
+		for (int32 i = 0; i < 3; i++)
+		{
+			FVector P = Group + FVector(R.FRandRange(-350.f, 350.f), R.FRandRange(-350.f, 350.f), 0); FHitResult G; FCollisionQueryParams Q;
+			if (!GetWorld()->LineTraceSingleByObjectType(G, P + FVector(0, 0, 20000), P - FVector(0, 0, 20000), FCollisionObjectQueryParams(ECC_WorldStatic), Q)) continue;
+			FActorSpawnParameters SP; SP.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+			ATrendoAnimal* A = GetWorld()->SpawnActor<ATrendoAnimal>(G.Location + FVector(0, 0, 60), FRotator(0, R.FRandRange(0, 360), 0), SP);
+			if (!A) continue;
+			if (!A->Setup(Def, Group)) { A->Destroy(); continue; }
+			Animals.Add(A); N++;
+		}
+	}
+	UE_LOG(LogTrendo, Display, TEXT("TRENDO-TIER %d Tiere gesetzt"), N);
 }
 """,
         ["TrendoTests.cpp"] = """
