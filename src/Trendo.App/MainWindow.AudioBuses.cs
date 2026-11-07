@@ -9,6 +9,24 @@ namespace Trendo.App;
 /// <summary>Paket 01 – Studio 4, S4-09 (07.11.2026): Busse im Mehrspur-Mischpult – Ausgang je Spur, Sends, je Bus EQ, Kompressor mit Sidechain, Hall, Pegel.</summary>
 public partial class MainWindow
 {
+    /// <summary>Paket 01 S4-01: Lautstärke-Automation je Spur („Sekunde:dB, …“).</summary>
+    Control AuAutomationPanel(ProgramDocument d)
+    {
+        var sp = new StackPanel { Name = "au-auto", Spacing = 4, Margin = new Thickness(0, 8, 0, 0) };
+        sp.Children.Add(H("Automation (Lautstärke)", 13));
+        var tracks = AudioMulti.Tracks(d.Data);
+        for (var i = 0; i < tracks.Count; i++)
+        {
+            var t = tracks[i];
+            var box = new TextBox { Name = $"au-auto-{i}", Text = string.Join(", ", AudioMulti.Automation(d.Data, t.Id).Select(p => FormattableString.Invariant($"{p.Time:0.##}:{p.Db:0.#}"))), Watermark = "z. B. 0:0, 4:-12, 6:0", FontSize = 12, MinWidth = 150 };
+            var ok = new Button { Name = $"au-auto-apply-{i}", Content = "✓", FontSize = 12, Padding = new Thickness(8, 2) };
+            ok.Click += (_, _) => ProgramRun(AUK, () => d.Edit("Automation", x => AudioMulti.SetAutomation(x, t.Id, AudioMulti.ParseAutomation(box.Text ?? ""))));
+            sp.Children.Add(new WrapPanel { Children = { new TextBlock { Text = t.Name + " ", Foreground = Text, FontSize = 12, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center, MaxWidth = 110, TextTrimming = TextTrimming.CharacterEllipsis }, box, new Border { Width = 4 }, ok } });
+        }
+        sp.Children.Add(P("Sekunde:dB – dazwischen gleitet der Pegel. Leer lassen = aus.", Muted, 10.5));
+        return sp;
+    }
+
     Control AuBusPanel(ProgramDocument d)
     {
         var sp = new StackPanel { Name = "au-buses", Spacing = 6, Margin = new Thickness(0, 8, 0, 0) };

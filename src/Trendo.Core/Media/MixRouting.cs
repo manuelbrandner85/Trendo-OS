@@ -166,7 +166,8 @@ public static class MixRouting
         {
             var tb = New(); var g = Math.Pow(10, t.GainDb / 20); var ang = (t.Pan + 1) * Math.PI / 4;
             float gl = (float)(g * Math.Cos(ang) * Math.Sqrt(2)), gr = (float)(g * Math.Sin(ang) * Math.Sqrt(2)); var off = (int)Math.Round(t.Start * rate);
-            for (var i = 0; i < a.Length; i++) { tb[0][off + i] = a.Data[0][i] * gl; tb[1][off + i] = a.Data[1][i] * gr; }
+            var auto = AudioMulti.Automation(doc, t.Id); // S4-01: Automation gilt auch mit Bussen
+            for (var i = 0; i < a.Length; i++) { var k = auto.Count == 0 ? 1f : AudioMulti.AutoGain(auto, (off + i) / (double)rate); tb[0][off + i] = a.Data[0][i] * gl * k; tb[1][off + i] = a.Data[1][i] * gr * k; }
             trackOut[t.Id] = tb; // auch für Sidechain (unabhängig von Stumm)
             if (!AudioMulti.Audible(all, t)) continue;
             var dest = TrackOut(doc, t.Id); var target = dest != Master && busBuf.TryGetValue(dest, out var bb) ? bb : master;

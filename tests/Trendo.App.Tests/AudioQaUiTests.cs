@@ -144,3 +144,37 @@ public class AudioBuses_Ui
         finally { w.Close(); }
     }
 }
+
+/// <summary>Paket 01 – Studio 4, S4-01 (07.11.2026): Mehrspur – Aufnahme als neue Spur, Automation, ohne Gerät keine Scheinaufnahme.</summary>
+public class AudioMultiRecord_Ui
+{
+    [AvaloniaFact(DisplayName = "S4-01 Mehrspur: Aufnahme landet als neue Spur, Automation per Feld (rückgängig machbar, Unsinn abgelehnt); ohne Mikrofon keine Scheinaufnahme")]
+    public async Task Record_and_automate()
+    {
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000; Directory.CreateDirectory(root);
+        try
+        {
+            string Wav(string n) { var x = Enumerable.Range(0, 44100 * 2).Select(i => (float)(0.3 * Math.Sin(2 * Math.PI * 300 * i / 44100.0))).ToArray(); var f = Path.Combine(root, n); AudioFile.WriteWav(new AudioBuf(44100, [x, (float[])x.Clone()]), f); return f; }
+            w.Show("ton"); Settle(); RealClick(w, V<Button>(w, "prog-tpl-mehrspur")); Settle();
+            w.Find<TextBox>("au-file").Text = Wav("musik.wav"); w.Find<Button>("au-add-track").Press(); Settle();
+            // ohne Mikrofon: keine Spur, klare Meldung
+            w.MicRecordOverride = _ => Task.FromResult<string?>(null);
+            await w.AuRecord(w.ProgramActive("ton")!, 3); Settle();
+            Assert.Single(AudioMulti.Tracks(w.ProgramActive("ton")!.Data));
+            // mit Aufnahme: neue Spur
+            w.MicRecordOverride = _ => Task.FromResult<string?>(Wav("mic.wav"));
+            await w.AuRecord(w.ProgramActive("ton")!, 2); Settle();
+            Assert.Equal(2, AudioMulti.Tracks(w.ProgramActive("ton")!.Data).Count);
+            // Automation
+            w.Show("ton"); Settle();
+            w.Find<TextBox>("au-auto-0").Text = "0:0, 1:-12"; var ok = w.Find<Button>("au-auto-apply-0"); ok.BringIntoView(); Settle(); ok.Press(); Settle();
+            var d = w.ProgramActive("ton")!; var id = AudioMulti.Tracks(d.Data)[0].Id;
+            Assert.Equal([(0.0, 0.0), (1.0, -12.0)], AudioMulti.Automation(d.Data, id)); Assert.Equal("Automation", d.UndoLabel);
+            w.Find<TextBox>("au-auto-0").Text = "lauter bitte"; w.Find<Button>("au-auto-apply-0").Press(); Settle();
+            Assert.Contains("verstehe ich nicht", w.ProgramMessage("ton"));
+            Assert.Equal(2, AudioMulti.Automation(w.ProgramActive("ton")!.Data, id).Count);
+            w.ProgramActive("ton")!.Undo(); Assert.Empty(AudioMulti.Automation(w.ProgramActive("ton")!.Data, id));
+        }
+        finally { w.Close(); }
+    }
+}

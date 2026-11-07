@@ -46,6 +46,50 @@ public static class AudioMulti
         if (name is { Length: > 0 } n) t["name"] = n;
     }
 
+    /// <summary>Paket 01 S4-01: Lautstärke-Automation einer Spur – Punkte (Projektzeit in s, Pegel in dB), dazwischen linear in dB.</summary>
+    public static List<(double Time, double Db)> Automation(JsonObject doc, string id) =>
+        (doc["tracks"] as JsonArray ?? []).OfType<JsonObject>().FirstOrDefault(t => S(t["id"]) == id)?["auto"] is JsonArray a
+            ? [.. a.OfType<JsonArray>().Where(p => p.Count == 2).Select(p => (N(p[0]), N(p[1])))] : [];
+
+    /// <summary>Automation setzen (leer = aus). Zeiten aufsteigend und ≥ 0, Pegel −60 … +12 dB – sonst Fehler, nichts geändert.</summary>
+    public static void SetAutomation(JsonObject doc, string id, IReadOnlyList<(double Time, double Db)> points)
+    {
+        for (var i = 0; i < points.Count; i++)
+        {
+            var (t, db) = points[i];
+            if (!double.IsFinite(t) || t < 0) throw new ArgumentException($"Punkt {i + 1}: Zeit {t} ungültig.");
+            if (!double.IsFinite(db) || db is < -60 or > 12) throw new ArgumentException($"Punkt {i + 1}: Pegel {db} dB außerhalb −60 … +12.");
+            if (i > 0 && t <= points[i - 1].Time) throw new ArgumentException($"Punkt {i + 1}: Zeiten müssen aufsteigen.");
+        }
+        var tr = Find(doc, id);
+        if (points.Count == 0) tr.Remove("auto"); else tr["auto"] = new JsonArray([.. points.Select(p => (JsonNode)new JsonArray(Math.Round(p.Time, 3), Math.Round(p.Db, 1)))]);
+    }
+
+    /// <summary>„0:0, 4:-12, 6:0“ (Sekunde:dB) lesen.</summary>
+    public static List<(double Time, double Db)> ParseAutomation(string text)
+    {
+        var r = new List<(double, double)>();
+        foreach (var part in (text ?? "").Split([',', ';', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var kv = part.Split(':');
+            if (kv.Length != 2 || !double.TryParse(kv[0].Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var t)
+                || !double.TryParse(kv[1].Replace(',', '.').Replace('−', '-'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var db))
+                throw new ArgumentException($"„{part}“ verstehe ich nicht – Schreibweise Sekunde:dB, z. B. 4:-12.");
+            r.Add((t, db));
+        }
+        return r;
+    }
+
+    /// <summary>Faktor zur Projektzeit (linear zwischen den Punkten in dB, davor/danach konstant).</summary>
+    public static float AutoGain(IReadOnlyList<(double Time, double Db)> a, double t)
+    {
+        double db;
+        if (t <= a[0].Time) db = a[0].Db;
+        else if (t >= a[^1].Time) db = a[^1].Db;
+        else { var i = 1; while (a[i].Time < t) i++; var (t0, d0) = a[i - 1]; var (t1, d1) = a[i]; db = d0 + (d1 - d0) * (t - t0) / (t1 - t0); }
+        return (float)Math.Pow(10, db / 20);
+    }
+
     public static void RemoveTrack(JsonObject doc, string id)
     {
         var arr = doc["tracks"] as JsonArray ?? []; var t = Find(doc, id); arr.Remove(t);
@@ -68,7 +112,8 @@ public static class AudioMulti
             var g = Math.Pow(10, t.GainDb / 20); var ang = (t.Pan + 1) * Math.PI / 4; // 0 … π/2
             float gl = (float)(g * Math.Cos(ang) * Math.Sqrt(2)), gr = (float)(g * Math.Sin(ang) * Math.Sqrt(2));
             var off = (int)Math.Round(t.Start * rate);
-            for (var i = 0; i < a.Length; i++) { outL[off + i] += a.Data[0][i] * gl; outR[off + i] += a.Data[1][i] * gr; }
+            var auto = Automation(doc, t.Id); // Paket 01 S4-01: Lautstärke-Automation (Projektzeit)
+            for (var i = 0; i < a.Length; i++) { var k = auto.Count == 0 ? 1f : AutoGain(auto, (off + i) / (double)rate); outL[off + i] += a.Data[0][i] * gl * k; outR[off + i] += a.Data[1][i] * gr * k; }
         }
         static float Soft(float v) => Math.Abs(v) <= 0.95f ? v : Math.Sign(v) * (0.95f + 0.05f * (float)Math.Tanh((Math.Abs(v) - 0.95f) / 0.05f));
         for (var i = 0; i < len; i++) { outL[i] = Soft(outL[i]); outR[i] = Soft(outR[i]); }
