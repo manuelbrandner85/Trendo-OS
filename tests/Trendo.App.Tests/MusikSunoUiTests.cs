@@ -301,6 +301,29 @@ public class MusikSuno_Ui
         finally { w.Close(); }
     }
 
+    [AvaloniaFact(DisplayName = "Suno V13: Mein Geschmack – ohne Favoriten Hinweis, mit zwei ★ Wörter sichtbar und Vorschlag in der Beschreibung; Bibliothek „Für dich“")]
+    public void Taste()
+    {
+        var (w, _, root) = Ui.Open(); _w = w; Directory.CreateDirectory(root);
+        try
+        {
+            var lib = new SongLibrary(w.Core.DataRoot);
+            foreach (var n in new[] { "a", "b", "c" }) File.WriteAllBytes(Path.Combine(root, n + ".wav"), [0]);
+            var a = lib.Add(new MusicSong { Title = "A", Style = "Indie-Pop, Akustikgitarre", File = Path.Combine(root, "a.wav") });
+            var b = lib.Add(new MusicSong { Title = "B", Style = "Indie-Pop, Klavier", File = Path.Combine(root, "b.wav") });
+            lib.Add(new MusicSong { Title = "C", Style = "Techno", File = Path.Combine(root, "c.wav") });
+            w.Show("musik-studio"); w.MsPage("erstellen"); Pump();
+            Assert.False(w.Find<Button>("ms-taste-go").IsEnabled); Assert.Null(w.MsTakeTaste());
+            lib.Update(a.Id, x => x.Favorite = true); lib.Update(b.Id, x => x.Favorite = true);
+            w.Show("musik-studio"); Pump();
+            Assert.Contains("indie-pop", string.Join(" ", w.Find<WrapPanel>("ms-taste-words").Children.OfType<Border>().Select(x => ((TextBlock)x.Child!).Text)));
+            w.Find<Button>("ms-taste-go").Press(); Pump();
+            Assert.StartsWith("indie-pop", w.Find<TextBox>("ms-desc").Text); Assert.Contains("Geschmack", w.Find<TextBlock>("ms-msg").Text);
+            Assert.Contains(SongQuery.Sorts, x => x.Id == "geschmack");
+        }
+        finally { w.Close(); }
+    }
+
     [AvaloniaFact(DisplayName = "Suno V5: Remix-Knopf je Lied; Beschreibung wiederverwenden; Zuschneiden und Abschnitt entfernen (echtes FFmpeg); Remaster als eigene Fassung")]
     public async Task Remix()
     {

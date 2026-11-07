@@ -24,6 +24,9 @@ public static class MusicSuno
         return $"{Moods[r.Next(Moods.Length)]} {Genres[r.Next(Genres.Length)]} {Topics[r.Next(Topics.Length)]} {Colors[r.Next(Colors.Length)]}";
     }
 
+    /// <summary>V13: ein Thema (für „Mein Geschmack“).</summary>
+    public static string Topic(int seed) => Topics[new Random(seed).Next(Topics.Length)];
+
     /// <summary>V17: die Idee des Tages – für alle gleich an diesem Datum, morgen eine andere.</summary>
     public static string DailyIdea(DateOnly day) => Idea(day.Year * 1000 + day.DayOfYear);
 

@@ -80,7 +80,7 @@ public static class SongQuery
 {
     public static readonly (string Id, string Label)[] Filters = [("alle", "Alle"), ("favoriten", "Favoriten"), ("gesang", "Mit Gesang"), ("instrumental", "Instrumental"),
         ("eigene", "Eigene Aufnahmen"), ("fassungen", "Fassungen (Cover, Abschnitt, länger)"), ("spuren", "Spuren"), ("stimme", "In meiner Stimme")];
-    public static readonly (string Id, string Label)[] Sorts = [("neu", "Neueste zuerst"), ("alt", "Älteste zuerst"), ("titel", "Titel A–Z"), ("laenge", "Längste zuerst"), ("fav", "Favoriten zuerst")];
+    public static readonly (string Id, string Label)[] Sorts = [("neu", "Neueste zuerst"), ("alt", "Älteste zuerst"), ("titel", "Titel A–Z"), ("laenge", "Längste zuerst"), ("fav", "Favoriten zuerst"), ("geschmack", "Für dich (Mein Geschmack)")];
     public const int PageSize = 30;
 
     static bool Is(MusicSong s, string filter) => filter switch
@@ -112,11 +112,13 @@ public static class SongQuery
         q = q.Where(s => Is(s, filter));
         if (!string.IsNullOrWhiteSpace(search))
             q = q.Where(s => s.Title.Contains(search, StringComparison.OrdinalIgnoreCase) || s.Style.Contains(search, StringComparison.OrdinalIgnoreCase) || s.Lyrics.Contains(search, StringComparison.OrdinalIgnoreCase));
+        var taste = sort == "geschmack" ? MusicTaste.Profile(visible) : []; // V13
         if (collectionId is null || sort != "neu" || all.FirstOrDefault(x => x.Id == collectionId)?.Kind == MusicCollections.Workspace)
             q = sort switch
             {
                 "alt" => q.OrderBy(s => s.Created), "titel" => q.OrderBy(s => s.Title, StringComparer.CurrentCultureIgnoreCase), "laenge" => q.OrderByDescending(s => s.Seconds),
-                "fav" => q.OrderByDescending(s => s.Favorite).ThenByDescending(s => s.Created), _ => q.OrderByDescending(s => s.Created),
+                "fav" => q.OrderByDescending(s => s.Favorite).ThenByDescending(s => s.Created),
+                "geschmack" => q.OrderByDescending(s => MusicTaste.Score(s, taste)).ThenByDescending(s => s.Created), _ => q.OrderByDescending(s => s.Created),
             };
         var list = q.ToList(); var pages = Math.Max(1, (list.Count + PageSize - 1) / PageSize); var p = Math.Clamp(page, 0, pages - 1);
         return ([.. list.Skip(p * PageSize).Take(PageSize)], list.Count, pages);
