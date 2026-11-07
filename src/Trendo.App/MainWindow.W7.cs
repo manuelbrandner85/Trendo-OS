@@ -100,12 +100,12 @@ public partial class MainWindow
         var addr = new TextBox { Name = "fus-addr", PlaceholderText = "192.168.x.x oder name.local", Width = 200 };
         var port = new TextBox { Name = "fus-port", Text = "8787", Width = 70 };
         var pcode = new TextBox { Name = "fus-pcode", PlaceholderText = "Code vom Gerät", Width = 120 };
-        sp.Children.Add(WCard(new StackPanel { Spacing = 6, Children = { new TextBlock { Text = "Gerät koppeln", Foreground = Text },
-            P("Auf dem Pi/Linux-Gerät einmalig „trendo-companion netz an“ (nur das eigene Heimnetz), dann „trendo-companion pair“ und den 6-stelligen Code hier eingeben.", null, 11),
-            new WrapPanel { Children = { addr, port, pcode, Act("fus-pair", "Koppeln", () => _ = PairRemoteAsync(addr.Text ?? "", int.TryParse(port.Text, out var p) ? p : 0, pcode.Text ?? ""), true) } } } }));
+        // Y14 (07.11.2026): Koppeln als Werkzeug-Karte, ohne Geräte ein Leerzustand
+        sp.Children.Add(ToolCard("fus-card-pair", Mdi.Raspberry, "#FCA5A5", "#B91C1C", "Gerät koppeln", "Auf dem Pi/Linux-Gerät einmalig „trendo-companion netz an“ (nur das eigene Heimnetz), dann „trendo-companion pair“ und den 6-stelligen Code hier eingeben.",
+            new WrapPanel { Children = { addr, port, pcode, Act("fus-pair", "Koppeln", () => _ = PairRemoteAsync(addr.Text ?? "", int.TryParse(port.Text, out var p) ? p : 0, pcode.Text ?? ""), true) } }));
         var nodes = Verbund.Nodes();
         sp.Children.Add(new TextBlock { Text = "Dieser PC: " + string.Join(", ", SelfCaps()), Foreground = Muted, FontSize = 11 });
-        if (nodes.Count == 0) sp.Children.Add(P("Noch keine Geräte gekoppelt. Ohne zweites Gerät arbeitet Trendo allein auf diesem PC.", null, 11.5));
+        if (nodes.Count == 0) sp.Children.Add(EmptyState("fus-empty", "teilen", "Noch keine Geräte gekoppelt", "Ohne zweites Gerät arbeitet Trendo allein auf diesem PC. Mit einem Raspberry Pi oder zweiten PC laufen Aufgaben dort, wo das passende Werkzeug ist."));
         var i = 0;
         foreach (var n in nodes)
         {

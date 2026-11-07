@@ -29,8 +29,6 @@ public partial class MainWindow
     private Control ForensicsView()
     {
         var sp = new StackPanel { Spacing = 6 };
-        sp.Children.Add(H("Datei prüfen", 14));
-        sp.Children.Add(P("Vergleiche die Prüfsumme (SHA-256) eines Downloads mit der Angabe des Herstellers. Stimmt sie, ist die Datei unverändert."));
         var file = new TextBox { Name = "for-file", PlaceholderText = "Datei", Width = 320 }; var exp = new TextBox { Name = "for-expected", PlaceholderText = "Prüfsumme vom Hersteller (optional)", Width = 320 };
         var calc = new Button { Name = "for-hash", Content = "Prüfen", Background = Accent };
         calc.Click += async (_, _) =>
@@ -41,22 +39,22 @@ public partial class MainWindow
             _hashOut = e.Trim() == "" ? $"SHA-256: {h}" : string.Equals(h, e.Trim().Replace(" ", ""), StringComparison.OrdinalIgnoreCase) ? $"✓ Stimmt überein. Die Datei ist unverändert.\n{h}" : $"⚠ Stimmt NICHT überein. Datei nicht öffnen und neu laden.\n{h}";
             Show("forensik");
         };
-        sp.Children.Add(new WrapPanel { Children = { MSp(file), MSp(exp), MSp(calc) } });
-        sp.Children.Add(new SelectableTextBlock { Name = "for-hash-out", Text = _hashOut, Foreground = Text, TextWrapping = TextWrapping.Wrap });
+        // Y4 (07.11.2026): drei Werkzeug-Karten statt Überschriften-Liste
+        sp.Children.Add(ToolCard("for-card-file", Mdi.ShieldSearch, "#8FC2FF", "#2F6FE0", "Datei prüfen", "Vergleiche die Prüfsumme (SHA-256) eines Downloads mit der Angabe des Herstellers. Stimmt sie, ist die Datei unverändert.",
+            new WrapPanel { Children = { MSp(file), MSp(exp), MSp(calc) } }, new SelectableTextBlock { Name = "for-hash-out", Text = _hashOut, Foreground = Text, TextWrapping = TextWrapping.Wrap }));
 
-        sp.Children.Add(H("Wer wartet auf Verbindungen?", 14));
         var ports = ListeningPorts();
         var outside = ports.Where(p => p.Where != "nur dieser PC").ToList();
-        sp.Children.Add(P($"{ports.Count} offene Anschlüsse (Ports), davon {outside.Count} auch von außen erreichbar. Unbekannte Programme, die von außen erreichbar sind, solltest du prüfen.", Text));
-        sp.Children.Add(new TextBlock { Name = "for-ports", Text = string.Join(", ", outside.Take(30).Select(p => p.Port)), Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap });
-
-        sp.Children.Add(H("Beweise sichern", 14));
-        sp.Children.Add(P("Sichert Dateien unverändert mit Prüfsumme und lückenloser Kette – nur auf diesem PC. Jeder Fall löscht sich nach spätestens 120 Stunden; 24 Stunden vorher warnt Trendo."));
+        var portChips = new WrapPanel { Name = "for-port-chips" };
+        foreach (var pt in outside.Take(30)) portChips.Children.Add(new Border { Margin = new Thickness(0, 0, 6, 6), Padding = new Thickness(8, 2), CornerRadius = new CornerRadius(8), Background = Brush.Parse("#22F87171"), Child = new TextBlock { Text = pt.Port.ToString(), Foreground = Text, FontSize = 11.5 } });
+        sp.Children.Add(ToolCard("for-card-ports", Mdi.Wifi, outside.Count == 0 ? "#86EFAC" : "#FCD34D", outside.Count == 0 ? "#15803D" : "#B45309", "Wer wartet auf Verbindungen?",
+            $"{ports.Count} offene Anschlüsse (Ports), davon {outside.Count} auch von außen erreichbar. Unbekannte Programme, die von außen erreichbar sind, solltest du prüfen.",
+            portChips, new TextBlock { Name = "for-ports", Text = string.Join(", ", outside.Take(30).Select(p => p.Port)), IsVisible = false }));
         var title = new TextBox { Name = "for-case-title", PlaceholderText = "Name des Falls, z. B. „Betrugs-Mail März“", Width = 320 };
         var mk = new Button { Name = "for-case-new", Content = "Fall anlegen" };
         mk.Click += (_, _) => { var c = Lab.Create(title.Text ?? ""); _forCase = c.Id; _forMsg = $"Fall angelegt. Er löscht sich am {c.Expires:dd.MM. HH:mm} Uhr."; Show("forensik"); };
-        sp.Children.Add(new WrapPanel { Children = { MSp(title), MSp(mk) } });
-        sp.Children.Add(new TextBlock { Name = "for-msg", Text = _forMsg, Foreground = Text, TextWrapping = TextWrapping.Wrap });
+        sp.Children.Add(ToolCard("for-card-case", Mdi.ShieldCheck, "#C4B5FD", "#6D28D9", "Beweise sichern", "Sichert Dateien unverändert mit Prüfsumme und lückenloser Kette – nur auf diesem PC. Jeder Fall löscht sich nach spätestens 120 Stunden; 24 Stunden vorher warnt Trendo.",
+            new WrapPanel { Children = { MSp(title), MSp(mk) } }, new TextBlock { Name = "for-msg", Text = _forMsg, Foreground = Text, TextWrapping = TextWrapping.Wrap }));
         var i = 0;
         foreach (var c in Lab.Cases())
         {

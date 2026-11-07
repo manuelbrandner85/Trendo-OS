@@ -180,6 +180,23 @@ public class Modern_Ui
         finally { w.Close(); }
     }
 
+    [AvaloniaFact(DisplayName = "Y4/Y7/Y11/Y14: Gefahren prüfen, Teilen, Qualität und Geräteverbund als Werkzeug-Karten mit Symbol; Geräteverbund ohne Geräte mit Leerzustand")]
+    public void Tool_cards()
+    {
+        var (w, _, _) = Ui.Open();
+        try
+        {
+            foreach (var (page, cards) in new[] { ("forensik", new[] { "for-card-file", "for-card-ports", "for-card-case" }), ("qual-leistung", new[] { "perf-card", "audit-card" }), ("verbund", new[] { "fus-card-pair", "fus-empty" }) })
+            {
+                w.Show(page); Pump();
+                foreach (var c in cards) Assert.True(w.TryFind<Border>(c) is not null, $"{page}: {c} fehlt");
+            }
+            w.Show("teilen"); Pump();
+            Assert.True(w.TryFind<Border>("share-card") is not null || w.TryFind<Border>("share-live") is not null || w.TryFind<TextBlock>("share-msg") is not null);
+        }
+        finally { w.Close(); }
+    }
+
     [AvaloniaFact(DisplayName = "G10: KI-Aufträge der Grafikkarten-Warteschlange als Karten – läuft mit Laufzeit, wartet mit Platz; fertig = Karte weg")]
     public async Task Task_cards()
     {

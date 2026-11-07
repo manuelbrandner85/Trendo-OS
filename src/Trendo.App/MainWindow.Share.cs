@@ -96,10 +96,9 @@ public partial class MainWindow
         var ips = ShareAddressOverride is { } o ? [("Test", o)] : ShareServer.LanAddresses();
         if (ActiveShare is { } s)
         {
-            sp.Children.Add(WCard(new StackPanel { Spacing = 4, Children = {
-                new TextBlock { Text = "Freigabe läuft", Foreground = Brush.Parse("#4ADE80"), FontWeight = FontWeight.SemiBold },
-                new SelectableTextBlock { Name = "share-url", Text = s.Url, Foreground = Text, FontSize = 15 },
-                P($"Ordner: {s.Share.Folder} · gültig bis {s.Share.Expires:HH:mm} Uhr · {s.Share.Downloads} Download(s)", null, 11) } }));
+            sp.Children.Add(ToolCard("share-live", Mdi.Wifi, "#86EFAC", "#15803D", "Freigabe läuft", $"Gültig bis {s.Share.Expires:HH:mm} Uhr · {s.Share.Downloads} Download(s)",
+                new SelectableTextBlock { Name = "share-url", Text = s.Url, Foreground = Text, FontSize = 18, FontWeight = FontWeight.SemiBold },
+                P($"Ordner: {s.Share.Folder} · gültig bis {s.Share.Expires:HH:mm} Uhr · {s.Share.Downloads} Download(s)", null, 11)));
             var stop = new Button { Name = "share-stop", Content = "Freigabe beenden", Background = Accent };
             stop.Click += async (_, _) => { await StopShareAsync(); Show("teilen"); };
             sp.Children.Add(stop);
@@ -119,8 +118,10 @@ public partial class MainWindow
                 catch (Exception ex) { _shareMsg = "Hat nicht geklappt: " + ex.Message; }
                 Show("teilen");
             };
-            sp.Children.Add(folder); sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { dur, net, go } });
-            sp.Children.Add(P("Beim ersten Mal fragt Windows vielleicht, ob Trendo im privaten Netzwerk erreichbar sein darf. Wähle „Private Netzwerke“.", null, 11));
+            // Y7 (07.11.2026): Teilen als Werkzeug-Karte
+            sp.Children.Add(ToolCard("share-card", Mdi.Folder, "#F5D27A", "#9C7419", "Ordner teilen", "Wähle Ordner, Dauer und Netz – dann zeigt Trendo einen Link für Handy oder Tablet.",
+                folder, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { dur, net, go } },
+                P("Beim ersten Mal fragt Windows vielleicht, ob Trendo im privaten Netzwerk erreichbar sein darf. Wähle „Private Netzwerke“.", null, 11)));
         }
         sp.Children.Add(new TextBlock { Name = "share-msg", Text = _shareMsg, Foreground = Text, TextWrapping = TextWrapping.Wrap });
         return SysPage("Teilen im Heimnetz", sp);

@@ -68,7 +68,8 @@ public partial class MainWindow
     private Control QualPerfView()
     {
         var sp = new StackPanel { Spacing = 10 }; const string V = "qual-leistung";
-        sp.Children.Add(Card(Section("Wie schnell ist Trendo?", "Öffnet die Hauptseiten nacheinander und misst die Zeit. Ziel: jede Seite unter 0,3 Sekunden.",
+        // Y11 (07.11.2026): Werkzeug-Karten mit Symbol
+        sp.Children.Add(ToolCard("perf-card", Mdi.ChartLine, "#8FC2FF", "#2F6FE0", "Wie schnell ist Trendo?", "Öffnet die Hauptseiten nacheinander und misst die Zeit. Ziel: jede Seite unter 0,3 Sekunden.",
             Line(Act("perf-run", "Jetzt messen", () =>
             {
                 long before = GC.GetTotalMemory(true);
@@ -77,9 +78,9 @@ public partial class MainWindow
                 var slow = m.Where(x => !x.Ok).ToList();
                 _qualOut = $"{m.Count} Seiten · Mittelwert {Quality.Median(m.Select(x => x.Took)).TotalMilliseconds:0} ms · {(slow.Count == 0 ? "✓ alle im Ziel" : "⚠ zu langsam: " + string.Join(", ", slow.Select(s => $"{s.What} ({s.Took.TotalMilliseconds:0} ms)")))}\nSpeicher danach: {(after - before) / 1048576.0:+0.0;-0.0} MB {(Quality.Leaks(before, after) ? "⚠ auffällig" : "✓ unauffällig")}";
                 Say("Messung fertig.", V);
-            }, true)), new TextBlock { Name = "perf-out", Text = _qualOut, Foreground = Text, TextWrapping = TextWrapping.Wrap })));
-        sp.Children.Add(Card(Section("Protokoll prüfen", "Jede Aktion steht in einer Kette, in der jeder Eintrag den vorigen absichert. Wird etwas verändert oder gelöscht, fällt es hier auf.",
-            Line(Act("audit-check", "Kette prüfen", () => { var b = _core.Audit.FirstBroken(); Say(b is null ? $"✓ Alle {_core.Audit.ReadAll().Count} Einträge unverändert." : $"✕ Ab Eintrag {b} wurde das Protokoll verändert.", V); })))));
+            }, true)), new TextBlock { Name = "perf-out", Text = _qualOut, Foreground = Text, TextWrapping = TextWrapping.Wrap }));
+        sp.Children.Add(ToolCard("audit-card", Mdi.CheckboxMarkedOutline, "#86EFAC", "#15803D", "Protokoll prüfen", "Jede Aktion steht in einer Kette, in der jeder Eintrag den vorigen absichert. Wird etwas verändert oder gelöscht, fällt es hier auf.",
+            Line(Act("audit-check", "Kette prüfen", () => { var b = _core.Audit.FirstBroken(); Say(b is null ? $"✓ Alle {_core.Audit.ReadAll().Count} Einträge unverändert." : $"✕ Ab Eintrag {b} wurde das Protokoll verändert.", V); }))));
         return QualPage("Qualität – Leistung", sp);
     }
 
