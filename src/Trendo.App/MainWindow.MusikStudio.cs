@@ -396,7 +396,9 @@ public partial class MainWindow
         var (songs, total, pages) = MsQuery(); // V4: Arbeitsbereich/Sammlung, Filter, Suche, Sortierung, Seite
         if (songs.Count == 0 && _msRunning.Count == 0)
             sp.Children.Add(new StackPanel { Spacing = 6, Margin = new Thickness(0, 40, 0, 0), HorizontalAlignment = HorizontalAlignment.Center, Children = {
-                new TextBlock { Text = "♪", FontSize = 46, Foreground = Accent, HorizontalAlignment = HorizontalAlignment.Center },
+                new Border { Width = 92, Height = 92, CornerRadius = new CornerRadius(46), HorizontalAlignment = HorizontalAlignment.Center, // G6: Linien-Symbol im Goldschein
+                    Background = new RadialGradientBrush { GradientStops = { new GradientStop(Color.Parse("#40D4AF37"), 0), new GradientStop(Color.Parse("#00D4AF37"), 1) } },
+                    Child = WithCenter(TrendoIcons.Icon(_msFav || _msSearch.Length > 0 ? "suche" : "musik", 44, Accent)) },
                 new TextBlock { Name = "ms-empty", Text = _msFav || _msSearch.Length > 0 || _msFilter != "alle" || _msColl is not null || _msWs is not null ? "Nichts gefunden." : "Noch keine Lieder – links beschreiben und „Erstellen“.", Foreground = Muted, FontSize = 14, HorizontalAlignment = HorizontalAlignment.Center } } });
         if (_msGridView) { sp.Children.Add(MsSongGrid(songs)); sp.Children.Add(MsPager(total, pages)); return MsCard("ms-library", new ScrollViewer { Content = sp }); }
         var i = 0;

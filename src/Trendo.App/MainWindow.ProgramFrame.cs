@@ -313,10 +313,14 @@ public partial class MainWindow
         foreach (var a in actions) { a.Margin = new Thickness(4); row.Children.Add(a); }
         return new Border
         {
-            Name = name, Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(16), Padding = new Thickness(24, 28), Margin = new Thickness(0, 6, 0, 6),
+            Name = name, Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(16), Padding = new Thickness(24, 28), Margin = new Thickness(0, 6, 0, 6), BoxShadow = CardShadow,
             Child = new StackPanel { Spacing = 10, HorizontalAlignment = HorizontalAlignment.Center, Children =
             {
-                new TextBlock { Text = icon, FontSize = 46, HorizontalAlignment = HorizontalAlignment.Center },
+                // G6 (07.11.2026): Symbol im leuchtenden Goldkreis; Linien-Symbol, wenn der Name eines ist, sonst das Zeichen
+                new Border { Width = 92, Height = 92, CornerRadius = new CornerRadius(46), HorizontalAlignment = HorizontalAlignment.Center,
+                    Background = new RadialGradientBrush { GradientStops = { new GradientStop(Color.Parse("#40D4AF37"), 0), new GradientStop(Color.Parse("#00D4AF37"), 1) } },
+                    Child = TrendoIcons.Paths.ContainsKey(icon) ? new Viewbox { Width = 46, Height = 46, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Child = TrendoIcons.Icon(icon, 46, Accent) }
+                        : new TextBlock { Text = icon, FontSize = 42, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } },
                 new TextBlock { Text = title, Foreground = Text, FontSize = 18, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Center },
                 new TextBlock { Text = text, Foreground = Muted, FontSize = 13, TextWrapping = TextWrapping.Wrap, TextAlignment = TextAlignment.Center, MaxWidth = 560, HorizontalAlignment = HorizontalAlignment.Center },
                 row,

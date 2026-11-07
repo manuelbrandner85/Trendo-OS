@@ -66,9 +66,22 @@ public partial class MainWindow
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto"), ColumnSpacing = 10, Children = {
             new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, VerticalAlignment = VerticalAlignment.Center, Children = { back, pp, stop } },
             Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { pos, tempo, takt, ton } }, 1),
-            Pos(new DockPanel { VerticalAlignment = VerticalAlignment.Center, Children = { Dk(title, Avalonia.Controls.Dock.Left), seek } }, 2),
+            Pos(new DockPanel { VerticalAlignment = VerticalAlignment.Center, Children = { Dk(title, Avalonia.Controls.Dock.Left), MsSeekWithWave(song, seek) } }, 2),
             Pos(master, 3) } };
         return new Border { Name = "ms-player", CornerRadius = new CornerRadius(12), Background = DawPanel, BorderBrush = DawEdge, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(10, 6), Margin = new Thickness(0, 0, 0, 10), Child = grid };
+    }
+
+    WaveStrip? _msWave;
+
+    /// <summary>K3: Wellenform des Lieds hinter dem Abspielregler (echte Werte aus der Datei, wie bei der Video-Zeitleiste zwischengespeichert).</summary>
+    Control MsSeekWithWave(MusicSong? song, Slider seek)
+    {
+        var peaks = song is not null ? EditWave(song.File) : null;
+        _msWave = new WaveStrip { Name = "ms-wave", Height = 30, Peaks = peaks ?? [], Played = Accent, Margin = new Thickness(16, 0), VerticalAlignment = VerticalAlignment.Center,
+            Progress = _mDur > 0 && !double.IsNaN(_mDur) ? Math.Clamp(_mPos / _mDur, 0, 1) : 0, IsVisible = peaks is not null };
+        seek.ValueChanged += (_, _) => { if (seek.Maximum > 0) _msWave?.SetProgress(seek.Value / seek.Maximum); };
+        if (peaks is not null) seek.Opacity = 0.55; // Regler bleibt bedienbar, die Welle trägt das Bild
+        return new Panel { Children = { _msWave, seek } };
     }
 
     SongUnderstanding.Result? Understanding0(MusicSong? s) => s is null ? null : Understanding(s);

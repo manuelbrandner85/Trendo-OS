@@ -17,6 +17,9 @@ public sealed class EditTimeline : Control
     public IReadOnlyList<EditClip> Music { get; set; } = [];
     public IReadOnlyDictionary<string, IReadOnlyList<Bitmap>> Thumbs { get; set; } = new Dictionary<string, IReadOnlyList<Bitmap>>();
     public double PxPerSec { get; set; } = 40;
+    /// <summary>K1 (07.11.2026): echte Wellenform je Tondatei – kleinster/größter Wert, <see cref="WaveRate"/> Spalten je Sekunde. Fehlt sie, zeigt die Spur nur eine Mittellinie (nichts Erfundenes).</summary>
+    public IReadOnlyDictionary<string, (float Min, float Max)[]> Waves { get; set; } = new Dictionary<string, (float, float)[]>();
+    public const int WaveRate = 50;
     public double Playhead { get; set; }
     /// <summary>Marken aus Trendo Musik: Abschnitte (gold), Liedzeilen nach Stimme (Sängerin rosa, Sänger blau, beide gold), Einstellungen (weiß).</summary>
     public IReadOnlyList<EditMarker> Markers { get; set; } = [];
@@ -163,7 +166,7 @@ public sealed class EditTimeline : Control
             ctx.DrawGeometry(new SolidColorBrush(Color.Parse("#99FFFFFF")), null, new PolylineGeometry([new Point(r2.X, r2.Bottom - 2), new Point(r2.X + w0, r2.Y + 18), new Point(r2.X + w0, r2.Bottom - 2)], true));
             ctx.DrawText(new FormattedText($"⤫ {fd:0.#} s", De, FlowDirection.LeftToRight, font, 10, Brushes.White), new Point(r2.X + 2, r2.Bottom - 14));
         }
-        // Musikspur mit angedeuteter Wellenform
+        // Musikspur mit echter Wellenform (K1)
         for (var i = 0; i < Music.Count; i++)
         {
             var r = BoxOf("music", i); var m = Music[i]; var sel = Selected is ("music", var si) && si == i;
@@ -175,8 +178,18 @@ public sealed class EditTimeline : Control
                 _ => r,
             };
             ctx.DrawRectangle(new SolidColorBrush(Color.Parse("#FF047857")), new Pen(new SolidColorBrush(Color.Parse(sel ? "#FFFACC15" : "#8834D399")), sel ? 2.5 : 1), new RoundedRect(r.Deflate(1), 6));
-            var wave = new Pen(new SolidColorBrush(Color.Parse("#9934D399")), 1.2); var rnd = new Random(m.Id.GetHashCode());
-            for (var x = r.X + 4; x < r.Right - 4; x += 3) { var a = (0.25 + 0.6 * rnd.NextDouble()) * (MusicH / 2 - 6) * m.Volume; ctx.DrawLine(wave, new Point(x, r.Center.Y - a), new Point(x, r.Center.Y + a)); }
+            var wave = new Pen(new SolidColorBrush(Color.Parse("#CC6EE7B7")), 1.1);
+            if (Waves.TryGetValue(m.File, out var pk) && pk.Length > 0)
+            {
+                var half = MusicH / 2 - 5;
+                for (var x = r.X + 2; x < r.Right - 2; x += 2)
+                {
+                    var t = m.In + (x - r.X) / PxPerSec; var k = (int)(t * WaveRate); if (k < 0 || k >= pk.Length) continue;
+                    var (lo, hi) = pk[k]; var vol = Math.Min(1.5, m.Volume);
+                    ctx.DrawLine(wave, new Point(x, r.Center.Y - Math.Min(half, hi * half * vol)), new Point(x, r.Center.Y - Math.Max(-half, lo * half * vol)));
+                }
+            }
+            else ctx.DrawLine(wave, new Point(r.X + 4, r.Center.Y), new Point(r.Right - 4, r.Center.Y));
             ctx.DrawText(new FormattedText($"♪ {System.IO.Path.GetFileName(m.File)} · {m.Volume * 100:0} %", De, FlowDirection.LeftToRight, bold, 11, Brushes.White), new Point(r.X + 6, r.Y + 2));
         }
         // Abspielkopf

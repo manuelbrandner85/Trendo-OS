@@ -194,7 +194,7 @@ public partial class MainWindow
         transport.Children.Add(new Border { Width = 1 }); // Platzhalter links
         var tpWrap = new Grid { Children = { transport, tpMid } };
         var tl = new EditTimeline { Name = "ve-timeline", Clips = clips, Music = music, PxPerSec = EditZoom, Playhead = d.Number("playhead"), Selected = EditSelected, Markers = VideoEdit.Markers(p),
-            Thumbs = clips.ToDictionary(c => c.Id, EditThumbs) };
+            Thumbs = clips.ToDictionary(c => c.Id, EditThumbs), Waves = music.Select(m => m.File).Distinct().Select(f => (f, w: EditWave(f))).Where(x => x.w is not null).ToDictionary(x => x.f, x => x.w!) };
         EditTimelineForTests = tl;
         tl.PlayheadChanged = t => ProgramRun(VK, () => d.Set("playhead", Math.Min(t, VideoEdit.Duration(d.Data)), "Abspielkopf"));
         tl.ClipSelected = (track, i) => { EditSelected = (track, i); EditTab = "auswahl"; Show(VK); };
@@ -238,6 +238,24 @@ public partial class MainWindow
         _veTime = time;
         Grid.SetRow(tpWrap, 1); g.Children.Add(tpWrap); Grid.SetRow(tlBox, 2); g.Children.Add(tlBox); Grid.SetRow(hint, 3); g.Children.Add(hint);
         return g;
+    }
+
+    static readonly Dictionary<string, (DateTime Stamp, (float Min, float Max)[] Peaks)> _veWaves = [];
+
+    /// <summary>K1: Wellenform einer Tondatei (WAV/MP3, selbst gelesen), zwischengespeichert bis zur nächsten Änderung der Datei.</summary>
+    static (float Min, float Max)[]? EditWave(string file)
+    {
+        try
+        {
+            if (!File.Exists(file) || !AudioFile.Readable.Contains(Path.GetExtension(file).ToLowerInvariant())) return null;
+            var stamp = File.GetLastWriteTimeUtc(file);
+            lock (_veWaves) if (_veWaves.TryGetValue(file, out var c) && c.Stamp == stamp) return c.Peaks;
+            var a = AudioFile.Read(file);
+            var peaks = AudioEdit.Peaks(a, Math.Max(1, (int)(a.Seconds * EditTimeline.WaveRate)));
+            lock (_veWaves) _veWaves[file] = (stamp, peaks);
+            return peaks;
+        }
+        catch (Exception e) when (e is IOException or InvalidOperationException or UnauthorizedAccessException or InvalidDataException) { return null; }
     }
 
     static string ClockMs(double s) => TimeSpan.FromSeconds(Math.Max(0, s)).ToString(s >= 3600 ? @"h\:mm\:ss\.f" : @"m\:ss\.f");

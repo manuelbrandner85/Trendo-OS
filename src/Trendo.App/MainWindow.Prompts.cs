@@ -29,7 +29,18 @@ public partial class MainWindow
         var row = new WrapPanel();
         foreach (var t in Prompts.All())
         {
-            var b = new Button { Name = "prompt-" + t.Id, Content = t.Name, Margin = new Thickness(0, 0, 6, 6), Background = _promptSel == t.Id ? Accent : Brushes.Transparent };
+            // K7 (07.11.2026): Vorlagen als Karten mit Farbe je Kategorie und Vorschau des Textes
+            var col = PromptCategoryColor(t.Category); var on = _promptSel == t.Id;
+            var preview = System.Text.RegularExpressions.Regex.Replace(t.Text, @"\s+", " ").Trim();
+            var b = new Button { Name = "prompt-" + t.Id, Width = 236, Height = 104, Margin = new Thickness(0, 0, 10, 10), Padding = new Thickness(0), CornerRadius = new CornerRadius(14),
+                HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalContentAlignment = VerticalAlignment.Stretch, BorderThickness = new Thickness(on ? 2 : 1), BorderBrush = on ? Accent : EdgeLit, Background = TileBg,
+                Content = new DockPanel { Children = {
+                    Dk(new Border { Width = 5, CornerRadius = new CornerRadius(14, 0, 0, 14), Background = Brush.Parse(col) }, Avalonia.Controls.Dock.Left),
+                    new StackPanel { Margin = new Thickness(12, 10), Spacing = 4, Children = {
+                        new TextBlock { Text = t.Category.ToUpperInvariant(), Foreground = Brush.Parse(col), FontSize = 10, FontWeight = FontWeight.Bold, LetterSpacing = 0.5 },
+                        new TextBlock { Text = t.Name, Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
+                        new TextBlock { Text = preview.Length > 90 ? preview[..90] + " …" : preview, Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap, MaxHeight = 30, TextTrimming = TextTrimming.CharacterEllipsis } } } } } };
+            Hover(b);
             ToolTip.SetTip(b, t.Category);
             b.Click += (_, _) => { _promptSel = t.Id; _promptEdit = false; _promptVals.Clear(); _promptMsg = ""; Show("ki-vorlagen"); };
             row.Children.Add(b);
@@ -48,6 +59,14 @@ public partial class MainWindow
         if (LastPromptOutput != "" && t0 is not null && !_promptEdit)
             sp.Children.Add(WCard(new SelectableTextBlock { Name = "prompt-answer", Text = LastPromptOutput, Foreground = Text, TextWrapping = TextWrapping.Wrap }));
         return KiPage("Vorlagen", sp);
+    }
+
+    /// <summary>K7: feste Farbe je Kategorie (gleiche Kategorie = gleiche Farbe).</summary>
+    static string PromptCategoryColor(string category)
+    {
+        string[] palette = ["#E8B64C", "#5AA9FF", "#4ADE80", "#F472B6", "#A78BFA", "#2DD4BF", "#FB923C"];
+        var h = 0; foreach (var c in category.ToLowerInvariant()) h = unchecked(h * 31 + c);
+        return palette[(h & 0x7fffffff) % palette.Length];
     }
 
     private Control Hints(string text)

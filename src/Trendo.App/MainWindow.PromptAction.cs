@@ -463,7 +463,7 @@ public partial class MainWindow
             {
                 Name = "auftrag-leiste", Background = Brush.Parse(_style == "mac" ? (_theme == "hell" ? "#FFECECEC" : "#FF2A2A2C") : (_theme == "hell" ? "#FFEBEBED" : "#FF2E2E32")),
                 BorderBrush = Edge, BorderThickness = new Avalonia.Thickness(0, 0, 0, 1), Padding = new Avalonia.Thickness(10, 6), Margin = new Avalonia.Thickness(0, 0, 0, 6),
-                Child = new StackPanel { Spacing = 4, Children = { row, preview, liveThumb, AssistAttached(key, assistHost), detail, pro } }
+                Child = new StackPanel { Spacing = 4, Children = { row, PromptChipRow(studio, box), preview, liveThumb, AssistAttached(key, assistHost), detail, pro } }
             };
             ability.IsVisible = false; // wie im System: keine Zusatzzeile über der Titelleiste (steht im Tooltip)
             ToolTip.SetTip(box, ability.Text);
@@ -482,7 +482,7 @@ public partial class MainWindow
             CornerRadius = new Avalonia.CornerRadius(12),
             Padding = new Avalonia.Thickness(8, 6),
             Margin = new Avalonia.Thickness(0, 0, 0, 6),
-            Child = new StackPanel { Spacing = 4, Children = { ability, row, preview, liveThumb, AssistAttached(key, assistHost), detail, pro } }
+            Child = new StackPanel { Spacing = 4, Children = { ability, row, PromptChipRow(studio, box), preview, liveThumb, AssistAttached(key, assistHost), detail, pro } } // G3: Vorschlags-Chips
         };
     }
 }

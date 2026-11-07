@@ -56,6 +56,71 @@ public class Modern_Ui
         finally { w.Close(); }
     }
 
+    [AvaloniaFact(DisplayName = "G3/G4: Vorschlags-Chips unter der Studio-KI-Zeile setzen den Auftrag ein (starten nichts) und verschwinden beim Tippen; Desktop „Weitermachen“ mit zuletzt benutzten Programmen")]
+    public void Chips_and_continue()
+    {
+        var (w, _, _) = Ui.Open();
+        try
+        {
+            w.Show("musik-studio"); Pump();
+            var chip = w.Find<Button>("auftrag-chip-0");
+            Assert.True(w.Find<WrapPanel>("auftrag-chips").IsVisible);
+            chip.Press(); Pump();
+            Assert.Equal(MainWindow.PromptChips["STUDIO-MUSIK-01"][0], w.Find<TextBox>("auftrag-prompt").Text);
+            Assert.False(w.Find<WrapPanel>("auftrag-chips").IsVisible);
+            Assert.Equal("Noch nicht gestartet", w.Find<TextBlock>("auftrag-status").Text);
+            foreach (var id in MainWindow.PromptChips.Keys) Assert.NotNull(StudioCatalog.For(id));
+            w.Show("start"); Pump();
+            Assert.True(w.Find<Border>("widget-weiter").IsVisible);
+            var first = w.Find<Button>("continue-0");
+            Assert.Contains("Trendo Musik", string.Join(" ", first.GetLogicalDescendants().OfType<TextBlock>().Select(t => t.Text)));
+            first.Press(); Pump(); Assert.Equal("musik-studio", w.CurrentView);
+        }
+        finally { w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "K1: Musikspur im Videoschnitt zeigt die echte Wellenform der Tondatei (laut/leise erkennbar); ohne lesbare Datei nur Mittellinie statt erfundener Welle")]
+    public void Video_real_waveform()
+    {
+        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
+        try
+        {
+            const int rate = 22050;
+            // 2 s leise, 2 s laut
+            var wav = Path.Combine(root, "musik.wav");
+            Trendo.Core.Media.AudioFile.WriteWav(new Trendo.Core.Media.AudioBuf(rate, [Enumerable.Range(0, rate * 4).Select(i => (float)((i < rate * 2 ? 0.05 : 0.8) * Math.Sin(2 * Math.PI * 220 * i / rate))).ToArray()]), wav);
+            var png = Path.Combine(root, "bild.png"); File.WriteAllBytes(png, Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="));
+            var fake = Path.Combine(root, "kaputt.mp3"); File.WriteAllBytes(fake, [1, 2, 3]);
+            w.Show("schnitt"); Pump(); w.Find<Button>("prog-tpl-leer").Press(); Pump();
+            w.EditAdd(png); w.EditAdd(wav, music: true, length: 4, audio: true); w.EditAdd(fake, music: true, length: 3, audio: true);
+            w.Show("schnitt"); Pump();
+            var tl = w.EditTimelineForTests!;
+            var pk = tl.Waves[wav];
+            Assert.InRange(pk.Length, 195, 205);
+            Assert.True(pk[150].Max > 0.6 && pk[50].Max < 0.1, $"leise {pk[50].Max}, laut {pk[150].Max}");
+            Assert.False(tl.Waves.ContainsKey(fake));
+        }
+        finally { w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "K3: Abspielleiste von Trendo Musik zeigt die echte Wellenform des gewählten Lieds; ohne Lied keine Welle")]
+    public void Musik_player_wave()
+    {
+        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
+        try
+        {
+            w.Show("musik-studio"); Pump();
+            Assert.False(w.Find<WaveStrip>("ms-wave").IsVisible);
+            const int rate = 22050; var wav = Path.Combine(root, "lied.wav");
+            Trendo.Core.Media.AudioFile.WriteWav(new Trendo.Core.Media.AudioBuf(rate, [Enumerable.Range(0, rate * 3).Select(i => (float)(0.5 * Math.Sin(2 * Math.PI * 330 * i / rate))).ToArray()]), wav);
+            var s = new Trendo.Core.SongLibrary(w.Core.DataRoot).Add(new Trendo.Core.MusicSong { Title = "Welle", File = wav, Seconds = 3 });
+            w.MusicStudioSelect(s.Id); w.Show("musik-studio"); Pump();
+            var strip = w.Find<WaveStrip>("ms-wave");
+            Assert.True(strip.IsVisible); Assert.InRange(strip.Peaks.Length, 140, 160); Assert.InRange(strip.Peaks.Max(p => p.Max), 0.45, 0.55);
+        }
+        finally { w.Close(); }
+    }
+
     [AvaloniaFact(DisplayName = "G10: KI-Aufträge der Grafikkarten-Warteschlange als Karten – läuft mit Laufzeit, wartet mit Platz; fertig = Karte weg")]
     public async Task Task_cards()
     {
