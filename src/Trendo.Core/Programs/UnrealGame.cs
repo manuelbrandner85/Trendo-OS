@@ -1194,6 +1194,7 @@ private:
 #include "Components/ChildActorComponent.h"
 #include "Animation/Skeleton.h"
 #include "PhysicsEngine/PhysicsAsset.h"
+#include "PhysicsEngine/BodySetup.h"
 #include "AIController.h"
 #include "Engine/StaticMeshActor.h"
 #include "Components/DecalComponent.h"
@@ -1475,7 +1476,8 @@ bool ATrendoEnemy::Ragdoll(const FVector& Impulse)
 	bDead = true; GetCharacterMovement()->DisableMovement();
 	// Echte Sturz-Animation (auf das eigene Skelett übertragen): fällt glaubwürdig zu Boden und bleibt liegen
 	// Standard: echter Physik-Sturz (Ragdoll mit der Physik-Hülle des Engine-Mannequins); fehlt sie, fällt er mit echter Sturz-Animation
-	UPhysicsAsset* PA = LoadObject<UPhysicsAsset>(nullptr, TEXT("/MoverExamples/Characters/Mannequins/Rigs/PA_Mannequin.PA_Mannequin"));
+	UPhysicsAsset* PA = Body3D->GetPhysicsAsset(); // MetaHuman bringt eine eigene, zum Körper passende Physik-Hülle mit (PHYS_<Name>)
+	if (!PA || PA->SkeletalBodySetups.Num() < 8) PA = LoadObject<UPhysicsAsset>(nullptr, TEXT("/MoverExamples/Characters/Mannequins/Rigs/PA_Mannequin.PA_Mannequin"));
 	if (UAnimationAsset* Death = PA && !FParse::Param(FCommandLine::Get(), TEXT("trendosturzanimation")) ? nullptr : Anim(TEXT("MM_Death_Front_03_ExtractedRM"), MetaDirOf(Body3D)))
 	{
 		SetActorRotation(FRotator(0, Impulse.Rotation().Yaw + 180.f, 0)); // fällt in Schlagrichtung nach vorn weg
@@ -1486,11 +1488,26 @@ bool ATrendoEnemy::Ragdoll(const FVector& Impulse)
 	if (AActor* Part = Body3D->GetOwner(); Part && Part != this) { Part->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform); Part->SetActorEnableCollision(true); } // MetaHuman fällt frei – Kollision des Teils wieder an (war für die Kapsel aus)
 	Body3D->Stop(); Body3D->SetAnimationMode(EAnimationMode::AnimationCustomMode);
 	// Physik-Hülle des Engine-Mannequins (gleiche Körperknochen wie MetaHuman, Kollision mit Gelände und Objekten erprobt)
-	if (PA) Body3D->SetPhysicsAsset(PA, true); else if (!Body3D->GetPhysicsAsset()) return false;
+	if (PA && PA != Body3D->GetPhysicsAsset()) Body3D->SetPhysicsAsset(PA, true); else if (!Body3D->GetPhysicsAsset()) return false;
+	// 2) Gesicht, Kleidung und Haare folgen dem fallenden Körper Knochen für Knochen – ihre eigene (Gesichts-)Animation darf nicht gegen die Physik arbeiten (Kopf-Zappeln)
+	if (AActor* PartActor = Body3D->GetOwner())
+	{
+		TArray<USkeletalMeshComponent*> Parts; PartActor->GetComponents(Parts);
+		for (USkeletalMeshComponent* P : Parts) if (P != Body3D) { P->SetSimulatePhysics(false); P->SetLeaderPoseComponent(Body3D, true); P->bEnableUpdateRateOptimizations = false; }
+	}
 	Body3D->SetCollisionObjectType(ECC_PhysicsBody); Body3D->SetCollisionResponseToAllChannels(ECR_Block); Body3D->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore); Body3D->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	Body3D->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	Body3D->SetAllUseCCD(true); // schnelle Körperteile rutschen nicht durchs Gelände
 	Body3D->SetAllBodiesSimulatePhysics(true); Body3D->SetSimulatePhysics(true); Body3D->WakeAllRigidBodies(); Body3D->bBlendPhysics = true;
+	// 3) Bewusstlos, nicht schlaff wie Gummi: Dämpfung in allen Gliedern, Kopf und Nacken deutlich stärker (kein Nachwippen), danach kommt der Körper zur Ruhe
+	for (FBodyInstance* B : Body3D->Bodies)
+	{
+		if (!B || !B->BodySetup.IsValid()) continue;
+		const FString Bone = B->BodySetup->BoneName.ToString().ToLower();
+		const bool bHead = Bone.Contains(TEXT("head")) || Bone.Contains(TEXT("neck"));
+		B->LinearDamping = bHead ? 0.6f : 0.25f; B->AngularDamping = bHead ? 6.f : 1.6f; B->UpdateDampingProperties();
+		B->SleepFamily = ESleepFamily::Sensitive; // liegt er, schläft die Physik ein – kein Zittern am Boden
+	}
 	Body3D->AddImpulse((Impulse.GetSafeNormal() + FVector(0, 0, 0.15f)) * 260.f, TEXT("spine_03"), true); // Stoß in Schlagrichtung (Geschwindigkeit), Körper kippt
 	return true;
 }
@@ -2229,7 +2246,7 @@ public:
 	void Touch(AActor* Other);
 	void Damage(ATrendoEnemy* E);
 	/** Blutfleck auf dem Boden unter Pos (Material M_TrendoBlut aus der Welt-Einrichtung), Größe 1 = normal. */
-	void SpawnBlood(const FVector& Pos, float Size);
+	void SpawnBlood(const FVector& Pos, float Size); class UDecalComponent* BloodDecal(const FVector& At, float Length, float Width, float Yaw); void SpatterBlood(const FVector& Pos, const FVector& Dir, int32 N, float Reach); void GrowPool(class UDecalComponent* Pool, float Seconds);
 	void Attack();
 	void Dismount();
 	/** In den fahrbaren Wagen steigen bzw. aussteigen (E oder Controller-B). */
@@ -2251,7 +2268,7 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 private:
-	TWeakObjectPtr<AActor> LimbPiece; float ProbeYaw = 0; TMap<const void*, FVector> FarHead; int32 FarFrames = 0; int32 FarStill = 0; float FarMaxJump = 0; int32 FarJumps = 0; int32 FarStartJumps = 0; TMap<const void*, FString> FarAnim; float FarDist = 0; TArray<TWeakObjectPtr<UDecalComponent>> BloodDecals; bool bAgedShot = false; bool bAgedPending = false; float MaxRoll = 0; bool bLimbShot = false; bool bLimbPending = false; float CheckSeconds = -1; bool bShotTaken = false; bool bCloseShot = false; bool bCloseDone = false; bool bProbe = false; bool bProbeDone = false; float ProbeStart = 0; int32 ProbeLives = 0; bool bCarProbe = false; bool bCarDone = false; int32 BloodCount = 0; int32 Severed = 0; float FightShotDelay = 0; bool bFight = false; bool bFightDone = false; UPROPERTY() ATrendoEnemy* FightEnemy = nullptr; FVector CarStart = FVector::ZeroVector; float WheelTurn = 0; TMap<FString, FQuat> WheelLast;
+	TWeakObjectPtr<AActor> LimbPiece; float ProbeYaw = 0; FVector FightHead = FVector::ZeroVector; TMap<const void*, FVector> FarHead; int32 FarFrames = 0; int32 FarStill = 0; float FarMaxJump = 0; int32 FarJumps = 0; int32 FarStartJumps = 0; TMap<const void*, FString> FarAnim; float FarDist = 0; TArray<TWeakObjectPtr<UDecalComponent>> BloodDecals; bool bAgedShot = false; bool bAgedPending = false; float MaxRoll = 0; bool bLimbShot = false; bool bLimbPending = false; float CheckSeconds = -1; bool bShotTaken = false; bool bCloseShot = false; bool bCloseDone = false; bool bProbe = false; bool bProbeDone = false; float ProbeStart = 0; int32 ProbeLives = 0; bool bCarProbe = false; bool bCarDone = false; int32 BloodCount = 0; int32 Severed = 0; float FightShotDelay = 0; bool bFight = false; bool bFightDone = false; UPROPERTY() ATrendoEnemy* FightEnemy = nullptr; FVector CarStart = FVector::ZeroVector; float WheelTurn = 0; TMap<FString, FQuat> WheelLast;
 	static float WheelAngle(AActor* Car, TMap<FString, FQuat>& Last);
 	static void VehicleAxis(AActor* Car, FName Input, float Value);
 	static void VehicleCall(AActor* Car, const TCHAR* Func, FName Input, int32 Value);
@@ -2478,7 +2495,7 @@ void ATrendoGameMode::Damage(ATrendoEnemy* E)
 	const bool bBrutal = Data.Violence == TEXT("brutal"), bNone = Data.Violence == TEXT("keine");
 	FVector From = Hero() ? (E->GetActorLocation() - Hero()->GetActorLocation()).GetSafeNormal2D() : -E->GetActorForwardVector();
 	E->Hp--;
-	if (E->Hp > 0) { E->Knock(From * (bBrutal ? 260.f : 180.f)); return; } // Treffer: taumelt zurück, kurz benommen
+	if (E->Hp > 0) { E->Knock(From * (bBrutal ? 260.f : 180.f)); if (!bNone) SpatterBlood(E->GetActorLocation(), From, bBrutal ? 10 : 5, bBrutal ? 220.f : 140.f); return; } // Treffer: taumelt zurück, Spritzer in Schlagrichtung
 	State.Defeated++; State.Score += E->MaxHp > 1 ? 10 : 2; if (E->MaxHp > 1) State.Note = TEXT("Boss besiegt!");
 	Enemies.Remove(E);
 	if (bBrutal && E->Sever(From)) { Severed++; LimbPiece = E->SeveredPiece; } // brutale Spiele: ein Glied wird abgetrennt
@@ -2486,13 +2503,22 @@ void ATrendoGameMode::Damage(ATrendoEnemy* E)
 	// Bodenflecken nur auf dem Boden: der liegende Körper nimmt keine Boden-Decals an
 	{ TArray<UPrimitiveComponent*> Prims; E->GetComponents(Prims); if (E->Body3D && E->Body3D->GetOwner()) { TArray<UPrimitiveComponent*> More; E->Body3D->GetOwner()->GetComponents(More); Prims.Append(More); }
 	  for (UPrimitiveComponent* P : Prims) P->SetReceivesDecals(false); }
-	if (!bNone) SpawnBlood(E->GetActorLocation(), bBrutal ? 1.2f : 0.8f); // Spritzer am Trefferort
+	if (!bNone) SpatterBlood(E->GetActorLocation(), From, bBrutal ? 16 : 8, bBrutal ? 280.f : 170.f); // Spritzer in Schlagrichtung
 	// Blutlache dort, wo der Körper nach dem Sturz liegt (nach 1,2 s)
 	if (!bNone && E->Body3D)
 	{
 		TWeakObjectPtr<USkeletalMeshComponent> Body = E->Body3D; const float Size = bBrutal ? 2.4f : 1.5f; const FName Stump = E->SeveredBone; FTimerHandle Th;
-		GetWorldTimerManager().SetTimer(Th, FTimerDelegate::CreateWeakLambda(this, [this, Body, Size, Stump]() { if (!Body.IsValid()) return; SpawnBlood(Body->GetBoneLocation(TEXT("pelvis")), Size);
-			if (!Stump.IsNone()) SpawnBlood(Body->GetBoneLocation(Stump), Size * 0.55f); }), 1.2f, false);
+		GetWorldTimerManager().SetTimer(Th, FTimerDelegate::CreateWeakLambda(this, [this, Body, Size, Stump]() { if (!Body.IsValid()) return;
+			GrowPool(BloodDecal(Body->GetBoneLocation(TEXT("spine_03")), 70.f * Size, 55.f * Size, FMath::FRandRange(0.f, 360.f)), 8.f); // Lache unter dem Oberkörper wächst
+			if (Stump.IsNone()) return;
+			GrowPool(BloodDecal(Body->GetBoneLocation(Stump), 34.f * Size, 28.f * Size, FMath::FRandRange(0.f, 360.f)), 6.f);
+			for (int32 k = 0; k < 6; k++) // Stumpf: Blut pulsiert in Stößen heraus, jeder schwächer
+			{
+				FTimerHandle Pulse; GetWorldTimerManager().SetTimer(Pulse, FTimerDelegate::CreateWeakLambda(this, [this, Body, Stump, k]() { if (!Body.IsValid()) return;
+					const FVector At = Body->GetBoneLocation(Stump), Out = (At - Body->GetBoneLocation(TEXT("pelvis"))).GetSafeNormal2D();
+					SpatterBlood(At, Out.RotateAngleAxis(FMath::FRandRange(-35.f, 35.f), FVector::UpVector), 4 - k / 2, 130.f - 15.f * k); }), 0.2f + 0.55f * k, false);
+			}
+		}), 1.2f, false);
 	}
 	E->SetLifeSpan(30.f);
 }
@@ -2597,7 +2623,7 @@ void ATrendoGameMode::Tick(float DeltaSeconds)
 	if (DrivenCar) if (APlayerController* PC = GetWorld()->GetFirstPlayerController(); PC && (PC->WasInputKeyJustPressed(EKeys::E) || PC->WasInputKeyJustPressed(EKeys::Gamepad_FaceButton_Right))) ExitCar();
 	if (DrivenCar && bCarProbe && !bCarDone)
 		if (ATrendoCar* TC = Cast<ATrendoCar>(DrivenCar)) { { const float Off = FMath::FindDeltaAngleDegrees(TC->GetActorRotation().Yaw, ProbeYaw); // Vollgas, lenkt wie ein Spieler auf die freie Bahn
-			TC->Drive(FMath::Abs(Off) > 35.f ? 0.6f : 1.f, FMath::Clamp(Off / 30.f, -1.f, 1.f), 0.f); WheelTurn = TC->WheelSpin(); MaxRoll = FMath::Max(MaxRoll, FMath::Max(FMath::Abs(TC->GetActorRotation().Roll), FMath::Abs(TC->GetActorRotation().Pitch))); } }
+			if (FMath::Abs(Off) > 120.f) TC->Drive(0.f, 0.f, TC->GetVelocity().Size() * 0.036f > 18.f ? 0.f : 0.45f); else TC->Drive(FMath::Abs(Off) > 35.f ? 0.6f : 1.f, FMath::Clamp(Off / 30.f, -1.f, 1.f), 0.f); /* freie Bahn hinter dem Wagen: zurücksetzen statt im Wald wenden (Bremse im Stand = rückwärts) */ WheelTurn = TC->WheelSpin(); MaxRoll = FMath::Max(MaxRoll, FMath::Max(FMath::Abs(TC->GetActorRotation().Roll), FMath::Abs(TC->GetActorRotation().Pitch))); } }
 	// Flacker-Messung (Prüflauf, bis zur Gegner-Probe): laufende Gegner in über 25 m Entfernung – bekommt die Pose jedes Bild ein Update, springt sie?
 	if (CheckSeconds > 0 && !bProbe)
 		if (APlayerController* PC = GetWorld()->GetFirstPlayerController(); PC && PC->PlayerCameraManager)
@@ -2774,10 +2800,10 @@ void ATrendoGameMode::Tick(float DeltaSeconds)
 				const FRotator Look = (Pel - Hero()->GetActorLocation()).Rotation();
 				if (AController* Co = Hero()->GetController()) Co->SetControlRotation(FRotator(-32.f, Look.Yaw + 18.f, 0));
 			}
-			FightShotDelay = 0.6f;
+			FightShotDelay = 0.6f; if (IsValid(FightEnemy) && FightEnemy->Body3D) FightHead = FightEnemy->Body3D->GetBoneLocation(TEXT("head"));
 
 		}
-		else if (bFightDone && FightShotDelay > 0.f) { FightShotDelay = 0.f; CheckSeconds = 1.f; FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("Screenshots/trendo-kampf.png"), false, false); }
+		else if (bFightDone && FightShotDelay > 0.f) { FightShotDelay = 0.f; CheckSeconds = 1.f; if (IsValid(FightEnemy) && FightEnemy->Body3D) UE_LOG(LogTrendo, Display, TEXT("TRENDO-KAMPF Kopf nach dem Liegen: %.1f cm Bewegung in 0,6 s (%s)"), FVector::Dist(FightHead, FightEnemy->Body3D->GetBoneLocation(TEXT("head"))), FVector::Dist(FightHead, FightEnemy->Body3D->GetBoneLocation(TEXT("head"))) < 2.f ? TEXT("ruhig") : TEXT("zappelt")); FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("Screenshots/trendo-kampf.png"), false, false); }
 		else if (bFightDone && !bLimbShot)
 		{
 			// Nahaufnahme des abgetrennten Glieds (Schnittfläche/Wunde): Figur 1,6 m daneben, Blick schräg nach unten
@@ -2938,6 +2964,14 @@ void ATrendoGameMode::LoadModels()
 }
 
 /** Pflanzen, Bäume, Felsen und Holz aus Content/TrendoDaten/natur.json (von Trendo eingerichtet) auf dem Gelände verteilen – feste Zufallsfolge, Spielweg bleibt frei. */
+/** Landschaft des Spiels aus level.json („biome“: savanne, wald, hof) – steuert Pflanzendichte und Tiere. Standard: Wald. */
+static FString TrendoBiome()
+{
+	FString LJ; TSharedPtr<FJsonObject> L;
+	if (FFileHelper::LoadFileToString(LJ, *(FPaths::ProjectContentDir() / TEXT("TrendoDaten/level.json"))) && FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(LJ), L) && L.IsValid() && L->HasField(TEXT("biome"))) return L->GetStringField(TEXT("biome"));
+	return TEXT("wald");
+}
+
 void ATrendoGameMode::SpawnNature()
 {
 	FString Json; if (!FFileHelper::LoadFileToString(Json, *(FPaths::ProjectContentDir() / TEXT("TrendoDaten/natur.json")))) return;
@@ -2954,12 +2988,22 @@ void ATrendoGameMode::SpawnNature()
 	struct FKindRule { const TCHAR* Kind; int32 Count; float Radius; float MinScale, MaxScale; bool bSolid; float Clear; };
 	const FKindRule Rules[] = { { TEXT("gras"), 120000, 4500, 1.1f, 2.0f, false, 0 }, { TEXT("farn"), 2500, 6500, 0.8f, 1.5f, false, 0 }, { TEXT("strauch"), 1200, 9000, 0.9f, 1.8f, false, 250 },
 		{ TEXT("baum"), 2000, 25000, 1.0f, 2.2f, true, 450 }, { TEXT("stein"), 260, 10000, 0.6f, 2.2f, true, 350 }, { TEXT("holz"), 60, 9000, 0.8f, 1.3f, true, 350 } };
+	// Pflanzendichte je Landschaft: Wald dicht (Bäume, Farne, Unterholz, Totholz), Savanne offen mit vereinzelten Bäumen, Hof viel Wiese und wenig Bäume
+	const FString Biome = TrendoBiome();
+	auto Density = [&Biome](const TCHAR* Kind) -> float
+	{
+		const FString K = Kind;
+		if (Biome == TEXT("savanne")) return K == TEXT("baum") ? 0.45f : K == TEXT("farn") ? 0.15f : K == TEXT("strauch") ? 0.8f : K == TEXT("holz") ? 0.5f : 1.f;
+		if (Biome == TEXT("hof")) return K == TEXT("baum") ? 0.4f : K == TEXT("gras") ? 1.4f : K == TEXT("farn") ? 0.4f : K == TEXT("stein") ? 0.4f : 0.7f;
+		return K == TEXT("baum") ? 2.6f : K == TEXT("farn") ? 2.5f : K == TEXT("strauch") ? 2.f : K == TEXT("holz") ? 2.f : K == TEXT("gras") ? 1.25f : 0.8f; // Wald
+	};
 	const FVector Fwd = StartRot.Vector(); const float PathLen = 400.f + (Data.Levels.Num() > 0 ? Data.Levels[0].Rows[0].Len() * 300.f : 3000.f);
 	FCollisionQueryParams Q; if (APawn* H = UGameplayStatics::GetPlayerPawn(this, 0)) Q.AddIgnoredActor(H);
 	for (const FKindRule& Rule : Rules)
 	{
 		const TArray<UStaticMesh*>* Meshes = Kinds.Find(Rule.Kind); if (!Meshes || Meshes->Num() == 0) continue;
-		for (int32 i = 0; i < Rule.Count; i++)
+		const int32 Count = FMath::RoundToInt(Rule.Count * Density(Rule.Kind));
+		for (int32 i = 0; i < Count; i++)
 		{
 			const float A = R.FRandRange(0, 2 * PI), D = Rule.Radius * FMath::Sqrt(R.FRand());
 			FVector P = Origin + FVector(FMath::Cos(A) * D, FMath::Sin(A) * D, 0);
@@ -2979,7 +3023,7 @@ void ATrendoGameMode::SpawnNature()
 			NatureCount++;
 		}
 	}
-	UE_LOG(LogTrendo, Display, TEXT("TRENDO-NATUR %d Pflanzen/Felsen in %d Arten"), NatureCount, Comps.Num());
+	UE_LOG(LogTrendo, Display, TEXT("TRENDO-NATUR %d Pflanzen/Felsen in %d Arten, Landschaft %s"), NatureCount, Comps.Num(), *Biome);
 	// Licht wie draußen am Vormittag: Sonne schräg hinter der Kamera, leichter Dunst in der Ferne
 	for (TActorIterator<ADirectionalLight> L(GetWorld()); L; ++L) { L->GetRootComponent()->SetMobility(EComponentMobility::Movable); L->SetActorRotation(FRotator(-38.f, StartRot.Yaw + 35.f, 0)); }
 	for (TActorIterator<AExponentialHeightFog> F(GetWorld()); F; ++F) if (UExponentialHeightFogComponent* C = F->GetComponent()) { C->SetFogDensity(0.035f); C->SetFogHeightFalloff(0.15f); }
@@ -3041,7 +3085,7 @@ void ATrendoGameMode::SpawnAnimals()
 	const TArray<TSharedPtr<FJsonValue>>* Arr; if (!O->TryGetArrayField(TEXT("tiere"), Arr) || Arr->Num() == 0) return;
 	const FVector Fwd = StartRot.Vector(), Right = FRotationMatrix(StartRot).GetUnitAxis(EAxis::Y);
 	// Landschaft des Spiels (level.json „biome“): nur Tiere mit passendem Lebensraum – Hyäne in der Savanne, Hirsch/Fuchs/Wolf im Wald, Schwein auf dem Hof
-	FString Biome = TEXT("wald"); { FString LJ; TSharedPtr<FJsonObject> L; if (FFileHelper::LoadFileToString(LJ, *(FPaths::ProjectContentDir() / TEXT("TrendoDaten/level.json"))) && FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(LJ), L) && L.IsValid() && L->HasField(TEXT("biome"))) Biome = L->GetStringField(TEXT("biome")); }
+	const FString Biome = TrendoBiome();
 	FRandomStream R(2711); int32 N = 0, Group = 0;
 	for (int32 k = 0; k < Arr->Num(); k++)
 	{
@@ -3065,6 +3109,44 @@ void ATrendoGameMode::SpawnAnimals()
 	TSet<FString> Furs; for (ATrendoAnimal* A : Animals) if (IsValid(A)) Furs.Add(A->FurVariant);
 	TSet<FString> Kinds; for (ATrendoAnimal* A : Animals) if (IsValid(A)) Kinds.Add(A->Kind);
 	UE_LOG(LogTrendo, Display, TEXT("TRENDO-TIER %d Tiere gesetzt (Landschaft %s: %s), %d verschiedene Felle"), N, *Biome, *FString::Join(Kinds.Array(), TEXT(", ")), Furs.Num());
+}
+
+/** Ein Blutfleck auf dem Gelände (nie auf Körpern): Länge entlang der Flugrichtung, Breite quer – länglich wie ein schräg auftreffender Tropfen. */
+UDecalComponent* ATrendoGameMode::BloodDecal(const FVector& At, float Length, float Width, float Yaw)
+{
+	UMaterialInterface* M = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Trendo/Natur/M_TrendoBlut.M_TrendoBlut")); if (!M) return nullptr;
+	FHitResult Hit; if (!GetWorld()->LineTraceSingleByObjectType(Hit, At + FVector(0, 0, 60), At - FVector(0, 0, 400), FCollisionObjectQueryParams(ECC_WorldStatic))) return nullptr;
+	UDecalComponent* Dc = UGameplayStatics::SpawnDecalAtLocation(this, M, FVector(40, Width, Length), Hit.Location, FRotator(-90, Yaw, 0), 600.f);
+	if (!Dc) return nullptr;
+	if (UMaterialInstanceDynamic* Mi = Dc->CreateDynamicMaterialInstance()) Mi->SetScalarParameterValue(TEXT("Start"), GetWorld()->GetTimeSeconds()); // trocknet mit der Zeit
+	BloodDecals.Add(Dc); BloodCount++;
+	return Dc;
+}
+
+/** Spritzer in Schlagrichtung wie bei echten Spurenbildern: viele kleine Tropfen in einem Kegel; je weiter weg, desto flacher der Aufprall – länger und schmaler. */
+void ATrendoGameMode::SpatterBlood(const FVector& Pos, const FVector& Dir, int32 N, float Reach)
+{
+	const FVector D = Dir.GetSafeNormal2D().IsNearlyZero() ? FVector(1, 0, 0) : Dir.GetSafeNormal2D();
+	FRandomStream R(static_cast<int32>(Pos.X * 13 + Pos.Y * 7 + N));
+	for (int32 i = 0; i < N; i++)
+	{
+		const float Dist = R.FRandRange(25.f, Reach), Spread = R.FRandRange(-28.f, 28.f) * (1.f - Dist / (Reach * 1.6f));
+		const FVector Way = D.RotateAngleAxis(Spread, FVector::UpVector);
+		const float Stretch = 1.f + 2.2f * Dist / Reach, Base = R.FRandRange(3.f, 9.f) * (1.2f - 0.5f * Dist / Reach);
+		BloodDecal(Pos + Way * Dist, Base * Stretch, Base, Way.Rotation().Yaw);
+	}
+	BloodDecal(Pos + D * 15.f, R.FRandRange(16.f, 26.f), R.FRandRange(12.f, 18.f), R.FRandRange(0.f, 360.f)); // Tropfen direkt am Treffer
+}
+
+/** Blutlache, die über einige Sekunden langsam auf volle Größe wächst (statt sofort fertig dazuliegen). */
+void ATrendoGameMode::GrowPool(UDecalComponent* Pool, float Seconds)
+{
+	if (!Pool) return;
+	TWeakObjectPtr<UDecalComponent> P = Pool; const float T0 = GetWorld()->GetTimeSeconds(); P->SetRelativeScale3D(FVector(1.f, 0.3f, 0.3f));
+	FTimerHandle Th; FTimerDelegate Dg;
+	Dg.BindWeakLambda(this, [this, P, T0, Seconds]() { if (!P.IsValid()) return; const float A = FMath::Clamp((GetWorld()->GetTimeSeconds() - T0) / Seconds, 0.f, 1.f); const float S = 0.3f + 0.7f * FMath::Sqrt(A); P->SetRelativeScale3D(FVector(1.f, S, S)); });
+	GetWorldTimerManager().SetTimer(Th, Dg, 0.15f, true);
+	FTimerHandle Stop; GetWorldTimerManager().SetTimer(Stop, FTimerDelegate::CreateWeakLambda(this, [this, Th]() mutable { GetWorldTimerManager().ClearTimer(Th); }), Seconds + 0.3f, false);
 }
 """,
         ["TrendoTests.cpp"] = """

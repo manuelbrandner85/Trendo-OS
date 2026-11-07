@@ -43,7 +43,9 @@ public class UnrealAnimalsTests
             string Src(string f) => File.ReadAllText(Directory.GetFiles(Path.Combine(built, "Source"), f, SearchOption.AllDirectories).Single());
             var actors = Src("TrendoActors.cpp");
             Assert.Contains("ATrendoAnimal::Kill", actors); Assert.Contains("flieht", actors); Assert.Contains("GetRandomReachablePointInRadius", actors); Assert.Contains("FurVariant", actors); // jedes Tier eigenes Fell
-            Assert.Contains("TRENDO-TIER", Src("TrendoGameMode.cpp")); Assert.Contains("class ATrendoAnimal", Src("TrendoActors.h"));
+            Assert.Contains("TRENDO-TIER", Src("TrendoGameMode.cpp"));
+            Assert.Contains("SetLeaderPoseComponent(Body3D", actors); Assert.Contains("Body3D->GetPhysicsAsset()", actors); // MetaHuman-eigene Physik, Gesicht folgt dem Körper (kein Kopf-Zappeln)
+            Assert.Contains("SpatterBlood", Src("TrendoGameMode.cpp")); Assert.Contains("GrowPool", Src("TrendoGameMode.cpp")); Assert.Contains("TrendoBiome()", Src("TrendoGameMode.cpp")); // Spurenbild, wachsende Lache, Pflanzen je Landschaft Assert.Contains("class ATrendoAnimal", Src("TrendoActors.h"));
         }
         finally { if (Directory.Exists(dir)) Directory.Delete(dir, true); }
     }
