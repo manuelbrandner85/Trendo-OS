@@ -266,6 +266,7 @@ public partial class MainWindow
         var sp = bodies["medien"];
         sp.Children.Add(EditProxyPanel(d)); // Paket 01 S3-02: Proxy-Dateien
         sp.Children.Add(EditShotPlanPanel(d)); // Paket 01 S3-01/S3-03: Drehbuch → Shotliste, Storyboard
+        sp.Children.Add(EditMulticamPanel(d)); // Paket 01 S3-02: Multicam
         // Medien hinzufügen
         var path = new TextBox { Name = "ve-file", PlaceholderText = "Video-, Bild- oder Tondatei", HorizontalAlignment = HorizontalAlignment.Stretch };
         Button B(string name, string label, Action a, bool primary = false) { var b = new Button { Name = name, Content = label, Margin = new Thickness(0, 0, 4, 4), FontSize = 12 }; if (primary) { b.Background = Accent; b.Foreground = Brushes.White; } b.Click += (_, _) => ProgramRun(VK, a); return b; }

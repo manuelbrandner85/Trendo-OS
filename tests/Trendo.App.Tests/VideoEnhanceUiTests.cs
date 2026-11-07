@@ -189,3 +189,41 @@ public class VideoShotPlan_Ui
         finally { w.Close(); }
     }
 }
+
+/// <summary>Paket 01 – Studio 3, S3-02 (07.11.2026): Multicam im Videoschnitt.</summary>
+public class VideoMulticam_Ui
+{
+    [AvaloniaFact(DisplayName = "S3-02 Multicam: zwei echte Kameradateien über den Ton synchronisieren (echtes FFmpeg), Wechsel 0:1, 3:2, 6:1 → drei Bild-Abschnitte mit richtigen Einstiegspunkten, Ton von Kamera 1 durchgehend; Unsinn bei den Wechseln wird gemeldet")]
+    public async Task Multicam_cut()
+    {
+        var ff = Cli.Find("ffmpeg"); if (ff is null) return;
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000; Directory.CreateDirectory(root);
+        try
+        {
+            const int rate = 48000; var rng = new Random(5); var scene = new float[rate * 14]; var t = 0.3;
+            while (t < 13.5) { var at = (int)(t * rate); for (var i = 0; i < rate / 20 && at + i < scene.Length; i++) scene[at + i] = (float)(0.6 * Math.Sin(2 * Math.PI * 300 * i / rate) * Math.Exp(-i / (rate * 0.015))); t += 0.15 + rng.NextDouble() * 0.6; }
+            string Cam(string name, float[] audio, string color)
+            {
+                var wav = Path.Combine(root, name + ".wav"); AudioFile.WriteWav(new AudioBuf(rate, [audio, (float[])audio.Clone()]), wav);
+                var mp4 = Path.Combine(root, name + ".mp4");
+                Assert.True(Cli.Run(ff, ["-hide_banner", "-loglevel", "error", "-y", "-f", "lavfi", "-i", $"color=c={color}:s=320x180:r=25", "-i", wav, "-shortest", "-pix_fmt", "yuv420p", "-c:a", "aac", mp4], root, 60000).Ok); return mp4;
+            }
+            var a = Cam("a", scene[..(rate * 12)], "red"); var b = Cam("b", scene[(rate * 2)..], "blue"); // B startete 2 s später
+            w.FfmpegRunOverride = args => Cli.Run(ff, args, root, 60000);
+            w.Show("schnitt"); Settle(); RealClick(w, V<Button>(w, "prog-tpl-leer")); w.EditTab = "medien"; w.Show("schnitt"); Settle();
+            w.Find<TextBox>("ve-mc-files").Text = a + "\n" + b;
+            Assert.True(await w.EditMulticamSync(a + "\n" + b)); w.Show("schnitt"); Settle();
+            Assert.InRange(w.EditMulticamAngles![1].Offset, 1.97, 2.03);
+            w.Find<TextBox>("ve-mc-switches").Text = "0:1, 3:2, 6:1";
+            var cut = w.Find<Button>("ve-mc-cut"); cut.BringIntoView(); Settle(); cut.Press(); Settle();
+            var d = w.ProgramActive("schnitt")!; var clips = VideoEdit.Clips(d.Data);
+            Assert.Equal([a, b, a], clips.Select(c => c.File)); Assert.InRange(clips[1].In, 0.97, 1.03); Assert.Equal(3, clips[1].Length, 2);
+            Assert.All(clips, c => Assert.False(c.HasAudio));
+            Assert.Equal(a, VideoEdit.Clips(d.Data, "music").Single().File);
+            Assert.Equal("Multicam-Schnitt", d.UndoLabel);
+            w.Show("schnitt"); Settle(); w.Find<TextBox>("ve-mc-switches").Text = "drei Kameras bitte"; w.Find<Button>("ve-mc-cut").Press(); Settle();
+            Assert.Contains("verstehe ich nicht", w.ProgramMessage("schnitt"));
+        }
+        finally { w.Close(); }
+    }
+}
