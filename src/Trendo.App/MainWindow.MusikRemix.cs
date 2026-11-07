@@ -30,6 +30,7 @@ public partial class MainWindow
             ("midi", "🎹 MIDI holen", () => _ = MsMidi(s.Id)),
             ("persona", "👤 Persona aus diesem Lied", () => Tab("bearbeiten")),
             ("inspo", "🎧 Als Klangvorbild für ein neues Lied", () => { _msRefFile = s.File; _msMsg = $"Klangvorbild: „{s.Title}“ – jetzt beschreiben und „Erstellen“."; MsPage("erstellen"); }),
+            ("clip", "📱 Kurzvideo 9:16 (Reels, Shorts)", () => _ = MsShortVideo(s.Id)),
             ("speak", "💬 Teil per Sprache ändern (Produzent)", () => Tab("profi")),
         ];
     }

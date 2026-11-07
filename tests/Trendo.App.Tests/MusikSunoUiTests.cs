@@ -269,6 +269,38 @@ public class MusikSuno_Ui
         finally { w.Close(); }
     }
 
+    [AvaloniaFact(DisplayName = "Suno V16/V17: Idee des Tages mit 7-Tage-Kalender (Tage mit Liedern markiert, ältere Idee wählbar, übernehmen); Kurzvideo 9:16 im Remix-Menü (echtes FFmpeg)")]
+    public async Task Daily_idea_short_video()
+    {
+        var (w, _, root) = Ui.Open(); _w = w; Directory.CreateDirectory(root);
+        try
+        {
+            var today = new DateOnly(2026, 11, 7); w.TodayOverride = today;
+            const int rate = 44100;
+            var f = Path.Combine(root, "a.wav"); Trendo.Core.Media.AudioFile.WriteWav(new Trendo.Core.Media.AudioBuf(rate, [Enumerable.Range(0, rate * 8).Select(i => (float)(0.2 * Math.Sin(2 * Math.PI * 220 * i / rate))).ToArray()]), f);
+            var lib = new SongLibrary(w.Core.DataRoot);
+            var s = lib.Add(new MusicSong { Title = "Hafenlied", File = f, Seconds = 8, Kind = "neu" });
+            w.Show("musik-studio"); w.MsPage("erstellen"); Pump();
+            Assert.Equal(MusicSuno.DailyIdea(today), w.Find<TextBlock>("ms-idea-text").Text);
+            Assert.NotEqual(MusicSuno.DailyIdea(today), MusicSuno.DailyIdea(today.AddDays(-1)));
+            var made = DateOnly.FromDateTime(s.Created.LocalDateTime);
+            if (made == today) Assert.Contains("●", string.Join("", ((StackPanel)w.Find<Button>("ms-idea-day-0").Content!).Children.OfType<TextBlock>().Select(t => t.Text)));
+            w.Find<Button>("ms-idea-day-2").Press(); Pump();
+            Assert.Equal(MusicSuno.DailyIdea(today.AddDays(-2)), w.Find<TextBlock>("ms-idea-text").Text);
+            w.Find<Button>("ms-idea-take").Press(); Pump();
+            Assert.Equal(MusicSuno.DailyIdea(today.AddDays(-2)), w.Find<TextBox>("ms-desc").Text); Assert.Contains("05.11.", w.Find<TextBlock>("ms-msg").Text);
+            // Kurzvideo
+            Assert.Contains(w.MsRemixActions(s), a => a.Id == "clip");
+            if (Cli.Find("ffmpeg") is not { } ff) return;
+            w.MasterRunOverride = a => Task.Run(() => Cli.Run(ff, a, root, 300_000));
+            var mp4 = await w.MsShortVideo(s.Id);
+            Assert.True(mp4 is not null, w.Find<TextBlock>("ms-msg").Text); Assert.True(File.Exists(mp4)); Assert.Contains("9:16", w.Find<TextBlock>("ms-msg").Text);
+            var probe = Cli.Run(Cli.Find("ffprobe") ?? "ffprobe", ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height", "-of", "csv=p=0", mp4!], root, 60_000);
+            if (probe.Ok) { var wh = probe.Out.Trim().Split(','); Assert.True(int.Parse(wh[1]) > int.Parse(wh[0]), "hochkant: " + probe.Out); }
+        }
+        finally { w.Close(); }
+    }
+
     [AvaloniaFact(DisplayName = "Suno V5: Remix-Knopf je Lied; Beschreibung wiederverwenden; Zuschneiden und Abschnitt entfernen (echtes FFmpeg); Remaster als eigene Fassung")]
     public async Task Remix()
     {

@@ -260,6 +260,7 @@ public partial class MainWindow
         }
         sp.Children.Add(MsCreateHeader()); sp.Children.Add(MsKindTabs()); // V7/V8: Lieder | Sounds | Sprache
         if (_msKind != "lieder") { sp.Children.Add(_msKind == "sounds" ? MsSoundsForm() : MsSpeechForm()); return MsCard("ms-create-panel", new ScrollViewer { Content = sp }); }
+        sp.Children.Add(MsDailyIdeaCard()); // V17: Idee des Tages
         sp.Children.Add(modes);
         if (MsProducerDraftBanner() is { } prod) sp.Children.Add(prod); // Claude 26: offener Produzenten-Entwurf
         var sync = new List<Action>(); // beim Klick die Felder direkt auslesen – nicht auf das Änderungs-Ereignis warten
