@@ -112,6 +112,11 @@ if (Environment.GetEnvironmentVariable("TRENDO_XR_EYE") is { Length: > 0 }) { wi
 if (Environment.GetEnvironmentVariable("TRENDO_N8N_PRO") is { Length: > 0 }) { win.WfPro = true; win.Show("ablaeufe"); } // Abläufe Profi: n8n-Agenten-Arbeitsplatz
 if (Environment.GetEnvironmentVariable("TRENDO_GAME_ENGINES") is { Length: > 0 }) { win.EngineProbeOverride = win.EngineDetect; var ed = win.ProgramNew("spiele-programm", Environment.GetEnvironmentVariable("TRENDO_GAME_ENGINES") == "openworld" ? "openworld" : "retro-plattform"); win.GameSection = "Bauen"; win.Show("spiele-programm"); } // Spiele: Engines (Unreal, Unity, Godot, Blender) im Bereich Bauen
 if (Environment.GetEnvironmentVariable("TRENDO_3D_ENGINE") is { Length: > 0 }) { win.Show("3d"); } // 3D: Knöpfe „Für Engine“
+if (Environment.GetEnvironmentVariable("TRENDO_SCAN_COVERAGE") is { Length: > 0 }) // S4: Abdeckung beim Einscannen (Würfel, Kameras schräg rundum mit Lücke)
+{ var sd = Directory.CreateDirectory(Path.Combine(root, "scan-beispiel")).FullName;
+  File.WriteAllText(Path.Combine(sd, "modell.obj"), "v -50 -50 0\nv 50 -50 0\nv 50 50 0\nv -50 50 0\nv -50 -50 100\nv 50 -50 100\nv 50 50 100\nv -50 50 100\nf 1 2 3\nf 1 3 4\nf 5 6 7\nf 5 7 8\nf 1 2 6\nf 1 6 5\nf 2 3 7\nf 2 7 6\nf 3 4 8\nf 3 8 7\nf 4 1 5\nf 4 5 8\n");
+  File.WriteAllText(Path.Combine(sd, "kameras.json"), "[" + string.Join(",", Enumerable.Range(0, 12).Select(i => i * 30).Where(d => d is not (150 or 180)).Select(d => string.Create(System.Globalization.CultureInfo.InvariantCulture, $"{{\"name\":\"f{d}.jpg\",\"x\":{200 * Math.Cos(d * Math.PI / 180)},\"y\":{200 * Math.Sin(d * Math.PI / 180)},\"z\":200}}"))) + "]");
+  win.Show("scan3d"); win.ScanSetModel(Path.Combine(sd, "modell.obj")); }
 if (Environment.GetEnvironmentVariable("TRENDO_XR_HMD") is { Length: > 0 }) { win.Show("xr"); win.XrFile = Trendo.Core.XrSample.Write(Path.Combine(root, "beispiel.glb")); win.XrHeadset = true; win.Show("xr"); } // S3: Brillen-Ansicht
 if (Environment.GetEnvironmentVariable("TRENDO_GAME_BOARD") is { Length: > 0 }) // S2: Spiele-Dashboard mit Vorschau und Aufgaben-Board
 { var gb = win.ProgramNew("spiele-programm", Trendo.Core.Programs.GameDesign.Templates.First(t => t.Scale == "aa").Id);

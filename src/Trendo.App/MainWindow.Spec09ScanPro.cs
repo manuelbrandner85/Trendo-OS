@@ -123,4 +123,41 @@ public partial class MainWindow
                 sp.Children.Add(P($"✗ {Path.GetFileName(f)}: {why}", Brush.Parse("#F97316"), 11));
         return sp;
     }
+
+    /// <summary>S4: Abdeckung nach der Rechnung – aus den Kamerapositionen: welche Richtungen und Höhen fotografiert sind und wo noch Fotos fehlen.</summary>
+    Control? ScanCoverageCard(Mesh mesh)
+    {
+        if (_scanModel is null) return null;
+        var cams = ScanPro.LoadCameras(Path.GetDirectoryName(_scanModel)!).Select(c => c.Center).ToList();
+        var v = mesh.V; if (v.Count == 0) return null;
+        var center = new Vec3((v.Min(p => p.X) + v.Max(p => p.X)) / 2, (v.Min(p => p.Y) + v.Max(p => p.Y)) / 2, (v.Min(p => p.Z) + v.Max(p => p.Z)) / 2);
+        if (ScanCoverage.Compute(cams, center) is not { } r) return null;
+        ScanCoverageResult = r;
+        var advice = new StackPanel { Spacing = 3, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center };
+        advice.Children.Add(P($"{r.Cameras} Kameras · Abdeckung {r.Percent} %", Text, 12.5));
+        if (r.Gaps.Count == 0) advice.Children.Add(P("✓ Rundum und in allen Höhen fotografiert.", Brush.Parse("#2FBF71"), 11.5));
+        foreach (var g in r.Gaps) advice.Children.Add(P("• " + g, Brush.Parse("#F5A524"), 11.5));
+        advice.Children.Add(P("Außen flach, Mitte schräg, innen von oben · 0° = erstes Foto, im Uhrzeigersinn · rot fehlt, gelb 1 Foto, grün 2+", Muted, 10.5));
+        return new Border { Name = "scan-coverage", CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Background = Brush.Parse("#1A1F2A"), BorderBrush = EdgeLit, BorderThickness = new Thickness(1),
+            Child = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,10,*"), Children = { new ScanCoverageView { Name = "scan-coverage-disc", Result = r, Width = 150, Height = 150 }, Pos(advice, 2) } } };
+    }
+    public ScanCoverage.Result? ScanCoverageResult { get; private set; }
+
+    /// <summary>S4: Aufnahme-Assistent vor der Rechnung – drei Runden ums Objekt plus Details, Fortschritt nach Fotoanzahl (Richtungen zeigt die Abdeckung nach der Rechnung).</summary>
+    Control ScanAssistantCard(int photos)
+    {
+        var sp = new StackPanel { Name = "scan-assistant", Spacing = 4, Children = { new TextBlock { Text = "Aufnahme-Assistent", Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold } } };
+        var done = photos;
+        foreach (var (step, n) in ScanCoverage.Plan)
+        {
+            var have = Math.Clamp(done, 0, n); done -= n;
+            var ok = have >= n;
+            sp.Children.Add(new DockPanel { Children = {
+                new TextBlock { Text = ok ? "✓" : $"{have}/{n}", Width = 38, Foreground = ok ? Brush.Parse("#2FBF71") : Muted, FontSize = 11.5 },
+                new TextBlock { Text = step, Foreground = Text, FontSize = 11.5, TextWrapping = TextWrapping.Wrap } } });
+        }
+        sp.Children.Add(new ProgressBar { Name = "scan-assistant-progress", Minimum = 0, Maximum = ScanCoverage.PlanTotal, Value = Math.Min(photos, ScanCoverage.PlanTotal), Height = 6, Margin = new Thickness(0, 4, 0, 0) });
+        sp.Children.Add(P(photos >= ScanCoverage.PlanTotal ? "Genug Fotos – nach der Rechnung zeigt die Abdeckung, ob Richtungen fehlen." : $"Empfohlen etwa {ScanCoverage.PlanTotal} Fotos, je Foto rund 2/3 Überlappung mit dem nächsten.", Muted, 10.5));
+        return new Border { CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Margin = new Thickness(0, 6, 0, 0), Background = Brush.Parse("#1A1F2A"), BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = sp };
+    }
 }

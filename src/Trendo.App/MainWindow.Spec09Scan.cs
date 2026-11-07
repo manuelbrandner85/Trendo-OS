@@ -77,6 +77,7 @@ public partial class MainWindow
             if (ScanRankingList() is { } rankList) photos.Children.Add(rankList); // gute Fotos auswählen (Claude 4)
         }
         else photos.Children.Add(P("Mindestens 3 Fotos aus verschiedenen Richtungen – besser 20 bis 80 mit viel Überlappung, gleichmäßiges Licht, ohne Spiegelungen.", Muted, 11.5));
+        photos.Children.Add(ScanAssistantCard(_scanReport?.Count ?? 0)); // S4: Aufnahme-Assistent
 
         // ── Mitte: Rechnung ──
         var steps = new StackPanel { Name = "scan-steps", Spacing = 2 };
@@ -109,6 +110,7 @@ public partial class MainWindow
             foreach (var (v, l) in new[] { ("schraeg", "Schräg"), ("vorne", "Vorne"), ("oben", "Oben"), ("seite", "Seite") }) { var vv = v; views.Children.Add(MSp(Act("scan-view-" + v, l, () => view.SetView(vv)))); }
             views.Children.Add(MSp(Act("scan-wire", _scanWire ? "Fläche" : "Drahtgitter", () => { _scanWire = !_scanWire; Show("scan3d"); })));
             result.Children.Add(views);
+            if (ScanCoverageCard(mesh) is { } cov) result.Children.Add(cov); // S4: Abdeckung – wo fehlen Fotos?
             result.Children.Add(ScanToolsCard(mesh));
             var exports = new WrapPanel();
             foreach (var (ext, label) in new[] { ("obj", "OBJ"), ("stl", "STL (3D-Druck)"), ("glb", "GLB (Web, AR)") }) { var e = ext; exports.Children.Add(MSp(Act("scan-export-" + ext, label, () => Try("scan3d", () => ScanExport(e))))); }
