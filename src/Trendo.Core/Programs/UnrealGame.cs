@@ -2351,7 +2351,10 @@ void ATrendoGameMode::BuildWorld(int32 Level)
 			if (C == 'E')
 			{
 				FActorSpawnParameters SP; SP.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-				ATrendoEnemy* E = GetWorld()->SpawnActor<ATrendoEnemy>(P + FVector(0, 0, 10), FRotator::ZeroRotator, SP);
+				// genau auf das Gelände: Kapselunterkante 2 cm über dem Boden (vorher steckte die Kapsel im Boden und wurde im ersten Moment herausgedrückt – Posen-Sprung beim Erscheinen)
+				FVector At = P + FVector(0, 0, 10); FHitResult Gr;
+				if (bOpen && GetWorld()->LineTraceSingleByObjectType(Gr, P + FVector(0, 0, 5000), P - FVector(0, 0, 5000), FCollisionObjectQueryParams(ECC_WorldStatic))) At.Z = Gr.Location.Z + 92.f;
+				ATrendoEnemy* E = GetWorld()->SpawnActor<ATrendoEnemy>(At, FRotator::ZeroRotator, SP);
 				E->Init(FMath::Clamp(FMath::RoundToInt(Data.Prop(Level, X, Y, TEXT("hp"), 1)), 1, 9), P.Z - (bOpen ? 60.f : 50.f));
 				Enemies.Add(E); Spawned.Add(E); continue;
 			}
@@ -2558,7 +2561,8 @@ void ATrendoGameMode::Tick(float DeltaSeconds)
 				{
 					FarFrames++; if (Head.Equals(*Last, 0.001f)) FarStill++;
 					FarMaxJump = FMath::Max(FarMaxJump, FVector::Dist(Head, *Last)); const FString AnimNow = E->Body3D->GetSingleNodeInstance() && E->Body3D->GetSingleNodeInstance()->GetCurrentAsset() ? E->Body3D->GetSingleNodeInstance()->GetCurrentAsset()->GetName() : TEXT("-");
-					if (FVector::Dist(Head, *Last) > 12.f && GetWorld()->GetTimeSeconds() < 1.5f) FarStartJumps++; // erste 1,5 s: Figur setzt nach dem Erscheinen auf (getrennt gezählt)
+					if (FVector::Dist(Head, *Last) > 12.f && GetWorld()->GetTimeSeconds() < 1.5f && ++FarStartJumps <= 4) { UE_LOG(LogTrendo, Display, TEXT("TRENDO-FLACKERN Start-Sprung %.0f cm Zeit %.2f Kopf %s (vorher %s) Becken %s Boden=%s Fallen=%s Z=%.0f Animation %s"), FVector::Dist(Head, *Last), GetWorld()->GetTimeSeconds(), *Head.ToCompactString(), *Last->ToCompactString(), *E->Body3D->GetBoneLocation(TEXT("pelvis"), EBoneSpaces::ComponentSpace).ToCompactString(), E->GetCharacterMovement()->IsMovingOnGround() ? TEXT("ja") : TEXT("nein"), E->GetCharacterMovement()->IsFalling() ? TEXT("ja") : TEXT("nein"), E->GetActorLocation().Z, E->Body3D->GetSingleNodeInstance() && E->Body3D->GetSingleNodeInstance()->GetCurrentAsset() ? *E->Body3D->GetSingleNodeInstance()->GetCurrentAsset()->GetName() : TEXT("-")); }
+					else if (FVector::Dist(Head, *Last) > 12.f && GetWorld()->GetTimeSeconds() < 1.5f) {} // erste 1,5 s: Figur setzt nach dem Erscheinen auf (getrennt gezählt)
 					else if (FVector::Dist(Head, *Last) > 12.f && ++FarJumps <= 12) UE_LOG(LogTrendo, Display, TEXT("TRENDO-FLACKERN Sprung %.0f cm: %s Abstand %.0f m Tempo %.0f Animation %s (vorher %s) Boden=%s Zeit %.2f Kopf %s (vorher %s) Becken %s Körper-Drehung %s Pos %.1f"), FVector::Dist(Head, *Last), *E->GetName(), Dist / 100.f, E->GetVelocity().Size2D(), *AnimNow, *FarAnim.FindRef(E), E->GetCharacterMovement()->IsMovingOnGround() ? TEXT("ja") : TEXT("nein"), GetWorld()->GetTimeSeconds(), *Head.ToCompactString(), *Last->ToCompactString(), *E->Body3D->GetBoneLocation(TEXT("pelvis"), EBoneSpaces::ComponentSpace).ToCompactString(), *E->Body3D->GetComponentRotation().ToCompactString(), E->Body3D->GetSingleNodeInstance() ? E->Body3D->GetSingleNodeInstance()->GetCurrentTime() : -1.f);
 					FarAnim.Add(E, AnimNow); FarDist = FMath::Max(FarDist, Dist);
 				}
