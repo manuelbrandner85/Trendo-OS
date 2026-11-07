@@ -52,12 +52,15 @@ public class UnrealGameTests
             Assert.Contains("ATrendoCar", actors); Assert.Contains("PC->Possess(Car)", gm); // fahrbarer Wagen mit Chaos-Physik
             var car = File.ReadAllText(Path.Combine(dir, "Source", "Waldlaeufer", "TrendoCar.cpp"));
             Assert.Contains("SportsCar_AnimBP", car); Assert.Contains("bUseAutomaticGears = true", car); Assert.Contains("Phys_Wheel_FL", car); // drehende Räder, Automatik
+            Assert.Contains("COMNudge", car); Assert.DoesNotContain("FrictionForceMultiplier = 3.f", car); // tiefer Schwerpunkt, normale Haftung: rutscht statt zu kippen
             Assert.Contains("TRENDO-GEGNER", gm); Assert.Contains("TRENDO-WAGEN", gm); // Probe im Prüflauf
             // Gegner als echter Charakter (Kapsel, Schwerkraft, Boden, Kollision), Messung von Bodenkontakt und Kampf; Sturz-Animation beim Tod
             Assert.Contains("class ATrendoEnemy : public ACharacter", File.ReadAllText(Path.Combine(dir, "Source", "Waldlaeufer", "TrendoActors.h")));
             Assert.Contains("AIModule", File.ReadAllText(Path.Combine(dir, "Source", "Waldlaeufer", "Waldlaeufer.Build.cs")));
             Assert.Contains("TRENDO-BODEN", gm); Assert.Contains("TRENDO-KAMPF", gm); Assert.Contains("MM_Death_Front_03_ExtractedRM", actors);
             Assert.Contains("TRENDO-GLIED", actors); Assert.Contains("HideBoneByName", actors); Assert.Contains("SetReceivesDecals(false)", gm); // Glieder abtrennbar, Blut nur am Boden
+            Assert.Contains("M_TrendoWunde", UnrealGame.MenschScript); Assert.Contains("weld_mesh_edges", UnrealGame.MenschScript); // Schnittfläche geschlossen, Wundmaterial statt Haut
+            Assert.Contains("trendo-glied.png", gm); Assert.Contains("freie Bahn", gm); // Nahaufnahme des Glieds; Testfahrt in freie Richtung
             Assert.Contains("bEnableUpdateRateOptimizations = false", actors); // kein Ruckeln/Flackern in der Ferne
             Assert.Equal("normal", lv["violence"]!.GetValue<string>()); // Gewalt-Stufe im Level (Standard normal)
         }

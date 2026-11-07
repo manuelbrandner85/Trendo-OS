@@ -491,6 +491,31 @@ def dress(ch, gender, items):
 # aus Körper und Kleidung heraus (Punkte nach ihrem stärksten Knochen), schließt die Schnittkante, legt den Drehpunkt ans Gelenk
 # und speichert jedes Stück als eigenes Modell mit Materialien und Physik-Kollision.
 LIMBS = ["lowerarm_l", "lowerarm_r", "calf_l", "calf_r"]
+# Wundfläche am abgetrennten Glied: nasses, dunkles Fleischrot mit Variation (Rauheit niedrig = feucht glänzend)
+def wound_material():
+    path = "/Game/Trendo/Mensch/M_TrendoWunde"
+    if eal.does_asset_exist(path): return unreal.load_asset(path)
+    MEL = unreal.MaterialEditingLibrary
+    m = unreal.AssetToolsHelpers.get_asset_tools().create_asset("M_TrendoWunde", "/Game/Trendo/Mensch", unreal.Material, unreal.MaterialFactoryNew())
+    def const3(rgb, x, y):
+        c = MEL.create_material_expression(m, unreal.MaterialExpressionConstant3Vector, x, y); c.set_editor_property("constant", unreal.LinearColor(*rgb, 1.0)); return c
+    def const(v, x, y):
+        c = MEL.create_material_expression(m, unreal.MaterialExpressionConstant, x, y); c.set_editor_property("r", v); return c
+    noise = MEL.create_material_expression(m, unreal.MaterialExpressionNoise, -700, 0)
+    noise.set_editor_property("scale", 0.35); noise.set_editor_property("levels", 4); noise.set_editor_property("output_min", 0.0); noise.set_editor_property("output_max", 1.0)
+    lp = getattr(unreal, "MaterialExpressionLocalPosition", None)   # Muster haftet am Glied, wandert nicht beim Fliegen
+    if lp: MEL.connect_material_expressions(MEL.create_material_expression(m, lp, -900, 0), "", noise, "Position")
+    lerp = MEL.create_material_expression(m, unreal.MaterialExpressionLinearInterpolate, -300, -100)
+    MEL.connect_material_expressions(const3((0.20, 0.018, 0.014), -500, -200), "", lerp, "A")   # frisches Fleisch
+    MEL.connect_material_expressions(const3((0.055, 0.004, 0.003), -500, -100), "", lerp, "B")  # geronnenes Blut
+    MEL.connect_material_expressions(noise, "", lerp, "Alpha")
+    MEL.connect_material_property(lerp, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    rough = MEL.create_material_expression(m, unreal.MaterialExpressionLinearInterpolate, -300, 150)
+    MEL.connect_material_expressions(const(0.22, -500, 100), "", rough, "A"); MEL.connect_material_expressions(const(0.45, -500, 200), "", rough, "B")
+    MEL.connect_material_expressions(noise, "", rough, "Alpha"); MEL.connect_material_property(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
+    MEL.connect_material_property(const(0.5, -300, 300), "", unreal.MaterialProperty.MP_SPECULAR)
+    MEL.recompile_material(m); eal.save_loaded_asset(m); return m
+
 def cut_limbs(name):
     G = unreal; AU, BW, ME, MQ = G.GeometryScript_AssetUtils, G.GeometryScript_BoneWeights, G.GeometryScript_MeshEdits, G.GeometryScript_MeshQueries
     parts = [(k, p) for k, p in (("Koerper", f"{ROOT}/{name}/Bau/{name}/Body/SKM_{name}_BodyMesh"), ("Kleidung", f"{ROOT}/{name}/Bau/{name}/Clothing/{name}_Outfits")) if eal.does_asset_exist(p)]
@@ -511,7 +536,23 @@ def cut_limbs(name):
             dm = unreal.DynamicMesh()
             dm, _ = AU.copy_mesh_from_skeletal_mesh(skm, dm, G.GeometryScriptCopyMeshFromAssetOptions(), G.GeometryScriptMeshReadLOD())
             ME.delete_vertices_from_mesh(dm, G.GeometryScript_List.convert_array_to_index_list(drop, G.GeometryScriptIndexType.VERTEX))
-            G.GeometryScript_MeshRepair.fill_all_mesh_holes(dm, G.GeometryScriptFillHolesOptions())
+            cap = []
+            if part == "Koerper":   # Schnittkante schließen; Hosenbein bleibt offen (man sieht hinein auf die Wunde)
+                def tri_ids():   # neue Dreiecke belegen freie IDs gelöschter – deshalb Mengenvergleich statt Zählen
+                    r = MQ.get_all_triangle_i_ds(dm); lst = next(x for x in (r if isinstance(r, tuple) else (r,)) if isinstance(x, G.GeometryScriptIndexList))
+                    return set(G.GeometryScript_List.convert_index_list_to_array(lst))
+                before = tri_ids()
+                R = G.GeometryScript_MeshRepair
+                try: R.weld_mesh_edges(dm, G.GeometryScriptWeldEdgesOptions())   # UV-Nähte: doppelte Randpunkte verbinden, sonst kein geschlossener Rand
+                except Exception as e: log("Hinweis Naht %s: %s" % (limb, str(e)[:120]))
+                fr = R.fill_all_mesh_holes(dm, G.GeometryScriptFillHolesOptions())
+                log("Füllen %s: %s" % (limb, fr[1:] if isinstance(fr, tuple) else fr))
+                cap = sorted(tri_ids() - before)
+                try:   # Abschluss-Dreiecke bekommen das Wundmaterial (eigener Material-Platz hinter den Haut-Materialien)
+                    G.GeometryScript_Materials.enable_material_i_ds(dm)
+                    G.GeometryScript_Materials.set_material_id_on_triangles(dm, G.GeometryScript_List.convert_array_to_index_list(cap, G.GeometryScriptIndexType.TRIANGLE), len(mats))
+                    log("Wunde %s: %d Abschluss-Dreiecke, Material-IDs bis %s, Haut-Materialien %d" % (limb, len(cap), G.GeometryScript_Materials.get_max_material_id(dm), len(mats)))
+                except Exception as e: log("Hinweis Wunde %s: %s" % (limb, str(e)[:160])); cap = []
             # Drehpunkt ans Gelenk: Stück in den Knochenraum (Grundhaltung) legen – im Spiel sitzt es dann genau am Knochen
             wt = BW.get_bone_info(dm, limb)[2].get_editor_property("world_transform")
             G.GeometryScript_MeshTransforms.transform_mesh(dm, wt.inverse())
@@ -519,9 +560,9 @@ def cut_limbs(name):
             if eal.does_asset_exist(dest): eal.delete_asset(dest)
             sm, _ = G.GeometryScript_NewAssetUtils.create_new_static_mesh_asset_from_mesh(dm, dest, G.GeometryScriptCreateNewStaticMeshAssetOptions())
             if not sm: continue
-            for i, m in enumerate(mats):
+            for i, m in enumerate(mats + ([wound_material()] if cap else [])):
                 try: sm.set_material(i, m)
-                except Exception: break
+                except Exception as e: log("Hinweis Material %d %s: %s" % (i, limb, str(e)[:120])); break
             try: G.GeometryScript_Collision.set_static_mesh_collision_from_mesh(dm, sm, G.GeometryScriptCollisionFromMeshOptions())
             except Exception as e: log("Hinweis Kollision %s: %s" % (limb, str(e)[:120]))
             eal.save_loaded_asset(sm); made += 1
@@ -847,6 +888,8 @@ public:
 	bool Sever(const FVector& Push);
 	/** Abgetrennter Knochen (für die Blutlache am Stumpf), sonst NAME_None. */
 	FName SeveredBone = NAME_None;
+	/** Das abgetrennte Stück (Physikteil), für die Prüf-Nahaufnahme. */
+	TWeakObjectPtr<AActor> SeveredPiece;
 	float Stun = 0; bool bDead = false;
 	/** Sekunden, die der Gegner nach dem letzten Sichtkontakt noch sucht (> 0 = alarmiert). */
 	float Alert = 0;
@@ -1184,7 +1227,7 @@ bool ATrendoEnemy::Sever(const FVector& Push)
 	M->SetCollisionProfileName(TEXT("PhysicsActor")); M->SetUseCCD(true); M->SetSimulatePhysics(true);
 	M->AddImpulse(Push.GetSafeNormal() * 240.f + FVector(0, 0, 190.f), NAME_None, true); // fliegt kurz und landet in der Nähe
 	M->AddAngularImpulseInDegrees(FVector(FMath::FRandRange(-600.f, 600.f), FMath::FRandRange(-600.f, 600.f), FMath::FRandRange(-300.f, 300.f)), NAME_None, true);
-	A->SetLifeSpan(90.f);
+	A->SetLifeSpan(90.f); SeveredPiece = A;
 	M->SetReceivesDecals(false); if (Cloth) for (UActorComponent* C : A->GetComponents()) if (UPrimitiveComponent* Pc = Cast<UPrimitiveComponent>(C)) Pc->SetReceivesDecals(false);
 	SeveredBone = Body3D->GetParentBone(FName(*Bone)); // Blut fließt am Stumpf auf den Boden (Spielmodus legt die Lache)
 	UE_LOG(LogTemp, Display, TEXT("TRENDO-GLIED abgetrennt=%s Kleidung=%s"), *Bone, Cloth ? TEXT("ja") : TEXT("nein"));
@@ -1343,7 +1386,7 @@ static const TCHAR* CarDir = TEXT("/ChaosModularVehicleExamples/Models/SportsCar
 UTrendoWheelFront::UTrendoWheelFront()
 {
 	WheelRadius = 36.f; WheelWidth = 24.f; bAffectedBySteering = true; MaxSteerAngle = 38.f;
-	bAffectedByHandbrake = false; bAffectedByEngine = false; FrictionForceMultiplier = 3.f; CorneringStiffness = 1000.f;
+	bAffectedByHandbrake = false; bAffectedByEngine = false; FrictionForceMultiplier = 2.5f; CorneringStiffness = 1000.f;
 	SuspensionMaxRaise = 8.f; SuspensionMaxDrop = 12.f; SpringRate = 250.f; SpringPreload = 50.f; SuspensionDampingRatio = 0.5f;
 	MaxBrakeTorque = 3000.f;
 }
@@ -1351,7 +1394,7 @@ UTrendoWheelFront::UTrendoWheelFront()
 UTrendoWheelRear::UTrendoWheelRear()
 {
 	WheelRadius = 36.f; WheelWidth = 28.f; bAffectedBySteering = false; bAffectedByHandbrake = true; bAffectedByEngine = true;
-	FrictionForceMultiplier = 3.f; CorneringStiffness = 1000.f; MaxHandBrakeTorque = 6000.f; MaxBrakeTorque = 3000.f;
+	FrictionForceMultiplier = 2.5f; CorneringStiffness = 1000.f; MaxHandBrakeTorque = 6000.f; MaxBrakeTorque = 3000.f;
 	SuspensionMaxRaise = 8.f; SuspensionMaxDrop = 12.f; SpringRate = 250.f; SpringPreload = 50.f; SuspensionDampingRatio = 0.5f;
 }
 
@@ -1360,6 +1403,7 @@ ATrendoCar::ATrendoCar()
 	PrimaryActorTick.bCanEverTick = true;
 	UChaosWheeledVehicleMovementComponent* M = CastChecked<UChaosWheeledVehicleMovementComponent>(GetVehicleMovementComponent());
 	M->ChassisHeight = 140.f; M->DragCoefficient = 0.31f; M->DownforceCoefficient = 0.3f; M->Mass = 1450.f; // Sportwagen um 1,45 t
+	GetMesh()->BodyInstance.COMNudge = FVector(0, 0, -35.f); // Schwerpunkt tief wie bei einem flachen Sportwagen (~45 cm über der Straße): rutscht in scharfen Kurven, statt zu kippen
 	M->WheelSetups.SetNum(4);
 	const TCHAR* Bones[4] = { TEXT("Phys_Wheel_FL"), TEXT("Phys_Wheel_FR"), TEXT("Phys_Wheel_BL"), TEXT("Phys_Wheel_BR") };
 	for (int32 i = 0; i < 4; i++) { M->WheelSetups[i].BoneName = Bones[i]; M->WheelSetups[i].WheelClass = i < 2 ? UTrendoWheelFront::StaticClass() : UTrendoWheelRear::StaticClass(); }
@@ -1814,7 +1858,7 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 private:
-	float CheckSeconds = -1; bool bShotTaken = false; bool bCloseShot = false; bool bCloseDone = false; bool bProbe = false; bool bProbeDone = false; float ProbeStart = 0; int32 ProbeLives = 0; bool bCarProbe = false; bool bCarDone = false; int32 BloodCount = 0; int32 Severed = 0; float FightShotDelay = 0; bool bFight = false; bool bFightDone = false; UPROPERTY() ATrendoEnemy* FightEnemy = nullptr; FVector CarStart = FVector::ZeroVector; float WheelTurn = 0; TMap<FString, FQuat> WheelLast;
+	TWeakObjectPtr<AActor> LimbPiece; float ProbeYaw = 0; float MaxRoll = 0; bool bLimbShot = false; bool bLimbPending = false; float CheckSeconds = -1; bool bShotTaken = false; bool bCloseShot = false; bool bCloseDone = false; bool bProbe = false; bool bProbeDone = false; float ProbeStart = 0; int32 ProbeLives = 0; bool bCarProbe = false; bool bCarDone = false; int32 BloodCount = 0; int32 Severed = 0; float FightShotDelay = 0; bool bFight = false; bool bFightDone = false; UPROPERTY() ATrendoEnemy* FightEnemy = nullptr; FVector CarStart = FVector::ZeroVector; float WheelTurn = 0; TMap<FString, FQuat> WheelLast;
 	static float WheelAngle(AActor* Car, TMap<FString, FQuat>& Last);
 	static void VehicleAxis(AActor* Car, FName Input, float Value);
 	static void VehicleCall(AActor* Car, const TCHAR* Func, FName Input, int32 Value);
@@ -1862,6 +1906,7 @@ private:
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
+#include "GameFramework/SpringArmComponent.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogTrendo, Log, All);
 
@@ -2034,7 +2079,7 @@ void ATrendoGameMode::Damage(ATrendoEnemy* E)
 	if (E->Hp > 0) { E->Knock(From * (bBrutal ? 260.f : 180.f)); return; } // Treffer: taumelt zurück, kurz benommen
 	State.Defeated++; State.Score += E->MaxHp > 1 ? 10 : 2; if (E->MaxHp > 1) State.Note = TEXT("Boss besiegt!");
 	Enemies.Remove(E);
-	if (bBrutal && E->Sever(From)) Severed++; // brutale Spiele: ein Glied wird abgetrennt
+	if (bBrutal && E->Sever(From)) { Severed++; LimbPiece = E->SeveredPiece; } // brutale Spiele: ein Glied wird abgetrennt
 	if (bNone || !E->Ragdoll(From * (bBrutal ? 32000.f : 18000.f))) { E->Destroy(); return; } // ohne Gewalt verschwindet er, sonst fällt er als Körper
 	// Bodenflecken nur auf dem Boden: der liegende Körper nimmt keine Boden-Decals an
 	{ TArray<UPrimitiveComponent*> Prims; E->GetComponents(Prims); if (E->Body3D && E->Body3D->GetOwner()) { TArray<UPrimitiveComponent*> More; E->Body3D->GetOwner()->GetComponents(More); Prims.Append(More); }
@@ -2147,7 +2192,8 @@ void ATrendoGameMode::Tick(float DeltaSeconds)
 	// im Wagen: E (Tastatur) bzw. B (Controller) steigt aus – der Wagen hat eigene Steuerung, die Figur ist dann nicht aktiv
 	if (DrivenCar) if (APlayerController* PC = GetWorld()->GetFirstPlayerController(); PC && (PC->WasInputKeyJustPressed(EKeys::E) || PC->WasInputKeyJustPressed(EKeys::Gamepad_FaceButton_Right))) ExitCar();
 	if (DrivenCar && bCarProbe && !bCarDone)
-		if (ATrendoCar* TC = Cast<ATrendoCar>(DrivenCar)) { TC->Drive(1.f, 0.f, 0.f); WheelTurn = TC->WheelSpin(); } // Vollgas geradeaus wie ein Spieler
+		if (ATrendoCar* TC = Cast<ATrendoCar>(DrivenCar)) { { const float Off = FMath::FindDeltaAngleDegrees(TC->GetActorRotation().Yaw, ProbeYaw); // Vollgas, lenkt wie ein Spieler auf die freie Bahn
+			TC->Drive(FMath::Abs(Off) > 35.f ? 0.6f : 1.f, FMath::Clamp(Off / 30.f, -1.f, 1.f), 0.f); WheelTurn = TC->WheelSpin(); MaxRoll = FMath::Max(MaxRoll, FMath::Max(FMath::Abs(TC->GetActorRotation().Roll), FMath::Abs(TC->GetActorRotation().Pitch))); } }
 	if (Playing() && !State.bWon && !State.bOver)
 	{
 		State.Seconds += DeltaSeconds; State.CheckRules(Data);
@@ -2235,19 +2281,45 @@ void ATrendoGameMode::Tick(float DeltaSeconds)
 
 		}
 		else if (bFightDone && FightShotDelay > 0.f) { FightShotDelay = 0.f; CheckSeconds = 1.f; FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("Screenshots/trendo-kampf.png"), false, false); }
+		else if (bFightDone && !bLimbShot)
+		{
+			// Nahaufnahme des abgetrennten Glieds (Schnittfläche/Wunde): Figur 1,6 m daneben, Blick schräg nach unten
+			bLimbShot = true; CheckSeconds = 0.8f;
+			if (LimbPiece.IsValid() && Hero())
+			{
+				const FVector At = LimbPiece->GetActorLocation(); bLimbPending = true;
+				const FVector Mid = LimbPiece->GetComponentsBoundingBox().GetCenter(); const FVector CutSide = (At - Mid).GetSafeNormal2D(); // Drehpunkt = Gelenk = Schnittkante
+				Hero()->SetActorLocation(FVector(At.X + CutSide.X * 150.f, At.Y + CutSide.Y * 150.f, Hero()->GetActorLocation().Z + 30.f), false, nullptr, ETeleportType::TeleportPhysics);
+				const FRotator Look = (At - Hero()->GetActorLocation()).Rotation();
+				if (AController* Co = Hero()->GetController()) Co->SetControlRotation(FRotator(-58.f, Look.Yaw + 8.f, 0)); Hero()->Arm->TargetArmLength = 190.f; Hero()->Arm->bEnableCameraLag = false;
+				UE_LOG(LogTrendo, Display, TEXT("TRENDO-GLIED liegt %.0f cm über dem Boden, %.1f m vom Körper"), At.Z - (IsValid(FightEnemy) && FightEnemy->Body3D ? FightEnemy->Body3D->GetBoneLocation(TEXT("pelvis")).Z - 20.f : At.Z), IsValid(FightEnemy) && FightEnemy->Body3D ? FVector::Dist2D(At, FightEnemy->Body3D->GetBoneLocation(TEXT("pelvis"))) / 100.f : -1.f);
+			}
+		}
+		else if (bLimbPending) { bLimbPending = false; CheckSeconds = 0.6f; FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("Screenshots/trendo-glied.png"), false, false); }
 		else if (bFightDone && !bCarProbe)
 		{
 			// Wagen-Probe: einsteigen (der Wagen wird gesteuert), Bild aus der Fahrzeugkamera, danach aussteigen
-			bCarProbe = true; CheckSeconds = 5.f;
-			for (AActor* A : Spawned) if (ATrendoThing* T = Cast<ATrendoThing>(A); IsValid(T) && IsValid(T->Car)) { for (ATrendoEnemy* E : Enemies) if (IsValid(E)) E->bFrozen = true; EnterCar(T->Car); CarStart = T->Car->GetActorLocation(); WheelTurn = 0; WheelLast.Empty(); break; }
+			bCarProbe = true; CheckSeconds = 5.f; if (Hero()) Hero()->Arm->TargetArmLength = 520.f; // Kamera nach der Nahaufnahme zurück
+			for (AActor* A : Spawned) if (ATrendoThing* T = Cast<ATrendoThing>(A); IsValid(T) && IsValid(T->Car)) { for (ATrendoEnemy* E : Enemies) if (IsValid(E)) E->bFrozen = true;
+				// Testfahrt in die freieste Richtung (16 Richtungen, Kugel in Wagenbreite, 60 m), damit die Messung nicht an einem Baum endet
+				{ APawn* Car = T->Car; FCollisionQueryParams Q(TEXT("TrendoFreieBahn"), false, Car); if (Hero()) Q.AddIgnoredActor(Hero());
+				  // zuerst geradeaus, dann abwechselnd links/rechts immer weiter weg; die erste Richtung mit 40 m freier Bahn gewinnt
+				  const FVector From = Car->GetActorLocation() + FVector(0, 0, 160); const float Yaw0 = Car->GetActorRotation().Yaw; float BestOff = 0.f, Best = -1.f;
+				  for (int32 i = 0; i < 16; i++) { const float Off = (i % 2 ? -1.f : 1.f) * FMath::CeilToFloat(i / 2.f) * 22.5f; const FVector To = From + FRotator(0, Yaw0 + Off, 0).Vector() * 6000.f; FHitResult H;
+				    const bool bHit = GetWorld()->SweepSingleByChannel(H, From, To, FQuat::Identity, ECC_Vehicle, FCollisionShape::MakeSphere(90.f), Q);
+				    const float Free = !bHit ? 6000.f : H.bStartPenetrating ? 0.f : H.Distance;
+				    if (Free > Best) { Best = Free; BestOff = Off; } if (Free >= 4000.f) break; }
+				  ProbeYaw = Yaw0 + BestOff; // nicht teleportieren (kippt einen laufenden Chaos-Wagen) – der Prüf-Fahrer lenkt dorthin
+				  UE_LOG(LogTrendo, Display, TEXT("TRENDO-WAGEN freie Bahn %.0f m, Lenkziel %.0f° zur Fahrtrichtung"), Best / 100.f, BestOff); }
+				EnterCar(T->Car); CarStart = T->Car->GetActorLocation(); WheelTurn = 0; WheelLast.Empty(); break; }
 		}
 		else if (bCarProbe && !bCarDone)
 		{
 			bCarDone = true; CheckSeconds = 1.5f;
 			if (DrivenCar)
 			{
-				UE_LOG(LogTrendo, Display, TEXT("TRENDO-WAGEN gesteuert=%s Klasse=%s Tempo=%.0f km/h Strecke=%.1f m Raddrehung=%.0f° (%s) Gang=%d"), GetWorld()->GetFirstPlayerController()->GetPawn() == DrivenCar ? TEXT("ja") : TEXT("nein"), *DrivenCar->GetClass()->GetName(),
-					DrivenCar->GetVelocity().Size() * 0.036f, FVector::Dist2D(DrivenCar->GetActorLocation(), CarStart) / 100.f, WheelTurn, WheelTurn > 90.f ? TEXT("Reifen drehen sich") : TEXT("Reifen stehen"), Cast<ATrendoCar>(DrivenCar) ? Cast<ATrendoCar>(DrivenCar)->GetVehicleMovementComponent()->GetCurrentGear() : -99);
+				UE_LOG(LogTrendo, Display, TEXT("TRENDO-WAGEN gesteuert=%s Klasse=%s Tempo=%.0f km/h Strecke=%.1f m Raddrehung=%.0f° (%s) Gang=%d Neigung max=%.0f°"), GetWorld()->GetFirstPlayerController()->GetPawn() == DrivenCar ? TEXT("ja") : TEXT("nein"), *DrivenCar->GetClass()->GetName(),
+					DrivenCar->GetVelocity().Size() * 0.036f, FVector::Dist2D(DrivenCar->GetActorLocation(), CarStart) / 100.f, WheelTurn, WheelTurn > 90.f ? TEXT("Reifen drehen sich") : TEXT("Reifen stehen"), Cast<ATrendoCar>(DrivenCar) ? Cast<ATrendoCar>(DrivenCar)->GetVehicleMovementComponent()->GetCurrentGear() : -99, MaxRoll);
 				FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("Screenshots/trendo-wagen.png"), false, false);
 			}
 			else UE_LOG(LogTrendo, Display, TEXT("TRENDO-WAGEN kein fahrbarer Wagen"));
