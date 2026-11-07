@@ -99,3 +99,9 @@ Nicht in diesem Teil: S3-04/06/07/08/10, S4-15 (Sitzung B); S3-09, S3-13 brauche
 | S4-19 | Melodie → Noten mit Sicherheit je Note, Mehrstimmiges nie exakt, Unsicherheitsbericht | `reports/paket01/s4-19-melodie-zu-midi-lauf.md` | TESTED |
 
 Weiter offen: S3-01/03 Shot-Plan, S3-02 Proxy/Multicam, S3-17 Abspann-Vorlage, S3-18 Warteschlange, S4-01 Automation in der Mehrspur, S4-09 EQ/Kompressor je Spur, S4-12 Intonation.
+
+### Abschluss 07.11.2026
+
+Nach den Nachträgen sind auch umgesetzt (je mit Beleg unter `reports/paket01/`): S3-02 Proxy und Multicam, S3-17 Abspann, S3-18 Warteschlange, S4-01 Automation und Aufnahme als Spur, S4-09 Busse/Sends/Sidechain, S4-12 Tempo/Tonhöhe mit Messung, S3-01/S3-03 Shotliste und Storyboard; dazu Trendo Musik V1–V8 (Hochladen → Trennen, Spuren-Mischer, Stimmen mit Einwilligung, Karaoke).
+
+Offen aus S3/S4 nur noch: S4-06 Plugin-Host (gesperrt bis Sandbox, REA-Bewertung und Freigabe), S3-09 Lip-Sync und S3-13 Video-KI (brauchen Modelle → Freigabe), S3-04/06/07/08/10 und S4-15 (Sitzung B).
