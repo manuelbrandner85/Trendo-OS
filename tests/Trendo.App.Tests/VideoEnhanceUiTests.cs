@@ -160,3 +160,32 @@ public class VideoProxy_Ui
         finally { w.Close(); }
     }
 }
+
+/// <summary>Paket 01 – Studio 3, S3-01/S3-03 (07.11.2026): Drehbuch → Shotliste und Storyboard im Videoschnitt.</summary>
+public class VideoShotPlan_Ui
+{
+    [AvaloniaFact(DisplayName = "S3-01/S3-03 Videoschnitt: Shotliste aus dem Drehbuch (CSV), Storyboard-Tafeln mit Shot-IDs in die Zeitleiste; nicht erzeugbare Tafel steht im Fehlprotokoll, der Rest wird übernommen")]
+    public async Task Script_to_storyboard()
+    {
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000; Directory.CreateDirectory(root);
+        try
+        {
+            w.FfmpegRunOverride = a => { if (a[^1].EndsWith("SZ01-E02.mp4")) return new Cli.Result(1, "", "Fehler: Schrift defekt"); File.WriteAllBytes(a[^1], new byte[64]); return new Cli.Result(0, "", ""); };
+            w.Show("schnitt"); Settle(); RealClick(w, V<Button>(w, "prog-tpl-leer")); w.EditTab = "medien"; w.Show("schnitt"); Settle();
+            w.Find<TextBox>("ve-script").Text = "1 INNEN. KÜCHE – MORGEN\n- Totale: Erika kommt (4 s)\n- Nah: Kaffee (3 s)\n\n2 AUSSEN. STRASSE – TAG\n- Halbtotale: Erika geht (5 s)";
+            var b = w.Find<Button>("ve-shotlist"); b.BringIntoView(); Settle(); b.Press(); Settle();
+            Assert.Equal(3, w.EditShotPlanLast!.AllShots.Count());
+            Assert.Single(Directory.GetFiles(root, "*Shotliste.csv", SearchOption.AllDirectories));
+            Assert.Contains("Shotliste: 2 Szenen, 3 Einstellungen", w.ProgramMessage("schnitt"));
+            w.Show("schnitt"); Settle(); w.Find<Button>("ve-storyboard").Press();
+            for (var i = 0; i < 100 && VideoEdit.Clips(w.ProgramActive("schnitt")!.Data).Count < 2; i++) { await Task.Delay(20); Settle(); }
+            await Task.Delay(100); Settle();
+            var d = w.ProgramActive("schnitt")!; var clips = VideoEdit.Clips(d.Data);
+            Assert.Equal(["SZ01-E01", "SZ02-E01"], clips.Select(c => c.Title)); Assert.Equal([4.0, 5.0], clips.Select(c => c.Length));
+            Assert.Contains(w.EditStoryboardLog, l => l.StartsWith("SZ01-E02") && l.Contains("Schrift defekt"));
+            Assert.Contains("Fehlprotokoll", w.ProgramMessage("schnitt"));
+            Assert.Equal("Storyboard", d.UndoLabel);
+        }
+        finally { w.Close(); }
+    }
+}
