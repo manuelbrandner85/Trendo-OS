@@ -90,6 +90,14 @@ public sealed partial class ClaudeChats(string dataRoot)
         all.Remove(c); Save(studio, all); return c;
     }
 
+    /// <summary>C4 (08.11.2026): Regel bei vollen Rechten – Claude setzt Aufträge selbst um, startet benötigte Programme und nutzt verbundene MCP-Werkzeuge,
+    /// fragt aber vor allem, was nach außen wirkt oder nicht rückgängig zu machen ist.</summary>
+    public const string FullRule =
+        "\nDu hast volle Rechte wie in Claude Code: Setze den Auftrag selbst vollständig um. Brauchst du ein Programm (z. B. Blender, Unreal Engine, Godot, Unity), " +
+        "starte es sichtbar und arbeite darin über die verbundenen MCP-Werkzeuge oder die Kommandozeile – nur Programme, die auf dem PC schon installiert sind; lade keine Programme herunter. " +
+        "Vor allem, was nach außen wirkt oder nicht rückgängig zu machen ist – E-Mails oder Nachrichten senden, etwas veröffentlichen oder hochladen, kaufen, Dateien außerhalb des Projektordners löschen –, " +
+        "fragst du zuerst mit einer Frage-Zeile und wartest auf die Antwort.";
+
     /// <summary>Anweisungen für Claude in diesem Studio: Rolle, Fachgebiet, Fachregeln, Lieferformat, Arbeitsweise im Projektordner.</summary>
     public static string System(string studioName, string role, IReadOnlyList<Skill> skills, StudioFormat? format = null, string? workFile = null) =>
         ClaudeWeb.Brief(studioName, role, skills) +

@@ -239,6 +239,48 @@ public class Modern_Ui
         finally { w.Close(); }
     }
 
+    [AvaloniaFact(DisplayName = "C1/C2/C4: Ist Claude verbunden, geht „Los“ der Studio-Zeile an Claude (Studio bleibt sichtbar, volle Rechte mit Rückfrage bei Wirkung nach außen); der zweite Auftrag läuft in derselben Sitzung; ohne Claude plant Trendo selbst")]
+    public async Task Claude_takes_studio_prompts()
+    {
+        var (w, _, _) = Ui.Open();
+        var calls = new List<IReadOnlyList<string>>();
+        static string J(object o) => System.Text.Json.JsonSerializer.Serialize(o);
+        try
+        {
+            w.Show("musik-studio"); Pump();
+            Assert.False(w.ClaudeTakesStudioPrompts); // ohne Claude: Trendo-Planung wie bisher
+            MainWindow.ClaudeStatusOverride = () => Task.FromResult(new Trendo.Core.ClaudeCode.Status(true, true, "claude.ai", "max", @"C:\x\claude.exe"));
+            MainWindow.ClaudeStepDelay = 0;
+            MainWindow.ClaudeRunOverride = (args, _, line, _) =>
+            {
+                calls.Add(args);
+                line(J(new { type = "system", subtype = "init", session_id = "s1", model = "claude" }));
+                line(J(new { type = "assistant", message = new { content = new object[] { new { type = "text", text = "Erledigt." } } } }));
+                line(J(new { type = "result", subtype = "success", is_error = false, result = "Erledigt.", session_id = "s1", num_turns = 1 }));
+                return Task.FromResult(0);
+            };
+            await w.ClaudeCheck(true); Pump();
+            Assert.True(w.ClaudeTakesStudioPrompts);
+            w.Show("musik-studio"); Pump();
+            w.Find<TextBox>("auftrag-prompt").Text = "Mach ein Sommerlied";
+            w.Find<Button>("auftrag-pruefen").Press();
+            for (var i = 0; i < 100 && calls.Count == 0; i++) { Pump(); await Task.Delay(20); }
+            Assert.Single(calls);
+            var sys = calls[0][calls[0].ToList().IndexOf("--append-system-prompt") + 1];
+            Assert.Contains("Mach ein Sommerlied", string.Join(" ", calls[0]));
+            Assert.Contains("fragst du zuerst", sys); // C4: Rückfrage bei Wirkung nach außen
+            Assert.True(w.ClaudeDockOpen(w.ActiveWindowId!)); Assert.False(w.ClaudeDockIsMax(w.ActiveWindowId!)); // Studio bleibt sichtbar
+            for (var i = 0; i < 100 && w.ClaudeChatRunning(); i++) { Pump(); await Task.Delay(20); }
+            // zweiter Auftrag: dieselbe Sitzung
+            w.Show("musik-studio"); Pump();
+            w.Find<TextBox>("auftrag-prompt").Text = "Jetzt etwas schneller";
+            w.Find<Button>("auftrag-pruefen").Press();
+            for (var i = 0; i < 100 && calls.Count < 2; i++) { Pump(); await Task.Delay(20); }
+            Assert.Equal(2, calls.Count); Assert.Contains("--resume", calls[1]); Assert.Contains("s1", calls[1]);
+        }
+        finally { MainWindow.ClaudeStatusOverride = null; MainWindow.ClaudeRunOverride = null; w.Close(); }
+    }
+
     [AvaloniaFact(DisplayName = "G10: KI-Aufträge der Grafikkarten-Warteschlange als Karten – läuft mit Laufzeit, wartet mit Platz; fertig = Karte weg")]
     public async Task Task_cards()
     {

@@ -231,6 +231,20 @@ public partial class MainWindow
 
         check.Click += async (_, _) =>
         {
+            // C1 (08.11.2026): ist Claude verbunden, setzt Claude den Auftrag um (rechts im Claude-Bereich, im Projekt des Studios); sonst plant Trendo selbst
+            if ((box.Text ?? "").Trim().Length > 0 && ClaudeTakesStudioPrompts)
+            {
+                var asked = (box.Text ?? "").Trim();
+                check.IsEnabled = false;
+                try
+                {
+                    box.Text = "";
+                    box.PlaceholderText = "Ändern oder ergänzen – Claude arbeitet im selben Projekt weiter …";
+                    if (await ClaudeFromStudioBar(key is not null && ClaudeBelongs(key) ? ClaudeStudioOf(key) : studio, asked, t => status.Text = t)) return;
+                    box.Text = asked;
+                }
+                finally { check.IsEnabled = true; }
+            }
             if (AssistTargetFor(key) is { } at && (box.Text ?? "").Trim().Length > 0)
             {
                 check.IsEnabled = false;
