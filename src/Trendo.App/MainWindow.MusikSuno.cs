@@ -52,6 +52,7 @@ public partial class MainWindow
     void MsPageColumns(Grid root)
     {
         Control At(Control c, int col, int span = 1) { Grid.SetRow(c, 0); Grid.SetColumn(c, col); Grid.SetColumnSpan(c, span); return c; }
+        if (_msLyricsFull && _msPage == "erstellen") { root.Children.Add(At(MsLyricsFullEditor(), 2, 5)); return; } // V6: Liedtext im Vollbild
         switch (_msPage)
         {
             case "studio":

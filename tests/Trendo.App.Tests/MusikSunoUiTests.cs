@@ -19,7 +19,7 @@ public class MusikSuno_Ui
 
     sealed class FakeAce : HttpMessageHandler
     {
-        public readonly List<string> Requests = []; int _n;
+        public readonly List<string> Requests = []; int _n; public byte[]? Audio;
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage r, CancellationToken ct)
         {
             static HttpResponseMessage J(string s) => new(HttpStatusCode.OK) { Content = new StringContent(s, Encoding.UTF8, "application/json") };
@@ -32,7 +32,7 @@ public class MusikSuno_Ui
                     lock (Requests) Requests.Add(body);
                     return J(W($"{{\"task_id\":\"t{++_n}\"}}"));
                 case "/query_result": return J(W($"[{{\"task_id\":\"t{_n}\",\"status\":1,\"result\":\"[{{\\\"file\\\":\\\"/v1/audio?path=c.mp3\\\"}}]\"}}]"));
-                case "/v1/audio": return new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(Encoding.ASCII.GetBytes("ID3")) };
+                case "/v1/audio": return new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(Audio ?? Encoding.ASCII.GetBytes("ID3")) };
                 default: return new HttpResponseMessage(HttpStatusCode.NotFound);
             }
         }
@@ -97,6 +97,74 @@ public class MusikSuno_Ui
             Assert.NotNull(w.TryFind<Control>("ms-grid-view")); Assert.NotNull(w.TryFind<Button>("ms-tile-0")); Assert.Equal("1 Lied", w.Find<TextBlock>("ms-count").Text);
             w.Find<Button>("ms-coll-del-" + pl.Id).Press(); Pump();
             Assert.Empty(w.MusicColl.OfKind(MusicCollections.Playlist)); Assert.Equal(2, lib.Visible().Count); // Lieder bleiben
+        }
+        finally { w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "Suno V6: Vollbild-Editor – Etikett an der Marke, Zeile nach Wunsch, 3 Varianten wählen, ganzer Text, Texter-Beispiel fließt in die Anweisung")]
+    public async Task Lyrics_editor()
+    {
+        var (w, _, _) = Ui.Open(); _w = w;
+        var prompts = new List<string>();
+        w.MusicLyricsOverride = p => { prompts.Add(p); return Task.FromResult(p.Contains("drei Varianten") ? "1. Wir tanzen bis zum Morgenlicht\n2. Wir singen laut und frieren nicht\n3. Wir lachen und vergessen nicht"
+            : p.Contains("Überarbeite") ? "[Strophe]\nNeue Strophe hier\n[Refrain]\nNeuer Refrain da" : "wir rollen leise durch die Nacht"); };
+        try
+        {
+            w.Show("musik-studio"); w.MusicStudioProMode(true); w.Show("musik-studio"); Pump();
+            w.MsLyricsText = "[Strophe]\nDie Straße glänzt im Abendlicht\nwir fahren los und halten nicht";
+            w.Find<Button>("ms-lyrics-full").Press(); Pump();
+            Assert.NotNull(w.TryFind<TextBox>("ms-lyrics-big")); Assert.Contains("2 Zeilen", w.Find<TextBlock>("ms-lyf-stats").Text);
+            var box = w.Find<TextBox>("ms-lyrics-big"); box.CaretIndex = box.Text!.Length; w.Find<Button>("ms-lyf-tag-Refrain").Press(); Pump();
+            Assert.EndsWith("[Refrain]\n", w.MsLyricsText);
+            Assert.True(await w.MsLyricsLine(2, "ruhiger")); Assert.Contains("wir rollen leise durch die Nacht", w.MsLyricsText); Assert.Contains("ruhiger", prompts[^1]);
+            Assert.Equal(3, await w.MsLyricsVariants(1)); w.Show("musik-studio"); Pump();
+            w.Find<Button>("ms-ly-pick-1").Press(); Pump();
+            Assert.Contains("Wir singen laut und frieren nicht", w.MsLyricsText); Assert.Empty(w.MsLineVariants);
+            Assert.Equal(0, await w.MsLyricsVariants(0)); // Abschnittsmarke ist keine Zeile
+            // Texter: Beispiel speichern, fließt in die nächste Anweisung
+            w.Show("musik-studio"); Pump();
+            w.Find<TextBox>("ms-lyricist-name").Text = "Meine Balladen"; w.Find<TextBox>("ms-lyrics-big").Text = "Mein Hafen schläft\nim grauen Licht\ndie Möwen kreisen\nund schweigen nicht";
+            w.Find<Button>("ms-lyricist-save").Press(); Pump();
+            Assert.Single(w.LyricistStore.All()); Assert.Contains("Meine Balladen", w.Find<TextBlock>("ms-msg").Text);
+            Assert.True(await w.MsLyricsWhole("mehr Bilder")); Assert.Contains("Mein Hafen schläft", prompts[^1]); Assert.StartsWith("[Strophe]\nNeue Strophe", w.MsLyricsText);
+            w.Show("musik-studio"); Pump(); w.Find<Button>("ms-lyrics-full-close").Press(); Pump();
+            Assert.Null(w.TryFind<TextBox>("ms-lyrics-big")); Assert.Contains("Neue Strophe", w.Find<TextBox>("ms-lyrics").Text); // Text bleibt
+        }
+        finally { w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "Suno V7/V8: Reiter Lieder/Sounds/Sprache; One-Shot und Loop aus dem Stück der Musik-KI (Rohstück aufgehoben); Sprache mit Musik (echtes FFmpeg, Musik abgesenkt)")]
+    public async Task Sounds_and_speech()
+    {
+        var ff = Cli.Find("ffmpeg");
+        var (w, _, root) = Ui.Open(); _w = w; Directory.CreateDirectory(root);
+        var fake = new FakeAce(); w.AceClientOverride = new AceStepClient(new HttpClient(fake));
+        try
+        {
+            // Stück mit Schlägen bei 100 BPM und einem Einsatz nach 1 s
+            const int rate = 22050; var x = new float[rate * 14]; var beat = (int)(rate * 0.6);
+            for (var b = 0; b < 21; b++) { var st = rate + b * beat; for (var i = 0; i < rate / 8 && st + i < x.Length; i++) x[st + i] = (float)(0.7 * Math.Sin(2 * Math.PI * 90 * i / rate) * Math.Exp(-i / (rate * 0.03))); }
+            var wav = Path.Combine(root, "stueck.wav"); Trendo.Core.Media.AudioFile.WriteWav(new Trendo.Core.Media.AudioBuf(rate, [x, (float[])x.Clone()]), wav); fake.Audio = File.ReadAllBytes(wav);
+            w.Show("musik-studio"); Pump();
+            w.Find<Button>("ms-kind-sounds").Press(); Pump();
+            Assert.NotNull(w.TryFind<TextBox>("ms-sound-desc")); Assert.Null(w.TryFind<Button>("ms-create"));
+            var shot = await w.MsMakeSound("Bassdrum, trocken", loop: false);
+            Assert.NotNull(shot); Assert.Equal("sound", shot!.Kind); Assert.EndsWith("(One-Shot).wav", shot.File); Assert.InRange(shot.Seconds, 0.05, 1.0);
+            Assert.Contains("one shot", fake.Requests[^1]);
+            var loop = await w.MsMakeSound("Beat", loop: true, bpm: 100, bars: 2);
+            Assert.NotNull(loop); Assert.InRange(Trendo.Core.Media.AudioFile.Read(loop!.File).Seconds, 4.7, 4.9); // 2 Takte bei 100 BPM = 4,8 s
+            Assert.Contains("\"bpm\":100", fake.Requests[^1]);
+            Assert.True(Directory.GetFiles(Path.Combine(Path.GetDirectoryName(loop.File)!, ".roh")).Length >= 2);
+            await Assert.ThrowsAsync<ArgumentException>(() => w.MsMakeSound("Beat", loop: true, bars: 3));
+            // Sprache
+            w.Find<Button>("ms-kind-sprache").Press(); Pump(); Assert.NotNull(w.TryFind<TextBox>("ms-speech-text"));
+            w.MsSpeechTtsOverride = (text, outFile) => { Trendo.Core.Media.AudioFile.WriteWav(new Trendo.Core.Media.AudioBuf(22050, [Enumerable.Range(0, 22050 * 3).Select(i => (float)(0.4 * Math.Sin(i * 0.06))).ToArray()]), outFile); return Task.FromResult(true); };
+            if (ff is null) w.MsSpeechMixOverride = a => { File.WriteAllBytes(a[^1], File.ReadAllBytes(wav)); return new Cli.Result(0, "", ""); };
+            var sp = await w.MsMakeSpeech("Es war einmal ein kleiner Leuchtturm.", "sanftes Klavier");
+            Assert.NotNull(sp); Assert.Equal("sprache", sp!.Kind); Assert.Equal("Es war einmal ein kleiner Leuchtturm.", sp.Lyrics); Assert.Equal(8.0, sp.Seconds, 1);
+            Assert.Contains("background music for spoken word", fake.Requests[^1]); Assert.Contains("sanftes Klavier", fake.Requests[^1]);
+            if (ff is not null) Assert.InRange(Trendo.Core.Media.AudioFile.Read(sp.File).Seconds, 7.9, 8.1);
+            Assert.Null(await w.MsMakeSpeech("  ", ""));
         }
         finally { w.Close(); }
     }

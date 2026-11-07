@@ -256,7 +256,9 @@ public partial class MainWindow
             b.Click += (_, _) => { _msPro = p; Show(MS); };
             modes.Children.Add(b);
         }
-        sp.Children.Add(MsCreateHeader()); sp.Children.Add(modes);
+        sp.Children.Add(MsCreateHeader()); sp.Children.Add(MsKindTabs()); // V7/V8: Lieder | Sounds | Sprache
+        if (_msKind != "lieder") { sp.Children.Add(_msKind == "sounds" ? MsSoundsForm() : MsSpeechForm()); return MsCard("ms-create-panel", new ScrollViewer { Content = sp }); }
+        sp.Children.Add(modes);
         if (MsProducerDraftBanner() is { } prod) sp.Children.Add(prod); // Claude 26: offener Produzenten-Entwurf
         var sync = new List<Action>(); // beim Klick die Felder direkt auslesen – nicht auf das Änderungs-Ereignis warten
         TextBox Box(string name, string watermark, string value, Action<string> set, double minH = 0, bool multi = false)
@@ -293,7 +295,7 @@ public partial class MainWindow
                 tags.Children.Add(b);
             }
             var claude = Act("ms-lyrics-ki", "✳ Liedtext mit KI", () => { Sync(); _ = MsWriteLyrics(); });
-            sp.Children.Add(new StackPanel { Spacing = 4, Children = { new DockPanel { Children = { Dk(claude, Avalonia.Controls.Dock.Right), H("Liedtext", 13) } }, lyr, tags, MsLyricsTools(Sync) } });
+            sp.Children.Add(new StackPanel { Spacing = 4, Children = { new DockPanel { Children = { Dk(claude, Avalonia.Controls.Dock.Right), H("Liedtext", 13) } }, lyr, tags, MsLyricsFullButton(), MsLyricsTools(Sync) } }); // V6: Vollbild-Editor wie Suno
             more.Children.Add(MsFactsPanel(Sync)); // M7: Tonart und Tempo eines bekannten Songs
             // Tempo, Tonart, Takt
             var bpm = Box("ms-bpm", "BPM auto", _msBpm, v => _msBpm = v.Trim()); bpm.Width = 88; ToolTip.SetTip(bpm, "Tempo in Schlägen pro Minute (30–300). Leer = die KI wählt.");
