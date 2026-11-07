@@ -1,0 +1,190 @@
+{
+ "CORE-03": [
+  {
+   "repo": "langchain-ai/langgraph",
+   "lizenz": "MIT",
+   "sterne": 44624,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Build resilient agents."
+  },
+  {
+   "repo": "microsoft/autogen",
+   "lizenz": "CC-BY-4.0",
+   "sterne": 61738,
+   "zuletzt": "2026-10-28",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "A programming framework for agentic AI"
+  },
+  {
+   "repo": "crewAIInc/crewAI",
+   "lizenz": "MIT",
+   "sterne": 60615,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Framework for orchestrating role-playing, autonomous AI agents. By fostering collaborative intelligence, CrewA"
+  },
+  {
+   "repo": "openai/openai-agents-python",
+   "lizenz": "MIT",
+   "sterne": 30549,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "A lightweight, powerful framework for multi-agent workflows"
+  },
+  {
+   "repo": "pydantic/pydantic-ai",
+   "lizenz": "MIT",
+   "sterne": 21078,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "How Python does AI. Agents, realtime voice, image generation, embeddings. Every model, every interface, typed "
+  }
+ ],
+ "SYS-05": [
+  {
+   "repo": "n8n-io/n8n",
+   "lizenz": "NOASSERTION",
+   "sterne": 209772,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "Fair-code workflow automation platform with native AI capabilities. Combine visual building with custom code, "
+  },
+  {
+   "repo": "FlowiseAI/Flowise",
+   "lizenz": "NOASSERTION",
+   "sterne": 55561,
+   "zuletzt": "2026-08-13",
+   "archiviert": true,
+   "sprache": "TypeScript",
+   "beschreibung": "Build AI Agents, Visually"
+  },
+  {
+   "repo": "node-red/node-red",
+   "lizenz": "Apache-2.0",
+   "sterne": 23823,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "JavaScript",
+   "beschreibung": "Low-code programming for event-driven applications"
+  },
+  {
+   "repo": "activepieces/activepieces",
+   "lizenz": "NOASSERTION",
+   "sterne": 25420,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "AI Agents & MCPs & AI Workflow Automation • (~400 MCP servers for AI agents) • AI Automation / AI Agent with M"
+  },
+  {
+   "repo": "windmill-labs/windmill",
+   "lizenz": "NOASSERTION",
+   "sterne": 18458,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Rust",
+   "beschreibung": "Code-first platform for workflows, apps and AI agents, on the fastest self-hostable orchestrator (benchmarked "
+  }
+ ],
+ "X-03": [
+  {
+   "repo": "appsmithorg/appsmith",
+   "lizenz": "Apache-2.0",
+   "sterne": 41187,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "Platform to build admin panels, internal tools, and dashboards. Integrates with 25+ databases and any API."
+  },
+  {
+   "repo": "Budibase/budibase",
+   "lizenz": "NOASSERTION",
+   "sterne": 28394,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "AI agents, automations and apps that run your operations. Model agnostic."
+  },
+  {
+   "repo": "ToolJet/ToolJet",
+   "lizenz": "AGPL-3.0",
+   "sterne": 41205,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "HTML",
+   "beschreibung": "Open-source foundation of ToolJet AI - the enterprise app generation platform for internal tools, dashboards, "
+  },
+  {
+   "repo": "nocodb/nocodb",
+   "lizenz": "NOASSERTION",
+   "sterne": 65440,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "🔥 🔥 🔥 A Free & Self-hostable Airtable Alternative"
+  },
+  {
+   "repo": "baserow/baserow",
+   "lizenz": "NOASSERTION",
+   "sterne": 6283,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Build databases, automations, apps & agents with AI — no code.  Open source platform available on cloud and se"
+  }
+ ],
+ "SPEC-01": [
+  {
+   "repo": "furnishup/blueprint3d",
+   "lizenz": "MIT",
+   "sterne": 1999,
+   "zuletzt": "2021-01-20",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "Build interior spaces in 3D"
+  },
+  {
+   "repo": "cvdlab/react-planner",
+   "lizenz": "MIT",
+   "sterne": 1491,
+   "zuletzt": "2024-04-20",
+   "archiviert": false,
+   "sprache": "JavaScript",
+   "beschreibung": ":pencil2: A React Component for plans design. Draw a 2D floorplan and navigate it in 3D mode."
+  },
+  {
+   "repo": "IfcOpenShell/IfcOpenShell",
+   "lizenz": "LGPL-3.0",
+   "sterne": 2939,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Open source IFC library and geometry engine"
+  },
+  {
+   "repo": "xeokit/xeokit-sdk",
+   "lizenz": "AGPL-3.0",
+   "sterne": 949,
+   "zuletzt": "2026-11-02",
+   "archiviert": false,
+   "sprache": "HTML",
+   "beschreibung": "3D BIM IFC Viewer SDK for AEC engineering applications. Open Source JavaScript Toolkit based on pure WebGL for"
+  },
+  {
+   "repo": "ThatOpen/engine_components",
+   "lizenz": "MIT",
+   "sterne": 732,
+   "zuletzt": "2026-10-22",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": ""
+  }
+ ]
+}

@@ -383,5 +383,444 @@
    "sprache": "C++",
    "beschreibung": "The open source mesh processing system"
   }
+ ],
+ "SPEC-09": [
+  {
+   "repo": "colmap/colmap",
+   "lizenz": "NOASSERTION",
+   "sterne": 13174,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "COLMAP - Structure-from-Motion and Multi-View Stereo"
+  },
+  {
+   "repo": "openMVG/openMVG",
+   "lizenz": "MPL-2.0",
+   "sterne": 6591,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "open Multiple View Geometry library. Basis for 3D computer vision and Structure from Motion."
+  },
+  {
+   "repo": "cdcseacave/openMVS",
+   "lizenz": "AGPL-3.0",
+   "sterne": 4188,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "open Structure-fom-Motion and Multi-View Stereo reconstruction library"
+  },
+  {
+   "repo": "isl-org/Open3D",
+   "lizenz": "NOASSERTION",
+   "sterne": 14181,
+   "zuletzt": "2026-11-05",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Open3D: A Modern Library for 3D Data Processing"
+  },
+  {
+   "repo": "nerfstudio-project/nerfstudio",
+   "lizenz": "Apache-2.0",
+   "sterne": 12160,
+   "zuletzt": "2025-07-29",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "A collaboration friendly studio for NeRFs"
+  },
+  {
+   "repo": "alicevision/Meshroom",
+   "lizenz": "NOASSERTION",
+   "sterne": 13067,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Node-based Visual Programming Toolbox"
+  },
+  {
+   "repo": "graphdeco-inria/gaussian-splatting",
+   "lizenz": "NOASSERTION",
+   "sterne": 24432,
+   "zuletzt": "2025-10-17",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Original reference implementation of \"3D Gaussian Splatting for Real-Time Radiance Field Rendering\""
+  },
+  {
+   "repo": "PointCloudLibrary/pcl",
+   "lizenz": "NOASSERTION",
+   "sterne": 11208,
+   "zuletzt": "2026-11-04",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Point Cloud Library (PCL)"
+  },
+  {
+   "repo": "nerfstudio-project/gsplat",
+   "lizenz": "Apache-2.0",
+   "sterne": 5872,
+   "zuletzt": "2026-09-19",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "CUDA accelerated rasterization of gaussian splatting"
+  }
+ ],
+ "SPEC-15": [
+  {
+   "repo": "obsproject/obs-studio",
+   "lizenz": "GPL-2.0",
+   "sterne": 79124,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "C",
+   "beschreibung": "OBS Studio - Free and open source software for live streaming and screen recording"
+  },
+  {
+   "repo": "FFmpeg/FFmpeg",
+   "lizenz": "NOASSERTION",
+   "sterne": 66713,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C",
+   "beschreibung": "Mirror of https://git.ffmpeg.org/ffmpeg.git"
+  },
+  {
+   "repo": "bluenviron/mediamtx",
+   "lizenz": "MIT",
+   "sterne": 20641,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Go",
+   "beschreibung": "Ready-to-use Media-over-QUIC / SRT / WebRTC / RTSP / RTMP / LL-HLS / MPEG-TS / RTP live media server and media"
+  },
+  {
+   "repo": "ossrs/srs",
+   "lizenz": "MIT",
+   "sterne": 29433,
+   "zuletzt": "2026-10-31",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "SRS is a simple, high-performance, AI-driven real-time media server supporting RTMP, WebRTC, HLS, HTTP-FLV, HT"
+  },
+  {
+   "repo": "Haivision/srt",
+   "lizenz": "MPL-2.0",
+   "sterne": 3626,
+   "zuletzt": "2026-11-05",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Secure, Reliable, Transport"
+  },
+  {
+   "repo": "arut/nginx-rtmp-module",
+   "lizenz": "BSD-2-Clause",
+   "sterne": 14023,
+   "zuletzt": "2024-12-24",
+   "archiviert": false,
+   "sprache": "C",
+   "beschreibung": "NGINX-based Media Streaming Server"
+  }
+ ],
+ "STUDIO-TV-01": [
+  {
+   "repo": "mpv-player/mpv",
+   "lizenz": "NOASSERTION",
+   "sterne": 37981,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C",
+   "beschreibung": "🎥 Command line media player"
+  },
+  {
+   "repo": "videolan/vlc",
+   "lizenz": "GPL-2.0",
+   "sterne": 20353,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C",
+   "beschreibung": "VLC media player - plays everything, runs anywhere. Code here: https://code.videolan.org/videolan/vlc"
+  },
+  {
+   "repo": "iptv-org/iptv",
+   "lizenz": "Unlicense",
+   "sterne": 143515,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "Collection of publicly available IPTV channels from all over the world"
+  },
+  {
+   "repo": "jellyfin/jellyfin",
+   "lizenz": "GPL-2.0",
+   "sterne": 59105,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": "The Free Software Media System - Server Backend & API"
+  },
+  {
+   "repo": "tvheadend/tvheadend",
+   "lizenz": "GPL-3.0",
+   "sterne": 3578,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "C",
+   "beschreibung": "Tvheadend is the leading TV streaming server for Linux with ATSC, DVB-C/C2, DVB-S/S2, DVB-T/T2, IPTV, SAT>IP a"
+  },
+  {
+   "repo": "streamlink/streamlink",
+   "lizenz": "BSD-2-Clause",
+   "sterne": 11900,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Streamlink is a CLI utility which pipes video streams from various services into a video player"
+  }
+ ],
+ "SYS-10": [
+  {
+   "repo": "LibreOffice/core",
+   "lizenz": "GPL-3.0",
+   "sterne": 4617,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Read-only LibreOffice core repo - no pull request (use gerrit instead https://gerrit.libreoffice.org/) - don't"
+  },
+  {
+   "repo": "ONLYOFFICE/DocumentServer",
+   "lizenz": "AGPL-3.0",
+   "sterne": 7098,
+   "zuletzt": "2026-10-26",
+   "archiviert": false,
+   "sprache": "Shell",
+   "beschreibung": "ONLYOFFICE Docs is a free collaborative online office suite comprising viewers and editors for texts, spreadsh"
+  },
+  {
+   "repo": "typst/typst",
+   "lizenz": "Apache-2.0",
+   "sterne": 57035,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "Rust",
+   "beschreibung": "A markup-based typesetting system that is powerful and easy to learn."
+  },
+  {
+   "repo": "jgm/pandoc",
+   "lizenz": "GPL-2.0",
+   "sterne": 46849,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Haskell",
+   "beschreibung": "Universal markup converter"
+  },
+  {
+   "repo": "excalidraw/excalidraw",
+   "lizenz": "MIT",
+   "sterne": 135298,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "Virtual whiteboard for sketching hand-drawn like diagrams"
+  },
+  {
+   "repo": "marktext/marktext",
+   "lizenz": "MIT",
+   "sterne": 63707,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "📝A simple and elegant markdown editor, available for Linux, macOS and Windows."
+  }
+ ],
+ "CORE-03": [
+  {
+   "repo": "langchain-ai/langgraph",
+   "lizenz": "MIT",
+   "sterne": 44624,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Build resilient agents."
+  },
+  {
+   "repo": "microsoft/autogen",
+   "lizenz": "CC-BY-4.0",
+   "sterne": 61738,
+   "zuletzt": "2026-10-28",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "A programming framework for agentic AI"
+  },
+  {
+   "repo": "crewAIInc/crewAI",
+   "lizenz": "MIT",
+   "sterne": 60615,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Framework for orchestrating role-playing, autonomous AI agents. By fostering collaborative intelligence, CrewA"
+  },
+  {
+   "repo": "openai/openai-agents-python",
+   "lizenz": "MIT",
+   "sterne": 30549,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "A lightweight, powerful framework for multi-agent workflows"
+  },
+  {
+   "repo": "pydantic/pydantic-ai",
+   "lizenz": "MIT",
+   "sterne": 21078,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "How Python does AI. Agents, realtime voice, image generation, embeddings. Every model, every interface, typed "
+  }
+ ],
+ "SYS-05": [
+  {
+   "repo": "n8n-io/n8n",
+   "lizenz": "NOASSERTION",
+   "sterne": 209772,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "Fair-code workflow automation platform with native AI capabilities. Combine visual building with custom code, "
+  },
+  {
+   "repo": "FlowiseAI/Flowise",
+   "lizenz": "NOASSERTION",
+   "sterne": 55561,
+   "zuletzt": "2026-08-13",
+   "archiviert": true,
+   "sprache": "TypeScript",
+   "beschreibung": "Build AI Agents, Visually"
+  },
+  {
+   "repo": "node-red/node-red",
+   "lizenz": "Apache-2.0",
+   "sterne": 23823,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "JavaScript",
+   "beschreibung": "Low-code programming for event-driven applications"
+  },
+  {
+   "repo": "activepieces/activepieces",
+   "lizenz": "NOASSERTION",
+   "sterne": 25420,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "AI Agents & MCPs & AI Workflow Automation • (~400 MCP servers for AI agents) • AI Automation / AI Agent with M"
+  },
+  {
+   "repo": "windmill-labs/windmill",
+   "lizenz": "NOASSERTION",
+   "sterne": 18458,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Rust",
+   "beschreibung": "Code-first platform for workflows, apps and AI agents, on the fastest self-hostable orchestrator (benchmarked "
+  }
+ ],
+ "X-03": [
+  {
+   "repo": "appsmithorg/appsmith",
+   "lizenz": "Apache-2.0",
+   "sterne": 41187,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "Platform to build admin panels, internal tools, and dashboards. Integrates with 25+ databases and any API."
+  },
+  {
+   "repo": "Budibase/budibase",
+   "lizenz": "NOASSERTION",
+   "sterne": 28394,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "AI agents, automations and apps that run your operations. Model agnostic."
+  },
+  {
+   "repo": "ToolJet/ToolJet",
+   "lizenz": "AGPL-3.0",
+   "sterne": 41205,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "HTML",
+   "beschreibung": "Open-source foundation of ToolJet AI - the enterprise app generation platform for internal tools, dashboards, "
+  },
+  {
+   "repo": "nocodb/nocodb",
+   "lizenz": "NOASSERTION",
+   "sterne": 65440,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "🔥 🔥 🔥 A Free & Self-hostable Airtable Alternative"
+  },
+  {
+   "repo": "baserow/baserow",
+   "lizenz": "NOASSERTION",
+   "sterne": 6283,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Build databases, automations, apps & agents with AI — no code.  Open source platform available on cloud and se"
+  }
+ ],
+ "SPEC-01": [
+  {
+   "repo": "furnishup/blueprint3d",
+   "lizenz": "MIT",
+   "sterne": 1999,
+   "zuletzt": "2021-01-20",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "Build interior spaces in 3D"
+  },
+  {
+   "repo": "cvdlab/react-planner",
+   "lizenz": "MIT",
+   "sterne": 1491,
+   "zuletzt": "2024-04-20",
+   "archiviert": false,
+   "sprache": "JavaScript",
+   "beschreibung": ":pencil2: A React Component for plans design. Draw a 2D floorplan and navigate it in 3D mode."
+  },
+  {
+   "repo": "IfcOpenShell/IfcOpenShell",
+   "lizenz": "LGPL-3.0",
+   "sterne": 2939,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Open source IFC library and geometry engine"
+  },
+  {
+   "repo": "xeokit/xeokit-sdk",
+   "lizenz": "AGPL-3.0",
+   "sterne": 949,
+   "zuletzt": "2026-11-02",
+   "archiviert": false,
+   "sprache": "HTML",
+   "beschreibung": "3D BIM IFC Viewer SDK for AEC engineering applications. Open Source JavaScript Toolkit based on pure WebGL for"
+  },
+  {
+   "repo": "ThatOpen/engine_components",
+   "lizenz": "MIT",
+   "sterne": 732,
+   "zuletzt": "2026-10-22",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": ""
+  }
  ]
 }

@@ -23,7 +23,7 @@ Korrektur 08.11.2026: Die Zählung sucht nur die Studio-Kennung – „TV & Live
 | CORE-06 | Spiele bauen | 18 | 20 | NOT RUN – folgt in späteren Runden |
 | SPEC-04 | VR & AR gestalten | 10 | 3 | NOT RUN – folgt in späteren Runden |
 | SPEC-09 | Gegenstände einscannen | 10 | 3 | bewertet (Runde 2) |
-| SPEC-01 | Wohnung planen | 11 | 10 | NOT RUN – folgt in späteren Runden |
+| SPEC-01 | Wohnung planen | 11 | 10 | bewertet (Runde 3) |
 | SPEC-02 | Schaltungen berechnen | 9 | 3 | NOT RUN – folgt in späteren Runden |
 | SPEC-03 | Statik nachrechnen | 8 | 4 | NOT RUN – folgt in späteren Runden |
 | SPEC-10 | Geräte überwachen | 8 | 5 | NOT RUN – folgt in späteren Runden |
@@ -37,12 +37,12 @@ Korrektur 08.11.2026: Die Zählung sucht nur die Studio-Kennung – „TV & Live
 | CORE-10 | Wissen merken | 10 | 1 | NOT RUN – folgt in späteren Runden |
 | SYS-08 | Sicher recherchieren | 10 | 2 | NOT RUN – folgt in späteren Runden |
 | CORE-02 | KI fragen | 19 | 6 | NOT RUN – folgt in späteren Runden |
-| CORE-03 | KI-Team einsetzen | 9 | 2 | NOT RUN – folgt in späteren Runden |
+| CORE-03 | KI-Team einsetzen | 9 | 2 | bewertet (Runde 3) |
 | X-05 | Kostenlose KI finden | 12 | 2 | NOT RUN – folgt in späteren Runden |
-| SYS-05 | Aufgaben automatisieren | 10 | 1 | NOT RUN – folgt in späteren Runden |
+| SYS-05 | Aufgaben automatisieren | 10 | 1 | bewertet (Runde 3) |
 | X-01 | Großprojekte umsetzen | 8 | 2 | NOT RUN – folgt in späteren Runden |
 | CORE-07 | Webseite bauen | 19 | 20 | NOT RUN – folgt in späteren Runden |
-| X-03 | Apps zusammenklicken | 11 | 6 | NOT RUN – folgt in späteren Runden |
+| X-03 | Apps zusammenklicken | 11 | 6 | bewertet (Runde 3) |
 | X-06 | Projekte von GitHub holen | 10 | 1 | NOT RUN – folgt in späteren Runden |
 | X-04 | Trendo erweitern | 9 | 3 | NOT RUN – folgt in späteren Runden |
 | X-10 | Programme nachbauen | 9 | 1 | NOT RUN – folgt in späteren Runden |

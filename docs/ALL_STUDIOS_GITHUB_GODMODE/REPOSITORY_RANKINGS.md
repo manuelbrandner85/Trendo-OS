@@ -1,4 +1,4 @@
-# Rangliste Runden 1 und 2 (gewichtete Matrix)
+# Rangliste Runden 1–3 (gewichtete Matrix)
 
 Gewichte: Funktion 25 %, Integration 20 %, Code 15 %, Lizenz 15 %, Leistung 10 %, Sicherheit 10 %, Gemeinschaft 5 %. Lizenzverstöße/unvertretbare Risiken sind Ausschluss unabhängig von Punkten.
 
@@ -91,3 +91,47 @@ Bestand: Eigene Text-, Tabellen- und Präsentationsprogramme vorhanden (154 Test
 | jgm/pandoc | 9 | 7 | 9 | 5 | 9 | 8 | 9 | 7.9 | OPTIONAL | GPL, als getrenntes Programm für Formatwandlung (DOCX/ODT/Markdown) |
 | LibreOffice/core | 10 | 4 | 7 | 5 | 6 | 8 | 9 | 6.95 | ÜBERGABE | GPL/MPL-Anwendung, Umwandlung per soffice --headless als externe Übergabe |
 | ONLYOFFICE/DocumentServer | 9 | 3 | 7 | 2 | 6 | 7 | 8 | 5.9 | AUSGESCHLOSSEN | AGPL-3.0 und Server – ausgeschlossen |
+
+## CORE-03 – KI-Team einsetzen
+Bestand: AgentCenter mit Rollen je Studio (StudioTeams), Claude über den Login der Person, Aufgaben mit Zustand. Projektregel: kein zweites Agenten-Laufzeitsystem.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| langchain-ai/langgraph | 9 | 3 | 8 | 10 | 8 | 8 | 9 | 7.6 | KONZEPT | nur Konzept (clean-room in AgentCenter): Zustandsgraph mit Zwischenständen und Wiederaufnahme nach Abbruch |
+| pydantic/pydantic-ai | 8 | 3 | 9 | 10 | 8 | 9 | 8 | 7.55 | KONZEPT | nur Konzept: geprüfte, typisierte Antworten der KI (Schema) |
+| crewAIInc/crewAI | 8 | 3 | 7 | 10 | 7 | 8 | 9 | 7.1 | KONZEPT | nur Konzept: Rolle, Ziel, Hintergrund je Agent und Übergaben – in StudioTeams bereits ähnlich |
+| openai/openai-agents-python | 8 | 2 | 8 | 10 | 8 | 8 | 8 | 7.1 | VERWORFEN | an einen bezahlten Anbieter gebunden – nicht übernommen |
+| microsoft/autogen | 8 | 2 | 7 | 6 | 7 | 8 | 9 | 6.3 | VERWORFEN | Doku CC-BY, zweites Laufzeitsystem – nicht übernommen |
+
+## SYS-05 – Aufgaben automatisieren
+Bestand: WorkflowEngine vorhanden; n8n als optionale externe Profi-Ebene (nicht mitgeliefert).
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| node-red/node-red | 8 | 7 | 8 | 10 | 8 | 7 | 9 | 8.05 | AUSWAHL | freie Alternative zu n8n (Apache-2.0) als externes Programm mit Projektübergabe (Flows als JSON) |
+| n8n-io/n8n | 10 | 6 | 8 | 4 | 8 | 8 | 10 | 7.6 | VORHANDEN | Sustainable Use License (Fair-Code, nicht Open Source) – bleibt optional, nur Anbindung |
+| windmill-labs/windmill | 9 | 4 | 8 | 5 | 9 | 8 | 7 | 7.05 | VERWORFEN | teils AGPL, Server – nicht übernommen |
+| activepieces/activepieces | 8 | 4 | 8 | 6 | 8 | 8 | 7 | 6.85 | VERWORFEN | MIT mit kostenpflichtigen Teilen (ee) – nicht übernommen |
+| FlowiseAI/Flowise | 8 | 4 | 7 | 5 | 7 | 7 | 3 | 6.15 | VERWORFEN | archiviert (2026-08) und gemischte Lizenz – verworfen |
+
+## X-03 – Apps zusammenklicken
+Bestand: Eigener App-Baukasten im Studio vorhanden (126 Tests).
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| appsmithorg/appsmith | 9 | 3 | 8 | 10 | 6 | 8 | 9 | 7.4 | KONZEPT | Apache-2.0, braucht Server/Docker – nur Konzept (Widget-Raster, Datenbindung) |
+| baserow/baserow | 8 | 4 | 8 | 6 | 7 | 8 | 7 | 6.75 | VERWORFEN | MIT-Kern mit Premium-Teilen, Server – nicht übernommen |
+| nocodb/nocodb | 8 | 4 | 8 | 4 | 7 | 8 | 9 | 6.55 | VERWORFEN | Fair-Code-Lizenz – nicht übernommen |
+| Budibase/budibase | 8 | 3 | 8 | 5 | 7 | 8 | 8 | 6.45 | VERWORFEN | GPL-3.0 – nicht übernommen |
+| ToolJet/ToolJet | 8 | 3 | 8 | 2 | 7 | 8 | 8 | 6.0 | AUSGESCHLOSSEN | AGPL-3.0 – ausgeschlossen |
+
+## SPEC-01 – Wohnung planen
+Bestand: Raumplanung mit Flächen, Möbeln (Assets/moebel) und 3D vorhanden (113 Tests).
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| ThatOpen/engine_components | 8 | 8 | 8 | 10 | 8 | 8 | 6 | 8.2 | AUSWAHL | IFC/BIM-Ansicht im WebView (MIT), wie der Web-Editor gebündelt |
+| IfcOpenShell/IfcOpenShell | 9 | 6 | 8 | 7 | 8 | 8 | 7 | 7.65 | AUSWAHL | LGPL-3.0, getrenntes Programm: Grundriss als IFC exportieren/importieren |
+| xeokit/xeokit-sdk | 9 | 6 | 8 | 2 | 9 | 8 | 6 | 6.95 | AUSGESCHLOSSEN | AGPL-3.0 – ausgeschlossen |
+| cvdlab/react-planner | 7 | 6 | 6 | 10 | 7 | 7 | 3 | 6.9 | KONZEPT | MIT, seit 2024 ruhend – nur Konzept |
+| furnishup/blueprint3d | 7 | 6 | 6 | 10 | 7 | 7 | 2 | 6.85 | KONZEPT | MIT, seit 2021 ruhend – nur Konzept (Wände ziehen, Raum in 3D) |

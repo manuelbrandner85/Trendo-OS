@@ -1,4 +1,4 @@
-# GitHub-Katalog – Runden 1 und 2 (API-Abfrage 07./08.11.2026; Lizenzen bei NOASSERTION aus der Lizenzdatei gelesen)
+# GitHub-Katalog – Runden 1–3 (API-Abfrage 07./08.11.2026; Lizenzen bei NOASSERTION aus der Lizenzdatei gelesen)
 
 ## CORE-08
 | Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
@@ -94,5 +94,37 @@
 | jgm/pandoc | GPL-2.0 | 2026-11-07 | nein | 46849 | Haskell |
 | excalidraw/excalidraw | MIT | 2026-11-07 | nein | 135298 | TypeScript |
 | marktext/marktext | MIT | 2026-11-06 | nein | 63707 | TypeScript |
+## CORE-03
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| langchain-ai/langgraph | MIT | 2026-11-07 | nein | 44624 | Python |
+| microsoft/autogen | CC-BY-4.0 | 2026-10-28 | nein | 61738 | Python |
+| crewAIInc/crewAI | MIT | 2026-11-07 | nein | 60615 | Python |
+| openai/openai-agents-python | MIT | 2026-11-07 | nein | 30549 | Python |
+| pydantic/pydantic-ai | MIT | 2026-11-07 | nein | 21078 | Python |
+## SYS-05
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| n8n-io/n8n | NOASSERTION | 2026-11-07 | nein | 209772 | TypeScript |
+| FlowiseAI/Flowise | NOASSERTION | 2026-08-13 | ja | 55561 | TypeScript |
+| node-red/node-red | Apache-2.0 | 2026-11-06 | nein | 23823 | JavaScript |
+| activepieces/activepieces | NOASSERTION | 2026-11-07 | nein | 25420 | TypeScript |
+| windmill-labs/windmill | NOASSERTION | 2026-11-07 | nein | 18458 | Rust |
+## X-03
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| appsmithorg/appsmith | Apache-2.0 | 2026-11-06 | nein | 41187 | TypeScript |
+| Budibase/budibase | NOASSERTION | 2026-11-07 | nein | 28394 | TypeScript |
+| ToolJet/ToolJet | AGPL-3.0 | 2026-11-07 | nein | 41205 | HTML |
+| nocodb/nocodb | NOASSERTION | 2026-11-06 | nein | 65440 | TypeScript |
+| baserow/baserow | NOASSERTION | 2026-11-07 | nein | 6283 | Python |
+## SPEC-01
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| furnishup/blueprint3d | MIT | 2021-01-20 | nein | 1999 | TypeScript |
+| cvdlab/react-planner | MIT | 2024-04-20 | nein | 1491 | JavaScript |
+| IfcOpenShell/IfcOpenShell | LGPL-3.0 | 2026-11-06 | nein | 2939 | C++ |
+| xeokit/xeokit-sdk | AGPL-3.0 | 2026-11-02 | nein | 949 | HTML |
+| ThatOpen/engine_components | MIT | 2026-10-22 | nein | 732 | TypeScript |
 
 Korrigiert: PhotoDemon → tannerhelland/PhotoDemon (BSD-ähnlich), Shotcut → mltframework/shotcut (GPL-3.0).
