@@ -70,7 +70,7 @@ public static class UnrealGame
     /// <summary>Plugins, die Trendo im Projekt einschaltet: Python/Interchange zum Einrichten der Welt, dazu die Engine-Beispielinhalte
     /// mit Menschfigur samt Geh-/Lauf-/Sprung-Animationen (MoverExamples) und Sportwagen (ChaosModularVehicleExamples) – Teil jeder Unreal-Installation –
     /// und der MetaHuman Creator für den echten Menschen als Spielfigur.</summary>
-    public static readonly string[] Plugins = ["PythonScriptPlugin", "EditorScriptingUtilities", "Interchange", "InterchangeEditor", "MoverExamples", "ChaosModularVehicleExamples", "ChaosModularVehicle", "ChaosVehiclesPlugin", "MetaHumanCharacter"];
+    public static readonly string[] Plugins = ["PythonScriptPlugin", "EditorScriptingUtilities", "Interchange", "InterchangeEditor", "MoverExamples", "ChaosModularVehicleExamples", "ChaosModularVehicle", "ChaosVehiclesPlugin", "MetaHumanCharacter", "GeometryScripting"];
     /// <summary>Eigene Karte, die das Welt-Skript aus der Open-World-Vorlage anlegt.</summary>
     public const string WeltMap = "/Game/Trendo/Welt";
     public const string WeltScriptRel = "Trendo/trendo_welt.py";
@@ -845,6 +845,8 @@ public:
 	bool Ragdoll(const FVector& Impulse);
 	/** Brutale Spiele: ein Glied (Unterarm/Unterschenkel) abtrennen – am Körper ausblenden, ausgeschnittenes Stück fliegt als Physikteil; false ohne Glieder. */
 	bool Sever(const FVector& Push);
+	/** Abgetrennter Knochen (für die Blutlache am Stumpf), sonst NAME_None. */
+	FName SeveredBone = NAME_None;
 	float Stun = 0; bool bDead = false;
 	/** Sekunden, die der Gegner nach dem letzten Sichtkontakt noch sucht (> 0 = alarmiert). */
 	float Alert = 0;
@@ -1180,12 +1182,11 @@ bool ATrendoEnemy::Sever(const FVector& Push)
 	UStaticMeshComponent* M = A->GetStaticMeshComponent(); M->SetMobility(EComponentMobility::Movable); M->SetStaticMesh(Flesh); A->SetActorScale3D(At.GetScale3D());
 	if (Cloth) { UStaticMeshComponent* C = NewObject<UStaticMeshComponent>(A, TEXT("Kleidung")); C->SetStaticMesh(Cloth); C->SetCollisionEnabled(ECollisionEnabled::NoCollision); C->SetupAttachment(M); C->RegisterComponent(); }
 	M->SetCollisionProfileName(TEXT("PhysicsActor")); M->SetUseCCD(true); M->SetSimulatePhysics(true);
-	M->AddImpulse(Push.GetSafeNormal() * 520.f + FVector(0, 0, 320.f), NAME_None, true);
+	M->AddImpulse(Push.GetSafeNormal() * 240.f + FVector(0, 0, 190.f), NAME_None, true); // fliegt kurz und landet in der Nähe
 	M->AddAngularImpulseInDegrees(FVector(FMath::FRandRange(-600.f, 600.f), FMath::FRandRange(-600.f, 600.f), FMath::FRandRange(-300.f, 300.f)), NAME_None, true);
 	A->SetLifeSpan(90.f);
-	// Blut am Stumpf
-	if (UMaterialInterface* Blood = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Trendo/Natur/M_TrendoBlut.M_TrendoBlut")))
-		UGameplayStatics::SpawnDecalAttached(Blood, FVector(18, 14, 14), Body3D, Body3D->GetParentBone(FName(*Bone)), FVector::ZeroVector, FRotator(-90, 0, 0), EAttachLocation::SnapToTarget, 120.f);
+	M->SetReceivesDecals(false); if (Cloth) for (UActorComponent* C : A->GetComponents()) if (UPrimitiveComponent* Pc = Cast<UPrimitiveComponent>(C)) Pc->SetReceivesDecals(false);
+	SeveredBone = Body3D->GetParentBone(FName(*Bone)); // Blut fließt am Stumpf auf den Boden (Spielmodus legt die Lache)
 	UE_LOG(LogTemp, Display, TEXT("TRENDO-GLIED abgetrennt=%s Kleidung=%s"), *Bone, Cloth ? TEXT("ja") : TEXT("nein"));
 	return true;
 }
@@ -2035,7 +2036,17 @@ void ATrendoGameMode::Damage(ATrendoEnemy* E)
 	Enemies.Remove(E);
 	if (bBrutal && E->Sever(From)) Severed++; // brutale Spiele: ein Glied wird abgetrennt
 	if (bNone || !E->Ragdoll(From * (bBrutal ? 32000.f : 18000.f))) { E->Destroy(); return; } // ohne Gewalt verschwindet er, sonst fällt er als Körper
-	if (!bNone) SpawnBlood(E->GetActorLocation(), bBrutal ? 1.6f : 1.f);
+	// Bodenflecken nur auf dem Boden: der liegende Körper nimmt keine Boden-Decals an
+	{ TArray<UPrimitiveComponent*> Prims; E->GetComponents(Prims); if (E->Body3D && E->Body3D->GetOwner()) { TArray<UPrimitiveComponent*> More; E->Body3D->GetOwner()->GetComponents(More); Prims.Append(More); }
+	  for (UPrimitiveComponent* P : Prims) P->SetReceivesDecals(false); }
+	if (!bNone) SpawnBlood(E->GetActorLocation(), bBrutal ? 1.2f : 0.8f); // Spritzer am Trefferort
+	// Blutlache dort, wo der Körper nach dem Sturz liegt (nach 1,2 s)
+	if (!bNone && E->Body3D)
+	{
+		TWeakObjectPtr<USkeletalMeshComponent> Body = E->Body3D; const float Size = bBrutal ? 2.4f : 1.5f; const FName Stump = E->SeveredBone; FTimerHandle Th;
+		GetWorldTimerManager().SetTimer(Th, FTimerDelegate::CreateWeakLambda(this, [this, Body, Size, Stump]() { if (!Body.IsValid()) return; SpawnBlood(Body->GetBoneLocation(TEXT("pelvis")), Size);
+			if (!Stump.IsNone()) SpawnBlood(Body->GetBoneLocation(Stump), Size * 0.55f); }), 1.2f, false);
+	}
 	E->SetLifeSpan(30.f);
 }
 
@@ -2312,7 +2323,7 @@ void ATrendoGameMode::SpawnBlood(const FVector& Pos, float Size)
 {
 	UMaterialInterface* M = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Trendo/Natur/M_TrendoBlut.M_TrendoBlut")); if (!M) return;
 	FHitResult Hit; FCollisionQueryParams Q; for (ATrendoEnemy* E : Enemies) Q.AddIgnoredActor(E);
-	if (!GetWorld()->LineTraceSingleByChannel(Hit, Pos + FVector(0, 0, 50), Pos - FVector(0, 0, 400), ECC_WorldStatic, Q)) return;
+	if (!GetWorld()->LineTraceSingleByObjectType(Hit, Pos + FVector(0, 0, 50), Pos - FVector(0, 0, 400), FCollisionObjectQueryParams(ECC_WorldStatic), Q)) return; // nur Gelände, nie der liegende Körper
 	FRandomStream R(static_cast<int32>(Pos.X * 7 + Pos.Y));
 	for (int32 i = 0; i < 3; i++) // ein großer Fleck und zwei Spritzer daneben
 	{

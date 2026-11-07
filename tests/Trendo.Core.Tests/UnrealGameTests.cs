@@ -57,6 +57,7 @@ public class UnrealGameTests
             Assert.Contains("class ATrendoEnemy : public ACharacter", File.ReadAllText(Path.Combine(dir, "Source", "Waldlaeufer", "TrendoActors.h")));
             Assert.Contains("AIModule", File.ReadAllText(Path.Combine(dir, "Source", "Waldlaeufer", "Waldlaeufer.Build.cs")));
             Assert.Contains("TRENDO-BODEN", gm); Assert.Contains("TRENDO-KAMPF", gm); Assert.Contains("MM_Death_Front_03_ExtractedRM", actors);
+            Assert.Contains("TRENDO-GLIED", actors); Assert.Contains("HideBoneByName", actors); Assert.Contains("SetReceivesDecals(false)", gm); // Glieder abtrennbar, Blut nur am Boden
             Assert.Contains("bEnableUpdateRateOptimizations = false", actors); // kein Ruckeln/Flackern in der Ferne
             Assert.Equal("normal", lv["violence"]!.GetValue<string>()); // Gewalt-Stufe im Level (Standard normal)
         }
