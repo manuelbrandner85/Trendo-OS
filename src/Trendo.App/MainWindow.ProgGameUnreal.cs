@@ -115,12 +115,14 @@ public partial class MainWindow
         if (_opt.Isolated && UnrealRunOverride is null) { lines.Add("• Echter Mensch: im Testmodus nicht gebaut"); return; }
         // Kleidung: Outfits aus dem Werkzeugordner (im Testmodus aus dem Testordner) ins Projekt legen
         var clothes = UnrealGame.CopyClothes(_opt.Isolated ? Path.Combine(_core.DataRoot, "kleidung") : UnrealGame.ClothesDir(_deps.ToolsRoot), Path.GetDirectoryName(uproject)!);
-        step("Unreal baut die Spielfigur als echten Menschen (MetaHuman: Haut, Haare, Gesicht, Bewegungen) … einige Minuten.");
-        var (me, mlog) = await Task.Run(() => UnrealRun(UnrealGame.EditorCmd(engine), UnrealGame.MenschArgs(uproject, Path.Combine(logs, "mensch.txt")), Path.Combine(logs, "mensch.txt"), 2_400_000));
+        step("Unreal baut die Menschen des Spiels (MetaHuman: Spielfigur, Gegner, Figur – Haut, Haare, Gesicht, Kleidung, Bewegungen) … etwa 15 Minuten.");
+        var (me, mlog) = await Task.Run(() => UnrealRun(UnrealGame.EditorCmd(engine), UnrealGame.MenschArgs(uproject, Path.Combine(logs, "mensch.txt")), Path.Combine(logs, "mensch.txt"), 5_400_000));
         var (mok, info, err) = UnrealGame.ParseMensch(mlog);
         _core.Audit.Append(Principal.LocalOwner.Name, "game.unreal.mensch", mok ? "ok" : "fehler");
-        lines.Add(mok ? "✓ Echter Mensch als Spielfigur (MetaHuman" + (info.FirstOrDefault(l => l.StartsWith("gebaut")) is { } g ? ", " + g : "") + ")"
+        var people = info.Where(l => l.Contains(" gebaut: ")).Select(l => l[..l.IndexOf(" gebaut: ")]).ToList();
+        lines.Add(mok ? $"✓ Echte Menschen (MetaHuman): {(people.Count > 0 ? string.Join(", ", people) : "Spielfigur")}"
                       + (info.FirstOrDefault(l => l.StartsWith("Kleidung:")) is { } k ? " – " + k : "")
+                      + string.Concat(info.Where(l => l.Contains(": nicht gebaut")).Select(l => " – " + l))
                       + (clothes == 0 ? " – eigene Kleidung: kostenloses MetaHuman-Outfit (.mhpkg) von Fab in den Ordner „" + (_opt.Isolated ? "kleidung" : UnrealGame.ClothesDir(_deps.ToolsRoot)) + "“ legen" : "")
                       : $"• Spielfigur bleibt die Gliederpuppe (Exitcode {me}): {err}");
     }

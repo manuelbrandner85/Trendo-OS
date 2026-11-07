@@ -34,6 +34,8 @@ public sealed class ProgramSpec(string key, string studio, string title)
     public List<ProgramExport> Exports { get; init; } = [];
     public required Func<ProgramDocument, Control> Workspace { get; init; }
     public Func<ProgramDocument, Control>? Properties { get; init; }
+    /// <summary>Optional ganz oben auf der Startseite (ohne offenes Dokument), z. B. der Spiele-Prompt „Spiel aus einem Satz“.</summary>
+    public Func<Control>? StartTop { get; init; }
     /// <summary>Paket F (A1): Werkzeugleiste links (wie in Profi-Programmen) – einklappbar.</summary>
     public List<ProgramTool> Tools { get; init; } = [];
     /// <summary>Paket F (A1): Bereich unten – einklappbar.</summary>
@@ -268,6 +270,7 @@ public partial class MainWindow
             }
             sp.Children.Insert(0, Card(rs));
         }
+        if (spec.StartTop is { } top) sp.Children.Insert(0, top());
         return sp;
     }
 

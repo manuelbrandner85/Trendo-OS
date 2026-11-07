@@ -16,7 +16,8 @@ public static class UnrealGame
     ];
 
     /// <summary>Welt des Spiels: aus dem Dokument („world“), sonst Open World für AAA+ und Level für die anderen Größen.</summary>
-    public static string WorldOf(JsonObject d) => d["world"]?.ToString() is "level" or "openworld" ? d["world"]!.ToString() : d["scale"]?.ToString() == "aaa" ? "openworld" : "level";
+    public static string WorldOf(JsonObject d) => d["world3d"]?.ToString() is "level" or "openworld" ? d["world3d"]!.ToString() // Wahl aus dem Spiele-Prompt
+        : d["world"]?.ToString() is "level" or "openworld" ? d["world"]!.ToString() : d["scale"]?.ToString() == "aaa" ? "openworld" : "level";
 
     /// <summary>Modulname aus dem Projektordner (nur Buchstaben und Ziffern, wie das .uproject).</summary>
     public static string ModuleName(string projectDir) => Path.GetFileNameWithoutExtension(Directory.GetFiles(projectDir, "*.uproject").Single());
@@ -403,21 +404,23 @@ unreal.log("TRENDO-WELT-OK %d Pflanzen/Felsen-Modelle, %d Spielobjekt-Modelle" %
 
     /// <summary>Python-Skript für Unreal: echter Mensch (MetaHuman aus Epic-Vorlage, Rig und Texturen aus dem MetaHuman-Dienst, Zusammenbau) und Bewegungen per IK-Retargeting.</summary>
     public const string MenschScript = """
-# Von Trendo erzeugt: baut die Spielfigur als echten Menschen (MetaHuman) und überträgt die Bewegungen auf ihr Skelett.
+# Von Trendo erzeugt: baut die Menschen des Spiels als MetaHumans (Spielfigur, Gegner, Figur) und überträgt die Bewegungen auf ihre Skelette.
 # Läuft mit Grafik ohne Fenster (-RenderOffscreen): Hauttexturen entstehen auf der Grafikkarte.
 # Braucht die MetaHuman Creator-Kerndaten (Epic Games Launcher → Bibliothek → 5.8 → Optionen) und die Epic-Anmeldung aus dem Launcher
 # (Gesichts-Rig und hochaufgelöste Texturen kommen aus Epics MetaHuman-Dienst). Fehlt etwas, bleibt das Spiel bei der Gliederpuppe.
-import traceback, unreal
+import os, traceback, unreal
 
-PRESET = "/MetaHumanCharacter/Optional/Presets/Ada"   # Epic-Vorlage: Haut, Haare, Augenbrauen, Wimpern, Grundkleidung
 ROOT = "/Game/Trendo/Mensch"
-NAME = "Waldlaeuferin"
+# (Name im Spiel, Epic-Vorlage, Geschlecht für die Kleidung) – Vorlagen bringen Haut, Haare, Augenbrauen, Wimpern mit; jede Figur sieht anders aus
+CAST = [("Waldlaeuferin", "Ada", "F"), ("Gegner", "Victor", "M"), ("Figur", "Walter", "M")]
 MOVES = ["MM_Idle", "MM_Jump", "MM_Fall_Loop", "MM_Walk_Fwd", "MM_Run_Fwd", "MM_Walk_InPlace", "BS_MM_WalkRun"]
 SRC = "/MoverExamples/Characters/Mannequins/"
+PRESETS = "/MetaHumanCharacter/Optional/Presets/"
 eal = unreal.EditorAssetLibrary
 tools = unreal.AssetToolsHelpers.get_asset_tools()
 def log(m): unreal.log("TRENDO-MENSCH " + str(m).replace("\n", " | "))
 def fail(m): unreal.log("TRENDO-MENSCH-FEHLER " + m)
+def kind(p): return str(eal.find_asset_data(p).get_editor_property("asset_class_path").get_editor_property("asset_name"))
 def again(fn):
     # Nach dem Zusammenbau meldet Unreal beim nächsten Dateizugriff einmal verzögert einen ARKit-Hinweis als Fehler – dann einmal wiederholen
     try: return fn()
@@ -429,100 +432,73 @@ def save_all():
     try: unreal.EditorLoadingAndSavingUtils.save_dirty_packages(True, True)
     except Exception as e: log("Hinweis beim Speichern: " + str(e)[:200])
 
-# Kleidung: freie MetaHuman-Outfits (.mhpkg, z. B. von Fab) legt Trendo nach Trendo/Kleidung im Projekt; ohne Outfit bleibt Epics Grundkleidung.
-# Farben passend zur Welt (Wald): Oberteil olivgrün, Hose dunkelbraun, Schuhe dunkel.
-CLOTH_COLORS = [(("shirt", "top", "tee"), unreal.LinearColor(0.10, 0.14, 0.06, 1)), (("pant", "trouser", "short", "bottom"), unreal.LinearColor(0.07, 0.05, 0.035, 1)),
-                (("shoe", "slipper", "sandal", "foot"), unreal.LinearColor(0.04, 0.035, 0.03, 1))]
-def dress(ch, sub, edit):
-    import os
+def import_clothes():
+    # Freie MetaHuman-Outfits (.mhpkg, z. B. von Fab) aus Trendo/Kleidung importieren; gibt die Kleidungsstücke (Wardrobe-Items) zurück
     folder = os.path.join(unreal.Paths.project_dir(), "Trendo", "Kleidung")
     for f in sorted(os.listdir(folder)) if os.path.isdir(folder) else []:
         if f.lower().endswith(".mhpkg"):
             t = unreal.AssetImportTask(); t.filename = os.path.join(folder, f); t.destination_path = "/Game/Trendo/Kleidung"; t.automated = True; t.save = True; t.replace_existing = True
             try: tools.import_asset_tasks([t])
             except Exception as e: log("Hinweis Kleidung %s: %s" % (f, str(e)[:200]))
-    items = [p for p in (eal.list_assets("/Game/Trendo/Kleidung", recursive=True) if eal.does_directory_exist("/Game/Trendo/Kleidung") else [])
-             if str(eal.find_asset_data(p).get_editor_property("asset_class_path").get_editor_property("asset_name")) == "MetaHumanWardrobeItem"]
-    if not items: log("Kleidung: Grundkleidung von Epic (kein Outfit in Trendo/Kleidung)")
-    wi = unreal.load_asset(items[0]) if items else None
-    col = ch.internal_collection; inst = col.default_instance
-    keys = list(col.get_item_keys_for_slot("Outfits"))
-    if wi:
-        key = col.try_add_item_from_wardrobe_item("Outfits", wi)
-        # nur das neue Outfit tragen: ersetzt die Grundkleidung der Vorlage im Kleidungsplatz
-        inst.set_single_slot_selection("Outfits", key); keys = [key]
-    def colors():
-        sub.assemble_for_preview(character=ch)
-        n = 0
-        for k in keys:
-            ps = inst.get_instance_parameters(item_path=unreal.MetaHumanPaletteItemPath(item_key=k))
-            log("Kleidungs-Parameter: " + ", ".join(str(p.name) for p in ps)[:400])
-            for p in ps:
-                name = str(p.name).lower()
-                if "color" not in name and "colour" not in name and "tint" not in name: continue
-                for words, c in CLOTH_COLORS:
-                    if any(w in name for w in words):
-                        try: p.set_color(value=c); n += 1
-                        except Exception: pass
-                        break
-        log("Kleidung: %s, %d Farben angepasst" % (wi.get_name() if wi else "Grundkleidung", n))
-    edit(colors)
-    eal.save_loaded_asset(ch, False)
+    if not eal.does_directory_exist("/Game/Trendo/Kleidung"): return []
+    return [p for p in eal.list_assets("/Game/Trendo/Kleidung", recursive=True) if kind(p) == "MetaHumanWardrobeItem"]
 
-def run():
-    pre = unreal.load_asset(PRESET)
-    if pre is None:
-        return fail("MetaHuman Creator-Kerndaten fehlen – Epic Games Launcher → Bibliothek → Unreal 5.8 → Optionen → „MetaHuman Creator-Kerndaten“ anhaken → Übernehmen")
-    sub = unreal.get_editor_subsystem(unreal.MetaHumanCharacterEditorSubsystem)
-    if eal.does_directory_exist(ROOT): eal.delete_directory(ROOT)
-    ch = eal.duplicate_asset(PRESET, f"{ROOT}/{NAME}")
+def dress(ch, gender, items):
+    # Outfit passend zum Geschlecht (Dateiname „_F_“/„_M_“), sonst das erste; ersetzt die Grundkleidung der Vorlage
+    pick = next((p for p in items if f"_{gender}_" in p.split("/")[-1].upper()), items[0] if items else None)
+    if not pick: return "Grundkleidung von Epic"
+    wi = unreal.load_asset(pick); col = ch.internal_collection
+    key = col.try_add_item_from_wardrobe_item("Outfits", wi)
+    col.default_instance.set_single_slot_selection("Outfits", key)
+    eal.save_loaded_asset(ch, False)
+    return wi.get_name()
+
+def build_one(sub, name, preset, gender, clothes):
+    ch = eal.duplicate_asset(PRESETS + preset, f"{ROOT}/{name}/{name}")
     def edit(fn):
         if not sub.try_add_object_to_edit(ch): raise RuntimeError("MetaHuman lässt sich nicht bearbeiten")
         try: fn()
         except Exception as e: log("Hinweis: " + str(e)[:300])   # Control-Rig-Hinweise beim Zusammenbau sind harmlos
         finally:
             if sub.is_object_added_for_editing(ch): sub.remove_object_to_edit(ch)
+    ready = []
     def cloud():
         r = unreal.MetaHumanCharacterAutoRiggingRequestParams(); r.blocking = True; r.report_progress = False; r.rig_type = unreal.MetaHumanRigType.JOINTS_ONLY
         sub.request_auto_rigging(ch, r)
         t = unreal.MetaHumanCharacterTextureRequestParams(); t.blocking = True; t.report_progress = False
         sub.request_texture_sources(ch, t)
         ready.append(bool(ch.has_high_resolution_textures) and bool(sub.can_build_meta_human(ch)))   # nur während der Bearbeitung lesbar
-    ready = []
     edit(cloud)
-    if not (ready and ready[0]):
-        return fail("MetaHuman-Dienst nicht erreicht – bitte im Epic Games Launcher angemeldet sein und Internet prüfen")
+    if not (ready and ready[0]): return "MetaHuman-Dienst nicht erreicht – bitte im Epic Games Launcher angemeldet sein und Internet prüfen"
     eal.save_loaded_asset(ch, False)
-    log("Rig und 4K-Texturen aus dem MetaHuman-Dienst")
-    try: dress(ch, sub, edit)
-    except Exception as e: log("Hinweis Kleidung: " + traceback.format_exc().strip().splitlines()[-1][:300])
+    try: cloth = dress(ch, gender, clothes)
+    except Exception: cloth = "Grundkleidung (Outfit ging nicht: " + traceback.format_exc().strip().splitlines()[-1][:150] + ")"
     def build():
         b = unreal.MetaHumanCharacterEditorBuildParameters()
         b.pipeline_type = unreal.MetaHumanDefaultPipelineType.OPTIMIZED
         b.pipeline_quality = unreal.MetaHumanQualityLevel.HIGH
-        b.absolute_build_path = f"{ROOT}/Bau"; b.common_folder_path = f"{ROOT}/Gemeinsam"
+        b.absolute_build_path = f"{ROOT}/{name}/Bau"; b.common_folder_path = f"{ROOT}/Gemeinsam"
         b.enable_wardrobe_item_validation = False
         sub.build_meta_human(character=ch, params=b)
     edit(build)
     save_all()
     body = None; parts = {}
-    for p in eal.list_assets(f"{ROOT}/Bau", recursive=True):
-        c = str(eal.find_asset_data(p).get_editor_property("asset_class_path").get_editor_property("asset_name")); parts[c] = parts.get(c, 0) + 1
+    for p in again(lambda: eal.list_assets(f"{ROOT}/{name}/Bau", recursive=True)):
+        c = kind(p); parts[c] = parts.get(c, 0) + 1
         if c == "SkeletalMesh" and "BodyMesh" in p: body = unreal.load_asset(p)
-    if body is None or not eal.does_asset_exist(f"{ROOT}/Bau/{NAME}/BP_{NAME}"):
-        return fail("Zusammenbau des MetaHuman fehlgeschlagen – Protokoll mensch.txt")
-    log("gebaut: %d Körperteile, %d Haar-Arten, %d Texturen" % (parts.get("SkeletalMesh", 0), parts.get("GroomAsset", 0), parts.get("Texture2D", 0)))
-    # Bewegungen der Engine-Figur (Mover-Beispiel) per IK-Retargeting auf das MetaHuman-Skelett übertragen – eigene Proportionen bleiben
-    dest = f"{ROOT}/Bewegung"
+    if body is None or not eal.does_asset_exist(f"{ROOT}/{name}/Bau/{name}/BP_{name}"):
+        return "Zusammenbau fehlgeschlagen – Protokoll mensch.txt"
+    # Bewegungen der Engine-Figur (Mover-Beispiel) per IK-Retargeting auf das eigene Skelett übertragen – eigene Proportionen bleiben
+    dest = f"{ROOT}/{name}/Bewegung"
     for a in MOVES:
         to = f"{dest}/Quelle/{a}"
         again(lambda: eal.does_asset_exist(to) or eal.duplicate_asset(SRC + "Animations/Manny/" + a, to))
     bs = unreal.load_asset(f"{dest}/Quelle/BS_MM_WalkRun"); samples = bs.get_editor_property("sample_data")
     for s in samples: s.set_editor_property("animation", unreal.load_asset(f"{dest}/Quelle/" + s.get_editor_property("animation").get_name()))
     bs.set_editor_property("sample_data", samples); again(lambda: eal.save_loaded_asset(bs))
-    rig = tools.create_asset(f"IK_{NAME}", dest, unreal.IKRigDefinition, unreal.IKRigDefinitionFactory())
+    rig = tools.create_asset(f"IK_{name}", dest, unreal.IKRigDefinition, unreal.IKRigDefinitionFactory())
     rc = unreal.IKRigController.get_controller(rig); rc.set_skeletal_mesh(body); rc.apply_auto_generated_retarget_definition(); eal.save_loaded_asset(rig)
-    rtg = tools.create_asset(f"RTG_Figur_{NAME}", dest, unreal.IKRetargeter, unreal.IKRetargetFactory())
+    rtg = tools.create_asset(f"RTG_Figur_{name}", dest, unreal.IKRetargeter, unreal.IKRetargetFactory())
     c = unreal.IKRetargeterController.get_controller(rtg)
     src_rig = unreal.load_asset(SRC + "Rigs/IK_Mannequin"); manny = unreal.load_asset(SRC + "Meshes/SKM_Manny_Simple")
     c.set_ik_rig(unreal.RetargetSourceOrTarget.SOURCE, src_rig); c.set_ik_rig(unreal.RetargetSourceOrTarget.TARGET, rig)
@@ -530,13 +506,30 @@ def run():
     c.assign_ik_rig_to_all_ops(unreal.RetargetSourceOrTarget.SOURCE, src_rig); c.assign_ik_rig_to_all_ops(unreal.RetargetSourceOrTarget.TARGET, rig)
     c.auto_map_chains(unreal.AutoMapChainType.FUZZY, True); eal.save_loaded_asset(rtg)
     data = [eal.find_asset_data(f"{dest}/Quelle/{a}") for a in MOVES]
-    out = unreal.IKRetargetBatchOperation.duplicate_and_retarget(assets_to_retarget=data, source_mesh=manny, target_mesh=body, ik_retarget_asset=rtg,
-                                                                 prefix="MH_", target_path=dest, include_referenced_assets=True)
+    unreal.IKRetargetBatchOperation.duplicate_and_retarget(assets_to_retarget=data, source_mesh=manny, target_mesh=body, ik_retarget_asset=rtg,
+                                                           prefix="MH_", target_path=dest, include_referenced_assets=True)
     save_all()
     have = [a for a in ("MM_Idle", "MM_Jump", "MM_Fall_Loop", "BS_MM_WalkRun") if eal.does_asset_exist(f"{dest}/MH_{a}")]
-    if len(have) < 4: return fail("Bewegungen nicht vollständig übertragen: " + ", ".join(have))
-    log("Bewegungen übertragen: Stehen, Gehen, Laufen, Springen, Fallen")
-    unreal.log("TRENDO-MENSCH-OK %d" % len(out))
+    if len(have) < 4: return "Bewegungen nicht vollständig übertragen: " + ", ".join(have)
+    log(f"{name} ({preset}) gebaut: {parts.get('SkeletalMesh', 0)} Körperteile, {parts.get('GroomAsset', 0)} Haar-Arten, Kleidung {cloth}, Bewegungen übertragen")
+    return ""
+
+def run():
+    if unreal.load_asset(PRESETS + CAST[0][1]) is None:
+        return fail("MetaHuman Creator-Kerndaten fehlen – Epic Games Launcher → Bibliothek → Unreal 5.8 → Optionen → „MetaHuman Creator-Kerndaten“ anhaken → Übernehmen")
+    sub = unreal.get_editor_subsystem(unreal.MetaHumanCharacterEditorSubsystem)
+    if eal.does_directory_exist(ROOT): eal.delete_directory(ROOT)
+    clothes = import_clothes()
+    log("Kleidung: %d Outfit(s) – %s" % (len(clothes), ", ".join(p.split("/")[-1].split(".")[0] for p in clothes) or "Grundkleidung von Epic"))
+    built = []
+    for name, preset, gender in CAST:
+        try: err = build_one(sub, name, preset, gender, clothes)
+        except Exception: err = traceback.format_exc().strip().splitlines()[-1]
+        if err:
+            if name == CAST[0][0]: return fail(err)   # ohne Spielfigur kein Mensch im Spiel
+            log(f"{name}: nicht gebaut ({err}) – bleibt Gliederpuppe")
+        else: built.append(name)
+    unreal.log("TRENDO-MENSCH-OK %d %s" % (len(built), ",".join(built)))
 
 try: run()
 except Exception: fail(traceback.format_exc().strip().splitlines()[-1])
@@ -732,6 +725,8 @@ public:
 	UPROPERTY(VisibleAnywhere) USphereComponent* Catch;
 	UPROPERTY(VisibleAnywhere) UStaticMeshComponent* Mesh;
 	UPROPERTY(VisibleAnywhere) USkeletalMeshComponent* Figure;
+	/** Animierter Körper: MetaHuman, sonst Gliederpuppe (Figure). */
+	UPROPERTY() USkeletalMeshComponent* Body3D = nullptr;
 	void Setup(TCHAR InTile, int32 X, int32 Y, const FLinearColor& Color, float Size, bool bSolid);
 	/** true, wenn ein echtes Modell statt einer Grundform verwendet wird. */
 	bool bModel = false;
@@ -746,6 +741,8 @@ public:
 	ATrendoEnemy();
 	UPROPERTY(VisibleAnywhere) UStaticMeshComponent* Mesh;
 	UPROPERTY(VisibleAnywhere) USkeletalMeshComponent* Figure;
+	/** Animierter Körper: MetaHuman, sonst Gliederpuppe (Figure). */
+	UPROPERTY() USkeletalMeshComponent* Body3D = nullptr;
 	UPROPERTY(VisibleAnywhere) int32 Hp = 1;
 	UPROPERTY(VisibleAnywhere) int32 MaxHp = 1;
 	/** Im Menü still (von GameMode gesetzt). */
@@ -755,8 +752,12 @@ public:
 	void Init(int32 InHp, float Ground);
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;
+	/** Open World: Streife, Sehen (Blickfeld, freie Sicht), Verfolgen, Angreifen, Suchen am letzten Ort, Rückzug des angeschlagenen Bosses. */
+	void ThinkOpenWorld(float Dt, class ATrendoGameMode* GM);
+	/** Sekunden, die der Gegner nach dem letzten Sichtkontakt noch sucht (> 0 = alarmiert). */
+	float Alert = 0;
 private:
-	FVector Start; float T = 0;
+	FVector Start; float T = 0; float Attack = 0; FVector LastSeen = FVector::ZeroVector;
 };
 
 /** Geschoss der Waffe „Werfen“ (mit Modell: geworfenes Beil, das sich dreht). */
@@ -783,7 +784,7 @@ USkeletalMesh* TrendoCar();
 /** Menschfigur bewegen: Gehen/Laufen fließend nach Tempo (Blendspace), in der Luft Sprung bzw. Fallen, im Stand Atmen. */
 void TrendoAnimate(USkeletalMeshComponent* Figure, const FVector& Velocity, bool bInAir);
 /** MetaHuman (echter Mensch mit Gesicht, Haaren, Kleidung) als Teil von Owner unter Parent; gibt den Körper zum Animieren zurück, sonst nullptr. */
-USkeletalMeshComponent* TrendoSetupMetaHuman(AActor* Owner, USceneComponent* Parent, float FootZ);
+USkeletalMeshComponent* TrendoSetupMetaHuman(AActor* Owner, USceneComponent* Parent, float FootZ, const TCHAR* Who = TEXT("Waldlaeuferin"), float Scale = 1.f);
 /** Figur einrichten: Modell, Blickrichtung (Mannequin schaut entlang Y), Füße auf FootZ, matte Farbe (Tint) statt Chrom. */
 bool TrendoSetupFigure(USkeletalMeshComponent* Figure, float FootZ, const FLinearColor& Tint = FLinearColor(0.32f, 0.36f, 0.27f));
 """,
@@ -817,11 +818,17 @@ template <class T> static T* Cached(const FString& Path)
 	return Cast<T>(W.Get());
 }
 // MetaHuman (von Trendo im Projekt gebaut: Körper, Gesicht, Kleidung, Haare) und seine auf das MetaHuman-Skelett übertragenen Bewegungen
-static const TCHAR* MetaHumanClass = TEXT("/Game/Trendo/Mensch/Bau/Waldlaeuferin/BP_Waldlaeuferin.BP_Waldlaeuferin_C");
-static const TCHAR* MetaHumanAnimDir = TEXT("/Game/Trendo/Mensch/Bewegung/");
-static UAnimationAsset* Anim(const TCHAR* Name, bool bMeta = false)
+// Jede Figur (Waldlaeuferin, Gegner, Figur) liegt unter /Game/Trendo/Mensch/<Name>/ mit Bau/ und Bewegung/
+static FString MetaHumanDir(const TCHAR* Who) { return FString::Printf(TEXT("/Game/Trendo/Mensch/%s/"), Who); }
+static UAnimationAsset* Anim(const TCHAR* Name, const FString& MetaDir = FString())
 {
-	return bMeta ? Cached<UAnimationAsset>(FString::Printf(TEXT("%sMH_%s.MH_%s"), MetaHumanAnimDir, Name, Name)) : Cached<UAnimationAsset>(FString::Printf(TEXT("%s%s.%s"), AnimDir, Name, Name));
+	return MetaDir.Len() ? Cached<UAnimationAsset>(FString::Printf(TEXT("%sBewegung/MH_%s.MH_%s"), *MetaDir, Name, Name)) : Cached<UAnimationAsset>(FString::Printf(TEXT("%s%s.%s"), AnimDir, Name, Name));
+}
+/** Bewegungs-Ordner eines MetaHuman-Körpers (als Kennzeichen am Körper gespeichert), sonst leer = Gliederpuppe. */
+static FString MetaDirOf(const USkeletalMeshComponent* F)
+{
+	if (F) for (const FName& T : F->ComponentTags) { const FString S = T.ToString(); if (S.StartsWith(TEXT("TrendoMensch:"))) return S.Mid(13); }
+	return FString();
 }
 static bool IsMeta(const USkeletalMeshComponent* F)
 {
@@ -829,11 +836,13 @@ static bool IsMeta(const USkeletalMeshComponent* F)
 	return M && M->GetSkeleton() && M->GetSkeleton()->GetName().StartsWith(TEXT("metahuman"));
 }
 
-USkeletalMeshComponent* TrendoSetupMetaHuman(AActor* Owner, USceneComponent* Parent, float FootZ)
+USkeletalMeshComponent* TrendoSetupMetaHuman(AActor* Owner, USceneComponent* Parent, float FootZ, const TCHAR* Who, float Scale)
 {
-	UClass* C = Owner ? LoadClass<AActor>(nullptr, MetaHumanClass) : nullptr; if (!C || !Parent) return nullptr;
+	const FString Dir = MetaHumanDir(Who);
+	UClass* C = Owner ? LoadClass<AActor>(nullptr, *FString::Printf(TEXT("%sBau/%s/BP_%s.BP_%s_C"), *Dir, Who, Who, Who)) : nullptr; if (!C || !Parent) return nullptr;
 	UChildActorComponent* CA = NewObject<UChildActorComponent>(Owner, TEXT("MetaHuman"));
 	CA->SetChildActorClass(C); CA->SetupAttachment(Parent);
+	CA->SetUsingAbsoluteScale(true); CA->SetWorldScale3D(FVector(Scale)); // eigene Größe, auch wenn der Trefferkörper gestreckt ist
 	CA->SetRelativeLocationAndRotation(FVector(0, 0, FootZ), FRotator(0, -90, 0)); // MetaHuman schaut entlang Y
 	CA->RegisterComponent();
 	AActor* A = CA->GetChildActor(); if (!A) { CA->DestroyComponent(); return nullptr; }
@@ -841,9 +850,10 @@ USkeletalMeshComponent* TrendoSetupMetaHuman(AActor* Owner, USceneComponent* Par
 	TArray<USkeletalMeshComponent*> Parts; A->GetComponents(Parts);
 	USkeletalMeshComponent* Body = nullptr;
 	for (USkeletalMeshComponent* P : Parts) if (IsMeta(P) && (!Body || P->GetName().Contains(TEXT("Body")))) Body = P;
-	if (!Body || !Anim(TEXT("MM_Idle"), true)) { CA->DestroyComponent(); return nullptr; }
+	if (!Body || !Anim(TEXT("MM_Idle"), Dir)) { CA->DestroyComponent(); return nullptr; }
+	Body->ComponentTags.Add(FName(*(TEXT("TrendoMensch:") + Dir)));
 	Body->SetAnimationMode(EAnimationMode::AnimationSingleNode);
-	Body->PlayAnimation(Anim(TEXT("MM_Idle"), true), true);
+	Body->PlayAnimation(Anim(TEXT("MM_Idle"), Dir), true);
 	return Body;
 }
 
@@ -875,7 +885,7 @@ void TrendoAnimate(USkeletalMeshComponent* Figure, const FVector& Velocity, bool
 {
 	if (!Figure || !Figure->GetSkeletalMeshAsset() || !Figure->IsVisible()) return;
 	UAnimSingleNodeInstance* I = Figure->GetSingleNodeInstance(); if (!I) return;
-	const float Speed = Velocity.Size2D(); const bool M = IsMeta(Figure);
+	const float Speed = Velocity.Size2D(); const FString M = MetaDirOf(Figure);
 	UAnimationAsset* Want = bInAir ? Anim(Velocity.Z > 200.f ? TEXT("MM_Jump") : TEXT("MM_Fall_Loop"), M) : Speed < 15.f ? Anim(TEXT("MM_Idle"), M) : Anim(TEXT("BS_MM_WalkRun"), M);
 	if (!Want) return;
 	if (I->GetCurrentAsset() != Want) I->SetAnimationAsset(Want, Want != Anim(TEXT("MM_Jump"), M), 1.f);
@@ -915,7 +925,7 @@ void ATrendoThing::Setup(TCHAR InTile, int32 X, int32 Y, const FLinearColor& Col
 	const ATrendoGameMode* GM = Cast<ATrendoGameMode>(UGameplayStatics::GetGameMode(this));
 	const float Foot = GM && GM->Data.World == TEXT("openworld") ? -60.f : -50.f * Size; // Abstand Mitte → Boden
 	// 1) Figur (N) als Mensch, Fahrzeug (V „wagen“) als Sportwagen
-	if (InTile == 'N' && TrendoSetupFigure(Figure, Foot, FLinearColor(0.42f, 0.33f, 0.22f))) bModel = true;
+	if (InTile == 'N') { Body3D = TrendoSetupMetaHuman(this, Catch, Foot, TEXT("Figur")); if (Body3D) bModel = true; else if (TrendoSetupFigure(Figure, Foot, FLinearColor(0.42f, 0.33f, 0.22f))) { bModel = true; Body3D = Figure; } }
 	if (InTile == 'V' && Kind != TEXT("ufo"))
 		if (USkeletalMesh* Car = TrendoCar()) { Figure->SetSkeletalMesh(Car); Figure->SetRelativeLocation(FVector(0, 0, Foot)); Figure->SetVisibility(true); Figure->SetCastShadow(true); bModel = true; }
 	// 2) Gegenstände, Ziel, Speicherpunkt, Kiste … als Fotomodell (echte Größe, zufällig gedreht)
@@ -964,7 +974,10 @@ void ATrendoEnemy::Init(int32 InHp, float Ground)
 {
 	MaxHp = Hp = InHp;
 	const float K = MaxHp > 1 ? 1.25f : 1.f; // Boss größer
-	if (TrendoSetupFigure(Figure, -50.f, MaxHp > 1 ? FLinearColor(0.16f, 0.05f, 0.04f) : FLinearColor(0.38f, 0.14f, 0.1f)))
+	SetActorScale3D(FVector(0.8f * K, 0.8f * K, 1.8f * K)); // Trefferkörper so groß wie ein Mensch
+	Body3D = TrendoSetupMetaHuman(this, Mesh, -50.f, TEXT("Gegner"), K);
+	if (!Body3D && TrendoSetupFigure(Figure, -50.f, MaxHp > 1 ? FLinearColor(0.16f, 0.05f, 0.04f) : FLinearColor(0.38f, 0.14f, 0.1f))) Body3D = Figure;
+	if (Body3D)
 	{
 		// Menschmodell: unsichtbarer Trefferkörper so groß wie die Figur, Füße auf dem Boden
 		bModel = true; Mesh->SetHiddenInGame(true); Mesh->SetCastShadow(false);
@@ -979,16 +992,61 @@ void ATrendoEnemy::Init(int32 InHp, float Ground)
 void ATrendoEnemy::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	if (bFrozen) { TrendoAnimate(Figure, FVector::ZeroVector, false); return; }
+	if (bFrozen) { TrendoAnimate(Body3D, FVector::ZeroVector, false); return; }
 	T += DeltaSeconds;
-	// Hin und her gehen (Wendepunkte mit Abbremsen), Blick in Gehrichtung
+	ATrendoGameMode* GM = Cast<ATrendoGameMode>(UGameplayStatics::GetGameMode(this));
+	if (GM && GM->Data.World == TEXT("openworld")) { ThinkOpenWorld(DeltaSeconds, GM); return; }
+	// Level-Spiel: hin und her gehen (Wendepunkte mit Abbremsen), Blick in Gehrichtung
 	const float Vx = FMath::Cos(T * 1.5f) * 225.f;
 	SetActorLocation(Start + FVector(FMath::Sin(T * 1.5f) * 150.f, 0, 0));
 	if (bModel)
 	{
 		if (FMath::Abs(Vx) > 20.f) SetActorRotation(FMath::RInterpTo(GetActorRotation(), FRotator(0, Vx > 0 ? 0.f : 180.f, 0), DeltaSeconds, 6.f));
-		TrendoAnimate(Figure, FVector(Vx, 0, 0), false);
+		TrendoAnimate(Body3D, FVector(Vx, 0, 0), false);
 	}
+}
+
+/** Gegner-KI in der Open World: Streife um den Startpunkt, sieht die Spielfigur (Sichtweite, Blickfeld, freie Sicht), verfolgt sie, greift aus der Nähe an,
+ *  sucht sie nach Sichtverlust noch eine Weile am letzten Ort; ein angeschlagener Boss weicht zurück. Läuft dem Gelände nach (Boden per Strahl), schaut in Gehrichtung. */
+void ATrendoEnemy::ThinkOpenWorld(float Dt, ATrendoGameMode* GM)
+{
+	const FVector Me = GetActorLocation();
+	const float K = MaxHp > 1 ? 1.25f : 1.f;
+	FVector Goal = Start + FVector(FMath::Sin(T * 0.35f) * 450.f, FMath::Sin(T * 0.23f + 1.3f) * 300.f, 0); float Speed = 150.f; // Streife, gemächlich
+	Attack = FMath::Max(0.f, Attack - Dt);
+	if (APawn* H = UGameplayStatics::GetPlayerPawn(this, 0); H && GM->Playing())
+	{
+		const FVector To = H->GetActorLocation() - Me; const float Dist = To.Size2D();
+		const bool bInView = Dist < 2600.f && (Dist < 600.f || FVector::DotProduct(GetActorForwardVector(), To.GetSafeNormal2D()) > 0.3f); // ~145° Blickfeld, aus der Nähe hört er
+		bool bSees = false;
+		if (bInView)
+		{
+			FHitResult Hit; FCollisionQueryParams Q(TEXT("TrendoSicht"), false, this);
+			bSees = !GetWorld()->LineTraceSingleByChannel(Hit, Me + FVector(0, 0, 60.f * K), H->GetActorLocation() + FVector(0, 0, 60), ECC_Visibility, Q) || Hit.GetActor() == H;
+		}
+		if (bSees) { Alert = 4.f; LastSeen = H->GetActorLocation(); } else Alert = FMath::Max(0.f, Alert - Dt);
+		if (Alert > 0)
+		{
+			const bool bFlee = MaxHp > 1 && Hp == 1; // angeschlagener Boss weicht zurück
+			if (bFlee) { Goal = Me - To.GetSafeNormal2D() * 800.f; Speed = 420.f; }
+			else
+			{
+				Goal = bSees ? H->GetActorLocation() : LastSeen; Speed = Dist < 170.f ? 0.f : 380.f * (MaxHp > 1 ? 0.85f : 1.f);
+				if (bSees && Dist < 190.f && Attack <= 0.f) { Attack = 1.4f; GM->Hit(); } // Schlag aus der Nähe, dann kurz Pause
+			}
+		}
+	}
+	FVector Dir = Goal - Me; Dir.Z = 0; const float Len = Dir.Size();
+	const FVector Vel = Len > 25.f && Speed > 0.f ? Dir / Len * FMath::Min(Speed, Len / FMath::Max(Dt, 0.001f)) : FVector::ZeroVector;
+	FVector Next = Me + Vel * Dt;
+	// dem Gelände folgen: Boden unter dem nächsten Schritt suchen (Spielfigur und eigene Teile ignorieren)
+	FHitResult Ground; FCollisionQueryParams Q(TEXT("TrendoBoden"), false, this);
+	if (APawn* H = UGameplayStatics::GetPlayerPawn(this, 0)) Q.AddIgnoredActor(H);
+	if (GetWorld()->LineTraceSingleByChannel(Ground, Next + FVector(0, 0, 400), Next - FVector(0, 0, 2000), ECC_WorldStatic, Q))
+		Next.Z = FMath::FInterpTo(Me.Z, Ground.Location.Z + (bModel ? 90.f * K : 50.f * GetActorScale3D().Z), Dt, 12.f);
+	SetActorLocation(Next);
+	if (Vel.SizeSquared2D() > 400.f) SetActorRotation(FMath::RInterpTo(GetActorRotation(), FRotator(0, Vel.Rotation().Yaw, 0), Dt, 5.f));
+	if (bModel) TrendoAnimate(Body3D, Vel, false);
 }
 
 ATrendoShot::ATrendoShot()

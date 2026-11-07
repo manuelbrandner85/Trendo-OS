@@ -41,6 +41,7 @@ public partial class MainWindow
         ],
         Workspace = GameWorkspace,
         Properties = GameProperties,
+        StartTop = () => GamePromptBar(null), // Spiele-Prompt: Spiel aus einem Satz
         Status = d => { var s = GameDesign.ScaleOf(d.Text("scale")); var w = GameDesign.Check(d.Data).Count; return $"{s.Name} · {(s.Engine == "unreal" ? "Unreal Engine 5" : "Browser")} · {GameDesign.Overall(d.Data)} % geplant · {(w == 0 ? "keine Hinweise" : $"{w} Hinweis(e)")}"; },
         Help = "Wähle oben den Bereich: Übersicht, Spielbibel, Figuren, Welt, Missionen, Produktion oder Bauen. Retro-Spiele sind sofort im Browser spielbar, 3D bis AAA+ entsteht als Unreal-Projekt mit deiner Spielbibel.",
     }, "spiel", "spiele", "game", "retro", "unreal", "aaa", "rpg", "level", "boss", "spielbibel");
@@ -106,7 +107,7 @@ public partial class MainWindow
             "Veröffentlichen" => GameReleaseView(d), // Ziele, Checkliste, Pakete, Hochladen mit eigenem Konto
             _ => GameOverview(d),
         };
-        return new StackPanel { Spacing = 4, Children = { bar, body } };
+        return new StackPanel { Spacing = 4, Children = { GamePromptBar(d), bar, body } };
     }
 
     private Control GameOverview(ProgramDocument d)
