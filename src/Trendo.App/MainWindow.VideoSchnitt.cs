@@ -144,11 +144,12 @@ public partial class MainWindow
         {
             if (c.IsImage) { using var s = File.OpenRead(c.File); return new Bitmap(s); }
             if (FfmpegPath is not { } ff || _opt.Isolated) return null;
-            var t = Math.Round(at.SourceTime, 1); var key = c.File + "|" + t;
+            var src = VideoProxy.ForPreview(d.Data, c.File); // Paket 01 S3-02: Proxy für die Vorschau
+            var t = Math.Round(at.SourceTime, 1); var key = src + "|" + t;
             if (_veFrames.TryGetValue(key, out var b)) return b;
             var dir = Path.Combine(MediaFolder, ".vorschau", "kopf"); Directory.CreateDirectory(dir);
             var png = Path.Combine(dir, Convert.ToHexString(System.Security.Cryptography.SHA1.HashData(System.Text.Encoding.UTF8.GetBytes(key)))[..16] + ".png");
-            if (!File.Exists(png)) Cli.Run(ff, ["-hide_banner", "-loglevel", "error", "-y", "-ss", t.ToString(System.Globalization.CultureInfo.InvariantCulture), "-i", c.File, "-frames:v", "1", "-vf", "scale=640:-2", png], dir, 30000);
+            if (!File.Exists(png)) Cli.Run(ff, ["-hide_banner", "-loglevel", "error", "-y", "-ss", t.ToString(System.Globalization.CultureInfo.InvariantCulture), "-i", src, "-frames:v", "1", "-vf", "scale=640:-2", png], dir, 30000);
             if (!File.Exists(png)) return null;
             using var fs = File.OpenRead(png); if (_veFrames.Count > 60) _veFrames.Clear(); return _veFrames[key] = new Bitmap(fs);
         }
@@ -263,6 +264,7 @@ public partial class MainWindow
         outer.Children.Add(tabBar);
         foreach (var t in tabs) outer.Children.Add(bodies[t.Id]);
         var sp = bodies["medien"];
+        sp.Children.Add(EditProxyPanel(d)); // Paket 01 S3-02: Proxy-Dateien
         // Medien hinzufügen
         var path = new TextBox { Name = "ve-file", PlaceholderText = "Video-, Bild- oder Tondatei", HorizontalAlignment = HorizontalAlignment.Stretch };
         Button B(string name, string label, Action a, bool primary = false) { var b = new Button { Name = name, Content = label, Margin = new Thickness(0, 0, 4, 4), FontSize = 12 }; if (primary) { b.Background = Accent; b.Foreground = Brushes.White; } b.Click += (_, _) => ProgramRun(VK, a); return b; }
@@ -442,7 +444,7 @@ public partial class MainWindow
                 var key = c.Id + "|" + c.In + "|" + c.Out;
                 if (!_vePlayFrames.TryGetValue(key, out var frames))
                     frames = _vePlayFrames[key] = PlayFramesOverride?.Invoke(c) ?? (FfmpegPath is { } ff && !_opt.Isolated
-                        ? VideoEdit.PlayFrames(ff, c, Path.Combine(MediaFolder, ".vorschau", "abspielen", Convert.ToHexString(System.Security.Cryptography.SHA1.HashData(System.Text.Encoding.UTF8.GetBytes(c.File + File.GetLastWriteTimeUtc(c.File).Ticks + key)))[..12]), PlayFps) : []);
+                        ? VideoEdit.PlayFrames(ff, c with { File = VideoProxy.ForPreview(d.Data, c.File) }, Path.Combine(MediaFolder, ".vorschau", "abspielen", Convert.ToHexString(System.Security.Cryptography.SHA1.HashData(System.Text.Encoding.UTF8.GetBytes(c.File + File.GetLastWriteTimeUtc(c.File).Ticks + key)))[..12]), PlayFps) : []);
                 if (frames.Count > 0) file = frames[Math.Clamp((int)((at.SourceTime - c.In) * PlayFps), 0, frames.Count - 1)];
             }
             if (file is null) return;

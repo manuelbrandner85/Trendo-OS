@@ -131,3 +131,32 @@ public class VideoQueue_Ui
         finally { w.Close(); }
     }
 }
+
+/// <summary>Paket 01 – Studio 3, S3-02 (07.11.2026): Proxy-Dateien im Videoschnitt.</summary>
+public class VideoProxy_Ui
+{
+    [AvaloniaFact(DisplayName = "S3-02 Videoschnitt: Proxys erstellen (echtes FFmpeg) – Vorschau nutzt den Proxy, Export bleibt beim Original; ausschalten geht")]
+    public async Task Proxies()
+    {
+        var ff = Cli.Find("ffmpeg"); if (ff is null) return;
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000; Directory.CreateDirectory(root);
+        try
+        {
+            var orig = Path.Combine(root, "kamera.mp4");
+            Assert.True(Cli.Run(ff, ["-hide_banner", "-loglevel", "error", "-y", "-f", "lavfi", "-i", "testsrc2=s=1280x720:r=25:d=2", "-pix_fmt", "yuv420p", orig], root, 60000).Ok);
+            w.FfmpegRunOverride = a => Cli.Run(ff, a, root, 120000);
+            w.Show("schnitt"); Settle(); RealClick(w, V<Button>(w, "prog-tpl-leer"));
+            w.EditAdd(orig, length: 2, audio: false); w.EditTab = "medien"; w.Show("schnitt"); Settle();
+            var b = w.Find<Button>("ve-proxy-make"); b.BringIntoView(); Settle(); b.Press();
+            for (var i = 0; i < 300 && VideoProxy.Map(w.ProgramActive("schnitt")!.Data).Count == 0; i++) { await Task.Delay(20); Settle(); }
+            var d = w.ProgramActive("schnitt")!;
+            var px = VideoProxy.Map(d.Data)[orig];
+            Assert.True(File.Exists(px)); Assert.Equal(px, VideoProxy.ForPreview(d.Data, orig));
+            Assert.Contains("1 Proxy(s) bereit", w.ProgramMessage("schnitt"));
+            Assert.DoesNotContain(".proxy.mp4", string.Join(" ", VideoEdit.ExportArgs(d.Data, Path.Combine(root, "film.mp4"))));
+            w.Show("schnitt"); Settle(); w.Find<CheckBox>("ve-proxy-use").IsChecked = false; Settle();
+            Assert.Equal(orig, VideoProxy.ForPreview(w.ProgramActive("schnitt")!.Data, orig));
+        }
+        finally { w.Close(); }
+    }
+}
