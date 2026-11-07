@@ -28,6 +28,7 @@ public partial class MainWindow
     public async Task GamePromptRun(string wish, bool change)
     {
         if (_gpBusy || string.IsNullOrWhiteSpace(wish)) return;
+        if (await GameCommandRun(wish)) return; // U6: /bild, /sprite, /modell, /musik, /sprache, /video
         var current = change ? ProgramActive(GK) : null;
         if (change && current is null) { _progMsg[GK] = "Zum Ändern zuerst ein Spiel öffnen – oder „Neues Spiel“."; Show(GK); return; }
         _gpText = wish.Trim(); _gpChange = change; _gpResult = null; _gpBase = current?.Data.DeepClone().AsObject();
@@ -40,19 +41,19 @@ public partial class MainWindow
             if (Windows.Active?.Id is { } id && !ClaudeDockOpen(id)) ClaudeDockToggle("CORE-06");
             _gpKi = ClaudeKi; _progMsg[GK] = "✳ Claude entwickelt dein Spiel mit allen Fähigkeiten – rechts im Claude-Bereich siehst du jeden Schritt.";
             Show(GK);
-            await ClaudeChatSend(GameDirector.Instructions(true) + "\n\n" + prompt);
+            await ClaudeChatSend(GameDirector.Instructions(true) + GameExpertBrief(_gpText, current) + "\n\n" + prompt);
             return;
         }
         _gpBusy = true; _progMsg[GK] = "Die KI entwickelt dein Spiel …"; Show(GK);
         try
         {
             string answer;
-            if (GamePromptOverride is { } o) { answer = await o(GameDirector.Instructions(false), prompt); _gpKi = "Test-KI"; }
+            if (GamePromptOverride is { } o) { answer = await o(GameDirector.Instructions(false) + GameExpertBrief(_gpText, current), prompt); _gpKi = "Test-KI"; }
             else
             {
                 var all = DefaultKiBackends().Where(b => b is not IMainKiBackend).OrderBy(b => b is IRemoteKiBackend ? 0 : 1).ToList();
                 var core = new IntelligenceCore(_core.DataRoot, _core.Audit, () => all);
-                var a = await core.AskAsync(new KiRequest(prompt, GameDirector.Instructions(false), UseKnowledge: false, AllowRemote: true));
+                var a = await core.AskAsync(new KiRequest(prompt, GameDirector.Instructions(false) + GameExpertBrief(_gpText, current), UseKnowledge: false, AllowRemote: true));
                 if (!a.Ok) throw new InvalidOperationException("Keine KI hat geantwortet: " + a.Text + " – richte auf der KI-Seite eine kostenlose Internet-KI ein, lade eine KI für diesen PC oder melde Claude an.");
                 answer = a.Text; _gpKi = KiLabel(a, all);
             }
@@ -87,12 +88,14 @@ public partial class MainWindow
             Text = claude ? "✳ Claude – alle Fähigkeiten (dein Abo)" : "💻 Lokale KI von Trendo – mit Claude (Seite „KI“) arbeitet hier Claude mit allen Fähigkeiten" };
         var btnNew = Act("game-prompt-new", _gpBusy ? "KI arbeitet …" : "▶ Neues Spiel", () => GamePromptRun(input.Text ?? "", false), true);
         var btnChange = Act("game-prompt-change", "✎ Dieses Spiel ändern", () => GamePromptRun(input.Text ?? "", true));
-        btnNew.IsEnabled = btnChange.IsEnabled = !_gpBusy; btnChange.IsVisible = d is not null;
+        var btnTeam = Act("game-prompt-team-run", "🧭 Team-Lauf mit Ablaufplan", () => GameHarnessRun(input.Text ?? ""));
+        btnNew.IsEnabled = btnChange.IsEnabled = btnTeam.IsEnabled = !_gpBusy; btnChange.IsVisible = d is not null;
         var sp = new StackPanel { Spacing = 8, Children = {
             new TextBlock { Text = "🎮 Spiel-Auftrag – dein Entwicklerteam", FontSize = 16, FontWeight = FontWeight.SemiBold, Foreground = Text },
-            P("Jede Spielart: Jump'n'Run, Puzzle, Rennspiel, Horror, Rollenspiel, Open World … Game Director, Design, Story, Level, Grafik, Ton, Test und Produktion arbeiten mit.", null, 12),
+            P("Jede Spielart: Jump'n'Run, Puzzle, Rennspiel, Horror, Rollenspiel, Open World … Game Director, Design, Story, Level, Grafik, Ton, Test und Produktion arbeiten mit – dazu passende Fachleute aus 53 Spiele-Rollen.", null, 12),
             input,
-            new WrapPanel { Children = { btnNew, new Border { Width = 8 }, btnChange, new Border { Width = 12 }, ki } } } };
+            GameCouncilRow(input.Text ?? "", d),
+            new WrapPanel { Children = { btnNew, new Border { Width = 8 }, btnChange, new Border { Width = 8 }, btnTeam, new Border { Width = 12 }, ki } } } };
         if (_gpResult is { } r)
         {
             if (r.Error is { } err) sp.Children.Add(P("⚠ " + err, Brush.Parse("#F5A524"), 12.5));

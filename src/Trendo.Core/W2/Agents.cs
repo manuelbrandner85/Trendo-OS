@@ -64,7 +64,11 @@ public sealed class AgentCenter
     }
 
     /// <summary>Allgemeine Rolle oder Rolle eines Studio-Teams (Id „&lt;studio&gt;.&lt;rolle&gt;“).</summary>
-    public static AgentRole Role(string id) => Roles.FirstOrDefault(r => r.Id == id) ?? StudioRole(id) ?? throw new InvalidOperationException("Diese Rolle gibt es nicht: " + id);
+    public static AgentRole Role(string id) => Roles.FirstOrDefault(r => r.Id == id) ?? StudioRole(id) ?? GameExpertRole(id) ?? throw new InvalidOperationException("Diese Rolle gibt es nicht: " + id);
+
+    /// <summary>U1 (07.11.2026): die 53 Spiele-Fachrollen (<see cref="Programs.GameExperts"/>) gehören zum Spiele-Team (CORE-06), Id „spiele.&lt;rolle&gt;“.</summary>
+    public static AgentRole? GameExpertRole(string id) =>
+        id.StartsWith("spiele.", StringComparison.Ordinal) && Programs.GameExperts.Find(id[7..]) is { } e ? Programs.GameExperts.ToAgent(e) : null;
 
     /// <summary>Rolle aus dem Profi-Team eines Studios – mit fester Studio-Zuordnung.</summary>
     public static AgentRole? StudioRole(string id)
@@ -115,7 +119,9 @@ public sealed class AgentCenter
     public AgentRole RoleOf(string id) => CustomRoles().FirstOrDefault(r => r.Id == id) ?? Role(id);
     /// <summary>Alle Rollen eines Studios: Profi-Team und eigene Rollen.</summary>
     public IReadOnlyList<AgentRole> RolesFor(string studioId) =>
-        [.. (StudioTeams.For(studioId)?.Roles ?? []).Select(r => StudioRole(r.Id)!), .. CustomRoles().Where(r => r.Studio == studioId)];
+        [.. (StudioTeams.For(studioId)?.Roles ?? []).Select(r => StudioRole(r.Id)!),
+         .. (studioId == Programs.GameExperts.Studio ? Programs.GameExperts.All.Select(Programs.GameExperts.ToAgent) : []), // Spiele-Fachleute (U1)
+         .. CustomRoles().Where(r => r.Studio == studioId)];
     public IReadOnlyList<AgentTask> Tasks(string? projectId = null) => _tasks.Where(t => projectId is null || t.ProjectId == projectId).OrderByDescending(t => t.Created).ToList();
     public AgentTask? Get(string id) => _tasks.FirstOrDefault(t => t.Id == id);
 
