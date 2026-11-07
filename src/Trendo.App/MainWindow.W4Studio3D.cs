@@ -77,7 +77,8 @@ public partial class MainWindow
                 new WrapPanel { Children = { Labeled("Name", objName), Act("3d-save", "Speichern", () => SaveScene(objName)), Act("3d-new", "Neues Objekt", () => NewScene(objName)), Act("3d-undo", "Rückgängig", UndoScene) } },
                 H("Szene", 14), SceneTree(objName) } }),
             Card(SavedBlock()),
-            Card(EngineExportCard(objName))); // Paket 01 S2-17: in der Seitenleiste, damit die 3D-Fläche oben bleibt
+            Card(EngineExportCard(objName)), // Paket 01 S2-17: in der Seitenleiste, damit die 3D-Fläche oben bleibt
+            Card(F3dCard())); // Alle Studios, Runde 1: Vorschaubilder jeder 3D-Datei (f3d)
         var stepPanel = StepPanel3D();
         var partCard = Card(new StackPanel { Spacing = 8, Children = { H(Selected is { } sp0 ? "Teil: " + sp0.Name : "Neues Teil", 14), PartForm(objName) } });
         var right = Side("3d-editor-scroll",
