@@ -1,6 +1,6 @@
 # Trendo Text – Produktionspaket
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.36 (Stand 0893360)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.36 (Stand 63090ad)
 
 Arbeitsfläche: Dokumentseite (Textverarbeitung)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

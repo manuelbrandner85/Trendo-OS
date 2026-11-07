@@ -1,6 +1,6 @@
 # Audio bearbeiten – Architektur
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `ton` · Stand: 0.9.36 (Stand 0893360)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `ton` · Stand: 0.9.36 (Stand 63090ad)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.AudioEditor.cs`

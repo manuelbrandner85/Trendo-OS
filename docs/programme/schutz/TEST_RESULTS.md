@@ -1,6 +1,6 @@
 # Schutz & Datenschutz – Testergebnisse
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.36 (Stand 0893360)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.36 (Stand 63090ad)
 
 Lauf: `api.trx, app.trx, core.trx`
 

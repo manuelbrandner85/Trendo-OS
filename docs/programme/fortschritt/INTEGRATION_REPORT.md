@@ -1,6 +1,6 @@
 # Fortschritt – Einbindung in Trendo OS
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `fortschritt` · Stand: 0.9.36 (Stand 0893360)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `fortschritt` · Stand: 0.9.36 (Stand 63090ad)
 
 - Seite `fortschritt` im Studio „Qualität prüfen“ (System & Sicherheit) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

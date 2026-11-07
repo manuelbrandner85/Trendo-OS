@@ -1,6 +1,6 @@
 # Projekte – Produktionspaket
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `projects` · Stand: 0.9.36 (Stand 0893360)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `projects` · Stand: 0.9.36 (Stand 63090ad)
 
 Arbeitsfläche: Projektmappe (Projekte, Dateien, Details – wie ein Datei-Explorer)  
 Modulstatus (requirements.yaml): IN_PROGRESS / Test PC_VERIFIED  

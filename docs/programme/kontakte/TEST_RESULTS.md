@@ -1,6 +1,6 @@
 # Adressbuch – Testergebnisse
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kontakte` · Stand: 0.9.36 (Stand 0893360)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kontakte` · Stand: 0.9.36 (Stand 63090ad)
 
 Lauf: `api.trx, app.trx, core.trx`
 

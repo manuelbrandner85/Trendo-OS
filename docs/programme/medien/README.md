@@ -1,6 +1,6 @@
 # Medien – Produktionspaket
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `medien` · Stand: 0.9.36 (Stand 0893360)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `medien` · Stand: 0.9.36 (Stand 63090ad)
 
 Arbeitsfläche: Fotogalerie mit Betrachter  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

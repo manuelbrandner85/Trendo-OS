@@ -1,6 +1,6 @@
 # Ersteinrichtung – Produktionspaket
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `einrichtung` · Stand: 0.9.36 (Stand 0893360)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `einrichtung` · Stand: 0.9.36 (Stand 63090ad)
 
 Arbeitsfläche: Einrichtungs-Assistent (Schritt für Schritt)  
 Modulstatus (requirements.yaml): IN_PROGRESS / Test PC_VERIFIED  

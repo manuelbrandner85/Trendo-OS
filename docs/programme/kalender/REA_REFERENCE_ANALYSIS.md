@@ -1,6 +1,6 @@
 # Kalender – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kalender` · Stand: 0.9.36 (Stand 0893360)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kalender` · Stand: 0.9.36 (Stand 63090ad)
 
 Analyse: [Vorbild-Analyse Kalender: Thunderbird-Kalender, Outlook, Google Kalender (Clean-Room)](../../../docs/claude/vorbilder/kalender-outlook.md)
 

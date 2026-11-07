@@ -1,6 +1,6 @@
 # Aus Fotos – Testergebnisse
 
-Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `scan3d` · Stand: 0.9.36 (Stand 0893360)
+Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `scan3d` · Stand: 0.9.36 (Stand 63090ad)
 
 Lauf: `api.trx, app.trx, core.trx`
 

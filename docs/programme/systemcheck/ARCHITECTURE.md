@@ -1,6 +1,6 @@
 # Systemcheck – Architektur
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `systemcheck` · Stand: 0.9.36 (Stand 0893360)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `systemcheck` · Stand: 0.9.36 (Stand 63090ad)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Sys13.cs`
@@ -13,11 +13,12 @@ Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `sy
 - `CrashLog`
 
 ## Dateiformate (im Code belegt)
+- .json
 - .md
 - .txt
 
 ## Externe Programme und Dienste
-- FFmpeg
+– keine
 
 ## Bausteine (Masterprompt 131 / 5)
 Eigene Arbeitsseite ohne die gemeinsame Programm-Hülle – Dokumentmodell, Rückgängig und Bedienstufen sind hier nicht einheitlich.
