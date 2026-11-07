@@ -49,10 +49,11 @@ public static class SongCover
     static readonly string[] Framing = ["centered striking composition", "wide cinematic shot", "symmetrical minimalist composition", "close-up with shallow depth of field"];
 
     /// <summary>Beschreibung für die Bild-KI aus Stil (und Titel) des Lieds; <paramref name="variant"/> wechselt die Bildgestaltung.</summary>
-    public static string Prompt(string style, string title, int variant = 0)
+    public static string Prompt(string style, string title, int variant = 0, string? hint = null)
     {
-        var s = (style + " " + title).ToLowerInvariant();
-        var scene = Scenes.FirstOrDefault(x => x.Keys.Any(k => s.Contains(k))).Scene ?? "an abstract artistic composition of flowing colors and light, elegant and modern";
+        var s = (style + " " + title + " " + hint).ToLowerInvariant();
+        var scene = hint is { Length: > 0 } h ? h.Trim().TrimEnd('.') // V15: eigene Beschreibung hat Vorrang vor der Szene aus dem Stil
+            : Scenes.FirstOrDefault(x => x.Keys.Any(k => s.Contains(k))).Scene ?? "an abstract artistic composition of flowing colors and light, elegant and modern";
         var moods = Moods.Where(x => x.Keys.Any(k => s.Contains(k))).Select(x => x.Mood).Take(2).ToList();
         var frame = Framing[Math.Abs(variant) % Framing.Length];
         return $"professional music album cover art, {scene}, {string.Join(", ", moods.Append(frame))}, high detail, rich colors, award-winning photography and design, square format, " +

@@ -324,6 +324,50 @@ public class MusikSuno_Ui
         finally { w.Close(); }
     }
 
+    [AvaloniaFact(DisplayName = "Suno V15: Cover nach eigener Beschreibung (übersetzt, an die Bild-KI); bewegtes Cover aus dem Bild mit der Video-KI (Startbild), nahtlose Schleife 1080² mit echtem FFmpeg + Herkunftsnachweis; ohne Modell klarer Hinweis")]
+    public async Task Cover_hint_motion()
+    {
+        var (w, _, root) = Ui.Open(); _w = w; Directory.CreateDirectory(root);
+        string? seen = null;
+        MainWindow.CoverImageOverride = (p, _, png) =>
+        {
+            seen = p; using var sf = SKSurface.Create(new SKImageInfo(512, 512)); sf.Canvas.Clear(new SKColor(30, 60, 120));
+            using var img = sf.Snapshot(); using var d = img.Encode(SKEncodedImageFormat.Png, 90); File.WriteAllBytes(png, d.ToArray()); return Task.FromResult(true);
+        };
+        try
+        {
+            w.CoverTranslateOverride = _ => Task.FromResult<string?>("lighthouse in fog at sunrise");
+            var dir = Path.Combine(root, "musik-test"); Directory.CreateDirectory(dir); var f = Path.Combine(dir, "a.wav"); File.WriteAllBytes(f, [0]);
+            var lib = new SongLibrary(w.Core.DataRoot);
+            var s = lib.Add(new MusicSong { Title = "Hafenlied", Style = "Indie-Pop", File = f, Seconds = 30 });
+            w.MusicStudioSelect(s.Id); w.Show("musik-studio"); Pump();
+            Assert.NotNull(await w.MsCoverWithHint(s.Id, "Leuchtturm im Nebel bei Sonnenaufgang"));
+            Assert.Contains("lighthouse in fog at sunrise", seen); Assert.Contains("no text", seen);
+            Assert.Equal("lighthouse in fog at sunrise", lib.Get(s.Id)!.CoverHint);
+            // ohne Video-Modell
+            Assert.Null(await w.MsMotionCover(s.Id)); Assert.Contains("Wan 2.2", w.Find<TextBlock>("ms-msg").Text);
+            if (Cli.Find("ffmpeg") is not { } ff) return;
+            string F(string n) { var p = Path.Combine(root, n); File.WriteAllBytes(p, [1]); return p; }
+            w.EditGenModelOverride = new Trendo.Core.Media.GenVideo.Model("wan2.2-szenen", "Wan 2.2 – Filmszenen (5B)", "Apache-2.0", F("a.gguf"), F("t5.gguf"), F("vae.safetensors"));
+            List<string>? args = null;
+            w.VideoKiOverride = (_, a) => { args = [.. a]; var o = a[args.IndexOf("-o") + 1]; return Task.FromResult(Cli.Run(ff, ["-hide_banner", "-loglevel", "error", "-y", "-f", "lavfi", "-i", "testsrc=size=704x704:rate=24:duration=2", "-c:v", "libvpx-vp9", "-b:v", "0", "-crf", "40", o], root, 120_000).Ok); };
+            w.FfmpegRunOverride = a => Cli.Run(ff, a, root, 300_000);
+            var clip = await w.MsMotionCover(s.Id);
+            Assert.True(clip is not null, w.Find<TextBlock>("ms-msg").Text);
+            Assert.Equal(lib.Get(s.Id)!.CoverFile, args![args.IndexOf("-i") + 1]); Assert.Equal("704", args[args.IndexOf("-W") + 1]); Assert.Contains("lighthouse", args[args.IndexOf("-p") + 1]);
+            Assert.True(File.Exists(Trendo.Core.Media.GenVideo.ProvenancePath(clip!))); Assert.Null(Trendo.Core.Media.GenVideo.VerifyProvenance(clip!)); Assert.Equal(clip, lib.Get(s.Id)!.CoverVideo);
+            Assert.Empty(Directory.GetFiles(Path.GetDirectoryName(clip!)!, ".bewegt-*"));
+            if (Cli.Find("ffprobe") is { } fp)
+            {
+                var pr = Cli.Run(fp, ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height:format=duration", "-of", "default=nw=1", clip!], root, 60_000);
+                Assert.Contains("width=1080", pr.Out); Assert.Contains("height=1080", pr.Out);
+                var dur = double.Parse(pr.Out.Split('\n').First(l => l.StartsWith("duration=")).Split('=')[1].Trim(), System.Globalization.CultureInfo.InvariantCulture);
+                Assert.InRange(dur, 3.8, 4.1); // 2 s vorwärts + rückwärts
+            }
+        }
+        finally { MainWindow.CoverImageOverride = null; w.Close(); }
+    }
+
     [AvaloniaFact(DisplayName = "Suno V5: Remix-Knopf je Lied; Beschreibung wiederverwenden; Zuschneiden und Abschnitt entfernen (echtes FFmpeg); Remaster als eigene Fassung")]
     public async Task Remix()
     {

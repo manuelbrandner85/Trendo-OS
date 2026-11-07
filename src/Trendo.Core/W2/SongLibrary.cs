@@ -29,6 +29,10 @@ public sealed class MusicSong
     /// <summary>Name auf dem Cover (Künstlername); leer = ohne Namen.</summary>
     public string Artist { get; set; } = "";
     public int CoverSeed { get; set; }
+    /// <summary>V15: eigene Beschreibung des Cover-Motivs (leer = aus dem Stil).</summary>
+    public string CoverHint { get; set; } = "";
+    /// <summary>V15: bewegtes Cover (MP4-Schleife aus der Video-KI, leer = keins).</summary>
+    public string CoverVideo { get; set; } = "";
     /// <summary>M5: Ergebnis der Song-Analyse (oder null).</summary>
     public SongAnalysis? Analysis { get; set; }
     public DateTimeOffset Created { get; set; } = DateTimeOffset.Now;

@@ -67,7 +67,7 @@ public partial class MainWindow
         string? motif = null; var ownPhoto = photo is not null && File.Exists(photo);
         try
         {
-            motif = ownPhoto ? photo : await CoverMotif(SongCover.Prompt(s.Style, s.Title, sd), sd, !auto);
+            motif = ownPhoto ? photo : await CoverMotif(SongCover.Prompt(s.Style, s.Title, sd, s.CoverHint), sd, !auto);
             var dir = Path.Combine(Path.GetDirectoryName(s.File)!, "Cover"); Directory.CreateDirectory(dir);
             var file = Path.Combine(dir, $"{DevStudio.SafeName(s.Title)}-{sd}.jpg");
             await Task.Run(() => File.WriteAllBytes(file, ComposeCover(motif, s.Title, name, lay, s.Id)));
@@ -224,6 +224,7 @@ public partial class MainWindow
             ? P("Für gemalte Motive: in der KI-Bibliothek unter „Bilder erzeugen“ SDXL Turbo einrichten. Bis dahin: eigenes Foto oder Farbfläche.", Muted, 11)
             : P("Die Bild-KI malt ein Motiv zu Stil und Stimmung, Trendo setzt Titel und Name mit echter Schrift darauf (1400 × 1400).", Muted, 11);
         sp.Children.Add(layouts); sp.Children.Add(artist); sp.Children.Add(new WrapPanel { Children = { make, Spacer(own) } }); sp.Children.Add(hint);
+        sp.Children.Add(MsCoverPlus(s)); // V15: Beschreibung, bewegtes Cover
         return sp;
 
         static Control Spacer(Control c) { c.Margin = new Thickness(6, 0, 0, 0); return c; }
