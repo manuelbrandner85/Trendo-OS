@@ -159,6 +159,7 @@ public partial class MainWindow
         women.IsCheckedChanged += (_, _) => { if ((women.IsChecked == true) != d.Flag("women")) { d.Set("women", women.IsChecked == true, "Damen/Herren"); Show("mode-programm"); } };
         sp.Children.Add(H("Maße", 12)); sp.Children.Add(women);
         Num("chest", "Brust cm"); Num("waist", "Taille cm"); Num("hip", "Hüfte cm"); Num("gradeStep", "Sprung je Größe cm", 4); Num("gradeLen", "Längensprung je Größe cm", 1); Num("fabricWidth", "Stoffbreite cm", 140);
+        sp.Children.Add(SewingPanel(d)); // Alle Studios, Runde 7: echte Schnittmuster mit FreeSewing
         // Schnittteile direkt bearbeiten: Name, Breite × Höhe × Anzahl
         sp.Children.Add(H("Schnittteile", 12));
         var pieces = d.List("pieces").OfType<JsonObject>().ToList();

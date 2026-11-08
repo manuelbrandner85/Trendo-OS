@@ -32,7 +32,7 @@
 | CORE-06 Level als Tiled-Karten (.tmj + Kachelbild + Welt) | eingebaut im Spiel-Editor („Als Tiled-Karten ausgeben“), unabhängig gegengelesen mit pytiled-parser (reports/alle-studios/tiled-e2e.md); 7 Kern-, 1 Echt-, 1 Oberflächentest grün; Öffnen in Tiled/Godot NOT RUN |
 | CORE-07 Barrierefreiheit genau prüfen (axe-core 4.14 + jsdom, eigener Prozess) | eingebaut in der Qualitätsprüfung (Einrichten per Klick über npm, Befunde auf Deutsch), 4 Kern- und 1 Oberflächentest grün (reports/alle-studios/axe-e2e.md); echter Lauf wartet auf Freigabe des Nutzers – NOT RUN |
 | CORE-09 Objekte erkennen und zählen (YOLOX-S, onnxruntime, Prozessor) | eingebaut im Kamera-Bereich (Einrichten per Klick, Modell mit fester SHA-256), 6 Kern- und 1 Oberflächentest grün (reports/alle-studios/yolox-e2e.md); echter Lauf wartet auf Freigabe des Nutzers – NOT RUN |
-| Runde 7 übrige (FreeSewing) | bewertet 08.11.2026, Umsetzung NOT RUN |
+| SPEC-08 Schnittmuster nach Maß (FreeSewing 4.10.2, 11 Schnitte) | eingebaut in „Kleidung & Produkte“ (Einrichten per Klick über npm, fehlende Maße aus Standardgröße mit Nennung), 5 Kern- und 1 Oberflächentest grün (reports/alle-studios/freesewing-e2e.md); echter Lauf wartet auf Freigabe des Nutzers – NOT RUN |
 | Runden 8+ (28 Studios, davon SPEC-07 abgelehnt) | NOT RUN |
 | Web Design Studio Modul 05 (Design-Tokens) | eingebaut, 2 Tests, im Browser geprüft (docs/web-design-godmode) |
 | Volltest nach den Änderungen | grün: Api 16, Core 1546, App 829 (reports/alle-studios/volltest-2026-11-08.md) |
