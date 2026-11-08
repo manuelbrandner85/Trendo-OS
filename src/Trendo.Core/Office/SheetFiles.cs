@@ -2,6 +2,7 @@ using System.Globalization;
 using System.IO.Compression;
 using System.Security;
 using System.Text;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace Trendo.Core.Office;
@@ -426,7 +427,7 @@ public static class SheetFiles
         XDocument? Load(string name) { var e = z.GetEntry(name); if (e is null) return null; return e.LoadXml(); }
         var wb = Load("xl/workbook.xml") ?? throw new InvalidDataException("Keine Excel-Mappe (workbook.xml fehlt).");
         var rels = Load("xl/_rels/workbook.xml.rels");
-        var shared = Load("xl/sharedStrings.xml")?.Root?.Elements(S + "si").Select(si => string.Concat(si.Descendants(S + "t").Select(t => t.Value))).ToList() ?? [];
+        var shared = z.GetEntry("xl/sharedStrings.xml") is { } sharedEntry ? ReadSharedStrings(sharedEntry) : [];
         var stDoc = Load("xl/styles.xml");
         var codes = stDoc?.Root?.Element(S + "numFmts")?.Elements(S + "numFmt").ToDictionary(n => (int)n.Attribute("numFmtId")!, n => (string?)n.Attribute("formatCode")) ?? [];
         var fontsBold = stDoc?.Root?.Element(S + "fonts")?.Elements(S + "font").Select(f => f.Element(S + "b") is { } b && (string?)b.Attribute("val") is null or "1" or "true").ToList() ?? [];
@@ -441,6 +442,50 @@ public static class SheetFiles
             return (Fmt: FromNumFmt(nf, codes.GetValueOrDefault(nf)), Bold: fontsBold.ElementAtOrDefault(I("fontId")), Fill: fillColors.ElementAtOrDefault(I("fillId")), Border: borders.ElementAtOrDefault(I("borderId")), Unlocked: (string?)x.Element(S + "protection")?.Attribute("locked") is "0" or "false");
         }).ToList() ?? [];
 
+        var escaped = new string?[shared.Count]; // jeder gemeinsame Text wird nur einmal auf Zahl/Datum geprüft, auch wenn er tausendfach vorkommt
+        string EscapedShared(int idx) { var text = shared[idx]; return escaped[idx] ??= Escape(text); }
+
+        void ReadCell(XmlReader x, Sheet sh)
+        {
+            var (r, ci) = Addr.Parse(x.GetAttribute("r")!);
+            var t = x.GetAttribute("t") ?? "n";
+            var style = x.GetAttribute("s") is { } sa && XmlConvert.ToInt32(sa) is var si && si < xfs.Count ? xfs[si] : default;
+            string? v = null, f = null, inline = null;
+            if (x.IsEmptyElement) x.Read();
+            else
+            {
+                var depth = x.Depth; x.Read();
+                while (x.Depth > depth)
+                {
+                    if (IsS(x, "t")) inline += ElementText(x);
+                    else if (x.Depth == depth + 1 && v is null && IsS(x, "v")) v = ElementText(x);
+                    else if (x.Depth == depth + 1 && f is null && IsS(x, "f")) f = ElementText(x);
+                    else x.Read();
+                }
+                x.Read();
+            }
+            string raw;
+            if (!string.IsNullOrEmpty(f)) raw = "=" + Formula.FromExcelSafe(f);
+            else raw = t switch
+            {
+                "s" => int.TryParse(v, out var idx) && idx < shared.Count ? EscapedShared(idx) : "",
+                "inlineStr" => Escape(inline ?? ""),
+                "b" => v == "1" ? "WAHR" : "FALSCH",
+                "e" => "'" + (v ?? ""),
+                "str" => Escape(v ?? ""),
+                _ => v is null ? "" : NumberRaw(double.Parse(v, CultureInfo.InvariantCulture), style.Fmt),
+            };
+            if (raw.Length == 0 && !style.Bold && style.Fill is null && !style.Border && style.Fmt == NumFmt.Standard && !style.Unlocked) return;
+            var cell = sh.GetOrAdd(r, ci);
+            cell.Raw = raw; cell.Format = style.Fmt; cell.Bold = style.Bold; cell.Fill = style.Fill; cell.Border = style.Border; cell.Unlocked = style.Unlocked;
+        }
+
+        void ReadRow(XmlReader x, Sheet sh)
+        {
+            if (x.GetAttribute("hidden") is "1" or "true" && x.GetAttribute("r") is { } hr) sh.HiddenRows.Add(XmlConvert.ToInt32(hr) - 1);
+            ForEachChild(x, c => { if (IsS(c, "c")) ReadCell(c, sh); else c.Skip(); });
+        }
+
         var doc = new SheetDoc(); doc.Sheets.Clear();
         foreach (var sheetEl in wb.Root!.Element(S + "sheets")!.Elements(S + "sheet"))
         {
@@ -449,44 +494,101 @@ public static class SheetFiles
             var target = rels?.Root?.Elements(Pr + "Relationship").FirstOrDefault(r => (string?)r.Attribute("Id") == rid)?.Attribute("Target")?.Value ?? "worksheets/sheet1.xml";
             target = target.StartsWith('/') ? target[1..] : "xl/" + target;
             var sh = new Sheet(name); doc.Sheets.Add(sh);
-            var ws = Load(target); if (ws is null) continue;
-            if (ws.Root!.Element(S + "sheetViews")?.Element(S + "sheetView")?.Element(S + "pane") is { } pane && (string?)pane.Attribute("state") is "frozen" or "frozenSplit")
+            if (z.GetEntry(target) is not { } sheetPart) continue;
+            var ws = ReadWorksheet(sheetPart, x => ReadRow(x, sh));
+            if (ws.Element(S + "sheetViews")?.Element(S + "sheetView")?.Element(S + "pane") is { } pane && (string?)pane.Attribute("state") is "frozen" or "frozenSplit")
             { sh.FreezeRows = (int?)(double?)pane.Attribute("ySplit") ?? 0; sh.FreezeCols = (int?)(double?)pane.Attribute("xSplit") ?? 0; }
-            try { ReadExtras(z, target, ws.Root!, sh, dxfFills); } catch (Exception e) when (e is System.Xml.XmlException or InvalidDataException or ArgumentException or FormatException) { }
+            try { ReadExtras(z, target, ws, sh, dxfFills); } catch (Exception e) when (e is System.Xml.XmlException or InvalidDataException or ArgumentException or FormatException) { }
             try { ReadCharts(z, target, sh); } catch (Exception e) when (e is System.Xml.XmlException or InvalidDataException or ArgumentException) { } // Diagramme sind Beigabe – Zellen trotzdem lesen
-            foreach (var col in ws.Root!.Element(S + "cols")?.Elements(S + "col") ?? [])
+            foreach (var col in ws.Element(S + "cols")?.Elements(S + "col") ?? [])
             {
                 var min = (int)col.Attribute("min")! - 1; var max = Math.Min((int)col.Attribute("max")! - 1, min + 200);
                 if (double.TryParse((string?)col.Attribute("width"), NumberStyles.Float, CultureInfo.InvariantCulture, out var w) && (string?)col.Attribute("customWidth") is "1" or "true")
                     for (var c = min; c <= max; c++) sh.ColWidths[c] = Math.Round(w, 2);
             }
-            foreach (var row in ws.Root.Element(S + "sheetData")?.Elements(S + "row") ?? [])
-            {
-                if ((string?)row.Attribute("hidden") is "1" or "true" && (int?)row.Attribute("r") is int hr) sh.HiddenRows.Add(hr - 1);
-                foreach (var c in row.Elements(S + "c"))
-                {
-                    var (r, ci) = Addr.Parse((string)c.Attribute("r")!);
-                    var t = (string?)c.Attribute("t") ?? "n"; var v = c.Element(S + "v")?.Value; var f = c.Element(S + "f")?.Value;
-                    var style = (int?)c.Attribute("s") is int si && si < xfs.Count ? xfs[si] : default;
-                    string raw;
-                    if (!string.IsNullOrEmpty(f)) raw = "=" + Formula.FromExcelSafe(f);
-                    else raw = t switch
-                    {
-                        "s" => int.TryParse(v, out var idx) && idx < shared.Count ? Escape(shared[idx]) : "",
-                        "inlineStr" => Escape(string.Concat(c.Descendants(S + "t").Select(x => x.Value))),
-                        "b" => v == "1" ? "WAHR" : "FALSCH",
-                        "e" => "'" + (v ?? ""),
-                        "str" => Escape(v ?? ""),
-                        _ => v is null ? "" : NumberRaw(double.Parse(v, CultureInfo.InvariantCulture), style.Fmt),
-                    };
-                    if (raw.Length == 0 && !style.Bold && style.Fill is null && !style.Border && style.Fmt == NumFmt.Standard && !style.Unlocked) continue;
-                    var cell = sh.GetOrAdd(r, ci);
-                    cell.Raw = raw; cell.Format = style.Fmt; cell.Bold = style.Bold; cell.Fill = style.Fill; cell.Border = style.Border; cell.Unlocked = style.Unlocked;
-                }
-            }
         }
         if (doc.Sheets.Count == 0) doc.Sheets.Add(new Sheet("Tabelle1"));
         return doc;
+    }
+
+    static bool IsS(XmlReader x, string name) => x.NodeType == XmlNodeType.Element && x.LocalName == name && x.NamespaceURI == S.NamespaceName;
+
+    /// <summary>Text eines Elements samt Unterelementen; der Leser steht danach hinter dem Element.</summary>
+    static string ElementText(XmlReader x)
+    {
+        if (x.IsEmptyElement) { x.Read(); return ""; }
+        var depth = x.Depth; string? text = null; x.Read();
+        while (x.Depth > depth)
+        {
+            if (x.NodeType is XmlNodeType.Text or XmlNodeType.CDATA or XmlNodeType.SignificantWhitespace) text = text is null ? x.Value : text + x.Value;
+            x.Read();
+        }
+        x.Read();
+        return text ?? "";
+    }
+
+    /// <summary>Ruft <paramref name="child"/> für jedes direkte Unterelement auf; es muss den Leser hinter das Unterelement bewegen.</summary>
+    static void ForEachChild(XmlReader x, Action<XmlReader> child)
+    {
+        if (x.IsEmptyElement) { x.Read(); return; }
+        var depth = x.Depth; x.Read();
+        while (x.Depth > depth)
+        {
+            if (x.NodeType == XmlNodeType.Element) child(x);
+            else x.Read();
+        }
+        x.Read();
+    }
+
+    /// <summary>Gemeinsame Texte als Datenstrom lesen – in großen Mappen ist das die längste Liste.</summary>
+    static List<string> ReadSharedStrings(ZipArchiveEntry entry)
+    {
+        var list = new List<string>();
+        entry.ReadXml(x =>
+        {
+            x.MoveToContent();
+            ForEachChild(x, si =>
+            {
+                if (!IsS(si, "si")) { si.Skip(); return; }
+                string? text = null;
+                ForEachText(si, t => text = text is null ? t : text + t);
+                list.Add(text ?? "");
+            });
+        });
+        return list;
+    }
+
+    /// <summary>Alle &lt;t&gt;-Texte unterhalb des aktuellen Elements, in Dokumentreihenfolge (auch Rich-Text-Abschnitte).</summary>
+    static void ForEachText(XmlReader x, Action<string> text)
+    {
+        if (x.IsEmptyElement) { x.Read(); return; }
+        var depth = x.Depth; x.Read();
+        while (x.Depth > depth)
+        {
+            if (IsS(x, "t")) text(ElementText(x));
+            else x.Read();
+        }
+        x.Read();
+    }
+
+    /// <summary>Tabellenblatt lesen: Zeilen gehen als Datenstrom direkt ins Blatt, nur die übrigen Abschnitte (Fenster, Spalten, Regeln) landen als XML im Rückgabewert.</summary>
+    static XElement ReadWorksheet(ZipArchiveEntry entry, Action<XmlReader> readRow)
+    {
+        XElement? root = null;
+        entry.ReadXml(x =>
+        {
+            x.MoveToContent();
+            var ws = root = new XElement(XName.Get(x.LocalName, x.NamespaceURI));
+            var dataDone = false;
+            ForEachChild(x, part =>
+            {
+                if (!IsS(part, "sheetData")) { ws.Add(XNode.ReadFrom(part)); return; }
+                if (dataDone) { part.Skip(); return; }
+                dataDone = true;
+                ForEachChild(part, row => { if (IsS(row, "row")) readRow(row); else row.Skip(); });
+            });
+        });
+        return root!;
     }
 
     /// <summary>Text, der wie eine Zahl, Formel oder ein Datum aussieht, bleibt Text („'“ davor, wie in Calc).</summary>

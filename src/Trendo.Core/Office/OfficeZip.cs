@@ -50,13 +50,21 @@ public static class OfficeZip
     /// <summary>XML eines Eintrags laden: ohne DTD, ohne Nachladen externer Dateien, mit Größengrenze.</summary>
     public static XDocument LoadXml(this ZipArchiveEntry e, LoadOptions options = LoadOptions.None)
     {
+        XDocument? doc = null;
+        e.ReadXml(r => doc = XDocument.Load(r, options), !options.HasFlag(LoadOptions.PreserveWhitespace));
+        return doc!;
+    }
+
+    /// <summary>Eintrag als Datenstrom lesen, mit denselben Schutzregeln wie <see cref="LoadXml"/> – für Tabellenblätter, die als XDocument ein Vielfaches an Speicher belegen würden.</summary>
+    public static void ReadXml(this ZipArchiveEntry e, Action<XmlReader> read, bool ignoreWhitespace = true)
+    {
         var settings = new XmlReaderSettings
         {
             DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null, MaxCharactersFromEntities = 0, MaxCharactersInDocument = MaxEntryBytes,
-            IgnoreWhitespace = !options.HasFlag(LoadOptions.PreserveWhitespace),
+            IgnoreWhitespace = ignoreWhitespace,
         };
         using var s = e.OpenLimited();
-        try { using var r = XmlReader.Create(s, settings); return XDocument.Load(r, options); }
+        try { using var r = XmlReader.Create(s, settings); read(r); }
         catch (XmlException x) when (x.Message.Contains("DTD", StringComparison.OrdinalIgnoreCase)) { throw Bad($"„{e.FullName}“ enthält eine DTD (nicht erlaubt)."); }
     }
 
