@@ -84,3 +84,4 @@ Hinweise:
 - Recherche, Artikel-Ansicht: eigener Code nach dem Verfahren von mozilla/readability (Apache-2.0, https://github.com/mozilla/readability). KI-Vorlagen, Anweisungs-Test: eigener Code nach der Idee von promptfoo (MIT, https://github.com/promptfoo/promptfoo). Von beiden Projekten wird nichts mitgeliefert.
 - Kostenlose KI, Ausweichen auf das nächste Modell: eigener Code nach der Idee von LiteLLM (https://github.com/BerriAI/litellm). Von dem Projekt wird nichts mitgeliefert.
 - KI fragen, Gedächtnis: eigener Code nach der Idee von mem0 (Apache-2.0, https://github.com/mem0ai/mem0). Von dem Projekt wird nichts mitgeliefert.
+- Nur im Testprojekt, nicht ausgeliefert: SpiceSharp 3.2.3 (MIT, https://github.com/SpiceSharp/SpiceSharp) als Gegenprobe der Schaltungssimulation.
