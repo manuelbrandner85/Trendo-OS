@@ -1820,5 +1820,175 @@
    "sprache": "HTML",
    "beschreibung": "Font files available from Google Fonts, and a public issue tracker for all things Google Fonts"
   }
+ ],
+ "SYS-06": [
+  {
+   "repo": "localsend/localsend",
+   "lizenz": "Apache-2.0",
+   "sterne": 97856,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "Dart",
+   "beschreibung": "An open-source cross-platform alternative to AirDrop"
+  },
+  {
+   "repo": "localsend/protocol",
+   "lizenz": null,
+   "sterne": 592,
+   "zuletzt": "2026-08-07",
+   "archiviert": false,
+   "sprache": "Mermaid",
+   "beschreibung": "The LocalSend REST API"
+  },
+  {
+   "repo": "syncthing/syncthing",
+   "lizenz": "MPL-2.0",
+   "sterne": 90217,
+   "zuletzt": "2026-11-05",
+   "archiviert": false,
+   "sprache": "Go",
+   "beschreibung": "Open Source Continuous File Synchronization"
+  },
+  {
+   "repo": "magic-wormhole/magic-wormhole",
+   "lizenz": "MIT",
+   "sterne": 23091,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "get things from one computer to another, safely"
+  },
+  {
+   "repo": "schollz/croc",
+   "lizenz": "MIT",
+   "sterne": 40882,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Go",
+   "beschreibung": "Easily and securely send things from one computer to another"
+  }
+ ],
+ "SYS-07": [
+  {
+   "repo": "LibreHardwareMonitor/LibreHardwareMonitor",
+   "lizenz": "MPL-2.0",
+   "sterne": 9349,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": "Libre Hardware Monitor is free software that can monitor the temperature sensors, fan speeds, voltages, load a"
+  },
+  {
+   "repo": "pciutils/pciids",
+   "lizenz": null,
+   "sterne": 392,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": null,
+   "beschreibung": "The pci.ids file"
+  },
+  {
+   "repo": "usbids/usbids",
+   "lizenz": "GPL-3.0",
+   "sterne": 17,
+   "zuletzt": "2026-06-26",
+   "archiviert": false,
+   "sprache": null,
+   "beschreibung": "Linux USB ID Repository (master still in CVS at SourceForge.net)"
+  },
+  {
+   "repo": "linuxhw/hw-probe",
+   "lizenz": "NOASSERTION",
+   "sterne": 931,
+   "zuletzt": "2026-08-14",
+   "archiviert": false,
+   "sprache": "Perl",
+   "beschreibung": "Probe for hardware, check operability and find drivers"
+  }
+ ],
+ "X-09": [
+  {
+   "repo": "aristocratos/btop",
+   "lizenz": "Apache-2.0",
+   "sterne": 35293,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "A monitor of resources"
+  },
+  {
+   "repo": "nicolargo/glances",
+   "lizenz": "NOASSERTION",
+   "sterne": 33910,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Glances an Eye on your system. A top/htop alternative for GNU/Linux, BSD, macOS and Windows operating systems."
+  },
+  {
+   "repo": "GameTechDev/PresentMon",
+   "lizenz": "MIT",
+   "sterne": 2668,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Capture and analyze the high-level performance characteristics of graphics applications on Windows."
+  },
+  {
+   "repo": "netdata/netdata",
+   "lizenz": "GPL-3.0",
+   "sterne": 81300,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "Go",
+   "beschreibung": "The fastest path to AI-powered full stack observability, even for lean teams."
+  }
+ ],
+ "SYS-02": [
+  {
+   "repo": "angularsen/UnitsNet",
+   "lizenz": "MIT-0",
+   "sterne": 2969,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": "Makes life working with units of measurement just a little bit better."
+  },
+  {
+   "repo": "ncalc/ncalc",
+   "lizenz": "MIT",
+   "sterne": 1171,
+   "zuletzt": "2026-11-03",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": "NCalc is a fast and lightweight expression evaluator library for .NET, designed for flexibility and high perfo"
+  },
+  {
+   "repo": "josdejong/mathjs",
+   "lizenz": "Apache-2.0",
+   "sterne": 15105,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "JavaScript",
+   "beschreibung": "An extensive math library for JavaScript and Node.js"
+  },
+  {
+   "repo": "Qalculate/libqalculate",
+   "lizenz": "GPL-2.0",
+   "sterne": 2726,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Qalculate! library and CLI"
+  },
+  {
+   "repo": "ShareX/ShareX",
+   "lizenz": "GPL-3.0",
+   "sterne": 40807,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": "ShareX is a free and open-source application that enables users to capture or record any area of their screen "
+  }
  ]
 }

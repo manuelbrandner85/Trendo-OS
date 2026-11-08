@@ -293,5 +293,35 @@
 | phosphor-icons/core | MIT | 2026-01-06 | nein | 396 | TypeScript |
 | WordPress/openverse | MIT | 2026-11-07 | nein | 556 | Python |
 | google/fonts | je Schrift OFL-1.1 / Apache-2.0 / UFL | 2026-11-08 | nein | 20738 | HTML |
+## SYS-06
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| localsend/localsend | Apache-2.0 | 2026-11-08 | nein | 97856 | Dart |
+| localsend/protocol | keine Lizenzdatei – offene Protokollbeschreibung; eigener Code nach der Beschreibung | 2026-08-07 | nein | 592 | Mermaid |
+| syncthing/syncthing | MPL-2.0 | 2026-11-05 | nein | 90217 | Go |
+| magic-wormhole/magic-wormhole | MIT | 2026-11-06 | nein | 23091 | Python |
+| schollz/croc | MIT | 2026-11-07 | nein | 40882 | Go |
+## SYS-07
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| LibreHardwareMonitor/LibreHardwareMonitor | MPL-2.0 | 2026-11-06 | nein | 9349 | C# |
+| pciutils/pciids | GPL-2.0+ oder BSD-3-Clause (Kopf von pci.ids) | 2026-11-08 | nein | 392 |  |
+| usbids/usbids | GPL-3.0 | 2026-06-26 | nein | 17 |  |
+| linuxhw/hw-probe | LGPL-2.1+ oder BSD-4-Clause (aus Lizenzdatei) | 2026-08-14 | nein | 931 | Perl |
+## X-09
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| aristocratos/btop | Apache-2.0 | 2026-11-06 | nein | 35293 | C++ |
+| nicolargo/glances | LGPL-3.0 (aus Lizenzdatei) | 2026-11-07 | nein | 33910 | Python |
+| GameTechDev/PresentMon | MIT | 2026-11-06 | nein | 2668 | C++ |
+| netdata/netdata | GPL-3.0 | 2026-11-08 | nein | 81300 | Go |
+## SYS-02
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| angularsen/UnitsNet | MIT-0 | 2026-11-06 | nein | 2969 | C# |
+| ncalc/ncalc | MIT | 2026-11-03 | nein | 1171 | C# |
+| josdejong/mathjs | Apache-2.0 | 2026-11-06 | nein | 15105 | JavaScript |
+| Qalculate/libqalculate | GPL-2.0 | 2026-11-06 | nein | 2726 | C++ |
+| ShareX/ShareX | GPL-3.0 | 2026-11-08 | nein | 40807 | C# |
 
 Korrigiert: PhotoDemon → tannerhelland/PhotoDemon (BSD-ähnlich), Shotcut → mltframework/shotcut (GPL-3.0).

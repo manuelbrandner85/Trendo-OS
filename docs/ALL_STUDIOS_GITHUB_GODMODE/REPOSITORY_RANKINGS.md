@@ -363,3 +363,45 @@ Bestand: Openverse, Freesound, Poly Haven, ambientCG, Pixabay, Wikimedia und Sch
 | iconify/icon-sets | 9 | 8 | 8 | 8 | 9 | 9 | 7 | 8.4 | AUSWAHL | über 200 Symbolsätze mit Lizenz je Satz – nur freie Sätze (MIT, Apache, ISC, OFL, CC0, CC BY mit Nennung) offline durchsuchbar, SVG |
 | phosphor-icons/core | 8 | 8 | 8 | 10 | 9 | 9 | 5 | 8.35 | VORHANDEN | MIT – in Iconify enthalten |
 | game-icons/icons | 8 | 7 | 7 | 7 | 9 | 9 | 6 | 7.6 | OPTION | CC BY 3.0 – 4000 Spiel-Symbole; Option, Namensnennung nötig (in Iconify enthalten) |
+
+## SYS-06 – Dateien teilen
+Bestand: Ordner im Heimnetz teilen: nur lesen, geheimer Link, läuft ab.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| localsend/localsend | 10 | 8 | 9 | 10 | 9 | 9 | 10 | 9.25 | AUSWAHL | Apache-2.0, offenes LocalSend-Protokoll (v2/v3): Dateien direkt ans Handy senden und von dort empfangen – als eigener C#-Code nach der Protokollbeschreibung, die LocalSend-App läuft auf dem Handy |
+| schollz/croc | 9 | 6 | 9 | 10 | 9 | 9 | 10 | 8.6 | OPTION | MIT, Einzelprogramm: Dateien übers Internet mit Code-Wort – Option, nutzt einen Relay-Server |
+| localsend/protocol | 9 | 8 | 8 | 7 | 9 | 9 | 5 | 8.15 | KONZEPT | Protokollbeschreibung (ohne Lizenzdatei) – nur als Vorlage für eigenen Code gelesen |
+| syncthing/syncthing | 10 | 4 | 9 | 7 | 9 | 9 | 10 | 8.0 | EXTERN | MPL-2.0, Dauer-Abgleich zwischen Geräten – nur externes Programm |
+| magic-wormhole/magic-wormhole | 8 | 5 | 8 | 10 | 8 | 9 | 9 | 7.85 | OPTION | MIT, Python – gleiche Rolle wie croc |
+
+## SYS-07 – Geräte erkennen
+Bestand: Geräte und Laufwerke auf einen Blick, Probleme und Neues hervorgehoben; unbekannte Geräte erscheinen oft nur mit Nummern.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| pciutils/pciids | 8 | 10 | 8 | 9 | 10 | 10 | 6 | 8.85 | AUSWAHL | pci.ids (BSD-3-Clause gewählt, Doppellizenz): Hersteller und Modell zu PCI-Nummern – reine Datendatei, offline |
+| usbids/usbids | 8 | 9 | 7 | 5 | 10 | 10 | 3 | 7.75 | OPTION | GPL-3.0 als Spiegel – Lizenz der Originaldatei erst prüfen; Option |
+| LibreHardwareMonitor/LibreHardwareMonitor | 10 | 4 | 8 | 7 | 8 | 3 | 9 | 7.1 | AUSGESCHLOSSEN | MPL-2.0, aber lädt für viele Sensoren einen Kernel-Treiber – Treiber sind in Trendo verboten; ausgeschlossen |
+| linuxhw/hw-probe | 8 | 2 | 7 | 6 | 7 | 6 | 6 | 5.95 | VERWORFEN | LGPL/BSD-4, Linux-Werkzeug mit Upload – nicht übernommen |
+
+## X-09 – Leistung anzeigen
+Bestand: Speicher & Leistung vorhanden (Auslastung, nvidia-smi für die Grafikkarte).
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| aristocratos/btop | 9 | 3 | 9 | 10 | 9 | 9 | 10 | 8.0 | KONZEPT | Apache-2.0 – Konzept: Verlaufsgrafiken je Kern, Prozessliste nach Verursacher; eigener Code |
+| GameTechDev/PresentMon | 8 | 5 | 8 | 10 | 9 | 6 | 7 | 7.55 | OPTION | MIT, Bildraten messen – braucht Admin-Rechte (ETW); Option nur auf Wunsch |
+| nicolargo/glances | 8 | 3 | 8 | 6 | 7 | 8 | 9 | 6.65 | KONZEPT | LGPL-3.0, Python – Konzept |
+| netdata/netdata | 10 | 1 | 8 | 5 | 7 | 7 | 10 | 6.55 | VERWORFEN | GPL-3.0, Dauerdienst – nicht übernommen |
+
+## SYS-02 – Kleine Helfer & Musik
+Bestand: Rechner, Notizen, Bildschirmfoto, Einheiten (kleine eigene Tabelle), Musik und Videos abspielen.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| angularsen/UnitsNet | 9 | 10 | 9 | 10 | 9 | 10 | 8 | 9.4 | AUSWAHL | MIT-0, .NET: über 1000 Einheiten mit Umrechnung – ersetzt die kleine eigene Tabelle |
+| ncalc/ncalc | 8 | 10 | 8 | 10 | 9 | 9 | 6 | 8.8 | AUSWAHL | MIT, .NET: Formeln mit Funktionen sicher auswerten – für den Rechner |
+| josdejong/mathjs | 10 | 5 | 9 | 10 | 8 | 8 | 9 | 8.4 | OPTION | Apache-2.0, JavaScript – Option, NCalc reicht |
+| ShareX/ShareX | 10 | 3 | 8 | 5 | 9 | 8 | 10 | 7.25 | EXTERN | GPL-3.0 – nur externes Programm |
+| Qalculate/libqalculate | 10 | 3 | 8 | 5 | 9 | 8 | 7 | 7.1 | EXTERN | GPL-2.0 – nur externes Programm |
