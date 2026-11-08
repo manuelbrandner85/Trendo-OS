@@ -45,7 +45,8 @@
 | CORE-12 Anweisungs-Test (eigener Code nach promptfoo) | eingebaut, echter Lauf mit lokaler KI, Oberfläche mit Test-KI (gleicher Bericht) |
 | CORE-04, X-02 | bewertet 08.11.2026: kein Einbau, schon abgedeckt oder durch Projektregeln ausgeschlossen |
 | X-05 Kostenlose KI weicht auf das nächste Modell aus (eigener Code nach LiteLLM) | eingebaut, Tests bis zur HTTP-Antwort, echter Lauf gegen OpenRouter NOT RUN (reports/alle-studios/runde12-kostenlose-ki-ausweichen-e2e.md) |
-| X-11, CORE-02, X-01 | bewertet 08.11.2026: kein Einbau; automatisches Gedächtnis (mem0) nur nach Entscheidung |
+| X-11, X-01 | bewertet 08.11.2026: kein Einbau |
+| CORE-02 Gedächtnis mit Kontrolle (eigener Code nach mem0, freigegeben 08.11.2026) | eingebaut, von Haus aus aus, jeder Eintrag sichtbar und löschbar, nichts ins Internet; 30 Kern- und 1 Oberflächentest, echter Lauf mit lokaler KI (reports/alle-studios/ki-gedaechtnis-e2e.md) |
 | X-06, X-04, X-10, CORE-01, SYS-01, SYS-11, SYS-13 (Runden 13 und 14) | bewertet 08.11.2026: kein Einbau, Funktionen vorhanden oder durch Projektregeln ausgeschlossen. Damit alle Studios bewertet, SPEC-07 bleibt abgelehnt |
 | Web Design Studio Modul 05 (Design-Tokens) | eingebaut, 2 Tests, im Browser geprüft (docs/web-design-godmode) |
 | Volltest nach den Änderungen | grün: Api 16, Core 1546, App 829 (reports/alle-studios/volltest-2026-11-08.md) |

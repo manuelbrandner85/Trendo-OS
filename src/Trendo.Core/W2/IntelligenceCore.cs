@@ -29,7 +29,7 @@ public sealed class KiModelBusyException(string message, bool accountLimit) : Ex
 public interface IMainKiBackend : IRemoteKiBackend { }
 
 /// <param name="AllowRemote">Nur der freie Chat setzt das: dann darf ein eingeschalteter KI-Dienst außerhalb des PCs einspringen – ohne Verlauf und ohne eigene Dokumente. Abläufe, E-Mail, Agenten und Aufträge bleiben immer lokal.</param>
-public sealed record KiRequest(string Question, string? SystemPrompt = null, string? PreferredModel = null, IReadOnlyList<KiMessage>? History = null, bool UseKnowledge = true, bool AllowRemote = false);
+public sealed record KiRequest(string Question, string? SystemPrompt = null, string? PreferredModel = null, IReadOnlyList<KiMessage>? History = null, bool UseKnowledge = true, bool AllowRemote = false, bool Personal = false);
 public sealed record KiAnswer(bool Ok, string Text, string? Backend, string? Model, IReadOnlyList<string> Sources, TimeSpan Took);
 
 /// <summary>CORE-02 Trendo Intelligence Core: ein Eingang für alle KI-Fragen in Trendo OS.
@@ -44,6 +44,8 @@ public sealed class IntelligenceCore
     private readonly string _historyFile;
     /// <summary>C3: Internet-KIs in allen Bereichen erlaubt (nicht nur im freien Chat)? Eigene Dokumente gehen trotzdem nie hinaus.</summary>
     public Func<bool>? RemoteEverywhere { get; set; }
+    /// <summary>Gedächtnis der Person; nur bei Anfragen mit <see cref="KiRequest.Personal"/> und nur für die KI auf diesem PC.</summary>
+    public KiMemoryStore? Memory { get; set; }
     /// <summary>C4: eine Antwort kam aus dem Internet (Name der Quelle) – für Hinweis und Tageszähler.</summary>
     public Action<string>? RemoteUsed { get; set; }
 
@@ -85,6 +87,7 @@ public sealed class IntelligenceCore
                 foreach (var (t, x) in hits) { sys.Append($"### {t}\n{(x.Length > 1500 ? x[..1500] : x)}\n"); sources.Add(t); }
             }
         }
+        if (req.Personal && Memory?.PromptBlock() is { Length: > 0 } remembered) sys.Append(remembered);
         List<KiMessage> Messages(string system)
         {
             var m = new List<KiMessage> { new("system", system) };

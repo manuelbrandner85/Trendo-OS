@@ -40,11 +40,12 @@ public partial class MainWindow
         try
         {
             using var kiLabel = KiActivityHub.Label("Trendo KI");
-            var a = await Intel.AskAsync(new KiRequest(q, PreferredModel: KiModelName, History: _chat.ToList(), AllowRemote: true), _askCts.Token);
+            var a = await Intel.AskAsync(new KiRequest(q, PreferredModel: KiModelName, History: _chat.ToList(), AllowRemote: true, Personal: true), _askCts.Token);
             LastAnswer = a.Text;
             if (a.Ok)
             {
                 _chat.Add(new("user", q)); _chat.Add(new("assistant", a.Text));
+                LearnFromChat(q);
                 var c = Chats.Append(CurrentChat(), q, a.Text, a.Model is null ? null : $"{a.Model} · {a.Backend}"); _chatId = c.Id;
             }
             _askState = a.Ok ? $"Antwort von {a.Model} ({a.Backend}{(KiCatalog.Cloud.Any(c => c.Name == a.Backend) ? ", außerhalb des PCs" : "")}) in {a.Took.TotalSeconds:0.0} s{(a.Sources.Count > 0 ? " · Wissen: " + string.Join(", ", a.Sources) : "")}" : a.Text;
@@ -93,6 +94,8 @@ public partial class MainWindow
                 new Border { Width = 4 },
                 Act("ask-chat-save", "Als Dokument", () => { var f = Path.Combine(WorkFolder("KI-Gespräche"), DevStudio.SafeName(chat.Title) + ".md"); File.WriteAllText(f, ChatStore.ToMarkdown(chat)); _askState = "Gespeichert: " + f; NotifyFileResult(_askState); Show("ki-fragen"); }) } });
         }
+
+        left.Children.Add(KiMemoryPanel());
 
         // ── rechts: Verlauf ──
         var sp = new StackPanel { Spacing = 8 };

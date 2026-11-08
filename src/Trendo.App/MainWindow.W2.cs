@@ -20,6 +20,7 @@ public partial class MainWindow
         var i = new IntelligenceCore(_core.DataRoot, _core.Audit, () => KiBackendsOverride?.Invoke() ?? DefaultKiBackends(), KnowledgeLookup);
         i.RemoteEverywhere = () => KiSourceSettings.Load(_core.DataRoot).RemoteEverywhere;
         i.RemoteUsed = name => _ui.Post(() => RemoteKiUsed(name));
+        i.Memory = KiMemory;
         return i;
     }
 

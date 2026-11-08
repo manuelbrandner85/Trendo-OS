@@ -158,7 +158,14 @@ if (Environment.GetEnvironmentVariable("TRENDO_R11") is { Length: > 0 } r11) // 
     void R11Pump(Func<bool> done, int seconds) { var t0 = DateTime.UtcNow; while (!done() && DateTime.UtcNow - t0 < TimeSpan.FromSeconds(seconds)) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); Thread.Sleep(30); } Avalonia.Threading.Dispatcher.UIThread.RunJobs(); }
     T Named<T>(string name) where T : Avalonia.Controls.Control => Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(win).OfType<T>().First(c => c.Name == name);
     void Click(string name) => Named<Avalonia.Controls.Button>(name).RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Avalonia.Controls.Button.ClickEvent));
-    if (r11 == "prompt")
+    if (r11 == "gedaechtnis")
+    {
+        win.KiMemory.SetEnabled(true);
+        foreach (var fact in new[] { "Heißt Erika Muster", "Wohnt in Köln", "Arbeitet als Tischlerin", "Wunsch: immer kurz" }) win.KiMemory.Add(fact);
+        win.Show("ki-fragen"); R11Pump(() => false, 1);
+        Click("ask-mem-open"); R11Pump(() => false, 1);
+    }
+    else if (r11 == "prompt")
     {
         var alt = win.Prompts.Save(null, "Biene", "Test", "Erzähl mir etwas über die {{Thema}}.");
         win.Prompts.Save(alt.Id, "Biene", "Test", "Antworte ausschließlich mit einem gültigen JSON-Objekt der Form {\"text\":\"...\"} ohne Codeblock. Der Text: ein Satz über die {{Thema}}, höchstens zehn Wörter.");
