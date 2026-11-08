@@ -1,0 +1,190 @@
+{
+ "SPEC-11": [
+  {
+   "repo": "stephanstapel/ZUGFeRD-csharp",
+   "lizenz": "Apache-2.0",
+   "sterne": 395,
+   "zuletzt": "2026-10-27",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": "Open source C# e-invoicing library. Enables creating and reading ZUGFeRD invoices."
+  },
+  {
+   "repo": "itplr-kosit/validator",
+   "lizenz": "Apache-2.0",
+   "sterne": 193,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "Java",
+   "beschreibung": "Validates XML documents with XML Schema and Schematron"
+  },
+  {
+   "repo": "ZUGFeRD/mustangproject",
+   "lizenz": "Apache-2.0",
+   "sterne": 491,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "XSLT",
+   "beschreibung": "Open Source Java e-Invoicing library, validator and tool (Factur-X/ZUGFeRD, UNCEFACT/CII XRechnung)"
+  },
+  {
+   "repo": "invoiceninja/invoiceninja",
+   "lizenz": "Elastic License 2.0 (aus Lizenzdatei)",
+   "sterne": 10535,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "PHP",
+   "beschreibung": "A source-available invoice, quote, project and time-tracking app built with Laravel"
+  },
+  {
+   "repo": "akaunting/akaunting",
+   "lizenz": "Business Source License (aus Lizenzdatei)",
+   "sterne": 10285,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "PHP",
+   "beschreibung": "Online Accounting Software"
+  }
+ ],
+ "SYS-09": [
+  {
+   "repo": "jstedfast/MailKit",
+   "lizenz": "MIT",
+   "sterne": 6872,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": "A cross-platform .NET library for IMAP, POP3, and SMTP."
+  },
+  {
+   "repo": "ical-org/ical.net",
+   "lizenz": "MIT (aus Lizenzdatei)",
+   "sterne": 983,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": "iCal.NET - iCalendar library for .Net"
+  },
+  {
+   "repo": "thunderbird/thunderbird-desktop",
+   "lizenz": "MPL-2.0",
+   "sterne": 237,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "JavaScript",
+   "beschreibung": "The official repository for the Thunderbird desktop email client."
+  },
+  {
+   "repo": "Kozea/Radicale",
+   "lizenz": "GPL-3.0",
+   "sterne": 5194,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "A simple CalDAV (calendar) and CardDAV (contact) server."
+  },
+  {
+   "repo": "nextcloud/calendar",
+   "lizenz": "AGPL-3.0",
+   "sterne": 1197,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "JavaScript",
+   "beschreibung": "📆 Calendar app for Nextcloud"
+  }
+ ],
+ "STUDIO-LETTER-01": [
+  {
+   "repo": "Sematre/typst-letter-pro",
+   "lizenz": "MIT",
+   "sterne": 222,
+   "zuletzt": "2025-03-20",
+   "archiviert": false,
+   "sprache": "Typst",
+   "beschreibung": "DIN 5008 letter template for Typst"
+  },
+  {
+   "repo": "languagetool-org/languagetool",
+   "lizenz": "LGPL-2.1",
+   "sterne": 15236,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "Java",
+   "beschreibung": "Style and Grammar Checker for 25+ Languages"
+  },
+  {
+   "repo": "QuestPDF/QuestPDF",
+   "lizenz": "Community-/kommerzielle Doppellizenz (aus Lizenzdatei)",
+   "sterne": 14219,
+   "zuletzt": "2026-10-29",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": "QuestPDF is a modern library for PDF document generation. Its fluent C# API lets you design complex layouts wi"
+  },
+  {
+   "repo": "komascript/komascript",
+   "lizenz": "LPPL (nicht auf GitHub, CTAN)",
+   "sterne": "–",
+   "zuletzt": "–",
+   "archiviert": false,
+   "sprache": "–",
+   "beschreibung": ""
+  },
+  {
+   "repo": "wkhtmltopdf/wkhtmltopdf",
+   "lizenz": "LGPL-3.0",
+   "sterne": 14540,
+   "zuletzt": "2022-11-22",
+   "archiviert": true,
+   "sprache": "C++",
+   "beschreibung": "Convert HTML to PDF using Webkit (QtWebKit)"
+  }
+ ],
+ "STUDIO-ONLINE-BUSINESS-01": [
+  {
+   "repo": "medusajs/medusa",
+   "lizenz": "MIT, Enterprise-Teile eigene Lizenz (aus Lizenzdatei)",
+   "sterne": 37126,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "The world's most flexible commerce platform for agents and developers"
+  },
+  {
+   "repo": "saleor/saleor",
+   "lizenz": "BSD-3-Clause",
+   "sterne": 23514,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Saleor Core: the high performance, composable, headless commerce API."
+  },
+  {
+   "repo": "bagisto/bagisto",
+   "lizenz": "MIT",
+   "sterne": 28344,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "PHP",
+   "beschreibung": "Open Source eCommerce & Multi-Vendor Marketplace Platform Built with Laravel for Enterprise-Scale Commerce, Su"
+  },
+  {
+   "repo": "woocommerce/woocommerce",
+   "lizenz": "GPL-2.0",
+   "sterne": 10582,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "PHP",
+   "beschreibung": "A customizable, open-source ecommerce platform built on WordPress. Build any commerce solution you can imagine"
+  },
+  {
+   "repo": "PrestaShop/PrestaShop",
+   "lizenz": "OSL-3.0 / AFL-3.0 (aus Lizenzdatei)",
+   "sterne": 9248,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "PHP",
+   "beschreibung": "PrestaShop is the universal open-source software platform to build your e-commerce solution."
+  }
+ ]
+}

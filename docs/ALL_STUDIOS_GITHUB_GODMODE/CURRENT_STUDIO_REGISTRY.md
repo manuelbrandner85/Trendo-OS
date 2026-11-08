@@ -5,13 +5,13 @@ Korrektur 08.11.2026: Die Zählung sucht nur die Studio-Kennung – „TV & Live
 
 | Studio | Name | Quelldateien | Testdateien | Status Runde 1 |
 |---|---|---|---|---|
-| STUDIO-LETTER-01 | Briefe schreiben | 16 | 7 | NOT RUN – folgt in späteren Runden |
+| STUDIO-LETTER-01 | Briefe schreiben | 16 | 7 | bewertet (Runde 6) |
 | SYS-10 | Texte & Tabellen | 20 | 14 | bewertet (Runde 2) |
-| SYS-09 | E-Mails & Termine | 13 | 1 | NOT RUN – folgt in späteren Runden |
+| SYS-09 | E-Mails & Termine | 13 | 1 | bewertet (Runde 6) |
 | X-11 | Neues Projekt starten | 8 | 2 | NOT RUN – folgt in späteren Runden |
 | SYS-02 | Kleine Helfer & Musik | 11 | 1 | NOT RUN – folgt in späteren Runden |
-| STUDIO-ONLINE-BUSINESS-01 | Online verkaufen | 13 | 5 | NOT RUN – folgt in späteren Runden |
-| SPEC-11 | Geld & Rechnungen | 9 | 3 | NOT RUN – folgt in späteren Runden |
+| STUDIO-ONLINE-BUSINESS-01 | Online verkaufen | 13 | 5 | bewertet (Runde 6) |
+| SPEC-11 | Geld & Rechnungen | 9 | 3 | bewertet (Runde 6) |
 | CORE-08 | Videos & Fotos bearbeiten | 18 | 6 | bewertet (Runde 1) |
 | SPEC-15 | Live streamen | 10 | 4 | bewertet (Runde 2) |
 | STUDIO-MUSIK-01 | Trendo Musik | 10 | 3 | bewertet (Runde 1) |

@@ -190,5 +190,37 @@
 | traccar/traccar | Apache-2.0 | 2026-11-08 | nein | 8087 | Java |
 | Project-OSRM/osrm-backend | BSD-2-Clause | 2026-11-07 | nein | 8196 | C++ |
 | openmaptiles/openmaptiles | Code BSD-3-Clause, Design CC-BY-4.0 (aus Lizenzdatei) | 2026-07-29 | nein | 3222 | PLpgSQL |
+## SPEC-11
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| stephanstapel/ZUGFeRD-csharp | Apache-2.0 | 2026-10-27 | nein | 395 | C# |
+| itplr-kosit/validator | Apache-2.0 | 2026-11-06 | nein | 193 | Java |
+| ZUGFeRD/mustangproject | Apache-2.0 | 2026-11-06 | nein | 491 | XSLT |
+| invoiceninja/invoiceninja | Elastic License 2.0 (aus Lizenzdatei) | 2026-11-06 | nein | 10535 | PHP |
+| akaunting/akaunting | Business Source License (aus Lizenzdatei) | 2026-11-07 | nein | 10285 | PHP |
+## SYS-09
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| jstedfast/MailKit | MIT | 2026-11-08 | nein | 6872 | C# |
+| ical-org/ical.net | MIT (aus Lizenzdatei) | 2026-11-06 | nein | 983 | C# |
+| thunderbird/thunderbird-desktop | MPL-2.0 | 2026-11-07 | nein | 237 | JavaScript |
+| Kozea/Radicale | GPL-3.0 | 2026-11-07 | nein | 5194 | Python |
+| nextcloud/calendar | AGPL-3.0 | 2026-11-08 | nein | 1197 | JavaScript |
+## STUDIO-LETTER-01
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| Sematre/typst-letter-pro | MIT | 2025-03-20 | nein | 222 | Typst |
+| languagetool-org/languagetool | LGPL-2.1 | 2026-11-06 | nein | 15236 | Java |
+| QuestPDF/QuestPDF | Community-/kommerzielle Doppellizenz (aus Lizenzdatei) | 2026-10-29 | nein | 14219 | C# |
+| komascript/komascript | LPPL (nicht auf GitHub, CTAN) | – | nein | – | – |
+| wkhtmltopdf/wkhtmltopdf | LGPL-3.0 | 2022-11-22 | ja | 14540 | C++ |
+## STUDIO-ONLINE-BUSINESS-01
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| medusajs/medusa | MIT, Enterprise-Teile eigene Lizenz (aus Lizenzdatei) | 2026-11-07 | nein | 37126 | TypeScript |
+| saleor/saleor | BSD-3-Clause | 2026-11-06 | nein | 23514 | Python |
+| bagisto/bagisto | MIT | 2026-11-06 | nein | 28344 | PHP |
+| woocommerce/woocommerce | GPL-2.0 | 2026-11-08 | nein | 10582 | PHP |
+| PrestaShop/PrestaShop | OSL-3.0 / AFL-3.0 (aus Lizenzdatei) | 2026-11-08 | nein | 9248 | PHP |
 
 Korrigiert: PhotoDemon → tannerhelland/PhotoDemon (BSD-ähnlich), Shotcut → mltframework/shotcut (GPL-3.0).

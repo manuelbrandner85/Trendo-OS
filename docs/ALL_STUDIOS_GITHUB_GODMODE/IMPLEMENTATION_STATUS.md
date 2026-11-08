@@ -3,7 +3,7 @@
 | Bereich | Stand |
 |---|---|
 | Bestandsaufnahme 56 Studios | erledigt |
-| Runde 1–5 Recherche/Bewertung (20 Studios) | erledigt |
+| Runde 1–6 Recherche/Bewertung (24 Studios) | erledigt |
 | CORE-05 f3d-Vorschaubilder | eingebaut, echter Lauf geprüft (reports/alle-studios/f3d-e2e.md), 10 Kern- und 1 Oberflächentest |
 | CORE-05/CORE-06 Claude in Blender/Unreal/Godot (C5/C6) | MCP je Projekt + sichtbarer Start eingebaut, 10 Kern- und 1 Oberflächentest; Zusammenspiel mit dem Claude-Chat (Sitzung A, C1–C4) NOT RUN |
 | STUDIO-MUSIK-01 basic-pitch (Noten auch mehrstimmig) | eingebaut als KI-Laufzeit „Noten“ (ohne TensorFlow, ONNX), echter Lauf (reports/alle-studios/basic-pitch-e2e.md), 8 Kern- und 1 Oberflächentest grün; Einrichtung per uv NOT RUN |
@@ -25,6 +25,7 @@
 | Runde 4 übrige (SpiceSharp, Math.NET Numerics, Statik-Konzepte) | geplant, NOT RUN – NuGet-Pakete bzw. eigener Code |
 | SPEC-10 MQTT-Live-Werte (MQTTnet) | eingebaut, echter Lauf mit Broker auf 127.0.0.1 (reports/alle-studios/mqtt-e2e.md), Tests grün; echte Geräte NOT RUN |
 | SPEC-04 glTF-Validator + glTF-Transform | eingebaut im VR-Studio („Prüfen & für Web packen“), echter Lauf: Regal 532 → 105 KB, weiter fehlerfrei (reports/alle-studios/gltf-e2e.md); Einrichten per Knopf NOT RUN |
-| Runden 6+ (36 Studios) | NOT RUN |
+| Runde 6 Umsetzung (ZUGFeRD-csharp, ical.net, typst-Briefvorlage) | geplant, NOT RUN |
+| Runden 7+ (32 Studios) | NOT RUN |
 | Web Design Studio Modul 05 (Design-Tokens) | eingebaut, 2 Tests, im Browser geprüft (docs/web-design-godmode) |
 | Volltest nach den Änderungen | grün: Api 16, Core 1546, App 829 (reports/alle-studios/volltest-2026-11-08.md) |

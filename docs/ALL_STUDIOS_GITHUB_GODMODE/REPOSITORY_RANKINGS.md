@@ -223,3 +223,47 @@ Bestand: Eigenes Tankbuch (Volltank-Methode), Fahrtenbuch mit Lücken-Prüfung u
 | traccar/traccar | 9 | 3 | 8 | 10 | 8 | 8 | 9 | 7.6 | VERWORFEN | Apache-2.0 GPS-Server – zu groß; Fahrten als GPX importieren reicht (Karten-Studio) |
 | brendan-w/python-OBD | 8 | 4 | 7 | 5 | 8 | 7 | 5 | 6.35 | KONZEPT | GPL-2.0 – Code nicht übernehmen; Konzept: Fehlercodes und km-Stand über OBD-II-Adapter (ELM327, eigenes Protokoll) |
 | openmaptiles/openmaptiles | 7 | 2 | 8 | 6 | 8 | 8 | 8 | 6.25 | VERWORFEN | Kartenschema – nicht nötig (Vektorkarten nutzen Protomaps) |
+
+## SPEC-11 – Geld & Rechnungen
+Bestand: Eigene Rechnungen, Kasse, GiroCode (EPC-QR) und Auswertungen vorhanden; E-Rechnung (XRechnung/ZUGFeRD) fehlt noch.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| stephanstapel/ZUGFeRD-csharp | 10 | 10 | 8 | 10 | 9 | 9 | 8 | 9.4 | AUSWAHL | .NET-Bibliothek (Apache-2.0): E-Rechnungen als ZUGFeRD/Factur-X (PDF mit XML) und XRechnung schreiben und lesen – in Deutschland für Firmen Pflicht (Empfang seit 2025, Versand ab 2027/28) |
+| itplr-kosit/validator | 9 | 5 | 9 | 10 | 8 | 9 | 7 | 8.15 | OPTION | Apache-2.0, offizieller Prüfer der KoSIT (Java) – XRechnung gegen die amtlichen Regeln prüfen; Option, braucht Java |
+| ZUGFeRD/mustangproject | 9 | 4 | 8 | 10 | 8 | 8 | 7 | 7.7 | KONZEPT | Apache-2.0 (Java) – Konzept: Prüfen und Visualisieren von E-Rechnungen; die .NET-Bibliothek reicht zum Schreiben |
+| invoiceninja/invoiceninja | 9 | 2 | 8 | 2 | 8 | 8 | 9 | 6.2 | AUSGESCHLOSSEN | Elastic License 2.0 – nicht Open Source, ausgeschlossen |
+| akaunting/akaunting | 8 | 2 | 8 | 2 | 8 | 8 | 9 | 5.95 | AUSGESCHLOSSEN | Business Source License – ausgeschlossen |
+
+## SYS-09 – E-Mails & Termine
+Bestand: Eigenes E-Mail-Programm (IMAP/SMTP-Protokoll), Adressbuch und Kalender mit iCal-Export vorhanden.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| jstedfast/MailKit | 10 | 9 | 10 | 10 | 9 | 10 | 9 | 9.65 | OPTION | .NET (MIT), Standard-Bibliothek für IMAP/SMTP/POP3 mit OAuth2 und IDLE – Option, falls das eigene Protokoll an Grenzen stößt (z. B. OAuth bei Microsoft/Google) |
+| ical-org/ical.net | 9 | 10 | 8 | 10 | 9 | 9 | 7 | 9.1 | AUSWAHL | .NET (MIT): Kalenderdateien mit Wiederholungen (RRULE), Ausnahmen und Zeitzonen sicher lesen – für den Import fremder .ics |
+| thunderbird/thunderbird-desktop | 10 | 3 | 8 | 7 | 8 | 9 | 10 | 7.55 | EXTERN | MPL-2.0 – externes Programm; Übergabe per .eml/.ics reicht |
+| Kozea/Radicale | 8 | 4 | 8 | 5 | 9 | 8 | 8 | 6.85 | KONZEPT | GPL-3.0 CalDAV/CardDAV-Server – nur Konzept (Kalender mit Handy abgleichen) |
+| nextcloud/calendar | 8 | 2 | 8 | 2 | 8 | 8 | 8 | 5.9 | AUSGESCHLOSSEN | AGPL-3.0 – ausgeschlossen |
+
+## STUDIO-LETTER-01 – Briefe schreiben
+Bestand: Eigene Briefe nach DIN 5008 mit PDF, Vorlagen und Claude-Unterstützung vorhanden; typst seit Runde 2 eingebaut.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Sematre/typst-letter-pro | 9 | 9 | 8 | 10 | 10 | 9 | 5 | 8.9 | AUSWAHL | MIT, typst-Vorlage für Briefe nach DIN 5008 (Faltmarken, Anschriftfeld) – passt zur typst-Anbindung; als Vorlage übernehmen, Stand 2025 |
+| languagetool-org/languagetool | 10 | 5 | 9 | 7 | 7 | 9 | 10 | 8.0 | OPTION | LGPL-2.1, Grammatik- und Stilprüfung als lokaler Dienst (Java) – Option zusätzlich zur Rechtschreibung (Hunspell) |
+| QuestPDF/QuestPDF | 9 | 8 | 9 | 3 | 9 | 9 | 9 | 7.9 | VERWORFEN | Doppellizenz, für größere Firmen kostenpflichtig – nicht übernommen (PDFsharp ist schon da) |
+| komascript/komascript | 9 | 3 | 8 | 7 | 8 | 8 | 7 | 7.05 | KONZEPT | LPPL (LaTeX) – Konzept: Briefklasse scrlttr2 als Vorbild für Layout-Regeln |
+| wkhtmltopdf/wkhtmltopdf | 7 | 5 | 6 | 6 | 6 | 4 | 2 | 5.65 | VERWORFEN | LGPL-3.0, archiviert und unsicher – nicht verwenden |
+
+## STUDIO-ONLINE-BUSINESS-01 – Online verkaufen
+Bestand: Eigene Verkaufsstatistik, Kasse und Geschäftshilfen vorhanden; kein eigener Shop-Server.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| saleor/saleor | 9 | 2 | 9 | 10 | 8 | 8 | 9 | 7.55 | KONZEPT | BSD-3, aber kompletter Shop-Server (Python, Datenbank) – für Trendo zu groß; nur Konzept (Bestell-Ablauf) |
+| medusajs/medusa | 9 | 2 | 9 | 7 | 8 | 8 | 10 | 7.15 | VERWORFEN | MIT mit Enterprise-Teilen, Shop-Server (Node) – nicht übernommen |
+| bagisto/bagisto | 8 | 2 | 7 | 10 | 7 | 7 | 9 | 6.8 | VERWORFEN | MIT, Laravel-Shop – Server, nicht übernommen |
+| woocommerce/woocommerce | 9 | 3 | 7 | 5 | 7 | 7 | 10 | 6.55 | KONZEPT | GPL-2.0, WordPress-Plugin – nur Anbindung über die offizielle REST-Schnittstelle als Konzept |
+| PrestaShop/PrestaShop | 8 | 2 | 7 | 5 | 7 | 7 | 8 | 6.0 | VERWORFEN | OSL-3.0 – nicht übernommen |
