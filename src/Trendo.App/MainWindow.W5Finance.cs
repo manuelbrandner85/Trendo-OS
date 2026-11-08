@@ -71,7 +71,8 @@ public partial class MainWindow
             }
             catch (FormatException) { Say("Bitte Menge und Preis als Zahl eingeben.", "finanzen"); }
         }, true);
-        sp.Children.Add(Card(new StackPanel { Spacing = 5, Children = { H("Rechnung schreiben", 14), new WrapPanel { Children = { seller, buyer } }, new WrapPanel { Children = { item, qty, unit } }, small, make } }));
+        sp.Children.Add(Card(new StackPanel { Spacing = 5, Children = { H("Rechnung schreiben", 14), new WrapPanel { Children = { seller, buyer } }, new WrapPanel { Children = { item, qty, unit } }, small, make,
+            ERechnungPanel(seller, buyer, item, qty, unit, small) } })); // Alle Studios, Runde 6: auch als E-Rechnung (XRechnung)
 
         sp.Children.Add(SmallBizCheck("fin-ku"));
         sp.Children.Add(FinanceExtras());

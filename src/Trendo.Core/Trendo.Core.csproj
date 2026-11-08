@@ -8,6 +8,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.14" />
     <PackageReference Include="MQTTnet" Version="5.2.0.1603" /><!-- Alle Studios Runde 5: Live-Messwerte im Zwilling (MIT), nur Abonnieren -->
+    <PackageReference Include="ZUGFeRD-csharp" Version="18.0.1" /><!-- Alle Studios Runde 6: E-Rechnung ZUGFeRD/XRechnung (Apache-2.0) -->
     <PackageReference Include="NLayer" Version="1.16.0" />
     <PackageReference Include="PDFsharp" Version="6.2.4" />
     <PackageReference Include="SharpCompress" Version="0.50.7" />
