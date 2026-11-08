@@ -68,6 +68,7 @@ public partial class MainWindow
                 BorderBrush = Brush.Parse(c.Level == CheckLevel.Gut ? "#334ADE80" : col), BorderThickness = new Thickness(1) });
         }
         sp.Children.Add(cards);
+        sp.Children.Add(SchutzResticCard()); // Alle Studios, Runde 8: restic
         sp.Children.Add(H("Liegen Passwörter offen herum?", 14));
         sp.Children.Add(P("Trendo liest Textdateien in einem Ordner und zeigt offen gespeicherte Passwörter, Schlüssel, IBANs und Kartennummern – nur maskiert. Nichts wird verändert oder verschickt."));
         var folder = new TextBox { Name = "sec-folder", Text = _scanFolder == "" ? (string.IsNullOrEmpty(_settings.ProjectsFolder) ? UserSettings.DefaultProjectsFolder() : _settings.ProjectsFolder) : _scanFolder, Width = 360 };
