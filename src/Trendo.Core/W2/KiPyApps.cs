@@ -40,6 +40,8 @@ public static class KiPyApps
         new(KiRuntime.Noten, "", "basic-pitch-0.4.0", "3.12", [],
             ["onnxruntime==1.31.1", "numpy==2.2.6", "scipy==1.18.1", "librosa==1.0.0", "pretty_midi==0.2.11.post0", "mir_eval==0.8.2", "resampy==0.4.3", "soundfile==0.14.0", "typing_extensions"],
             false, "trendo_noten.py", ["basic-pitch==0.4.0"]),
+        // Alle Studios, Runde 3 (08.11.2026): IfcOpenShell 0.9.0.post1 von PyPI (LGPL-3.0, eigener Prozess) – Grundriss → IFC4, IFC-Dateien prüfen
+        new(KiRuntime.Ifc, "", "ifcopenshell-0.9.0.post1", "3.12", [], ["ifcopenshell==0.9.0.post1", "numpy==2.5.4"], false, "trendo_ifc.py"),
     ];
 
     public static KiPyApp? For(KiRuntime r) => All.FirstOrDefault(a => a.Id == r);

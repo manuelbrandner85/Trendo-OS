@@ -60,6 +60,9 @@ public partial class MainWindow
             ("Prüfen", [
                 new ProgramCmd("arch-check", "Plan prüfen", d => { _archIssues = FloorPlan.From(d.Data).Check(); _progMsg[AK] = _archIssues.Count == 0 ? "✓ Keine Probleme gefunden: alle Räume mit Tür, genug Fensterfläche, nichts steht im Weg." : $"{_archIssues.Count} Hinweis(e) – rechts unter „Prüfung“."; }, true),
             ]),
+            ("BIM", [
+                new ProgramCmd("arch-ifc-setup", "IFC einrichten", d => _ = ArchIfcSetup(), false, "Einmalig IfcOpenShell einrichten (kostenlos, LGPL-3.0) – danach Export „IFC (BIM)“ für Architekten- und CAD-Programme"),
+            ]),
         ],
         Exports =
         [
@@ -69,6 +72,7 @@ public partial class MainWindow
             new("raumbuch", "Raumbuch (CSV)", ".csv", (d, f) => { File.WriteAllText(f, PlanDrawing.RoomBookCsv(FloorPlan.Levels(d.Data)), new System.Text.UTF8Encoding(true)); return f; }),
             new("obj", "3D (OBJ)", ".obj", (d, f) => { var mtl = Path.ChangeExtension(f, ".mtl"); var full = new Dictionary<string, Mesh?>(); var (obj, m) = PlanDrawing.Obj(FloorPlan.Levels(d.Data), Path.GetFileName(mtl), t => full.TryGetValue(t, out var x) ? x : full[t] = PlanModelFile(t) is { } mf ? Mesh3D.ReadMeshFile(mf) : null); File.WriteAllText(mtl, m); File.WriteAllText(f, obj); return f; }),
             new("material", "Materialliste", ".md", (d, f) => { File.WriteAllText(f, PlanDrawing.MaterialList(FloorPlan.From(d.Data))); return f; }),
+            new("ifc", "IFC (BIM)", ".ifc", ArchIfcExport), // Alle Studios, Runde 3: IfcOpenShell
         ],
         Workspace = ArchWorkspace,
         Properties = ArchProperties,

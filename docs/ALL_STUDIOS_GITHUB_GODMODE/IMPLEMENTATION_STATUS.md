@@ -13,7 +13,8 @@
 | STUDIO-TV-01 streamlink (Das Erste/ARD, arte live) | eingebaut, echter Lauf (arte → m3u8), Tests grün; Abspielen im Player NOT RUN |
 | Runde 2 übrige (Open3D) | NOT RUN |
 | CORE-03 KI-Team: Team-Lauf fortsetzen (Konzept LangGraph, eigener Code) | eingebaut (5d45824cd), 3 Kerntests grün, KI-Team-Oberflächentests grün; echter Lauf mit Claude NOT RUN |
-| Runde 3 übrige Umsetzung (Node-RED-Anbindung, IFC-Ansicht/-Export, weitere KI-Team-Konzepte) | geplant, NOT RUN |
+| SPEC-01 IFC-Export (IfcOpenShell) | eingebaut: Exportieren „IFC (BIM)“ + „BIM → IFC einrichten“, echter Lauf mit Vorlage, Geometrie nachgemessen (reports/alle-studios/ifc-e2e.md); Öffnen in BIM-Programmen NOT RUN |
+| Runde 3 übrige Umsetzung (Node-RED-Anbindung, IFC-Ansicht ThatOpen, weitere KI-Team-Konzepte) | NOT RUN |
 | SPEC-06 FSRS-Planer für Karteikarten (Runde 4) | eingebaut, umschaltbar im Lernplan, 12 Kern- und 1 Oberflächentest grün |
 | Runde 4 übrige (SpiceSharp, Math.NET Numerics, Statik-Konzepte) | geplant, NOT RUN – NuGet-Pakete bzw. eigener Code |
 | Runden 5+ (40 Studios) | NOT RUN |

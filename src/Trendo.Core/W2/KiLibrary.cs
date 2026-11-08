@@ -4,7 +4,7 @@ namespace Trendo.Core;
 public enum KiKind { Chat, Denken, Code, BildVerstehen, Uebersetzen, Wissen, BildErzeugen, BildVerbessern, Video, SpracheZuText, TextZuSprache, Musik, Modell3D, Geraeusche }
 
 /// <summary>Womit Trendo ein Modell ausführt. Jede Laufzeit ist ein freies Programm, das Trendo selbst in „TrendoWerkzeuge“ einrichtet.</summary>
-public enum KiRuntime { Ollama, StableDiffusionCpp, WhisperCpp, Piper, RealEsrgan, Python, AceStep, Uv, TripoSR, MMAudio, MusikAnalyse, Spuren, VideoPruefung, Stimme, PluginHost, Noten }
+public enum KiRuntime { Ollama, StableDiffusionCpp, WhisperCpp, Piper, RealEsrgan, Python, AceStep, Uv, TripoSR, MMAudio, MusikAnalyse, Spuren, VideoPruefung, Stimme, PluginHost, Noten, Ifc }
 
 /// <summary>Eine Laufzeit: offizielles GitHub-Projekt mit fest gewählter Veröffentlichung (Tag, Datei, SHA-256, Größe), Hauptprogramm im ZIP.
 /// Ollama und Python kommen aus dem Vollpaket (<see cref="Tag"/> leer).</summary>
@@ -92,6 +92,9 @@ public static class KiLibrary
         // Alle Studios, Runde 1 (08.11.2026): mehrstimmige Noten mit basic-pitch (Spotify, Apache-2.0), ONNX-Modell ohne TensorFlow – echt geprüft
         new(KiRuntime.Noten, "Noten erkennen (basic-pitch)", "spotify/basic-pitch", "Apache-2.0", "Erkennt Noten aus Aufnahmen – auch Akkorde und mehrere Stimmen – lokal.",
             "basic-pitch-0.4.0", "", "", 0, "env/Scripts/python.exe"),
+        // Alle Studios, Runde 3 (08.11.2026): Grundriss als IFC4 (BIM) – IfcOpenShell (LGPL-3.0) als eigener Prozess, kein KI-Modell; echt geprüft (Wandvolumen nachgemessen)
+        new(KiRuntime.Ifc, "IFC-Austausch (IfcOpenShell)", "IfcOpenShell/IfcOpenShell", "LGPL-3.0", "Speichert Grundrisse als IFC (BIM) für Architekten- und CAD-Programme und prüft IFC-Dateien – lokal.",
+            "ifcopenshell-0.9.0.post1", "", "", 0, "env/Scripts/python.exe"),
     ];
 
     const string Hf = "https://huggingface.co/";
