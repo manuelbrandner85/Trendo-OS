@@ -66,9 +66,10 @@ public partial class MainWindow
             AuFoleyMake(_auFoleyKind, _auFoleySeconds, _auFoleyIntensity);
         });
         sp.Children.Add(make);
+        sp.Children.Add(AuSfxPanel()); // Alle Studios, Runde 7: Spiel-Effekte nach sfxr
         if (AuRendered(d) is not null)
         {
-            var ev = Foley.Kinds.FirstOrDefault(k => k.Id == d.Text("foleyKind")).Event ?? "";
+            var ev = Foley.Kinds.FirstOrDefault(k => k.Id == d.Text("foleyKind")).Event ?? Sfxr.Presets.FirstOrDefault(k => k.Id == d.Text("sfxPreset")).Event ?? "";
             var name = new TextBox { Name = "au-foley-name", Text = d.Title, PlaceholderText = "Name" };
             var tags = new TextBox { Name = "au-foley-tags", Text = ev, PlaceholderText = "Ereignisse/Tags, z. B. Schritt.Kies, Loop" };
             var lic = new TextBox { Name = "au-foley-license", Text = d.Text("license"), PlaceholderText = "Lizenz (z. B. CC0 1.0) – leer/unbekannt = nicht veröffentlichen" };

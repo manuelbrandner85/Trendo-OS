@@ -28,7 +28,8 @@
 | SPEC-11 E-Rechnung (XRechnung mit ZUGFeRD-csharp 18) | eingebaut in „Rechnung schreiben“, Datei wird wieder eingelesen und geprüft (reports/alle-studios/erechnung-e2e.md), 9 Kern- und 1 Oberflächentest grün; KoSIT-Validator und Empfang in Fremdprogrammen NOT RUN; Bibliothek ab 1.12.2026 ohne Pflege |
 | SYS-09/P16 fremde Kalenderdateien (ical.net 5.2.4) | eingebaut im Kalender („ICS einlesen …“): Regeln mit Ende, Ausnahmen, verschobene Termine, Zeitzonen; echter Vergleich mit Python icalendar/recurring-ical-events – 632 Termine aus 4 Dateien gleich (reports/alle-studios/ics-fremd-e2e.md); 10 Kern-, 1 Echt-, 1 Oberflächentest grün; echte Konto-Exporte NOT RUN |
 | SYS-10 Geschäftsbrief nach DIN 5008 (typst, Konzept typst-letter-pro) | eingebaut in der typst-Karte (Form A/B), echter Lauf: typst misst Anschrift, Info und Betreff selbst – im Soll ±0,5 mm (reports/alle-studios/din5008-e2e.md); 5 Kern-, 2 Echt-, 1 Oberflächentest grün; Ausdruck im Fensterkuvert NOT RUN |
-| Runde 7 Umsetzung (sfxr-Soundeffekte + Tiled-Format, axe-core, FreeSewing, YOLOX) | bewertet 08.11.2026, Umsetzung geplant, NOT RUN |
+| CORE-06 Spiel-Effekte nach sfxr (eigener C#-Code, gemeinfreies Verfahren) | eingebaut in der Geräusch-Werkstatt (7 Vorlagen, Varianten, Bibliothek/Paket), am Ton gemessen: Frequenz, Hüllkurve, Tonhöhenverlauf (reports/alle-studios/sfxr-e2e.md); 9 Kern- und 1 Oberflächentest grün; Hörtest NOT RUN |
+| Runde 7 übrige (Tiled-Format, axe-core, FreeSewing, YOLOX) | bewertet 08.11.2026, Umsetzung NOT RUN |
 | Runden 8+ (28 Studios, davon SPEC-07 abgelehnt) | NOT RUN |
 | Web Design Studio Modul 05 (Design-Tokens) | eingebaut, 2 Tests, im Browser geprüft (docs/web-design-godmode) |
 | Volltest nach den Änderungen | grün: Api 16, Core 1546, App 829 (reports/alle-studios/volltest-2026-11-08.md) |
