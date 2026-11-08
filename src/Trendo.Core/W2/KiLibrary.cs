@@ -4,7 +4,7 @@ namespace Trendo.Core;
 public enum KiKind { Chat, Denken, Code, BildVerstehen, Uebersetzen, Wissen, BildErzeugen, BildVerbessern, Video, SpracheZuText, TextZuSprache, Musik, Modell3D, Geraeusche }
 
 /// <summary>Womit Trendo ein Modell ausführt. Jede Laufzeit ist ein freies Programm, das Trendo selbst in „TrendoWerkzeuge“ einrichtet.</summary>
-public enum KiRuntime { Ollama, StableDiffusionCpp, WhisperCpp, Piper, RealEsrgan, Python, AceStep, Uv, TripoSR, MMAudio, MusikAnalyse, Spuren, VideoPruefung, Stimme, PluginHost }
+public enum KiRuntime { Ollama, StableDiffusionCpp, WhisperCpp, Piper, RealEsrgan, Python, AceStep, Uv, TripoSR, MMAudio, MusikAnalyse, Spuren, VideoPruefung, Stimme, PluginHost, Noten }
 
 /// <summary>Eine Laufzeit: offizielles GitHub-Projekt mit fest gewählter Veröffentlichung (Tag, Datei, SHA-256, Größe), Hauptprogramm im ZIP.
 /// Ollama und Python kommen aus dem Vollpaket (<see cref="Tag"/> leer).</summary>
@@ -89,6 +89,9 @@ public static class KiLibrary
         // Paket 01 S4-06 (07.11.2026): Plugin-Host – Pedalboard (Spotify, GPL-3.0) als eigenes Programm; lädt VST3 nur abgeschottet und nur freigegeben
         new(KiRuntime.PluginHost, "Plugin-Host (Pedalboard)", "spotify/pedalboard", "GPL-3.0", "Lädt freigegebene VST3-Plugins abgeschottet und schickt Ton durch sie – lokal, offline.",
             "pedalboard-0.9.26", "", "", 0, "env/Scripts/python.exe"),
+        // Alle Studios, Runde 1 (08.11.2026): mehrstimmige Noten mit basic-pitch (Spotify, Apache-2.0), ONNX-Modell ohne TensorFlow – echt geprüft
+        new(KiRuntime.Noten, "Noten erkennen (basic-pitch)", "spotify/basic-pitch", "Apache-2.0", "Erkennt Noten aus Aufnahmen – auch Akkorde und mehrere Stimmen – lokal.",
+            "basic-pitch-0.4.0", "", "", 0, "env/Scripts/python.exe"),
     ];
 
     const string Hf = "https://huggingface.co/";
@@ -200,6 +203,10 @@ public static class KiLibrary
         new("plugin-host", KiKind.Musik, KiRuntime.PluginHost, "Plugin-Host für VST3 (abgeschottet)", "", 0.15, 4, "GPL-3.0",
             "Effekt-Plugins (VST3) auf eine Tonaufnahme anwenden – jedes Plugin erst prüfen und freigeben",
             "Im Audioeditor unter „Plugins“: Plugin prüfen, Herkunft angeben, freigeben, dann „Auf Ton anwenden“. Plugins laufen in einem abgeschotteten Prozess ohne Schreibrechte auf deine Dateien.", []),
+        // Alle Studios, Runde 1 (08.11.2026): basic-pitch – kleines Netz (ONNX, im Paket), läuft auf dem Prozessor
+        new("musik-noten", KiKind.Musik, KiRuntime.Noten, "Noten erkennen, auch Akkorde (basic-pitch)", "", 0.25, 4, "Apache-2.0",
+            "aus Gesang, Klavier oder Gitarre MIDI-Noten machen – auch mehrstimmig",
+            "In Trendo Musik bei getrennten Spuren „MIDI“ – mit basic-pitch werden auch Akkorde erkannt; ohne bleibt die einstimmige Erkennung. Läuft ohne Grafikkarte in Sekunden.", []),
     ];
 
     public static IEnumerable<KiLibraryModel> OfKind(KiKind k) => Models.Where(m => m.Kind == k);

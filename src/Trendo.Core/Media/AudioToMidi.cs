@@ -91,6 +91,27 @@ public static class AudioToMidi
         return new Result(notes, Math.Round(polyShare, 3), Math.Round(unsure, 3), exact, verdict);
     }
 
+    /// <summary>Alle Studios, Runde 1: Ergebnis von basic-pitch (trendo_noten.py, JSON „noten“: tonhoehe, start, ende, staerke) als <see cref="Result"/>.
+    /// Mehrstimmigkeit = Anteil der Noten, die sich zeitlich mit einer anderen überlappen. basic-pitch schätzt – „Exact“ ist nie true.</summary>
+    public static Result FromBasicPitch(string json)
+    {
+        using var d = System.Text.Json.JsonDocument.Parse(json);
+        if (!d.RootElement.TryGetProperty("noten", out var arr) || arr.ValueKind != System.Text.Json.JsonValueKind.Array) throw new FormatException("Antwort von basic-pitch ohne Notenliste.");
+        var notes = new List<Note>();
+        foreach (var n in arr.EnumerateArray())
+        {
+            var p = n.GetProperty("tonhoehe").GetInt32(); var s = n.GetProperty("start").GetDouble(); var e = n.GetProperty("ende").GetDouble();
+            var a = n.TryGetProperty("staerke", out var st) ? st.GetDouble() : 0.5;
+            if (p is < 0 or > 127 || !double.IsFinite(s) || !double.IsFinite(e) || e <= s || s < 0) continue; // unsinnige Einträge verwerfen
+            notes.Add(new Note(p, s, e - s, Math.Clamp(a, 0, 1)));
+        }
+        notes.Sort((x, y) => x.Start != y.Start ? x.Start.CompareTo(y.Start) : x.Pitch.CompareTo(y.Pitch));
+        var overl = notes.Count(n => notes.Any(o => !ReferenceEquals(o, n) && o.Start < n.Start + n.Length && n.Start < o.Start + o.Length));
+        var poly = notes.Count == 0 ? 0 : (double)overl / notes.Count; var unsure = notes.Count == 0 ? 0 : (double)notes.Count(n => n.Confidence < 0.5) / notes.Count;
+        var verdict = notes.Count == 0 ? "Keine Noten erkannt." : poly > 0 ? $"Mehrstimmig erkannt (basic-pitch): {poly:P0} der Noten klingen zusammen mit anderen – bitte nachhören." : "Einstimmig erkannt (basic-pitch) – bitte nachhören.";
+        return new Result(notes, Math.Round(poly, 3), Math.Round(unsure, 3), false, verdict);
+    }
+
     /// <summary>Noten als Piano-Roll-Lied (Ticks bei gegebenem Tempo).</summary>
     public static PianoRoll.Song ToSong(Result r, double bpm, string name) =>
         new(bpm, 4, [.. r.Notes.Select(n => new PianoRoll.Note(Math.Clamp(n.Pitch, 0, 127), (int)Math.Round(n.Start * bpm / 60 * PianoRoll.Ppq), Math.Max(1, (int)Math.Round(n.Length * bpm / 60 * PianoRoll.Ppq)), (int)Math.Clamp(40 + n.Confidence * 80, 1, 127)))], name);

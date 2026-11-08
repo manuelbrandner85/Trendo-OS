@@ -4,7 +4,7 @@ namespace Trendo.Core;
 /// Trendo richtet jede in einer eigenen Umgebung unter „TrendoWerkzeuge/ki/laufzeit/&lt;name&gt;“ ein – mit uv (Astral, MIT/Apache):
 /// Quellcode aus dem offiziellen GitHub-Projekt auf einem fest gewählten Stand (Commit wird geprüft), eigenes Python 3.12,
 /// PyTorch vom offiziellen PyTorch-Server, übrige Pakete von PyPI. Nichts landet im Benutzerordner oder im System.</summary>
-public sealed record KiPyApp(KiRuntime Id, string Repo, string Commit, string Python, string[] Torch, string[] Packages, bool InstallRepo, string Script)
+public sealed record KiPyApp(KiRuntime Id, string Repo, string Commit, string Python, string[] Torch, string[] Packages, bool InstallRepo, string Script, string[]? NoDeps = null)
 {
     public string RepoUrl => $"https://github.com/{Repo}.git";
     /// <summary>Ohne GitHub-Quellcode (nur Pakete von PyPI).</summary>
@@ -35,6 +35,11 @@ public static class KiPyApps
              "beautifulsoup4==4.15.0", "psutil==7.2.2", "webrtcvad-wheels==2.0.14"], false, "trendo_stimme.py"),
         // Paket 01 S4-06 (07.11.2026): Plugin-Host – Pedalboard 0.9.26 (GPL-3.0) von PyPI, ohne PyTorch; läuft nur in der abgeschotteten Laufumgebung
         new(KiRuntime.PluginHost, "", "pedalboard-0.9.26", "3.12", [], ["pedalboard==0.9.26", "soundfile==0.14.0", "numpy==2.4.6"], false, "trendo_plugin.py"),
+        // Alle Studios, Runde 1 (08.11.2026): basic-pitch 0.4.0 verlangt unter Windows TensorFlow < 2.15.1 (für Python 3.12 nicht erhältlich) –
+        // darum basic-pitch ohne Abhängigkeiten und das mitgelieferte ONNX-Modell mit onnxruntime; Fassungen wie im echten Lauf geprüft
+        new(KiRuntime.Noten, "", "basic-pitch-0.4.0", "3.12", [],
+            ["onnxruntime==1.31.1", "numpy==2.2.6", "scipy==1.18.1", "librosa==1.0.0", "pretty_midi==0.2.11.post0", "mir_eval==0.8.2", "resampy==0.4.3", "soundfile==0.14.0", "typing_extensions"],
+            false, "trendo_noten.py", ["basic-pitch==0.4.0"]),
     ];
 
     public static KiPyApp? For(KiRuntime r) => All.FirstOrDefault(a => a.Id == r);
@@ -84,6 +89,7 @@ public static class KiPyApps
         if (a.InstallRepo) { pk.Add("--editable"); pk.Add(p.Repo); }
         pk.AddRange(a.Packages);
         s.Add(new("Weitere Pakete laden", p.Uv, [.. pk], p.Dir));
+        if (a.NoDeps is { Length: > 0 } nd) s.Add(new("Hauptpaket laden (ohne nicht benötigte Abhängigkeiten)", p.Uv, ["pip", "install", "--quiet", "--python", p.Env, "--no-deps", .. nd], p.Dir));
         return s;
     }
 

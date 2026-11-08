@@ -11,6 +11,10 @@ namespace Trendo.App;
 /// mit Pegel, Stumm, Solo – abgespielt in Trendo selbst), Trennung schnell (htdemucs) oder genau (htdemucs_ft) mit Qualitätsmessung.</summary>
 public partial class MainWindow
 {
+    /// <summary>Für Tests: basic-pitch nachbilden (Eingabedatei → JSON wie trendo_noten.py).</summary>
+    public static Func<string, string>? NotenRunOverride { get; set; }
+    bool NotenReady => NotenRunOverride is not null || KiStore.RuntimeReady(KiRuntime.Noten);
+    public string MsMessage => _msMsg;
     /// <summary>V1: nach „＋ Eigene Aufnahme“ gleich in Gesang und Begleitung trennen.</summary>
     public bool MsAutoSplit { get; set; } = true;
     /// <summary>V7: „htdemucs“ (schnell) oder „htdemucs_ft“ (genauer, etwa 4× langsamer).</summary>
@@ -134,12 +138,20 @@ public partial class MainWindow
     {
         var dir = MsStemDir(s); if (dir is null || !StemTools.Files(dir).TryGetValue(stemId, out var f)) { _msMsg = "Erst „Spuren trennen“."; Show(MS); return null; }
         var root = Songs.Get(MsStemRoot(s)) ?? s; var label = StemTools.Stems.First(x => x.Id == stemId).Label;
-        var r = await Task.Run(() => AudioToMidi.Transcribe(AudioFile.Read(f)));
-        if (r.Notes.Count == 0) { _msMsg = $"In der Spur „{label}“ wurden keine Noten erkannt."; Show(MS); return null; }
         var mid = Path.Combine(dir, $"{stemId}.mid");
+        AudioToMidi.Result r;
+        if (NotenReady) // Alle Studios, Runde 1: basic-pitch erkennt auch Akkorde; ohne Einrichtung die einstimmige Erkennung
+        {
+            var json = Path.Combine(dir, $"{stemId}.noten.json");
+            if (NotenRunOverride is { } o) await File.WriteAllTextAsync(json, o(f));
+            else { var k = await KiPyRun(KiRuntime.Noten, [f, mid, json], 600_000); if (!k.Ok || !File.Exists(json)) { _msMsg = "Noten erkennen (basic-pitch) hat nicht geklappt: " + (k.Err.Length > 0 ? k.Err : k.Out).Trim().Split('\n')[^1]; Show(MS); return null; } }
+            r = AudioToMidi.FromBasicPitch(await File.ReadAllTextAsync(json));
+        }
+        else r = await Task.Run(() => AudioToMidi.Transcribe(AudioFile.Read(f)));
+        if (r.Notes.Count == 0) { _msMsg = $"In der Spur „{label}“ wurden keine Noten erkannt."; Show(MS); return null; }
         await File.WriteAllBytesAsync(mid, PianoRoll.ToMidi(AudioToMidi.ToSong(r, root.Bpm ?? 120, $"{root.Title} – {label}")));
         await File.WriteAllTextAsync(Path.Combine(dir, $"{stemId} – Unsicherheitsbericht.md"), AudioToMidi.Report($"{root.Title} – {label}", r));
-        _msMsg = $"✓ MIDI „{label}“: {r.Notes.Count} Noten{(r.Exact ? "" : " (geschätzt – mehrstimmig, siehe Unsicherheitsbericht)")} – {Path.GetFileName(mid)} im Spuren-Ordner.";
+        _msMsg = $"✓ MIDI „{label}“: {r.Notes.Count} Noten{(NotenReady ? $" (basic-pitch, {r.PolyphonicShare:P0} mehrstimmig)" : r.Exact ? "" : " (geschätzt – mehrstimmig, siehe Unsicherheitsbericht)")} – {Path.GetFileName(mid)} im Spuren-Ordner.";
         Show(MS);
         return mid;
     }
