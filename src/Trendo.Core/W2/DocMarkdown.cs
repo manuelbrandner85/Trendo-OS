@@ -26,6 +26,12 @@ public static class DocMarkdown
         return new(j["zeichen"]?.GetValue<int>() ?? 0, j["titel"]?.GetValue<string>() ?? "");
     }
 
-    /// <summary>Seitentitel: Titel aus dem Dokument, sonst Dateiname.</summary>
-    public static string TitleFor(string file, Result r) => r.Title.Trim().Length > 0 ? r.Title.Trim() : Path.GetFileNameWithoutExtension(file);
+    /// <summary>Seitentitel: Titel aus dem Dokument, sonst die erste Überschrift im Text (echter Lauf: Word/Excel/PDF liefern meist keinen Titel), sonst Dateiname.</summary>
+    public static string TitleFor(string file, Result r, string markdown = "")
+    {
+        if (r.Title.Trim().Length > 0) return r.Title.Trim();
+        var h = markdown.Replace("\r", "").Split('\n').Select(l => l.Trim()).FirstOrDefault(l => l.StartsWith('#'));
+        var t = h?.TrimStart('#').Trim() ?? "";
+        return t.Length is > 0 and <= 120 ? t : Path.GetFileNameWithoutExtension(file);
+    }
 }

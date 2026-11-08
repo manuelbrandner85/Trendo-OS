@@ -22,7 +22,17 @@ public static class ResticBackup
     public static IReadOnlyList<string> InitArgs(string repo) => ["init", "-r", repo, "--json"];
     public static IReadOnlyList<string> BackupArgs(string repo, IEnumerable<string> paths) => ["backup", "-r", repo, "--json", "--tag", "trendo", "--exclude-caches", .. paths];
     public static IReadOnlyList<string> SnapshotsArgs(string repo) => ["snapshots", "-r", repo, "--json"];
-    public static IReadOnlyList<string> RestoreArgs(string repo, string id, string target) => ["restore", id, "-r", repo, "--target", target];
+    /// <summary>Mit Quellpfad wird gezielt dieser gesicherte Ordner zurückgeholt („id:/C/…“) – direkt in den Zielordner, ohne den ganzen Originalpfad nachzubauen
+    /// (echter Lauf 08.11.2026: ohne Pfad baute restic „ziel\C\Users\…“ nach und scheiterte an Zeitstempeln übergeordneter Ordner).</summary>
+    public static IReadOnlyList<string> RestoreArgs(string repo, string id, string target, string? sourcePath = null) =>
+        ["restore", sourcePath is null ? id : id + ":" + SnapshotPath(sourcePath), "-r", repo, "--target", target];
+
+    /// <summary>Windows-Pfad in die Schreibweise innerhalb eines restic-Stands: „C:\Daten\x“ → „/C/Daten/x“.</summary>
+    public static string SnapshotPath(string p)
+    {
+        var f = p.Replace('\\', '/').TrimEnd('/');
+        return f.Length >= 2 && f[1] == ':' ? "/" + f[0] + f[2..] : f.StartsWith('/') ? f : "/" + f;
+    }
     public static IReadOnlyList<string> CheckArgs(string repo) => ["check", "-r", repo];
 
     /// <summary>Eingaben prüfen – leere Liste = in Ordnung.</summary>
@@ -102,7 +112,7 @@ public static class ResticBackup
     }
 
     /// <summary>Wiederherstellen in einen neuen, leeren Ordner.</summary>
-    public static (bool Ok, string Message) Restore(string toolDir, string repo, string password, string snapshotId, string target, Func<string, IReadOnlyList<string>, IDictionary<string, string>, Cli.Result>? run = null)
+    public static (bool Ok, string Message) Restore(string toolDir, string repo, string password, string snapshotId, string target, Func<string, IReadOnlyList<string>, IDictionary<string, string>, Cli.Result>? run = null, IReadOnlyList<string>? sourcePaths = null)
     {
         if (!System.Text.RegularExpressions.Regex.IsMatch(snapshotId, "^[0-9a-f]{8,64}$")) return (false, "Ungültiger Stand.");
         if (!Path.IsPathFullyQualified(target)) return (false, "Bitte einen vollständigen Zielordner angeben.");
@@ -110,8 +120,19 @@ public static class ResticBackup
         if (run is null && !Ready(toolDir)) return (false, "restic ist noch nicht eingerichtet.");
         run ??= (e, a, env) => Cli.Run(e, a, timeoutMs: 6 * 3_600_000, env: env);
         Directory.CreateDirectory(target);
-        var r = run(Exe(toolDir), RestoreArgs(repo, snapshotId, target), Env(password));
-        return r.Ok ? (true, $"Wiederhergestellt nach „{target}“.") : (false, "Wiederherstellen ging nicht: " + First(r));
+        if (sourcePaths is null || sourcePaths.Count == 0)
+        {
+            var r0 = run(Exe(toolDir), RestoreArgs(repo, snapshotId, target), Env(password));
+            return r0.Ok ? (true, $"Wiederhergestellt nach „{target}“.") : (false, "Wiederherstellen ging nicht: " + First(r0));
+        }
+        foreach (var src in sourcePaths) // ein Ordner: direkt ins Ziel; mehrere: je ein Unterordner mit dem Ordnernamen
+        {
+            var name = string.Concat(Path.GetFileName(src.TrimEnd('\\', '/')).Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c));
+            var dest = sourcePaths.Count == 1 ? target : Path.Combine(target, name.Length > 0 ? name : "laufwerk");
+            var r = run(Exe(toolDir), RestoreArgs(repo, snapshotId, dest, src), Env(password));
+            if (!r.Ok) return (false, "Wiederherstellen ging nicht: " + First(r));
+        }
+        return (true, $"Wiederhergestellt nach „{target}“.");
     }
 
     /// <summary>Stände der Sicherung abrufen.</summary>

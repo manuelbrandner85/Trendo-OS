@@ -42,7 +42,7 @@ public class SchutzRestic_Ui
             var snap = Assert.Single(w.ResticSnapshots!); Assert.Equal("abcdef12", snap.ShortId);
             Assert.NotNull(w.Find<Button>("sec-restic-restore-0"));
             var target = await w.SchutzResticRestore(snap, "geheim-12345");
-            Assert.NotNull(target); Assert.Contains("abcdef12", target); Assert.Equal(["restore", "abcdef1234567890"], calls[^1].Take(2));
+            Assert.NotNull(target); Assert.Contains("abcdef12", target); Assert.Equal(["restore", "abcdef1234567890:/X/eigene-daten"], calls[^1].Take(2)); // gezielt der gesicherte Ordner
             Assert.StartsWith("✓ Wiederhergestellt", w.ResticMessage);
             await w.SchutzResticBackup(data, Path.Combine(data, "innen"), "geheim-12345");
             Assert.Contains("würde sich selbst sichern", w.ResticMessage);

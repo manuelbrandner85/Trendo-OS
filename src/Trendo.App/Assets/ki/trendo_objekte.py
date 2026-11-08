@@ -13,6 +13,8 @@ COCO = ["person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "t
         "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair", "couch", "potted plant", "bed", "dining table", "toilet", "tv",
         "laptop", "mouse", "remote", "keyboard", "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase",
         "scissors", "teddy bear", "hair drier", "toothbrush"]
+# Beschriftung im Bild auf Deutsch (gleich wie ObjectDetect.German in C#, per Test geprüft)
+GERMAN = {"person": "Person", "bicycle": "Fahrrad", "car": "Auto", "motorcycle": "Motorrad", "airplane": "Flugzeug", "bus": "Bus", "train": "Zug", "truck": "Lastwagen", "boat": "Boot", "traffic light": "Ampel", "fire hydrant": "Hydrant", "stop sign": "Stoppschild", "parking meter": "Parkuhr", "bench": "Bank", "bird": "Vogel", "cat": "Katze", "dog": "Hund", "horse": "Pferd", "sheep": "Schaf", "cow": "Kuh", "elephant": "Elefant", "bear": "Bär", "zebra": "Zebra", "giraffe": "Giraffe", "backpack": "Rucksack", "umbrella": "Schirm", "handbag": "Handtasche", "tie": "Krawatte", "suitcase": "Koffer", "frisbee": "Frisbee", "skis": "Ski", "snowboard": "Snowboard", "sports ball": "Ball", "kite": "Drachen", "baseball bat": "Baseballschläger", "baseball glove": "Baseballhandschuh", "skateboard": "Skateboard", "surfboard": "Surfbrett", "tennis racket": "Tennisschläger", "bottle": "Flasche", "wine glass": "Weinglas", "cup": "Tasse", "fork": "Gabel", "knife": "Messer", "spoon": "Löffel", "bowl": "Schüssel", "banana": "Banane", "apple": "Apfel", "sandwich": "Sandwich", "orange": "Orange", "broccoli": "Brokkoli", "carrot": "Karotte", "hot dog": "Hotdog", "pizza": "Pizza", "donut": "Donut", "cake": "Kuchen", "chair": "Stuhl", "couch": "Sofa", "potted plant": "Topfpflanze", "bed": "Bett", "dining table": "Tisch", "toilet": "Toilette", "tv": "Fernseher", "laptop": "Laptop", "mouse": "Maus", "remote": "Fernbedienung", "keyboard": "Tastatur", "cell phone": "Handy", "microwave": "Mikrowelle", "oven": "Backofen", "toaster": "Toaster", "sink": "Spüle", "refrigerator": "Kühlschrank", "book": "Buch", "clock": "Uhr", "vase": "Vase", "scissors": "Schere", "teddy bear": "Teddybär", "hair drier": "Föhn", "toothbrush": "Zahnbürste"}
 SIZE = 640
 
 
@@ -90,25 +92,32 @@ def main() -> int:
     boxes = np.stack([pred[m, 0] - pred[m, 2] / 2, pred[m, 1] - pred[m, 3] / 2, pred[m, 0] + pred[m, 2] / 2, pred[m, 1] + pred[m, 3] / 2], 1) / r
     score, cls = score[m], cls[m]
     found = []
-    for c in np.unique(cls):  # NMS je Klasse
-        idx = np.where(cls == c)[0]
-        for k in nms(boxes[idx], score[idx], 0.45):
-            i = idx[k]
-            b = boxes[i]
-            found.append({"klasse": COCO[int(c)], "sicherheit": round(float(score[i]), 3),
-                          "rahmen": [max(0, round(float(b[0]))), max(0, round(float(b[1]))), min(w, round(float(b[2]))), min(h, round(float(b[3])))]})
+    # klassenübergreifend wie YOLOX' eigene Vorlage (class_agnostic): ein Gegenstand zählt einmal, auch wenn er z. B. als „Auto“ und „Lastwagen“ erkannt wird
+    for i in nms(boxes, score, 0.45) if len(score) else []:
+        b = boxes[i]
+        found.append({"klasse": COCO[int(cls[i])], "sicherheit": round(float(score[i]), 3),
+                      "rahmen": [max(0, round(float(b[0]))), max(0, round(float(b[1]))), min(w, round(float(b[2]))), min(h, round(float(b[3])))]})
     found.sort(key=lambda o: -o["sicherheit"])
     counts = {}
     for o in found:
         counts[o["klasse"]] = counts.get(o["klasse"], 0) + 1
 
     if out != "-":
+        from PIL import ImageFont
         draw = ImageDraw.Draw(rgb)
         lw = max(2, round(min(w, h) / 300))
+        font = ImageFont.load_default(size=max(12, round(min(w, h) / 32)))
         for o in found:
             x1, y1, x2, y2 = o["rahmen"]
             draw.rectangle([x1, y1, x2, y2], outline=(245, 165, 36), width=lw)
-            draw.text((x1 + lw + 2, y1 + lw + 1), f"{o['klasse']} {int(o['sicherheit'] * 100)}%", fill=(245, 165, 36))
+            label = f"{GERMAN.get(o['klasse'], o['klasse'])} {int(o['sicherheit'] * 100)} %"
+            tx1, ty1, tx2, ty2 = draw.textbbox((x1, y1), label, font=font)
+            pad = max(2, lw)
+            ly = y1 - (ty2 - ty1) - 2 * pad if y1 - (ty2 - ty1) - 2 * pad >= 0 else y1  # Beschriftung über dem Rahmen, am oberen Rand innen
+            bw = (tx2 - tx1) + 2 * pad
+            lx = max(0, min(x1, w - bw))  # am rechten Bildrand nach links rücken, damit nichts abgeschnitten wird
+            draw.rectangle([lx, ly, lx + bw, ly + (ty2 - ty1) + 2 * pad], fill=(245, 165, 36))
+            draw.text((lx + pad - (tx1 - x1), ly + pad - (ty1 - y1)), label, fill=(20, 20, 20), font=font)
         Path(out).parent.mkdir(parents=True, exist_ok=True)
         rgb.save(out)
     print(json.dumps({"breite": w, "hoehe": h, "ms": round((time.perf_counter() - t0) * 1000), "objekte": found, "anzahl": counts}))

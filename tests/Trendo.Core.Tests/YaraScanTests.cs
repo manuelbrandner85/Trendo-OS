@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Trendo.Core.Tests;
 
-/// <summary>Alle Studios, Runde 8 – SPEC-12: yara-x mit den ReversingLabs-Regeln. Ausgabe im echten NDJSON-Format von yr 1.22 (scan.rs); Echtlauf erst nach Freigabe.</summary>
+/// <summary>Alle Studios, Runde 8 – SPEC-12: yara-x mit den ReversingLabs-Regeln. Ausgabe im echten NDJSON-Format von yr 1.22 (meta als Liste von Paaren, wie im echten Lauf; Objekt-Form ebenfalls); Echtlauf erst nach Freigabe.</summary>
 public class YaraScanTests : IDisposable
 {
     readonly string _dir = Path.Combine(Path.GetTempPath(), "trendo-yara-" + Guid.NewGuid().ToString("N"));
@@ -13,11 +13,11 @@ public class YaraScanTests : IDisposable
 
     const string Out = """
         {"path":"C:\\scan\\rechnung.exe","rules":[{"identifier":"Win32_Ransomware_WannaCry","meta":{"author":"ReversingLabs","category":"MALWARE","malware":"WANNACRY","description":"Yara rule that detects WannaCry ransomware.","tc_detection_type":"Ransomware","tc_detection_name":"WannaCry","tc_detection_factor":5},"tags":["tc_detection","malicious"]}]}
-        {"path":"C:\\scan\\tool.exe","rules":[{"identifier":"Win32_Hacktool_Mimikatz","meta":{"category":"MALWARE","tc_detection_type":"Hacktool","tc_detection_name":"Mimikatz","tc_detection_factor":4}},{"identifier":"Neu","meta":{"category":"PUA"}}]}
+        {"path":"C:\\scan\\tool.exe","rules":[{"identifier":"Win32_Hacktool_Mimikatz","meta":[["category","MALWARE"],["tc_detection_type","Hacktool"],["tc_detection_name","Mimikatz"],["tc_detection_factor",4]]},{"identifier":"Neu","meta":{"category":"PUA"}}]}
         warning: something
         """;
 
-    [Fact(DisplayName = "YARA +1: NDJSON lesen – deutsche Art, Name, Schwere (höchste zuerst), Zeilen ohne JSON übersprungen")]
+    [Fact(DisplayName = "YARA +1: NDJSON lesen (meta als Paar-Liste wie yr 1.22 und als Objekt) – deutsche Art, Name, Schwere (höchste zuerst), Zeilen ohne JSON übersprungen")]
     public void Parse()
     {
         var f = YaraScan.Parse(Out);
@@ -105,5 +105,53 @@ public class YaraRulesRealTests
             Assert.Contains(files, f => Path.GetFileName(f).StartsWith("ransomware-", StringComparison.Ordinal));
         }
         finally { try { Directory.Delete(dir, true); } catch (IOException) { } }
+    }
+}
+
+/// <summary>Echter Lauf von yr 1.22.0 mit allen 310 ReversingLabs-Regeln (Prüfordner, Freigabe 08.11.2026). Eingerichtet über Trendos eigenen Weg (ExtractExe/ExtractRules).</summary>
+public class YaraScanRealTests
+{
+    static string Zip => Path.Combine(Path.GetTempPath(), "trendo-tools-b", "yarax", "yarax.zip");
+    static string Rules => Path.Combine(Path.GetTempPath(), "trendo-tools-b", "yara-regeln", "rl-rules-e0a0be54.zip");
+    public sealed class YrFactAttribute : FactAttribute { public YrFactAttribute() { if (!OperatingSystem.IsWindows() || !File.Exists(Zip) || !File.Exists(Rules)) Skip = "Übersprungen – yara-x oder Regeln nicht im Prüfordner."; } }
+
+    const string TestRule = """
+        rule Trendo_Pruefregel : tc_detection
+        {
+            meta:
+                category = "MALWARE"
+                description = "Harmlose Prüfregel von Trendo (nur Testmarkierung)"
+                tc_detection_type = "Ransomware"
+                tc_detection_name = "TrendoTest"
+                tc_detection_factor = 5
+            strings:
+                $m = "TRENDO-PRUEFMARKE-6f1c"
+            condition:
+                $m
+        }
+        """;
+
+    [YrFact(DisplayName = "YARA echt: Archiv mit gepinnter Prüfsumme; yr kompiliert alle 310 Regeln; saubere Dateien ohne Befund; Prüfmarke in Unterordner wird als Erpressersoftware gemeldet")]
+    public void Real_scan()
+    {
+        var zip = File.ReadAllBytes(Zip);
+        Assert.Equal(YaraScan.ZipSha256, Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(zip)));
+        var tools = Path.Combine(Path.GetTempPath(), "trendo-yxreal-" + Guid.NewGuid().ToString("N")); var target = Path.Combine(tools, "ziel");
+        try
+        {
+            Assert.True(YaraScan.ExtractExe(zip, tools)); Assert.Equal(310, YaraScan.ExtractRules(new MemoryStream(File.ReadAllBytes(Rules)), tools));
+            Directory.CreateDirectory(Path.Combine(target, "unter"));
+            File.WriteAllText(Path.Combine(target, "brief.txt"), "Sehr geehrte Damen und Herren"); File.WriteAllBytes(Path.Combine(target, "bild.bin"), new byte[4096]);
+            var (clean, m1) = YaraScan.Scan(tools, target);
+            Assert.True(clean is not null, m1); Assert.Empty(clean!); Assert.Contains("Keine bekannten", m1);
+            File.WriteAllText(Path.Combine(YaraScan.RulesDir(tools), "trendo-pruefregel.yara"), TestRule);
+            File.WriteAllText(Path.Combine(target, "unter", "rechnung.exe"), "MZ ... TRENDO-PRUEFMARKE-6f1c ...");
+            var (hit, m2) = YaraScan.Scan(tools, target);
+            Assert.True(hit is not null, m2);
+            var f = Assert.Single(hit!);
+            Assert.Equal(("Trendo_Pruefregel", "Erpressersoftware", "TrendoTest", 5), (f.Rule, f.Kind, f.Name, f.Severity)); Assert.EndsWith("rechnung.exe", f.File);
+            Assert.StartsWith("1 Datei(en) mit 1 Treffer(n): rechnung.exe → Erpressersoftware TrendoTest", m2);
+        }
+        finally { try { Directory.Delete(tools, true); } catch (IOException) { } catch (UnauthorizedAccessException) { } }
     }
 }

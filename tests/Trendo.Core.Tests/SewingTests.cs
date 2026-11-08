@@ -46,7 +46,7 @@ public class SewingTests : IDisposable
     public void Catalog()
     {
         Assert.Equal(11, Sewing.Designs.Length); Assert.Contains(("teagan", "T-Shirt"), Sewing.Designs);
-        var a = Sewing.InstallArgs("x"); Assert.Contains("--ignore-scripts", a); Assert.Contains("@freesewing/core@" + Sewing.Version, a); Assert.Contains("@freesewing/sandy@" + Sewing.Version, a);
+        var a = Sewing.InstallArgs("x"); Assert.Contains("--ignore-scripts", a); Assert.Contains("@freesewing/core@" + Sewing.Version, a); Assert.Contains("@freesewing/sandy@" + Sewing.Version, a); Assert.Contains("@freesewing/config@" + Sewing.Version, a); Assert.Contains("@freesewing/plugin-transform@" + Sewing.Version, a); // undeklarierte Abhängigkeiten
         Assert.Equal(38, Sewing.German.Count); Assert.Equal("Rückenlänge", Sewing.Name("hpsToWaistBack")); Assert.Equal("neuesMass", Sewing.Name("neuesMass"));
     }
 

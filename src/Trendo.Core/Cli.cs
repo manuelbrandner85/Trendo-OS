@@ -16,9 +16,11 @@ public static class Cli
         return null;
     }
 
-    public static Result Run(string exe, IEnumerable<string> args, string? cwd = null, int timeoutMs = 60000, IDictionary<string, string>? env = null)
+    /// <param name="encoding">Kodierung der Ausgabe; ohne Angabe die der Konsole. Python mit PYTHONIOENCODING=utf-8 braucht UTF-8, sonst werden Umlaute verstümmelt.</param>
+    public static Result Run(string exe, IEnumerable<string> args, string? cwd = null, int timeoutMs = 60000, IDictionary<string, string>? env = null, System.Text.Encoding? encoding = null)
     {
         var psi = new ProcessStartInfo(Find(exe) ?? exe) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true, WorkingDirectory = cwd ?? Environment.CurrentDirectory };
+        if (encoding is not null) { psi.StandardOutputEncoding = encoding; psi.StandardErrorEncoding = encoding; }
         foreach (var a in args) psi.ArgumentList.Add(a);
         if (env is not null) foreach (var kv in env) psi.Environment[kv.Key] = kv.Value;
         try

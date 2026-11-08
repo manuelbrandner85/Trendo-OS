@@ -23,7 +23,7 @@ public partial class MainWindow
         if (KiStepOverride is { } o) return o(exe, args, cwd, env);
         if (_opt.Isolated) return Task.FromResult(new Cli.Result(-1, "", "Testmodus: es wird nichts eingerichtet oder gestartet."));
         Directory.CreateDirectory(cwd);
-        return Task.Run(() => Cli.Run(exe, args, cwd, timeoutMs, env.ToDictionary()));
+        return Task.Run(() => Cli.Run(exe, args, cwd, timeoutMs, env.ToDictionary(), System.Text.Encoding.UTF8)); // PYTHONIOENCODING=utf-8 (UvEnv) – sonst Umlaute verstümmelt
     }
 
     /// <summary>Python-KI einrichten: uv (falls nötig) laden und prüfen, Quellcode auf festem Stand holen und prüfen, Umgebung und Pakete anlegen.</summary>

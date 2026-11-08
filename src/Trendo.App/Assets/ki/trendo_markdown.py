@@ -19,6 +19,16 @@ def main() -> int:
     if src.stat().st_size > 50 * 1024 * 1024:
         print("Datei zu groß (über 50 MB).", file=sys.stderr)
         return 2
+    # Echter Lauf 08.11.2026: eine kaputte .xlsx wurde als „reiner Text“ (Müll) übernommen – darum vorher die Dateiart prüfen
+    import zipfile
+
+    suffix = src.suffix.lower()
+    if suffix in (".docx", ".pptx", ".xlsx") and not zipfile.is_zipfile(src):
+        print("Datei ist beschädigt (kein gültiges Office-Dokument).", file=sys.stderr)
+        return 3
+    if suffix == ".pdf" and src.read_bytes()[:5] != b"%PDF-":
+        print("Datei ist beschädigt (kein gültiges PDF).", file=sys.stderr)
+        return 3
     from markitdown import MarkItDown
 
     try:

@@ -39,5 +39,17 @@ Die JSON-Felder sind **aus dem Quellcode von restic 0.19.1** übernommen:
 - **Gefunden und behoben:** Größenangaben hingen von der Systemsprache ab. Jetzt stehen sie immer deutsch da („50,0 MB“).
 
 ## Nicht geprüft (NOT RUN)
-- **Echter Lauf von restic** (sichern, Stände, zurückholen, Prüfsumme des Archivs). Das wäre ein heruntergeladenes Programm und braucht die Freigabe des Nutzers.
+- ~~**Echter Lauf von restic** (sichern, Stände, zurückholen, Prüfsumme des Archivs).~~ → erledigt am 08.11.2026 nach Freigabe, siehe „Echter Lauf“ unten. Das wäre ein heruntergeladenes Programm und braucht die Freigabe des Nutzers.
 - Zeitgesteuertes Sichern. Bisher wird auf Knopfdruck gesichert.
+
+## Echter Lauf (08.11.2026, Freigabe des Nutzers „Ja, alle testen“)
+- **Download:** Das Archiv kam beim zweiten Versuch (GitHub war gestört). Die SHA-256 stimmt exakt; im Archiv liegt genau `restic_0.19.1_windows_amd64.exe`.
+- **Echter Ablauf** mit 2 Dateien, darunter ein 3-MB-Foto:
+  - Die erste Sicherung legt die Ablage an.
+  - **Die Ablage enthält keinen Klartext** (Markierung im Brief nicht auffindbar).
+  - Die zweite Sicherung nach einer Änderung meldet 0 neu, 1 geändert, 1 unverändert, unter 100 KB dazu – das Foto wird nicht noch einmal abgelegt.
+  - 2 Stände.
+  - Der ältere Stand kommt zurück: Foto Byte für Byte gleich, Brief ohne den späteren Nachtrag.
+  - Ein falsches Passwort ergibt „Das Passwort passt nicht zu dieser Sicherung.“
+- **Gefunden und behoben:** Beim Zurückholen baute restic den ganzen Originalpfad nach (`ziel\C\Users\…`) und brach an den Zeitstempeln übergeordneter Ordner ab („Access is denied“). Trendo holt jetzt gezielt jeden gesicherten Ordner zurück (`<stand>:/C/…`): bei einem Ordner direkt ins Ziel, bei mehreren je einen Unterordner. Das ist für Nutzer auch übersichtlicher.
+- **Test:** `ResticRealTests.Real_backup` ist grün.

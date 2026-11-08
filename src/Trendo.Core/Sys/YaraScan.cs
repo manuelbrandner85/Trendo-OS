@@ -46,8 +46,12 @@ public static class YaraScan
             var j = JsonNode.Parse(line)!; var file = j["path"]?.GetValue<string>() ?? "";
             foreach (var r in j["rules"]?.AsArray() ?? [])
             {
-                var meta = r!["meta"]; string M(string k) => meta?[k] is JsonValue v && v.TryGetValue<string>(out var s) ? s : "";
-                int Sev() => meta?["tc_detection_factor"] is JsonValue v && v.TryGetValue<int>(out var i) ? Math.Clamp(i, 1, 5) : 3;
+                // yr 1.22 liefert meta als Liste von Paaren [["schlüssel", wert], …] (echter Lauf 08.11.2026); ein Objekt wird ebenso verstanden
+                var meta = new Dictionary<string, JsonNode?>(StringComparer.Ordinal);
+                if (r!["meta"] is JsonObject mo) foreach (var (k, v) in mo) meta[k] = v;
+                else if (r["meta"] is JsonArray ma) foreach (var p in ma.OfType<JsonArray>()) if (p.Count == 2 && p[0] is JsonValue kv && kv.TryGetValue<string>(out var key)) meta[key] = p[1];
+                string M(string k) => meta.GetValueOrDefault(k) is JsonValue v && v.TryGetValue<string>(out var s) ? s : "";
+                int Sev() => meta.GetValueOrDefault("tc_detection_factor") is JsonValue v && v.TryGetValue<int>(out var i) ? Math.Clamp(i, 1, 5) : 3;
                 list.Add(new(file, r["identifier"]?.GetValue<string>() ?? "?", Kind(M("tc_detection_type").Length > 0 ? M("tc_detection_type") : M("category")),
                     M("tc_detection_name").Length > 0 ? M("tc_detection_name") : M("malware"), M("description"), Sev()));
             }

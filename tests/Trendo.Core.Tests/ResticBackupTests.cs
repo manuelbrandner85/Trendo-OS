@@ -60,6 +60,8 @@ public class ResticBackupTests : IDisposable
         Assert.True(ok, msg); Assert.Equal(["restore", "bbbb2222", "-r", Repo, "--target", target], seen);
         Assert.False(ResticBackup.Restore(_dir, Repo, "geheim-12345", "bbbb2222", Data, (_, _, _) => new Cli.Result(0, "", "")).Ok); // nicht leer
         Assert.Equal("Ungültiger Stand.", ResticBackup.Restore(_dir, Repo, "x", "latest; rm", target).Message);
+        Assert.Equal("/C/Users/x/Daten", ResticBackup.SnapshotPath(@"C:\Users\x\Daten\")); Assert.Equal("/home/a", ResticBackup.SnapshotPath("/home/a"));
+        Assert.Equal(["restore", "bbbb2222:/D/Fotos", "-r", Repo, "--target", target], ResticBackup.RestoreArgs(Repo, "bbbb2222", target, @"D:\Fotos"));
     }
 
     [Fact(DisplayName = "restic −1: Prüfungen – Passwort ≥ 8, vollständiger Pfad, Ordner vorhanden, Sicherungsort nicht im gesicherten Ordner")]
@@ -84,5 +86,47 @@ public class ResticBackupTests : IDisposable
         var tools = Path.Combine(_dir, "tools"); Assert.True(ResticBackup.ExtractExe(ms.ToArray(), tools));
         Assert.Equal(["restic.exe"], Directory.GetFiles(tools).Select(Path.GetFileName));
         Assert.Contains("v" + ResticBackup.Version, ResticBackup.ZipUrl); Assert.Equal(64, ResticBackup.ZipSha256.Length);
+    }
+}
+
+/// <summary>Echter Lauf mit restic 0.19.1 (Prüfordner, Freigabe 08.11.2026), eingerichtet über Trendos eigenen Weg (ExtractExe).</summary>
+public class ResticRealTests
+{
+    static string Zip => Path.Combine(Path.GetTempPath(), "trendo-tools-b", "restic", "restic.zip");
+    public sealed class ResticFactAttribute : FactAttribute { public ResticFactAttribute() { if (!OperatingSystem.IsWindows() || !File.Exists(Zip)) Skip = "Übersprungen – restic nicht im Prüfordner."; } }
+
+    [ResticFact(DisplayName = "restic echt: sichern, Stände, zurückholen (Byte für Byte gleich), Ablage ohne Klartext, zweite Sicherung nur mit der Änderung, falsches Passwort verständlich")]
+    public void Real_backup()
+    {
+        var zip = File.ReadAllBytes(Zip);
+        Assert.Equal(ResticBackup.ZipSha256, Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(zip)));
+        var root = Path.Combine(Path.GetTempPath(), "trendo-resticreal-" + Guid.NewGuid().ToString("N"));
+        var tools = Path.Combine(root, "tools"); var data = Path.Combine(root, "daten"); var repo = Path.Combine(root, "usb", "sicherung");
+        try
+        {
+            Assert.True(ResticBackup.ExtractExe(zip, tools));
+            Directory.CreateDirectory(Path.Combine(data, "fotos"));
+            File.WriteAllText(Path.Combine(data, "brief.txt"), "GEHEIMER-KLARTEXT-7d2e Sehr geehrte Damen und Herren");
+            var big = new byte[3_000_000]; new Random(5).NextBytes(big); File.WriteAllBytes(Path.Combine(data, "fotos", "urlaub.jpg"), big);
+            var cache = Path.Combine(root, "cache");
+            Cli.Result Run(string e, IReadOnlyList<string> a, IDictionary<string, string> env) { env["RESTIC_CACHE_DIR"] = cache; return Cli.Run(e, a, timeoutMs: 300_000, env: env); }
+            var (s1, m1) = ResticBackup.Backup(tools, repo, "geheim-12345", [data], Run);
+            Assert.True(s1 is not null, m1); Assert.Equal(2, s1!.FilesNew); Assert.True(ResticBackup.IsRepo(repo));
+            var repoBytes = Directory.EnumerateFiles(repo, "*", SearchOption.AllDirectories).SelectMany(File.ReadAllBytes).ToArray();
+            Assert.DoesNotContain("GEHEIMER-KLARTEXT-7d2e", System.Text.Encoding.Latin1.GetString(repoBytes)); // verschlüsselt
+            File.AppendAllText(Path.Combine(data, "brief.txt"), " – Nachtrag");
+            var (s2, _) = ResticBackup.Backup(tools, repo, "geheim-12345", [data], Run);
+            Assert.Equal((0, 1, 1), (s2!.FilesNew, s2.FilesChanged, s2.FilesUnmodified)); Assert.True(s2.BytesAdded < 100_000, s2.BytesAdded.ToString()); // Foto nicht noch einmal
+            var (snaps, m3) = ResticBackup.Snapshots(tools, repo, "geheim-12345", Run);
+            Assert.True(snaps is not null, m3); Assert.Equal(2, snaps!.Count);
+            var target = Path.Combine(root, "zurueck");
+            var (ok, m4) = ResticBackup.Restore(tools, repo, "geheim-12345", snaps[1].ShortId, target, Run, snaps[1].Paths);
+            Assert.True(ok, m4);
+            var restored = Path.Combine(target, "fotos", "urlaub.jpg"); // direkt im Ziel, ohne den Originalpfad nachzubauen
+            Assert.Equal(big, File.ReadAllBytes(restored));
+            Assert.DoesNotContain("Nachtrag", File.ReadAllText(Path.Combine(target, "brief.txt"))); // älterer Stand
+            Assert.Equal("Das Passwort passt nicht zu dieser Sicherung.", ResticBackup.Snapshots(tools, repo, "falsch-falsch", Run).Message);
+        }
+        finally { try { Directory.Delete(root, true); } catch (IOException) { } catch (UnauthorizedAccessException) { } }
     }
 }

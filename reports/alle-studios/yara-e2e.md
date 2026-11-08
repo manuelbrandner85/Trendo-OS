@@ -44,5 +44,12 @@ Alle Studios, Runde 8, SPEC-12 „System auf Gefahren prüfen“.
   - Ohne Treffer kommt der Hinweis „kein Freibrief“; ein fehlender Ordner wird verständlich gemeldet.
 
 ## Nicht geprüft (NOT RUN)
-- **Echter Lauf von `yr`** auf Testdateien. Das wäre ein heruntergeladenes Programm und braucht die Freigabe des Nutzers. Dabei würde auch das Programm-Archiv selbst noch einmal gegen seine Prüfsumme geprüft.
+- ~~**Echter Lauf von `yr`** auf Testdateien.~~ → erledigt am 08.11.2026 nach Freigabe, siehe „Echter Lauf“ unten. Das wäre ein heruntergeladenes Programm und braucht die Freigabe des Nutzers. Dabei würde auch das Programm-Archiv selbst noch einmal gegen seine Prüfsumme geprüft.
 - Laufzeit auf großen Ordnern.
+
+## Echter Lauf (08.11.2026, Freigabe des Nutzers „Ja, alle testen“)
+- **Download:** Das Programm-Archiv kam beim erneuten Versuch durch. Die SHA-256 stimmt exakt mit der gepinnten überein. Eingerichtet wurde über Trendos eigenen Weg (`ExtractExe`, `ExtractRules`).
+- **yr 1.22.0** kompiliert alle 310 ReversingLabs-Regeln und meldet saubere Dateien als sauber.
+- **Prüfmarke:** Eine Testdatei mit Prüfmarke in einem Unterordner meldet die harmlose Trendo-Prüfregel (Meta im ReversingLabs-Stil) als „Erpressersoftware TrendoTest“, Schwere 5.
+- **Gefunden und behoben:** yr 1.22 liefert `meta` als **Liste von Paaren** (`[["tc_detection_type","Ransomware"],…]`), nicht als Objekt. Der Quellcode zeigte nur `serde_json::Value`. Ohne diesen Lauf wäre jeder echte Fund mit einem Absturz geendet. Der Parser versteht jetzt beide Formen; der Einheitentest nutzt das echte Format.
+- **Test:** `YaraScanRealTests.Real_scan` ist grün.

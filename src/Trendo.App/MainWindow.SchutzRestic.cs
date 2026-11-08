@@ -45,7 +45,7 @@ public partial class MainWindow
     {
         var target = Path.Combine(WorkFolder("Wiederhergestellt"), $"{snap.Time.LocalDateTime:yyyy-MM-dd HHmm} ({snap.ShortId})");
         var dir = ResticDir; var run = ResticRunOverride; var repo = _resticRepo;
-        var (ok, msg) = await Task.Run(() => ResticBackup.Restore(dir, repo, password, snap.Id, target, run));
+        var (ok, msg) = await Task.Run(() => ResticBackup.Restore(dir, repo, password, snap.Id, target, run, snap.Paths));
         _resticMsg = (ok ? "✓ " : "⚠ ") + msg; _core.Audit.Append(Principal.LocalOwner.Name, "backup.restic.restore", ok ? snap.ShortId : "fehler");
         Show("schutz"); return ok ? target : null;
     }

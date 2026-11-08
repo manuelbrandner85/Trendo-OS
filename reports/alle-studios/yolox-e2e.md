@@ -47,6 +47,19 @@ Das erkennt die Funktion im aktuellen Bild (Livebild oder Foto):
 - Die bisherigen Kamera- und Roboter-Tests sowie die KI-Bibliothekstests bleiben grün.
 
 ## Nicht geprüft (NOT RUN)
-- **Echter Lauf:** Modell und onnxruntime auf einem echten Foto. Dafür muss die Python-Laufzeit eingerichtet und das heruntergeladene Modell ausgeführt werden. Das geht nur mit Freigabe des Nutzers, wie bei axe-core. Der Download selbst ist geprüft (Größe, Prüfsumme, ONNX-Kopf).
+- ~~**Echter Lauf:** Modell und onnxruntime auf einem echten Foto.~~ → erledigt am 08.11.2026 nach Freigabe, siehe „Echter Lauf“ unten. Dafür muss die Python-Laufzeit eingerichtet und das heruntergeladene Modell ausgeführt werden. Das geht nur mit Freigabe des Nutzers, wie bei axe-core. Der Download selbst ist geprüft (Größe, Prüfsumme, ONNX-Kopf).
 - Erkennungsgüte auf eigenen Kamerabildern.
 - Ein Dauerlauf auf dem Livebild. Bisher wird ein Bild nach dem anderen auf Knopfdruck erkannt.
+
+## Echter Lauf (08.11.2026, Freigabe des Nutzers „Ja, alle testen“)
+- **Einrichtung:** Python-Umgebung mit onnxruntime 1.31.1, numpy 2.2.6 und Pillow 12.3.0. Das Modell `yolox_s.onnx` hat die gepinnte SHA-256 (nachgeprüft).
+- **Testbild:** das YOLOX-Demobild `dog.jpg` (768 × 576, aus dem Apache-2.0-Projekt). Erkannt in 217 ms auf dem Prozessor:
+  - Fahrrad 95 %
+  - Hund 91 %
+  - Lastwagen (Pickup) 60 %
+  - Topfpflanze 43 %
+  - Die Rahmen sitzen richtig (`yolox-demobild.png`).
+- **Gefunden und behoben:**
+  1. **Doppelte Zählung:** Dasselbe Fahrzeug zählte als „Auto“ *und* „Lastwagen“. Ursache war, dass doppelte Treffer nur je Klasse entfernt wurden. Jetzt geschieht das klassenübergreifend, wie in YOLOX' eigener Vorlage (`demo_utils.multiclass_nms`, `class_agnostic=True`, im Quelltext nachgeprüft).
+  2. **Beschriftung im Bild** war winzig, englisch und am Rand abgeschnitten. Jetzt ist sie deutsch, größer, mit Farbfeld und rückt am Rand nach innen. Ein Test hält die deutschen Namen in Python und C# gleich.
+- **Test:** `ObjectDetectRealTests` (Erkennen und gleiche Namen) ist grün.

@@ -33,7 +33,7 @@ public partial class MainWindow
                 {
                     var res = DocMarkdown.Parse(r.Out); var text = (await File.ReadAllTextAsync(outMd)).Trim(); var source = "Datei: " + Path.GetFileName(file);
                     if (Wissen.All().Any(k => k.Source == source && k.Text == text)) { s++; continue; }
-                    Wissen.Add(DocMarkdown.TitleFor(file, res), text, source, "dokument"); a++;
+                    Wissen.Add(DocMarkdown.TitleFor(file, res, text), text, source, "dokument"); a++;
                 }
                 catch (Exception e) when (e is FormatException or System.Text.Json.JsonException or IOException) { f++; lastErr = $"{Path.GetFileName(file)}: {e.Message}"; }
             }

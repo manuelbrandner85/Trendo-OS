@@ -32,7 +32,9 @@ public static class Sewing
     public static string Name(string m) => German.TryGetValue(m, out var n) ? n : m;
 
     public static IReadOnlyList<string> InstallArgs(string dir) =>
-        ["install", "@freesewing/core@" + Version, "@freesewing/models@" + Version, "@freesewing/plugin-theme@" + Version, .. Designs.Select(d => $"@freesewing/{d.Id}@{Version}"),
+        // config und plugin-transform werden von models/core-plugins importiert, aber dort nicht als Abhängigkeit geführt (im echten Lauf 08.11.2026 gefunden)
+        ["install", "@freesewing/core@" + Version, "@freesewing/models@" + Version, "@freesewing/plugin-theme@" + Version, "@freesewing/config@" + Version, "@freesewing/plugin-transform@" + Version,
+         .. Designs.Select(d => $"@freesewing/{d.Id}@{Version}"),
          "--prefix", dir, "--no-fund", "--no-audit", "--omit=dev", "--ignore-scripts"];
 
     public static bool Ready(string dir) => File.Exists(Path.Combine(dir, "node_modules", "@freesewing", "core", "package.json")) && File.Exists(Path.Combine(dir, "node_modules", "@freesewing", "models", "package.json"));

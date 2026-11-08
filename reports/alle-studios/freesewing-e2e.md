@@ -43,9 +43,20 @@ Das Ergebnis ist eine SVG-Datei in Millimetern zum Drucken im Maßstab 1:1 oder 
   - Ergänzte Maße werden auf Deutsch genannt; der Knopf „Schnittmuster öffnen“ erscheint.
   - Ein unbekannter Schnitt wird abgelehnt.
 - Der bisherige SPEC-08-Oberflächentest bleibt grün.
-- **Echtlauf `SewingRealTests.Real_draft`** (T-Shirt und Hose, Brust 92 / Taille 76 / Hüfte 100): **NOT RUN**. Er wartet auf die Freigabe des Nutzers, weil heruntergeladener Code ausgeführt würde. Der Ordner liegt geparkt; ohne Freigabe wird der Test übersprungen.
+- **Echtlauf `SewingRealTests.Real_draft`** (T-Shirt und Hose, Brust 92 / Taille 76 / Hüfte 100): → erledigt am 08.11.2026 nach Freigabe, siehe „Echter Lauf“ unten.
 
 ## Nicht geprüft (NOT RUN)
-- Der echte Lauf (siehe oben).
+- ~~Der echte Lauf~~ → erledigt am 08.11.2026 nach Freigabe, siehe „Echter Lauf“ unten.
 - Ausdruck und Probeschnitt.
 - Kachelung auf A4-Seiten. Bisher entsteht ein großer Bogen als SVG.
+
+## Echter Lauf (08.11.2026, Freigabe des Nutzers „Ja, alle testen“)
+- **Gefunden: Packfehler bei FreeSewing selbst.** `@freesewing/models` und `plugin-annotations` importieren `@freesewing/config`; `core-plugins` importiert `@freesewing/plugin-transform`. Beide sind dort nicht als Abhängigkeit eingetragen, also installiert npm sie nicht. Der erste echte Lauf brach deshalb mit `ERR_MODULE_NOT_FOUND` ab.
+  - **Behoben:** Trendo installiert beide fest mit (`Sewing.InstallArgs`, beide MIT).
+  - **Prüfung:** Ein Suchlauf über alle `@freesewing/…`-Importe der installierten Quellen fand danach keine weitere Lücke.
+- **Danach liefen alle 11 Schnitte echt** für Brust 92 / Taille 76 / Hüfte 100 mit Standardgröße `cisFemaleAdult34`.
+  - Beispiele: T-Shirt-Bogen 96,7 × 63,2 cm, Wickelhose 123,2 × 115,8 cm, Bleistiftrock 39,7 × 130,1 cm, Tellerrock 167,8 × 75,8 cm.
+  - Jeweils mit genauer Liste der ergänzten Maße.
+- **Sichtprüfung** (`freesewing-teagan-titan.png`): T-Shirt mit Rücken, Vorderteil und Ärmel; Hose mit Hinter- und Vorderteil; Nahtzugabe als äußere Linie.
+- **Grenze:** Die Beschriftungen im Schnitt sind englisch (FreeSewing-Standard).
+- **Test:** `SewingRealTests.Real_draft` (T-Shirt und Hose) ist grün und läuft künftig automatisch mit.

@@ -37,8 +37,16 @@ Der Knopf prüft alle HTML-Seiten des Projekts. Die Befunde erscheinen auf Deuts
   - Prüfseite mit bekannten Fehlern: Bild ohne Alt-Text, keine Sprache, kein Titel, leerer Link, leerer Knopf, Feld ohne Beschriftung, h1 → h3.
   - Auf der Seite liegt zusätzlich ein Skript, das den Alt-Text und die Sprache „reparieren“ würde. Findet axe beides trotzdem, ist bewiesen, dass Seiten-Skripte nicht laufen.
   - Eine saubere Gegenseite darf keine Fehler haben.
-  - **NOT RUN:** Das Ausführen des heruntergeladenen Codes braucht die Freigabe des Nutzers. Ohne Freigabe wird der Test automatisch übersprungen. Der heruntergeladene Ordner liegt geparkt im Prüfordner, damit kein Testlauf ihn ungefragt startet.
+  - → erledigt am 08.11.2026 nach Freigabe, siehe „Echter Lauf“ unten.
 
 ## Nicht geprüft (NOT RUN)
-- Der echte Lauf (siehe oben), bis zur Freigabe.
+- ~~Der echte Lauf~~ → erledigt am 08.11.2026 nach Freigabe, siehe „Echter Lauf“ unten.
 - Das Einrichten über den Knopf. Der Download selbst ist geprüft: 37 Pakete, Fassungen wie gepinnt.
+
+## Echter Lauf (08.11.2026, Freigabe des Nutzers „Ja, alle testen“)
+- **Einrichtung:** axe-core 4.14.0 + jsdom 30.1.3 (37 Pakete) liefen echt über Node 24.22.2.
+- **Ergebnis der Prüfseite:** 8 Regelverstöße – `image-alt`, `html-has-lang`, `document-title`, `link-name`, `button-name`, `label`, `heading-order`, `region` (4×). Dazu 9 bestandene Regeln.
+- **Seiten-Skripte laufen nicht:** Die Seite enthält ein Skript, das Alt-Text und Sprache gesetzt hätte. axe meldet beide Fehler trotzdem, das Skript lief also nicht.
+- **Gegenprobe:** Die saubere Gegenseite hat keinen Fehler.
+- **Dauer:** 0,8 s.
+- **Test:** `AxeCheckTests.Real_run` ist grün und läuft künftig automatisch mit (Prüfordner `trendo-tools-b/axe`).

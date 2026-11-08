@@ -67,3 +67,42 @@ public class ObjectDetectTests
         Assert.ThrowsAny<System.Text.Json.JsonException>(() => ObjectDetect.Parse("kein json"));
     }
 }
+
+/// <summary>Echter Lauf: YOLOX-S mit onnxruntime auf dem YOLOX-Demobild (Prüfumgebung %TEMP%\trendo-tools-b\yolox, Freigabe 08.11.2026).</summary>
+public class ObjectDetectRealTests
+{
+    static string Dir => Path.Combine(Path.GetTempPath(), "trendo-tools-b", "yolox");
+    static string Py => Path.Combine(Dir, "venv", OperatingSystem.IsWindows() ? Path.Combine("Scripts", "python.exe") : Path.Combine("bin", "python"));
+    static string Script()
+    {
+        var root = new DirectoryInfo(AppContext.BaseDirectory); while (root is not null && !File.Exists(Path.Combine(root.FullName, "Trendo.sln"))) root = root.Parent;
+        return Path.Combine(root!.FullName, "src", "Trendo.App", "Assets", "ki", "trendo_objekte.py");
+    }
+    public sealed class YoloxFactAttribute : FactAttribute { public YoloxFactAttribute() { if (!File.Exists(Py) || !File.Exists(Path.Combine(Dir, ObjectDetect.ModelFile)) || !File.Exists(Path.Combine(Dir, "dog.jpg"))) Skip = "Übersprungen – YOLOX-Prüfumgebung fehlt."; } }
+
+    [YoloxFact(DisplayName = "Objekte echt: Modell mit gepinnter Prüfsumme; Demobild → Fahrrad und Hund sicher erkannt, Fahrzeug nur einmal gezählt, markiertes Bild geschrieben")]
+    public void Real_detect()
+    {
+        Assert.Equal(ObjectDetect.ModelSha256, Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(Path.Combine(Dir, ObjectDetect.ModelFile)))));
+        var outPng = Path.Combine(Path.GetTempPath(), "trendo-yolox-" + Guid.NewGuid().ToString("N") + ".png");
+        try
+        {
+            var r = Cli.Run(Py, ["-I", Script(), "-", .. ObjectDetect.Args(Path.Combine(Dir, ObjectDetect.ModelFile), Path.Combine(Dir, "dog.jpg"), outPng, 0.35)], timeoutMs: 120_000);
+            Assert.True(r.Ok, r.Err);
+            var res = ObjectDetect.Parse(r.Out.Trim().Split('\n')[^1]);
+            Assert.Equal((768, 576), (res.Width, res.Height));
+            Assert.Contains(res.Hits, h => h.Class == "bicycle" && h.Score > 0.9); Assert.Contains(res.Hits, h => h.Class == "dog" && h.Score > 0.85);
+            Assert.Single(res.Hits, h => h.Class is "car" or "truck"); // klassenübergreifend: ein Fahrzeug zählt einmal
+            Assert.StartsWith("1 Fahrrad, 1 Hund", res.Summary);
+            Assert.True(new FileInfo(outPng).Length > 10_000);
+        }
+        finally { File.Delete(outPng); }
+    }
+
+    [Fact(DisplayName = "Objekte: deutsche Namen im Bild (Python) und in der Zählung (C#) sind gleich – alle 80 Klassen")]
+    public void Same_german_names()
+    {
+        var py = File.ReadAllText(Script());
+        foreach (var (en, (one, _)) in ObjectDetect.German) Assert.Contains($"\"{en}\": \"{one}\"", py);
+    }
+}
