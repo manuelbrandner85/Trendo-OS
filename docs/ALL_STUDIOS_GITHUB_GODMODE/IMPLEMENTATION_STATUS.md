@@ -36,7 +36,7 @@
 | X-07 Symbole (Iconify, Lizenz je Satz) | eingebaut als Reiter „Symbole“ (258 freie Sätze, 18 ausgeblendet), alle 21 000+ Symbole aus 4 echten Sätzen sicher ausgegeben, Vorschau gerendert (reports/alle-studios/iconify-e2e.md); 7 Kern-, 1 Echtdaten-, 1 Oberflächentest grün |
 | SPEC-12 Auf Schadsoftware-Merkmale prüfen (yara-x 1.22.0 + 310 ReversingLabs-Regeln) | eingebaut als Werkzeug-Karte, Ausgabeformat aus dem Quellcode von yr 1.22 übernommen, echtes Regel-Archiv (SHA-256) entpackt und geprüft (reports/alle-studios/yara-e2e.md); 6 Kern-, 1 Echtdaten-, 1 Oberflächentest grün; Lauf von yr wartet auf Freigabe – NOT RUN |
 | CORE-11 Verschlüsselte Sicherung mit Versionen (restic 0.19.1) | eingebaut als Karte in „Daten schützen“ (sichern, Stände, Wiederherstellen in neuen Ordner), JSON-Felder aus dem Quellcode von 0.19.1 (reports/alle-studios/restic-e2e.md); 6 Kern- und 1 Oberflächentest grün; Lauf von restic wartet auf Freigabe – NOT RUN |
-| Runde 8 übrige (markitdown) | bewertet 08.11.2026, Umsetzung NOT RUN – führt heruntergeladene Pakete aus (Freigabe nötig) |
+| CORE-10 Word/PDF/PowerPoint/Excel ins Wissen (markitdown 0.1.9) | eingebaut in „Wissen merken“ (KI-Laufzeit „Dokumente“, Aufrufe aus dem Quellcode von 0.1.9 geprüft) (reports/alle-studios/markitdown-e2e.md); 3 Kern- und 1 Oberflächentest grün; Lauf wartet auf Freigabe – NOT RUN |
 | Runden 9+ (24 Studios, davon SPEC-07 abgelehnt) | NOT RUN |
 | Web Design Studio Modul 05 (Design-Tokens) | eingebaut, 2 Tests, im Browser geprüft (docs/web-design-godmode) |
 | Volltest nach den Änderungen | grün: Api 16, Core 1546, App 829 (reports/alle-studios/volltest-2026-11-08.md) |

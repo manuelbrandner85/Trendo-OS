@@ -95,7 +95,7 @@ public partial class MainWindow
         };
         var (good, bad) = Wissen.FeedbackStats();
         left.Children.Add(new Border { Height = 8 });
-        left.Children.Add(P("Dateien einlesen", Muted, 11)); left.Children.Add(folder); left.Children.Add(imp);
+        left.Children.Add(P("Dateien einlesen", Muted, 11)); left.Children.Add(folder); left.Children.Add(imp); left.Children.Add(WissenDocsButton(folder)); // Alle Studios, Runde 8: markitdown
         left.Children.Add(P($"{Wissen.All().Count} Seiten · Rückmeldungen: {good} gut, {bad} verbesserungswürdig", null, 10.5));
         var trashed = Wissen.Trashed().Count;
         left.Children.Add(Act("wissen-trash", $"🗑 Papierkorb ({trashed})", () => { _wikiTrashView = true; _wikiId = null; _wikiEdit = false; Show(V); }));

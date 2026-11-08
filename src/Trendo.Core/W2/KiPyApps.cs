@@ -46,6 +46,8 @@ public static class KiPyApps
         new(KiRuntime.ScanNetz, "", "open3d-0.20.0", "3.12", [], ["open3d==0.20.0", "numpy==2.5.4"], false, "trendo_open3d.py"),
         // Alle Studios, Runde 7 (08.11.2026): YOLOX-Objekterkennung – nur onnxruntime/numpy/Pillow von PyPI, Modell separat mit fester Prüfsumme (ObjectDetect)
         new(KiRuntime.Objekte, "", "yolox-s-0.1.1rc0", "3.12", [], ["onnxruntime==1.31.1", "numpy==2.2.6", "pillow==12.3.0"], false, "trendo_objekte.py"),
+        // Alle Studios, Runde 8 (08.11.2026): markitdown 0.1.9 von PyPI (MIT) mit den Teilen für PDF, Word, PowerPoint, Excel – ohne Plugins, nur lokale Dateien
+        new(KiRuntime.Dokumente, "", "markitdown-0.1.9", "3.12", [], ["markitdown[pdf,docx,pptx,xlsx]==0.1.9"], false, "trendo_markdown.py"),
     ];
 
     public static KiPyApp? For(KiRuntime r) => All.FirstOrDefault(a => a.Id == r);

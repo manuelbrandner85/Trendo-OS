@@ -72,7 +72,7 @@ public partial class MainWindow
     async Task<Cli.Result> KiPyRun(KiRuntime r, IReadOnlyList<string> args, int timeoutMs = 1_800_000)
     {
         // große KIs auf der Grafikkarte nacheinander; die Song-Analyse (librosa) rechnet auf dem Prozessor und darf nebenher laufen
-        using var gpu = r is KiRuntime.MusikAnalyse or KiRuntime.VideoPruefung or KiRuntime.Noten or KiRuntime.ScanNetz or KiRuntime.Objekte ? null : await GpuSlot(r.ToString(), KiLibrary.RuntimeInfo(r).Name);
+        using var gpu = r is KiRuntime.MusikAnalyse or KiRuntime.VideoPruefung or KiRuntime.Noten or KiRuntime.ScanNetz or KiRuntime.Objekte or KiRuntime.Dokumente ? null : await GpuSlot(r.ToString(), KiLibrary.RuntimeInfo(r).Name);
         var app = KiPyApps.For(r)!; var p = KiStore.PyPaths(r);
         if (KiStepOverride is null && !_opt.Isolated) CopyKiScript(app, p); // immer die Fassung dieser Trendo-Version
         return await KiStep(p.PythonExe, [Path.Combine(p.Dir, app.Script), p.Repo, .. args], p.Dir, KiPyApps.UvEnv(p.UvHome), timeoutMs);
