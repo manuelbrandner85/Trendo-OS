@@ -33,6 +33,7 @@ Automatisch erzeugt aus project.assets.json (alle Projekte, auch indirekte Paket
 | Microsoft.Data.Sqlite.Core | 10.0.14 | MIT |
 | Microsoft.Extensions.DependencyInjection.Abstractions | 8.0.2 | MIT |
 | Microsoft.Extensions.Logging.Abstractions | 8.0.3 | MIT |
+| MQTTnet | 5.2.0.1603 | Lizenzdatei im Paket: LICENSE |
 | NLayer | 1.16.0 | MIT |
 | PDFsharp | 6.2.4 | MIT |
 | PDFtoImage | 5.2.1 | MIT |
