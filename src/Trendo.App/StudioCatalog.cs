@@ -23,6 +23,7 @@ public static class StudioCatalog
         ["SYS-02"] = new("Kleine Helfer & Musik", "Kleine Helfer: Rechner, Notizen, Bildschirmfoto, Musik und Videos abspielen.", "Arbeiten & Büro"),
 
         ["STUDIO-ONLINE-BUSINESS-01"] = new("Online verkaufen", "Geschäftsidee planen, gründen und online verkaufen.", "Business & Geld"),
+        ["STUDIO-POD-01"] = new("Print on Demand", "Eigene Motive auf Produkte bringen: Druckdatei prüfen, Preis rechnen, Rechtliches klären.", "Business & Geld"),
         ["SPEC-11"] = new("Geld & Rechnungen", "Haushaltsbuch, Rechnungen, Kredite und Steuern im Blick.", "Business & Geld"),
 
         ["CORE-08"] = new("Videos & Fotos bearbeiten", "Videos schneiden, Musik aufnehmen und Bilder gestalten.", "Kreativ & Medien"),

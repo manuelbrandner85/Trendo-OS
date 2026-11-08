@@ -134,6 +134,6 @@ public class PromptBarTests
             Assert.Equal(info.Name, profile.Title);
             Assert.Equal(info.Area, profile.Area);
         }
-        Assert.Equal(57, StudioCatalog.ById.Count); // + TV & Live (27.10.2026), + Trendo Musik (03.11.2026), + Filme machen (08.11.2026)
+        Assert.Equal(58, StudioCatalog.ById.Count); // + TV & Live (27.10.2026), + Trendo Musik (03.11.2026), + Filme machen und Print on Demand (08.11.2026)
     }
 }

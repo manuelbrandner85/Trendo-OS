@@ -14,6 +14,7 @@ public static class KiSuggestions
         ["SPEC-08"] = [KiKind.BildErzeugen, KiKind.Modell3D],
         ["CORE-08"] = [KiKind.Geraeusche, KiKind.SpracheZuText, KiKind.BildVerbessern, KiKind.Musik],
         ["STUDIO-FILM-01"] = [KiKind.Video, KiKind.BildErzeugen, KiKind.TextZuSprache, KiKind.Musik, KiKind.Geraeusche],
+        ["STUDIO-POD-01"] = [KiKind.BildErzeugen, KiKind.BildVerbessern],
         ["SPEC-15"] = [KiKind.Geraeusche, KiKind.SpracheZuText],
         ["X-07"] = [KiKind.Geraeusche, KiKind.BildErzeugen, KiKind.Musik],
         ["SYS-02"] = [KiKind.Musik],

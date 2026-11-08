@@ -66,7 +66,7 @@ public partial class MainWindow
     private void InitWave6()
     {
         LoadFachState();
-        InitSpec01(); InitSpec02(); InitSpec03(); InitSpec04(); InitLibrary3D(); InitSpec05(); InitSpec06(); InitSpec08(); InitSpec09(); InitSpec10(); InitSpec13(); InitSpec14(); InitSpec15(); InitSpec16(); InitCore09(); InitTv(); InitMusikStudio(); InitFilm();
+        InitSpec01(); InitSpec02(); InitSpec03(); InitSpec04(); InitLibrary3D(); InitSpec05(); InitSpec06(); InitSpec08(); InitSpec09(); InitSpec10(); InitSpec13(); InitSpec14(); InitSpec15(); InitSpec16(); InitCore09(); InitTv(); InitMusikStudio(); InitFilm(); InitPod();
     }
 
     /// <summary>Aufklappbare Gruppe, damit jedes Studio übersichtlich bleibt.</summary>
