@@ -202,7 +202,7 @@
       "Ohne Unterschrift",
       "Brief prüfen",
       "Text von der KI verbessern lassen",
-      "8. November 2026",
+      "9. November 2026",
       "Alle 20 Vorlagen zeigen …",
       "Fertig – Brief speichern",
       "Als verschickt eintragen",
@@ -274,9 +274,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 85,
+    "WarmMs": 87,
     "WindowsOnly": []
   },
   {
@@ -394,8 +394,7 @@
       "Antwort auf die letzte E-Mail entwerfen",
       "Termin nächste Woche Dienstag 10 Uhr",
       "Ungelesene Mails zusammenfassen",
-      "Übersetzen",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "E-Mail & Kontakte",
       "Adressbuch",
       "Posteingang",
@@ -436,9 +435,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 38,
+    "WarmMs": 39,
     "WindowsOnly": []
   },
   {
@@ -556,8 +555,7 @@
       "Antwort auf die letzte E-Mail entwerfen",
       "Termin nächste Woche Dienstag 10 Uhr",
       "Ungelesene Mails zusammenfassen",
-      "Übersetzen",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "E-Mail & Kontakte",
       "Adressbuch",
       "Posteingang",
@@ -591,7 +589,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
     "WarmMs": 41,
     "WindowsOnly": []
@@ -722,8 +720,7 @@
       "Antwort auf die letzte E-Mail entwerfen",
       "Termin nächste Woche Dienstag 10 Uhr",
       "Ungelesene Mails zusammenfassen",
-      "Übersetzen",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "E-Mail & Kontakte",
       "Adressbuch",
       "Posteingang",
@@ -794,9 +791,9 @@
       "src/Trendo.App/MainWindow.Pim.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 39,
+    "WarmMs": 50,
     "WindowsOnly": []
   },
   {
@@ -914,8 +911,7 @@
       "Antwort auf die letzte E-Mail entwerfen",
       "Termin nächste Woche Dienstag 10 Uhr",
       "Ungelesene Mails zusammenfassen",
-      "Übersetzen",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "E-Mail & Kontakte",
       "Adressbuch",
       "Posteingang",
@@ -960,9 +956,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 29,
+    "WarmMs": 36,
     "WindowsOnly": []
   },
   {
@@ -1080,8 +1076,7 @@
       "Antwort auf die letzte E-Mail entwerfen",
       "Termin nächste Woche Dienstag 10 Uhr",
       "Ungelesene Mails zusammenfassen",
-      "Übersetzen",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "E-Mail & Kontakte",
       "Adressbuch",
       "Posteingang",
@@ -1127,9 +1122,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -1367,9 +1362,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -1524,8 +1519,7 @@
     "Tools": [
       "Los",
       "✳ Claude",
-      "Musik",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Übersicht",
       "Dateien",
       "Bilder & Medien",
@@ -1622,7 +1616,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -1865,9 +1859,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -1887,7 +1881,7 @@
     "Tools": [
       "Los",
       "✳ Claude",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "＋ Neues Projekt",
       "Beispiel-Urlaubsvideo",
       "▸ Aufnahmen  (0)",
@@ -1954,9 +1948,9 @@
       "src/Trendo.App/MainWindow.W4Suite.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -2113,10 +2107,7 @@
       "Haushaltsplan als Tabelle",
       "Präsentation über unser Projekt, 8 Folien",
       "Lebenslauf modern gestalten",
-      "Vorlesen",
-      "Sprache zu Text",
-      "Übersetzen",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Start",
       "PDF",
       "Schreiben",
@@ -2210,7 +2201,7 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
     "WarmMs": 12,
     "WindowsOnly": []
@@ -2370,10 +2361,7 @@
       "Haushaltsplan als Tabelle",
       "Präsentation über unser Projekt, 8 Folien",
       "Lebenslauf modern gestalten",
-      "Vorlesen",
-      "Sprache zu Text",
-      "Übersetzen",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "PDF öffnen …",
       "Neue leere PDF"
     ],
@@ -2444,9 +2432,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 7,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -2606,10 +2594,7 @@
       "Haushaltsplan als Tabelle",
       "Präsentation über unser Projekt, 8 Folien",
       "Lebenslauf modern gestalten",
-      "Vorlesen",
-      "Sprache zu Text",
-      "Übersetzen",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Datei ▾",
       "Start",
       "Einfügen",
@@ -2708,9 +2693,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -2870,10 +2855,7 @@
       "Haushaltsplan als Tabelle",
       "Präsentation über unser Projekt, 8 Folien",
       "Lebenslauf modern gestalten",
-      "Vorlesen",
-      "Sprache zu Text",
-      "Übersetzen",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Datei ▾",
       "Start",
       "Einfügen",
@@ -2990,7 +2972,7 @@
       "src/Trendo.App/MainWindow.Tabelle.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
     "WarmMs": 14,
     "WindowsOnly": []
@@ -3152,10 +3134,7 @@
       "Haushaltsplan als Tabelle",
       "Präsentation über unser Projekt, 8 Folien",
       "Lebenslauf modern gestalten",
-      "Vorlesen",
-      "Sprache zu Text",
-      "Übersetzen",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Start",
       "Einfügen",
       "Entwurf",
@@ -3289,9 +3268,9 @@
       "src/Trendo.App/MainWindow.Text.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 24,
+    "WarmMs": 18,
     "WindowsOnly": []
   },
   {
@@ -3316,7 +3295,7 @@
       "Monatsausgaben nach Kategorie",
       "Rechnung für Erika Muster schreiben",
       "Sparplan für 5.000 €",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Budget setzen",
       "Heute",
       "↶ Rückgängig",
@@ -3372,9 +3351,9 @@
       "src/Trendo.App/MainWindow.W5Finance.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 44,
+    "WarmMs": 37,
     "WindowsOnly": []
   },
   {
@@ -3471,9 +3450,7 @@
       "Produktbeschreibung für handgemachte Kerzen",
       "Preise kalkulieren",
       "Startplan für einen Online-Shop",
-      "Bilder erzeugen",
-      "Übersetzen",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Verkaufen",
       "Geschäftsidee",
       "\uD83E\uDDFE Kasse",
@@ -3521,9 +3498,115 @@
       "src/Trendo.App/MainWindow.W5Business.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
     "WarmMs": 10,
+    "WindowsOnly": []
+  },
+  {
+    "Id": "pod-programm",
+    "Name": "Print on Demand",
+    "Studio": "STUDIO-POD-01",
+    "StudioName": "Print on Demand",
+    "Area": "Business & Geld",
+    "Type": [],
+    "Functions": [],
+    "Engine": [
+      "PodCheck",
+      "PodLegal",
+      "PodLevel",
+      "PodPrice",
+      "XrPlus"
+    ],
+    "Tools": [
+      "Verkaufstext (Exportieren)"
+    ],
+    "Formats": [
+      ".jpg",
+      ".md",
+      ".png",
+      ".tdoc"
+    ],
+    "Dependencies": [],
+    "Ui": [
+      "Menüband",
+      "Eigenschaften",
+      "Statusleiste",
+      "Dokument-Reiter"
+    ],
+    "Tabs": [
+      "Print on Demand"
+    ],
+    "Tests": [
+      "POD: Motiv prüfen, Preis für Wunschgewinn, Markenwarnung, Checkliste, Verkaufstext als Datei"
+    ],
+    "SourceFiles": [
+      "src/Trendo.App/MainWindow.PodStudio.cs"
+    ],
+    "Status": "IN_PROGRESS / Test NOT_RUN",
+    "Version": "0.9.36 (Stand 70e872a)",
+    "Shell": true,
+    "WarmMs": 8,
+    "WindowsOnly": []
+  },
+  {
+    "Id": "film-programm",
+    "Name": "Filme machen",
+    "Studio": "STUDIO-FILM-01",
+    "StudioName": "Filme machen",
+    "Area": "Kreativ & Medien",
+    "Type": [],
+    "Functions": [],
+    "Engine": [
+      "FountainKind",
+      "Fountain",
+      "FilmBreakdowns",
+      "ShotPlan",
+      "TypstDoc"
+    ],
+    "Tools": [
+      "Einstellungen vorschlagen (Planen)",
+      "Figuren & Orte übernehmen (Planen)",
+      "Drehbuch (.fountain) (Exportieren)",
+      "Drehbuch (PDF) (Exportieren)",
+      "Shotliste (CSV) (Exportieren)",
+      "Drehbuchauszug (Exportieren)"
+    ],
+    "Formats": [
+      ".csv",
+      ".fountain",
+      ".html",
+      ".m3u8",
+      ".md",
+      ".pdf",
+      ".png",
+      ".svg",
+      ".tdoc"
+    ],
+    "Dependencies": [
+      "FFmpeg",
+      "OBS Studio (optional)"
+    ],
+    "Ui": [
+      "Menüband",
+      "Eigenschaften",
+      "Statusleiste",
+      "Dokument-Reiter"
+    ],
+    "Tabs": [
+      "Filme machen"
+    ],
+    "Tests": [
+      "Film: Beispiel öffnen, Drehbuch als Seite, Einstellungen vorschlagen, Figuren übernehmen, Beschreibung bleibt, Export und Rückgängig",
+      "Film: PDF ohne typst meldet verständlich, was fehlt"
+    ],
+    "SourceFiles": [
+      "src/Trendo.App/MainWindow.FilmStudio.cs"
+    ],
+    "Status": "IN_PROGRESS / Test NOT_RUN",
+    "Version": "0.9.36 (Stand 70e872a)",
+    "Shell": true,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -3634,10 +3717,7 @@
     "Tools": [
       "Los",
       "✳ Claude",
-      "Geräusche & Effekte",
-      "Bilder erzeugen",
-      "Musik",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Bilder",
       "Klänge",
       "Schriften",
@@ -3689,9 +3769,9 @@
       "src/Trendo.App/MainWindow.W4Assets.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -3720,7 +3800,7 @@
       "Produktion",
       "Verbindungen",
       "Online-Dienste",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Vorlagen",
       "ALLTAG",
       "BRIEFE",
@@ -3740,6 +3820,7 @@
       "KI-Vorlagen"
     ],
     "Tests": [
+      "Anweisungs-Test: falsche Regeln werden gemeldet; Ergebnis zählt Durchläufe beider Fassungen; Regeln bleiben gespeichert",
       "CORE-02 UI: Studio verweist auf „KI fragen“, Frage wird beantwortet",
       "CORE-02: Nur Quellen auf diesem Gerät – Cloud-Adressen werden abgelehnt",
       "CORE-02: Ollama-Format (tags/chat) wird korrekt gesprochen",
@@ -3749,12 +3830,13 @@
       "CORE-12: Platzhalter mit Standardwert ausfüllen, fehlende werden genannt",
       "CORE-12: Qualitätsprüfung erkennt kurze Aufträge, Geheimnisse, offene Platzhalter; Masterprompt hat Regeln",
       "CORE-12: Versionen speichern und zurückholen, Mitgelieferte nicht löschbar",
+      "Recherche: zeigt zuerst nur den Artikel, Knopf wechselt ohne neuen Abruf zur ganzen Seite und zurück; ohne Artikel ein Hinweis",
       "SYS-05 UI: Vorlage anlegen, Probelauf, Freigeben, Ausführen, eigener Ablauf",
       "X-05 UI: Suche findet laufende Quelle, Fragen nutzt die Rückfallkette"
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -3789,7 +3871,7 @@
       "Produktion",
       "Verbindungen",
       "Online-Dienste",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Vorlagen",
       "Skills",
       "＋ Eigener Skill",
@@ -3832,9 +3914,9 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -3998,6 +4080,9 @@
     ],
     "Tests": [
       "Bedienstufen: Einfach blendet Fachwerkzeuge aus, Erweitert zeigt alle, Wechsel lässt das Dokument unverändert; Einstellung bleibt gespeichert",
+      "Kleidung: Anprobe schreibt einen vollständigen Auftrag, zeigt Bilder; Fehler von Blender werden gemeldet",
+      "Kleidung: Produktionsdateien werden geschrieben",
+      "Kleidung: Schnittteile mit Kurven, Zuschnitt und Kosten erscheinen; Stoff und Schnitt lassen sich wechseln",
       "Profi-Stufe: Befehlssuche führt Befehle aus, Verlauf springt zurück, Projektdaten – falsches JSON wird abgelehnt, richtiges übernommen und rückgängig machbar",
       "Programm: Startseite → Vorlage → bearbeiten → Rückgängig → Speichern → Zuletzt → wieder öffnen; Reiter für zwei Dokumente",
       "Programm: ungespeichertes Dokument wird automatisch gesichert und auf der Startseite wiederhergestellt",
@@ -4022,7 +4107,7 @@
       "src/Trendo.App/MainWindow.ProgMode.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": true,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -4170,9 +4255,7 @@
       "✳ Claude",
       "Stream-Szene mit Kamera und Bildschirm",
       "Ablauf für eine 30-Minuten-Sendung",
-      "Geräusche & Effekte",
-      "Sprache zu Text",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Ablauf",
       "On-Air-Uhr",
       "\uD83C\uDFA5 Studio",
@@ -4288,9 +4371,9 @@
       "src/Trendo.App/MainWindow.Spec15.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 57,
+    "WarmMs": 60,
     "WindowsOnly": []
   },
   {
@@ -4457,9 +4540,7 @@
       "Sommerlied über einen Roadtrip",
       "Ruhige Klavierballade, instrumental",
       "Rap über Montagmorgen",
-      "Musik",
-      "Geräusche & Effekte",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Erstellen",
       "Studio",
       "Bibliothek",
@@ -4469,12 +4550,12 @@
       "Sounds",
       "Sprache",
       "Übernehmen",
-      "Mo",
       "Di",
       "Mi",
       "Do",
       "Fr",
       "Sa",
+      "So",
       "Heute",
       "Lied in meinem Geschmack",
       "Einfach",
@@ -4511,7 +4592,9 @@
       "Datei wählen und untersuchen",
       "Das ist meine eigene Stimme. Ich nehme sie hier selbst mit dem Mikrofon auf.",
       "⏺ Aufnahme 1 von 10",
-      "\uD83E\uDDE0 Stimme lernen"
+      "\uD83E\uDDE0 Stimme lernen",
+      "\uD83C\uDF99 Cover erzeugen",
+      "\uD83C\uDFA4 Karaoke aus dem Original"
     ],
     "Formats": [],
     "Dependencies": [],
@@ -4604,9 +4687,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 23,
+    "WarmMs": 26,
     "WindowsOnly": []
   },
   {
@@ -4623,7 +4706,7 @@
     "Tools": [
       "Los",
       "✳ Claude",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "\uD83E\uDDF8 Kinder-Profil",
       "\uD83D\uDCFA Live-TV",
       "\uD83C\uDFAC Filme",
@@ -4679,7 +4762,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
     "WarmMs": 7,
     "WindowsOnly": []
@@ -5072,9 +5155,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -5427,9 +5510,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -5704,11 +5787,7 @@
       "Urlaubsvideo mit Musik schneiden",
       "Foto aufhellen und zuschneiden",
       "Untertitel erzeugen",
-      "Geräusche & Effekte",
-      "Sprache zu Text",
-      "Bilder verbessern",
-      "Musik",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Verstanden",
       "Medien bearbeiten",
       "Videoschnitt",
@@ -5787,9 +5866,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 46,
+    "WarmMs": 40,
     "WindowsOnly": []
   },
   {
@@ -6164,7 +6243,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": true,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -6438,9 +6517,7 @@
     ],
     "Tools": [
       "✳ Claude",
-      "3D aus Bild",
-      "Bilder erzeugen",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Verstanden",
       "Kopieren",
       "Blender einrichten",
@@ -6452,9 +6529,15 @@
       "Als GLB",
       "Als FBX",
       "Als Blender-Datei",
+      "Los",
+      "Hinzufügen …",
       "Speichern",
       "Neues Objekt",
       "Rückgängig",
+      "Drucken mit Bambu Studio",
+      "Drucker steuern",
+      "Freie 3D-Modelle suchen",
+      "Mehr Werkzeuge anzeigen",
       "Unity",
       "Unreal Engine",
       "Godot",
@@ -6490,8 +6573,6 @@
       "Glätten",
       "Spiegeln",
       "Aushöhlen",
-      "Los",
-      "Hinzufügen …",
       "Teile vorschlagen",
       "In Blender bauen (sichtbar)",
       "Vorschaubild rendern"
@@ -6545,6 +6626,7 @@
       "3D aus Bild: TripoSR nach Klick einrichten (Stand geprüft, eigene Umgebung), Foto wählen → GLB → „Im 3D-Studio öffnen“; falscher Stand wird nicht eingerichtet",
       "3D-Arbeitsfläche: Formen einsetzen (auf dem Boden), Teil anklicken, mit der Maus verschieben (Raster), Pfeiltasten, Verdoppeln, Entf, Rückgängig",
       "3D-Arbeitsfläche: „Auf den Boden“ setzt die Unterkante auf 0, Text und Ebene stehen auf dem Boden",
+      "3D-Modelle, Einfach: Grundfunktionen sichtbar, Export und Fachwerkzeuge nach einem Klick; Erweitert zeigt alles",
       "3D-Seite zeigt die Auftragsleiste, ohne die 3D-Arbeitsfläche zu verkleinern",
       "3D-Studio: Kreatur-Karte – Drache in Bronze/Grün, „Vorschaubild rendern“ startet Blender im Hintergrund, „sichtbar“ ohne -b; Ergebnis mit Vorschau",
       "3D: OBJ, STL und GLB speichern, Datei öffnen, Projekt wieder öffnen",
@@ -6585,7 +6667,10 @@
       "CORE-05: Szenenbaum – Teile in Gruppen ordnen, Gruppe auswählen bewegt alle ihre Teile, Ausblenden nimmt Teile aus Ansicht und Render, Material für die ganze Gruppe",
       "CORE-05: Umrisse: Würfelschnitt ergibt einen geschlossenen Umriss (Umfang 80 mm, Fläche 400 mm²); zwei Körper zwei Umrisse",
       "CORE-05: Unbekannte Formate und Formen werden abgewiesen",
+      "Einfach: In jedem Programm bleibt jeder Befehl der Stufe erreichbar, direkt oder unter „Mehr“; direkt sichtbar sind höchstens vier Programmbefehle",
       "Geräusche: MMAudio mit Hinweis „nur nicht-kommerziell“, Beschreibung + Länge → WAV zum Anhören; ohne Beschreibung kein Lauf",
+      "Spiele bauen, Einfach: Auftrag und nächster Schritt; „Alle Bereiche“ zeigt alles; Erweitert unverändert",
+      "Spiele bauen: Nächster Schritt nennt den schwächsten Bereich in Alltagssprache; Alltagswörter nur in Einfach",
       "Startbildschirm bekommt keine Auftragsleiste",
       "Studio-Seiten: Überschrift ist der Name aus dem Studio-Katalog",
       "StudioCatalog.NameOf: Katalogname, sonst der bisherige Text",
@@ -6593,15 +6678,16 @@
       "Teams: jedes Studio (außer dem abgelehnten SPEC-07) hat ein Profi-Team; „\uD83D\uDC65 Team“ im 3D-Studio öffnet „KI einsetzen“ mit dem 3D-Team; eigene Rolle nur mit Studio",
       "Vorschlag 36: Studios zeigen „✨ Freie KI hier“ – 3D-Studio schlägt „3D aus Bild“ vor, der Klick öffnet die KI-Bibliothek (geladen wird erst dort); jede Studio-Zuordnung gibt es wirklich",
       "assimp-Oberfläche: ohne Einrichtung Knopf; FBX im 3D-Ordner → „→ GLB“ startet Trendo mit --assimp-convert, Ergebnis in 3D/umgewandelt",
-      "f3d im 3D-Studio: Einrichten ohne Werkzeug; mit Werkzeug Knopf je Modell, Vorschaubild erscheint im Studio"
+      "f3d im 3D-Studio: Einrichten ohne Werkzeug; mit Werkzeug Knopf je Modell, Vorschaubild erscheint im Studio",
+      "Übrige Seiten, Einfach: Rest hinter „Mehr anzeigen“ und nach einem Klick wieder da; Erweitert zeigt alles sofort"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 43,
+    "WarmMs": 44,
     "WindowsOnly": []
   },
   {
@@ -6878,9 +6964,7 @@
       "Los",
       "Hinzufügen …",
       "✳ Claude",
-      "3D aus Bild",
-      "Bilder erzeugen",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Datei wählen …",
       "Aus Trendo CAD",
       "Bambu Studio einrichten (kostenlos, AGPL)",
@@ -6967,9 +7051,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -7246,9 +7330,7 @@
       "Los",
       "Hinzufügen …",
       "✳ Claude",
-      "3D aus Bild",
-      "Bilder erzeugen",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Datei ▾",
       "Quader",
       "Zylinder",
@@ -7357,9 +7439,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 48,
+    "WarmMs": 49,
     "WindowsOnly": []
   },
   {
@@ -7502,8 +7584,7 @@
     "Tools": [
       "Los",
       "✳ Claude",
-      "3D aus Bild",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Gegenstände einscannen",
       "Aus Fotos",
       "Kopieren",
@@ -7572,9 +7653,9 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -7788,9 +7869,9 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": true,
-    "WarmMs": 7,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -7799,9 +7880,7 @@
     "Studio": "CORE-06",
     "StudioName": "Spiele bauen",
     "Area": "3D, Spiele & VR",
-    "Type": [
-      "Spieleprojekt (Übersicht, Spielbibel, Figuren, Welt, Missionen, Level, Bauen)"
-    ],
+    "Type": [],
     "Functions": [
       {
         "Nr": "SP-01",
@@ -8037,6 +8116,7 @@
       "GameStudio",
       "GameDesign",
       "GameSaves",
+      "PlainWords",
       "PlatformSim"
     ],
     "Tools": [
@@ -8068,7 +8148,6 @@
     "Rea": "docs/claude/vorbilder/spiele-godot-gdevelop.md",
     "ReaSummary": "Vorbild-Analyse Spiele: Godot, GDevelop, Construct, Unreal Engine (Clean-Room)",
     "Ui": [
-      "Spieleprojekt (Übersicht, Spielbibel, Figuren, Welt, Missionen, Level, Bauen)",
       "Menüband",
       "Eigenschaften",
       "Statusleiste",
@@ -8078,6 +8157,7 @@
       "Spiele bauen"
     ],
     "Tests": [
+      "3D-Modelle, Einfach: Grundfunktionen sichtbar, Export und Fachwerkzeuge nach einem Klick; Erweitert zeigt alles",
       "CORE-06 (UI): Spiel anlegen öffnet es im Browser; ohne Unreal ehrlicher Hinweis, mit Unreal Projekt anlegen",
       "CORE-06 G1: Godot Asset Library – Suche mit Titel, Autor, Lizenz; Laden nur von GitHub/GitLab, ZIP sicher entpackt; fremde Download-Adresse abgelehnt",
       "CORE-06 G1–G3: Assets – Godot-Suche, neue Downloads übernehmen, Bildstreifen als Lauf-Animation (4 Bilder), Ton als Sprung-Geräusch, Asset-Liste mit Abspann, NC-Lizenz warnt beim Veröffentlichen",
@@ -8104,17 +8184,21 @@
       "CORE-06: Unreal-Engines aus Launcher-Liste erkannt, neueste zuerst; .uproject ist gültig",
       "CORE-06: Zeitlimit: nach Ablauf verloren, Restzeit zählt herunter; ohne Limit −1",
       "CORE-06: Zustände der Figur – stehen auf dem Boden, laufen mit Tempo, springen nach oben, fallen nach unten; Blickrichtung folgt der Laufrichtung",
+      "Einfach: In jedem Programm bleibt jeder Befehl der Stufe erreichbar, direkt oder unter „Mehr“; direkt sichtbar sind höchstens vier Programmbefehle",
+      "Spiele bauen, Einfach: Auftrag und nächster Schritt; „Alle Bereiche“ zeigt alles; Erweitert unverändert",
+      "Spiele bauen: Nächster Schritt nennt den schwächsten Bereich in Alltagssprache; Alltagswörter nur in Einfach",
       "Spiele: Retro-Vorlage, Level im Raster bearbeiten, Figur hinzufügen, prüfen, bauen und spielen",
-      "Spiele: Umfang AAA+ wählen setzt AAA-Meilensteine; Bauen legt ein Unreal-Projekt mit Spielbibel an"
+      "Spiele: Umfang AAA+ wählen setzt AAA-Meilensteine; Bauen legt ein Unreal-Projekt mit Spielbibel an",
+      "Übrige Seiten, Einfach: Rest hinter „Mehr anzeigen“ und nach einem Klick wieder da; Erweitert zeigt alles sofort"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.ProgGame.cs",
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": true,
-    "WarmMs": 11,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -8362,16 +8446,14 @@
       "GameStudio",
       "GameDesign",
       "GameSaves",
+      "PlainWords",
       "PlatformSim"
     ],
     "Tools": [
       "Los",
       "Hinzufügen …",
       "✳ Claude",
-      "3D aus Bild",
-      "Geräusche & Effekte",
-      "Musik",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Spiele bauen",
       "Werkstatt",
       "Kopieren",
@@ -8413,6 +8495,7 @@
       "Werkstatt"
     ],
     "Tests": [
+      "3D-Modelle, Einfach: Grundfunktionen sichtbar, Export und Fachwerkzeuge nach einem Klick; Erweitert zeigt alles",
       "CORE-06 (UI): Spiel anlegen öffnet es im Browser; ohne Unreal ehrlicher Hinweis, mit Unreal Projekt anlegen",
       "CORE-06 G1: Godot Asset Library – Suche mit Titel, Autor, Lizenz; Laden nur von GitHub/GitLab, ZIP sicher entpackt; fremde Download-Adresse abgelehnt",
       "CORE-06 G1–G3: Assets – Godot-Suche, neue Downloads übernehmen, Bildstreifen als Lauf-Animation (4 Bilder), Ton als Sprung-Geräusch, Asset-Liste mit Abspann, NC-Lizenz warnt beim Veröffentlichen",
@@ -8445,7 +8528,10 @@
       "Claude im Studio: Trendo prüft das Ergebnis und gibt Fehler automatisch an Claude zurück, bis es läuft – höchstens drei Durchgänge",
       "Claude wie im Original: Skills, Plugins, Connectoren und Agenten aus dem eigenen Claude sichtbar; genutzter Skill/Connector unter der Antwort",
       "Claude-Abo aufgebraucht: Ersatz-KI übernimmt dieselbe Nachricht (sichtbar „Aktive KI“), bis zur Freigabe ohne Claude, danach automatisch wieder Claude",
+      "Einfach: In jedem Programm bleibt jeder Befehl der Stufe erreichbar, direkt oder unter „Mehr“; direkt sichtbar sind höchstens vier Programmbefehle",
       "Kostenlose KI-Werkzeuge: Claude bestellt ein Bild – erst als Entwurf zum Ansehen, ins Projekt erst nach „Übernehmen“; neu erzeugen, verwerfen; Knöpfe; Diktieren",
+      "Spiele bauen, Einfach: Auftrag und nächster Schritt; „Alle Bereiche“ zeigt alles; Erweitert unverändert",
+      "Spiele bauen: Nächster Schritt nennt den schwächsten Bereich in Alltagssprache; Alltagswörter nur in Einfach",
       "Spiele: Retro-Vorlage, Level im Raster bearbeiten, Figur hinzufügen, prüfen, bauen und spielen",
       "Spiele: Umfang AAA+ wählen setzt AAA-Meilensteine; Bauen legt ein Unreal-Projekt mit Spielbibel an",
       "Spiele: Unreal öffnen und die Herstellerseite bleiben der alte Weg",
@@ -8462,16 +8548,17 @@
       "T-0203: „Starten“ öffnet nicht, wenn die Prüfung scheitert",
       "T-0204 (UI): Anlegen → Editor; Tempo und Level ändern, speichern, als ZIP exportieren",
       "T-0204 (UI): Unreal – vorhandenes Projekt öffnen; ohne Unreal klarer Hinweis",
-      "T-0204: Einstellungen landen in config.js, Bild wird kopiert, Export enthält alles"
+      "T-0204: Einstellungen landen in config.js, Bild wird kopiert, Export enthält alles",
+      "Übrige Seiten, Einfach: Rest hinter „Mehr anzeigen“ und nach einem Klick wieder da; Erweitert zeigt alles sofort"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.ProgGame.cs",
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 37,
     "WindowsOnly": []
   },
   {
@@ -8596,9 +8683,7 @@
     "Tools": [
       "Los",
       "✳ Claude",
-      "3D aus Bild",
-      "Geräusche & Effekte",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Datei wählen …",
       "Öffnen",
       "Beispielmodell",
@@ -8674,9 +8759,9 @@
       "src/Trendo.App/MainWindow.Spec04.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 38,
+    "WarmMs": 53,
     "WindowsOnly": []
   },
   {
@@ -8822,7 +8907,7 @@
     "Tools": [
       "Los",
       "✳ Claude",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "⛽ Familienauto",
       "Elektro",
       "＋ Anlegen",
@@ -8873,9 +8958,9 @@
       "src/Trendo.App/MainWindow.Spec16.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 63,
+    "WarmMs": 96,
     "WindowsOnly": []
   },
   {
@@ -9064,9 +9149,9 @@
       "src/Trendo.App/MainWindow.Spec14.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -9211,7 +9296,7 @@
     "Tools": [
       "Los",
       "✳ Claude",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Diesen PC jetzt messen",
       "● Live (alle 5 s)",
       "24 h",
@@ -9274,9 +9359,9 @@
       "src/Trendo.App/MainWindow.Spec10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 64,
+    "WarmMs": 40,
     "WindowsOnly": []
   },
   {
@@ -9422,7 +9507,7 @@
     "Tools": [
       "Los",
       "✳ Claude",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Not-Aus",
       "Not-Aus lösen",
       "Arm planen",
@@ -9496,9 +9581,9 @@
       "src/Trendo.App/MainWindow.Core09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 43,
+    "WarmMs": 85,
     "WindowsOnly": []
   },
   {
@@ -9694,9 +9779,9 @@
       "src/Trendo.App/MainWindow.Spec13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": true,
-    "WarmMs": 7,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -9876,9 +9961,9 @@
       "src/Trendo.App/MainWindow.Spec02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -10058,9 +10143,9 @@
       "src/Trendo.App/MainWindow.Spec03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": true,
-    "WarmMs": 7,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -10256,9 +10341,9 @@
       "src/Trendo.App/MainWindow.Spec01.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -10381,9 +10466,7 @@
       "✳ Claude",
       "Vokabeln Englisch Kapitel 3",
       "Prüfungsfragen zur Ersten Hilfe",
-      "Vorlesen",
-      "Bilder verstehen",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Lernen",
       "Lernplan",
       "Eintippen",
@@ -10429,9 +10512,9 @@
       "src/Trendo.App/MainWindow.Spec06.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 8,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -10618,9 +10701,9 @@
       "src/Trendo.App/MainWindow.Spec05.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": true,
-    "WarmMs": 7,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -10639,9 +10722,7 @@
       "✳ Claude",
       "Recherche: Wärmepumpe Kosten 2026",
       "Quellen zu gesunder Ernährung",
-      "Übersetzen",
-      "Bilder verstehen",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Lesen",
       "Literaturliste kopieren",
       "Als Bericht speichern",
@@ -10658,7 +10739,9 @@
       "Recherche im Lesemodus"
     ],
     "Tests": [
+      "Anweisungs-Test: falsche Regeln werden gemeldet; Ergebnis zählt Durchläufe beider Fassungen; Regeln bleiben gespeichert",
       "CORE-11 UI: Schutz-Seite über System erreichbar, Sichern, Ordner prüfen",
+      "Recherche: zeigt zuerst nur den Artikel, Knopf wechselt ohne neuen Abruf zur ganzen Seite und zurück; ohne Artikel ein Hinweis",
       "SPEC-12 UI: Prüfsumme vergleichen, Fall anlegen, Beweis sichern, Bericht",
       "SYS-04 UI: Suchen, installieren, Updates anzeigen und aktualisieren, entfernen",
       "SYS-06 Freigabe-Dialog: Fenster schließen (X) lehnt ab",
@@ -10677,9 +10760,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -10696,9 +10779,7 @@
     "Tools": [
       "Los",
       "✳ Claude",
-      "Wissen & Suche",
-      "Sprache zu Text",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "＋ Neue Seite",
       "\uD83D\uDCC5 Wochenrückblick",
       "\uD83D\uDD78 Wissensnetz",
@@ -10757,9 +10838,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 21,
     "WindowsOnly": []
   },
   {
@@ -10834,7 +10915,7 @@
       "Produktion",
       "Verbindungen",
       "Online-Dienste",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Abläufe",
       "Einfach: Trendo-Abläufe",
       "Profi: n8n und Node-RED",
@@ -10892,9 +10973,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -10926,7 +11007,7 @@
       "Abläufe",
       "Verbindungen",
       "Online-Dienste",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Verstanden",
       "Kopieren",
       "Abläufe über mehrere Studios",
@@ -10966,9 +11047,9 @@
       "src/Trendo.App/MainWindow.W5Fusion.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 18,
     "WindowsOnly": []
   },
   {
@@ -11066,9 +11147,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 24,
     "WindowsOnly": []
   },
   {
@@ -11101,12 +11182,11 @@
       "Produktion",
       "Verbindungen",
       "Online-Dienste",
-      "Chat & Schreiben",
-      "Nachdenken & Rechnen",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Modell",
       "Fragen",
       "＋ Neues Gespräch",
+      "Einschalten",
       "Claude als Haupt-KI nutzen (wenn verbunden)",
       "Claude darf im Claude-Chat bei Bedarf ins Internet und Befehle ausführen",
       "Claude startet sein Ergebnis echt und sieht es sich selbst an (Bildschirmfoto), bevor du es bekommst",
@@ -11144,6 +11224,7 @@
       "Chatfenster: Enter sendet, Antwort als Sprechblase mit Tabelle und Code (Kopieren), Gespräch gespeichert und wieder zu öffnen, umbenennen, löschen",
       "Claude-Regeln 01.11.2026: Claude Code aus Trendo erlaubt (eigene Anmeldung je Nutzer) – kein Sperr-Hinweis; „Claude Code öffnen“ startet das echte Claude Code im Projektordner",
       "Claude-Regeln 01.11.2026: Trendo speichert keine Claude-Tokens – ein alter wird beim Start gelöscht, kein Token-Feld mehr",
+      "Gedächtnis: aus, bis man es einschaltet; danach merkt der Chat Aussagen, Einträge sichtbar und löschbar; alles vergessen fragt nach",
       "SYS-05 UI: Vorlage anlegen, Probelauf, Freigeben, Ausführen, eigener Ablauf",
       "T-0316: Claude als Haupt-KI – Frage läuft eingegrenzt über Claude (kein Datei-Ändern), Antwort mit Quelle „Claude (dein Abo)“; Haupt-KI aus → Claude wird nicht gefragt",
       "T-0316: Claude-Karte – nicht installiert → „Claude Code einrichten“, nicht angemeldet → „Mit Claude verbinden“, verbunden → „✓ Mit deinem Claude-Abo verbunden (Max)“",
@@ -11153,9 +11234,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 26,
     "WindowsOnly": []
   },
   {
@@ -11192,9 +11273,7 @@
       "Produktion",
       "Verbindungen",
       "Online-Dienste",
-      "Chat & Schreiben",
-      "Nachdenken & Rechnen",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Modell",
       "Fragen",
       "Öffnen"
@@ -11235,9 +11314,9 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 20,
     "WindowsOnly": []
   },
   {
@@ -11335,9 +11414,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 20,
+    "WarmMs": 55,
     "WindowsOnly": []
   },
   {
@@ -11376,9 +11455,7 @@
       "Abläufe",
       "Produktion",
       "Online-Dienste",
-      "Chat & Schreiben",
-      "Nachdenken & Rechnen",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Modell",
       "Fragen",
       "Verbindungen",
@@ -11449,9 +11526,9 @@
       "src/Trendo.App/MainWindow.Connections.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 20,
     "WindowsOnly": []
   },
   {
@@ -11480,7 +11557,7 @@
       "Produktion",
       "Verbindungen",
       "Online-Dienste",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Rollen",
       "+ Eigene Rolle",
       "Rolle starten",
@@ -11526,9 +11603,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 22,
     "WindowsOnly": []
   },
   {
@@ -11566,7 +11643,7 @@
       "Produktion",
       "Verbindungen",
       "Online-Dienste",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Verstanden",
       "KI-Bibliothek",
       "Chat & Schreiben (7)",
@@ -11632,9 +11709,9 @@
       "src/Trendo.App/MainWindow.KiLibrary.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 19,
     "WindowsOnly": []
   },
   {
@@ -11663,7 +11740,7 @@
       "Produktion",
       "Verbindungen",
       "Online-Dienste",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Verstanden",
       "KI-Quellen",
       "Claude als Haupt-KI nutzen (wenn verbunden)",
@@ -11697,6 +11774,7 @@
       "KI-Quellen"
     ],
     "Tests": [
+      "3D-Modelle, Einfach: Grundfunktionen sichtbar, Export und Fachwerkzeuge nach einem Klick; Erweitert zeigt alles",
       "Beschreibung: README wird beim Aufklappen geladen; geholte Projekte lassen sich mit Rückfrage entfernen",
       "CORE-02 UI: Studio verweist auf „KI fragen“, Frage wird beantwortet",
       "CORE-02: Nur Quellen auf diesem Gerät – Cloud-Adressen werden abgelehnt",
@@ -11712,6 +11790,7 @@
       "Claude im Studio: wie Claude im Web – claude.ai im ganzen Fenster, kein Terminal; anmelden, Projekte des Studios anlegen, fortsetzen, entfernen",
       "Claude-Regeln 01.11.2026: Claude Code aus Trendo erlaubt (eigene Anmeldung je Nutzer) – kein Sperr-Hinweis; „Claude Code öffnen“ startet das echte Claude Code im Projektordner",
       "Claude-Regeln 01.11.2026: Trendo speichert keine Claude-Tokens – ein alter wird beim Start gelöscht, kein Token-Feld mehr",
+      "Einfach: In jedem Programm bleibt jeder Befehl der Stufe erreichbar, direkt oder unter „Mehr“; direkt sichtbar sind höchstens vier Programmbefehle",
       "Einrichtung: Ergebnis bleibt stehen (mit fehlgeschlagenen Paketen), schließt erst nach „Los geht's“",
       "Einrichtung: „Abbrechen“ beendet die Installation und schließt den Bildschirm; danach kein Ergebnisbildschirm",
       "Installer-Programm: Installieren & starten führt den Installer still aus, erkennt das Programm, startet es; Entfernen ruft den Deinstaller",
@@ -11722,6 +11801,8 @@
       "LM Studio: Installer von der Herstellerseite laden und starten, danach erkennen und Quelle einschalten",
       "Programme von GitHub: Programmliste vom neuesten Release, kleine zuerst, mit Prüfsumme – Selbstgebautes (qpdf) und Bei-Bedarf-Programme (Blender) lädt das Setup nicht",
       "SYS-05 UI: Vorlage anlegen, Probelauf, Freigeben, Ausführen, eigener Ablauf",
+      "Spiele bauen, Einfach: Auftrag und nächster Schritt; „Alle Bereiche“ zeigt alles; Erweitert unverändert",
+      "Spiele bauen: Nächster Schritt nennt den schwächsten Bereich in Alltagssprache; Alltagswörter nur in Einfach",
       "T-0316: Claude als Haupt-KI – Frage läuft eingegrenzt über Claude (kein Datei-Ändern), Antwort mit Quelle „Claude (dein Abo)“; Haupt-KI aus → Claude wird nicht gefragt",
       "T-0316: Claude-Karte – nicht installiert → „Claude Code einrichten“, nicht angemeldet → „Mit Claude verbinden“, verbunden → „✓ Mit deinem Claude-Abo verbunden (Max)“",
       "T-0316: Studio – „✳ Claude“ immer in der Auftragsleiste; das Claude-Projekt des Studios trägt seine Rolle, kein Terminal",
@@ -11731,13 +11812,14 @@
       "X-05: Nur freie Quellen auf diesem Gerät, Modelle passend zur Hardware",
       "X-05: Rückfallkette lässt sich sortieren, abschalten und bleibt gespeichert",
       "X-05: Zähler „ins Internet“ – zählt nur den heutigen Tag, am nächsten Tag wieder bei 0, keine Inhalte gespeichert",
-      "Zusatzprogramme: keine Ordnerwahl mehr – „von GitHub laden“; ohne Internet bleibt ein Merker zum Nachladen beim nächsten Start"
+      "Zusatzprogramme: keine Ordnerwahl mehr – „von GitHub laden“; ohne Internet bleibt ein Merker zum Nachladen beim nächsten Start",
+      "Übrige Seiten, Einfach: Rest hinter „Mehr anzeigen“ und nach einem Klick wieder da; Erweitert zeigt alles sofort"
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 26,
     "WindowsOnly": []
   },
   {
@@ -11800,9 +11882,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 19,
     "WindowsOnly": []
   },
   {
@@ -11824,8 +11906,7 @@
       "✳ Claude",
       "App für Einkaufslisten",
       "Vereins-App mit Terminen",
-      "Programmieren",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Kopieren",
       "+ Überschrift",
       "+ Text",
@@ -11896,9 +11977,9 @@
       "src/Trendo.App/MainWindow.W4Builder.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -11917,7 +11998,7 @@
     "Tools": [
       "Los",
       "✳ Claude",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Kopieren",
       "＋ Anlegen"
     ],
@@ -11947,9 +12028,9 @@
       "src/Trendo.App/MainWindow.W5CleanRoom.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 8,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -11972,7 +12053,7 @@
     "Tools": [
       "Los",
       "✳ Claude",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Kopieren",
       "\uD83D\uDCDD Notizen",
       "\uD83D\uDDBC Bildbearbeitung",
@@ -12048,9 +12129,9 @@
       "src/Trendo.App/MainWindow.W4Oss.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -12073,7 +12154,7 @@
     "Tools": [
       "Los",
       "✳ Claude",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Kopieren",
       "Ja, installieren",
       "Abbrechen",
@@ -12117,9 +12198,9 @@
       "src/Trendo.App/MainWindow.W5Ext.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 8,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -12141,10 +12222,7 @@
       "✳ Claude",
       "Webseite für ein Café",
       "Kontaktformular einbauen",
-      "Bilder erzeugen",
-      "Programmieren",
-      "3D aus Bild",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Verstanden",
       "Software",
       "Code-Editor",
@@ -12256,9 +12334,9 @@
       "src/Trendo.App/MainWindow.W4Dev.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 47,
+    "WarmMs": 66,
     "WindowsOnly": []
   },
   {
@@ -12301,9 +12379,11 @@
       "Systemcheck",
       "Qualitäts-Ampel",
       "Bau-Fortschritt",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Ordner wählen …",
-      "Teilen starten"
+      "Teilen starten",
+      "Datei wählen …",
+      "Handys suchen"
     ],
     "Formats": [],
     "Dependencies": [],
@@ -12326,6 +12406,8 @@
       "I2/I4: KI-Rollen als Karten (Auftrag, Schreibrecht), Wahl markiert; Ablauf-Vorlagen als Karten, ohne Ablauf Leerzustand, Vorlage legt Ablauf an",
       "K1: Musikspur im Videoschnitt zeigt die echte Wellenform der Tondatei (laut/leise erkennbar); ohne lesbare Datei nur Mittellinie statt erfundener Welle",
       "K3: Abspielleiste von Trendo Musik zeigt die echte Wellenform des gewählten Lieds; ohne Lied keine Welle",
+      "LocalSend echt über HTTP: Dateien kommen Byte für Byte an (Token, SHA-256); abgewählte Datei entfällt; Ablehnung, PIN und Prüfsummenfehler verständlich und mit cancel",
+      "LocalSend echt über UDP: Antwort eines Geräts erscheint in der Liste mit Senden-Knopf; ohne Antwort verständlicher Hinweis",
       "SPEC-12 UI: Prüfsumme vergleichen, Fall anlegen, Beweis sichern, Bericht",
       "SYS-04 UI: Suchen, installieren, Updates anzeigen und aktualisieren, entfernen",
       "SYS-06 Freigabe-Dialog: Fenster schließen (X) lehnt ab",
@@ -12347,9 +12429,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 23,
+    "WarmMs": 45,
     "WindowsOnly": []
   },
   {
@@ -12421,9 +12503,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -12467,7 +12549,7 @@
       "Systemcheck",
       "Qualitäts-Ampel",
       "Bau-Fortschritt",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Jetzt sichern",
       "restic einrichten (ca. 11 MB)",
       "Ordner wählen …",
@@ -12520,9 +12602,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 24,
     "WindowsOnly": []
   },
   {
@@ -12590,9 +12672,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 27,
     "WindowsOnly": []
   },
   {
@@ -12810,8 +12892,10 @@
       "System & Sicherheit",
       "Bereit",
       "Briefe schreiben",
+      "Print on Demand",
       "Trendo Musik",
       "TV & Live",
+      "Filme machen",
       "Noch nicht verfügbar",
       "Desktop einrichten",
       "PC, Pi & Handy verbinden",
@@ -12896,9 +12980,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 45,
+    "WarmMs": 65,
     "WindowsOnly": []
   },
   {
@@ -13157,9 +13241,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -13380,11 +13464,13 @@
       "Neues Projekt starten",
       "Kleine Helfer & Musik",
       "Online verkaufen",
+      "Print on Demand",
       "Geld & Rechnungen",
       "Videos & Fotos bearbeiten",
       "Live streamen",
       "Trendo Musik",
       "TV & Live",
+      "Filme machen",
       "Kleidung & Produkte entwerfen",
       "Freie Bilder & Klänge finden",
       "KI-Anweisungen schreiben",
@@ -13419,9 +13505,7 @@
       "Startmodus wählen",
       "Daten schützen",
       "System auf Gefahren prüfen",
-      "Surfen & Herunterladen",
-      "Programme installieren",
-      "Dateien teilen"
+      "Surfen & Herunterladen"
     ],
     "Formats": [],
     "Dependencies": [],
@@ -13447,9 +13531,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 37,
+    "WarmMs": 31,
     "WindowsOnly": []
   },
   {
@@ -13690,9 +13774,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 6,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -13959,9 +14043,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 7,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -14302,9 +14386,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 6,
+    "WarmMs": 7,
     "WindowsOnly": []
   },
   {
@@ -14347,7 +14431,7 @@
       "Systemcheck",
       "Qualitäts-Ampel",
       "Bau-Fortschritt",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Jetzt prüfen und reparieren"
     ],
     "Formats": [],
@@ -14379,9 +14463,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -14424,7 +14508,7 @@
       "Systemcheck",
       "Qualitäts-Ampel",
       "Bau-Fortschritt",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Geräte suchen"
     ],
     "Formats": [],
@@ -14439,6 +14523,7 @@
     ],
     "Tests": [
       "CORE-11 UI: Schutz-Seite über System erreichbar, Sichern, Ordner prüfen",
+      "Geräte: namenloses PCI-Gerät erscheint mit Kennung und Angebot; „Namen nachschlagen“ lädt die Liste (Prüfsumme) und zeigt Hersteller und Modell; danach kein Angebot mehr",
       "SPEC-12 UI: Prüfsumme vergleichen, Fall anlegen, Beweis sichern, Bericht",
       "SYS-04 UI: Suchen, installieren, Updates anzeigen und aktualisieren, entfernen",
       "SYS-06 Freigabe-Dialog: Fenster schließen (X) lehnt ab",
@@ -14456,9 +14541,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -14501,7 +14586,7 @@
       "Systemcheck",
       "Qualitäts-Ampel",
       "Bau-Fortschritt",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "\uD83C\uDFE0  Zuhause (im selben WLAN)",
       "\uD83C\uDF0D  Überall – auch unterwegs",
       "Handy für unterwegs verbinden",
@@ -14553,9 +14638,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 38,
+    "WarmMs": 63,
     "WindowsOnly": []
   },
   {
@@ -14599,7 +14684,7 @@
       "Systemcheck",
       "Qualitäts-Ampel",
       "Bau-Fortschritt",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Verstanden",
       "Leistung",
       "Prozesse",
@@ -14653,9 +14738,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 18,
     "WindowsOnly": []
   },
   {
@@ -14698,7 +14783,7 @@
       "Systemcheck",
       "Qualitäts-Ampel",
       "Bau-Fortschritt",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Koppeln",
       "Erreichbarkeit prüfen",
       "Wo läuft das?"
@@ -14736,9 +14821,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 22,
     "WindowsOnly": []
   },
   {
@@ -14781,7 +14866,7 @@
       "Systemcheck",
       "Qualitäts-Ampel",
       "Bau-Fortschritt",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Suchen",
       "Installierte & Updates anzeigen",
       "VLC",
@@ -14837,9 +14922,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 24,
     "WindowsOnly": []
   },
   {
@@ -15106,9 +15191,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 32,
     "WindowsOnly": []
   },
   {
@@ -15353,9 +15438,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 17,
+    "WarmMs": 54,
     "WindowsOnly": []
   },
   {
@@ -15531,7 +15616,7 @@
       "Systemcheck",
       "Qualitäts-Ampel",
       "Bau-Fortschritt",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Kopieren",
       "Nach Updates schauen",
       "Datei wählen …",
@@ -15609,9 +15694,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 26,
     "WindowsOnly": []
   },
   {
@@ -15898,9 +15983,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 46,
+    "WarmMs": 81,
     "WindowsOnly": []
   },
   {
@@ -16108,9 +16193,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 35,
+    "WarmMs": 49,
     "WindowsOnly": []
   },
   {
@@ -16283,7 +16368,7 @@
       "Systemcheck",
       "Qualitäts-Ampel",
       "Bau-Fortschritt",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Leistung",
       "Rückfall & Lizenzen",
       "Kopieren",
@@ -16324,9 +16409,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -16547,9 +16632,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -16761,9 +16846,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -17062,9 +17147,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 96,
+    "WarmMs": 127,
     "WindowsOnly": []
   },
   {
@@ -17279,9 +17364,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -17453,7 +17538,7 @@
       "Systemcheck",
       "Qualitäts-Ampel",
       "Bau-Fortschritt",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Sehen",
       "Hilfen",
       "Prüfen",
@@ -17462,6 +17547,8 @@
       "mindestens 12 pt",
       "mindestens 14 pt",
       "mindestens 16 pt",
+      "Standard (Inter)",
+      "Atkinson Hyperlegible",
       "Einfachen Modus einschalten",
       "Einfach",
       "Erweitert",
@@ -17484,6 +17571,7 @@
     ],
     "Tests": [
       "Bedienstufen: Einfach blendet Fachwerkzeuge aus, Erweitert zeigt alle, Wechsel lässt das Dokument unverändert; Einstellung bleibt gespeichert",
+      "Lesbare Schrift: Knöpfe in „Sehen“; Atkinson wird gespeichert und aufs Fenster angewandt; zurück zum Standard; unbekannte Wahl ignoriert; Schriftdateien und Lizenz liegen bei",
       "Profi-Stufe: Befehlssuche führt Befehle aus, Verlauf springt zurück, Projektdaten – falsches JSON wird abgelehnt, richtiges übernommen und rückgängig machbar",
       "SYS-12 (UI): Bericht über alle Seiten; keine Seite tiefer als 2 Ebenen; Prüfseite hat keine unbenannten Knöpfe",
       "SYS-12 (UI): Leise Benachrichtigung; Einstellung bleibt gespeichert; einfacher Modus zeigt weniger Kacheln",
@@ -17506,9 +17594,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -17721,9 +17809,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -17766,7 +17854,7 @@
       "Systemcheck",
       "Qualitäts-Ampel",
       "Bau-Fortschritt",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Stick oder SSD schreiben …"
     ],
     "Formats": [],
@@ -17798,9 +17886,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -18077,9 +18165,9 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 40,
+    "WarmMs": 39,
     "WindowsOnly": []
   },
   {
@@ -18257,7 +18345,7 @@
       "Systemcheck",
       "Qualitäts-Ampel",
       "Bau-Fortschritt",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Sicher prüfen",
       "Laden & Speichern",
       "Browser",
@@ -18332,9 +18420,9 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 30,
+    "WarmMs": 18,
     "WindowsOnly": []
   },
   {
@@ -18377,7 +18465,7 @@
       "Systemcheck",
       "Qualitäts-Ampel",
       "Bau-Fortschritt",
-      "\uD83D\uDC65 Team",
+      "Mehr ▾",
       "Datei wählen …",
       "Prüfen",
       "Regel-Prüfung einrichten (yara-x, kostenlos)",
@@ -18417,9 +18505,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 434d2ab)",
+    "Version": "0.9.36 (Stand 70e872a)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 22,
     "WindowsOnly": []
   }
 ]

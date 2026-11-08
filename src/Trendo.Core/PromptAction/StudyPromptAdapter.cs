@@ -152,6 +152,71 @@ public sealed class SongPlanAdapter : IStudioActionAdapter
     public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked("Das Lied entsteht im Studio „Trendo Musik“.");
 }
 
+/// <summary>STUDIO-FILM-01: Drehbuch-Gerüst aus einer Idee im Fountain-Format – ohne KI, nur die Struktur. Bilder und Clips entstehen im Studio.</summary>
+public sealed class FilmOutlineAdapter : IStudioActionAdapter
+{
+    public string StudioId => "STUDIO-FILM-01";
+    public string ActionId => "film.drehbuch.geruest";
+    public string Label => "Drehbuch-Gerüst anlegen";
+    public SideEffectClass Effect => SideEffectClass.None;
+    public CapabilityLevel DeclaredLevel => CapabilityLevel.Partial;
+    public string Evidence => "PromptActionTests.Filmgeruest";
+    public bool CanPerformSideEffect => false;
+    public IReadOnlyList<string> RequiredFields => ["idee"];
+    public IReadOnlyList<string> OutputKinds => ["fountain"];
+    public ActionDraft? TryParse(string prompt, IReadOnlyDictionary<string, string> known) => new(ActionId, FieldKit.Read(prompt, known));
+    public IReadOnlyList<ClarificationQuestion> Missing(IReadOnlyDictionary<string, string> parameters) =>
+        FieldKit.Has(parameters, "idee") ? [] : [new("idee", "idee", "Worum geht es im Film? Schreib z. B. „Idee: Eine Frau verpasst den letzten Zug“.", true)];
+    public IReadOnlyList<ValidationFinding> Validate(IReadOnlyDictionary<string, string> parameters) => [];
+    public AdapterOutcome Produce(AdapterCall call)
+    {
+        var idee = FieldKit.Text(call.Parameters, "idee").Trim();
+        var titel = FieldKit.Text(call.Parameters, "titel").Trim();
+        if (titel.Length == 0) titel = idee.Length <= 40 ? idee : idee[..40].TrimEnd() + "…";
+        var body = $"Titel: {titel}\n\n= {idee}\n\n# Anfang\n\nINNEN. ORT – TAG\n\nZeig, wer die Hauptfigur ist und was sie will.\n\n# Mitte\n\nAUSSEN. ORT – TAG\n\nEin Hindernis stellt sich in den Weg.\n\n# Schluss\n\nINNEN. ORT – NACHT\n\nDie Figur entscheidet sich. Was hat sich verändert?\n";
+        var qa = new QaResult(ActionId, true, "Drehbuch-Gerüst erstellt. Die Szenen füllst du im Studio „Filme machen“.", null, titel, "Fountain");
+        return FieldKit.Save(call, FieldKit.Slot("film", call.Version, "drehbuch.fountain"), body, titel, qa);
+    }
+    public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked("Bilder und Clips entstehen im Studio „Filme machen“.");
+}
+
+/// <summary>STUDIO-POD-01: Preis und Gewinn je Stück rechnen. Es ist kein Anbieter angeschlossen, nichts wird eingestellt oder bestellt.</summary>
+public sealed class PodPriceAdapter : IStudioActionAdapter
+{
+    public string StudioId => "STUDIO-POD-01";
+    public string ActionId => "pod.preis.rechnen";
+    public string Label => "Preis rechnen";
+    public SideEffectClass Effect => SideEffectClass.None;
+    public CapabilityLevel DeclaredLevel => CapabilityLevel.Partial;
+    public string Evidence => "PromptActionTests.Pod_preis";
+    public bool CanPerformSideEffect => false;
+    public IReadOnlyList<string> RequiredFields => ["kosten", "preis"];
+    public IReadOnlyList<string> OutputKinds => ["txt"];
+    static readonly System.Globalization.CultureInfo De = System.Globalization.CultureInfo.GetCultureInfo("de-DE");
+    static decimal? Number(IReadOnlyDictionary<string, string> p, string key) =>
+        decimal.TryParse(FieldKit.Text(p, key).Replace("€", "").Trim(), System.Globalization.NumberStyles.Number, De, out var v) && v >= 0 ? v : null;
+    public ActionDraft? TryParse(string prompt, IReadOnlyDictionary<string, string> known) => new(ActionId, FieldKit.Read(prompt, known));
+    public IReadOnlyList<ClarificationQuestion> Missing(IReadOnlyDictionary<string, string> parameters)
+    {
+        var q = new List<ClarificationQuestion>();
+        if (!FieldKit.Has(parameters, "kosten")) q.Add(new("kosten", "kosten", "Was kostet die Herstellung beim Anbieter? Schreib z. B. „Kosten: 12,50“.", true));
+        if (!FieldKit.Has(parameters, "preis")) q.Add(new("preis", "preis", "Zu welchem Preis willst du verkaufen? Schreib z. B. „Preis: 29,99“.", true));
+        return q;
+    }
+    public IReadOnlyList<ValidationFinding> Validate(IReadOnlyDictionary<string, string> parameters) =>
+        [.. new[] { "kosten", "preis", "versand", "steuer", "gebuehr" }.Where(k => FieldKit.Has(parameters, k) && Number(parameters, k) is null).Select(k => new ValidationFinding(k, $"„{k}“ ist keine gültige Zahl.", true))];
+    public AdapterOutcome Produce(AdapterCall call)
+    {
+        decimal Or(string key, decimal fallback) => Number(call.Parameters, key) ?? fallback;
+        var input = new Trendo.Core.Pod.PodPriceInput(Or("kosten", 0), Or("versand", 0), Or("gebuehr", 0), 0, Or("steuer", 19));
+        var r = Trendo.Core.Pod.PodPrice.Calc(input, Or("preis", 0));
+        var body = string.Format(De, "Preisrechnung je Stück\nVerkaufspreis brutto: {0:0.00} €\nNetto: {1:0.00} €\nUmsatzsteuer: {2:0.00} €\nGebühren: {3:0.00} €\nHerstellung: {4:0.00} €\nVersand: {5:0.00} €\nGewinn: {6:0.00} € ({7:0.#} %)\n\nNur eine Rechnung aus deinen Zahlen. Es wurde nichts bestellt oder eingestellt.\n", r.Gross, r.Net, r.Vat, r.Fees, input.ProductCost, input.Shipping, r.Profit, r.MarginPercent);
+        var qa = new QaResult(ActionId, true, "Preis gerechnet.", null, "Preisrechnung", "PodPrice");
+        return FieldKit.Save(call, FieldKit.Slot("pod", call.Version, "preisrechnung.txt"), body, "Preisrechnung", qa);
+    }
+    public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked("Es ist kein Anbieter angeschlossen. Trendo stellt nichts ein und bestellt nichts.");
+}
+
 /// <summary>SPEC-15: Senden und Stream bleiben aus. LiveBroadcast.Go wird nicht gerufen.</summary>
 public sealed class StreamSendAdapter : IStudioActionAdapter
 {

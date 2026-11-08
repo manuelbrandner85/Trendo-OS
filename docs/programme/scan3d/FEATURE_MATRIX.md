@@ -1,6 +1,6 @@
 # Aus Fotos – Funktionsmatrix
 
-Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `scan3d` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `scan3d` · Stand: 0.9.36 (Stand 70e872a)
 
 Quelle: `docs/w6-katalog/SPEC-09.md`
 
@@ -30,8 +30,7 @@ Quelle: `docs/w6-katalog/SPEC-09.md`
 ## Werkzeuge der Oberfläche
 - Los
 - ✳ Claude
-- 3D aus Bild
-- 👥 Team
+- Mehr ▾
 - Gegenstände einscannen
 - Aus Fotos
 - Kopieren

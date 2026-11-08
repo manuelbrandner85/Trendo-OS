@@ -1,13 +1,14 @@
 # Werkstatt – Testergebnisse
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.36 (Stand 70e872a)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 50 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 50 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 5
 
 | Test | Ergebnis |
 |---|---|
+| 3D-Modelle, Einfach: Grundfunktionen sichtbar, Export und Fachwerkzeuge nach einem Klick; Erweitert zeigt alles | nicht im Lauf |
 | CORE-06 (UI): Spiel anlegen öffnet es im Browser; ohne Unreal ehrlicher Hinweis, mit Unreal Projekt anlegen | ✓ bestanden |
 | CORE-06 G1: Godot Asset Library – Suche mit Titel, Autor, Lizenz; Laden nur von GitHub/GitLab, ZIP sicher entpackt; fremde Download-Adresse abgelehnt | ✓ bestanden |
 | CORE-06 G1–G3: Assets – Godot-Suche, neue Downloads übernehmen, Bildstreifen als Lauf-Animation (4 Bilder), Ton als Sprung-Geräusch, Asset-Liste mit Abspann, NC-Lizenz warnt beim Veröffentlichen | ✓ bestanden |
@@ -40,7 +41,10 @@ Bestanden 50 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | Claude im Studio: Trendo prüft das Ergebnis und gibt Fehler automatisch an Claude zurück, bis es läuft – höchstens drei Durchgänge | ✓ bestanden |
 | Claude wie im Original: Skills, Plugins, Connectoren und Agenten aus dem eigenen Claude sichtbar; genutzter Skill/Connector unter der Antwort | ✓ bestanden |
 | Claude-Abo aufgebraucht: Ersatz-KI übernimmt dieselbe Nachricht (sichtbar „Aktive KI“), bis zur Freigabe ohne Claude, danach automatisch wieder Claude | ✓ bestanden |
+| Einfach: In jedem Programm bleibt jeder Befehl der Stufe erreichbar, direkt oder unter „Mehr“; direkt sichtbar sind höchstens vier Programmbefehle | nicht im Lauf |
 | Kostenlose KI-Werkzeuge: Claude bestellt ein Bild – erst als Entwurf zum Ansehen, ins Projekt erst nach „Übernehmen“; neu erzeugen, verwerfen; Knöpfe; Diktieren | ✓ bestanden |
+| Spiele bauen, Einfach: Auftrag und nächster Schritt; „Alle Bereiche“ zeigt alles; Erweitert unverändert | nicht im Lauf |
+| Spiele bauen: Nächster Schritt nennt den schwächsten Bereich in Alltagssprache; Alltagswörter nur in Einfach | nicht im Lauf |
 | Spiele: Retro-Vorlage, Level im Raster bearbeiten, Figur hinzufügen, prüfen, bauen und spielen | ✓ bestanden |
 | Spiele: Umfang AAA+ wählen setzt AAA-Meilensteine; Bauen legt ein Unreal-Projekt mit Spielbibel an | ✓ bestanden |
 | Spiele: Unreal öffnen und die Herstellerseite bleiben der alte Weg | ✓ bestanden |
@@ -58,3 +62,4 @@ Bestanden 50 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | T-0204 (UI): Anlegen → Editor; Tempo und Level ändern, speichern, als ZIP exportieren | ✓ bestanden |
 | T-0204 (UI): Unreal – vorhandenes Projekt öffnen; ohne Unreal klarer Hinweis | ✓ bestanden |
 | T-0204: Einstellungen landen in config.js, Bild wird kopiert, Export enthält alles | ✓ bestanden |
+| Übrige Seiten, Einfach: Rest hinter „Mehr anzeigen“ und nach einem Klick wieder da; Erweitert zeigt alles sofort | nicht im Lauf |

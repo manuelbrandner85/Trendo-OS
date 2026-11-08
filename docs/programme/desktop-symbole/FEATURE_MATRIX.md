@@ -1,6 +1,6 @@
 # Desktop-Symbole – Funktionsmatrix
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.36 (Stand 70e872a)
 
 Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 
@@ -57,11 +57,13 @@ Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 - Neues Projekt starten
 - Kleine Helfer & Musik
 - Online verkaufen
+- Print on Demand
 - Geld & Rechnungen
 - Videos & Fotos bearbeiten
 - Live streamen
 - Trendo Musik
 - TV & Live
+- Filme machen
 - Kleidung & Produkte entwerfen
 - Freie Bilder & Klänge finden
 - KI-Anweisungen schreiben
@@ -97,5 +99,3 @@ Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 - Daten schützen
 - System auf Gefahren prüfen
 - Surfen & Herunterladen
-- Programme installieren
-- Dateien teilen

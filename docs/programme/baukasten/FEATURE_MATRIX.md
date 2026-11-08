@@ -1,6 +1,6 @@
 # Baukasten – Funktionsmatrix
 
-Studio: Apps zusammenklicken (X-03) · Bereich: Entwickeln · Seite: `baukasten` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Apps zusammenklicken (X-03) · Bereich: Entwickeln · Seite: `baukasten` · Stand: 0.9.36 (Stand 70e872a)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -9,8 +9,7 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - ✳ Claude
 - App für Einkaufslisten
 - Vereins-App mit Terminen
-- Programmieren
-- 👥 Team
+- Mehr ▾
 - Kopieren
 - + Überschrift
 - + Text

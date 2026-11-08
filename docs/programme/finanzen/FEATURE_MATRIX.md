@@ -1,6 +1,6 @@
 # Geld – Funktionsmatrix
 
-Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.36 (Stand 70e872a)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -10,7 +10,7 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Monatsausgaben nach Kategorie
 - Rechnung für Erika Muster schreiben
 - Sparplan für 5.000 €
-- 👥 Team
+- Mehr ▾
 - Budget setzen
 - Heute
 - ↶ Rückgängig

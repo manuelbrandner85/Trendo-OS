@@ -1,10 +1,12 @@
 # Recherche im Lesemodus – Testplan
 
-Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.36 (Stand 70e872a)
 
-16 Tests sprechen dieses Programm an.
+18 Tests sprechen dieses Programm an.
 
+- Anweisungs-Test: falsche Regeln werden gemeldet; Ergebnis zählt Durchläufe beider Fassungen; Regeln bleiben gespeichert
 - CORE-11 UI: Schutz-Seite über System erreichbar, Sichern, Ordner prüfen
+- Recherche: zeigt zuerst nur den Artikel, Knopf wechselt ohne neuen Abruf zur ganzen Seite und zurück; ohne Artikel ein Hinweis
 - SPEC-12 UI: Prüfsumme vergleichen, Fall anlegen, Beweis sichern, Bericht
 - SYS-04 UI: Suchen, installieren, Updates anzeigen und aktualisieren, entfernen
 - SYS-06 Freigabe-Dialog: Fenster schließen (X) lehnt ab
