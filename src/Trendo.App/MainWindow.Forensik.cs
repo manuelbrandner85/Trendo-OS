@@ -50,6 +50,7 @@ public partial class MainWindow
         sp.Children.Add(ToolCard("for-card-ports", Mdi.Wifi, outside.Count == 0 ? "#86EFAC" : "#FCD34D", outside.Count == 0 ? "#15803D" : "#B45309", "Wer wartet auf Verbindungen?",
             $"{ports.Count} offene Anschlüsse (Ports), davon {outside.Count} auch von außen erreichbar. Unbekannte Programme, die von außen erreichbar sind, solltest du prüfen.",
             portChips, new TextBlock { Name = "for-ports", Text = string.Join(", ", outside.Take(30).Select(p => p.Port)), IsVisible = false }));
+        sp.Children.Add(ForensicsYaraCard()); // Alle Studios, Runde 8: yara-x
         var title = new TextBox { Name = "for-case-title", PlaceholderText = "Name des Falls, z. B. „Betrugs-Mail März“", Width = 320 };
         var mk = new Button { Name = "for-case-new", Content = "Fall anlegen" };
         mk.Click += (_, _) => { var c = Lab.Create(title.Text ?? ""); _forCase = c.Id; _forMsg = $"Fall angelegt. Er löscht sich am {c.Expires:dd.MM. HH:mm} Uhr."; Show("forensik"); };
