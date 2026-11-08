@@ -132,14 +132,14 @@ public partial class MainWindow
     private Control AssetView()
     {
         var tabs = new WrapPanel { Name = "mb-tabs" };
-        foreach (var (k, l) in new[] { ("bilder", "Bilder"), ("klaenge", "Klänge"), ("schriften", "Schriften"), ("3d", "3D & Texturen"), ("merklisten", "☆ Merklisten"), ("bibliothek", "Meine Bibliothek") })
+        foreach (var (k, l) in new[] { ("bilder", "Bilder"), ("klaenge", "Klänge"), ("schriften", "Schriften"), ("symbole", "Symbole"), ("3d", "3D & Texturen"), ("merklisten", "☆ Merklisten"), ("bibliothek", "Meine Bibliothek") })
         {
             var b = new Button { Name = "mb-tab-" + k, Content = l, Padding = new Thickness(14, 5), Margin = new Thickness(0, 0, 6, 0), CornerRadius = new CornerRadius(14), Foreground = Text,
                 Background = MediaTab == k ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(1) };
             b.Click += (_, _) => { if (MediaTab != k && k is "bilder" or "klaenge") { MediaHits = []; MediaSel = -1; _mbFormat = ""; } MediaTab = k; _mbMsg = ""; Show(MB); };
             tabs.Children.Add(b);
         }
-        Control body = MediaTab switch { "3d" => AssetPolyHaven(), "bibliothek" => MediaLibraryView(), "merklisten" => MediaCollectionsView(), "schriften" => FontsView(), _ => MediaBrowse() };
+        Control body = MediaTab switch { "3d" => AssetPolyHaven(), "bibliothek" => MediaLibraryView(), "merklisten" => MediaCollectionsView(), "schriften" => FontsView(), "symbole" => IconsView(), _ => MediaBrowse() }; // Alle Studios, Runde 8: Iconify
         var sp = new StackPanel { Spacing = 8, Children = { P("Freie Bilder, Klänge, Modelle und Texturen. Alles hier darfst du kostenlos nutzen, auch für Geld – bei manchen musst du den Urheber nennen, das steht immer dabei."), tabs } };
         if (_mbMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "mb-msg", Text = _mbMsg, Foreground = _mbMsg.StartsWith('⚠') ? Brush.Parse("#F97316") : GoldText(), FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
         sp.Children.Add(body);

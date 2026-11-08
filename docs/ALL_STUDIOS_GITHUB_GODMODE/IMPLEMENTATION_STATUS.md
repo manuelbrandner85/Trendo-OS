@@ -33,7 +33,8 @@
 | CORE-07 Barrierefreiheit genau prüfen (axe-core 4.14 + jsdom, eigener Prozess) | eingebaut in der Qualitätsprüfung (Einrichten per Klick über npm, Befunde auf Deutsch), 4 Kern- und 1 Oberflächentest grün (reports/alle-studios/axe-e2e.md); echter Lauf wartet auf Freigabe des Nutzers – NOT RUN |
 | CORE-09 Objekte erkennen und zählen (YOLOX-S, onnxruntime, Prozessor) | eingebaut im Kamera-Bereich (Einrichten per Klick, Modell mit fester SHA-256), 6 Kern- und 1 Oberflächentest grün (reports/alle-studios/yolox-e2e.md); echter Lauf wartet auf Freigabe des Nutzers – NOT RUN |
 | SPEC-08 Schnittmuster nach Maß (FreeSewing 4.10.2, 11 Schnitte) | eingebaut in „Kleidung & Produkte“ (Einrichten per Klick über npm, fehlende Maße aus Standardgröße mit Nennung), 5 Kern- und 1 Oberflächentest grün (reports/alle-studios/freesewing-e2e.md); echter Lauf wartet auf Freigabe des Nutzers – NOT RUN |
-| Runde 8 Umsetzung (restic, yara-x + ReversingLabs-Regeln, markitdown, Iconify) | bewertet 08.11.2026, Umsetzung NOT RUN |
+| X-07 Symbole (Iconify, Lizenz je Satz) | eingebaut als Reiter „Symbole“ (258 freie Sätze, 18 ausgeblendet), alle 21 000+ Symbole aus 4 echten Sätzen sicher ausgegeben, Vorschau gerendert (reports/alle-studios/iconify-e2e.md); 7 Kern-, 1 Echtdaten-, 1 Oberflächentest grün |
+| Runde 8 übrige (restic, yara-x + ReversingLabs-Regeln, markitdown) | bewertet 08.11.2026, Umsetzung NOT RUN – alle drei führen heruntergeladene Programme aus (Freigabe nötig) |
 | Runden 9+ (24 Studios, davon SPEC-07 abgelehnt) | NOT RUN |
 | Web Design Studio Modul 05 (Design-Tokens) | eingebaut, 2 Tests, im Browser geprüft (docs/web-design-godmode) |
 | Volltest nach den Änderungen | grün: Api 16, Core 1546, App 829 (reports/alle-studios/volltest-2026-11-08.md) |

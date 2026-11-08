@@ -331,6 +331,15 @@ else if (shot == "seite")
     if (win.Windows.Active is { Maximized: false } pageWin) win.Windows.ToggleMaximize(pageWin.Id);
     win.Show(page);
     if (Environment.GetEnvironmentVariable("TRENDO_TEAM_STUDIO") is { Length: > 0 } teamStudio) win.AgentsForStudio(teamStudio); // Profi-Team eines Studios unter „KI einsetzen“
+    if (Environment.GetEnvironmentVariable("TRENDO_ICONS_DIR") is { Length: > 0 } iconDir) // Alle Studios, Runde 8: Reiter „Symbole“ mit Iconify-Daten aus einem Ordner (Name;Suche in TRENDO_ICONS_QUERY)
+    {
+        MainWindow.IconFetchOverride = u => Task.FromResult(File.ReadAllText(Path.Combine(iconDir, u[(u.LastIndexOf('/') + 1)..])));
+        win.MediaTab = "symbole";
+        var (pfx, query) = (Environment.GetEnvironmentVariable("TRENDO_ICONS_QUERY") ?? "mdi;home").Split(';') is [var a, var b] ? (a, b) : ("mdi", "home");
+        var load = win.IconLoadSets(); while (!load.IsCompleted) Dispatcher.UIThread.RunJobs(); load.GetAwaiter().GetResult();
+        var find = win.IconSearch(pfx, query); while (!find.IsCompleted) Dispatcher.UIThread.RunJobs(); find.GetAwaiter().GetResult();
+        win.Show(page);
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_MUSIK_DEMO") is { Length: > 0 }) // Trendo Musik mit erfundenen Beispielliedern (leere Dateien, nur zum Zeigen)
     {
         var lib = new SongLibrary(root); var dir = Path.Combine(root, "musik-demo"); Directory.CreateDirectory(dir);
