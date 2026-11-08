@@ -188,6 +188,7 @@ public partial class MainWindow
                 DocVersions.ExportPackage(Clean(pm), (pa.Text ?? "").Split('\n').Select(x => x.Trim().Trim('"')).Where(x => x.Length > 0), z);
                 Say($"Paket erstellt: {Path.GetFileName(z)} (Prüfsummen {(DocVersions.VerifyPackage(z) ? "stimmen" : "FEHLER")}).", V);
             }))))));
+        sp.Children.Add(Card(TypstCard())); // Alle Studios, Runde 2: Brief/Rechnung als PDF mit typst
         return DokuPage("Schreiben", sp);
     }
 

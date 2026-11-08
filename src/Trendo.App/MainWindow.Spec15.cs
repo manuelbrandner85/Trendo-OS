@@ -70,7 +70,7 @@ public partial class MainWindow
         if (_bcMsg.Length == 0 && _w45Msg.Length > 0) bar.Children.Add(new TextBlock { Name = "bc-app-msg", Text = _w45Msg, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 4), TextWrapping = TextWrapping.Wrap, MaxWidth = 520, FontSize = 12, Foreground = Brush.Parse(_w45Msg.StartsWith('⚠') ? "#F87171" : "#7FD3FF") }); // Meldungen von „In OBS öffnen“
         if (_bcMsg.Length > 0) bar.Children.Add(new TextBlock { Name = "bc-msg", Text = _bcMsg, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 4), TextWrapping = TextWrapping.Wrap, MaxWidth = 520, FontSize = 12, Foreground = Brush.Parse(_bcMsg.StartsWith('⚠') ? "#F87171" : "#4ADE80") });
 
-        Control main = BcMode == "onair" ? BcOnAir() : BcMode == "studio" ? new ScrollViewer { Content = LiveSection(wide: true) } : BcRundown(); // Profi 27: Studio wie OBS
+        Control main = BcMode == "onair" ? BcOnAir() : BcMode == "studio" ? new ScrollViewer { Content = new StackPanel { Spacing = 10, Children = { LiveSection(wide: true), Card(LiveServerCard()) } } } : BcRundown(); // Profi 27: Studio wie OBS
         var mid2 = new Border { Name = "bc-main", CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(14), Child = main };
         var right = new Border { Name = "bc-side", Width = 360, CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(12), Child = new ScrollViewer { Content = BcSide() } };
         var body = new Grid { ColumnDefinitions = new ColumnDefinitions("*,12,Auto"), Children = { mid2, Pos(right, 2) } };

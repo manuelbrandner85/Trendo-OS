@@ -6,8 +6,11 @@
 | Runde 1–4 Recherche/Bewertung (16 Studios) | erledigt |
 | CORE-05 f3d-Vorschaubilder | eingebaut, echter Lauf geprüft (reports/alle-studios/f3d-e2e.md), 10 Kern- und 1 Oberflächentest |
 | CORE-05/CORE-06 Claude in Blender/Unreal/Godot (C5/C6) | MCP je Projekt + sichtbarer Start eingebaut, 10 Kern- und 1 Oberflächentest; Zusammenspiel mit dem Claude-Chat (Sitzung A, C1–C4) NOT RUN |
-| Runde 1 übrige (MLT, basic-pitch, PMTiles/MapLibre, assimp) | geplant, NOT RUN – brauchen je eine Freigabe zum Ausführen fremden Codes |
-| Runde 2 (Open3D, mediamtx, streamlink, typst) | geplant, NOT RUN |
+| Runde 1 übrige (MLT, basic-pitch, PMTiles/MapLibre, assimp) | Freigabe erteilt 08.11.2026; assimp nur als DLL, MLT ohne offizielles Windows-Paket – NOT RUN |
+| SYS-10 typst (Brief/Rechnung als PDF) | eingebaut, echter Lauf über den Adapter (reports/alle-studios/runde2-werkzeuge-e2e.md), Tests grün |
+| SPEC-15 mediamtx (eigener Sendeserver, nur 127.0.0.1) | eingebaut, echter Lauf mit Teststream, Tests grün; OBS-Lauf NOT RUN |
+| STUDIO-TV-01 streamlink (Das Erste/ARD, arte live) | eingebaut, echter Lauf (arte → m3u8), Tests grün; Abspielen im Player NOT RUN |
+| Runde 2 übrige (Open3D) | NOT RUN |
 | CORE-03 KI-Team: Team-Lauf fortsetzen (Konzept LangGraph, eigener Code) | eingebaut (5d45824cd), 3 Kerntests grün, KI-Team-Oberflächentests grün; echter Lauf mit Claude NOT RUN |
 | Runde 3 übrige Umsetzung (Node-RED-Anbindung, IFC-Ansicht/-Export, weitere KI-Team-Konzepte) | geplant, NOT RUN |
 | SPEC-06 FSRS-Planer für Karteikarten (Runde 4) | eingebaut, umschaltbar im Lernplan, 12 Kern- und 1 Oberflächentest grün |

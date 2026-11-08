@@ -131,6 +131,7 @@ public partial class MainWindow
             Hover(b); tiles.Children.Add(b);
         }
         if (tiles.Children.Count == 0) sp.Children.Add(P($"In „{_tvLegalCat}“ gibt es hier keinen Anbieter – oben „Alle“ wählen.", Muted, 12.5));
+        if (_tvLegalKind == LegalSources.Kind.Mediathek) sp.Children.Add(Card(LiveChannelsCard()));
         sp.Children.Add(tiles);
         sp.Children.Add(P(_tvLegalKind switch
         {
