@@ -39,6 +39,7 @@ public class ProgramLevel_Ui
         Assert.Null(w.TryFind<Button>("prog-cmd-ms-f-linear")); Assert.NotNull(w.TryFind<Button>("prog-cmd-ms-k-linie"));
         // Einstellungen: gleiche Stufe, gleiche Wirkung
         w.Show("bedien-sehen"); Settle();
+        w.Find<Button>("level-erweitert").BringIntoView(); Settle(); // liegt auf der längeren Seite unterhalb des Sichtbereichs – wie ein Mensch erst hinscrollen
         RealClick(w, w.Find<Button>("level-erweitert")); Settle();
         Assert.Equal(UserLevel.Erweitert, w.ProgramLevel);
     }
