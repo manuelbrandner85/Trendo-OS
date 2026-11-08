@@ -78,7 +78,8 @@ public partial class MainWindow
                 H("Szene", 14), SceneTree(objName) } }),
             Card(SavedBlock()),
             Card(EngineExportCard(objName)), // Paket 01 S2-17: in der Seitenleiste, damit die 3D-Fläche oben bleibt
-            Card(F3dCard())); // Alle Studios, Runde 1: Vorschaubilder jeder 3D-Datei (f3d)
+            Card(F3dCard()), // Alle Studios, Runde 1: Vorschaubilder jeder 3D-Datei (f3d)
+            Card(AssimpCard())); // Alle Studios, Runde 1: 3D-Dateien umwandeln (assimp, eigener Prozess)
         var stepPanel = StepPanel3D();
         var partCard = Card(new StackPanel { Spacing = 8, Children = { H(Selected is { } sp0 ? "Teil: " + sp0.Name : "Neues Teil", 14), PartForm(objName) } });
         var right = Side("3d-editor-scroll",

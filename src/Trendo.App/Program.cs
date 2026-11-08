@@ -21,6 +21,7 @@ class Program
         if (Environment.GetEnvironmentVariable("ADB_MDNS_OPENSCREEN") is null) Environment.SetEnvironmentVariable("ADB_MDNS_OPENSCREEN", "1");
         var uiArgs = AppStartup.WithoutVelopack(args);
         if (uiArgs.Contains(ImageWriter.Arg)) return ImageWriter.RunElevated(uiArgs); // Stick-/SSD-Schreiber (eigener Prozess mit Administratorrechten)
+        if (uiArgs.Length == 4 && uiArgs[0] == AssimpConvert.Switch) return AssimpConvert.RunInThisProcess(uiArgs[1], uiArgs[2], uiArgs[3], Console.Error); // 3D umwandeln (eigener Prozess, Absturz trifft nicht Trendo)
         // Fast-Hooks (--veloapp-install usw.) beendet Velopack selbst. OnFirstRun beendet nicht: danach muss das Fenster erscheinen.
         var velo = Velopack.VelopackApp.Build().OnFirstRun(_ => AppStartup.NoteFirstRun());
         // Deinstallieren (nur Windows): fragen, ob auch die eigenen Daten weg sollen – Standard: behalten

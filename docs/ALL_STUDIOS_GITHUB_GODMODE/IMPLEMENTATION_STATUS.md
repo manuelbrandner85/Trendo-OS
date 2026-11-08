@@ -8,7 +8,8 @@
 | CORE-05/CORE-06 Claude in Blender/Unreal/Godot (C5/C6) | MCP je Projekt + sichtbarer Start eingebaut, 10 Kern- und 1 Oberflächentest; Zusammenspiel mit dem Claude-Chat (Sitzung A, C1–C4) NOT RUN |
 | STUDIO-MUSIK-01 basic-pitch (Noten auch mehrstimmig) | eingebaut als KI-Laufzeit „Noten“ (ohne TensorFlow, ONNX), echter Lauf (reports/alle-studios/basic-pitch-e2e.md), 8 Kern- und 1 Oberflächentest grün; Einrichtung per uv NOT RUN |
 | SPEC-13 PMTiles (Offline-Rasterkarten) | eigener Leser in TilePack, echter Vergleich mit go-pmtiles bis 87 381 Kacheln byte-gleich (reports/alle-studios/pmtiles-e2e.md), 12 Tests grün |
-| Runde 1 übrige (MLT, MapLibre-Vektorkarten, assimp) | Freigabe erteilt 08.11.2026; assimp nur als DLL, MLT ohne offizielles Windows-Paket – NOT RUN |
+| CORE-05 assimp (3D → GLB) | eingebaut im 3D-Studio, eigener Prozess --assimp-convert, echter Lauf (reports/alle-studios/assimp-e2e.md), Tests grün |
+| Runde 1 übrige (MLT, MapLibre-Vektorkarten) | Freigabe erteilt 08.11.2026; MLT ohne offizielles Windows-Paket – NOT RUN |
 | SYS-10 typst (Brief/Rechnung als PDF) | eingebaut, echter Lauf über den Adapter (reports/alle-studios/runde2-werkzeuge-e2e.md), Tests grün |
 | SPEC-15 mediamtx (eigener Sendeserver, nur 127.0.0.1) | eingebaut, echter Lauf mit Teststream, Tests grün; OBS-Lauf NOT RUN |
 | STUDIO-TV-01 streamlink (Das Erste/ARD, arte live) | eingebaut, echter Lauf (arte → m3u8), Tests grün; Abspielen im Player NOT RUN |

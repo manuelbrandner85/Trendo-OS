@@ -37,6 +37,7 @@ Quelle: `src/Trendo.Core/DependencyCatalog` (Installation bei Bedarf beim Öffne
 | Chromium | BSD-3-Clause | Nicht erforderlich | — | Windows: Microsoft Edge ist vorhanden; in der Linux-Edition enthalten |
 | Claude Code | Kontotarif | Nicht erforderlich | — | Optionaler Cloudbereich, nicht Teil des OS-Bundles |
 | f3d 4.0.1 | BSD-3-Clause | Auto-Installation pro Benutzer nach Zustimmung (offizielle Zip, SHA-256 geprüft) | — | Vorschaubilder für 3D-Dateien, eigener Prozess |
+| assimp 6.0.5 | BSD-3-Clause | Auto-Installation pro Benutzer nach Zustimmung (offizielle Zip, SHA-256 geprüft) | — | 3D-Dateien umwandeln, läuft in eigenem Trendo-Prozess (--assimp-convert) |
 | typst 0.15.1 | Apache-2.0 | Auto-Installation pro Benutzer nach Zustimmung (offizielle Zip, SHA-256 geprüft) | — | Briefe/Rechnungen als PDF, eigener Prozess, Dateizugriff auf den Projektordner begrenzt |
 | mediamtx 1.21.3 | MIT | Auto-Installation pro Benutzer nach Zustimmung (offizielle Zip, SHA-256 geprüft) | — | Eigener Sendeserver, Standard nur 127.0.0.1 |
 | streamlink 8.6.3 (Windows-Build mit Python und FFmpeg) | BSD-2-Clause; FFmpeg LGPL/GPL im Paket | Auto-Installation pro Benutzer nach Zustimmung (offizielle Zip, SHA-256 geprüft) | — | Nur Livestreams von Das Erste/ARD und arte, kein Login, keine Aufnahme; getrenntes Programm, nicht mitgeliefert |
