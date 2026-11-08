@@ -1614,5 +1614,211 @@
    "sprache": "C++",
    "beschreibung": "ESPHome is a system to control your ESP32, ESP8266, BK72xx, RP2040 by simple yet powerful configuration files "
   }
+ ],
+ "CORE-11": [
+  {
+   "repo": "restic/restic",
+   "lizenz": "BSD-2-Clause",
+   "sterne": 37064,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "Go",
+   "beschreibung": "Fast, secure, efficient backup program"
+  },
+  {
+   "repo": "kopia/kopia",
+   "lizenz": "Apache-2.0",
+   "sterne": 14607,
+   "zuletzt": "2026-11-03",
+   "archiviert": false,
+   "sprache": "Go",
+   "beschreibung": "Cross-platform backup tool for Windows, macOS & Linux with fast, incremental backups, client-side end-to-end e"
+  },
+  {
+   "repo": "keepassxreboot/keepassxc",
+   "lizenz": "NOASSERTION",
+   "sterne": 29851,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "KeePassXC is a cross-platform community-driven port of the Windows application “KeePass Password Safe”."
+  },
+  {
+   "repo": "gitleaks/gitleaks",
+   "lizenz": "MIT",
+   "sterne": 30770,
+   "zuletzt": "2026-10-28",
+   "archiviert": false,
+   "sprache": "Go",
+   "beschreibung": "Find secrets with Gitleaks 🔑"
+  },
+  {
+   "repo": "borgbackup/borg",
+   "lizenz": "NOASSERTION",
+   "sterne": 13914,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Deduplicating archiver with compression and authenticated encryption."
+  }
+ ],
+ "SPEC-12": [
+  {
+   "repo": "VirusTotal/yara-x",
+   "lizenz": "BSD-3-Clause",
+   "sterne": 1356,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "Rust",
+   "beschreibung": "A rewrite of YARA in Rust."
+  },
+  {
+   "repo": "YARAHQ/yara-forge",
+   "lizenz": "GPL-3.0",
+   "sterne": 353,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Automated YARA Rule Standardization and Quality Assurance Tool"
+  },
+  {
+   "repo": "SigmaHQ/sigma",
+   "lizenz": "NOASSERTION",
+   "sterne": 11429,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Main Sigma Rule Repository"
+  },
+  {
+   "repo": "WithSecureOpenSource/chainsaw",
+   "lizenz": "GPL-3.0",
+   "sterne": 3710,
+   "zuletzt": "2026-11-05",
+   "archiviert": false,
+   "sprache": "Rust",
+   "beschreibung": "Rapidly Search and Hunt through Windows Forensic Artefacts"
+  },
+  {
+   "repo": "Yamato-Security/hayabusa",
+   "lizenz": "AGPL-3.0",
+   "sterne": 3443,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "Rust",
+   "beschreibung": "Hayabusa (隼) is a sigma-based threat hunting and fast forensics timeline generator for Windows event logs."
+  },
+  {
+   "repo": "Velocidex/velociraptor",
+   "lizenz": "NOASSERTION",
+   "sterne": 4428,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Go",
+   "beschreibung": "Digging Deeper...."
+  },
+  {
+   "repo": "reversinglabs/reversinglabs-yara-rules",
+   "lizenz": "MIT",
+   "sterne": 952,
+   "zuletzt": "2025-11-03",
+   "archiviert": false,
+   "sprache": "YARA",
+   "beschreibung": "ReversingLabs YARA Rules"
+  }
+ ],
+ "CORE-10": [
+  {
+   "repo": "asg017/sqlite-vec",
+   "lizenz": "Apache-2.0",
+   "sterne": 8246,
+   "zuletzt": "2026-05-18",
+   "archiviert": false,
+   "sprache": "C",
+   "beschreibung": "A vector search SQLite extension that runs anywhere!"
+  },
+  {
+   "repo": "microsoft/markitdown",
+   "lizenz": "MIT",
+   "sterne": 194372,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Python tool for converting files and office documents to Markdown."
+  },
+  {
+   "repo": "docling-project/docling",
+   "lizenz": "MIT",
+   "sterne": 70277,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Get your documents ready for gen AI"
+  },
+  {
+   "repo": "khoj-ai/khoj",
+   "lizenz": "AGPL-3.0",
+   "sterne": 38055,
+   "zuletzt": "2026-08-02",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Your AI second brain. Self-hostable. Get answers from the web or your docs. Build custom agents, schedule auto"
+  },
+  {
+   "repo": "logseq/logseq",
+   "lizenz": "AGPL-3.0",
+   "sterne": 45515,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "Clojure",
+   "beschreibung": "A privacy-first, open-source platform for knowledge management and collaboration. Download link:  http://githu"
+  }
+ ],
+ "X-07": [
+  {
+   "repo": "iconify/icon-sets",
+   "lizenz": null,
+   "sterne": 1078,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "200+ open source icon sets. Icons are validated, cleaned up, optimised, ready to render as SVG. Updated automa"
+  },
+  {
+   "repo": "game-icons/icons",
+   "lizenz": "NOASSERTION",
+   "sterne": 1366,
+   "zuletzt": "2026-04-23",
+   "archiviert": false,
+   "sprache": "Shell",
+   "beschreibung": "All SVG icons available on https://game-icons.net"
+  },
+  {
+   "repo": "phosphor-icons/core",
+   "lizenz": "MIT",
+   "sterne": 396,
+   "zuletzt": "2026-01-06",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": ""
+  },
+  {
+   "repo": "WordPress/openverse",
+   "lizenz": "MIT",
+   "sterne": 556,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Openverse is a search engine for openly-licensed media. This monorepo includes all application code."
+  },
+  {
+   "repo": "google/fonts",
+   "lizenz": null,
+   "sterne": 20738,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "HTML",
+   "beschreibung": "Font files available from Google Fonts, and a public issue tracker for all things Google Fonts"
+  }
  ]
 }

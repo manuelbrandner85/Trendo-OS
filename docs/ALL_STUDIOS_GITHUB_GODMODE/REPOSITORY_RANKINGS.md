@@ -317,3 +317,49 @@ Bestand: Webcams, RTSP und ONVIF-Suche, Roboterarm und Fahrroboter mit Sicherhei
 | blakeblackshear/frigate | 9 | 2 | 8 | 10 | 8 | 8 | 10 | 7.45 | KONZEPT | MIT, aber kompletter Docker-Dienst – nur Konzept (Ereignis-Zeitleiste, Zonen) |
 | ros2/ros2 | 9 | 2 | 8 | 10 | 8 | 8 | 9 | 7.4 | KONZEPT | Apache-2.0, riesiges Robotik-Gerüst – Konzept (Nachrichten/Themen), kein Einbau |
 | esphome/esphome | 8 | 4 | 8 | 6 | 8 | 7 | 9 | 6.85 | EXTERN | MIT/GPL-3.0 gemischt, Mikrocontroller-Firmware – nur extern |
+
+## CORE-11 – Daten schützen
+Bestand: Sicherheitszentrale mit Ampel, Suche nach offen gespeicherten Passwörtern/IBANs (maskiert), Sicherung als ZIP mit Sicherheitskopie vor dem Wiederherstellen; keine verschlüsselten, versionierten Sicherungen.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| restic/restic | 10 | 9 | 9 | 10 | 9 | 10 | 10 | 9.55 | AUSWAHL | BSD-2, Einzelprogramm: verschlüsselte, entdoppelte Sicherungen mit Versionen (z. B. auf USB-Platte), Prüfen und Wiederherstellen einzelner Dateien – offizieller Download mit fester Prüfsumme |
+| kopia/kopia | 9 | 8 | 9 | 10 | 9 | 10 | 8 | 9.0 | OPTION | Apache-2.0, ähnlich restic mit eigener Oberfläche – Option, eins von beiden genügt |
+| gitleaks/gitleaks | 8 | 7 | 9 | 10 | 9 | 9 | 9 | 8.5 | OPTION | MIT – Regelwerk für Geheimnisse (Schlüssel, Tokens) als Konzept/Daten für Trendos eigene Passwort-Suche |
+| borgbackup/borg | 9 | 2 | 9 | 10 | 9 | 10 | 9 | 7.85 | VERWORFEN | BSD-3, unter Windows nicht nativ – nicht übernommen |
+| keepassxreboot/keepassxc | 9 | 3 | 9 | 6 | 9 | 10 | 10 | 7.5 | EXTERN | GPL – Passwortmanager nur als externes Programm (KDBX-Datei bleibt bei der Person) |
+
+## SPEC-12 – System auf Gefahren prüfen
+Bestand: Prüfsummen, wer auf dem PC lauscht, Beweis-Fälle (höchstens 120 h); keine Regel-Prüfung von Dateien und Ereignisprotokollen.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| VirusTotal/yara-x | 9 | 8 | 9 | 10 | 10 | 9 | 7 | 8.95 | AUSWAHL | BSD-3, Rust-Einzelprogramm (yr): Dateien und Ordner mit YARA-Regeln auf Schadsoftware-Merkmale prüfen – nur lesen, Ergebnis als Befundliste |
+| reversinglabs/reversinglabs-yara-rules | 8 | 9 | 8 | 10 | 9 | 9 | 6 | 8.6 | AUSWAHL | MIT – geprüfte YARA-Regelsammlung (Ransomware, Trojaner, Hacktools) als Regelquelle für yara-x; Stand 2025-11 |
+| SigmaHQ/sigma | 9 | 5 | 8 | 7 | 8 | 9 | 10 | 7.7 | OPTION | Regeln DRL 1.1 (Namensnennung) – Ereignisprotokolle prüfen; braucht Auswerter |
+| YARAHQ/yara-forge | 9 | 6 | 8 | 4 | 9 | 8 | 6 | 7.25 | VERWORFEN | GPL-3.0, Regelpakete mit gemischten Lizenzen (auch nicht-kommerziell) – nicht übernommen |
+| WithSecureOpenSource/chainsaw | 9 | 4 | 8 | 5 | 9 | 9 | 7 | 7.15 | EXTERN | GPL-3.0, Rust – Ereignisprotokolle mit Sigma prüfen; nur als externes Programm |
+| Yamato-Security/hayabusa | 9 | 4 | 8 | 2 | 9 | 9 | 7 | 6.7 | AUSGESCHLOSSEN | AGPL-3.0 – ausgeschlossen |
+| Velocidex/velociraptor | 10 | 3 | 8 | 2 | 9 | 8 | 8 | 6.7 | AUSGESCHLOSSEN | AGPL-3.0 – ausgeschlossen |
+
+## CORE-10 – Wissen merken
+Bestand: Wissensablage mit eigener Suche, Notizen und Obsidian-kompatiblem Markdown; Office/PDF landen nicht als durchsuchbarer Text darin.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| microsoft/markitdown | 9 | 8 | 8 | 10 | 8 | 9 | 10 | 8.75 | AUSWAHL | MIT, Python: Word, Excel, PowerPoint, PDF, HTML → Markdown für die Wissensablage – über die KI-Laufzeit, ohne Cloud |
+| asg017/sqlite-vec | 8 | 7 | 8 | 10 | 10 | 9 | 8 | 8.4 | OPTION | Apache-2.0/MIT – Vektorsuche direkt in SQLite; Option, falls die eigene Ähnlichkeitssuche groß wird (Stand 2026-05) |
+| docling-project/docling | 10 | 5 | 8 | 10 | 6 | 9 | 10 | 8.2 | OPTION | MIT, genauer bei Tabellen/Layout, aber große Modelle – Option für schwierige PDFs |
+| logseq/logseq | 9 | 2 | 8 | 2 | 8 | 8 | 10 | 6.25 | AUSGESCHLOSSEN | AGPL-3.0 – ausgeschlossen |
+| khoj-ai/khoj | 9 | 2 | 8 | 2 | 7 | 8 | 9 | 6.1 | AUSGESCHLOSSEN | AGPL-3.0 – ausgeschlossen |
+
+## X-07 – Freie Bilder & Klänge finden
+Bestand: Openverse, Freesound, Poly Haven, ambientCG, Pixabay, Wikimedia und Schriften sind angebunden (mit Herkunft und Lizenz).
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| google/fonts | 9 | 8 | 8 | 9 | 9 | 9 | 10 | 8.7 | VORHANDEN | OFL/Apache je Schrift – bereits angebunden |
+| WordPress/openverse | 9 | 8 | 8 | 10 | 8 | 9 | 6 | 8.55 | VORHANDEN | MIT – bereits angebunden |
+| iconify/icon-sets | 9 | 8 | 8 | 8 | 9 | 9 | 7 | 8.4 | AUSWAHL | über 200 Symbolsätze mit Lizenz je Satz – nur freie Sätze (MIT, Apache, ISC, OFL, CC0, CC BY mit Nennung) offline durchsuchbar, SVG |
+| phosphor-icons/core | 8 | 8 | 8 | 10 | 9 | 9 | 5 | 8.35 | VORHANDEN | MIT – in Iconify enthalten |
+| game-icons/icons | 8 | 7 | 7 | 7 | 9 | 9 | 6 | 7.6 | OPTION | CC BY 3.0 – 4000 Spiel-Symbole; Option, Namensnennung nötig (in Iconify enthalten) |

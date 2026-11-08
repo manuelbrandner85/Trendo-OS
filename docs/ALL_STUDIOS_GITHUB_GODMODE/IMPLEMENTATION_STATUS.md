@@ -3,7 +3,7 @@
 | Bereich | Stand |
 |---|---|
 | Bestandsaufnahme 56 Studios | erledigt |
-| Runde 1–7 Recherche/Bewertung (28 Studios) | erledigt |
+| Runde 1–8 Recherche/Bewertung (32 Studios) | erledigt |
 | CORE-05 f3d-Vorschaubilder | eingebaut, echter Lauf geprüft (reports/alle-studios/f3d-e2e.md), 10 Kern- und 1 Oberflächentest |
 | CORE-05/CORE-06 Claude in Blender/Unreal/Godot (C5/C6) | MCP je Projekt + sichtbarer Start eingebaut, 10 Kern- und 1 Oberflächentest; Zusammenspiel mit dem Claude-Chat (Sitzung A, C1–C4) NOT RUN |
 | STUDIO-MUSIK-01 basic-pitch (Noten auch mehrstimmig) | eingebaut als KI-Laufzeit „Noten“ (ohne TensorFlow, ONNX), echter Lauf (reports/alle-studios/basic-pitch-e2e.md), 8 Kern- und 1 Oberflächentest grün; Einrichtung per uv NOT RUN |
@@ -33,6 +33,7 @@
 | CORE-07 Barrierefreiheit genau prüfen (axe-core 4.14 + jsdom, eigener Prozess) | eingebaut in der Qualitätsprüfung (Einrichten per Klick über npm, Befunde auf Deutsch), 4 Kern- und 1 Oberflächentest grün (reports/alle-studios/axe-e2e.md); echter Lauf wartet auf Freigabe des Nutzers – NOT RUN |
 | CORE-09 Objekte erkennen und zählen (YOLOX-S, onnxruntime, Prozessor) | eingebaut im Kamera-Bereich (Einrichten per Klick, Modell mit fester SHA-256), 6 Kern- und 1 Oberflächentest grün (reports/alle-studios/yolox-e2e.md); echter Lauf wartet auf Freigabe des Nutzers – NOT RUN |
 | SPEC-08 Schnittmuster nach Maß (FreeSewing 4.10.2, 11 Schnitte) | eingebaut in „Kleidung & Produkte“ (Einrichten per Klick über npm, fehlende Maße aus Standardgröße mit Nennung), 5 Kern- und 1 Oberflächentest grün (reports/alle-studios/freesewing-e2e.md); echter Lauf wartet auf Freigabe des Nutzers – NOT RUN |
-| Runden 8+ (28 Studios, davon SPEC-07 abgelehnt) | NOT RUN |
+| Runde 8 Umsetzung (restic, yara-x + ReversingLabs-Regeln, markitdown, Iconify) | bewertet 08.11.2026, Umsetzung NOT RUN |
+| Runden 9+ (24 Studios, davon SPEC-07 abgelehnt) | NOT RUN |
 | Web Design Studio Modul 05 (Design-Tokens) | eingebaut, 2 Tests, im Browser geprüft (docs/web-design-godmode) |
 | Volltest nach den Änderungen | grün: Api 16, Core 1546, App 829 (reports/alle-studios/volltest-2026-11-08.md) |

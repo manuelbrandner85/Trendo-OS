@@ -17,7 +17,7 @@ Korrektur 08.11.2026: Die Zählung sucht nur die Studio-Kennung – „TV & Live
 | STUDIO-MUSIK-01 | Trendo Musik | 10 | 3 | bewertet (Runde 1) |
 | STUDIO-TV-01 | TV & Live | 8 | 0 | bewertet (Runde 2) |
 | SPEC-08 | Kleidung & Produkte entwerfen | 9 | 7 | bewertet (Runde 7) |
-| X-07 | Freie Bilder & Klänge finden | 9 | 2 | NOT RUN – folgt in späteren Runden |
+| X-07 | Freie Bilder & Klänge finden | 9 | 2 | bewertet (Runde 8) |
 | CORE-12 | KI-Anweisungen schreiben | 9 | 1 | NOT RUN – folgt in späteren Runden |
 | CORE-05 | 3D-Modelle erstellen | 17 | 17 | bewertet (Runde 1) |
 | CORE-06 | Spiele bauen | 18 | 20 | bewertet (Runde 7) |
@@ -34,7 +34,7 @@ Korrektur 08.11.2026: Die Zählung sucht nur die Studio-Kennung – „TV & Live
 | SPEC-05 | Messwerte auswerten | 8 | 4 | bewertet (Runde 4) |
 | SPEC-06 | Lernen mit Karteikarten | 10 | 4 | bewertet (Runde 4) |
 | SPEC-07 | Texte übersetzen | 6 | 8 | NOT RUN – folgt in späteren Runden |
-| CORE-10 | Wissen merken | 10 | 1 | NOT RUN – folgt in späteren Runden |
+| CORE-10 | Wissen merken | 10 | 1 | bewertet (Runde 8) |
 | SYS-08 | Sicher recherchieren | 10 | 2 | NOT RUN – folgt in späteren Runden |
 | CORE-02 | KI fragen | 19 | 6 | NOT RUN – folgt in späteren Runden |
 | CORE-03 | KI-Team einsetzen | 9 | 2 | bewertet (Runde 3) |
@@ -48,8 +48,8 @@ Korrektur 08.11.2026: Die Zählung sucht nur die Studio-Kennung – „TV & Live
 | X-10 | Programme nachbauen | 9 | 1 | NOT RUN – folgt in späteren Runden |
 | CORE-01 | Desktop einrichten | 10 | 4 | NOT RUN – folgt in späteren Runden |
 | SYS-01 | Startmodus wählen | 8 | 1 | NOT RUN – folgt in späteren Runden |
-| CORE-11 | Daten schützen | 11 | 6 | NOT RUN – folgt in späteren Runden |
-| SPEC-12 | System auf Gefahren prüfen | 8 | 1 | NOT RUN – folgt in späteren Runden |
+| CORE-11 | Daten schützen | 11 | 6 | bewertet (Runde 8) |
+| SPEC-12 | System auf Gefahren prüfen | 8 | 1 | bewertet (Runde 8) |
 | SYS-03 | Surfen & Herunterladen | 10 | 2 | NOT RUN – folgt in späteren Runden |
 | SYS-04 | Programme installieren | 8 | 2 | NOT RUN – folgt in späteren Runden |
 | SYS-06 | Dateien teilen | 8 | 2 | NOT RUN – folgt in späteren Runden |

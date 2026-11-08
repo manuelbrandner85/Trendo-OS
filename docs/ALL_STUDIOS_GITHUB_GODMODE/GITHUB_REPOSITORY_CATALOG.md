@@ -259,5 +259,39 @@
 | openvinotoolkit/openvino | Apache-2.0 | 2026-11-06 | nein | 11129 | C++ |
 | ros2/ros2 | Apache-2.0 (Pakete einzeln) | 2026-11-04 | nein | 6291 |  |
 | esphome/esphome | MIT (Python) / GPL-3.0 (C++-Laufzeit) | 2026-11-08 | nein | 12069 | C++ |
+## CORE-11
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| restic/restic | BSD-2-Clause | 2026-11-06 | nein | 37064 | Go |
+| kopia/kopia | Apache-2.0 | 2026-11-03 | nein | 14607 | Go |
+| keepassxreboot/keepassxc | GPL-2.0/3.0 (aus Lizenzdatei) | 2026-11-08 | nein | 29851 | C++ |
+| gitleaks/gitleaks | MIT | 2026-10-28 | nein | 30770 | Go |
+| borgbackup/borg | BSD-3-Clause (aus Lizenzdatei) | 2026-11-06 | nein | 13914 | Python |
+## SPEC-12
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| VirusTotal/yara-x | BSD-3-Clause | 2026-11-06 | nein | 1356 | Rust |
+| YARAHQ/yara-forge | GPL-3.0 | 2026-11-08 | nein | 353 | Python |
+| SigmaHQ/sigma | Regeln: Detection Rule License 1.1 (Namensnennung), Spezifikation gemeinfrei | 2026-11-07 | nein | 11429 | Python |
+| WithSecureOpenSource/chainsaw | GPL-3.0 | 2026-11-05 | nein | 3710 | Rust |
+| Yamato-Security/hayabusa | AGPL-3.0 | 2026-11-06 | nein | 3443 | Rust |
+| Velocidex/velociraptor | AGPL-3.0 (aus Lizenzdatei) | 2026-11-07 | nein | 4428 | Go |
+| reversinglabs/reversinglabs-yara-rules | MIT | 2025-11-03 | nein | 952 | YARA |
+## CORE-10
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| asg017/sqlite-vec | Apache-2.0 | 2026-05-18 | nein | 8246 | C |
+| microsoft/markitdown | MIT | 2026-11-07 | nein | 194372 | Python |
+| docling-project/docling | MIT | 2026-11-08 | nein | 70277 | Python |
+| khoj-ai/khoj | AGPL-3.0 | 2026-08-02 | nein | 38055 | Python |
+| logseq/logseq | AGPL-3.0 | 2026-11-08 | nein | 45515 | Clojure |
+## X-07
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| iconify/icon-sets | je Symbolsatz eigene Lizenz (MIT, Apache-2.0, OFL, CC BY …) in collections.json | 2026-11-07 | nein | 1078 | TypeScript |
+| game-icons/icons | CC BY 3.0 (teils CC0) – Namensnennung | 2026-04-23 | nein | 1366 | Shell |
+| phosphor-icons/core | MIT | 2026-01-06 | nein | 396 | TypeScript |
+| WordPress/openverse | MIT | 2026-11-07 | nein | 556 | Python |
+| google/fonts | je Schrift OFL-1.1 / Apache-2.0 / UFL | 2026-11-08 | nein | 20738 | HTML |
 
 Korrigiert: PhotoDemon → tannerhelland/PhotoDemon (BSD-ähnlich), Shotcut → mltframework/shotcut (GPL-3.0).
