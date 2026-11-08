@@ -13,10 +13,27 @@ Freigabe des Nutzers: „Ja, alle testen“. Die Anbindung gibt es schon (N1–N
 - Aufruf über die Netzwerkadresse des PCs (statt 127.0.0.1) → nicht erreichbar. `uiHost: 127.0.0.1` wirkt.
 - Prozess danach beendet (eigene PID und Kindprozess).
 
-## Befunde (Vorschläge, nicht umgesetzt)
+## Befunde (umgesetzt 08.11.2026 – Nutzer: „mach einfach alles automatisch“)
 1. **Admin-Schnittstelle ohne Anmeldung:** Jedes Programm auf diesem PC kann Abläufe mit eigenem Code (Funktionsbausteine) übernehmen. Vorschlag: `adminAuth` mit einem von Trendo erzeugten Schlüssel setzen, so wie bei der Trendo-Schnittstelle.
 2. **npm ohne `--ignore-scripts`:** `N8n.InstallArgs` erlaubt Installationsskripte. Für Node-RED ist belegt, dass es ohne sie läuft, und das Abschalten würde fremden Code beim Einrichten vermeiden. Für n8n ist das nicht geprüft.
 
 ## Nicht geprüft
 - Einrichtung und Start über die Trendo-Oberfläche („KI & Automatik → Abläufe“).
 - Aufrufe von Trendo-Aktionen aus Node-RED (Trendo-Schnittstelle 47800).
+
+## Umsetzung und echter Nachlauf (Node-RED 5.0.9, neue Trendo-Einstellungsdatei)
+- `N8n.InstallArgs` setzt für Node-RED `--ignore-scripts`, n8n bleibt unverändert.
+- `N8n.NodeRedSettings`: Herkunftsprüfung als `httpAdminMiddleware` und `httpNodeMiddleware`. Statt einer Passwortanmeldung, die den Editor-Knopf in Trendo sperren würde, nimmt Node-RED nur Anfragen an 127.0.0.1/localhost an, und nur von dort.
+
+| Anfrage | Antwort |
+|---|---|
+| Einstellungen von 127.0.0.1 / localhost | 200 / 200 |
+| Editor-Seite | 200 |
+| Ablauf übernehmen mit Herkunft http://127.0.0.1:1880 | 204 |
+| Ablauf übernehmen mit Herkunft https://boese.example (fremde Webseite) | **403** |
+| Host boese.example (DNS-Rebinding) | **403** |
+| Herkunft „null“ (Sandbox-Rahmen) | **403** |
+| eigene Ablauf-Adresse lokal / mit fremdem Host | 200 / **403** |
+
+- Tests: `N8nTests` 7 grün (neu: `NodeRed_hardened`).
+- Grenze: Programme, die auf diesem PC laufen, können die Schnittstelle weiterhin nutzen. Dagegen hülfe nur eine Anmeldung, die den Editor-Knopf erschweren würde.

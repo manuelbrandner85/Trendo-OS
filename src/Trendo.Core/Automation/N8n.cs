@@ -15,7 +15,10 @@ public static class N8n
     public static string TrendoApiBase => $"http://127.0.0.1:{TrendoApiPort}/api";
 
     /// <summary>Einrichten (N1): npm in einen eigenen Ordner, ohne Admin-Rechte, ohne globale Installation.</summary>
-    public static List<string> InstallArgs(string dir, string package = "n8n") => ["install", package + "@latest", "--prefix", dir, "--no-fund", "--no-audit", "--omit=dev"];
+    /// <remarks>Node-RED ohne Installationsskripte (--ignore-scripts): echter Lauf 08.11.2026 – Node-RED 5.0.9 läuft ohne sie, und beim Einrichten wird kein fremder Code ausgeführt.
+    /// n8n behält die Skripte (seine Datenbank-Bausteine brauchen sie; ohne nicht geprüft).</remarks>
+    public static List<string> InstallArgs(string dir, string package = "n8n") =>
+        ["install", package + "@latest", "--prefix", dir, "--no-fund", "--no-audit", "--omit=dev", .. package == "node-red" ? new[] { "--ignore-scripts" } : []];
     public static string Exe(string dir, string name = "n8n") => Path.Combine(dir, "node_modules", ".bin", OperatingSystem.IsWindows() ? name + ".cmd" : name);
 
     /// <summary>Umgebung für den Start: nur 127.0.0.1, eigener Datenordner, keine Telemetrie, keine Werbe-Hinweise.</summary>
@@ -183,6 +186,21 @@ public static class N8n
     public const string NodeRedLicense = "Apache-2.0";
     public static Dictionary<string, string> NodeRedEnv(string dataDir) => new() { ["NODE_RED_ENABLE_PROJECTS"] = "false" };
     public static List<string> NodeRedArgs(string dataDir) => ["--userDir", dataDir, "--port", NodeRedPort.ToString(), "--settings", Path.Combine(dataDir, "settings.js")];
-    /// <summary>Node-RED nur auf 127.0.0.1 (eigene Einstellungsdatei).</summary>
-    public const string NodeRedSettings = "module.exports = { uiHost: \"127.0.0.1\", uiPort: 1880, diagnostics: { enabled: false }, telemetry: { enabled: false } };\n";
+    /// <summary>Node-RED nur auf 127.0.0.1 (eigene Einstellungsdatei). Dazu eine Herkunftsprüfung für Verwaltung und eigene Ablauf-Adressen (08.11.2026):
+    /// nur Anfragen an 127.0.0.1/localhost und – falls der Browser eine Herkunft mitschickt – nur von dort. So können fremde Webseiten (auch per DNS-Rebinding)
+    /// keine Abläufe mit eigenem Code einschleusen; der Editor in Trendo bleibt ohne Anmeldung bedienbar.</summary>
+    public const string NodeRedSettings = """
+        const lokal = /^(127\.0\.0\.1|localhost)(:\d+)?$/i;
+        const lokaleHerkunft = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/i;
+        function nurVonDiesemPc(req, res, next) {
+            if (!lokal.test(req.headers.host || "")) { res.status(403).send("Node-RED in Trendo: nur von diesem PC."); return; }
+            const herkunft = req.headers.origin;
+            if (herkunft && herkunft !== "null" && !lokaleHerkunft.test(herkunft)) { res.status(403).send("Node-RED in Trendo: fremde Webseite abgewiesen."); return; }
+            if (herkunft === "null") { res.status(403).send("Node-RED in Trendo: unbekannte Herkunft abgewiesen."); return; }
+            next();
+        }
+        module.exports = { uiHost: "127.0.0.1", uiPort: 1880, diagnostics: { enabled: false }, telemetry: { enabled: false },
+            httpAdminMiddleware: nurVonDiesemPc, httpNodeMiddleware: nurVonDiesemPc };
+
+        """;
 }

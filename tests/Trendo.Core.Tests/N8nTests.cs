@@ -19,6 +19,17 @@ public class N8nTests
         Assert.EndsWith(OperatingSystem.IsWindows() ? "n8n.cmd" : "n8n", N8n.Exe("x"));
     }
 
+    [Fact(DisplayName = "Node-RED Sicherheit (08.11.2026): Einrichten ohne Installationsskripte; Herkunftsprüfung für Verwaltung und Ablauf-Adressen; n8n unverändert")]
+    public void NodeRed_hardened()
+    {
+        Assert.Contains("--ignore-scripts", N8n.InstallArgs("C:/werkzeuge/node-red", "node-red"));
+        Assert.DoesNotContain("--ignore-scripts", N8n.InstallArgs("C:/werkzeuge/n8n"));
+        var s = N8n.NodeRedSettings;
+        Assert.Contains("httpAdminMiddleware: nurVonDiesemPc", s); Assert.Contains("httpNodeMiddleware: nurVonDiesemPc", s);
+        Assert.Contains(@"/^(127\.0\.0\.1|localhost)(:\d+)?$/i", s); Assert.Contains("res.status(403)", s);
+        Assert.EndsWith("};", s.TrimEnd()); Assert.StartsWith("const lokal", s);
+    }
+
     [Fact(DisplayName = "Abläufe n8n N2: Trendo KI wählt den Anbieter über den Vorsatz („lmstudio/…“) oder den ersten erreichbaren; Zugang für n8n zeigt auf 127.0.0.1")]
     public void Ki_route()
     {
