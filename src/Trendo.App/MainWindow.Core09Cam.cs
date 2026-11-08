@@ -168,6 +168,7 @@ public partial class MainWindow
         actions.Children.Add(MSp(Act("cam-snap", "Foto speichern", () => _ = Snap())));
         actions.Children.Add(MSp(Act("cam-rec", "Aufnahme starten", RecStart)));
         actions.Children.Add(MSp(Act("cam-stop", "Aufnahme stoppen", RecStop)));
+        actions.Children.Add(MSp(CamObjectsButton())); // Alle Studios, Runde 7: YOLOX
         sp.Children.Add(actions);
         return WCard(sp);
     }

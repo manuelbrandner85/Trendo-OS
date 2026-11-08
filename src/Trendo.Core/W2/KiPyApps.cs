@@ -44,6 +44,8 @@ public static class KiPyApps
         new(KiRuntime.Ifc, "", "ifcopenshell-0.9.0.post1", "3.12", [], ["ifcopenshell==0.9.0.post1", "numpy==2.5.4"], false, "trendo_ifc.py"),
         // Alle Studios, Runde 2 (08.11.2026): Open3D 0.20.0 von PyPI (MIT) – Scan-Netze glätten und vereinfachen
         new(KiRuntime.ScanNetz, "", "open3d-0.20.0", "3.12", [], ["open3d==0.20.0", "numpy==2.5.4"], false, "trendo_open3d.py"),
+        // Alle Studios, Runde 7 (08.11.2026): YOLOX-Objekterkennung – nur onnxruntime/numpy/Pillow von PyPI, Modell separat mit fester Prüfsumme (ObjectDetect)
+        new(KiRuntime.Objekte, "", "yolox-s-0.1.1rc0", "3.12", [], ["onnxruntime==1.31.1", "numpy==2.2.6", "pillow==12.3.0"], false, "trendo_objekte.py"),
     ];
 
     public static KiPyApp? For(KiRuntime r) => All.FirstOrDefault(a => a.Id == r);

@@ -4,7 +4,7 @@ namespace Trendo.Core;
 public enum KiKind { Chat, Denken, Code, BildVerstehen, Uebersetzen, Wissen, BildErzeugen, BildVerbessern, Video, SpracheZuText, TextZuSprache, Musik, Modell3D, Geraeusche }
 
 /// <summary>Womit Trendo ein Modell ausführt. Jede Laufzeit ist ein freies Programm, das Trendo selbst in „TrendoWerkzeuge“ einrichtet.</summary>
-public enum KiRuntime { Ollama, StableDiffusionCpp, WhisperCpp, Piper, RealEsrgan, Python, AceStep, Uv, TripoSR, MMAudio, MusikAnalyse, Spuren, VideoPruefung, Stimme, PluginHost, Noten, Ifc, ScanNetz }
+public enum KiRuntime { Ollama, StableDiffusionCpp, WhisperCpp, Piper, RealEsrgan, Python, AceStep, Uv, TripoSR, MMAudio, MusikAnalyse, Spuren, VideoPruefung, Stimme, PluginHost, Noten, Ifc, ScanNetz, Objekte }
 
 /// <summary>Eine Laufzeit: offizielles GitHub-Projekt mit fest gewählter Veröffentlichung (Tag, Datei, SHA-256, Größe), Hauptprogramm im ZIP.
 /// Ollama und Python kommen aus dem Vollpaket (<see cref="Tag"/> leer).</summary>
@@ -98,6 +98,9 @@ public static class KiLibrary
         // Alle Studios, Runde 2 (08.11.2026): Scan-Netze glätten (Taubin) und vereinfachen (Quadric) mit Open3D (MIT) – kein KI-Modell, echt geprüft
         new(KiRuntime.ScanNetz, "Scan-Netze (Open3D)", "isl-org/Open3D", "MIT", "Glättet gescannte 3D-Modelle ohne Schrumpfen und vereinfacht sie für Web und Spiele – lokal.",
             "open3d-0.20.0", "", "", 0, "env/Scripts/python.exe"),
+        // Alle Studios, Runde 7 (08.11.2026): Objekte erkennen und zählen – YOLOX-S (Megvii, Apache-2.0) als ONNX mit onnxruntime, auf dem Prozessor
+        new(KiRuntime.Objekte, "Objekte erkennen (YOLOX)", "Megvii-BaseDetection/YOLOX", "Apache-2.0", "Erkennt und zählt Personen, Fahrzeuge, Tiere und Gegenstände (80 Arten) im Kamerabild – lokal, ohne Cloud.",
+            "yolox-s-0.1.1rc0", "", "", 0, "env/Scripts/python.exe"),
     ];
 
     const string Hf = "https://huggingface.co/";
