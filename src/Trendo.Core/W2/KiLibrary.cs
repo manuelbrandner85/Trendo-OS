@@ -4,7 +4,7 @@ namespace Trendo.Core;
 public enum KiKind { Chat, Denken, Code, BildVerstehen, Uebersetzen, Wissen, BildErzeugen, BildVerbessern, Video, SpracheZuText, TextZuSprache, Musik, Modell3D, Geraeusche }
 
 /// <summary>Womit Trendo ein Modell ausführt. Jede Laufzeit ist ein freies Programm, das Trendo selbst in „TrendoWerkzeuge“ einrichtet.</summary>
-public enum KiRuntime { Ollama, StableDiffusionCpp, WhisperCpp, Piper, RealEsrgan, Python, AceStep, Uv, TripoSR, MMAudio, MusikAnalyse, Spuren, VideoPruefung, Stimme, PluginHost, Noten, Ifc }
+public enum KiRuntime { Ollama, StableDiffusionCpp, WhisperCpp, Piper, RealEsrgan, Python, AceStep, Uv, TripoSR, MMAudio, MusikAnalyse, Spuren, VideoPruefung, Stimme, PluginHost, Noten, Ifc, ScanNetz }
 
 /// <summary>Eine Laufzeit: offizielles GitHub-Projekt mit fest gewählter Veröffentlichung (Tag, Datei, SHA-256, Größe), Hauptprogramm im ZIP.
 /// Ollama und Python kommen aus dem Vollpaket (<see cref="Tag"/> leer).</summary>
@@ -95,6 +95,9 @@ public static class KiLibrary
         // Alle Studios, Runde 3 (08.11.2026): Grundriss als IFC4 (BIM) – IfcOpenShell (LGPL-3.0) als eigener Prozess, kein KI-Modell; echt geprüft (Wandvolumen nachgemessen)
         new(KiRuntime.Ifc, "IFC-Austausch (IfcOpenShell)", "IfcOpenShell/IfcOpenShell", "LGPL-3.0", "Speichert Grundrisse als IFC (BIM) für Architekten- und CAD-Programme und prüft IFC-Dateien – lokal.",
             "ifcopenshell-0.9.0.post1", "", "", 0, "env/Scripts/python.exe"),
+        // Alle Studios, Runde 2 (08.11.2026): Scan-Netze glätten (Taubin) und vereinfachen (Quadric) mit Open3D (MIT) – kein KI-Modell, echt geprüft
+        new(KiRuntime.ScanNetz, "Scan-Netze (Open3D)", "isl-org/Open3D", "MIT", "Glättet gescannte 3D-Modelle ohne Schrumpfen und vereinfacht sie für Web und Spiele – lokal.",
+            "open3d-0.20.0", "", "", 0, "env/Scripts/python.exe"),
     ];
 
     const string Hf = "https://huggingface.co/";

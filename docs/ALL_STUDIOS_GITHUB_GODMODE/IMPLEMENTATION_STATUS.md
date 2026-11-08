@@ -11,7 +11,7 @@
 | SYS-10 typst (Brief/Rechnung als PDF) | eingebaut, echter Lauf über den Adapter (reports/alle-studios/runde2-werkzeuge-e2e.md), Tests grün |
 | SPEC-15 mediamtx (eigener Sendeserver, nur 127.0.0.1) | eingebaut, echter Lauf mit Teststream, Tests grün; OBS-Lauf NOT RUN |
 | STUDIO-TV-01 streamlink (Das Erste/ARD, arte live) | eingebaut, echter Lauf (arte → m3u8), Tests grün; Abspielen im Player NOT RUN |
-| Runde 2 übrige (Open3D) | NOT RUN |
+| SPEC-09 Open3D (Scan glätten/vereinfachen) | eingebaut im Scan-Studio, echter Lauf (reports/alle-studios/open3d-e2e.md), 4 Kern- und 1 Oberflächentest grün; Einrichtung per uv NOT RUN |
 | CORE-03 KI-Team: Team-Lauf fortsetzen (Konzept LangGraph, eigener Code) | eingebaut (5d45824cd), 3 Kerntests grün, KI-Team-Oberflächentests grün; echter Lauf mit Claude NOT RUN |
 | SPEC-01 IFC-Export (IfcOpenShell) | eingebaut: Exportieren „IFC (BIM)“ + „BIM → IFC einrichten“, echter Lauf mit Vorlage, Geometrie nachgemessen (reports/alle-studios/ifc-e2e.md); Öffnen in BIM-Programmen NOT RUN |
 | Runde 3 übrige Umsetzung (Node-RED-Anbindung, IFC-Ansicht ThatOpen, weitere KI-Team-Konzepte) | NOT RUN |

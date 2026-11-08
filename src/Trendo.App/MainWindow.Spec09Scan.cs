@@ -112,6 +112,7 @@ public partial class MainWindow
             result.Children.Add(views);
             if (ScanCoverageCard(mesh) is { } cov) result.Children.Add(cov); // S4: Abdeckung – wo fehlen Fotos?
             result.Children.Add(ScanToolsCard(mesh));
+            result.Children.Add(ScanOpen3dCard(mesh)); // Alle Studios, Runde 2: Glätten und Vereinfachen mit Open3D
             var exports = new WrapPanel();
             foreach (var (ext, label) in new[] { ("obj", "OBJ"), ("stl", "STL (3D-Druck)"), ("glb", "GLB (Web, AR)") }) { var e = ext; exports.Children.Add(MSp(Act("scan-export-" + ext, label, () => Try("scan3d", () => ScanExport(e))))); }
             result.Children.Add(P("Speichern als:", Muted, 11)); result.Children.Add(exports);

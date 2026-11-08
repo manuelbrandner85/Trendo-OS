@@ -42,6 +42,8 @@ public static class KiPyApps
             false, "trendo_noten.py", ["basic-pitch==0.4.0"]),
         // Alle Studios, Runde 3 (08.11.2026): IfcOpenShell 0.9.0.post1 von PyPI (LGPL-3.0, eigener Prozess) – Grundriss → IFC4, IFC-Dateien prüfen
         new(KiRuntime.Ifc, "", "ifcopenshell-0.9.0.post1", "3.12", [], ["ifcopenshell==0.9.0.post1", "numpy==2.5.4"], false, "trendo_ifc.py"),
+        // Alle Studios, Runde 2 (08.11.2026): Open3D 0.20.0 von PyPI (MIT) – Scan-Netze glätten und vereinfachen
+        new(KiRuntime.ScanNetz, "", "open3d-0.20.0", "3.12", [], ["open3d==0.20.0", "numpy==2.5.4"], false, "trendo_open3d.py"),
     ];
 
     public static KiPyApp? For(KiRuntime r) => All.FirstOrDefault(a => a.Id == r);
