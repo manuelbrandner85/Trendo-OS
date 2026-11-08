@@ -10,12 +10,13 @@ import workerCode from "maplibre-gl/dist/maplibre-gl-worker.mjs?raw";
 // MapLibre 6 lädt seinen Worker als eigene Datei – unter file:// nicht erreichbar. Darum steckt der Worker als Text im Bündel und startet über eine Blob-Adresse.
 maplibregl.setWorkerUrl(URL.createObjectURL(new Blob([workerCode], { type: "text/javascript" })));
 
-const glyphs = import.meta.glob("./assets/glyphs/*/*.pbf", { query: "?url&inline", import: "default", eager: true });
-const sprites = import.meta.glob("./assets/sprites/*", { query: "?url&inline", import: "default", eager: true });
+const glyphs = import.meta.glob("./assets/glyphs/*/*.pbf", { query: "?hex", import: "default", eager: true });
+const sprites = import.meta.glob("./assets/sprites/*", { query: "?hex", import: "default", eager: true });
 const hinweis = document.getElementById("hinweis");
 const offen = new Map(); let naechste = 1;
 
 function zuBytes(dataUrl) { const b = atob(dataUrl.slice(dataUrl.indexOf(",") + 1)); const u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
+function hexZuBytes(h) { const u = new Uint8Array(h.length / 2); for (let i = 0; i < u.length; i++) u[i] = parseInt(h.substr(i * 2, 2), 16); return u; }
 function senden(nachricht) { if (window.invokeCSharpAction) window.invokeCSharpAction(JSON.stringify(nachricht)); else if (window.chrome?.webview) window.chrome.webview.postMessage(JSON.stringify(nachricht)); }
 
 // Trendo antwortet mit window.trendoKachel(id, base64 | "")
@@ -29,13 +30,13 @@ maplibregl.addProtocol("trendo-kachel", (params) => new Promise((ok) => {
 maplibregl.addProtocol("trendo-schrift", async (params) => {
   const m = /^trendo-schrift:\/\/([^/]+)\/(\d+-\d+)\.pbf$/.exec(params.url);
   const stapel = m ? decodeURIComponent(m[1]).split(",")[0] : ""; const url = glyphs[`./assets/glyphs/${stapel}/${m?.[2]}.pbf`];
-  return { data: url ? zuBytes(url) : new Uint8Array(0) };
+  return { data: url ? hexZuBytes(url) : new Uint8Array(0) };
 });
 maplibregl.addProtocol("trendo-symbol", async (params) => {
   const datei = params.url.replace(/^trendo-symbol:\/\//, "").replace(/[?#].*$/, "").replace("/@", "@"); // MapLibre fragt „light/@2x.json“ an
   const url = sprites[`./assets/sprites/${datei}`];
   if (!url) return { data: datei.endsWith(".json") ? {} : new Uint8Array(0) };
-  return { data: datei.endsWith(".json") ? JSON.parse(new TextDecoder().decode(zuBytes(url))) : zuBytes(url) };
+  return { data: datei.endsWith(".json") ? JSON.parse(new TextDecoder().decode(hexZuBytes(url))) : hexZuBytes(url) };
 });
 
 // Trendo ruft window.trendoKarte({ name, minzoom, maxzoom, bounds: [w, s, o, n] }) auf, sobald das Paket offen ist

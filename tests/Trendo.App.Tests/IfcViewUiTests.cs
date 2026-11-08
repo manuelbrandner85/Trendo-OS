@@ -20,6 +20,7 @@ public class IfcViewUi
                 return new Cli.Result(0, "", "");
             };
             w.IfcViewScriptOverride = sent.Add;
+            w.ProgramSetLevel(2); // BIM-Knöpfe gibt es erst in der Stufe „Professionell“
             w.Show(MainWindow.StudioPages["SPEC-01"]); w.ProgramNew("architektur", "wohnung"); w.Show("architektur");
             w.Find<Button>("prog-cmd-arch-ifc-view").Press();
             Assert.NotNull(w.IfcViewFile); Assert.EndsWith(".ifc", w.IfcViewFile); Assert.NotNull(w.Find<Border>("arch-ifc-area"));

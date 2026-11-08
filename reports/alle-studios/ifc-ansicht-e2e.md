@@ -33,3 +33,8 @@ Freigabe des Nutzers: „Ja, alle testen“ und „mach einfach alles automatisc
 ## Grenzen
 - Türen und Fenster aus Trendos eigenem Export haben noch keine eigene Form, sichtbar sind nur die Öffnungen.
 - Messen und Schnitte gibt es nicht. Das ist eine reine Ansicht.
+
+## Nachtrag (Volltest 08.11.2026)
+- Die drei BIM-Knöpfe ließen das Menüband des Wohnungsplaners in eine zweite Zeile umbrechen. Dadurch rutschte der Foto-Knopf aus dem Bild, und drei bestehende Oberflächentests schlugen fehl (T-0257, T-0280).
+- Behoben: Die BIM-Knöpfe erscheinen erst ab der Stufe „Professionell“. Der Export „IFC (BIM)“ bleibt unter Exportieren und nennt im Hinweis die Stufe.
+- Kartenbündel: Schriften und Symbole sind jetzt hexadezimal eingebettet statt Base64. Base64 enthielt zufällig den Namen des früheren Entwicklungswerkzeugs, den der Paket-Wächter sucht. Nach dem Umbau gibt es 0 Treffer, die Karte ist im Browser unverändert (53 Symbole, 46 Beschriftungen, keine Fehler).

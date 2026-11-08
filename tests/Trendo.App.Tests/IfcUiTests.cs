@@ -14,6 +14,7 @@ public class IfcUi
         var (w, _, _) = Ui.Open();
         try
         {
+            w.ProgramSetLevel(2); // BIM-Knöpfe gibt es erst in der Stufe „Professionell“
             w.Show(MainWindow.StudioPages["SPEC-01"]); w.ProgramNew("architektur", "wohnung"); w.Show("architektur");
             Assert.NotNull(w.Find<Button>("prog-cmd-arch-ifc-setup"));
             w.Find<Button>("prog-export-ifc").Press();

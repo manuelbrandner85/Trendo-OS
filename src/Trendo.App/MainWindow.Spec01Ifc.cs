@@ -29,7 +29,7 @@ public partial class MainWindow
     /// <summary>Export „IFC (BIM)“: aktives Geschoss → IFC4 (Wände, Türen, Fenster, Räume); danach zur Kontrolle wieder eingelesen.</summary>
     string ArchIfcExport(ProgramDocument d, string file)
     {
-        if (!IfcReady) throw new InvalidOperationException("Für IFC zuerst im Menüband „BIM → IFC einrichten“ klicken (einmalig, kostenlos, LGPL-3.0).");
+        if (!IfcReady) throw new InvalidOperationException("Für IFC zuerst im Menüband „BIM → IFC einrichten“ klicken (Stufe „Professionell“; einmalig, kostenlos, LGPL-3.0).");
         var plan = FloorPlan.From(d.Data);
         if (plan.Walls.Count == 0) throw new InvalidOperationException("Der Grundriss hat noch keine Wände – nichts zu exportieren.");
         var json = Path.ChangeExtension(file, ".plan.json");

@@ -61,9 +61,9 @@ public partial class MainWindow
                 new ProgramCmd("arch-check", "Plan prüfen", d => { _archIssues = FloorPlan.From(d.Data).Check(); _progMsg[AK] = _archIssues.Count == 0 ? "✓ Keine Probleme gefunden: alle Räume mit Tür, genug Fensterfläche, nichts steht im Weg." : $"{_archIssues.Count} Hinweis(e) – rechts unter „Prüfung“."; }, true),
             ]),
             ("BIM", [
-                new ProgramCmd("arch-ifc-setup", "IFC einrichten", d => _ = ArchIfcSetup(), false, "Einmalig IfcOpenShell einrichten (kostenlos, LGPL-3.0) – danach Export „IFC (BIM)“ für Architekten- und CAD-Programme"),
-                new ProgramCmd("arch-ifc-view", "IFC ansehen", d => { if (_ifcViewFile is null) ArchIfcViewCurrent(d); else ArchIfcViewClose(); }, false, "Grundriss als IFC speichern und in 3D ansehen (web-ifc/ThatOpen) – nochmal klicken schließt die Ansicht"),
-                new ProgramCmd("arch-ifc-open", "IFC öffnen …", d => _ = ArchIfcPick(), false, "Eine IFC-Datei (z. B. vom Architekten) in 3D ansehen"),
+                new ProgramCmd("arch-ifc-setup", "IFC einrichten", d => _ = ArchIfcSetup(), false, "Einmalig IfcOpenShell einrichten (kostenlos, LGPL-3.0) – danach Export „IFC (BIM)“ für Architekten- und CAD-Programme", Level: 2),
+                new ProgramCmd("arch-ifc-view", "IFC ansehen", d => { if (_ifcViewFile is null) ArchIfcViewCurrent(d); else ArchIfcViewClose(); }, false, "Grundriss als IFC speichern und in 3D ansehen (web-ifc/ThatOpen) – nochmal klicken schließt die Ansicht", Level: 2),
+                new ProgramCmd("arch-ifc-open", "IFC öffnen …", d => _ = ArchIfcPick(), false, "Eine IFC-Datei (z. B. vom Architekten) in 3D ansehen", Level: 2),
             ]),
         ],
         Exports =
