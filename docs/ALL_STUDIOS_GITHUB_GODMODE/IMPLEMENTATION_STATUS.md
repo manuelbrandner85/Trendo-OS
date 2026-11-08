@@ -39,7 +39,7 @@
 | CORE-10 Word/PDF/PowerPoint/Excel ins Wissen (markitdown 0.1.9) | eingebaut in „Wissen merken“ (KI-Laufzeit „Dokumente“, Aufrufe aus dem Quellcode von 0.1.9 geprüft) (reports/alle-studios/markitdown-e2e.md); 3 Kern- und 1 Oberflächentest grün; echter Lauf grün (5 Formate; kaputte Dateien abgelehnt, Titel, Umlaute in Python-Meldungen korrigiert) |
 | SYS-07 Geräte ohne Namen benennen (pci.ids) | eingebaut: namenlose PCI-Geräte erscheinen jetzt (fielen vorher weg), Hersteller und Modell aus der echten Liste (2524 Hersteller, 21 739 Geräte) (reports/alle-studios/runde9-geraete-einheiten-e2e.md); 5 Kern-, 1 Echtdaten-, 1 Oberflächentest grün |
 | SYS-02 Einheiten erweitert (Zeit, Energie, Leistung, Druck, Datenmengen, Winkel) | eigener Code nach exakten Definitionen, UnitsNet und NCalc nach Bestandsprüfung verworfen; 16 Tests grün |
-| Runde 9 übrige (LocalSend-Protokoll) | bewertet 08.11.2026, Umsetzung NOT RUN |
+| SYS-06 Ans Handy senden (LocalSend-Protokoll v2, eigener Code) | eingebaut in „Teilen im Heimnetz“, echte HTTP- und UDP-Verbindungen gegen einen Empfänger nach der Protokollbeschreibung (reports/alle-studios/localsend-e2e.md); 14 Kern- und 2 Oberflächentests grün; echtes Handy, HTTPS und WLAN-Multicast NOT RUN |
 | Runden 10+ (20 Studios, davon SPEC-07 abgelehnt) | NOT RUN |
 | Web Design Studio Modul 05 (Design-Tokens) | eingebaut, 2 Tests, im Browser geprüft (docs/web-design-godmode) |
 | Volltest nach den Änderungen | grün: Api 16, Core 1546, App 829 (reports/alle-studios/volltest-2026-11-08.md) |

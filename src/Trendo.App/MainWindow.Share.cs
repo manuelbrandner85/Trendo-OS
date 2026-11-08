@@ -124,6 +124,7 @@ public partial class MainWindow
                 P("Beim ersten Mal fragt Windows vielleicht, ob Trendo im privaten Netzwerk erreichbar sein darf. Wähle „Private Netzwerke“.", null, 11)));
         }
         sp.Children.Add(new TextBlock { Name = "share-msg", Text = _shareMsg, Foreground = Text, TextWrapping = TextWrapping.Wrap });
+        sp.Children.Add(ShareLocalSendCard()); // Alle Studios, Runde 9: ans Handy senden
         return SysPage("Teilen im Heimnetz", sp);
     }
 }
