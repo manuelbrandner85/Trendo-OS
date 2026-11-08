@@ -22,6 +22,7 @@ public partial class MainWindow
     TileCache MakeTiles()
     {
         var t = new TileCache(Path.Combine(_core.DataRoot, "karten", "kacheln"), !_core.Offline && (!_opt.Isolated || Environment.GetEnvironmentVariable("TRENDO_TILES") == "1"));
+        if (MapPackPath is { Length: > 0 } vp && IsVectorPack(vp)) { try { _vec = new VectorMap(vp); _vecNote = $"Vektorkarte „{_vec.Name}“."; } catch (Exception ex) when (ex is ArgumentException or InvalidDataException or IOException or UnauthorizedAccessException) { } return t; } // Alle Studios, Runde 1
         if (MapPackPath is { Length: > 0 } pp) try { t.Pack = new TilePack(pp); } catch (Exception ex) when (ex is ArgumentException or InvalidDataException or IOException or UnauthorizedAccessException) { } // Paket fehlt inzwischen
         return t;
     }
@@ -92,6 +93,8 @@ public partial class MainWindow
 
     private Control MapWorkspace(ProgramDocument d)
     {
+        _ = Tiles; // lädt das gemerkte Paket (Raster oder Vektor) – sonst geschah das erst im Inspektor, nach der Arbeitsfläche (echter Lauf 08.11.2026)
+        if (VectorMapView() is { } vector) return vector; // Alle Studios, Runde 1: offene Vektorkarte füllt die Arbeitsfläche
         var m = MapDoc.From(d.Data);
         if (MapState.DocId != d.Id) { MapState.DocId = d.Id; MapState.Fitted = false; MapState.Lat = double.NaN; MapState.Selected = null; MapState.Draft.Clear(); } // anderes Dokument: Ansicht neu
         var tools = new WrapPanel { Name = "mk-tools", Width = 112 };
@@ -189,6 +192,7 @@ public partial class MainWindow
                 Act2("mk-pack-load", "Laden", () => { try { MapLoadPack(Need(pack, "das Kartenpaket")); } catch (Exception ex) when (ex is ArgumentException or InvalidDataException or IOException or UnauthorizedAccessException) { _mapNetMsg = "⚠ " + ex.Message; Show(MK); } }),
                 Act2("mk-pack-off", "Entfernen", () => { MapPackPath = ""; Tiles.Pack = null; _mapNetMsg = "Kartenpaket entfernt."; Show(MK); }) } });
             if (Tiles.Pack is { } tp) sp.Children.Add(new TextBlock { Name = "mk-pack-info", Text = $"{tp.Count} Kacheln, Zoom {tp.MinZoom}–{tp.MaxZoom} · {Path.GetFileName(tp.Source.TrimEnd('/', '\\'))}", Foreground = Brush.Parse("#7FD3FF"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
+            if (VectorMapPane() is { } vp) sp.Children.Add(vp); // Alle Studios, Runde 1: Vektorkarte (MapLibre)
             if (_mapNetMsg.Length > 0 && sel is null) sp.Children.Add(new TextBlock { Name = "mk-net-msg", Text = _mapNetMsg, FontSize = 12, TextWrapping = TextWrapping.Wrap, Foreground = Brush.Parse(_mapNetMsg.StartsWith('⚠') ? "#F87171" : "#7FD3FF") });
         }
         return sp;
@@ -270,6 +274,8 @@ public partial class MainWindow
     /// <summary>Offline-Kartenpaket laden, merken und die Karte auf sein Gebiet setzen.</summary>
     public void MapLoadPack(string path)
     {
+        if (IsVectorPack(path)) { MapOpenVector(path); return; } // Alle Studios, Runde 1: Vektorkarte → MapLibre
+        _vec?.Dispose(); _vec = null; _vecView = null; _vecNote = "";
         var p = new TilePack(path); Tiles.Pack = p; MapPackPath = path;
         var (s, w, n, e) = p.Bounds(); MapState.Lat = (s + n) / 2; MapState.Lon = (w + e) / 2; MapState.Zoom = p.MaxZoom; MapState.Tiles = true;
         _mapNetMsg = $"✓ Kartenpaket geladen: {p.Count} Kacheln, Zoom {p.MinZoom}–{p.MaxZoom}."; Show(MK);

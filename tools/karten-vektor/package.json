@@ -1,0 +1,14 @@
+{
+  "name": "trendo-karten-vektor",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": { "build": "vite build" },
+  "dependencies": {
+    "@protomaps/basemaps": "5.7.2",
+    "maplibre-gl": "6.17.0"
+  },
+  "devDependencies": {
+    "vite": "7.1.12"
+  }
+}
