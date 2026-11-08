@@ -9,6 +9,7 @@ Quelle: `src/Trendo.Core/DependencyCatalog` (Installation bei Bedarf beim Öffne
 | Schrift Inter | SIL OFL 1.1 | Im Setup enthalten | — | Avalonia.Fonts.Inter, frei weitergebbar |
 | Velopack | MIT | Im Setup enthalten | — | Bestandteil von Setup.exe |
 | YamlDotNet | MIT | Im Setup enthalten | — | NuGet-Bibliothek |
+| MQTTnet 5.2 | MIT | Im Setup enthalten | — | NuGet-Bibliothek – Live-Messwerte im Studio „Geräte überwachen“ (nur Abonnieren) |
 | Microsoft.Data.Sqlite (mit SQLitePCLRaw/e_sqlite3) | MIT, Apache-2.0, SQLite gemeinfrei | Im Setup enthalten | — | NuGet-Bibliothek – Offline-Kartenpakete (MBTiles) lesen |
 | Hintergrund (KI-generiert) + Trendo-Logo (eigener Entwurf) | Eigenes Projekt-Asset (KI-generiert) | Im Setup enthalten | — | Für Trendo OS erstellt |
 | Microsoft Edge WebView2 | Microsoft | Nicht erforderlich | — | Trendo OS nutzt keine Web-Ansichten; nicht erforderlich |

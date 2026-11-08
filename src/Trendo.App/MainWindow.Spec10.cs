@@ -112,6 +112,7 @@ public partial class MainWindow
         tree.Children.Add(H("Messwerte einlesen", 12));
         var csv = Field("twin-csv-path", "CSV-Datei „Zeit;Anlage;Sensor;Wert“ (.csv)", 150); tree.Children.Add(csv);
         tree.Children.Add(Btn("twin-csv-load", "Einlesen", () => TwinRun(() => { var f = Need(csv, "die CSV-Datei"); if (!File.Exists(f)) throw new IOException("Diese Datei gibt es nicht."); var (ok, bad) = Twin.Import(File.ReadAllText(f)); _twMsg = $"{ok} Messwerte übernommen{(bad > 0 ? $", {bad} Zeilen übersprungen" : "")}."; })));
+        tree.Children.Add(TwinMqttPanel()); // Alle Studios, Runde 5: Live-Messwerte über MQTT
         var left = new Border { Name = "twin-left", Width = 230, CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(10), Child = new ScrollViewer { Content = tree } };
 
         // Mitte: Kacheln der Anlage + großes Diagramm
