@@ -267,3 +267,53 @@ Bestand: Eigene Verkaufsstatistik, Kasse und Geschäftshilfen vorhanden; kein ei
 | bagisto/bagisto | 8 | 2 | 7 | 10 | 7 | 7 | 9 | 6.8 | VERWORFEN | MIT, Laravel-Shop – Server, nicht übernommen |
 | woocommerce/woocommerce | 9 | 3 | 7 | 5 | 7 | 7 | 10 | 6.55 | KONZEPT | GPL-2.0, WordPress-Plugin – nur Anbindung über die offizielle REST-Schnittstelle als Konzept |
 | PrestaShop/PrestaShop | 8 | 2 | 7 | 5 | 7 | 7 | 8 | 6.0 | VERWORFEN | OSL-3.0 – nicht übernommen |
+
+## CORE-06 – Spiele bauen
+Bestand: Godot/Unreal/Unity-Anbindung, eigener Kachel-Leveleditor, Spielregeln und Geräusch-Werkstatt (Umgebungsgeräusche) vorhanden; typische Spiel-Soundeffekte (Sprung, Münze, Laser) fehlen.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| chr15m/jsfxr | 9 | 10 | 8 | 10 | 10 | 10 | 6 | 9.25 | AUSWAHL | Unlicense (sfxr-Verfahren gemeinfrei): Retro-Soundeffekte (Sprung, Münze, Laser, Explosion, Treffer, Power-up) aus wenigen Reglern – als eigener C#-Code in die Geräusch-Werkstatt, ohne Samples, Rechte eindeutig |
+| mapeditor/tiled | 9 | 8 | 8 | 8 | 9 | 9 | 9 | 8.5 | AUSWAHL | Programm GPL-2.0, Kartenformat offen (libtiled BSD-2): Trendo-Level als Tiled-Karte (.tmj) ausgeben – Godot, Phaser, Defold u. a. lesen sie; Tiled selbst nur extern |
+| bevyengine/bevy | 9 | 3 | 9 | 10 | 10 | 9 | 10 | 8.1 | OPTION | MIT/Apache-2.0, Rust-Engine – stark, aber Godot ist schon angebunden; Option für Rust-Projekte |
+| deepnight/ldtk | 8 | 6 | 7 | 10 | 9 | 9 | 8 | 7.95 | KONZEPT | MIT, Level-Editor mit JSON-Format – Konzept (Auto-Layer-Regeln); Format-Import später |
+| MonoGame/MonoGame | 8 | 5 | 8 | 9 | 9 | 8 | 9 | 7.7 | KONZEPT | MS-PL, C#-Framework – Konzept, Godot deckt C# ab |
+| raysan5/raylib | 7 | 4 | 9 | 10 | 9 | 8 | 10 | 7.6 | OPTION | zlib – Lern-Engine; nicht nötig neben Godot |
+| LibreSprite/LibreSprite | 7 | 3 | 7 | 5 | 8 | 8 | 7 | 6.1 | EXTERN | GPL-2.0, Pixel-Grafik – nur extern mit Dateiübergabe |
+
+## CORE-07 – Webseite bauen
+Bestand: Web Design Studio (Puck, R3F, GrapesJS-Import) und eigene Qualitätsprüfung (Handy, Ladezeit, Barrierefreiheit, SEO, Links) ohne Netz vorhanden.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| dequelabs/axe-core | 10 | 9 | 9 | 8 | 9 | 9 | 9 | 9.1 | AUSWAHL | MPL-2.0 unverändert als Datei: echte Barrierefreiheitsprüfung (WCAG 2.2) in der Vorschau-WebView – ergänzt die eigene Prüfung, offline |
+| lycheeverse/lychee | 8 | 8 | 9 | 10 | 10 | 9 | 7 | 8.7 | OPTION | Apache-2.0/MIT, Rust-Einzelprogramm: Links einer fertigen Seite schnell prüfen (auch externe, nur auf Wunsch) – Option zur eigenen Linkprüfung |
+| gohugoio/hugo | 9 | 6 | 9 | 10 | 10 | 9 | 10 | 8.7 | OPTION | Apache-2.0, Einzelprogramm: statische Seiten/Blogs aus Markdown – Option für große Blogs |
+| GoogleChrome/lighthouse | 9 | 4 | 9 | 10 | 6 | 8 | 10 | 7.8 | OPTION | Apache-2.0, braucht Node + Chrome – Option; axe-core ist darin schon der Barrierefreiheitsteil |
+| withastro/astro | 9 | 3 | 9 | 10 | 8 | 8 | 10 | 7.8 | VERWORFEN | MIT, Node-Werkzeugkette – Trendo hat einen eigenen Seitenbau; nicht übernommen |
+| 11ty/eleventy | 8 | 3 | 8 | 10 | 8 | 8 | 8 | 7.3 | VERWORFEN | MIT (heißt jetzt „buildawesome“), Node – nicht übernommen |
+
+## SPEC-08 – Kleidung & Produkte entwerfen
+Bestand: Programm „Kleidung & Produkte“ mit Größen- und Produktrechnern vorhanden; echte Schnittmuster nach Körpermaßen fehlen.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| freesewing/freesewing | 10 | 8 | 8 | 10 | 8 | 9 | 6 | 8.8 | AUSWAHL | MIT (aktiv auf Codeberg): Schnittmuster nach eigenen Körpermaßen als SVG/PDF (Hemd, Hose, Rock …) – als Bündel im WebView oder Node-Prozess, offline |
+| CadQuery/cadquery | 8 | 6 | 8 | 10 | 8 | 9 | 8 | 8.0 | OPTION | Apache-2.0, Python – gleiche Rolle wie build123d; eins von beiden genügt |
+| gumyr/build123d | 8 | 6 | 8 | 10 | 8 | 9 | 7 | 7.95 | OPTION | Apache-2.0, Python: Produktteile parametrisch als STEP/STL – Option über die KI-Laufzeit |
+| FreeCAD/FreeCAD | 10 | 4 | 7 | 7 | 7 | 8 | 10 | 7.4 | EXTERN | LGPL-2.1 – externes Programm, Übergabe STEP |
+| openscad/openscad | 8 | 4 | 7 | 5 | 8 | 8 | 9 | 6.65 | EXTERN | GPL-2.0 – externes Programm |
+| FashionFreedom/Seamly2D | 9 | 3 | 7 | 5 | 8 | 8 | 6 | 6.55 | EXTERN | GPL-3.0 Schnittprogramm – nur extern mit Dateiübergabe |
+
+## CORE-09 – Kameras & Roboter steuern
+Bestand: Webcams, RTSP und ONVIF-Suche, Roboterarm und Fahrroboter mit Sicherheitsfreigabe vorhanden; Objekte erkennen/zählen fehlt.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| microsoft/onnxruntime | 9 | 9 | 9 | 10 | 9 | 9 | 10 | 9.2 | VORHANDEN | MIT – Laufzeit für YOLOX, in der KI-Laufzeit vorhanden bzw. per NuGet |
+| AlexxIT/go2rtc | 9 | 8 | 8 | 10 | 9 | 8 | 9 | 8.7 | OPTION | MIT, Einzelprogramm: viele Kameramarken (RTSP, ONVIF, HomeKit …) verzögerungsarm in die WebView – Option neben mediamtx |
+| Megvii-BaseDetection/YOLOX | 9 | 8 | 8 | 10 | 8 | 9 | 7 | 8.6 | AUSWAHL | Apache-2.0: Objekterkennung als ONNX-Modell mit onnxruntime (MIT) – Personen/Dinge im Kamerabild erkennen und zählen, lokal, ohne Cloud |
+| ultralytics/ultralytics | 10 | 7 | 8 | 2 | 9 | 8 | 10 | 7.6 | AUSGESCHLOSSEN | AGPL-3.0 – ausgeschlossen (YOLOX ist Apache-2.0) |
+| blakeblackshear/frigate | 9 | 2 | 8 | 10 | 8 | 8 | 10 | 7.45 | KONZEPT | MIT, aber kompletter Docker-Dienst – nur Konzept (Ereignis-Zeitleiste, Zonen) |
+| ros2/ros2 | 9 | 2 | 8 | 10 | 8 | 8 | 9 | 7.4 | KONZEPT | Apache-2.0, riesiges Robotik-Gerüst – Konzept (Nachrichten/Themen), kein Einbau |
+| esphome/esphome | 8 | 4 | 8 | 6 | 8 | 7 | 9 | 6.85 | EXTERN | MIT/GPL-3.0 gemischt, Mikrocontroller-Firmware – nur extern |

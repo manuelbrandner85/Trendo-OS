@@ -16,11 +16,11 @@ Korrektur 08.11.2026: Die Zählung sucht nur die Studio-Kennung – „TV & Live
 | SPEC-15 | Live streamen | 10 | 4 | bewertet (Runde 2) |
 | STUDIO-MUSIK-01 | Trendo Musik | 10 | 3 | bewertet (Runde 1) |
 | STUDIO-TV-01 | TV & Live | 8 | 0 | bewertet (Runde 2) |
-| SPEC-08 | Kleidung & Produkte entwerfen | 9 | 7 | NOT RUN – folgt in späteren Runden |
+| SPEC-08 | Kleidung & Produkte entwerfen | 9 | 7 | bewertet (Runde 7) |
 | X-07 | Freie Bilder & Klänge finden | 9 | 2 | NOT RUN – folgt in späteren Runden |
 | CORE-12 | KI-Anweisungen schreiben | 9 | 1 | NOT RUN – folgt in späteren Runden |
 | CORE-05 | 3D-Modelle erstellen | 17 | 17 | bewertet (Runde 1) |
-| CORE-06 | Spiele bauen | 18 | 20 | NOT RUN – folgt in späteren Runden |
+| CORE-06 | Spiele bauen | 18 | 20 | bewertet (Runde 7) |
 | SPEC-04 | VR & AR gestalten | 10 | 3 | bewertet (Runde 5) |
 | SPEC-09 | Gegenstände einscannen | 10 | 3 | bewertet (Runde 2) |
 | SPEC-01 | Wohnung planen | 11 | 10 | bewertet (Runde 3) |
@@ -30,7 +30,7 @@ Korrektur 08.11.2026: Die Zählung sucht nur die Studio-Kennung – „TV & Live
 | SPEC-13 | Routen & Karten | 9 | 4 | bewertet (Runde 1) |
 | SPEC-14 | Fräsen & Fertigen | 8 | 3 | bewertet (Runde 5) |
 | SPEC-16 | Auto & Fahrten | 8 | 5 | bewertet (Runde 5) |
-| CORE-09 | Kameras & Roboter steuern | 11 | 5 | NOT RUN – folgt in späteren Runden |
+| CORE-09 | Kameras & Roboter steuern | 11 | 5 | bewertet (Runde 7) |
 | SPEC-05 | Messwerte auswerten | 8 | 4 | bewertet (Runde 4) |
 | SPEC-06 | Lernen mit Karteikarten | 10 | 4 | bewertet (Runde 4) |
 | SPEC-07 | Texte übersetzen | 6 | 8 | NOT RUN – folgt in späteren Runden |
@@ -41,7 +41,7 @@ Korrektur 08.11.2026: Die Zählung sucht nur die Studio-Kennung – „TV & Live
 | X-05 | Kostenlose KI finden | 12 | 2 | NOT RUN – folgt in späteren Runden |
 | SYS-05 | Aufgaben automatisieren | 10 | 1 | bewertet (Runde 3) |
 | X-01 | Großprojekte umsetzen | 8 | 2 | NOT RUN – folgt in späteren Runden |
-| CORE-07 | Webseite bauen | 19 | 20 | NOT RUN – folgt in späteren Runden |
+| CORE-07 | Webseite bauen | 19 | 20 | bewertet (Runde 7) |
 | X-03 | Apps zusammenklicken | 11 | 6 | bewertet (Runde 3) |
 | X-06 | Projekte von GitHub holen | 10 | 1 | NOT RUN – folgt in späteren Runden |
 | X-04 | Trendo erweitern | 9 | 3 | NOT RUN – folgt in späteren Runden |

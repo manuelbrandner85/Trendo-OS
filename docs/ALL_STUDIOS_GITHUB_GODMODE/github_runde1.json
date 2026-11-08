@@ -1386,5 +1386,233 @@
    "sprache": "PHP",
    "beschreibung": "PrestaShop is the universal open-source software platform to build your e-commerce solution."
   }
+ ],
+ "CORE-06": [
+  {
+   "repo": "deepnight/ldtk",
+   "lizenz": "MIT",
+   "sterne": 4386,
+   "zuletzt": "2026-11-05",
+   "archiviert": false,
+   "sprache": "Haxe",
+   "beschreibung": "Modern, lightweight and efficient 2D level editor"
+  },
+  {
+   "repo": "mapeditor/tiled",
+   "lizenz": "NOASSERTION",
+   "sterne": 13036,
+   "zuletzt": "2026-11-02",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Flexible level editor"
+  },
+  {
+   "repo": "chr15m/jsfxr",
+   "lizenz": "Unlicense",
+   "sterne": 464,
+   "zuletzt": "2026-05-05",
+   "archiviert": false,
+   "sprache": "JavaScript",
+   "beschreibung": "JavaScript sound effects generator."
+  },
+  {
+   "repo": "raysan5/raylib",
+   "lizenz": "Zlib",
+   "sterne": 35588,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "C",
+   "beschreibung": "A simple and easy-to-use library to enjoy videogames programming"
+  },
+  {
+   "repo": "bevyengine/bevy",
+   "lizenz": "Apache-2.0",
+   "sterne": 49611,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Rust",
+   "beschreibung": "A refreshingly simple data-driven game engine built in Rust"
+  },
+  {
+   "repo": "MonoGame/MonoGame",
+   "lizenz": "NOASSERTION",
+   "sterne": 14610,
+   "zuletzt": "2026-11-05",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": "One framework for creating powerful cross-platform games."
+  },
+  {
+   "repo": "LibreSprite/LibreSprite",
+   "lizenz": "GPL-2.0",
+   "sterne": 8749,
+   "zuletzt": "2026-10-30",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Animated sprite editor & pixel art tool -- Fork of the last GPLv2 commit of Aseprite"
+  }
+ ],
+ "CORE-07": [
+  {
+   "repo": "dequelabs/axe-core",
+   "lizenz": "MPL-2.0",
+   "sterne": 7777,
+   "zuletzt": "2026-11-05",
+   "archiviert": false,
+   "sprache": "HTML",
+   "beschreibung": "Accessibility engine for automated Web UI testing"
+  },
+  {
+   "repo": "GoogleChrome/lighthouse",
+   "lizenz": "Apache-2.0",
+   "sterne": 31028,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "JavaScript",
+   "beschreibung": "Automated auditing, performance metrics, and best practices for the web."
+  },
+  {
+   "repo": "gohugoio/hugo",
+   "lizenz": "Apache-2.0",
+   "sterne": 90410,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Go",
+   "beschreibung": "The world’s fastest framework for building websites."
+  },
+  {
+   "repo": "withastro/astro",
+   "lizenz": "NOASSERTION",
+   "sterne": 63804,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "The web framework for content-driven websites."
+  },
+  {
+   "repo": "11ty/buildawesome",
+   "lizenz": "MIT",
+   "sterne": 20024,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "JavaScript",
+   "beschreibung": "A simpler site generator. Transforms a directory of templates (of varying types) into HTML."
+  },
+  {
+   "repo": "lycheeverse/lychee",
+   "lizenz": "Apache-2.0",
+   "sterne": 4105,
+   "zuletzt": "2026-11-02",
+   "archiviert": false,
+   "sprache": "Rust",
+   "beschreibung": "⚡ Fast, async, stream-based link checker written in Rust. Finds broken URLs and mail addresses inside Markdown"
+  }
+ ],
+ "SPEC-08": [
+  {
+   "repo": "freesewing/freesewing",
+   "lizenz": "MIT",
+   "sterne": 489,
+   "zuletzt": "2025-04-02",
+   "archiviert": true,
+   "sprache": "JavaScript",
+   "beschreibung": "Freesewing's monorepo holding all our NPM packages, including our core library"
+  },
+  {
+   "repo": "FashionFreedom/Seamly2D",
+   "lizenz": "GPL-3.0",
+   "sterne": 1035,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Open source patternmaking software to democratize fashion."
+  },
+  {
+   "repo": "CadQuery/cadquery",
+   "lizenz": "NOASSERTION",
+   "sterne": 6075,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "A python parametric CAD scripting framework based on OCCT"
+  },
+  {
+   "repo": "openscad/openscad",
+   "lizenz": "NOASSERTION",
+   "sterne": 10614,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "OpenSCAD - The Programmers Solid 3D CAD Modeller  "
+  },
+  {
+   "repo": "FreeCAD/FreeCAD",
+   "lizenz": "LGPL-2.1",
+   "sterne": 35242,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Official source code of FreeCAD, a free and opensource multiplatform 3D parametric modeler."
+  },
+  {
+   "repo": "build123d/build123d",
+   "fehler": "HTTP Error 404: Not Found"
+  }
+ ],
+ "CORE-09": [
+  {
+   "repo": "AlexxIT/go2rtc",
+   "lizenz": "MIT",
+   "sterne": 14606,
+   "zuletzt": "2026-11-05",
+   "archiviert": false,
+   "sprache": "Go",
+   "beschreibung": "Ultimate camera streaming application"
+  },
+  {
+   "repo": "blakeblackshear/frigate",
+   "lizenz": "MIT",
+   "sterne": 37326,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "NVR with realtime local object detection for IP cameras"
+  },
+  {
+   "repo": "ultralytics/ultralytics",
+   "lizenz": "AGPL-3.0",
+   "sterne": 63205,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Ultralytics YOLO27, YOLO26, YOLO11, YOLOv8 — object detection, instance segmentation, semantic segmentation, i"
+  },
+  {
+   "repo": "openvinotoolkit/openvino",
+   "lizenz": "Apache-2.0",
+   "sterne": 11129,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "OpenVINO™ is an open source toolkit for optimizing and deploying AI inference"
+  },
+  {
+   "repo": "ros2/ros2",
+   "lizenz": null,
+   "sterne": 6291,
+   "zuletzt": "2026-11-04",
+   "archiviert": false,
+   "sprache": null,
+   "beschreibung": "The Robot Operating System, is a meta operating system for robots."
+  },
+  {
+   "repo": "esphome/esphome",
+   "lizenz": "NOASSERTION",
+   "sterne": 12069,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "ESPHome is a system to control your ESP32, ESP8266, BK72xx, RP2040 by simple yet powerful configuration files "
+  }
  ]
 }

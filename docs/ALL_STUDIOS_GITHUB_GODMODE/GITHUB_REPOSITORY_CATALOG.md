@@ -222,5 +222,42 @@
 | bagisto/bagisto | MIT | 2026-11-06 | nein | 28344 | PHP |
 | woocommerce/woocommerce | GPL-2.0 | 2026-11-08 | nein | 10582 | PHP |
 | PrestaShop/PrestaShop | OSL-3.0 / AFL-3.0 (aus Lizenzdatei) | 2026-11-08 | nein | 9248 | PHP |
+## CORE-06
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| deepnight/ldtk | MIT | 2026-11-05 | nein | 4386 | Haxe |
+| mapeditor/tiled | GPL-2.0 (Programm), libtiled BSD-2 | 2026-11-02 | nein | 13036 | C++ |
+| chr15m/jsfxr | Unlicense | 2026-05-05 | nein | 464 | JavaScript |
+| raysan5/raylib | Zlib | 2026-11-08 | nein | 35588 | C |
+| bevyengine/bevy | Apache-2.0 | 2026-11-07 | nein | 49611 | Rust |
+| MonoGame/MonoGame | MS-PL | 2026-11-05 | nein | 14610 | C# |
+| LibreSprite/LibreSprite | GPL-2.0 | 2026-10-30 | nein | 8749 | C++ |
+## CORE-07
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| dequelabs/axe-core | MPL-2.0 | 2026-11-05 | nein | 7777 | HTML |
+| GoogleChrome/lighthouse | Apache-2.0 | 2026-11-06 | nein | 31028 | JavaScript |
+| gohugoio/hugo | Apache-2.0 | 2026-11-07 | nein | 90410 | Go |
+| withastro/astro | MIT (aus Lizenzdatei) | 2026-11-07 | nein | 63804 | TypeScript |
+| 11ty/buildawesome | MIT | 2026-11-06 | nein | 20024 | JavaScript |
+| lycheeverse/lychee | Apache-2.0 | 2026-11-02 | nein | 4105 | Rust |
+## SPEC-08
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| freesewing/freesewing | MIT – auf GitHub archiviert, aktiv auf Codeberg (codeberg.org/freesewing) | 2025-04-02 | ja | 489 | JavaScript |
+| FashionFreedom/Seamly2D | GPL-3.0 | 2026-11-06 | nein | 1035 | C++ |
+| CadQuery/cadquery | Apache-2.0 (aus Lizenzdatei) | 2026-11-06 | nein | 6075 | Python |
+| openscad/openscad | GPL-2.0 | 2026-11-07 | nein | 10614 | C++ |
+| FreeCAD/FreeCAD | LGPL-2.1 | 2026-11-08 | nein | 35242 | C++ |
+| build123d/build123d | (Adresse falsch, korrigiert) | | | | |
+## CORE-09
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| AlexxIT/go2rtc | MIT | 2026-11-05 | nein | 14606 | Go |
+| blakeblackshear/frigate | MIT | 2026-11-07 | nein | 37326 | Python |
+| ultralytics/ultralytics | AGPL-3.0 | 2026-11-08 | nein | 63205 | Python |
+| openvinotoolkit/openvino | Apache-2.0 | 2026-11-06 | nein | 11129 | C++ |
+| ros2/ros2 | Apache-2.0 (Pakete einzeln) | 2026-11-04 | nein | 6291 |  |
+| esphome/esphome | MIT (Python) / GPL-3.0 (C++-Laufzeit) | 2026-11-08 | nein | 12069 | C++ |
 
 Korrigiert: PhotoDemon → tannerhelland/PhotoDemon (BSD-ähnlich), Shotcut → mltframework/shotcut (GPL-3.0).
