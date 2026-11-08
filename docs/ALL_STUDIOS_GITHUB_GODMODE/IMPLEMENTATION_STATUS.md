@@ -19,7 +19,8 @@
 | SPEC-01 IFC-Export (IfcOpenShell) | eingebaut: Exportieren „IFC (BIM)“ + „BIM → IFC einrichten“, echter Lauf mit Vorlage, Geometrie nachgemessen (reports/alle-studios/ifc-e2e.md); Öffnen in BIM-Programmen NOT RUN |
 | SYS-05 Node-RED | Anbindung war schon da (N1–N7); echter Lauf mit Trendos Einstellungen; Härtung umgesetzt (Herkunftsprüfung, --ignore-scripts) und echt nachgeprüft (reports/alle-studios/node-red-e2e.md) |
 | SPEC-01 IFC-Ansicht (web-ifc/ThatOpen + three.js) | eingebaut: „IFC ansehen“ / „IFC öffnen …“, echter Lauf im Trendo-WebView (reports/alle-studios/ifc-ansicht-e2e.md), Test grün |
-| Runde 3 übrige (weitere KI-Team-Konzepte: typisierte Antworten, Rollen) | NOT RUN |
+| CORE-03 KI-Team: geprüfte Antwortform (pydantic-ai-Konzept, eigener Code) | eingebaut, erster Nutzer „Planer“ (ziel + schritte); Nachfrage nur bei fehlerhaftem JSON, Freitext bleibt unverändert; 10 Tests, alle 46 Agenten-Tests grün; echter Lauf mit Claude NOT RUN |
+| Runde 3 übrige (Rollenbeschreibungen nach crewAI) | NOT RUN |
 | SPEC-06 FSRS-Planer für Karteikarten (Runde 4) | eingebaut, umschaltbar im Lernplan, 12 Kern- und 1 Oberflächentest grün |
 | Runde 4 übrige (SpiceSharp, Math.NET Numerics, Statik-Konzepte) | geplant, NOT RUN – NuGet-Pakete bzw. eigener Code |
 | SPEC-10 MQTT-Live-Werte (MQTTnet) | eingebaut, echter Lauf mit Broker auf 127.0.0.1 (reports/alle-studios/mqtt-e2e.md), Tests grün; echte Geräte NOT RUN |

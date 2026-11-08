@@ -3,7 +3,7 @@ using System.Text.Json;
 namespace Trendo.Core;
 
 /// <summary>KI-Rolle. <paramref name="Studio"/>: das Studio, dem die Rolle fest gehört (Wunsch 03.11.2026) – leer bei den allgemeinen Rollen.</summary>
-public sealed record AgentRole(string Id, string Name, string Does, string SystemPrompt, bool MayWriteFiles, string? Studio = null);
+public sealed record AgentRole(string Id, string Name, string Does, string SystemPrompt, bool MayWriteFiles, string? Studio = null, IReadOnlyList<AnswerField>? Shape = null);
 
 public enum AgentTaskState { Neu, Laeuft, Fertig, Fehler, WartetAufFreigabe, Gespeichert }
 
@@ -19,6 +19,8 @@ public sealed class AgentTask
     public string? SavedAs { get; set; }
     public string? ApprovalId { get; set; }
     public string? TeamId { get; set; }
+    /// <summary>Geprüfte Antwort als JSON, wenn die Rolle eine Antwortform verlangt (siehe <see cref="AgentAnswer"/>); null = freier Text oder ungeprüft.</summary>
+    public string? Data { get; set; }
     public DateTimeOffset Created { get; set; } = DateTimeOffset.Now;
     public DateTimeOffset? Finished { get; set; }
 }
@@ -30,7 +32,8 @@ public sealed class AgentCenter
 {
     public static readonly IReadOnlyList<AgentRole> Roles =
     [
-        new("planer", "Planer", "zerlegt ein Ziel in klare Schritte", "Du bist der Planer. Zerlege das Ziel in nummerierte, machbare Schritte mit jeweils einem Satz. Nenne zuerst den wichtigsten Schritt.", false),
+        new("planer", "Planer", "zerlegt ein Ziel in klare Schritte", "Du bist der Planer. Zerlege das Ziel in nummerierte, machbare Schritte mit jeweils einem Satz. Nenne zuerst den wichtigsten Schritt.", false,
+            Shape: [new("ziel", "text", "das Ziel in einem Satz"), new("schritte", "liste", "machbare Schritte, wichtigster zuerst")]),
         new("recherche", "Rechercheur", "sammelt, was bekannt ist, und sagt, was fehlt", "Du bist der Rechercheur. Sammle bekanntes Wissen zum Thema und trenne klar: Fakten, Annahmen, offene Fragen. Erfinde keine Quellen.", false),
         new("texter", "Texter", "schreibt verständliche Texte", "Du bist der Texter. Schreibe klar, freundlich und in einfachem Deutsch. Kurze Sätze, keine Fachwörter ohne Erklärung.", true),
         new("lektor", "Lektor", "verbessert Rechtschreibung und Stil", "Du bist der Lektor. Verbessere Rechtschreibung, Grammatik und Stil. Gib den verbesserten Text aus und danach höchstens 5 Hinweise.", true),
@@ -141,8 +144,23 @@ public sealed class AgentCenter
         var r = RoleOf(t.RoleId);
         t.State = AgentTaskState.Laeuft; Save();
         var q = t.Input is { Length: > 0 } inp ? $"Auftrag: {t.Goal}\n\nVorarbeit/Eingabe:\n{inp}" : $"Auftrag: {t.Goal}";
-        var a = await ki.AskAsync(new KiRequest(q, r.SystemPrompt + " Antworte auf Deutsch.", model), ct);
-        t.Result = a.Text; t.State = a.Ok ? AgentTaskState.Fertig : AgentTaskState.Fehler; t.Finished = DateTimeOffset.Now; Save();
+        var system = r.SystemPrompt + " Antworte auf Deutsch." + (r.Shape is { Count: > 0 } sh ? AgentAnswer.Instruction(sh) : "");
+        var a = await ki.AskAsync(new KiRequest(q, system, model), ct);
+        t.Result = a.Text; t.Data = null;
+        if (a.Ok && r.Shape is { Count: > 0 } shape)
+        {
+            // Runde 3 (pydantic-ai-Konzept): Antwortform prüfen, bei Fehlern einmal mit den konkreten Fehlern nachfragen
+            // Ohne JSON (Modell ignoriert die Form) keine Nachfrage: Text bleibt unverändert, Data bleibt leer (ungeprüft) – so ändert sich für freie Antworten nichts
+            var (data, errors) = AgentAnswer.Check(a.Text, shape);
+            if (data is null && AgentAnswer.ExtractJson(a.Text) is not null)
+            {
+                var retry = await ki.AskAsync(new KiRequest(q + "\n\n" + AgentAnswer.Correction(errors, shape), system, model), ct);
+                if (retry.Ok) { (data, errors) = AgentAnswer.Check(retry.Text, shape); if (data is not null || t.Result.Length == 0) t.Result = retry.Text; }
+            }
+            if (data is not null) { t.Data = data.ToJsonString(); t.Result = AgentAnswer.Render(data, shape); }
+            _audit.Append("agent:" + r.Id, "agent.form", data is null ? "ungeprüft" : "geprüft");
+        }
+        t.State = a.Ok ? AgentTaskState.Fertig : AgentTaskState.Fehler; t.Finished = DateTimeOffset.Now; Save();
         _audit.Append("agent:" + r.Id, a.Ok ? "agent.done" : "agent.failed", $"{t.Id} {a.Text.Length}Z");
         return t;
     }
