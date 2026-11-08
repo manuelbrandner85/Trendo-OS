@@ -10,12 +10,12 @@ public sealed partial class TilePack : IDisposable
 {
     [GeneratedRegex(@"(?:^|/)(\d{1,2})/(\d+)/(\d+)\.(png|jpe?g|webp)$", RegexOptions.IgnoreCase)] private static partial Regex TilePath();
     readonly Dictionary<(int Z, int X, int Y), string> _index = [];
-    readonly ZipArchive? _zip; readonly string? _dir; readonly Microsoft.Data.Sqlite.SqliteConnection? _db;
+    readonly ZipArchive? _zip; readonly string? _dir; readonly Microsoft.Data.Sqlite.SqliteConnection? _db; readonly PmTiles? _pm;
     int _dbMin, _dbMax, _dbCount;
     public string Source { get; }
-    public int MinZoom => _db is not null ? _dbMin : _index.Count == 0 ? 0 : _index.Keys.Min(k => k.Z);
-    public int MaxZoom => _db is not null ? _dbMax : _index.Count == 0 ? 0 : _index.Keys.Max(k => k.Z);
-    public int Count => _db is not null ? _dbCount : _index.Count;
+    public int MinZoom => _pm is not null ? _pm.Info.MinZoom : _db is not null ? _dbMin : _index.Count == 0 ? 0 : _index.Keys.Min(k => k.Z);
+    public int MaxZoom => _pm is not null ? _pm.Info.MaxZoom : _db is not null ? _dbMax : _index.Count == 0 ? 0 : _index.Keys.Max(k => k.Z);
+    public int Count => _pm is not null ? (int)Math.Min(int.MaxValue, _pm.Info.AddressedTiles) : _db is not null ? _dbCount : _index.Count;
 
     public TilePack(string path)
     {
@@ -37,12 +37,19 @@ public sealed partial class TilePack : IDisposable
             if (_dbCount == 0) { Dispose(); throw new InvalidDataException("Das MBTiles-Paket enthält keine Kacheln."); }
             return;
         }
+        else if (File.Exists(path) && path.EndsWith(".pmtiles", StringComparison.OrdinalIgnoreCase)) // Alle Studios, Runde 1: PMTiles v3 (eigener Leser)
+        {
+            _pm = new PmTiles(path);
+            if (!_pm.IsRaster) { var t = _pm.Info.Type; Dispose(); throw new InvalidDataException(t == PmTiles.TileType.Mvt ? "Das ist eine Vektorkarte (MVT) – Trendo zeigt bisher Rasterkarten (PNG, JPEG, WebP)." : $"Kacheltyp {t} wird nicht unterstützt."); }
+            if (_pm.Info.AddressedTiles == 0) { Dispose(); throw new InvalidDataException("Das PMTiles-Paket enthält keine Kacheln."); }
+            return;
+        }
         else if (File.Exists(path) && path.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
         {
             _zip = ZipFile.OpenRead(path);
             foreach (var e in _zip.Entries) Add(e.FullName.Replace('\\', '/'));
         }
-        else throw new ArgumentException("Bitte ein MBTiles-Paket, einen Ordner oder eine ZIP-Datei mit Kacheln (z/x/y.png) wählen.");
+        else throw new ArgumentException("Bitte ein MBTiles- oder PMTiles-Paket, einen Ordner oder eine ZIP-Datei mit Kacheln (z/x/y.png) wählen.");
         if (_index.Count == 0) { Dispose(); throw new InvalidDataException("Darin sind keine Kacheln im Schema z/x/y.png."); }
     }
 
@@ -50,6 +57,7 @@ public sealed partial class TilePack : IDisposable
 
     public byte[]? Get(int z, int x, int y)
     {
+        if (_pm is not null) return _pm.Get(z, x, y);
         if (_db is not null)
         {
             lock (_db)
@@ -67,6 +75,7 @@ public sealed partial class TilePack : IDisposable
     /// <summary>Abgedecktes Gebiet (Breite/Länge) der höchsten Zoomstufe – zum Hinspringen.</summary>
     public (double South, double West, double North, double East) Bounds()
     {
+        if (_pm is not null) return (_pm.Info.MinLat, _pm.Info.MinLon, _pm.Info.MaxLat, _pm.Info.MaxLon);
         var z = MaxZoom; double n = 1 << z;
         var ks = _index.Keys.Where(k => k.Z == z).ToList();
         if (_db is not null)
@@ -78,5 +87,5 @@ public sealed partial class TilePack : IDisposable
         return (Lat(ks.Max(k => k.Y) + 1), Lon(ks.Min(k => k.X)), Lat(ks.Min(k => k.Y)), Lon(ks.Max(k => k.X) + 1));
     }
 
-    public void Dispose() { _zip?.Dispose(); _db?.Dispose(); }
+    public void Dispose() { _zip?.Dispose(); _db?.Dispose(); _pm?.Dispose(); }
 }

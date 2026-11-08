@@ -184,7 +184,7 @@ public partial class MainWindow
             sp.Children.Add(P(Tiles.Online ? "Kartendaten © OpenStreetMap-Mitwirkende (ODbL). Kacheln werden zwischengespeichert." : "Offline: Karte aus dem Zwischenspeicher, sonst Gitter.", null, 11));
             // T-0274b: Offline-Kartenpaket (Ordner oder ZIP mit z/x/y.png)
             sp.Children.Add(H("Offline-Kartenpaket", 12));
-            var pack = Field("mk-pack-path", "Kartenpaket (.mbtiles, .zip) oder Kachel-Ordner", 150, MapPackPath); sp.Children.Add(pack);
+            var pack = Field("mk-pack-path", "Kartenpaket (.mbtiles, .pmtiles, .zip) oder Kachel-Ordner", 150, MapPackPath); sp.Children.Add(pack);
             sp.Children.Add(new WrapPanel { Children = {
                 Act2("mk-pack-load", "Laden", () => { try { MapLoadPack(Need(pack, "das Kartenpaket")); } catch (Exception ex) when (ex is ArgumentException or InvalidDataException or IOException or UnauthorizedAccessException) { _mapNetMsg = "⚠ " + ex.Message; Show(MK); } }),
                 Act2("mk-pack-off", "Entfernen", () => { MapPackPath = ""; Tiles.Pack = null; _mapNetMsg = "Kartenpaket entfernt."; Show(MK); }) } });
