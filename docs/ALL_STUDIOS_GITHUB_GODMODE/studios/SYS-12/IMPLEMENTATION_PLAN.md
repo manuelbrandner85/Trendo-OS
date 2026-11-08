@@ -3,4 +3,4 @@
 2. Adapter mit Eingabeprüfung, Zeitlimit, eigenem Arbeitsordner.
 3. Bedienung im Studio (Knopf + Vorschau), Ergebnis als Projektdatei.
 4. Je Funktionspaket ≥10 Tests (positiv/negativ), echte Läufe mit Beleg.
-Auswahl: googlefonts/atkinson-hyperlegible, antijingoist/opendyslexic
+Auswahl: googlefonts/atkinson-hyperlegible

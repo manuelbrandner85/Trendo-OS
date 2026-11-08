@@ -433,7 +433,7 @@ Bestand: Mindestschrift, einfacher Modus, Kontrast AA, Status mit Zeichen, Vorle
 | Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
 |---|---|---|---|---|---|---|---|---|---|---|
 | googlefonts/atkinson-hyperlegible | 9 | 10 | 8 | 10 | 10 | 10 | 6 | 9.25 | AUSWAHL | OFL-1.1: Schrift des Braille Institute für Sehschwäche – 2 Dateien, 110 KB, im Setup; Projekt abgeschlossen (archiviert), Schrift bleibt nutzbar |
-| antijingoist/opendyslexic | 8 | 10 | 8 | 10 | 9 | 10 | 6 | 8.9 | AUSWAHL | OFL-1.1: Schrift für Legasthenie als Wahlmöglichkeit – Nutzen in Studien umstritten, Wirkung ist individuell |
+| antijingoist/opendyslexic | 8 | 10 | 8 | 10 | 9 | 10 | 6 | 8.9 | VERWORFEN | OFL-1.1 – in Trendo geprüft und verworfen: Unterlängen werden in der Oberfläche abgeschnitten, Text läuft zu breit; Nutzen ohnehin umstritten |
 | dequelabs/axe-core | 9 | 3 | 9 | 8 | 9 | 9 | 9 | 7.65 | VORHANDEN | MPL-2.0 – prüft Webseiten (seit Runde 7 eingebaut), nicht die Avalonia-Oberfläche |
 | tailwindlabs/tailwindcss | 6 | 1 | 9 | 10 | 8 | 8 | 10 | 6.65 | VERWORFEN | MIT – Web-Werkzeug, passt nicht |
 | MaPePeR/jsColorblindSimulator | 7 | 5 | 6 | 0 | 8 | 8 | 2 | 5.35 | AUSGESCHLOSSEN | keine Lizenz – nicht nutzbar |

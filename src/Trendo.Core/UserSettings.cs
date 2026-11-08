@@ -38,6 +38,8 @@ public sealed class UserSettings
     public bool IsLowPower(bool arm) => PowerProfile == "sparsam" || (PowerProfile is not "hoch" && arm);
     /// <summary>SYS-12: Mindestschriftgröße in pt (0 = wie gestaltet), Leichte Sprache, Farbblind-Symbole, leise Meldungen, einfacher Modus, Fensterplatz.</summary>
     public int FontMin { get; set; }
+    /// <summary>Alle Studios, Runde 10: gut lesbare Schrift („“ = Standard, „atkinson“).</summary>
+    public string ReadFont { get; set; } = "";
     public bool EasyLanguage { get; set; }
     public bool ColorBlind { get; set; }
     public string NotifyStyle { get; set; } = "normal";

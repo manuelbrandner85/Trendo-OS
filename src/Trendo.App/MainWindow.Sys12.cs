@@ -27,6 +27,7 @@ public partial class MainWindow
         RegisterTab(BedienTabs, "bedien-hilfen", "Hilfen", "SYS-12", BedienHelpView, "leichte sprache", "vorlesen", "diktat", "benachrichtigung", "leise", "einstellungen sichern", "export", "import");
         RegisterTab(BedienTabs, "bedien-pruefen", "Prüfen", "SYS-12", BedienCheckView, "barrierefreiheit", "bericht", "bildschirmleser", "narrator", "tastatur", "englisch");
         RestoreWindowPlace();
+        ApplyReadFont();
         Closing += (_, _) => { if (WindowState == WindowState.Normal) { _settings.WindowRect = [Position.X, Position.Y, (int)Width, (int)Height]; SaveSettings(); } };
     }
     private Control BedienPage(string title, Control body) => W45Page(title, BedienTabs, "bedien", body);
@@ -79,6 +80,7 @@ public partial class MainWindow
         var fonts = Line(); foreach (var m in A11y.FontMins)
         { var on = _settings.FontMin == m; fonts.Children.Add(Act($"font-{m}", (on ? "✓ " : "") + (m == 0 ? "Wie gestaltet" : $"mindestens {m} pt"), () => { _settings.FontMin = m; SaveSettings(); Show(V); }, on)); }
         sp.Children.Add(Card(Section("Schriftgröße", "Unabhängig von der Anzeigegröße: kleine Schrift wird auf diese Mindestgröße angehoben.", fonts)));
+        sp.Children.Add(ReadFontSection(V)); // Alle Studios, Runde 10: gut lesbare Schrift
         sp.Children.Add(Card(Section("Einfacher Modus", "Nur die wichtigsten Kacheln auf dem Startbildschirm und größere Knöpfe.",
             Opt("simple-mode", "Einfachen Modus einschalten", _settings.SimpleMode, v => _settings.SimpleMode = v, V))));
         var levels = Line(); for (var i = 0; i < 3; i++)

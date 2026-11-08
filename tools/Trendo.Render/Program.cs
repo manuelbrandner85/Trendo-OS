@@ -61,6 +61,7 @@ if (shot is "brief" or "fenster" or "seite")
     prepared.SetupDone = true;
     foreach (var hint in MainWindow.HelpTexts.Keys) if (!prepared.SeenHints.Contains(hint)) prepared.SeenHints.Add(hint);
     if (shot == "seite") prepared.ReduceMotion = true;
+    if (Environment.GetEnvironmentVariable("TRENDO_READFONT") is { Length: > 0 } rf) prepared.ReadFont = rf; // Alle Studios, Runde 10
     if (shot == "brief")
     {
         prepared.Name = "Erika Muster"; prepared.SenderStreet = "Hauptstraße 1"; prepared.SenderCity = "10115 Berlin"; prepared.SenderContact = "erika@example.de";
