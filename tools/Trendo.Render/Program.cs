@@ -153,6 +153,30 @@ if (Environment.GetEnvironmentVariable("TRENDO_LIVE_STUDIO") is { Length: > 0 })
 {
     win.BcMode = "studio"; win.LiveSetPlan("00:00 Gleich geht's los – Begrüßung / 02:00 Kamera – Thema vorstellen / 10:00 Bildschirm – Demo");
 }
+if (Environment.GetEnvironmentVariable("TRENDO_R11") is { Length: > 0 } r11) // Alle Studios, Runde 11: Lesemodus mit Artikel (HTML-Datei) oder Anweisungs-Test mit der echten KI
+{
+    void R11Pump(Func<bool> done, int seconds) { var t0 = DateTime.UtcNow; while (!done() && DateTime.UtcNow - t0 < TimeSpan.FromSeconds(seconds)) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); Thread.Sleep(30); } Avalonia.Threading.Dispatcher.UIThread.RunJobs(); }
+    T Named<T>(string name) where T : Avalonia.Controls.Control => Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(win).OfType<T>().First(c => c.Name == name);
+    void Click(string name) => Named<Avalonia.Controls.Button>(name).RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Avalonia.Controls.Button.ClickEvent));
+    if (r11 == "prompt")
+    {
+        var alt = win.Prompts.Save(null, "Biene", "Test", "Erzähl mir etwas über die {{Thema}}.");
+        win.Prompts.Save(alt.Id, "Biene", "Test", "Antworte ausschließlich mit einem gültigen JSON-Objekt der Form {\"text\":\"...\"} ohne Codeblock. Der Text: ein Satz über die {{Thema}}, höchstens zehn Wörter.");
+        win.Show("ki-vorlagen"); R11Pump(() => false, 1);
+        Click("prompt-" + alt.Id); R11Pump(() => false, 1);
+        Named<Avalonia.Controls.TextBox>("pvar-Thema").Text = "Biene";
+        Named<Avalonia.Controls.TextBox>("ptest-checks").Text = "enthält: Biene\nhöchstens 25 Wörter\nist JSON";
+        Click("ptest-run"); R11Pump(() => win.LastPromptTest.Count > 0, 500); R11Pump(() => false, 1);
+        foreach (var v in win.LastPromptTest) Console.WriteLine($"{v.Label}: {v.Passed}/{v.Runs.Count} beantwortet {v.Runs.Count(x => x.Answered)}");
+    }
+    else
+    {
+        var html = File.ReadAllText(r11);
+        win.ReaderFetchOverride = u => Task.FromResult(("text/html", html, u));
+        var rt = win.ReadUrlAsync("https://example.org/artikel"); R11Pump(() => rt.IsCompleted, 20);
+        win.Show("recherche"); R11Pump(() => false, 1);
+    }
+}
 if (Environment.GetEnvironmentVariable("TRENDO_TV_VIDEOS") is { } tvVid) // Video-Plattformen mit echter Suche (z. B. "peertube:musik")
 {
     var parts = tvVid.Split(':', 2); win.TvTabForTests = "videos"; win.TvVideoSelect(parts[0].Length > 0 ? parts[0] : "peertube");

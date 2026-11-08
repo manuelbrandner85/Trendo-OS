@@ -49,12 +49,13 @@ Regeln: `enthält: Biene`, `höchstens 25 Wörter`, `ist JSON`.
 | genaue Anweisung (JSON, höchstens zehn Wörter) | 3 von 3 |
 | „Erzähl mir etwas über die Biene.“ | 0 von 3 (zu lang, kein JSON) |
 
-Der Lauf nutzte die Auswertung `PromptEval` mit direktem Aufruf der lokalen KI. Der Weg über die Oberfläche ist mit einer Test-KI geprüft.
+Ein zweiter Lauf ging über die echte Oberfläche (`tools/Trendo.Render`, `TRENDO_R11=prompt`, Knopf „Testen“, normaler KI-Weg von Trendo) und ergab wieder 3 von 3 gegen 0 von 3. Bild: `runde11-anweisungstest.png`.
 
 ## Kein Einbau bei CORE-04 und X-02
 Die Kopplung läuft schon über WLAN und Tailscale; die Selbstheilung repariert Trendo selbst. Die Kandidaten brächten keinen Mehrwert oder sind verboten (Treiber, Dienste, Windows-Einstellungen, AGPL). Begründung je Projekt: `docs/ALL_STUDIOS_GITHUB_GODMODE`.
 
 ## Nicht geprüft (NOT RUN)
-- Sichtprüfung der neuen Knöpfe und der Testkarte als gerendertes Bild.
 - Vergleich mit dem Original mozilla/readability auf denselben Seiten (fremdes Programm, nicht ausgeführt).
-- Anweisungs-Test über die Oberfläche mit einer echten KI.
+
+## Sichtprüfung
+Testkarte und Knopf „Ganze Seite zeigen“ wurden gerendert und angesehen: lesbar, nichts abgeschnitten. Vom Lesemodus liegt kein Bild bei, weil es fremden Artikeltext zeigen würde.
