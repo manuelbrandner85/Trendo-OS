@@ -1990,5 +1990,184 @@
    "sprache": "C#",
    "beschreibung": "ShareX is a free and open-source application that enables users to capture or record any area of their screen "
   }
+ ],
+ "X-08": [
+  {
+   "repo": "Genymobile/scrcpy",
+   "lizenz": "Apache-2.0",
+   "sterne": 154306,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "C",
+   "beschreibung": "Display and control your Android device"
+  },
+  {
+   "repo": "KDE/kdeconnect-kde",
+   "lizenz": null,
+   "sterne": 4137,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Multi-platform app that allows your devices to communicate"
+  },
+  {
+   "repo": "barry-ran/QtScrcpy",
+   "lizenz": "Apache-2.0",
+   "sterne": 32770,
+   "zuletzt": "2026-10-15",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Android real-time display control software"
+  },
+  {
+   "repo": "yume-chan/ya-webadb",
+   "lizenz": "MIT",
+   "sterne": 3276,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "ADB in your browser"
+  }
+ ],
+ "SYS-03": [
+  {
+   "repo": "aria2/aria2",
+   "lizenz": "GPL-2.0",
+   "sterne": 43434,
+   "zuletzt": "2026-06-25",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "aria2 is a lightweight multi-protocol & multi-source, cross platform download utility operated in command-line"
+  },
+  {
+   "repo": "easylist/easylist",
+   "lizenz": null,
+   "sterne": 3203,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "Adblock Filter List",
+   "beschreibung": "EasyList filter subscription (EasyList, EasyPrivacy, EasyList Cookie, Fanboy's Social/Annoyances/Notifications"
+  },
+  {
+   "repo": "brave/adblock-rust",
+   "lizenz": "MPL-2.0",
+   "sterne": 2921,
+   "zuletzt": "2026-11-05",
+   "archiviert": false,
+   "sprache": "Rust",
+   "beschreibung": "Brave's Rust-based adblock engine"
+  },
+  {
+   "repo": "yt-dlp/yt-dlp",
+   "lizenz": "Unlicense",
+   "sterne": 206135,
+   "zuletzt": "2026-11-04",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "A feature-rich command-line audio/video downloader"
+  },
+  {
+   "repo": "curl/curl",
+   "lizenz": "NOASSERTION",
+   "sterne": 43429,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "C",
+   "beschreibung": "A command line tool and library for transferring data with URL syntax, supporting DICT, FILE, FTP, FTPS, GOPHE"
+  }
+ ],
+ "SYS-12": [
+  {
+   "repo": "antijingoist/opendyslexic",
+   "lizenz": "OFL-1.1",
+   "sterne": 796,
+   "zuletzt": "2025-08-11",
+   "archiviert": true,
+   "sprache": null,
+   "beschreibung": "OpenDyslexic, a typeface that uses typeface shapes & features to help offset some visual symptoms of Dyslexia."
+  },
+  {
+   "repo": "googlefonts/atkinson-hyperlegible",
+   "lizenz": "OFL-1.1",
+   "sterne": 326,
+   "zuletzt": "2021-04-30",
+   "archiviert": true,
+   "sprache": "HTML",
+   "beschreibung": ""
+  },
+  {
+   "repo": "dequelabs/axe-core",
+   "lizenz": "MPL-2.0",
+   "sterne": 7777,
+   "zuletzt": "2026-11-05",
+   "archiviert": false,
+   "sprache": "HTML",
+   "beschreibung": "Accessibility engine for automated Web UI testing"
+  },
+  {
+   "repo": "MaPePeR/jsColorblindSimulator",
+   "lizenz": null,
+   "sterne": 120,
+   "zuletzt": "2024-08-04",
+   "archiviert": false,
+   "sprache": "JavaScript",
+   "beschreibung": "Simulate different kinds of colorblindness on images in your browser."
+  },
+  {
+   "repo": "tailwindlabs/tailwindcss",
+   "lizenz": "MIT",
+   "sterne": 98646,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "A utility-first CSS framework for rapid UI development."
+  }
+ ],
+ "SYS-04": [
+  {
+   "repo": "microsoft/winget-pkgs",
+   "lizenz": "MIT",
+   "sterne": 11296,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": null,
+   "beschreibung": "The Microsoft community Windows Package Manager manifest repository"
+  },
+  {
+   "repo": "ScoopInstaller/Scoop",
+   "lizenz": "NOASSERTION",
+   "sterne": 24803,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "PowerShell",
+   "beschreibung": "A command-line installer for Windows."
+  },
+  {
+   "repo": "ScoopInstaller/Main",
+   "lizenz": "Unlicense",
+   "sterne": 1885,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "PowerShell",
+   "beschreibung": "📦 The default bucket for Scoop."
+  },
+  {
+   "repo": "chocolatey/choco",
+   "lizenz": "NOASSERTION",
+   "sterne": 11562,
+   "zuletzt": "2026-10-28",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": "Chocolatey - the package manager for Windows"
+  },
+  {
+   "repo": "microsoft/winget-cli",
+   "lizenz": "MIT",
+   "sterne": 26569,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "WinGet is the Windows Package Manager. This project includes a CLI (Command Line Interface), PowerShell module"
+  }
  ]
 }

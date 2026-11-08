@@ -405,3 +405,45 @@ Bestand: Rechner, Notizen, Bildschirmfoto, Einheiten (kleine eigene Tabelle), Mu
 | josdejong/mathjs | 10 | 5 | 9 | 10 | 8 | 8 | 9 | 8.4 | OPTION | Apache-2.0, JavaScript – Option, NCalc reicht |
 | ShareX/ShareX | 10 | 3 | 8 | 5 | 9 | 8 | 10 | 7.25 | EXTERN | GPL-3.0 – nur externes Programm |
 | Qalculate/libqalculate | 10 | 3 | 8 | 5 | 9 | 8 | 7 | 7.1 | EXTERN | GPL-2.0 – nur externes Programm |
+
+## X-08 – Handy verbinden
+Bestand: Handy-Anbindung mit adb und Bildschirmspiegelung über scrcpy vorhanden.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Genymobile/scrcpy | 10 | 8 | 9 | 10 | 9 | 9 | 10 | 9.25 | VORHANDEN | Apache-2.0 – bereits angebunden |
+| yume-chan/ya-webadb | 8 | 4 | 9 | 10 | 8 | 8 | 7 | 7.6 | VERWORFEN | MIT, adb im Browser – Trendo hat adb schon |
+| barry-ran/QtScrcpy | 8 | 3 | 7 | 10 | 8 | 8 | 8 | 7.15 | VERWORFEN | Apache-2.0, eigene Oberfläche um scrcpy – kein Mehrwert |
+| KDE/kdeconnect-kde | 9 | 3 | 8 | 5 | 8 | 8 | 8 | 6.8 | EXTERN | GPL – nur externes Programm |
+
+## SYS-03 – Surfen & Herunterladen
+Bestand: Prüfsumme und Linkprüfung, Download-Manager mit Fortsetzen, Lesemodus, Browser-Einstellungen vorhanden.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| curl/curl | 9 | 7 | 9 | 9 | 9 | 9 | 10 | 8.65 | VERWORFEN | curl-Lizenz – kein Mehrwert gegenüber dem eigenen Download |
+| yt-dlp/yt-dlp | 10 | 7 | 8 | 10 | 8 | 6 | 10 | 8.5 | AUSGESCHLOSSEN | Unlicense, aber allgemeiner Video-Abruf widerspricht „nur legale Quellen“; streamlink deckt die Mediatheken ab |
+| aria2/aria2 | 9 | 5 | 8 | 5 | 9 | 8 | 9 | 7.35 | EXTERN | GPL-2.0, Downloads mit mehreren Verbindungen – nur extern; eigener Manager reicht |
+| brave/adblock-rust | 8 | 2 | 9 | 7 | 9 | 8 | 6 | 6.8 | VERWORFEN | MPL-2.0 – Trendo hat keinen eigenen Browser-Kern, in dem Filter greifen |
+| easylist/easylist | 8 | 2 | 7 | 3 | 8 | 8 | 8 | 5.9 | VERWORFEN | Filterliste – ohne Browser-Kern nicht nutzbar |
+
+## SYS-12 – Schrift & Farben anpassen
+Bestand: Mindestschrift, einfacher Modus, Kontrast AA, Status mit Zeichen, Vorlesen vorhanden; keine besonders lesbaren Schriften.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| googlefonts/atkinson-hyperlegible | 9 | 10 | 8 | 10 | 10 | 10 | 6 | 9.25 | AUSWAHL | OFL-1.1: Schrift des Braille Institute für Sehschwäche – 2 Dateien, 110 KB, im Setup; Projekt abgeschlossen (archiviert), Schrift bleibt nutzbar |
+| antijingoist/opendyslexic | 8 | 10 | 8 | 10 | 9 | 10 | 6 | 8.9 | AUSWAHL | OFL-1.1: Schrift für Legasthenie als Wahlmöglichkeit – Nutzen in Studien umstritten, Wirkung ist individuell |
+| dequelabs/axe-core | 9 | 3 | 9 | 8 | 9 | 9 | 9 | 7.65 | VORHANDEN | MPL-2.0 – prüft Webseiten (seit Runde 7 eingebaut), nicht die Avalonia-Oberfläche |
+| tailwindlabs/tailwindcss | 6 | 1 | 9 | 10 | 8 | 8 | 10 | 6.65 | VERWORFEN | MIT – Web-Werkzeug, passt nicht |
+| MaPePeR/jsColorblindSimulator | 7 | 5 | 6 | 0 | 8 | 8 | 2 | 5.35 | AUSGESCHLOSSEN | keine Lizenz – nicht nutzbar |
+
+## SYS-04 – Programme installieren
+Bestand: Programme-Katalog mit winget und Abhängigkeits-Verwaltung vorhanden (Einrichten nach Zustimmung, feste Prüfsummen).
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| microsoft/winget-cli | 9 | 9 | 9 | 10 | 9 | 9 | 10 | 9.2 | VORHANDEN | MIT – bereits genutzt |
+| microsoft/winget-pkgs | 9 | 8 | 8 | 10 | 9 | 8 | 9 | 8.7 | VORHANDEN | MIT – Paketliste, über winget bereits verfügbar |
+| ScoopInstaller/Scoop | 8 | 5 | 8 | 10 | 8 | 7 | 8 | 7.6 | OPTION | Unlicense/MIT – installiert ohne Admin, aber zweite Paketquelle ohne Mehrwert |
+| chocolatey/choco | 8 | 3 | 8 | 9 | 8 | 6 | 9 | 7.0 | VERWORFEN | Apache-2.0, braucht Admin – nicht übernommen |

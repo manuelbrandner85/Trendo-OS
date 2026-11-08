@@ -323,5 +323,36 @@
 | josdejong/mathjs | Apache-2.0 | 2026-11-06 | nein | 15105 | JavaScript |
 | Qalculate/libqalculate | GPL-2.0 | 2026-11-06 | nein | 2726 | C++ |
 | ShareX/ShareX | GPL-3.0 | 2026-11-08 | nein | 40807 | C# |
+## X-08
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| Genymobile/scrcpy | Apache-2.0 | 2026-11-06 | nein | 154306 | C |
+| KDE/kdeconnect-kde | GPL (laut Projekt, keine maschinenlesbare Lizenzdatei) | 2026-11-08 | nein | 4137 | C++ |
+| barry-ran/QtScrcpy | Apache-2.0 | 2026-10-15 | nein | 32770 | C++ |
+| yume-chan/ya-webadb | MIT | 2026-11-06 | nein | 3276 | TypeScript |
+## SYS-03
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| aria2/aria2 | GPL-2.0 | 2026-06-25 | nein | 43434 | C++ |
+| easylist/easylist | keine Lizenzdatei im Stammordner | 2026-11-08 | nein | 3203 | Adblock Filter List |
+| brave/adblock-rust | MPL-2.0 | 2026-11-05 | nein | 2921 | Rust |
+| yt-dlp/yt-dlp | Unlicense | 2026-11-04 | nein | 206135 | Python |
+| curl/curl | curl-Lizenz (MIT-artig, aus COPYING) | 2026-11-08 | nein | 43429 | C |
+## SYS-12
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| antijingoist/opendyslexic | OFL-1.1 | 2025-08-11 | ja | 796 |  |
+| googlefonts/atkinson-hyperlegible | OFL-1.1 | 2021-04-30 | ja | 326 | HTML |
+| dequelabs/axe-core | MPL-2.0 | 2026-11-05 | nein | 7777 | HTML |
+| MaPePeR/jsColorblindSimulator | keine Lizenz – nicht nutzbar | 2024-08-04 | nein | 120 | JavaScript |
+| tailwindlabs/tailwindcss | MIT | 2026-11-06 | nein | 98646 | TypeScript |
+## SYS-04
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| microsoft/winget-pkgs | MIT | 2026-11-08 | nein | 11296 |  |
+| ScoopInstaller/Scoop | Unlicense oder MIT (aus Lizenzdatei) | 2026-11-08 | nein | 24803 | PowerShell |
+| ScoopInstaller/Main | Unlicense | 2026-11-08 | nein | 1885 | PowerShell |
+| chocolatey/choco | Apache-2.0 (aus Lizenzdatei) | 2026-10-28 | nein | 11562 | C# |
+| microsoft/winget-cli | MIT | 2026-11-06 | nein | 26569 | C++ |
 
 Korrigiert: PhotoDemon → tannerhelland/PhotoDemon (BSD-ähnlich), Shotcut → mltframework/shotcut (GPL-3.0).
