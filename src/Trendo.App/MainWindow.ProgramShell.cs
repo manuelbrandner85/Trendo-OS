@@ -361,6 +361,7 @@ public partial class MainWindow
             }))).ToList()));
         if (level == UserLevel.Profi) groups.Add(("Profi", ProTools(spec, d)));
         if (spec.Help.Length > 0) groups.Add(("Hilfe", [RBtn("prog-help", "? Hilfe", () => Toast(spec.Help))]));
+        if (level == UserLevel.Einfach && !OsStyle) groups = SimpleRibbon(groups, spec); // Wunsch 08.11.2026: Wichtigstes sichtbar, alles andere hinter „Mehr“
         Control? osChrome = OsStyle ? OsProgramChrome(spec, groups, tabs, docs.Count) : null; // Windows-Menüzeile, Mac-Menüleiste, GNOME-Kopfleiste
         var ribbon = new WrapPanel { Name = osChrome is null ? "prog-ribbon" : "prog-ribbon-trendo" };
         string? lastGroup = null;
@@ -432,7 +433,7 @@ public partial class MainWindow
         grid.Children.Add(Pos(center, col));
         if (spec.Properties is { } props && showProps)
             grid.Children.Add(Pos(new Border { Name = "prog-properties", CornerRadius = new CornerRadius(14), Background = PaneBg, BorderBrush = PaneEdge, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(12),
-                Child = spec.FillHeight ? new ScrollViewer { Content = new StackPanel { Spacing = 6, Margin = new Thickness(0, 0, 8, 0), Children = { (DawLook ? new TextBlock { Text = "INSPEKTOR", Foreground = Muted, FontSize = 10.5, FontWeight = FontWeight.Bold } : H("Eigenschaften", 13)), props(d) } } } : new StackPanel { Spacing = 6, Children = { (DawLook ? new TextBlock { Text = "INSPEKTOR", Foreground = Muted, FontSize = 10.5, FontWeight = FontWeight.Bold } : H("Eigenschaften", 13)), props(d) } } }, dawOrder ? 0 : col + 2));
+                Child = spec.FillHeight ? new ScrollViewer { Content = new StackPanel { Spacing = 6, Margin = new Thickness(0, 0, 8, 0), Children = { (DawLook ? new TextBlock { Text = PlainWords.For(ProgramLevel, "INSPEKTOR"), Foreground = Muted, FontSize = 10.5, FontWeight = FontWeight.Bold } : H("Eigenschaften", 13)), props(d) } } } : new StackPanel { Spacing = 6, Children = { (DawLook ? new TextBlock { Text = PlainWords.For(ProgramLevel, "INSPEKTOR"), Foreground = Muted, FontSize = 10.5, FontWeight = FontWeight.Bold } : H("Eigenschaften", 13)), props(d) } } }, dawOrder ? 0 : col + 2));
 
         // Ränder ein- und ausklappen (gemerkt je Programm)
         var toggles = new StackPanel { Name = "prog-panel-toggles", Orientation = Orientation.Horizontal, Spacing = 4, Margin = new Thickness(10, 0, 0, 0) };
@@ -459,7 +460,7 @@ public partial class MainWindow
 
         Button RBtn(string name, string label, Action go, bool primary = false, string? tip = null)
         {
-            var b = new Button { Name = name, Content = label, FontSize = DawLook ? 12 : 12.5, Padding = DawLook ? new Thickness(9, 4) : new Thickness(12, 6), CornerRadius = new CornerRadius(DawLook ? 5 : 8), Foreground = primary ? Brushes.White : Text,
+            var b = new Button { Name = name, Content = PlainWords.For(ProgramLevel, label), FontSize = DawLook ? 12 : 12.5, Padding = DawLook ? new Thickness(9, 4) : new Thickness(12, 6), CornerRadius = new CornerRadius(DawLook ? 5 : 8), Foreground = primary ? Brushes.White : Text,
                 Background = primary ? Accent : DawLook ? DawButton : Brushes.Transparent, BorderBrush = DawLook ? DawEdge : Edge, BorderThickness = new Thickness(primary || DawLook ? 0 : 1) };
             if (tip is not null) ToolTip.SetTip(b, tip);
             b.Click += (_, _) => go(); return b;

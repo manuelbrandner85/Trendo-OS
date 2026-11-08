@@ -88,11 +88,14 @@ public partial class MainWindow
         foreach (var s in sections)
         {
             var on = s == _gameSection; var ss = s;
-            var b = new Button { Name = "game-sec-" + s.ToLowerInvariant().Replace("ü", "ue"), Content = s, FontSize = 12.5, Padding = new Thickness(14, 6), Margin = new Thickness(0, 0, 6, 8), CornerRadius = new CornerRadius(16),
+            var b = new Button { Name = "game-sec-" + s.ToLowerInvariant().Replace("ü", "ue"), Content = PlainWords.For(ProgramLevel, s), FontSize = 12.5, Padding = new Thickness(14, 6), Margin = new Thickness(0, 0, 6, 8), CornerRadius = new CornerRadius(16),
                 Background = on ? Accent : Brushes.Transparent, Foreground = on ? Brushes.White : Text, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1) };
             b.Click += (_, _) => { _gameSection = ss; Show(GK); };
             bar.Children.Add(b);
         }
+        if (IsSimple && !_gameShowAll) // Wunsch 08.11.2026: erst nur Auftrag und nächster Schritt, alle Bereiche nach einem Klick
+            return new StackPanel { Spacing = 8, Children = { GamePromptBar(d), GameNextCard(d),
+                Act("game-show-all", "Alle Bereiche zeigen (Figuren, Welt, Aufgaben und mehr)", () => { _gameShowAll = true; Show(GK); }) } };
         Control body = _gameSection switch
         {
             "Spielbibel" => GameBible(d),
@@ -107,7 +110,9 @@ public partial class MainWindow
             "Veröffentlichen" => GameReleaseView(d), // Ziele, Checkliste, Pakete, Hochladen mit eigenem Konto
             _ => GameOverview(d),
         };
-        return new StackPanel { Spacing = 4, Children = { GamePromptBar(d), bar, body } };
+        var all = new StackPanel { Spacing = 4, Children = { GamePromptBar(d), bar, body } };
+        if (IsSimple) all.Children.Insert(1, Act("game-show-less", "Weniger zeigen", () => { _gameShowAll = false; _gameSection = "Übersicht"; Show(GK); }));
+        return all;
     }
 
     private Control GameOverview(ProgramDocument d)
@@ -293,7 +298,7 @@ public partial class MainWindow
         }
         var comp = GameDesign.Completeness(d.Data);
         sp.Children.Add(H("Stand", 12));
-        foreach (var (k, v) in comp) sp.Children.Add(new StackPanel { Spacing = 1, Children = { Row(P(k, Text, 11.5), P(v + " %", null, 11)), new ProgressBar { Value = v, Maximum = 100, Height = 5 } } });
+        foreach (var (k, v) in comp) sp.Children.Add(new StackPanel { Spacing = 1, Children = { Row(P(PlainWords.For(ProgramLevel, k), Text, 11.5), P(v + " %", null, 11)), new ProgressBar { Value = v, Maximum = 100, Height = 5 } } });
         return sp;
     }
 

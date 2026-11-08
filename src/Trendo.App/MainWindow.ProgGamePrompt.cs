@@ -87,15 +87,20 @@ public partial class MainWindow
         var ki = new TextBlock { Name = "game-prompt-ki", FontSize = 12, Foreground = claude ? ClaudeAccent : Muted, VerticalAlignment = VerticalAlignment.Center,
             Text = claude ? "✳ Claude – alle Fähigkeiten (dein Abo)" : "💻 Lokale KI von Trendo – mit Claude (Seite „KI“) arbeitet hier Claude mit allen Fähigkeiten" };
         var btnNew = Act("game-prompt-new", _gpBusy ? "KI arbeitet …" : "▶ Neues Spiel", () => GamePromptRun(input.Text ?? "", false), true);
-        var btnChange = Act("game-prompt-change", "✎ Dieses Spiel ändern", () => GamePromptRun(input.Text ?? "", true));
+        var btnChange = Act("game-prompt-change", "✎ Dieses Spiel ändern", () => GamePromptRun(input.Text ?? "", true), IsSimple && d is not null);
         var btnTeam = Act("game-prompt-team-run", "🧭 Team-Lauf mit Ablaufplan", () => GameHarnessRun(input.Text ?? ""));
         btnNew.IsEnabled = btnChange.IsEnabled = btnTeam.IsEnabled = !_gpBusy; btnChange.IsVisible = d is not null;
+        if (IsSimple)
+        {
+            input.PlaceholderText = d is null ? "Beschreibe dein Spiel in eigenen Worten, zum Beispiel: Ein Abenteuer mit Pferden und einem Drachen" : "Was soll an deinem Spiel anders werden? Zum Beispiel: Mach den Boss schwerer";
+            btnNew.IsVisible = d is null; btnTeam.IsVisible = false;
+        }
         var sp = new StackPanel { Spacing = 8, Children = {
-            new TextBlock { Text = "🎮 Spiel-Auftrag – dein Entwicklerteam", FontSize = 16, FontWeight = FontWeight.SemiBold, Foreground = Text },
-            P("Jede Spielart: Jump'n'Run, Puzzle, Rennspiel, Horror, Rollenspiel, Open World … Game Director, Design, Story, Level, Grafik, Ton, Test und Produktion arbeiten mit – dazu passende Fachleute aus 53 Spiele-Rollen.", null, 12),
+            new TextBlock { Text = IsSimple ? (d is null ? "🎮 Was für ein Spiel möchtest du?" : "🎮 Was soll sich ändern?") : "🎮 Spiel-Auftrag – dein Entwicklerteam", FontSize = 16, FontWeight = FontWeight.SemiBold, Foreground = Text },
+            IsSimple ? new Border() : P("Jede Spielart: Jump'n'Run, Puzzle, Rennspiel, Horror, Rollenspiel, Open World … Game Director, Design, Story, Level, Grafik, Ton, Test und Produktion arbeiten mit – dazu passende Fachleute aus 53 Spiele-Rollen.", null, 12),
             input,
-            GameCouncilRow(input.Text ?? "", d),
-            new WrapPanel { Children = { btnNew, new Border { Width = 8 }, btnChange, new Border { Width = 8 }, btnTeam, new Border { Width = 12 }, ki } } } };
+            IsSimple ? new Border() : GameCouncilRow(input.Text ?? "", d),
+            new WrapPanel { Children = { btnNew, new Border { Width = 8 }, btnChange, new Border { Width = 8 }, btnTeam, new Border { Width = 12 }, IsSimple ? new Border() : ki } } } };
         if (_gpResult is { } r)
         {
             if (r.Error is { } err) sp.Children.Add(P("⚠ " + err, Brush.Parse("#F5A524"), 12.5));

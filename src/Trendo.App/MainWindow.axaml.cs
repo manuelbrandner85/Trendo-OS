@@ -676,6 +676,7 @@ public sealed partial class MainWindow : Window
 
     private Control Page(string title, Control content, Control? dock = null)
     {
+        SimplifyPage(CurrentView, content); // Stufe „Einfach“: Rest hinter „Mehr anzeigen“
         var sp = new StackPanel { Spacing = 8, Children = { FocusMode ? new Panel() : PageHead(title), Readable(content) } };
         Detach(_hintHost); sp.Children.Insert(1, _hintHost);
         var scroll = new ScrollViewer { Content = sp };
@@ -730,6 +731,7 @@ public sealed partial class MainWindow : Window
                 var tsid = sid; tb.Click += (_, _) => AgentsForStudio(tsid);
                 right.Children.Add(tb);
             }
+            SimplifyHeadExtras(right);
             right.Children.Add(help);
             card.Children.Add(Pos(right, 2));
             return new Border

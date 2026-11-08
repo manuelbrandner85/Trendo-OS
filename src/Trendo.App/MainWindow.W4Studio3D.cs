@@ -76,6 +76,7 @@ public partial class MainWindow
                 H("Objekt", 14),
                 new WrapPanel { Children = { Labeled("Name", objName), Act("3d-save", "Speichern", () => SaveScene(objName)), Act("3d-new", "Neues Objekt", () => NewScene(objName)), Act("3d-undo", "Rückgängig", UndoScene) } },
                 H("Szene", 14), SceneTree(objName) } }),
+            PrintAndModelsCard(objName),
             Card(SavedBlock()),
             Card(EngineExportCard(objName)), // Paket 01 S2-17: in der Seitenleiste, damit die 3D-Fläche oben bleibt
             Card(F3dCard()), // Alle Studios, Runde 1: Vorschaubilder jeder 3D-Datei (f3d)
@@ -93,6 +94,7 @@ public partial class MainWindow
         var split = new Grid { ColumnDefinitions = new ColumnDefinitions("250,*,330"), MinHeight = 0, VerticalAlignment = VerticalAlignment.Stretch };
         split.Children.Add(left); Grid.SetColumn(center, 1); split.Children.Add(center);
         Grid.SetColumn(right, 2); split.Children.Add(right);
+        Simplify3D(header, left, right, objName);
         return FitKreativPage("3D-Modelle erstellen", header, split);
     }
 
@@ -189,6 +191,7 @@ public partial class MainWindow
                 new WrapPanel { Children = { Act("3d-smooth", "Glätten", () => Smooth(objName)), Labeled("Spiegel", mirror), Act("3d-mirror", "Spiegeln", () => Mirror(objName, mirror)), Labeled("Wand cm", shell), Act("3d-shell", "Aushöhlen", () => Shell(objName, shell)) } },
             },
         };
+        if (IsSimple && !_simple3dMore) foreach (var i in new[] { 0, 3, 4, 7, 8, 9, 10 }) form.Children[i].IsVisible = false; // Felder bleiben erhalten, Standardwerte gelten
         return form;
     }
 
