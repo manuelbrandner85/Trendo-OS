@@ -62,6 +62,8 @@ public partial class MainWindow
             ]),
             ("BIM", [
                 new ProgramCmd("arch-ifc-setup", "IFC einrichten", d => _ = ArchIfcSetup(), false, "Einmalig IfcOpenShell einrichten (kostenlos, LGPL-3.0) – danach Export „IFC (BIM)“ für Architekten- und CAD-Programme"),
+                new ProgramCmd("arch-ifc-view", "IFC ansehen", d => { if (_ifcViewFile is null) ArchIfcViewCurrent(d); else ArchIfcViewClose(); }, false, "Grundriss als IFC speichern und in 3D ansehen (web-ifc/ThatOpen) – nochmal klicken schließt die Ansicht"),
+                new ProgramCmd("arch-ifc-open", "IFC öffnen …", d => _ = ArchIfcPick(), false, "Eine IFC-Datei (z. B. vom Architekten) in 3D ansehen"),
             ]),
         ],
         Exports =
@@ -126,6 +128,7 @@ public partial class MainWindow
 
     private Control ArchWorkspace(ProgramDocument d)
     {
+        if (IfcViewArea() is { } ifc) return ifc; // Alle Studios, Runde 3: IFC-Ansicht füllt die Arbeitsfläche
         var plan = FloorPlan.From(d.Data);
         // Werkzeugleiste links
         var tools = new StackPanel { Name = "arch-tools", Spacing = 3, Width = 112 };

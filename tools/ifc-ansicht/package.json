@@ -1,0 +1,14 @@
+{
+  "name": "trendo-ifc-ansicht",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": { "build": "vite build" },
+  "dependencies": {
+    "three": "0.180.0",
+    "web-ifc": "0.0.78"
+  },
+  "devDependencies": {
+    "vite": "7.1.12"
+  }
+}

@@ -22,11 +22,13 @@
     <PackageReference Include="Velopack" Version="1.2.161" />
   </ItemGroup>
   <ItemGroup>
-    <AvaloniaResource Include="Assets\**" Exclude="Assets\webdesign\**;Assets\karten\**" />
+    <AvaloniaResource Include="Assets\**" Exclude="Assets\webdesign\**;Assets\karten\**;Assets\ifc\**" />
     <!-- Web Design Studio: Editor-Bündel als Dateien neben dem Programm (lädt per file:// im WebView, nicht in die Programmdatei eingebettet) -->
     <None Include="Assets\webdesign\**" CopyToOutputDirectory="PreserveNewest" />
     <!-- Karten-Studio: Vektorkarten-Seite (MapLibre) ebenfalls als Dateien neben dem Programm -->
     <None Include="Assets\karten\**" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Wohnung planen: IFC-Ansicht (web-ifc + three.js) als Dateien neben dem Programm -->
+    <None Include="Assets\ifc\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Trendo.Core\Trendo.Core.csproj" />
