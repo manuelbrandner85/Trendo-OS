@@ -120,7 +120,7 @@ public partial class MainWindow
         // die Programm-Hülle scrollt die Arbeitsfläche schon (ScrollWorkspace) – kein zweiter Scrollbereich darin (Prüfung „Einfachheit“, 04.11.2026)
         return new Grid { Name = "mode-scroll", ColumnDefinitions = new ColumnDefinitions("240,16,*"), Margin = new Thickness(4, 4, 10, 4), Children = {
             figure,
-            Pos(new StackPanel { Spacing = 12, Children = { card, H("Größentabelle", 13), table, H($"Varianten ({ModeVariants(d).Count})", 13), variants, layout } }, 2) } };
+            Pos(new StackPanel { Spacing = 12, Children = { GarmentPanel(d), card, H("Größentabelle", 13), table, H($"Varianten ({ModeVariants(d).Count})", 13), variants, layout } }, 2) } };
     }
 
     private Control ModeProperties(ProgramDocument d)
