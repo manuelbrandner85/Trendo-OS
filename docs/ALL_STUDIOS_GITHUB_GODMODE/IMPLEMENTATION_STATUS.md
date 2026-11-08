@@ -20,9 +20,9 @@
 | SYS-05 Node-RED | Anbindung war schon da (N1–N7); echter Lauf mit Trendos Einstellungen; Härtung umgesetzt (Herkunftsprüfung, --ignore-scripts) und echt nachgeprüft (reports/alle-studios/node-red-e2e.md) |
 | SPEC-01 IFC-Ansicht (web-ifc/ThatOpen + three.js) | eingebaut: „IFC ansehen“ / „IFC öffnen …“, echter Lauf im Trendo-WebView (reports/alle-studios/ifc-ansicht-e2e.md), Test grün |
 | CORE-03 KI-Team: geprüfte Antwortform (pydantic-ai-Konzept, eigener Code) | eingebaut, erster Nutzer „Planer“ (ziel + schritte); Nachfrage nur bei fehlerhaftem JSON, Freitext bleibt unverändert; 10 Tests, alle 46 Agenten-Tests grün; echter Lauf mit Claude NOT RUN |
-| Runde 3 übrige (Rollenbeschreibungen nach crewAI) | NOT RUN |
+| Runde 3 übrige (Rollenbeschreibungen nach crewAI) | Bestandsprüfung 08.11.2026: vorhanden in StudioTeams (Name, Aufgabe, Schwerpunkt je Rolle, fester Rollen-Prompt); kein Einbau |
 | SPEC-06 FSRS-Planer für Karteikarten (Runde 4) | eingebaut, umschaltbar im Lernplan, 12 Kern- und 1 Oberflächentest grün |
-| Runde 4 übrige (SpiceSharp, Math.NET Numerics, Statik-Konzepte) | geplant, NOT RUN – NuGet-Pakete bzw. eigener Code |
+| Runde 4 übrige (SpiceSharp, Math.NET Numerics, Statik-Konzepte) | Bestandsprüfung 08.11.2026: kein Einbau. Eigene Simulation hat Dioden, Transistoren, OPV, DC und AC; Messwerte haben lineare, Potenz- und Exponential-Anpassung; Statik-Studio vorhanden. Gegenprobe der Simulation mit SpiceSharp NOT RUN (neues Fremdpaket, bräuchte Freigabe) |
 | SPEC-10 MQTT-Live-Werte (MQTTnet) | eingebaut, echter Lauf mit Broker auf 127.0.0.1 (reports/alle-studios/mqtt-e2e.md), Tests grün; echte Geräte NOT RUN |
 | SPEC-04 glTF-Validator + glTF-Transform | eingebaut im VR-Studio („Prüfen & für Web packen“), echter Lauf: Regal 532 → 105 KB, weiter fehlerfrei (reports/alle-studios/gltf-e2e.md); Einrichten per Knopf NOT RUN |
 | SPEC-11 E-Rechnung (XRechnung mit ZUGFeRD-csharp 18) | eingebaut in „Rechnung schreiben“, Datei wird wieder eingelesen und geprüft (reports/alle-studios/erechnung-e2e.md), 9 Kern- und 1 Oberflächentest grün; KoSIT-Validator und Empfang in Fremdprogrammen NOT RUN; Bibliothek ab 1.12.2026 ohne Pflege |
