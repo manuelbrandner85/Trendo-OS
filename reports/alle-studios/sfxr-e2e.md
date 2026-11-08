@@ -4,7 +4,7 @@ Alle Studios, Runde 7, CORE-06 „Spiele bauen“.
 
 **Grundlage:** das sfxr-Verfahren von DrPetter (2007, gemeinfrei). Vorbild ist jsfxr (Unlicense). Umgesetzt ist es als **eigener C#-Code** in `src/Trendo.Core/Media/Sfxr.cs`, ohne Fremdcode, ohne Samples und ohne Abhängigkeit.
 
-**Sprachwahl:** C#, nicht Rust. Die Synthese ist klein (eine Schleife pro Sample) und läuft im vorhandenen C#-Audiopfad, gemessen deutlich unter 1 ms pro Effekt-Sekunde. Rust brächte keinen messbaren Vorteil und nur eine zusätzliche Sprachgrenze.
+**Sprachwahl:** C#, nicht Rust. Die Synthese ist klein (eine Schleife pro Sample) und läuft im vorhandenen C#-Audiopfad, Gemessen: 50 s Ton in 275 ms, also 5,5 ms je Ton-Sekunde. Das ist etwa 180-mal schneller als Echtzeit; ein typischer Effekt (0,1–0,5 s) ist in unter 3 ms fertig. Rust brächte keinen messbaren Vorteil und nur eine zusätzliche Sprachgrenze.
 
 ## Was die Nutzerin oder der Nutzer sieht
 Audioeditor → Geräusch-Werkstatt → **„Spiel-Effekte (8-Bit)“**.
