@@ -179,3 +179,47 @@ Bestand: Eigene Karteikarten mit SM-2 (abgestufte Antworten) vorhanden (90 Tests
 | open-spaced-repetition/fsrs4anki | 8 | 4 | 8 | 10 | 8 | 8 | 8 | 7.5 | KONZEPT | MIT – Konzept: Zielbehaltensrate einstellbar |
 | ankitects/anki | 10 | 3 | 8 | 2 | 9 | 8 | 10 | 6.8 | AUSGESCHLOSSEN | AGPL-3.0 – Code ausgeschlossen; nur Konzept: .apkg-Import (SQLite-Format, eigener Leser) |
 | mnemosyne-proj/mnemosyne | 7 | 3 | 6 | 5 | 7 | 7 | 4 | 5.6 | VERWORFEN | gemischte Lizenz, wenig aktiv – nicht übernommen |
+
+## SPEC-04 – VR & AR gestalten
+Bestand: Eigene Prüfung von glTF/GLB auf Brillen-Tauglichkeit (Dreiecke, Texturen, Zeitbudget je Bild) vorhanden; 3D-Vorschau über f3d und Umwandlung über assimp (Runde 1).
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| donmccurdy/glTF-Transform | 10 | 7 | 9 | 10 | 9 | 8 | 8 | 8.85 | AUSWAHL | MIT, Node-Kommandozeile: GLB für Brillen optimieren (meshopt, Draco, Texturen verkleinern, doppelte Daten entfernen) – passt direkt zur vorhandenen Prüfung |
+| KhronosGroup/glTF-Validator | 9 | 8 | 9 | 10 | 9 | 9 | 7 | 8.85 | AUSWAHL | Apache-2.0, offizieller Prüfer der Khronos Group als Kommandozeile – Fehlerbericht zu jeder GLB vor dem Hochladen |
+| zeux/meshoptimizer | 9 | 5 | 10 | 10 | 10 | 9 | 9 | 8.6 | KONZEPT | MIT, steckt in glTF-Transform – nicht getrennt einbauen |
+| google/model-viewer | 9 | 6 | 9 | 10 | 8 | 9 | 9 | 8.45 | OPTION | Apache-2.0, Web-Komponente: AR-Vorschau auf dem Handy (WebXR/Scene Viewer) – Option für den Web-Export |
+| KhronosGroup/KTX-Software | 8 | 5 | 8 | 10 | 9 | 8 | 7 | 7.75 | OPTION | Apache-2.0, KTX2/Basis-Texturen (GPU-komprimiert) – über glTF-Transform nutzbar, Option |
+
+## SPEC-10 – Geräte überwachen
+Bestand: Eigener digitaler Zwilling: Anlagen, Sensoren, CSV-Import, Ampel, Trend, Vorhersage bis zum Alarm (Live-Werte noch ohne Protokoll).
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| dotnet/MQTTnet | 10 | 10 | 9 | 10 | 9 | 9 | 9 | 9.6 | AUSWAHL | .NET-Bibliothek (MIT): Live-Messwerte über MQTT (Standard bei Sensoren, Shelly, Tasmota, Home Assistant) direkt in den Zwilling – nur lesen, nur nach Freigabe |
+| eclipse-mosquitto/mosquitto | 9 | 6 | 9 | 9 | 10 | 8 | 10 | 8.45 | OPTION | EPL-2.0 oder BSD-3: eigener MQTT-Broker als externes Programm, falls im Haus keiner läuft – Option |
+| influxdata/telegraf | 9 | 4 | 8 | 10 | 9 | 8 | 9 | 7.9 | KONZEPT | MIT, Sammel-Dienst – für Trendo zu groß; nur Konzept (Eingangs-Plugins wie Modbus) |
+| home-assistant/core | 10 | 3 | 8 | 10 | 7 | 7 | 10 | 7.7 | VERWORFEN | Apache-2.0, eigenes Hausautomations-System – nicht einbauen; Anbindung über MQTT reicht |
+| grafana/grafana | 9 | 3 | 8 | 2 | 8 | 8 | 10 | 6.45 | AUSGESCHLOSSEN | AGPL-3.0 – ausgeschlossen |
+
+## SPEC-14 – Fräsen & Fertigen
+Bestand: Eigene G-Code-Prüfung (Weg, Zeit, Grenzen, Werkzeuge, Vorschau), Schnittwerte, Taschen, Lochkreise, Konturen, Zerspanleistung.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| xyz-tools/gcode-preview | 8 | 7 | 8 | 10 | 8 | 9 | 5 | 8.05 | OPTION | MIT, 3D-Vorschau der Werkzeugwege im Browserfenster – Option, wenn die eigene Vorschau nicht reicht |
+| CauldronDevelopmentLLC/CAMotics | 9 | 5 | 8 | 6 | 8 | 8 | 6 | 7.25 | EXTERN | GPL-2.0: Abtrag-Simulation als externes Programm (G-Code übergeben) – zeigt das fertige Werkstück |
+| aewallin/opencamlib | 8 | 4 | 8 | 7 | 9 | 8 | 5 | 7.0 | KONZEPT | LGPL-2.1, Werkzeugweg-Berechnung für 3D-Flächen – nur als getrennter Prozess; Konzept für später |
+| gnea/grbl | 8 | 3 | 8 | 5 | 9 | 6 | 7 | 6.4 | VERWORFEN | GPL-3.0 Maschinen-Firmware – nicht einbauen; Senden an echte Maschinen nur nach eigener Freigabe (gefährlicher Aktor) |
+| Denvi/Candle | 8 | 3 | 7 | 5 | 8 | 6 | 6 | 6.1 | VERWORFEN | GPL-3.0 Steuerprogramm – nicht übernommen (Maschinensteuerung bleibt außen vor) |
+
+## SPEC-16 – Auto & Fahrten
+Bestand: Eigenes Tankbuch (Volltank-Methode), Fahrtenbuch mit Lücken-Prüfung und Festschreiben, Erinnerungen (HU, Service).
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Project-OSRM/osrm-backend | 9 | 3 | 9 | 10 | 9 | 8 | 9 | 7.85 | VERWORFEN | BSD-2 Routing-Server – braucht große Datenaufbereitung; Routing bleibt im Karten-Studio |
+| hargata/lubelog | 9 | 4 | 8 | 10 | 8 | 8 | 8 | 7.75 | KONZEPT | MIT – nur Konzept: Wartungs- und Reparaturhistorie je Fahrzeug, Kosten je km, Anhänge (Rechnungen); eigener Code in Vehicles |
+| traccar/traccar | 9 | 3 | 8 | 10 | 8 | 8 | 9 | 7.6 | VERWORFEN | Apache-2.0 GPS-Server – zu groß; Fahrten als GPX importieren reicht (Karten-Studio) |
+| brendan-w/python-OBD | 8 | 4 | 7 | 5 | 8 | 7 | 5 | 6.35 | KONZEPT | GPL-2.0 – Code nicht übernehmen; Konzept: Fehlercodes und km-Stand über OBD-II-Adapter (ELM327, eigenes Protokoll) |
+| openmaptiles/openmaptiles | 7 | 2 | 8 | 6 | 8 | 8 | 8 | 6.25 | VERWORFEN | Kartenschema – nicht nötig (Vektorkarten nutzen Protomaps) |

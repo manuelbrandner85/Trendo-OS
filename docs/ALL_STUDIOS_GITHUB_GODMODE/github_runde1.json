@@ -1010,5 +1010,193 @@
    "sprache": "–",
    "beschreibung": ""
   }
+ ],
+ "SPEC-04": [
+  {
+   "repo": "donmccurdy/glTF-Transform",
+   "lizenz": "MIT",
+   "sterne": 2068,
+   "zuletzt": "2026-10-20",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "glTF 2.0 SDK for JavaScript and TypeScript, on Web and Node.js."
+  },
+  {
+   "repo": "KhronosGroup/glTF-Validator",
+   "lizenz": "Apache-2.0",
+   "sterne": 475,
+   "zuletzt": "2026-10-06",
+   "archiviert": false,
+   "sprache": "Dart",
+   "beschreibung": "Tool to validate glTF assets."
+  },
+  {
+   "repo": "google/model-viewer",
+   "lizenz": "Apache-2.0",
+   "sterne": 8315,
+   "zuletzt": "2026-11-05",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "Easily display interactive 3D models on the web and in AR! "
+  },
+  {
+   "repo": "zeux/meshoptimizer",
+   "lizenz": "MIT",
+   "sterne": 8814,
+   "zuletzt": "2026-10-14",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Mesh optimization library that makes meshes smaller and faster to render"
+  },
+  {
+   "repo": "KhronosGroup/KTX-Software",
+   "lizenz": "Apache-2.0 (aus Lizenzdatei)",
+   "sterne": 1397,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "KTX (Khronos Texture) Library and Tools"
+  }
+ ],
+ "SPEC-10": [
+  {
+   "repo": "dotnet/MQTTnet",
+   "lizenz": "MIT",
+   "sterne": 5086,
+   "zuletzt": "2026-09-30",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": "MQTTnet is a high performance .NET library for MQTT based communication. It provides a MQTT client and a MQTT "
+  },
+  {
+   "repo": "eclipse-mosquitto/mosquitto",
+   "lizenz": "EPL-2.0 oder BSD-3-Clause (aus Lizenzdatei)",
+   "sterne": 11344,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "C",
+   "beschreibung": "Eclipse Mosquitto - An open source MQTT broker"
+  },
+  {
+   "repo": "influxdata/telegraf",
+   "lizenz": "MIT",
+   "sterne": 17897,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "Go",
+   "beschreibung": "Agent for collecting, processing, aggregating, and writing metrics, logs, and other arbitrary data."
+  },
+  {
+   "repo": "home-assistant/core",
+   "lizenz": "Apache-2.0",
+   "sterne": 92054,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": ":house_with_garden: Open source home automation that puts local control and privacy first."
+  },
+  {
+   "repo": "grafana/grafana",
+   "lizenz": "AGPL-3.0",
+   "sterne": 77759,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "The open and composable observability and data visualization platform. Visualize metrics, logs, and traces fro"
+  }
+ ],
+ "SPEC-14": [
+  {
+   "repo": "CauldronDevelopmentLLC/CAMotics",
+   "lizenz": "GPL-2.0 (aus Lizenzdatei)",
+   "sterne": 769,
+   "zuletzt": "2026-03-23",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Open-Source Simulation & Computer Aided Machining - A 3-axis CNC GCode simulator"
+  },
+  {
+   "repo": "xyz-tools/gcode-preview",
+   "lizenz": "MIT",
+   "sterne": 204,
+   "zuletzt": "2026-10-28",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "A simple GCode parser & previewer lib with 3D printing in mind. Written in Typescript."
+  },
+  {
+   "repo": "aewallin/opencamlib",
+   "lizenz": "LGPL-2.1",
+   "sterne": 552,
+   "zuletzt": "2026-10-17",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "open source computer aided manufacturing algorithms library"
+  },
+  {
+   "repo": "gnea/grbl",
+   "lizenz": "GPL-3.0 (aus Lizenzdatei)",
+   "sterne": 4581,
+   "zuletzt": "2024-06-12",
+   "archiviert": false,
+   "sprache": "C",
+   "beschreibung": "An open source, embedded, high performance g-code-parser and CNC milling controller written in optimized C tha"
+  },
+  {
+   "repo": "Denvi/Candle",
+   "lizenz": "GPL-3.0",
+   "sterne": 1713,
+   "zuletzt": "2026-10-23",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "GRBL controller application with G-Code visualizer written in Qt."
+  }
+ ],
+ "SPEC-16": [
+  {
+   "repo": "hargata/lubelog",
+   "lizenz": "MIT",
+   "sterne": 2954,
+   "zuletzt": "2026-11-05",
+   "archiviert": false,
+   "sprache": "JavaScript",
+   "beschreibung": "LubeLogger is a web-based vehicle maintenance and fuel mileage tracker"
+  },
+  {
+   "repo": "brendan-w/python-OBD",
+   "lizenz": "GPL-2.0",
+   "sterne": 1326,
+   "zuletzt": "2025-04-07",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "OBD-II serial module for reading engine data"
+  },
+  {
+   "repo": "traccar/traccar",
+   "lizenz": "Apache-2.0",
+   "sterne": 8087,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "Java",
+   "beschreibung": "Open source GPS tracking platform - self-hosted or managed, 200+ device protocols"
+  },
+  {
+   "repo": "Project-OSRM/osrm-backend",
+   "lizenz": "BSD-2-Clause",
+   "sterne": 8196,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Open Source Routing Machine - C++ backend"
+  },
+  {
+   "repo": "openmaptiles/openmaptiles",
+   "lizenz": "Code BSD-3-Clause, Design CC-BY-4.0 (aus Lizenzdatei)",
+   "sterne": 3222,
+   "zuletzt": "2026-07-29",
+   "archiviert": false,
+   "sprache": "PLpgSQL",
+   "beschreibung": "OpenMapTiles Vector Tile Schema Implementation"
+  }
  ]
 }

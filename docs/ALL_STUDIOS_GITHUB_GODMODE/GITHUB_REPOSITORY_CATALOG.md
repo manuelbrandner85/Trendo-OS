@@ -158,5 +158,37 @@
 | ankitects/anki | AGPL-3.0 (Teile BSD-3) (aus Lizenzdatei) | – | nein | – | – |
 | mnemosyne-proj/mnemosyne | gemischt (LGPL-3 + eigene) (aus Lizenzdatei) | – | nein | – | – |
 | open-spaced-repetition/fsrs4anki | MIT (aus Lizenzdatei) | – | nein | – | – |
+## SPEC-04
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| donmccurdy/glTF-Transform | MIT | 2026-10-20 | nein | 2068 | TypeScript |
+| KhronosGroup/glTF-Validator | Apache-2.0 | 2026-10-06 | nein | 475 | Dart |
+| google/model-viewer | Apache-2.0 | 2026-11-05 | nein | 8315 | TypeScript |
+| zeux/meshoptimizer | MIT | 2026-10-14 | nein | 8814 | C++ |
+| KhronosGroup/KTX-Software | Apache-2.0 (aus Lizenzdatei) | 2026-11-07 | nein | 1397 | C++ |
+## SPEC-10
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| dotnet/MQTTnet | MIT | 2026-09-30 | nein | 5086 | C# |
+| eclipse-mosquitto/mosquitto | EPL-2.0 oder BSD-3-Clause (aus Lizenzdatei) | 2026-11-06 | nein | 11344 | C |
+| influxdata/telegraf | MIT | 2026-11-06 | nein | 17897 | Go |
+| home-assistant/core | Apache-2.0 | 2026-11-08 | nein | 92054 | Python |
+| grafana/grafana | AGPL-3.0 | 2026-11-08 | nein | 77759 | TypeScript |
+## SPEC-14
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| CauldronDevelopmentLLC/CAMotics | GPL-2.0 (aus Lizenzdatei) | 2026-03-23 | nein | 769 | C++ |
+| xyz-tools/gcode-preview | MIT | 2026-10-28 | nein | 204 | TypeScript |
+| aewallin/opencamlib | LGPL-2.1 | 2026-10-17 | nein | 552 | C++ |
+| gnea/grbl | GPL-3.0 (aus Lizenzdatei) | 2024-06-12 | nein | 4581 | C |
+| Denvi/Candle | GPL-3.0 | 2026-10-23 | nein | 1713 | C++ |
+## SPEC-16
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| hargata/lubelog | MIT | 2026-11-05 | nein | 2954 | JavaScript |
+| brendan-w/python-OBD | GPL-2.0 | 2025-04-07 | nein | 1326 | Python |
+| traccar/traccar | Apache-2.0 | 2026-11-08 | nein | 8087 | Java |
+| Project-OSRM/osrm-backend | BSD-2-Clause | 2026-11-07 | nein | 8196 | C++ |
+| openmaptiles/openmaptiles | Code BSD-3-Clause, Design CC-BY-4.0 (aus Lizenzdatei) | 2026-07-29 | nein | 3222 | PLpgSQL |
 
 Korrigiert: PhotoDemon → tannerhelland/PhotoDemon (BSD-ähnlich), Shotcut → mltframework/shotcut (GPL-3.0).

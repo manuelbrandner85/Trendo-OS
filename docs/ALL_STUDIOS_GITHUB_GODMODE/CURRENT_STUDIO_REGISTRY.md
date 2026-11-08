@@ -21,15 +21,15 @@ Korrektur 08.11.2026: Die Zählung sucht nur die Studio-Kennung – „TV & Live
 | CORE-12 | KI-Anweisungen schreiben | 9 | 1 | NOT RUN – folgt in späteren Runden |
 | CORE-05 | 3D-Modelle erstellen | 17 | 17 | bewertet (Runde 1) |
 | CORE-06 | Spiele bauen | 18 | 20 | NOT RUN – folgt in späteren Runden |
-| SPEC-04 | VR & AR gestalten | 10 | 3 | NOT RUN – folgt in späteren Runden |
+| SPEC-04 | VR & AR gestalten | 10 | 3 | bewertet (Runde 5) |
 | SPEC-09 | Gegenstände einscannen | 10 | 3 | bewertet (Runde 2) |
 | SPEC-01 | Wohnung planen | 11 | 10 | bewertet (Runde 3) |
 | SPEC-02 | Schaltungen berechnen | 9 | 3 | bewertet (Runde 4) |
 | SPEC-03 | Statik nachrechnen | 8 | 4 | bewertet (Runde 4) |
-| SPEC-10 | Geräte überwachen | 8 | 5 | NOT RUN – folgt in späteren Runden |
+| SPEC-10 | Geräte überwachen | 8 | 5 | bewertet (Runde 5) |
 | SPEC-13 | Routen & Karten | 9 | 4 | bewertet (Runde 1) |
-| SPEC-14 | Fräsen & Fertigen | 8 | 3 | NOT RUN – folgt in späteren Runden |
-| SPEC-16 | Auto & Fahrten | 8 | 5 | NOT RUN – folgt in späteren Runden |
+| SPEC-14 | Fräsen & Fertigen | 8 | 3 | bewertet (Runde 5) |
+| SPEC-16 | Auto & Fahrten | 8 | 5 | bewertet (Runde 5) |
 | CORE-09 | Kameras & Roboter steuern | 11 | 5 | NOT RUN – folgt in späteren Runden |
 | SPEC-05 | Messwerte auswerten | 8 | 4 | bewertet (Runde 4) |
 | SPEC-06 | Lernen mit Karteikarten | 10 | 4 | bewertet (Runde 4) |

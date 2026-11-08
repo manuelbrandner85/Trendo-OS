@@ -1,0 +1,1 @@
+# Funktionszuordnung SPEC-14
