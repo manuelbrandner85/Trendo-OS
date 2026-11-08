@@ -489,3 +489,45 @@ Bestand: Selbstprüfung beim Start und sichere Reparaturen an Trendo selbst vorh
 | LibreHardwareMonitor/LibreHardwareMonitor | 8 | 3 | 8 | 7 | 8 | 3 | 8 | 6.35 | AUSGESCHLOSSEN | MPL-2.0, nutzt einen Kernel-Treiber – verboten |
 | ChrisTitusTech/winutil | 7 | 1 | 7 | 10 | 7 | 3 | 10 | 6.0 | AUSGESCHLOSSEN | MIT, ändert Windows-Einstellungen – in Trendo verboten |
 | hirschmann/nbfc | 5 | 1 | 5 | 3 | 7 | 3 | 5 | 3.9 | VERWORFEN | keine maschinenlesbare Lizenz, Lüftersteuerung – nicht das Thema |
+
+## X-11 – Neues Projekt starten
+Bestand: „Vorhaben“: Ziel wählen, Trendo richtet Schritte, Zeitplan, Meilensteine und Dateien ein. Vorlagen auch in den Programmen.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| cookiecutter/cookiecutter | 7 | 3 | 8 | 10 | 8 | 6 | 9 | 6.9 | VERWORFEN | BSD-3-Clause, Projektgerüste für Entwickler – führt beim Anlegen fremde Skripte aus, Trendo hat eigene Vorlagen |
+| copier-org/copier | 7 | 3 | 8 | 10 | 8 | 6 | 7 | 6.8 | VERWORFEN | MIT, wie cookiecutter – kein Mehrwert für Nutzer ohne Fachwissen |
+| dotnet/templating | 6 | 3 | 8 | 5 | 8 | 8 | 6 | 5.95 | VERWORFEN | nur .NET-Projekte; keine Angabe bei GitHub |
+| yeoman/yeoman | 6 | 2 | 6 | 5 | 7 | 6 | 6 | 5.15 | VERWORFEN | keine Angabe bei GitHub, seit 2022 ohne Änderung |
+
+## CORE-02 – KI fragen
+Bestand: Chat mit Verlauf, eigenes Wissen als Quelle, Dateien, lokale KIs und Claude vorhanden.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| microsoft/semantic-kernel | 7 | 4 | 8 | 10 | 8 | 8 | 9 | 7.3 | AUSGESCHLOSSEN | MIT, .NET – Trendo hat mit IntelligenceCore schon einen KI-Kern, ein zweiter ist verboten |
+| LibreChat-AI/LibreChat | 9 | 2 | 8 | 10 | 7 | 7 | 9 | 7.2 | VERWORFEN | MIT, Web-Anwendung mit Datenbank – kein Mehrwert |
+| mem0ai/mem0 | 8 | 3 | 8 | 10 | 7 | 6 | 10 | 7.1 | OPTION | Apache-2.0, automatisches Gedächtnis über Chats – persönliche Daten, nur nach ausdrücklicher Entscheidung |
+| open-webui/open-webui | 10 | 2 | 8 | 3 | 7 | 7 | 10 | 6.45 | VERWORFEN | eigene Oberfläche als Server, keine Standardlizenz – Trendo hat einen eigenen Chat |
+| getzep/graphiti | 7 | 2 | 8 | 10 | 6 | 6 | 8 | 6.45 | VERWORFEN | Apache-2.0, braucht eine Graph-Datenbank – zu schwer |
+
+## X-05 – Kostenlose KI finden
+Bestand: Kostenlose OpenRouter-Modelle, weitere Dienste und lokale KIs mit Tageszähler vorhanden; war ein kostenloses Modell ausgelastet, gab es aber keinen zweiten Versuch.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| ollama/ollama | 10 | 9 | 9 | 10 | 9 | 8 | 10 | 9.35 | VORHANDEN | MIT – bereits angebunden |
+| ggml-org/llama.cpp | 9 | 7 | 9 | 10 | 10 | 8 | 10 | 8.8 | VORHANDEN | MIT – über die KI-Quellen bereits verfügbar |
+| huggingface/huggingface_hub | 7 | 4 | 9 | 10 | 8 | 8 | 8 | 7.4 | VERWORFEN | Apache-2.0 – Modell-Downloads laufen in Trendo schon über feste Prüfsummen |
+| BerriAI/litellm | 10 | 3 | 8 | 4 | 8 | 7 | 10 | 6.9 | AUSWAHL | Idee (Ausweichen auf das nächste Modell) als eigener Code übernommen; das Paket selbst nicht: Lizenz gemischt, Python-Server |
+
+## X-01 – Großprojekte umsetzen
+Bestand: Kanban-Tafel mit KI-Rollen, Teams mit Fortsetzen nach Abbruch, Abläufe und Belege vorhanden.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| langchain-ai/langgraph | 9 | 3 | 8 | 10 | 7 | 7 | 10 | 7.45 | AUSGESCHLOSSEN | MIT – Fortsetzen nach Abbruch ist in Trendo vorhanden; zweites Agenten-System verboten |
+| crewAIInc/crewAI | 8 | 3 | 8 | 10 | 7 | 7 | 10 | 7.2 | AUSGESCHLOSSEN | MIT – Rollen-Idee schon in AgentCenter; ein zweites Agenten-System ist verboten |
+| taskforcesh/bullmq | 6 | 1 | 9 | 10 | 9 | 8 | 9 | 6.7 | VERWORFEN | MIT, braucht Redis – Trendo hat einen eigenen Job-Ablauf |
+| microsoft/autogen | 8 | 3 | 8 | 6 | 7 | 7 | 10 | 6.6 | AUSGESCHLOSSEN | zweites Agenten-System verboten |
+| openai/swarm | 6 | 3 | 7 | 10 | 7 | 7 | 7 | 6.4 | VERWORFEN | MIT, Lehrbeispiel |

@@ -8,7 +8,7 @@ Korrektur 08.11.2026: Die Zählung sucht nur die Studio-Kennung – „TV & Live
 | STUDIO-LETTER-01 | Briefe schreiben | 16 | 7 | bewertet (Runde 6) |
 | SYS-10 | Texte & Tabellen | 20 | 14 | bewertet (Runde 2) |
 | SYS-09 | E-Mails & Termine | 13 | 1 | bewertet (Runde 6) |
-| X-11 | Neues Projekt starten | 8 | 2 | NOT RUN – folgt in späteren Runden |
+| X-11 | Neues Projekt starten | 8 | 2 | bewertet (Runde 12) |
 | SYS-02 | Kleine Helfer & Musik | 11 | 1 | bewertet (Runde 9) |
 | STUDIO-ONLINE-BUSINESS-01 | Online verkaufen | 13 | 5 | bewertet (Runde 6) |
 | SPEC-11 | Geld & Rechnungen | 9 | 3 | bewertet (Runde 6) |
@@ -36,11 +36,11 @@ Korrektur 08.11.2026: Die Zählung sucht nur die Studio-Kennung – „TV & Live
 | SPEC-07 | Texte übersetzen | 6 | 8 | NOT RUN – folgt in späteren Runden |
 | CORE-10 | Wissen merken | 10 | 1 | bewertet (Runde 8) |
 | SYS-08 | Sicher recherchieren | 10 | 2 | bewertet (Runde 11) |
-| CORE-02 | KI fragen | 19 | 6 | NOT RUN – folgt in späteren Runden |
+| CORE-02 | KI fragen | 19 | 6 | bewertet (Runde 12) |
 | CORE-03 | KI-Team einsetzen | 9 | 2 | bewertet (Runde 3) |
-| X-05 | Kostenlose KI finden | 12 | 2 | NOT RUN – folgt in späteren Runden |
+| X-05 | Kostenlose KI finden | 12 | 2 | bewertet (Runde 12) |
 | SYS-05 | Aufgaben automatisieren | 10 | 1 | bewertet (Runde 3) |
-| X-01 | Großprojekte umsetzen | 8 | 2 | NOT RUN – folgt in späteren Runden |
+| X-01 | Großprojekte umsetzen | 8 | 2 | bewertet (Runde 12) |
 | CORE-07 | Webseite bauen | 19 | 20 | bewertet (Runde 7) |
 | X-03 | Apps zusammenklicken | 11 | 6 | bewertet (Runde 3) |
 | X-06 | Projekte von GitHub holen | 10 | 1 | NOT RUN – folgt in späteren Runden |

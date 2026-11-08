@@ -98,7 +98,7 @@
 | Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
 |---|---|---|---|---|---|
 | langchain-ai/langgraph | MIT | 2026-11-07 | nein | 44624 | Python |
-| microsoft/autogen | CC-BY-4.0 | 2026-10-28 | nein | 61738 | Python |
+| microsoft/autogen | CC-BY-4.0 laut GitHub (Doku), Code MIT laut Projekt | 2026-10-28 | nein | 61738 | Python |
 | crewAIInc/crewAI | MIT | 2026-11-07 | nein | 60615 | Python |
 | openai/openai-agents-python | MIT | 2026-11-07 | nein | 30549 | Python |
 | pydantic/pydantic-ai | MIT | 2026-11-07 | nein | 21078 | Python |
@@ -384,5 +384,35 @@
 | hirschmann/nbfc | keine maschinenlesbare Lizenz | 2024-07-08 | nein | 3238 | C# |
 | ventoy/Ventoy | GPL-3.0 | 2026-10-22 | nein | 80649 | C |
 | ChrisTitusTech/winutil | MIT | 2026-11-04 | nein | 65714 | PowerShell |
+## X-11
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| cookiecutter/cookiecutter | BSD-3-Clause | 2026-04-01 | nein | 25177 | Python |
+| copier-org/copier | MIT | 2026-11-06 | nein | 3685 | Python |
+| yeoman/yeoman | keine Angabe bei GitHub | 2022-10-18 | nein | 10102 |  |
+| dotnet/templating | keine Angabe bei GitHub | 2026-11-07 | nein | 1739 |  |
+## CORE-02
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| open-webui/open-webui | keine Standardlizenz (GitHub: NOASSERTION) | 2026-11-08 | nein | 158098 | Svelte |
+| LibreChat-AI/LibreChat | MIT | 2026-11-08 | nein | 46853 | TypeScript |
+| mem0ai/mem0 | Apache-2.0 | 2026-11-06 | nein | 68627 | Python |
+| getzep/graphiti | Apache-2.0 | 2026-11-08 | nein | 32650 | Python |
+| microsoft/semantic-kernel | MIT | 2026-11-07 | nein | 28747 | C# |
+## X-05
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| BerriAI/litellm | gemischt (GitHub: NOASSERTION) | 2026-11-08 | nein | 62907 | Python |
+| ollama/ollama | MIT | 2026-11-08 | nein | 186349 | Go |
+| ggml-org/llama.cpp | MIT | 2026-11-08 | nein | 133722 | C++ |
+| huggingface/huggingface_hub | Apache-2.0 | 2026-11-06 | nein | 4035 | Python |
+## X-01
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| microsoft/autogen | CC-BY-4.0 laut GitHub (Doku), Code MIT laut Projekt | 2026-10-28 | nein | 61747 | Python |
+| crewAIInc/crewAI | MIT | 2026-11-08 | nein | 60643 | Python |
+| langchain-ai/langgraph | MIT | 2026-11-08 | nein | 44645 | Python |
+| openai/swarm | MIT | 2026-04-15 | nein | 22116 | Python |
+| taskforcesh/bullmq | MIT | 2026-11-08 | nein | 9577 | TypeScript |
 
 Korrigiert: PhotoDemon → tannerhelland/PhotoDemon (BSD-ähnlich), Shotcut → mltframework/shotcut (GPL-3.0).

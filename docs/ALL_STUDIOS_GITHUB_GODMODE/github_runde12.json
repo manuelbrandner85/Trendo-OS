@@ -1,0 +1,172 @@
+{
+ "X-11": [
+  {
+   "repo": "cookiecutter/cookiecutter",
+   "lizenz": "BSD-3-Clause",
+   "sterne": 25177,
+   "zuletzt": "2026-04-01",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "A cross-platform command-line utility that creates projects from cookiecutters (project templates), e.g. Pytho"
+  },
+  {
+   "repo": "copier-org/copier",
+   "lizenz": "MIT",
+   "sterne": 3685,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Library and command-line utility for rendering projects templates."
+  },
+  {
+   "repo": "yeoman/yeoman",
+   "lizenz": null,
+   "sterne": 10102,
+   "zuletzt": "2022-10-18",
+   "archiviert": false,
+   "sprache": null,
+   "beschreibung": "Yeoman - a set of tools for automating development workflow"
+  },
+  {
+   "repo": "dotnet/templating",
+   "lizenz": null,
+   "sterne": 1739,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": null,
+   "beschreibung": "This repo contains the Template Engine which is used by dotnet new"
+  }
+ ],
+ "CORE-02": [
+  {
+   "repo": "open-webui/open-webui",
+   "lizenz": "NOASSERTION",
+   "sterne": 158098,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "Svelte",
+   "beschreibung": "User-friendly AI Interface (Supports Ollama, OpenAI API, ...)"
+  },
+  {
+   "repo": "LibreChat-AI/LibreChat",
+   "lizenz": "MIT",
+   "sterne": 46853,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "Enhanced ChatGPT Clone: Features Agents, MCP, Skills, DeepSeek, Anthropic, AWS, OpenAI, Responses API, Azure, "
+  },
+  {
+   "repo": "mem0ai/mem0",
+   "lizenz": "Apache-2.0",
+   "sterne": 68627,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "The Memory Layer for AI Agents - Drop-in memory infrastructure for AI agents and apps. Context that persists. "
+  },
+  {
+   "repo": "getzep/graphiti",
+   "lizenz": "Apache-2.0",
+   "sterne": 32650,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Build Real-Time Knowledge Graphs for AI Agents"
+  },
+  {
+   "repo": "microsoft/semantic-kernel",
+   "lizenz": "MIT",
+   "sterne": 28747,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": "Integrate cutting-edge LLM technology quickly and easily into your apps"
+  }
+ ],
+ "X-05": [
+  {
+   "repo": "BerriAI/litellm",
+   "lizenz": "NOASSERTION",
+   "sterne": 62907,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "The fastest, litest AI Gateway. Rust core with Python SDK. Call 100+ LLM APIs in OpenAI (or native) format wit"
+  },
+  {
+   "repo": "ollama/ollama",
+   "lizenz": "MIT",
+   "sterne": 186349,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "Go",
+   "beschreibung": "Get up and running with Kimi, GLM, MiniMax, DeepSeek, gpt-oss, Qwen, Gemma and other models."
+  },
+  {
+   "repo": "ggml-org/llama.cpp",
+   "lizenz": "MIT",
+   "sterne": 133722,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "LLM inference in C/C++"
+  },
+  {
+   "repo": "huggingface/huggingface_hub",
+   "lizenz": "Apache-2.0",
+   "sterne": 4035,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "The official CLI and Python client for the Hugging Face Hub."
+  }
+ ],
+ "X-01": [
+  {
+   "repo": "microsoft/autogen",
+   "lizenz": "CC-BY-4.0",
+   "sterne": 61747,
+   "zuletzt": "2026-10-28",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "A programming framework for agentic AI"
+  },
+  {
+   "repo": "crewAIInc/crewAI",
+   "lizenz": "MIT",
+   "sterne": 60643,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Framework for orchestrating role-playing, autonomous AI agents. By fostering collaborative intelligence, CrewA"
+  },
+  {
+   "repo": "langchain-ai/langgraph",
+   "lizenz": "MIT",
+   "sterne": 44645,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Build resilient agents."
+  },
+  {
+   "repo": "openai/swarm",
+   "lizenz": "MIT",
+   "sterne": 22116,
+   "zuletzt": "2026-04-15",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Educational framework exploring ergonomic, lightweight multi-agent orchestration. Managed by OpenAI Solution t"
+  },
+  {
+   "repo": "taskforcesh/bullmq",
+   "lizenz": "MIT",
+   "sterne": 9577,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "BullMQ - Message Queue and Batch processing for NodeJS, Python, .NET, Elixir, Rust and PHP based on Redis or P"
+  }
+ ]
+}

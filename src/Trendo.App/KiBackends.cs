@@ -150,7 +150,7 @@ public sealed class OpenAiCompatBackend(string name, string baseUrl, HttpMessage
 
 /// <summary>KI-Dienst mit API-Schlüssel (OpenAI-Format). Bewusste Ausnahme von <see cref="LocalOnly"/>: nur HTTPS, nur genau die Adresse
 /// aus <see cref="KiCatalog.Cloud"/>, nur wenn der Besitzer den Dienst eingeschaltet und einen Schlüssel gespeichert hat. Der Text verlässt dann den PC.</summary>
-public sealed class CloudKiBackend : IRemoteKiBackend
+public sealed class CloudKiBackend : IKiFailoverBackend
 {
     private readonly HttpClient _http;
     private readonly KiCloudService _svc;
@@ -176,6 +176,8 @@ public sealed class CloudKiBackend : IRemoteKiBackend
 
     public string Name => _svc.Name;
     public string BaseUrl => _svc.BaseUrl;
+    /// <summary>Nur bei OpenRouter: Dort liefert <see cref="ModelsAsync"/> ausschließlich kostenlose Modelle. Bezahlte Dienste wechseln nie von selbst das Modell.</summary>
+    public bool CanSwitchModel => _svc.Id == "openrouter";
     public async Task<bool> IsUpAsync(CancellationToken ct = default) => (await ModelsAsync(ct)).Count > 0;
 
     /// <summary>Prüft einen Schlüssel über dieselben Grenzen (HTTPS, fester Anbieter, keine Weiterleitung): gültig, wenn der Dienst Modelle liefert.</summary>
@@ -229,6 +231,13 @@ public sealed class CloudKiBackend : IRemoteKiBackend
     {
         var body = new { model, stream = false, messages = messages.Select(m => new { role = m.Role, content = m.Content }).ToArray() };
         using var r = await _http.PostAsJsonAsync(_prefix + "chat/completions", body, ct);
+        if (_svc.Id == "openrouter" && r.StatusCode is System.Net.HttpStatusCode.TooManyRequests or System.Net.HttpStatusCode.ServiceUnavailable or System.Net.HttpStatusCode.BadGateway or System.Net.HttpStatusCode.NotFound)
+        {
+            var detail = await r.Content.ReadAsStringAsync(ct);
+            var limit = r.StatusCode == System.Net.HttpStatusCode.TooManyRequests && (detail.Contains("free-models-per", StringComparison.OrdinalIgnoreCase)
+                || (r.Headers.TryGetValues("X-RateLimit-Remaining", out var left) && left.FirstOrDefault() == "0"));
+            throw new KiModelBusyException(limit ? "Grenze für kostenlose Anfragen erreicht" : $"Modell gerade nicht verfügbar ({(int)r.StatusCode})", limit);
+        }
         r.EnsureSuccessStatusCode();
         var doc = await r.Content.ReadFromJsonAsync<JsonElement>(ct);
         return doc.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString()?.Trim() ?? "";

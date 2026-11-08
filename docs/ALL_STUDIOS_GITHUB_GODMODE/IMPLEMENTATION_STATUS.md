@@ -44,6 +44,8 @@
 | SYS-08 Nur der Artikel im Lesemodus (eigener Code nach mozilla/readability) | eingebaut, an 11 echten Seiten geprüft, MDN wird nicht erkannt (reports/alle-studios/runde11-artikel-anweisungstest-e2e.md) |
 | CORE-12 Anweisungs-Test (eigener Code nach promptfoo) | eingebaut, echter Lauf mit lokaler KI, Oberfläche mit Test-KI (gleicher Bericht) |
 | CORE-04, X-02 | bewertet 08.11.2026: kein Einbau, schon abgedeckt oder durch Projektregeln ausgeschlossen |
-| Runden 12+ (12 Studios, davon SPEC-07 abgelehnt) | NOT RUN |
+| X-05 Kostenlose KI weicht auf das nächste Modell aus (eigener Code nach LiteLLM) | eingebaut, Tests bis zur HTTP-Antwort, echter Lauf gegen OpenRouter NOT RUN (reports/alle-studios/runde12-kostenlose-ki-ausweichen-e2e.md) |
+| X-11, CORE-02, X-01 | bewertet 08.11.2026: kein Einbau; automatisches Gedächtnis (mem0) nur nach Entscheidung |
+| Runden 13+ (8 Studios, davon SPEC-07 abgelehnt) | NOT RUN |
 | Web Design Studio Modul 05 (Design-Tokens) | eingebaut, 2 Tests, im Browser geprüft (docs/web-design-godmode) |
 | Volltest nach den Änderungen | grün: Api 16, Core 1546, App 829 (reports/alle-studios/volltest-2026-11-08.md) |

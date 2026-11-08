@@ -18,6 +18,12 @@ public interface IKiBackend
 /// <summary>Quelle außerhalb dieses PCs (KI-Dienst mit Schlüssel). Bekommt nie Ausschnitte aus den eigenen Dokumenten („Wissen“) – nur Frage und Verlauf.</summary>
 public interface IRemoteKiBackend : IKiBackend { }
 
+/// <summary>Alle Studios, Runde 12 – X-05: Quelle, die ausweichen kann. Nur wenn <see cref="CanSwitchModel"/> gilt (alle Modelle kostenlos), darf Trendo bei einem ausgelasteten Modell ein anderes derselben Quelle versuchen.</summary>
+public interface IKiFailoverBackend : IRemoteKiBackend { bool CanSwitchModel { get; } }
+
+/// <summary>Das gewählte Modell kann gerade nicht antworten. <paramref name="AccountLimit"/>: Die Grenze gilt für das ganze Konto, ein anderes Modell hilft dann nicht.</summary>
+public sealed class KiModelBusyException(string message, bool accountLimit) : Exception(message) { public bool AccountLimit { get; } = accountLimit; }
+
 /// <summary>T-0316: vom Nutzer bewusst gewählte Haupt-KI außerhalb des PCs (Claude über das eigene Abo). Darf überall antworten, nicht nur im freien Chat –
 /// bekommt aber wie jede Internet-KI keine Ausschnitte aus den eigenen Dokumenten.</summary>
 public interface IMainKiBackend : IRemoteKiBackend { }
@@ -47,6 +53,9 @@ public sealed class IntelligenceCore
         _historyFile = Path.Combine(dataRoot, "ki", "verlauf.jsonl");
         Directory.CreateDirectory(Path.GetDirectoryName(_historyFile)!);
     }
+
+    /// <summary>Höchstens so viele kostenlose Modelle je Frage, damit eine Frage das Tageskontingent nicht aufbraucht.</summary>
+    public const int MaxFreeModelTries = 3;
 
     public async Task<KiAnswer> AskAsync(KiRequest req, CancellationToken ct = default)
     {
@@ -92,8 +101,10 @@ public sealed class IntelligenceCore
             if (b is IRemoteKiBackend and not IMainKiBackend && !req.AllowRemote && RemoteEverywhere?.Invoke() != true) continue; // nur der freie Chat – oder überall, wenn eingestellt
             if (!await b.IsUpAsync(ct)) { tried.Add($"{b.Name}: nicht erreichbar"); continue; }
             var models = await b.ModelsAsync(ct);
-            var model = req.PreferredModel is { } p && models.Contains(p) ? p : models.FirstOrDefault();
-            if (model is null) { tried.Add($"{b.Name}: kein Modell"); continue; }
+            var first = req.PreferredModel is { } p && models.Contains(p) ? p : models.FirstOrDefault();
+            if (first is null) { tried.Add($"{b.Name}: kein Modell"); continue; }
+            IEnumerable<string> candidates = b is IKiFailoverBackend { CanSwitchModel: true } ? new[] { first }.Concat(models.Where(m => m != first)).Take(MaxFreeModelTries) : [first];
+            foreach (var model in candidates)
             try
             {
                 var remote = b is IRemoteKiBackend;
@@ -106,7 +117,8 @@ public sealed class IntelligenceCore
                 if (remote) RemoteUsed?.Invoke(b.Name);
                 return new(true, text, b.Name, model, remote ? [] : sources, sw.Elapsed);
             }
-            catch (Exception ex) when (ex is not OperationCanceledException) { tried.Add($"{b.Name}: {ex.Message}"); }
+            catch (KiModelBusyException ex) { tried.Add($"{b.Name} ({model}): {ex.Message}"); if (ex.AccountLimit) break; }
+            catch (Exception ex) when (ex is not OperationCanceledException) { tried.Add($"{b.Name}: {ex.Message}"); break; }
         }
         _audit.Append("ki", "ki.unavailable", string.Join("; ", tried));
         return new(false, "Gerade ist keine KI auf diesem PC erreichbar. Unter „KI-Quellen“ siehst du, was fehlt, und kannst es einrichten.", null, null, sources, sw.Elapsed);
