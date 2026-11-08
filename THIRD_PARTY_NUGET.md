@@ -28,6 +28,7 @@ Automatisch erzeugt aus project.assets.json (alle Projekte, auch indirekte Paket
 | HarfBuzzSharp.NativeAssets.macOS | 8.3.1.3 | MIT |
 | HarfBuzzSharp.NativeAssets.WebAssembly | 8.3.1.3 | MIT |
 | HarfBuzzSharp.NativeAssets.Win32 | 8.3.1.3 | MIT |
+| Ical.Net | 5.2.4 | MIT |
 | MicroCom.Runtime | 0.11.6 | MIT |
 | Microsoft.Data.Sqlite | 10.0.14 | MIT |
 | Microsoft.Data.Sqlite.Core | 10.0.14 | MIT |
@@ -35,6 +36,7 @@ Automatisch erzeugt aus project.assets.json (alle Projekte, auch indirekte Paket
 | Microsoft.Extensions.Logging.Abstractions | 8.0.3 | MIT |
 | MQTTnet | 5.2.0.1603 | Lizenzdatei im Paket: LICENSE |
 | NLayer | 1.16.0 | MIT |
+| NodaTime | 3.2.2 | Apache-2.0 |
 | PDFsharp | 6.2.4 | MIT |
 | PDFtoImage | 5.2.1 | MIT |
 | SharpCompress | 0.50.7 | MIT |

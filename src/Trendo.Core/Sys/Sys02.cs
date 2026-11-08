@@ -436,9 +436,21 @@ public sealed class Calendar(string dataRoot)
     public void ExportFile(string ics) => File.WriteAllText(ics, Ics.Export(All(), Todos()));
 
     /// <summary>Termine und Aufgaben aus ICS übernehmen (gleiche UID wird ersetzt).</summary>
-    public (int Events, int Todos) ImportText(string ics)
+    public (int Events, int Todos) ImportText(string ics) => ImportText(ics, DateTime.Now);
+
+    /// <summary>Wie <see cref="ImportText(string)"/>; fremde Dateien mit Regeln, Ausnahmen oder Zeitzonen liest ical.net (Runde 6),
+    /// aufgelöste Reihen ersetzen beim erneuten Einlesen ihre alten Einzeltermine.</summary>
+    public (int Events, int Todos) ImportText(string ics, DateTime now)
     {
-        var ev = Ics.Import(ics); foreach (var e in ev) Add(e);
+        List<CalEvent> ev;
+        if (IcsForeign.NeedsFullParser(ics))
+        {
+            var (list, series) = IcsForeign.Import(ics, now); ev = list;
+            var l = J.Load<CalEvent>(F); var uids = ev.Select(e => e.Uid).ToHashSet();
+            l.RemoveAll(x => uids.Contains(x.Uid) || series.Any(s => x.Uid == s || x.Uid.StartsWith(s + "#", StringComparison.Ordinal)));
+            l.AddRange(ev); J.Save(F, l); // ein Speichervorgang statt bis zu 5000
+        }
+        else { ev = Ics.Import(ics); foreach (var e in ev) Add(e); }
         var td = Ics.ImportTodos(ics); foreach (var t in td) AddTodo(t);
         return (ev.Count, td.Count);
     }

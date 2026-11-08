@@ -26,7 +26,8 @@
 | SPEC-10 MQTT-Live-Werte (MQTTnet) | eingebaut, echter Lauf mit Broker auf 127.0.0.1 (reports/alle-studios/mqtt-e2e.md), Tests grün; echte Geräte NOT RUN |
 | SPEC-04 glTF-Validator + glTF-Transform | eingebaut im VR-Studio („Prüfen & für Web packen“), echter Lauf: Regal 532 → 105 KB, weiter fehlerfrei (reports/alle-studios/gltf-e2e.md); Einrichten per Knopf NOT RUN |
 | SPEC-11 E-Rechnung (XRechnung mit ZUGFeRD-csharp 18) | eingebaut in „Rechnung schreiben“, Datei wird wieder eingelesen und geprüft (reports/alle-studios/erechnung-e2e.md), 9 Kern- und 1 Oberflächentest grün; KoSIT-Validator und Empfang in Fremdprogrammen NOT RUN; Bibliothek ab 1.12.2026 ohne Pflege |
-| Runde 6 übrige (ical.net, typst-Briefvorlage DIN 5008) | geplant, NOT RUN |
+| SYS-09/P16 fremde Kalenderdateien (ical.net 5.2.4) | eingebaut im Kalender („ICS einlesen …“): Regeln mit Ende, Ausnahmen, verschobene Termine, Zeitzonen; echter Vergleich mit Python icalendar/recurring-ical-events – 632 Termine aus 4 Dateien gleich (reports/alle-studios/ics-fremd-e2e.md); 10 Kern-, 1 Echt-, 1 Oberflächentest grün; echte Konto-Exporte NOT RUN |
+| Runde 6 übrige (typst-Briefvorlage DIN 5008) | geplant, NOT RUN |
 | Runden 7+ (32 Studios) | NOT RUN |
 | Web Design Studio Modul 05 (Design-Tokens) | eingebaut, 2 Tests, im Browser geprüft (docs/web-design-godmode) |
 | Volltest nach den Änderungen | grün: Api 16, Core 1546, App 829 (reports/alle-studios/volltest-2026-11-08.md) |

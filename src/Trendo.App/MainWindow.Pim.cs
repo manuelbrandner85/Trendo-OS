@@ -549,9 +549,25 @@ public partial class MainWindow
         var ics = new Button { Name = "cal-export", Content = "Als ICS speichern" };
         ics.Click += (_, _) => { var f = Path.Combine(WorkFolder("kalender"), "kalender.ics"); Cal.ExportFile(f); _pimMsg = "Gespeichert: " + f; NotifyFileResult(_pimMsg); Show("kalender"); };
         var imp = new Button { Name = "cal-import", Content = "ICS einlesen …" };
-        imp.Click += async (_, _) => { if (await PickMedia("cal-ics", ["*.ics"]) is { } f) { var (ne, nt) = Cal.ImportText(File.ReadAllText(f)); _pimMsg = $"{ne} Termine und {nt} Aufgaben eingelesen."; } Show("kalender"); };
+        imp.Click += async (_, _) => { if (await PickMedia("cal-ics", ["*.ics"]) is { } f) CalendarImportFile(f); Show("kalender"); };
         return Card(new StackPanel { Spacing = 6, Children = { H("Termin eintragen", 14), new WrapPanel { Children = { t, new Border { Width = 4 }, date, new Border { Width = 4 }, time, new Border { Width = 4 }, dur, new TextBlock { Text = " min ", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center }, allDay } },
             new WrapPanel { Children = { loc, new Border { Width = 4 }, remind, new Border { Width = 4 }, rep, new Border { Width = 4 }, add, new Border { Width = 12 }, imp, new Border { Width = 4 }, ics } } } });
+    }
+
+    public string PimMessage => _pimMsg;
+
+    /// <summary>Kalenderdatei einlesen (öffentlich für Tests). Fremde Regeln, Ausnahmen und Zeitzonen löst ical.net auf (Alle Studios, Runde 6).</summary>
+    public (int Events, int Todos)? CalendarImportFile(string path)
+    {
+        try
+        {
+            var text = File.ReadAllText(path);
+            var full = IcsForeign.NeedsFullParser(text);
+            var r = Cal.ImportText(text);
+            _pimMsg = $"{r.Events} Termine und {r.Todos} Aufgaben eingelesen." + (full ? " Wiederholungen mit Ende, Ausnahmen und Zeitzonen wurden genau übernommen; Reihen mit Regeln stehen als einzelne Termine (ein Jahr zurück bis zwei Jahre voraus)." : "");
+            return r;
+        }
+        catch (Exception ex) when (ex is FormatException or IOException or UnauthorizedAccessException) { _pimMsg = "Kalenderdatei ließ sich nicht einlesen: " + ex.Message; return null; }
     }
 
     // ---------- Aufgaben: Tafel (Offen · In Arbeit · Erledigt) ----------

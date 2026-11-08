@@ -6,6 +6,7 @@
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Ical.Net" Version="5.2.4" /><!-- Alle Studios Runde 6: fremde .ics mit Regeln/Ausnahmen/Zeitzonen (MIT, mit NodaTime Apache-2.0) -->
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.14" />
     <PackageReference Include="MQTTnet" Version="5.2.0.1603" /><!-- Alle Studios Runde 5: Live-Messwerte im Zwilling (MIT), nur Abonnieren -->
     <PackageReference Include="ZUGFeRD-csharp" Version="18.0.1" /><!-- Alle Studios Runde 6: E-Rechnung ZUGFeRD/XRechnung (Apache-2.0) -->
