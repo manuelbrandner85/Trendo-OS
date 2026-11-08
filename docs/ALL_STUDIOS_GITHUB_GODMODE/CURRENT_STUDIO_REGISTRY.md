@@ -18,7 +18,7 @@ Korrektur 08.11.2026: Die Zählung sucht nur die Studio-Kennung – „TV & Live
 | STUDIO-TV-01 | TV & Live | 8 | 0 | bewertet (Runde 2) |
 | SPEC-08 | Kleidung & Produkte entwerfen | 9 | 7 | bewertet (Runde 7) |
 | X-07 | Freie Bilder & Klänge finden | 9 | 2 | bewertet (Runde 8) |
-| CORE-12 | KI-Anweisungen schreiben | 9 | 1 | NOT RUN – folgt in späteren Runden |
+| CORE-12 | KI-Anweisungen schreiben | 9 | 1 | bewertet (Runde 11) |
 | CORE-05 | 3D-Modelle erstellen | 17 | 17 | bewertet (Runde 1) |
 | CORE-06 | Spiele bauen | 18 | 20 | bewertet (Runde 7) |
 | SPEC-04 | VR & AR gestalten | 10 | 3 | bewertet (Runde 5) |
@@ -35,7 +35,7 @@ Korrektur 08.11.2026: Die Zählung sucht nur die Studio-Kennung – „TV & Live
 | SPEC-06 | Lernen mit Karteikarten | 10 | 4 | bewertet (Runde 4) |
 | SPEC-07 | Texte übersetzen | 6 | 8 | NOT RUN – folgt in späteren Runden |
 | CORE-10 | Wissen merken | 10 | 1 | bewertet (Runde 8) |
-| SYS-08 | Sicher recherchieren | 10 | 2 | NOT RUN – folgt in späteren Runden |
+| SYS-08 | Sicher recherchieren | 10 | 2 | bewertet (Runde 11) |
 | CORE-02 | KI fragen | 19 | 6 | NOT RUN – folgt in späteren Runden |
 | CORE-03 | KI-Team einsetzen | 9 | 2 | bewertet (Runde 3) |
 | X-05 | Kostenlose KI finden | 12 | 2 | NOT RUN – folgt in späteren Runden |
@@ -57,7 +57,7 @@ Korrektur 08.11.2026: Die Zählung sucht nur die Studio-Kennung – „TV & Live
 | SYS-11 | Programme starten | 9 | 2 | NOT RUN – folgt in späteren Runden |
 | SYS-12 | Schrift & Farben anpassen | 10 | 2 | bewertet (Runde 10) |
 | SYS-13 | Qualität prüfen | 10 | 2 | NOT RUN – folgt in späteren Runden |
-| X-02 | Einrichten & Reparieren | 9 | 3 | NOT RUN – folgt in späteren Runden |
+| X-02 | Einrichten & Reparieren | 9 | 3 | bewertet (Runde 11) |
 | X-08 | Handy verbinden | 9 | 2 | bewertet (Runde 10) |
-| CORE-04 | PC, Pi & Handy verbinden | 10 | 2 | NOT RUN – folgt in späteren Runden |
+| CORE-04 | PC, Pi & Handy verbinden | 10 | 2 | bewertet (Runde 11) |
 | X-09 | Leistung anzeigen | 8 | 1 | bewertet (Runde 9) |

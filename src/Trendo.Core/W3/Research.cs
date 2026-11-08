@@ -8,7 +8,7 @@ namespace Trendo.Core;
 
 public enum UrlKind { Lesemodus, NurTorBrowser, Abgelehnt }
 public sealed record UrlVerdict(UrlKind Kind, string Reason, Uri? Uri = null);
-public sealed record ReaderPage(string Title, string Text, IReadOnlyList<(string Text, string Href)> Links);
+public sealed record ReaderPage(string Title, string Text, IReadOnlyList<(string Text, string Href)> Links, bool IsArticle = false);
 public sealed record ResearchSource(string Url, string Title, DateTimeOffset At, string Sha256, int Chars);
 
 /// <summary>SYS-08 Deep Web & Dark Web READ-ONLY Research: legaler Lesemodus. Normale Seiten werden nur gelesen (GET, keine Formulare/Downloads/Logins),
@@ -72,8 +72,9 @@ public sealed partial class ResearchDesk
     [GeneratedRegex(@"<a\b[^>]*href\s*=\s*[""']([^""']+)[""'][^>]*>(.*?)</a>", RegexOptions.Singleline | RegexOptions.IgnoreCase)] private static partial Regex A();
     [GeneratedRegex(@"<title[^>]*>(.*?)</title>", RegexOptions.Singleline | RegexOptions.IgnoreCase)] private static partial Regex T();
 
-    /// <summary>Macht aus HTML reinen Lesetext. Skripte, Formulare und eingebettete Inhalte fallen weg.</summary>
-    public static ReaderPage ToReader(string html, Uri baseUri)
+    /// <summary>Macht aus HTML reinen Lesetext. Skripte, Formulare und eingebettete Inhalte fallen weg. Mit <paramref name="articleOnly"/> nur der eigentliche Artikel,
+    /// falls einer sicher erkennbar ist (<see cref="ReaderPage.IsArticle"/>); die Links bleiben die der ganzen Seite.</summary>
+    public static ReaderPage ToReader(string html, Uri baseUri, bool articleOnly = false)
     {
         var title = System.Web.HttpUtility.HtmlDecode(T().Match(html).Groups[1].Value).Trim();
         var h = Drop().Replace(html, " ");
@@ -81,12 +82,17 @@ public sealed partial class ResearchDesk
         h = Regex.Replace(h, @"<title[^>]*>.*?</title>", " ", RegexOptions.Singleline | RegexOptions.IgnoreCase); // steht schon als Überschrift darüber
         var links = A().Matches(h).Select(m => (Text: Clean(m.Groups[2].Value), Href: m.Groups[1].Value)).Where(l => l.Text.Length > 0)
             .Select(l => Uri.TryCreate(baseUri, l.Href, out var u) && u.Scheme is "http" or "https" ? (l.Text, u.ToString()) : (l.Text, "")).Where(l => l.Item2 != "").Distinct().Take(100).ToList();
+        var article = articleOnly ? ExtractArticle(h) : null;
+        return new(title == "" ? baseUri.Host : title, PlainText(article ?? h), links, article is not null);
+    }
+
+    private static string PlainText(string h)
+    {
         h = Regex.Replace(h, @"<(br|/p|/div|/h[1-6]|/li|/tr|/section|/article)\b[^>]*>", "\n", RegexOptions.IgnoreCase);
         h = Regex.Replace(h, @"<h[1-6][^>]*>", "\n## ", RegexOptions.IgnoreCase);
         h = Regex.Replace(h, @"<li[^>]*>", "\n• ", RegexOptions.IgnoreCase);
         var text = System.Web.HttpUtility.HtmlDecode(Regex.Replace(h, "<[^>]+>", " "));
-        text = string.Join("\n", text.Split('\n').Select(l => Regex.Replace(l, @"[ \t\u00a0]+", " ").Trim()).Where(l => l.Length > 0 && l != "##"));
-        return new(title == "" ? baseUri.Host : title, text, links);
+        return string.Join("\n", text.Split('\n').Select(l => Regex.Replace(l, @"[ \t\u00a0]+", " ").Trim()).Where(l => l.Length > 0 && l != "##"));
     }
 
     private static string Clean(string s) => Regex.Replace(System.Web.HttpUtility.HtmlDecode(Regex.Replace(s, "<[^>]+>", " ")), @"\s+", " ").Trim();

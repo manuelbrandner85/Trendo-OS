@@ -354,5 +354,35 @@
 | ScoopInstaller/Main | Unlicense | 2026-11-08 | nein | 1885 | PowerShell |
 | chocolatey/choco | Apache-2.0 (aus Lizenzdatei) | 2026-10-28 | nein | 11562 | C# |
 | microsoft/winget-cli | MIT | 2026-11-06 | nein | 26569 | C++ |
+## CORE-12
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| promptfoo/promptfoo | MIT | 2026-11-08 | nein | 26954 | TypeScript |
+| stanfordnlp/dspy | MIT | 2026-11-07 | nein | 38971 | Python |
+| microsoft/promptflow | MIT | 2026-10-31 | nein | 11263 | Python |
+| f/prompts.chat | keine maschinenlesbare Lizenz | 2026-11-08 | nein | 176443 | MDX |
+## SYS-08
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| adbar/trafilatura | Apache-2.0 | 2026-11-06 | nein | 7094 | Python |
+| mozilla/readability | Apache-2.0 | 2026-08-04 | nein | 11527 | JavaScript |
+| searxng/searxng | AGPL-3.0 | 2026-11-08 | nein | 39339 | Python |
+| ArchiveBox/ArchiveBox | MIT | 2026-11-08 | nein | 28974 | Python |
+| strumenta/SmartReader | Apache-2.0 | 2026-07-25 | nein | 188 | C# |
+## CORE-04
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| tailscale/tailscale | BSD-3-Clause | 2026-11-07 | nein | 38794 | Go |
+| juanfont/headscale | BSD-3-Clause | 2026-11-08 | nein | 45467 | Go |
+| rustdesk/rustdesk | AGPL-3.0 | 2026-11-08 | nein | 128646 | Rust |
+| WireGuard/wireguard-windows | MIT | 2026-09-26 | nein | 2886 | Go |
+## X-02
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| smartmontools/smartmontools | GPL-2.0 | 2026-11-07 | nein | 1465 | C++ |
+| LibreHardwareMonitor/LibreHardwareMonitor | MPL-2.0 | 2026-11-06 | nein | 9349 | C# |
+| hirschmann/nbfc | keine maschinenlesbare Lizenz | 2024-07-08 | nein | 3238 | C# |
+| ventoy/Ventoy | GPL-3.0 | 2026-10-22 | nein | 80649 | C |
+| ChrisTitusTech/winutil | MIT | 2026-11-04 | nein | 65714 | PowerShell |
 
 Korrigiert: PhotoDemon → tannerhelland/PhotoDemon (BSD-ähnlich), Shotcut → mltframework/shotcut (GPL-3.0).

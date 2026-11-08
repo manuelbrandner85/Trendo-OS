@@ -1,0 +1,172 @@
+{
+ "CORE-12": [
+  {
+   "repo": "promptfoo/promptfoo",
+   "lizenz": "MIT",
+   "sterne": 26954,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "TypeScript",
+   "beschreibung": "Test your prompts, agents, and RAGs. Red teaming/pentesting/vulnerability scanning for AI. Compare performance"
+  },
+  {
+   "repo": "stanfordnlp/dspy",
+   "lizenz": "MIT",
+   "sterne": 38971,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "DSPy: The framework for programming—not prompting—language models"
+  },
+  {
+   "repo": "microsoft/promptflow",
+   "lizenz": "MIT",
+   "sterne": 11263,
+   "zuletzt": "2026-10-31",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Build high-quality LLM apps - from prototyping, testing to production deployment and monitoring."
+  },
+  {
+   "repo": "f/prompts.chat",
+   "lizenz": "NOASSERTION",
+   "sterne": 176443,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "MDX",
+   "beschreibung": "f.k.a. Awesome ChatGPT Prompts. Share, discover, and collect prompts from the community. Free and open source "
+  }
+ ],
+ "SYS-08": [
+  {
+   "repo": "adbar/trafilatura",
+   "lizenz": "Apache-2.0",
+   "sterne": 7094,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "Python & Command-line tool to gather text and metadata on the Web: Crawling, scraping, extraction, output as C"
+  },
+  {
+   "repo": "mozilla/readability",
+   "lizenz": "Apache-2.0",
+   "sterne": 11527,
+   "zuletzt": "2026-08-04",
+   "archiviert": false,
+   "sprache": "JavaScript",
+   "beschreibung": "A standalone version of the readability lib"
+  },
+  {
+   "repo": "searxng/searxng",
+   "lizenz": "AGPL-3.0",
+   "sterne": 39339,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "SearXNG is a free internet metasearch engine which aggregates results from various search services and databas"
+  },
+  {
+   "repo": "ArchiveBox/ArchiveBox",
+   "lizenz": "MIT",
+   "sterne": 28974,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "🗃 Open source self-hosted web archiving. Takes URLs/browser history/bookmarks/Pocket/Pinboard/etc., saves HTML"
+  },
+  {
+   "repo": "strumenta/SmartReader",
+   "lizenz": "Apache-2.0",
+   "sterne": 188,
+   "zuletzt": "2026-07-25",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": "C# port of Mozilla Readability"
+  }
+ ],
+ "CORE-04": [
+  {
+   "repo": "tailscale/tailscale",
+   "lizenz": "BSD-3-Clause",
+   "sterne": 38794,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Go",
+   "beschreibung": "The easiest, most secure way to use WireGuard and 2FA."
+  },
+  {
+   "repo": "juanfont/headscale",
+   "lizenz": "BSD-3-Clause",
+   "sterne": 45467,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "Go",
+   "beschreibung": "An open source, self-hosted implementation of the Tailscale control server"
+  },
+  {
+   "repo": "rustdesk/rustdesk",
+   "lizenz": "AGPL-3.0",
+   "sterne": 128646,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "Rust",
+   "beschreibung": "An open-source remote desktop application designed for self-hosting, as an alternative to TeamViewer."
+  },
+  {
+   "repo": "WireGuard/wireguard-windows",
+   "lizenz": "MIT",
+   "sterne": 2886,
+   "zuletzt": "2026-09-26",
+   "archiviert": false,
+   "sprache": "Go",
+   "beschreibung": "Download WireGuard for Windows at https://www.wireguard.com/install . This repo is a mirror only. Official rep"
+  }
+ ],
+ "X-02": [
+  {
+   "repo": "smartmontools/smartmontools",
+   "lizenz": "GPL-2.0",
+   "sterne": 1465,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "2025-06-01: This is now the official upstream repository of smartmontools"
+  },
+  {
+   "repo": "LibreHardwareMonitor/LibreHardwareMonitor",
+   "lizenz": "MPL-2.0",
+   "sterne": 9349,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": "Libre Hardware Monitor is free software that can monitor the temperature sensors, fan speeds, voltages, load a"
+  },
+  {
+   "repo": "hirschmann/nbfc",
+   "lizenz": "NOASSERTION",
+   "sterne": 3238,
+   "zuletzt": "2024-07-08",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": "NoteBook FanControl"
+  },
+  {
+   "repo": "ventoy/Ventoy",
+   "lizenz": "GPL-3.0",
+   "sterne": 80649,
+   "zuletzt": "2026-10-22",
+   "archiviert": false,
+   "sprache": "C",
+   "beschreibung": "A new bootable USB solution."
+  },
+  {
+   "repo": "ChrisTitusTech/winutil",
+   "lizenz": "MIT",
+   "sterne": 65714,
+   "zuletzt": "2026-11-04",
+   "archiviert": false,
+   "sprache": "PowerShell",
+   "beschreibung": "Chris Titus Tech's Windows Utility - Install Programs, Tweaks, Fixes, and Updates"
+  }
+ ]
+}

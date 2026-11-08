@@ -103,7 +103,7 @@ public partial class MainWindow
         edit.Click += (_, _) => { _promptEdit = true; Show("ki-vorlagen"); };
         sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { send, copy, edit } });
         sp.Children.Add(P(t.Text, null, 11));
-        return WCard(sp);
+        return new StackPanel { Spacing = 8, Children = { WCard(sp), PromptTestCard(t, Grab) } };
     }
 
     private Control PromptEditor(PromptTemplate? t)

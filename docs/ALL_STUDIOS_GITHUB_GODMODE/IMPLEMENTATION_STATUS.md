@@ -41,6 +41,9 @@
 | SYS-02 Einheiten erweitert (Zeit, Energie, Leistung, Druck, Datenmengen, Winkel) | eigener Code nach exakten Definitionen, UnitsNet und NCalc nach Bestandsprüfung verworfen; 16 Tests grün |
 | SYS-06 Ans Handy senden (LocalSend-Protokoll v2, eigener Code) | eingebaut in „Teilen im Heimnetz“, echte HTTP- und UDP-Verbindungen gegen einen Empfänger nach der Protokollbeschreibung (reports/alle-studios/localsend-e2e.md); 14 Kern- und 2 Oberflächentests grün; echtes Handy, HTTPS und WLAN-Multicast NOT RUN |
 | SYS-12 Gut lesbare Schrift (Atkinson Hyperlegible, OFL-1.1) | eingebaut in „Sehen“, gilt für die ganze Oberfläche, gerendert geprüft (reports/alle-studios/schrift-e2e.md); OpenDyslexic nach Sichtprüfung verworfen; Handy, Surfen und Programme schon gut abgedeckt |
-| Runden 11+ (16 Studios, davon SPEC-07 abgelehnt) | NOT RUN |
+| SYS-08 Nur der Artikel im Lesemodus (eigener Code nach mozilla/readability) | eingebaut, an 11 echten Seiten geprüft, MDN wird nicht erkannt (reports/alle-studios/runde11-artikel-anweisungstest-e2e.md) |
+| CORE-12 Anweisungs-Test (eigener Code nach promptfoo) | eingebaut, echter Lauf mit lokaler KI, Oberfläche mit Test-KI (gleicher Bericht) |
+| CORE-04, X-02 | bewertet 08.11.2026: kein Einbau, schon abgedeckt oder durch Projektregeln ausgeschlossen |
+| Runden 12+ (12 Studios, davon SPEC-07 abgelehnt) | NOT RUN |
 | Web Design Studio Modul 05 (Design-Tokens) | eingebaut, 2 Tests, im Browser geprüft (docs/web-design-godmode) |
 | Volltest nach den Änderungen | grün: Api 16, Core 1546, App 829 (reports/alle-studios/volltest-2026-11-08.md) |

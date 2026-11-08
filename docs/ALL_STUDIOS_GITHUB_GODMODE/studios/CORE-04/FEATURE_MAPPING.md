@@ -1,0 +1,1 @@
+# Funktionszuordnung CORE-04

@@ -16,6 +16,7 @@ public partial class MainWindow
     private string _rsMsg = "", _rsUrl = "", _rsTrans = "", _rsShownUrl = "", _rsStyle = "einfach";
     public string ReaderUrl => _rsShownUrl;
     SelectableTextBlock? _rsTextBlock;
+    private bool _rsWholePage; private string _rsRaw = ""; private Uri? _rsFinal;
 
     private void InitSys08()
     {
@@ -40,11 +41,30 @@ public partial class MainWindow
         try
         {
             var (type, body, final) = await (ReaderFetchOverride ?? FetchReadOnly)(v.Uri!);
-            ReaderShown = type == "text/plain" ? new ReaderPage(final.Host, body, []) : ResearchDesk.ToReader(body, final);
+            ReaderShown = type == "text/plain" ? new ReaderPage(final.Host, body, []) : ResearchDesk.ToReader(body, final, !_rsWholePage);
+            _rsRaw = type == "text/plain" ? "" : body; _rsFinal = final;
             Desk.Record(final, ReaderShown, body); _rsShownUrl = final.ToString();
             _rsMsg = $"Gelesen: {final.Host} · {ReaderShown.Text.Length} Zeichen · nichts wurde gespeichert außer in dieser Sitzung.";
         }
         catch (Exception ex) { ReaderShown = null; _rsMsg = "Konnte die Seite nicht lesen: " + ex.Message; }
+    }
+
+    /// <summary>Zwischen „nur der Artikel“ und „ganze Seite“ wechseln, ohne die Seite neu zu laden (öffentlich für Tests).</summary>
+    public void ReaderToggleWholePage()
+    {
+        _rsWholePage = !_rsWholePage;
+        if (_rsRaw.Length > 0 && _rsFinal is not null) ReaderShown = ResearchDesk.ToReader(_rsRaw, _rsFinal, !_rsWholePage);
+    }
+
+    private WrapPanel ReaderBar(Button translate)
+    {
+        var bar = new WrapPanel { Children = { MSp(translate) } };
+        if (_rsRaw.Length == 0) return bar;
+        var toggle = new Button { Name = "rs-whole", Content = _rsWholePage ? "Nur den Artikel zeigen" : "Ganze Seite zeigen" };
+        toggle.Click += (_, _) => { ReaderToggleWholePage(); Show("recherche"); };
+        bar.Children.Add(MSp(toggle));
+        if (!_rsWholePage && ReaderShown is { IsArticle: false }) bar.Children.Add(new TextBlock { Name = "rs-noarticle", Text = "Kein einzelner Artikel erkannt – die ganze Seite wird gezeigt.", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center });
+        return bar;
     }
 
     /// <summary>Recherche als Lese-Browser (Clean-Room): oben Adresse, links Startpunkte und Quellen der Sitzung, Mitte der Lesebereich,
@@ -94,7 +114,7 @@ public partial class MainWindow
         {
             var tr = new Button { Name = "rs-translate", Content = "Auf Deutsch (KI auf diesem PC)" };
             tr.Click += async (_, _) => { tr.IsEnabled = false; using var kiLabel = Trendo.Core.KiActivityHub.Label("Recherche"); var a = await Intel.AskAsync(new KiRequest("Übersetze ins Deutsche. Gib nur die Übersetzung aus:\n\n" + (p.Text.Length > 4000 ? p.Text[..4000] : p.Text), PreferredModel: KiModelName, UseKnowledge: false)); _rsTrans = a.Text; Show("recherche"); };
-            var body = new StackPanel { Spacing = 8, Children = { new TextBlock { Text = p.Title, Foreground = Text, FontSize = 22, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap }, new WrapPanel { Children = { tr } } } };
+            var body = new StackPanel { Spacing = 8, Children = { new TextBlock { Text = p.Title, Foreground = Text, FontSize = 22, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap }, ReaderBar(tr) } };
             if (_rsTrans != "") body.Children.Add(new SelectableTextBlock { Name = "rs-trans", Text = _rsTrans, Foreground = Text, TextWrapping = TextWrapping.Wrap });
             body.Children.Add(ResearchMarkBar(p));
             var shownText = p.Text.Length > 20000 ? p.Text[..20000] : p.Text;

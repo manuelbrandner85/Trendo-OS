@@ -447,3 +447,45 @@ Bestand: Programme-Katalog mit winget und Abhängigkeits-Verwaltung vorhanden (E
 | microsoft/winget-pkgs | 9 | 8 | 8 | 10 | 9 | 8 | 9 | 8.7 | VORHANDEN | MIT – Paketliste, über winget bereits verfügbar |
 | ScoopInstaller/Scoop | 8 | 5 | 8 | 10 | 8 | 7 | 8 | 7.6 | OPTION | Unlicense/MIT – installiert ohne Admin, aber zweite Paketquelle ohne Mehrwert |
 | chocolatey/choco | 8 | 3 | 8 | 9 | 8 | 6 | 9 | 7.0 | VERWORFEN | Apache-2.0, braucht Admin – nicht übernommen |
+
+## CORE-12 – KI-Anweisungen schreiben
+Bestand: Vorlagen mit Lücken, Versionen, Hinweise und Masterprompt-Baukasten vorhanden; kein Vergleich, ob eine Anweisung wirklich besser ist.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| promptfoo/promptfoo | 10 | 3 | 9 | 10 | 8 | 8 | 10 | 8.05 | AUSWAHL | MIT – die Idee (Regeln, mehrere Fassungen, Durchläufe zählen) ist übernommen, als eigener Code ohne Node |
+| stanfordnlp/dspy | 8 | 2 | 9 | 10 | 6 | 8 | 10 | 7.15 | VERWORFEN | MIT, Python-Rahmen zum automatischen Optimieren – zu schwer für diesen Zweck |
+| microsoft/promptflow | 7 | 2 | 8 | 10 | 6 | 8 | 8 | 6.65 | VERWORFEN | MIT, Arbeitsabläufe mit Azure-Bezug; Trendo hat eigene Abläufe |
+| f/prompts.chat | 6 | 5 | 6 | 3 | 8 | 7 | 10 | 5.85 | VERWORFEN | Vorlagensammlung ohne maschinenlesbare Lizenz – nicht übernommen |
+
+## SYS-08 – Sicher recherchieren
+Bestand: Lesemodus nur lesend, Quellenliste, Markierungen und Bericht vorhanden; der Text enthielt aber auch Menüs, Cookie-Hinweise und Fußzeilen.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| mozilla/readability | 10 | 4 | 9 | 10 | 9 | 9 | 10 | 8.45 | AUSWAHL | Apache-2.0, JavaScript – das Verfahren ist übernommen, als eigener Code in .NET |
+| adbar/trafilatura | 9 | 3 | 9 | 10 | 8 | 8 | 8 | 7.7 | OPTION | Apache-2.0, sehr gut, aber Python-Laufzeit nur für den Lesemodus |
+| strumenta/SmartReader | 9 | 5 | 7 | 10 | 8 | 7 | 5 | 7.55 | VERWORFEN | Apache-2.0, .NET-Fassung von Readability – bringt ein HTML-Paket und eigenen Netzabruf mit, in Core unerwünscht (QA-019) |
+| ArchiveBox/ArchiveBox | 8 | 2 | 8 | 10 | 6 | 7 | 9 | 6.85 | VERWORFEN | MIT, Webarchiv mit Server – Sitzungen in Trendo sind bewusst flüchtig |
+| searxng/searxng | 8 | 2 | 8 | 2 | 8 | 7 | 10 | 5.9 | AUSGESCHLOSSEN | AGPL-3.0 – ausgeschlossen |
+
+## CORE-04 – PC, Pi & Handy verbinden
+Bestand: Kopplung über WLAN, unterwegs über Tailscale, mit Übergabe-Codes und enger Windows-Freigabe vorhanden.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| tailscale/tailscale | 10 | 8 | 9 | 10 | 9 | 9 | 10 | 9.25 | VORHANDEN | BSD-3-Clause – bereits angebunden |
+| WireGuard/wireguard-windows | 7 | 3 | 9 | 10 | 9 | 9 | 7 | 7.35 | AUSGESCHLOSSEN | MIT, braucht Dienst und Treiber – in Trendo verboten; Tailscale deckt es ab |
+| juanfont/headscale | 7 | 3 | 8 | 10 | 8 | 8 | 10 | 7.15 | VERWORFEN | BSD-3-Clause, eigener Tailscale-Server – für normale Nutzer zu aufwendig |
+| rustdesk/rustdesk | 9 | 3 | 8 | 2 | 8 | 7 | 10 | 6.35 | AUSGESCHLOSSEN | AGPL-3.0 – ausgeschlossen |
+
+## X-02 – Einrichten & Reparieren
+Bestand: Selbstprüfung beim Start und sichere Reparaturen an Trendo selbst vorhanden.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| smartmontools/smartmontools | 8 | 4 | 9 | 5 | 9 | 8 | 7 | 6.95 | VERWORFEN | GPL-2.0, braucht Admin-Rechte für Datenträger – Festplatten-Zustand ist in Trendo bereits abgedeckt |
+| ventoy/Ventoy | 8 | 3 | 8 | 5 | 9 | 7 | 10 | 6.65 | VERWORFEN | GPL-3.0, Trendo hat einen eigenen Stick-Assistenten |
+| LibreHardwareMonitor/LibreHardwareMonitor | 8 | 3 | 8 | 7 | 8 | 3 | 8 | 6.35 | AUSGESCHLOSSEN | MPL-2.0, nutzt einen Kernel-Treiber – verboten |
+| ChrisTitusTech/winutil | 7 | 1 | 7 | 10 | 7 | 3 | 10 | 6.0 | AUSGESCHLOSSEN | MIT, ändert Windows-Einstellungen – in Trendo verboten |
+| hirschmann/nbfc | 5 | 1 | 5 | 3 | 7 | 3 | 5 | 3.9 | VERWORFEN | keine maschinenlesbare Lizenz, Lüftersteuerung – nicht das Thema |
