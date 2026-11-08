@@ -52,7 +52,8 @@ public static class TypstDoc
             if ("\\#*_`$<>@[]=-+/~\"'".Contains(ch)) sb.Append('\\');
             sb.Append(ch);
         }
-        return sb.ToString();
+        // „8. November“ oder „3. Mahnung“ am Zeilen- bzw. Zellenanfang wäre sonst eine nummerierte Liste
+        return Regex.Replace(sb.ToString(), @"(?m)^(\s*\d+)\.", "$1\\.");
     }
 
     /// <summary>Brief bzw. Rechnung als typst-Quelle: Titel, Anrede/Text (Absätze) und optionale Posten (Menge, Artikel, Einzelpreis) mit Summe.</summary>
@@ -70,6 +71,70 @@ public static class TypstDoc
                 sb.Append($"  [{q.ToString("0.##", de)}], [{Escape(item)}], [{Escape(price.ToString("N2", de))} €], [{Escape((q * price).ToString("N2", de))} €],\n");
             sb.Append(")\n\n#align(right)[*Gesamt: ").Append(Escape(list.Sum(r => r.Qty * r.Price).ToString("N2", de))).Append(" €*]\n");
         }
+        return sb.ToString();
+    }
+
+    /// <summary>Geschäftsbrief nach DIN 5008 (Alle Studios, Runde 6; Konzept typst-letter-pro, eigener Code, offline ohne typst-Pakete).</summary>
+    public sealed record DinLetter(string Sender, string Recipient, string Subject, string Body, DateOnly Date,
+        bool FormA = false, string YourRef = "", string OurRef = "", string Closing = "Mit freundlichen Grüßen", string Signer = "", string Footer = "");
+
+    /// <summary>Maße DIN 5008 (Millimeter von oben): Anschriftfeld, Informationsblock, Betreff, Falzmarken; Lochmarke 148,5.</summary>
+    public static (double Address, double Info, double Subject, double Fold1, double Fold2) DinGeometry(bool formA) =>
+        formA ? (27, 32, 80.46, 87, 192) : (45, 50, 98.46, 105, 210);
+    public const double DinLeft = 25, DinRight = 20, DinTop = 27, DinAddressLeft = 20, DinAddressWidth = 85, DinInfoLeft = 125, DinPunch = 148.5;
+
+    /// <summary>Pflichtangaben prüfen – leere Liste = in Ordnung.</summary>
+    public static IReadOnlyList<string> DinCheck(DinLetter l)
+    {
+        var e = new List<string>();
+        static int Lines(string s) => s.Replace("\r", "").Split('\n').Count(x => x.Trim().Length > 0);
+        if (Lines(l.Sender) == 0) e.Add("Absender fehlt.");
+        if (Lines(l.Recipient) == 0) e.Add("Empfänger fehlt.");
+        else if (Lines(l.Recipient) > 6) e.Add("Die Anschrift hat höchstens 6 Zeilen (DIN 5008).");
+        if (l.Subject.Trim().Length == 0) e.Add("Betreff fehlt.");
+        if (l.Body.Trim().Length == 0) e.Add("Brieftext fehlt.");
+        return e;
+    }
+
+    static string Mm(double v) => v.ToString("0.##", CultureInfo.InvariantCulture) + "mm";
+    static string Block(string s) => string.Join(" \\\n", s.Replace("\r", "").Split('\n').Select(x => x.Trim()).Where(x => x.Length > 0).Select(Escape));
+
+    /// <summary>typst-Quelle für einen DIN-5008-Brief (Form A oder B): Briefkopf, Rücksendeangabe, Anschriftfeld 85 × 45 mm, Informationsblock,
+    /// Betreff, Text, Gruß, Falz- und Lochmarken; Fußzeile und ab Seite 2 „Seite x von y“.</summary>
+    public static string Din5008(DinLetter l)
+    {
+        if (DinCheck(l) is { Count: > 0 } errors) throw new ArgumentException(string.Join(" ", errors));
+        var g = DinGeometry(l.FormA); var de = CultureInfo.GetCultureInfo("de-DE");
+        var senderLines = l.Sender.Replace("\r", "").Split('\n').Select(x => x.Trim()).Where(x => x.Length > 0).ToList();
+        var back = Escape(string.Join(" · ", senderLines));
+        var sb = new StringBuilder();
+        sb.Append("// DIN 5008 Form ").Append(l.FormA ? "A" : "B").Append(" – erzeugt von Trendo, frei bearbeitbar\n");
+        sb.Append("#set page(paper: \"a4\", margin: (left: ").Append(Mm(DinLeft)).Append(", right: ").Append(Mm(DinRight)).Append(", top: ").Append(Mm(DinTop)).Append(", bottom: 28mm),\n");
+        sb.Append("  background: context { if here().page() == 1 {\n");
+        sb.Append("    place(top + left, dx: 4mm, dy: ").Append(Mm(g.Fold1)).Append(", line(length: 5mm, stroke: 0.3pt + luma(110)))\n");
+        sb.Append("    place(top + left, dx: 4mm, dy: ").Append(Mm(DinPunch)).Append(", line(length: 8mm, stroke: 0.3pt + luma(110)))\n");
+        sb.Append("    place(top + left, dx: 4mm, dy: ").Append(Mm(g.Fold2)).Append(", line(length: 5mm, stroke: 0.3pt + luma(110)))\n  } },\n");
+        sb.Append("  footer: context { set text(size: 7.5pt, fill: luma(90)); let n = counter(page).final().first()\n");
+        sb.Append("    grid(columns: (1fr, auto), [").Append(Block(l.Footer)).Append("], if n > 1 [Seite #counter(page).display() von #n] else []) })\n");
+        sb.Append("#set text(lang: \"de\", region: \"DE\", size: 11pt, font: (\"Inter\", \"Arial\", \"Liberation Sans\", \"DejaVu Sans\", \"Libertinus Serif\"))\n");
+        sb.Append("#set par(justify: false, leading: 0.62em, spacing: 1.2em)\n\n");
+        // Briefkopf rechts oben
+        sb.Append("#place(top + right, dy: ").Append(Mm((l.FormA ? 8 : 14) - DinTop)).Append(", align(right, text(size: 9pt)[*").Append(Escape(senderLines[0])).Append("*");
+        if (senderLines.Count > 1) sb.Append(" \\\n").Append(string.Join(" \\\n", senderLines.Skip(1).Select(Escape)));
+        sb.Append("]))\n");
+        // Anschriftfeld 85 × 45 mm: Rücksendeangabe in der Zusatz- und Vermerkzone (17,7 mm), darunter die Anschriftzone (27,3 mm)
+        sb.Append("#place(top + left, dx: ").Append(Mm(DinAddressLeft - DinLeft)).Append(", dy: ").Append(Mm(g.Address - DinTop)).Append(", block(width: ").Append(Mm(DinAddressWidth)).Append(", height: 45mm)[\n");
+        sb.Append("  #place(top + left, dx: 5mm, dy: 12.2mm, text(size: 7pt, fill: luma(70))[").Append(back).Append("])\n");
+        sb.Append("  #place(top + left, dx: 5mm, dy: 17.7mm, [#block(width: 75mm, height: 27.3mm, text(size: 10pt)[").Append(Block(l.Recipient)).Append("]) <din-anschrift>])\n])\n");
+        // Informationsblock
+        sb.Append("#place(top + left, dx: ").Append(Mm(DinInfoLeft - DinLeft)).Append(", dy: ").Append(Mm(g.Info - DinTop)).Append(", [#block(width: 75mm, text(size: 9pt, grid(columns: (28mm, 1fr), row-gutter: 1.4mm,\n");
+        if (l.YourRef.Trim().Length > 0) sb.Append("  [Ihr Zeichen:], [").Append(Escape(l.YourRef.Trim())).Append("],\n");
+        if (l.OurRef.Trim().Length > 0) sb.Append("  [Unser Zeichen:], [").Append(Escape(l.OurRef.Trim())).Append("],\n");
+        sb.Append("  [Datum:], [").Append(Escape(l.Date.ToString("d. MMMM yyyy", de))).Append("],\n))) <din-info>])\n\n");
+        // Betreff und Text
+        sb.Append("#v(").Append(Mm(g.Subject - DinTop)).Append(")\n#block[*").Append(Escape(l.Subject.Trim())).Append("*] <din-betreff>\n\n#v(0.6em)\n");
+        foreach (var p in l.Body.Replace("\r", "").Split("\n\n")) if (p.Trim().Length > 0) sb.Append(Block(p)).Append("\n\n");
+        sb.Append(Escape(l.Closing.Trim())).Append("\n\n#v(12mm)\n").Append(Escape((l.Signer.Trim().Length > 0 ? l.Signer : senderLines[0]).Trim())).Append('\n');
         return sb.ToString();
     }
 }

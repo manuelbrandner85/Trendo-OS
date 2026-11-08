@@ -64,6 +64,7 @@ public partial class MainWindow
             var items = new TextBox { Name = "typst-items", AcceptsReturn = true, MinHeight = 50, PlaceholderText = "Posten (optional), je Zeile: Menge;Artikel;Preis – z. B. 2;Stühle;59,50" };
             sp.Children.Add(title); sp.Children.Add(body); sp.Children.Add(items);
             sp.Children.Add(Act("typst-run", "Als PDF setzen", () => TypstLetter(title.Text ?? "", body.Text ?? "", items.Text ?? ""), true));
+            sp.Children.Add(DinCard(title, body)); // Alle Studios, Runde 6: Geschäftsbrief nach DIN 5008
         }
         if (_typstMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "typst-msg", Text = _typstMsg, FontSize = 11.5, Foreground = Muted, TextWrapping = Avalonia.Media.TextWrapping.Wrap });
         return sp;
