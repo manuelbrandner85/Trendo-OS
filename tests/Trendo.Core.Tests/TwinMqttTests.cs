@@ -75,6 +75,8 @@ public class TwinMqttTests : IDisposable
     {
         var port = FreePort();
         var server = new MqttServerFactory().CreateMqttServer(new MqttServerOptionsBuilder().WithDefaultEndpoint().WithDefaultEndpointBoundIPAddress(IPAddress.Loopback).WithDefaultEndpointPort(port).Build());
+        var subscribed = 0;
+        server.ClientSubscribedTopicAsync += _ => { Interlocked.Increment(ref subscribed); return Task.CompletedTask; };
         await server.StartAsync();
         try
         {
@@ -82,7 +84,9 @@ public class TwinMqttTests : IDisposable
             var links = new[] { new MqttLink("haus/keller/temp", "Keller", "Temperatur"), new MqttLink("tele/+/SENSOR", "Steckdose", "Leistung", "ENERGY.Power") };
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20)); var got = 0;
             var listen = TwinMqtt.ListenAsync(hub, "127.0.0.1", port, links, cts.Token, (_, n) => Interlocked.Add(ref got, n));
-            await Task.Delay(800); // abonniert
+            // erst senden, wenn der Broker beide Abos bestätigt hat – feste Wartezeit war unter Last im Volltest zu knapp
+            for (var i = 0; i < 100 && Volatile.Read(ref subscribed) < 2; i++) await Task.Delay(50);
+            Assert.Equal(2, Volatile.Read(ref subscribed));
             var factory = new MqttClientFactory(); using var device = factory.CreateMqttClient();
             await device.ConnectAsync(new MqttClientOptionsBuilder().WithTcpServer("127.0.0.1", port).WithClientId("geraet").Build());
             await device.PublishStringAsync("haus/keller/temp", "26,5");
