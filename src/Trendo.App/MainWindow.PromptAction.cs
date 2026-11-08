@@ -120,12 +120,17 @@ public partial class MainWindow
         return dock;
     }
 
+    /// <summary>Hinweis in der Auftragszeile mit einem Beispiel, das zum Studio passt.</summary>
+    internal static string PromptHint(string studio) => PromptChips.TryGetValue(studio, out var chips) && chips.Length > 0
+        ? $"Schreib hier, was entstehen soll, z. B. „{chips[0]}“. Das Ergebnis siehst du zuerst und entscheidest dann."
+        : "Schreib hier in normalen Worten, was entstehen soll. Das Ergebnis siehst du zuerst und entscheidest dann.";
+
     private Control BuildPromptBar(string studio, string? key = null)
     {
         var box = new TextBox
         {
             Name = "auftrag-prompt",
-            PlaceholderText = "Was soll dieses Studio für dich tun? Sag es in deinen Worten und drück Enter – am Ende entscheidest du: behalten oder nicht.",
+            PlaceholderText = PromptHint(studio),
             AcceptsReturn = true,
             TextWrapping = TextWrapping.Wrap,
             MinHeight = 32,
@@ -137,7 +142,7 @@ public partial class MainWindow
         // T-0315: Programm-Assistent – versteht das offene Programm den Auftrag, arbeitet er im Dokument (Plan, Rückfragen, Vorschau); sonst der Studio-Ablauf
         var assistHost = new ContentControl { Name = "assist-host" };
         var assistTarget = AssistTargetFor(key);
-        if (assistTarget is not null) box.PlaceholderText = $"Was soll ich in „{assistTarget.Title}“ für dich tun? Sag es in deinen Worten – ich zeige dir zuerst Plan und Vorschau.";
+        if (assistTarget is not null) box.PlaceholderText = $"Schreib hier, was in „{assistTarget.Title}“ entstehen oder sich ändern soll. Du siehst zuerst den Plan und entscheidest dann.";
         var liveThumb = new ContentControl { Name = "assist-live" };
         DispatcherTimer? liveTimer = null;
         if (key is not null && _assistTyped.TryGetValue(key, out var typed)) box.Text = typed.Prompt;
