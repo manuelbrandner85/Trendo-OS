@@ -2509,5 +2509,244 @@
    "sprache": "TypeScript",
    "beschreibung": "BullMQ - Message Queue and Batch processing for NodeJS, Python, .NET, Elixir, Rust and PHP based on Redis or P"
   }
+ ],
+ "X-06": [
+  {
+   "repo": "github/gitignore",
+   "lizenz": "CC0-1.0",
+   "sterne": 176197,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": null,
+   "beschreibung": "A collection of useful .gitignore templates"
+  },
+  {
+   "repo": "ossf/scorecard",
+   "lizenz": "Apache-2.0",
+   "sterne": 5816,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "Go",
+   "beschreibung": "OpenSSF Scorecard - Security health metrics for Open Source"
+  },
+  {
+   "repo": "licensee/licensee",
+   "lizenz": "MIT",
+   "sterne": 921,
+   "zuletzt": "2026-11-02",
+   "archiviert": false,
+   "sprache": "Ruby",
+   "beschreibung": "Ruby gem & CLI to detect a project's open source license (SPDX) from LICENSE files, package manifests, and REA"
+  },
+  {
+   "repo": "go-enry/go-enry",
+   "lizenz": "Apache-2.0",
+   "sterne": 634,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "Go",
+   "beschreibung": "A faster file programming language detector"
+  },
+  {
+   "repo": "github-linguist/linguist",
+   "lizenz": "MIT",
+   "sterne": 13770,
+   "zuletzt": "2026-11-04",
+   "archiviert": false,
+   "sprache": "Ruby",
+   "beschreibung": "Language Savant. If your repository's language is being reported incorrectly, send us a pull request!"
+  }
+ ],
+ "X-04": [
+  {
+   "repo": "extism/extism",
+   "lizenz": "BSD-3-Clause",
+   "sterne": 5827,
+   "zuletzt": "2026-10-09",
+   "archiviert": false,
+   "sprache": "Rust",
+   "beschreibung": "The framework for building with WebAssembly (wasm). Easily & securely load wasm modules, move data, call funct"
+  },
+  {
+   "repo": "modelcontextprotocol/csharp-sdk",
+   "lizenz": "NOASSERTION",
+   "sterne": 4621,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": "The official C# SDK for Model Context Protocol servers and clients. Maintained in collaboration with Microsoft"
+  },
+  {
+   "repo": "bytecodealliance/wasmtime-dotnet",
+   "lizenz": "Apache-2.0",
+   "sterne": 525,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": ".NET embedding of Wasmtime https://bytecodealliance.github.io/wasmtime-dotnet/"
+  }
+ ],
+ "X-10": [
+  {
+   "repo": "fossology/fossology",
+   "lizenz": "GPL-2.0",
+   "sterne": 1050,
+   "zuletzt": "2026-11-05",
+   "archiviert": false,
+   "sprache": "HTML",
+   "beschreibung": "FOSSology is an open source license compliance software system and toolkit.  As a toolkit you can run license,"
+  },
+  {
+   "repo": "aboutcode-org/scancode-toolkit",
+   "lizenz": "NOASSERTION",
+   "sterne": 2664,
+   "zuletzt": "2026-11-02",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": ":mag: ScanCode detects licenses, copyrights, dependencies by \"scanning code\" ... to discover and inventory ope"
+  },
+  {
+   "repo": "jplag/JPlag",
+   "lizenz": "GPL-3.0",
+   "sterne": 2001,
+   "zuletzt": "2026-11-05",
+   "archiviert": false,
+   "sprache": "Java",
+   "beschreibung": "State-of-the-Art Source Code Plagiarism & Collusion Detection. Check for plagiarism in a set of programs."
+  }
+ ],
+ "CORE-01": [
+  {
+   "repo": "seerge/g-helper",
+   "lizenz": "GPL-3.0",
+   "sterne": 15962,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": "Lightweight Armoury Crate alternative for Asus laptops with nearly the same functionality. Works with ROG Zeph"
+  },
+  {
+   "repo": "microsoft/PowerToys",
+   "lizenz": "MIT",
+   "sterne": 140727,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C",
+   "beschreibung": "Microsoft PowerToys is a collection of utilities that supercharge productivity and customization on Windows"
+  },
+  {
+   "repo": "Open-Shell/Open-Shell-Menu",
+   "lizenz": "MIT",
+   "sterne": 9455,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Classic Shell Reborn."
+  }
+ ],
+ "SYS-01": [
+  {
+   "repo": "dotnet/runtime",
+   "lizenz": "MIT",
+   "sterne": 18413,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": ".NET is a cross-platform runtime for cloud, mobile, desktop, and IoT apps."
+  },
+  {
+   "repo": "shirou/gopsutil",
+   "lizenz": "NOASSERTION",
+   "sterne": 11937,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "Go",
+   "beschreibung": "psutil for golang"
+  },
+  {
+   "repo": "Rem0o/FanControl.Releases",
+   "lizenz": "NOASSERTION",
+   "sterne": 21355,
+   "zuletzt": "2026-11-02",
+   "archiviert": false,
+   "sprache": null,
+   "beschreibung": "This is the release repository for Fan Control, a highly customizable fan controlling software for Windows."
+  }
+ ],
+ "SYS-11": [
+  {
+   "repo": "ScoopInstaller/Scoop",
+   "lizenz": "NOASSERTION",
+   "sterne": 24804,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "PowerShell",
+   "beschreibung": "A command-line installer for Windows."
+  },
+  {
+   "repo": "AppImage/AppImageKit",
+   "lizenz": "NOASSERTION",
+   "sterne": 9460,
+   "zuletzt": "2026-07-26",
+   "archiviert": false,
+   "sprache": null,
+   "beschreibung": "Package desktop applications as AppImages that run on common Linux-based operating systems, such as RHEL, Cent"
+  },
+  {
+   "repo": "flatpak/flatpak",
+   "lizenz": "LGPL-2.1",
+   "sterne": 5107,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "C",
+   "beschreibung": "Linux application sandboxing and distribution framework"
+  }
+ ],
+ "SYS-13": [
+  {
+   "repo": "microsoft/playwright-dotnet",
+   "lizenz": "MIT",
+   "sterne": 3026,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": ".NET version of the Playwright testing and automation library."
+  },
+  {
+   "repo": "stryker-mutator/stryker-net",
+   "lizenz": "Apache-2.0",
+   "sterne": 2130,
+   "zuletzt": "2026-11-08",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": "Mutation testing for .NET core and .NET framework!"
+  },
+  {
+   "repo": "VerifyTests/Verify",
+   "lizenz": "MIT",
+   "sterne": 3472,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": "Verify is a snapshot testing tool that simplifies the assertion of complex data models and documents."
+  },
+  {
+   "repo": "fluentassertions/fluentassertions",
+   "lizenz": "NOASSERTION",
+   "sterne": 3812,
+   "zuletzt": "2026-10-28",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": "A very extensive set of extension methods that allow you to more naturally specify the expected outcome of a T"
+  },
+  {
+   "repo": "AvaloniaUI/Avalonia",
+   "lizenz": "MIT",
+   "sterne": 31781,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": "Develop Desktop, Embedded, Mobile and WebAssembly apps with C# and XAML. The future of .NET UI"
+  }
  ]
 }

@@ -46,6 +46,6 @@
 | CORE-04, X-02 | bewertet 08.11.2026: kein Einbau, schon abgedeckt oder durch Projektregeln ausgeschlossen |
 | X-05 Kostenlose KI weicht auf das nächste Modell aus (eigener Code nach LiteLLM) | eingebaut, Tests bis zur HTTP-Antwort, echter Lauf gegen OpenRouter NOT RUN (reports/alle-studios/runde12-kostenlose-ki-ausweichen-e2e.md) |
 | X-11, CORE-02, X-01 | bewertet 08.11.2026: kein Einbau; automatisches Gedächtnis (mem0) nur nach Entscheidung |
-| Runden 13+ (8 Studios, davon SPEC-07 abgelehnt) | NOT RUN |
+| X-06, X-04, X-10, CORE-01, SYS-01, SYS-11, SYS-13 (Runden 13 und 14) | bewertet 08.11.2026: kein Einbau, Funktionen vorhanden oder durch Projektregeln ausgeschlossen. Damit alle Studios bewertet, SPEC-07 bleibt abgelehnt |
 | Web Design Studio Modul 05 (Design-Tokens) | eingebaut, 2 Tests, im Browser geprüft (docs/web-design-godmode) |
 | Volltest nach den Änderungen | grün: Api 16, Core 1546, App 829 (reports/alle-studios/volltest-2026-11-08.md) |

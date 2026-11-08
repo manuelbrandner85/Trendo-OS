@@ -43,20 +43,20 @@ Korrektur 08.11.2026: Die Zählung sucht nur die Studio-Kennung – „TV & Live
 | X-01 | Großprojekte umsetzen | 8 | 2 | bewertet (Runde 12) |
 | CORE-07 | Webseite bauen | 19 | 20 | bewertet (Runde 7) |
 | X-03 | Apps zusammenklicken | 11 | 6 | bewertet (Runde 3) |
-| X-06 | Projekte von GitHub holen | 10 | 1 | NOT RUN – folgt in späteren Runden |
-| X-04 | Trendo erweitern | 9 | 3 | NOT RUN – folgt in späteren Runden |
-| X-10 | Programme nachbauen | 9 | 1 | NOT RUN – folgt in späteren Runden |
-| CORE-01 | Desktop einrichten | 10 | 4 | NOT RUN – folgt in späteren Runden |
-| SYS-01 | Startmodus wählen | 8 | 1 | NOT RUN – folgt in späteren Runden |
+| X-06 | Projekte von GitHub holen | 10 | 1 | bewertet (Runde 13) |
+| X-04 | Trendo erweitern | 9 | 3 | bewertet (Runde 13) |
+| X-10 | Programme nachbauen | 9 | 1 | bewertet (Runde 13) |
+| CORE-01 | Desktop einrichten | 10 | 4 | bewertet (Runde 13) |
+| SYS-01 | Startmodus wählen | 8 | 1 | bewertet (Runde 14) |
 | CORE-11 | Daten schützen | 11 | 6 | bewertet (Runde 8) |
 | SPEC-12 | System auf Gefahren prüfen | 8 | 1 | bewertet (Runde 8) |
 | SYS-03 | Surfen & Herunterladen | 10 | 2 | bewertet (Runde 10) |
 | SYS-04 | Programme installieren | 8 | 2 | bewertet (Runde 10) |
 | SYS-06 | Dateien teilen | 8 | 2 | bewertet (Runde 9) |
 | SYS-07 | Geräte erkennen | 9 | 2 | bewertet (Runde 9) |
-| SYS-11 | Programme starten | 9 | 2 | NOT RUN – folgt in späteren Runden |
+| SYS-11 | Programme starten | 9 | 2 | bewertet (Runde 14) |
 | SYS-12 | Schrift & Farben anpassen | 10 | 2 | bewertet (Runde 10) |
-| SYS-13 | Qualität prüfen | 10 | 2 | NOT RUN – folgt in späteren Runden |
+| SYS-13 | Qualität prüfen | 10 | 2 | bewertet (Runde 14) |
 | X-02 | Einrichten & Reparieren | 9 | 3 | bewertet (Runde 11) |
 | X-08 | Handy verbinden | 9 | 2 | bewertet (Runde 10) |
 | CORE-04 | PC, Pi & Handy verbinden | 10 | 2 | bewertet (Runde 11) |

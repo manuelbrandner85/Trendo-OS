@@ -531,3 +531,70 @@ Bestand: Kanban-Tafel mit KI-Rollen, Teams mit Fortsetzen nach Abbruch, Abläufe
 | taskforcesh/bullmq | 6 | 1 | 9 | 10 | 9 | 8 | 9 | 6.7 | VERWORFEN | MIT, braucht Redis – Trendo hat einen eigenen Job-Ablauf |
 | microsoft/autogen | 8 | 3 | 8 | 6 | 7 | 7 | 10 | 6.6 | AUSGESCHLOSSEN | zweites Agenten-System verboten |
 | openai/swarm | 6 | 3 | 7 | 10 | 7 | 7 | 7 | 6.4 | VERWORFEN | MIT, Lehrbeispiel |
+
+## X-06 – Projekte von GitHub holen
+Bestand: Suche ohne Konto, Lizenz verständlich erklärt, Kopie mit Herkunftsnachweis; Projekte mit unklarer Lizenz werden bewusst nicht installiert.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| github/gitignore | 5 | 5 | 8 | 10 | 10 | 10 | 10 | 7.45 | VERWORFEN | CC0-1.0 – kein Bezug zum Holen fremder Projekte |
+| ossf/scorecard | 7 | 2 | 9 | 10 | 8 | 9 | 8 | 7.1 | OPTION | Apache-2.0, Sicherheitsbewertung – braucht ein GitHub-Token je Person |
+| licensee/licensee | 7 | 2 | 8 | 10 | 8 | 8 | 6 | 6.75 | VERWORFEN | MIT – Lizenz aus der Datei raten würde „unklar“ aufweichen; hinter NOASSERTION stecken oft Zusatzbedingungen |
+| github-linguist/linguist | 5 | 2 | 8 | 10 | 7 | 8 | 9 | 6.3 | VERWORFEN | MIT – Sprache liefert GitHub bereits |
+| go-enry/go-enry | 5 | 2 | 8 | 10 | 9 | 8 | 5 | 6.3 | VERWORFEN | Apache-2.0 – wie Linguist |
+
+## X-04 – Trendo erweitern
+Bestand: Erweiterungen sind bewusst nur Daten (Vorlagen, Schrittlisten, Links, Textbausteine) mit Prüfsumme.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| extism/extism | 8 | 4 | 8 | 10 | 8 | 6 | 7 | 7.25 | VERWORFEN | BSD-3-Clause – fremder ausführbarer Code widerspricht „nur Daten“ |
+| bytecodealliance/wasmtime-dotnet | 7 | 4 | 9 | 10 | 9 | 6 | 5 | 7.15 | VERWORFEN | Apache-2.0 – wie Extism |
+| modelcontextprotocol/csharp-sdk | 8 | 5 | 8 | 4 | 8 | 6 | 8 | 6.6 | VERWORFEN | Lizenz bei GitHub nicht erkannt; Trendo hat einen eigenen Lese-Adapter |
+
+## X-10 – Programme nachbauen
+Bestand: Clean-Room mit getrennten Rollen, Tagebuch und Ähnlichkeitsprüfung gegen das Original vorhanden.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| jplag/JPlag | 9 | 4 | 9 | 5 | 8 | 8 | 7 | 7.1 | EXTERN | GPL-3.0, Java – nur als externes Programm möglich; eigene Ähnlichkeitsprüfung reicht |
+| aboutcode-org/scancode-toolkit | 8 | 3 | 8 | 4 | 6 | 8 | 7 | 6.15 | OPTION | Lizenzscanner, Lizenz gemischt, Python |
+| fossology/fossology | 8 | 1 | 8 | 5 | 6 | 7 | 6 | 5.75 | VERWORFEN | GPL-2.0, Server mit Datenbank |
+
+## CORE-01 – Desktop einrichten
+Bestand: Desktop, Startmenü, Suche, Stile wie Windows, Mac und GNOME vorhanden.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| microsoft/PowerToys | 8 | 1 | 9 | 10 | 8 | 6 | 10 | 6.95 | AUSGESCHLOSSEN | MIT – ändert Windows, in Trendo verboten |
+| Open-Shell/Open-Shell-Menu | 7 | 1 | 7 | 10 | 8 | 5 | 8 | 6.2 | AUSGESCHLOSSEN | MIT – greift in die Windows-Shell ein, verboten |
+| seerge/g-helper | 6 | 1 | 7 | 5 | 8 | 4 | 8 | 5.1 | VERWORFEN | GPL-3.0, nur ASUS-Geräte |
+
+## SYS-01 – Startmodus wählen
+Bestand: Gerät wird erkannt (PC, Stick, Pi), nichts wird umgestellt.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| dotnet/runtime | 9 | 10 | 10 | 10 | 9 | 9 | 10 | 9.55 | VORHANDEN | MIT – Trendo nutzt die Erkennung daraus bereits |
+| shirou/gopsutil | 6 | 2 | 8 | 5 | 9 | 8 | 8 | 5.95 | VERWORFEN | Go, kein Mehrwert |
+| Rem0o/FanControl.Releases | 5 | 1 | 5 | 4 | 8 | 3 | 8 | 4.3 | AUSGESCHLOSSEN | Lüftersteuerung braucht Treiber – verboten |
+
+## SYS-11 – Programme starten
+Bestand: Freigegebener Katalog mit Pflegen, Starten und Prüfen vorhanden; Start erst nach Freigabe.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| ScoopInstaller/Scoop | 8 | 5 | 8 | 10 | 8 | 7 | 8 | 7.6 | OPTION | Unlicense/MIT, schon in Runde 10 bewertet: zweite Paketquelle ohne Mehrwert |
+| flatpak/flatpak | 7 | 3 | 8 | 5 | 8 | 8 | 8 | 6.3 | VERWORFEN | LGPL-2.1, nur Linux, systemweit |
+| AppImage/AppImageKit | 6 | 3 | 7 | 5 | 8 | 6 | 7 | 5.65 | VERWORFEN | nur Linux, ohne Bezug zum Katalog |
+
+## SYS-13 – Qualität prüfen
+Bestand: Fehlerseite, Modul-Register, Leistung, Rückfall, Lizenzen; im Repo drei Testprojekte mit Oberflächentests.
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| AvaloniaUI/Avalonia | 10 | 10 | 9 | 10 | 9 | 9 | 10 | 9.65 | VORHANDEN | MIT – bereits die Oberfläche von Trendo, Headless-Tests inklusive |
+| VerifyTests/Verify | 7 | 5 | 9 | 10 | 8 | 9 | 7 | 7.65 | VERWORFEN | MIT – eigene Prüfungen genügen |
+| stryker-mutator/stryker-net | 8 | 3 | 8 | 10 | 4 | 9 | 7 | 6.95 | OPTION | Apache-2.0, prüft die Güte der Tests – nur Entwicklungswerkzeug, Laufzeit bei dieser Testmenge sehr hoch |
+| microsoft/playwright-dotnet | 7 | 2 | 9 | 10 | 7 | 8 | 8 | 6.9 | VERWORFEN | MIT – Trendo ist keine Web-Anwendung |
+| fluentassertions/fluentassertions | 6 | 5 | 9 | 3 | 8 | 8 | 8 | 6.3 | AUSGESCHLOSSEN | Lizenz nicht erkannt, neuere Fassungen kostenpflichtig für Firmen |

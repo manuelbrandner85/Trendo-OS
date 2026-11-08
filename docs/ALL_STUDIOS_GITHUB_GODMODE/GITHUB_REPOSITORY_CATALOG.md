@@ -414,5 +414,51 @@
 | langchain-ai/langgraph | MIT | 2026-11-08 | nein | 44645 | Python |
 | openai/swarm | MIT | 2026-04-15 | nein | 22116 | Python |
 | taskforcesh/bullmq | MIT | 2026-11-08 | nein | 9577 | TypeScript |
+## X-06
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| github/gitignore | CC0-1.0 | 2026-11-07 | nein | 176197 |  |
+| ossf/scorecard | Apache-2.0 | 2026-11-08 | nein | 5816 | Go |
+| licensee/licensee | MIT | 2026-11-02 | nein | 921 | Ruby |
+| go-enry/go-enry | Apache-2.0 | 2026-11-08 | nein | 634 | Go |
+| github-linguist/linguist | MIT | 2026-11-04 | nein | 13770 | Ruby |
+## X-04
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| extism/extism | BSD-3-Clause | 2026-10-09 | nein | 5827 | Rust |
+| modelcontextprotocol/csharp-sdk | keine Standardlizenz erkannt (GitHub: NOASSERTION) | 2026-11-07 | nein | 4621 | C# |
+| bytecodealliance/wasmtime-dotnet | Apache-2.0 | 2026-11-06 | nein | 525 | C# |
+## X-10
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| fossology/fossology | GPL-2.0 | 2026-11-05 | nein | 1050 | HTML |
+| aboutcode-org/scancode-toolkit | gemischt (GitHub: NOASSERTION) | 2026-11-02 | nein | 2664 | Python |
+| jplag/JPlag | GPL-3.0 | 2026-11-05 | nein | 2001 | Java |
+## CORE-01
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| seerge/g-helper | GPL-3.0 | 2026-11-08 | nein | 15962 | C# |
+| microsoft/PowerToys | MIT | 2026-11-07 | nein | 140727 | C |
+| Open-Shell/Open-Shell-Menu | MIT | 2026-11-07 | nein | 9455 | C++ |
+## SYS-01
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| dotnet/runtime | MIT | 2026-11-08 | nein | 18413 | C# |
+| shirou/gopsutil | GitHub: NOASSERTION | 2026-11-07 | nein | 11937 | Go |
+| Rem0o/FanControl.Releases | GitHub: NOASSERTION | 2026-11-02 | nein | 21355 |  |
+## SYS-11
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| ScoopInstaller/Scoop | Unlicense oder MIT (aus Lizenzdatei) | 2026-11-08 | nein | 24804 | PowerShell |
+| AppImage/AppImageKit | GitHub: NOASSERTION | 2026-07-26 | nein | 9460 |  |
+| flatpak/flatpak | LGPL-2.1 | 2026-11-06 | nein | 5107 | C |
+## SYS-13
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| microsoft/playwright-dotnet | MIT | 2026-11-06 | nein | 3026 | C# |
+| stryker-mutator/stryker-net | Apache-2.0 | 2026-11-08 | nein | 2130 | C# |
+| VerifyTests/Verify | MIT | 2026-11-06 | nein | 3472 | C# |
+| fluentassertions/fluentassertions | GitHub: NOASSERTION, neuere Fassungen kostenpflichtig für Firmen | 2026-10-28 | nein | 3812 | C# |
+| AvaloniaUI/Avalonia | MIT | 2026-11-07 | nein | 31781 | C# |
 
 Korrigiert: PhotoDemon → tannerhelland/PhotoDemon (BSD-ähnlich), Shotcut → mltframework/shotcut (GPL-3.0).
