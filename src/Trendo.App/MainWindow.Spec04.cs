@@ -105,6 +105,7 @@ public partial class MainWindow
             Meter("xr-m-size", "Dateigröße", info.Bytes, b.MaxBytes, $"{Fach.F(info.Bytes / 1048576.0, 2)} / {Fach.F(b.MaxBytes / 1048576.0, 0)} MB");
             if (det is { Textures.Count: > 0 }) { var big = det.Textures.Max(t => Math.Max(t.Width, t.Height)); var lim = XrPro.MaxTextureSide(XrDevice); Meter("xr-m-texsize", "Größte Textur", big, lim, $"{big} / {lim} px"); }
             sp.Children.Add(XrFixCard(info, det));
+            sp.Children.Add(XrGltfCard()); // Alle Studios, Runde 5: Khronos-Prüfung und Packen für Web & Brille
             sp.Children.Add(H("Alle Geräte", 12));
             foreach (var bb in XrInspector.Budgets)
             {

@@ -24,7 +24,7 @@
 | SPEC-06 FSRS-Planer für Karteikarten (Runde 4) | eingebaut, umschaltbar im Lernplan, 12 Kern- und 1 Oberflächentest grün |
 | Runde 4 übrige (SpiceSharp, Math.NET Numerics, Statik-Konzepte) | geplant, NOT RUN – NuGet-Pakete bzw. eigener Code |
 | SPEC-10 MQTT-Live-Werte (MQTTnet) | eingebaut, echter Lauf mit Broker auf 127.0.0.1 (reports/alle-studios/mqtt-e2e.md), Tests grün; echte Geräte NOT RUN |
-| Runde 5 übrige (glTF-Transform, glTF-Validator) | geplant, NOT RUN |
+| SPEC-04 glTF-Validator + glTF-Transform | eingebaut im VR-Studio („Prüfen & für Web packen“), echter Lauf: Regal 532 → 105 KB, weiter fehlerfrei (reports/alle-studios/gltf-e2e.md); Einrichten per Knopf NOT RUN |
 | Runden 6+ (36 Studios) | NOT RUN |
 | Web Design Studio Modul 05 (Design-Tokens) | eingebaut, 2 Tests, im Browser geprüft (docs/web-design-godmode) |
 | Volltest nach den Änderungen | grün: Api 16, Core 1546, App 829 (reports/alle-studios/volltest-2026-11-08.md) |

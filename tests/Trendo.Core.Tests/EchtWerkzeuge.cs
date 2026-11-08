@@ -34,5 +34,9 @@ public static class EchtWerkzeuge
     public static string? VektorPmtiles() => First(Env("TRENDO_VEKTOR_PMTILES"), Path.Combine(Pruef, "pmtiles", "ort.pmtiles"));
     public static string? AssimpDll() => First(Env("TRENDO_ASSIMP_DLL"), Path.Combine(Werkzeuge, "assimp", "Release", "assimp-vc143-mt.dll"), Path.Combine(Pruef, "assimp", "x", "Release", "assimp-vc143-mt.dll"));
     public static string? Melt() => First(Env("TRENDO_MELT_EXE"), Path.Combine(Werkzeuge, "kdenlive", "bin", "melt.exe"));
+    public static string? GltfValidator() => First(Env("TRENDO_GLTF_VALIDATOR"), Path.Combine(Werkzeuge, "gltf-validator", "gltf_validator.exe"), Path.Combine(Pruef, "gltf-validator", "x", "gltf_validator.exe"));
+    /// <summary>Startskript von glTF-Transform (node_modules/@gltf-transform/cli/bin/cli.js) im Werkzeug- oder Prüfordner.</summary>
+    public static string? GltfTransformCli() => First(Env("TRENDO_GLTF_TRANSFORM_CLI"), GltfTools.CliJs(Path.Combine(Werkzeuge, "gltf-transform")), GltfTools.CliJs(Path.Combine(Pruef, "gltf-transform")));
+    public static string? Node() => Env("TRENDO_NODE") ?? Cli.Find("node");
     public static string? FfmpegDir() => First(Env("TRENDO_FFMPEG_DIR"), Path.Combine(Werkzeuge, "ffmpeg", "bin")) is { } d && File.Exists(Path.Combine(d, OperatingSystem.IsWindows() ? "ffmpeg.exe" : "ffmpeg")) ? d : null;
 }

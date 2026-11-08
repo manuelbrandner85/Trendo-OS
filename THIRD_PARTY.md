@@ -39,6 +39,8 @@ Quelle: `src/Trendo.Core/DependencyCatalog` (Installation bei Bedarf beim Öffne
 | Claude Code | Kontotarif | Nicht erforderlich | — | Optionaler Cloudbereich, nicht Teil des OS-Bundles |
 | f3d 4.0.1 | BSD-3-Clause | Auto-Installation pro Benutzer nach Zustimmung (offizielle Zip, SHA-256 geprüft) | — | Vorschaubilder für 3D-Dateien, eigener Prozess |
 | assimp 6.0.5 | BSD-3-Clause | Auto-Installation pro Benutzer nach Zustimmung (offizielle Zip, SHA-256 geprüft) | — | 3D-Dateien umwandeln, läuft in eigenem Trendo-Prozess (--assimp-convert) |
+| glTF-Validator 2.0.0-dev.3.10 (Khronos) | Apache-2.0 | Auto-Installation pro Benutzer nach Zustimmung (offizielle Zip, SHA-256 geprüft) | — | 3D-Modelle offiziell prüfen (VR & AR) |
+| glTF-Transform 4.5.1 | MIT | Nach Klick per npm in den Werkzeugordner (feste Fassung, ohne Installationsskripte) | — | Modelle für Web & Brille packen (meshopt, WebP); Start mit node direkt |
 | typst 0.15.1 | Apache-2.0 | Auto-Installation pro Benutzer nach Zustimmung (offizielle Zip, SHA-256 geprüft) | — | Briefe/Rechnungen als PDF, eigener Prozess, Dateizugriff auf den Projektordner begrenzt |
 | mediamtx 1.21.3 | MIT | Auto-Installation pro Benutzer nach Zustimmung (offizielle Zip, SHA-256 geprüft) | — | Eigener Sendeserver, Standard nur 127.0.0.1 |
 | streamlink 8.6.3 (Windows-Build mit Python und FFmpeg) | BSD-2-Clause; FFmpeg LGPL/GPL im Paket | Auto-Installation pro Benutzer nach Zustimmung (offizielle Zip, SHA-256 geprüft) | — | Nur Livestreams von Das Erste/ARD und arte, kein Login, keine Aufnahme; getrenntes Programm, nicht mitgeliefert |
