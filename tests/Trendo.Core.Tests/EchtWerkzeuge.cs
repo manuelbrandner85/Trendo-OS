@@ -38,6 +38,8 @@ public static class EchtWerkzeuge
     /// <summary>Startskript von glTF-Transform (node_modules/@gltf-transform/cli/bin/cli.js) im Werkzeug- oder Prüfordner.</summary>
     public static string? GltfTransformCli() => First(Env("TRENDO_GLTF_TRANSFORM_CLI"), GltfTools.CliJs(Path.Combine(Werkzeuge, "gltf-transform")), GltfTools.CliJs(Path.Combine(Pruef, "gltf-transform")));
     /// <summary>Prüfordner mit fremden .ics (dateien/) und der Referenz aus icalendar + recurring-ical-events (referenz.json).</summary>
+    /// <summary>Python-Prüfumgebung mit unabhängigen Lesern (pytiled-parser …) im Prüfordner.</summary>
+    public static string? PruefPython() => First(Env("TRENDO_PRUEF_PYTHON"), Path.Combine(Pruef, "py-pruef", Py));
     public static string? IcsReferenz() => First(Env("TRENDO_ICS_REFERENZ"), Path.Combine(Pruef, "ics-probe", "referenz.json"));
     public static string? Node() => Env("TRENDO_NODE") ?? Cli.Find("node");
     public static string? FfmpegDir() => First(Env("TRENDO_FFMPEG_DIR"), Path.Combine(Werkzeuge, "ffmpeg", "bin")) is { } d && File.Exists(Path.Combine(d, OperatingSystem.IsWindows() ? "ffmpeg.exe" : "ffmpeg")) ? d : null;

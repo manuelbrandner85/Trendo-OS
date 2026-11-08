@@ -534,6 +534,7 @@ public partial class MainWindow
             tabs.Children.Add(b);
         }
         tabs.Children.Add(Act("game-lv-add", "＋ Level", () => ProgramRun(GK, () => GameAddLevel(d))));
+        tabs.Children.Add(Act("game-tiled", "Als Tiled-Karten ausgeben", () => ProgramRun(GK, () => GameExportTiled(d)))); // Alle Studios, Runde 7
         var name = new TextBox { Name = "game-lv-name", Text = GameLevelName(d, li), Width = 150 };
         void Rename() { if (name.Text?.Trim() is { Length: > 0 } t && t != GameLevelName(d, li)) ProgramRun(GK, () => GameRenameLevel(d, li, t)); }
         name.LostFocus += (_, _) => Rename(); OnEnter(name, Rename);
