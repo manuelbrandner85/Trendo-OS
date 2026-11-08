@@ -40,6 +40,8 @@ public static class EchtWerkzeuge
     /// <summary>Prüfordner mit fremden .ics (dateien/) und der Referenz aus icalendar + recurring-ical-events (referenz.json).</summary>
     /// <summary>Python-Prüfumgebung mit unabhängigen Lesern (pytiled-parser …) im Prüfordner.</summary>
     public static string? PruefPython() => First(Env("TRENDO_PRUEF_PYTHON"), Path.Combine(Pruef, "py-pruef", Py));
+    /// <summary>Ordner mit axe-core und jsdom (node_modules), wie Trendo ihn einrichtet.</summary>
+    public static string? AxeDir() => new[] { Env("TRENDO_AXE_DIR"), Path.Combine(Werkzeuge, "axe"), Path.Combine(Pruef, "axe") }.FirstOrDefault(d => d is not null && AxeCheck.Ready(d));
     public static string? IcsReferenz() => First(Env("TRENDO_ICS_REFERENZ"), Path.Combine(Pruef, "ics-probe", "referenz.json"));
     public static string? Node() => Env("TRENDO_NODE") ?? Cli.Find("node");
     public static string? FfmpegDir() => First(Env("TRENDO_FFMPEG_DIR"), Path.Combine(Werkzeuge, "ffmpeg", "bin")) is { } d && File.Exists(Path.Combine(d, OperatingSystem.IsWindows() ? "ffmpeg.exe" : "ffmpeg")) ? d : null;

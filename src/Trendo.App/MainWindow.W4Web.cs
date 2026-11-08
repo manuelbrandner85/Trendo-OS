@@ -184,6 +184,7 @@ public partial class MainWindow
                 Act("web-apply-yes", "Übernehmen", async () => { try { var r = WebsiteStudio.Revise(_webDir!, pend); _webPending = null; _webDiff = null; ShowScore(r.Quality); await RefreshPreview(); Say(r.Message, "dev"); } catch (Exception ex) when (ex is ArgumentException or IOException) { Say(ex.Message, "dev"); } }, true),
                 Act("web-apply-no", "Verwerfen", () => { _webPending = null; _webDiff = null; Say("Verworfen – nichts geändert.", "dev"); }) } } } }));
         }
+        sp.Children.Add(WebAxePanel()); // Alle Studios, Runde 7: axe-core
         if (_webArmed) sp.Children.Add(Act("web-pack-yes", "Ja, Paket nur auf diesem PC speichern", DoPack, true));
         sp.Children.Add(P("Das Paket bleibt lokal. Trendo lädt nichts hoch.", null, 11));
         return sp;
