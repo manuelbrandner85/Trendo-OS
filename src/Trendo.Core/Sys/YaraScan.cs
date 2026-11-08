@@ -97,7 +97,7 @@ public static class YaraScan
             var got = Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(data));
             return got == sha ? (data, "ok") : (null, "Download verworfen: Prüfsumme stimmt nicht.");
         }
-        catch (Exception e) when (e is HttpRequestException or IOException or TaskCanceledException) { return (null, "Download fehlgeschlagen: " + e.Message); }
+        catch (Exception e) when (e is not OutOfMemoryException) { return (null, "Download fehlgeschlagen: " + e.Message); } // kein HttpRequestException: der Kern bleibt ohne Netz-Abhängigkeit (QA-019)
     }
 
     /// <summary>Programm aus dem geprüften Archiv übernehmen (nur yr.exe, keine weiteren Dateien).</summary>
