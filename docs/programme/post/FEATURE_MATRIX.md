@@ -1,6 +1,6 @@
 # E-Mail & Kontakte – Funktionsmatrix
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `post` · Stand: 0.9.36 (Stand 2963379)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `post` · Stand: 0.9.36 (Stand 434d2ab)
 
 Quelle: `docs/spec/kataloge/SYS-09_KATALOG.md`
 

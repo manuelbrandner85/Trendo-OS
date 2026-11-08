@@ -1,10 +1,10 @@
 # TV & Live – Testergebnisse
 
-Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand 2963379)
+Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand 434d2ab)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 24 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 27 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -32,3 +32,6 @@ Bestanden 24 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | Update sofort: geladenes Update startet 30-Sekunden-Countdown (alles gesichert), danach Installation; „Jetzt neu starten“ geht sofort | ✓ bestanden |
 | Updates: nach dem Neustart kommen die Fenster zurück und „Was ist neu?“ erscheint einmal | ✓ bestanden |
 | Updates: suchen und im Hintergrund laden; „beim nächsten Start“ installiert beim Beenden, „sofort“ mit Einrichtungsbildschirm, Sicherung und Fenstern | ✓ bestanden |
+| mediamtx-Oberfläche: Sendeserver starten → OBS-Adresse und Ansehen-Adresse, nur 127.0.0.1; beenden; unsicherer Name abgelehnt | ✓ bestanden |
+| streamlink-Oberfläche: Mediathek-Seite zeigt Das Erste und arte; Klick löst den Stream auf und wechselt zum Player | ✓ bestanden |
+| typst-Oberfläche: ohne Programm Einrichten-Knopf; mit Programm Brief mit Posten → PDF im Ordner Dokumente; falscher Posten → Hinweis | ✓ bestanden |

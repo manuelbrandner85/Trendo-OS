@@ -1,6 +1,6 @@
 # Kameras & Roboter steuern – Funktionsmatrix
 
-Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.36 (Stand 2963379)
+Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.36 (Stand 434d2ab)
 
 Quelle: `docs/w6-katalog/CORE-09.md`
 
@@ -53,5 +53,6 @@ Quelle: `docs/w6-katalog/CORE-09.md`
 - Foto speichern
 - Aufnahme starten
 - Aufnahme stoppen
+- Objekterkennung einrichten (YOLOX, kostenlos)
 - Datei wählen …
 - Ordner wählen …

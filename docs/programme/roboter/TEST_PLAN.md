@@ -1,8 +1,8 @@
 # Kameras & Roboter steuern – Testplan
 
-Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.36 (Stand 2963379)
+Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.36 (Stand 434d2ab)
 
-27 Tests sprechen dieses Programm an.
+28 Tests sprechen dieses Programm an.
 
 - CORE-09 F11: Objekte zählen
 - CORE-09 F12: Belichtung
@@ -31,3 +31,4 @@ Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete ·
 - CORE-09: PNG/BMP lesen, Farbobjekt finden, Kinematik hin und zurück, Fahrprogramm
 - CORE-09: Simulation und Trockenlauf senden nichts, Echt braucht Freigabe
 - CORE-09: Webcams aus sysfs, DirectShow nur Video, RTSP-Adresse
+- Objekterkennung: ohne Einrichtung Einrichten-Knopf; ohne Bild klarer Hinweis; mit Bild → markiertes Bild in der Vorschau, „2 Personen, 1 Hund“ im Status

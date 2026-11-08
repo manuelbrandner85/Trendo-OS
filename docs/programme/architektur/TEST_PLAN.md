@@ -1,9 +1,11 @@
 # Grundriss & Wohnen – Testplan
 
-Studio: Wohnung planen (SPEC-01) · Bereich: Technik & Fachgebiete · Seite: `architektur` · Stand: 0.9.36 (Stand 2963379)
+Studio: Wohnung planen (SPEC-01) · Bereich: Technik & Fachgebiete · Seite: `architektur` · Stand: 0.9.36 (Stand 434d2ab)
 
-23 Tests sprechen dieses Programm an.
+25 Tests sprechen dieses Programm an.
 
+- IFC-Ansicht: Menüband „IFC ansehen“ exportiert und öffnet die 3D-Ansicht; bereit → Datei als Base64; geladen → Bauteile; nochmal klicken schließt
+- IFC-Oberfläche: ohne Einrichtung klarer Hinweis; mit IfcOpenShell → .ifc im Ordner Grundrisse, Kontrollbericht, Hilfsdateien aufgeräumt
 - SPEC-01 F08: Fliesenbedarf
 - SPEC-01 F09: Tapetenrollen
 - SPEC-01 F10: Möbel-Stellprüfung

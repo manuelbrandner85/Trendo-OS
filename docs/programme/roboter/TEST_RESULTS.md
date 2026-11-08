@@ -1,10 +1,10 @@
 # Kameras & Roboter steuern – Testergebnisse
 
-Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.36 (Stand 2963379)
+Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.36 (Stand 434d2ab)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 27 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 28 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -35,3 +35,4 @@ Bestanden 27 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | CORE-09: PNG/BMP lesen, Farbobjekt finden, Kinematik hin und zurück, Fahrprogramm | ✓ bestanden |
 | CORE-09: Simulation und Trockenlauf senden nichts, Echt braucht Freigabe | ✓ bestanden |
 | CORE-09: Webcams aus sysfs, DirectShow nur Video, RTSP-Adresse | ✓ bestanden |
+| Objekterkennung: ohne Einrichtung Einrichten-Knopf; ohne Bild klarer Hinweis; mit Bild → markiertes Bild in der Vorschau, „2 Personen, 1 Hund“ im Status | ✓ bestanden |

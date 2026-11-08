@@ -1,10 +1,10 @@
 # Karten & Touren – Testergebnisse
 
-Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `karten` · Stand: 0.9.36 (Stand 2963379)
+Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `karten` · Stand: 0.9.36 (Stand 434d2ab)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 14 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 15 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -22,3 +22,4 @@ Bestanden 14 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | SPEC-13 UI: Kachel-Ordner als Offline-Paket laden – Karte springt hin, Info zeigt Kacheln und Zoom, bleibt nach Neustart gemerkt | ✓ bestanden |
 | SPEC-13 UI: Route mit der Maus zeichnen (Doppelklick beendet), Wegpunkt setzen, Fläche messen (Enter), Rechner rechnen sofort | ✓ bestanden |
 | SPEC-13: GPX lesen, km/Höhenmeter/Dauer, GeoJSON, Koordinaten DMS/UTM, Luftlinie | ✓ bestanden |
+| Vektorkarte-Oberfläche: .pmtiles mit MVT → MapLibre füllt die Arbeitsfläche statt der Rasterkarte; bereit → Start, Kachel → Antwort; Schließen | ✓ bestanden |

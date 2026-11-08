@@ -1,8 +1,8 @@
 # 3D – Testplan
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand 2963379)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand 434d2ab)
 
-51 Tests sprechen dieses Programm an.
+53 Tests sprechen dieses Programm an.
 
 - 3D Für Engine: ohne Teil Hinweis; vier Ziele; Unity-Export mit Bericht-Datei; Verlust (Material) wird als Fehler gemeldet
 - 3D aus Bild: TripoSR nach Klick einrichten (Stand geprüft, eigene Umgebung), Foto wählen → GLB → „Im 3D-Studio öffnen“; falscher Stand wird nicht eingerichtet
@@ -55,3 +55,5 @@ Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d
 - Teams im Claude-Chat: vor dem Lauf liegt das Studio-Team als .claude/agents/trendo-*.md im Projektordner – Claude kann die Fachrollen hinzuziehen
 - Teams: jedes Studio (außer dem abgelehnten SPEC-07) hat ein Profi-Team; „👥 Team“ im 3D-Studio öffnet „KI einsetzen“ mit dem 3D-Team; eigene Rolle nur mit Studio
 - Vorschlag 36: Studios zeigen „✨ Freie KI hier“ – 3D-Studio schlägt „3D aus Bild“ vor, der Klick öffnet die KI-Bibliothek (geladen wird erst dort); jede Studio-Zuordnung gibt es wirklich
+- assimp-Oberfläche: ohne Einrichtung Knopf; FBX im 3D-Ordner → „→ GLB“ startet Trendo mit --assimp-convert, Ergebnis in 3D/umgewandelt
+- f3d im 3D-Studio: Einrichten ohne Werkzeug; mit Werkzeug Knopf je Modell, Vorschaubild erscheint im Studio

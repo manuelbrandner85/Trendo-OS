@@ -1,6 +1,6 @@
 # Abläufe (Automatisch erledigen) – Funktionsmatrix
 
-Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.36 (Stand 2963379)
+Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.36 (Stand 434d2ab)
 
 Quelle: `docs/spec/kataloge/SYS-05_KATALOG.md`
 

@@ -1,6 +1,6 @@
 # Karten & Touren – Architektur
 
-Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `karten` · Stand: 0.9.36 (Stand 2963379)
+Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `karten` · Stand: 0.9.36 (Stand 434d2ab)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Spec13.cs`
@@ -19,6 +19,7 @@ Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `k
 - `MapPoint`
 - `ElevationService`
 - `TilePack`
+- `VectorMap`
 
 ## Dateiformate (im Code belegt)
 - .geojson

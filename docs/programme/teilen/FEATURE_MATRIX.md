@@ -1,6 +1,6 @@
 # Ordner im Heimnetz teilen – Funktionsmatrix
 
-Studio: Dateien teilen (SYS-06) · Bereich: System & Sicherheit · Seite: `teilen` · Stand: 0.9.36 (Stand 2963379)
+Studio: Dateien teilen (SYS-06) · Bereich: System & Sicherheit · Seite: `teilen` · Stand: 0.9.36 (Stand 434d2ab)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

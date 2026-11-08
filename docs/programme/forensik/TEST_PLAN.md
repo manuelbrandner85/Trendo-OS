@@ -1,8 +1,8 @@
 # Sicherheits-Werkzeuge & Beweise – Testplan
 
-Studio: System auf Gefahren prüfen (SPEC-12) · Bereich: System & Sicherheit · Seite: `forensik` · Stand: 0.9.36 (Stand 2963379)
+Studio: System auf Gefahren prüfen (SPEC-12) · Bereich: System & Sicherheit · Seite: `forensik` · Stand: 0.9.36 (Stand 434d2ab)
 
-19 Tests sprechen dieses Programm an.
+20 Tests sprechen dieses Programm an.
 
 - CORE-11 UI: Schutz-Seite über System erreichbar, Sichern, Ordner prüfen
 - SPEC-12 UI: Prüfsumme vergleichen, Fall anlegen, Beweis sichern, Bericht
@@ -23,3 +23,4 @@ Studio: System auf Gefahren prüfen (SPEC-12) · Bereich: System & Sicherheit ·
 - T-0201: Ordnerfeld öffnet den Ordner-Dialog
 - T-0201: jedes Pfad- oder Ordnerfeld hat „Datei wählen …“ bzw. „Ordner wählen …“
 - X-02 UI: Beim Start automatisch geprüft, Seite zeigt Ergebnis, erneut prüfen
+- YARA-Karte: ohne Einrichtung Einrichten-Knopf; mit yara-x Treffer als Warnung mit deutscher Art; nichts wird verändert; fehlender Ordner verständlich

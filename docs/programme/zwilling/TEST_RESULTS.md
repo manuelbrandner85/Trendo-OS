@@ -1,13 +1,14 @@
 # Geräte überwachen – Testergebnisse
 
-Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.36 (Stand 2963379)
+Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.36 (Stand 434d2ab)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 20 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 21 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
+| MQTT-Oberfläche: Verknüpfungen lesen (Kommentare, JSON-Feld), Fehler verständlich; Verbinden legt Sensoren an, merkt Broker ohne Passwort; Trennen | ✓ bestanden |
 | SPEC-10 F09: Speichergrenze | ✓ bestanden |
 | SPEC-10 F10: Ereignisprotokoll | ✓ bestanden |
 | SPEC-10 F11: Hysterese | ✓ bestanden |

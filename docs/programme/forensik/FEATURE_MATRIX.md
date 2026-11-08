@@ -1,6 +1,6 @@
 # Sicherheits-Werkzeuge & Beweise – Funktionsmatrix
 
-Studio: System auf Gefahren prüfen (SPEC-12) · Bereich: System & Sicherheit · Seite: `forensik` · Stand: 0.9.36 (Stand 2963379)
+Studio: System auf Gefahren prüfen (SPEC-12) · Bereich: System & Sicherheit · Seite: `forensik` · Stand: 0.9.36 (Stand 434d2ab)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -36,4 +36,5 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - 👥 Team
 - Datei wählen …
 - Prüfen
+- Regel-Prüfung einrichten (yara-x, kostenlos)
 - Fall anlegen

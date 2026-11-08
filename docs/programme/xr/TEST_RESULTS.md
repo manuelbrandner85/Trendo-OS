@@ -1,10 +1,10 @@
 # VR & AR gestalten – Testergebnisse
 
-Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.36 (Stand 2963379)
+Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.36 (Stand 434d2ab)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 19 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 20 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -27,3 +27,4 @@ Bestanden 19 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | SPEC-04 VR: Vorschau aus Augenhöhe schaltbar (1,60 m), Anzeige der größten Textur, Karte „Für die Brille reparieren“; passt das Modell, gibt es nichts zu reparieren | ✓ bestanden |
 | SPEC-04: GLB lesen, Dreiecke zählen, Geräte-Grenzen und Bildzeit prüfen | ✓ bestanden |
 | SPEC-09 Scan: Kameras als Marker, beschneiden, Reste entfernen, Löcher schließen, echte Größe direkt und über Kreditkarte, Rückgängig; gute Fotos auswählen und als Kopie verwenden; Texturqualität wählbar | ✓ bestanden |
+| glTF-Oberfläche: ohne Programme Einrichten-Knöpfe; mit ihnen offiziell prüfen und für Web packen – neue …-web.glb, Original bleibt, Hinweis auf Blender/Unreal | ✓ bestanden |

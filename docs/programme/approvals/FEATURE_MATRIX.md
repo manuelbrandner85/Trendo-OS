@@ -1,6 +1,6 @@
 # Freigaben – Funktionsmatrix
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `approvals` · Stand: 0.9.36 (Stand 2963379)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `approvals` · Stand: 0.9.36 (Stand 434d2ab)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

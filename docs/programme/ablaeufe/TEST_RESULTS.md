@@ -1,10 +1,10 @@
 # Abläufe (Automatisch erledigen) – Testergebnisse
 
-Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.36 (Stand 2963379)
+Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.36 (Stand 434d2ab)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 32 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 33 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -13,6 +13,7 @@ Bestanden 32 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | Ablaufplan: Bausteine anhängen, Schritt per Maus nach oben ziehen, einstellen, Probelauf, Rückgängig; Änderung an freigegebenem Ablauf verlangt neue Freigabe | ✓ bestanden |
 | Abläufe Profi: n8n einrichten nur nach Ja, starten, Vorlage als Fluss mit Nach-außen-Hinweis, Nein verwirft, Ja speichert .n8n.json; Claude-Datei erscheint; Probe-Ereignis geht an den lokalen Webhook | ✓ bestanden |
 | Abläufe: Fehler im Zeitplan wird angezeigt und protokolliert, der nächste fehlerfreie Lauf nimmt den Hinweis wieder weg | ✓ bestanden |
+| C1/C2/C4: Ist Claude verbunden, geht „Los“ der Studio-Zeile an Claude (Studio bleibt sichtbar, volle Rechte mit Rückfrage bei Wirkung nach außen); der zweite Auftrag läuft in derselben Sitzung; ohne Claude plant Trendo selbst | ✓ bestanden |
 | CORE-02 UI: Studio verweist auf „KI fragen“, Frage wird beantwortet | ✓ bestanden |
 | CORE-02: Nur Quellen auf diesem Gerät – Cloud-Adressen werden abgelehnt | ✓ bestanden |
 | CORE-02: Ollama-Format (tags/chat) wird korrekt gesprochen | ✓ bestanden |

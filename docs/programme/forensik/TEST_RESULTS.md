@@ -1,10 +1,10 @@
 # Sicherheits-Werkzeuge & Beweise – Testergebnisse
 
-Studio: System auf Gefahren prüfen (SPEC-12) · Bereich: System & Sicherheit · Seite: `forensik` · Stand: 0.9.36 (Stand 2963379)
+Studio: System auf Gefahren prüfen (SPEC-12) · Bereich: System & Sicherheit · Seite: `forensik` · Stand: 0.9.36 (Stand 434d2ab)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 19 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 20 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -27,3 +27,4 @@ Bestanden 19 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | T-0201: Ordnerfeld öffnet den Ordner-Dialog | ✓ bestanden |
 | T-0201: jedes Pfad- oder Ordnerfeld hat „Datei wählen …“ bzw. „Ordner wählen …“ | ✓ bestanden |
 | X-02 UI: Beim Start automatisch geprüft, Seite zeigt Ergebnis, erneut prüfen | ✓ bestanden |
+| YARA-Karte: ohne Einrichtung Einrichten-Knopf; mit yara-x Treffer als Warnung mit deutscher Art; nichts wird verändert; fehlender Ordner verständlich | ✓ bestanden |

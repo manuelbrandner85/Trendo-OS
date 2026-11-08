@@ -1,10 +1,10 @@
 # Startbildschirm – Testergebnisse
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.36 (Stand 2963379)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.36 (Stand 434d2ab)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 103 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 2
+Bestanden 104 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 2
 
 | Test | Ergebnis |
 |---|---|
@@ -18,6 +18,7 @@ Bestanden 103 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 2
 | Baukasten übernimmt die neue Seite ins Formular | ✓ bestanden |
 | Briefseite zeigt den echten Brieftext in der Vorschau | ✓ bestanden |
 | Briefseite zeigt die Auftragsleiste und meldet ehrlich, wenn nichts eingebaut ist | ✓ bestanden |
+| C1/C2/C4: Ist Claude verbunden, geht „Los“ der Studio-Zeile an Claude (Studio bleibt sichtbar, volle Rechte mit Rückfrage bei Wirkung nach außen); der zweite Auftrag läuft in derselben Sitzung; ohne Claude plant Trendo selbst | ✓ bestanden |
 | CORE-01: Dateisuche begrenzt Tiefe und Anzahl | ✓ bestanden |
 | CORE-01: Desktop im Windows-, Mac- und GNOME-Stil ohne verschwommene Glasfläche über dem Hintergrund | nicht im Lauf |
 | CORE-01: Desktop-Symbole – Seite schaltet jedes Symbol hin und zurück (Knopftext folgt), doppeltes Hinzufügen legt kein zweites Symbol an | ✓ bestanden |

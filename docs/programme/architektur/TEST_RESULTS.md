@@ -1,13 +1,15 @@
 # Grundriss & Wohnen – Testergebnisse
 
-Studio: Wohnung planen (SPEC-01) · Bereich: Technik & Fachgebiete · Seite: `architektur` · Stand: 0.9.36 (Stand 2963379)
+Studio: Wohnung planen (SPEC-01) · Bereich: Technik & Fachgebiete · Seite: `architektur` · Stand: 0.9.36 (Stand 434d2ab)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 23 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 25 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
+| IFC-Ansicht: Menüband „IFC ansehen“ exportiert und öffnet die 3D-Ansicht; bereit → Datei als Base64; geladen → Bauteile; nochmal klicken schließt | ✓ bestanden |
+| IFC-Oberfläche: ohne Einrichtung klarer Hinweis; mit IfcOpenShell → .ifc im Ordner Grundrisse, Kontrollbericht, Hilfsdateien aufgeräumt | ✓ bestanden |
 | SPEC-01 F08: Fliesenbedarf | ✓ bestanden |
 | SPEC-01 F09: Tapetenrollen | ✓ bestanden |
 | SPEC-01 F10: Möbel-Stellprüfung | ✓ bestanden |

@@ -1,8 +1,8 @@
 # TV & Live – Testplan
 
-Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand 2963379)
+Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand 434d2ab)
 
-24 Tests sprechen dieses Programm an.
+27 Tests sprechen dieses Programm an.
 
 - Anmeldung: „Beim Start nach PIN fragen“ lässt sich abschalten
 - Apps: WhatsApp installieren → Desktop und Startmenü, öffnet als App-Fenster mit eigenem Speicher, Entfernen löscht die Anmeldung
@@ -28,3 +28,6 @@ Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · 
 - Update sofort: geladenes Update startet 30-Sekunden-Countdown (alles gesichert), danach Installation; „Jetzt neu starten“ geht sofort
 - Updates: nach dem Neustart kommen die Fenster zurück und „Was ist neu?“ erscheint einmal
 - Updates: suchen und im Hintergrund laden; „beim nächsten Start“ installiert beim Beenden, „sofort“ mit Einrichtungsbildschirm, Sicherung und Fenstern
+- mediamtx-Oberfläche: Sendeserver starten → OBS-Adresse und Ansehen-Adresse, nur 127.0.0.1; beenden; unsicherer Name abgelehnt
+- streamlink-Oberfläche: Mediathek-Seite zeigt Das Erste und arte; Klick löst den Stream auf und wechselt zum Player
+- typst-Oberfläche: ohne Programm Einrichten-Knopf; mit Programm Brief mit Posten → PDF im Ordner Dokumente; falscher Posten → Hinweis

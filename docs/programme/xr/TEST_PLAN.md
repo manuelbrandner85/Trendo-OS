@@ -1,8 +1,8 @@
 # VR & AR gestalten – Testplan
 
-Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.36 (Stand 2963379)
+Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.36 (Stand 434d2ab)
 
-19 Tests sprechen dieses Programm an.
+20 Tests sprechen dieses Programm an.
 
 - S3 VR: Brillen-Ansicht zeigt linkes und rechtes Auge (±3,15 cm, Sichtfeld der Brille), Ziehen dreht beide; Handy-AR hat keine Brillen-Ansicht
 - SPEC-04 F02: glTF lesen
@@ -23,3 +23,4 @@ Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` �
 - SPEC-04 VR: Vorschau aus Augenhöhe schaltbar (1,60 m), Anzeige der größten Textur, Karte „Für die Brille reparieren“; passt das Modell, gibt es nichts zu reparieren
 - SPEC-04: GLB lesen, Dreiecke zählen, Geräte-Grenzen und Bildzeit prüfen
 - SPEC-09 Scan: Kameras als Marker, beschneiden, Reste entfernen, Löcher schließen, echte Größe direkt und über Kreditkarte, Rückgängig; gute Fotos auswählen und als Kopie verwenden; Texturqualität wählbar
+- glTF-Oberfläche: ohne Programme Einrichten-Knöpfe; mit ihnen offiziell prüfen und für Web packen – neue …-web.glb, Original bleibt, Hinweis auf Blender/Unreal

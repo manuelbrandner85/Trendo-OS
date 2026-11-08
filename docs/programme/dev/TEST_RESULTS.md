@@ -1,10 +1,10 @@
 # Software – Testergebnisse
 
-Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 2963379)
+Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 434d2ab)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 48 · Fehlgeschlagen 1 · Übersprungen 0 · nicht im Lauf 2
+Bestanden 51 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 2
 
 | Test | Ergebnis |
 |---|---|
@@ -50,12 +50,14 @@ Bestanden 48 · Fehlgeschlagen 1 · Übersprungen 0 · nicht im Lauf 2
 | T-0203: „Ja, einrichten“ öffnet keine Herstellerseite, solange die Prüfung nicht besteht | ✓ bestanden |
 | T-0203: „Starten“ öffnet LibreOffice und Blender erst nach bestandener Prüfung und Freigabe | ✓ bestanden |
 | T-0203: „Starten“ öffnet nicht, wenn die Prüfung scheitert | ✓ bestanden |
-| T-0206 (UI): Dateiliste, Editor mit Zeilennummern, Speichern; Änderung erst als Vorschau, dann übernehmen | ✕ fehlgeschlagen |
+| T-0206 (UI): Dateiliste, Editor mit Zeilennummern, Speichern; Änderung erst als Vorschau, dann übernehmen | ✓ bestanden |
 | Teams im Claude-Chat: vor dem Lauf liegt das Studio-Team als .claude/agents/trendo-*.md im Projektordner – Claude kann die Fachrollen hinzuziehen | ✓ bestanden |
 | Teams: jedes Studio (außer dem abgelehnten SPEC-07) hat ein Profi-Team; „👥 Team“ im 3D-Studio öffnet „KI einsetzen“ mit dem 3D-Team; eigene Rolle nur mit Studio | nicht im Lauf |
 | Unterlagen: nur Freigegebenes geht an Claude (als Datei im Projekt); passende Unterlagen werden vorgeschlagen – erst nach Ja | ✓ bestanden |
 | Verbindungen: GitHub-Anmeldung im eigenen gh-Ordner der Person (sichtbar, im Browser), Netlify-Schlüssel nur im Tresor, Claude-Plugins nur nach Ja geändert | ✓ bestanden |
 | Veröffentlichen: erst nach Ja; Projekt als ZIP im Ordner „Veröffentlicht“, ohne Hilfsdateien – hochgeladen wird nichts | ✓ bestanden |
+| Visueller Editor: Knöpfe da, im Testmodus kein WebView; „speichern“ vom Editor schreibt die Seite, Export legt die fertige Seite an | ✓ bestanden |
 | Wiederholungen automatisieren: Auftrag als Ablauf merken (Prompt-Bibliothek), mit einem Klick wiederholen; Wiederholung wird erkannt | ✓ bestanden |
 | Zeitreise: jede Antwort mit Änderungen wird ein Versionspunkt; zurück auf einen älteren Stand und wieder vor | ✓ bestanden |
 | Ziehen in Claude: Text kommt als Zitat ins Eingabefeld, Dateien werden angehängt | ✓ bestanden |
+| axe-Oberfläche: ohne Einrichtung Einrichten-Knopf; mit axe → Befunde auf Deutsch (✗ Fehler, • Hinweis) mit Version und Zahl der bestandenen Regeln | ✓ bestanden |

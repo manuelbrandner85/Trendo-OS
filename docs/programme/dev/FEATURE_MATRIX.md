@@ -1,6 +1,6 @@
 # Software – Funktionsmatrix
 
-Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 2963379)
+Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 434d2ab)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -18,6 +18,9 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Software
 - Code-Editor
 - Kopieren
+- Editor öffnen
+- Als fertige Webseite exportieren
+- Export im Browser öffnen
 - Klar
 - Verspielt
 - Luxuriös
@@ -36,4 +39,5 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Jetzt beheben
 - Änderung ansehen
 - Paket vorbereiten
+- Genaue Barrierefreiheitsprüfung einrichten (axe-core, kostenlos)
 - Anlegen

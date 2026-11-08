@@ -1,8 +1,8 @@
 # Audio bearbeiten – Testplan
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `ton` · Stand: 0.9.36 (Stand 2963379)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `ton` · Stand: 0.9.36 (Stand 434d2ab)
 
-22 Tests sprechen dieses Programm an.
+23 Tests sprechen dieses Programm an.
 
 - Audio Mehrspur: Projekt anlegen, zwei Spuren, Clip mit der Maus verschieben, Stumm und Solo per Knopf, Abmischen öffnet eine Spur
 - Audio spektral retuschieren: Spektrogramm an, Rechteck um den Pfeifton ziehen, Bereich absenken – Pfeifton weg, Stimme bleibt, rückgängig
@@ -25,4 +25,5 @@ Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seit
 - S4-17 Audioeditor: Schritte erzeugen und öffnen, mit Ereignis-Tag in die Bibliothek; Fremdgeräusch ohne Lizenz wird im Paket ausgeschlossen und genannt
 - S4-19 Audioeditor: Melodie → Noten schreibt MIDI und Unsicherheitsbericht, legt die Noten in Trendo Musik; Akkord wird als NICHT exakt gemeldet
 - S4-20 Audioeditor: ohne Lizenz und bei Übersteuerung keine Freigabe (Grund steht da, kein Ordner); mit Angabe Freigabe mit WAV 24 Bit und Prüfbericht
+- Spiel-Effekte: Laser würfeln → öffnet sich mit Lizenz „selbst erzeugt“ und Tag Spiel.Schuss; neue Variante ist anders; in die Bibliothek und ins Paket
 - X17 Versionen: nach dem zweiten Speichern zeigt die Datei-Gruppe „Versionen (1)“, Wiederherstellen holt den alten Stand (rückgängig machbar)

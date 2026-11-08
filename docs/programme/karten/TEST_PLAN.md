@@ -1,8 +1,8 @@
 # Karten & Touren – Testplan
 
-Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `karten` · Stand: 0.9.36 (Stand 2963379)
+Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `karten` · Stand: 0.9.36 (Stand 434d2ab)
 
-14 Tests sprechen dieses Programm an.
+15 Tests sprechen dieses Programm an.
 
 - SPEC-13 F02: GPX-Routen
 - SPEC-13 F13: UTM → Grad
@@ -18,3 +18,4 @@ Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `k
 - SPEC-13 UI: Kachel-Ordner als Offline-Paket laden – Karte springt hin, Info zeigt Kacheln und Zoom, bleibt nach Neustart gemerkt
 - SPEC-13 UI: Route mit der Maus zeichnen (Doppelklick beendet), Wegpunkt setzen, Fläche messen (Enter), Rechner rechnen sofort
 - SPEC-13: GPX lesen, km/Höhenmeter/Dauer, GeoJSON, Koordinaten DMS/UTM, Luftlinie
+- Vektorkarte-Oberfläche: .pmtiles mit MVT → MapLibre füllt die Arbeitsfläche statt der Rasterkarte; bereit → Start, Kachel → Antwort; Schließen

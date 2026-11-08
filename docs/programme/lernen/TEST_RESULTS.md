@@ -1,14 +1,15 @@
 # Lernen mit Karteikarten – Testergebnisse
 
-Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.36 (Stand 2963379)
+Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.36 (Stand 434d2ab)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 16 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 17 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
 | Download-Manager: mehrere Links auf einmal, höchstens N gleichzeitig, Fortschritt, Anhalten/Fortsetzen, Prüfsumme falsch → Fehler; ohne Netz (nachgebildet) | ✓ bestanden |
+| FSRS-Oberfläche: Planer umschalten → Meldung, Behaltensrate wählbar, „Leicht“ zeigt 16 Tage statt 4, zurück auf SM-2 | ✓ bestanden |
 | Fahrtenbuch (T-0311): Fahrt korrigieren mit Grund, Fahrt stornieren mit Grund, Monat festschreiben – danach keine Änderung mehr möglich | ✓ bestanden |
 | Lernplan: Plan mit Prüfungstermin anlegen → Tagesplan mit Ziel, Kalender mit Prüfungstag; „Jetzt lernen“ lernt in Plan-Reihenfolge und hält das Tempo | ✓ bestanden |
 | SPEC-06 F07: Export | ✓ bestanden |

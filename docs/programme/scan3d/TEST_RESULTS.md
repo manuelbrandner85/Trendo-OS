@@ -1,13 +1,14 @@
 # Aus Fotos – Testergebnisse
 
-Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `scan3d` · Stand: 0.9.36 (Stand 2963379)
+Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `scan3d` · Stand: 0.9.36 (Stand 434d2ab)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 30 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 31 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
+| Open3D-Oberfläche: ohne Einrichtung Knopf; Glätten ersetzt das Modell mit Rückgängig; Fehler von Open3D wird gemeldet, Modell bleibt | ✓ bestanden |
 | S4 Scannen: Aufnahme-Assistent vor der Rechnung; nach der Rechnung Abdeckungsscheibe mit Prozent und Lücken aus den Kamerapositionen | ✓ bestanden |
 | SPEC-04 VR: Vorschau aus Augenhöhe schaltbar (1,60 m), Anzeige der größten Textur, Karte „Für die Brille reparieren“; passt das Modell, gibt es nichts zu reparieren | ✓ bestanden |
 | SPEC-09 F10: Skalieren | ✓ bestanden |

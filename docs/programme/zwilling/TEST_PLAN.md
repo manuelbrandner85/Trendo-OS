@@ -1,9 +1,10 @@
 # Geräte überwachen – Testplan
 
-Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.36 (Stand 2963379)
+Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.36 (Stand 434d2ab)
 
-20 Tests sprechen dieses Programm an.
+21 Tests sprechen dieses Programm an.
 
+- MQTT-Oberfläche: Verknüpfungen lesen (Kommentare, JSON-Feld), Fehler verständlich; Verbinden legt Sensoren an, merkt Broker ohne Passwort; Trennen
 - SPEC-10 F09: Speichergrenze
 - SPEC-10 F10: Ereignisprotokoll
 - SPEC-10 F11: Hysterese

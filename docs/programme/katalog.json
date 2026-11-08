@@ -202,7 +202,7 @@
       "Ohne Unterschrift",
       "Brief prüfen",
       "Text von der KI verbessern lassen",
-      "7. November 2026",
+      "8. November 2026",
       "Alle 20 Vorlagen zeigen …",
       "Fertig – Brief speichern",
       "Als verschickt eintragen",
@@ -274,9 +274,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 87,
+    "WarmMs": 85,
     "WindowsOnly": []
   },
   {
@@ -436,9 +436,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 52,
+    "WarmMs": 38,
     "WindowsOnly": []
   },
   {
@@ -591,9 +591,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 44,
+    "WarmMs": 41,
     "WindowsOnly": []
   },
   {
@@ -794,9 +794,9 @@
       "src/Trendo.App/MainWindow.Pim.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 46,
+    "WarmMs": 39,
     "WindowsOnly": []
   },
   {
@@ -945,6 +945,7 @@
       "Claude zeigt, wo es arbeitet; Felder in Aufklapp-Menüs kann Claude lesen und ausfüllen",
       "Genauere Leser (Kalender, Programm-Dokument), Design „Wie Windows“, Hilfe „?“ auf Seiten ohne eigenen Hilfetext, Hinweis statt stummer Knöpfe",
       "Kalender-Kern: Raster 15 Minuten, Verschieben behält die Dauer, Ende nie vor Beginn + 15 min",
+      "Kalender-Oberfläche: fremde .ics mit „6× jeden Montag“ → 6 Termine und Hinweis; kaputte Datei → Meldung statt Absturz",
       "Kalender: in der Woche ziehen legt Termin an, benennen, verschieben auf anderen Tag, Unterkante ziehen verlängert, Rückgängig; Monat: Termin auf anderen Tag ziehen",
       "O1/O2/O6: Konto (Passwort geschützt), Posteingang nur lesend, Nachricht öffnen, Antworten nur nach Bestätigung senden, Regel erst nach Freigabe",
       "O3/O5: Termin eintragen (wöchentlich), Monats-/Wochen-/Tagesansicht, Erinnerung als Benachrichtigung; Aufgabe anlegen und abhaken",
@@ -959,9 +960,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 26,
+    "WarmMs": 29,
     "WindowsOnly": []
   },
   {
@@ -1126,9 +1127,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -1366,9 +1367,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -1621,9 +1622,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -1864,7 +1865,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
     "WarmMs": 11,
     "WindowsOnly": []
@@ -1953,9 +1954,9 @@
       "src/Trendo.App/MainWindow.W4Suite.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 23,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -2209,9 +2210,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -2443,9 +2444,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 7,
     "WindowsOnly": []
   },
   {
@@ -2707,9 +2708,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -2989,7 +2990,7 @@
       "src/Trendo.App/MainWindow.Tabelle.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
     "WarmMs": 14,
     "WindowsOnly": []
@@ -3288,9 +3289,9 @@
       "src/Trendo.App/MainWindow.Text.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 34,
+    "WarmMs": 24,
     "WindowsOnly": []
   },
   {
@@ -3328,6 +3329,7 @@
       "Als CSV speichern",
       "Kleinunternehmer (keine MwSt)",
       "Rechnung erstellen",
+      "Rechnung + E-Rechnung (XRechnung) erstellen",
       "Prüfen",
       "Übernehmen",
       "ZIP erstellen"
@@ -3352,6 +3354,7 @@
       "Geld"
     ],
     "Tests": [
+      "E-Rechnung-Oberfläche: fehlende Angaben verständlich, nichts gebucht; vollständig → XRechnung neben der Rechnung, Einnahme gebucht, eigene Angaben gemerkt",
       "Geld: Übersicht mit Saldo und Diagramm, Budget-Warnung, Kategorie in der Tabelle ändern wird gelernt, Steuerberater-ZIP",
       "Geschäftsidee U2/U3: Score als Ring mit Ampel, Gründungsschritte abhaken",
       "Online verkaufen: Startseite mit Kennzahlen; Kunde, Artikel, Bestellung, Rechnung – Umsatz und Geld stimmen",
@@ -3369,9 +3372,9 @@
       "src/Trendo.App/MainWindow.W5Finance.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 51,
+    "WarmMs": 44,
     "WindowsOnly": []
   },
   {
@@ -3518,9 +3521,9 @@
       "src/Trendo.App/MainWindow.W5Business.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -3638,6 +3641,7 @@
       "Bilder",
       "Klänge",
       "Schriften",
+      "Symbole",
       "3D & Texturen",
       "☆ Merklisten",
       "Meine Bibliothek",
@@ -3671,6 +3675,7 @@
       "Medienbrowser wie Openverse/Unsplash/Google Fonts: beide Quellen gemischt, Ausrichtung filtern, Namensnennung als HTML, Bild in der Bildbearbeitung öffnen, Schriften suchen und laden",
       "Medienbrowser: Bilder suchen, Raster mit Vorschaubild, Vorschau mit Lizenz und Urheber, nur freie Lizenzen, Laden mit Herkunft, Namensnennung kopieren; Klänge vorhören; Bibliothek",
       "Medienbrowser: Testmodus ohne nachgebildetes Netz sucht nicht im Internet",
+      "Symbole-Reiter: Sätze laden (nur freie sichtbar), suchen, Klick speichert SVG; CC BY mit Namensnennung in Lizenzen.txt; versteckte Symbole fehlen",
       "X-07 (UI): Suche und Laden mit Lizenzdatei (Netz simuliert)",
       "X-07: Echter Download eines HDRI von Poly Haven mit Prüfsumme (übersprungen ohne Internet)",
       "X-07: Mischen abwechselnd ohne doppelte Dateien; Ausrichtung quer/hoch/quadrat (±8 %) und Mindestbreite",
@@ -3684,9 +3689,9 @@
       "src/Trendo.App/MainWindow.W4Assets.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -3749,9 +3754,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -3827,7 +3832,7 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
     "WarmMs": 12,
     "WindowsOnly": []
@@ -4017,7 +4022,7 @@
       "src/Trendo.App/MainWindow.ProgMode.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": true,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -4274,15 +4279,18 @@
       "T-0203: „In VS Code öffnen“ startet den Ordner, wenn --version schnell antwortet",
       "T-0203: „Ja, einrichten“ öffnet keine Herstellerseite, solange die Prüfung nicht besteht",
       "T-0203: „Starten“ öffnet LibreOffice und Blender erst nach bestandener Prüfung und Freigabe",
-      "T-0203: „Starten“ öffnet nicht, wenn die Prüfung scheitert"
+      "T-0203: „Starten“ öffnet nicht, wenn die Prüfung scheitert",
+      "mediamtx-Oberfläche: Sendeserver starten → OBS-Adresse und Ansehen-Adresse, nur 127.0.0.1; beenden; unsicherer Name abgelehnt",
+      "streamlink-Oberfläche: Mediathek-Seite zeigt Das Erste und arte; Klick löst den Stream auf und wechselt zum Player",
+      "typst-Oberfläche: ohne Programm Einrichten-Knopf; mit Programm Brief mit Posten → PDF im Ordner Dokumente; falscher Posten → Hinweis"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Spec15.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 80,
+    "WarmMs": 57,
     "WindowsOnly": []
   },
   {
@@ -4461,12 +4469,12 @@
       "Sounds",
       "Sprache",
       "Übernehmen",
-      "So",
       "Mo",
       "Di",
       "Mi",
       "Do",
       "Fr",
+      "Sa",
       "Heute",
       "Lied in meinem Geschmack",
       "Einfach",
@@ -4519,6 +4527,7 @@
     "Tests": [
       "A2/A4: Texte & Tabellen mit Neu-Karten (Dokument, Tabelle, Präsentation, PDF, Brief, Word-Vorlagen) und Leerzustand; Neues Projekt mit Ziel-Karten",
       "Abbrechen: voller Grafikspeicher wird gemeldet, hängendes Lied zeigt „■ Abbrechen“, der Klick stoppt es, nichts landet in der Bibliothek, ehrlicher Hinweis",
+      "C1/C2/C4: Ist Claude verbunden, geht „Los“ der Studio-Zeile an Claude (Studio bleibt sichtbar, volle Rechte mit Rückfrage bei Wirkung nach außen); der zweite Auftrag läuft in derselben Sitzung; ohne Claude plant Trendo selbst",
       "Cover-Werkstatt UI: Karaoke ohne Original meldet freundlich; mit Original trennt es die Spuren und startet das Mitsingen",
       "Cover-Werkstatt UI: Lied suchen und wählen, Original untersuchen (Bauplan sichtbar), ohne Text freundlicher Hinweis, Cover mit Tempo/Tonart/Takt, rote Ampel → neuer Versuch näher am Original → grün, Klang 1956 als neue Fassung",
       "Einfach-Modus mit Stimme: die Text-KI schreibt den Liedtext (Sprache, Länge, Abschnitte) – an ACE-Step geht dieser Text, nicht „[Instrumental]“, die Länge bleibt",
@@ -4595,9 +4604,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 31,
+    "WarmMs": 23,
     "WindowsOnly": []
   },
   {
@@ -4663,11 +4672,14 @@
       "TV-Vollbild: kleines Fenster „Verkleinern“ beim Start und bei Mausbewegung, ein Klick verkleinert",
       "Update sofort: geladenes Update startet 30-Sekunden-Countdown (alles gesichert), danach Installation; „Jetzt neu starten“ geht sofort",
       "Updates: nach dem Neustart kommen die Fenster zurück und „Was ist neu?“ erscheint einmal",
-      "Updates: suchen und im Hintergrund laden; „beim nächsten Start“ installiert beim Beenden, „sofort“ mit Einrichtungsbildschirm, Sicherung und Fenstern"
+      "Updates: suchen und im Hintergrund laden; „beim nächsten Start“ installiert beim Beenden, „sofort“ mit Einrichtungsbildschirm, Sicherung und Fenstern",
+      "mediamtx-Oberfläche: Sendeserver starten → OBS-Adresse und Ansehen-Adresse, nur 127.0.0.1; beenden; unsicherer Name abgelehnt",
+      "streamlink-Oberfläche: Mediathek-Seite zeigt Das Erste und arte; Klick löst den Stream auf und wechselt zum Player",
+      "typst-Oberfläche: ohne Programm Einrichten-Knopf; mit Programm Brief mit Posten → PDF im Ordner Dokumente; falscher Posten → Hinweis"
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
     "WarmMs": 7,
     "WindowsOnly": []
@@ -5050,6 +5062,7 @@
       "S4-17 Audioeditor: Schritte erzeugen und öffnen, mit Ereignis-Tag in die Bibliothek; Fremdgeräusch ohne Lizenz wird im Paket ausgeschlossen und genannt",
       "S4-19 Audioeditor: Melodie → Noten schreibt MIDI und Unsicherheitsbericht, legt die Noten in Trendo Musik; Akkord wird als NICHT exakt gemeldet",
       "S4-20 Audioeditor: ohne Lizenz und bei Übersteuerung keine Freigabe (Grund steht da, kein Ordner); mit Angabe Freigabe mit WAV 24 Bit und Prüfbericht",
+      "Spiel-Effekte: Laser würfeln → öffnet sich mit Lizenz „selbst erzeugt“ und Tag Spiel.Schuss; neue Variante ist anders; in die Bibliothek und ins Paket",
       "X17 Versionen: nach dem zweiten Speichern zeigt die Datei-Gruppe „Versionen (1)“, Wiederherstellen holt den alten Stand (rückgängig machbar)"
     ],
     "SourceFiles": [
@@ -5059,7 +5072,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": true,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -5414,9 +5427,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": true,
-    "WarmMs": 10,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -5774,9 +5787,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 56,
+    "WarmMs": 46,
     "WindowsOnly": []
   },
   {
@@ -6105,6 +6118,7 @@
     ],
     "Tests": [
       "A2/A4: Texte & Tabellen mit Neu-Karten (Dokument, Tabelle, Präsentation, PDF, Brief, Word-Vorlagen) und Leerzustand; Neues Projekt mit Ziel-Karten",
+      "C1/C2/C4: Ist Claude verbunden, geht „Los“ der Studio-Zeile an Claude (Studio bleibt sichtbar, volle Rechte mit Rückfrage bei Wirkung nach außen); der zweite Auftrag läuft in derselben Sitzung; ohne Claude plant Trendo selbst",
       "CORE-08 (UI): Datei wählen, Ton herausholen – echte Ausgabedatei",
       "CORE-08 Videoschnitt Profi: Look Schwarzweiß, Ton 50 %, Übergang Wischen, Titel oben – als ein Schritt rückgängig; Logo auf die zweite Bildspur, Ecke unten links, entfernen",
       "CORE-08 Videoschnitt echt mit FFmpeg: Schwarzweiß auf Stück 1 macht die Pixel grau, Stück 2 bleibt farbig, Logo auf der zweiten Spur erscheint, Länge stimmt",
@@ -6150,9 +6164,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -6445,6 +6459,8 @@
       "Unreal Engine",
       "Godot",
       "Web",
+      "f3d einrichten",
+      "assimp einrichten",
       "Würfel",
       "Kugel",
       "Zylinder",
@@ -6575,15 +6591,17 @@
       "StudioCatalog.NameOf: Katalogname, sonst der bisherige Text",
       "Teams im Claude-Chat: vor dem Lauf liegt das Studio-Team als .claude/agents/trendo-*.md im Projektordner – Claude kann die Fachrollen hinzuziehen",
       "Teams: jedes Studio (außer dem abgelehnten SPEC-07) hat ein Profi-Team; „\uD83D\uDC65 Team“ im 3D-Studio öffnet „KI einsetzen“ mit dem 3D-Team; eigene Rolle nur mit Studio",
-      "Vorschlag 36: Studios zeigen „✨ Freie KI hier“ – 3D-Studio schlägt „3D aus Bild“ vor, der Klick öffnet die KI-Bibliothek (geladen wird erst dort); jede Studio-Zuordnung gibt es wirklich"
+      "Vorschlag 36: Studios zeigen „✨ Freie KI hier“ – 3D-Studio schlägt „3D aus Bild“ vor, der Klick öffnet die KI-Bibliothek (geladen wird erst dort); jede Studio-Zuordnung gibt es wirklich",
+      "assimp-Oberfläche: ohne Einrichtung Knopf; FBX im 3D-Ordner → „→ GLB“ startet Trendo mit --assimp-convert, Ergebnis in 3D/umgewandelt",
+      "f3d im 3D-Studio: Einrichten ohne Werkzeug; mit Werkzeug Knopf je Modell, Vorschaubild erscheint im Studio"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 49,
+    "WarmMs": 43,
     "WindowsOnly": []
   },
   {
@@ -6949,9 +6967,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -7339,9 +7357,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 73,
+    "WarmMs": 48,
     "WindowsOnly": []
   },
   {
@@ -7518,6 +7536,7 @@
       "Aus Fotos"
     ],
     "Tests": [
+      "Open3D-Oberfläche: ohne Einrichtung Knopf; Glätten ersetzt das Modell mit Rückgängig; Fehler von Open3D wird gemeldet, Modell bleibt",
       "S4 Scannen: Aufnahme-Assistent vor der Rechnung; nach der Rechnung Abdeckungsscheibe mit Prozent und Lücken aus den Kamerapositionen",
       "SPEC-04 VR: Vorschau aus Augenhöhe schaltbar (1,60 m), Anzeige der größten Textur, Karte „Für die Brille reparieren“; passt das Modell, gibt es nichts zu reparieren",
       "SPEC-09 F10: Skalieren",
@@ -7553,9 +7572,9 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -7769,9 +7788,9 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 7,
     "WindowsOnly": []
   },
   {
@@ -8093,9 +8112,9 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": true,
-    "WarmMs": 13,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -8450,9 +8469,9 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 24,
+    "WarmMs": 19,
     "WindowsOnly": []
   },
   {
@@ -8594,6 +8613,8 @@
       "Drahtgitter an",
       "\uD83D\uDC41 Aus Augenhöhe",
       "\uD83E\uDD7D Brillen-Ansicht",
+      "Khronos-Prüfer einrichten",
+      "glTF-Transform einrichten",
       "Prüfbericht speichern"
     ],
     "Formats": [
@@ -8645,16 +8666,17 @@
       "SPEC-04 VR: Brillen-Reparatur – Dreiecke auf 90 % des Budgets, Texturen auf die Gerätegrenze, Zentimeter-Modell auf Meter; Blender-Skript mit Dezimieren, Bildverkleinern, GLB-Export; passendes Modell braucht nichts",
       "SPEC-04 VR: Vorschau aus Augenhöhe schaltbar (1,60 m), Anzeige der größten Textur, Karte „Für die Brille reparieren“; passt das Modell, gibt es nichts zu reparieren",
       "SPEC-04: GLB lesen, Dreiecke zählen, Geräte-Grenzen und Bildzeit prüfen",
-      "SPEC-09 Scan: Kameras als Marker, beschneiden, Reste entfernen, Löcher schließen, echte Größe direkt und über Kreditkarte, Rückgängig; gute Fotos auswählen und als Kopie verwenden; Texturqualität wählbar"
+      "SPEC-09 Scan: Kameras als Marker, beschneiden, Reste entfernen, Löcher schließen, echte Größe direkt und über Kreditkarte, Rückgängig; gute Fotos auswählen und als Kopie verwenden; Texturqualität wählbar",
+      "glTF-Oberfläche: ohne Programme Einrichten-Knöpfe; mit ihnen offiziell prüfen und für Web packen – neue …-web.glb, Original bleibt, Hinweis auf Blender/Unreal"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Library3D.cs",
       "src/Trendo.App/MainWindow.Spec04.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 50,
+    "WarmMs": 38,
     "WindowsOnly": []
   },
   {
@@ -8851,9 +8873,9 @@
       "src/Trendo.App/MainWindow.Spec16.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 81,
+    "WarmMs": 63,
     "WindowsOnly": []
   },
   {
@@ -9042,9 +9064,9 @@
       "src/Trendo.App/MainWindow.Spec14.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -9204,6 +9226,7 @@
       "＋ Anlegen",
       "Datei wählen …",
       "Einlesen",
+      "● MQTT verbinden",
       "Anlegen",
       "Umbenennen",
       "CSV speichern",
@@ -9225,6 +9248,7 @@
       "Geräte überwachen"
     ],
     "Tests": [
+      "MQTT-Oberfläche: Verknüpfungen lesen (Kommentare, JSON-Feld), Fehler verständlich; Verbinden legt Sensoren an, merkt Broker ohne Passwort; Trennen",
       "SPEC-10 F09: Speichergrenze",
       "SPEC-10 F10: Ereignisprotokoll",
       "SPEC-10 F11: Hysterese",
@@ -9250,9 +9274,9 @@
       "src/Trendo.App/MainWindow.Spec10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 26,
+    "WarmMs": 64,
     "WindowsOnly": []
   },
   {
@@ -9421,6 +9445,7 @@
       "Foto speichern",
       "Aufnahme starten",
       "Aufnahme stoppen",
+      "Objekterkennung einrichten (YOLOX, kostenlos)",
       "Datei wählen …",
       "Ordner wählen …"
     ],
@@ -9464,15 +9489,16 @@
       "CORE-09: ONVIF-Probe, Profile und Stream-Adresse",
       "CORE-09: PNG/BMP lesen, Farbobjekt finden, Kinematik hin und zurück, Fahrprogramm",
       "CORE-09: Simulation und Trockenlauf senden nichts, Echt braucht Freigabe",
-      "CORE-09: Webcams aus sysfs, DirectShow nur Video, RTSP-Adresse"
+      "CORE-09: Webcams aus sysfs, DirectShow nur Video, RTSP-Adresse",
+      "Objekterkennung: ohne Einrichtung Einrichten-Knopf; ohne Bild klarer Hinweis; mit Bild → markiertes Bild in der Vorschau, „2 Personen, 1 Hund“ im Status"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Core09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 31,
+    "WarmMs": 43,
     "WindowsOnly": []
   },
   {
@@ -9613,7 +9639,8 @@
       "RouteService",
       "MapPoint",
       "ElevationService",
-      "TilePack"
+      "TilePack",
+      "VectorMap"
     ],
     "Tools": [
       "Hintergrund an/aus (Karte)",
@@ -9660,15 +9687,16 @@
       "SPEC-13 UI: Höhen ergänzen fragt erst – „Nein“ sendet nichts, „Ja“ holt die Höhen; Route entlang von Wegen über den eingetragenen Server",
       "SPEC-13 UI: Kachel-Ordner als Offline-Paket laden – Karte springt hin, Info zeigt Kacheln und Zoom, bleibt nach Neustart gemerkt",
       "SPEC-13 UI: Route mit der Maus zeichnen (Doppelklick beendet), Wegpunkt setzen, Fläche messen (Enter), Rechner rechnen sofort",
-      "SPEC-13: GPX lesen, km/Höhenmeter/Dauer, GeoJSON, Koordinaten DMS/UTM, Luftlinie"
+      "SPEC-13: GPX lesen, km/Höhenmeter/Dauer, GeoJSON, Koordinaten DMS/UTM, Luftlinie",
+      "Vektorkarte-Oberfläche: .pmtiles mit MVT → MapLibre füllt die Arbeitsfläche statt der Rasterkarte; bereit → Start, Kachel → Antwort; Schließen"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Spec13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": true,
-    "WarmMs": 10,
+    "WarmMs": 7,
     "WindowsOnly": []
   },
   {
@@ -9848,9 +9876,9 @@
       "src/Trendo.App/MainWindow.Spec02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": true,
-    "WarmMs": 14,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -10030,9 +10058,9 @@
       "src/Trendo.App/MainWindow.Spec03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": true,
-    "WarmMs": 10,
+    "WarmMs": 7,
     "WindowsOnly": []
   },
   {
@@ -10160,16 +10188,21 @@
       "Raster (Ansicht)",
       "Maße (Ansicht)",
       "Plan prüfen (Prüfen)",
+      "IFC einrichten (BIM)",
+      "IFC ansehen (BIM)",
+      "IFC öffnen … (BIM)",
       "PDF (Plan) (Exportieren)",
       "SVG (Exportieren)",
       "DXF (CAD) (Exportieren)",
       "Raumbuch (CSV) (Exportieren)",
       "3D (OBJ) (Exportieren)",
-      "Materialliste (Exportieren)"
+      "Materialliste (Exportieren)",
+      "IFC (BIM) (Exportieren)"
     ],
     "Formats": [
       ".csv",
       ".dxf",
+      ".ifc",
       ".md",
       ".obj",
       ".pdf",
@@ -10193,6 +10226,8 @@
       "Grundriss & Wohnen"
     ],
     "Tests": [
+      "IFC-Ansicht: Menüband „IFC ansehen“ exportiert und öffnet die 3D-Ansicht; bereit → Datei als Base64; geladen → Bauteile; nochmal klicken schließt",
+      "IFC-Oberfläche: ohne Einrichtung klarer Hinweis; mit IfcOpenShell → .ifc im Ordner Grundrisse, Kontrollbericht, Hilfsdateien aufgeräumt",
       "SPEC-01 F08: Fliesenbedarf",
       "SPEC-01 F09: Tapetenrollen",
       "SPEC-01 F10: Möbel-Stellprüfung",
@@ -10221,7 +10256,7 @@
       "src/Trendo.App/MainWindow.Spec01.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": true,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -10373,6 +10408,7 @@
     ],
     "Tests": [
       "Download-Manager: mehrere Links auf einmal, höchstens N gleichzeitig, Fortschritt, Anhalten/Fortsetzen, Prüfsumme falsch → Fehler; ohne Netz (nachgebildet)",
+      "FSRS-Oberfläche: Planer umschalten → Meldung, Behaltensrate wählbar, „Leicht“ zeigt 16 Tage statt 4, zurück auf SM-2",
       "Fahrtenbuch (T-0311): Fahrt korrigieren mit Grund, Fahrt stornieren mit Grund, Monat festschreiben – danach keine Änderung mehr möglich",
       "Lernplan: Plan mit Prüfungstermin anlegen → Tagesplan mit Ziel, Kalender mit Prüfungstag; „Jetzt lernen“ lernt in Plan-Reihenfolge und hält das Tempo",
       "SPEC-06 F07: Export",
@@ -10393,7 +10429,7 @@
       "src/Trendo.App/MainWindow.Spec06.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -10582,7 +10618,7 @@
       "src/Trendo.App/MainWindow.Spec05.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": true,
     "WarmMs": 7,
     "WindowsOnly": []
@@ -10641,9 +10677,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -10670,6 +10706,7 @@
       "Datei wählen …",
       "Ordner wählen …",
       "Einlesen",
+      "Word/PDF einlesen einrichten (markitdown)",
       "\uD83D\uDDD1 Papierkorb (0)",
       "Merken",
       "Abbrechen",
@@ -10687,6 +10724,7 @@
     ],
     "Tests": [
       "A2/A4: Texte & Tabellen mit Neu-Karten (Dokument, Tabelle, Präsentation, PDF, Brief, Word-Vorlagen) und Leerzustand; Neues Projekt mit Ziel-Karten",
+      "C1/C2/C4: Ist Claude verbunden, geht „Los“ der Studio-Zeile an Claude (Studio bleibt sichtbar, volle Rechte mit Rückfrage bei Wirkung nach außen); der zweite Auftrag läuft in derselben Sitzung; ohne Claude plant Trendo selbst",
       "CORE-02 UI: Studio verweist auf „KI fragen“, Frage wird beantwortet",
       "CORE-02: Nur Quellen auf diesem Gerät – Cloud-Adressen werden abgelehnt",
       "CORE-02: Ollama-Format (tags/chat) wird korrekt gesprochen",
@@ -10696,6 +10734,7 @@
       "CORE-10: Ordner einlesen nur Textdateien, keine Doppelten",
       "CORE-10: Suche findet Wissen trotz Umlauten und Mehrzahl, bleibt nach Neustart erhalten",
       "CORE-12 UI: Vorlage ausfüllen und senden, neue Vorlage speichern, Masterprompt bauen",
+      "Dokumente einlesen: ohne Einrichtung Einrichten-Knopf; 2 Dokumente → 2 Wissensseiten mit Titel und Quelle; zweites Mal übersprungen; kaputte Datei gemeldet",
       "G10: KI-Aufträge der Grafikkarten-Warteschlange als Karten – läuft mit Laufzeit, wartet mit Platz; fertig = Karte weg",
       "G2: Befehlsleiste mit Gruppen-Überschriften und Symbolen; ausgeführter Befehl steht danach oben unter „Zuletzt benutzt“",
       "G3/G4: Vorschlags-Chips unter der Studio-KI-Zeile setzen den Auftrag ein (starten nichts) und verschwinden beim Tippen; Desktop „Weitermachen“ mit zuletzt benutzten Programmen",
@@ -10718,9 +10757,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -10822,6 +10861,7 @@
       "Ablaufplan: Bausteine anhängen, Schritt per Maus nach oben ziehen, einstellen, Probelauf, Rückgängig; Änderung an freigegebenem Ablauf verlangt neue Freigabe",
       "Abläufe Profi: n8n einrichten nur nach Ja, starten, Vorlage als Fluss mit Nach-außen-Hinweis, Nein verwirft, Ja speichert .n8n.json; Claude-Datei erscheint; Probe-Ereignis geht an den lokalen Webhook",
       "Abläufe: Fehler im Zeitplan wird angezeigt und protokolliert, der nächste fehlerfreie Lauf nimmt den Hinweis wieder weg",
+      "C1/C2/C4: Ist Claude verbunden, geht „Los“ der Studio-Zeile an Claude (Studio bleibt sichtbar, volle Rechte mit Rückfrage bei Wirkung nach außen); der zweite Auftrag läuft in derselben Sitzung; ohne Claude plant Trendo selbst",
       "CORE-02 UI: Studio verweist auf „KI fragen“, Frage wird beantwortet",
       "CORE-02: Nur Quellen auf diesem Gerät – Cloud-Adressen werden abgelehnt",
       "CORE-02: Ollama-Format (tags/chat) wird korrekt gesprochen",
@@ -10852,7 +10892,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
     "WarmMs": 11,
     "WindowsOnly": []
@@ -10926,9 +10966,9 @@
       "src/Trendo.App/MainWindow.W5Fusion.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -11026,7 +11066,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
     "WarmMs": 11,
     "WindowsOnly": []
@@ -11113,9 +11153,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -11195,7 +11235,7 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -11295,9 +11335,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 20,
     "WindowsOnly": []
   },
   {
@@ -11409,7 +11449,7 @@
       "src/Trendo.App/MainWindow.Connections.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
     "WarmMs": 14,
     "WindowsOnly": []
@@ -11460,6 +11500,7 @@
     ],
     "Tests": [
       "A2/A4: Texte & Tabellen mit Neu-Karten (Dokument, Tabelle, Präsentation, PDF, Brief, Word-Vorlagen) und Leerzustand; Neues Projekt mit Ziel-Karten",
+      "C1/C2/C4: Ist Claude verbunden, geht „Los“ der Studio-Zeile an Claude (Studio bleibt sichtbar, volle Rechte mit Rückfrage bei Wirkung nach außen); der zweite Auftrag läuft in derselben Sitzung; ohne Claude plant Trendo selbst",
       "CORE-02 UI: Studio verweist auf „KI fragen“, Frage wird beantwortet",
       "CORE-02: Nur Quellen auf diesem Gerät – Cloud-Adressen werden abgelehnt",
       "CORE-02: Ollama-Format (tags/chat) wird korrekt gesprochen",
@@ -11485,9 +11526,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -11539,7 +11580,7 @@
       "Videos erzeugen (4)",
       "Sprache zu Text (3)",
       "Vorlesen (2)",
-      "Musik (5)",
+      "Musik (6)",
       "3D aus Bild (1)",
       "Geräusche & Effekte (1)",
       "Ollama jetzt starten",
@@ -11591,9 +11632,9 @@
       "src/Trendo.App/MainWindow.KiLibrary.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -11694,9 +11735,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 29,
+    "WarmMs": 18,
     "WindowsOnly": []
   },
   {
@@ -11759,7 +11800,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
     "WarmMs": 13,
     "WindowsOnly": []
@@ -11855,9 +11896,9 @@
       "src/Trendo.App/MainWindow.W4Builder.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -11906,9 +11947,9 @@
       "src/Trendo.App/MainWindow.W5CleanRoom.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -12007,7 +12048,7 @@
       "src/Trendo.App/MainWindow.W4Oss.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -12076,9 +12117,9 @@
       "src/Trendo.App/MainWindow.W5Ext.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -12108,6 +12149,9 @@
       "Software",
       "Code-Editor",
       "Kopieren",
+      "Editor öffnen",
+      "Als fertige Webseite exportieren",
+      "Export im Browser öffnen",
       "Klar",
       "Verspielt",
       "Luxuriös",
@@ -12126,6 +12170,7 @@
       "Jetzt beheben",
       "Änderung ansehen",
       "Paket vorbereiten",
+      "Genaue Barrierefreiheitsprüfung einrichten (axe-core, kostenlos)",
       "Anlegen"
     ],
     "Formats": [
@@ -12200,18 +12245,20 @@
       "Unterlagen: nur Freigegebenes geht an Claude (als Datei im Projekt); passende Unterlagen werden vorgeschlagen – erst nach Ja",
       "Verbindungen: GitHub-Anmeldung im eigenen gh-Ordner der Person (sichtbar, im Browser), Netlify-Schlüssel nur im Tresor, Claude-Plugins nur nach Ja geändert",
       "Veröffentlichen: erst nach Ja; Projekt als ZIP im Ordner „Veröffentlicht“, ohne Hilfsdateien – hochgeladen wird nichts",
+      "Visueller Editor: Knöpfe da, im Testmodus kein WebView; „speichern“ vom Editor schreibt die Seite, Export legt die fertige Seite an",
       "Wiederholungen automatisieren: Auftrag als Ablauf merken (Prompt-Bibliothek), mit einem Klick wiederholen; Wiederholung wird erkannt",
       "Zeitreise: jede Antwort mit Änderungen wird ein Versionspunkt; zurück auf einen älteren Stand und wieder vor",
-      "Ziehen in Claude: Text kommt als Zitat ins Eingabefeld, Dateien werden angehängt"
+      "Ziehen in Claude: Text kommt als Zitat ins Eingabefeld, Dateien werden angehängt",
+      "axe-Oberfläche: ohne Einrichtung Einrichten-Knopf; mit axe → Befunde auf Deutsch (✗ Fehler, • Hinweis) mit Version und Zahl der bestandenen Regeln"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.CodeEditor.cs",
       "src/Trendo.App/MainWindow.W4Dev.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 33,
+    "WarmMs": 47,
     "WindowsOnly": []
   },
   {
@@ -12270,6 +12317,7 @@
     ],
     "Tests": [
       "A2/A4: Texte & Tabellen mit Neu-Karten (Dokument, Tabelle, Präsentation, PDF, Brief, Word-Vorlagen) und Leerzustand; Neues Projekt mit Ziel-Karten",
+      "C1/C2/C4: Ist Claude verbunden, geht „Los“ der Studio-Zeile an Claude (Studio bleibt sichtbar, volle Rechte mit Rückfrage bei Wirkung nach außen); der zweite Auftrag läuft in derselben Sitzung; ohne Claude plant Trendo selbst",
       "CORE-11 UI: Schutz-Seite über System erreichbar, Sichern, Ordner prüfen",
       "G10: KI-Aufträge der Grafikkarten-Warteschlange als Karten – läuft mit Laufzeit, wartet mit Platz; fertig = Karte weg",
       "G2: Befehlsleiste mit Gruppen-Überschriften und Symbolen; ausgeführter Befehl steht danach oben unter „Zuletzt benutzt“",
@@ -12299,9 +12347,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 27,
+    "WarmMs": 23,
     "WindowsOnly": []
   },
   {
@@ -12373,7 +12421,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -12421,6 +12469,7 @@
       "Bau-Fortschritt",
       "\uD83D\uDC65 Team",
       "Jetzt sichern",
+      "restic einrichten (ca. 11 MB)",
       "Ordner wählen …",
       "Ordner prüfen"
     ],
@@ -12437,6 +12486,7 @@
     ],
     "Tests": [
       "A2/A4: Texte & Tabellen mit Neu-Karten (Dokument, Tabelle, Präsentation, PDF, Brief, Word-Vorlagen) und Leerzustand; Neues Projekt mit Ziel-Karten",
+      "C1/C2/C4: Ist Claude verbunden, geht „Los“ der Studio-Zeile an Claude (Studio bleibt sichtbar, volle Rechte mit Rückfrage bei Wirkung nach außen); der zweite Auftrag läuft in derselben Sitzung; ohne Claude plant Trendo selbst",
       "CORE-11 UI: Schutz-Seite über System erreichbar, Sichern, Ordner prüfen",
       "CORE-11: Ordnerprüfung findet Passwort, Schlüssel, gültige IBAN, Kartennummer – maskiert",
       "CORE-11: Schutz-Prüfung erkennt fehlende Sicherung und verändertes Protokoll",
@@ -12465,13 +12515,14 @@
       "W3: Wissensnetz – Seiten als Punkte, [[Verweise]] als Linien (ungerichtet, ohne Doppelte, fehlende Ziele nicht), Klick öffnet die Seite; leer mit Leerzustand",
       "X-02 UI: Beim Start automatisch geprüft, Seite zeigt Ergebnis, erneut prüfen",
       "Y3/Y6: Sicherheitszentrale mit Schutz-Ring und Ampel-Karten je Prüfung; Programme verwalten mit App-Regal – Klick sucht, installiert nichts ohne „Installieren“",
-      "Y4/Y7/Y11/Y14: Gefahren prüfen, Teilen, Qualität und Geräteverbund als Werkzeug-Karten mit Symbol; Geräteverbund ohne Geräte mit Leerzustand"
+      "Y4/Y7/Y11/Y14: Gefahren prüfen, Teilen, Qualität und Geräteverbund als Werkzeug-Karten mit Symbol; Geräteverbund ohne Geräte mit Leerzustand",
+      "restic-Karte: ohne Einrichtung Einrichten-Knopf; sichern legt Ablage an, Passwort nur in der Umgebung; Stände anzeigen; Wiederherstellen in neuen Ordner"
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -12539,9 +12590,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -12845,9 +12896,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 53,
+    "WarmMs": 45,
     "WindowsOnly": []
   },
   {
@@ -13106,9 +13157,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -13396,9 +13447,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 37,
     "WindowsOnly": []
   },
   {
@@ -13639,9 +13690,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 8,
+    "WarmMs": 6,
     "WindowsOnly": []
   },
   {
@@ -13908,9 +13959,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 8,
+    "WarmMs": 7,
     "WindowsOnly": []
   },
   {
@@ -14152,6 +14203,7 @@
       "Baukasten übernimmt die neue Seite ins Formular",
       "Briefseite zeigt den echten Brieftext in der Vorschau",
       "Briefseite zeigt die Auftragsleiste und meldet ehrlich, wenn nichts eingebaut ist",
+      "C1/C2/C4: Ist Claude verbunden, geht „Los“ der Studio-Zeile an Claude (Studio bleibt sichtbar, volle Rechte mit Rückfrage bei Wirkung nach außen); der zweite Auftrag läuft in derselben Sitzung; ohne Claude plant Trendo selbst",
       "CORE-01: Dateisuche begrenzt Tiefe und Anzahl",
       "CORE-01: Desktop im Windows-, Mac- und GNOME-Stil ohne verschwommene Glasfläche über dem Hintergrund",
       "CORE-01: Desktop-Symbole – Seite schaltet jedes Symbol hin und zurück (Knopftext folgt), doppeltes Hinzufügen legt kein zweites Symbol an",
@@ -14250,7 +14302,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
     "WarmMs": 6,
     "WindowsOnly": []
@@ -14327,9 +14379,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -14404,9 +14456,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -14501,9 +14553,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 51,
+    "WarmMs": 38,
     "WindowsOnly": []
   },
   {
@@ -14601,9 +14653,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -14684,7 +14736,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
     "WarmMs": 13,
     "WindowsOnly": []
@@ -14755,6 +14807,7 @@
     ],
     "Tests": [
       "A2/A4: Texte & Tabellen mit Neu-Karten (Dokument, Tabelle, Präsentation, PDF, Brief, Word-Vorlagen) und Leerzustand; Neues Projekt mit Ziel-Karten",
+      "C1/C2/C4: Ist Claude verbunden, geht „Los“ der Studio-Zeile an Claude (Studio bleibt sichtbar, volle Rechte mit Rückfrage bei Wirkung nach außen); der zweite Auftrag läuft in derselben Sitzung; ohne Claude plant Trendo selbst",
       "CORE-11 UI: Schutz-Seite über System erreichbar, Sichern, Ordner prüfen",
       "G10: KI-Aufträge der Grafikkarten-Warteschlange als Karten – läuft mit Laufzeit, wartet mit Platz; fertig = Karte weg",
       "G2: Befehlsleiste mit Gruppen-Überschriften und Symbolen; ausgeführter Befehl steht danach oben unter „Zuletzt benutzt“",
@@ -14784,9 +14837,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -15053,9 +15106,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 30,
+    "WarmMs": 19,
     "WindowsOnly": []
   },
   {
@@ -15300,9 +15353,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 35,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -15556,9 +15609,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -15845,9 +15898,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 56,
+    "WarmMs": 46,
     "WindowsOnly": []
   },
   {
@@ -16055,9 +16108,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 37,
+    "WarmMs": 35,
     "WindowsOnly": []
   },
   {
@@ -16271,7 +16324,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
     "WarmMs": 12,
     "WindowsOnly": []
@@ -16494,9 +16547,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -16708,9 +16761,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -17009,9 +17062,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 109,
+    "WarmMs": 96,
     "WindowsOnly": []
   },
   {
@@ -17226,7 +17279,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
     "WarmMs": 11,
     "WindowsOnly": []
@@ -17453,9 +17506,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -17668,7 +17721,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
     "WarmMs": 11,
     "WindowsOnly": []
@@ -17745,7 +17798,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -18024,9 +18077,9 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
-    "WarmMs": 42,
+    "WarmMs": 40,
     "WindowsOnly": []
   },
   {
@@ -18279,7 +18332,7 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
     "WarmMs": 30,
     "WindowsOnly": []
@@ -18327,6 +18380,7 @@
       "\uD83D\uDC65 Team",
       "Datei wählen …",
       "Prüfen",
+      "Regel-Prüfung einrichten (yara-x, kostenlos)",
       "Fall anlegen"
     ],
     "Formats": [],
@@ -18358,11 +18412,12 @@
       "T-0201: Mausklick auf „Datei wählen …“ füllt das Feld, die Datei steht danach unter „Zuletzt“; Eintippen geht weiter",
       "T-0201: Ordnerfeld öffnet den Ordner-Dialog",
       "T-0201: jedes Pfad- oder Ordnerfeld hat „Datei wählen …“ bzw. „Ordner wählen …“",
-      "X-02 UI: Beim Start automatisch geprüft, Seite zeigt Ergebnis, erneut prüfen"
+      "X-02 UI: Beim Start automatisch geprüft, Seite zeigt Ergebnis, erneut prüfen",
+      "YARA-Karte: ohne Einrichtung Einrichten-Knopf; mit yara-x Treffer als Warnung mit deutscher Art; nichts wird verändert; fehlender Ordner verständlich"
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 2963379)",
+    "Version": "0.9.36 (Stand 434d2ab)",
     "Shell": false,
     "WarmMs": 15,
     "WindowsOnly": []

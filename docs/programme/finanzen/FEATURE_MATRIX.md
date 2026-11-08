@@ -1,6 +1,6 @@
 # Geld – Funktionsmatrix
 
-Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.36 (Stand 2963379)
+Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.36 (Stand 434d2ab)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -23,6 +23,7 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Als CSV speichern
 - Kleinunternehmer (keine MwSt)
 - Rechnung erstellen
+- Rechnung + E-Rechnung (XRechnung) erstellen
 - Prüfen
 - Übernehmen
 - ZIP erstellen

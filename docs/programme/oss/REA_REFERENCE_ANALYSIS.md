@@ -1,6 +1,6 @@
 # Open Source – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` · Stand: 0.9.36 (Stand 2963379)
+Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` · Stand: 0.9.36 (Stand 434d2ab)
 
 Analyse: [Vorbild-Analyse Erweitern: VS Code Erweiterungen, GitHub Desktop, Pinokio, Obsidian-Plugins (Clean-Room)](../../../docs/claude/vorbilder/erweitern-vscode-github-desktop.md)
 

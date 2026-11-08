@@ -1,6 +1,6 @@
 # 3D – Funktionsmatrix
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand 2963379)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand 434d2ab)
 
 Quelle: `docs/spec/kataloge/CORE-05_KATALOG.md`
 
@@ -71,6 +71,8 @@ Quelle: `docs/spec/kataloge/CORE-05_KATALOG.md`
 - Unreal Engine
 - Godot
 - Web
+- f3d einrichten
+- assimp einrichten
 - Würfel
 - Kugel
 - Zylinder

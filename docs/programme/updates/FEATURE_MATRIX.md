@@ -1,6 +1,6 @@
 # Trendo-Updates – Funktionsmatrix
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `updates` · Stand: 0.9.36 (Stand 2963379)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `updates` · Stand: 0.9.36 (Stand 434d2ab)
 
 Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 

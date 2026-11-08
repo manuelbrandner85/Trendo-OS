@@ -1,8 +1,8 @@
 # Live streamen – Testplan
 
-Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.36 (Stand 2963379)
+Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.36 (Stand 434d2ab)
 
-41 Tests sprechen dieses Programm an.
+44 Tests sprechen dieses Programm an.
 
 - Live streamen wie OBS: Szene wählen und anlegen, Bauchbinde einblenden (im FFmpeg-Graph), Tonmischer mit Lautstärke und Stumm, Pegel und Aussetzer-Warnung, Probelauf mit Ampel, Sendeplan
 - SPEC-15 F12: Was läuft gerade
@@ -45,3 +45,6 @@ Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung`
 - T-0203: „Ja, einrichten“ öffnet keine Herstellerseite, solange die Prüfung nicht besteht
 - T-0203: „Starten“ öffnet LibreOffice und Blender erst nach bestandener Prüfung und Freigabe
 - T-0203: „Starten“ öffnet nicht, wenn die Prüfung scheitert
+- mediamtx-Oberfläche: Sendeserver starten → OBS-Adresse und Ansehen-Adresse, nur 127.0.0.1; beenden; unsicherer Name abgelehnt
+- streamlink-Oberfläche: Mediathek-Seite zeigt Das Erste und arte; Klick löst den Stream auf und wechselt zum Player
+- typst-Oberfläche: ohne Programm Einrichten-Knopf; mit Programm Brief mit Posten → PDF im Ordner Dokumente; falscher Posten → Hinweis

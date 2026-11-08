@@ -1,10 +1,11 @@
 # KI-Rollen und Teams – Testplan
 
-Studio: KI-Team einsetzen (CORE-03) · Bereich: KI & Automatik · Seite: `ki-rollen` · Stand: 0.9.36 (Stand 2963379)
+Studio: KI-Team einsetzen (CORE-03) · Bereich: KI & Automatik · Seite: `ki-rollen` · Stand: 0.9.36 (Stand 434d2ab)
 
-23 Tests sprechen dieses Programm an.
+24 Tests sprechen dieses Programm an.
 
 - A2/A4: Texte & Tabellen mit Neu-Karten (Dokument, Tabelle, Präsentation, PDF, Brief, Word-Vorlagen) und Leerzustand; Neues Projekt mit Ziel-Karten
+- C1/C2/C4: Ist Claude verbunden, geht „Los“ der Studio-Zeile an Claude (Studio bleibt sichtbar, volle Rechte mit Rückfrage bei Wirkung nach außen); der zweite Auftrag läuft in derselben Sitzung; ohne Claude plant Trendo selbst
 - CORE-02 UI: Studio verweist auf „KI fragen“, Frage wird beantwortet
 - CORE-02: Nur Quellen auf diesem Gerät – Cloud-Adressen werden abgelehnt
 - CORE-02: Ollama-Format (tags/chat) wird korrekt gesprochen

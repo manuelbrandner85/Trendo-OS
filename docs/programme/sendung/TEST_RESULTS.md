@@ -1,10 +1,10 @@
 # Live streamen – Testergebnisse
 
-Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.36 (Stand 2963379)
+Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.36 (Stand 434d2ab)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 41 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 44 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -49,3 +49,6 @@ Bestanden 41 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | T-0203: „Ja, einrichten“ öffnet keine Herstellerseite, solange die Prüfung nicht besteht | ✓ bestanden |
 | T-0203: „Starten“ öffnet LibreOffice und Blender erst nach bestandener Prüfung und Freigabe | ✓ bestanden |
 | T-0203: „Starten“ öffnet nicht, wenn die Prüfung scheitert | ✓ bestanden |
+| mediamtx-Oberfläche: Sendeserver starten → OBS-Adresse und Ansehen-Adresse, nur 127.0.0.1; beenden; unsicherer Name abgelehnt | ✓ bestanden |
+| streamlink-Oberfläche: Mediathek-Seite zeigt Das Erste und arte; Klick löst den Stream auf und wechselt zum Player | ✓ bestanden |
+| typst-Oberfläche: ohne Programm Einrichten-Knopf; mit Programm Brief mit Posten → PDF im Ordner Dokumente; falscher Posten → Hinweis | ✓ bestanden |
