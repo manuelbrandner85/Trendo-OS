@@ -321,7 +321,7 @@ public partial class MainWindow
         var uf = new ComboBox { Name = "unit-from", ItemsSource = units, SelectedItem = "km" }; var ut = new ComboBox { Name = "unit-to", ItemsSource = units, SelectedItem = "meile" };
         var uo = new TextBlock { Name = "unit-result", Foreground = Text, FontSize = 14 };
         var rate = Field("cur-rate", "Kurs, z. B. 1 € = 1,08 $", 160); var amt = Field("cur-amount", "Betrag", 100);
-        sp.Children.Add(Card(Section("Einheiten umrechnen", "Länge, Gewicht, Volumen, Fläche, Tempo und Temperatur. Für Geld trägst du den Kurs selbst ein – Trendo holt keine Kurse aus dem Internet.",
+        sp.Children.Add(Card(Section("Einheiten umrechnen", "Länge, Gewicht, Volumen, Fläche, Tempo, Temperatur, Zeit, Energie, Leistung, Druck, Datenmengen und Winkel. Für Geld trägst du den Kurs selbst ein – Trendo holt keine Kurse aus dem Internet.",
             Line(uv, uf, P("in"), ut, Act("unit-run", "Umrechnen", () => Try(V, () => { var v = double.Parse(Clean(uv), De); uo.Text = $"= {Calc.Format(Units.Convert(v, (string)uf.SelectedItem!, (string)ut.SelectedItem!))} {ut.SelectedItem}"; })), uo),
             Line(amt, P("×"), rate, Act("cur-run", "Geld umrechnen", () => Try(V, () => uo.Text = "= " + Calc.Format(Units.Currency(double.Parse(Need(amt, "den Betrag"), De), double.Parse(Need(rate, "den Kurs"), De)))))))));
 

@@ -30,21 +30,35 @@ public sealed class DeviceScanner(IProcessRunner run, string dataRoot, string sy
         }
         if (OperatingSystem.IsWindows() && sysRoot == "/sys") // eigener sysRoot = bewusst sysfs lesen (Tests, Linux-Abbild)
         {
-            var (e, o) = await run.RunAsync("powershell", "-NoProfile -Command \"Get-PnpDevice -PresentOnly | Select-Object Class,FriendlyName,Status | ConvertTo-Csv -NoTypeInformation\"", null, ct);
-            if (e == 0) l.AddRange(ParsePnpCsv(o));
+            var (e, o) = await run.RunAsync("powershell", "-NoProfile -Command \"Get-PnpDevice -PresentOnly | Select-Object Class,FriendlyName,Status,InstanceId | ConvertTo-Csv -NoTypeInformation\"", null, ct);
+            var idsFile = PciIds.FileIn(dataRoot); // Alle Studios, Runde 9: Geräte ohne Namen benennen, wenn die Liste geladen ist
+            if (e == 0) l.AddRange(ParsePnpCsv(o, File.Exists(idsFile) ? PciIds.Parse(await File.ReadAllTextAsync(idsFile, ct)) : null));
         }
         else l.AddRange(ScanSys());
         return l.DistinctBy(d => (d.Category, d.Name)).OrderBy(d => d.Category).ThenBy(d => d.Name).ToList();
     }
 
-    public static IReadOnlyList<DeviceInfo> ParsePnpCsv(string csv)
+    /// <summary>Kennzeichen für Geräte, die erst mit der PCI-Liste einen Namen bekommen.</summary>
+    public const string UnnamedPrefix = "Unbekanntes PCI-Gerät";
+    static readonly string[] GenericNames = ["Unbekanntes Gerät", "Unknown device", "Unknown Device", "PCI-Gerät", "PCI Device"];
+
+    public static IReadOnlyList<DeviceInfo> ParsePnpCsv(string csv, PciIds? ids = null)
     {
         var res = new List<DeviceInfo>();
         foreach (var line in csv.Replace("\r", "").Split('\n').Skip(1).Where(x => x.Length > 2))
         {
-            var c = SplitCsv(line); if (c.Count < 3 || c[1] == "") continue;
+            var c = SplitCsv(line); if (c.Count < 3) continue;
+            var detail = "";
+            if ((c[1] == "" || GenericNames.Contains(c[1])) && c.Count > 3 && PciIds.FromInstanceId(c[3]) is { } pci) // bisher fielen Geräte ohne Namen weg – gerade die ohne Treiber
+            {
+                var known = ids?.Name(pci.Vendor, pci.Device);
+                c[1] = known ?? $"{UnnamedPrefix} ({pci.Vendor.ToUpperInvariant()}:{pci.Device.ToUpperInvariant()})";
+                detail = known is null ? "ohne Namen – Kennung aus der Hardware" : "Name aus der PCI-Liste (Windows kennt es nicht – Treiber fehlt vermutlich)";
+                if (c[0] == "") c[0] = "Unbekannt";
+            }
+            if (c[1] == "") continue;
             if (c[0] is "System" or "SoftwareDevice" or "SoftwareComponent" or "Computer" or "Volume" or "VolumeSnapshot" or "LegacyDriver" or "Firmware" or "SecurityDevices") continue;
-            res.Add(new(Group(c[0]), c[1], c[2] == "OK" ? "OK" : c[2] switch { "Error" => "Fehler", "Degraded" => "eingeschränkt", "Unknown" => "unbekannt", _ => c[2] }));
+            res.Add(new(Group(c[0]), c[1], c[2] == "OK" ? "OK" : c[2] switch { "Error" => "Fehler", "Degraded" => "eingeschränkt", "Unknown" => "unbekannt", _ => c[2] }, detail));
         }
         return res;
     }

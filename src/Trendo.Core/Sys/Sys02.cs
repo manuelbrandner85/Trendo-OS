@@ -500,6 +500,14 @@ public static class Units
         ["ml"] = ("Volumen", 0.001), ["l"] = ("Volumen", 1), ["m³"] = ("Volumen", 1000), ["gallone"] = ("Volumen", 3.785411784),
         ["m²"] = ("Fläche", 1), ["km²"] = ("Fläche", 1e6), ["ha"] = ("Fläche", 1e4), ["ar"] = ("Fläche", 100),
         ["km/h"] = ("Tempo", 1 / 3.6), ["m/s"] = ("Tempo", 1), ["mph"] = ("Tempo", 0.44704),
+        // Alle Studios, Runde 9: Alltagsgrößen selbst ergänzt (UnitsNet geprüft und verworfen: 2,6 MB ohne deutsche Namen für wenige gebrauchte Einheiten)
+        ["s"] = ("Zeit", 1), ["min"] = ("Zeit", 60), ["h"] = ("Zeit", 3600), ["Tag"] = ("Zeit", 86400), ["Woche"] = ("Zeit", 604800),
+        ["J"] = ("Energie", 1), ["kJ"] = ("Energie", 1000), ["kcal"] = ("Energie", 4184), ["Wh"] = ("Energie", 3600), ["kWh"] = ("Energie", 3_600_000),
+        ["W"] = ("Leistung", 1), ["kW"] = ("Leistung", 1000), ["PS"] = ("Leistung", 735.49875),
+        ["Pa"] = ("Druck", 1), ["hPa"] = ("Druck", 100), ["bar"] = ("Druck", 100_000), ["psi"] = ("Druck", 6894.757293168),
+        ["Byte"] = ("Datenmenge", 1), ["KB"] = ("Datenmenge", 1e3), ["MB"] = ("Datenmenge", 1e6), ["GB"] = ("Datenmenge", 1e9), ["TB"] = ("Datenmenge", 1e12),
+        ["KiB"] = ("Datenmenge", 1024), ["MiB"] = ("Datenmenge", 1_048_576), ["GiB"] = ("Datenmenge", 1_073_741_824), ["TiB"] = ("Datenmenge", 1_099_511_627_776),
+        ["°"] = ("Winkel", Math.PI / 180), ["rad"] = ("Winkel", 1),
     };
     public static readonly string[] Temps = ["°C", "°F", "K"];
     public static IEnumerable<string> All => U.Keys.Concat(Temps);

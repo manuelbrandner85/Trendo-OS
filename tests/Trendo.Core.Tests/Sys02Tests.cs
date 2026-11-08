@@ -205,3 +205,24 @@ public class Sys02_Alltag
         Assert.Empty(ResourceWarn.Check(50, 100L << 30)); Assert.Equal(2, ResourceWarn.Check(95, 1L << 30).Count); Assert.Empty(ResourceWarn.Check(null, null));
     }
 }
+
+/// <summary>Alle Studios, Runde 9 – SYS-02: neue Einheitengruppen, geprüft gegen die exakten Definitionen (SI, BIPM, IEC 80000-13).</summary>
+public class UnitsAlltagTests
+{
+    [Theory(DisplayName = "Einheiten +: Zeit, Energie, Leistung, Druck, Datenmenge, Winkel nach exakter Definition")]
+    [InlineData(1, "Woche", "h", 168)] [InlineData(90, "min", "h", 1.5)] [InlineData(1, "Tag", "s", 86400)]
+    [InlineData(1, "kWh", "J", 3600000)] [InlineData(1, "kcal", "kJ", 4.184)] [InlineData(1000, "Wh", "kWh", 1)]
+    [InlineData(1, "PS", "W", 735.49875)] [InlineData(100, "kW", "PS", 135.96216173039)]
+    [InlineData(1, "bar", "hPa", 1000)] [InlineData(1, "psi", "Pa", 6894.757293168)] [InlineData(2.5, "bar", "psi", 36.2594)]
+    [InlineData(1, "GB", "MB", 1000)] [InlineData(1, "GiB", "MiB", 1024)] [InlineData(1, "TB", "GiB", 931.3225746154785)]
+    [InlineData(180, "°", "rad", Math.PI)]
+    public void Exact(double v, string from, string to, double expected) => Assert.Equal(expected, Units.Convert(v, from, to), 3);
+
+    [Fact(DisplayName = "Einheiten −: verschiedene Größen lassen sich nicht umrechnen; alle neuen Einheiten stehen zur Auswahl; bisherige bleiben")]
+    public void Groups()
+    {
+        Assert.Throws<ArgumentException>(() => Units.Convert(1, "kWh", "kW")); Assert.Throws<ArgumentException>(() => Units.Convert(1, "MB", "min"));
+        foreach (var u in new[] { "kWh", "PS", "bar", "GiB", "Woche", "rad", "km", "°C" }) Assert.Contains(u, Units.All);
+        Assert.Equal(Units.All.Count(), Units.All.Distinct(StringComparer.OrdinalIgnoreCase).Count());
+    }
+}

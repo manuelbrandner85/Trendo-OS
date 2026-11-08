@@ -39,6 +39,7 @@ public partial class MainWindow
         sp.Children.Add(new TextBlock { Name = "dev-msg", Text = _devMsg, Foreground = Text });
         if (_devAdded.Count > 0 && _devAdded.Count < Devices.Count) sp.Children.Add(P("Neu seit dem letzten Mal: " + string.Join(", ", _devAdded.Select(d => d.Name)), Brush.Parse("#4ADE80")));
         if (_devRemoved.Count > 0) sp.Children.Add(P("Nicht mehr da: " + string.Join(", ", _devRemoved.Select(d => d.Name)), Brush.Parse("#FACC15")));
+        sp.Children.Add(DevicesPciCard()); // Alle Studios, Runde 9: Geräte ohne Namen benennen
         var probs = Devices.Where(d => d.Problem).ToList();
         if (probs.Count > 0)
         {

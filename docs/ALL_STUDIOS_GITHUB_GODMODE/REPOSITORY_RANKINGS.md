@@ -400,8 +400,8 @@ Bestand: Rechner, Notizen, Bildschirmfoto, Einheiten (kleine eigene Tabelle), Mu
 
 | Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
 |---|---|---|---|---|---|---|---|---|---|---|
-| angularsen/UnitsNet | 9 | 10 | 9 | 10 | 9 | 10 | 8 | 9.4 | AUSWAHL | MIT-0, .NET: über 1000 Einheiten mit Umrechnung – ersetzt die kleine eigene Tabelle |
-| ncalc/ncalc | 8 | 10 | 8 | 10 | 9 | 9 | 6 | 8.8 | AUSWAHL | MIT, .NET: Formeln mit Funktionen sicher auswerten – für den Rechner |
+| angularsen/UnitsNet | 9 | 10 | 9 | 10 | 9 | 10 | 8 | 9.4 | VERWORFEN | MIT-0, .NET, 2,6 MB – nach Bestandsprüfung nicht übernommen: englische Namen, im Alltag wenige Einheiten nötig; eigene Tabelle um Zeit, Energie, Leistung, Druck, Datenmengen, Winkel erweitert |
+| ncalc/ncalc | 8 | 10 | 8 | 10 | 9 | 9 | 6 | 8.8 | VERWORFEN | MIT, .NET – nach Bestandsprüfung nicht übernommen: der eigene Rechner kann Funktionen, Grafik und Zahlensysteme bereits |
 | josdejong/mathjs | 10 | 5 | 9 | 10 | 8 | 8 | 9 | 8.4 | OPTION | Apache-2.0, JavaScript – Option, NCalc reicht |
 | ShareX/ShareX | 10 | 3 | 8 | 5 | 9 | 8 | 10 | 7.25 | EXTERN | GPL-3.0 – nur externes Programm |
 | Qalculate/libqalculate | 10 | 3 | 8 | 5 | 9 | 8 | 7 | 7.1 | EXTERN | GPL-2.0 – nur externes Programm |
