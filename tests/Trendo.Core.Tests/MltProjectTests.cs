@@ -98,8 +98,8 @@ public class MltProjectTests
     {
         public MeltFactAttribute() { if (Melt() is null || Ff("ffmpeg") is null) Skip = "Übersprungen – TRENDO_MELT_EXE / TRENDO_FFMPEG_DIR nicht gesetzt."; }
     }
-    static string? Melt() => Environment.GetEnvironmentVariable("TRENDO_MELT_EXE") is { Length: > 0 } p && File.Exists(p) ? p : null;
-    static string? Ff(string n) => Environment.GetEnvironmentVariable("TRENDO_FFMPEG_DIR") is { Length: > 0 } d && File.Exists(Path.Combine(d, n + ".exe")) ? Path.Combine(d, n + ".exe") : null;
+    static string? Melt() => EchtWerkzeuge.Melt();
+    static string? Ff(string n) => EchtWerkzeuge.FfmpegDir() is { } d && File.Exists(Path.Combine(d, n + ".exe")) ? Path.Combine(d, n + ".exe") : null;
 
     [MeltFact(DisplayName = "MLT echt: melt rendert den Trendo-Schnitt – 5,5 s, 1280×720, Bild und Ton, rote Stelle bei 3,5 s")]
     public void Real_render()

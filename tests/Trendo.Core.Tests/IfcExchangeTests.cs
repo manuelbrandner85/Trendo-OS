@@ -96,7 +96,7 @@ public class IfcExchangeTests
     {
         public IfcFactAttribute() { if (Python() is null) Skip = "Übersprungen – TRENDO_IFC_PYTHON nicht gesetzt (Python mit ifcopenshell)."; }
     }
-    static string? Python() => Environment.GetEnvironmentVariable("TRENDO_IFC_PYTHON") is { Length: > 0 } p && File.Exists(p) ? p : null;
+    static string? Python() => EchtWerkzeuge.IfcPython();
     static string Script() { var d = new DirectoryInfo(AppContext.BaseDirectory); while (d is not null && !File.Exists(Path.Combine(d.FullName, "Trendo.sln"))) d = d.Parent; return Path.Combine(d!.FullName, "src", "Trendo.App", "Assets", "ki", "trendo_ifc.py"); }
 
     [IfcFact(DisplayName = "IFC echt: Vorlage „2-Zimmer-Wohnung“ → IFC4 mit IfcOpenShell, wieder eingelesen, gleiche Anzahl Bauteile")]

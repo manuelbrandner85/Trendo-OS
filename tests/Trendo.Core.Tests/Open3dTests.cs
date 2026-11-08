@@ -38,7 +38,7 @@ public class Open3dTests
     {
         public Open3dFactAttribute() { if (Python() is null) Skip = "Übersprungen – TRENDO_OPEN3D_PYTHON nicht gesetzt (Python mit open3d)."; }
     }
-    static string? Python() => Environment.GetEnvironmentVariable("TRENDO_OPEN3D_PYTHON") is { Length: > 0 } p && File.Exists(p) ? p : null;
+    static string? Python() => EchtWerkzeuge.Open3dPython();
     static string Script() { var d = new DirectoryInfo(AppContext.BaseDirectory); while (d is not null && !File.Exists(Path.Combine(d.FullName, "Trendo.sln"))) d = d.Parent; return Path.Combine(d!.FullName, "src", "Trendo.App", "Assets", "ki", "trendo_open3d.py"); }
 
     /// <summary>Kugel 10 cm Radius (OBJ, Meter) mit 3 mm Rauschen entlang der Normalen – wie ein verrauschter Scan.</summary>

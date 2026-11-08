@@ -113,13 +113,13 @@ public class PmTilesTests : IDisposable
     {
         public PmFactAttribute() { if (Exe() is null) Skip = "Übersprungen – TRENDO_PMTILES_EXE nicht gesetzt (go-pmtiles)."; }
     }
-    static string? Exe() => Environment.GetEnvironmentVariable("TRENDO_PMTILES_EXE") is { Length: > 0 } p && File.Exists(p) ? p : null;
+    static string? Exe() => EchtWerkzeuge.PmtilesExe();
 
     string Mbtiles(string name, int maxZ)
     {
         var f = Path.Combine(_dir, name);
         using var db = new Microsoft.Data.Sqlite.SqliteConnection("Data Source=" + f); db.Open();
-        using (var c = db.CreateCommand()) { c.CommandText = "CREATE TABLE metadata (name text, value text); CREATE TABLE tiles (zoom_level integer, tile_column integer, tile_row integer, tile_data blob); INSERT INTO metadata VALUES ('format','png'),('minzoom','0'),('maxzoom','" + maxZ + "'),('name','Test');"; c.ExecuteNonQuery(); }
+        using (var c = db.CreateCommand()) { c.CommandText = "CREATE TABLE metadata (name text, value text); CREATE TABLE tiles (zoom_level integer, tile_column integer, tile_row integer, tile_data blob); CREATE UNIQUE INDEX tile_index ON tiles (zoom_level, tile_column, tile_row); INSERT INTO metadata VALUES ('format','png'),('minzoom','0'),('maxzoom','" + maxZ + "'),('name','Test');"; c.ExecuteNonQuery(); }
         using var tx = db.BeginTransaction(); using var ins = db.CreateCommand(); ins.Transaction = tx;
         ins.CommandText = "INSERT INTO tiles VALUES ($z,$x,$y,$d)"; var pz = ins.Parameters.Add("$z", Microsoft.Data.Sqlite.SqliteType.Integer); var px = ins.Parameters.Add("$x", Microsoft.Data.Sqlite.SqliteType.Integer); var py = ins.Parameters.Add("$y", Microsoft.Data.Sqlite.SqliteType.Integer); var pd = ins.Parameters.Add("$d", Microsoft.Data.Sqlite.SqliteType.Blob);
         for (var z = 0; z <= maxZ; z++) for (var x = 0; x < 1 << z; x++) for (var y = 0; y < 1 << z; y++)
@@ -136,7 +136,10 @@ public class PmTilesTests : IDisposable
             var r = Cli.Run(Exe()!, ["convert", mb, pm], _dir, 300_000); Assert.True(r.Ok, r.Err + r.Out);
             using var a = new TilePack(mb); using var b = new TilePack(pm);
             Assert.Equal((a.MinZoom, a.MaxZoom, a.Count), (b.MinZoom, b.MaxZoom, b.Count));
-            for (var z = 0; z <= maxZ; z++) for (var x = 0; x < 1 << z; x++) for (var y = 0; y < 1 << z; y++) Assert.Equal(a.Get(z, x, y), b.Get(z, x, y));
+            // bis Zoom 6 jede Kachel, ab Zoom 7 eine gestreute Stichprobe (etwa jede neunte); Blattverzeichnisse werden so trotzdem gelesen.
+            // Index tile_index (wie in der MBTiles-Spezifikation): ohne ihn brauchte go-pmtiles 4 min 48 s statt 9 s für 87 381 Kacheln (gemessen 08.11.2026)
+            for (var z = 0; z <= maxZ; z++) for (var x = 0; x < 1 << z; x++) for (var y = 0; y < 1 << z; y++)
+                if (z <= 6 || (x * 31 + y * 17) % 9 == 0) Assert.Equal(a.Get(z, x, y), b.Get(z, x, y));
             using var raw = new PmTiles(pm);
             Assert.Equal(PmTiles.Compression.Gzip, raw.Info.Internal);
             if (maxZ == 8) Assert.True(raw.Info.LeafLength > 0, "erwartet Blattverzeichnisse bei 87 381 Kacheln");

@@ -77,7 +77,7 @@ public class AssimpConvertTests : IDisposable
     {
         public AssimpFactAttribute() { if (Dll() is null) Skip = "Übersprungen – TRENDO_ASSIMP_DLL nicht gesetzt (assimp-DLL aus der offiziellen Zip)."; }
     }
-    static string? Dll() => Environment.GetEnvironmentVariable("TRENDO_ASSIMP_DLL") is { Length: > 0 } p && File.Exists(p) ? p : null;
+    static string? Dll() => EchtWerkzeuge.AssimpDll();
 
     [AssimpFact(DisplayName = "assimp echt: OBJ → GLB → OBJ (8 Ecken, 12 Dreiecke bleiben), kaputte Datei ergibt Exit 3 ohne Absturz")]
     public void Real_roundtrip()

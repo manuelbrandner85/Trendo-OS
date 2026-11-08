@@ -5,20 +5,24 @@ using Xunit;
 
 namespace Trendo.Core.Tests;
 
-/// <summary>Echte Läufe der Runde-2-Werkzeuge über die Trendo-Adapter. Laufen nur, wenn TRENDO_WERKZEUGE_TEST auf einen Ordner mit den entpackten
-/// offiziellen Downloads zeigt (typst/, mediamtx/, streamlink/); sonst übersprungen. Beleg: reports/alle-studios/runde2-werkzeuge-e2e.md.</summary>
+/// <summary>Echte Läufe der Runde-2-Werkzeuge über die Trendo-Adapter. Die Programme werden automatisch gefunden (<see cref="EchtWerkzeuge"/>:
+/// TRENDO_WERKZEUGE_TEST, %LOCALAPPDATA%\TrendoWerkzeuge oder Prüfordner); fehlen sie, wird übersprungen. Beleg: reports/alle-studios/runde2-werkzeuge-e2e.md.</summary>
 public class ToolAdaptersRealTests
 {
     public sealed class ToolFactAttribute : FactAttribute
     {
-        public ToolFactAttribute(string tool) { if (Exe(tool) is null) Skip = $"Übersprungen – {tool} nicht bereitgestellt (TRENDO_WERKZEUGE_TEST)."; }
+        public ToolFactAttribute(string tool)
+        {
+            if (Exe(tool) is null) Skip = $"Übersprungen – {tool} nicht gefunden (TrendoWerkzeuge, Prüfordner trendo-tools-b oder TRENDO_WERKZEUGE_TEST).";
+            else if (tool == "streamlink" && !Online("www.arte.tv")) Skip = "Übersprungen – kein Internet (streamlink braucht die Live-Seite von arte).";
+        }
+        static bool Online(string host)
+        {
+            try { var t = System.Net.Dns.GetHostAddressesAsync(host); return t.Wait(3000) && t.Result.Length > 0; }
+            catch (AggregateException) { return false; }
+        }
     }
-    static string? Exe(string tool)
-    {
-        var d = Environment.GetEnvironmentVariable("TRENDO_WERKZEUGE_TEST"); if (string.IsNullOrEmpty(d) || !Directory.Exists(Path.Combine(d, tool))) return null;
-        var name = OperatingSystem.IsWindows() ? tool + ".exe" : tool;
-        return Directory.EnumerateFiles(Path.Combine(d, tool), name, SearchOption.AllDirectories).FirstOrDefault(f => !f.Contains("Python", StringComparison.Ordinal));
-    }
+    static string? Exe(string tool) => EchtWerkzeuge.Tool(tool); // automatisch: Umgebungsvariable, TrendoWerkzeuge oder Prüfordner
 
     [ToolFact("typst")]
     public void Typst_real_letter()

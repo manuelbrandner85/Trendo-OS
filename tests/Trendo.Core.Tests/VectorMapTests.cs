@@ -86,7 +86,7 @@ public class VectorMapTests : IDisposable
     {
         public VecFactAttribute() { if (Real() is null) Skip = "Übersprungen – TRENDO_VEKTOR_PMTILES nicht gesetzt (Protomaps-Ausschnitt)."; }
     }
-    static string? Real() => Environment.GetEnvironmentVariable("TRENDO_VEKTOR_PMTILES") is { Length: > 0 } p && File.Exists(p) ? p : null;
+    static string? Real() => EchtWerkzeuge.VektorPmtiles();
 
     [VecFact(DisplayName = "Vektorkarte echt: Protomaps-Ausschnitt – alle Kacheln lesbar, entpackt als MVT (Protobuf), Gebiet stimmt")]
     public void Real_protomaps()
