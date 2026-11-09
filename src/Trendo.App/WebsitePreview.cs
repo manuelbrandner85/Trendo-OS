@@ -42,7 +42,8 @@ public static class WebsitePreview
     }
 
     /// <summary><paramref name="errors"/>: sammelt Skriptfehler, Konsolen-Fehler und nicht gefundene Dateien der Seite („echt testen“).</summary>
-    public static async Task<WebsitePreviewResult> CaptureAsync(string projectDir, int width, int height, string pngPath, string? query = null, CancellationToken ct = default, List<string>? errors = null)
+    /// <param name="domPath">Falls gesetzt: Die fertig gezeichnete Seite wird dort als HTML abgelegt, und zu breiter Inhalt landet in <paramref name="errors"/> (Prüfung des Exports, A6).</param>
+    public static async Task<WebsitePreviewResult> CaptureAsync(string projectDir, int width, int height, string pngPath, string? query = null, CancellationToken ct = default, List<string>? errors = null, string? domPath = null)
     {
         var index = Path.Combine(projectDir, "index.html");
         if (!File.Exists(index)) return new(false, "", "Die Seite hat keine index.html.");
@@ -51,11 +52,11 @@ public static class WebsitePreview
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(pngPath))!);
         using var host = WebsiteHost.Start(projectDir);
         var url = host.Origin + "/index.html" + (string.IsNullOrWhiteSpace(query) ? "" : "?" + query.TrimStart('?'));
-        await ShotAsync(browser, url, width, height, pngPath, ct, errors);
+        await ShotAsync(browser, url, width, height, pngPath, ct, errors, domPath);
         return File.Exists(pngPath) ? new(true, pngPath, width < 700 ? "Handy" : "Desktop") : new(false, "", "Die Vorschau hat kein Bild geschrieben.");
     }
 
-    static async Task ShotAsync(string browser, string url, int width, int height, string pngPath, CancellationToken ct, List<string>? errors = null)
+    static async Task ShotAsync(string browser, string url, int width, int height, string pngPath, CancellationToken ct, List<string>? errors = null, string? domPath = null)
     {
         var profile = Path.Combine(Path.GetTempPath(), "trendo-chrome-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(profile);
@@ -127,6 +128,14 @@ public static class WebsitePreview
             }
             await Task.Delay(errors is null ? 400 : 1200, timeout.Token); // beim echten Test etwas länger laufen lassen, damit späte Fehler auffallen
             if (errors is not null) await cdp.Call("Runtime.evaluate", new { expression = "1" }, timeout.Token); // ausstehende Meldungen abholen
+            if (domPath is not null)
+            {
+                var dom = await cdp.Call("Runtime.evaluate", new { expression = "document.documentElement.outerHTML", returnByValue = true }, timeout.Token);
+                await File.WriteAllTextAsync(domPath, "<!doctype html>\n" + ResultValue(dom), timeout.Token);
+                var over = await cdp.Call("Runtime.evaluate", new { expression = "Math.max(document.documentElement.scrollWidth, document.body ? document.body.scrollWidth : 0) - window.innerWidth", returnByValue = true }, timeout.Token);
+                if (errors is not null && double.TryParse(ResultValue(over), System.Globalization.CultureInfo.InvariantCulture, out var extra) && extra > 1)
+                    lock (errors) errors.Add($"Waagerechtes Scrollen bei {width} Pixeln Breite ({extra:0} Pixel zu breit).");
+            }
             var shot = await cdp.Call("Page.captureScreenshot", new { format = "png" }, timeout.Token);
             var data = ResultString(shot, "data");
             if (string.IsNullOrWhiteSpace(data)) throw new InvalidOperationException("Chrome hat kein Bild geliefert.");

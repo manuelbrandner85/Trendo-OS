@@ -24,12 +24,15 @@ public static partial class WebDesign
     {
         if (string.IsNullOrWhiteSpace(json)) return (null, "Keine Seitendaten.");
         if (Encoding.UTF8.GetByteCount(json) > MaxBytes) return (null, "Seite ist zu groß (über 8 MB).");
-        JsonNode? n; try { n = JsonNode.Parse(json); } catch (JsonException) { return (null, "Seitendaten sind kein gültiges JSON."); }
-        if (n is not JsonObject o || o["root"] is not JsonObject || o["content"] is not JsonArray content) return (null, "Seitendaten unvollständig (root/content fehlt).");
-        foreach (var c in content) if (c is not JsonObject co || string.IsNullOrWhiteSpace(co["type"]?.ToString())) return (null, "Ein Baustein hat keinen Typ.");
-        Sanitize(o);
-        SanitizeTokens(o["root"]?["props"] as JsonObject);
-        return (o.ToJsonString(), null);
+        try
+        {
+            if (JsonNode.Parse(json) is not JsonObject o || o["root"] is not JsonObject || o["content"] is not JsonArray content) return (null, "Seitendaten unvollständig (root/content fehlt).");
+            foreach (var c in content) if (c is not JsonObject co || string.IsNullOrWhiteSpace(co["type"]?.ToString())) return (null, "Ein Baustein hat keinen Typ.");
+            Sanitize(o);
+            SanitizeTokens(o["root"]?["props"] as JsonObject);
+            return (o.ToJsonString(), null);
+        }
+        catch (Exception e) when (e is JsonException or ArgumentException) { return (null, "Seitendaten sind kein gültiges JSON."); } // ArgumentException: doppelte Schlüssel
     }
 
     [GeneratedRegex("^#[0-9a-fA-F]{6}$")] private static partial Regex HexColor();
@@ -47,16 +50,40 @@ public static partial class WebDesign
         if (p["space"] is not null) p["space"] = Math.Clamp(Num(p["space"]) ?? 24, 4, 48);
     }
 
-    [GeneratedRegex(@"^\s*(javascript|vbscript|data)\s*:", RegexOptions.IgnoreCase)] private static partial Regex DangerousUrl();
+    [GeneratedRegex(@"^[a-zA-Z][a-zA-Z0-9+.-]*:")] private static partial Regex UrlScheme();
+    static readonly string[] AllowedSchemes = ["http:", "https:", "mailto:", "tel:"];
+    static readonly string[] ImageTypes = [".png", ".jpg", ".jpeg", ".webp", ".gif", ".avif"];
 
-    /// <summary>Gefährliche Links (javascript:, vbscript:, data:) aus Link-Feldern entfernen – die fertige Seite soll niemanden angreifen können.</summary>
+    /// <summary>Steuerzeichen und Leerraum fallen weg, damit „java&lt;Tab&gt;script:“ als das erkannt wird, was der Browser daraus macht.</summary>
+    public static string StripUrl(string s) => string.Concat(s.Where(c => !char.IsControl(c) && !char.IsWhiteSpace(c)));
+
+    /// <summary>Nur Sprungziele, relative Pfade und erlaubte Adressarten.</summary>
+    public static bool IsAllowedUrl(string url)
+    {
+        var s = StripUrl(url);
+        return !UrlScheme().IsMatch(s) || AllowedSchemes.Any(a => s.StartsWith(a, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>Bild im Projekt: relative Datei mit Bild-Endung, nicht in versteckten Ordnern und nicht im Export-Ordner. So kann kein Plan fremde Projektdateien in den Export ziehen oder das Bündel ersetzen.</summary>
+    public static bool IsSafeImagePath(string src)
+    {
+        if (src.Any(char.IsControl)) return false;
+        var clean = src.Trim().Split('#', '?')[0].Replace('\\', '/');
+        if (clean.Length == 0 || clean.StartsWith('/') || UrlScheme().IsMatch(clean)) return false;
+        var parts = clean.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Any(p => p is ".." or "." || p.StartsWith('.'))) return false;
+        if (parts[0].Equals(ExportDir, StringComparison.OrdinalIgnoreCase)) return false;
+        return ImageTypes.Contains(Path.GetExtension(parts[^1]), StringComparer.OrdinalIgnoreCase);
+    }
+
+    /// <summary>Gefährliche Links aus Link-Feldern entfernen – die fertige Seite soll niemanden angreifen können. Erlaubt sind nur http, https, mailto, tel und relative Ziele.</summary>
     static void Sanitize(JsonNode? n)
     {
         switch (n)
         {
             case JsonObject o:
                 foreach (var key in o.Select(kv => kv.Key).ToList())
-                    if (key is "href" or "src" && o[key] is JsonValue v && v.TryGetValue(out string? s) && DangerousUrl().IsMatch(s)) o[key] = "#";
+                    if (key is "href" or "src" && o[key] is JsonValue v && v.TryGetValue(out string? s) && !IsAllowedUrl(s)) o[key] = "#";
                     else Sanitize(o[key]);
                 break;
             case JsonArray a: foreach (var x in a) Sanitize(x); break;
@@ -87,22 +114,49 @@ public static partial class WebDesign
     /// <summary>Exportiert die gespeicherte Seite als fertige Webseite: index.html, seite.js (Daten) und das Editor-Bündel im Anzeigemodus – läuft ohne Netz direkt aus dem Ordner.</summary>
     public static (string? Dir, string? Error) Export(string projectDir, string editorDir)
     {
+        return ExportContent(Load(projectDir), projectDir, Path.Combine(projectDir, ExportDir), editorDir);
+    }
+
+    /// <summary>Exportiert bestimmte Seitendaten in einen Zielordner (auch eine Vorschau oder Variante, ohne die gespeicherte Seite zu berühren). Bilder aus dem Projekt reisen mit, damit die Seite vollständig bleibt.</summary>
+    public static (string? Dir, string? Error) ExportContent(string json, string projectDir, string outDir, string editorDir)
+    {
         var js = Path.Combine(editorDir, "assets", "editor.js"); var css = Path.Combine(editorDir, "assets", "style.css");
         if (!File.Exists(js) || !File.Exists(css)) return (null, "Editor-Bündel fehlt im Programm (Assets/webdesign).");
-        var (data, err) = Validate(Load(projectDir)); if (data is null) return (null, err);
-        var outDir = Path.Combine(projectDir, ExportDir); var assets = Path.Combine(outDir, "assets"); Directory.CreateDirectory(assets);
+        var (data, err) = Validate(json); if (data is null) return (null, err);
+        var assets = Path.Combine(outDir, "assets"); Directory.CreateDirectory(assets);
         File.Copy(js, Path.Combine(assets, "editor.js"), true); File.Copy(css, Path.Combine(assets, "style.css"), true);
         var lic = Path.Combine(editorDir, "LIZENZEN.txt"); // MIT & Co. verlangen den Urheberhinweis auch in jeder weitergegebenen Seite
         if (File.Exists(lic)) File.Copy(lic, Path.Combine(assets, "LIZENZEN.txt"), true);
-        var title = (JsonNode.Parse(data)?["root"]?["props"]?["title"]?.ToString() ?? "Webseite") // nur HTML-Sonderzeichen maskieren, Umlaute bleiben lesbar (UTF-8)
-            .Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");
+        var doc = JsonNode.Parse(data)!;
+        CopyImages(doc, projectDir, outDir);
+        static string Esc(string s) => s.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;"); // nur HTML-Sonderzeichen maskieren, Umlaute bleiben lesbar (UTF-8)
+        var title = Esc(doc["root"]?["props"]?["title"]?.ToString() ?? "Webseite");
+        var description = doc["root"]?["props"]?["description"]?.ToString() is { Length: > 0 } d ? $"<meta name=\"description\" content=\"{Esc(d)}\" />\n" : "";
         // Daten als Skript (fetch ist über file:// gesperrt); „</“ entschärfen, damit kein Text das Skript beenden kann
         File.WriteAllText(Path.Combine(outDir, "seite.js"), "window.TRENDO_SEITE = " + data.Replace("</", "<\\/") + ";\n");
         File.WriteAllText(Path.Combine(outDir, "index.html"),
-            "<!doctype html>\n<html lang=\"de\">\n<head>\n<meta charset=\"UTF-8\" />\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n" +
+            "<!doctype html>\n<html lang=\"de\">\n<head>\n<meta charset=\"UTF-8\" />\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n" + description +
             $"<title>{title}</title>\n<link rel=\"stylesheet\" href=\"assets/style.css\">\n<script src=\"seite.js\"></script>\n<script defer src=\"assets/editor.js\"></script>\n</head>\n<body>\n<div id=\"root\"></div>\n" +
             "<noscript>Diese Seite braucht JavaScript.</noscript>\n</body>\n</html>\n");
         return (outDir, null);
+    }
+
+    /// <summary>Bilder des Projekts in den Export kopieren. Nur Dateien innerhalb des Projektordners.</summary>
+    static void CopyImages(JsonNode? n, string projectDir, string outDir)
+    {
+        if (n is JsonArray a) { foreach (var x in a) CopyImages(x, projectDir, outDir); return; }
+        if (n is not JsonObject o) return;
+        foreach (var kv in o)
+            if (kv.Key == "src" && kv.Value is JsonValue v && v.TryGetValue(out string? src) && src.Length > 0)
+            {
+                if (!IsSafeImagePath(src) || !WebDesignCheck.IsLocalFile(projectDir, src)) continue;
+                var clean = src.Trim().Split('#', '?')[0].Replace('/', Path.DirectorySeparatorChar);
+                var target = Path.GetFullPath(Path.Combine(outDir, clean));
+                if (!target.StartsWith(Path.GetFullPath(outDir).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.Ordinal)) continue;
+                Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+                File.Copy(Path.Combine(projectDir, clean), target, true);
+            }
+            else CopyImages(kv.Value, projectDir, outDir);
     }
 
     /// <summary>Nachricht vom Editor („bereit“, „geaendert“, „speichern“ mit Daten).</summary>
@@ -116,6 +170,6 @@ public static partial class WebDesign
             var kind = n?["art"]?.ToString(); if (string.IsNullOrEmpty(kind)) return null;
             return new(kind, n!["daten"]?.ToJsonString());
         }
-        catch (JsonException) { return null; }
+        catch (Exception e) when (e is JsonException or ArgumentException or InvalidOperationException) { return null; }
     }
 }
