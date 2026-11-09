@@ -141,6 +141,14 @@ public partial class MainWindow
         play.Click += (_, _) => LibPlayGodot(project);
         info.Children.Add(play);
 
+        if (LibGodot() is null)
+        {
+            info.Children.Add(P("Godot 4 wurde nicht gefunden. Wähle einmal die Datei Godot_v4…, dann merkt sich Trendo den Ort.", Muted, 11));
+            var pickGodot = new Button { Name = "lib-godot-pick", Content = "Godot wählen", Padding = new Thickness(12, 5) };
+            pickGodot.Click += async (_, _) => { if (await PickMediaFile("lib-godot", "Godot 4", [OperatingSystem.IsWindows() ? "Godot_v4*.exe" : "Godot_v4*"]) is { } f) LibSetGodot(f); };
+            info.Children.Add(pickGodot);
+        }
+
         info.Children.Add(H("Ändern, umbauen, erweitern", 13));
         var change = new TextBox { Name = "lib-change", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 56, MaxLength = GameLibrary.MaxWish, PlaceholderText = "Zum Beispiel: ein zweiter Stadtteil und Regen in der Nacht" };
         info.Children.Add(change);
@@ -208,9 +216,27 @@ public partial class MainWindow
         Directory.Delete(dir, true);
     }
 
+    string LibGodotFile => Path.Combine(_core.DataRoot, "konsolenspiele", "godot-pfad.txt");
+
+    /// <summary>Merkt sich eine selbst gewählte Godot-Datei. false: Das ist keine Godot-4-Datei, der Grund steht im Hinweis.</summary>
+    public bool LibSetGodot(string path)
+    {
+        if (!File.Exists(path) || EngineTargets.GodotVersionFromName(Path.GetFileName(path)) is null)
+        {
+            _progMsg[ConsoleKey] = "Das ist kein Godot-4-Programm. Wähle die Datei, die mit Godot_v4 beginnt."; Show(ConsoleKey);
+            return false;
+        }
+        Directory.CreateDirectory(Path.GetDirectoryName(LibGodotFile)!);
+        File.WriteAllText(LibGodotFile, path);
+        _core.Audit.Append(Principal.LocalOwner.Name, "bibliothek.godot", Path.GetFileName(path));
+        Show(ConsoleKey);
+        return true;
+    }
+
     string? LibGodot()
     {
         if (LibGodotOverride is not null) return LibGodotOverride;
+        if (File.Exists(LibGodotFile) && File.ReadAllText(LibGodotFile).Trim() is { Length: > 0 } chosen && File.Exists(chosen)) return chosen;
         if (_opt.Isolated) return null;
         var local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         var pf = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
@@ -235,7 +261,7 @@ public partial class MainWindow
     /// <summary>Startet ein Godot-Projekt in einem eigenen Fenster.</summary>
     public bool LibPlayGodot(string project)
     {
-        if (LibGodot() is not { } godot) { _progMsg[ConsoleKey] = "Zum Spielen fehlt Godot 4. Lege Godot_v4…exe in den Werkzeugordner oder richte es unter Programme ein."; Show(ConsoleKey); return false; }
+        if (LibGodot() is not { } godot) { _progMsg[ConsoleKey] = "Zum Spielen fehlt Godot 4. Wähle es mit „Godot wählen“ oder richte es unter Programme ein."; Show(ConsoleKey); return false; }
         _core.Audit.Append(Principal.LocalOwner.Name, "bibliothek.start", Path.GetFileName(project));
         if (LibStart(godot, GameLibrary.PlayArgs(project), project)) return true;
         _progMsg[ConsoleKey] = "Godot ließ sich nicht starten."; Show(ConsoleKey);

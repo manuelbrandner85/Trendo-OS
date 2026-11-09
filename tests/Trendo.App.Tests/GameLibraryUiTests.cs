@@ -118,6 +118,29 @@ public class GameLibrary_Ui
         w.Close();
     }
 
+    [AvaloniaFact(DisplayName = "Bibliothek: Godot wählen prüft die Datei, merkt sich den Ort und startet danach damit")]
+    public async Task Choose_godot()
+    {
+        var (w, root) = Open();
+        var d = w.ProgramActive(K)!;
+        w.ConsoleGitOverride = (_, dir) => { var p = Path.Combine(dir, "3d", "truck_town"); Directory.CreateDirectory(p); File.WriteAllText(Path.Combine(p, "project.godot"), "x"); return true; };
+        string? exe = null; w.LibStartOverride = (x, _) => { exe = x; return true; };
+        RealClick(w, w.Find<Button>("lib-card-demo-truck")); Settle();
+        Assert.True(await w.LibFetch(d, GameLibrary.Find("demo-truck")!)); Settle();
+        Assert.NotNull(w.TryFind<Button>("lib-godot-pick"));
+
+        var wrong = Path.Combine(root, "irgendwas.exe"); File.WriteAllText(wrong, "x");
+        Assert.False(w.LibSetGodot(wrong));
+        Assert.False(w.LibSetGodot(Path.Combine(root, "Godot_v4.7.1-stable_win64.exe")));
+
+        var good = Path.Combine(root, "Godot_v4.7.1-stable_win64.exe"); File.WriteAllText(good, "x");
+        Assert.True(w.LibSetGodot(good)); Settle();
+        Assert.Null(w.TryFind<Button>("lib-godot-pick"));
+        RealClick(w, w.Find<Button>("lib-play")); Settle();
+        Assert.Equal(good, exe);
+        w.Close();
+    }
+
     [AvaloniaFact(DisplayName = "Bibliothek: Ohne Godot erklärt Spielen, was fehlt, und startet nichts")]
     public void No_godot()
     {
