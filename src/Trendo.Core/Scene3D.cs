@@ -77,7 +77,8 @@ public sealed partial class Scene3D
 
     public static string ShapeLabel(string id) => PartShapes.FirstOrDefault(s => s.Id == id).Label is { Length: > 0 } l ? l : "Datei";
 
-    public string WriteBlenderSpec(string dir)
+    /// <param name="textureDir">Ordner der geladenen Oberfläche je ambientCG-Kennung; ohne Eintrag gilt nur Farbe und Rauheit.</param>
+    public string WriteBlenderSpec(string dir, IReadOnlyDictionary<string, string>? textureDir = null)
     {
         Directory.CreateDirectory(dir);
         var parts = new List<object>();
@@ -109,9 +110,14 @@ public sealed partial class Scene3D
                 baseY = p.BaseY,
                 baseZ = p.BaseZ,
                 material = p.Material,
+                finish = mat?.Finish,
                 metallic = mat?.Metallic,
                 roughness = mat?.Roughness,
                 transmission = mat?.Transmission,
+                tile_m = mat?.TileM,
+                tint = mat is { TextureId: null } ? (bool?)null : mat?.Tint is null,
+                textures = mat?.TextureId is { } tid && textureDir is not null && textureDir.TryGetValue(tid, out var tdir)
+                    ? new { color = Path.Combine(tdir, tid + "_1K-JPG_Color.jpg"), roughness = Path.Combine(tdir, tid + "_1K-JPG_Roughness.jpg"), normal = Path.Combine(tdir, tid + "_1K-JPG_NormalGL.jpg"), metalness = Path.Combine(tdir, tid + "_1K-JPG_Metalness.jpg") } : null,
                 file,
                 ops = p.Ops.Select(o => new { kind = o.Kind, amount = o.Amount, axis = o.Axis, diameter = o.Diameter, atX = o.AtX, atY = o.AtY, atZ = o.AtZ }),
             });

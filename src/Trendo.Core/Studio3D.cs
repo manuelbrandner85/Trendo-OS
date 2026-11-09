@@ -141,7 +141,68 @@ def activate(obj):
 def color_of(h):
     h = (h or "#2F86F6").lstrip("#")
     if len(h) < 6: h = "2F86F6"
-    return tuple(int(h[i:i+2], 16) / 255 for i in (0, 2, 4)) + (1.0,)
+    def lin(c):
+        return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+    return tuple(lin(int(h[i:i+2], 16) / 255) for i in (0, 2, 4)) + (1.0,)
+
+def textured(mat, bsdf, part, base):
+    tex = part.get("textures")
+    if not tex or not os.path.exists(tex["color"]):
+        return
+    tree = mat.node_tree
+    geo = tree.nodes.new("ShaderNodeNewGeometry")
+    mapping = tree.nodes.new("ShaderNodeMapping")
+    s = 1.0 / (float(part.get("tile_m") or 0.5) * 100.0)  # eine Blender-Einheit ist hier 1 cm
+    mapping.inputs["Scale"].default_value = (s, s, s)
+    tree.links.new(geo.outputs["Position"], mapping.inputs["Vector"])
+    def image(path, data):
+        node = tree.nodes.new("ShaderNodeTexImage")
+        node.image = bpy.data.images.load(path)
+        node.projection = "BOX"
+        node.projection_blend = 0.25
+        if data: node.image.colorspace_settings.name = "Non-Color"
+        tree.links.new(mapping.outputs["Vector"], node.inputs["Vector"])
+        return node
+    col = image(tex["color"], False)
+    if part.get("tint"):
+        mix = tree.nodes.new("ShaderNodeMixRGB")
+        mix.blend_type = "MULTIPLY"
+        mix.inputs[0].default_value = 1.0
+        mix.inputs[2].default_value = base
+        tree.links.new(col.outputs["Color"], mix.inputs[1])
+        tree.links.new(mix.outputs[0], bsdf.inputs["Base Color"])
+    else:
+        tree.links.new(col.outputs["Color"], bsdf.inputs["Base Color"])
+    if os.path.exists(tex["roughness"]):
+        tree.links.new(image(tex["roughness"], True).outputs["Color"], bsdf.inputs["Roughness"])
+    if os.path.exists(tex["metalness"]):
+        tree.links.new(image(tex["metalness"], True).outputs["Color"], bsdf.inputs["Metallic"])
+    if os.path.exists(tex["normal"]):
+        nm = tree.nodes.new("ShaderNodeNormalMap")
+        nm.inputs["Strength"].default_value = 0.8
+        tree.links.new(image(tex["normal"], True).outputs["Color"], nm.inputs["Color"])
+        tree.links.new(nm.outputs["Normal"], bsdf.inputs["Normal"])
+
+def surface_marks(mat, bsdf, part):
+    # Feine Bearbeitungsspuren: Schleif- oder Fraesriefen laengs X, dazu breite Bahnen, die den Glanz leicht wechseln lassen
+    kind = part.get("finish")
+    if kind not in ("gefraest", "gebuerstet"): return
+    tree = mat.node_tree
+    geo = tree.nodes.new("ShaderNodeNewGeometry")
+    fine_map = tree.nodes.new("ShaderNodeMapping"); fine_map.inputs["Scale"].default_value = (1.0, 55.0 if kind == "gefraest" else 110.0, 1.0)
+    wide_map = tree.nodes.new("ShaderNodeMapping"); wide_map.inputs["Scale"].default_value = (0.5, 2.5, 0.5)
+    fine = tree.nodes.new("ShaderNodeTexNoise"); fine.inputs["Scale"].default_value = 1.0; fine.inputs["Detail"].default_value = 4.0
+    wide = tree.nodes.new("ShaderNodeTexNoise"); wide.inputs["Scale"].default_value = 1.0; wide.inputs["Detail"].default_value = 2.0
+    tree.links.new(geo.outputs["Position"], fine_map.inputs["Vector"]); tree.links.new(geo.outputs["Position"], wide_map.inputs["Vector"])
+    tree.links.new(fine_map.outputs["Vector"], fine.inputs["Vector"]); tree.links.new(wide_map.outputs["Vector"], wide.inputs["Vector"])
+    a = tree.nodes.new("ShaderNodeMath"); a.operation = "MULTIPLY"; a.inputs[1].default_value = 0.7; tree.links.new(fine.outputs[0], a.inputs[0])
+    b = tree.nodes.new("ShaderNodeMath"); b.operation = "MULTIPLY"; b.inputs[1].default_value = 0.3; tree.links.new(wide.outputs[0], b.inputs[0])
+    both = tree.nodes.new("ShaderNodeMath"); both.operation = "ADD"; tree.links.new(a.outputs[0], both.inputs[0]); tree.links.new(b.outputs[0], both.inputs[1])
+    r = float(part.get("roughness") or 0.35)
+    rng = tree.nodes.new("ShaderNodeMapRange"); rng.inputs["From Min"].default_value = 0.3; rng.inputs["From Max"].default_value = 0.7; rng.inputs["To Min"].default_value = r - 0.08; rng.inputs["To Max"].default_value = r + 0.1
+    tree.links.new(both.outputs[0], rng.inputs["Value"]); tree.links.new(rng.outputs[0], bsdf.inputs["Roughness"])
+    bump = tree.nodes.new("ShaderNodeBump"); bump.inputs["Strength"].default_value = 0.15; bump.inputs["Distance"].default_value = 0.002
+    tree.links.new(fine.outputs[0], bump.inputs["Height"]); tree.links.new(bump.outputs[0], bsdf.inputs["Normal"])
 
 def paint(obj, h, part=None):
     r, g, b, _ = color_of(h)
@@ -157,6 +218,8 @@ def paint(obj, h, part=None):
             for name in ("Transmission Weight", "Transmission"):
                 if t > 0 and name in bsdf.inputs: bsdf.inputs[name].default_value = t; break
             if t > 0 and "IOR" in bsdf.inputs: bsdf.inputs["IOR"].default_value = 1.45
+            textured(mat, bsdf, part, (r, g, b, 1))
+            surface_marks(mat, bsdf, part)
     obj.data.materials.append(mat)
     obj.color = (r, g, b, 1)
 
@@ -212,10 +275,13 @@ for part in spec.get("parts", []):
             except Exception: pass
     if obj is None or obj.type != "MESH": continue
     obj.name = (part.get("name") or "Teil")[:60]
+    if part.get("material"): obj.data.materials.clear()  # sonst behalten die Flaechen die Farbe aus der importierten Datei
     paint(obj, part.get("color"), part)
     try:  # UV-Abwicklung für Texturen (Smart UV)
         activate(obj); bpy.ops.object.mode_set(mode="EDIT"); bpy.ops.mesh.select_all(action="SELECT")
-        bpy.ops.uv.smart_project(angle_limit=1.15, island_margin=0.02); bpy.ops.object.mode_set(mode="OBJECT")
+        if len(obj.data.polygons) <= 20000:  # Oberflaechen laufen ueber Box-Projektion, sehr feine Netze brauchen keine Abwicklung
+            bpy.ops.uv.smart_project(angle_limit=1.15, island_margin=0.02)
+        bpy.ops.object.mode_set(mode="OBJECT")
     except Exception:
         try: bpy.ops.object.mode_set(mode="OBJECT")
         except Exception: pass
@@ -256,6 +322,7 @@ for part in spec.get("parts", []):
 # Licht und Kamera wie in einem echten Aufbau (Maße in cm = Blender-Einheiten)
 meshes = [o for o in bpy.data.objects if o.type == "MESH" and not o.hide_render]
 from mathutils import Vector
+bpy.context.view_layer.update()  # Matrizen aktuell halten, sonst steht der Boden falsch
 if meshes:
     pts = [o.matrix_world @ Vector(c) for o in meshes for c in o.bound_box]
     lo = Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts))); hi = Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts)))
@@ -263,7 +330,7 @@ else:
     lo, hi = Vector((-10, -10, 0)), Vector((10, 10, 20))
 mid = (lo + hi) / 2; rad = max(5.0, (hi - lo).length / 2)
 bpy.ops.mesh.primitive_plane_add(size=rad * 12, location=(mid.x, mid.y, lo.z)); floor = bpy.context.object; floor.name = "Boden"
-paint(floor, "#B9B4AC", {"metallic": 0, "roughness": 0.8})
+paint(floor, "#3A3B3D" if spec.get("light") == "produkt" else "#B9B4AC", {"metallic": 0, "roughness": 0.8})
 light = spec.get("light") or "studio"
 def area(name, loc, power, size, color=(1, 1, 1)):
     bpy.ops.object.light_add(type="AREA", location=loc); L = bpy.context.object; L.name = name
@@ -277,6 +344,10 @@ if light == "studio":
     area("Fülllicht", mid + Vector((d * 0.9, -d * 0.5, d * 0.4)), 12 * d * d * k, rad * 2.0)
     area("Kantenlicht", mid + Vector((0, d, d * 0.8)), 25 * d * d * k, rad)
     if bg: bg.inputs[0].default_value = (0.05, 0.05, 0.06, 1); bg.inputs[1].default_value = 0.4
+elif light == "produkt":  # heller Studiohintergrund: Metall braucht etwas Helles zum Spiegeln
+    area("Softbox", mid + Vector((-d * 0.3, -d * 0.3, d)), 22 * d * d * k, rad * 3)
+    area("Kante", mid + Vector((d * 0.8, d * 0.8, d * 0.4)), 10 * d * d * k, rad * 2)
+    if bg: bg.inputs[0].default_value = (0.5, 0.5, 0.5, 1); bg.inputs[1].default_value = 0.7
 elif light in ("tag", "abend"):
     bpy.ops.object.light_add(type="SUN", location=mid + Vector((0, 0, d))); sun = bpy.context.object; sun.name = "Sonne"
     sun.data.energy = (4.0 if light == "tag" else 2.2) * k; sun.data.angle = math.radians(0.6)

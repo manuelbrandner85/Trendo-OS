@@ -46,6 +46,7 @@ public partial class MainWindow
             ("Ansicht", [
                 new ProgramCmd("cnc-v-top", "Von oben", _ => { _cncIso = false; Show(CK); }),
                 new ProgramCmd("cnc-v-iso", "Schräg (3D)", _ => { _cncIso = true; Show(CK); }),
+                new ProgramCmd("cnc-v-stock", "Werkstück in 3D", _ => { _cncStock = !_cncStock; Show(CK); }, false, "Zeigt das Rohteil, das bis zum aktuellen Simulationsschritt abgetragen ist"),
             ]),
             ("Erzeugen", [
                 new ProgramCmd("cnc-g-pocket", "Tasche", d => CncGenerate(d, "Tasche erzeugen", j => j.Pocket())),
@@ -157,7 +158,7 @@ public partial class MainWindow
         }
         var right = new DockPanel();
         DockPanel.SetDock(notes, Avalonia.Controls.Dock.Bottom); DockPanel.SetDock(simBar, Avalonia.Controls.Dock.Bottom);
-        right.Children.Add(notes); right.Children.Add(simBar); right.Children.Add(new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, Child = view });
+        right.Children.Add(notes); right.Children.Add(simBar); right.Children.Add(new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, Child = _cncStock ? CncStockView(d, segs, j) : view });
         var left = new DockPanel { Children = { new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, Child = ed } } };
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("340,10,*"), Children = { left, Pos(right, 2) } };
         _ui.Post(() => CncSeek(_cncT), DispatcherPriority.Background);

@@ -39,6 +39,20 @@ public static class Fabrics
         return [Math.Round(L(v >> 16 & 255), 4), Math.Round(L(v >> 8 & 255), 4), Math.Round(L(v & 255), 4), 1];
     }
 
+    public static readonly (string Id, string Label)[] Patterns = [("uni", "Einfarbig"), ("streifen", "Streifen"), ("karo", "Karo"), ("punkte", "Punkte"), ("bild", "Eigenes Bild")];
+    public static readonly string[] Palette = ["#F2F0EA", "#CDBB9B", "#E6DCC6", "#8A8F98", "#1F1F1F", "#1E2F5C", "#2C5AA0", "#7FB2D9", "#2F6B47", "#8FA876", "#A8232D", "#6E1F33", "#E0836A", "#E8B64C", "#7A4A2B", "#6B4C9A"];
+
+    /// <summary>Muster für den Auftrag: Art, zweite Farbe, Rapport in cm, bei „bild“ der Dateipfad. Null bei „Einfarbig“.</summary>
+    public static JsonObject? ToJobPattern(string? kind, string? color2, double sizeCm, string? image)
+    {
+        var k = Patterns.Any(p => p.Id == kind) ? kind! : "uni";
+        if (k == "uni" || (k == "bild" && string.IsNullOrWhiteSpace(image))) return null;
+        var c = Linear(color2 ?? "#F2F0EA");
+        var o = new JsonObject { ["kind"] = k, ["size_m"] = Math.Clamp(sizeCm, 0.5, 100) / 100, ["color"] = new JsonArray(c[0], c[1], c[2], c[3]) };
+        if (k == "bild") o["image"] = image;
+        return o;
+    }
+
     public static JsonObject ToJob(FabricInfo f, string? color, string? textureDir)
     {
         var c = Linear(color);

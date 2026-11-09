@@ -36,6 +36,30 @@ public class Garment_Ui
         finally { w.Close(); }
     }
 
+    [AvaloniaFact(DisplayName = "Kleidung: Farbe aus der Palette und eigene Farbe; Muster mit Größe und zweiter Farbe landen im Auftrag; falsche Farbe wird gemeldet")]
+    public async Task Look()
+    {
+        var (w, d) = Open();
+        try
+        {
+            string key = MainWindow.StudioPages["SPEC-08"];
+            w.Find<Button>("garment-color-5").Press(); W2Ui.Settle();
+            Assert.Equal(Fabrics.Palette[5], w.ProgramActive(key)!.Text("gColor"));
+            w.Find<TextBox>("garment-color-own").Text = "blau"; w.Find<Button>("garment-color-apply").Press(); W2Ui.Settle();
+            Assert.Contains("#A8232D", w.GarmentMessage); Assert.Equal(Fabrics.Palette[5], w.ProgramActive(key)!.Text("gColor"));
+            w.Find<TextBox>("garment-color-own").Text = "#123456"; w.Find<Button>("garment-color-apply").Press(); W2Ui.Settle();
+            Assert.Equal("#123456", w.ProgramActive(key)!.Text("gColor"));
+            w.Find<Button>("garment-pattern-streifen").Press(); W2Ui.Settle();
+            w.Find<TextBox>("garment-pattern-size").Text = "2,5"; w.Find<Button>("garment-pattern-size-set").Press(); W2Ui.Settle();
+            w.Find<Button>("garment-pattern-color-0").Press(); W2Ui.Settle();
+            JsonObject? job = null;
+            w.GarmentRunOverride = f => { job = JsonNode.Parse(File.ReadAllText(f))!.AsObject(); return Task.FromResult<string?>(null); };
+            await w.GarmentTryOn(w.ProgramActive(key)!); W2Ui.Settle();
+            Assert.Equal("streifen", (string)job!["fabric"]!["pattern"]!["kind"]!); Assert.Equal(0.025, (double)job["fabric"]!["pattern"]!["size_m"]!, 6);
+        }
+        finally { w.Close(); }
+    }
+
     [AvaloniaFact(DisplayName = "Kleidung: Anprobe schreibt einen vollständigen Auftrag, zeigt Bilder; Fehler von Blender werden gemeldet")]
     public async Task TryOn()
     {
@@ -50,7 +74,7 @@ public class Garment_Ui
                 return Task.FromResult<string?>(null);
             };
             await w.GarmentTryOn(d); W2Ui.Settle();
-            Assert.Equal(4, job!["parts"]!.AsArray().Count); Assert.Equal(15d, (double)job["fabric"]!["tension"]!);
+            Assert.Equal(5, job!["parts"]!.AsArray().Count); Assert.Equal(15d, (double)job["fabric"]!["tension"]!);
             Assert.Single(w.GarmentImages); Assert.Contains("Fertig", w.GarmentMessage);
             Assert.NotNull(w.TryFind<WrapPanel>("garment-images"));
             w.GarmentRunOverride = _ => Task.FromResult<string?>("kaputt");

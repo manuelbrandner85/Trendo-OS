@@ -16,7 +16,7 @@ public static class OfficeZip
     public const int MaxRatio = 200;
     const long RatioMinBytes = 10L * 1024 * 1024;
 
-    static InvalidDataException Bad(string why) => new($"Die Datei wurde aus Sicherheitsgründen nicht geöffnet: {why}");
+    internal static InvalidDataException Bad(string why) => new($"Die Datei wurde aus Sicherheitsgründen nicht geöffnet: {why}");
 
     /// <summary>ZIP öffnen und vor dem Lesen die Grenzen prüfen.</summary>
     public static ZipArchive OpenRead(string path)
@@ -50,13 +50,26 @@ public static class OfficeZip
     /// <summary>XML eines Eintrags laden: ohne DTD, ohne Nachladen externer Dateien, mit Größengrenze.</summary>
     public static XDocument LoadXml(this ZipArchiveEntry e, LoadOptions options = LoadOptions.None)
     {
+        XDocument? doc = null;
+        e.ReadXml(r => doc = XDocument.Load(r, options), !options.HasFlag(LoadOptions.PreserveWhitespace));
+        return doc!;
+    }
+
+    /// <summary>Eintrag als Datenstrom lesen, mit denselben Schutzregeln wie <see cref="LoadXml"/> – für Tabellenblätter, die als XDocument ein Vielfaches an Speicher belegen würden.</summary>
+    public static void ReadXml(this ZipArchiveEntry e, Action<XmlReader> read, bool ignoreWhitespace = true)
+    {
         var settings = new XmlReaderSettings
         {
             DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null, MaxCharactersFromEntities = 0, MaxCharactersInDocument = MaxEntryBytes,
-            IgnoreWhitespace = !options.HasFlag(LoadOptions.PreserveWhitespace),
+            IgnoreWhitespace = ignoreWhitespace,
         };
         using var s = e.OpenLimited();
-        try { using var r = XmlReader.Create(s, settings); return XDocument.Load(r, options); }
+        try
+        {
+            using var r = XmlReader.Create(s, settings);
+            read(r);
+            while (r.Read()) { } // bis zum Dateiende prüfen, wie XDocument: Nachgeschobenes (zweite Wurzel, DTD) bleibt ein Fehler
+        }
         catch (XmlException x) when (x.Message.Contains("DTD", StringComparison.OrdinalIgnoreCase)) { throw Bad($"„{e.FullName}“ enthält eine DTD (nicht erlaubt)."); }
     }
 

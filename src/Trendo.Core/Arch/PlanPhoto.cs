@@ -11,7 +11,20 @@ namespace Trendo.Core.Arch;
 public static class PlanPhoto
 {
     /// <summary>„vogel“ = Blick schräg von oben ohne Decke, „raum“ = Augenhöhe in einem Raum mit Decke und Leuchte.</summary>
-    public static JsonObject Scene(IReadOnlyList<FloorPlan> levels, Func<string, string?> modelFile, string mode = "vogel", string? roomId = null, int width = 1600, int height = 1000, int samples = 256)
+    /// <summary>Sonnenstand aus Monat (Mitte), Sonnenzeit und Breitengrad. Azimut in Grad von Nord im Uhrzeigersinn, Elevation in Grad.</summary>
+    public static (double Elevation, double Azimuth) Sun(int month, double hour, double latitude)
+    {
+        const double Rad = Math.PI / 180;
+        var day = 15 + (Math.Clamp(month, 1, 12) - 1) * 30.4;
+        var declination = 23.44 * Math.Sin(2 * Math.PI * (day - 81) / 365) * Rad;
+        var lat = latitude * Rad; var angle = (hour - 13) * 15 * Rad; // 13 Uhr Ortszeit entspricht in Mitteleuropa etwa dem Sonnenhöchststand
+        var sinEl = Math.Sin(lat) * Math.Sin(declination) + Math.Cos(lat) * Math.Cos(declination) * Math.Cos(angle);
+        var el = Math.Asin(sinEl);
+        var az = Math.Atan2(Math.Sin(angle), Math.Cos(angle) * Math.Sin(lat) - Math.Tan(declination) * Math.Cos(lat)) + Math.PI;
+        return (el / Rad, (az / Rad + 360) % 360);
+    }
+
+    public static JsonObject Scene(IReadOnlyList<FloorPlan> levels, Func<string, string?> modelFile, string mode = "vogel", string? roomId = null, int width = 1600, int height = 1000, int samples = 256, int? sunMonth = null, double? sunHour = null, double latitude = 51)
     {
         static JsonArray P(params double[] v) => new(v.Select(x => (JsonNode)Math.Round(x, 4)).ToArray());
         var walls = new JsonArray(); var rooms = new JsonArray(); var openings = new JsonArray(); var items = new JsonArray();
@@ -22,7 +35,7 @@ public static class PlanPhoto
                 if (id is not null && wallIds.Contains(id))
                     walls.Add(new JsonArray(solid.Polys.Select(poly => (JsonNode)new JsonArray(poly.Verts.Select(v => (JsonNode)P(v.X / 100, v.Y / 100, v.Z / 100)).ToArray())).ToArray())); // je Wandkörper geschlossen
             foreach (var r in p.Rooms.Where(r => r.Points.Count >= 3))
-                rooms.Add(new JsonObject { ["id"] = r.Id, ["name"] = r.Name, ["kind"] = r.Kind, ["floor"] = r.Floor, ["z"] = z, ["height"] = r.Height / 100,
+                rooms.Add(new JsonObject { ["id"] = r.Id, ["name"] = r.Name, ["kind"] = r.Kind, ["floor"] = r.Floor, ["wall"] = r.WallFinish, ["z"] = z, ["height"] = r.Height / 100,
                     ["points"] = new JsonArray(r.Points.Select(q => (JsonNode)P(q.X / 100, -q.Y / 100)).ToArray()) });
             foreach (var o in p.Openings)
             {
@@ -44,6 +57,7 @@ public static class PlanPhoto
         return new JsonObject
         {
             ["mode"] = mode, ["room"] = roomId, ["width"] = width, ["height"] = height, ["samples"] = samples,
+            ["sun"] = sunMonth is { } mon && sunHour is { } hr ? new JsonObject { ["elevation"] = Math.Round(Sun(mon, hr, latitude).Elevation, 2), ["azimuth"] = Math.Round(Sun(mon, hr, latitude).Azimuth, 2) } : null,
             ["north"] = top?.North ?? 0, ["walls"] = walls, ["rooms"] = rooms, ["openings"] = openings, ["items"] = items,
         };
     }

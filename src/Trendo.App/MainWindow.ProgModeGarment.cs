@@ -6,6 +6,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
 using Trendo.Core;
 using Trendo.Core.Programs;
 using Path = System.IO.Path;
@@ -88,6 +89,7 @@ public partial class MainWindow
         combo.SelectionChanged += (_, _) => { if (combo.SelectedIndex >= 0 && Fabrics.All[combo.SelectedIndex] != fabric) ProgramRun("mode-programm", () => d.Set("gFabric", Fabrics.All[combo.SelectedIndex].Id, "Stoff wählen")); };
         sp.Children.Add(H("Schnitt und Stoff", 14)); sp.Children.Add(kinds);
         sp.Children.Add(new WrapPanel { Children = { MSp(combo), new TextBlock { Name = "garment-fabric-facts", Text = $"{fabric.Note} · {fabric.Gsm:0} g/m² · Bahn {fabric.WidthCm:0} cm · Dehnung {fabric.StretchPct:0} % · {fabric.PricePerM:0} €/m", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap, MaxWidth = 520 } } });
+        sp.Children.Add(GarmentLook(d));
         if (g is null) { sp.Children.Add(P(GarmentMessage, Brush.Parse("#FACC15"), 12)); return WCard(sp); }
 
         sp.Children.Add(H("Schnittteile", 13));
@@ -125,6 +127,63 @@ public partial class MainWindow
         return WCard(sp);
     }
 
+    private const string ModeKey = "mode-programm";
+
+    /// <summary>Farbe und Muster frei wählen.</summary>
+    private Control GarmentLook(ProgramDocument d)
+    {
+        var sp = new StackPanel { Name = "garment-look", Spacing = 6 };
+        WrapPanel Swatches(string prefix, string field, string current)
+        {
+            var row = new WrapPanel();
+            for (var i = 0; i < Fabrics.Palette.Length; i++)
+            {
+                var hex = Fabrics.Palette[i]; var on = string.Equals(hex, current, StringComparison.OrdinalIgnoreCase);
+                var b = new Button { Name = $"{prefix}-{i}", Width = 26, Height = 26, Padding = new Thickness(0), CornerRadius = new CornerRadius(13), Margin = new Thickness(0, 0, 5, 5), Background = Brush.Parse(hex), BorderBrush = on ? Accent : Edge, BorderThickness = new Thickness(on ? 3 : 1) };
+                ToolTip.SetTip(b, hex);
+                b.Click += (_, _) => ProgramRun(ModeKey, () => d.Set(field, hex, "Farbe wählen"));
+                row.Children.Add(b);
+            }
+            return row;
+        }
+        var color = GarmentColor(d);
+        sp.Children.Add(H("Farbe", 13));
+        sp.Children.Add(Swatches("garment-color", "gColor", color));
+        var own = new TextBox { Name = "garment-color-own", Width = 130, PlaceholderText = "#RRGGBB", Text = color.StartsWith('#') ? color : "" };
+        sp.Children.Add(new WrapPanel { Children = { MSp(own), MSp(Act("garment-color-apply", "Eigene Farbe", () => { var v = (own.Text ?? "").Trim(); if (System.Text.RegularExpressions.Regex.IsMatch(v, "^#[0-9A-Fa-f]{6}$")) ProgramRun(ModeKey, () => d.Set("gColor", v, "Farbe wählen")); else { GarmentMessage = "Bitte eine Farbe wie #A8232D eingeben."; Show(ModeKey); } })) } });
+        var kind = d.Text("gPattern", "uni");
+        var kinds = new WrapPanel();
+        foreach (var (id, label) in Fabrics.Patterns) { var pick = id; kinds.Children.Add(MSp(Act("garment-pattern-" + id, label, () => ProgramRun(ModeKey, () => d.Set("gPattern", pick, "Muster wählen")), kind == id))); }
+        sp.Children.Add(H("Muster", 13)); sp.Children.Add(kinds);
+        if (kind is "streifen" or "karo" or "punkte" or "bild")
+        {
+            var size = new TextBox { Name = "garment-pattern-size", Width = 80, Text = d.Number("gPatternSize", kind == "bild" ? 30 : 3).ToString("0.#") };
+            var row = new WrapPanel { Children = { MSp(new TextBlock { Text = kind == "bild" ? "Bildbreite in cm" : "Mustergröße in cm", Foreground = Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }), MSp(size),
+                MSp(Act("garment-pattern-size-set", "Übernehmen", () => { if (double.TryParse((size.Text ?? "").Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v) && v > 0) ProgramRun(ModeKey, () => d.Set("gPatternSize", v, "Mustergröße")); })) } };
+            sp.Children.Add(row);
+            if (kind == "bild")
+            {
+                var file = d.Text("gPatternImage");
+                sp.Children.Add(new WrapPanel { Children = { MSp(Act("garment-pattern-image", "Bild wählen …", () => _ = GarmentPickImage(d))), new TextBlock { Name = "garment-pattern-file", Text = file.Length == 0 ? "Noch kein Bild gewählt." : Path.GetFileName(file), Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center } } });
+            }
+            else { sp.Children.Add(P("Zweite Farbe des Musters", Muted, 11.5)); sp.Children.Add(Swatches("garment-pattern-color", "gPatternColor", d.Text("gPatternColor", "#F2F0EA"))); }
+        }
+        return sp;
+    }
+
+    private async Task GarmentPickImage(ProgramDocument d)
+    {
+        var req = new PickRequest("mode-muster", false, false, ["png", "jpg", "jpeg"]);
+        string? f;
+        if (PickOverride is { } fake) f = (await fake(req))?.FirstOrDefault();
+        else
+        {
+            var got = await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Bild für den Stoffdruck", FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Bilder") { Patterns = ["*.png", "*.jpg", "*.jpeg"] }] });
+            f = got.Count > 0 ? got[0].TryGetLocalPath() : null;
+        }
+        if (f is not null) ProgramRun(ModeKey, () => d.Set("gPatternImage", f, "Stoffdruck wählen"));
+    }
+
     /// <summary>Produktionsdatei schreiben (öffentlich für Tests). Rückgabe: Pfad oder null.</summary>
     public string? GarmentExport(ProgramDocument d, string ext)
     {
@@ -146,12 +205,15 @@ public partial class MainWindow
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException) { GarmentMessage = "Speichern ging nicht: " + e.Message; Show("mode-programm"); return null; }
     }
 
-    private async Task<string?> GarmentTextures(FabricInfo fabric)
+    private Task<string?> GarmentTextures(FabricInfo fabric) => AmbientTexture(fabric.TextureId);
+
+    /// <summary>Kostenlose Oberfläche von ambientCG (CC0) holen; schon geladene werden wiederverwendet. Offline oder im Testmodus: null.</summary>
+    private async Task<string?> AmbientTexture(string id)
     {
         if (_opt.Isolated || _core.Offline) return null;
-        var existing = Bib.Items().FirstOrDefault(i => i.Source == Trendo.Core.Bibliothek.AssetLibrary.AmbientCg && i.Id == fabric.TextureId && Directory.Exists(i.File));
+        var existing = Bib.Items().FirstOrDefault(i => i.Source == Trendo.Core.Bibliothek.AssetLibrary.AmbientCg && i.Id == id && Directory.Exists(i.File));
         if (existing is not null) return existing.File;
-        var item = await Bib.Download(new Trendo.Core.Bibliothek.AssetHit(Trendo.Core.Bibliothek.AssetLibrary.AmbientCg, fabric.TextureId, fabric.TextureId, "material", "Stoff", "", "CC0", "ambientCG", "https://ambientcg.com/a/" + fabric.TextureId));
+        var item = await Bib.Download(new Trendo.Core.Bibliothek.AssetHit(Trendo.Core.Bibliothek.AssetLibrary.AmbientCg, id, id, "material", "Material", "", "CC0", "ambientCG", "https://ambientcg.com/a/" + id));
         return item.File;
     }
 
@@ -168,7 +230,9 @@ public partial class MainWindow
             var dir = Path.Combine(WorkFolder("Mode"), "Anprobe", DevStudio.SafeName(d.Text("name", "Entwurf"))); Directory.CreateDirectory(dir);
             var fabric = Fabrics.Of(d.Text("gFabric"));
             var job = GarmentBlocks.ToJson(g, GarmentBody(d));
-            job["fabric"] = Fabrics.ToJob(fabric, GarmentColor(d), await GarmentTextures(fabric));
+            var jobFabric = Fabrics.ToJob(fabric, GarmentColor(d), await GarmentTextures(fabric));
+            if (Fabrics.ToJobPattern(d.Text("gPattern"), d.Text("gPatternColor"), d.Number("gPatternSize", 3), d.Text("gPatternImage")) is { } pattern) jobFabric["pattern"] = pattern;
+            job["fabric"] = jobFabric;
             job["frames"] = 110; job["samples"] = 200; job["out"] = Path.Combine(dir, "bild");
             var jobFile = Path.Combine(dir, "auftrag.json"); File.WriteAllText(jobFile, job.ToJsonString());
             _core.Audit.Append(Principal.LocalOwner.Name, "mode.anprobe", g.Kind + " " + fabric.Id);
@@ -181,7 +245,7 @@ public partial class MainWindow
                 var r = await Task.Run(() => Cli.Run(blender!, ["--python", script, "--", jobFile], dir, 1_800_000));
                 problem = r.Ok && r.Out.Contains("TRENDO_FERTIG") ? null : (r.Err.Length > 0 ? r.Err : r.Out).Trim().Split('\n').LastOrDefault(l => l.Trim().Length > 0) ?? "Blender hat abgebrochen.";
             }
-            GarmentImages = new[] { "vorn", "schraeg", "hinten" }.Select(v => Path.Combine(dir, $"bild-{v}.png")).Where(File.Exists).ToList();
+            GarmentImages = new[] { "nah", "vorn", "schraeg", "hinten" }.Select(v => Path.Combine(dir, $"bild-{v}.png")).Where(File.Exists).ToList();
             GarmentMessage = problem is not null ? "Anprobe abgebrochen: " + problem : GarmentImages.Count == 0 ? "Blender hat kein Bild geliefert." : "Fertig. Die Bilder liegen in: " + dir;
         }
         catch (Exception e) when (e is IOException or InvalidOperationException or HttpRequestException or UnauthorizedAccessException or System.Text.Json.JsonException) { GarmentMessage = "Anprobe ging nicht: " + e.Message; }
