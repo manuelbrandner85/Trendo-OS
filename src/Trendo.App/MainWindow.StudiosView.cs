@@ -87,7 +87,7 @@ public partial class MainWindow
         // Zuletzt benutzt: nur ohne Suche und Filter, aus dem vorhandenen Verlauf
         if (string.IsNullOrWhiteSpace(_studioFilter) && _studioQuery.Trim().Length == 0)
         {
-            var recent = _settings.RecentPages.Select(k => _studios.FirstOrDefault(s => PageForStudio(s.Id) == k)).OfType<StudioEntry>().DistinctBy(s => s.Id).Take(6).ToList();
+            var recent = _settings.RecentPages.Select(k => _studios.FirstOrDefault(s => PageForStudio(s.Id) == k)).OfType<StudioEntry>().Where(s => !StudioCatalog.Removed.Contains(s.Id)).DistinctBy(s => s.Id).Take(6).ToList();
             if (recent.Count > 0)
             {
                 var rw = new WrapPanel { Name = "studios-recent" };

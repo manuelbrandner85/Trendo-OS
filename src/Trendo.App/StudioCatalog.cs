@@ -117,8 +117,8 @@ public static class StudioCatalog
     /// <summary>Bereich „Einstellungen“ als Ziel einer Zusammenlegung.</summary>
     public const string SettingsHost = "settings";
 
-    /// <summary>Aus der Liste entfernt: nirgends mehr angeboten (abgelehnt, siehe Entscheidungsregister). Die Kennung bleibt für das Register erhalten.</summary>
-    public static readonly IReadOnlySet<string> Removed = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "SPEC-07" };
+    /// <summary>Aus der Liste entfernt (SPEC-07 abgelehnt, die übrigen auf Wunsch vom 09.11.2026): nirgends mehr angeboten. Die Kennungen bleiben für Register und Modelle erhalten.</summary>
+    public static readonly IReadOnlySet<string> Removed = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "SPEC-07", "SPEC-04", "SPEC-16", "CORE-09" };
 
     /// <summary>Zusammengelegt (Freigabe 09.11.2026): Das Studio steht nicht mehr in der Übersicht, bleibt aber über die Suche und die Leiste des aufnehmenden Studios erreichbar. Keine Funktion geht verloren.</summary>
     public static readonly IReadOnlyDictionary<string, string> FoldedInto = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -130,7 +130,7 @@ public static class StudioCatalog
     };
 
     /// <summary>Nur über die Suche erreichbar, ohne aufnehmendes Studio.</summary>
-    public static readonly IReadOnlySet<string> SearchOnly = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "CORE-09" };
+    public static readonly IReadOnlySet<string> SearchOnly = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>Steht das Studio in der Übersicht, im Startmenü und auf dem Desktop?</summary>
     public static bool InOverview(string id) => !Removed.Contains(id) && !FoldedInto.ContainsKey(id) && !SearchOnly.Contains(id);

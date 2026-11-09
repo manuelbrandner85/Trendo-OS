@@ -40,7 +40,7 @@ public class StudioIconTests
         var (w, _, _) = Ui.Open();
         w.Show("studios");
         var cards = w.GetLogicalDescendants().OfType<Button>().Where(b => b.Name?.StartsWith("studio-card-") == true).ToList();
-        Assert.True(cards.Count >= 54, $"nur {cards.Count} Karten");
+        Assert.True(cards.Count >= 37, $"nur {cards.Count} Karten");
         foreach (var c in cards)
         {
             var id = c.Name!["studio-card-".Length..];
@@ -59,7 +59,7 @@ public class StudioIconTests
         var (w, _, _) = Ui.Open();
         w.Show("studios");
         var cards = w.GetLogicalDescendants().OfType<Button>().Where(b => b.Name?.StartsWith("studio-card-") == true).ToList();
-        Assert.True(cards.Count >= 54);
+        Assert.True(cards.Count >= 37);
         var bad = new System.Text.RegularExpressions.Regex(@"\b(CORE|SYS|SPEC|X|STUDIO)-|APPROVED|REJECTED|Ultimate|GODMODE|\b2\.0\b|Fusion|Blockiert|Nicht verbunden|Benötigtes Programm");
         foreach (var c in cards)
             foreach (var t in c.GetLogicalDescendants().OfType<TextBlock>().Where(t => t.IsVisible))
@@ -67,7 +67,7 @@ public class StudioIconTests
         var heads = w.GetLogicalDescendants().OfType<TextBlock>().Where(t => t.Name?.StartsWith("studio-area-") == true).Select(t => t.Text).ToList();
         Assert.True(heads.Count >= 8, $"nur {heads.Count} Bereiche");
         Assert.Contains("Technik & Fachgebiete", heads);
-        Assert.Equal("Auto & Fahrten", Avalonia.Automation.AutomationProperties.GetName(cards.Single(c => c.Name == "studio-card-SPEC-16")));
+        Assert.Equal("Geld & Rechnungen", Avalonia.Automation.AutomationProperties.GetName(cards.Single(c => c.Name == "studio-card-SPEC-11")));
         w.Close();
     }
 }

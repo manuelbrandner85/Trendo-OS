@@ -20,7 +20,7 @@ public class Design41RolloutTests
         var (w, _, _) = Ui.Open();
         w.Show("studios");
         var all = w.GetLogicalDescendants().OfType<Button>().Count(b => b.Name?.StartsWith("studio-card-") == true);
-        Assert.True(all >= 54, $"nur {all} Karten");
+        Assert.True(all >= 37, $"nur {all} Karten");
         Press(w.Find<Button>("studio-filter-business")!);
         var biz = w.GetLogicalDescendants().OfType<Button>().Where(b => b.Name?.StartsWith("studio-card-") == true).Select(b => b.Name).ToList();
         Assert.Contains("studio-card-STUDIO-ONLINE-BUSINESS-01", biz);

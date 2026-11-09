@@ -56,7 +56,7 @@ public class StartMenu_StudioFenster
         foreach (var id in StudioCatalog.ById.Keys)
             Assert.Contains(w.Studios, s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
 
-        foreach (var (id, info) in StudioCatalog.ById)
+        foreach (var (id, info) in StudioCatalog.ById.Where(k => StudioCatalog.InOverview(k.Key)))
         {
             RealClick(w, V<Button>(w, "start-button"));
             Assert.True(w.StartMenuOpen, id);
