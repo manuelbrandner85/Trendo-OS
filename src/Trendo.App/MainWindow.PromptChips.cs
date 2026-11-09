@@ -19,6 +19,7 @@ public partial class MainWindow
         ["STUDIO-MUSIK-01"] = ["Sommerlied über einen Roadtrip", "Ruhige Klavierballade, instrumental", "Rap über Montagmorgen"],
         ["STUDIO-FILM-01"] = ["Drehbuch für einen Kurzfilm über einen Neuanfang", "Trailer von einer Minute", "Dialog spannender machen"],
         ["STUDIO-POD-01"] = ["Motivideen für Wanderfreunde", "Verkaufstext für dieses T-Shirt", "Sinnvollen Preis ausrechnen"],
+        ["STUDIO-CONSOLE-01"] = ["Erkläre mir den nächsten Schritt", "Was fehlt auf diesem PC?", "Bring es auf mein Steam Deck"],
         ["SPEC-15"] = ["Stream-Szene mit Kamera und Bildschirm", "Ablauf für eine 30-Minuten-Sendung"],
         ["SPEC-01"] = ["Wohnzimmer 4 × 5 m einrichten", "Wandfläche zum Streichen berechnen"],
         ["SPEC-02"] = ["Vorwiderstand für eine LED an 12 V", "Spannungsteiler 5 V → 3,3 V"],

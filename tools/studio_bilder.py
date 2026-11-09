@@ -25,6 +25,7 @@ PROMPTS = {
     'STUDIO-MUSIK-01': 'a home music production studio at night: studio monitor speakers, a large-diaphragm condenser microphone with pop filter, a MIDI keyboard and an acoustic guitar on a stand, warm golden lamp light, dark acoustic panels',
     'STUDIO-FILM-01': 'a film director chair and a wooden clapperboard next to a cinema camera on a tripod on a dark film set, warm golden spotlight, soft haze',
     'STUDIO-POD-01': 'a screen printing workbench in a dark workshop: a freshly printed plain t-shirt, a ceramic mug and rolled posters with abstract colorful artwork, a squeegee and ink tins, warm lamp light',
+    'STUDIO-CONSOLE-01': 'a retro video game console with a disc tray open and a modern handheld game device and a laptop side by side on a dark workbench, cables, warm lamp light, no brand names',
     'STUDIO-TV-01': 'a cozy dark living room with a large wall-mounted television glowing, sofa and a remote control on a side table',
     'SPEC-08': 'tailor workbench with fabric swatches, measuring tape, scissors and a dress form in a dark atelier',
     'X-07': 'a photographer and sound recordist kit: camera, field recorder and headphones laid out on a dark table',
