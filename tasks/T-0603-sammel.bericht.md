@@ -28,4 +28,6 @@ Merge nach `main` nur nach OK. VFX als Studio und Umbau der Programm-Hülle sind
 
 Feste Fassung a508929 über dieselben Git-Schritte wie im Studio geladen, 11 Skill-Ordner vorhanden. Die mitgelieferte Testsuite und `console-anywhere doctor` liefen auf diesem PC; Ergebnis siehe Commit-Text.
 
+Die 2 Fehler der Testsuite (559 Tests, 31 übersprungen) sind `test_anywhere.TestPackage.test_elf_name_baked_in` und `test_launch_script_reads_system_cnf`. Beide rufen `/bin/sh` auf, das es unter Windows nicht gibt (`FileNotFoundError`). Das erzeugte `play.sh` selbst wurde dadurch auf diesem PC nicht geprüft.
+
 Ein Port ist hier nicht möglich: Auf dem PC liegt kein ISO-Abbild, und Trendo darf keines beschaffen. Für Windows fehlt CMake, das nach den Projektregeln nicht ohne die Person systemweit installiert wird. Linux und Steam Deck brauchen ein Linux-System oder WSL2, Android zusätzlich JDK 17, Gradle, Android SDK und adb.
