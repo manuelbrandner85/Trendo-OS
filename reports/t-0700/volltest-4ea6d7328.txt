@@ -1,0 +1,11 @@
+4ea6d7328 T-0700: Level-Editor-Test scrollt zum Vorlagenknopf
+    97 Warnung(en)
+BUILD_EXIT 0
+Bestanden!   : Fehler:     0, erfolgreich:    16, übersprungen:     0, gesamt:    16, Dauer: 2 s - Trendo.Api.Tests.dll (net10.0)
+Bestanden!   : Fehler:     0, erfolgreich:  2191, übersprungen:     5, gesamt:  2196, Dauer: 1 m 7 s - Trendo.Core.Tests.dll (net10.0)
+Bestanden!   : Fehler:     0, erfolgreich:  1177, übersprungen:     4, gesamt:  1181, Dauer: 36 m 19 s - Trendo.App.Tests.dll (net10.0)
+TEST_EXIT 0
+Ran 11 tests in 16.167s
+
+OK
+PY_EXIT 0

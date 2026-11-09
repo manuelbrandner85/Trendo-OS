@@ -28,3 +28,12 @@
 - Ein erster Lauf hatte 5 rote Tests, alle wegen veralteter Testannahmen (neue Schutzregeln, längere Startseite). Keiner zeigte einen Produktfehler.
 - Nicht geprüft: echte Claude-Läufe außerhalb von Spiele, Bild, 3D, Briefe, Statik und Baukasten, echte Abo-Pause, Unreal und Unity in einem Auftrag, Tests mit Anfängern, QA- und Security-Agent.
 - Status: gebaut und getestet, nicht abgenommen. Offen: Zusammenführen mit `main`, Phase F.
+
+## Phase F
+
+- Volltest auf 4ea6d7328, nach dem Zusammenführen mit origin/main: Build Exit 0, Api 16 von 16, Core 2191 bestanden und 5 übersprungen, App 1177 bestanden und 4 übersprungen, Exit 0. Paket-Tests 11, OK, Exit 0.
+- Beleg: `reports/t-0700/volltest-4ea6d7328.txt`, SHA-256 bee19b4d57249bf5ac45a01cd31fc6868870fae42f64ac15b621f602e445dd7c.
+- Unabhängige Sicherheits- und QA-Prüfung durch getrennte Agenten: alle Befunde bearbeitet, keine erneute Begutachtung nach den Korrekturen.
+- origin/main hat seither 5 weitere Commits. Die 16 Studio-Zusammenlegungen sind noch nicht enthalten.
+- Nicht geprüft: echte Abo-Pause, Unreal und Unity in einem echten Auftrag, 52 Studios ohne echten Claude-Lauf, Tests mit Anfängern, Pi und Linux.
+- Status: gebaut und getestet, nicht abgenommen. Merge nach main wartet auf das OK des Projektinhabers.
