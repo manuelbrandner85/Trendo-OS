@@ -192,7 +192,7 @@ public partial class MainWindow
         }
         if (doc is not null)
         {
-            if (doc.Data.ToJsonString() != before) { ClaudeChangeAfter(plan.Page, doc); _progMsg[plan.Page] = "✳ Claude hat im Programm gearbeitet – oben vergleichen, behalten oder verwerfen."; }
+            if (doc.Data.ToJsonString() != before) { ClaudeChangeAfter(plan.Page, doc); _progMsg[plan.Page] = ClaudeNoClicks ? "✳ Claude hat im Programm gearbeitet." : "✳ Claude hat im Programm gearbeitet – oben vergleichen, behalten oder verwerfen."; }
             else _claudeChanges.Remove(plan.Page);
         }
         _core.Audit.Append(Principal.LocalOwner.Name, "claude.bedient", $"{plan.Page} · {done.Count} Schritte" + (plan.Steps.Any(s => ClaudeActions.StepRisky(s, plan.State)) ? " · mit Wirkung nach außen" : ""));

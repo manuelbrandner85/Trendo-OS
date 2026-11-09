@@ -80,10 +80,7 @@ public partial class MainWindow
         d.Edit("Asset verwenden", x =>
         {
             var target = GameAssets.Add(x, GameAssetDir(d), file, source, license, author, url, use)["file"]!.GetValue<string>();
-            if (use == "figur") x["playerImage"] = target;
-            else if (use == "hintergrund") x["backgroundImage"] = target;
-            else if (use.StartsWith("anim-", StringComparison.Ordinal)) { var a = x["anims"] as JsonObject ?? []; a[use[5..]] = new JsonObject { ["file"] = target, ["frames"] = frames, ["fps"] = 8 }; x["anims"] = a; }
-            else if (use.StartsWith("ton-", StringComparison.Ordinal)) { var s = x["sounds"] as JsonObject ?? []; s[use[4..]] = target; x["sounds"] = s; }
+            GameAssets.Assign(x, target, use, frames);
         });
         _gaPending.RemoveAll(p => p.File == file);
         _core.Audit.Append(Principal.LocalOwner.Name, "spiele.asset.verwendet", $"{Path.GetFileName(file)} als {use} ({license})");

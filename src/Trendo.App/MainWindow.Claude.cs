@@ -262,6 +262,8 @@ public partial class MainWindow
         main.IsCheckedChanged += (_, _) => KiSourceSettings.Update(_core.DataRoot, x => x.ClaudeMain = main.IsChecked == true);
         var always = new CheckBox { Name = "claude-always-full", Content = "Claude darf im Claude-Chat bei Bedarf ins Internet und Befehle ausführen", IsChecked = set.ClaudeAlwaysFull, Foreground = Text };
         ToolTip.SetTip(always, "Volle Claude-Code-Funktionen in allen Studios (auch deine Skills, Agenten, Plugins und MCP-Werkzeuge). Einzelne Projekte stellst du im Chat mit „🔒 Sicher“ ab.");
+        var noClicks = new CheckBox { Name = "claude-no-clicks", Content = "Claude arbeitet selbständig ohne Klicks (aus: Plan und Vergleich zum Bestätigen)", IsChecked = set.ClaudeNoClicks, Foreground = Text };
+        noClicks.IsCheckedChanged += (_, _) => { KiSourceSettings.Update(_core.DataRoot, x => x.ClaudeNoClicks = noClicks.IsChecked == true); _core.Audit.Append(Principal.LocalOwner.Name, "claude.ohne-klicks", noClicks.IsChecked == true ? "an" : "aus"); };
         always.IsCheckedChanged += (_, _) => { KiSourceSettings.Update(_core.DataRoot, x => x.ClaudeAlwaysFull = always.IsChecked == true); _core.Audit.Append(Principal.LocalOwner.Name, always.IsChecked == true ? "claude.immer.voll.an" : "claude.immer.voll.aus", ""); };
         var looks = new CheckBox { Name = "claude-looks", Content = "Claude startet sein Ergebnis echt und sieht es sich selbst an (Bildschirmfoto), bevor du es bekommst", IsChecked = set.ClaudeLooks, Foreground = Text };
         ToolTip.SetTip(looks, "Webseiten und Spiele: Trendo startet sie unsichtbar, meldet Fehler an Claude und zeigt Claude ein Bildschirmfoto – bis zu drei Durchgänge. Kostet etwas mehr von deinem Abo.");
@@ -280,7 +282,7 @@ public partial class MainWindow
                 P(s.Ready && !ClaudeEmbedApproved ? "Claude Code ist mit deinem Abo bereit. „Claude Code öffnen“ startet es sichtbar im Projektordner – dort arbeitest du direkt mit Claude, ohne API."
                   : s.Ready ? "Claude beantwortet Fragen, plant und baut in allen Programmen – wo programmiert wird, arbeitet es wie Claude Code. Volle Funktionen (Befehle, Web, deine Skills) gibst du je Projekt frei. Deine Dokumente aus „Wissen“ gehen nicht automatisch mit."
                   : "Einmal verbinden, dann ist Claude deine Haupt-KI in Trendo. Die Anmeldung läuft über Claude selbst – Trendo sieht nie dein Passwort. Ohne Claude arbeitet die KI auf diesem PC weiter.", Muted, 12),
-                gate, main, always, looks, suggests, sounds, buttons, ClaudeWebRow(),
+                gate, main, always, noClicks, looks, suggests, sounds, buttons, ClaudeWebRow(),
                 new TextBlock { Name = "claude-msg", Text = _claudeMsg, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap, IsVisible = _claudeMsg.Length > 0 } } },
         };
     }

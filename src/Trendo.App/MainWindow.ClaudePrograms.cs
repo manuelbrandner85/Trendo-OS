@@ -131,6 +131,15 @@ public partial class MainWindow
     {
         if (doc is null || !_claudeChanges.TryGetValue(page, out var c)) return null;
         if (c.DocId != doc.Id) return null;
+        if (ClaudeNoClicks) // nichts zu bestätigen, nur die Möglichkeit, es zurückzuholen
+        {
+            var undo = new Button { Name = "claude-change-drop", Content = "↶ Zurücknehmen", FontSize = 12, Padding = new Thickness(10, 3), Background = Brushes.Transparent, Foreground = Text, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8) };
+            undo.Click += (_, _) => ClaudeChangeDecide(page, "verwerfen");
+            var compare = new Button { Name = c.ShowingBefore ? "claude-change-after" : "claude-change-before", Content = c.ShowingBefore ? "Nachher" : "Vorher", FontSize = 12, Padding = new Thickness(10, 3), Margin = new Thickness(0, 0, 6, 0), Background = Brushes.Transparent, Foreground = Text, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8) };
+            compare.Click += (_, _) => ClaudeChangeDecide(page, c.ShowingBefore ? "nachher" : "vorher");
+            var line = new DockPanel { Children = { Dk(undo, Avalonia.Controls.Dock.Right), Dk(compare, Avalonia.Controls.Dock.Right), new TextBlock { Text = $"✳ Claude hat „{doc.Title}“ bearbeitet.", Foreground = Text, FontSize = 12.5, VerticalAlignment = VerticalAlignment.Center } } };
+            return Appear(CGlass(line, 12, new Thickness(12, 6), "claude-change"));
+        }
         Button B(string name, string label, string what, bool on = false, bool main = false)
         {
             var b = new Button { Name = name, Content = label, FontSize = 12.5, Padding = new Thickness(12, 4), Margin = new Thickness(0, 0, 6, 0), CornerRadius = new CornerRadius(8),

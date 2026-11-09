@@ -114,6 +114,8 @@ public partial class MainWindow
             var dir = WorkFolder(spec.Folder); var stem = DevStudio.SafeName(d.Title); target = Path.Combine(dir, stem + ProgramDocument.Extension);
             for (var n = 2; File.Exists(target); n++) target = Path.Combine(dir, $"{stem} ({n}){ProgramDocument.Extension}");
         }
+        else if (!Path.IsPathRooted(target)) // nur ein Name: neben das Dokument, sonst in den Ordner des Programms, nie ins Arbeitsverzeichnis des Prozesses
+            target = Path.Combine(d.Path is { } current && Path.IsPathRooted(current) ? Path.GetDirectoryName(current)! : WorkFolder(spec.Folder), target);
         d.Save(target); ProgRecent.Add(spec.Studio, d.Path!);
         _core.Audit.Append(Principal.LocalOwner.Name, "program.save", $"{spec.Studio} {Path.GetFileName(d.Path)}");
         _progMsg[key] = "Gespeichert: " + d.Path; return d.Path!;
@@ -257,6 +259,7 @@ public partial class MainWindow
         var sp = new StackPanel { Spacing = 10, Children = {
             Card(new StackPanel { Spacing = 8, Children = { H("Neu", 15), tpl } }),
             Card(new StackPanel { Spacing = 6, Children = { H("Zuletzt", 15), recent } }) } };
+        if (StudioTaskCard(spec.Studio, spec.Key) is { } tasks) sp.Children.Insert(1, tasks); // unter „Neu“: Die Vorlagen bleiben dort, wo man sie kennt
         var orphans = ProgramDocument.Orphans(ProgBackup, spec.Studio);
         if (orphans.Count > 0)
         {

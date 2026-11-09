@@ -23,7 +23,7 @@ public class LevelEditor_Ui
     public void Paint_level()
     {
         var (w, l, _) = Ui.Open(); w.Width = 1600; w.Height = 1400;
-        w.Show(GK); Settle(); RealClick(w, V<Button>(w, "prog-tpl-retro-plattform"));
+        w.Show(GK); Settle(); { var tpl = V<Button>(w, "prog-tpl-retro-plattform"); tpl.BringIntoView(); Settle(); RealClick(w, tpl); };
         w.GameSection = "Level"; w.Show(GK); Settle();
         Assert.Equal(GameStudio.DefaultPlatform, Level(w));
         // Münzen in Zeile 2, Spalten 2–6 ziehend malen

@@ -104,6 +104,15 @@ public static class GameAssets
         a.Add(entry); doc["assets"] = a;
         return entry;
     }
+    /// <summary>Ein aufgenommenes Asset im Spiel einsetzen (Figur, Hintergrund, Animation, Ton).</summary>
+    public static void Assign(JsonObject x, string target, string use, int frames = 1)
+    {
+        if (use == "figur") x["playerImage"] = target;
+        else if (use == "hintergrund") x["backgroundImage"] = target;
+        else if (use.StartsWith("anim-", StringComparison.Ordinal)) { var a = x["anims"] as JsonObject ?? []; a[use[5..]] = new JsonObject { ["file"] = target, ["frames"] = frames, ["fps"] = 8 }; x["anims"] = a; }
+        else if (use.StartsWith("ton-", StringComparison.Ordinal)) { var s = x["sounds"] as JsonObject ?? []; s[use[4..]] = target; x["sounds"] = s; }
+    }
+
     static bool SameFile(string a, string b) => File.Exists(a) && string.Equals(Path.GetFullPath(a), Path.GetFullPath(b), StringComparison.OrdinalIgnoreCase);
 
     static string S(JsonElement e, string k) => e.ValueKind == JsonValueKind.Object && e.TryGetProperty(k, out var v) ? v.ValueKind == JsonValueKind.String ? v.GetString() ?? "" : v.GetRawText() : "";

@@ -14,6 +14,8 @@ public sealed class FusionContext
     public Dictionary<string, string> Out { get; } = new();
     public string? Ffmpeg { get; init; }
     public string? Blender { get; init; }
+    /// <summary>Bild aus einem Bilddokument schreiben (die Grafik liegt in der App).</summary>
+    public Func<System.Text.Json.Nodes.JsonObject, string, string>? RenderImage { get; init; }
     public string In(string k) => Input.TryGetValue(k, out var v) ? v : "";
 }
 
@@ -36,6 +38,44 @@ public static class Fusion
                 pg.Save(Path.Combine(c.WorkDir, "seite.json")); c.Out["site"] = pg.Publish(Path.Combine(c.WorkDir, "webseite")); return "index.html geschrieben";
             }),
             new("Vorhaben", "Schrittliste zum Start", c => { var d = CreationSuite.Create(c.WorkDir, "web", "Start"); c.Out["steps"] = d; return CreationSuite.Steps(d).Count + " Schritte"; }),
+        ]),
+        new("figur-spiel", "Spielfigur → fertiges Spiel", "Das Bildprogramm zeichnet eine Figur und übergibt sie, Spiele bauen setzt sie ein und baut ein spielbares Spiel.", ["text"],
+        [
+            new("Bildbearbeitung", "Figur zeichnen und übergeben", c =>
+            {
+                if (c.In("text").Trim().Length == 0) throw new InvalidOperationException("Bitte einen Namen für das Spiel eingeben.");
+                if (c.RenderImage is null) throw new InvalidOperationException("Das Bildprogramm steht hier nicht zur Verfügung.");
+                var image = Trendo.Core.Media.ImageDoc.New(256, 256, "#00000000");
+                Trendo.Core.Media.ImageDoc.AddShape(image, "ellipse", 28, 28, 200, 200, "#E8B931", "#7A5A00", 8);
+                Trendo.Core.Media.ImageDoc.AddText(image, c.In("text").Trim()[..1].ToUpperInvariant(), 92, 74, 96, "#2A1E00");
+                c.RenderImage(image, Path.Combine(c.WorkDir, "figur.png"));
+                c.Out["handoff"] = new ProjectHandoff(c.WorkDir).Add("CORE-08", "CORE-06", "figur.png", "figur", "Spielfigur").Id;
+                return "figur.png an Spiele bauen übergeben";
+            }),
+            new("Spiele bauen", "Spiel anlegen und Figur einsetzen", c =>
+            {
+                var file = new ProjectHandoff(c.WorkDir).Take(c.Out["handoff"], "CORE-06");
+                var template = Programs.GameDesign.Templates.First(t => t.Id == "retro-plattform");
+                var doc = new Programs.ProgramDocument("CORE-06", c.In("text").Trim(), template.Bible());
+                doc.Set("title", c.In("text").Trim());
+                doc.Edit("Figur", d => Programs.GameAssets.Assign(d, Programs.GameAssets.Add(d, Path.Combine(c.WorkDir, "assets"), file, "Bildbearbeitung", "eigene Arbeit", "", "", "figur")["file"]!.GetValue<string>(), "figur"));
+                doc.Save(Path.Combine(c.WorkDir, "spiel" + Programs.ProgramDocument.Extension));
+                c.Out["doc"] = doc.Path!;
+                return "Figur im Spiel eingesetzt";
+            }),
+            new("Spiele bauen", "Spiel bauen", c =>
+            {
+                var doc = Programs.ProgramDocument.Load(c.Out["doc"], "CORE-06");
+                c.Out["game"] = Programs.GameDesign.BuildBrowser(doc.Data, Path.Combine(c.WorkDir, "spiel"));
+                if (!File.Exists(Path.Combine(c.Out["game"], "index.html"))) throw new InvalidOperationException("Das Spiel wurde nicht gebaut.");
+                return Path.GetFileName(c.Out["game"]);
+            }),
+            new("Qualität", "Ergebnis prüfen", c =>
+            {
+                var doc = Programs.ProgramDocument.Load(c.Out["doc"], "CORE-06");
+                var hints = Programs.GameDesign.Check(doc.Data);
+                return hints.Count == 0 ? "Keine Probleme gefunden" : hints.Count + " Hinweise: " + string.Join("; ", hints);
+            }),
         ]),
         new("video-pack", "Video → Upload-Paket", "Aus einem Video werden MP4, Vorschaubild, Ton und GIF.", ["ffmpeg", "file"],
         [

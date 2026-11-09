@@ -375,6 +375,7 @@ public partial class MainWindow
     async Task ClaudeChatSend(ClaudeDock dock, string? text, bool check = false, int round = 0, string? shot = null)
     {
         if (!_chatUis.TryGetValue(dock, out var ui) || ui.Running || string.IsNullOrWhiteSpace(text)) return;
+        if (ClaudeNoClicks && _core.Approvals.Halted) { Toast("Der Not-Stopp ist aktiv. Claude startet erst nach „Fortsetzen“."); return; }
         text = text.Trim();
         var studio = ChatStudio(dock);
         var chats = CChats;
@@ -462,6 +463,7 @@ public partial class MainWindow
                     switch (ev)
                     {
                         case ClaudeCode.Init i:
+                            _mcpConnected = i.Connectors ?? [];
                             if (i.Session.Length > 0) session = i.Session;
                             if (i.Skills is not null || i.Connectors is not null || i.Plugins is not null) { SaveCaps(i); ui.Caps.Text = ClaudeCapsText(i); }
                             break;
@@ -486,13 +488,16 @@ public partial class MainWindow
                     ui.Scroll.ScrollToEnd();
                 });
         }
+        var bridged = false;
         using var watch = limited ? null : ClaudeWatch(dock, folder, () => workFile); // jede Änderung im Projektordner live im Programm – egal, wie Claude sie macht
         if (!limited)
         {
             try
             {
                 var mcpFile = chat.FullWith(ClaudeAlways) ? ClaudeStudioMcp(folder, dock.Studio) : null; // C5 (08.11.2026): Blender/Unreal/Godot direkt aus Claude
-                await Task.Run(() => ClaudeRun(ClaudeWithMcp(ClaudeCode.Args(prompt, ClaudeCode.Phase.Chat, chat.Session, system, model is { Length: > 0 } ? model : null, chat.FullWith(ClaudeAlways) ? ClaudeCode.Level.Voll : ClaudeCode.Level.Sicher), mcpFile), folder, OnLine, ui.Cts.Token));
+                await using var bridge = await ClaudeBridgeOpen(dock, folder, chat.Id); // Claude bedient die Programme selbst
+                bridged = bridge is not null;
+                await Task.Run(() => ClaudeRun(ClaudeWithMcp(ClaudeCode.Args(prompt, ClaudeCode.Phase.Chat, chat.Session, bridge is null ? system : system + TrendoMcp.HandsFreeRule, model is { Length: > 0 } ? model : null, chat.FullWith(ClaudeAlways) ? ClaudeCode.Level.Voll : ClaudeCode.Level.Sicher), mcpFile, bridge?.ConfigFile), folder, OnLine, ui.Cts.Token));
             }
             catch (OperationCanceledException) { error = "Angehalten."; }
             catch (InvalidOperationException e) { error = e.Message; }
@@ -524,11 +529,17 @@ public partial class MainWindow
         // bestellte KI-Werkzeuge (Bild, Musik, …) kostenlos auf dem PC ausführen – die Dateien zählen zu den Änderungen dieser Antwort
         if (error is null && ClaudeTools.Parse(say.ToString()).Count > 0) { thinking.Text = "🎨 Trendo erzeugt Bilder, Musik … (auf diesem PC)"; steps.AddRange(await ClaudeRunTools(dock, chat.Id, say.ToString(), folder)); }
         var changes = snap?.Changes() ?? [];
-        var changed = changes.Select(c => $"{c.File} ({c.Change})").ToList();
+        var changed = changes.Where(c => !c.File.Replace('\\', '/').StartsWith(".versionen/", StringComparison.Ordinal)).Select(c => $"{c.File} ({c.Change})").ToList(); // Versionsablage ist kein Ergebnis
         var answer = say.ToString().Trim();
+        var autoPlan = false;
         // Projekt-Gedächtnis: „Merken: …“-Zeilen übernehmen und als Arbeitsschritt zeigen
         // Claude bedient das Programm: Schritte erst als Plan, Ausführen nur nach Freigabe
-        if (error is null && pageState is not null && ClaudeActions.Parse(answer, pageState) is { Count: > 0 } psteps) ui.Plan = new ClaudePlan(dock.Page, pageState, psteps, chat.Id);
+        if (error is null && pageState is not null && ClaudeActions.Parse(answer, pageState) is { Count: > 0 } psteps)
+        {
+            ui.Plan = new ClaudePlan(dock.Page, pageState, psteps, chat.Id);
+            autoPlan = bridged && ClaudeNoClicks && ClaudePlanSafe(dock.Page, pageState, psteps); // nur Claude, die Ersatz-KI bleibt beim Plan mit Knopf
+        }
+        var finished = TrendoMcp.IsFinished(answer); answer = TrendoMcp.StripFinish(answer);
         // selbstlernend: „Lernregel: …“ wird ein Vorschlag (gilt erst nach Ja)
         foreach (var lr in ClaudeLearnFrom(studio, answer, false, check, check ? null : text, chat.Title)) steps.Add(new ClaudeChats.Step("🎓 Regel-Vorschlag: " + lr.Text, false));
         answer = StudioLearning.Strip(answer);
@@ -545,10 +556,17 @@ public partial class MainWindow
         pulse.Cancel();
         ui.Running = false; ui.Cts = null; ui.Send.Content = "↑"; ToolTip.SetTip(ui.Send, "Senden (Enter) · neue Zeile mit Umschalt+Enter");
         RenderChatList(dock); RenderChat(dock);
+        if (autoPlan) await ClaudeRunPlan(dock);
         await ClaudeAfterRun(dock, folder, format, workFile, snap, changes);
         // Echt testen, bis es läuft: Trendo prüft mit den Fachregeln, startet das Ergebnis (Browser unsichtbar, Syntaxprüfung) und zeigt Claude ein Bildschirmfoto –
         // Befunde gehen automatisch zurück an Claude, höchstens bis Durchgang ClaudeProbe.Rounds
-        if (round + 1 < ClaudeProbe.Rounds && error is null && changes.Count > 0)
+        var rounds = ClaudeRounds;
+        if (bridged && error is null && !finished && round + 1 < rounds && !_core.Approvals.Halted)
+        {
+            _core.Audit.Append(Principal.LocalOwner.Name, "claude.chat.weiter", $"Durchgang {round + 2}");
+            await ClaudeChatSend(dock, TrendoMcp.ContinuePrompt, check: true, round: round + 1);
+        }
+        else if (round + 1 < rounds && error is null && changes.Count > 0 && !_core.Approvals.Halted)
         {
             var alive = changes.Where(c => c.Change != "gelöscht").Select(c => c.File).ToList();
             var found = TrendoAgent.Check(folder, alive).Where(c => !c.Ok).Select(c => c.Text).ToList();
@@ -865,7 +883,7 @@ public partial class MainWindow
             B("claude-preview-after", "Nachher", "So ist es jetzt", () => { ui.Compare = "nachher"; RenderPreview(dock); }, ui.Compare == "nachher");
             if (ui.LastSnapshot is not null)
             {
-                B("claude-preview-keep", "✓ Behalten", "Änderung behalten", () => { ui.PreviewOriginal = null; ui.Compare = "nachher"; ui.LastSnapshot = null; RenderPreview(dock); RenderChat(dock); });
+                if (!ClaudeNoClicks) B("claude-preview-keep", "✓ Behalten", "Änderung behalten", () => { ui.PreviewOriginal = null; ui.Compare = "nachher"; ui.LastSnapshot = null; RenderPreview(dock); RenderChat(dock); });
                 B("claude-preview-undo", "↶ Zurücknehmen", "Änderungen der letzten Antwort rückgängig machen", () => { ClaudeChatUndo(dock); ui.PreviewOriginal = null; ui.Compare = "nachher"; RenderPreview(dock); });
             }
         }
