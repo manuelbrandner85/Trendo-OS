@@ -73,7 +73,7 @@ Nicht möglich ohne Menschen: Nutzertests mit echten Anfängern. Trendo kann Kli
 |---|---|---|
 | 02 Fachverständnis | `StudioKnowledge.cs` (Zweck, Aufgaben, Programme, Formate, Abläufe, Qualität, Helfer), ergänzt `CapabilityCatalog` | Tests „Referenz:“ |
 | 03 Projektkontext | Werkzeuge `projekt_kontext`, `studio_wissen` | Tests, Lauf unten |
-| 04 Startansicht | „Was möchtest du machen?“ mit fünf Aufgaben, darunter Neu und Zuletzt | Bild, Test |
+| 04 Startansicht | „Was möchtest du machen?“ mit fünf Aufgaben, unter „Neu“ und über „Zuletzt“ | Bild, Test |
 | 05 Einfach und Profi | vorhandene Stufen. Umschalten ändert keine Daten, alle Befehle in jeder Stufe erreichbar | Tests |
 | 06 Natürliche Sprache | Absichtserkennung `StudioKnowledgeBase.Match`, Eingabezeile geht an Claude | Tests, Lauf |
 | 07 Programmprüfung | `programme_pruefen`: installiert, startbar, Schnittstelle, Aktionen, Rechte. MCP gilt nur nach gemeldeter Verbindung | Tests |

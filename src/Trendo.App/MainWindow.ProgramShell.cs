@@ -259,6 +259,7 @@ public partial class MainWindow
         var sp = new StackPanel { Spacing = 10, Children = {
             Card(new StackPanel { Spacing = 8, Children = { H("Neu", 15), tpl } }),
             Card(new StackPanel { Spacing = 6, Children = { H("Zuletzt", 15), recent } }) } };
+        if (StudioTaskCard(spec.Studio, spec.Key) is { } tasks) sp.Children.Insert(1, tasks); // unter „Neu“: Die Vorlagen bleiben dort, wo man sie kennt
         var orphans = ProgramDocument.Orphans(ProgBackup, spec.Studio);
         if (orphans.Count > 0)
         {
@@ -275,7 +276,6 @@ public partial class MainWindow
             sp.Children.Insert(0, Card(rs));
         }
         if (spec.StartTop is { } top) sp.Children.Insert(0, top());
-        if (StudioTaskCard(spec.Studio, spec.Key) is { } tasks) sp.Children.Insert(0, tasks);
         return sp;
     }
 

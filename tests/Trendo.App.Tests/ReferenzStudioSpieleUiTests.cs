@@ -49,7 +49,7 @@ public class ReferenzStudioSpiele_Ui
     public void One_click_to_start()
     {
         var (w, _, _) = Studio();
-        RealClick(w, Find<Button>(w, "studio-task-figur")!); Settle();
+        var figur = Find<Button>(w, "studio-task-figur")!; figur.BringIntoView(); Settle(); RealClick(w, figur); Settle();
         var box = Find<TextBox>(w, "auftrag-prompt")!;
         Assert.StartsWith("Entwirf für mein Spiel eine Figur", box.Text);
         Assert.Equal(box.Text!.Length, box.CaretIndex);

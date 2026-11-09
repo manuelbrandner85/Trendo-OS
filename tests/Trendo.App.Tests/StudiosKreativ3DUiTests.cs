@@ -60,7 +60,7 @@ public class StudiosKreativ3D_Ui
         w.Show(page); Settle();
         Button? B(string n) => w.GetVisualDescendants().OfType<Button>().LastOrDefault(b => b.Name == "studio-task-" + n && b.IsEffectivelyVisible);
         Assert.NotNull(B(shown)); Assert.Null(B(hidden));
-        RealClick(w, B(shown)!); Settle();
+        B(shown)!.BringIntoView(); Settle(); RealClick(w, B(shown)!); Settle();
         var box = w.GetVisualDescendants().OfType<TextBox>().Last(t => t.Name == "auftrag-prompt" && t.IsEffectivelyVisible);
         Assert.False(string.IsNullOrEmpty(box.Text));
         w.Close();
