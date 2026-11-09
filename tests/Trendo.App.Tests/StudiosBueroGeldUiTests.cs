@@ -61,6 +61,7 @@ public class StudiosBueroGeld_Ui
     public async Task Claude_reaches(string page, string studio)
     {
         var (w, _, _) = Ui.Open();
+        w.ClaudeConsentOverride = _ => Task.FromResult(true); // private Seiten fragen, hier zugestimmt
         var m = w.ClaudeBridgeForTest(Folder(), page);
         Assert.False(Failed(await Call(m, "programm_oeffnen", new JsonObject { ["programm"] = page })));
         Assert.Equal(page, w.CurrentView);

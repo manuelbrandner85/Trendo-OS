@@ -267,7 +267,7 @@ public class ReferenzStudioSpiele_Ui
     [Fact(DisplayName = "Referenz: Ohne ausführliche Beschreibung bleibt das Studio ehrlich als nicht ausführlich markiert")]
     public void Derived_is_marked()
     {
-        var k = StudioKnowledgeBase.For("SPEC-02")!;
+        var k = StudioKnowledgeBase.For("SPEC-07")!;
         Assert.False(k.Detailed); Assert.Empty(k.Tasks);
         Assert.Null(StudioKnowledgeBase.For("GIBTSNICHT"));
         Assert.Empty(StudioKnowledgeBase.Match(k, "irgendwas"));

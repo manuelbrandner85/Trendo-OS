@@ -122,7 +122,7 @@ public class SPEC02_UiPlus
     public void Transistor_opamp_bode()
     {
         var (w, _, _) = Ui.Open();
-        w.Show(EK); Settle(); RealClick(w, Get<Button>(w, "prog-tpl-transistor"));
+        w.Show(EK); Settle(); { var tpl = Get<Button>(w, "prog-tpl-transistor"); tpl.BringIntoView(); Settle(); RealClick(w, tpl); };
         Assert.NotNull(Get<Button>(w, "ek-tool-npn"));
         w.CircuitAdvance(0.01);
         var c = Model(w); var led = c.Parts.Single(p => p.Kind == "led");
@@ -152,7 +152,7 @@ public class SPEC02_UiPcb
     public void Pcb_flow()
     {
         var (w, _, _) = Ui.Open();
-        w.Show(EK); Settle(); RealClick(w, Get<Button>(w, "prog-tpl-transistor"));
+        w.Show(EK); Settle(); { var tpl = Get<Button>(w, "prog-tpl-transistor"); tpl.BringIntoView(); Settle(); RealClick(w, tpl); };
         Press(w, "prog-cmd-ek-pcb");
         Assert.True(w.CircuitState.Pcb); Assert.Equal(6, Model(w).Pcb.Places.Count); // Batterie, 2 Widerstände, LED, Transistor, Schalter
         Assert.Contains("noch nicht verlegt", Get<TextBlock>(w, "ek-pcb-info").Text);
