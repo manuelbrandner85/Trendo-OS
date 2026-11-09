@@ -32,7 +32,7 @@ public class PodPrintful_Ui
                 var u when u.Contains("/create-task/") => (200, """{"result":{"task_key":"gt","status":"pending"}}"""),
                 var u when u.Contains("/mockup-generator/task") => (200, """{"result":{"task_key":"gt","status":"completed","mockups":[{"mockup_url":"https://x/a.jpg"}]}}"""),
                 var u when u.EndsWith("/store/products") => (200, """{"result":{"id":555}}"""),
-                var u when u.EndsWith("/store/products/555") => (200, "{\"result\":{\"sync_variants\":[{\"files\":[{\"status\":\"" + (FilesReady ? "ok" : "waiting") + "\"}]}]}}"),
+                var u when u.EndsWith("/store/products/555") => (200, "{\"result\":{\"sync_variants\":[{\"id\":77,\"name\":\"M\",\"files\":[{\"status\":\"" + (FilesReady ? "ok" : "waiting") + "\"}]}]}}"),
                 _ => (200, "{}"),
             };
             return Task.FromResult(new WebReply(c, Encoding.UTF8.GetBytes(s)));

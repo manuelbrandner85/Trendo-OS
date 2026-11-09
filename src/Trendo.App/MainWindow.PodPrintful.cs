@@ -162,6 +162,7 @@ public partial class MainWindow
         {
             PodLastProduct = await c.CreateProductAsync(name.Trim(), _pfChosen.Select(id => (id, retail)), url, PodMockupUrls.FirstOrDefault());
             _core.Audit.Append(Principal.LocalOwner.Name, "pod.printful", "produkt angelegt");
+            new PodShopStore(_core.DataRoot).Add(new(Guid.NewGuid().ToString("N"), name.Trim(), retail, PodMockupUrls.FirstOrDefault() ?? "", PodLastProduct.Value, [.. await c.ProductVariantsAsync(PodLastProduct.Value)]));
             for (var i = 0; i < 24 && !ready; i++) { ready = await c.ProductFilesReadyAsync(PodLastProduct.Value); if (!ready) await PodWait(TimeSpan.FromSeconds(5), default); }
             _progMsg[PodKey] = ready ? "Produkt ist bei Printful angelegt." : "Produkt ist angelegt, Printful verarbeitet die Datei noch.";
         }

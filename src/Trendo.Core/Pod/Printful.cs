@@ -92,6 +92,11 @@ public sealed class PrintfulClient(IWebSend web, string token)
         return new(r?["task_key"]?.GetValue<string>() ?? "", r?["status"]?.GetValue<string>() ?? "", urls.Distinct().ToList(), r?["error"]?.ToString() is { Length: > 0 } e ? e : null);
     }
 
+    /// <summary>Varianten eines angelegten Produkts mit ihren Kennungen für Bestellungen.</summary>
+    public async Task<IReadOnlyList<PodShopVariant>> ProductVariantsAsync(long productId, CancellationToken ct = default) =>
+        ((await Call("GET", $"/store/products/{productId}", null, ct))?["sync_variants"] as JsonArray ?? []).OfType<JsonObject>()
+            .Select(v => new PodShopVariant(Str(v, "name"), v["id"]!.GetValue<long>())).ToList();
+
     /// <summary>Hat Printful die Dateien dieses Produkts schon übernommen?</summary>
     public async Task<bool> ProductFilesReadyAsync(long productId, CancellationToken ct = default) =>
         PrintfulFiles.AllReady(await Call("GET", $"/store/products/{productId}", null, ct));

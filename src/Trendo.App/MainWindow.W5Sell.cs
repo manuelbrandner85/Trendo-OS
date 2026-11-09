@@ -163,6 +163,7 @@ public partial class MainWindow
                 var f = Path.Combine(BusinessFolder, DevStudio.SafeName(BizIdea.Name) + "-Shop.html");
                 File.WriteAllText(f, Shop.ShopHtml(BizIdea.Name, shop.Products.All(), _settings.SmallBusiness)); Launch(f); Say("Gespeichert: " + f, V);
             }))), shopGrid)));
+        sp.Children.Add(Card(Section("Print on Demand im Shop", "Produkte aus Printful, Bezahlung über dein eigenes Stripe-Konto. Bestellungen werden zuerst Entwürfe, Kosten entstehen erst nach deiner Freigabe.", PodShopCard())));
         return BusinessPage("Online verkaufen", sp);
     }
 }
