@@ -167,9 +167,12 @@ public static class VideoPro
             if (IsImage(o.File)) args.AddRange(["-loop", "1", "-framerate", fps.ToString(Inv), "-t", F(o.Start + o.Length), "-i", o.File]);
             else args.AddRange(["-t", F(o.Length), "-i", o.File]);
             var idx = input++; var ow = Math.Max(16, (int)Math.Round(w * o.Width / 2) * 2);
-            graph.Add($"[{idx}:v]{KeyAndMask(o)}scale={ow}:-2,format=rgba,colorchannelmixer=aa={F(o.Opacity)},setpts=PTS-STARTPTS+{F(IsImage(o.File) ? 0 : o.Start)}/TB[ov{i}]");
+            var local = IsImage(o.File) ? $"(T-{F(o.Start)})" : "T"; var localT = local.ToLowerInvariant(); // V5: Zeit ab dem Start der Einblendung; Bilder laufen ab 0 der Gesamtzeit
+            graph.Add($"[{idx}:v]{KeyAndMask(o)}scale={ow}:-2{VideoAnim.OverlaySize(p, o.Id, localT)},format=rgba{(VideoAnim.Keys(p, o.Id, "opacity").Count > 0 ? "" : $",colorchannelmixer=aa={F(o.Opacity)}")}{VideoAnim.OverlayOpacity(p, o.Id, local)},setpts=PTS-STARTPTS+{F(IsImage(o.File) ? 0 : o.Start)}/TB[ov{i}]");
             var next = i == ov.Count - 1 ? vout : $"ovc{i}";
-            graph.Add($"[{cur}][ov{i}]overlay=x={F(o.X)}*W:y={F(o.Y)}*H:enable='between(t,{F(o.Start)},{F(o.Start + o.Length)})':eof_action=pass[{next}]");
+            var over = $"(t-{F(o.Start)})"; var mx = VideoAnim.OverlayPos(p, o.Id, "x", over); var my = VideoAnim.OverlayPos(p, o.Id, "y", over); // V5: bewegte Lage
+            var pos = mx is null && my is null ? $"x={F(o.X)}*W:y={F(o.Y)}*H" : $"x='({mx ?? F(o.X)})*W':y='({my ?? F(o.Y)})*H':eval=frame";
+            graph.Add($"[{cur}][ov{i}]overlay={pos}:enable='between(t,{F(o.Start)},{F(o.Start + o.Length)})':eof_action=pass[{next}]");
             cur = next;
         }
         if (ov.Count == 0) graph.Add($"[{vin}]null[{vout}]");
