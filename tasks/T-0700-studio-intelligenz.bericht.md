@@ -15,3 +15,9 @@
 - Echter Lauf durch den Claude-Bereich: 7 Minuten 28, keine Rückfrage, Ergebnis gespeichert. Details in `docs/STUDIO_REBUILD_4_0/TRENDO_UNIVERSAL_STUDIO_PHASEN.md`.
 - Nicht geprüft: echte Abo-Pause, Lauf mit Unreal, Unity oder Blender, Tests mit Anfängern, QA- und Security-Agent.
 - Status: Referenzstudio gebaut und getestet, nicht abgenommen. Phase D bis F offen.
+
+## Phase D (Bildbearbeitung → Spiele bauen)
+
+- Echter Lauf durch den Claude-Bereich: 3 Minuten 48, keine Rückfrage, Spiel mit der gezeichneten Figur gebaut.
+- Volltest auf 41b0f800c: Build Exit 0, Api 16 von 16, Core 1966 bestanden und 5 übersprungen, App 919 bestanden und 4 übersprungen, Exit 0. Paket-Tests 11, OK, Exit 0.
+- Nicht gebaut: längere Ketten, Einsatz von `WorkflowEngine` und `AgentCenter` in der Kette.
