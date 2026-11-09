@@ -87,22 +87,47 @@ public static partial class WebDesign
     /// <summary>Exportiert die gespeicherte Seite als fertige Webseite: index.html, seite.js (Daten) und das Editor-Bündel im Anzeigemodus – läuft ohne Netz direkt aus dem Ordner.</summary>
     public static (string? Dir, string? Error) Export(string projectDir, string editorDir)
     {
+        return ExportContent(Load(projectDir), projectDir, Path.Combine(projectDir, ExportDir), editorDir);
+    }
+
+    /// <summary>Exportiert bestimmte Seitendaten in einen Zielordner (auch eine Vorschau oder Variante, ohne die gespeicherte Seite zu berühren). Bilder aus dem Projekt reisen mit, damit die Seite vollständig bleibt.</summary>
+    public static (string? Dir, string? Error) ExportContent(string json, string projectDir, string outDir, string editorDir)
+    {
         var js = Path.Combine(editorDir, "assets", "editor.js"); var css = Path.Combine(editorDir, "assets", "style.css");
         if (!File.Exists(js) || !File.Exists(css)) return (null, "Editor-Bündel fehlt im Programm (Assets/webdesign).");
-        var (data, err) = Validate(Load(projectDir)); if (data is null) return (null, err);
-        var outDir = Path.Combine(projectDir, ExportDir); var assets = Path.Combine(outDir, "assets"); Directory.CreateDirectory(assets);
+        var (data, err) = Validate(json); if (data is null) return (null, err);
+        var assets = Path.Combine(outDir, "assets"); Directory.CreateDirectory(assets);
         File.Copy(js, Path.Combine(assets, "editor.js"), true); File.Copy(css, Path.Combine(assets, "style.css"), true);
         var lic = Path.Combine(editorDir, "LIZENZEN.txt"); // MIT & Co. verlangen den Urheberhinweis auch in jeder weitergegebenen Seite
         if (File.Exists(lic)) File.Copy(lic, Path.Combine(assets, "LIZENZEN.txt"), true);
-        var title = (JsonNode.Parse(data)?["root"]?["props"]?["title"]?.ToString() ?? "Webseite") // nur HTML-Sonderzeichen maskieren, Umlaute bleiben lesbar (UTF-8)
-            .Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");
+        var doc = JsonNode.Parse(data)!;
+        CopyImages(doc, projectDir, outDir);
+        static string Esc(string s) => s.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;"); // nur HTML-Sonderzeichen maskieren, Umlaute bleiben lesbar (UTF-8)
+        var title = Esc(doc["root"]?["props"]?["title"]?.ToString() ?? "Webseite");
+        var description = doc["root"]?["props"]?["description"]?.ToString() is { Length: > 0 } d ? $"<meta name=\"description\" content=\"{Esc(d)}\" />\n" : "";
         // Daten als Skript (fetch ist über file:// gesperrt); „</“ entschärfen, damit kein Text das Skript beenden kann
         File.WriteAllText(Path.Combine(outDir, "seite.js"), "window.TRENDO_SEITE = " + data.Replace("</", "<\\/") + ";\n");
         File.WriteAllText(Path.Combine(outDir, "index.html"),
-            "<!doctype html>\n<html lang=\"de\">\n<head>\n<meta charset=\"UTF-8\" />\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n" +
+            "<!doctype html>\n<html lang=\"de\">\n<head>\n<meta charset=\"UTF-8\" />\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n" + description +
             $"<title>{title}</title>\n<link rel=\"stylesheet\" href=\"assets/style.css\">\n<script src=\"seite.js\"></script>\n<script defer src=\"assets/editor.js\"></script>\n</head>\n<body>\n<div id=\"root\"></div>\n" +
             "<noscript>Diese Seite braucht JavaScript.</noscript>\n</body>\n</html>\n");
         return (outDir, null);
+    }
+
+    /// <summary>Bilder des Projekts in den Export kopieren. Nur Dateien innerhalb des Projektordners.</summary>
+    static void CopyImages(JsonNode? n, string projectDir, string outDir)
+    {
+        if (n is JsonArray a) { foreach (var x in a) CopyImages(x, projectDir, outDir); return; }
+        if (n is not JsonObject o) return;
+        foreach (var kv in o)
+            if (kv.Key == "src" && kv.Value is JsonValue v && v.TryGetValue(out string? src) && src.Length > 0 && WebDesignCheck.IsLocalFile(projectDir, src))
+            {
+                var clean = src.Split('#', '?')[0].Replace('/', Path.DirectorySeparatorChar);
+                var target = Path.Combine(outDir, clean);
+                Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+                File.Copy(Path.Combine(projectDir, clean), target, true);
+            }
+            else CopyImages(kv.Value, projectDir, outDir);
     }
 
     /// <summary>Nachricht vom Editor („bereit“, „geaendert“, „speichern“ mit Daten).</summary>
