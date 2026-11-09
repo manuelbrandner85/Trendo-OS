@@ -1,0 +1,12 @@
+Auszug, Stand 7473ac0eb, Windows
+Bestanden!   : Fehler:     0, erfolgreich:    16, übersprungen:     0, gesamt:    16, Dauer: 2 s - Trendo.Api.Tests.dll (net10.0)
+Bestanden!   : Fehler:     0, erfolgreich:  2151, übersprungen:     5, gesamt:  2156, Dauer: 56 s - Trendo.Core.Tests.dll (net10.0)
+Erster Lauf App:
+CORE-07 (UI): Seite aus Beschreibung, Note, Stil, Paket erst nach Bestätigung [FAIL]
+Fehler!      : Fehler:     1, erfolgreich:   949, übersprungen:     4, gesamt:   954, Dauer: 33 m 35 s - Trendo.App.Tests.dll (net10.0)
+Einzelprüfung DisplayName~CORE-07, dreimal:
+Bestanden!   : Fehler:     0, erfolgreich:     4, übersprungen:     0, gesamt:     4, Dauer: 6 s - Trendo.App.Tests.dll (net10.0)
+Bestanden!   : Fehler:     0, erfolgreich:     4, übersprungen:     0, gesamt:     4, Dauer: 6 s - Trendo.App.Tests.dll (net10.0)
+Bestanden!   : Fehler:     0, erfolgreich:     4, übersprungen:     0, gesamt:     4, Dauer: 6 s - Trendo.App.Tests.dll (net10.0)
+Zweiter Lauf App, komplett, Exitcode 0:
+Bestanden!   : Fehler:     0, erfolgreich:   950, übersprungen:     4, gesamt:   954, Dauer: 31 m 31 s - Trendo.App.Tests.dll (net10.0)
