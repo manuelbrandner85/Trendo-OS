@@ -50,7 +50,7 @@ public class Garment_Ui
                 return Task.FromResult<string?>(null);
             };
             await w.GarmentTryOn(d); W2Ui.Settle();
-            Assert.Equal(4, job!["parts"]!.AsArray().Count); Assert.Equal(15d, (double)job["fabric"]!["tension"]!);
+            Assert.Equal(5, job!["parts"]!.AsArray().Count); Assert.Equal(15d, (double)job["fabric"]!["tension"]!);
             Assert.Single(w.GarmentImages); Assert.Contains("Fertig", w.GarmentMessage);
             Assert.NotNull(w.TryFind<WrapPanel>("garment-images"));
             w.GarmentRunOverride = _ => Task.FromResult<string?>("kaputt");

@@ -91,7 +91,7 @@ public class GarmentProductionTests
         var d = GarmentProduction.Dxf(T);
         Assert.Contains("SCHNITT", d); Assert.Contains("NAHT", d); Assert.Contains("FADENLAUF", d);
         Assert.StartsWith("0\nSECTION", d); Assert.EndsWith("0\nEOF\n", d);
-        Assert.Equal(4 * 3, System.Text.RegularExpressions.Regex.Matches(d, "POLYLINE").Count);
+        Assert.Equal(5 * 3, System.Text.RegularExpressions.Regex.Matches(d, "POLYLINE").Count);
     }
 
     [Fact(DisplayName = "PDF: Schnittbogen auf mehreren A4-Seiten; Datenblatt nennt Stoff, Teile, Nähte und Größen")]

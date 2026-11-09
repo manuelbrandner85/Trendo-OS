@@ -238,6 +238,10 @@ def segment_counts(job):
     return counts
 
 
+def job_sleeve_len(body):
+    return body.get("_sleeve", 0.22)
+
+
 def wrap(role, x, y, part_top, body, half_width):
     """Startlage rund um den Koerper (in Metern); die Ruhelaenge bleibt der flache Schnitt."""
     f = body_frame(body)
@@ -263,6 +267,51 @@ def wrap(role, x, y, part_top, body, half_width):
         z = f["waist_z"] - depth / 100.0
         py = ay * math.cos(theta)
         return Vector((ax * math.sin(theta), -py if role == "skirtFront" else py, z))
+    if role == "neckRib":
+        r = half_width * 2 / (2 * math.pi) * 1.15 / 100.0
+        s_val = (x + half_width) / (2 * half_width)
+        phi = -math.pi / 2 + 2 * math.pi * s_val
+        return Vector((r * math.sin(phi), -r * math.cos(phi), f["neck_z"] - 0.016 + y / 100.0))
+    if role == "band":
+        a_w, b_w = ellipse_axes(body["waist"], 0.76)
+        s_val = (x + half_width) / (2 * half_width)
+        phi = -math.pi / 2 + 2 * math.pi * s_val
+        return Vector(((a_w + 0.004) * math.sin(phi), -(b_w + 0.004) * math.cos(phi), f["waist_z"] + y / 100.0))
+    if role in ("cuffR", "cuffL"):
+        sign = 1 if role == "cuffR" else -1
+        angle = math.radians(32)
+        axis = Vector((sign * math.sin(angle), 0, -math.cos(angle)))
+        out = Vector((sign * math.cos(angle), 0, math.sin(angle)))
+        fwd = Vector((0, -1, 0))
+        start = Vector((sign * f["shoulder_x"] * 0.93, 0, f["shoulder_z"] - 0.012))
+        radius = half_width * 2 / (2 * math.pi) * 1.25 / 100.0
+        theta = x / half_width * math.pi
+        t = job_sleeve_len(body) + (5 - y) / 100.0 * -1
+        return start + axis * t + out * (radius * math.cos(theta)) + fwd * (radius * math.sin(theta))
+    if role.startswith("leg"):
+        side = 1 if role.endswith("R") else -1
+        front = "Front" in role
+        a_h, b_h = ellipse_axes(body["hip"], 0.74)
+        depth = part_top - y
+        crotch = body["height"] * 0.155
+        leg_x = side * a_h * 0.46
+        z = f["waist_z"] - 0.005 - depth / 100.0
+        if depth < crotch:
+            # oberhalb des Schritts: halbe Huefte
+            a_w, b_w = ellipse_axes(body["waist"], 0.76)
+            u = depth / crotch
+            ax = (a_w + (a_h - a_w) * min(1.0, u * 1.6)) * 1.1
+            ay = (b_w + (b_h - b_w) * min(1.0, u * 1.6)) * 1.14
+            hs = (body["hip"] + 4) / 4
+            u2 = max(0.0, min(1.0, (x * side + 0.42 * hs) / (1.08 * hs)))
+            theta = u2 * math.pi / 2 * side
+            return Vector((ax * math.sin(theta), (-1 if front else 1) * ay * math.cos(theta), z))
+        inseam = part_top - crotch
+        hem_half = body["hip"] * 0.095
+        local_half = hem_half + (body["hip"] * 0.16 - hem_half) * max(0.0, min(1.0, y / inseam))
+        radius = local_half * 2 / math.pi / 100.0 * 1.18
+        theta = side * max(-1.0, min(1.0, x * side / local_half)) * math.pi / 2
+        return Vector((leg_x + radius * math.sin(theta), (-1 if front else 1) * radius * math.cos(theta), z))
     sign = 1 if role == "sleeveR" else -1
     angle = math.radians(32)
     axis = Vector((sign * math.sin(angle), 0, -math.cos(angle)))
@@ -327,14 +376,18 @@ def build_garment(job):
             all_uv.append((v.x / 100.0, v.y / 100.0))
         for tri in tris:
             faces.append(tuple(offset + i for i in tri))
-        if part["role"].startswith("skirt"):
-            pinned.extend(boundary[(part["name"], "waist")])
+        if part["role"] == "band":
+            for name, _start, _n in spans:
+                if name.startswith("seam") or name == "free":
+                    pinned.extend(boundary[(part["name"], name)])
     edges = []
     seam_pairs = []
     for seam in job["seams"]:
         a = boundary[(seam["a"], seam["ea"])]
         b = boundary[(seam["b"], seam["eb"])]
-        if seam["rev"]:
+        direct = sum((all_start[i] - all_start[j]).length for i, j in zip(a, b))
+        flipped = sum((all_start[i] - all_start[j]).length for i, j in zip(a, reversed(b)))
+        if flipped < direct:
             b = list(reversed(b))
         for i, j in zip(a, b):
             edges.append((i, j))
@@ -384,7 +437,7 @@ def add_cloth(garment, body, job, flat):
     st.use_sewing_springs = True
     st.sewing_force_max = 6.0
     st.rest_shape_key = flat
-    if garment.vertex_groups["Bund"].index is not None and job["kind"] == "rock":
+    if job["kind"] in ("rock", "hose"):
         st.vertex_group_mass = "Bund"
         st.pin_stiffness = 1.0
     cc = cloth.collision_settings
@@ -398,6 +451,10 @@ def add_cloth(garment, body, job, flat):
 
 def build(job):
     clear_scene()
+    for part in job["parts"]:
+        if part["role"] == "sleeveR":
+            under = next(e for e in part["edges"] if e["name"] == "underF")
+            job["body"]["_sleeve"] = edge_length(under["pts"]) / 100.0 + 0.06
     scene = bpy.context.scene
     scene.frame_start = 1
     scene.frame_end = int(job.get("frames", 80))
@@ -632,8 +689,8 @@ def studio(job, body):
 def aim(camera, job, degrees):
     """Kamera mit realer Portraetbrennweite; Mitte des Kleidungsstuecks im Bild."""
     h = job["body"]["height"] / 100.0
-    centre = Vector((0, 0, 0.7 * h if job["kind"] == "tshirt" else 0.47 * h))
-    distance = 2.9
+    centre = Vector((0, 0, {"rock": 0.47, "hose": 0.42, "kleid": 0.56}.get(job["kind"], 0.7) * h))
+    distance = {"hose": 4.6, "kleid": 3.9}.get(job["kind"], 2.9)
     ang = math.radians(degrees)
     camera.location = centre + Vector((math.sin(ang) * distance, -math.cos(ang) * distance, 0.08))
     camera.rotation_euler = (centre - camera.location).to_track_quat("-Z", "Y").to_euler()

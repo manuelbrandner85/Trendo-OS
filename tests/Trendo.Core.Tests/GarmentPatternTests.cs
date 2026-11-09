@@ -13,12 +13,16 @@ public class GarmentPatternTests
     [Theory(DisplayName = "Grundschnitt: Kanten schließen lückenlos, jedes Teil hat Fläche")]
     [InlineData("tshirt")]
     [InlineData("rock")]
+    [InlineData("kleid")]
+    [InlineData("pullover")]
+    [InlineData("hemd")]
+    [InlineData("hose")]
     public void Closed(string kind)
     {
         var g = GarmentBlocks.Build(kind, M);
         foreach (var p in g.Parts)
         {
-            Assert.True(p.Area > 100, p.Name);
+            Assert.True(p.Area > 40, p.Name);
             for (var i = 0; i < p.Edges.Count; i++) Assert.True(Dist(p.Edges[i].Points[^1], p.Edges[(i + 1) % p.Edges.Count].Points[0]) < 1e-6, $"{p.Name}: {p.Edges[i].Name}");
         }
     }
@@ -26,6 +30,10 @@ public class GarmentPatternTests
     [Theory(DisplayName = "Grundschnitt: Jede Naht verbindet vorhandene Kanten, zusammengenähte Kanten sind passend lang")]
     [InlineData("tshirt")]
     [InlineData("rock")]
+    [InlineData("kleid")]
+    [InlineData("pullover")]
+    [InlineData("hemd")]
+    [InlineData("hose")]
     public void Seams_fit(string kind)
     {
         var g = GarmentBlocks.Build(kind, M);
@@ -61,7 +69,7 @@ public class GarmentPatternTests
     public void Skirt_measures()
     {
         var g = GarmentBlocks.Build("rock", M);
-        var waist = g.Parts.Sum(p => p.Edge("waist").Length); var hem = g.Parts.Sum(p => p.Edge("hem").Length);
+        var panels = g.Parts.Take(2).ToList(); var waist = panels.Sum(p => p.Edge("waist").Length); var hem = panels.Sum(p => p.Edge("hem").Length);
         Assert.Equal(M.Waist + 2, waist, 3); Assert.True(hem > M.Hip);
     }
 
@@ -74,6 +82,6 @@ public class GarmentPatternTests
     public void Json()
     {
         var j = GarmentBlocks.ToJson(GarmentBlocks.Build("tshirt", M), M);
-        Assert.Equal(4, j["parts"]!.AsArray().Count); Assert.Equal(10, j["seams"]!.AsArray().Count); Assert.Equal(92d, (double)j["body"]!["chest"]!);
+        Assert.Equal(5, j["parts"]!.AsArray().Count); Assert.Equal(13, j["seams"]!.AsArray().Count); Assert.Equal(92d, (double)j["body"]!["chest"]!);
     }
 }
