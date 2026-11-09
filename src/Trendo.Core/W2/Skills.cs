@@ -11,6 +11,8 @@ namespace Trendo.Core;
 public sealed record Skill(string Id, string Name, string Description, IReadOnlyList<string> Studios, string Body, IReadOnlyList<string> Checklist, string Origin, string License, string Source)
 {
     public bool BuiltIn => Origin == "mitgeliefert";
+    /// <summary>Fachgebiets-Skill: wird nur geladen, wenn die Aufgabe eines dieser Stichworte enthält. Leer = gilt immer für seine Studios.</summary>
+    public IReadOnlyList<string> Keywords { get; init; } = [];
     public bool AppliesTo(string? key, string? studio) => Studios.Contains("*") || key is not null && Studios.Contains(key, StringComparer.OrdinalIgnoreCase) || studio is not null && Studios.Contains(studio, StringComparer.OrdinalIgnoreCase);
 }
 
@@ -48,7 +50,8 @@ public static partial class SkillFiles
             checklist = rest[..end].Split('\n').Select(l => l.Trim()).Where(l => l.StartsWith("- ") || l.StartsWith("* ")).Select(l => Regex.Replace(l[2..], @"^\[[ xX]\]\s*", "").Trim()).Where(l => l.Length > 0).ToList();
         }
         return new Skill(Slug(head.GetValueOrDefault("id") ?? fallbackId ?? name), name, head.GetValueOrDefault("description") ?? "", studios, body, checklist, origin,
-            head.GetValueOrDefault("lizenz") ?? head.GetValueOrDefault("license") ?? "", head.GetValueOrDefault("quelle") ?? head.GetValueOrDefault("source") ?? "");
+            head.GetValueOrDefault("lizenz") ?? head.GetValueOrDefault("license") ?? "", head.GetValueOrDefault("quelle") ?? head.GetValueOrDefault("source") ?? "")
+        { Keywords = (head.GetValueOrDefault("stichworte") ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) };
     }
 
     /// <summary>Als Markdown mit Kopf schreiben (eigene und geladene Skills).</summary>
@@ -97,7 +100,38 @@ public sealed class SkillLibrary(string dataRoot, PromptLibrary prompts, AuditLo
 
     /// <summary>Skills für eine Seite bzw. ein Studio (eigene und geladene vor mitgelieferten, damit eigene Regeln Vorrang haben).</summary>
     public IReadOnlyList<Skill> For(string? key, string? studio) =>
-        All().Where(s => s.AppliesTo(key, studio) && !s.Studios.Contains("*")).OrderBy(s => s.BuiltIn ? 1 : 0).ThenBy(s => s.Name).ToList();
+        All().Where(s => s.Keywords.Count == 0 && s.AppliesTo(key, studio) && !s.Studios.Contains("*")).OrderBy(s => s.BuiltIn ? 1 : 0).ThenBy(s => s.Name).ToList();
+
+    /// <summary>Höchstlänge der Fachregeln für eine KI auf diesem PC (Zeichen): kleine Modelle haben wenig Platz für Anweisungen.</summary>
+    public const int MaxPromptCharsLocal = 2400;
+
+    /// <summary>Skills passend zur Aufgabe: eigene zuerst, dann die Fachgebiete mit den meisten Treffern, zuletzt die Grundregeln.</summary>
+    public IReadOnlyList<Skill> ForTask(string? key, string? studio, string? task)
+    {
+        var always = For(key, studio);
+        var topical = string.IsNullOrWhiteSpace(task) ? [] : All()
+            .Where(s => s.Keywords.Count > 0 && s.AppliesTo(key, studio) && !s.Studios.Contains("*"))
+            .Select(s => (Skill: s, Hits: s.Keywords.Count(k => task.Contains(k, StringComparison.OrdinalIgnoreCase))))
+            .Where(x => x.Hits > 0).OrderByDescending(x => x.Hits).ThenBy(x => x.Skill.Name).Select(x => x.Skill).ToList();
+        return [.. always.Where(s => !s.BuiltIn), .. topical, .. always.Where(s => s.BuiltIn)];
+    }
+
+    /// <summary>Fachregeln passend zur Aufgabe, höchstens <paramref name="maxChars"/> Zeichen und nur ganze Zeilen. Unter dem Standardwert (lokale KI) entfällt die Checkliste, weil Trendo selbst prüft.</summary>
+    public string? PromptText(string? key, string? studio, string? task, int maxChars = MaxPromptChars)
+    {
+        var skills = ForTask(key, studio, task); if (skills.Count == 0) return null;
+        var sb = new StringBuilder();
+        foreach (var s in skills)
+        {
+            var body = maxChars < MaxPromptChars ? Regex.Split(s.Body, @"^##\s+Checkliste\s*$", RegexOptions.Multiline | RegexOptions.IgnoreCase)[0] : s.Body;
+            foreach (var line in $"### Skill: {s.Name}\n{body.Trim()}\n".Split('\n'))
+            {
+                if (sb.Length + line.Length + 1 > maxChars) return sb.ToString().Trim();
+                sb.Append(line).Append('\n');
+            }
+        }
+        return sb.ToString().Trim();
+    }
 
     /// <summary>Fachregeln als Text für die KI (gekürzt auf <see cref="MaxPromptChars"/>).</summary>
     public string? PromptText(string? key, string? studio)
@@ -187,7 +221,7 @@ public sealed class SkillLibrary(string dataRoot, PromptLibrary prompts, AuditLo
     public int ExportForClaude(string projectDir, string? key, string? studio)
     {
         var n = 0;
-        foreach (var s in For(key, studio))
+        foreach (var s in All().Where(x => x.AppliesTo(key, studio) && !x.Studios.Contains("*"))) // auch Fachgebiete: Claude Code wählt selbst nach der Beschreibung
         {
             var d = Path.Combine(projectDir, ".claude", "skills", "trendo-" + s.Id); Directory.CreateDirectory(d);
             File.WriteAllText(Path.Combine(d, "SKILL.md"), SkillFiles.ToClaudeSkill(s)); n++;
