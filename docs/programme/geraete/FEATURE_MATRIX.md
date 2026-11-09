@@ -1,6 +1,6 @@
 # Geräte & Laufwerke – Funktionsmatrix
 
-Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.36 (Stand 70e872a)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -33,5 +33,5 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Systemcheck
 - Qualitäts-Ampel
 - Bau-Fortschritt
-- 👥 Team
+- Mehr ▾
 - Geräte suchen

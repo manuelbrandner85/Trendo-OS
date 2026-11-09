@@ -1,10 +1,13 @@
 # Kleidung & Produkte – Testplan
 
-Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.36 (Stand 70e872a)
 
-20 Tests sprechen dieses Programm an.
+23 Tests sprechen dieses Programm an.
 
 - Bedienstufen: Einfach blendet Fachwerkzeuge aus, Erweitert zeigt alle, Wechsel lässt das Dokument unverändert; Einstellung bleibt gespeichert
+- Kleidung: Anprobe schreibt einen vollständigen Auftrag, zeigt Bilder; Fehler von Blender werden gemeldet
+- Kleidung: Produktionsdateien werden geschrieben
+- Kleidung: Schnittteile mit Kurven, Zuschnitt und Kosten erscheinen; Stoff und Schnitt lassen sich wechseln
 - Profi-Stufe: Befehlssuche führt Befehle aus, Verlauf springt zurück, Projektdaten – falsches JSON wird abgelehnt, richtiges übernommen und rückgängig machbar
 - Programm: Startseite → Vorlage → bearbeiten → Rückgängig → Speichern → Zuletzt → wieder öffnen; Reiter für zwei Dokumente
 - Programm: ungespeichertes Dokument wird automatisch gesichert und auf der Startseite wiederhergestellt

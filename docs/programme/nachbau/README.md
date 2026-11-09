@@ -1,6 +1,6 @@
 # Sauberer Nachbau – Produktionspaket
 
-Studio: Programme nachbauen (X-10) · Bereich: Entwickeln · Seite: `nachbau` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Programme nachbauen (X-10) · Bereich: Entwickeln · Seite: `nachbau` · Stand: 0.9.36 (Stand 70e872a)
 
 Arbeitsfläche: Nachbau-Projekt (Projekte, drei Schritte, Tagebuch)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

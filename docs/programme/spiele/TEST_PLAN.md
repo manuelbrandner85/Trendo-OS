@@ -1,9 +1,10 @@
 # Werkstatt – Testplan
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.36 (Stand 70e872a)
 
-50 Tests sprechen dieses Programm an.
+55 Tests sprechen dieses Programm an.
 
+- 3D-Modelle, Einfach: Grundfunktionen sichtbar, Export und Fachwerkzeuge nach einem Klick; Erweitert zeigt alles
 - CORE-06 (UI): Spiel anlegen öffnet es im Browser; ohne Unreal ehrlicher Hinweis, mit Unreal Projekt anlegen
 - CORE-06 G1: Godot Asset Library – Suche mit Titel, Autor, Lizenz; Laden nur von GitHub/GitLab, ZIP sicher entpackt; fremde Download-Adresse abgelehnt
 - CORE-06 G1–G3: Assets – Godot-Suche, neue Downloads übernehmen, Bildstreifen als Lauf-Animation (4 Bilder), Ton als Sprung-Geräusch, Asset-Liste mit Abspann, NC-Lizenz warnt beim Veröffentlichen
@@ -36,7 +37,10 @@ Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` ·
 - Claude im Studio: Trendo prüft das Ergebnis und gibt Fehler automatisch an Claude zurück, bis es läuft – höchstens drei Durchgänge
 - Claude wie im Original: Skills, Plugins, Connectoren und Agenten aus dem eigenen Claude sichtbar; genutzter Skill/Connector unter der Antwort
 - Claude-Abo aufgebraucht: Ersatz-KI übernimmt dieselbe Nachricht (sichtbar „Aktive KI“), bis zur Freigabe ohne Claude, danach automatisch wieder Claude
+- Einfach: In jedem Programm bleibt jeder Befehl der Stufe erreichbar, direkt oder unter „Mehr“; direkt sichtbar sind höchstens vier Programmbefehle
 - Kostenlose KI-Werkzeuge: Claude bestellt ein Bild – erst als Entwurf zum Ansehen, ins Projekt erst nach „Übernehmen“; neu erzeugen, verwerfen; Knöpfe; Diktieren
+- Spiele bauen, Einfach: Auftrag und nächster Schritt; „Alle Bereiche“ zeigt alles; Erweitert unverändert
+- Spiele bauen: Nächster Schritt nennt den schwächsten Bereich in Alltagssprache; Alltagswörter nur in Einfach
 - Spiele: Retro-Vorlage, Level im Raster bearbeiten, Figur hinzufügen, prüfen, bauen und spielen
 - Spiele: Umfang AAA+ wählen setzt AAA-Meilensteine; Bauen legt ein Unreal-Projekt mit Spielbibel an
 - Spiele: Unreal öffnen und die Herstellerseite bleiben der alte Weg
@@ -54,3 +58,4 @@ Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` ·
 - T-0204 (UI): Anlegen → Editor; Tempo und Level ändern, speichern, als ZIP exportieren
 - T-0204 (UI): Unreal – vorhandenes Projekt öffnen; ohne Unreal klarer Hinweis
 - T-0204: Einstellungen landen in config.js, Bild wird kopiert, Export enthält alles
+- Übrige Seiten, Einfach: Rest hinter „Mehr anzeigen“ und nach einem Klick wieder da; Erweitert zeigt alles sofort

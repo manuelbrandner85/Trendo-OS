@@ -1612,6 +1612,36 @@ public class PromptActionTests
         Assert.DoesNotContain("ist leer", File.ReadAllText(Repo("docs/improvement-42/security-approvals.md")));
     }
 
+    [Fact(DisplayName = "Filme machen: „Drehbuch-Gerüst“ fragt nach der Idee und legt ein gültiges Fountain-Drehbuch an, ohne Nebenwirkung")]
+    public void Filmgeruest()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("STUDIO-FILM-01", "Idee: Eine Frau verpasst den letzten Zug", id: "film-1"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var text = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single(a => a.RelativePath.EndsWith("drehbuch.fountain")).RelativePath));
+        var b = Trendo.Core.Film.FilmBreakdowns.Of(Trendo.Core.Film.Fountain.Parse(text));
+        Assert.Equal(3, b.Scenes.Count);
+        var ad = PromptActions.CreateDefault().Single(a => a.StudioId == "STUDIO-FILM-01");
+        Assert.False(ad.CanPerformSideEffect);
+        Assert.NotEmpty(ad.Missing(new Dictionary<string, string>()));
+    }
+
+    [Fact(DisplayName = "Print on Demand: „Preis rechnen“ fragt nach Kosten und Preis, rechnet mit Steuer, stellt nichts ein")]
+    public void Pod_preis()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("STUDIO-POD-01", "Kosten: 12\nPreis: 29,99\nVersand: 4", id: "pod-1"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var text = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single(a => a.RelativePath.EndsWith("preisrechnung.txt")).RelativePath));
+        Assert.Contains("Netto: 25,20 €", text); Assert.Contains("Gewinn: 9,20 €", text);
+        var ad = PromptActions.CreateDefault().Single(a => a.StudioId == "STUDIO-POD-01");
+        Assert.False(ad.CanPerformSideEffect);
+        Assert.Equal(2, ad.Missing(new Dictionary<string, string>()).Count);
+        Assert.NotEmpty(ad.Validate(new Dictionary<string, string> { ["kosten"] = "viel" }));
+    }
+
     [Fact(DisplayName = "Trendo Musik: „Lied planen“ fragt nach dem Thema und legt einen Liedplan mit Abschnitten an – erzeugt wird im Studio, nichts wird gesendet")]
     public void Liedplan()
     {
@@ -1634,7 +1664,7 @@ public class PromptActionTests
         var adapters = PromptActions.CreateDefault();
         var registered = adapters.Select(a => a.StudioId).ToHashSet(StringComparer.OrdinalIgnoreCase);
         Assert.Equal(ids.Count, registered.Count);
-        Assert.Equal(83, adapters.Count); // + TV & Live (27.10.2026), + Trendo Musik (03.11.2026); SPEC-07 abgelehnt: nur die Sperre, kein Übersetzungsadapter
+        Assert.Equal(85, adapters.Count); // + TV & Live (27.10.2026), + Trendo Musik (03.11.2026), + Filme machen und Print on Demand (08.11.2026); SPEC-07 abgelehnt: nur die Sperre, kein Übersetzungsadapter
         Assert.Equal(adapters.Count, adapters.Select(a => a.ActionId).Distinct(StringComparer.OrdinalIgnoreCase).Count());
         Assert.All(adapters, a => Assert.NotNull(CapabilityCatalog.Find(a.StudioId)));
         Assert.Contains(registered, id => id == "STUDIO-LETTER-01");
@@ -1661,7 +1691,7 @@ public class PromptActionTests
             Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level(id, adapters));
         }
         Assert.Equal(CapabilityLevel.Blocked, CapabilityCatalog.Level("SPEC-07", adapters));
-        Assert.Equal(53, ids.Count(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Partial)); // + TV & Live, + Trendo Musik (03.11.2026)
+        Assert.Equal(55, ids.Count(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Partial)); // + TV & Live, + Trendo Musik (03.11.2026), + Filme machen und Print on Demand (08.11.2026)
         Assert.Equal(3, ids.Count(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Blocked));
         Assert.DoesNotContain(ids, id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.NotImplemented);
         Assert.DoesNotContain(ids, id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Ready);

@@ -1,6 +1,6 @@
 # Trendo Musik – Architektur
 
-Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand 70e872a)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

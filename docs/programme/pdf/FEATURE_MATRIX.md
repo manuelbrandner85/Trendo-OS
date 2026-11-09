@@ -1,6 +1,6 @@
 # Trendo PDF – Funktionsmatrix
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.36 (Stand 70e872a)
 
 Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 
@@ -39,9 +39,6 @@ Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 - Haushaltsplan als Tabelle
 - Präsentation über unser Projekt, 8 Folien
 - Lebenslauf modern gestalten
-- Vorlesen
-- Sprache zu Text
-- Übersetzen
-- 👥 Team
+- Mehr ▾
 - PDF öffnen …
 - Neue leere PDF

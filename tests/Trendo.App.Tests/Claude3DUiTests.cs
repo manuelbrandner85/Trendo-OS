@@ -56,7 +56,7 @@ public class Claude3D_Ui
             Assert.Equal(("abend", 85d), (scene.Light, scene.CameraLens));
             Assert.Contains("Im Programm erledigt", w.ClaudeChatCurrent()!.Messages[^1].Text);
             // ungültige Vorschläge
-            Assert.Null(MainWindow.Parse3DParts("Klotz;cube;10;10;10;0;0;5;0;0;0;marmor").Parts);
+            Assert.Null(MainWindow.Parse3DParts("Klotz;cube;10;10;10;0;0;5;0;0;0;quark").Parts);
             Assert.Contains("Form", MainWindow.Parse3DParts("Klotz;pyramide;10;10;10").Error);
             Assert.Contains("Maße", MainWindow.Parse3DParts("Klotz;cube;0;10;10").Error);
             // Rückgängig (Kamera, Licht, Teile – je ein Schritt)

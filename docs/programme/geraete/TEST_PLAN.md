@@ -1,10 +1,11 @@
 # Geräte & Laufwerke – Testplan
 
-Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.36 (Stand 70e872a)
 
-15 Tests sprechen dieses Programm an.
+16 Tests sprechen dieses Programm an.
 
 - CORE-11 UI: Schutz-Seite über System erreichbar, Sichern, Ordner prüfen
+- Geräte: namenloses PCI-Gerät erscheint mit Kennung und Angebot; „Namen nachschlagen“ lädt die Liste (Prüfsumme) und zeigt Hersteller und Modell; danach kein Angebot mehr
 - SPEC-12 UI: Prüfsumme vergleichen, Fall anlegen, Beweis sichern, Bericht
 - SYS-04 UI: Suchen, installieren, Updates anzeigen und aktualisieren, entfernen
 - SYS-06 Freigabe-Dialog: Fenster schließen (X) lehnt ab

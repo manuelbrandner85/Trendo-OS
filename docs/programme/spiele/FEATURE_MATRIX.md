@@ -1,6 +1,6 @@
 # Werkstatt – Funktionsmatrix
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.36 (Stand 70e872a)
 
 Quelle: `docs/spec/kataloge/CORE-06_KATALOG.md`
 
@@ -49,10 +49,7 @@ Quelle: `docs/spec/kataloge/CORE-06_KATALOG.md`
 - Los
 - Hinzufügen …
 - ✳ Claude
-- 3D aus Bild
-- Geräusche & Effekte
-- Musik
-- 👥 Team
+- Mehr ▾
 - Spiele bauen
 - Werkstatt
 - Kopieren

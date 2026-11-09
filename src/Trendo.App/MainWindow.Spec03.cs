@@ -46,6 +46,7 @@ public partial class MainWindow
                 new ProgramCmd("tk-m", "Momente M", _ => FrameState.Show = FrameState.Show with { Moment = !FrameState.Show.Moment }, false, "Momentenlinie (Zugseite) an/aus"),
                 new ProgramCmd("tk-v", "Querkraft V", _ => FrameState.Show = FrameState.Show with { Shear = !FrameState.Show.Shear }),
                 new ProgramCmd("tk-n", "Normalkraft N", _ => FrameState.Show = FrameState.Show with { Normal = !FrameState.Show.Normal }),
+                new ProgramCmd("tk-3d", "3D-Ansicht", _ => { _frame3d = !_frame3d; Show(TK); }, false, "Balken als Körper, Biegung stark überhöht, Rot zeigt die größte Belastung"),
                 new ProgramCmd("tk-def", "Biegelinie", _ => FrameState.Show = FrameState.Show with { Deformed = !FrameState.Show.Deformed }, false, "Verformung (überhöht dargestellt)"),
                 new ProgramCmd("tk-react", "Reaktionen", _ => FrameState.Show = FrameState.Show with { Reactions = !FrameState.Show.Reactions }),
             ]),
@@ -140,7 +141,7 @@ public partial class MainWindow
         }
         tools.Children.Add(opts);
         var canvas = new FrameCanvas(m, r, err, FrameState, FrameEdit, FrameSelect) { Name = "tk-canvas", MinHeight = 160 };
-        var frame = new Border { CornerRadius = new CornerRadius(12), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = canvas };
+        var frame = new Border { CornerRadius = new CornerRadius(12), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = _frame3d && r is not null ? Frame3DView(m, r) : canvas };
         return new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,10,*"), Children = { new ScrollViewer { Content = tools }, Pos(frame, 2) } };
     }
 

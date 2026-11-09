@@ -1,6 +1,6 @@
 # Live streamen – Funktionsmatrix
 
-Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.36 (Stand 70e872a)
 
 Quelle: `docs/w6-katalog/SPEC-15.md`
 
@@ -32,9 +32,7 @@ Quelle: `docs/w6-katalog/SPEC-15.md`
 - ✳ Claude
 - Stream-Szene mit Kamera und Bildschirm
 - Ablauf für eine 30-Minuten-Sendung
-- Geräusche & Effekte
-- Sprache zu Text
-- 👥 Team
+- Mehr ▾
 - Ablauf
 - On-Air-Uhr
 - 🎥 Studio

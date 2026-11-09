@@ -1,6 +1,6 @@
 # Wissen für die KI – Architektur
 
-Studio: Wissen merken (CORE-10) · Bereich: Wissen & Lernen · Seite: `ki-wissen` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Wissen merken (CORE-10) · Bereich: Wissen & Lernen · Seite: `ki-wissen` · Stand: 0.9.36 (Stand 70e872a)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

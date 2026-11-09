@@ -1,6 +1,6 @@
 # Schutz & Datenschutz – Funktionsmatrix
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.36 (Stand 70e872a)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -33,7 +33,7 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Systemcheck
 - Qualitäts-Ampel
 - Bau-Fortschritt
-- 👥 Team
+- Mehr ▾
 - Jetzt sichern
 - restic einrichten (ca. 11 MB)
 - Ordner wählen …

@@ -1,6 +1,6 @@
 # 3D – Funktionsmatrix
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand 70e872a)
 
 Quelle: `docs/spec/kataloge/CORE-05_KATALOG.md`
 
@@ -50,9 +50,7 @@ Quelle: `docs/spec/kataloge/CORE-05_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - ✳ Claude
-- 3D aus Bild
-- Bilder erzeugen
-- 👥 Team
+- Mehr ▾
 - Verstanden
 - Kopieren
 - Blender einrichten
@@ -64,9 +62,15 @@ Quelle: `docs/spec/kataloge/CORE-05_KATALOG.md`
 - Als GLB
 - Als FBX
 - Als Blender-Datei
+- Los
+- Hinzufügen …
 - Speichern
 - Neues Objekt
 - Rückgängig
+- Drucken mit Bambu Studio
+- Drucker steuern
+- Freie 3D-Modelle suchen
+- Mehr Werkzeuge anzeigen
 - Unity
 - Unreal Engine
 - Godot
@@ -102,8 +106,6 @@ Quelle: `docs/spec/kataloge/CORE-05_KATALOG.md`
 - Glätten
 - Spiegeln
 - Aushöhlen
-- Los
-- Hinzufügen …
 - Teile vorschlagen
 - In Blender bauen (sichtbar)
 - Vorschaubild rendern

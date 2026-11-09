@@ -1,6 +1,6 @@
 # Aufgaben – Funktionsmatrix
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `aufgaben` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `aufgaben` · Stand: 0.9.36 (Stand 70e872a)
 
 Quelle: `docs/spec/kataloge/SYS-09_KATALOG.md`
 
@@ -29,8 +29,7 @@ Quelle: `docs/spec/kataloge/SYS-09_KATALOG.md`
 - Antwort auf die letzte E-Mail entwerfen
 - Termin nächste Woche Dienstag 10 Uhr
 - Ungelesene Mails zusammenfassen
-- Übersetzen
-- 👥 Team
+- Mehr ▾
 - E-Mail & Kontakte
 - Adressbuch
 - Posteingang

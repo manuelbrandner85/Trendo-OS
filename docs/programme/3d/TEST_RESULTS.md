@@ -1,10 +1,10 @@
 # 3D – Testergebnisse
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand 70e872a)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 51 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 2
+Bestanden 51 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 7
 
 | Test | Ergebnis |
 |---|---|
@@ -12,6 +12,7 @@ Bestanden 51 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 2
 | 3D aus Bild: TripoSR nach Klick einrichten (Stand geprüft, eigene Umgebung), Foto wählen → GLB → „Im 3D-Studio öffnen“; falscher Stand wird nicht eingerichtet | ✓ bestanden |
 | 3D-Arbeitsfläche: Formen einsetzen (auf dem Boden), Teil anklicken, mit der Maus verschieben (Raster), Pfeiltasten, Verdoppeln, Entf, Rückgängig | ✓ bestanden |
 | 3D-Arbeitsfläche: „Auf den Boden“ setzt die Unterkante auf 0, Text und Ebene stehen auf dem Boden | ✓ bestanden |
+| 3D-Modelle, Einfach: Grundfunktionen sichtbar, Export und Fachwerkzeuge nach einem Klick; Erweitert zeigt alles | nicht im Lauf |
 | 3D-Seite zeigt die Auftragsleiste, ohne die 3D-Arbeitsfläche zu verkleinern | ✓ bestanden |
 | 3D-Studio: Kreatur-Karte – Drache in Bronze/Grün, „Vorschaubild rendern“ startet Blender im Hintergrund, „sichtbar“ ohne -b; Ergebnis mit Vorschau | ✓ bestanden |
 | 3D: OBJ, STL und GLB speichern, Datei öffnen, Projekt wieder öffnen | ✓ bestanden |
@@ -52,7 +53,10 @@ Bestanden 51 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 2
 | CORE-05: Szenenbaum – Teile in Gruppen ordnen, Gruppe auswählen bewegt alle ihre Teile, Ausblenden nimmt Teile aus Ansicht und Render, Material für die ganze Gruppe | ✓ bestanden |
 | CORE-05: Umrisse: Würfelschnitt ergibt einen geschlossenen Umriss (Umfang 80 mm, Fläche 400 mm²); zwei Körper zwei Umrisse | ✓ bestanden |
 | CORE-05: Unbekannte Formate und Formen werden abgewiesen | ✓ bestanden |
+| Einfach: In jedem Programm bleibt jeder Befehl der Stufe erreichbar, direkt oder unter „Mehr“; direkt sichtbar sind höchstens vier Programmbefehle | nicht im Lauf |
 | Geräusche: MMAudio mit Hinweis „nur nicht-kommerziell“, Beschreibung + Länge → WAV zum Anhören; ohne Beschreibung kein Lauf | ✓ bestanden |
+| Spiele bauen, Einfach: Auftrag und nächster Schritt; „Alle Bereiche“ zeigt alles; Erweitert unverändert | nicht im Lauf |
+| Spiele bauen: Nächster Schritt nennt den schwächsten Bereich in Alltagssprache; Alltagswörter nur in Einfach | nicht im Lauf |
 | Startbildschirm bekommt keine Auftragsleiste | ✓ bestanden |
 | Studio-Seiten: Überschrift ist der Name aus dem Studio-Katalog | ✓ bestanden |
 | StudioCatalog.NameOf: Katalogname, sonst der bisherige Text | ✓ bestanden |
@@ -61,3 +65,4 @@ Bestanden 51 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 2
 | Vorschlag 36: Studios zeigen „✨ Freie KI hier“ – 3D-Studio schlägt „3D aus Bild“ vor, der Klick öffnet die KI-Bibliothek (geladen wird erst dort); jede Studio-Zuordnung gibt es wirklich | ✓ bestanden |
 | assimp-Oberfläche: ohne Einrichtung Knopf; FBX im 3D-Ordner → „→ GLB“ startet Trendo mit --assimp-convert, Ergebnis in 3D/umgewandelt | ✓ bestanden |
 | f3d im 3D-Studio: Einrichten ohne Werkzeug; mit Werkzeug Knopf je Modell, Vorschaubild erscheint im Studio | ✓ bestanden |
+| Übrige Seiten, Einfach: Rest hinter „Mehr anzeigen“ und nach einem Klick wieder da; Erweitert zeigt alles sofort | nicht im Lauf |

@@ -1,6 +1,6 @@
 # Sehen – Funktionsmatrix
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `bedien-sehen` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `bedien-sehen` · Stand: 0.9.36 (Stand 70e872a)
 
 Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 
@@ -61,7 +61,7 @@ Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 - Systemcheck
 - Qualitäts-Ampel
 - Bau-Fortschritt
-- 👥 Team
+- Mehr ▾
 - Sehen
 - Hilfen
 - Prüfen
@@ -70,6 +70,8 @@ Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 - mindestens 12 pt
 - mindestens 14 pt
 - mindestens 16 pt
+- Standard (Inter)
+- Atkinson Hyperlegible
 - Einfachen Modus einschalten
 - Einfach
 - Erweitert

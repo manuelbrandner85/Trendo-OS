@@ -1,6 +1,6 @@
 # Schaltung & Simulation – Funktionsmatrix
 
-Studio: Schaltungen berechnen (SPEC-02) · Bereich: Technik & Fachgebiete · Seite: `elektronik` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Schaltungen berechnen (SPEC-02) · Bereich: Technik & Fachgebiete · Seite: `elektronik` · Stand: 0.9.36 (Stand 70e872a)
 
 Quelle: `docs/w6-katalog/SPEC-02.md`
 
