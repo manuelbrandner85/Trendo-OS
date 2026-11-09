@@ -220,6 +220,8 @@ public class GameDocumentTests
         var s = Sec(Bible(), "stil");
         Assert.Equal("Aquarell, ruhig", GameDocument.ParseReply("```Aquarell, ruhig```", s).Suggestion);
         Assert.Equal("Aquarell", GameDocument.ParseReply("```abschnitt\nAquarell\n```", s).Suggestion);
+        Assert.Equal("Aquarell\nzweite Zeile", GameDocument.ParseReply("```Aquarell\nzweite Zeile```", s).Suggestion);
+        Assert.NotNull(GameDocument.ParseReply("```json [{\"name\":\"Rabe\"}]```", Sec(Bible(), "figuren")).Suggestion);
     }
 
     [Theory(DisplayName = "Bilder: nur lokale PNG- und JPG-Dateien werden geöffnet")]
@@ -227,11 +229,18 @@ public class GameDocumentTests
     [InlineData("//server/freigabe/x.png")]
     [InlineData("/\\server\\x.png")]
     [InlineData("\\\\?\\C:\\x.png")]
+    [InlineData("\\??\\UNC\\server\\freigabe\\x.png")]
+    [InlineData("\\??\\C:\\x.png")]
+    [InlineData("\\x.png")]
     [InlineData("\\\\.\\COM1.png")]
     [InlineData("bild.png")]
     [InlineData("..\\bild.png")]
     [InlineData("")]
-    public void Rejected_paths(string path) => Assert.False(GameDocument.IsLocalImage(path));
+    public void Rejected_paths(string path)
+    {
+        if (path.StartsWith("/\\", StringComparison.Ordinal) && !OperatingSystem.IsWindows()) return; // dort ein gewöhnlicher Pfad
+        Assert.False(GameDocument.IsLocalImage(path));
+    }
 
     [Fact(DisplayName = "Bilder: lokaler Pfad ist erlaubt, andere Dateiarten nicht")]
     public void Local_paths()
@@ -254,6 +263,20 @@ public class GameDocumentTests
             Assert.Equal(0, ImagesIn(f));
             using var read = PdfReader.Open(f, PdfDocumentOpenMode.Import);
             Assert.True(read.Pages[0].Resources.Elements.GetDictionary("/Font")?.Elements.Count > 0);
+        }
+        finally { Directory.Delete(root, true); }
+    }
+
+    [Fact(DisplayName = "PDF: Datei, die die Prüfung ablehnt, wird nicht geöffnet, auch wenn sie ein gültiges Bild wäre")]
+    public void Pdf_respects_check()
+    {
+        var root = Tmp();
+        try
+        {
+            var d = Bible(); var other = Path.ChangeExtension(Image(root), ".bmp"); File.Move(Path.Combine(root, "bild.png"), other);
+            GameDocument.AddImage(d, "idee", other);
+            var f = Path.Combine(root, "x.pdf"); GameDocument.WritePdf(d, f);
+            Assert.Equal(0, ImagesIn(f));
         }
         finally { Directory.Delete(root, true); }
     }

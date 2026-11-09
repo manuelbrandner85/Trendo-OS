@@ -145,9 +145,10 @@ public static class GameDocument
     /// <summary>Nur lokale PNG- und JPG-Dateien werden geöffnet: Pfade stehen im Dokument, das auch aus fremder Quelle stammen kann, und ein Netzwerkpfad würde beim Anzeigen eine Verbindung aufbauen.</summary>
     public static bool IsLocalImage(string path)
     {
-        static bool Sep(char c) => c is '\\' or '/';
-        if (string.IsNullOrWhiteSpace(path) || path.Contains('\0') || (path.Length > 1 && Sep(path[0]) && Sep(path[1])) || !Path.IsPathFullyQualified(path)) return false;
-        return Path.GetExtension(path).ToLowerInvariant() is ".png" or ".jpg" or ".jpeg";
+        if (string.IsNullOrWhiteSpace(path) || path.Contains('\0')) return false;
+        // Nur erlauben, was sicher lokal ist; Ausschlusslisten lassen sich umgehen (z. B. mit \??\UNC\…)
+        var local = OperatingSystem.IsWindows() ? Regex.IsMatch(path, @"^[A-Za-z]:[\\/]") && path.IndexOf(':', 2) < 0 : path.StartsWith('/') && !path.StartsWith("//", StringComparison.Ordinal);
+        return local && Path.GetExtension(path).ToLowerInvariant() is ".png" or ".jpg" or ".jpeg";
     }
 
     static void Attach(JsonObject d, string id, string path)
@@ -296,7 +297,7 @@ public static class GameDocument
     /// <summary>KI-Antwort trennen in Text und Vorschlag. Eine unlesbare Liste wird kein Vorschlag, damit sie nie ins Dokument gelangt.</summary>
     public static Reply ParseReply(string answer, Section s)
     {
-        var m = Regex.Match(answer, @"```(?:[a-zA-ZäöüÄÖÜ]+[ \t]*\r?\n|\r?\n)?([\s\S]*?)```");
+        var m = Regex.Match(answer, @"```(?:(?:abschnitt|json|text|markdown|md)(?=\s)[ \t]*\r?\n?|\r?\n)?([\s\S]*?)```", RegexOptions.IgnoreCase);
         if (!m.Success) return new Reply(answer.Trim(), null);
         var text = (answer[..m.Index] + answer[(m.Index + m.Length)..]).Trim();
         var suggestion = m.Groups[1].Value.Trim();

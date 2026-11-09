@@ -19,7 +19,7 @@ public partial class MainWindow
     readonly Dictionary<string, string> _gcAnswers = []; readonly HashSet<string> _gcLiked = [], _gcDisliked = [];
     readonly Dictionary<string, string> _gcImages = [], _gcImageNotes = [];
     GameConcept.Options _gcOpts = new(); List<GameConcept.Idea> _gcIdeas = []; int _gcSeed = Environment.TickCount;
-    readonly HashSet<string> _gcSeen = [];
+    readonly HashSet<string> _gcSeen = []; bool _gameStale;
     (string Doc, string Section)? _gdChat; bool _gdBusy; (ProgramDocument Doc, string Id, string Text)? _gdPending;
 
     /// <summary>Aktuelle Ideen (für Tests).</summary>
@@ -39,8 +39,9 @@ public partial class MainWindow
     /// <summary>Nach einer KI-Antwort neu zeichnen, ohne etwas zu stören: Wer woanders arbeitet, sieht das Ergebnis beim Zurückkommen; ein gerade bearbeitetes Feld behält Text, Fokus und Schreibmarke.</summary>
     void GameRefresh()
     {
-        if (CurrentView != GK) return;
-        var focused = FocusManager?.GetFocusedElement() as TextBox;
+        if (CurrentView != GK) { _gameStale = true; return; }
+        _gameStale = false;
+        var focused = FocusManager?.GetFocusedElement() is TextBox { Name: { } n } box && n.StartsWith("game-", StringComparison.Ordinal) ? box : null; // Namen der Spiele-Seite gibt es in keinem anderen Fenster
         var (name, text, caret) = (focused?.Name, focused?.Text, focused?.CaretIndex ?? 0);
         Show(GK);
         if (name is not null && this.GetLogicalDescendants().OfType<TextBox>().FirstOrDefault(t => t.Name == name) is { } again) { again.Text = text; again.CaretIndex = caret; Avalonia.Threading.Dispatcher.UIThread.Post(() => again.Focus(), Avalonia.Threading.DispatcherPriority.Background); } // erst nach dem Neuzeichnen, sonst geht der Fokus wieder verloren

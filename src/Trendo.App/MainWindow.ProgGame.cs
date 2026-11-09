@@ -37,11 +37,12 @@ public partial class MainWindow
         ],
         Exports =
         [
-            new("bible-pdf", "Spielbibel als PDF", ".pdf", (d, f) => { GameDocument.WritePdf(d.Data, f); return f; }), // zuerst: die Stufe Einfach zeigt nur den ersten Export
+            new("bible-pdf", "Spielbibel als PDF", ".pdf", (d, f) => { GameDocument.WritePdf(d.Data, f); return f; }),
             new("bible", "Spielbibel", ".md", (d, f) => { File.WriteAllText(f, GameDesign.BibleMarkdown(d.Data)); return f; }),
         ],
         Workspace = GameWorkspace,
         Properties = GameProperties,
+        SimpleExports = 2, // PDF und Text
         StartTop = () => new StackPanel { Children = { GamePromptBar(null), GameIdeasCard() } }, // Spiele-Prompt: Spiel aus einem Satz; T-0610: Ideen finden
         Status = d => { var s = GameDesign.ScaleOf(d.Text("scale")); var w = GameDesign.Check(d.Data).Count; return $"{s.Name} · {(s.Engine == "unreal" ? "Unreal Engine 5" : "Browser")} · {GameDesign.Overall(d.Data)} % geplant · {(w == 0 ? "keine Hinweise" : $"{w} Hinweis(e)")}"; },
         Help = "Wähle oben den Bereich: Übersicht, Ideen, Spielbibel, Figuren, Welt, Missionen, Produktion oder Bauen. In der Spielbibel lässt sich jeder Abschnitt verschieben, bebildern und mit der KI besprechen. Retro-Spiele sind sofort im Browser spielbar, 3D bis AAA+ entsteht als Unreal-Projekt mit deiner Spielbibel.",

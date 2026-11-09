@@ -233,10 +233,13 @@ public class GameDesignDoc_Ui
             var late = new TaskCompletionSource<string>();
             MainWindow.GamePromptOverride = (_, _) => late.Task;
             w.Find<Button>("game-doc-chat-suggest").Press(); Pump();
+            var gameWindow = w.Windows.Active!.Id;
             var other = MainWindow.Programs.Keys.First(k => k != GK);
             w.Show(other); Pump();
             late.SetResult("Später."); await Settle();
             Assert.Equal(other, w.CurrentView);
+            w.FocusWindow(gameWindow); Pump(); // zurück zum Spiel: die Antwort ist zu sehen, der Knopf wieder frei
+            Assert.True(w.Find<Button>("game-doc-chat-send").IsEnabled);
         }
         finally { MainWindow.GamePromptOverride = null; }
     }
@@ -246,10 +249,38 @@ public class GameDesignDoc_Ui
     {
         var (w, _, root) = Ui.Open();
         Assert.Equal("bible-pdf", MainWindow.Programs[GK].Exports[0].Name);
+        Assert.Equal("bible", MainWindow.Programs[GK].Exports[1].Name);
+        Assert.Equal(2, MainWindow.Programs[GK].SimpleExports); // Stufe Einfach zeigt PDF und Text
         w.ProgramNew(GK, "retro-jump");
         w.Show(GK); Pump();
         w.Find<Button>("prog-export-bible-pdf").Press(); Pump();
         Assert.NotEmpty(Directory.GetFiles(root, "*.pdf", SearchOption.AllDirectories));
+    }
+
+    [AvaloniaFact(DisplayName = "Ideen: „Neue Ideen“ zeigt ohne KI andere Themen; Abschnitt entfernen löscht seinen Verlauf")]
+    public async Task Reroll_and_chat_cleanup()
+    {
+        var (w, _, _) = Ui.Open();
+        MainWindow.GamePromptOverride = (_, _) => throw new InvalidOperationException("keine KI");
+        try
+        {
+            w.Show(GK); Pump();
+            w.Find<Button>("game-path-start").Press(); Pump();
+            w.Find<Button>("game-path-0-2").Press(); Pump();
+            w.Find<Button>("game-path-1-2").Press(); Pump();
+            w.Find<Button>("game-path-2-0").Press(); await Settle();
+            var first = w.GameIdeas.Select(i => i.Theme).ToList();
+            w.Find<Button>("game-idea-more").Press(); await Settle();
+            Assert.DoesNotContain(w.GameIdeas, i => first.Contains(i.Theme));
+
+            var d = w.ProgramNew(GK, "retro-jump");
+            d.Edit("Neu", x => GameDocument.AddCustom(x, "Extra"));
+            GameDocument.AddChat(d, "abschnitt-1", "du", "Alt");
+            w.GameSection = "Spielbibel"; w.Show(GK); Pump();
+            w.Find<Button>("game-doc-abschnitt-1-del").Press(); Pump();
+            Assert.Empty(GameDocument.Chat(d, "abschnitt-1"));
+        }
+        finally { MainWindow.GamePromptOverride = null; }
     }
 
     [AvaloniaFact(DisplayName = "Dokument: Netzwerkpfad aus fremder Datei wird nicht geöffnet, die Spielbibel zeigt einen Hinweis")]
