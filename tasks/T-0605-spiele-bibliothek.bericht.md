@@ -17,20 +17,21 @@ Bestehende kommerzielle Spiele werden nicht nachgebaut, auch nicht umbenannt ode
 
 ## Testergebnis
 
-Volltest nach dem Einmischen von `main` auf `67bf8660b`, alle Exitcodes 0: Api 16 bestanden; Core 2151 bestanden, 5 übersprungen; App 949 bestanden, 4 übersprungen; Paket-Tests 9 OK. Ein vorheriger Lauf war rot: `QA-019`, weil der Download `HttpClient` im Kern nutzte. Behoben über `IWebFetch`.
+Auf `7473ac0eb`: Api 16 bestanden; Core 2151 bestanden, 5 übersprungen; Paket-Tests 9 OK. App im ersten Lauf 949 bestanden, 4 übersprungen, 1 Fehler (`CORE-07 (UI)`, Webseiten-Oberfläche, nicht von dieser Änderung berührt, Ursache im Protokoll nicht sichtbar, einzeln dreimal grün). App danach komplett wiederholt: 950 bestanden, 4 übersprungen. Ein vorheriger Lauf war rot: `QA-019`, weil der Download `HttpClient` im Kern nutzte. Behoben über `IWebFetch`.
 
 ## Echte Läufe (09.11.2026, nach Freigabe)
 
 - Godot-Demo `3d/truck_town` über dieselben Git-Schritte wie im Studio geholt (11 MB), mit Godot 4.7.1 importiert und ohne Fenster gestartet: Exitcode 0.
+- Export derselben Demo mit den offiziellen Vorlagen 4.7.1 (SHA-512 geprüft, nur im Temp-Ordner): Windows-Programm startet ohne Fenster mit Exitcode 0. Browser-Fassung lief im eingebauten Browser bis auf die fahrbare Strecke, keine Fehler in der Konsole. Export von Hand, nicht über den Studio-Auftrag an Claude.
 - mGBA 0.10.5 mit Libbet gestartet: Fenster lief mit 57 Bildern pro Sekunde, danach beendet.
 - Claude hat „Hafenstadt Morvane“ aus dem Studio-Auftrag gebaut. Nach dem selbst gesetzten Limit von 25 Minuten abgebrochen. Ergebnis: 5417 Zeilen GDScript, Import und Start ohne Fehler, Sichtprüfung zeigt Stadt, Verkehr, Karte, Auftragsmarkierung und Anzeigen. Rohbau-Grafik mit Figur aus Grundformen und flimmernden Fassaden. `CREDITS.md` fehlt und das eigene Prüfskript kompiliert nicht, beides wegen des Abbruchs nicht fertig.
 
 ## Nicht geprüft
 
-- Die Knöpfe in der echten App: Die Volltests bilden Git, Godot und Emulator nach, die echten Läufe oben liefen außerhalb der App. Die Godot-Suche der App findet nur den Werkzeugordner und übliche Orte, nicht die vorhandene Godot-Installation in einem anderen Ordner.
+- Die Knöpfe in der echten App: Die Volltests bilden Git, Godot und Emulator nach, die echten Läufe oben liefen außerhalb der App. Liegt Godot anderswo, wählt die Person es einmal mit „Godot wählen“; der Dateidialog selbst ist nur nachgebildet getestet.
 - µCity im Emulator.
 - Spielen von Hand: Fahren, Aufträge und Fahndung wurden nicht durchgespielt.
-- Export auf andere Geräte.
+- Export für Android, Mac und Linux sowie der Export-Knopf im Studio.
 - Keine Abnahme durch eine Person. Die Cover wurden lokal erzeugt und per Sichtprüfung kontrolliert, zwei wegen Emblem und Schriftzug ersetzt.
 
 ## Status
