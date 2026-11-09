@@ -70,7 +70,8 @@ public partial class MainWindow
         if (_gpResult?.Doc is not { } neu) return;
         var d = _gpChange ? ProgramActive(GK) : null;
         if (d is null) { ProgramNew(GK, "leer"); d = ProgramActive(GK)!; }
-        d.Edit(_gpChange ? "Spiel-Auftrag: " + _gpText : "Spiel aus einem Satz", x => { foreach (var (k, v) in neu) x[k] = v?.DeepClone(); });
+        var tools = GameToolsHere();
+        d.Edit(_gpChange ? "Spiel-Auftrag: " + _gpText : "Spiel aus einem Satz", x => { foreach (var (k, v) in neu) x[k] = v?.DeepClone(); GameTools.Apply(x, tools); });
         _core.Audit.Append(Principal.LocalOwner.Name, "game.prompt.apply", d.Text("title"));
         _progMsg[GK] = $"„{d.Text("title")}“ übernommen – „Bauen“ macht es spielbar. Rückgängig mit Strg+Z.";
         _gpResult = null; _gameSection = "Übersicht"; Show(GK);

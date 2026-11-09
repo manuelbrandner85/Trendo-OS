@@ -57,6 +57,8 @@ public partial class MainWindow
         {
             var dir = GameDesign.BuildBrowser(d.Data, WorkFolder("Spiele"));
             d.Set("built", dir, "Bauen"); _progMsg[GK] = "Spielbar gebaut: " + dir; _core.Audit.Append(Principal.LocalOwner.Name, "game.build", Path.GetFileName(dir));
+            // T-0630: hat das Team Godot oder Unity gewählt, entsteht das Engine-Projekt gleich mit
+            if (GameTools.Decide(d.Data, GameToolsHere()).Route is ("godot" or "unity") and var route) GameToEngine(d, route);
             return;
         }
         var engines = _opt.Isolated ? [] : GameStudio.FindEngines();
@@ -97,7 +99,7 @@ public partial class MainWindow
             bar.Children.Add(b);
         }
         if (IsSimple && !_gameShowAll) // Wunsch 08.11.2026: erst nur Auftrag und nächster Schritt, alle Bereiche nach einem Klick
-            return new StackPanel { Spacing = 8, Children = { GamePromptBar(d), GameNextCard(d),
+            return new StackPanel { Spacing = 8, Children = { GamePromptBar(d), GameToolLine(d), GameNextCard(d),
                 Act("game-show-all", "Alle Bereiche zeigen (Figuren, Welt, Aufgaben und mehr)", () => { _gameShowAll = true; Show(GK); }) } };
         Control body = _gameSection switch
         {
@@ -114,7 +116,7 @@ public partial class MainWindow
             "Veröffentlichen" => GameReleaseView(d), // Ziele, Checkliste, Pakete, Hochladen mit eigenem Konto
             _ => GameOverview(d),
         };
-        var all = new StackPanel { Spacing = 4, Children = { GamePromptBar(d), bar, body } };
+        var all = new StackPanel { Spacing = 4, Children = { GamePromptBar(d), GameToolLine(d), bar, body } };
         if (IsSimple) all.Children.Insert(1, Act("game-show-less", "Weniger zeigen", () => { _gameShowAll = false; _gameSection = "Übersicht"; Show(GK); }));
         return all;
     }

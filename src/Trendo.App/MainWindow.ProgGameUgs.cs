@@ -10,7 +10,7 @@ namespace Trendo.App;
 /// Befehle /bild /sprite /modell /musik /sprache /video über Trendos kostenlose KI-Werkzeuge, Prüfschleife für Bilder.</summary>
 public partial class MainWindow
 {
-    string _gpMode = "normal"; string? _gpCmdMode; string? _gpLastLog; bool _gpNoCmd;
+    string _gpMode = "auto"; string? _gpCmdMode; string? _gpLastLog; bool _gpNoCmd;
     /// <summary>Für Tests: Bewerter für die Bild-Prüfschleife (Datei, Anweisung → JSON-Urteil). Ohne Bewerter bleibt ein Bild ehrlich „nicht geprüft“.</summary>
     public static Func<string, string, Task<string>>? GameJudgeOverride { get; set; }
     /// <summary>Für Tests: letzter Team-Lauf (Protokollordner) und Rat-Modus.</summary>
@@ -28,8 +28,20 @@ public partial class MainWindow
             + string.Join("\n", ex.Select(e => $"- {e.Name}: {e.Does}. Leitlinien: {string.Join("; ", e.Rules)}. Grenze: {e.Limit}."))
             + "\nBeziehe ihre Sicht ein und nenne bei wichtigen Entscheidungen, welche Fachperson sie trägt."
             + "\nPrüfschleife für Bilder: Prüfe jedes Bild, das du mit [[trendo:bild …]] bestellst, danach selbst (Datei ansehen) streng nach: " + AssetCheck.JudgeInstruction
-            + " Ist es nicht bestanden, bestelle es höchstens zweimal neu mit nachgebessertem Prompt.";
+            + " Ist es nicht bestanden, bestelle es höchstens zweimal neu mit nachgebessertem Prompt."
+            + GameTools.Brief(GameToolsHere());
     }
+
+    /// <summary>T-0630: was auf diesem PC für die automatische Wahl von Engine und Werkzeugen bereitsteht.</summary>
+    GameTools.Available GameToolsHere()
+    {
+        var found = EngineCheck();
+        bool Has(string id) => found.Any(e => e.Id == id && e.Installed);
+        return new GameTools.Available(Has("unreal"), Has("unity"), Has("godot"), Has("blender"), GamePromptClaude);
+    }
+
+    /// <summary>T-0630: sichtbare Zeile, welche Engine und Werkzeuge das Team gewählt hat.</summary>
+    TextBlock GameToolLine(ProgramDocument d) => new() { Name = "game-tool-choice", Text = "🧭 " + GameTools.Line(GameTools.Decide(d.Data, GameToolsHere())), FontSize = 12.5, Foreground = Muted, TextWrapping = TextWrapping.Wrap };
 
     public void GameCouncilSet(string mode) { if (GameExperts.Modes.Any(m => m.Id == mode)) { _gpMode = mode; Show(GK); } }
 

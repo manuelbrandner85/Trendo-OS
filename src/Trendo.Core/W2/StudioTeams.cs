@@ -246,6 +246,22 @@ public static class StudioTeams
     public static StudioRole? Role(string id) => All.SelectMany(t => t.Roles).FirstOrDefault(r => r.Id == id);
     public static string? StudioOf(string roleId) => All.FirstOrDefault(t => t.Roles.Any(r => r.Id == roleId))?.StudioId;
 
+    /// <summary>T-0630: Rollen des Studios, die zum Auftrag passen, ohne dass jemand wählt. Treffer in Name, Aufgabe und Schwerpunkt zählen; ohne Treffer arbeitet die erste Rolle.</summary>
+    public static IReadOnlyList<StudioRole> Pick(string? studioId, string? task, int max = 3)
+    {
+        if (For(studioId) is not { } team) return [];
+        var words = (task ?? "").ToLowerInvariant().Split([' ', ',', '.', ';', ':', '!', '?', '„', '“', '"', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Where(w => w.Length >= 4).Distinct().ToList();
+        var hits = team.Roles.Select((r, i) => (r, i, s: words.Count(w => $"{r.Name} {r.Does} {r.Focus}".Contains(w, StringComparison.OrdinalIgnoreCase)))).Where(x => x.s > 0).OrderByDescending(x => x.s).ThenBy(x => x.i).Select(x => x.r).Take(max).ToList();
+        return hits.Count > 0 ? hits : [team.Roles[0]];
+    }
+
+    /// <summary>T-0630: Zusatz für die KI: wer am Auftrag mitarbeitet. Leer, wenn das Studio kein Team hat.</summary>
+    public static string Brief(string? studioId, string? task)
+    {
+        var roles = Pick(studioId, task);
+        return roles.Count == 0 ? "" : "\nDein Team arbeitet automatisch mit, beziehe seine Sicht ein:\n" + string.Join("\n", roles.Select(r => $"- {r.Name}: {r.Does}. Achtet auf: {r.Focus}."));
+    }
+
     /// <summary>Feste Regeln für jede Rolle.</summary>
     public const string Rules = "Antworte auf Deutsch, klar und ehrlich. Erfinde nichts – trenne Fakten, Annahmen und offene Fragen. "
         + "Senden, Kaufen, Installieren, Löschen und echte Maschinen nur nach ausdrücklichem Ja der Person. Keine Passwörter oder geheimen Schlüssel.";

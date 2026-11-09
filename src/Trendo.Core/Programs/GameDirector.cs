@@ -31,7 +31,7 @@ public static class GameDirector
     ];
 
     static readonly string[] Keys = ["title", "scale", "genre", "logline", "loop", "controls", "style", "audience", "platforms", "sound", "menus", "systems", "browser", "world3d",
-        "mechanics", "characters", "world", "quests", "level", "weapon", "abilities", "violence"];
+        "mechanics", "characters", "world", "quests", "level", "weapon", "abilities", "violence", "engine", "engineReason", "blender"];
 
     /// <summary>Anweisungen für die KI (lokal oder Claude): Profi-Team, Liefer-Format (eine Spielbibel als JSON), Rückfragen und Vorschläge.</summary>
     public static string Instructions(bool claude)
@@ -138,6 +138,9 @@ public static class GameDirector
             o["browser"] = "";
             o["world3d"] = S(o["world3d"]) is "level" or "openworld" ? S(o["world3d"]) : scale is "aaa" || genre.Contains("open world") ? "openworld" : "level";
         }
+        o["engine"] = GameTools.Engines.Contains(S(o["engine"]).ToLowerInvariant()) ? S(o["engine"]).ToLowerInvariant() : "";
+        o["engineReason"] = S(o["engineReason"]);
+        if (o["blender"]?.GetValueKind() is not (JsonValueKind.True or JsonValueKind.False)) o.Remove("blender");
         o["weapon"] = S(o["weapon"]) is "schwert" or "werfen" ? S(o["weapon"]) : "";
         // Gewalt-Darstellung: ausdrücklich gewählt, sonst nach Zielgruppe (Kinder → keine)
         var aud = S(o["audience"]).ToLowerInvariant();
@@ -153,7 +156,7 @@ public static class GameDirector
     {
         var lines = new List<string>();
         var labels = new Dictionary<string, string> { ["title"] = "Titel", ["scale"] = "Umfang", ["genre"] = "Genre", ["logline"] = "Idee", ["loop"] = "Kernschleife", ["controls"] = "Steuerung",
-            ["style"] = "Stil", ["sound"] = "Ton", ["browser"] = "Spielart", ["world3d"] = "Welt", ["weapon"] = "Waffe", ["violence"] = "Gewalt" };
+            ["style"] = "Stil", ["sound"] = "Ton", ["browser"] = "Spielart", ["world3d"] = "Welt", ["weapon"] = "Waffe", ["violence"] = "Gewalt", ["engine"] = "Engine" };
         foreach (var (k, l) in labels)
             if (S(old[k]) != S(neu[k])) lines.Add($"{l}: {Short(S(old[k]))} → {Short(S(neu[k]))}");
         void Named(string key, string label, string nameKey)

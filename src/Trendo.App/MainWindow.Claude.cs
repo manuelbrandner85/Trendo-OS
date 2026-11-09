@@ -213,7 +213,8 @@ public partial class MainWindow
     public string ClaudeRoleFor(string? studio) =>
         (StudioProfiles.Has(studio) ? StudioProfiles.For(studio).Role + " " : "") +
         $"Du arbeitest für Trendo OS im Studio „{(studio is null ? "Programmieren" : StudioCatalog.NameOf(studio, studio))}“. Antworte auf Deutsch, plane zuerst sichtbar (Aufgabenliste), frage bei Unklarem nach und arbeite professionell und barrierearm." +
-        (studio is not null && Skills.For(null, studio).Count > 0 ? " Nutze die Trendo-Skills unter .claude/skills (trendo-…) und prüfe dein Ergebnis vor dem Abschluss gegen deren Checklisten; bessere nach, bis alle Punkte erfüllt sind." : "");
+        (studio is not null && Skills.For(null, studio).Count > 0 ? " Nutze die Trendo-Skills unter .claude/skills (trendo-…) und prüfe dein Ergebnis vor dem Abschluss gegen deren Checklisten; bessere nach, bis alle Punkte erfüllt sind." : "") +
+        (StudioTeams.For(studio) is { } team ? $" Dein {team.Name} steht als Agenten unter .claude/agents (trendo-…) bereit: Ziehe ohne Rückfrage die Rollen hinzu, die der Auftrag braucht ({string.Join(", ", team.Roles.Select(r => r.Name))})." : "");
 
     /// <summary>Knopf „In Claude Code öffnen“ (nur wenn Claude Code installiert ist).</summary>
     Button? ClaudeOpenButton(string name, Func<string> folder, Func<string?> prompt, string? studio)

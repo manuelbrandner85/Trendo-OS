@@ -134,8 +134,8 @@ public static class GameExperts
             "community,spieler,rückmeldung,ankündigung,patchnotes", null, "Fakten, Pläne, bekannte Fehler und Übergangslösungen trennen", "Rückmeldungen in umsetzbare Punkte ordnen", "öffentliche Zusagen passen zur echten Planung"),
     ];
 
-    /// <summary>Rat-Modus: leicht = 1 Fachperson, normal = 3, Rat = bis 6 (Grenze 1–6).</summary>
-    public static readonly (string Id, string Label, int Count)[] Modes = [("leicht", "Leicht – eine Fachperson", 1), ("normal", "Normal – drei Fachleute", 3), ("rat", "Rat – bis zu sechs Fachleute", 6)];
+    /// <summary>Rat-Modus: automatisch nach Auftrag (Standard, T-0630), leicht = 1 Fachperson, normal = 3, Rat = bis 6 (Grenze 1–6).</summary>
+    public static readonly (string Id, string Label, int Count)[] Modes = [("auto", "Automatisch – so viele wie der Auftrag braucht", 0), ("leicht", "Leicht – eine Fachperson", 1), ("normal", "Normal – drei Fachleute", 3), ("rat", "Rat – bis zu sechs Fachleute", 6)];
 
     public static GameExpert? Find(string id) => All.FirstOrDefault(e => e.Id == id);
 
@@ -143,7 +143,9 @@ public static class GameExperts
     /// fremde Engine-Spezialisten fallen weg. Ohne Treffer: Game Designer und Technischer Direktor.</summary>
     public static IReadOnlyList<GameExpert> Pick(string? task, string? engine, string mode = "normal", int? max = null)
     {
-        var n = Math.Clamp(max ?? Modes.FirstOrDefault(m => m.Id == mode).Count switch { 0 => 3, var c => c }, 1, 6);
+        var lower = " " + (task ?? "").ToLowerInvariant() + " ";
+        var needed = All.Count(e => (e.Engine is null || string.IsNullOrEmpty(engine) || e.Engine == engine.ToLowerInvariant()) && e.Triggers.Any(k => lower.Contains(k, StringComparison.Ordinal)));
+        var n = Math.Clamp(max ?? (mode == "auto" ? Math.Max(needed, 2) : Modes.FirstOrDefault(m => m.Id == mode).Count switch { 0 => 3, var c => c }), 1, 6);
         var t = " " + (task ?? "").ToLowerInvariant() + " "; var eng = (engine ?? "").ToLowerInvariant();
         var scored = All.Where(e => e.Engine is null || eng.Length == 0 || e.Engine == eng)
             .Select((e, i) => (e, i, s: e.Triggers.Count(k => t.Contains(k, StringComparison.Ordinal)) * 10 + (e.Engine is not null && e.Engine == eng && t.Length > 2 ? 3 : 0)))
