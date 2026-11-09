@@ -1,0 +1,4 @@
+python -m unittest discover -s tests/claude_handoff
+Ran 9 tests in 15.091s
+
+OK

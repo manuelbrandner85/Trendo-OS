@@ -1,0 +1,4 @@
+Auszug, Stand b1f4c7b54, Windows, Exitcode 0
+Bestanden!   : Fehler:     0, erfolgreich:    16, übersprungen:     0, gesamt:    16, Dauer: 2 s - Trendo.Api.Tests.dll (net10.0)
+Bestanden!   : Fehler:     0, erfolgreich:  2158, übersprungen:     5, gesamt:  2163, Dauer: 1 m 10 s - Trendo.Core.Tests.dll (net10.0)
+Bestanden!   : Fehler:     0, erfolgreich:   955, übersprungen:     4, gesamt:   959, Dauer: 34 m 59 s - Trendo.App.Tests.dll (net10.0)
