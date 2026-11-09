@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Avalonia;
@@ -417,6 +418,78 @@ public partial class MainWindow
     public bool PodKittlOn => File.Exists(PodKittlFile);
     public void PodKittlSet(bool on) { if (on) { Directory.CreateDirectory(IoPath.GetDirectoryName(PodKittlFile)!); File.WriteAllText(PodKittlFile, "ja"); } else if (File.Exists(PodKittlFile)) File.Delete(PodKittlFile); _core.Audit.Append(Principal.LocalOwner.Name, "pod.kittl", on ? "an" : "aus"); }
 
+    string PodKittlDir => IoPath.Combine(_core.DataRoot, "print-on-demand", "kittl-zugang");
+    KittlConnect.State _kittlState = KittlConnect.State.Unbekannt;
+    bool _kittlChecked;
+    /// <summary>Für Tests: Aufruf von Claude nachbilden.</summary>
+    public Func<IReadOnlyList<string>, Cli.Result>? KittlCliOverride { get; set; }
+    /// <summary>Für Tests: Anmeldefenster nachbilden.</summary>
+    public Func<IReadOnlyList<string>, bool>? KittlConsoleOverride { get; set; }
+    public KittlConnect.State PodKittlState => _kittlState;
+
+    async Task<Cli.Result?> KittlCli(IReadOnlyList<string> args)
+    {
+        if (KittlCliOverride is { } fake) return fake(args);
+        if (_opt.Isolated || ClaudeExe() is not { } exe) return null;
+        Directory.CreateDirectory(PodKittlDir);
+        return await Task.Run(() => Cli.Run(exe, args, PodKittlDir, 60000));
+    }
+
+    /// <summary>Fragt ab, ob das eigene Kittl-Konto verbunden ist.</summary>
+    public async Task<KittlConnect.State> PodKittlCheck()
+    {
+        _kittlChecked = true;
+        var r = await KittlCli(KittlConnect.GetArgs);
+        _kittlState = r is null ? KittlConnect.State.Unbekannt : KittlConnect.Parse(r.Out + "\n" + r.Err);
+        if (_kittlState == KittlConnect.State.NichtEingerichtet) _kittlState = KittlConnect.State.AnmeldungNoetig;
+        Show(PodKey);
+        return _kittlState;
+    }
+
+    /// <summary>Öffnet ein Konsolenfenster, in dem Claude die Anmeldung im Browser startet. Ohne Terminal bricht die Anmeldung ab.</summary>
+    bool KittlConsole(string exe, IReadOnlyList<string> args)
+    {
+        try
+        {
+            ProcessStartInfo psi;
+            if (OperatingSystem.IsWindows()) psi = new ProcessStartInfo(exe) { UseShellExecute = true };
+            else if (Cli.Find("x-terminal-emulator") is { } term) { psi = new ProcessStartInfo(term) { UseShellExecute = false }; psi.ArgumentList.Add("-e"); psi.ArgumentList.Add(exe); }
+            else return false;
+            psi.WorkingDirectory = PodKittlDir;
+            foreach (var a in args) psi.ArgumentList.Add(a);
+            using var p = Process.Start(psi);
+            if (p is null) return false;
+            if (p.WaitForExit(300000)) return true;
+            p.Kill(true);
+            return false;
+        }
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException) { return false; }
+    }
+
+    /// <summary>Anmeldung am eigenen Kittl-Konto. Der Hinweis nennt den Grund, wenn es nicht geklappt hat.</summary>
+    public async Task<bool> PodKittlLogin()
+    {
+        var exe = ClaudeExe();
+        if (KittlConsoleOverride is null && (_opt.Isolated || exe is null)) { _progMsg[PodKey] = "Dafür muss Claude Code installiert sein. Das richtest du unter „Mit Claude verbinden“ ein."; Show(PodKey); return false; }
+        Directory.CreateDirectory(PodKittlDir);
+        await KittlCli(KittlConnect.AddArgs); // meldet einen Fehler, wenn der Eintrag schon da ist; das ist in Ordnung
+        _progMsg[PodKey] = "Im neuen Fenster öffnet sich die Anmeldung. Bestätige sie im Browser mit deinem Kittl-Konto."; Show(PodKey);
+        var opened = KittlConsoleOverride is { } fake ? fake(KittlConnect.LoginArgs) : await Task.Run(() => KittlConsole(exe!, KittlConnect.LoginArgs));
+        _core.Audit.Append(Principal.LocalOwner.Name, "pod.kittl", "anmelden");
+        var state = await PodKittlCheck();
+        _progMsg[PodKey] = state == KittlConnect.State.Verbunden ? "Kittl ist verbunden." : opened ? "Die Anmeldung wurde nicht abgeschlossen. Versuche es noch einmal." : "Das Anmeldefenster ließ sich nicht öffnen.";
+        Show(PodKey);
+        return state == KittlConnect.State.Verbunden;
+    }
+
+    /// <summary>Meldet das Kittl-Konto bei Claude Code ab.</summary>
+    public async Task PodKittlLogout()
+    {
+        await KittlCli(KittlConnect.LogoutArgs);
+        _core.Audit.Append(Principal.LocalOwner.Name, "pod.kittl", "abmelden");
+        await PodKittlCheck();
+    }
+
     Control PodKittlPanel(ProgramDocument d)
     {
         var sp = new StackPanel { Name = "pod-kittl", Spacing = 4, Margin = new Thickness(0, 12, 0, 0) };
@@ -427,7 +500,30 @@ public partial class MainWindow
         var open = new Button { Name = "pod-kittl-open", Content = "kittl.com öffnen", Padding = new Thickness(10, 4), Margin = new Thickness(6, 0, 0, 0) };
         open.Click += (_, _) => Launch("https://www.kittl.com");
         sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Children = { toggle, open } });
-        if (PodKittlOn) sp.Children.Add(P("Einmal anmelden: im Terminal „claude“ starten, „/mcp“ eingeben, „trendo-kittl“ wählen und im Browser mit deinem Kittl-Konto bestätigen.", Muted, 11));
+        if (PodKittlOn)
+        {
+            if (!_kittlChecked) _ = PodKittlCheck();
+            sp.Children.Add(new TextBlock { Name = "pod-kittl-state", Text = KittlConnect.Text(_kittlState), Foreground = _kittlState == KittlConnect.State.Verbunden ? Brush.Parse("#3DDC84") : Muted, FontSize = 12, Margin = new Thickness(0, 4, 0, 0) });
+            var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6 };
+            if (_kittlState != KittlConnect.State.Verbunden)
+            {
+                var login = new Button { Name = "pod-kittl-login", Content = "Bei Kittl anmelden", Padding = new Thickness(10, 4) };
+                login.Classes.Add("accent");
+                login.Click += async (_, _) => await PodKittlLogin();
+                row.Children.Add(login);
+            }
+            var check = new Button { Name = "pod-kittl-check", Content = "Verbindung prüfen", Padding = new Thickness(10, 4) };
+            check.Click += async (_, _) => await PodKittlCheck();
+            row.Children.Add(check);
+            if (_kittlState == KittlConnect.State.Verbunden)
+            {
+                var logout = new Button { Name = "pod-kittl-logout", Content = "Abmelden", Padding = new Thickness(10, 4) };
+                logout.Click += async (_, _) => await PodKittlLogout();
+                row.Children.Add(logout);
+            }
+            sp.Children.Add(row);
+            sp.Children.Add(P("Jede Person meldet sich mit dem eigenen Konto an. Läuft die Anmeldung ab, erscheint der Knopf wieder.", Muted, 11));
+        }
         return sp;
     }
 }

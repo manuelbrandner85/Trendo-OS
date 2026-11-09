@@ -107,6 +107,45 @@ public class PodDesign_Ui
     }
 
     [AvaloniaFact(DisplayName = "K-14: Kittl ist von Haus aus aus, Knopf schaltet um und nennt die Anmeldung")]
+    public async Task Kittl_login_flow()
+    {
+        var (w, _, _) = Open();
+        var calls = new List<string>();
+        var state = "  Status: ! Needs authentication";
+        w.KittlCliOverride = a => { calls.Add(string.Join(' ', a)); return new(0, a[1] == "get" ? state : "", ""); };
+        var console = new List<string>();
+        w.KittlConsoleOverride = a => { console.Add(string.Join(' ', a)); state = "  Status: √ Connected"; return true; };
+        w.PodKittlSet(true);
+        Assert.Equal(KittlConnect.State.AnmeldungNoetig, await w.PodKittlCheck()); Settle();
+        Assert.Equal("Anmeldung nötig", w.Find<TextBlock>("pod-kittl-state").Text);
+        Assert.Null(w.TryFind<Button>("pod-kittl-logout"));
+
+        Assert.True(await w.PodKittlLogin()); Settle();
+        Assert.Contains("mcp login trendo-kittl", console);
+        Assert.Contains(calls, c => c.StartsWith("mcp add --transport http trendo-kittl", StringComparison.Ordinal));
+        Assert.StartsWith("✓", w.Find<TextBlock>("pod-kittl-state").Text);
+        Assert.Null(w.TryFind<Button>("pod-kittl-login"));
+
+        state = "  Status: ! Needs authentication";
+        await w.PodKittlLogout(); Settle();
+        Assert.Contains("mcp logout trendo-kittl", calls);
+        Assert.NotNull(w.TryFind<Button>("pod-kittl-login"));
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "POD-Design: Bricht die Anmeldung ab, bleibt der Knopf und ein Hinweis erklärt es")]
+    public async Task Kittl_login_aborted()
+    {
+        var (w, _, _) = Open();
+        w.KittlCliOverride = a => new(0, a[1] == "get" ? "  Status: ! Needs authentication" : "", "");
+        w.KittlConsoleOverride = _ => false;
+        w.PodKittlSet(true);
+        Assert.False(await w.PodKittlLogin()); Settle();
+        Assert.NotNull(w.TryFind<Button>("pod-kittl-login"));
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "POD-Design: Kittl-Schalter schaltet die Anbindung ein und aus und bietet die Anmeldung an")]
     public void Kittl()
     {
         var (w, _, _) = Open();
@@ -114,7 +153,7 @@ public class PodDesign_Ui
         w.Find<Button>("pod-kittl-toggle").BringIntoView(); Settle();
         RealClick(w, w.Find<Button>("pod-kittl-toggle")); Settle();
         Assert.True(w.PodKittlOn);
-        Assert.Contains(w.Find<StackPanel>("pod-kittl").Children.OfType<TextBlock>(), t => t.Text!.Contains("/mcp"));
+        Assert.NotNull(w.TryFind<Button>("pod-kittl-login"));
         w.Find<Button>("pod-kittl-toggle").BringIntoView(); Settle();
         RealClick(w, w.Find<Button>("pod-kittl-toggle")); Settle();
         Assert.False(w.PodKittlOn);
