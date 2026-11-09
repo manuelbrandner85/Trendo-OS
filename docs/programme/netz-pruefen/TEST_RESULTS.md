@@ -1,6 +1,6 @@
 # Sicher prüfen – Testergebnisse
 
-Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `netz-pruefen` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `netz-pruefen` · Stand: 0.9.36 (Stand 70e872a)
 
 Lauf: `api.trx, app.trx, core.trx`
 

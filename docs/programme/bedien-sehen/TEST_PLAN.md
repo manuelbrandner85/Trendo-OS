@@ -1,10 +1,11 @@
 # Sehen – Testplan
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `bedien-sehen` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `bedien-sehen` · Stand: 0.9.36 (Stand 70e872a)
 
-18 Tests sprechen dieses Programm an.
+19 Tests sprechen dieses Programm an.
 
 - Bedienstufen: Einfach blendet Fachwerkzeuge aus, Erweitert zeigt alle, Wechsel lässt das Dokument unverändert; Einstellung bleibt gespeichert
+- Lesbare Schrift: Knöpfe in „Sehen“; Atkinson wird gespeichert und aufs Fenster angewandt; zurück zum Standard; unbekannte Wahl ignoriert; Schriftdateien und Lizenz liegen bei
 - Profi-Stufe: Befehlssuche führt Befehle aus, Verlauf springt zurück, Projektdaten – falsches JSON wird abgelehnt, richtiges übernommen und rückgängig machbar
 - SYS-12 (UI): Bericht über alle Seiten; keine Seite tiefer als 2 Ebenen; Prüfseite hat keine unbenannten Knöpfe
 - SYS-12 (UI): Leise Benachrichtigung; Einstellung bleibt gespeichert; einfacher Modus zeigt weniger Kacheln

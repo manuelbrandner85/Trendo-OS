@@ -1,6 +1,6 @@
 # KI fragen – Funktionsmatrix
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki-fragen` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki-fragen` · Stand: 0.9.36 (Stand 70e872a)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -23,12 +23,11 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Produktion
 - Verbindungen
 - Online-Dienste
-- Chat & Schreiben
-- Nachdenken & Rechnen
-- 👥 Team
+- Mehr ▾
 - Modell
 - Fragen
 - ＋ Neues Gespräch
+- Einschalten
 - Claude als Haupt-KI nutzen (wenn verbunden)
 - Claude darf im Claude-Chat bei Bedarf ins Internet und Befehle ausführen
 - Claude startet sein Ergebnis echt und sieht es sich selbst an (Bildschirmfoto), bevor du es bekommst

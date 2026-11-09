@@ -1,6 +1,6 @@
 # Downloads – Testplan
 
-Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.36 (Stand 70e872a)
 
 47 Tests sprechen dieses Programm an.
 

@@ -1,6 +1,6 @@
 # Abläufe (Automatisch erledigen) – Funktionsmatrix
 
-Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.36 (Stand 70e872a)
 
 Quelle: `docs/spec/kataloge/SYS-05_KATALOG.md`
 
@@ -31,7 +31,7 @@ Quelle: `docs/spec/kataloge/SYS-05_KATALOG.md`
 - Produktion
 - Verbindungen
 - Online-Dienste
-- 👥 Team
+- Mehr ▾
 - Abläufe
 - Einfach: Trendo-Abläufe
 - Profi: n8n und Node-RED

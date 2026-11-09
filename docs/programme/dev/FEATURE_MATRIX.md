@@ -1,6 +1,6 @@
 # Software – Funktionsmatrix
 
-Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 70e872a)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -10,10 +10,7 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - ✳ Claude
 - Webseite für ein Café
 - Kontaktformular einbauen
-- Bilder erzeugen
-- Programmieren
-- 3D aus Bild
-- 👥 Team
+- Mehr ▾
 - Verstanden
 - Software
 - Code-Editor

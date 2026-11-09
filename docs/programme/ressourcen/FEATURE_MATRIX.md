@@ -1,6 +1,6 @@
 # Speicher & Leistung – Funktionsmatrix
 
-Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.36 (Stand 70e872a)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -33,7 +33,7 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Systemcheck
 - Qualitäts-Ampel
 - Bau-Fortschritt
-- 👥 Team
+- Mehr ▾
 - Verstanden
 - Leistung
 - Prozesse

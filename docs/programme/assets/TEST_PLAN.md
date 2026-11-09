@@ -1,6 +1,6 @@
 # Freie Bilder & Klänge – Testplan
 
-Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.36 (Stand 70e872a)
 
 13 Tests sprechen dieses Programm an.
 

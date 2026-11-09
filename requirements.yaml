@@ -480,6 +480,20 @@ modules:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: tests/Trendo.Core.Tests/IpTvTests.cs (Auftrag im Chat 27.10.2026)
+- id: STUDIO-FILM-01
+  name: Filme machen (Kurzfilme und Trailer)
+  approved_expansion_functions: '11'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: docs/claude/FILM_POD_PLAN_2026-11-08.md (Freigabe im Chat 08.11.2026)
+- id: STUDIO-POD-01
+  name: Print on Demand
+  approved_expansion_functions: '10'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: docs/claude/FILM_POD_PLAN_2026-11-08.md (Freigabe im Chat 08.11.2026)
 - id: SPEC-16
   name: Transport & Vehicle 2.0
   approved_expansion_functions: '20'

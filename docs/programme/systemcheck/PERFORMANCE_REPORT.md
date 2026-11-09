@@ -1,6 +1,6 @@
 # Systemcheck – Leistung
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `systemcheck` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `systemcheck` · Stand: 0.9.36 (Stand 70e872a)
 
 Kein eigener Leistungsmesslauf für dieses Programm. Zielhardware und Budgets sind noch nicht festgelegt – Messung offen.
 

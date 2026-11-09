@@ -1,6 +1,6 @@
 # Programme verwalten – Produktionspaket
 
-Studio: Programme installieren (SYS-04) · Bereich: System & Sicherheit · Seite: `appcenter` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Programme installieren (SYS-04) · Bereich: System & Sicherheit · Seite: `appcenter` · Stand: 0.9.36 (Stand 70e872a)
 
 Arbeitsfläche: Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

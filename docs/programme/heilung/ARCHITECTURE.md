@@ -1,6 +1,6 @@
 # Selbstheilung – Architektur
 
-Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.36 (Stand 70e872a)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

@@ -1,14 +1,15 @@
 # Geräte & Laufwerke – Testergebnisse
 
-Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.36 (Stand 70e872a)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 15 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 15 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
 
 | Test | Ergebnis |
 |---|---|
 | CORE-11 UI: Schutz-Seite über System erreichbar, Sichern, Ordner prüfen | ✓ bestanden |
+| Geräte: namenloses PCI-Gerät erscheint mit Kennung und Angebot; „Namen nachschlagen“ lädt die Liste (Prüfsumme) und zeigt Hersteller und Modell; danach kein Angebot mehr | nicht im Lauf |
 | SPEC-12 UI: Prüfsumme vergleichen, Fall anlegen, Beweis sichern, Bericht | ✓ bestanden |
 | SYS-04 UI: Suchen, installieren, Updates anzeigen und aktualisieren, entfernen | ✓ bestanden |
 | SYS-06 Freigabe-Dialog: Fenster schließen (X) lehnt ab | ✓ bestanden |

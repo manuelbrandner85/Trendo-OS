@@ -1,13 +1,14 @@
 # KI-Vorlagen – Testergebnisse
 
-Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-vorlagen` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-vorlagen` · Stand: 0.9.36 (Stand 70e872a)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 11 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 11 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 2
 
 | Test | Ergebnis |
 |---|---|
+| Anweisungs-Test: falsche Regeln werden gemeldet; Ergebnis zählt Durchläufe beider Fassungen; Regeln bleiben gespeichert | nicht im Lauf |
 | CORE-02 UI: Studio verweist auf „KI fragen“, Frage wird beantwortet | ✓ bestanden |
 | CORE-02: Nur Quellen auf diesem Gerät – Cloud-Adressen werden abgelehnt | ✓ bestanden |
 | CORE-02: Ollama-Format (tags/chat) wird korrekt gesprochen | ✓ bestanden |
@@ -17,5 +18,6 @@ Bestanden 11 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | CORE-12: Platzhalter mit Standardwert ausfüllen, fehlende werden genannt | ✓ bestanden |
 | CORE-12: Qualitätsprüfung erkennt kurze Aufträge, Geheimnisse, offene Platzhalter; Masterprompt hat Regeln | ✓ bestanden |
 | CORE-12: Versionen speichern und zurückholen, Mitgelieferte nicht löschbar | ✓ bestanden |
+| Recherche: zeigt zuerst nur den Artikel, Knopf wechselt ohne neuen Abruf zur ganzen Seite und zurück; ohne Artikel ein Hinweis | nicht im Lauf |
 | SYS-05 UI: Vorlage anlegen, Probelauf, Freigeben, Ausführen, eigener Ablauf | ✓ bestanden |
 | X-05 UI: Suche findet laufende Quelle, Fragen nutzt die Rückfallkette | ✓ bestanden |

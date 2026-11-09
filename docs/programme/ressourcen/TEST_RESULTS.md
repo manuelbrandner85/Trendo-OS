@@ -1,6 +1,6 @@
 # Speicher & Leistung – Testergebnisse
 
-Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.36 (Stand 70e872a)
 
 Lauf: `api.trx, app.trx, core.trx`
 

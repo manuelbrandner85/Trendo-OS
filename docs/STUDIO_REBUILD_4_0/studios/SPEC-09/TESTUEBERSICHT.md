@@ -1,0 +1,47 @@
+# Testübersicht: Gegenstände einscannen
+
+Studio SPEC-09 · Gegenstände einscannen · Bereich 3D, Spiele & VR
+
+> Entwurf aus dem read-only Audit vom 09.11.2026. Zahlen sind aus dem Repository erzeugt. „Implementiert“ heißt nicht „abgenommen“.
+
+Gezählte Tests des Studios: 85. Gefordert für die Abnahme 4.0: mindestens 20 eigene positive und negative Testfälle.
+
+## Dem Studio zugeordnete Tests
+
+Die Zuordnung kommt aus dem Programmkatalog und ist ungenau: Sie kann Tests anderer Studios enthalten (siehe REA-Audit).
+
+- Open3D-Oberfläche: ohne Einrichtung Knopf; Glätten ersetzt das Modell mit Rückgängig; Fehler von Open3D wird gemeldet, Modell bleibt
+- S4 Scannen: Aufnahme-Assistent vor der Rechnung; nach der Rechnung Abdeckungsscheibe mit Prozent und Lücken aus den Kamerapositionen
+- SPEC-04 VR: Vorschau aus Augenhöhe schaltbar (1,60 m), Anzeige der größten Textur, Karte „Für die Brille reparieren“; passt das Modell, gibt es nichts zu reparieren
+- SPEC-09 F10: Skalieren
+- SPEC-09 F11: Zentrieren
+- SPEC-09 F12: Zuschneiden
+- SPEC-09 F13: Boden finden
+- SPEC-09 F14: Boden entfernen
+- SPEC-09 F15: Scans vergleichen
+- SPEC-09 F16: Volumen
+- SPEC-09 F17: XYZ speichern
+- SPEC-09 F18: Punktdichte
+- SPEC-09 F19: Drehen
+- SPEC-09 F20: Zusammenführen
+- SPEC-09 Foto: COLMAP-Plan ohne Grafikkarte, Video nutzt FFmpeg und die Reihe
+- SPEC-09 Foto: Fläche aus PLY, Hülle aus Punkten, Binärformat, Quadrat, Linie
+- SPEC-09 Foto: Lauf schreibt OBJ fürs 3D-Studio, Abbruch bei Fehler und ohne Kameramodell
+- SPEC-09 Foto: Meshroom bekommt Eingabe und Ausgabe, Arbeitsordner liegt beim Programm
+- SPEC-09 Foto: Ordner listet Bilder, zu wenige Fotos werden abgelehnt
+- SPEC-09 Katalog: COLMAP als geprüftes Windows-ZIP, Meshroom nur über die offizielle Seite
+- SPEC-09 Scan: Beschneiden (unten weg), kleine Reste entfernen (größtes Teil bleibt), Löcher schließen (offener Würfel wird dicht), echte Größe direkt und über einen bekannten Gegenstand
+- SPEC-09 Scan: Kameras als Marker, beschneiden, Reste entfernen, Löcher schließen, echte Größe direkt und über Kreditkarte, Rückgängig; gute Fotos auswählen und als Kopie verwenden; Texturqualität wählbar
+- SPEC-09 Scan: Kameras aus COLMAP (images.txt und images.bin) – Kameramitte C = −Rᵀt, in die Lage des Modells umgerechnet und gespeichert; Meshroom cameras.sfm
+- SPEC-09 Scan: gute Fotos auswählen – wahrscheinlich unscharfe (wenig Bilddetails) und doppelte werden aussortiert; Meshroom bekommt die gewählte Texturgröße
+- SPEC-09 UI: Beispielraum – Maus dreht und zoomt, Störpunkte/Boden entfernen als Schritte, Schritt wieder entfernen, Rückgängig
+- SPEC-09 UI: Messen – zwei Punkte anklicken zeigt den Abstand; eigene Datei laden, Einheit umrechnen, Analyse, Export PLY/XYZ/Bericht
+- SPEC-09 UI: Rechnung zeigt den Fortschritt und öffnet das Modell im 3D-Studio
+- SPEC-09 UI: Video ohne FFmpeg fragt, bevor etwas installiert wird
+- SPEC-09 UI: ohne Fotos keine Installation, mit Fotos fragt Trendo vor COLMAP
+- SPEC-09: Punktwolke aus PLY (ASCII/binär), XYZ, OBJ; ausdünnen, Ausreißer, PLY speichern
+- Scan-Arbeitsplatz (Runde 7): Fotos einlesen mit Prüfung und Vorschau, Schritte der Rechnung mit Fortschritt, Modell in 3D drehen, Export als OBJ, STL und GLB
+
+## Pflichtprüfungen der Abnahme 4.0
+
+Alle Punkte offen, bis ein Testartefakt vorliegt: alte Funktionen, neue Funktionen, Bedienbarkeit, Erreichbarkeit, Dateikompatibilität, Fehlerbehandlung, Rechte, Leistung, Speicher, Stabilität, Tastatur und Maus, Ziehen und Ablegen, Rückgängig, Wiederherstellung, Exporte, Zusammenspiel mit anderen Studios.

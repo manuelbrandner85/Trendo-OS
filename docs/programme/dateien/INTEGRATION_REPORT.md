@@ -1,6 +1,6 @@
 # Dateien – Einbindung in Trendo OS
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `dateien` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `dateien` · Stand: 0.9.36 (Stand 70e872a)
 
 - Seite `dateien` im Studio „Desktop einrichten“ (System & Sicherheit) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

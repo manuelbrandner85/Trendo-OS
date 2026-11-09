@@ -23,12 +23,14 @@ public static class StudioCatalog
         ["SYS-02"] = new("Kleine Helfer & Musik", "Kleine Helfer: Rechner, Notizen, Bildschirmfoto, Musik und Videos abspielen.", "Arbeiten & Büro"),
 
         ["STUDIO-ONLINE-BUSINESS-01"] = new("Online verkaufen", "Geschäftsidee planen, gründen und online verkaufen.", "Business & Geld"),
+        ["STUDIO-POD-01"] = new("Print on Demand", "Eigene Motive auf Produkte bringen: Druckdatei prüfen, Preis rechnen, Rechtliches klären.", "Business & Geld"),
         ["SPEC-11"] = new("Geld & Rechnungen", "Haushaltsbuch, Rechnungen, Kredite und Steuern im Blick.", "Business & Geld"),
 
         ["CORE-08"] = new("Videos & Fotos bearbeiten", "Videos schneiden, Musik aufnehmen und Bilder gestalten.", "Kreativ & Medien"),
         ["SPEC-15"] = new("Live streamen", "Livestreams und Sendungen planen und durchführen.", "Kreativ & Medien"),
         ["STUDIO-MUSIK-01"] = new("Trendo Musik", "Lieder mit Gesang aus einer Beschreibung erzeugen – Liedtext, Stil, Sprache, bis 10 Minuten, alles auf deinem PC.", "Kreativ & Medien"),
         ["STUDIO-TV-01"] = new("TV & Live", "Fernsehen über das Internet: eigene Senderlisten, Programmführer, Aufnahmen und mehrere Sender gleichzeitig.", "Kreativ & Medien"),
+        ["STUDIO-FILM-01"] = new("Filme machen", "Kurzfilme und Trailer: vom Drehbuch über Figuren und Einstellungen zum fertigen Film.", "Kreativ & Medien"),
         ["SPEC-08"] = new("Kleidung & Produkte entwerfen", "Kleidergrößen, Schnitte und Produktideen.", "Kreativ & Medien"),
         ["X-07"] = new("Freie Bilder & Klänge finden", "Kostenlose Bilder, Klänge und Schriften finden.", "Kreativ & Medien"),
         ["CORE-12"] = new("KI-Anweisungen schreiben", "Gute Anweisungen für die KI schreiben und sammeln.", "Kreativ & Medien"),

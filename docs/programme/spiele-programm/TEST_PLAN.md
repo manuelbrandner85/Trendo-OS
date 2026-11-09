@@ -1,9 +1,10 @@
 # Spiele bauen – Testplan
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.36 (Stand 70e872a)
 
-28 Tests sprechen dieses Programm an.
+33 Tests sprechen dieses Programm an.
 
+- 3D-Modelle, Einfach: Grundfunktionen sichtbar, Export und Fachwerkzeuge nach einem Klick; Erweitert zeigt alles
 - CORE-06 (UI): Spiel anlegen öffnet es im Browser; ohne Unreal ehrlicher Hinweis, mit Unreal Projekt anlegen
 - CORE-06 G1: Godot Asset Library – Suche mit Titel, Autor, Lizenz; Laden nur von GitHub/GitLab, ZIP sicher entpackt; fremde Download-Adresse abgelehnt
 - CORE-06 G1–G3: Assets – Godot-Suche, neue Downloads übernehmen, Bildstreifen als Lauf-Animation (4 Bilder), Ton als Sprung-Geräusch, Asset-Liste mit Abspann, NC-Lizenz warnt beim Veröffentlichen
@@ -30,5 +31,9 @@ Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-pro
 - CORE-06: Unreal-Engines aus Launcher-Liste erkannt, neueste zuerst; .uproject ist gültig
 - CORE-06: Zeitlimit: nach Ablauf verloren, Restzeit zählt herunter; ohne Limit −1
 - CORE-06: Zustände der Figur – stehen auf dem Boden, laufen mit Tempo, springen nach oben, fallen nach unten; Blickrichtung folgt der Laufrichtung
+- Einfach: In jedem Programm bleibt jeder Befehl der Stufe erreichbar, direkt oder unter „Mehr“; direkt sichtbar sind höchstens vier Programmbefehle
+- Spiele bauen, Einfach: Auftrag und nächster Schritt; „Alle Bereiche“ zeigt alles; Erweitert unverändert
+- Spiele bauen: Nächster Schritt nennt den schwächsten Bereich in Alltagssprache; Alltagswörter nur in Einfach
 - Spiele: Retro-Vorlage, Level im Raster bearbeiten, Figur hinzufügen, prüfen, bauen und spielen
 - Spiele: Umfang AAA+ wählen setzt AAA-Meilensteine; Bauen legt ein Unreal-Projekt mit Spielbibel an
+- Übrige Seiten, Einfach: Rest hinter „Mehr anzeigen“ und nach einem Klick wieder da; Erweitert zeigt alles sofort

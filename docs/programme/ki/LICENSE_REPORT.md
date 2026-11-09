@@ -1,6 +1,6 @@
 # KI – Lizenzen
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki` · Stand: 0.9.36 (Stand 70e872a)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

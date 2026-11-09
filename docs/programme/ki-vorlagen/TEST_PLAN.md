@@ -1,9 +1,10 @@
 # KI-Vorlagen – Testplan
 
-Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-vorlagen` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-vorlagen` · Stand: 0.9.36 (Stand 70e872a)
 
-11 Tests sprechen dieses Programm an.
+13 Tests sprechen dieses Programm an.
 
+- Anweisungs-Test: falsche Regeln werden gemeldet; Ergebnis zählt Durchläufe beider Fassungen; Regeln bleiben gespeichert
 - CORE-02 UI: Studio verweist auf „KI fragen“, Frage wird beantwortet
 - CORE-02: Nur Quellen auf diesem Gerät – Cloud-Adressen werden abgelehnt
 - CORE-02: Ollama-Format (tags/chat) wird korrekt gesprochen
@@ -13,5 +14,6 @@ Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite
 - CORE-12: Platzhalter mit Standardwert ausfüllen, fehlende werden genannt
 - CORE-12: Qualitätsprüfung erkennt kurze Aufträge, Geheimnisse, offene Platzhalter; Masterprompt hat Regeln
 - CORE-12: Versionen speichern und zurückholen, Mitgelieferte nicht löschbar
+- Recherche: zeigt zuerst nur den Artikel, Knopf wechselt ohne neuen Abruf zur ganzen Seite und zurück; ohne Artikel ein Hinweis
 - SYS-05 UI: Vorlage anlegen, Probelauf, Freigeben, Ausführen, eigener Ablauf
 - X-05 UI: Suche findet laufende Quelle, Fragen nutzt die Rückfallkette

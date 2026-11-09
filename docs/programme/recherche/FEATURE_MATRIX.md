@@ -1,6 +1,6 @@
 # Recherche im Lesemodus – Funktionsmatrix
 
-Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.36 (Stand 70e872a)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -9,9 +9,7 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - ✳ Claude
 - Recherche: Wärmepumpe Kosten 2026
 - Quellen zu gesunder Ernährung
-- Übersetzen
-- Bilder verstehen
-- 👥 Team
+- Mehr ▾
 - Lesen
 - Literaturliste kopieren
 - Als Bericht speichern

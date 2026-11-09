@@ -1,8 +1,8 @@
 # Ordner im Heimnetz teilen – Testplan
 
-Studio: Dateien teilen (SYS-06) · Bereich: System & Sicherheit · Seite: `teilen` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Dateien teilen (SYS-06) · Bereich: System & Sicherheit · Seite: `teilen` · Stand: 0.9.36 (Stand 70e872a)
 
-28 Tests sprechen dieses Programm an.
+30 Tests sprechen dieses Programm an.
 
 - A2/A4: Texte & Tabellen mit Neu-Karten (Dokument, Tabelle, Präsentation, PDF, Brief, Word-Vorlagen) und Leerzustand; Neues Projekt mit Ziel-Karten
 - C1/C2/C4: Ist Claude verbunden, geht „Los“ der Studio-Zeile an Claude (Studio bleibt sichtbar, volle Rechte mit Rückfrage bei Wirkung nach außen); der zweite Auftrag läuft in derselben Sitzung; ohne Claude plant Trendo selbst
@@ -14,6 +14,8 @@ Studio: Dateien teilen (SYS-06) · Bereich: System & Sicherheit · Seite: `teile
 - I2/I4: KI-Rollen als Karten (Auftrag, Schreibrecht), Wahl markiert; Ablauf-Vorlagen als Karten, ohne Ablauf Leerzustand, Vorlage legt Ablauf an
 - K1: Musikspur im Videoschnitt zeigt die echte Wellenform der Tondatei (laut/leise erkennbar); ohne lesbare Datei nur Mittellinie statt erfundener Welle
 - K3: Abspielleiste von Trendo Musik zeigt die echte Wellenform des gewählten Lieds; ohne Lied keine Welle
+- LocalSend echt über HTTP: Dateien kommen Byte für Byte an (Token, SHA-256); abgewählte Datei entfällt; Ablehnung, PIN und Prüfsummenfehler verständlich und mit cancel
+- LocalSend echt über UDP: Antwort eines Geräts erscheint in der Liste mit Senden-Knopf; ohne Antwort verständlicher Hinweis
 - SPEC-12 UI: Prüfsumme vergleichen, Fall anlegen, Beweis sichern, Bericht
 - SYS-04 UI: Suchen, installieren, Updates anzeigen und aktualisieren, entfernen
 - SYS-06 Freigabe-Dialog: Fenster schließen (X) lehnt ab

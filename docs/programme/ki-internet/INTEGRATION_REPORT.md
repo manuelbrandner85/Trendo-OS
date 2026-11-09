@@ -1,6 +1,6 @@
 # Kostenlose Internet-KIs – Einbindung in Trendo OS
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-internet` · Stand: 0.9.36 (Stand 434d2ab)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-internet` · Stand: 0.9.36 (Stand 70e872a)
 
 - Seite `ki-internet` im Studio „Kostenlose KI finden“ (KI & Automatik) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein
