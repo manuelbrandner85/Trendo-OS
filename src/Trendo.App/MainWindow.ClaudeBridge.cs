@@ -166,7 +166,8 @@ public partial class MainWindow
             }),
             S("dokument_lesen", "Liest die Daten des offenen Dokuments als JSON, ganz oder ab einem Pfad wie „levels/0“.", TrendoMcp.Schema(("pfad", "string", "Pfad, leer für alles", false), programArg), a =>
             {
-                var doc = BridgeOpenDoc(BridgeSpec(run, a)); var node = DocPath.Get(doc.Data, a["pfad"].AsText());
+                var pageData = a["programm"] is null && BridgeKey(run) is null && CurrentView == "3d" ? JsonNode.Parse(_scene.ToJson())!.AsObject() : null;
+                var node = DocPath.Get(pageData ?? BridgeOpenDoc(BridgeSpec(run, a)).Data, a["pfad"].AsText());
                 if (node is null) return McpResult.Fail("An diesem Pfad steht nichts.");
                 var json = node.ToJsonString();
                 if (json.Length <= MaxToolText) return new McpResult(json);
@@ -175,10 +176,19 @@ public partial class MainWindow
             }),
             T("dokument_setzen", "Ändert eine Stelle im Dokument und zeigt sie sofort im Programm. Pfad wie „levels/0/name“, Wert als JSON. Mit loeschen=true wird die Stelle entfernt.", TrendoMcp.Schema(("pfad", "string", "Pfad", true), ("wert", "any", "Neuer Wert", false), ("loeschen", "boolean", "Stelle entfernen", false), programArg), async a =>
             {
+                if (a["programm"] is null && BridgeKey(run) is null && CurrentView == "3d")
+                {
+                    var scene = JsonNode.Parse(_scene.ToJson())!.AsObject();
+                    if (a["loeschen"].AsBool()) DocPath.Remove(scene, Need(a, "pfad")); else DocPath.Set(scene, Need(a, "pfad"), DocPath.Unwrap(a["wert"]?.DeepClone()));
+                    var changed = Scene3D.FromJson(scene.ToJsonString()); // erst prüfen, dann übernehmen
+                    _undo3d.Add(_scene.ToJson()); _scene = changed;
+                    Show("3d"); await Pump();
+                    return BridgeDone(run);
+                }
                 var spec = BridgeSpec(run, a); var doc = BridgeOpenDoc(spec); var path = Need(a, "pfad");
                 run.Page = spec.Key; ClaudeChangeBegin(spec.Key, doc);
                 var remove = a["loeschen"].AsBool();
-                doc.Edit("Claude: " + path, d => { if (remove) DocPath.Remove(d, path); else DocPath.Set(d, path, a["wert"]?.DeepClone()); });
+                doc.Edit("Claude: " + path, d => { if (remove) DocPath.Remove(d, path); else DocPath.Set(d, path, DocPath.Unwrap(a["wert"]?.DeepClone())); });
                 ClaudeChangeAfter(spec.Key, doc);
                 if (CurrentView == spec.Key) Show(spec.Key);
                 await Pump();
@@ -186,6 +196,11 @@ public partial class MainWindow
             }),
             S("rueckgaengig", "Nimmt den letzten Schritt im Dokument zurück.", TrendoMcp.Schema(programArg), a =>
             {
+                if (a["programm"] is null && BridgeKey(run) is null && CurrentView == "3d")
+                {
+                    if (_undo3d.Count == 0) return McpResult.Fail("Es gibt nichts zum Zurücknehmen.");
+                    UndoSceneSilent(); Show("3d"); return BridgeDone(run);
+                }
                 var spec = BridgeSpec(run, a); var doc = BridgeOpenDoc(spec);
                 if (!doc.Undo()) return McpResult.Fail("Es gibt nichts zum Zurücknehmen.");
                 Show(spec.Key); return BridgeDone(run);
@@ -242,7 +257,7 @@ public partial class MainWindow
 
     ProgramSpec BridgeSpec(BridgeRun run, JsonObject a)
     {
-        var key = a["programm"].AsText() ?? BridgeKey(run) ?? throw new ArgumentException("Es ist kein Programm offen. Erst „programm_oeffnen“ benutzen.");
+        var key = a["programm"].AsText() ?? BridgeKey(run) ?? throw new ArgumentException("Diese Seite hat kein Dokumentprogramm und keine Befehlsliste. Bediene sie mit „seite_lesen“, „feld_setzen“, „auswaehlen“ und „klicken“.");
         return Programs.TryGetValue(key, out var spec) ? spec : throw new ArgumentException("Dieses Programm gibt es nicht. Liste mit „programme“ abrufen.");
     }
 

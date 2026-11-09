@@ -143,6 +143,16 @@ public static class DocPath
         }
     }
 
+    /// <summary>Werte kommen von Claude manchmal als Text mit JSON darin an („\"#FF0000\"“ oder „[1,2]“). Nur vollständig gültiges JSON wird ausgepackt, sonst bleibt der Text, wie er ist.</summary>
+    public static JsonNode? Unwrap(JsonNode? value)
+    {
+        if (value is not JsonValue v || v.GetValueKind() != JsonValueKind.String) return value;
+        var text = v.GetValue<string>().Trim();
+        if (text.Length < 2 || !((text[0] == '"' && text[^1] == '"') || (text[0] == '[' && text[^1] == ']') || (text[0] == '{' && text[^1] == '}'))) return value;
+        try { return JsonNode.Parse(text); }
+        catch (JsonException) { return value; }
+    }
+
     public static bool Remove(JsonObject root, string path)
     {
         var parts = Parts(path);

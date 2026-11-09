@@ -116,6 +116,27 @@ Echter Lauf durch den Claude-Bereich: Auftrag „einfachen Roboter im Bildprogra
 
 Offen: Die vorhandene `WorkflowEngine` kennt nur Dateischritte und wird nicht benutzt, die Kette läuft über die Studio-Fusion. `AgentCenter` wird im festen Ablauf nicht eingesetzt. Längere Ketten aus dem Auftrag (Stadt mit 3D, Material, Animation, Unreal, Ton, QA) sind nicht gebaut.
 
-## Phase E und F
+## Phase E: übrige Studios
+
+### Paket 1: Kreativ und 3D
+
+Videos und Fotos (CORE-08), Filme (STUDIO-FILM-01), Musik (STUDIO-MUSIK-01), 3D-Modelle (CORE-05), Webseite (CORE-07).
+
+| Baustein | Stand |
+|---|---|
+| Fachwissen, Aufgaben, Absichtserkennung | für alle fünf, 30 Tests |
+| Startseite „Was möchtest du machen?“ | nur bei Dokumentprogrammen (Videoschnitt, Bild, Ton, Medien, Film). Musik, 3D und Webseite behalten ihre Vorschläge in der Eingabezeile |
+| Programmprüfung | ffmpeg, Blender, f3d, git zusätzlich zu den Spiele-Engines |
+| Claude-Zugriff bis ins Detail | Dokumentprogramme und 3D-Szene. Bei der Webseite arbeitet Claude direkt in den Projektdateien. Musik nur auf Seitenebene |
+
+Echter Lauf durch den Claude-Bereich mit echtem Blender: Auftrag „Holztisch 120 × 70 × 75 cm“. Claude baute neun Teile mit den richtigen Maßen, renderte dreimal, sah sich jedes Bild an und korrigierte selbst einen Farbfehler und zu helles Licht. Kein Klick, keine Rückfrage.
+
+Grenzen dieses Laufs: Die Holzmaserung fehlte, weil der Prüfaufbau keine Oberflächen aus dem Internet lädt. In der normalen App ist das nicht geprüft. Claude schlug eine Regel zum Lernen vor, die mit Ja oder Nein bestätigt wird. Sie hält die Arbeit nicht auf.
+
+Dabei behoben: Claude übergab Werte teils als Text mit JSON darin, das Teil wurde dadurch blau.
+
+Offen: die übrigen Studios. Sitzung A legt parallel 16 Studios zusammen (freigegeben vom Nutzer), die Studio-Kennungen ändern sich beim Zusammenführen.
+
+## Phase F
 
 Noch nicht begonnen.

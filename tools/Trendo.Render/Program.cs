@@ -172,13 +172,17 @@ if (Environment.GetEnvironmentVariable("TRENDO_R11") is { Length: > 0 } r11) // 
         Directory.CreateDirectory(Environment.GetEnvironmentVariable("TRENDO_BRIDGE_DIR")!);
         win.ClaudeNoClicks = true;
         var check = win.ClaudeCheck(); R11Pump(() => check.IsCompleted, 20);
-        win.Show("spiele-programm"); R11Pump(() => false, 1);
+        var chatPage = Environment.GetEnvironmentVariable("TRENDO_BRIDGE_PAGE") ?? "spiele-programm";
+        if (Environment.GetEnvironmentVariable("TRENDO_BRIDGE_BLENDER") is { Length: > 0 } realBlender)
+            win.Render3DOverride = (spec, png) => Task.Run(() => { var (r, _) = Trendo.Core.Studio3DPro.Render(realBlender, spec, png); return r.Ok && File.Exists(png); });
+        win.Show(chatPage); R11Pump(() => false, 1);
         Console.WriteLine("BEREIT " + win.ClaudeTakesStudioPrompts);
-        var send = win.ClaudeFromStudioBar("CORE-06", Environment.GetEnvironmentVariable("TRENDO_BRIDGE_PROMPT")!); R11Pump(() => send.IsCompleted, 800);
+        var send = win.ClaudeFromStudioBar(Environment.GetEnvironmentVariable("TRENDO_BRIDGE_STUDIO") ?? "CORE-06", Environment.GetEnvironmentVariable("TRENDO_BRIDGE_PROMPT")!); R11Pump(() => send.IsCompleted, 800);
         Console.WriteLine("CHAT_FERTIG " + send.IsCompleted + " " + (send.IsCompletedSuccessfully ? send.Result.ToString() : send.Exception?.ToString()));
         Console.WriteLine("OFFENE_FRAGEN plan=" + win.ClaudePlanPending() + " aenderung=" + win.ClaudeChangePending("spiele-programm"));
         if (win.ClaudeChatCurrent() is { } cc) File.WriteAllText(Environment.GetEnvironmentVariable("TRENDO_BRIDGE_DIR") + "\\antwort.txt", string.Join("\n---\n", cc.Messages.Select(m => m.Role + ": " + m.Text)));
-        if (win.ProgramActive("spiele-programm") is { } chatDoc) File.WriteAllText(Environment.GetEnvironmentVariable("TRENDO_BRIDGE_DIR") + "\\dokument.json", chatDoc.Data.ToJsonString());
+        if (MainWindow.Programs.ContainsKey(chatPage) && win.ProgramActive(chatPage) is { } chatDoc) File.WriteAllText(Environment.GetEnvironmentVariable("TRENDO_BRIDGE_DIR") + "\\dokument.json", chatDoc.Data.ToJsonString());
+        if (chatPage == "3d") File.WriteAllText(Environment.GetEnvironmentVariable("TRENDO_BRIDGE_DIR") + "\\dokument.json", win.Studio3DSceneJson);
         R11Pump(() => false, 1);
     }
     else

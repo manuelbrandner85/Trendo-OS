@@ -3,7 +3,7 @@ using System.Text.Json.Nodes;
 namespace Trendo.Core.PromptAction;
 
 /// <summary>Eine typische Aufgabe in einem Studio. <paramref name="Starter"/> kommt in die Eingabe, die Person ergänzt den Rest.</summary>
-public sealed record StudioTask(string Id, string Label, string Hint, string Starter, IReadOnlyList<string> Keywords, IReadOnlyList<string> Needs);
+public sealed record StudioTask(string Id, string Label, string Hint, string Starter, IReadOnlyList<string> Keywords, IReadOnlyList<string> Needs, string? Program = null);
 
 /// <summary>Fachwissen eines Studios. Ergänzt <see cref="CapabilityCatalog"/> (Reife und Grenzen) um Zweck, Aufgaben, Formate und Qualität; keine zweite Registry.</summary>
 public sealed record StudioKnowledge(
@@ -41,6 +41,86 @@ public static class StudioKnowledgeBase
             ["Idee → Spielbibel → Level → Prüfen → Bauen → Spielen → Weitergeben"],
             ["Jedes Level hat Start und erreichbares Ziel", "Keine unfairen Sprünge oder Fallen am Start", "Spiel lässt sich bauen und starten", "Keine Platzhalter im fertigen Spiel"],
             ["CORE-05", "X-07", "STUDIO-MUSIK-01", "CORE-08"],
+            true),
+        ["CORE-08"] = new("CORE-08",
+            "Videos schneiden, Bilder gestalten, Ton bearbeiten und Medien umwandeln.",
+            [
+                T("medien", "Medien umwandeln", "Datei in ein anderes Format bringen", "Wandle diese Datei um: ", ["medien", "umwandel", "konvert", "format", "datei"], "Mediendatei"),
+                new("schnitt", "Video schneiden", "Clips anordnen, kürzen, Musik dazu", "Schneide aus meinen Clips ein Video über ", ["video", "schneid", "schnitt", "clip", "film ab"], ["Videodateien"], "schnitt"),
+                new("bild", "Bild oder Plakat gestalten", "Ebenen, Text, Formen, Export", "Gestalte ein Bild: ", ["bild", "foto", "plakat", "poster", "retusch", "logo", "zeichne"], [], "bild"),
+                new("ton", "Ton bearbeiten", "Schneiden, lauter, sauberer", "Bearbeite diese Tonaufnahme: ", ["ton", "audio", "podcast", "rausch", "aufnahme"], ["Tondatei"], "ton"),
+            ],
+            ["ffmpeg"],
+            ["Videos, Bilder oder Tondateien", "Beschreibung des Ziels"],
+            ["fertiges Video", "fertiges Bild", "bearbeitete Tondatei"],
+            [".tdoc", ".mp4", ".png", ".jpg", ".svg", ".wav"],
+            ["Medien holen → Anordnen → Vorschau prüfen → Exportieren"],
+            ["Export lässt sich öffnen und hat die gewünschte Länge oder Größe", "Keine fremden Inhalte ohne passende Lizenz"],
+            ["STUDIO-MUSIK-01", "X-07", "STUDIO-FILM-01"],
+            true),
+        ["STUDIO-FILM-01"] = new("STUDIO-FILM-01",
+            "Kurzfilme und Trailer planen: Drehbuch, Figuren, Orte, Einstellungen und Abgabe.",
+            [
+                T("drehbuch", "Drehbuch schreiben", "Vom Einfall zur fertigen Szene", "Schreibe ein Drehbuch über ", ["drehbuch", "film", "kurzfilm", "szene", "geschichte"], "Idee oder Thema"),
+                T("shots", "Einstellungen planen", "Shotliste aus dem Drehbuch", "Plane die Einstellungen für ", ["einstellung", "shot", "kamera", "storyboard"], "Drehbuch"),
+                T("trailer", "Trailer vorbereiten", "Die stärksten Momente auswählen", "Plane einen Trailer aus ", ["trailer", "teaser", "vorschau"], "Drehbuch oder Szenen"),
+                T("auszug", "Figuren und Orte auflisten", "Drehbuchauszug für die Planung", "Erstelle den Drehbuchauszug für ", ["figur", "ort", "auszug", "drehplan", "besetzung"], "Drehbuch"),
+            ],
+            ["ffmpeg", "blender"],
+            ["Idee oder vorhandenes Drehbuch", "optional Szenen als Video"],
+            ["Drehbuch", "Shotliste", "Drehbuchauszug"],
+            [".tdoc", ".fountain", ".pdf", ".csv", ".md"],
+            ["Idee → Drehbuch → Auszug → Einstellungen → Schnitt"],
+            ["Jede Szene hat einen Szenenkopf", "Figuren und Orte sind einheitlich benannt"],
+            ["CORE-08", "STUDIO-MUSIK-01", "CORE-05"],
+            true),
+        ["STUDIO-MUSIK-01"] = new("STUDIO-MUSIK-01",
+            "Lieder mit Gesang aus einer Beschreibung erzeugen, Spuren trennen, abmischen und Cover gestalten.",
+            [
+                T("lied", "Lied erzeugen", "Stil, Text, Sprache, Länge", "Erzeuge ein Lied über ", ["lied", "song", "musik", "melodie", "rap", "ballade"], "Thema oder Liedtext"),
+                T("instrumental", "Instrumental erzeugen", "Musik ohne Gesang", "Erzeuge ein Instrumental im Stil ", ["instrumental", "ohne gesang", "hintergrundmusik"], "Stil"),
+                T("trennen", "Spuren trennen", "Gesang und Begleitung getrennt", "Trenne die Spuren von ", ["trenn", "spur", "karaoke", "stem"], "Tondatei"),
+                T("cover", "Cover gestalten", "Bild zum Lied", "Gestalte ein Cover für ", ["cover", "albumbild", "plattencover"], "Titel oder Stimmung"),
+            ],
+            ["ffmpeg"],
+            ["Beschreibung, Stil, Sprache", "optional Liedtext oder Tondatei"],
+            ["Lied als Audiodatei", "getrennte Spuren", "Cover"],
+            [".mp3", ".wav", ".flac", ".png"],
+            ["Beschreibung → Erzeugen → Anhören → Trennen oder Abmischen → Export"],
+            ["Keine Stimmen bekannter Personen", "Liedtexte nur vom Nutzer oder selbst erfunden"],
+            ["CORE-08", "STUDIO-FILM-01"],
+            true),
+        ["CORE-05"] = new("CORE-05",
+            "3D-Modelle bauen und fotorealistisch rendern, für Spiele, Filme und den 3D-Druck.",
+            [
+                T("modell", "Modell bauen", "Aus einem Satz, mit echten Maßen", "Modelliere ", ["modell", "3d", "objekt", "bau", "burg", "haus", "tisch", "stuhl"], "Beschreibung oder Foto"),
+                T("render", "Foto rendern", "Echte Materialien und Licht", "Rendere ein realistisches Bild von ", ["render", "foto", "bild", "material"], "Modell"),
+                T("druck", "Für den 3D-Druck vorbereiten", "Prüfen und als STL ausgeben", "Bereite für den 3D-Druck vor: ", ["druck", "stl", "drucker", "bambu"], "Modell"),
+                T("export", "Für andere Programme ausgeben", "GLB, FBX, OBJ", "Exportiere für ", ["export", "glb", "fbx", "obj", "unreal"], "Modell"),
+            ],
+            ["blender", "f3d"],
+            ["Beschreibung, Maße oder Foto"],
+            ["3D-Modell", "gerendertes Bild", "Druckdatei"],
+            [".blend", ".glb", ".fbx", ".obj", ".stl", ".png"],
+            ["Beschreiben → Modellieren → Materialien → Licht und Kamera → Rendern → Export"],
+            ["Reale Maße und Proportionen", "Echte Materialien statt Einheitsfarbe", "Kontaktschatten, nichts schwebt"],
+            ["CORE-06", "SPEC-08", "X-07"],
+            true),
+        ["CORE-07"] = new("CORE-07",
+            "Webseiten und kleine Web-Anwendungen als echtes Projekt mit Quelltext bauen, testen und ansehen.",
+            [
+                T("seite", "Webseite bauen", "Ein Satz genügt", "Baue mir eine Webseite für ", ["webseite", "website", "homepage", "seite", "landing"], "Thema oder Firma"),
+                T("funktion", "Funktion hinzufügen", "Formular, Galerie, Menü", "Füge meiner Webseite hinzu: ", ["formular", "galerie", "menü", "funktion", "einbauen", "kontakt"], "bestehendes Projekt"),
+                T("design", "Design verbessern", "Schöner, klarer, schneller", "Verbessere das Design: ", ["design", "schöner", "farbe", "layout"], "bestehendes Projekt"),
+                T("pruefen", "Webseite prüfen", "Fehler, Links, Handyansicht", "Prüfe meine Webseite auf ", ["prüf", "test", "fehler", "kaputt", "link", "handy"], "bestehendes Projekt"),
+            ],
+            ["git"],
+            ["Thema oder bestehendes Projekt"],
+            ["Quelltext der Webseite", "lokale Vorschau"],
+            [".html", ".css", ".js"],
+            ["Anforderung → Bauen → Starten → Prüfen → Verbessern"],
+            ["Keine Fehler in der Konsole", "Funktioniert auf dem Handy", "Veröffentlichen nur nach Zustimmung"],
+            ["CORE-08", "X-07", "CORE-05"],
             true),
     };
 
@@ -86,6 +166,9 @@ public sealed record ProgramCheck(string Id, string Name, bool Installed, bool? 
         ["unity"] = ["Projekt anlegen", "Tests über die Kommandozeile"],
         ["godot"] = ["Projekt anlegen", "Headless-Prüfung"],
         ["blender"] = ["3D-Modelle erzeugen", "Rendern", "Export"],
+        ["ffmpeg"] = ["Video und Ton umwandeln", "Schneiden und Exportieren"],
+        ["f3d"] = ["3D-Dateien ansehen"],
+        ["git"] = ["Versionen des Projekts"],
     };
 
     /// <summary>Art der Schnittstelle, nur aus tatsächlichem Befund. <paramref name="mcpConnected"/>: im letzten Claude-Lauf gemeldete Verbindungen.</summary>

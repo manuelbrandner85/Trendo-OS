@@ -16,6 +16,8 @@ public partial class MainWindow
     IReadOnlyList<string> _mcpConnected = [];
     /// <summary>Für Tests: Startprüfung eines Programms nachstellen.</summary>
     public Func<string, string, bool?>? ProgramStartsOverride { get; set; }
+    /// <summary>Für Tests: Programmdatei außerhalb der Spiele-Engines finden.</summary>
+    public Func<string, string?>? ProgramFindOverride { get; set; }
 
     static readonly string[] MemoryKinds = ["Entscheidung", "Fortschritt", "Schritt", "Problem", "Qualität", "Freigabe", "Programm", "Datei"];
 
@@ -24,6 +26,12 @@ public partial class MainWindow
     {
         var wanted = only?.ToHashSet(StringComparer.OrdinalIgnoreCase);
         var found = EngineCheck();
+        foreach (var id in wanted?.Where(w => found.All(e => !e.Id.Equals(w, StringComparison.OrdinalIgnoreCase))) ?? [])
+        {
+            var exe = ProgramFindOverride is { } find ? find(id) : _opt.Isolated ? null : ToolPath(id);
+            var installed = exe is not null && (ProgramFindOverride is not null || File.Exists(exe));
+            found.Add(new EngineFound(id, DependencyCatalog.All.FirstOrDefault(c => c.Id == id)?.Name ?? id, null, exe, installed, installed ? "vorhanden" : "fehlt", "Dieses Programm fehlt. Es lässt sich unter „Programme einrichten“ hinzufügen."));
+        }
         return found.Where(e => wanted is null || wanted.Contains(e.Id)).Select(e =>
         {
             var starts = e.Installed && e.Exe is { } exe ? BridgeStarts(e.Id, exe) : (e.Installed ? null : false);
@@ -37,7 +45,7 @@ public partial class MainWindow
     {
         if (ProgramStartsOverride is { } o) return o(id, exe);
         if (_opt.Isolated) return null;
-        var args = id switch { "blender" or "godot" => "--version", "unity" => "-version", _ => null };
+        var args = id switch { "blender" or "godot" or "git" or "f3d" => "--version", "unity" or "ffmpeg" => "-version", _ => null };
         if (args is null) return null; // Unreal kennt keinen schnellen Prüfaufruf
         try
         {
@@ -127,11 +135,11 @@ public partial class MainWindow
     string? BridgeStudio(BridgeRun run) => run.Dock?.Studio ?? (BridgeKey(run) is { } k ? Programs[k].Studio : ClaudeBelongs(CurrentView) ? ClaudeStudioOf(CurrentView) : null);
 
     /// <summary>Startseite: „Was möchtest du machen?“ mit den wichtigsten Aufgaben des Studios. Der Klick füllt die Eingabe oben, die Person ergänzt nur noch das Thema.</summary>
-    Control? StudioTaskCard(string studio)
+    Control? StudioTaskCard(string studio, string? program = null)
     {
         if (StudioKnowledgeBase.For(studio) is not { Detailed: true } k) return null;
         var row = new WrapPanel { Name = "studio-tasks" };
-        foreach (var t in k.Tasks.Take(5))
+        foreach (var t in k.Tasks.Where(x => x.Program is null || x.Program == program).Take(5))
         {
             var task = t;
             var b = new Button { Name = "studio-task-" + task.Id, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(14, 10), Width = 230, CornerRadius = new CornerRadius(10), HorizontalContentAlignment = HorizontalAlignment.Left,

@@ -273,7 +273,7 @@ public partial class MainWindow
             sp.Children.Insert(0, Card(rs));
         }
         if (spec.StartTop is { } top) sp.Children.Insert(0, top());
-        if (StudioTaskCard(spec.Studio) is { } tasks) sp.Children.Insert(0, tasks);
+        if (StudioTaskCard(spec.Studio, spec.Key) is { } tasks) sp.Children.Insert(0, tasks);
         return sp;
     }
 

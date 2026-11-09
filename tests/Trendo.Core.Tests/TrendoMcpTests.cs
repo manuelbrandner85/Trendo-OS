@@ -74,6 +74,17 @@ public class TrendoMcpTests
     [InlineData("Level hinzufügen", "x", false, false)]
     public void Consent(string label, string name, bool undoable, bool asks) => Assert.Equal(asks, ClaudeActions.NeedsConsent(label, name, undoable));
 
+    [Theory(DisplayName = "Dokument-Stellen: JSON in Text wird ausgepackt, normaler Text bleibt")]
+    [InlineData("\"#FF0000\"", "\"#FF0000\"".Length - 2, "string")]
+    [InlineData("[1,2]", 2, "array")]
+    [InlineData("[kein json", 10, "string")]
+    [InlineData("Hallo", 5, "string")]
+    public void Unwrap(string input, int size, string kind)
+    {
+        var r = DocPath.Unwrap(JsonValue.Create(input));
+        if (kind == "array") Assert.Equal(size, r!.AsArray().Count); else Assert.Equal(size, ((string)r!).Length);
+    }
+
     [Fact(DisplayName = "Fertig-Zeichen: wird erkannt und erscheint nicht in der Antwort")]
     public void Finish()
     {
