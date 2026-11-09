@@ -28,7 +28,13 @@ public partial class MainWindow
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Text.Json.JsonException) { return null; }
     }
 
-    static IReadOnlyList<string> ClaudeWithMcp(IReadOnlyList<string> args, string? mcpFile) => mcpFile is null ? args : [.. args, "--mcp-config", mcpFile];
+    static IReadOnlyList<string> ClaudeWithMcp(IReadOnlyList<string> args, string? mcpFile, string? bridgeFile = null)
+    {
+        var files = new[] { mcpFile, bridgeFile }.OfType<string>().ToList();
+        if (files.Count == 0) return args;
+        IReadOnlyList<string> all = bridgeFile is null ? args : [.. args, "--allowedTools", TrendoMcp.AllowedTools];
+        return [.. all, "--mcp-config", .. files];
+    }
 
     /// <summary>Übernimmt Claude die Aufträge der Studio-Zeile? (verbunden über das Abo, als Haupt-KI eingeschaltet, kein Abo-Limit gerade)</summary>
     public bool ClaudeTakesStudioPrompts =>

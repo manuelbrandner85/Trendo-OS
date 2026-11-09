@@ -94,6 +94,7 @@ public partial class MainWindow
                 _core.Audit.Append(Principal.LocalOwner.Name, "claude.etappe.weiter", s.Studio);
                 await ClaudeChatSend(dock, ClaudeStages.Resume + s.Request);
             }
+            else if (ClaudeNoClicks) ClaudeContinue(s.Studio, s.ChatId); // Fenster für das Projekt öffnen, beim nächsten Takt macht Claude weiter
             else if (!_stageToasted.Contains(s.ChatId))
             {
                 _stageToasted.Add(s.ChatId);

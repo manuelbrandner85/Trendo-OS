@@ -52,7 +52,7 @@ if (Environment.GetEnvironmentVariable("TRENDO_LOGO") is { Length: > 0 } logoDir
     Console.WriteLine("Logo geschrieben: " + logoDir);
     return;
 }
-var root = Path.Combine(Path.GetTempPath(), "trendo-render");
+var root = Environment.GetEnvironmentVariable("TRENDO_RENDER_ROOT") ?? Path.Combine(Path.GetTempPath(), "trendo-render");
 if (Directory.Exists(root)) Directory.Delete(root, true);
 if (shot is "brief" or "fenster" or "seite")
 {
@@ -158,6 +158,36 @@ if (Environment.GetEnvironmentVariable("TRENDO_R11") is { Length: > 0 } r11) // 
     void R11Pump(Func<bool> done, int seconds) { var t0 = DateTime.UtcNow; while (!done() && DateTime.UtcNow - t0 < TimeSpan.FromSeconds(seconds)) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); Thread.Sleep(30); } Avalonia.Threading.Dispatcher.UIThread.RunJobs(); }
     T Named<T>(string name) where T : Avalonia.Controls.Control => Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(win).OfType<T>().First(c => c.Name == name);
     void Click(string name) => Named<Avalonia.Controls.Button>(name).RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Avalonia.Controls.Button.ClickEvent));
+    if (r11 == "bruecke") // echter Lauf: Claude Code bedient das offene Trendo über die Werkzeuge
+    {
+        var runDir = Environment.GetEnvironmentVariable("TRENDO_BRIDGE_DIR")!; Directory.CreateDirectory(runDir);
+        var page = Environment.GetEnvironmentVariable("TRENDO_BRIDGE_PAGE") ?? "spiele-programm";
+        win.Show(page); R11Pump(() => false, 1);
+        var hostTask = Trendo.Api.ClaudeBridgeHost.StartAsync(win.ClaudeBridgeForTest(runDir, page)); R11Pump(() => hostTask.IsCompleted, 20);
+        if (Environment.GetEnvironmentVariable("TRENDO_BRIDGE_SHOT") is { Length: > 0 })
+        {
+            var bridgeShot = win.ClaudeBridgeForTest(runDir, page).Tools.First(t => t.Name == "bild_ansehen").Run([]);
+            R11Pump(() => bridgeShot.IsCompleted, 20);
+            Console.WriteLine(bridgeShot.IsFaulted ? "SHOT_FEHLER " + bridgeShot.Exception : $"SHOT {bridgeShot.Result.Error} {bridgeShot.Result.Text} {bridgeShot.Result.Png?.Length}");
+        }
+        var cfg = Path.Combine(runDir, "bruecke.json"); File.WriteAllText(cfg, hostTask.Result.ConfigJson());
+        var level = Environment.GetEnvironmentVariable("TRENDO_BRIDGE_LEVEL") == "voll" ? Trendo.Core.ClaudeCode.Level.Voll : Trendo.Core.ClaudeCode.Level.Sicher;
+        var cliArgs = Trendo.Core.ClaudeCode.Args(Environment.GetEnvironmentVariable("TRENDO_BRIDGE_PROMPT")!, Trendo.Core.ClaudeCode.Phase.Chat, null, "Du arbeitest im Trendo-Programm." + Trendo.Core.TrendoMcp.HandsFreeRule, "sonnet", level);
+        var psi = new System.Diagnostics.ProcessStartInfo(Environment.GetEnvironmentVariable("TRENDO_BRIDGE_CLAUDE")!) { WorkingDirectory = runDir, RedirectStandardOutput = true, RedirectStandardError = true, RedirectStandardInput = true, UseShellExecute = false, CreateNoWindow = true };
+        foreach (var x in cliArgs) psi.ArgumentList.Add(x);
+        psi.ArgumentList.Add("--allowedTools"); psi.ArgumentList.Add(Trendo.Core.TrendoMcp.AllowedTools); psi.ArgumentList.Add("--mcp-config"); psi.ArgumentList.Add(cfg);
+        using var proc = System.Diagnostics.Process.Start(psi)!; proc.StandardInput.Close();
+        using var log = new StreamWriter(Path.Combine(runDir, "lauf.jsonl"));
+        proc.OutputDataReceived += (_, e) => { if (e.Data is { } l) lock (log) log.WriteLine(l); };
+        proc.ErrorDataReceived += (_, e) => { if (e.Data is { } l) lock (log) log.WriteLine("STDERR " + l); };
+        proc.BeginOutputReadLine(); proc.BeginErrorReadLine();
+        R11Pump(() => proc.HasExited, 780);
+        if (!proc.HasExited) proc.Kill(true);
+        Console.WriteLine("CLAUDE_EXIT " + (proc.HasExited ? proc.ExitCode : -1));
+        if (win.ProgramActive(page) is { } finalDoc) File.WriteAllText(Path.Combine(runDir, "dokument.json"), finalDoc.Data.ToJsonString());
+        R11Pump(() => false, 1);
+    }
+    else
     if (r11 == "statik") { typeof(MainWindow).GetField("_frame3d", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.SetValue(win, true); win.ProgramNew("technik", "rahmen"); win.Show("technik"); R11Pump(() => false, 1); }
     else
     if (r11 == "fraesen") { typeof(MainWindow).GetField("_cncStock", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.SetValue(win, true); win.ProgramNew("cnc", "leer"); win.Show("cnc"); R11Pump(() => false, 1); }

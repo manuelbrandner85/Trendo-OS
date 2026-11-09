@@ -165,6 +165,13 @@ public static partial class ClaudeCode
         }
     }
 
+    static string TrendoToolDetail(JsonObject inp)
+    {
+        foreach (var key in new[] { "ziel", "name", "programm", "pfad", "format" })
+            if (inp[key]?.GetValueKind() == System.Text.Json.JsonValueKind.String) return " „" + inp[key]!.GetValue<string>() + "“";
+        return "";
+    }
+
     static Ev? ToolEvent(string name, JsonObject inp, string projectDir)
     {
         string? Rel(string? p)
@@ -196,6 +203,7 @@ public static partial class ClaudeCode
             {
                 var parts = mcpName.Split("__", 3); var server = parts.Length > 1 ? parts[1] : "Connector"; var tool = parts.Length > 2 ? parts[2] : "";
                 server = server.StartsWith("claude_ai_", StringComparison.Ordinal) ? server["claude_ai_".Length..].Replace('_', ' ') : server;
+                if (server == "trendo") return new Tool(name, "Im Programm: " + tool.Replace('_', ' ') + TrendoToolDetail(inp), null, null, null, false, "Programm", tool);
                 return new Tool(name, $"Connector {server}: {tool.Replace('_', ' ')}", null, null, null, false, "Connector", server);
             }
             default: return new Tool(name, $"nutzt {name}", file, null, null, false);

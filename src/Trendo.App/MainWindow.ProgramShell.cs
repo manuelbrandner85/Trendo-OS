@@ -112,6 +112,8 @@ public partial class MainWindow
             var dir = WorkFolder(spec.Folder); var stem = DevStudio.SafeName(d.Title); target = Path.Combine(dir, stem + ProgramDocument.Extension);
             for (var n = 2; File.Exists(target); n++) target = Path.Combine(dir, $"{stem} ({n}){ProgramDocument.Extension}");
         }
+        else if (!Path.IsPathRooted(target)) // nur ein Name: neben das Dokument, sonst in den Ordner des Programms, nie ins Arbeitsverzeichnis des Prozesses
+            target = Path.Combine(d.Path is { } current && Path.IsPathRooted(current) ? Path.GetDirectoryName(current)! : WorkFolder(spec.Folder), target);
         d.Save(target); ProgRecent.Add(spec.Studio, d.Path!);
         _core.Audit.Append(Principal.LocalOwner.Name, "program.save", $"{spec.Studio} {Path.GetFileName(d.Path)}");
         _progMsg[key] = "Gespeichert: " + d.Path; return d.Path!;

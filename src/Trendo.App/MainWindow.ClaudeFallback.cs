@@ -62,8 +62,12 @@ public partial class MainWindow
         foreach (var call in ClaudeTools.Parse(answer))
         {
             var (ok, msg) = await KiToolRun(call.Kind, call.Input, folder, call.File, DraftRoot(chatId));
-            if (ok && _chatUis.TryGetValue(dock, out var ui)) ui.Drafts.Add(new ClaudeDraft(call.Kind, call.Input, call.File, System.IO.Path.Combine(DraftRoot(chatId), call.File.Replace('/', System.IO.Path.DirectorySeparatorChar)), folder, chatId));
-            steps.Add(new ClaudeChats.Step(ok ? $"{ClaudeTools.Kinds[call.Kind].Label}: {call.File} – Entwurf wartet auf deine Freigabe" : msg, false, !ok));
+            if (ok && _chatUis.TryGetValue(dock, out var ui))
+            {
+                ui.Drafts.Add(new ClaudeDraft(call.Kind, call.Input, call.File, System.IO.Path.Combine(DraftRoot(chatId), call.File.Replace('/', System.IO.Path.DirectorySeparatorChar)), folder, chatId));
+                if (ClaudeNoClicks) await ClaudeDraftDecide(ui.Drafts.Count - 1, "ok");
+            }
+            steps.Add(new ClaudeChats.Step(ok ? $"{ClaudeTools.Kinds[call.Kind].Label}: {call.File}" + (ClaudeNoClicks ? "" : " – Entwurf wartet auf deine Freigabe") : msg, false, !ok));
         }
         return steps;
     }
