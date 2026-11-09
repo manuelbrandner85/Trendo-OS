@@ -127,18 +127,27 @@ function Viewer() {
 // Welche Stelle eines Bausteins welches Feld ist – Text wird über dieselbe Aktion „element_aendern“ gespeichert, die auch die KI nutzt.
 const TEXT_FELDER = { Kopfbereich: { H1: "title", P: "sub", A: "cta" }, Ueberschrift: { H2: "text", H3: "text" }, Text: { P: "text" }, Knopf: { A: "label" } };
 
-// Zeichnet die Seite mit denselben Bausteinen, aber jeder Baustein ist anklickbar.
-function selectableConfig(selected, toggle) {
-  const components = {};
-  for (const [name, c] of Object.entries(config.components))
-    components[name] = { ...c, render: (p) => (
-      <div className={"t-sel" + (selected.includes(p.id) ? " t-sel-on" : "")} data-tid={p.id} data-typ={name}
-        onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (!e.target.isContentEditable) toggle(p.id); }}>{c.render(p)}</div>) };
-  return { ...config, components };
+// Die Auswahl kommt über den Kontext: Die Baustein-Konfiguration bleibt dieselbe, sonst ersetzt React bei jedem Klick die Elemente und ein Doppelklick träfe ins Leere.
+const SelCtx = React.createContext({ selected: [], toggle: () => {} });
+const pendingToggles = new Map(); // Je Baustein: Ein Einzelklick wählt erst aus, wenn kein zweiter Klick folgt
+
+function SelBox({ id, typ, children }) {
+  const { selected, toggle } = React.useContext(SelCtx);
+  const onClick = (e) => {
+    e.preventDefault(); e.stopPropagation();
+    if (e.target.isContentEditable || e.detail > 1) return;
+    clearTimeout(pendingToggles.get(id));
+    pendingToggles.set(id, setTimeout(() => { pendingToggles.delete(id); toggle(id); }, 240));
+  };
+  return <div className={"t-sel" + (selected.includes(id) ? " t-sel-on" : "")} data-tid={id} data-typ={typ} onClick={onClick}>{children}</div>;
 }
+
+const selectableConfig = { ...config, components: Object.fromEntries(Object.entries(config.components).map(([name, c]) =>
+  [name, { ...c, render: (p) => <SelBox id={p.id} typ={name}>{c.render(p)}</SelBox> }])) };
 
 function startTextEdit(e) {
   const el = e.target; const host = el.closest?.("[data-tid]"); if (!host) return;
+  clearTimeout(pendingToggles.get(host.dataset.tid)); pendingToggles.delete(host.dataset.tid);
   const feld = TEXT_FELDER[host.dataset.typ]?.[el.tagName]; if (!feld) return;
   e.preventDefault(); e.stopPropagation();
   const before = el.textContent; el.contentEditable = "plaintext-only"; el.focus();
@@ -153,12 +162,13 @@ function startTextEdit(e) {
 }
 
 function Selectable({ data, selected, setSelected, onBack }) {
-  const toggle = (id) => setSelected(selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id]);
+  const toggle = (id) => setSelected((now) => now.includes(id) ? now.filter((x) => x !== id) : [...now, id]);
+  const ctx = useMemo(() => ({ selected, toggle }), [selected]);
   return (
     <div className="t-preview" onDoubleClick={startTextEdit}>
       <div className="t-seltools"><span>{selected.length ? `${selected.length} ausgewählt` : "Klicken wählt aus · Doppelklick ändert Text"}</span>
         {selected.length > 0 && <button className="t-tool" onClick={() => setSelected([])}>Auswahl aufheben</button>}<button className="t-tool" onClick={onBack}>← Zurück zum Editor</button></div>
-      <Render config={selectableConfig(selected, toggle)} data={data} />
+      <SelCtx.Provider value={ctx}><Render config={selectableConfig} data={data} /></SelCtx.Provider>
     </div>
   );
 }
@@ -172,7 +182,7 @@ function App() {
   const draftTimer = useRef(0);
   useEffect(() => {
     // nur einmal: Trendo antwortet auf „bereit“ mit der gespeicherten Seite (sonst Endlosschleife Laden → bereit → Laden)
-    window.trendoLoad = (json) => { const d = typeof json === "string" ? JSON.parse(json) : json; setData(d || empty); setKey((k) => k + 1); return true; };
+    window.trendoLoad = (json) => { clearTimeout(draftTimer.current); const d = typeof json === "string" ? JSON.parse(json) : json; setData(d || empty); setKey((k) => k + 1); return true; };
     window.trendoData = () => JSON.stringify(dataRef.current);
     window.trendoVorschau = (json) => { setKiPreview(json ? (typeof json === "string" ? JSON.parse(json) : json) : null); return true; };
     window.trendoAuswahl = (ids) => { setSelected(ids || []); return true; };

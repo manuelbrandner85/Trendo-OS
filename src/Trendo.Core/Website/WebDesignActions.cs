@@ -64,6 +64,8 @@ public static partial class WebDesignActions
     };
 
     public static IReadOnlyCollection<string> ComponentNames => Bausteine.Keys;
+    /// <summary>Feldnamen eines Bausteins (für den Abgleich mit dem Editor).</summary>
+    public static IReadOnlyCollection<string> ComponentFields(string name) => Bausteine[name].Felder.Keys;
 
     /// <summary>Bausteine mit ihren Feldern als Text für die KI.</summary>
     public static string ComponentsText() => string.Join("\n", Bausteine.Select(b =>
@@ -88,6 +90,7 @@ public static partial class WebDesignActions
         if (text is null) return (null, "Die KI hat keinen Aktionsplan geliefert.");
         try { return JsonNode.Parse(text) is JsonObject o && o["aktionen"] is JsonArray ? (o, null) : (null, "Die KI hat keinen Aktionsplan geliefert."); }
         catch (JsonException) { return (null, "Der Aktionsplan der KI ist kein gültiges JSON."); }
+        catch (ArgumentException) { return (null, "Der Aktionsplan ist fehlerhaft (zum Beispiel doppelte Angaben)."); }
     }
 
     /// <summary>Plan aus einer KI-Antwort oder als JSON-Text prüfen und auf eine Kopie der Seite anwenden.</summary>
@@ -99,6 +102,12 @@ public static partial class WebDesignActions
 
     /// <summary>Führt alle Aktionen auf einer Kopie aus. Die erste ungültige Aktion verwirft den ganzen Plan.</summary>
     public static WebPlanResult Apply(string pageJson, JsonObject plan, WebPlanScope? scope = null)
+    {
+        try { return ApplyPlan(pageJson, plan, scope); }
+        catch (Exception e) when (e is ArgumentException or InvalidOperationException or JsonException or FormatException) { return WebPlanResult.Fail("Der Aktionsplan ist fehlerhaft (zum Beispiel doppelte Angaben)."); }
+    }
+
+    static WebPlanResult ApplyPlan(string pageJson, JsonObject plan, WebPlanScope? scope)
     {
         foreach (var kv in plan) if (kv.Key != "aktionen") return WebPlanResult.Fail($"Unbekannte Angabe im Plan: „{kv.Key}“.");
         var (valid, verr) = WebDesign.Validate(pageJson); if (valid is null) return WebPlanResult.Fail(verr!);
@@ -151,7 +160,6 @@ public static partial class WebDesignActions
     static string NeedS(JsonNode? n, string what) => S(n) is { Length: > 0 } s ? (s.Length > MaxTextChars ? throw new PlanError($"„{what}“ ist zu lang.") : s) : throw new PlanError($"„{what}“ muss ein nicht leerer Text sein.");
     [GeneratedRegex("^[A-Za-z0-9_-]{1,64}$")] private static partial Regex IdPattern();
     [GeneratedRegex("^#[0-9a-fA-F]{6}$")] private static partial Regex HexPattern();
-    [GeneratedRegex(@"^[a-zA-Z][a-zA-Z0-9+.-]*:")] private static partial Regex HasScheme();
 
     /// <summary>Alle Baustein-Listen der Seite: Hauptliste, Slots und ältere Puck-Bereiche.</summary>
     static IEnumerable<JsonArray> Lists(JsonObject doc)
@@ -212,16 +220,15 @@ public static partial class WebDesignActions
     static string Link(string feld, string v)
     {
         var s = v.Trim();
-        if (HasScheme().IsMatch(s) && !s.StartsWith("https:", StringComparison.OrdinalIgnoreCase) && !s.StartsWith("http:", StringComparison.OrdinalIgnoreCase) && !s.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase))
-            throw new PlanError($"„{feld}“: diese Linkart ist nicht erlaubt.");
+        if (s.Any(char.IsControl) || !WebDesign.IsAllowedUrl(s)) throw new PlanError($"„{feld}“: diese Linkart ist nicht erlaubt.");
         return s;
     }
 
-    /// <summary>Bilder müssen im Projekt liegen: keine Adressen und kein Weg nach oben, sonst läuft die Seite nicht offline.</summary>
+    /// <summary>Bilder müssen als Bilddatei im Projekt liegen: keine Adressen, kein Weg nach oben, keine anderen Dateiarten, sonst läuft die Seite nicht offline oder fremde Dateien gelangen in den Export. Leer heißt: noch kein Bild.</summary>
     static string Image(string feld, string v)
     {
         var s = v.Trim().Replace('\\', '/');
-        if (HasScheme().IsMatch(s) || s.StartsWith("//", StringComparison.Ordinal) || s.StartsWith('/') || s.Split('/').Contains("..")) throw new PlanError($"„{feld}“: das Bild muss als Datei im Projekt liegen.");
+        if (s.Length > 0 && !WebDesign.IsSafeImagePath(s)) throw new PlanError($"„{feld}“: das Bild muss als Bilddatei (PNG, JPG, WebP, GIF, AVIF) im Projekt liegen.");
         return s;
     }
 

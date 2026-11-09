@@ -23,7 +23,7 @@ public partial class MainWindow
     public static (bool Claude, bool Local)? WebDesignKiStateOverride { get; set; }
 
     string _wdAiText = "", _wdAiImage = "", _wdStandName = "", _wdVariantName = "", _wdKiWho = "", _wdLabel = "";
-    bool _wdAiBusy; string? _wdDraft, _wdBase, _wdLastAuto, _wdVariant, _wdTempImage;
+    bool _wdAiBusy; string? _wdDraft, _wdBase, _wdLastAuto, _wdVariant, _wdPendingVariant, _wdTempImage;
     WebPlanResult? _wdPending; WebPlanScope? _wdPendingScope; WebDesignCheck.LoopResult? _wdLoop; WebAuditResult? _wdAudit;
     List<string> _wdSelection = [];
     readonly Dictionary<string, string> _wdVariantImages = [];
@@ -37,8 +37,31 @@ public partial class MainWindow
 
     /// <summary>Was gerade gilt: ungespeicherter Entwurf aus dem Editor, sonst die gespeicherte Seite oder Variante.</summary>
     string WebDesignCurrent() => _wdDraft ?? WebDesignStates.Read(WebDesignDir, _wdVariant);
-    void WebDesignReload(string json) => _wdView?.InvokeScript("window.trendoLoad(" + json + ")");
-    void WebDesignShowPreview(string? json) => _wdView?.InvokeScript("window.trendoVorschau(" + (json ?? "null") + ")");
+    // Daten gehen als JSON-Text ins Skript, nie als Skriptcode
+    static string JsArg(string? s) => System.Text.Json.JsonSerializer.Serialize(s);
+    void WebDesignReload(string json) => _wdView?.InvokeScript("window.trendoLoad(" + JsArg(json) + ")");
+    void WebDesignShowPreview(string? json) => _wdView?.InvokeScript("window.trendoVorschau(" + JsArg(json) + ")");
+    void WebDesignClearSelection() { _wdSelection = []; _wdView?.InvokeScript("window.trendoAuswahl([])"); }
+
+    /// <summary>Solange die KI arbeitet, bleibt das Ziel fest. Liefert false und einen Hinweis.</summary>
+    bool WebDesignIdle()
+    {
+        if (!_wdAiBusy) return true;
+        _wdNote = "Die KI arbeitet noch. Bitte warte, bis sie fertig ist."; Show("dev"); return false;
+    }
+
+    void WebDesignDropPending()
+    {
+        if (_wdPending is null) return;
+        _wdPending = null; _wdLoop = null; _wdAudit = null; WebDesignShowPreview(null);
+    }
+
+    /// <summary>Ungespeicherter Entwurf wird vor jedem Wechsel als automatischer Stand gesichert, damit er nicht verloren geht.</summary>
+    void WebDesignKeepDraft(string label)
+    {
+        if (_wdDraft is { } d && d != WebDesignStates.Read(WebDesignDir, _wdVariant)) WebDesignStates.SaveContent(WebDesignDir, label, d, true, _wdVariant);
+        _wdDraft = null;
+    }
 
     async Task<(bool Claude, bool Local, IReadOnlyList<IKiBackend> Backends)> WebKiState()
     {
@@ -102,20 +125,27 @@ public partial class MainWindow
     public async Task WebDesignAiRun(string wish, string? image = null)
     {
         if (_wdAiBusy || string.IsNullOrWhiteSpace(wish)) return;
-        _wdAiText = wish; image = string.IsNullOrWhiteSpace(image) ? null : image.Trim().Trim('"');
-        var (claude, local, backends) = await WebKiState();
-        var vision = WebDesignVisionOverride is not null || (image is not null && await WebVisionModel() is not null);
-        var choice = WebDesignKi.Choose(image is null ? WebDesignKi.Tasks["seite_aus_text"] : WebDesignKi.Tasks["seite_aus_bild"], claude, local, vision);
-        if (!choice.Ok) { _wdNote = choice.Note; _wdKiWho = ""; Show("dev"); return; }
-        if (image is not null && (!File.Exists(image) || Path.GetExtension(image).ToLowerInvariant() is not (".png" or ".jpg" or ".jpeg" or ".webp"))) { _wdNote = "Bitte ein vorhandenes Bild (PNG, JPG oder WebP) angeben."; Show("dev"); return; }
-        var task = "neue seite layout gestaltung responsiv " + wish;
-        await WebDesignAiPlan("Neue Seite", task, async () =>
+        _wdAiBusy = true; var handed = false; // sofort belegt: kein Doppelstart, solange noch geprüft wird, welche KI da ist
+        try
         {
-            string? note = null;
-            if (image is not null) { note = await WebImageNote(image, claude); if (note is null) return null; }
-            try { return await WebKiAsk(WebDesignKi.Instructions(WebSkills(task, claude)), WebDesignKi.NewPagePrompt(wish, note), backends); }
-            finally { if (_wdTempImage is { } t) { try { File.Delete(t); } catch (IOException) { } _wdTempImage = null; } } // die Kopie für Claude bleibt nicht liegen
-        }, WebDesign.Empty(), null, backends, claude);
+            _wdAiText = wish; image = string.IsNullOrWhiteSpace(image) ? null : image.Trim().Trim('"');
+            var (claude, local, backends) = await WebKiState();
+            var vision = WebDesignVisionOverride is not null || (image is not null && await WebVisionModel() is not null);
+            var choice = WebDesignKi.Choose(image is null ? WebDesignKi.Tasks["seite_aus_text"] : WebDesignKi.Tasks["seite_aus_bild"], claude, local, vision);
+            if (!choice.Ok) { _wdNote = choice.Note; _wdKiWho = ""; return; }
+            if (image is not null && (!File.Exists(image) || Path.GetExtension(image).ToLowerInvariant() is not (".png" or ".jpg" or ".jpeg" or ".webp"))) { _wdNote = "Bitte ein vorhandenes Bild (PNG, JPG oder WebP) angeben."; return; }
+            var task = "neue seite layout gestaltung responsiv " + wish;
+            handed = true;
+            await WebDesignAiPlan("Neue Seite", task, async () =>
+            {
+                string? note = null;
+                if (image is not null) { note = await WebImageNote(image, claude); if (note is null) return null; }
+                var ask = _wdTempImage is null ? backends : backends.Where(b => b is IMainKiBackend).ToList(); // nur Claude kann die Bilddatei lesen; eine lokale Text-KI bekäme den Hinweis ohne Bild
+                try { return await WebKiAsk(WebDesignKi.Instructions(WebSkills(task, claude)), WebDesignKi.NewPagePrompt(wish, note), ask); }
+                finally { if (_wdTempImage is { } t) { try { File.Delete(t); } catch (IOException) { } _wdTempImage = null; } } // die Kopie für Claude bleibt nicht liegen
+            }, WebDesign.Empty(), null, backends, claude);
+        }
+        finally { if (!handed) { _wdAiBusy = false; Show("dev"); } }
     }
 
     /// <summary>K1: Nur die Auswahl per Satz ändern, mit Vorschau und einem Rückgängig-Schritt.</summary>
@@ -124,19 +154,27 @@ public partial class MainWindow
         if (_wdAiBusy || string.IsNullOrWhiteSpace(wish)) return;
         _wdAiText = wish;
         if (_wdSelection.Count == 0) { _wdNote = "Wähle zuerst mit „Auswählen“ im Editor aus, was sich ändern soll."; Show("dev"); return; }
-        var (claude, local, backends) = await WebKiState();
-        var choice = WebDesignKi.Choose(WebDesignKi.Tasks["auswahl_aendern"], claude, local, false);
-        if (!choice.Ok) { _wdNote = choice.Note; Show("dev"); return; }
-        var current = WebDesignCurrent(); var scope = new WebPlanScope(_wdSelection.ToHashSet());
-        await WebDesignAiPlan($"{_wdSelection.Count} Bausteine ändern", wish, () => WebKiAsk(WebDesignKi.Instructions(WebSkills(wish, claude), scope), WebDesignKi.SelectionPrompt(wish, current, _wdSelection), backends)!, current, scope, backends, claude);
+        _wdAiBusy = true; var handed = false;
+        try
+        {
+            var (claude, local, backends) = await WebKiState();
+            var choice = WebDesignKi.Choose(WebDesignKi.Tasks["auswahl_aendern"], claude, local, false);
+            if (!choice.Ok) { _wdNote = choice.Note; return; }
+            var current = WebDesignCurrent(); var scope = new WebPlanScope(_wdSelection.ToHashSet());
+            handed = true;
+            await WebDesignAiPlan($"{_wdSelection.Count} Bausteine ändern", wish, () => WebKiAsk(WebDesignKi.Instructions(WebSkills(wish, claude), scope), WebDesignKi.SelectionPrompt(wish, current, _wdSelection), backends)!, current, scope, backends, claude);
+        }
+        finally { if (!handed) { _wdAiBusy = false; Show("dev"); } }
     }
 
     /// <summary>Gemeinsamer Weg jeder KI-Änderung: Plan holen, prüfen, im Prüfkreislauf nachbessern, als Vorschau bereitstellen. Geschrieben wird erst beim Übernehmen.</summary>
     async Task WebDesignAiPlan(string label, string task, Func<Task<string?>> ask, string planBase, WebPlanScope? scope, IReadOnlyList<IKiBackend> backends, bool claude)
     {
-        _wdAiBusy = true; _wdPending = null; _wdLoop = null; _wdAudit = null; _wdNote = "Die KI arbeitet …"; Show("dev");
+        _wdAiBusy = true;
         try
         {
+            WebDesignDropPending(); _wdLoop = null; _wdAudit = null; _wdNote = "Die KI arbeitet …"; Show("dev");
+            var target = _wdVariant; var startBase = WebDesignCurrent();
             var answer = await ask();
             if (answer is null) return;
             _core.Audit.Append(Principal.LocalOwner.Name, "web.visuell.ki", label);
@@ -145,17 +183,21 @@ public partial class MainWindow
             WebAuditResult? audit = null;
             var loop = await WebDesignCheck.RunAsync(r.Json, async j => { audit = await WebDesignProbe(j); return audit.Findings; }, async (doc, errors) =>
             {
-                try { return await WebKiAsk(WebDesignKi.Instructions(WebSkills(task, claude), scope), WebDesignKi.RepairPrompt(doc, errors), backends); }
+                var ids = scope?.Ids.ToList();
+                var relevant = ids is null ? errors : errors.Where(e => ids.Any(i => e.Text.Contains(i, StringComparison.Ordinal))).ToList(); // bei einer Auswahl nur Fehler an der Auswahl nachbessern
+                if (relevant.Count == 0) return null;
+                try { return await WebKiAsk(WebDesignKi.Instructions(WebSkills(task, claude), scope), WebDesignKi.RepairPrompt(doc, relevant, ids), backends); }
                 catch (Exception e) when (e is InvalidOperationException or HttpRequestException or TaskCanceledException) { return null; }
             }, scope);
-            _wdBase = WebDesignCurrent(); _wdLabel = label; _wdPendingScope = scope; _wdLoop = loop; _wdAudit = audit;
+            if (_wdVariant != target || (scope is not null && WebDesignCurrent() != startBase)) { _wdNote = "Die Seite wurde geändert, während die KI gearbeitet hat. Der Vorschlag wurde verworfen, nichts wurde geändert."; return; }
+            _wdBase = WebDesignCurrent(); _wdLabel = label; _wdPendingScope = scope; _wdPendingVariant = target; _wdLoop = loop; _wdAudit = audit;
             var changes = r.Changes.Concat(loop.Rounds.SelectMany(x => x.Repairs)).ToList();
             _wdPending = r with { Json = loop.Json, Changes = changes };
             if (await WebDesignVisionHint(audit) is { } hint) _wdAudit = audit! with { Note = (audit!.Note + " " + hint).Trim() };
             WebDesignShowPreview(loop.Json);
             _wdNote = loop.Clean ? "Vorschau fertig. Prüfen und übernehmen." : loop.LimitReached ? $"Vorschau fertig. Nach {loop.Repairs} Nachbesserungen sind noch Fehler offen." : "Vorschau fertig, es sind noch Fehler offen.";
         }
-        catch (Exception e) when (e is InvalidOperationException or HttpRequestException or TaskCanceledException or IOException) { _wdNote = e.Message; }
+        catch (Exception e) when (e is InvalidOperationException or HttpRequestException or TaskCanceledException or IOException or ArgumentException or UnauthorizedAccessException) { _wdNote = e.Message; }
         finally { _wdAiBusy = false; Show("dev"); }
     }
 
@@ -176,24 +218,28 @@ public partial class MainWindow
     public void WebDesignAccept()
     {
         if (_wdPending is not { Json: { } json } p || _wdBase is null) return;
+        if (!WebDesignIdle()) return;
+        if (_wdPendingVariant != _wdVariant) { WebDesignDropPending(); _wdNote = "Der Vorschlag gehörte zu einer anderen Fassung und wurde verworfen."; Show("dev"); return; }
         var (auto, err) = WebDesignActions.Commit(WebDesignDir, p, _wdBase, _wdLabel, _wdVariant);
         if (auto is null) { _wdNote = err ?? "Übernehmen ging nicht."; Show("dev"); return; }
-        _wdLastAuto = auto; _wdDraft = null; _wdPending = null; _wdSelection = [];
+        _wdLastAuto = auto; _wdDraft = null; _wdPending = null; WebDesignClearSelection();
         _core.Audit.Append(Principal.LocalOwner.Name, "web.visuell.ki.uebernehmen", _wdLabel);
         WebDesignShowPreview(null); WebDesignReload(json);
         _wdNote = "Übernommen. Du kannst weiter im Editor ändern oder die KI-Änderung rückgängig machen.";
         Show("dev");
     }
 
-    public void WebDesignDiscard() { _wdPending = null; _wdLoop = null; _wdAudit = null; WebDesignShowPreview(null); _wdNote = "Verworfen, die Seite ist unverändert."; Show("dev"); }
+    public void WebDesignDiscard() { WebDesignDropPending(); _wdNote = "Verworfen, die Seite ist unverändert."; Show("dev"); }
 
     /// <summary>Letzte KI-Änderung in einem Schritt zurücknehmen.</summary>
     public void WebDesignUndo()
     {
-        if (_wdLastAuto is not { } id) return;
+        if (_wdLastAuto is not { } id || !WebDesignIdle()) return;
+        WebDesignDropPending(); WebDesignKeepDraft("Entwurf vor Rückgängig");
         var err = WebDesignStates.Restore(WebDesignDir, id);
         _wdNote = err ?? "KI-Änderung rückgängig gemacht.";
-        if (err is null) { _wdLastAuto = null; _wdDraft = null; WebDesignReload(WebDesignStates.Read(WebDesignDir, _wdVariant)); }
+        _core.Audit.Append(Principal.LocalOwner.Name, "web.visuell.rueckgaengig", err ?? "ok");
+        if (err is null) { _wdLastAuto = null; WebDesignReload(WebDesignStates.Read(WebDesignDir, _wdVariant)); }
         Show("dev");
     }
 
@@ -204,6 +250,7 @@ public partial class MainWindow
         var err = r.Error ?? WebDesignStates.Write(WebDesignDir, r.Json!, _wdVariant);
         if (err is null) { foreach (var n in r.States) WebDesignStates.SaveContent(WebDesignDir, n, r.Json!, false, _wdVariant); _wdDraft = null; WebDesignReload(r.Json!); }
         _wdNote = err ?? "Gespeichert: " + string.Join(", ", r.Changes);
+        _core.Audit.Append(Principal.LocalOwner.Name, "web.visuell.aktion", err ?? "ok");
         Avalonia.Threading.Dispatcher.UIThread.Post(() => Show("dev"));
     }
 
@@ -211,15 +258,16 @@ public partial class MainWindow
     public async Task WebDesignCheckNow()
     {
         if (_wdAiBusy) return;
-        _wdAiBusy = true; _wdNote = "Die Seite wird geprüft …"; Show("dev");
+        _wdAiBusy = true;
         try
         {
+            _wdNote = "Die Seite wird geprüft …"; Show("dev");
             WebAuditResult? audit = null;
             _wdLoop = await WebDesignCheck.RunAsync(WebDesignStates.Read(WebDesignDir, _wdVariant), async j => { audit = await WebDesignProbe(j); return audit.Findings; });
             _wdAudit = audit;
             _wdNote = _wdLoop.Clean ? "Prüfung ohne Fehler." : "Die Prüfung hat Fehler gefunden.";
         }
-        catch (Exception e) when (e is InvalidOperationException or IOException or TaskCanceledException) { _wdNote = e.Message; }
+        catch (Exception e) when (e is InvalidOperationException or IOException or TaskCanceledException or UnauthorizedAccessException or ArgumentException) { _wdNote = e.Message; }
         finally { _wdAiBusy = false; Show("dev"); }
     }
 
@@ -233,9 +281,12 @@ public partial class MainWindow
 
     public void WebDesignStandRestore(string id)
     {
+        if (!WebDesignIdle()) return;
+        WebDesignDropPending(); WebDesignKeepDraft("Entwurf vor Wiederherstellen");
         var err = WebDesignStates.Restore(WebDesignDir, id);
         _wdNote = err ?? "Stand wiederhergestellt. Der vorige Inhalt liegt als automatischer Stand bereit.";
-        if (err is null) { _wdDraft = null; WebDesignReload(WebDesignStates.Read(WebDesignDir, _wdVariant)); }
+        _core.Audit.Append(Principal.LocalOwner.Name, "web.visuell.stand.wiederherstellen", err ?? "ok");
+        if (err is null) WebDesignReload(WebDesignStates.Read(WebDesignDir, _wdVariant));
         Show("dev");
     }
 
@@ -248,7 +299,9 @@ public partial class MainWindow
     /// <summary>Variante im Editor öffnen (null: zurück zur Seite). Ab jetzt wirken Speichern, KI und Stände auf diese Fassung.</summary>
     public void WebDesignVariantOpen(string? id)
     {
-        _wdVariant = id; _wdDraft = null; _wdSelection = [];
+        if (!WebDesignIdle()) return;
+        WebDesignDropPending(); WebDesignKeepDraft("Entwurf vor Wechsel der Fassung");
+        _wdVariant = id; WebDesignClearSelection();
         WebDesignReload(WebDesignStates.Read(WebDesignDir, id));
         _wdNote = id is null ? "Du bearbeitest wieder die Seite." : "Du bearbeitest jetzt eine Variante. Die Seite bleibt unverändert.";
         Show("dev");
@@ -256,9 +309,12 @@ public partial class MainWindow
 
     public void WebDesignVariantAdopt(string id)
     {
+        if (!WebDesignIdle()) return;
+        WebDesignDropPending(); WebDesignKeepDraft("Entwurf vor Übernahme einer Variante");
         var err = WebDesignStates.AdoptVariant(WebDesignDir, id);
         _wdNote = err ?? "Variante übernommen. Die bisherige Seite liegt als automatischer Stand bereit.";
-        if (err is null) { _wdVariant = null; _wdDraft = null; WebDesignReload(WebDesignStates.Read(WebDesignDir)); }
+        _core.Audit.Append(Principal.LocalOwner.Name, "web.visuell.variante.uebernehmen", err ?? "ok");
+        if (err is null) { _wdVariant = null; WebDesignClearSelection(); WebDesignReload(WebDesignStates.Read(WebDesignDir)); }
         Show("dev");
     }
 
@@ -278,6 +334,7 @@ public partial class MainWindow
                 if ((await WebsitePreview.CaptureAsync(dir, 1280, 800, png)).Ok) _wdVariantImages[v.Id] = png;
             }
             catch (Exception e) when (e is InvalidOperationException or TimeoutException or IOException or OperationCanceledException) { _wdNote = e.Message; }
+        try { if (Directory.Exists(site)) Directory.Delete(site, true); } catch (IOException) { /* Browser hält die Datei noch */ } catch (UnauthorizedAccessException) { }
         if (_wdNote.StartsWith("Bilder der", StringComparison.Ordinal)) _wdNote = "Bilder aktualisiert.";
         Show("dev");
     }
@@ -331,7 +388,8 @@ public partial class MainWindow
         {
             var box = new StackPanel { Name = "web-ki-check-result", Spacing = 3 };
             var errors = loop.Findings.Where(f => f.Level == "Fehler").ToList();
-            box.Children.Add(P(loop.Clean ? $"Prüfung auf dem Export: keine Fehler{(loop.Repairs > 0 ? $" nach {loop.Repairs} Nachbesserung(en)" : "")}." : $"Prüfung auf dem Export: {errors.Count} Fehler offen{(loop.LimitReached ? $", Obergrenze von {WebDesignCheck.MaxRepairs} Nachbesserungen erreicht" : "")}.", loop.Clean ? Text : Brush.Parse("#F5A524"), 12.5));
+            var what = _wdAudit is { Images.Count: 0 } ? "Prüfung nur der Editor-Daten, nicht vollständig" : "Prüfung auf dem Export";
+            box.Children.Add(P(loop.Clean ? $"{what}: keine Fehler{(loop.Repairs > 0 ? $" nach {loop.Repairs} Nachbesserung(en)" : "")}." : $"{what}: {errors.Count} Fehler offen{(loop.LimitReached ? $", Obergrenze von {WebDesignCheck.MaxRepairs} Nachbesserungen erreicht" : "")}.", loop.Clean ? Text : Brush.Parse("#F5A524"), 12.5));
             foreach (var f in errors.Take(10)) box.Children.Add(P("✗ " + f.Area + ": " + f.Text, Muted, 12));
             foreach (var f in loop.Findings.Where(f => f.Level == "Hinweis").Take(6)) box.Children.Add(P("• " + f.Area + ": " + f.Text, Muted, 12));
             if (_wdAudit is { Note.Length: > 0 } a) box.Children.Add(P(a.Note, Muted, 12));
@@ -348,7 +406,8 @@ public partial class MainWindow
         standName.TextChanged += (_, _) => _wdStandName = standName.Text ?? "";
         var states = new StackPanel { Name = "web-staende", Spacing = 3, Children = { new TextBlock { Text = "Stände", FontSize = 13, FontWeight = FontWeight.SemiBold, Foreground = Text }, new WrapPanel { Children = { standName, new Border { Width = 8 }, Act("web-stand-save", "Stand speichern", () => WebDesignStandSave(standName.Text ?? "")) } } } };
         var i = 0;
-        foreach (var s in WebDesignStates.List(WebDesignDir).Take(8))
+        var all = WebDesignStates.List(WebDesignDir);
+        foreach (var s in all.Where(x => !x.Auto).Concat(all.Where(x => x.Auto).Take(8)).OrderByDescending(x => x.Id, StringComparer.Ordinal))
         {
             var id = s.Id;
             states.Children.Add(Row(P($"{(s.Auto ? "⟲ " : "★ ")}{s.Name} · {s.Zeit:dd.MM. HH:mm}{(s.Variante is null ? "" : " · Variante")}", Muted, 12), Act($"web-stand-restore-{i++}", "Wiederherstellen", () => WebDesignStandRestore(id))));

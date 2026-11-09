@@ -94,15 +94,24 @@ public class WebDesignKi_Ui : IDisposable
         public Task<string> ChatAsync(string model, IReadOnlyList<KiMessage> messages, CancellationToken ct = default) => throw new InvalidOperationException("nicht verbunden");
     }
 
+    sealed class PaidApi : IRemoteKiBackend
+    {
+        public int Calls;
+        public string Name => "Bezahl-API"; public string BaseUrl => "https://api.example";
+        public Task<bool> IsUpAsync(CancellationToken ct = default) => Task.FromResult(true);
+        public Task<IReadOnlyList<string>> ModelsAsync(CancellationToken ct = default) => Task.FromResult<IReadOnlyList<string>>(["x"]);
+        public Task<string> ChatAsync(string model, IReadOnlyList<KiMessage> messages, CancellationToken ct = default) { Calls++; return Task.FromResult("nein"); }
+    }
+
     [AvaloniaFact(DisplayName = "A7: Ohne Claude läuft die Textaufgabe lokal und die Oberfläche nennt die KI; ohne jede KI ein klarer Hinweis")]
     public async Task A7_local_and_none()
     {
-        var (w, _, _) = Ui.Open();
-        w.KiBackendsOverride = () => [new DownClaude(), new LocalKi()];
+        var (w, _, _) = Ui.Open(); var api = new PaidApi();
+        w.KiBackendsOverride = () => [new DownClaude(), api, new LocalKi()];
         w.Show("dev"); Pump();
         Assert.Contains("KI auf diesem PC", w.Find<TextBlock>("web-ki-who").Text);
         await w.WebDesignAiRun("Eine Seite"); Pump();
-        Assert.Contains(WebDesignKi.LocalLabel, w.WebDesignKiWho); Assert.Contains("klein", w.WebDesignKiWho); Assert.NotNull(w.WebDesignPending);
+        Assert.Contains(WebDesignKi.LocalLabel, w.WebDesignKiWho); Assert.Contains("klein", w.WebDesignKiWho); Assert.NotNull(w.WebDesignPending); Assert.Equal(0, api.Calls);
         w.KiBackendsOverride = () => [new DownClaude()];
         w.WebDesignDiscard();
         await w.WebDesignAiRun("Eine Seite"); Pump();
@@ -199,6 +208,80 @@ public class WebDesignKi_Ui : IDisposable
         Assert.Contains("Variante", File.ReadAllText(PageFile(w))); Assert.Null(w.WebDesignVariant);
     }
 
+    [AvaloniaFact(DisplayName = "Kein Datenverlust: Wechsel der Fassung verwirft eine offene KI-Vorschau, die Variante bleibt unberührt")]
+    public async Task Preview_bound_to_target()
+    {
+        var (w, before) = await WithPage();
+        w.WebDesignVariantCreate("A"); Pump();
+        var id = WebDesignStates.Variants(w.WebDesignDir).Single().Id;
+        var variantBefore = WebDesignStates.VariantContent(w.WebDesignDir, id);
+        await w.WebDesignAiRun("Neue Fassung"); Pump();
+        Assert.NotNull(w.WebDesignPending);
+        w.WebDesignVariantOpen(id); Pump();
+        Assert.Null(w.WebDesignPending);
+        w.WebDesignAccept(); Pump();
+        Assert.Equal(variantBefore, WebDesignStates.VariantContent(w.WebDesignDir, id)); Assert.Equal(before, File.ReadAllText(PageFile(w)));
+
+        w.WebDesignVariantOpen(null); Pump();
+        await w.WebDesignAiRun("Neue Fassung"); Pump();
+        var named = WebDesignStates.SaveContent(w.WebDesignDir, "Alt", before).Stand!;
+        w.WebDesignStandRestore(named.Id); Pump();
+        Assert.Null(w.WebDesignPending); // Wiederherstellen macht die Vorschau hinfällig
+    }
+
+    [AvaloniaFact(DisplayName = "Kein Datenverlust: Solange die KI arbeitet, bleibt das Ziel fest; eine Änderung in der Zwischenzeit verwirft den Vorschlag für die Auswahl")]
+    public async Task Busy_keeps_target()
+    {
+        var (w, before) = await WithPage();
+        w.WebDesignVariantCreate("A"); Pump();
+        var id = WebDesignStates.Variants(w.WebDesignDir).Single().Id;
+        var gate = new TaskCompletionSource<string>();
+        MainWindow.WebDesignKiOverride = (_, _) => gate.Task;
+        w.WebDesignSetSelection("t1");
+        var run = w.WebDesignAiChange("Etwas"); Pump();
+        w.WebDesignVariantOpen(id); Pump();
+        Assert.Null(w.WebDesignVariant); Assert.Contains("arbeitet noch", w.WebDesignNote);
+        var second = 0;
+        MainWindow.WebDesignKiOverride = (_, _) => { second++; return gate.Task; };
+        await w.WebDesignAiChange("Doppelt"); Pump();
+        Assert.Equal(0, second); // kein Doppelstart
+        w.WebDesignMessage("{\"art\":\"entwurf\",\"daten\":" + before.Replace("Unsere Bohnen", "Zwischendurch") + "}"); Pump();
+        gate.SetResult("""{"aktionen":[{"aktion":"element_aendern","id":"t1","props":{"text":"KI"}}]}""");
+        await run; Pump();
+        Assert.Null(w.WebDesignPending); Assert.Contains("verworfen", w.WebDesignNote);
+    }
+
+    [AvaloniaFact(DisplayName = "Sperre löst sich: Auch wenn die Seite nicht lesbar ist, bleibt die KI nicht für immer blockiert")]
+    public async Task Busy_released_after_failure()
+    {
+        var (w, _) = await WithPage();
+        using (new FileStream(PageFile(w), FileMode.Open, FileAccess.Read, FileShare.None))
+        {
+            await w.WebDesignAiRun("Neue Fassung"); Pump();
+            Assert.DoesNotContain("arbeitet", w.WebDesignNote); Assert.Null(w.WebDesignPending);
+        }
+        await w.WebDesignAiRun("Neue Fassung"); Pump();
+        Assert.NotNull(w.WebDesignPending);
+    }
+
+    [AvaloniaFact(DisplayName = "Kein Datenverlust: Ungespeicherter Entwurf landet vor Wiederherstellen und Fassungswechsel in einem Stand; benannte Stände bleiben sichtbar")]
+    public async Task Draft_is_kept()
+    {
+        var (w, before) = await WithPage();
+        var named = WebDesignStates.SaveContent(w.WebDesignDir, "Mein Stand", before).Stand!;
+        w.WebDesignMessage("{\"art\":\"entwurf\",\"daten\":" + before.Replace("Unsere Bohnen", "Entwurf eins") + "}"); Pump();
+        w.WebDesignStandRestore(named.Id); Pump();
+        Assert.Contains(WebDesignStates.List(w.WebDesignDir), s => s.Auto && WebDesignStates.Content(w.WebDesignDir, s.Id)!.Contains("Entwurf eins"));
+        w.WebDesignVariantCreate("A"); Pump();
+        w.WebDesignMessage("{\"art\":\"entwurf\",\"daten\":" + before.Replace("Unsere Bohnen", "Entwurf zwei") + "}"); Pump();
+        w.WebDesignVariantOpen(WebDesignStates.Variants(w.WebDesignDir).Single().Id); Pump();
+        Assert.Contains(WebDesignStates.List(w.WebDesignDir), s => s.Auto && WebDesignStates.Content(w.WebDesignDir, s.Id)!.Contains("Entwurf zwei"));
+        w.WebDesignVariantOpen(null); Pump();
+        for (var i = 0; i < 12; i++) WebDesignStates.SaveContent(w.WebDesignDir, "Auto", before, true);
+        w.Show("dev"); Pump();
+        Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Mein Stand"));
+    }
+
     [AvaloniaFact(DisplayName = "A6: Eingebauter Fehler wird gemeldet und gezielt nachgebessert; die Obergrenze gilt; Bildbewertung ist nur ein Hinweis")]
     public async Task A6_loop_in_ui()
     {
@@ -250,9 +333,18 @@ public class WebDesignKi_Browser
     public void K1_K2_real_bundle()
     {
         if (WebsitePreview.FindBrowser() is not { } chrome || Cli.Find("node") is not { } node) { Assert.Skip("Übersprungen – Chrome/Edge oder Node.js fehlt auf diesem PC."); return; }
-        var r = Cli.Run(node, [Path.Combine(Repo(), "tools", "webdesign-editor", "pruefe-auswahl.mjs"), chrome, Path.Combine(Repo(), "src", "Trendo.App", "Assets", "webdesign")], timeoutMs: 90_000);
-        Assert.True(r.Ok, r.Out + r.Err);
-        Assert.Contains("\"problems\":[]", r.Out);
+        // Echte Ausgabe der Aktionen, nicht von Hand gebaut: K4 prüft so, dass der Editor sie öffnet
+        var plan = WebDesignActions.Apply(WebDesign.Empty(), """{"aktionen":[{"aktion":"seite_anlegen","titel":"Café","beschreibung":"x"},{"aktion":"ansicht_anpassen","ansicht":"handy"},{"aktion":"baustein_einfuegen","typ":"Kopfbereich","id":"held","props":{"title":"Guter Kaffee","sub":"Täglich frisch","motion":"keine"}},{"aktion":"baustein_einfuegen","typ":"Text","id":"t1","props":{"text":"Unsere Bohnen"}},{"aktion":"baustein_einfuegen","typ":"Bereich","id":"b"},{"aktion":"baustein_einfuegen","typ":"Knopf","id":"kn","in":"b","props":{"label":"Innen"}}]}""");
+        Assert.Null(plan.Error);
+        var file = Path.Combine(Path.GetTempPath(), "trendo-webki-seite-" + Guid.NewGuid().ToString("N") + ".json");
+        File.WriteAllText(file, plan.Json!);
+        try
+        {
+            var r = Cli.Run(node, [Path.Combine(Repo(), "tools", "webdesign-editor", "pruefe-auswahl.mjs"), chrome, Path.Combine(Repo(), "src", "Trendo.App", "Assets", "webdesign"), file], timeoutMs: 90_000);
+            Assert.True(r.Ok, r.Out + r.Err);
+            Assert.Contains("\"problems\":[]", r.Out);
+        }
+        finally { File.Delete(file); }
     }
 
     [Fact(DisplayName = "A6: Echte Prüfung auf dem Export: drei Bilder, gezeichnete Seite mit <main>, defekter Link und zu breiter Inhalt werden gefunden (übersprungen ohne Chrome)")]
@@ -281,6 +373,11 @@ public class WebDesignKi_Browser
             Assert.DoesNotContain(res.Findings, f => f.Area == "Konsole");
             Assert.False(Directory.Exists(Path.Combine(d, WebDesignAudit.WorkDir, "seite"))); // kein HTML bleibt liegen, das andere Prüfungen mitzählen würden
             Assert.False(File.Exists(Path.Combine(d, WebDesign.PageFile))); // die Seite selbst wurde nicht geschrieben
+
+            // Fehlende Datei fällt in der echten Konsole auf: auf die Festplatte bezogen fehlt sie, im Browser kommt 404
+            var broken = WebDesignActions.Apply(plan.Json!, """{"aktionen":[{"aktion":"baustein_einfuegen","typ":"Bild","id":"f","props":{"src":"fehlt.png","alt":"Foto"}}]}""");
+            var second = await WebDesignAudit.RunAsync(broken.Json!, d, editor, "node", Path.Combine(d, "axe"), (_, _, _) => new Cli.Result(0, """{"axe":"4","results":[]}""", ""), ct);
+            Assert.Contains(second.Findings, f => f.Area == "Konsole" && f.Text.Contains("fehlt.png"));
         }
         finally { try { Directory.Delete(d, true); } catch (IOException) { } }
     }

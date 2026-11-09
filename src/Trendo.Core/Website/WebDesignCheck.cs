@@ -78,11 +78,12 @@ public static partial class WebDesignCheck
                 else
                 {
                     if (string.IsNullOrWhiteSpace(p?["alt"]?.ToString())) f.Add(new("Barrierefreiheit", "Fehler", $"Bild „{id}“ hat keinen Alternativtext.", "alt"));
-                    if (!IsLocalFile(projectDir, src)) f.Add(new("Links", "Fehler", $"Bild „{id}“: Die Datei „{src}“ liegt nicht im Projekt.", "missing"));
+                    if (!WebDesign.IsSafeImagePath(src)) f.Add(new("Links", "Fehler", $"Bild „{id}“: „{src}“ ist keine Bilddatei, die in den Export darf.", "image-unsafe"));
+                    else if (!IsLocalFile(projectDir, src)) f.Add(new("Links", "Fehler", $"Bild „{id}“: Die Datei „{src}“ liegt nicht im Projekt.", "missing"));
                 }
             }
             foreach (var field in new[] { "href" })
-                if (p?[field]?.ToString() is { Length: > 1 } link && !link.StartsWith("http", StringComparison.OrdinalIgnoreCase) && !link.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase))
+                if (p?[field]?.ToString() is { Length: > 1 } link && !link.StartsWith("http", StringComparison.OrdinalIgnoreCase) && !link.StartsWith("mailto:", StringComparison.OrdinalIgnoreCase) && !link.StartsWith("tel:", StringComparison.OrdinalIgnoreCase))
                 {
                     if (link.StartsWith('#')) f.Add(new("Links", "Fehler", $"Baustein „{id}“ springt zu „{link}“, dieses Ziel gibt es auf der Seite nicht.", "anchor"));
                     else if (!IsLocalFile(projectDir, link)) f.Add(new("Links", "Fehler", $"Baustein „{id}“ verweist auf „{link}“, das liegt nicht im Projekt.", "missing"));
@@ -98,10 +99,14 @@ public static partial class WebDesignCheck
     public static bool IsLocalFile(string projectDir, string rel)
     {
         var clean = rel.Split('#', '?')[0].Replace('\\', '/');
-        if (clean.Length == 0 || clean.StartsWith('/') || clean.Split('/').Contains("..")) return false;
+        if (clean.Length == 0 || clean.StartsWith('/') || clean.Contains(':') || clean.Any(char.IsControl) || clean.Split('/').Contains("..")) return false;
         var full = Path.GetFullPath(Path.Combine(projectDir, clean));
         var root = Path.GetFullPath(projectDir).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
-        return full.StartsWith(root, StringComparison.Ordinal) && File.Exists(full);
+        if (!full.StartsWith(root, StringComparison.Ordinal) || !File.Exists(full)) return false;
+        // Verknüpfungen (Symlinks, Junctions) im Pfad könnten aus dem Projekt herausführen
+        for (var p = full; p.Length >= root.Length; p = Path.GetDirectoryName(p)!)
+            if (new FileInfo(p).LinkTarget is not null) return false;
+        return true;
     }
 
     /// <summary>Für die Ausgabe: gleiche Befunde nur einmal, Fehler zuerst.</summary>

@@ -2,7 +2,7 @@
 
 **Auftrag:** `tasks/T-0620-web-ki.md`, Vorgabe `docs/nachbau/web-ki/anforderungen.md`: A1, A3, A6, A7, K4, K1, K2, K5.
 **Branch/Worktree:** `claude/T-0620-web-ki`, `C:\Users\<user>\TrendoEntwicklung\wt-T-0620-web-ki`, Basis 9cff19506.
-**Status:** Alle acht Funktionen gebaut, jede Prüfung der Liste hat einen bestandenen Test. Nicht in `main`, kein Release, nichts veröffentlicht. QA-Review steht aus, es gibt noch keinen PR.
+**Status:** Alle acht Funktionen gebaut, jede Prüfung der Liste hat einen bestandenen Test. PR: manuelbrandner85/Trendo-OS#284. Nicht in `main`, kein Release, nichts veröffentlicht. QA-Prüfung: bestanden mit Empfehlungen, nach zwei nicht bestandenen Runden.
 
 ## Was gebaut wurde
 
@@ -13,7 +13,7 @@
 | A3 | `webdesign.md` als Grundregeln, 7 Fachgebiete mit Stichworten, `SkillLibrary.ForTask`. Lokal höchstens 2400 Zeichen, ganze Zeilen, ohne Checkliste. Eigene Formulierungen. | 7 Aufgaben laden je das richtige Fachgebiet, Grenze eingehalten, Fachgebiete nur bei passender Aufgabe |
 | K4 | Satz oder eigenes Bild ergibt Editor-Daten, Vorschau, Übernehmen als ein Schritt. | Ungültige Antwort abgelehnt, Ergebnis lässt sich öffnen und ändern, Klickweg mit Rückgängig, echtes Bündel in Chrome öffnet die Daten |
 | K1 | „Auswählen“ im Editor, auch mehrere Bausteine. Die KI sieht und ändert nur die Auswahl, Vorschau, ein Rückgängig-Schritt. | Nur Auswahl geändert, außerhalb abgelehnt, Verwerfen lässt die Seite gleich, echtes Bündel in Chrome |
-| K2 | Doppelklick auf Text ändert ihn direkt, ohne KI, über `element_aendern`. | Gespeicherte Daten enthalten den Text, keine KI gefragt, echtes Bündel in Chrome (Feld, Enter, Escape) |
+| K2 | Doppelklick auf Text ändert ihn direkt, ohne KI, über `element_aendern`. | Gespeicherte Daten enthalten den Text, keine KI gefragt, echtes Bündel in Chrome mit echten Mausereignissen und Tastatur (Doppelklick, richtiges Feld, Enter, Klick daneben, Escape) |
 | K5 | Benannte und automatische Stände, Varianten mit Bildern nebeneinander, Übernehmen mit Sicherung. | Wiederherstellen bytegleich, automatischer Stand vor KI-Änderung, Variante ändert das Original nicht, Stand einer Variante, Grenzen |
 | A6 | Prüfung auf dem Export: 3 Breiten in echtem Chrome, Konsole, zu breiter Inhalt, defekte Verweise, `WebsiteQuality` und `AxeCheck` auf der gezeichneten Seite, höchstens 3 Nachbesserungen. Bildbewertung ist als Hinweis gekennzeichnet. | Eingebaute Fehler gefunden, Obergrenze, gezielte Nachbesserung, ungültige Nachbesserung verworfen, Lauf in echtem Chrome |
 
@@ -37,13 +37,21 @@ python -m unittest discover -s tests/claude_handoff
 | Projekt | Bestanden | Übersprungen | Fehler | Gesamt |
 |---|---|---|---|---|
 | Trendo.Api.Tests | 16 | 0 | 0 | 16 |
-| Trendo.Core.Tests | 1983 | 5 | 0 | 1988 |
-| Trendo.App.Tests | 894 | 4 | 0 | 898 |
+| Trendo.Core.Tests | 1995 | 5 | 0 | 2000 |
+| Trendo.App.Tests | 898 | 4 | 0 | 902 |
 | tests/claude_handoff | 9 | 0 | 0 | 9 |
 
-Die beiden Prüfungen in echtem Chrome liefen und wurden nicht übersprungen. Gezielt wurden die 14 UI-Tests dreimal nacheinander grün ausgeführt.
+Die beiden Prüfungen in echtem Chrome liefen und wurden nicht übersprungen. Die Prüfung des Bündels nutzt echte Mausereignisse und echte Tastatur.
 
 Zwei Befunde auf dem Weg, beide behoben: Die Paket-Tests schlugen fehl, solange `tools/webdesign-editor/node_modules` im Worktree lag (Treffer in einem Fremdpaket); der Ordner und `dist` sind wieder entfernt. Elf UI-Tests schlugen reihenfolgeabhängig fehl, weil Browser-Tests in derselben Klasse `MainWindow` auf dem falschen Thread initialisierten; sie stehen jetzt in einer eigenen Klasse.
+
+## QA-Prüfung
+
+Unabhängige QA- und Sicherheitsprüfung in drei Runden, Ergebnis im PR.
+
+- Runde 1, nicht bestanden: K2 ging mit echter Maus nicht (der Test nutzte ein künstliches Ereignis), Datenverlust bei offener KI-Vorschau und Fassungswechsel, ungesicherter Entwurf, ein Plan konnte beliebige Projektdateien in den Export ziehen und `editor.js` ersetzen, Variantendateien gingen ungeprüft in `InvokeScript`. Alle fünf sind behoben, mit Tests belegt, dazu die meisten Empfehlungen (fehlerhafte Pläne, Schemaprüfung, Symlinks, Audit, Stichworte).
+- Runde 2, nicht bestanden: Die KI-Sperre blieb nach einer Ausnahme hängen. Behoben, Regressionstest ergänzt, dazu fünf Empfehlungen.
+- Runde 3, bestanden mit Empfehlungen, nur am Code geprüft, weil gleichzeitig der Volltest lief. Offen bleibt: Ein langsamer Doppelklick (über 240 ms Abstand) wählt den Baustein zusätzlich aus oder ab; das Bearbeiten selbst funktioniert.
 
 ## Artefakte
 
@@ -56,6 +64,8 @@ Kein Bericht unter `reports/`, kein Statuswechsel in `requirements.yaml`. Editor
 - Die App wurde nicht im Fenster bedient. Die Oberfläche ist headless getestet, das Bündel in Chrome, nicht im `NativeWebView` der App. `invokeCSharpAction` war dabei nachgebildet.
 - `AxeCheck` lief im Chrome-Test mit nachgebildetem Ergebnis, die echte Regelprüfung über Node nicht.
 - Linux-USB und Pi 4 nicht geprüft.
+- „Varianten nebeneinander ansehen“ erzeugt die Bilder nur außerhalb des Testmodus und hat keinen automatischen Test.
+- Offen ist, ob das Umhängen des Browserfensters bei `Show("dev")` beim Auswählen im echten Fenster den Fokus nimmt.
 
 ## Offene Punkte und Grenzen
 
@@ -68,7 +78,7 @@ Kein Bericht unter `reports/`, kein Statuswechsel in `requirements.yaml`. Editor
 - Sprungziele: Bausteine haben keine Ankerziele. Jeder Link wie `#kontakt` wird daher korrekt als defekt gemeldet, auch beim Standardwert des Knopfs im Editor.
 - Der Export rendert weiter per Skript (W3, Stufe 3). Darum läuft die Inhaltsprüfung auf der gezeichneten Seite.
 - `origin/main` ist seit der Basis um vier T-0502-Commits weiter; sie berühren keine Datei dieses Auftrags.
-- CLAUDE.md verlangt vor dem Merge das QA-Review, dieses Mal durch `19-qa-verification`, und einen PR. Beides steht aus.
+- Merge nach `main` und Release nur nach ausdrücklichem OK.
 
 ## Rust
 

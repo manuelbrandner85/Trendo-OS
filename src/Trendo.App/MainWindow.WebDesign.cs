@@ -24,7 +24,7 @@ public partial class MainWindow
         switch (m.Kind)
         {
             case "bereit": // Editor geladen → gespeicherte Seite hineinreichen
-                _wdView?.InvokeScript("window.trendoLoad(" + WebDesignStates.Read(WebDesignDir, _wdVariant) + ")");
+                WebDesignReload(WebDesignCurrent()); // auch nach Schließen und Öffnen: ein ungespeicherter Entwurf bleibt sichtbar
                 break;
             case "speichern":
                 var err = WebDesignStates.Write(WebDesignDir, m.Data ?? "", _wdVariant);

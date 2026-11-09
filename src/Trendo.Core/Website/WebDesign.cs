@@ -24,12 +24,15 @@ public static partial class WebDesign
     {
         if (string.IsNullOrWhiteSpace(json)) return (null, "Keine Seitendaten.");
         if (Encoding.UTF8.GetByteCount(json) > MaxBytes) return (null, "Seite ist zu groß (über 8 MB).");
-        JsonNode? n; try { n = JsonNode.Parse(json); } catch (JsonException) { return (null, "Seitendaten sind kein gültiges JSON."); }
-        if (n is not JsonObject o || o["root"] is not JsonObject || o["content"] is not JsonArray content) return (null, "Seitendaten unvollständig (root/content fehlt).");
-        foreach (var c in content) if (c is not JsonObject co || string.IsNullOrWhiteSpace(co["type"]?.ToString())) return (null, "Ein Baustein hat keinen Typ.");
-        Sanitize(o);
-        SanitizeTokens(o["root"]?["props"] as JsonObject);
-        return (o.ToJsonString(), null);
+        try
+        {
+            if (JsonNode.Parse(json) is not JsonObject o || o["root"] is not JsonObject || o["content"] is not JsonArray content) return (null, "Seitendaten unvollständig (root/content fehlt).");
+            foreach (var c in content) if (c is not JsonObject co || string.IsNullOrWhiteSpace(co["type"]?.ToString())) return (null, "Ein Baustein hat keinen Typ.");
+            Sanitize(o);
+            SanitizeTokens(o["root"]?["props"] as JsonObject);
+            return (o.ToJsonString(), null);
+        }
+        catch (Exception e) when (e is JsonException or ArgumentException) { return (null, "Seitendaten sind kein gültiges JSON."); } // ArgumentException: doppelte Schlüssel
     }
 
     [GeneratedRegex("^#[0-9a-fA-F]{6}$")] private static partial Regex HexColor();
@@ -47,16 +50,40 @@ public static partial class WebDesign
         if (p["space"] is not null) p["space"] = Math.Clamp(Num(p["space"]) ?? 24, 4, 48);
     }
 
-    [GeneratedRegex(@"^\s*(javascript|vbscript|data)\s*:", RegexOptions.IgnoreCase)] private static partial Regex DangerousUrl();
+    [GeneratedRegex(@"^[a-zA-Z][a-zA-Z0-9+.-]*:")] private static partial Regex UrlScheme();
+    static readonly string[] AllowedSchemes = ["http:", "https:", "mailto:", "tel:"];
+    static readonly string[] ImageTypes = [".png", ".jpg", ".jpeg", ".webp", ".gif", ".avif"];
 
-    /// <summary>Gefährliche Links (javascript:, vbscript:, data:) aus Link-Feldern entfernen – die fertige Seite soll niemanden angreifen können.</summary>
+    /// <summary>Steuerzeichen und Leerraum fallen weg, damit „java&lt;Tab&gt;script:“ als das erkannt wird, was der Browser daraus macht.</summary>
+    public static string StripUrl(string s) => string.Concat(s.Where(c => !char.IsControl(c) && !char.IsWhiteSpace(c)));
+
+    /// <summary>Nur Sprungziele, relative Pfade und erlaubte Adressarten.</summary>
+    public static bool IsAllowedUrl(string url)
+    {
+        var s = StripUrl(url);
+        return !UrlScheme().IsMatch(s) || AllowedSchemes.Any(a => s.StartsWith(a, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>Bild im Projekt: relative Datei mit Bild-Endung, nicht in versteckten Ordnern und nicht im Export-Ordner. So kann kein Plan fremde Projektdateien in den Export ziehen oder das Bündel ersetzen.</summary>
+    public static bool IsSafeImagePath(string src)
+    {
+        if (src.Any(char.IsControl)) return false;
+        var clean = src.Trim().Split('#', '?')[0].Replace('\\', '/');
+        if (clean.Length == 0 || clean.StartsWith('/') || UrlScheme().IsMatch(clean)) return false;
+        var parts = clean.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Any(p => p is ".." or "." || p.StartsWith('.'))) return false;
+        if (parts[0].Equals(ExportDir, StringComparison.OrdinalIgnoreCase)) return false;
+        return ImageTypes.Contains(Path.GetExtension(parts[^1]), StringComparer.OrdinalIgnoreCase);
+    }
+
+    /// <summary>Gefährliche Links aus Link-Feldern entfernen – die fertige Seite soll niemanden angreifen können. Erlaubt sind nur http, https, mailto, tel und relative Ziele.</summary>
     static void Sanitize(JsonNode? n)
     {
         switch (n)
         {
             case JsonObject o:
                 foreach (var key in o.Select(kv => kv.Key).ToList())
-                    if (key is "href" or "src" && o[key] is JsonValue v && v.TryGetValue(out string? s) && DangerousUrl().IsMatch(s)) o[key] = "#";
+                    if (key is "href" or "src" && o[key] is JsonValue v && v.TryGetValue(out string? s) && !IsAllowedUrl(s)) o[key] = "#";
                     else Sanitize(o[key]);
                 break;
             case JsonArray a: foreach (var x in a) Sanitize(x); break;
@@ -120,10 +147,12 @@ public static partial class WebDesign
         if (n is JsonArray a) { foreach (var x in a) CopyImages(x, projectDir, outDir); return; }
         if (n is not JsonObject o) return;
         foreach (var kv in o)
-            if (kv.Key == "src" && kv.Value is JsonValue v && v.TryGetValue(out string? src) && src.Length > 0 && WebDesignCheck.IsLocalFile(projectDir, src))
+            if (kv.Key == "src" && kv.Value is JsonValue v && v.TryGetValue(out string? src) && src.Length > 0)
             {
-                var clean = src.Split('#', '?')[0].Replace('/', Path.DirectorySeparatorChar);
-                var target = Path.Combine(outDir, clean);
+                if (!IsSafeImagePath(src) || !WebDesignCheck.IsLocalFile(projectDir, src)) continue;
+                var clean = src.Trim().Split('#', '?')[0].Replace('/', Path.DirectorySeparatorChar);
+                var target = Path.GetFullPath(Path.Combine(outDir, clean));
+                if (!target.StartsWith(Path.GetFullPath(outDir).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.Ordinal)) continue;
                 Directory.CreateDirectory(Path.GetDirectoryName(target)!);
                 File.Copy(Path.Combine(projectDir, clean), target, true);
             }
@@ -141,6 +170,6 @@ public static partial class WebDesign
             var kind = n?["art"]?.ToString(); if (string.IsNullOrEmpty(kind)) return null;
             return new(kind, n!["daten"]?.ToJsonString());
         }
-        catch (JsonException) { return null; }
+        catch (Exception e) when (e is JsonException or ArgumentException or InvalidOperationException) { return null; }
     }
 }

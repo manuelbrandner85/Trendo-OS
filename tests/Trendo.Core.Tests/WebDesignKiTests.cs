@@ -104,6 +104,84 @@ public class WebDesignKiTests
         Assert.Contains("im Projekt", WebDesignActions.Apply(Page, plan).Error);
     }
 
+    [Theory(DisplayName = "A1 Sicherheit: Nur Bilddateien aus dem Projekt, keine versteckten oder vom Export belegten Pfade")]
+    [InlineData(".env")] [InlineData(".trendo-staende/x.json")] [InlineData("seite.trendo.json")] [InlineData("assets/editor.js")] [InlineData("veroeffentlichen/foto.png")] [InlineData("ordner/.geheim/foto.png")] [InlineData("foto.svg")] [InlineData("C:\\Windows\\foto.png")]
+    public void Image_only_safe(string src)
+    {
+        var plan = new JsonObject { ["aktionen"] = new JsonArray(new JsonObject { ["aktion"] = "baustein_einfuegen", ["typ"] = "Bild", ["id"] = "f" }, new JsonObject { ["aktion"] = "bild_setzen", ["id"] = "f", ["src"] = src, ["alt"] = "x" }) };
+        Assert.Contains("Bilddatei", WebDesignActions.Apply(Page, plan).Error);
+    }
+
+    [Fact(DisplayName = "A1 Sicherheit: Fehlerhafte Pläne werden abgelehnt statt abzustürzen; Schemaprüfung lässt sich nicht mit Steuerzeichen umgehen")]
+    public void Malformed_plans_and_schemes()
+    {
+        Assert.Contains("fehlerhaft", WebDesignActions.Apply(Page, """{"aktionen":[{"aktion":"stand_speichern","name":"a","name":"b"}]}""").Error);
+        Assert.Contains("fehlerhaft", WebDesignActions.Apply(Page, """{"aktionen":[],"aktionen":[]}""").Error);
+        foreach (var bad in new[] { "java\tscript:alert(1)", "\u0001javascript:alert(1)", "ms-\tmsdt:x", "file:///c:/x", "vbscript:x" })
+        {
+            var plan = new JsonObject { ["aktionen"] = new JsonArray(new JsonObject { ["aktion"] = "element_aendern", ["id"] = "kn1", ["props"] = new JsonObject { ["href"] = bad } }) };
+            Assert.Contains("nicht erlaubt", WebDesignActions.Apply(Page, plan).Error);
+            var page = new JsonObject { ["root"] = new JsonObject(), ["content"] = new JsonArray(new JsonObject { ["type"] = "Knopf", ["props"] = new JsonObject { ["href"] = bad } }) };
+            Assert.Equal("#", JsonNode.Parse(WebDesign.Validate(page.ToJsonString()).Json!)!["content"]![0]!["props"]!["href"]!.ToString());
+        }
+        Assert.False(WebDesignCheck.IsLocalFile(Path.GetTempPath(), "a\u0000.png")); Assert.False(WebDesignCheck.IsLocalFile(Path.GetTempPath(), "C:\\Windows\\win.ini"));
+    }
+
+    [Fact(DisplayName = "A6 Sicherheit: Export kopiert nur Bilder; fremde Dateien bleiben draußen, das Bündel lässt sich nicht ersetzen")]
+    public void Export_ignores_unsafe_files()
+    {
+        var d = Dir(); try
+        {
+            File.WriteAllText(Path.Combine(d, ".env"), "GEHEIM=1");
+            Directory.CreateDirectory(Path.Combine(d, "assets")); File.WriteAllText(Path.Combine(d, "assets", "editor.js"), "/*BOESE*/");
+            var page = """{"root":{"props":{"title":"x"}},"content":[{"type":"Bild","props":{"id":"a","src":".env","alt":"x"}},{"type":"Bild","props":{"id":"b","src":"assets/editor.js","alt":"x"}}],"zones":{}}""";
+            WebDesign.Save(d, page);
+            var editor = Path.Combine(Repo(), "src", "Trendo.App", "Assets", "webdesign");
+            var (outDir, err) = WebDesign.Export(d, editor); Assert.Null(err);
+            Assert.False(File.Exists(Path.Combine(outDir!, ".env")));
+            Assert.Equal(File.ReadAllBytes(Path.Combine(editor, "assets", "editor.js")), File.ReadAllBytes(Path.Combine(outDir!, "assets", "editor.js")));
+            Assert.Equal(2, WebDesignCheck.CheckData(page, d).Count(f => f.Code == "image-unsafe"));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "K5: Stände und Varianten gehören nicht in ein weitergegebenes Paket; doppelte Schlüssel in Seitendaten werden abgewiesen")]
+    public void Pack_without_states()
+    {
+        var root = Dir(); try
+        {
+            var built = WebsiteStudio.Build(root, WebsiteStudio.Example("mikro"));
+            WebDesign.Save(built.Directory, Page); WebDesignStates.Save(built.Directory, "Geheimer Stand"); WebDesignStates.CreateVariant(built.Directory, "A");
+            var audit = new AuditLog(Path.Combine(root, "audit.jsonl")); var gate = new ApprovalGate(audit);
+            var pending = WebsiteStudio.RequestPack(gate, Principal.LocalOwner, built.Directory); gate.Approve(pending.Id, Principal.LocalOwner);
+            using var archive = System.IO.Compression.ZipFile.OpenRead(WebsiteStudio.Pack(gate, pending.Id, built.Directory));
+            Assert.Contains(archive.Entries, e => e.Name == "index.html");
+            Assert.DoesNotContain(archive.Entries, e => e.FullName.StartsWith(".trendo-", StringComparison.Ordinal));
+            Assert.Contains("JSON", WebDesign.Validate("""{"root":{},"root":{},"content":[]}""").Error);
+            Assert.Null(WebDesign.ParseMessage("""{"art":"a","art":"b"}"""));
+        }
+        finally { Directory.Delete(root, true); }
+    }
+
+    [Fact(DisplayName = "K5 Sicherheit: Manipulierte Variantendatei gilt als nicht vorhanden und wird nie als Skript gelesen")]
+    public void K5_manipulated_variant()
+    {
+        var d = Dir(); try
+        {
+            WebDesign.Save(d, Page);
+            var (v, _) = WebDesignStates.CreateVariant(d, "A");
+            var f = Path.Combine(d, WebDesignStates.VariantsDir, v!.Id + ".json");
+            File.WriteAllText(f, new JsonObject { ["name"] = "A", ["zeit"] = "2026-11-09T00:00:00+01:00", ["seite"] = "alert(document.domain)" }.ToJsonString());
+            Assert.Null(WebDesignStates.VariantContent(d, v.Id));
+            Assert.DoesNotContain("alert", WebDesignStates.Read(d, v.Id));
+            File.WriteAllText(f, "[]"); // keine Objektform: gilt ebenso als nicht vorhanden, statt eine Ausnahme zu werfen
+            Assert.Null(WebDesignStates.VariantContent(d, v.Id));
+            File.WriteAllText(f, new JsonObject { ["name"] = "A", ["seite"] = "alert(document.domain)" }.ToJsonString());
+            Assert.NotNull(WebDesignStates.AdoptVariant(d, v.Id)); Assert.Contains("Willkommen", WebDesign.Load(d));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
     [Fact(DisplayName = "A1: Ein ungültiger Schritt verwirft den ganzen Plan, nichts wird geschrieben")]
     public void Nothing_written_on_rejection()
     {
@@ -124,7 +202,13 @@ public class WebDesignKiTests
     {
         var src = File.ReadAllText(Path.Combine(Repo(), "tools", "webdesign-editor", "src", "main.jsx"));
         Assert.Equal(8, WebDesignActions.ComponentNames.Count);
-        foreach (var c in WebDesignActions.ComponentNames) Assert.Contains($"    {c}: {{", src);
+        var names = WebDesignActions.ComponentNames.ToList();
+        foreach (var c in names)
+        {
+            var start = src.IndexOf($"    {c}: {{", StringComparison.Ordinal); Assert.True(start >= 0, c);
+            var next = names.Select(n => src.IndexOf($"    {n}: {{", start + 1, StringComparison.Ordinal)).Where(i => i > start).DefaultIfEmpty(src.Length).Min();
+            foreach (var field in WebDesignActions.ComponentFields(c).Where(f => f is not ("motion" or "seconds"))) Assert.Contains(field + ":", src[start..next]); // gleiche Felder wie im Editor
+        }
     }
 
     // ---------- A7 ----------
@@ -235,11 +319,12 @@ public class WebDesignKiTests
         finally { Directory.Delete(root, true); }
     }
 
-    [Fact(DisplayName = "A3: Fachgebiete tauchen ohne passende Aufgabe nicht auf")]
+    [Fact(DisplayName = "A3: Fachgebiete tauchen ohne passende Aufgabe nicht auf, Stichworte treffen nur am Wortanfang")]
     public void Topics_only_when_relevant()
     {
         var lib = Lib(out var root); try
         {
+            Assert.DoesNotContain(lib.ForTask(null, "CORE-07", "Eine Variante mit Text"), s => s.Id == "webdesign-barrierefreiheit"); // „aria“ steckt in „Variante“
             Assert.DoesNotContain(lib.For(null, "CORE-07"), s => s.Keywords.Count > 0);
             Assert.Null(lib.PromptText(null, "CORE-02", "barrierefrei"));
         }
@@ -301,6 +386,8 @@ public class WebDesignKiTests
         Assert.Null(WebDesignActions.Apply(Page, """{"aktionen":[{"aktion":"element_aendern","id":"kn1","props":{"label":"x"}}]}""", new WebPlanScope(new HashSet<string> { "b1" })).Error);
         var p = WebDesignKi.SelectionPrompt("kürzer", Page, ["t1"]);
         Assert.Contains("\"t1\"", p); Assert.DoesNotContain("Bleibt", p); Assert.DoesNotContain("Willkommen", p);
+        var r = WebDesignKi.RepairPrompt(Page, [new("Links", "Fehler", "t1 kaputt", "x")], ["t1"]);
+        Assert.Contains("t1 kaputt", r); Assert.DoesNotContain("Bleibt", r); // auch beim Nachbessern nur die Auswahl
     }
 
     // ---------- K5 ----------
@@ -401,6 +488,8 @@ public class WebDesignKiTests
             var g = WebDesignCheck.CheckData(withImage.Json!, d);
             foreach (var code in new[] { "missing", "alt", "h1", "contrast", "heading-order" }) Assert.Contains(g, x => x.Code == code && x.Level == "Fehler");
             Assert.DoesNotContain(WebDesignCheck.CheckData(Page, d), x => x.Level == "Fehler");
+            Assert.DoesNotContain(WebDesignCheck.CheckData(Page.Replace("\"href\":\"#\",\"motion\"", "\"href\":\"tel:+4912345\",\"motion\""), d), x => x.Level == "Fehler"); // Telefon-Links sind erlaubt
+            Assert.True(WebDesign.IsSafeImagePath("assets/poster.jpg")); // Webseiten von Trendo legen Bilder dort ab
         }
         finally { Directory.Delete(d, true); }
     }

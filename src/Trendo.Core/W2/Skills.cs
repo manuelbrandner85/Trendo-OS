@@ -111,7 +111,7 @@ public sealed class SkillLibrary(string dataRoot, PromptLibrary prompts, AuditLo
         var always = For(key, studio);
         var topical = string.IsNullOrWhiteSpace(task) ? [] : All()
             .Where(s => s.Keywords.Count > 0 && s.AppliesTo(key, studio) && !s.Studios.Contains("*"))
-            .Select(s => (Skill: s, Hits: s.Keywords.Count(k => task.Contains(k, StringComparison.OrdinalIgnoreCase))))
+            .Select(s => (Skill: s, Hits: s.Keywords.Count(k => Regex.IsMatch(task, @"\b" + Regex.Escape(k), RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)))) // am Wortanfang: „aria“ trifft nicht „Variante“
             .Where(x => x.Hits > 0).OrderByDescending(x => x.Hits).ThenBy(x => x.Skill.Name).Select(x => x.Skill).ToList();
         return [.. always.Where(s => !s.BuiltIn), .. topical, .. always.Where(s => s.BuiltIn)];
     }

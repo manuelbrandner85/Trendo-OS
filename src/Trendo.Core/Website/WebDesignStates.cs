@@ -61,7 +61,7 @@ public static partial class WebDesignStates
             return new(Path.GetFileNameWithoutExtension(file), o["name"]?.ToString() ?? "", o["auto"]?.GetValue<bool>() == true,
                 DateTimeOffset.TryParse(o["zeit"]?.ToString(), out var t) ? t : DateTimeOffset.MinValue, o["variante"]?.ToString());
         }
-        catch (Exception e) when (e is JsonException or IOException or InvalidOperationException) { return null; }
+        catch (Exception e) when (e is JsonException or IOException or InvalidOperationException or ArgumentException) { return null; }
     }
 
     /// <summary>Alle Stände, neueste zuerst.</summary>
@@ -81,7 +81,7 @@ public static partial class WebDesignStates
     {
         if (!IdPattern().IsMatch(id) || !File.Exists(StateFile(dir, id))) return null;
         try { return JsonNode.Parse(File.ReadAllText(StateFile(dir, id)))?["seite"]?.ToString(); }
-        catch (JsonException) { return null; }
+        catch (Exception e) when (e is JsonException or InvalidOperationException or ArgumentException) { return null; }
     }
 
     /// <summary>Stand wiederherstellen: Vorher wird der aktuelle Inhalt automatisch gesichert, danach steht exakt der alte Inhalt in der Datei.</summary>
@@ -127,15 +127,15 @@ public static partial class WebDesignStates
         var list = new List<Variante>();
         foreach (var f in Directory.GetFiles(d, "*.json").OrderBy(f => Path.GetFileName(f), StringComparer.Ordinal))
             try { if (JsonNode.Parse(File.ReadAllText(f)) is JsonObject o) list.Add(new(Path.GetFileNameWithoutExtension(f), o["name"]?.ToString() ?? "", DateTimeOffset.TryParse(o["zeit"]?.ToString(), out var t) ? t : DateTimeOffset.MinValue)); }
-            catch (JsonException) { }
+            catch (Exception e) when (e is JsonException or InvalidOperationException or ArgumentException) { }
         return list;
     }
 
     public static string? VariantContent(string dir, string id)
     {
         if (!IdPattern().IsMatch(id) || !File.Exists(VariantFile(dir, id))) return null;
-        try { return JsonNode.Parse(File.ReadAllText(VariantFile(dir, id)))?["seite"]?.ToString(); }
-        catch (JsonException) { return null; }
+        try { return JsonNode.Parse(File.ReadAllText(VariantFile(dir, id)))?["seite"]?.ToString() is { } s && WebDesign.Validate(s).Error is null ? s : null; } // kaputte oder manipulierte Datei gilt als nicht vorhanden
+        catch (Exception e) when (e is JsonException or InvalidOperationException or ArgumentException) { return null; }
     }
 
     static string VariantFileText(string dir, string id, string content)

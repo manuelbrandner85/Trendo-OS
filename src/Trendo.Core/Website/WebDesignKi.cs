@@ -56,7 +56,10 @@ public static class WebDesignKi
         + (imageNote is { Length: > 0 } ? "\nOrientiere dich an diesem Bild:\n" + imageNote : "");
 
     /// <summary>Auftrag für eine Änderung an ausgewählten Bausteinen (K1). Die KI sieht nur die Auswahl.</summary>
-    public static string SelectionPrompt(string wish, string pageJson, IReadOnlyCollection<string> ids)
+    public static string SelectionPrompt(string wish, string pageJson, IReadOnlyCollection<string> ids) =>
+        "Ändere nur diese Bausteine:\n" + SelectedBlocks(pageJson, ids) + "\n\nÄnderungswunsch: " + wish.Trim();
+
+    static string SelectedBlocks(string pageJson, IReadOnlyCollection<string> ids)
     {
         var blocks = new JsonArray();
         var doc = JsonNode.Parse(pageJson)!.AsObject();
@@ -70,11 +73,11 @@ public static class WebDesignKi
             }
         }
         Walk(doc["content"]); Walk(doc["zones"]);
-        return "Ändere nur diese Bausteine:\n" + blocks.ToJsonString() + "\n\nÄnderungswunsch: " + wish.Trim();
+        return blocks.ToJsonString();
     }
 
-    /// <summary>Auftrag zum Nachbessern (A6): nur die gefundenen Fehler, gezielt.</summary>
-    public static string RepairPrompt(string pageJson, IEnumerable<WebsiteFinding> findings) =>
+    /// <summary>Auftrag zum Nachbessern (A6): nur die gefundenen Fehler, gezielt. Mit <paramref name="ids"/> sieht die KI nur die Auswahl.</summary>
+    public static string RepairPrompt(string pageJson, IEnumerable<WebsiteFinding> findings, IReadOnlyCollection<string>? ids = null) =>
         "Die Prüfung der fertigen Seite hat diese Fehler gefunden. Behebe gezielt nur sie, ändere sonst nichts.\n"
-        + string.Join("\n", findings.Select(f => $"- {f.Area}: {f.Text}")) + "\n\nSeite:\n" + pageJson;
+        + string.Join("\n", findings.Select(f => $"- {f.Area}: {f.Text}")) + (ids is null ? "\n\nSeite:\n" + pageJson : "\n\nBausteine:\n" + SelectedBlocks(pageJson, ids));
 }

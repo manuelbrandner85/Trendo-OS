@@ -1,12 +1,12 @@
 // Prüft das gebaute Editor-Bündel in einem echten Chrome: Auswählen in der Vorschau, Text direkt ändern, KI-Vorschau.
-// Aufruf: node pruefe-auswahl.mjs <chrome> <Ordner des Bündels>. Ausgabe: JSON mit den Ergebnissen; Fehler ergeben Exitcode 1.
+// Aufruf: node pruefe-auswahl.mjs <chrome> <Ordner des Bündels> <Seitendaten.json mit den Bausteinen held, t1, b, kn>. Ausgabe: JSON mit den Ergebnissen; Fehler ergeben Exitcode 1.
 import { spawn } from "node:child_process";
 import { createServer } from "node:http";
 import { mkdtempSync, readFileSync, existsSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, extname, normalize } from "node:path";
 
-const [chrome, bundle] = process.argv.slice(2);
+const [chrome, bundle, pageFile] = process.argv.slice(2);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const types = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8" };
 const server = createServer((req, res) => {
@@ -46,32 +46,60 @@ try {
   await call("Page.addScriptToEvaluateOnNewDocument", { source: "window.__m=[];window.invokeCSharpAction=(x)=>window.__m.push(JSON.parse(x));" });
   await call("Page.navigate", { url: site });
   check("bereit gemeldet", await until("window.__m && window.__m.some(x=>x.art==='bereit')"));
-  const page = { root: { props: { title: "Café", description: "x", ansicht: "handy" } }, content: [
-    { type: "Kopfbereich", props: { id: "held", title: "Guter Kaffee", sub: "Täglich frisch", cta: "Los", href: "#", motion: "keine", seconds: 1 } },
-    { type: "Text", props: { id: "t1", text: "Unsere Bohnen", align: "left" } },
-    { type: "Bereich", props: { id: "b", tone: "hell", content: [{ type: "Knopf", props: { id: "kn", label: "Innen", href: "#" } }] } }], zones: {} };
+  const page = JSON.parse(readFileSync(pageFile, "utf8"));
   await run(`window.trendoLoad(${JSON.stringify(page)})`);
   check("KI-Daten öffnen sich im Editor", await until(`document.body.innerText.includes('Guter Kaffee')`));
   check("Knopf Auswählen da", await until(`[...document.querySelectorAll('button')].some(b=>b.textContent==='Auswählen')`));
   await run(`[...document.querySelectorAll('button')].find(b=>b.textContent==='Auswählen').click()`);
   check("Bausteine anklickbar", await until(`document.querySelectorAll('[data-tid]').length===4`));
 
-  await run(`document.querySelector('[data-tid="t1"]').click()`);
-  check("Auswahl gemeldet", await until(`JSON.stringify(window.__m.filter(x=>x.art==='auswahl').at(-1)?.daten.ids)==='["t1"]'`));
-  check("Auswahl sichtbar", await until(`document.querySelector('[data-tid="t1"]').classList.contains('t-sel-on')`));
-  await run(`document.querySelector('[data-tid="kn"] a').click()`);
-  check("Mehrfachauswahl, innerstes Element", await until(`JSON.stringify(window.__m.filter(x=>x.art==='auswahl').at(-1)?.daten.ids)==='["t1","kn"]'`));
-  check("Link führt beim Auswählen nirgends hin", await run(`!location.hash`));
-  await run(`document.querySelector('[data-tid="kn"] a').click()`);
-  check("Abwählen", await until(`JSON.stringify(window.__m.filter(x=>x.art==='auswahl').at(-1)?.daten.ids)==='["t1"]'`));
+  // Echte Mausereignisse: So bedient ein Mensch die Vorschau; ein künstliches dblclick verdeckt Fehler
+  const center = async (sel) => run(`(()=>{const el=document.querySelector('${sel}');el.scrollIntoView({block:'center'});const r=el.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2};})()`);
+  const mouseClick = async (sel, count = 1) => {
+    const p = await center(sel);
+    await call("Input.dispatchMouseEvent", { type: "mouseMoved", x: p.x, y: p.y });
+    for (let c = 1; c <= count; c++) {
+      await call("Input.dispatchMouseEvent", { type: "mousePressed", x: p.x, y: p.y, button: "left", buttons: 1, clickCount: c });
+      await call("Input.dispatchMouseEvent", { type: "mouseReleased", x: p.x, y: p.y, button: "left", buttons: 0, clickCount: c });
+    }
+  };
+  const key = async (name, code) => { await call("Input.dispatchKeyEvent", { type: "rawKeyDown", key: name, code: name, windowsVirtualKeyCode: code }); await call("Input.dispatchKeyEvent", { type: "keyUp", key: name, code: name, windowsVirtualKeyCode: code }); };
+  const lastIds = `JSON.stringify(window.__m.filter(x=>x.art==='auswahl').at(-1)?.daten.ids)`;
+  const lastAction = `window.__m.filter(x=>x.art==='aktion').at(-1)?.daten.aktionen[0]`;
 
-  const edit = (sel, text) => `(()=>{const el=document.querySelector('${sel}');el.dispatchEvent(new MouseEvent('dblclick',{bubbles:true}));if(!el.isContentEditable)return false;el.textContent=${JSON.stringify(text)};el.blur();return true;})()`;
-  check("Absatz wird direkt bearbeitbar", await run(edit('[data-tid="t1"] p', "Beste Bohnen")));
-  check("Text geht als Aktion an Trendo", await until(`(()=>{const a=window.__m.filter(x=>x.art==='aktion').at(-1)?.daten.aktionen[0];return a&&a.aktion==='element_aendern'&&a.id==='t1'&&a.props.text==='Beste Bohnen';})()`));
-  check("Titel im Kopfbereich trifft das richtige Feld", await run(edit('[data-tid="held"] h1', "Neu")) && await until(`window.__m.filter(x=>x.art==='aktion').at(-1)?.daten.aktionen[0].props.title==='Neu'`));
+  await run(`window.__knoten=document.querySelector('[data-tid="t1"] p')`);
+  await mouseClick('[data-tid="t1"] p');
+  check("Auswahl gemeldet", await until(`${lastIds}==='["t1"]'`));
+  check("Auswahl sichtbar", await until(`document.querySelector('[data-tid="t1"]').classList.contains('t-sel-on')`));
+  check("Auswählen ersetzt die Elemente nicht", await run(`window.__knoten===document.querySelector('[data-tid="t1"] p')`));
+  await mouseClick('[data-tid="kn"] a');
+  check("Mehrfachauswahl, innerstes Element", await until(`${lastIds}==='["t1","kn"]'`));
+  check("Link führt beim Auswählen nirgends hin", await run(`!location.hash`));
+  await mouseClick('[data-tid="kn"] a');
+  check("Abwählen", await until(`${lastIds}==='["t1"]'`));
+  await mouseClick('[data-tid="kn"] a'); await mouseClick('[data-tid="held"] p');
+  check("Zwei schnelle Klicks auf verschiedene Bausteine zählen beide", await until(`${lastIds}==='["t1","kn","held"]'`));
+  await mouseClick('[data-tid="kn"] a'); await mouseClick('[data-tid="held"] p');
+  check("Schnelles Abwählen", await until(`${lastIds}==='["t1"]'`));
+
+  await mouseClick('[data-tid="t1"] p', 2);
+  check("Doppelklick macht den Text bearbeitbar", await until(`document.querySelector('[data-tid="t1"] p').isContentEditable`));
+  await sleep(320);
+  check("Doppelklick ändert die Auswahl nicht", (await run(lastIds)) === '["t1"]');
+  await call("Input.insertText", { text: "Neu" });
+  await key("Enter", 13);
+  check("Enter speichert als Aktion", await until(`(()=>{const a=${lastAction};return a&&a.aktion==='element_aendern'&&a.id==='t1'&&a.props.text.includes('Neu');})()`));
+  await mouseClick('[data-tid="held"] h1', 2);
+  check("Titel wird bearbeitbar", await until(`document.querySelector('[data-tid="held"] h1').isContentEditable`));
+  await call("Input.insertText", { text: "Anders" });
+  await mouseClick('.t-seltools span');
+  check("Klick daneben speichert das richtige Feld", await until(`(${lastAction})?.props.title?.includes('Anders')`));
   const count = await run(`window.__m.filter(x=>x.art==='aktion').length`);
   const textBefore = await run(`document.querySelector('[data-tid="t1"] p').textContent`);
-  await run(`(()=>{const el=document.querySelector('[data-tid="t1"] p');el.dispatchEvent(new MouseEvent('dblclick',{bubbles:true}));el.textContent='Weg';el.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}));})()`);
+  await mouseClick('[data-tid="t1"] p', 2);
+  await until(`document.querySelector('[data-tid="t1"] p').isContentEditable`);
+  await call("Input.insertText", { text: "Weg" });
+  await key("Escape", 27);
   await sleep(100);
   check("Escape verwirft ohne Aktion", (await run(`window.__m.filter(x=>x.art==='aktion').length`)) === count && (await run(`document.querySelector('[data-tid="t1"] p').textContent`)) === textBefore);
 
