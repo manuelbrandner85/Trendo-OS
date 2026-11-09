@@ -1,0 +1,25 @@
+{
+  "format": "tdoc",
+  "version": 1,
+  "studio": "CORE-08",
+  "title": "Altes Projekt",
+  "created": "2026-11-01T10:00:00.0000000",
+  "changed": "2026-11-01T10:00:00.0000000",
+  "data": {
+    "clips": [
+      { "id": "c1", "file": "@@DIR@@/a.mp4", "in": 1, "out": 9, "len": 20, "audio": true, "start": 0, "vol": 0.8, "fade": 0.5 },
+      { "id": "c2", "file": "@@DIR@@/b.mp4", "in": 0, "out": 6, "len": 6, "audio": true, "start": 0 }
+    ],
+    "music": [
+      { "id": "m1", "file": "@@DIR@@/musik.mp3", "in": 0, "out": 10, "len": 30, "audio": true, "start": 2, "vol": 0.5 },
+      { "id": "m2", "file": "@@DIR@@/stimme.wav", "in": 0, "out": 3, "len": 3, "audio": true, "start": 5 }
+    ],
+    "overlay": [
+      { "id": "o1", "file": "@@DIR@@/logo.png", "start": 1, "len": 4, "x": 0.68, "y": 0.05, "w": 0.28, "op": 0.9, "key": "", "ksim": 0.15, "kblend": 0.05, "mask": null }
+    ],
+    "playhead": 0,
+    "width": 1280,
+    "height": 720,
+    "fps": 25
+  }
+}
