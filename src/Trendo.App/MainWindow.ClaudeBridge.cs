@@ -25,7 +25,7 @@ public partial class MainWindow
     /// <summary>Durchgänge, bis Claude fertig sein muss.</summary>
     int ClaudeRounds => ClaudeNoClicks ? 8 : ClaudeProbe.Rounds;
 
-    sealed class BridgeRun { public ClaudeDock? Dock; public required string Folder; public string? Page; public string? ChatId; }
+    sealed class BridgeRun { public ClaudeDock? Dock; public required string Folder; public string? Page; public string? ChatId; public readonly HashSet<string> Allowed = []; }
 
     sealed class ClaudeBridgeSession(ClaudeBridgeHost host, string configFile) : IAsyncDisposable
     {
@@ -58,7 +58,7 @@ public partial class MainWindow
 
     IReadOnlyList<McpTool> BridgeTools(BridgeRun run)
     {
-        McpTool T(string name, string text, JsonObject schema, Func<JsonObject, Task<McpResult>> body) => new(name, text, schema, a => BridgeUi(name, body, a));
+        McpTool T(string name, string text, JsonObject schema, Func<JsonObject, Task<McpResult>> body) => new(name, text, schema, a => BridgeUi(run, name, body, a));
         McpTool S(string name, string text, JsonObject schema, Func<JsonObject, McpResult> body) => T(name, text, schema, a => Task.FromResult(body(a)));
         var programArg = ("programm", "string", "Kennung des Programms; ohne Angabe das zuletzt benutzte", false);
         return
@@ -238,12 +238,30 @@ public partial class MainWindow
         return full.StartsWith(root, StringComparison.OrdinalIgnoreCase) ? full : throw new ArgumentException("Dateien entstehen nur im Projektordner.");
     }
 
-    async Task<McpResult> BridgeUi(string name, Func<JsonObject, Task<McpResult>> body, JsonObject a)
+    /// <summary>Seiten, die nur der Nutzer selbst bedient: Hier werden Freigaben erteilt.</summary>
+    public static readonly IReadOnlySet<string> ClaudeBlockedPages = new HashSet<string> { "approvals" };
+    /// <summary>Seiten mit privaten oder sicherheitsrelevanten Inhalten: Claude braucht je Lauf einmal die Zustimmung.</summary>
+    public static readonly IReadOnlySet<string> ClaudeSensitivePages = new HashSet<string> { "schutz", "sicherung", "forensik", "keys", "claude-verbinden", "personen", "posteingang", "post", "kontakte", "finanzen" };
+    static readonly HashSet<string> PageTools = ["programm_oeffnen", "seite_lesen", "feld_setzen", "auswaehlen", "klicken", "bild_ansehen"];
+
+    /// <summary>Darf Claude diese Seite anfassen? null heißt ja, sonst der Grund.</summary>
+    async Task<McpResult?> BridgeGuard(BridgeRun run, string name, JsonObject a)
+    {
+        if (!PageTools.Contains(name)) return null;
+        var page = name == "programm_oeffnen" ? a["programm"].AsText() ?? "" : CurrentView;
+        if (ClaudeBlockedPages.Contains(page)) return McpResult.Fail("Diese Seite bedient nur der Nutzer selbst. Dort werden Freigaben erteilt.");
+        if (!ClaudeSensitivePages.Contains(page) || run.Allowed.Contains(page)) return null;
+        if (!await BridgeConsent(run, $"die Seite „{page}“ mit privaten Inhalten öffnen und lesen")) return McpResult.Fail("Nicht bestätigt: Der Nutzer möchte das nicht.");
+        run.Allowed.Add(page);
+        return null;
+    }
+
+    async Task<McpResult> BridgeUi(BridgeRun run, string name, Func<JsonObject, Task<McpResult>> body, JsonObject a)
     {
         var result = await _ui.InvokeAsync(async () =>
         {
             if (_core.Approvals.Halted) return McpResult.Fail("Nicht bestätigt: Der Not-Stopp ist aktiv. " + _core.Approvals.HaltReason);
-            try { return await body(a); }
+            try { return await BridgeGuard(run, name, a) ?? await body(a); }
             catch (Exception e) when (e is InvalidOperationException or ArgumentException or IOException or UnauthorizedAccessException or FormatException or KeyNotFoundException or NullReferenceException or IndexOutOfRangeException)
             { return McpResult.Fail(e.Message); }
         });

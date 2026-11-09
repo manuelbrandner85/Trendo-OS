@@ -60,7 +60,7 @@ public partial class MainWindow
 
     IEnumerable<McpTool> StudioIntelTools(BridgeRun run)
     {
-        McpTool S(string name, string text, JsonObject schema, Func<JsonObject, McpResult> body) => new(name, text, schema, a => BridgeUi(name, x => Task.FromResult(body(x)), a));
+        McpTool S(string name, string text, JsonObject schema, Func<JsonObject, McpResult> body) => new(name, text, schema, a => BridgeUi(run, name, x => Task.FromResult(body(x)), a));
         yield return S("studio_wissen", "Fachwissen eines Studios: Zweck, Aufgaben, Programme, Ein- und Ausgaben, Formate, Abläufe, Qualitätsregeln, helfende Studios, Grenzen. Mit auftrag zeigt es die passenden Aufgaben.", TrendoMcp.Schema(("studio", "string", "Studio-Kennung, ohne Angabe das aktuelle", false), ("auftrag", "string", "Wunsch des Nutzers", false)), a =>
         {
             var id = a["studio"].AsText() ?? BridgeStudio(run);
@@ -103,7 +103,7 @@ public partial class MainWindow
 
     IEnumerable<McpTool> HandoffTools(BridgeRun run)
     {
-        McpTool S(string name, string text, JsonObject schema, Func<JsonObject, McpResult> body) => new(name, text, schema, a => BridgeUi(name, x => Task.FromResult(body(x)), a));
+        McpTool S(string name, string text, JsonObject schema, Func<JsonObject, McpResult> body) => new(name, text, schema, a => BridgeUi(run, name, x => Task.FromResult(body(x)), a));
         yield return S("uebergeben", "Gibt eine Datei aus dem Projektordner an ein anderes Studio weiter.", TrendoMcp.Schema(("datei", "string", "Pfad im Projektordner", true), ("an_studio", "string", "Studio-Kennung des Empfängers", true), ("art", "string", "Zum Beispiel figur, ton, modell", true), ("notiz", "string", "Hinweis für das nächste Studio", false)), a =>
         {
             var to = Need(a, "an_studio");

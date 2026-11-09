@@ -169,6 +169,25 @@ Echter Lauf durch den Claude-Bereich: Einfeldträger IPE 200, 5 m, 10 kN/m. 1 Mi
 
 Offen: In den anderen elf Studios gab es keinen echten Claude-Lauf, nur Tests.
 
+### Paket 4: alle übrigen Studios
+
+32 Studios aus KI und Automatik, Entwickeln, System und Sicherheit sowie die übrigen aus Kreativ und 3D. Damit hat jedes Studio außer dem abgelehnten SPEC-07 ausführliches Fachwissen, geprüft durch einen Test über den ganzen Katalog.
+
+Schutz heikler Seiten:
+
+- Die Seite „Freigaben“ ist für Claude gesperrt, auch mit Zustimmung. Dort entscheidet nur der Nutzer.
+- Schutz, Sicherung, Forensik, Online-Dienste (Schlüssel), Claude verbinden, Personen, Posteingang, E-Mail, Kontakte und Geld öffnet Claude erst nach Zustimmung im Chat, je Lauf einmal.
+
+Echter Lauf durch den Claude-Bereich: Einkaufslisten-App im Baukasten, 4 Minuten 31, kein Klick. Claude meldete 28 eigene Tests und eine Gegenprobe mit eingebauten Fehlern.
+
+Grenzen von Phase E insgesamt:
+
+- Einen echten Claude-Lauf gab es in 7 von 57 Studios (Spiele, Bildbearbeitung, 3D, Briefe, Statik, Baukasten und das Zusammenspiel Bild → Spiele). Die übrigen sind nur durch Tests abgedeckt.
+- Das Fachwissen beschreibt, was Studios können. Es macht aus einem Formular-Studio noch keinen echten Editor. Die Spalte „Grenze“ in `TRENDO_STUDIO_FUNKTIONSMATRIX.md` zeigt, was fehlt.
+- Die Startseite mit Aufgaben gibt es nur bei Dokumentprogrammen, alle anderen haben höchstens Vorschläge in der Eingabezeile.
+- Vollen Datenzugriff haben Dokumentprogramme und die 3D-Szene, sonst nur die Seite.
+- Der Nutzer legt mit Sitzung A 16 Studios zusammen, die Kennungen müssen beim Zusammenführen abgeglichen werden.
+
 ## Phase F
 
 Noch nicht begonnen.

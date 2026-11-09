@@ -150,7 +150,8 @@ public class ClaudeBridge_Ui
     {
         var (w, _, _) = Ui.Open(); var folder = Folder();
         var m = w.ClaudeBridgeForTest(folder);
-        foreach (var page in MainWindow.StudioPages.Values.Distinct().ToList())
+        w.ClaudeConsentOverride = _ => Task.FromResult(true);
+        foreach (var page in MainWindow.StudioPages.Values.Distinct().Where(p => !MainWindow.ClaudeBlockedPages.Contains(p)).ToList())
         {
             var opened = await Call(m, "programm_oeffnen", new JsonObject { ["programm"] = page });
             Assert.False(Failed(opened), page + ": " + Text(opened));
