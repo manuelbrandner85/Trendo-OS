@@ -56,7 +56,7 @@ public class StartMenu_StudioFenster
         foreach (var id in StudioCatalog.ById.Keys)
             Assert.Contains(w.Studios, s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
 
-        foreach (var (id, info) in StudioCatalog.ById)
+        foreach (var (id, info) in StudioCatalog.ById.Where(k => StudioCatalog.InOverview(k.Key)))
         {
             RealClick(w, V<Button>(w, "start-button"));
             Assert.True(w.StartMenuOpen, id);
@@ -107,7 +107,7 @@ public class StartMenu_StudioFenster
         Assert.True(w.StartMenuOpen);
         var letters = w.GetVisualDescendants().OfType<TextBlock>().Where(t => t.Name?.StartsWith("sm-letter-") == true).Select(t => t.Text).ToList();
         Assert.Equal(letters.OrderBy(x => x, StringComparer.Create(new System.Globalization.CultureInfo("de-DE"), true)), letters);
-        Assert.Equal(StudioCatalog.ById.Count, w.GetVisualDescendants().OfType<Button>().Count(b => b.Name?.StartsWith("sm-az-") == true));
+        Assert.Equal(StudioCatalog.ById.Keys.Count(StudioCatalog.InOverview), w.GetVisualDescendants().OfType<Button>().Count(b => b.Name?.StartsWith("sm-az-") == true));
         w.Close();
     }
 

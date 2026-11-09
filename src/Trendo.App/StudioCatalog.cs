@@ -114,6 +114,30 @@ public static class StudioCatalog
         return items.OrderBy(x => SubAreas.GetValueOrDefault(id(x), ""), de).ThenBy(x => For(id(x))?.Name ?? fallbackName(x), de);
     }
 
+    /// <summary>Bereich „Einstellungen“ als Ziel einer Zusammenlegung.</summary>
+    public const string SettingsHost = "settings";
+
+    /// <summary>Aus der Liste entfernt (SPEC-07 abgelehnt, die übrigen auf Wunsch vom 09.11.2026): nirgends mehr angeboten. Die Kennungen bleiben für Register und Modelle erhalten.</summary>
+    public static readonly IReadOnlySet<string> Removed = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "SPEC-07", "SPEC-04", "SPEC-16", "CORE-09" };
+
+    /// <summary>Zusammengelegt (Freigabe 09.11.2026): Das Studio steht nicht mehr in der Übersicht, bleibt aber über die Suche und die Leiste des aufnehmenden Studios erreichbar. Keine Funktion geht verloren.</summary>
+    public static readonly IReadOnlyDictionary<string, string> FoldedInto = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ["X-08"] = "CORE-04", ["SYS-11"] = "SYS-04", ["SPEC-10"] = "SPEC-05", ["X-03"] = "CORE-07",
+        ["CORE-01"] = SettingsHost, ["SYS-01"] = SettingsHost, ["SYS-12"] = SettingsHost, ["X-09"] = SettingsHost, ["SYS-13"] = SettingsHost, ["SYS-07"] = SettingsHost, ["X-02"] = SettingsHost,
+        ["CORE-03"] = "CORE-02", ["X-05"] = "CORE-02", ["CORE-12"] = "CORE-02", ["X-01"] = "X-11",
+        ["X-06"] = "X-04", ["X-10"] = "X-04", ["X-07"] = "CORE-08",
+    };
+
+    /// <summary>Nur über die Suche erreichbar, ohne aufnehmendes Studio.</summary>
+    public static readonly IReadOnlySet<string> SearchOnly = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>Steht das Studio in der Übersicht, im Startmenü und auf dem Desktop?</summary>
+    public static bool InOverview(string id) => !Removed.Contains(id) && !FoldedInto.ContainsKey(id) && !SearchOnly.Contains(id);
+
+    /// <summary>Studios, die in ein Studio oder die Einstellungen eingegliedert sind.</summary>
+    public static IEnumerable<string> FoldedFor(string host) => FoldedInto.Where(k => string.Equals(k.Value, host, StringComparison.OrdinalIgnoreCase)).Select(k => k.Key);
+
     public static StudioInfo? For(string? id) => id is not null && ById.TryGetValue(id, out var i) ? i : null;
 
     /// <summary>Anzeigename aus dem Katalog. Fehlt der Eintrag, bleibt der bisherige Text.</summary>

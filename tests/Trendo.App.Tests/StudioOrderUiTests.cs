@@ -32,7 +32,7 @@ public class StudioOrder_Ui
         Assert.Null(w.TryFind<TextBlock>("studios-recent-head"));
         Assert.NotNull(w.TryFind<TextBlock>("studio-sub-Sicherheit & Daten"));
         var chip = w.GetLogicalDescendants().OfType<Button>().First(b => (b.Content as string)?.StartsWith("System & Sicherheit (", StringComparison.Ordinal) == true);
-        Assert.Equal("System & Sicherheit (15)", chip.Content);
+        Assert.Equal("System & Sicherheit (6)", chip.Content);
 
         w.Show(MainWindow.StudioPages["SPEC-11"]); Settle();
         w.Show("studios"); Settle();

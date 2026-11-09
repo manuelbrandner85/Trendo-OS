@@ -65,9 +65,9 @@ public partial class MainWindow
         var gs = new GlobalSearch();
         foreach (var (t, k, w) in Pages.Concat(ExtraPages)) if (_showMap.ContainsKey(k)) gs.Add("Seite", t, "page:" + k, w);
         foreach (var c in Categories) gs.Add("Seite", c.Label, "filter:" + c.Filter, c.Label.Split(' ', '&'));
-        foreach (var s in _studios) gs.Add("Studio", StudioCatalog.For(s.Id)?.Name ?? s.Name, "studio:" + s.Id, StudioWords(s.Id, s.Name));
+        foreach (var s in _studios.Where(s => !StudioCatalog.Removed.Contains(s.Id))) gs.Add("Studio", StudioCatalog.For(s.Id)?.Name ?? s.Name, "studio:" + s.Id, StudioWords(s.Id, s.Name));
         foreach (var (id, info) in StudioCatalog.ById)
-            if (!_studios.Any(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase)))
+            if (!StudioCatalog.Removed.Contains(id) && !_studios.Any(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase)))
                 gs.Add("Studio", info.Name, "studio:" + id, StudioWords(id, info.Name));
         foreach (var p in _core.Projects.List()) gs.Add("Projekt", p.Name, "project:" + p.Id, p.Id);
         // A3: Installierbares gleich mit finden („Video schneiden“ → Kdenlive installieren)

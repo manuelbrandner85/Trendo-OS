@@ -169,7 +169,7 @@ public class Bildbearbeitung_Ui
     [AvaloniaFact(DisplayName = "Bildbearbeitung Profi (Profi 24): Zauberstab wählt die Farbfläche, Maske daraus, Lasso umfährt, inhaltsbasiert füllen entfernt Fleck, Kurvenpunkte frei ziehen")]
     public void Wand_lasso_contentfill_curve()
     {
-        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000; Directory.CreateDirectory(root);
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1100; Directory.CreateDirectory(root);
         try
         {
             var src = Path.Combine(root, "foto.png");
