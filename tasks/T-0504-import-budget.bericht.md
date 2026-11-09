@@ -26,7 +26,7 @@ Vor der Änderung gegen den alten Code ausgeführt:
 - Beziehungsliste: 94,7 s alter Code, 0,65 s neuer Code.
 - Tief verschachtelte Diagramme: Stack Overflow im alten Code.
 - „Viele Anker auf dasselbe Ziel“ war im alten Code grün, weil dort kein Budget existierte. Mit ausgeschaltetem Zwischenspeicher wurde der Test rot, also prüft er den Zwischenspeicher.
-- Nicht gegen den alten Code gelaufen: die drei später geänderten oder ergänzten Tests (zwei Tiefentests, „Notizen und Zeichnungen zählen gemeinsam“, „Anker ohne Id“). „Überlange Beziehungsziele“ scheiterte im alten Lauf an der ZIP-Prüfung und wurde danach umgebaut.
+- Nicht gegen den alten Code gelaufen: die vier später geänderten oder ergänzten Tests (zwei Tiefentests, „Notizen und Zeichnungen zählen gemeinsam“, „Anker ohne Id“). „Überlange Beziehungsziele“ scheiterte im alten Lauf an der ZIP-Prüfung und wurde danach umgebaut.
 
 ## Gleichheit der Ergebnisse
 Vergleich von 82d0c981a und diesem Stand auf 105 Dateien (24 echte XLSX, 80 echte OBJ, eine erzeugte Mappe mit Diagrammen): Der SHA-256 über alle gelesenen Daten ist in allen 105 Zeilen gleich (Gesamthash `C0B70E0C…61EB860`). Darin 5 Diagramme, 7 Notizen, 2 Regeln, 1 Auswahlliste, 153 OBJ-Teile, 0 Lesefehler. Das Vergleichswerkzeug liegt nicht im Repository, die Dateien bleiben lokal.
