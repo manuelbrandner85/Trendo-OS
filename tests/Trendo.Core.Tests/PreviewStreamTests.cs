@@ -76,7 +76,6 @@ public class PreviewStreamTests
             Assert.Equal(120, n);
             var fps = n / sw.Elapsed.TotalSeconds;
             Assert.True(fps >= 30, $"nur {fps:0} Bilder/s");
-            TestContext.Current.SendDiagnosticMessage($"Vorschau: {fps:0} Bilder/s");
         }
         finally { Directory.Delete(dir, true); }
     }
