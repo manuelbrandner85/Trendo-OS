@@ -37,3 +37,10 @@
 - origin/main hat seither 5 weitere Commits. Die 16 Studio-Zusammenlegungen sind noch nicht enthalten.
 - Nicht geprüft: echte Abo-Pause, Unreal und Unity in einem echten Auftrag, 52 Studios ohne echten Claude-Lauf, Tests mit Anfängern, Pi und Linux.
 - Status: gebaut und getestet, nicht abgenommen. Merge nach main wartet auf das OK des Projektinhabers.
+
+## Stand für den Merge nach main
+
+- Mit origin/main 0.9.89 zusammengeführt. Ein Lauf hatte 16 rote Tests, weil Aufgaben-Karte und Studio-Leiste die Vorlagen aus dem sichtbaren Bereich schoben. Behoben: Die Karte steht unter „Neu“.
+- Volltest auf 1de30b3a0: Build Exit 0, Api 16 von 16, Core 2191 bestanden und 5 übersprungen, App 1180 bestanden und 4 übersprungen, Exit 0. Paket-Tests 11, OK, Exit 0.
+- Beleg: `reports/t-0700/volltest-1de30b3a0.txt`, SHA-256 87a354087300a451b2b0009d0ff694684fbc43bad3e01d5b66ea9b73d5b5ecc2.
+- Merge nach main freigegeben vom Projektinhaber („Ja, nach main“). Nicht abgenommen.
