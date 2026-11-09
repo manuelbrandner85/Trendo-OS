@@ -46,6 +46,9 @@ public partial class MainWindow
         var stopped = new List<string>();
         if (dropped > 0) stopped.Add($"{dropped} Freigaben verworfen");
         if (_dlCts is { IsCancellationRequested: false } dl) { dl.Cancel(); stopped.Add("Download angehalten"); }
+        var claudeRuns = _chatUis.Values.Where(u => u.Running && u.Cts is { IsCancellationRequested: false }).ToList();
+        foreach (var u in claudeRuns) u.Cts!.Cancel();
+        if (claudeRuns.Count > 0) stopped.Add("Claude angehalten");
         if (ActiveShare is not null) { await StopShareAsync(); stopped.Add("Freigabe im Netz beendet"); }
         if (_live is { Mode: not LiveMode.Idle } live) { live.Stop(); stopped.Add("Sendung/Aufnahme beendet"); }
         if (!Bench.Drive.Emergency) { Bench.Drive.EmergencyStop(); stopped.Add("Roboterarm Not-Aus"); }

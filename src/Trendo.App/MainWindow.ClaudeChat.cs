@@ -375,6 +375,7 @@ public partial class MainWindow
     async Task ClaudeChatSend(ClaudeDock dock, string? text, bool check = false, int round = 0, string? shot = null)
     {
         if (!_chatUis.TryGetValue(dock, out var ui) || ui.Running || string.IsNullOrWhiteSpace(text)) return;
+        if (ClaudeNoClicks && _core.Approvals.Halted) { Toast("Der Not-Stopp ist aktiv. Claude startet erst nach „Fortsetzen“."); return; }
         text = text.Trim();
         var studio = ChatStudio(dock);
         var chats = CChats;
@@ -536,7 +537,7 @@ public partial class MainWindow
         if (error is null && pageState is not null && ClaudeActions.Parse(answer, pageState) is { Count: > 0 } psteps)
         {
             ui.Plan = new ClaudePlan(dock.Page, pageState, psteps, chat.Id);
-            autoPlan = ClaudeNoClicks && !psteps.Any(s => ClaudeActions.StepRisky(s, pageState));
+            autoPlan = bridged && ClaudeNoClicks && ClaudePlanSafe(dock.Page, pageState, psteps); // nur Claude, die Ersatz-KI bleibt beim Plan mit Knopf
         }
         var finished = TrendoMcp.IsFinished(answer); answer = TrendoMcp.StripFinish(answer);
         // selbstlernend: „Lernregel: …“ wird ein Vorschlag (gilt erst nach Ja)
@@ -560,12 +561,12 @@ public partial class MainWindow
         // Echt testen, bis es läuft: Trendo prüft mit den Fachregeln, startet das Ergebnis (Browser unsichtbar, Syntaxprüfung) und zeigt Claude ein Bildschirmfoto –
         // Befunde gehen automatisch zurück an Claude, höchstens bis Durchgang ClaudeProbe.Rounds
         var rounds = ClaudeRounds;
-        if (bridged && error is null && !finished && round + 1 < rounds)
+        if (bridged && error is null && !finished && round + 1 < rounds && !_core.Approvals.Halted)
         {
             _core.Audit.Append(Principal.LocalOwner.Name, "claude.chat.weiter", $"Durchgang {round + 2}");
             await ClaudeChatSend(dock, TrendoMcp.ContinuePrompt, check: true, round: round + 1);
         }
-        else if (round + 1 < rounds && error is null && changes.Count > 0)
+        else if (round + 1 < rounds && error is null && changes.Count > 0 && !_core.Approvals.Halted)
         {
             var alive = changes.Where(c => c.Change != "gelöscht").Select(c => c.File).ToList();
             var found = TrendoAgent.Check(folder, alive).Where(c => !c.Ok).Select(c => c.Text).ToList();

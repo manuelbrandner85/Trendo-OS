@@ -25,7 +25,7 @@ Read-only, keine Änderung am Programmcode. Ergebnis: [Funktionsmatrix](TRENDO_S
 
 ## Claude-Zugang (Teil von Phase C)
 
-Claude bedient Trendo während der Arbeit selbst über 15 Werkzeuge (`W2/TrendoMcp.cs`, `MainWindow.ClaudeBridge.cs`, `Trendo.Api/ClaudeBridgeHost.cs`). Der Zugang lauscht nur auf 127.0.0.1, gilt für einen Lauf und braucht ein Zufalls-Kennzeichen. Anmeldedaten von Claude berührt er nicht.
+Claude bedient Trendo während der Arbeit selbst über 22 Werkzeuge (`W2/TrendoMcp.cs`, `MainWindow.ClaudeBridge.cs`, `Trendo.Api/ClaudeBridgeHost.cs`). Der Zugang lauscht nur auf 127.0.0.1, gilt für einen Lauf und braucht ein Zufalls-Kennzeichen. Anmeldedaten von Claude berührt er nicht.
 
 Echte Läufe mit Claude Code 2.1.316 am 09.11.2026 gegen ein laufendes Trendo-Fenster:
 
@@ -40,14 +40,14 @@ Nicht geprüft: der Lauf durch den echten Chat-Bereich der App (die Läufe ginge
 
 ## Phase B: Funktionsschutz und Zuordnung (Baseline erstellt, Lücken offen)
 
-`scripts/function_baseline.py` erfasst aus dem Quellcode jede Funktion mit festem Namen in `baseline/funktionen.csv`. Der Paket-Test `test_funktions_baseline.py` schlägt an, sobald eine davon aus dem Code verschwindet.
+`scripts/function_baseline.py` erfasst aus dem Quellcode die Funktionen, deren Name fest im Code steht in `baseline/funktionen.csv`. Der Paket-Test `test_funktions_baseline.py` schlägt an, sobald eine davon aus dem Code verschwindet.
 
 | Messgröße | Wert |
 |---|---|
-| Erfasste Funktionen | 2174 (1212 Knöpfe, 641 Felder, 189 Auswahllisten, 132 Befehle) |
-| Mit Test, der den Namen nennt | 1160 |
-| Einem Studio zugeordnet | 988 |
-| Stellen mit Namen, die erst zur Laufzeit entstehen (nicht erfasst) | 519 |
+| Erfasste Funktionen | 2258, Stand nach dem Zusammenführen mit `main` |
+| Mit Test, der den Namen nennt | 1224 |
+| Einem Studio zugeordnet | 1016 |
+| Stellen mit Namen, die erst zur Laufzeit entstehen (nicht erfasst) | 543 |
 
 Grenzen: Die Spalten Ausgabe und Abhängigkeiten stehen auf „offen“, weil sie sich aus dem Code nicht sicher ablesen lassen. Der Schutz prüft, ob der Name noch da ist, nicht ob die Funktion gleich gut arbeitet. Das bleibt Aufgabe der Tests je Studio.
 
@@ -182,12 +182,45 @@ Echter Lauf durch den Claude-Bereich: Einkaufslisten-App im Baukasten, 4 Minuten
 
 Grenzen von Phase E insgesamt:
 
-- Einen echten Claude-Lauf gab es in 7 von 57 Studios (Spiele, Bildbearbeitung, 3D, Briefe, Statik, Baukasten und das Zusammenspiel Bild → Spiele). Die übrigen sind nur durch Tests abgedeckt.
+- Einen echten Claude-Lauf gab es in 6 von 58 Studios (Spiele, Videos und Fotos über die Bildbearbeitung, 3D, Briefe, Statik, Baukasten). Die übrigen sind nur durch Tests abgedeckt.
 - Das Fachwissen beschreibt, was Studios können. Es macht aus einem Formular-Studio noch keinen echten Editor. Die Spalte „Grenze“ in `TRENDO_STUDIO_FUNKTIONSMATRIX.md` zeigt, was fehlt.
 - Die Startseite mit Aufgaben gibt es nur bei Dokumentprogrammen, alle anderen haben höchstens Vorschläge in der Eingabezeile.
 - Vollen Datenzugriff haben Dokumentprogramme und die 3D-Szene, sonst nur die Seite.
 - Der Nutzer legt mit Sitzung A 16 Studios zusammen, die Kennungen müssen beim Zusammenführen abgeglichen werden.
 
-## Phase F
+## Phase F: Gesamtprüfung
 
-Noch nicht begonnen.
+`main` (0.9.88 und später) ist in den Zweig geholt, ohne Konflikte. Die 16 Studio-Zusammenlegungen sind dort noch nicht enthalten.
+
+Zwei unabhängige Gutachten, nur lesend. Beide lauteten zunächst „nicht abnahmefähig“. Behoben:
+
+| Befund | Behebung |
+|---|---|
+| Not-Stopp beendete Claude nicht | Bricht laufende Arbeit ab, kein neuer Durchgang, kein neuer Start |
+| Programme ließen sich ohne Rückfrage entfernen | Wortliste erweitert, Programm-Seiten brauchen Zustimmung |
+| Claude konnte eigene Rechte einschalten | Rechte-Schalter sind für Claude gesperrt, auch mit Zustimmung |
+| Felder und Schalter ohne Prüfung, Einwilligungen setzbar | Gleiche Prüfung wie bei Klicks, Einwilligungsfelder gesperrt |
+| Bild zeigte auch andere Fenster | Nur noch die geprüfte Seite |
+| Automatischer Plan umging die Regeln, auch für die Ersatz-KI | Gleiche Regeln, nur noch für Claude |
+| Vorher/Nachher ging verloren, kein Schalter | Vergleich bleibt, Schalter „ohne Klicks“ in den Claude-Einstellungen |
+| Nutzerweg ungetestet | Tests mit eingeschaltetem Modus, auch Negativfälle |
+| Automatische Übernahme traf das falsche Fenster | Nur noch im Fenster des Laufs |
+| Falsche Formate, Rechnen ohne Funktion | Fachwissen korrigiert |
+| Belege fehlten | `reports/t-0700/` mit Rohlog und Prüfsumme |
+
+Baseline: Nach dem Zusammenführen entfielen acht Einträge (`controls`, `game-f-mechanics`, `menus`, `systems`, `logline`, `loop`, `sound`, `style`), weil `main` diese Felder im Spiele-Programm nun zur Laufzeit erzeugt (`ProgGameDesign.cs`). Die Funktionen bestehen weiter. Exporte sind seit der Korrektur des Musters mit erfasst.
+
+Ergebnis gegen die Erfolgsdefinition des Auftrags:
+
+| Punkt | Stand |
+|---|---|
+| 1 Zweck und passende Oberfläche je Studio | Zweck ja, passende Oberfläche nur teilweise (Startseite nur bei Dokumentprogrammen) |
+| 2 Vorhandene Fähigkeiten erhalten | Volltest und Baseline belegen das für benannte Funktionen, nicht für die Qualität im Einzelnen |
+| 3 Claude führt reale Aufgaben aus | belegt in 6 Studios, sonst nur Tests |
+| 4 Anfänger schaffen die Hauptaufgaben | **nicht belegt**, keine Tests mit Menschen |
+| 5 Profis behalten alle Werkzeuge | Stufe Profi unverändert, im Referenzstudio getestet |
+| 6 Mehrere Studios arbeiten zusammen | belegt für Bild → Spiele, längere Ketten fehlen |
+| 7 Echte, bearbeitbare Projektdateien | belegt in den echten Läufen |
+| 8 Abnahmetests dokumentiert | teilweise, die Abnahme selbst steht aus |
+
+**Damit ist der Auftrag noch nicht im Sinne der Erfolgsdefinition erfüllt. Abgenommen ist kein Studio.**

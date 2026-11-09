@@ -169,11 +169,11 @@ public static class DocPath
 
 public static partial class ClaudeActions
 {
-    [GeneratedRegex(@"senden|verschick|kauf|bezahl|bestell|zahlung|überweis|veröffentlich|hochlad|posten|\bteilen\b|installier|formatier|lösch|papierkorb|drucken|druck starten|maschine|abmeld|freigeb|freigabe|genehmig|einverstanden|zustimm|vertrauen|approve|mikrofon|not-aus|notaus|verbinden mit", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"senden|verschick|kauf|bezahl|bestell|zahlung|überweis|veröffentlich|hochlad|posten|\bteilen\b|installier|formatier|lösch|entfern|leeren|zurücksetz|überschreib|abschick|ausführen|einricht|aktualisier|update|einwillig|papierkorb|drucken|druck starten|maschine|abmeld|freigeb|freigabe|genehmig|einverstanden|zustimm|vertrauen|approve|mikrofon|not-aus|notaus|verbinden mit", RegexOptions.IgnoreCase)]
     private static partial Regex ConsentRx();
-    [GeneratedRegex(@"lösch", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"lösch|entfern|leeren", RegexOptions.IgnoreCase)]
     private static partial Regex DeleteRx();
-    [GeneratedRegex(@"datei|projekt|dokument|papierkorb|\balle|endgültig|konto", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"datei|projekt|dokument|programm|papierkorb|\balle|endgültig|konto", RegexOptions.IgnoreCase)]
     private static partial Regex WholeThingRx();
 
     /// <summary>Muss der Nutzer im Chat zustimmen? Nur bei Wirkung nach außen oder wenn sich etwas nicht zurückholen lässt.

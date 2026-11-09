@@ -21,6 +21,7 @@ T = r'"((?:[^"\\]|\\.)*)"'
 PATTERNS = [
     ("befehl", re.compile(r"new ProgramCmd\(" + N + r",\s*" + T)),
     ("export", re.compile(r"new ProgramExport\(" + N + r",\s*" + T + r",\s*" + T)),
+    ("export", re.compile(r"\bnew\(" + N + r",\s*" + T + r",\s*\"(\.[a-z0-9.]+)\"")),
     ("werkzeug", re.compile(r"new ProgramTool\(" + N + r',\s*"[^"]*",\s*' + T)),
     ("knopf", re.compile(r"\b(?:Act|RBtn|Btn|B)\(" + N + r",\s*" + T)),
     ("knopf", re.compile(r"new Button \{ Name = " + N + r",\s*Content = " + T)),

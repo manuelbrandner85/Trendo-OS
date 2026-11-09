@@ -95,6 +95,151 @@ public class StudiosAlle_Ui
         w.Close();
     }
 
+    [AvaloniaFact(DisplayName = "Schutz: Claude kann seine eigenen Rechte nicht ändern, auch nicht mit Zustimmung")]
+    public async Task Rights_switch_refused()
+    {
+        var (w, _, _) = Ui.Open();
+        w.ClaudeConsentOverride = _ => Task.FromResult(true);
+        var m = w.ClaudeBridgeForTest(Folder());
+        await Call(m, "programm_oeffnen", new JsonObject { ["programm"] = "technik", ["vorlage"] = "einfeld" }); Settle();
+        var root = Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(w).OfType<Avalonia.Controls.StackPanel>().First(p => p.IsEffectivelyVisible && p.Bounds.Width > 0 && Avalonia.VisualTree.VisualExtensions.FindAncestorOfType<Avalonia.Controls.Border>(p)?.Name == "prog-workspace");
+        var toggle = new Avalonia.Controls.CheckBox { Name = "claude-always-full", Content = "Internet", IsChecked = false }; root.Children.Add(toggle); Settle();
+        var r = await Call(m, "feld_setzen", new JsonObject { ["ziel"] = "claude-always-full", ["wert"] = true });
+        Assert.True(Failed(r)); Assert.Contains("nur der Nutzer", Text(r)); Assert.False(toggle.IsChecked);
+        Assert.True(Failed(await Call(m, "klicken", new JsonObject { ["ziel"] = "claude-always-full" }))); Assert.False(toggle.IsChecked);
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Schutz: Einwilligungen im Dokument setzt nur der Nutzer")]
+    public async Task Consent_field_refused()
+    {
+        var (w, _, _) = Ui.Open();
+        var m = w.ClaudeBridgeForTest(Folder());
+        await Call(m, "programm_oeffnen", new JsonObject { ["programm"] = "technik", ["vorlage"] = "einfeld" });
+        var r = await Call(m, "dokument_setzen", new JsonObject { ["pfad"] = "quelle/consent", ["wert"] = true });
+        Assert.True(Failed(r)); Assert.Contains("nur der Nutzer", Text(r));
+        Assert.Null(w.ProgramActive("technik")!.Data["quelle"]);
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Not-Stopp: Bricht laufende Claude-Arbeit ab und lässt keinen neuen Durchgang starten")]
+    public async Task Halt_stops_claude()
+    {
+        var w = await Chat("CORE-06", "spiele-programm");
+        var started = 0; var cancelled = new TaskCompletionSource();
+        MainWindow.ClaudeRunOverride = async (_, _, _, ct) =>
+        {
+            started++;
+            try { await Task.Delay(-1, ct); } catch (OperationCanceledException) { cancelled.TrySetResult(); throw; }
+            return 0;
+        };
+        try
+        {
+            var send = w.ClaudeChatSend("Baue ein Spiel");
+            for (var i = 0; i < 500 && started == 0; i++) { Settle(); await Task.Delay(5); }
+            Assert.Equal(1, started);
+            await Run(Done(w.HaltAll("Prüfung")));
+            await Run(Done(cancelled.Task.WaitAsync(TimeSpan.FromSeconds(10))));
+            await Run(Done(send));
+            Assert.Equal(1, started); // kein weiterer Durchgang
+            await Run(Done(w.ClaudeChatSend("Nochmal")));
+            Assert.Equal(1, started); // kein neuer Lauf während des Not-Stopps
+            w.Core.Approvals.Resume(Principal.LocalOwner);
+        }
+        finally { MainWindow.ClaudeRunOverride = null; MainWindow.ClaudeStatusOverride = null; }
+        w.Close();
+    }
+    static async Task<bool> Done(Task t) { await t; return true; }
+
+    static Action<string> Emit(Action<string> line) => line;
+    static void Say(Action<string> line, string text)
+    {
+        line(System.Text.Json.JsonSerializer.Serialize(new { type = "system", subtype = "init", session_id = "s1", model = "claude" }));
+        line(System.Text.Json.JsonSerializer.Serialize(new { type = "assistant", message = new { content = new object[] { new { type = "text", text } } } }));
+        line(System.Text.Json.JsonSerializer.Serialize(new { type = "result", subtype = "success", is_error = false, result = text, session_id = "s1", num_turns = 1 }));
+    }
+
+    static async Task<MainWindow> Chat(string studio, string page)
+    {
+        var (w, _, _) = Ui.Open();
+        w.ClaudeNoClicks = true; MainWindow.ClaudeStepDelay = 0;
+        MainWindow.ClaudeStatusOverride = () => Task.FromResult(new ClaudeCode.Status(true, true, "claude.ai", "max", @"C:\x\claude.exe"));
+        await Run(Done(w.ClaudeCheck(true)));
+        w.Show(page); Settle(); w.ClaudeDockToggle(studio); w.Show(page); Settle();
+        return w;
+    }
+
+    [AvaloniaFact(DisplayName = "Nutzerweg: Claude bekommt den Zugang samt Freigabe und ist bei „fertig“ am Ende, ohne das Wort in der Antwort")]
+    public async Task Chat_finishes()
+    {
+        var w = await Chat("CORE-06", "spiele-programm");
+        var calls = new List<IReadOnlyList<string>>();
+        MainWindow.ClaudeRunOverride = (a, _, line, _) => { calls.Add(a); Say(line, "Alles gebaut.\nTRENDO_FERTIG"); return Task.FromResult(0); };
+        try
+        {
+            await Run(Done(w.ClaudeChatSend("Baue ein Spiel")));
+            var a = Assert.Single(calls);
+            Assert.Contains("--mcp-config", a); Assert.Contains(TrendoMcp.AllowedTools, a);
+            Assert.Contains(a, x => x.Contains("DU ARBEITEST SELBSTÄNDIG"));
+            Assert.DoesNotContain("TRENDO_FERTIG", w.ClaudeChatCurrent()!.Messages[^1].Text);
+            var config = a[a.ToList().IndexOf("--mcp-config") + 1];
+            Assert.False(File.Exists(config)); // Zugangsdaten sind nach dem Lauf weg
+        }
+        finally { MainWindow.ClaudeRunOverride = null; MainWindow.ClaudeStatusOverride = null; }
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Nutzerweg: Ohne „fertig“ arbeitet Claude weiter, aber höchstens acht Durchgänge")]
+    public async Task Chat_continues_limited()
+    {
+        var w = await Chat("CORE-06", "spiele-programm");
+        var prompts = new List<string>();
+        MainWindow.ClaudeRunOverride = (a, _, line, _) => { prompts.Add(a[a.ToList().IndexOf("-p") + 1]); Say(line, "Noch nicht fertig."); return Task.FromResult(0); };
+        try
+        {
+            await Run(Done(w.ClaudeChatSend("Baue ein Spiel")));
+            Assert.Equal(8, prompts.Count);
+            Assert.Contains(TrendoMcp.ContinuePrompt, prompts[1]);
+        }
+        finally { MainWindow.ClaudeRunOverride = null; MainWindow.ClaudeStatusOverride = null; }
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Nutzerweg: Ein harmloser Plan läuft von selbst, bei offener Freigabe bleibt er stehen")]
+    public async Task Plan_guard()
+    {
+        var w = await Chat("SPEC-03", "technik");
+        MainWindow.ClaudeRunOverride = (_, _, line, _) => { Say(line, "Ich schalte die Ansicht um.\n[[trendo:klick | prog-cmd-tk-m]]\nTRENDO_FERTIG"); return Task.FromResult(0); };
+        try
+        {
+            w.ProgramNew("technik", "einfeld"); w.Show("technik"); Settle();
+            await Run(Done(w.ClaudeChatSend("Zeige die Momente")));
+            Assert.False(w.ClaudePlanPending());
+            var open = w.Core.Approvals.Request(Principal.LocalOwner, "test", "offen", "ziel");
+            await Run(Done(w.ClaudeChatSend("Noch einmal")));
+            Assert.True(w.ClaudePlanPending());
+            w.Core.Approvals.Deny(open.Id, Principal.LocalOwner);
+        }
+        finally { MainWindow.ClaudeRunOverride = null; MainWindow.ClaudeStatusOverride = null; }
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Nutzerweg: Mit ausgeschaltetem „ohne Klicks“ bleiben Plan, Vergleich und Behalten wie zuvor")]
+    public async Task Switch_restores()
+    {
+        var w = await Chat("SPEC-03", "technik");
+        w.ClaudeNoClicks = false;
+        MainWindow.ClaudeRunOverride = (a, _, line, _) => { Assert.DoesNotContain("--mcp-config", a); Say(line, "Plan.\n[[trendo:klick | prog-cmd-tk-m]]"); return Task.FromResult(0); };
+        try
+        {
+            w.ProgramNew("technik", "einfeld"); w.Show("technik"); Settle();
+            await Run(Done(w.ClaudeChatSend("Zeige die Momente")));
+            Assert.True(w.ClaudePlanPending());
+        }
+        finally { MainWindow.ClaudeRunOverride = null; MainWindow.ClaudeStatusOverride = null; }
+        w.Close();
+    }
+
     [AvaloniaFact(DisplayName = "Schutz: Fachwissen bleibt ohne Zustimmung abrufbar, es enthält keine privaten Daten")]
     public async Task Knowledge_without_consent()
     {

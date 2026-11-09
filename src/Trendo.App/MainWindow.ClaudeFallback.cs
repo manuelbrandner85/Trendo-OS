@@ -62,12 +62,14 @@ public partial class MainWindow
         foreach (var call in ClaudeTools.Parse(answer))
         {
             var (ok, msg) = await KiToolRun(call.Kind, call.Input, folder, call.File, DraftRoot(chatId));
+            var taken = false;
             if (ok && _chatUis.TryGetValue(dock, out var ui))
             {
                 ui.Drafts.Add(new ClaudeDraft(call.Kind, call.Input, call.File, System.IO.Path.Combine(DraftRoot(chatId), call.File.Replace('/', System.IO.Path.DirectorySeparatorChar)), folder, chatId));
-                if (ClaudeNoClicks) await ClaudeDraftDecide(ui.Drafts.Count - 1, "ok");
+                // das Übernehmen arbeitet über das aktive Fenster: nur wenn das der Lauf ist, sonst bleibt die Karte stehen
+                if (ClaudeNoClicks && Windows.Active?.Id is { } activeId && _claudeDocks.TryGetValue(activeId, out var activeDock) && ReferenceEquals(activeDock, dock)) { await ClaudeDraftDecide(ui.Drafts.Count - 1, "ok"); taken = true; }
             }
-            steps.Add(new ClaudeChats.Step(ok ? $"{ClaudeTools.Kinds[call.Kind].Label}: {call.File}" + (ClaudeNoClicks ? "" : " – Entwurf wartet auf deine Freigabe") : msg, false, !ok));
+            steps.Add(new ClaudeChats.Step(ok ? $"{ClaudeTools.Kinds[call.Kind].Label}: {call.File}" + (taken ? "" : " – Entwurf wartet auf deine Freigabe") : msg, false, !ok));
         }
         return steps;
     }

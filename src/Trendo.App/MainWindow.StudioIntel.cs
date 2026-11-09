@@ -66,16 +66,17 @@ public partial class MainWindow
             var id = a["studio"].AsText() ?? BridgeStudio(run);
             return StudioKnowledgeBase.For(id) is { } k ? new McpResult(StudioKnowledgeBase.ToJson(k, a["auftrag"].AsText()).ToJsonString()) : McpResult.Fail("Dieses Studio ist nicht bekannt.");
         });
-        yield return S("programme_pruefen", "Prüft echte Fachprogramme auf diesem PC: installiert, startbar, Schnittstelle, Aktionen, Rechte. Fehlt etwas, sage es dem Nutzer und tu nicht so, als wäre es da.", TrendoMcp.Schema(("programme", "string", "Kennungen mit Komma, ohne Angabe die des Studios", false)), a =>
+        yield return new("programme_pruefen", "Prüft echte Fachprogramme auf diesem PC: installiert, startbar, Schnittstelle, Aktionen, Rechte. Fehlt etwas, sage es dem Nutzer und tu nicht so, als wäre es da.", TrendoMcp.Schema(("programme", "string", "Kennungen mit Komma, ohne Angabe die des Studios", false)), args => BridgeUi(run, "programme_pruefen", async a =>
         {
             var list = a["programme"].AsText()?.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
             IEnumerable<string>? only = list ?? (StudioKnowledgeBase.For(BridgeStudio(run)) is { Programs.Count: > 0 } k ? k.Programs : null);
-            return new McpResult(new JsonArray(ProgramChecks(only).Select(c => (JsonNode)new JsonObject
+            var checks = await Task.Run(() => ProgramChecks(only)); // Startprüfungen blockieren die Oberfläche und den Not-Stopp nicht
+            return new McpResult(new JsonArray(checks.Select(c => (JsonNode)new JsonObject
             {
                 ["programm"] = c.Id, ["name"] = c.Name, ["installiert"] = c.Installed, ["startet"] = c.Starts, ["schnittstelle"] = c.Interface,
                 ["aktionen"] = new JsonArray(c.Actions.Select(x => (JsonNode)x).ToArray()), ["rechte"] = c.Rights, ["hinweis"] = c.Note,
             }).ToArray()).ToJsonString());
-        });
+        }, args));
         yield return S("projekt_kontext", "Stand des Projekts: Studio, Dokument, Fortschritt, Dateien, Gedächtnis mit früheren Entscheidungen, Rechte. Zu Beginn jeder Arbeit lesen.", TrendoMcp.Schema(), _ =>
         {
             var doc = BridgeDoc(run); var key = BridgeKey(run);

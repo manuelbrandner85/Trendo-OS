@@ -19,7 +19,7 @@ public partial class MainWindow
 {
     bool? _handsFree;
     /// <summary>Claude arbeitet ohne Klicks. Im Testmodus aus, damit die Prüfungen des Plan-Wegs (lokale KIs) weiter gelten; neue Tests schalten es ein.</summary>
-    public bool ClaudeNoClicks { get => _handsFree ?? !_opt.Isolated; set => _handsFree = value; }
+    public bool ClaudeNoClicks { get => _handsFree ?? (!_opt.Isolated && KiSourceSettings.Load(_core.DataRoot).ClaudeNoClicks); set => _handsFree = value; }
     /// <summary>Für Tests: Zustimmung im Chat nachstellen.</summary>
     public Func<string, Task<bool>>? ClaudeConsentOverride { get; set; }
     /// <summary>Durchgänge, bis Claude fertig sein muss.</summary>
@@ -47,7 +47,9 @@ public partial class MainWindow
             var host = await ClaudeBridgeHost.StartAsync(new TrendoMcp(BridgeTools(new BridgeRun { Dock = dock, Folder = folder, Page = dock.Page, ChatId = chatId })));
             var dir = Path.Combine(_core.DataRoot, "cache", "claude-bruecke"); Directory.CreateDirectory(dir);
             var file = Path.Combine(dir, Guid.NewGuid().ToString("N") + ".json");
-            await File.WriteAllTextAsync(file, host.ConfigJson());
+            var access = new FileStreamOptions { Mode = FileMode.CreateNew, Access = FileAccess.Write };
+            if (!OperatingSystem.IsWindows()) access.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite; // das Kennzeichen geht nur den eigenen Nutzer an
+            await using (var w = new StreamWriter(file, System.Text.Encoding.UTF8, access)) await w.WriteAsync(host.ConfigJson());
             return new ClaudeBridgeSession(host, file);
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException) { _core.Audit.Append(Principal.LocalOwner.Name, "claude.bruecke.fehler", e.Message); return null; }
@@ -92,6 +94,7 @@ public partial class MainWindow
             T("feld_setzen", "Trägt einen Wert in ein Feld, einen Regler oder einen Schalter ein. Ziel ist der Name oder die Beschriftung aus seite_lesen.", TrendoMcp.Schema(("ziel", "string", "Name oder Beschriftung", true), ("wert", "any", "Text, Zahl oder true/false", true)), async a =>
             {
                 var c = BridgeFind(Need(a, "ziel")) ?? throw new ArgumentException("Dieses Element gibt es auf der Seite nicht: " + Need(a, "ziel"));
+                if (await BridgeControlGuard(run, c, $"„{BridgeLabel(c)}“ ausfüllen") is { } refusedField) return refusedField;
                 var value = a["wert"].AsText() ?? "";
                 switch (c)
                 {
@@ -108,6 +111,7 @@ public partial class MainWindow
             T("auswaehlen", "Wählt einen Eintrag in einer Auswahlliste, Liste oder einem Reiter.", TrendoMcp.Schema(("ziel", "string", "Name oder Beschriftung", true), ("eintrag", "string", "Text des Eintrags", true)), async a =>
             {
                 var c = BridgeFind(Need(a, "ziel")) as SelectingItemsControl ?? throw new ArgumentException("Hier gibt es keine Auswahl: " + Need(a, "ziel"));
+                if (await BridgeControlGuard(run, c, $"„{BridgeLabel(c)}“ auswählen") is { } refusedChoice) return refusedChoice;
                 var wanted = Need(a, "eintrag");
                 var item = c.Items.FirstOrDefault(i => ItemText(i).Equals(wanted, StringComparison.OrdinalIgnoreCase));
                 if (item is null) return McpResult.Fail("Diesen Eintrag gibt es nicht. Vorhanden: " + string.Join(", ", c.Items.Select(ItemText).Take(60)));
@@ -118,8 +122,7 @@ public partial class MainWindow
             {
                 var c = BridgeFind(Need(a, "ziel")) ?? throw new ArgumentException("Dieses Element gibt es auf der Seite nicht: " + Need(a, "ziel"));
                 var label = c is Button bt ? ButtonText(bt) : c is MenuItem mi0 ? mi0.Header?.ToString() ?? "" : "";
-                // Wartet Trendo auf eine Freigabe, darf Claude sie nicht selbst erteilen: Dann fragt jeder Klick beim Nutzer nach.
-                if ((_core.Approvals.Pending().Count > 0 || ClaudeActions.NeedsConsent(label, c.Name ?? "", BridgeDoc(run) is not null)) && !await BridgeConsent(run, $"„{label}“ im Programm drücken")) return McpResult.Fail("Nicht bestätigt: Der Nutzer möchte das nicht.");
+                if (await BridgeControlGuard(run, c, $"„{label}“ im Programm drücken") is { } refused) return refused;
                 var page = BridgeKey(run); var doc = page is null ? null : ProgramActive(page);
                 if (doc is not null) ClaudeChangeBegin(page!, doc);
                 ClaudeFlash(c);
@@ -187,6 +190,7 @@ public partial class MainWindow
                     return BridgeDone(run);
                 }
                 var spec = BridgeSpec(run, a); var doc = BridgeOpenDoc(spec); var path = Need(a, "pfad");
+                if (System.Text.RegularExpressions.Regex.IsMatch(path, "consent|einwillig|freigabe|approved", System.Text.RegularExpressions.RegexOptions.IgnoreCase)) return McpResult.Fail("Einwilligungen und Freigaben trägt nur der Nutzer selbst ein.");
                 run.Page = spec.Key; ClaudeChangeBegin(spec.Key, doc);
                 var remove = a["loeschen"].AsBool();
                 doc.Edit("Claude: " + path, d => { if (remove) DocPath.Remove(d, path); else DocPath.Set(d, path, DocPath.Unwrap(a["wert"]?.DeepClone())); });
@@ -220,7 +224,7 @@ public partial class MainWindow
                 Directory.CreateDirectory(Path.GetDirectoryName(path)!);
                 return new McpResult(export.Write(doc, path) is { Length: > 0 } note ? note : "Exportiert: " + path);
             }),
-            S("bild_ansehen", "Bildschirmfoto des Trendo-Fensters, so wie der Nutzer es sieht.", TrendoMcp.Schema(), _ => BridgeShot()),
+            S("bild_ansehen", "Bildschirmfoto der offenen Trendo-Seite.", TrendoMcp.Schema(), _ => BridgeShot()),
             .. StudioIntelTools(run),
             .. HandoffTools(run),
         ];
@@ -241,8 +245,26 @@ public partial class MainWindow
     /// <summary>Seiten, die nur der Nutzer selbst bedient: Hier werden Freigaben erteilt.</summary>
     public static readonly IReadOnlySet<string> ClaudeBlockedPages = new HashSet<string> { "approvals" };
     /// <summary>Seiten mit privaten oder sicherheitsrelevanten Inhalten: Claude braucht je Lauf einmal die Zustimmung.</summary>
-    public static readonly IReadOnlySet<string> ClaudeSensitivePages = new HashSet<string> { "schutz", "sicherung", "forensik", "keys", "claude-verbinden", "personen", "posteingang", "post", "kontakte", "finanzen" };
+    public static readonly IReadOnlySet<string> ClaudeSensitivePages = new HashSet<string> { "schutz", "sicherung", "forensik", "keys", "claude-verbinden", "personen", "posteingang", "post", "kontakte", "finanzen", "appcenter", "hinzufuegen", "components", "prog-pflege", "updates", "teilen", "settings" };
     static readonly HashSet<string> PageTools = ["programm_oeffnen", "seite_lesen", "feld_setzen", "auswaehlen", "klicken", "bild_ansehen"];
+
+    /// <summary>Darf Claude dieses Element bedienen? Rechte-Schalter nie. Bei offener Freigabe oder Wirkung nach außen fragt es den Nutzer, damit Claude keine Freigabe selbst erteilt.</summary>
+    async Task<McpResult?> BridgeControlGuard(BridgeRun run, Control c, string what)
+    {
+        var name = c.Name ?? "";
+        if (name.StartsWith("claude-", StringComparison.Ordinal) || name.StartsWith("ki-cloud-use-", StringComparison.Ordinal)) return McpResult.Fail("Rechte von Claude ändert nur der Nutzer selbst.");
+        if ((_core.Approvals.Pending().Count > 0 || ClaudeActions.NeedsConsent(BridgeLabel(c), name, BridgeDoc(run) is not null)) && !await BridgeConsent(run, what)) return McpResult.Fail("Nicht bestätigt: Der Nutzer möchte das nicht.");
+        return null;
+    }
+
+    /// <summary>Darf ein Plan aus [[trendo:…]]-Zeilen ohne Klick laufen? Es gelten dieselben Regeln wie für die Werkzeuge.</summary>
+    bool ClaudePlanSafe(string page, ClaudeActions.Page state, IReadOnlyList<ClaudeActions.Step> steps)
+    {
+        if (_core.Approvals.Halted || _core.Approvals.Pending().Count > 0 || ClaudeBlockedPages.Contains(page) || ClaudeSensitivePages.Contains(page)) return false;
+        var undoable = Programs.ContainsKey(page) && ProgramActive(page) is not null;
+        return steps.All(s => !ClaudeActions.StepRisky(s, state) && !ClaudeActions.NeedsConsent(ClaudeActions.Describe(s, state), s.Target, undoable)
+            && !s.Target.StartsWith("claude-", StringComparison.Ordinal) && !s.Target.StartsWith("ki-cloud-use-", StringComparison.Ordinal));
+    }
 
     /// <summary>Darf Claude diese Seite anfassen? null heißt ja, sonst der Grund.</summary>
     async Task<McpResult?> BridgeGuard(BridgeRun run, string name, JsonObject a)
@@ -346,21 +368,22 @@ public partial class MainWindow
 
     McpResult BridgeShot()
     {
-        var (w, h) = ((int)Bounds.Width, (int)Bounds.Height);
-        if (w <= 0 || h <= 0) return McpResult.Fail("Das Fenster ist gerade nicht sichtbar.");
+        if (ActivePageRoot is not { } page) return McpResult.Fail("Es ist gerade keine Seite offen.");
+        var (w, h) = ((int)page.Bounds.Width, (int)page.Bounds.Height); // nur die geprüfte Seite, keine anderen offenen Fenster
+        if (w <= 0 || h <= 0) return McpResult.Fail("Die Seite ist gerade nicht sichtbar.");
         try
         {
             using var full = new RenderTargetBitmap(new PixelSize(w, h));
-            full.Render(this);
+            full.Render(page);
             using var ms = new MemoryStream();
             full.Save(ms);
-            if (w <= 1400) return new McpResult("Das sieht der Nutzer gerade.", ms.ToArray());
+            if (w <= 1400) return new McpResult("Das ist die offene Seite.", ms.ToArray());
             ms.Position = 0;
             using var decoded = new Bitmap(ms); // verkleinern geht nur aus einem geladenen Bild
             using var small = decoded.CreateScaledBitmap(new PixelSize(1400, h * 1400 / w));
             using var scaled = new MemoryStream();
             small.Save(scaled);
-            return new McpResult("Das sieht der Nutzer gerade.", scaled.ToArray());
+            return new McpResult("Das ist die offene Seite.", scaled.ToArray());
         }
         catch (Exception e) when (e is InvalidOperationException or NullReferenceException or NotSupportedException or ArgumentException) { return McpResult.Fail("Bildschirmfoto nicht möglich: " + e.Message); }
     }
