@@ -1,6 +1,6 @@
 # Bericht T-0603: Videoschnitt-Pilot, Design-Editor, Konsolen-Studio, Studio-Ordnung
 
-**Zweige:** `claude/T-0600-pilot-videoschnitt`, `claude/T-0601-pod-design`, `claude/T-0602-konsole-studio`, `claude/T-0604-studio-ordnung`, zusammengeführt in `claude/T-0603-sammel`. Nicht auf `main`.
+**Zweige:** `claude/T-0600-pilot-videoschnitt`, `claude/T-0601-pod-design`, `claude/T-0602-konsole-studio`, `claude/T-0604-studio-ordnung`, zusammengeführt in `claude/T-0603-sammel`. Nach `main` übernommen am 09.11.2026 nach ausdrücklichem OK.
 
 ## Inhalt
 
@@ -12,7 +12,8 @@
 ## Testergebnis
 
 - Volltest vor der Studio-Ordnung: Api 16 bestanden; App 939 bestanden, 4 übersprungen; Paket-Tests OK; Core 2143 bestanden, 5 übersprungen, 1 Fehler (`T-0241`, Dateisperre). Core danach komplett: 2144 bestanden, 5 übersprungen.
-- Studio-Ordnung gezielt: 15 von 15 Oberflächen-Tests, Matrix und Katalog neu erzeugt. Kein neuer Volltest nach der Studio-Ordnung.
+- Studio-Ordnung gezielt: 15 von 15 Oberflächen-Tests, Matrix und Katalog neu erzeugt.
+- Volltest des gesamten Sammelzweigs am 09.11.2026 (`aa69c01e9`, Build 0 Fehler, 95 Warnungen, alle Exitcodes 0): Api 16 bestanden; Core 2144 bestanden, 5 übersprungen; App 942 bestanden, 4 übersprungen; Paket-Tests 9 OK.
 
 ## Nicht geprüft
 
@@ -22,7 +23,7 @@
 
 ## Offen
 
-Merge nach `main` nur nach OK. VFX als Studio und Umbau der Programm-Hülle sind nicht entschieden. Die Funktionskataloge, Bewertungen und die weiteren Studios aus Rebuild 4.0 sind nicht begonnen. Stufe 2 des Design-Editors (K-15 bis K-18) ist offen.
+VFX als Studio und Umbau der Programm-Hülle sind nicht entschieden. Die Funktionskataloge, Bewertungen und die weiteren Studios aus Rebuild 4.0 sind nicht begonnen. Stufe 2 des Design-Editors (K-15 bis K-18) ist offen.
 
 ## Konsolen-Studio: echter Lauf ohne Spiel (09.11.2026)
 
