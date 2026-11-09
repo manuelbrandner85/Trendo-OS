@@ -316,7 +316,7 @@ public partial class MainWindow
 
     Control PodLeftPanel(ProgramDocument d, List<PodItem> items)
     {
-        var sp = new StackPanel { Name = "pod-left", Spacing = 6 };
+        var sp = new StackPanel { Name = "pod-left", Spacing = 6, Margin = new Thickness(0, 0, 14, 0) };
         Button A(string name, string label, Action a) { var b = new Button { Name = name, Content = label, HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(10, 6) }; b.Click += (_, _) => a(); return b; }
         sp.Children.Add(H("Hinzufügen", 13));
         sp.Children.Add(A("pod-add-text", "Text", () => PodAdd(d, "text")));
@@ -341,7 +341,7 @@ public partial class MainWindow
 
     Control PodRightPanel(ProgramDocument d, List<PodItem> items)
     {
-        var sp = new StackPanel { Name = "pod-right", Spacing = 5 };
+        var sp = new StackPanel { Name = "pod-right", Spacing = 5, Margin = new Thickness(0, 0, 14, 0) };
         var chosen = items.Where(i => PodSelected.Contains(i.Id)).ToList();
         var palette = d.List("palette").Select(x => x?.ToString() ?? "").Where(PodDesign.IsColor).ToList();
         if (chosen.Count != 1)
