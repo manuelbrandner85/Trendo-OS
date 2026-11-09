@@ -2,7 +2,7 @@
 
 **Auftrag:** `tasks/T-0630-auto-team.md`.
 **Branch/Worktree:** `claude/T-0630-auto-team`, Basis a3a361b2d, `C:\Users\<user>\TrendoEntwicklung\wt-T-0620-web-ki`.
-**Status:** Gebaut. QA-Runden 1 und 2 nicht bestanden, Befunde bearbeitet. Nicht in `main`, kein Release.
+**Status:** Gebaut und getestet. QA-Runde 3 bestanden mit Empfehlungen. Merge nach `main` freigegeben, kein Release.
 
 ## Was gebaut wurde
 
@@ -11,7 +11,7 @@
 - `Route`: Das, was Trendos eigener Bau kann. Godot und Unity nur beim Plattformer und nur, wenn installiert, sonst Browser oder Unreal nach Umfang. Weicht die Route von der Wahl ab, sagt die Notiz das.
 - `GameBuild`: Beim Plattformer entsteht das gewählte Godot- oder Unity-Projekt einmal mit. Besteht es schon, bleibt es unverändert und Trendo sagt das. Ein Fehler in diesem Schritt bricht Bauen und Spielen nicht ab.
 - Die Zeile `game-tool-choice` und die Vorschau zeigen, was tatsächlich gilt.
-- Fachleute: Modus „Automatisch“ ist Standard, 2 bis 6 Personen nach Auftrag. Stichwörter nur am Wortanfang, kurze nur als ganzes Wort. Im Automatikmodus verdrängen Engine-Spezialisten ohne Treffer nicht die Standardrollen.
+- Fachleute: Modus „Automatisch“ ist Standard, 2 bis 6 Personen nach Auftrag. Stichwörter ab 5 Zeichen sowie „menü“, „welt“ und „shop“ zählen auch im Wortinneren, andere mit 4 Zeichen nur am Wortanfang, kürzere nur als ganzes Wort (auch mit Mehrzahl-s). In allen Modi verdrängen Engine-Spezialisten ohne Treffer nicht mehr die Standardrollen.
 - Studio-Team: `StudioTeams.Pick` und `Brief` geben der lokalen KI im Programm-Assistenten die passenden Rollen mit, Füllwörter zählen nicht. `ClaudeTeamRule` weist Claude an, die Agenten ohne Rückfrage einzusetzen, nur auf den beiden Wegen, die sie vorher exportieren.
 - MCP-Server für Claude im Spiele-Studio: zuerst die Projektdateien, dann die ausdrückliche Wahl im Dokument. Browser-Spiele bekommen keinen Engine-Server.
 - Die Suche nach Engines für die automatische Wahl läuft beim Zeichnen höchstens alle 30 Sekunden, Fehler dabei stören das Zeichnen nicht. Die Anzeige im Bereich „Bauen“ sucht wie bisher direkt.
@@ -25,7 +25,14 @@ python -m unittest discover -s tests/claude_handoff
 
 ## Testergebnis
 
-Wird nach dem Volltest des letzten Stands ergänzt.
+Volltest auf Commit fe8535483, danach nur dieser Bericht geändert. Exitcodes 0.
+
+| Projekt | Bestanden | Übersprungen | Fehler | Gesamt |
+|---|---|---|---|---|
+| Trendo.Api.Tests | 16 | 0 | 0 | 16 |
+| Trendo.Core.Tests | 2108 | 5 | 0 | 2113 |
+| Trendo.App.Tests | 920 | 4 | 0 | 924 |
+| tests/claude_handoff | 9 | 0 | 0 | 9 |
 
 ## QA-Prüfung
 
@@ -35,7 +42,14 @@ Bearbeitet: 1 bis 12, 13 (ungültige Engine, alter Grund), 14, 15 teilweise.
 
 Runde 2, nicht bestanden (6 neue Befunde): MCP-Wahl übersah Projektdateien, zu strenge Stichwörter verloren Zusammensetzungen, Blender-Text bei 2D mit Claude, Spezialisten verdrängten in anderen Modi die Standardrollen, Sonderfälle in `Parse` und `StudioTeams.Pick`. Alle bearbeitet.
 
-Nicht durch Tests abgedeckt: Zwischenspeicher und Fehlerfang der Engine-Suche, die Anbindung von `StudioTeams.Brief` im Programm-Assistenten.
+Runde 3, bestanden mit Empfehlungen, per Codelesen. Offen bleiben diese Empfehlungen:
+
+- Stichwörter ab 5 Zeichen treffen auch falsche Wörter: „rauch“ in „braucht“, „unity“ in „Community“, „bindung“ in „Verbindung“. Das vergrößert im Modus „Automatisch“ manchmal das Team.
+- `Parse`: „AAA“ statt „aaa“ ohne `engine` setzt die Wahl zurück; eine ungültige Engine zusammen mit neuem Umfang behält die alte Wahl.
+- Retro auf dem Smartphone mit Unity und Claude zeigt „3D-Modelle mit Blender“, obwohl das Spiel 2D ist.
+- Die MCP-Wahl nimmt das aktive Spiel-Dokument, das nicht das Dokument des Chats sein muss.
+
+Nicht durch Tests abgedeckt: Zwischenspeicher und Fehlerfang der Engine-Suche, die Anbindung von `StudioTeams.Brief` im Programm-Assistenten, die Anbindung in `ClaudeStudioMcp`.
 
 Nicht geändert: Der Status im Programm und die Überschrift im Bereich „Bauen“ nennen weiter Browser oder Unreal nach Umfang, weil das die Route beschreibt.
 
