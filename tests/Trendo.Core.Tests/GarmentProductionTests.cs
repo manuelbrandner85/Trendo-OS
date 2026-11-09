@@ -37,6 +37,17 @@ public class GarmentProductionTests
         Assert.Null(Fabrics.ToJob(Fabrics.Of("denim"), "Navy", null)["textures"]);
     }
 
+    [Fact(DisplayName = "Muster: Streifen mit zweiter Farbe und Rapport; Einfarbig und Bild ohne Datei ergeben keins; Rapport wird begrenzt")]
+    public void Pattern_job()
+    {
+        var j = Fabrics.ToJobPattern("streifen", "#FFFFFF", 3, null)!;
+        Assert.Equal("streifen", (string)j["kind"]!); Assert.Equal(0.03, (double)j["size_m"]!, 6);
+        Assert.Null(Fabrics.ToJobPattern("uni", "#FFFFFF", 3, null)); Assert.Null(Fabrics.ToJobPattern("bild", null, 3, " ")); Assert.Null(Fabrics.ToJobPattern("gibtsnicht", null, 3, null));
+        Assert.Equal(1.0, (double)Fabrics.ToJobPattern("karo", null, 9999, null)!["size_m"]!, 6);
+        Assert.Equal("C:/a.png", (string)Fabrics.ToJobPattern("bild", null, 20, "C:/a.png")!["image"]!);
+        Assert.Equal(16, Fabrics.Palette.Length);
+    }
+
     [Fact(DisplayName = "Nahtzugabe: Schnittkante liegt außerhalb der Nahtlinie, am Saum breiter")]
     public void Allowance()
     {

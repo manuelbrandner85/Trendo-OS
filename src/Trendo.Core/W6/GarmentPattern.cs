@@ -50,12 +50,17 @@ public static class GarmentBlocks
             "tshirt" => TShirt(b),
             "rock" => Skirt(b),
             "kleid" => Dress(b),
-            "pullover" => Top(b, "pullover", "Pullover", 14, b.Height * 0.40, 58, "Halsbündchen", 3.5),
-            "hemd" => Top(b, "hemd", "Hemd (ohne Knopfleiste in 3D)", 12, b.Height * 0.44, 60, "Stehkragen", 3.5),
+            "pullover" => Top(b, "pullover", "Pullover", 12, b.Height * 0.38, ArmLength(b) - CuffHeight, "Halsbündchen", 3.5),
+            "hemd" => Top(b, "hemd", "Hemd (ohne Knopfleiste in 3D)", 10, b.Height * 0.43, ArmLength(b) - CuffHeight, "Stehkragen", 3.5),
             "hose" => Trousers(b),
             _ => throw new ArgumentException("Diesen Schnitt gibt es nicht."),
         };
     }
+
+    const double CuffHeight = 5;
+
+    /// <summary>Schulter bis Handgelenk: etwa 33 % der Körpergröße.</summary>
+    public static double ArmLength(BodyMeasures b) => b.Height * 0.33;
 
     /// <summary>Kubische Bézierkurve als Punktliste.</summary>
     public static List<PatPt> Bezier(PatPt a, PatPt c1, PatPt c2, PatPt b, int segments = 16)
@@ -88,10 +93,11 @@ public static class GarmentBlocks
         return new(name, role, [Line("hem", hemL, hemR), Line("sideR", hemR, under), armR, shR, neckEdge, Mirror("shL", shR), Mirror("armL", armR), Line("sideL", new(-half, underY), hemL)]);
     }
 
-    static PatPart Sleeve(string name, string role, double capLength, BodyMeasures b, double length = 22)
+    /// <summary>Ärmel. <paramref name="shoulderToHem"/>: Länge von der Schulter bis zur Ärmelkante in cm; die Armkugel zählt mit, sonst wird der Ärmel zu lang.</summary>
+    static PatPart Sleeve(string name, string role, double capLength, BodyMeasures b, double? shoulderToHem = null)
     {
-        const double capHeight0 = 0;
-        var capHeight = b.Chest / 10 + 3 + capHeight0;
+        var capHeight = b.Chest / 10 + 3;
+        var length = Math.Max(4, (shoulderToHem ?? b.Height * 0.145) - capHeight);
         // Halbe Armkugelbreite so suchen, dass die Armkugel 2 % länger ist als das Armloch (Mehrweite zum Einhalten).
         double low = 8, high = 40;
         Func<double, List<PatPt>> cap = w => Bezier(new(w, 0), new(w * 0.55, capHeight * 0.12), new(w * 0.45, capHeight), new(0, capHeight));
@@ -102,7 +108,7 @@ public static class GarmentBlocks
         PatPt L(double x, double y) => new(x, y);
         var capF = cap(hw).Select(p => L(p.X, p.Y + y0)).ToList();
         var capB = capF.AsEnumerable().Reverse().Select(p => L(-p.X, p.Y)).ToList();
-        var hemHalf = length > 30 ? Math.Max(hw * 0.5, b.Chest * 0.1) : hw * 0.92;
+        var hemHalf = length > 25 ? Math.Max(hw * 0.5, b.Chest * 0.1) : hw * 0.92;
         return new(name, role, [Line("hem", L(-hemHalf, 0), L(hemHalf, 0)), Line("underF", L(hemHalf, 0), capF[0]), new("capF", capF), new("capB", capB), Line("underB", capB[^1], L(-hemHalf, 0))]);
     }
 
@@ -147,7 +153,7 @@ public static class GarmentBlocks
         var right = Sleeve("Ärmel rechts", "sleeveR", armAvg, b, sleeve); var left = Sleeve("Ärmel links", "sleeveL", armAvg, b, sleeve);
         var cuffLen = right.Edge("hem").Length;
         var band = Band(collar, "neckRib", front.Edge("neck").Length, back.Edge("neck").Length, collarHeight, 0.96);
-        return new(kind, label, [front, back, right, left, band, Cuff("Manschette rechts", "cuffR", cuffLen, 5), Cuff("Manschette links", "cuffL", cuffLen, 5)],
+        return new(kind, label, [front, back, right, left, band, Cuff("Manschette rechts", "cuffR", cuffLen, CuffHeight), Cuff("Manschette links", "cuffL", cuffLen, CuffHeight)],
         [
             .. BodySeams("Vorderteil", "Rückenteil"), .. SleeveSeams("Vorderteil", "Rückenteil"), .. BandSeams(collar, "Vorderteil", "Rückenteil", "neck"),
             new("Manschette rechts", "seam", "Ärmel rechts", "hem", false), new("Manschette rechts", "endR", "Manschette rechts", "endL", true),

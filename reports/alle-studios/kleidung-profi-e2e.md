@@ -8,6 +8,9 @@ Studio „Kleidung & Produkte entwerfen“ (SPEC-08). Eigener Code nach dem Vorb
 - **Sechs Kleidungsstücke in 3D:** T-Shirt, Pullover, Hemd, Kleid, A-Linien-Rock und Hose. Halsbündchen, Stehkragen, Manschetten und Bund sind echte, angenähte Teile.
 - **Echte Stoffe:** Sieben Stoffe mit Gewicht, Bahnbreite, Dehnung, Preis und Physikwerten. Die Oberflächen kommen kostenlos von ambientCG (CC0) und werden beim ersten Gebrauch geladen.
 - **3D-Anprobe:** Puppe nach Brust, Taille, Hüfte und Körpergröße. Die flachen Teile werden vernäht und fallen mit Blender-Stoffphysik, danach entstehen drei Fotos (vorn, schräg, hinten). Blender öffnet sich dabei sichtbar und schließt sich selbst.
+- **Schaufensterpuppe:** eiförmiger Kopf, geformte Hände mit fünf Fingern, Füße, Waden und Knie.
+- **Passform:** Ärmellänge aus der Armlänge (33 % der Körpergröße), ein Test prüft das für 150, 168 und 195 cm.
+- **Farben und Muster frei wählbar:** Palette mit 16 Farben, eigene Farbe, Streifen, Karo, Punkte, eigenes Bild als Stoffdruck, jeweils in wählbarer Größe. Sichtbare Steppnähte an allen Kanten.
 - **Produktion:** Schnitt 1:1 als PDF auf A4 mit Kontrollquadrat, Plotter-Datei (DXF), technisches Datenblatt mit Teilen, Nähten, Stoffbedarf und Kosten je Größe.
 
 ## Echte Läufe
@@ -22,6 +25,9 @@ Studio „Kleidung & Produkte entwerfen“ (SPEC-08). Eigener Code nach dem Vorb
 - Die Hose rutschte herunter, weil der Bund nicht angenäht war; danach schaute die Puppe an Hüfte und Innenbein durch, bis die Startlage stimmte.
 - Die Nahtzugabe war an Ecken falsch, ein Test hat das gefunden.
 
+- Am Ausschnitt klaffte die Naht bis zu 18 cm, weil das Bündchen rundum gleich hoch lag; das verrutschte die Schulter. Gemessen und behoben.
+- Blender blieb nach fertigem Bild beim Schließen einmal 17 Minuten hängen; es beendet sich jetzt selbst.
+
 ## Reality Check
 Beide Bilder wirken wie Fotos von Kleidung auf einer Schneiderpuppe: Gewebe sichtbar, Licht von Softboxen, Kontaktschatten, Saum umgeschlagen.
 
@@ -29,7 +35,7 @@ Bewusste Grenzen:
 - Der Bordeaux-Ton wirkt durch den Faserglanz etwas stumpfer als gewählt.
 - Die Passform des T-Shirts ist eher weit und kastig.
 - Säume sind vereinfacht umgeschlagen. Das Hemd hat in 3D keine Knopfleiste, nur einen Stehkragen.
-- Die Puppe ist bewusst eine Schneiderpuppe ohne Kopf, keine Person.
+- Der Rock zeigt an der Seitennaht und am Saum leichte Unruhe in der Stoffphysik.
 - Denim ist eine Annäherung, es gibt keine freie Denim-Textur.
 
 ## Nicht geprüft (NOT RUN)

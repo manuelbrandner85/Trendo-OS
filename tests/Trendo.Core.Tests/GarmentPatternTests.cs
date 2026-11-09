@@ -65,6 +65,19 @@ public class GarmentPatternTests
         Assert.InRange(cap / arm, 1.0, 1.05);
     }
 
+    [Theory(DisplayName = "Passform: Ärmel enden am Handgelenk, kurze Ärmel oberhalb des Ellenbogens, auch bei großen und kleinen Personen")]
+    [InlineData(150)]
+    [InlineData(168)]
+    [InlineData(195)]
+    public void Sleeves_fit(double height)
+    {
+        var b = M with { Height = height };
+        double Len(string kind, string part) { var p = GarmentBlocks.Build(kind, b).Parts.First(x => x.Name == part); return p.Outline.Max(q => q.Y) - p.Outline.Min(q => q.Y); }
+        var arm = GarmentBlocks.ArmLength(b);
+        foreach (var kind in new[] { "pullover", "hemd" }) Assert.InRange(Len(kind, "Ärmel rechts") + Len(kind, "Manschette rechts"), arm - 0.5, arm + 0.5);
+        Assert.InRange(Len("tshirt", "Ärmel rechts"), arm * 0.3, arm * 0.55); // Ellenbogen liegt bei etwa 60 % der Armlänge
+    }
+
     [Fact(DisplayName = "Rock: Bund passt zur Taille plus Mehrweite, Saum weiter als Hüfte")]
     public void Skirt_measures()
     {

@@ -3,6 +3,7 @@
 # Auftrag (JSON): kind, body{height,chest,waist,hip,women}, parts[], seams[], fabric{...}, out, frames, samples.
 import json
 import math
+import os
 import sys
 
 import bpy
@@ -10,7 +11,7 @@ import bmesh
 from mathutils import Vector
 from mathutils.geometry import delaunay_2d_cdt
 
-H_CM = 1.25  # Maschenweite des Stoffnetzes in cm
+H_CM = 1.0  # Maschenweite des Stoffnetzes in cm
 
 
 def clear_scene():
@@ -126,10 +127,11 @@ def build_mannequin(body):
         hip_r = hip / (2 * math.pi) / 100.0
         leg_keys = [
             (0.50, 0.58, sign * a_h * 0.48),
-            (0.30, 0.37, sign * a_h * 0.46),
-            (0.285, 0.36, sign * a_h * 0.45),
-            (0.05, 0.22, sign * a_h * 0.42),
-            (0.0, 0.20, sign * a_h * 0.42),
+            (0.40, 0.5, sign * a_h * 0.47),
+            (0.29, 0.345, sign * a_h * 0.45),
+            (0.205, 0.345, sign * a_h * 0.44),
+            (0.06, 0.2, sign * a_h * 0.42),
+            (0.0, 0.19, sign * a_h * 0.42),
         ]
         keys_asc = sorted(leg_keys, key=lambda k: k[0])
         z = 0.0
@@ -139,6 +141,7 @@ def build_mannequin(body):
             rings.append((Vector((x, 0, z * h)), Vector((radius, 0, 0)), Vector((0, radius, 0))))
             z += 0.01
         parts.append(loft("Bein", rings, 32))
+    wrists = []
     # Arme (A-Haltung, 32 Grad vom Koerper)
     for sign in (-1, 1):
         angle = math.radians(32)
@@ -146,7 +149,8 @@ def build_mannequin(body):
         side = Vector((sign * math.cos(angle), 0, math.sin(angle)))
         start = Vector((sign * f["shoulder_x"] * 0.8, 0, f["shoulder_z"] - 0.018))
         length = 0.36 * h
-        arm_keys = [(0.0, 0.14), (0.035, 0.26), (0.09, 0.325), (0.16, 0.335), (0.26, 0.315), (0.5, 0.255), (0.78, 0.2), (0.96, 0.165), (1.0, 0.12)]
+        wrists.append((sign, start + axis * length, axis, side))
+        arm_keys = [(0.0, 0.14), (0.035, 0.26), (0.09, 0.325), (0.16, 0.335), (0.26, 0.315), (0.5, 0.255), (0.78, 0.2), (0.97, 0.165), (1.0, 0.16)]
         rings = []
         t = 0.0
         while t <= 1.0 + 1e-6:
@@ -170,7 +174,145 @@ def build_mannequin(body):
     mod.factor = 0.9
     mod.iterations = 40
     bpy.ops.object.shade_smooth()
+    extras = []
+    for sign, wrist, axis, side in wrists:
+        extras.append(build_hand(sign, wrist, axis, side, h, chest))
+    extras.append(build_head(f, h, chest))
+    extras.extend(build_feet(h, hip, a_h))
+    obj["zubehoer"] = json.dumps([e.name for e in extras])
     return obj
+
+
+def fuse(name, parts, voxel, smooth):
+    """Lofts zu einer geschlossenen Form verschmelzen."""
+    bpy.ops.object.select_all(action="DESELECT")
+    for p in parts:
+        p.select_set(True)
+    bpy.context.view_layer.objects.active = parts[0]
+    bpy.ops.object.join()
+    obj = bpy.context.view_layer.objects.active
+    obj.name = name
+    obj.data.remesh_voxel_size = voxel
+    obj.data.use_remesh_preserve_volume = True
+    bpy.ops.object.voxel_remesh()
+    mod = obj.modifiers.new("Glatt", "SMOOTH")
+    mod.factor = 0.8
+    mod.iterations = smooth
+    bpy.ops.object.shade_smooth()
+    return obj
+
+
+def capsule(name, start, end, r0, r1, flat=1.0, side=None, segments=14):
+    axis = end - start
+    length = axis.length
+    d = axis.normalized()
+    ref = side if side is not None else (Vector((0, 1, 0)) if abs(d.y) < 0.9 else Vector((1, 0, 0)))
+    u = d.cross(ref).normalized()
+    v = u.cross(d).normalized()
+    rings = []
+    steps = 10
+    for i in range(steps + 1):
+        t = i / steps
+        r = r0 + (r1 - r0) * t
+        cap = math.sqrt(max(0.0, 1 - ((2 * t - 1) ** 8)))
+        rings.append((start + d * (length * t), u * (r * flat * max(cap, 0.25)), v * (r * max(cap, 0.25))))
+    return loft(name, rings, segments)
+
+
+def tube(name, points, radii, reference, segments=14):
+    """Durchgehende, weiche Roehre entlang gekruemmter Punkte, Spitze abgerundet."""
+    pts = []
+    rad = []
+    for i in range(len(points) - 1):
+        for k in range(8):
+            t = k / 8
+            pts.append(points[i].lerp(points[i + 1], t))
+            rad.append(radii[i] + (radii[i + 1] - radii[i]) * t)
+    tip_dir = (points[-1] - points[-2]).normalized()
+    r_end = radii[-1]
+    for k in range(7):
+        ang = k / 6 * math.pi / 2
+        pts.append(points[-1] + tip_dir * (math.sin(ang) * r_end))
+        rad.append(max(r_end * math.cos(ang), r_end * 0.08))
+    rings = []
+    for i, p in enumerate(pts):
+        a = pts[max(i - 1, 0)]
+        c = pts[min(i + 1, len(pts) - 1)]
+        d = (c - a).normalized()
+        u = d.cross(reference).normalized()
+        v = u.cross(d).normalized()
+        rings.append((p, u * rad[i], v * rad[i]))
+    return loft(name, rings, segments)
+
+
+def build_hand(sign, wrist, axis, side, h, chest):
+    """Geformte Hand einer Schaufensterpuppe: Handruecken nach vorn, Finger dicht beieinander und leicht gebeugt, Daumen angelegt."""
+    scale = h / 1.68
+    forward = Vector((0, -1, 0))
+    inner = -side
+    # Handflaeche als weicher Querschnitt: am Gelenk schmal, an den Knoecheln am breitesten
+    palm_keys = [(-0.02, 0.0215, 0.0185), (0.0, 0.0225, 0.0175), (0.025, 0.031, 0.0165), (0.06, 0.0395, 0.0145), (0.088, 0.0415, 0.0125), (0.1, 0.038, 0.0095), (0.106, 0.026, 0.006)]
+    rings = []
+    t = palm_keys[0][0]
+    while t <= palm_keys[-1][0] + 1e-6:
+        w, d = catmull(palm_keys, t)
+        rings.append((wrist + axis * (t * scale) + forward * (-0.002 * scale), side * (w * scale), forward * (d * scale)))
+        t += 0.004
+    parts = [loft("Hand", rings, 32)]
+    knuckle_line = wrist + axis * (0.094 * scale)
+    fingers = [(0.057, 0.0066, 0.0285), (0.072, 0.0074, 0.0098), (0.078, 0.0077, -0.0088), (0.07, 0.0074, -0.0272)]  # kleiner Finger aussen bis Zeigefinger innen
+    for i, (length, radius, off) in enumerate(fingers):
+        spread = (i - 1.5) * 0.028
+        direction = (axis + side * spread).normalized()
+        start = knuckle_line + side * (off * scale) + direction * (-0.012 * scale)
+        a = start + direction * (0.012 * scale)
+        b = a + (direction - forward * 0.05).normalized() * (length * 0.48 * scale)
+        c = b + (direction - forward * 0.22).normalized() * (length * 0.3 * scale)
+        d = c + (direction - forward * 0.42).normalized() * (length * 0.2 * scale)
+        parts.append(tube("Finger", [start, a, b, c, d], [radius * 1.08 * scale, radius * 1.05 * scale, radius * scale, radius * 0.9 * scale, radius * 0.74 * scale], forward))
+    thumb_root = wrist + axis * (0.022 * scale) + inner * (0.018 * scale) + forward * (-0.002 * scale)
+    t1 = thumb_root + (axis * 0.55 + inner * 0.8).normalized() * (0.036 * scale)
+    t2 = t1 + (axis * 0.85 + inner * 0.5 + forward * 0.12).normalized() * (0.034 * scale)
+    t3 = t2 + (axis * 0.97 + inner * 0.18 + forward * 0.2).normalized() * (0.03 * scale)
+    parts.append(tube("Daumen", [thumb_root, t1, t2, t3], [0.0165 * scale, 0.0125 * scale, 0.0095 * scale, 0.0076 * scale], forward))
+    return fuse("Hand", parts, 0.0011, 16)
+
+
+def build_head(f, h, chest):
+    """Abstrakter Kopf einer Schaufensterpuppe: Eiform, angedeutete Nase, Kinn und Brauen."""
+    scale = h / 1.68
+    total = 0.215 * scale
+    z0 = h - total
+    keys = [(0.0, 0.012, 0.016, -0.018), (0.04, 0.03, 0.038, -0.018), (0.14, 0.05, 0.06, -0.016), (0.32, 0.066, 0.083, -0.009), (0.55, 0.076, 0.094, 0.002), (0.78, 0.076, 0.094, 0.008), (0.93, 0.056, 0.074, 0.01), (0.985, 0.028, 0.038, 0.01), (1.0, 0.008, 0.01, 0.01)]
+    rings = []
+    t = 0.0
+    while t <= 1.0001:
+        a, b, off = catmull(keys, t)
+        rings.append((Vector((0, off * scale, z0 + t * total)), Vector((a * scale, 0, 0)), Vector((0, b * scale, 0))))
+        t += 0.02
+    parts = [loft("Kopf", rings, 56)]
+    z = lambda frac: z0 + frac * total
+    # Hals, damit der Kopf in die Puppe uebergeht
+    neck_r = chest * 0.36 / (2 * math.pi) / 100.0
+    parts.append(capsule("Hals", Vector((0, 0.012, 0.86 * h)), Vector((0, 0.0, z(0.16))), neck_r * 0.96, neck_r * 0.82, 1.0, None, 32))
+    return fuse("Kopf", parts, 0.002, 40)
+
+
+def build_feet(h, hip, a_h):
+    scale = h / 1.68
+    feet = []
+    for sign in (-1, 1):
+        x = sign * a_h * 0.42
+        keys = [(-0.075, 0.03, 0.025, 0.03), (0.0, 0.043, 0.03, 0.05), (0.09, 0.05, 0.02, 0.03), (0.17, 0.046, 0.016, 0.016), (0.2, 0.03, 0.012, 0.012)]
+        rings = []
+        t = keys[0][0]
+        while t <= keys[-1][0] + 1e-6:
+            w, _low, top = catmull(keys, t)
+            rings.append((Vector((x, -t * scale, top * scale * 0.5)), Vector((w * scale * 0.78, 0, 0)), Vector((0, 0, max(top, 0.008) * scale * 0.55))))
+            t += 0.01
+        foot = loft("Fuss", rings, 28)
+        feet.append(fuse("Fuss", [foot, capsule("Knoechel", Vector((x, 0, 0.0)), Vector((x, 0, 0.11 * h)), 0.034 * scale, 0.032 * scale, 1.0, None, 20)], 0.003, 10))
+    return feet
 
 
 def resample(points, count):
@@ -238,6 +380,15 @@ def segment_counts(job):
     return counts
 
 
+def ring_phi(body, x, half_width):
+    """Winkel auf dem Ring; die Grenze zwischen Vorder- und Rueckenkante liegt auf der rechten Seite."""
+    s_val = (x + half_width) / (2 * half_width)
+    m = body.get("_ring_m", 0.5)
+    if s_val <= m:
+        return -math.pi / 2 + math.pi * (s_val / m)
+    return math.pi / 2 + math.pi * ((s_val - m) / (1 - m))
+
+
 def job_sleeve_len(body):
     return body.get("_sleeve", 0.22)
 
@@ -269,13 +420,13 @@ def wrap(role, x, y, part_top, body, half_width):
         return Vector((ax * math.sin(theta), -py if role == "skirtFront" else py, z))
     if role == "neckRib":
         r = half_width * 2 / (2 * math.pi) * 1.15 / 100.0
-        s_val = (x + half_width) / (2 * half_width)
-        phi = -math.pi / 2 + 2 * math.pi * s_val
-        return Vector((r * math.sin(phi), -r * math.cos(phi), f["neck_z"] - 0.016 + y / 100.0))
+        phi = ring_phi(body, x, half_width)
+        # Der Ring folgt dem Ausschnitt: vorn tiefer als im Nacken
+        drop = 0.02 + ((body["chest"] / 16 + 3.5) / 100.0 - 0.02) * (math.cos(phi) + 1) / 2
+        return Vector((r * math.sin(phi), -r * math.cos(phi), f["neck_z"] - 0.012 - drop + y / 100.0))
     if role == "band":
         a_w, b_w = ellipse_axes(body["waist"], 0.76)
-        s_val = (x + half_width) / (2 * half_width)
-        phi = -math.pi / 2 + 2 * math.pi * s_val
+        phi = ring_phi(body, x, half_width)
         return Vector(((a_w + 0.004) * math.sin(phi), -(b_w + 0.004) * math.cos(phi), f["waist_z"] + y / 100.0))
     if role in ("cuffR", "cuffL"):
         sign = 1 if role == "cuffR" else -1
@@ -286,7 +437,7 @@ def wrap(role, x, y, part_top, body, half_width):
         start = Vector((sign * f["shoulder_x"] * 0.93, 0, f["shoulder_z"] - 0.012))
         radius = half_width * 2 / (2 * math.pi) * 1.25 / 100.0
         theta = x / half_width * math.pi
-        t = job_sleeve_len(body) + (5 - y) / 100.0 * -1
+        t = job_sleeve_len(body) + y / 100.0
         return start + axis * t + out * (radius * math.cos(theta)) + fwd * (radius * math.sin(theta))
     if role.startswith("leg"):
         side = 1 if role.endswith("R") else -1
@@ -370,6 +521,10 @@ def build_garment(job):
             boundary[(part["name"], name)] = ids
         half_width = (max(xs) - min(xs)) / 2
         top = max(ys)
+        if part["role"] in ("neckRib", "band"):
+            front = sum(edge_length(e["pts"]) for e in part["edges"] if e["name"].startswith("seamF"))
+            back = sum(edge_length(e["pts"]) for e in part["edges"] if e["name"].startswith("seamB"))
+            job["body"]["_ring_m"] = front / (front + back)
         for v in vert_out:
             all_flat.append((v.x / 100.0, v.y / 100.0))
             all_start.append(wrap(part["role"], v.x, v.y, top, job["body"], half_width))
@@ -435,7 +590,7 @@ def add_cloth(garment, body, job, flat):
     st.compression_damping = 5
     st.shear_damping = 5
     st.use_sewing_springs = True
-    st.sewing_force_max = 6.0
+    st.sewing_force_max = 20.0
     st.rest_shape_key = flat
     if job["kind"] in ("rock", "hose"):
         st.vertex_group_mass = "Bund"
@@ -453,8 +608,8 @@ def build(job):
     clear_scene()
     for part in job["parts"]:
         if part["role"] == "sleeveR":
-            under = next(e for e in part["edges"] if e["name"] == "underF")
-            job["body"]["_sleeve"] = edge_length(under["pts"]) / 100.0 + 0.06
+            ys = [p[1] for e in part["edges"] for p in e["pts"]]
+            job["body"]["_sleeve"] = (max(ys) - min(ys)) / 100.0
     scene = bpy.context.scene
     scene.frame_start = 1
     scene.frame_end = int(job.get("frames", 80))
@@ -512,6 +667,7 @@ def finish_garment(garment):
     bm.normal_update()
     # Saum und Ausschnitt nach innen umschlagen statt roher Schnittkante
     boundary = [e for e in bm.edges if e.is_boundary]
+    stitches = stitch_points(boundary)
     rim = {v for e in boundary for v in e.verts}
     inward = {}
     for v in rim:
@@ -529,6 +685,7 @@ def finish_garment(garment):
     bm.to_mesh(mesh)
     bm.free()
     final = bpy.data.objects.new("Kleidungsstueck", mesh)
+    build_stitches(stitches)
     bpy.context.collection.objects.link(final)
     garment.hide_render = True
     garment.hide_viewport = True
@@ -541,6 +698,114 @@ def finish_garment(garment):
     thick.thickness = 0.0007
     thick.offset = 1
     return final
+
+
+def math_node(tree, op, a, b=None):
+    node = tree.nodes.new("ShaderNodeMath")
+    node.operation = op
+    if isinstance(a, (int, float)):
+        node.inputs[0].default_value = a
+    else:
+        tree.links.new(a, node.inputs[0])
+    if b is not None:
+        if isinstance(b, (int, float)):
+            node.inputs[1].default_value = b
+        else:
+            tree.links.new(b, node.inputs[1])
+    return node.outputs[0]
+
+
+def pattern_socket(tree, coord, tint, fabric, pattern):
+    """Muster in echter Groesse auf dem Stoff; Rueckgabe ist die Farbe fuer das Material."""
+    kind = pattern.get("kind", "uni")
+    if kind == "uni":
+        return tint.outputs[0]
+    if kind == "bild" and pattern.get("image"):
+        scale = 1.0 / max(0.02, float(pattern.get("size_m", 0.3)))
+        mapping = tree.nodes.new("ShaderNodeMapping")
+        mapping.inputs["Scale"].default_value = (scale, scale, 1)
+        tree.links.new(coord.outputs["UV"], mapping.inputs["Vector"])
+        pic = image_node(tree, pattern["image"], False)
+        tree.links.new(mapping.outputs["Vector"], pic.inputs["Vector"])
+        mix = tree.nodes.new("ShaderNodeMixRGB")
+        mix.blend_type = "MULTIPLY"
+        mix.inputs[0].default_value = 1.0
+        tree.links.new(pic.outputs["Color"], mix.inputs[1])
+        tree.links.new(tint.outputs[0], mix.inputs[2])
+        return mix.outputs[0]
+    sep = tree.nodes.new("ShaderNodeSeparateXYZ")
+    tree.links.new(coord.outputs["UV"], sep.inputs[0])
+    size = max(0.002, float(pattern.get("size_m", 0.03)))
+    u = math_node(tree, "FRACT", math_node(tree, "DIVIDE", sep.outputs["X"], size))
+    v = math_node(tree, "FRACT", math_node(tree, "DIVIDE", sep.outputs["Y"], size))
+    if kind == "streifen":
+        mask = math_node(tree, "LESS_THAN", u, 0.5)
+    elif kind == "karo":
+        a = math_node(tree, "LESS_THAN", u, 0.5)
+        b = math_node(tree, "LESS_THAN", v, 0.5)
+        mask = math_node(tree, "ABSOLUTE", math_node(tree, "SUBTRACT", a, b))
+    else:  # Punkte
+        du = math_node(tree, "SUBTRACT", u, 0.5)
+        dv = math_node(tree, "SUBTRACT", v, 0.5)
+        dist = math_node(tree, "SQRT", math_node(tree, "ADD", math_node(tree, "MULTIPLY", du, du), math_node(tree, "MULTIPLY", dv, dv)))
+        mask = math_node(tree, "LESS_THAN", dist, 0.28)
+    second = tree.nodes.new("ShaderNodeMixRGB")
+    second.blend_type = "MULTIPLY"
+    second.inputs[0].default_value = 1.0
+    second.inputs[2].default_value = pattern.get("color", [0.9, 0.9, 0.9, 1])
+    tree.links.new(tint.inputs[1].links[0].from_socket, second.inputs[1])
+    mix = tree.nodes.new("ShaderNodeMixRGB")
+    tree.links.new(mask, mix.inputs[0])
+    tree.links.new(tint.outputs[0], mix.inputs[1])
+    tree.links.new(second.outputs[0], mix.inputs[2])
+    return mix.outputs[0]
+
+
+def stitch_points(boundary):
+    """Laufpunkte der Steppnaht 9 mm innerhalb jeder Kante."""
+    runs = []
+    for e in boundary:
+        a, b = e.verts
+        faces = list(e.link_faces)
+        if not faces:
+            continue
+        inward = (faces[0].calc_center_median() - (a.co + b.co) / 2)
+        if inward.length == 0:
+            continue
+        inward.normalize()
+        n = faces[0].normal
+        runs.append((a.co + inward * 0.009 + n * 0.0012, b.co + inward * 0.009 + n * 0.0012))
+    return runs
+
+
+def build_stitches(runs):
+    """Kurze Fadenstuecke, 2,8 mm lang, Abstand 3,6 mm."""
+    verts = []
+    faces = []
+    for p, q in runs:
+        d = q - p
+        length = d.length
+        if length == 0:
+            continue
+        step = 0.0036
+        count = int(length / step)
+        dir_ = d.normalized()
+        up = Vector((0, 0, 1)) if abs(dir_.z) < 0.9 else Vector((1, 0, 0))
+        side = dir_.cross(up).normalized() * 0.00032
+        for i in range(count):
+            s = p + dir_ * (i * step)
+            e = s + dir_ * 0.0028
+            base = len(verts)
+            verts.extend([tuple(s - side), tuple(s + side), tuple(e + side), tuple(e - side)])
+            faces.append((base, base + 1, base + 2, base + 3))
+    if not verts:
+        return None
+    mesh = bpy.data.meshes.new("Steppnaht")
+    mesh.from_pydata(verts, [], faces)
+    mesh.update()
+    obj = bpy.data.objects.new("Steppnaht", mesh)
+    bpy.context.collection.objects.link(obj)
+    return obj
 
 
 def image_node(tree, path, non_color):
@@ -561,6 +826,7 @@ def fabric_material(job):
     bsdf.inputs["Roughness"].default_value = fabric.get("roughness", 0.85)
     bsdf.inputs["Sheen Weight"].default_value = fabric.get("sheen", 0.2)
     bsdf.inputs["Sheen Roughness"].default_value = 0.5
+    pattern = fabric.get("pattern") or {}
     tex = fabric.get("textures") or {}
     if tex.get("color"):
         coord = tree.nodes.new("ShaderNodeUVMap")
@@ -576,7 +842,8 @@ def fabric_material(job):
         tint.inputs[0].default_value = 1.0
         tint.inputs[2].default_value = fabric["color"]
         tree.links.new(color.outputs["Color"], tint.inputs[1])
-        tree.links.new(tint.outputs[0], bsdf.inputs["Base Color"])
+        tint_socket = pattern_socket(tree, coord, tint, fabric, pattern)
+        tree.links.new(tint_socket, bsdf.inputs["Base Color"])
         if tex.get("roughness"):
             rough = image_node(tree, tex["roughness"], True)
             tree.links.new(mapping.outputs["Vector"], rough.inputs["Vector"])
@@ -592,6 +859,20 @@ def fabric_material(job):
     return mat
 
 
+def thread_material(job):
+    obj = bpy.data.objects.get("Steppnaht")
+    if obj is None:
+        return
+    fabric = dict(DEFAULT_FABRIC, **job.get("fabric", {}))
+    thread = bpy.data.materials.new("Faden")
+    thread.use_nodes = True
+    node = next(n for n in thread.node_tree.nodes if n.type == "BSDF_PRINCIPLED")
+    c = fabric["color"]
+    node.inputs["Base Color"].default_value = (min(1, c[0] * 0.55 + 0.03), min(1, c[1] * 0.55 + 0.03), min(1, c[2] * 0.55 + 0.03), 1)
+    node.inputs["Roughness"].default_value = 0.55
+    obj.data.materials.append(thread)
+
+
 def studio(job, body):
     scene = bpy.context.scene
     h = job["body"]["height"] / 100.0
@@ -602,6 +883,8 @@ def studio(job, body):
     d.inputs["Base Color"].default_value = (0.74, 0.71, 0.66, 1)
     d.inputs["Roughness"].default_value = 0.46
     body.data.materials.append(doll)
+    for name in json.loads(body.get("zubehoer", "[]")):
+        bpy.data.objects[name].data.materials.append(doll)
     # Hohlkehle als Studiohintergrund, reale Masse: 6 m breit
     verts = []
     prof = []
@@ -686,11 +969,11 @@ def studio(job, body):
     return camera
 
 
-def aim(camera, job, degrees):
+def aim(camera, job, degrees, close=False):
     """Kamera mit realer Portraetbrennweite; Mitte des Kleidungsstuecks im Bild."""
     h = job["body"]["height"] / 100.0
-    centre = Vector((0, 0, {"rock": 0.47, "hose": 0.42, "kleid": 0.56}.get(job["kind"], 0.7) * h))
-    distance = {"hose": 4.6, "kleid": 3.9}.get(job["kind"], 2.9)
+    centre = Vector((0, 0, ({"rock": 0.47, "hose": 0.42, "kleid": 0.56}.get(job["kind"], 0.7) if close else 0.52) * h))
+    distance = {"hose": 4.3, "kleid": 3.7}.get(job["kind"], 2.6) if close else 5.1
     ang = math.radians(degrees)
     camera.location = centre + Vector((math.sin(ang) * distance, -math.cos(ang) * distance, 0.08))
     camera.rotation_euler = (centre - camera.location).to_track_quat("-Z", "Y").to_euler()
@@ -703,15 +986,24 @@ def main():
     simulate()
     final = finish_garment(garment)
     final.data.materials.append(fabric_material(job))
+    thread_material(job)
     camera = studio(job, body)
-    views = {"vorn": 0, "schraeg": 35, "hinten": 180}
-    for name, degrees in views.items():
-        aim(camera, job, degrees)
+    views = {"nah": (20, True), "vorn": (0, False), "schraeg": (35, False), "hinten": (180, False)}
+    for name, (degrees, close) in views.items():
+        aim(camera, job, degrees, close)
         bpy.context.scene.render.filepath = job["out"] + "-" + name + ".png"
         bpy.ops.render.render(write_still=True)
     print("TRENDO_FERTIG", flush=True)
-    bpy.ops.wm.quit_blender()
+    os._exit(0)  # quit_blender blieb im Test einmal 17 Minuten haengen; die Bilder sind hier schon geschrieben
 
 
 if __name__ == "__main__" and "--" in sys.argv:
-    main()
+    try:
+        main()
+    except Exception as error:  # Blender bliebe sonst offen und Trendo wartete vergeblich
+        import traceback
+        print("TRENDO_FEHLER", error, flush=True)
+        traceback.print_exc()
+        sys.stdout.flush()
+        sys.stderr.flush()
+        os._exit(1)
