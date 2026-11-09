@@ -502,6 +502,33 @@ public class ImportTempoTests
         finally { Directory.Delete(d, true); }
     }
 
+    [Fact(DisplayName = "T-0504: Budget – Notizen und Zeichnungen zählen gemeinsam")]
+    public void Budget_notes_and_drawings_share()
+    {
+        var d = Tmp();
+        try
+        {
+            // Je Art 300 × 1 MB bleibt unter der Grenze, zusammen sind es 600 MB.
+            var f = ManySheets(d, 300, SheetWithDrawing, _ => RelList([Rel("d1", "../drawings/drawing1.xml"), $"""<Relationship Id="c" Type="http://x/comments" Target="../comments1.xml"/>"""]),
+                ("xl/comments1.xml", $"""<comments xmlns="{S}"><!--{Comment(1024 * 1024)}--><commentList/></comments>"""),
+                ("xl/drawings/drawing1.xml", $"<wsDr><!--{Comment(1024 * 1024)}--></wsDr>"));
+            AssertRejected(f);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0504: Diagramme – Anker und Beziehung ohne Id passen wie bisher zueinander")]
+    public void Charts_missing_ids_match()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = WithDrawing(d, $"""<wsDr xmlns:c="{CNs}"><c:chart/></wsDr>""", RelList(["""<Relationship Target="../charts/chart1.xml"/>"""]), ("xl/charts/chart1.xml", ChartXml("<a:t>Ohne Id</a:t>", "$A$1")));
+            Assert.Equal([new SheetChart(ChartKind.Balken, "A1:A1", "Ohne Id")], SheetFiles.ReadXlsx(f).Sheets[0].Charts);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
     [Fact(DisplayName = "T-0504: Budget – mehrere Blätter mit derselben Notizdatei gehen unterhalb der Grenze weiter")]
     public void Budget_shared_notes_below_limit()
     {
@@ -635,7 +662,7 @@ public class ImportTempoTests
         finally { Directory.Delete(d, true); }
     }
 
-    [Fact(DisplayName = "T-0504: OBJ-Teile – ein riesiges Vieleck zählt beim Einlesen je Dreieck")]
+    [Fact(DisplayName = "T-0504: OBJ-Teile – ein Vieleck zählt mit jedem seiner Dreiecke")]
     public void Obj_parts_big_polygon()
     {
         var d = Tmp();
