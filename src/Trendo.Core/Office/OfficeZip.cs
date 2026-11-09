@@ -16,7 +16,7 @@ public static class OfficeZip
     public const int MaxRatio = 200;
     const long RatioMinBytes = 10L * 1024 * 1024;
 
-    static InvalidDataException Bad(string why) => new($"Die Datei wurde aus Sicherheitsgründen nicht geöffnet: {why}");
+    internal static InvalidDataException Bad(string why) => new($"Die Datei wurde aus Sicherheitsgründen nicht geöffnet: {why}");
 
     /// <summary>ZIP öffnen und vor dem Lesen die Grenzen prüfen.</summary>
     public static ZipArchive OpenRead(string path)

@@ -215,11 +215,16 @@ public partial class MainWindow
         $"Du arbeitest für Trendo OS im Studio „{(studio is null ? "Programmieren" : StudioCatalog.NameOf(studio, studio))}“. Antworte auf Deutsch, plane zuerst sichtbar (Aufgabenliste), frage bei Unklarem nach und arbeite professionell und barrierearm." +
         (studio is not null && Skills.For(null, studio).Count > 0 ? " Nutze die Trendo-Skills unter .claude/skills (trendo-…) und prüfe dein Ergebnis vor dem Abschluss gegen deren Checklisten; bessere nach, bis alle Punkte erfüllt sind." : "");
 
+    /// <summary>T-0630: nur für Wege, die das Team vorher als Agenten in den Projektordner legen (Claude-Chat, „In Claude Code öffnen“).</summary>
+    public string ClaudeTeamRule(string? studio) => StudioTeams.For(studio) is { } team
+        ? $" Dein {team.Name} steht als Agenten unter .claude/agents (trendo-…) bereit: Ziehe ohne Rückfrage die Rollen hinzu, die der Auftrag braucht ({string.Join(", ", team.Roles.Select(r => r.Name))})."
+        : "";
+
     /// <summary>Knopf „In Claude Code öffnen“ (nur wenn Claude Code installiert ist).</summary>
     Button? ClaudeOpenButton(string name, Func<string> folder, Func<string?> prompt, string? studio)
     {
         if (!_claude.Installed) { if (!_opt.Isolated || ClaudeStatusOverride is not null) _ = ClaudeCheck(); return null; }
-        var b = Act(name, "In Claude Code öffnen", () => ClaudeOpen(folder(), prompt(), ClaudeRoleFor(studio), studio));
+        var b = Act(name, "In Claude Code öffnen", () => ClaudeOpen(folder(), prompt(), ClaudeRoleFor(studio) + ClaudeTeamRule(studio), studio));
         ToolTip.SetTip(b, _claude.Ready ? "Öffnet dein Claude Code sichtbar im Projektordner – mit deinem Auftrag. Du arbeitest dort direkt mit deinem Claude-Abo." : "Claude Code ist installiert, aber nicht angemeldet – unter „KI-Quellen“ mit Claude verbinden.");
         b.IsEnabled = _claude.Ready;
         return b;

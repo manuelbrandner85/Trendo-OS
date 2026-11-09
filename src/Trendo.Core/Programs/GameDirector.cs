@@ -31,7 +31,7 @@ public static class GameDirector
     ];
 
     static readonly string[] Keys = ["title", "scale", "genre", "logline", "loop", "controls", "style", "audience", "platforms", "sound", "menus", "systems", "browser", "world3d",
-        "mechanics", "characters", "world", "quests", "level", "weapon", "abilities", "violence"];
+        "mechanics", "characters", "world", "quests", "level", "weapon", "abilities", "violence", "engine", "engineReason", "blender"];
 
     /// <summary>Anweisungen für die KI (lokal oder Claude): Profi-Team, Liefer-Format (eine Spielbibel als JSON), Rückfragen und Vorschläge.</summary>
     public static string Instructions(bool claude)
@@ -44,7 +44,7 @@ public static class GameDirector
                "Größen (scale): " + scales + ". retro/indie2d laufen sofort im Browser (browser: jump, plattform, breakout oder snake); indie3d/aa/aaa entstehen in Unreal Engine 5 " +
                "mit echten Figuren (MetaHuman), fotorealer Welt und Physik (world3d: level oder openworld).\n" +
                "Liefere IMMER die vollständige Spielbibel als EIN JSON-Objekt in einem ```json-Block mit diesen Feldern: " +
-               "title, scale, genre, logline (ein Satz), loop (Kernschleife), mechanics (Liste), controls, style, audience, platforms, sound, menus, systems, browser, world3d, " +
+               "title, scale, genre, logline (ein Satz), loop (Kernschleife), mechanics (Liste), controls, style, audience, platforms, sound, menus, systems, browser, world3d, engine, engineReason, blender, " +
                "characters (Liste: name, role = Held|Begleiter|Gegner|Boss|Nebenfigur, text, phases = Zahl, Bosse 2–4), world (Liste: name, text), " +
                "quests (Liste: title, kind = Haupt|Neben, goal, needs, gives, giver = Name einer Figur), level (nur Browser: Zeilen aus # . o E ^ S Z F C K D G N), " +
                "weapon (schwert|werfen oder leer), abilities (doppelsprung, sprint …), " +
@@ -91,7 +91,16 @@ public static class GameDirector
         catch (JsonException e) { return new Result(null, qs, sug, "Die Spielbibel der KI war fehlerhaft: " + e.Message); }
         if (raw2 is null) return new Result(null, qs, sug, "Die KI hat keine Spielbibel geliefert.");
         var merged = current?.DeepClone().AsObject() ?? new JsonObject();
-        foreach (var k in Keys) if (raw2[k] is { } v) merged[k] = v.DeepClone();
+        var engineBefore = S(merged["engine"]).ToLowerInvariant(); var scaleBefore = S(merged["scale"]);
+        var engineGiven = raw2["engine"] is not null; var engineValid = GameTools.Engines.Contains(S(raw2["engine"]).ToLowerInvariant());
+        var skip = engineGiven && !engineValid ? new[] { "engine", "engineReason", "blender" } : []; // eine ungültige Engine löscht keine gültige Wahl und bringt keinen Grund mit
+        foreach (var k in Keys.Except(skip)) if (raw2[k] is { } v) merged[k] = v.DeepClone();
+        if (S(merged["engine"]).ToLowerInvariant() != engineBefore) // alter Grund und altes Blender-Nein passen nicht zur neuen Engine
+        {
+            if (raw2["engineReason"] is null) merged.Remove("engineReason");
+            if (raw2["blender"] is null) merged.Remove("blender");
+        }
+        if (!engineGiven && scaleBefore.Length > 0 && S(merged["scale"]) != scaleBefore) { merged.Remove("engine"); merged.Remove("engineReason"); merged.Remove("blender"); } // neuer Umfang ohne neue Wahl: wie beim Auswahlfeld
         return new Result(Normalize(merged), qs, sug, null);
     }
 
@@ -138,6 +147,9 @@ public static class GameDirector
             o["browser"] = "";
             o["world3d"] = S(o["world3d"]) is "level" or "openworld" ? S(o["world3d"]) : scale is "aaa" || genre.Contains("open world") ? "openworld" : "level";
         }
+        o["engine"] = GameTools.Engines.Contains(S(o["engine"]).ToLowerInvariant()) ? S(o["engine"]).ToLowerInvariant() : "";
+        o["engineReason"] = S(o["engineReason"]);
+        if (o["blender"]?.GetValueKind() is not (JsonValueKind.True or JsonValueKind.False)) o.Remove("blender");
         o["weapon"] = S(o["weapon"]) is "schwert" or "werfen" ? S(o["weapon"]) : "";
         // Gewalt-Darstellung: ausdrücklich gewählt, sonst nach Zielgruppe (Kinder → keine)
         var aud = S(o["audience"]).ToLowerInvariant();
@@ -153,7 +165,7 @@ public static class GameDirector
     {
         var lines = new List<string>();
         var labels = new Dictionary<string, string> { ["title"] = "Titel", ["scale"] = "Umfang", ["genre"] = "Genre", ["logline"] = "Idee", ["loop"] = "Kernschleife", ["controls"] = "Steuerung",
-            ["style"] = "Stil", ["sound"] = "Ton", ["browser"] = "Spielart", ["world3d"] = "Welt", ["weapon"] = "Waffe", ["violence"] = "Gewalt" };
+            ["style"] = "Stil", ["sound"] = "Ton", ["browser"] = "Spielart", ["world3d"] = "Welt", ["weapon"] = "Waffe", ["violence"] = "Gewalt", ["engine"] = "Engine" };
         foreach (var (k, l) in labels)
             if (S(old[k]) != S(neu[k])) lines.Add($"{l}: {Short(S(old[k]))} → {Short(S(neu[k]))}");
         void Named(string key, string label, string nameKey)

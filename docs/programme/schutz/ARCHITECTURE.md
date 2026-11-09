@@ -1,6 +1,6 @@
 # Schutz & Datenschutz – Architektur
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.36 (Stand 70e872a)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.36 (Stand df96c57)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

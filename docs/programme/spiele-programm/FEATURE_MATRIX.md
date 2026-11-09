@@ -1,6 +1,6 @@
 # Spiele bauen – Funktionsmatrix
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.36 (Stand 70e872a)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.36 (Stand df96c57)
 
 Quelle: `docs/spec/kataloge/CORE-06_KATALOG.md`
 
@@ -52,4 +52,5 @@ Quelle: `docs/spec/kataloge/CORE-06_KATALOG.md`
 - Figur (Hinzufügen)
 - Region (Hinzufügen)
 - Mission (Hinzufügen)
+- Spielbibel als PDF (Exportieren)
 - Spielbibel (Exportieren)

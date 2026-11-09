@@ -134,20 +134,40 @@ public static class GameExperts
             "community,spieler,rückmeldung,ankündigung,patchnotes", null, "Fakten, Pläne, bekannte Fehler und Übergangslösungen trennen", "Rückmeldungen in umsetzbare Punkte ordnen", "öffentliche Zusagen passen zur echten Planung"),
     ];
 
-    /// <summary>Rat-Modus: leicht = 1 Fachperson, normal = 3, Rat = bis 6 (Grenze 1–6).</summary>
-    public static readonly (string Id, string Label, int Count)[] Modes = [("leicht", "Leicht – eine Fachperson", 1), ("normal", "Normal – drei Fachleute", 3), ("rat", "Rat – bis zu sechs Fachleute", 6)];
+    /// <summary>Rat-Modus: automatisch nach Auftrag (Standard, T-0630), leicht = 1 Fachperson, normal = 3, Rat = bis 6 (Grenze 1–6).</summary>
+    public static readonly (string Id, string Label, int Count)[] Modes = [("auto", "Automatisch – so viele wie der Auftrag braucht", 0), ("leicht", "Leicht – eine Fachperson", 1), ("normal", "Normal – drei Fachleute", 3), ("rat", "Rat – bis zu sechs Fachleute", 6)];
 
     public static GameExpert? Find(string id) => All.FirstOrDefault(e => e.Id == id);
+
+    static readonly HashSet<string> InnerShort = ["menü", "welt", "shop"];
+
+    /// <summary>Deutsche Zusammensetzungen zählen: ab 5 Zeichen auch im Wort („Hintergrundmusik“), bei 4 Zeichen nur am Wortanfang außer wenigen wie „Hauptmenü“ („plan“ trifft nicht „Planet“ im Wort);
+    /// bis 3 Zeichen wie „ki“ oder „rig“ nur als ganzes Wort, auch mit Mehrzahl-s („NPCs“).</summary>
+    static bool Hit(string text, string keyword)
+    {
+        if (keyword.Length >= 5 || InnerShort.Contains(keyword)) return text.Contains(keyword, StringComparison.Ordinal);
+        for (var i = text.IndexOf(keyword, StringComparison.Ordinal); i >= 0; i = text.IndexOf(keyword, i + 1, StringComparison.Ordinal))
+        {
+            if (i > 0 && char.IsLetterOrDigit(text[i - 1])) continue;
+            if (keyword.Length > 3) return true;
+            var end = i + keyword.Length;
+            if (end < text.Length && text[end] == 's') end++;
+            if (end >= text.Length || !char.IsLetterOrDigit(text[end])) return true;
+        }
+        return false;
+    }
 
     /// <summary>Wählt die passenden Fachleute für einen Auftrag: Treffer in den Stichwörtern zählen, die gewählte Engine bevorzugt ihre Spezialisten,
     /// fremde Engine-Spezialisten fallen weg. Ohne Treffer: Game Designer und Technischer Direktor.</summary>
     public static IReadOnlyList<GameExpert> Pick(string? task, string? engine, string mode = "normal", int? max = null)
     {
-        var n = Math.Clamp(max ?? Modes.FirstOrDefault(m => m.Id == mode).Count switch { 0 => 3, var c => c }, 1, 6);
+        var lower = " " + (task ?? "").ToLowerInvariant() + " ";
+        var needed = All.Count(e => (e.Engine is null || string.IsNullOrEmpty(engine) || e.Engine == engine.ToLowerInvariant()) && e.Triggers.Any(k => Hit(lower, k)));
+        var n = Math.Clamp(max ?? (mode == "auto" ? Math.Max(needed, 2) : Modes.FirstOrDefault(m => m.Id == mode).Count switch { 0 => 3, var c => c }), 1, 6);
         var t = " " + (task ?? "").ToLowerInvariant() + " "; var eng = (engine ?? "").ToLowerInvariant();
         var scored = All.Where(e => e.Engine is null || eng.Length == 0 || e.Engine == eng)
-            .Select((e, i) => (e, i, s: e.Triggers.Count(k => t.Contains(k, StringComparison.Ordinal)) * 10 + (e.Engine is not null && e.Engine == eng && t.Length > 2 ? 3 : 0)))
-            .Where(x => x.s >= 10 || (x.s > 0 && x.e.Engine == eng))
+            .Select((e, i) => (e, i, s: e.Triggers.Count(k => Hit(t, k)) * 10 + (e.Engine is not null && e.Engine == eng && t.Length > 2 ? 3 : 0)))
+            .Where(x => x.s >= 10)
             .OrderByDescending(x => x.s).ThenBy(x => x.i).Select(x => x.e).Take(n).ToList();
         foreach (var fallback in new[] { "game-designer", "technical-director" }) if (scored.Count < Math.Min(n, 2) && scored.All(e => e.Id != fallback)) scored.Add(Find(fallback)!);
         return scored.Take(n).ToList();

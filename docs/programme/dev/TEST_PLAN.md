@@ -1,9 +1,13 @@
 # Software – Testplan
 
-Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 70e872a)
+Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand df96c57)
 
-53 Tests sprechen dieses Programm an.
+70 Tests sprechen dieses Programm an.
 
+- A6: Echte Prüfung auf dem Export: drei Bilder, gezeichnete Seite mit <main>, defekter Link und zu breiter Inhalt werden gefunden (übersprungen ohne Chrome)
+- A6: Eingebauter Fehler wird gemeldet und gezielt nachgebessert; die Obergrenze gilt; Bildbewertung ist nur ein Hinweis
+- A6: „Seite prüfen“ meldet Fehler der gespeicherten Seite, ohne etwas zu ändern
+- A7: Ohne Claude läuft die Textaufgabe lokal und die Oberfläche nennt die KI; ohne jede KI ein klarer Hinweis
 - Annehmen/Verwerfen im Programm: Claude ändert das Studio-Dokument – Vorher/Nachher vergleichen, verwerfen stellt alles her, behalten übernimmt
 - Befehlsleiste Strg+K und Projekt-Fortsetzung überall: Claude fragen, weitermachen – auch aus einem anderen Studio
 - CORE-07 (UI): Seite aus Beschreibung, Note, Stil, Paket erst nach Bestätigung
@@ -25,14 +29,27 @@ Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand
 - Claude-Chat: „⬆ GitHub“ lädt das Projekt nach Ja als privates Repo hoch (gh-Ordner der Person); „🌐 Netlify“ nur im Web-Studio, veröffentlicht nach Ja
 - Claude: während der Arbeit weiterschreiben – Nachricht wartet sichtbar und kommt gleich danach dran; „Stopp & jetzt“ nimmt sie sofort
 - Echt testen bis es läuft: Skriptfehler gehen zurück an Claude; ohne Fehler sieht Claude das Bildschirmfoto an; abschaltbar
+- Editor-Entwurf ist die Grundlage der KI: ungespeicherte Änderungen gehen nicht verloren und werden erst beim Übernehmen geschrieben
 - Etappen: Abo mitten im Auftrag leer – Ersatz-KI übernimmt, Trendo merkt sich das Projekt; ist Claude wieder frei, macht Claude dort weiter
 - Freihändig sprechen: zuhören, abschicken, Antwort vorlesen, bis man es ausschaltet
 - Gutachter: zweite Meinung mit Note, ändert nichts; „Verbessern lassen“ gibt die Punkte an Claude
+- K1 und K2: Das echte Editor-Bündel in echtem Chrome: Auswählen, Mehrfachauswahl, Text direkt ändern, KI-Vorschau (übersprungen ohne Chrome oder Node)
+- K1: Auftrag außerhalb der Auswahl wird abgelehnt; ohne Auswahl ein Hinweis
+- K1: Auswahl aus der Vorschau, Auftrag ändert nur sie, die KI sieht nur sie; Verwerfen lässt die Seite gleich, Übernehmen ist ein Rückgängig-Schritt
+- K2: Text direkt ändern: gespeicherte Daten enthalten den neuen Text, ohne KI
+- K4 und A7: Bild ohne bildfähige KI ergibt einen Hinweis statt eines Fehlers, nichts wird gefragt; mit bildfähiger KI fließt das Bild in den Auftrag
+- K4: Satz → Vorschau ohne Schreiben → Übernehmen als ein Schritt → Rückgängig; Editor-Daten statt Dateien
+- K4: Ungültige KI-Antwort wird gemeldet, nichts gelangt in die Seite
+- K5: Stand benennen und wiederherstellen; Variante anlegen, öffnen, Original bleibt, übernehmen
+- Kein Datenverlust: Solange die KI arbeitet, bleibt das Ziel fest; eine Änderung in der Zwischenzeit verwirft den Vorschlag für die Auswahl
+- Kein Datenverlust: Ungespeicherter Entwurf landet vor Wiederherstellen und Fassungswechsel in einem Stand; benannte Stände bleiben sichtbar
+- Kein Datenverlust: Wechsel der Fassung verwirft eine offene KI-Vorschau, die Variante bleibt unberührt
 - Kostenlose KI-Werkzeuge: Claude bestellt ein Bild – erst als Entwurf zum Ansehen, ins Projekt erst nach „Übernehmen“; neu erzeugen, verwerfen; Knöpfe; Diktieren
 - Markieren & Claude fragen: Zellbereich in Trendo Tabelle geht mit ins Eingabefeld; Knopf auf der Seite; Strg+Umschalt+A
 - Projekt-Gedächtnis: Claude merkt sich „Merken:“-Zeilen, sie gehen bei jeder Nachricht mit; ansehen, ergänzen, vergessen
 - Schöne Antworten: Überschrift, Tabelle als Raster, Code mit Farben und „Kopieren“; Glas-Design im Chat
 - Selbstlernend in allen Studios: Claudes „Lernregel“ wird Vorschlag; nach Ja gilt sie für alle Projekte des Studios; Nein und Zurücknehmen; Gutachten lehrt mit
+- Sperre löst sich: Auch wenn die Seite nicht lesbar ist, bleibt die KI nicht für immer blockiert
 - Spiele-Studio: eingebaute Spielregeln; mit GAMEFORGE dessen Regeln, Skills und Agenten (im sicheren Modus als Projekt-Skills); Regeln-Feld zeigt den Stand
 - Spiele: Unreal öffnen und die Herstellerseite bleiben der alte Weg
 - T-0203: Abbrechen installiert nichts

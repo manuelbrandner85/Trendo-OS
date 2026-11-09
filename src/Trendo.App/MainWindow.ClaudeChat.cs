@@ -450,7 +450,7 @@ public partial class MainWindow
         FolderSnapshot? snap = null;
         var point = CTimeline.NewStore(chat.Id); // Versionspunkt für die Zeitreise
         try { snap = FolderSnapshot.Take(folder, point); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
-        var system = ClaudeChats.System(StudioCatalog.NameOf(dock.Studio ?? "", "Trendo"), ClaudeRoleFor(dock.Studio), Skills.For(null, dock.Studio), format, workFile) + programInfo + LiveReplay.Rule + ClaudeStudioRules(dock, folder, chat.FullWith(ClaudeAlways)) + ClaudeDocsFor(chat.Id, folder) + CMemory.Prompt(chat.Id) + (ClaudeSuggestsOn ? ClaudeChats.SuggestRule : "");
+        var system = ClaudeChats.System(StudioCatalog.NameOf(dock.Studio ?? "", "Trendo"), ClaudeRoleFor(dock.Studio) + ClaudeTeamRule(dock.Studio), Skills.For(null, dock.Studio), format, workFile) + programInfo + LiveReplay.Rule + ClaudeStudioRules(dock, folder, chat.FullWith(ClaudeAlways)) + ClaudeDocsFor(chat.Id, folder) + CMemory.Prompt(chat.Id) + (ClaudeSuggestsOn ? ClaudeChats.SuggestRule : "");
         string? pendingFile = null;
         var model = KiSourceSettings.Load(_core.DataRoot).ClaudeModel;
         void OnLine(string l)

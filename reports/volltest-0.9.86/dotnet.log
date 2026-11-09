@@ -1,0 +1,16 @@
+--- Lauf 1 (Api, App; Core wegen gesperrter Datei nicht gestartet)
+C:\Program Files\dotnet\sdk\10.0.403\Microsoft.Common.CurrentVersion.targets(4919,5): error MSB3027: "obj\Release\net10.0\Trendo.Core.Tests.dll" konnte nicht in "bin\Release\net10.0\Trendo.Core.Tests.dll" kopiert werden. Die zulässige Anzahl von Wiederholungen von 10 wurde überschritten. Fehler. Die Datei wird durch "testhost (29560)" gesperrt. [<repo>\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Program Files\dotnet\sdk\10.0.403\Microsoft.Common.CurrentVersion.targets(4919,5): error MSB3021: Die Datei "obj\Release\net10.0\Trendo.Core.Tests.dll" kann nicht in "bin\Release\net10.0\Trendo.Core.Tests.dll" kopiert werden. The process cannot access the file '<repo>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll' because it is being used by another process. [<repo>\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+Bestanden!   : Fehler:     0, erfolgreich:    16, übersprungen:     0, gesamt:    16, Dauer: 2 s - Trendo.Api.Tests.dll (net10.0)
+[xUnit.net 00:00:07.65]     Musik-KI live: Paket prüfen, entpacken, Server starten, 30 s Lied erzeugen [SKIP]
+[xUnit.net 00:00:44.47]     SYS-03-P14: Seite als PDF – A4, Prüfsumme im Protokoll (nur wenn Chrome/Edge da) [SKIP]
+[xUnit.net 00:04:47.81]     T-0202: Kein Klick auf irgendeiner Seite stürzt ab (Klick-Audit, Bericht der stummen Knöpfe) [SKIP]
+[xUnit.net 00:05:33.67]     T-0306: mpv (echt) – Abspielen meldet Position und Länge, Springen, Pause, Titelende kommt genau einmal [SKIP]
+Bestanden!   : Fehler:     0, erfolgreich:   915, übersprungen:     4, gesamt:   919, Dauer: 33 m 40 s - Trendo.App.Tests.dll (net10.0)
+--- Lauf 2 (Core, gleicher Commit)
+[xUnit.net 00:00:05.08]     X-08: BlueZ sucht ohne zu koppeln, koppelt nur nach Zustimmung, OBEX und Akku [SKIP]
+[xUnit.net 00:00:05.16]     T-0223 T8: Rechtschreibung Deutsch – Fehler gefunden mit Vorschlägen, richtige Wörter, Zahlen, Adressen und eigene Wörter nicht angestrichen [SKIP]
+[xUnit.net 00:00:45.49]     SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt [SKIP]
+[xUnit.net 00:00:45.49]     SYS-10-P08 (T-0244 getrennt): Scan → durchsuchbares PDF mit Tesseract [SKIP]
+[xUnit.net 00:00:53.83]     Briefe F3: Rechtschreibung im Brieftext – Tippfehler mit Stelle und Vorschlag, Platzhalter [Datum] und richtige Wörter nicht angestrichen [SKIP]
+Bestanden!   : Fehler:     0, erfolgreich:  2075, übersprungen:     5, gesamt:  2080, Dauer: 1 m 23 s - Trendo.Core.Tests.dll (net10.0)

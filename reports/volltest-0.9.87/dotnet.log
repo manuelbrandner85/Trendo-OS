@@ -1,0 +1,12 @@
+Bestanden!   : Fehler:     0, erfolgreich:    16, übersprungen:     0, gesamt:    16, Dauer: 2 s - Trendo.Api.Tests.dll (net10.0)
+[xUnit.net 00:00:03.88]     Briefe F3: Rechtschreibung im Brieftext – Tippfehler mit Stelle und Vorschlag, Platzhalter [Datum] und richtige Wörter nicht angestrichen [SKIP]
+[xUnit.net 00:00:10.77]     X-08: BlueZ sucht ohne zu koppeln, koppelt nur nach Zustimmung, OBEX und Akku [SKIP]
+[xUnit.net 00:00:38.12]     T-0223 T8: Rechtschreibung Deutsch – Fehler gefunden mit Vorschlägen, richtige Wörter, Zahlen, Adressen und eigene Wörter nicht angestrichen [SKIP]
+[xUnit.net 00:00:38.76]     SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt [SKIP]
+[xUnit.net 00:00:38.76]     SYS-10-P08 (T-0244 getrennt): Scan → durchsuchbares PDF mit Tesseract [SKIP]
+Bestanden!   : Fehler:     0, erfolgreich:  2108, übersprungen:     5, gesamt:  2113, Dauer: 1 m 7 s - Trendo.Core.Tests.dll (net10.0)
+[xUnit.net 00:02:35.07]     T-0306: mpv (echt) – Abspielen meldet Position und Länge, Springen, Pause, Titelende kommt genau einmal [SKIP]
+[xUnit.net 00:10:02.22]     T-0202: Kein Klick auf irgendeiner Seite stürzt ab (Klick-Audit, Bericht der stummen Knöpfe) [SKIP]
+[xUnit.net 00:17:56.94]     Musik-KI live: Paket prüfen, entpacken, Server starten, 30 s Lied erzeugen [SKIP]
+[xUnit.net 00:18:48.83]     SYS-03-P14: Seite als PDF – A4, Prüfsumme im Protokoll (nur wenn Chrome/Edge da) [SKIP]
+Bestanden!   : Fehler:     0, erfolgreich:   920, übersprungen:     4, gesamt:   924, Dauer: 31 m 41 s - Trendo.App.Tests.dll (net10.0)

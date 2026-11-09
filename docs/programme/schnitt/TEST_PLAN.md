@@ -1,8 +1,8 @@
 # Videoschnitt – Testplan
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `schnitt` · Stand: 0.9.36 (Stand 70e872a)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `schnitt` · Stand: 0.9.36 (Stand df96c57)
 
-39 Tests sprechen dieses Programm an.
+50 Tests sprechen dieses Programm an.
 
 - A2/A4: Texte & Tabellen mit Neu-Karten (Dokument, Tabelle, Präsentation, PDF, Brief, Word-Vorlagen) und Leerzustand; Neues Projekt mit Ziel-Karten
 - C1/C2/C4: Ist Claude verbunden, geht „Los“ der Studio-Zeile an Claude (Studio bleibt sichtbar, volle Rechte mit Rückfrage bei Wirkung nach außen); der zweite Auftrag läuft in derselben Sitzung; ohne Claude plant Trendo selbst
@@ -30,6 +30,15 @@ Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seit
 - S3-18 Videoschnitt: drei Fassungen in die Warteschlange (YouTube, Hochformat, ProRes) laufen nacheinander; entfernte Fassung läuft nicht; ein Fehler hält die Schlange nicht an
 - S3-18/S3-20 Videoschnitt: „Film ausliefern“ legt einen Ordner mit Film, Stems, EDL, OTIO, Cue-Liste und Prüfbericht an; fehlendes Medium wird gemeldet statt verschleiert
 - T4/T7: Geräte überwachen und Auto & Fahrten starten mit Leerzustand; Beispiel-Knopf darin füllt Dashboard bzw. Fahrzeug
+- V2: Einblendungen erscheinen auf der Zeitleiste und lassen sich auf eine zweite Bildspur ziehen
+- V2: Tonspur hinzufügen, Musik mit der Maus auf die neue Spur ziehen, Stumm-Knopf greift, Rückgängig holt sie zurück
+- V3: Pfeiltaste springt um genau ein Bild der Projekt-Bildrate, Anzeige zeigt den Zeitcode, Klick im Lineal rastet ein
+- V4: Slip- und Rolling-Werkzeug über die Zeitleiste; Löschen-und-Aufrücken verlangt eine Tonauswahl
+- V5: Keyframe über die Oberfläche setzen und entfernen; Abspielkopf bestimmt die Stelle im Stück
+- V6: Effekt hinzufügen, abschalten, entfernen
+- V7: Farbrad wirkt auf den Export und lässt sich zurücksetzen
+- V8: Mischpult zeigt alle Tonspuren; Pegel, Stumm und Solo wirken aufs Dokument
+- V9: Rechtsklick-Menü passt zum Stück; Aktionen wirken; Zeitleiste hat einen Höhen-Griff
 - Videoschnitt Export X1/X11/X16: Vorlage Hochformat per Klick, Bereich und Lautheit gehen an den Export, Dateiname mit Vorlage, EDL und FCPXML werden geschrieben
 - Videoschnitt UI: Medien auf die Spuren, Stück ziehen ordnet um, Kante ziehen kürzt, Lineal setzt Abspielkopf, S teilt, Strg+Z, Entf, Export, Einfach-Stufe
 - Videoschnitt UI: falsche Dateien und leere Bildspur geben klare Meldungen
@@ -39,6 +48,8 @@ Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seit
 - Videoschnitt X5: L spielt (zweimal = 2×), J rückwärts, K hält an, I/O setzen den Export-Bereich, M setzt eine Marke, Pos1/Ende springen
 - Videoschnitt übersichtlich: Spurnamen, Abspielleiste unter der Vorschau, rechts Medien · Auswahl · Export – Auswahl öffnet sich beim Anklicken eines Stücks
 - Videoschnitt „Meine Exporte“: fertiges Video bleibt in der Liste, Abspielen startet es, Ordner öffnen markiert die Datei im Explorer, Löschen in den Papierkorb
+- Vorschau V1: Abspielen nimmt die Bildquelle, zeigt Bilder, spielt die Ton-Mischung; Anhalten beendet Quelle und Ton und setzt den Abspielkopf
+- Vorschau V1: Ohne Bildquelle (Tests, Abschottung) bleibt die bisherige Wiedergabe; schnelleres Tempo wechselt dorthin
 - Vorschläge UI: Kalender plant fällige Aufgabe ein (Ja, Rückgängig), Aufgaben aus E-Mails (Nein bleibt gemerkt), Abläufe, Videoschnitt-Stille
 - W3: Wissensnetz – Seiten als Punkte, [[Verweise]] als Linien (ungerichtet, ohne Doppelte, fehlende Ziele nicht), Klick öffnet die Seite; leer mit Leerzustand
 - Y3/Y6: Sicherheitszentrale mit Schutz-Ring und Ampel-Karten je Prüfung; Programme verwalten mit App-Regal – Klick sucht, installiert nichts ohne „Installieren“

@@ -487,6 +487,13 @@ modules:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: docs/claude/FILM_POD_PLAN_2026-11-08.md (Freigabe im Chat 08.11.2026)
+- id: STUDIO-CONSOLE-01
+  name: Konsolenspiele portieren (eigene PS2-Spiele)
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Auftrag im Chat 09.11.2026 (Goal)
 - id: STUDIO-POD-01
   name: Print on Demand
   approved_expansion_functions: '10'

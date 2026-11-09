@@ -66,6 +66,10 @@ public static class StudioTeams
             R("pod-idee", "Motiv-Gestalterin", "entwickelt Motive und Sprüche", "eigene Ideen, keine fremden Marken oder Figuren", true),
             R("pod-preis", "Kalkulatorin", "prüft Preis und Gewinn je Stück", "alle Gebühren und Steuern einrechnen"),
             R("pod-text", "Verkaufstexter", "schreibt Beschreibung und Schlagwörter", "ehrlich, keine Fantasie-Eigenschaften")),
+        T("STUDIO-CONSOLE-01", "Portier-Team",
+            R("kon-analyse", "Analystin", "untersucht das Spiel und den Recompiler-Lauf", "nur das eigene Abbild, Belege statt Vermutungen"),
+            R("kon-laufzeit", "Laufzeit-Entwickler", "ergänzt fehlende Bausteine", "kleine Schritte, jeder Schritt getestet", true),
+            R("kon-tester", "Tester", "startet den Port und ordnet Abstürze", "Protokolle lesen, Spieldaten nie weitergeben")),
         T("SPEC-15", "Sende-Team",
             R("redaktion", "Sendungsredakteur", "plant Ablauf, Themen und Sendeplan", "Zeitplan mit Puffer"),
             R("technik", "Bild- & Tontechniker", "richtet Szenen, Quellen und Ton ein", "Pegel, Bitrate, Ausfallplan"),
@@ -245,6 +249,31 @@ public static class StudioTeams
     public static StudioTeam? For(string? studioId) => All.FirstOrDefault(t => t.StudioId == studioId);
     public static StudioRole? Role(string id) => All.SelectMany(t => t.Roles).FirstOrDefault(r => r.Id == id);
     public static string? StudioOf(string roleId) => All.FirstOrDefault(t => t.Roles.Any(r => r.Id == roleId))?.StudioId;
+
+    /// <summary>T-0630: Rollen des Studios, die zum Auftrag passen, ohne dass jemand wählt. Treffer in Name, Aufgabe und Schwerpunkt zählen; ohne Treffer arbeitet die erste Rolle.</summary>
+    public static IReadOnlyList<StudioRole> Pick(string? studioId, string? task, int max = 3)
+    {
+        if (For(studioId) is not { } team) return [];
+        var words = (task ?? "").ToLowerInvariant().Split([' ', ',', '.', ';', ':', '!', '?', '„', '“', '"', '\n', '(', ')', '-', '/'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Where(w => w.Length >= 3 && !Filler.Contains(w)).Distinct().ToList();
+        var hits = team.Roles.Select((r, i) => (r, i, s: words.Count(w => StartsWord($"{r.Name} {r.Does} {r.Focus}".ToLowerInvariant(), w)))).Where(x => x.s > 0).OrderByDescending(x => x.s).ThenBy(x => x.i).Select(x => x.r).Take(max).ToList();
+        return hits.Count > 0 ? hits : [team.Roles[0]];
+    }
+
+    static readonly HashSet<string> Filler = ["bitte", "der", "die", "das", "den", "dem", "des", "ein", "eine", "einen", "einem", "einer", "und", "oder", "aber", "mit", "für", "von", "vom", "zum", "zur", "auf", "aus", "bei", "nach", "über", "unter", "mach", "mache", "machen", "soll", "sollen", "will", "wird", "werden", "sind", "ist", "auch", "noch", "dann", "wenn", "nicht", "kein", "keine", "alle", "alles", "mehr", "sehr", "mein", "meine", "dein", "deine", "dass", "damit", "ich", "wir", "mir", "nur", "wie", "was", "als", "bis", "vor", "kann", "können", "hat", "habe", "gib", "gibt", "zeig", "zeige"];
+
+    static bool StartsWord(string text, string word)
+    {
+        for (var i = text.IndexOf(word, StringComparison.Ordinal); i >= 0; i = text.IndexOf(word, i + 1, StringComparison.Ordinal))
+            if (i == 0 || !char.IsLetterOrDigit(text[i - 1])) return true;
+        return false;
+    }
+
+    /// <summary>T-0630: Zusatz für die KI: wer am Auftrag mitarbeitet. Leer, wenn das Studio kein Team hat.</summary>
+    public static string Brief(string? studioId, string? task)
+    {
+        var roles = Pick(studioId, task);
+        return roles.Count == 0 ? "" : "\nDein Team arbeitet automatisch mit, beziehe seine Sicht ein:\n" + string.Join("\n", roles.Select(r => $"- {r.Name}: {r.Does}. Achtet auf: {r.Focus}."));
+    }
 
     /// <summary>Feste Regeln für jede Rolle.</summary>
     public const string Rules = "Antworte auf Deutsch, klar und ehrlich. Erfinde nichts – trenne Fakten, Annahmen und offene Fragen. "

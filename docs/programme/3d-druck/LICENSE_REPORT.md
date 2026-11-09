@@ -1,6 +1,6 @@
 # Trendo 3D-Druck – Lizenzen
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d-druck` · Stand: 0.9.36 (Stand 70e872a)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d-druck` · Stand: 0.9.36 (Stand df96c57)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 
@@ -13,6 +13,7 @@ Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nen
 - Krita (optional)
 - Inkscape (optional)
 - Tesseract OCR
+- ambientCG (freie Materialien)
 - PDFsharp (MIT)
 - Hunspell-Wörterbücher
 - Git

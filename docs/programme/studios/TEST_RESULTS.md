@@ -1,10 +1,10 @@
 # Alle Studios – Testergebnisse
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.36 (Stand 70e872a)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.36 (Stand df96c57)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 49 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
+Bestanden 49 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 4
 
 | Test | Ergebnis |
 |---|---|
@@ -50,6 +50,9 @@ Bestanden 49 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
 | Startseite: die neun bekannten Studios öffnen aus dem Startmenü per echtem Mausklick eine eigene Seite | ✓ bestanden |
 | Studio-Klick: Unreal nur geführt – kein Installieren-Knopf, offizieller Installer-Link | ✓ bestanden |
 | Studio-Klick: fehlendes Programm → genau eine Frage 'Studio braucht X. Jetzt installieren?', 'Später' installiert nichts | ✓ bestanden |
+| Studio-Ordnung: alphabetisch innerhalb einer Unterteilung, Umlaute deutsch sortiert | nicht im Lauf |
+| Studio-Ordnung: jedes Studio im System-Bereich hat eine Unterteilung, keine Unterteilung zeigt auf ein fehlendes Studio | nicht im Lauf |
+| Studio-Ordnung: Übersicht zeigt Unterteilungen und Anzahl; „Zuletzt benutzt“ erscheint nach dem Öffnen eines Studios und nicht bei der Suche | nicht im Lauf |
 | Symbole: alle Pfade sind gültige Avalonia-Geometrien mit Akzentfarben | ✓ bestanden |
 | Symbole: jede Karte unter „Alle Studios“ und jeder Fach-Reiter zeigt sein Studio-Symbol | ✓ bestanden |
 | Symbole: jedes Studio aus requirements.yaml hat ein eigenes, eindeutiges Symbol | ✓ bestanden |

@@ -77,7 +77,7 @@ export const config = {
       radius: { type: "number", label: "Rundung (px)", min: 0, max: 40 }, space: { type: "number", label: "Abstand-Grundwert (px)", min: 4, max: 48 },
     },
     defaultProps: { title: "Neue Seite", description: "", accent: "#1d1d1f", ink: "#1d1d1f", paper: "#ffffff", font: "klar", radius: 12, space: 24 },
-    render: ({ children, accent, ink, paper, font, radius, space }) => <div className="t-page" style={tokens({ accent, ink, paper, font, radius, space })}>{children}</div>,
+    render: ({ children, accent, ink, paper, font, radius, space }) => <main className="t-page" style={tokens({ accent, ink, paper, font, radius, space })}>{children}</main>,
   },
   components: {
     Kopfbereich: {
@@ -119,26 +119,85 @@ const viewports = [{ width: 390, height: "auto", label: "Handy", icon: "Smartpho
 // Fertige Seite (Export): kein Editor, nur die Seite aus window.TRENDO_SEITE (seite.js neben index.html)
 function Viewer() {
   const data = window.TRENDO_SEITE || empty;
-  useEffect(() => { document.title = data.root?.props?.title || "Webseite"; const d = data.root?.props?.description; if (d) { let m = document.querySelector('meta[name="description"]'); if (!m) { m = document.createElement("meta"); m.name = "description"; document.head.appendChild(m); } m.content = d; } }, [data]);
+  useEffect(() => { document.title = data.root?.props?.title || "Webseite"; const d = data.root?.props?.description; if (d) { let m = document.querySelector('meta[name="description"]'); if (!m) { m = document.createElement("meta"); m.name = "description"; document.head.appendChild(m); } m.content = d; } document.documentElement.dataset.fertig = "1"; }, [data]);
   return <Render config={config} data={data} />;
+}
+
+// ---------- K1/K2: Auswählen in der Vorschau, Text direkt ändern ----------
+// Welche Stelle eines Bausteins welches Feld ist – Text wird über dieselbe Aktion „element_aendern“ gespeichert, die auch die KI nutzt.
+const TEXT_FELDER = { Kopfbereich: { H1: "title", P: "sub", A: "cta" }, Ueberschrift: { H2: "text", H3: "text" }, Text: { P: "text" }, Knopf: { A: "label" } };
+
+// Die Auswahl kommt über den Kontext: Die Baustein-Konfiguration bleibt dieselbe, sonst ersetzt React bei jedem Klick die Elemente und ein Doppelklick träfe ins Leere.
+const SelCtx = React.createContext({ selected: [], toggle: () => {} });
+const pendingToggles = new Map(); // Je Baustein: Ein Einzelklick wählt erst aus, wenn kein zweiter Klick folgt
+
+function SelBox({ id, typ, children }) {
+  const { selected, toggle } = React.useContext(SelCtx);
+  const onClick = (e) => {
+    e.preventDefault(); e.stopPropagation();
+    if (e.target.isContentEditable || e.detail > 1) return;
+    clearTimeout(pendingToggles.get(id));
+    pendingToggles.set(id, setTimeout(() => { pendingToggles.delete(id); toggle(id); }, 240));
+  };
+  return <div className={"t-sel" + (selected.includes(id) ? " t-sel-on" : "")} data-tid={id} data-typ={typ} onClick={onClick}>{children}</div>;
+}
+
+const selectableConfig = { ...config, components: Object.fromEntries(Object.entries(config.components).map(([name, c]) =>
+  [name, { ...c, render: (p) => <SelBox id={p.id} typ={name}>{c.render(p)}</SelBox> }])) };
+
+function startTextEdit(e) {
+  const el = e.target; const host = el.closest?.("[data-tid]"); if (!host) return;
+  clearTimeout(pendingToggles.get(host.dataset.tid)); pendingToggles.delete(host.dataset.tid);
+  const feld = TEXT_FELDER[host.dataset.typ]?.[el.tagName]; if (!feld) return;
+  e.preventDefault(); e.stopPropagation();
+  const before = el.textContent; el.contentEditable = "plaintext-only"; el.focus();
+  const end = (save) => {
+    el.removeEventListener("blur", onBlur); el.removeEventListener("keydown", onKey); el.contentEditable = "false";
+    if (save && el.textContent !== before) send({ art: "aktion", daten: { aktionen: [{ aktion: "element_aendern", id: host.dataset.tid, props: { [feld]: el.textContent } }] } });
+    else el.textContent = before;
+  };
+  const onBlur = () => end(true);
+  const onKey = (k) => { if (k.key === "Escape") end(false); else if (k.key === "Enter" && !k.shiftKey) { k.preventDefault(); end(true); } };
+  el.addEventListener("blur", onBlur); el.addEventListener("keydown", onKey);
+}
+
+function Selectable({ data, selected, setSelected, onBack }) {
+  const toggle = (id) => setSelected((now) => now.includes(id) ? now.filter((x) => x !== id) : [...now, id]);
+  const ctx = useMemo(() => ({ selected, toggle }), [selected]);
+  return (
+    <div className="t-preview" onDoubleClick={startTextEdit}>
+      <div className="t-seltools"><span>{selected.length ? `${selected.length} ausgewählt` : "Klicken wählt aus · Doppelklick ändert Text"}</span>
+        {selected.length > 0 && <button className="t-tool" onClick={() => setSelected([])}>Auswahl aufheben</button>}<button className="t-tool" onClick={onBack}>← Zurück zum Editor</button></div>
+      <SelCtx.Provider value={ctx}><Render config={selectableConfig} data={data} /></SelCtx.Provider>
+    </div>
+  );
 }
 
 function App() {
   const [data, setData] = useState(() => { try { return JSON.parse(localStorage.getItem("trendo-entwurf") || "null") || empty; } catch { return empty; } });
-  const [key, setKey] = useState(0); const [preview, setPreview] = useState(false);
+  const [key, setKey] = useState(0); const [mode, setMode] = useState("editor"); // editor, vorschau, auswahl
+  const [kiPreview, setKiPreview] = useState(null); // KI-Ergebnis, das noch nicht übernommen ist
+  const [selected, setSelected] = useState([]);
   const dataRef = useRef(data); dataRef.current = data;
+  const draftTimer = useRef(0);
   useEffect(() => {
     // nur einmal: Trendo antwortet auf „bereit“ mit der gespeicherten Seite (sonst Endlosschleife Laden → bereit → Laden)
-    window.trendoLoad = (json) => { const d = typeof json === "string" ? JSON.parse(json) : json; setData(d || empty); setKey((k) => k + 1); return true; };
+    window.trendoLoad = (json) => { clearTimeout(draftTimer.current); const d = typeof json === "string" ? JSON.parse(json) : json; setData(d || empty); setKey((k) => k + 1); return true; };
     window.trendoData = () => JSON.stringify(dataRef.current);
+    window.trendoVorschau = (json) => { setKiPreview(json ? (typeof json === "string" ? JSON.parse(json) : json) : null); return true; };
+    window.trendoAuswahl = (ids) => { setSelected(ids || []); return true; };
     send({ art: "bereit" });
   }, []);
-  if (preview) return <div className="t-preview"><button className="t-back" onClick={() => setPreview(false)}>← Zurück zum Editor</button><Render config={config} data={data} /></div>;
+  useEffect(() => { send({ art: "auswahl", daten: { ids: selected } }); }, [selected]);
+  const ui = useMemo(() => { const v = viewports.find((x) => x.label.toLowerCase() === data.root?.props?.ansicht); return v ? { viewports: { current: { width: v.width, height: "auto" } } } : undefined; }, [key]);
+  if (kiPreview) return <div className="t-preview"><div className="t-seltools"><span>Vorschau des KI-Vorschlags – noch nicht übernommen</span></div><Render config={config} data={kiPreview} /></div>;
+  if (mode === "vorschau") return <div className="t-preview"><button className="t-back" onClick={() => setMode("editor")}>← Zurück zum Editor</button><Render config={config} data={data} /></div>;
+  if (mode === "auswahl") return <Selectable key={key} data={data} selected={selected} setSelected={setSelected} onBack={() => setMode("editor")} />;
   return (
-    <Puck key={key} config={config} data={data} viewports={viewports} iframe={{ enabled: location.protocol !== "file:" && !location.search.includes("ohneRahmen") }} dictionary={de}
-      onChange={(d) => { setData(d); try { localStorage.setItem("trendo-entwurf", JSON.stringify(d)); } catch { } send({ art: "geaendert" }); }}
+    <Puck key={key} config={config} data={data} viewports={viewports} ui={ui} iframe={{ enabled: location.protocol !== "file:" && !location.search.includes("ohneRahmen") }} dictionary={de}
+      onChange={(d) => { setData(d); try { localStorage.setItem("trendo-entwurf", JSON.stringify(d)); } catch { } send({ art: "geaendert" }); clearTimeout(draftTimer.current); draftTimer.current = setTimeout(() => send({ art: "entwurf", daten: d }), 400); }}
       onPublish={(d) => send({ art: "speichern", daten: d })}
-      overrides={{ headerActions: ({ children }) => <>{children}<button className="t-tool" onClick={() => setPreview(true)}>Vorschau</button></>, drawerItem: DrawerItem }} />
+      overrides={{ headerActions: ({ children }) => <>{children}<button className="t-tool" onClick={() => setMode("auswahl")}>Auswählen</button><button className="t-tool" onClick={() => setMode("vorschau")}>Vorschau</button></>, drawerItem: DrawerItem }} />
   );
 }
 

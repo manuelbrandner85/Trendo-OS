@@ -7,6 +7,8 @@ namespace Trendo.Core;
 public static partial class Mesh3D
 {
     public const int MaxTriangles = 200_000;
+    /// <summary>Obergrenze beim Einlesen ganzer Netze (Scans sind oft groß, aber eine präparierte OBJ darf nicht den Speicher füllen; 20 Mio. Dreiecke brauchen beim Einlesen bis zu 4,4 GB).</summary>
+    public const int MaxFileTriangles = 20_000_000;
 
     public static void WriteObj(Mesh mesh, string path)
     {
@@ -122,12 +124,12 @@ public static partial class Mesh3D
     static string F(double v) => v.ToString("0.######", CultureInfo.InvariantCulture);
 
     /// <summary>Liest ein Netz (OBJ, STL, GLB, glTF) in Originaleinheiten. PLY mit Flächen liest der Foto-Scan.</summary>
-    public static Mesh ReadMeshFile(string path)
+    public static Mesh ReadMeshFile(string path, int maxTriangles = MaxFileTriangles)
     {
         var ext = Path.GetExtension(path).ToLowerInvariant();
         var mesh = ext switch
         {
-            ".obj" => ReadObjPlain(path),
+            ".obj" => ReadObjPlain(path, maxTriangles),
             ".stl" => ReadStl(path, 1),
             ".glb" => ReadGlb(path),
             ".gltf" => ReadGltf(path),
@@ -137,8 +139,9 @@ public static partial class Mesh3D
         return mesh;
     }
 
-    static Mesh ReadObjPlain(string path)
+    static Mesh ReadObjPlain(string path, int maxTriangles)
     {
+        static InvalidDataException TooBig(int max) => new($"Die Datei ist zu groß: Trendo liest höchstens {max:N0} Dreiecke.");
         var v = new List<Vec3>(); var m = new Mesh(); var f = new List<int>();
         foreach (var raw in File.ReadLines(path))
         {
@@ -147,13 +150,20 @@ public static partial class Mesh3D
             if (kind is "v")
             {
                 if (NextToken(line, ref pos, out var x) && NextToken(line, ref pos, out var y) && NextToken(line, ref pos, out var z))
+                {
+                    if (v.Count >= maxTriangles * 3L) throw TooBig(maxTriangles);
                     v.Add(new Vec3(double.Parse(x, CultureInfo.InvariantCulture), double.Parse(y, CultureInfo.InvariantCulture), double.Parse(z, CultureInfo.InvariantCulture)));
+                }
             }
             else if (kind is "f" && HasTokens(line, pos, 3))
             {
                 f.Clear();
                 while (NextToken(line, ref pos, out var tok)) { var n = int.Parse(BeforeSlash(tok), CultureInfo.InvariantCulture); f.Add(n < 0 ? v.Count + n : n - 1); }
-                for (var k = 1; k + 1 < f.Count; k++) m.Add(v[f[0]], v[f[k]], v[f[k + 1]]);
+                for (var k = 1; k + 1 < f.Count; k++)
+                {
+                    m.Add(v[f[0]], v[f[k]], v[f[k + 1]]);
+                    if (m.Triangles > maxTriangles) throw TooBig(maxTriangles);
+                }
             }
         }
         return m;

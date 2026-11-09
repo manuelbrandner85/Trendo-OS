@@ -217,6 +217,39 @@ public sealed class PodPriceAdapter : IStudioActionAdapter
     public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked("Es ist kein Anbieter angeschlossen. Trendo stellt nichts ein und bestellt nichts.");
 }
 
+/// <summary>STUDIO-CONSOLE-01: Plan für die Portierung eines eigenen Spiels. Beschafft nichts und startet nichts.</summary>
+public sealed class ConsolePlanAdapter : IStudioActionAdapter
+{
+    public string StudioId => "STUDIO-CONSOLE-01";
+    public string ActionId => "konsole.plan";
+    public string Label => "Portierung planen";
+    public SideEffectClass Effect => SideEffectClass.None;
+    public CapabilityLevel DeclaredLevel => CapabilityLevel.Partial;
+    public string Evidence => "PromptActionTests.Konsolenplan";
+    public bool CanPerformSideEffect => false;
+    public IReadOnlyList<string> RequiredFields => ["spiel", "besitz"];
+    public IReadOnlyList<string> OutputKinds => ["txt"];
+    public ActionDraft? TryParse(string prompt, IReadOnlyDictionary<string, string> known) => new(ActionId, FieldKit.Read(prompt, known));
+    public IReadOnlyList<ClarificationQuestion> Missing(IReadOnlyDictionary<string, string> parameters)
+    {
+        var q = new List<ClarificationQuestion>();
+        if (!FieldKit.Has(parameters, "spiel")) q.Add(new("spiel", "spiel", "Um welches Spiel geht es? Schreib z. B. „Spiel: …“.", true));
+        if (!FieldKit.Has(parameters, "besitz")) q.Add(new("besitz", "besitz", "Besitzt du das Spiel und hast das Abbild von deiner eigenen Disc? Schreib „Besitz: ja“.", true));
+        return q;
+    }
+    public IReadOnlyList<ValidationFinding> Validate(IReadOnlyDictionary<string, string> parameters) =>
+        FieldKit.Has(parameters, "besitz") && !FieldKit.Text(parameters, "besitz").Trim().Equals("ja", StringComparison.OrdinalIgnoreCase) ? [new("besitz", "Portiert werden nur Spiele, die du besitzt.", true)] : [];
+    public AdapterOutcome Produce(AdapterCall call)
+    {
+        var spiel = FieldKit.Text(call.Parameters, "spiel");
+        var steps = string.Join("\n", Trendo.Core.ConsolePort.ConsolePortKit.Skills.Where(s => s.Stage == "Grundlage").Select((s, i) => $"{i + 1}. {s.Title}: {s.What}"));
+        var body = $"Portierplan: {spiel}\n\nVoraussetzung: Abbild von deiner eigenen Disc. Trendo liefert keine Spiele und kein BIOS.\n\n{steps}\n\nDanach im Studio: Grafik, Ton, Controller und Pakete für deine Geräte. Experimentell: Viele Spiele laufen noch nicht vollständig.\n";
+        var qa = new QaResult(ActionId, true, "Plan erstellt.", null, spiel, "ConsolePortKit");
+        return FieldKit.Save(call, FieldKit.Slot("konsole", call.Version, "portierplan.txt"), body, spiel, qa);
+    }
+    public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked("Das Portieren läuft im Studio.");
+}
+
 /// <summary>SPEC-15: Senden und Stream bleiben aus. LiveBroadcast.Go wird nicht gerufen.</summary>
 public sealed class StreamSendAdapter : IStudioActionAdapter
 {

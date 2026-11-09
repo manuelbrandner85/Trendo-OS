@@ -60,7 +60,7 @@ public partial class MainWindow
             filters.Children.Add(b);
         }
         ChipFilter(null, "Alle");
-        foreach (var area in StudioCatalog.Areas) ChipFilter(area, area);
+        foreach (var area in StudioCatalog.Areas) ChipFilter(area, $"{area} ({_studios.Count(s => StudioCatalog.For(s.Id)?.Area == area)})");
         main.Children.Add(filters);
 
         // Kopf „Studios“ mit Suche
@@ -84,15 +84,33 @@ public partial class MainWindow
             Ico(Mdi.ViewGridOutline, 20, Text), Pos(new TextBlock { Text = "Studios", Foreground = Text, FontSize = 19, FontWeight = FontWeight.SemiBold, Margin = new Thickness(10, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center }, 1),
             Pos(count, 2), Pos(searchBox, 3) } });
 
+        // Zuletzt benutzt: nur ohne Suche und Filter, aus dem vorhandenen Verlauf
+        if (string.IsNullOrWhiteSpace(_studioFilter) && _studioQuery.Trim().Length == 0)
+        {
+            var recent = _settings.RecentPages.Select(k => _studios.FirstOrDefault(s => PageForStudio(s.Id) == k)).OfType<StudioEntry>().DistinctBy(s => s.Id).Take(6).ToList();
+            if (recent.Count > 0)
+            {
+                var rw = new WrapPanel { Name = "studios-recent" };
+                foreach (var st in recent) rw.Children.Add(StudioCard(st));
+                main.Children.Add(new StackPanel { Spacing = 4, Children = { new TextBlock { Name = "studios-recent-head", Text = "Zuletzt benutzt", Foreground = Muted, FontSize = 12, FontWeight = FontWeight.SemiBold, Margin = new Thickness(2, 4, 0, 0) }, rw } });
+            }
+        }
+
         // Bildkarten, nach Bereichen gruppiert
         var groups = list.GroupBy(s => StudioCatalog.For(s.Id)?.Area ?? "Weitere")
             .OrderBy(g => Array.IndexOf(StudioCatalog.Areas, g.Key) is var k && k < 0 ? 99 : k);
         foreach (var g in groups)
         {
             var head = new TextBlock { Name = "studio-area-" + g.Key, Text = g.Key, Foreground = Muted, FontSize = 12, FontWeight = FontWeight.SemiBold, Margin = new Thickness(2, 4, 0, 0) };
-            var wrap = new WrapPanel();
-            foreach (var st in g) wrap.Children.Add(StudioCard(st));
-            main.Children.Add(new StackPanel { Spacing = 4, Children = { head, wrap } });
+            var section = new StackPanel { Spacing = 4, Children = { head } };
+            foreach (var sub in StudioCatalog.Sorted(g, s => s.Id, s => s.Name).GroupBy(s => StudioCatalog.SubAreas.GetValueOrDefault(s.Id, "")))
+            {
+                if (sub.Key.Length > 0) section.Children.Add(new TextBlock { Name = "studio-sub-" + sub.Key, Text = sub.Key, Foreground = Muted, FontSize = 11, Margin = new Thickness(2, 2, 0, 0), Opacity = 0.85 });
+                var wrap = new WrapPanel();
+                foreach (var st in sub) wrap.Children.Add(StudioCard(st));
+                section.Children.Add(wrap);
+            }
+            main.Children.Add(section);
         }
         if (list.Count == 0 && _studios.Count > 0) main.Children.Add(P("Kein Studio passt zu dieser Suche.", Text));
 

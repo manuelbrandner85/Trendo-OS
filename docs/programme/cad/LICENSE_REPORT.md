@@ -1,6 +1,6 @@
 # Trendo CAD – Lizenzen
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.36 (Stand 70e872a)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.36 (Stand df96c57)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 
@@ -14,6 +14,7 @@ Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nen
 - Inkscape (optional)
 - FreeCAD (optional)
 - Tesseract OCR
+- ambientCG (freie Materialien)
 - PDFsharp (MIT)
 - Hunspell-Wörterbücher
 - Git

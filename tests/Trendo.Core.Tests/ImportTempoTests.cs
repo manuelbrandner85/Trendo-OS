@@ -210,6 +210,149 @@ public class ImportTempoTests
         finally { Directory.Delete(d, true); }
     }
 
+    const string RelNs = "http://schemas.openxmlformats.org/package/2006/relationships";
+
+    static string Zip(string dir, params (string Name, string Content)[] entries)
+    {
+        var path = Path.Combine(dir, Guid.NewGuid().ToString("N") + ".xlsx");
+        using var z = ZipFile.Open(path, ZipArchiveMode.Create);
+        foreach (var (name, content) in entries) { using var w = new StreamWriter(z.CreateEntry(name).Open(), new UTF8Encoding(false)); w.Write(content); }
+        return path;
+    }
+
+    static string SheetsXml(int count) => $"""<workbook xmlns="{S}" xmlns:r="{R}"><sheets>{string.Concat(Enumerable.Range(0, count).Select(i => $"<sheet name=\"B{i}\" r:id=\"rId1\"/>"))}</sheets></workbook>""";
+
+    static readonly (string, string) SheetRels = ("xl/worksheets/_rels/sheet1.xml.rels", $"""<Relationships xmlns="{RelNs}"><Relationship Id="c1" Type="http://x/comments" Target="../comments1.xml"/></Relationships>""");
+    static readonly string OneCell = $"""<worksheet xmlns="{S}"><sheetData><row r="1"><c r="A1"><v>1</v></c></row></sheetData></worksheet>""";
+
+    [Fact(DisplayName = "T-0503: Excel-Notizen – tief verschachtelte Texte zählen einmal und bleiben schnell")]
+    public void Notes_nested_text_once()
+    {
+        const int Depth = 100_000;
+        var d = Tmp();
+        try
+        {
+            var nested = string.Concat(Enumerable.Repeat("<t>", Depth)) + "x" + string.Concat(Enumerable.Repeat("</t>", Depth));
+            var f = Zip(d, ("xl/workbook.xml", SheetsXml(1)), ("xl/_rels/workbook.xml.rels", Rels), ("xl/worksheets/sheet1.xml", OneCell), SheetRels,
+                ("xl/comments1.xml", $"""<comments xmlns="{S}"><commentList><comment ref="A1"><text>{nested}</text></comment><comment ref="B2"><text><r><t>Teil </t></r><r><t>zwei</t></r></text></comment><comment ref="kaputt"><text><t>weg</t></text></comment></commentList></comments>"""));
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            var s = SheetFiles.ReadXlsx(f).Sheets[0];
+            Assert.True(sw.Elapsed < TimeSpan.FromSeconds(30), $"Dauer: {sw.Elapsed}");
+            Assert.Equal("x", s.Get(0, 0)!.Note);
+            Assert.Equal("Teil zwei", s.Get(1, 1)!.Note);
+            Assert.Equal(2, s.Cells.Count(c => c.Value.Note is not null));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0503: Excel-Notizen – kaputte Notizdatei kostet nur die Notizen, nicht die Zellen")]
+    public void Notes_broken_file_keeps_cells()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = Zip(d, ("xl/workbook.xml", SheetsXml(1)), ("xl/_rels/workbook.xml.rels", Rels), ("xl/worksheets/sheet1.xml", OneCell), SheetRels,
+                ("xl/comments1.xml", $"""<comments xmlns="{S}"><commentList><comment ref="A1"><text><t>schon gelesen</t></text></comment><comment ref="B2">"""));
+            var s = SheetFiles.ReadXlsx(f).Sheets[0];
+            Assert.Equal("1", s.Raw(0, 0));
+            Assert.All(s.Cells, c => Assert.Null(c.Value.Note));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0503: Excel – zu viele Blätter werden abgelehnt, die Grenze selbst geht noch")]
+    public void Too_many_sheets()
+    {
+        var d = Tmp();
+        try
+        {
+            var ok = Zip(d, ("xl/workbook.xml", SheetsXml(OfficeZip.MaxEntries)), ("xl/_rels/workbook.xml.rels", Rels), ("xl/worksheets/sheet1.xml", OneCell));
+            Assert.Equal(OfficeZip.MaxEntries, SheetFiles.ReadXlsx(ok).Sheets.Count);
+            var bad = Zip(d, ("xl/workbook.xml", SheetsXml(OfficeZip.MaxEntries + 1)), ("xl/_rels/workbook.xml.rels", Rels), ("xl/worksheets/sheet1.xml", OneCell));
+            Assert.Contains("Sicherheitsgründen", Assert.Throws<InvalidDataException>(() => SheetFiles.ReadXlsx(bad)).Message);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0503: Excel – ein Blatt-Eintrag kann nicht beliebig oft gelesen werden")]
+    public void Repeated_sheet_part_is_budgeted()
+    {
+        var d = Tmp();
+        try
+        {
+            var big = $"""<worksheet xmlns="{S}"><!--{new string('a', 1024 * 1024)}--><sheetData/></worksheet>""";
+            var f = Zip(d, ("xl/workbook.xml", SheetsXml(600)), ("xl/_rels/workbook.xml.rels", Rels), ("xl/worksheets/sheet1.xml", big));
+            Assert.Contains("Sicherheitsgründen", Assert.Throws<InvalidDataException>(() => SheetFiles.ReadXlsx(f)).Message);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0503: Excel – Mehrfach-Verweis liest Zellen je Blatt, Notizen nur beim ersten")]
+    public void Repeated_sheet_part_extras_once()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = Zip(d, ("xl/workbook.xml", SheetsXml(2)), ("xl/_rels/workbook.xml.rels", Rels), ("xl/worksheets/sheet1.xml", OneCell), SheetRels,
+                ("xl/comments1.xml", $"""<comments xmlns="{S}"><commentList><comment ref="A1"><text><t>Notiz</t></text></comment></commentList></comments>"""));
+            var doc = SheetFiles.ReadXlsx(f);
+            Assert.Equal(["1", "1"], doc.Sheets.Select(s => s.Raw(0, 0)));
+            Assert.Equal("Notiz", doc.Sheets[0].Get(0, 0)!.Note);
+            Assert.Null(doc.Sheets[1].Get(0, 0)!.Note);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0503: Excel – Blatt-Zuordnung: erste Beziehung gewinnt, fehlendes Ziel, fehlende Id")]
+    public void Sheet_relationship_mapping()
+    {
+        var d = Tmp();
+        try
+        {
+            static string Value(int n) => $"""<worksheet xmlns="{S}"><sheetData><row r="1"><c r="A1"><v>{n}</v></c></row></sheetData></worksheet>""";
+            var f = Zip(d,
+                ("xl/workbook.xml", $"""<workbook xmlns="{S}" xmlns:r="{R}"><sheets><sheet name="A" r:id="rId1"/><sheet name="B" r:id="rId2"/><sheet name="C"/><sheet name="D" r:id="gibtsnicht"/></sheets></workbook>"""),
+                ("xl/_rels/workbook.xml.rels", $"""<Relationships xmlns="{RelNs}"><Relationship Id="rId1" Target="worksheets/sheet2.xml"/><Relationship Id="rId1" Target="worksheets/sheet3.xml"/><Relationship Id="rId2"/><Relationship Target="/xl/worksheets/sheet3.xml"/></Relationships>"""),
+                ("xl/worksheets/sheet1.xml", Value(1)), ("xl/worksheets/sheet2.xml", Value(2)), ("xl/worksheets/sheet3.xml", Value(3)));
+            Assert.Equal(["2", "1", "3", "1"], SheetFiles.ReadXlsx(f).Sheets.Select(s => s.Raw(0, 0)));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0503: Excel-Notizen – zweite Liste, doppelter Bezug, fehlender Bezug")]
+    public void Notes_list_edge_cases()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = Zip(d, ("xl/workbook.xml", SheetsXml(1)), ("xl/_rels/workbook.xml.rels", Rels), ("xl/worksheets/sheet1.xml", OneCell), SheetRels,
+                ("xl/comments1.xml", $"""<comments xmlns="{S}"><commentList><comment ref="A1"><text><t>erste</t></text></comment><comment ref="A1"><text><t>zweite</t></text></comment><comment><text><t>ohne</t></text></comment><fremd ref="C3"/></commentList><commentList><comment ref="D4"><text><t>spaeter</t></text></comment></commentList></comments>"""));
+            var s = SheetFiles.ReadXlsx(f).Sheets[0];
+            Assert.Equal("zweite", s.Get(0, 0)!.Note);
+            Assert.Single(s.Cells, c => c.Value.Note is not null);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0503: OBJ – Obergrenze für Dreiecke und Punkte, genau an der Grenze geht es noch")]
+    public void Obj_limit()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = Path.Combine(d, "a.obj");
+            File.WriteAllText(f, "v 0 0 0\nv 1 0 0\nv 1 1 0\nv 0 1 0\nf 1 2 3\nf 1 3 4\n");
+            Assert.Equal(2, Mesh3D.ReadMeshFile(f, 2).Triangles);
+            Assert.Throws<InvalidDataException>(() => Mesh3D.ReadMeshFile(f, 1));
+            File.WriteAllText(f, "v 0 0 0\nv 1 0 0\nv 1 1 0\nv 0 1 0\nf 1 2 3 4\n"); // Vieleck zählt je Dreieck
+            Assert.Throws<InvalidDataException>(() => Mesh3D.ReadMeshFile(f, 1));
+            File.WriteAllText(f, string.Concat(Enumerable.Repeat("v 0 0 0\n", 7)));
+            Assert.Throws<InvalidDataException>(() => Mesh3D.ReadMeshFile(f, 2));
+            Assert.True(Mesh3D.MaxFileTriangles >= 5_000_000); // große Scans müssen weiter gehen
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
     [Fact(DisplayName = "T-0502: OBJ – Teile, Materialien und kaputte Flächen")]
     public void Obj_parts()
     {

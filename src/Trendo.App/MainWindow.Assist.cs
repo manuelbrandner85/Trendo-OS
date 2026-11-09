@@ -144,7 +144,8 @@ public partial class MainWindow
         var plan = AssistPlanner.Plan(prompt, t.Actions, prefs.Values);
         if (!plan.Understood && !_core.Offline && prompt.Trim().Length > 3)
         {
-            var ki = await Intel.AskAsync(new KiRequest(prompt, AssistPlanner.KiPrompt(t.Title, t.Actions, t.Role, SkillsFor(t.Key)), UseKnowledge: false));
+            var role = t.Role + StudioTeams.Brief(ClaudeBelongs(t.Key) ? ClaudeStudioOf(t.Key) : null, prompt); // T-0630: das Team des Studios arbeitet ohne Auswahl mit
+            var ki = await Intel.AskAsync(new KiRequest(prompt, AssistPlanner.KiPrompt(t.Title, t.Actions, role, SkillsFor(t.Key)), UseKnowledge: false));
             if (ki.Ok) { var kp = AssistPlanner.FromKi(prompt, ki.Text, t.Actions); kp.Source = $"KI ({ki.Backend})"; if (kp.Understood) plan = kp; }
         }
         if (!plan.Understood) return false;

@@ -1,6 +1,6 @@
 # Trendo CAD – Architektur
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.36 (Stand 70e872a)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.36 (Stand df96c57)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Cad.cs`
@@ -25,6 +25,7 @@ Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `ca
 - .fbx
 - .glb
 - .gltf
+- .jpg
 - .json
 - .obj
 - .png
@@ -43,6 +44,7 @@ Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `ca
 - Inkscape (optional)
 - FreeCAD (optional)
 - Tesseract OCR
+- ambientCG (freie Materialien)
 - PDFsharp (MIT)
 - Hunspell-Wörterbücher
 - Git

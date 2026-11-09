@@ -391,10 +391,25 @@ public static class SheetFiles
         XDocument rels; rels = relEntry.LoadXml();
         var target = rels.Root?.Elements(Pr + "Relationship").FirstOrDefault(r => ((string?)r.Attribute("Type"))?.EndsWith("/comments", StringComparison.Ordinal) == true)?.Attribute("Target")?.Value;
         if (target is null || z.GetEntry(ResolvePath(sheetPath, target)) is not { } ce) return;
-        XDocument cdoc; cdoc = ce.LoadXml();
-        foreach (var cm in cdoc.Root?.Element(S + "commentList")?.Elements(S + "comment") ?? [])
-            if (Addr.TryParse((string?)cm.Attribute("ref") ?? "", out var rc))
-                sh.GetOrAdd(rc.Row, rc.Col).Note = string.Concat(cm.Descendants(S + "t").Select(x => x.Value));
+        var notes = new List<(int Row, int Col, string Text)>(); // erst nach fehlerfreiem Lesen übernehmen: kaputte Notizdatei = keine Notizen
+        ce.ReadXml(x =>
+        {
+            MoveToRoot(x);
+            var listDone = false;
+            ForEachChild(x, list =>
+            {
+                if (listDone || !IsS(list, "commentList")) { list.Skip(); return; }
+                listDone = true;
+                ForEachChild(list, cm =>
+                {
+                    if (!IsS(cm, "comment")) { cm.Skip(); return; }
+                    var known = Addr.TryParse(cm.GetAttribute("ref") ?? "", out var rc);
+                    var text = AllTexts(cm); // liest verschachtelte <t> nur einmal, statt sie je Ebene erneut zu kopieren
+                    if (known) notes.Add((rc.Row, rc.Col, text));
+                });
+            });
+        });
+        foreach (var n in notes) sh.GetOrAdd(n.Row, n.Col).Note = n.Text;
     }
 
     // ---------- XLSX lesen ----------
@@ -486,20 +501,33 @@ public static class SheetFiles
             ForEachChild(x, c => { if (IsS(c, "c")) ReadCell(c, sh); else c.Skip(); });
         }
 
+        const string NoId = "\0"; // Beziehung oder Blatt ohne Id: passen wie bisher zueinander
+        var relTargets = new Dictionary<string, string?>();
+        foreach (var rel in rels?.Root?.Elements(Pr + "Relationship") ?? []) relTargets.TryAdd((string?)rel.Attribute("Id") ?? NoId, rel.Attribute("Target")?.Value);
+
         var doc = new SheetDoc(); doc.Sheets.Clear();
+        long sheetBytes = 0; var seenParts = new HashSet<string>();
         foreach (var sheetEl in wb.Root!.Element(S + "sheets")!.Elements(S + "sheet"))
         {
+            // Viele Blätter dürfen auf denselben Eintrag zeigen; die ZIP-Prüfung zählt ihn aber nur einmal.
+            if (doc.Sheets.Count >= OfficeZip.MaxEntries) throw OfficeZip.Bad($"zu viele Blätter (erlaubt {OfficeZip.MaxEntries}).");
             var name = (string)sheetEl.Attribute("name")!;
             var rid = (string?)sheetEl.Attribute(R + "id");
-            var target = rels?.Root?.Elements(Pr + "Relationship").FirstOrDefault(r => (string?)r.Attribute("Id") == rid)?.Attribute("Target")?.Value ?? "worksheets/sheet1.xml";
+            var target = relTargets.GetValueOrDefault(rid ?? NoId) ?? "worksheets/sheet1.xml";
             target = target.StartsWith('/') ? target[1..] : "xl/" + target;
             var sh = new Sheet(name); doc.Sheets.Add(sh);
             if (z.GetEntry(target) is not { } sheetPart) continue;
+            sheetBytes += sheetPart.Length;
+            if (sheetBytes > OfficeZip.MaxTotalBytes) throw OfficeZip.Bad($"die Blätter wären zusammen über {OfficeZip.MaxTotalBytes / 1048576} MB groß.");
+            var firstUse = seenParts.Add(target);
             var ws = ReadWorksheet(sheetPart, x => ReadRow(x, sh));
             if (ws.Element(S + "sheetViews")?.Element(S + "sheetView")?.Element(S + "pane") is { } pane && (string?)pane.Attribute("state") is "frozen" or "frozenSplit")
             { sh.FreezeRows = (int?)(double?)pane.Attribute("ySplit") ?? 0; sh.FreezeCols = (int?)(double?)pane.Attribute("xSplit") ?? 0; }
-            try { ReadExtras(z, target, ws, sh, dxfFills); } catch (Exception e) when (e is System.Xml.XmlException or InvalidDataException or ArgumentException or FormatException) { }
-            try { ReadCharts(z, target, sh); } catch (Exception e) when (e is System.Xml.XmlException or InvalidDataException or ArgumentException) { } // Diagramme sind Beigabe – Zellen trotzdem lesen
+            if (firstUse)
+            {
+                try { ReadExtras(z, target, ws, sh, dxfFills); } catch (Exception e) when (e is System.Xml.XmlException or InvalidDataException or ArgumentException or FormatException) { }
+                try { ReadCharts(z, target, sh); } catch (Exception e) when (e is System.Xml.XmlException or InvalidDataException or ArgumentException) { } // Diagramme sind Beigabe – Zellen trotzdem lesen
+            }
             foreach (var col in ws.Element(S + "cols")?.Elements(S + "col") ?? [])
             {
                 var min = (int)col.Attribute("min")! - 1; var max = Math.Min((int)col.Attribute("max")! - 1, min + 200);

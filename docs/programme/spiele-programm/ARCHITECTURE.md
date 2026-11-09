@@ -1,6 +1,6 @@
 # Spiele bauen – Architektur
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.36 (Stand 70e872a)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.36 (Stand df96c57)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.ProgGame.cs`
@@ -18,6 +18,7 @@ Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-pro
 - `GameSaves`
 - `PlainWords`
 - `PlatformSim`
+- `GameDocument`
 
 ## Dateiformate (im Code belegt)
 - .html
@@ -26,6 +27,7 @@ Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-pro
 - .md
 - .mp3
 - .ogg
+- .pdf
 - .png
 - .tdoc
 - .txt
@@ -35,6 +37,7 @@ Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-pro
 ## Externe Programme und Dienste
 - Blender (optional, 3D-Fotos/Render)
 - Unreal Engine (optional)
+- PDFsharp (MIT)
 
 ## Bausteine (Masterprompt 131 / 5)
 A Programmfenster mit Menüband und Kürzeln · B Arbeitsfläche · C Werkzeuge ändern das Dokument · D .tdoc-Projektdatei mit Autosave/Wiederherstellen · E Rückgängig/Wiederholen und Verlauf · I Prüfungen · J Startmenü, Suche, Ordner, Bedienstufen

@@ -36,6 +36,8 @@ public sealed class ProgramSpec(string key, string studio, string title)
     public Func<ProgramDocument, Control>? Properties { get; init; }
     /// <summary>Optional ganz oben auf der Startseite (ohne offenes Dokument), z. B. der Spiele-Prompt „Spiel aus einem Satz“.</summary>
     public Func<Control>? StartTop { get; init; }
+    /// <summary>Wie viele Exporte die Stufe Einfach zeigt (die ersten).</summary>
+    public int SimpleExports { get; init; } = 1;
     /// <summary>Paket F (A1): Werkzeugleiste links (wie in Profi-Programmen) – einklappbar.</summary>
     public List<ProgramTool> Tools { get; init; } = [];
     /// <summary>Paket F (A1): Bereich unten – einklappbar.</summary>
@@ -355,7 +357,7 @@ public partial class MainWindow
             if (shown.Count > 0) groups.Add((g, shown));
         }
         if (spec.Exports.Count > 0)
-            groups.Add(("Exportieren", spec.Exports.Take(level == UserLevel.Einfach ? 1 : int.MaxValue).Select(x => (Control)RBtn("prog-export-" + x.Name, x.Label, () => ProgramRun(key, () =>
+            groups.Add(("Exportieren", spec.Exports.Take(level == UserLevel.Einfach ? spec.SimpleExports : int.MaxValue).Select(x => (Control)RBtn("prog-export-" + x.Name, x.Label, () => ProgramRun(key, () =>
             {
                 var file = Path.Combine(WorkFolder(spec.Folder), DevStudio.SafeName(d.Title) + x.Extension);
                 var res = x.Write(d, file);

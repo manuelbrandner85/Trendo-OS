@@ -24,7 +24,7 @@ Grenzen: keine Kinofilme auf Knopfdruck; kein Code aus AGPL-Projekten (AI Movie 
 
 | Nr. | Inhalt | Stand |
 |---|---|---|
-| P1 | Studio mit Ablauf | Teil 1: Motiv, Preis, Rechtliches, Verkaufstext |
+| P1 | Studio mit Ablauf | Teil 1: Entwerfen, Druck prüfen, Preis, Rechtliches, Verkaufstext; Editor nach `docs/nachbau/kittl/anforderungen.md` |
 | P2 | Motiv aus Bild-KI, eigenem Bild oder Text | eigenes Bild eingebaut; Bild-KI, Freistellen, Hochrechnen offen |
 | P3 | Druckdatei prüfen | eingebaut (Auflösung, Füllgrad, Transparenz, Seitenverhältnis); Maße sind Richtwerte |
 | P4 | Produktvorschau auf dem PC | eingebaut als vereinfachte Form, keine Produktfotos |

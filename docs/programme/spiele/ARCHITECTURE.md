@@ -1,6 +1,6 @@
 # Werkstatt – Architektur
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.36 (Stand 70e872a)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.36 (Stand df96c57)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.ProgGame.cs`
@@ -16,6 +16,7 @@ Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` ·
 - `GameSaves`
 - `PlainWords`
 - `PlatformSim`
+- `GameDocument`
 
 ## Dateiformate (im Code belegt)
 - .html
@@ -24,6 +25,7 @@ Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` ·
 - .md
 - .mp3
 - .ogg
+- .pdf
 - .png
 - .txt
 - .wav
@@ -32,6 +34,7 @@ Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` ·
 ## Externe Programme und Dienste
 - Blender (optional, 3D-Fotos/Render)
 - Unreal Engine (optional)
+- PDFsharp (MIT)
 
 ## Bausteine (Masterprompt 131 / 5)
 Eigene Arbeitsseite ohne die gemeinsame Programm-Hülle – Dokumentmodell, Rückgängig und Bedienstufen sind hier nicht einheitlich.

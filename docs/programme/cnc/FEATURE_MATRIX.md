@@ -1,6 +1,6 @@
 # CNC-Werkstatt – Funktionsmatrix
 
-Studio: Fräsen & Fertigen (SPEC-14) · Bereich: Technik & Fachgebiete · Seite: `cnc` · Stand: 0.9.36 (Stand 70e872a)
+Studio: Fräsen & Fertigen (SPEC-14) · Bereich: Technik & Fachgebiete · Seite: `cnc` · Stand: 0.9.36 (Stand df96c57)
 
 Quelle: `docs/w6-katalog/SPEC-14.md`
 
@@ -33,6 +33,7 @@ Quelle: `docs/w6-katalog/SPEC-14.md`
 - ⏭ Ende (Simulation)
 - Von oben (Ansicht)
 - Schräg (3D) (Ansicht)
+- Werkstück in 3D (Ansicht)
 - Tasche (Erzeugen)
 - Kontur (Erzeugen)
 - Lochkreis (Erzeugen)

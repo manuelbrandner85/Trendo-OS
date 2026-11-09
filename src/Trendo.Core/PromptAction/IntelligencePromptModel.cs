@@ -39,7 +39,7 @@ public static class PromptActions
             new CncMachineAdapter(), new CncFeedAdapter(),
             new VehicleCostAdapter(), new StatsAdapter(),
             new KnowledgeRememberAdapter(), new LearnCardAdapter(), new PromptFillAdapter(), new FashionSizeAdapter(),
-            new StreamSendAdapter(), new RundownAdapter(), new TvListAdapter(), new SongPlanAdapter(), new FilmOutlineAdapter(), new PodPriceAdapter(),
+            new StreamSendAdapter(), new RundownAdapter(), new TvListAdapter(), new SongPlanAdapter(), new FilmOutlineAdapter(), new PodPriceAdapter(), new ConsolePlanAdapter(),
             new LicenseFetchAdapter(), new LicenseNoteAdapter(),
             new XrBudgetAdapter(), new ScanBlockedAdapter(),
             ..SystemActions.Create()

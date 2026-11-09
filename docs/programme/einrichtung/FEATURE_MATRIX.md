@@ -1,6 +1,6 @@
 # Ersteinrichtung – Funktionsmatrix
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `einrichtung` · Stand: 0.9.36 (Stand 70e872a)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `einrichtung` · Stand: 0.9.36 (Stand df96c57)
 
 Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 
