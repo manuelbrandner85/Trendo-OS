@@ -56,7 +56,7 @@ public partial class MainWindow
             _scanStatus = $"✓ {what}: {before:N0} → {o.Triangles:N0} Dreiecke. „Rückgängig“ holt den vorigen Stand.";
             _core.Audit.Append(Principal.LocalOwner.Name, "scan.bearbeitet", what);
         }
-        catch (Exception e) when (e is InvalidOperationException or ArgumentException or IOException) { _scanStatus = "⚠ " + e.Message; }
+        catch (Exception e) when (e is InvalidOperationException or ArgumentException or IOException or InvalidDataException) { _scanStatus = "⚠ " + e.Message; }
         Show("scan3d");
     }
     public void ScanUndo()
