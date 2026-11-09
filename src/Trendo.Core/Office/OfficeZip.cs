@@ -64,7 +64,12 @@ public static class OfficeZip
             IgnoreWhitespace = ignoreWhitespace,
         };
         using var s = e.OpenLimited();
-        try { using var r = XmlReader.Create(s, settings); read(r); }
+        try
+        {
+            using var r = XmlReader.Create(s, settings);
+            read(r);
+            while (r.Read()) { } // bis zum Dateiende prüfen, wie XDocument: Nachgeschobenes (zweite Wurzel, DTD) bleibt ein Fehler
+        }
         catch (XmlException x) when (x.Message.Contains("DTD", StringComparison.OrdinalIgnoreCase)) { throw Bad($"„{e.FullName}“ enthält eine DTD (nicht erlaubt)."); }
     }
 

@@ -128,6 +128,88 @@ public class ImportTempoTests
         finally { Directory.Delete(d, true); }
     }
 
+    [Fact(DisplayName = "T-0502: Excel – Hunderttausende Textstücke brauchen keine quadratische Zeit")]
+    public void Xlsx_many_text_pieces_stay_linear()
+    {
+        const int N = 500_000; const int Expected = N * 4;
+        static string Repeat(string piece) => new StringBuilder(piece.Length * N).Insert(0, piece, N).ToString();
+        var d = Tmp();
+        try
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            string Fresh(string sheet, string? shared = null) { File.Delete(Path.Combine(d, "a.xlsx")); return Xlsx(d, sheet, shared); }
+            var oneShared = $"""<worksheet xmlns="{S}"><sheetData><row r="1"><c r="A1" t="s"><v>0</v></c></row></sheetData></worksheet>""";
+            Assert.Equal(Expected, SheetFiles.ReadXlsx(Fresh(oneShared, $"""<sst xmlns="{S}"><si><t>{Repeat("aaaa<b/>")}</t></si></sst>""")).Sheets[0].Raw(0, 0).Length);
+            Assert.Equal(Expected, SheetFiles.ReadXlsx(Fresh(oneShared, $"""<sst xmlns="{S}"><si>{Repeat("<t>aaaa</t>")}</si></sst>""")).Sheets[0].Raw(0, 0).Length);
+            Assert.Equal(Expected, SheetFiles.ReadXlsx(Fresh($"""<worksheet xmlns="{S}"><sheetData><row r="1"><c r="A1" t="inlineStr"><is>{Repeat("<t>aaaa</t>")}</is></c></row></sheetData></worksheet>""")).Sheets[0].Raw(0, 0).Length);
+            Assert.Equal(Expected, SheetFiles.ReadXlsx(Fresh($"""<worksheet xmlns="{S}"><sheetData><row r="1"><c r="A1" t="str"><v>{Repeat("aaaa<b/>")}</v></c></row></sheetData></worksheet>""")).Sheets[0].Raw(0, 0).Length);
+            Assert.True(sw.Elapsed < TimeSpan.FromSeconds(30), $"Dauer: {sw.Elapsed}");
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Theory(DisplayName = "T-0502: Excel – leeres oder falsch beendetes XML bleibt ein XML-Fehler")]
+    [InlineData("")]
+    [InlineData("<!-- nur ein Kommentar -->")]
+    [InlineData("<worksheet><sheetData/></worksheet><zweite/>")]
+    [InlineData("<worksheet><sheetData><row>")]
+    public void Xlsx_broken_xml(string broken)
+    {
+        var d = Tmp();
+        try
+        {
+            var sheet = Xlsx(d, broken);
+            Assert.Throws<System.Xml.XmlException>(() => SheetFiles.ReadXlsx(sheet));
+            File.Delete(sheet);
+            var shared = Xlsx(d, $"""<worksheet xmlns="{S}"><sheetData/></worksheet>""", broken);
+            Assert.Throws<System.Xml.XmlException>(() => SheetFiles.ReadXlsx(shared));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0502: Excel – leere Zellen, Kommentare, Fehlerwerte, zweiter Wert, CDATA")]
+    public void Xlsx_cell_edge_cases()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = Xlsx(d, $"""
+                <worksheet xmlns="{S}"><sheetData>
+                <!-- vor der Zeile -->
+                <row r="1"><c r="A1"/><?pi test?><c r="B1" t="e"><v>#DIV/0!</v></c><c r="C1"><v>1</v><v>2</v></c><c r="D1"><v>4<!-- mitten -->2</v></c></row>
+                <row r="2"><c r="A2" t="str"><v><![CDATA[<x>]]> &amp; y</v></c><c r="B2" t="str"><v/></c></row>
+                </sheetData></worksheet>
+                """);
+            var s = SheetFiles.ReadXlsx(f).Sheets[0];
+            Assert.Null(s.Get(0, 0));
+            Assert.Equal("'#DIV/0!", s.Raw(0, 1));
+            Assert.Equal("1", s.Raw(0, 2));
+            Assert.Equal("42", s.Raw(0, 3));
+            Assert.Equal("<x> & y", s.Raw(1, 0));
+            Assert.Null(s.Get(1, 1));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0502: OBJ – kaputte Zeilen verhalten sich wie bisher")]
+    public void Obj_plain_errors()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = Path.Combine(d, "a.obj");
+            File.WriteAllText(f, "v 0 0 0\nv 1 0 0\nv 1 1 0\nv 1 2\nf a b\nf 1 2 3\n");
+            Assert.Equal(1, Mesh3D.ReadMeshFile(f).Triangles); // zu kurze „v“- und „f“-Zeilen zählen nicht
+            File.WriteAllText(f, "v a b c\n");
+            Assert.Throws<FormatException>(() => Mesh3D.ReadMeshFile(f));
+            File.WriteAllText(f, "v 0 0 0\nv 1 0 0\nv 1 1 0\nf 1 2 x\n");
+            Assert.Throws<FormatException>(() => Mesh3D.ReadMeshFile(f));
+            File.WriteAllText(f, "v 0 0 0\nv 1 0 0\nv 1 1 0\nf 1 2 9\n");
+            Assert.Throws<ArgumentOutOfRangeException>(() => Mesh3D.ReadMeshFile(f));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
     [Fact(DisplayName = "T-0502: OBJ – Teile, Materialien und kaputte Flächen")]
     public void Obj_parts()
     {

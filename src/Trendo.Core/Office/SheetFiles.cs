@@ -450,14 +450,14 @@ public static class SheetFiles
             var (r, ci) = Addr.Parse(x.GetAttribute("r")!);
             var t = x.GetAttribute("t") ?? "n";
             var style = x.GetAttribute("s") is { } sa && XmlConvert.ToInt32(sa) is var si && si < xfs.Count ? xfs[si] : default;
-            string? v = null, f = null, inline = null;
+            string? v = null, f = null; TextParts inline = default;
             if (x.IsEmptyElement) x.Read();
             else
             {
                 var depth = x.Depth; x.Read();
                 while (x.Depth > depth)
                 {
-                    if (IsS(x, "t")) inline += ElementText(x);
+                    if (IsS(x, "t")) inline.Add(ElementText(x));
                     else if (x.Depth == depth + 1 && v is null && IsS(x, "v")) v = ElementText(x);
                     else if (x.Depth == depth + 1 && f is null && IsS(x, "f")) f = ElementText(x);
                     else x.Read();
@@ -469,7 +469,7 @@ public static class SheetFiles
             else raw = t switch
             {
                 "s" => int.TryParse(v, out var idx) && idx < shared.Count ? EscapedShared(idx) : "",
-                "inlineStr" => Escape(inline ?? ""),
+                "inlineStr" => Escape(inline.ToString()),
                 "b" => v == "1" ? "WAHR" : "FALSCH",
                 "e" => "'" + (v ?? ""),
                 "str" => Escape(v ?? ""),
@@ -513,18 +513,32 @@ public static class SheetFiles
 
     static bool IsS(XmlReader x, string name) => x.NodeType == XmlNodeType.Element && x.LocalName == name && x.NamespaceURI == S.NamespaceName;
 
+    /// <summary>Sammelt Textstücke in linearer Zeit: Eine präparierte Datei mit Hunderttausenden Stücken darf nicht durch wiederholtes Kopieren alles anhalten (T-0255).</summary>
+    struct TextParts
+    {
+        string? _first; StringBuilder? _more;
+        public void Add(string part) { if (_first is null) _first = part; else (_more ??= new StringBuilder(_first)).Append(part); }
+        public override readonly string ToString() => _more?.ToString() ?? _first ?? "";
+    }
+
     /// <summary>Text eines Elements samt Unterelementen; der Leser steht danach hinter dem Element.</summary>
     static string ElementText(XmlReader x)
     {
         if (x.IsEmptyElement) { x.Read(); return ""; }
-        var depth = x.Depth; string? text = null; x.Read();
+        var depth = x.Depth; TextParts text = default; x.Read();
         while (x.Depth > depth)
         {
-            if (x.NodeType is XmlNodeType.Text or XmlNodeType.CDATA or XmlNodeType.SignificantWhitespace) text = text is null ? x.Value : text + x.Value;
+            if (x.NodeType is XmlNodeType.Text or XmlNodeType.CDATA or XmlNodeType.SignificantWhitespace) text.Add(x.Value);
             x.Read();
         }
         x.Read();
-        return text ?? "";
+        return text.ToString();
+    }
+
+    /// <summary>Zum Wurzelelement gehen; eine Datei ohne Wurzel ist wie beim XDocument ein XML-Fehler.</summary>
+    static void MoveToRoot(XmlReader x)
+    {
+        if (x.MoveToContent() != XmlNodeType.Element) throw new XmlException("Die Datei enthält kein Wurzelelement.");
     }
 
     /// <summary>Ruft <paramref name="child"/> für jedes direkte Unterelement auf; es muss den Leser hinter das Unterelement bewegen.</summary>
@@ -546,29 +560,28 @@ public static class SheetFiles
         var list = new List<string>();
         entry.ReadXml(x =>
         {
-            x.MoveToContent();
+            MoveToRoot(x);
             ForEachChild(x, si =>
             {
-                if (!IsS(si, "si")) { si.Skip(); return; }
-                string? text = null;
-                ForEachText(si, t => text = text is null ? t : text + t);
-                list.Add(text ?? "");
+                if (IsS(si, "si")) list.Add(AllTexts(si));
+                else si.Skip();
             });
         });
         return list;
     }
 
-    /// <summary>Alle &lt;t&gt;-Texte unterhalb des aktuellen Elements, in Dokumentreihenfolge (auch Rich-Text-Abschnitte).</summary>
-    static void ForEachText(XmlReader x, Action<string> text)
+    /// <summary>Alle &lt;t&gt;-Texte unterhalb des aktuellen Elements aneinander, in Dokumentreihenfolge (auch Rich-Text-Abschnitte).</summary>
+    static string AllTexts(XmlReader x)
     {
-        if (x.IsEmptyElement) { x.Read(); return; }
-        var depth = x.Depth; x.Read();
+        if (x.IsEmptyElement) { x.Read(); return ""; }
+        var depth = x.Depth; TextParts text = default; x.Read();
         while (x.Depth > depth)
         {
-            if (IsS(x, "t")) text(ElementText(x));
+            if (IsS(x, "t")) text.Add(ElementText(x));
             else x.Read();
         }
         x.Read();
+        return text.ToString();
     }
 
     /// <summary>Tabellenblatt lesen: Zeilen gehen als Datenstrom direkt ins Blatt, nur die übrigen Abschnitte (Fenster, Spalten, Regeln) landen als XML im Rückgabewert.</summary>
@@ -577,7 +590,7 @@ public static class SheetFiles
         XElement? root = null;
         entry.ReadXml(x =>
         {
-            x.MoveToContent();
+            MoveToRoot(x);
             var ws = root = new XElement(XName.Get(x.LocalName, x.NamespaceURI));
             var dataDone = false;
             ForEachChild(x, part =>
