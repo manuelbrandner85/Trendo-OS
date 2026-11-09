@@ -205,12 +205,15 @@ public partial class MainWindow
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException) { GarmentMessage = "Speichern ging nicht: " + e.Message; Show("mode-programm"); return null; }
     }
 
-    private async Task<string?> GarmentTextures(FabricInfo fabric)
+    private Task<string?> GarmentTextures(FabricInfo fabric) => AmbientTexture(fabric.TextureId);
+
+    /// <summary>Kostenlose Oberfläche von ambientCG (CC0) holen; schon geladene werden wiederverwendet. Offline oder im Testmodus: null.</summary>
+    private async Task<string?> AmbientTexture(string id)
     {
         if (_opt.Isolated || _core.Offline) return null;
-        var existing = Bib.Items().FirstOrDefault(i => i.Source == Trendo.Core.Bibliothek.AssetLibrary.AmbientCg && i.Id == fabric.TextureId && Directory.Exists(i.File));
+        var existing = Bib.Items().FirstOrDefault(i => i.Source == Trendo.Core.Bibliothek.AssetLibrary.AmbientCg && i.Id == id && Directory.Exists(i.File));
         if (existing is not null) return existing.File;
-        var item = await Bib.Download(new Trendo.Core.Bibliothek.AssetHit(Trendo.Core.Bibliothek.AssetLibrary.AmbientCg, fabric.TextureId, fabric.TextureId, "material", "Stoff", "", "CC0", "ambientCG", "https://ambientcg.com/a/" + fabric.TextureId));
+        var item = await Bib.Download(new Trendo.Core.Bibliothek.AssetHit(Trendo.Core.Bibliothek.AssetLibrary.AmbientCg, id, id, "material", "Material", "", "CC0", "ambientCG", "https://ambientcg.com/a/" + id));
         return item.File;
     }
 

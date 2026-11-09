@@ -19,20 +19,26 @@ public static class Studio3DPro
     ];
 
     /// <summary>PBR-Material: Metall 0/1, Rauheit 0–1, Durchlässigkeit (Glas) 0–1, typische Farbe (null = Farbe des Teils).</summary>
-    public sealed record Material(string Id, string Label, double Metallic, double Roughness, double Transmission = 0, string? Tint = null);
+    /// <param name="TextureId">Echte Oberfläche von ambientCG (CC0); ohne bleibt es bei Farbe und Rauheit.</param>
+    /// <param name="TileM">Kantenlänge einer Texturkachel in Metern.</param>
+    public sealed record Material(string Id, string Label, double Metallic, double Roughness, double Transmission = 0, string? Tint = null, string? TextureId = null, double TileM = 0.5);
     public static readonly Material[] Materials =
     [
         new("kunststoff-matt", "Kunststoff matt", 0, 0.6),
         new("kunststoff", "Kunststoff glänzend", 0, 0.25),
         new("lack", "Lack", 0, 0.1),
-        new("holz", "Holz", 0, 0.65, Tint: "#B07A48"),
-        new("stein", "Stein", 0, 0.85, Tint: "#8F8A82"),
+        new("holz", "Holz", 0, 0.65, Tint: "#B07A48", TextureId: "Wood092", TileM: 0.5),
+        new("holz-hell", "Holz hell", 0, 0.65, Tint: "#D2B48C", TextureId: "Wood096", TileM: 0.5),
+        new("stein", "Stein", 0, 0.85, Tint: "#8F8A82", TextureId: "Concrete034", TileM: 0.8),
+        new("marmor", "Marmor", 0, 0.2, Tint: "#E6E2DA", TextureId: "Marble012", TileM: 0.6),
+        new("ziegel", "Ziegel", 0, 0.85, Tint: "#A0522D", TextureId: "Bricks060", TileM: 0.8),
+        new("leder", "Leder", 0, 0.5, Tint: "#6B4A2F", TextureId: "Leather039", TileM: 0.2),
         new("keramik", "Keramik", 0, 0.15, Tint: "#EDEAE4"),
         new("gummi", "Gummi", 0, 0.9, Tint: "#26282B"),
-        new("stoff", "Stoff", 0, 1.0),
-        new("metall", "Metall gebürstet", 1, 0.35, Tint: "#B4B8BD"),
+        new("stoff", "Stoff", 0, 1.0, TextureId: "Fabric019", TileM: 0.12),
+        new("metall", "Metall gebürstet", 1, 0.35, Tint: "#B4B8BD", TextureId: "Metal049A", TileM: 0.3),
         new("chrom", "Chrom", 1, 0.06, Tint: "#D9DCE0"),
-        new("gold", "Gold", 1, 0.2, Tint: "#D4A93C"),
+        new("gold", "Gold", 1, 0.2, Tint: "#D4A93C", TextureId: "Metal048A", TileM: 0.3),
         new("kupfer", "Kupfer", 1, 0.3, Tint: "#B87333"),
         new("glas", "Glas", 0, 0.02, 1, "#F2F6F8"),
     ];

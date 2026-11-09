@@ -253,11 +253,15 @@ public partial class MainWindow
     {
         if (Visible3D.Count == 0) { Say("Noch nichts zu rendern – erst Teile modellieren.", "3d"); return; }
         if (Studio3DRendering) return;
-        var spec = _scene.WriteBlenderSpec(Path.Combine(Dir3D(), "blender"));
         var outPng = Studio3DPro.NextRenderPath(Dir3D(), DateTime.Now);
         Studio3DRendering = true; Say("Blender rendert im Hintergrund – das dauert je nach Grafikkarte ein bis einige Minuten.", "3d");
         try
         {
+            var textures = new Dictionary<string, string>();
+            foreach (var id in _scene.Parts.Where(p => !p.Hidden && !string.IsNullOrEmpty(p.Material)).Select(p => Studio3DPro.MaterialOf(p.Material).TextureId).OfType<string>().Distinct())
+                try { if (await AmbientTexture(id) is { } dir) textures[id] = dir; }
+                catch (Exception e) when (e is HttpRequestException or IOException or InvalidOperationException or TaskCanceledException) { Say("Die echte Oberfläche ließ sich nicht laden, es wird mit Farbe gerendert: " + Short(e.Message), "3d"); }
+            var spec = _scene.WriteBlenderSpec(Path.Combine(Dir3D(), "blender"), textures);
             bool ok;
             if (Render3DOverride is { } fake) ok = await fake(spec, outPng);
             else

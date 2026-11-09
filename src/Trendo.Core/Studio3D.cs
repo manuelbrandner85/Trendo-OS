@@ -141,7 +141,47 @@ def activate(obj):
 def color_of(h):
     h = (h or "#2F86F6").lstrip("#")
     if len(h) < 6: h = "2F86F6"
-    return tuple(int(h[i:i+2], 16) / 255 for i in (0, 2, 4)) + (1.0,)
+    def lin(c):
+        return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+    return tuple(lin(int(h[i:i+2], 16) / 255) for i in (0, 2, 4)) + (1.0,)
+
+def textured(mat, bsdf, part, base):
+    tex = part.get("textures")
+    if not tex or not os.path.exists(tex["color"]):
+        return
+    tree = mat.node_tree
+    geo = tree.nodes.new("ShaderNodeNewGeometry")
+    mapping = tree.nodes.new("ShaderNodeMapping")
+    s = 1.0 / (float(part.get("tile_m") or 0.5) * 100.0)  # eine Blender-Einheit ist hier 1 cm
+    mapping.inputs["Scale"].default_value = (s, s, s)
+    tree.links.new(geo.outputs["Position"], mapping.inputs["Vector"])
+    def image(path, data):
+        node = tree.nodes.new("ShaderNodeTexImage")
+        node.image = bpy.data.images.load(path)
+        node.projection = "BOX"
+        node.projection_blend = 0.25
+        if data: node.image.colorspace_settings.name = "Non-Color"
+        tree.links.new(mapping.outputs["Vector"], node.inputs["Vector"])
+        return node
+    col = image(tex["color"], False)
+    if part.get("tint"):
+        mix = tree.nodes.new("ShaderNodeMixRGB")
+        mix.blend_type = "MULTIPLY"
+        mix.inputs[0].default_value = 1.0
+        mix.inputs[2].default_value = base
+        tree.links.new(col.outputs["Color"], mix.inputs[1])
+        tree.links.new(mix.outputs[0], bsdf.inputs["Base Color"])
+    else:
+        tree.links.new(col.outputs["Color"], bsdf.inputs["Base Color"])
+    if os.path.exists(tex["roughness"]):
+        tree.links.new(image(tex["roughness"], True).outputs["Color"], bsdf.inputs["Roughness"])
+    if os.path.exists(tex["metalness"]):
+        tree.links.new(image(tex["metalness"], True).outputs["Color"], bsdf.inputs["Metallic"])
+    if os.path.exists(tex["normal"]):
+        nm = tree.nodes.new("ShaderNodeNormalMap")
+        nm.inputs["Strength"].default_value = 0.8
+        tree.links.new(image(tex["normal"], True).outputs["Color"], nm.inputs["Color"])
+        tree.links.new(nm.outputs["Normal"], bsdf.inputs["Normal"])
 
 def paint(obj, h, part=None):
     r, g, b, _ = color_of(h)
@@ -157,6 +197,7 @@ def paint(obj, h, part=None):
             for name in ("Transmission Weight", "Transmission"):
                 if t > 0 and name in bsdf.inputs: bsdf.inputs[name].default_value = t; break
             if t > 0 and "IOR" in bsdf.inputs: bsdf.inputs["IOR"].default_value = 1.45
+            textured(mat, bsdf, part, (r, g, b, 1))
     obj.data.materials.append(mat)
     obj.color = (r, g, b, 1)
 
