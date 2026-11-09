@@ -20,7 +20,11 @@ public partial class MainWindow
 
     private void InitW5Fusion() => RegisterTab(BusinessTabs, "produktion", "Produktion", "X-01", FusionView, "ablauf", "automatisch", "fusion", "kette", "produktion");
 
-    private FusionContext FusionCtx(Recipe r) => new() { WorkDir = Path.Combine(FusionFolder, $"{DateTime.Now:yyyy-MM-dd-HHmmss}-{r.Id}"), Input = new(_fusionInput), Ffmpeg = FfmpegPath, Blender = BlenderPath };
+    private FusionContext FusionCtx(Recipe r) => new() { WorkDir = Path.Combine(FusionFolder, $"{DateTime.Now:yyyy-MM-dd-HHmmss}-{r.Id}"), Input = new(_fusionInput), Ffmpeg = FfmpegPath, Blender = BlenderPath, RenderImage = (d, f) => { Directory.CreateDirectory(Path.GetDirectoryName(f)!); return ImageRender.Export(d, f); } };
+
+    public IReadOnlyList<StepResult> FusionResult => _fusionResult;
+    public void FusionSelect(string id) { _fusionRecipe = Fusion.Recipes.ToList().FindIndex(r => r.Id == id); _fusionApproval = null; _fusionResult = []; }
+    public void FusionSetInput(string key, string value) => _fusionInput[key] = value;
 
     public void FusionRequest()
     {
@@ -75,6 +79,7 @@ public partial class MainWindow
             case "idea-site": I("name", "Name der Idee"); I("problem", "Welches Problem löst du?"); I("solution", "Wie löst du es?"); I("audience", "Für wen?"); I("price", "Preis in €"); I("email", "Deine E-Mail für Anfragen"); break;
             case "video-pack": I("file", "Pfad zur Videodatei"); break;
             case "logo-print": I("text", "Wort für den Schriftzug, z. B. Trendo"); break;
+            case "figur-spiel": I("text", "Name des Spiels, z. B. Sternenspringer"); break;
         }
         sp.Children.Add(Card(new StackPanel { Spacing = 6, Children = { H("1. Angaben", 14), inputs } }));
         var ctx = FusionCtx(r); var missing = Fusion.Missing(r, ctx);

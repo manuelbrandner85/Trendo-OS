@@ -206,6 +206,7 @@ public partial class MainWindow
             }),
             S("bild_ansehen", "Bildschirmfoto des Trendo-Fensters, so wie der Nutzer es sieht.", TrendoMcp.Schema(), _ => BridgeShot()),
             .. StudioIntelTools(run),
+            .. HandoffTools(run),
         ];
     }
 

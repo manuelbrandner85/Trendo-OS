@@ -93,6 +93,37 @@ public partial class MainWindow
         });
     }
 
+    IEnumerable<McpTool> HandoffTools(BridgeRun run)
+    {
+        McpTool S(string name, string text, JsonObject schema, Func<JsonObject, McpResult> body) => new(name, text, schema, a => BridgeUi(name, x => Task.FromResult(body(x)), a));
+        yield return S("uebergeben", "Gibt eine Datei aus dem Projektordner an ein anderes Studio weiter.", TrendoMcp.Schema(("datei", "string", "Pfad im Projektordner", true), ("an_studio", "string", "Studio-Kennung des Empfängers", true), ("art", "string", "Zum Beispiel figur, ton, modell", true), ("notiz", "string", "Hinweis für das nächste Studio", false)), a =>
+        {
+            var to = Need(a, "an_studio");
+            if (CapabilityCatalog.Find(to) is null) return McpResult.Fail("Dieses Studio gibt es nicht.");
+            var item = new ProjectHandoff(run.Folder).Add(BridgeStudio(run) ?? "", to, Need(a, "datei"), Need(a, "art"), a["notiz"].AsText() ?? "");
+            return new McpResult(new JsonObject { ["uebergabe"] = item.Id, ["datei"] = item.File, ["an"] = item.To }.ToJsonString());
+        });
+        yield return S("uebergaben", "Offene Übergaben an das aktuelle Studio in diesem Projekt.", TrendoMcp.Schema(), _ => new McpResult(new JsonArray(new ProjectHandoff(run.Folder).OpenFor(BridgeStudio(run)).Select(h => (JsonNode)new JsonObject
+            { ["uebergabe"] = h.Id, ["von"] = h.From, ["datei"] = h.File, ["art"] = h.Kind, ["notiz"] = h.Note }).ToArray()).ToJsonString()));
+        yield return S("uebernehmen", "Nimmt eine Übergabe an. In „Spiele bauen“ setzt verwendung die Datei direkt ein (figur, hintergrund, anim-…, ton-…). Sonst kommt der Pfad zurück.", TrendoMcp.Schema(("uebergabe", "string", "Kennung aus uebergaben", true), ("verwendung", "string", "Einsatzzweck im Spiel", false)), a =>
+        {
+            var studio = BridgeStudio(run) ?? throw new ArgumentException("Es ist kein Studio offen.");
+            var use = a["verwendung"].AsText();
+            if (use is { Length: > 0 } && studio == "CORE-06")
+            {
+                var open = new ProjectHandoff(run.Folder).OpenFor(studio).FirstOrDefault(h => h.Id == Need(a, "uebergabe"));
+                if (open is not null && !GameAssets.Fits(use, open.File)) return McpResult.Fail($"„{open.File}“ passt nicht zur Verwendung „{use}“.");
+            }
+            var file = new ProjectHandoff(run.Folder).Take(Need(a, "uebergabe"), studio);
+            _core.Audit.Append(Principal.LocalOwner.Name, "projekt.uebergabe", $"{studio} {Path.GetFileName(file)}");
+            if (use is not { Length: > 0 } || studio != "CORE-06") return new McpResult(file);
+            var doc = BridgeOpenDoc(Programs[GK]); run.Page = GK; ClaudeChangeBegin(GK, doc);
+            doc.Edit("Übergabe: " + use, d => GameAssets.Assign(d, GameAssets.Add(d, Path.Combine(run.Folder, "assets"), file, "aus dem Projekt", "eigene Arbeit", "", "", use)["file"]!.GetValue<string>(), use, GameAssets.ImageSize(file) is { } sz ? GameAssets.FramesOf(sz.W, sz.H) : 1));
+            ClaudeChangeAfter(GK, doc); Show(GK);
+            return new McpResult($"Eingesetzt als {use}: {file}");
+        });
+    }
+
     string? BridgeStudio(BridgeRun run) => run.Dock?.Studio ?? (BridgeKey(run) is { } k ? Programs[k].Studio : ClaudeBelongs(CurrentView) ? ClaudeStudioOf(CurrentView) : null);
 
     /// <summary>Startseite: „Was möchtest du machen?“ mit den wichtigsten Aufgaben des Studios. Der Klick füllt die Eingabe oben, die Person ergänzt nur noch das Thema.</summary>

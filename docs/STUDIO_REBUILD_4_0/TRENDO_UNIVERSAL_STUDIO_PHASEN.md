@@ -103,6 +103,19 @@ Ein freier Auftrag ohne die Vorgabe „im Programm bleiben“ war nach 13 Minute
 - Tests mit echten Anfängern fehlen und können nur Menschen leisten.
 - Keine Abnahme: Das Abnahmeprotokoll und die QA- und Security-Prüfung fehlen noch.
 
-## Phase D bis F
+## Phase D: Ablauf über zwei Studios (Bildbearbeitung → Spiele bauen)
+
+Es gibt zwei Wege, beide auf vorhandenen Systemen und ohne zweites Ablauf- oder Projektsystem:
+
+- **Fester Ablauf:** Rezept „Spielfigur → fertiges Spiel“ in der vorhandenen Studio-Fusion unter Produktion. Läuft nur nach Freigabe über `ApprovalGate`, Schritte stehen im `AuditLog` und in `PROTOKOLL.txt`.
+- **Über Claude:** Werkzeuge `uebergeben`, `uebergaben`, `uebernehmen`. Die Übergabe liegt als Datei im Projektordner (`.trendo/uebergaben.json`) mit Prüfsumme, gilt nur für dieses Projekt und wird ungültig, wenn die Datei danach verändert wird.
+
+Tests: 3 für die Übergabe, 4 für die Kette über den echten Eingabeweg (Bild exportieren, übergeben, übernehmen, bauen, Figur im gebauten Spiel; falsches Studio, falsche Verwendung, doppelte Annahme; Ablauf nur nach Freigabe; Abbruch ohne Namen).
+
+Echter Lauf durch den Claude-Bereich: Auftrag „einfachen Roboter im Bildprogramm zeichnen, als PNG weitergeben, in der Plattformer-Vorlage einsetzen, Spiel bauen“. 3 Minuten 48, keine Rückfrage, kein Klick. Ergebnis: Spiel „Robo-Sprung“ mit der gezeichneten Figur.
+
+Offen: Die vorhandene `WorkflowEngine` kennt nur Dateischritte und wird nicht benutzt, die Kette läuft über die Studio-Fusion. `AgentCenter` wird im festen Ablauf nicht eingesetzt. Längere Ketten aus dem Auftrag (Stadt mit 3D, Material, Animation, Unreal, Ton, QA) sind nicht gebaut.
+
+## Phase E und F
 
 Noch nicht begonnen.
