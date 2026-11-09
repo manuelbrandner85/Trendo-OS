@@ -397,10 +397,11 @@ public partial class MainWindow
 
     public void EditTogglePlay(ProgramDocument d)
     {
-        if (_vePlay is not null) { _vePlay.Stop(); _vePlay = null; _progMsg[VK] = "Angehalten bei " + ClockMs(d.Number("playhead")) + "."; Show(VK); return; }
+        if (_vePlay is not null) { EditSmoothStop(); _vePlay.Stop(); _vePlay = null; _progMsg[VK] = "Angehalten bei " + ClockMs(d.Number("playhead")) + "."; Show(VK); return; }
         if (VideoEdit.Clips(d.Data).Count == 0) { _progMsg[VK] = "Nichts zum Abspielen – zuerst Medien auf die Bildspur legen."; Show(VK); return; }
         if (d.Number("playhead") >= VideoEdit.VideoLength(VideoEdit.Clips(d.Data)) - 0.05) d.Set("playhead", 0, "Abspielkopf");
         var t = d.Number("playhead");
+        if (EditSmoothPossible) { EditSmoothStart(d, t); return; } // Pilot 4.0, V1: flüssig mit Ton; sonst wie bisher über Einzelbilder
         _vePlay = new Avalonia.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(1000.0 / PlayFps) };
         _vePlay.Tick += (_, _) =>
         {
@@ -448,14 +449,20 @@ public partial class MainWindow
         }
     }
 
+    /// <summary>Abspielkopf, Zeitanzeige und Titel zur Zeit t.</summary>
+    void EditShowChrome(ProgramDocument d, double t, EditClip c)
+    {
+        if (EditTimelineForTests is { } tl) { tl.Playhead = t; tl.InvalidateVisual(); }
+        if (_veTime is not null) _veTime.Text = $"{ClockMs(t)} / {ClockMs(VideoEdit.Duration(d.Data))}";
+        if (_veOverlay is not null) { _veOverlay.Text = c.Title; _veOverlay.IsVisible = c.Title.Length > 0; }
+    }
+
     /// <summary>Bild zur Zeit t zeigen, ohne die Seite neu aufzubauen (Abspielen).</summary>
     public void EditShowFrame(ProgramDocument d, double t)
     {
         if (VideoEdit.At(d.Data, t) is not { } at) return;
         var c = VideoEdit.Clips(d.Data)[at.Index];
-        if (EditTimelineForTests is { } tl) { tl.Playhead = t; tl.InvalidateVisual(); }
-        if (_veTime is not null) _veTime.Text = $"{ClockMs(t)} / {ClockMs(VideoEdit.Duration(d.Data))}";
-        if (_veOverlay is not null) { _veOverlay.Text = c.Title; _veOverlay.IsVisible = c.Title.Length > 0; }
+        EditShowChrome(d, t, c);
         if (_vePreview is null) return;
         try
         {
