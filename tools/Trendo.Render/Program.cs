@@ -685,6 +685,13 @@ else if (shot == "seite")
     }
     if (Environment.GetEnvironmentVariable("TRENDO_3D") is { Length: > 0 }) { win.Show("3d"); foreach (var sh in new[] { "cube", "sphere", "cylinder", "torus" }) win.Studio3DAddShape(sh); win.Studio3DSelect(1); } // 3D-Modelle erstellen mit Arbeitsfläche
     if (Environment.GetEnvironmentVariable("TRENDO_PROGTPL") is { Length: > 0 } tpl) { if (Environment.GetEnvironmentVariable("TRENDO_LEVEL") is { Length: > 0 } lv) win.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Of(lv)); win.ProgramNew(page, tpl); if (Environment.GetEnvironmentVariable("TRENDO_GAMESEC") is { Length: > 0 } gs) win.GameSection = gs; win.Show(page); } // Programm mit Vorlage öffnen
+    if (Environment.GetEnvironmentVariable("TRENDO_POD_EXPORT") is { Length: > 0 } podFile) // Design-Editor: Beispiel-Entwurf, echte Druckdatei mit Skia
+    {
+        var pd = win.ProgramActive("pod-programm")!;
+        win.PodAdd(pd, "ellipse"); win.PodAdd(pd, "text");
+        pd.Edit("Beispiel", x => { var l = Trendo.Core.Pod.PodDesign.Items(x); l[0] = l[0] with { Fill = "#F5B83D", Y = 260, H = l[0].W }; l[1] = l[1] with { Text = "Waldliebe", Bold = true, Size = 130, Y = 700, Shadow = true }; Trendo.Core.Pod.PodDesign.Store(x, l); });
+        win.PodExportPng(pd, podFile); win.Show("pod-programm");
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_AUDIO") is { Length: > 0 } au) { win.AuOpen(au); win.AuSel = (20, 34); win.AuSpectro = Environment.GetEnvironmentVariable("TRENDO_AUDIO_SPEKTRO") is { Length: > 0 }; win.Show("ton"); } // Audio-Editor mit echter Datei zeigen
     if (Environment.GetEnvironmentVariable("TRENDO_PROFIL") is { Length: > 0 } prof) // Öffnungszeit messen: jede Seite 40× öffnen (für dotnet-trace)
     {

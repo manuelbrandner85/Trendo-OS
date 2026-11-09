@@ -24,6 +24,7 @@ public class PodStudio_Ui
         w.Show(K); Settle();
         RealClick(w, w.Find<Button>("prog-tpl-tshirt")); Settle();
         var d = w.ProgramActive(K)!;
+        RealClick(w, w.Find<Button>("pod-step-motiv")); Settle();
         Assert.NotNull(w.TryFind<Canvas>("pod-preview"));
 
         d.Set("motif", FakePng(root, 800, 1000, 2)); w.Show(K); Settle();
