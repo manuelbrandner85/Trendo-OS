@@ -769,6 +769,7 @@ public sealed partial class MainWindow : Window
         var info = StudioCatalog.For(s.Id);
         var name = info?.Name ?? s.Name;
         var q = _studioQuery.Trim();
+        if (StudioCatalog.Removed.Contains(s.Id) || (q.Length == 0 && !StudioCatalog.InOverview(s.Id))) return false; // zusammengelegte Studios nur über die Suche
         if (q.Length > 0 && !name.Contains(q, StringComparison.OrdinalIgnoreCase) && !(info?.Sentence.Contains(q, StringComparison.OrdinalIgnoreCase) ?? false) && !s.Id.Contains(q, StringComparison.OrdinalIgnoreCase))
             return false;
         var f = _studioFilter;

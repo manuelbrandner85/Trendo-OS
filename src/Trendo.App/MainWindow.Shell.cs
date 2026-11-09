@@ -228,7 +228,7 @@ public partial class MainWindow
         foreach (var f in UserSettings.Ordered(FeaturedStudios, f => f.Item1, _settings.TileOrder))
             if (seen.Add(f.Id) && !_settings.HiddenTiles.Contains("tile-" + f.Id)) yield return (f.Id, StudioCatalog.NameOf(f.Id, f.Title), f.Sub);
         foreach (var s in _studios)
-            if (seen.Add(s.Id) && !_settings.HiddenTiles.Contains("tile-" + s.Id) && StudioCatalog.For(s.Id) is { } info) yield return (s.Id, info.Name, info.Sentence);
+            if (StudioCatalog.InOverview(s.Id) && seen.Add(s.Id) && !_settings.HiddenTiles.Contains("tile-" + s.Id) && StudioCatalog.For(s.Id) is { } info) yield return (s.Id, info.Name, info.Sentence);
     }
 
     private Control DesktopView()

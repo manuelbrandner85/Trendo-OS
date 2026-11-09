@@ -60,7 +60,7 @@ public partial class MainWindow
             filters.Children.Add(b);
         }
         ChipFilter(null, "Alle");
-        foreach (var area in StudioCatalog.Areas) ChipFilter(area, $"{area} ({_studios.Count(s => StudioCatalog.For(s.Id)?.Area == area)})");
+        foreach (var area in StudioCatalog.Areas) ChipFilter(area, $"{area} ({_studios.Count(s => StudioCatalog.For(s.Id)?.Area == area && StudioCatalog.InOverview(s.Id))})");
         main.Children.Add(filters);
 
         // Kopf „Studios“ mit Suche

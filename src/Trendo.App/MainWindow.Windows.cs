@@ -78,7 +78,7 @@ public partial class MainWindow
             RenderWindows(); return;
         }
         if (_deskHost.Children.Count == 0) _deskHost.Children.Add(SafeView("start"));
-        var content = SafeView(key);
+        var content = WithFoldedStrip(key, SafeView(key));
         var (win, closed) = Windows.Open(_backWindow ?? TargetWindow(key), key, PresentTitle(key), back: _backWindow is not null);
         if (closed is not null && _frames.Remove(closed.Id, out var old)) { _closeButtons.Remove(closed.Id); DetachFrame(old.Frame); _framePage.Remove(closed.Id); _windowStudio.Remove(closed.Id); ClaudeDockWindowClosed(closed.Id); }
         if (StudioKeyFor(key) is { } sid) _windowStudio[win.Id] = sid;
