@@ -67,6 +67,42 @@ Grenzen: Die Spalten Ausgabe und Abhängigkeiten stehen auf „offen“, weil si
 
 Nicht möglich ohne Menschen: Nutzertests mit echten Anfängern. Trendo kann Klickzahl und Zeit bis zur ersten Aktion messen, die Erfolgsquote mit echten Personen muss der Projektinhaber erheben.
 
-## Phase C bis F
+## Phase C: Referenzstudio „Spiele bauen“ (CORE-06)
 
-Noch nicht abgeschlossen. Als Referenzstudio ist „Spiele bauen“ (CORE-06) gewählt, weil dort der erste echte Claude-Lauf belegt ist und die Ampel rot steht.
+| Punkt | Umsetzung | Beleg |
+|---|---|---|
+| 02 Fachverständnis | `StudioKnowledge.cs` (Zweck, Aufgaben, Programme, Formate, Abläufe, Qualität, Helfer), ergänzt `CapabilityCatalog` | Tests „Referenz:“ |
+| 03 Projektkontext | Werkzeuge `projekt_kontext`, `studio_wissen` | Tests, Lauf unten |
+| 04 Startansicht | „Was möchtest du machen?“ mit fünf Aufgaben, darunter Neu und Zuletzt | Bild, Test |
+| 05 Einfach und Profi | vorhandene Stufen. Umschalten ändert keine Daten, alle Befehle in jeder Stufe erreichbar | Tests |
+| 06 Natürliche Sprache | Absichtserkennung `StudioKnowledgeBase.Match`, Eingabezeile geht an Claude | Tests, Lauf |
+| 07 Programmprüfung | `programme_pruefen`: installiert, startbar, Schnittstelle, Aktionen, Rechte. MCP gilt nur nach gemeldeter Verbindung | Tests |
+| 09 Gedächtnis | `projekt_merken` im vorhandenen, sichtbaren und löschbaren `ClaudeMemory` | Tests |
+| 12 Autonom mit Kontrolle | `ApprovalGate`, `AuditLog`, Not-Stopp | Tests |
+
+### Messwerte
+
+| Messung | Wert |
+|---|---|
+| Klicks bis zur ersten sinnvollen Aktion | 1, danach nur noch das Thema tippen |
+| Öffnen des Studios im Test | unter 1,5 Sekunden (Grenze im Test) |
+| Eigene Tests des Studios | 23 |
+
+### Echter Lauf durch den Claude-Bereich der App
+
+Auftrag über die Eingabezeile des Studios: „Plattformer-Vorlage zu einem kleinen Dschungel-Spiel mit zwei Leveln, im Programm bleiben, prüfen, speichern“. Claude Code 2.1.316, Stufe Voll, 7 Minuten 28, keine Rückfrage, kein offener Plan, kein Klick. Ergebnis: Spiel „Dschungel-Dash“ gebaut und gespeichert. Abo-Nutzung laut Trendo rund 6,2 Millionen verarbeitete Tokens, der größte Teil davon Zwischenspeicher.
+
+Ein freier Auftrag ohne die Vorgabe „im Programm bleiben“ war nach 13 Minuten nicht fertig, weil Claude zusätzlich eigenen Spielcode schrieb. Der Prüfaufbau brach ihn ab.
+
+### Offen im Referenzstudio
+
+- Claude meldete echte Grenzen des Programms: Das Spiel endet fest bei 20 Punkten, die Hintergrundfarbe und die Tastenbelegung lassen sich nicht einstellen.
+- Unreal, Unity und Blender wurden in diesem Studio nicht in einem echten Lauf benutzt. Unreal ist ohne Editorstart nicht auf Startfähigkeit prüfbar.
+- Die Ampel im Programmkatalog bleibt rot, bis der Katalog neu erzeugt ist. Die Erkennung des Editors ist angepasst.
+- Die obere Eingabezeile und das Feld „Was für ein Spiel möchtest du?“ stehen doppelt da. Das Zusammenlegen muss prüfen, dass nichts verloren geht.
+- Tests mit echten Anfängern fehlen und können nur Menschen leisten.
+- Keine Abnahme: Das Abnahmeprotokoll und die QA- und Security-Prüfung fehlen noch.
+
+## Phase D bis F
+
+Noch nicht begonnen.

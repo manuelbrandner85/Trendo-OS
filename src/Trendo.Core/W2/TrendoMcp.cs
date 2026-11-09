@@ -78,7 +78,9 @@ public sealed class TrendoMcp(IReadOnlyList<McpTool> tools)
     public const string FinishMark = "TRENDO_FERTIG";
     public const string HandsFreeRule =
         "\n\nDU ARBEITEST SELBSTÄNDIG. Der Nutzer klickt nichts und bestätigt nichts. Führe den Auftrag vollständig aus, so wie Claude Code es täte, und liefere ein fertiges, geprüftes Ergebnis statt eines Vorschlags.\n" +
-        "- Du bedienst Trendo mit den Werkzeugen des Servers „trendo“: `programme`, `programm_oeffnen`, `seite_lesen`, `befehle`, `befehl`, `werkzeug`, `feld_setzen`, `auswaehlen`, `klicken`, `dokument_lesen`, `dokument_setzen`, `exportieren`, `speichern`, `rueckgaengig`, `bild_ansehen`. Schreibe keine Zeilen der Form [[trendo:…]].\n" +
+        "- Du bedienst Trendo mit den Werkzeugen des Servers „trendo“: `programme`, `programm_oeffnen`, `seite_lesen`, `befehle`, `befehl`, `werkzeug`, `feld_setzen`, `auswaehlen`, `klicken`, `dokument_lesen`, `dokument_setzen`, `exportieren`, `speichern`, `rueckgaengig`, `bild_ansehen`, `studio_wissen`, `programme_pruefen`, `projekt_kontext`, `projekt_merken`. Schreibe keine Zeilen der Form [[trendo:…]].\n" +
+        "- Lies zu Beginn `projekt_kontext` und `studio_wissen` und berücksichtige frühere Entscheidungen, statt von vorn zu beginnen. Halte wichtige Entscheidungen, Probleme und Prüfergebnisse mit `projekt_merken` fest.\n" +
+        "- Prüfe mit `programme_pruefen`, bevor du ein Fachprogramm brauchst. Fehlt es oder startet es nicht, sage das offen und behaupte keinen Erfolg.\n" +
         "- Vorgehen: Aufgabenliste anlegen, Programm öffnen, `befehle` und `dokument_lesen` ansehen, Schritt für Schritt arbeiten, nach jedem größeren Schritt mit `seite_lesen` oder `bild_ansehen` prüfen, Fehler selbst beheben, zum Schluss speichern.\n" +
         "- Befehle stehen dir auf allen Bedienstufen zur Verfügung, auch die im Menü versteckten. Das Dokument kannst du bis in jedes Feld lesen und ändern.\n" +
         "- Keine Platzhalter und keine halben Sachen. Triff vernünftige Entscheidungen selbst. Frage nur, wenn der Auftrag ohne die Antwort gar nicht umsetzbar ist.\n" +
@@ -119,7 +121,11 @@ public static class DocPath
             switch (node)
             {
                 case JsonObject o:
-                    if (o[parts[i]] is not { } next) o[parts[i]] = next = new JsonObject();
+                    if (o[parts[i]] is not { } next)
+                    {
+                        if (int.TryParse(parts[i + 1], out _)) throw new ArgumentException($"Die Stelle „{parts[i]}“ gibt es nicht."); // eine Liste entsteht nicht nebenbei
+                        o[parts[i]] = next = new JsonObject();
+                    }
                     node = next; break;
                 case JsonArray a when int.TryParse(parts[i], out var k) && k >= 0 && k < a.Count && a[k] is { } item:
                     node = item; break;

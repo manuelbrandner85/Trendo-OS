@@ -25,7 +25,7 @@ public partial class MainWindow
     /// <summary>Durchgänge, bis Claude fertig sein muss.</summary>
     int ClaudeRounds => ClaudeNoClicks ? 8 : ClaudeProbe.Rounds;
 
-    sealed class BridgeRun { public ClaudeDock? Dock; public required string Folder; public string? Page; }
+    sealed class BridgeRun { public ClaudeDock? Dock; public required string Folder; public string? Page; public string? ChatId; }
 
     sealed class ClaudeBridgeSession(ClaudeBridgeHost host, string configFile) : IAsyncDisposable
     {
@@ -38,13 +38,13 @@ public partial class MainWindow
     }
 
     /// <summary>Zugang für einen Claude-Lauf öffnen. null, wenn Claude nicht selbst arbeiten soll oder der Zugang nicht startet.</summary>
-    async Task<ClaudeBridgeSession?> ClaudeBridgeOpen(ClaudeDock dock, string folder)
+    async Task<ClaudeBridgeSession?> ClaudeBridgeOpen(ClaudeDock dock, string folder, string chatId)
     {
         if (!ClaudeNoClicks) return null;
         try
         {
             _claudeChanges.Clear(); // neuer Lauf: das Rückgängig bezieht sich auf diesen Lauf
-            var host = await ClaudeBridgeHost.StartAsync(new TrendoMcp(BridgeTools(new BridgeRun { Dock = dock, Folder = folder, Page = dock.Page })));
+            var host = await ClaudeBridgeHost.StartAsync(new TrendoMcp(BridgeTools(new BridgeRun { Dock = dock, Folder = folder, Page = dock.Page, ChatId = chatId })));
             var dir = Path.Combine(_core.DataRoot, "cache", "claude-bruecke"); Directory.CreateDirectory(dir);
             var file = Path.Combine(dir, Guid.NewGuid().ToString("N") + ".json");
             await File.WriteAllTextAsync(file, host.ConfigJson());
@@ -54,7 +54,7 @@ public partial class MainWindow
     }
 
     /// <summary>Werkzeuge für Tests ohne Netz.</summary>
-    public TrendoMcp ClaudeBridgeForTest(string folder, string? page = null) => new(BridgeTools(new BridgeRun { Folder = folder, Page = page ?? CurrentView }));
+    public TrendoMcp ClaudeBridgeForTest(string folder, string? page = null, string? chatId = null) => new(BridgeTools(new BridgeRun { Folder = folder, Page = page ?? CurrentView, ChatId = chatId }));
 
     IReadOnlyList<McpTool> BridgeTools(BridgeRun run)
     {
@@ -82,7 +82,8 @@ public partial class MainWindow
                     }
                     Show(key);
                 }
-                else Show(key);
+                else if (_showMap.ContainsKey(key)) Show(key);
+                else return McpResult.Fail("Diese Seite gibt es nicht. Liste mit „programme“ abrufen.");
                 run.Page = key;
                 await Pump();
                 return BridgePage(run);
@@ -204,6 +205,7 @@ public partial class MainWindow
                 return new McpResult(export.Write(doc, path) is { Length: > 0 } note ? note : "Exportiert: " + path);
             }),
             S("bild_ansehen", "Bildschirmfoto des Trendo-Fensters, so wie der Nutzer es sieht.", TrendoMcp.Schema(), _ => BridgeShot()),
+            .. StudioIntelTools(run),
         ];
     }
 

@@ -158,6 +158,30 @@ if (Environment.GetEnvironmentVariable("TRENDO_R11") is { Length: > 0 } r11) // 
     void R11Pump(Func<bool> done, int seconds) { var t0 = DateTime.UtcNow; while (!done() && DateTime.UtcNow - t0 < TimeSpan.FromSeconds(seconds)) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); Thread.Sleep(30); } Avalonia.Threading.Dispatcher.UIThread.RunJobs(); }
     T Named<T>(string name) where T : Avalonia.Controls.Control => Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(win).OfType<T>().First(c => c.Name == name);
     void Click(string name) => Named<Avalonia.Controls.Button>(name).RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Avalonia.Controls.Button.ClickEvent));
+    if (r11 == "chat") // echter Lauf durch den Claude-Bereich der App, genau wie aus der Eingabezeile des Studios
+    {
+        var chatExe = Environment.GetEnvironmentVariable("TRENDO_BRIDGE_CLAUDE")!;
+        MainWindow.ClaudeStatusOverride = () => Task.FromResult(new Trendo.Core.ClaudeCode.Status(true, true, "claude.ai", "real", chatExe));
+        MainWindow.ClaudeRunOverride = (a, d, line, ct) =>
+        {
+            var chatPsi = new System.Diagnostics.ProcessStartInfo(chatExe) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true, RedirectStandardInput = true, StandardOutputEncoding = System.Text.Encoding.UTF8, StandardErrorEncoding = System.Text.Encoding.UTF8, WorkingDirectory = d };
+            foreach (var x in a) chatPsi.ArgumentList.Add(x);
+            File.WriteAllText(Environment.GetEnvironmentVariable("TRENDO_BRIDGE_DIR") + "\\args.txt", string.Join("\n", a.Where(z => !z.Contains('\n') && !z.Contains("bruecke") || z.StartsWith("--"))));
+            return MainWindow.ClaudeRunProcess(chatPsi, d, l => { lock (typeof(MainWindow)) File.AppendAllText(Environment.GetEnvironmentVariable("TRENDO_BRIDGE_DIR") + "\\lauf.jsonl", l + "\n"); line(l); }, ct);
+        };
+        Directory.CreateDirectory(Environment.GetEnvironmentVariable("TRENDO_BRIDGE_DIR")!);
+        win.ClaudeNoClicks = true;
+        var check = win.ClaudeCheck(); R11Pump(() => check.IsCompleted, 20);
+        win.Show("spiele-programm"); R11Pump(() => false, 1);
+        Console.WriteLine("BEREIT " + win.ClaudeTakesStudioPrompts);
+        var send = win.ClaudeFromStudioBar("CORE-06", Environment.GetEnvironmentVariable("TRENDO_BRIDGE_PROMPT")!); R11Pump(() => send.IsCompleted, 800);
+        Console.WriteLine("CHAT_FERTIG " + send.IsCompleted + " " + (send.IsCompletedSuccessfully ? send.Result.ToString() : send.Exception?.ToString()));
+        Console.WriteLine("OFFENE_FRAGEN plan=" + win.ClaudePlanPending() + " aenderung=" + win.ClaudeChangePending("spiele-programm"));
+        if (win.ClaudeChatCurrent() is { } cc) File.WriteAllText(Environment.GetEnvironmentVariable("TRENDO_BRIDGE_DIR") + "\\antwort.txt", string.Join("\n---\n", cc.Messages.Select(m => m.Role + ": " + m.Text)));
+        if (win.ProgramActive("spiele-programm") is { } chatDoc) File.WriteAllText(Environment.GetEnvironmentVariable("TRENDO_BRIDGE_DIR") + "\\dokument.json", chatDoc.Data.ToJsonString());
+        R11Pump(() => false, 1);
+    }
+    else
     if (r11 == "bruecke") // echter Lauf: Claude Code bedient das offene Trendo über die Werkzeuge
     {
         var runDir = Environment.GetEnvironmentVariable("TRENDO_BRIDGE_DIR")!; Directory.CreateDirectory(runDir);

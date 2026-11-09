@@ -143,6 +143,7 @@ public partial class MainWindow
         var assistHost = new ContentControl { Name = "assist-host" };
         var assistTarget = AssistTargetFor(key);
         if (assistTarget is not null) box.PlaceholderText = $"Schreib hier, was in „{assistTarget.Title}“ entstehen oder sich ändern soll. Du siehst zuerst den Plan und entscheidest dann.";
+        if (ClaudeNoClicks && ClaudeTakesStudioPrompts) box.PlaceholderText = "Schreib hier, was entstehen soll. Claude erledigt alles und zeigt dir das Ergebnis.";
         var liveThumb = new ContentControl { Name = "assist-live" };
         DispatcherTimer? liveTimer = null;
         if (key is not null && _assistTyped.TryGetValue(key, out var typed)) box.Text = typed.Prompt;

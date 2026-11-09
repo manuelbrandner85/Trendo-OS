@@ -462,6 +462,7 @@ public partial class MainWindow
                     switch (ev)
                     {
                         case ClaudeCode.Init i:
+                            _mcpConnected = i.Connectors ?? [];
                             if (i.Session.Length > 0) session = i.Session;
                             if (i.Skills is not null || i.Connectors is not null || i.Plugins is not null) { SaveCaps(i); ui.Caps.Text = ClaudeCapsText(i); }
                             break;
@@ -493,7 +494,7 @@ public partial class MainWindow
             try
             {
                 var mcpFile = chat.FullWith(ClaudeAlways) ? ClaudeStudioMcp(folder, dock.Studio) : null; // C5 (08.11.2026): Blender/Unreal/Godot direkt aus Claude
-                await using var bridge = await ClaudeBridgeOpen(dock, folder); // Claude bedient die Programme selbst
+                await using var bridge = await ClaudeBridgeOpen(dock, folder, chat.Id); // Claude bedient die Programme selbst
                 bridged = bridge is not null;
                 await Task.Run(() => ClaudeRun(ClaudeWithMcp(ClaudeCode.Args(prompt, ClaudeCode.Phase.Chat, chat.Session, bridge is null ? system : system + TrendoMcp.HandsFreeRule, model is { Length: > 0 } ? model : null, chat.FullWith(ClaudeAlways) ? ClaudeCode.Level.Voll : ClaudeCode.Level.Sicher), mcpFile, bridge?.ConfigFile), folder, OnLine, ui.Cts.Token));
             }
@@ -527,7 +528,7 @@ public partial class MainWindow
         // bestellte KI-Werkzeuge (Bild, Musik, …) kostenlos auf dem PC ausführen – die Dateien zählen zu den Änderungen dieser Antwort
         if (error is null && ClaudeTools.Parse(say.ToString()).Count > 0) { thinking.Text = "🎨 Trendo erzeugt Bilder, Musik … (auf diesem PC)"; steps.AddRange(await ClaudeRunTools(dock, chat.Id, say.ToString(), folder)); }
         var changes = snap?.Changes() ?? [];
-        var changed = changes.Select(c => $"{c.File} ({c.Change})").ToList();
+        var changed = changes.Where(c => !c.File.Replace('\\', '/').StartsWith(".versionen/", StringComparison.Ordinal)).Select(c => $"{c.File} ({c.Change})").ToList(); // Versionsablage ist kein Ergebnis
         var answer = say.ToString().Trim();
         var autoPlan = false;
         // Projekt-Gedächtnis: „Merken: …“-Zeilen übernehmen und als Arbeitsschritt zeigen
