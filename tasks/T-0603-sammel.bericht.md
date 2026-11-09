@@ -23,3 +23,9 @@
 ## Offen
 
 Merge nach `main` nur nach OK. VFX als Studio und Umbau der Programm-Hülle sind nicht entschieden. Die Funktionskataloge, Bewertungen und die weiteren Studios aus Rebuild 4.0 sind nicht begonnen. Stufe 2 des Design-Editors (K-15 bis K-18) ist offen.
+
+## Konsolen-Studio: echter Lauf ohne Spiel (09.11.2026)
+
+Feste Fassung a508929 über dieselben Git-Schritte wie im Studio geladen, 11 Skill-Ordner vorhanden. Die mitgelieferte Testsuite und `console-anywhere doctor` liefen auf diesem PC; Ergebnis siehe Commit-Text.
+
+Ein Port ist hier nicht möglich: Auf dem PC liegt kein ISO-Abbild, und Trendo darf keines beschaffen. Für Windows fehlt CMake, das nach den Projektregeln nicht ohne die Person systemweit installiert wird. Linux und Steam Deck brauchen ein Linux-System oder WSL2, Android zusätzlich JDK 17, Gradle, Android SDK und adb.
