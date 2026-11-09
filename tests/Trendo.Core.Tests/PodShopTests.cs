@@ -30,7 +30,7 @@ public class PodShopTests
         var html = pages["index.html"];
         Assert.Contains("https://buy.stripe.com/x", html);
         Assert.Contains("zahlungspflichtig bestellen", html);
-        Assert.Contains("24,90 € inkl. MwSt., zzgl. Versand", html);
+        Assert.Contains("24,90", html); Assert.Contains("inkl. MwSt. und Versand", html);
         Assert.DoesNotContain("<b>Shirt</b>", html);
         Assert.Contains("Erika Muster", pages["impressum.html"]);
         Assert.Contains("19 UStG", PodShopSite.Build("S", items, Legal, true)["index.html"]);
@@ -82,7 +82,7 @@ public class PodShopTests
         var f = new Fake((200, """{"result":{"id":99}}"""), (200, """{"result":{"id":99}}"""));
         var o = new PrintfulOrders(f, "t");
         var order = new PodPaidOrder("cs_test_abc", "plink", "Erika", new("Erika M", "Weg 1", "Ort", "12345", "DE"), "e@x");
-        Assert.Equal(99, await o.CreateDraftAsync(order, 7));
+        Assert.Equal(99, (await o.CreateDraftAsync(order, 7)).Id);
         Assert.EndsWith("/orders", f.Calls[0].Url);
         Assert.DoesNotContain("confirm", f.Calls[0].Url);
         Assert.Contains("\"sync_variant_id\":7", f.Calls[0].Body);

@@ -98,15 +98,16 @@ public sealed class PrintfulClient(IWebSend web, string token)
             .Select(v => new PodShopVariant(Str(v, "name"), v["id"]!.GetValue<long>())).ToList();
 
     /// <summary>Hat Printful die Dateien dieses Produkts schon übernommen?</summary>
-    public async Task<bool> ProductFilesReadyAsync(long productId, CancellationToken ct = default) =>
-        PrintfulFiles.AllReady(await Call("GET", $"/store/products/{productId}", null, ct));
+    public async Task<PfFileState> ProductFilesStateAsync(long productId, CancellationToken ct = default) =>
+        PrintfulFiles.State(await Call("GET", $"/store/products/{productId}", null, ct));
 
     /// <summary>Legt ein Produkt im eigenen Printful-Bestand an. Das bestellt nichts und kostet nichts.</summary>
-    public async Task<long> CreateProductAsync(string name, IEnumerable<(int VariantId, decimal RetailPrice)> variants, string fileUrl, string? thumbnail = null, CancellationToken ct = default)
+    public async Task<long> CreateProductAsync(string name, IEnumerable<(int VariantId, decimal RetailPrice)> variants, string fileUrl, string placement, string? thumbnail = null, CancellationToken ct = default)
     {
+        var fileType = placement is "" or "front" ? "default" : placement; // bei Printful heißt die Vorderseite „default“
         var list = new JsonArray();
         foreach (var (id, price) in variants)
-            list.Add(new JsonObject { ["variant_id"] = id, ["retail_price"] = price.ToString("0.00", CultureInfo.InvariantCulture), ["files"] = new JsonArray(new JsonObject { ["url"] = fileUrl }) });
+            list.Add(new JsonObject { ["variant_id"] = id, ["retail_price"] = price.ToString("0.00", CultureInfo.InvariantCulture), ["files"] = new JsonArray(new JsonObject { ["type"] = fileType, ["url"] = fileUrl }) });
         if (list.Count == 0) throw new PodServiceException("Wähle mindestens eine Variante aus.");
         var product = new JsonObject { ["name"] = name };
         if (thumbnail is not null) product["thumbnail"] = thumbnail;
@@ -115,13 +116,16 @@ public sealed class PrintfulClient(IWebSend web, string token)
     }
 }
 
+public enum PfFileState { Waiting, Ready, Failed }
+
 public static class PrintfulFiles
 {
-    /// <summary>Hat Printful alle Dateien eines Produkts übernommen? Erst dann darf die Ablage geleert werden.</summary>
-    public static bool AllReady(JsonNode? productResult)
+    /// <summary>Stand der Dateien eines Produkts. Erst bei „Ready“ oder „Failed“ darf die Ablage geleert werden.</summary>
+    public static PfFileState State(JsonNode? productResult)
     {
         var files = (productResult?["sync_variants"] as JsonArray ?? []).OfType<JsonObject>().SelectMany(v => (v["files"] as JsonArray ?? []).OfType<JsonObject>()).ToList();
-        return files.Count > 0 && files.All(f => f["status"]?.GetValue<string>() == "ok");
+        if (files.Any(f => f["status"]?.GetValue<string>() == "failed")) return PfFileState.Failed;
+        return files.Count > 0 && files.All(f => f["status"]?.GetValue<string>() == "ok") ? PfFileState.Ready : PfFileState.Waiting;
     }
 }
 

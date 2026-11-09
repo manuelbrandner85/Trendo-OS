@@ -191,7 +191,7 @@ public static partial class ClaudeActions
 
     public const int MaxSteps = 12;
 
-    [GeneratedRegex(@"senden|verschick|lösch|entfern|leeren|papierkorb|kauf|bezahl|bestell|zahlen|überweis|drucken|veröffentlich|hochlad|teilen|posten|abmeld|deinstall|formatier|überschreib|zurücksetz|endgültig|ausführen|starten|aufnahme", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"kostet geld|kostenpflichtig|senden|verschick|lösch|entfern|leeren|papierkorb|kauf|bezahl|bestell|zahlen|überweis|drucken|veröffentlich|hochlad|teilen|posten|abmeld|deinstall|formatier|überschreib|zurücksetz|endgültig|ausführen|starten|aufnahme", RegexOptions.IgnoreCase)]
     private static partial Regex RiskyRx();
     [GeneratedRegex(@"pass|kenn?wort|token|secret|geheim|schlüssel|api-?key|pin\b|iban|kreditkarte|cvc", RegexOptions.IgnoreCase)]
     private static partial Regex SecretRx();

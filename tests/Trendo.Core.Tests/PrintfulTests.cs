@@ -75,11 +75,12 @@ public class PrintfulTests
     {
         var f = new Fake((200, """{"result":{"id":123}}"""));
         var c = new PrintfulClient(f, "t");
-        Assert.Equal(123, await c.CreateProductAsync("Mein Shirt", [(4012, 24.9m)], "https://d/x.png"));
+        Assert.Equal(123, await c.CreateProductAsync("Mein Shirt", [(4012, 24.9m)], "https://d/x.png", "back"));
         Assert.Equal("POST", f.Calls[0].Method);
         Assert.EndsWith("/store/products", f.Calls[0].Url);
         Assert.Contains("\"retail_price\":\"24.90\"", f.Calls[0].Body);
-        await Assert.ThrowsAsync<PodServiceException>(() => c.CreateProductAsync("Leer", [], "https://d/x.png"));
+        Assert.Contains("\"type\":\"back\"", f.Calls[0].Body);
+        await Assert.ThrowsAsync<PodServiceException>(() => c.CreateProductAsync("Leer", [], "https://d/x.png", "front"));
     }
 
     [Fact(DisplayName = "Printful: Der Client kennt keinen Bestellaufruf")]

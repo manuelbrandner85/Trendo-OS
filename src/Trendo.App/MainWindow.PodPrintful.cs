@@ -24,6 +24,7 @@ public partial class MainWindow
     bool _pfBusy;
     DateTime _pfLastMockup = DateTime.MinValue;
     readonly List<Bitmap> _pfMockupImages = [];
+    string _pfLastPngHash = "", _pfMockupHash = "", _pfName = "", _pfPrice = "";
 
     /// <summary>Für Tests: Netz, Wartezeit und Ausgabe der Druckdatei nachbilden.</summary>
     public IWebSend? PodWebOverride { get; set; }
@@ -113,12 +114,33 @@ public partial class MainWindow
             throw new PodServiceException("Richte zuerst die Design-Ablage ein.");
         var host = new NetlifyDesignHost(PodWeb, token);
         var name = NetlifyDesignHost.RandomName();
-        await host.DeployAsync(site, NetlifyDesignHost.Zip([(name, PodPng(d))]), PodWait);
+        var png = PodPng(d);
+        _pfLastPngHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(png));
+        try { await host.DeployAsync(site, NetlifyDesignHost.Zip([(name, png)]), PodWait); }
+        catch (PodServiceException) { await PodClearQuiet(host, site); throw; }
         _core.Audit.Append(Principal.LocalOwner.Name, "pod.netlify", "design bereitgestellt");
         return (host, site, baseUrl.TrimEnd('/') + "/" + name);
     }
 
-    static async Task PodClear(NetlifyDesignHost host, string site, Func<TimeSpan, CancellationToken, Task> wait) => await host.DeployAsync(site, NetlifyDesignHost.Zip([]), wait);
+    /// <summary>Leert die Ablage. Ein Fehler dabei darf das Ergebnis der eigentlichen Aktion nicht verfälschen, deshalb gibt es nur einen Hinweis.</summary>
+    async Task PodClearQuiet(NetlifyDesignHost host, string site)
+    {
+        try { await host.DeployAsync(site, NetlifyDesignHost.Zip([]), PodWait); }
+        catch (Exception e) when (e is PodServiceException or HttpRequestException or TaskCanceledException or IOException) { _progMsg[PodKey] = (_progMsg.GetValueOrDefault(PodKey) ?? "") + " Die Design-Ablage konnte nicht geleert werden, das wird beim nächsten Mal nachgeholt."; }
+    }
+
+    /// <summary>Schließt ein noch offenes Produkt ab. Solange Printful die Datei nicht hat, darf die Ablage nicht überschrieben werden.</summary>
+    async Task PodSettlePending()
+    {
+        var pending = new PodPendingStore(_core.DataRoot);
+        if (pending.Get() is not { } p) return;
+        var state = await Pf().ProductFilesStateAsync(p.ProductId);
+        if (state == PfFileState.Waiting) throw new PodServiceException("Printful verarbeitet noch die letzte Datei. Versuche es gleich noch einmal.");
+        if (state == PfFileState.Ready) new PodShopStore(_core.DataRoot).Add(p.Item);
+        if (PodSecret(NfKey) is { } token && PodSecret(NfSite) is { } site) await PodClearQuiet(new NetlifyDesignHost(PodWeb, token), site);
+        pending.Clear();
+        if (state == PfFileState.Failed) throw new PodServiceException("Printful konnte die Datei des letzten Produkts nicht verarbeiten. Es wurde nicht in den Shop übernommen.");
+    }
 
     /// <summary>Erzeugt echte Mockups bei Printful und leert danach die Ablage.</summary>
     public Task<bool> PodMakeMockups(ProgramDocument d) => PodRun(async () =>
@@ -126,6 +148,7 @@ public partial class MainWindow
         if (_pfProduct is not { } product || _pfChosen.Count == 0) throw new PodServiceException("Wähle zuerst Produkt und Variante.");
         var left = PodMockupGap - (DateTime.UtcNow - _pfLastMockup);
         if (left > TimeSpan.Zero) throw new PodServiceException($"Printful erlaubt nur wenige Mockups pro Minute. Noch {Math.Ceiling(left.TotalSeconds)} Sekunden.");
+        await PodSettlePending();
         var (host, site, url) = await PodUpload(d);
         try
         {
@@ -136,6 +159,7 @@ public partial class MainWindow
             if (task.Failed) throw new PodServiceException("Printful konnte kein Mockup erzeugen: " + (task.Error ?? "unbekannter Grund"));
             if (!task.Done) throw new PodServiceException("Printful braucht zu lange. Versuche es gleich noch einmal.");
             PodMockupUrls = task.Urls;
+            _pfMockupHash = _pfLastPngHash;
             _pfMockupImages.Clear();
             foreach (var u in task.Urls.Take(6))
             {
@@ -146,7 +170,7 @@ public partial class MainWindow
             }
             _progMsg[PodKey] = $"{task.Urls.Count} Mockups erzeugt.";
         }
-        finally { await PodClear(host, site, PodWait); }
+        finally { await PodClearQuiet(host, site); }
     });
 
     /// <summary>Legt das Design als Produkt im eigenen Printful-Bestand an. Bestellt nichts. Die Ablage wird erst geleert, wenn Printful die Datei übernommen hat.</summary>
@@ -155,19 +179,43 @@ public partial class MainWindow
         if (_pfProduct is null || _pfChosen.Count == 0) throw new PodServiceException("Wähle zuerst Produkt und Variante.");
         if (string.IsNullOrWhiteSpace(name)) throw new PodServiceException("Gib dem Produkt einen Namen.");
         if (retail <= 0) throw new PodServiceException("Gib einen Verkaufspreis an.");
+        if (retail != Math.Round(retail, 2)) throw new PodServiceException("Der Preis darf höchstens zwei Nachkommastellen haben.");
+        await PodSettlePending();
+        PodLastProduct = null;
         var (host, site, url) = await PodUpload(d);
         var c = Pf();
-        var ready = false;
+        var image = _pfMockupHash == _pfLastPngHash ? PodMockupUrls.FirstOrDefault() : null; // nie das Mockup eines älteren Designs zeigen
+        var clear = true;
         try
         {
-            PodLastProduct = await c.CreateProductAsync(name.Trim(), _pfChosen.Select(id => (id, retail)), url, PodMockupUrls.FirstOrDefault());
+            var created = await c.CreateProductAsync(name.Trim(), _pfChosen.Select(id => (id, retail)), url, _pfPlacement, image);
+            PodLastProduct = created;
+            clear = false; // Printful hat das Produkt, holt die Datei aber erst noch ab
             _core.Audit.Append(Principal.LocalOwner.Name, "pod.printful", "produkt angelegt");
-            new PodShopStore(_core.DataRoot).Add(new(Guid.NewGuid().ToString("N"), name.Trim(), retail, PodMockupUrls.FirstOrDefault() ?? "", PodLastProduct.Value, [.. await c.ProductVariantsAsync(PodLastProduct.Value)]));
-            for (var i = 0; i < 24 && !ready; i++) { ready = await c.ProductFilesReadyAsync(PodLastProduct.Value); if (!ready) await PodWait(TimeSpan.FromSeconds(5), default); }
-            _progMsg[PodKey] = ready ? "Produkt ist bei Printful angelegt." : "Produkt ist angelegt, Printful verarbeitet die Datei noch.";
+            var state = PfFileState.Waiting;
+            for (var i = 0; i < 24 && state == PfFileState.Waiting; i++)
+            {
+                try { state = await c.ProductFilesStateAsync(created); } catch (PodServiceException) { break; }
+                if (state == PfFileState.Waiting) await PodWait(TimeSpan.FromSeconds(5), default);
+            }
+            IReadOnlyList<PodShopVariant> variants = [];
+            try { variants = await c.ProductVariantsAsync(created); } catch (PodServiceException) { state = PfFileState.Waiting; }
+            var item = new PodShopItem(Guid.NewGuid().ToString("N"), name.Trim(), retail, image ?? "", created, [.. variants]);
+            if (state == PfFileState.Ready) { new PodShopStore(_core.DataRoot).Add(item); clear = true; _progMsg[PodKey] = "Produkt ist bei Printful angelegt und im Shop."; _pfName = ""; _pfPrice = ""; }
+            else if (state == PfFileState.Failed) { clear = true; throw new PodServiceException("Printful konnte die Datei nicht verarbeiten. Das Produkt wurde nicht in den Shop übernommen."); }
+            else { new PodPendingStore(_core.DataRoot).Set(new(created, item)); _progMsg[PodKey] = "Produkt ist angelegt, Printful verarbeitet die Datei noch. Es erscheint danach im Shop."; }
         }
-        finally { if (ready || PodLastProduct is null) await PodClear(host, site, PodWait); }
+        finally { if (clear) await PodClearQuiet(host, site); }
     });
+
+    void PodNetlifyDisconnect()
+    {
+        foreach (var k in new[] { NfKey, NfSite, NfUrl }) _core.Secrets.Delete(k);
+        _core.Audit.Append(Principal.LocalOwner.Name, "pod.netlify", "getrennt");
+        Show(PodKey);
+    }
+
+    static decimal PodParsePrice(string? text) { try { return Finance.ParseAmount(text ?? ""); } catch (Exception e) when (e is FormatException or OverflowException) { return 0m; } }
 
     TextBox PodSecretBox(string name, string hint) => new() { Name = name, PasswordChar = '•', PlaceholderText = hint, MinWidth = 280 };
 
@@ -194,10 +242,12 @@ public partial class MainWindow
 
         if (!PodNetlifyOn)
         {
-            sp.Children.Add(P("Printful holt Designs nur von einer Internetadresse ab. Dafür liegt das Design kurz in deinem eigenen Netlify-Konto unter einem nicht erratbaren Namen und wird danach wieder entfernt.", Muted, 11));
+            sp.Children.Add(P("Printful holt Designs nur von einer Internetadresse ab. Dafür liegt das Design kurz in deinem eigenen Netlify-Konto unter einem nicht erratbaren Namen und wird danach aus der Ablage genommen.", Muted, 11));
             var token = PodSecretBox("pod-nf-token", "Netlify-Schlüssel einfügen");
             sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { PodBtn("pod-nf-get", "Schlüssel bei Netlify holen", () => { Launch(NetlifyDesignHost.TokenPage); return Task.CompletedTask; }), token, PodBtn("pod-nf-connect", "Ablage einrichten", () => PodNetlifyConnect(token.Text ?? ""), true) } });
         }
+
+        else sp.Children.Add(PodBtn("pod-nf-off", "Design-Ablage trennen", () => { PodNetlifyDisconnect(); return Task.CompletedTask; }));
 
         if (_pfCatalog.Count > 0)
         {
@@ -241,9 +291,11 @@ public partial class MainWindow
                 foreach (var img in _pfMockupImages) shots.Children.Add(new Image { Source = img, Width = 200, Margin = new Thickness(0, 0, 8, 8) });
                 sp.Children.Add(shots);
             }
-            var name = new TextBox { Name = "pod-pf-name", PlaceholderText = "Name des Produkts", MinWidth = 240 };
-            var price = new TextBox { Name = "pod-pf-price", PlaceholderText = "Verkaufspreis", Width = 110 };
-            sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { name, price, PodBtn("pod-pf-create", "Als Produkt anlegen", () => PodCreateProduct(d, name.Text ?? "", decimal.TryParse((price.Text ?? "").Replace(',', '.'), System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var r) ? r : 0m)) } });
+            var name = new TextBox { Name = "pod-pf-name", Text = _pfName, PlaceholderText = "Name des Produkts", MinWidth = 240 };
+            var price = new TextBox { Name = "pod-pf-price", Text = _pfPrice, PlaceholderText = "Verkaufspreis mit Versand", Width = 170 };
+            name.TextChanged += (_, _) => _pfName = name.Text ?? "";
+            price.TextChanged += (_, _) => _pfPrice = price.Text ?? "";
+            sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { name, price, PodBtn("pod-pf-create", "Als Produkt anlegen", () => PodCreateProduct(d, name.Text ?? "", PodParsePrice(price.Text))) } });
             sp.Children.Add(P("Das Anlegen bestellt nichts und kostet nichts. Kosten entstehen erst bei einer von dir bestätigten Bestellung.", Muted, 11));
         }
         return sp;

@@ -12,16 +12,17 @@ namespace Trendo.App;
 public partial class MainWindow
 {
     const string StKey = "pod-stripe-key", ShopSite = "pod-shop-site", ShopUrl = "pod-shop-url";
-    string _shopMsg = "";
+    string _shopMsg = "", _shopArmed = "";
     bool _shopBusy, _shopChecked;
     IReadOnlyList<PodPaidOrder> _shopOrders = [];
-    readonly Dictionary<string, long> _shopDrafts = [];
-    readonly HashSet<long> _shopConfirmed = [];
+    readonly Dictionary<string, string> _shopField = [];
 
     public string PodShopMessage => _shopMsg;
     public IReadOnlyList<PodPaidOrder> PodShopOrders => _shopOrders;
     public bool PodStripeOn => PodSecret(StKey) is not null;
     public PodShopStore PodShopItems => new(_core.DataRoot);
+    public string DataRootForTests => _core.DataRoot;
+    PodOrderStore ShopOrderStore => new(_core.DataRoot);
     string ShopFolder => IoPath.Combine(_core.DataRoot, "print-on-demand", "shop-seite");
 
     async Task<bool> ShopRun(Func<Task> work)
@@ -41,10 +42,19 @@ public partial class MainWindow
         await new StripeClient(PodWeb, key).CheckAsync();
         _core.Secrets.Set(StKey, key);
         _core.Audit.Append(Principal.LocalOwner.Name, "pod.stripe", "verbunden");
-        _shopMsg = "Stripe ist verbunden.";
+        _shopMsg = key.StartsWith("sk_test", StringComparison.Ordinal) ? "Stripe ist im Testmodus verbunden. Testzahlungen werden nie an Printful gegeben." : "Stripe ist verbunden.";
     });
 
+    void PodStripeDisconnect()
+    {
+        _core.Secrets.Delete(StKey);
+        _shopOrders = [];
+        _core.Audit.Append(Principal.LocalOwner.Name, "pod.stripe", "getrennt");
+        Show(CurrentView);
+    }
+
     StripeClient Stripe() => new(PodWeb, PodSecret(StKey) ?? throw new PodServiceException("Verbinde zuerst dein Stripe-Konto."));
+    PrintfulOrders PfOrders() => new(PodWeb, PodSecret(PfKey) ?? throw new PodServiceException("Verbinde zuerst dein Printful-Konto."));
 
     /// <summary>Legt für alle Varianten ohne Link einen Bezahl-Link an.</summary>
     public Task<bool> PodCreatePayLinks() => ShopRun(async () =>
@@ -55,7 +65,7 @@ public partial class MainWindow
             var variants = new List<PodShopVariant>();
             foreach (var v in item.Variants)
             {
-                if (v.PayUrl is not null) { variants.Add(v); continue; }
+                if (v.PayUrl is { Length: > 0 }) { variants.Add(v); continue; }
                 var (id, url) = await s.PayLinkAsync($"{item.Name} {v.Name}".Trim(), item.Price);
                 variants.Add(v with { PayUrl = url, PayId = id }); made++;
             }
@@ -87,27 +97,43 @@ public partial class MainWindow
         _shopMsg = "Der Shop ist online: " + PodSecret(ShopUrl);
     });
 
-    public Task<bool> PodFetchOrders() => ShopRun(async () => { _shopOrders = await Stripe().PaidOrdersAsync(); _shopMsg = $"{_shopOrders.Count} bezahlte Bestellungen."; });
+    public Task<bool> PodFetchOrders() => ShopRun(async () =>
+    {
+        var s = Stripe();
+        _shopOrders = await s.PaidOrdersAsync();
+        _shopMsg = $"{_shopOrders.Count} bezahlte Bestellungen." + (s.HasMore ? " Ältere Zahlungen findest du im Stripe-Konto." : "");
+    });
 
     PodShopVariant? ShopVariantFor(PodPaidOrder o) => PodShopItems.All().SelectMany(i => i.Variants).FirstOrDefault(v => v.PayId == o.PayLinkId);
 
-    /// <summary>Legt zu einer bezahlten Bestellung einen kostenlosen Entwurf bei Printful an.</summary>
+    /// <summary>Legt zu einer echten, bezahlten Bestellung einen kostenlosen Entwurf bei Printful an. Prüft vorher, ob es zu dieser Zahlung schon einen gibt.</summary>
     public Task<bool> PodDraftOrder(PodPaidOrder order) => ShopRun(async () =>
     {
-        if (_shopDrafts.ContainsKey(order.SessionId)) throw new PodServiceException("Zu dieser Zahlung gibt es schon einen Entwurf.");
+        if (!order.Live) throw new PodServiceException("Das ist eine Testzahlung. Sie wird nicht an Printful gegeben.");
+        if (ShopOrderStore.All().ContainsKey(order.SessionId)) throw new PodServiceException("Zu dieser Zahlung gibt es schon einen Entwurf.");
         var v = ShopVariantFor(order) ?? throw new PodServiceException("Diese Zahlung gehört zu keinem Produkt aus dem Shop.");
-        var id = await new PrintfulOrders(PodWeb, PodSecret(PfKey) ?? throw new PodServiceException("Verbinde zuerst dein Printful-Konto.")).CreateDraftAsync(order, v.SyncId);
-        _shopDrafts[order.SessionId] = id;
-        _core.Audit.Append(Principal.LocalOwner.Name, "pod.bestellung", "entwurf " + id);
+        var orders = PfOrders();
+        if (await orders.FindAsync(order.SessionId) is { } known)
+        {
+            ShopOrderStore.Set(order.SessionId, new(known.Draft.Id, known.Confirmed, known.Draft.Cost));
+            _shopMsg = "Diese Bestellung gab es bei Printful schon, sie ist wieder verknüpft.";
+            return;
+        }
+        var draft = await orders.CreateDraftAsync(order, v.SyncId);
+        ShopOrderStore.Set(order.SessionId, new(draft.Id, false, draft.Cost));
+        _core.Audit.Append(Principal.LocalOwner.Name, "pod.bestellung", "entwurf " + draft.Id);
         _shopMsg = "Entwurf angelegt. Kosten entstehen erst, wenn du ihn freigibst.";
     });
 
-    /// <summary>Gibt einen Entwurf frei. Das kostet Geld und läuft nur über diesen ausdrücklichen Klick.</summary>
-    public Task<bool> PodConfirmOrder(long printfulId) => ShopRun(async () =>
+    /// <summary>Gibt einen Entwurf frei. Das kostet Geld und läuft nur über die zweistufige Bestätigung in der Oberfläche.</summary>
+    public Task<bool> PodConfirmOrder(PodPaidOrder order) => ShopRun(async () =>
     {
-        await new PrintfulOrders(PodWeb, PodSecret(PfKey) ?? throw new PodServiceException("Verbinde zuerst dein Printful-Konto.")).ConfirmAsync(printfulId);
-        _shopConfirmed.Add(printfulId);
-        _core.Audit.Append(Principal.LocalOwner.Name, "pod.bestellung", "freigegeben " + printfulId);
+        if (!ShopOrderStore.All().TryGetValue(order.SessionId, out var st)) throw new PodServiceException("Zu dieser Zahlung gibt es keinen Entwurf.");
+        if (st.Confirmed) throw new PodServiceException("Diese Bestellung ist schon freigegeben.");
+        await PfOrders().ConfirmAsync(st.PrintfulId);
+        ShopOrderStore.Set(order.SessionId, st with { Confirmed = true });
+        _shopArmed = "";
+        _core.Audit.Append(Principal.LocalOwner.Name, "pod.bestellung", "freigegeben " + st.PrintfulId);
         _shopMsg = "Bestellung ist zur Fertigung freigegeben.";
     });
 
@@ -119,13 +145,20 @@ public partial class MainWindow
         return b;
     }
 
+    TextBox ShopField(string name, string hint, bool multi = false)
+    {
+        var t = new TextBox { Name = name, Text = _shopField.GetValueOrDefault(name, ""), PlaceholderText = hint, AcceptsReturn = multi, MinHeight = multi ? 48 : double.NaN, MaxWidth = 420, HorizontalAlignment = HorizontalAlignment.Left };
+        t.TextChanged += (_, _) => _shopField[name] = t.Text ?? "";
+        return t;
+    }
+
     Control PodShopCard()
     {
         var sp = new StackPanel { Name = "shop-pod", Spacing = 6 };
         if (_shopMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "shop-msg", Text = _shopMsg, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap });
         var items = PodShopItems.All();
         foreach (var i in items)
-            sp.Children.Add(P($"{i.Name} · {i.Price:0.00} € · {i.Variants.Count(v => v.PayUrl is not null)} von {i.Variants.Count} Varianten bestellbar", Text, 12));
+            sp.Children.Add(P($"{i.Name} · {i.Price:0.00} € inkl. Versand · {i.Variants.Count(v => v.PayUrl is { Length: > 0 })} von {i.Variants.Count} Varianten bestellbar", Text, 12));
         if (items.Count == 0) sp.Children.Add(P("Noch keine Produkte. Lege sie im Studio „Print on Demand“ über Printful an.", Muted, 12));
 
         if (!PodStripeOn)
@@ -135,13 +168,13 @@ public partial class MainWindow
             return sp;
         }
 
-        sp.Children.Add(ShopBtn("shop-paylinks", "Bezahl-Links anlegen", PodCreatePayLinks, true));
+        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { ShopBtn("shop-paylinks", "Bezahl-Links anlegen", PodCreatePayLinks, true), ShopBtn("shop-st-off", "Stripe trennen", () => { PodStripeDisconnect(); return Task.CompletedTask; }) } });
         sp.Children.Add(H("Angaben für Impressum und Rechtstexte", 13));
-        var shop = new TextBox { Name = "shop-name", PlaceholderText = "Name des Shops", MaxWidth = 420, HorizontalAlignment = HorizontalAlignment.Left };
-        var owner = new TextBox { Name = "shop-owner", PlaceholderText = "Dein Name oder deine Firma", MaxWidth = 420, HorizontalAlignment = HorizontalAlignment.Left };
-        var addr = new TextBox { Name = "shop-address", PlaceholderText = "Straße und Hausnummer, PLZ und Ort", AcceptsReturn = true, MinHeight = 48, MaxWidth = 420, HorizontalAlignment = HorizontalAlignment.Left };
-        var mail = new TextBox { Name = "shop-email", PlaceholderText = "E-Mail", MaxWidth = 420, HorizontalAlignment = HorizontalAlignment.Left };
-        var vat = new TextBox { Name = "shop-vat", PlaceholderText = "Umsatzsteuer-ID, falls vorhanden", MaxWidth = 420, HorizontalAlignment = HorizontalAlignment.Left };
+        var shop = ShopField("shop-name", "Name des Shops");
+        var owner = ShopField("shop-owner", "Dein Name oder deine Firma");
+        var addr = ShopField("shop-address", "Straße und Hausnummer, PLZ und Ort", true);
+        var mail = ShopField("shop-email", "E-Mail");
+        var vat = ShopField("shop-vat", "Umsatzsteuer-ID, falls vorhanden");
         sp.Children.Add(shop); sp.Children.Add(owner); sp.Children.Add(addr); sp.Children.Add(mail); sp.Children.Add(vat);
         PodShopLegal Legal() => new(owner.Text ?? "", addr.Text ?? "", mail.Text ?? "", vat.Text ?? "");
         var check = new CheckBox { Name = "shop-legal-ok", IsChecked = _shopChecked, Content = new TextBlock { Text = "Die Rechtstexte sind Vorlagen und keine Rechtsberatung. Ich habe sie geprüft oder prüfen lassen.", TextWrapping = TextWrapping.Wrap, Foreground = Text, FontSize = 12 } };
@@ -153,14 +186,23 @@ public partial class MainWindow
 
         sp.Children.Add(H("Bestellungen", 13));
         sp.Children.Add(ShopBtn("shop-orders", "Bezahlte Bestellungen abrufen", PodFetchOrders));
-        var nr = 0;
+        var states = ShopOrderStore.All();
         foreach (var o in _shopOrders)
         {
-            var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { new TextBlock { Text = $"{o.Customer} · {o.Address?.City}", Foreground = Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center } } };
-            var order = o; var idx = nr++;
-            if (!_shopDrafts.TryGetValue(o.SessionId, out var draft)) row.Children.Add(ShopBtn("shop-draft-" + idx, "Entwurf bei Printful anlegen", () => PodDraftOrder(order)));
-            else if (_shopConfirmed.Contains(draft)) row.Children.Add(new TextBlock { Text = "✓ freigegeben", Foreground = Brush.Parse("#3DDC84"), FontSize = 12, VerticalAlignment = VerticalAlignment.Center });
-            else row.Children.Add(ShopBtn("shop-confirm-" + idx, "Fertigung freigeben (kostet Geld)", () => PodConfirmOrder(draft), true));
+            var order = o;
+            // Nur Kennzeichen und Land: Namen und Adressen sollen nicht im Seitentext stehen
+            var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { new TextBlock { Text = $"Bestellung {o.Code} · {o.Address?.Country}" + (o.Live ? "" : " · Testzahlung"), Foreground = Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center } } };
+            if (!o.Live) { }
+            else if (!states.TryGetValue(o.SessionId, out var st)) row.Children.Add(ShopBtn("shop-draft-" + o.Code, "Entwurf bei Printful anlegen", () => PodDraftOrder(order)));
+            else if (st.Confirmed) row.Children.Add(new TextBlock { Text = "✓ freigegeben", Foreground = Brush.Parse("#3DDC84"), FontSize = 12, VerticalAlignment = VerticalAlignment.Center });
+            else if (_shopArmed != o.SessionId)
+                row.Children.Add(ShopBtn("shop-arm-" + o.Code, $"Bestellung {o.Code} zur Fertigung freigeben (kostet Geld)", () => { _shopArmed = order.SessionId; Show(CurrentView); return Task.CompletedTask; }));
+            else
+            {
+                row.Children.Add(ShopBtn("shop-disarm-" + o.Code, "Abbrechen", () => { _shopArmed = ""; Show(CurrentView); return Task.CompletedTask; }));
+                row.Children.Add(new TextBlock { Text = "Wirklich?", Foreground = Brush.Parse("#F5A524"), FontSize = 12, VerticalAlignment = VerticalAlignment.Center });
+                row.Children.Add(ShopBtn("shop-confirm-" + o.Code, $"Ja, kostenpflichtig fertigen: {o.Code}" + (st.Cost is { } c ? $" für {c:0.00}" : ""), () => PodConfirmOrder(order), true));
+            }
             sp.Children.Add(row);
         }
         return sp;

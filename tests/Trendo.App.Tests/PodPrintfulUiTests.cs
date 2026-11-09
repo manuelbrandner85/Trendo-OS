@@ -92,7 +92,8 @@ public class PodPrintful_Ui
         Assert.Single(f.Calls, c => c.EndsWith("/deploys"));
         f.FilesReady = true;
         Assert.True(await w.PodCreateProduct(d, "Mein Shirt 2", 24.9m));
-        Assert.Equal(3, f.Calls.Count(c => c.EndsWith("/deploys")));
+        Assert.Equal(4, f.Calls.Count(c => c.EndsWith("/deploys")));
+        Assert.Equal("Mein Shirt 2", Assert.Single(w.PodShopItems.All()).Name); // die Nachbildung liefert beide Male dieselbe Produktnummer
         Assert.DoesNotContain(f.Calls, c => c.Contains("/orders"));
         w.Close();
     }
@@ -108,6 +109,7 @@ public class PodPrintful_Ui
         Assert.DoesNotContain(f.Calls, c => c.Contains("/create-task/"));
         Assert.False(await w.PodCreateProduct(d, "", 10m));
         Assert.False(await w.PodCreateProduct(d, "X", 0m));
+        Assert.False(await w.PodCreateProduct(d, "X", 12.345m));
         w.Close();
     }
 
