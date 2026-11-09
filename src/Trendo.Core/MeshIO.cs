@@ -139,21 +139,46 @@ public static partial class Mesh3D
 
     static Mesh ReadObjPlain(string path)
     {
-        var v = new List<Vec3>(); var m = new Mesh();
+        var v = new List<Vec3>(); var m = new Mesh(); var f = new List<int>();
         foreach (var raw in File.ReadLines(path))
         {
-            var t = raw.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (t.Length == 0) continue;
-            if (t[0] == "v" && t.Length >= 4)
-                v.Add(new Vec3(double.Parse(t[1], CultureInfo.InvariantCulture), double.Parse(t[2], CultureInfo.InvariantCulture), double.Parse(t[3], CultureInfo.InvariantCulture)));
-            else if (t[0] == "f" && t.Length >= 4)
+            var line = raw.AsSpan().Trim(); var pos = 0;
+            if (!NextToken(line, ref pos, out var kind)) continue;
+            if (kind is "v")
             {
-                int Ix(string s) { var n = int.Parse(s.Split('/')[0], CultureInfo.InvariantCulture); return n < 0 ? v.Count + n : n - 1; }
-                var f = t.Skip(1).Select(Ix).ToArray();
-                for (var k = 1; k + 1 < f.Length; k++) m.Add(v[f[0]], v[f[k]], v[f[k + 1]]);
+                if (NextToken(line, ref pos, out var x) && NextToken(line, ref pos, out var y) && NextToken(line, ref pos, out var z))
+                    v.Add(new Vec3(double.Parse(x, CultureInfo.InvariantCulture), double.Parse(y, CultureInfo.InvariantCulture), double.Parse(z, CultureInfo.InvariantCulture)));
+            }
+            else if (kind is "f" && HasTokens(line, pos, 3))
+            {
+                f.Clear();
+                while (NextToken(line, ref pos, out var tok)) { var n = int.Parse(BeforeSlash(tok), CultureInfo.InvariantCulture); f.Add(n < 0 ? v.Count + n : n - 1); }
+                for (var k = 1; k + 1 < f.Count; k++) m.Add(v[f[0]], v[f[k]], v[f[k + 1]]);
             }
         }
         return m;
+    }
+
+    /// <summary>Nächstes durch Leerzeichen getrenntes Wort einer OBJ-Zeile, ohne Zwischen-Strings – große Modelle haben Millionen Zeilen.</summary>
+    static bool NextToken(ReadOnlySpan<char> line, ref int pos, out ReadOnlySpan<char> token)
+    {
+        while (pos < line.Length && line[pos] == ' ') pos++;
+        var start = pos;
+        while (pos < line.Length && line[pos] != ' ') pos++;
+        token = line[start..pos];
+        return pos > start;
+    }
+
+    static bool HasTokens(ReadOnlySpan<char> line, int pos, int count)
+    {
+        while (count-- > 0) if (!NextToken(line, ref pos, out _)) return false;
+        return true;
+    }
+
+    static ReadOnlySpan<char> BeforeSlash(ReadOnlySpan<char> token)
+    {
+        var i = token.IndexOf('/');
+        return i < 0 ? token : token[..i];
     }
 
     public static Part3D Import(string path) => ImportParts(path, "auto")[0];
@@ -284,23 +309,30 @@ public static partial class Mesh3D
         void Paint(byte r, byte g, byte b) { if (cur is null) return; cur.CR = r; cur.CG = g; cur.CB = b; }
         byte cr = 0xB7, cg = 0xBC, cb = 0xC4;
         void Flush() { if (cur is { Triangles: > 0 }) chunks.Add((name, cur)); cur = null; }
+        var ids = new List<int>();
         foreach (var raw in lines)
         {
-            var line = raw.Trim();
+            var line = raw.AsSpan().Trim(); var pos = 0;
             if (line.Length == 0 || line[0] == '#') continue;
-            var p = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (p[0] is "o" or "g") { Flush(); name = line.Length > 2 ? line[2..].Trim() : "Teil"; if (name.Length == 0) name = "Teil"; }
-            else if (p[0] == "usemtl" && p.Length > 1 && mtls.TryGetValue(p[1], out var col)) { cr = col.R; cg = col.G; cb = col.B; Paint(cr, cg, cb); }
-            else if (p[0] == "v" && p.Length >= 4) v.Add(new(D(p[1]) * scale, D(p[2]) * scale, D(p[3]) * scale));
-            else if (p[0] == "f" && p.Length >= 4)
+            NextToken(line, ref pos, out var kind);
+            if (kind is "o" or "g") { Flush(); name = line.Length > 2 ? line[2..].Trim().ToString() : "Teil"; if (name.Length == 0) name = "Teil"; }
+            else if (kind is "usemtl")
+            {
+                if (NextToken(line, ref pos, out var mtl) && mtls.TryGetValue(mtl.ToString(), out var col)) { cr = col.R; cg = col.G; cb = col.B; Paint(cr, cg, cb); }
+            }
+            else if (kind is "v")
+            {
+                if (NextToken(line, ref pos, out var x) && NextToken(line, ref pos, out var y) && NextToken(line, ref pos, out var z))
+                    v.Add(new(D(x) * scale, D(y) * scale, D(z) * scale));
+            }
+            else if (kind is "f" && HasTokens(line, pos, 3))
             {
                 cur ??= new Mesh();
                 Paint(cr, cg, cb);
-                var ids = new List<int>();
-                for (var i = 1; i < p.Length; i++)
+                ids.Clear();
+                while (NextToken(line, ref pos, out var tok))
                 {
-                    var tok = p[i].Split('/')[0];
-                    if (!int.TryParse(tok, NumberStyles.Integer, CultureInfo.InvariantCulture, out var id)) continue;
+                    if (!int.TryParse(BeforeSlash(tok), NumberStyles.Integer, CultureInfo.InvariantCulture, out var id)) continue;
                     if (id < 0) id = v.Count + id + 1;
                     ids.Add(id - 1);
                 }
@@ -597,6 +629,7 @@ public static partial class Mesh3D
     }
 
     static double D(string s) => double.Parse(s, NumberStyles.Float, CultureInfo.InvariantCulture);
+    static double D(ReadOnlySpan<char> s) => double.Parse(s, NumberStyles.Float, CultureInfo.InvariantCulture);
 
     static Mesh Gray() => new() { CR = 0xB7, CG = 0xBC, CB = 0xC4 };
 
