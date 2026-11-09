@@ -38,12 +38,13 @@ public partial class MainWindow
         Exports =
         [
             new("bible", "Spielbibel", ".md", (d, f) => { File.WriteAllText(f, GameDesign.BibleMarkdown(d.Data)); return f; }),
+            new("bible-pdf", "Spielbibel als PDF", ".pdf", (d, f) => { GameDocument.WritePdf(d.Data, f); return f; }),
         ],
         Workspace = GameWorkspace,
         Properties = GameProperties,
-        StartTop = () => GamePromptBar(null), // Spiele-Prompt: Spiel aus einem Satz
+        StartTop = () => new StackPanel { Children = { GamePromptBar(null), GameIdeasCard() } }, // Spiele-Prompt: Spiel aus einem Satz; T-0610: Ideen finden
         Status = d => { var s = GameDesign.ScaleOf(d.Text("scale")); var w = GameDesign.Check(d.Data).Count; return $"{s.Name} · {(s.Engine == "unreal" ? "Unreal Engine 5" : "Browser")} · {GameDesign.Overall(d.Data)} % geplant · {(w == 0 ? "keine Hinweise" : $"{w} Hinweis(e)")}"; },
-        Help = "Wähle oben den Bereich: Übersicht, Spielbibel, Figuren, Welt, Missionen, Produktion oder Bauen. Retro-Spiele sind sofort im Browser spielbar, 3D bis AAA+ entsteht als Unreal-Projekt mit deiner Spielbibel.",
+        Help = "Wähle oben den Bereich: Übersicht, Ideen, Spielbibel, Figuren, Welt, Missionen, Produktion oder Bauen. In der Spielbibel lässt sich jeder Abschnitt verschieben, bebildern und mit der KI besprechen. Retro-Spiele sind sofort im Browser spielbar, 3D bis AAA+ entsteht als Unreal-Projekt mit deiner Spielbibel.",
     }, "spiel", "spiele", "game", "retro", "unreal", "aaa", "rpg", "level", "boss", "spielbibel");
 
     static void GameAdd(ProgramDocument d, string key, JsonObject item) => d.Edit("Hinzufügen", x => { var l = x[key] as JsonArray ?? []; l.Add(item); x[key] = l; });
@@ -84,6 +85,7 @@ public partial class MainWindow
         if (d.Text("browser") == "plattform") sections.Insert(5, "Test"); // Testmodus mit Spielbarkeits-Prüfung, Fehlern und Notizen
         if (d.Text("browser") is "plattform" or "jump" or "breakout") sections.Insert(sections.IndexOf("Level") + 1, "Assets"); // freie Assets (G1–G3)
         if ((_gameSection is "Level" or "Test" or "Assets") && !sections.Contains(_gameSection)) _gameSection = "Übersicht";
+        sections.Insert(1, "Ideen");
         var bar = new WrapPanel { Name = "game-sections" };
         foreach (var s in sections)
         {
@@ -98,6 +100,7 @@ public partial class MainWindow
                 Act("game-show-all", "Alle Bereiche zeigen (Figuren, Welt, Aufgaben und mehr)", () => { _gameShowAll = true; Show(GK); }) } };
         Control body = _gameSection switch
         {
+            "Ideen" => GameIdeasCard(),
             "Spielbibel" => GameBible(d),
             "Figuren" => GameList(d, "characters", "Figuren und Bosse", [("name", "Name", 160), ("role", "Rolle", 0), ("text", "Beschreibung", 320), ("phases", "Phasen", 60)]),
             "Welt" => GameWorld(d),
@@ -135,26 +138,6 @@ public partial class MainWindow
                 Kpi("game-kpi-ms", "Meilensteine", $"{done} / {ms.Count}", ms.FirstOrDefault(m => m["done"]?.GetValueKind() != System.Text.Json.JsonValueKind.True)?["name"].AsText() ?? "alles geschafft", "#2FBF71", "#167A45") } },
             GameDashboard(d), // S2: Spielvorschau und Aufgaben-Board
             H("Phase", 14), GamePhaseBar(d, false), H("Bereiche", 14), rings, H("Prüfung", 14), w } };
-    }
-
-    private Control GameBible(ProgramDocument d)
-    {
-        var sp = new StackPanel { Spacing = 6 };
-        void Field(string key, string label, bool multi = false)
-        {
-            var t = new TextBox { Name = "game-f-" + key, Text = d.Text(key), PlaceholderText = label, AcceptsReturn = multi, TextWrapping = TextWrapping.Wrap, MinHeight = multi ? 56 : 0 };
-            void Commit() { if ((t.Text ?? "") != d.Text(key)) { d.Set(key, t.Text ?? "", label); Show(GK); } }
-            t.LostFocus += (_, _) => Commit(); OnEnter(t, Commit);
-            sp.Children.Add(P(label, null, 11.5)); sp.Children.Add(t);
-        }
-        Field("logline", "Idee in einem Satz", true); Field("genre", "Genre"); Field("loop", "Kernschleife (was macht man immer wieder?)", true);
-        var mech = new TextBox { Name = "game-f-mechanics", Text = string.Join(", ", d.List("mechanics").Select(x => x.AsText())), PlaceholderText = "Mechaniken, mit Komma getrennt" };
-        void CommitMech() { var l = (mech.Text ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries); d.Set("mechanics", new JsonArray([.. l.Select(x => (JsonNode)x)]), "Mechaniken"); Show(GK); }
-        mech.LostFocus += (_, _) => CommitMech(); OnEnter(mech, CommitMech);
-        sp.Children.Add(P("Mechaniken", null, 11.5)); sp.Children.Add(mech);
-        Field("controls", "Steuerung"); Field("style", "Stil (Grafik, Farben, Stimmung)"); Field("audience", "Zielgruppe"); Field("platforms", "Plattformen");
-        Field("systems", "Systeme (Inventar, Fähigkeiten, Crafting, Speichern …)", true); Field("sound", "Ton und Musik", true); Field("menus", "Menüs und HUD", true);
-        return sp;
     }
 
     /// <summary>Listen-Editor für Figuren und Missionen: jede Zeile eine Karte, Enter oder Verlassen übernimmt.</summary>
