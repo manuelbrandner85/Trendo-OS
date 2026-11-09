@@ -88,6 +88,16 @@ public class ClaudeBridge_Ui
         asked.Clear();
         Assert.False(Failed(await Call(m, "befehl", new JsonObject { ["name"] = "tk-3d" }))); Assert.Empty(asked);
         Assert.Empty(w.Core.Approvals.Pending());
+        // Offene Freigabe: Claude darf sie nicht selbst erteilen, auch nicht über einen harmlos benannten Knopf
+        var open = w.Core.Approvals.Request(Principal.LocalOwner, "test.bewegung", "Roboter bewegen", "ziel");
+        answer = false; asked.Clear();
+        var harmless = new Button { Name = "test-weiter", Content = "Weiter" }; harmless.Click += (_, _) => pressed += 100;
+        w.GetVisualDescendants().OfType<StackPanel>().First(p => p.IsEffectivelyVisible && p.Bounds.Width > 0 && p.FindAncestorOfType<Border>()?.Name == "prog-workspace").Children.Add(harmless); Settle(); // die Seite wurde inzwischen neu aufgebaut
+        Assert.True(Failed(await Call(m, "klicken", new JsonObject { ["ziel"] = "test-weiter" })));
+        Assert.True(Failed(await Call(m, "befehl", new JsonObject { ["name"] = "tk-3d" })));
+        Assert.Equal(2, asked.Count); Assert.True(pressed < 100);
+        w.Core.Approvals.Deny(open.Id, Principal.LocalOwner);
+        answer = true;
         w.Core.Approvals.Halt(Principal.LocalOwner, "Test");
         var halted = await Call(m, "befehl", new JsonObject { ["name"] = "tk-3d" });
         Assert.True(Failed(halted)); Assert.Contains("Not-Stopp", Text(halted));

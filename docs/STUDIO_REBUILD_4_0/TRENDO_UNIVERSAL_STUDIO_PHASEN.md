@@ -153,6 +153,22 @@ Echter Lauf durch den Claude-Bereich: Auftrag „Kündigung Fitnessstudio“ mit
 
 Offen: In Texte, Tabellen, E-Mails und Geld gab es keinen echten Claude-Lauf, nur Tests. Claude schlug wieder eine Lernregel vor, die auf Ja oder Nein wartet, die Arbeit aber nicht aufhält.
 
+### Paket 3: Technik und Wissen
+
+Wohnung (SPEC-01), Schaltungen (SPEC-02), Statik (SPEC-03), Geräte überwachen (SPEC-10), Karten (SPEC-13), Fräsen (SPEC-14), Auto (SPEC-16), Kameras und Roboter (CORE-09), Messwerte (SPEC-05), Lernen (SPEC-06), Wissen (CORE-10), Recherche (SYS-08).
+
+| Baustein | Stand |
+|---|---|
+| Fachwissen, Aufgaben, Absichtserkennung | für alle zwölf |
+| Startseite „Was möchtest du machen?“ | bei den sechs Dokumentprogrammen |
+| Claude-Zugriff | sechs Dokumentprogramme bis ins Detail, die übrigen auf Seitenebene |
+
+Sicherheitslücke gefunden und geschlossen: Solange Trendo auf eine Freigabe wartet (etwa vor einer Roboterbewegung), hätte Claude den Freigabe-Knopf selbst drücken können. Jetzt fragt jeder Klick und jeder Befehl von Claude beim Nutzer nach, solange eine Freigabe offen ist. Wörter wie Freigeben, Genehmigen, Einverstanden und Mikrofon fragen immer.
+
+Echter Lauf durch den Claude-Bereich: Einfeldträger IPE 200, 5 m, 10 kN/m. 1 Minute 41, kein Klick, keine Rückfrage. Das Programm lieferte das von Hand nachprüfbare Moment von 31,25 kNm. Claude meldete von sich aus, dass die Durchbiegung über L/300 liegt und das Kippen vom Programm nicht geprüft wird (das stammt aus seiner eigenen Handrechnung).
+
+Offen: In den anderen elf Studios gab es keinen echten Claude-Lauf, nur Tests.
+
 ## Phase F
 
 Noch nicht begonnen.

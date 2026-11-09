@@ -72,6 +72,11 @@ public class TrendoMcpTests
     [InlineData("Rendern starten", "x", true, false)]
     [InlineData("Kennzahlen", "x", true, false)]
     [InlineData("Level hinzufügen", "x", false, false)]
+    [InlineData("Freigeben", "x", true, true)]
+    [InlineData("Einverstanden", "x", true, true)]
+    [InlineData("Diesem Plugin vertrauen und freigeben", "x", true, true)]
+    [InlineData("Mikrofon einschalten", "x", true, true)]
+    [InlineData("Weiter", "fusion-approve", true, true)]
     public void Consent(string label, string name, bool undoable, bool asks) => Assert.Equal(asks, ClaudeActions.NeedsConsent(label, name, undoable));
 
     [Theory(DisplayName = "Dokument-Stellen: JSON in Text wird ausgepackt, normaler Text bleibt")]

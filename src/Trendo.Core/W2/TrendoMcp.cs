@@ -169,7 +169,7 @@ public static class DocPath
 
 public static partial class ClaudeActions
 {
-    [GeneratedRegex(@"senden|verschick|kauf|bezahl|bestell|zahlung|überweis|veröffentlich|hochlad|posten|\bteilen\b|installier|formatier|lösch|papierkorb|drucken|druck starten|maschine|abmeld", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"senden|verschick|kauf|bezahl|bestell|zahlung|überweis|veröffentlich|hochlad|posten|\bteilen\b|installier|formatier|lösch|papierkorb|drucken|druck starten|maschine|abmeld|freigeb|freigabe|genehmig|einverstanden|zustimm|vertrauen|approve|mikrofon|not-aus|notaus|verbinden mit", RegexOptions.IgnoreCase)]
     private static partial Regex ConsentRx();
     [GeneratedRegex(@"lösch", RegexOptions.IgnoreCase)]
     private static partial Regex DeleteRx();

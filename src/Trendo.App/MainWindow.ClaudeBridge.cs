@@ -118,7 +118,8 @@ public partial class MainWindow
             {
                 var c = BridgeFind(Need(a, "ziel")) ?? throw new ArgumentException("Dieses Element gibt es auf der Seite nicht: " + Need(a, "ziel"));
                 var label = c is Button bt ? ButtonText(bt) : c is MenuItem mi0 ? mi0.Header?.ToString() ?? "" : "";
-                if (ClaudeActions.NeedsConsent(label, c.Name ?? "", BridgeDoc(run) is not null) && !await BridgeConsent(run, $"„{label}“ im Programm drücken")) return McpResult.Fail("Nicht bestätigt: Der Nutzer möchte das nicht.");
+                // Wartet Trendo auf eine Freigabe, darf Claude sie nicht selbst erteilen: Dann fragt jeder Klick beim Nutzer nach.
+                if ((_core.Approvals.Pending().Count > 0 || ClaudeActions.NeedsConsent(label, c.Name ?? "", BridgeDoc(run) is not null)) && !await BridgeConsent(run, $"„{label}“ im Programm drücken")) return McpResult.Fail("Nicht bestätigt: Der Nutzer möchte das nicht.");
                 var page = BridgeKey(run); var doc = page is null ? null : ProgramActive(page);
                 if (doc is not null) ClaudeChangeBegin(page!, doc);
                 ClaudeFlash(c);
@@ -151,7 +152,7 @@ public partial class MainWindow
                 var wanted = Need(a, "name");
                 var cmd = spec.Ribbon.SelectMany(g => g.Cmds).FirstOrDefault(c => c.Name == wanted || c.Label.Equals(wanted, StringComparison.OrdinalIgnoreCase));
                 if (cmd is null) return McpResult.Fail("Diesen Befehl gibt es nicht. Liste mit „befehle“ abrufen.");
-                if (ClaudeActions.NeedsConsent(cmd.Label, cmd.Name, true) && !await BridgeConsent(run, $"„{cmd.Label}“ ausführen")) return McpResult.Fail("Nicht bestätigt: Der Nutzer möchte das nicht.");
+                if ((_core.Approvals.Pending().Count > 0 || ClaudeActions.NeedsConsent(cmd.Label, cmd.Name, true)) && !await BridgeConsent(run, $"„{cmd.Label}“ ausführen")) return McpResult.Fail("Nicht bestätigt: Der Nutzer möchte das nicht.");
                 run.Page = spec.Key; ClaudeChangeBegin(spec.Key, doc);
                 cmd.Run(doc); await Pump();
                 ClaudeChangeAfter(spec.Key, doc);
