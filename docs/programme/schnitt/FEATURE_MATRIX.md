@@ -1,6 +1,6 @@
 # Videoschnitt – Funktionsmatrix
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `schnitt` · Stand: 0.9.36 (Stand 70e872a)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `schnitt` · Stand: 0.9.36 (Stand 20e850a)
 
 Quelle: `docs/spec/kataloge/CORE-08_KATALOG.md`
 
@@ -56,6 +56,14 @@ Quelle: `docs/spec/kataloge/CORE-08_KATALOG.md`
 - Nach hinten ▶ (Schneiden)
 - ⬇ Video exportieren (Ausgabe)
 - 📦 Film ausliefern (Ausgabe)
+- Bildspur + (Spuren)
+- Tonspur + (Spuren)
+- Leere Spuren entfernen (Spuren)
+- Auswahl (Werkzeug)
+- Slip (Werkzeug)
+- Rolling (Werkzeug)
+- Einrasten (Werkzeug)
+- Löschen und aufrücken (Werkzeug)
 - ＋ Zoom (Ansicht)
 - － Zoom (Ansicht)
 - ⏮ Anfang (Ansicht)

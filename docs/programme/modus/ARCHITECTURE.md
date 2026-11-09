@@ -1,6 +1,6 @@
 # Betriebsmodus – Architektur
 
-Studio: Startmodus wählen (SYS-01) · Bereich: System & Sicherheit · Seite: `modus` · Stand: 0.9.36 (Stand 70e872a)
+Studio: Startmodus wählen (SYS-01) · Bereich: System & Sicherheit · Seite: `modus` · Stand: 0.9.36 (Stand 20e850a)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

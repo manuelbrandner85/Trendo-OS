@@ -1,10 +1,11 @@
 # Spiele bauen – Lizenzen
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.36 (Stand 70e872a)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.36 (Stand 20e850a)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 
 - Blender (optional, 3D-Fotos/Render)
 - Unreal Engine (optional)
+- PDFsharp (MIT)
 
 Lizenztexte der mitgelieferten Bibliotheken: `src/Trendo.Core/WebAssets/LIZENZEN.txt`. Optionale Programme werden nur nach Zustimmung aus offiziellen Quellen eingerichtet (GRUNDSATZ-01).

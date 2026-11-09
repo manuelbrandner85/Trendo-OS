@@ -1,6 +1,6 @@
 # Briefe schreiben – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand 70e872a)
+Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand 20e850a)
 
 Analyse: [Vorbild-Analyse Briefe: Word-Briefvorlagen und Serienbrief, Writer-Seriendruck (Clean-Room)](../../../docs/claude/vorbilder/briefe-word-serienbrief.md)
 

@@ -1,6 +1,6 @@
 # Desktop-Symbole – Funktionsmatrix
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.36 (Stand 70e872a)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.36 (Stand 20e850a)
 
 Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 
@@ -68,6 +68,7 @@ Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 - Freie Bilder & Klänge finden
 - KI-Anweisungen schreiben
 - 3D-Modelle erstellen
+- Konsolenspiele portieren
 - Spiele bauen
 - VR & AR gestalten
 - Gegenstände einscannen
@@ -98,4 +99,3 @@ Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 - Startmodus wählen
 - Daten schützen
 - System auf Gefahren prüfen
-- Surfen & Herunterladen

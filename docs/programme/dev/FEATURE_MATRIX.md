@@ -1,6 +1,6 @@
 # Software – Funktionsmatrix
 
-Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 70e872a)
+Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 20e850a)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -18,6 +18,14 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Editor öffnen
 - Als fertige Webseite exportieren
 - Export im Browser öffnen
+- Datei wählen …
+- Bild wählen …
+- ▶ Neue Seite daraus
+- Auswahl ändern
+- Seite prüfen
+- Stand speichern
+- Variante anlegen
+- Nebeneinander ansehen
 - Klar
 - Verspielt
 - Luxuriös
@@ -28,7 +36,6 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Desktop
 - Handy
 - Im Browser öffnen
-- Datei wählen …
 - Ordner wählen …
 - Beispielwürfel, wenn keine Datei da ist
 - Pixel Streaming nur dokumentieren

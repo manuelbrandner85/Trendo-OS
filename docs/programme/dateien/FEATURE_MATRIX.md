@@ -1,6 +1,6 @@
 # Dateien – Funktionsmatrix
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `dateien` · Stand: 0.9.36 (Stand 70e872a)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `dateien` · Stand: 0.9.36 (Stand 20e850a)
 
 Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 

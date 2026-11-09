@@ -1,6 +1,6 @@
 # Bildbearbeitung – Architektur
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.36 (Stand 70e872a)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.36 (Stand 20e850a)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.AudioEditor.cs`
@@ -20,40 +20,27 @@ Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seit
 - `VideoEdit`
 - `AudioEdit`
 - `MediaStudio`
+- `VideoTools`
+- `VideoLanes`
 - `AudioFile`
 - `AudioMulti`
+- `VideoPro`
 - `ImageOps`
-- `VideoExport`
-- `Rect`
-- `FileShelf`
 
 ## Dateiformate (im Code belegt)
-- .csv
-- .docx
 - .jpg
-- .json
-- .md
 - .mp3
 - .mp4
-- .ods
-- .odt
 - .ogg
-- .pdf
 - .png
-- .pptx
 - .svg
 - .tdoc
 - .txt
 - .wav
 - .webm
-- .xlsx
-- .zip
 
 ## Externe Programme und Dienste
-- Blender (optional, 3D-Fotos/Render)
-- Ollama – lokale KI (optional)
 - FFmpeg
-- LibreOffice (optional)
 - Krita (optional)
 - Inkscape (optional)
 - GIMP (optional)

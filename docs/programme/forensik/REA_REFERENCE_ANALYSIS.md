@@ -1,6 +1,6 @@
 # Sicherheits-Werkzeuge & Beweise – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: System auf Gefahren prüfen (SPEC-12) · Bereich: System & Sicherheit · Seite: `forensik` · Stand: 0.9.36 (Stand 70e872a)
+Studio: System auf Gefahren prüfen (SPEC-12) · Bereich: System & Sicherheit · Seite: `forensik` · Stand: 0.9.36 (Stand 20e850a)
 
 Analyse: [Vorbild-Analyse Schutz: Windows-Sicherheit, Dateiversionsverlauf/Time Machine, TCPView, Bitwarden-Bericht (Clean-Room)](../../../docs/claude/vorbilder/schutz-windows-sicherheit-timemachine.md)
 

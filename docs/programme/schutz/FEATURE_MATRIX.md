@@ -1,6 +1,6 @@
 # Schutz & Datenschutz – Funktionsmatrix
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.36 (Stand 70e872a)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.36 (Stand 20e850a)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

@@ -1,6 +1,6 @@
 # KI – Testergebnisse
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki` · Stand: 0.9.36 (Stand 70e872a)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki` · Stand: 0.9.36 (Stand 20e850a)
 
 Lauf: `api.trx, app.trx, core.trx`
 

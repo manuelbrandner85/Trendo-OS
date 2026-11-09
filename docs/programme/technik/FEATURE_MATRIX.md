@@ -1,6 +1,6 @@
 # Tragwerk & Mechanik – Funktionsmatrix
 
-Studio: Statik nachrechnen (SPEC-03) · Bereich: Technik & Fachgebiete · Seite: `technik` · Stand: 0.9.36 (Stand 70e872a)
+Studio: Statik nachrechnen (SPEC-03) · Bereich: Technik & Fachgebiete · Seite: `technik` · Stand: 0.9.36 (Stand 20e850a)
 
 Quelle: `docs/w6-katalog/SPEC-03.md`
 
@@ -27,6 +27,7 @@ Quelle: `docs/w6-katalog/SPEC-03.md`
 - Momente M (Ergebnisse)
 - Querkraft V (Ergebnisse)
 - Normalkraft N (Ergebnisse)
+- 3D-Ansicht (Ergebnisse)
 - Biegelinie (Ergebnisse)
 - Reaktionen (Ergebnisse)
 - Einpassen (Ansicht)

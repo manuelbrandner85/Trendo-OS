@@ -1,6 +1,6 @@
 # Alle Studios – Funktionsmatrix
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.36 (Stand 70e872a)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.36 (Stand 20e850a)
 
 Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 
@@ -58,6 +58,7 @@ Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 - Trendo Musik
 - TV & Live
 - Filme machen
+- Konsolenspiele portieren
 - Noch nicht verfügbar
 - Desktop einrichten
 - PC, Pi & Handy verbinden
