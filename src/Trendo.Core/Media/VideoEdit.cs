@@ -6,7 +6,7 @@ namespace Trendo.Core.Media;
 /// <summary>Ein Stück auf der Zeitleiste: Ausschnitt <see cref="In"/>–<see cref="Out"/> (Sekunden) aus einer Datei.
 /// Bildspur: lückenlos hintereinander (Reihenfolge = Liste). Tonspur (Musik): eigene Startzeit und Lautstärke.</summary>
 /// <summary><paramref name="Fade"/>: Überblenden ins nächste Stück (Sekunden), <paramref name="Title"/>: eingeblendeter Text.</summary>
-public sealed record EditClip(string Id, string File, double In, double Out, double SourceLength, bool HasAudio = true, double Start = 0, double Volume = 1, double Fade = 0, string Title = "")
+public sealed record EditClip(string Id, string File, double In, double Out, double SourceLength, bool HasAudio = true, double Start = 0, double Volume = 1, double Fade = 0, string Title = "", int Lane = 0)
 {
     public double Length => Math.Max(0, Out - In);
     public bool IsImage => MediaStudio.IsImage(File);
@@ -36,9 +36,11 @@ public static class VideoEdit
     public static JsonObject NewProject(int width = 1280, int height = 720) => new() { ["clips"] = new JsonArray(), ["music"] = new JsonArray(), ["playhead"] = 0, ["width"] = width, ["height"] = height, ["fps"] = 30 };
 
     public static List<EditClip> Clips(JsonObject p, string track = "clips") => (p[track] as JsonArray ?? []).OfType<JsonObject>().Select(Read).ToList();
-    static EditClip Read(JsonObject o) => new((string?)o["id"] ?? Guid.NewGuid().ToString("N")[..8], (string?)o["file"] ?? "", D(o["in"]), D(o["out"]), D(o["len"]), (bool?)o["audio"] ?? true, D(o["start"]), o["vol"] is null ? 1 : D(o["vol"]), D(o["fade"]), (string?)o["title"] ?? "");
+    static EditClip Read(JsonObject o) => ReadBase(o) with { Lane = o["lane"] is JsonValue v && v.TryGetValue<int>(out var lane) ? lane : 0 };
+    static EditClip ReadBase(JsonObject o) => new((string?)o["id"] ?? Guid.NewGuid().ToString("N")[..8], (string?)o["file"] ?? "", D(o["in"]), D(o["out"]), D(o["len"]), (bool?)o["audio"] ?? true, D(o["start"]), o["vol"] is null ? 1 : D(o["vol"]), D(o["fade"]), (string?)o["title"] ?? "");
     static double D(JsonNode? n) => n is null ? 0 : double.TryParse(n.GetValueKind() == System.Text.Json.JsonValueKind.String ? n.GetValue<string>() : n.ToJsonString(), NumberStyles.Float, Inv, out var v) ? v : 0;
-    static JsonObject Write(EditClip c) => new() { ["id"] = c.Id, ["file"] = c.File, ["in"] = Math.Round(c.In, 3), ["out"] = Math.Round(c.Out, 3), ["len"] = Math.Round(c.SourceLength, 3), ["audio"] = c.HasAudio, ["start"] = Math.Round(c.Start, 3), ["vol"] = Math.Round(c.Volume, 2), ["fade"] = Math.Round(c.Fade, 2), ["title"] = c.Title };
+    static JsonObject Write(EditClip c) { var o = WriteBase(c); if (c.Lane != 0) o["lane"] = c.Lane; return o; } // ältere Projekte bleiben ohne „lane“
+    static JsonObject WriteBase(EditClip c) => new() { ["id"] = c.Id, ["file"] = c.File, ["in"] = Math.Round(c.In, 3), ["out"] = Math.Round(c.Out, 3), ["len"] = Math.Round(c.SourceLength, 3), ["audio"] = c.HasAudio, ["start"] = Math.Round(c.Start, 3), ["vol"] = Math.Round(c.Volume, 2), ["fade"] = Math.Round(c.Fade, 2), ["title"] = c.Title };
     public static void Store(JsonObject p, List<EditClip> clips, string track = "clips") => p[track] = new JsonArray([.. clips.Select(c => (JsonNode)Write(c))]);
 
     /// <summary>Gesamtlänge: Bildspur, mindestens bis zum Ende der Musik.</summary>
@@ -140,7 +142,7 @@ public static class VideoEdit
     /// Stücke ohne Ton bekommen Stille; Musik mit Startzeit und Lautstärke darübergemischt. H.264 + AAC, MP4.</summary>
     public static List<string> ExportArgs(JsonObject p, string output, VideoExport.Options? o = null)
     {
-        var clips = Clips(p); var music = Clips(p, "music");
+        var clips = Clips(p); var music = Clips(p, "music").Where(m => VideoLanes.IsOn(p, "audio", m.Lane)).ToList();
         if (clips.Count == 0) throw new InvalidOperationException("Die Bildspur ist leer – zuerst Videos oder Bilder hinzufügen.");
         if (clips.FirstOrDefault(c => !System.IO.File.Exists(c.File)) is { } miss) throw new FileNotFoundException("Datei fehlt: " + Path.GetFileName(miss.File));
         int w = (int)D(p["width"]), h = (int)D(p["height"]), fps = (int)Math.Max(1, D(p["fps"])); if (w < 16) w = 1280; if (h < 16) h = 720;

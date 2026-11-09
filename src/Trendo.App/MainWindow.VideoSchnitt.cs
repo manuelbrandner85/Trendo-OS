@@ -42,7 +42,7 @@ public partial class MainWindow
             ("Schneiden", [
                 new ProgramCmd("ve-split", "Teilen (S)", d => d.Edit("Teilen", x => { if (!VideoEdit.Split(x, d.Number("playhead"))) throw new InvalidOperationException("Am Abspielkopf liegt kein Stück – oder er steht zu nah an einer Schnittkante."); }), true, "Stück am Abspielkopf in zwei teilen"),
                 new ProgramCmd("ve-delete", "Löschen (Entf)", d => EditDelete(d), false, "Ausgewähltes Stück entfernen"),
-                new ProgramCmd("ve-play", "▶ Abspielen (Leertaste)", d => EditTogglePlay(d), false, "Im Programm abspielen (Bild, ohne Ton) – noch einmal: anhalten"),
+                new ProgramCmd("ve-play", "▶ Abspielen (Leertaste)", d => EditTogglePlay(d), false, "Im Programm abspielen – noch einmal: anhalten"),
                 new ProgramCmd("ve-silence", "✨ Stille finden", d => EditFindSilences(d), false, "Stille Stellen (mind. 1 s) in Videos mit Ton suchen – Trendo schlägt vor, sie herauszuschneiden", Level: 1),
                 new ProgramCmd("ve-left", "◀ Nach vorn", d => EditShift(d, -1), false, "Ausgewähltes Stück eine Stelle nach vorn"),
                 new ProgramCmd("ve-right", "Nach hinten ▶", d => EditShift(d, 1), false, "Ausgewähltes Stück eine Stelle nach hinten"),
@@ -51,13 +51,25 @@ public partial class MainWindow
                 new ProgramCmd("ve-export-bg", "⬇ Video exportieren", d => _ = EditExportBackground(d), true, "Als MP4 im Hintergrund – mit Fortschritt und Abbrechen; du kannst weiterarbeiten"),
                 new ProgramCmd("ve-deliver", "📦 Film ausliefern", d => _ = FilmDeliver(d), false, "Wie im Profi-Schnitt: Film, Ton-Stems (Dialog, Musik), Schnittliste (EDL, OTIO), Cue-Liste und Prüfbericht mit Prüfsummen in einem Ordner"),
             ]),
+            ("Spuren", [
+                new ProgramCmd("ve-lane-video", "Bildspur +", d => d.Edit("Bildspur hinzufügen", x => VideoLanes.Add(x, "video")), false, "Noch eine Spur für Einblendungen"),
+                new ProgramCmd("ve-lane-audio", "Tonspur +", d => d.Edit("Tonspur hinzufügen", x => VideoLanes.Add(x, "audio")), false, "Noch eine Tonspur"),
+                new ProgramCmd("ve-lane-trim", "Leere Spuren entfernen", d => d.Edit("Leere Spuren entfernen", x => { while (VideoLanes.RemoveLast(x, "audio")) { } while (VideoLanes.RemoveLast(x, "video")) { } }), false, "Spuren mit Inhalt bleiben"),
+            ]),
+            ("Werkzeug", [
+                new ProgramCmd("ve-tool-auswahl", "Auswahl", _ => EditTool = "auswahl", false, "Stücke ziehen, ordnen, kürzen"),
+                new ProgramCmd("ve-tool-slip", "Slip", _ => EditTool = "slip", false, "Stück ziehen: anderer Ausschnitt der Quelle, Länge bleibt"),
+                new ProgramCmd("ve-tool-roll", "Rolling", _ => EditTool = "roll", false, "An einem Schnitt ziehen: das eine Stück wird länger, das andere kürzer"),
+                new ProgramCmd("ve-snap", "Einrasten", _ => EditSnap = !EditSnap, false, "An Schnitte, Marken und den Abspielkopf einrasten (an oder aus)"),
+                new ProgramCmd("ve-ripple", "Löschen und aufrücken", d => EditRippleDelete(d), false, "Ton löschen, spätere Stücke derselben Spur rücken auf"),
+            ]),
             ("Ansicht", [
                 new ProgramCmd("ve-zoom-in", "＋ Zoom", _ => EditZoom = Math.Min(200, EditZoom * 1.5)),
                 new ProgramCmd("ve-zoom-out", "－ Zoom", _ => EditZoom = Math.Max(4, EditZoom / 1.5)),
                 new ProgramCmd("ve-start", "⏮ Anfang", d => d.Set("playhead", 0, "Abspielkopf")),
             ]),
         ],
-        GroupLevels = new() { ["Ansicht"] = 1 },
+        GroupLevels = new() { ["Ansicht"] = 1, ["Spuren"] = 1, ["Werkzeug"] = 1 },
         Exports = [new("mp4", "Video (MP4) sofort", ".mp4", (d, f) => EditExport(d, f))],
         Workspace = EditWorkspace,
         Properties = EditProperties,
@@ -93,6 +105,16 @@ public partial class MainWindow
         if (EditSelected is not { } s) throw new InvalidOperationException("Erst ein Stück auf der Zeitleiste anklicken.");
         d.Edit("Löschen", x => VideoEdit.Remove(x, s.Index, s.Track)); EditSelected = null;
     }
+    /// <summary>Werkzeug der Zeitleiste: „auswahl“, „slip“, „roll“.</summary>
+    public string EditTool { get; set; } = "auswahl";
+    public bool EditSnap { get; set; } = true;
+
+    void EditRippleDelete(ProgramDocument d)
+    {
+        if (EditSelected is not ("music", var i)) throw new InvalidOperationException("Erst ein Stück auf einer Tonspur anklicken. Auf der Bildspur rücken die Stücke beim Löschen ohnehin auf.");
+        d.Edit("Löschen und aufrücken", x => VideoTools.RippleDeleteMusic(x, i)); EditSelected = null;
+    }
+
     void EditShift(ProgramDocument d, int by)
     {
         if (EditSelected is not ("clips", var i)) throw new InvalidOperationException("Erst ein Stück auf der Bildspur anklicken.");
@@ -173,7 +195,7 @@ public partial class MainWindow
         _veOverlay = overlay;
         var view = new Viewbox { Stretch = Stretch.Uniform, Child = frameBox };
         if (screen is not Image) { var img = new Image { Name = "ve-play-image", Stretch = Stretch.Uniform, IsVisible = false }; frameBox.Children.Insert(1, img); _vePreview = img; }
-        var time = new TextBlock { Name = "ve-time", Text = $"{ClockMs(d.Number("playhead"))} / {ClockMs(VideoEdit.Duration(p))}", Foreground = Text, FontSize = 13, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0) };
+        var time = new TextBlock { Name = "ve-time", Text = $"{ClockMs(d.Number("playhead"))} / {ClockMs(VideoEdit.Duration(p))}  ·  {VideoTools.TimeCode(d.Number("playhead"), VideoTools.Fps(p))}", Foreground = Text, FontSize = 13, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0) };
         // Abspielleiste unter der Vorschau wie in jedem Schnittprogramm
         Button Tp(string name, string label, string tip, Action a, bool main = false)
         {
@@ -193,10 +215,17 @@ public partial class MainWindow
         DockPanel.SetDock(zoom, Avalonia.Controls.Dock.Right); transport.Children.Add(zoom);
         transport.Children.Add(new Border { Width = 1 }); // Platzhalter links
         var tpWrap = new Grid { Children = { transport, tpMid } };
-        var tl = new EditTimeline { Name = "ve-timeline", Clips = clips, Music = music, PxPerSec = EditZoom, Playhead = d.Number("playhead"), Selected = EditSelected, Markers = VideoEdit.Markers(p),
+        var tl = new EditTimeline { Name = "ve-timeline", Clips = clips, Music = music, PxPerSec = EditZoom, Playhead = d.Number("playhead"), Selected = EditSelected, Markers = VideoEdit.Markers(p), Overlays = VideoPro.Overlays(p), VideoLaneCount = VideoLanes.Video(p), AudioLaneCount = VideoLanes.Audio(p), Tool = EditTool, SnapOn = EditSnap,
             Thumbs = clips.ToDictionary(c => c.Id, EditThumbs), Waves = music.Select(m => m.File).Distinct().Select(f => (f, w: EditWave(f))).Where(x => x.w is not null).ToDictionary(x => x.f, x => x.w!) };
+        tl.LayoutLanes();
         EditTimelineForTests = tl;
-        tl.PlayheadChanged = t => ProgramRun(VK, () => d.Set("playhead", Math.Min(t, VideoEdit.Duration(d.Data)), "Abspielkopf"));
+        tl.MusicLaneMoved = (i, start, lane) => ProgramRun(VK, () => { var m = VideoEdit.Clips(d.Data, "music")[i]; d.Edit("Auf andere Spur", x => { VideoEdit.SetMusic(x, i, start, m.Volume); VideoLanes.SetMusicLane(x, i, lane); }); EditSelected = ("music", i); });
+        tl.OverlayMoved = (i, start, lane) => ProgramRun(VK, () => { var o = VideoPro.Overlays(d.Data)[i]; d.Edit("Einblendung verschieben", x => { VideoPro.SetOverlay(x, o.Id, start, o.Length, o.X, o.Y, o.Width, o.Opacity); VideoLanes.SetOverlayLane(x, o.Id, lane); }); });
+        tl.OverlayTrimmed = (i, start, len) => ProgramRun(VK, () => { var o = VideoPro.Overlays(d.Data)[i]; d.Edit("Einblendung kürzen", x => VideoPro.SetOverlay(x, o.Id, start, len, o.X, o.Y, o.Width, o.Opacity)); });
+        tl.OverlaySelected = _ => { EditTab = "medien"; Show(VK); };
+        tl.ClipSlipped = (i, dt) => ProgramRun(VK, () => d.Edit("Slip", x => VideoTools.Slip(x, i, VideoTools.Quantize(Math.Abs(dt), VideoTools.Fps(x)) * Math.Sign(dt))));
+        tl.CutRolled = (i, dt) => ProgramRun(VK, () => d.Edit("Rolling", x => VideoTools.Roll(x, i, VideoTools.Quantize(Math.Abs(dt), VideoTools.Fps(x)) * Math.Sign(dt))));
+        tl.PlayheadChanged = t => ProgramRun(VK, () => d.Set("playhead", Math.Min(VideoTools.Quantize(t, VideoTools.Fps(d.Data)), VideoEdit.Duration(d.Data)), "Abspielkopf")); // V3: auf Einzelbilder
         tl.ClipSelected = (track, i) => { EditSelected = (track, i); EditTab = "auswahl"; Show(VK); };
         tl.ClipMoved = (a, b) => ProgramRun(VK, () => { d.Edit("Umordnen", x => VideoEdit.Move(x, a, b)); EditSelected = ("clips", b); });
         tl.MusicMoved = (i, start) => ProgramRun(VK, () => { var m = VideoEdit.Clips(d.Data, "music")[i]; d.Edit("Musik verschieben", x => VideoEdit.SetMusic(x, i, start, m.Volume)); EditSelected = ("music", i); });
@@ -219,8 +248,8 @@ public partial class MainWindow
                 case Key.S when e.KeyModifiers == KeyModifiers.None: ProgramRun(VK, () => Cmd("ve-split")!.Run(d)); e.Handled = true; break;
                 case Key.Delete: ProgramRun(VK, () => EditDelete(d)); e.Handled = true; break;
                 case Key.Space: EditTogglePlay(d); e.Handled = true; break;
-                case Key.Left: ProgramRun(VK, () => d.Set("playhead", Math.Max(0, Math.Round(d.Number("playhead") - (e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? 1 : 1.0 / 30), 3)), "Abspielkopf")); e.Handled = true; break;
-                case Key.Right: ProgramRun(VK, () => d.Set("playhead", Math.Min(VideoEdit.Duration(d.Data), Math.Round(d.Number("playhead") + (e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? 1 : 1.0 / 30), 3)), "Abspielkopf")); e.Handled = true; break;
+                case Key.Left: ProgramRun(VK, () => d.Set("playhead", Math.Max(0, Math.Round(d.Number("playhead") - (e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? 1 : 1.0 / VideoTools.Fps(d.Data)), 3)), "Abspielkopf")); e.Handled = true; break;
+                case Key.Right: ProgramRun(VK, () => d.Set("playhead", Math.Min(VideoEdit.Duration(d.Data), Math.Round(d.Number("playhead") + (e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? 1 : 1.0 / VideoTools.Fps(d.Data)), 3)), "Abspielkopf")); e.Handled = true; break;
                 case Key.J or Key.K or Key.L or Key.I or Key.O or Key.M or Key.Home or Key.End when e.KeyModifiers == KeyModifiers.None: EditKey(d, e.Key); e.Handled = true; break; // X5: wie in Profi-Schnittprogrammen
             }
         };
@@ -228,11 +257,23 @@ public partial class MainWindow
         // Spurnamen links neben der Zeitleiste
         var labels = new Canvas { Width = 92, Height = tl.Height, Background = Brush.Parse("#0E131C") };
         void Lab(string text, double top, double h) { var t = new Border { Width = 92, Height = h, Child = new TextBlock { Text = text, Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0) } }; Canvas.SetTop(t, top); labels.Children.Add(t); }
-        Lab("Zeit", 0, EditTimeline.Ruler); Lab("🎬 Bild", EditTimeline.VideoTop, EditTimeline.VideoH); Lab("♪ Musik", EditTimeline.MusicTop, EditTimeline.MusicH);
+        Lab("Zeit", 0, EditTimeline.Ruler); Lab("🎬 Bild", EditTimeline.VideoTop, EditTimeline.VideoH); 
+        void Lane(string kind, int lane, string text, double top, double h)
+        {
+            var name = new TextBlock { Text = text, Foreground = Muted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(6, 0, 0, 0) };
+            Button Sw(string id, string label, bool on, Action a) { var b = new Button { Name = $"ve-lane-{kind}-{lane}-{id}", Content = label, FontSize = 10, Width = 18, Height = 18, Padding = new Thickness(0), HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center }; if (on) b.Classes.Add("accent"); b.Click += (_, _) => ProgramRun(VK, a); return b; }
+            var row = new Grid { Width = 92, Height = h, ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto") };
+            row.Children.Add(name);
+            row.Children.Add(Pos(Sw("m", "M", VideoLanes.IsMuted(p, kind, lane), () => d.Edit("Stumm", x => VideoLanes.ToggleMute(x, kind, lane))), 1));
+            row.Children.Add(Pos(Sw("s", "S", VideoLanes.IsSolo(p, kind, lane), () => d.Edit("Solo", x => VideoLanes.ToggleSolo(x, kind, lane))), 2));
+            Canvas.SetTop(row, top); labels.Children.Add(row);
+        }
+        Lane("audio", 0, "♪ Musik", EditTimeline.MusicTop, EditTimeline.MusicH);
+        foreach (var (kind, lane, y) in tl.ExtraRows()) Lane(kind, lane, kind == "audio" ? $"♪ Ton {lane + 1}" : $"🖼 Einbl. {lane + 1}", y, EditTimeline.LaneH);
         labels.Name = "ve-track-labels";
         var tlBox = new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, BorderBrush = Edge, BorderThickness = new Thickness(1),
             Child = new DockPanel { Children = { Dk(labels, Avalonia.Controls.Dock.Left), scroll } } };
-        var hint = new TextBlock { Text = "Stück ziehen: umordnen · Kanten ziehen: kürzen · Lineal: Abspielkopf · S teilen · Entf löschen · ←/→ Bild für Bild (Umschalt: Sekunde)", Foreground = Muted, FontSize = 11.5, Margin = new Thickness(2, 4, 0, 0), TextWrapping = TextWrapping.Wrap };
+        var hint = new TextBlock { Text = "Stück ziehen: umordnen · Kanten ziehen: kürzen · Lineal: Abspielkopf · S teilen · Entf löschen · ←/→ Bild für Bild (Umschalt: Sekunde) · Ton und Einblendungen auf eine andere Spur ziehen", Foreground = Muted, FontSize = 11.5, Margin = new Thickness(2, 4, 0, 0), TextWrapping = TextWrapping.Wrap };
         var g = new Grid { RowDefinitions = new RowDefinitions("*,Auto,Auto,Auto") };
         g.Children.Add(new Border { Background = Brush.Parse("#05070C"), CornerRadius = new CornerRadius(10), Padding = new Thickness(6), Child = view, MinHeight = 90 });
         _veTime = time;
@@ -453,7 +494,7 @@ public partial class MainWindow
     void EditShowChrome(ProgramDocument d, double t, EditClip c)
     {
         if (EditTimelineForTests is { } tl) { tl.Playhead = t; tl.InvalidateVisual(); }
-        if (_veTime is not null) _veTime.Text = $"{ClockMs(t)} / {ClockMs(VideoEdit.Duration(d.Data))}";
+        if (_veTime is not null) _veTime.Text = $"{ClockMs(t)} / {ClockMs(VideoEdit.Duration(d.Data))}  ·  {VideoTools.TimeCode(t, VideoTools.Fps(d.Data))}";
         if (_veOverlay is not null) { _veOverlay.Text = c.Title; _veOverlay.IsVisible = c.Title.Length > 0; }
     }
 

@@ -75,7 +75,7 @@ public static class VideoPro
     /// <param name="Key">Farbe für Greenscreen als „#RRGGBB“, leer = aus (Paket 01 S3-05).</param>
     /// <param name="Mask">Maske (Ausschnitt der Einblendung) in Anteilen 0…1: X, Y, Breite, Höhe – außerhalb bleibt durchsichtig.</param>
     public sealed record Overlay(string Id, string File, double Start, double Length, double X, double Y, double Width, double Opacity,
-        string Key = "", double KeySimilarity = 0.15, double KeyBlend = 0.05, (double X, double Y, double W, double H)? Mask = null);
+        string Key = "", double KeySimilarity = 0.15, double KeyBlend = 0.05, (double X, double Y, double W, double H)? Mask = null, int Lane = 0);
 
     public static List<Overlay> Overlays(JsonObject p) => (p["overlay"] as JsonArray ?? []).OfType<JsonObject>().Select(o =>
     {
@@ -83,16 +83,24 @@ public static class VideoPro
         (double, double, double, double)? mask = o["mask"] is JsonArray m && m.Count == 4 && m.All(n => n is JsonValue)
             ? (Num(m[0]), Num(m[1]), Num(m[2]), Num(m[3])) : null;
         return new Overlay((string?)o["id"] ?? "", (string?)o["file"] ?? "", D("start", 0), D("len", 5), D("x", 0.68), D("y", 0.05), D("w", 0.28), D("op", 1),
-            (string?)o["key"] ?? "", D("ksim", 0.15), D("kblend", 0.05), mask);
+            (string?)o["key"] ?? "", D("ksim", 0.15), D("kblend", 0.05), mask, (int)D("lane", 0));
         static double Num(JsonNode? n) => n is not null && double.TryParse(n.ToJsonString(), NumberStyles.Float, Inv, out var v) ? v : 0;
     }).ToList();
 
-    static void StoreOverlays(JsonObject p, IEnumerable<Overlay> l) => p["overlay"] = new JsonArray([.. l.Select(o => (JsonNode)new JsonObject
+    static void StoreOverlays(JsonObject p, IEnumerable<Overlay> l) => p["overlay"] = new JsonArray([.. l.Select(o => WithLane(o.Lane, new JsonObject
     {
         ["id"] = o.Id, ["file"] = o.File, ["start"] = Math.Round(o.Start, 3), ["len"] = Math.Round(o.Length, 3), ["x"] = Math.Round(o.X, 3), ["y"] = Math.Round(o.Y, 3), ["w"] = Math.Round(o.Width, 3), ["op"] = Math.Round(o.Opacity, 2),
         ["key"] = o.Key, ["ksim"] = Math.Round(o.KeySimilarity, 3), ["kblend"] = Math.Round(o.KeyBlend, 3),
         ["mask"] = o.Mask is { } m ? new JsonArray(Math.Round(m.X, 4), Math.Round(m.Y, 4), Math.Round(m.W, 4), Math.Round(m.H, 4)) : null,
-    })]);
+    }))]);
+
+    static JsonNode WithLane(int lane, JsonObject o) { if (lane != 0) o["lane"] = lane; return o; }
+
+    public static void SetLane(JsonObject p, string id, int lane)
+    {
+        var l = Overlays(p); var i = l.FindIndex(o => o.Id == id); if (i < 0) return;
+        l[i] = l[i] with { Lane = lane }; StoreOverlays(p, l);
+    }
 
     /// <summary>Greenscreen für eine Einblendung: Farbe „#RRGGBB“ (leer = aus), Ähnlichkeit 0,01–0,6, weiche Kante 0–0,5.</summary>
     public static void SetKey(JsonObject p, string id, string color, double similarity = 0.15, double blend = 0.05)
@@ -151,7 +159,7 @@ public static class VideoPro
     /// <summary>Zweite Bildspur in den Filtergraph legen: aus „vin“ wird „vout“. Liefert die zusätzlichen Eingaben.</summary>
     public static List<string> OverlayGraph(JsonObject p, List<string> graph, string vin, string vout, ref int input, int w, int h, int fps)
     {
-        var args = new List<string>(); var cur = vin; var ov = Overlays(p);
+        var args = new List<string>(); var cur = vin; var ov = Overlays(p).Where(o => VideoLanes.IsOn(p, "video", o.Lane)).OrderBy(o => o.Lane).ToList(); // OrderBy ist stabil: ohne Spurangaben bleibt die Reihenfolge
         for (var i = 0; i < ov.Count; i++)
         {
             var o = ov[i];

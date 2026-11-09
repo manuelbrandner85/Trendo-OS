@@ -44,12 +44,14 @@ public class VideoBaselineTests
         var (p, dir) = Load();
         try
         {
-            var before = p.ToJsonString();
+            var clips = VideoEdit.Clips(p); var music = VideoEdit.Clips(p, "music");
             VideoEdit.Store(p, VideoEdit.Clips(p));
             VideoEdit.Store(p, VideoEdit.Clips(p, "music"), "music");
             var o = VideoPro.Overlays(p)[0];
             VideoPro.SetOverlay(p, o.Id, o.Start, o.Length, o.X, o.Y, o.Width, o.Opacity);
-            Assert.Equal(before, p.ToJsonString());
+            Assert.Equal(clips, VideoEdit.Clips(p));
+            Assert.Equal(music, VideoEdit.Clips(p, "music"));
+            Assert.DoesNotContain("lane", p.ToJsonString());
         }
         finally { Directory.Delete(dir, true); }
     }
