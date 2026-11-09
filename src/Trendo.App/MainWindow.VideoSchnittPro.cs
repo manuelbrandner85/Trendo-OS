@@ -59,6 +59,10 @@ public partial class MainWindow
         var reset = new Button { Name = "ve-pro-reset", Content = "Farbe zurücksetzen", Margin = new Thickness(0, 4, 0, 0) };
         reset.Click += (_, _) => ProgramRun(VK, () => d.Edit("Farbe zurücksetzen", x => VideoPro.SetFx(x, c.Id, new VideoPro.ClipFx(Transition: fx.Transition, TitlePos: fx.TitlePos, TitleSize: fx.TitleSize))));
         sp.Children.Add(new WrapPanel { Children = { apply, new Border { Width = 6 }, reset } });
+        var clipStart = VideoEdit.Starts(VideoEdit.Clips(d.Data))[index];
+        sp.Children.Add(EditKeysPanel(d, c.Id, Math.Clamp(d.Number("playhead") - clipStart, 0, c.Length))); // Pilot 4.0, V5
+        sp.Children.Add(EditStackPanel(d, c.Id)); // Pilot 4.0, V6
+        sp.Children.Add(EditGradePanel(d, c.Id)); // Pilot 4.0, V7
         sp.Children.Add(EditClipScopes(d, c)); // Paket 01 S3-11: Scopes und Farbvergleich
         sp.Children.Add(EditClipEnhance(d, c)); // Paket 01 S3-12: Bild verbessern mit Messung
         return sp;
@@ -107,6 +111,7 @@ public partial class MainWindow
             var del = new Button { Name = "ve-overlay-del-" + i, Content = "Entfernen" };
             del.Click += (_, _) => ProgramRun(VK, () => d.Edit("Zweite Bildspur entfernen", x => VideoPro.RemoveOverlay(x, o.Id)));
             card.Children.Add(new WrapPanel { Children = { ok, new Border { Width = 6 }, del } });
+            card.Children.Add(EditKeysPanel(d, o.Id, Math.Clamp(d.Number("playhead") - o.Start, 0, o.Length))); // Pilot 4.0, V5
             sp.Children.Add(new Border { CornerRadius = new CornerRadius(10), Background = Brush.Parse("#10FFFFFF"), BorderBrush = Edge, BorderThickness = new Thickness(1), Padding = new Thickness(10, 8), Child = card });
         }
         return sp;

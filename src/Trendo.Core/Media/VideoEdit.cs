@@ -6,7 +6,7 @@ namespace Trendo.Core.Media;
 /// <summary>Ein Stück auf der Zeitleiste: Ausschnitt <see cref="In"/>–<see cref="Out"/> (Sekunden) aus einer Datei.
 /// Bildspur: lückenlos hintereinander (Reihenfolge = Liste). Tonspur (Musik): eigene Startzeit und Lautstärke.</summary>
 /// <summary><paramref name="Fade"/>: Überblenden ins nächste Stück (Sekunden), <paramref name="Title"/>: eingeblendeter Text.</summary>
-public sealed record EditClip(string Id, string File, double In, double Out, double SourceLength, bool HasAudio = true, double Start = 0, double Volume = 1, double Fade = 0, string Title = "")
+public sealed record EditClip(string Id, string File, double In, double Out, double SourceLength, bool HasAudio = true, double Start = 0, double Volume = 1, double Fade = 0, string Title = "", int Lane = 0)
 {
     public double Length => Math.Max(0, Out - In);
     public bool IsImage => MediaStudio.IsImage(File);
@@ -36,9 +36,11 @@ public static class VideoEdit
     public static JsonObject NewProject(int width = 1280, int height = 720) => new() { ["clips"] = new JsonArray(), ["music"] = new JsonArray(), ["playhead"] = 0, ["width"] = width, ["height"] = height, ["fps"] = 30 };
 
     public static List<EditClip> Clips(JsonObject p, string track = "clips") => (p[track] as JsonArray ?? []).OfType<JsonObject>().Select(Read).ToList();
-    static EditClip Read(JsonObject o) => new((string?)o["id"] ?? Guid.NewGuid().ToString("N")[..8], (string?)o["file"] ?? "", D(o["in"]), D(o["out"]), D(o["len"]), (bool?)o["audio"] ?? true, D(o["start"]), o["vol"] is null ? 1 : D(o["vol"]), D(o["fade"]), (string?)o["title"] ?? "");
+    static EditClip Read(JsonObject o) => ReadBase(o) with { Lane = o["lane"] is JsonValue v && v.TryGetValue<int>(out var lane) ? lane : 0 };
+    static EditClip ReadBase(JsonObject o) => new((string?)o["id"] ?? Guid.NewGuid().ToString("N")[..8], (string?)o["file"] ?? "", D(o["in"]), D(o["out"]), D(o["len"]), (bool?)o["audio"] ?? true, D(o["start"]), o["vol"] is null ? 1 : D(o["vol"]), D(o["fade"]), (string?)o["title"] ?? "");
     static double D(JsonNode? n) => n is null ? 0 : double.TryParse(n.GetValueKind() == System.Text.Json.JsonValueKind.String ? n.GetValue<string>() : n.ToJsonString(), NumberStyles.Float, Inv, out var v) ? v : 0;
-    static JsonObject Write(EditClip c) => new() { ["id"] = c.Id, ["file"] = c.File, ["in"] = Math.Round(c.In, 3), ["out"] = Math.Round(c.Out, 3), ["len"] = Math.Round(c.SourceLength, 3), ["audio"] = c.HasAudio, ["start"] = Math.Round(c.Start, 3), ["vol"] = Math.Round(c.Volume, 2), ["fade"] = Math.Round(c.Fade, 2), ["title"] = c.Title };
+    static JsonObject Write(EditClip c) { var o = WriteBase(c); if (c.Lane != 0) o["lane"] = c.Lane; return o; } // ältere Projekte bleiben ohne „lane“
+    static JsonObject WriteBase(EditClip c) => new() { ["id"] = c.Id, ["file"] = c.File, ["in"] = Math.Round(c.In, 3), ["out"] = Math.Round(c.Out, 3), ["len"] = Math.Round(c.SourceLength, 3), ["audio"] = c.HasAudio, ["start"] = Math.Round(c.Start, 3), ["vol"] = Math.Round(c.Volume, 2), ["fade"] = Math.Round(c.Fade, 2), ["title"] = c.Title };
     public static void Store(JsonObject p, List<EditClip> clips, string track = "clips") => p[track] = new JsonArray([.. clips.Select(c => (JsonNode)Write(c))]);
 
     /// <summary>Gesamtlänge: Bildspur, mindestens bis zum Ende der Musik.</summary>
@@ -140,7 +142,7 @@ public static class VideoEdit
     /// Stücke ohne Ton bekommen Stille; Musik mit Startzeit und Lautstärke darübergemischt. H.264 + AAC, MP4.</summary>
     public static List<string> ExportArgs(JsonObject p, string output, VideoExport.Options? o = null)
     {
-        var clips = Clips(p); var music = Clips(p, "music");
+        var clips = Clips(p); var music = Clips(p, "music").Where(m => VideoLanes.IsOn(p, "audio", m.Lane)).ToList();
         if (clips.Count == 0) throw new InvalidOperationException("Die Bildspur ist leer – zuerst Videos oder Bilder hinzufügen.");
         if (clips.FirstOrDefault(c => !System.IO.File.Exists(c.File)) is { } miss) throw new FileNotFoundException("Datei fehlt: " + Path.GetFileName(miss.File));
         int w = (int)D(p["width"]), h = (int)D(p["height"]), fps = (int)Math.Max(1, D(p["fps"])); if (w < 16) w = 1280; if (h < 16) h = 720;
@@ -154,11 +156,12 @@ public static class VideoEdit
             var fx = VideoPro.Fx(p, c.Id); // Profi 23: Farbe, Titellage und -größe je Stück
             var title = c.Title.Length > 0 && FontFile() is { } font
                 ? $",drawtext=fontfile='{font.Replace("\\", "/").Replace(":", "\\:")}':text='{DrawText(c.Title)}':fontcolor=white:fontsize=h/14*{F(fx.TitleSize)}:borderw=3:bordercolor=black@0.6:x=(w-text_w)/2:y={VideoPro.TitleY(fx.TitlePos)}" : "";
-            f.Add($"[{vi}:v]scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps={fps},format=yuv420p{VideoPro.ColorFilter(fx)}{title}[v{vi}]");
+            f.Add($"[{vi}:v]scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps={fps},format=yuv420p{VideoPro.ColorFilter(fx)}{VideoGrade.Filter(p, c.Id)}{VideoAnim.StackFilter(p, c.Id)}{title}[{(VideoAnim.HasTransform(p, c.Id) ? "vt" : "v")}{vi}]"); // V6: Effektstapel nach der Farbe
+            if (VideoAnim.HasTransform(p, c.Id)) f.AddRange(VideoAnim.ClipTransform(p, c.Id, $"vt{vi}", $"v{vi}", w, h, fps, c.Length)); // V5: Bewegung, Größe, Deckkraft
             string ai;
             if (c.HasAudio && !c.IsImage) { ai = $"{vi}:a"; }
             else { a.AddRange(["-f", "lavfi", "-t", F(c.Length), "-i", "anullsrc=r=48000:cl=stereo"]); ai = $"{input++}:a"; }
-            f.Add($"[{ai}]aresample=48000,aformat=channel_layouts=stereo{(Math.Abs(c.Volume - 1) > 0.001 ? $",volume={F(c.Volume)}" : "")}[a{vi}]"); // Tonpegel je Stück
+            f.Add($"[{ai}]aresample=48000,aformat=channel_layouts=stereo{(Math.Abs(c.Volume * VideoLanes.BaseGain(p) - 1) > 0.001 ? $",volume={F(c.Volume * VideoLanes.BaseGain(p))}" : "")}{VideoAnim.VolumeFilter(p, c.Id)}[a{vi}]"); // Tonpegel je Stück, V5: Verlauf
             concat += $"[v{vi}][a{vi}]"; ids.Add(vi);
         }
         if (clips.Select((_, i) => FadeOf(clips, i)).All(x => x <= 0)) f.Add($"{concat}concat=n={clips.Count}:v=1:a=1[vbase][abase]");
@@ -187,7 +190,7 @@ public static class VideoEdit
             if (!System.IO.File.Exists(m.File)) throw new FileNotFoundException("Datei fehlt: " + Path.GetFileName(m.File));
             a.AddRange(["-ss", F(m.In), "-t", F(m.Length), "-i", m.File]);
             var ms = (long)Math.Round(m.Start * 1000);
-            f.Add($"[{input++}:a]aresample=48000,aformat=channel_layouts=stereo,volume={F(m.Volume)},adelay={ms}|{ms}[m{n}]");
+            f.Add($"[{input++}:a]aresample=48000,aformat=channel_layouts=stereo,volume={F(m.Volume * VideoLanes.Gain(p, m.Lane))}{VideoAnim.VolumeFilter(p, m.Id)},adelay={ms}|{ms}[m{n}]");
             mix += $"[m{n}]"; n++;
         }
         var total = VideoLength(clips);
