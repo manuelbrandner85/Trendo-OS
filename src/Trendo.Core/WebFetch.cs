@@ -17,3 +17,9 @@ public interface IWebFetch
 {
     Task<WebReply> GetAsync(string url, CancellationToken ct = default);
 }
+
+/// <summary>Abruf mit Methode, Kopfzeilen und Inhalt, für Dienste mit eigenem Schlüssel der Person. Die App liefert die Umsetzung (QA-019).</summary>
+public interface IWebSend
+{
+    Task<WebReply> SendAsync(string method, string url, IReadOnlyDictionary<string, string> headers, byte[]? body = null, string? contentType = null, CancellationToken ct = default);
+}
