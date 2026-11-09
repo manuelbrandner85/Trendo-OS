@@ -15,6 +15,9 @@ namespace Trendo.App;
 public partial class MainWindow
 {
     private bool _archPhoto;
+    /// <summary>Echter Sonnenstand im Foto; null = gleichmäßiges Standardlicht.</summary>
+    public int? ArchPhotoSunMonth { get; set; }
+    public double? ArchPhotoSunHour { get; set; }
     public string ArchPhotoMode = "vogel";
     public string? ArchPhotoRoom;
     public bool ArchPhotoFinal;
@@ -49,7 +52,7 @@ public partial class MainWindow
         var d = ProgramActive(AK); if (d is null || ArchPhotoBusy) return;
         var levels = FloorPlan.Levels(d.Data);
         var (w, h, spp) = ArchPhotoFinal ? (1600, 1000, 256) : (960, 600, 64);
-        var scene = PlanPhoto.Scene(levels, PlanModelFile, ArchPhotoMode, ArchPhotoMode == "raum" ? ArchPhotoRoom : null, w, h, spp);
+        var scene = PlanPhoto.Scene(levels, PlanModelFile, ArchPhotoMode, ArchPhotoMode == "raum" ? ArchPhotoRoom : null, w, h, spp, ArchPhotoSunMonth, ArchPhotoSunHour);
         var outFile = Path.Combine(_core.DataRoot, "cache", "foto", $"grundriss-{ArchPhotoMode}-{DateTime.Now:yyyyMMdd-HHmmss}.png");
         ArchPhotoBusy = true; _archPhotoProgress = 0; _archPhotoMsg = "Blender baut die Szene …"; _archPhotoCts = new CancellationTokenSource(); Show(AK);
         var progress = new Progress<double>(v => { _archPhotoProgress = v; if (_archPhotoBar is { } bar) bar.Value = v * 100; });
@@ -109,6 +112,25 @@ public partial class MainWindow
             cb.SelectedIndex = Math.Max(0, rooms.FindIndex(r => r.Id == ArchPhotoRoom));
             cb.SelectionChanged += (_, _) => { if (cb.SelectedIndex >= 0) ArchPhotoRoom = rooms[cb.SelectedIndex].Id; };
             bar.Children.Add(cb);
+        }
+        bar.Children.Add(new TextBlock { Text = "Licht", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 4, 4) });
+        var hours = new List<string> { "Passend zu den Fenstern" }; for (var h = 6; h <= 21; h++) hours.Add(h + " Uhr");
+        var hourBox = new ComboBox { Name = "arch-photo-hour", Width = 170, FontSize = 12, Margin = new Thickness(0, 0, 4, 4), ItemsSource = hours, SelectedIndex = ArchPhotoSunHour is { } sh ? (int)sh - 5 : 0 };
+        hourBox.SelectionChanged += (_, _) =>
+        {
+            ArchPhotoSunHour = hourBox.SelectedIndex <= 0 ? null : hourBox.SelectedIndex + 5;
+            ArchPhotoSunMonth = ArchPhotoSunHour is null ? null : ArchPhotoSunMonth ?? 6;
+            Show(AK);
+        };
+        bar.Children.Add(hourBox);
+        if (ArchPhotoSunHour is { } sunH)
+        {
+            string[] months = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+            var monthBox = new ComboBox { Name = "arch-photo-month", Width = 120, FontSize = 12, Margin = new Thickness(0, 0, 4, 4), ItemsSource = months, SelectedIndex = (ArchPhotoSunMonth ?? 6) - 1 };
+            monthBox.SelectionChanged += (_, _) => { if (monthBox.SelectedIndex >= 0) { ArchPhotoSunMonth = monthBox.SelectedIndex + 1; Show(AK); } };
+            bar.Children.Add(monthBox);
+            if (PlanPhoto.Sun(ArchPhotoSunMonth ?? 6, sunH, 51).Elevation <= 0)
+                bar.Children.Add(new TextBlock { Name = "arch-photo-night", Text = "Die Sonne ist dann schon untergegangen, das Bild zeigt die letzte Dämmerung.", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 4, 4) });
         }
         bar.Children.Add(new TextBlock { Text = "Qualität", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 6, 4) });
         bar.Children.Add(Btn("arch-photo-q-preview", "Vorschau", () => { ArchPhotoFinal = false; Show(AK); }, !ArchPhotoFinal));

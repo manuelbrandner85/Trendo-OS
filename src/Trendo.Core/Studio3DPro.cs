@@ -21,7 +21,7 @@ public static class Studio3DPro
     /// <summary>PBR-Material: Metall 0/1, Rauheit 0–1, Durchlässigkeit (Glas) 0–1, typische Farbe (null = Farbe des Teils).</summary>
     /// <param name="TextureId">Echte Oberfläche von ambientCG (CC0); ohne bleibt es bei Farbe und Rauheit.</param>
     /// <param name="TileM">Kantenlänge einer Texturkachel in Metern.</param>
-    public sealed record Material(string Id, string Label, double Metallic, double Roughness, double Transmission = 0, string? Tint = null, string? TextureId = null, double TileM = 0.5);
+    public sealed record Material(string Id, string Label, double Metallic, double Roughness, double Transmission = 0, string? Tint = null, string? TextureId = null, string? Finish = null, double TileM = 0.5);
     public static readonly Material[] Materials =
     [
         new("kunststoff-matt", "Kunststoff matt", 0, 0.6),
@@ -36,7 +36,8 @@ public static class Studio3DPro
         new("keramik", "Keramik", 0, 0.15, Tint: "#EDEAE4"),
         new("gummi", "Gummi", 0, 0.9, Tint: "#26282B"),
         new("stoff", "Stoff", 0, 1.0, TextureId: "Fabric019", TileM: 0.12),
-        new("metall", "Metall gebürstet", 1, 0.35, Tint: "#B4B8BD", TextureId: "Metal049A", TileM: 0.3),
+        new("metall", "Metall gebürstet", 1, 0.35, Tint: "#D6D9DD", Finish: "gebuerstet"),
+        new("alu-gefraest", "Aluminium gefräst", 1, 0.36, Tint: "#F0F1F2", Finish: "gefraest"),
         new("chrom", "Chrom", 1, 0.06, Tint: "#D9DCE0"),
         new("gold", "Gold", 1, 0.2, Tint: "#D4A93C", TextureId: "Metal048A", TileM: 0.3),
         new("kupfer", "Kupfer", 1, 0.3, Tint: "#B87333"),

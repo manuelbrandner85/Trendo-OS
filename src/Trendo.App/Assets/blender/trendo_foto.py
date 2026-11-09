@@ -85,7 +85,7 @@ def planks(name, c1, c2, rough, plank=(1.2, 0.19), coat=0.0):
     tm._set(b, **{'Coat Weight': coat, 'Coat Roughness': 0.2})
     return m
 
-def tiles(name, col, grout=(0.42, 0.41, 0.39), size=0.6, rough=(0.18, 0.85), vary=1.04):
+def tiles(name, col, grout=(0.42, 0.41, 0.39), size=0.6, rough=(0.18, 0.85), vary=1.04, coord='Object'):
     """Feinsteinzeug: quadratische Platten, glasiert (geringe Rauheit), Fugen matt und vertieft, Platten minimal unterschiedlich hell."""
     m, nt, b = node_mat(name)
     tc = nt.nodes.new('ShaderNodeTexCoord')
@@ -94,7 +94,7 @@ def tiles(name, col, grout=(0.42, 0.41, 0.39), size=0.6, rough=(0.18, 0.85), var
     br.inputs['Mortar Size'].default_value = 0.003; br.inputs['Bias'].default_value = 0.0
     c2 = tuple(min(1, x * vary) for x in col)
     br.inputs['Color1'].default_value = (*col, 1); br.inputs['Color2'].default_value = (*c2, 1); br.inputs['Mortar'].default_value = (*grout, 1)
-    nt.links.new(tc.outputs['Object'], br.inputs['Vector']); nt.links.new(br.outputs['Color'], b.inputs['Base Color'])
+    nt.links.new(tc.outputs[coord], br.inputs['Vector']); nt.links.new(br.outputs['Color'], b.inputs['Base Color'])
     rr = nt.nodes.new('ShaderNodeMapRange'); rr.inputs['From Min'].default_value = 0; rr.inputs['From Max'].default_value = 1; rr.inputs['To Min'].default_value = rough[0]; rr.inputs['To Max'].default_value = rough[1]
     nt.links.new(br.outputs['Fac'], rr.inputs['Value']); nt.links.new(rr.outputs['Result'], b.inputs['Roughness'])
     inv = nt.nodes.new('ShaderNodeMath'); inv.operation = 'SUBTRACT'; inv.inputs[0].default_value = 1.0; nt.links.new(br.outputs['Fac'], inv.inputs[1])
@@ -102,7 +102,22 @@ def tiles(name, col, grout=(0.42, 0.41, 0.39), size=0.6, rough=(0.18, 0.85), var
     nt.links.new(inv.outputs['Value'], bu.inputs['Height']); nt.links.new(bu.outputs['Normal'], b.inputs['Normal'])
     return m
 
+def wallpaper():
+    """Tapete: dezente senkrechte Streifen in zwei nahen Tönen, feine Papierstruktur, matt. Läuft über die Wand-UVs."""
+    m, nt, b = node_mat('Tapete')
+    tc = nt.nodes.new('ShaderNodeTexCoord')
+    wv = nt.nodes.new('ShaderNodeTexWave'); wv.wave_type = 'BANDS'; wv.bands_direction = 'X'; wv.inputs['Scale'].default_value = 2.0; wv.inputs['Distortion'].default_value = 0.0
+    nt.links.new(tc.outputs['UV'], wv.inputs['Vector'])
+    ramp = nt.nodes.new('ShaderNodeValToRGB'); ramp.color_ramp.elements[0].position = 0.45; ramp.color_ramp.elements[1].position = 0.55
+    ramp.color_ramp.elements[0].color = (0.56, 0.52, 0.43, 1); ramp.color_ramp.elements[1].color = (0.63, 0.59, 0.50, 1)
+    nt.links.new(wv.outputs['Fac'], ramp.inputs['Fac']); nt.links.new(ramp.outputs['Color'], b.inputs['Base Color'])
+    b.inputs['Roughness'].default_value = 0.72
+    tm._bump(m, scale=900, strength=0.05, detail=5)
+    return m
+
 M_WALL = plaster()
+M_WALL_TILE = tiles('Wandfliese weiß', (0.74, 0.74, 0.72), grout=(0.5, 0.49, 0.47), size=0.3, coord='UV')
+M_WALL_PAPER = wallpaper()
 M_CEIL = plaster('Decke weiß', (0.83, 0.83, 0.81))
 M_CUT = tm.solid('Schnittfläche', (0.045, 0.047, 0.05), 0.8)
 M_SKIRT = tm.solid('Sockelleiste Lack', (0.78, 0.78, 0.76), 0.35, coat=0.1)
@@ -163,9 +178,33 @@ for solid in S['walls']:  # jeder Wandkörper für sich geschlossen – verschwe
         try: bm.faces.new(vs)
         except ValueError: pass
     bmesh.ops.remove_doubles(bm, verts=own, dist=0.0005)
+# Wandbelag je Raum: lange Wandflächen an den Raumecken teilen, damit jeder Raum seinen eigenen Belag bekommt
+finished_rooms = [r for r in S['rooms'] if r.get('wall') in ('fliesen', 'tapete')]
+for r in finished_rooms:
+    pts = r['points']
+    for i, a in enumerate(pts):
+        c = pts[(i + 1) % len(pts)]; dx, dy = c[0] - a[0], c[1] - a[1]; ln = math.hypot(dx, dy)
+        if ln < 1e-6: continue
+        for q in (a, c):
+            bmesh.ops.bisect_plane(bm, geom=bm.verts[:] + bm.edges[:] + bm.faces[:], plane_co=(q[0], q[1], 0), plane_no=(dx / ln, dy / ln, 0))
 bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+def in_room(r, x, y, z):
+    if not (r['z'] - 0.01 <= z <= r['z'] + r['height'] + 0.01): return False
+    pts = r['points']; inside = False; j = len(pts) - 1
+    for i in range(len(pts)):
+        if (pts[i][1] > y) != (pts[j][1] > y) and x < (pts[j][0] - pts[i][0]) * (y - pts[i][1]) / (pts[j][1] - pts[i][1]) + pts[i][0]: inside = not inside
+        j = i
+    return inside
+wall_uv = bm.loops.layers.uv.new('UVMap')
+for f in bm.faces:
+    if abs(f.normal.z) > 0.3: continue
+    tx, ty = -f.normal.y, f.normal.x
+    for lp in f.loops: lp[wall_uv].uv = (lp.vert.co.x * tx + lp.vert.co.y * ty, lp.vert.co.z)
+    fc = f.calc_center_median(); px, py = fc.x + f.normal.x * 0.06, fc.y + f.normal.y * 0.06
+    for r in finished_rooms:
+        if in_room(r, px, py, fc.z): f.material_index = 2 if r['wall'] == 'fliesen' else 3; break
 wall_me = bpy.data.meshes.new('Wände'); bm.to_mesh(wall_me); bm.free()
-wall_me.materials.append(M_WALL); wall_me.materials.append(M_CUT)
+wall_me.materials.append(M_WALL); wall_me.materials.append(M_CUT); wall_me.materials.append(M_WALL_TILE); wall_me.materials.append(M_WALL_PAPER)
 top = max((v.co.z for v in wall_me.vertices), default=2.5)
 if MODE == 'vogel':  # Schnittflächen oben dunkel – wie in Architektur-Ansichten
     for p in wall_me.polygons:
@@ -277,6 +316,9 @@ for o in S['openings']:
 az = math.atan2(fy, fx) if (fx or fy) else math.radians(-60)
 az += math.radians(35)  # nicht genau frontal – schräges Licht zeichnet Formen
 EL = math.radians(32 if MODE == 'vogel' else 24)
+if S.get('sun'):  # echter Sonnenstand aus Monat und Uhrzeit; Norden des Plans wird beruecksichtigt
+    EL = math.radians(max(3.0, float(S['sun']['elevation'])))
+    az = math.radians(90.0 - float(S['sun']['azimuth']) - float(S.get('north') or 0))  # Nordpfeil dreht im Plan im Uhrzeigersinn
 
 w = bpy.data.worlds.new('Himmel'); w.use_nodes = True; sc.world = w; nt = w.node_tree
 sky = nt.nodes.new('ShaderNodeTexSky')

@@ -110,6 +110,7 @@ public sealed partial class Scene3D
                 baseY = p.BaseY,
                 baseZ = p.BaseZ,
                 material = p.Material,
+                finish = mat?.Finish,
                 metallic = mat?.Metallic,
                 roughness = mat?.Roughness,
                 transmission = mat?.Transmission,

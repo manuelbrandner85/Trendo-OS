@@ -158,6 +158,10 @@ if (Environment.GetEnvironmentVariable("TRENDO_R11") is { Length: > 0 } r11) // 
     void R11Pump(Func<bool> done, int seconds) { var t0 = DateTime.UtcNow; while (!done() && DateTime.UtcNow - t0 < TimeSpan.FromSeconds(seconds)) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); Thread.Sleep(30); } Avalonia.Threading.Dispatcher.UIThread.RunJobs(); }
     T Named<T>(string name) where T : Avalonia.Controls.Control => Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(win).OfType<T>().First(c => c.Name == name);
     void Click(string name) => Named<Avalonia.Controls.Button>(name).RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Avalonia.Controls.Button.ClickEvent));
+    if (r11 == "statik") { typeof(MainWindow).GetField("_frame3d", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.SetValue(win, true); win.ProgramNew("technik", "rahmen"); win.Show("technik"); R11Pump(() => false, 1); }
+    else
+    if (r11 == "fraesen") { typeof(MainWindow).GetField("_cncStock", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.SetValue(win, true); win.ProgramNew("cnc", "leer"); win.Show("cnc"); R11Pump(() => false, 1); }
+    else
     if (r11 == "kleidung") { win.ProgramNew("mode-programm", "tshirt"); win.Show("mode-programm"); R11Pump(() => false, 1); }
     else if (r11 == "gedaechtnis")
     {
