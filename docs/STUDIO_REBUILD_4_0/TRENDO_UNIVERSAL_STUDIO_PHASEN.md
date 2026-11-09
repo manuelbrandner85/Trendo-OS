@@ -137,6 +137,22 @@ Dabei behoben: Claude übergab Werte teils als Text mit JSON darin, das Teil wur
 
 Offen: die übrigen Studios. Sitzung A legt parallel 16 Studios zusammen (freigegeben vom Nutzer), die Studio-Kennungen ändern sich beim Zusammenführen.
 
+### Paket 2: Büro und Geld
+
+Briefe (STUDIO-LETTER-01), Texte und Tabellen (SYS-10), E-Mails und Termine (SYS-09), Geld und Rechnungen (SPEC-11), Online verkaufen (STUDIO-ONLINE-BUSINESS-01), Print on Demand (STUDIO-POD-01), Kleine Helfer (SYS-02).
+
+| Baustein | Stand |
+|---|---|
+| Fachwissen, Aufgaben, Absichtserkennung | für alle sieben, 36 Tests |
+| Startseite „Was möchtest du machen?“ | nur Print on Demand. Die anderen behalten ihre Vorschläge in der Eingabezeile |
+| Programmprüfung | zusätzlich LibreOffice, qpdf, Tesseract |
+| Claude-Zugriff | Print on Demand bis ins Detail, Briefe über die Datei `Brief.json`. Die übrigen auf Seitenebene |
+| Rückfrage | Senden, Bezahlen und Bestellen fragen immer, Entwerfen nicht |
+
+Echter Lauf durch den Claude-Bereich: Auftrag „Kündigung Fitnessstudio“ mit erfundenen Beispieldaten. 1 Minute 27, kein Klick, keine Rückfrage. Ergebnis: Brief nach DIN 5008 im Programm und als Word-Datei. Claude nannte offen, was es nicht wissen kann (Kündigungsfrist, Form laut Vertrag), und versandte nichts.
+
+Offen: In Texte, Tabellen, E-Mails und Geld gab es keinen echten Claude-Lauf, nur Tests. Claude schlug wieder eine Lernregel vor, die auf Ja oder Nein wartet, die Arbeit aber nicht aufhält.
+
 ## Phase F
 
 Noch nicht begonnen.

@@ -45,7 +45,7 @@ public partial class MainWindow
     {
         if (ProgramStartsOverride is { } o) return o(id, exe);
         if (_opt.Isolated) return null;
-        var args = id switch { "blender" or "godot" or "git" or "f3d" => "--version", "unity" or "ffmpeg" => "-version", _ => null };
+        var args = id switch { "blender" or "godot" or "git" or "f3d" or "qpdf" or "tesseract" => "--version", "unity" or "ffmpeg" => "-version", _ => null };
         if (args is null) return null; // Unreal kennt keinen schnellen Prüfaufruf
         try
         {

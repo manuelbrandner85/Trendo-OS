@@ -182,6 +182,7 @@ if (Environment.GetEnvironmentVariable("TRENDO_R11") is { Length: > 0 } r11) // 
         Console.WriteLine("OFFENE_FRAGEN plan=" + win.ClaudePlanPending() + " aenderung=" + win.ClaudeChangePending("spiele-programm"));
         if (win.ClaudeChatCurrent() is { } cc) File.WriteAllText(Environment.GetEnvironmentVariable("TRENDO_BRIDGE_DIR") + "\\antwort.txt", string.Join("\n---\n", cc.Messages.Select(m => m.Role + ": " + m.Text)));
         if (MainWindow.Programs.ContainsKey(chatPage) && win.ProgramActive(chatPage) is { } chatDoc) File.WriteAllText(Environment.GetEnvironmentVariable("TRENDO_BRIDGE_DIR") + "\\dokument.json", chatDoc.Data.ToJsonString());
+        if (chatPage == "brief" && win.ClaudeChatCurrent() is { } briefChat && File.Exists(Path.Combine(briefChat.Folder, "Brief.json"))) File.Copy(Path.Combine(briefChat.Folder, "Brief.json"), Environment.GetEnvironmentVariable("TRENDO_BRIDGE_DIR") + "\\dokument.json", true);
         if (chatPage == "3d") File.WriteAllText(Environment.GetEnvironmentVariable("TRENDO_BRIDGE_DIR") + "\\dokument.json", win.Studio3DSceneJson);
         R11Pump(() => false, 1);
     }
