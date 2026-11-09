@@ -75,7 +75,7 @@ public class TrendoMcpTests
     public void Consent(string label, string name, bool undoable, bool asks) => Assert.Equal(asks, ClaudeActions.NeedsConsent(label, name, undoable));
 
     [Theory(DisplayName = "Dokument-Stellen: JSON in Text wird ausgepackt, normaler Text bleibt")]
-    [InlineData("\"#FF0000\"", "\"#FF0000\"".Length - 2, "string")]
+    [InlineData("\"#FF0000\"", 7, "string")]
     [InlineData("[1,2]", 2, "array")]
     [InlineData("[kein json", 10, "string")]
     [InlineData("Hallo", 5, "string")]
