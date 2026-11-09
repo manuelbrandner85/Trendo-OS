@@ -21,3 +21,10 @@
 - Echter Lauf durch den Claude-Bereich: 3 Minuten 48, keine Rückfrage, Spiel mit der gezeichneten Figur gebaut.
 - Volltest auf 41b0f800c: Build Exit 0, Api 16 von 16, Core 1966 bestanden und 5 übersprungen, App 919 bestanden und 4 übersprungen, Exit 0. Paket-Tests 11, OK, Exit 0.
 - Nicht gebaut: längere Ketten, Einsatz von `WorkflowEngine` und `AgentCenter` in der Kette.
+
+## Phase E (alle Studios)
+
+- Volltest auf 4b00267dd: Build Exit 0, Api 16 von 16, Core 1975 bestanden und 5 übersprungen, App 1102 bestanden und 4 übersprungen, Exit 0. Paket-Tests 11, OK, Exit 0.
+- Ein erster Lauf hatte 5 rote Tests, alle wegen veralteter Testannahmen (neue Schutzregeln, längere Startseite). Keiner zeigte einen Produktfehler.
+- Nicht geprüft: echte Claude-Läufe außerhalb von Spiele, Bild, 3D, Briefe, Statik und Baukasten, echte Abo-Pause, Unreal und Unity in einem Auftrag, Tests mit Anfängern, QA- und Security-Agent.
+- Status: gebaut und getestet, nicht abgenommen. Offen: Zusammenführen mit `main`, Phase F.
