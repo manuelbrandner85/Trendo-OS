@@ -411,6 +411,7 @@ public partial class MainWindow
             }
         }
         sp.Children.Add(PodKittlPanel(d));
+        sp.Children.Add(PodPrintfulPanel(d));
         return new ScrollViewer { Content = sp };
     }
 

@@ -92,6 +92,10 @@ public sealed class PrintfulClient(IWebSend web, string token)
         return new(r?["task_key"]?.GetValue<string>() ?? "", r?["status"]?.GetValue<string>() ?? "", urls.Distinct().ToList(), r?["error"]?.ToString() is { Length: > 0 } e ? e : null);
     }
 
+    /// <summary>Hat Printful die Dateien dieses Produkts schon übernommen?</summary>
+    public async Task<bool> ProductFilesReadyAsync(long productId, CancellationToken ct = default) =>
+        PrintfulFiles.AllReady(await Call("GET", $"/store/products/{productId}", null, ct));
+
     /// <summary>Legt ein Produkt im eigenen Printful-Bestand an. Das bestellt nichts und kostet nichts.</summary>
     public async Task<long> CreateProductAsync(string name, IEnumerable<(int VariantId, decimal RetailPrice)> variants, string fileUrl, string? thumbnail = null, CancellationToken ct = default)
     {
@@ -103,6 +107,16 @@ public sealed class PrintfulClient(IWebSend web, string token)
         if (thumbnail is not null) product["thumbnail"] = thumbnail;
         var res = await Call("POST", "/store/products", new JsonObject { ["sync_product"] = product, ["sync_variants"] = list }, ct);
         return res?["id"]?.GetValue<long>() ?? throw new PodServiceException("Printful hat keine Produktnummer geliefert.");
+    }
+}
+
+public static class PrintfulFiles
+{
+    /// <summary>Hat Printful alle Dateien eines Produkts übernommen? Erst dann darf die Ablage geleert werden.</summary>
+    public static bool AllReady(JsonNode? productResult)
+    {
+        var files = (productResult?["sync_variants"] as JsonArray ?? []).OfType<JsonObject>().SelectMany(v => (v["files"] as JsonArray ?? []).OfType<JsonObject>()).ToList();
+        return files.Count > 0 && files.All(f => f["status"]?.GetValue<string>() == "ok");
     }
 }
 
