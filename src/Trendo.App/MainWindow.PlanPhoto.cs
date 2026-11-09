@@ -101,6 +101,7 @@ public partial class MainWindow
             b.Click += (_, _) => go(); return b;
         }
         var bar = new WrapPanel { Name = "arch-photo-bar" };
+        bar.Children.Add(Btn("arch-photo-back", "Zurück zum Plan", ArchPhotoToggle));
         bar.Children.Add(Btn("arch-photo-vogel", "Vogelperspektive", () => { ArchPhotoMode = "vogel"; Show(AK); }, ArchPhotoMode == "vogel"));
         bar.Children.Add(Btn("arch-photo-raum", "Raumansicht", () => { ArchPhotoMode = "raum"; Show(AK); }, ArchPhotoMode == "raum"));
         if (ArchPhotoMode == "raum" && plan.Rooms.Count > 0)
@@ -113,24 +114,25 @@ public partial class MainWindow
             cb.SelectionChanged += (_, _) => { if (cb.SelectedIndex >= 0) ArchPhotoRoom = rooms[cb.SelectedIndex].Id; };
             bar.Children.Add(cb);
         }
-        bar.Children.Add(new TextBlock { Text = "Licht", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 4, 4) });
-        var hours = new List<string> { "Passend zu den Fenstern" }; for (var h = 6; h <= 21; h++) hours.Add(h + " Uhr");
-        var hourBox = new ComboBox { Name = "arch-photo-hour", Width = 170, FontSize = 12, Margin = new Thickness(0, 0, 4, 4), ItemsSource = hours, SelectedIndex = ArchPhotoSunHour is { } sh ? (int)sh - 5 : 0 };
+        var lightBar = new WrapPanel { Name = "arch-photo-light" }; // eigene Zeile, damit die Knopfleiste nicht unter das Bild umbricht
+        lightBar.Children.Add(new TextBlock { Text = "Licht", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 4, 4) });
+        var hours = new List<string> { "Automatisch" }; for (var h = 6; h <= 21; h++) hours.Add(h + " Uhr");
+        var hourBox = new ComboBox { Name = "arch-photo-hour", Width = 125, FontSize = 12, Margin = new Thickness(0, 0, 4, 4), ItemsSource = hours, SelectedIndex = ArchPhotoSunHour is { } sh ? (int)sh - 5 : 0 };
         hourBox.SelectionChanged += (_, _) =>
         {
             ArchPhotoSunHour = hourBox.SelectedIndex <= 0 ? null : hourBox.SelectedIndex + 5;
             ArchPhotoSunMonth = ArchPhotoSunHour is null ? null : ArchPhotoSunMonth ?? 6;
             Show(AK);
         };
-        bar.Children.Add(hourBox);
+        lightBar.Children.Add(hourBox);
         if (ArchPhotoSunHour is { } sunH)
         {
             string[] months = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
             var monthBox = new ComboBox { Name = "arch-photo-month", Width = 120, FontSize = 12, Margin = new Thickness(0, 0, 4, 4), ItemsSource = months, SelectedIndex = (ArchPhotoSunMonth ?? 6) - 1 };
             monthBox.SelectionChanged += (_, _) => { if (monthBox.SelectedIndex >= 0) { ArchPhotoSunMonth = monthBox.SelectedIndex + 1; Show(AK); } };
-            bar.Children.Add(monthBox);
+            lightBar.Children.Add(monthBox);
             if (PlanPhoto.Sun(ArchPhotoSunMonth ?? 6, sunH, 51).Elevation <= 0)
-                bar.Children.Add(new TextBlock { Name = "arch-photo-night", Text = "Die Sonne ist dann schon untergegangen, das Bild zeigt die letzte Dämmerung.", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 4, 4) });
+                lightBar.Children.Add(new TextBlock { Name = "arch-photo-night", Text = "Die Sonne ist dann schon untergegangen, das Bild zeigt die letzte Dämmerung.", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 4, 4) });
         }
         bar.Children.Add(new TextBlock { Text = "Qualität", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 6, 4) });
         bar.Children.Add(Btn("arch-photo-q-preview", "Vorschau", () => { ArchPhotoFinal = false; Show(AK); }, !ArchPhotoFinal));
@@ -138,7 +140,6 @@ public partial class MainWindow
         if (ArchPhotoBusy) bar.Children.Add(Btn("arch-photo-cancel", "Abbrechen", ArchPhotoCancel));
         else bar.Children.Add(Btn("arch-photo-go", "Foto rechnen", () => { _ = ArchPhotoRender(); }, accent: true));
         if (ArchPhotoFile is not null && !ArchPhotoBusy) bar.Children.Add(Btn("arch-photo-save", "Speichern", () => { try { _archPhotoMsg = "✓ Gespeichert: " + Path.GetFileName(ArchPhotoSave()); } catch (Exception ex) when (ex is InvalidOperationException or IOException or UnauthorizedAccessException) { _archPhotoMsg = "⚠ " + ex.Message; } Show(AK); }));
-        bar.Children.Add(Btn("arch-photo-back", "Zurück zum Plan", ArchPhotoToggle));
 
         Control body;
         if (ArchPhotoBusy)
@@ -155,7 +156,7 @@ public partial class MainWindow
             body = new TextBlock { Name = "arch-photo-empty", Text = "Fotorealistische Ansicht des Plans – mit echten Materialien, Sonne durch die Fenster und den Möbeln in voller Qualität.\n„Foto rechnen“ startet Blender im Hintergrund.",
                 Foreground = Muted, FontSize = 14, TextWrapping = TextWrapping.Wrap, TextAlignment = TextAlignment.Center, MaxWidth = 560, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
         var stage = new Border { Name = "arch-photo", Background = Brush.Parse("#0B1424"), CornerRadius = new CornerRadius(10), ClipToBounds = true, MinHeight = 160, Child = body };
-        var root = new DockPanel(); DockPanel.SetDock(bar, Avalonia.Controls.Dock.Top); root.Children.Add(bar);
+        var root = new DockPanel(); DockPanel.SetDock(bar, Avalonia.Controls.Dock.Top); root.Children.Add(bar); DockPanel.SetDock(lightBar, Avalonia.Controls.Dock.Top); root.Children.Add(lightBar);
         if (_archPhotoMsg.Length > 0)
         {
             var msg = new TextBlock { Name = "arch-photo-msg", Text = _archPhotoMsg, FontSize = 12, Margin = new Thickness(2, 0, 0, 6), TextWrapping = TextWrapping.Wrap, Foreground = Brush.Parse(_archPhotoMsg.StartsWith('⚠') ? "#F87171" : _archPhotoMsg.StartsWith('✓') ? "#4ADE80" : "#7FD3FF") };
