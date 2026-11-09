@@ -20,6 +20,8 @@ public partial class MainWindow
     /// <summary>Letztes Ergebnis (für Tests): Vorschau-Zeilen der geplanten Änderung.</summary>
     public IReadOnlyList<string> GamePromptPreview => _gpResult?.Doc is { } nd ? GameDirector.Diff(_gpBase ?? new JsonObject(), nd) : [];
     public GameDirector.Result? GamePromptResult => _gpResult;
+    /// <summary>Vorschau-Zeile: welche Engine nach dem Übernehmen tatsächlich gilt.</summary>
+    public string? GamePromptToolLine => _gpResult?.Doc is { } nd ? GameTools.Line(GameTools.Decide(nd, GameToolsHere())) : null;
 
     /// <summary>Claude mit allen Fähigkeiten, wenn eingerichtet, angemeldet und das Kontingent frei ist; sonst die lokalen KIs.</summary>
     bool GamePromptClaude => _claude.Ready && !CLimit.Active(DateTimeOffset.Now) && GamePromptOverride is null;
@@ -109,6 +111,7 @@ public partial class MainWindow
                 var diff = GameDirector.Diff(_gpBase ?? new JsonObject(), neu);
                 var prev = new StackPanel { Name = "game-prompt-preview", Spacing = 2 };
                 prev.Children.Add(P($"Vorschau „{neu["title"]}“ · {GameDesign.ScaleOf(neu["scale"]?.ToString() ?? "").Name} · {neu["genre"]} · erstellt von {_gpKi}", Text, 12.5));
+                prev.Children.Add(P("🧭 " + GamePromptToolLine, Muted, 12)); // was wirklich gilt, auch wenn die KI etwas nicht Installiertes nannte
                 foreach (var l in diff.Take(14)) prev.Children.Add(P(l, Muted, 12));
                 if (diff.Count > 14) prev.Children.Add(P($"… und {diff.Count - 14} weitere Änderungen", Muted, 12));
                 sp.Children.Add(prev);

@@ -24,13 +24,24 @@ public partial class MainWindow
         switch (m.Kind)
         {
             case "bereit": // Editor geladen → gespeicherte Seite hineinreichen
-                _wdView?.InvokeScript("window.trendoLoad(" + WebDesign.Load(WebDesignDir) + ")");
+                WebDesignReload(WebDesignCurrent()); // auch nach Schließen und Öffnen: ein ungespeicherter Entwurf bleibt sichtbar
                 break;
             case "speichern":
-                var err = WebDesign.Save(WebDesignDir, m.Data ?? "");
+                var err = WebDesignStates.Write(WebDesignDir, m.Data ?? "", _wdVariant);
                 _wdNote = err ?? $"Gespeichert ({DateTime.Now:HH:mm:ss}) – {Path.Combine(WebDesignDir, WebDesign.PageFile)}";
                 _core.Audit.Append(Principal.LocalOwner.Name, "web.visuell.speichern", err ?? "ok");
+                if (err is null) _wdDraft = null;
                 Dispatcher.UIThread.Post(() => Show("dev"));
+                break;
+            case "entwurf": // ungespeicherte Änderung im Editor: Grundlage für die nächste KI-Änderung, nichts wird geschrieben
+                if (WebDesign.Validate(m.Data).Json is { } draft) _wdDraft = draft;
+                break;
+            case "auswahl":
+                var ids = (System.Text.Json.Nodes.JsonNode.Parse(m.Data ?? "{}")?["ids"] as System.Text.Json.Nodes.JsonArray)?.Select(x => x?.ToString() ?? "").Where(x => x.Length > 0).ToList() ?? [];
+                if (!ids.SequenceEqual(_wdSelection)) { _wdSelection = ids; Dispatcher.UIThread.Post(() => Show("dev")); }
+                break;
+            case "aktion":
+                WebDesignHumanAction(m.Data);
                 break;
         }
     }
@@ -56,6 +67,7 @@ public partial class MainWindow
             Act("web-visual-browser", "Export im Browser öffnen", () => { var f = Path.Combine(WebDesignDir, WebDesign.ExportDir, "index.html"); if (File.Exists(f)) Launch(f); else { _wdNote = "Zuerst exportieren."; Show("dev"); } }),
         } });
         if (!editorOk) sp.Children.Add(P("Editor-Bündel fehlt im Programm (Assets/webdesign) – bitte Trendo neu installieren.", Avalonia.Media.Brush.Parse("#F5A524"), 12));
+        sp.Children.Add(WebDesignKiPane());
         if (_wdNote.Length > 0) sp.Children.Add(new TextBlock { Name = "web-visual-note", Text = _wdNote, FontSize = 12, Foreground = Muted, TextWrapping = Avalonia.Media.TextWrapping.Wrap });
         if (_wdOpen && editorOk)
         {

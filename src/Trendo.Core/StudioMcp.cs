@@ -17,7 +17,7 @@ public static class StudioMcp
     public static IReadOnlyList<string> Needs(string studioId, string? engine = null) => studioId switch
     {
         "CORE-05" or "SPEC-04" or "SPEC-09" => ["blender"],
-        "CORE-06" => (engine ?? "").ToLowerInvariant() switch { var e when e.Contains("godot") => ["godot", "blender"], var e when e.Contains("unity") => ["blender"], _ => ["unreal", "blender"] },
+        "CORE-06" => (engine ?? "").ToLowerInvariant() switch { var e when e.Contains("godot") => ["godot", "blender"], var e when e.Contains("unity") => ["blender"], "browser" or "web" => [], _ => ["unreal", "blender"] },
         _ => [],
     };
 
@@ -60,6 +60,9 @@ public static class StudioMcp
     }
 
     /// <summary>Engine eines Spielprojekts aus seinen Dateien: .uproject → unreal, project.godot → godot, ProjectSettings/ProjectVersion.txt → unity, sonst null.</summary>
+    /// <summary>T-0630: vorhandene Projektdateien zählen vor der ausdrücklichen Wahl im Dokument; eine reine Regelentscheidung zählt hier nicht.</summary>
+    public static string? EngineFor(string projectDir, string? chosen) => EngineOfProject(projectDir) ?? (string.IsNullOrWhiteSpace(chosen) ? null : chosen);
+
     public static string? EngineOfProject(string projectDir)
     {
         if (!Directory.Exists(projectDir)) return null;

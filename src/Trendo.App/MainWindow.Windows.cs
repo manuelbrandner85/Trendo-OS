@@ -310,6 +310,7 @@ public partial class MainWindow
         var a = Windows.Active;
         CurrentView = a?.Page ?? "start"; MarkTab(CurrentView); MarkSide(CurrentView);
         RenderWindows();
+        if (CurrentView == GK && _gameStale) { _gameStale = false; Show(GK); } // T-0610: KI-Antwort kam, während ein anderes Fenster vorne war
     }
 
     private void RenderWindows()

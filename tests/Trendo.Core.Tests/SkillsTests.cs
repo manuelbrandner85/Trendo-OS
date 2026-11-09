@@ -18,7 +18,7 @@ public class SkillsTests
     public void Built_in()
     {
         var all = SkillLibrary.BuiltIn;
-        Assert.Equal(["brief-din5008", "code-qualitaet", "foto-bild", "praesentation", "spiele", "tabellen", "technik-cad", "texte-lektorat", "webdesign"], all.Select(s => s.Id).OrderBy(x => x));
+        Assert.Equal(["brief-din5008", "code-qualitaet", "foto-bild", "praesentation", "spiele", "tabellen", "technik-cad", "texte-lektorat", "webdesign", "webdesign-barrierefreiheit", "webdesign-bewegung", "webdesign-layout", "webdesign-leistung", "webdesign-responsiv", "webdesign-seo", "webdesign-sicherheit"], all.Select(s => s.Id).OrderBy(x => x, StringComparer.Ordinal));
         Assert.All(all, s => { Assert.True(s.Description.Length > 20, s.Id); Assert.NotEmpty(s.Studios); Assert.True(s.Checklist.Count >= 5, s.Id); Assert.True(s.BuiltIn); Assert.DoesNotContain("## Checkliste", s.Checklist); });
         var web = all.Single(s => s.Id == "webdesign");
         Assert.Contains("CORE-07", web.Studios); Assert.Contains(web.Checklist, c => c.Contains("4,5 : 1"));
@@ -90,7 +90,8 @@ public class SkillsTests
         try
         {
             var proj = Path.Combine(root, "projekt");
-            Assert.Equal(2, lib.ExportForClaude(proj, null, "CORE-07"));
+            Assert.Equal(9, lib.ExportForClaude(proj, null, "CORE-07")); // Grundregeln, Sauberer Code, sieben Fachgebiete
+            Assert.True(File.Exists(Path.Combine(proj, ".claude", "skills", "trendo-webdesign-seo", "SKILL.md")));
             var f = File.ReadAllText(Path.Combine(proj, ".claude", "skills", "trendo-webdesign", "SKILL.md"));
             Assert.StartsWith("---\nname: webdesign\ndescription: Gestaltung", f);
             Assert.Contains("## Checkliste", f);

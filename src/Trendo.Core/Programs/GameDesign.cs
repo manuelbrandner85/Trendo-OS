@@ -136,21 +136,7 @@ public static class GameDesign
     }
 
     /// <summary>Spielbibel als Markdown (für das Team, das Unreal-Projekt oder zum Ausdrucken).</summary>
-    public static string BibleMarkdown(JsonObject d)
-    {
-        var sb = new StringBuilder($"# {S(d["title"])}\n\n**Umfang:** {ScaleOf(S(d["scale"])).Name} · **Genre:** {S(d["genre"])} · **Plattformen:** {S(d["platforms"])}\n\n");
-        sb.Append($"## Idee\n\n{S(d["logline"])}\n\n## Kernschleife\n\n{S(d["loop"])}\n\n## Mechaniken\n\n");
-        foreach (var m in (d["mechanics"] as JsonArray ?? [])) sb.Append($"- {S(m)}\n");
-        sb.Append($"\n## Steuerung\n\n{S(d["controls"])}\n\n## Stil\n\n{S(d["style"])}\n\n## Figuren\n\n");
-        foreach (var c in Objs(d, "characters")) sb.Append($"- **{S(c["name"])}** ({S(c["role"])}{(S(c["role"]) == "Boss" ? $", {ProgramDocument.ToNumber(c["phases"]):0} Phasen" : "")}): {S(c["text"])}\n");
-        sb.Append("\n## Welt\n\n");
-        foreach (var r in Objs(d, "world")) sb.Append($"- **{S(r["name"])}**: {S(r["text"])}\n");
-        sb.Append("\n## Missionen\n\n");
-        foreach (var q in Objs(d, "quests")) sb.Append($"- **{S(q["title"])}** ({S(q["kind"])}): {S(q["goal"])}{(S(q["needs"]).Length > 0 ? $" · braucht {S(q["needs"])}" : "")}{(S(q["gives"]).Length > 0 ? $" · gibt {S(q["gives"])}" : "")}\n");
-        sb.Append($"\n## Systeme\n\n{S(d["systems"])}\n\n## Ton und Musik\n\n{S(d["sound"])}\n\n## Menüs\n\n{S(d["menus"])}\n\n## Meilensteine\n\n");
-        foreach (var m in Objs(d, "milestones")) sb.Append($"- [{(m["done"]?.GetValueKind() == System.Text.Json.JsonValueKind.True ? "x" : " ")}] {S(m["name"])}\n");
-        return sb.ToString();
-    }
+    public static string BibleMarkdown(JsonObject d) => GameDocument.Markdown(d);
 
     /// <summary>Ereignis-Regeln aus dem Projekt („rules“: [{when, n, do}]).</summary>
     /// <summary>Waffe der Spielfigur aus dem Dokument („weapon“), unbekannt = keine.</summary>

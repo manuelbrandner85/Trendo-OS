@@ -41,6 +41,8 @@ public sealed class ProgramDocument
     public string Studio { get; }
     public string Title { get; set; }
     public JsonObject Data { get; private set; }
+    /// <summary>T-0610: Begleitdaten außerhalb von Rückgängig und Versionen (z. B. Chat-Verläufe); werden mit der Datei gespeichert.</summary>
+    public JsonObject Meta { get; private set; } = [];
     public string? Path { get; private set; }
     public bool Dirty { get; private set; }
     public DateTime Created { get; }
@@ -78,6 +80,9 @@ public sealed class ProgramDocument
         _undo.Push((before, label)); if (_undo.Count > MaxUndo) Trim(_undo);
         _redo.Clear(); Dirty = true; Changed = DateTime.Now;
     }
+
+    /// <summary>Begleitdaten ändern: kein Rückgängig-Schritt, aber das Dokument gilt als geändert.</summary>
+    public void EditMeta(Action<JsonObject> change) { change(Meta); Dirty = true; Changed = DateTime.Now; }
 
     public bool Undo()
     {
@@ -119,11 +124,16 @@ public sealed class ProgramDocument
     public void Set(string key, JsonNode? value, string? label = null) => Edit(label ?? key, d => d[key] = value?.DeepClone());
 
     // ---------- Datei ----------
-    public string Serialize() => new JsonObject
+    public string Serialize()
     {
-        ["format"] = "tdoc", ["version"] = 1, ["studio"] = Studio, ["title"] = Title,
-        ["created"] = Created.ToString("O"), ["changed"] = Changed.ToString("O"), ["data"] = Data.DeepClone(),
-    }.ToJsonString(Pretty);
+        var root = new JsonObject
+        {
+            ["format"] = "tdoc", ["version"] = 1, ["studio"] = Studio, ["title"] = Title,
+            ["created"] = Created.ToString("O"), ["changed"] = Changed.ToString("O"), ["data"] = Data.DeepClone(),
+        };
+        if (Meta.Count > 0) root["meta"] = Meta.DeepClone();
+        return root.ToJsonString(Pretty);
+    }
 
     public void Save(string? path = null)
     {
@@ -188,7 +198,7 @@ public sealed class ProgramDocument
         var studio = (string?)root["studio"] ?? "";
         if (expectStudio is not null && !studio.Equals(expectStudio, StringComparison.OrdinalIgnoreCase)) throw new InvalidDataException("Diese Projektdatei gehört zu einem anderen Studio.");
         var d = new ProgramDocument(studio, (string?)root["title"] ?? System.IO.Path.GetFileNameWithoutExtension(path), root["data"]?.DeepClone().AsObject());
-        d.Path = path; return d;
+        d.Path = path; d.Meta = root["meta"]?.DeepClone() as JsonObject ?? []; return d;
     }
 
     // ---------- automatisches Sichern ----------
@@ -210,7 +220,7 @@ public sealed class ProgramDocument
     public static ProgramDocument Restore(string autosaveFile)
     {
         var d = Load(autosaveFile); var target = autosaveFile.EndsWith(".autosave", StringComparison.Ordinal) ? autosaveFile[..^".autosave".Length] : null;
-        var r = new ProgramDocument(d.Studio, d.Title, d.Data) { Path = target, Dirty = true };
+        var r = new ProgramDocument(d.Studio, d.Title, d.Data) { Path = target, Dirty = true, Meta = d.Meta };
         return r;
     }
 }

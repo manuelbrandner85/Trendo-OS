@@ -151,6 +151,8 @@ public static class WebsiteStudio
         {
             File.WriteAllText(Path.Combine(full, "NICHT-HOCHGELADEN.txt"), "Trendo hat diese Seite nicht ins Internet gestellt.\nDas Paket liegt nur auf diesem PC.\n");
             ZipFile.CreateFromDirectory(full, zip);
+            using (var a = ZipFile.Open(zip, ZipArchiveMode.Update)) // frühere Stände und Varianten gehören nicht in ein weitergegebenes Paket
+                foreach (var e in a.Entries.Where(e => e.FullName.StartsWith(".trendo-", StringComparison.Ordinal)).ToList()) e.Delete();
             return zip;
         });
     }
