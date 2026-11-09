@@ -83,6 +83,7 @@ public class TrendoMcpTests
     [InlineData("Diesem Plugin vertrauen und freigeben", "x", true, true)]
     [InlineData("Mikrofon einschalten", "x", true, true)]
     [InlineData("Weiter", "fusion-approve", true, true)]
+    [InlineData("Ja, kostenpflichtig fertigen: ABC", "shop-confirm-ABC", false, true)]
     public void Consent(string label, string name, bool undoable, bool asks) => Assert.Equal(asks, ClaudeActions.NeedsConsent(label, name, undoable));
 
     [Theory(DisplayName = "Dokument-Stellen: JSON in Text wird ausgepackt, normaler Text bleibt")]
