@@ -18,7 +18,7 @@ namespace Trendo.App;
 public partial class MainWindow
 {
     const string PodKey = "pod-programm";
-    string _podStep = "motiv";
+    string _podStep = "entwurf";
 
     static JsonObject PodDoc(string product, string title, string description) => new()
     {
@@ -51,6 +51,8 @@ public partial class MainWindow
         ],
         Exports =
         [
+            new("png", "Entwurf als PNG (Druckgröße)", ".png", (d, f) => PodExportPng(d, f)),
+            new("svg", "Entwurf als SVG", ".svg", (d, f) => { var (w, h) = PodDesign.Board(PodProductOf(d)); File.WriteAllText(f, PodDesign.Svg(PodDesign.Items(d.Data), w, h)); return f; }),
             new("listing", "Verkaufstext", ".md", (d, f) => { File.WriteAllText(f, PodLegal.Listing(d.Title, d.Text("description"), d.Text("tags").Split(','), PodProductOf(d), PodDec(d, "gross"))); return f; }),
         ],
         Workspace = PodWorkspace,
@@ -61,13 +63,14 @@ public partial class MainWindow
     private Control PodWorkspace(ProgramDocument d)
     {
         var steps = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Margin = new Thickness(4, 4, 4, 10), [DockPanel.DockProperty] = Avalonia.Controls.Dock.Top };
-        foreach (var (id, label) in new[] { ("motiv", "1 Motiv"), ("preis", "2 Preis"), ("recht", "3 Rechtliches"), ("text", "4 Verkaufstext") })
+        foreach (var (id, label) in new[] { ("entwurf", "1 Entwerfen"), ("motiv", "2 Druck prüfen"), ("preis", "3 Preis"), ("recht", "4 Rechtliches"), ("text", "5 Verkaufstext") })
         {
             var b = new Button { Name = "pod-step-" + id, Content = label, Padding = new Thickness(14, 6), FontWeight = _podStep == id ? FontWeight.SemiBold : FontWeight.Normal };
             if (_podStep == id) b.Classes.Add("accent");
             b.Click += (_, _) => { _podStep = id; Show(PodKey); };
             steps.Children.Add(b);
         }
+        if (_podStep == "entwurf") return new DockPanel { Name = "pod-workspace", Children = { steps, PodDesigner(d) } }; // eigene Flächen scrollen und zoomen selbst
         Control body = _podStep switch { "preis" => PodPricePane(d), "recht" => PodLegalPane(d), "text" => PodTextPane(d), _ => PodMotifPane(d) };
         return new DockPanel { Name = "pod-workspace", Children = { steps, new ScrollViewer { Content = body } } };
     }

@@ -12,6 +12,7 @@ public static class StudioMcp
 {
     public const string FileName = ".mcp.json";
     public const string Prefix = "trendo-";
+    public const string KittlMcpUrl = "https://mcp.kittl.com/mcp";
 
     /// <summary>Welche Programme ein Studio braucht (Engine des Spiels entscheidet bei CORE-06).</summary>
     public static IReadOnlyList<string> Needs(string studioId, string? engine = null) => studioId switch
@@ -40,7 +41,7 @@ public static class StudioMcp
     public sealed record Result(string ProjectDir, IReadOnlyList<string> Added, IReadOnlyList<string> Missing);
 
     /// <summary>Legt bzw. aktualisiert <c>.mcp.json</c> im Projektordner und liefert den Ordner. Fehlende Server stehen in <see cref="Result.Missing"/>.</summary>
-    public static Result EnsureProjectConfig(string projectDir, string studioId, string? engine = null, JsonObject? userConfig = null)
+    public static Result EnsureProjectConfig(string projectDir, string studioId, string? engine = null, JsonObject? userConfig = null, bool kittl = false)
     {
         Directory.CreateDirectory(projectDir);
         var file = Path.Combine(projectDir, FileName);
@@ -55,6 +56,7 @@ public static class StudioMcp
         foreach (var p in Needs(studioId, engine))
             if (FindServer(userConfig, p) is { } s) { servers[Prefix + p] = s; added.Add(p); }
             else missing.Add(p);
+        if (kittl) { servers[Prefix + "kittl"] = new JsonObject { ["type"] = "http", ["url"] = KittlMcpUrl }; added.Add("kittl"); } // offizieller Zugang; die Anmeldung läuft über Claude im Browser, Trendo sieht keine Zugangsdaten
         File.WriteAllText(file, doc.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
         return new(projectDir, added, missing);
     }

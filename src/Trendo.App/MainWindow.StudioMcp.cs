@@ -12,7 +12,7 @@ public partial class MainWindow
     /// <summary>Schreibt die <c>.mcp.json</c> des Projekts (nur Server, die das Studio braucht, aus der vorhandenen Claude-Einstellung) und liefert den Ordner samt fehlenden Servern.</summary>
     public StudioMcp.Result StudioMcpPrepare(string projectDir, string studioId, string? engine = null)
     {
-        var r = StudioMcp.EnsureProjectConfig(projectDir, studioId, engine);
+        var r = StudioMcp.EnsureProjectConfig(projectDir, studioId, engine, kittl: studioId == "STUDIO-POD-01" && PodKittlOn);
         _core.Audit.Append(Principal.LocalOwner.Name, "studio.mcp", $"{studioId} +{string.Join(",", r.Added)} fehlt:{string.Join(",", r.Missing)}");
         return r;
     }
