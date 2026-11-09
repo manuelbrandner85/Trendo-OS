@@ -15,6 +15,8 @@ public static class OfficeZip
     /// <summary>Normale Office-XML packt sich etwa 5- bis 50-fach; ab 200-fach und mehr als 10 MB ist es fast sicher eine Bombe.</summary>
     public const int MaxRatio = 200;
     const long RatioMinBytes = 10L * 1024 * 1024;
+    /// <summary>Echte Excel-Teile sind kaum 30 Ebenen tief. Der XML-Baum läuft beim Aufbau je Knoten alle Eltern ab, und sein Text wird rekursiv gelesen: Sehr tiefes XML kostet sonst quadratische Zeit und kann das ganze Programm beenden.</summary>
+    public const int MaxXmlDepth = 256;
 
     internal static InvalidDataException Bad(string why) => new($"Die Datei wurde aus Sicherheitsgründen nicht geöffnet: {why}");
 
@@ -53,6 +55,49 @@ public static class OfficeZip
         XDocument? doc = null;
         e.ReadXml(r => doc = XDocument.Load(r, options), !options.HasFlag(LoadOptions.PreserveWhitespace));
         return doc!;
+    }
+
+    /// <summary>Wie <see cref="LoadXml"/>, aber höchstens <see cref="MaxXmlDepth"/> Ebenen tief.</summary>
+    internal static XDocument LoadShallowXml(this ZipArchiveEntry e)
+    {
+        XDocument? doc = null;
+        e.ReadXml(r => doc = XDocument.Load(new ShallowReader(r)));
+        return doc!;
+    }
+
+    /// <summary>Lässt einen XML-Baum nur bis <see cref="MaxXmlDepth"/> Ebenen unter der aktuellen Stelle zu.</summary>
+    internal sealed class ShallowReader(XmlReader inner) : XmlReader
+    {
+        readonly int _max = inner.Depth + MaxXmlDepth;
+        public override bool Read()
+        {
+            var more = inner.Read();
+            if (more && inner.Depth > _max) throw Bad($"das XML ist tiefer als {MaxXmlDepth} Ebenen verschachtelt.");
+            return more;
+        }
+        public override int AttributeCount => inner.AttributeCount;
+        public override string BaseURI => inner.BaseURI;
+        public override int Depth => inner.Depth;
+        public override bool EOF => inner.EOF;
+        public override bool IsEmptyElement => inner.IsEmptyElement;
+        public override string LocalName => inner.LocalName;
+        public override string NamespaceURI => inner.NamespaceURI;
+        public override XmlNameTable NameTable => inner.NameTable;
+        public override XmlNodeType NodeType => inner.NodeType;
+        public override string Prefix => inner.Prefix;
+        public override ReadState ReadState => inner.ReadState;
+        public override string Value => inner.Value;
+        public override string GetAttribute(int i) => inner.GetAttribute(i);
+        public override string? GetAttribute(string name) => inner.GetAttribute(name);
+        public override string? GetAttribute(string name, string? ns) => inner.GetAttribute(name, ns);
+        public override string? LookupNamespace(string prefix) => inner.LookupNamespace(prefix);
+        public override bool MoveToAttribute(string name) => inner.MoveToAttribute(name);
+        public override bool MoveToAttribute(string name, string? ns) => inner.MoveToAttribute(name, ns);
+        public override bool MoveToElement() => inner.MoveToElement();
+        public override bool MoveToFirstAttribute() => inner.MoveToFirstAttribute();
+        public override bool MoveToNextAttribute() => inner.MoveToNextAttribute();
+        public override bool ReadAttributeValue() => inner.ReadAttributeValue();
+        public override void ResolveEntity() => inner.ResolveEntity();
     }
 
     /// <summary>Eintrag als Datenstrom lesen, mit denselben Schutzregeln wie <see cref="LoadXml"/> – für Tabellenblätter, die als XDocument ein Vielfaches an Speicher belegen würden.</summary>

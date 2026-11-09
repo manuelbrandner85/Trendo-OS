@@ -246,9 +246,8 @@ public static class SheetFiles
     }
 
     /// <summary>Diagramme eines Blatts lesen: Art, Titel und den Bereich aus allen Bezügen (Kopf, Beschriftung, Werte).</summary>
-    static void ReadCharts(ZipArchive z, string sheetPath, Sheet sh)
+    static void ReadCharts(ExtraParts parts, string sheetPath, XElement ws, Sheet sh)
     {
-        XDocument? Load(string name) { var e = z.GetEntry(name); if (e is null) return null; return e.LoadXml(); }
         static string Dir(string file) { var i = file.LastIndexOf('/'); return i < 0 ? "" : file[..i]; }
         static string Resolve(string baseFile, string target)
         {
@@ -258,31 +257,101 @@ public static class SheetFiles
             return string.Join('/', parts);
         }
         static string RelsOf(string file) => $"{Dir(file)}/_rels/{file[(file.LastIndexOf('/') + 1)..]}.rels";
-        XNamespace c = C, a = A;
-        var ws = Load(sheetPath); var did = (string?)ws?.Root?.Element(S + "drawing")?.Attribute(R + "id"); if (did is null) return;
-        var drTarget = Load(RelsOf(sheetPath))?.Root?.Elements(Pr + "Relationship").FirstOrDefault(r => (string?)r.Attribute("Id") == did)?.Attribute("Target")?.Value; if (drTarget is null) return;
-        var drPath = Resolve(sheetPath, drTarget); var drawing = Load(drPath); if (drawing is null) return;
-        var drRels = Load(RelsOf(drPath));
+        XNamespace c = C;
+        var did = (string?)ws.Element(S + "drawing")?.Attribute(R + "id"); if (did is null) return;
+        var drTarget = RelTargets(parts.Load(RelsOf(sheetPath))).GetValueOrDefault(did); if (drTarget is null) return;
+        var drPath = Resolve(sheetPath, drTarget); var drawing = parts.Load(drPath); if (drawing is null) return;
+        var drRels = RelTargets(parts.Load(RelsOf(drPath)));
         foreach (var chartEl in drawing.Descendants(c + "chart"))
         {
-            var cid = (string?)chartEl.Attribute(R + "id");
-            var target = drRels?.Root?.Elements(Pr + "Relationship").FirstOrDefault(r => (string?)r.Attribute("Id") == cid)?.Attribute("Target")?.Value; if (target is null) continue;
-            var chart = Load(Resolve(drPath, target)); if (chart?.Root is null) continue;
-            var plot = chart.Root.Descendants(c + "plotArea").FirstOrDefault(); if (plot is null) continue;
-            var kind = plot.Elements().Any(e => e.Name.LocalName is "pieChart" or "pie3DChart" or "doughnutChart") ? ChartKind.Kreis
-                : plot.Elements().Any(e => e.Name.LocalName is "lineChart" or "line3DChart" or "scatterChart" or "areaChart") ? ChartKind.Linie : ChartKind.Balken;
-            int t = int.MaxValue, l = int.MaxValue, b = -1, rr = -1;
-            foreach (var f in plot.Descendants(c + "f").Select(x => x.Value))
-            {
-                var bang = f.LastIndexOf('!'); var body = (bang >= 0 ? f[(bang + 1)..] : f).Replace("$", "").Trim('(', ')');
-                var ends = body.Split(':');
-                if (!Addr.TryParse(ends[0], out var p1) || !Addr.TryParse(ends[^1], out var p2)) continue;
-                t = Math.Min(t, Math.Min(p1.Row, p2.Row)); l = Math.Min(l, Math.Min(p1.Col, p2.Col)); b = Math.Max(b, Math.Max(p1.Row, p2.Row)); rr = Math.Max(rr, Math.Max(p1.Col, p2.Col));
-            }
-            if (b < 0) continue;
-            var title = string.Concat(chart.Root.Element(c + "chart")?.Element(c + "title")?.Descendants(a + "t").Select(x => x.Value) ?? []);
-            sh.Charts.Add(new SheetChart(kind, $"{Addr.Name(t, l)}:{Addr.Name(b, rr)}", title.Length > 0 ? title : "Diagramm"));
+            parts.CountAnchor();
+            var target = drRels.GetValueOrDefault((string?)chartEl.Attribute(R + "id") ?? NoId); if (target is null) continue;
+            var chartPath = Resolve(drPath, target);
+            if (!parts.Charts.TryGetValue(chartPath, out var chart)) parts.Charts[chartPath] = chart = ParseChart(parts.Load(chartPath));
+            if (chart is not null) sh.Charts.Add(chart);
         }
+    }
+
+    /// <summary>Art, Titel und Bereich eines Diagramms; null, wenn es nichts Darstellbares enthält.</summary>
+    static SheetChart? ParseChart(XDocument? chart)
+    {
+        XNamespace c = C, a = A;
+        if (chart?.Root is null) return null;
+        var plot = chart.Root.Descendants(c + "plotArea").FirstOrDefault(); if (plot is null) return null;
+        var kind = plot.Elements().Any(e => e.Name.LocalName is "pieChart" or "pie3DChart" or "doughnutChart") ? ChartKind.Kreis
+            : plot.Elements().Any(e => e.Name.LocalName is "lineChart" or "line3DChart" or "scatterChart" or "areaChart") ? ChartKind.Linie : ChartKind.Balken;
+        int t = int.MaxValue, l = int.MaxValue, b = -1, rr = -1;
+        foreach (var f in Outermost(plot, c + "f").Select(x => x.Value))
+        {
+            var bang = f.LastIndexOf('!'); var body = (bang >= 0 ? f[(bang + 1)..] : f).Replace("$", "").Trim('(', ')');
+            var ends = body.Split(':');
+            if (!Addr.TryParse(ends[0], out var p1) || !Addr.TryParse(ends[^1], out var p2)) continue;
+            t = Math.Min(t, Math.Min(p1.Row, p2.Row)); l = Math.Min(l, Math.Min(p1.Col, p2.Col)); b = Math.Max(b, Math.Max(p1.Row, p2.Row)); rr = Math.Max(rr, Math.Max(p1.Col, p2.Col));
+        }
+        if (b < 0) return null;
+        var titleEl = chart.Root.Element(c + "chart")?.Element(c + "title");
+        var title = titleEl is null ? "" : string.Concat(Outermost(titleEl, a + "t").Select(x => x.Value));
+        return new SheetChart(kind, $"{Addr.Name(t, l)}:{Addr.Name(b, rr)}", title.Length > 0 ? title : "Diagramm");
+    }
+
+    /// <summary>Unterelemente mit diesem Namen in Dokumentreihenfolge, aber nicht die darin nochmals verschachtelten: So wird jeder Text nur einmal gelesen.</summary>
+    static IEnumerable<XElement> Outermost(XElement root, XName name)
+    {
+        var node = root.FirstNode;
+        while (node is not null)
+        {
+            if (node is XElement e)
+            {
+                if (e.Name == name) yield return e;
+                else if (e.FirstNode is { } first) { node = first; continue; }
+            }
+            while (node.NextNode is null)
+            {
+                node = node.Parent!;
+                if (ReferenceEquals(node, root)) yield break;
+            }
+            node = node.NextNode;
+        }
+    }
+
+    const string NoId = "\0"; // Beziehung oder Verweis ohne Id: passen wie bisher zueinander
+    const int MaxPartName = ushort.MaxValue; // länger kann ein Name im ZIP-Verzeichnis nicht sein
+
+    /// <summary>Beziehungen nach Id; bei doppelter Id gilt die erste. Überlange Ziele können auf nichts zeigen und zählen wie fehlende, damit sie nicht je Verweis verarbeitet werden.</summary>
+    static Dictionary<string, string?> RelTargets(XDocument? rels)
+    {
+        var map = new Dictionary<string, string?>();
+        foreach (var rel in rels?.Root?.Elements(Pr + "Relationship") ?? [])
+            map.TryAdd((string?)rel.Attribute("Id") ?? NoId, rel.Attribute("Target")?.Value is { Length: <= MaxPartName } target ? target : null);
+        return map;
+    }
+
+    /// <summary>Gemeinsame Rechnung einer Mappe für alles, was Blätter zusätzlich lesen (Notizen, Zeichnungen, Diagramme).
+    /// Viele Blätter dürfen auf dieselbe Nebendatei zeigen; die ZIP-Prüfung zählt sie aber nur einmal.</summary>
+    sealed class ExtraParts(ZipArchive zip)
+    {
+        long _bytes; int _anchors;
+        /// <summary>Gelesene Diagramme je Ziel: Eine Mappe enthält höchstens so viele davon, wie sie Einträge hat.</summary>
+        public Dictionary<string, SheetChart?> Charts { get; } = [];
+        /// <summary>Eine Grenze wurde überschritten. Dann ist die Datei präpariert und wird abgelehnt, statt still ohne Beigaben zu öffnen.</summary>
+        public bool Over { get; private set; }
+
+        public ZipArchiveEntry? Entry(string name)
+        {
+            if (zip.GetEntry(name) is not { } e) return null;
+            _bytes += e.Length;
+            if (_bytes > OfficeZip.MaxTotalBytes) throw Fail($"Notizen und Diagramme wären zusammen über {OfficeZip.MaxTotalBytes / 1048576} MB groß.");
+            return e;
+        }
+
+        public XDocument? Load(string name) => Entry(name)?.LoadShallowXml();
+
+        public void CountAnchor()
+        {
+            if (++_anchors > OfficeZip.MaxEntries) throw Fail($"zu viele Diagramme (erlaubt {OfficeZip.MaxEntries}).");
+        }
+
+        InvalidDataException Fail(string why) { Over = true; return OfficeZip.Bad(why); }
     }
 
     // ---------- E5/E6/E9 in XLSX ----------
@@ -356,7 +425,7 @@ public static class SheetFiles
     }
 
     /// <summary>Blattschutz, bedingte Formate, Auswahllisten und Notizen lesen.</summary>
-    static void ReadExtras(ZipArchive z, string sheetPath, XElement ws, Sheet sh, List<string?> dxfFills)
+    static void ReadExtras(ExtraParts parts, string sheetPath, XElement ws, Sheet sh, List<string?> dxfFills)
     {
         if (ws.Element(S + "sheetProtection") is { } prot && (string?)prot.Attribute("sheet") is "1" or "true") sh.Protected = true;
         foreach (var cf in ws.Elements(S + "conditionalFormatting"))
@@ -387,10 +456,9 @@ public static class SheetFiles
             foreach (var range in ((string?)dv.Attribute("sqref") ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries))
                 sh.Validations.Add(new ValidationRule(range, f1.Trim('"').Split(',').Select(x => x.Trim()).Where(x => x.Length > 0).ToList()));
         }
-        var relEntry = z.GetEntry(SheetRelsPath(sheetPath)); if (relEntry is null) return;
-        XDocument rels; rels = relEntry.LoadXml();
+        var rels = parts.Load(SheetRelsPath(sheetPath)); if (rels is null) return;
         var target = rels.Root?.Elements(Pr + "Relationship").FirstOrDefault(r => ((string?)r.Attribute("Type"))?.EndsWith("/comments", StringComparison.Ordinal) == true)?.Attribute("Target")?.Value;
-        if (target is null || z.GetEntry(ResolvePath(sheetPath, target)) is not { } ce) return;
+        if (target is null || parts.Entry(ResolvePath(sheetPath, target)) is not { } ce) return;
         var notes = new List<(int Row, int Col, string Text)>(); // erst nach fehlerfreiem Lesen übernehmen: kaputte Notizdatei = keine Notizen
         ce.ReadXml(x =>
         {
@@ -439,7 +507,7 @@ public static class SheetFiles
     public static SheetDoc ReadXlsx(string path)
     {
         using var z = OfficeZip.OpenRead(path);
-        XDocument? Load(string name) { var e = z.GetEntry(name); if (e is null) return null; return e.LoadXml(); }
+        XDocument? Load(string name) { var e = z.GetEntry(name); if (e is null) return null; return e.LoadShallowXml(); }
         var wb = Load("xl/workbook.xml") ?? throw new InvalidDataException("Keine Excel-Mappe (workbook.xml fehlt).");
         var rels = Load("xl/_rels/workbook.xml.rels");
         var shared = z.GetEntry("xl/sharedStrings.xml") is { } sharedEntry ? ReadSharedStrings(sharedEntry) : [];
@@ -501,12 +569,10 @@ public static class SheetFiles
             ForEachChild(x, c => { if (IsS(c, "c")) ReadCell(c, sh); else c.Skip(); });
         }
 
-        const string NoId = "\0"; // Beziehung oder Blatt ohne Id: passen wie bisher zueinander
-        var relTargets = new Dictionary<string, string?>();
-        foreach (var rel in rels?.Root?.Elements(Pr + "Relationship") ?? []) relTargets.TryAdd((string?)rel.Attribute("Id") ?? NoId, rel.Attribute("Target")?.Value);
+        var relTargets = RelTargets(rels);
 
         var doc = new SheetDoc(); doc.Sheets.Clear();
-        long sheetBytes = 0; var seenParts = new HashSet<string>();
+        long sheetBytes = 0; var seenParts = new HashSet<string>(); var extras = new ExtraParts(z);
         foreach (var sheetEl in wb.Root!.Element(S + "sheets")!.Elements(S + "sheet"))
         {
             // Viele Blätter dürfen auf denselben Eintrag zeigen; die ZIP-Prüfung zählt ihn aber nur einmal.
@@ -525,8 +591,8 @@ public static class SheetFiles
             { sh.FreezeRows = (int?)(double?)pane.Attribute("ySplit") ?? 0; sh.FreezeCols = (int?)(double?)pane.Attribute("xSplit") ?? 0; }
             if (firstUse)
             {
-                try { ReadExtras(z, target, ws, sh, dxfFills); } catch (Exception e) when (e is System.Xml.XmlException or InvalidDataException or ArgumentException or FormatException) { }
-                try { ReadCharts(z, target, sh); } catch (Exception e) when (e is System.Xml.XmlException or InvalidDataException or ArgumentException) { } // Diagramme sind Beigabe – Zellen trotzdem lesen
+                try { ReadExtras(extras, target, ws, sh, dxfFills); } catch (Exception e) when (!extras.Over && e is System.Xml.XmlException or InvalidDataException or ArgumentException or FormatException) { }
+                try { ReadCharts(extras, target, ws, sh); } catch (Exception e) when (!extras.Over && e is System.Xml.XmlException or InvalidDataException or ArgumentException) { } // Diagramme sind Beigabe – Zellen trotzdem lesen
             }
             foreach (var col in ws.Element(S + "cols")?.Elements(S + "col") ?? [])
             {
@@ -623,7 +689,7 @@ public static class SheetFiles
             var dataDone = false;
             ForEachChild(x, part =>
             {
-                if (!IsS(part, "sheetData")) { ws.Add(XNode.ReadFrom(part)); return; }
+                if (!IsS(part, "sheetData")) { ws.Add(XNode.ReadFrom(new OfficeZip.ShallowReader(part))); return; }
                 if (dataDone) { part.Skip(); return; }
                 dataDone = true;
                 ForEachChild(part, row => { if (IsS(row, "row")) readRow(row); else row.Skip(); });

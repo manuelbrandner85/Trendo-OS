@@ -353,6 +353,340 @@ public class ImportTempoTests
         finally { Directory.Delete(d, true); }
     }
 
+    const string CNs = "http://schemas.openxmlformats.org/drawingml/2006/chart";
+    const string ANs = "http://schemas.openxmlformats.org/drawingml/2006/main";
+
+    static string Rel(string id, string target) => $"""<Relationship Id="{id}" Target="{target}"/>""";
+    static string RelList(IEnumerable<string> rels) => $"""<Relationships xmlns="{RelNs}">{string.Concat(rels)}</Relationships>""";
+    static string DrawingOf(IEnumerable<string> ids) => $"""<wsDr xmlns:c="{CNs}" xmlns:r="{R}">{string.Concat(ids.Select(id => $"<c:chart r:id=\"{id}\"/>"))}</wsDr>""";
+    static string ChartXml(string title, string formula, string padding = "") => $"""<c:chartSpace xmlns:c="{CNs}" xmlns:a="{ANs}">{padding}<c:chart><c:title><c:tx><c:rich>{title}</c:rich></c:tx></c:title><c:plotArea><c:barChart><c:ser><c:val><c:numRef><c:f>{formula}</c:f></c:numRef></c:val></c:ser></c:barChart></c:plotArea></c:chart></c:chartSpace>""";
+    static readonly string SheetWithDrawing = $"""<worksheet xmlns="{S}" xmlns:r="{R}"><sheetData><row r="1"><c r="A1"><v>1</v></c></row></sheetData><drawing r:id="d1"/></worksheet>""";
+    static readonly (string, string) DrawingSheetRels = ("xl/worksheets/_rels/sheet1.xml.rels", RelList([Rel("d1", "../drawings/drawing1.xml")]));
+    static string Comment(int bytes) => new('a', bytes);
+
+    /// <summary>Mappe mit einer Zeichnung auf einem Blatt.</summary>
+    static string WithDrawing(string dir, string drawing, string drawingRels, params (string, string)[] more) =>
+        Zip(dir, [("xl/workbook.xml", SheetsXml(1)), ("xl/_rels/workbook.xml.rels", Rels), ("xl/worksheets/sheet1.xml", SheetWithDrawing), DrawingSheetRels, ("xl/drawings/drawing1.xml", drawing), ("xl/drawings/_rels/drawing1.xml.rels", drawingRels), .. more]);
+
+    /// <summary>Viele eigene Blätter, die alle dieselbe Nebendatei benutzen.</summary>
+    static string ManySheets(string dir, int count, string sheet, Func<int, string> sheetRels, params (string, string)[] more)
+    {
+        var entries = new List<(string, string)>
+        {
+            ("xl/workbook.xml", $"""<workbook xmlns="{S}" xmlns:r="{R}"><sheets>{string.Concat(Enumerable.Range(1, count).Select(i => $"<sheet name=\"B{i}\" r:id=\"s{i}\"/>"))}</sheets></workbook>"""),
+            ("xl/_rels/workbook.xml.rels", RelList(Enumerable.Range(1, count).Select(i => Rel($"s{i}", $"worksheets/sheet{i}.xml")))),
+        };
+        for (var i = 1; i <= count; i++) { entries.Add(($"xl/worksheets/sheet{i}.xml", sheet)); entries.Add(($"xl/worksheets/_rels/sheet{i}.xml.rels", sheetRels(i))); }
+        entries.AddRange(more);
+        return Zip(dir, [.. entries]);
+    }
+
+    static void AssertRejected(string file) => Assert.Contains("Sicherheitsgründen", Assert.Throws<InvalidDataException>(() => SheetFiles.ReadXlsx(file)).Message);
+
+    [Fact(DisplayName = "T-0504: Diagramme – normale Datei: Art, Bereich, Titel und mehrere Blätter wie bisher")]
+    public void Charts_normal_roundtrip()
+    {
+        var d = Tmp();
+        try
+        {
+            var doc = new SheetDoc();
+            var sh = doc.Sheets[0];
+            sh.Set(0, 0, "Monat"); sh.Set(0, 1, "Wert"); sh.Set(1, 0, "Jan"); sh.Set(1, 1, "4"); sh.Set(2, 0, "Feb"); sh.Set(2, 1, "5");
+            sh.Charts.Add(new SheetChart(ChartKind.Linie, "A1:B3", "Verlauf & mehr"));
+            sh.Charts.Add(new SheetChart(ChartKind.Kreis, "A1:B3", "Anteile"));
+            var f = Path.Combine(d, "normal.xlsx");
+            SheetFiles.WriteXlsx(doc, f);
+            var back = SheetFiles.ReadXlsx(f).Sheets[0].Charts;
+            Assert.Equal([new SheetChart(ChartKind.Linie, "A1:B3", "Verlauf & mehr"), new SheetChart(ChartKind.Kreis, "A1:B3", "Anteile")], back);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0504: Diagramme – mehrteiliger Titel, fehlender Titel, unbekannte Beziehung")]
+    public void Charts_edge_cases()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = WithDrawing(d, DrawingOf(["c1", "gibtsnicht", "c2"]), RelList([Rel("c1", "../charts/chart1.xml"), Rel("c1", "../charts/chart2.xml"), Rel("c2", "../charts/chart2.xml")]),
+                ("xl/charts/chart1.xml", ChartXml("<a:p><a:r><a:t>Teil </a:t></a:r><a:r><a:t>zwei</a:t></a:r></a:p>", "'Blatt'!$C$2:$D$9")),
+                ("xl/charts/chart2.xml", ChartXml("", "$A$1")));
+            Assert.Equal([new SheetChart(ChartKind.Balken, "C2:D9", "Teil zwei"), new SheetChart(ChartKind.Balken, "A1:A1", "Diagramm")], SheetFiles.ReadXlsx(f).Sheets[0].Charts);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0504: Diagramme – viele Anker auf dasselbe Ziel laden es nur einmal")]
+    public void Charts_same_target_loaded_once()
+    {
+        const int Anchors = 600; // 600 × 1 MB läge über dem Budget, wenn jeder Anker neu lesen würde
+        var d = Tmp();
+        try
+        {
+            var f = WithDrawing(d, DrawingOf(Enumerable.Repeat("c1", Anchors)), RelList([Rel("c1", "../charts/chart1.xml")]),
+                ("xl/charts/chart1.xml", ChartXml("<a:t>T</a:t>", "$A$1", $"<!--{Comment(1024 * 1024)}-->")));
+            var charts = SheetFiles.ReadXlsx(f).Sheets[0].Charts;
+            Assert.Equal(Anchors, charts.Count);
+            Assert.All(charts, c => Assert.Equal("T", c.Title));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0504: Diagramme – riesige Beziehungsliste wird nicht je Anker durchsucht")]
+    public void Charts_relationship_lookup_is_fast()
+    {
+        const int Relations = 500_000; const int Anchors = OfficeZip.MaxEntries;
+        var d = Tmp();
+        try
+        {
+            var ids = Enumerable.Range(0, Relations).Select(i => $"r{i}").ToList();
+            var f = WithDrawing(d, DrawingOf(ids[^Anchors..]), RelList(ids.Select(id => Rel(id, "../charts/chart1.xml"))), ("xl/charts/chart1.xml", ChartXml("<a:t>T</a:t>", "$A$1")));
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            Assert.Equal(Anchors, SheetFiles.ReadXlsx(f).Sheets[0].Charts.Count);
+            Assert.True(sw.Elapsed < TimeSpan.FromSeconds(30), $"Dauer: {sw.Elapsed}");
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0504: Diagramme – Anzahl der Anker ist je Mappe begrenzt, die Grenze selbst geht noch")]
+    public void Charts_anchor_limit()
+    {
+        var d = Tmp();
+        try
+        {
+            string Make(int n) => WithDrawing(d, DrawingOf(Enumerable.Repeat("c1", n)), RelList([Rel("c1", "../charts/chart1.xml")]), ("xl/charts/chart1.xml", ChartXml("<a:t>T</a:t>", "$A$1")));
+            Assert.Equal(OfficeZip.MaxEntries, SheetFiles.ReadXlsx(Make(OfficeZip.MaxEntries)).Sheets[0].Charts.Count);
+            AssertRejected(Make(OfficeZip.MaxEntries + 1));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0504: Diagramme – Anker zählen über alle Blätter zusammen")]
+    public void Charts_anchor_limit_across_sheets()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = ManySheets(d, 2, SheetWithDrawing, _ => RelList([Rel("d1", "../drawings/drawing1.xml")]),
+                ("xl/drawings/drawing1.xml", DrawingOf(Enumerable.Repeat("c1", OfficeZip.MaxEntries / 2 + 1))),
+                ("xl/drawings/_rels/drawing1.xml.rels", RelList([Rel("c1", "../charts/chart1.xml")])),
+                ("xl/charts/chart1.xml", ChartXml("<a:t>T</a:t>", "$A$1")));
+            AssertRejected(f);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0504: Budget – viele Blätter lesen dieselbe Notizdatei nicht beliebig oft")]
+    public void Budget_repeated_notes()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = ManySheets(d, 600, OneCell, _ => RelList([$"""<Relationship Id="c" Type="http://x/comments" Target="../comments1.xml"/>"""]),
+                ("xl/comments1.xml", $"""<comments xmlns="{S}"><!--{Comment(1024 * 1024)}--><commentList/></comments>"""));
+            AssertRejected(f);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0504: Budget – viele Blätter lesen dieselbe Zeichnung nicht beliebig oft")]
+    public void Budget_repeated_drawing()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = ManySheets(d, 600, SheetWithDrawing, _ => RelList([Rel("d1", "../drawings/drawing1.xml")]),
+                ("xl/drawings/drawing1.xml", $"<wsDr><!--{Comment(1024 * 1024)}--></wsDr>"));
+            AssertRejected(f);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0504: Budget – mehrere Blätter mit derselben Notizdatei gehen unterhalb der Grenze weiter")]
+    public void Budget_shared_notes_below_limit()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = ManySheets(d, 3, OneCell, _ => RelList([$"""<Relationship Id="c" Type="http://x/comments" Target="../comments1.xml"/>"""]),
+                ("xl/comments1.xml", $"""<comments xmlns="{S}"><commentList><comment ref="A1"><text><t>Notiz</t></text></comment></commentList></comments>"""));
+            Assert.All(SheetFiles.ReadXlsx(f).Sheets, s => Assert.Equal("Notiz", s.Get(0, 0)!.Note));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0504: Diagramme – kaputte Zeichnung kostet nur die Diagramme, nicht die Zellen")]
+    public void Charts_broken_drawing_keeps_cells()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = WithDrawing(d, "<wsDr><kaputt>", RelList([]));
+            var s = SheetFiles.ReadXlsx(f).Sheets[0];
+            Assert.Equal("1", s.Raw(0, 0));
+            Assert.Empty(s.Charts);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    static string Nest(int depth, string open, string close, string inner) => string.Concat(Enumerable.Repeat(open, depth)) + inner + string.Concat(Enumerable.Repeat(close, depth));
+
+    [Fact(DisplayName = "T-0504: Diagramme – verschachtelte Titel und Bezüge zählen einmal")]
+    public void Charts_nested_text_once()
+    {
+        const int Depth = 200;
+        var d = Tmp();
+        try
+        {
+            var f = WithDrawing(d, DrawingOf(["c1"]), RelList([Rel("c1", "../charts/chart1.xml")]),
+                ("xl/charts/chart1.xml", ChartXml(Nest(Depth, "<a:t>", "</a:t>", "Titel"), Nest(Depth, "<c:f>", "</c:f>", "$B$2:$C$4"))));
+            Assert.Equal([new SheetChart(ChartKind.Balken, "B2:C4", "Titel")], SheetFiles.ReadXlsx(f).Sheets[0].Charts);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0504: Diagramme – extrem tiefes XML beendet das Programm nicht und kostet nur die Diagramme")]
+    public void Charts_extreme_depth_does_not_crash()
+    {
+        const int Depth = 1_000_000;
+        var d = Tmp();
+        try
+        {
+            var f = WithDrawing(d, DrawingOf(["c1"]), RelList([Rel("c1", "../charts/chart1.xml")]),
+                ("xl/charts/chart1.xml", ChartXml(Nest(Depth, "<a:t>", "</a:t>", "Titel"), "$A$1")));
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            var s = SheetFiles.ReadXlsx(f).Sheets[0];
+            Assert.True(sw.Elapsed < TimeSpan.FromSeconds(30), $"Dauer: {sw.Elapsed}");
+            Assert.Equal("1", s.Raw(0, 0));
+            Assert.Empty(s.Charts);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0504: Excel – tief verschachtelte Blatt-Abschnitte werden abgelehnt, übliche Tiefe geht weiter")]
+    public void Worksheet_section_depth_limit()
+    {
+        static string Sheet(int depth) => $"""<worksheet xmlns="{S}"><sheetData/><conditionalFormatting sqref="A1"><cfRule type="cellIs" operator="equal"><formula>{Nest(depth, "<x>", "</x>", "7")}</formula></cfRule></conditionalFormatting></worksheet>""";
+        var d = Tmp();
+        try
+        {
+            var ok = Xlsx(d, Sheet(100));
+            Assert.Equal(7, SheetFiles.ReadXlsx(ok).Sheets[0].CondRules.Single().V1);
+            File.Delete(ok);
+            var bad = Xlsx(d, Sheet(1_000_000));
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            AssertRejected(bad);
+            Assert.True(sw.Elapsed < TimeSpan.FromSeconds(30), $"Dauer: {sw.Elapsed}");
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0504: Excel – überlange Beziehungsziele werden nicht je Blatt oder Anker verarbeitet")]
+    public void Oversized_relationship_targets_are_ignored()
+    {
+        var huge = new string('x', 9 * 1024 * 1024); // unter der Schwelle der ZIP-Bomben-Prüfung
+        var d = Tmp();
+        try
+        {
+            var f = Zip(d,
+                ("xl/workbook.xml", $"""<workbook xmlns="{S}" xmlns:r="{R}"><sheets>{string.Concat(Enumerable.Range(0, OfficeZip.MaxEntries).Select(i => $"<sheet name=\"B{i}\" r:id=\"lang\"/>"))}</sheets></workbook>"""),
+                ("xl/_rels/workbook.xml.rels", RelList([Rel("lang", huge)])),
+                ("xl/worksheets/sheet1.xml", OneCell));
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            Assert.Equal(OfficeZip.MaxEntries, SheetFiles.ReadXlsx(f).Sheets.Count);
+            Assert.True(sw.Elapsed < TimeSpan.FromSeconds(30), $"Dauer: {sw.Elapsed}");
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    const string Tri = "v 0 0 0\nv 1 0 0\nv 1 1 0\n";
+
+    [Fact(DisplayName = "T-0504: OBJ-Teile – Gesamtgrenze über alle Teile, genau an der Grenze geht es noch")]
+    public void Obj_parts_total_limit()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = Path.Combine(d, "a.obj");
+            File.WriteAllText(f, Tri + "o A\nf 1 2 3\no B\nf 1 2 3\no C\nf 1 2 3\n");
+            Assert.Equal(3, Mesh3D.ImportParts(f, "cm", 3).Count);
+            Assert.Throws<InvalidOperationException>(() => Mesh3D.ImportParts(f, "cm", 2));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0504: OBJ-Teile – die Grenze greift beim Einlesen, nicht erst am Dateiende")]
+    public void Obj_parts_limit_stops_reading()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = Path.Combine(d, "a.obj");
+            // Die Zeile „v a b c“ hinter der Grenze wäre ein Zahlenfehler: Er darf nicht mehr erreicht werden.
+            File.WriteAllText(f, Tri + "o A\nf 1 2 3\no B\nf 1 2 3\nv a b c\n");
+            Assert.Throws<InvalidOperationException>(() => Mesh3D.ImportParts(f, "cm", 1));
+            File.WriteAllText(f, string.Concat(Enumerable.Repeat("v 0 0 0\n", 7)) + "v a b c\n");
+            Assert.Throws<InvalidOperationException>(() => Mesh3D.ImportParts(f, "cm", 2)); // höchstens 3 Punkte je erlaubtes Dreieck
+            var sb = new StringBuilder(Tri);
+            for (var i = 0; i <= Mesh3D.MaxTriangles; i++) sb.Append("f 1 2 3\n");
+            File.WriteAllText(f, sb.Append("v a b c\n").ToString());
+            Assert.Throws<InvalidOperationException>(() => Mesh3D.ImportParts(f, "cm")); // Grenze je Teil ebenfalls beim Einlesen
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0504: OBJ-Teile – ein riesiges Vieleck zählt beim Einlesen je Dreieck")]
+    public void Obj_parts_big_polygon()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = Path.Combine(d, "a.obj");
+            File.WriteAllText(f, "v 0 0 0\nv 1 0 0\nv 1 1 0\nv 0 1 0\nf 1 2 3 4\nv a b c\n");
+            Assert.Throws<InvalidOperationException>(() => Mesh3D.ImportParts(f, "cm", 1));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0504: OBJ-Teile – Anzahl der Teile ist begrenzt, auch über Farben")]
+    public void Obj_parts_count_limit()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = Path.Combine(d, "a.obj");
+            var sb = new StringBuilder(Tri);
+            for (var i = 0; i <= Mesh3D.MaxImportParts + 1; i++) sb.Append("o T\nf 1 2 3\n"); // ein Teil zählt, sobald das nächste beginnt
+            File.WriteAllText(f, sb.Append("v a b c\n").ToString());
+            Assert.Throws<InvalidOperationException>(() => Mesh3D.ImportParts(f));
+
+            File.WriteAllText(Path.Combine(d, "c.mtl"), string.Concat(Enumerable.Range(0, 256).SelectMany(r => Enumerable.Range(0, 256).Select(g => $"newmtl m{r}_{g}\nKd {r / 255.0:0.####} {g / 255.0:0.####} 0\n".Replace(',', '.')))));
+            var colors = new StringBuilder("mtllib c.mtl\n" + Tri);
+            for (var part = 0; part < 2; part++) // zwei Teile mit je 65.536 Farben = 131.072 Einzelteile
+            {
+                colors.Append("o T\n");
+                for (var r = 0; r < 256; r++) for (var g = 0; g < 256; g++) colors.Append($"usemtl m{r}_{g}\nf 1 2 3\n");
+            }
+            File.WriteAllText(f, colors.ToString());
+            Assert.Throws<InvalidOperationException>(() => Mesh3D.ImportParts(f));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0504: OBJ-Teile – Materialdatei darf auch hinter den ersten Flächen genannt sein")]
+    public void Obj_parts_late_mtllib()
+    {
+        var d = Tmp();
+        try
+        {
+            File.WriteAllText(Path.Combine(d, "a.mtl"), "newmtl rot\nKd 1 0 0\n");
+            var f = Path.Combine(d, "a.obj");
+            File.WriteAllText(f, Tri + "usemtl rot\nf 1 2 3\nmtllib a.mtl\n");
+            Assert.Equal("#FF0000", Mesh3D.ImportParts(f, "mm").Single().Color);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
     [Fact(DisplayName = "T-0502: OBJ – Teile, Materialien und kaputte Flächen")]
     public void Obj_parts()
     {

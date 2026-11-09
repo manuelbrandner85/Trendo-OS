@@ -9,6 +9,8 @@ public static partial class Mesh3D
     public const int MaxTriangles = 200_000;
     /// <summary>Obergrenze beim Einlesen ganzer Netze (Scans sind oft groß, aber eine präparierte OBJ darf nicht den Speicher füllen; 20 Mio. Dreiecke brauchen beim Einlesen bis zu 4,4 GB).</summary>
     public const int MaxFileTriangles = 20_000_000;
+    /// <summary>Höchstzahl der Teile, in die eine Datei zerfallen darf: Jedes Teil kostet Speicher, auch wenn es nur ein Dreieck hat.</summary>
+    public const int MaxImportParts = 100_000;
 
     public static void WriteObj(Mesh mesh, string path)
     {
@@ -194,7 +196,7 @@ public static partial class Mesh3D
     public static Part3D Import(string path) => ImportParts(path, "auto")[0];
 
     /// <summary>Liest eine Datei als Teile. unit ist auto, mm oder cm. GLB und glTF bleiben Meter.</summary>
-    public static List<Part3D> ImportParts(string path, string unit = "auto")
+    public static List<Part3D> ImportParts(string path, string unit = "auto", int maxTriangles = MaxFileTriangles)
     {
         if (!File.Exists(path)) throw new InvalidOperationException("Die Datei gibt es nicht.");
         var ext = Path.GetExtension(path).ToLowerInvariant();
@@ -204,7 +206,7 @@ public static partial class Mesh3D
         var scale = ext is ".glb" or ".gltf" ? 100.0 : mm ? 0.1 : 1.0;
         List<Part3D> parts = ext switch
         {
-            ".obj" => ReadObjParts(path, scale),
+            ".obj" => ReadObjParts(path, scale, maxTriangles),
             ".stl" => SplitColors(ReadStl(path, scale), name),
             ".glb" => SplitColors(ReadGlb(path), name),
             ".gltf" => SplitColors(ReadGltf(path), name),
@@ -308,19 +310,29 @@ public static partial class Mesh3D
         };
     }
 
-    static List<Part3D> ReadObjParts(string path, double scale)
+    static List<Part3D> ReadObjParts(string path, double scale, int maxTriangles)
     {
-        var lines = File.ReadAllLines(path);
+        static InvalidOperationException TooBig(int max) => new($"Die Datei ist zu groß: Trendo liest höchstens {max:N0} Dreiecke.");
+        static InvalidOperationException TooManyParts() => new($"Die Datei hat zu viele Teile (über {MaxImportParts:N0}).");
         var v = new List<Vec3>();
-        var mtls = ReadMtl(path, lines);
+        var mtls = ReadMtl(path, File.ReadLines(path)); // eigener Durchlauf: Die Materialdatei darf auch nach der ersten Fläche genannt sein
         var chunks = new List<(string Name, Mesh Mesh)>();
         Mesh? cur = null;
         var name = Path.GetFileNameWithoutExtension(path);
         void Paint(byte r, byte g, byte b) { if (cur is null) return; cur.CR = r; cur.CG = g; cur.CB = b; }
         byte cr = 0xB7, cg = 0xBC, cb = 0xC4;
-        void Flush() { if (cur is { Triangles: > 0 }) chunks.Add((name, cur)); cur = null; }
+        long finished = 0; // Dreiecke der abgeschlossenen Teile
+        void Flush()
+        {
+            if (cur is { Triangles: > 0 })
+            {
+                if (chunks.Count >= MaxImportParts) throw TooManyParts();
+                chunks.Add((name, cur)); finished += cur.Triangles;
+            }
+            cur = null;
+        }
         var ids = new List<int>();
-        foreach (var raw in lines)
+        foreach (var raw in File.ReadLines(path))
         {
             var line = raw.AsSpan().Trim(); var pos = 0;
             if (line.Length == 0 || line[0] == '#') continue;
@@ -333,7 +345,10 @@ public static partial class Mesh3D
             else if (kind is "v")
             {
                 if (NextToken(line, ref pos, out var x) && NextToken(line, ref pos, out var y) && NextToken(line, ref pos, out var z))
+                {
+                    if (v.Count >= maxTriangles * 3L) throw TooBig(maxTriangles);
                     v.Add(new(D(x) * scale, D(y) * scale, D(z) * scale));
+                }
             }
             else if (kind is "f" && HasTokens(line, pos, 3))
             {
@@ -348,7 +363,11 @@ public static partial class Mesh3D
                 }
                 for (var i = 1; i + 1 < ids.Count; i++)
                     if ((uint)ids[0] < (uint)v.Count && (uint)ids[i] < (uint)v.Count && (uint)ids[i + 1] < (uint)v.Count)
+                    {
                         cur.Add(v[ids[0]], v[ids[i]], v[ids[i + 1]]);
+                        Guard(cur.Triangles);
+                        if (finished + cur.Triangles > maxTriangles) throw TooBig(maxTriangles);
+                    }
             }
         }
         Flush();
@@ -356,8 +375,8 @@ public static partial class Mesh3D
         var parts = new List<Part3D>();
         foreach (var (chunkName, mesh) in chunks)
         {
-            Guard(mesh.Triangles);
             parts.AddRange(SplitColors(mesh, chunkName));
+            if (parts.Count > MaxImportParts) throw TooManyParts();
         }
         return parts;
     }
@@ -690,7 +709,7 @@ public static partial class Mesh3D
 
     readonly record struct ColorKey(byte R, byte G, byte B);
 
-    static Dictionary<string, (byte R, byte G, byte B)> ReadMtl(string objPath, string[] objLines)
+    static Dictionary<string, (byte R, byte G, byte B)> ReadMtl(string objPath, IEnumerable<string> objLines)
     {
         var map = new Dictionary<string, (byte R, byte G, byte B)>(StringComparer.OrdinalIgnoreCase);
         var mtllib = objLines.Select(l => l.Trim()).FirstOrDefault(l => l.StartsWith("mtllib ", StringComparison.OrdinalIgnoreCase));
