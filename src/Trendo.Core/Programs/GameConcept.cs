@@ -75,11 +75,16 @@ public static class GameConcept
     }
 
     /// <summary>Ideen ohne KI aus dem Baukasten. Abgelehnte Themen fallen weg, gemochte kommen zuerst.</summary>
-    public static List<Idea> Local(Options o, int seed, IReadOnlyCollection<string>? liked = null, IReadOnlyCollection<string>? disliked = null, int count = 5)
+    public static List<Idea> Local(Options o, int seed, IReadOnlyCollection<string>? liked = null, IReadOnlyCollection<string>? disliked = null, IReadOnlyCollection<string>? seen = null, int count = 5)
     {
         var rng = new Random(seed);
         bool Rejected(Theme t) => disliked?.Contains(t.Id) == true;
-        var pool = Themes.Where(t => !Rejected(t) && (o.Mood.Length == 0 || t.Mood == o.Mood)).ToList();
+        bool Fresh(Theme t) => seen?.Contains(t.Id) != true || liked?.Contains(t.Id) == true;
+        var matching = Themes.Where(t => !Rejected(t) && (o.Mood.Length == 0 || t.Mood == o.Mood)).ToList();
+        var pool = matching.Where(Fresh).ToList();
+        // Reicht es nicht für drei Ideen: erst ungesehene Themen anderer Stimmungen, dann Bekanntes
+        if (pool.Count < 3) pool.AddRange(Themes.Where(t => !Rejected(t) && Fresh(t) && !pool.Contains(t)));
+        if (pool.Count < 3) pool.AddRange(matching.Where(t => !pool.Contains(t)));
         if (pool.Count < 3) pool.AddRange(Themes.Where(t => !Rejected(t) && !pool.Contains(t)));
         var chosen = pool.Select(t => (Theme: t, Order: rng.Next())).OrderBy(x => liked?.Contains(x.Theme.Id) == true ? 0 : 1).ThenBy(x => x.Order).Take(count).Select(x => x.Theme);
         string Pick(string wanted, IReadOnlyList<string> from) => wanted.Length > 0 ? wanted : from[rng.Next(from.Count)];

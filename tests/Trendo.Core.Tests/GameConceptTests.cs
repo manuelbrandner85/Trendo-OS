@@ -32,6 +32,20 @@ public class GameConceptTests
         Assert.True(GameConcept.Local(new GameConcept.Options(Mood: "lustig"), 3, disliked: ["putzroboter", "katzen", "imbiss"]).Count >= 3);
     }
 
+    [Fact(DisplayName = "Ideen: neu würfeln ohne KI zeigt Ungesehenes, auch wenn die Stimmung nur drei Themen hat; Gemochtes darf wiederkommen")]
+    public void Reroll_shows_new()
+    {
+        var o = new GameConcept.Options(Mood: "lustig");
+        var first = GameConcept.Local(o, 1).Select(i => i.Theme).ToList();
+        var second = GameConcept.Local(o, 2, seen: first);
+        Assert.True(second.Count >= 3);
+        Assert.DoesNotContain(second, i => first.Contains(i.Theme));
+        Assert.Contains(GameConcept.Local(o, 3, liked: ["katzen"], seen: first), i => i.Theme == "katzen");
+        var all = GameConcept.Local(new GameConcept.Options(), 4, count: 12).Select(i => i.Theme).ToList();
+        Assert.Equal(12, all.Count);
+        Assert.True(GameConcept.Local(o, 5, seen: all).Count >= 3); // alles gesehen: trotzdem Ideen
+    }
+
     [Fact(DisplayName = "Ideen: KI-Antwort wird gelesen, Einstellungen gelten, Abgelehntes und Unbrauchbares fällt weg")]
     public void Parse_answer()
     {

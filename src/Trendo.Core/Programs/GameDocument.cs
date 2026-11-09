@@ -132,7 +132,7 @@ public static class GameDocument
         foreach (var s in Sections(d))
         {
             sb.Append($"## {s.Title}\n\n{Body(d, s)}\n\n");
-            foreach (var img in Images(d, s.Id)) sb.Append($"![{s.Title}]({img})\n\n");
+            foreach (var img in Images(d, s.Id)) sb.Append($"![{s.Title}]({Path.GetFileName(img)})\n\n"); // nur der Name: der Text geht auch an KIs und in Exporte
         }
         return sb.ToString().TrimEnd() + "\n";
     }
@@ -141,6 +141,14 @@ public static class GameDocument
 
     public static List<string> Images(JsonObject d, string id) => Texts((d["docImages"] as JsonObject)?[id]);
     public static List<string> Vault(JsonObject d) => Texts(d["docVault"]);
+
+    /// <summary>Nur lokale PNG- und JPG-Dateien werden geöffnet: Pfade stehen im Dokument, das auch aus fremder Quelle stammen kann, und ein Netzwerkpfad würde beim Anzeigen eine Verbindung aufbauen.</summary>
+    public static bool IsLocalImage(string path)
+    {
+        static bool Sep(char c) => c is '\\' or '/';
+        if (string.IsNullOrWhiteSpace(path) || path.Contains('\0') || (path.Length > 1 && Sep(path[0]) && Sep(path[1])) || !Path.IsPathFullyQualified(path)) return false;
+        return Path.GetExtension(path).ToLowerInvariant() is ".png" or ".jpg" or ".jpeg";
+    }
 
     static void Attach(JsonObject d, string id, string path)
     {
@@ -213,6 +221,7 @@ public static class GameDocument
             {
                 try
                 {
+                    if (!IsLocalImage(file)) throw new ArgumentException("Kein lokales Bild.");
                     using var img = XImage.FromFile(file);
                     var w = Math.Min(MaxImage, img.PixelWidth * 25.4 / 96); var h = w * img.PixelHeight / img.PixelWidth;
                     if (h > MaxImageHeight) { w *= MaxImageHeight / h; h = MaxImageHeight; }
@@ -221,7 +230,7 @@ public static class GameDocument
                     g!.DrawImage(img, Left * Mm, y * Mm, w * Mm, h * Mm);
                     y += h;
                 }
-                catch (Exception e) when (e is InvalidOperationException or ArgumentException or IOException or NotSupportedException)
+                catch (Exception e) when (e is InvalidOperationException or ArgumentException or IOException or NotSupportedException or UnauthorizedAccessException)
                 {
                     Line("[Bild konnte nicht eingebettet werden: " + Path.GetFileName(file) + "]", text, XColor.FromArgb(0x5C, 0x6B, 0x7A), 5);
                 }
@@ -246,6 +255,20 @@ public static class GameDocument
         if (all[id] is not JsonArray l) all[id] = l = [];
         l.Add(new JsonObject { ["role"] = role, ["text"] = text });
     });
+
+    /// <summary>Verlauf eines entfernten Abschnitts löschen, damit ein neuer Abschnitt mit derselben Kennung ihn nicht erbt.</summary>
+    public static void ClearChat(ProgramDocument doc, string id) { if ((doc.Meta["docChats"] as JsonObject)?.ContainsKey(id) == true) doc.EditMeta(m => (m["docChats"] as JsonObject)?.Remove(id)); }
+
+    static bool ValidList(Section s, JsonNode? n)
+    {
+        if (n is not JsonArray { Count: > 0 } list) return false;
+        return s.Kind switch
+        {
+            SectionKind.Milestones => list.All(x => (x is JsonObject o ? S(o["name"]) : S(x)).Length > 0),
+            SectionKind.Quests => list.All(x => x is JsonObject o && S(o["title"]).Length > 0),
+            _ => list.All(x => x is JsonObject o && S(o["name"]).Length > 0),
+        };
+    }
 
     public static string ChatInstructions(Section s)
     {
@@ -273,16 +296,17 @@ public static class GameDocument
     /// <summary>KI-Antwort trennen in Text und Vorschlag. Eine unlesbare Liste wird kein Vorschlag, damit sie nie ins Dokument gelangt.</summary>
     public static Reply ParseReply(string answer, Section s)
     {
-        var m = Regex.Match(answer, @"```[a-zA-ZäöüÄÖÜ]*[ \t]*\r?\n?([\s\S]*?)```");
+        var m = Regex.Match(answer, @"```(?:[a-zA-ZäöüÄÖÜ]+[ \t]*\r?\n|\r?\n)?([\s\S]*?)```");
         if (!m.Success) return new Reply(answer.Trim(), null);
         var text = (answer[..m.Index] + answer[(m.Index + m.Length)..]).Trim();
         var suggestion = m.Groups[1].Value.Trim();
         if (suggestion.Length == 0) return new Reply(text, null);
         if (!s.Editable)
         {
-            JsonNode? n = null;
-            try { n = JsonNode.Parse(suggestion); } catch (JsonException) { }
-            if (n is not JsonArray) return new Reply(text, null);
+            bool ok;
+            try { ok = ValidList(s, JsonNode.Parse(suggestion)); }
+            catch (Exception e) when (e is JsonException or ArgumentException or InvalidOperationException) { ok = false; } // auch doppelte Schlüssel
+            if (!ok) return new Reply(text, null);
         }
         return new Reply(text, suggestion);
     }

@@ -2,6 +2,7 @@ using System.Text.Json.Nodes;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Trendo.Core;
 using Trendo.Core.Programs;
@@ -18,7 +19,8 @@ public partial class MainWindow
     readonly Dictionary<string, string> _gcAnswers = []; readonly HashSet<string> _gcLiked = [], _gcDisliked = [];
     readonly Dictionary<string, string> _gcImages = [], _gcImageNotes = [];
     GameConcept.Options _gcOpts = new(); List<GameConcept.Idea> _gcIdeas = []; int _gcSeed = Environment.TickCount;
-    string? _gdChat; bool _gdBusy; (string Id, string Text)? _gdPending;
+    readonly HashSet<string> _gcSeen = [];
+    (string Doc, string Section)? _gdChat; bool _gdBusy; (ProgramDocument Doc, string Id, string Text)? _gdPending;
 
     /// <summary>Aktuelle Ideen (für Tests).</summary>
     public IReadOnlyList<GameConcept.Idea> GameIdeas => _gcIdeas;
@@ -34,11 +36,23 @@ public partial class MainWindow
         return (a.Text, KiLabel(a, all));
     }
 
+    /// <summary>Nach einer KI-Antwort neu zeichnen, ohne etwas zu stören: Wer woanders arbeitet, sieht das Ergebnis beim Zurückkommen; ein gerade bearbeitetes Feld behält Text, Fokus und Schreibmarke.</summary>
+    void GameRefresh()
+    {
+        if (CurrentView != GK) return;
+        var focused = FocusManager?.GetFocusedElement() as TextBox;
+        var (name, text, caret) = (focused?.Name, focused?.Text, focused?.CaretIndex ?? 0);
+        Show(GK);
+        if (name is not null && this.GetLogicalDescendants().OfType<TextBox>().FirstOrDefault(t => t.Name == name) is { } again) { again.Text = text; again.CaretIndex = caret; Avalonia.Threading.Dispatcher.UIThread.Post(() => again.Focus(), Avalonia.Threading.DispatcherPriority.Background); } // erst nach dem Neuzeichnen, sonst geht der Fokus wieder verloren
+    }
+
     // ───────────── Ideen ─────────────
 
     public async Task GameIdeasRun(GameConcept.Options options)
     {
         if (_gcBusy) return;
+        if (options != _gcOpts) _gcSeen.Clear();
+        foreach (var i in _gcIdeas) _gcSeen.Add(i.Theme);
         _gcBusy = true; _gcOpts = options; _gcNote = "Ideen werden gesucht …"; Show(GK);
         _core.Audit.Append(Principal.LocalOwner.Name, "game.ideen", options.Genre);
         try
@@ -50,10 +64,10 @@ public partial class MainWindow
                 ideas = GameConcept.Parse(text, options, _gcDisliked, ++_gcSeed); source = "erstellt von " + ki;
             }
             catch (Exception e) when (e is InvalidOperationException or HttpRequestException or TaskCanceledException or IOException) { }
-            if (ideas.Count < 3) { ideas = GameConcept.Local(options, ++_gcSeed, _gcLiked, _gcDisliked); source = "ohne KI aus dem Ideen-Baukasten – mit einer eingerichteten KI werden die Ideen freier"; }
+            if (ideas.Count < 3) { ideas = GameConcept.Local(options, ++_gcSeed, _gcLiked, _gcDisliked, _gcSeen); source = "ohne KI aus dem Ideen-Baukasten – mit einer eingerichteten KI werden die Ideen freier"; }
             _gcIdeas = ideas; _gcImages.Clear(); _gcImageNotes.Clear(); _gcNote = $"{ideas.Count} Ideen, {source}.";
         }
-        finally { _gcBusy = false; Show(GK); }
+        finally { _gcBusy = false; GameRefresh(); }
     }
 
     void GameIdeaRate(GameConcept.Idea idea, bool like)
@@ -72,7 +86,7 @@ public partial class MainWindow
         var (ok, msg) = await KiToolRun("bild", GameConcept.ImagePrompt(idea), folder, file);
         if (ok) { _gcImages[idea.Title] = Path.GetFullPath(Path.Combine(folder, file.Replace('/', Path.DirectorySeparatorChar))); _gcImageNotes.Remove(idea.Title); }
         else _gcImageNotes[idea.Title] = "Kein Konzeptbild: " + msg;
-        Show(GK);
+        GameRefresh();
     }
 
     public void GameIdeaUse(GameConcept.Idea idea)
@@ -169,10 +183,11 @@ public partial class MainWindow
 
     Control GameThumb(string file, string name, double width)
     {
+        if (!GameDocument.IsLocalImage(file)) return new TextBlock { Name = name, Text = "Bild nicht geöffnet (nur lokale PNG- und JPG-Dateien): " + Path.GetFileName(file), Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap };
         try
         {
             using var fs = File.OpenRead(file);
-            return new Image { Name = name, Source = new Avalonia.Media.Imaging.Bitmap(fs), Width = width, HorizontalAlignment = HorizontalAlignment.Left };
+            return new Image { Name = name, Source = Avalonia.Media.Imaging.Bitmap.DecodeToWidth(fs, (int)width * 2), Width = width, HorizontalAlignment = HorizontalAlignment.Left };
         }
         catch (Exception e) when (e is IOException or ArgumentException or InvalidOperationException or NullReferenceException or UnauthorizedAccessException)
         {
@@ -204,7 +219,7 @@ public partial class MainWindow
 
     Control GameDocCard(ProgramDocument d, GameDocument.Section s, int index, int count)
     {
-        var id = s.Id; var pre = "game-doc-" + id;
+        var id = s.Id; var pre = "game-doc-" + id; var chatOpen = _gdChat is { } open && open.Doc == d.Id && open.Section == id;
         Button Small(string suffix, string label, Action a, bool enabled = true) { var b = Act(pre + suffix, label, a); b.FontSize = 11.5; b.Padding = new Thickness(8, 3); b.Margin = new Thickness(0, 0, 4, 0); b.IsEnabled = enabled; return b; }
         Control heading;
         if (s.Custom)
@@ -221,8 +236,8 @@ public partial class MainWindow
             Small("-down", "▼", () => ProgramRun(GK, () => d.Edit("Abschnitt verschieben", x => GameDocument.Move(x, id, 1))), index < count - 1),
             Act(pre + "-img", "🖼 Bild", () => GameDocPickImage(d, id)),
             new Border { Width = 4 },
-            Small("-chat", _gdChat == id ? "💬 Chat schließen" : "💬 Mit KI besprechen", () => { _gdChat = _gdChat == id ? null : id; _gdPending = null; Show(GK); }) } };
-        if (s.Custom) head.Children.Add(Small("-del", "Entfernen", () => ProgramRun(GK, () => d.Edit("Abschnitt entfernen", x => GameDocument.RemoveCustom(x, id)))));
+            Small("-chat", chatOpen ? "💬 Chat schließen" : "💬 Mit KI besprechen", () => { _gdChat = chatOpen ? null : (d.Id, id); _gdPending = null; Show(GK); }) } };
+        if (s.Custom) head.Children.Add(Small("-del", "Entfernen", () => ProgramRun(GK, () => { d.Edit("Abschnitt entfernen", x => GameDocument.RemoveCustom(x, id)); GameDocument.ClearChat(d, id); })));
         var sp = new StackPanel { Spacing = 6, Children = { head } };
         if (s.Editable)
         {
@@ -252,7 +267,7 @@ public partial class MainWindow
             }
             sp.Children.Add(strip);
         }
-        if (_gdChat == id) sp.Children.Add(GameDocChat(d, s));
+        if (chatOpen) sp.Children.Add(GameDocChat(d, s));
         return new Border { Name = pre, Padding = new Thickness(12, 10), CornerRadius = new CornerRadius(12), Background = Brush.Parse(C("#14FFFFFF", "#08000000")), BorderBrush = Edge, BorderThickness = new Thickness(1), Child = sp };
     }
 
@@ -296,16 +311,17 @@ public partial class MainWindow
             var (answer, ki) = await GameAsk(GameDocument.ChatInstructions(s), GameDocument.ChatPrompt(d.Data, s, question, history));
             var reply = GameDocument.ParseReply(answer, s);
             GameDocument.AddChat(d, id, ki, reply.Text.Length > 0 ? reply.Text : "Hier ist mein Vorschlag.");
-            if (reply.Suggestion is { } text) _gdPending = (id, text);
+            if (reply.Suggestion is { } text) _gdPending = (d, id, text);
         }
         catch (Exception e) when (e is InvalidOperationException or HttpRequestException or TaskCanceledException or IOException) { GameDocument.AddChat(d, id, "Hinweis", e.Message); }
-        finally { _gdBusy = false; Show(GK); }
+        finally { _gdBusy = false; GameRefresh(); }
     }
 
     /// <summary>Vorschlag übernehmen: ein Schritt, rückgängig machbar, nur dieser Abschnitt.</summary>
     public void GameDocAccept()
     {
-        if (_gdPending is not { } p || ProgramActive(GK) is not { } d || GameDocument.Find(d.Data, p.Id) is not { } s) return;
+        if (_gdPending is not { } p || !ReferenceEquals(ProgramActive(GK), p.Doc) || GameDocument.Find(p.Doc.Data, p.Id) is not { } s) return;
+        var d = p.Doc;
         ProgramRun(GK, () => { d.Edit("KI-Vorschlag: " + s.Title, x => GameDocument.Apply(x, s, p.Text)); _gdPending = null; _progMsg[GK] = $"Vorschlag für „{s.Title}“ übernommen. Rückgängig mit Strg+Z."; });
     }
 
@@ -314,7 +330,7 @@ public partial class MainWindow
         var id = s.Id;
         var sp = new StackPanel { Name = "game-doc-chat", Spacing = 5 };
         foreach (var l in GameDocument.Chat(d, id)) sp.Children.Add(P($"{(l.Role == "du" ? "Du" : l.Role)}: {l.Text}", l.Role == "du" ? Text : Muted, 12));
-        if (_gdPending is { } p && p.Id == id)
+        if (_gdPending is { } p && ReferenceEquals(p.Doc, d) && p.Id == id)
         {
             var preview = new StackPanel { Name = "game-doc-preview", Spacing = 2, Children = { P("Vorschlag (noch nicht übernommen):", Text, 12.5) } };
             foreach (var line in GameDocument.Preview(d.Data, s, p.Text).Take(14)) preview.Children.Add(P(line, Muted, 12));

@@ -37,8 +37,8 @@ public partial class MainWindow
         ],
         Exports =
         [
+            new("bible-pdf", "Spielbibel als PDF", ".pdf", (d, f) => { GameDocument.WritePdf(d.Data, f); return f; }), // zuerst: die Stufe Einfach zeigt nur den ersten Export
             new("bible", "Spielbibel", ".md", (d, f) => { File.WriteAllText(f, GameDesign.BibleMarkdown(d.Data)); return f; }),
-            new("bible-pdf", "Spielbibel als PDF", ".pdf", (d, f) => { GameDocument.WritePdf(d.Data, f); return f; }),
         ],
         Workspace = GameWorkspace,
         Properties = GameProperties,

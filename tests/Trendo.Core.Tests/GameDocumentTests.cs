@@ -182,7 +182,7 @@ public class GameDocumentTests
         Assert.Equal(["Rennen", "Fliegen", "Tauchen"], d["mechanics"]!.AsArray().Select(x => (string)x!));
     }
 
-    [Fact(DisplayName = "Chat: Verlauf bleibt nach Speichern und Laden, ohne Rückgängig-Schritt und unberührt vom Wiederherstellen")]
+    [Fact(DisplayName = "Chat: Verlauf bleibt nach Speichern, Laden und Autosave, ohne Rückgängig-Schritt")]
     public void Chat_persists()
     {
         var root = Tmp();
@@ -199,6 +199,101 @@ public class GameDocumentTests
             Assert.Equal(2, GameDocument.Chat(loaded, "stil").Count);
             var autosave = loaded.Autosave(root) ?? ProgramDocument.AutosaveFile(file);
             Assert.Equal(2, GameDocument.Chat(ProgramDocument.Restore(autosave), "stil").Count);
+        }
+        finally { Directory.Delete(root, true); }
+    }
+
+    [Theory(DisplayName = "Chat: Liste ohne brauchbare Einträge wird kein Vorschlag und kann nichts löschen")]
+    [InlineData("figuren", "[\"Anna\",\"Ben\"]")]
+    [InlineData("figuren", "[]")]
+    [InlineData("figuren", "[{\"role\":\"Held\"}]")]
+    [InlineData("figuren", "[{\"name\":\"a\",\"name\":\"b\"}]")]
+    [InlineData("welt", "[\"Wald\"]")]
+    [InlineData("missionen", "[{\"goal\":\"ohne Titel\"}]")]
+    [InlineData("meilensteine", "[]")]
+    public void Unusable_list(string section, string json) =>
+        Assert.Null(GameDocument.ParseReply($"Rat\n```json\n{json}\n```", Sec(Bible(), section)).Suggestion);
+
+    [Fact(DisplayName = "Chat: Block in einer Zeile verliert kein Wort; mit Sprachkennung bleibt nur der Inhalt")]
+    public void One_line_block()
+    {
+        var s = Sec(Bible(), "stil");
+        Assert.Equal("Aquarell, ruhig", GameDocument.ParseReply("```Aquarell, ruhig```", s).Suggestion);
+        Assert.Equal("Aquarell", GameDocument.ParseReply("```abschnitt\nAquarell\n```", s).Suggestion);
+    }
+
+    [Theory(DisplayName = "Bilder: nur lokale PNG- und JPG-Dateien werden geöffnet")]
+    [InlineData("\\\\server\\freigabe\\x.png")]
+    [InlineData("//server/freigabe/x.png")]
+    [InlineData("/\\server\\x.png")]
+    [InlineData("\\\\?\\C:\\x.png")]
+    [InlineData("\\\\.\\COM1.png")]
+    [InlineData("bild.png")]
+    [InlineData("..\\bild.png")]
+    [InlineData("")]
+    public void Rejected_paths(string path) => Assert.False(GameDocument.IsLocalImage(path));
+
+    [Fact(DisplayName = "Bilder: lokaler Pfad ist erlaubt, andere Dateiarten nicht")]
+    public void Local_paths()
+    {
+        var dir = Path.GetTempPath();
+        Assert.True(GameDocument.IsLocalImage(Path.Combine(dir, "a.png"))); Assert.True(GameDocument.IsLocalImage(Path.Combine(dir, "a.JPG")));
+        Assert.False(GameDocument.IsLocalImage(Path.Combine(dir, "a.exe"))); Assert.False(GameDocument.IsLocalImage(Path.Combine(dir, "a.png:strom")));
+    }
+
+    [Fact(DisplayName = "PDF: Netzwerkpfad im Dokument wird nicht geöffnet und bricht nichts ab; Schrift ist eingebettet")]
+    public void Pdf_network_path()
+    {
+        var root = Tmp();
+        try
+        {
+            var d = Bible();
+            GameDocument.AddImage(d, "idee", "\\\\server\\freigabe\\x.png");
+            var f = Path.Combine(root, "netz.pdf");
+            Assert.True(GameDocument.WritePdf(d, f) >= 1);
+            Assert.Equal(0, ImagesIn(f));
+            using var read = PdfReader.Open(f, PdfDocumentOpenMode.Import);
+            Assert.True(read.Pages[0].Resources.Elements.GetDictionary("/Font")?.Elements.Count > 0);
+        }
+        finally { Directory.Delete(root, true); }
+    }
+
+    [Fact(DisplayName = "Datenschutz: Markdown und KI-Auftrag enthalten nur den Dateinamen, nie den Pfad")]
+    public void Image_paths_stay_private()
+    {
+        var d = Bible();
+        var file = Path.Combine(Path.GetTempPath(), "geheim-ordner", "bild.png");
+        GameDocument.AddImage(d, "idee", file);
+        var md = GameDocument.Markdown(d);
+        Assert.Contains("![Idee](bild.png)", md); Assert.DoesNotContain("geheim-ordner", md);
+        Assert.DoesNotContain("geheim-ordner", GameDocument.ChatPrompt(d, Sec(d, "stil"), "Frage", []));
+    }
+
+    [Fact(DisplayName = "Chat: Verlauf eines entfernten Abschnitts wird nicht vererbt")]
+    public void Chat_not_inherited()
+    {
+        var doc = new ProgramDocument("CORE-06", "Test", Bible());
+        var id = ""; doc.Edit("Neu", x => id = GameDocument.AddCustom(x, "Eins"));
+        GameDocument.AddChat(doc, id, "du", "Alt");
+        doc.Edit("Weg", x => GameDocument.RemoveCustom(x, id)); GameDocument.ClearChat(doc, id);
+        var again = ""; doc.Edit("Neu", x => again = GameDocument.AddCustom(x, "Zwei"));
+        Assert.Equal(id, again);
+        Assert.Empty(GameDocument.Chat(doc, again));
+    }
+
+    [Fact(DisplayName = "Chat: Wiederherstellen eines Stands setzt den Verlauf nicht zurück")]
+    public void Chat_survives_restore()
+    {
+        var root = Tmp();
+        try
+        {
+            var doc = new ProgramDocument("CORE-06", "Test", Bible());
+            var file = Path.Combine(root, "spiel.tdoc"); doc.Save(file);
+            doc.Edit("Text", x => GameDocument.SetText(x, "stil", "Neu")); doc.Save(file);
+            GameDocument.AddChat(doc, "stil", "du", "Frage");
+            doc.RestoreVersion(Assert.Single(ProgramDocument.Versions(file)).File);
+            Assert.NotEqual("Neu", (string?)doc.Data["style"]);
+            Assert.Single(GameDocument.Chat(doc, "stil"));
         }
         finally { Directory.Delete(root, true); }
     }
