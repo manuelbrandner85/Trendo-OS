@@ -1,6 +1,6 @@
 # Verkaufen – Einbindung in Trendo OS
 
-Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld · Seite: `verkaufen` · Stand: 0.9.36 (Stand 20e850a)
+Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld · Seite: `verkaufen` · Stand: 0.9.36 (Stand df96c57)
 
 - Seite `verkaufen` im Studio „Online verkaufen“ (Business & Geld) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

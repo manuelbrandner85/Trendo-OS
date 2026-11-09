@@ -1,6 +1,6 @@
 # Vorhaben – Architektur
 
-Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.36 (Stand 20e850a)
+Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.36 (Stand df96c57)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.W4Suite.cs`

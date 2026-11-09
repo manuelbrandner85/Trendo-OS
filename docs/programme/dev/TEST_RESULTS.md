@@ -1,17 +1,17 @@
 # Software – Testergebnisse
 
-Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 20e850a)
+Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand df96c57)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 51 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 19
+Bestanden 68 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 2
 
 | Test | Ergebnis |
 |---|---|
-| A6: Echte Prüfung auf dem Export: drei Bilder, gezeichnete Seite mit <main>, defekter Link und zu breiter Inhalt werden gefunden (übersprungen ohne Chrome) | nicht im Lauf |
-| A6: Eingebauter Fehler wird gemeldet und gezielt nachgebessert; die Obergrenze gilt; Bildbewertung ist nur ein Hinweis | nicht im Lauf |
-| A6: „Seite prüfen“ meldet Fehler der gespeicherten Seite, ohne etwas zu ändern | nicht im Lauf |
-| A7: Ohne Claude läuft die Textaufgabe lokal und die Oberfläche nennt die KI; ohne jede KI ein klarer Hinweis | nicht im Lauf |
+| A6: Echte Prüfung auf dem Export: drei Bilder, gezeichnete Seite mit <main>, defekter Link und zu breiter Inhalt werden gefunden (übersprungen ohne Chrome) | ✓ bestanden |
+| A6: Eingebauter Fehler wird gemeldet und gezielt nachgebessert; die Obergrenze gilt; Bildbewertung ist nur ein Hinweis | ✓ bestanden |
+| A6: „Seite prüfen“ meldet Fehler der gespeicherten Seite, ohne etwas zu ändern | ✓ bestanden |
+| A7: Ohne Claude läuft die Textaufgabe lokal und die Oberfläche nennt die KI; ohne jede KI ein klarer Hinweis | ✓ bestanden |
 | Annehmen/Verwerfen im Programm: Claude ändert das Studio-Dokument – Vorher/Nachher vergleichen, verwerfen stellt alles her, behalten übernimmt | ✓ bestanden |
 | Befehlsleiste Strg+K und Projekt-Fortsetzung überall: Claude fragen, weitermachen – auch aus einem anderen Studio | ✓ bestanden |
 | CORE-07 (UI): Seite aus Beschreibung, Note, Stil, Paket erst nach Bestätigung | ✓ bestanden |
@@ -33,27 +33,27 @@ Bestanden 51 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 19
 | Claude-Chat: „⬆ GitHub“ lädt das Projekt nach Ja als privates Repo hoch (gh-Ordner der Person); „🌐 Netlify“ nur im Web-Studio, veröffentlicht nach Ja | nicht im Lauf |
 | Claude: während der Arbeit weiterschreiben – Nachricht wartet sichtbar und kommt gleich danach dran; „Stopp & jetzt“ nimmt sie sofort | ✓ bestanden |
 | Echt testen bis es läuft: Skriptfehler gehen zurück an Claude; ohne Fehler sieht Claude das Bildschirmfoto an; abschaltbar | ✓ bestanden |
-| Editor-Entwurf ist die Grundlage der KI: ungespeicherte Änderungen gehen nicht verloren und werden erst beim Übernehmen geschrieben | nicht im Lauf |
+| Editor-Entwurf ist die Grundlage der KI: ungespeicherte Änderungen gehen nicht verloren und werden erst beim Übernehmen geschrieben | ✓ bestanden |
 | Etappen: Abo mitten im Auftrag leer – Ersatz-KI übernimmt, Trendo merkt sich das Projekt; ist Claude wieder frei, macht Claude dort weiter | ✓ bestanden |
 | Freihändig sprechen: zuhören, abschicken, Antwort vorlesen, bis man es ausschaltet | ✓ bestanden |
 | Gutachter: zweite Meinung mit Note, ändert nichts; „Verbessern lassen“ gibt die Punkte an Claude | ✓ bestanden |
-| K1 und K2: Das echte Editor-Bündel in echtem Chrome: Auswählen, Mehrfachauswahl, Text direkt ändern, KI-Vorschau (übersprungen ohne Chrome oder Node) | nicht im Lauf |
-| K1: Auftrag außerhalb der Auswahl wird abgelehnt; ohne Auswahl ein Hinweis | nicht im Lauf |
-| K1: Auswahl aus der Vorschau, Auftrag ändert nur sie, die KI sieht nur sie; Verwerfen lässt die Seite gleich, Übernehmen ist ein Rückgängig-Schritt | nicht im Lauf |
-| K2: Text direkt ändern: gespeicherte Daten enthalten den neuen Text, ohne KI | nicht im Lauf |
-| K4 und A7: Bild ohne bildfähige KI ergibt einen Hinweis statt eines Fehlers, nichts wird gefragt; mit bildfähiger KI fließt das Bild in den Auftrag | nicht im Lauf |
-| K4: Satz → Vorschau ohne Schreiben → Übernehmen als ein Schritt → Rückgängig; Editor-Daten statt Dateien | nicht im Lauf |
-| K4: Ungültige KI-Antwort wird gemeldet, nichts gelangt in die Seite | nicht im Lauf |
-| K5: Stand benennen und wiederherstellen; Variante anlegen, öffnen, Original bleibt, übernehmen | nicht im Lauf |
-| Kein Datenverlust: Solange die KI arbeitet, bleibt das Ziel fest; eine Änderung in der Zwischenzeit verwirft den Vorschlag für die Auswahl | nicht im Lauf |
-| Kein Datenverlust: Ungespeicherter Entwurf landet vor Wiederherstellen und Fassungswechsel in einem Stand; benannte Stände bleiben sichtbar | nicht im Lauf |
-| Kein Datenverlust: Wechsel der Fassung verwirft eine offene KI-Vorschau, die Variante bleibt unberührt | nicht im Lauf |
+| K1 und K2: Das echte Editor-Bündel in echtem Chrome: Auswählen, Mehrfachauswahl, Text direkt ändern, KI-Vorschau (übersprungen ohne Chrome oder Node) | ✓ bestanden |
+| K1: Auftrag außerhalb der Auswahl wird abgelehnt; ohne Auswahl ein Hinweis | ✓ bestanden |
+| K1: Auswahl aus der Vorschau, Auftrag ändert nur sie, die KI sieht nur sie; Verwerfen lässt die Seite gleich, Übernehmen ist ein Rückgängig-Schritt | ✓ bestanden |
+| K2: Text direkt ändern: gespeicherte Daten enthalten den neuen Text, ohne KI | ✓ bestanden |
+| K4 und A7: Bild ohne bildfähige KI ergibt einen Hinweis statt eines Fehlers, nichts wird gefragt; mit bildfähiger KI fließt das Bild in den Auftrag | ✓ bestanden |
+| K4: Satz → Vorschau ohne Schreiben → Übernehmen als ein Schritt → Rückgängig; Editor-Daten statt Dateien | ✓ bestanden |
+| K4: Ungültige KI-Antwort wird gemeldet, nichts gelangt in die Seite | ✓ bestanden |
+| K5: Stand benennen und wiederherstellen; Variante anlegen, öffnen, Original bleibt, übernehmen | ✓ bestanden |
+| Kein Datenverlust: Solange die KI arbeitet, bleibt das Ziel fest; eine Änderung in der Zwischenzeit verwirft den Vorschlag für die Auswahl | ✓ bestanden |
+| Kein Datenverlust: Ungespeicherter Entwurf landet vor Wiederherstellen und Fassungswechsel in einem Stand; benannte Stände bleiben sichtbar | ✓ bestanden |
+| Kein Datenverlust: Wechsel der Fassung verwirft eine offene KI-Vorschau, die Variante bleibt unberührt | ✓ bestanden |
 | Kostenlose KI-Werkzeuge: Claude bestellt ein Bild – erst als Entwurf zum Ansehen, ins Projekt erst nach „Übernehmen“; neu erzeugen, verwerfen; Knöpfe; Diktieren | ✓ bestanden |
 | Markieren & Claude fragen: Zellbereich in Trendo Tabelle geht mit ins Eingabefeld; Knopf auf der Seite; Strg+Umschalt+A | ✓ bestanden |
 | Projekt-Gedächtnis: Claude merkt sich „Merken:“-Zeilen, sie gehen bei jeder Nachricht mit; ansehen, ergänzen, vergessen | ✓ bestanden |
 | Schöne Antworten: Überschrift, Tabelle als Raster, Code mit Farben und „Kopieren“; Glas-Design im Chat | ✓ bestanden |
 | Selbstlernend in allen Studios: Claudes „Lernregel“ wird Vorschlag; nach Ja gilt sie für alle Projekte des Studios; Nein und Zurücknehmen; Gutachten lehrt mit | ✓ bestanden |
-| Sperre löst sich: Auch wenn die Seite nicht lesbar ist, bleibt die KI nicht für immer blockiert | nicht im Lauf |
+| Sperre löst sich: Auch wenn die Seite nicht lesbar ist, bleibt die KI nicht für immer blockiert | ✓ bestanden |
 | Spiele-Studio: eingebaute Spielregeln; mit GAMEFORGE dessen Regeln, Skills und Agenten (im sicheren Modus als Projekt-Skills); Regeln-Feld zeigt den Stand | ✓ bestanden |
 | Spiele: Unreal öffnen und die Herstellerseite bleiben der alte Weg | ✓ bestanden |
 | T-0203: Abbrechen installiert nichts | ✓ bestanden |

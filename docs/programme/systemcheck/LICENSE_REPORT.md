@@ -1,6 +1,6 @@
 # Systemcheck – Lizenzen
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `systemcheck` · Stand: 0.9.36 (Stand 20e850a)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `systemcheck` · Stand: 0.9.36 (Stand df96c57)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

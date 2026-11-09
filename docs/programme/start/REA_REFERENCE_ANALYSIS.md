@@ -1,6 +1,6 @@
 # Startbildschirm – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.36 (Stand 20e850a)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.36 (Stand df96c57)
 
 Analyse: [Vorbild-Analyse Desktop: Windows 11, GNOME Shell, macOS Launchpad, VS Code Arbeitsbereiche (Clean-Room)](../../../docs/claude/vorbilder/desktop-windows11-gnome-shell.md)
 

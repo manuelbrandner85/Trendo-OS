@@ -1,6 +1,6 @@
 # Filme machen – Testergebnisse
 
-Studio: Filme machen (STUDIO-FILM-01) · Bereich: Kreativ & Medien · Seite: `film-programm` · Stand: 0.9.36 (Stand 20e850a)
+Studio: Filme machen (STUDIO-FILM-01) · Bereich: Kreativ & Medien · Seite: `film-programm` · Stand: 0.9.36 (Stand df96c57)
 
 Lauf: `api.trx, app.trx, core.trx`
 

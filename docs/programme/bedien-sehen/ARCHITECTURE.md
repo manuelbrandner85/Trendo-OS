@@ -1,6 +1,6 @@
 # Sehen – Architektur
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `bedien-sehen` · Stand: 0.9.36 (Stand 20e850a)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `bedien-sehen` · Stand: 0.9.36 (Stand df96c57)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Sys12.cs`

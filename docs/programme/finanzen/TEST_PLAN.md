@@ -1,8 +1,8 @@
 # Geld – Testplan
 
-Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.36 (Stand 20e850a)
+Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.36 (Stand df96c57)
 
-13 Tests sprechen dieses Programm an.
+16 Tests sprechen dieses Programm an.
 
 - E-Rechnung-Oberfläche: fehlende Angaben verständlich, nichts gebucht; vollständig → XRechnung neben der Rechnung, Einnahme gebucht, eigene Angaben gemerkt
 - Geld: Übersicht mit Saldo und Diagramm, Budget-Warnung, Kategorie in der Tabelle ändern wird gelernt, Steuerberater-ZIP
@@ -15,5 +15,8 @@ Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finan
 - SPEC-11: Bank-CSV (deutsches Format, Anführungszeichen) wird gelesen, Kategorien geraten
 - SPEC-11: Netto/MwSt, Monats- und Jahresübersicht stimmen; Export-Import ohne Verlust; doppelte übersprungen
 - SPEC-11: Rechnung – fortlaufende Nummer, Summen, Kleinunternehmer-Hinweis, keine doppelte Nummer
+- Studio-Ordnung: alphabetisch innerhalb einer Unterteilung, Umlaute deutsch sortiert
+- Studio-Ordnung: jedes Studio im System-Bereich hat eine Unterteilung, keine Unterteilung zeigt auf ein fehlendes Studio
+- Studio-Ordnung: Übersicht zeigt Unterteilungen und Anzahl; „Zuletzt benutzt“ erscheint nach dem Öffnen eines Studios und nicht bei der Suche
 - T-0301: Ring-Klick filtert, Suche, Buchung ändern + Rückgängig, Monat blättern, Fixkosten, Kontoauszug erst Vorschau dann Ja, Regel anlegen
 - § 19 UStG (UI): Kleinunternehmer-Prüfung auf Geld- und Business-Seite

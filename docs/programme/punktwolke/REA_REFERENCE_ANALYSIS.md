@@ -1,6 +1,6 @@
 # Punktwolke – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `punktwolke` · Stand: 0.9.36 (Stand 20e850a)
+Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `punktwolke` · Stand: 0.9.36 (Stand df96c57)
 
 Analyse: [Vorbild-Analyse Punktwolke: CloudCompare, MeshLab (Clean-Room)](../../../docs/claude/vorbilder/punktwolke-cloudcompare.md)
 

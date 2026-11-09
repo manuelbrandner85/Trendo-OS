@@ -1,6 +1,6 @@
 # Abläufe (Automatisch erledigen) – Testplan
 
-Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.36 (Stand 20e850a)
+Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.36 (Stand df96c57)
 
 33 Tests sprechen dieses Programm an.
 

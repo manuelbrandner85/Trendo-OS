@@ -1,6 +1,6 @@
 # Konsolenspiele portieren – Produktionspaket
 
-Studio: Konsolenspiele portieren (STUDIO-CONSOLE-01) · Bereich: 3D, Spiele & VR · Seite: `konsole-programm` · Stand: 0.9.36 (Stand 20e850a)
+Studio: Konsolenspiele portieren (STUDIO-CONSOLE-01) · Bereich: 3D, Spiele & VR · Seite: `konsole-programm` · Stand: 0.9.36 (Stand df96c57)
 
 Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
 Modulstatus (requirements.yaml): IN_PROGRESS / Test NOT_RUN  

@@ -1,6 +1,6 @@
 # Ordner im Heimnetz teilen – Testergebnisse
 
-Studio: Dateien teilen (SYS-06) · Bereich: System & Sicherheit · Seite: `teilen` · Stand: 0.9.36 (Stand 20e850a)
+Studio: Dateien teilen (SYS-06) · Bereich: System & Sicherheit · Seite: `teilen` · Stand: 0.9.36 (Stand df96c57)
 
 Lauf: `api.trx, app.trx, core.trx`
 

@@ -1,6 +1,6 @@
 # Trendo Text – Funktionsmatrix
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.36 (Stand 20e850a)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.36 (Stand df96c57)
 
 Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 

@@ -1,6 +1,6 @@
 # Schaltung & Simulation – Einbindung in Trendo OS
 
-Studio: Schaltungen berechnen (SPEC-02) · Bereich: Technik & Fachgebiete · Seite: `elektronik` · Stand: 0.9.36 (Stand 20e850a)
+Studio: Schaltungen berechnen (SPEC-02) · Bereich: Technik & Fachgebiete · Seite: `elektronik` · Stand: 0.9.36 (Stand df96c57)
 
 - Seite `elektronik` im Studio „Schaltungen berechnen“ (Technik & Fachgebiete) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: ja (Dokumente .tdoc, Zuletzt, Wiederherstellen, Bedienstufen)

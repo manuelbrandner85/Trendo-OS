@@ -1,6 +1,6 @@
 # Trendo-Updates – Lizenzen
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `updates` · Stand: 0.9.36 (Stand 20e850a)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `updates` · Stand: 0.9.36 (Stand df96c57)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

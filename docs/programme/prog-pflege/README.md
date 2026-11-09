@@ -1,6 +1,6 @@
 # Pflegen – Produktionspaket
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `prog-pflege` · Stand: 0.9.36 (Stand 20e850a)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `prog-pflege` · Stand: 0.9.36 (Stand df96c57)
 
 Arbeitsfläche: Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

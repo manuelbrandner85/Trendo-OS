@@ -1,6 +1,6 @@
 # KI – Produktionspaket
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki` · Stand: 0.9.36 (Stand 20e850a)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki` · Stand: 0.9.36 (Stand df96c57)
 
 Arbeitsfläche: KI-Zentrale (Bereiche, Suche, Seite – wie LM Studio)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

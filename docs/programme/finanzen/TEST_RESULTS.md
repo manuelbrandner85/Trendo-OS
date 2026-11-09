@@ -1,10 +1,10 @@
 # Geld – Testergebnisse
 
-Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.36 (Stand 20e850a)
+Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.36 (Stand df96c57)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 13 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 13 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 3
 
 | Test | Ergebnis |
 |---|---|
@@ -19,5 +19,8 @@ Bestanden 13 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | SPEC-11: Bank-CSV (deutsches Format, Anführungszeichen) wird gelesen, Kategorien geraten | ✓ bestanden |
 | SPEC-11: Netto/MwSt, Monats- und Jahresübersicht stimmen; Export-Import ohne Verlust; doppelte übersprungen | ✓ bestanden |
 | SPEC-11: Rechnung – fortlaufende Nummer, Summen, Kleinunternehmer-Hinweis, keine doppelte Nummer | ✓ bestanden |
+| Studio-Ordnung: alphabetisch innerhalb einer Unterteilung, Umlaute deutsch sortiert | nicht im Lauf |
+| Studio-Ordnung: jedes Studio im System-Bereich hat eine Unterteilung, keine Unterteilung zeigt auf ein fehlendes Studio | nicht im Lauf |
+| Studio-Ordnung: Übersicht zeigt Unterteilungen und Anzahl; „Zuletzt benutzt“ erscheint nach dem Öffnen eines Studios und nicht bei der Suche | nicht im Lauf |
 | T-0301: Ring-Klick filtert, Suche, Buchung ändern + Rückgängig, Monat blättern, Fixkosten, Kontoauszug erst Vorschau dann Ja, Regel anlegen | ✓ bestanden |
 | § 19 UStG (UI): Kleinunternehmer-Prüfung auf Geld- und Business-Seite | ✓ bestanden |

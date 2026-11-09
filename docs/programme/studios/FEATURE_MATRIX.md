@@ -1,6 +1,6 @@
 # Alle Studios – Funktionsmatrix
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.36 (Stand 20e850a)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.36 (Stand df96c57)
 
 Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 
@@ -43,28 +43,28 @@ Quelle: `docs/spec/kataloge/CORE-01_KATALOG.md`
 - Verstanden
 - Suchen
 - Alle
-- Arbeiten & Büro
-- Business & Geld
-- Kreativ & Medien
-- 3D, Spiele & VR
-- Technik & Fachgebiete
-- Wissen & Lernen
-- KI & Automatik
-- Entwickeln
-- System & Sicherheit
+- Arbeiten & Büro (5)
+- Business & Geld (3)
+- Kreativ & Medien (7)
+- 3D, Spiele & VR (5)
+- Technik & Fachgebiete (8)
+- Wissen & Lernen (5)
+- KI & Automatik (6)
+- Entwickeln (5)
+- System & Sicherheit (15)
 - Bereit
 - Briefe schreiben
 - Print on Demand
+- Filme machen
 - Trendo Musik
 - TV & Live
-- Filme machen
 - Konsolenspiele portieren
 - Noch nicht verfügbar
 - Desktop einrichten
-- PC, Pi & Handy verbinden
-- Startmodus wählen
 - Schrift & Farben anpassen
+- Startmodus wählen
 - Handy verbinden
+- PC, Pi & Handy verbinden
 - Leistung anzeigen
 - KI fragen
 - KI-Team einsetzen

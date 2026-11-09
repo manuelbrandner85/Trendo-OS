@@ -1,6 +1,6 @@
 # TV & Live – Testplan
 
-Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand 20e850a)
+Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand df96c57)
 
 27 Tests sprechen dieses Programm an.
 

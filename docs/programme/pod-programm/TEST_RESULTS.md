@@ -1,6 +1,6 @@
 # Print on Demand – Testergebnisse
 
-Studio: Print on Demand (STUDIO-POD-01) · Bereich: Business & Geld · Seite: `pod-programm` · Stand: 0.9.36 (Stand 20e850a)
+Studio: Print on Demand (STUDIO-POD-01) · Bereich: Business & Geld · Seite: `pod-programm` · Stand: 0.9.36 (Stand df96c57)
 
 Lauf: `api.trx, app.trx, core.trx`
 
