@@ -62,6 +62,7 @@ public partial class MainWindow
         var clipStart = VideoEdit.Starts(VideoEdit.Clips(d.Data))[index];
         sp.Children.Add(EditKeysPanel(d, c.Id, Math.Clamp(d.Number("playhead") - clipStart, 0, c.Length))); // Pilot 4.0, V5
         sp.Children.Add(EditStackPanel(d, c.Id)); // Pilot 4.0, V6
+        sp.Children.Add(EditGradePanel(d, c.Id)); // Pilot 4.0, V7
         sp.Children.Add(EditClipScopes(d, c)); // Paket 01 S3-11: Scopes und Farbvergleich
         sp.Children.Add(EditClipEnhance(d, c)); // Paket 01 S3-12: Bild verbessern mit Messung
         return sp;

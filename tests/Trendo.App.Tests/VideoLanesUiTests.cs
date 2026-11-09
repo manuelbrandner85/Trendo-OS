@@ -19,7 +19,7 @@ public class VideoLanes_Ui
 
     static (MainWindow W, Trendo.Core.Programs.ProgramDocument D, Func<string, string> F) Open(int fps = 30)
     {
-        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000;
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1500;
         string F(string n) { var f = Path.Combine(root, n); if (!File.Exists(f)) File.WriteAllBytes(f, n.EndsWith(".png", StringComparison.Ordinal) ? Png : [1, 2, 3]); return f; }
         w.Show("schnitt"); Settle(); RealClick(w, w.Find<Button>("prog-tpl-leer")); Settle();
         var d = w.ProgramActive("schnitt")!; d.Set("fps", fps);
@@ -35,9 +35,11 @@ public class VideoLanes_Ui
         RealClick(w, w.Find<Button>("prog-cmd-ve-lane-audio")); Settle();
         Assert.Equal(2, VideoLanes.Audio(d.Data));
         var t = w.EditTimelineForTests!; t.BringIntoView(); Settle();
+        w.Find<ScrollViewer>("ve-timeline-scroll").Offset = new Vector(0, 0); Settle();
         var r = t.BoxOf("music", 0); var y2 = t.ExtraRows().First().Y + 10;
         Drag(w, P(w, r.Center.X, r.Center.Y), P(w, r.Center.X, y2));
         Assert.Equal(1, VideoEdit.Clips(d.Data, "music")[0].Lane);
+        w.Find<Button>("ve-lane-audio-1-m").BringIntoView(); Settle();
         RealClick(w, w.Find<Button>("ve-lane-audio-1-m")); Settle();
         Assert.True(VideoLanes.IsMuted(d.Data, "audio", 1));
         Assert.True(d.Undo()); Assert.True(d.Undo());
@@ -52,6 +54,7 @@ public class VideoLanes_Ui
         w.EditAddOverlay(d, F("logo.png")); w.Show("schnitt"); Settle();
         RealClick(w, w.Find<Button>("prog-cmd-ve-lane-video")); Settle();
         var t = w.EditTimelineForTests!; t.BringIntoView(); Settle();
+        w.Find<ScrollViewer>("ve-timeline-scroll").Offset = new Vector(0, 999); Settle();
         var r = t.BoxOf("overlay", 0); var y2 = t.ExtraRows().Last().Y + 10;
         Drag(w, P(w, r.Center.X, r.Center.Y), P(w, r.Center.X, y2));
         Assert.Equal(1, VideoPro.Overlays(d.Data)[0].Lane);

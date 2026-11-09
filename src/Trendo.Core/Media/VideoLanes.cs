@@ -58,6 +58,21 @@ public static class VideoLanes
         return solos.Count == 0 || solos.Contains(Key(kind, lane));
     }
 
+    /// <summary>V8: Pegel einer Tonspur (0 bis 2). Spur −1 ist der Ton der Bildspur.</summary>
+    public static double Gain(JsonObject p, int lane) => (Cfg(p)?["gain"] as JsonObject)?[Key("audio", lane)] is JsonValue v && double.TryParse(v.ToJsonString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var g) ? g : 1;
+
+    public static void SetGain(JsonObject p, int lane, double gain)
+    {
+        var cfg = Ensure(p);
+        var map = cfg["gain"] as JsonObject ?? (JsonObject)(cfg["gain"] = new JsonObject());
+        if (Math.Abs(gain - 1) < 0.005) map.Remove(Key("audio", lane)); else map[Key("audio", lane)] = Math.Round(Math.Clamp(gain, 0, 2), 3);
+        if (map.Count == 0) cfg.Remove("gain");
+        if (cfg.Count == 0) p.Remove("lanes");
+    }
+
+    /// <summary>Wirksamer Pegel des Bildspur-Tons: 0, wenn er stumm ist oder eine andere Spur auf Solo steht.</summary>
+    public static double BaseGain(JsonObject p) => IsOn(p, "audio", -1) ? Gain(p, -1) : 0;
+
     public static void SetMusicLane(JsonObject p, int index, int lane)
     {
         var l = VideoEdit.Clips(p, "music");

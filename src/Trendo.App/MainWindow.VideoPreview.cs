@@ -57,6 +57,7 @@ public partial class MainWindow
         if (VideoEdit.At(d.Data, t) is not { } at) return;
         var c = clips[at.Index];
         EditShowChrome(d, t, c);
+        EditUpdateMeters(d, t); // V8: Pegel laufen mit
         if (_vePreview is null) return;
         if (c.IsImage) { if (_veSourceKey != c.Id) { _veSource?.Dispose(); _veSource = null; _veSourceKey = c.Id; EditShowFrame(d, t); } return; }
         var key = c.Id + "|" + c.In + "|" + c.Out;

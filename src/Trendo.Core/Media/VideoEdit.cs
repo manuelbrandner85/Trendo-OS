@@ -156,12 +156,12 @@ public static class VideoEdit
             var fx = VideoPro.Fx(p, c.Id); // Profi 23: Farbe, Titellage und -größe je Stück
             var title = c.Title.Length > 0 && FontFile() is { } font
                 ? $",drawtext=fontfile='{font.Replace("\\", "/").Replace(":", "\\:")}':text='{DrawText(c.Title)}':fontcolor=white:fontsize=h/14*{F(fx.TitleSize)}:borderw=3:bordercolor=black@0.6:x=(w-text_w)/2:y={VideoPro.TitleY(fx.TitlePos)}" : "";
-            f.Add($"[{vi}:v]scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps={fps},format=yuv420p{VideoPro.ColorFilter(fx)}{VideoAnim.StackFilter(p, c.Id)}{title}[{(VideoAnim.HasTransform(p, c.Id) ? "vt" : "v")}{vi}]"); // V6: Effektstapel nach der Farbe
+            f.Add($"[{vi}:v]scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps={fps},format=yuv420p{VideoPro.ColorFilter(fx)}{VideoGrade.Filter(p, c.Id)}{VideoAnim.StackFilter(p, c.Id)}{title}[{(VideoAnim.HasTransform(p, c.Id) ? "vt" : "v")}{vi}]"); // V6: Effektstapel nach der Farbe
             if (VideoAnim.HasTransform(p, c.Id)) f.AddRange(VideoAnim.ClipTransform(p, c.Id, $"vt{vi}", $"v{vi}", w, h, fps, c.Length)); // V5: Bewegung, Größe, Deckkraft
             string ai;
             if (c.HasAudio && !c.IsImage) { ai = $"{vi}:a"; }
             else { a.AddRange(["-f", "lavfi", "-t", F(c.Length), "-i", "anullsrc=r=48000:cl=stereo"]); ai = $"{input++}:a"; }
-            f.Add($"[{ai}]aresample=48000,aformat=channel_layouts=stereo{(Math.Abs(c.Volume - 1) > 0.001 ? $",volume={F(c.Volume)}" : "")}{VideoAnim.VolumeFilter(p, c.Id)}[a{vi}]"); // Tonpegel je Stück, V5: Verlauf
+            f.Add($"[{ai}]aresample=48000,aformat=channel_layouts=stereo{(Math.Abs(c.Volume * VideoLanes.BaseGain(p) - 1) > 0.001 ? $",volume={F(c.Volume * VideoLanes.BaseGain(p))}" : "")}{VideoAnim.VolumeFilter(p, c.Id)}[a{vi}]"); // Tonpegel je Stück, V5: Verlauf
             concat += $"[v{vi}][a{vi}]"; ids.Add(vi);
         }
         if (clips.Select((_, i) => FadeOf(clips, i)).All(x => x <= 0)) f.Add($"{concat}concat=n={clips.Count}:v=1:a=1[vbase][abase]");
@@ -190,7 +190,7 @@ public static class VideoEdit
             if (!System.IO.File.Exists(m.File)) throw new FileNotFoundException("Datei fehlt: " + Path.GetFileName(m.File));
             a.AddRange(["-ss", F(m.In), "-t", F(m.Length), "-i", m.File]);
             var ms = (long)Math.Round(m.Start * 1000);
-            f.Add($"[{input++}:a]aresample=48000,aformat=channel_layouts=stereo,volume={F(m.Volume)}{VideoAnim.VolumeFilter(p, m.Id)},adelay={ms}|{ms}[m{n}]");
+            f.Add($"[{input++}:a]aresample=48000,aformat=channel_layouts=stereo,volume={F(m.Volume * VideoLanes.Gain(p, m.Lane))}{VideoAnim.VolumeFilter(p, m.Id)},adelay={ms}|{ms}[m{n}]");
             mix += $"[m{n}]"; n++;
         }
         var total = VideoLength(clips);

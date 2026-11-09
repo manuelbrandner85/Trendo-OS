@@ -271,13 +271,24 @@ public partial class MainWindow
         Lane("audio", 0, "♪ Musik", EditTimeline.MusicTop, EditTimeline.MusicH);
         foreach (var (kind, lane, y) in tl.ExtraRows()) Lane(kind, lane, kind == "audio" ? $"♪ Ton {lane + 1}" : $"🖼 Einbl. {lane + 1}", y, EditTimeline.LaneH);
         labels.Name = "ve-track-labels";
+        tl.AddHandler(ContextRequestedEvent, (_, e) => // Pilot 4.0, V9: Rechtsklick auf ein Stück
+        {
+            if (!e.TryGetPosition(tl, out var at) || tl.ItemAt(at) is not { } item) return;
+            EditContextMenu(d, item.Track, item.Index).ShowAt(tl, true); e.Handled = true;
+        });
         var tlBox = new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, BorderBrush = Edge, BorderThickness = new Thickness(1),
-            Child = new DockPanel { Children = { Dk(labels, Avalonia.Controls.Dock.Left), scroll } } };
+            Child = new ScrollViewer { Name = "ve-timeline-scroll", HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, Content = new DockPanel { Children = { Dk(labels, Avalonia.Controls.Dock.Left), scroll } } } };
         var hint = new TextBlock { Text = "Stück ziehen: umordnen · Kanten ziehen: kürzen · Lineal: Abspielkopf · S teilen · Entf löschen · ←/→ Bild für Bild (Umschalt: Sekunde) · Ton und Einblendungen auf eine andere Spur ziehen", Foreground = Muted, FontSize = 11.5, Margin = new Thickness(2, 4, 0, 0), TextWrapping = TextWrapping.Wrap };
-        var g = new Grid { RowDefinitions = new RowDefinitions("*,Auto,Auto,Auto") };
+        // Pilot 4.0, V9: Höhe der Zeitleiste ziehen, gemerkt je Person; ohne gespeicherten Wert passt sie sich den Spuren an
+        var tlRow = new GridLength(PaneWidths().TryGetValue("schnitt/zeitleiste", out var savedH) && savedH >= 80 ? savedH : Math.Min(tl.Height + 18, 300)); // viele Spuren scrollen innerhalb der Zeitleiste
+        var g = new Grid { RowDefinitions = new RowDefinitions { new(GridLength.Star), new(GridLength.Auto), new(new GridLength(6)), new(tlRow), new(GridLength.Auto) } };
+        var tlGrip = new GridSplitter { Name = "ve-timeline-grip", ResizeDirection = GridResizeDirection.Rows, Background = Brushes.Transparent, Cursor = new Cursor(StandardCursorType.SizeNorthSouth), HorizontalAlignment = HorizontalAlignment.Stretch };
+        ToolTip.SetTip(tlGrip, "Ziehen ändert die Höhe der Zeitleiste");
+        tlGrip.DragCompleted += (_, _) => SavePaneWidth("schnitt/zeitleiste", g.RowDefinitions[3].ActualHeight);
+        Grid.SetRow(tlGrip, 2); g.Children.Add(tlGrip);
         g.Children.Add(new Border { Background = Brush.Parse("#05070C"), CornerRadius = new CornerRadius(10), Padding = new Thickness(6), Child = view, MinHeight = 90 });
         _veTime = time;
-        Grid.SetRow(tpWrap, 1); g.Children.Add(tpWrap); Grid.SetRow(tlBox, 2); g.Children.Add(tlBox); Grid.SetRow(hint, 3); g.Children.Add(hint);
+        Grid.SetRow(tpWrap, 1); g.Children.Add(tpWrap); Grid.SetRow(tlBox, 3); g.Children.Add(tlBox); Grid.SetRow(hint, 4); g.Children.Add(hint);
         return g;
     }
 
@@ -307,7 +318,7 @@ public partial class MainWindow
         if (SuggestionCard(VK, EditSuggestions(d)) is { } sugg) outer.Children.Add(sugg);
         // Registerkarten: Medien · Auswahl · Export – alles bleibt da, nur geordnet
         if (EditSelected != _veSeenSel) { _veSeenSel = EditSelected; if (EditSelected is not null) EditTab = "auswahl"; } // neue Auswahl: gleich ihre Einstellungen zeigen
-        var tabs = new (string Id, string Label)[] { ("medien", "Medien"), ("auswahl", EditSelected is { } es ? (es.Track == "music" ? "Auswahl: Musik" : "Auswahl: Stück") : "Auswahl"), ("export", _veExport is not null ? "Export ⏳" : "Export") };
+        var tabs = new (string Id, string Label)[] { ("medien", "Medien"), ("auswahl", EditSelected is { } es ? (es.Track == "music" ? "Auswahl: Musik" : "Auswahl: Stück") : "Auswahl"), ("mischpult", "Mischpult"), ("export", _veExport is not null ? "Export ⏳" : "Export") };
         if (!tabs.Any(t => t.Id == EditTab)) EditTab = "medien";
         var tabBar = new WrapPanel { Name = "ve-tabs" };
         var bodies = new Dictionary<string, StackPanel>();
@@ -322,6 +333,7 @@ public partial class MainWindow
         }
         outer.Children.Add(tabBar);
         foreach (var t in tabs) outer.Children.Add(bodies[t.Id]);
+        bodies["mischpult"].Children.Add(EditMixerPanel(d)); // Pilot 4.0, V8
         var sp = bodies["medien"];
         sp.Children.Add(EditProxyPanel(d)); // Paket 01 S3-02: Proxy-Dateien
         sp.Children.Add(EditShotPlanPanel(d)); // Paket 01 S3-01/S3-03: Drehbuch → Shotliste, Storyboard

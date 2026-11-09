@@ -101,9 +101,13 @@ public sealed class EditTimeline : Control
         return null;
     }
 
+    /// <summary>Stück an einem Punkt der Zeitleiste, sonst null.</summary>
+    public (string Track, int Index)? ItemAt(Point p) => HitTest(p) is { } h ? (h.Track, h.Index) : null;
+
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e); Focus();
+        if (e.GetCurrentPoint(this).Properties.IsRightButtonPressed) return; // Rechtsklick öffnet das Menü
         var p = e.GetPosition(this); _from = _at = p; _dragged = false;
         if (p.Y > Ruler && HitTest(p) is { } h)
         {

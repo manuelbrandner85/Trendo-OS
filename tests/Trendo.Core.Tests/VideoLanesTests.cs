@@ -65,6 +65,31 @@ public class VideoLanesTests
         _ = low;
     });
 
+    [Fact(DisplayName = "V8: Spurpegel wirkt im Export, Standard bleibt ungespeichert; Stumm und Solo betreffen auch den Bildspur-Ton")]
+    public void Gain() => In(d =>
+    {
+        var p = P(d);
+        VideoLanes.SetGain(p, 0, 0.5);
+        Assert.Contains("volume=0.25", string.Join(" ", VideoEdit.ExportArgs(p, Path.Combine(d, "x.mp4")))); // Stück 0,5 mal Spur 0,5
+        VideoLanes.SetGain(p, 0, 1); Assert.False(p.ContainsKey("lanes"));
+        VideoLanes.SetGain(p, -1, 2); Assert.Equal(2, VideoLanes.BaseGain(p));
+        Assert.Contains("volume=2", string.Join(" ", VideoEdit.ExportArgs(p, Path.Combine(d, "x.mp4"))));
+        VideoLanes.ToggleMute(p, "audio", -1); Assert.Equal(0, VideoLanes.BaseGain(p));
+        VideoLanes.ToggleMute(p, "audio", -1); VideoLanes.ToggleSolo(p, "audio", 0); Assert.Equal(0, VideoLanes.BaseGain(p));
+    });
+
+    [Fact(DisplayName = "V7: Farbräder: Lage ergibt Farbanteile, außerhalb rückt auf den Rand, Mitte wird nicht gespeichert, im Export enthalten")]
+    public void Grade() => In(d =>
+    {
+        var p = P(d);
+        VideoGrade.Set(p, "c1", "gain", 3, 0);
+        Assert.Equal((1d, 0d), VideoGrade.Get(p, "c1", "gain"));
+        Assert.Equal(",colorbalance=rh=0.5:gh=-0.25:bh=-0.25", VideoGrade.Filter(p, "c1"));
+        Assert.Contains("colorbalance=rh=0.5", string.Join(" ", VideoEdit.ExportArgs(p, Path.Combine(d, "x.mp4"))));
+        VideoGrade.Set(p, "c1", "gain", 0, 0); Assert.False(p.ContainsKey("grade"));
+        Assert.Throws<ArgumentException>(() => VideoGrade.Set(p, "c1", "bunt", 0, 0));
+    });
+
     [Fact(DisplayName = "V3: Zeit rastet auf Einzelbilder, Zeitcode zählt Bilder bei 25 und 30 Bildern")]
     public void Timecode()
     {
