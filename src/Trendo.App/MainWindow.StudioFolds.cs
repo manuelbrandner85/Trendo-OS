@@ -17,12 +17,12 @@ public partial class MainWindow
         foreach (var id in StudioCatalog.FoldedFor(host).OrderBy(i => StudioCatalog.For(i)?.Name, StringComparer.CurrentCulture))
         {
             if (PageForStudio(id) is not { } page || page == key) continue;
-            var b = new Button { Name = "fold-open-" + id, Content = StudioCatalog.For(id)?.Name ?? id, Padding = new Thickness(10, 3), Margin = new Thickness(0, 0, 6, 4), FontSize = 12 };
+            var b = new Button { Name = "fold-open-" + id, Content = StudioCatalog.For(id)?.Name ?? id, Padding = new Thickness(8, 1), Margin = new Thickness(0, 0, 6, 2), FontSize = 11 };
             b.Click += (_, _) => Show(page);
             row.Children.Add(b);
         }
         if (row.Children.Count == 0) return content;
-        var strip = new DockPanel { Name = "fold-strip", Margin = new Thickness(10, 6, 10, 4) };
+        var strip = new DockPanel { Name = "fold-strip", Margin = new Thickness(10, 3, 10, 0) };
         strip.Children.Add(Dk(new TextBlock { Text = "Gehört hierher:", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0, 4, 10, 0) }, Avalonia.Controls.Dock.Left));
         strip.Children.Add(row);
         return new DockPanel { Children = { Dk(strip, Avalonia.Controls.Dock.Top), content } };

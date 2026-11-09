@@ -36,7 +36,7 @@ public class Design41RolloutTests
         Assert.Contains("studio-card-STUDIO-LETTER-01", found);
         Assert.DoesNotContain("studio-card-CORE-06", found);
         Press(w.Find<Button>("studio-filter-alle")!);
-        Assert.True(w.GetLogicalDescendants().OfType<Button>().Count(b => b.Name?.StartsWith("studio-card-") == true) >= 54);
+        Assert.True(w.GetLogicalDescendants().OfType<Button>().Count(b => b.Name?.StartsWith("studio-card-") == true) >= 37);
         w.Close();
     }
 

@@ -107,7 +107,7 @@ public class StartMenu_StudioFenster
         Assert.True(w.StartMenuOpen);
         var letters = w.GetVisualDescendants().OfType<TextBlock>().Where(t => t.Name?.StartsWith("sm-letter-") == true).Select(t => t.Text).ToList();
         Assert.Equal(letters.OrderBy(x => x, StringComparer.Create(new System.Globalization.CultureInfo("de-DE"), true)), letters);
-        Assert.Equal(StudioCatalog.ById.Count, w.GetVisualDescendants().OfType<Button>().Count(b => b.Name?.StartsWith("sm-az-") == true));
+        Assert.Equal(StudioCatalog.ById.Keys.Count(StudioCatalog.InOverview), w.GetVisualDescendants().OfType<Button>().Count(b => b.Name?.StartsWith("sm-az-") == true));
         w.Close();
     }
 
