@@ -255,7 +255,7 @@ public static class StudioTeams
         return hits.Count > 0 ? hits : [team.Roles[0]];
     }
 
-    static readonly HashSet<string> Filler = ["bitte", "der", "die", "das", "den", "dem", "des", "ein", "eine", "einen", "einem", "einer", "und", "oder", "aber", "mit", "für", "von", "vom", "zum", "zur", "auf", "aus", "bei", "nach", "über", "unter", "mach", "mache", "machen", "soll", "sollen", "will", "wird", "werden", "sind", "ist", "auch", "noch", "dann", "wenn", "nicht", "kein", "keine", "alle", "alles", "mehr", "sehr", "mein", "meine", "dein", "deine", "dass", "damit", "ich", "wir", "mir"];
+    static readonly HashSet<string> Filler = ["bitte", "der", "die", "das", "den", "dem", "des", "ein", "eine", "einen", "einem", "einer", "und", "oder", "aber", "mit", "für", "von", "vom", "zum", "zur", "auf", "aus", "bei", "nach", "über", "unter", "mach", "mache", "machen", "soll", "sollen", "will", "wird", "werden", "sind", "ist", "auch", "noch", "dann", "wenn", "nicht", "kein", "keine", "alle", "alles", "mehr", "sehr", "mein", "meine", "dein", "deine", "dass", "damit", "ich", "wir", "mir", "nur", "wie", "was", "als", "bis", "vor", "kann", "können", "hat", "habe", "gib", "gibt", "zeig", "zeige"];
 
     static bool StartsWord(string text, string word)
     {

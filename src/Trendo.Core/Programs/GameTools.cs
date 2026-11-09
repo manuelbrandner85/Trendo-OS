@@ -62,7 +62,7 @@ public static class GameTools
         if (route != engine)
             notes.Add(a.Claude ? $"Claude baut es direkt in {NameOf(engine)}, der Knopf „Bauen“ erzeugt daraus {NameOf(route)}." : $"Ohne Claude entsteht es beim Bauen als {NameOf(route)}, in {NameOf(engine)} baut es erst Claude.");
 
-        var needsModels = scaleEngine != "browser" || (a.Claude && engine != "browser");
+        var needsModels = scaleEngine != "browser" || (a.Claude && engine is "unreal" or "unity");
         var blender = needsModels && a.Blender && d["blender"]?.GetValueKind() != JsonValueKind.False;
         if (needsModels && !a.Blender) notes.Add("Blender ist nicht installiert, 3D-Modelle kommen dann aus freien Quellen.");
         return new Choice(engine, route, blender, reason, string.Join(" ", notes));

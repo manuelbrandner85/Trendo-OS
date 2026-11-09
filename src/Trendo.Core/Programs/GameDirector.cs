@@ -91,10 +91,16 @@ public static class GameDirector
         catch (JsonException e) { return new Result(null, qs, sug, "Die Spielbibel der KI war fehlerhaft: " + e.Message); }
         if (raw2 is null) return new Result(null, qs, sug, "Die KI hat keine Spielbibel geliefert.");
         var merged = current?.DeepClone().AsObject() ?? new JsonObject();
-        var engineBefore = S(merged["engine"]).ToLowerInvariant();
-        foreach (var k in Keys)
-            if (raw2[k] is { } v && (k != "engine" || GameTools.Engines.Contains(S(v).ToLowerInvariant()))) merged[k] = v.DeepClone(); // eine ungültige Engine löscht keine gültige Wahl
-        if (S(merged["engine"]).ToLowerInvariant() != engineBefore && raw2["engineReason"] is null) merged.Remove("engineReason"); // alter Grund passt nicht zur neuen Engine
+        var engineBefore = S(merged["engine"]).ToLowerInvariant(); var scaleBefore = S(merged["scale"]);
+        var engineGiven = raw2["engine"] is not null; var engineValid = GameTools.Engines.Contains(S(raw2["engine"]).ToLowerInvariant());
+        var skip = engineGiven && !engineValid ? new[] { "engine", "engineReason", "blender" } : []; // eine ungültige Engine löscht keine gültige Wahl und bringt keinen Grund mit
+        foreach (var k in Keys.Except(skip)) if (raw2[k] is { } v) merged[k] = v.DeepClone();
+        if (S(merged["engine"]).ToLowerInvariant() != engineBefore) // alter Grund und altes Blender-Nein passen nicht zur neuen Engine
+        {
+            if (raw2["engineReason"] is null) merged.Remove("engineReason");
+            if (raw2["blender"] is null) merged.Remove("blender");
+        }
+        if (!engineGiven && scaleBefore.Length > 0 && S(merged["scale"]) != scaleBefore) { merged.Remove("engine"); merged.Remove("engineReason"); merged.Remove("blender"); } // neuer Umfang ohne neue Wahl: wie beim Auswahlfeld
         return new Result(Normalize(merged), qs, sug, null);
     }
 

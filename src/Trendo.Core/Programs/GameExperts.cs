@@ -139,14 +139,20 @@ public static class GameExperts
 
     public static GameExpert? Find(string id) => All.FirstOrDefault(e => e.Id == id);
 
-    /// <summary>Stichwort am Wortanfang; kurze Stichwörter (bis 3 Zeichen wie „ki“ oder „rig“) nur als ganzes Wort.</summary>
+    static readonly HashSet<string> InnerShort = ["menü", "welt", "shop"];
+
+    /// <summary>Deutsche Zusammensetzungen zählen: ab 5 Zeichen auch im Wort („Hintergrundmusik“), bei 4 Zeichen nur am Wortanfang außer wenigen wie „Hauptmenü“ („plan“ trifft nicht „Planet“ im Wort);
+    /// bis 3 Zeichen wie „ki“ oder „rig“ nur als ganzes Wort, auch mit Mehrzahl-s („NPCs“).</summary>
     static bool Hit(string text, string keyword)
     {
+        if (keyword.Length >= 5 || InnerShort.Contains(keyword)) return text.Contains(keyword, StringComparison.Ordinal);
         for (var i = text.IndexOf(keyword, StringComparison.Ordinal); i >= 0; i = text.IndexOf(keyword, i + 1, StringComparison.Ordinal))
         {
             if (i > 0 && char.IsLetterOrDigit(text[i - 1])) continue;
+            if (keyword.Length > 3) return true;
             var end = i + keyword.Length;
-            if (keyword.Length > 3 || end >= text.Length || !char.IsLetterOrDigit(text[end])) return true;
+            if (end < text.Length && text[end] == 's') end++;
+            if (end >= text.Length || !char.IsLetterOrDigit(text[end])) return true;
         }
         return false;
     }
@@ -161,7 +167,7 @@ public static class GameExperts
         var t = " " + (task ?? "").ToLowerInvariant() + " "; var eng = (engine ?? "").ToLowerInvariant();
         var scored = All.Where(e => e.Engine is null || eng.Length == 0 || e.Engine == eng)
             .Select((e, i) => (e, i, s: e.Triggers.Count(k => Hit(t, k)) * 10 + (e.Engine is not null && e.Engine == eng && t.Length > 2 ? 3 : 0)))
-            .Where(x => x.s >= 10 || (mode != "auto" && x.s > 0 && x.e.Engine == eng))
+            .Where(x => x.s >= 10)
             .OrderByDescending(x => x.s).ThenBy(x => x.i).Select(x => x.e).Take(n).ToList();
         foreach (var fallback in new[] { "game-designer", "technical-director" }) if (scored.Count < Math.Min(n, 2) && scored.All(e => e.Id != fallback)) scored.Add(Find(fallback)!);
         return scored.Take(n).ToList();

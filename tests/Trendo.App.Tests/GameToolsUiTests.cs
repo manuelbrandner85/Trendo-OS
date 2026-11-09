@@ -92,6 +92,16 @@ public class GameTools_Ui
             Assert.Contains("Godot", w.Find<TextBlock>("game-tool-choice").Text);
             unreal = true; w.Show(GK); Pump();
             Assert.Contains("Unreal", w.Find<TextBlock>("game-tool-choice").Text);
+            // Vorschau nennt, was wirklich gilt, auch wenn die KI nicht Installiertes wählt
+            MainWindow.GamePromptOverride = (_, _) => Task.FromResult("```json\n{\"title\":\"Riesig\",\"engine\":\"unity\"}\n```");
+            w.Find<TextBox>("game-prompt").Text = "Bitte in Unity";
+            w.Find<Button>("game-prompt-change").Press(); Pump(); await Task.Delay(50); Pump();
+            Assert.Contains("Unity ist nicht installiert", w.GamePromptToolLine);
+            w.Find<Button>("game-prompt-accept").Press(); Pump();
+            // Umfang von Hand ändern: die Wahl der KI verfällt
+            w.Find<Button>("game-sec-bauen").Press(); Pump();
+            w.Find<ComboBox>("game-p-scale").SelectedIndex = 0; Pump();
+            Assert.Equal("", d.Text("engine"));
         }
         finally { MainWindow.GamePromptOverride = null; }
     }

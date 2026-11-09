@@ -134,6 +134,50 @@ public class GameToolsTests
         Assert.DoesNotContain(GameExperts.Pick("schwierig und traurig", null, "auto"), e => e.Name.Contains("Animator") || e.Name.Contains("Technical Artist"));
     }
 
+    [Theory(DisplayName = "Fachleute: deutsche Zusammensetzungen und Mehrzahl von Abkürzungen werden erkannt")]
+    [InlineData("Ein neues Hauptmenü bauen", "ui")]
+    [InlineData("Die Hintergrundmusik düsterer machen", "ton")]
+    [InlineData("Eine größere Spielwelt", "welt")]
+    [InlineData("Die NPCs sollen klüger werden", "ai-programmer")]
+    public void Experts_compounds(string task, string expected) =>
+        Assert.Contains(GameExperts.Pick(task, null, "auto"), e => e.Id.Contains(expected) || e.Name.Contains(expected, StringComparison.OrdinalIgnoreCase));
+
+    [Fact(DisplayName = "Fachleute: Engine-Spezialisten ohne Treffer verdrängen auch in den anderen Modi nicht die Standardrollen")]
+    public void Experts_engine_no_displacement() =>
+        Assert.Equal(["game-designer", "technical-director"], GameExperts.Pick("Mach den Boss schwerer", "godot", "normal").Select(e => e.Id));
+
+    [Fact(DisplayName = "Blender: 2D mit Godot und Claude braucht keine 3D-Modelle, Unreal mit Claude schon")]
+    public void Blender_with_claude()
+    {
+        Assert.False(GameTools.Decide(Doc("indie2d"), All with { Claude = true }).Blender);
+        Assert.True(GameTools.Decide(Doc("retro", "Browser", engine: "unreal"), All with { Claude = true }).Blender);
+    }
+
+    [Fact(DisplayName = "MCP: Projektdateien gehen vor der Wahl im Dokument, ohne beides bleibt es offen, Browser-Spiele brauchen keinen Engine-Server")]
+    public void Mcp_engine()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "trendo-mcp-" + Guid.NewGuid().ToString("N")[..8]); Directory.CreateDirectory(dir);
+        try
+        {
+            Assert.Null(StudioMcp.EngineFor(dir, "")); Assert.Equal("unity", StudioMcp.EngineFor(dir, "unity"));
+            File.WriteAllText(Path.Combine(dir, "project.godot"), "");
+            Assert.Equal("godot", StudioMcp.EngineFor(dir, "unreal"));
+            Assert.Empty(StudioMcp.Needs("CORE-06", "browser")); Assert.Empty(StudioMcp.Needs("CORE-06", "web"));
+            Assert.Contains("unreal", StudioMcp.Needs("CORE-06", null));
+        }
+        finally { Directory.Delete(dir, true); }
+    }
+
+    [Fact(DisplayName = "Änderung per Satz: ungültige Engine bringt keinen Grund mit, neue Engine löscht altes Blender-Nein, neuer Umfang ohne Wahl setzt zurück")]
+    public void Parse_edge_cases()
+    {
+        var current = new JsonObject { ["title"] = "A", ["scale"] = "aaa", ["engine"] = "unreal", ["engineReason"] = "Riesige Welt", ["blender"] = false };
+        Assert.Equal("Riesige Welt", (string)GameDirector.Parse("```json\n{\"engine\":\"xyz\",\"engineReason\":\"neu\"}\n```", current).Doc!["engineReason"]!);
+        Assert.Null(GameDirector.Parse("```json\n{\"engine\":\"godot\"}\n```", current).Doc!["blender"]);
+        var rescaled = GameDirector.Parse("```json\n{\"scale\":\"retro\"}\n```", current).Doc!;
+        Assert.Equal("", (string)rescaled["engine"]!); Assert.Null(rescaled["blender"]);
+    }
+
     [Fact(DisplayName = "Studio-Team: Füllwörter zählen nicht, Wörter nur am Wortanfang")]
     public void Studio_pick_precise()
     {

@@ -2,7 +2,7 @@
 
 **Auftrag:** `tasks/T-0630-auto-team.md`.
 **Branch/Worktree:** `claude/T-0630-auto-team`, Basis a3a361b2d, `C:\Users\<user>\TrendoEntwicklung\wt-T-0620-web-ki`.
-**Status:** Gebaut und getestet. Erste QA-Runde nicht bestanden, Befunde bearbeitet. Nicht in `main`, kein Release.
+**Status:** Gebaut. QA-Runden 1 und 2 nicht bestanden, Befunde bearbeitet. Nicht in `main`, kein Release.
 
 ## Was gebaut wurde
 
@@ -13,8 +13,8 @@
 - Die Zeile `game-tool-choice` und die Vorschau zeigen, was tatsächlich gilt.
 - Fachleute: Modus „Automatisch“ ist Standard, 2 bis 6 Personen nach Auftrag. Stichwörter nur am Wortanfang, kurze nur als ganzes Wort. Im Automatikmodus verdrängen Engine-Spezialisten ohne Treffer nicht die Standardrollen.
 - Studio-Team: `StudioTeams.Pick` und `Brief` geben der lokalen KI im Programm-Assistenten die passenden Rollen mit, Füllwörter zählen nicht. `ClaudeTeamRule` weist Claude an, die Agenten ohne Rückfrage einzusetzen, nur auf den beiden Wegen, die sie vorher exportieren.
-- MCP-Server für Claude richten sich im Spiele-Studio nach der gewählten Engine.
-- Die Suche nach Engines läuft beim Zeichnen höchstens alle 30 Sekunden, Fehler dabei stören das Zeichnen nicht.
+- MCP-Server für Claude im Spiele-Studio: zuerst die Projektdateien, dann die ausdrückliche Wahl im Dokument. Browser-Spiele bekommen keinen Engine-Server.
+- Die Suche nach Engines für die automatische Wahl läuft beim Zeichnen höchstens alle 30 Sekunden, Fehler dabei stören das Zeichnen nicht. Die Anzeige im Bereich „Bauen“ sucht wie bisher direkt.
 
 ## Kommandos
 
@@ -32,6 +32,10 @@ Wird nach dem Volltest des letzten Stands ergänzt.
 Runde 1, nicht bestanden (15 Befunde). Die drei schweren: zweites „Bauen“ brach ab, Regelentscheidungen froren ein, `blender:false` blieb dauerhaft.
 
 Bearbeitet: 1 bis 12, 13 (ungültige Engine, alter Grund), 14, 15 teilweise.
+
+Runde 2, nicht bestanden (6 neue Befunde): MCP-Wahl übersah Projektdateien, zu strenge Stichwörter verloren Zusammensetzungen, Blender-Text bei 2D mit Claude, Spezialisten verdrängten in anderen Modi die Standardrollen, Sonderfälle in `Parse` und `StudioTeams.Pick`. Alle bearbeitet.
+
+Nicht durch Tests abgedeckt: Zwischenspeicher und Fehlerfang der Engine-Suche, die Anbindung von `StudioTeams.Brief` im Programm-Assistenten.
 
 Nicht geändert: Der Status im Programm und die Überschrift im Bereich „Bauen“ nennen weiter Browser oder Unreal nach Umfang, weil das die Route beschreibt.
 
