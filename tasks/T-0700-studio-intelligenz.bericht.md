@@ -1,0 +1,10 @@
+# T-0700 Zwischenbericht (Phase A und B, Claude-Zugang)
+
+- Auftrag: Universal Studio Intelligence & Ultimate Easy UX, dazu „Claude arbeitet in jedem Programm selbst, ohne Klicks“.
+- Branch/Worktree: `claude/T-0700-studio-intelligenz`, `Trend Os-worktrees/T-0700-studio-intelligenz`. Kein Merge, kein Release.
+- Kommandos: `dotnet build Trendo.sln -c Release`, `dotnet test Trendo.sln -c Release --no-build`, `python -m unittest discover -s tests/claude_handoff`.
+- Ergebnis Volltest auf c291bed21: Build Exit 0, Api 16 von 16, Core 1963 bestanden und 5 übersprungen, App 892 bestanden und 4 übersprungen, Exit 0. Paket-Tests 11, OK, Exit 0. Der Baseline-Test lief darin schon mit.
+- Artefakte: `docs/STUDIO_REBUILD_4_0/TRENDO_STUDIO_FUNKTIONSMATRIX.md`, `docs/STUDIO_REBUILD_4_0/baseline/funktionen.csv`, `docs/STUDIO_REBUILD_4_0/TRENDO_UNIVERSAL_STUDIO_PHASEN.md`.
+- Echte Läufe mit Claude Code: zwei gegen ein laufendes Trendo-Fenster, siehe Phasen-Dokument.
+- Nicht geprüft: Lauf durch den echten Chat-Bereich der App, echte Abo-Pause, Auftrag mit Unreal oder Blender, Nutzertests mit Anfängern, QA- und Security-Agent.
+- Offen: Phase C bis F. Status: in Arbeit.
