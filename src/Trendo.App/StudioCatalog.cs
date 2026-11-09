@@ -33,7 +33,7 @@ public static class StudioCatalog
         ["STUDIO-FILM-01"] = new("Filme machen", "Kurzfilme und Trailer: vom Drehbuch über Figuren und Einstellungen zum fertigen Film.", "Kreativ & Medien"),
         ["SPEC-08"] = new("Kleidung & Produkte entwerfen", "Kleidergrößen, Schnitte und Produktideen.", "Kreativ & Medien"),
         ["X-07"] = new("Freie Bilder & Klänge finden", "Kostenlose Bilder, Klänge und Schriften finden.", "Kreativ & Medien"),
-        ["CORE-12"] = new("KI-Anweisungen schreiben", "Gute Anweisungen für die KI schreiben und sammeln.", "Kreativ & Medien"),
+        ["CORE-12"] = new("KI-Anweisungen schreiben", "Gute Anweisungen für die KI schreiben und sammeln.", "KI & Automatik"),
 
         ["CORE-05"] = new("3D-Modelle erstellen", "3D-Modelle bauen und ansehen – Blender optional.", "3D, Spiele & VR"),
         ["STUDIO-CONSOLE-01"] = new("Konsolenspiele portieren", "Dein eigenes PS2-Spiel als Programm für PC, Steam Deck oder Handy.", "3D, Spiele & VR"),
@@ -98,6 +98,22 @@ public static class StudioCatalog
     };
 
     /// <summary>Info zu einem Studio oder null.</summary>
+    /// <summary>Unterteilung großer Bereiche: nur für die Anzeige, der Bereich selbst bleibt gleich.</summary>
+    public static readonly IReadOnlyDictionary<string, string> SubAreas = new Dictionary<string, string>
+    {
+        ["CORE-01"] = "Einrichten", ["SYS-01"] = "Einrichten", ["SYS-12"] = "Einrichten", ["X-02"] = "Einrichten",
+        ["CORE-11"] = "Sicherheit & Daten", ["SPEC-12"] = "Sicherheit & Daten", ["SYS-03"] = "Sicherheit & Daten", ["SYS-06"] = "Sicherheit & Daten",
+        ["SYS-04"] = "Programme & Geräte", ["SYS-11"] = "Programme & Geräte", ["SYS-07"] = "Programme & Geräte", ["X-08"] = "Programme & Geräte", ["CORE-04"] = "Programme & Geräte",
+        ["SYS-13"] = "Prüfen & Messen", ["X-09"] = "Prüfen & Messen",
+    };
+
+    /// <summary>Sortiert Studios für die Übersicht: innerhalb einer Unterteilung alphabetisch (deutsche Sortierung).</summary>
+    public static IEnumerable<T> Sorted<T>(IEnumerable<T> items, Func<T, string> id, Func<T, string> fallbackName)
+    {
+        var de = StringComparer.Create(System.Globalization.CultureInfo.GetCultureInfo("de-DE"), true);
+        return items.OrderBy(x => SubAreas.GetValueOrDefault(id(x), ""), de).ThenBy(x => For(id(x))?.Name ?? fallbackName(x), de);
+    }
+
     public static StudioInfo? For(string? id) => id is not null && ById.TryGetValue(id, out var i) ? i : null;
 
     /// <summary>Anzeigename aus dem Katalog. Fehlt der Eintrag, bleibt der bisherige Text.</summary>
