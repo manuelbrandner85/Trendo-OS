@@ -1,4 +1,3 @@
-using System.Net;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Platform;
@@ -14,9 +13,9 @@ public class GameLibrary_Ui
 {
     const string K = "konsole-programm";
 
-    sealed class Fake(byte[] body) : HttpMessageHandler
+    sealed class Fake(byte[] body) : Trendo.Core.IWebFetch
     {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage r, CancellationToken c) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(body) });
+        public Task<Trendo.Core.WebReply> GetAsync(string url, CancellationToken ct = default) => Task.FromResult(new Trendo.Core.WebReply(200, body));
     }
 
     static (MainWindow w, string root) Open()
@@ -112,7 +111,7 @@ public class GameLibrary_Ui
     {
         var (w, root) = Open();
         var started = false;
-        w.LibHttpOverride = new HttpClient(new Fake([9, 9])); w.LibStartOverride = (_, _) => { started = true; return true; };
+        w.LibFetchOverride = new Fake([9, 9]); w.LibStartOverride = (_, _) => { started = true; return true; };
         Assert.False(await w.LibPlayHomebrew(GameLibrary.Find("hb-libbet")!));
         Assert.False(started);
         Assert.Empty(Directory.Exists(Path.Combine(root, "konsolenspiele", "homebrew")) ? Directory.GetFiles(Path.Combine(root, "konsolenspiele", "homebrew")) : []);

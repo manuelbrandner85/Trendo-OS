@@ -20,13 +20,19 @@ public partial class MainWindow
     /// <summary>Für Tests: Programmstart nachbilden (Programm, Argumente).</summary>
     public Func<string, IReadOnlyList<string>, bool>? LibStartOverride { get; set; }
     /// <summary>Für Tests: Downloads nachbilden.</summary>
-    public HttpClient? LibHttpOverride { get; set; }
+    public IWebFetch? LibFetchOverride { get; set; }
     /// <summary>Für Tests: Entpacken nachbilden (Archiv, Ziel).</summary>
     public Func<string, string, bool>? LibExtractOverride { get; set; }
     /// <summary>Für Tests: Godot vorgeben.</summary>
     public string? LibGodotOverride { get; set; }
 
-    static readonly HttpClient LibHttp = new() { Timeout = TimeSpan.FromMinutes(5) };
+    static readonly HttpFetch LibHttp = new(new HttpClient { Timeout = TimeSpan.FromMinutes(5) });
+
+    async Task<string?> LibDownload(string url, string sha256, string dest)
+    {
+        try { return await GameLibrary.DownloadAsync(LibFetchOverride ?? LibHttp, url, sha256, dest); }
+        catch (HttpRequestException) { return "Der Download ist fehlgeschlagen. Ist das Internet erreichbar?"; }
+    }
 
     internal static Bitmap? LibraryCover(string id)
     {
@@ -243,7 +249,7 @@ public partial class MainWindow
         if (!_opt.Isolated && Cli.Find("mgba-qt") is { } system) return system;
         if (!OperatingSystem.IsWindows()) { _progMsg[ConsoleKey] = "Installiere mGBA über die Paketverwaltung deines Systems, dann klappt das Spielen."; return null; }
         var archive = Path.Combine(LibMgbaDir, "mgba.7z");
-        if (await GameLibrary.DownloadAsync(LibHttpOverride ?? LibHttp, GameLibrary.MgbaUrl, GameLibrary.MgbaSha256, archive) is { } problem) { _progMsg[ConsoleKey] = "mGBA: " + problem; return null; }
+        if (await LibDownload(GameLibrary.MgbaUrl, GameLibrary.MgbaSha256, archive) is { } problem) { _progMsg[ConsoleKey] = "mGBA: " + problem; return null; }
         _core.Audit.Append(Principal.LocalOwner.Name, "deps.install", "mgba 0.10.5");
         bool extracted;
         if (LibExtractOverride is { } fake) extracted = fake(archive, LibMgbaDir);
@@ -264,7 +270,7 @@ public partial class MainWindow
         var rom = Path.Combine(LibHomebrewDir, GameLibrary.RomFile(e));
         if (!File.Exists(rom) || !string.Equals(ExtensionCatalog.FileSha256(rom), e.Sha256, StringComparison.OrdinalIgnoreCase))
         {
-            if (await GameLibrary.DownloadAsync(LibHttpOverride ?? LibHttp, e.Url!, e.Sha256!, rom) is { } problem) { _progMsg[ConsoleKey] = problem; Show(ConsoleKey); return false; }
+            if (await LibDownload(e.Url!, e.Sha256!, rom) is { } problem) { _progMsg[ConsoleKey] = problem; Show(ConsoleKey); return false; }
             _core.Audit.Append(Principal.LocalOwner.Name, "bibliothek.homebrew", e.Id);
         }
         if (await LibEnsureMgba() is not { } mgba) { Show(ConsoleKey); return false; }

@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using Trendo.Core;
 
 namespace Trendo.Core.ConsolePort;
 
@@ -110,28 +111,21 @@ public static class GameLibrary
     public static string RomFile(Entry e) => e.Url is null ? throw new ArgumentException("Kein Homebrew-Spiel.") : e.Url[(e.Url.LastIndexOf('/') + 1)..];
 
     /// <summary>Lädt eine Datei und behält sie nur, wenn die Prüfsumme stimmt. Liefert null, sonst den Grund.</summary>
-    public static async Task<string?> DownloadAsync(HttpClient http, string url, string sha256, string dest, CancellationToken ct = default)
+    public static async Task<string?> DownloadAsync(IWebFetch web, string url, string sha256, string dest, CancellationToken ct = default)
     {
-        var part = dest + ".part";
         try
         {
+            var reply = await web.GetAsync(url, ct);
+            if (!reply.Ok) return $"Der Download ist fehlgeschlagen ({reply.Status}).";
+            if (!Convert.ToHexString(SHA256.HashData(reply.Body)).Equals(sha256, StringComparison.OrdinalIgnoreCase)) return "Die Prüfsumme stimmt nicht. Die Datei wurde verworfen.";
             Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
-            using (var resp = await http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct))
-            {
-                if (!resp.IsSuccessStatusCode) return $"Der Download ist fehlgeschlagen ({(int)resp.StatusCode}).";
-                await using var from = await resp.Content.ReadAsStreamAsync(ct);
-                await using var to = File.Create(part);
-                await from.CopyToAsync(to, ct);
-            }
-            string actual;
-            await using (var check = File.OpenRead(part)) actual = Convert.ToHexString(await SHA256.HashDataAsync(check, ct));
-            if (!actual.Equals(sha256, StringComparison.OrdinalIgnoreCase)) { File.Delete(part); return "Die Prüfsumme stimmt nicht. Die Datei wurde verworfen."; }
+            var part = dest + ".part";
+            await File.WriteAllBytesAsync(part, reply.Body, ct);
             File.Move(part, dest, true);
             return null;
         }
-        catch (Exception ex) when (ex is HttpRequestException or IOException or TaskCanceledException or UnauthorizedAccessException)
+        catch (Exception ex) when (ex is IOException or TaskCanceledException or UnauthorizedAccessException)
         {
-            try { if (File.Exists(part)) File.Delete(part); } catch (IOException) { }
             return "Der Download ist fehlgeschlagen. Ist das Internet erreichbar?";
         }
     }

@@ -1,5 +1,5 @@
-using System.Net;
 using System.Security.Cryptography;
+using Trendo.Core;
 using Trendo.Core.ConsolePort;
 using Xunit;
 
@@ -7,9 +7,9 @@ namespace Trendo.Core.Tests;
 
 public class GameLibraryTests
 {
-    sealed class Fake(HttpStatusCode code, byte[] body) : HttpMessageHandler
+    sealed class Fake(int code, byte[] body) : IWebFetch
     {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage r, CancellationToken c) => Task.FromResult(new HttpResponseMessage(code) { Content = new ByteArrayContent(body) });
+        public Task<WebReply> GetAsync(string url, CancellationToken ct = default) => Task.FromResult(new WebReply(code, body));
     }
 
     static string Temp() { var d = Path.Combine(Path.GetTempPath(), "trendo-lib-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(d); return d; }
@@ -78,7 +78,7 @@ public class GameLibraryTests
             byte[] body = [1, 2, 3, 4];
             var sha = Convert.ToHexString(SHA256.HashData(body));
             var dest = Path.Combine(d, "sub", "spiel.gb");
-            using var ok = new HttpClient(new Fake(HttpStatusCode.OK, body));
+            var ok = new Fake(200, body);
             Assert.Null(await GameLibrary.DownloadAsync(ok, "https://x.test/a", sha, dest));
             Assert.Equal(body, File.ReadAllBytes(dest));
 
@@ -87,7 +87,7 @@ public class GameLibraryTests
             Assert.False(File.Exists(bad));
             Assert.False(File.Exists(bad + ".part"));
 
-            using var nf = new HttpClient(new Fake(HttpStatusCode.NotFound, []));
+            var nf = new Fake(404, []);
             Assert.Contains("404", await GameLibrary.DownloadAsync(nf, "https://x.test/a", sha, bad));
         }
         finally { Directory.Delete(d, true); }

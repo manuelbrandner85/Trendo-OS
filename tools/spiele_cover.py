@@ -12,7 +12,7 @@ STYLE = ('cinematic key art for an original video game, vertical poster composit
          'no text, no letters, no title, no logos, no watermark, no brand names')
 
 COVERS = {
-    'morvane': 'an invented rainy harbor city at night seen from a rooftop, container cranes, wet streets with car headlights, a lone courier in a hooded jacket beside a plain unbranded motorcycle',
+    'morvane': 'an invented rainy harbor city at night seen from a rooftop, container cranes, wet streets with car headlights, a lone courier in a plain hooded jacket standing with his back to the viewer, no motorcycle, no vehicle close to the camera, no patches, no badges',
     'moosgrund': 'a tiny glowing forest spirit made of moss leaping between giant mossy tree tops, shafts of warm sunlight, stylized early 2000s 3D game look',
     'ascheturm': 'an armored lone knight with a worn greatsword before an immense tower of grey ash and drifting embers, gloomy dusk',
     'kuestenrallye': 'two plain unbranded rally cars drifting around a sunny coastal cliff road, turquoise sea, dust clouds, early 2000s 3D racing game look',
@@ -22,7 +22,7 @@ COVERS = {
     'sternenwerft': 'a huge orbital shipyard above a blue planet, a small patched-together spaceship leaving the dock, laser sparks in the distance',
     'demo-platformer-3d': 'a small cheerful robot jumping across floating grass islands collecting golden coins, bright blue sky, stylized 3D',
     'demo-squash': 'a small round hero jumping onto colorful blob creatures on a simple arena floor, playful stylized 3D',
-    'demo-truck': 'a sturdy plain unbranded truck driving through a tiny toy-like town on a hilly road, warm afternoon light',
+    'demo-truck': 'a tiny toy-like wooden delivery truck painted solid orange seen from the side and from behind, driving away through a tiny toy-like town on a hilly road, no grille visible, no emblem, warm afternoon light',
     'demo-platformer-2d': 'a pixel art scene of a small adventurer running across green platforms in a cave, retro palette',
     'demo-dodge': 'a small character dodging swarms of little creatures on a dark blue field, simple playful 2D illustration',
     'hb-libbet': 'a small girl unrolling a magic glowing carpet tile by tile across a dark floor, four-color green handheld game palette, pixel art',
