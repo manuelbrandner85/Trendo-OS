@@ -57,8 +57,7 @@ public partial class MainWindow
         {
             var dir = GameDesign.BuildBrowser(d.Data, WorkFolder("Spiele"));
             d.Set("built", dir, "Bauen"); _progMsg[GK] = "Spielbar gebaut: " + dir; _core.Audit.Append(Principal.LocalOwner.Name, "game.build", Path.GetFileName(dir));
-            // T-0630: hat das Team Godot oder Unity gewählt, entsteht das Engine-Projekt gleich mit
-            if (GameTools.Decide(d.Data, GameToolsHere()).Route is ("godot" or "unity") and var route) GameToEngine(d, route);
+            GameAutoEngine(d);
             return;
         }
         var engines = _opt.Isolated ? [] : GameStudio.FindEngines();
@@ -270,7 +269,7 @@ public partial class MainWindow
         scale.SelectionChanged += (_, _) =>
         {
             if (scale.SelectedIndex < 0) return; var s = GameDesign.Scales[scale.SelectedIndex]; if (s.Id == d.Text("scale")) return;
-            d.Edit("Umfang", x => { x["scale"] = s.Id; x["milestones"] = new JsonArray([.. GameDesign.Milestones(s.Id).Select(m => (JsonNode)new JsonObject { ["name"] = m, ["done"] = false })]); });
+            d.Edit("Umfang", x => { x.Remove("engine"); x.Remove("engineReason"); x.Remove("blender"); x["scale"] = s.Id; x["milestones"] = new JsonArray([.. GameDesign.Milestones(s.Id).Select(m => (JsonNode)new JsonObject { ["name"] = m, ["done"] = false })]); });
             Show(GK);
         };
         sp.Children.Add(P("Umfang", null, 11.5)); sp.Children.Add(scale);

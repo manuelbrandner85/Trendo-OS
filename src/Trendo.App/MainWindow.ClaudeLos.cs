@@ -21,7 +21,7 @@ public partial class MainWindow
             StudioMcp.Result r;
             if (StudioMcpOverride is { } o) r = o(folder, studio);
             else if (_opt.Isolated) return null;
-            else r = StudioMcpPrepare(folder, studio);
+            else r = StudioMcpPrepare(folder, studio, studio == "CORE-06" && ProgramActive(GK) is { } game ? GameEngineOf(game) : null); // T-0630: Server passend zur gewählten Engine
             var file = Path.Combine(folder, ".mcp.json");
             return r.Added.Count > 0 && File.Exists(file) ? file : null;
         }

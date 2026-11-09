@@ -139,17 +139,29 @@ public static class GameExperts
 
     public static GameExpert? Find(string id) => All.FirstOrDefault(e => e.Id == id);
 
+    /// <summary>Stichwort am Wortanfang; kurze Stichwörter (bis 3 Zeichen wie „ki“ oder „rig“) nur als ganzes Wort.</summary>
+    static bool Hit(string text, string keyword)
+    {
+        for (var i = text.IndexOf(keyword, StringComparison.Ordinal); i >= 0; i = text.IndexOf(keyword, i + 1, StringComparison.Ordinal))
+        {
+            if (i > 0 && char.IsLetterOrDigit(text[i - 1])) continue;
+            var end = i + keyword.Length;
+            if (keyword.Length > 3 || end >= text.Length || !char.IsLetterOrDigit(text[end])) return true;
+        }
+        return false;
+    }
+
     /// <summary>Wählt die passenden Fachleute für einen Auftrag: Treffer in den Stichwörtern zählen, die gewählte Engine bevorzugt ihre Spezialisten,
     /// fremde Engine-Spezialisten fallen weg. Ohne Treffer: Game Designer und Technischer Direktor.</summary>
     public static IReadOnlyList<GameExpert> Pick(string? task, string? engine, string mode = "normal", int? max = null)
     {
         var lower = " " + (task ?? "").ToLowerInvariant() + " ";
-        var needed = All.Count(e => (e.Engine is null || string.IsNullOrEmpty(engine) || e.Engine == engine.ToLowerInvariant()) && e.Triggers.Any(k => lower.Contains(k, StringComparison.Ordinal)));
+        var needed = All.Count(e => (e.Engine is null || string.IsNullOrEmpty(engine) || e.Engine == engine.ToLowerInvariant()) && e.Triggers.Any(k => Hit(lower, k)));
         var n = Math.Clamp(max ?? (mode == "auto" ? Math.Max(needed, 2) : Modes.FirstOrDefault(m => m.Id == mode).Count switch { 0 => 3, var c => c }), 1, 6);
         var t = " " + (task ?? "").ToLowerInvariant() + " "; var eng = (engine ?? "").ToLowerInvariant();
         var scored = All.Where(e => e.Engine is null || eng.Length == 0 || e.Engine == eng)
-            .Select((e, i) => (e, i, s: e.Triggers.Count(k => t.Contains(k, StringComparison.Ordinal)) * 10 + (e.Engine is not null && e.Engine == eng && t.Length > 2 ? 3 : 0)))
-            .Where(x => x.s >= 10 || (x.s > 0 && x.e.Engine == eng))
+            .Select((e, i) => (e, i, s: e.Triggers.Count(k => Hit(t, k)) * 10 + (e.Engine is not null && e.Engine == eng && t.Length > 2 ? 3 : 0)))
+            .Where(x => x.s >= 10 || (mode != "auto" && x.s > 0 && x.e.Engine == eng))
             .OrderByDescending(x => x.s).ThenBy(x => x.i).Select(x => x.e).Take(n).ToList();
         foreach (var fallback in new[] { "game-designer", "technical-director" }) if (scored.Count < Math.Min(n, 2) && scored.All(e => e.Id != fallback)) scored.Add(Find(fallback)!);
         return scored.Take(n).ToList();

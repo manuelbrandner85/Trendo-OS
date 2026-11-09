@@ -44,7 +44,7 @@ public static class GameDirector
                "Größen (scale): " + scales + ". retro/indie2d laufen sofort im Browser (browser: jump, plattform, breakout oder snake); indie3d/aa/aaa entstehen in Unreal Engine 5 " +
                "mit echten Figuren (MetaHuman), fotorealer Welt und Physik (world3d: level oder openworld).\n" +
                "Liefere IMMER die vollständige Spielbibel als EIN JSON-Objekt in einem ```json-Block mit diesen Feldern: " +
-               "title, scale, genre, logline (ein Satz), loop (Kernschleife), mechanics (Liste), controls, style, audience, platforms, sound, menus, systems, browser, world3d, " +
+               "title, scale, genre, logline (ein Satz), loop (Kernschleife), mechanics (Liste), controls, style, audience, platforms, sound, menus, systems, browser, world3d, engine, engineReason, blender, " +
                "characters (Liste: name, role = Held|Begleiter|Gegner|Boss|Nebenfigur, text, phases = Zahl, Bosse 2–4), world (Liste: name, text), " +
                "quests (Liste: title, kind = Haupt|Neben, goal, needs, gives, giver = Name einer Figur), level (nur Browser: Zeilen aus # . o E ^ S Z F C K D G N), " +
                "weapon (schwert|werfen oder leer), abilities (doppelsprung, sprint …), " +
@@ -91,7 +91,10 @@ public static class GameDirector
         catch (JsonException e) { return new Result(null, qs, sug, "Die Spielbibel der KI war fehlerhaft: " + e.Message); }
         if (raw2 is null) return new Result(null, qs, sug, "Die KI hat keine Spielbibel geliefert.");
         var merged = current?.DeepClone().AsObject() ?? new JsonObject();
-        foreach (var k in Keys) if (raw2[k] is { } v) merged[k] = v.DeepClone();
+        var engineBefore = S(merged["engine"]).ToLowerInvariant();
+        foreach (var k in Keys)
+            if (raw2[k] is { } v && (k != "engine" || GameTools.Engines.Contains(S(v).ToLowerInvariant()))) merged[k] = v.DeepClone(); // eine ungültige Engine löscht keine gültige Wahl
+        if (S(merged["engine"]).ToLowerInvariant() != engineBefore && raw2["engineReason"] is null) merged.Remove("engineReason"); // alter Grund passt nicht zur neuen Engine
         return new Result(Normalize(merged), qs, sug, null);
     }
 

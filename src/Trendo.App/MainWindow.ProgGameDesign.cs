@@ -98,7 +98,6 @@ public partial class MainWindow
         {
             foreach (var (k, v) in bible) x[k] = v?.DeepClone();
             if (_gcImages.TryGetValue(idea.Title, out var image)) GameDocument.AddImage(x, "idee", image);
-            GameTools.Apply(x, GameToolsHere());
         });
         _core.Audit.Append(Principal.LocalOwner.Name, "game.idee.uebernommen", idea.Title);
         _progMsg[GK] = $"„{idea.Title}“ ist angelegt – jetzt die Spielbibel ausbauen. Rückgängig mit Strg+Z.";

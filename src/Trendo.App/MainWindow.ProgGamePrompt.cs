@@ -70,8 +70,7 @@ public partial class MainWindow
         if (_gpResult?.Doc is not { } neu) return;
         var d = _gpChange ? ProgramActive(GK) : null;
         if (d is null) { ProgramNew(GK, "leer"); d = ProgramActive(GK)!; }
-        var tools = GameToolsHere();
-        d.Edit(_gpChange ? "Spiel-Auftrag: " + _gpText : "Spiel aus einem Satz", x => { foreach (var (k, v) in neu) x[k] = v?.DeepClone(); GameTools.Apply(x, tools); });
+        d.Edit(_gpChange ? "Spiel-Auftrag: " + _gpText : "Spiel aus einem Satz", x => { foreach (var (k, v) in neu) x[k] = v?.DeepClone(); });
         _core.Audit.Append(Principal.LocalOwner.Name, "game.prompt.apply", d.Text("title"));
         _progMsg[GK] = $"„{d.Text("title")}“ übernommen – „Bauen“ macht es spielbar. Rückgängig mit Strg+Z.";
         _gpResult = null; _gameSection = "Übersicht"; Show(GK);
@@ -110,6 +109,7 @@ public partial class MainWindow
                 var diff = GameDirector.Diff(_gpBase ?? new JsonObject(), neu);
                 var prev = new StackPanel { Name = "game-prompt-preview", Spacing = 2 };
                 prev.Children.Add(P($"Vorschau „{neu["title"]}“ · {GameDesign.ScaleOf(neu["scale"]?.ToString() ?? "").Name} · {neu["genre"]} · erstellt von {_gpKi}", Text, 12.5));
+                prev.Children.Add(P("🧭 " + GameTools.Line(GameTools.Decide(neu, GameToolsHere())), Muted, 12)); // was wirklich gilt, auch wenn die KI etwas nicht Installiertes nannte
                 foreach (var l in diff.Take(14)) prev.Children.Add(P(l, Muted, 12));
                 if (diff.Count > 14) prev.Children.Add(P($"… und {diff.Count - 14} weitere Änderungen", Muted, 12));
                 sp.Children.Add(prev);

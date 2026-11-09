@@ -250,9 +250,18 @@ public static class StudioTeams
     public static IReadOnlyList<StudioRole> Pick(string? studioId, string? task, int max = 3)
     {
         if (For(studioId) is not { } team) return [];
-        var words = (task ?? "").ToLowerInvariant().Split([' ', ',', '.', ';', ':', '!', '?', '„', '“', '"', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Where(w => w.Length >= 4).Distinct().ToList();
-        var hits = team.Roles.Select((r, i) => (r, i, s: words.Count(w => $"{r.Name} {r.Does} {r.Focus}".Contains(w, StringComparison.OrdinalIgnoreCase)))).Where(x => x.s > 0).OrderByDescending(x => x.s).ThenBy(x => x.i).Select(x => x.r).Take(max).ToList();
+        var words = (task ?? "").ToLowerInvariant().Split([' ', ',', '.', ';', ':', '!', '?', '„', '“', '"', '\n', '(', ')', '-', '/'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Where(w => w.Length >= 3 && !Filler.Contains(w)).Distinct().ToList();
+        var hits = team.Roles.Select((r, i) => (r, i, s: words.Count(w => StartsWord($"{r.Name} {r.Does} {r.Focus}".ToLowerInvariant(), w)))).Where(x => x.s > 0).OrderByDescending(x => x.s).ThenBy(x => x.i).Select(x => x.r).Take(max).ToList();
         return hits.Count > 0 ? hits : [team.Roles[0]];
+    }
+
+    static readonly HashSet<string> Filler = ["bitte", "der", "die", "das", "den", "dem", "des", "ein", "eine", "einen", "einem", "einer", "und", "oder", "aber", "mit", "für", "von", "vom", "zum", "zur", "auf", "aus", "bei", "nach", "über", "unter", "mach", "mache", "machen", "soll", "sollen", "will", "wird", "werden", "sind", "ist", "auch", "noch", "dann", "wenn", "nicht", "kein", "keine", "alle", "alles", "mehr", "sehr", "mein", "meine", "dein", "deine", "dass", "damit", "ich", "wir", "mir"];
+
+    static bool StartsWord(string text, string word)
+    {
+        for (var i = text.IndexOf(word, StringComparison.Ordinal); i >= 0; i = text.IndexOf(word, i + 1, StringComparison.Ordinal))
+            if (i == 0 || !char.IsLetterOrDigit(text[i - 1])) return true;
+        return false;
     }
 
     /// <summary>T-0630: Zusatz für die KI: wer am Auftrag mitarbeitet. Leer, wenn das Studio kein Team hat.</summary>

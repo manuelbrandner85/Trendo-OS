@@ -18,7 +18,7 @@ public partial class MainWindow
     public string GameCouncilMode => _gpMode;
 
     /// <summary>Engine des offenen Spiels (für die Auswahl der Engine-Spezialisten).</summary>
-    string? GameEngineOf(ProgramDocument? d) => d?.Data["engine"]?.ToString()?.ToLowerInvariant() switch { { } e when e.Contains("unreal") => "unreal", { } e when e.Contains("godot") => "godot", { } e when e.Contains("unity") => "unity", { } e when e.Contains("web") => "web", _ => null };
+    string? GameEngineOf(ProgramDocument? d) => d is null ? null : GameTools.Decide(d.Data, GameToolsHere()).Engine switch { "browser" => "web", var e => e };
 
     /// <summary>Fachleute für den Auftrag als Zusatz zur Team-Anweisung (lokale KI und Claude).</summary>
     string GameExpertBrief(string wish, ProgramDocument? d)
@@ -35,9 +35,35 @@ public partial class MainWindow
     /// <summary>T-0630: was auf diesem PC für die automatische Wahl von Engine und Werkzeugen bereitsteht.</summary>
     GameTools.Available GameToolsHere()
     {
-        var found = EngineCheck();
+        var found = GameEnginesSeen();
         bool Has(string id) => found.Any(e => e.Id == id && e.Installed);
         return new GameTools.Available(Has("unreal"), Has("unity"), Has("godot"), Has("blender"), GamePromptClaude);
+    }
+
+    List<EngineFound>? _gameEngines; DateTime _gameEnginesAt;
+
+    /// <summary>Die Suche liest Dateien; beim Neuzeichnen zählt darum das Ergebnis der letzten 30 Sekunden. Ein Fehler beim Suchen stört das Zeichnen nicht.</summary>
+    List<EngineFound> GameEnginesSeen()
+    {
+        if (EngineProbeOverride is not null || _opt.Isolated) return EngineCheck();
+        if (_gameEngines is null || DateTime.UtcNow - _gameEnginesAt > TimeSpan.FromSeconds(30))
+        {
+            try { _gameEngines = EngineCheck(); }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException or System.Text.Json.JsonException) { _gameEngines ??= []; }
+            _gameEnginesAt = DateTime.UtcNow;
+        }
+        return _gameEngines;
+    }
+
+    /// <summary>T-0630: hat das Team beim Plattformer Godot oder Unity gewählt, entsteht das Engine-Projekt einmal mit. Ein Fehler dabei bricht Bauen und Spielen nicht ab.</summary>
+    void GameAutoEngine(ProgramDocument d)
+    {
+        var route = GameTools.Decide(d.Data, GameToolsHere()).Route;
+        if (route is not ("godot" or "unity")) return;
+        var built = _progMsg[GK];
+        if (Directory.Exists(d.Text(route + "Project"))) { _progMsg[GK] = $"{built} Das {GameTools.NameOf(route)}-Projekt besteht schon und bleibt unverändert."; return; }
+        try { GameToEngine(d, route); _progMsg[GK] = built + " " + _progMsg[GK]; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException) { _progMsg[GK] = $"{built} Das {GameTools.NameOf(route)}-Projekt wurde nicht angelegt: {e.Message}"; }
     }
 
     /// <summary>T-0630: sichtbare Zeile, welche Engine und Werkzeuge das Team gewählt hat.</summary>

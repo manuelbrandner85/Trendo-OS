@@ -70,6 +70,78 @@ public class GameToolsTests
         Assert.False(c.Blender); Assert.Contains("Blender ist nicht installiert", c.Note);
     }
 
+    [Fact(DisplayName = "Engine-Wahl: Regelentscheidung ändert das Dokument nicht und folgt neu installierten Engines und neuem Umfang")]
+    public void Rule_is_not_frozen()
+    {
+        var d = Doc("indie2d");
+        var before = d.ToJsonString();
+        Assert.Equal("godot", GameTools.Decide(d, new GameTools.Available(false, false, true, false)).Engine);
+        Assert.Equal(before, d.ToJsonString());
+        d["scale"] = "aaa";
+        Assert.Equal("unreal", GameTools.Decide(d, All).Engine);
+    }
+
+    [Fact(DisplayName = "Engine-Wahl: Blender bleibt nach späterer Installation verfügbar, nur ein ausdrückliches Nein der KI schaltet es ab")]
+    public void Blender_not_frozen()
+    {
+        var d = Doc("aaa");
+        Assert.False(GameTools.Decide(d, All with { Blender = false }).Blender);
+        Assert.True(GameTools.Decide(d, All).Blender);
+        d["blender"] = false;
+        Assert.False(GameTools.Decide(d, All).Blender);
+    }
+
+    [Fact(DisplayName = "Engine-Wahl: Schreibweise der KI ist egal")]
+    public void Case_insensitive() => Assert.Equal("unity", GameTools.Decide(Doc("indie3d", engine: "Unity"), All).Engine);
+
+    [Fact(DisplayName = "Engine-Wahl: Browser-Umfang ohne Engine bleibt im Browser, auch für Smartphones, und erzeugt kein Engine-Projekt")]
+    public void Browser_is_fallback()
+    {
+        var c = GameTools.Decide(Doc("retro", "Smartphone", browser: "plattform"), new GameTools.Available(false, false, false, false));
+        Assert.Equal("browser", c.Engine); Assert.Equal("browser", c.Route);
+    }
+
+    [Fact(DisplayName = "Engine-Wahl: Weicht die Regel auf eine andere Engine aus, wird das gesagt")]
+    public void Rule_fallback_is_named()
+    {
+        var c = GameTools.Decide(Doc("aaa"), new GameTools.Available(false, false, true, false));
+        Assert.Equal("godot", c.Engine); Assert.Contains("Unreal Engine 5 wäre passender", c.Note);
+    }
+
+    [Fact(DisplayName = "Engine-Wahl: Blender-Text nur, wenn wirklich 3D gebaut wird; doppelter Punkt entfällt")]
+    public void Honest_line()
+    {
+        Assert.False(GameTools.Decide(Doc("retro", "Browser", engine: "unreal"), All).Blender);
+        var d = Doc("aaa", engine: "unreal"); d["engineReason"] = "Riesige Welt.";
+        Assert.DoesNotContain("..", GameTools.Line(GameTools.Decide(d, All)));
+    }
+
+    [Fact(DisplayName = "Änderung per Satz: ungültige Engine löscht keine Wahl, neue Engine übernimmt keinen alten Grund, ohne Angabe bleibt alles")]
+    public void Parse_merges_engine()
+    {
+        var current = new JsonObject { ["title"] = "A", ["scale"] = "aaa", ["engine"] = "unreal", ["engineReason"] = "Riesige Welt" };
+        Assert.Equal("unreal", (string)GameDirector.Parse("```json\n{\"engine\":\"xyz\"}\n```", current).Doc!["engine"]!);
+        Assert.Equal("unreal", (string)GameDirector.Parse("```json\n{\"title\":\"B\"}\n```", current).Doc!["engine"]!);
+        var changed = GameDirector.Parse("```json\n{\"engine\":\"godot\"}\n```", current).Doc!;
+        Assert.Equal("godot", (string)changed["engine"]!); Assert.Equal("", (string)changed["engineReason"]!);
+    }
+
+    [Fact(DisplayName = "Fachleute: nur am Wortanfang, kurze Stichwörter als ganzes Wort, Engine verdrängt im Automatikmodus nicht die Standardrollen")]
+    public void Experts_precise()
+    {
+        Assert.Equal(["game-designer", "technical-director"], GameExperts.Pick("Mach den Boss schwerer", "godot", "auto").Select(e => e.Id));
+        Assert.DoesNotContain(GameExperts.Pick("Spiel für Kinder mit einer Kiste", null, "auto"), e => e.Id == "ai-programmer");
+        Assert.DoesNotContain(GameExperts.Pick("schwierig und traurig", null, "auto"), e => e.Name.Contains("Animator") || e.Name.Contains("Technical Artist"));
+    }
+
+    [Fact(DisplayName = "Studio-Team: Füllwörter zählen nicht, Wörter nur am Wortanfang")]
+    public void Studio_pick_precise()
+    {
+        var team = StudioTeams.All.First();
+        Assert.Equal(team.Roles[0], Assert.Single(StudioTeams.Pick(team.StudioId, "bitte eine")));
+        Assert.Contains(StudioTeams.Pick(team.StudioId, "Ton"), r => r.Name == "Lektor");
+    }
+
     [Fact(DisplayName = "Spielbibel: KI-Antwort mit Engine wird übernommen, Unsinn als leer bereinigt")]
     public void Parse_keeps_engine()
     {
@@ -82,7 +154,7 @@ public class GameToolsTests
     public void Brief_lists_installed()
     {
         var b = GameTools.Brief(new GameTools.Available(true, false, true, false));
-        Assert.Contains("Unreal Engine 5, Godot", b); Assert.DoesNotContain("vorhanden: Unity", b); Assert.Contains("fragst dafür nicht nach", b);
+        Assert.Contains("vorhanden: Unreal Engine 5, Godot,", b); Assert.DoesNotContain("vorhanden: Unity", b); Assert.Contains("fragst dafür nicht nach", b); Assert.Contains("lade oder installiere nichts", b);
     }
 
     [Fact(DisplayName = "Fachleute automatisch: Anzahl richtet sich nach dem Auftrag, mindestens zwei, höchstens sechs")]
