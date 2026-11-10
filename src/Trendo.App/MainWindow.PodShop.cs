@@ -115,8 +115,11 @@ public partial class MainWindow
         if (item.Provider == "printify")
         {
             if (!PodPrintifyManual) throw new PodServiceException("Bestätige im Studio „Print on Demand“, dass dein Printify-Shop auf manuelle Freigabe steht. Sonst startet Printify die Fertigung selbst.");
-            var remote = await Pfy().CreateOrderAsync(PfyShopId(), order, item.RemoteProduct, v.SyncId);
-            ShopOrderStore.Set(order.SessionId, new(0, false, null, remote));
+            var shopId = PfyShopId();
+            var remote = await Pfy().CreateOrderAsync(shopId, order, item.RemoteProduct, v.SyncId);
+            decimal? cost = null;
+            try { cost = await Pfy().OrderCostAsync(shopId, remote); } catch (PodServiceException) { }
+            ShopOrderStore.Set(order.SessionId, new(0, false, cost, $"{shopId}/{remote}"));
             _core.Audit.Append(Principal.LocalOwner.Name, "pod.bestellung", "printify angelegt");
             _shopMsg = "Bestellung bei Printify angelegt. Gefertigt wird erst nach deiner Freigabe.";
             return;
@@ -139,7 +142,12 @@ public partial class MainWindow
     {
         if (!ShopOrderStore.All().TryGetValue(order.SessionId, out var st)) throw new PodServiceException("Zu dieser Zahlung gibt es keinen Entwurf.");
         if (st.Confirmed) throw new PodServiceException("Diese Bestellung ist schon freigegeben.");
-        if (st.RemoteId is { } remote) await Pfy().SendToProductionAsync(PfyShopId(), remote);
+        if (st.RemoteId is { } remote)
+        {
+            var parts = remote.Split('/', 2);
+            if (parts.Length != 2 || !long.TryParse(parts[0], out var shopId) || shopId != PfyShopId()) throw new PodServiceException("Diese Bestellung gehört zu einem anderen Printify-Shop. Gib sie direkt bei Printify frei.");
+            await Pfy().SendToProductionAsync(shopId, parts[1]);
+        }
         else await PfOrders().ConfirmAsync(st.PrintfulId);
         ShopOrderStore.Set(order.SessionId, st with { Confirmed = true });
         _shopArmed = "";
@@ -169,12 +177,12 @@ public partial class MainWindow
         var items = PodShopItems.All();
         foreach (var i in items)
             sp.Children.Add(P($"{i.Name} · {i.Price:0.00} € inkl. Versand · {i.Variants.Count(v => v.PayUrl is { Length: > 0 })} von {i.Variants.Count} Varianten bestellbar", Text, 12));
-        if (items.Count == 0) sp.Children.Add(P("Noch keine Produkte. Lege sie im Studio „Print on Demand“ über Printful an.", Muted, 12));
+        if (items.Count == 0) sp.Children.Add(P("Noch keine Produkte. Lege sie im Studio „Print on Demand“ über Printful oder Printify an.", Muted, 12));
 
         if (!PodStripeOn)
         {
-            var key = new TextBox { Name = "shop-st-key", PasswordChar = '•', PlaceholderText = "Stripe-Schlüssel einfügen", MinWidth = 280 };
-            sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { ShopBtn("shop-st-get", "Schlüssel bei Stripe holen", () => { Launch(StripeClient.KeyPage); return Task.CompletedTask; }), key, ShopBtn("shop-st-connect", "Verbinden", () => PodStripeConnect(key.Text ?? ""), true) } });
+            var key = PodSecretBox("shop-st-key", "Stripe-Schlüssel einfügen");
+            sp.Children.Add(PodKeyRow(ShopBtn("shop-st-get", "Schlüssel bei Stripe holen", () => { Launch(StripeClient.KeyPage); return Task.CompletedTask; }), key, ShopBtn("shop-st-connect", "Verbinden", () => PodStripeConnect(key.Text ?? ""), true)));
             return sp;
         }
 
@@ -203,7 +211,7 @@ public partial class MainWindow
             // Nur Kennzeichen und Land: Namen und Adressen sollen nicht im Seitentext stehen
             var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { new TextBlock { Text = $"Bestellung {o.Code} · {o.Address?.Country}" + (o.Live ? "" : " · Testzahlung"), Foreground = Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center } } };
             if (!o.Live) { }
-            else if (!states.TryGetValue(o.SessionId, out var st)) row.Children.Add(ShopBtn("shop-draft-" + o.Code, "Entwurf bei Printful anlegen", () => PodDraftOrder(order)));
+            else if (!states.TryGetValue(o.SessionId, out var st)) row.Children.Add(ShopBtn("shop-draft-" + o.Code, ShopVariantFor(o)?.Item.Provider == "printify" ? "Bei Printify anlegen (wartet auf deine Freigabe)" : "Entwurf bei Printful anlegen", () => PodDraftOrder(order)));
             else if (st.Confirmed) row.Children.Add(new TextBlock { Text = "✓ freigegeben", Foreground = Brush.Parse("#3DDC84"), FontSize = 12, VerticalAlignment = VerticalAlignment.Center });
             else if (_shopArmed != o.SessionId)
                 row.Children.Add(ShopBtn("shop-arm-" + o.Code, $"Bestellung {o.Code} zur Fertigung freigeben (kostet Geld)", () => { _shopArmed = order.SessionId; Show(CurrentView); return Task.CompletedTask; }));

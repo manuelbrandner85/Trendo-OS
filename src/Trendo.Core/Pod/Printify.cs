@@ -29,9 +29,10 @@ public sealed class PrintifyClient(IWebSend web, string token)
         try { doc = JsonNode.Parse(r.Body); } catch (JsonException) { }
         if (r.Status == 401) throw new PodServiceException("Der Printify-Schlüssel ist ungültig oder abgelaufen. Hole dir einen neuen.");
         if (r.Status == 403) throw new PodServiceException("Dem Printify-Schlüssel fehlt die nötige Berechtigung.");
-        if (r.Status == 409) throw new PodServiceException("Diese Bestellung gibt es bei Printify schon.");
+        if (r.Status == 409) throw new PodServiceException("Printify meldet einen Konflikt, den Eintrag gibt es dort schon.");
         if (r.Status == 429) throw new PodServiceException("Printify bittet um eine kurze Pause. Versuche es in einer Minute erneut.");
-        if (!r.Ok) throw new PodServiceException("Printify meldet: " + (doc?["message"]?.ToString() ?? doc?["error"]?.ToString() ?? $"Fehler {r.Status}"));
+        // Fehlertexte bei Bestellungen können Adressdaten enthalten, deshalb dort nur die Nummer zeigen
+        if (!r.Ok) throw new PodServiceException(path.Contains("/orders", StringComparison.Ordinal) ? $"Printify meldet Fehler {r.Status}." : "Printify meldet: " + (doc?["message"]?.ToString() ?? doc?["error"]?.ToString() ?? $"Fehler {r.Status}"));
         return doc;
     }
 
@@ -93,15 +94,30 @@ public sealed class PrintifyClient(IWebSend web, string token)
     {
         if (order.Address is not { } a) throw new PodServiceException("Zu dieser Zahlung fehlt die Lieferadresse.");
         var parts = a.Name.Trim().Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1) parts = [parts[0], parts[0]]; // Druckereien verlangen oft beide Felder
+        var ext = new string(order.SessionId.Where(char.IsLetterOrDigit).ToArray());
         var body = new JsonObject
         {
-            ["external_id"] = order.SessionId,
+            ["external_id"] = ext.Length > 32 ? ext[^32..] : ext,
             ["line_items"] = new JsonArray(new JsonObject { ["product_id"] = productId, ["variant_id"] = variantId, ["quantity"] = 1 }),
             ["shipping_method"] = 1,
             ["send_shipping_notification"] = false,
             ["address_to"] = new JsonObject { ["first_name"] = parts.ElementAtOrDefault(0) ?? "", ["last_name"] = parts.ElementAtOrDefault(1) ?? "", ["email"] = order.Email, ["country"] = a.Country, ["address1"] = a.Line1, ["address2"] = a.Line2, ["city"] = a.City, ["zip"] = a.Zip },
         };
-        return Id(await Call("POST", $"/shops/{shop}/orders.json", body, ct));
+        try { return Id(await Call("POST", $"/shops/{shop}/orders.json", body, ct)); }
+        catch (PodServiceException e) when (e.Message.Contains("Konflikt", StringComparison.Ordinal))
+        {
+            throw new PodServiceException("Zu dieser Zahlung gibt es bei Printify schon eine Bestellung. Prüfe sie dort und gib sie dort frei oder storniere sie.");
+        }
+    }
+
+    /// <summary>Kosten einer Bestellung (Ware und Versand), damit die Freigabe die Summe zeigen kann.</summary>
+    public async Task<decimal?> OrderCostAsync(long shop, string orderId, CancellationToken ct = default)
+    {
+        var r = await Call("GET", $"/shops/{shop}/orders/{Uri.EscapeDataString(orderId)}.json", null, ct);
+        long Cents(string key) => long.TryParse(r?[key]?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var v) ? v : 0;
+        var total = Cents("total_price") + Cents("total_shipping") + Cents("total_tax");
+        return total > 0 ? total / 100m : null;
     }
 
     /// <summary>Gibt eine Bestellung in die Fertigung. Das kostet Geld.</summary>

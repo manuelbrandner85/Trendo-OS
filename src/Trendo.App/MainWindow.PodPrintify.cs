@@ -23,12 +23,13 @@ public partial class MainWindow
 
     public bool PodPrintifyOn => PodSecret(PfyKey) is not null;
     string PfyManualFile => IoPath.Combine(_core.DataRoot, "print-on-demand", "printify-manuell.txt");
-    public bool PodPrintifyManual => File.Exists(PfyManualFile);
+    /// <summary>Die Bestätigung gilt nur für genau den Shop, für den sie gegeben wurde.</summary>
+    public bool PodPrintifyManual => File.Exists(PfyManualFile) && PodSecret(PfyShopKey) is { } shop && File.ReadAllText(PfyManualFile).Trim() == shop;
     public IReadOnlyList<string> PodPrintifyMockups { get; private set; } = [];
 
     public void PodPrintifySetManual(bool on)
     {
-        if (on) { Directory.CreateDirectory(IoPath.GetDirectoryName(PfyManualFile)!); File.WriteAllText(PfyManualFile, "ja"); }
+        if (on && PodSecret(PfyShopKey) is { } shop) { Directory.CreateDirectory(IoPath.GetDirectoryName(PfyManualFile)!); File.WriteAllText(PfyManualFile, shop); }
         else if (File.Exists(PfyManualFile)) File.Delete(PfyManualFile);
         _core.Audit.Append(Principal.LocalOwner.Name, "pod.printify", on ? "manuelle freigabe bestaetigt" : "manuelle freigabe zurueckgenommen");
     }
@@ -44,13 +45,15 @@ public partial class MainWindow
         var shops = await new PrintifyClient(PodWeb, token).ShopsAsync();
         if (shops.Count == 0) throw new PodServiceException("In deinem Printify-Konto gibt es noch keinen Shop. Lege dort zuerst einen an.");
         _core.Secrets.Set(PfyKey, token); _core.Secrets.Set(PfyShopKey, shops[0].Id.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        if (File.Exists(PfyManualFile)) File.Delete(PfyManualFile); // eine neue Verbindung braucht eine neue Bestätigung
         _core.Audit.Append(Principal.LocalOwner.Name, "pod.printify", "verbunden");
-        _progMsg[PodKey] = "Printify ist verbunden: " + shops[0].Title;
+        _progMsg[PodKey] = "Printify ist verbunden mit dem Shop „" + shops[0].Title + "“." + (shops.Count > 1 ? $" Dein Konto hat {shops.Count} Shops, Trendo nutzt diesen ersten." : "");
     });
 
     public void PodPrintifyDisconnect()
     {
         _core.Secrets.Delete(PfyKey); _core.Secrets.Delete(PfyShopKey);
+        if (File.Exists(PfyManualFile)) File.Delete(PfyManualFile);
         _pfyCatalog = []; _pfyBlueprint = null; _pfyProviders = []; _pfyProvider = null; _pfyVariants = []; _pfyChosen.Clear(); PodPrintifyMockups = [];
         _core.Audit.Append(Principal.LocalOwner.Name, "pod.printify", "getrennt");
         Show(PodKey);
@@ -97,13 +100,14 @@ public partial class MainWindow
             try { imageId = await c.UploadUrlAsync("design.png", url); }
             finally { await PodClearQuiet(host, site); }
         }
+        var note = _progMsg.GetValueOrDefault(PodKey) ?? "";
         var chosen = _pfyVariants.Where(v => _pfyChosen.Contains(v.Id)).ToList();
         var product = await c.CreateProductAsync(PfyShopId(), name.Trim(), b.Id, p.Id, chosen.Select(v => v.Id).ToList(), retail, chosen[0].Position, imageId);
         PodPrintifyMockups = product.Images;
         PodShopItems.Add(new(Guid.NewGuid().ToString("N"), name.Trim(), retail, product.Images.FirstOrDefault() ?? "", PrintifyHash(product.Id), [.. chosen.Select(v => new PodShopVariant(v.Title, v.Id))], "printify", product.Id));
         _core.Audit.Append(Principal.LocalOwner.Name, "pod.printify", "produkt angelegt");
         _pfyName = ""; _pfyPrice = "";
-        _progMsg[PodKey] = $"Produkt ist bei Printify angelegt und im Shop. {product.Images.Count} Mockups.";
+        _progMsg[PodKey] = $"Produkt ist bei Printify angelegt und im Shop. {product.Images.Count} Mockups." + (note.Contains("Ablage", StringComparison.Ordinal) ? " " + note.Trim() : "");
     });
 
     /// <summary>Printify nutzt Text-Kennungen. Der Shop ersetzt gleiche Produkte über eine Zahl, dafür genügt ein stabiler Wert aus der Kennung.</summary>
@@ -116,11 +120,11 @@ public partial class MainWindow
         if (!PodPrintifyOn)
         {
             var token = PodSecretBox("pod-pfy-token", "Printify-Schlüssel einfügen");
-            sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { PodBtn("pod-pfy-get", "Schlüssel bei Printify holen", () => { Launch(PrintifyClient.TokenPage); return Task.CompletedTask; }), token, PodBtn("pod-pfy-connect", "Verbinden", () => PodPrintifyConnect(token.Text ?? ""), true) } });
+            sp.Children.Add(PodKeyRow(PodBtn("pod-pfy-get", "Schlüssel bei Printify holen", () => { Launch(PrintifyClient.TokenPage); return Task.CompletedTask; }), token, PodBtn("pod-pfy-connect", "Verbinden", () => PodPrintifyConnect(token.Text ?? ""), true)));
             return sp;
         }
         sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { new TextBlock { Name = "pod-pfy-state", Text = "✓ Printify verbunden", Foreground = Brush.Parse("#3DDC84"), FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, PodBtn("pod-pfy-load", _pfyCatalog.Count == 0 ? "Katalog laden" : "Katalog neu laden", PodPrintifyCatalog), PodBtn("pod-pfy-off", "Trennen", () => { PodPrintifyDisconnect(); return Task.CompletedTask; }) } });
-        var manual = new CheckBox { Name = "pod-pfy-manual", IsChecked = PodPrintifyManual, Content = new TextBlock { Text = "Mein Printify-Shop steht auf manuelle Freigabe. Sonst gibt Printify Bestellungen nach 24 Stunden selbst in die Fertigung, und das kostet Geld.", TextWrapping = TextWrapping.Wrap, Foreground = Text, FontSize = 12 } };
+        var manual = new CheckBox { Name = "pod-pfy-manual", IsChecked = PodPrintifyManual, Content = new TextBlock { Text = "Dieser Printify-Shop steht auf manuelle Freigabe. Sonst gibt Printify Bestellungen nach 24 Stunden selbst in die Fertigung, und das kostet Geld. Die Bestätigung gilt nur für diesen Shop.", TextWrapping = TextWrapping.Wrap, Foreground = Text, FontSize = 12 } };
         manual.IsCheckedChanged += (_, _) => { if ((manual.IsChecked == true) != PodPrintifyManual) PodPrintifySetManual(manual.IsChecked == true); };
         sp.Children.Add(manual);
 

@@ -80,6 +80,10 @@ public class PrintifyTests
         await c.SendToProductionAsync(7, "o1");
         Assert.EndsWith("/shops/7/orders/o1/send_to_production.json", f.Calls[1].Url);
         var dup = new PrintifyClient(new Fake((409, "{}")), "t");
-        Assert.Contains("schon", (await Assert.ThrowsAsync<PodServiceException>(() => dup.CreateOrderAsync(7, order, "p1", 40))).Message);
+        Assert.Contains("schon eine Bestellung", (await Assert.ThrowsAsync<PodServiceException>(() => dup.CreateOrderAsync(7, order, "p1", 40))).Message);
+        var bad = new PrintifyClient(new Fake((400, """{"message":"Erika Muster, Weg 1"}""")), "t");
+        Assert.DoesNotContain("Erika", (await Assert.ThrowsAsync<PodServiceException>(() => bad.CreateOrderAsync(7, order, "p1", 40))).Message);
+        var cost = new PrintifyClient(new Fake((200, """{"total_price":1500,"total_shipping":490,"total_tax":0}""")), "t");
+        Assert.Equal(19.90m, await cost.OrderCostAsync(7, "o1"));
     }
 }

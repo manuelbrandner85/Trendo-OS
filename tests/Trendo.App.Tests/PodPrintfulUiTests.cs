@@ -119,6 +119,11 @@ public class PodPrintful_Ui
         var (w, _, _) = Open();
         Assert.NotNull(w.TryFind<Button>("pod-pf-get"));
         Assert.Null(w.TryFind<Button>("pod-pf-load"));
+        // Ein langer Schlüssel darf das Feld nicht verbreitern, „Verbinden“ bleibt sichtbar
+        var box = w.Find<TextBox>("pod-pf-token");
+        box.Text = new string('x', 400); Settle();
+        Assert.True(box.Bounds.Width <= 470, $"Feld ist {box.Bounds.Width} breit");
+        Assert.True(w.Find<Button>("pod-pf-connect").Bounds.Width > 0);
         await Ready(w); Settle();
         Assert.Null(w.TryFind<Button>("pod-pf-get"));
         Assert.NotNull(w.TryFind<Button>("pod-pf-prod-71"));

@@ -87,6 +87,7 @@ public class PodPrintify_Ui
         Assert.DoesNotContain(f.Calls, c => c.EndsWith("/orders.json"));
 
         w.PodPrintifySetManual(true);
+        Assert.True(w.PodPrintifyManual);
         Assert.True(await w.PodDraftOrder(order));
         Assert.Single(f.Calls, c => c.EndsWith("/orders.json"));
         Assert.DoesNotContain(f.Calls, c => c.Contains("send_to_production"));
@@ -103,8 +104,13 @@ public class PodPrintify_Ui
         Assert.Null(w.TryFind<Button>("pod-pfy-get"));
         Assert.NotNull(w.TryFind<CheckBox>("pod-pfy-manual"));
         Assert.NotNull(w.TryFind<Button>("pod-pfy-prod-3"));
+        w.PodPrintifySetManual(true);
         w.PodPrintifyDisconnect(); Settle();
         Assert.False(w.PodPrintifyOn);
+        Assert.False(w.PodPrintifyManual);
+        Assert.True(await w.PodPrintifyConnect("t"));
+        Assert.False(w.PodPrintifyManual); // neue Verbindung braucht neue Bestätigung
+        w.PodPrintifyDisconnect(); Settle();
         Assert.NotNull(w.TryFind<Button>("pod-pfy-get"));
         w.Close();
     }

@@ -217,7 +217,11 @@ public partial class MainWindow
 
     static decimal PodParsePrice(string? text) { try { return Finance.ParseAmount(text ?? ""); } catch (Exception e) when (e is FormatException or OverflowException) { return 0m; } }
 
-    TextBox PodSecretBox(string name, string hint) => new() { Name = name, PasswordChar = '•', PlaceholderText = hint, MinWidth = 280 };
+    /// <summary>Feld für einen Zugangsschlüssel. Feste Breite, damit ein langer Schlüssel das Studio nicht aus dem Bild schiebt.</summary>
+    TextBox PodSecretBox(string name, string hint) => new() { Name = name, PasswordChar = '•', PlaceholderText = hint, TextWrapping = TextWrapping.NoWrap, HorizontalAlignment = HorizontalAlignment.Stretch };
+
+    /// <summary>Schlüssel holen, einfügen, verbinden: untereinander statt nebeneinander, so bleibt alles sichtbar, auch in schmalen Bereichen.</summary>
+    static Control PodKeyRow(Button get, TextBox box, Button connect) => new StackPanel { Spacing = 6, MaxWidth = 460, HorizontalAlignment = HorizontalAlignment.Left, Children = { get, box, connect } };
 
     Button PodBtn(string name, string text, Func<Task> act, bool accent = false)
     {
@@ -235,7 +239,7 @@ public partial class MainWindow
         {
             sp.Children.Add(P("Mit deinem eigenen Printful-Konto siehst du echte Produkte und Mockups. Der Schlüssel liegt verschlüsselt in Trendo.", Muted, 11));
             var token = PodSecretBox("pod-pf-token", "Printful-Schlüssel einfügen");
-            sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { PodBtn("pod-pf-get", "Schlüssel bei Printful holen", () => { Launch(PrintfulClient.TokenPage); return Task.CompletedTask; }), token, PodBtn("pod-pf-connect", "Verbinden", () => PodPrintfulConnect(token.Text ?? ""), true) } });
+            sp.Children.Add(PodKeyRow(PodBtn("pod-pf-get", "Schlüssel bei Printful holen", () => { Launch(PrintfulClient.TokenPage); return Task.CompletedTask; }), token, PodBtn("pod-pf-connect", "Verbinden", () => PodPrintfulConnect(token.Text ?? ""), true)));
             return sp;
         }
         sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { new TextBlock { Name = "pod-pf-state", Text = "✓ Printful verbunden", Foreground = Brush.Parse("#3DDC84"), FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, PodBtn("pod-pf-load", _pfCatalog.Count == 0 ? "Katalog laden" : "Katalog neu laden", PodLoadCatalog), PodBtn("pod-pf-off", "Trennen", () => { PodPrintfulDisconnect(); return Task.CompletedTask; }) } });
@@ -244,7 +248,7 @@ public partial class MainWindow
         {
             sp.Children.Add(P("Printful holt Designs nur von einer Internetadresse ab. Dafür liegt das Design kurz in deinem eigenen Netlify-Konto unter einem nicht erratbaren Namen und wird danach aus der Ablage genommen.", Muted, 11));
             var token = PodSecretBox("pod-nf-token", "Netlify-Schlüssel einfügen");
-            sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { PodBtn("pod-nf-get", "Schlüssel bei Netlify holen", () => { Launch(NetlifyDesignHost.TokenPage); return Task.CompletedTask; }), token, PodBtn("pod-nf-connect", "Ablage einrichten", () => PodNetlifyConnect(token.Text ?? ""), true) } });
+            sp.Children.Add(PodKeyRow(PodBtn("pod-nf-get", "Schlüssel bei Netlify holen", () => { Launch(NetlifyDesignHost.TokenPage); return Task.CompletedTask; }), token, PodBtn("pod-nf-connect", "Ablage einrichten", () => PodNetlifyConnect(token.Text ?? ""), true)));
         }
 
         else sp.Children.Add(PodBtn("pod-nf-off", "Design-Ablage trennen", () => { PodNetlifyDisconnect(); return Task.CompletedTask; }));
