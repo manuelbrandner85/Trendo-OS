@@ -7,7 +7,7 @@ using System.Text.Json.Nodes;
 namespace Trendo.Core.Pod;
 
 public sealed record PodShopVariant(string Name, long SyncId, string? PayUrl = null, string? PayId = null);
-public sealed record PodShopItem(string Id, string Name, decimal Price, string Image, long PrintfulId, List<PodShopVariant> Variants);
+public sealed record PodShopItem(string Id, string Name, decimal Price, string Image, long PrintfulId, List<PodShopVariant> Variants, string Provider = "printful", string RemoteProduct = "");
 public sealed record PodShopLegal(string Owner, string Address, string Email, string VatId = "");
 public sealed record PodAddress(string Name, string Line1, string City, string Zip, string Country, string Line2 = "");
 public sealed record PodPaidOrder(string SessionId, string PayLinkId, string Customer, PodAddress? Address, string Email, bool Live = true)
@@ -16,7 +16,7 @@ public sealed record PodPaidOrder(string SessionId, string PayLinkId, string Cus
     public string Code => SessionId.Length <= 8 ? SessionId : SessionId[^8..];
 }
 public sealed record PodDraft(long Id, decimal? Cost);
-public sealed record PodOrderState(long PrintfulId, bool Confirmed, decimal? Cost);
+public sealed record PodOrderState(long PrintfulId, bool Confirmed, decimal? Cost, string? RemoteId = null);
 public sealed record PodPending(long ProductId, PodShopItem Item);
 
 /// <summary>Produkte aus dem Anbieter, die im eigenen Shop stehen.</summary>
@@ -109,7 +109,7 @@ public static class PodShopSite
             ["impressum.html"] = Page("Impressum", $"<h1>Impressum</h1>{who}{vat}"),
             ["agb.html"] = Page("AGB", $"<h1>Allgemeine Geschäftsbedingungen</h1><p>Anbieter ist {H(l.Owner)}. Der Vertrag kommt zustande, wenn du den Bestellvorgang mit der Zahlung abschließt. Die Ware wird auf Bestellung gefertigt und nach Zahlungseingang versandt. Es gelten die gesetzlichen Gewährleistungsrechte.</p>"),
             ["widerruf.html"] = Page("Widerruf", $"<h1>Widerrufsbelehrung</h1><p>Du hast das Recht, binnen vierzehn Tagen ohne Angabe von Gründen diesen Vertrag zu widerrufen. Die Frist beträgt vierzehn Tage ab dem Tag, an dem du oder ein von dir benannter Dritter die Ware in Besitz genommen hast. Um dein Widerrufsrecht auszuüben, informiere uns mittels einer eindeutigen Erklärung:</p>{who}"),
-            ["datenschutz.html"] = Page("Datenschutz", $"<h1>Datenschutzerklärung</h1><p>Verantwortlich ist {H(l.Owner)}. Zur Abwicklung einer Bestellung werden deine Angaben an den Zahlungsdienst Stripe und an den Fertigungspartner Printful übermittelt. Du hast das Recht auf Auskunft, Berichtigung, Löschung und Beschwerde bei einer Aufsichtsbehörde.</p>{who}"),
+            ["datenschutz.html"] = Page("Datenschutz", $"<h1>Datenschutzerklärung</h1><p>Verantwortlich ist {H(l.Owner)}. Zur Abwicklung einer Bestellung werden deine Angaben an den Zahlungsdienst Stripe und an den Fertigungspartner (Printful oder Printify) übermittelt. Du hast das Recht auf Auskunft, Berichtigung, Löschung und Beschwerde bei einer Aufsichtsbehörde.</p>{who}"),
         };
     }
 }

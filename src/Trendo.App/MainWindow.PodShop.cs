@@ -104,14 +104,23 @@ public partial class MainWindow
         _shopMsg = $"{_shopOrders.Count} bezahlte Bestellungen." + (s.HasMore ? " Ältere Zahlungen findest du im Stripe-Konto." : "");
     });
 
-    PodShopVariant? ShopVariantFor(PodPaidOrder o) => PodShopItems.All().SelectMany(i => i.Variants).FirstOrDefault(v => v.PayId == o.PayLinkId);
+    (PodShopItem Item, PodShopVariant Variant)? ShopVariantFor(PodPaidOrder o) => PodShopItems.All().SelectMany(i => i.Variants.Select(v => (i, v))).Where(x => x.v.PayId == o.PayLinkId).Select(x => ((PodShopItem, PodShopVariant)?)x).FirstOrDefault();
 
     /// <summary>Legt zu einer echten, bezahlten Bestellung einen kostenlosen Entwurf bei Printful an. Prüft vorher, ob es zu dieser Zahlung schon einen gibt.</summary>
     public Task<bool> PodDraftOrder(PodPaidOrder order) => ShopRun(async () =>
     {
         if (!order.Live) throw new PodServiceException("Das ist eine Testzahlung. Sie wird nicht an Printful gegeben.");
         if (ShopOrderStore.All().ContainsKey(order.SessionId)) throw new PodServiceException("Zu dieser Zahlung gibt es schon einen Entwurf.");
-        var v = ShopVariantFor(order) ?? throw new PodServiceException("Diese Zahlung gehört zu keinem Produkt aus dem Shop.");
+        var (item, v) = ShopVariantFor(order) ?? throw new PodServiceException("Diese Zahlung gehört zu keinem Produkt aus dem Shop.");
+        if (item.Provider == "printify")
+        {
+            if (!PodPrintifyManual) throw new PodServiceException("Bestätige im Studio „Print on Demand“, dass dein Printify-Shop auf manuelle Freigabe steht. Sonst startet Printify die Fertigung selbst.");
+            var remote = await Pfy().CreateOrderAsync(PfyShopId(), order, item.RemoteProduct, v.SyncId);
+            ShopOrderStore.Set(order.SessionId, new(0, false, null, remote));
+            _core.Audit.Append(Principal.LocalOwner.Name, "pod.bestellung", "printify angelegt");
+            _shopMsg = "Bestellung bei Printify angelegt. Gefertigt wird erst nach deiner Freigabe.";
+            return;
+        }
         var orders = PfOrders();
         if (await orders.FindAsync(order.SessionId) is { } known)
         {
@@ -130,10 +139,11 @@ public partial class MainWindow
     {
         if (!ShopOrderStore.All().TryGetValue(order.SessionId, out var st)) throw new PodServiceException("Zu dieser Zahlung gibt es keinen Entwurf.");
         if (st.Confirmed) throw new PodServiceException("Diese Bestellung ist schon freigegeben.");
-        await PfOrders().ConfirmAsync(st.PrintfulId);
+        if (st.RemoteId is { } remote) await Pfy().SendToProductionAsync(PfyShopId(), remote);
+        else await PfOrders().ConfirmAsync(st.PrintfulId);
         ShopOrderStore.Set(order.SessionId, st with { Confirmed = true });
         _shopArmed = "";
-        _core.Audit.Append(Principal.LocalOwner.Name, "pod.bestellung", "freigegeben " + st.PrintfulId);
+        _core.Audit.Append(Principal.LocalOwner.Name, "pod.bestellung", "freigegeben");
         _shopMsg = "Bestellung ist zur Fertigung freigegeben.";
     });
 
