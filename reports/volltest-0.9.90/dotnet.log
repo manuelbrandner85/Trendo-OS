@@ -1,0 +1,4 @@
+Auszug, Stand 0109cc7a5, Windows, Exitcode 0
+Bestanden!   : Fehler:     0, erfolgreich:    16, übersprungen:     0, gesamt:    16, Dauer: 2 s - Trendo.Api.Tests.dll (net10.0)
+Bestanden!   : Fehler:     0, erfolgreich:  2212, übersprungen:     5, gesamt:  2217, Dauer: 1 m 2 s - Trendo.Core.Tests.dll (net10.0)
+Bestanden!   : Fehler:     0, erfolgreich:  1190, übersprungen:     4, gesamt:  1194, Dauer: 31 m 47 s - Trendo.App.Tests.dll (net10.0)

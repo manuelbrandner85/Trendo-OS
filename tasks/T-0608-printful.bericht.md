@@ -1,6 +1,6 @@
 # Bericht T-0608: Printful und Shop
 
-**Zweig:** `claude/T-0608-printful`. Merge nach `main` freigegeben, Reihenfolge laut Nutzer: erst T-0700, danach dieser Stand.
+**Zweig:** `claude/T-0608-printful`. Nach `main` übernommen am 10.11.2026 nach ausdrücklichem OK, zusammen mit T-0700 in Release 0.9.90.
 
 ## Inhalt
 
@@ -14,7 +14,7 @@ Ein getrennter Prüflauf hat 15 Befunde gemeldet, darunter die fehlende Druckpos
 
 ## Testergebnis
 
-Volltest auf `1a982462f`, Exitcode 0: Api 16 bestanden; Core 2178 bestanden, 5 übersprungen; App 965 bestanden, 4 übersprungen; Paket-Tests 9 OK. Nach dem Zusammenführen mit T-0700 ist ein erneuter Volltest nötig.
+Volltest auf `1a982462f`, Exitcode 0: Api 16 bestanden; Core 2178 bestanden, 5 übersprungen; App 965 bestanden, 4 übersprungen; Paket-Tests 9 OK. Nach dem Zusammenführen mit T-0700 auf `0109cc7a5`, Exitcode 0: Api 16 bestanden; Core 2212 bestanden, 5 übersprungen; App 1190 bestanden, 4 übersprungen; Paket-Tests 11 OK.
 
 ## Nicht geprüft
 
@@ -22,4 +22,4 @@ Kein Lauf mit echten Konten bei Printful, Netlify oder Stripe. Offen sind damit:
 
 ## Status
 
-Fertig zur Übernahme nach T-0700. Keine Abnahme durch eine Person.
+Auf `main`. Keine Abnahme durch eine Person.
