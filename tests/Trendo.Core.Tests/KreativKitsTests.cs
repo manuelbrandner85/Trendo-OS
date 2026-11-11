@@ -101,4 +101,26 @@ public class KreativKitsTests
         Assert.NotEmpty(all.Single(a => a.StudioId == "STUDIO-LOGO-01").Validate(new Dictionary<string, string> { ["name"] = "X", ["farbe"] = "blau" }));
         Assert.NotEmpty(all.Single(a => a.StudioId == "STUDIO-PODCAST-01").Validate(new Dictionary<string, string> { ["kapitel"] = "ohne Zeit" }));
     }
+
+    [Fact(DisplayName = "Kreativ-Prüfung: fremde Ziffern, Steuerzeichen, Emojis, Netzwerkpfade und Dateityp im Feed führen zu keinem Fehler")]
+    public void Absicherung()
+    {
+        var (ch, problems) = PodcastKit.ParseChapters("００:００ Start\n00:00 Echt"); // Vollbreiten-Ziffern: kein Absturz, nur Hinweis
+        Assert.Single(ch); Assert.Single(problems);
+        Assert.Equal("audio/wav", PodcastKit.AudioType("a.WAV"));
+        Assert.Equal("audio/mp4", PodcastKit.AudioType("a.m4a"));
+        Assert.Equal("audio/mpeg", PodcastKit.AudioType("a.mp3"));
+        var svg = LogoKit.Svg(new("A\u0001B 😀x", "", "#1E3A8A", "#D4A017", "kreis", ""));
+        Assert.Contains("AB", XElement.Parse(svg).Value);
+        Assert.Equal("😀X", LogoKit.Initials("😀 xavier"));
+        Assert.Equal("ab😀", KreativSafe.Cut("ab😀cd", 3));
+        Assert.NotNull(XElement.Parse(ComicKit.Svg("2x2", [new("x\u0007y", new string('ä', 69) + "😀😀", "")])));
+        Assert.False(KreativSafe.LocalFile(@"\\rechner\freigabe\bild.png"));
+        Assert.False(KreativSafe.LocalFile("relativ.png"));
+        var f = Path.GetTempFileName();
+        try { Assert.True(KreativSafe.LocalFile(f)); File.WriteAllBytes(f, new byte[10]); Assert.False(KreativSafe.LocalFile(f, 5)); }
+        finally { File.Delete(f); }
+        Assert.Equal(new ComicKit.Panel("Hallo", "Später", ""), ComicKit.ParsePanel(" Hallo | Später "));
+        Assert.Equal(new ComicKit.Panel("Nur Text", "", ""), ComicKit.ParsePanel("Nur Text"));
+    }
 }

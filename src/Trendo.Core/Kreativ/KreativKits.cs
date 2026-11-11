@@ -2,9 +2,49 @@ using System.Globalization;
 using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace Trendo.Core.Kreativ;
+
+/// <summary>Gemeinsame Absicherung der Kreativ-Studios: Text für XML bereinigen, nur lokale Dateien mit Größengrenze.</summary>
+public static class KreativSafe
+{
+    /// <summary>Höchstgröße eines eingebetteten Bildes.</summary>
+    public const long MaxImageBytes = 25L * 1024 * 1024;
+
+    /// <summary>Entfernt Zeichen, die in XML nicht erlaubt sind (Steuerzeichen, einzelne Ersatzzeichen), und maskiert den Rest.</summary>
+    public static string Xml(string? s)
+    {
+        if (string.IsNullOrEmpty(s)) return "";
+        var b = new StringBuilder(s.Length);
+        for (var i = 0; i < s.Length; i++)
+        {
+            var c = s[i];
+            if (char.IsHighSurrogate(c) && i + 1 < s.Length && char.IsLowSurrogate(s[i + 1])) { b.Append(c).Append(s[++i]); continue; }
+            if (XmlConvert.IsXmlChar(c)) b.Append(c);
+        }
+        return SecurityElement.Escape(b.ToString()) ?? "";
+    }
+
+    /// <summary>Kürzt auf höchstens <paramref name="max"/> Textzeichen, ohne ein Emoji oder Ersatzpaar zu zerschneiden.</summary>
+    public static string Cut(string s, int max)
+    {
+        var e = StringInfo.GetTextElementEnumerator(s ?? ""); var b = new StringBuilder(); var n = 0;
+        while (n < max && e.MoveNext()) { b.Append(e.GetTextElement()); n++; }
+        return b.ToString();
+    }
+
+    /// <summary>Nur vollständige lokale Pfade, keine Netzwerkfreigaben (\\rechner\…), Datei muss existieren und darf nicht größer als <paramref name="maxBytes"/> sein.
+    /// Projektdateien können von anderen stammen; ein Netzwerkpfad würde beim bloßen Öffnen eine Verbindung aufbauen.</summary>
+    public static bool LocalFile(string? path, long maxBytes = long.MaxValue)
+    {
+        if (string.IsNullOrWhiteSpace(path) || !Path.IsPathFullyQualified(path)) return false;
+        if (path.StartsWith(@"\\", StringComparison.Ordinal) || path.StartsWith("//", StringComparison.Ordinal)) return false;
+        try { var f = new FileInfo(path); return f.Exists && f.Length <= maxBytes; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException) { return false; }
+    }
+}
 
 /// <summary>Texte zusammenfassen ohne Internet: wichtigste Sätze nach Worthäufigkeit, in der ursprünglichen Reihenfolge. Claude kann es danach ausführlicher.</summary>
 public static partial class SummaryKit
@@ -66,7 +106,7 @@ public static partial class LogoKit
     public static string Initials(string name)
     {
         var parts = (name ?? "").Split([' ', '-', '_'], StringSplitOptions.RemoveEmptyEntries);
-        return parts.Length == 0 ? "?" : string.Concat(parts.Take(2).Select(p => char.ToUpper(p[0], CultureInfo.CurrentCulture)));
+        return parts.Length == 0 ? "?" : string.Concat(parts.Take(2).Select(p => KreativSafe.Cut(p, 1).ToUpper(CultureInfo.CurrentCulture)));
     }
 
     static double Lum(string hex)
@@ -86,7 +126,7 @@ public static partial class LogoKit
     /// <summary>Lesbare Schriftfarbe auf der Hauptfarbe.</summary>
     public static string TextOn(string bg) => Contrast(bg, "#FFFFFF") >= Contrast(bg, "#111111") ? "#FFFFFF" : "#111111";
 
-    static string X(string s) => SecurityElement.Escape(s) ?? "";
+    static string X(string s) => KreativSafe.Xml(s);
 
     public static string Svg(Spec s)
     {
@@ -122,7 +162,7 @@ public static partial class PodcastKit
     public sealed record Chapter(TimeSpan Start, string Title);
     public sealed record Episode(string Title, string Description, string FileName, long Bytes, TimeSpan Duration, DateTimeOffset Published, string Guid);
 
-    [GeneratedRegex(@"^\s*(?:(\d{1,2}):)?(\d{1,2}):(\d{2})\s+(.+)$")]
+    [GeneratedRegex(@"^\s*(?:([0-9]{1,2}):)?([0-9]{1,2}):([0-9]{2})\s+(.+)$")]
     private static partial Regex ChapterRx();
 
     /// <summary>Liest Zeilen wie „00:00 Einleitung“ oder „1:02:30 Fazit“.</summary>
@@ -168,6 +208,16 @@ public static partial class PodcastKit
     public static IReadOnlyList<string> LoudnessArgs(string input, string output) =>
         ["-y", "-i", input, "-af", "loudnorm=I=-16:TP=-1.5:LRA=11", "-ar", "44100", "-b:a", "128k", output];
 
+    /// <summary>Dateityp der Folge aus der Endung, damit Podcast-Apps richtig abspielen.</summary>
+    public static string AudioType(string file) => Path.GetExtension(file).ToLowerInvariant() switch
+    {
+        ".m4a" or ".mp4" or ".aac" => "audio/mp4",
+        ".ogg" or ".oga" or ".opus" => "audio/ogg",
+        ".wav" => "audio/wav",
+        ".flac" => "audio/flac",
+        _ => "audio/mpeg",
+    };
+
     public static string Rss(string show, string author, string description, string baseUrl, IEnumerable<Episode> episodes)
     {
         if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out var b) || b.Scheme != Uri.UriSchemeHttps) throw new ArgumentException("Gib die Internetadresse mit https:// an, unter der die Folgen liegen.");
@@ -177,7 +227,7 @@ public static partial class PodcastKit
             new XElement(it + "author", author), new XElement(it + "explicit", "false"));
         foreach (var e in episodes)
             channel.Add(new XElement("item", new XElement("title", e.Title), new XElement("description", e.Description),
-                new XElement("enclosure", new XAttribute("url", root + Uri.EscapeDataString(e.FileName)), new XAttribute("length", e.Bytes), new XAttribute("type", "audio/mpeg")),
+                new XElement("enclosure", new XAttribute("url", root + Uri.EscapeDataString(e.FileName)), new XAttribute("length", e.Bytes), new XAttribute("type", AudioType(e.FileName))),
                 new XElement("guid", new XAttribute("isPermaLink", "false"), e.Guid), new XElement("pubDate", e.Published.ToString("r", CultureInfo.InvariantCulture)),
                 new XElement(it + "duration", ((long)e.Duration.TotalSeconds).ToString(CultureInfo.InvariantCulture))));
         var doc = new XDocument(new XDeclaration("1.0", "utf-8", null), new XElement("rss", new XAttribute("version", "2.0"), new XAttribute(XNamespace.Xmlns + "itunes", it), channel));
@@ -217,7 +267,14 @@ public static partial class ComicKit
         return parts.Select(p => p.Trim()).Where(p => p.Length > 0).ToList();
     }
 
-    [GeneratedRegex(@"(?im)^\s*bild\s*\d+\s*[:.)-]\s*")]
+    /// <summary>„Sprechblase | Bildunterschrift“ in die zwei Teile trennen.</summary>
+    public static Panel ParsePanel(string part, string image = "")
+    {
+        var i = (part ?? "").IndexOf('|');
+        return i < 0 ? new(part?.Trim() ?? "", "", image) : new(part![..i].Trim(), part[(i + 1)..].Trim(), image);
+    }
+
+    [GeneratedRegex(@"(?im)^\s*bild\s*[0-9]+\s*[:.)-]\s*")]
     private static partial Regex BildRx();
 
     static IEnumerable<string> Wrap(string text, int width)
@@ -232,11 +289,11 @@ public static partial class ComicKit
         if (line.Length > 0) yield return line.ToString();
     }
 
-    static string X(string s) => SecurityElement.Escape(s) ?? "";
+    static string X(string s) => KreativSafe.Xml(s);
 
     static string? DataUri(string path)
     {
-        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path)) return null;
+        if (!KreativSafe.LocalFile(path, KreativSafe.MaxImageBytes)) return null;
         var ext = Path.GetExtension(path).ToLowerInvariant();
         var mime = ext switch { ".png" => "image/png", ".jpg" or ".jpeg" => "image/jpeg", _ => null };
         return mime is null ? null : $"data:{mime};base64,{Convert.ToBase64String(File.ReadAllBytes(path))}";
@@ -263,7 +320,7 @@ public static partial class ComicKit
                 for (var l = 0; l < speech.Count; l++) sb.Append(f($"<text x=\"{b.X + 36}\" y=\"{b.Y + 50 + l * 26}\" font-size=\"20\" font-family=\"Comic Sans MS, Segoe UI\">{X(speech[l])}</text>"));
             }
             if (p.Caption.Trim().Length > 0)
-                sb.Append(f($"<rect x=\"{b.X}\" y=\"{b.Y + b.H - 44}\" width=\"{b.W}\" height=\"44\" fill=\"#FFF3B0\" stroke=\"#111\" stroke-width=\"3\"/><text x=\"{b.X + 14}\" y=\"{b.Y + b.H - 16}\" font-size=\"18\" font-family=\"Segoe UI\">{X(string.Concat(p.Caption.Trim().Take(70)))}</text>"));
+                sb.Append(f($"<rect x=\"{b.X}\" y=\"{b.Y + b.H - 44}\" width=\"{b.W}\" height=\"44\" fill=\"#FFF3B0\" stroke=\"#111\" stroke-width=\"3\"/><text x=\"{b.X + 14}\" y=\"{b.Y + b.H - 16}\" font-size=\"18\" font-family=\"Segoe UI\">{X(KreativSafe.Cut(p.Caption.Trim(), 70))}</text>"));
         }
         return sb.Append("</svg>").ToString();
     }

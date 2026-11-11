@@ -24,6 +24,9 @@ public partial class MainWindow
         "Anwohner können ihre Fragen bei einer Bürgerversammlung im März stellen. Der Radweg soll vor allem Schülern einen sicheren Weg ermöglichen. " +
         "Bisher fahren viele Kinder auf der stark befahrenen Hauptstraße. Die Fertigstellung ist für den Herbst geplant.";
 
+    /// <summary>Text aus Dokumentdaten, auch wenn eine fremde Datei dort eine Zahl oder ein Objekt hat.</summary>
+    static string Js(JsonNode? n) => n is JsonValue v && v.TryGetValue<string>(out var s) ? s : "";
+
     private void InitKreativStudios() { InitSummary(); InitLogo(); InitPodcast(); InitComic(); }
 
     /// <summary>Gemeinsames Textfeld: übernimmt Getipptes nach einer Sekunde Pause, beim Verlassen und beim Schließen.</summary>
@@ -241,7 +244,7 @@ public partial class MainWindow
         SimpleExports = 2,
         Workspace = PodcWorkspace,
         Properties = PodcProperties,
-        Status = d => { var (c, p) = PodcastKit.ParseChapters(d.Text("chapters")); return $"{c.Count} Kapitel" + (p.Count > 0 ? $" · {p.Count} Hinweis(e)" : "") + (File.Exists(d.Text("audio")) ? " · Aufnahme: " + Path.GetFileName(d.Text("audio")) : " · keine Aufnahme"); },
+        Status = d => { var (c, p) = PodcastKit.ParseChapters(d.Text("chapters")); return $"{c.Count} Kapitel" + (p.Count > 0 ? $" · {p.Count} Hinweis(e)" : "") + (KreativSafe.LocalFile(d.Text("audio")) ? " · Aufnahme: " + Path.GetFileName(d.Text("audio")) : " · keine Aufnahme"); },
         Help = "Kapitel schreibst du als „Minuten:Sekunden Titel“, eine Zeile je Kapitel. „Lautheit angleichen“ braucht FFmpeg und legt eine neue MP3 neben das Original. Den Feed lädst du selbst zu deinem Webspace hoch – Trendo veröffentlicht nichts.",
     }, "podcast", "podcasts", "folge", "shownotes", "kapitelmarken", "lautheit", "rss", "hörsendung", "interview aufnehmen");
 
@@ -258,10 +261,14 @@ public partial class MainWindow
             ProgramRun(PodcKey, () => { d.Set("audio", f, "Aufnahme"); Show(PodcKey); });
     }
 
+    bool _podcBusy;
+
     async Task PodcLoudness(ProgramDocument d)
     {
         var src = d.Text("audio");
-        if (!File.Exists(src)) { _progMsg[PodcKey] = "Lade zuerst eine Aufnahme."; Show(PodcKey); return; }
+        if (!KreativSafe.LocalFile(src)) { _progMsg[PodcKey] = "Lade zuerst eine Aufnahme von diesem Rechner."; Show(PodcKey); return; }
+        if (_podcBusy) { _progMsg[PodcKey] = "Die Lautheit wird schon angeglichen – einen Moment."; Show(PodcKey); return; }
+        _podcBusy = true;
         if (FfmpegPath is not { } ff) { _progMsg[PodcKey] = "FFmpeg fehlt. Du richtest es im Studio „Videos schneiden“ mit einem Klick ein."; Show(PodcKey); return; }
         var dir = Path.GetDirectoryName(src)!;
         var meta = Path.Combine(Path.GetTempPath(), "trendo-podcast-" + Guid.NewGuid().ToString("N") + ".txt");
@@ -280,17 +287,17 @@ public partial class MainWindow
             _progMsg[PodcKey] = p.ExitCode == 0 && File.Exists(output) ? "Fertig: " + output : "FFmpeg meldet einen Fehler: " + string.Concat(err.Split('\n').LastOrDefault(l => l.Trim().Length > 0) ?? "");
             if (p.ExitCode == 0) NotifyFileResult(_progMsg[PodcKey]);
         }
-        catch (Exception ex) when (ex is IOException or InvalidOperationException or System.ComponentModel.Win32Exception) { _progMsg[PodcKey] = ex.Message; }
-        finally { try { File.Delete(meta); } catch (IOException) { } }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or UnauthorizedAccessException or ArgumentException or System.ComponentModel.Win32Exception) { _progMsg[PodcKey] = ex.Message; }
+        finally { _podcBusy = false; try { File.Delete(meta); } catch (IOException) { } }
         Show(PodcKey);
     }
 
     string PodcRss(ProgramDocument d, string file)
     {
         var audio = d.Text("audio");
-        var fin = File.Exists(audio) ? Path.Combine(Path.GetDirectoryName(audio)!, Path.GetFileNameWithoutExtension(audio) + "-fertig.mp3") : "";
+        var fin = KreativSafe.LocalFile(audio) ? Path.Combine(Path.GetDirectoryName(audio)!, Path.GetFileNameWithoutExtension(audio) + "-fertig.mp3") : "";
         var use = File.Exists(fin) ? fin : audio;
-        if (!File.Exists(use)) throw new InvalidOperationException("Für den Feed braucht es eine Aufnahme.");
+        if (!KreativSafe.LocalFile(use)) throw new InvalidOperationException("Für den Feed braucht es eine Aufnahme auf diesem Rechner.");
         var ep = new PodcastKit.Episode(d.Text("title"), d.Text("description"), Path.GetFileName(use), new FileInfo(use).Length, PodcLength(d), DateTimeOffset.Now, d.Id);
         File.WriteAllText(file, PodcastKit.Rss(d.Text("show").Length > 0 ? d.Text("show") : d.Text("title"), d.Text("author"), d.Text("description"), d.Text("baseUrl"), [ep]));
         return file;
@@ -302,7 +309,8 @@ public partial class MainWindow
         var audio = d.Text("audio");
         var info = new StackPanel { Spacing = 4 };
         info.Children.Add(H("Aufnahme", 14));
-        info.Children.Add(P(File.Exists(audio) ? $"{Path.GetFileName(audio)} · {new FileInfo(audio).Length / 1024.0 / 1024.0:0.0} MB" : "Noch keine Aufnahme. Oben „Aufnahme laden …“ oder „Aufnehmen“.", File.Exists(audio) ? Text : Muted, 12));
+        var hasAudio = KreativSafe.LocalFile(audio);
+        info.Children.Add(P(hasAudio ? $"{Path.GetFileName(audio)} · {new FileInfo(audio).Length / 1024.0 / 1024.0:0.0} MB" : "Noch keine Aufnahme. Oben „Aufnahme laden …“ oder „Aufnehmen“.", hasAudio ? Text : Muted, 12));
         info.Children.Add(P("Ziel-Lautheit -16 LUFS, Spitze -1,5 dBTP, MP3 128 kbit/s. Das Original bleibt unverändert.", Muted, 11));
         sp.Children.Add(KrCard(info, "podc-audio-card"));
         var notes = new StackPanel { Name = "podc-chapters-view", Spacing = 3 };
@@ -343,11 +351,11 @@ public partial class MainWindow
         ["panels"] = new JsonArray(panels.Select(p => (JsonNode)new JsonObject { ["speech"] = p.Speech, ["caption"] = p.Caption, ["image"] = "" }).ToArray()),
     };
     static List<ComicKit.Panel> ComicPanels(ProgramDocument d) =>
-        d.List("panels").OfType<JsonObject>().Select(o => new ComicKit.Panel((string?)o["speech"] ?? "", (string?)o["caption"] ?? "", (string?)o["image"] ?? "")).ToList();
+        d.List("panels").OfType<JsonObject>().Select(o => new ComicKit.Panel(Js(o["speech"]), Js(o["caption"]), Js(o["image"]))).ToList();
 
     static void ComicFit(JsonObject x)
     {
-        var need = ComicKit.Boxes((string?)x["layout"] ?? "2x2").Count;
+        var need = ComicKit.Boxes(Js(x["layout"]) is { Length: > 0 } l ? l : "2x2").Count;
         if (x["panels"] is not JsonArray a) x["panels"] = a = [];
         while (a.Count < need) a.Add(new JsonObject { ["speech"] = "", ["caption"] = "", ["image"] = "" });
     }
@@ -377,7 +385,7 @@ public partial class MainWindow
         ],
         Workspace = ComicWorkspace,
         Properties = ComicProperties,
-        Status = d => $"{ComicKit.Boxes(d.Text("layout")).Count} Bilder · {ComicPanels(d).Count(p => File.Exists(p.ImagePath))} mit Bild",
+        Status = d => $"{ComicKit.Boxes(d.Text("layout")).Count} Bilder · {ComicPanels(d).Count(p => KreativSafe.LocalFile(p.ImagePath))} mit Bild",
         Help = "Oben die Aufteilung wählen. Rechts für jedes Bild Sprechblase, Bildunterschrift und ein Bild (PNG/JPEG) eintragen. Bilder machst du z. B. im Studio „Bilder mit KI“ oder mit einer Zeichnung.",
     }, "comic", "comics", "storyboard", "manga", "bildergeschichte", "sprechblase", "panel", "graphic novel");
 
@@ -391,7 +399,7 @@ public partial class MainWindow
         {
             var b = boxes[i]; var p = i < panels.Count ? panels[i] : new ComicKit.Panel("", "", "");
             var frame = new Border { Width = b.W, Height = b.H, BorderBrush = Brushes.Black, BorderThickness = new Thickness(4), ClipToBounds = true, Background = Brush.Parse("#F3F4F6") };
-            if (File.Exists(p.ImagePath))
+            if (KreativSafe.LocalFile(p.ImagePath, KreativSafe.MaxImageBytes))
                 try { frame.Child = new Image { Source = new Bitmap(p.ImagePath), Stretch = Stretch.UniformToFill }; }
                 catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException) { }
             else frame.Child = new TextBlock { Text = $"Bild {i + 1}", Foreground = Brush.Parse("#9CA3AF"), FontSize = 28, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
@@ -421,13 +429,13 @@ public partial class MainWindow
             sp.Children.Add(H($"Bild {i + 1}", 13));
             TextBox Field(string field, string label)
             {
-                var t = new TextBox { Name = $"comic-{field}-{i}", Text = (string?)list[i][field] ?? "", PlaceholderText = label, TextWrapping = TextWrapping.Wrap, AcceptsReturn = field == "speech" };
-                t.LostFocus += (_, _) => { if ((t.Text ?? "") != ((string?)list[index][field] ?? "")) d.Edit(label + " geändert", x => { if (x["panels"] is JsonArray a && a[index] is JsonObject o) o[field] = t.Text ?? ""; }); };
+                var t = new TextBox { Name = $"comic-{field}-{i}", Text = Js(list[i][field]), PlaceholderText = label, TextWrapping = TextWrapping.Wrap, AcceptsReturn = field == "speech" };
+                t.LostFocus += (_, _) => { if ((t.Text ?? "") != Js(list[index][field])) d.Edit(label + " geändert", x => { if (x["panels"] is JsonArray a && a[index] is JsonObject o) o[field] = t.Text ?? ""; }); };
                 return t;
             }
             sp.Children.Add(Field("speech", "Sprechblase"));
             sp.Children.Add(Field("caption", "Bildunterschrift"));
-            var pick = new Button { Name = $"comic-image-{i}", Content = File.Exists((string?)list[i]["image"]) ? "Bild: " + Path.GetFileName((string?)list[i]["image"]) : "Bild wählen …", Padding = new Thickness(10, 4) };
+            var pick = new Button { Name = $"comic-image-{i}", Content = KreativSafe.LocalFile(Js(list[i]["image"])) ? "Bild: " + Path.GetFileName(Js(list[i]["image"])) : "Bild wählen …", Padding = new Thickness(10, 4) };
             pick.Click += async (_, _) =>
             {
                 if (await PickMediaFile("comic-bild", "Bild (PNG oder JPEG)", ["*.png", "*.jpg", "*.jpeg"]) is { } f)

@@ -126,13 +126,13 @@ public sealed class ComicPromptAdapter : IStudioActionAdapter
     {
         var parts = ComicKit.SplitStory(FieldKit.Text(call.Parameters, "geschichte"));
         var layout = parts.Count <= 3 ? "3-reihen" : parts.Count <= 4 ? "2x2" : "6er";
-        var panels = parts.Select(p => new ComicKit.Panel(p, "", "")).ToList();
+        var panels = parts.Select(p => ComicKit.ParsePanel(p)).ToList();
         var title = FieldKit.Text(call.Parameters, "titel");
         var svg = ComicKit.Svg(layout, panels, title);
         var count = ComicKit.Boxes(layout).Count;
         var qa = new QaResult(ActionId, parts.Count <= count, $"{Math.Min(parts.Count, count)} von {parts.Count} Bildern auf der Seite.", null, title, "ComicKit");
         return FieldKit.Save(call, FieldKit.Slot("comic", call.Version, "seite.svg"), svg, title, qa,
-            parts.Count > count ? [$"Nur {count} Bilder passen auf eine Seite, der Rest kommt auf die nächste."] : null);
+            parts.Count > count ? [$"Nur {count} Bilder passen auf eine Seite. Die übrigen {parts.Count - count} sind nicht auf der Seite – Geschichte kürzen oder im Studio weitere Seiten anlegen."] : null);
     }
     public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked("Es wird nichts veröffentlicht.");
 }
