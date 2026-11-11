@@ -501,6 +501,34 @@ modules:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: docs/claude/FILM_POD_PLAN_2026-11-08.md (Freigabe im Chat 08.11.2026)
+- id: STUDIO-SUMMARY-01
+  name: Texte zusammenfassen
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)
+- id: STUDIO-LOGO-01
+  name: Logos & Marken
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)
+- id: STUDIO-PODCAST-01
+  name: Podcast aufnehmen
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)
+- id: STUDIO-COMIC-01
+  name: Comics & Storyboards
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)
 - id: SPEC-16
   name: Transport & Vehicle 2.0
   approved_expansion_functions: '20'

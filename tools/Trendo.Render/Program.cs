@@ -123,6 +123,7 @@ if (Environment.GetEnvironmentVariable("TRENDO_GAME_BOARD") is { Length: > 0 }) 
 { var gb = win.ProgramNew("spiele-programm", Trendo.Core.Programs.GameDesign.Templates.First(t => t.Scale == "aa").Id);
   gb.Edit("Aufgaben", x => { Trendo.Core.Programs.GameBoard.Add(x, "Boss-Arena bauen", "eigene"); Trendo.Core.Programs.GameBoard.Seed(x); Trendo.Core.Programs.GameBoard.Move(x, 0, 1); Trendo.Core.Programs.GameBoard.Move(x, 1, 2); });
   win.GameSection = "Übersicht"; win.Show("spiele-programm"); }
+if (Environment.GetEnvironmentVariable("TRENDO_PROG_TPL") is { Length: > 0 } progTpl && progTpl.Split(':') is [var tplKey, var tplId]) { win.ProgramNew(tplKey, tplId); win.Show(tplKey); } // beliebiges Studio-Programm mit Vorlage zeigen (Schlüssel:Vorlage)
 if (Environment.GetEnvironmentVariable("TRENDO_TV_TAB") is { Length: > 0 } tvTab) { win.TvTabForTests = tvTab; win.Show("tv"); }
 if (Environment.GetEnvironmentVariable("TRENDO_TV_LEGAL") is { } tvLegal) { win.TvTabForTests = "mediathek"; win.Show("tv"); var lt = win.TvLegalSearchAsync(tvLegal, tvLegal.Length == 0 ? "Filme" : "Alle", null); var lw = DateTime.UtcNow; while (!lt.IsCompleted && DateTime.UtcNow - lw < TimeSpan.FromSeconds(40)) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); Thread.Sleep(30); } win.Show("tv"); } // Mediatheken mit echter Suche zeigen
 win.Show();

@@ -1627,6 +1627,23 @@ public class PromptActionTests
         Assert.NotEmpty(ad.Validate(new Dictionary<string, string> { ["besitz"] = "nein", ["spiel"] = "x" }));
     }
 
+    [Fact(DisplayName = "Kreativ & KI: Zusammenfassung, Logo, Shownotes und Comicseite entstehen als echte Dateien im Projekt")]
+    public void Kreativ_Studios_schreiben_Dateien()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        string Run(string studio, string prompt, string file, string id)
+        {
+            var done = wf.Los(fx.Project, wf.Start(fx.Req(studio, prompt, id: id), fx.Ctx()).RunId, fx.Ctx());
+            Assert.Equal(RunStatus.Verified, done.Status);
+            return File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single(a => a.RelativePath.EndsWith(file)).RelativePath));
+        }
+        Assert.Contains("Stichwörter", Run("STUDIO-SUMMARY-01", "Text: Der Radweg kommt. Der Radweg kostet viel. Der Radweg ist sicher.", "zusammenfassung.md", "sum-1"));
+        Assert.Contains("<svg", Run("STUDIO-LOGO-01", "Name: Café Morgenrot\nForm: schild", "logo.svg", "logo-1"));
+        Assert.Contains("02:15 Thema", Run("STUDIO-PODCAST-01", "Titel: Folge 1\nKapitel: 00:00 Start; 02:15 Thema", "shownotes.md", "podc-1"));
+        Assert.Contains("Er sucht", Run("STUDIO-COMIC-01", "Titel: Der Schlüssel\nGeschichte: Bild 1: Er sucht. Bild 2: Der Kater weiß es.", "seite.svg", "comic-1"));
+    }
+
     [Fact(DisplayName = "Filme machen: „Drehbuch-Gerüst“ fragt nach der Idee und legt ein gültiges Fountain-Drehbuch an, ohne Nebenwirkung")]
     public void Filmgeruest()
     {
@@ -1679,7 +1696,7 @@ public class PromptActionTests
         var adapters = PromptActions.CreateDefault();
         var registered = adapters.Select(a => a.StudioId).ToHashSet(StringComparer.OrdinalIgnoreCase);
         Assert.Equal(ids.Count, registered.Count);
-        Assert.Equal(86, adapters.Count); // + TV & Live (27.10.2026), + Trendo Musik (03.11.2026), + Filme machen und Print on Demand (08.11.2026); SPEC-07 abgelehnt: nur die Sperre, kein Übersetzungsadapter
+        Assert.Equal(90, adapters.Count); // + vier Studios Kreativ & KI (11.11.2026), + TV & Live (27.10.2026), + Trendo Musik (03.11.2026), + Filme machen und Print on Demand (08.11.2026); SPEC-07 abgelehnt: nur die Sperre, kein Übersetzungsadapter
         Assert.Equal(adapters.Count, adapters.Select(a => a.ActionId).Distinct(StringComparer.OrdinalIgnoreCase).Count());
         Assert.All(adapters, a => Assert.NotNull(CapabilityCatalog.Find(a.StudioId)));
         Assert.Contains(registered, id => id == "STUDIO-LETTER-01");
@@ -1706,7 +1723,7 @@ public class PromptActionTests
             Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level(id, adapters));
         }
         Assert.Equal(CapabilityLevel.Blocked, CapabilityCatalog.Level("SPEC-07", adapters));
-        Assert.Equal(56, ids.Count(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Partial)); // + TV & Live, + Trendo Musik (03.11.2026), + Filme machen und Print on Demand (08.11.2026)
+        Assert.Equal(60, ids.Count(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Partial)); // + TV & Live, + Trendo Musik (03.11.2026), + Filme machen und Print on Demand (08.11.2026)
         Assert.Equal(3, ids.Count(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Blocked));
         Assert.DoesNotContain(ids, id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.NotImplemented);
         Assert.DoesNotContain(ids, id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Ready);

@@ -31,9 +31,13 @@ public static class StudioCatalog
         ["STUDIO-MUSIK-01"] = new("Trendo Musik", "Lieder mit Gesang aus einer Beschreibung erzeugen – Liedtext, Stil, Sprache, bis 10 Minuten, alles auf deinem PC.", "Kreativ & Medien"),
         ["STUDIO-TV-01"] = new("TV & Live", "Fernsehen über das Internet: eigene Senderlisten, Programmführer, Aufnahmen und mehrere Sender gleichzeitig.", "Kreativ & Medien"),
         ["STUDIO-FILM-01"] = new("Filme machen", "Kurzfilme und Trailer: vom Drehbuch über Figuren und Einstellungen zum fertigen Film.", "Kreativ & Medien"),
+        ["STUDIO-LOGO-01"] = new("Logos & Marken", "Logo, Farben und Schrift für deine Marke – als SVG, mit Kontrastprüfung.", "Kreativ & Medien"),
+        ["STUDIO-PODCAST-01"] = new("Podcast aufnehmen", "Folgen aufnehmen, Lautheit angleichen, Kapitel, Shownotes und Feed.", "Kreativ & Medien"),
+        ["STUDIO-COMIC-01"] = new("Comics & Storyboards", "Comicseiten und Storyboards mit Bildaufteilung, Sprechblasen und Texten.", "Kreativ & Medien"),
         ["SPEC-08"] = new("Kleidung & Produkte entwerfen", "Kleidergrößen, Schnitte und Produktideen.", "Kreativ & Medien"),
         ["X-07"] = new("Freie Bilder & Klänge finden", "Kostenlose Bilder, Klänge und Schriften finden.", "Kreativ & Medien"),
         ["CORE-12"] = new("KI-Anweisungen schreiben", "Gute Anweisungen für die KI schreiben und sammeln.", "KI & Automatik"),
+        ["STUDIO-SUMMARY-01"] = new("Texte zusammenfassen", "Lange Texte auf das Wichtigste bringen – mit Stichwörtern und Lesezeit, auch ohne Internet.", "KI & Automatik"),
 
         ["CORE-05"] = new("3D-Modelle erstellen", "3D-Modelle bauen und ansehen – Blender optional.", "3D, Spiele & VR"),
         ["STUDIO-CONSOLE-01"] = new("Konsolenspiele portieren", "Dein eigenes PS2-Spiel als Programm für PC, Steam Deck oder Handy.", "3D, Spiele & VR"),
