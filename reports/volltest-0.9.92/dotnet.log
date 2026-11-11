@@ -1,0 +1,4 @@
+Bestanden!   : Fehler:     0, erfolgreich:    16, übersprungen:     0, gesamt:    16, Dauer: 2 s - Trendo.Api.Tests.dll (net10.0)
+Bestanden!   : Fehler:     0, erfolgreich:  2224, übersprungen:     5, gesamt:  2229, Dauer: 1 m 20 s - Trendo.Core.Tests.dll (net10.0)
+Bestanden!   : Fehler:     0, erfolgreich:  1207, übersprungen:     4, gesamt:  1211, Dauer: 34 m 7 s - Trendo.App.Tests.dll (net10.0)
+dotnet exit 0
