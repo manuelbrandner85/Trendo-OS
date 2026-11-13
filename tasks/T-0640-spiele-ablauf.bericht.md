@@ -2,7 +2,7 @@
 
 **Auftrag:** E2, E3 und E4 aus `docs/nachbau/spiele-ki/anforderungen.md` im Programm „Spiele bauen“ umsetzen. Freigabe des Nutzers für Stufe 2, weitergeleitet von der Sitzung, die Stufe 1 gebaut hat.
 **Branch:** `claude/T-0640-spiele-ablauf`, von `origin/main` 7f0f9e3fa, eigener Worktree. `origin/main` hat sich seitdem nicht bewegt.
-**Status:** gebaut, automatisch getestet, QA-Freigabe. Nicht in `main`, kein Release: beides braucht ein eigenes OK des Nutzers.
+**Status:** gebaut, automatisch getestet, QA-Freigabe, nach OK des Nutzers per Fast-Forward in `main` (089e6d61a). Kein Release.
 
 ## Was jetzt geht
 
@@ -70,5 +70,5 @@ Die letzte Korrektur (d6f945d31) hat der QA-Agent nicht mehr gesehen; sie setzt 
 
 ## Offene Punkte
 
-- Merge nach `main` und Release brauchen ein ausdrückliches OK des Nutzers.
+- Release braucht ein ausdrückliches OK des Nutzers.
 - Stufe 3 (E1, E5 bis E7, D5) ist nicht begonnen.
