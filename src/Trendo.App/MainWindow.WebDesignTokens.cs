@@ -36,11 +36,17 @@ public partial class MainWindow
         return lines.Count == 0 ? "✓ Kontrast passt (mindestens 4,5 : 1)." : string.Join("\n", lines);
     }
 
+    // Meldung direkt unter „Gestaltung übernehmen“, nicht erst unten im Bereich (Live-Test 13.11.2026)
+    string _wdTokNote = "";
+
     /// <summary>Gestaltungswerte übernehmen: als Aktionen auf der offenen Fassung, danach gelten sie für das ganze Projekt.</summary>
     public void WebDesignTokensApply(IReadOnlyDictionary<string, string> values)
     {
         var (t, invalid) = WebDesignTokensFrom(values);
-        if (invalid.Count > 0) { _wdNote = "Nicht übernommen: " + string.Join(", ", invalid) + " ungültig."; Show("dev"); return; }
+        if (invalid.Count > 0) { _wdNote = _wdTokNote = "Nicht übernommen: " + string.Join(", ", invalid) + " ungültig."; Show("dev"); return; }
+        var weak = WebDesignTokens.Check(t).Select(f => f.Text).ToList();
+        if (weak.Count > 0) { _wdNote = _wdTokNote = "Nicht übernommen, der Kontrast reicht nicht: " + string.Join(" ", weak); Show("dev"); return; }
+        _wdTokNote = "";
         var plan = new JsonArray(t.Select(kv => (JsonNode)new JsonObject { ["aktion"] = "gestaltungswert_setzen", ["name"] = kv.Key, ["wert"] = kv.Value?.DeepClone() }).ToArray());
         WebDesignHumanAction(new JsonObject { ["aktionen"] = plan }.ToJsonString());
     }
@@ -60,7 +66,7 @@ public partial class MainWindow
         string Val(string k, string d) => current[k] is JsonValue v ? (v.TryGetValue(out string? s) ? s : v.ToJsonString()) : d;
         var sp = new StackPanel { Spacing = 6, Name = "web-gestaltung" };
         sp.Children.Add(new TextBlock { Text = "🎨 Gestaltung für das ganze Projekt", FontSize = 15, FontWeight = FontWeight.SemiBold, Foreground = Text });
-        sp.Children.Add(P("Farben, Schrift, Rundung und Abstand gelten für die Seite und alle Varianten. Der dunkle Satz greift, wenn das Gerät auf dunkel steht.", Muted, 12));
+        sp.Children.Add(P("Farben, Schrift, Rundung und Abstand gelten für die Seite, den Export und neue Varianten. Eine bestehende Variante behält ihre Gestaltung, bis du sie übernimmst. Der dunkle Satz greift, wenn das Gerät auf dunkel steht.", Muted, 12));
         var boxes = new Dictionary<string, TextBox>();
         var check = new TextBlock { Name = "web-tok-check", FontSize = 12, TextWrapping = TextWrapping.Wrap };
         var dark = new CheckBox { Name = "web-tok-dunkel", Content = "Dunklen Satz verwenden", Foreground = Text, IsChecked = Val("dunkel", "false") == "true" };
@@ -95,6 +101,7 @@ public partial class MainWindow
         sp.Children.Add(new WrapPanel { Children = { dark, new Border { Width = 12 }, Act("web-tok-apply", "Gestaltung übernehmen", () => WebDesignTokensApply(Values()), true) } });
         Recheck();
         sp.Children.Add(check);
+        if (_wdTokNote.Length > 0) sp.Children.Add(new TextBlock { Name = "web-tok-note", Text = _wdTokNote, FontSize = 12, TextWrapping = TextWrapping.Wrap, Foreground = Brush.Parse("#F5A524") });
 
         // W1, Z4: Ansichten
         sp.Children.Add(new TextBlock { Text = "📱 Geräte-Ansichten", FontSize = 13, FontWeight = FontWeight.SemiBold, Foreground = Text, Margin = new Thickness(0, 8, 0, 0) });

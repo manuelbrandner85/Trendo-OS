@@ -117,6 +117,32 @@ try {
   const nachher = parseFloat(await run(`getComputedStyle(document.querySelector('[data-b="fuss"]')).opacity`));
   check("Export: Zeitleiste folgt dem Scrollen", nachher > vorher && Math.abs(vorher - 0.2) < 0.21, [vorher, nachher]);
   check("keine Skriptfehler", exceptions.length === 0, exceptions.slice(0, 3));
+
+  // Live-Test 13.11.2026: Projekt ohne Medien und Komponenten – Baustein mit Bild- oder Komponenten-Feld auswählen zeichnete endlos neu (React-Fehler 185, Editor weiß)
+  const leer = { root: { props: { title: "Leer" } }, content: [
+    { type: "Hero", props: { id: "lh", titel: "Hallo", text: "Kurz", knopf: "Los", knopfZiel: "#", bild: "", bildAlt: "" } },
+    { type: "Bild", props: { id: "lb", src: "", alt: "" } },
+    { type: "Galerie", props: { id: "lg", bilder: [{ src: "", alt: "" }] } },
+    { type: "Komponente", props: { id: "lk", komponente: "" } }], zones: {} };
+  await call("Page.navigate", { url: editorUrl });
+  await until("window.__m && window.__m.some(x=>x.art==='bereit')");
+  await run(`window.trendoLoad(${JSON.stringify(JSON.stringify(leer))})`);
+  await until(`!!document.querySelector('[data-b="lk"]')`);
+  const vorFehler = exceptions.length;
+  // Live-Test 13.11.2026: „Mitte“ zentrierte nur den Text, die Knöpfe blieben links
+  await run(`document.querySelector('[data-b="lh"]').style.textAlign='center'`);
+  // Mitte der ganzen Knopfgruppe (Puck ergänzt den zweiten Knopf aus den Vorgaben) gegen die Mitte des Textblocks
+  const knopfMitte = await run(`(()=>{const h=document.querySelector('[data-b="lh"] .t-heroz-text').getBoundingClientRect();const bs=[...document.querySelectorAll('[data-b="lh"] .t-btn')].map(e=>e.getBoundingClientRect());const l=Math.min(...bs.map(b=>b.left)),r=Math.max(...bs.map(b=>b.right));return [Math.round((l+r)/2-(h.left+h.right)/2), bs.length];})()`);
+  check("Hero: Knöpfe folgen der Ausrichtung", Math.abs(knopfMitte[0]) < 4, knopfMitte);
+  await run(`document.querySelector('[data-b="lh"]').style.textAlign=''`);
+  for (const b of ["lh", "lb", "lg", "lk"]) {
+    const box = await run(`(()=>{const e=document.querySelector('[data-b="${b}"]');e.scrollIntoView({block:"center"});const r=e.getBoundingClientRect();return [r.x+r.width/2,r.y+Math.min(20,r.height/2)];})()`);
+    for (const type of ["mouseMoved", "mousePressed", "mouseReleased"]) await call("Input.dispatchMouseEvent", { type, x: box[0], y: box[1], button: "left", clickCount: 1 });
+    await sleep(400);
+    check(`Editor ohne Medien: ${b} auswählen ohne Endlosschleife`, exceptions.length === vorFehler && await run(`!!document.querySelector('[data-b="${b}"]')`), exceptions.slice(vorFehler, vorFehler + 1));
+    if (b === "lb") check("Editor ohne Medien: Bild-Feld sichtbar und beschriftet", await run(`[...document.querySelectorAll('input[aria-label="Bilddatei im Projekt"]')].some(e=>e.offsetParent && e.closest('.t-anp')?.querySelector('b')?.textContent==='Bild')`));
+    if (b === "lk") check("Editor ohne Komponenten: Komponenten-Wahl beschriftet", await run(`[...document.querySelectorAll('select[aria-label="Komponente"]')].some(e=>e.offsetParent && e.closest('.t-anp')?.querySelector('b')?.textContent==='Komponente')`));
+  }
 } catch (e) { problems.push(String(e?.message ?? e)); }
 finally {
   try { ws?.close(); } catch { /* schon zu */ }

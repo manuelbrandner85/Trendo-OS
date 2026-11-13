@@ -28,7 +28,11 @@ public class WebDesignStufe2_Ui
         Assert.Contains("Hintergrund: bitte als #RRGGBB", w.Find<TextBlock>("web-tok-check").Text);
         w.Find<Button>("web-tok-apply").Press(); Pump();
         Assert.Contains("ungültig", w.WebDesignNote); Assert.Null(WebDesignTokens.Load(w.WebDesignDir)); // ungültig: nichts übernommen
-        w.Find<TextBox>("web-tok-paper").Text = "#ffffff"; w.Find<TextBox>("web-tok-ink").Text = "#123456"; w.Find<TextBox>("web-tok-accent").Text = "#7A1F2B";
+        w.Find<TextBox>("web-tok-paper").Text = "#ffffff"; w.Find<TextBox>("web-tok-ink").Text = "#eeeeee"; Pump(); // gültig, aber Text #eeeeee zu schwach (Live-Test 13.11.2026: wurde trotzdem übernommen)
+        w.Find<Button>("web-tok-apply").Press(); Pump();
+        Assert.Contains("Kontrast reicht nicht", w.WebDesignNote); Assert.Null(WebDesignTokens.Load(w.WebDesignDir));
+        Assert.Contains("Kontrast reicht nicht", w.Find<TextBlock>("web-tok-note").Text); // sichtbar direkt am Knopf
+        w.Find<TextBox>("web-tok-ink").Text = "#123456"; w.Find<TextBox>("web-tok-accent").Text = "#7A1F2B";
         w.Find<CheckBox>("web-tok-dunkel").IsChecked = true; w.Find<TextBox>("web-tok-inkDunkel").Text = "#202020"; Pump();
         Assert.Contains("(dunkel)", w.Find<TextBlock>("web-tok-check").Text); // dunkler Satz wird mitgeprüft
         w.Find<TextBox>("web-tok-inkDunkel").Text = "#f2f2f2"; Pump();

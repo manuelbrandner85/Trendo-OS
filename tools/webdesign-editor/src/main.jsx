@@ -132,7 +132,9 @@ function AnpassungenFeld({ value, onChange, spalten }) {
 }
 // ---------- W5: Komponenten ----------
 // Original im Projekt (root.props.komponenten), Verwendung mit eigenen Überschreibungen; gleiche Regel wie in C# (WebDesignComponents.Instance): ids „verwendung--baustein“
-const komponentenVon = (data) => (Array.isArray(data?.root?.props?.komponenten) ? data.root.props.komponenten : []);
+// Feste leere Liste: Selektoren des Editors dürfen nicht bei jedem Aufruf ein neues Objekt liefern, sonst zeichnet React endlos neu (Fehler 185)
+const LEER = Object.freeze([]);
+const komponentenVon = (data) => (Array.isArray(data?.root?.props?.komponenten) ? data.root.props.komponenten : LEER);
 function KomponenteAnzeige({ komponente, ueberschreibungen, id }) {
   const data = React.useContext(DataCtx) || window.TRENDO_SEITE;
   const def = komponentenVon(data).find((k) => k.id === komponente);
@@ -141,7 +143,8 @@ function KomponenteAnzeige({ komponente, ueberschreibungen, id }) {
 }
 function KomponenteWahl({ value, onChange }) {
   const defs = usePuckSel((s) => komponentenVon(s.appState.data));
-  return <select className="t-anp-ansicht" value={value || ""} onChange={(e) => onChange(e.target.value)}><option value="">– wählen –</option>{defs.map((k) => <option key={k.id} value={k.id}>{k.name}</option>)}</select>;
+  // Eigene Felder bekommen von Puck keine Beschriftung, deshalb steht sie hier (Live-Test 13.11.2026)
+  return <div className="t-anp"><b>Komponente</b><select className="t-anp-ansicht" aria-label="Komponente" value={value || ""} onChange={(e) => onChange(e.target.value)}><option value="">– wählen –</option>{defs.map((k) => <option key={k.id} value={k.id}>{k.name}</option>)}</select></div>;
 }
 // Felder der Komponente: „Nur hier“ überschreibt in dieser Verwendung, „Original“ ändert alle Verwendungen
 function UeberschreibungenFeld({ value, onChange }) {
@@ -232,16 +235,16 @@ function rahmenProps(p) {
 }
 
 // Z7: Bild aus den Medien des Projekts wählen oder einen Pfad eingeben
-function BildWahl({ value, onChange }) {
-  const medien = usePuckSel((s) => (Array.isArray(s.appState.data.root?.props?.medien) ? s.appState.data.root.props.medien : []));
+function BildWahl({ value, onChange, label }) {
+  const medien = usePuckSel((s) => (Array.isArray(s.appState.data.root?.props?.medien) ? s.appState.data.root.props.medien : LEER));
   return (
-    <div className="t-anp">
+    <div className="t-anp"><b>{label}</b>
       {medien.length > 0 && <select className="t-anp-ansicht t-bildwahl" aria-label="Bild aus den Medien" value={medien.some((m) => m.datei === value) ? value : ""} onChange={(e) => e.target.value && onChange(e.target.value)}>
         <option value="">– aus den Medien wählen –</option>{medien.map((m) => <option key={m.datei} value={m.datei}>{m.titel}</option>)}</select>}
       <input type="text" aria-label="Bilddatei im Projekt" value={value || ""} onChange={(e) => onChange(e.target.value)} />
     </div>);
 }
-const bildFeld = (label) => ({ type: "custom", label, render: ({ value, onChange }) => <BildWahl value={value} onChange={onChange} /> });
+const bildFeld = (label) => ({ type: "custom", label, render: ({ value, onChange }) => <BildWahl value={value} onChange={onChange} label={label} /> });
 
 const anpassungenFeld = (spalten = false) => ({ anpassungen: { type: "custom", label: "Anpassungen je Ansicht", render: ({ value, onChange }) => <AnpassungenFeld value={value} onChange={onChange} spalten={spalten} /> } });
 

@@ -34,6 +34,23 @@ Unabhängig vom Implementierer, je Teil in eigener Kopie, Ergebnisse in diesem B
 - **Teil 3, nicht bestanden:** SVG-Symbol im Bild-Feld angeboten, beim Speichern still entfernt. Behoben, dazu Medienliste nicht mehr im Export, strenge Medienpfade gegen CSS-Einschleusung, Zeilenumbruch im Schriftnamen ungültig, beschädigtes Medienverzeichnis wird nicht überschrieben, Fontsource nur WOFF2 mit Größengrenze.
 - **Nachprüfung (nur am Code, c98705bfb):** bestanden mit Empfehlungen; die zwei Empfehlungen stehen unter „Offene Punkte“.
 
+## Live-Test im echten Fenster (13.11.2026)
+
+Trendo aus diesem Stand gestartet (eigener Testdatenordner), im Fenster mit Maus und Tastatur bedient, `NativeWebView` (WebView2) mit echter Claude-Anbindung über das Abo.
+
+**Gefunden und behoben:**
+1. **Editor wird weiß** beim Einfügen oder Auswählen von Hero, Bild, Galerie oder Komponente in einem Projekt ohne Medien bzw. ohne Komponenten (React-Fehler 185, Endlosschleife). Ursache: Die Selektoren für die Medien- und Komponentenliste lieferten bei jedem Aufruf eine neue leere Liste. Jetzt eine feste leere Liste. Die Chrome-Prüfungen hatten immer Medien, deshalb fiel es dort nicht auf. Neuer Schritt in `pruefe-teil2.mjs`, schlägt mit dem alten Bündel fehl.
+2. **Gestaltung trotz zu schwachem Kontrast übernommen** (Text #dddddd auf Weiß, 1,4 : 1): Die Warnung erschien, „Gestaltung übernehmen“ speicherte trotzdem. Jetzt gesperrt mit Meldung direkt am Knopf (vorher stand die Meldung weit unten im Bereich). UI-Test ergänzt.
+3. **Bild- und Komponentenwahl ohne Beschriftung** im Eigenschaftenfeld (eigene Felder bekommen von Puck keine). Ergänzt, mit Prüfung.
+4. **Hero-Knöpfe blieben bei „Mitte“ links** (Flex-Container ignoriert die Textausrichtung). Die Knopfzeile folgt jetzt der Ausrichtung, mit Prüfung.
+5. Text im Gestaltungsbereich sagte „gilt für alle Varianten“, richtig ist: Seite, Export und neue Varianten; bestehende Varianten behalten ihre Gestaltung bis zur Übernahme.
+
+**Live bestätigt:** Kontrast beim Wählen; Bausteine ziehen (Überschrift, Hero, Preise); Speichern; Vorschau Desktop/Tablet/Handy; Anpassung je Ansicht (Hero auf Handy mittig, Desktop bleibt links); Erscheinen-Bewegung; Export mit Medienregel `max-width: 600px`; KI mit echtem Claude: drei Gestaltungsrichtungen mit Vorschau, gewählte Richtung gebaut, Prüfung „keine Fehler nach 1 Nachbesserung“, Übernehmen setzt Schrift und Farben, automatischer Stand „Vor KI“, Wiederherstellen setzt auch die Gestaltungswerte zurück; Komponente aus Auswahl, zweite Verwendung einfügen, Titel „nur hier“ überschreiben (andere Verwendung unverändert).
+
+**Volltest nach den Korrekturen (14.11.2026):** Api 16/0, Core 2311 bestanden + 5 übersprungen, App 1217 bestanden + 5 übersprungen, claude_handoff 11 OK, alle Exitcodes 0.
+
+**Beobachtet, nicht behoben (bestand schon vor Stufe 2):** Der eingebettete Editor ist im Fenster nur etwa 450 px hoch; beim Scrollen der Seite liegt er über der Kopfleiste (WebView wird nicht beschnitten); das Mausrad bleibt im Eigenschaftenfeld manchmal hängen, die Bildlaufleiste geht.
+
 ## Entscheidungen für den Nutzer
 
 1. **Varianten und Gestaltungswerte:** W6 verlangt projektweite Werte, K5 verlangt, dass eine Variante das Original nicht ändert. Umgesetzt: Seite, Export und neue Varianten nutzen die Projektwerte; eine bestehende Variante behält ihre eigene Gestaltung, bis sie übernommen wird. Komponenten ebenso.
@@ -42,8 +59,7 @@ Unabhängig vom Implementierer, je Teil in eigener Kopie, Ergebnisse in diesem B
 
 ## Was NICHT geprüft wurde
 
-- Kein Lauf mit echtem Claude; die App nicht im echten Fenster und `NativeWebView` bedient (Editor-Bündel in echtem Chrome geprüft).
-- Bedienung der Komponenten im Editor per Maus, besonders „Original ändern (alle Verwendungen)“.
+- Im Live-Test nicht bedient: „Original ändern (alle Verwendungen)“ per Maus, Vorlagen, Medien-Import, Zeitleiste, dunkler Satz.
 - Fontsource gegen das echte Netz aus der App (Schnittstelle von Hand abgefragt, im Test nachgebildet).
 - „Weniger Bewegung“ in der Editor-Vorschau (nur im Export geprüft).
 - Linux-USB und Pi 4.
