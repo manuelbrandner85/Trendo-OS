@@ -25,7 +25,7 @@ public partial class MainWindow
         Ribbon =
         [
             ("Spiel", [
-                new ProgramCmd("check", "Spiel prüfen", d => _progMsg[GK] = GameDesign.Check(d.Data) is { Count: > 0 } w ? "Hinweise:\n• " + string.Join("\n• ", w) : "Keine Probleme gefunden ✓", true),
+                new ProgramCmd("check", "Spiel prüfen", d => _progMsg[GK] = GameDesign.Check(d.Data) is { Count: > 0 } w ? "Hinweise:\n• " + string.Join("\n• ", w) : "Keine Probleme gefunden", true),
                 new ProgramCmd("build", "Bauen", d => GameBuild(d)),
                 new ProgramCmd("play", "Spielen / Öffnen", d => GamePlay(d)),
             ]),
@@ -130,8 +130,8 @@ public partial class MainWindow
         var scale = GameDesign.ScaleOf(d.Text("scale"));
         var warn = GameDesign.Check(d.Data);
         var w = new StackPanel { Name = "game-warnings", Spacing = 3 };
-        foreach (var x in warn) w.Children.Add(P("⚠ " + x, Brush.Parse("#F5A524"), 12));
-        if (warn.Count == 0) w.Children.Add(P("✓ Keine Probleme gefunden.", Brush.Parse("#2FBF71"), 12));
+        foreach (var x in warn) w.Children.Add(P("" + x, Brush.Parse("#F5A524"), 12));
+        if (warn.Count == 0) w.Children.Add(P("Keine Probleme gefunden.", Brush.Parse("#2FBF71"), 12));
         var ms = d.List("milestones").OfType<JsonObject>().ToList(); var done = ms.Count(m => m["done"]?.GetValueKind() == System.Text.Json.JsonValueKind.True);
         return new StackPanel { Spacing = 10, Children = {
             new WrapPanel { Children = {
@@ -458,7 +458,7 @@ public partial class MainWindow
         var tiles = deco
             ? new (char Ch, string Id, string Label)[] { ('w', "wolke", "Wolke"), ('m', "berg", "Berg"), ('t', "baum", "Baum"), ('b', "busch", "Busch"), ('g', "gras", "Gras"), ('.', "radierer", "Radierer") }
             : kind == "plattform"
-            ? new (char Ch, string Id, string Label)[] { (LevelCanvas.PickTool, "auswahl", "⬚ Auswählen"), ('#', "boden", "Boden"), ('o', "muenze", "Münze"), ('E', "gegner", "Gegner"), ('^', "stacheln", "Stacheln"), ('S', "start", "Start"), ('F', "feder", "Sprungfeder"), ('C', "speicher", "Speicherpunkt"), ('K', "schluessel", "Schlüssel"), ('D', "tuer", "Tür"), ('G', "gegenstand", "Gegenstand"), ('N', "figur", "Sprechende Figur"), ('V', "fahrzeug", "Fahrzeug"), ('Z', "ziel", "Ziel"), ('.', "radierer", "Radierer") }
+            ? new (char Ch, string Id, string Label)[] { (LevelCanvas.PickTool, "auswahl", "Auswählen"), ('#', "boden", "Boden"), ('o', "muenze", "Münze"), ('E', "gegner", "Gegner"), ('^', "stacheln", "Stacheln"), ('S', "start", "Start"), ('F', "feder", "Sprungfeder"), ('C', "speicher", "Speicherpunkt"), ('K', "schluessel", "Schlüssel"), ('D', "tuer", "Tür"), ('G', "gegenstand", "Gegenstand"), ('N', "figur", "Sprechende Figur"), ('V', "fahrzeug", "Fahrzeug"), ('Z', "ziel", "Ziel"), ('.', "radierer", "Radierer") }
             : [('#', "boden", kind == "breakout" ? "Stein" : "Hindernis"), ('.', "radierer", "Radierer")];
         if (!tiles.Any(t => t.Ch == GameTile)) GameTile = tiles[deco ? 0 : kind == "plattform" ? 1 : 0].Ch;
         var canvas = new LevelCanvas { Name = "game-level", Rows = deco ? GameDecorRows(d, li) : rows, Tile = GameTile, Cell = kind == "jump" ? 18 : 22, Selected = deco ? null : GameObjSel,
@@ -482,21 +482,21 @@ public partial class MainWindow
         });
         var more = new Button { Name = "game-level-wider", Content = "＋ 10 Spalten" }; more.Click += (_, _) => Resize(10);
         var less = new Button { Name = "game-level-narrower", Content = "－ 10 Spalten" }; less.Click += (_, _) => Resize(-10);
-        var test = new Button { Name = "game-level-test", Content = kind == "plattform" ? "Im Browser testen" : "▶ Testen" };
+        var test = new Button { Name = "game-level-test", Content = kind == "plattform" ? "Im Browser testen" : "Testen" };
         if (kind != "plattform") { test.Background = Accent; test.Foreground = Brushes.White; }
         test.Click += (_, _) => ProgramRun(GK, () => { if (d.List("level").Count == 0) d.Set("level", new JsonArray([.. rows.Select(x => (JsonNode)x)]), "Level"); GameBuild(d); GamePlay(d); });
         var tools = new WrapPanel { Children = { palette, new Border { Width = 12 }, more, new Border { Width = 4 }, less, new Border { Width = 12 } } };
         if (kind == "plattform")
         {
-            var play = new Button { Name = "game-level-play", Content = "▶ Im Fenster spielen", Background = Accent, Foreground = Brushes.White, Margin = new Thickness(0, 0, 4, 0) };
+            var play = new Button { Name = "game-level-play", Content = "Im Fenster spielen", Background = Accent, Foreground = Brushes.White, Margin = new Thickness(0, 0, 4, 0) };
             play.Click += (_, _) => ProgramRun(GK, () => GamePlayHere(d));
             tools.Children.Add(play);
         }
         tools.Children.Add(test);
         Control? levelBar = kind == "plattform" ? GameLevelBar(d, li) : null;
         var hints = new StackPanel { Name = "game-level-hints", Spacing = 2 };
-        foreach (var h in kind == "plattform" ? GameStudio.CheckPlatform(rows) : []) hints.Children.Add(P("⚠ " + h, Brush.Parse("#F5A524"), 12));
-        if (hints.Children.Count == 0 && kind == "plattform") hints.Children.Add(P("✓ Start, Ziel und Boden sind da – „Im Fenster spielen“ startet sofort, „Im Browser testen“ baut das fertige Spiel.", Brush.Parse("#2FBF71"), 12));
+        foreach (var h in kind == "plattform" ? GameStudio.CheckPlatform(rows) : []) hints.Children.Add(P("" + h, Brush.Parse("#F5A524"), 12));
+        if (hints.Children.Count == 0 && kind == "plattform") hints.Children.Add(P("Start, Ziel und Boden sind da – „Im Fenster spielen“ startet sofort, „Im Browser testen“ baut das fertige Spiel.", Brush.Parse("#2FBF71"), 12));
         var stats = string.Concat(rows);
         var info = P(kind == "plattform" ? $"{rows.Max(x => x.Length)} × {rows.Count} Kacheln · {stats.Count(ch => ch == 'o')} Münzen · {stats.Count(ch => ch == 'E')} Gegner · {stats.Count(ch => ch == '^')} Stacheln" : $"{rows.Max(x => x.Length)} × {rows.Count} Kacheln", Muted, 11.5);
         Control scene = new ScrollViewer { Content = canvas, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Disabled, MaxHeight = 16 * 22 + 20, VerticalAlignment = VerticalAlignment.Top };
@@ -530,7 +530,7 @@ public partial class MainWindow
         name.LostFocus += (_, _) => Rename(); OnEnter(name, Rename);
         TextBlock Lbl(string t) => new() { Text = t, Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center };
         var manage = new WrapPanel { Children = { Lbl("Name"), new Border { Width = 6 }, name, new Border { Width = 6 } } };
-        if (li >= 2) manage.Children.Add(Act("game-lv-up", "◀ früher", () => ProgramRun(GK, () => GameMoveLevelUp(d, li))));
+        if (li >= 2) manage.Children.Add(Act("game-lv-up", "früher", () => ProgramRun(GK, () => GameMoveLevelUp(d, li))));
         if (li >= 1) manage.Children.Add(Act("game-lv-del", "Level löschen", () => ProgramRun(GK, () => GameDeleteLevel(d, li))));
         var layers = new WrapPanel { Name = "game-layers", VerticalAlignment = VerticalAlignment.Center, Children = { Lbl("Ebene"), new Border { Width = 6 } } };
         foreach (var (id, label) in new[] { ("spiel", "Spiel (Boden, Gegner …)"), ("hintergrund", "Hintergrund (nur Deko)") })
@@ -711,15 +711,15 @@ public partial class MainWindow
         GamePlaytestCanvas = canvas;
         canvas.Ticked = () => status.Text = Status();
         canvas.Stop = () => { _gamePlay = null; GamePlaytestCanvas = null; Show(GK); };
-        var again = Act("game-play-again", "↻ Nochmal", () => { _gamePlay = sim.Restart(); Show(GK); }, true);
-        var stop = Act("game-play-stop", "■ Zurück zum Editor", () => canvas.Stop());
-        var save = Act("game-play-save", "💾 Speichern", () => ProgramRun(GK, () => GameSaveHere(d)));
-        var load = Act("game-play-load", "⤴ Fortsetzen", () => ProgramRun(GK, () => GameLoadHere(d)));
+        var again = Act("game-play-again", "Nochmal", () => { _gamePlay = sim.Restart(); Show(GK); }, true);
+        var stop = Act("game-play-stop", "Zurück zum Editor", () => canvas.Stop());
+        var save = Act("game-play-save", "Speichern", () => ProgramRun(GK, () => GameSaveHere(d)));
+        var load = Act("game-play-load", "Fortsetzen", () => ProgramRun(GK, () => GameLoadHere(d)));
         load.IsEnabled = File.Exists(GameSavePath(d));
         return new StackPanel { Spacing = 8, Children = {
             new WrapPanel { Children = { status, again, new Border { Width = 6 }, save, new Border { Width = 4 }, load, new Border { Width = 6 }, stop } },
             GamePlayNoteBar(d),
             new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = canvas },
-            P("← → oder A/D laufen · Leertaste, ↑ oder W springt · Esc zurück zum Editor · gleiche Regeln wie im gebauten Spiel", Muted, 11.5) } };
+            P("oder A/D laufen · Leertaste, ↑ oder W springt · Esc zurück zum Editor · gleiche Regeln wie im gebauten Spiel", Muted, 11.5) } };
     }
 }

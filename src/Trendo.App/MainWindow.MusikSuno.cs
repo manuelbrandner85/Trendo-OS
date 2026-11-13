@@ -140,14 +140,14 @@ public partial class MainWindow
             var b = new Button { Name = name, Content = label, FontSize = 12, Padding = new Thickness(10, 4), Margin = new Thickness(0, 0, 6, 6), CornerRadius = new CornerRadius(14), Background = Brush.Parse("#1FFFFFFF"), BorderThickness = new Thickness(0) };
             ToolTip.SetTip(b, tip); b.Click += async (_, _) => { sync(); await a(); }; return b;
         }
-        row.Children.Add(B("ms-ref-audio", _msRefFile is null ? "+ Audio" : "✓ Audio: " + Path.GetFileNameWithoutExtension(_msRefFile), "Klangvorbild: eine Aufnahme oder ein eigenes Lied – der neue Song klingt ähnlich.", async () =>
+        row.Children.Add(B("ms-ref-audio", _msRefFile is null ? "+ Audio" : "Audio: " + Path.GetFileNameWithoutExtension(_msRefFile), "Klangvorbild: eine Aufnahme oder ein eigenes Lied – der neue Song klingt ähnlich.", async () =>
         {
             var f = await PickMedia("ms-ref-audio", ["*.mp3", "*.wav", "*.flac", "*.ogg", "*.m4a"]);
             if (f is not null) { _msRefFile = f; _msMsg = "Klangvorbild: " + Path.GetFileName(f); }
             Show(MS);
         }));
         var voiceLabel = MsVoiceChoices().FirstOrDefault(c => c.Id == MsSingVoice).Label;
-        row.Children.Add(B("ms-ref-voice", MsSingVoice.Length == 0 ? "+ Stimme" : "✓ " + voiceLabel, "In welcher Stimme gesungen wird – eigene Stimme oder eine Stimme mit Einwilligung.", () => { MsPage("stimmen"); return Task.CompletedTask; }));
+        row.Children.Add(B("ms-ref-voice", MsSingVoice.Length == 0 ? "+ Stimme" : "" + voiceLabel, "In welcher Stimme gesungen wird – eigene Stimme oder eine Stimme mit Einwilligung.", () => { MsPage("stimmen"); return Task.CompletedTask; }));
         row.Children.Add(MsPersonaChip(B)); // V11
         row.Children.Add(B("ms-ref-image", "+ Bild", "Ein Foto bestimmt die Stimmung: Farben, Helligkeit und Lebhaftigkeit werden zu Stil-Wörtern.", async () =>
         {
@@ -157,7 +157,7 @@ public partial class MainWindow
             catch (Exception e) when (e is IOException or InvalidDataException or ArgumentException) { _msMsg = "Das Bild ließ sich nicht lesen: " + e.Message; }
             Show(MS);
         }));
-        row.Children.Add(B("ms-dice", "🎲 Idee", "Liedidee würfeln", () => { var idea = MusicSuno.Idea(Random.Shared.Next()); if (_msPro) _msStyle = idea; else _msDesc = idea; Show(MS); return Task.CompletedTask; }));
+        row.Children.Add(B("ms-dice", "Idee", "Liedidee würfeln", () => { var idea = MusicSuno.Idea(Random.Shared.Next()); if (_msPro) _msStyle = idea; else _msDesc = idea; Show(MS); return Task.CompletedTask; }));
         return row;
     }
 

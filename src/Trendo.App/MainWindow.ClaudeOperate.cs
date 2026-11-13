@@ -144,20 +144,20 @@ public partial class MainWindow
     Control PlanCard(ClaudeDock dock, ChatUi ui, ClaudePlan plan)
     {
         var sp = new StackPanel { Spacing = 6 };
-        sp.Children.Add(new TextBlock { Text = $"🛠 Claude möchte in „{plan.State.Program}“:", Foreground = CGold, FontSize = 14, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
+        sp.Children.Add(new TextBlock { Text = $"Claude möchte in „{plan.State.Program}“:", Foreground = CGold, FontSize = 14, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
         var risky = false;
         for (var i = 0; i < plan.Steps.Count; i++)
         {
             var s = plan.Steps[i]; var r = ClaudeActions.StepRisky(s, plan.State); risky |= r;
             var pv = ClaudeExtraPreview(plan.Page, s) ?? ClaudeMusicPreview(plan.Page, s);
-            sp.Children.Add(new TextBlock { Name = $"claude-plan-step-{i}", Text = $"{i + 1}. {ClaudeActions.Describe(s, plan.State)}" + (r ? "  ⚠ wirkt nach außen" : ""), Foreground = r ? Brush.Parse("#FFF8B26A") : ClaudeFg, FontSize = 13, TextWrapping = TextWrapping.Wrap });
+            sp.Children.Add(new TextBlock { Name = $"claude-plan-step-{i}", Text = $"{i + 1}. {ClaudeActions.Describe(s, plan.State)}" + (r ? "  wirkt nach außen" : ""), Foreground = r ? Brush.Parse("#FFF8B26A") : ClaudeFg, FontSize = 13, TextWrapping = TextWrapping.Wrap });
             if (pv is not null) sp.Children.Add(pv);
         }
-        if (risky) sp.Children.Add(new TextBlock { Text = "⚠ Darunter ist etwas, das nach außen wirkt oder sich nicht zurücknehmen lässt (z. B. senden, löschen, kaufen). Es passiert nur, wenn du „Ausführen“ klickst.", Foreground = Brush.Parse("#FFF8B26A"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
-        var run = new Button { Name = "claude-plan-run", Content = risky ? "▶ Ausführen – ich bin einverstanden" : "▶ Ausführen", FontSize = 12.5, Padding = new Thickness(12, 4), Margin = new Thickness(0, 4, 6, 0), Background = ClaudeAccent, Foreground = Brushes.White, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(0) };
-        var no = new Button { Name = "claude-plan-no", Content = "✕ Nein", FontSize = 12.5, Padding = new Thickness(12, 4), Margin = new Thickness(0, 4, 0, 0), Background = Brushes.Transparent, Foreground = ClaudeFg, BorderBrush = GlassEdge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8) };
+        if (risky) sp.Children.Add(new TextBlock { Text = "Darunter ist etwas, das nach außen wirkt oder sich nicht zurücknehmen lässt (z. B. senden, löschen, kaufen). Es passiert nur, wenn du „Ausführen“ klickst.", Foreground = Brush.Parse("#FFF8B26A"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
+        var run = new Button { Name = "claude-plan-run", Content = risky ? "Ausführen – ich bin einverstanden" : "Ausführen", FontSize = 12.5, Padding = new Thickness(12, 4), Margin = new Thickness(0, 4, 6, 0), Background = ClaudeAccent, Foreground = Brushes.White, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(0) };
+        var no = new Button { Name = "claude-plan-no", Content = "Nein", FontSize = 12.5, Padding = new Thickness(12, 4), Margin = new Thickness(0, 4, 0, 0), Background = Brushes.Transparent, Foreground = ClaudeFg, BorderBrush = GlassEdge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8) };
         run.Click += async (_, _) => await ClaudeRunPlan(dock);
-        no.Click += (_, _) => { ui.Plan = null; CChats.Add(ChatStudio(dock), plan.ChatId, new ClaudeChats.Msg("assistant", "✕ Nicht ausgeführt – im Programm hat sich nichts geändert.", [], DateTimeOffset.Now)); RenderChat(dock); };
+        no.Click += (_, _) => { ui.Plan = null; CChats.Add(ChatStudio(dock), plan.ChatId, new ClaudeChats.Msg("assistant", "Nicht ausgeführt – im Programm hat sich nichts geändert.", [], DateTimeOffset.Now)); RenderChat(dock); };
         sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Children = { run, no } });
         return Appear(CGlass(sp, name: "claude-plan"));
     }
@@ -192,11 +192,11 @@ public partial class MainWindow
         }
         if (doc is not null)
         {
-            if (doc.Data.ToJsonString() != before) { ClaudeChangeAfter(plan.Page, doc); _progMsg[plan.Page] = ClaudeNoClicks ? "✳ Claude hat im Programm gearbeitet." : "✳ Claude hat im Programm gearbeitet – oben vergleichen, behalten oder verwerfen."; }
+            if (doc.Data.ToJsonString() != before) { ClaudeChangeAfter(plan.Page, doc); _progMsg[plan.Page] = ClaudeNoClicks ? "Claude hat im Programm gearbeitet." : "Claude hat im Programm gearbeitet – oben vergleichen, behalten oder verwerfen."; }
             else _claudeChanges.Remove(plan.Page);
         }
         _core.Audit.Append(Principal.LocalOwner.Name, "claude.bedient", $"{plan.Page} · {done.Count} Schritte" + (plan.Steps.Any(s => ClaudeActions.StepRisky(s, plan.State)) ? " · mit Wirkung nach außen" : ""));
-        var msg = "🛠 Im Programm erledigt:\n" + string.Join("\n", done.Select(d => "- " + d)) + (failed.Count > 0 ? "\n\n⚠ Nicht möglich (Element nicht mehr da oder gesperrt):\n" + string.Join("\n", failed.Select(f => "- " + f)) : "");
+        var msg = "Im Programm erledigt:\n" + string.Join("\n", done.Select(d => "- " + d)) + (failed.Count > 0 ? "\n\n⚠ Nicht möglich (Element nicht mehr da oder gesperrt):\n" + string.Join("\n", failed.Select(f => "- " + f)) : "");
         CChats.Add(ChatStudio(dock), plan.ChatId, new ClaudeChats.Msg("assistant", msg, [], DateTimeOffset.Now));
         if (CurrentView == plan.Page) Show(plan.Page);
         RenderChat(dock);
@@ -210,7 +210,7 @@ public partial class MainWindow
         var studio = ClaudeBelongs(CurrentView) ? ClaudeStudioOf(CurrentView) : null;
         var what = ClaudeTargetText(src);
         if (what is null) return;
-        MenuItem Item() { var mi = new MenuItem { Name = "claude-context-ask", Header = "✳ Claude fragen", Tag = what }; mi.Click += (s, _) => ClaudeContextAsk((s as MenuItem)?.Tag as string ?? what, studio); return mi; }
+        MenuItem Item() { var mi = new MenuItem { Name = "claude-context-ask", Header = "Claude fragen", Tag = what }; mi.Click += (s, _) => ClaudeContextAsk((s as MenuItem)?.Tag as string ?? what, studio); return mi; }
         // vorhandenes Menü (eigenes oder eines Elternteils) um den Eintrag ergänzen
         foreach (var c in src.GetSelfAndLogicalAncestors().OfType<Control>())
         {

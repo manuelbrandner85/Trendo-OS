@@ -301,7 +301,7 @@ public class MusikSuno_Ui
         finally { w.Close(); }
     }
 
-    [AvaloniaFact(DisplayName = "Suno V13: Mein Geschmack – ohne Favoriten Hinweis, mit zwei ★ Wörter sichtbar und Vorschlag in der Beschreibung; Bibliothek „Für dich“")]
+    [AvaloniaFact(DisplayName = "Suno V13: Mein Geschmack – ohne Favoriten Hinweis, mit zwei Wörter sichtbar und Vorschlag in der Beschreibung; Bibliothek „Für dich“")]
     public void Taste()
     {
         var (w, _, root) = Ui.Open(); _w = w; Directory.CreateDirectory(root);

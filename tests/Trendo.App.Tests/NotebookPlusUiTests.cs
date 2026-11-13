@@ -20,7 +20,7 @@ public class NotebookPlus_Ui
         Assert.Equal((1, 2), NoteText.Checklist(t)); Assert.Equal((2, 2), NoteText.Checklist(NoteText.Toggle(t, 1))); Assert.Equal(t, NoteText.Toggle(t, 3));
         var back = NoteText.Backlinks([("A", "Einkauf", t), ("A", "Wochenplan", "Montag"), ("B", "Rezepte", "[[Wochenplan]]")], "Wochenplan");
         Assert.Equal([("A", "Einkauf"), ("B", "Rezepte")], back);
-        var doc = NoteText.ToDoc("Einkauf", "- [ ] Milch\n[[Wochenplan]]"); Assert.Contains(doc.Paras, p => p.Text == "☐ Milch"); Assert.Contains(doc.Paras, p => p.Text == "Wochenplan");
+        var doc = NoteText.ToDoc("Einkauf", "- [ ] Milch\n[[Wochenplan]]"); Assert.Contains(doc.Paras, p => p.Text == "Milch"); Assert.Contains(doc.Paras, p => p.Text == "Wochenplan");
     }
 
     [AvaloniaFact(DisplayName = "Notizbuch UI: Checkliste einfügen, in der Lese-Ansicht abhaken (gespeichert), Verknüpfung legt fehlende Seite an, Verweist hierher, Als PDF")]

@@ -68,7 +68,7 @@ public partial class MainWindow
             var n = VideoExport.ReadSrt(await File.ReadAllTextAsync(srt)).Count;
             d.Edit("Untertitel", x => x["subs"] = srt);
             _core.Audit.Append(Principal.LocalOwner.Name, "video.untertitel", $"{n} Zeilen");
-            _progMsg[VK] = $"✓ {n} Untertitel erkannt – gespeichert als {Path.GetFileName(srt)}. Beim Export einbrennen oder als SRT mitgeben.";
+            _progMsg[VK] = $"{n} Untertitel erkannt – gespeichert als {Path.GetFileName(srt)}. Beim Export einbrennen oder als SRT mitgeben.";
         }
         catch (Exception e) when (e is InvalidOperationException or IOException or FileNotFoundException) { _progMsg[VK] = e.Message; }
         finally { _veSubsBusy = false; try { Directory.Delete(tmp, true); } catch (IOException) { } Show(VK); }
@@ -144,7 +144,7 @@ public partial class MainWindow
         sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { new TextBlock { Text = "von", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center }, ra, new TextBlock { Text = "bis", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center }, rb, new TextBlock { Text = "Sekunden", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center } } });
         // X10: Untertitel
         var subs = d.Text("subs");
-        var subsBtn = new Button { Name = "ve-subs", Content = _veSubsBusy ? "Untertitel werden erstellt …" : subs.Length > 0 ? "Untertitel neu erzeugen" : "💬 Untertitel erzeugen (Whisper)", FontSize = 12, IsEnabled = !_veSubsBusy };
+        var subsBtn = new Button { Name = "ve-subs", Content = _veSubsBusy ? "Untertitel werden erstellt …" : subs.Length > 0 ? "Untertitel neu erzeugen" : "Untertitel erzeugen (Whisper)", FontSize = 12, IsEnabled = !_veSubsBusy };
         subsBtn.Click += async (_, _) => await EditSubtitles(d);
         sp.Children.Add(subsBtn);
         if (subs.Length > 0 && File.Exists(subs))
@@ -171,7 +171,7 @@ public partial class MainWindow
         var pr = VideoExport.Get(EditPreset);
         var (enc, _) = VideoExport.Encoder(pr, _veGpu, Math.Max(1, len));
         sp.Children.Add(P(gpuText + (pr.AudioOnly ? "" : $" Encoder für diese Vorlage: {enc}."), Muted, 11.5));
-        var go = new Button { Name = "ve-export-go", Content = pr.AudioOnly ? "⬇ Ton exportieren" : "⬇ Exportieren", Background = Accent, Foreground = Brushes.White, FontSize = 13, Padding = new Thickness(16, 7), CornerRadius = new CornerRadius(8), IsEnabled = _veExport is null };
+        var go = new Button { Name = "ve-export-go", Content = pr.AudioOnly ? "Ton exportieren" : "Exportieren", Background = Accent, Foreground = Brushes.White, FontSize = 13, Padding = new Thickness(16, 7), CornerRadius = new CornerRadius(8), IsEnabled = _veExport is null };
         go.Click += async (_, _) => await EditExportBackground(d);
         // Paket 01 S3-18: weitere Fassungen in die Warteschlange (laufen nacheinander)
         var queue = new Button { Name = "ve-queue-add", Content = "＋ In die Warteschlange", FontSize = 12, Margin = new Thickness(6, 0, 0, 0) };

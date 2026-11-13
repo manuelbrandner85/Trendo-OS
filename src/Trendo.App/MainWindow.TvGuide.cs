@@ -47,13 +47,13 @@ public partial class MainWindow
         var groups = new List<string> { "Alle", "Favoriten" }; groups.AddRange(TvChannels().Select(c => c.Group).Distinct().OrderBy(g => g));
         var gsel = new ComboBox { Name = "tv-guide-group", ItemsSource = groups, SelectedItem = groups.Contains(_tvGroup) ? _tvGroup : "Alle", Width = 170, CornerRadius = new CornerRadius(10), Margin = new Thickness(0, 0, 6, 6) };
         gsel.SelectionChanged += (_, _) => { if (gsel.SelectedItem is string g && g != _tvGroup) { _tvGroup = g; Show("tv"); } };
-        var find = new TextBox { Name = "tv-guide-find", Text = _tvGuideFind, PlaceholderText = "🔎  Sendung suchen (alle Tage) …", Width = 260, CornerRadius = new CornerRadius(10), Margin = new Thickness(0, 0, 6, 6) };
+        var find = new TextBox { Name = "tv-guide-find", Text = _tvGuideFind, PlaceholderText = "Sendung suchen (alle Tage) …", Width = 260, CornerRadius = new CornerRadius(10), Margin = new Thickness(0, 0, 6, 6) };
         find.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) { _tvGuideFind = find.Text ?? ""; Show("tv"); } };
         sp.Children.Add(new WrapPanel { Children = {
-            Chip("tv-guide-earlier", "◀ 2 Std. früher", false, () => Go(_tvGuideDay, Math.Max(-6, fromHour - 2))),
+            Chip("tv-guide-earlier", "2 Std. früher", false, () => Go(_tvGuideDay, Math.Max(-6, fromHour - 2))),
             Chip("tv-guide-now", "Jetzt", _tvGuideDay == 0 && _tvGuideHour is null, () => Go(0, null)),
             Chip("tv-guide-prime", "20:15", _tvGuideHour == 19.5, () => Go(_tvGuideDay, 19.5)),
-            Chip("tv-guide-later", "2 Std. später ▶", false, () => Go(_tvGuideDay, Math.Min(26, fromHour + 2))),
+            Chip("tv-guide-later", "2 Std. später", false, () => Go(_tvGuideDay, Math.Min(26, fromHour + 2))),
             gsel, find } });
         // Sparten
         var kinds = new WrapPanel { Name = "tv-guide-kinds" };
@@ -69,7 +69,7 @@ public partial class MainWindow
             var hits = Trendo.Core.Tv.TvGuide.Search(progs, TvChannels(), _tvGuideFind, now);
             var list = new StackPanel { Name = "tv-guide-hits", Spacing = 2 };
             list.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { H(hits.Count == 0 ? $"Nichts gefunden für „{_tvGuideFind}“" : $"{hits.Count} Termine für „{_tvGuideFind}“", 13),
-                Pos(Chip("tv-guide-find-clear", "✕ Suche schließen", false, () => { _tvGuideFind = ""; Show("tv"); }), 1) } });
+                Pos(Chip("tv-guide-find-clear", "Suche schließen", false, () => { _tvGuideFind = ""; Show("tv"); }), 1) } });
             for (var i = 0; i < hits.Count; i++)
             {
                 var (c, p) = hits[i]; var key = $"{c.Id}|{p.Start:O}"; var local = p.Start.ToLocalTime();
@@ -120,7 +120,7 @@ public partial class MainWindow
                 var s = p.Start < from ? from : p.Start; var e = p.Stop > to ? to : p.Stop; var w = Math.Max(8, X(e) - X(s) - 2);
                 var on = p.IsOn(now); var past = p.Stop <= now; var kind = Trendo.Core.Tv.TvGuide.Kind(p); var key = $"{c.Id}|{p.Start:O}";
                 var rec = Trendo.Core.Tv.TvGuide.Planned(recs, c, p); var bell = Tv.HasReminder(c.Id, p.Start);
-                var marks = (rec ? "⏺ " : "") + (bell ? "🔔 " : "");
+                var marks = (rec ? "• " : "") + (bell ? "• " : "");
                 var title = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2, Children = { new TextBlock { Text = p.Title, Foreground = Text, FontSize = 12, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis } } };
                 if (marks.Length > 0) title.Children.Insert(0, new TextBlock { Text = marks, Foreground = Brush.Parse(rec ? "#F87171" : "#FACC15"), FontSize = 11 });
                 var inner = new StackPanel { Spacing = 1, Margin = new Thickness(7, 0, 4, 0), VerticalAlignment = VerticalAlignment.Center, Children = { title } };
@@ -169,25 +169,25 @@ public partial class MainWindow
         if (sel.IsOn(now)) d.Children.Add(new ProgressBar { Value = sel.Progress(now) * 100, Height = 4, MinHeight = 4, Foreground = Brush.Parse("#D4A84B"), Background = Brush.Parse("#22FFFFFF"), Margin = new Thickness(0, 2) });
         if (sel.Description.Length > 0) d.Children.Add(P(sel.Description, Text, 12.5));
         var acts = new WrapPanel();
-        if (sel.IsOn(now)) acts.Children.Add(TvButton("tv-prog-watch", "▶ Ansehen", () => { _tvTab = "live"; TvPlay(ch.Id); Show("tv"); }, true));
+        if (sel.IsOn(now)) acts.Children.Add(TvButton("tv-prog-watch", "Ansehen", () => { _tvTab = "live"; TvPlay(ch.Id); Show("tv"); }, true));
         var planned = Tv.Recordings.FirstOrDefault(r => r.ChannelId == ch.Id && r.State is "geplant" or "läuft" && r.Start <= sel.Start && r.Stop >= sel.Stop);
         if (sel.Stop > now)
         {
-            if (planned is null) acts.Children.Add(TvButton("tv-prog-rec", "⏺ Aufnehmen", () =>
+            if (planned is null) acts.Children.Add(TvButton("tv-prog-rec", "Aufnehmen", () =>
             {
                 var r = TvPlanRecording(ch, sel.Title, sel.Start, sel.Stop);
                 var clash = Trendo.Core.Tv.TvGuide.Overlaps(Tv.Recordings, sel.Start, sel.Stop, r?.Id);
-                _tvMsg = $"✓ Aufnahme geplant: {sel.Title} ({sel.Start.ToLocalTime():dd.MM. HH:mm})." + (clash.Count > 0 ? $" Hinweis: überschneidet sich mit „{clash[0].Title}“ ({clash[0].ChannelName}) – beide laufen gleichzeitig, wenn dein Anbieter das erlaubt." : "");
+                _tvMsg = $"Aufnahme geplant: {sel.Title} ({sel.Start.ToLocalTime():dd.MM. HH:mm})." + (clash.Count > 0 ? $" Hinweis: überschneidet sich mit „{clash[0].Title}“ ({clash[0].ChannelName}) – beide laufen gleichzeitig, wenn dein Anbieter das erlaubt." : "");
                 Show("tv");
             }));
-            else if (planned.State == "geplant") acts.Children.Add(TvButton("tv-prog-unrec", "⏺ Aufnahme geplant – entfernen", () => { Tv.RemoveRecording(planned.Id); _tvMsg = "Aufnahme entfernt."; Show("tv"); }));
+            else if (planned.State == "geplant") acts.Children.Add(TvButton("tv-prog-unrec", "Aufnahme geplant – entfernen", () => { Tv.RemoveRecording(planned.Id); _tvMsg = "Aufnahme entfernt."; Show("tv"); }));
             if (sel.Start > now)
             {
                 var on = Tv.HasReminder(ch.Id, sel.Start);
-                acts.Children.Add(TvButton("tv-prog-remind", on ? "🔔 Erinnerung aus" : "🔔 Erinnern", () =>
+                acts.Children.Add(TvButton("tv-prog-remind", on ? "Erinnerung aus" : "Erinnern", () =>
                 {
                     var set = Tv.ToggleReminder(ch, sel);
-                    _tvMsg = set ? $"🔔 Trendo erinnert dich kurz vor {sel.Start.ToLocalTime():HH:mm} an „{sel.Title}“." : "Erinnerung entfernt.";
+                    _tvMsg = set ? $"Trendo erinnert dich kurz vor {sel.Start.ToLocalTime():HH:mm} an „{sel.Title}“." : "Erinnerung entfernt.";
                     if (set) TvRecWatch();
                     Show("tv");
                 }));
@@ -207,7 +207,7 @@ public partial class MainWindow
         {
             Tv.ReminderShown(r.ChannelId, r.Start);
             var id = r.ChannelId;
-            Toast($"🔔 {(r.Start > DateTime.UtcNow ? "Gleich" : "Jetzt")}: „{r.Title}“ auf {r.ChannelName} ({r.Start.ToLocalTime():HH:mm})", ("Einschalten", new Action(() => { _tvTab = "live"; TvPlay(id); Show("tv"); })));
+            Toast($"{(r.Start > DateTime.UtcNow ? "Gleich" : "Jetzt")}: „{r.Title}“ auf {r.ChannelName} ({r.Start.ToLocalTime():HH:mm})", ("Einschalten", new Action(() => { _tvTab = "live"; TvPlay(id); Show("tv"); })));
         }
     }
 }

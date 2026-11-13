@@ -218,7 +218,7 @@ public partial class MainWindow
         if (_setupSummary is null)
         {
             _setupSummary = new TextBlock { Name = "setup-overlay-problems", FontSize = 12.5, Foreground = Brush.Parse("#FFD28A"), HorizontalAlignment = HorizontalAlignment.Center, TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.Wrap, MaxWidth = 620 };
-            _setupDoneButton = new Button { Name = "setup-overlay-done", Content = "Los geht's", FontSize = 15, Padding = new Thickness(28, 10), CornerRadius = new CornerRadius(12), HorizontalAlignment = HorizontalAlignment.Center,
+            _setupDoneButton = new Button { Name = "setup-overlay-done", Content = "Fertig", FontSize = 15, Padding = new Thickness(28, 10), CornerRadius = new CornerRadius(12), HorizontalAlignment = HorizontalAlignment.Center,
                 Background = GoldText(), Foreground = Brush.Parse("#1A1206"), FontWeight = FontWeight.Bold };
             _setupDoneButton.Click += (_, _) => { _setupDoneButton.IsVisible = false; _setupSummary.IsVisible = false; EndSetupOverlay(); };
             if (_setupOverlay.Children.OfType<StackPanel>().FirstOrDefault() is { } col) { col.Children.Add(_setupSummary); col.Children.Add(_setupDoneButton); }

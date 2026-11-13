@@ -32,7 +32,7 @@ public partial class MainWindow
             var text = built.Length == 0 ? "Noch nicht gebaut – „Bauen“ legt das Spiel an." : scale.Engine == "browser" ? "Im Browser spielbar – „Spielen“ öffnet es." : "Gebaut – die Vorschau erscheint nach dem ersten Prüflauf in Unreal.";
             body = new Border { Name = "game-preview-empty", Width = 360, Height = 203, CornerRadius = new CornerRadius(10), Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
                 GradientStops = { new GradientStop(Color.Parse("#2A2418"), 0), new GradientStop(Color.Parse("#141210"), 1) } }, BorderBrush = EdgeLit, BorderThickness = new Thickness(1),
-                Child = new TextBlock { Text = "🎮\n" + text, TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.Wrap, Foreground = Text, FontSize = 13, Margin = new Thickness(18), VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center } };
+                Child = new TextBlock { Text = "\n" + text, TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.Wrap, Foreground = Text, FontSize = 13, Margin = new Thickness(18), VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center } };
         }
         var play = SmallBtn("game-preview-play", built.Length == 0 ? "Bauen" : "Spielen", () => { if (built.Length == 0) GameBuild(d); else GamePlay(d); Show(GK); }, true);
         return new Border { Name = "game-preview", Margin = new Thickness(0, 0, 12, 12), Padding = new Thickness(12), CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), BoxShadow = CardShadow,
@@ -100,7 +100,7 @@ public partial class MainWindow
         }
         var result = GameFlow.ResultOf(t);
         if (result.Length > 0)
-            sp.Children.Add(new TextBlock { Name = $"game-task-{i}-result", Text = (result == GameFlow.Done ? "✓ Fertig" : result == GameFlow.DoneWithNotes ? "✓ Fertig mit Hinweisen" : "⛔ Blockiert") + (t["note"].AsText() is { Length: > 0 } n ? ": " + n : ""),
+            sp.Children.Add(new TextBlock { Name = $"game-task-{i}-result", Text = (result == GameFlow.Done ? "Fertig" : result == GameFlow.DoneWithNotes ? "Fertig mit Hinweisen" : "Blockiert") + (t["note"].AsText() is { Length: > 0 } n ? ": " + n : ""),
                 FontSize = 11, TextWrapping = TextWrapping.Wrap, Foreground = result == GameFlow.Blocked ? Brush.Parse("#F06A6A") : Brush.Parse("#2FBF71") });
         if (GameBoard.StateOf(t) != "Fertig")
         {

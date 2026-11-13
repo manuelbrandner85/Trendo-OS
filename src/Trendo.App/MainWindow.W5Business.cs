@@ -73,7 +73,7 @@ public partial class MainWindow
                 new TextBlock { Name = "biz-verdict", Text = $"{v.Score} von 100 · {v.Decision}", FontSize = 20, FontWeight = FontWeight.SemiBold, Foreground = Brush.Parse(col), VerticalAlignment = VerticalAlignment.Center } } } } };
         var be = BusinessStudio.BreakEven(i);
         res.Children.Add(P($"Gewinn pro Monat: {BusinessStudio.ProfitMonth(i):N0} € · Gewinnschwelle: {(be is null ? "nicht erreichbar" : be + " Verkäufe")} · Stundenlohn: {BusinessStudio.HourlyWage(i):N2} €", Text));
-        foreach (var b in v.Blockers) res.Children.Add(P("⚠ " + b, Brush.Parse("#F97316")));
+        foreach (var b in v.Blockers) res.Children.Add(P("" + b, Brush.Parse("#F97316")));
         foreach (var p in v.Parts) res.Children.Add(P($"{p.Label}: {p.Points}/{p.Max} – {p.Why}", null, 11));
         res.Children.Add(P("Das ist eine Schätzung aus deinen Zahlen, keine Garantie.", null, 10));
         sp.Children.Add(Card(new StackPanel { Children = { H("3. Ergebnis", 14), res } }));

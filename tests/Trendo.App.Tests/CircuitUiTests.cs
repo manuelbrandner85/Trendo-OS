@@ -157,7 +157,7 @@ public class SPEC02_UiPcb
         Assert.True(w.CircuitState.Pcb); Assert.Equal(6, Model(w).Pcb.Places.Count); // Batterie, 2 Widerstände, LED, Transistor, Schalter
         Assert.Contains("noch nicht verlegt", Get<TextBlock>(w, "ek-pcb-info").Text);
         Press(w, "prog-cmd-ek-route");
-        Assert.Contains("✓ Prüfung: keine Konflikte", Get<TextBlock>(w, "ek-pcb-info").Text);
+        Assert.Contains("Prüfung: keine Konflikte", Get<TextBlock>(w, "ek-pcb-info").Text);
         var led = Model(w).Parts.Single(p => p.Kind == "led"); var pl = Model(w).Pcb.Places[led.Id];
         var cv = Get<PcbCanvas>(w, "ek-pcb-canvas"); var from = cv.TranslatePoint(cv.ToScreen(pl.X, pl.Y), w)!.Value; var dx = 10 * cv.Scale;
         w.MouseDown(from, MouseButton.Left); w.MouseMove(from + new Point(dx / 2, 0)); w.MouseMove(from + new Point(dx, 0)); w.MouseUp(from + new Point(dx, 0), MouseButton.Left); Settle();

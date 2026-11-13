@@ -63,7 +63,7 @@ public partial class MainWindow
             ],
             Workspace = ScanWorkspace,
             Properties = ScanProperties,
-            Status = d => { var s = ScanDoc.From(d.Data); try { var i = ScanCloud(d).Info(); return $"{Fach.F(i.Points, 0)} Punkte · {Fach.F(i.SizeX, 2)} × {Fach.F(i.SizeY, 2)} × {Fach.F(i.SizeZ, 2)} · {s.Ops.Count} Schritte{(_pcMeasure ? " · Messen: Punkte anklicken" : "")}"; } catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or InvalidDataException or FormatException) { return s.Source.Length == 0 ? "Noch keine Datei" : "⚠ " + ex.Message; } },
+            Status = d => { var s = ScanDoc.From(d.Data); try { var i = ScanCloud(d).Info(); return $"{Fach.F(i.Points, 0)} Punkte · {Fach.F(i.SizeX, 2)} × {Fach.F(i.SizeY, 2)} × {Fach.F(i.SizeZ, 2)} · {s.Ops.Count} Schritte{(_pcMeasure ? " · Messen: Punkte anklicken" : "")}"; } catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or InvalidDataException or FormatException) { return s.Source.Length == 0 ? "Noch keine Datei" : "" + ex.Message; } },
             Help = "Links ziehen dreht, rechts ziehen (oder Umschalt) verschiebt, Mausrad zoomt. „Messen“ einschalten und zwei Punkte anklicken. Jeder Bearbeitungsschritt steht rechts in der Liste und lässt sich wieder entfernen – die Originaldatei bleibt unverändert.",
         }, "3d-scan", "scan", "punktwolke", "ply", "xyz", "lidar", "laserscan", "pointcloud", "cloudcompare", "meshlab", "volumen");
         RegisterTab(FachTabs, "scan3d", "Aus Fotos", "SPEC-09", () => FachPage("3D-Modell aus Fotos", new StackPanel { Spacing = 8, Children = { P("Mach aus Fotos oder einem Video ein 3D-Modell. Fertige Punktwolken öffnest du im Reiter „Punktwolke“.", Text), PhotoScanCard() } }), "fotogrammetrie", "colmap", "meshroom", "fotos zu 3d");
@@ -105,7 +105,7 @@ public partial class MainWindow
         PointCloud pc;
         try { pc = ScanCloudOf(s); }
         catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or InvalidDataException or FormatException)
-        { return new Border { Name = "pc-error", Background = Brush.Parse("#212121"), CornerRadius = new CornerRadius(10), Child = new TextBlock { Text = "⚠ " + ex.Message, Foreground = Brush.Parse("#F87171"), FontSize = 15, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(24), VerticalAlignment = VerticalAlignment.Center } }; }
+        { return new Border { Name = "pc-error", Background = Brush.Parse("#212121"), CornerRadius = new CornerRadius(10), Child = new TextBlock { Text = "" + ex.Message, Foreground = Brush.Parse("#F87171"), FontSize = 15, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(24), VerticalAlignment = VerticalAlignment.Center } }; }
         var view = new PointCloudView { Name = "pc-view", Cloud = pc, Yaw = s.Yaw, Pitch = s.Pitch, Zoom = s.Zoom, ByHeight = s.ColorBy != "auto", MeasureMode = _pcMeasure, Cursor = new Avalonia.Input.Cursor(_pcMeasure ? Avalonia.Input.StandardCursorType.Cross : Avalonia.Input.StandardCursorType.SizeAll) };
         view.Marks.AddRange(_pcMarks);
         view.ViewChanged = (yaw, pitch, zoom) => { var cur = ScanDoc.From(d.Data); cur.Yaw = yaw; cur.Pitch = pitch; cur.Zoom = zoom; cur.WriteTo(d.Data); }; // Ansicht ohne Rückgängig-Eintrag merken

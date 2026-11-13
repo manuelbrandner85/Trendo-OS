@@ -152,7 +152,7 @@ public partial class MainWindow
                     Background = on ? Brush.Parse("#26C9A227") : Brushes.Transparent, CornerRadius = new CornerRadius(10),
                     Content = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = { face,
                         Pos(new TextBlock { Text = title, Foreground = Text, FontSize = 12.5, Margin = new Thickness(10, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis }, 1),
-                        Pos(new TextBlock { Text = on ? "✓ auf dem Desktop" : "＋ hinzufügen", Foreground = on ? Brush.Parse("#4ADE80") : Accent, FontSize = 11, VerticalAlignment = VerticalAlignment.Center }, 2) } } };
+                        Pos(new TextBlock { Text = on ? "auf dem Desktop" : "＋ hinzufügen", Foreground = on ? Brush.Parse("#4ADE80") : Accent, FontSize = 11, VerticalAlignment = VerticalAlignment.Center }, 2) } } };
                 var sid = id;
                 b.Click += (_, _) => { SetOnDesktop(sid, !OnDesktop(sid)); Show("desktop-symbole"); };
                 wrap.Children.Add(b);

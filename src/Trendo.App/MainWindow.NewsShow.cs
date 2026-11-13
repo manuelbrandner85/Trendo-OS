@@ -25,7 +25,7 @@ public partial class MainWindow
     readonly ProgressBar _newsAll = new() { Name = "news-progress", Minimum = 0, Maximum = 1, Height = 5, Width = 520, CornerRadius = new CornerRadius(3), HorizontalAlignment = HorizontalAlignment.Center };
     readonly Button _newsPrev = new() { Name = "news-prev", Content = "‹", FontSize = 30, Width = 58, Height = 58, CornerRadius = new CornerRadius(29), Background = Brush.Parse("#22FFFFFF"), Foreground = Brushes.White, HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, Padding = new Thickness(0, -4, 0, 0) };
     readonly Button _newsNext = new() { Name = "news-next", Content = "›", FontSize = 30, Width = 58, Height = 58, CornerRadius = new CornerRadius(29), Background = Brush.Parse("#22FFFFFF"), Foreground = Brushes.White, HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, Padding = new Thickness(0, -4, 0, 0) };
-    readonly Button _newsDone = new() { Name = "news-done", Content = "Los geht's", FontSize = 20, FontWeight = FontWeight.SemiBold, Padding = new Thickness(38, 12), CornerRadius = new CornerRadius(26), Foreground = Brush.Parse("#1B1404"), IsVisible = false, HorizontalAlignment = HorizontalAlignment.Center };
+    readonly Button _newsDone = new() { Name = "news-done", Content = "Schließen", FontSize = 20, FontWeight = FontWeight.SemiBold, Padding = new Thickness(38, 12), CornerRadius = new CornerRadius(26), Foreground = Brush.Parse("#1B1404"), IsVisible = false, HorizontalAlignment = HorizontalAlignment.Center };
     readonly Canvas _newsGlow = new() { IsHitTestVisible = false };
     readonly List<(Ellipse E, double Speed, double Phase, double Radius)> _newsOrbs = [];
     DispatcherTimer? _newsTimer; DateTime _newsShown; TimeSpan _newsElapsed; WindowState _newsPrevState = WindowState.Normal;
@@ -168,7 +168,7 @@ public partial class MainWindow
                 var k = 0;
                 foreach (var pt in s.Points.Take(7))
                     list.Children.Add(Part(new Border { Name = $"news-point-{k++}", Background = Brush.Parse("#14FFFFFF"), BorderBrush = Brush.Parse("#22F5C451"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(16, 8), MaxWidth = 820,
-                        Child = new TextBlock { Text = "✓  " + pt, Foreground = Brush.Parse("#EAF1FB"), FontSize = 17, TextWrapping = TextWrapping.Wrap } }));
+                        Child = new TextBlock { Text = "" + pt, Foreground = Brush.Parse("#EAF1FB"), FontSize = 17, TextWrapping = TextWrapping.Wrap } }));
                 if (s.Points.Count > 7) list.Children.Add(Part(new TextBlock { Text = $"… und {s.Points.Count - 7} weitere", Foreground = Brush.Parse("#9FB3D6"), FontSize = 15, HorizontalAlignment = HorizontalAlignment.Center }));
                 sp.Children.Add(list);
             }

@@ -38,7 +38,7 @@ public partial class MainWindow
     {
         LastCopied = text;
         try { if (Clipboard is { } cb) await cb.SetTextAsync(text); _mbMsg = $"{what} kopiert."; }
-        catch (Exception) { _mbMsg = $"⚠ {what} ließ sich nicht kopieren."; }
+        catch (Exception) { _mbMsg = $"{what} ließ sich nicht kopieren."; }
         Show(MB);
     }
 
@@ -47,7 +47,7 @@ public partial class MainWindow
         _mbBusy = true; _mbMsg = busy; Show(MB);
         try { _mbMsg = await work(); }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or TimeoutException or InvalidDataException or InvalidOperationException or IOException or ArgumentException
-            or UnauthorizedAccessException or System.Text.Json.JsonException) { _mbMsg = "⚠ " + ex.Message; }
+            or UnauthorizedAccessException or System.Text.Json.JsonException) { _mbMsg = "" + ex.Message; }
         _mbBusy = false; Show(MB);
     }
 
@@ -71,7 +71,7 @@ public partial class MainWindow
         var f = await MediaLib.Preview(h);
         if (Audio() is not { } a) return "Zum Vorhören braucht Trendo den freien Player mpv – unter Medien › Musik „Player einrichten“.";
         a.Load(f); MediaListening = f;
-        return $"▶ „{h.Title}“ ({h.Seconds:0.#} s)";
+        return $"„{h.Title}“ ({h.Seconds:0.#} s)";
     });
 
     public Task MediaGet(MediaHit h) => MediaGuard($"„{h.Title}“ wird geladen …", async () =>
@@ -79,7 +79,7 @@ public partial class MainWindow
         if (!MediaOnline) throw new InvalidOperationException("Offline – Laden geht erst mit Internet.");
         var item = await MediaLib.Download(h);
         _core.Audit.Append(Principal.LocalOwner.Name, "medien.download", $"{h.Provider}/{h.Id} ({h.License})");
-        return $"✓ „{item.Name}“ liegt in deiner Bibliothek – {(h.Free ? "frei nutzbar" : "bitte den Urheber nennen")} ({h.License}).";
+        return $"„{item.Name}“ liegt in deiner Bibliothek – {(h.Free ? "frei nutzbar" : "bitte den Urheber nennen")} ({h.License}).";
     });
 
     /// <summary>Freie Schriften suchen (Fontsource, wie Google Fonts).</summary>
@@ -97,7 +97,7 @@ public partial class MainWindow
         if (!MediaOnline) throw new InvalidOperationException("Offline – Laden geht erst mit Internet.");
         await Fonts.Download(f);
         _core.Audit.Append(Principal.LocalOwner.Name, "medien.schrift", $"{f.Id} ({f.License})");
-        return $"✓ Schrift „{f.Family}“ liegt unter Medien › Schriften ({f.License}, frei nutzbar).";
+        return $"Schrift „{f.Family}“ liegt unter Medien › Schriften ({f.License}, frei nutzbar).";
     });
 
     /// <summary>Geladenes Bild in der Bildbearbeitung bzw. Klang im Audio-Editor öffnen (wie Adobe Stock in Photoshop).</summary>
@@ -132,7 +132,7 @@ public partial class MainWindow
     private Control AssetView()
     {
         var tabs = new WrapPanel { Name = "mb-tabs" };
-        foreach (var (k, l) in new[] { ("bilder", "Bilder"), ("klaenge", "Klänge"), ("schriften", "Schriften"), ("symbole", "Symbole"), ("3d", "3D & Texturen"), ("merklisten", "☆ Merklisten"), ("bibliothek", "Meine Bibliothek") })
+        foreach (var (k, l) in new[] { ("bilder", "Bilder"), ("klaenge", "Klänge"), ("schriften", "Schriften"), ("symbole", "Symbole"), ("3d", "3D & Texturen"), ("merklisten", "Merklisten"), ("bibliothek", "Meine Bibliothek") })
         {
             var b = new Button { Name = "mb-tab-" + k, Content = l, Padding = new Thickness(14, 5), Margin = new Thickness(0, 0, 6, 0), CornerRadius = new CornerRadius(14), Foreground = Text,
                 Background = MediaTab == k ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(1) };
@@ -229,8 +229,8 @@ public partial class MainWindow
             var acts = new WrapPanel();
             if (sound)
             {
-                acts.Children.Add(Act("mb-listen", "▶ Vorhören", () => _ = MediaListen(h), true)); acts.Children.Add(new Border { Width = 6 });
-                acts.Children.Add(Act("mb-stop", "■ Stopp", () => { _audio?.Stop(); MediaListening = null; _mbMsg = ""; Show(MB); })); acts.Children.Add(new Border { Width = 6 });
+                acts.Children.Add(Act("mb-listen", "Vorhören", () => _ = MediaListen(h), true)); acts.Children.Add(new Border { Width = 6 });
+                acts.Children.Add(Act("mb-stop", "Stopp", () => { _audio?.Stop(); MediaListening = null; _mbMsg = ""; Show(MB); })); acts.Children.Add(new Border { Width = 6 });
             }
             var get = Act("mb-get", "In die Bibliothek", () => _ = MediaGet(h), !sound); get.IsEnabled = !_mbBusy;
             acts.Children.Add(get); acts.Children.Add(new Border { Width = 6 });

@@ -68,7 +68,7 @@ public partial class MainWindow
     }
 
     /// <summary>T-0630: sichtbare Zeile, welche Engine und Werkzeuge das Team gewählt hat.</summary>
-    TextBlock GameToolLine(ProgramDocument d) => new() { Name = "game-tool-choice", Text = "🧭 " + GameTools.Line(GameTools.Decide(d.Data, GameToolsHere())), FontSize = 12.5, Foreground = Muted, TextWrapping = TextWrapping.Wrap };
+    TextBlock GameToolLine(ProgramDocument d) => new() { Name = "game-tool-choice", Text = "" + GameTools.Line(GameTools.Decide(d.Data, GameToolsHere())), FontSize = 12.5, Foreground = Muted, TextWrapping = TextWrapping.Wrap };
 
     public void GameCouncilSet(string mode) { if (GameExperts.Modes.Any(m => m.Id == mode)) { _gpMode = mode; Show(GK); } }
 

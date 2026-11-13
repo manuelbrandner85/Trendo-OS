@@ -90,7 +90,7 @@ public partial class MainWindow
         if (EditGenLastClip is { } c && File.Exists(c))
         {
             var v = GenVideo.VerifyProvenance(c);
-            sp.Children.Add(P((v is null ? "✓ Nachweis passt: " : "⚠ " + v + " ") + Path.GetFileName(GenVideo.ProvenancePath(c)), v is null ? Text : Brush.Parse("#FACC15"), 11));
+            sp.Children.Add(P((v is null ? "Nachweis passt: " : "" + v + " ") + Path.GetFileName(GenVideo.ProvenancePath(c)), v is null ? Text : Brush.Parse("#FACC15"), 11));
         }
         sp.Children.Add(P($"{m.Name} · {m.License} · gleicher Zufallswert und gleiche Beschreibung ergeben denselben Clip. Jeder Clip ist als KI-erzeugt gekennzeichnet.", Muted, 10.5));
         return sp;

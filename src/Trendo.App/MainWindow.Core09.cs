@@ -24,7 +24,7 @@ public partial class MainWindow
 
     private void InitCore09() => RegisterTab(FachTabs, "roboter", "Roboter-Werkstatt", "CORE-09", RobotView, "roboter", "robotik", "roboterarm", "kamera", "bilderkennung", "vision", "servo", "kinematik", "greifer", "pick and place");
 
-    void RobRun(Action a) { try { a(); } catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or FormatException or UnauthorizedAccessException or InvalidDataException) { _robMsg = "⚠ " + ex.Message; } Show("roboter"); }
+    void RobRun(Action a) { try { a(); } catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or FormatException or UnauthorizedAccessException or InvalidDataException) { _robMsg = "" + ex.Message; } Show("roboter"); }
 
     List<(double X, double Y, double Z)> RobPoints() => Bench.Points.Split('|', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries)).Where(p => p.Length == 3)
         .Select(p => (Fach.Num(p[0], "x"), Fach.Num(p[1], "y"), Fach.Num(p[2], "z"))).ToList();
@@ -85,7 +85,7 @@ public partial class MainWindow
         var arm = new ArmConfig();
         (double X, double Y, double Z)? target = null; Joints j = Bench.Drive.Pose ?? new(0, 90, -90);
         try { var t = (Fach.Num(Bench.X, "x"), Fach.Num(Bench.Y, "y"), Fach.Num(Bench.Z, "z")); target = t; j = RobotArm.Inverse(arm, t.Item1, t.Item2, t.Item3); } // geplante Stellung zum Ziel; die echte Stellung steht in der Steuerung
-        catch (Exception ex) when (ex is ArgumentException or FormatException) { if (_robMsg.Length == 0) _robMsg = "⚠ " + ex.Message; }
+        catch (Exception ex) when (ex is ArgumentException or FormatException) { if (_robMsg.Length == 0) _robMsg = "" + ex.Message; }
         List<(double X, double Y, double Z)> pts; try { pts = RobPoints(); } catch (FormatException) { pts = []; }
         var view = new ArmView { Name = "rob-arm-view", Arm = arm, J = j, Target = target, Points = pts, MinHeight = 260 };
         view.Picked = (x, y) => RobRun(() => { RobotArm.Inverse(arm, x, y, Fach.Num(Bench.Z, "z")); Bench.X = x.ToString("0"); Bench.Y = y.ToString("0"); _robMsg = $"Ziel {x:0} / {y:0} / {Bench.Z} mm – mit „Fahren“ anfahren oder als Wegpunkt übernehmen."; });
@@ -107,7 +107,7 @@ public partial class MainWindow
         var pick = new TextBox { Name = "rob-pick-from", Text = "150 0 20", Width = 110 }; var place = new TextBox { Name = "rob-pick-to", Text = "0 150 20", Width = 110 };
         var actions = new WrapPanel { Children = {
             Btn("rob-pt-add", "＋ Ziel als Wegpunkt", () => RobRun(() => { var l = RobPoints(); var p = (Fach.Num(Bench.X, "x"), Fach.Num(Bench.Y, "y"), Fach.Num(Bench.Z, "z")); RobotArm.Inverse(arm, p.Item1, p.Item2, p.Item3); l.Add(p); RobSetPoints(l); _robMsg = ""; })),
-            Btn("rob-sim", RobSimulating ? "■ Simulation stoppen" : "▶ Weg simulieren", () => RobRun(() => RobSimulate()), true),
+            Btn("rob-sim", RobSimulating ? "Simulation stoppen" : "Weg simulieren", () => RobRun(() => RobSimulate()), true),
             Btn("rob-csv", "Programm (CSV)", () => RobRun(() => { var p = RobotArm.Program(arm, Bench.Points.Replace('|', '\n')); var f = System.IO.Path.Combine(WorkFolder("Roboter"), "programm.csv"); File.WriteAllText(f, RobotArm.Csv(p)); _robMsg = $"Gesamt {Fach.F(p.Sum(s => s.Seconds), 2)} s – gespeichert: {f}"; NotifyFileResult(_robMsg); })),
             new TextBlock { Text = "Pick & Place von", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 4, 4) }, pick,
             new TextBlock { Text = "nach", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 4, 4) }, place,

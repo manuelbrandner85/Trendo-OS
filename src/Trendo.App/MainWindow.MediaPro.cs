@@ -39,7 +39,7 @@ public partial class MainWindow
         var added = Collections.Add(list, h);
         _mbList = list.Trim();
         _core.Audit.Append(Principal.LocalOwner.Name, "medien.merken", $"{_mbList}: {h.Provider}/{h.Id}");
-        _mbMsg = added ? $"☆ „{h.Title}“ in „{_mbList}“ gemerkt ({h.License})." : $"„{h.Title}“ steht schon in „{_mbList}“.";
+        _mbMsg = added ? $"„{h.Title}“ in „{_mbList}“ gemerkt ({h.License})." : $"„{h.Title}“ steht schon in „{_mbList}“.";
     }
 
     /// <summary>Alle Einträge einer Merkliste in die Bibliothek laden; Namensnennungen als Datei daneben.</summary>
@@ -53,7 +53,7 @@ public partial class MainWindow
         var credits = Path.Combine(AssetFolder, "Medien", $"Namensnennungen – {string.Concat(list.Split(Path.GetInvalidFileNameChars()))}.txt");
         await File.WriteAllTextAsync(credits, Collections.Credits(list));
         _core.Audit.Append(Principal.LocalOwner.Name, "medien.merkliste.laden", $"{list}: {n}");
-        return $"✓ {n} Einträge aus „{list}“ in der Bibliothek" + (failed > 0 ? $", {failed} gingen nicht" : "") + $" – Namensnennungen in „{Path.GetFileName(credits)}“.";
+        return $"{n} Einträge aus „{list}“ in der Bibliothek" + (failed > 0 ? $", {failed} gingen nicht" : "") + $" – Namensnennungen in „{Path.GetFileName(credits)}“.";
     });
 
     /// <summary>Preview-Teil „Ähnliche“ und „Merken“ unter dem gewählten Treffer.</summary>
@@ -67,7 +67,7 @@ public partial class MainWindow
         var name = new TextBox { Name = "mb-collect-new", Text = _mbNewList, PlaceholderText = "Name, z. B. Projekt Sommerfest", IsVisible = lists.Count == 0, MinWidth = 170 };
         pick.SelectionChanged += (_, _) => { name.IsVisible = pick.SelectedIndex >= lists.Count; if (pick.SelectedIndex >= 0 && pick.SelectedIndex < lists.Count) _mbList = lists[pick.SelectedIndex]; };
         name.TextChanged += (_, _) => _mbNewList = name.Text ?? "";
-        var add = Act("mb-collect", "☆ Merken", () => { Try(MB, () => MediaCollect(h, pick.SelectedIndex >= lists.Count || lists.Count == 0 ? name.Text ?? "" : lists[pick.SelectedIndex])); Show(MB); });
+        var add = Act("mb-collect", "Merken", () => { Try(MB, () => MediaCollect(h, pick.SelectedIndex >= lists.Count || lists.Count == 0 ? name.Text ?? "" : lists[pick.SelectedIndex])); Show(MB); });
         sp.Children.Add(new WrapPanel { Children = { pick, new Border { Width = 4 }, add } });
         sp.Children.Add(name);
         return sp;
@@ -77,7 +77,7 @@ public partial class MainWindow
     {
         var all = Collections.All();
         var sp = new StackPanel { Name = "mb-lists", Spacing = 6 };
-        if (all.Count == 0) { sp.Children.Add(P("Noch keine Merkliste. Bei einem Bild oder Klang „☆ Merken“ antippen – z. B. eine Liste je Projekt. Lizenz und Namensnennung bleiben immer dabei.", Muted, 12)); return Card(sp); }
+        if (all.Count == 0) { sp.Children.Add(P("Noch keine Merkliste. Bei einem Bild oder Klang „Merken“ antippen – z. B. eine Liste je Projekt. Lizenz und Namensnennung bleiben immer dabei.", Muted, 12)); return Card(sp); }
         if (!all.Any(c => c.Name == _mbListSel)) _mbListSel = all[0].Name;
         var tabs = new WrapPanel { Name = "mb-list-tabs" };
         foreach (var c in all)

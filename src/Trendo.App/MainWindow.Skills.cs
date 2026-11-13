@@ -107,7 +107,7 @@ public partial class MainWindow
             {
                 var saved = Skills.SaveOwn(s?.Id, name.Text ?? "", desc.Text ?? "", (studios.Text ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
                     body.Text ?? "", (check.Text ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
-                _skillMsg = $"✓ „{saved.Name}“ gespeichert (Version {Prompts.Get(saved.Id)?.Version})."; _skillSel = saved.Id; _skillEdit = false;
+                _skillMsg = $"„{saved.Name}“ gespeichert (Version {Prompts.Get(saved.Id)?.Version})."; _skillSel = saved.Id; _skillEdit = false;
             }
             catch (ArgumentException e) { _skillMsg = e.Message; }
             Show("ki-skills");
@@ -144,7 +144,7 @@ public partial class MainWindow
             try { license = FirstLicenseLine(await GitHubText(SourceApps.RawUrl(repo, (dir.Length > 0 ? dir + "/" : "") + "LICENSE.txt"), CancellationToken.None)); }
             catch (Exception e) when (e is HttpRequestException or InvalidOperationException) { license = "siehe Projekt " + repo; }
             var s = Skills.Import(md, $"https://github.com/{repo}/blob/main/{path}", license);
-            _skillMsg = $"✓ „{s.Name}“ übernommen · Lizenz: {s.License}. Er gilt für: {(s.Studios.Contains("*") ? "alle Programme – unter „Bearbeiten“ nicht änderbar; als eigenen Skill kopieren, um ihn zuzuordnen" : string.Join(", ", s.Studios))}.";
+            _skillMsg = $"„{s.Name}“ übernommen · Lizenz: {s.License}. Er gilt für: {(s.Studios.Contains("*") ? "alle Programme – unter „Bearbeiten“ nicht änderbar; als eigenen Skill kopieren, um ihn zuzuordnen" : string.Join(", ", s.Studios))}.";
         }
         catch (Exception e) when (e is not OutOfMemoryException) { _skillMsg = "Übernehmen hat nicht geklappt: " + (e is InvalidDataException ? e.Message : GitHubWhy(e)); }
         Show("ki-skills");

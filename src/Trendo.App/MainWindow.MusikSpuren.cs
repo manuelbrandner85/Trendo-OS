@@ -44,7 +44,7 @@ public partial class MainWindow
                     made.Add(Songs.Add(new MusicSong { Title = $"{s.Title} – {title}", Style = s.Style, Lyrics = kind == "gesang" ? s.Lyrics : "[Instrumental]", Language = s.Language,
                         Seconds = s.Seconds, Bpm = s.Bpm, Key = s.Key, TimeSignature = s.TimeSignature, File = Path.Combine(dir, file), Kind = kind, ParentId = s.Id }));
                 _msSel = made[0].Id;
-                _msMsg = "✓ Getrennt: Begleitung und Gesang sind jetzt eigene Lieder, Schlagzeug, Bass und Rest liegen im Spuren-Ordner – unten im Spuren-Mischer einzeln anhören.";
+                _msMsg = "Getrennt: Begleitung und Gesang sind jetzt eigene Lieder, Schlagzeug, Bass und Rest liegen im Spuren-Ordner – unten im Spuren-Mischer einzeln anhören.";
                 await Task.Run(() => MsMeasureStems(s, dir)); // V7: Qualität messen (im Hintergrund)
                 _core.Audit.Append(Principal.LocalOwner.Name, "musik.spuren", Path.GetFileName(s.File));
             }
@@ -74,7 +74,7 @@ public partial class MainWindow
             sp.Children.Add(P("Gesang, Schlagzeug, Bass und Rest einzeln – z. B. die Begleitung zum Mitsingen. Braucht Demucs (frei, MIT, einmalig ca. 3 GB mit PyTorch).", Muted, 11));
             sp.Children.Add(Act("ms-stems-setup", "Spuren trennen einrichten", async () =>
             {
-                try { await KiPyInstall(StemsModel, KiPyApps.For(KiRuntime.Spuren)!); _msMsg = "✓ Spuren trennen ist eingerichtet."; }
+                try { await KiPyInstall(StemsModel, KiPyApps.For(KiRuntime.Spuren)!); _msMsg = "Spuren trennen ist eingerichtet."; }
                 catch (Exception e) when (e is InvalidOperationException or IOException or HttpRequestException or OperationCanceledException) { _msMsg = "Einrichten ging nicht: " + e.Message; }
                 Show(MS);
             }));
@@ -82,7 +82,7 @@ public partial class MainWindow
         }
         sp.Children.Add(P("Begleitung ohne Gesang und Gesang allein werden eigene Lieder, Schlagzeug, Bass und Rest kommen in den Spuren-Ordner." +
             (s.Kind == "eigen" ? " Fremde Lieder nur privat nutzen." : ""), Muted, 11));
-        var go = Act("ms-stems", _msSplitting ? "Wird getrennt …" : MsStemDir(s) is null ? "🎚 Spuren trennen" : "🎚 Neu trennen", () => _ = MsSplit(s.Id));
+        var go = Act("ms-stems", _msSplitting ? "Wird getrennt …" : MsStemDir(s) is null ? "Spuren trennen" : "Neu trennen", () => _ = MsSplit(s.Id));
         go.IsEnabled = !_msSplitting;
         sp.Children.Add(MsStemModelBox()); // V7
         sp.Children.Add(go);

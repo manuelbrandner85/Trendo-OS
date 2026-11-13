@@ -35,10 +35,10 @@ public class Sewing_Ui
             Assert.Equal(["teagan"], seen!.Skip(1).Take(1)); Assert.Equal("10", seen[4]);
             Assert.Equal(d.Flag("women") ? "frau" : "mann", seen[3]);
             Assert.Contains("\"neck\":390", measures); Assert.Contains("\"chest\":" + (d.Number("chest") * 10).ToString("0.#", System.Globalization.CultureInfo.InvariantCulture), measures);
-            Assert.StartsWith("✓ T-Shirt: Schnittbogen 80 × 90 cm – aus Standardgröße ergänzt: Oberarmumfang, Schulterneigung (Grad).", w.SewingMessage);
+            Assert.StartsWith("T-Shirt: Schnittbogen 80 × 90 cm – aus Standardgröße ergänzt: Oberarmumfang, Schulterneigung (Grad).", w.SewingMessage);
             Assert.Contains("1:1 drucken", w.SewingMessage);
             w.Show(SK); Settle(); Assert.NotNull(w.Find<Button>("mode-sew-open"));
-            Assert.Null(w.SewingDraft(d, "gibtsnicht")); Assert.Equal("⚠ Unbekannter Schnitt.", w.SewingMessage);
+            Assert.Null(w.SewingDraft(d, "gibtsnicht")); Assert.Equal("Unbekannter Schnitt.", w.SewingMessage);
         }
         finally { MainWindow.SewingDirOverride = null; MainWindow.SewingRunOverride = null; w.Close(); }
     }

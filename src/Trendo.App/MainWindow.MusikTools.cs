@@ -44,7 +44,7 @@ public partial class MainWindow
         if (a is not null)
         {
             if (songId is not null) Songs.Update(songId, s => s.Analysis = a);
-            _msMsg = $"✓ {a.KeyDe} · {a.Bpm:0} BPM · {a.Meter}" + (a.Range is { } rg ? $" · Tonumfang {rg.Low}–{rg.High} ({rg.Voice})" : "");
+            _msMsg = $"{a.KeyDe} · {a.Bpm:0} BPM · {a.Meter}" + (a.Range is { } rg ? $" · Tonumfang {rg.Low}–{rg.High} ({rg.Voice})" : "");
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.analyse", Path.GetFileName(file));
         }
         if (CurrentView == MS) Show(MS);
@@ -70,10 +70,10 @@ public partial class MainWindow
                 _msMsg = $"Tonart, Tempo und Takt von „{s.Title}“ übernommen – links im Profi-Modus."; Show(MS);
             }));
         }
-        else if (AnalyseReady) sp.Children.Add(Act("ms-analyse", "🔍 Analysieren (Tonart, Tempo, Akkorde, Tonumfang)", () => _ = MsAnalyse(s.File, s.Id)));
+        else if (AnalyseReady) sp.Children.Add(Act("ms-analyse", "Analysieren (Tonart, Tempo, Akkorde, Tonumfang)", () => _ = MsAnalyse(s.File, s.Id)));
         else sp.Children.Add(Act("ms-analyse-setup", "Song-Analyse einrichten (einmalig, ca. 300 MB)", async () =>
         {
-            try { await KiPyInstall(AnalyseModel, KiPyApps.For(KiRuntime.MusikAnalyse)!); _msMsg = "✓ Song-Analyse ist eingerichtet."; }
+            try { await KiPyInstall(AnalyseModel, KiPyApps.For(KiRuntime.MusikAnalyse)!); _msMsg = "Song-Analyse ist eingerichtet."; }
             catch (Exception e) when (e is InvalidOperationException or IOException or HttpRequestException or OperationCanceledException) { _msMsg = "Einrichten ging nicht: " + e.Message; }
             Show(MS);
         }));
@@ -130,11 +130,11 @@ public partial class MainWindow
         }
         else File.Copy(file, target);
         var s = Songs.Add(new MusicSong { Title = Path.GetFileNameWithoutExtension(file), Style = "", File = target, Kind = "eigen", Seconds = 0 });
-        _msSel = s.Id; _msMsg = "✓ Aufnahme hinzugefügt – jetzt analysieren oder rechts „In anderem Stil“ ein Cover machen (nur privat).";
+        _msSel = s.Id; _msMsg = "Aufnahme hinzugefügt – jetzt analysieren oder rechts „In anderem Stil“ ein Cover machen (nur privat).";
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.import", Path.GetFileName(target));
         if (AnalyseReady) _ = MsAnalyse(target, s.Id);
         var doSplit = split ?? (picked && MsAutoSplit);
-        if (doSplit && StemsReady) { _msMsg = "✓ Aufnahme hinzugefügt – Gesang und Begleitung werden gleich getrennt …"; _ = MsSplit(s.Id); } // V1: gleich trennen
+        if (doSplit && StemsReady) { _msMsg = "Aufnahme hinzugefügt – Gesang und Begleitung werden gleich getrennt …"; _ = MsSplit(s.Id); } // V1: gleich trennen
         else if (doSplit) _msMsg += " Zum Trennen von Stimme und Musik rechts „Spuren trennen einrichten“ (einmalig).";
         Show(MS);
         return s;
@@ -151,7 +151,7 @@ public partial class MainWindow
         { try { _msLyrics = SongTools.RepeatChorus(_msLyrics); _msMsg = ""; } catch (ArgumentException e) { _msMsg = e.Message; } Show(MS); }));
         row.Children.Add(B("ms-lyrics-syllables", _msShowSyllables ? "Silben aus" : "Silben zählen", "Silben je Zeile – gleich lange Zeilen singen sich besser", () => { _msShowSyllables = !_msShowSyllables; Show(MS); }));
         row.Children.Add(B("ms-lyrics-floskeln", "KI-Floskeln prüfen", "Sucht abgegriffene KI-Phrasen wie „Neonlicht“ oder „Herz in Flammen“", MsCheckFloskeln));
-        row.Children.Add(B("ms-lyrics-catchy", "✳ Refrain eingängiger", "Die KI macht den Refrain einprägsamer – der Rest bleibt", () => _ = MsCatchyChorus()));
+        row.Children.Add(B("ms-lyrics-catchy", "Refrain eingängiger", "Die KI macht den Refrain einprägsamer – der Rest bleibt", () => _ = MsCatchyChorus()));
         sp.Children.Add(row);
         if (_msShowSyllables)
         {
@@ -190,7 +190,7 @@ public partial class MainWindow
         try
         {
             var t = MusicLyricsOverride is { } o ? await o(prompt) : await Intel.AskAsync(new KiRequest(prompt, PreferredModel: KiModelName, UseKnowledge: false, AllowRemote: true)) is { Ok: true } a ? a.Text : null;
-            if (t is { Length: > 20 } && t.Contains('[')) { _msLyrics = t.Trim().Trim('`').Trim(); _msMsg = "✓ Refrain überarbeitet – lies ihn gegen."; }
+            if (t is { Length: > 20 } && t.Contains('[')) { _msLyrics = t.Trim().Trim('`').Trim(); _msMsg = "Refrain überarbeitet – lies ihn gegen."; }
             else _msMsg = "Dafür braucht es eine Text-KI (unter „KI einsetzen“ einrichten).";
         }
         catch (Exception e) when (e is InvalidOperationException or HttpRequestException or TaskCanceledException) { _msMsg = "Ging nicht: " + e.Message; }

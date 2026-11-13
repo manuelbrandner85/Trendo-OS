@@ -476,7 +476,7 @@ public partial class MainWindow
             tiles.Children.Add(b);
         }
         sp.Children.Add(tiles);
-        var open = new Button { Name = "tabelle-open", Content = "📂  Datei öffnen … (Excel, LibreOffice, CSV)", Padding = new Thickness(14, 8) };
+        var open = new Button { Name = "tabelle-open", Content = "Datei öffnen … (Excel, LibreOffice, CSV)", Padding = new Thickness(14, 8) };
         open.Click += (_, _) => _ = SheetOpenClick();
         sp.Children.Add(open);
         var recent = SheetRecent();
@@ -534,7 +534,7 @@ public partial class MainWindow
     private Control SheetRibbon()
     {
         var tabRow = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2, Margin = new Thickness(0, 4, 0, 4) };
-        var file = new Button { Name = "tabelle-file", Content = "Datei ▾", Focusable = false, Padding = new Thickness(10, 4), Background = Accent };
+        var file = new Button { Name = "tabelle-file", Content = "Datei", Focusable = false, Padding = new Thickness(10, 4), Background = Accent };
         var fm = new ContextMenu();
         MenuItem Mi(string name, string header, Action a) { var m = new MenuItem { Name = name, Header = header }; m.Click += (_, _) => a(); return m; }
         fm.Items.Add(Mi("tabelle-m-start", "Startseite (Neu, Vorlagen, Zuletzt)", () => { SheetShowStart(); Show("tabelle"); }));
@@ -784,9 +784,9 @@ public partial class MainWindow
             cell.IsFormula ? (v.IsError ? $"Formel mit Fehler {v.Text}: {SheetErrorHelp(v.Text)}" : $"Formel, Ergebnis: {SheetFormat.Display(v, cell.Format)}") :
             v.IsNumber ? $"Zahl ({cell.Format})" : v.Kind == CellValue.K.Bool ? "Wahrheitswert" : "Text";
         sp.Children.Add(new TextBlock { Name = "tabelle-side-what", Text = what, Foreground = v.IsError ? Brush.Parse("#F87171") : Muted, FontSize = 12.5, TextWrapping = TextWrapping.Wrap });
-        if (cell?.Note is { } noteText) sp.Children.Add(new Border { Name = "tabelle-side-note", Background = Brush.Parse("#FFFFF7D6"), CornerRadius = new CornerRadius(6), Padding = new Thickness(8, 6), Child = new TextBlock { Text = "🗒 " + noteText, Foreground = Brushes.Black, FontSize = 12.5, TextWrapping = TextWrapping.Wrap } });
+        if (cell?.Note is { } noteText) sp.Children.Add(new Border { Name = "tabelle-side-note", Background = Brush.Parse("#FFFFF7D6"), CornerRadius = new CornerRadius(6), Padding = new Thickness(8, 6), Child = new TextBlock { Text = "" + noteText, Foreground = Brushes.Black, FontSize = 12.5, TextWrapping = TextWrapping.Wrap } });
         if (SheetExtras.ValidationFor(ActiveSheet, r, c) is { } vrule) sp.Children.Add(new TextBlock { Text = "Erlaubt: " + string.Join(", ", vrule.Items), Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap });
-        if (ActiveSheet.Protected) sp.Children.Add(new TextBlock { Text = cell?.Unlocked == true ? "🔓 Freigegeben – änderbar trotz Blattschutz." : "🔒 Blatt geschützt.", Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap });
+        if (ActiveSheet.Protected) sp.Children.Add(new TextBlock { Text = cell?.Unlocked == true ? "Freigegeben – änderbar trotz Blattschutz." : "Blatt geschützt.", Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap });
         sp.Children.Add(new TextBlock { Text = "Funktion einfügen", Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 8, 0, 0) });
         var q = new TextBox { Name = "tabelle-fn-search", Text = _shFnQuery, PlaceholderText = "z. B. summe, wenn, datum" };
         var list = new StackPanel { Name = "tabelle-fn-list", Spacing = 2 };

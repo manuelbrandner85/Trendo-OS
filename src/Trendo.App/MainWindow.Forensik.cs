@@ -36,7 +36,7 @@ public partial class MainWindow
             var f = file.Text?.Trim().Trim('"') ?? ""; var e = exp.Text ?? "";
             if (!File.Exists(f)) { _hashOut = "Diese Datei gibt es nicht."; Show("forensik"); return; }
             var h = await Task.Run(() => ForensicsLab.Sha256(f));
-            _hashOut = e.Trim() == "" ? $"SHA-256: {h}" : string.Equals(h, e.Trim().Replace(" ", ""), StringComparison.OrdinalIgnoreCase) ? $"✓ Stimmt überein. Die Datei ist unverändert.\n{h}" : $"⚠ Stimmt NICHT überein. Datei nicht öffnen und neu laden.\n{h}";
+            _hashOut = e.Trim() == "" ? $"SHA-256: {h}" : string.Equals(h, e.Trim().Replace(" ", ""), StringComparison.OrdinalIgnoreCase) ? $"Stimmt überein. Die Datei ist unverändert.\n{h}" : $"Stimmt NICHT überein. Datei nicht öffnen und neu laden.\n{h}";
             Show("forensik");
         };
         // Y4 (07.11.2026): drei Werkzeug-Karten statt Überschriften-Liste
@@ -69,7 +69,7 @@ public partial class MainWindow
             del.Click += (_, _) => { Lab.Delete(c.Id); _forMsg = "Fall gelöscht."; Show("forensik"); };
             sp.Children.Add(WCard(new StackPanel { Spacing = 3, Children = {
                 new TextBlock { Text = $"{c.Title} · {c.Items.Count} Datei(en)", Foreground = Text, FontWeight = FontWeight.SemiBold },
-                P(st == CaseState.LaeuftBaldAb ? $"⚠ Löscht sich bald: {c.Expires:dd.MM. HH:mm} Uhr. Bericht jetzt sichern, falls nötig." : $"Löscht sich am {c.Expires:dd.MM. HH:mm} Uhr.", st == CaseState.LaeuftBaldAb ? Brush.Parse("#FACC15") : null, 11),
+                P(st == CaseState.LaeuftBaldAb ? $"Löscht sich bald: {c.Expires:dd.MM. HH:mm} Uhr. Bericht jetzt sichern, falls nötig." : $"Löscht sich am {c.Expires:dd.MM. HH:mm} Uhr.", st == CaseState.LaeuftBaldAb ? Brush.Parse("#FACC15") : null, 11),
                 new WrapPanel { Children = { MSp(add), MSp(addB), MSp(ver), MSp(del) } } } }));
         }
         return SysPage("Sicherheits-Werkzeuge", sp);

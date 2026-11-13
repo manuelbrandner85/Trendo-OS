@@ -33,7 +33,7 @@ public class GitHubPlus_Ui
         return ms.ToArray();
     }
 
-    [AvaloniaFact(DisplayName = "T-0313: Trefferliste zeigt „✓ Windows-Programm · Version · Größe“ bzw. „Nur Quellcode“; Installieren nur, wo es ein Windows-Programm gibt")]
+    [AvaloniaFact(DisplayName = "T-0313: Trefferliste zeigt „Windows-Programm · Version · Größe“ bzw. „Nur Quellcode“; Installieren nur, wo es ein Windows-Programm gibt")]
     public async Task Availability_in_hits()
     {
         var (w, _, _) = Ui.Open();
@@ -50,10 +50,10 @@ public class GitHubPlus_Ui
             w.OssSearchOverride = _ => Task.FromResult<IReadOnlyList<OssRepo>>([Repo("avail-win/a"), Repo("avail-src/b"), Repo("avail-none/c")]);
             w.Show("oss"); await w.OssSearch("werkzeug");
             for (var i = 0; i < 100 && w.OssAvailability.Count < 3; i++) { await Task.Delay(20); Avalonia.Threading.Dispatcher.UIThread.RunJobs(); }
-            Assert.Equal("✓ Windows-Programm · v3.1 · 45 MB", w.OssAvailability["avail-win/a"].Text);
+            Assert.Equal("Windows-Programm · v3.1 · 45 MB", w.OssAvailability["avail-win/a"].Text);
             Assert.StartsWith("Nur Quellcode", w.OssAvailability["avail-src/b"].Text); Assert.StartsWith("Noch keine Veröffentlichung", w.OssAvailability["avail-none/c"].Text);
             w.Show("oss"); Avalonia.Threading.Dispatcher.UIThread.RunJobs();
-            Assert.Equal("✓ Windows-Programm · v3.1 · 45 MB", ((TextBlock)w.Find<Border>("oss-avail-0").Child!).Text);
+            Assert.Equal("Windows-Programm · v3.1 · 45 MB", ((TextBlock)w.Find<Border>("oss-avail-0").Child!).Text);
             Assert.True(w.Find<Button>("oss-install-0").IsEnabled); Assert.Null(w.TryFind<Button>("oss-install-1")); Assert.Null(w.TryFind<Button>("oss-install-2")); // nur Quellcode: statt ausgegrautem Knopf der Weg über den Quellcode (T-0314)
         }
         finally { MainWindow.GitHubHandlerOverride = null; }

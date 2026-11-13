@@ -134,7 +134,7 @@ Dann bleibt mir nur noch eins.
                     case FountainKind.Parenthetical: t.Margin = new Thickness(130, 0, 90, 0); break;
                     case FountainKind.Dialogue: t.Margin = new Thickness(90, 0, 60, 0); break;
                     case FountainKind.Transition: t.HorizontalAlignment = HorizontalAlignment.Right; break;
-                    case FountainKind.Shot: t.Foreground = Brush.Parse("#8A6D1F"); t.FontSize = 11; t.Text = "▸ " + l.Text; break;
+                    case FountainKind.Shot: t.Foreground = Brush.Parse("#8A6D1F"); t.FontSize = 11; t.Text = "" + l.Text; break;
                     case FountainKind.Section or FountainKind.Synopsis: t.Foreground = Brush.Parse("#7B8794"); t.FontStyle = FontStyle.Italic; break;
                 }
                 preview.Children.Add(t);
@@ -189,7 +189,7 @@ Dann bleibt mir nur noch eins.
         var b = FilmOf(d);
         var sp = new StackPanel { Name = "film-shots", Spacing = 6, Margin = new Thickness(4, 0, 10, 4) };
         sp.Children.Add(P($"{b.ShotCount} Einstellungen. Eine KI-Einstellung ist höchstens etwa 5 Sekunden lang. Längere Einstellungen werden aus mehreren Clips zusammengesetzt.", Muted, 12));
-        foreach (var p in b.Problems) sp.Children.Add(P("⚠ " + p, Brush.Parse("#F5A524"), 12));
+        foreach (var p in b.Problems) sp.Children.Add(P("" + p, Brush.Parse("#F5A524"), 12));
         foreach (var s in b.Scenes)
         {
             sp.Children.Add(H($"{s.Code} · {s.Place}. {s.Location}{(s.Time.Length > 0 ? " – " + s.Time : "")}", 13));

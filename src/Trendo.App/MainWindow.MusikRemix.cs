@@ -18,20 +18,20 @@ public partial class MainWindow
     {
         void Tab(string t) { _msSel = s.Id; _msDetailTab = t; Show(MS); }
         return [
-            ("extend", "↦ Verlängern", () => Tab("bearbeiten")),
-            ("cover", "♫ Cover in anderem Stil", () => Tab("bearbeiten")),
-            ("replace", "✎ Abschnitt ersetzen", () => Tab("bearbeiten")),
-            ("crop", "✂ Zuschneiden oder Abschnitt entfernen", () => Tab("bearbeiten")),
-            ("remaster", "✨ Remaster (neu, nah am Original)", () => _ = MsRemaster(s.Id)),
-            ("reuse", "↺ Beschreibung wiederverwenden", () => MsReusePrompt(s.Id)),
-            ("mashup", "⇄ Mashup mit einem anderen Lied", () => Tab("bearbeiten")),
-            ("sample", "◧ Als Sample verwenden", () => Tab("bearbeiten")),
-            ("stems", "🎚 Spuren holen", () => Tab("spuren")),
-            ("midi", "🎹 MIDI holen", () => _ = MsMidi(s.Id)),
-            ("persona", "👤 Persona aus diesem Lied", () => Tab("bearbeiten")),
-            ("inspo", "🎧 Als Klangvorbild für ein neues Lied", () => { _msRefFile = s.File; _msMsg = $"Klangvorbild: „{s.Title}“ – jetzt beschreiben und „Erstellen“."; MsPage("erstellen"); }),
-            ("clip", "📱 Kurzvideo 9:16 (Reels, Shorts)", () => _ = MsShortVideo(s.Id)),
-            ("speak", "💬 Teil per Sprache ändern (Produzent)", () => Tab("profi")),
+            ("extend", "Verlängern", () => Tab("bearbeiten")),
+            ("cover", "Cover in anderem Stil", () => Tab("bearbeiten")),
+            ("replace", "Abschnitt ersetzen", () => Tab("bearbeiten")),
+            ("crop", "Zuschneiden oder Abschnitt entfernen", () => Tab("bearbeiten")),
+            ("remaster", "Remaster (neu, nah am Original)", () => _ = MsRemaster(s.Id)),
+            ("reuse", "Beschreibung wiederverwenden", () => MsReusePrompt(s.Id)),
+            ("mashup", "Mashup mit einem anderen Lied", () => Tab("bearbeiten")),
+            ("sample", "Als Sample verwenden", () => Tab("bearbeiten")),
+            ("stems", "Spuren holen", () => Tab("spuren")),
+            ("midi", "MIDI holen", () => _ = MsMidi(s.Id)),
+            ("persona", "Persona aus diesem Lied", () => Tab("bearbeiten")),
+            ("inspo", "Als Klangvorbild für ein neues Lied", () => { _msRefFile = s.File; _msMsg = $"Klangvorbild: „{s.Title}“ – jetzt beschreiben und „Erstellen“."; MsPage("erstellen"); }),
+            ("clip", "Kurzvideo 9:16 (Reels, Shorts)", () => _ = MsShortVideo(s.Id)),
+            ("speak", "Teil per Sprache ändern (Produzent)", () => Tab("profi")),
         ];
     }
 
@@ -65,7 +65,7 @@ public partial class MainWindow
         var made = await MusicStudioCreate(new AceStepClient.Job(s.Style.Length > 0 ? s.Style : "same style", s.Lyrics, (int)Math.Round(s.Seconds), s.Language, 1, s.Bpm, s.Key, s.TimeSignature, Task: "cover", CoverStrength: 0.85), s.Title, s.Id);
         if (made.FirstOrDefault() is not { } m) return null;
         Songs.Update(m.Id, x => { x.Title = s.Title + " – Remaster"; x.Kind = "remaster"; });
-        _msMsg = $"✓ Remaster von „{s.Title}“ fertig – mit dem Original vergleichen (Reiter Lied → Fassungen).";
+        _msMsg = $"Remaster von „{s.Title}“ fertig – mit dem Original vergleichen (Reiter Lied → Fassungen).";
         Show(MS);
         return Songs.Get(m.Id);
     }
@@ -105,7 +105,7 @@ public partial class MainWindow
         var m = Songs.Add(new MusicSong { Title = s.Title + " – gekürzt", Style = s.Style, Lyrics = s.Lyrics, Language = s.Language, Seconds = Math.Round(len, 2), Bpm = s.Bpm, Key = s.Key,
             TimeSignature = s.TimeSignature, File = outFile, Kind = "gekuerzt", ParentId = s.Id, Mastered = s.Mastered, CoverFile = s.CoverFile });
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.gekuerzt", $"{s.Id} {(keep ? "behalten" : "entfernt")} {from:0.0}-{to:0.0}");
-        _msSel = m.Id; _msMsg = keep ? $"✓ Zugeschnitten auf {from:0.0}–{to:0.0} s ({SongTime(len)})." : $"✓ {from:0.0}–{to:0.0} s entfernt, weich übergeblendet ({SongTime(len)}).";
+        _msSel = m.Id; _msMsg = keep ? $"Zugeschnitten auf {from:0.0}–{to:0.0} s ({SongTime(len)})." : $"{from:0.0}–{to:0.0} s entfernt, weich übergeblendet ({SongTime(len)}).";
         Show(MS);
         return m;
     }
@@ -120,6 +120,6 @@ public partial class MainWindow
             P("Ohne neue KI: schneidet die Datei, mit weichem Übergang. Das Original bleibt erhalten.", Muted, 11.5),
             new WrapPanel { Children = { new TextBlock { Text = "von", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) }, from,
                 new TextBlock { Text = "bis", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 6, 0) }, to, new TextBlock { Text = "s", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0) } } },
-            new WrapPanel { Children = { Act("ms-crop-keep", "✂ Nur das behalten", () => _ = Run(true)), new Border { Width = 6 }, Act("ms-crop-remove", "Diesen Teil entfernen", () => _ = Run(false)) } } } };
+            new WrapPanel { Children = { Act("ms-crop-keep", "Nur das behalten", () => _ = Run(true)), new Border { Width = 6 }, Act("ms-crop-remove", "Diesen Teil entfernen", () => _ = Run(false)) } } } };
     }
 }

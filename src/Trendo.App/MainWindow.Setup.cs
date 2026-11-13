@@ -118,7 +118,7 @@ public sealed partial class MainWindow
                     row.Children.Add(b);
                 }
                 sp.Children.Add(row);
-                var photo = new Button { Name = "wiz-avatar-photo", Content = "📷 Eigenes Foto wählen …" };
+                var photo = new Button { Name = "wiz-avatar-photo", Content = "Eigenes Foto wählen …" };
                 photo.Click += async (_, _) => await PickAvatarPhoto();
                 var cam = new Button { Name = "wiz-avatar-camera", Content = "Mit der Kamera aufnehmen" };
                 ToolTip.SetTip(cam, "Öffnet die Windows-Kamera. Danach das Foto mit „Eigenes Foto wählen“ übernehmen (Ordner Bilder › Eigene Aufnahmen).");
@@ -144,7 +144,7 @@ public sealed partial class MainWindow
                 if (Lock.Enabled && !_wizChangeLock && _wizRecovery is null)
                 {
                     // Schon eingerichtet (z. B. nach einem Neustart mitten in der Einrichtung): nicht noch einmal fragen
-                    sp.Children.Add(P($"✓ Deine Anmeldung ist eingerichtet ({(Lock.Current == ProfileLock.Kind.Pin ? "PIN" : "Passwort")}).", Brush.Parse("#4ADE80"), 13));
+                    sp.Children.Add(P($"Deine Anmeldung ist eingerichtet ({(Lock.Current == ProfileLock.Kind.Pin ? "PIN" : "Passwort")}).", Brush.Parse("#4ADE80"), 13));
                     var redo = new Button { Name = "wiz-lock-change", Content = "Anders festlegen" };
                     redo.Click += (_, _) => { _wizChangeLock = true; Show("einrichtung"); };
                     sp.Children.Add(redo);
@@ -164,7 +164,7 @@ public sealed partial class MainWindow
                         var dir = _opt.Isolated ? _core.DataRoot : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
                         var f = Path.Combine(dir, "Wiederherstellungs-Code.txt");
                         File.WriteAllText(f, $"Wiederherstellungs-Code für deine Anmeldung\r\n\r\n{code}\r\n\r\nGut aufbewahren. Damit setzt du eine vergessene PIN bzw. ein vergessenes Passwort neu.\r\n");
-                        _wizMsg = "✓ Gespeichert: " + f; _wizRecoveryNoted = true; Show("einrichtung");
+                        _wizMsg = "Gespeichert: " + f; _wizRecoveryNoted = true; Show("einrichtung");
                     };
                     var noted = new CheckBox { Name = "wiz-recovery-noted", Content = "Ich habe den Code aufgeschrieben oder gespeichert", IsChecked = _wizRecoveryNoted, Foreground = Text };
                     noted.IsCheckedChanged += (_, _) => { _wizRecoveryNoted = noted.IsChecked == true; Show("einrichtung"); };
@@ -350,7 +350,7 @@ public sealed partial class MainWindow
                 add.Click += (_, _) =>
                 {
                     _wizPersonName = pname.Text ?? ""; _wizPersonChild = child.IsChecked == true;
-                    try { var p = persons.Add(_wizPersonName, "emoji:" + AvatarEmojis[persons.All().Count % AvatarEmojis.Length], _wizPersonChild, _core.Audit); _wizMsg = $"✓ {p.Name} ist angelegt. Beim Start von Trendo wählt jede Person sich selbst."; _wizPersonName = ""; _wizPersonChild = false; }
+                    try { var p = persons.Add(_wizPersonName, "emoji:" + AvatarEmojis[persons.All().Count % AvatarEmojis.Length], _wizPersonChild, _core.Audit); _wizMsg = $"{p.Name} ist angelegt. Beim Start von Trendo wählt jede Person sich selbst."; _wizPersonName = ""; _wizPersonChild = false; }
                     catch (ArgumentException e) { _wizMsg = e.Message; }
                     Show("einrichtung");
                 };
@@ -363,7 +363,7 @@ public sealed partial class MainWindow
                 FinishSetup();
                 sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 14, Children = { AvatarView(64), P($"Alles bereit{(string.IsNullOrEmpty(_settings.Name) ? "" : ", " + _settings.Name)}! Hier ist dein Systemcheck:", Text, 14) } });
                 sp.Children.Add(SystemCheckPanel());
-                var done = new Button { Name = "wiz-done", Content = "Los geht's", Background = Accent, Padding = new Thickness(16, 6) }; done.Click += (_, _) => { LeaveSetupFullscreen(); Show("start"); };
+                var done = new Button { Name = "wiz-done", Content = "Fertig", Background = Accent, Padding = new Thickness(16, 6) }; done.Click += (_, _) => { LeaveSetupFullscreen(); Show("start"); };
                 sp.Children.Add(done);
                 return Page("Ersteinrichtung", sp);
         }
@@ -396,7 +396,7 @@ public sealed partial class MainWindow
             SetupOverlayProgress(i, todo.Count, $"{todo[i].Name} wird eingerichtet …");
             await InstallOne(todo[i], refresh: false);
         }
-        SetupOverlayProgress(todo.Count, todo.Count, "Fertig ✓");
+        SetupOverlayProgress(todo.Count, todo.Count, "Fertig");
         if (_deps.HasModel(model)) KiModel.Select(_core.DataRoot, model, _core.Audit);
         ReloadStudios();
     }
@@ -477,7 +477,7 @@ public sealed partial class MainWindow
             {
                 _repairMsg = $"{c.Name}: wird repariert …"; Show(CurrentView);
                 bool ok; try { ok = InstallOverride is { } fake ? await fake(c) : await InstallOne(c, refresh: false); } catch (Exception ex) { ok = false; _depLog.Text = ex.Message; }
-                _repairMsg = ok ? $"{c.Name}: repariert ✓" : $"{c.Name}: hat nicht geklappt{(_core.Offline ? " – keine Internetverbindung" : "")}. {_depLog.Text}".Trim();
+                _repairMsg = ok ? $"{c.Name}: repariert" : $"{c.Name}: hat nicht geklappt{(_core.Offline ? " – keine Internetverbindung" : "")}. {_depLog.Text}".Trim();
                 ReloadStudios(); Show(CurrentView);
             };
             return b;

@@ -30,15 +30,15 @@ public partial class MainWindow
     /// <summary>Für Web &amp; Brille packen: neue Datei „…-web.glb“, das Original bleibt; danach gleich wieder geprüft, wenn der Validator da ist.</summary>
     public void XrPackWeb()
     {
-        if (GltfTransform is not { } t) { _gltfMsg = "⚠ glTF-Transform ist noch nicht eingerichtet."; Show("xr"); return; }
+        if (GltfTransform is not { } t) { _gltfMsg = "glTF-Transform ist noch nicht eingerichtet."; Show("xr"); return; }
         var output = Path.Combine(Path.GetDirectoryName(XrFile) ?? WorkFolder("Modell-Prüfer"), Path.GetFileNameWithoutExtension(XrFile) + "-web.glb");
         var (ok, msg) = GltfTools.Pack(t.Node, t.CliJs, XrFile, output, run: GltfRunOverride);
         _core.Audit.Append(Principal.LocalOwner.Name, "xr.gltf.packen", ok ? Path.GetFileName(output) : "fehler");
-        if (!ok) { _gltfMsg = "⚠ " + msg; Show("xr"); return; }
+        if (!ok) { _gltfMsg = "" + msg; Show("xr"); return; }
         var original = Path.GetFileName(XrFile); XrFile = output;
         var check = GltfValidator is { } v ? GltfTools.Validate(v, output, run: GltfRunOverride) : (null, "");
         _gltfReport = check.Report;
-        _gltfMsg = $"✓ Gepackt: {Path.GetFileName(output)} ({msg}) – {original} bleibt unverändert. Für Blender und Unreal das Original verwenden." + (check.Report is { } r ? " " + r.Text : "");
+        _gltfMsg = $"Gepackt: {Path.GetFileName(output)} ({msg}) – {original} bleibt unverändert. Für Blender und Unreal das Original verwenden." + (check.Report is { } r ? " " + r.Text : "");
         Show("xr");
     }
 
@@ -51,13 +51,13 @@ public partial class MainWindow
             if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner);
             _gltfMsg = "glTF-Validator wird eingerichtet (offizieller Download, ~2 MB, Prüfsumme wird geprüft) …"; Show("xr");
             var ok = !_opt.Isolated && await Task.Run(() => _deps.InstallAsync(Principal.LocalOwner, comp));
-            _gltfMsg = ok ? "✓ glTF-Validator ist eingerichtet." : _opt.Isolated ? "Testmodus: nichts installiert." : "⚠ glTF-Validator konnte nicht eingerichtet werden.";
+            _gltfMsg = ok ? "glTF-Validator ist eingerichtet." : _opt.Isolated ? "Testmodus: nichts installiert." : "glTF-Validator konnte nicht eingerichtet werden.";
         }
         else
         {
             var npm = Cli.Find("npm") ?? Cli.Find("npm.cmd");
             if (_opt.Isolated) _gltfMsg = "Testmodus: nichts installiert.";
-            else if (npm is null) _gltfMsg = "⚠ Node.js mit npm fehlt – zuerst unter Programme „Node.js“ einrichten.";
+            else if (npm is null) _gltfMsg = "Node.js mit npm fehlt – zuerst unter Programme „Node.js“ einrichten.";
             else
             {
                 _gltfMsg = "glTF-Transform wird aus der offiziellen npm-Quelle geladen (feste Fassung, ohne Installationsskripte) …"; Show("xr");
@@ -65,7 +65,7 @@ public partial class MainWindow
                 var r = await Task.Run(() => Cli.Run(npm, GltfTools.InstallArgs(GltfTransformDir), GltfTransformDir, 600_000));
                 var ok = r.Ok && File.Exists(GltfTools.CliJs(GltfTransformDir));
                 _core.Audit.Append(Principal.LocalOwner.Name, "deps.npm", "@gltf-transform/cli@" + GltfTools.TransformVersion + (ok ? "" : " (fehlgeschlagen)"));
-                _gltfMsg = ok ? "✓ glTF-Transform ist eingerichtet." : "⚠ Einrichten ging nicht: " + Short(r.Err.Length > 0 ? r.Err : r.Out);
+                _gltfMsg = ok ? "glTF-Transform ist eingerichtet." : "Einrichten ging nicht: " + Short(r.Err.Length > 0 ? r.Err : r.Out);
             }
         }
         Show("xr");

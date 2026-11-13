@@ -20,7 +20,7 @@ public partial class MainWindow
         var outFile = Path.Combine(Folder3D, "umgewandelt", Path.GetFileNameWithoutExtension(file) + ".glb");
         var exe = Environment.ProcessPath ?? "TrendoOS";
         var (ok, msg) = AssimpConvert.Convert(exe, AssimpDll ?? "", file, outFile, run: AssimpRunOverride ?? (_opt.Isolated ? (_, _, _) => new Cli.Result(-1, "", "Testmodus: assimp wird nicht gestartet.") : null));
-        _assimpMsg = ok ? $"✓ Umgewandelt: {Path.GetFileName(outFile)} (im Ordner 3D/umgewandelt)" : "⚠ " + msg; _assimpLast = ok ? outFile : _assimpLast;
+        _assimpMsg = ok ? $"Umgewandelt: {Path.GetFileName(outFile)} (im Ordner 3D/umgewandelt)" : "⚠ " + msg; _assimpLast = ok ? outFile : _assimpLast;
         _core.Audit.Append(Principal.LocalOwner.Name, "3d.assimp.umwandeln", ok ? Path.GetFileName(file) : "fehler");
         Show("3d");
     }
@@ -53,7 +53,7 @@ public partial class MainWindow
                 .OrderByDescending(File.GetLastWriteTimeUtc).Take(8).ToList() : [];
             if (files.Count == 0) sp.Children.Add(P("Keine umwandelbare 3D-Datei im 3D-Ordner (FBX, DAE, 3DS, OBJ, PLY, STL …).", null, 11));
             var i = 0;
-            foreach (var f in files) { var file = f; sp.Children.Add(Act($"3d-assimp-{i++}", "→ GLB: " + Path.GetFileName(file), () => AssimpToGlb(file))); }
+            foreach (var f in files) { var file = f; sp.Children.Add(Act($"3d-assimp-{i++}", "GLB: " + Path.GetFileName(file), () => AssimpToGlb(file))); }
         }
         if (_assimpMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "3d-assimp-msg", Text = _assimpMsg, FontSize = 11, Foreground = Muted, TextWrapping = Avalonia.Media.TextWrapping.Wrap });
         return sp;

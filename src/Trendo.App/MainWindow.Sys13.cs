@@ -76,11 +76,11 @@ public partial class MainWindow
                 var m = MeasurePages(BasePageModules.Keys.Where(_showMap.ContainsKey).Where(k => k is not ("akte" or "ausgabe" or "einrichtung")));
                 long after = GC.GetTotalMemory(true);
                 var slow = m.Where(x => !x.Ok).ToList();
-                _qualOut = $"{m.Count} Seiten · Mittelwert {Quality.Median(m.Select(x => x.Took)).TotalMilliseconds:0} ms · {(slow.Count == 0 ? "✓ alle im Ziel" : "⚠ zu langsam: " + string.Join(", ", slow.Select(s => $"{s.What} ({s.Took.TotalMilliseconds:0} ms)")))}\nSpeicher danach: {(after - before) / 1048576.0:+0.0;-0.0} MB {(Quality.Leaks(before, after) ? "⚠ auffällig" : "✓ unauffällig")}";
+                _qualOut = $"{m.Count} Seiten · Mittelwert {Quality.Median(m.Select(x => x.Took)).TotalMilliseconds:0} ms · {(slow.Count == 0 ? "✓ alle im Ziel" : "zu langsam: " + string.Join(", ", slow.Select(s => $"{s.What} ({s.Took.TotalMilliseconds:0} ms)")))}\nSpeicher danach: {(after - before) / 1048576.0:+0.0;-0.0} MB {(Quality.Leaks(before, after) ? "auffällig" : "unauffällig")}";
                 Say("Messung fertig.", V);
             }, true)), new TextBlock { Name = "perf-out", Text = _qualOut, Foreground = Text, TextWrapping = TextWrapping.Wrap }));
         sp.Children.Add(ToolCard("audit-card", Mdi.CheckboxMarkedOutline, "#86EFAC", "#15803D", "Protokoll prüfen", "Jede Aktion steht in einer Kette, in der jeder Eintrag den vorigen absichert. Wird etwas verändert oder gelöscht, fällt es hier auf.",
-            Line(Act("audit-check", "Kette prüfen", () => { var b = _core.Audit.FirstBroken(); Say(b is null ? $"✓ Alle {_core.Audit.ReadAll().Count} Einträge unverändert." : $"✕ Ab Eintrag {b} wurde das Protokoll verändert.", V); }))));
+            Line(Act("audit-check", "Kette prüfen", () => { var b = _core.Audit.FirstBroken(); Say(b is null ? $"Alle {_core.Audit.ReadAll().Count} Einträge unverändert." : $"Ab Eintrag {b} wurde das Protokoll verändert.", V); }))));
         return QualPage("Qualität – Leistung", sp);
     }
 

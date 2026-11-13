@@ -78,6 +78,7 @@ public sealed partial class MainWindow : Window
     public MainWindow(TrendoCore core, AppOptions opt, IToolProbe probe)
     {
         StartupTrace.Mark("window.ctor");
+        GlyphIcons.Enable(); // D3 (13.11.2026): Zeichen-Knöpfe zeigen Linien-Symbole
         _opt = opt; _core = core; _probe = probe;
         // Isolated: nichts außerhalb des Datenordners erkennen (Tests sind unabhängig von installierten Programmen/laufendem Ollama)
         Func<string, bool>? exists = opt.Isolated ? p => Path.GetFullPath(p).StartsWith(Path.GetFullPath(core.DataRoot), StringComparison.OrdinalIgnoreCase) && File.Exists(p) : null;
@@ -263,8 +264,8 @@ public sealed partial class MainWindow : Window
         SetRing("RAM", m.RamPercent, mem.UsedGb is { } mu && mem.TotalGb is { } mt ? $"{mu:0.0} / {mt:0.0} GB" : null);
         SetRing("SSD", m.DiskPercent, disk.UsedGb is { } du && disk.TotalGb is { } dt ? $"{du:0} / {dt:0} GB" : null);
         SetRing("GPU", m.GpuPercent, m.GpuPercent is null ? "Nicht verfügbar" : m.GpuSource);
-        _netDown.Text = net.DownBps is { } down ? "↓ " + Rate(down) : _tick < 2 ? "↓ Messung läuft …" : "↓ Nicht verfügbar";
-        _netUp.Text = net.UpBps is { } up ? "↑ " + Rate(up) : _tick < 2 ? "↑ Messung läuft …" : "↑ Nicht verfügbar";
+        _netDown.Text = net.DownBps is { } down ? "↓ " + Rate(down) : _tick < 2 ? "Messung läuft …" : "Nicht verfügbar";
+        _netUp.Text = net.UpBps is { } up ? "↑ " + Rate(up) : _tick < 2 ? "Messung läuft …" : "Nicht verfügbar";
         var vals = new[] { m.CpuPercent, m.RamPercent, m.DiskPercent, m.GpuPercent }.Where(v => v.HasValue).Select(v => v!.Value).ToList();
         var high = vals.Count > 0 && vals.Max() >= 90;
         _sysState.Text = vals.Count == 0 ? "Messung läuft …" : high ? "Hohe Auslastung" : "Alles in Ordnung";
@@ -338,25 +339,28 @@ public sealed partial class MainWindow : Window
     }
 
     // ======================= Design-Bausteine (nach Konzept) =======================
-    private static IBrush Grad(string a, string b) => new LinearGradientBrush
-    {
-        StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
-        GradientStops = { new GradientStop(Color.Parse(a), 0), new GradientStop(Color.Parse(b), 1) },
-    };
+    /// <summary>Früher ein Farbverlauf; seit der Vorgabe 13.11.2026 („nicht KI-generiert“) eine ruhige, einfarbige Fläche aus der dunkleren Farbe.</summary>
+    private static IBrush Grad(string a, string b) => new SolidColorBrush(Calm(Color.Parse(b)));
 
-    /// <summary>Vektor-Icon (Material Design Icons).</summary>
-    private static Control Ico(string data, double size, IBrush fill, string? glow = null)
+    /// <summary>Farbe dämpfen: weniger Sättigung, gleiche Richtung – Farben bleiben erkennbar, wirken aber nicht grell.</summary>
+    static Color Calm(Color c, double keep = 0.55)
     {
-        var p = new Avalonia.Controls.Shapes.Path { Data = Geometry.Parse(data), Fill = fill, Stretch = Stretch.Uniform, Width = size, Height = size };
-        if (glow is not null) p.Effect = new DropShadowEffect { Color = Color.Parse(glow), BlurRadius = size * 0.6, OffsetX = 0, OffsetY = 0, Opacity = 0.9 };
-        return p;
+        var grey = (c.R * 0.3 + c.G * 0.59 + c.B * 0.11);
+        byte M(byte v) => (byte)Math.Clamp(grey + (v - grey) * keep, 0, 255);
+        return Color.FromArgb(c.A, M(c.R), M(c.G), M(c.B));
     }
 
-    /// <summary>Farbiges, abgerundetes Quadrat mit weißem Symbol (Seitenleiste, Schnellzugriff, Projekte, Dock).</summary>
+    /// <summary>Vektor-Icon (Material Design Icons). Leuchten gibt es nicht mehr (Vorgabe 13.11.2026), der Parameter bleibt für bestehende Aufrufe.</summary>
+    private static Control Ico(string data, double size, IBrush fill, string? glow = null) =>
+        new Avalonia.Controls.Shapes.Path { Data = Geometry.Parse(data), Fill = fill, Stretch = Stretch.Uniform, Width = size, Height = size };
+
+    /// <summary>Symbolfeld (Seitenleiste, Schnellzugriff, Projekte, Studios): neutrale Fläche mit farbigem Linien-Symbol statt bunter Verlaufskachel.</summary>
     private static Border Chip(string data, string c1, string c2, double size = 26, double icon = 0.58, IBrush? fg = null) => new()
     {
-        Width = size, Height = size, CornerRadius = new CornerRadius(size * 0.26), Background = Grad(c1, c2),
-        Child = Ico(data, size * icon, fg ?? Brushes.White), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center,
+        Width = size, Height = size, CornerRadius = new CornerRadius(Math.Max(4, size * 0.18)), Background = Brush.Parse(_theme == "hell" ? "#FFEDEEF1" : "#FF2C2D31"),
+        BorderBrush = Brush.Parse(_theme == "hell" ? "#1A000000" : "#14FFFFFF"), BorderThickness = new Thickness(1),
+        Child = Ico(data, size * icon, fg is null || ReferenceEquals(fg, Brushes.White) ? new SolidColorBrush(Calm(Color.Parse(_theme == "hell" ? c2 : c1), 0.8)) : fg),
+        HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center,
     };
 
     /// <summary>Kartenkopf „Alle Studios“: Studio-Symbol (zentrale Karte StudioIcons) + Name.</summary>
@@ -371,11 +375,11 @@ public sealed partial class MainWindow : Window
 
     private static Border Panel(Control c, double pad = 12) => new()
     {
-        Background = Glass, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(pad), Child = c, Margin = new Thickness(0, 0, 0, 10),
-        BoxShadow = BoxShadows.Parse("0 8 24 0 #66000814"),
+        Background = Glass, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(pad), Child = c, Margin = new Thickness(0, 0, 0, 10),
     };
-    // G8 (07.11.2026): klare Rangordnung – große Überschriften fett und enger gesetzt, Fließtext mit ruhigem Zeilenabstand
-    private static TextBlock H(string t, double size = 15) => new() { Text = t, Foreground = Text, FontSize = size, FontWeight = size >= 18 ? FontWeight.Bold : FontWeight.SemiBold, LetterSpacing = size >= 18 ? -0.4 : 0 };
+    /// <summary>P2 (13.11.2026): feste Schriftstufen 11 · 12 · 13 · 15 · 18 · 22, Überschriften halbfett statt fett.</summary>
+    internal static double Step(double size) => size switch { <= 11.5 => 11, <= 12.5 => 12, <= 14 => 13, <= 16.5 => 15, <= 20 => 18, _ => 22 };
+    private static TextBlock H(string t, double size = 15) => new() { Text = t, Foreground = Text, FontSize = Step(size), FontWeight = FontWeight.SemiBold };
     private static TextBlock P(string t, IBrush? c = null, double size = 12) => new() { Text = t, Foreground = c ?? Muted, FontSize = size, TextWrapping = TextWrapping.Wrap, LineHeight = Math.Round(size * 1.45) };
     private static Button Flat(string name, Control content, string? automation = null)
     {
@@ -395,7 +399,7 @@ public sealed partial class MainWindow : Window
     internal static Control Logo(double size, bool glow = false, bool tile = true)
     {
         var box = new Viewbox { Name = "trendo-logo", Width = size, Height = size, Stretch = Stretch.Uniform, Child = TrendoLogo.Build(tile) };
-        if (glow) box.Effect = new DropShadowEffect { Color = Color.Parse(TrendoLogo.Glow), BlurRadius = size * 0.35, OffsetX = 0, OffsetY = 0, Opacity = 0.8 };
+        // Logo bleibt, aber ohne Leuchten (Vorgabe 13.11.2026)
         ToolTip.SetTip(box, "Trendo-Logo");
         return box;
     }
@@ -726,7 +730,7 @@ public sealed partial class MainWindow : Window
             if (StudioTeams.For(sid) is { } team)
             {
                 // Wunsch 03.11.2026: das Profi-Team des Studios einen Klick entfernt
-                var tb = new Button { Name = "page-team", Content = "👥 Team", FontSize = 12, Padding = new Thickness(9, 2), CornerRadius = new CornerRadius(10), Background = Brush.Parse("#22FFFFFF"), Foreground = Text, BorderThickness = new Thickness(0), VerticalAlignment = VerticalAlignment.Top };
+                var tb = new Button { Name = "page-team", Content = "Team", FontSize = 12, Padding = new Thickness(9, 2), CornerRadius = new CornerRadius(10), Background = Brush.Parse("#22FFFFFF"), Foreground = Text, BorderThickness = new Thickness(0), VerticalAlignment = VerticalAlignment.Top };
                 ToolTip.SetTip(tb, $"{team.Name}: {string.Join(", ", team.Roles.Select(r => r.Name))} – unter „KI einsetzen“ starten");
                 var tsid = sid; tb.Click += (_, _) => AgentsForStudio(tsid);
                 right.Children.Add(tb);
@@ -879,7 +883,7 @@ public sealed partial class MainWindow : Window
         foreach (var (m, id, label) in new[] { (DependencyCatalog.LocalModel, "model", "Qwen2.5 0.5B (klein, schnell)"), (DependencyCatalog.LargeModel, "model-7b", "Qwen2.5 7B (besseres Deutsch, ~4,7 GB)") })
         {
             var have = _deps.HasModel(m);
-            var b = new Button { Name = "btn-model-" + id, Content = have ? (KiModelName == m ? $"✓ {label}" : $"{label} verwenden") : $"{label} herunterladen (Zustimmung)", IsEnabled = !_depBusy, Background = KiModelName == m ? Accent : null };
+            var b = new Button { Name = "btn-model-" + id, Content = have ? (KiModelName == m ? $"{label}" : $"{label} verwenden") : $"{label} herunterladen (Zustimmung)", IsEnabled = !_depBusy, Background = KiModelName == m ? Accent : null };
             b.Click += async (_, _) =>
             {
                 if (!_deps.IsInstalled(DependencyCatalog.Get(id))) { _deps.GiveConsent(Principal.LocalOwner); await InstallOne(DependencyCatalog.Get(id), refresh: false); }
@@ -992,7 +996,7 @@ public sealed partial class MainWindow : Window
         // Wunsch 04.11.2026: keine Ordnerwahl mehr – die mitgelieferten Programme kommen direkt von GitHub
         var vpGo = new Button { Name = "vollpaket-install", Content = VollpaketMissing ? "Jetzt von GitHub laden und einrichten" : "Fehlende Programme von GitHub nachladen", Background = Accent, IsEnabled = !_depBusy };
         var vpMsg = new TextBlock { Name = "vollpaket-msg", Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap };
-        vpGo.Click += async (_, _) => { vpMsg.Text = "Wird von GitHub geladen …"; var r = await InstallVollpaketOnline(); vpMsg.Text = r is null ? _depLog.Text ?? "" : r.Failed.Count == 0 ? "✓ Alle Programme sind eingerichtet." : $"{r.Failed.Count} Programm(e) nicht eingerichtet – erneut versuchen."; Show("components"); };
+        vpGo.Click += async (_, _) => { vpMsg.Text = "Wird von GitHub geladen …"; var r = await InstallVollpaketOnline(); vpMsg.Text = r is null ? _depLog.Text ?? "" : r.Failed.Count == 0 ? "Alle Programme sind eingerichtet." : $"{r.Failed.Count} Programm(e) nicht eingerichtet – erneut versuchen."; Show("components"); };
         sp.Children.Add(new Border { Name = "vollpaket-card", Background = Brush.Parse(VollpaketMissing ? "#33F59E0B" : C("#22FFFFFF", "#0F000000")), CornerRadius = new CornerRadius(12), Padding = new Thickness(12, 10), Margin = new Thickness(0, 4, 0, 4),
             Child = new StackPanel { Spacing = 6, Children = {
                 new TextBlock { Text = VollpaketMissing ? "Die mitgelieferten Programme sind noch nicht geladen" : "Mitgelieferte Programme", Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
@@ -1016,7 +1020,7 @@ public sealed partial class MainWindow : Window
                     P($"{c.Purpose} – {c.Reason}{(c.ApproxMb > 0 ? $" · ca. {c.ApproxMb} MB" : "")}", null, 11) } });
                 Control right;
                 if (c.Mode is DeliveryMode.Bundled or DeliveryMode.NotNeeded) right = P(c.Mode == DeliveryMode.Bundled ? "enthalten" : "—", Brush.Parse("#4ADE80"));
-                else if (inst) right = P("✓ erkannt", Brush.Parse("#4ADE80"));
+                else if (inst) right = P("erkannt", Brush.Parse("#4ADE80"));
                 else if (c.Mode == DeliveryMode.Guided)
                 {
                     var b = new Button { Name = "btn-guide-" + c.Id, Content = "Installieren (offiziell)", IsEnabled = !_core.Offline && c.OfficialUrl is not null };
@@ -1147,9 +1151,9 @@ public sealed partial class MainWindow : Window
             var comp = c.Component;
             var line = c.State switch
             {
-                ToolState.Working => $"✓ {comp.Name} – {c.Detail}{(c.Version is { } v ? $" ({v})" : "")}",
-                ToolState.Broken => $"⚠ {comp.Name} ist installiert, startet aber nicht: {c.Detail}",
-                _ => $"✗ {comp.Name} fehlt",
+                ToolState.Working => $"{comp.Name} – {c.Detail}{(c.Version is { } v ? $" ({v})" : "")}",
+                ToolState.Broken => $"{comp.Name} ist installiert, startet aber nicht: {c.Detail}",
+                _ => $"{comp.Name} fehlt",
             };
             sp.Children.Add(P(line, Text, 13));
             if (c.Ok) continue;
@@ -1201,7 +1205,7 @@ public sealed partial class MainWindow : Window
         {
             var has = _core.Secrets.Get("TrendoOS:key-" + k.Id) is not null;
             var box = new TextBox { Name = "txt-key-" + k.Id, PasswordChar = '•', PlaceholderText = "Schlüssel hier einfügen", Width = 320 };
-            var res = new TextBlock { Name = "key-state-" + k.Id, Text = has ? "gespeichert ✓" : "kein Schlüssel", Foreground = Muted, FontSize = 11 };
+            var res = new TextBlock { Name = "key-state-" + k.Id, Text = has ? "gespeichert" : "kein Schlüssel", Foreground = Muted, FontSize = 11 };
             var get = new Button { Name = "btn-getkey-" + k.Id, Content = "Schlüssel holen", IsEnabled = !_core.Offline };
             get.Click += (_, _) => _core.Integrations.LaunchDirect(Principal.LocalOwner, k.KeyUrl, _core.Audit);
             var save = new Button { Name = "btn-savekey-" + k.Id, Content = "Prüfen & speichern", IsEnabled = !_core.Offline };
@@ -1212,7 +1216,7 @@ public sealed partial class MainWindow : Window
                 var ok = KeyValidatorOverride is { } f ? await f(key) : await ValidateKey(k.ValidateUrl, key);
                 if (ok) { _core.Secrets.Set("TrendoOS:key-" + k.Id, key); box.Text = ""; }
                 _core.Audit.Append(Principal.LocalOwner.Name, ok ? "key.saved" : "key.invalid", k.Id); // Schlüssel selbst nie im Log
-                res.Text = ok ? "gültig und gespeichert ✓" : "ungültig – nicht gespeichert";
+                res.Text = ok ? "gültig und gespeichert" : "ungültig – nicht gespeichert";
             };
             sp.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12), Child = new StackPanel { Spacing = 6, Children = {
                 new TextBlock { Text = k.Name, Foreground = Text, FontWeight = FontWeight.SemiBold }, P(k.Note, null, 11),
@@ -1227,7 +1231,7 @@ public sealed partial class MainWindow : Window
             var has = _core.Secrets.Get(c.SecretName) is not null;
             var on = kiSet.Cloud.Contains(c.Id);
             var box = new TextBox { Name = "txt-ki-" + c.Id, PasswordChar = '•', PlaceholderText = "Schlüssel hier einfügen", Width = 300 };
-            var res = new TextBlock { Name = "ki-key-state-" + c.Id, Text = has ? "gespeichert ✓" : "kein Schlüssel", Foreground = Muted, FontSize = 11 };
+            var res = new TextBlock { Name = "ki-key-state-" + c.Id, Text = has ? "gespeichert" : "kein Schlüssel", Foreground = Muted, FontSize = 11 };
             var get = new Button { Name = "btn-ki-getkey-" + c.Id, Content = "Schlüssel holen", IsEnabled = !_core.Offline };
             ToolTip.SetTip(get, "Öffnet die offizielle Seite: " + c.KeyUrl);
             get.Click += (_, _) => _core.Integrations.LaunchDirect(Principal.LocalOwner, c.KeyUrl, _core.Audit);
@@ -1252,7 +1256,7 @@ public sealed partial class MainWindow : Window
                 var ok = KeyValidatorOverride is { } f ? await f(key) : await CloudKiBackend.ValidateAsync(c, key);
                 if (ok) { _core.Secrets.Set(c.SecretName, key); box.Text = ""; use.IsEnabled = true; }
                 _core.Audit.Append(Principal.LocalOwner.Name, ok ? "key.saved" : "key.invalid", "ki-" + c.Id); // Schlüssel selbst nie im Log
-                res.Text = ok ? "gültig und gespeichert ✓" : "ungültig – nicht gespeichert";
+                res.Text = ok ? "gültig und gespeichert" : "ungültig – nicht gespeichert";
             };
             sp.Children.Add(new Border { Name = "ki-cloud-" + c.Id, Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12), Child = new StackPanel { Spacing = 6, Children = {
                 new TextBlock { Text = $"{c.Name} · {(c.FreeTier ? "kostenlose Stufe" : "kostenpflichtig")}", Foreground = Text, FontWeight = FontWeight.SemiBold }, P(c.Hint, null, 11),
@@ -1307,7 +1311,7 @@ public sealed partial class MainWindow : Window
             r = await Task.Run(() => Vollpaket.InstallEach(dir, _deps.ToolsRoot, _core.Audit, line => _ui.Post(() => { _depLog.Text = line; SetupOverlayProgress(++step, total, line); }), ct, only));
             if (r.Canceled) { _depLog.Text = $"Abgebrochen – {r.Installed + r.Present} von {r.Total} Programmen sind eingerichtet."; return r; }
             var ok = r.Installed + r.Present;
-            _depLog.Text = r.Failed.Count == 0 ? $"Alle {r.Total} mitgelieferten Programme sind eingerichtet ✓" : $"{ok} von {r.Total} Programmen eingerichtet, {r.Failed.Count} nicht.";
+            _depLog.Text = r.Failed.Count == 0 ? $"Alle {r.Total} mitgelieferten Programme sind eingerichtet" : $"{ok} von {r.Total} Programmen eingerichtet, {r.Failed.Count} nicht.";
             FinishSetupOverlay(r.Failed.Count == 0 ? "Alles eingerichtet" : "Fast alles eingerichtet",
                 $"{ok} von {r.Total} Programmen sind bereit{(r.Installed > 0 ? $" ({r.Installed} neu eingerichtet)" : "")}.", r.Failed.Select(f => $"{f.Name}: {f.Reason}").ToList());
         }
@@ -1364,7 +1368,7 @@ public sealed partial class MainWindow : Window
         {
             ok = await Task.Run(() => _deps.InstallAsync(Principal.LocalOwner, c, line =>
                 _ui.Post(() => { if (!string.IsNullOrWhiteSpace(line)) _depLog.Text = $"{c.Name}: {line.Trim()}"; })));
-            _depLog.Text = ok ? $"{c.Name}: installiert und erkannt ✓" : $"{c.Name}: hat nicht geklappt – im Systemcheck kannst du es erneut versuchen";
+            _depLog.Text = ok ? $"{c.Name}: installiert und erkannt" : $"{c.Name}: hat nicht geklappt – im Systemcheck kannst du es erneut versuchen";
         }
         catch (Exception ex) { ok = false; _depLog.Text = $"{c.Name}: {ex.Message}"; }
         _depBusy = false; _depProgress.IsIndeterminate = false; _depProgress.IsVisible = false;

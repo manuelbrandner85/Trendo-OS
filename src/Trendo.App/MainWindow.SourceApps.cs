@@ -117,7 +117,7 @@ public partial class MainWindow
                 {
                     var rel = await GitHubLatestOrEmpty(f.FullName, CancellationToken.None);
                     var a = GitHubApps.Availability(rel, Arm64, Has7z); _ossAvail[f.FullName] = a;
-                    if (a.Kind == "windows") { var fork = f with { LicenseId = f.LicenseId.Length > 0 ? f.LicenseId : r.LicenseId }; list.Add(("Diesen Fork installieren", $"Fork {f.FullName} (★ {f.Stars}): {a.Text}", () => GitHubInstall(fork))); }
+                    if (a.Kind == "windows") { var fork = f with { LicenseId = f.LicenseId.Length > 0 ? f.LicenseId : r.LicenseId }; list.Add(("Diesen Fork installieren", $"Fork {f.FullName} ({f.Stars}): {a.Text}", () => GitHubInstall(fork))); }
                 }
             }
             catch (Exception ex) when (ex is not OutOfMemoryException) { if (ex.Message.Contains("Abfragen")) _w45Msg = ex.Message; }
@@ -266,7 +266,7 @@ public partial class MainWindow
                 throw new InvalidOperationException($"Eingerichtet, aber die Startdatei „{st.Exe}“ fehlt. Das Projekt braucht wohl eine andere Startweise – „Quellcode holen“ und die Anleitung (README) helfen weiter.");
             var entry = SourceApps.Register(_deps.ToolsRoot, repo.FullName, sha, plan, repo.LicenseId, repo.Description, _core.Audit);
             if (Directory.Exists(old)) try { Directory.Delete(old, true); } catch (IOException) { }
-            SetupOverlayProgress(4, 4, "Fertig ✓");
+            SetupOverlayProgress(4, 4, "Fertig");
             var msg = $"„{name}“ ist aus dem Quellcode eingerichtet{(start ? " und startet gerade" : "")}. Du findest es unter „Programme“ › „Aus Quellcode eingerichtet“.";
             FinishSetupOverlay("Bereit", msg, []); Say(msg, "oss");
             if (start) await SourceStart(entry);

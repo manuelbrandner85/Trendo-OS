@@ -97,8 +97,8 @@ public partial class MainWindow
         name.LostFocus += (_, _) => Rename(); OnEnter(name, Rename); unit.LostFocus += (_, _) => Rename(); OnEnter(unit, Rename);
         sp.Children.Add(name); sp.Children.Add(Row(P("Einheit", Text, 12), unit));
         sp.Children.Add(new WrapPanel { Children = {
-            Act2("ms-as-x", s.Chart.X == ci ? "✓ ist x-Achse" : "als x-Achse", () => SheetEdit("x-Achse", x => { x.Chart.X = ci; x.Chart.Ys.Remove(ci); })),
-            Act2("ms-as-y", s.Chart.Ys.Contains(ci) ? "✓ im Diagramm" : "ins Diagramm", () => SheetEdit("Diagramm", x => { if (!x.Chart.Ys.Remove(ci)) { x.Chart.Ys.Add(ci); if (x.Chart.X == ci) x.Chart.X = -1; } })),
+            Act2("ms-as-x", s.Chart.X == ci ? "ist x-Achse" : "als x-Achse", () => SheetEdit("x-Achse", x => { x.Chart.X = ci; x.Chart.Ys.Remove(ci); })),
+            Act2("ms-as-y", s.Chart.Ys.Contains(ci) ? "im Diagramm" : "ins Diagramm", () => SheetEdit("Diagramm", x => { if (!x.Chart.Ys.Remove(ci)) { x.Chart.Ys.Add(ci); if (x.Chart.X == ci) x.Chart.X = -1; } })),
             Act2("ms-delcol", "Spalte löschen", () => { SheetEdit("Spalte löschen", x => { x.Columns.RemoveAt(ci); x.Chart.Ys = x.Chart.Ys.Where(i => i != ci).Select(i => i > ci ? i - 1 : i).ToList(); x.Chart.X = x.Chart.X == ci ? -1 : x.Chart.X > ci ? x.Chart.X - 1 : x.Chart.X; }); _msCol = Math.Max(0, ci - 1); }) } });
         var v = s.Values(ci);
         if (v.Length > 0)
@@ -147,7 +147,7 @@ public partial class MainWindow
         sp.Children.Add(Act2("ms-csv-load", "Laden", () => ProgramRun(SK, () => { var p = Need(csv, "die CSV-Datei"); if (!File.Exists(p)) throw new FileNotFoundException("Diese Datei gibt es nicht."); var ns = MeasureSheet.FromCsv(File.ReadAllText(p), Path.GetFileNameWithoutExtension(p)); SheetEdit("CSV laden", x => { x.Columns = ns.Columns; x.Chart = ns.Chart; x.Name = ns.Name; }); _msCol = 0; _msRow = 0; _progMsg[SK] = $"„{Path.GetFileName(p)}“ geladen – {ns.Columns.Count} Spalten, {ns.Rows} Zeilen."; })));
         var calcs = new StackPanel { Spacing = 10 };
         LiveCalc(calcs, "sci-chi", "Häufigkeiten vergleichen (Chi²)", [("t", "Kreuztabelle (Zeilen mit |)", "20 30 | 40 10", null)],
-            v2 => { var rows = v2("t").Split('|').Select(r => r.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => Fach.Num(x)).ToArray()).ToArray(); var c = StatsPlus.ChiSquare(rows); return $"χ² = {Fach.F(c.Chi2, 3)}, df = {c.Df}, p = {Fach.F(c.P, 4)} → {(c.Significant ? "✓ Zusammenhang signifikant" : "kein gesicherter Zusammenhang")}{(c.LowExpected ? " ⚠ erwartete Häufigkeit < 5" : "")}"; });
+            v2 => { var rows = v2("t").Split('|').Select(r => r.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => Fach.Num(x)).ToArray()).ToArray(); var c = StatsPlus.ChiSquare(rows); return $"χ² = {Fach.F(c.Chi2, 3)}, df = {c.Df}, p = {Fach.F(c.P, 4)} → {(c.Significant ? "✓ Zusammenhang signifikant" : "kein gesicherter Zusammenhang")}{(c.LowExpected ? " erwartete Häufigkeit < 5" : "")}"; });
         LiveCalc(calcs, "sci-n", "Wie viele Messungen brauche ich?", [("s", "Streuung (Vorstudie)", "2,5", null), ("m", "Genauigkeit ±", "0,5", null), ("c", "Sicherheit", "95", ["90", "95", "99"])],
             v2 => $"mindestens {StatsPlus.SampleSize(Fach.Num(v2("s")), Fach.Num(v2("m")), Fach.Num(v2("c")) / 100)} Messungen");
         LiveCalc(calcs, "sci-err", "Messunsicherheit weiterrechnen", [("a", "Wert a ± u", "12,3 0,2", null), ("op", "Rechenart", "*", ["+", "-", "*", "/"]), ("b", "Wert b ± u", "4,1 0,1", null)],

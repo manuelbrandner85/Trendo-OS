@@ -32,7 +32,7 @@ public partial class MainWindow
     Control SellTabs()
     {
         var bar = new WrapPanel { Name = "sell-tabs" };
-        foreach (var (id, label) in new[] { ("kasse", "🧾 Kasse"), ("online", "🛒 Online & Artikel"), ("auswertung", "📊 Auswertung") })
+        foreach (var (id, label) in new[] { ("kasse", "Kasse"), ("online", "Online & Artikel"), ("auswertung", "Auswertung") })
         { var b = Act("sell-tab-" + id, label, () => { _sellTab = id; Show("verkaufen"); }, _sellTab == id); b.Margin = new Thickness(0, 0, 6, 6); bar.Children.Add(b); }
         return bar;
     }
@@ -66,10 +66,10 @@ public partial class MainWindow
         const string V = "verkaufen";
         var kasse = Kasse; var products = kasse.Shop.Products.All(); var small = _settings.SmallBusiness;
         // Links: Artikel
-        var find = new TextBox { Name = "kasse-find", Text = _kasseFind, PlaceholderText = "🔎  Artikel suchen …", Width = 260, HorizontalAlignment = HorizontalAlignment.Left, CornerRadius = new CornerRadius(8) };
+        var find = new TextBox { Name = "kasse-find", Text = _kasseFind, PlaceholderText = "Artikel suchen …", Width = 260, HorizontalAlignment = HorizontalAlignment.Left, CornerRadius = new CornerRadius(8) };
         // Scanner oder Artikelnummer: genauer Treffer landet sofort im Korb (wie an jeder Ladenkasse), sonst wird gefiltert
         find.KeyDown += (_, e) => { if (e.Key != Avalonia.Input.Key.Enter) return; var hit = SalesStats.Find(products, find.Text ?? ""); if (hit is not null) { CartAdd(hit.Name, 1); _kasseFind = ""; } else _kasseFind = find.Text ?? ""; Show(V); };
-        find.PlaceholderText = "🔎  Artikel suchen oder Strichcode scannen …";
+        find.PlaceholderText = "Artikel suchen oder Strichcode scannen …";
         var tiles = new WrapPanel { Name = "kasse-articles" };
         var shown = products.Where(p => _kasseFind.Length == 0 || p.Name.Contains(_kasseFind, StringComparison.CurrentCultureIgnoreCase)).ToList();
         for (var i = 0; i < shown.Count; i++)
@@ -122,7 +122,7 @@ public partial class MainWindow
             Pos(new TextBlock { Name = "kasse-total", Text = Eu(total) + " €", Foreground = GoldText(), FontSize = 30, FontWeight = FontWeight.Bold }, 1) } });
         if (!small && total > 0) pay.Children.Add(new TextBlock { Text = $"enthält {Eu(Math.Round(total - total / (1 + LegalRates.VatStandard / 100m), 2))} € MwSt ({LegalRates.VatStandard:0} %)", Foreground = Muted, FontSize = 11, HorizontalAlignment = HorizontalAlignment.Right });
         var kinds = new WrapPanel();
-        foreach (var (id, label) in new[] { ("bar", "💶 Bar"), ("karte", "💳 Karte") }) { var b = Act("kasse-pay-" + id, label, () => { _kassePay = id; Show(V); }, _kassePay == id); b.Margin = new Thickness(0, 0, 6, 0); kinds.Children.Add(b); }
+        foreach (var (id, label) in new[] { ("bar", "Bar"), ("karte", "Karte") }) { var b = Act("kasse-pay-" + id, label, () => { _kassePay = id; Show(V); }, _kassePay == id); b.Margin = new Thickness(0, 0, 6, 0); kinds.Children.Add(b); }
         pay.Children.Add(kinds);
         if (_kassePay == "bar")
         {
@@ -141,7 +141,7 @@ public partial class MainWindow
         if (_cart.Count > 0) pay.Children.Add(Act("kasse-clear", "Warenkorb leeren", () => { _cart.Clear(); Show(V); }));
         if (_kasseLast is { } last)
             pay.Children.Add(new Border { Name = "kasse-done", Background = Brush.Parse("#332FBF71"), BorderBrush = Brush.Parse("#2FBF71"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(12), Child = new StackPanel { Spacing = 6, Children = {
-                new TextBlock { Text = $"✓ {last.No} · {Eu(last.Gross)} € {(last.Payment == "bar" ? "bar" : "mit Karte")}", Foreground = Text, FontWeight = FontWeight.SemiBold },
+                new TextBlock { Text = $"{last.No} · {Eu(last.Gross)} € {(last.Payment == "bar" ? "bar" : "mit Karte")}", Foreground = Text, FontWeight = FontWeight.SemiBold },
                 last.Payment == "bar" ? new TextBlock { Name = "kasse-done-change", Text = $"Rückgeld: {Eu(last.Change)} €", Foreground = GoldText(), FontSize = 22, FontWeight = FontWeight.Bold } : new TextBlock { Text = "Bezahlt.", Foreground = Muted },
                 Act("kasse-receipt", "Bon als PDF", () => Try(V, () => { var f = Path.Combine(BusinessFolder, "Kasse", last.No + ".pdf"); Directory.CreateDirectory(Path.GetDirectoryName(f)!); CashRegister.ReceiptPdf(f, last, Seller); NotifyFileResult("Gespeichert: " + f); Say("Bon gespeichert: " + Path.GetFileName(f), V); })) } } });
         var right = Glass2(new StackPanel { Spacing = 10, Width = 400, Children = { H("Warenkorb", 15), new ScrollViewer { Content = cart, MaxHeight = 300 }, pay } }, 14);

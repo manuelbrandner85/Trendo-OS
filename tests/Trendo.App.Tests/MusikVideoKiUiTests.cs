@@ -52,7 +52,7 @@ public class MusikVideoKiUiTests
             var clips = w.ShotClips(s, "vorschau");
             Assert.Equal(sc.Shots.Count, clips.Count);
             Assert.Equal(sc.Shots.Count - 1, ok);
-            Assert.Contains("✓ in Ordnung nach 2 Versuchen", clips.Single(c => c.Index == 0).Report);
+            Assert.Contains("in Ordnung nach 2 Versuchen", clips.Single(c => c.Index == 0).Report);
             Assert.Contains("Zu viele Hände", clips.Single(c => c.Index == 0).Report);
             Assert.Contains("sechs Finger", clips.Single(c => c.Index == 1).Report); // G2: zweiter Blick der Bild-KI, danach behoben
             Assert.True(clips.Single(c => c.Index == 1).Ok);

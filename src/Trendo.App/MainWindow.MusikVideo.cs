@@ -43,7 +43,7 @@ public partial class MainWindow
         var a = await SectionsOf(s);
         if (a is null) { _msMsg = "Die Abschnitte des Lieds ließen sich nicht erkennen."; Show(MS); return null; }
         _mvShots = MusicVideo.Plan(a, s.Style.Length > 0 ? s.Style : "cinematic", s.TimeSignature == "3" ? 3 : 4); _mvFor = songId;
-        _msMsg = $"✓ Shotliste: {_mvShots.Count} Einstellungen, Schnitte auf dem Takt ({a.Bpm:0} BPM), {a.Sections.Count} Abschnitte.";
+        _msMsg = $"Shotliste: {_mvShots.Count} Einstellungen, Schnitte auf dem Takt ({a.Bpm:0} BPM), {a.Sections.Count} Abschnitte.";
         Show(MS); return _mvShots;
     }
 
@@ -84,7 +84,7 @@ public partial class MainWindow
         }
         File.WriteAllText(Path.Combine(dir, "QUELLEN.txt"), "Videos von Pexels (pexels.com) – Pexels-Lizenz, kostenlos nutzbar.\n" + string.Join("\n", clips.Take(count).Select(c => $"{c.Page} – {c.Author}")));
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.video.pexels", $"{got} Clips");
-        _msMsg = $"✓ {got} Clips von Pexels geladen (Quellen in „QUELLEN.txt“)."; Show(MS);
+        _msMsg = $"{got} Clips von Pexels geladen (Quellen in „QUELLEN.txt“)."; Show(MS);
         return got;
     }
 
@@ -150,7 +150,7 @@ public partial class MainWindow
                 made.Add(outFile);
             }
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.video", $"{s.Id} {string.Join(",", formats.Select(f => $"{f.Item1}x{f.Item2}"))} {_mvLook}");
-            _msMsg = $"✓ Musikvideo fertig ({string.Join(" und ", made.Select(m => m.Contains("9x16") ? "9:16" : "16:9"))})" + (lyr is null && _mvLyrics ? " – Liedtext erst nach „Spuren trennen“ einblendbar." : ".");
+            _msMsg = $"Musikvideo fertig ({string.Join(" und ", made.Select(m => m.Contains("9x16") ? "9:16" : "16:9"))})" + (lyr is null && _mvLyrics ? " – Liedtext erst nach „Spuren trennen“ einblendbar." : ".");
             Show(MS);
             return made;
         }
@@ -196,7 +196,7 @@ public partial class MainWindow
             foreach (var f in got ?? []) if (!_mvClips.Contains(f)) _mvClips.Add(f);
             Show(MS);
         });
-        var key = new TextBox { Name = "ms-video-pexels-key", Watermark = _core.Secrets.Get(PexelsSecret) is { Length: > 0 } ? "Pexels-Schlüssel gespeichert ✓" : "Pexels-Schlüssel (kostenlos)", Text = _mvPexelsKey, Width = 170, PasswordChar = '•' };
+        var key = new TextBox { Name = "ms-video-pexels-key", Watermark = _core.Secrets.Get(PexelsSecret) is { Length: > 0 } ? "Pexels-Schlüssel gespeichert" : "Pexels-Schlüssel (kostenlos)", Text = _mvPexelsKey, Width = 170, PasswordChar = '•' };
         key.TextChanged += (_, _) => _mvPexelsKey = key.Text ?? "";
         var stock = Act("ms-video-pexels", "Clips von Pexels", () => _ = MsVideoStock(s.Id));
         sp.Children.Add(new WrapPanel { Children = { own, new Border { Width = 6 }, key, new Border { Width = 6 }, stock } });
@@ -204,7 +204,7 @@ public partial class MainWindow
             sp.Children.Add(new WrapPanel { Children = { new TextBlock { Name = "ms-video-clips", Text = $"{_mvClips.Count} Clips gewählt", Foreground = Muted, FontSize = 11, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center },
                 new Border { Width = 6 }, Act("ms-video-clear", "leeren", () => { _mvClips.Clear(); Show(MS); }) } });
         sp.Children.Add(new WrapPanel { Children = { Act("ms-video-plan", "Shotliste", () => _ = MsVideoPlan(s.Id)), new Border { Width = 6 },
-            Act("ms-video-render", _mvBusy ? "Wird gerendert …" : "🎬 Video erstellen", () => { if (!_mvBusy) _ = MsVideoRender(s.Id); }) } });
+            Act("ms-video-render", _mvBusy ? "Wird gerendert …" : "Video erstellen", () => { if (!_mvBusy) _ = MsVideoRender(s.Id); }) } });
         if (_mvShots is { } shots && _mvFor == s.Id)
         {
             var list = new StackPanel { Name = "ms-video-shots", Spacing = 1 };

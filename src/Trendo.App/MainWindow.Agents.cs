@@ -70,7 +70,7 @@ public partial class MainWindow
                     new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = {
                         new Border { Width = 26, Height = 26, CornerRadius = new CornerRadius(13), Background = on ? Accent : Brush.Parse("#2AFFFFFF"),
                             Child = new TextBlock { Text = r.Name.Length > 0 ? r.Name[..1].ToUpperInvariant() : "?", Foreground = Brushes.White, FontWeight = FontWeight.Bold, FontSize = 12, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } },
-                        new TextBlock { Text = (r.Id.StartsWith("eigen.") ? "✎ " : "") + r.Name, Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis } } },
+                        new TextBlock { Text = (r.Id.StartsWith("eigen.") ? "• " : "") + r.Name, Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis } } },
                     new TextBlock { Text = r.Does, Foreground = Muted, FontSize = 10.5, TextWrapping = TextWrapping.Wrap, MaxHeight = 28, TextTrimming = TextTrimming.CharacterEllipsis },
                     new TextBlock { Text = r.MayWriteFiles ? "darf nach Freigabe speichern" : "nur Vorschläge", Foreground = r.MayWriteFiles ? Brush.Parse("#FACC15") : Muted, FontSize = 9.5 } } } };
             Hover(b);
@@ -151,7 +151,7 @@ public partial class MainWindow
             var state = t.State switch { AgentTaskState.Fertig => "fertig", AgentTaskState.Fehler => "nicht geklappt", AgentTaskState.Laeuft => "läuft", AgentTaskState.WartetAufFreigabe => "wartet auf Freigabe", AgentTaskState.Gespeichert => $"gespeichert als {t.SavedAs}", _ => "neu" };
             sp.Children.Add(WCard(new StackPanel { Spacing = 3, Children = {
                 new TextBlock { Text = $"{role.Name}: {t.Goal}", Foreground = Text, FontSize = 13, TextWrapping = TextWrapping.Wrap },
-                P($"{state} · {t.Created:dd.MM. HH:mm}{(t.TeamId is null ? "" : " · Team")}{(role.Shape is { Count: > 0 } ? (t.Data is null ? " · Antwortform ungeprüft" : " · ✓ Antwortform geprüft") : "")}", null, 10.5),
+                P($"{state} · {t.Created:dd.MM. HH:mm}{(t.TeamId is null ? "" : " · Team")}{(role.Shape is { Count: > 0 } ? (t.Data is null ? " · Antwortform ungeprüft" : " · Antwortform geprüft") : "")}", null, 10.5),
                 new SelectableTextBlock { Name = $"agent-result-{n}", Text = t.Result.Length > 600 ? t.Result[..600] + " …" : t.Result, Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap },
                 row } }));
         }
@@ -176,7 +176,7 @@ public partial class MainWindow
             {
                 var sid = studio.SelectedIndex < 0 ? "" : all[studio.SelectedIndex].Key;
                 var r = Agents.AddCustomRole(name.Text ?? "", does.Text ?? "", focus.Text ?? "", sid, write.IsChecked == true, id => StudioCatalog.For(id)?.Name);
-                _agentNewRole = false; _agentStudio = sid; _agentRole = r.Id; _agentMsg = $"✓ Rolle „{r.Name}“ gehört jetzt zum Studio „{StudioCatalog.For(sid)?.Name}“.";
+                _agentNewRole = false; _agentStudio = sid; _agentRole = r.Id; _agentMsg = $"Rolle „{r.Name}“ gehört jetzt zum Studio „{StudioCatalog.For(sid)?.Name}“.";
             }
             catch (ArgumentException ex) { _agentMsg = ex.Message; }
             Show("ki-rollen");

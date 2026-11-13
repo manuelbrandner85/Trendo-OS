@@ -26,9 +26,9 @@ public class ClaudeDock_Ui
             Assert.Null(w.LastClipboardText); // nichts kopiert – man tippt direkt in Claude
             Assert.Equal("chat", w.ClaudeDockTab(win)); // startet mit dem Claude-Chat; claude.ai ist der zweite Reiter
             w.Find<Button>("claude-tab-web").Press(); Assert.Equal("web", w.ClaudeDockTab(win));
-            Assert.True(w.ClaudeDockIsMax(win)); Assert.Equal("⤡ Studio zeigen", w.Find<Button>("claude-dock-max").Content);
+            Assert.True(w.ClaudeDockIsMax(win)); Assert.Equal("Studio zeigen", w.Find<Button>("claude-dock-max").Content);
             Assert.Null(w.TryFind<Button>("claude-tab-code")); Assert.Contains("Testmodus", string.Join("|", w.GetLogicalTexts()));
-            w.Find<Button>("claude-dock-max").Press(); Assert.False(w.ClaudeDockIsMax(win)); Assert.Equal("⤢ Groß", w.Find<Button>("claude-dock-max").Content);
+            w.Find<Button>("claude-dock-max").Press(); Assert.False(w.ClaudeDockIsMax(win)); Assert.Equal("Groß", w.Find<Button>("claude-dock-max").Content);
             w.Find<Button>("claude-dock-max").Press(); Assert.True(w.ClaudeDockIsMax(win));
             var pane = w.Find<Border>("claude-web-pane");
             w.Show("baukasten"); w.Show("baukasten"); Assert.Same(pane, w.Find<Border>("claude-web-pane")); // Neuzeichnen lädt claude.ai nicht neu
@@ -51,7 +51,7 @@ public class ClaudeDock_Ui
             Assert.Equal(ClaudeWeb.Projects, w.ClaudeDockWebUrl(win)); Assert.StartsWith("Neues Projekt „Kontaktformular“", w.Find<TextBlock>("claude-web-state").Text);
             w.ClaudeWebNavigated("https://claude.ai/project/0f3a9c2e-1111-2222-3333-444455556666");
             Assert.Equal("0f3a9c2e-1111-2222-3333-444455556666", w.CWeb.ProjectOf("X-03"));
-            Assert.StartsWith("✓ Projekt „Kontaktformular“", w.Find<TextBlock>("claude-web-msg").Text);
+            Assert.StartsWith("Projekt „Kontaktformular“", w.Find<TextBlock>("claude-web-msg").Text);
             Assert.Contains("Kontaktformular", string.Join("|", w.GetLogicalTexts()));
             Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "claude.web.projekt");
 
@@ -70,7 +70,7 @@ public class ClaudeDock_Ui
             w.Find<Button>("claude-dock-close").Press(); Assert.False(w.ClaudeDockOpen(win)); Assert.Null(w.TryFind<Grid>("claude-split"));
 
             // KI-Seite zeigt die Verbindung; Trennen meldet wirklich ab
-            w.Show("ki-quellen"); Assert.StartsWith("✓ Claude im Web verbunden", w.Find<TextBlock>("claude-web-connected").Text);
+            w.Show("ki-quellen"); Assert.StartsWith("Claude im Web verbunden", w.Find<TextBlock>("claude-web-connected").Text);
             w.Find<Button>("claude-web-disconnect").Press(); Assert.False(w.CWeb.Connected);
             Assert.Equal("claude-verbinden", w.CurrentView); Assert.Equal(ClaudeWeb.Logout, w.ClaudeConnectUrl);
             w.Show("ki-quellen"); w.Find<Button>("claude-web-connect").Press(); Assert.Equal("claude-verbinden", w.CurrentView);

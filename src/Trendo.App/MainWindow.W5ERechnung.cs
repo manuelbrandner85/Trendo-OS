@@ -22,7 +22,7 @@ public partial class MainWindow
             var inv = new Invoice(Finance.NextInvoiceNumber(Money.InvoiceNumbers(), DateOnly.FromDateTime(DateTime.Today)), DateOnly.FromDateTime(DateTime.Today), seller, buyer,
                 [new(item, Finance.ParseAmount(qty.Length > 0 ? qty : "1"), Finance.ParseAmount(unit))], LegalRates.VatStandard, smallBusiness);
             var s = ERechnung.Parse(seller, vatId, taxNumber, sellerMail); var b = ERechnung.Parse(buyer, email: buyerMail);
-            if (ERechnung.Check(inv, s, b, iban, reference) is { Count: > 0 } errors) { _erMsg = "⚠ " + string.Join(" ", errors); Show("finanzen"); return null; }
+            if (ERechnung.Check(inv, s, b, iban, reference) is { Count: > 0 } errors) { _erMsg = "" + string.Join(" ", errors); Show("finanzen"); return null; }
             Directory.CreateDirectory(Path.GetDirectoryName(ERechnungFile)!);
             File.WriteAllText(ERechnungFile, JsonSerializer.Serialize(new ERechnungAngaben(vatId.Trim(), taxNumber.Trim(), sellerMail.Trim(), iban.Trim())));
             var html = Money.WriteInvoice(inv);
@@ -31,10 +31,10 @@ public partial class MainWindow
             var check = ERechnung.Read(File.ReadAllBytes(xml));
             Money.Add(new(inv.Date, $"Rechnung {inv.Number}", Finance.Totals(inv).Gross, "Einnahmen", inv.SmallBusiness ? 0 : LegalRates.VatStandard));
             _core.Audit.Append(Principal.LocalOwner.Name, "finance.erechnung", inv.Number);
-            _erMsg = $"✓ Rechnung {inv.Number} als E-Rechnung gespeichert: {Path.GetFileName(xml)} ({check.Gross:N2} € brutto, wieder eingelesen und geprüft). Die lesbare Fassung liegt daneben.";
+            _erMsg = $"Rechnung {inv.Number} als E-Rechnung gespeichert: {Path.GetFileName(xml)} ({check.Gross:N2} € brutto, wieder eingelesen und geprüft). Die lesbare Fassung liegt daneben.";
             Show("finanzen"); return xml;
         }
-        catch (FormatException) { _erMsg = "⚠ Bitte Menge und Preis als Zahl eingeben."; Show("finanzen"); return null; }
+        catch (FormatException) { _erMsg = "Bitte Menge und Preis als Zahl eingeben."; Show("finanzen"); return null; }
     }
 
     Control ERechnungPanel(TextBox seller, TextBox buyer, TextBox item, TextBox qty, TextBox unit, CheckBox small)

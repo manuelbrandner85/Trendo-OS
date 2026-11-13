@@ -84,7 +84,7 @@ public partial class MainWindow
         if (r.Hard.Count > 0) { sp.Children.Add(H("Noch schwierig", 13)); foreach (var c in r.Hard) sp.Children.Add(P($"• {c.Front}  ({c.Deck}, {c.Lapses}× vergessen)", Text, 12)); }
         if (r.OpenLinks.Count > 0) { sp.Children.Add(H("Noch offen", 13)); sp.Children.Add(P(string.Join(" · ", r.OpenLinks) + " – auf diese Seiten verweist du, sie fehlen noch.", Text, 12)); }
         if (r.Topics.Count > 0) sp.Children.Add(P("Themen der Woche: " + string.Join(", ", r.Topics), Muted, 11.5));
-        var ki = new Button { Name = "week-ki", Content = _weekBusy ? "Fasst zusammen …" : "✳ Mit KI zusammenfassen", IsEnabled = !_weekBusy && r.NewPages.Count > 0 };
+        var ki = new Button { Name = "week-ki", Content = _weekBusy ? "Fasst zusammen …" : "Mit KI zusammenfassen", IsEnabled = !_weekBusy && r.NewPages.Count > 0 };
         ki.Click += async (_, _) => await WeekSummarize();
         var save = new Button { Name = "week-save", Content = "Als Seite speichern", Background = Accent, Foreground = Brushes.White };
         save.Click += (_, _) => Try("ki-wissen", () => WeekSave());

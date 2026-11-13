@@ -116,11 +116,11 @@ public partial class MainWindow
             case "nachher" when c.ShowingBefore: doc.ReplaceData(c.After); c.ShowingBefore = false; _progMsg[page] = "Du siehst Claudes Fassung."; break;
             case "behalten":
                 if (c.ShowingBefore) doc.ReplaceData(c.After);
-                _claudeChanges.Remove(page); _progMsg[page] = "✓ Claudes Änderungen übernommen – Strg+Z nimmt sie trotzdem noch zurück.";
+                _claudeChanges.Remove(page); _progMsg[page] = "Claudes Änderungen übernommen – Strg+Z nimmt sie trotzdem noch zurück.";
                 _core.Audit.Append(Principal.LocalOwner.Name, "claude.programm.behalten", page); break;
             case "verwerfen":
                 if (!c.ShowingBefore) doc.Rollback(c.Before);
-                _claudeChanges.Remove(page); _progMsg[page] = "✕ Claudes Änderungen verworfen – das Dokument ist wie vorher.";
+                _claudeChanges.Remove(page); _progMsg[page] = "Claudes Änderungen verworfen – das Dokument ist wie vorher.";
                 _core.Audit.Append(Principal.LocalOwner.Name, "claude.programm.verworfen", page); break;
         }
         if (CurrentView == page) Show(page);
@@ -133,11 +133,11 @@ public partial class MainWindow
         if (c.DocId != doc.Id) return null;
         if (ClaudeNoClicks) // nichts zu bestätigen, nur die Möglichkeit, es zurückzuholen
         {
-            var undo = new Button { Name = "claude-change-drop", Content = "↶ Zurücknehmen", FontSize = 12, Padding = new Thickness(10, 3), Background = Brushes.Transparent, Foreground = Text, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8) };
+            var undo = new Button { Name = "claude-change-drop", Content = "Zurücknehmen", FontSize = 12, Padding = new Thickness(10, 3), Background = Brushes.Transparent, Foreground = Text, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8) };
             undo.Click += (_, _) => ClaudeChangeDecide(page, "verwerfen");
             var compare = new Button { Name = c.ShowingBefore ? "claude-change-after" : "claude-change-before", Content = c.ShowingBefore ? "Nachher" : "Vorher", FontSize = 12, Padding = new Thickness(10, 3), Margin = new Thickness(0, 0, 6, 0), Background = Brushes.Transparent, Foreground = Text, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8) };
             compare.Click += (_, _) => ClaudeChangeDecide(page, c.ShowingBefore ? "nachher" : "vorher");
-            var line = new DockPanel { Children = { Dk(undo, Avalonia.Controls.Dock.Right), Dk(compare, Avalonia.Controls.Dock.Right), new TextBlock { Text = $"✳ Claude hat „{doc.Title}“ bearbeitet.", Foreground = Text, FontSize = 12.5, VerticalAlignment = VerticalAlignment.Center } } };
+            var line = new DockPanel { Children = { Dk(undo, Avalonia.Controls.Dock.Right), Dk(compare, Avalonia.Controls.Dock.Right), new TextBlock { Text = $"Claude hat „{doc.Title}“ bearbeitet.", Foreground = Text, FontSize = 12.5, VerticalAlignment = VerticalAlignment.Center } } };
             return Appear(CGlass(line, 12, new Thickness(12, 6), "claude-change"));
         }
         Button B(string name, string label, string what, bool on = false, bool main = false)
@@ -148,9 +148,9 @@ public partial class MainWindow
         }
         var row = new WrapPanel { Children = {
             B("claude-change-before", "Vorher", "vorher", c.ShowingBefore), B("claude-change-after", "Nachher", "nachher", !c.ShowingBefore),
-            new Border { Width = 10 }, B("claude-change-keep", "✓ Behalten", "behalten", main: true), B("claude-change-drop", "✕ Verwerfen", "verwerfen") } };
+            new Border { Width = 10 }, B("claude-change-keep", "Behalten", "behalten", main: true), B("claude-change-drop", "Verwerfen", "verwerfen") } };
         var sp = new StackPanel { Spacing = 6, Children = {
-            new TextBlock { Text = $"✳ Claude hat „{doc.Title}“ geändert" + (c.ShowingBefore ? " – du siehst gerade den Stand vorher." : " – du siehst Claudes Fassung."), Foreground = Text, FontSize = 13.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
+            new TextBlock { Text = $"Claude hat „{doc.Title}“ geändert" + (c.ShowingBefore ? " – du siehst gerade den Stand vorher." : " – du siehst Claudes Fassung."), Foreground = Text, FontSize = 13.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
             row } };
         return Appear(CGlass(sp, 12, new Thickness(14, 8), "claude-change"));
     }
@@ -162,7 +162,7 @@ public partial class MainWindow
     Control SuggestChips(ClaudeDock dock, IReadOnlyList<string> list)
     {
         var row = new WrapPanel { Name = "claude-chat-suggest", Margin = new Thickness(0, 2, 0, 0) };
-        row.Children.Add(new TextBlock { Text = "💡 Als Nächstes:", Foreground = CGold, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 6) });
+        row.Children.Add(new TextBlock { Text = "Als Nächstes:", Foreground = CGold, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 6) });
         for (var i = 0; i < list.Count; i++)
         {
             var s = list[i];
@@ -236,15 +236,15 @@ public partial class MainWindow
         if (Windows.Active?.Id is { } aw && ClaudeDockOpen(aw)) yield break; // offen: alles steht schon im Claude-Bereich
         if (page is "text" or "tabelle" or "praesentation")
         {
-            var ask = new Button { Name = "auftrag-claude-markierung", Content = "✳ Markierung fragen", Height = 32 };
-            ToolTip.SetTip(ask, "Was du markiert hast, mit Claude besprechen (Strg+Umschalt+A) – auch ziehen geht: Text oder Dateien einfach auf „✳ Claude“ ziehen");
+            var ask = new Button { Name = "auftrag-claude-markierung", Content = "Markierung fragen", Height = 32 };
+            ToolTip.SetTip(ask, "Was du markiert hast, mit Claude besprechen (Strg+Umschalt+A) – auch ziehen geht: Text oder Dateien einfach auf „Claude“ ziehen");
             ask.Click += (_, _) => ClaudeAskSelection(page);
             yield return ask;
         }
         if (CChats.All(studio).FirstOrDefault(c => c.Messages.Count > 0) is { } last)
         {
             var title = last.Title.Length > 22 ? last.Title[..21] + "…" : last.Title;
-            var go = new Button { Name = "auftrag-claude-weiter", Content = "↻ Weiter: " + title, Height = 32 };
+            var go = new Button { Name = "auftrag-claude-weiter", Content = "Weiter: " + title, Height = 32 };
             ToolTip.SetTip(go, $"Mit Claude weitermachen, wo du warst: „{last.Title}“ (zuletzt {last.Last.LocalDateTime:dd.MM. HH:mm})" + (last.Messages.LastOrDefault(m => m.Role == "user")?.Text is { } lt ? $"\nZuletzt: {(lt.Length > 120 ? lt[..120] + " …" : lt)}" : ""));
             go.Click += (_, _) => ClaudeContinue(studio, last.Id);
             yield return go;
@@ -260,20 +260,20 @@ public partial class MainWindow
         if (studio is not null && q.Length > 0)
         {
             var ask = q;
-            yield return ($"✳ Claude: „{q}“", "Claude in diesem Studio", () => { if (ClaudeOpenFor(studio) is { } d) _ = ClaudeChatSend(d, ask); }, 3);
+            yield return ($"Claude: „{q}“", "Claude in diesem Studio", () => { if (ClaudeOpenFor(studio) is { } d) _ = ClaudeChatSend(d, ask); }, 3);
         }
-        if (studio is not null && ClaudeSelection(page) is not null && score("✳ markierung an claude fragen", q) is > 0 and var s0)
-            yield return ("✳ Markierung an Claude", "Claude", () => ClaudeAskSelection(page), s0 + 1);
+        if (studio is not null && ClaudeSelection(page) is not null && score("markierung an claude fragen", q) is > 0 and var s0)
+            yield return ("Markierung an Claude", "Claude", () => ClaudeAskSelection(page), s0 + 1);
         if (studio is not null)
         {
             var lastChat = CChats.All(studio).FirstOrDefault(c => c.Messages.Count > 0);
             if (lastChat?.Messages.LastOrDefault(m => m.Role == "assistant") is { } am && ClaudeSuggestsOn)
                 foreach (var sug in ClaudeChats.SplitSuggestions(am.Text).Suggestions)
-                    if (score(sug, q) is > 0 and var s1) { var sx = sug; var cid = lastChat.Id; yield return ("💡 " + sug, "Claude schlägt vor", () => { if (ClaudeOpenFor(studio, null, cid) is { } d) _ = ClaudeChatSend(d, sx); }, s1 + 1); }
+                    if (score(sug, q) is > 0 and var s1) { var sx = sug; var cid = lastChat.Id; yield return ("" + sug, "Claude schlägt vor", () => { if (ClaudeOpenFor(studio, null, cid) is { } d) _ = ClaudeChatSend(d, sx); }, s1 + 1); }
             foreach (var f in ClaudeFlows.For(Prompts, StudioCatalog.NameOf(studio, "Trendo")))
                 if (score("ablauf " + f.Name, q) is > 0 and var s2) { var ft = f.Text; yield return ("⟳ " + f.Name, "Claude-Ablauf", () => { if (ClaudeOpenFor(studio) is { } d) _ = ClaudeChatSend(d, ft); }, s2); }
         }
         foreach (var c in CChats.Recent(5))
-            if (score("weiter " + c.Title, q) is > 0 and var s3) { var cs = c.Studio; var cid = c.Id; yield return ("↻ Weiter: " + c.Title, "Claude-Projekt · " + StudioCatalog.NameOf(cs, cs), () => ClaudeContinue(cs, cid), s3); }
+            if (score("weiter " + c.Title, q) is > 0 and var s3) { var cs = c.Studio; var cid = c.Id; yield return ("Weiter: " + c.Title, "Claude-Projekt · " + StudioCatalog.NameOf(cs, cs), () => ClaudeContinue(cs, cid), s3); }
     }
 }

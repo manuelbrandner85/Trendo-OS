@@ -140,9 +140,9 @@ public partial class MainWindow
             void B(string n, string t, Action a, bool primary = false) { var b = Act($"dlm-{n}-{k}", t, a, primary); b.FontSize = 11; b.Margin = new Thickness(0, 0, 4, 0); btn.Children.Add(b); }
             switch (j.Status)
             {
-                case S.Lädt or S.Wartet: B("pause", "❚❚ Anhalten", () => DownloadPause(id)); break;
-                case S.Angehalten: B("resume", "▶ Fortsetzen", () => DownloadResume(id), true); break;
-                case S.Fehler: B("retry", "↻ Erneut versuchen", () => DownloadResume(id), true); break;
+                case S.Lädt or S.Wartet: B("pause", "Anhalten", () => DownloadPause(id)); break;
+                case S.Angehalten: B("resume", "Fortsetzen", () => DownloadResume(id), true); break;
+                case S.Fehler: B("retry", "Erneut versuchen", () => DownloadResume(id), true); break;
                 case S.Fertig:
                     B("open", "Öffnen", () => Launch(j.Target), true);
                     B("folder", "Ordner", () => Launch(Path.GetDirectoryName(j.Target)!)); break;
@@ -153,7 +153,7 @@ public partial class MainWindow
             sp.Children.Add(Card(new StackPanel { Name = $"dlm-job-{k}", Spacing = 4, Children = {
                 Row(new StackPanel { Children = { new TextBlock { Text = j.Name, Foreground = Text, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis }, P(new Uri(j.Url).Host, Muted, 10.5) } }, btn),
                 bar, info,
-                risky ? P("⚠ Programmdatei – nur öffnen, wenn du der Quelle vertraust.", Brush.Parse("#FACC15"), 10.5) : new Panel() } }));
+                risky ? P("Programmdatei – nur öffnen, wenn du der Quelle vertraust.", Brush.Parse("#FACC15"), 10.5) : new Panel() } }));
         }
         return sp;
     }

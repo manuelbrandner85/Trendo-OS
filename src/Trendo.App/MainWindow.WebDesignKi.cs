@@ -352,9 +352,9 @@ public partial class MainWindow
     {
         var sp = new StackPanel { Spacing = 8, Name = "web-ki" };
         var claudeReady = _claude.Ready && !CLimit.Active(DateTimeOffset.Now);
-        sp.Children.Add(new TextBlock { Text = "✨ Seite mit KI bauen und ändern", FontSize = 15, FontWeight = FontWeight.SemiBold, Foreground = Text });
+        sp.Children.Add(new TextBlock { Text = "Seite mit KI bauen und ändern", FontSize = 15, FontWeight = FontWeight.SemiBold, Foreground = Text });
         sp.Children.Add(new TextBlock { Name = "web-ki-who", FontSize = 12, Foreground = claudeReady ? ClaudeAccent : Muted, TextWrapping = TextWrapping.Wrap,
-            Text = claudeReady ? "✳ Claude über dein Abo. Ohne Claude arbeitet eine KI auf diesem PC." : "💻 KI auf diesem PC. Mit Claude (Seite „KI“) arbeitet hier dein Abo." });
+            Text = claudeReady ? "Claude über dein Abo. Ohne Claude arbeitet eine KI auf diesem PC." : "KI auf diesem PC. Mit Claude (Seite „KI“) arbeitet hier dein Abo." });
         if (_wdVariant is { } activeVariant) sp.Children.Add(new WrapPanel { Children = { P("Du bearbeitest eine Variante, die Seite bleibt unverändert.", Brush.Parse("#F5A524"), 12.5), new Border { Width = 8 }, Act("web-var-back", "Zurück zur Seite", () => WebDesignVariantOpen(null)) } });
         var wish = new TextBox { Name = "web-ki-wish", Text = _wdAiText, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 56, FontSize = 14, PlaceholderText = "Beschreibe die Seite oder die Änderung, zum Beispiel: Eine ruhige Seite für eine Bäckerei mit Öffnungszeiten" };
         wish.TextChanged += (_, _) => _wdAiText = wish.Text ?? "";
@@ -366,12 +366,12 @@ public partial class MainWindow
             var got = await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Bild als Vorlage", FileTypeFilter = [new("Bilder") { Patterns = ["*.png", "*.jpg", "*.jpeg", "*.webp"] }] });
             if (got.Select(f => Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(f)).OfType<string>().FirstOrDefault() is { } path) image.Text = path;
         }) } });
-        var btnNew = Act("web-ki-new", _wdAiBusy ? "KI arbeitet …" : "▶ Neue Seite daraus", () => WebDesignAiRun(wish.Text ?? "", image.Text), _wdSelection.Count == 0);
-        var btnChange = Act("web-ki-change", _wdSelection.Count == 0 ? "Auswahl ändern" : $"✎ Nur Auswahl ändern ({_wdSelection.Count})", () => WebDesignAiChange(wish.Text ?? ""), _wdSelection.Count > 0);
+        var btnNew = Act("web-ki-new", _wdAiBusy ? "KI arbeitet …" : "Neue Seite daraus", () => WebDesignAiRun(wish.Text ?? "", image.Text), _wdSelection.Count == 0);
+        var btnChange = Act("web-ki-change", _wdSelection.Count == 0 ? "Auswahl ändern" : $"Nur Auswahl ändern ({_wdSelection.Count})", () => WebDesignAiChange(wish.Text ?? ""), _wdSelection.Count > 0);
         var btnCheck = Act("web-ki-check", "Seite prüfen", () => WebDesignCheckNow());
         btnNew.IsEnabled = !_wdAiBusy; btnChange.IsEnabled = !_wdAiBusy && _wdSelection.Count > 0; btnCheck.IsEnabled = !_wdAiBusy;
         var row = new WrapPanel { Children = { btnNew, new Border { Width = 8 }, btnChange, new Border { Width = 8 }, btnCheck } };
-        if (_wdLastAuto is not null) { row.Children.Add(new Border { Width = 8 }); row.Children.Add(Act("web-ki-undo", "↶ KI-Änderung rückgängig", WebDesignUndo)); }
+        if (_wdLastAuto is not null) { row.Children.Add(new Border { Width = 8 }); row.Children.Add(Act("web-ki-undo", "KI-Änderung rückgängig", WebDesignUndo)); }
         sp.Children.Add(row);
         sp.Children.Add(new TextBlock { Name = "web-ki-selection", FontSize = 12, Foreground = Muted, TextWrapping = TextWrapping.Wrap, Text = _wdSelection.Count == 0 ? "Im Editor unter „Auswählen“ Bausteine anklicken: Die KI ändert dann nur diese. Doppelklick auf einen Text ändert ihn direkt, ohne KI." : "Ausgewählt: " + string.Join(", ", _wdSelection) });
 
@@ -382,7 +382,7 @@ public partial class MainWindow
             foreach (var l in p.Changes.Take(14)) box.Children.Add(P("• " + l, Muted, 12));
             if (p.Changes.Count > 14) box.Children.Add(P($"… und {p.Changes.Count - 14} weitere Änderungen", Muted, 12));
             sp.Children.Add(box);
-            sp.Children.Add(new WrapPanel { Children = { Act("web-ki-accept", "✓ Übernehmen", WebDesignAccept, true), new Border { Width = 8 }, Act("web-ki-discard", "✕ Verwerfen", WebDesignDiscard) } });
+            sp.Children.Add(new WrapPanel { Children = { Act("web-ki-accept", "Übernehmen", WebDesignAccept, true), new Border { Width = 8 }, Act("web-ki-discard", "Verwerfen", WebDesignDiscard) } });
         }
         if (_wdLoop is { } loop)
         {
@@ -390,7 +390,7 @@ public partial class MainWindow
             var errors = loop.Findings.Where(f => f.Level == "Fehler").ToList();
             var what = _wdAudit is { Images.Count: 0 } ? "Prüfung nur der Editor-Daten, nicht vollständig" : "Prüfung auf dem Export";
             box.Children.Add(P(loop.Clean ? $"{what}: keine Fehler{(loop.Repairs > 0 ? $" nach {loop.Repairs} Nachbesserung(en)" : "")}." : $"{what}: {errors.Count} Fehler offen{(loop.LimitReached ? $", Obergrenze von {WebDesignCheck.MaxRepairs} Nachbesserungen erreicht" : "")}.", loop.Clean ? Text : Brush.Parse("#F5A524"), 12.5));
-            foreach (var f in errors.Take(10)) box.Children.Add(P("✗ " + f.Area + ": " + f.Text, Muted, 12));
+            foreach (var f in errors.Take(10)) box.Children.Add(P("" + f.Area + ": " + f.Text, Muted, 12));
             foreach (var f in loop.Findings.Where(f => f.Level == "Hinweis").Take(6)) box.Children.Add(P("• " + f.Area + ": " + f.Text, Muted, 12));
             if (_wdAudit is { Note.Length: > 0 } a) box.Children.Add(P(a.Note, Muted, 12));
             if (_wdAudit is { Images.Count: > 0 } imgs)
@@ -410,7 +410,7 @@ public partial class MainWindow
         foreach (var s in all.Where(x => !x.Auto).Concat(all.Where(x => x.Auto).Take(8)).OrderByDescending(x => x.Id, StringComparer.Ordinal))
         {
             var id = s.Id;
-            states.Children.Add(Row(P($"{(s.Auto ? "⟲ " : "★ ")}{s.Name} · {s.Zeit:dd.MM. HH:mm}{(s.Variante is null ? "" : " · Variante")}", Muted, 12), Act($"web-stand-restore-{i++}", "Wiederherstellen", () => WebDesignStandRestore(id))));
+            states.Children.Add(Row(P($"{(s.Auto ? "⟲ " : "")}{s.Name} · {s.Zeit:dd.MM. HH:mm}{(s.Variante is null ? "" : " · Variante")}", Muted, 12), Act($"web-stand-restore-{i++}", "Wiederherstellen", () => WebDesignStandRestore(id))));
         }
         sp.Children.Add(states);
 
@@ -421,7 +421,7 @@ public partial class MainWindow
         foreach (var v in WebDesignStates.Variants(WebDesignDir))
         {
             var id = v.Id; var n = vi++;
-            var card = new StackPanel { Spacing = 4, Width = 230, Children = { P((id == _wdVariant ? "● " : "") + v.Name, Text, 12.5) } };
+            var card = new StackPanel { Spacing = 4, Width = 230, Children = { P((id == _wdVariant ? "• " : "") + v.Name, Text, 12.5) } };
             if (_wdVariantImages.TryGetValue(id, out var png) && File.Exists(png)) card.Children.Add(WebThumb(png, 214));
             card.Children.Add(new WrapPanel { Children = { Act($"web-var-open-{n}", "Öffnen", () => WebDesignVariantOpen(id)), new Border { Width = 6 }, Act($"web-var-adopt-{n}", "Übernehmen", () => WebDesignVariantAdopt(id)) } });
             cards.Children.Add(new Border { Margin = new Thickness(0, 4, 10, 4), Padding = new Thickness(8), CornerRadius = new CornerRadius(10), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Child = card });

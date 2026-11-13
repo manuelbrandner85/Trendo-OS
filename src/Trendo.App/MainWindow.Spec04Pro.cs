@@ -42,10 +42,10 @@ public partial class MainWindow
     public async Task XrFix()
     {
         var (_, info, det, _) = XrLoad();
-        if (info is null) { _xrMsg = "⚠ Erst ein Modell öffnen."; Show("xr"); return; }
+        if (info is null) { _xrMsg = "Erst ein Modell öffnen."; Show("xr"); return; }
         var plan = XrPro.Plan(info, det, XrDevice);
-        if (!plan.Needed) { _xrMsg = "✓ Nichts zu reparieren – das Modell passt schon auf dieses Gerät."; Show("xr"); return; }
-        if (!XrFile.EndsWith(".glb", StringComparison.OrdinalIgnoreCase) && !XrFile.EndsWith(".gltf", StringComparison.OrdinalIgnoreCase)) { _xrMsg = "⚠ Reparieren geht mit glTF/GLB – andere Formate erst in der 3D-Bibliothek übernehmen."; Show("xr"); return; }
+        if (!plan.Needed) { _xrMsg = "Nichts zu reparieren – das Modell passt schon auf dieses Gerät."; Show("xr"); return; }
+        if (!XrFile.EndsWith(".glb", StringComparison.OrdinalIgnoreCase) && !XrFile.EndsWith(".gltf", StringComparison.OrdinalIgnoreCase)) { _xrMsg = "Reparieren geht mit glTF/GLB – andere Formate erst in der 3D-Bibliothek übernehmen."; Show("xr"); return; }
         var output = Path.Combine(WorkFolder("Modell-Prüfer"), Path.GetFileNameWithoutExtension(XrFile) + "-brille.glb");
         var script = XrPro.FixScript(Path.GetFullPath(XrFile), output, plan);
         _xrMsg = "Blender repariert im Hintergrund …"; Show("xr");
@@ -54,13 +54,13 @@ public partial class MainWindow
         else if (ModelConverter.FindBlender() is { } bl && !_opt.Isolated)
         {
             var py = Path.Combine(Path.GetTempPath(), $"trendo-xrfix-{Guid.NewGuid():N}.py"); await File.WriteAllTextAsync(py, script);
-            try { var r = await Task.Run(() => Cli.Run(bl, ["--background", "--factory-startup", "--python-exit-code", "1", "--python", py], null, 600_000)); ok = r.Ok && File.Exists(output); if (!ok) { _xrMsg = "⚠ Blender konnte nicht reparieren: " + Short(r.Err.Length > 0 ? r.Err : r.Out); Show("xr"); return; } }
+            try { var r = await Task.Run(() => Cli.Run(bl, ["--background", "--factory-startup", "--python-exit-code", "1", "--python", py], null, 600_000)); ok = r.Ok && File.Exists(output); if (!ok) { _xrMsg = "Blender konnte nicht reparieren: " + Short(r.Err.Length > 0 ? r.Err : r.Out); Show("xr"); return; } }
             finally { TryDelete(py); }
         }
-        else { _xrMsg = "⚠ Blender ist nicht eingerichtet (Programme → Blender) – ohne Blender geht die Reparatur nicht."; Show("xr"); return; }
-        if (!ok || !File.Exists(output)) { _xrMsg = "⚠ Reparatur fehlgeschlagen."; Show("xr"); return; }
+        else { _xrMsg = "Blender ist nicht eingerichtet (Programme → Blender) – ohne Blender geht die Reparatur nicht."; Show("xr"); return; }
+        if (!ok || !File.Exists(output)) { _xrMsg = "Reparatur fehlgeschlagen."; Show("xr"); return; }
         _core.Audit.Append(Principal.LocalOwner.Name, "xr.repariert", $"{Path.GetFileName(XrFile)} → {Path.GetFileName(output)}");
-        XrFile = output; _xrMsg = $"✓ Repariert: {Path.GetFileName(output)} – das Original bleibt unverändert.";
+        XrFile = output; _xrMsg = $"Repariert: {Path.GetFileName(output)} – das Original bleibt unverändert.";
         Show("xr");
     }
 
@@ -71,11 +71,11 @@ public partial class MainWindow
         var dev = XrInspector.Budgets[Math.Clamp(XrDevice, 0, XrInspector.Budgets.Count - 1)].Device.Split(" (")[0];
         var sp = new StackPanel { Name = "xr-fix-card", Spacing = 4 };
         sp.Children.Add(H("Für die Brille reparieren", 12));
-        if (!plan.Needed && plan.Steps.Count == 0) { sp.Children.Add(P($"✓ Passt auf {dev}: Dreiecke, Texturen und Maßstab sind im Rahmen.", Brush.Parse("#4ADE80"), 11.5)); return sp; }
+        if (!plan.Needed && plan.Steps.Count == 0) { sp.Children.Add(P($"Passt auf {dev}: Dreiecke, Texturen und Maßstab sind im Rahmen.", Brush.Parse("#4ADE80"), 11.5)); return sp; }
         foreach (var s in plan.Steps) sp.Children.Add(P("• " + s, s.StartsWith("Hinweis", StringComparison.Ordinal) ? Muted : Text, 11.5));
         if (plan.Needed)
         {
-            var b = new Button { Name = "xr-fix", Content = $"🛠 Für {dev} reparieren", Padding = new Thickness(10, 4), Background = Accent, Foreground = Brushes.White };
+            var b = new Button { Name = "xr-fix", Content = $"Für {dev} reparieren", Padding = new Thickness(10, 4), Background = Accent, Foreground = Brushes.White };
             ToolTip.SetTip(b, "Blender rechnet eine neue Datei „…-brille.glb“ – das Original bleibt");
             b.Click += (_, _) => _ = XrFix();
             sp.Children.Add(b);

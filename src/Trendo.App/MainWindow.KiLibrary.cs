@@ -71,7 +71,7 @@ public partial class MainWindow
                 })));
             }
             sp.Children.Add(P($"Läuft mit {rt.Name} ({rt.License}): {rt.WhatItDoes} " +
-                (ready ? "✓ eingerichtet." : rt.FromVollpaket ? (rt.Id == KiRuntime.Ollama ? "Startet automatisch, sobald die Trendo KI läuft." : "Kommt aus dem Vollpaket.") : $"Wird beim ersten Laden mit eingerichtet ({rt.Bytes / (1 << 20)} MB, {(rt.Url is null ? $"offizielle GitHub-Seite {rt.Repo}" : $"offizielles Paket {new Uri(rt.Url).Host}, verlinkt auf github.com/{rt.Repo}")})."), null, 11));
+                (ready ? "eingerichtet." : rt.FromVollpaket ? (rt.Id == KiRuntime.Ollama ? "Startet automatisch, sobald die Trendo KI läuft." : "Kommt aus dem Vollpaket.") : $"Wird beim ersten Laden mit eingerichtet ({rt.Bytes / (1 << 20)} MB, {(rt.Url is null ? $"offizielle GitHub-Seite {rt.Repo}" : $"offizielles Paket {new Uri(rt.Url).Host}, verlinkt auf github.com/{rt.Repo}")})."), null, 11));
         }
         if (!ol.Up && KiLibrary.OfKind(_kiLibKind).Any(m => m.Runtime == KiRuntime.Ollama)) sp.Children.Add(OllamaHint("ki-bibliothek"));
         foreach (var m in KiLibrary.OfKind(_kiLibKind))
@@ -187,7 +187,7 @@ public partial class MainWindow
                 try { await Task.Run(() => store.InstallModelFile(m, f, file, sha, _core.Audit)); } finally { TryDelete(file); }
                 step++;
             }
-            SetupOverlayProgress(steps, steps, "Fertig ✓");
+            SetupOverlayProgress(steps, steps, "Fertig");
             _core.Audit.Append(Principal.LocalOwner.Name, "ki.library.install", $"{m.Id} {m.License}");
             _kiLibMsg = $"{m.Name} ist eingerichtet. Mit „Ausprobieren“ kannst du es gleich testen."; _kiTry = m.Id;
         }
@@ -398,7 +398,7 @@ public partial class MainWindow
         {
             if (res.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase) || res.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
             {
-                var play = new Button { Name = "kilib-play-result", Content = "▶ Anhören", Background = Accent }; play.Click += (_, _) => Launch(res);
+                var play = new Button { Name = "kilib-play-result", Content = "Anhören", Background = Accent }; play.Click += (_, _) => Launch(res);
                 sp.Children.Add(play);
             }
             if (res.EndsWith(".png", StringComparison.OrdinalIgnoreCase))

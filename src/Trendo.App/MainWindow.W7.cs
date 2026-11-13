@@ -118,7 +118,7 @@ public partial class MainWindow
         }
         var task = new TextBox { Name = "fus-task", PlaceholderText = "Aufgabe braucht … (ki, ocr, video)", Width = 220 };
         sp.Children.Add(new WrapPanel { Children = { Act("fus-check", "Erreichbarkeit prüfen", () => _ = CheckNodesAsync()), task,
-            Act("fus-route", "Wo läuft das?", () => { var (w, why) = FusionStore.Route(task.Text?.Trim() ?? "", SelfCaps(), Verbund.Nodes()); W7Say(w.Length > 0 ? $"→ {w}: {why}" : "Nicht möglich: " + why, "verbund"); }) } });
+            Act("fus-route", "Wo läuft das?", () => { var (w, why) = FusionStore.Route(task.Text?.Trim() ?? "", SelfCaps(), Verbund.Nodes()); W7Say(w.Length > 0 ? $"{w}: {why}" : "Nicht möglich: " + why, "verbund"); }) } });
         return SysPage("Geräteverbund", sp);
     }
 

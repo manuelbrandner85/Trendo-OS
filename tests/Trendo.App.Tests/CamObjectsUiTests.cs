@@ -36,7 +36,7 @@ public class CamObjects_Ui
             Assert.Equal("Erkannt: 2 Personen, 1 Hund (40 ms, YOLOX-S, lokal).", w.Find<TextBlock>("cam-status").Text);
             MainWindow.ObjectsRunOverride = _ => new Cli.Result(1, "", "Bild nicht lesbar: kaputt");
             await w.CamDetectObjects();
-            Assert.StartsWith("⚠ Objekterkennung: Bild nicht lesbar", w.Bench.CamStatus);
+            Assert.StartsWith("Objekterkennung: Bild nicht lesbar", w.Bench.CamStatus);
         }
         finally { MainWindow.ObjectsRunOverride = null; w.Close(); }
     }

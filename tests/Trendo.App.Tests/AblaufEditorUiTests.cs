@@ -11,7 +11,7 @@ public class AblaufEditor_Ui
 {
     static async Task Until(Func<bool> ok, int ms = 6000) { for (var i = 0; i < ms / 20 && !ok(); i++) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); await Task.Delay(20); } Assert.True(ok()); }
 
-    [AvaloniaFact(DisplayName = "Ablauf-Editor: Probelauf mit Anzeige – jeder Baustein leuchtet vorher auf, danach ✓ mit Anzahl bzw. ✕ bei Fehler, Ergebnis am Ende; nichts wird geändert")]
+    [AvaloniaFact(DisplayName = "Ablauf-Editor: Probelauf mit Anzeige – jeder Baustein leuchtet vorher auf, danach mit Anzahl bzw. bei Fehler, Ergebnis am Ende; nichts wird geändert")]
     public async Task Probelauf_mit_Anzeige()
     {
         var (w, _, root) = Ui.Open();
@@ -28,7 +28,7 @@ public class AblaufEditor_Ui
         if (!task.IsCompleted) lit.Add(w.WfProbeStep);
         await task; Avalonia.Threading.Dispatcher.UIThread.RunJobs();
         var probe = w.WfProbe!; Assert.True(probe.DryRun); Assert.Equal(wf.Steps.Count, probe.Steps.Count);
-        Assert.StartsWith("✓ Ordner anlegen", w.Find<TextBlock>("wf-node-0-badge").Text);
+        Assert.StartsWith("Ordner anlegen", w.Find<TextBlock>("wf-node-0-badge").Text);
         Assert.Contains(Enumerable.Range(1, wf.Steps.Count - 1), i => w.Find<TextBlock>($"wf-node-{i}-badge").Text!.Contains("2 Dateien"));
         Assert.Contains("im Probelauf wurde nichts geändert", w.Find<TextBlock>("wf-end-text").Text);
         Assert.False(Directory.Exists(Path.Combine(home, "Sammlung")));

@@ -46,7 +46,7 @@ public partial class MainWindow
         }
         var take = new Button { Name = "ms-idea-take", Content = "Übernehmen", FontSize = 11.5, Padding = new Thickness(10, 3), CornerRadius = new CornerRadius(12), BorderThickness = new Thickness(0), Background = Brush.Parse("#33D4AF37"), VerticalAlignment = VerticalAlignment.Center };
         take.Click += (_, _) => MsTakeDailyIdea(day);
-        var head = new DockPanel { Children = { Dk(take, Avalonia.Controls.Dock.Right), new TextBlock { Text = day == today ? "💡 IDEE DES TAGES" : $"💡 IDEE VOM {day:dd.MM.}", Foreground = Muted, FontSize = 10, FontWeight = FontWeight.Bold, VerticalAlignment = VerticalAlignment.Center } } };
+        var head = new DockPanel { Children = { Dk(take, Avalonia.Controls.Dock.Right), new TextBlock { Text = day == today ? "IDEE DES TAGES" : $"IDEE VOM {day:dd.MM.}", Foreground = Muted, FontSize = 10, FontWeight = FontWeight.Bold, VerticalAlignment = VerticalAlignment.Center } } };
         return new Border { Name = "ms-idea", Padding = new Thickness(10, 8), CornerRadius = new CornerRadius(12), Margin = new Thickness(0, 0, 0, 6),
             Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
                 GradientStops = { new GradientStop(Color.Parse("#26D4AF37"), 0), new GradientStop(Color.Parse("#0AFFFFFF"), 1) } },
@@ -58,7 +58,7 @@ public partial class MainWindow
     {
         _msSel = songId; _msDetailTab = "profi";
         var f = await MsHookClip(songId, 30);
-        _msMsg = f is null ? MusicProMessage : $"✓ Kurzvideo 9:16 fertig: {Path.GetFileName(f)} (Ordner „Musik/Kurzclips“).";
+        _msMsg = f is null ? MusicProMessage : $"Kurzvideo 9:16 fertig: {Path.GetFileName(f)} (Ordner „Musik/Kurzclips“).";
         Show(MS); return f;
     }
 }

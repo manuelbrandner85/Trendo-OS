@@ -157,7 +157,7 @@ public partial class MainWindow
         reject.Click += (_, _) => { TextAiDecide(false); Show("text"); };
         return new Border { Name = "text-ai-card", Background = Brush.Parse("#1AC9A227"), BorderBrush = Brush.Parse("#55C9A227"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 8), Margin = new Thickness(0, 4, 0, 4),
             Child = new StackPanel { Spacing = 6, Children = {
-                new TextBlock { Text = "✨ Vorschlag der KI – noch nichts geändert", Foreground = Text, FontWeight = FontWeight.SemiBold },
+                new TextBlock { Text = "Vorschlag der KI – noch nichts geändert", Foreground = Text, FontWeight = FontWeight.SemiBold },
                 tb, new StackPanel { Orientation = Orientation.Horizontal, Children = { accept, reject } } } } };
     }
 
@@ -471,8 +471,8 @@ public partial class MainWindow
         {
             var issues = TextTools.Accessibility(TextDocument);
             var box = new StackPanel { Name = "text-access-panel", Spacing = 4, Children = { H("Barrierefreiheit", 13) } };
-            if (issues.Count == 0) box.Children.Add(P("Keine Barrieren gefunden ✓", Brush.Parse("#4ADE80"), 12.5));
-            foreach (var i in issues) box.Children.Add(new StackPanel { Spacing = 1, Children = { P("⚠ " + i.Text, Brush.Parse("#FACC15"), 12.5), P(i.Fix, null, 12) } });
+            if (issues.Count == 0) box.Children.Add(P("Keine Barrieren gefunden", Brush.Parse("#4ADE80"), 12.5));
+            foreach (var i in issues) box.Children.Add(new StackPanel { Spacing = 1, Children = { P("" + i.Text, Brush.Parse("#FACC15"), 12.5), P(i.Fix, null, 12) } });
             yield return Glass2(box, 10);
         }
         if (_txMerge && _txData is { } d)

@@ -95,7 +95,7 @@ public partial class MainWindow
         }
         catch (Exception e) when (e is IOException or InvalidOperationException) { }
         var b = CoverStudio.Build(a, sections, melody);
-        CwSay($"✓ Bauplan: {b.Bpm:0} BPM · {b.Meter} · {b.KeyDe} · {b.Sections.Count} Teile" + (b.Melody.Count > 0 ? $" · Melodie {CoverStudio.Note(b.MelodyLow)}–{CoverStudio.Note(b.MelodyHigh)}" : ""));
+        CwSay($"Bauplan: {b.Bpm:0} BPM · {b.Meter} · {b.KeyDe} · {b.Sections.Count} Teile" + (b.Melody.Count > 0 ? $" · Melodie {CoverStudio.Note(b.MelodyLow)}–{CoverStudio.Note(b.MelodyHigh)}" : ""));
         return b;
     }
 
@@ -103,13 +103,13 @@ public partial class MainWindow
     public async Task<MusicSong?> MsCoverMake()
     {
         if (_cwBusy) return null;
-        if (_cwOriginal is not { } oid || Songs.Get(oid) is not { } orig || _cwPlan is not { } plan) { CwSay("Zuerst unter ② dein Original wählen."); return null; }
-        if (_cwLyrics.Trim().Length == 0) { CwSay("Bitte unter ③ den Liedtext einfügen – Trendo holt ihn nicht aus dem Internet."); return null; }
+        if (_cwOriginal is not { } oid || Songs.Get(oid) is not { } orig || _cwPlan is not { } plan) { CwSay("Zuerst unter Schritt 2 dein Original wählen."); return null; }
+        if (_cwLyrics.Trim().Length == 0) { CwSay("Bitte unter Schritt 3 den Liedtext einfügen – Trendo holt ihn nicht aus dem Internet."); return null; }
         _cwBusy = true; _cwResults.Clear();
         try
         {
             var own = _cwVoice == "eigen";
-            if (own && !OwnVoiceReady) { CwSay("Deine Stimme ist noch nicht gelernt – unter ④ „Meine eigene Stimme“."); return null; }
+            if (own && !OwnVoiceReady) { CwSay("Deine Stimme ist noch nicht gelernt – unter Schritt 4 „Meine eigene Stimme“."); return null; }
             var voice = CoverStudio.Voice(own ? "frei" : _cwVoice); var strength = CoverStudio.Strength(_cwCloseness);
             var title = (_cwHit?.Title ?? orig.Title.Replace(" – Original", "")) + " (Cover)";
             MusicSong? best = null; CoverStudio.Report? bestR = null;
@@ -137,13 +137,13 @@ public partial class MainWindow
             // M8: Klang der Epoche (Stimme bringt ihren Klang mit, eigene Wahl hat Vorrang)
             var soundId = _cwSound != "heute" ? _cwSound : voice.Sound;
             if (soundId != "heute") best = await CwApplySound(best, soundId) ?? best;
-            CwSay($"✓ Cover fertig: „{best.Title}“" + (bestR is null ? "." : $" – Ampel {LightDe(bestR.Light)} ({bestR.Score * 100:0} % wie das Original)."));
+            CwSay($"Cover fertig: „{best.Title}“" + (bestR is null ? "." : $" – Ampel {LightDe(bestR.Light)} ({bestR.Score * 100:0} % wie das Original)."));
             return best;
         }
         finally { _cwBusy = false; if (CurrentView == MS) Show(MS); }
     }
 
-    static string LightDe(string l) => l switch { "gruen" => "🟢 grün", "gelb" => "🟡 gelb", _ => "🔴 rot" };
+    static string LightDe(string l) => l switch { "gruen" => "grün", "gelb" => "gelb", _ => "rot" };
 
     /// <summary>Für Tests: Ersatz für FFmpeg beim Epochen-Klang (Eingang, Ausgang).</summary>
     public Func<string, string, Task<bool>>? EraSoundOverride { get; set; }
@@ -170,13 +170,13 @@ public partial class MainWindow
     /// <summary>M7: Karaoke aus der eigenen Datei – Spuren trennen, dann über die Begleitung mitsingen (Text und Melodie laufen mit).</summary>
     public async Task<bool> MsCoverKaraoke()
     {
-        if (_cwOriginal is not { } oid || Songs.Get(oid) is null) { CwSay("Zuerst unter ② dein Original wählen."); return false; }
+        if (_cwOriginal is not { } oid || Songs.Get(oid) is null) { CwSay("Zuerst unter Schritt 2 dein Original wählen."); return false; }
         if (_cwLyrics.Trim().Length > 0) Songs.Update(oid, x => x.Lyrics = _cwLyrics.Trim());
         CwSay("Gesang und Begleitung werden getrennt …");
         try { var st = await MsSplit(oid); if (st.Count == 0) { CwSay("Trennen ging nicht: " + _msMsg); return false; } }
         catch (InvalidOperationException e) { CwSay(e.Message); return false; }
         var ok = await MsSingStart(oid);
-        CwSay(ok ? "🎤 Karaoke läuft – singe über die Begleitung." : _msMsg);
+        CwSay(ok ? "Karaoke läuft – singe über die Begleitung." : _msMsg);
         return ok;
     }
 
@@ -192,9 +192,9 @@ public partial class MainWindow
         }
         TextBlock Step(string t) => new() { Text = t, Foreground = Brush.Parse("#F5B83D"), FontSize = 12.5, FontWeight = FontWeight.SemiBold };
 
-        // ① Lied suchen
+        // 1 Lied suchen
         var q = new TextBox { Name = "cw-query", Text = _cwQuery, Watermark = "Künstler – Titel", MinWidth = 220 };
-        sp.Children.Add(new StackPanel { Spacing = 4, Children = { Step("① Lied suchen"), new WrapPanel { Children = { q, new Border { Width = 6 }, B("cw-search", "Suchen", () => MsCoverSearch(q.Text ?? "")) } } } });
+        sp.Children.Add(new StackPanel { Spacing = 4, Children = { Step("1. Lied suchen"), new WrapPanel { Children = { q, new Border { Width = 6 }, B("cw-search", "Suchen", () => MsCoverSearch(q.Text ?? "")) } } } });
         for (var i = 0; i < _cwHits.Count && i < 6; i++)
         {
             var ii = i; var h = _cwHits[i]; var on = _cwHit?.Mbid == h.Mbid;
@@ -208,15 +208,15 @@ public partial class MainWindow
         }
         if (_cwHit is { } hit)
         {
-            if (MsCoverTaken.Count > 0) sp.Children.Add(new TextBlock { Name = "cw-taken", Text = "✓ Übernommen: " + string.Join(", ", MsCoverTaken), Foreground = Brush.Parse("#4ADE80"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
+            if (MsCoverTaken.Count > 0) sp.Children.Add(new TextBlock { Name = "cw-taken", Text = "Übernommen: " + string.Join(", ", MsCoverTaken), Foreground = Brush.Parse("#4ADE80"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
             var link = new Button { Name = "cw-page", Content = "Infos bei MusicBrainz ansehen", FontSize = 11.5, Padding = new Thickness(8, 2) };
             link.Click += (_, _) => Launch(hit.Page);
             sp.Children.Add(link);
         }
 
-        // ② Original
+        // 2 Original
         var orig = _cwOriginal is { } oid ? Songs.Get(oid) : null;
-        sp.Children.Add(new StackPanel { Spacing = 4, Children = { Step("② Dein Original (eigene Datei: MP3, CD-Kopie …)"),
+        sp.Children.Add(new StackPanel { Spacing = 4, Children = { Step("2. Dein Original (eigene Datei: MP3, CD-Kopie …)"),
             B("cw-original", orig is null ? "Datei wählen und untersuchen" : "Andere Datei wählen", async () => { await MsCoverOriginal(); }) } });
         if (_cwPlan is { } p)
         {
@@ -229,12 +229,12 @@ public partial class MainWindow
             if (p.Melody.Count > 20) sp.Children.Add(CwMelodyCurve(p));
         }
 
-        // ③ Text
+        // 3 Text
         var lyr = new TextBox { Name = "cw-lyrics", Text = _cwLyrics, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 110, MaxHeight = 220, Watermark = "Liedtext hier einfügen (mit [Strophe], [Refrain] …)" };
         lyr.TextChanged += (_, _) => _cwLyrics = lyr.Text ?? "";
-        sp.Children.Add(new StackPanel { Spacing = 4, Children = { Step("③ Liedtext"), P(CoverStudio.LyricsHint, Muted, 11), lyr } });
+        sp.Children.Add(new StackPanel { Spacing = 4, Children = { Step("3. Liedtext"), P(CoverStudio.LyricsHint, Muted, 11), lyr } });
 
-        // ④ Stil, Stimme, Nähe, Klang
+        // 4 Stil, Stimme, Nähe, Klang
         var genre = new TextBox { Name = "cw-genre", Text = _cwGenre, Watermark = "Genre, z. B. Rockabilly, Akustik, Jazz (leer = wie das Original)", MinWidth = 260 };
         genre.TextChanged += (_, _) => _cwGenre = genre.Text ?? "";
         var voiceIds = CoverStudio.Voices.Select(v => v.Id).Concat(OwnVoiceReady ? ["eigen"] : []).ToList();
@@ -247,15 +247,15 @@ public partial class MainWindow
         near.ValueChanged += (_, _) => _cwCloseness = near.Value;
         var vInfo = CoverStudio.Voice(_cwVoice == "eigen" ? "frei" : _cwVoice);
         sp.Children.Add(new StackPanel { Spacing = 4, Children = {
-            Step("④ Stil, Stimme und Klang"), genre,
+            Step("4. Stil, Stimme und Klang"), genre,
             new WrapPanel { Children = { new StackPanel { Children = { P("Stimme (erfunden, keine echte Person)", Muted, 11), voice } }, new Border { Width = 10 }, new StackPanel { Children = { P("Klang wie damals", Muted, 11), sound } } } },
             P(_cwVoice == "eigen" ? "Das Cover wird in deiner gelernten Stimme gesungen." : vInfo.Id == "frei" ? "Eigene Wahl: die Stimme folgt deinem Genre-Text." : vInfo.Hint + " – Klang passt automatisch, außer du wählst oben einen anderen.", Muted, 11),
             MsOwnVoicePanel(),
             new StackPanel { Children = { P("Nähe zum Original – links freier, rechts genauer (Rhythmus, Höhen und Tiefen)", Muted, 11), near } } } });
 
-        // ⑤ Erzeugen
-        sp.Children.Add(new StackPanel { Spacing = 6, Children = { Step("⑤ Cover erzeugen und prüfen"),
-            new WrapPanel { Children = { B("cw-make", _cwBusy ? "Cover entsteht …" : "🎙 Cover erzeugen", async () => { await MsCoverMake(); }, true), new Border { Width = 6 }, B("cw-karaoke", "🎤 Karaoke aus dem Original", async () => { await MsCoverKaraoke(); }) } } } });
+        // 5 Erzeugen
+        sp.Children.Add(new StackPanel { Spacing = 6, Children = { Step("5. Cover erzeugen und prüfen"),
+            new WrapPanel { Children = { B("cw-make", _cwBusy ? "Cover entsteht …" : "Cover erzeugen", async () => { await MsCoverMake(); }, true), new Border { Width = 6 }, B("cw-karaoke", "Karaoke aus dem Original", async () => { await MsCoverKaraoke(); }) } } } });
         if (_cwMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "cw-msg", Text = _cwMsg, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap });
 
         // Ampel je Versuch
@@ -270,7 +270,7 @@ public partial class MainWindow
         }
 
         var box = new Expander { Name = "cw-box", IsExpanded = _cwOpen, HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(0, 6, 0, 0), Content = sp,
-            Header = new StackPanel { Children = { new TextBlock { Text = "🎙 Cover-Werkstatt", Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold },
+            Header = new StackPanel { Children = { new TextBlock { Text = "Cover-Werkstatt", Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold },
                 new TextBlock { Text = "Nach deinem Original: gleicher Rhythmus, gleiche Höhen und Tiefen, Stimme und Klang einer Epoche, Karaoke", Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap } } } };
         box.PropertyChanged += (_, e) => { if (e.Property == Expander.IsExpandedProperty) _cwOpen = box.IsExpanded; };
         return box;

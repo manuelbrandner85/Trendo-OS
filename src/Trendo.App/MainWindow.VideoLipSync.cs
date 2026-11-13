@@ -106,7 +106,7 @@ public partial class MainWindow
         var go = Act("ve-lip-run", _veLipBusy ? "Mundbilder entstehen …" : "Mundbilder erzeugen und prüfen", () => { if (!_veLipBusy) _ = EditLipSync(d, _veLipAudio, _veLipText, _veLipVideo); });
         go.IsEnabled = !_veLipBusy; sp.Children.Add(go);
         foreach (var r in new[] { EditLipLast, EditLipVideoLast }.OfType<LipSync.SyncResult>())
-            sp.Children.Add(P((r.Ok ? "✓ " : "✗ ") + r.Text, r.Ok ? Text : Brush.Parse("#F87171"), 11));
+            sp.Children.Add(P((r.Ok ? "• " : "") + r.Text, r.Ok ? Text : Brush.Parse("#F87171"), 11));
         sp.Children.Add(P("Mundbilder nach Papagayo (AI, E, O, U, L, WQ, etc, FV, MBP, rest) – als JSON und Moho-Datei für Blender, Moho, OpenToonz. Erlaubter Versatz ±80 ms.", Muted, 10.5));
         return sp;
     }

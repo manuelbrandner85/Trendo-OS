@@ -328,7 +328,7 @@ public partial class MainWindow
         foreach (var i in Enumerable.Reverse(items))
         {
             var label = i.Kind switch { "text" => i.Text.Length > 18 ? i.Text[..18] + "…" : i.Text, "rect" => "Rechteck", "ellipse" => "Kreis", _ => "Bild" };
-            var row = new Button { Name = "pod-layer-" + i.Id, Content = (i.Group.Length > 0 ? "▣ " : "") + label, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(8, 3) };
+            var row = new Button { Name = "pod-layer-" + i.Id, Content = (i.Group.Length > 0 ? "• " : "") + label, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(8, 3) };
             if (PodSelected.Contains(i.Id)) row.Classes.Add("accent");
             row.Click += (_, _) => { PodSelected.Clear(); foreach (var x in PodDesign.WithGroups(items, [i.Id])) PodSelected.Add(x); Show(PodKey); };
             var eye = new Button { Name = "pod-hide-" + i.Id, Content = i.Hidden ? "○" : "●", Padding = new Thickness(6, 3) };

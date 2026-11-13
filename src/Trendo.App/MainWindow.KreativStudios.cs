@@ -215,7 +215,7 @@ public partial class MainWindow
         var cw = LogoKit.Contrast(s.Primary, "#FFFFFF"); var cb = LogoKit.Contrast(s.Primary, "#000000");
         sp.Children.Add(H("Kontrast", 13));
         sp.Children.Add(P($"Hauptfarbe zu Weiß {cw.ToString("0.0", De)}:1 · zu Schwarz {cb.ToString("0.0", De)}:1", Text, 12));
-        sp.Children.Add(P(Math.Max(cw, cb) >= 4.5 ? "✓ Gut lesbar auch in kleiner Schrift." : "⚠ Unter 4,5:1 – für kleine Schrift eine kräftigere Farbe wählen.", Math.Max(cw, cb) >= 4.5 ? Brush.Parse("#4ADE80") : Brush.Parse("#F5A524"), 12));
+        sp.Children.Add(P(Math.Max(cw, cb) >= 4.5 ? "Gut lesbar auch in kleiner Schrift." : "Unter 4,5:1 – für kleine Schrift eine kräftigere Farbe wählen.", Math.Max(cw, cb) >= 4.5 ? Brush.Parse("#4ADE80") : Brush.Parse("#F5A524"), 12));
         if (!LogoKit.IsHex(d.Text("primary")) || !LogoKit.IsHex(d.Text("accent"))) sp.Children.Add(P("Farben bitte als #RRGGBB eintragen, z. B. #1E3A8A.", Brush.Parse("#F5A524"), 12));
         return sp;
     }
@@ -327,7 +327,7 @@ public partial class MainWindow
             var (ch, problems) = PodcastKit.ParseChapters(text);
             foreach (var c in ch)
                 notes.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("70,*"), Children = { new TextBlock { Text = c.Start.TotalHours >= 1 ? c.Start.ToString(@"h\:mm\:ss") : c.Start.ToString(@"mm\:ss"), Foreground = Accent, FontFamily = new FontFamily("Consolas, monospace"), FontSize = 13 }, Pos(new TextBlock { Text = c.Title, Foreground = Text, FontSize = 13 }, 1) } });
-            foreach (var p in problems) notes.Children.Add(P("⚠ " + p, Brush.Parse("#F5A524"), 12));
+            foreach (var p in problems) notes.Children.Add(P("" + p, Brush.Parse("#F5A524"), 12));
         }
         var box = KrBox(d, "chapters", "podc-chapters", "00:00 Begrüßung", true, Render);
         box.FontFamily = new FontFamily("Consolas, Courier New, monospace"); box.MinHeight = 200;

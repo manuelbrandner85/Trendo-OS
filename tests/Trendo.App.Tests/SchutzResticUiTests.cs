@@ -34,7 +34,7 @@ public class SchutzRestic_Ui
             };
             w.Show("schutz"); Assert.NotNull(w.Find<TextBox>("sec-restic-pw"));
             await w.SchutzResticBackup(data, repo, "geheim-12345");
-            Assert.StartsWith("✓ Gesichert: 1 neue", w.ResticMessage); Assert.Contains("Passwort gut aufbewahren", w.ResticMessage);
+            Assert.StartsWith("Gesichert: 1 neue", w.ResticMessage); Assert.Contains("Passwort gut aufbewahren", w.ResticMessage);
             Assert.Equal(["init", "backup"], calls.Select(c => c[0])); Assert.All(envs, e => Assert.Equal("geheim-12345", e));
             Assert.DoesNotContain(calls.SelectMany(c => c), a => a.Contains("geheim"));
             Assert.DoesNotContain("geheim-12345", File.ReadAllText(w.Core.Audit.FilePath));
@@ -43,7 +43,7 @@ public class SchutzRestic_Ui
             Assert.NotNull(w.Find<Button>("sec-restic-restore-0"));
             var target = await w.SchutzResticRestore(snap, "geheim-12345");
             Assert.NotNull(target); Assert.Contains("abcdef12", target); Assert.Equal(["restore", "abcdef1234567890:/X/eigene-daten"], calls[^1].Take(2)); // gezielt der gesicherte Ordner
-            Assert.StartsWith("✓ Wiederhergestellt", w.ResticMessage);
+            Assert.StartsWith("Wiederhergestellt", w.ResticMessage);
             await w.SchutzResticBackup(data, Path.Combine(data, "innen"), "geheim-12345");
             Assert.Contains("würde sich selbst sichern", w.ResticMessage);
         }

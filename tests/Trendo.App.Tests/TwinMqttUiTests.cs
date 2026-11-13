@@ -28,7 +28,7 @@ public class TwinMqttUi
             var saved = File.ReadAllText(Path.Combine(w.Core.DataRoot, "zwilling", "mqtt.json"));
             Assert.Contains("127.0.0.1", saved); Assert.Contains("nutzer", saved); Assert.DoesNotContain("geheim", saved);
             for (var i = 0; i < 100 && !w.TwinMqttMessage.StartsWith('⚠'); i++) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); await Task.Delay(50); }
-            Assert.StartsWith("⚠ MQTT:", w.TwinMqttMessage);
+            Assert.StartsWith("MQTT:", w.TwinMqttMessage);
             w.TwinMqttStop(); Assert.False(w.TwinMqttRunning); Assert.StartsWith("MQTT getrennt", w.TwinMqttMessage);
         }
         finally { w.Close(); }

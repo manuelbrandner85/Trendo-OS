@@ -31,7 +31,7 @@ public partial class MainWindow
         BibBusy = true; _bibMsg = busy; Show(BIB);
         try { _bibMsg = await work(); }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or TimeoutException or InvalidDataException or InvalidOperationException or IOException or ArgumentException
-            or UnauthorizedAccessException or KeyNotFoundException or System.Text.Json.JsonException) { _bibMsg = "⚠ " + ex.Message; }
+            or UnauthorizedAccessException or KeyNotFoundException or System.Text.Json.JsonException) { _bibMsg = "" + ex.Message; }
         BibBusy = false; Show(BIB);
     }
 
@@ -53,7 +53,7 @@ public partial class MainWindow
         if (!BibOnline) throw new InvalidOperationException("Offline – Laden geht erst mit Internetverbindung.");
         var item = hit.Source is AssetLibrary.PolyHaven or AssetLibrary.AmbientCg ? await Bib.Download(hit) : await BibFree.Download(Bib, hit, BibKey(hit.Source));
         _core.Audit.Append(Trendo.Core.Principal.LocalOwner.Name, "bibliothek3d.download", $"{hit.Source}/{hit.Id} ({hit.License})");
-        return $"✓ „{item.Name}“ liegt in deiner Bibliothek ({item.License}, {item.Source}).";
+        return $"„{item.Name}“ liegt in deiner Bibliothek ({item.License}, {item.Source}).";
     });
 
     /// <summary>Modell aus einem anderen Programm übernehmen: GLB/glTF direkt, alles andere über Blender nach GLB.</summary>
@@ -70,7 +70,7 @@ public partial class MainWindow
         }
         var item = Bib.AddLocal(glb, Path.GetFileName(path), Path.GetFileName(path));
         if (!ReferenceEquals(glb, path)) try { File.Delete(glb); } catch (IOException) { }
-        return $"✓ „{item.Name}“ übernommen{(ext == ".glb" ? "" : " (mit Blender nach GLB umgewandelt)")}.";
+        return $"„{item.Name}“ übernommen{(ext == ".glb" ? "" : " (mit Blender nach GLB umgewandelt)")}.";
     });
 
     private Control BibView()
@@ -117,7 +117,7 @@ public partial class MainWindow
                     new TextBlock { Text = h.Name, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis, MaxWidth = 156 },
                     new TextBlock { Text = h.SizeCm is { } s ? $"{s[0]:0} × {s[1]:0} × {s[2]:0} cm" : h.Category, Foreground = Muted, FontSize = 11 },
                     new TextBlock { Text = $"{h.License} · {h.Author}", Foreground = Muted, FontSize = 10.5, TextTrimming = TextTrimming.CharacterEllipsis, MaxWidth = 156 } } };
-                var act = have ? (Control)new TextBlock { Name = $"bib-have-{i}", Text = "✓ in der Bibliothek", Foreground = Brush.Parse("#4ADE80"), FontSize = 11.5, Margin = new Thickness(0, 4, 0, 0) }
+                var act = have ? (Control)new TextBlock { Name = $"bib-have-{i}", Text = "in der Bibliothek", Foreground = Brush.Parse("#4ADE80"), FontSize = 11.5, Margin = new Thickness(0, 4, 0, 0) }
                     : Btn($"bib-get-{i}", "Laden", () => { _ = BibDownload(hit); }, true);
                 grid.Children.Add(new Border { Name = $"bib-hit-{i}", Width = 176, Margin = new Thickness(0, 0, 10, 10), Padding = new Thickness(10), CornerRadius = new CornerRadius(12), Background = Brush.Parse("#2C2C2C"), BorderBrush = EdgeLit, BorderThickness = new Thickness(1),
                     Child = new StackPanel { Children = { new Border { CornerRadius = new CornerRadius(8), ClipToBounds = true, Child = pic }, info, act } } });
@@ -160,7 +160,7 @@ public partial class MainWindow
         sp.Children.Add(H("Aus anderen Programmen", 13));
         sp.Children.Add(P("FBX, OBJ, USD/USDZ, Alembic, PLY, STL, glTF oder eine Blender-Datei – Trendo wandelt sie mit Blender nach GLB um (Meter, Materialien und Texturen eingebettet).", null, 11.5));
         var file = Field("bib-import-path", "z. B. sessel.fbx", 330); sp.Children.Add(file);
-        sp.Children.Add(btn("bib-import", "Übernehmen", () => { try { _ = BibImport(Need(file, "die Datei")); } catch (ArgumentException ex) { _bibMsg = "⚠ " + ex.Message; Show(BIB); } }, true));
+        sp.Children.Add(btn("bib-import", "Übernehmen", () => { try { _ = BibImport(Need(file, "die Datei")); } catch (ArgumentException ex) { _bibMsg = "" + ex.Message; Show(BIB); } }, true));
         if (ModelConverter.FindBlender() is null) sp.Children.Add(P("Blender ist nicht eingerichtet – GLB und glTF gehen trotzdem; für andere Formate Blender unter Programme einrichten.", Brush.Parse("#FACC15"), 11));
         if (mine.Count > 0)
         {

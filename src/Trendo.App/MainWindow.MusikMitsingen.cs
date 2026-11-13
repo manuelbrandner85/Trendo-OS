@@ -55,7 +55,7 @@ public partial class MainWindow
         var dir = Path.Combine(WorkFolder("Musik"), DevStudio.SafeName(s.Title) + " – Aufnahmen"); Directory.CreateDirectory(dir);
         var take = Path.Combine(dir, $"Aufnahme {DateTime.Now:yyyy-MM-dd HH-mm-ss}.wav");
         _singTake = new SingAlong.Take(mel); _singSongId = songId; _singCts = new CancellationTokenSource(); _takeFile = null;
-        _msMsg = "🎤 Sing mit! Am besten mit Kopfhörern, damit die Begleitung nicht mit aufgenommen wird."; Show(MS);
+        _msMsg = "Sing mit! Am besten mit Kopfhörern, damit die Begleitung nicht mit aufgenommen wird."; Show(MS);
         MusicPlay([acc.File], 0, MS);
         var ct = _singCts.Token;
         void OnBlock(float[] block)
@@ -67,7 +67,7 @@ public partial class MainWindow
             {
                 if (_singLive is null) return;
                 _singLive.Text = (last.Target is double t ? $"Ziel {SingAlong.NoteName(t)}" : "Pause") + (last.SungMidi is double m ? $" · du {SingAlong.NoteName(m)}" : "") +
-                    v switch { SingAlong.Verdict.Treffer => "  ✓ Treffer", SingAlong.Verdict.Hoeher => "  ▲ etwas höher", SingAlong.Verdict.Tiefer => "  ▼ etwas tiefer", _ => "" } +
+                    v switch { SingAlong.Verdict.Treffer => "  Treffer", SingAlong.Verdict.Hoeher => "  etwas höher", SingAlong.Verdict.Tiefer => "  etwas tiefer", _ => "" } +
                     $"   ·   {_singTake.HitPercent:0} % getroffen";
                 _singLive.Foreground = v switch { SingAlong.Verdict.Treffer => Brush.Parse("#4ADE80"), SingAlong.Verdict.Hoeher or SingAlong.Verdict.Tiefer => Brush.Parse("#FACC15"), _ => Muted };
                 if (double.IsFinite(_mDur) && _mDur > 1 && _mPos >= _mDur - 0.3) MsSingStop(); // Lied zu Ende
@@ -78,7 +78,7 @@ public partial class MainWindow
         _audio?.Stop(); _mPaused = true;
         _singCts.Dispose(); _singCts = null;
         if (file is not null && File.Exists(file)) { _takeFile = file; _takeFor = songId; }
-        _msMsg = _takeFile is null ? "Die Aufnahme ging nicht." : $"✓ Aufnahme fertig – {_singTake.HitPercent:0} % der gesungenen Töne getroffen. Unten mischen, dann wird ein neues Lied daraus.";
+        _msMsg = _takeFile is null ? "Die Aufnahme ging nicht." : $"Aufnahme fertig – {_singTake.HitPercent:0} % der gesungenen Töne getroffen. Unten mischen, dann wird ein neues Lied daraus.";
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.mitsingen.ende", $"{_singTake.HitPercent:0}%");
         Show(MS);
         return _takeFile is not null;
@@ -133,7 +133,7 @@ public partial class MainWindow
         var song = Songs.Add(new MusicSong { Title = root.Title + " – mit meiner Stimme", Style = root.Style, Lyrics = root.Lyrics, Language = root.Language, Seconds = acc.Seconds,
             Bpm = root.Bpm, Key = root.Key, TimeSignature = root.TimeSignature, File = outFile, Kind = "aufnahme", ParentId = root.Id });
         await MsMaster(song.Id, quiet: true);
-        _msSel = song.Id; _msMsg = "✓ Gemischt und gemastert – dein Lied mit deiner Stimme ist in der Bibliothek.";
+        _msSel = song.Id; _msMsg = "Gemischt und gemastert – dein Lied mit deiner Stimme ist in der Bibliothek.";
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.mischen", song.Id);
         Show(MS);
         return Songs.Get(song.Id);
@@ -149,11 +149,11 @@ public partial class MainWindow
         {
             _singLive = new TextBlock { Name = "ms-sing-live", Text = "Hör zu und sing mit …", Foreground = Muted, FontSize = 14, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap };
             sp.Children.Add(_singLive);
-            sp.Children.Add(Act("ms-sing-stop", "■ Aufnahme beenden", MsSingStop));
+            sp.Children.Add(Act("ms-sing-stop", "Aufnahme beenden", MsSingStop));
             return sp;
         }
         sp.Children.Add(P("Die Begleitung läuft, du singst – Trendo zeigt live, ob du höher oder tiefer singen solltest. Am besten mit Kopfhörern.", Muted, 11));
-        sp.Children.Add(Act("ms-sing", "🎤 Mitsingen starten", () => _ = MsSingStart(s.Id)));
+        sp.Children.Add(Act("ms-sing", "Mitsingen starten", () => _ = MsSingStart(s.Id)));
         if (_takeFile is not null && _takeFor == s.Id)
         {
             var off = new NumericUpDown { Name = "ms-mix-offset", Minimum = -400, Maximum = 400, Increment = 10, Value = _mixOffset, FormatString = "0", Width = 110 };
@@ -165,7 +165,7 @@ public partial class MainWindow
             rev.SelectionChanged += (_, _) => _mixReverb = rev.SelectedIndex switch { 0 => "aus", 2 => "halle", _ => "raum" };
             sp.Children.Add(new WrapPanel { Children = { new TextBlock { Text = "Versatz ms", Foreground = Muted, FontSize = 11, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) }, off,
                 new TextBlock { Text = "Stimme", Foreground = Muted, FontSize = 11, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center, Margin = new Thickness(10, 0, 6, 0) }, vol, rev } });
-            sp.Children.Add(new WrapPanel { Children = { Act("ms-take-play", "▶ Aufnahme anhören", () => MusicPlay([_takeFile], 0, MS)), new Border { Width = 6 }, Act("ms-mix", "Mischen & mastern", () => _ = MsMixTake()) } });
+            sp.Children.Add(new WrapPanel { Children = { Act("ms-take-play", "Aufnahme anhören", () => MusicPlay([_takeFile], 0, MS)), new Border { Width = 6 }, Act("ms-mix", "Mischen & mastern", () => _ = MsMixTake()) } });
         }
         return sp;
     }

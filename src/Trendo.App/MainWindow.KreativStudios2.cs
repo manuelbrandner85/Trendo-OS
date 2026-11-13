@@ -242,14 +242,14 @@ public partial class MainWindow
         var slider = new Slider { Name = "anim-slider", Minimum = 0, Maximum = dur, Value = _animTime, VerticalAlignment = VerticalAlignment.Center };
         void Draw(double t) { _animTime = t; view.Child = AnimStage(d, layers, t, _animPlay is null && layers.Count > 0 ? _animSel : null); time.Text = $"{t:0.00} s"; }
         slider.PropertyChanged += (_, e) => { if (e.Property == RangeBase.ValueProperty && Math.Abs(slider.Value - _animTime) > 0.0001) Draw(slider.Value); };
-        var play = new Button { Name = "anim-play", Content = _animPlay is null ? "▶ Abspielen" : "■ Stopp", Padding = new Thickness(12, 5) };
+        var play = new Button { Name = "anim-play", Content = _animPlay is null ? "Abspielen" : "Stopp", Padding = new Thickness(12, 5) };
         play.Click += (_, _) =>
         {
-            if (_animPlay is { } running) { running.Stop(); _animPlay = null; play.Content = "▶ Abspielen"; Draw(_animTime); return; }
+            if (_animPlay is { } running) { running.Stop(); _animPlay = null; play.Content = "Abspielen"; Draw(_animTime); return; }
             var start = DateTime.UtcNow; var from = _animTime >= dur ? 0 : _animTime;
             _animPlay = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(33) };
-            _animPlay.Tick += (_, _) => { var t = from + (DateTime.UtcNow - start).TotalSeconds; if (t >= dur) { t = dur; _animPlay?.Stop(); _animPlay = null; play.Content = "▶ Abspielen"; } slider.Value = t; Draw(t); };
-            _animPlay.Start(); play.Content = "■ Stopp";
+            _animPlay.Tick += (_, _) => { var t = from + (DateTime.UtcNow - start).TotalSeconds; if (t >= dur) { t = dur; _animPlay?.Stop(); _animPlay = null; play.Content = "Abspielen"; } slider.Value = t; Draw(t); };
+            _animPlay.Start(); play.Content = "Stopp";
         };
         view.DetachedFromVisualTree += (_, _) => { _animPlay?.Stop(); _animPlay = null; };
         // Zeitleiste: Schlüssel der gewählten Ebene als Punkte
@@ -304,7 +304,7 @@ public partial class MainWindow
         {
             var p = prop;
             var box = new TextBox { Name = "anim-val-" + p, Text = AnimKit.ValueOf(l, p, _animTime).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture), Width = 90 };
-            var set = new Button { Name = "anim-key-" + p, Content = "◆ Schlüssel", Padding = new Thickness(8, 3) };
+            var set = new Button { Name = "anim-key-" + p, Content = "Schlüssel", Padding = new Thickness(8, 3) };
             set.Click += (_, _) => ProgramRun(AnimKey, () =>
             {
                 if (!double.TryParse((box.Text ?? "").Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v) || !double.IsFinite(v)) throw new FormatException("Bitte eine Zahl eintragen.");
@@ -646,11 +646,11 @@ public partial class MainWindow
         box.MinHeight = 80; box.FontSize = 15;
         var style = ImageAiKit.Styles.FirstOrDefault(x => x.Id == d.Text("style")) ?? ImageAiKit.Styles[0];
         var fmt = ImageAiKit.Formats.FirstOrDefault(x => x.Id == d.Text("format")); if (fmt.Id is null) fmt = ImageAiKit.Formats[0];
-        var go = new Button { Name = "img-go", Content = _imgAiBusy ? "Malt …" : "✦ Bilder malen", Padding = new Thickness(18, 8), IsEnabled = !_imgAiBusy, FontSize = 14 };
+        var go = new Button { Name = "img-go", Content = _imgAiBusy ? "Malt …" : "Bilder malen", Padding = new Thickness(18, 8), IsEnabled = !_imgAiBusy, FontSize = 14 };
         go.Classes.Add("accent");
         go.Click += (_, _) => _ = ImgGenerate(d);
         sp.Children.Add(KrCard(new StackPanel { Spacing = 8, Children = { box, new WrapPanel { Children = { go, new TextBlock { Text = $"Stil: {style.Label} · Format: {fmt.Label}", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0) } } } } }, "img-card"));
-        if (ImageAiKit.Blocked(d.Text("prompt")) is { } why && d.Text("prompt").Length > 0) sp.Children.Add(P("⚠ " + why, Brush.Parse("#F5A524"), 12));
+        if (ImageAiKit.Blocked(d.Text("prompt")) is { } why && d.Text("prompt").Length > 0) sp.Children.Add(P("" + why, Brush.Parse("#F5A524"), 12));
         var imgs = ImgList(d).Where(p => KreativSafe.LocalFile(p, KreativSafe.MaxImageBytes)).Reverse().ToList();
         var gallery = new WrapPanel { Name = "img-gallery" };
         foreach (var p in imgs.Take(48))

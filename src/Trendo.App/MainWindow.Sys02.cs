@@ -108,7 +108,7 @@ public partial class MainWindow
         void ZipAsk(ArchiveConflictException ex, Func<ArchiveConflict, string> run)
         {
             zipAsk.Children.Clear();
-            zipAsk.Children.Add(P("⚠ " + ex.Message + (ex.Names.Count > 1 ? " " + string.Join(", ", ex.Names.Take(5).Select(Path.GetFileName)) + (ex.Names.Count > 5 ? " …" : "") : "") + " Was soll passieren?", Text, 12.5));
+            zipAsk.Children.Add(P("" + ex.Message + (ex.Names.Count > 1 ? " " + string.Join(", ", ex.Names.Take(5).Select(Path.GetFileName)) + (ex.Names.Count > 5 ? " …" : "") : "") + " Was soll passieren?", Text, 12.5));
             var row = new WrapPanel();
             foreach (var (mode, id, label) in new[] { (ArchiveConflict.KeepBoth, "keep", "Beide behalten"), (ArchiveConflict.Skip, "skip", "Vorhandene behalten"), (ArchiveConflict.Overwrite, "replace", "Ersetzen") })
             {
@@ -170,7 +170,7 @@ public partial class MainWindow
                 var items = MediaLibrary.Index([UserFolder(Environment.SpecialFolder.MyMusic), UserFolder(Environment.SpecialFolder.MyVideos), UserFolder(Environment.SpecialFolder.MyPictures), ProjectsRoot]);
                 lib.Children.Add(P($"{items.Count} Dateien gefunden ({items.Count(i => i.Kind == "Musik")} Musik, {items.Count(i => i.Kind == "Video")} Videos, {items.Count(i => i.Kind == "Bild")} Bilder) in {sw.Elapsed.TotalSeconds:0.0} s.", Text));
                 var i = 0;
-                foreach (var m in items.Where(x => x.Kind != "Bild").OrderByDescending(x => x.Changed).Take(25)) { var f = m.Path; lib.Children.Add(Act($"lib-play-{i++}", $"▶ {Path.GetFileName(f)}", () => Play(f))); }
+                foreach (var m in items.Where(x => x.Kind != "Bild").OrderByDescending(x => x.Changed).Take(25)) { var f = m.Path; lib.Children.Add(Act($"lib-play-{i++}", $"{Path.GetFileName(f)}", () => Play(f))); }
             })), lib)));
 
         var img = Field("img-file", "Bilddatei (PNG, JPG …)");

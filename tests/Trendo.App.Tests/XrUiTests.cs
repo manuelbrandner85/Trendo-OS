@@ -64,7 +64,7 @@ public class SPEC04_Ui
         Assert.Contains("Komfort", Get<SelectableTextBlock>(w, "xr-move-out").Text);
         Retype(w, "xr-move-turn", "200"); Assert.Contains("Schritt-Drehen", Get<SelectableTextBlock>(w, "xr-move-out").Text);
         Get<ComboBox>(w, "xr-move-snap").SelectedItem = "ja"; Settle(); Assert.DoesNotContain("Glattes Drehen", Get<SelectableTextBlock>(w, "xr-move-out").Text);
-        Retype(w, "xr-frame-ms", "20"); Assert.StartsWith("⚠ Zu langsam", Get<SelectableTextBlock>(w, "xr-frame-out").Text);
+        Retype(w, "xr-frame-ms", "20"); Assert.StartsWith("Zu langsam", Get<SelectableTextBlock>(w, "xr-frame-out").Text);
         w.Close();
     }
 }

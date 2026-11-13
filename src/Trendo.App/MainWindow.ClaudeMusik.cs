@@ -38,7 +38,7 @@ public partial class MainWindow
         if (page == "sendung" && s.Kind == "feld") return ClaudeLivePreview(s);
         if (page == MB) return ClaudeMediaPreview(s);
         if (page != MS || s.Kind != "feld" || s.Value is not { Length: > 0 } v || MsSelected is not { } song) return null;
-        TextBlock Warn(string t) => new() { Name = "claude-plan-warn", Text = "⚠ So nicht möglich: " + t, Foreground = Brush.Parse("#FFF8B26A"), FontSize = 12, TextWrapping = TextWrapping.Wrap };
+        TextBlock Warn(string t) => new() { Name = "claude-plan-warn", Text = "So nicht möglich: " + t, Foreground = Brush.Parse("#FFF8B26A"), FontSize = 12, TextWrapping = TextWrapping.Wrap };
         var bpm = song.Analysis?.Bpm ?? song.Bpm ?? 0; var meter = song.Analysis?.Meter ?? song.TimeSignature;
         switch (s.Target)
         {
@@ -99,14 +99,14 @@ public partial class MainWindow
             {
                 var (text, err) = SongProducer.ParseLyrics(v); if (text is null) { _msMsg = "Claudes Liedtext nicht übernommen: " + err + "."; return false; }
                 Draft(); _msLyrics = text; _msInstr = false;
-                _msMsg = "✳ Claudes Fassung steht links im Profi-Formular – „Erstellen“ erzeugt sie, danach unter „Fassungen vergleichen“ A/B neben dem Original.";
+                _msMsg = "Claudes Fassung steht links im Profi-Formular – „Erstellen“ erzeugt sie, danach unter „Fassungen vergleichen“ A/B neben dem Original.";
                 return true;
             }
             case ProdStyle:
             {
                 var (text, err) = SongProducer.ParseStyle(v); if (text is null) { _msMsg = "Claudes Stil nicht übernommen: " + err + "."; return false; }
                 Draft(); _msStyle = text; _msGenres.Clear();
-                _msMsg = "✳ Claudes Stil steht links im Profi-Formular – „Erstellen“ erzeugt die neue Fassung.";
+                _msMsg = "Claudes Stil steht links im Profi-Formular – „Erstellen“ erzeugt die neue Fassung.";
                 return true;
             }
             case ProdMaster:
@@ -137,6 +137,6 @@ public partial class MainWindow
         drop.Click += (_, _) => { _msProdParent = null; _msTitle = ""; _msMsg = "Entwurf verworfen."; Show(MS); };
         return new Border { Name = "ms-prod-banner", CornerRadius = new CornerRadius(10), Background = Brush.Parse("#22D4A84B"), BorderBrush = Brush.Parse("#66D4A84B"), BorderThickness = new Thickness(1), Padding = new Thickness(10, 6), Margin = new Thickness(0, 0, 0, 6),
             Child = new DockPanel { Children = { Dk(drop, Avalonia.Controls.Dock.Right),
-                new TextBlock { Text = $"✳ Produzenten-Fassung von „{parent.Title}“ – „Erstellen“ erzeugt sie als neue Fassung zum Vergleichen.", Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center } } } };
+                new TextBlock { Text = $"Produzenten-Fassung von „{parent.Title}“ – „Erstellen“ erzeugt sie als neue Fassung zum Vergleichen.", Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center } } } };
     }
 }

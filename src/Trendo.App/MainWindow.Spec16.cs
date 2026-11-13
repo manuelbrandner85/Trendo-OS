@@ -24,7 +24,7 @@ public partial class MainWindow
 
     private static DateTime DateOr(string s) => s.Trim() == "" ? DateTime.Today : DateTime.TryParse(s, Fach.De, System.Globalization.DateTimeStyles.None, out var d) ? d : throw new FormatException("Datum bitte als TT.MM.JJJJ.");
 
-    void CarRun(Action a) { try { a(); } catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or FormatException or UnauthorizedAccessException) { _carMsg = "⚠ " + ex.Message; } Show("fahrzeug"); }
+    void CarRun(Action a) { try { a(); } catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or FormatException or UnauthorizedAccessException) { _carMsg = "" + ex.Message; } Show("fahrzeug"); }
 
     private Control VehicleView()
     {
@@ -45,9 +45,9 @@ public partial class MainWindow
             var b = new Button { Name = $"car-pick-{v.Name}".Replace(' ', '_'), HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(10, 8),
                 Background = on ? Brush.Parse("#C9A22733") : Brush.Parse("#2E2E2E"), BorderBrush = on ? Accent : Edge, BorderThickness = new Thickness(on ? 2 : 1), CornerRadius = new CornerRadius(10),
                 Content = new StackPanel { Spacing = 1, Children = {
-                    new TextBlock { Text = (v.Electric ? "⚡ " : "⛽ ") + v.Name, Foreground = Text, FontWeight = FontWeight.SemiBold, FontSize = 14 },
+                    new TextBlock { Text = (v.Electric ? "• " : "") + v.Name, Foreground = Text, FontWeight = FontWeight.SemiBold, FontSize = 14 },
                     new TextBlock { Text = $"{v.Plate} · {Fach.F(v.Odometer, 0)} km".Trim(' ', '·'), Foreground = Muted, FontSize = 11 },
-                    new TextBlock { Text = rem.Any(r => r.Urgent) ? "⚠ " + rem.First(r => r.Urgent).Text : rem.Count > 0 ? "• " + rem[0].Text : "", Foreground = Brush.Parse(rem.Any(r => r.Urgent) ? "#FACC15" : "#8FA3BF"), FontSize = 11, TextWrapping = TextWrapping.Wrap } } } };
+                    new TextBlock { Text = rem.Any(r => r.Urgent) ? "" + rem.First(r => r.Urgent).Text : rem.Count > 0 ? "• " + rem[0].Text : "", Foreground = Brush.Parse(rem.Any(r => r.Urgent) ? "#FACC15" : "#8FA3BF"), FontSize = 11, TextWrapping = TextWrapping.Wrap } } } };
             b.Click += (_, _) => { CarSel = nm; _carMsg = ""; Show("fahrzeug"); };
             list.Children.Add(b);
         }
@@ -86,7 +86,7 @@ public partial class MainWindow
             Kpi("car-kpi-km", "Kosten je km", s.CostPerKm is { } c ? $"{Fach.F(c * 100, 1)} ct" : "–", $"über {Fach.F(s.Km, 0)} km"),
             Kpi("car-kpi-cost", v.Electric ? "Strom gesamt" : "Sprit gesamt", $"{Fach.F(s.TotalCost, 0)} €", $"{Fach.F(s.TotalAmount, 0)} {unit}"),
             Kpi("car-kpi-odo", "km-Stand", Fach.F(v.Odometer, 0), $"{Fach.F(share, 0)} % dienstlich") } });
-        foreach (var r in VehicleBook.Reminders(v, DateTime.Today)) sp.Children.Add(new TextBlock { Text = (r.Urgent ? "⚠ " : "• ") + r.Text, Foreground = Brush.Parse(r.Urgent ? "#FACC15" : "#C9D6EA"), FontSize = 13 });
+        foreach (var r in VehicleBook.Reminders(v, DateTime.Today)) sp.Children.Add(new TextBlock { Text = (r.Urgent ? "" : "• ") + r.Text, Foreground = Brush.Parse(r.Urgent ? "#FACC15" : "#C9D6EA"), FontSize = 13 });
         var cons = VehiclePlus.Consumption(v);
         sp.Children.Add(H($"Verbrauch je Tankfüllung ({unit}/100 km)", 13));
         sp.Children.Add(new Border { Name = "car-chart-cons", Height = 180, CornerRadius = new CornerRadius(10), ClipToBounds = true, Child = new ShapeView((w, h) => CarLineChart(cons.Select(x => (x.Date, x.Per100)).ToList(), w, h, "#4FA3FF", s.AvgPer100), "#212121") });
@@ -173,7 +173,7 @@ public partial class MainWindow
                 new TextBlock { Name = "car-trip-sum", Text = $"{Fach.F(biz, 0)} km dienstlich · {Fach.F(priv - commute, 0)} km privat · {Fach.F(commute, 0)} km Arbeitsweg · {Fach.F(share, 1)} % dienstlich", Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold },
                 bar } }, 1),
             Pos(Btn("car-t-pdf", "Fahrtenbuch als PDF", () => CarRun(() => { var f = Path.Combine(WorkFolder("Fahrzeug"), $"Fahrtenbuch {_carYear} {DevStudio.SafeName(v.Name)}.pdf"); Directory.CreateDirectory(Path.GetDirectoryName(f)!); VehicleBook.LogPdf(f, v, _carYear); _carMsg = "Gespeichert: " + f; NotifyFileResult(_carMsg); })), 2) } });
-        foreach (var (a, b) in gaps) sp.Children.Add(new TextBlock { Text = $"⚠ Lücke im Fahrtenbuch: {Fach.F(a, 0)} → {Fach.F(b, 0)} km ({Fach.F(b - a, 0)} km fehlen)", Foreground = Brush.Parse("#FACC15"), FontSize = 12 });
+        foreach (var (a, b) in gaps) sp.Children.Add(new TextBlock { Text = $"Lücke im Fahrtenbuch: {Fach.F(a, 0)} → {Fach.F(b, 0)} km ({Fach.F(b - a, 0)} km fehlen)", Foreground = Brush.Parse("#FACC15"), FontSize = 12 });
 
         // Schnelleingabe
         var nd = new TextBox { Name = "car-t-new-date", Text = DateTime.Today.ToString("dd.MM.yyyy"), Width = 100 }; var ns = new TextBox { Name = "car-t-new-start", Text = v.Odometer > 0 ? v.Odometer.ToString("0", De) : "", Width = 90 };
@@ -215,7 +215,7 @@ public partial class MainWindow
             var m = months.FirstOrDefault(x => x.Month == grp.Key); var mon = grp.Key;
             var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Margin = new Thickness(0, 8, 0, 2), Children = {
                 new TextBlock { Text = $"{new DateTime(_carYear, mon, 1).ToString("MMMM", De)} · {Fach.F(m?.Business ?? 0, 0)} km dienstlich · {Fach.F(m?.Private ?? 0, 0)} km privat · {Fach.F(m?.Commute ?? 0, 0)} km Arbeitsweg", Foreground = GoldText(), FontSize = 13, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center } } };
-            head.Children.Add(Pos(m?.Locked == true ? new TextBlock { Name = $"car-t-locked-{mon}", Text = "🔒 festgeschrieben", Foreground = Muted, FontSize = 12 } : Btn($"car-t-lock-{mon}", "Monat festschreiben", () => CarRun(() => { var n = Cars.LockMonth(v.Name, _carYear, mon); _carMsg = $"{n} Fahrten im {new DateTime(_carYear, mon, 1).ToString("MMMM", De)} festgeschrieben – Änderungen sind nicht mehr möglich."; })), 1));
+            head.Children.Add(Pos(m?.Locked == true ? new TextBlock { Name = $"car-t-locked-{mon}", Text = "festgeschrieben", Foreground = Muted, FontSize = 12 } : Btn($"car-t-lock-{mon}", "Monat festschreiben", () => CarRun(() => { var n = Cars.LockMonth(v.Name, _carYear, mon); _carMsg = $"{n} Fahrten im {new DateTime(_carYear, mon, 1).ToString("MMMM", De)} festgeschrieben – Änderungen sind nicht mehr möglich."; })), 1));
             sp.Children.Add(head);
             foreach (var t in grp)
             {

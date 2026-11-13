@@ -146,7 +146,7 @@ public partial class MainWindow
         // GitHub: Suche nach freien Programmen auf GitHub
         if (!mine && _hubTab is "alles" or "github")
         {
-            var gh = new Button { Name = "hub-github-search", Content = q.Length > 0 ? $"🔎 Auf GitHub nach „{q}“ suchen" : "🔎 Freie Programme auf GitHub suchen", IsEnabled = !_core.Offline, Margin = new Thickness(0, 6, 0, 0) };
+            var gh = new Button { Name = "hub-github-search", Content = q.Length > 0 ? $"Auf GitHub nach „{q}“ suchen" : "Freie Programme auf GitHub suchen", IsEnabled = !_core.Offline, Margin = new Thickness(0, 6, 0, 0) };
             gh.Click += async (_, _) => { Show("oss"); if (q.Length > 0) await OssSearch(q); };
             list.Children.Add(gh);
         }
@@ -161,7 +161,7 @@ public partial class MainWindow
         var right = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center };
         if (it.Installed)
         {
-            right.Children.Add(new TextBlock { Text = "✓ installiert", Foreground = Brush.Parse("#4ADE80"), FontSize = 12, VerticalAlignment = VerticalAlignment.Center });
+            right.Children.Add(new TextBlock { Text = "installiert", Foreground = Brush.Parse("#4ADE80"), FontSize = 12, VerticalAlignment = VerticalAlignment.Center });
             if (it.Open is { } open) { var o = new Button { Name = "hub-open-" + safe, Content = "Öffnen" }; o.Click += async (_, _) => await open(); right.Children.Add(o); }
             if (mine && it.Update is { } upd)
             {

@@ -193,7 +193,7 @@ public sealed class SlideView : Control
                             ctx.DrawGeometry(fb, null, new PolylineGeometry([new(r.Left, r.Top + r.Height * 0.25), new(r.Right - r.Height * 0.5, r.Top + r.Height * 0.25), new(r.Right - r.Height * 0.5, r.Top), new(r.Right, r.Top + r.Height / 2), new(r.Right - r.Height * 0.5, r.Bottom), new(r.Right - r.Height * 0.5, r.Top + r.Height * 0.75), new(r.Left, r.Top + r.Height * 0.75)], true));
                         else ctx.FillRectangle(fb, r);
                     }
-                    var text = s.Kind == ShapeKind.Medien ? "▶  " + Path.GetFileName(s.MediaPath ?? "Video/Audio") : s.Text;
+                    var text = s.Kind == ShapeKind.Medien ? "" + Path.GetFileName(s.MediaPath ?? "Video/Audio") : s.Text;
                     if (s.Kind == ShapeKind.Medien && s.Fill is null) ctx.FillRectangle(B("#111827"), r);
                     if (text.Length == 0) break;
                     var color = s.Kind == ShapeKind.Medien ? Brushes.White : B(s.Color ?? (s.Role == "title" ? th.Title : th.Text));

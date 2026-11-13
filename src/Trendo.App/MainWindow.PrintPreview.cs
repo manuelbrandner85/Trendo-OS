@@ -119,9 +119,9 @@ public partial class MainWindow
         var slider = new Slider { Name = "print-layer", Minimum = 1, Maximum = Math.Max(1, est.Layers), Value = _prLayer, IsSnapToTickEnabled = true, TickFrequency = 1, Width = 300 };
         slider.PropertyChanged += (_, e) => { if (e.Property == Slider.ValueProperty && (int)slider.Value != _prLayer) { _prLayer = (int)slider.Value; Show("3d-druck"); } };
         var warn = new StackPanel { Name = "print-warnings", Spacing = 2 };
-        if (!r.Fits) warn.Children.Add(P($"⚠ Passt nicht auf die Platte ({plate.W:0} × {plate.D:0} × {plate.H:0} mm) – verkleinern oder anders aufstellen.", Brush.Parse("#F87171"), 12));
-        if (r.OverhangCm2 > 0.5) warn.Children.Add(P($"⚠ {r.OverhangCm2:0.#} cm² hängen steiler als 45° über – Stützen einschalten (ca. {est.SupportGrams:0.#} g) oder „Automatisch aufstellen“.", Brush.Parse("#F5A524"), 12));
-        if (warn.Children.Count == 0) warn.Children.Add(P("✓ Passt auf die Platte, kein nennenswerter Überhang.", Brush.Parse("#2FBF71"), 12));
+        if (!r.Fits) warn.Children.Add(P($"Passt nicht auf die Platte ({plate.W:0} × {plate.D:0} × {plate.H:0} mm) – verkleinern oder anders aufstellen.", Brush.Parse("#F87171"), 12));
+        if (r.OverhangCm2 > 0.5) warn.Children.Add(P($"{r.OverhangCm2:0.#} cm² hängen steiler als 45° über – Stützen einschalten (ca. {est.SupportGrams:0.#} g) oder „Automatisch aufstellen“.", Brush.Parse("#F5A524"), 12));
+        if (warn.Children.Count == 0) warn.Children.Add(P("Passt auf die Platte, kein nennenswerter Überhang.", Brush.Parse("#2FBF71"), 12));
         Button B(string name, string label, Action a, bool primary = false) { var b = new Button { Name = name, Content = label, Margin = new Thickness(0, 0, 6, 0) }; if (primary) { b.Background = Accent; b.Foreground = Brushes.White; } b.Click += (_, _) => a(); return b; }
         var facts = P($"{r.SizeX:0.#} × {r.SizeY:0.#} × {r.SizeZ:0.#} mm · {est.Layers} Schichten à {st.Layer:0.00} mm · {r.VolumeCm3:0.#} cm³ · ca. {est.Grams:0.#} g {st.Mat.Name} ({est.FilamentM:0.#} m) · ca. {est.Euro:0.00} € · ca. {(int)est.Time.TotalHours} h {est.Time.Minutes:00} min"
             + (est.SupportGrams > 0.5 ? $" · davon Stützen ca. {est.SupportGrams:0.#} g" : "") + $" · Düse {st.Mat.Nozzle} °C, Bett {st.Mat.Bed} °C (Schätzung aus den Bahnen – genau rechnet Bambu Studio)", Text, 12.5);

@@ -316,10 +316,10 @@ public partial class MainWindow
         var outline = new TextBox { Name = "praesentation-outline", Text = _dkOutline, AcceptsReturn = true, AcceptsTab = true, TextWrapping = TextWrapping.Wrap, MinHeight = 140, Width = 760, HorizontalAlignment = HorizontalAlignment.Left,
             PlaceholderText = "Stichpunkte – eine Zeile je Folie, darunter eingerückt die Punkte:\nUnser Sommerfest\n  - Planung für alle Nachbarn\nAblauf\n  - 14 Uhr Begrüßung\n  - 15 Uhr Kuchen" };
         outline.TextChanged += (_, _) => _dkOutline = outline.Text ?? "";
-        var fromOutline = new Button { Name = "praesentation-from-outline", Content = "✨ Folien aus Stichpunkten", Background = Accent };
+        var fromOutline = new Button { Name = "praesentation-from-outline", Content = "Folien aus Stichpunkten", Background = Accent };
         fromOutline.Click += (_, _) => { if ((outline.Text ?? "").Trim().Length == 0) { _dkMsg = "Bitte erst Stichpunkte eintragen."; Show("praesentation"); return; } DeckFromOutline(outline.Text!); Show("praesentation"); };
         var topic = new TextBox { Name = "praesentation-topic", PlaceholderText = "oder ein Thema, z. B. „Energiesparen im Haushalt“", Width = 420 };
-        var ai = new Button { Name = "praesentation-ai", Content = "🤖 Mit der KI entwerfen" };
+        var ai = new Button { Name = "praesentation-ai", Content = "Mit der KI entwerfen" };
         ai.Click += async (_, _) =>
         {
             if ((topic.Text ?? "").Trim().Length == 0) { _dkMsg = "Bitte ein Thema eintragen."; Show("praesentation"); return; }
@@ -337,7 +337,7 @@ public partial class MainWindow
         sp.Children.Add(outline);
         sp.Children.Add(new WrapPanel { Children = { fromOutline, new Border { Width = 16 }, topic, new Border { Width = 6 }, ai } });
         if (_dkMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "praesentation-start-msg", Text = _dkMsg, Foreground = Muted, FontSize = 13, TextWrapping = TextWrapping.Wrap });
-        var open = new Button { Name = "praesentation-open", Content = "📂  Datei öffnen … (PowerPoint, Impress)", Padding = new Thickness(14, 8) };
+        var open = new Button { Name = "praesentation-open", Content = "Datei öffnen … (PowerPoint, Impress)", Padding = new Thickness(14, 8) };
         open.Click += (_, _) => _ = DeckOpenClick();
         sp.Children.Add(open);
         sp.Children.Add(new TextBlock { Text = "Zuletzt geöffnet", Foreground = Text, FontSize = 16, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 6, 0, 0) });
@@ -379,7 +379,7 @@ public partial class MainWindow
     Control DeckRibbon()
     {
         var tabRow = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2, Margin = new Thickness(0, 4, 0, 4) };
-        var file = new Button { Name = "praesentation-file", Content = "Datei ▾", Focusable = false, Padding = new Thickness(10, 4), Background = Accent };
+        var file = new Button { Name = "praesentation-file", Content = "Datei", Focusable = false, Padding = new Thickness(10, 4), Background = Accent };
         var fm = new ContextMenu();
         MenuItem Mi(string name, string header, Action a) { var m = new MenuItem { Name = name, Header = header }; m.Click += (_, _) => a(); return m; }
         fm.Items.Add(Mi("praesentation-m-start", "Startseite (Neu, Vorlagen, KI, Zuletzt)", () => { DeckStartVisible = true; Show("praesentation"); }));

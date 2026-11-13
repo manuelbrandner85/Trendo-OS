@@ -29,7 +29,7 @@ public partial class MainWindow
     {
         _vec?.Dispose(); _vec = new VectorMap(path); _vecView = null; MapPackPath = path; Tiles.Pack = null;
         var i = _vec.Info;
-        _vecNote = $"✓ Vektorkarte „{_vec.Name}“: Zoom {i.MinZoom}–{i.MaxZoom}, Gebiet {i.MinLat:0.###}–{i.MaxLat:0.###} N, {i.MinLon:0.###}–{i.MaxLon:0.###} O.";
+        _vecNote = $"Vektorkarte „{_vec.Name}“: Zoom {i.MinZoom}–{i.MaxZoom}, Gebiet {i.MinLat:0.###}–{i.MaxLat:0.###} N, {i.MinLon:0.###}–{i.MaxLon:0.###} O.";
         _core.Audit.Append(Principal.LocalOwner.Name, "karten.vektor.oeffnen", _vec.Name);
         Show(MK);
     }
@@ -44,8 +44,8 @@ public partial class MainWindow
         {
             case "bereit": VectorSend(_vec.InitScript()); break;
             case "kachel": if (_vec.Answer(m) is { } s) VectorSend(s); break;
-            case "geladen": _vecNote = $"✓ Vektorkarte „{_vec.Name}“ angezeigt."; break;
-            case "fehler": _vecNote = "⚠ Karte: " + m.Text; Dispatcher.UIThread.Post(() => Show(MK)); break;
+            case "geladen": _vecNote = $"Vektorkarte „{_vec.Name}“ angezeigt."; break;
+            case "fehler": _vecNote = "Karte: " + m.Text; Dispatcher.UIThread.Post(() => Show(MK)); break;
         }
     }
 

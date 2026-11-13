@@ -31,7 +31,7 @@ public partial class MainWindow
     public async Task IconLoadSets()
     {
         try { _iconSets = IconSets.ParseCollections(await IconGet(IconSets.CollectionsUrl, Path.Combine(IconCache, "collections.json"))); IconMessage = ""; }
-        catch (Exception e) when (e is HttpRequestException or IOException or FormatException or System.Text.Json.JsonException or TaskCanceledException) { IconMessage = "⚠ Symbolsätze nicht ladbar: " + e.Message; }
+        catch (Exception e) when (e is HttpRequestException or IOException or FormatException or System.Text.Json.JsonException or TaskCanceledException) { IconMessage = "Symbolsätze nicht ladbar: " + e.Message; }
         Show(MB);
     }
 
@@ -40,14 +40,14 @@ public partial class MainWindow
     {
         _iconPrefix = prefix; _iconQuery = query;
         var set = _iconSets?.FirstOrDefault(s => s.Prefix == prefix);
-        if (set is null || set.Use == IconSets.Use.Ausgeschlossen) { IconMessage = "⚠ Diesen Symbolsatz bietet Trendo nicht an (Lizenz nicht frei genug)."; Show(MB); return; }
+        if (set is null || set.Use == IconSets.Use.Ausgeschlossen) { IconMessage = "Diesen Symbolsatz bietet Trendo nicht an (Lizenz nicht frei genug)."; Show(MB); return; }
         try
         {
             if (_icons?.Prefix != prefix) _icons = new IconSets.Icons(await IconGet(IconSets.SetUrl(prefix), Path.Combine(IconCache, prefix + ".json")));
             IconHits = _icons.Search(query, 48);
             IconMessage = IconHits.Count == 0 ? "Nichts gefunden – englische Begriffe probieren (z. B. home, arrow, heart)." : $"{IconHits.Count} Symbole aus „{set.Name}“ ({set.LicenseTitle}).";
         }
-        catch (Exception e) when (e is HttpRequestException or IOException or FormatException or System.Text.Json.JsonException or TaskCanceledException) { IconMessage = "⚠ Symbolsatz nicht ladbar: " + e.Message; }
+        catch (Exception e) when (e is HttpRequestException or IOException or FormatException or System.Text.Json.JsonException or TaskCanceledException) { IconMessage = "Symbolsatz nicht ladbar: " + e.Message; }
         Show(MB);
     }
 
@@ -60,10 +60,10 @@ public partial class MainWindow
         {
             var f = IconSets.Save(Path.Combine(AssetFolder, "Symbole"), set, _icons, name);
             _core.Audit.Append(Principal.LocalOwner.Name, "assets.icon", $"{set.Prefix}:{name} ({set.Spdx})");
-            IconMessage = $"✓ Gespeichert: {Path.GetFileName(f)}" + (set.Use == IconSets.Use.MitNennung ? " – Namensnennung nötig, steht in „Lizenzen.txt“." : $" – {set.LicenseTitle}, frei nutzbar.");
+            IconMessage = $"Gespeichert: {Path.GetFileName(f)}" + (set.Use == IconSets.Use.MitNennung ? " – Namensnennung nötig, steht in „Lizenzen.txt“." : $" – {set.LicenseTitle}, frei nutzbar.");
             Show(MB); return f;
         }
-        catch (InvalidOperationException e) { IconMessage = "⚠ " + e.Message; Show(MB); return null; }
+        catch (InvalidOperationException e) { IconMessage = "" + e.Message; Show(MB); return null; }
     }
 
     static readonly Regex PathRx = new("<path\\b([^>]*)>", RegexOptions.Compiled);

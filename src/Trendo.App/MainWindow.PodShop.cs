@@ -212,7 +212,7 @@ public partial class MainWindow
             var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { new TextBlock { Text = $"Bestellung {o.Code} · {o.Address?.Country}" + (o.Live ? "" : " · Testzahlung"), Foreground = Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center } } };
             if (!o.Live) { }
             else if (!states.TryGetValue(o.SessionId, out var st)) row.Children.Add(ShopBtn("shop-draft-" + o.Code, ShopVariantFor(o)?.Item.Provider == "printify" ? "Bei Printify anlegen (wartet auf deine Freigabe)" : "Entwurf bei Printful anlegen", () => PodDraftOrder(order)));
-            else if (st.Confirmed) row.Children.Add(new TextBlock { Text = "✓ freigegeben", Foreground = Brush.Parse("#3DDC84"), FontSize = 12, VerticalAlignment = VerticalAlignment.Center });
+            else if (st.Confirmed) row.Children.Add(new TextBlock { Text = "freigegeben", Foreground = Brush.Parse("#3DDC84"), FontSize = 12, VerticalAlignment = VerticalAlignment.Center });
             else if (_shopArmed != o.SessionId)
                 row.Children.Add(ShopBtn("shop-arm-" + o.Code, $"Bestellung {o.Code} zur Fertigung freigeben (kostet Geld)", () => { _shopArmed = order.SessionId; Show(CurrentView); return Task.CompletedTask; }));
             else

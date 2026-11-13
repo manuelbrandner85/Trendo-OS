@@ -33,7 +33,7 @@ public partial class MainWindow
         _tvVodUrl = url; _tvNextCancelled = false;
         if (Tv.ResumeFor(url) is { Open: true } r)
         {
-            _tvMsg = $"✓ Weiter ab {TvClock(r.Pos)}.";
+            _tvMsg = $"Weiter ab {TvClock(r.Pos)}.";
             _ = Task.Delay(1500).ContinueWith(_ => _ui.Post(() => _tvPlayer?.Send("seek", Math.Round(r.Pos), "absolute")));
         }
     }
@@ -82,8 +82,8 @@ public partial class MainWindow
     /// <summary>Knöpfe unter dem Film/der Folge: Intro überspringen, Nächste Folge, Countdown, Bild im Bild, Bild & Ton.</summary>
     Control TvVodExtras()
     {
-        var skip = TvButton("tv-vod-skip-intro", "⏭ Intro überspringen", () => _tvPlayer?.Send("seek", 85)); skip.IsVisible = false;
-        var next = TvButton("tv-vod-next", "⏭ Nächste Folge", () => TvPlayNextEpisode(), true); next.IsVisible = false;
+        var skip = TvButton("tv-vod-skip-intro", "Intro überspringen", () => _tvPlayer?.Send("seek", 85)); skip.IsVisible = false;
+        var next = TvButton("tv-vod-next", "Nächste Folge", () => TvPlayNextEpisode(), true); next.IsVisible = false;
         var cd = new TextBlock { Name = "tv-vod-countdown", Foreground = GoldText(), FontSize = 13, VerticalAlignment = VerticalAlignment.Center, IsVisible = false };
         var cancel = TvButton("tv-vod-next-cancel", "Abbrechen", () => { _tvNextCancelled = true; TvSetVisible("tv-vod-next", false); TvSetVisible("tv-vod-countdown", false); });
         cancel.Bind(IsVisibleProperty, cd.GetObservable(IsVisibleProperty));
@@ -115,7 +115,7 @@ public partial class MainWindow
             };
             row.Children.Add(b);
         }
-        return new StackPanel { Name = "tv-continue-" + kind, Spacing = 6, Children = { H("▶ Weiterschauen", 15), new ScrollViewer { Content = row, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Disabled } } };
+        return new StackPanel { Name = "tv-continue-" + kind, Spacing = 6, Children = { H("Weiterschauen", 15), new ScrollViewer { Content = row, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Disabled } } };
     }
 
     // ---------- 3 Startseite wie bei Streaming-Diensten ----------
@@ -128,9 +128,9 @@ public partial class MainWindow
             var info = new StackPanel { Spacing = 6, VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(26, 0, 26, 22), MaxWidth = 560, HorizontalAlignment = HorizontalAlignment.Left, Children = {
                 new TextBlock { Text = "EMPFEHLUNG", Foreground = GoldText(), FontSize = 11, LetterSpacing = 2 },
                 new TextBlock { Text = hero.Name, Foreground = Brushes.White, FontSize = 30, FontWeight = FontWeight.Bold, TextWrapping = TextWrapping.Wrap },
-                new TextBlock { Text = string.Join(" · ", new[] { hero.Year, hero.Rating is { Length: > 0 } r ? "★ " + r : null, hero.Category }.Where(x => !string.IsNullOrEmpty(x))), Foreground = Brush.Parse("#E7E1D5"), FontSize = 13 },
+                new TextBlock { Text = string.Join(" · ", new[] { hero.Year, hero.Rating is { Length: > 0 } r ? "" + r : null, hero.Category }.Where(x => !string.IsNullOrEmpty(x))), Foreground = Brush.Parse("#E7E1D5"), FontSize = 13 },
                 new TextBlock { Text = hero.Plot ?? "", Foreground = Brush.Parse("#D8D2C6"), FontSize = 13, TextWrapping = TextWrapping.Wrap, MaxHeight = 60, TextTrimming = TextTrimming.CharacterEllipsis },
-                new WrapPanel { Children = { TvButton("tv-hero-play", "▶ Abspielen", () => { _tvEp = null; TvPlayVideo(hero.Url, hero.Name); }, true), TvButton("tv-hero-info", "ⓘ Mehr Infos", () => { _tvVodSel = hero.Id; Show("tv"); }) } } } };
+                new WrapPanel { Children = { TvButton("tv-hero-play", "Abspielen", () => { _tvEp = null; TvPlayVideo(hero.Url, hero.Name); }, true), TvButton("tv-hero-info", "Mehr Infos", () => { _tvVodSel = hero.Id; Show("tv"); }) } } } };
             sp.Children.Add(new Border { Name = "tv-film-hero", Height = 340, CornerRadius = new CornerRadius(18), ClipToBounds = true, Background = Brush.Parse("#1A1A1A"),
                 Child = new Grid { Children = { img,
                     new Border { Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 0, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#F00B0B0C"), 0), new GradientStop(Color.Parse("#990B0B0C"), 0.5), new GradientStop(Color.Parse("#000B0B0C"), 1) } } },
@@ -155,10 +155,10 @@ public partial class MainWindow
     /// <summary>Kinder-Profil an/aus. Aus geht mit PIN (wenn eine eingerichtet ist).</summary>
     public bool TvSetKids(bool on, string? pin = null)
     {
-        if (on) { Tv.SetKidsMode(true); _tvChannels = null; _tvKidsAsk = false; _tvMsg = "✓ Kinder-Profil an – nur Kindersender und Kinderfilme."; _core.Audit.Append(Principal.LocalOwner.Name, "tv.kinder", "an"); return true; }
+        if (on) { Tv.SetKidsMode(true); _tvChannels = null; _tvKidsAsk = false; _tvMsg = "Kinder-Profil an – nur Kindersender und Kinderfilme."; _core.Audit.Append(Principal.LocalOwner.Name, "tv.kinder", "an"); return true; }
         if (Lock.Enabled && !Lock.Verify(pin ?? "")) { _tvKidsAsk = true; _tvMsg = pin is null ? "Zum Beenden des Kinder-Profils die PIN eingeben." : "Die PIN stimmt nicht."; return false; }
         Tv.SetKidsMode(false); _tvChannels = null; _tvKidsAsk = false;
-        _tvMsg = Lock.Enabled ? "✓ Kinder-Profil aus." : "✓ Kinder-Profil aus. Tipp: unter Einstellungen → Sicherheit eine PIN setzen, dann können Kinder es nicht selbst beenden.";
+        _tvMsg = Lock.Enabled ? "Kinder-Profil aus." : "Kinder-Profil aus. Tipp: unter Einstellungen → Sicherheit eine PIN setzen, dann können Kinder es nicht selbst beenden.";
         _core.Audit.Append(Principal.LocalOwner.Name, "tv.kinder", "aus");
         return true;
     }
@@ -166,7 +166,7 @@ public partial class MainWindow
     Control TvKidsBar()
     {
         var kids = Tv.KidsMode;
-        var b = TvButton("tv-kids", kids ? "🧸 Kinder-Profil beenden" : "🧸 Kinder-Profil", () => { if (Tv.KidsMode) TvSetKids(false); else TvSetKids(true); Show("tv"); }, kids);
+        var b = TvButton("tv-kids", kids ? "Kinder-Profil beenden" : "Kinder-Profil", () => { if (Tv.KidsMode) TvSetKids(false); else TvSetKids(true); Show("tv"); }, kids);
         var sp = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { b } };
         if (_tvKidsAsk)
         {
@@ -177,7 +177,7 @@ public partial class MainWindow
     }
 
     // ---------- 5 Bild im Bild ----------
-    Button TvPipButton(string name) => TvButton(name, _tvPip is null ? "⧉ Bild im Bild" : "⧉ Zurückholen", () => TvPip(_tvPip is null));
+    Button TvPipButton(string name) => TvButton(name, _tvPip is null ? "Bild im Bild" : "Zurückholen", () => TvPip(_tvPip is null));
 
     /// <summary>Bild im Bild: das laufende Bild in ein kleines Fenster, das über allem liegt – Trendo bleibt frei bedienbar.</summary>
     public void TvPip(bool on)
@@ -202,7 +202,7 @@ public partial class MainWindow
     /// <summary>Bild & Ton: Helligkeit, Kontrast, Farbe, Nachtmodus (leise Stellen lauter, laute leiser), Ton-Verzögerung.</summary>
     Button TvTuneButton(string name)
     {
-        var b = TvButton(name, "🎚 Bild & Ton", () => { });
+        var b = TvButton(name, "Bild & Ton", () => { });
         var panel = new StackPanel { Name = name + "-panel", Spacing = 6, Width = 280, Margin = new Thickness(6) };
         Slider S(string id, string label, string prop)
         {
@@ -250,15 +250,15 @@ public partial class MainWindow
         switch (cmd)
         {
             case "pause": _tvPlayer?.Send("cycle", "pause"); return "⏯";
-            case "zurueck": _tvPlayer?.Send("seek", -30); return "⏪ 30 s";
-            case "vor": _tvPlayer?.Send("seek", 30); return "⏩ 30 s";
-            case "lauter": _tvPlayer?.Send("add", "volume", 10); return "🔊 +";
-            case "leiser": _tvPlayer?.Send("add", "volume", -10); return "🔉 −";
+            case "zurueck": _tvPlayer?.Send("seek", -30); return "30 s";
+            case "vor": _tvPlayer?.Send("seek", 30); return "30 s";
+            case "lauter": _tvPlayer?.Send("add", "volume", 10); return "+";
+            case "leiser": _tvPlayer?.Send("add", "volume", -10); return "−";
             case "stumm": _tvPlayer?.Send("cycle", "mute"); return "🔇";
-            case "sender+": TvZap(1); return "Sender ▶";
-            case "sender-": TvZap(-1); return "◀ Sender";
-            case "vollbild": TvFullscreen(!TvIsFullscreen); return TvIsFullscreen ? "⛶ Vollbild" : "⤡ Fenster";
-            case "naechste": return TvPlayNextEpisode() ? "⏭ Nächste Folge" : "Keine nächste Folge";
+            case "sender+": TvZap(1); return "Sender";
+            case "sender-": TvZap(-1); return "Sender";
+            case "vollbild": TvFullscreen(!TvIsFullscreen); return TvIsFullscreen ? "Vollbild" : "Fenster";
+            case "naechste": return TvPlayNextEpisode() ? "Nächste Folge" : "Keine nächste Folge";
             default: return "Unbekannt";
         }
     }
@@ -286,8 +286,8 @@ public partial class MainWindow
         if (_tvVodInfo is not { } i) return null;
         var sp = new StackPanel { Name = "tv-film-info", Spacing = 3 };
         void L(string label, string? v) { if (!string.IsNullOrWhiteSpace(v)) sp.Children.Add(new TextBlock { Text = $"{label}: {v}", Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap }); }
-        L("Bewertung", i.Rating is { } r ? "★ " + r : null); L("Genre", i.Genre); L("Länge", i.Duration); L("Regie", i.Director); L("Darsteller", i.Cast);
-        if (i.TrailerUrl is { } t) sp.Children.Add(TvButton("tv-film-trailer", "▶ Trailer ansehen", () => Launch(t)));
+        L("Bewertung", i.Rating is { } r ? "" + r : null); L("Genre", i.Genre); L("Länge", i.Duration); L("Regie", i.Director); L("Darsteller", i.Cast);
+        if (i.TrailerUrl is { } t) sp.Children.Add(TvButton("tv-film-trailer", "Trailer ansehen", () => Launch(t)));
         return sp;
     }
 
@@ -296,7 +296,7 @@ public partial class MainWindow
     Control? TvQualityButton()
     {
         if (_tvChannel is not { } id || !_tvAlternatives.TryGetValue(id, out var alts) || alts.Count < 2) return null;
-        var b = TvButton("tv-quality", "Qualität ▾", () => { });
+        var b = TvButton("tv-quality", "Qualität", () => { });
         var menu = new StackPanel { Spacing = 4, Margin = new Thickness(6) };
         foreach (var c in alts) { var cid = c.Id; menu.Children.Add(TvButton("tv-quality-" + Safe(c.Id), c.Name, () => TvPlay(cid))); }
         b.Flyout = new Flyout { Content = menu, Placement = PlacementMode.Top };

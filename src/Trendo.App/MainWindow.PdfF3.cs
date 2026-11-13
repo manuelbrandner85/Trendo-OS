@@ -31,7 +31,7 @@ public partial class MainWindow
             try { img.Source = new Avalonia.Media.Imaging.Bitmap(_settings.LetterSignature); } catch (Exception) { img.IsVisible = false; }
             sp.Children.Add(new Border { Background = Brushes.White, CornerRadius = new CornerRadius(6), Padding = new Thickness(6), HorizontalAlignment = HorizontalAlignment.Left, Child = img });
             var on = _pdfMode == "Sign";
-            var place = new Button { Name = "pdf-sign-place", Content = on ? "✍ Jetzt auf die Seite klicken …" : "✍ Auf die Seite setzen", Background = on ? Accent : Brushes.Transparent };
+            var place = new Button { Name = "pdf-sign-place", Content = on ? "Jetzt auf die Seite klicken …" : "Auf die Seite setzen", Background = on ? Accent : Brushes.Transparent };
             place.Click += (_, _) => { _pdfMode = on ? null : "Sign"; PdfSay(on ? "" : "Klick auf die Stelle, an der die Unterschrift stehen soll."); Show("pdf"); };
             var redraw = new Button { Name = "pdf-sign-redraw", Content = "Neu zeichnen" };
             redraw.Click += (_, _) => { _pdfSignDraw = true; Show("pdf"); };
@@ -40,11 +40,11 @@ public partial class MainWindow
         }
         else
         {
-            sp.Children.Add(SignaturePad("pdf-sig", "pdf", _ => { _pdfSignDraw = false; _pdfMode = "Sign"; PdfSay("✓ Unterschrift gespeichert – jetzt auf die Stelle der Seite klicken."); Show("pdf"); },
+            sp.Children.Add(SignaturePad("pdf-sig", "pdf", _ => { _pdfSignDraw = false; _pdfMode = "Sign"; PdfSay("Unterschrift gespeichert – jetzt auf die Stelle der Seite klicken."); Show("pdf"); },
                 m => { PdfSay(m); Show("pdf"); }, 205, 90)); // passt in die Seitenleiste
             if (have) { var back = new Button { Name = "pdf-sign-keep", Content = "Bisherige behalten" }; back.Click += (_, _) => { _pdfSignDraw = false; _sigStrokes.Clear(); Show("pdf"); }; sp.Children.Add(back); }
         }
-        return new Expander { Name = "pdf-sign", Header = "✍ Unterschreiben", IsExpanded = _pdfMode == "Sign" || _pdfSignDraw, HorizontalAlignment = HorizontalAlignment.Stretch, Content = sp };
+        return new Expander { Name = "pdf-sign", Header = "Unterschreiben", IsExpanded = _pdfMode == "Sign" || _pdfSignDraw, HorizontalAlignment = HorizontalAlignment.Stretch, Content = sp };
     }
 
     /// <summary>Unterschrift mittig an die angeklickte Stelle setzen (Punkte in PDF-Koordinaten von oben links).</summary>
@@ -67,7 +67,7 @@ public partial class MainWindow
         sp.Children.Add(new WrapPanel { Children = { page, Sp(all) } });
         if (_pdfOcrText.Length > 0)
             sp.Children.Add(new TextBox { Name = "pdf-ocr-text", Text = _pdfOcrText, IsReadOnly = true, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MaxHeight = 200 });
-        return new Expander { Name = "pdf-ocr", Header = "🔎 Texterkennung", IsExpanded = _pdfOcrText.Length > 0 || _pdfOcrBusy, HorizontalAlignment = HorizontalAlignment.Stretch, Content = sp };
+        return new Expander { Name = "pdf-ocr", Header = "Texterkennung", IsExpanded = _pdfOcrText.Length > 0 || _pdfOcrBusy, HorizontalAlignment = HorizontalAlignment.Stretch, Content = sp };
     }
 
     /// <summary>Tesseract und deutsches Sprachpaket bereitstellen (wie im Briefe-Studio); null mit Meldung, wenn es nicht geht.</summary>
@@ -128,7 +128,7 @@ public partial class MainWindow
                 i => _ui.Post(() => { PdfSay($"Texterkennung: Seite {i + 1} von {pages} …"); }), _core.Audit);
             if (err is not null) { PdfSay(err); return null; }
             OpenPdf(outFile);
-            PdfSay($"✓ Durchsuchbar gespeichert: {Path.GetFileName(outFile)} ({n} Seiten) – Suchen und Kopieren gehen jetzt.");
+            PdfSay($"Durchsuchbar gespeichert: {Path.GetFileName(outFile)} ({n} Seiten) – Suchen und Kopieren gehen jetzt.");
             return outFile;
         }
         catch (Exception ex) when (ex is IOException or InvalidOperationException or UnauthorizedAccessException) { PdfSay("Texterkennung fehlgeschlagen: " + ex.Message); return null; }

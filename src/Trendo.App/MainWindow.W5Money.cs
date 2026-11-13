@@ -26,7 +26,7 @@ public partial class MainWindow
         var chart = new BarChart { Name = "fin-chart", Height = 200, Labels = MonthShort, Foreground = Muted };
         chart.Series.Add(("Einnahmen", "#2FBF71", months.Select(m => (double)m.Income).ToArray()));
         chart.Series.Add(("Ausgaben", "#F0644B", months.Select(m => (double)m.Expense).ToArray()));
-        var legend = new WrapPanel { Children = { new TextBlock { Text = "■ Einnahmen", Foreground = Brush.Parse("#2FBF71"), FontSize = 12, Margin = new Thickness(0, 0, 14, 0) }, new TextBlock { Text = "■ Ausgaben", Foreground = Brush.Parse("#F0644B"), FontSize = 12 } } };
+        var legend = new WrapPanel { Children = { new TextBlock { Text = "Einnahmen", Foreground = Brush.Parse("#2FBF71"), FontSize = 12, Margin = new Thickness(0, 0, 14, 0) }, new TextBlock { Text = "Ausgaben", Foreground = Brush.Parse("#F0644B"), FontSize = 12 } } };
 
         // F4 Budgets
         var budgets = new StackPanel { Name = "fin-budgets", Spacing = 6 };

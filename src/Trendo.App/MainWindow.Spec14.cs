@@ -39,9 +39,9 @@ public partial class MainWindow
         Ribbon =
         [
             ("Simulation", [
-                new ProgramCmd("cnc-play", "▶ Abspielen / Pause", _ => CncPlay(), true),
-                new ProgramCmd("cnc-start", "⏮ Anfang", _ => { CncStop(); CncSeek(0); }),
-                new ProgramCmd("cnc-end", "⏭ Ende", _ => { CncStop(); CncSeek(-1); }),
+                new ProgramCmd("cnc-play", "Abspielen / Pause", _ => CncPlay(), true),
+                new ProgramCmd("cnc-start", "Anfang", _ => { CncStop(); CncSeek(0); }),
+                new ProgramCmd("cnc-end", "Ende", _ => { CncStop(); CncSeek(-1); }),
             ]),
             ("Ansicht", [
                 new ProgramCmd("cnc-v-top", "Von oben", _ => { _cncIso = false; Show(CK); }),
@@ -62,7 +62,7 @@ public partial class MainWindow
         ],
         Workspace = CncWorkspace,
         Properties = CncProperties,
-        Status = d => { try { var r = CncReport(d); return $"{r.Lines} Zeilen · {r.Moves} Bewegungen · Dauer ca. {(int)r.Time.TotalHours}:{r.Time.Minutes:00}:{r.Time.Seconds:00} · Fräsweg {Fach.F(r.CutMm / 1000, 2)} m · {(r.Warnings.Count == 0 ? "✓ keine Auffälligkeiten" : $"⚠ {r.Warnings.Count} Hinweise")}"; } catch (Exception ex) when (ex is InvalidOperationException or FormatException) { return "⚠ " + ex.Message; } },
+        Status = d => { try { var r = CncReport(d); return $"{r.Lines} Zeilen · {r.Moves} Bewegungen · Dauer ca. {(int)r.Time.TotalHours}:{r.Time.Minutes:00}:{r.Time.Seconds:00} · Fräsweg {Fach.F(r.CutMm / 1000, 2)} m · {(r.Warnings.Count == 0 ? "✓ keine Auffälligkeiten" : $"{r.Warnings.Count} Hinweise")}"; } catch (Exception ex) when (ex is InvalidOperationException or FormatException) { return "⚠ " + ex.Message; } },
         Help = "Links steht der G-Code – tippen und mit F5, Strg+Enter oder einem Klick in die Vorschau prüfen. Rechts zeigt die Vorschau die Bahnen; „Abspielen“ fährt das Programm nach, der Regler springt an jede Stelle, die gerade gefahrene Zeile wird links markiert. Hinweise unten springen per Klick zur Zeile.",
     }, "cnc", "fräse", "fräsen", "g-code", "gcode", "drehzahl", "vorschub", "laser", "fertigung", "camotics", "nc-viewer");
 
@@ -144,10 +144,10 @@ public partial class MainWindow
         var simBar = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), RowDefinitions = new RowDefinitions("Auto,Auto"), Margin = new Thickness(0, 6, 0, 0), Children = { play, Pos(slider, 1), Grid2(now, 1, 0, 2) } };
         // Hinweise mit Sprung zur Zeile
         var notes = new StackPanel { Name = "cnc-notes", Spacing = 2, Margin = new Thickness(0, 6, 0, 0) };
-        if (err is not null) notes.Children.Add(new TextBlock { Name = "cnc-error", Text = "⚠ " + err, Foreground = Brush.Parse("#F87171"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
+        if (err is not null) notes.Children.Add(new TextBlock { Name = "cnc-error", Text = "" + err, Foreground = Brush.Parse("#F87171"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
         else if (rep is not null)
         {
-            if (rep.Warnings.Count == 0) notes.Children.Add(new TextBlock { Name = "cnc-ok", Text = "✓ Keine Auffälligkeiten.", Foreground = Brush.Parse("#4ADE80"), FontSize = 12 });
+            if (rep.Warnings.Count == 0) notes.Children.Add(new TextBlock { Name = "cnc-ok", Text = "Keine Auffälligkeiten.", Foreground = Brush.Parse("#4ADE80"), FontSize = 12 });
             for (var k = 0; k < rep.Warnings.Count; k++)
             {
                 var w = rep.Warnings[k]; var m = System.Text.RegularExpressions.Regex.Match(w, @"^Zeile (\d+)");

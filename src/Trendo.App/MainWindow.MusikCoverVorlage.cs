@@ -34,10 +34,10 @@ public partial class MainWindow
                 _msBpm = Math.Round(f.Bpm).ToString(System.Globalization.CultureInfo.InvariantCulture); taken.Add($"{f.Bpm:0} BPM");
                 if (AceStepClient.Keys.Contains(f.Key)) { _msKey = f.Key; taken.Add("Tonart " + SongTools.KeyDe(f.Key)); }
             }
-            else missing.Add("Tonart und Tempo (keine Messung – mit eigener Aufnahme unter ② genau)");
+            else missing.Add("Tonart und Tempo (keine Messung – mit eigener Aufnahme unter Schritt 2 genau)");
         MsCoverTaken = taken;
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.cover.vorlage", h.Mbid);
-        _msMsg = $"✓ „{h.Title}“ als Vorlage übernommen: {string.Join(", ", taken)}." + (missing.Count > 0 ? $" Noch offen: {string.Join(", ", missing)}." : "") + " Jetzt links „Erstellen“ – Melodie und Text entstehen neu, ein Cover fremder Lieder nur privat nutzen.";
+        _msMsg = $"„{h.Title}“ als Vorlage übernommen: {string.Join(", ", taken)}." + (missing.Count > 0 ? $" Noch offen: {string.Join(", ", missing)}." : "") + " Jetzt links „Erstellen“ – Melodie und Text entstehen neu, ein Cover fremder Lieder nur privat nutzen.";
         CwSay(_msMsg);
     }
 }

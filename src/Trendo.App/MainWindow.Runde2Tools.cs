@@ -35,15 +35,15 @@ public partial class MainWindow
         foreach (var l in items.Replace("\r", "").Split('\n').Where(l => l.Trim().Length > 0))
         {
             var p = l.Split(';');
-            if (p.Length != 3 || !decimal.TryParse(p[0].Trim(), de, out var q) || !decimal.TryParse(p[2].Trim().TrimEnd('€').Trim(), de, out var pr)) { _typstMsg = $"⚠ Posten „{l.Trim()}“ bitte als „Menge;Artikel;Preis“."; Show("doku-schreiben"); return; }
+            if (p.Length != 3 || !decimal.TryParse(p[0].Trim(), de, out var q) || !decimal.TryParse(p[2].Trim().TrimEnd('€').Trim(), de, out var pr)) { _typstMsg = $"Posten „{l.Trim()}“ bitte als „Menge;Artikel;Preis“."; Show("doku-schreiben"); return; }
             rows.Add((q, p[1].Trim(), pr));
         }
-        if (title.Trim().Length == 0) { _typstMsg = "⚠ Bitte einen Titel angeben."; Show("doku-schreiben"); return; }
+        if (title.Trim().Length == 0) { _typstMsg = "Bitte einen Titel angeben."; Show("doku-schreiben"); return; }
         var dir = DokuOut; Directory.CreateDirectory(dir);
         var name = string.Concat(title.Trim().Select(c => char.IsLetterOrDigit(c) ? c : '-')).Trim('-'); if (name.Length == 0) name = "brief";
         var typ = Path.Combine(dir, name + ".typ"); File.WriteAllText(typ, TypstDoc.Letter(title, body, rows));
         var (ok, msg) = TypstDoc.Compile(ToolExe("typst") ?? "", typ, Path.Combine(dir, name + ".pdf"), dir, run: ToolRunOverride);
-        _typstMsg = ok ? $"✓ PDF gespeichert: {Path.GetFileName(msg)} (Quelle {Path.GetFileName(typ)} bleibt bearbeitbar)" : "⚠ " + msg;
+        _typstMsg = ok ? $"PDF gespeichert: {Path.GetFileName(msg)} (Quelle {Path.GetFileName(typ)} bleibt bearbeitbar)" : "⚠ " + msg;
         _core.Audit.Append(Principal.LocalOwner.Name, "office.typst.pdf", ok ? Path.GetFileName(msg) : "fehler");
         Show("doku-schreiben");
     }
@@ -79,8 +79,8 @@ public partial class MainWindow
     public void LiveServerStart(string path)
     {
         if (LiveServerRunning) { _mtxMsg = "Der Sendeserver läuft schon."; Show("sendung"); return; }
-        if (!LiveServer.ValidPath(path)) { _mtxMsg = "⚠ Sendungsname: nur a–z, 0–9, - und _ (bis 40 Zeichen)."; Show("sendung"); return; }
-        var exe = ToolExe("mediamtx"); if (exe is null) { _mtxMsg = "⚠ mediamtx ist noch nicht eingerichtet."; Show("sendung"); return; }
+        if (!LiveServer.ValidPath(path)) { _mtxMsg = "Sendungsname: nur a–z, 0–9, - und _ (bis 40 Zeichen)."; Show("sendung"); return; }
+        var exe = ToolExe("mediamtx"); if (exe is null) { _mtxMsg = "mediamtx ist noch nicht eingerichtet."; Show("sendung"); return; }
         var work = Path.Combine(WorkFolder("Live"), "server"); var args = LiveServer.Prepare(work);
         if (LiveServerStartOverride is { } o) _mtxOn = o(exe, args, work);
         else if (_opt.Isolated) { _mtxMsg = "Testmodus: Sendeserver wird nicht gestartet."; Show("sendung"); return; }
@@ -88,12 +88,12 @@ public partial class MainWindow
         {
             var psi = new ProcessStartInfo(exe) { WorkingDirectory = work, UseShellExecute = false, CreateNoWindow = true };
             foreach (var a in args) psi.ArgumentList.Add(a);
-            try { _mtx = Process.Start(psi); _mtxOn = _mtx is not null; } catch (System.ComponentModel.Win32Exception e) { _mtxMsg = "⚠ Sendeserver startet nicht: " + e.Message; Show("sendung"); return; }
+            try { _mtx = Process.Start(psi); _mtxOn = _mtx is not null; } catch (System.ComponentModel.Win32Exception e) { _mtxMsg = "Sendeserver startet nicht: " + e.Message; Show("sendung"); return; }
             if (!_mtxHooked) { _mtxHooked = true; Closed += (_, _) => { try { if (_mtx is { HasExited: false }) _mtx.Kill(); } catch (InvalidOperationException) { } }; }
         }
-        if (!_mtxOn) { _mtxMsg = "⚠ Sendeserver startet nicht."; Show("sendung"); return; }
+        if (!_mtxOn) { _mtxMsg = "Sendeserver startet nicht."; Show("sendung"); return; }
         _mtxPath = path;
-        _mtxMsg = $"✓ Sendeserver bereit (nur auf diesem Rechner). In OBS unter Stream → Server eintragen: {LiveServer.PublishUrl(path)} – Ansehen: {LiveServer.WatchUrl(path)}";
+        _mtxMsg = $"Sendeserver bereit (nur auf diesem Rechner). In OBS unter Stream → Server eintragen: {LiveServer.PublishUrl(path)} – Ansehen: {LiveServer.WatchUrl(path)}";
         _core.Audit.Append(Principal.LocalOwner.Name, "live.server.start", path);
         Show("sendung");
     }
@@ -129,13 +129,13 @@ public partial class MainWindow
     public async Task LiveChannelPlay(string url)
     {
         var exe = ToolExe("streamlink");
-        if (exe is null) { _slMsg = "⚠ streamlink ist noch nicht eingerichtet."; Show("tv"); return; }
+        if (exe is null) { _slMsg = "streamlink ist noch nicht eingerichtet."; Show("tv"); return; }
         _slMsg = "Livestream wird gesucht …"; Show("tv");
         var run = ToolRunOverride;
         var (ok, msg) = await Task.Run(() => LiveResolve.StreamUrl(exe, url, "best", run: run));
         _core.Audit.Append(Principal.LocalOwner.Name, "tv.live.oeffentlich", ok ? new Uri(url).Host : "fehler");
-        if (!ok) { _slMsg = "⚠ " + msg; Show("tv"); return; }
-        _slMsg = "▶ Läuft im Player."; _tvTab = "live"; Show("tv"); TvPlayUrl(msg, "main");
+        if (!ok) { _slMsg = "" + msg; Show("tv"); return; }
+        _slMsg = "Läuft im Player."; _tvTab = "live"; Show("tv"); TvPlayUrl(msg, "main");
     }
 
     Control LiveChannelsCard()

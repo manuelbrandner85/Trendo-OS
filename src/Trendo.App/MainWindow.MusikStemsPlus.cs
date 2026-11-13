@@ -106,9 +106,9 @@ public partial class MainWindow
                 new TextBlock { Text = label, Width = 110, Foreground = ch.Mute ? Muted : Text, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center },
                 T($"ms-stem-mute-{id}", "M", ch.Mute, () => ch with { Mute = !ch.Mute }), T($"ms-stem-solo-{id}", "S", ch.Solo, () => ch with { Solo = !ch.Solo }), vol, get, midi } });
         }
-        var play = Act("ms-stem-play", "▶ Mischung anhören", () => MsStemPlay(s));
+        var play = Act("ms-stem-play", "Mischung anhören", () => MsStemPlay(s));
         var save = Act("ms-stem-save", "Als Lied speichern", () => MsStemSave(s));
-        var karaoke = Act("ms-karaoke", "🎤 Karaoke (LRC)", () => _ = MsKaraoke(s)); // V8
+        var karaoke = Act("ms-karaoke", "Karaoke (LRC)", () => _ = MsKaraoke(s)); // V8
         sp.Children.Add(new WrapPanel { Children = { play, new Border { Width = 4 }, save, new Border { Width = 4 }, karaoke } });
         if (MsStemQuality is { } q) sp.Children.Add(P($"Letzte Trennung: {q.Reconstruction:0.0} dB Rekonstruktion, Übersprechen {q.Bleed:0.00}.", Muted, 10.5));
         return sp;
@@ -127,7 +127,7 @@ public partial class MainWindow
         MusicSong Add(string file, string title, string kind, bool voice) => Songs.Add(new MusicSong { Title = $"{root.Title} – {title}", Style = root.Style, Lyrics = voice ? root.Lyrics : "[Instrumental]",
             Language = root.Language, Seconds = Math.Round(alone.Seconds, 2), Bpm = root.Bpm, Key = root.Key, TimeSignature = root.TimeSignature, File = file, Kind = kind, ParentId = root.Id });
         var made = new List<MusicSong> { Add(fa, label, "spur-" + stemId, stemId == "gesang"), Add(fr, "ohne " + label, "ohne-" + stemId, stemId != "gesang" && !string.IsNullOrWhiteSpace(root.Lyrics)) };
-        _msSel = made[0].Id; _msMsg = $"✓ „{label}“ allein und „ohne {label}“ sind jetzt eigene Lieder.";
+        _msSel = made[0].Id; _msMsg = $"„{label}“ allein und „ohne {label}“ sind jetzt eigene Lieder.";
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.spur.geholt", $"{root.Id} {stemId}");
         Show(MS);
         return made;
@@ -151,7 +151,7 @@ public partial class MainWindow
         if (r.Notes.Count == 0) { _msMsg = $"In der Spur „{label}“ wurden keine Noten erkannt."; Show(MS); return null; }
         await File.WriteAllBytesAsync(mid, PianoRoll.ToMidi(AudioToMidi.ToSong(r, root.Bpm ?? 120, $"{root.Title} – {label}")));
         await File.WriteAllTextAsync(Path.Combine(dir, $"{stemId} – Unsicherheitsbericht.md"), AudioToMidi.Report($"{root.Title} – {label}", r));
-        _msMsg = $"✓ MIDI „{label}“: {r.Notes.Count} Noten{(NotenReady ? $" (basic-pitch, {r.PolyphonicShare:P0} mehrstimmig)" : r.Exact ? "" : " (geschätzt – mehrstimmig, siehe Unsicherheitsbericht)")} – {Path.GetFileName(mid)} im Spuren-Ordner.";
+        _msMsg = $"MIDI „{label}“: {r.Notes.Count} Noten{(NotenReady ? $" (basic-pitch, {r.PolyphonicShare:P0} mehrstimmig)" : r.Exact ? "" : " (geschätzt – mehrstimmig, siehe Unsicherheitsbericht)")} – {Path.GetFileName(mid)} im Spuren-Ordner.";
         Show(MS);
         return mid;
     }
@@ -173,7 +173,7 @@ public partial class MainWindow
         await File.WriteAllTextAsync(lrc, TimedText.ToLrc(cues, root.Title, root.Language.Length > 0 ? root.Language : "de", acc.Seconds));
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.karaoke", Path.GetFileName(lrc));
         if (play) MusicPlay([acc.File], 0, MS);
-        _msMsg = $"🎤 Karaoke: {cues.Count} Zeilen mit Zeiten – „{Path.GetFileName(lrc)}“ liegt neben der Begleitung (für jeden Karaoke-Player)." + (play ? " Die Begleitung läuft." : "");
+        _msMsg = $"Karaoke: {cues.Count} Zeilen mit Zeiten – „{Path.GetFileName(lrc)}“ liegt neben der Begleitung (für jeden Karaoke-Player)." + (play ? " Die Begleitung läuft." : "");
         Show(MS);
         return lrc;
     }

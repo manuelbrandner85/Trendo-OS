@@ -151,7 +151,7 @@ public partial class MainWindow
         if (d.Text("material").Contains('%')) // Textiletikett sofort prüfen (EU-Textilverordnung)
         {
             var lab = FashionPlus.TextileLabel(d.Text("material"));
-            sp.Children.Add(new TextBlock { Name = "mode-label-check", Text = lab.Ok ? "✓ Etikett zulässig" : "⚠ " + string.Join(" · ", lab.Problems) + (lab.Label == "" ? "" : $" – Vorschlag: {lab.Label}"), FontSize = 11, TextWrapping = TextWrapping.Wrap, Foreground = Brush.Parse(lab.Ok ? "#4ADE80" : "#F5A524") });
+            sp.Children.Add(new TextBlock { Name = "mode-label-check", Text = lab.Ok ? "Etikett zulässig" : "" + string.Join(" · ", lab.Problems) + (lab.Label == "" ? "" : $" – Vorschlag: {lab.Label}"), FontSize = 11, TextWrapping = TextWrapping.Wrap, Foreground = Brush.Parse(lab.Ok ? "#4ADE80" : "#F5A524") });
         }
         Txt("description", "Beschreibung", true); Txt("care", "Pflege");
         Csv("sizes", "Größen (mit Komma)"); Csv("colors", "Farben (mit Komma)");
@@ -197,7 +197,7 @@ public partial class MainWindow
         LiveCalc(calcs, "mode-c-yarn", "Garnbedarf (Stricken)", [("w", "Breite (cm)", "50", null), ("h", "Länge (cm)", "60", null), ("s", "Maschen / 10 cm", "22", null), ("r", "Reihen / 10 cm", "30", null), ("m", "m je Knäuel", "125", null)],
             v => { var y = FashionPlus.Yarn(Fach.Num(v("w")), Fach.Num(v("h")), Fach.Num(v("s")), Fach.Num(v("r")), Fach.Num(v("m"))); return $"{y.Stitches} Maschen × {y.Rows} Reihen · ca. {Fach.F(y.Meters, 0)} m → {y.Balls} Knäuel"; });
         LiveCalc(calcs, "mode-c-ean", "EAN-Strichcode", [("e", "12 Ziffern oder EAN-13", "400638133393", null)],
-            v => { var dg = new string(v("e").Where(char.IsDigit).ToArray()); return dg.Length == 13 ? (FashionPlus.EanValid(dg) ? "✓ Gültige EAN-13." : $"⚠ Prüfziffer falsch – richtig wäre {FashionPlus.EanCheckDigit(dg[..12])}.") : $"Vollständige EAN: {dg}{FashionPlus.EanCheckDigit(dg)}"; });
+            v => { var dg = new string(v("e").Where(char.IsDigit).ToArray()); return dg.Length == 13 ? (FashionPlus.EanValid(dg) ? "Gültige EAN-13." : $"Prüfziffer falsch – richtig wäre {FashionPlus.EanCheckDigit(dg[..12])}.") : $"Vollständige EAN: {dg}{FashionPlus.EanCheckDigit(dg)}"; });
         LiveCalc(calcs, "mode-c-tier", "Staffelpreise (vom Ladenpreis)", [("q", "Menge", "50", null), ("t", "Stufen „ab Menge:Rabatt %“", "10:5 25:10 100:15", null)],
             v => { var tiers = v("t").Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => x.Split(':')).Select(x => x.Length == 2 ? ((int)Fach.Num(x[0]), Fach.Num(x[1])) : throw new FormatException("Stufe bitte als „10:5“.")); var r = FashionPlus.Tier(ModePrice(d).Gross, (int)Fach.Num(v("q")), tiers); return $"{Fach.F(r.DiscountPct, 0)} % Rabatt → {Fach.F(r.Unit)} € je Stück, zusammen {Fach.F(r.Total)} €"; });
         sp.Children.Add(new Expander { Name = "mode-calcs", Header = "Rechner (Schuh, Kind, BH, Ring, Garn, EAN, Staffel)", IsExpanded = false, Content = calcs, Margin = new Thickness(0, 8, 0, 0) });
@@ -263,12 +263,12 @@ public partial class MainWindow
         if (!derived)
         {
             bar.Children.Add(B("mode-marker-auto", "Automatisch legen", () => { d.Set("layout", MarkerJson(Marker.AutoLayout(pieces, width)), "Automatisch legen"); MarkerSelected = -1; }, true));
-            bar.Children.Add(B("mode-marker-rotate", "↻ Drehen", () => { if (MarkerSelected < 0 || MarkerSelected >= lay.Count) throw new InvalidOperationException("Erst ein Teil anklicken."); canvas.Rotated!(MarkerSelected); }));
+            bar.Children.Add(B("mode-marker-rotate", "Drehen", () => { if (MarkerSelected < 0 || MarkerSelected >= lay.Count) throw new InvalidOperationException("Erst ein Teil anklicken."); canvas.Rotated!(MarkerSelected); }));
         }
         var title = d.Text("name") + (sizeLabel.Length > 0 ? $" ({sizeLabel})" : "");
         bar.Children.Add(B("mode-marker-pdf", "Als PDF", () => { var f = Path.Combine(WorkFolder("Produkte"), MarkerFile(d, derived ? MarkerSize : "", ".pdf")); Marker.Pdf(f, title, pieces, lay, width); _progMsg[K] = "Gespeichert: " + f; NotifyFileResult(_progMsg[K]); }));
         bar.Children.Add(B("mode-marker-svg", "Als SVG (1:1)", () => { var f = Path.Combine(WorkFolder("Produkte"), MarkerFile(d, derived ? MarkerSize : "", ".svg")); File.WriteAllText(f, Marker.Svg(title, pieces, lay, width)); _progMsg[K] = "Gespeichert: " + f; NotifyFileResult(_progMsg[K]); }));
-        var facts = new TextBlock { Name = "mode-marker-facts", Text = $"Verbrauch {len / 100:0.00} m bei {width:0} cm Breite · Ausnutzung {eff * 100:0} % · Verschnitt {100 - eff * 100:0} %" + (bad.Count > 0 ? $" · ⚠ {bad.Count} Teile überlappen oder ragen über den Rand" : "") + (lay.Count == 0 && pieces.Count > 0 ? " · ⚠ ein Teil ist breiter als der Stoff" : ""), Foreground = bad.Count > 0 || (lay.Count == 0 && pieces.Count > 0) ? Brush.Parse("#F87171") : Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap };
+        var facts = new TextBlock { Name = "mode-marker-facts", Text = $"Verbrauch {len / 100:0.00} m bei {width:0} cm Breite · Ausnutzung {eff * 100:0} % · Verschnitt {100 - eff * 100:0} %" + (bad.Count > 0 ? $" · {bad.Count} Teile überlappen oder ragen über den Rand" : "") + (lay.Count == 0 && pieces.Count > 0 ? " · ein Teil ist breiter als der Stoff" : ""), Foreground = bad.Count > 0 || (lay.Count == 0 && pieces.Count > 0) ? Brush.Parse("#F87171") : Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap };
         // Stoffbedarf aller Größen
         var run = new Grid { Name = "mode-marker-run", ColumnDefinitions = new ColumnDefinitions(string.Join(",", Enumerable.Repeat("Auto", sizes.Count + 1))) };
         if (sizes.Count > 1 && pieces.Count > 0)

@@ -47,7 +47,7 @@ public partial class MainWindow
                 new TextBlock { Text = $"{e.Name}  ·  {r.Score} Punkte", Foreground = Text, FontSize = 13.5, FontWeight = FontWeight.SemiBold },
                 new TextBlock { Text = $"{e.StudioName} · {e.Area} · {(e.Type.Count == 0 ? "keine eigene Arbeitsfläche" : string.Join(", ", e.Type))} · {e.Tests.Count} Tests · Vorbild: {(e.Rea is null ? "fehlt" : "ja")}"
                     + (e.WarmMs is { } ms ? $" · öffnet in {ms:0} ms" : "") + $" · Trendo OS: {r.Linux}", Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap },
-                new TextBlock { Text = r.Missing.Count == 0 ? "✓ nichts offen" : "Offen: " + string.Join(" · ", r.Missing), Foreground = r.Missing.Count == 0 ? Brush.Parse("#4ADE80") : Text, FontSize = 11.5, TextWrapping = TextWrapping.Wrap } } };
+                new TextBlock { Text = r.Missing.Count == 0 ? "nichts offen" : "Offen: " + string.Join(" · ", r.Missing), Foreground = r.Missing.Count == 0 ? Brush.Parse("#4ADE80") : Text, FontSize = 11.5, TextWrapping = TextWrapping.Wrap } } };
             var open = new Button { Name = $"ql-open-{n}", Content = "Öffnen", FontSize = 12, VerticalAlignment = VerticalAlignment.Center };
             open.Click += (_, _) => Show(id);
             list.Children.Add(new Border { Background = Brush.Parse("#10FFFFFF"), CornerRadius = new CornerRadius(12), Padding = new Thickness(12, 8),

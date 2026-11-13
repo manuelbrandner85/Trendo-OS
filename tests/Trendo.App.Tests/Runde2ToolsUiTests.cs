@@ -26,7 +26,7 @@ public class Runde2ToolsUi
             w.Find<TextBox>("typst-title").Text = "Rechnung 17"; w.Find<TextBox>("typst-body").Text = "Sehr geehrte Frau Muster,";
             w.Find<TextBox>("typst-items").Text = "2;Stühle;59,50\n1;Tisch;349";
             w.Find<Button>("typst-run").Press();
-            Assert.StartsWith("✓ PDF gespeichert: Rechnung-17.pdf", w.TypstMessage);
+            Assert.StartsWith("PDF gespeichert: Rechnung-17.pdf", w.TypstMessage);
             Assert.Contains("Gesamt: 468,00 €", File.ReadAllText(seen![3]));
             w.Find<TextBox>("typst-items").Text = "zwei Stühle"; w.Find<Button>("typst-run").Press();
             Assert.Contains("Menge;Artikel;Preis", w.TypstMessage);

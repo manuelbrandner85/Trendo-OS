@@ -53,7 +53,7 @@ public partial class MainWindow
     Control MediaTabs()
     {
         var bar = new WrapPanel { Name = "media-tabs" };
-        foreach (var (id, label) in new[] { ("fotos", "🖼 Fotos"), ("musik", "🎵 Musik & Videos") })
+        foreach (var (id, label) in new[] { ("fotos", "Fotos"), ("musik", "Musik & Videos") })
         {
             var on = _mediaTab == id; var b = Act("media-tab-" + id, label, () => { _mediaTab = id; Show("medien"); }, on); b.Margin = new Thickness(0, 0, 6, 6); bar.Children.Add(b);
         }
@@ -84,14 +84,14 @@ public partial class MainWindow
         }
         side.Children.Add(Nav("photo-nav-alle", "Alle Fotos", "alle", _photos.Count));
         var ai = 0;
-        foreach (var (name, count) in albums) side.Children.Add(Nav($"photo-nav-album-{ai++}", name == Trendo.Core.Sys.PhotoAlbum.Favorites ? "★ Favoriten" : "▣ " + name, "album:" + name, count));
-        side.Children.Add(Nav("photo-nav-dups", "⧉ Doppelte", "doppelte", _photoDups?.Sum(g => g.Count - 1) ?? 0));
+        foreach (var (name, count) in albums) side.Children.Add(Nav($"photo-nav-album-{ai++}", name == Trendo.Core.Sys.PhotoAlbum.Favorites ? "Favoriten" : "" + name, "album:" + name, count));
+        side.Children.Add(Nav("photo-nav-dups", "Doppelte", "doppelte", _photoDups?.Sum(g => g.Count - 1) ?? 0));
         var newName = new TextBox { Name = "photo-album-name", PlaceholderText = "Neues Album …", Margin = new Thickness(0, 8, 0, 0) };
         newName.KeyDown += (_, e) => { if (e.Key == Key.Enter) Try("medien", () => { Albums.Create(newName.Text ?? ""); _photoView = "album:" + newName.Text!.Trim(); Show("medien"); }); };
         side.Children.Add(newName);
         side.Children.Add(Act("photo-album-create", "Album anlegen", () => Try("medien", () => { Albums.Create(newName.Text ?? ""); _photoView = "album:" + newName.Text!.Trim(); Show("medien"); })));
         side.Children.Add(H("Ordner", 12));
-        foreach (var f in PhotoFolders.Where(Directory.Exists).Distinct()) side.Children.Add(new TextBlock { Text = "📁 " + Path.GetFileName(f.TrimEnd('\\', '/')), Foreground = Muted, FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis });
+        foreach (var f in PhotoFolders.Where(Directory.Exists).Distinct()) side.Children.Add(new TextBlock { Text = "" + Path.GetFileName(f.TrimEnd('\\', '/')), Foreground = Muted, FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis });
         var folder = new TextBox { Name = "photo-add-folder", PlaceholderText = "Weiteren Ordner hinzufügen" };
         side.Children.Add(folder);
         side.Children.Add(Act("photo-add-folder-ok", "Ordner aufnehmen", () => Try("medien", () =>
@@ -100,7 +100,7 @@ public partial class MainWindow
             if (!_settings.PhotoFolders.Contains(f, StringComparer.OrdinalIgnoreCase)) { _settings.PhotoFolders.Add(f); SaveSettings(); }
             _photos = null; Show("medien");
         })));
-        side.Children.Add(Act("photo-reload", "↻ Neu einlesen", () => { _photos = null; Show("medien"); }));
+        side.Children.Add(Act("photo-reload", "Neu einlesen", () => { _photos = null; Show("medien"); }));
 
         var main = _photoView == "doppelte" ? PhotoDuplicates() : PhotoGrid();
         return new Grid { Name = "photo-album", ColumnDefinitions = new ColumnDefinitions("Auto,14,*"), Children = { Glass2(side, 10), Pos(main, 2) } };
@@ -121,7 +121,7 @@ public partial class MainWindow
         var size = new Slider { Name = "photo-size", Minimum = 90, Maximum = 280, Value = _photoSize, Width = 160, VerticalAlignment = VerticalAlignment.Center };
         size.PropertyChanged += (_, e) => { if (e.Property == Avalonia.Controls.Primitives.RangeBase.ValueProperty && Math.Abs(size.Value - _photoSize) > 8) { _photoSize = size.Value; Show("medien"); } };
         sp.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = {
-            new StackPanel { Children = { H(album is null ? "Alle Fotos" : album == Trendo.Core.Sys.PhotoAlbum.Favorites ? "★ Favoriten" : album, 18), new TextBlock { Name = "photo-count", Text = $"{list.Count} Fotos" + (list.Count > 0 ? $" · {list[^1].Taken:MMMM yyyy} bis {list[0].Taken:MMMM yyyy}" : ""), Foreground = Muted, FontSize = 12 } } },
+            new StackPanel { Children = { H(album is null ? "Alle Fotos" : album == Trendo.Core.Sys.PhotoAlbum.Favorites ? "Favoriten" : album, 18), new TextBlock { Name = "photo-count", Text = $"{list.Count} Fotos" + (list.Count > 0 ? $" · {list[^1].Taken:MMMM yyyy} bis {list[0].Taken:MMMM yyyy}" : ""), Foreground = Muted, FontSize = 12 } } },
             Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { new TextBlock { Text = "Größe", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, size } }, 1) } });
         // Auswahlleiste – wird bei Klicks nur neu befüllt (kein Neuaufbau der Seite, sonst käme ein Doppelklick nie an)
         var selHost = new StackPanel(); sp.Children.Add(selHost);
@@ -132,7 +132,7 @@ public partial class MainWindow
             var pick = new ComboBox { Name = "photo-sel-album", ItemsSource = names, SelectedIndex = names.Count > 0 ? 0 : -1, Width = 170 };
             var bar = new WrapPanel { Name = "photo-selbar", Children = {
                 new TextBlock { Text = $"{_photoSel.Count} ausgewählt", Foreground = GoldText(), FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 0) },
-                Act("photo-sel-fav", "★ Zu Favoriten", () => { Albums.Add(Trendo.Core.Sys.PhotoAlbum.Favorites, _photoSel); Say($"{_photoSel.Count} Fotos bei den Favoriten.", "medien"); }),
+                Act("photo-sel-fav", "Zu Favoriten", () => { Albums.Add(Trendo.Core.Sys.PhotoAlbum.Favorites, _photoSel); Say($"{_photoSel.Count} Fotos bei den Favoriten.", "medien"); }),
                 pick, Act("photo-sel-add", "Zum Album", () => Try("medien", () => { if (pick.SelectedItem is not string a) throw new ArgumentException("Erst links ein Album anlegen."); var n = Albums.Add(a, _photoSel); Say($"{n} Fotos zu „{a}“ hinzugefügt.", "medien"); })) } };
             if (album is not null) bar.Children.Add(Act("photo-sel-remove", "Aus diesem Album nehmen", () => { Albums.Remove(album, _photoSel); _photoSel.Clear(); Show("medien"); }));
             bar.Children.Add(Act("photo-sel-none", "Auswahl aufheben", () => { _photoSel.Clear(); Show("medien"); }));
@@ -199,7 +199,7 @@ public partial class MainWindow
             P(Path.GetDirectoryName(p.Path) ?? "", Muted, 11.5),
             P($"Foto {i + 1} von {list.Count}", Muted, 11.5) } };
         var acts = new StackPanel { Spacing = 6 };
-        acts.Children.Add(Act("photo-fav", fav ? "★ Aus Favoriten nehmen" : "☆ Zu Favoriten", () => { Albums.ToggleFavorite(p.Path); Show("medien"); }, !fav));
+        acts.Children.Add(Act("photo-fav", fav ? "Aus Favoriten nehmen" : "Zu Favoriten", () => { Albums.ToggleFavorite(p.Path); Show("medien"); }, !fav));
         acts.Children.Add(Act("photo-edit", "In Bildbearbeitung öffnen", () => Try("medien", () => { ImgAddImage(p.Path); Show("bild"); })));
         acts.Children.Add(Act("photo-folder", "Im Ordner zeigen", () => Launch(Path.GetDirectoryName(p.Path)!)));
         if (!_photoAskTrash) acts.Children.Add(Act("photo-trash", "In den Papierkorb …", () => { _photoAskTrash = true; Show("medien"); }));
@@ -218,9 +218,9 @@ public partial class MainWindow
         }
         info.Children.Add(acts);
         var top = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = {
-            Act("photo-back", "← Zurück zur Übersicht", () => { _photoOpen = null; Show("medien"); }),
+            Act("photo-back", "Zurück zur Übersicht", () => { _photoOpen = null; Show("medien"); }),
             Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, HorizontalAlignment = HorizontalAlignment.Center, Children = { Act("photo-prev", "◀", () => Go(-1)), Act("photo-next", "▶", () => Go(1)) } }, 1),
-            Pos(new TextBlock { Text = "← → blättern · Esc schließt", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center }, 2) } };
+            Pos(new TextBlock { Text = "blättern · Esc schließt", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center }, 2) } };
         var root = new Grid { Name = "photo-viewer", Focusable = true, RowDefinitions = new RowDefinitions("Auto,10,*"), ColumnDefinitions = new ColumnDefinitions("*,14,Auto"), Children = { top, Pos(stage, 0), Pos(Glass2(info, 12), 2) } };
         Grid.SetColumnSpan(top, 3); Grid.SetRow(stage, 2); Grid.SetRow(root.Children[2], 2);
         root.KeyDown += (_, e) => { if (e.Key == Key.Right) { Go(1); e.Handled = true; } else if (e.Key == Key.Left) { Go(-1); e.Handled = true; } else if (e.Key == Key.Escape) { _photoOpen = null; Show("medien"); e.Handled = true; } };
@@ -237,7 +237,7 @@ public partial class MainWindow
     Control PhotoDuplicates()
     {
         var sp = new StackPanel { Name = "photo-dups", Spacing = 8 };
-        sp.Children.Add(H("⧉ Doppelte Fotos", 18));
+        sp.Children.Add(H("Doppelte Fotos", 18));
         if (_photoDups is null)
         {
             sp.Children.Add(P("Trendo vergleicht den Inhalt (nicht nur den Namen). Das älteste Foto jeder Gruppe bleibt.", Muted, 12.5));

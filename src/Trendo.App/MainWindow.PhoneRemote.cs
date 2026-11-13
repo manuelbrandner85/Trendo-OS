@@ -481,7 +481,7 @@ public partial class MainWindow
     {
         if (_remoteToast.TryGetValue(device, out var last) && DateTime.UtcNow - last < TimeSpan.FromMinutes(10)) return;
         _remoteToast[device] = DateTime.UtcNow;
-        Toast($"📱 {device} nutzt Trendo gerade auf dem Handy.", ("Sperren", new Action(() =>
+        Toast($"{device} nutzt Trendo gerade auf dem Handy.", ("Sperren", new Action(() =>
         {
             if (PhoneAccess.Devices().FirstOrDefault(d => d.Name == device) is { } d) PhoneSetRemote(d.Id, d.Name, false);
             if (CurrentView == "handy") Show("handy");

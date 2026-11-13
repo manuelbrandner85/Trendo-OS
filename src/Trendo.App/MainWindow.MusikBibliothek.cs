@@ -30,8 +30,8 @@ public partial class MainWindow
         var items = new List<(string Label, string? Ws, string? Coll)> { (MusicCollections.DefaultWorkspace, null, null) };
         items.AddRange(ws.Select(w => (w.Name, (string?)w.Id, (string?)null)));
         items.Add(("Alle Lieder", "*", null));
-        items.AddRange(pls.Select(p => ("▶ " + p.Name, (string?)null, (string?)p.Id)));
-        items.AddRange(albs.Select(a => ("◉ " + a.Name, (string?)null, (string?)a.Id)));
+        items.AddRange(pls.Select(p => ("" + p.Name, (string?)null, (string?)p.Id)));
+        items.AddRange(albs.Select(a => ("" + a.Name, (string?)null, (string?)a.Id)));
         var where = new ComboBox { Name = "ms-where", FontSize = 12, ItemsSource = items.Select(x => x.Label).ToList(), MinWidth = 150,
             SelectedIndex = Math.Max(0, items.FindIndex(x => x.Coll is not null ? x.Coll == _msColl : _msColl is null && x.Ws == _msWs)) };
         where.SelectionChanged += (_, _) => { if (where.SelectedIndex < 0) return; var it = items[where.SelectedIndex]; _msWs = it.Ws; _msColl = it.Coll; _msPageNo = 0; Show(MS); };
@@ -39,7 +39,7 @@ public partial class MainWindow
         filter.SelectionChanged += (_, _) => { _msFilter = SongQuery.Filters[Math.Max(0, filter.SelectedIndex)].Id; _msPageNo = 0; Show(MS); };
         var sort = new ComboBox { Name = "ms-sort", FontSize = 12, ItemsSource = SongQuery.Sorts.Select(f => f.Label).ToList(), SelectedIndex = Math.Max(0, Array.FindIndex(SongQuery.Sorts, f => f.Id == _msSort)) };
         sort.SelectionChanged += (_, _) => { _msSort = SongQuery.Sorts[Math.Max(0, sort.SelectedIndex)].Id; Show(MS); };
-        var view = new Button { Name = "ms-view", Content = _msGridView ? "☰ Liste" : "▦ Raster", FontSize = 12, Padding = new Thickness(10, 4) };
+        var view = new Button { Name = "ms-view", Content = _msGridView ? "Liste" : "Raster", FontSize = 12, Padding = new Thickness(10, 4) };
         ToolTip.SetTip(view, "Zwischen Liste und Raster (große Cover) wechseln");
         view.Click += (_, _) => { _msGridView = !_msGridView; Show(MS); };
         return new StackPanel { Spacing = 6, Children = {
@@ -89,13 +89,13 @@ public partial class MainWindow
             foreach (var c in col.OfKind(kind))
             {
                 var cc = c; var inIt = kind == MusicCollections.Workspace ? col.WorkspaceOf(s.Id) == c.Id : c.SongIds.Contains(s.Id);
-                var item = new MenuItem { Header = (inIt ? "✓ " : "") + c.Name };
+                var item = new MenuItem { Header = (inIt ? "• " : "") + c.Name };
                 item.Click += (_, _) => { if (kind == MusicCollections.Workspace) col.MoveToWorkspace(s.Id, cc.Id); else if (inIt) col.RemoveSong(cc.Id, s.Id); else col.AddSong(cc.Id, s.Id); _msMsg = $"„{s.Title}“ → {cc.Name}"; Show(MS); };
                 mi.Items.Add(item);
             }
             if (kind == MusicCollections.Workspace)
             {
-                var home = new MenuItem { Header = (col.WorkspaceOf(s.Id) is null ? "✓ " : "") + MusicCollections.DefaultWorkspace };
+                var home = new MenuItem { Header = (col.WorkspaceOf(s.Id) is null ? "• " : "") + MusicCollections.DefaultWorkspace };
                 home.Click += (_, _) => { col.MoveToWorkspace(s.Id, null); Show(MS); };
                 mi.Items.Insert(0, home);
             }
@@ -104,9 +104,9 @@ public partial class MainWindow
             mi.Items.Add(neu);
             return mi;
         }
-        yield return Sub("playlist", "♫ Zu Playlist", MusicCollections.Playlist);
-        yield return Sub("album", "◉ Zu Album", MusicCollections.Album);
-        yield return Sub("workspace", "▣ In Arbeitsbereich", MusicCollections.Workspace);
+        yield return Sub("playlist", "Zu Playlist", MusicCollections.Playlist);
+        yield return Sub("album", "Zu Album", MusicCollections.Album);
+        yield return Sub("workspace", "In Arbeitsbereich", MusicCollections.Workspace);
     }
 
     /// <summary>Seite „Bibliothek“: Sammlungen links (anlegen, umbenennen, löschen, Reihenfolge), Lieder rechts daneben.</summary>
@@ -142,8 +142,8 @@ public partial class MainWindow
         {
             sp.Children.Add(new TextBlock { Text = "REIHENFOLGE", Foreground = Muted, FontSize = 10, FontWeight = FontWeight.Bold, Margin = new Thickness(0, 6, 0, 0) });
             sp.Children.Add(new WrapPanel { Children = {
-                Act("ms-coll-up", "▲ nach oben", () => { col.Move(cid, sid, -1); Show(MS); }),
-                Act("ms-coll-down", "▼ nach unten", () => { col.Move(cid, sid, 1); Show(MS); }),
+                Act("ms-coll-up", "nach oben", () => { col.Move(cid, sid, -1); Show(MS); }),
+                Act("ms-coll-down", "nach unten", () => { col.Move(cid, sid, 1); Show(MS); }),
                 Act("ms-coll-remove", "aus der Sammlung nehmen", () => { col.RemoveSong(cid, sid); Show(MS); }) } });
         }
         return MsCard("ms-collections-card", new ScrollViewer { Content = sp });

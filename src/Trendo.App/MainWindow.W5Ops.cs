@@ -72,7 +72,7 @@ public partial class MainWindow
         var wsec = new StackPanel { Spacing = 4, Children = { H("Ware und Lieferanten", 14), new WrapPanel { Children = { pn, ps, pc, pp, pst, pl, pd, Act("op-p-add", "Hinzufügen", () =>
         { if (string.IsNullOrWhiteSpace(pn.Text)) { Say("Bitte zuerst den Produktnamen eintragen.", "biz-betrieb"); return; } BizProducts.Add(new(pn.Text!, ps.Text ?? "", ParseD(pc.Text), ParseD(pp.Text), (int)ParseD(pst.Text), (int)ParseD(pl.Text), ParseD(pd.Text))); Say($"Produkt „{pn.Text}“ hinzugefügt.", "biz-betrieb"); }) } } } };
         var k = 0;
-        foreach (var p in prods) wsec.Children.Add(new TextBlock { Name = $"op-p-row-{k++}", Text = $"{(BusinessOps.NeedsOrder(p) ? "⚠ nachbestellen: " + BusinessOps.OrderQty(p) + " Stück · " : "✓ ")}{p.Name} ({p.Supplier}) · Bestand {p.Stock} · Marge {BusinessOps.UnitMargin(p):P0}", Foreground = BusinessOps.NeedsOrder(p) ? Brush.Parse("#FACC15") : Text, FontSize = 11.5 });
+        foreach (var p in prods) wsec.Children.Add(new TextBlock { Name = $"op-p-row-{k++}", Text = $"{(BusinessOps.NeedsOrder(p) ? "⚠ nachbestellen: " + BusinessOps.OrderQty(p) + " Stück · " : "")}{p.Name} ({p.Supplier}) · Bestand {p.Stock} · Marge {BusinessOps.UnitMargin(p):P0}", Foreground = BusinessOps.NeedsOrder(p) ? Brush.Parse("#FACC15") : Text, FontSize = 11.5 });
         sp.Children.Add(Card(wsec));
 
         // BUS-023 Anfragen

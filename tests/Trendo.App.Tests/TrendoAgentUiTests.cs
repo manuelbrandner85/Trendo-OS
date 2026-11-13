@@ -50,7 +50,7 @@ public class TrendoAgent_Ui
         Assert.Equal("Mit Telefonnummer?", w.AgentStatus(win)); w.Find<Button>("agent-answer-1").Press(); // „Nein“
         await Until(() => w.AgentDone(win));
         w.Find<Button>("agent-keep").Press();
-        Assert.True(File.Exists(file)); Assert.Equal("✓ Behalten.", w.AgentStatus(win));
+        Assert.True(File.Exists(file)); Assert.Equal("Behalten.", w.AgentStatus(win));
         Assert.Contains(w.Core.Audit.ReadAll(), x => x.Action == "agent.apply");
         Assert.Contains(w.Core.Audit.ReadAll(), x => x.Action == "agent.undo");
         w.Close();

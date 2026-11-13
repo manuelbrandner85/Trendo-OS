@@ -123,13 +123,13 @@ public partial class MainWindow
                 };
                 boxes.Children.Add(cb);
             }
-            var label = on is null ? heads[col - af.Left] : $"⏷ {heads[col - af.Left]} ({on.Count} von {values.Count})";
+            var label = on is null ? heads[col - af.Left] : $"{heads[col - af.Left]} ({on.Count} von {values.Count})";
             list.Children.Add(new Expander { Name = $"tabelle-af-col-{col}", Header = label, IsExpanded = on is not null, HorizontalAlignment = HorizontalAlignment.Stretch,
                 Content = new ScrollViewer { MaxHeight = 220, Content = boxes } });
         }
         var off = new Button { Name = "tabelle-af-off", Content = "Autofilter aus", Focusable = false };
         off.Click += (_, _) => { SheetToggleAutoFilter(); Show("tabelle"); };
-        return Card("tabelle-af", "⏷ Autofilter", ActiveSheet.HiddenRows.Count == 0 ? "Werte abhaken, die du sehen willst." : $"{ActiveSheet.HiddenRows.Count} Zeile(n) ausgeblendet.", list, off);
+        return Card("tabelle-af", "Autofilter", ActiveSheet.HiddenRows.Count == 0 ? "Werte abhaken, die du sehen willst." : $"{ActiveSheet.HiddenRows.Count} Zeile(n) ausgeblendet.", list, off);
     }
 
     Border Card(string name, string title, string hint, params Control[] items)

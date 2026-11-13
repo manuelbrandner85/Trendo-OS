@@ -85,7 +85,7 @@ public partial class MainWindow
                 (dev, file) => _ui.Post(() => Toast($"Vom Handy ({dev}): {Path.GetFileName(file)}", ("Ordner öffnen", new Action(() => Launch(PhoneInbox))))),
                 (dev, text) => _ui.Post(() =>
                 {
-                    if (text == "\u0001verbunden") { Toast($"✓ {dev} ist jetzt verbunden."); if (CurrentView == "handy") Show("handy"); return; }
+                    if (text == "\u0001verbunden") { Toast($"{dev} ist jetzt verbunden."); if (CurrentView == "handy") Show("handy"); return; }
                     _phoneTexts.Insert(0, (dev, text)); if (_phoneTexts.Count > 10) _phoneTexts.RemoveAt(10);
                     Toast($"Vom Handy ({dev}): {(text.Length > 80 ? text[..80] + " …" : text)}", ("Kopieren", new Action(() => { if (Clipboard is { } cb) _ = cb.SetTextAsync(text); })));
                     if (CurrentView == "handy") Show("handy");
@@ -238,7 +238,7 @@ public partial class MainWindow
         return b;
     }
 
-    static TextBlock Ok(string t) => new() { Text = "✓ " + t, Foreground = Brush.Parse("#4ADE80"), FontSize = 13, TextWrapping = TextWrapping.Wrap };
+    static TextBlock Ok(string t) => new() { Text = "" + t, Foreground = Brush.Parse("#4ADE80"), FontSize = 13, TextWrapping = TextWrapping.Wrap };
 
     private Control PhoneEasyCard()
     {
@@ -256,8 +256,8 @@ public partial class MainWindow
                 body.Children.Add(H("Wo möchtest du das Handy nutzen?", 15));
                 body.Children.Add(new WrapPanel { Children =
                 {
-                    BigButton("phone-where-home", "🏠  Zuhause (im selben WLAN)", async () => { _phoneWhere = "home"; await ShowPhoneQrAsync(); }),
-                    BigButton("phone-where-away", "🌍  Überall – auch unterwegs", () => { _phoneWhere = "away"; _phoneTsPhoneDone = false; Show("handy"); return Task.CompletedTask; }, false),
+                    BigButton("phone-where-home", "Zuhause (im selben WLAN)", async () => { _phoneWhere = "home"; await ShowPhoneQrAsync(); }),
+                    BigButton("phone-where-away", "Überall – auch unterwegs", () => { _phoneWhere = "away"; _phoneTsPhoneDone = false; Show("handy"); return Task.CompletedTask; }, false),
                 } });
                 body.Children.Add(P("Zuhause ist am schnellsten eingerichtet. „Überall“ nutzt Tailscale – ein kostenloses, verschlüsseltes Privatnetz nur für deine Geräte. Trendo richtet es mit dir zusammen ein.", null, 12.5));
                 break;
@@ -382,7 +382,7 @@ public partial class MainWindow
     {
         var dev = PhoneAccess.Devices().FirstOrDefault(d => d.Id == _phoneNewDevice);
         body.Children.Add(Ok($"{dev?.Name ?? "Dein Handy"} ist verbunden."));
-        body.Children.Add(H("Fertig! 🎉", 17));
+        body.Children.Add(H("Fertig!", 17));
         if (dev is not null && !_phoneRemoteAsked && !dev.Remote)
         {
             body.Children.Add(H($"Darf „{dev.Name}“ Trendo komplett bedienen?", 15));
@@ -425,7 +425,7 @@ public partial class MainWindow
             var remote = new Button { Name = "phone-easy-remote-" + d.Id, Content = on ? "Bedienen sperren" : "Trendo bedienen erlauben", Padding = new Thickness(10, 4), Background = on ? Brushes.Transparent : Accent };
             remote.Click += (_, _) => { PhoneSetRemote(id, nm, !on); Show("handy"); };
             sp.Children.Add(WCard(new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto"), Children = {
-                new StackPanel { Children = { new TextBlock { Text = "📱 " + d.Name, Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
+                new StackPanel { Children = { new TextBlock { Text = "" + d.Name, Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
                     P($"Verbunden seit {d.Paired.ToLocalTime():dd.MM.yyyy} · zuletzt gesehen {d.LastSeen.ToLocalTime():dd.MM. HH:mm}{(on ? " · darf Trendo bedienen" : "")}", null, 12) } },
                 Pos(Sp(remote), 1), Pos(Sp(rm), 2) } }));
         }
@@ -440,7 +440,7 @@ public partial class MainWindow
         var away = new StackPanel { Name = "phone-easy-away", Spacing = 6 };
         away.Children.Add(H("Auch unterwegs verbinden", 14));
         if (ts is not null)
-            away.Children.Add(P($"✓ Bereit: Tailscale läuft auf dem PC ({ts}). Unterwegs erreicht dein Handy den PC, wenn dort Tailscale an ist.", Brush.Parse("#4ADE80"), 13));
+            away.Children.Add(P($"Bereit: Tailscale läuft auf dem PC ({ts}). Unterwegs erreicht dein Handy den PC, wenn dort Tailscale an ist.", Brush.Parse("#4ADE80"), 13));
         else
             away.Children.Add(P("Damit dein Handy den PC auch außerhalb des WLANs erreicht, nutzt Trendo Tailscale: ein privates, verschlüsseltes Netz nur für deine Geräte. Kostenlos für Privatnutzer, kein Port im Router, nichts ist öffentlich. Trendo führt dich Schritt für Schritt durch.", Text, 13));
         if (_phoneWhere != "away")
@@ -541,7 +541,7 @@ public partial class MainWindow
             }
             catch (System.ComponentModel.Win32Exception) { ok = false; } // Windows-Frage mit „Nein“ beantwortet
         }
-        _phoneMsg = ok ? "✓ Windows-Freigabe ist eingerichtet. Jetzt den Code noch einmal scannen." : "Die Windows-Freigabe wurde nicht eingerichtet (Frage abgelehnt?).";
+        _phoneMsg = ok ? "Windows-Freigabe ist eingerichtet. Jetzt den Code noch einmal scannen." : "Die Windows-Freigabe wurde nicht eingerichtet (Frage abgelehnt?).";
         _phoneQrAt = DateTime.UtcNow;
     }
 }

@@ -42,7 +42,7 @@ public partial class MainWindow
             catch (OperationCanceledException) { }
             _lsMsg = found.Count == 0 ? "Kein Handy gefunden. Ist LocalSend dort geöffnet und im selben WLAN?" : $"{found.Count} Gerät(e) gefunden.";
         }
-        catch (SocketException e) { _lsMsg = "⚠ Netzwerksuche ging nicht: " + e.Message; }
+        catch (SocketException e) { _lsMsg = "Netzwerksuche ging nicht: " + e.Message; }
         LsPeers = [.. found.Values.OrderBy(p => p.Alias)];
         Show("teilen");
     }
@@ -51,8 +51,8 @@ public partial class MainWindow
     public async Task<int> LocalSendSend(LocalSend.Peer peer, IReadOnlyList<string> paths, string? pin = null)
     {
         var missing = paths.FirstOrDefault(p => !File.Exists(p));
-        if (paths.Count == 0 || missing is not null) { _lsMsg = "⚠ Diese Datei gibt es nicht."; Show("teilen"); return 0; }
-        if (!IPAddress.TryParse(peer.Address, out var ip) || !LocalSend.IsLocal(ip)) { _lsMsg = "⚠ Senden nur innerhalb des eigenen Netzes."; Show("teilen"); return 0; }
+        if (paths.Count == 0 || missing is not null) { _lsMsg = "Diese Datei gibt es nicht."; Show("teilen"); return 0; }
+        if (!IPAddress.TryParse(peer.Address, out var ip) || !LocalSend.IsLocal(ip)) { _lsMsg = "Senden nur innerhalb des eigenen Netzes."; Show("teilen"); return 0; }
         _lsMsg = $"Warte auf Bestätigung am Gerät „{peer.Alias}“ …"; Show("teilen");
         using var handler = new HttpClientHandler();
         if (peer.Protocol == "https") handler.ServerCertificateCustomValidationCallback = (_, cert, _, _) => cert is not null && LocalSend.CertificateMatches(cert.RawData, peer.Fingerprint); // selbst signiert: gegen den angekündigten Fingerabdruck prüfen
@@ -67,7 +67,7 @@ public partial class MainWindow
                 files.Add(new(Guid.NewGuid().ToString("N"), p, Path.GetFileName(p), s.Length, Convert.ToHexStringLower(await SHA256.HashDataAsync(s)), LocalSend.FileType(p)));
             }
             using var prep = await http.PostAsync(LocalSend.PrepareUrl(peer, pin), new StringContent(LocalSend.PrepareBody(LsFingerprint, files), Encoding.UTF8, "application/json"));
-            if ((int)prep.StatusCode == 204 || !prep.IsSuccessStatusCode) { _lsMsg = ((int)prep.StatusCode == 204 ? "" : "⚠ ") + LocalSend.Error((int)prep.StatusCode); Show("teilen"); return 0; }
+            if ((int)prep.StatusCode == 204 || !prep.IsSuccessStatusCode) { _lsMsg = ((int)prep.StatusCode == 204 ? "• " : "") + LocalSend.Error((int)prep.StatusCode); Show("teilen"); return 0; }
             var (sid, tokens) = LocalSend.ParsePrepare(await prep.Content.ReadAsStringAsync()); session = sid;
             foreach (var f in files)
             {
@@ -79,11 +79,11 @@ public partial class MainWindow
                 sent++;
             }
             session = null;
-            _lsMsg = $"✓ {sent} Datei(en) an „{peer.Alias}“ gesendet.";
+            _lsMsg = $"{sent} Datei(en) an „{peer.Alias}“ gesendet.";
         }
         catch (Exception e) when (e is HttpRequestException or IOException or InvalidOperationException or FormatException or System.Text.Json.JsonException or TaskCanceledException)
         {
-            _lsMsg = "⚠ Senden ging nicht: " + e.Message;
+            _lsMsg = "Senden ging nicht: " + e.Message;
             if (session is not null) try { using var c = await http.PostAsync(LocalSend.CancelUrl(peer, session), null); } catch (HttpRequestException) { } // Sitzung am Handy freigeben
         }
         _core.Audit.Append(Principal.LocalOwner.Name, "share.localsend", $"{sent} Datei(en)");

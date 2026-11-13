@@ -65,14 +65,14 @@ public partial class MainWindow
         else
         {
             var npm = Cli.Find("npm") ?? Cli.Find("npm.cmd");
-            if (npm is null) { _n8nMsg = "⚠ Node.js mit npm fehlt – zuerst unter Programme „Node.js“ einrichten."; Show("ablaeufe"); return; }
+            if (npm is null) { _n8nMsg = "Node.js mit npm fehlt – zuerst unter Programme „Node.js“ einrichten."; Show("ablaeufe"); return; }
             Directory.CreateDirectory(dir);
             var r = await Task.Run(() => Cli.Run(npm, N8n.InstallArgs(dir, pkg), dir, 1_800_000));
             ok = r.Ok && File.Exists(N8n.Exe(dir, pkg == "node-red" ? "node-red" : "n8n"));
-            if (!ok) { _n8nMsg = "⚠ Einrichten ging nicht: " + Short(r.Err.Length > 0 ? r.Err : r.Out); Show("ablaeufe"); return; }
+            if (!ok) { _n8nMsg = "Einrichten ging nicht: " + Short(r.Err.Length > 0 ? r.Err : r.Out); Show("ablaeufe"); return; }
         }
         _core.Audit.Append(Principal.LocalOwner.Name, "automatik.eingerichtet", pkg + (ok ? "" : " (fehlgeschlagen)"));
-        _n8nMsg = ok ? $"✓ {pkg} ist eingerichtet – „Starten“." : $"⚠ {pkg} konnte nicht eingerichtet werden."; Show("ablaeufe");
+        _n8nMsg = ok ? $"{pkg} ist eingerichtet – „Starten“." : $"{pkg} konnte nicht eingerichtet werden."; Show("ablaeufe");
     }
 
     /// <summary>Lokale Trendo-Schnittstelle für die Automatik (Trendo KI und Aktionen) auf 127.0.0.1:47800.</summary>
@@ -83,7 +83,7 @@ public partial class MainWindow
         {
             _autoApi = await Trendo.Api.LocalApi.StartAsync(_core, new Trendo.Api.ApiTokens(_core.Secrets), "", _probe, N8n.TrendoApiPort, new Trendo.Api.AutomationHost
             {
-                Notify = t => _ui.Post(() => Toast("⚡ " + t)),
+                Notify = t => _ui.Post(() => Toast("" + t)),
                 ListWorkflows = () => [.. Workflows.All().Select(w => (object)new { id = w.Id, name = w.Name, enabled = w.Enabled, approved = w.IsApproved })],
                 RunWorkflow = async (id, dry) =>
                 {
@@ -101,13 +101,13 @@ public partial class MainWindow
                 },
             });
         }
-        catch (Exception e) when (e is IOException or InvalidOperationException) { _n8nMsg = "⚠ Trendo-Schnittstelle konnte nicht starten: " + e.Message; }
+        catch (Exception e) when (e is IOException or InvalidOperationException) { _n8nMsg = "Trendo-Schnittstelle konnte nicht starten: " + e.Message; }
     }
 
     public async Task AutomationStart(string which)
     {
         await EnsureAutoApi();
-        if (AutomationHttpOverride is not null && which == "n8n") { _n8nFakeRunning = true; StartAutoTimer(); _n8nMsg = "✓ n8n läuft."; Show("ablaeufe"); return; }
+        if (AutomationHttpOverride is not null && which == "n8n") { _n8nFakeRunning = true; StartAutoTimer(); _n8nMsg = "n8n läuft."; Show("ablaeufe"); return; }
         var node = which == "node-red";
         var exe = N8n.Exe(node ? NodeRedDir : N8nDir, node ? "node-red" : "n8n");
         if (!File.Exists(exe)) { _n8nMsg = "Erst einrichten."; Show("ablaeufe"); return; }
@@ -171,7 +171,7 @@ public partial class MainWindow
     {
         if (N8nKey is not { } key) { _n8nMsg = "Für das automatische Eintragen braucht Trendo deinen n8n-API-Schlüssel (n8n → Einstellungen → n8n API → Schlüssel erstellen)."; Show("ablaeufe"); return; }
         var res = await AutoSend("POST", N8n.EditorUrl + "api/v1/credentials", N8n.KiCredential(AutoToken).ToJsonString(), key);
-        _n8nMsg = res is null ? "⚠ n8n hat den Zugang nicht angenommen (läuft n8n? Schlüssel richtig?)." : "✓ Zugang „Trendo KI (lokal)“ ist in n8n eingetragen – in jedem KI-Baustein auswählbar.";
+        _n8nMsg = res is null ? "n8n hat den Zugang nicht angenommen (läuft n8n? Schlüssel richtig?)." : "Zugang „Trendo KI (lokal)“ ist in n8n eingetragen – in jedem KI-Baustein auswählbar.";
         if (res is not null) _core.Audit.Append(Principal.LocalOwner.Name, "automatik.trendo-ki", "Zugang in n8n");
         Show("ablaeufe");
     }
@@ -188,7 +188,7 @@ public partial class MainWindow
         Directory.CreateDirectory(Path.GetDirectoryName(file)!); File.WriteAllText(file, clean.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
         string? res = N8nKey is { } key ? await AutoSend("POST", N8n.EditorUrl + "api/v1/workflows", clean.ToJsonString(), key) : null;
         _core.Audit.Append(Principal.LocalOwner.Name, "automatik.import", $"{clean["name"]} ({_n8nPreviewName}){(res is null ? " als Datei" : "")}");
-        _n8nMsg = res is not null ? $"✓ „{clean["name"]}“ ist in n8n angelegt (noch ausgeschaltet – in n8n prüfen und einschalten)." : $"Gespeichert als {Path.GetFileName(file)} – in n8n über „…“ → „Import from File“ öffnen (für den direkten Weg den n8n-API-Schlüssel eintragen).";
+        _n8nMsg = res is not null ? $"„{clean["name"]}“ ist in n8n angelegt (noch ausgeschaltet – in n8n prüfen und einschalten)." : $"Gespeichert als {Path.GetFileName(file)} – in n8n über „…“ → „Import from File“ öffnen (für den direkten Weg den n8n-API-Schlüssel eintragen).";
         _n8nPreview = null; await N8nRefresh();
     }
 
@@ -266,8 +266,8 @@ public partial class MainWindow
                 if (i < rv.Nodes.Count - 1) flow.Children.Add(new TextBlock { Text = "  →  ", Foreground = GoldText(), FontSize = 16, VerticalAlignment = VerticalAlignment.Center });
             }
             var box = new StackPanel { Name = "n8n-preview", Spacing = 6, Children = { new TextBlock { Text = $"Vorschau: {rv.Name}", Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold }, P("Aus: " + _n8nPreviewName, Muted, 11), flow } };
-            foreach (var x in rv.External) box.Children.Add(P("⚠ Wirkt nach außen: " + x, Brush.Parse("#F5A524"), 11.5));
-            foreach (var x in rv.Problems) box.Children.Add(P("⚠ " + x, Brush.Parse("#F87171"), 11.5));
+            foreach (var x in rv.External) box.Children.Add(P("Wirkt nach außen: " + x, Brush.Parse("#F5A524"), 11.5));
+            foreach (var x in rv.Problems) box.Children.Add(P("" + x, Brush.Parse("#F87171"), 11.5));
             box.Children.Add(new WrapPanel { Children = { B("n8n-import", rv.External.Count > 0 ? "Ja, anlegen (wirkt nach außen)" : "Ja, in n8n anlegen", () => _ = N8nImport(), true), B("n8n-import-no", "Nein", () => { _n8nPreview = null; Show("ablaeufe"); }) } });
             center.Children.Add(Pane(box));
         }
@@ -293,7 +293,7 @@ public partial class MainWindow
         foreach (var w in Workflows.All()) { var ww = w; right.Children.Add(B($"n8n-from-{k++}", "↦ " + w.Name, () => N8nPreview(N8n.FromTrendo(ww, AutoToken), "Trendo-Ablauf"))); }
         right.Children.Add(new TextBlock { Text = "Von Claude gebaut", Foreground = Text, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 6, 0, 0) });
         var files = N8nClaudeFiles(); var ci = 0;
-        foreach (var f in files) { var ff = f; right.Children.Add(B($"n8n-claude-{ci++}", "✳ " + Path.GetFileName(f), () => { try { N8nPreview(JsonNode.Parse(File.ReadAllText(ff).Replace("TRENDO_SCHLUESSEL", AutoToken)) as JsonObject ?? [], "Claude: " + Path.GetFileName(ff)); } catch (System.Text.Json.JsonException e) { _n8nMsg = "⚠ Claudes Datei ist kein gültiger Ablauf: " + e.Message; Show("ablaeufe"); } })); }
+        foreach (var f in files) { var ff = f; right.Children.Add(B($"n8n-claude-{ci++}", "✳ " + Path.GetFileName(f), () => { try { N8nPreview(JsonNode.Parse(File.ReadAllText(ff).Replace("TRENDO_SCHLUESSEL", AutoToken)) as JsonObject ?? [], "Claude: " + Path.GetFileName(ff)); } catch (System.Text.Json.JsonException e) { _n8nMsg = "Claudes Datei ist kein gültiger Ablauf: " + e.Message; Show("ablaeufe"); } })); }
         if (files.Count == 0) right.Children.Add(P("Sag Claude, welchen Ablauf du brauchst – er legt ihn als „….n8n.json“ ab und er erscheint hier zur Prüfung.", Muted, 11));
 
         var grid = new Grid { Name = "n8n-workspace", ColumnDefinitions = new ColumnDefinitions("260,10,*,10,290") };
@@ -302,8 +302,8 @@ public partial class MainWindow
         TextBlock Dig(string name, string t) => new() { Name = name, Text = t, Foreground = DawLook ? DawDigits : Text, FontFamily = new FontFamily("Consolas, monospace"), FontWeight = FontWeight.SemiBold, FontSize = 13, Margin = new Thickness(0, 0, 18, 0), VerticalAlignment = VerticalAlignment.Center };
         var lcd = new Border { Name = "n8n-lcd", Background = DawLook ? DawLcd : TileBg, BorderBrush = PaneEdge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(6), Padding = new Thickness(10, 6), Margin = new Thickness(0, 0, 16, 10),
             Child = new WrapPanel { Children = {
-                Dig("n8n-lcd-n8n", "N8N " + (N8nRunning ? "● LÄUFT" : N8nInstalled ? "○ AUS" : "– FEHLT")),
-                Dig("n8n-lcd-red", "NODE-RED " + (_noderedProc is { HasExited: false } ? "● LÄUFT" : NodeRedInstalled ? "○ AUS" : "– FEHLT")),
+                Dig("n8n-lcd-n8n", "N8N " + (N8nRunning ? "LÄUFT" : N8nInstalled ? "AUS" : "– FEHLT")),
+                Dig("n8n-lcd-red", "NODE-RED " + (_noderedProc is { HasExited: false } ? "LÄUFT" : NodeRedInstalled ? "AUS" : "– FEHLT")),
                 Dig("n8n-lcd-ki", $"KI {_kiUp.Count}/{N8n.Backends.Length}"),
                 Dig("n8n-lcd-ev", $"EREIGNISSE {Hooks.List().Count}"),
                 Dig("n8n-lcd-wf", $"ABLÄUFE {_n8nList.Count}") } } };

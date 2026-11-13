@@ -22,7 +22,7 @@ public class ERechnungUi
                 "DE123456789", "", "rechnung@example.org", "DE02 1203 0000 0000 2020 51", "einkauf@example.com", "Bestellung 4711");
             Assert.NotNull(xml); Assert.StartsWith("xrechnung-", Path.GetFileName(xml)); Assert.True(File.Exists(xml));
             var r = ERechnung.Read(File.ReadAllBytes(xml!)); Assert.Equal(190.40m, r.Gross); Assert.Equal("Bestellung 4711", r.Reference);
-            Assert.Equal(before + 1, w.Money.All().Count); Assert.StartsWith("✓ Rechnung", w.ERechnungMessage);
+            Assert.Equal(before + 1, w.Money.All().Count); Assert.StartsWith("Rechnung", w.ERechnungMessage);
             var saved = File.ReadAllText(Path.Combine(w.Core.DataRoot, "finanzen", "e-rechnung.json")); Assert.Contains("DE123456789", saved); Assert.Contains("rechnung@example.org", saved);
             w.Show("finanzen"); Assert.Equal("DE123456789", w.Find<TextBox>("er-vat").Text);
         }

@@ -59,7 +59,7 @@ public partial class MainWindow
         Ribbon =
         [
             ("Simulation", [
-                new ProgramCmd("ek-run", "▶ / ❚❚", _ => CircuitState.Running = !CircuitState.Running, true, "Simulation starten/anhalten"),
+                new ProgramCmd("ek-run", "/", _ => CircuitState.Running = !CircuitState.Running, true, "Simulation starten/anhalten"),
                 new ProgramCmd("ek-reset", "Neu starten", _ => _simKey = "", false, "Alle Kondensatoren entladen, Zeit auf 0"),
                 new ProgramCmd("ek-speed", "Tempo", _ => CircuitState.Speed = CircuitState.Speed >= 1 ? 0.1 : CircuitState.Speed >= 0.1 ? 0.01 : 1, false, "Echtzeit → 10× → 100× langsamer"),
             ]),
@@ -67,7 +67,7 @@ public partial class MainWindow
                 new ProgramCmd("ek-pcb", "Schaltplan / Platine", d => { CircuitState.Pcb = !CircuitState.Pcb; if (CircuitState.Pcb && Circuit.From(d.Data).Pcb.Places.Count == 0) CircuitEdit("Platine anlegen", x => Pcb.AutoPlace(x)); }, false, "Zwischen Schaltplan und Platinen-Layout wechseln")]),
             ("Platine", [
                 new ProgramCmd("ek-place", "Automatisch platzieren", _ => CircuitEdit("Bauteile platzieren", x => Pcb.AutoPlace(x))),
-                new ProgramCmd("ek-route", "Leiterbahnen verlegen", _ => CircuitEdit("Leiterbahnen verlegen", x => { var (ok, open) = Pcb.AutoRoute(x); _pcbMsg = open == 0 ? $"✓ {ok} Verbindungen verlegt." : $"⚠ {ok} verlegt, {open} ohne freien Weg – Bauteile anders anordnen und erneut verlegen."; }), true),
+                new ProgramCmd("ek-route", "Leiterbahnen verlegen", _ => CircuitEdit("Leiterbahnen verlegen", x => { var (ok, open) = Pcb.AutoRoute(x); _pcbMsg = open == 0 ? $"{ok} Verbindungen verlegt." : $"{ok} verlegt, {open} ohne freien Weg – Bauteile anders anordnen und erneut verlegen."; }), true),
                 new ProgramCmd("ek-unroute", "Bahnen löschen", _ => CircuitEdit("Bahnen löschen", x => x.Pcb.Traces.Clear())),
             ]),
         ],
@@ -154,7 +154,7 @@ public partial class MainWindow
             cv.Rotate = id => CircuitEdit("Bauteil drehen", c => { var pl = c.Pcb.Places[id]; pl.Rot = (pl.Rot + 90) % 360; });
             var issues = Pcb.Check(pc);
             var info = new TextBlock { Name = "ek-pcb-info", Margin = new Thickness(0, 6, 0, 0), FontSize = 12, TextWrapping = TextWrapping.Wrap,
-                Text = (_pcbMsg.Length > 0 ? _pcbMsg + " · " : "") + (issues.Count == 0 ? "✓ Prüfung: keine Konflikte, alles verlegt" : "⚠ " + string.Join(" · ", issues.Take(4))) + $" · Platine {pc.Pcb.W:0} × {pc.Pcb.H:0} mm, 2 Lagen · ziehen verschiebt, R dreht",
+                Text = (_pcbMsg.Length > 0 ? _pcbMsg + " · " : "") + (issues.Count == 0 ? "Prüfung: keine Konflikte, alles verlegt" : "" + string.Join(" · ", issues.Take(4))) + $" · Platine {pc.Pcb.W:0} × {pc.Pcb.H:0} mm, 2 Lagen · ziehen verschiebt, R dreht",
                 Foreground = Brush.Parse(issues.Count == 0 ? "#4ADE80" : "#FACC15") };
             var dp = new DockPanel(); DockPanel.SetDock(info, Avalonia.Controls.Dock.Bottom); dp.Children.Add(info); dp.Children.Add(new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, Child = cv });
             return dp;
@@ -231,7 +231,7 @@ public partial class MainWindow
             {
                 sp.Children.Add(H("Frequenzgang", 12));
                 sp.Children.Add(Act2("ek-bode", "Bode-Diagramm hier (Anschluss 2)", () => { try { _bode = (sel, AcAnalysis.Sweep(c, (p.X2, p.Y2))); _bodeErr = ""; } catch (Exception ex) when (ex is InvalidOperationException or ArgumentException) { _bode = null; _bodeErr = ex.Message; } Show(EK); }));
-                if (_bodeErr.Length > 0) sp.Children.Add(new TextBlock { Name = "ek-bode-err", Text = "⚠ " + _bodeErr, Foreground = Brush.Parse("#F87171"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
+                if (_bodeErr.Length > 0) sp.Children.Add(new TextBlock { Name = "ek-bode-err", Text = "" + _bodeErr, Foreground = Brush.Parse("#F87171"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
                 if (_bode is { } bd && bd.Part == sel)
                 {
                     var fc = AcAnalysis.Cutoff(bd.Pts);
@@ -240,7 +240,7 @@ public partial class MainWindow
                 }
             }
             sp.Children.Add(new WrapPanel { Children = {
-                Act2("ek-rotate", "↻ Drehen (R)", () => CircuitEdit("Drehen", x => { var q = x.Part(sel)!; var (dx, dy) = (q.X2 - q.X1, q.Y2 - q.Y1); (q.X2, q.Y2) = (q.X1 - dy, q.Y1 + dx); })),
+                Act2("ek-rotate", "Drehen (R)", () => CircuitEdit("Drehen", x => { var q = x.Part(sel)!; var (dx, dy) = (q.X2 - q.X1, q.Y2 - q.Y1); (q.X2, q.Y2) = (q.X1 - dy, q.Y1 + dx); })),
                 Act2("ek-del", "Löschen", () => { CircuitState.Selected = null; CircuitEdit("Löschen", x => x.Remove(sel)); }) } });
         }
         else
@@ -248,13 +248,13 @@ public partial class MainWindow
             sp.Children.Add(H("Schaltung", 13));
             Fact("Bauteile", c.Parts.Count(x => x.Kind is not ("draht" or "masse")).ToString());
             Fact("Simulation", (CircuitState.Running ? "läuft" : "angehalten") + (CircuitState.Speed < 1 ? $", {1 / CircuitState.Speed:0}× langsamer" : ", Echtzeit"));
-            if (_sim?.Problem is { } pr) sp.Children.Add(new Border { Name = "ek-problem", Background = Brush.Parse("#33EF4444"), CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 6), Child = new TextBlock { Text = "⚠ " + pr, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap } });
+            if (_sim?.Problem is { } pr) sp.Children.Add(new Border { Name = "ek-problem", Background = Brush.Parse("#33EF4444"), CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 6), Child = new TextBlock { Text = "" + pr, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap } });
             if (st is not null)
             {
                 var checks = Simulator.Check(c, st);
                 sp.Children.Add(H("Prüfung", 12));
-                if (checks.Count == 0) sp.Children.Add(new TextBlock { Name = "ek-check", Text = "✓ Keine Überlastung gefunden.", Foreground = Brush.Parse("#4ADE80"), FontSize = 12 });
-                else foreach (var m in checks) sp.Children.Add(new TextBlock { Name = "ek-check", Text = "⚠ " + m, Foreground = Brush.Parse("#F87171"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
+                if (checks.Count == 0) sp.Children.Add(new TextBlock { Name = "ek-check", Text = "Keine Überlastung gefunden.", Foreground = Brush.Parse("#4ADE80"), FontSize = 12 });
+                else foreach (var m in checks) sp.Children.Add(new TextBlock { Name = "ek-check", Text = "" + m, Foreground = Brush.Parse("#F87171"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
             }
             var k = 0;
             foreach (var part in c.Parts.Where(x => x.Kind is not ("draht" or "masse")))
@@ -284,7 +284,7 @@ public partial class MainWindow
             LiveCalc(calcs, "el-cable", "Kabel: Spannungsverlust", [("l", "Länge (m)", "5", null), ("a", "Strom (A)", "10", null), ("q", "Querschnitt (mm²)", "1,5", null), ("u", "Spannung (V)", "12", null)],
                 v => { var x = ElectronicsPlus.CableDrop(Fach.Num(v("l")), Fach.Num(v("a")), Fach.Num(v("q")), Fach.Num(v("u"))); return $"{(x.DropPct > 3 ? "⚠" : "✓")} Verlust {Fach.F(x.DropV, 2)} V ({Fach.F(x.DropPct, 1)} %), {Fach.F(x.LossW, 1)} W"; });
             LiveCalc(calcs, "el-reg", "Spannungsregler (z. B. 7805)", [("vin", "Eingang (V)", "12", null), ("vout", "Ausgang (V)", "5", null), ("a", "Strom (A)", "0,5", null)],
-                v => { var x = ElectronicsPlus.Regulator(Fach.Num(v("vin")), Fach.Num(v("vout")), Fach.Num(v("a"))); return x.NeedsSink ? $"⚠ {Fach.F(x.Watt, 2)} W – Kühlkörper ≤ {Fach.F(x.SinkKPerW, 1)} K/W nötig" : $"✓ {Fach.F(x.Watt, 2)} W, ca. {Fach.F(x.TjNoSink, 0)} °C – kein Kühlkörper nötig"; });
+                v => { var x = ElectronicsPlus.Regulator(Fach.Num(v("vin")), Fach.Num(v("vout")), Fach.Num(v("a"))); return x.NeedsSink ? $"{Fach.F(x.Watt, 2)} W – Kühlkörper ≤ {Fach.F(x.SinkKPerW, 1)} K/W nötig" : $"{Fach.F(x.Watt, 2)} W, ca. {Fach.F(x.TjNoSink, 0)} °C – kein Kühlkörper nötig"; });
             LiveCalc(calcs, "el-si", "Einheiten-Präfixe", [("v", "Wert", "4k7", null)], v => $"{v("v")} = {Fach.F(ElectronicsPlus.Si(v("v")), 12).TrimEnd('0').TrimEnd(',')}");
             sp.Children.Add(new Expander { Name = "ek-calcs", Header = "Rechner (Farbcode, LED, Teiler …)", IsExpanded = false, Content = calcs });
         }

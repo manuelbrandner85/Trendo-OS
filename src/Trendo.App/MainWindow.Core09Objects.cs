@@ -28,14 +28,14 @@ public partial class MainWindow
             Bench.CamStatus = "Objekte werden erkannt …"; Show("roboter");
             var args = ObjectDetect.Args(ObjectsModelPath, src, marked, ObjectsThreshold);
             var r = ObjectsRunOverride is { } o ? o(args) : await KiPyRun(KiRuntime.Objekte, args, 300_000);
-            if (!r.Ok) { Bench.CamStatus = "⚠ Objekterkennung: " + Short(r.Err.Length > 0 ? r.Err : r.Out); Show("roboter"); return; }
+            if (!r.Ok) { Bench.CamStatus = "Objekterkennung: " + Short(r.Err.Length > 0 ? r.Err : r.Out); Show("roboter"); return; }
             var res = ObjectDetect.Parse(r.Out.Trim().Split('\n')[^1]);
             ObjectsLast = res;
             if (File.Exists(marked)) Bench.Frame = await File.ReadAllBytesAsync(marked);
             Bench.CamStatus = $"Erkannt: {res.Summary} ({res.Ms} ms, YOLOX-S, lokal).";
             _core.Audit.Append(Principal.LocalOwner.Name, "camera.objects", res.Summary);
         }
-        catch (Exception e) when (e is IOException or FormatException or System.Text.Json.JsonException or InvalidOperationException) { Bench.CamStatus = "⚠ Ergebnis nicht lesbar: " + e.Message; }
+        catch (Exception e) when (e is IOException or FormatException or System.Text.Json.JsonException or InvalidOperationException) { Bench.CamStatus = "Ergebnis nicht lesbar: " + e.Message; }
         finally { try { Directory.Delete(dir, true); } catch (IOException) { } }
         Show("roboter");
     }
@@ -49,7 +49,7 @@ public partial class MainWindow
             var (ok, msg) = File.Exists(ObjectsModelPath) ? (true, "Modell ist schon da.")
                 : await ObjectDetect.DownloadModelAsync(new HttpClient { Timeout = TimeSpan.FromMinutes(5) }.GetStreamAsync, Path.GetDirectoryName(ObjectsModelPath)!);
             _core.Audit.Append(Principal.LocalOwner.Name, "deps.model", "yolox_s.onnx " + (ok ? "ok" : "verworfen"));
-            Bench.CamStatus = ok ? "✓ Objekterkennung ist eingerichtet." : "⚠ " + msg;
+            Bench.CamStatus = ok ? "Objekterkennung ist eingerichtet." : "" + msg;
         }
         catch (Exception e) when (e is InvalidOperationException or IOException or HttpRequestException or OperationCanceledException) { Bench.CamStatus = "Einrichten ging nicht: " + e.Message; }
         Show("roboter");

@@ -84,9 +84,9 @@ public partial class MainWindow
         sp.Children.Add(Card(Section("Einfacher Modus", "Nur die wichtigsten Kacheln auf dem Startbildschirm und größere Knöpfe.",
             Opt("simple-mode", "Einfachen Modus einschalten", _settings.SimpleMode, v => _settings.SimpleMode = v, V))));
         var levels = Line(); for (var i = 0; i < 3; i++)
-        { var lv = i; var on = ProgramLevel == lv; levels.Children.Add(Act("level-" + Trendo.Core.Programs.UserLevel.Ids[i], (on ? "✓ " : "") + Trendo.Core.Programs.UserLevel.Names[i], () => ProgramSetLevel(lv, V), on)); }
+        { var lv = i; var on = ProgramLevel == lv; levels.Children.Add(Act("level-" + Trendo.Core.Programs.UserLevel.Ids[i], (on ? "• " : "") + Trendo.Core.Programs.UserLevel.Names[i], () => ProgramSetLevel(lv, V), on)); }
         sp.Children.Add(Card(Section("Bedienstufe der Programme", "Einfach: nur das Wichtigste. Erweitert: alle Fachwerkzeuge. Professionell: zusätzlich Befehlssuche, Verlauf und Projektdaten. Deine Dokumente bleiben beim Wechsel unverändert.", levels)));
-        sp.Children.Add(Card(Section("Farben und Bewegung", "Status zusätzlich mit Zeichen (✓ ⚠ ✕), damit man ihn auch ohne Farben erkennt.",
+        sp.Children.Add(Card(Section("Farben und Bewegung", "Status zusätzlich mit Zeichen (✕), damit man ihn auch ohne Farben erkennt.",
             Opt("color-blind", "Status mit Zeichen statt nur Farbe", _settings.ColorBlind, v => _settings.ColorBlind = v, V),
             Opt("a11y-motion", "Bewegung reduzieren (keine Animationen)", _settings.ReduceMotion, v => _settings.ReduceMotion = v, V),
             new TextBlock { Name = "status-sample", Foreground = Text, Text = _settings.ColorBlind ? $"{A11y.WithSymbol(A11y.Level.Gut, "In Ordnung")}   {A11y.WithSymbol(A11y.Level.Hinweis, "Hinweis")}   {A11y.WithSymbol(A11y.Level.Problem, "Problem")}" : "● In Ordnung   ● Hinweis   ● Problem" },
@@ -103,7 +103,7 @@ public partial class MainWindow
         sp.Children.Add(Card(Section("Leichte Sprache", "Hilfetexte werden kürzer: wenige kurze Sätze, einfache Wörter.",
             Opt("easy-lang", "Leichte Sprache für Hilfetexte", _settings.EasyLanguage, v => { _settings.EasyLanguage = v; _settings.SeenHints.Clear(); }, V))));
         var notes = Line(); foreach (var (id, label) in new[] { ("normal", "Normal – Fenster kommt nach vorn"), ("leise", "Leise – nur Eintrag, nichts springt auf") })
-        { var on = _settings.NotifyStyle == id; notes.Children.Add(Act("notify-" + id, (on ? "✓ " : "") + label, () => { _settings.NotifyStyle = id; SaveSettings(); Show(V); }, on)); }
+        { var on = _settings.NotifyStyle == id; notes.Children.Add(Act("notify-" + id, (on ? "• " : "") + label, () => { _settings.NotifyStyle = id; SaveSettings(); Show(V); }, on)); }
         sp.Children.Add(Card(Section("Benachrichtigungen", "Wie sich Erinnerungen melden.", notes)));
         var say = new TextBox { Name = "speak-text", PlaceholderText = "Text zum Vorlesen", AcceptsReturn = true, Width = 520, MinHeight = 60, Text = _w45Msg };
         sp.Children.Add(Card(Section("Vorlesen", "Liest Text mit der Windows-Stimme vor – ganz ohne Internet.",

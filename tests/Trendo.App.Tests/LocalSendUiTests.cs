@@ -83,7 +83,7 @@ public class LocalSend_Ui
         {
             w.Show("teilen"); Assert.NotNull(w.Find<Button>("ls-find"));
             Assert.Equal(2, await w.LocalSendSend(Peer(r.Port), [a, b]));
-            Assert.Equal("✓ 2 Datei(en) an „Testhandy“ gesendet.", w.LocalSendMessage);
+            Assert.Equal("2 Datei(en) an „Testhandy“ gesendet.", w.LocalSendMessage);
             Assert.Equal(data, r.Received["urlaub bild.jpg"]); Assert.Equal(File.ReadAllBytes(b), r.Received["notiz.txt"]);
             Assert.Equal("/api/localsend/v2/prepare-upload", r.Paths[0]);
 

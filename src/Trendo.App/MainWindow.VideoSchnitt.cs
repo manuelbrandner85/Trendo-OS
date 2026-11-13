@@ -42,14 +42,14 @@ public partial class MainWindow
             ("Schneiden", [
                 new ProgramCmd("ve-split", "Teilen (S)", d => d.Edit("Teilen", x => { if (!VideoEdit.Split(x, d.Number("playhead"))) throw new InvalidOperationException("Am Abspielkopf liegt kein Stück – oder er steht zu nah an einer Schnittkante."); }), true, "Stück am Abspielkopf in zwei teilen"),
                 new ProgramCmd("ve-delete", "Löschen (Entf)", d => EditDelete(d), false, "Ausgewähltes Stück entfernen"),
-                new ProgramCmd("ve-play", "▶ Abspielen (Leertaste)", d => EditTogglePlay(d), false, "Im Programm abspielen – noch einmal: anhalten"),
-                new ProgramCmd("ve-silence", "✨ Stille finden", d => EditFindSilences(d), false, "Stille Stellen (mind. 1 s) in Videos mit Ton suchen – Trendo schlägt vor, sie herauszuschneiden", Level: 1),
-                new ProgramCmd("ve-left", "◀ Nach vorn", d => EditShift(d, -1), false, "Ausgewähltes Stück eine Stelle nach vorn"),
-                new ProgramCmd("ve-right", "Nach hinten ▶", d => EditShift(d, 1), false, "Ausgewähltes Stück eine Stelle nach hinten"),
+                new ProgramCmd("ve-play", "Abspielen (Leertaste)", d => EditTogglePlay(d), false, "Im Programm abspielen – noch einmal: anhalten"),
+                new ProgramCmd("ve-silence", "Stille finden", d => EditFindSilences(d), false, "Stille Stellen (mind. 1 s) in Videos mit Ton suchen – Trendo schlägt vor, sie herauszuschneiden", Level: 1),
+                new ProgramCmd("ve-left", "Nach vorn", d => EditShift(d, -1), false, "Ausgewähltes Stück eine Stelle nach vorn"),
+                new ProgramCmd("ve-right", "Nach hinten", d => EditShift(d, 1), false, "Ausgewähltes Stück eine Stelle nach hinten"),
             ]),
             ("Ausgabe", [
-                new ProgramCmd("ve-export-bg", "⬇ Video exportieren", d => _ = EditExportBackground(d), true, "Als MP4 im Hintergrund – mit Fortschritt und Abbrechen; du kannst weiterarbeiten"),
-                new ProgramCmd("ve-deliver", "📦 Film ausliefern", d => _ = FilmDeliver(d), false, "Wie im Profi-Schnitt: Film, Ton-Stems (Dialog, Musik), Schnittliste (EDL, OTIO), Cue-Liste und Prüfbericht mit Prüfsummen in einem Ordner"),
+                new ProgramCmd("ve-export-bg", "Video exportieren", d => _ = EditExportBackground(d), true, "Als MP4 im Hintergrund – mit Fortschritt und Abbrechen; du kannst weiterarbeiten"),
+                new ProgramCmd("ve-deliver", "Film ausliefern", d => _ = FilmDeliver(d), false, "Wie im Profi-Schnitt: Film, Ton-Stems (Dialog, Musik), Schnittliste (EDL, OTIO), Cue-Liste und Prüfbericht mit Prüfsummen in einem Ordner"),
             ]),
             ("Spuren", [
                 new ProgramCmd("ve-lane-video", "Bildspur +", d => d.Edit("Bildspur hinzufügen", x => VideoLanes.Add(x, "video")), false, "Noch eine Spur für Einblendungen"),
@@ -66,7 +66,7 @@ public partial class MainWindow
             ("Ansicht", [
                 new ProgramCmd("ve-zoom-in", "＋ Zoom", _ => EditZoom = Math.Min(200, EditZoom * 1.5)),
                 new ProgramCmd("ve-zoom-out", "－ Zoom", _ => EditZoom = Math.Max(4, EditZoom / 1.5)),
-                new ProgramCmd("ve-start", "⏮ Anfang", d => d.Set("playhead", 0, "Abspielkopf")),
+                new ProgramCmd("ve-start", "Anfang", d => d.Set("playhead", 0, "Abspielkopf")),
             ]),
         ],
         GroupLevels = new() { ["Ansicht"] = 1, ["Spuren"] = 1, ["Werkzeug"] = 1 },
@@ -257,7 +257,7 @@ public partial class MainWindow
         // Spurnamen links neben der Zeitleiste
         var labels = new Canvas { Width = 92, Height = tl.Height, Background = Brush.Parse("#0E131C") };
         void Lab(string text, double top, double h) { var t = new Border { Width = 92, Height = h, Child = new TextBlock { Text = text, Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0) } }; Canvas.SetTop(t, top); labels.Children.Add(t); }
-        Lab("Zeit", 0, EditTimeline.Ruler); Lab("🎬 Bild", EditTimeline.VideoTop, EditTimeline.VideoH); 
+        Lab("Zeit", 0, EditTimeline.Ruler); Lab("Bild", EditTimeline.VideoTop, EditTimeline.VideoH); 
         void Lane(string kind, int lane, string text, double top, double h)
         {
             var name = new TextBlock { Text = text, Foreground = Muted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(6, 0, 0, 0) };
@@ -268,8 +268,8 @@ public partial class MainWindow
             row.Children.Add(Pos(Sw("s", "S", VideoLanes.IsSolo(p, kind, lane), () => d.Edit("Solo", x => VideoLanes.ToggleSolo(x, kind, lane))), 2));
             Canvas.SetTop(row, top); labels.Children.Add(row);
         }
-        Lane("audio", 0, "♪ Musik", EditTimeline.MusicTop, EditTimeline.MusicH);
-        foreach (var (kind, lane, y) in tl.ExtraRows()) Lane(kind, lane, kind == "audio" ? $"♪ Ton {lane + 1}" : $"🖼 Einbl. {lane + 1}", y, EditTimeline.LaneH);
+        Lane("audio", 0, "Musik", EditTimeline.MusicTop, EditTimeline.MusicH);
+        foreach (var (kind, lane, y) in tl.ExtraRows()) Lane(kind, lane, kind == "audio" ? $"Ton {lane + 1}" : $"Einbl. {lane + 1}", y, EditTimeline.LaneH);
         labels.Name = "ve-track-labels";
         tl.AddHandler(ContextRequestedEvent, (_, e) => // Pilot 4.0, V9: Rechtsklick auf ein Stück
         {
@@ -318,7 +318,7 @@ public partial class MainWindow
         if (SuggestionCard(VK, EditSuggestions(d)) is { } sugg) outer.Children.Add(sugg);
         // Registerkarten: Medien · Auswahl · Export – alles bleibt da, nur geordnet
         if (EditSelected != _veSeenSel) { _veSeenSel = EditSelected; if (EditSelected is not null) EditTab = "auswahl"; } // neue Auswahl: gleich ihre Einstellungen zeigen
-        var tabs = new (string Id, string Label)[] { ("medien", "Medien"), ("auswahl", EditSelected is { } es ? (es.Track == "music" ? "Auswahl: Musik" : "Auswahl: Stück") : "Auswahl"), ("mischpult", "Mischpult"), ("export", _veExport is not null ? "Export ⏳" : "Export") };
+        var tabs = new (string Id, string Label)[] { ("medien", "Medien"), ("auswahl", EditSelected is { } es ? (es.Track == "music" ? "Auswahl: Musik" : "Auswahl: Stück") : "Auswahl"), ("mischpult", "Mischpult"), ("export", _veExport is not null ? "Export" : "Export") };
         if (!tabs.Any(t => t.Id == EditTab)) EditTab = "medien";
         var tabBar = new WrapPanel { Name = "ve-tabs" };
         var bodies = new Dictionary<string, StackPanel>();
@@ -361,7 +361,7 @@ public partial class MainWindow
         {
             var mk = VideoEdit.Markers(d.Data);
             sp.Children.Add(new Border { Name = "ve-song-link", Background = Brush.Parse("#22C9A227"), CornerRadius = new CornerRadius(10), Padding = new Thickness(10, 8), Child = new StackPanel { Spacing = 4, Children = {
-                new TextBlock { Text = $"♪ Verknüpft mit „{ls.Title}“ aus Trendo Musik", Foreground = Text, FontSize = 12, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
+                new TextBlock { Text = $"Verknüpft mit „{ls.Title}“ aus Trendo Musik", Foreground = Text, FontSize = 12, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
                 P($"{mk.Count(m => m.Kind == "section")} Abschnitte · {mk.Count(m => m.Kind == "line")} Liedzeilen (rosa Sängerin, blau Sänger, gold beide) · {mk.Count(m => m.Kind == "shot")} Einstellungen aus dem Drehbuch", Muted, 11),
                 B("ve-song-open", "Zum Lied in Trendo Musik", () => { _msSel = ls.Id; _msDetailTab = "video"; Show(MS); }) } } });
         }
@@ -402,7 +402,7 @@ public partial class MainWindow
                 if (VideoEdit.Song(d.Data) is { } lk && Songs.Get(lk.Id) is { } lsong && System.Text.RegularExpressions.Regex.Match(Path.GetFileName(c.File), @"^einstellung(\d{3})\.mp4$") is { Success: true } mm)
                 {
                     var idx = int.Parse(mm.Groups[1].Value); var prev = c.File.Contains(Path.DirectorySeparatorChar + "vorschau" + Path.DirectorySeparatorChar);
-                    sp.Children.Add(B("ve-shot-redo", $"🎬 Einstellung {idx + 1} neu erzeugen (KI)", () => { MsShotReroll(lsong.Id, idx); _ = MsRenderVideo(lsong.Id, prev, idx).ContinueWith(_ => _ui.Post(() => { _thumbs.Clear(); _veFrames.Clear(); Show(VK); })); }));
+                    sp.Children.Add(B("ve-shot-redo", $"Einstellung {idx + 1} neu erzeugen (KI)", () => { MsShotReroll(lsong.Id, idx); _ = MsRenderVideo(lsong.Id, prev, idx).ContinueWith(_ => _ui.Post(() => { _thumbs.Clear(); _veFrames.Clear(); Show(VK); })); }));
                 }
                 sp.Children.Add(B("ve-sel-delete", "Stück löschen", () => EditDelete(d)));
             }
@@ -434,7 +434,7 @@ public partial class MainWindow
                 _thumbs.Clear(); _progMsg[VK] = n == 0 ? "In diesem Ordner wurden die fehlenden Dateien nicht gefunden." : $"{n} von {miss.Count} Dateien wieder verknüpft."; Show(VK);
             };
             outer.Children.Insert(0, new Border { Name = "ve-missing", Background = Brush.Parse("#33F59E0B"), BorderBrush = Brush.Parse("#F59E0B"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 8), Margin = new Thickness(0, 0, 0, 8),
-                Child = new StackPanel { Spacing = 6, Children = { P($"⚠ {miss.Count} Datei(en) nicht gefunden – verschoben oder umbenannt? z. B. „{Path.GetFileName(miss[0])}“.", Text, 12), relink } } });
+                Child = new StackPanel { Spacing = 6, Children = { P($"{miss.Count} Datei(en) nicht gefunden – verschoben oder umbenannt? z. B. „{Path.GetFileName(miss[0])}“.", Text, 12), relink } } });
         }
         return outer;
     }
@@ -487,7 +487,7 @@ public partial class MainWindow
                 var dir = key == Key.L ? 1 : -1;
                 EditRate = _vePlay is not null && Math.Sign(EditRate) == dir ? Math.Clamp(EditRate * 2, -4, 4) : dir;
                 if (_vePlay is null) { if (dir < 0 && at <= 0.05) { EditRate = 1; break; } EditTogglePlay(d); }
-                _progMsg[VK] = (EditRate > 0 ? "▶ " : "◀ ") + $"{Math.Abs(EditRate):0}× (K hält an)"; break;
+                _progMsg[VK] = (EditRate > 0 ? "• " : "") + $"{Math.Abs(EditRate):0}× (K hält an)"; break;
             }
             case Key.I: EditRange = (Math.Round(at, 2), EditRange.To > at ? EditRange.To : len); _progMsg[VK] = $"Bereich ab {ClockMs(at)} (Export → „Nur einen Bereich“)."; Show(VK); break;
             case Key.O: EditRange = (Math.Min(EditRange.From, at), Math.Round(at, 2)); _progMsg[VK] = $"Bereich {ClockMs(EditRange.From)}–{ClockMs(at)}."; Show(VK); break;

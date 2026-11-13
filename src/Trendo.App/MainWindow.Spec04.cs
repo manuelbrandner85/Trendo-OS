@@ -19,7 +19,7 @@ public partial class MainWindow
 
     private void InitSpec04() => RegisterTab(FachTabs, "xr", "Modell-Prüfer", "SPEC-04", XrView, "vr", "ar", "mr", "xr", "brille", "quest", "gltf", "glb", "virtuelle realität", "modell prüfen");
 
-    void XrRun(Action a) { try { a(); } catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or FormatException or UnauthorizedAccessException or InvalidDataException) { _xrMsg = "⚠ " + ex.Message; } Show("xr"); }
+    void XrRun(Action a) { try { a(); } catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or FormatException or UnauthorizedAccessException or InvalidDataException) { _xrMsg = "" + ex.Message; } Show("xr"); }
 
     (Mesh? Mesh, XrModelInfo? Info, XrDetail? Detail, string? Error) XrLoad()
     {
@@ -59,7 +59,7 @@ public partial class MainWindow
         // Mitte: 3D-Ansicht
         Control center;
         if (mesh is null)
-            center = new Border { Name = "xr-empty", Background = Brush.Parse("#212121"), CornerRadius = new CornerRadius(10), Child = new TextBlock { Text = err is null ? "Modell oben wählen oder hierher ziehen – oder das Beispielmodell laden." : "⚠ " + err, Foreground = err is null ? Muted : Brush.Parse("#F87171"), FontSize = 15, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(24), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } };
+            center = new Border { Name = "xr-empty", Background = Brush.Parse("#212121"), CornerRadius = new CornerRadius(10), Child = new TextBlock { Text = err is null ? "Modell oben wählen oder hierher ziehen – oder das Beispielmodell laden." : "" + err, Foreground = err is null ? Muted : Brush.Parse("#F87171"), FontSize = 15, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(24), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } };
         else
         {
             var view = new MeshView { Name = "xr-view", Model = mesh, Wire = _xrWire, EyeHeightCm = _xrEye ? XrPro.EyeCm : null, EyeDistanceCm = XrPro.ViewDistanceCm, Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.SizeAll) };
@@ -67,10 +67,10 @@ public partial class MainWindow
             var tools = new WrapPanel { Margin = new Thickness(0, 6, 0, 0) };
             foreach (var (id, label) in new[] { ("iso", "Schräg"), ("vorne", "Vorne"), ("seite", "Seite"), ("oben", "Oben") }) { var v = id; tools.Children.Add(Btn("xr-v-" + id, label, () => view.SetView(v))); }
             tools.Children.Add(Btn("xr-wire", _xrWire ? "Drahtgitter aus" : "Drahtgitter an", () => { _xrWire = !_xrWire; Show("xr"); }));
-            tools.Children.Add(Btn("xr-eye", _xrEye ? "👁 Augenhöhe aus" : "👁 Aus Augenhöhe", () => { _xrEye = !_xrEye; Show("xr"); }, _xrEye)); // wie mit der Brille: 1,60 m, 2 m Abstand
+            tools.Children.Add(Btn("xr-eye", _xrEye ? "Augenhöhe aus" : "Aus Augenhöhe", () => { _xrEye = !_xrEye; Show("xr"); }, _xrEye)); // wie mit der Brille: 1,60 m, 2 m Abstand
             if (XrPro.HeadsetOf(XrDevice) is { } hs) // S3: beide Augen wie in der Brille (Sichtfeld und Augenabstand des Zielgeräts)
             {
-                tools.Children.Add(Btn("xr-hmd", _xrHmd ? "🥽 Brillen-Ansicht aus" : "🥽 Brillen-Ansicht", () => { _xrHmd = !_xrHmd; Show("xr"); }, _xrHmd));
+                tools.Children.Add(Btn("xr-hmd", _xrHmd ? "Brillen-Ansicht aus" : "Brillen-Ansicht", () => { _xrHmd = !_xrHmd; Show("xr"); }, _xrHmd));
                 if (_xrHmd) { var hv = XrHeadsetView(mesh, hs, view); view = hv.Left; headset = hv.Panel; }
             }
             var size = det is null ? "" : XrPlus.ScaleVerdict(det);
@@ -129,7 +129,7 @@ public partial class MainWindow
         var calcs = new StackPanel { Spacing = 6 };
         var fps = XrInspector.Budgets[Math.Clamp(XrDevice, 0, XrInspector.Budgets.Count - 1)].Fps.ToString();
         LiveCalc(calcs, "xr-frame", "Bildzeit", [("fps", "Bildwiederholrate (Hz)", fps, ["60", "72", "90", "120"]), ("ms", "Gemessen (ms, aus der Leistungsanzeige)", "12", null)],
-            v => { var (bud, ok, h) = XrInspector.FrameBudget((int)Fach.Num(v("fps")), Fach.Num(v("ms"))); return ok ? $"✓ Im Budget: {Fach.F(bud)} ms je Bild, {Fach.F(h, 1)} % Reserve" : $"⚠ Zu langsam: Budget nur {Fach.F(bud)} ms – Szene vereinfachen"; });
+            v => { var (bud, ok, h) = XrInspector.FrameBudget((int)Fach.Num(v("fps")), Fach.Num(v("ms"))); return ok ? $"Im Budget: {Fach.F(bud)} ms je Bild, {Fach.F(h, 1)} % Reserve" : $"Zu langsam: Budget nur {Fach.F(bud)} ms – Szene vereinfachen"; });
         LiveCalc(calcs, "xr-lod", "Detailstufen planen", [("tris", "Dreiecke (voll)", (info?.Triangles ?? 200000).ToString(), null), ("size", "Objektgröße (m)", det is null ? "2" : Fach.F(Math.Max(det.SizeX, Math.Max(det.SizeY, det.SizeZ)), 2), null)],
             v => string.Join(" · ", XrPlus.LodPlan((long)Fach.Num(v("tris")), Fach.Num(v("size"))).Select(x => $"Stufe {x.Level}: {Fach.F(x.Triangles, 0)} ab {Fach.F(x.FromM, 1)} m")));
         LiveCalc(calcs, "xr-texel", "Textur scharf genug?", [("px", "Textur (px)", det?.Textures.FirstOrDefault()?.Width.ToString() ?? "2048", ["512", "1024", "2048", "4096"]), ("size", "Objekt (m)", "2", null), ("dist", "Abstand (m)", "1", null)],

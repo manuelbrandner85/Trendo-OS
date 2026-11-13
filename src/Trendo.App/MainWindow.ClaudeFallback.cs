@@ -20,7 +20,7 @@ public partial class MainWindow
     public static Func<string, string, string, Task<bool>>? KiToolOverride { get; set; }
     /// <summary>Für Tests: Diktat nachbilden (liefert den erkannten Text).</summary>
     public static Func<Task<string?>>? DictateOverride { get; set; }
-    public const string ClaudeKi = "✳ Claude (dein Abo)";
+    public const string ClaudeKi = "Claude (dein Abo)";
 
     /// <summary>Anzeigename einer KI: Internet-KIs mit 🌐, KI auf dem PC mit 💻.</summary>
     static string KiLabel(KiAnswer a, IReadOnlyList<IKiBackend> backends)
@@ -88,7 +88,7 @@ public partial class MainWindow
                 Directory.CreateDirectory(System.IO.Path.GetDirectoryName(target)!);
                 if (File.Exists(d.Path)) File.Move(d.Path, target, true);
                 ui.Drafts.RemoveAt(index);
-                CChats.Add(ChatStudio(dock), d.ChatId, new ClaudeChats.Msg("assistant", $"✓ {label} übernommen: {d.File}", [new ClaudeChats.Step($"{label}: {d.File}", true)], DateTimeOffset.Now, [d.File + " (neu)"], 0, null, null, "🆓 KI-Bibliothek (auf diesem PC)"));
+                CChats.Add(ChatStudio(dock), d.ChatId, new ClaudeChats.Msg("assistant", $"{label} übernommen: {d.File}", [new ClaudeChats.Step($"{label}: {d.File}", true)], DateTimeOffset.Now, [d.File + " (neu)"], 0, null, null, "KI-Bibliothek (auf diesem PC)"));
                 _core.Audit.Append(Principal.LocalOwner.Name, "claude.entwurf.ok", d.File);
                 RenderChat(dock);
                 if (StudioFormat.PreviewKind(target) != "none") ShowPreview(dock, target);
@@ -122,7 +122,7 @@ public partial class MainWindow
         else if (ext == ".txt" && File.Exists(d.Path)) sp.Children.Add(new SelectableTextBlock { Text = File.ReadAllText(d.Path), Foreground = ClaudeFg, TextWrapping = TextWrapping.Wrap, MaxHeight = 200 });
         else
         {
-            var play = new Button { Name = $"claude-draft-play-{i}", Content = ext is ".webm" or ".mp4" ? "▶ Ansehen" : "▶ Anhören", Background = ClaudeItem, Foreground = ClaudeFg, CornerRadius = new CornerRadius(8), Padding = new Thickness(12, 5), BorderThickness = new Thickness(0), HorizontalAlignment = HorizontalAlignment.Left };
+            var play = new Button { Name = $"claude-draft-play-{i}", Content = ext is ".webm" or ".mp4" ? "Ansehen" : "Anhören", Background = ClaudeItem, Foreground = ClaudeFg, CornerRadius = new CornerRadius(8), Padding = new Thickness(12, 5), BorderThickness = new Thickness(0), HorizontalAlignment = HorizontalAlignment.Left };
             play.Click += (_, _) => { if (!_opt.Isolated) Launch(d.Path); };
             sp.Children.Add(play);
         }
@@ -132,7 +132,7 @@ public partial class MainWindow
             var b = new Button { Name = name, Content = text, Background = primary ? ClaudeAccent : ClaudeItem, Foreground = primary ? Brushes.White : ClaudeFg, CornerRadius = new CornerRadius(8), Padding = new Thickness(12, 5), Margin = new Thickness(0, 0, 6, 0), BorderThickness = new Thickness(0) };
             b.Click += async (_, _) => await ClaudeDraftDecide(i, what); row.Children.Add(b); return b;
         }
-        B($"claude-draft-ok-{i}", "✓ Übernehmen", true, "ok"); B($"claude-draft-again-{i}", "↻ Neu erzeugen", false, "neu"); B($"claude-draft-no-{i}", "✕ Verwerfen", false, "no");
+        B($"claude-draft-ok-{i}", "Übernehmen", true, "ok"); B($"claude-draft-again-{i}", "Neu erzeugen", false, "neu"); B($"claude-draft-no-{i}", "Verwerfen", false, "no");
         sp.Children.Add(row);
         return new Border { Name = $"claude-draft-{i}", Background = Brush.Parse("#14FFFFFF"), BorderBrush = ClaudeAccent, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(14, 10), Child = sp };
     }
@@ -200,13 +200,13 @@ public partial class MainWindow
             var b = new Button { Name = "claude-tool-" + kind, Content = label, FontSize = 12, Padding = new Thickness(10, 3), Margin = new Thickness(0, 0, 6, 4), CornerRadius = new CornerRadius(12), Background = ClaudeItem, Foreground = ClaudeFg, BorderThickness = new Thickness(0) };
             ToolTip.SetTip(b, tip); b.Click += async (_, _) => await a(); row.Children.Add(b);
         }
-        B("bild", "🎨 Bild", "Bild aus dem Text im Eingabefeld erzeugen (kostenlos, auf dem PC)", () => ClaudeToolButton(dock, "bild"));
-        B("video", "🎬 Video", "Kurzes Video aus dem Text im Eingabefeld (starke Grafikkarte nötig)", () => ClaudeToolButton(dock, "video"));
-        B("verbessern", "✨ Verbessern", "Ein Bild wählen und 4-fach vergrößern", () => ClaudeToolButton(dock, "verbessern"));
-        B("musik", "🎵 Musik", "Musikstück nach der Beschreibung im Eingabefeld", () => ClaudeToolButton(dock, "musik"));
-        B("vorlesen", "🔊 Vorlesen", "Claudes letzte Antwort vorlesen", () => ClaudeToolButton(dock, "vorlesen"));
-        B("diktieren", "🎙 Diktieren", "Sprechen statt tippen – auf dem PC erkannt, ohne Cloud", () => ClaudeDictate(dock));
-        B("freihaendig", "🗣 Freihändig", "Freihändig sprechen: Trendo hört zu, schickt nach einer kurzen Pause ab und liest Claudes Antwort vor – bis du es wieder ausschaltest", () => ClaudeHandsFreeToggle(dock));
+        B("bild", "Bild", "Bild aus dem Text im Eingabefeld erzeugen (kostenlos, auf dem PC)", () => ClaudeToolButton(dock, "bild"));
+        B("video", "Video", "Kurzes Video aus dem Text im Eingabefeld (starke Grafikkarte nötig)", () => ClaudeToolButton(dock, "video"));
+        B("verbessern", "Verbessern", "Ein Bild wählen und 4-fach vergrößern", () => ClaudeToolButton(dock, "verbessern"));
+        B("musik", "Musik", "Musikstück nach der Beschreibung im Eingabefeld", () => ClaudeToolButton(dock, "musik"));
+        B("vorlesen", "Vorlesen", "Claudes letzte Antwort vorlesen", () => ClaudeToolButton(dock, "vorlesen"));
+        B("diktieren", "Diktieren", "Sprechen statt tippen – auf dem PC erkannt, ohne Cloud", () => ClaudeDictate(dock));
+        B("freihaendig", "Freihändig", "Freihändig sprechen: Trendo hört zu, schickt nach einer kurzen Pause ab und liest Claudes Antwort vor – bis du es wieder ausschaltest", () => ClaudeHandsFreeToggle(dock));
         return row;
     }
 
@@ -234,12 +234,12 @@ public partial class MainWindow
         var file = $"medien/{kind}-{DateTime.Now:yyyyMMdd-HHmmss}{ClaudeTools.Kinds[kind].Ext}";
         chats.Add(studio, chat.Id, new ClaudeChats.Msg("user", (kind is "bild" or "video" or "musik" ? $"{label}: " : "") + (kind == "vorlesen" ? "Letzte Antwort vorlesen" : input), [], DateTimeOffset.Now));
         ui.Input.Text = ""; ui.Running = true; RenderChatList(dock); RenderChat(dock);
-        ui.Log.Children.Add(new TextBlock { Text = $"⏳ {label} … (kostenlos auf diesem PC)", Foreground = ClaudeAccent, FontSize = 13 });
+        ui.Log.Children.Add(new TextBlock { Text = $"{label} … (kostenlos auf diesem PC)", Foreground = ClaudeAccent, FontSize = 13 });
         var (ok, msg) = await KiToolRun(kind, input, chat.Folder, file, DraftRoot(chat.Id));
         ui.Running = false;
         var draft = Path.Combine(DraftRoot(chat.Id), file.Replace('/', Path.DirectorySeparatorChar));
         if (ok) ui.Drafts.Add(new ClaudeDraft(kind, input, file, draft, chat.Folder, chat.Id));
-        chats.Add(studio, chat.Id, new ClaudeChats.Msg("assistant", ok ? $"{label}: Entwurf fertig – sieh ihn dir an und übernimm ihn, wenn er passt." : "⚠ " + msg, [], DateTimeOffset.Now, null, 0, null, null, "🆓 KI-Bibliothek (auf diesem PC)"));
+        chats.Add(studio, chat.Id, new ClaudeChats.Msg("assistant", ok ? $"{label}: Entwurf fertig – sieh ihn dir an und übernimm ihn, wenn er passt." : "⚠ " + msg, [], DateTimeOffset.Now, null, 0, null, null, "KI-Bibliothek (auf diesem PC)"));
         RenderChatList(dock); RenderChat(dock);
         if (ok && kind == "vorlesen" && !_opt.Isolated) Launch(draft); // vorlesen: gleich anhören
     }
@@ -262,12 +262,12 @@ public partial class MainWindow
             var psi = new ProcessStartInfo(ff) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardInput = true, RedirectStandardError = true };
             foreach (var a in new[] { "-hide_banner", "-y", "-f", "dshow", "-i", "audio=" + mic.Id, "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le", _dictationFile }) psi.ArgumentList.Add(a);
             _dictation = Process.Start(psi); _dictation?.BeginErrorReadLine();
-            if (btn is not null) btn.Content = "⏹ Fertig";
-            ui.Input.PlaceholderText = "🎙 Ich höre zu … zum Beenden auf „Fertig“ klicken.";
+            if (btn is not null) btn.Content = "Fertig";
+            ui.Input.PlaceholderText = "Ich höre zu … zum Beenden auf „Fertig“ klicken.";
             return;
         }
         try { _dictation.StandardInput.Write('q'); _dictation.StandardInput.Flush(); await _dictation.WaitForExitAsync(new CancellationTokenSource(5000).Token); } catch (Exception e) when (e is IOException or InvalidOperationException or OperationCanceledException) { try { _dictation.Kill(); } catch (InvalidOperationException) { } }
-        _dictation = null; if (btn is not null) btn.Content = "🎙 Diktieren";
+        _dictation = null; if (btn is not null) btn.Content = "Diktieren";
         if (_dictationFile is not { } wav || !File.Exists(wav)) { ui.Input.PlaceholderText = "Die Aufnahme hat nicht geklappt."; return; }
         ui.Input.PlaceholderText = "Wird erkannt …";
         var tmp = Path.Combine(Path.GetTempPath(), "trendo-diktat-" + Guid.NewGuid().ToString("N"));

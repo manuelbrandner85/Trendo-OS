@@ -110,7 +110,7 @@ public partial class MainWindow
         foreach (var g in Studio3DPro.Groups(_scene))
         {
             var gg = g; var on = _selGroup == g;
-            var head = Act("3d-group-" + Scene3D.Slug(g), (on ? "● " : "") + "▾ " + g + $" ({Studio3DPro.InGroup(_scene, g).Count})", () => Studio3DSelectGroup(on ? null : gg));
+            var head = Act("3d-group-" + Scene3D.Slug(g), (on ? "• " : "") + "" + g + $" ({Studio3DPro.InGroup(_scene, g).Count})", () => Studio3DSelectGroup(on ? null : gg));
             head.FontWeight = FontWeight.SemiBold; head.FontSize = 12.5; head.Padding = new Thickness(8, 2); ToolTip.SetTip(head, "Gruppe auswählen – die Anfasser bewegen dann alle ihre Teile");
             tree.Children.Add(head);
             foreach (var p in Studio3DPro.InGroup(_scene, g)) tree.Children.Add(Row(p, 16));
@@ -134,7 +134,7 @@ public partial class MainWindow
         for (var i = 0; i < prog.Count; i++)
         {
             var (step, done, why) = prog[i]; var on = step.Id == _step3d; var id = step.Id;
-            var b = new Button { Name = "3d-step-" + step.Id, Content = (done ? "✓ " : $"{i + 1} ") + step.Label, FontSize = 12.5, Padding = new Thickness(12, 4), Margin = new Thickness(0, 0, 4, 6), CornerRadius = new CornerRadius(14),
+            var b = new Button { Name = "3d-step-" + step.Id, Content = (done ? "" : $"{i + 1} ") + step.Label, FontSize = 12.5, Padding = new Thickness(12, 4), Margin = new Thickness(0, 0, 4, 6), CornerRadius = new CornerRadius(14),
                 Background = on ? Accent : Brushes.Transparent, Foreground = on ? Brushes.White : done ? Brush.Parse("#2FBF71") : Text, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1) };
             ToolTip.SetTip(b, step.Hint + " – " + why);
             b.Click += (_, _) => { _step3d = id; Show("3d"); };
@@ -151,7 +151,7 @@ public partial class MainWindow
         {
             case "uv":
                 return new StackPanel { Spacing = 6, Children = { H("UV-Abwicklung", 14), P("Damit Texturen (Holzmaserung, Stein, Schrift) richtig auf den Teilen liegen, wird jedes Teil abgewickelt. Trendo macht das beim Bauen und Rendern in Blender automatisch (Smart UV, kleine Abstände zwischen den Inseln).", null, 12),
-                    P(_scene.Parts.Count > 0 ? $"✓ {Visible3D.Count} Teil(e) werden abgewickelt." : "Erst Teile modellieren.", _scene.Parts.Count > 0 ? Brush.Parse("#2FBF71") : Muted, 12) } };
+                    P(_scene.Parts.Count > 0 ? $"{Visible3D.Count} Teil(e) werden abgewickelt." : "Erst Teile modellieren.", _scene.Parts.Count > 0 ? Brush.Parse("#2FBF71") : Muted, 12) } };
             case "material": return MaterialPanel3D();
             case "licht": return LightPanel3D();
             case "kamera": return CameraPanel3D();
@@ -209,7 +209,7 @@ public partial class MainWindow
         {
             var ll = l; var on = _scene.Light == l.Id;
             var b = new Button { Name = "3d-light-" + l.Id, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(10, 6), Margin = new Thickness(0, 0, 0, 4), Background = on ? Accent : Brushes.Transparent,
-                Content = new StackPanel { Children = { new TextBlock { Text = (on ? "● " : "") + l.Label, FontWeight = FontWeight.SemiBold, Foreground = on ? Brushes.White : Text }, new TextBlock { Text = l.Hint, FontSize = 11, TextWrapping = TextWrapping.Wrap, Foreground = on ? Brushes.White : Muted } } } };
+                Content = new StackPanel { Children = { new TextBlock { Text = (on ? "• " : "") + l.Label, FontWeight = FontWeight.SemiBold, Foreground = on ? Brushes.White : Text }, new TextBlock { Text = l.Hint, FontSize = 11, TextWrapping = TextWrapping.Wrap, Foreground = on ? Brushes.White : Muted } } } };
             b.Click += (_, _) => Studio3DSetLight(ll.Id, _scene.LightPower);
             sp.Children.Add(b);
         }
@@ -274,7 +274,7 @@ public partial class MainWindow
             if (!ok || !File.Exists(outPng)) { Say("Render fehlgeschlagen.", "3d"); return; }
             _core.Audit.Append(Principal.LocalOwner.Name, "3d.render", Path.GetFileName(outPng));
             _step3d = "render"; _compare3d = 0.5;
-            Say("✓ Gerendert: " + Path.GetFileName(outPng) + (Studio3DPro.Renders(Dir3D()).Count > 1 ? " – unten mit dem letzten Bild vergleichen." : "."), "3d");
+            Say("Gerendert: " + Path.GetFileName(outPng) + (Studio3DPro.Renders(Dir3D()).Count > 1 ? " – unten mit dem letzten Bild vergleichen." : "."), "3d");
         }
         finally { Studio3DRendering = false; }
     }
@@ -282,7 +282,7 @@ public partial class MainWindow
     private Control RenderPanel3D()
     {
         var sp = new StackPanel { Spacing = 6, Children = { H("Render", 14), P("Fotorealistisch in Blender (Cycles, Entrauschen, AgX-Farbumfang) mit deinem Licht und deiner Kamera. Jedes Bild bleibt im Verlauf.", null, 12) } };
-        var go = Act("3d-render", Studio3DRendering ? "Rendert …" : "▶ Rendern", () => _ = Studio3DRender(), true); go.IsEnabled = !Studio3DRendering;
+        var go = Act("3d-render", Studio3DRendering ? "Rendert …" : "Rendern", () => _ = Studio3DRender(), true); go.IsEnabled = !Studio3DRendering;
         sp.Children.Add(go);
         var renders = Studio3DPro.Renders(Dir3D());
         if (renders.Count == 0) { sp.Children.Add(P("Noch kein Bild.", Muted, 12)); return sp; }

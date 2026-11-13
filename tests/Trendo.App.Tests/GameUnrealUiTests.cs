@@ -52,7 +52,7 @@ public class GameUnreal_Ui
         };
         await w.GameUnrealCheck(d, screenshot: false); Pump();
         Assert.Contains("Testspieler-Bot: 2 von 3 Prüfpunkten in Ordnung", w.LastUnrealReport); // Testspieler-Bot aus den Messzeilen
-        Assert.Contains("⚠ Fahrzeug: Wagen kommt nur 2,6 m weit", w.LastUnrealReport);
+        Assert.Contains("Fahrzeug: Wagen kommt nur 2,6 m weit", w.LastUnrealReport);
         Assert.Contains(Trendo.Core.Programs.GameBoard.Tasks(d.Data), t => t["source"]!.GetValue<string>() == "Testspieler"); // Auffälliges landet als Aufgabe im Board
         Assert.Equal(["Build.bat", "UnrealEditor-Cmd.exe", "UnrealEditor-Cmd.exe", "UnrealEditor-Cmd.exe", "UnrealEditor.exe"], runs);
         Assert.Contains("Echte Menschen (MetaHuman): Waldlaeuferin (Ada)", w.LastUnrealReport);

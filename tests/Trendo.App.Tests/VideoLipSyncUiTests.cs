@@ -47,7 +47,7 @@ public class VideoLipSync_Ui
             Assert.Contains("\"mund\": \"MBP\"", File.ReadAllText(Path.Combine(w.EditLipFolder!, "mundbilder.json")));
             Assert.StartsWith("MohoSwitch1", File.ReadAllText(Path.Combine(w.EditLipFolder!, "mundbilder-30fps.dat")));
             Assert.Equal("Lippensynchron", d.UndoLabel);
-            w.Show("schnitt"); Settle(); Assert.Contains(w.GetLogicalDescendantsOfType<TextBlock>(), t => (t.Text ?? "").StartsWith("✓ OK: Versatz"));
+            w.Show("schnitt"); Settle(); Assert.Contains(w.GetLogicalDescendantsOfType<TextBlock>(), t => (t.Text ?? "").StartsWith("OK: Versatz"));
             // fehlende Aufnahme
             Assert.False(await w.EditLipSync(d, Path.Combine(root, "gibtsnicht.wav"), "Hallo"));
             Assert.Contains("FAIL: Sprachaufnahme fehlt", w.ProgramMessage("schnitt"));

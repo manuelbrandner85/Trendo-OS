@@ -15,8 +15,8 @@ public partial class MainWindow
             v =>
             {
                 var (ok, why) = LegalRates.SmallBusiness((decimal)Fach.Num(v("prev")), (decimal)Fach.Num(v("cur")), v("new").Trim().StartsWith("j", StringComparison.OrdinalIgnoreCase));
-                return ok ? $"✓ Ja, du kannst Kleinunternehmer sein. {why}\nAuf Rechnungen steht dann: „Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.“"
-                          : $"✗ Nein, Kleinunternehmer geht nicht. {why}\nDu musst Mehrwertsteuer auf Rechnungen ausweisen und ans Finanzamt abführen. Sprich am besten mit dem Finanzamt oder einer Steuerberatung.";
+                return ok ? $"Ja, du kannst Kleinunternehmer sein. {why}\nAuf Rechnungen steht dann: „Gemäß § 19 UStG wird keine Umsatzsteuer berechnet.“"
+                          : $"Nein, Kleinunternehmer geht nicht. {why}\nDu musst Mehrwertsteuer auf Rechnungen ausweisen und ans Finanzamt abführen. Sprich am besten mit dem Finanzamt oder einer Steuerberatung.";
             }, "Prüfen");
     }
 }

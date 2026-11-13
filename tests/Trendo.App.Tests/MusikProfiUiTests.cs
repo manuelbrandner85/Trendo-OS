@@ -34,7 +34,7 @@ public class MusikProfiUiTests
 
     const string Measure = "{\n \"input_i\" : \"-13.40\", \"input_tp\" : \"-0.70\", \"input_lra\" : \"15.70\", \"input_thresh\" : \"-24.00\", \"target_offset\" : \"0.20\"\n}";
 
-    [AvaloniaFact(DisplayName = "Profi: neues Lied wird gleich gemastert (messen, dann linear auf −14 LUFS), Datei ersetzt, „✓ Gemastert“; ohne FFmpeg bleibt das Lied wie es ist")]
+    [AvaloniaFact(DisplayName = "Profi: neues Lied wird gleich gemastert (messen, dann linear auf −14 LUFS), Datei ersetzt, „Gemastert“; ohne FFmpeg bleibt das Lied wie es ist")]
     public async Task Auto_master()
     {
         var (w, _, root) = Ui.Open();
@@ -58,7 +58,7 @@ public class MusikProfiUiTests
             Assert.Equal(4000, new FileInfo(s.File).Length);
             Assert.Empty(Directory.GetFiles(Path.GetDirectoryName(s.File)!, ".trendo-master-*"));
             Assert.Contains("Gemastert auf −14 LUFS", w.Find<TextBlock>("ms-msg").Text);
-            Assert.Equal("✓ Gemastert", w.Find<Button>("ms-master").Content);
+            Assert.Equal("Gemastert", w.Find<Button>("ms-master").Content);
             // Messung kaputt: nichts wird ersetzt
             w.MasterRunOverride = _ => Task.FromResult(new Cli.Result(1, "", "Fehler"));
             Assert.False(await w.MsMaster(s.Id));

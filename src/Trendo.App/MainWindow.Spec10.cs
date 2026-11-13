@@ -61,7 +61,7 @@ public partial class MainWindow
     }
     void TwinLiveTick(object? s, EventArgs e) { if (CurrentView != "zwilling") { _twLive?.Stop(); return; } MeasureThisPc(); Show("zwilling"); }
 
-    void TwinRun(Action a) { try { a(); } catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or FormatException or UnauthorizedAccessException) { _twMsg = "⚠ " + ex.Message; } Show("zwilling"); }
+    void TwinRun(Action a) { try { a(); } catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or FormatException or UnauthorizedAccessException) { _twMsg = "" + ex.Message; } Show("zwilling"); }
 
     static IBrush LevelBrush(TwinLevel l) => Brush.Parse(l switch { TwinLevel.Alarm => "#F87171", TwinLevel.Warnung => "#FACC15", TwinLevel.Ok => "#4ADE80", _ => "#8FA3BF" });
 
@@ -76,7 +76,7 @@ public partial class MainWindow
         // Kopf: Werkzeugleiste
         var bar = new WrapPanel { Name = "twin-bar" };
         bar.Children.Add(Btn("twin-pc", "Diesen PC jetzt messen", () => TwinRun(() => { MeasureThisPc(); TwinAsset = "Dieser PC"; }), true));
-        bar.Children.Add(Btn("twin-live", TwinLive ? "■ Live stoppen" : "● Live (alle 5 s)", TwinToggleLive));
+        bar.Children.Add(Btn("twin-live", TwinLive ? "Live stoppen" : "Live (alle 5 s)", TwinToggleLive));
         if (Twin.Model.Assets.Count == 0 || !Twin.Model.Assets.Any(a => a.Name == "Heizung")) bar.Children.Add(Btn("twin-demo", "Beispielanlagen laden", () => TwinRun(() => { var n = TwinDemo.Seed(Twin, DateTime.Now); TwinAsset = "Kühlraum"; TwinSensor = "Temperatur"; _twMsg = $"{Fach.F(n, 0)} Beispielwerte geladen (erfunden)."; })));
         foreach (var (id, label) in new[] { ("24h", "24 h"), ("7d", "7 Tage"), ("30d", "30 Tage"), ("all", "Alles") })
         {
@@ -195,9 +195,9 @@ public partial class MainWindow
         LiveCalc(calcs, "twin-hours", "Betriebsstunden", [("thr", $"Läuft ab ({s.Unit})", "1", null)],
             v => { if (rs.Count == 0) throw new InvalidOperationException("Dieser Sensor hat noch keine Werte."); var gap = TwinPlus.GapHours(rs); return $"{Fach.F(TwinPlus.HoursAbove(rs, Fach.Num(v("thr"))), 1)} Stunden in Betrieb" + (gap > 0 ? $" · {Fach.F(gap, 1)} h Datenlücke nicht mitgerechnet" : ""); });
         LiveCalc(calcs, "twin-maint", "Wartungsplan", [("run", "Betriebsstunden jetzt", "1200", null), ("last", "Letzte Wartung bei", "1000", null), ("int", "Intervall (h)", "500", null)],
-            v => { var m = TwinPlus.Maintenance(Fach.Num(v("run")), Fach.Num(v("int")), Fach.Num(v("last"))); return m.Due ? $"⚠ Wartung fällig (seit {Fach.F(-m.Remaining, 0)} h)" : $"Nächste Wartung bei {Fach.F(m.NextAt, 0)} h – noch {Fach.F(m.Remaining, 0)} h"; });
+            v => { var m = TwinPlus.Maintenance(Fach.Num(v("run")), Fach.Num(v("int")), Fach.Num(v("last"))); return m.Due ? $"Wartung fällig (seit {Fach.F(-m.Remaining, 0)} h)" : $"Nächste Wartung bei {Fach.F(m.NextAt, 0)} h – noch {Fach.F(m.Remaining, 0)} h"; });
         LiveCalc(calcs, "twin-stale", "Stille Sensoren", [("min", "länger als (Minuten)", "60", null)],
-            v => { var st = TwinPlus.Stale(Twin.Model, DateTime.Now, Fach.Num(v("min"))); return st.Count == 0 ? "✓ Alle Sensoren sind aktuell." : string.Join("\n", st.Select(x => $"⚠ {x.Asset} – {x.Sensor}: {(x.Last is { } t ? $"zuletzt {t:dd.MM. HH:mm}" : "noch nie")}")); });
+            v => { var st = TwinPlus.Stale(Twin.Model, DateTime.Now, Fach.Num(v("min"))); return st.Count == 0 ? "Alle Sensoren sind aktuell." : string.Join("\n", st.Select(x => $"{x.Asset} – {x.Sensor}: {(x.Last is { } t ? $"zuletzt {t:dd.MM. HH:mm}" : "noch nie")}")); });
         sp.Children.Add(new Expander { Name = "twin-calcs", Header = "Betriebsstunden, Wartung, stille Sensoren", Content = calcs, Margin = new Thickness(0, 6, 0, 0) });
         var tools = new StackPanel { Spacing = 4 };
         Button B(string name, string label, Action go) { var b = new Button { Name = name, Content = label, Padding = new Thickness(10, 4) }; b.Click += (_, _) => TwinRun(go); return b; }

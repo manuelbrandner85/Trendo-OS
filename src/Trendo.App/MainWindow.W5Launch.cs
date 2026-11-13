@@ -49,7 +49,7 @@ public partial class MainWindow
             var n = 0;
             foreach (var x in BusinessLaunch.Compliance(BizSite, lg, _bizConsumers).Concat(BusinessLaunch.Quality(BizSite).Where(q => !q.Ok)))
                 chk.Children.Add(new TextBlock { Name = $"ln-check-{n++}", Text = $"{(x.Ok ? "✓" : "✗")} {x.Area}: {x.Label}{(x.Ok ? "" : " – " + x.Fix)}", Foreground = x.Ok ? Text : Brush.Parse("#F97316"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
-            if (BusinessLaunch.Quality(BizSite).All(q => q.Ok)) chk.Children.Add(P("✓ Qualität: keine toten Links, alle Bilder beschrieben, nur https.", Text, 11.5));
+            if (BusinessLaunch.Quality(BizSite).All(q => q.Ok)) chk.Children.Add(P("Qualität: keine toten Links, alle Bilder beschrieben, nur https.", Text, 11.5));
             chk.Children.Add(P("Technische Prüfung, keine Rechtsberatung.", null, 10));
             sp.Children.Add(Card(chk));
             var dom = T("ln-domain", "", "Domain (optional), z. B. meine-firma.de", 240);
@@ -69,7 +69,7 @@ public partial class MainWindow
         sp.Children.Add(Card(bsec));
 
         var (ready, checks) = BusinessLaunch.Handover(i, Experiments.All(), Directory.Exists(BizSite) ? BizSite : null, lg, _bizConsumers, BizBackupDir);
-        var hsec = new StackPanel { Spacing = 2, Children = { new TextBlock { Name = "ln-ready", Text = ready ? "Startklar ✓" : $"Noch nicht startklar – {checks.Count(x => !x.Ok)} offene Punkte", FontSize = 18, FontWeight = FontWeight.SemiBold, Foreground = ready ? Brush.Parse("#22C55E") : Brush.Parse("#FACC15") } } };
+        var hsec = new StackPanel { Spacing = 2, Children = { new TextBlock { Name = "ln-ready", Text = ready ? "Startklar" : $"Noch nicht startklar – {checks.Count(x => !x.Ok)} offene Punkte", FontSize = 18, FontWeight = FontWeight.SemiBold, Foreground = ready ? Brush.Parse("#22C55E") : Brush.Parse("#FACC15") } } };
         foreach (var x in checks) hsec.Children.Add(P($"{(x.Ok ? "✓" : "○")} {x.Label}{(x.Ok ? "" : " – " + x.Fix)}", x.Ok ? Text : null, 11));
         sp.Children.Add(Card(hsec));
         return BusinessPage("Start & Übergabe", sp);

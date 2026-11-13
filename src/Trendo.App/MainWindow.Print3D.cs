@@ -179,7 +179,7 @@ public partial class MainWindow
         }
         if (PrintFile is { } pf0 && !pf0.EndsWith(".gcode.3mf", StringComparison.OrdinalIgnoreCase))
         {
-            var prep = new Button { Name = "print-prepare", Content = "▶ Für den Druck vorbereiten", Background = Accent, Foreground = Brushes.White };
+            var prep = new Button { Name = "print-prepare", Content = "Für den Druck vorbereiten", Background = Accent, Foreground = Brushes.White };
             prep.Click += (_, _) => _ = PrepareForPrint();
             slicer.Children.Add(prep);
             slicer.Children.Add(P("Trendo lässt Bambu Studio im Hintergrund aufstellen, anordnen und slicen – danach direkt „Hochladen und drucken“.", null, 12));

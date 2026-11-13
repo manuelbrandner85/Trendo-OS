@@ -44,7 +44,7 @@ public partial class MainWindow
         if (probs.Count > 0)
         {
             sp.Children.Add(H("Braucht Aufmerksamkeit", 14));
-            foreach (var d in probs) sp.Children.Add(WCard(new StackPanel { Children = { new TextBlock { Text = "⚠ " + d.Name, Foreground = Text }, P($"Zustand: {d.Status}. Tipp: Gerät neu einstecken oder den PC neu starten. Hilft das nicht, den Treiber beim Hersteller laden.", Brush.Parse("#FACC15"), 11) } }));
+            foreach (var d in probs) sp.Children.Add(WCard(new StackPanel { Children = { new TextBlock { Text = "" + d.Name, Foreground = Text }, P($"Zustand: {d.Status}. Tipp: Gerät neu einstecken oder den PC neu starten. Hilft das nicht, den Treiber beim Hersteller laden.", Brush.Parse("#FACC15"), 11) } }));
         }
         foreach (var g in Devices.GroupBy(d => d.Category))
         {

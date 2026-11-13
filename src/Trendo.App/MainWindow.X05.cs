@@ -116,7 +116,7 @@ public partial class MainWindow
         {
             var s = KiCatalog.Sources.First(x => x.Id == id); var pos = n++;
             var off = set.Disabled.Contains(id);
-            var state = LastScan.TryGetValue(id, out var r) ? r.Up ? $"✓ läuft · {r.Models.Count} Modell(e){(r.Models.Count > 0 ? ": " + string.Join(", ", r.Models.Take(3)) : "")}" : "nicht gefunden" : "noch nicht gesucht";
+            var state = LastScan.TryGetValue(id, out var r) ? r.Up ? $"läuft · {r.Models.Count} Modell(e){(r.Models.Count > 0 ? ": " + string.Join(", ", r.Models.Take(3)) : "")}" : "nicht gefunden" : "noch nicht gesucht";
             var up = new Button { Name = "src-up-" + id, Content = "▲", IsEnabled = pos > 0, Padding = new Thickness(8, 2) };
             up.Click += (_, _) => { KiSourceSettings.Update(_core.DataRoot, s => s.Move(id, -1)); Show("ki-quellen"); };
             var tg = new Button { Name = "src-toggle-" + id, Content = off ? "Einschalten" : "Ausschalten", Padding = new Thickness(8, 2) };
@@ -138,7 +138,7 @@ public partial class MainWindow
         foreach (var m in KiCatalog.Models)
         {
             var fits = KiCatalog.Fits(m, hw); var got = have.Contains(m.Tag);
-            var b = new Button { Name = "model-pull-" + m.Tag.Replace(':', '-').Replace('.', '-'), Content = got ? "✓ vorhanden" : KiCatalog.AutoLicense(m) ? (fits ? "Jetzt laden (sonst automatisch)" : "passt nicht") : $"Lizenz „{m.License}“ bestätigen & laden", IsEnabled = !got && fits && ol.Up && !_core.Offline, Padding = new Thickness(8, 2) };
+            var b = new Button { Name = "model-pull-" + m.Tag.Replace(':', '-').Replace('.', '-'), Content = got ? "vorhanden" : KiCatalog.AutoLicense(m) ? (fits ? "Jetzt laden (sonst automatisch)" : "passt nicht") : $"Lizenz „{m.License}“ bestätigen & laden", IsEnabled = !got && fits && ol.Up && !_core.Offline, Padding = new Thickness(8, 2) };
             // Befund 27.10.2026: gesperrte Knöpfe sagen, warum
             if (!b.IsEnabled && !got) ToolTip.SetTip(b, !fits ? $"Braucht {m.MinRamGb} GB Arbeitsspeicher." : _core.Offline ? "Im Offline-Modus wird nichts geladen." : "Zuerst muss Ollama laufen – siehe Hinweis oben.");
             b.Click += async (_, _) =>

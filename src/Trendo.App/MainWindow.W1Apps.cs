@@ -55,7 +55,7 @@ public partial class MainWindow
             var b = new Button { Name = "app-" + c.Id, FontSize = 11, Padding = new Thickness(10, 2), Content = exe is not null ? "Starten" : have ? "Vorhanden" : "Installieren …", IsEnabled = exe is not null || !have };
             b.Click += (_, _) => { if (exe is not null) Launch(exe); else Show("components"); };
             sp.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 5), Child = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = {
-                new StackPanel { Children = { new TextBlock { Text = c.Name, Foreground = Text, FontSize = 12.5 }, P((have ? "✓ vorhanden · " : "fehlt · ") + c.Purpose, have ? null : Brush.Parse("#FACC15"), 10.5) } },
+                new StackPanel { Children = { new TextBlock { Text = c.Name, Foreground = Text, FontSize = 12.5 }, P((have ? "vorhanden · " : "fehlt · ") + c.Purpose, have ? null : Brush.Parse("#FACC15"), 10.5) } },
                 Pos(b, 1) } } });
             i++;
         }
@@ -152,7 +152,7 @@ public partial class MainWindow
             b.Click += (_, _) => StartTimer(TimeSpan.FromMinutes(min));
             presets.Children.Add(b);
         }
-        var stop = new Button { Name = "timer-stop", Content = "■ Stopp", Margin = new Thickness(0, 0, 6, 6), CornerRadius = new CornerRadius(12) }; stop.Click += (_, _) => { _timer?.Stop(); _timerText.Text = "00:00"; };
+        var stop = new Button { Name = "timer-stop", Content = "Stopp", Margin = new Thickness(0, 0, 6, 6), CornerRadius = new CornerRadius(12) }; stop.Click += (_, _) => { _timer?.Stop(); _timerText.Text = "00:00"; };
         presets.Children.Add(stop);
         var timerPanel = Panel("Kurzzeitwecker", "⏱", new StackPanel { Spacing = 14, Children = { dial, presets, P("Läuft weiter, auch wenn du die Seite wechselst – am Ende meldet sich Trendo.", Muted, 11.5) } });
 

@@ -69,7 +69,7 @@ public class SPEC10_Ui
         Press(w, "twin-export"); var csv = Get<TextBlock>(w, "twin-msg").Text!["Gespeichert: ".Length..]; Assert.True(File.Exists(csv));
         Press(w, "twin-svg"); System.Xml.Linq.XDocument.Load(Get<TextBlock>(w, "twin-msg").Text!["Gespeichert: ".Length..]);
         CloseToasts(w); // Hinweise „Ordner öffnen“ wie ein Nutzer wegklicken
-        Press(w, "twin-del"); Assert.StartsWith("⚠ Bitte den Sensornamen", Get<TextBlock>(w, "twin-msg").Text);
+        Press(w, "twin-del"); Assert.StartsWith("Bitte den Sensornamen", Get<TextBlock>(w, "twin-msg").Text);
         Get<TextBox>(w, "twin-del-confirm").Text = "Druck (psi)"; Press(w, "twin-del");
         Assert.DoesNotContain(w.Twin.Model.Assets.First(x => x.Name == "Werkstatt").Sensors, s => s.Name == "Druck (psi)");
         // Diesen PC messen und Live

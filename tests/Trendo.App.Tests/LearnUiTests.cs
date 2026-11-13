@@ -49,7 +49,7 @@ public class SPEC06_Ui
         Assert.Contains("4 Tagen", Get<TextBlock>(w, "learn-msg").Text);
         Assert.Contains("Für heute alles gelernt", Front(w));
         Assert.Equal(0, w.Learn.Progress("Englisch").Due);
-        Assert.Contains("✓ heute", string.Join(" ", Get<Border>(w, "learn-side").GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text)));
+        Assert.Contains("heute", string.Join(" ", Get<Border>(w, "learn-side").GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text)));
         w.Close();
     }
 
@@ -63,10 +63,10 @@ public class SPEC06_Ui
         Press(w, "learn-mode-tippen");
         var front = Front(w); var answer = w.Learn.Store.Cards.First(c => c.Front == front).Back;
         TypeInto(w, "learn-typed", answer[..^1] + "x"); Key1(w, Key.Enter, PhysicalKey.Enter);
-        Assert.Contains("✓ Richtig (kleiner Tippfehler)", Get<TextBlock>(w, "learn-typed-result").Text);
+        Assert.Contains("Richtig (kleiner Tippfehler)", Get<TextBlock>(w, "learn-typed-result").Text);
         Press(w, "learn-next");
         front = Front(w); TypeInto(w, "learn-typed", "falsch"); Key1(w, Key.Enter, PhysicalKey.Enter);
-        Assert.Contains("✕ Leider falsch", Get<TextBlock>(w, "learn-typed-result").Text);
+        Assert.Contains("Leider falsch", Get<TextBlock>(w, "learn-typed-result").Text);
         // Quiz: richtige Antwort mit ihrer Zifferntaste
         Press(w, "learn-mode-quiz");
         front = Front(w); answer = w.Learn.Store.Cards.First(c => c.Front == front).Back;
@@ -74,7 +74,7 @@ public class SPEC06_Ui
         var idx = opts.FindIndex(o => o.EndsWith(" " + answer));
         Get<DockPanel>(w, "learn-root").Focus(); Settle();
         Key1(w, Key.D1 + idx, PhysicalKey.Digit1 + idx);
-        Assert.Equal("✓ Richtig!", Get<TextBlock>(w, "learn-msg").Text);
+        Assert.Equal("Richtig!", Get<TextBlock>(w, "learn-msg").Text);
         // Tabelle: bearbeiten, suchen, löschen, Liste einfügen
         Press(w, "learn-mode-karten");
         var row = Enumerable.Range(0, 4).First(i => Get<TextBox>(w, $"learn-f-{i}").Text == "Haus");

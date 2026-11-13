@@ -244,7 +244,7 @@ public sealed class EditTimeline : Control
             var fd = VideoEdit.FadeOf([.. Clips], i); if (fd <= 0) continue;
             var r2 = BoxOf("clips", i + 1); var w0 = fd * PxPerSec;
             ctx.DrawGeometry(new SolidColorBrush(Color.Parse("#99FFFFFF")), null, new PolylineGeometry([new Point(r2.X, r2.Bottom - 2), new Point(r2.X + w0, r2.Y + 18), new Point(r2.X + w0, r2.Bottom - 2)], true));
-            ctx.DrawText(new FormattedText($"⤫ {fd:0.#} s", De, FlowDirection.LeftToRight, font, 10, Brushes.White), new Point(r2.X + 2, r2.Bottom - 14));
+            ctx.DrawText(new FormattedText($"{fd:0.#} s", De, FlowDirection.LeftToRight, font, 10, Brushes.White), new Point(r2.X + 2, r2.Bottom - 14));
         }
         // Musikspur mit echter Wellenform (K1)
         for (var i = 0; i < Music.Count; i++)
@@ -270,7 +270,7 @@ public sealed class EditTimeline : Control
                 }
             }
             else ctx.DrawLine(wave, new Point(r.X + 4, r.Center.Y), new Point(r.Right - 4, r.Center.Y));
-            ctx.DrawText(new FormattedText($"♪ {System.IO.Path.GetFileName(m.File)} · {m.Volume * 100:0} %", De, FlowDirection.LeftToRight, bold, 11, Brushes.White), new Point(r.X + 6, r.Y + 2));
+            ctx.DrawText(new FormattedText($"{System.IO.Path.GetFileName(m.File)} · {m.Volume * 100:0} %", De, FlowDirection.LeftToRight, bold, 11, Brushes.White), new Point(r.X + 6, r.Y + 2));
         }
         // Einblendungsspuren
         for (var i = 0; i < Overlays.Count; i++)

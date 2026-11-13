@@ -126,16 +126,16 @@ public partial class MainWindow
                 Content = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { new TextBlock { Text = label, Foreground = Text, FontSize = 13, TextTrimming = TextTrimming.CharacterEllipsis }, Pos(new TextBlock { Text = count.ToString(), Foreground = Muted, FontSize = 12 }, 1) } } };
             b.Click += (_, _) => { _musicView = view; Show("medien"); }; Hover(b); return b;
         }
-        side.Children.Add(Nav("music-nav-alben", "💿 Alben", "alben", albums.Count));
-        side.Children.Add(Nav("music-nav-titel", "♪ Alle Titel", "titel", music.Count));
-        side.Children.Add(Nav("music-nav-kuenstler", "🎤 Künstler", "kuenstler", artists.Count));
-        side.Children.Add(Nav("music-nav-videos", "🎬 Videos", "videos", videos.Count));
+        side.Children.Add(Nav("music-nav-alben", "Alben", "alben", albums.Count));
+        side.Children.Add(Nav("music-nav-titel", "Alle Titel", "titel", music.Count));
+        side.Children.Add(Nav("music-nav-kuenstler", "Künstler", "kuenstler", artists.Count));
+        side.Children.Add(Nav("music-nav-videos", "Videos", "videos", videos.Count));
         side.Children.Add(H("Wiedergabelisten", 12));
         for (var i = 0; i < lists.Count; i++) side.Children.Add(Nav($"music-nav-list-{i}", "≡ " + lists[i].Name, "liste:" + lists[i].Name, lists[i].Count));
         var newList = new TextBox { Name = "music-list-name", PlaceholderText = "Neue Liste …" };
         side.Children.Add(newList);
         side.Children.Add(Act("music-list-create", "Liste anlegen", () => Try("medien", () => { MusicLists.Create(newList.Text ?? ""); _musicView = "liste:" + newList.Text!.Trim(); _musicListPick = newList.Text.Trim(); Show("medien"); })));
-        side.Children.Add(Act("music-reload", "↻ Neu einlesen", () => { _tracks = null; Show("medien"); }));
+        side.Children.Add(Act("music-reload", "Neu einlesen", () => { _tracks = null; Show("medien"); }));
 
         Control main = _musicView switch
         {
@@ -143,9 +143,9 @@ public partial class MainWindow
             "kuenstler" => MusicArtists(artists),
             "videos" => MusicVideos(videos),
             var v when v.StartsWith("album:") => albums.FirstOrDefault(a => "album:" + a.Artist + "|" + a.Album == v) is { Tracks: not null } al && al.Tracks.Count > 0 ? MusicAlbum(al.Artist, al.Album, al.Tracks) : MusicAlbums(albums),
-            var v when v.StartsWith("artist:") => MusicTrackList($"🎤 {v[7..]}", music.Where(t => t.Artist == v[7..]).ToList(), null),
+            var v when v.StartsWith("artist:") => MusicTrackList($"{v[7..]}", music.Where(t => t.Artist == v[7..]).ToList(), null),
             var v when v.StartsWith("liste:") => MusicTrackList("≡ " + v[6..], MusicLists.Get(v[6..]).Select(p => TrackOf(p) ?? MusicLibrary.Read(p)).ToList(), v[6..]),
-            _ => MusicTrackList("♪ Alle Titel", MusicLibrary.Search(music, _musicFind), null, search: true),
+            _ => MusicTrackList("Alle Titel", MusicLibrary.Search(music, _musicFind), null, search: true),
         };
         var body = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,14,*"), Children = { Glass2(side, 10), Pos(new ScrollViewer { Content = main, MaxHeight = 560 }, 2) } };
         var root = new StackPanel { Name = "music", Spacing = 10, Children = { body } };
@@ -169,12 +169,12 @@ public partial class MainWindow
             wrap.Children.Add(b);
         }
         if (albums.Count == 0) wrap.Children.Add(P("Keine Musik gefunden. Lege Titel in deinen Ordner „Musik“ (oder in den Projektordner) und tippe links „Neu einlesen“.", Muted, 13));
-        return new StackPanel { Spacing = 8, Children = { H("💿 Alben", 18), wrap } };
+        return new StackPanel { Spacing = 8, Children = { H("Alben", 18), wrap } };
     }
 
     Control MusicArtists(List<(string Artist, int Albums, int Tracks)> artists)
     {
-        var sp = new StackPanel { Name = "music-artists", Spacing = 2, Children = { H("🎤 Künstler", 18) } };
+        var sp = new StackPanel { Name = "music-artists", Spacing = 2, Children = { H("Künstler", 18) } };
         for (var i = 0; i < artists.Count; i++)
         {
             var (a, al, n) = artists[i];
@@ -187,7 +187,7 @@ public partial class MainWindow
 
     Control MusicVideos(List<Track> videos)
     {
-        var sp = new StackPanel { Name = "music-videos", Spacing = 4, Children = { H("🎬 Videos", 18), P(MpvExe is not null ? "Videos öffnen im Player-Fenster (mpv)." : "Videos öffnen mit dem Standardprogramm.", Muted, 12) } };
+        var sp = new StackPanel { Name = "music-videos", Spacing = 4, Children = { H("Videos", 18), P(MpvExe is not null ? "Videos öffnen im Player-Fenster (mpv)." : "Videos öffnen mit dem Standardprogramm.", Muted, 12) } };
         var i = 0; foreach (var v in videos.OrderByDescending(v => v.Modified).Take(200)) sp.Children.Add(FileRow(new FileInfo(v.Path), i++, "media", MpvExe));
         if (videos.Count == 0) sp.Children.Add(P("Keine Videos gefunden.", Muted, 12.5));
         return sp;
@@ -202,10 +202,10 @@ public partial class MainWindow
                 new TextBlock { Text = "ALBUM", Foreground = Muted, FontSize = 11, FontWeight = FontWeight.SemiBold },
                 new TextBlock { Name = "music-album-title", Text = album, Foreground = Text, FontSize = 30, FontWeight = FontWeight.Bold, TextWrapping = TextWrapping.Wrap },
                 new TextBlock { Text = $"{artist}{(year.Length > 0 ? " · " + year : "")} · {tracks.Count} Titel", Foreground = GoldText(), FontSize = 14 },
-                new WrapPanel { Children = { Act("music-album-play", "▶ Abspielen", () => MusicPlay(paths), true), new Border { Width = 6 },
-                    Act("music-album-shuffle", "⤮ Zufällig", () => { _queue.SetShuffle(true); MusicPlay(paths); }), new Border { Width = 6 },
+                new WrapPanel { Children = { Act("music-album-play", "Abspielen", () => MusicPlay(paths), true), new Border { Width = 6 },
+                    Act("music-album-shuffle", "Zufällig", () => { _queue.SetShuffle(true); MusicPlay(paths); }), new Border { Width = 6 },
                     Act("music-album-queue", "+ Warteschlange", () => { foreach (var p in paths) _queue.Enqueue(p); Say($"{paths.Count} Titel in der Warteschlange.", "medien"); if (_queue.Items.Count == paths.Count) MusicStart(); }), new Border { Width = 6 },
-                    Act("music-back", "← Alle Alben", () => { _musicView = "alben"; Show("medien"); }) } } } }, 2) } };
+                    Act("music-back", "Alle Alben", () => { _musicView = "alben"; Show("medien"); }) } } } }, 2) } };
         return new StackPanel { Spacing = 14, Children = { head, MusicTable(tracks, null, showAlbum: false) } };
     }
 
@@ -214,12 +214,12 @@ public partial class MainWindow
         var sp = new StackPanel { Spacing = 8 };
         var top = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { H(title, 18) } };
         if (tracks.Count > 0) top.Children.Add(Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = {
-            Act("music-list-play", "▶ Alle abspielen", () => MusicPlay(tracks.Select(t => t.Path).ToList()), true),
-            Act("music-list-shuffle", "⤮ Zufällig", () => { _queue.SetShuffle(true); MusicPlay(tracks.Select(t => t.Path).ToList()); }) } }, 1));
+            Act("music-list-play", "Alle abspielen", () => MusicPlay(tracks.Select(t => t.Path).ToList()), true),
+            Act("music-list-shuffle", "Zufällig", () => { _queue.SetShuffle(true); MusicPlay(tracks.Select(t => t.Path).ToList()); }) } }, 1));
         sp.Children.Add(top);
         if (search)
         {
-            var find = new TextBox { Name = "music-find", Text = _musicFind, PlaceholderText = "🔎  Titel, Künstler oder Album …", Width = 300, HorizontalAlignment = HorizontalAlignment.Left };
+            var find = new TextBox { Name = "music-find", Text = _musicFind, PlaceholderText = "Titel, Künstler oder Album …", Width = 300, HorizontalAlignment = HorizontalAlignment.Left };
             find.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) { _musicFind = find.Text ?? ""; Show("medien"); } };
             sp.Children.Add(find);
         }
@@ -312,7 +312,7 @@ public partial class MainWindow
         vol.PropertyChanged += (_, e) => { if (e.Property == RangeBase.ValueProperty) { _mVol = (int)vol.Value; _audio?.SetVolume(_mVol); } };
         var right = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center, Children = {
             new TextBlock { Text = "🔊", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center }, vol,
-            Act("music-queue", (_mQueueOpen ? "▾ " : "▸ ") + $"Warteschlange ({_queue.Items.Count})", () => { _mQueueOpen = !_mQueueOpen; Show("medien"); }, _mQueueOpen) } };
+            Act("music-queue", (_mQueueOpen ? "• " : "") + $"Warteschlange ({_queue.Items.Count})", () => { _mQueueOpen = !_mQueueOpen; Show("medien"); }, _mQueueOpen) } };
         if (MpvExe is null && AudioOverride is null) right.Children.Insert(0, Act("music-setup", "Player einrichten", () => _ = MusicSetupPlayer(), true));
         bar.Children.Add(Pos(right, 2));
         return new Border { Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#F0363636"), 0), new GradientStop(Color.Parse("#F01C1C1C"), 1) } },
@@ -325,6 +325,6 @@ public partial class MainWindow
     {
         if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner);
         Say("Player wird eingerichtet …", "medien"); await InstallOne(DependencyCatalog.Get("mpv"));
-        Say(MpvExe is not null ? "✓ Player ist eingerichtet." : "✗ Der Player ließ sich nicht einrichten. Ist Internet da? Sonst das Trendo-Vollpaket anschließen.", "medien"); Show("medien");
+        Say(MpvExe is not null ? "Player ist eingerichtet." : "Der Player ließ sich nicht einrichten. Ist Internet da? Sonst das Trendo-Vollpaket anschließen.", "medien"); Show("medien");
     }
 }

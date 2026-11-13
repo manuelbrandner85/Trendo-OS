@@ -33,7 +33,7 @@ public partial class MainWindow
     /// <summary>S1: Stimme aufnehmen (oder eine Datei nehmen) und analysieren; das Profil wird unter <paramref name="name"/> gespeichert.</summary>
     public async Task<VoiceProfile?> MsAnalyseVoice(string name, string? file = null)
     {
-        _msRecording = true; _msMsg = file is null ? $"🎤 Aufnahme läuft ({VoiceSeconds} s): sing langsam von deinem tiefsten bis zu deinem höchsten Ton, dann ein Stück eines Lieds …" : "Die Stimme wird untersucht …";
+        _msRecording = true; _msMsg = file is null ? $"Aufnahme läuft ({VoiceSeconds} s): sing langsam von deinem tiefsten bis zu deinem höchsten Ton, dann ein Stück eines Lieds …" : "Die Stimme wird untersucht …";
         if (CurrentView == MS) Show(MS);
         var wav = file; var own = false;
         try
@@ -55,7 +55,7 @@ public partial class MainWindow
             var (a, why) = VoiceAnalysis.Parse(json);
             if (a is null) { _msMsg = "Keine Stimme erkannt: " + why + "."; return null; }
             var p = Voices.Upsert(name, a);
-            _msMsg = $"✓ Stimme von „{p.Name}“: {a.Summary}.";
+            _msMsg = $"Stimme von „{p.Name}“: {a.Summary}.";
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.stimme.analyse", p.Id); // keine Aufnahme gespeichert, nur das Ergebnis
             return p;
         }
@@ -87,7 +87,7 @@ public partial class MainWindow
         sp.Children.Add(P("Sing 20 Sekunden: langsam vom tiefsten bis zum höchsten Ton, dann ein Stück eines Lieds. Trendo findet deine Lage und die Tonarten, die dir liegen. Gespeichert wird nur das Ergebnis, nicht die Aufnahme.", Muted, 11));
         var name = new TextBox { Name = "ms-voice-name", Text = _msVoiceName, Width = 120, Watermark = "Name" };
         name.TextChanged += (_, _) => _msVoiceName = name.Text ?? "";
-        var rec = Act("ms-voice-record", _msRecording ? "🎤 Aufnahme läuft …" : "🎤 Stimme aufnehmen", () => { sync(); _ = MsAnalyseVoice(_msVoiceName); });
+        var rec = Act("ms-voice-record", _msRecording ? "Aufnahme läuft …" : "Stimme aufnehmen", () => { sync(); _ = MsAnalyseVoice(_msVoiceName); });
         rec.IsEnabled = !_msRecording;
         var fromFile = Act("ms-voice-file", "Aus Datei", async () =>
         {

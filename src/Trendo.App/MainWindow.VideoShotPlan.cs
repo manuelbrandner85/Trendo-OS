@@ -69,7 +69,7 @@ public partial class MainWindow
         {
             foreach (var s in p.Scenes.Take(12))
                 sp.Children.Add(P($"{s.Code} {s.Place}. {s.Location}{(s.Time.Length > 0 ? " – " + s.Time : "")}: " + string.Join(", ", s.Shots.Select(x => $"{x.Id[^3..]} {x.Type} {x.Seconds:0.#} s")), Text, 11));
-            foreach (var pr in p.Problems.Take(5)) sp.Children.Add(P("⚠ " + pr, Brush.Parse("#FACC15"), 11));
+            foreach (var pr in p.Problems.Take(5)) sp.Children.Add(P("" + pr, Brush.Parse("#FACC15"), 11));
         }
         sp.Children.Add(P("Szenenkopf „1 INNEN. KÜCHE – TAG“, Einstellungen „- Totale: … (4 s)“.", Muted, 10.5));
         return sp;

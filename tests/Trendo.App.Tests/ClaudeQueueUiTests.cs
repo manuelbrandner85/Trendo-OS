@@ -39,7 +39,7 @@ public class ClaudeQueue_Ui
             await Until(() => w.ClaudeChatRunning());
             Assert.True(w.Find<TextBox>("claude-chat-input").IsEnabled); // Eingabe bleibt offen
             w.ClaudeChatSubmit("Und mach die Überschrift blau");
-            Assert.Equal(1, w.ClaudeChatQueued()); Assert.Contains("⏳ wartet", string.Join("|", w.GetLogicalTexts()));
+            Assert.Equal(1, w.ClaudeChatQueued()); Assert.Contains("wartet", string.Join("|", w.GetLogicalTexts()));
             gate.SetResult(); await Run(first);
             Assert.Equal(2, prompts.Count); Assert.StartsWith("Und mach die Überschrift blau", prompts[1]); Assert.Equal(0, w.ClaudeChatQueued());
 

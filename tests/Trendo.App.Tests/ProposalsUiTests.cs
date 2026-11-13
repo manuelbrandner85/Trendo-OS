@@ -59,7 +59,7 @@ public class ProposalsUiTests
         w.Show("einrichtung");
         w.Find<TextBox>("wiz-name").Text = "Erika Muster";
         w.Find<Button>("wiz-avatar-1").Press();
-        Assert.Equal("emoji:🦊", w.Settings.Avatar);
+        Assert.Equal("emoji:", w.Settings.Avatar);
         w.Find<Button>("wiz-next").Press();
         w.Find<RadioButton>("wiz-lock-pin").IsChecked = true; Pump();
         w.Find<TextBox>("wiz-secret").Text = "4711"; w.Find<TextBox>("wiz-secret2").Text = "4711";

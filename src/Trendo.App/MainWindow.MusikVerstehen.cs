@@ -103,7 +103,7 @@ public partial class MainWindow
             var res = SongUnderstanding.Build(s.Lyrics, sections, singers, words, theme);
             await File.WriteAllTextAsync(UnderstandFile(s), SongUnderstanding.Save(res));
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.verstanden", $"{s.Id}: {res.Source}");
-            Say("✓ Verstanden: " + SongUnderstanding.Summary(res) + (words is null && vocal is not null ? " – genauer mit einem Whisper-Modell aus der KI-Bibliothek." : ""));
+            Say("Verstanden: " + SongUnderstanding.Summary(res) + (words is null && vocal is not null ? " – genauer mit einem Whisper-Modell aus der KI-Bibliothek." : ""));
             return res;
         }
         catch (Exception e) when (e is IOException or System.Text.Json.JsonException or InvalidOperationException) { Say("Verstehen ging nicht: " + e.Message); return null; }
@@ -121,7 +121,7 @@ public partial class MainWindow
         var u = Understanding(s);
         sp.Children.Add(P(u is null ? "Damit das Musikvideo zum Lied passt, hört Trendo es genau an: Takt und Aufbau, wer wann singt (Sängerin, Sänger, beide) und jede Zeile mit Zeit – und liest, worum es geht."
             : SongUnderstanding.Summary(u) + $" · Zeiten aus: {u.Source}", u is null ? Muted : Text, 11.5));
-        var go = Act("ms-understand", _msUnderstanding ? "Wird verstanden …" : u is null ? "🎧 Lied verstehen" : "Neu verstehen", () => _ = MsUnderstand(s.Id), u is null);
+        var go = Act("ms-understand", _msUnderstanding ? "Wird verstanden …" : u is null ? "Lied verstehen" : "Neu verstehen", () => _ = MsUnderstand(s.Id), u is null);
         go.IsEnabled = !_msUnderstanding;
         sp.Children.Add(go);
         if (u is null) return sp;
@@ -133,7 +133,7 @@ public partial class MainWindow
         var list = new StackPanel { Name = "ms-understand-lines", Spacing = 1 };
         foreach (var l in u.Lines.Take(60))
         {
-            var who = l.Who switch { "beide" => "👥 beide", var w when w.StartsWith("Sängerin") => "♀ " + w, var w when w.StartsWith("Sänger") => "♂ " + w, var w => w };
+            var who = l.Who switch { "beide" => "beide", var w when w.StartsWith("Sängerin") => "" + w, var w when w.StartsWith("Sänger") => "" + w, var w => w };
             list.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("44,78,*"), Children = {
                 new TextBlock { Text = l.Timed ? SongTime(l.Start) : "–", Foreground = Muted, FontSize = 11 },
                 Pos(new TextBlock { Text = who, Foreground = l.Who == "beide" ? Accent : Text, FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis }, 1),

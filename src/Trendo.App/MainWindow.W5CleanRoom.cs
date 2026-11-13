@@ -71,8 +71,8 @@ public partial class MainWindow
                 new DockPanel { Children = { Dk(Act("clean-check", "Prüfen", () => CleanCheck(theirs.Text?.Trim('"', ' ') ?? ""), true), Avalonia.Controls.Dock.Right), theirs } } } };
             if (_cleanSims is { } sims)
             {
-                if (sims.Count == 0) check.Children.Add(P("✓ Keine auffällige Ähnlichkeit gefunden.", Brush.Parse("#4ADE80"), 12));
-                foreach (var sm in sims.Take(10)) check.Children.Add(P($"⚠ {sm.Ours} ↔ {sm.Theirs}: {sm.Score:P0} gleich", Brush.Parse("#F97316"), 11.5));
+                if (sims.Count == 0) check.Children.Add(P("Keine auffällige Ähnlichkeit gefunden.", Brush.Parse("#4ADE80"), 12));
+                foreach (var sm in sims.Take(10)) check.Children.Add(P($"{sm.Ours} ↔ {sm.Theirs}: {sm.Score:P0} gleich", Brush.Parse("#F97316"), 11.5));
             }
             center = new ScrollViewer { Content = new StackPanel { Spacing = 10, Children = {
                 new DockPanel { Children = { Dk(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { Act("clean-spec", "Beschreibung als Datei", () => Launch(specFile)), Act("clean-folder", "Ordner", () => Launch(open)) } }, Avalonia.Controls.Dock.Right),

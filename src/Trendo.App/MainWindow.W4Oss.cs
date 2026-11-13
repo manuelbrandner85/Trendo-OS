@@ -119,7 +119,7 @@ public partial class MainWindow
                 new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = {
                     new StackPanel { Spacing = 2, Children = {
                         new TextBlock { Text = r.FullName.Split('/')[1], Foreground = Text, FontSize = 15, FontWeight = FontWeight.SemiBold },
-                        new TextBlock { Text = $"{r.FullName}  ·  ★ {r.Stars:N0}{(r.Language.Length > 0 ? "  ·  " + r.Language : "")}{(have is not null ? "  ·  ✓ eingerichtet" : "")}", Foreground = Muted, FontSize = 11.5 },
+                        new TextBlock { Text = $"{r.FullName}  ·  {r.Stars:N0}{(r.Language.Length > 0 ? "  ·  " + r.Language : "")}{(have is not null ? "  ·  ✓ eingerichtet" : "")}", Foreground = Muted, FontSize = 11.5 },
                         P(r.Description, Text, 12.5), OssAvailBadge(r, i), SourceBadge(r, i),
                         P(OpenSource.Explain(r.LicenseId), kind == OpenSource.LicenseKind.Unklar ? Brush.Parse("#FACC15") : null, 11) } },
                     Pos(buttons, 1) } },
@@ -130,9 +130,9 @@ public partial class MainWindow
         // ── App-Store-Rahmen (Umbau 04.11.2026, wie Flathub/Microsoft Store): Kategorien links, Treffer in der Mitte, Eigenes rechts ──
         var cats = new StackPanel { Name = "oss-cats", Spacing = 3 };
         cats.Children.Add(new TextBlock { Text = "Kategorien", Foreground = Muted, FontSize = 11.5, Margin = new Thickness(4, 0, 0, 4) });
-        foreach (var (n, label, query) in new[] { ("oss-ex-0", "📝 Notizen", "notes app"), ("oss-ex-1", "🖼 Bildbearbeitung", "image editor"), ("oss-ex-2", "🔐 Passwort-Manager", "password manager"),
-                     ("oss-ex-3", "🎵 Musik", "music player"), ("oss-ex-4", "📕 PDF", "pdf tool"), ("oss-ex-5", "🎮 Spiele", "open source game"), ("oss-ex-6", "🎬 Video", "video editor"),
-                     ("oss-ex-7", "📊 Büro", "office suite"), ("oss-ex-8", "💻 Entwickeln", "code editor"), ("oss-ex-9", "🛡 Sicherheit", "privacy tool"), ("oss-ex-10", "🧊 3D", "3d modeling"), ("oss-ex-11", "📚 Lernen", "flashcards") })
+        foreach (var (n, label, query) in new[] { ("oss-ex-0", "Notizen", "notes app"), ("oss-ex-1", "Bildbearbeitung", "image editor"), ("oss-ex-2", "Passwort-Manager", "password manager"),
+                     ("oss-ex-3", "Musik", "music player"), ("oss-ex-4", "PDF", "pdf tool"), ("oss-ex-5", "Spiele", "open source game"), ("oss-ex-6", "Video", "video editor"),
+                     ("oss-ex-7", "Büro", "office suite"), ("oss-ex-8", "Entwickeln", "code editor"), ("oss-ex-9", "Sicherheit", "privacy tool"), ("oss-ex-10", "3D", "3d modeling"), ("oss-ex-11", "Lernen", "flashcards") })
         {
             var qq = query; var on = string.Equals(_ossQuery, query, StringComparison.OrdinalIgnoreCase);
             var b = new Button { Name = n, Content = label, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(10, 6), CornerRadius = new CornerRadius(8),

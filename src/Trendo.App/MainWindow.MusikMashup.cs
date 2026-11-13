@@ -54,7 +54,7 @@ public partial class MainWindow
             if (!r2.Ok || !File.Exists(outFile)) { _msMsg = "Mischen ging nicht: " + (r2.Err.Trim().Split('\n').LastOrDefault() ?? ""); return null; }
             var m = Songs.Add(new MusicSong { Title = title, Style = $"Mashup: Gesang aus „{a.Title}“, Musik aus „{b.Title}“ · {plan.Text.Split(" – ")[0]}", Lyrics = a.Lyrics, Language = a.Language,
                 Seconds = acc.Seconds, Bpm = b.Bpm, Key = b.Key, TimeSignature = b.TimeSignature, File = outFile, Kind = "mashup", ParentId = b.Id });
-            _msSel = m.Id; _msMsg = $"✓ Mashup fertig – {plan.Text}";
+            _msSel = m.Id; _msMsg = $"Mashup fertig – {plan.Text}";
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.mashup", $"{a.Id}+{b.Id} t={plan.Tempo} s={plan.Semitones}");
             return m;
         }
@@ -76,7 +76,7 @@ public partial class MainWindow
         var made = await MusicStudioCreate(job, (prompt.Trim().Length > 30 ? prompt.Trim()[..30] : prompt.Trim()) + " (Sample)");
         if (made.FirstOrDefault() is not { } m) return null;
         Songs.Update(m.Id, x => { x.Kind = "sample"; x.ParentId = s.Id; x.Style = prompt.Trim() + $" · Sample aus „{s.Title}“ {from:0.0}–{to:0.0} s"; });
-        _msMsg = $"✓ Neues Lied aus dem Sample ({from:0.0}–{to:0.0} s von „{s.Title}“)."; Show(MS);
+        _msMsg = $"Neues Lied aus dem Sample ({from:0.0}–{to:0.0} s von „{s.Title}“)."; Show(MS);
         return Songs.Get(m.Id);
     }
 
@@ -90,7 +90,7 @@ public partial class MainWindow
         var pick = new ComboBox { Name = "ms-mashup-with", HorizontalAlignment = HorizontalAlignment.Stretch, FontSize = 12, ItemsSource = others.Select(x => "Musik aus: " + x.Title).ToList(), SelectedIndex = Math.Max(-1, others.FindIndex(x => x.Id == _msMashWith)) };
         pick.SelectionChanged += (_, _) => _msMashWith = pick.SelectedIndex >= 0 ? others[pick.SelectedIndex].Id : null;
         sp.Children.Add(pick);
-        sp.Children.Add(Act("ms-mashup-go", "⇄ Mashup erstellen", () => { if (_msMashWith is { } w2) _ = MsMashup(s.Id, w2); else { _msMsg = "Erst das zweite Lied wählen."; Show(MS); } }));
+        sp.Children.Add(Act("ms-mashup-go", "Mashup erstellen", () => { if (_msMashWith is { } w2) _ = MsMashup(s.Id, w2); else { _msMsg = "Erst das zweite Lied wählen."; Show(MS); } }));
         sp.Children.Add(H("Als Sample verwenden", 13));
         var from = new NumericUpDown { Name = "ms-sample-from", Minimum = 0, Maximum = (decimal)Math.Max(1, s.Seconds), Value = (decimal)Math.Min(_msSampleFrom, s.Seconds), Increment = 1, FormatString = "0.0", Width = 96 };
         var to = new NumericUpDown { Name = "ms-sample-to", Minimum = 0, Maximum = (decimal)Math.Max(1, s.Seconds), Value = (decimal)Math.Min(_msSampleTo, s.Seconds), Increment = 1, FormatString = "0.0", Width = 96 };
@@ -101,7 +101,7 @@ public partial class MainWindow
         sp.Children.Add(new WrapPanel { Children = { new TextBlock { Text = "von", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) }, from,
             new TextBlock { Text = "bis", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 6, 0) }, to, new TextBlock { Text = "s", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0) } } });
         sp.Children.Add(desc); sp.Children.Add(instr);
-        sp.Children.Add(Act("ms-sample-go", "◧ Neues Lied aus dem Sample", () =>
+        sp.Children.Add(Act("ms-sample-go", "Neues Lied aus dem Sample", () =>
         {
             _msSampleFrom = (double)(from.Value ?? 0); _msSampleTo = (double)(to.Value ?? 0); _msSamplePrompt = desc.Text ?? "";
             _ = MsSampleCreate(s.Id, _msSampleFrom, _msSampleTo, _msSamplePrompt, _msSampleLen, _msSampleInstr);

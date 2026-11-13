@@ -51,10 +51,10 @@ public partial class MainWindow
         {
             Step(No() + " Unreal kompiliert das Spiel (C++) … beim ersten Mal einige Minuten.");
             var (ce, clog) = await Task.Run(() => UnrealRun(UnrealGame.BuildBat(engine), UnrealGame.CompileArgs(uproject), Path.Combine(logs, "kompilieren.txt"), 1_800_000));
-            if (!UnrealGame.CompileOk(clog)) { ok = false; lines.Add($"✗ Kompilieren fehlgeschlagen (Exitcode {ce}) – Protokoll kompilieren.txt"); }
+            if (!UnrealGame.CompileOk(clog)) { ok = false; lines.Add($"Kompilieren fehlgeschlagen (Exitcode {ce}) – Protokoll kompilieren.txt"); }
             else
             {
-                lines.Add($"✓ Kompiliert (Exitcode {ce})");
+                lines.Add($"Kompiliert (Exitcode {ce})");
                 var welt = open && await GameUnrealWelt(built, uproject, engine, logs, lines, t => Step(No() + " " + t), () => n++);
                 ok &= !open || welt;
                 // Echter Mensch als Spielfigur (MetaHuman); gelingt es nicht, bleibt die Gliederpuppe – das Spiel läuft trotzdem
@@ -64,11 +64,11 @@ public partial class MainWindow
                 var (_, tlog) = await Task.Run(() => UnrealRun(UnrealGame.EditorCmd(engine), UnrealGame.TestArgs(uproject, Path.Combine(logs, "tests.txt")), Path.Combine(logs, "tests.txt"), 900_000));
                 var tests = UnrealGame.ParseTests(tlog);
                 ok &= tests.Count > 0 && tests.All(t => t.Ok);
-                lines.Add(tests.Count == 0 ? "✗ Keine Unreal-Tests gefunden – Protokoll tests.txt" : $"{(tests.All(t => t.Ok) ? "✓" : "✗")} Unreal-Tests: {tests.Count(t => t.Ok)} von {tests.Count} bestanden ({string.Join(", ", tests.Select(t => t.Test.Replace("Trendo.", "") + (t.Ok ? "" : " ✗")))})");
+                lines.Add(tests.Count == 0 ? "Keine Unreal-Tests gefunden – Protokoll tests.txt" : $"{(tests.All(t => t.Ok) ? "✓" : "✗")} Unreal-Tests: {tests.Count(t => t.Ok)} von {tests.Count} bestanden ({string.Join(", ", tests.Select(t => t.Test.Replace("Trendo.", "") + (t.Ok ? "" : " ✗")))})");
                 Step(No() + " Das Spiel startet zur Probe" + (screenshot ? " und macht ein Bild …" : " …"));
                 var (_, glog) = await Task.Run(() => UnrealRun(UnrealGame.Editor(engine), UnrealGame.CheckArgs(uproject, Path.Combine(logs, "start.txt"), screenshot && !_opt.Isolated), Path.Combine(logs, "start.txt"), 900_000));
                 var (gok, gtext) = UnrealGame.ParseCheck(glog);
-                ok &= gok; lines.Add((gok ? "✓ Spiel läuft: " : "✗ Spiel: ") + gtext);
+                ok &= gok; lines.Add((gok ? "Spiel läuft: " : "Spiel: ") + gtext);
                 // Testspieler-Bot: der Startlauf hat das Spiel angespielt – Prüfpunkte mit Messwert; Auffälliges kommt als Aufgabe ins Board
                 var bot = Trendo.Core.Programs.GamePlaytest.Read(glog);
                 if (bot.Count > 0)
@@ -80,7 +80,7 @@ public partial class MainWindow
                 }
             }
         }
-        catch (Exception e) when (e is IOException or InvalidOperationException or System.ComponentModel.Win32Exception) { ok = false; lines.Add("✗ " + e.Message); }
+        catch (Exception e) when (e is IOException or InvalidOperationException or System.ComponentModel.Win32Exception) { ok = false; lines.Add("" + e.Message); }
         finally { UnrealBusy = false; }
         LastUnrealReport = (ok ? "Alles bereit – „Spielen“ startet dein 3D-Spiel." : "Nicht alles ging – Details unten.") + "\n" + string.Join("\n", lines);
         File.WriteAllText(Path.Combine(logs, "bericht.txt"), $"{DateTime.Now:yyyy-MM-dd HH:mm} {UnrealGame.WorldOf(d.Data)}\n{LastUnrealReport}\n");
@@ -102,24 +102,24 @@ public partial class MainWindow
             else { var (files, download) = NatureHttp(); got = await Task.Run(() => UnrealNature.Fetch(cache, files, download, t => step(t))); }
             var copied = Directory.Exists(cache) ? UnrealNature.CopyTo(cache, built) : 0;
             _core.Audit.Append(Principal.LocalOwner.Name, "game.unreal.assets", $"polyhaven cc0 neu={got} kopiert={copied}");
-            lines.Add($"✓ Fotomaterialien bereit (Poly Haven, CC0; {got} neu geladen, {copied} ins Projekt kopiert)");
+            lines.Add($"Fotomaterialien bereit (Poly Haven, CC0; {got} neu geladen, {copied} ins Projekt kopiert)");
         }
         catch (Exception e) when (e is HttpRequestException or IOException or TaskCanceledException or InvalidOperationException or System.Text.Json.JsonException)
         {
-            lines.Add("✗ Fotomaterialien nicht geladen: " + e.Message + " – das Spiel bleibt in der einfachen Open World."); skip(); return false;
+            lines.Add("Fotomaterialien nicht geladen: " + e.Message + " – das Spiel bleibt in der einfachen Open World."); skip(); return false;
         }
         // Tiere (freie, geriggte Modelle mit Lizenz) legt der Welt-Bau mit an – sie leben dann in der offenen Welt
         var animals = UnrealGame.CopyAnimals(_opt.Isolated ? Path.Combine(_core.DataRoot, "tiere") : UnrealGame.AnimalsDir(_deps.ToolsRoot), built);
         var packs = UnrealGame.CopyAnimalPacks(_opt.Isolated ? Path.Combine(_core.DataRoot, "tiere-pakete") : UnrealGame.AnimalPacksDir(_deps.ToolsRoot), built);
         var biome = "wald";
         try { biome = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(Path.Combine(built, "Content", "TrendoDaten", "level.json")))?["biome"]?.GetValue<string>() ?? biome; } catch (Exception e) when (e is IOException or System.Text.Json.JsonException or InvalidOperationException) { }
-        if (animals + packs > 0) lines.Add($"✓ Tiere bereit: {animals} Modell(e) und {packs} Tierpaket(e) – im Spiel nur die, die zur Landschaft „{biome}“ passen (Lizenz liegt dem Spiel bei)");
+        if (animals + packs > 0) lines.Add($"Tiere bereit: {animals} Modell(e) und {packs} Tierpaket(e) – im Spiel nur die, die zur Landschaft „{biome}“ passen (Lizenz liegt dem Spiel bei)");
         step("Unreal richtet die Welt ein (Boden, Pflanzen, Felsen, Tiere, Licht) … einige Minuten.");
         var (we, wlog) = await Task.Run(() => UnrealRun(UnrealGame.EditorCmd(engine), UnrealGame.WeltArgs(uproject, Path.Combine(logs, "welt.txt")), Path.Combine(logs, "welt.txt"), 1_800_000));
         var (wok, models, info) = UnrealGame.ParseWelt(wlog);
-        if (!wok) { lines.Add($"✗ Welt nicht eingerichtet (Exitcode {we}) – Protokoll welt.txt" + (info.LastOrDefault(l => l.StartsWith("Fehler")) is { } er ? ": " + er : "")); return false; }
+        if (!wok) { lines.Add($"Welt nicht eingerichtet (Exitcode {we}) – Protokoll welt.txt" + (info.LastOrDefault(l => l.StartsWith("Fehler")) is { } er ? ": " + er : "")); return false; }
         UnrealGame.UseWeltMap(built);
-        lines.Add($"✓ Welt eingerichtet: {models} Pflanzen- und Felsmodelle, " + (info.Any(l => l.StartsWith("Bodenmaterial")) ? "fotorealer Boden" : "Boden") + ", Karte " + UnrealGame.WeltMap);
+        lines.Add($"Welt eingerichtet: {models} Pflanzen- und Felsmodelle, " + (info.Any(l => l.StartsWith("Bodenmaterial")) ? "fotorealer Boden" : "Boden") + ", Karte " + UnrealGame.WeltMap);
         return true;
     }
 
@@ -135,7 +135,7 @@ public partial class MainWindow
         var (mok, info, err) = UnrealGame.ParseMensch(mlog);
         _core.Audit.Append(Principal.LocalOwner.Name, "game.unreal.mensch", mok ? "ok" : "fehler");
         var people = info.Where(l => l.Contains(" gebaut: ")).Select(l => l[..l.IndexOf(" gebaut: ")]).ToList();
-        lines.Add(mok ? $"✓ Echte Menschen (MetaHuman): {(people.Count > 0 ? string.Join(", ", people) : "Spielfigur")}"
+        lines.Add(mok ? $"Echte Menschen (MetaHuman): {(people.Count > 0 ? string.Join(", ", people) : "Spielfigur")}"
                       + (info.FirstOrDefault(l => l.StartsWith("Kleidung:")) is { } k ? " – " + k : "")
                       + string.Concat(info.Where(l => l.Contains(": nicht gebaut")).Select(l => " – " + l))
                       + (clothes == 0 ? " – eigene Kleidung: kostenloses MetaHuman-Outfit (.mhpkg) von Fab in den Ordner „" + (_opt.Isolated ? "kleidung" : UnrealGame.ClothesDir(_deps.ToolsRoot)) + "“ legen" : "")

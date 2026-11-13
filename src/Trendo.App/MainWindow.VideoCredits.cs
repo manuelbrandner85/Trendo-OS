@@ -45,7 +45,7 @@ public partial class MainWindow
         var r = await Task.Run(() => run(Credits.Args(t, txt, outFile)));
         if (!r.Ok || !File.Exists(outFile)) { _progMsg[VK] = "Abspann ging nicht: " + (r.Err.Trim().Split('\n').LastOrDefault() ?? ""); Show(VK); return null; }
         d.Edit("Abspann", x => { x["credits"] = text; VideoEdit.Add(x, VideoEdit.NewClip(outFile, seconds, true)); });
-        _progMsg[VK] = $"Abspann ({seconds:0} s) liegt am Ende der Zeitleiste. Schrift: {fc.Text}" + (fc.Light == "gelb" ? " ⚠ Vor der Veröffentlichung prüfen." : "");
+        _progMsg[VK] = $"Abspann ({seconds:0} s) liegt am Ende der Zeitleiste. Schrift: {fc.Text}" + (fc.Light == "gelb" ? " Vor der Veröffentlichung prüfen." : "");
         Show(VK);
         return outFile;
     }

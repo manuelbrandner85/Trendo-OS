@@ -25,7 +25,7 @@ public partial class MainWindow
         var direct = spec.Ribbon.SelectMany(g => g.Item2).OrderBy(c => c.Primary ? 0 : 1).Select(c => "prog-cmd-" + c.Name).Where(shown.Contains).Take(SimpleCommands).ToHashSet();
         direct.Add("prog-save"); direct.Add("prog-undo");
         var keep = groups.SelectMany(g => g.Items).Where(i => direct.Contains(i.Name ?? "")).ToList();
-        var more = new Button { Name = "prog-more", Content = "Mehr ▾", FontSize = 12.5, Padding = new Thickness(12, 6), CornerRadius = new CornerRadius(8), Background = Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(1), Foreground = Text };
+        var more = new Button { Name = "prog-more", Content = "Mehr", FontSize = 12.5, Padding = new Thickness(12, 6), CornerRadius = new CornerRadius(8), Background = Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(1), Foreground = Text };
         ToolTip.SetTip(more, "Alle weiteren Befehle");
         var list = new StackPanel { Name = "prog-more-list", Width = 360, Spacing = 8 };
         foreach (var (name, items) in groups)
@@ -88,7 +88,7 @@ public partial class MainWindow
     {
         if (!IsSimple || right.Children.Count == 0) return;
         var extras = right.Children.ToList();
-        var more = new Button { Name = "page-head-more", Content = "Mehr ▾", FontSize = 12, Padding = new Thickness(9, 2), CornerRadius = new CornerRadius(10), Background = Brush.Parse("#22FFFFFF"), Foreground = Text, BorderThickness = new Thickness(0) };
+        var more = new Button { Name = "page-head-more", Content = "Mehr", FontSize = 12, Padding = new Thickness(9, 2), CornerRadius = new CornerRadius(10), Background = Brush.Parse("#22FFFFFF"), Foreground = Text, BorderThickness = new Thickness(0) };
         var list = new StackPanel { Spacing = 6, MaxWidth = 340 };
         foreach (var c in extras) { right.Children.Remove(c); list.Children.Add(c); }
         more.Flyout = new Flyout { Content = list };

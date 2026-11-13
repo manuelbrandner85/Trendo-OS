@@ -59,7 +59,7 @@ public partial class MainWindow
             if (!r.Ok || !File.Exists(outFile)) { MpSay("Mastern ging nicht: " + Short(r.Err)); return null; }
             var v = await MpAddVersion(s, outFile, $"Master {st.Label}, {t.Lufs:0} LUFS" + (eq is { Length: > 0 } ? " nach Referenz" : ""));
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.master.pro", $"{st.Id} {t.Id} ref={(eq is null ? "nein" : "ja")}");
-            MpSay(v is null ? "Mastern ging nicht." : $"✓ Gemastert ({st.Label}, Ziel {t.Label} {t.Lufs:0} LUFS{(eq is { Length: > 0 } ? ", Klang an die Referenz angeglichen" : "")}).");
+            MpSay(v is null ? "Mastern ging nicht." : $"Gemastert ({st.Label}, Ziel {t.Label} {t.Lufs:0} LUFS{(eq is { Length: > 0 } ? ", Klang an die Referenz angeglichen" : "")}).");
             return v;
         }
         finally { _mpBusy = false; if (CurrentView == MS) Show(MS); }
@@ -94,7 +94,7 @@ public partial class MainWindow
             var label = $"Üben {tempo * 100:0} %" + (semitones != 0 ? $", {(semitones > 0 ? "+" : "")}{semitones} Halbtöne" : "") + (click ? ", mit Klick" : "");
             var v = await MpAddVersion(s, outFile, label);
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.ueben", label);
-            MpSay(v is null ? "Ging nicht." : $"✓ Übe-Fassung „{label}“ ist fertig." + quality + (check.Light == "gelb" ? " ⚠ " + check.Text : ""));
+            MpSay(v is null ? "Ging nicht." : $"Übe-Fassung „{label}“ ist fertig." + quality + (check.Light == "gelb" ? "" + check.Text : ""));
             return v;
         }
         finally { _mpBusy = false; if (CurrentView == MS) Show(MS); }
@@ -114,7 +114,7 @@ public partial class MainWindow
         var bytes = MusicPro.Midi(notes, an.Chords, an.Bpm, int.TryParse(an.MeterValue, out var m) ? m : 4, an.Duration);
         var file = Path.Combine(WorkFolder("Musik"), DevStudio.SafeName(s.Title) + ".mid"); await File.WriteAllBytesAsync(file, bytes);
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.midi", Path.GetFileName(file));
-        MpSay($"✓ MIDI gespeichert: {Path.GetFileName(file)} – {notes.Count} Noten, {an.Chords.Count} Akkorde (zum Weiterbearbeiten in jedem Notenprogramm).");
+        MpSay($"MIDI gespeichert: {Path.GetFileName(file)} – {notes.Count} Noten, {an.Chords.Count} Akkorde (zum Weiterbearbeiten in jedem Notenprogramm).");
         return file;
     }
 
@@ -128,7 +128,7 @@ public partial class MainWindow
             var loop = MusicPro.MakeLoop(a, bpm, bpb, bars);
             var f = Path.Combine(Path.GetDirectoryName(s.File)!, $".trendo-loop-{Guid.NewGuid():N}.wav"); AudioFile.WriteWav(loop, f, 24);
             var v = await MpAddVersion(s, f, $"Loop {bars} Takte ({bpm:0} BPM)");
-            MpSay(v is null ? "Ging nicht." : $"✓ Loop mit {bars} Takten – läuft ohne Knacken endlos weiter.");
+            MpSay(v is null ? "Ging nicht." : $"Loop mit {bars} Takten – läuft ohne Knacken endlos weiter.");
             return v;
         }
         catch (InvalidOperationException e) { MpSay(e.Message); return null; }
@@ -150,7 +150,7 @@ public partial class MainWindow
             var r = await MasterRun(ff, MusicPro.HookArgs(s.File, cover, file, start, seconds, s.Title));
             if (!r.Ok || !File.Exists(file)) { MpSay("Kurzclip ging nicht: " + Short(r.Err)); return null; }
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.kurzclip", Path.GetFileName(file));
-            MpSay($"✓ Kurzclip ({seconds:0} s ab {CoverStudio.Time(start)}) gespeichert: {Path.GetFileName(file)}");
+            MpSay($"Kurzclip ({seconds:0} s ab {CoverStudio.Time(start)}) gespeichert: {Path.GetFileName(file)}");
             return file;
         }
         finally { _mpBusy = false; if (CurrentView == MS) Show(MS); }
@@ -168,7 +168,7 @@ public partial class MainWindow
         var refBox = new TextBox { Name = "mp-ref-file", Text = _mpRefFile, PlaceholderText = "Referenz-Lied (WAV/MP3), optional" };
         refBox.TextChanged += (_, _) => _mpRefFile = (refBox.Text ?? "").Trim().Trim('"');
         sp.Children.Add(new StackPanel { Spacing = 4, Children = { H("Mastern wie im Studio", 13), P("Stil und Ziel je Plattform – mit Referenz klingt dein Lied wie ein Lied, das du magst (Klangbild, nicht die Musik).", Muted, 11.5), style, target, refBox,
-            B("mp-master", "🎚 Mastern (neue Fassung)", () => MsMasterPro(s.Id, _mpStyle, _mpTarget, _mpRefFile.Length > 0 ? _mpRefFile : null), true) } });
+            B("mp-master", "Mastern (neue Fassung)", () => MsMasterPro(s.Id, _mpStyle, _mpTarget, _mpRefFile.Length > 0 ? _mpRefFile : null), true) } });
 
         // Üben
         var tempo = new Slider { Name = "mp-tempo", Minimum = 0.5, Maximum = 1.5, Value = _mpTempo, Width = 200 };
@@ -184,9 +184,9 @@ public partial class MainWindow
 
         // Weitergeben
         sp.Children.Add(new StackPanel { Spacing = 4, Children = { H("Weitergeben", 13),
-            new WrapPanel { Children = { B("mp-midi", "🎹 MIDI (Melodie + Akkorde)", async () => { await MsMidi(s.Id); }), new Border { Width = 6 },
-                B("mp-loop-4", "🔁 Loop 4 Takte", async () => { await MsLoop(s.Id, 4); }), new Border { Width = 6 }, B("mp-loop-8", "Loop 8 Takte", async () => { await MsLoop(s.Id, 8); }) } },
-            new WrapPanel { Children = { B("mp-hook-15", "📱 Kurzclip 15 s", async () => { await MsHookClip(s.Id, 15); }), new Border { Width = 6 }, B("mp-hook-30", "Kurzclip 30 s", async () => { await MsHookClip(s.Id, 30); }) } },
+            new WrapPanel { Children = { B("mp-midi", "MIDI (Melodie + Akkorde)", async () => { await MsMidi(s.Id); }), new Border { Width = 6 },
+                B("mp-loop-4", "Loop 4 Takte", async () => { await MsLoop(s.Id, 4); }), new Border { Width = 6 }, B("mp-loop-8", "Loop 8 Takte", async () => { await MsLoop(s.Id, 8); }) } },
+            new WrapPanel { Children = { B("mp-hook-15", "Kurzclip 15 s", async () => { await MsHookClip(s.Id, 15); }), new Border { Width = 6 }, B("mp-hook-30", "Kurzclip 30 s", async () => { await MsHookClip(s.Id, 30); }) } },
             P("Kurzclip: Hochkant-Video aus dem stärksten Teil (meist der Refrain) mit Titelbild und Wellenform – für Reels, Shorts, Status.", Muted, 11) } });
         if (_mpMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "mp-msg", Text = _mpMsg, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap });
         return sp;
@@ -199,7 +199,7 @@ public partial class MainWindow
         sp.Children.Add(H("Klang wie …", 13));
         sp.Children.Add(P("Neues Lied klingt wie eine Datei oder eines deiner Lieder (Klang und Stimmung, keine Melodie).", Muted, 11));
         var mine = Songs.All().Where(x => File.Exists(x.File) && x.Kind is not ("gesang" or "begleitung")).Take(30).ToList();
-        var pick = new ComboBox { Name = "ms-ref-song", ItemsSource = new[] { "– keine Referenz –" }.Concat(mine.Select(x => "🎵 " + x.Title)).ToList(), MinWidth = 220,
+        var pick = new ComboBox { Name = "ms-ref-song", ItemsSource = new[] { "– keine Referenz –" }.Concat(mine.Select(x => "" + x.Title)).ToList(), MinWidth = 220,
             SelectedIndex = _msRefFile is null ? 0 : Math.Max(0, mine.FindIndex(x => x.File == _msRefFile) + 1) };
         pick.SelectionChanged += (_, _) => { _msRefFile = pick.SelectedIndex <= 0 ? null : mine[pick.SelectedIndex - 1].File; };
         var file = new TextBox { Name = "ms-ref-file", PlaceholderText = "… oder eigene Tondatei (WAV/MP3)", Text = _msRefFile is { } r && mine.All(x => x.File != r) ? r : "" };
@@ -229,7 +229,7 @@ public partial class MainWindow
         _msLyrics = MusicPro.PlanLyrics(parts, existing);
         var bpm = int.TryParse(_msBpm, out var bp) ? bp : 110; var sec = MusicPro.PlanSeconds(parts, bpm, _msTime is { Length: > 0 } t && int.TryParse(t, out var bb) ? bb : 4);
         _msPro = true; _msPlanText = text;
-        _msMsg = $"✓ Gerüst mit {parts.Count} Teilen – etwa {CoverStudio.Time(sec)} bei {bpm} BPM. Texte unter den Marken eintragen.";
+        _msMsg = $"Gerüst mit {parts.Count} Teilen – etwa {CoverStudio.Time(sec)} bei {bpm} BPM. Texte unter den Marken eintragen.";
         Show(MS); return _msLyrics;
     }
 }

@@ -28,6 +28,6 @@ public class MailPlus_Ui
         q = w.Find<TextBox>("inbox-search"); q.Text = "";
         q.RaiseEvent(new Avalonia.Input.KeyEventArgs { RoutedEvent = Avalonia.Input.InputElement.KeyUpEvent, Key = Avalonia.Input.Key.Back }); Settle();
         w.Find<Button>("inbox-folder-merker").Press(); Settle();
-        Assert.Equal(["⭐ Ihre Rechnung"], Subjects(w));
+        Assert.Equal(["Ihre Rechnung"], Subjects(w));
     }
 }

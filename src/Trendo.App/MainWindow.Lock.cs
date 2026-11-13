@@ -154,7 +154,7 @@ public partial class MainWindow
             }
             case "neu":
             {
-                col.Children.Add(P("✓ Bestätigt. Wähle jetzt " + (pin ? "eine neue PIN." : "ein neues Passwort."), Brush.Parse("#4ADE80"), 13));
+                col.Children.Add(P("Bestätigt. Wähle jetzt " + (pin ? "eine neue PIN." : "ein neues Passwort."), Brush.Parse("#4ADE80"), 13));
                 var a = new TextBox { Name = "lock-new1", PasswordChar = '•', PlaceholderText = pin ? "Neue PIN" : "Neues Passwort", Width = 240, HorizontalAlignment = HorizontalAlignment.Center, Text = _lockNew1 };
                 var b = new TextBox { Name = "lock-new2", PasswordChar = '•', PlaceholderText = "Wiederholen", Width = 240, HorizontalAlignment = HorizontalAlignment.Center, Text = _lockNew2 };
                 a.TextChanged += (_, _) => _lockNew1 = a.Text ?? ""; b.TextChanged += (_, _) => _lockNew2 = b.Text ?? "";
@@ -237,7 +237,7 @@ public partial class MainWindow
             {
                 var reset = new Button { Name = "person-reset-" + id, Content = "Anmeldung zurücksetzen" };
                 ToolTip.SetTip(reset, "Für vergessene PINs: Die Person meldet sich danach ohne PIN an und wählt eine neue.");
-                reset.Click += (_, _) => { new ProfileLock(store.RootOf(id)).Set(ProfileLock.Kind.None); _core.Audit.Append(Principal.LocalOwner.Name, "person.lock.reset", id); _personMsg = $"✓ Die Anmeldung von {nm} ist zurückgesetzt."; Show("personen"); };
+                reset.Click += (_, _) => { new ProfileLock(store.RootOf(id)).Set(ProfileLock.Kind.None); _core.Audit.Append(Principal.LocalOwner.Name, "person.lock.reset", id); _personMsg = $"Die Anmeldung von {nm} ist zurückgesetzt."; Show("personen"); };
                 actions.Children.Add(Sp(reset));
                 actions.Children.Add(Sp(ConfirmRemoveButton("person:" + id, "person-remove-" + id, "personen", () => { store.Remove(id, _core.Audit); _personMsg = $"{nm} ist nicht mehr in der Liste. Die Daten bleiben im Ordner erhalten."; return Task.CompletedTask; })));
             }
@@ -258,7 +258,7 @@ public partial class MainWindow
             go.Click += (_, _) =>
             {
                 _personName = name.Text ?? ""; _personChild = child.IsChecked == true;
-                try { var p = store.Add(_personName, "emoji:" + AvatarEmojis[(store.All().Count + 1) % AvatarEmojis.Length], _personChild, _core.Audit); _personMsg = $"✓ {p.Name} ist angelegt."; _personName = ""; _personChild = false; }
+                try { var p = store.Add(_personName, "emoji:" + AvatarEmojis[(store.All().Count + 1) % AvatarEmojis.Length], _personChild, _core.Audit); _personMsg = $"{p.Name} ist angelegt."; _personName = ""; _personChild = false; }
                 catch (ArgumentException e) { _personMsg = e.Message; }
                 Show("personen");
             };

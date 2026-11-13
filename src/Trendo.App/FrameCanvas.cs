@@ -236,11 +236,11 @@ public sealed class FrameCanvas : Control
             if (double.TryParse(_typed, NumberStyles.Float, CultureInfo.GetCultureInfo("de-DE"), out var len) && len > 0) { var dx = end.X - c.X; var dy = end.Y - c.Y; var l = Math.Max(1e-6, Math.Sqrt(dx * dx + dy * dy)); end = (c.X + dx / l * len, c.Y + dy / l * len); }
             ctx.DrawLine(new Pen(B("#F5A524"), 4, new DashStyle([3, 2], 0)), ScreenM(c.X, c.Y), ScreenM(end.X, end.Y));
             var ll = Math.Sqrt((end.X - c.X) * (end.X - c.X) + (end.Y - c.Y) * (end.Y - c.Y)); var ang = Math.Atan2(end.Y - c.Y, end.X - c.X) * 180 / Math.PI;
-            Label(ctx, $"{ll:0.00} m · {ang:0}°{(_typed.Length > 0 ? "  ⌨ " + _typed : "")}", ScreenM(end.X, end.Y) + new Point(12, 10), "#1C1C1C", "#F5A524");
+            Label(ctx, $"{ll:0.00} m · {ang:0}°{(_typed.Length > 0 ? "" + _typed : "")}", ScreenM(end.X, end.Y) + new Point(12, 10), "#1C1C1C", "#F5A524");
         }
         if (_moved) { var sp = ScreenM(_snap.X, _snap.Y); var pen = new Pen(B("#F5A524"), 1.2); if (_snapped) ctx.DrawRectangle(null, pen, new Rect(sp.X - 6, sp.Y - 6, 12, 12)); else ctx.DrawEllipse(null, pen, sp, 3, 3); }
         Label(ctx, $"x {_snap.X:0.00} m · y {_snap.Y:0.00} m", new Point(10, size.Height - 24), "#C9D6EA", "#AA1C1C1C");
-        var hint = _error is { } err ? "⚠ " + err : _s.Hint.Length > 0 ? _s.Hint : ToolHint();
+        var hint = _error is { } err ? "" + err : _s.Hint.Length > 0 ? _s.Hint : ToolHint();
         if (hint.Length > 0) Label(ctx, hint, new Point(10, 10), _error is null ? "#F2F6FC" : "#FFFFFF", _error is null ? "#CC2C2C2C" : "#DDB91C1C");
         if (model.Members.Count == 0 && _s.Tool == "auswahl")
         {

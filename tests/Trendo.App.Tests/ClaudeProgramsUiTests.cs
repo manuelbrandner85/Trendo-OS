@@ -128,7 +128,7 @@ public class ClaudePrograms_Ui
             Assert.Contains("Vorschläge:", Arg(calls[0], "--append-system-prompt"));
             Assert.DoesNotContain("Vorschläge:", string.Join("|", w.GetLogicalTexts()));
             Assert.Equal("Farben anpassen", w.Find<Button>("claude-chat-suggest-1").Content);
-            w.OpenPalette("kontakt"); Assert.Contains(w.PaletteResults, r => r.Label == "💡 Kontaktformular ergänzen"); w.ClosePalette();
+            w.OpenPalette("kontakt"); Assert.Contains(w.PaletteResults, r => r.Label == "Kontaktformular ergänzen"); w.ClosePalette();
             w.Find<Button>("claude-chat-suggest-0").Press(); while (calls.Count < 2 || w.ClaudeChatRunning()) await Run(Task.Delay(20));
             Assert.StartsWith("Kontaktformular ergänzen", calls[1][1]);
 
@@ -178,17 +178,17 @@ public class ClaudePrograms_Ui
             var chat = w.ClaudeChatCurrent()!;
             w.ClaudeDockToggle("CORE-07"); // zu
             w.Show("dev");
-            Assert.StartsWith("↻ Weiter: Baue eine Startseite", (string)w.Find<Button>("auftrag-claude-weiter").Content!);
+            Assert.StartsWith("Weiter: Baue eine Startseite", (string)w.Find<Button>("auftrag-claude-weiter").Content!);
 
             w.Key(Avalonia.Input.PhysicalKey.K, Avalonia.Input.RawInputModifiers.Control);
             Assert.True(w.CommandPaletteOpen);
             w.OpenPalette("Mach den Kopf blau");
-            Assert.Equal("✳ Claude: „Mach den Kopf blau“", w.PaletteResults[0].Label);
+            Assert.Equal("Claude: „Mach den Kopf blau“", w.PaletteResults[0].Label);
             w.ClosePalette();
 
             w.Show("tabelle"); // anderes Studio
             w.OpenPalette("weiter bäckerei");
-            Assert.Contains(w.PaletteResults, r => r.Label == "↻ Weiter: " + chat.Title && r.Kind.StartsWith("Claude-Projekt"));
+            Assert.Contains(w.PaletteResults, r => r.Label == "Weiter: " + chat.Title && r.Kind.StartsWith("Claude-Projekt"));
             w.ClosePalette();
             w.ClaudeContinue("CORE-07", chat.Id);
             Assert.Equal("dev", w.CurrentView); Assert.Equal(chat.Id, w.ClaudeChatCurrent()!.Id);

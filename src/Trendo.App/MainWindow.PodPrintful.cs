@@ -242,7 +242,7 @@ public partial class MainWindow
             sp.Children.Add(PodKeyRow(PodBtn("pod-pf-get", "Schlüssel bei Printful holen", () => { Launch(PrintfulClient.TokenPage); return Task.CompletedTask; }), token, PodBtn("pod-pf-connect", "Verbinden", () => PodPrintfulConnect(token.Text ?? ""), true)));
             return sp;
         }
-        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { new TextBlock { Name = "pod-pf-state", Text = "✓ Printful verbunden", Foreground = Brush.Parse("#3DDC84"), FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, PodBtn("pod-pf-load", _pfCatalog.Count == 0 ? "Katalog laden" : "Katalog neu laden", PodLoadCatalog), PodBtn("pod-pf-off", "Trennen", () => { PodPrintfulDisconnect(); return Task.CompletedTask; }) } });
+        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { new TextBlock { Name = "pod-pf-state", Text = "Printful verbunden", Foreground = Brush.Parse("#3DDC84"), FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, PodBtn("pod-pf-load", _pfCatalog.Count == 0 ? "Katalog laden" : "Katalog neu laden", PodLoadCatalog), PodBtn("pod-pf-off", "Trennen", () => { PodPrintfulDisconnect(); return Task.CompletedTask; }) } });
 
         if (!PodNetlifyOn)
         {

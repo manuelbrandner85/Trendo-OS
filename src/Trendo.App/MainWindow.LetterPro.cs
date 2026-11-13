@@ -165,7 +165,7 @@ public partial class MainWindow
                 var skipped = new List<string>(); var list = Letters.SerialFromContacts(d, GroupContacts(), skipped);
                 if (list.Count == 0) throw new ArgumentException("In dieser Gruppe hat niemand eine vollständige Anschrift (Straße und Ort).");
                 _letterSerial = list; _letterSerialIdx = 0;
-                _letterMsg = $"{list.Count} Briefe – mit ◀ ▶ über der Vorschau durchblättern." + (skipped.Count > 0 ? $" Ohne Anschrift übersprungen: {string.Join(", ", skipped)}." : ""); Show(V);
+                _letterMsg = $"{list.Count} Briefe – mit über der Vorschau durchblättern." + (skipped.Count > 0 ? $" Ohne Anschrift übersprungen: {string.Join(", ", skipped)}." : ""); Show(V);
             })), B("letter-serial-group-run", "Alle als DOCX speichern", () => LetterTry(() =>
             {
                 var list = _letterSerial ?? Letters.SerialFromContacts(d, GroupContacts());
@@ -195,7 +195,7 @@ public partial class MainWindow
         Button B(string name, string label, Action go, bool accent = false) { var b = new Button { Name = name, Content = label, FontSize = 12, Padding = new Thickness(10, 4), Margin = new Thickness(0, 0, 6, 6), Background = accent ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(1) }; b.Click += (_, _) => go(); return b; }
         var padBox = SignaturePad("letter-sig", V, f =>
         {
-            d.SignatureFile = f; _letterMsg = "✓ Gezeichnete Unterschrift steht unter dem Gruß."; Show(V);
+            d.SignatureFile = f; _letterMsg = "Gezeichnete Unterschrift steht unter dem Gruß."; Show(V);
         }, m => LetterTry(() => throw new ArgumentException(m)));
         var sig = new TextBox { Name = "letter-signature", Text = _settings.LetterSignature, PlaceholderText = "… oder Bild deiner Unterschrift (PNG oder JPG)", MinWidth = 260, Margin = new Thickness(0, 0, 6, 6) };
         var set = B("letter-signature-set", "Bild übernehmen", () => LetterTry(() =>
@@ -209,7 +209,7 @@ public partial class MainWindow
             new TextBlock { Text = "Unterschrift", Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold },
             P("Mit Maus, Stift oder Finger unterschreiben – sie kommt unter den Gruß. Das ist keine qualifizierte elektronische Signatur.", null, 11),
             padBox, new WrapPanel { Children = { sig, set, off } } } };
-        if (File.Exists(d.SignatureFile)) sp.Children.Add(P("✓ Im Brief: " + System.IO.Path.GetFileName(d.SignatureFile), Brush.Parse("#4ADE80"), 11));
+        if (File.Exists(d.SignatureFile)) sp.Children.Add(P("Im Brief: " + System.IO.Path.GetFileName(d.SignatureFile), Brush.Parse("#4ADE80"), 11));
         return new Border { Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(10, 8), Margin = new Thickness(0, 6, 0, 0), Child = sp };
     }
 
@@ -239,7 +239,7 @@ public partial class MainWindow
         };
         canvas.PointerReleased += (_, e) => { cur = null; curLine = null; e.Pointer.Capture(null); };
         var pad = new Border { CornerRadius = new CornerRadius(8), BorderBrush = Edge, BorderThickness = new Thickness(1), ClipToBounds = true, HorizontalAlignment = HorizontalAlignment.Left, Child = canvas };
-        var use = B(prefix + "-use", width < 300 ? "✍ Übernehmen" : "✍ Gezeichnete Unterschrift übernehmen", () =>
+        var use = B(prefix + "-use", width < 300 ? "Übernehmen" : "Gezeichnete Unterschrift übernehmen", () =>
         {
             var png = LetterSignature.ToPng(_sigStrokes.Select(x => (IReadOnlyList<(double, double)>)x.Select(p => (p.X, p.Y)).ToList()).ToList());
             if (png is null) { error("Bitte erst im weißen Feld unterschreiben."); return; }
@@ -288,7 +288,7 @@ public partial class MainWindow
             var found = sp.CheckText(d.Subject).Select(m => (Field: subject, m)).Concat(sp.CheckText(d.Body).Select(m => (Field: body, m))).ToList();
             var bad = found.Select(f => f.m.Word).ToHashSet(StringComparer.Ordinal);
             var changed = !bad.SetEquals(_letterSpellBad); _letterSpellBad = bad;
-            if (found.Count == 0) bar.Children.Add(new TextBlock { Name = "letter-spell-ok", Text = "✓ Rechtschreibung: keine unbekannten Wörter", Foreground = Brush.Parse("#4ADE80"), FontSize = 11.5 });
+            if (found.Count == 0) bar.Children.Add(new TextBlock { Name = "letter-spell-ok", Text = "Rechtschreibung: keine unbekannten Wörter", Foreground = Brush.Parse("#4ADE80"), FontSize = 11.5 });
             else bar.Children.Add(new TextBlock { Text = $"Rechtschreibung – {found.Count} unbekannt:", Foreground = Brush.Parse("#F87171"), FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 4) });
             var i = 0;
             foreach (var (field, m) in found.DistinctBy(f => f.m.Word).Take(8))
@@ -363,7 +363,7 @@ public partial class MainWindow
             for (var i = 0; i < steps.Length; i++)
             {
                 var done = steps[i].Done();
-                buttons[i].Content = (done ? "✓ " : $"{i + 1} ") + steps[i].Label;
+                buttons[i].Content = (done ? "" : $"{i + 1} ") + steps[i].Label;
                 buttons[i].Background = i == current ? Accent : done ? Brush.Parse(C("#3322B35E", "#3322B35E")) : Brushes.Transparent;
             }
         }

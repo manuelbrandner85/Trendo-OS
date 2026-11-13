@@ -15,7 +15,7 @@ public partial class MainWindow
     public string? MsTakeTaste(int? seed = null)
     {
         var prof = MusicTaste.Profile(Songs.Visible());
-        if (prof.Count == 0) { _msMsg = "Markiere mindestens zwei Lieder mit ★ – daraus lernt Trendo deinen Geschmack (bleibt auf deinem PC)."; Show(MS); return null; }
+        if (prof.Count == 0) { _msMsg = "Markiere mindestens zwei Lieder mit – daraus lernt Trendo deinen Geschmack (bleibt auf deinem PC)."; Show(MS); return null; }
         var idea = MusicTaste.Suggest(prof, seed ?? _msTasteSeed++);
         if (_msPro) _msStyle = idea; else _msDesc = idea;
         _msMsg = "Vorschlag aus deinem Geschmack – anpassen oder gleich „Erstellen“."; Show(MS);
@@ -28,8 +28,8 @@ public partial class MainWindow
         var sp = new StackPanel { Spacing = 4 };
         var go = new Button { Name = "ms-taste-go", Content = "Lied in meinem Geschmack", FontSize = 11.5, Padding = new Thickness(10, 3), CornerRadius = new CornerRadius(12), BorderThickness = new Thickness(0), Background = Brush.Parse("#33D4AF37"), IsEnabled = prof.Count > 0 };
         go.Click += (_, _) => MsTakeTaste();
-        sp.Children.Add(new DockPanel { Children = { Dk(go, Avalonia.Controls.Dock.Right), new TextBlock { Text = "🎧 MEIN GESCHMACK", Foreground = Muted, FontSize = 10, FontWeight = FontWeight.Bold, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center } } });
-        if (prof.Count == 0) sp.Children.Add(P("Markiere Lieder mit ★ – Trendo lernt daraus, was dir gefällt. Nur auf deinem PC, nichts wird gesendet.", Muted, 11));
+        sp.Children.Add(new DockPanel { Children = { Dk(go, Avalonia.Controls.Dock.Right), new TextBlock { Text = "MEIN GESCHMACK", Foreground = Muted, FontSize = 10, FontWeight = FontWeight.Bold, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center } } });
+        if (prof.Count == 0) sp.Children.Add(P("Markiere Lieder mit – Trendo lernt daraus, was dir gefällt. Nur auf deinem PC, nichts wird gesendet.", Muted, 11));
         else
         {
             var chips = new WrapPanel { Name = "ms-taste-words" };

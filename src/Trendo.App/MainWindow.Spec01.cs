@@ -58,7 +58,7 @@ public partial class MainWindow
                 new ProgramCmd("arch-dims", "Maße", _ => ArchState.Dims = !ArchState.Dims, false, "Wandmaße zeigen/ausblenden"),
             ]),
             ("Prüfen", [
-                new ProgramCmd("arch-check", "Plan prüfen", d => { _archIssues = FloorPlan.From(d.Data).Check(); _progMsg[AK] = _archIssues.Count == 0 ? "✓ Keine Probleme gefunden: alle Räume mit Tür, genug Fensterfläche, nichts steht im Weg." : $"{_archIssues.Count} Hinweis(e) – rechts unter „Prüfung“."; }, true),
+                new ProgramCmd("arch-check", "Plan prüfen", d => { _archIssues = FloorPlan.From(d.Data).Check(); _progMsg[AK] = _archIssues.Count == 0 ? "Keine Probleme gefunden: alle Räume mit Tür, genug Fensterfläche, nichts steht im Weg." : $"{_archIssues.Count} Hinweis(e) – rechts unter „Prüfung“."; }, true),
             ]),
             ("BIM", [
                 new ProgramCmd("arch-ifc-setup", "IFC einrichten", d => _ = ArchIfcSetup(), false, "Einmalig IfcOpenShell einrichten (kostenlos, LGPL-3.0) – danach Export „IFC (BIM)“ für Architekten- und CAD-Programme", Level: 2),
@@ -290,7 +290,7 @@ public partial class MainWindow
                 sp.Children.Add(P(st.Verdict, null, 11));
             }
             sp.Children.Add(new WrapPanel { Children = {
-                Act2("arch-rotate", "↻ 90°", () => ArchEdit("Drehen", pl => { var x = pl.Items.First(y => y.Id == sel); x.Rot = (x.Rot + 90) % 360; })),
+                Act2("arch-rotate", "90°", () => ArchEdit("Drehen", pl => { var x = pl.Items.First(y => y.Id == sel); x.Rot = (x.Rot + 90) % 360; })),
                 Act2("arch-mirror", it.Mirror ? "Spiegeln ⇄ (an)" : "Spiegeln ⇄", () => ArchEdit("Spiegeln", pl => { var x = pl.Items.First(y => y.Id == sel); x.Mirror = !x.Mirror; })),
                 Act2("arch-dup", "Duplizieren", () => ArchEdit("Duplizieren", pl => { var x = pl.Items.First(y => y.Id == sel); var c = new Item { Type = x.Type, Name = x.Name, X = x.X + 30, Y = x.Y + 30, W = x.W, D = x.D, Rot = x.Rot }; pl.Items.Add(c); ArchState.Selected = c.Id; })),
                 Act2("arch-del", "Löschen", () => { ArchState.Selected = null; ArchEdit("Möbel löschen", pl => pl.Remove(sel)); }) } });
@@ -386,7 +386,7 @@ public partial class MainWindow
             sp.Children.Add(H("Vorlage-Bild", 12));
             if (p.Background is { } bgi)
             {
-                sp.Children.Add(P((FloorPlanView.Image(bgi.Path) is null ? "⚠ Datei fehlt: " : "") + Path.GetFileName(bgi.Path) + $" · {bgi.PxW * bgi.CmPerPx / 100:0.00} × {bgi.PxH * bgi.CmPerPx / 100:0.00} m", null, 11));
+                sp.Children.Add(P((FloorPlanView.Image(bgi.Path) is null ? "Datei fehlt: " : "") + Path.GetFileName(bgi.Path) + $" · {bgi.PxW * bgi.CmPerPx / 100:0.00} × {bgi.PxH * bgi.CmPerPx / 100:0.00} m", null, 11));
                 sp.Children.Add(new WrapPanel { Children = {
                     Act2("arch-cal", "Maßstab festlegen", () => { ArchState.CalA = ArchState.CalB = null; ArchTool("kalib"); }),
                     Act2("arch-bg-toggle", bgi.Visible ? "Ausblenden" : "Einblenden", () => ArchEdit("Vorlage-Bild zeigen", pl => pl.Background!.Visible = !pl.Background!.Visible)),
@@ -412,7 +412,7 @@ public partial class MainWindow
             {
                 var target = i.TargetId;
                 var b = new Button { Name = $"arch-issue-{k++}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Background = Brush.Parse(i.Level == "fehler" ? "#33EF4444" : i.Level == "warnung" ? "#33F5A524" : "#227FD3FF"), Padding = new Thickness(8, 4), Margin = new Thickness(0, 0, 0, 3),
-                    Content = new TextBlock { Text = (i.Level == "fehler" ? "✕ " : i.Level == "warnung" ? "⚠ " : "ℹ ") + i.Message, Foreground = Text, FontSize = 11.5, TextWrapping = TextWrapping.Wrap } };
+                    Content = new TextBlock { Text = (i.Level == "fehler" ? "" : i.Level == "warnung" ? "" : "ℹ ") + i.Message, Foreground = Text, FontSize = 11.5, TextWrapping = TextWrapping.Wrap } };
                 b.Click += (_, _) => { ArchState.Tool = "auswahl"; ArchSelect(target); };
                 box.Children.Add(b);
             }

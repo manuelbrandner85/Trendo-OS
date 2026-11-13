@@ -6,25 +6,31 @@
         <FluentTheme />
         <!-- Code-Editor (AvaloniaEdit, MIT) -->
         <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
-        <!-- Vorgabe 27.10.2026: hochwertig statt flach – Knöpfe heben sich beim Überfahren leicht an, Eingabefelder mit runden Ecken -->
-        <Style Selector="Button">
-            <Setter Property="Transitions">
-                <Transitions>
-                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.12" />
-                </Transitions>
-            </Setter>
-        </Style>
-        <Style Selector="Button:pointerover">
-            <Setter Property="RenderTransform" Value="translateY(-1px)" />
-        </Style>
-        <Style Selector="Button:pressed">
-            <Setter Property="RenderTransform" Value="scale(0.98)" />
+        <!-- Vorgabe 13.11.2026 „nicht KI-generiert“: eine Schriftfamilie, ruhige Bedienelemente ohne Anheben oder Hüpfen -->
+        <Style Selector="Window">
+            <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI, Inter, Noto Sans, sans-serif" />
         </Style>
         <Style Selector="TextBox">
-            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="CornerRadius" Value="4" />
         </Style>
         <Style Selector="ComboBox">
-            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="CornerRadius" Value="4" />
+        </Style>
+        <Style Selector="Button">
+            <Setter Property="CornerRadius" Value="4" />
+        </Style>
+        <!-- P4 Dichte „Kompakt“: weniger Innenabstand wie in Explorer oder Outlook -->
+        <Style Selector="Window.kompakt Button">
+            <Setter Property="Padding" Value="8,3" />
+            <Setter Property="MinHeight" Value="26" />
+        </Style>
+        <Style Selector="Window.kompakt TextBox">
+            <Setter Property="Padding" Value="6,3" />
+            <Setter Property="MinHeight" Value="26" />
+        </Style>
+        <Style Selector="Window.kompakt ComboBox">
+            <Setter Property="Padding" Value="6,2" />
+            <Setter Property="MinHeight" Value="26" />
         </Style>
     </Application.Styles>
 </Application>

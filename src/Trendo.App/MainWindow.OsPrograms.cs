@@ -30,13 +30,13 @@ public sealed partial class MainWindow
     /// <summary>Tastenkürzel wie im System anzeigen (Windows „Strg+S“, Mac „⌘S“, GNOME „Strg+S“).</summary>
     static string OsShortcut(string name) => (name, _style) switch
     {
-        ("prog-new", "mac") => "⌘N", ("prog-new", _) => "Strg+N",
-        ("prog-save", "mac") => "⌘S", ("prog-save", _) => "Strg+S",
-        ("prog-saveas" or "prog-saveas-open", "mac") => "⇧⌘S", ("prog-saveas" or "prog-saveas-open", _) => "Strg+Umschalt+S",
-        ("prog-close", "mac") => "⌘W", ("prog-close", _) => "Strg+W",
-        ("prog-undo", "mac") => "⌘Z", ("prog-undo", _) => "Strg+Z",
-        ("prog-redo", "mac") => "⇧⌘Z", ("prog-redo", "linux") => "Strg+Umschalt+Z", ("prog-redo", _) => "Strg+Y",
-        ("prog-help", "mac") => "⌘?", ("prog-help", _) => "F1",
+        ("prog-new", "mac") => "N", ("prog-new", _) => "Strg+N",
+        ("prog-save", "mac") => "S", ("prog-save", _) => "Strg+S",
+        ("prog-saveas" or "prog-saveas-open", "mac") => "S", ("prog-saveas" or "prog-saveas-open", _) => "Strg+Umschalt+S",
+        ("prog-close", "mac") => "W", ("prog-close", _) => "Strg+W",
+        ("prog-undo", "mac") => "Z", ("prog-undo", _) => "Strg+Z",
+        ("prog-redo", "mac") => "Z", ("prog-redo", "linux") => "Strg+Umschalt+Z", ("prog-redo", _) => "Strg+Y",
+        ("prog-help", "mac") => "?", ("prog-help", _) => "F1",
         _ => "",
     };
 

@@ -74,7 +74,7 @@ public partial class MainWindow
             Songs.Update(s.Id, x => x.CoverVideo = clip);
             if (old.Length > 0 && old != clip && File.Exists(old) && Path.GetDirectoryName(old) == dir) { TryDelete(old); TryDelete(GenVideo.ProvenancePath(old)); }
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.cover.bewegt", $"{s.Id} s{seed}");
-            _msMsg = $"✓ Bewegtes Cover fertig: {Path.GetFileName(clip)} – Schleife 1080 × 1080, Herkunftsnachweis daneben.";
+            _msMsg = $"Bewegtes Cover fertig: {Path.GetFileName(clip)} – Schleife 1080 × 1080, Herkunftsnachweis daneben.";
             return clip;
         }
         finally { TryDelete(raw); _msMotionBusy = false; Show(MS); }
@@ -85,13 +85,13 @@ public partial class MainWindow
         var sp = new StackPanel { Name = "ms-art-plus", Spacing = 4, Margin = new Thickness(0, 4, 0, 0) };
         var hint = new TextBox { Name = "ms-art-hint", Text = _msCoverHintDraft.Length > 0 ? _msCoverHintDraft : "", Watermark = s.CoverHint.Length > 0 ? "Jetzt: " + s.CoverHint : "Motiv beschreiben, z. B. „Leuchtturm im Nebel bei Sonnenaufgang“", FontSize = 12, TextWrapping = TextWrapping.Wrap };
         hint.TextChanged += (_, _) => _msCoverHintDraft = hint.Text ?? "";
-        var go = Act("ms-art-hint-go", "✎ Cover nach Beschreibung", () => { var t = (hint.Text ?? "").Trim(); if (t.Length < 3) { _msMsg = "Beschreibe kurz, was auf dem Cover sein soll."; Show(MS); return; } _msCoverHintDraft = ""; _ = MsCoverWithHint(s.Id, t); });
+        var go = Act("ms-art-hint-go", "Cover nach Beschreibung", () => { var t = (hint.Text ?? "").Trim(); if (t.Length < 3) { _msMsg = "Beschreibe kurz, was auf dem Cover sein soll."; Show(MS); return; } _msCoverHintDraft = ""; _ = MsCoverWithHint(s.Id, t); });
         go.IsEnabled = !_msArtBusy;
-        var motion = Act("ms-art-motion", _msMotionBusy ? "Bewegtes Cover entsteht …" : "🎬 Bewegtes Cover (KI-Video)", () => { if (!_msMotionBusy) _ = MsMotionCover(s.Id); });
+        var motion = Act("ms-art-motion", _msMotionBusy ? "Bewegtes Cover entsteht …" : "Bewegtes Cover (KI-Video)", () => { if (!_msMotionBusy) _ = MsMotionCover(s.Id); });
         motion.IsEnabled = !_msMotionBusy && File.Exists(s.CoverFile);
         sp.Children.Add(hint); sp.Children.Add(new WrapPanel { Children = { go, new Border { Width = 6 }, motion } });
         sp.Children.Add(P(EditGenModel() is null ? "Bewegtes Cover braucht „Wan 2.2 – Filmszenen“ aus der KI-Bibliothek (Videos erzeugen)." : "Bewegtes Cover: 4 Sekunden Video-KI aus deinem Cover, als nahtlose Schleife – wie ein animiertes Albumcover.", Muted, 11));
-        if (s.CoverVideo.Length > 0 && File.Exists(s.CoverVideo)) sp.Children.Add(P("🎬 " + Path.GetFileName(s.CoverVideo), Text, 11.5));
+        if (s.CoverVideo.Length > 0 && File.Exists(s.CoverVideo)) sp.Children.Add(P("" + Path.GetFileName(s.CoverVideo), Text, 11.5));
         return sp;
     }
 }

@@ -24,7 +24,7 @@ public partial class MainWindow
         _yaraMsg = "Wird geprüft …"; Show("forensik");
         var dir = YaraDir; var run = YaraRunOverride;
         var (f, msg) = await Task.Run(() => YaraScan.Scan(dir, target, run: run));
-        YaraLast = f; _yaraMsg = (f is { Count: > 0 } ? "⚠ " : f is null ? "⚠ " : "✓ ") + msg;
+        YaraLast = f; _yaraMsg = (f is { Count: > 0 } ? "" : f is null ? "• " : "") + msg;
         _core.Audit.Append(Principal.LocalOwner.Name, "security.yara", f is null ? "fehler" : $"{f.Count} Treffer");
         Show("forensik");
     }
@@ -38,7 +38,7 @@ public partial class MainWindow
         var (rules, m2) = exe is null ? (null, m1) : await YaraScan.FetchAsync(http.GetStreamAsync, YaraScan.RulesUrl, YaraScan.RulesSha256);
         var ok = exe is not null && rules is not null && YaraScan.ExtractExe(exe, YaraDir) && YaraScan.ExtractRules(new MemoryStream(rules), YaraDir) > 0;
         _core.Audit.Append(Principal.LocalOwner.Name, "deps.download", $"yara-x {YaraScan.Version} + ReversingLabs-Regeln {YaraScan.RulesCommit[..8]}" + (ok ? "" : " (fehlgeschlagen)"));
-        _yaraMsg = ok ? "✓ Regel-Prüfung ist eingerichtet (310 Regeln)." : "⚠ Einrichten ging nicht: " + (exe is null ? m1 : m2);
+        _yaraMsg = ok ? "Regel-Prüfung ist eingerichtet (310 Regeln)." : "Einrichten ging nicht: " + (exe is null ? m1 : m2);
         Show("forensik");
     }
 

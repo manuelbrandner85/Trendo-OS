@@ -37,10 +37,10 @@ public class GamePackage_Ui
             await w.GameUnrealPackage(d, outDir); Pump();
             Assert.EndsWith("RunUAT.bat", calls.Single().Exe); Assert.Contains("-clientconfig=Shipping", calls.Single().Args);
             Assert.Contains(w.GamePackages, f => f.EndsWith("-windows.zip") && File.Exists(f));
-            Assert.Contains("✓ Windows-Spiel fertig", w.ProgramMessage(GK)); Assert.Contains("Waldlaeufer.exe", w.ProgramMessage(GK));
+            Assert.Contains("Windows-Spiel fertig", w.ProgramMessage(GK)); Assert.Contains("Waldlaeufer.exe", w.ProgramMessage(GK));
             w.UnrealRunOverride = (_, _) => (6, "Error: Cook failed for /Game/Trendo/Welt\nBUILD FAILED");
             await w.GameUnrealPackage(d, outDir); Pump();
-            Assert.Contains("✗ Windows-Spiel nicht fertig (Exitcode 6)", w.ProgramMessage(GK)); Assert.Contains("Cook failed", w.ProgramMessage(GK));
+            Assert.Contains("Windows-Spiel nicht fertig (Exitcode 6)", w.ProgramMessage(GK)); Assert.Contains("Cook failed", w.ProgramMessage(GK));
         }
         finally { w.UnrealRunOverride = null; w.UnrealEngineOverride = null; if (Directory.Exists(outDir)) Directory.Delete(outDir, true); }
     }

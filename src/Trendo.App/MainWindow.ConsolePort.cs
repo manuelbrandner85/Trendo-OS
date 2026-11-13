@@ -62,7 +62,7 @@ public partial class MainWindow
         if (d.Text("image").Length > 0)
         {
             var problem = ConsolePortKit.CheckImage(d.Text("image"));
-            sp.Children.Add(new TextBlock { Name = "con-image-state", Text = problem is null ? "✓ " + Path.GetFileName(d.Text("image")) : "✕ " + problem, TextWrapping = TextWrapping.Wrap, FontSize = 12, Foreground = Brush.Parse(problem is null ? "#3DDC84" : "#FF6B6B") });
+            sp.Children.Add(new TextBlock { Name = "con-image-state", Text = problem is null ? "" + Path.GetFileName(d.Text("image")) : "" + problem, TextWrapping = TextWrapping.Wrap, FontSize = 12, Foreground = Brush.Parse(problem is null ? "#3DDC84" : "#FF6B6B") });
         }
         var owned = new CheckBox { Name = "con-owned", IsChecked = d.Flag("owned"), Content = new TextBlock { Text = "Ich besitze dieses Spiel und habe das Abbild selbst von meiner eigenen Disc erstellt.", TextWrapping = TextWrapping.Wrap, Foreground = Text, FontSize = 12 } };
         owned.IsCheckedChanged += (_, _) => { if (owned.IsChecked != d.Flag("owned")) ProgramRun(ConsoleKey, () => d.Set("owned", owned.IsChecked == true, "Besitz bestätigt")); };
@@ -79,7 +79,7 @@ public partial class MainWindow
     {
         var sp = new StackPanel { Name = "con-tools", Spacing = 6, Margin = new Thickness(4, 0, 14, 4), MaxWidth = 720, HorizontalAlignment = HorizontalAlignment.Left };
         sp.Children.Add(H("Skills", 13));
-        sp.Children.Add(new TextBlock { Name = "con-skills-state", Text = ConsoleSkillsReady ? "✓ Eingerichtet" : "Noch nicht eingerichtet", Foreground = Text, FontSize = 12 });
+        sp.Children.Add(new TextBlock { Name = "con-skills-state", Text = ConsoleSkillsReady ? "Eingerichtet" : "Noch nicht eingerichtet", Foreground = Text, FontSize = 12 });
         var install = new Button { Name = "con-install", Content = ConsoleSkillsReady ? "Erneut einrichten" : "Skills einrichten (console-skill, MIT)", Padding = new Thickness(12, 5) };
         install.Click += async (_, _) => await ConsoleInstall(d);
         sp.Children.Add(install);

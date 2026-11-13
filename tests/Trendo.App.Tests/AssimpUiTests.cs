@@ -24,7 +24,7 @@ public class AssimpUi
             w.Show("3d"); w.Find<Button>("3d-assimp-0").Press();
             Assert.Equal(["--assimp-convert", dll, fbx], seen!.Take(3));
             Assert.Equal(Path.Combine(dir, "umgewandelt", "stuhl.glb"), seen![3]);
-            Assert.StartsWith("✓ Umgewandelt: stuhl.glb", w.AssimpMessage);
+            Assert.StartsWith("Umgewandelt: stuhl.glb", w.AssimpMessage);
             MainWindow.AssimpRunOverride = (_, _, _) => new Cli.Result(-1073741819, "", "");
             w.Show("3d"); w.Find<Button>("3d-assimp-0").Press(); Assert.Contains("abgestürzt", w.AssimpMessage);
         }

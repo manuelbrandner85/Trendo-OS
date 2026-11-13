@@ -42,7 +42,7 @@ public partial class MainWindow
         File.Move(tmp, s.File, overwrite: true);
         Songs.Update(songId, x => { x.Mastered = true; x.MasterTarget = tg.Id; });
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.master", $"{Path.GetFileName(s.File)} von {m.I} LUFS");
-        if (!quiet) { _msMsg = $"✓ Gemastert „{tg.Label}“: {tg.Lufs:0} LUFS, Spitzen höchstens {tg.TruePeak:0.0} dBTP (vorher {m.I} LUFS).".Replace("-", "−"); Show(MS); }
+        if (!quiet) { _msMsg = $"Gemastert „{tg.Label}“: {tg.Lufs:0} LUFS, Spitzen höchstens {tg.TruePeak:0.0} dBTP (vorher {m.I} LUFS).".Replace("-", "−"); Show(MS); }
         return true;
     }
 
@@ -66,7 +66,7 @@ public partial class MainWindow
     void MsCheckFloskeln()
     {
         var hits = LyricsCraft.FindPhrases(_msLyrics);
-        _msMsg = _msLyrics.Trim().Length == 0 ? "Noch kein Liedtext da." : hits.Count == 0 ? "✓ Keine typischen KI-Floskeln gefunden." : "KI-Floskeln gefunden:" + FloskelHint(hits).Replace(" Noch abgegriffen klingt:", "");
+        _msMsg = _msLyrics.Trim().Length == 0 ? "Noch kein Liedtext da." : hits.Count == 0 ? "Keine typischen KI-Floskeln gefunden." : "KI-Floskeln gefunden:" + FloskelHint(hits).Replace(" Noch abgegriffen klingt:", "");
         Show(MS);
     }
 }

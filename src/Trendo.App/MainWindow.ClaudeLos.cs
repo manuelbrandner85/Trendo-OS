@@ -51,9 +51,9 @@ public partial class MainWindow
         if (dock.Tab != "chat") ClaudeDockShowTab(dock, "chat");
         if (_chatUis.TryGetValue(dock, out var ui) && ui.Running) { status?.Invoke("Claude arbeitet noch – dein Auftrag steht im Claude-Bereich bereit."); ui.Input.Text = text.Trim(); return true; }
         _core.Audit.Append(Principal.LocalOwner.Name, "claude.studio.los", studio ?? "");
-        status?.Invoke("✳ Claude arbeitet rechts im Projekt …");
+        status?.Invoke("Claude arbeitet rechts im Projekt …");
         await ClaudeChatSend(dock, text);
-        status?.Invoke("✳ Claude ist fertig – hier ändern oder ergänzen, Claude arbeitet im selben Projekt weiter");
+        status?.Invoke("Claude ist fertig – hier ändern oder ergänzen, Claude arbeitet im selben Projekt weiter");
         return true;
     }
 }

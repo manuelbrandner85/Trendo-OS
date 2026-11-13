@@ -177,8 +177,8 @@ public partial class MainWindow
                     var card = new Border { Name = $"big-card-{cid}", Background = TileBg, BorderBrush = on ? Brush.Parse("#FACC15") : Edge, BorderThickness = new Thickness(on ? 2 : 1), CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 6), Cursor = new Cursor(StandardCursorType.Hand),
                         Child = new StackPanel { Spacing = 4, Children = {
                             new TextBlock { Text = c.Title, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
-                            new WrapPanel { Children = { new Border { CornerRadius = new CornerRadius(8), Padding = new Thickness(6, 1), Background = Brush.Parse("#33C9A227"), Margin = new Thickness(0, 0, 6, 0), Child = new TextBlock { Text = "🤖 " + c.Role, Foreground = Text, FontSize = 10.5 } },
-                                new TextBlock { Text = c.Evidence.Count > 0 ? $"📎 {c.Evidence.Count}" : "", Foreground = Muted, FontSize = 10.5, VerticalAlignment = VerticalAlignment.Center } } },
+                            new WrapPanel { Children = { new Border { CornerRadius = new CornerRadius(8), Padding = new Thickness(6, 1), Background = Brush.Parse("#33C9A227"), Margin = new Thickness(0, 0, 6, 0), Child = new TextBlock { Text = "" + c.Role, Foreground = Text, FontSize = 10.5 } },
+                                new TextBlock { Text = c.Evidence.Count > 0 ? $"{c.Evidence.Count}" : "", Foreground = Muted, FontSize = 10.5, VerticalAlignment = VerticalAlignment.Center } } },
                             new ProgressBar { Value = c.Column == 2 ? 100 : c.Progress, Maximum = 100, Height = 4 } } } };
                     Point? from = null; var dragged = false;
                     card.PointerPressed += (_, e) => { from = e.GetPosition(this); dragged = false; e.Pointer.Capture(card); e.Handled = true; };
@@ -241,7 +241,7 @@ public partial class MainWindow
             {
                 var ok = BigBoards.Intact(_core.Projects, BigProject!, ev); var full = _core.Projects.ResolveInProject(BigProject!, ev.Path);
                 var eb = new Button { Name = $"big-ev-{ei++}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Background = Brushes.Transparent, Padding = new Thickness(4, 2),
-                    Content = new StackPanel { Children = { new TextBlock { Text = (ok ? "✓ " : "⚠ ") + Path.GetFileName(ev.Path)[(cid.Length + 1)..], Foreground = ok ? Text : Brush.Parse("#F97316"), FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis },
+                    Content = new StackPanel { Children = { new TextBlock { Text = (ok ? "• " : "") + Path.GetFileName(ev.Path)[(cid.Length + 1)..], Foreground = ok ? Text : Brush.Parse("#F97316"), FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis },
                         new TextBlock { Text = (ev.Note.Length > 0 ? ev.Note + " · " : "") + (ok ? "Prüfsumme stimmt" : "Datei verändert oder fehlt") + $" · {ev.Added.LocalDateTime.ToString("dd.MM. HH:mm", De)}", Foreground = Muted, FontSize = 10.5, TextWrapping = TextWrapping.Wrap } } } };
                 ToolTip.SetTip(eb, "SHA-256: " + ev.Sha256); eb.Click += (_, _) => { if (File.Exists(full)) Launch(full); };
                 right.Children.Add(eb);

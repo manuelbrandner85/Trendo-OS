@@ -62,7 +62,7 @@ public partial class MainWindow
         seek.AddHandler(PointerPressedEvent, (_, _) => _mSeeking = true, Avalonia.Interactivity.RoutingStrategies.Tunnel);
         seek.AddHandler(PointerReleasedEvent, (_, _) => { _mSeeking = false; _mPos = seek.Value; _audio?.Seek(seek.Value); }, Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
         var title = new TextBlock { Name = "ms-player-title", Text = song?.Title ?? "Nichts ausgewählt", Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, MaxWidth = 220, TextTrimming = TextTrimming.CharacterEllipsis };
-        var master = new TextBlock { Text = song is null ? "" : song.Mastered ? $"● Master {SongProducer.TargetOf(song.MasterTarget).Lufs:0} LUFS".Replace("-", "−") : "○ nicht gemastert", Foreground = song?.Mastered == true ? Brush.Parse("#4ADE80") : Muted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center };
+        var master = new TextBlock { Text = song is null ? "" : song.Mastered ? $"Master {SongProducer.TargetOf(song.MasterTarget).Lufs:0} LUFS".Replace("-", "−") : "nicht gemastert", Foreground = song?.Mastered == true ? Brush.Parse("#4ADE80") : Muted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center };
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto"), ColumnSpacing = 10, Children = {
             new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, VerticalAlignment = VerticalAlignment.Center, Children = { back, pp, stop } },
             Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { pos, tempo, takt, ton } }, 1),
@@ -110,7 +110,7 @@ public partial class MainWindow
         _msArrangeFile = s.File;
         var view = _msArrange = new ArrangeView { Name = "ms-arrange", Seconds = dur, Bars = SongFollow.Bars(bpm, meter, dur, u?.Beats), Lanes = lanes, Playhead = string.Equals(_queue.Current, s.File, StringComparison.OrdinalIgnoreCase) ? _mPos : -1 };
         view.Seek = t => MsPlayAt(s, t);
-        var mix = new Button { Name = "ms-to-mixer", Content = "☰ Im Mischpult öffnen", FontSize = 11.5, Padding = new Thickness(8, 2) };
+        var mix = new Button { Name = "ms-to-mixer", Content = "Im Mischpult öffnen", FontSize = 11.5, Padding = new Thickness(8, 2) };
         ToolTip.SetTip(mix, acc is not null ? "Gesang und Begleitung als Spuren mit Lautstärke, Panorama, Stumm und Solo" : "Das Lied als Spur im Mehrspur-Mischpult – mit „Spuren trennen“ kommen Gesang und Begleitung einzeln");
         mix.Click += (_, _) => { try { MsOpenInMixer(s); } catch (Exception e) when (e is IOException or InvalidOperationException) { _msMsg = e.Message; Show(MS); } };
         return new Border { Name = "ms-arrange-panel", CornerRadius = new CornerRadius(12), Background = DawPanel, BorderBrush = DawEdge, BorderThickness = new Thickness(1), Padding = new Thickness(8), Margin = new Thickness(0, 0, 0, 8),

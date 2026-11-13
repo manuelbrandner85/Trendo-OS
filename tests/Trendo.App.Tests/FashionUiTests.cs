@@ -60,7 +60,7 @@ public class SPEC08_Ui
         Assert.Contains("10 % Rabatt", Get<SelectableTextBlock>(w, "mode-c-tier-out").Text);
         Assert.Contains("XL:", Get<SelectableTextBlock>(w, "mode-c-grade-out").Text);
         Assert.Contains("Knäuel", Get<SelectableTextBlock>(w, "mode-c-yarn-out").Text);
-        Retype(w, "mode-c-ean-e", "4006381333932"); Assert.StartsWith("⚠ Prüfziffer falsch", Get<SelectableTextBlock>(w, "mode-c-ean-out").Text);
+        Retype(w, "mode-c-ean-e", "4006381333932"); Assert.StartsWith("Prüfziffer falsch", Get<SelectableTextBlock>(w, "mode-c-ean-out").Text);
         w.Close();
     }
 }

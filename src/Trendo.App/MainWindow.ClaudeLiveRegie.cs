@@ -62,7 +62,7 @@ public partial class MainWindow
     {
         if (s.Target != LiveClaudeScenes || s.Value is not { Length: > 0 } v) return null;
         var (list, err) = ParseLiveScenes(v);
-        if (list is null) return new TextBlock { Name = "claude-plan-warn", Text = "⚠ So nicht möglich: " + err, Foreground = Brush.Parse("#FFF8B26A"), FontSize = 12, TextWrapping = TextWrapping.Wrap };
+        if (list is null) return new TextBlock { Name = "claude-plan-warn", Text = "So nicht möglich: " + err, Foreground = Brush.Parse("#FFF8B26A"), FontSize = 12, TextWrapping = TextWrapping.Wrap };
         var wp = new WrapPanel { Name = "claude-plan-live" };
         foreach (var (name, main, texts) in list)
         {
@@ -87,7 +87,7 @@ public partial class MainWindow
             sc.Overlays.RemoveAll(o => o.Kind == "text");
             foreach (var t in texts) show.AddOverlay(sc.Id, "text", t);
         }
-        LiveSave(); _liveMsg = $"✳ Claude hat {list.Count} Szene{(list.Count == 1 ? "" : "n")} eingerichtet – links auswählen, „Vorschau starten“ zeigt sie.";
+        LiveSave(); _liveMsg = $"Claude hat {list.Count} Szene{(list.Count == 1 ? "" : "n")} eingerichtet – links auswählen, „Vorschau starten“ zeigt sie.";
         _core.Audit.Append(Principal.LocalOwner.Name, "claude.live.szenen", list.Count.ToString(System.Globalization.CultureInfo.InvariantCulture));
         return true;
     }

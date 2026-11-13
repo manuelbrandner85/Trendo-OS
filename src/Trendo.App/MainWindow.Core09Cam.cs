@@ -150,7 +150,7 @@ public partial class MainWindow
             for (var i = 0; i < Bench.Cameras.Count; i++)
             {
                 var cam = Bench.Cameras[i]; var n = i;
-                var mark = n == Bench.Selected ? "● " : "";
+                var mark = n == Bench.Selected ? "• " : "";
                 list.Children.Add(MSp(Act("cam-pick-" + n, mark + cam.KindLabel + ": " + cam.Name, () => { Bench.Selected = n; Show("roboter"); })));
             }
             sp.Children.Add(list);
@@ -200,7 +200,7 @@ public partial class MainWindow
                 ? "Keine ONVIF-Kamera hat geantwortet. Wenn du die Adresse kennst, trag sie als rtsp:// ein."
                 : found.Count + " Netzwerk-Kamera eingetragen.";
         }
-        catch (Exception ex) { Bench.CamStatus = "⚠ Die Suche ist fehlgeschlagen: " + ex.Message; }
+        catch (Exception ex) { Bench.CamStatus = "Die Suche ist fehlgeschlagen: " + ex.Message; }
         Show("roboter");
     }
 
@@ -216,7 +216,7 @@ public partial class MainWindow
             SaveCams();
             Bench.CamStatus = "Eingetragen: " + cam.Name;
         }
-        catch (Exception ex) when (ex is ArgumentException or UriFormatException) { Bench.CamStatus = "⚠ " + ex.Message; }
+        catch (Exception ex) when (ex is ArgumentException or UriFormatException) { Bench.CamStatus = "" + ex.Message; }
         Show("roboter");
     }
 
@@ -283,7 +283,7 @@ public partial class MainWindow
         catch (Exception ex)
         {
             Bench.Live = false;
-            Bench.CamStatus = "⚠ " + ex.Message;
+            Bench.CamStatus = "" + ex.Message;
         }
         PaintCam();
     }
@@ -301,7 +301,7 @@ public partial class MainWindow
             Bench.CamStatus = "Aufnahme läuft: " + path;
             _core.Audit.Append(Principal.LocalOwner.Name, "camera.record", Path.GetFileName(path));
         }
-        catch (Exception ex) { Bench.CamStatus = "⚠ " + ex.Message; }
+        catch (Exception ex) { Bench.CamStatus = "" + ex.Message; }
         PaintCam();
     }
 
@@ -309,7 +309,7 @@ public partial class MainWindow
     {
         if (_recHandle is null) { Bench.CamStatus = "Es läuft keine Aufnahme."; PaintCam(); return; }
         try { _recHandle.Dispose(); }
-        catch (Exception ex) { Bench.CamStatus = "⚠ " + ex.Message; PaintCam(); return; }
+        catch (Exception ex) { Bench.CamStatus = "" + ex.Message; PaintCam(); return; }
         _recHandle = null;
         Bench.CamStatus = _recPath is not null && File.Exists(_recPath) ? "Aufnahme gespeichert: " + _recPath : "Aufnahme beendet, die Datei ist nicht angekommen.";
         PaintCam();
@@ -410,7 +410,7 @@ public partial class MainWindow
             AskOrRun(MotionText.Move(j), j, $"Arm fährt nach {Bench.X} / {Bench.Y} / {Bench.Z} mm");
         }
         catch (Exception ex) when (ex is FormatException or ArgumentException or InvalidOperationException or ApprovalException or IOException)
-        { Bench.DriveStatus = "⚠ " + ex.Message; Show("roboter"); }
+        { Bench.DriveStatus = "" + ex.Message; Show("roboter"); }
     }
 
     private void Grip(bool close, ComboBox mode)
@@ -419,7 +419,7 @@ public partial class MainWindow
         Bench.Drive.Mode = ModeFrom(Bench.ModeIndex);
         try { AskOrRun(MotionText.Grip(close), Bench.Drive.Pose, close ? "Greifer schließen" : "Greifer öffnen"); }
         catch (Exception ex) when (ex is InvalidOperationException or ApprovalException or IOException)
-        { Bench.DriveStatus = "⚠ " + ex.Message; Show("roboter"); }
+        { Bench.DriveStatus = "" + ex.Message; Show("roboter"); }
     }
 
     private void RunPath(TextBox pts, ComboBox mode)
@@ -434,7 +434,7 @@ public partial class MainWindow
             AskOrRun(cmd, steps[^1].J, "Weg mit " + steps.Count + " Punkten fahren");
         }
         catch (Exception ex) when (ex is FormatException or ArgumentException or InvalidOperationException or ApprovalException or IOException)
-        { Bench.DriveStatus = "⚠ " + ex.Message; Show("roboter"); }
+        { Bench.DriveStatus = "" + ex.Message; Show("roboter"); }
     }
 
     private void AskOrRun(string command, Joints? pose, string description)
@@ -470,7 +470,7 @@ public partial class MainWindow
             _core.Audit.Append(Principal.LocalOwner.Name, "robot.move", cmd.Replace('\n', ' '));
         }
         catch (Exception ex) when (ex is InvalidOperationException or ApprovalException or IOException)
-        { Bench.DriveStatus = "⚠ " + ex.Message; }
+        { Bench.DriveStatus = "" + ex.Message; }
         Bench.PendingId = null; Bench.PendingCommand = null; Bench.PendingPose = null;
         Show("roboter");
     }
@@ -520,7 +520,7 @@ public partial class MainWindow
             Bench.Drive.Link = link;
             Bench.DriveStatus = "Verbunden mit " + link.Endpoint + ". Echte Fahrt bleibt gesperrt, bis du sie freigibst.";
         }
-        catch (Exception ex) when (ex is ArgumentException or IOException or SocketException) { Bench.DriveStatus = "⚠ " + ex.Message; }
+        catch (Exception ex) when (ex is ArgumentException or IOException or SocketException) { Bench.DriveStatus = "" + ex.Message; }
         Show("roboter");
     }
 
