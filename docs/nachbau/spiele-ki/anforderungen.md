@@ -1,6 +1,6 @@
 # Nachbau Spiele-Studio mit KI: Anforderungen
 
-Stand: 13.11.2026. Status: Stufe 1 (D1 bis D4, T-0610) in main; Stufe 2 (E2 bis E4, T-0640) gebaut und getestet, noch nicht in main; Stufe 3 nicht begonnen.
+Stand: 13.11.2026. Status: Stufe 1 (D1 bis D4, T-0610) in main; Stufe 2 (E2 bis E4, T-0640) in main seit 13.11.2026; Stufe 3 nicht begonnen.
 Iststand D1 bis D4: Stand nach T-0610, belegt durch Tests, App nicht von Hand bedient. Iststand aller anderen Zeilen: geprüft gegen `origin/main` (023a6d742) per Stichwortsuche und Lesen einzelner Dateien, nicht durch Bedienen der App.
 
 ## Clean-Room-Regeln
