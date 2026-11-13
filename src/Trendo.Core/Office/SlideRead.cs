@@ -77,7 +77,7 @@ public static partial class SlideFiles
             if (rels.Values.FirstOrDefault(r => r.Type.EndsWith("/notesSlide", StringComparison.Ordinal)) is { Target.Length: > 0 } nr && pkg.Load(nr.Target) is { } notes)
             {
                 var body = notes.Descendants(P + "sp").FirstOrDefault(s => (string?)s.Descendants(P + "ph").FirstOrDefault()?.Attribute("type") == "body");
-                if (body is not null) slide.Notes = string.Join('\n', body.Descendants(A + "p").Select(p => string.Concat(p.Descendants(A + "t").Select(t => t.Value)))).Trim('\n');
+                if (body is not null) slide.Notes = string.Join('\n', body.Descendants(A + "p").Select(p => string.Concat(p.Outermost(A + "t").Select(t => t.Value)))).Trim('\n');
             }
             doc.Slides.Add(slide);
         }
@@ -173,7 +173,7 @@ public static partial class SlideFiles
         if (gf.Descendants(A + "tbl").FirstOrDefault() is { } tbl)
         {
             s.Kind = ShapeKind.Tabelle;
-            s.Table = tbl.Elements(A + "tr").Select(tr => tr.Elements(A + "tc").Select(tc => string.Join('\n', tc.Descendants(A + "p").Select(p => string.Concat(p.Descendants(A + "t").Select(t => t.Value))))).ToList()).ToList();
+            s.Table = tbl.Elements(A + "tr").Select(tr => tr.Elements(A + "tc").Select(tc => string.Join('\n', tc.Descendants(A + "p").Select(p => string.Concat(p.Outermost(A + "t").Select(t => t.Value))))).ToList()).ToList();
             if ((int?)tbl.Descendants(A + "rPr").FirstOrDefault()?.Attribute("sz") is int sz) s.FontSize = sz / 100.0; else s.FontSize = 16;
             return s;
         }
@@ -186,7 +186,7 @@ public static partial class SlideFiles
             var ser = chart.Descendants(C + "ser").FirstOrDefault();
             s.ChartLabels = ser?.Element(C + "cat")?.Descendants(C + "pt").Select(p => p.Element(C + "v")?.Value ?? "").ToList() ?? [];
             s.ChartValues = ser?.Element(C + "val")?.Descendants(C + "pt").Select(p => double.TryParse(p.Element(C + "v")?.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var d) ? d : 0).ToList() ?? [];
-            s.Text = string.Concat(chart.Root?.Element(C + "chart")?.Element(C + "title")?.Descendants(A + "t").Select(t => t.Value) ?? []);
+            s.Text = string.Concat(chart.Root?.Element(C + "chart")?.Element(C + "title")?.Outermost(A + "t").Select(t => t.Value) ?? []);
             return s;
         }
         return null;

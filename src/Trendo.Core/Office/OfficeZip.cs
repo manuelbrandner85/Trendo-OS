@@ -17,6 +17,8 @@ public static class OfficeZip
     const long RatioMinBytes = 10L * 1024 * 1024;
     /// <summary>Echte Excel-Teile sind kaum 30 Ebenen tief. Der XML-Baum läuft beim Aufbau je Knoten alle Eltern ab, und sein Text wird rekursiv gelesen: Sehr tiefes XML kostet sonst quadratische Zeit und kann das ganze Programm beenden.</summary>
     public const int MaxXmlDepth = 256;
+    /// <summary>Höchstzahl der Knoten eines XML-Baums (Elemente, Attribute, Texte): Ein Knoten belegt ein Vielfaches seiner Bytes, stark gepackte Teile füllen sonst den Speicher.</summary>
+    public const int MaxXmlNodes = 40_000_000;
 
     internal static InvalidDataException Bad(string why) => new($"Die Datei wurde aus Sicherheitsgründen nicht geöffnet: {why}");
 
@@ -53,27 +55,45 @@ public static class OfficeZip
     public static XDocument LoadXml(this ZipArchiveEntry e, LoadOptions options = LoadOptions.None)
     {
         XDocument? doc = null;
-        e.ReadXml(r => doc = XDocument.Load(r, options), !options.HasFlag(LoadOptions.PreserveWhitespace));
+        e.ReadXml(r => doc = XDocument.Load(new ShallowReader(r), options), !options.HasFlag(LoadOptions.PreserveWhitespace));
         return doc!;
     }
 
-    /// <summary>Wie <see cref="LoadXml"/>, aber höchstens <see cref="MaxXmlDepth"/> Ebenen tief.</summary>
-    internal static XDocument LoadShallowXml(this ZipArchiveEntry e)
+    /// <summary>Unterelemente, auf die <paramref name="match"/> zutrifft, in Dokumentreihenfolge, aber nicht die darin nochmals verschachtelten: So wird jeder Text nur einmal gelesen.</summary>
+    internal static IEnumerable<XElement> Outermost(this XElement root, Func<XElement, bool> match)
     {
-        XDocument? doc = null;
-        e.ReadXml(r => doc = XDocument.Load(new ShallowReader(r)));
-        return doc!;
+        var node = root.FirstNode;
+        while (node is not null)
+        {
+            if (node is XElement e)
+            {
+                if (match(e)) yield return e;
+                else if (e.FirstNode is { } first) { node = first; continue; }
+            }
+            while (node.NextNode is null)
+            {
+                node = node.Parent!;
+                if (ReferenceEquals(node, root)) yield break;
+            }
+            node = node.NextNode;
+        }
     }
 
-    /// <summary>Lässt einen XML-Baum nur bis <see cref="MaxXmlDepth"/> Ebenen unter der aktuellen Stelle zu.</summary>
+    internal static IEnumerable<XElement> Outermost(this XElement root, XName name) => root.Outermost(e => e.Name == name);
+
+    /// <summary>Begrenzt einen XML-Baum auf <see cref="MaxXmlDepth"/> Ebenen unter der Startstelle und <see cref="MaxXmlNodes"/> Knoten.</summary>
     internal sealed class ShallowReader(XmlReader inner) : XmlReader
     {
         readonly int _max = inner.Depth + MaxXmlDepth;
+        long _nodes;
         public override bool Read()
         {
             var more = inner.Read();
-            if (more && inner.Depth > _max) throw Bad($"das XML ist tiefer als {MaxXmlDepth} Ebenen verschachtelt.");
-            return more;
+            if (!more) return false;
+            if (inner.Depth > _max) throw Bad($"das XML ist tiefer als {MaxXmlDepth} Ebenen verschachtelt.");
+            _nodes += 1 + (inner.NodeType == XmlNodeType.Element ? inner.AttributeCount : 0);
+            if (_nodes > MaxXmlNodes) throw Bad($"das XML hat mehr als {MaxXmlNodes:N0} Knoten.");
+            return true;
         }
         public override int AttributeCount => inner.AttributeCount;
         public override string BaseURI => inner.BaseURI;

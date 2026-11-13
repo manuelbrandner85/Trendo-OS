@@ -714,6 +714,408 @@ public class ImportTempoTests
         finally { Directory.Delete(d, true); }
     }
 
+    // ---------- T-0505: restliche Lücken ----------
+
+    static void ZipTo(string path, params (string Name, string Content)[] entries)
+    {
+        using var z = ZipFile.Open(path, ZipArchiveMode.Create);
+        foreach (var (name, content) in entries) { using var w = new StreamWriter(z.CreateEntry(name).Open(), new UTF8Encoding(false)); w.Write(content); }
+    }
+
+    /// <summary>Mappe, deren Blatt ungepackt geschrieben wird: So zählt die Knotengrenze und nicht die Prüfung auf ZIP-Bomben.</summary>
+    static string StoredSheet(string dir, Action<StreamWriter> write)
+    {
+        var path = Path.Combine(dir, "gross.xlsx");
+        using var z = ZipFile.Open(path, ZipArchiveMode.Create);
+        void Add(string n, string c) { using var w = new StreamWriter(z.CreateEntry(n).Open(), new UTF8Encoding(false)); w.Write(c); }
+        Add("xl/workbook.xml", Workbook); Add("xl/_rels/workbook.xml.rels", Rels);
+        using (var w = new StreamWriter(z.CreateEntry("xl/worksheets/sheet1.xml", CompressionLevel.NoCompression).Open(), new UTF8Encoding(false), 1 << 20)) write(w);
+        return path;
+    }
+
+    static void AssertBad(Action read) => Assert.Contains("Sicherheitsgründen", Assert.Throws<InvalidDataException>(read).Message);
+
+    [Fact(DisplayName = "T-0505: Excel – eine Auswahlliste kann nicht je Bereich neu vervielfacht werden")]
+    public void Validation_list_is_budgeted()
+    {
+        var d = Tmp();
+        try
+        {
+            var sqref = string.Join(' ', Enumerable.Range(1, 600).Select(i => $"A{i}"));
+            AssertRejected(Xlsx(d, $"""<worksheet xmlns="{S}"><sheetData/><dataValidations><dataValidation type="list" sqref="{sqref}"><formula1>"{Comment(1024 * 1024)}"</formula1></dataValidation></dataValidations></worksheet>"""));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0505: Excel – mehrere Bereiche einer Auswahlliste bleiben normal erhalten")]
+    public void Validation_several_ranges()
+    {
+        var d = Tmp();
+        try
+        {
+            var s = SheetFiles.ReadXlsx(Xlsx(d, $"""<worksheet xmlns="{S}"><sheetData/><dataValidations><dataValidation type="list" sqref="A1 B2:B4"><formula1>"Ja, Nein"</formula1></dataValidation></dataValidations></worksheet>""")).Sheets[0];
+            Assert.Equal(["A1", "B2:B4"], s.Validations.Select(v => v.Range));
+            Assert.All(s.Validations, v => Assert.Equal(["Ja", "Nein"], v.Items));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0505: Excel – Spaltenbreiten bleiben innerhalb der echten Spalten")]
+    public void Column_widths_are_limited()
+    {
+        var d = Tmp();
+        try
+        {
+            var cols = string.Concat(Enumerable.Range(1, 40_000).Select(i => $"""<col min="{i}" max="{i + 1000}" width="9" customWidth="1"/>"""));
+            var s = SheetFiles.ReadXlsx(Xlsx(d, $"""<worksheet xmlns="{S}"><cols>{cols}</cols><sheetData/></worksheet>""")).Sheets[0];
+            Assert.True(s.ColWidths.Keys.Max() < Addr.MaxCols);
+            Assert.True(s.ColWidths.Count <= Addr.MaxCols);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0505: Excel – Spaltenbreiten wie bisher: Bereich, Breite, ohne customWidth")]
+    public void Column_widths_normal()
+    {
+        var d = Tmp();
+        try
+        {
+            var s = SheetFiles.ReadXlsx(Xlsx(d, $"""<worksheet xmlns="{S}"><cols><col min="2" max="3" width="12.345" customWidth="1"/><col min="5" max="5" width="9"/></cols><sheetData/></worksheet>""")).Sheets[0];
+            Assert.Equal([1, 2], s.ColWidths.Keys.OrderBy(k => k));
+            Assert.Equal(Math.Round(12.345, 2), s.ColWidths[1]); // gerundet wie bisher
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0505: Excel – Knotenzahl der Blatt-Abschnitte ist über das ganze Blatt begrenzt")]
+    public void Worksheet_node_limit()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = StoredSheet(d, w =>
+            {
+                w.Write($"""<worksheet xmlns="{S}"><sheetData/>""");
+                for (var i = 0; i <= OfficeZip.MaxXmlNodes; i++) w.Write("<a/>");
+                w.Write("</worksheet>");
+            });
+            AssertRejected(f);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    static readonly (string, string) NodeHeader = ("x.txt", "");
+
+    [Fact(DisplayName = "T-0505: XML-Baum – Tiefe ist für alle Formate begrenzt, übliche Tiefe geht weiter")]
+    public void LoadXml_depth_limit()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = Path.Combine(d, "a.zip");
+            ZipTo(f, ("ok.xml", Nest(100, "<x>", "</x>", "7")), ("tief.xml", Nest(OfficeZip.MaxXmlDepth + 5, "<x>", "</x>", "7")));
+            using var z = OfficeZip.OpenRead(f);
+            Assert.Equal("7", z.GetEntry("ok.xml")!.LoadXml().Root!.Value);
+            AssertBad(() => z.GetEntry("tief.xml")!.LoadXml());
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0505: DOCX – extrem tiefes XML beendet das Programm nicht")]
+    public void Docx_extreme_depth()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = Path.Combine(d, "a.docx");
+            ZipTo(f, ("word/document.xml", $"""<w:document xmlns:w="{WNs}"><w:body><w:p><w:r>{Nest(1_000_000, "<w:t>", "</w:t>", "x")}</w:r></w:p></w:body></w:document>"""));
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            AssertBad(() => DocxFormat.Read(f));
+            Assert.True(sw.Elapsed < TimeSpan.FromSeconds(30), $"Dauer: {sw.Elapsed}");
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    const string WNs = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+    const string PNs = "http://schemas.openxmlformats.org/presentationml/2006/main";
+    const string ONs = "urn:oasis:names:tc:opendocument:xmlns:office:1.0", TNs = "urn:oasis:names:tc:opendocument:xmlns:table:1.0", XNs = "urn:oasis:names:tc:opendocument:xmlns:text:1.0";
+
+    [Fact(DisplayName = "T-0505: DOCX – verschachtelte Texte in Tabellen zählen einmal")]
+    public void Docx_nested_text_once()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = Path.Combine(d, "a.docx");
+            ZipTo(f, ("word/document.xml", $"""<w:document xmlns:w="{WNs}"><w:body><w:tbl><w:tr><w:tc><w:p><w:r>{Nest(100, "<w:t>", "</w:t>", "x")}</w:r></w:p></w:tc></w:tr></w:tbl></w:body></w:document>"""));
+            dynamic table = DocxFormat.Read(f).Blocks.Single();
+            Assert.Equal("x", (string)table.Rows[0][0]);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0505: PPTX – verschachtelte Notiztexte zählen einmal")]
+    public void Pptx_nested_text_once()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = Path.Combine(d, "a.pptx");
+            ZipTo(f,
+                ("ppt/presentation.xml", $"""<p:presentation xmlns:p="{PNs}" xmlns:r="{R}"><p:sldIdLst><p:sldId r:id="r1"/></p:sldIdLst></p:presentation>"""),
+                ("ppt/_rels/presentation.xml.rels", RelList([Rel("r1", "slides/slide1.xml")])),
+                ("ppt/slides/slide1.xml", $"""<p:sld xmlns:p="{PNs}"><p:cSld><p:spTree/></p:cSld></p:sld>"""),
+                ("ppt/slides/_rels/slide1.xml.rels", RelList(["""<Relationship Id="n" Type="http://x/notesSlide" Target="../notesSlides/n.xml"/>"""])),
+                ("ppt/notesSlides/n.xml", $"""<p:notes xmlns:p="{PNs}" xmlns:a="{ANs}"><p:sp><p:nvPr><p:ph type="body"/></p:nvPr><p:txBody><a:p>{Nest(100, "<a:t>", "</a:t>", "Notiz")}</a:p></p:txBody></p:sp></p:notes>"""));
+            Assert.Equal("Notiz", SlideFiles.ReadPptx(f).Slides.Single().Notes);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    static string OdsContent(string rows) => $"""<o:document-content xmlns:o="{ONs}" xmlns:t="{TNs}" xmlns:x="{XNs}"><t:table t:name="A">{rows}</t:table></o:document-content>""";
+    const string OdsValue = """<t:table-cell o:value-type="string"><x:p>v</x:p></t:table-cell>""";
+
+    [Fact(DisplayName = "T-0505: ODS – wiederholte Zellen sind begrenzt, die Grenze selbst geht noch")]
+    public void Ods_repeat_limit()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = Path.Combine(d, "a.ods");
+            ZipTo(f, ("content.xml", OdsContent($"""<t:table-row t:number-rows-repeated="10">{OdsValue}</t:table-row>""")));
+            Assert.Equal(10, SheetFiles.ReadOds(f, 10).Sheets[0].Cells.Count());
+            AssertBad(() => SheetFiles.ReadOds(f, 9));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0505: ODS – leere Wiederholungen kosten nichts und verschieben wie bisher")]
+    public void Ods_empty_repeats()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = Path.Combine(d, "a.ods");
+            var empties = string.Concat(Enumerable.Repeat("""<t:table-cell t:number-columns-repeated="1024"/>""", 200));
+            ZipTo(f, ("content.xml", OdsContent($"""<t:table-row t:number-rows-repeated="5"><t:table-cell t:number-columns-repeated="3"/>{OdsValue}{empties}</t:table-row><t:table-row><t:table-cell/>{OdsValue}</t:table-row>""")));
+            var s = SheetFiles.ReadOds(f, 1_000).Sheets[0]; // 201 Zellelemente × 5 Zeilen liegen unter der Arbeitsgrenze von 4 × 1.000
+            Assert.Equal("v", s.Raw(4, 3));
+            Assert.Equal("v", s.Raw(5, 1));
+            Assert.Equal(6, s.Cells.Count());
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0505: Einfacher Excel-Leser – ZIP-Prüfung, Spaltengrenze")]
+    public void Ooxml_read_limits()
+    {
+        var d = Tmp();
+        try
+        {
+            var bomb = Path.Combine(d, "b.xlsx");
+            ZipTo(bomb, ("xl/worksheets/sheet1.xml", new string(' ', 20 * 1024 * 1024)));
+            AssertBad(() => Trendo.Core.Sys.Ooxml.ReadXlsx(bomb));
+            var wide = Path.Combine(d, "w.xlsx");
+            ZipTo(wide, ("xl/worksheets/sheet1.xml", """<x><row r="1"><c r="A1"><v>1</v></c><c r="ZZZZZZ1"><v>2</v></c></row></x>"""));
+            Assert.Equal(["1"], Trendo.Core.Sys.Ooxml.ReadXlsx(wide).Single());
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0505: Einfacher Excel-Leser – unvollständige Marken laufen nicht endlos")]
+    public void Ooxml_unterminated_tags()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = Path.Combine(d, "a.xlsx");
+            ZipTo(f, ("xl/worksheets/sheet1.xml", string.Concat(Enumerable.Repeat("<row ", 1_800_000))));
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            AssertBad(() => Trendo.Core.Sys.Ooxml.ReadXlsx(f));
+            Assert.True(sw.Elapsed < TimeSpan.FromSeconds(60), $"Dauer: {sw.Elapsed}");
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0505: OBJ – mtllib bleibt im Ordner der Datei")]
+    public void Obj_mtllib_stays_in_folder()
+    {
+        var d = Tmp();
+        try
+        {
+            const string Red = "newmtl rot\nKd 1 0 0\n";
+            var sub = Path.Combine(d, "modell"); Directory.CreateDirectory(Path.Combine(sub, "mat"));
+            var f = Path.Combine(sub, "a.obj");
+            string Color(string lib) { File.WriteAllText(f, $"mtllib {lib}\n" + Tri + "usemtl rot\nf 1 2 3\n"); return Mesh3D.ImportParts(f, "mm").Single().Color; }
+
+            File.WriteAllText(Path.Combine(d, "aussen.mtl"), Red);
+            Assert.Equal("#B7BCC4", Color("../aussen.mtl"));
+            Assert.Equal("#B7BCC4", Color(Path.Combine(d, "aussen.mtl")));
+            File.WriteAllText(Path.Combine(sub, "mat", "innen.mtl"), Red);
+            Assert.Equal("#FF0000", Color("mat/innen.mtl"));
+            File.WriteAllText(Path.Combine(sub, "aussen.mtl"), Red);
+            Assert.Equal("#FF0000", Color(Path.Combine(d, "aussen.mtl"))); // fremder Pfad: gleichnamige Datei neben dem Modell
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0505: OBJ – übergroße Materialdatei wird nicht gelesen")]
+    public void Obj_mtl_size_limit()
+    {
+        var d = Tmp();
+        try
+        {
+            var mtl = Path.Combine(d, "a.mtl");
+            File.WriteAllText(mtl, "newmtl rot\nKd 1 0 0\n");
+            using (var fs = new FileStream(mtl, FileMode.Open, FileAccess.Write)) fs.SetLength(Mesh3D.MaxMtlBytes + 1);
+            var f = Path.Combine(d, "a.obj");
+            File.WriteAllText(f, "mtllib a.mtl\n" + Tri + "usemtl rot\nf 1 2 3\n");
+            Assert.Equal("#B7BCC4", Mesh3D.ImportParts(f, "mm").Single().Color);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    static byte[] StlBinary(int triangles)
+    {
+        using var m = new MemoryStream(); using var w = new BinaryWriter(m);
+        w.Write(new byte[80]); w.Write((uint)triangles);
+        for (var t = 0; t < triangles; t++)
+        {
+            for (var i = 0; i < 3; i++) w.Write(0f);
+            w.Write(0f); w.Write(0f); w.Write(0f);
+            w.Write(1f); w.Write(0f); w.Write(0f);
+            w.Write(1f); w.Write(1f); w.Write(0f);
+            w.Write((ushort)0);
+        }
+        return m.ToArray();
+    }
+
+    const string AsciiFacet = "facet normal 0 0 1\nouter loop\nvertex 0 0 0\nvertex 1 0 0\nvertex 1 1 0\nendloop\nendfacet\n";
+
+    [Fact(DisplayName = "T-0505: STL – Grenze beim Einlesen, normal wie bisher")]
+    public void Stl_limits()
+    {
+        var d = Tmp();
+        try
+        {
+            var bin = Path.Combine(d, "b.stl");
+            File.WriteAllBytes(bin, StlBinary(3));
+            Assert.Equal(3, Mesh3D.ReadMeshFile(bin, 3).Triangles);
+            Assert.Throws<InvalidDataException>(() => Mesh3D.ReadMeshFile(bin, 2));
+
+            var txt = Path.Combine(d, "t.stl");
+            File.WriteAllText(txt, "solid a\n" + AsciiFacet + AsciiFacet + "vertex a b c\n");
+            Assert.Throws<InvalidDataException>(() => Mesh3D.ReadMeshFile(txt, 1)); // die kaputte Zeile dahinter wird nicht mehr erreicht
+            File.WriteAllText(txt, "solid a\r\n" + AsciiFacet.Replace("\n", "\r\n") + "endsolid\r\n");
+            Assert.Equal(1, Mesh3D.ReadMeshFile(txt).Triangles);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    static string Glb(string dir, string json, byte[] bin)
+    {
+        var path = Path.Combine(dir, "a.glb");
+        var j = Encoding.UTF8.GetBytes(json); var pad = (4 - j.Length % 4) % 4;
+        using var w = new BinaryWriter(File.Create(path));
+        w.Write(0x46546C67); w.Write(2); w.Write(12 + 8 + j.Length + pad + 8 + bin.Length);
+        w.Write(j.Length + pad); w.Write(0x4E4F534A); w.Write(j); for (var i = 0; i < pad; i++) w.Write((byte)0x20);
+        w.Write(bin.Length); w.Write(0x004E4942); w.Write(bin);
+        return path;
+    }
+
+    static byte[] OneTriangle() { var b = new byte[36]; foreach (var (at, v) in new[] { (12, 1f), (24, 1f), (28, 1f) }) BitConverter.TryWriteBytes(b.AsSpan(at), v); return b; }
+    const string TriangleAccessors = """ "buffers":[{"byteLength":36}],"bufferViews":[{"buffer":0,"byteLength":36}],"accessors":[{"bufferView":0,"componentType":5126,"count":3,"type":"VEC3"}],"meshes":[{"primitives":[{"attributes":{"POSITION":0}}]}] """;
+
+    [Fact(DisplayName = "T-0505: GLB – Ein Dreieck wird wie bisher gelesen, Instanzen zählen zur Grenze")]
+    public void Glb_instances_limit()
+    {
+        var d = Tmp();
+        try
+        {
+            var nodes = string.Join(',', Enumerable.Repeat("""{"mesh":0}""", 10));
+            var f = Glb(d, "{" + TriangleAccessors + $""","nodes":[{nodes}]""" + "}", OneTriangle());
+            Assert.Equal(10, Mesh3D.ReadMeshFile(f, 10).Triangles);
+            Assert.Throws<InvalidDataException>(() => Mesh3D.ReadMeshFile(f, 9));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0505: GLB – falsche Anzahl im Accessor reserviert keinen Speicher")]
+    public void Glb_bogus_count()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = Glb(d, """{"buffers":[{"byteLength":36}],"bufferViews":[{"buffer":0,"byteLength":36}],"accessors":[{"bufferView":0,"componentType":5126,"count":2000000000,"type":"VEC3"}],"meshes":[{"primitives":[{"attributes":{"POSITION":0}}]}]}""", OneTriangle());
+            Assert.Contains("abgeschnitten", Assert.Throws<InvalidOperationException>(() => Mesh3D.ReadMeshFile(f)).Message);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0505: GLB – Knoten mit doppelten Kindern wachsen nicht exponentiell")]
+    public void Glb_node_graph_limit()
+    {
+        var d = Tmp();
+        try
+        {
+            var nodes = string.Join(',', Enumerable.Range(1, 60).Select(i => "{\"children\":[" + i + "," + i + "]}"));
+            var f = Glb(d, "{" + TriangleAccessors + ",\"nodes\":[" + nodes + ",{\"mesh\":0}],\"scenes\":[{\"nodes\":[0]}]}", OneTriangle());
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            Assert.Throws<InvalidOperationException>(() => Mesh3D.ReadMeshFile(f));
+            Assert.True(sw.Elapsed < TimeSpan.FromSeconds(30), $"Dauer: {sw.Elapsed}");
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0505: GLB – dieselben Punkte können nicht beliebig oft verarbeitet werden")]
+    public void Glb_work_limit()
+    {
+        const int Points = 1_000_000; const int Primitives = 1_200;
+        var d = Tmp();
+        try
+        {
+            var prims = string.Join(',', Enumerable.Repeat("""{"attributes":{"POSITION":0}}""", Primitives));
+            var f = Glb(d, $$"""{"buffers":[{"byteLength":{{Points * 12}}}],"bufferViews":[{"buffer":0,"byteLength":{{Points * 12}}}],"accessors":[{"bufferView":0,"componentType":5126,"count":{{Points}},"type":"VEC3"}],"meshes":[{"primitives":[{{prims}}]}]}""", new byte[Points * 12]);
+            Assert.Throws<InvalidDataException>(() => Mesh3D.ReadMeshFile(f));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0505: glTF – Speicherdatei außerhalb des Ordners wird nicht gelesen")]
+    public void Gltf_buffer_stays_in_folder()
+    {
+        var d = Tmp();
+        try
+        {
+            File.WriteAllBytes(Path.Combine(d, "b.bin"), OneTriangle());
+            var sub = Path.Combine(d, "modell"); Directory.CreateDirectory(sub);
+            var f = Path.Combine(sub, "a.gltf");
+            string Json(string uri) => "{" + TriangleAccessors.Replace("""{"byteLength":36}]""", $$"""{"uri":"{{uri}}","byteLength":36}]""") + "}";
+            File.WriteAllText(f, Json("../b.bin"));
+            Assert.Throws<InvalidOperationException>(() => Mesh3D.ReadMeshFile(f));
+            File.WriteAllBytes(Path.Combine(sub, "b.bin"), OneTriangle());
+            File.WriteAllText(f, Json("b.bin"));
+            Assert.Equal(1, Mesh3D.ReadMeshFile(f).Triangles);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0505: FBX – Zahlenlisten sind begrenzt, normal wie bisher")]
+    public void Fbx_limits()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = Path.Combine(d, "a.fbx");
+            string Fbx(string verts, string poly) => $"Vertices: *1 {{\n a: {verts}\n}}\nPolygonVertexIndex: *1 {{\n a: {poly}\n}}\n";
+            File.WriteAllText(f, Fbx("0, 0,0, 1,0,0,\n1,1,0", "0,1,-3"));
+            Assert.Equal(3, Mesh3D.ImportParts(f, "cm").Single().Indices!.Length);
+            File.WriteAllText(f, Fbx(string.Join(',', Enumerable.Repeat("0", 18)), "0,1,-3"));
+            Assert.Throws<InvalidDataException>(() => Mesh3D.ImportParts(f, "cm", 1));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
     [Fact(DisplayName = "T-0502: OBJ – Teile, Materialien und kaputte Flächen")]
     public void Obj_parts()
     {

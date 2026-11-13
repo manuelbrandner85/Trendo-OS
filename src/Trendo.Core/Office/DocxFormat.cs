@@ -341,7 +341,7 @@ public static class DocxFormat
             var fmt = numbering.Elements(W + "abstractNum").FirstOrDefault(a => (string?)a.Attribute(W + "abstractNumId") == abs)?.Elements(W + "lvl").FirstOrDefault(l => (string?)l.Attribute(W + "ilvl") == level.ToString(CultureInfo.InvariantCulture))?.Element(W + "numFmt")?.Attribute(W + "val")?.Value;
             return fmt == "bullet" || fmt is null ? ListKind.Bullet : ListKind.Number;
         }
-        static string PText(XElement p) => string.Concat(p.Descendants().Where(e => e.Name == W + "t" || e.Name == W + "tab").Select(e => e.Name == W + "tab" ? "\t" : e.Value));
+        static string PText(XElement p) => string.Concat(p.Outermost(e => e.Name == W + "t" || e.Name == W + "tab").Select(e => e.Name == W + "tab" ? "\t" : e.Value));
         Dictionary<string, string> NotesOf(string? target, string tag) =>
             target is null ? [] : Load("word/" + target).Root?.Elements(W + tag).Where(n => (string?)n.Attribute(W + "type") is null or "normal")
                 .ToDictionary(n => (string?)n.Attribute(W + "id") ?? "", n => string.Join("\n", n.Elements(W + "p").Select(PText)).Trim()) ?? [];
@@ -360,7 +360,7 @@ public static class DocxFormat
             if (el.Name == W + "p")
             {
                 // Inhaltsverzeichnis-Feld (TOC): Absätze bis zum Feldende werden ein Verzeichnis-Baustein
-                var instr = string.Concat(el.Descendants(W + "instrText").Select(x => x.Value)).Trim();
+                var instr = string.Concat(el.Outermost(W + "instrText").Select(x => x.Value)).Trim();
                 if (tocDepth == 0 && instr.StartsWith("TOC", StringComparison.Ordinal))
                 {
                     if (doc.Blocks.Count > 0 && doc.Blocks[^1] is Para { Text: var tt } prevTitle && prevTitle.Style == ParaStyle.Text && tt.Trim() is "Inhalt" or "Inhaltsverzeichnis" or "Contents" or "Table of Contents") doc.Blocks.RemoveAt(doc.Blocks.Count - 1);
@@ -386,7 +386,7 @@ public static class DocxFormat
             {
                 var t = new Table();
                 foreach (var tr in el.Elements(W + "tr"))
-                    t.Rows.Add(tr.Elements(W + "tc").Select(tc => string.Join("\n", tc.Elements(W + "p").Select(p => string.Concat(p.Descendants(W + "t").Select(x => x.Value))))).ToList());
+                    t.Rows.Add(tr.Elements(W + "tc").Select(tc => string.Join("\n", tc.Elements(W + "p").Select(p => string.Concat(p.Outermost(W + "t").Select(x => x.Value))))).ToList());
                 if (t.Rows.Count > 0) doc.Blocks.Add(t);
             }
             else if (el.Name == W + "sdt")

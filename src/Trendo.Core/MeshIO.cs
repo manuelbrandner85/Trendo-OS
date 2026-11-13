@@ -11,6 +11,8 @@ public static partial class Mesh3D
     public const int MaxFileTriangles = 20_000_000;
     /// <summary>Höchstzahl der Teile, in die eine Datei zerfallen darf: Jedes Teil kostet Speicher, auch wenn es nur ein Dreieck hat.</summary>
     public const int MaxImportParts = 100_000;
+    /// <summary>Echte Materialdateien sind wenige KB groß.</summary>
+    public const long MaxMtlBytes = 64L * 1024 * 1024;
 
     public static void WriteObj(Mesh mesh, string path)
     {
@@ -132,18 +134,41 @@ public static partial class Mesh3D
         var mesh = ext switch
         {
             ".obj" => ReadObjPlain(path, maxTriangles),
-            ".stl" => ReadStl(path, 1),
-            ".glb" => ReadGlb(path),
-            ".gltf" => ReadGltf(path),
+            ".stl" => ReadStl(path, 1, maxTriangles),
+            ".glb" => ReadGlb(path, maxTriangles),
+            ".gltf" => ReadGltf(path, maxTriangles),
             _ => throw new InvalidOperationException("Diese Datei ist kein Netz, das Trendo kennt."),
         };
         if (mesh.Triangles == 0) throw new InvalidOperationException("In der Datei ist kein Dreieck.");
         return mesh;
     }
 
+    static InvalidDataException TooBig(int max) => new($"Die Datei ist zu groß: Trendo liest höchstens {max:N0} Dreiecke.");
+
+    /// <summary>Text- und JSON-Dateien werden ganz in den Speicher gelesen und belegen dort ein Vielfaches.</summary>
+    const long MaxTextFileBytes = 1L << 30;
+
+    static void CheckTextSize(string path)
+    {
+        if (new FileInfo(path).Length > MaxTextFileBytes) throw new InvalidDataException($"Die Datei ist zu groß: Trendo liest solche Dateien bis {MaxTextFileBytes / 1048576:N0} MB.");
+    }
+
+    /// <summary>Datei, auf die ein Modell verweist. Sie muss im Ordner des Modells liegen: Eine Datei darf Trendo nicht auf fremde Pfade oder Netzfreigaben schicken.
+    /// Zeigt der Verweis woanders hin, gilt eine gleichnamige Datei neben dem Modell. Ohne passende Datei: null.</summary>
+    static string? FileBeside(string modelDir, string reference)
+    {
+        if (reference.Length == 0 || reference.Contains('\0')) return null;
+        var compare = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        var dir = Path.TrimEndingDirectorySeparator(Path.GetFullPath(modelDir.Length == 0 ? "." : modelDir)) + Path.DirectorySeparatorChar;
+        var relative = reference.Replace('\\', '/');
+        var full = Path.GetFullPath(Path.Combine(dir, relative));
+        if (!full.StartsWith(dir, compare)) full = Path.Combine(dir, Path.GetFileName(relative));
+        var info = new FileInfo(full);
+        return info.Exists && (info.Attributes & FileAttributes.ReparsePoint) == 0 ? full : null;
+    }
+
     static Mesh ReadObjPlain(string path, int maxTriangles)
     {
-        static InvalidDataException TooBig(int max) => new($"Die Datei ist zu groß: Trendo liest höchstens {max:N0} Dreiecke.");
         var v = new List<Vec3>(); var m = new Mesh(); var f = new List<int>();
         foreach (var raw in File.ReadLines(path))
         {
@@ -204,14 +229,15 @@ public static partial class Mesh3D
         if (string.IsNullOrWhiteSpace(name)) name = "Datei";
         var mm = unit == "mm" || (unit != "cm" && ext == ".stl");
         var scale = ext is ".glb" or ".gltf" ? 100.0 : mm ? 0.1 : 1.0;
+        var oneMesh = Math.Min(maxTriangles, MaxTriangles); // diese Formate ergeben ein Netz, das mehr als das nicht aufnehmen darf
         List<Part3D> parts = ext switch
         {
             ".obj" => ReadObjParts(path, scale, maxTriangles),
-            ".stl" => SplitColors(ReadStl(path, scale), name),
-            ".glb" => SplitColors(ReadGlb(path), name),
-            ".gltf" => SplitColors(ReadGltf(path), name),
+            ".stl" => SplitColors(ReadStl(path, scale, oneMesh), name),
+            ".glb" => SplitColors(ReadGlb(path, oneMesh), name),
+            ".gltf" => SplitColors(ReadGltf(path, oneMesh), name),
             ".fbx" when IsBinaryFbx(path) => throw new InvalidOperationException("Diese FBX-Datei ist binär. Mit Blender kann Trendo sie öffnen, sonst speichere sie als OBJ, STL oder GLB."),
-            ".fbx" => SplitColors(ReadFbx(path, scale), name),
+            ".fbx" => SplitColors(ReadFbx(path, scale, oneMesh), name),
             ".blend" => throw new InvalidOperationException("Eine Blender-Datei öffnet Trendo mit Blender."),
             _ => throw new InvalidOperationException("Trendo liest OBJ, STL, GLB, glTF und FBX. Blend geht über Blender."),
         };
@@ -381,15 +407,20 @@ public static partial class Mesh3D
         return parts;
     }
 
-    static Mesh ReadStl(string path, double scale)
+    static Mesh ReadStl(string path, double scale, int maxTriangles)
     {
-        var bytes = File.ReadAllBytes(path);
-        if (bytes.Length > 84)
+        var head = new byte[200]; int got; long length;
+        using (var fs = File.OpenRead(path)) { length = fs.Length; got = fs.ReadAtLeast(head, head.Length, throwOnEndOfStream: false); }
+        if (length > 84)
         {
-            var count = BitConverter.ToUInt32(bytes, 80);
-            if (bytes.Length == 84L + count * 50L && count > 0 && !LooksAscii(bytes)) return ReadStlBinary(bytes, (int)count, scale);
+            var count = BitConverter.ToUInt32(head, 80);
+            if (length == 84L + count * 50L && count > 0 && !LooksAscii(head.AsSpan(0, got).ToArray()))
+            {
+                if (count > (uint)maxTriangles) throw TooBig(maxTriangles);
+                return ReadStlBinary(File.ReadAllBytes(path), (int)count, scale);
+            }
         }
-        return ReadStlAscii(Encoding.UTF8.GetString(bytes), scale);
+        return ReadStlAscii(path, scale, maxTriangles);
     }
 
     static bool LooksAscii(byte[] bytes)
@@ -413,23 +444,27 @@ public static partial class Mesh3D
         return m;
     }
 
-    static Mesh ReadStlAscii(string text, double scale)
+    static Mesh ReadStlAscii(string path, double scale, int maxTriangles)
     {
         var m = Gray(); var v = new List<Vec3>();
-        foreach (var raw in text.Split('\n'))
+        foreach (var raw in File.ReadLines(path))
         {
             var line = raw.Trim();
             if (line.StartsWith("vertex", StringComparison.OrdinalIgnoreCase))
             {
                 var p = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                 if (p.Length >= 4) v.Add(new Vec3(D(p[1]), D(p[2]), D(p[3])) * scale);
-                if (v.Count == 3) { m.Add(v[0], v[1], v[2]); v.Clear(); }
+                if (v.Count == 3)
+                {
+                    m.Add(v[0], v[1], v[2]); v.Clear();
+                    if (m.Triangles > maxTriangles) throw TooBig(maxTriangles);
+                }
             }
         }
         return m;
     }
 
-    static Mesh ReadGlb(string path)
+    static Mesh ReadGlb(string path, int maxTriangles)
     {
         var bytes = File.ReadAllBytes(path);
         if (bytes.Length < 20 || BitConverter.ToUInt32(bytes, 0) != 0x46546C67) throw new InvalidOperationException("Das ist keine GLB-Datei.");
@@ -443,11 +478,12 @@ public static partial class Mesh3D
             o += len;
         }
         if (json is null || bin is null) throw new InvalidOperationException("Die GLB-Datei hat keinen Inhalt.");
-        return ParseGltf(json, bin, Path.GetDirectoryName(path)!);
+        return ParseGltf(json, bin, Path.GetDirectoryName(path)!, maxTriangles);
     }
 
-    static Mesh ReadGltf(string path)
+    static Mesh ReadGltf(string path, int maxTriangles)
     {
+        CheckTextSize(path);
         var json = File.ReadAllText(path);
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
@@ -460,11 +496,16 @@ public static partial class Mesh3D
             var comma = uri.IndexOf(',');
             bin = Convert.FromBase64String(uri[(comma + 1)..]);
         }
-        else bin = File.ReadAllBytes(Path.Combine(Path.GetDirectoryName(path)!, Uri.UnescapeDataString(uri)));
-        return ParseGltf(json, bin, Path.GetDirectoryName(path)!);
+        else bin = File.ReadAllBytes(FileBeside(Path.GetDirectoryName(path)!, Uri.UnescapeDataString(uri)) ?? throw new InvalidOperationException("Zur glTF-Datei fehlt die Binärdatei daneben."));
+        return ParseGltf(json, bin, Path.GetDirectoryName(path)!, maxTriangles);
     }
 
-    static Mesh ParseGltf(string json, byte[] bin, string dir)
+    /// <summary>Punkte und Indizes, die eine Datei insgesamt verarbeiten lassen darf. Echte Modelle bleiben weit darunter, auch mit vielen Instanzen.</summary>
+    const long MaxGltfWork = 1_000_000_000;
+    /// <summary>Speicher, den eine glTF-Datei über Puffer und Accessoren belegen darf.</summary>
+    const long MaxGltfBytes = 1L << 31;
+
+    static Mesh ParseGltf(string json, byte[] bin, string dir, int maxTriangles)
     {
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
@@ -472,6 +513,17 @@ public static partial class Mesh3D
             foreach (var e in req.EnumerateArray())
                 if (e.GetString()?.Contains("draco", StringComparison.OrdinalIgnoreCase) == true)
                     throw new InvalidOperationException("Diese GLB-Datei ist komprimiert. Bitte als OBJ oder STL speichern.");
+        static InvalidDataException TooMuch() => new("Die Datei ist zu groß: Sie verlangt mehr Arbeit, als Trendo beim Einlesen zulässt.");
+        long held = 0, work = 0;
+        void Hold(long bytes) { held += bytes; if (held > MaxGltfBytes) throw TooMuch(); }
+        void Work(long items) { work += items; if (work > MaxGltfWork) throw TooMuch(); }
+        var packed = new Dictionary<int, (byte[] Raw, int Comp, int Count)>();
+        (byte[] Raw, int Comp, int Count) Packed(int accessor)
+        {
+            if (!packed.TryGetValue(accessor, out var hit)) { hit = ReadPacked(root, Buf, accessor, Hold); packed[accessor] = hit; }
+            Work(hit.Count);
+            return hit;
+        }
         var cache = new Dictionary<int, byte[]>();
         byte[] Buf(int index)
         {
@@ -494,8 +546,8 @@ public static partial class Mesh3D
             }
             else
             {
-                var bp = Path.Combine(dir, Uri.UnescapeDataString(uri));
-                if (!File.Exists(bp)) throw new InvalidOperationException("Zur glTF-Datei fehlt die Binärdatei daneben.");
+                var bp = FileBeside(dir, Uri.UnescapeDataString(uri)) ?? throw new InvalidOperationException("Zur glTF-Datei fehlt die Binärdatei daneben.");
+                Hold(new FileInfo(bp).Length);
                 data = File.ReadAllBytes(bp);
             }
             return cache[index] = data;
@@ -512,7 +564,7 @@ public static partial class Mesh3D
                 if (prim.TryGetProperty("mode", out var mode) && mode.GetInt32() != 4)
                     throw new InvalidOperationException("Diese glTF-Datei ist kein Dreiecksnetz. Bitte als OBJ oder STL speichern.");
                 if (!prim.TryGetProperty("attributes", out var attr) || !attr.TryGetProperty("POSITION", out var posAcc)) continue;
-                var (posRaw, posComp, posCount) = ReadPacked(root, Buf, posAcc.GetInt32());
+                var (posRaw, posComp, posCount) = Packed(posAcc.GetInt32());
                 if (posComp != 5126) throw new InvalidOperationException("Die Punkte in der Datei sind in einem Format, das Trendo nicht liest.");
                 var pos = new Vec3[posCount];
                 for (var i = 0; i < posCount; i++)
@@ -520,7 +572,7 @@ public static partial class Mesh3D
                 int[] indices;
                 if (prim.TryGetProperty("indices", out var ind))
                 {
-                    var (raw, comp, count) = ReadPacked(root, Buf, ind.GetInt32());
+                    var (raw, comp, count) = Packed(ind.GetInt32());
                     indices = new int[count];
                     for (var i = 0; i < count; i++)
                         indices[i] = comp switch
@@ -540,7 +592,11 @@ public static partial class Mesh3D
                 for (var i = 0; i + 2 < indices.Length; i += 3)
                 {
                     var a = indices[i]; var b0 = indices[i + 1]; var c = indices[i + 2];
-                    if ((uint)a < (uint)pos.Length && (uint)b0 < (uint)pos.Length && (uint)c < (uint)pos.Length) m.Add(pos[a], pos[b0], pos[c]);
+                    if ((uint)a < (uint)pos.Length && (uint)b0 < (uint)pos.Length && (uint)c < (uint)pos.Length)
+                    {
+                        m.Add(pos[a], pos[b0], pos[c]);
+                        if (m.Triangles > maxTriangles) throw TooBig(maxTriangles);
+                    }
                 }
             }
             mi++;
@@ -548,7 +604,7 @@ public static partial class Mesh3D
         return m;
     }
 
-    static (byte[] Raw, int Comp, int Count) ReadPacked(JsonElement root, Func<int, byte[]> buf, int accessor)
+    static (byte[] Raw, int Comp, int Count) ReadPacked(JsonElement root, Func<int, byte[]> buf, int accessor, Action<long> hold)
     {
         var a = root.GetProperty("accessors")[accessor];
         if (!a.TryGetProperty("bufferView", out var bv)) throw new InvalidOperationException("Der Datei fehlt ein Speicherbereich.");
@@ -563,6 +619,8 @@ public static partial class Mesh3D
         var tight = comps * size;
         var stride = view.TryGetProperty("byteStride", out var st) && st.GetInt32() >= tight ? st.GetInt32() : tight;
         if (count < 0 || off < 0) throw new InvalidOperationException("Die Datei ist abgeschnitten.");
+        if (count > 0 && off + (count - 1L) * stride + tight > buffer.Length) throw new InvalidOperationException("Die Datei ist abgeschnitten."); // vor dem Reservieren: Die Anzahl stammt aus der Datei
+        hold((long)count * tight);
         var raw = new byte[count * tight];
         for (var i = 0; i < count; i++)
         {
@@ -611,9 +669,12 @@ public static partial class Mesh3D
             var children = nodes.EnumerateArray().SelectMany(n => n.TryGetProperty("children", out var c) ? c.EnumerateArray().Select(x => x.GetInt32()) : []).ToHashSet();
             roots.AddRange(Enumerable.Range(0, nodes.GetArrayLength()).Where(i => !children.Contains(i)));
         }
+        // In einem echten Szenengraph hat jeder Knoten einen Elternknoten; doppelte Kinder könnten sich sonst je Ebene verdoppeln.
+        var visitsLeft = Math.Max(1_000_000, nodes.GetArrayLength());
         void Walk(int i, double[] parent, int depth)
         {
             if (depth > 64 || i < 0 || i >= nodes.GetArrayLength()) return;
+            if (--visitsLeft < 0) throw new InvalidOperationException("Die Datei hat zu viele Knoten.");
             var n = nodes[i]; var world = Mul(parent, Local(n));
             if (n.TryGetProperty("mesh", out var mesh)) { var k = mesh.GetInt32(); if (!res.TryGetValue(k, out var l)) res[k] = l = []; l.Add(world); }
             if (n.TryGetProperty("children", out var ch)) foreach (var c in ch.EnumerateArray()) Walk(c.GetInt32(), world, depth + 1);
@@ -685,6 +746,7 @@ public static partial class Mesh3D
         Guard(mesh.Triangles);
         if (mesh.Triangles == 0) throw new InvalidOperationException("In der Datei ist kein Dreieck.");
         var groups = Groups(mesh);
+        if (groups.Count > MaxImportParts) throw new InvalidOperationException($"Die Datei hat zu viele Teile (über {MaxImportParts:N0}).");
         var parts = new List<Part3D>();
         for (var i = 0; i < groups.Count; i++)
         {
@@ -714,10 +776,10 @@ public static partial class Mesh3D
         var map = new Dictionary<string, (byte R, byte G, byte B)>(StringComparer.OrdinalIgnoreCase);
         var mtllib = objLines.Select(l => l.Trim()).FirstOrDefault(l => l.StartsWith("mtllib ", StringComparison.OrdinalIgnoreCase));
         if (mtllib is null) return map;
-        var file = Path.Combine(Path.GetDirectoryName(objPath) ?? "", mtllib[7..].Trim());
-        if (!File.Exists(file)) return map;
+        var file = FileBeside(Path.GetDirectoryName(objPath) ?? "", mtllib[7..].Trim());
+        if (file is null || new FileInfo(file).Length > MaxMtlBytes) return map;
         string? name = null;
-        foreach (var line in File.ReadAllLines(file))
+        foreach (var line in File.ReadLines(file))
         {
             var s = line.Trim();
             if (s.StartsWith("newmtl ", StringComparison.OrdinalIgnoreCase)) name = s[7..].Trim();
@@ -734,11 +796,12 @@ public static partial class Mesh3D
         return map;
     }
 
-    static Mesh ReadFbx(string path, double scale)
+    static Mesh ReadFbx(string path, double scale, int maxTriangles)
     {
+        CheckTextSize(path);
         var text = File.ReadAllText(path);
-        var verts = GrabArray(text, "Vertices");
-        var polys = GrabArray(text, "PolygonVertexIndex");
+        var verts = GrabArray(text, "Vertices", maxTriangles);
+        var polys = GrabArray(text, "PolygonVertexIndex", maxTriangles);
         if (verts.Count < 9 || polys.Count < 3) throw new InvalidOperationException("In der FBX-Datei steckt kein Netz, das Trendo lesen kann.");
         var mesh = Gray();
         var v = new List<Vec3>();
@@ -751,7 +814,10 @@ public static partial class Mesh3D
                 face.Add((int)(-id - 1));
                 for (var k = 1; k + 1 < face.Count; k++)
                     if ((uint)face[0] < (uint)v.Count && (uint)face[k] < (uint)v.Count && (uint)face[k + 1] < (uint)v.Count)
+                    {
                         mesh.Add(v[face[0]], v[face[k]], v[face[k + 1]]);
+                        if (mesh.Triangles > maxTriangles) throw TooBig(maxTriangles);
+                    }
                 face.Clear();
             }
             else face.Add((int)id);
@@ -761,7 +827,8 @@ public static partial class Mesh3D
         return mesh;
     }
 
-    static List<double> GrabArray(string text, string key)
+    /// <summary>Zahlenliste einer FBX-Datei, ohne je Zahl einen Text anzulegen; mehr als 9 Zahlen je erlaubtes Dreieck braucht kein echtes Netz.</summary>
+    static List<double> GrabArray(string text, string key, int maxTriangles)
     {
         var i = text.IndexOf(key, StringComparison.Ordinal);
         if (i < 0) return [];
@@ -771,8 +838,14 @@ public static partial class Mesh3D
         var end = text.IndexOf('}', start);
         if (end < 0) end = Math.Min(text.Length, start + 2_000_000);
         var list = new List<double>();
-        foreach (var tok in text[start..end].Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-            if (double.TryParse(tok, NumberStyles.Float, CultureInfo.InvariantCulture, out var d)) list.Add(d);
+        var numbers = text.AsSpan(start, end - start);
+        foreach (var part in numbers.Split(','))
+        {
+            var tok = numbers[part].Trim();
+            if (tok.Length == 0 || !double.TryParse(tok, NumberStyles.Float, CultureInfo.InvariantCulture, out var d)) continue;
+            if (list.Count >= maxTriangles * 9L) throw TooBig(maxTriangles);
+            list.Add(d);
+        }
         return list;
     }
 }

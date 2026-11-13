@@ -281,7 +281,7 @@ public static class SheetFiles
         var kind = plot.Elements().Any(e => e.Name.LocalName is "pieChart" or "pie3DChart" or "doughnutChart") ? ChartKind.Kreis
             : plot.Elements().Any(e => e.Name.LocalName is "lineChart" or "line3DChart" or "scatterChart" or "areaChart") ? ChartKind.Linie : ChartKind.Balken;
         int t = int.MaxValue, l = int.MaxValue, b = -1, rr = -1;
-        foreach (var f in Outermost(plot, c + "f").Select(x => x.Value))
+        foreach (var f in plot.Outermost(c + "f").Select(x => x.Value))
         {
             var bang = f.LastIndexOf('!'); var body = (bang >= 0 ? f[(bang + 1)..] : f).Replace("$", "").Trim('(', ')');
             var ends = body.Split(':');
@@ -290,28 +290,8 @@ public static class SheetFiles
         }
         if (b < 0) return null;
         var titleEl = chart.Root.Element(c + "chart")?.Element(c + "title");
-        var title = titleEl is null ? "" : string.Concat(Outermost(titleEl, a + "t").Select(x => x.Value));
+        var title = titleEl is null ? "" : string.Concat(titleEl.Outermost(a + "t").Select(x => x.Value));
         return new SheetChart(kind, $"{Addr.Name(t, l)}:{Addr.Name(b, rr)}", title.Length > 0 ? title : "Diagramm");
-    }
-
-    /// <summary>Unterelemente mit diesem Namen in Dokumentreihenfolge, aber nicht die darin nochmals verschachtelten: So wird jeder Text nur einmal gelesen.</summary>
-    static IEnumerable<XElement> Outermost(XElement root, XName name)
-    {
-        var node = root.FirstNode;
-        while (node is not null)
-        {
-            if (node is XElement e)
-            {
-                if (e.Name == name) yield return e;
-                else if (e.FirstNode is { } first) { node = first; continue; }
-            }
-            while (node.NextNode is null)
-            {
-                node = node.Parent!;
-                if (ReferenceEquals(node, root)) yield break;
-            }
-            node = node.NextNode;
-        }
     }
 
     const string NoId = "\0"; // Beziehung oder Verweis ohne Id: passen wie bisher zueinander
@@ -339,12 +319,18 @@ public static class SheetFiles
         public ZipArchiveEntry? Entry(string name)
         {
             if (zip.GetEntry(name) is not { } e) return null;
-            _bytes += e.Length;
-            if (_bytes > OfficeZip.MaxTotalBytes) throw Fail($"Notizen und Diagramme wären zusammen über {OfficeZip.MaxTotalBytes / 1048576} MB groß.");
+            Spend(e.Length);
             return e;
         }
 
-        public XDocument? Load(string name) => Entry(name)?.LoadShallowXml();
+        /// <summary>Bucht Arbeit, die einem nochmaligen Lesen entspricht.</summary>
+        public void Spend(long bytes)
+        {
+            _bytes += bytes;
+            if (_bytes > OfficeZip.MaxTotalBytes) throw Fail($"Notizen, Listen und Diagramme wären zusammen über {OfficeZip.MaxTotalBytes / 1048576} MB groß.");
+        }
+
+        public XDocument? Load(string name) => Entry(name)?.LoadXml();
 
         public void CountAnchor()
         {
@@ -453,8 +439,12 @@ public static class SheetFiles
         {
             var f1 = dv.Element(S + "formula1")?.Value ?? "";
             if ((string?)dv.Attribute("type") != "list" || f1.Length < 2 || f1[0] != '"') continue;
+            var items = f1.Trim('"').Split(',').Select(x => x.Trim()).Where(x => x.Length > 0).ToList(); // einmal zerlegen, alle Bereiche teilen sich die Liste
             foreach (var range in ((string?)dv.Attribute("sqref") ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries))
-                sh.Validations.Add(new ValidationRule(range, f1.Trim('"').Split(',').Select(x => x.Trim()).Where(x => x.Length > 0).ToList()));
+            {
+                parts.Spend(f1.Length + range.Length); // jeder Bereich kostet beim Anzeigen und Speichern die ganze Liste
+                sh.Validations.Add(new ValidationRule(range, items));
+            }
         }
         var rels = parts.Load(SheetRelsPath(sheetPath)); if (rels is null) return;
         var target = rels.Root?.Elements(Pr + "Relationship").FirstOrDefault(r => ((string?)r.Attribute("Type"))?.EndsWith("/comments", StringComparison.Ordinal) == true)?.Attribute("Target")?.Value;
@@ -507,7 +497,7 @@ public static class SheetFiles
     public static SheetDoc ReadXlsx(string path)
     {
         using var z = OfficeZip.OpenRead(path);
-        XDocument? Load(string name) { var e = z.GetEntry(name); if (e is null) return null; return e.LoadShallowXml(); }
+        XDocument? Load(string name) { var e = z.GetEntry(name); if (e is null) return null; return e.LoadXml(); }
         var wb = Load("xl/workbook.xml") ?? throw new InvalidDataException("Keine Excel-Mappe (workbook.xml fehlt).");
         var rels = Load("xl/_rels/workbook.xml.rels");
         var shared = z.GetEntry("xl/sharedStrings.xml") is { } sharedEntry ? ReadSharedStrings(sharedEntry) : [];
@@ -594,11 +584,12 @@ public static class SheetFiles
                 try { ReadExtras(extras, target, ws, sh, dxfFills); } catch (Exception e) when (!extras.Over && e is System.Xml.XmlException or InvalidDataException or ArgumentException or FormatException) { }
                 try { ReadCharts(extras, target, ws, sh); } catch (Exception e) when (!extras.Over && e is System.Xml.XmlException or InvalidDataException or ArgumentException) { } // Diagramme sind Beigabe – Zellen trotzdem lesen
             }
+            var colsLeft = Addr.MaxCols; // echte Spaltenangaben überschneiden sich nicht
             foreach (var col in ws.Element(S + "cols")?.Elements(S + "col") ?? [])
             {
-                var min = (int)col.Attribute("min")! - 1; var max = Math.Min((int)col.Attribute("max")! - 1, min + 200);
+                var min = (int)col.Attribute("min")! - 1; var max = Math.Min(Math.Min((int)col.Attribute("max")! - 1, min + 200), Addr.MaxCols - 1);
                 if (double.TryParse((string?)col.Attribute("width"), NumberStyles.Float, CultureInfo.InvariantCulture, out var w) && (string?)col.Attribute("customWidth") is "1" or "true")
-                    for (var c = min; c <= max; c++) sh.ColWidths[c] = Math.Round(w, 2);
+                    for (var c = min; c <= max && colsLeft > 0; c++, colsLeft--) sh.ColWidths[c] = Math.Round(w, 2);
             }
         }
         if (doc.Sheets.Count == 0) doc.Sheets.Add(new Sheet("Tabelle1"));
@@ -687,9 +678,10 @@ public static class SheetFiles
             MoveToRoot(x);
             var ws = root = new XElement(XName.Get(x.LocalName, x.NamespaceURI));
             var dataDone = false;
+            var limited = new OfficeZip.ShallowReader(x); // einer für das ganze Blatt: Die Knoten aller Abschnitte zählen zusammen
             ForEachChild(x, part =>
             {
-                if (!IsS(part, "sheetData")) { ws.Add(XNode.ReadFrom(new OfficeZip.ShallowReader(part))); return; }
+                if (!IsS(part, "sheetData")) { ws.Add(XNode.ReadFrom(limited)); return; }
                 if (dataDone) { part.Skip(); return; }
                 dataDone = true;
                 ForEachChild(part, row => { if (IsS(row, "row")) readRow(row); else row.Skip(); });
@@ -719,18 +711,24 @@ public static class SheetFiles
     static readonly XNamespace Table = "urn:oasis:names:tc:opendocument:xmlns:table:1.0";
     static readonly XNamespace TextNs = "urn:oasis:names:tc:opendocument:xmlns:text:1.0";
 
-    public static SheetDoc ReadOds(string path)
+    /// <summary>Höchstzahl der Zellen, die eine ODS-Datei samt Wiederholungen erzeugen darf.</summary>
+    public const int MaxOdsCells = 20_000_000;
+
+    public static SheetDoc ReadOds(string path, int maxCells = MaxOdsCells)
     {
         using var z = OfficeZip.OpenRead(path);
         var e = z.GetEntry("content.xml") ?? throw new InvalidDataException("Keine ODS-Datei (content.xml fehlt).");
         XDocument x; x = e.LoadXml();
         var doc = new SheetDoc(); doc.Sheets.Clear();
+        static InvalidDataException TooManyCells(int max) => OfficeZip.Bad($"zu viele Zellen (erlaubt {max:N0}).");
+        long created = 0, visited = 0; // „visited“ zählt auch leere und abgeschnittene Zellen: Auch sie kosten Zeit
         foreach (var t in x.Descendants(Table + "table"))
         {
             var sh = new Sheet((string?)t.Attribute(Table + "name") ?? $"Tabelle{doc.Sheets.Count + 1}"); doc.Sheets.Add(sh);
             var r = 0;
             foreach (var row in t.Descendants(Table + "table-row"))
             {
+                if (r >= Addr.MaxRows) break; // alles Weitere läge ohnehin außerhalb des Blatts
                 var rowRep = Math.Min((int?)row.Attribute(Table + "number-rows-repeated") ?? 1, 10_000);
                 var cells = row.Elements().Where(c => c.Name == Table + "table-cell" || c.Name == Table + "covered-table-cell").ToList();
                 var hasContent = cells.Any(c => c.Attribute(Office + "value-type") is not null || c.Attribute(Table + "formula") is not null);
@@ -742,8 +740,15 @@ public static class SheetFiles
                     {
                         var rep = Math.Min((int?)c.Attribute(Table + "number-columns-repeated") ?? 1, 1024);
                         var raw = OdsRaw(c, out var fmt);
+                        if (raw.Length == 0) { col += rep; visited++; if (visited > maxCells * 4L) throw TooManyCells(maxCells); continue; }
+                        visited += rep;
+                        if (visited > maxCells * 4L) throw TooManyCells(maxCells);
                         for (var k = 0; k < rep; k++, col++)
-                            if (raw.Length > 0 && r < Addr.MaxRows && col < Addr.MaxCols) { var cell = sh.GetOrAdd(r, col); cell.Raw = raw; cell.Format = fmt; }
+                            if (r < Addr.MaxRows && col < Addr.MaxCols)
+                            {
+                                if (++created > maxCells) throw TooManyCells(maxCells);
+                                var cell = sh.GetOrAdd(r, col); cell.Raw = raw; cell.Format = fmt;
+                            }
                     }
                 }
             }
