@@ -1,0 +1,526 @@
+{
+ "format": "Trendo SBOM 1",
+ "quelle": "dotnet list package --include-transitive, Lizenz aus .nuspec",
+ "pakete": [
+  {
+   "paket": "Avalonia",
+   "version": "12.1.4",
+   "art": "direkt",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "Avalonia.AvaloniaEdit",
+   "version": "12.0.0",
+   "art": "direkt",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "Avalonia.Controls.WebView",
+   "version": "12.1.1",
+   "art": "direkt",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "Avalonia.Desktop",
+   "version": "12.1.4",
+   "art": "direkt",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "Avalonia.Fonts.Inter",
+   "version": "12.1.4",
+   "art": "direkt",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "Avalonia.Themes.Fluent",
+   "version": "12.1.4",
+   "art": "direkt",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "Ical.Net",
+   "version": "5.2.4",
+   "art": "direkt",
+   "projekte": [
+    "Trendo.App",
+    "Trendo.Core",
+    "Trendo.Api",
+    "Trendo.Companion"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "Microsoft.Data.Sqlite",
+   "version": "10.0.14",
+   "art": "direkt",
+   "projekte": [
+    "Trendo.App",
+    "Trendo.Core",
+    "Trendo.Api",
+    "Trendo.Companion"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "MQTTnet",
+   "version": "5.2.0.1603",
+   "art": "direkt",
+   "projekte": [
+    "Trendo.App",
+    "Trendo.Core",
+    "Trendo.Api",
+    "Trendo.Companion"
+   ],
+   "lizenz": "Lizenzdatei im Paket: LICENSE"
+  },
+  {
+   "paket": "NLayer",
+   "version": "1.16.0",
+   "art": "direkt",
+   "projekte": [
+    "Trendo.App",
+    "Trendo.Core",
+    "Trendo.Api",
+    "Trendo.Companion"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "PDFsharp",
+   "version": "6.2.4",
+   "art": "direkt",
+   "projekte": [
+    "Trendo.App",
+    "Trendo.Core",
+    "Trendo.Api",
+    "Trendo.Companion"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "PDFtoImage",
+   "version": "5.2.1",
+   "art": "direkt",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "SharpCompress",
+   "version": "0.50.7",
+   "art": "direkt",
+   "projekte": [
+    "Trendo.App",
+    "Trendo.Core",
+    "Trendo.Api",
+    "Trendo.Companion"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "System.Security.Cryptography.Pkcs",
+   "version": "10.0.14",
+   "art": "direkt",
+   "projekte": [
+    "Trendo.App",
+    "Trendo.Core",
+    "Trendo.Api",
+    "Trendo.Companion"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "Velopack",
+   "version": "1.2.161",
+   "art": "direkt",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "WeCantSpell.Hunspell",
+   "version": "7.0.1",
+   "art": "direkt",
+   "projekte": [
+    "Trendo.App",
+    "Trendo.Core",
+    "Trendo.Api",
+    "Trendo.Companion"
+   ],
+   "lizenz": "Lizenzdatei im Paket: license.txt"
+  },
+  {
+   "paket": "YamlDotNet",
+   "version": "16.3.0",
+   "art": "direkt",
+   "projekte": [
+    "Trendo.App",
+    "Trendo.Core",
+    "Trendo.Api",
+    "Trendo.Companion"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "ZUGFeRD-csharp",
+   "version": "18.0.1",
+   "art": "direkt",
+   "projekte": [
+    "Trendo.App",
+    "Trendo.Core",
+    "Trendo.Api",
+    "Trendo.Companion"
+   ],
+   "lizenz": "Apache-2.0"
+  },
+  {
+   "paket": "Avalonia.Angle.Windows.Natives",
+   "version": "2.1.27548.20260419",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "Lizenzdatei im Paket: LICENSE"
+  },
+  {
+   "paket": "Avalonia.BuildServices",
+   "version": "11.3.2",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "Avalonia.FreeDesktop",
+   "version": "12.1.4",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "Avalonia.FreeDesktop.AtSpi",
+   "version": "12.1.4",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "Avalonia.HarfBuzz",
+   "version": "12.1.4",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "Avalonia.Native",
+   "version": "12.1.4",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "Avalonia.Remote.Protocol",
+   "version": "12.1.4",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "Avalonia.Skia",
+   "version": "12.1.4",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "Avalonia.Win32",
+   "version": "12.1.4",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "Avalonia.X11",
+   "version": "12.1.4",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "bblanchon.PDFium.Linux",
+   "version": "147.0.7690",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "Apache-2.0"
+  },
+  {
+   "paket": "bblanchon.PDFium.macOS",
+   "version": "147.0.7690",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "Apache-2.0"
+  },
+  {
+   "paket": "bblanchon.PDFium.Win32",
+   "version": "147.0.7690",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "Apache-2.0"
+  },
+  {
+   "paket": "HarfBuzzSharp",
+   "version": "8.3.1.3",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "HarfBuzzSharp.NativeAssets.Linux",
+   "version": "8.3.1.3",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "HarfBuzzSharp.NativeAssets.macOS",
+   "version": "8.3.1.3",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "HarfBuzzSharp.NativeAssets.WebAssembly",
+   "version": "8.3.1.3",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "HarfBuzzSharp.NativeAssets.Win32",
+   "version": "8.3.1.3",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "MicroCom.Runtime",
+   "version": "0.11.6",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "Microsoft.Data.Sqlite.Core",
+   "version": "10.0.14",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App",
+    "Trendo.Core",
+    "Trendo.Api",
+    "Trendo.Companion"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "Microsoft.Extensions.DependencyInjection.Abstractions",
+   "version": "8.0.2",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App",
+    "Trendo.Core",
+    "Trendo.Companion"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "Microsoft.Extensions.Logging.Abstractions",
+   "version": "8.0.3",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App",
+    "Trendo.Core",
+    "Trendo.Companion"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "NodaTime",
+   "version": "3.2.2",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App",
+    "Trendo.Core",
+    "Trendo.Api",
+    "Trendo.Companion"
+   ],
+   "lizenz": "Apache-2.0"
+  },
+  {
+   "paket": "SkiaSharp",
+   "version": "3.119.4",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "SkiaSharp.NativeAssets.Linux",
+   "version": "3.119.4",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "SkiaSharp.NativeAssets.Linux.NoDependencies",
+   "version": "3.119.2",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "SkiaSharp.NativeAssets.macOS",
+   "version": "3.119.4",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "SkiaSharp.NativeAssets.WebAssembly",
+   "version": "3.119.4",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "SkiaSharp.NativeAssets.Win32",
+   "version": "3.119.4",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  },
+  {
+   "paket": "SQLitePCLRaw.bundle_e_sqlite3",
+   "version": "2.1.13",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App",
+    "Trendo.Core",
+    "Trendo.Api",
+    "Trendo.Companion"
+   ],
+   "lizenz": "Apache-2.0"
+  },
+  {
+   "paket": "SQLitePCLRaw.core",
+   "version": "2.1.13",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App",
+    "Trendo.Core",
+    "Trendo.Api",
+    "Trendo.Companion"
+   ],
+   "lizenz": "Apache-2.0"
+  },
+  {
+   "paket": "SQLitePCLRaw.lib.e_sqlite3",
+   "version": "2.1.13",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App",
+    "Trendo.Core",
+    "Trendo.Api",
+    "Trendo.Companion"
+   ],
+   "lizenz": "Apache-2.0"
+  },
+  {
+   "paket": "SQLitePCLRaw.provider.e_sqlite3",
+   "version": "2.1.13",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App",
+    "Trendo.Core",
+    "Trendo.Api",
+    "Trendo.Companion"
+   ],
+   "lizenz": "Apache-2.0"
+  },
+  {
+   "paket": "Tmds.DBus.Protocol",
+   "version": "0.94.1",
+   "art": "mittelbar",
+   "projekte": [
+    "Trendo.App"
+   ],
+   "lizenz": "MIT"
+  }
+ ]
+}
