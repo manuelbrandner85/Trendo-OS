@@ -38,7 +38,7 @@ export function anpassungenCss(data, art) {
       if (Number.isInteger(a.schrift) && a.schrift >= 50 && a.schrift <= 200) d.push("font-size:" + a.schrift + "%", "--t-schrift:" + a.schrift / 100);
       if (d.length) regeln.push(`[data-b="${id}"]{${d.join(";")}}`);
       // Ausrichtung auch direkt am Inhalt, damit sie die Grundausrichtung des Bausteins schlägt
-      if (AUSRICHTUNG.includes(a.ausrichtung)) regeln.push(`[data-b="${id}"],.t-page [data-b="${id}"]>*{text-align:${a.ausrichtung}}`);
+      if (AUSRICHTUNG.includes(a.ausrichtung)) regeln.push(`[data-b="${id}"],.t-page [data-b="${id}"]>*,[data-b="${id}"] .t-hero{text-align:${a.ausrichtung}}`);
       if (b.type === "Spalten" && (a.spalten === 1 || a.spalten === 2)) regeln.push(`[data-b="${id}"]>.t-cols-box>.t-cols{grid-template-columns:repeat(${a.spalten},minmax(0,1fr))}`);
     }
     if (regeln.length) teile.push(`${art === "container" ? "@container seite" : "@media"} (max-width: ${v.breite}px){${regeln.join("")}}`);

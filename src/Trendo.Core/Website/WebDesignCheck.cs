@@ -46,7 +46,8 @@ public static partial class WebDesignCheck
     public static IReadOnlyList<WebsiteFinding> CheckData(string json, string projectDir)
     {
         var f = new List<WebsiteFinding>();
-        if (JsonNode.Parse(json) is not JsonObject doc) return [new("SEO", "Fehler", "Die Seitendaten sind unlesbar.", "data")];
+        if (JsonNode.Parse(json) is not JsonObject raw) return [new("SEO", "Fehler", "Die Seitendaten sind unlesbar.", "data")];
+        var doc = WebDesignComponents.Expand(raw); // geprüft wird, was Besucher sehen: Komponenten mit ihren Überschreibungen
         var blocks = new List<JsonObject>();
         void Walk(JsonNode? n)
         {

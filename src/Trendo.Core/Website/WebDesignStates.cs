@@ -33,13 +33,24 @@ public static partial class WebDesignStates
     }
 
     /// <summary>Inhalt der Seite oder einer Variante.</summary>
-    public static string Read(string dir, string? variant = null) => WebDesignTokens.Inject(variant is null ? PageRaw(dir) : VariantContent(dir, variant) ?? WebDesign.Empty(), WebDesignTokens.Load(dir)); // W6: Gestaltungswerte des Projekts gelten überall
+    /// <remarks>W6, W5: Gestaltungswerte und Komponenten des Projekts gelten für die Seite und den Export. Eine Variante bringt ihre eigenen mit (beim Anlegen kopiert),
+    /// damit sich auch eine andere Farbwelt ausprobieren lässt, ohne die Seite zu ändern (K5); erst beim Übernehmen gelten sie fürs Projekt.</remarks>
+    public static string Read(string dir, string? variant = null) => variant is null
+        ? WebDesignComponents.Inject(WebDesignTokens.Inject(PageRaw(dir), WebDesignTokens.Load(dir)), dir)
+        : VariantContent(dir, variant) ?? WebDesign.Empty();
+
+    /// <summary>Gestaltungswerte und Komponenten aus Seitendaten ins Projekt übernehmen.</summary>
+    static void LiftProject(string dir, string json)
+    {
+        if (WebDesign.Validate(json).Json is not { } ok) return;
+        WebDesignTokens.Lift(dir, ok); WebDesignComponents.Lift(dir, ok);
+    }
 
     /// <summary>Schreibt die Seite oder eine Variante. Nur gültige Daten; bei der Seite bleibt die vorige Fassung als Sicherung.</summary>
     public static string? Write(string dir, string json, string? variant = null)
     {
         var err = variant is null ? WebDesign.Save(dir, json) : SaveVariant(dir, variant, json);
-        if (err is null && WebDesign.Validate(json).Json is { } ok) WebDesignTokens.Lift(dir, ok); // geänderte Gestaltungswerte gelten ab jetzt für das ganze Projekt
+        if (err is null && variant is null) LiftProject(dir, json); // Werte der Seite gelten ab jetzt fürs Projekt; eine Variante ändert die Seite nicht
         return err;
     }
 
@@ -103,6 +114,7 @@ public static partial class WebDesignStates
             var f = Path.Combine(dir, WebDesign.PageFile);
             if (File.Exists(f)) File.Copy(f, Path.Combine(dir, WebDesign.BackupFile), true);
             WriteAtomic(f, text);
+            LiftProject(dir, text); // auch Gestaltungswerte und Komponenten kehren zum alten Stand zurück; die neuen liegen im automatischen Stand
         }
         return null;
     }
@@ -163,8 +175,11 @@ public static partial class WebDesignStates
     public static string? AdoptVariant(string dir, string id)
     {
         if (VariantContent(dir, id) is not { } text) return "Diese Variante gibt es nicht mehr.";
-        var (auto, err) = SaveContent(dir, "Vor Übernahme einer Variante", PageRaw(dir), true);
-        return auto is null ? err : WebDesign.Save(dir, text);
+        var (auto, err) = SaveContent(dir, "Vor Übernahme einer Variante", Read(dir), true);
+        if (auto is null) return err;
+        var save = WebDesign.Save(dir, text);
+        if (save is null) LiftProject(dir, text); // mit der Variante gelten ihre Gestaltungswerte und Komponenten fürs Projekt
+        return save;
     }
 
     public static bool DeleteVariant(string dir, string id)

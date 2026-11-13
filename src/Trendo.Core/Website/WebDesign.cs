@@ -31,6 +31,7 @@ public static partial class WebDesign
             Sanitize(o);
             SanitizeTokens(o["root"]?["props"] as JsonObject);
             WebDesignViews.Sanitize(o);
+            if (o["root"]?["props"] is JsonObject rp && rp["komponenten"] is not null) rp["komponenten"] = WebDesignComponents.ToJson(WebDesignComponents.Read(rp["komponenten"])); // nur gültige Komponenten
             return (o.ToJsonString(), null);
         }
         catch (Exception e) when (e is JsonException or ArgumentException) { return (null, "Seitendaten sind kein gültiges JSON."); } // ArgumentException: doppelte Schlüssel
@@ -127,7 +128,7 @@ public static partial class WebDesign
     /// <summary>Exportiert die gespeicherte Seite als fertige Webseite: index.html, seite.js (Daten) und das Editor-Bündel im Anzeigemodus – läuft ohne Netz direkt aus dem Ordner.</summary>
     public static (string? Dir, string? Error) Export(string projectDir, string editorDir)
     {
-        return ExportContent(WebDesignTokens.Inject(Load(projectDir), WebDesignTokens.Load(projectDir)), projectDir, Path.Combine(projectDir, ExportDir), editorDir);
+        return ExportContent(WebDesignComponents.Inject(WebDesignTokens.Inject(Load(projectDir), WebDesignTokens.Load(projectDir)), projectDir), projectDir, Path.Combine(projectDir, ExportDir), editorDir);
     }
 
     /// <summary>Exportiert bestimmte Seitendaten in einen Zielordner (auch eine Vorschau oder Variante, ohne die gespeicherte Seite zu berühren). Bilder aus dem Projekt reisen mit, damit die Seite vollständig bleibt.</summary>

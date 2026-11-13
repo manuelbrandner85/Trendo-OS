@@ -14,7 +14,7 @@ public class WebDesignStufe2_Ui
     static void Pump() { for (var i = 0; i < 8; i++) Dispatcher.UIThread.RunJobs(); }
     const string Page = """{"root":{"props":{"title":"Seite","description":"Kurz"}},"content":[{"type":"Text","props":{"id":"t1","text":"Absatz","align":"left"}}],"zones":{}}""";
 
-    [AvaloniaFact(DisplayName = "W6: Kontrast wird schon beim Wählen gemeldet; Übernehmen gilt für Seite und Variante")]
+    [AvaloniaFact(DisplayName = "W6: Kontrast wird schon beim Wählen gemeldet; Übernehmen gilt fürs Projekt, eine bestehende Variante bleibt unverändert")]
     public void Tokens_pane()
     {
         var (w, _, _) = Ui.Open();
@@ -35,9 +35,41 @@ public class WebDesignStufe2_Ui
         Assert.StartsWith("✓", w.Find<TextBlock>("web-tok-check").Text);
         w.Find<Button>("web-tok-apply").Press(); Pump();
         Assert.Equal("#7A1F2B", WebDesignTokens.Load(w.WebDesignDir)!["accent"]!.ToString());
-        var variant = WebDesignStates.Variants(w.WebDesignDir).Single().Id;
-        var props = JsonNode.Parse(WebDesignStates.Read(w.WebDesignDir, variant))!["root"]!["props"]!;
+        var props = JsonNode.Parse(WebDesignStates.Read(w.WebDesignDir))!["root"]!["props"]!;
         Assert.Equal(("#7A1F2B", "#123456", true), (props["accent"]!.ToString(), props["ink"]!.ToString(), props["dunkel"]!.GetValue<bool>()));
+        var variant = WebDesignStates.Variants(w.WebDesignDir).Single().Id;
+        Assert.DoesNotContain("7A1F2B", WebDesignStates.Read(w.WebDesignDir, variant)); // K5: Variante ändert sich nicht mit
+    }
+
+    [AvaloniaFact(DisplayName = "W5: Auswahl zur Komponente machen, einfügen, als Vorlage speichern und in ein anderes Projekt holen")]
+    public void Components_pane()
+    {
+        var templates = Path.Combine(Path.GetTempPath(), "trendo-web2-vorlagen-" + Guid.NewGuid().ToString("N"));
+        MainWindow.WebDesignTemplatesOverride = templates;
+        try
+        {
+            var (w, _, _) = Ui.Open();
+            w.WebDesignMessage("""{"art":"speichern","daten":{"root":{"props":{"title":"Seite"}},"content":[{"type":"Ueberschrift","props":{"id":"u","text":"Paket","level":"h2"}},{"type":"Text","props":{"id":"t","text":"Preis","align":"left"}}],"zones":{}}}"""); Pump();
+            w.Show("dev"); Pump();
+            Assert.False(w.Find<Button>("web-komp-erstellen").IsEnabled); // ohne Auswahl nicht möglich
+            w.WebDesignMessage("""{"art":"auswahl","daten":{"ids":["u","t"]}}"""); Pump();
+            w.Find<TextBox>("web-komp-name").Text = "Preiskarte";
+            w.Find<Button>("web-komp-erstellen").Press(); Pump();
+            var def = WebDesignComponents.Load(w.WebDesignDir).Single();
+            Assert.Equal("Preiskarte", def.Name); Assert.Empty(w.WebDesignSelection);
+            w.Find<Button>("web-komp-einfuegen-0").Press(); Pump();
+            Assert.Equal(2, JsonNode.Parse(WebDesign.Load(w.WebDesignDir))!["content"]!.AsArray().Count(b => b!["type"]!.ToString() == "Komponente"));
+            Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Preiskarte · 2 Baustein(e) · 2 Verwendung(en)"));
+            w.Find<Button>("web-komp-vorlage-0").Press(); Pump();
+            Assert.Single(WebDesignComponents.Templates(templates));
+
+            var (w2, _, _) = Ui.Open(); // anderes Projekt
+            w2.Show("dev"); Pump();
+            w2.Find<Button>("web-vorlage-0").Press(); Pump();
+            var expanded = WebDesignComponents.Expand(JsonNode.Parse(WebDesignStates.Read(w2.WebDesignDir))!.AsObject());
+            Assert.Contains("Paket", expanded["content"]!.ToJsonString());
+        }
+        finally { MainWindow.WebDesignTemplatesOverride = null; if (Directory.Exists(templates)) Directory.Delete(templates, true); }
     }
 
     [AvaloniaFact(DisplayName = "W1/Z4: Ansicht mit eigener Breite anlegen, Breite ändern und entfernen, ungültige Breite wird gemeldet")]

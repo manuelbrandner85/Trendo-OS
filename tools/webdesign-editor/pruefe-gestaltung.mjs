@@ -58,10 +58,12 @@ try {
     await call("Page.navigate", { url });
     await vorbereiten();
     check(`${wo}: Seite gezeichnet`, await until(`!!document.querySelector('[data-b="t1"] p')`));
+    check(`${wo}: Kopfbereich auf Desktop mittig`, (await run(style('[data-b="held"] .t-hero', "text-align"))) === "center");
     check(`${wo}: Desktop bleibt links`, ["left", "start"].includes(await run(style('[data-b="t1"] p', "text-align"))));
     const base = parseFloat(await run(style('[data-b="t1"] p', "font-size")));
     await width(900);
     check(`${wo}: Tablet-Anpassung wirkt`, (await run(style('[data-b="t1"] p', "text-align"))) === "center");
+    check(`${wo}: Ausrichtung wirkt auch im Kopfbereich`, ["left", "start"].includes(await run(style('[data-b="held"] .t-hero', "text-align"))), await run(style('[data-b="held"] .t-hero', "text-align")));
     check(`${wo}: Tablet behält die Grundschrift`, parseFloat(await run(style('[data-b="t1"] p', "font-size"))) === base);
     await width(500);
     check(`${wo}: Handy erbt von Tablet`, (await run(style('[data-b="t1"] p', "text-align"))) === "center");
@@ -74,6 +76,7 @@ try {
     check(`${wo}: Stapel-Abstand aus dem Gestaltungswert (24 px × 0,5)`, (await run(style('[data-b="stapel"] .t-stack', "column-gap"))) === "12px");
     await width(390);
     check(`${wo}: Stapel bleibt bei 390 px im Rahmen`, (await run(overflow)) <= 1, await run(overflow));
+    check(`${wo}: Stapel-Box liegt innerhalb der Seite`, await run(`(()=>{const s=document.querySelector('[data-b="stapel"] .t-stack').getBoundingClientRect(),p=document.querySelector('.t-page').getBoundingClientRect();return s.left>=p.left-0.5&&s.right<=p.right+0.5;})()`));
     await call("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: "dark" }] });
     check(`${wo}: dunkler Satz bei dunklem Gerät`, (await run(style(".t-page", "background-color"))) === "rgb(18, 18, 18)", await run(style(".t-page", "background-color")));
     await call("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: "light" }] });
@@ -123,7 +126,7 @@ try {
   await waehle("Tablet");
   await until(`window.__sichtbar('.t-anp').querySelectorAll('.t-anp-reset').length===1`);
   await mouseClick('.t-anp-reset');
-  check("Editor: Zurücksetzen entfernt nur die Tablet-Anpassung", await until(`(()=>{const e=window.__m.filter(x=>x.art==='entwurf').at(-1);if(!e)return false;const t=JSON.stringify(e.daten);return !t.includes('"Tablet":{"ausrichtung"') && t.includes('"Handy":{"schrift":150}');})()`, 4000), await run(`[[...document.querySelectorAll('.t-anp')].map(e=>(e.closest('[class*="Field"],[class*="field"]')?.className||'?')+' :: '+e.innerText.slice(0,60)), window.__m.filter(x=>x.art==='entwurf').length, JSON.stringify(window.__m.filter(x=>x.art==='entwurf').at(-1)?.daten?.content?.map(b=>[b.props.id,b.props.anpassungen]))]`));
+  check("Editor: Zurücksetzen entfernt nur die Tablet-Anpassung", await until(`(()=>{const e=window.__m.filter(x=>x.art==='entwurf').at(-1);if(!e)return false;const b=e.daten.content.find(x=>x.props.id==='t1');const t=JSON.stringify(b.props.anpassungen||{});return !t.includes('"Tablet"') && t.includes('"Handy":{"schrift":150}');})()`, 4000), await run(`[[...document.querySelectorAll('.t-anp')].map(e=>(e.closest('[class*="Field"],[class*="field"]')?.className||'?')+' :: '+e.innerText.slice(0,60)), window.__m.filter(x=>x.art==='entwurf').length, JSON.stringify(window.__m.filter(x=>x.art==='entwurf').at(-1)?.daten?.content?.map(b=>[b.props.id,b.props.anpassungen]))]`));
   check("keine Skriptfehler", exceptions.length === 0, exceptions.slice(0, 3));
 } catch (e) { problems.push(String(e?.message ?? e)); }
 finally {

@@ -40,6 +40,7 @@ body { margin: 0; background: #fff; font-family: "Segoe UI", Inter, system-ui, s
 /* A5: Stapel – Abstand aus dem Gestaltungswert, bricht um statt überzulaufen */
 .t-stack { display: flex; flex-wrap: wrap; min-width: 0; padding: 0 var(--t-space); box-sizing: border-box; }
 .t-stack-senkrecht { flex-direction: column; }
+.t-stack .t-stack { padding: 0; }
 .t-stack > * { min-width: 0; max-width: 100%; }
 .t-stack-waagerecht.t-stack-fuellt > * { flex: 1 1 0; }
 .t-stack-senkrecht.t-stack-fuellt { align-items: stretch; }

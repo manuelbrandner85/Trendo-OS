@@ -69,6 +69,7 @@ public partial class MainWindow
         if (!editorOk) sp.Children.Add(P("Editor-Bündel fehlt im Programm (Assets/webdesign) – bitte Trendo neu installieren.", Avalonia.Media.Brush.Parse("#F5A524"), 12));
         sp.Children.Add(WebDesignKiPane());
         sp.Children.Add(WebDesignTokensPane());
+        sp.Children.Add(WebDesignComponentsPane());
         if (_wdNote.Length > 0) sp.Children.Add(new TextBlock { Name = "web-visual-note", Text = _wdNote, FontSize = 12, Foreground = Muted, TextWrapping = Avalonia.Media.TextWrapping.Wrap });
         if (_wdOpen && editorOk)
         {

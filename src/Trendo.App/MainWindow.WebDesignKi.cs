@@ -303,7 +303,7 @@ public partial class MainWindow
         WebDesignDropPending(); WebDesignKeepDraft("Entwurf vor Wechsel der Fassung");
         _wdVariant = id; WebDesignClearSelection();
         WebDesignReload(WebDesignStates.Read(WebDesignDir, id));
-        _wdNote = id is null ? "Du bearbeitest wieder die Seite." : "Du bearbeitest jetzt eine Variante. Die Seite bleibt unverändert.";
+        _wdNote = id is null ? "Du bearbeitest wieder die Seite." : "Du bearbeitest jetzt eine Variante mit eigener Gestaltung. Die Seite bleibt unverändert, bis du die Variante übernimmst.";
         Show("dev");
     }
 

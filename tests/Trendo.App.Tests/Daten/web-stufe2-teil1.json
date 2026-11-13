@@ -6,6 +6,7 @@
  {"aktion":"baustein_einfuegen","typ":"Text","id":"t1","props":{"text":"Absatz zum Prüfen"}},
  {"aktion":"anpassung_setzen","id":"t1","ansicht":"Tablet","werte":{"ausrichtung":"center"}},
  {"aktion":"anpassung_setzen","id":"t1","ansicht":"Handy","werte":{"schrift":150}},
+ {"aktion":"anpassung_setzen","id":"held","ansicht":"Tablet","werte":{"ausrichtung":"left"}},
  {"aktion":"baustein_einfuegen","typ":"Spalten","id":"aussen"},
  {"aktion":"baustein_einfuegen","typ":"Spalten","id":"mitte","in":"aussen","slot":"left"},
  {"aktion":"baustein_einfuegen","typ":"Spalten","id":"innen","in":"mitte","slot":"left"},

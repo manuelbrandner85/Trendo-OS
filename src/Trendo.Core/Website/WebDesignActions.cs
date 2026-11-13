@@ -43,6 +43,12 @@ public static partial class WebDesignActions
         new("animation_setzen", "Setzt die Bewegung eines Bausteins, der sie kann: bewegung (keine, einblenden, schweben), dauer (0,2 bis 5 Sekunden).", KiBedarf.Text, ["id", "bewegung"], ["dauer"], true),
         new("bild_setzen", "Setzt die Bilddatei eines Bild-Bausteins samt Alternativtext. Die KI muss das Bild sehen können.", KiBedarf.Bild, ["id", "src", "alt"], [], true),
         new("stand_speichern", "Speichert das Ergebnis des Plans als benannten Stand.", KiBedarf.Text, ["name"], []),
+        new("komponente_erstellen", "Macht Bausteine (ids, aus derselben Liste) zu einer Komponente mit name; an ihrer Stelle steht danach eine Verwendung.", KiBedarf.Text, ["name", "ids"], ["id"]),
+        new("komponente_definieren", "Legt eine Komponente aus neuen Bausteinen an: name und bausteine (Liste aus typ, id, props).", KiBedarf.Text, ["name", "bausteine"], ["komponente"]),
+        new("komponente_einfuegen", "Fügt eine Verwendung einer Komponente ein: komponente (id), optional id, in, slot, position.", KiBedarf.Text, ["komponente"], ["id", "in", "slot", "position"]),
+        new("komponente_aendern", "Ändert das Original einer Komponente (wirkt auf alle Verwendungen): komponente, element (id im Original), props.", KiBedarf.Text, ["komponente", "element", "props"], []),
+        new("komponente_ueberschreiben", "Überschreibt Felder nur in einer Verwendung: id der Verwendung, element (id im Original), props.", KiBedarf.Text, ["id", "element", "props"], [], true),
+        new("komponente_zuruecksetzen", "Nimmt Überschreibungen einer Verwendung zurück, optional nur für element oder felder.", KiBedarf.Text, ["id"], ["element", "felder"], true),
     ];
 
     enum Art { Text, Link, Bild, Farbe, Wahl, Zahl, Slot, Stufe }
@@ -66,6 +72,8 @@ public static partial class WebDesignActions
         ["Szene3D"] = new(new() { ["form"] = new(Art.Wahl, ["wuerfel", "kugel", "ring"]), ["color"] = new(Art.Farbe), ["spin"] = new(Art.Zahl, Min: 0, Max: 3), ["height"] = new(Art.Zahl, Min: 160, Max: 900) },
             D(("form", "ring"), ("color", "#d4a73a"), ("spin", 0.6), ("height", 380))),
         // A5: Stapel mit Abstand als Stufe des Gestaltungswerts statt fester Pixel
+        // W5: Verwendung einer Komponente; Inhalt kommt aus dem Original, Änderungen nur über die Komponenten-Aktionen
+        ["Komponente"] = new(new(), D()),
         ["Stapel"] = new(new() { ["inhalt"] = new(Art.Slot), ["richtung"] = new(Art.Wahl, ["senkrecht", "waagerecht"]), ["abstand"] = new(Art.Stufe, Min: 0, Max: 4), ["breite"] = new(Art.Wahl, ["passt", "fuellt"]), ["ausrichtung"] = new(Art.Wahl, ["start", "mitte", "ende"]) },
             D(("richtung", "senkrecht"), ("abstand", 2), ("breite", "passt"), ("ausrichtung", "start"))),
     };
@@ -307,6 +315,7 @@ public static partial class WebDesignActions
             case "baustein_einfuegen":
             {
                 var type = NeedS(a["typ"], "typ"); var def = Def(type);
+                if (type == "Komponente") throw new PlanError("Komponenten bitte mit „komponente_einfuegen“ einfügen.");
                 var given = Props(type, a["props"], true);
                 var id = a["id"] is { } idn ? NeedS(idn, "id") : NewId(doc, type);
                 if (!IdPattern().IsMatch(id)) throw new PlanError($"„{id}“ ist keine gültige id.");
@@ -442,6 +451,113 @@ public static partial class WebDesignActions
                 var props = block["props"]!.AsObject();
                 props["src"] = Image("src", src); props["alt"] = alt;
                 changes.Add($"Bild {id} gesetzt");
+                return doc;
+            }
+            case "komponente_erstellen":
+            case "komponente_definieren":
+            {
+                var cname = NeedS(a["name"], "name").Trim();
+                if (!WebDesignComponents.ValidName(cname)) throw new PlanError("Der Name der Komponente darf 1 bis 60 Buchstaben, Ziffern, Leerzeichen, Punkt, Strich oder Unterstrich haben.");
+                var defs = WebDesignComponents.Read(rootProps["komponenten"]);
+                if (defs.Any(c => c.Name.Equals(cname, StringComparison.OrdinalIgnoreCase))) throw new PlanError($"Eine Komponente „{cname}“ gibt es schon.");
+                if (defs.Count >= WebDesignComponents.MaxComponents) throw new PlanError("Zu viele Komponenten.");
+                var kid = name == "komponente_definieren" && a["komponente"] is { } kn ? NeedS(kn, "komponente") : null;
+                if (kid is null) for (var n = 1; ; n++) if (!defs.Any(c => c.Id == $"K-{n}")) { kid = $"K-{n}"; break; }
+                if (!IdPattern().IsMatch(kid) || defs.Any(c => c.Id == kid)) throw new PlanError($"Komponenten-id „{kid}“ ist ungültig oder vergeben.");
+                var blocks = new JsonArray();
+                if (name == "komponente_erstellen")
+                {
+                    if (a["ids"] is not JsonArray ids || ids.Count == 0) throw new PlanError("„ids“ muss eine Liste von Bausteinen sein.");
+                    var found = ids.Select(x => Find(doc, NeedS(x, "ids"))).Distinct().ToList();
+                    var list = Lists(doc).First(l => l.Contains(found[0]));
+                    if (found.Any(b => !list.Contains(b))) throw new PlanError("Alle Bausteine einer Komponente müssen nebeneinander in derselben Liste liegen.");
+                    if (found.Any(b => TypeOf(b) == "Komponente")) throw new PlanError("Eine Komponente kann keine Verwendung einer Komponente enthalten.");
+                    var ordered = found.OrderBy(b => list.IndexOf(b)).ToList();
+                    var at = list.IndexOf(ordered[0]);
+                    foreach (var blk in ordered) { list.Remove(blk); blocks.Add(blk); }
+                    var uid = a["id"] is { } ui ? NeedS(ui, "id") : NewId(doc, "Komponente");
+                    if (!IdPattern().IsMatch(uid) || Lists(doc).SelectMany(l => l.OfType<JsonObject>()).Any(x => IdOf(x) == uid)) throw new PlanError($"id „{uid}“ ist ungültig oder vergeben.");
+                    list.Insert(at, new JsonObject { ["type"] = "Komponente", ["props"] = new JsonObject { ["id"] = uid, ["komponente"] = kid } });
+                }
+                else
+                {
+                    if (a["bausteine"] is not JsonArray items || items.Count == 0 || items.Count > WebDesignComponents.MaxBlocks) throw new PlanError($"„bausteine“ muss 1 bis {WebDesignComponents.MaxBlocks} Bausteine enthalten.");
+                    var used = new HashSet<string>();
+                    foreach (var item in items)
+                    {
+                        if (item is not JsonObject io) throw new PlanError("Jeder Baustein braucht typ und props.");
+                        var type = NeedS(io["typ"], "typ"); var bdef = Def(type);
+                        if (type == "Komponente") throw new PlanError("Eine Komponente kann keine Verwendung einer Komponente enthalten.");
+                        foreach (var kv in io) if (kv.Key is not ("typ" or "id" or "props")) throw new PlanError($"unbekannte Angabe „{kv.Key}“ in bausteine.");
+                        var bid = io["id"] is { } bi ? NeedS(bi, "id") : $"{type}-{used.Count + 1}";
+                        if (!IdPattern().IsMatch(bid) || !used.Add(bid)) throw new PlanError($"id „{bid}“ ist ungültig oder doppelt.");
+                        var props = new JsonObject();
+                        foreach (var kv in bdef.Standard) props[kv.Key] = kv.Value?.DeepClone();
+                        foreach (var kv in bdef.Felder.Where(f => f.Value.Art == Art.Slot)) props[kv.Key] = new JsonArray();
+                        foreach (var kv in Props(type, io["props"], true)) props[kv.Key] = kv.Value?.DeepClone();
+                        props["id"] = bid;
+                        blocks.Add(new JsonObject { ["type"] = type, ["props"] = props });
+                    }
+                }
+                defs.Add(new(kid, cname, blocks));
+                rootProps["komponenten"] = WebDesignComponents.ToJson(defs);
+                changes.Add($"Komponente „{cname}“ ({kid}) angelegt");
+                return doc;
+            }
+            case "komponente_einfuegen":
+            {
+                var kid = NeedS(a["komponente"], "komponente");
+                if (!WebDesignComponents.Read(rootProps["komponenten"]).Any(c => c.Id == kid)) throw new PlanError($"Komponente „{kid}“ gibt es nicht.");
+                var uid = a["id"] is { } ui ? NeedS(ui, "id") : NewId(doc, "Komponente");
+                if (!IdPattern().IsMatch(uid) || Lists(doc).SelectMany(l => l.OfType<JsonObject>()).Any(x => IdOf(x) == uid)) throw new PlanError($"id „{uid}“ ist ungültig oder vergeben.");
+                var list = Target(doc, a["in"], a["slot"]);
+                list.Insert(Position(a["position"], list.Count), new JsonObject { ["type"] = "Komponente", ["props"] = new JsonObject { ["id"] = uid, ["komponente"] = kid } });
+                changes.Add($"Komponente {kid} eingefügt ({uid})");
+                return doc;
+            }
+            case "komponente_aendern":
+            {
+                var kid = NeedS(a["komponente"], "komponente"); var element = NeedS(a["element"], "element");
+                var defs = WebDesignComponents.Read(rootProps["komponenten"]);
+                var def = defs.FirstOrDefault(c => c.Id == kid) ?? throw new PlanError($"Komponente „{kid}“ gibt es nicht.");
+                var block = def.Blocks.OfType<JsonObject>().FirstOrDefault(b => IdOf(b) == element) ?? throw new PlanError($"„{element}“ gibt es in der Komponente nicht.");
+                var props = block["props"]!.AsObject();
+                foreach (var kv in Props(TypeOf(block), a["props"], false)) { props[kv.Key] = kv.Value?.DeepClone(); changes.Add($"Komponente {kid}, {element}: {kv.Key} im Original geändert"); }
+                rootProps["komponenten"] = WebDesignComponents.ToJson(defs);
+                return doc;
+            }
+            case "komponente_ueberschreiben":
+            case "komponente_zuruecksetzen":
+            {
+                var id = NeedS(a["id"], "id"); var usage = Find(doc, id);
+                if (TypeOf(usage) != "Komponente") throw new PlanError($"„{id}“ ist keine Verwendung einer Komponente.");
+                var up = usage["props"]!.AsObject();
+                var def = WebDesignComponents.Read(rootProps["komponenten"]).FirstOrDefault(c => c.Id == S(up["komponente"])) ?? throw new PlanError("Das Original dieser Komponente fehlt.");
+                if (up["ueberschreibungen"] is not JsonObject over) up["ueberschreibungen"] = over = [];
+                if (name == "komponente_ueberschreiben")
+                {
+                    var element = NeedS(a["element"], "element");
+                    var block = def.Blocks.OfType<JsonObject>().FirstOrDefault(b => IdOf(b) == element) ?? throw new PlanError($"„{element}“ gibt es in der Komponente nicht.");
+                    if (over[element] is not JsonObject eo) over[element] = eo = [];
+                    foreach (var kv in Props(TypeOf(block), a["props"], false))
+                    {
+                        if (Def(TypeOf(block)).Felder[kv.Key].Art == Art.Slot) throw new PlanError("Bereiche lassen sich nicht überschreiben.");
+                        eo[kv.Key] = kv.Value?.DeepClone(); changes.Add($"Komponente {id}, {element}: {kv.Key} nur hier überschrieben");
+                    }
+                }
+                else
+                {
+                    var targets = a["element"] is { } en ? [NeedS(en, "element")] : over.Select(kv => kv.Key).ToList();
+                    foreach (var el in targets)
+                    {
+                        if (over[el] is not JsonObject eo) continue;
+                        var fields = a["felder"] is JsonArray fa ? fa.Select(x => S(x) ?? throw new PlanError("„felder“ muss eine Liste von Namen sein.")).ToList() : eo.Select(kv => kv.Key).ToList();
+                        foreach (var f in fields) eo.Remove(f);
+                        if (eo.Count == 0) over.Remove(el);
+                    }
+                    changes.Add($"Komponente {id}: Überschreibungen zurückgesetzt");
+                }
+                if (over.Count == 0) up.Remove("ueberschreibungen");
                 return doc;
             }
             case "stand_speichern":

@@ -141,7 +141,7 @@ public static partial class WebDesignViews
                 if (WebDesign.Number(a["schrift"]) is { } size && size == Math.Floor(size) && size is >= 50 and <= 200) { d.Add($"font-size:{(int)size}%"); d.Add("--t-schrift:" + (size / 100).ToString(System.Globalization.CultureInfo.InvariantCulture)); }
                 if (d.Count > 0) rules.Append($"[data-b=\"{id}\"]{{{string.Join(";", d)}}}");
                 // Ausrichtung auch direkt am Inhalt, damit sie die Grundausrichtung des Bausteins schlägt
-                if (a["ausrichtung"] is JsonValue al && al.TryGetValue(out string? align) && Align.Contains(align)) rules.Append($"[data-b=\"{id}\"],.t-page [data-b=\"{id}\"]>*{{text-align:{align}}}");
+                if (a["ausrichtung"] is JsonValue al && al.TryGetValue(out string? align) && Align.Contains(align)) rules.Append($"[data-b=\"{id}\"],.t-page [data-b=\"{id}\"]>*,[data-b=\"{id}\"] .t-hero{{text-align:{align}}}");
                 if (b["type"]?.ToString() == "Spalten" && WebDesign.Number(a["spalten"]) is { } cols && cols is 1 or 2)
                     rules.Append($"[data-b=\"{id}\"]>.t-cols-box>.t-cols{{grid-template-columns:repeat({(int)cols},minmax(0,1fr))}}");
             }

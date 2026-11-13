@@ -113,18 +113,75 @@ function AnpassungenFeld({ value, onChange, spalten }) {
     <div className="t-anp"><b>Anpassungen je Ansicht</b>
       {wahl}
       <p>Gilt für <b>{ansicht.name}</b> (bis {ansicht.breite} px) und alle kleineren Ansichten.</p>
-      {zeile("ausblenden", "Ausblenden", <input type="checkbox" checked={eigen.ausblenden === true} onChange={(e) => setze("ausblenden", e.target.checked ? true : undefined)} />)}
+      {zeile("ausblenden", "Sichtbarkeit", <select value={eigen.ausblenden === true ? "aus" : eigen.ausblenden === false ? "an" : ""} onChange={(e) => setze("ausblenden", e.target.value === "aus" ? true : e.target.value === "an" ? false : undefined)}><option value="">–</option><option value="aus">Ausblenden</option><option value="an">Wieder einblenden</option></select>)}
       {zeile("ausrichtung", "Ausrichtung", <select value={eigen.ausrichtung || ""} onChange={(e) => setze("ausrichtung", e.target.value)}><option value="">–</option><option value="left">Links</option><option value="center">Mitte</option><option value="right">Rechts</option></select>)}
       {zeile("schrift", "Schriftgröße %", <input type="number" min={50} max={200} step={5} value={eigen.schrift ?? ""} onChange={(e) => setze("schrift", e.target.value === "" ? undefined : Math.round(+e.target.value))} />)}
       {spalten && zeile("spalten", "Spalten", <select value={eigen.spalten ?? ""} onChange={(e) => setze("spalten", e.target.value === "" ? undefined : +e.target.value)}><option value="">–</option><option value="1">1</option><option value="2">2</option></select>)}
     </div>);
 }
+// ---------- W5: Komponenten ----------
+// Original im Projekt (root.props.komponenten), Verwendung mit eigenen Überschreibungen; gleiche Regel wie in C# (WebDesignComponents.Instance): ids „verwendung--baustein“
+export function instanz(def, verwendung, ueber) {
+  return (def?.bausteine || []).map((b) => {
+    const innen = b.props?.id || "b";
+    return { ...b, props: { ...(b.props || {}), ...((ueber || {})[innen] || {}), id: `${verwendung}--${innen}` } };
+  });
+}
+const komponentenVon = (data) => (Array.isArray(data?.root?.props?.komponenten) ? data.root.props.komponenten : []);
+function KomponenteAnzeige({ komponente, ueberschreibungen, id }) {
+  const data = React.useContext(DataCtx) || window.TRENDO_SEITE;
+  const def = komponentenVon(data).find((k) => k.id === komponente);
+  if (!def) return <div className="t-img t-empty">Komponente fehlt</div>;
+  return <Render config={innerConfig} data={{ root: { props: {} }, content: instanz(def, id, ueberschreibungen), zones: {} }} />;
+}
+function KomponenteWahl({ value, onChange }) {
+  const defs = usePuckSel((s) => komponentenVon(s.appState.data));
+  return <select className="t-anp-ansicht" value={value || ""} onChange={(e) => onChange(e.target.value)}><option value="">– wählen –</option>{defs.map((k) => <option key={k.id} value={k.id}>{k.name}</option>)}</select>;
+}
+// Felder der Komponente: „Nur hier“ überschreibt in dieser Verwendung, „Original“ ändert alle Verwendungen
+function UeberschreibungenFeld({ value, onChange }) {
+  const data = usePuckSel((s) => s.appState.data);
+  const sel = usePuckSel((s) => s.selectedItem?.props);
+  const dispatch = usePuckSel((s) => s.dispatch);
+  const [original, setOriginal] = useState(false);
+  const defs = komponentenVon(data);
+  const def = defs.find((k) => k.id === sel?.komponente);
+  if (!def) return <div className="t-anp">Erst eine Komponente wählen.</div>;
+  const ueber = value && typeof value === "object" ? value : {};
+  const setzeHier = (innen, feld, wert) => {
+    const e = { ...(ueber[innen] || {}) }; if (wert === undefined) delete e[feld]; else e[feld] = wert;
+    const neu = { ...ueber }; if (Object.keys(e).length) neu[innen] = e; else delete neu[innen];
+    onChange(neu);
+  };
+  const setzeOriginal = (innen, feld, wert) => {
+    const kompo = defs.map((k) => k.id !== def.id ? k : { ...k, bausteine: k.bausteine.map((b) => b.props?.id !== innen ? b : { ...b, props: { ...b.props, [feld]: wert } }) });
+    dispatch({ type: "setData", data: { ...data, root: { ...data.root, props: { ...data.root.props, komponenten: kompo } } } });
+  };
+  return (
+    <div className="t-anp"><b>{def.name}</b>
+      <label className="t-anp-zeile"><span>Original ändern (alle Verwendungen)</span><input type="checkbox" checked={original} onChange={(e) => setOriginal(e.target.checked)} /></label>
+      {def.bausteine.map((b) => {
+        const felder = Object.entries(baseConfig.components[b.type]?.fields || {}).filter(([, f]) => f.type === "text" || f.type === "textarea");
+        const innen = b.props?.id;
+        return felder.map(([feld, f]) => {
+          const hier = ueber[innen]?.[feld];
+          return (
+            <div className={"t-anp-zeile" + (hier !== undefined ? " t-anp-ueber" : "")} key={innen + feld} data-feld={`${innen}.${feld}`}>
+              <label>{(baseConfig.components[b.type]?.label || b.type) + " – " + (f.label || feld)}</label>
+              <input type="text" value={original ? (b.props?.[feld] ?? "") : (hier ?? b.props?.[feld] ?? "")} onChange={(e) => (original ? setzeOriginal(innen, feld, e.target.value) : setzeHier(innen, feld, e.target.value))} />
+              {!original && (hier !== undefined ? <button type="button" className="t-anp-reset" onClick={() => setzeHier(innen, feld, undefined)}>Zurücksetzen</button> : <span className="t-anp-erbe">wie im Original</span>)}
+            </div>);
+        });
+      })}
+    </div>);
+}
+
 const anpassungenFeld = (spalten = false) => ({ anpassungen: { type: "custom", label: "Anpassungen je Ansicht", render: ({ value, onChange }) => <AnpassungenFeld value={value} onChange={onChange} spalten={spalten} /> } });
 
 // ---------- Bausteine ----------
 const baseConfig = {
   categories: {
-    aufbau: { title: "Aufbau", components: ["Bereich", "Spalten", "Stapel"] },
+    aufbau: { title: "Aufbau", components: ["Bereich", "Spalten", "Stapel", "Komponente"] },
     inhalt: { title: "Inhalt", components: ["Kopfbereich", "Ueberschrift", "Text", "Bild", "Knopf"] },
     effekte: { title: "3D & Bewegung", components: ["Szene3D"] },
   },
@@ -161,6 +218,10 @@ const baseConfig = {
       defaultProps: { tone: "hell" }, render: ({ content: Content, tone }) => <section className={`t-section t-${tone}`}><Content /></section> },
     Spalten: { label: "Spalten", fields: { left: { type: "slot" }, right: { type: "slot" }, ...anpassungenFeld(true) },
       render: ({ left: Left, right: Right }) => <div className="t-cols-box"><div className="t-cols"><div><Left /></div><div><Right /></div></div></div> },
+    Komponente: { label: "Komponente", fields: {
+        komponente: { type: "custom", label: "Komponente", render: ({ value, onChange }) => <KomponenteWahl value={value} onChange={onChange} /> },
+        ueberschreibungen: { type: "custom", label: "Felder", render: ({ value, onChange }) => <UeberschreibungenFeld value={value} onChange={onChange} /> }, ...anpassungenFeld() },
+      render: ({ komponente, ueberschreibungen, id }) => <KomponenteAnzeige komponente={komponente} ueberschreibungen={ueberschreibungen} id={id} /> },
     // A5: Stapel mit Abstand aus den Gestaltungswerten (Stufen statt Pixel), „passt sich an“ oder „füllt aus“, bricht bei schmaler Breite um
     Stapel: { label: "Stapel", fields: { inhalt: { type: "slot" },
         richtung: { type: "radio", label: "Richtung", options: [{ label: "Untereinander", value: "senkrecht" }, { label: "Nebeneinander", value: "waagerecht" }] },
@@ -178,6 +239,9 @@ const baseConfig = {
 // Jeder Baustein steckt in einem Rahmen mit seiner id: daran hängen die Anpassungen je Ansicht (Editor, Vorschau und Export)
 export const config = { ...baseConfig, components: Object.fromEntries(Object.entries(baseConfig.components).map(([name, c]) =>
   [name, { ...c, render: (p) => <div className="t-b" data-b={p.id}>{c.render(p)}</div> }])) };
+
+// Bausteine einer Komponente: ohne eigene Seitenhülle
+const innerConfig = { ...config, root: { render: ({ children }) => <>{children}</> } };
 
 // Baustein per Doppelklick oder Eingabetaste am Seitenende einfügen (Bedienung ohne Ziehen, Tastatur, Barrierefreiheit)
 function DrawerItem({ children, name }) {

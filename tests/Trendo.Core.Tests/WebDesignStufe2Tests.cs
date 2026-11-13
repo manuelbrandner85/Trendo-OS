@@ -40,7 +40,7 @@ public class WebDesignStufe2Tests
     {
         var j = Ok(Page, """{"aktion":"anpassung_setzen","id":"t1","ansicht":"Handy","werte":{"ausblenden":true}}""", """{"aktion":"anpassung_setzen","id":"t1","ansicht":"Tablet","werte":{"ausrichtung":"center"}}""",
             """{"aktion":"anpassung_setzen","id":"sp","ansicht":"Handy","werte":{"spalten":2}}""");
-        Assert.Equal("@media (max-width: 1024px){[data-b=\"t1\"],.t-page [data-b=\"t1\"]>*{text-align:center}}\n@media (max-width: 600px){[data-b=\"t1\"]{display:none}[data-b=\"sp\"]>.t-cols-box>.t-cols{grid-template-columns:repeat(2,minmax(0,1fr))}}", WebDesignViews.Css(Doc(j)));
+        Assert.Equal("@media (max-width: 1024px){[data-b=\"t1\"],.t-page [data-b=\"t1\"]>*,[data-b=\"t1\"] .t-hero{text-align:center}}\n@media (max-width: 600px){[data-b=\"t1\"]{display:none}[data-b=\"sp\"]>.t-cols-box>.t-cols{grid-template-columns:repeat(2,minmax(0,1fr))}}", WebDesignViews.Css(Doc(j)));
         Assert.StartsWith("@container seite (max-width: 1024px)", WebDesignViews.Css(Doc(j), container: true));
         var d = Dir(); try
         {
@@ -96,6 +96,8 @@ public class WebDesignStufe2Tests
         Assert.Equal(["Tablet", "Handy", "Großes Handy"], WebDesignViews.Of(d["root"]!["props"]!.AsObject()).Select(v => v.Name));
         Assert.Null(WebDesignViews.Effective(d, "t1", "Handy", "ausrichtung").Value); // breiter als 480: gilt nicht
         Assert.Equal("center", WebDesignViews.Effective(d, "t1", "Großes Handy", "ausrichtung").Value!.ToString());
+        var below = Ok(j, """{"aktion":"ansicht_setzen","name":"Klein","breite":320}""");
+        Assert.Equal(("center", "Großes Handy"), (WebDesignViews.Effective(Doc(below), "t1", "Klein", "ausrichtung").Value!.ToString(), WebDesignViews.Effective(Doc(below), "t1", "Klein", "ausrichtung").From)); // gilt auch darunter
         Assert.Contains("@media (max-width: 480px)", WebDesignViews.Css(d));
         var wider = Ok(j, """{"aktion":"ansicht_setzen","name":"großes handy","breite":500}""");
         Assert.Equal(500, WebDesignViews.Of(Doc(wider)["root"]!["props"]!.AsObject()).Single(v => v.Name == "Großes Handy").Breite); // Breite wählbar, Name bleibt
@@ -113,7 +115,7 @@ public class WebDesignStufe2Tests
     [InlineData("""{"aktion":"ansicht_entfernen","name":"Uhr"}""", "gibt es nicht")]
     public void Z4_rejects(string action, string expected) => Assert.Contains(expected, WebDesignActions.Apply(Page, Plan(action)).Error);
 
-    [Fact(DisplayName = "Z4: Spalten richten sich nach ihrer eigenen Breite (Container-Regel im Bündel)")]
+    [Fact(DisplayName = "Z4: Bündel enthält die Container-Regel, nach der Spalten auf ihre eigene Breite reagieren")]
     public void Z4_container_and_parity()
     {
         var css = File.ReadAllText(Path.Combine(Repo(), "src", "Trendo.App", "Assets", "webdesign", "assets", "style.css"));
@@ -122,7 +124,7 @@ public class WebDesignStufe2Tests
     }
 
     // ---------- W6 ----------
-    [Fact(DisplayName = "W6: Wert ändern wirkt auf alle Seiten des Projekts (Seite und Varianten) und im Export")]
+    [Fact(DisplayName = "W6: Wert ändern wirkt projektweit (Seite, neue Varianten, Export); eine bestehende Variante behält ihre eigene Gestaltung, bis sie übernommen wird (K5)")]
     public void W6_project_wide()
     {
         var d = Dir(); try
@@ -132,14 +134,36 @@ public class WebDesignStufe2Tests
             var changed = Ok(WebDesignStates.Read(d), """{"aktion":"gestaltungswert_setzen","name":"accent","wert":"#0055AA"}""", """{"aktion":"gestaltungswert_setzen","name":"font","wert":"serif"}""");
             Assert.Null(WebDesignStates.Write(d, changed));
             Assert.Equal("#0055AA", WebDesignTokens.Load(d)!["accent"]!.ToString());
-            var variant = Doc(WebDesignStates.Read(d, v!.Id))["root"]!["props"]!;
-            Assert.Equal(("#0055AA", "serif"), (variant["accent"]!.ToString(), variant["font"]!.ToString())); // Variante folgt, obwohl nur die Seite geändert wurde
-            Assert.DoesNotContain("0055AA", WebDesignStates.VariantContent(d, v.Id)); // die Variante selbst bleibt unverändert gespeichert
+            Assert.DoesNotContain("0055AA", WebDesignStates.Read(d, v!.Id)); // bestehende Variante bleibt, wie sie war
+            var (v2, _) = WebDesignStates.CreateVariant(d, "C");
+            Assert.Equal(("#0055AA", "serif"), (Doc(WebDesignStates.Read(d, v2!.Id))["root"]!["props"]!["accent"]!.ToString(), Doc(WebDesignStates.Read(d, v2.Id))["root"]!["props"]!["font"]!.ToString())); // neue Variante übernimmt die Projektwerte
             var (outDir, err) = WebDesign.Export(d, Path.Combine(Repo(), "src", "Trendo.App", "Assets", "webdesign")); Assert.Null(err);
             Assert.Contains("#0055AA", File.ReadAllText(Path.Combine(outDir!, "seite.js")));
             var fromVariant = Ok(WebDesignStates.Read(d, v.Id), """{"aktion":"gestaltungswert_setzen","name":"accent","wert":"#226600"}""");
             Assert.Null(WebDesignStates.Write(d, fromVariant, v.Id));
-            Assert.Equal("#226600", Doc(WebDesignStates.Read(d))["root"]!["props"]!["accent"]!.ToString()); // auch umgekehrt: Variante ändert die Seite
+            Assert.Equal("#0055AA", Doc(WebDesignStates.Read(d))["root"]!["props"]!["accent"]!.ToString()); // Variante ändert die Seite nicht (K5)
+            Assert.Null(WebDesignStates.AdoptVariant(d, v.Id));
+            Assert.Equal("#226600", WebDesignTokens.Load(d)!["accent"]!.ToString()); // übernommen: jetzt gilt ihre Gestaltung fürs Projekt
+            var before = WebDesignStates.List(d).First(s => s.Name == "Vor Übernahme einer Variante");
+            Assert.Null(WebDesignStates.Restore(d, before.Id));
+            Assert.Equal("#0055AA", WebDesignTokens.Load(d)!["accent"]!.ToString()); // Wiederherstellen setzt auch die Gestaltung zurück
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "W6/K5: Rückgängig nach einer KI-Änderung setzt auch Gestaltungswerte exakt zurück")]
+    public void W6_undo_restores_tokens()
+    {
+        var d = Dir(); try
+        {
+            var start = Ok(Page, """{"aktion":"gestaltungswert_setzen","name":"accent","wert":"#111111"}""");
+            Assert.Null(WebDesignStates.Write(d, start));
+            var r = WebDesignActions.Apply(WebDesignStates.Read(d), Plan("""{"aktion":"gestaltungswert_setzen","name":"accent","wert":"#ff0000"}"""));
+            var (auto, err) = WebDesignActions.Commit(d, r, WebDesignStates.Read(d), "rot"); Assert.Null(err);
+            Assert.Equal("#ff0000", WebDesignTokens.Load(d)!["accent"]!.ToString());
+            Assert.Null(WebDesignStates.Restore(d, auto!));
+            Assert.Equal("#111111", WebDesignTokens.Load(d)!["accent"]!.ToString());
+            Assert.Equal("#111111", Doc(WebDesignStates.Read(d))["root"]!["props"]!["accent"]!.ToString());
         }
         finally { Directory.Delete(d, true); }
     }
