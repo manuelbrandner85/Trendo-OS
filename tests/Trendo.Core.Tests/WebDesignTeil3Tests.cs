@@ -226,6 +226,39 @@ public class WebDesignTeil3Tests
         finally { Directory.Delete(d, true); }
     }
 
+    [Fact(DisplayName = "QA Teil 3: Symbole als SVG stehen nicht im Bild-Feld; Medienliste kommt nicht in den Export")]
+    public void Z7_editor_list_and_export()
+    {
+        var (d, svg) = Project("stern.svg"); try
+        {
+            WebDesignAssets.Import(d, svg, "symbol", "Stern", "eigen", "CC0-1.0");
+            var png = Path.Combine(Path.GetDirectoryName(svg)!, "foto.png"); File.WriteAllBytes(png, [1]);
+            WebDesignAssets.Import(d, png, "bild", "Ausweis privat", "eigen", "CC0-1.0");
+            var list = WebDesignAssets.EditorList(d).Select(x => x!["datei"]!.ToString()).ToList();
+            Assert.Equal(["medien/bild/foto.png"], list);
+            WebDesign.Save(d, WebDesignAssets.Inject(Page, d));
+            var (outDir, _) = WebDesign.Export(d, Path.Combine(Repo(), "src", "Trendo.App", "Assets", "webdesign"));
+            Assert.DoesNotContain("Ausweis privat", File.ReadAllText(Path.Combine(outDir!, "seite.js")));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "QA Teil 3: Manipulierte Einträge im Medienverzeichnis fallen weg; ein beschädigtes Verzeichnis wird nicht überschrieben; Zeilenumbruch im Schriftnamen ist ungültig")]
+    public void Z7_tampered_registry()
+    {
+        var (d, src) = Project("a.woff2", [0x77, 0x4F, 0x46, 0x32]); try
+        {
+            File.WriteAllText(Path.Combine(d, WebDesignAssets.FileName), """[{"Datei":"medien/schrift/a\"){}*{display:none}x{y:url(\"b.woff2","Art":"schrift","Titel":"X","Stichworte":"","Herkunft":"","Lizenz":"OFL","Urheber":"","Quelle":"","Familie":"X"},{"Datei":"medien/bild/ok.png","Art":"bild","Titel":"Ok","Stichworte":"","Herkunft":"","Lizenz":"CC0","Urheber":"","Quelle":""}]""");
+            Assert.Equal(["medien/bild/ok.png"], WebDesignAssets.Load(d).Select(a => a.Datei));
+            Assert.Equal("", WebDesignAssets.FontFaceCss(d, JsonNode.Parse("""{"root":{"props":{"font":"eigene:X"}}}""")));
+            Assert.False(WebDesignAssets.ValidFamily("Inter\n"));
+            File.WriteAllText(Path.Combine(d, WebDesignAssets.FileName), "{kaputt");
+            Assert.Contains("beschädigt", WebDesignAssets.Import(d, src, "schrift", "A", "x", "OFL", familie: "A").Error);
+            Assert.Equal("{kaputt", File.ReadAllText(Path.Combine(d, WebDesignAssets.FileName)));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
     static string Repo()
     {
         for (var dir = new DirectoryInfo(AppContext.BaseDirectory); dir is not null; dir = dir.Parent) if (File.Exists(Path.Combine(dir.FullName, "Trendo.sln"))) return dir.FullName;

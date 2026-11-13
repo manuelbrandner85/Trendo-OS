@@ -157,6 +157,7 @@ public static partial class WebDesign
         var lic = Path.Combine(editorDir, "LIZENZEN.txt"); // MIT & Co. verlangen den Urheberhinweis auch in jeder weitergegebenen Seite
         if (File.Exists(lic)) File.Copy(lic, Path.Combine(assets, "LIZENZEN.txt"), true);
         var doc = JsonNode.Parse(data)!;
+        if (doc["root"]?["props"] is JsonObject rootProps && rootProps.Remove("medien")) data = doc.ToJsonString(); // Liste aller Projektmedien gehört nur in den Editor, nicht in die veröffentlichte Seite
         CopyImages(doc, projectDir, outDir);
         // Z7: eigene Schriften reisen lokal mit; Namensnennung für Medien unter CC-BY
         var media = WebDesignAssets.Load(projectDir); var used = WebDesignAssets.Used(doc, media);

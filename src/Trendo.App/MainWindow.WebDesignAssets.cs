@@ -70,11 +70,19 @@ public partial class MainWindow
             var license = meta["license"] is JsonObject lo ? lo["type"]?.ToString() ?? "" : meta["license"]?.ToString() ?? "";
             var subset = meta["defSubset"]?.ToString() ?? "latin";
             var url = meta["variants"]?["400"]?["normal"]?[subset]?["url"]?["woff2"]?.ToString();
-            if (url is null || !url.StartsWith("https://cdn.jsdelivr.net/fontsource/", StringComparison.Ordinal)) throw new InvalidOperationException("Fontsource hat keine Schriftdatei aus der offiziellen Quelle genannt.");
+            if (url is null || !url.StartsWith("https://cdn.jsdelivr.net/fontsource/", StringComparison.Ordinal) || url.Contains("..", StringComparison.Ordinal) || url.Contains('%') || !url.EndsWith(".woff2", StringComparison.Ordinal))
+                throw new InvalidOperationException("Fontsource hat keine Schriftdatei aus der offiziellen Quelle genannt.");
             if (!WebDesignAssets.ValidFamily(family)) throw new InvalidOperationException("Der Name der Schrift ist ungewöhnlich und wird nicht übernommen.");
             var tmp = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "trendo-web-medien", Guid.NewGuid().ToString("N")[..8])).FullName;
             var file = Path.Combine(tmp, id + "-400.woff2");
-            await File.WriteAllBytesAsync(file, await http.GetByteArrayAsync(url));
+            using (var resp = await http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead))
+            {
+                resp.EnsureSuccessStatusCode();
+                if (resp.Content.Headers.ContentLength is > 5_000_000) throw new InvalidOperationException("Die Schriftdatei ist ungewöhnlich groß und wird nicht geladen.");
+                var bytes = await resp.Content.ReadAsByteArrayAsync();
+                if (bytes.Length > 5_000_000 || bytes.Length < 4 || bytes[0] != (byte)'w' || bytes[1] != (byte)'O' || bytes[2] != (byte)'F' || bytes[3] != (byte)'2') throw new InvalidOperationException("Die geladene Datei ist keine WOFF2-Schrift.");
+                await File.WriteAllBytesAsync(file, bytes);
+            }
             _core.Audit.Append(Principal.LocalOwner.Name, "web.visuell.fontsource", $"{id} lizenz={license}");
             WebDesignAssetImport(file, "schrift", family, "Fontsource", license, "", "https://fontsource.org/fonts/" + id, "schrift", family);
             try { Directory.Delete(tmp, true); } catch (IOException) { }

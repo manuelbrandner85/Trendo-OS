@@ -23,16 +23,26 @@ public static partial class WebDesignAssets
         ["symbol"] = [".svg", ".png"], ["modell"] = [".glb", ".gltf"],
     };
 
-    [GeneratedRegex(@"^[\p{L}0-9 -]{1,40}$")] private static partial Regex FamilyPattern();
+    [GeneratedRegex(@"^[\p{L}0-9 -]{1,40}\z")] private static partial Regex FamilyPattern();
+    /// <summary>Gültiger Pfad im Medienordner: medien/&lt;art&gt;/&lt;slug&gt;.&lt;endung&gt; – nichts anderes kommt aus dem Verzeichnis in Seite, CSS oder Export.</summary>
+    [GeneratedRegex(@"^medien/(bild|video|schrift|symbol|modell)/[a-z0-9-]{1,80}\.[a-z0-9]{2,5}\z")] private static partial Regex FilePattern();
     public static bool ValidFamily(string f) => FamilyPattern().IsMatch(f);
 
     static string File(string dir) => Path.Combine(dir, FileName);
 
-    public static List<Asset> Load(string dir)
+    public static List<Asset> Load(string dir) => TryLoad(dir).List ?? [];
+
+    /// <summary>Verzeichnis lesen; <paramref name="Broken"/> heißt: Die Datei ist da, aber unlesbar – dann darf nichts darüber geschrieben werden.</summary>
+    public static (List<Asset>? List, bool Broken) TryLoad(string dir)
     {
-        if (!System.IO.File.Exists(File(dir))) return [];
-        try { return JsonSerializer.Deserialize<List<Asset>>(System.IO.File.ReadAllText(File(dir)))?.Where(a => a.Datei is { Length: > 0 } && Types.ContainsKey(a.Art)).ToList() ?? []; }
-        catch (Exception e) when (e is JsonException or IOException or NotSupportedException) { return []; }
+        if (!System.IO.File.Exists(File(dir))) return ([], false);
+        try
+        {
+            var all = JsonSerializer.Deserialize<List<Asset>>(System.IO.File.ReadAllText(File(dir)));
+            return (all?.Where(a => a.Datei is { Length: > 0 } && FilePattern().IsMatch(a.Datei) && Types.TryGetValue(a.Art, out var x) && a.Datei.StartsWith($"{Folder}/{a.Art}/", StringComparison.Ordinal)
+                && x.Contains(Path.GetExtension(a.Datei)) && (a.Familie is null || ValidFamily(a.Familie))).ToList() ?? [], false);
+        }
+        catch (Exception e) when (e is JsonException or IOException or NotSupportedException) { return (null, true); }
     }
 
     static void Save(string dir, List<Asset> list)
@@ -50,10 +60,12 @@ public static partial class WebDesignAssets
         if (!exts.Contains(ext)) return (null, $"Für „{art}“ sind nur {string.Join(", ", exts)} erlaubt.");
         if (new FileInfo(source).Length > MaxBytes) return (null, "Die Datei ist größer als 50 MB.");
         if (art == "schrift" && (familie is null || !ValidFamily(familie))) return (null, "Eine Schrift braucht einen Familiennamen aus Buchstaben, Ziffern, Leerzeichen oder Strich.");
-        var name = SkillFiles.Slug(Path.GetFileNameWithoutExtension(source)) + ext;
-        var rel = $"{Folder}/{art}/{name}";
-        var list = Load(dir);
-        for (var n = 2; list.Any(a => a.Datei == rel); n++) rel = $"{Folder}/{art}/{SkillFiles.Slug(Path.GetFileNameWithoutExtension(source))}-{n}{ext}";
+        var (loaded, broken) = TryLoad(dir);
+        if (broken || loaded is null) return (null, "Das Medienverzeichnis (medien.trendo.json) ist beschädigt. Es wird nicht überschrieben, damit keine Lizenzangaben verloren gehen.");
+        var list = loaded;
+        var slug = SkillFiles.Slug(Path.GetFileNameWithoutExtension(source));
+        var rel = $"{Folder}/{art}/{slug}{ext}";
+        for (var n = 2; list.Any(a => a.Datei == rel) || System.IO.File.Exists(Path.Combine(dir, rel.Replace('/', Path.DirectorySeparatorChar))); n++) rel = $"{Folder}/{art}/{slug}-{n}{ext}";
         var target = Path.Combine(dir, rel.Replace('/', Path.DirectorySeparatorChar));
         Directory.CreateDirectory(Path.GetDirectoryName(target)!);
         System.IO.File.Copy(source, target, false);
@@ -67,7 +79,9 @@ public static partial class WebDesignAssets
     /// <summary>Herkunft und Lizenz nachtragen oder ändern.</summary>
     public static string? Update(string dir, string datei, string herkunft, string lizenz, string urheber, string quelle)
     {
-        var list = Load(dir); var i = list.FindIndex(a => a.Datei == datei);
+        var (loaded, broken) = TryLoad(dir);
+        if (broken || loaded is null) return "Das Medienverzeichnis ist beschädigt und wird nicht überschrieben.";
+        var list = loaded; var i = list.FindIndex(a => a.Datei == datei);
         if (i < 0) return "Diese Datei steht nicht im Verzeichnis.";
         list[i] = list[i] with { Herkunft = Clean(herkunft, 200), Lizenz = Clean(lizenz, 80), Urheber = Clean(urheber, 200), Quelle = Clean(quelle, 500) };
         Save(dir, list); return null;
@@ -149,7 +163,7 @@ public static partial class WebDesignAssets
     }
 
     /// <summary>Liste für den Editor (Auswahl in Bild-Feldern), ohne Lizenzangaben.</summary>
-    public static JsonArray EditorList(string dir) => new(Load(dir).Where(a => a.Art is "bild" or "symbol").Select(a => (JsonNode)new JsonObject { ["datei"] = a.Datei, ["titel"] = a.Titel, ["art"] = a.Art }).ToArray());
+    public static JsonArray EditorList(string dir) => new(Load(dir).Where(a => a.Art == "bild" || a.Art == "symbol" && WebDesign.IsSafeImagePath(a.Datei)).Select(a => (JsonNode)new JsonObject { ["datei"] = a.Datei, ["titel"] = a.Titel, ["art"] = a.Art }).ToArray());
 
     /// <summary>Medienliste für den Editor in Seitendaten einsetzen.</summary>
     public static string Inject(string json, string dir)
