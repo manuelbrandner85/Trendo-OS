@@ -678,7 +678,7 @@ public static class SheetFiles
             MoveToRoot(x);
             var ws = root = new XElement(XName.Get(x.LocalName, x.NamespaceURI));
             var dataDone = false;
-            var limited = new OfficeZip.ShallowReader(x); // einer für das ganze Blatt: Die Knoten aller Abschnitte zählen zusammen
+            var limited = new OfficeZip.ShallowReader(x, OfficeZip.NodesOf(entry.Archive)); // Die Knoten aller Abschnitte und Teile zählen zusammen
             ForEachChild(x, part =>
             {
                 if (!IsS(part, "sheetData")) { ws.Add(XNode.ReadFrom(limited)); return; }
@@ -733,13 +733,13 @@ public static class SheetFiles
                 var cells = row.Elements().Where(c => c.Name == Table + "table-cell" || c.Name == Table + "covered-table-cell").ToList();
                 var hasContent = cells.Any(c => c.Attribute(Office + "value-type") is not null || c.Attribute(Table + "formula") is not null);
                 if (!hasContent) { r += rowRep; continue; }
+                // Jede Zelle einmal auswerten: Wiederholte Zeilen teilen sich den Text, statt ihn je Wiederholung neu anzulegen
+                var parsed = cells.Select(c => (Rep: Math.Min((int?)c.Attribute(Table + "number-columns-repeated") ?? 1, 1024), Raw: OdsRaw(c, out var f), Fmt: f)).ToList();
                 for (var rr = 0; rr < rowRep; rr++, r++)
                 {
                     var col = 0;
-                    foreach (var c in cells)
+                    foreach (var (rep, raw, fmt) in parsed)
                     {
-                        var rep = Math.Min((int?)c.Attribute(Table + "number-columns-repeated") ?? 1, 1024);
-                        var raw = OdsRaw(c, out var fmt);
                         if (raw.Length == 0) { col += rep; visited++; if (visited > maxCells * 4L) throw TooManyCells(maxCells); continue; }
                         visited += rep;
                         if (visited > maxCells * 4L) throw TooManyCells(maxCells);

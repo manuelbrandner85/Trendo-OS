@@ -77,7 +77,7 @@ public static partial class SlideFiles
             if (rels.Values.FirstOrDefault(r => r.Type.EndsWith("/notesSlide", StringComparison.Ordinal)) is { Target.Length: > 0 } nr && pkg.Load(nr.Target) is { } notes)
             {
                 var body = notes.Descendants(P + "sp").FirstOrDefault(s => (string?)s.Descendants(P + "ph").FirstOrDefault()?.Attribute("type") == "body");
-                if (body is not null) slide.Notes = string.Join('\n', body.Descendants(A + "p").Select(p => string.Concat(p.Outermost(A + "t").Select(t => t.Value)))).Trim('\n');
+                if (body is not null) slide.Notes = string.Join('\n', body.Outermost(A + "p").Select(p => string.Concat(p.Outermost(A + "t").Select(t => t.Value)))).Trim('\n');
             }
             doc.Slides.Add(slide);
         }
@@ -173,7 +173,7 @@ public static partial class SlideFiles
         if (gf.Descendants(A + "tbl").FirstOrDefault() is { } tbl)
         {
             s.Kind = ShapeKind.Tabelle;
-            s.Table = tbl.Elements(A + "tr").Select(tr => tr.Elements(A + "tc").Select(tc => string.Join('\n', tc.Descendants(A + "p").Select(p => string.Concat(p.Outermost(A + "t").Select(t => t.Value))))).ToList()).ToList();
+            s.Table = tbl.Elements(A + "tr").Select(tr => tr.Elements(A + "tc").Select(tc => string.Join('\n', tc.Outermost(A + "p").Select(p => string.Concat(p.Outermost(A + "t").Select(t => t.Value))))).ToList()).ToList();
             if ((int?)tbl.Descendants(A + "rPr").FirstOrDefault()?.Attribute("sz") is int sz) s.FontSize = sz / 100.0; else s.FontSize = 16;
             return s;
         }
@@ -226,7 +226,7 @@ public static partial class SlideFiles
             {
                 if (el.Name == Pres + "notes")
                 {
-                    slide.Notes = string.Join('\n', el.Descendants(Dr + "text-box").SelectMany(b => b.Descendants(Tx + "p")).Select(p => p.Value)).Trim();
+                    slide.Notes = string.Join('\n', el.Descendants(Dr + "text-box").SelectMany(b => b.Descendants(Tx + "p")).Select(p => p.Value).WithinTextBudget(el)).Trim();
                     continue;
                 }
                 var s = new SlideShape { X = Cm((string?)el.Attribute(Svg + "x")), Y = Cm((string?)el.Attribute(Svg + "y")), W = Cm((string?)el.Attribute(Svg + "width")), H = Cm((string?)el.Attribute(Svg + "height")) };
@@ -238,7 +238,7 @@ public static partial class SlideFiles
                     if (el.Element(Tb + "table") is { } tbl)
                     {
                         s.Kind = ShapeKind.Tabelle; s.FontSize = 16;
-                        s.Table = tbl.Descendants(Tb + "table-row").Select(r => r.Elements(Tb + "table-cell").Select(c => string.Join('\n', c.Descendants(Tx + "p").Select(p => p.Value))).ToList()).ToList();
+                        s.Table = tbl.Descendants(Tb + "table-row").Select(r => r.Elements(Tb + "table-cell").Select(c => string.Join('\n', c.Descendants(Tx + "p").Select(p => p.Value).WithinTextBudget(c))).ToList()).ToList();
                     }
                     else if (el.Element(Dr + "object") is { } obj && ReadOdpChart(pkg, (string?)obj.Attribute(Xl + "href"), s)) { }
                     else if (el.Element(Dr + "image") is { } img && (string?)img.Attribute(Xl + "href") is { } href && pkg.Bytes(href.TrimStart('.', '/')) is { } bytes) { s.Kind = ShapeKind.Bild; s.Image = bytes; }
@@ -284,7 +284,7 @@ public static partial class SlideFiles
         if (pkg.Load(dir + "/content.xml") is not { } c || c.Descendants(Ch + "chart").FirstOrDefault() is not { } chart) return false;
         s.Kind = ShapeKind.Diagramm;
         s.ChartKind = ((string?)chart.Attribute(Ch + "class") ?? "") switch { "chart:circle" or "chart:ring" => ChartKind.Kreis, "chart:line" or "chart:area" or "chart:scatter" => ChartKind.Linie, _ => ChartKind.Balken };
-        s.Text = string.Concat(chart.Element(Ch + "title")?.Descendants(Tx + "p").Select(p => p.Value) ?? []);
+        s.Text = chart.Element(Ch + "title") is { } title ? string.Concat(title.Descendants(Tx + "p").Select(p => p.Value).WithinTextBudget(title)) : "";
         var rows = chart.Descendants(Tb + "table-rows").FirstOrDefault()?.Elements(Tb + "table-row").ToList() ?? [];
         s.ChartLabels = rows.Select(r => r.Elements(Tb + "table-cell").FirstOrDefault()?.Descendants(Tx + "p").FirstOrDefault()?.Value ?? "").ToList();
         s.ChartValues = rows.Select(r => double.TryParse((string?)r.Elements(Tb + "table-cell").Skip(1).FirstOrDefault()?.Attribute(Od + "value"), NumberStyles.Float, CultureInfo.InvariantCulture, out var d) ? d : 0).ToList();

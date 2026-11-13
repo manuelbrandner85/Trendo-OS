@@ -17,8 +17,13 @@ public static class OfficeZip
     const long RatioMinBytes = 10L * 1024 * 1024;
     /// <summary>Echte Excel-Teile sind kaum 30 Ebenen tief. Der XML-Baum läuft beim Aufbau je Knoten alle Eltern ab, und sein Text wird rekursiv gelesen: Sehr tiefes XML kostet sonst quadratische Zeit und kann das ganze Programm beenden.</summary>
     public const int MaxXmlDepth = 256;
-    /// <summary>Höchstzahl der Knoten eines XML-Baums (Elemente, Attribute, Texte): Ein Knoten belegt ein Vielfaches seiner Bytes, stark gepackte Teile füllen sonst den Speicher.</summary>
-    public const int MaxXmlNodes = 40_000_000;
+    /// <summary>Höchstzahl der Knoten (Elemente, Attribute, Texte) aller XML-Bäume einer Datei zusammen: Ein Knoten belegt ein Vielfaches seiner Bytes,
+    /// stark gepackte oder mehrfach verwiesene Teile füllen sonst den Speicher oder werden endlos neu gelesen.</summary>
+    public const int MaxXmlNodes = 20_000_000;
+
+    /// <summary>Gezählte Knoten je geöffneter Datei.</summary>
+    static readonly System.Runtime.CompilerServices.ConditionalWeakTable<ZipArchive, System.Runtime.CompilerServices.StrongBox<long>> NodeCount = new();
+    internal static System.Runtime.CompilerServices.StrongBox<long> NodesOf(ZipArchive z) => NodeCount.GetValue(z, _ => new(0));
 
     internal static InvalidDataException Bad(string why) => new($"Die Datei wurde aus Sicherheitsgründen nicht geöffnet: {why}");
 
@@ -55,7 +60,7 @@ public static class OfficeZip
     public static XDocument LoadXml(this ZipArchiveEntry e, LoadOptions options = LoadOptions.None)
     {
         XDocument? doc = null;
-        e.ReadXml(r => doc = XDocument.Load(new ShallowReader(r), options), !options.HasFlag(LoadOptions.PreserveWhitespace));
+        e.ReadXml(r => doc = XDocument.Load(new ShallowReader(r, NodesOf(e.Archive)), options), !options.HasFlag(LoadOptions.PreserveWhitespace));
         return doc!;
     }
 
@@ -81,18 +86,33 @@ public static class OfficeZip
 
     internal static IEnumerable<XElement> Outermost(this XElement root, XName name) => root.Outermost(e => e.Name == name);
 
+    /// <summary>Absatztexte wie bisher, auch verschachtelte (Textfelder) einzeln – aber zusammen höchstens das Achtfache des Gesamttexts von <paramref name="part"/>.
+    /// Mehr entsteht nur, wenn eine präparierte Datei Absätze hundertfach ineinander steckt.</summary>
+    internal static IEnumerable<string> WithinTextBudget(this IEnumerable<string> texts, XElement part)
+    {
+        var left = 8L * part.Value.Length + 1_000_000;
+        foreach (var t in texts)
+        {
+            left -= t.Length;
+            if (left < 0) throw Bad("verschachtelte Absätze würden den Text vervielfachen.");
+            yield return t;
+        }
+    }
+
     /// <summary>Begrenzt einen XML-Baum auf <see cref="MaxXmlDepth"/> Ebenen unter der Startstelle und <see cref="MaxXmlNodes"/> Knoten.</summary>
-    internal sealed class ShallowReader(XmlReader inner) : XmlReader
+    internal sealed class ShallowReader(XmlReader inner, System.Runtime.CompilerServices.StrongBox<long> nodes) : XmlReader
     {
         readonly int _max = inner.Depth + MaxXmlDepth;
-        long _nodes;
         public override bool Read()
         {
             var more = inner.Read();
             if (!more) return false;
             if (inner.Depth > _max) throw Bad($"das XML ist tiefer als {MaxXmlDepth} Ebenen verschachtelt.");
-            _nodes += 1 + (inner.NodeType == XmlNodeType.Element ? inner.AttributeCount : 0);
-            if (_nodes > MaxXmlNodes) throw Bad($"das XML hat mehr als {MaxXmlNodes:N0} Knoten.");
+            if (inner.NodeType != XmlNodeType.EndElement) // schließende Marken legen keinen Knoten an
+            {
+                nodes.Value += 1 + (inner.NodeType == XmlNodeType.Element ? inner.AttributeCount : 0);
+                if (nodes.Value > MaxXmlNodes) throw Bad($"die Datei hat zusammen mehr als {MaxXmlNodes:N0} XML-Knoten.");
+            }
             return true;
         }
         public override int AttributeCount => inner.AttributeCount;

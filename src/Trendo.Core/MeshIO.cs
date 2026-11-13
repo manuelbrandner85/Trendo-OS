@@ -146,7 +146,7 @@ public static partial class Mesh3D
     static InvalidDataException TooBig(int max) => new($"Die Datei ist zu groß: Trendo liest höchstens {max:N0} Dreiecke.");
 
     /// <summary>Text- und JSON-Dateien werden ganz in den Speicher gelesen und belegen dort ein Vielfaches.</summary>
-    const long MaxTextFileBytes = 1L << 30;
+    const long MaxTextFileBytes = 256L * 1024 * 1024;
 
     static void CheckTextSize(string path)
     {
@@ -163,8 +163,16 @@ public static partial class Mesh3D
         var relative = reference.Replace('\\', '/');
         var full = Path.GetFullPath(Path.Combine(dir, relative));
         if (!full.StartsWith(dir, compare)) full = Path.Combine(dir, Path.GetFileName(relative));
+        // Keine Verknüpfung auf dem Weg vom Modellordner zur Datei: Ein verlinkter Unterordner könnte sonst überall hinzeigen.
+        // (OneDrive-Platzhalter tragen zwar die Reparse-Kennung, haben aber kein Verknüpfungsziel und bleiben erlaubt.)
+        for (var at = full; at.Length > dir.Length; at = Path.GetDirectoryName(at)!)
+        {
+            FileSystemInfo step = at == full ? new FileInfo(at) : new DirectoryInfo(at);
+            if (step.LinkTarget is not null) return null;
+        }
         var info = new FileInfo(full);
-        return info.Exists && (info.Attributes & FileAttributes.ReparsePoint) == 0 ? full : null;
+        // Gerätedateien und Pipes melden die Länge 0, ebenso wie leere Dateien, aus denen es nichts zu lesen gibt.
+        return info.Exists && info.Length > 0 ? full : null;
     }
 
     static Mesh ReadObjPlain(string path, int maxTriangles)
@@ -416,8 +424,10 @@ public static partial class Mesh3D
             var count = BitConverter.ToUInt32(head, 80);
             if (length == 84L + count * 50L && count > 0 && !LooksAscii(head.AsSpan(0, got).ToArray()))
             {
-                if (count > (uint)maxTriangles) throw TooBig(maxTriangles);
-                return ReadStlBinary(File.ReadAllBytes(path), (int)count, scale);
+                if (count > 2L * maxTriangles) throw TooBig(maxTriangles); // grob vorab; genau zählen nur die echten (nicht entarteten) Dreiecke
+                var m = ReadStlBinary(File.ReadAllBytes(path), (int)count, scale);
+                if (m.Triangles > maxTriangles) throw TooBig(maxTriangles);
+                return m;
             }
         }
         return ReadStlAscii(path, scale, maxTriangles);
@@ -516,7 +526,8 @@ public static partial class Mesh3D
         static InvalidDataException TooMuch() => new("Die Datei ist zu groß: Sie verlangt mehr Arbeit, als Trendo beim Einlesen zulässt.");
         long held = 0, work = 0;
         void Hold(long bytes) { held += bytes; if (held > MaxGltfBytes) throw TooMuch(); }
-        void Work(long items) { work += items; if (work > MaxGltfWork) throw TooMuch(); }
+        var workLimit = Math.Min(MaxGltfWork, 256L * maxTriangles); // ein kleiner Höchstwert für Dreiecke gilt auch für die Arbeit
+        void Work(long items) { work += items; if (work > workLimit) throw TooMuch(); }
         var packed = new Dictionary<int, (byte[] Raw, int Comp, int Count)>();
         (byte[] Raw, int Comp, int Count) Packed(int accessor)
         {

@@ -107,14 +107,20 @@ public static class Ooxml
     public static string StripOfficeMeta(string file)
     {
         var o = Path.Combine(Path.GetDirectoryName(file)!, Path.GetFileNameWithoutExtension(file) + "-ohne-metadaten" + Path.GetExtension(file));
+        using (OfficeZip.OpenRead(file)) { } // erst die ZIP-Prüfung: Zum Ändern entpackt .NET die Einträge in den Speicher
         File.Copy(file, o, true);
         using var z = ZipFile.Open(o, ZipArchiveMode.Update);
         foreach (var (name, tags) in new[] { ("docProps/core.xml", new[] { "dc:creator", "cp:lastModifiedBy", "dc:title", "dc:subject", "cp:keywords", "dc:description", "cp:lastPrinted" }), ("docProps/app.xml", new[] { "Company", "Manager", "Template" }), ("docProps/custom.xml", Array.Empty<string>()) })
         {
             var e = z.GetEntry(name); if (e is null) continue;
             string x; using (var r = new StreamReader(e.Open())) x = r.ReadToEnd();
-            if (name.EndsWith("custom.xml")) x = Regex.Replace(x, @"<property\b.*?</property>", "", RegexOptions.Singleline);
-            foreach (var t in tags) x = Regex.Replace(x, $@"<{t}\b([^>]*)>.*?</{t}>", $"<{t}$1></{t}>", RegexOptions.Singleline);
+            x = WithinTime(() =>
+            {
+                var s = x;
+                if (name.EndsWith("custom.xml")) s = Regex.Replace(s, @"<property\b.*?</property>", "", RegexOptions.Singleline, PatternTime);
+                foreach (var t in tags) s = Regex.Replace(s, $@"<{t}\b([^>]*)>.*?</{t}>", $"<{t}$1></{t}>", RegexOptions.Singleline, PatternTime);
+                return s;
+            });
             e.Delete(); using var w = new StreamWriter(z.CreateEntry(name).Open(), new UTF8Encoding(false)); w.Write(x);
         }
         return o;
@@ -122,19 +128,19 @@ public static class Ooxml
     public static Dictionary<string, string> OfficeMeta(string file)
     {
         var x = Entry(file, "docProps/core.xml") + Entry(file, "docProps/app.xml");
-        return Regex.Matches(x, @"<((?:dc|cp):\w+|Company|Manager)\b[^>]*>([^<]+)</\1>").ToDictionary(m => m.Groups[1].Value, m => m.Groups[2].Value);
+        return WithinTime(() => Regex.Matches(x, @"<((?:dc|cp):\w+|Company|Manager)\b[^>]*>([^<]+)</\1>", RegexOptions.None, PatternTime).ToDictionary(m => m.Groups[1].Value, m => m.Groups[2].Value));
     }
 
     /// <summary>P10: Serienbrief – Platzhalter {{Feld}} (auch über Formatierungsgrenzen hinweg) je CSV-Zeile ersetzen.</summary>
     public static List<string> MailMerge(string templateDocx, List<Dictionary<string, string>> rows, string outDir, string nameField = "")
     {
         string xml; using (var z = OfficeZip.OpenRead(templateDocx)) using (var r = new StreamReader(z.GetEntry("word/document.xml")!.OpenLimited())) xml = r.ReadToEnd();
-        xml = Regex.Replace(xml, @"\{(?:<[^>]+>)*\{((?:[^}<]|<[^>]+>)*?)\}(?:<[^>]+>)*\}", m => "{{" + Regex.Replace(m.Groups[1].Value, "<[^>]+>", "").Trim() + "}}");
+        xml = WithinTime(() => Regex.Replace(xml, @"\{(?:<[^>]+>)*\{((?:[^}<]|<[^>]+>)*?)\}(?:<[^>]+>)*\}", m => "{{" + Plain(m.Groups[1].Value, "<[^>]+>", "").Trim() + "}}", RegexOptions.None, PatternTime));
         Directory.CreateDirectory(outDir); var res = new List<string>(); var i = 0;
         foreach (var row in rows)
         {
             i++;
-            var filled = Regex.Replace(xml, @"\{\{([^}]+)\}\}", m => row.TryGetValue(m.Groups[1].Value.Trim(), out var v) ? SecurityElement.Escape(v) : m.Value);
+            var filled = WithinTime(() => Regex.Replace(xml, @"\{\{([^}]+)\}\}", m => row.TryGetValue(m.Groups[1].Value.Trim(), out var v) ? SecurityElement.Escape(v) : m.Value, RegexOptions.None, PatternTime));
             var stem = nameField.Length > 0 && row.TryGetValue(nameField, out var nm) && nm.Trim().Length > 0 ? string.Concat(nm.Where(c => !Path.GetInvalidFileNameChars().Contains(c))) : $"{i:000}";
             var o = Path.Combine(outDir, $"{Path.GetFileNameWithoutExtension(templateDocx)}-{i:000}-{stem}.docx");
             File.Copy(templateDocx, o, true);
@@ -143,7 +149,7 @@ public static class Ooxml
         }
         return res;
     }
-    public static List<string> Placeholders(string docx) => Regex.Matches(Regex.Replace(Entry(docx, "word/document.xml"), "<[^>]+>", ""), @"\{\{([^}]+)\}\}").Select(m => m.Groups[1].Value.Trim()).Distinct().ToList();
+    public static List<string> Placeholders(string docx) => WithinTime(() => Regex.Matches(Plain(Entry(docx, "word/document.xml"), "<[^>]+>", ""), @"\{\{([^}]+)\}\}", RegexOptions.None, PatternTime).Select(m => m.Groups[1].Value.Trim()).Distinct().ToList());
 
     /// <summary>P22: Unterschrift als Bild ans Ende einfügen (Kopie). Ausdrücklich keine qualifizierte elektronische Signatur.</summary>
     public static string InsertSignature(string docx, byte[] png, int widthPx, int heightPx, string caption)

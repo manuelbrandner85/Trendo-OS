@@ -531,17 +531,29 @@ public partial class MainWindow
         if (!File.Exists(path)) { Say("Die Datei gibt es nicht.", "3d"); return Task.CompletedTask; }
         if (ext == ".blend" || (ext == ".fbx" && Mesh3D.IsBinaryFbx(path))) return ImportViaBlender(path);
         if (ext is not ".obj" and not ".stl" and not ".glb" and not ".gltf" and not ".fbx") { Say("Trendo öffnet OBJ, STL, GLB, glTF und FBX. Blend geht über Blender.", "3d"); return Task.CompletedTask; }
-        if (new FileInfo(path).Length >= ImportInBackgroundBytes) return ImportLarge(path, ext, displayName);
-        try { AddImported(Mesh3D.ImportParts(path, _importUnit), ext, displayName); }
-        catch (Exception ex) { Say(ex.Message, "3d"); }
-        return Task.CompletedTask;
+        // Eine Warteschlange: Mehrere Dateien kommen in der gewählten Reihenfolge an, auch wenn eine davon im Hintergrund gelesen wird.
+        // Ist nichts in Arbeit, läuft ein kleiner Import wie bisher sofort durch.
+        return _importTail = ImportAfter(_importTail, path, ext, displayName, new FileInfo(path).Length >= ImportInBackgroundBytes);
     }
 
-    private async Task ImportLarge(string path, string ext, string? displayName)
+    private Task _importTail = Task.CompletedTask;
+
+    private async Task ImportAfter(Task previous, string path, string ext, string? displayName, bool large)
     {
-        var unit = _importUnit;
-        Say("Große Datei wird im Hintergrund gelesen …", "3d");
-        try { AddImported(await Task.Run(() => Mesh3D.ImportParts(path, unit)), ext, displayName); }
+        try { await previous; } catch { } // Fehler des vorigen Imports sind schon gemeldet
+        var unit = _importUnit; var scene = _scene;
+        try
+        {
+            List<Part3D> parts;
+            if (large)
+            {
+                Say("Große Datei wird im Hintergrund gelesen …", "3d");
+                parts = await Task.Run(() => Mesh3D.ImportParts(path, unit));
+                if (!ReferenceEquals(scene, _scene)) { Say("Während des Lesens wurde das Projekt gewechselt; die Datei wurde nicht eingefügt.", "3d"); return; }
+            }
+            else parts = Mesh3D.ImportParts(path, unit);
+            AddImported(parts, ext, displayName);
+        }
         catch (Exception ex) { Say(ex.Message, "3d"); }
     }
 

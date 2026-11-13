@@ -872,6 +872,107 @@ public class ImportTempoTests
         finally { Directory.Delete(d, true); }
     }
 
+    [Fact(DisplayName = "T-0505: PPTX – verschachtelte Absätze in Notizen zählen einmal")]
+    public void Pptx_nested_paragraphs_once()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = Path.Combine(d, "a.pptx");
+            ZipTo(f,
+                ("ppt/presentation.xml", $"""<p:presentation xmlns:p="{PNs}" xmlns:r="{R}"><p:sldIdLst><p:sldId r:id="r1"/></p:sldIdLst></p:presentation>"""),
+                ("ppt/_rels/presentation.xml.rels", RelList([Rel("r1", "slides/slide1.xml")])),
+                ("ppt/slides/slide1.xml", $"""<p:sld xmlns:p="{PNs}"><p:cSld><p:spTree/></p:cSld></p:sld>"""),
+                ("ppt/slides/_rels/slide1.xml.rels", RelList(["""<Relationship Id="n" Type="http://x/notesSlide" Target="../notesSlides/n.xml"/>"""])),
+                ("ppt/notesSlides/n.xml", $"""<p:notes xmlns:p="{PNs}" xmlns:a="{ANs}"><p:sp><p:nvPr><p:ph type="body"/></p:nvPr><p:txBody>{Nest(100, "<a:p>", "</a:p>", "<a:r><a:t>Notiz</a:t></a:r>")}<a:p><a:r><a:t>zwei</a:t></a:r></a:p></p:txBody></p:sp></p:notes>"""));
+            Assert.Equal("Notiz\nzwei", SlideFiles.ReadPptx(f).Slides.Single().Notes);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0505: PPTX – dieselbe Folie vielfach verwiesen wird über das Knotenbudget begrenzt")]
+    public void Pptx_repeated_slide_is_budgeted()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = Path.Combine(d, "a.pptx");
+            var ids = string.Concat(Enumerable.Repeat("""<p:sldId r:id="r1"/>""", 2_000));
+            ZipTo(f,
+                ("ppt/presentation.xml", $"""<p:presentation xmlns:p="{PNs}" xmlns:r="{R}"><p:sldIdLst>{ids}</p:sldIdLst></p:presentation>"""),
+                ("ppt/_rels/presentation.xml.rels", RelList([Rel("r1", "slides/slide1.xml")])),
+                ("ppt/slides/slide1.xml", $"""<p:sld xmlns:p="{PNs}"><p:cSld><p:spTree/></p:cSld>{string.Concat(Enumerable.Repeat("<x/>", 20_000))}</p:sld>"""));
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            AssertBad(() => SlideFiles.ReadPptx(f));
+            Assert.True(sw.Elapsed < TimeSpan.FromSeconds(60), $"Dauer: {sw.Elapsed}");
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0505: ODS – eine wiederholte Zeile teilt sich den Text, statt ihn je Zeile neu anzulegen")]
+    public void Ods_repeated_row_shares_text()
+    {
+        var d = Tmp();
+        try
+        {
+            var f = Path.Combine(d, "a.ods");
+            ZipTo(f, ("content.xml", OdsContent($"""<t:table-row t:number-rows-repeated="1000"><t:table-cell o:value-type="string"><x:p>{Comment(100_000)}</x:p></t:table-cell></t:table-row>""")));
+            var s = SheetFiles.ReadOds(f).Sheets[0];
+            Assert.Same(s.Raw(0, 0), s.Raw(999, 0));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0505: OBJ – verknüpfter Unterordner führt nicht aus dem Modellordner heraus")]
+    public void Obj_mtllib_no_linked_folder()
+    {
+        var d = Tmp();
+        try
+        {
+            var outside = Path.Combine(d, "aussen"); Directory.CreateDirectory(outside);
+            File.WriteAllText(Path.Combine(outside, "a.mtl"), "newmtl rot\nKd 1 0 0\n");
+            var model = Path.Combine(d, "modell"); Directory.CreateDirectory(model);
+            var link = Path.Combine(model, "tex");
+            if (OperatingSystem.IsWindows())
+            {
+                using var p = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("cmd.exe", $"/c mklink /J \"{link}\" \"{outside}\"") { CreateNoWindow = true, UseShellExecute = false })!;
+                p.WaitForExit();
+            }
+            else Directory.CreateSymbolicLink(link, outside);
+            Assert.True(Directory.Exists(link));
+            var f = Path.Combine(model, "a.obj");
+            File.WriteAllText(f, "mtllib tex/a.mtl\n" + Tri + "usemtl rot\nf 1 2 3\n");
+            Assert.Equal("#B7BCC4", Mesh3D.ImportParts(f, "mm").Single().Color);
+        }
+        finally
+        {
+            try { Directory.Delete(Path.Combine(d, "modell", "tex")); } catch (IOException) { } catch (UnauthorizedAccessException) { } // nur die Verknüpfung, nicht ihr Ziel
+            Directory.Delete(d, true);
+        }
+    }
+
+    [Fact(DisplayName = "T-0505: DOCX – Fußzeile mit hundertfach verschachtelten Absätzen wird abgelehnt, Textfeld normal wie bisher")]
+    public void Docx_footer_text_budget()
+    {
+        var d = Tmp();
+        try
+        {
+            string Make(string footerBody)
+            {
+                var f = Path.Combine(d, Guid.NewGuid().ToString("N") + ".docx");
+                ZipTo(f,
+                    ("word/document.xml", $"""<w:document xmlns:w="{WNs}" xmlns:r="{R}"><w:body><w:p><w:r><w:t>Text</w:t></w:r></w:p><w:sectPr><w:footerReference w:type="default" r:id="f"/></w:sectPr></w:body></w:document>"""),
+                    ("word/_rels/document.xml.rels", RelList(["""<Relationship Id="f" Type="http://x/footer" Target="footer1.xml"/>"""])),
+                    ("word/footer1.xml", $"""<w:ftr xmlns:w="{WNs}">{footerBody}</w:ftr>"""));
+                return f;
+            }
+            var normal = DocxFormat.Read(Make("<w:p><w:r><w:t>Außen </w:t></w:r><w:r><w:txbxContent><w:p><w:r><w:t>innen</w:t></w:r></w:p></w:txbxContent></w:r></w:p>"));
+            Assert.Equal("Außen innen innen", normal.Page.Footer); // Textfeld-Absatz zählt wie bisher auch einzeln
+            AssertBad(() => DocxFormat.Read(Make(Nest(200, "<w:p>", "</w:p>", $"<w:r><w:t>{Comment(10_000)}</w:t></w:r>"))));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
     static string OdsContent(string rows) => $"""<o:document-content xmlns:o="{ONs}" xmlns:t="{TNs}" xmlns:x="{XNs}"><t:table t:name="A">{rows}</t:table></o:document-content>""";
     const string OdsValue = """<t:table-cell o:value-type="string"><x:p>v</x:p></t:table-cell>""";
 

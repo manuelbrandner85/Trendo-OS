@@ -416,14 +416,14 @@ public static class DocxFormat
                 if (hr.Name == W + "headerReference")
                 {
                     if (part.Descendants(Vml + "textpath").Select(tp => tp.Attribute("string")).FirstOrDefault(a => a is not null) is { } wm) pg.Watermark = wm.Value;
-                    pg.Header = string.Join(" ", part.Descendants(W + "p").Select(PText).Where(s => s.Trim().Length > 0)).Trim();
+                    pg.Header = string.Join(" ", part.Descendants(W + "p").Select(PText).WithinTextBudget(part).Where(s => s.Trim().Length > 0)).Trim();
                 }
                 else
                 {
                     var paras = part.Descendants(W + "p").ToList();
-                    bool IsPageNo(XElement p) => p.Descendants(W + "fldSimple").Any(f => ((string?)f.Attribute(W + "instr"))?.Contains("PAGE") == true) || p.Descendants(W + "instrText").Any(i => i.Value.Contains("PAGE"));
+                    bool IsPageNo(XElement p) => p.Descendants(W + "fldSimple").Any(f => ((string?)f.Attribute(W + "instr"))?.Contains("PAGE") == true) || p.Outermost(W + "instrText").Any(i => i.Value.Contains("PAGE"));
                     pg.PageNumbers = paras.Any(IsPageNo);
-                    pg.Footer = string.Join(" ", paras.Where(p => !IsPageNo(p)).Select(PText).Where(s => s.Trim().Length > 0)).Trim();
+                    pg.Footer = string.Join(" ", paras.Where(p => !IsPageNo(p)).Select(PText).WithinTextBudget(part).Where(s => s.Trim().Length > 0)).Trim();
                 }
             }
         }
