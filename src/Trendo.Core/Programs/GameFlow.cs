@@ -78,7 +78,6 @@ public static class GameFlow
     public static int Generate(JsonObject d)
     {
         var n = 0;
-        GameBoard.Clean(d);
         foreach (var s in Plan(d))
         {
             // auch fertige Stories gleichen Namens zählen – erneutes Erzeugen legt nichts doppelt an
@@ -92,7 +91,7 @@ public static class GameFlow
         return n;
     }
 
-    static JsonObject Task(JsonObject d, int index) { GameBoard.Clean(d); return (d["tasks"] as JsonArray)?.ElementAtOrDefault(index) as JsonObject ?? throw new ArgumentException("Diese Aufgabe gibt es nicht."); }
+    static JsonObject Task(JsonObject d, int index) => GameBoard.At(d, index) ?? throw new ArgumentException("Diese Aufgabe gibt es nicht.");
 
     /// <summary>Ein Abnahmekriterium prüfen: erfüllt (true), nicht erfüllt (false) oder wieder offen (null). Ändert sich etwas, ist die Story wieder offen.</summary>
     public static void Check(JsonObject d, int index, int criterion, bool? ok)

@@ -188,9 +188,18 @@ public class GameFlowTests
         var d = Doc(); GameFlow.Generate(d);
         ((JsonArray)d["tasks"]!).Insert(0, JsonValue.Create("kaputt"));
         var shown = GameBoard.Tasks(d); var i = shown.FindIndex(t => ((string)t["title"]!).StartsWith("Kernspiel", StringComparison.Ordinal));
+        var before = d.ToJsonString();
+        Assert.Throws<InvalidOperationException>(() => GameFlow.Complete(d, i, GameFlow.Done)); // Kriterien offen
+        Assert.Throws<InvalidOperationException>(() => GameBoard.Move(d, i, 2));
+        Assert.Throws<ArgumentException>(() => GameFlow.Check(d, 99, 0, true));
+        Assert.Equal(before, d.ToJsonString()); // vor einer Ausnahme wird nichts geändert, auch kein Fremdeintrag entfernt
         GameFlow.Check(d, i, 0, true);
         Assert.Equal(GameFlow.Yes, GameFlow.Criteria(GameBoard.Tasks(d)[i])[0].State);
         Assert.StartsWith("Kernspiel", (string)GameBoard.Tasks(d)[i]["title"]!);
+        Assert.Equal("kaputt", (string?)d["tasks"]![0]); // bleibt erhalten
+        GameBoard.Remove(d, i);
+        Assert.Equal("kaputt", (string?)d["tasks"]![0]);
+        Assert.DoesNotContain(GameBoard.Tasks(d), t => ((string)t["title"]!).StartsWith("Kernspiel", StringComparison.Ordinal));
     }
 
     [Fact(DisplayName = "Tore: Risiko-Notiz wird beim Wiederöffnen und bei späterem Bestehen entfernt")]
