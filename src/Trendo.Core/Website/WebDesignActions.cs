@@ -43,6 +43,11 @@ public static partial class WebDesignActions
         new("animation_setzen", "Setzt die Bewegung eines Bausteins, der sie kann: bewegung (keine, einblenden, schweben), dauer (0,2 bis 5 Sekunden).", KiBedarf.Text, ["id", "bewegung"], ["dauer"], true),
         new("bild_setzen", "Setzt die Bilddatei eines Bild-Bausteins samt Alternativtext. Die KI muss das Bild sehen können.", KiBedarf.Bild, ["id", "src", "alt"], [], true),
         new("stand_speichern", "Speichert das Ergebnis des Plans als benannten Stand.", KiBedarf.Text, ["name"], []),
+        new("bewegung_setzen", "Setzt die Bewegung eines Bausteins: erscheinen (keine, einblenden, hochgleiten, zoomen), darueber (keine, anheben, vergroessern, aufhellen), dauer (0,2 bis 3 s), verzoegerung (0 bis 2 s). Bei „weniger Bewegung“ läuft nichts.", KiBedarf.Text, ["id"], ["erscheinen", "darueber", "dauer", "verzoegerung"], true),
+        new("zeitleiste_setzen", "Stellt die Zeitleiste eines Bausteins ein: dauer (0,2 bis 30 s), ausloeser (laden, scroll), wiederholen (nein, ja).", KiBedarf.Text, ["id"], ["dauer", "ausloeser", "wiederholen"], true),
+        new("schluesselbild_setzen", "Setzt ein Schlüsselbild: eigenschaft (x, y in px; skalierung 0 bis 5; drehung in Grad; deckkraft 0 bis 1), zeit in Sekunden, wert.", KiBedarf.Text, ["id", "eigenschaft", "zeit", "wert"], [], true),
+        new("schluesselbild_entfernen", "Entfernt das Schlüsselbild einer Eigenschaft zu einer Zeit.", KiBedarf.Text, ["id", "eigenschaft", "zeit"], [], true),
+        new("seitenuebergang_setzen", "Übergang beim Öffnen der Seite: art (keiner, einblenden).", KiBedarf.Text, ["art"], []),
         new("komponente_erstellen", "Macht Bausteine (ids, aus derselben Liste) zu einer Komponente mit name; an ihrer Stelle steht danach eine Verwendung.", KiBedarf.Text, ["name", "ids"], ["id"]),
         new("komponente_definieren", "Legt eine Komponente aus neuen Bausteinen an: name und bausteine (Liste aus typ, id, props).", KiBedarf.Text, ["name", "bausteine"], ["komponente"]),
         new("komponente_einfuegen", "Fügt eine Verwendung einer Komponente ein: komponente (id), optional id, in, slot, position.", KiBedarf.Text, ["komponente"], ["id", "in", "slot", "position"]),
@@ -51,14 +56,27 @@ public static partial class WebDesignActions
         new("komponente_zuruecksetzen", "Nimmt Überschreibungen einer Verwendung zurück, optional nur für element oder felder.", KiBedarf.Text, ["id"], ["element", "felder"], true),
     ];
 
-    enum Art { Text, Link, Bild, Farbe, Wahl, Zahl, Slot, Stufe }
-    sealed record Feld(Art Art, string[]? Werte = null, double Min = 0, double Max = 0);
+    enum Art { Text, Link, Bild, Farbe, Wahl, Zahl, Slot, Stufe, Liste, Email, Objekt }
+    sealed record Feld(Art Art, string[]? Werte = null, double Min = 0, double Max = 0, Dictionary<string, Feld>? Sub = null);
+    static Feld Liste(int max, params (string K, Feld F)[] sub) => new(Art.Liste, Max: max, Sub: sub.ToDictionary(x => x.K, x => x.F));
+    static Feld Objekt(params (string K, Feld F)[] sub) => new(Art.Objekt, Sub: sub.ToDictionary(x => x.K, x => x.F));
+
+    /// <summary>W4, Z2: Felder, die jeder Baustein hat.</summary>
+    static readonly Dictionary<string, Feld> Allgemein = new()
+    {
+        ["bewegung"] = Objekt(("erscheinen", new(Art.Wahl, ["keine", "einblenden", "hochgleiten", "zoomen"])), ("darueber", new(Art.Wahl, ["keine", "anheben", "vergroessern", "aufhellen"])),
+            ("dauer", new(Art.Zahl, Min: 0.2, Max: 3)), ("verzoegerung", new(Art.Zahl, Min: 0, Max: 2))),
+        ["zeitleiste"] = Objekt(("dauer", new(Art.Zahl, Min: 0.2, Max: 30)), ("ausloeser", new(Art.Wahl, ["laden", "scroll"])), ("wiederholen", new(Art.Wahl, ["nein", "ja"])),
+            ("punkte", Liste(60, ("zeit", new(Art.Zahl, Min: 0, Max: 30)), ("eigenschaft", new(Art.Wahl, [.. WebDesignMotion.Properties.Keys])), ("wert", new(Art.Zahl, Min: -2000, Max: 2000))))),
+    };
+
+    static JsonArray Items(params (string K, JsonNode? V)[][] items) => new(items.Select(i => (JsonNode)new JsonObject(i.Select(x => KeyValuePair.Create(x.K, x.V)))).ToArray());
     sealed record Baustein(Dictionary<string, Feld> Felder, Dictionary<string, JsonNode?> Standard);
 
     static Dictionary<string, JsonNode?> D(params (string K, JsonNode? V)[] v) => v.ToDictionary(x => x.K, x => x.V);
     static readonly Feld T = new(Art.Text), L = new(Art.Link), Motion = new(Art.Wahl, ["keine", "einblenden", "schweben"]), Seconds = new(Art.Zahl, Min: 0.2, Max: 5);
 
-    /// <summary>Die neun Bausteine des Editors mit ihren Feldern und Standardwerten (wie in <c>tools/webdesign-editor/src/main.jsx</c>).</summary>
+    /// <summary>Die Bausteine des Editors mit ihren Feldern und Standardwerten (wie in <c>tools/webdesign-editor/src/main.jsx</c>).</summary>
     static readonly Dictionary<string, Baustein> Bausteine = new()
     {
         ["Kopfbereich"] = new(new() { ["title"] = T, ["sub"] = T, ["cta"] = T, ["href"] = L, ["motion"] = Motion, ["seconds"] = Seconds },
@@ -72,6 +90,23 @@ public static partial class WebDesignActions
         ["Szene3D"] = new(new() { ["form"] = new(Art.Wahl, ["wuerfel", "kugel", "ring"]), ["color"] = new(Art.Farbe), ["spin"] = new(Art.Zahl, Min: 0, Max: 3), ["height"] = new(Art.Zahl, Min: 160, Max: 900) },
             D(("form", "ring"), ("color", "#d4a73a"), ("spin", 0.6), ("height", 380))),
         // A5: Stapel mit Abstand als Stufe des Gestaltungswerts statt fester Pixel
+        // Z1: Bausteine in Profi-Qualität
+        ["Navigation"] = new(new() { ["marke"] = T, ["links"] = Liste(12, ("label", T), ("href", L)), ["knopf"] = T, ["knopfZiel"] = L },
+            D(("marke", "Mein Laden"), ("links", Items([("label", "Angebot"), ("href", "#")], [("label", "Über uns"), ("href", "#")], [("label", "Kontakt"), ("href", "#")])), ("knopf", "Termin buchen"), ("knopfZiel", "#"))),
+        ["Hero"] = new(new() { ["kicker"] = T, ["titel"] = T, ["text"] = T, ["knopf"] = T, ["knopfZiel"] = L, ["knopf2"] = T, ["knopf2Ziel"] = L, ["bild"] = new(Art.Bild), ["bildAlt"] = T },
+            D(("kicker", "Neu"), ("titel", "Ein klares Versprechen in einem Satz"), ("text", "Zwei Sätze, die erklären, was Besucher hier bekommen und warum es ihnen hilft."), ("knopf", "Jetzt starten"), ("knopfZiel", "#"), ("knopf2", "Mehr erfahren"), ("knopf2Ziel", "#"), ("bild", ""), ("bildAlt", ""))),
+        ["Preise"] = new(new() { ["titel"] = T, ["tarife"] = Liste(6, ("name", T), ("preis", T), ("zeitraum", T), ("merkmale", T), ("knopf", T), ("ziel", L), ("hervorgehoben", new(Art.Wahl, ["nein", "ja"]))) },
+            D(("titel", "Preise"), ("tarife", Items(
+                [("name", "Basis"), ("preis", "9 €"), ("zeitraum", "im Monat"), ("merkmale", "Ein Projekt\nE-Mail-Hilfe"), ("knopf", "Basis wählen"), ("ziel", "#"), ("hervorgehoben", "nein")],
+                [("name", "Profi"), ("preis", "29 €"), ("zeitraum", "im Monat"), ("merkmale", "Zehn Projekte\nTelefon-Hilfe\nEigene Adresse"), ("knopf", "Profi wählen"), ("ziel", "#"), ("hervorgehoben", "ja")],
+                [("name", "Team"), ("preis", "79 €"), ("zeitraum", "im Monat"), ("merkmale", "Unbegrenzte Projekte\nPersönliche Betreuung"), ("knopf", "Team wählen"), ("ziel", "#"), ("hervorgehoben", "nein")])))),
+        ["Fragen"] = new(new() { ["titel"] = T, ["fragen"] = Liste(30, ("frage", T), ("antwort", T)) },
+            D(("titel", "Häufige Fragen"), ("fragen", Items([("frage", "Wie lange dauert die Lieferung?"), ("antwort", "In der Regel zwei bis drei Werktage.")], [("frage", "Kann ich zurückgeben?"), ("antwort", "Ja, innerhalb von 30 Tagen ohne Angabe von Gründen.")])))),
+        ["Galerie"] = new(new() { ["titel"] = T, ["bilder"] = Liste(40, ("src", new(Art.Bild)), ("alt", T)), ["spalten"] = new(Art.Stufe, Min: 2, Max: 4) }, D(("titel", ""), ("bilder", new JsonArray()), ("spalten", 3))),
+        ["Formular"] = new(new() { ["titel"] = T, ["empfaenger"] = new(Art.Email), ["knopf"] = T, ["hinweis"] = T },
+            D(("titel", "Schreib uns"), ("empfaenger", "kontakt@example.org"), ("knopf", "Nachricht senden"), ("hinweis", "Senden öffnet dein E-Mail-Programm. Es wird nichts im Internet gespeichert."))),
+        ["Fusszeile"] = new(new() { ["text"] = T, ["links"] = Liste(12, ("label", T), ("href", L)), ["impressum"] = L, ["datenschutz"] = L },
+            D(("text", "© Mein Laden"), ("links", new JsonArray()), ("impressum", "impressum.html"), ("datenschutz", "datenschutz.html"))),
         // W5: Verwendung einer Komponente; Inhalt kommt aus dem Original, Änderungen nur über die Komponenten-Aktionen
         ["Komponente"] = new(new(), D()),
         ["Stapel"] = new(new() { ["inhalt"] = new(Art.Slot), ["richtung"] = new(Art.Wahl, ["senkrecht", "waagerecht"]), ["abstand"] = new(Art.Stufe, Min: 0, Max: 4), ["breite"] = new(Art.Wahl, ["passt", "fuellt"]), ["ausrichtung"] = new(Art.Wahl, ["start", "mitte", "ende"]) },
@@ -93,6 +128,8 @@ public static partial class WebDesignActions
             Art.Farbe => " (#RRGGBB)",
             Art.Link => " (Ziel)",
             Art.Bild => " (Datei im Projekt)",
+            Art.Email => " (E-Mail-Adresse)",
+            Art.Liste => " (Liste aus " + string.Join(", ", f.Value.Sub!.Keys) + ")",
             _ => "",
         }))));
 
@@ -225,6 +262,38 @@ public static partial class WebDesignActions
             case Art.Stufe:
                 if (WebDesign.Number(value) is { } sd && sd == Math.Floor(sd) && sd >= f.Min && sd <= f.Max) return JsonValue.Create((int)sd);
                 throw new PlanError($"„{feld}“ muss eine Stufe von {f.Min.ToString(CultureInfo.InvariantCulture)} bis {f.Max.ToString(CultureInfo.InvariantCulture)} sein, keine Pixel.");
+            case Art.Email:
+                return S(value) is { } mail && System.Text.RegularExpressions.Regex.IsMatch(mail, @"^[^@\s<>""'?&#]+@[^@\s<>""'?&#]+\.[^@\s<>""'?&#]+$") ? JsonValue.Create(mail) : throw new PlanError($"„{feld}“ muss eine E-Mail-Adresse sein.");
+            case Art.Liste:
+            {
+                if (value is not JsonArray items) throw new PlanError($"„{feld}“ muss eine Liste sein.");
+                if (items.Count > f.Max) throw new PlanError($"„{feld}“ hat höchstens {f.Max.ToString(CultureInfo.InvariantCulture)} Einträge.");
+                var outList = new JsonArray();
+                foreach (var it in items)
+                {
+                    if (it is not JsonObject io) throw new PlanError($"Jeder Eintrag in „{feld}“ muss ein Objekt sein.");
+                    var o = new JsonObject();
+                    foreach (var kv in io)
+                    {
+                        if (!f.Sub!.TryGetValue(kv.Key, out var sf)) throw new PlanError($"„{feld}“ kennt kein Feld „{kv.Key}“.");
+                        o[kv.Key] = Check(feld + "." + kv.Key, sf, kv.Value);
+                    }
+                    outList.Add(o);
+                }
+                return outList;
+            }
+            case Art.Objekt:
+            {
+                if (value is not JsonObject obj) throw new PlanError($"„{feld}“ muss ein Objekt sein.");
+                var o = new JsonObject();
+                foreach (var kv in obj)
+                {
+                    if (!f.Sub!.TryGetValue(kv.Key, out var sf)) throw new PlanError($"„{feld}“ kennt kein Feld „{kv.Key}“.");
+                    o[kv.Key] = Check(feld + "." + kv.Key, sf, kv.Value);
+                }
+                if (feld == "zeitleiste" && WebDesignMotion.CheckTimeline(o) is { } zerr) throw new PlanError(zerr);
+                return o;
+            }
             case Art.Farbe:
                 return S(value) is { } c && HexPattern().IsMatch(c) ? JsonValue.Create(c) : throw new PlanError($"„{feld}“ muss eine Farbe #RRGGBB sein.");
             case Art.Link:
@@ -259,7 +328,7 @@ public static partial class WebDesignActions
         if (p.Count == 0 && !allowEmpty) throw new PlanError("„props“ ist leer.");
         foreach (var kv in p)
         {
-            if (!def.Felder.TryGetValue(kv.Key, out var f)) throw new PlanError($"Baustein {type} hat kein Feld „{kv.Key}“.");
+            if (!def.Felder.TryGetValue(kv.Key, out var f) && !Allgemein.TryGetValue(kv.Key, out f)) throw new PlanError($"Baustein {type} hat kein Feld „{kv.Key}“.");
             o[kv.Key] = Check(kv.Key, f, kv.Value);
         }
         return o;
@@ -558,6 +627,43 @@ public static partial class WebDesignActions
                     changes.Add($"Komponente {id}: Überschreibungen zurückgesetzt");
                 }
                 if (over.Count == 0) up.Remove("ueberschreibungen");
+                return doc;
+            }
+            case "bewegung_setzen":
+            case "zeitleiste_setzen":
+            case "schluesselbild_setzen":
+            case "schluesselbild_entfernen":
+            {
+                var id = NeedS(a["id"], "id"); var block = Find(doc, id); var props = block["props"]!.AsObject();
+                var key = name == "bewegung_setzen" ? "bewegung" : "zeitleiste";
+                var current = props[key] as JsonObject ?? [];
+                var next = (JsonObject)current.DeepClone();
+                if (name is "bewegung_setzen" or "zeitleiste_setzen")
+                {
+                    var given = 0;
+                    foreach (var kv in a) if (kv.Key is not ("aktion" or "id")) { next[kv.Key] = kv.Value?.DeepClone(); given++; }
+                    if (given == 0) throw new PlanError("Keine Einstellung angegeben.");
+                }
+                else
+                {
+                    var prop = NeedS(a["eigenschaft"], "eigenschaft");
+                    var zeit = WebDesign.Number(a["zeit"]) ?? throw new PlanError("„zeit“ muss eine Zahl sein.");
+                    if (next["punkte"] is not JsonArray pts) next["punkte"] = pts = [];
+                    var same = pts.OfType<JsonObject>().Where(p => p["eigenschaft"]?.ToString() == prop && WebDesign.Number(p["zeit"]) == zeit).ToList();
+                    if (name == "schluesselbild_entfernen" && same.Count == 0) throw new PlanError($"Bei {zeit.ToString(CultureInfo.InvariantCulture)} s gibt es kein Schlüsselbild für „{prop}“.");
+                    foreach (var p in same) pts.Remove(p);
+                    if (name == "schluesselbild_setzen") pts.Add(new JsonObject { ["zeit"] = zeit, ["eigenschaft"] = prop, ["wert"] = a["wert"]?.DeepClone() });
+                    next["dauer"] ??= 2;
+                }
+                props[key] = Check(key, Allgemein[key], next);
+                changes.Add($"{TypeOf(block)} {id}: {(key == "bewegung" ? "Bewegung" : "Zeitleiste")} geändert");
+                return doc;
+            }
+            case "seitenuebergang_setzen":
+            {
+                var art = S(a["art"]);
+                if (art is not ("keiner" or "einblenden")) throw new PlanError("„art“ muss keiner oder einblenden sein.");
+                rootProps["uebergang"] = art; changes.Add($"Seitenübergang: {art}");
                 return doc;
             }
             case "stand_speichern":

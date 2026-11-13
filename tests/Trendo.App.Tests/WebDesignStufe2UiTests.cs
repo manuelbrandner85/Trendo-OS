@@ -117,6 +117,52 @@ public class WebDesignStufe2_Browser
         finally { File.Delete(file); }
     }
 
+    /// <summary>Kleinstes gültiges PNG (1 × 1 Pixel), damit Galerie und Hero echte Dateien haben.</summary>
+    static readonly byte[] Png = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==");
+    static string? AxeFile() { var f = Path.Combine(Path.GetTempPath(), "trendo-axe", "node_modules", "axe-core", "axe.min.js"); return File.Exists(f) ? f : null; }
+
+    [Fact(DisplayName = "W5, Z1, W4, Z2 in echtem Chrome: Komponenten mit Überschreibung, Profi-Bausteine folgen den Gestaltungswerten, Tastatur und axe-core je Baustein, Bewegung mit „weniger Bewegung“ und Ersatzweg, Zeitleiste im Export (übersprungen ohne Chrome, Node oder axe-core in %TEMP%\\trendo-axe)")]
+    public void Real_browser_teil2()
+    {
+        if (WebsitePreview.FindBrowser() is not { } chrome || Cli.Find("node") is not { } node) { Assert.Skip("Übersprungen – Chrome/Edge oder Node.js fehlt auf diesem PC."); return; }
+        if (AxeFile() is not { } axe) { Assert.Skip("Übersprungen – axe-core ist nicht in %TEMP%\\trendo-axe eingerichtet (npm install axe-core@4.14.0 --prefix %TEMP%\\trendo-axe)."); return; }
+        var editor = Path.Combine(Repo(), "src", "Trendo.App", "Assets", "webdesign");
+        var d = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "trendo-web2-teil2-" + Guid.NewGuid().ToString("N"))).FullName;
+        try
+        {
+            Directory.CreateDirectory(Path.Combine(d, "bilder"));
+            foreach (var n in new[] { "held", "a", "b", "c" }) File.WriteAllBytes(Path.Combine(d, "bilder", n + ".png"), Png);
+            var r = WebDesignActions.Apply(WebDesign.Empty(), File.ReadAllText(Path.Combine(Repo(), "tests", "Trendo.App.Tests", "Daten", "web-stufe2-teil2.json")));
+            Assert.Null(r.Error);
+            Assert.Null(WebDesignStates.Write(d, r.Json!));
+            Assert.DoesNotContain(WebDesignCheck.CheckData(WebDesignStates.Read(d), d), f => f.Level == "Fehler"); // die Prüfseite selbst ist sauber
+            var (outDir, err) = WebDesign.Export(d, editor); Assert.Null(err);
+            Assert.True(File.Exists(Path.Combine(outDir!, "bilder", "a.png"))); Assert.True(File.Exists(Path.Combine(outDir!, "bilder", "held.png")));
+            Assert.Contains("lucide-react", File.ReadAllText(Path.Combine(outDir!, "assets", "LIZENZEN.txt"))); // Lizenzhinweis reist mit
+            var page = Path.Combine(d, "seite.json"); File.WriteAllText(page, WebDesignStates.Read(d));
+            var run = Cli.Run(node, [Path.Combine(Repo(), "tools", "webdesign-editor", "pruefe-teil2.mjs"), chrome, editor, page, outDir!, axe], timeoutMs: 180_000);
+            Assert.True(run.Ok, run.Out + run.Err);
+            Assert.Contains("\"problems\":[]", run.Out);
+        }
+        finally { try { Directory.Delete(d, true); } catch (IOException) { } }
+    }
+
+    [Fact(DisplayName = "Z2: Editor und Export (bewegung.js) berechnen Schlüsselbilder gleich wie C# (übersprungen ohne Node)")]
+    public void Same_timeline_values()
+    {
+        if (Cli.Find("node") is not { } node) { Assert.Skip("Übersprungen – Node.js fehlt."); return; }
+        var points = """[{"eigenschaft":"y","zeit":0.5,"wert":-10},{"eigenschaft":"y","zeit":2,"wert":30},{"eigenschaft":"deckkraft","zeit":1,"wert":0.4},{"eigenschaft":"y","zeit":1,"wert":0}]""";
+        var times = new[] { 0.0, 0.25, 0.5, 0.75, 1, 1.5, 2, 3 };
+        var module = new Uri(Path.Combine(Repo(), "tools", "webdesign-editor", "src", "bewegung.js")).AbsoluteUri;
+        var r = Cli.Run(node, ["--input-type=module", "-e", $"import {{ wertZurZeit }} from '{module}'; const p = {points}; const out = []; for (const e of ['x','y','skalierung','drehung','deckkraft']) for (const t of [{string.Join(",", times.Select(t => t.ToString(System.Globalization.CultureInfo.InvariantCulture)))}]) out.push(wertZurZeit(p, e, t)); process.stdout.write(JSON.stringify(out));"], timeoutMs: 30_000);
+        Assert.True(r.Ok, r.Err);
+        var js = JsonNode.Parse(r.Out)!.AsArray().Select(x => x!.GetValue<double>()).ToList();
+        var arr = JsonNode.Parse(points)!.AsArray();
+        var cs = new[] { "x", "y", "skalierung", "drehung", "deckkraft" }.SelectMany(e => times.Select(t => WebDesignMotion.ValueAt(arr, e, t))).ToList();
+        Assert.Equal(cs.Count, js.Count);
+        for (var i = 0; i < cs.Count; i++) Assert.Equal(cs[i], js[i], 9);
+    }
+
     [Fact(DisplayName = "W1, Z4, W6, A5 in echtem Chrome: Ansichten wirken nach unten, Spalten nach eigener Breite, dunkler Satz, Stapel im Rahmen – im Editor und im Export (übersprungen ohne Chrome oder Node)")]
     public void Real_browser()
     {

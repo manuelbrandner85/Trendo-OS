@@ -161,7 +161,7 @@ public static partial class WebDesign
         if (n is JsonArray a) { foreach (var x in a) CopyImages(x, projectDir, outDir); return; }
         if (n is not JsonObject o) return;
         foreach (var kv in o)
-            if (kv.Key == "src" && kv.Value is JsonValue v && v.TryGetValue(out string? src) && src.Length > 0)
+            if (kv.Key is "src" or "bild" && kv.Value is JsonValue v && v.TryGetValue(out string? src) && src.Length > 0)
             {
                 if (!IsSafeImagePath(src) || !WebDesignCheck.IsLocalFile(projectDir, src)) continue;
                 var clean = src.Trim().Split('#', '?')[0].Replace('/', Path.DirectorySeparatorChar);

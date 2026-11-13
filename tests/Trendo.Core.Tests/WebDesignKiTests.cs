@@ -35,7 +35,7 @@ public class WebDesignKiTests
     [Fact(DisplayName = "A1: Alle Aktionen des Editors aus Stufe 1 funktionieren")]
     public void All_actions()
     {
-        Assert.Equal(21, WebDesignActions.Catalog.Count);
+        Assert.Equal(26, WebDesignActions.Catalog.Count);
         var r = WebDesignActions.Apply(Page, """
             {"aktionen":[
              {"aktion":"seite_beschreiben","titel":"Neu","beschreibung":"Text"},
@@ -201,7 +201,7 @@ public class WebDesignKiTests
     public void Components_match_editor()
     {
         var src = File.ReadAllText(Path.Combine(Repo(), "tools", "webdesign-editor", "src", "main.jsx"));
-        Assert.Equal(10, WebDesignActions.ComponentNames.Count);
+        Assert.Equal(17, WebDesignActions.ComponentNames.Count);
         var names = WebDesignActions.ComponentNames.ToList();
         foreach (var c in names)
         {

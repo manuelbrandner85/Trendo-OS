@@ -8,6 +8,8 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import "./trendo.css";
 import { de } from "./de.js";
 import { ansichtenVon, anpassungenCss, geerbt, BASIS } from "./ansichten.js";
+import { Check, ChevronDown } from "lucide-react";
+import { starteBewegungen, bilderDerZeitleiste } from "./bewegung.js";
 
 const send = (msg) => { try { if (typeof window.invokeCSharpAction === "function") window.invokeCSharpAction(JSON.stringify(msg)); } catch { /* ohne Trendo (Test im Browser) */ } };
 
@@ -70,8 +72,15 @@ export function tokens(t) {
 const DataCtx = React.createContext(null);
 function PageRoot({ children, p }) {
   const data = React.useContext(DataCtx);
+  const ref = useRef(null);
+  // W4: Bewegungen und Zeitleisten starten; bei „weniger Bewegung“ startet nichts und alles bleibt sichtbar
+  useEffect(() => starteBewegungen(ref.current), [data]);
+  useEffect(() => {
+    const el = ref.current;
+    if (p.uebergang === "einblenden" && el && !el.ownerDocument.defaultView?.matchMedia?.("(prefers-reduced-motion: reduce)").matches && el.animate) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 450, easing: "ease-out" });
+  }, []);
   return (
-    <main className={"t-page" + (p.dunkel ? " t-hat-dunkel" : "")} style={tokens(p)}>
+    <main ref={ref} className={"t-page" + (p.dunkel ? " t-hat-dunkel" : "")} style={tokens(p)}>
       {data && <style>{anpassungenCss(data, "container")}</style>}
       {children}
     </main>);
@@ -176,6 +185,56 @@ function UeberschreibungenFeld({ value, onChange }) {
     </div>);
 }
 
+// ---------- W4 und Z2: Bewegung je Baustein und Zeitleiste ----------
+const ZEIT_EIGENSCHAFTEN = [["x", "Verschiebung waagerecht (px)"], ["y", "Verschiebung senkrecht (px)"], ["skalierung", "Größe (×)"], ["drehung", "Drehung (°)"], ["deckkraft", "Deckkraft (0 bis 1)"]];
+function ZeitleisteFeld({ value, onChange }) {
+  const id = usePuckSel((s) => s.selectedItem?.props?.id);
+  const z = { dauer: 2, ausloeser: "laden", wiederholen: "nein", punkte: [], ...(value && typeof value === "object" ? value : {}) };
+  const [neu, setNeu] = useState({ eigenschaft: "y", zeit: 0, wert: 0 });
+  const setze = (teil) => onChange({ ...z, ...teil });
+  const punktSetzen = () => {
+    const zeit = Math.min(z.dauer, Math.max(0, +neu.zeit || 0)), wert = +neu.wert || 0;
+    setze({ punkte: [...z.punkte.filter((p) => !(p.eigenschaft === neu.eigenschaft && +p.zeit === zeit)), { eigenschaft: neu.eigenschaft, zeit, wert }] });
+  };
+  const abspielen = () => { const el = document.querySelector(`[data-b="${id}"]`); if (el && z.punkte.length) el.animate(bilderDerZeitleiste(z), { duration: z.dauer * 1000, easing: "linear" }); };
+  return (
+    <div className="t-anp t-zeit"><b>Zeitleiste</b>
+      <div className="t-zeit-kopf">
+        <label>Dauer (s)<input type="number" min={0.2} max={30} step={0.1} value={z.dauer} onChange={(e) => setze({ dauer: Math.min(30, Math.max(0.2, +e.target.value || 1)) })} /></label>
+        <label>Auslöser<select value={z.ausloeser} onChange={(e) => setze({ ausloeser: e.target.value })}><option value="laden">Beim Laden</option><option value="scroll">Beim Scrollen</option></select></label>
+        <label><input type="checkbox" checked={z.wiederholen === "ja"} onChange={(e) => setze({ wiederholen: e.target.checked ? "ja" : "nein" })} />Wiederholen</label>
+      </div>
+      {ZEIT_EIGENSCHAFTEN.map(([k, label]) => (
+        <div className="t-spur" key={k}><span>{label}</span>
+          <div className="t-spur-bahn">{z.punkte.filter((p) => p.eigenschaft === k).map((p, i) => (
+            <button type="button" key={i} className="t-punkt" style={{ left: `${(p.zeit / z.dauer) * 100}%` }} title={`${p.zeit} s: ${p.wert} – klicken zum Entfernen`}
+              aria-label={`Schlüsselbild ${label} bei ${p.zeit} Sekunden, Wert ${p.wert}, entfernen`} onClick={() => setze({ punkte: z.punkte.filter((q) => q !== p) })} />))}</div>
+        </div>))}
+      <div className="t-zeit-neu">
+        <select aria-label="Eigenschaft" value={neu.eigenschaft} onChange={(e) => setNeu({ ...neu, eigenschaft: e.target.value })}>{ZEIT_EIGENSCHAFTEN.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
+        <input aria-label="Zeit in Sekunden" type="number" min={0} max={z.dauer} step={0.1} value={neu.zeit} onChange={(e) => setNeu({ ...neu, zeit: e.target.value })} />
+        <input aria-label="Wert" type="number" step={0.1} value={neu.wert} onChange={(e) => setNeu({ ...neu, wert: e.target.value })} />
+        <button type="button" className="t-anp-reset" onClick={punktSetzen}>Schlüsselbild setzen</button>
+        <button type="button" className="t-anp-reset" onClick={abspielen}>Abspielen</button>
+      </div>
+    </div>);
+}
+const bewegungFelder = {
+  bewegung: { type: "object", label: "Bewegung", objectFields: {
+    erscheinen: { type: "select", label: "Beim Erscheinen", options: [{ label: "Keine", value: "keine" }, { label: "Einblenden", value: "einblenden" }, { label: "Hochgleiten", value: "hochgleiten" }, { label: "Heranzoomen", value: "zoomen" }] },
+    darueber: { type: "select", label: "Beim Darüberfahren", options: [{ label: "Keine", value: "keine" }, { label: "Anheben", value: "anheben" }, { label: "Vergrößern", value: "vergroessern" }, { label: "Aufhellen", value: "aufhellen" }] },
+    dauer: { type: "number", label: "Dauer (s)", min: 0.2, max: 3, step: 0.1 }, verzoegerung: { type: "number", label: "Verzögerung (s)", min: 0, max: 2, step: 0.1 } } },
+  zeitleiste: { type: "custom", label: "Zeitleiste", render: ({ value, onChange }) => <ZeitleisteFeld value={value} onChange={onChange} /> },
+};
+// Rahmen eines Bausteins: id für Anpassungen, dazu Bewegung und Zeitleiste als Daten für den Ablauf in bewegung.js
+function rahmenProps(p) {
+  const b = p.bewegung || {}, z = p.zeitleiste;
+  const r = { className: "t-b" + (b.darueber && b.darueber !== "keine" ? " t-hov-" + b.darueber : ""), "data-b": p.id };
+  if (b.erscheinen && b.erscheinen !== "keine") Object.assign(r, { "data-erscheinen": b.erscheinen, "data-dauer": b.dauer ?? 0.8, "data-verzoegerung": b.verzoegerung ?? 0 });
+  if (z && Array.isArray(z.punkte) && z.punkte.length) r["data-zeitleiste"] = JSON.stringify(z);
+  return r;
+}
+
 const anpassungenFeld = (spalten = false) => ({ anpassungen: { type: "custom", label: "Anpassungen je Ansicht", render: ({ value, onChange }) => <AnpassungenFeld value={value} onChange={onChange} spalten={spalten} /> } });
 
 // ---------- Bausteine ----------
@@ -183,6 +242,7 @@ const baseConfig = {
   categories: {
     aufbau: { title: "Aufbau", components: ["Bereich", "Spalten", "Stapel", "Komponente"] },
     inhalt: { title: "Inhalt", components: ["Kopfbereich", "Ueberschrift", "Text", "Bild", "Knopf"] },
+    profi: { title: "Profi-Bausteine", components: ["Navigation", "Hero", "Preise", "Fragen", "Galerie", "Formular", "Fusszeile"] },
     effekte: { title: "3D & Bewegung", components: ["Szene3D"] },
   },
   // Modul 05 Design-System: seitenweite Werte als CSS-Variablen – jeder Baustein nutzt sie; Trendo prüft die Werte beim Speichern (nur #Farben, sichere Schriftnamen)
@@ -192,6 +252,7 @@ const baseConfig = {
       accent: { type: "text", label: "Akzentfarbe (#RRGGBB)" }, ink: { type: "text", label: "Textfarbe (#RRGGBB)" }, paper: { type: "text", label: "Hintergrund (#RRGGBB)" },
       font: { type: "select", label: "Schrift", options: [{ label: "Klar (Segoe/Helvetica)", value: "klar" }, { label: "Serif (Georgia)", value: "serif" }, { label: "Rund (Trebuchet)", value: "rund" }, { label: "Technisch (Consolas)", value: "mono" }] },
       radius: { type: "number", label: "Rundung (px)", min: 0, max: 40 }, space: { type: "number", label: "Abstand-Grundwert (px)", min: 4, max: 48 },
+      uebergang: { type: "select", label: "Seitenübergang beim Öffnen", options: [{ label: "Keiner", value: "keiner" }, { label: "Einblenden", value: "einblenden" }] },
       dunkel: { type: "radio", label: "Dunkler Satz", options: [{ label: "Aus", value: false }, { label: "An", value: true }] },
       accentDunkel: { type: "text", label: "Akzent dunkel (#RRGGBB)" }, inkDunkel: { type: "text", label: "Text dunkel (#RRGGBB)" }, paperDunkel: { type: "text", label: "Hintergrund dunkel (#RRGGBB)" },
     },
@@ -201,44 +262,126 @@ const baseConfig = {
   components: {
     Kopfbereich: {
       label: "Kopfbereich",
-      fields: { title: { type: "text", label: "Titel" }, sub: { type: "textarea", label: "Untertitel" }, cta: { type: "text", label: "Knopf-Text" }, href: { type: "text", label: "Knopf-Ziel" }, ...motionFields, ...anpassungenFeld() },
+      fields: { title: { type: "text", label: "Titel" }, sub: { type: "textarea", label: "Untertitel" }, cta: { type: "text", label: "Knopf-Text" }, href: { type: "text", label: "Knopf-Ziel" }, ...motionFields, ...anpassungenFeld(), ...bewegungFelder },
       defaultProps: { title: "Willkommen", sub: "Eine Seite, gebaut mit Trendo.", cta: "Mehr erfahren", href: "#", motion: "einblenden", seconds: 0.9 },
       render: ({ title, sub, cta, href, motion, seconds, id }) => (
         <Animated motion={motion} seconds={seconds} id={id}><header className="t-hero"><h1>{title}</h1><p>{sub}</p>{cta && <a className="t-btn" href={href}>{cta}</a>}</header></Animated>),
     },
-    Ueberschrift: { label: "Überschrift", fields: { text: { type: "text", label: "Text" }, level: { type: "select", label: "Ebene", options: [{ label: "H2", value: "h2" }, { label: "H3", value: "h3" }] }, ...anpassungenFeld() },
+    Ueberschrift: { label: "Überschrift", fields: { text: { type: "text", label: "Text" }, level: { type: "select", label: "Ebene", options: [{ label: "H2", value: "h2" }, { label: "H3", value: "h3" }] }, ...anpassungenFeld(), ...bewegungFelder },
       defaultProps: { text: "Überschrift", level: "h2" }, render: ({ text, level }) => React.createElement(level, { className: "t-h" }, text) },
-    Text: { label: "Text", fields: { text: { type: "textarea", label: "Text" }, align: { type: "radio", label: "Ausrichtung", options: [{ label: "Links", value: "left" }, { label: "Mitte", value: "center" }] }, ...anpassungenFeld() },
+    Text: { label: "Text", fields: { text: { type: "textarea", label: "Text" }, align: { type: "radio", label: "Ausrichtung", options: [{ label: "Links", value: "left" }, { label: "Mitte", value: "center" }] }, ...anpassungenFeld(), ...bewegungFelder },
       defaultProps: { text: "Hier steht dein Text.", align: "left" }, render: ({ text, align }) => <p className={`t-text t-a-${align === "center" ? "center" : "left"}`}>{text}</p> },
-    Bild: { label: "Bild", fields: { src: { type: "text", label: "Bilddatei (im Projekt)" }, alt: { type: "text", label: "Beschreibung (Pflicht für Barrierefreiheit)" }, ...anpassungenFeld() },
+    Bild: { label: "Bild", fields: { src: { type: "text", label: "Bilddatei (im Projekt)" }, alt: { type: "text", label: "Beschreibung (Pflicht für Barrierefreiheit)" }, ...anpassungenFeld(), ...bewegungFelder },
       defaultProps: { src: "", alt: "" }, render: ({ src, alt }) => src ? <img className="t-img" src={src} alt={alt} loading="lazy" /> : <div className="t-img t-empty">Bild wählen</div> },
-    Knopf: { label: "Knopf", fields: { label: { type: "text", label: "Text" }, href: { type: "text", label: "Ziel" }, ...anpassungenFeld() },
+    Knopf: { label: "Knopf", fields: { label: { type: "text", label: "Text" }, href: { type: "text", label: "Ziel" }, ...anpassungenFeld(), ...bewegungFelder },
       defaultProps: { label: "Kontakt", href: "#kontakt" }, render: ({ label, href }) => <a className="t-btn" href={href}>{label}</a> },
-    Bereich: { label: "Bereich", fields: { content: { type: "slot" }, tone: { type: "select", label: "Hintergrund", options: [{ label: "Hell", value: "hell" }, { label: "Dunkel", value: "dunkel" }] }, ...anpassungenFeld() },
+    Bereich: { label: "Bereich", fields: { content: { type: "slot" }, tone: { type: "select", label: "Hintergrund", options: [{ label: "Hell", value: "hell" }, { label: "Dunkel", value: "dunkel" }] }, ...anpassungenFeld(), ...bewegungFelder },
       defaultProps: { tone: "hell" }, render: ({ content: Content, tone }) => <section className={`t-section t-${tone}`}><Content /></section> },
-    Spalten: { label: "Spalten", fields: { left: { type: "slot" }, right: { type: "slot" }, ...anpassungenFeld(true) },
+    Spalten: { label: "Spalten", fields: { left: { type: "slot" }, right: { type: "slot" }, ...anpassungenFeld(true), ...bewegungFelder },
       render: ({ left: Left, right: Right }) => <div className="t-cols-box"><div className="t-cols"><div><Left /></div><div><Right /></div></div></div> },
+    // ---------- Z1: Bausteine in Profi-Qualität (eigene Umsetzung, Symbole von Lucide, ISC) ----------
+    Navigation: { label: "Navigation", fields: { marke: { type: "text", label: "Name oder Marke" },
+        links: { type: "array", label: "Links", arrayFields: { label: { type: "text", label: "Text" }, href: { type: "text", label: "Ziel" } }, defaultItemProps: { label: "Angebot", href: "#" }, getItemSummary: (i) => i.label || "Link" },
+        knopf: { type: "text", label: "Knopf-Text" }, knopfZiel: { type: "text", label: "Knopf-Ziel" }, ...anpassungenFeld(), ...bewegungFelder },
+      defaultProps: { marke: "Mein Laden", links: [{ label: "Angebot", href: "#" }, { label: "Über uns", href: "#" }, { label: "Kontakt", href: "#" }], knopf: "Termin buchen", knopfZiel: "#" },
+      render: ({ marke, links, knopf, knopfZiel }) => (
+        <nav className="t-nav" aria-label="Hauptnavigation">
+          <a className="t-nav-marke" href="#">{marke}</a>
+          <ul className="t-nav-links">{(links || []).map((l, i) => <li key={i}><a href={l.href}>{l.label}</a></li>)}</ul>
+          {knopf && <a className="t-btn t-nav-knopf" href={knopfZiel}>{knopf}</a>}
+        </nav>) },
+    Hero: { label: "Hero", fields: { kicker: { type: "text", label: "Zeile darüber" }, titel: { type: "text", label: "Titel" }, text: { type: "textarea", label: "Text" },
+        knopf: { type: "text", label: "Knopf-Text" }, knopfZiel: { type: "text", label: "Knopf-Ziel" }, knopf2: { type: "text", label: "Zweiter Knopf" }, knopf2Ziel: { type: "text", label: "Ziel zweiter Knopf" },
+        bild: { type: "text", label: "Bilddatei (im Projekt)" }, bildAlt: { type: "text", label: "Bildbeschreibung" }, ...anpassungenFeld(), ...bewegungFelder },
+      defaultProps: { kicker: "Neu", titel: "Ein klares Versprechen in einem Satz", text: "Zwei Sätze, die erklären, was Besucher hier bekommen und warum es ihnen hilft.", knopf: "Jetzt starten", knopfZiel: "#", knopf2: "Mehr erfahren", knopf2Ziel: "#", bild: "", bildAlt: "" },
+      render: ({ kicker, titel, text, knopf, knopfZiel, knopf2, knopf2Ziel, bild, bildAlt }) => (
+        <header className={"t-heroz" + (bild ? " t-heroz-bild" : "")}>
+          <div className="t-heroz-text">
+            {kicker && <p className="t-kicker">{kicker}</p>}
+            <h1>{titel}</h1><p className="t-heroz-lead">{text}</p>
+            <div className="t-knoepfe">{knopf && <a className="t-btn" href={knopfZiel}>{knopf}</a>}{knopf2 && <a className="t-btn t-btn-leise" href={knopf2Ziel}>{knopf2}</a>}</div>
+          </div>
+          {bild && <img className="t-heroz-img" src={bild} alt={bildAlt} />}
+        </header>) },
+    Preise: { label: "Preise", fields: { titel: { type: "text", label: "Überschrift" },
+        tarife: { type: "array", label: "Tarife", arrayFields: { name: { type: "text", label: "Name" }, preis: { type: "text", label: "Preis" }, zeitraum: { type: "text", label: "Zeitraum" },
+            merkmale: { type: "textarea", label: "Merkmale (eins je Zeile)" }, knopf: { type: "text", label: "Knopf-Text" }, ziel: { type: "text", label: "Knopf-Ziel" },
+            hervorgehoben: { type: "radio", label: "Hervorheben", options: [{ label: "Nein", value: "nein" }, { label: "Ja", value: "ja" }] } },
+          defaultItemProps: { name: "Tarif", preis: "0 €", zeitraum: "im Monat", merkmale: "Merkmal", knopf: "Wählen", ziel: "#", hervorgehoben: "nein" }, getItemSummary: (i) => i.name || "Tarif" }, ...anpassungenFeld(), ...bewegungFelder },
+      defaultProps: { titel: "Preise", tarife: [
+        { name: "Basis", preis: "9 €", zeitraum: "im Monat", merkmale: "Ein Projekt\nE-Mail-Hilfe", knopf: "Basis wählen", ziel: "#", hervorgehoben: "nein" },
+        { name: "Profi", preis: "29 €", zeitraum: "im Monat", merkmale: "Zehn Projekte\nTelefon-Hilfe\nEigene Adresse", knopf: "Profi wählen", ziel: "#", hervorgehoben: "ja" },
+        { name: "Team", preis: "79 €", zeitraum: "im Monat", merkmale: "Unbegrenzte Projekte\nPersönliche Betreuung", knopf: "Team wählen", ziel: "#", hervorgehoben: "nein" }] },
+      render: ({ titel, tarife }) => (
+        <section className="t-preise">
+          {titel && <h2 className="t-h">{titel}</h2>}
+          <div className="t-preise-raster">{(tarife || []).map((t, i) => (
+            <article key={i} className={"t-tarif" + (t.hervorgehoben === "ja" ? " t-tarif-an" : "")}>
+              <h3>{t.name}</h3><p className="t-preis"><span>{t.preis}</span> {t.zeitraum}</p>
+              <ul>{String(t.merkmale || "").split("\n").filter((m) => m.trim()).map((m, j) => <li key={j}><Check aria-hidden="true" size={18} />{m}</li>)}</ul>
+              {t.knopf && <a className={"t-btn" + (t.hervorgehoben === "ja" ? "" : " t-btn-leise")} href={t.ziel}>{t.knopf}</a>}
+            </article>))}</div>
+        </section>) },
+    Fragen: { label: "Häufige Fragen", fields: { titel: { type: "text", label: "Überschrift" },
+        fragen: { type: "array", label: "Fragen", arrayFields: { frage: { type: "text", label: "Frage" }, antwort: { type: "textarea", label: "Antwort" } }, defaultItemProps: { frage: "Frage?", antwort: "Antwort." }, getItemSummary: (i) => i.frage || "Frage" }, ...anpassungenFeld(), ...bewegungFelder },
+      defaultProps: { titel: "Häufige Fragen", fragen: [{ frage: "Wie lange dauert die Lieferung?", antwort: "In der Regel zwei bis drei Werktage." }, { frage: "Kann ich zurückgeben?", antwort: "Ja, innerhalb von 30 Tagen ohne Angabe von Gründen." }] },
+      render: ({ titel, fragen }) => (
+        <section className="t-fragen">
+          {titel && <h2 className="t-h">{titel}</h2>}
+          {(fragen || []).map((f, i) => <details key={i} className="t-frage"><summary>{f.frage}<ChevronDown aria-hidden="true" size={18} /></summary><p>{f.antwort}</p></details>)}
+        </section>) },
+    Galerie: { label: "Galerie", fields: { titel: { type: "text", label: "Überschrift" },
+        bilder: { type: "array", label: "Bilder", arrayFields: { src: { type: "text", label: "Bilddatei (im Projekt)" }, alt: { type: "text", label: "Beschreibung" } }, defaultItemProps: { src: "", alt: "" }, getItemSummary: (i) => i.alt || i.src || "Bild" },
+        spalten: { type: "select", label: "Spalten", options: [{ label: "2", value: 2 }, { label: "3", value: 3 }, { label: "4", value: 4 }] }, ...anpassungenFeld(), ...bewegungFelder },
+      defaultProps: { titel: "", bilder: [], spalten: 3 },
+      render: ({ titel, bilder, spalten }) => (
+        <section className="t-galerie">
+          {titel && <h2 className="t-h">{titel}</h2>}
+          <ul className="t-galerie-raster" style={{ "--t-galerie-spalten": spalten || 3 }}>{(bilder || []).length === 0 ? <li className="t-img t-empty">Bilder hinzufügen</li> : bilder.map((b, i) => <li key={i}>{b.src ? <img src={b.src} alt={b.alt} loading="lazy" /> : <div className="t-img t-empty">Bild wählen</div>}</li>)}</ul>
+        </section>) },
+    Formular: { label: "Kontaktformular", fields: { titel: { type: "text", label: "Überschrift" }, empfaenger: { type: "text", label: "E-Mail-Adresse des Empfängers" }, knopf: { type: "text", label: "Knopf-Text" }, hinweis: { type: "textarea", label: "Hinweis unter dem Formular" }, ...anpassungenFeld(), ...bewegungFelder },
+      defaultProps: { titel: "Schreib uns", empfaenger: "kontakt@example.org", knopf: "Nachricht senden", hinweis: "Senden öffnet dein E-Mail-Programm. Es wird nichts im Internet gespeichert." },
+      render: ({ id, titel, empfaenger, knopf, hinweis }) => (
+        <section className="t-formular">
+          {titel && <h2 className="t-h">{titel}</h2>}
+          <form action={"mailto:" + empfaenger} method="post" encType="text/plain">
+            <label htmlFor={id + "-name"}>Name</label><input id={id + "-name"} name="Name" autoComplete="name" required />
+            <label htmlFor={id + "-mail"}>E-Mail</label><input id={id + "-mail"} name="E-Mail" type="email" autoComplete="email" required />
+            <label htmlFor={id + "-text"}>Nachricht</label><textarea id={id + "-text"} name="Nachricht" rows={5} required />
+            <button type="submit" className="t-btn">{knopf}</button>
+            {hinweis && <p className="t-klein">{hinweis}</p>}
+          </form>
+        </section>) },
+    Fusszeile: { label: "Fußzeile", fields: { text: { type: "textarea", label: "Text" },
+        links: { type: "array", label: "Links", arrayFields: { label: { type: "text", label: "Text" }, href: { type: "text", label: "Ziel" } }, defaultItemProps: { label: "Link", href: "#" }, getItemSummary: (i) => i.label || "Link" },
+        impressum: { type: "text", label: "Ziel Impressum" }, datenschutz: { type: "text", label: "Ziel Datenschutz" }, ...anpassungenFeld(), ...bewegungFelder },
+      defaultProps: { text: "© Mein Laden", links: [], impressum: "impressum.html", datenschutz: "datenschutz.html" },
+      render: ({ text, links, impressum, datenschutz }) => (
+        <footer className="t-fuss">
+          <p>{text}</p>
+          <ul>{(links || []).map((l, i) => <li key={i}><a href={l.href}>{l.label}</a></li>)}{impressum && <li><a href={impressum}>Impressum</a></li>}{datenschutz && <li><a href={datenschutz}>Datenschutz</a></li>}</ul>
+        </footer>) },
     Komponente: { label: "Komponente", fields: {
         komponente: { type: "custom", label: "Komponente", render: ({ value, onChange }) => <KomponenteWahl value={value} onChange={onChange} /> },
-        ueberschreibungen: { type: "custom", label: "Felder", render: ({ value, onChange }) => <UeberschreibungenFeld value={value} onChange={onChange} /> }, ...anpassungenFeld() },
+        ueberschreibungen: { type: "custom", label: "Felder", render: ({ value, onChange }) => <UeberschreibungenFeld value={value} onChange={onChange} /> }, ...anpassungenFeld(), ...bewegungFelder },
       render: ({ komponente, ueberschreibungen, id }) => <KomponenteAnzeige komponente={komponente} ueberschreibungen={ueberschreibungen} id={id} /> },
     // A5: Stapel mit Abstand aus den Gestaltungswerten (Stufen statt Pixel), „passt sich an“ oder „füllt aus“, bricht bei schmaler Breite um
     Stapel: { label: "Stapel", fields: { inhalt: { type: "slot" },
         richtung: { type: "radio", label: "Richtung", options: [{ label: "Untereinander", value: "senkrecht" }, { label: "Nebeneinander", value: "waagerecht" }] },
         abstand: { type: "select", label: "Abstand", options: [0, 1, 2, 3, 4].map((n) => ({ label: ["Keiner", "Klein", "Mittel", "Groß", "Sehr groß"][n], value: n })) },
         breite: { type: "radio", label: "Breite der Teile", options: [{ label: "Passt sich an", value: "passt" }, { label: "Füllt aus", value: "fuellt" }] },
-        ausrichtung: { type: "select", label: "Ausrichtung", options: [{ label: "Anfang", value: "start" }, { label: "Mitte", value: "mitte" }, { label: "Ende", value: "ende" }] }, ...anpassungenFeld() },
+        ausrichtung: { type: "select", label: "Ausrichtung", options: [{ label: "Anfang", value: "start" }, { label: "Mitte", value: "mitte" }, { label: "Ende", value: "ende" }] }, ...anpassungenFeld(), ...bewegungFelder },
       defaultProps: { richtung: "senkrecht", abstand: 2, breite: "passt", ausrichtung: "start" },
       render: ({ inhalt: Inhalt, richtung, abstand, breite, ausrichtung }) => <Inhalt className={`t-stack t-stack-${richtung} t-stack-${breite} t-stack-a-${ausrichtung}`} style={{ gap: `calc(var(--t-space) * ${[0, 0.25, 0.5, 1, 1.5][abstand] ?? 0.5})` }} /> },
     Szene3D: { label: "3D-Szene", fields: { form: { type: "select", label: "Form", options: [{ label: "Würfel", value: "wuerfel" }, { label: "Kugel", value: "kugel" }, { label: "Knoten", value: "ring" }] },
-        color: { type: "text", label: "Farbe" }, spin: { type: "number", label: "Drehung", min: 0, max: 3, step: 0.1 }, height: { type: "number", label: "Höhe (px)", min: 160, max: 900 }, ...anpassungenFeld() },
+        color: { type: "text", label: "Farbe" }, spin: { type: "number", label: "Drehung", min: 0, max: 3, step: 0.1 }, height: { type: "number", label: "Höhe (px)", min: 160, max: 900 }, ...anpassungenFeld(), ...bewegungFelder },
       defaultProps: { form: "ring", color: "#d4a73a", spin: 0.6, height: 380 }, render: (p) => <Scene3D {...p} /> },
   },
 };
 
 // Jeder Baustein steckt in einem Rahmen mit seiner id: daran hängen die Anpassungen je Ansicht (Editor, Vorschau und Export)
 export const config = { ...baseConfig, components: Object.fromEntries(Object.entries(baseConfig.components).map(([name, c]) =>
-  [name, { ...c, render: (p) => <div className="t-b" data-b={p.id}>{c.render(p)}</div> }])) };
+  [name, { ...c, render: (p) => <div {...rahmenProps(p)}>{c.render(p)}</div> }])) };
 
 // Bausteine einer Komponente: ohne eigene Seitenhülle
 const innerConfig = { ...config, root: { render: ({ children }) => <>{children}</> } };

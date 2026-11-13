@@ -59,7 +59,7 @@ public static partial class WebDesignCheck
         if (string.IsNullOrWhiteSpace(root?["title"]?.ToString())) f.Add(new("SEO", "Fehler", "Der Seite fehlt ein Titel.", "title"));
         if (string.IsNullOrWhiteSpace(root?["description"]?.ToString())) f.Add(new("SEO", "Hinweis", "Die Seite hat keine Beschreibung für Suchmaschinen.", "description"));
         if (root is not null) f.AddRange(WebDesignTokens.Check(root)); // W6: Kontrast im hellen und, wenn eingeschaltet, im dunklen Satz
-        var heroes = blocks.Count(b => b["type"]!.ToString() == "Kopfbereich");
+        var heroes = blocks.Count(b => b["type"]!.ToString() is "Kopfbereich" or "Hero"); // beide tragen die Hauptüberschrift
         if (heroes == 0) f.Add(new("SEO", "Fehler", "Die Seite hat keine Hauptüberschrift (Kopfbereich fehlt).", "h1"));
         if (heroes > 1) f.Add(new("SEO", "Fehler", $"Die Seite hat {heroes} Hauptüberschriften, es sollte eine sein.", "h1"));
         var previous = 1;
@@ -70,6 +70,20 @@ public static partial class WebDesignCheck
             {
                 if (level > previous + 1) f.Add(new("Barrierefreiheit", "Fehler", $"Überschrift „{id}“ springt von Ebene {previous} auf {level}.", "heading-order"));
                 previous = level;
+            }
+            // Z1: Bilder in Galerie und Hero brauchen ebenfalls Datei und Beschreibung
+            var extra = t switch
+            {
+                "Galerie" => (p?["bilder"] as JsonArray)?.OfType<JsonObject>().Select((x, i) => (Src: x["src"]?.ToString() ?? "", Alt: x["alt"]?.ToString() ?? "", Name: $"{id}, Bild {i + 1}")).ToList(),
+                "Hero" when !string.IsNullOrEmpty(p?["bild"]?.ToString()) => [(p!["bild"]!.ToString(), p["bildAlt"]?.ToString() ?? "", id)],
+                _ => null,
+            };
+            foreach (var (src, alt, name) in extra ?? [])
+            {
+                if (src.Length == 0) { f.Add(new("Links", "Fehler", $"„{name}“ hat keine Datei.", "image-empty")); continue; }
+                if (string.IsNullOrWhiteSpace(alt)) f.Add(new("Barrierefreiheit", "Fehler", $"„{name}“ hat keinen Alternativtext.", "alt"));
+                if (!WebDesign.IsSafeImagePath(src)) f.Add(new("Links", "Fehler", $"„{name}“: „{src}“ ist keine Bilddatei, die in den Export darf.", "image-unsafe"));
+                else if (!IsLocalFile(projectDir, src)) f.Add(new("Links", "Fehler", $"„{name}“: Die Datei „{src}“ liegt nicht im Projekt.", "missing"));
             }
             if (t == "Bild")
             {
