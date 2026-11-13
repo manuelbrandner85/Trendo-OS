@@ -6,10 +6,10 @@ body { margin: 0; background: #fff; font-family: "Segoe UI", Inter, system-ui, s
 .t-back { position: fixed; right: 16px; top: 16px; z-index: 10; }
 /* Seite: Werte kommen als CSS-Variablen aus den Seiteneinstellungen; Rückfallwerte = bisheriger Look */
 .t-page { --t-accent: #1d1d1f; --t-ink: #1d1d1f; --t-paper: #ffffff; --t-font: "Segoe UI", Helvetica, Arial, sans-serif; --t-radius: 12px; --t-space: 24px;
-  min-height: 100vh; container-type: inline-size; font-family: var(--t-font); color: var(--t-ink); background: var(--t-paper); }
+  min-height: 100vh; container-type: inline-size; container-name: seite; font-family: var(--t-font); color: var(--t-ink); background: var(--t-paper); }
 .t-hero { padding: calc(var(--t-space) * 4) var(--t-space); text-align: center; background: radial-gradient(1200px 400px at 50% 0%, color-mix(in srgb, var(--t-accent) 10%, var(--t-paper)), var(--t-paper)); }
-.t-hero h1 { font-size: clamp(32px, 6vw, 64px); margin: 0 0 12px; letter-spacing: -0.02em; }
-.t-hero p { font-size: clamp(16px, 2.2vw, 22px); color: color-mix(in srgb, var(--t-ink) 78%, var(--t-paper)); max-width: 720px; margin: 0 auto calc(var(--t-space) + 4px); }
+.t-hero h1 { font-size: calc(clamp(32px, 6vw, 64px) * var(--t-schrift, 1)); margin: 0 0 12px; letter-spacing: -0.02em; }
+.t-hero p { font-size: calc(clamp(16px, 2.2vw, 22px) * var(--t-schrift, 1)); color: color-mix(in srgb, var(--t-ink) 78%, var(--t-paper)); max-width: 720px; margin: 0 auto calc(var(--t-space) + 4px); }
 .t-btn { display: inline-block; box-sizing: border-box; min-height: 44px; background: var(--t-accent); color: var(--t-paper); padding: 12px 22px; border-radius: 999px; text-decoration: none; font-weight: 600; }
 .t-btn:focus-visible { outline: 3px solid var(--t-accent); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
@@ -18,14 +18,38 @@ body { margin: 0; background: #fff; font-family: "Segoe UI", Inter, system-ui, s
 .t-sel:hover { outline-color: color-mix(in srgb, var(--t-gold) 60%, transparent); }
 .t-sel-on, .t-sel-on:hover { outline-color: var(--t-gold); box-shadow: 0 0 0 4px color-mix(in srgb, var(--t-gold) 28%, transparent) inset; }
 .t-sel [contenteditable="plaintext-only"], .t-sel [contenteditable="true"] { outline: 2px dashed var(--t-gold); outline-offset: 2px; cursor: text; }
-.t-seltools { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: linear-gradient(180deg, var(--t-panel), var(--t-bg)); color: var(--t-text); box-shadow: 0 1px 0 var(--t-edge), 0 6px 18px rgba(0,0,0,.28); font-size: 13px; }
+.t-seltools { position: sticky; top: 0; z-index: 20; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 12px; background: linear-gradient(180deg, var(--t-panel), var(--t-bg)); color: var(--t-text); box-shadow: 0 1px 0 var(--t-edge), 0 6px 18px rgba(0,0,0,.28); font-size: 13px; }
 .t-seltools span { flex: 1; }
+.t-tool-an { outline: 2px solid var(--t-text); outline-offset: 1px; }
+.t-vorschau-rahmen { margin: 0 auto; box-shadow: 0 0 0 1px rgba(0,0,0,.08), 0 10px 40px rgba(0,0,0,.12); }
+.t-anp-ansicht { width: 100%; padding: 4px; }
 .t-h { padding: var(--t-space) var(--t-space) 0; margin: 0; }
 .t-text { padding: 8px var(--t-space); line-height: 1.6; max-width: 820px; }
+.t-a-left { text-align: left; } .t-a-center { text-align: center; }
 .t-img { display: block; width: 100%; max-width: 1200px; margin: 16px auto; border-radius: var(--t-radius); }
 .t-empty { height: 220px; display: grid; place-items: center; background: color-mix(in srgb, var(--t-ink) 6%, var(--t-paper)); color: color-mix(in srgb, var(--t-ink) 50%, var(--t-paper)); }
 .t-section { padding: calc(var(--t-space) * 2) 0; }
 .t-dunkel { background: color-mix(in srgb, var(--t-ink) 92%, black); color: var(--t-paper); }
 .t-cols { display: grid; grid-template-columns: 1fr 1fr; gap: var(--t-space); padding: 0 var(--t-space); }
-@container (max-width: 700px) { .t-cols { grid-template-columns: 1fr; } .t-hero { padding: calc(var(--t-space) * 2.3) 16px; } }
+@container seite (max-width: 700px) { .t-hero { padding: calc(var(--t-space) * 2.3) 16px; } }
+/* Z4: Spalten richten sich nach ihrer eigenen Breite, nicht nach dem Bildschirm – in einer schmalen Spalte stehen sie untereinander */
+.t-cols-box { container-type: inline-size; }
+@container (max-width: 560px) { .t-cols { grid-template-columns: 1fr; } }
+/* W6: dunkler Satz der Gestaltungswerte */
+@media (prefers-color-scheme: dark) { .t-page.t-hat-dunkel { --t-accent: var(--t-accent-d) !important; --t-ink: var(--t-ink-d) !important; --t-paper: var(--t-paper-d) !important; } }
+/* A5: Stapel – Abstand aus dem Gestaltungswert, bricht um statt überzulaufen */
+.t-stack { display: flex; flex-wrap: wrap; min-width: 0; padding: 0 var(--t-space); box-sizing: border-box; }
+.t-stack-senkrecht { flex-direction: column; }
+.t-stack > * { min-width: 0; max-width: 100%; }
+.t-stack-waagerecht.t-stack-fuellt > * { flex: 1 1 0; }
+.t-stack-senkrecht.t-stack-fuellt { align-items: stretch; }
+.t-stack-waagerecht.t-stack-a-mitte { justify-content: center; } .t-stack-waagerecht.t-stack-a-ende { justify-content: flex-end; }
+.t-stack-senkrecht.t-stack-passt.t-stack-a-start { align-items: flex-start; } .t-stack-senkrecht.t-stack-passt.t-stack-a-mitte { align-items: center; } .t-stack-senkrecht.t-stack-passt.t-stack-a-ende { align-items: flex-end; }
+/* W1: Anpassungen je Ansicht im Eigenschaftenfeld */
+.t-anp { font-size: 12px; display: grid; gap: 6px; }
+.t-anp p { margin: 0; }
+.t-anp-zeile { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; align-items: center; padding: 4px 6px; border-radius: 6px; }
+.t-anp-ueber { background: color-mix(in srgb, var(--t-gold) 18%, transparent); box-shadow: inset 3px 0 0 var(--t-gold); }
+.t-anp-erbe { grid-column: 1 / -1; opacity: .7; }
+.t-anp-reset { grid-column: 1 / -1; justify-self: start; background: none; border: 1px solid var(--t-gold); border-radius: 6px; padding: 2px 8px; cursor: pointer; }
 .t-scene { width: 100%; }

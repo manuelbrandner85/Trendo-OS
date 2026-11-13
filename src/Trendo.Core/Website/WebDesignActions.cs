@@ -34,21 +34,25 @@ public static partial class WebDesignActions
         new("element_aendern", "Ändert Felder eines Bausteins.", KiBedarf.Text, ["id", "props"], [], true),
         new("element_entfernen", "Entfernt einen Baustein samt Inhalt.", KiBedarf.Text, ["id"], []),
         new("element_verschieben", "Verschiebt einen Baustein an eine andere Stelle.", KiBedarf.Text, ["id", "position"], ["in", "slot"]),
-        new("ansicht_anpassen", "Legt fest, in welcher Geräte-Ansicht der Editor die Seite zeigt: handy, tablet oder desktop.", KiBedarf.Text, ["ansicht"], []),
-        new("gestaltungswert_setzen", "Setzt einen zentralen Wert: accent, ink, paper (#RRGGBB), font (klar, serif, rund, mono), radius (0 bis 40), space (4 bis 48).", KiBedarf.Text, ["name", "wert"], []),
+        new("ansicht_anpassen", "Legt fest, in welcher Geräte-Ansicht der Editor die Seite zeigt: desktop oder der Name einer Ansicht.", KiBedarf.Text, ["ansicht"], []),
+        new("ansicht_setzen", "Legt eine Geräte-Ansicht an oder ändert ihre Breite: name und breite (240 bis 1920 Pixel). Sie gilt bis zu dieser Breite.", KiBedarf.Text, ["name", "breite"], []),
+        new("ansicht_entfernen", "Entfernt eine Geräte-Ansicht samt ihrer Anpassungen.", KiBedarf.Text, ["name"], []),
+        new("anpassung_setzen", "Passt einen Baustein für eine Ansicht und alle kleineren an: werte mit ausblenden (wahr/falsch), ausrichtung (left, center, right), schrift (50 bis 200 Prozent), spalten (1 oder 2, nur Spalten).", KiBedarf.Text, ["id", "ansicht", "werte"], [], true),
+        new("anpassung_zuruecksetzen", "Nimmt Anpassungen eines Bausteins in einer Ansicht zurück, optional nur die genannten felder.", KiBedarf.Text, ["id", "ansicht"], ["felder"], true),
+        new("gestaltungswert_setzen", "Setzt einen Gestaltungswert für das ganze Projekt: accent, ink, paper, accentDunkel, inkDunkel, paperDunkel (#RRGGBB), dunkel (wahr/falsch), font (klar, serif, rund, mono), radius (0 bis 40), space (4 bis 48).", KiBedarf.Text, ["name", "wert"], []),
         new("animation_setzen", "Setzt die Bewegung eines Bausteins, der sie kann: bewegung (keine, einblenden, schweben), dauer (0,2 bis 5 Sekunden).", KiBedarf.Text, ["id", "bewegung"], ["dauer"], true),
         new("bild_setzen", "Setzt die Bilddatei eines Bild-Bausteins samt Alternativtext. Die KI muss das Bild sehen können.", KiBedarf.Bild, ["id", "src", "alt"], [], true),
         new("stand_speichern", "Speichert das Ergebnis des Plans als benannten Stand.", KiBedarf.Text, ["name"], []),
     ];
 
-    enum Art { Text, Link, Bild, Farbe, Wahl, Zahl, Slot }
+    enum Art { Text, Link, Bild, Farbe, Wahl, Zahl, Slot, Stufe }
     sealed record Feld(Art Art, string[]? Werte = null, double Min = 0, double Max = 0);
     sealed record Baustein(Dictionary<string, Feld> Felder, Dictionary<string, JsonNode?> Standard);
 
     static Dictionary<string, JsonNode?> D(params (string K, JsonNode? V)[] v) => v.ToDictionary(x => x.K, x => x.V);
     static readonly Feld T = new(Art.Text), L = new(Art.Link), Motion = new(Art.Wahl, ["keine", "einblenden", "schweben"]), Seconds = new(Art.Zahl, Min: 0.2, Max: 5);
 
-    /// <summary>Die acht Bausteine des Editors mit ihren Feldern und Standardwerten (wie in <c>tools/webdesign-editor/src/main.jsx</c>).</summary>
+    /// <summary>Die neun Bausteine des Editors mit ihren Feldern und Standardwerten (wie in <c>tools/webdesign-editor/src/main.jsx</c>).</summary>
     static readonly Dictionary<string, Baustein> Bausteine = new()
     {
         ["Kopfbereich"] = new(new() { ["title"] = T, ["sub"] = T, ["cta"] = T, ["href"] = L, ["motion"] = Motion, ["seconds"] = Seconds },
@@ -61,6 +65,9 @@ public static partial class WebDesignActions
         ["Spalten"] = new(new() { ["left"] = new(Art.Slot), ["right"] = new(Art.Slot) }, D()),
         ["Szene3D"] = new(new() { ["form"] = new(Art.Wahl, ["wuerfel", "kugel", "ring"]), ["color"] = new(Art.Farbe), ["spin"] = new(Art.Zahl, Min: 0, Max: 3), ["height"] = new(Art.Zahl, Min: 160, Max: 900) },
             D(("form", "ring"), ("color", "#d4a73a"), ("spin", 0.6), ("height", 380))),
+        // A5: Stapel mit Abstand als Stufe des Gestaltungswerts statt fester Pixel
+        ["Stapel"] = new(new() { ["inhalt"] = new(Art.Slot), ["richtung"] = new(Art.Wahl, ["senkrecht", "waagerecht"]), ["abstand"] = new(Art.Stufe, Min: 0, Max: 4), ["breite"] = new(Art.Wahl, ["passt", "fuellt"]), ["ausrichtung"] = new(Art.Wahl, ["start", "mitte", "ende"]) },
+            D(("richtung", "senkrecht"), ("abstand", 2), ("breite", "passt"), ("ausrichtung", "start"))),
     };
 
     public static IReadOnlyCollection<string> ComponentNames => Bausteine.Keys;
@@ -74,6 +81,7 @@ public static partial class WebDesignActions
             Art.Wahl => " (" + string.Join("|", f.Value.Werte!) + ")",
             Art.Zahl => $" ({f.Value.Min.ToString(CultureInfo.InvariantCulture)} bis {f.Value.Max.ToString(CultureInfo.InvariantCulture)})",
             Art.Slot => " (Slot)",
+            Art.Stufe => $" (Stufe {f.Value.Min.ToString(CultureInfo.InvariantCulture)} bis {f.Value.Max.ToString(CultureInfo.InvariantCulture)} des Abstand-Grundwerts, keine Pixel)",
             Art.Farbe => " (#RRGGBB)",
             Art.Link => " (Ziel)",
             Art.Bild => " (Datei im Projekt)",
@@ -204,8 +212,11 @@ public static partial class WebDesignActions
             case Art.Wahl:
                 return S(value) is { } w && f.Werte!.Contains(w) ? JsonValue.Create(w) : throw new PlanError($"„{feld}“ muss einer von {string.Join(", ", f.Werte!)} sein.");
             case Art.Zahl:
-                if (value is JsonValue n && n.TryGetValue(out double d) && d >= f.Min && d <= f.Max) return JsonValue.Create(d);
+                if (WebDesign.Number(value) is { } d && d >= f.Min && d <= f.Max) return JsonValue.Create(d);
                 throw new PlanError($"„{feld}“ muss eine Zahl von {f.Min.ToString(CultureInfo.InvariantCulture)} bis {f.Max.ToString(CultureInfo.InvariantCulture)} sein.");
+            case Art.Stufe:
+                if (WebDesign.Number(value) is { } sd && sd == Math.Floor(sd) && sd >= f.Min && sd <= f.Max) return JsonValue.Create((int)sd);
+                throw new PlanError($"„{feld}“ muss eine Stufe von {f.Min.ToString(CultureInfo.InvariantCulture)} bis {f.Max.ToString(CultureInfo.InvariantCulture)} sein, keine Pixel.");
             case Art.Farbe:
                 return S(value) is { } c && HexPattern().IsMatch(c) ? JsonValue.Create(c) : throw new PlanError($"„{feld}“ muss eine Farbe #RRGGBB sein.");
             case Art.Link:
@@ -336,9 +347,66 @@ public static partial class WebDesignActions
             }
             case "ansicht_anpassen":
             {
-                var v = S(a["ansicht"]);
-                if (v is not ("handy" or "tablet" or "desktop")) throw new PlanError("„ansicht“ muss handy, tablet oder desktop sein.");
+                var v = S(a["ansicht"])?.ToLowerInvariant();
+                var names = new[] { WebDesignViews.Base }.Concat(WebDesignViews.Of(rootProps).Select(x => x.Name)).Select(x => x.ToLowerInvariant()).ToList();
+                if (v is null || !names.Contains(v)) throw new PlanError($"„ansicht“ muss eine dieser Ansichten sein: {string.Join(", ", names)}.");
                 rootProps["ansicht"] = v; changes.Add($"Ansicht: {v}");
+                return doc;
+            }
+            case "ansicht_setzen":
+            {
+                var viewName = NeedS(a["name"], "name").Trim();
+                if (WebDesign.Number(a["breite"]) is not { } breite || breite != Math.Floor(breite)) throw new PlanError("„breite“ muss eine ganze Zahl sein.");
+                var views = WebDesignViews.Of(rootProps).ToList();
+                if (WebDesignViews.CheckView(viewName, (int)breite, views) is { } err) throw new PlanError(err);
+                var existing = views.FirstOrDefault(x => x.Name.Equals(viewName, StringComparison.OrdinalIgnoreCase));
+                if (existing is not null) views.Remove(existing);
+                views.Add(new(existing?.Name ?? viewName, (int)breite));
+                rootProps["ansichten"] = WebDesignViews.ToJson(views);
+                changes.Add(existing is null ? $"Ansicht „{viewName}“ bis {breite} px angelegt" : $"Ansicht „{existing.Name}“ gilt jetzt bis {breite} px");
+                return doc;
+            }
+            case "ansicht_entfernen":
+            {
+                var viewName = NeedS(a["name"], "name");
+                var views = WebDesignViews.Of(rootProps).ToList();
+                var existing = views.FirstOrDefault(x => x.Name.Equals(viewName, StringComparison.OrdinalIgnoreCase)) ?? throw new PlanError($"Ansicht „{viewName}“ gibt es nicht.");
+                views.Remove(existing);
+                rootProps["ansichten"] = WebDesignViews.ToJson(views);
+                foreach (var blk in Lists(doc).SelectMany(l => l.OfType<JsonObject>())) if (blk["props"]?["anpassungen"] is JsonObject ov) { ov.Remove(existing.Name); if (ov.Count == 0) blk["props"]!.AsObject().Remove("anpassungen"); }
+                if (S(rootProps["ansicht"]) == existing.Name.ToLowerInvariant()) rootProps.Remove("ansicht");
+                changes.Add($"Ansicht „{existing.Name}“ entfernt");
+                return doc;
+            }
+            case "anpassung_setzen":
+            case "anpassung_zuruecksetzen":
+            {
+                var id = NeedS(a["id"], "id"); var block = Find(doc, id); var type = TypeOf(block);
+                var view = NeedS(a["ansicht"], "ansicht");
+                var known = WebDesignViews.Of(rootProps).FirstOrDefault(x => x.Name.Equals(view, StringComparison.OrdinalIgnoreCase))
+                    ?? throw new PlanError(view.Equals(WebDesignViews.Base, StringComparison.OrdinalIgnoreCase) ? $"{WebDesignViews.Base} ist die Grundlage; dort ändert man den Baustein selbst." : $"Ansicht „{view}“ gibt es nicht.");
+                var props = block["props"]!.AsObject();
+                if (props["anpassungen"] is not JsonObject all) props["anpassungen"] = all = [];
+                if (all[known.Name] is not JsonObject vals) all[known.Name] = vals = [];
+                if (name == "anpassung_setzen")
+                {
+                    if (a["werte"] is not JsonObject werte || werte.Count == 0) throw new PlanError("„werte“ muss ein nicht leeres Objekt sein.");
+                    foreach (var kv in werte)
+                    {
+                        var (val, err) = WebDesignViews.CheckOverride(type, kv.Key, kv.Value);
+                        if (err is not null) throw new PlanError(err);
+                        vals[kv.Key] = val;
+                    }
+                    changes.Add($"{type} {id}: in {known.Name} angepasst ({string.Join(", ", werte.Select(x => x.Key))})");
+                }
+                else
+                {
+                    var fields = a["felder"] is JsonArray fa ? fa.Select(x => S(x) ?? throw new PlanError("„felder“ muss eine Liste von Namen sein.")).ToList() : vals.Select(x => x.Key).ToList();
+                    foreach (var f in fields) vals.Remove(f);
+                    changes.Add($"{type} {id}: Anpassung in {known.Name} zurückgesetzt");
+                }
+                if (vals.Count == 0) all.Remove(known.Name);
+                if (all.Count == 0) props.Remove("anpassungen");
                 return doc;
             }
             case "gestaltungswert_setzen":
@@ -346,7 +414,8 @@ public static partial class WebDesignActions
                 var n = NeedS(a["name"], "name");
                 JsonNode value = n switch
                 {
-                    "accent" or "ink" or "paper" => Check("wert", new(Art.Farbe), a["wert"]),
+                    "accent" or "ink" or "paper" or "accentDunkel" or "inkDunkel" or "paperDunkel" => Check("wert", new(Art.Farbe), a["wert"]),
+                    "dunkel" => a["wert"] is JsonValue dv && dv.TryGetValue(out bool dark) ? JsonValue.Create(dark) : throw new PlanError("„wert“ muss wahr oder falsch sein."),
                     "font" => Check("wert", new(Art.Wahl, WebDesign.Fonts), a["wert"]),
                     "radius" => Check("wert", new(Art.Zahl, Min: 0, Max: 40), a["wert"]),
                     "space" => Check("wert", new(Art.Zahl, Min: 4, Max: 48), a["wert"]),

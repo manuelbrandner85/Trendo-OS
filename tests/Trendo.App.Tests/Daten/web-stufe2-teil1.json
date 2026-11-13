@@ -1,0 +1,21 @@
+{"aktionen":[
+ {"aktion":"seite_anlegen","titel":"Prüfseite","beschreibung":"Kurztext"},
+ {"aktion":"gestaltungswert_setzen","name":"dunkel","wert":true},
+ {"aktion":"gestaltungswert_setzen","name":"space","wert":24},
+ {"aktion":"baustein_einfuegen","typ":"Kopfbereich","id":"held","props":{"title":"Titel","sub":"Text","motion":"keine"}},
+ {"aktion":"baustein_einfuegen","typ":"Text","id":"t1","props":{"text":"Absatz zum Prüfen"}},
+ {"aktion":"anpassung_setzen","id":"t1","ansicht":"Tablet","werte":{"ausrichtung":"center"}},
+ {"aktion":"anpassung_setzen","id":"t1","ansicht":"Handy","werte":{"schrift":150}},
+ {"aktion":"baustein_einfuegen","typ":"Spalten","id":"aussen"},
+ {"aktion":"baustein_einfuegen","typ":"Spalten","id":"mitte","in":"aussen","slot":"left"},
+ {"aktion":"baustein_einfuegen","typ":"Spalten","id":"innen","in":"mitte","slot":"left"},
+ {"aktion":"baustein_einfuegen","typ":"Text","id":"i1","in":"innen","slot":"left","props":{"text":"Links innen"}},
+ {"aktion":"baustein_einfuegen","typ":"Text","id":"i2","in":"innen","slot":"right","props":{"text":"Rechts innen"}},
+ {"aktion":"baustein_einfuegen","typ":"Stapel","id":"stapel","props":{"richtung":"waagerecht","abstand":2}},
+ {"aktion":"baustein_einfuegen","typ":"Knopf","in":"stapel","props":{"label":"Erster Knopf mit Text"}},
+ {"aktion":"baustein_einfuegen","typ":"Knopf","in":"stapel","props":{"label":"Zweiter Knopf mit Text"}},
+ {"aktion":"baustein_einfuegen","typ":"Knopf","in":"stapel","props":{"label":"Dritter Knopf mit Text"}},
+ {"aktion":"baustein_einfuegen","typ":"Knopf","in":"stapel","props":{"label":"Vierter Knopf mit Text"}},
+ {"aktion":"baustein_einfuegen","typ":"Knopf","in":"stapel","props":{"label":"Fünfter Knopf mit Text"}},
+ {"aktion":"baustein_einfuegen","typ":"Knopf","in":"stapel","props":{"label":"Sechster Knopf mit Text"}}
+]}

@@ -33,10 +33,15 @@ public static partial class WebDesignStates
     }
 
     /// <summary>Inhalt der Seite oder einer Variante.</summary>
-    public static string Read(string dir, string? variant = null) => variant is null ? PageRaw(dir) : VariantContent(dir, variant) ?? WebDesign.Empty();
+    public static string Read(string dir, string? variant = null) => WebDesignTokens.Inject(variant is null ? PageRaw(dir) : VariantContent(dir, variant) ?? WebDesign.Empty(), WebDesignTokens.Load(dir)); // W6: Gestaltungswerte des Projekts gelten überall
 
     /// <summary>Schreibt die Seite oder eine Variante. Nur gültige Daten; bei der Seite bleibt die vorige Fassung als Sicherung.</summary>
-    public static string? Write(string dir, string json, string? variant = null) => variant is null ? WebDesign.Save(dir, json) : SaveVariant(dir, variant, json);
+    public static string? Write(string dir, string json, string? variant = null)
+    {
+        var err = variant is null ? WebDesign.Save(dir, json) : SaveVariant(dir, variant, json);
+        if (err is null && WebDesign.Validate(json).Json is { } ok) WebDesignTokens.Lift(dir, ok); // geänderte Gestaltungswerte gelten ab jetzt für das ganze Projekt
+        return err;
+    }
 
     /// <summary>Aktuellen Inhalt als Stand speichern.</summary>
     public static (Stand? Stand, string? Error) Save(string dir, string name, string? variant = null) => SaveContent(dir, name, Read(dir, variant), false, variant);

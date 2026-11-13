@@ -32,10 +32,10 @@ public class WebDesignKiTests
         Assert.Equal("h2", Prop(a.Json!, 4)["level"]!.ToString()); // Standardwerte wie im Editor, sonst kann der Baustein nicht zeichnen
     }
 
-    [Fact(DisplayName = "A1: Alle elf Aktionen des Editors funktionieren")]
+    [Fact(DisplayName = "A1: Alle Aktionen des Editors aus Stufe 1 funktionieren")]
     public void All_actions()
     {
-        Assert.Equal(11, WebDesignActions.Catalog.Count);
+        Assert.Equal(15, WebDesignActions.Catalog.Count);
         var r = WebDesignActions.Apply(Page, """
             {"aktionen":[
              {"aktion":"seite_beschreiben","titel":"Neu","beschreibung":"Text"},
@@ -201,7 +201,7 @@ public class WebDesignKiTests
     public void Components_match_editor()
     {
         var src = File.ReadAllText(Path.Combine(Repo(), "tools", "webdesign-editor", "src", "main.jsx"));
-        Assert.Equal(8, WebDesignActions.ComponentNames.Count);
+        Assert.Equal(9, WebDesignActions.ComponentNames.Count);
         var names = WebDesignActions.ComponentNames.ToList();
         foreach (var c in names)
         {

@@ -57,8 +57,7 @@ public static partial class WebDesignCheck
         var root = doc["root"]?["props"] as JsonObject;
         if (string.IsNullOrWhiteSpace(root?["title"]?.ToString())) f.Add(new("SEO", "Fehler", "Der Seite fehlt ein Titel.", "title"));
         if (string.IsNullOrWhiteSpace(root?["description"]?.ToString())) f.Add(new("SEO", "Hinweis", "Die Seite hat keine Beschreibung für Suchmaschinen.", "description"));
-        if (root?["ink"]?.ToString() is { Length: 7 } ink && root["paper"]?.ToString() is { Length: 7 } paper && WebsiteColor.Contrast(ink, paper) < 4.5)
-            f.Add(new("Barrierefreiheit", "Fehler", $"Text auf dem Hintergrund ist zu schwach ({WebsiteColor.Contrast(ink, paper):0.0}:1).", "contrast"));
+        if (root is not null) f.AddRange(WebDesignTokens.Check(root)); // W6: Kontrast im hellen und, wenn eingeschaltet, im dunklen Satz
         var heroes = blocks.Count(b => b["type"]!.ToString() == "Kopfbereich");
         if (heroes == 0) f.Add(new("SEO", "Fehler", "Die Seite hat keine Hauptüberschrift (Kopfbereich fehlt).", "h1"));
         if (heroes > 1) f.Add(new("SEO", "Fehler", $"Die Seite hat {heroes} Hauptüberschriften, es sollte eine sein.", "h1"));
