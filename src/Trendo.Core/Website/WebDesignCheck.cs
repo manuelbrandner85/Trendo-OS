@@ -58,6 +58,7 @@ public static partial class WebDesignCheck
         var root = doc["root"]?["props"] as JsonObject;
         if (string.IsNullOrWhiteSpace(root?["title"]?.ToString())) f.Add(new("SEO", "Fehler", "Der Seite fehlt ein Titel.", "title"));
         if (string.IsNullOrWhiteSpace(root?["description"]?.ToString())) f.Add(new("SEO", "Hinweis", "Die Seite hat keine Beschreibung für Suchmaschinen.", "description"));
+        f.AddRange(WebDesignAssets.Check(projectDir, doc)); // Z7: genutzte Medien brauchen Herkunft und Lizenz
         if (root is not null) f.AddRange(WebDesignTokens.Check(root)); // W6: Kontrast im hellen und, wenn eingeschaltet, im dunklen Satz
         var heroes = blocks.Count(b => b["type"]!.ToString() is "Kopfbereich" or "Hero"); // beide tragen die Hauptüberschrift
         if (heroes == 0) f.Add(new("SEO", "Fehler", "Die Seite hat keine Hauptüberschrift (Kopfbereich fehlt).", "h1"));

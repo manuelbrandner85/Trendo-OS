@@ -58,7 +58,7 @@ public static partial class WebDesign
         foreach (var (k, d) in WebDesignTokens.Defaults)
             if (p[k] is not null && !(p[k] is JsonValue v && v.TryGetValue(out string? s) && HexColor().IsMatch(s))) p[k] = d;
         if (p["dunkel"] is not null && !(p["dunkel"] is JsonValue dv && dv.TryGetValue(out bool _))) p["dunkel"] = false;
-        if (p["font"] is not null && !(p["font"] is JsonValue f && f.TryGetValue(out string? fs) && Fonts.Contains(fs))) p["font"] = "klar";
+        if (p["font"] is not null && !(p["font"] is JsonValue f && f.TryGetValue(out string? fs) && (Fonts.Contains(fs) || WebDesignAssets.FontFamilyOf(fs) is not null))) p["font"] = "klar"; // Z7: auch eigene Schrift aus den Medien
         static double? Num(JsonNode? n) => Number(n) ?? (n is JsonValue s && s.TryGetValue(out string? t) && double.TryParse(t, System.Globalization.CultureInfo.InvariantCulture, out var x) ? x : null);
         if (p["radius"] is not null) p["radius"] = Math.Clamp(Num(p["radius"]) ?? 12, 0, 40);
         if (p["space"] is not null) p["space"] = Math.Clamp(Num(p["space"]) ?? 24, 4, 48);
@@ -90,14 +90,29 @@ public static partial class WebDesign
         return ImageTypes.Contains(Path.GetExtension(parts[^1]), StringComparer.OrdinalIgnoreCase);
     }
 
-    /// <summary>Gefährliche Links aus Link-Feldern entfernen – die fertige Seite soll niemanden angreifen können. Erlaubt sind nur http, https, mailto, tel und relative Ziele.</summary>
+    /// <summary>Z7: Schriftdatei aus den Medien des Projekts: nur unter medien/schrift/, nur Schriftformate, kein Weg nach oben.</summary>
+    public static bool IsSafeFontPath(string rel)
+    {
+        var parts = rel.Replace('\\', '/').Split('/');
+        return parts.Length == 3 && parts[0] == WebDesignAssets.Folder && parts[1] == "schrift" && !parts[2].StartsWith('.') && !parts[2].Any(char.IsControl)
+            && WebDesignAssets.Types["schrift"].Contains(Path.GetExtension(parts[2]).ToLowerInvariant());
+    }
+
+    /// <summary>Felder mit Zielen (Links) und Bildern in allen Bausteinen, auch in Listen.</summary>
+    static readonly HashSet<string> LinkKeys = ["href", "knopfZiel", "knopf2Ziel", "ziel", "impressum", "datenschutz"], ImageKeys = ["src", "bild"];
+    [GeneratedRegex(@"^[^@\s<>""'?&#]+@[^@\s<>""'?&#]+\.[^@\s<>""'?&#]+$")] private static partial Regex MailPattern();
+
+    /// <summary>Gefährliche Links aus Link-Feldern entfernen – die fertige Seite soll niemanden angreifen können. Erlaubt sind nur http, https, mailto, tel und relative Ziele;
+    /// Bilder nur als Bilddatei im Projekt, Empfänger nur als schlichte E-Mail-Adresse.</summary>
     static void Sanitize(JsonNode? n)
     {
         switch (n)
         {
             case JsonObject o:
                 foreach (var key in o.Select(kv => kv.Key).ToList())
-                    if (key is "href" or "src" && o[key] is JsonValue v && v.TryGetValue(out string? s) && !IsAllowedUrl(s)) o[key] = "#";
+                    if (LinkKeys.Contains(key) && o[key] is JsonValue v && v.TryGetValue(out string? s) && !IsAllowedUrl(s)) o[key] = "#";
+                    else if (ImageKeys.Contains(key) && o[key] is JsonValue iv && iv.TryGetValue(out string? img) && img.Length > 0 && !IsSafeImagePath(img)) o[key] = "";
+                    else if (key == "empfaenger" && o[key] is JsonValue mv && mv.TryGetValue(out string? mail) && !MailPattern().IsMatch(mail)) o[key] = "";
                     else Sanitize(o[key]);
                 break;
             case JsonArray a: foreach (var x in a) Sanitize(x); break;
@@ -143,6 +158,18 @@ public static partial class WebDesign
         if (File.Exists(lic)) File.Copy(lic, Path.Combine(assets, "LIZENZEN.txt"), true);
         var doc = JsonNode.Parse(data)!;
         CopyImages(doc, projectDir, outDir);
+        // Z7: eigene Schriften reisen lokal mit; Namensnennung für Medien unter CC-BY
+        var media = WebDesignAssets.Load(projectDir); var used = WebDesignAssets.Used(doc, media);
+        foreach (var font in media.Where(a => a.Art == "schrift" && used.Contains(a.Datei) && IsSafeFontPath(a.Datei) && WebDesignCheck.IsLocalFile(projectDir, a.Datei)))
+        {
+            var target = Path.Combine(outDir, font.Datei.Replace('/', Path.DirectorySeparatorChar));
+            Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+            File.Copy(Path.Combine(projectDir, font.Datei.Replace('/', Path.DirectorySeparatorChar)), target, true);
+        }
+        var credits = WebDesignAssets.AttributionFor(projectDir, doc);
+        var creditsFile = Path.Combine(outDir, "namensnennung.html");
+        if (credits.Count > 0) File.WriteAllText(creditsFile, WebDesignAssets.AttributionHtml(credits)); else if (File.Exists(creditsFile)) File.Delete(creditsFile);
+        var extraCss = string.Join("\n", new[] { WebDesignAssets.FontFaceCss(projectDir, doc), WebDesignViews.Css(doc.AsObject()) }.Where(s => s.Length > 0));
         static string Esc(string s) => s.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;"); // nur HTML-Sonderzeichen maskieren, Umlaute bleiben lesbar (UTF-8)
         var title = Esc(doc["root"]?["props"]?["title"]?.ToString() ?? "Webseite");
         var description = doc["root"]?["props"]?["description"]?.ToString() is { Length: > 0 } d ? $"<meta name=\"description\" content=\"{Esc(d)}\" />\n" : "";
@@ -150,7 +177,7 @@ public static partial class WebDesign
         File.WriteAllText(Path.Combine(outDir, "seite.js"), "window.TRENDO_SEITE = " + data.Replace("</", "<\\/") + ";\n");
         File.WriteAllText(Path.Combine(outDir, "index.html"),
             "<!doctype html>\n<html lang=\"de\">\n<head>\n<meta charset=\"UTF-8\" />\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n" + description +
-            $"<title>{title}</title>\n<link rel=\"stylesheet\" href=\"assets/style.css\">\n" + (WebDesignViews.Css(doc.AsObject()) is { Length: > 0 } views ? $"<style id=\"t-anpassungen\">\n{views}\n</style>\n" : "") + $"<script src=\"seite.js\"></script>\n<script defer src=\"assets/editor.js\"></script>\n</head>\n<body>\n<div id=\"root\"></div>\n" +
+            $"<title>{title}</title>\n<link rel=\"stylesheet\" href=\"assets/style.css\">\n" + (extraCss.Length > 0 ? $"<style id=\"t-anpassungen\">\n{extraCss}\n</style>\n" : "") + $"<script src=\"seite.js\"></script>\n<script defer src=\"assets/editor.js\"></script>\n</head>\n<body>\n<div id=\"root\"></div>\n" +
             "<noscript>Diese Seite braucht JavaScript.</noscript>\n</body>\n</html>\n");
         return (outDir, null);
     }

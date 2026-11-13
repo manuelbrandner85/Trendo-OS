@@ -39,7 +39,7 @@ public static partial class WebDesignActions
         new("ansicht_entfernen", "Entfernt eine Geräte-Ansicht samt ihrer Anpassungen.", KiBedarf.Text, ["name"], []),
         new("anpassung_setzen", "Passt einen Baustein für eine Ansicht und alle kleineren an: werte mit ausblenden (wahr/falsch), ausrichtung (left, center, right), schrift (50 bis 200 Prozent), spalten (1 oder 2, nur Spalten).", KiBedarf.Text, ["id", "ansicht", "werte"], [], true),
         new("anpassung_zuruecksetzen", "Nimmt Anpassungen eines Bausteins in einer Ansicht zurück, optional nur die genannten felder.", KiBedarf.Text, ["id", "ansicht"], ["felder"], true),
-        new("gestaltungswert_setzen", "Setzt einen Gestaltungswert für das ganze Projekt: accent, ink, paper, accentDunkel, inkDunkel, paperDunkel (#RRGGBB), dunkel (wahr/falsch), font (klar, serif, rund, mono), radius (0 bis 40), space (4 bis 48).", KiBedarf.Text, ["name", "wert"], []),
+        new("gestaltungswert_setzen", "Setzt einen Gestaltungswert für das ganze Projekt: accent, ink, paper, accentDunkel, inkDunkel, paperDunkel (#RRGGBB), dunkel (wahr/falsch), font (klar, serif, rund, mono oder eigene:Familie aus den Medien), radius (0 bis 40), space (4 bis 48).", KiBedarf.Text, ["name", "wert"], []),
         new("animation_setzen", "Setzt die Bewegung eines Bausteins, der sie kann: bewegung (keine, einblenden, schweben), dauer (0,2 bis 5 Sekunden).", KiBedarf.Text, ["id", "bewegung"], ["dauer"], true),
         new("bild_setzen", "Setzt die Bilddatei eines Bild-Bausteins samt Alternativtext. Die KI muss das Bild sehen können.", KiBedarf.Bild, ["id", "src", "alt"], [], true),
         new("stand_speichern", "Speichert das Ergebnis des Plans als benannten Stand.", KiBedarf.Text, ["name"], []),
@@ -114,6 +114,8 @@ public static partial class WebDesignActions
     };
 
     public static IReadOnlyCollection<string> ComponentNames => Bausteine.Keys;
+    /// <summary>Felder eines Bausteins, die Bereiche für weitere Bausteine sind.</summary>
+    public static IReadOnlyCollection<string> SlotFields(string type) => Bausteine.TryGetValue(type, out var b) ? b.Felder.Where(f => f.Value.Art == Art.Slot).Select(f => f.Key).ToList() : [];
     /// <summary>Feldnamen eines Bausteins (für den Abgleich mit dem Editor).</summary>
     public static IReadOnlyCollection<string> ComponentFields(string name) => Bausteine[name].Felder.Keys;
 
@@ -494,6 +496,7 @@ public static partial class WebDesignActions
                 {
                     "accent" or "ink" or "paper" or "accentDunkel" or "inkDunkel" or "paperDunkel" => Check("wert", new(Art.Farbe), a["wert"]),
                     "dunkel" => a["wert"] is JsonValue dv && dv.TryGetValue(out bool dark) ? JsonValue.Create(dark) : throw new PlanError("„wert“ muss wahr oder falsch sein."),
+                    "font" when WebDesignAssets.FontFamilyOf(S(a["wert"])) is not null => JsonValue.Create(S(a["wert"])!), // Z7: eigene Schrift aus den Medien
                     "font" => Check("wert", new(Art.Wahl, WebDesign.Fonts), a["wert"]),
                     "radius" => Check("wert", new(Art.Zahl, Min: 0, Max: 40), a["wert"]),
                     "space" => Check("wert", new(Art.Zahl, Min: 4, Max: 48), a["wert"]),
@@ -540,8 +543,10 @@ public static partial class WebDesignActions
                     var found = ids.Select(x => Find(doc, NeedS(x, "ids"))).Distinct().ToList();
                     var list = Lists(doc).First(l => l.Contains(found[0]));
                     if (found.Any(b => !list.Contains(b))) throw new PlanError("Alle Bausteine einer Komponente müssen nebeneinander in derselben Liste liegen.");
-                    if (found.Any(b => TypeOf(b) == "Komponente")) throw new PlanError("Eine Komponente kann keine Verwendung einer Komponente enthalten.");
+                    if (found.Count > WebDesignComponents.MaxBlocks) throw new PlanError($"Eine Komponente hat höchstens {WebDesignComponents.MaxBlocks} Bausteine.");
+                    if (WebDesignComponents.ContainsUsage(new JsonArray(found.Select(b => (JsonNode)b.DeepClone()).ToArray()))) throw new PlanError("Eine Komponente kann keine Verwendung einer Komponente enthalten, auch nicht in einem Bereich.");
                     var ordered = found.OrderBy(b => list.IndexOf(b)).ToList();
+                    if (list.IndexOf(ordered[^1]) - list.IndexOf(ordered[0]) != ordered.Count - 1) throw new PlanError("Die Bausteine einer Komponente müssen direkt hintereinander liegen.");
                     var at = list.IndexOf(ordered[0]);
                     foreach (var blk in ordered) { list.Remove(blk); blocks.Add(blk); }
                     var uid = a["id"] is { } ui ? NeedS(ui, "id") : NewId(doc, "Komponente");

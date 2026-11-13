@@ -35,9 +35,9 @@ public static partial class WebDesignStates
     /// <summary>Inhalt der Seite oder einer Variante.</summary>
     /// <remarks>W6, W5: Gestaltungswerte und Komponenten des Projekts gelten für die Seite und den Export. Eine Variante bringt ihre eigenen mit (beim Anlegen kopiert),
     /// damit sich auch eine andere Farbwelt ausprobieren lässt, ohne die Seite zu ändern (K5); erst beim Übernehmen gelten sie fürs Projekt.</remarks>
-    public static string Read(string dir, string? variant = null) => variant is null
+    public static string Read(string dir, string? variant = null) => WebDesignAssets.Inject(variant is null // Z7: Medienliste für die Auswahl im Editor
         ? WebDesignComponents.Inject(WebDesignTokens.Inject(PageRaw(dir), WebDesignTokens.Load(dir)), dir)
-        : VariantContent(dir, variant) ?? WebDesign.Empty();
+        : VariantContent(dir, variant) ?? WebDesign.Empty(), dir);
 
     /// <summary>Gestaltungswerte und Komponenten aus Seitendaten ins Projekt übernehmen.</summary>
     static void LiftProject(string dir, string json)

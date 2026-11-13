@@ -72,6 +72,109 @@ public class WebDesignStufe2_Ui
         finally { MainWindow.WebDesignTemplatesOverride = null; if (Directory.Exists(templates)) Directory.Delete(templates, true); }
     }
 
+    [AvaloniaFact(DisplayName = "A8: Ohne Wahl wird nichts gebaut; abgelehnte Richtungen werden gemeldet; die gewählte Richtung prägt die Seite")]
+    public async Task Directions_first()
+    {
+        var (w, _, _) = Ui.Open(); var builds = 0; var answer = "kaputt";
+        const string dirs = """{"richtungen":[{"name":"Ruhig","stimmung":"Klar.","schrift":"klar","akzent":"#1f4e79","text":"#1d1d1f","hintergrund":"#ffffff","aufbau":["Hero","Text"]},{"name":"Warm","stimmung":"Herzlich.","schrift":"serif","akzent":"#7a1f2b","text":"#2b1d14","hintergrund":"#fbf6ee","aufbau":["Hero","Galerie"]}]}""";
+        MainWindow.WebDesignKiOverride = (s, _) => s.Contains("Gestaltungsrichtungen") ? Task.FromResult(answer) : Task.FromResult(new string('x', builds++ * 0) + """{"aktionen":[{"aktion":"seite_anlegen","titel":"Café"},{"aktion":"baustein_einfuegen","typ":"Hero"}]}""");
+        try
+        {
+            w.Show("dev"); Pump();
+            await w.WebDesignAiDirections("Café"); Pump();
+            Assert.Contains("abgelehnt", w.WebDesignNote); Assert.Null(w.WebDesignDirectionsShown);
+            answer = dirs;
+            await w.WebDesignAiDirections("Café"); Pump();
+            Assert.Equal(2, w.WebDesignDirectionsShown!.Count); Assert.NotNull(w.Find<WrapPanel>("web-ki-richtungen"));
+            Assert.Equal(0, builds); Assert.Null(w.WebDesignPending); Assert.False(File.Exists(Path.Combine(w.WebDesignDir, WebDesign.PageFile)));
+            await w.WebDesignChooseDirection(1); Pump();
+            Assert.Equal(1, builds);
+            var p = JsonNode.Parse(w.WebDesignPending!.Json!)!["root"]!["props"]!;
+            Assert.Equal(("serif", "#7a1f2b"), (p["font"]!.ToString(), p["accent"]!.ToString()));
+            Assert.Null(w.WebDesignDirectionsShown);
+        }
+        finally { MainWindow.WebDesignKiOverride = null; }
+    }
+
+    [AvaloniaFact(DisplayName = "Z7: Medien ins Projekt holen – Bilder werden verkleinert, Lizenz fehlt wird angezeigt, Suche, Schrift von Fontsource mit Herkunft und Lizenz")]
+    public async Task Media_pane()
+    {
+        var (w, _, root) = Ui.Open();
+        var big = Path.Combine(root, "gross.png");
+        using (var bmp = new SkiaSharp.SKBitmap(3000, 1500)) using (var img = SkiaSharp.SKImage.FromBitmap(bmp)) using (var data = img.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100)) using (var fs = File.Create(big)) data.SaveTo(fs);
+        w.Show("dev"); Pump();
+        w.WebDesignAssetImport(big, "bild", "Großes Bild", "eigenes Foto", ""); Pump();
+        var a = WebDesignAssets.Load(w.WebDesignDir).Single();
+        using (var stored = SkiaSharp.SKBitmap.Decode(Path.Combine(w.WebDesignDir, a.Datei))) Assert.Equal((1920, 960), (stored.Width, stored.Height)); // für das Web verkleinert
+        Assert.Contains("Lizenz eintragen", w.WebDesignNote);
+        Assert.Contains(w.GetLogicalTexts(), t => t.Contains("⚠ Lizenz fehlt"));
+        w.Find<TextBox>("web-medium-suche").Text = "nichtda"; Pump(); w.Find<Button>("web-medium-suchen").Press(); Pump();
+        Assert.DoesNotContain(w.GetLogicalTexts(), t => t.StartsWith("bild: Großes Bild", StringComparison.Ordinal));
+        Assert.Contains("medien", WebDesignStates.Read(w.WebDesignDir)); // Liste für die Auswahl im Editor
+
+        WebDesignFontsourceHandler = new FakeFontsource();
+        try
+        {
+            await w.WebDesignFontFetch("inter"); Pump();
+            Assert.True(WebDesignAssets.Load(w.WebDesignDir).Any(x => x.Art == "schrift"), w.WebDesignNote);
+            var font = WebDesignAssets.Load(w.WebDesignDir).Single(x => x.Art == "schrift");
+            Assert.Equal(("Inter", "OFL-1.1", "Fontsource"), (font.Familie, font.Lizenz, font.Herkunft));
+            w.Find<TextBox>("web-medium-suche").Text = ""; Pump(); w.Show("dev"); Pump();
+            w.Find<Button>("web-medium-schrift-1").Press(); Pump(); // zweites Medium in der Liste
+            Assert.Equal("eigene:Inter", JsonNode.Parse(WebDesign.Load(w.WebDesignDir))!["root"]!["props"]!["font"]!.ToString());
+            await w.WebDesignFontFetch("../böse"); Pump();
+            Assert.Contains("Kennung", w.WebDesignNote);
+        }
+        finally { WebDesignFontsourceHandler = null; }
+    }
+
+    static HttpMessageHandler? WebDesignFontsourceHandler { set => MainWindow.WebDesignFontsourceHandler = value; }
+
+    sealed class FakeFontsource : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage r, CancellationToken ct)
+        {
+            var u = r.RequestUri!.ToString();
+            if (u == "https://api.fontsource.org/v1/fonts/inter")
+                return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent("""{"id":"inter","family":"Inter","license":"OFL-1.1","defSubset":"latin","variants":{"400":{"normal":{"latin":{"url":{"woff2":"https://cdn.jsdelivr.net/fontsource/fonts/inter@5.3.0/latin-400-normal.woff2"}}}}}}""") });
+            if (u.StartsWith("https://cdn.jsdelivr.net/fontsource/", StringComparison.Ordinal))
+                return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new ByteArrayContent([0x77, 0x4F, 0x46, 0x32]) });
+            return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
+        }
+    }
+
+    sealed class BenchKi : IKiBackend
+    {
+        public string Name => "Ollama"; public string BaseUrl => "http://127.0.0.1:11434";
+        public Task<bool> IsUpAsync(CancellationToken ct = default) => Task.FromResult(true);
+        public Task<IReadOnlyList<string>> ModelsAsync(CancellationToken ct = default) => Task.FromResult<IReadOnlyList<string>>(["qwen3:4b", "qwen2.5:0.5b"]);
+        public Task<string> ChatAsync(string model, IReadOnlyList<KiMessage> messages, CancellationToken ct = default)
+        {
+            if (model == "qwen2.5:0.5b") return Task.FromResult("<html>fertig</html>");
+            var q = messages[^1].Content;
+            return Task.FromResult(q.Contains("Bäckerei") ? """{"aktionen":[{"aktion":"seite_anlegen","titel":"B"},{"aktion":"baustein_einfuegen","typ":"Hero"},{"aktion":"baustein_einfuegen","typ":"Text"},{"aktion":"baustein_einfuegen","typ":"Formular"}]}"""
+                : q.Contains("#weg") ? """{"aktionen":[{"aktion":"element_aendern","id":"held","props":{"href":"#"}}]}""" : """{"aktionen":[{"aktion":"element_aendern","id":"t1","props":{"text":"Wir freuen uns auf dich."}}]}""");
+        }
+    }
+
+    [AvaloniaFact(DisplayName = "Z6: Prüflauf vergleicht die lokalen Modelle, speichert das Ergebnis und empfiehlt nur das bestandene")]
+    public async Task Model_bench()
+    {
+        var (w, _, _) = Ui.Open();
+        MainWindow.WebDesignBenchBackendOverride = new BenchKi(); MainWindow.WebDesignHardwareOverride = new HardwareInfo(8L << 30, null, 0);
+        try
+        {
+            w.Show("dev"); Pump();
+            Assert.Contains("Noch kein Prüflauf", w.Find<TextBlock>("web-modell-empfehlung").Text);
+            await w.WebDesignBenchRun(); Pump();
+            var results = WebDesignModelBench.Load(Path.Combine(w.WebDesignDir, "..", ".."));
+            Assert.Contains("qwen3:4b", w.Find<TextBlock>("web-modell-empfehlung").Text);
+            Assert.Contains(w.GetLogicalTexts(), t => t.StartsWith("✗ qwen2.5:0.5b: 0 von 3"));
+            Assert.Contains(w.GetLogicalTexts(), t => t.StartsWith("✓ qwen3:4b: 3 von 3"));
+        }
+        finally { MainWindow.WebDesignBenchBackendOverride = null; MainWindow.WebDesignHardwareOverride = null; }
+    }
+
     [AvaloniaFact(DisplayName = "W1/Z4: Ansicht mit eigener Breite anlegen, Breite ändern und entfernen, ungültige Breite wird gemeldet")]
     public void Views_pane()
     {
@@ -145,6 +248,31 @@ public class WebDesignStufe2_Browser
             Assert.Contains("\"problems\":[]", run.Out);
         }
         finally { try { Directory.Delete(d, true); } catch (IOException) { } }
+    }
+
+    [Fact(DisplayName = "Z6 PC-Lauf: Prüflauf mit echten lokalen Modellen über Ollama, Protokoll unter reports/ (nur mit TRENDO_PC_LAUF=1)")]
+    public async Task Z6_pc_run()
+    {
+        if (Environment.GetEnvironmentVariable("TRENDO_PC_LAUF") != "1") { Assert.Skip("Übersprungen – PC-Lauf nur mit TRENDO_PC_LAUF=1 (braucht Ollama und Zeit)."); return; }
+        var ollama = new OllamaBackend();
+        Assert.True(await ollama.IsUpAsync(), "Ollama läuft nicht.");
+        var installed = await ollama.ModelsAsync();
+        var models = (Environment.GetEnvironmentVariable("TRENDO_PC_MODELLE") ?? "qwen2.5:3b,qwen2.5-coder:7b,mistral:7b").Split(',').Where(installed.Contains).ToList();
+        Assert.True(models.Count >= 2, "Mindestens zwei Modelle nötig, vorhanden: " + string.Join(", ", installed));
+        var results = new List<WebDesignModelBench.ModelResult>();
+        foreach (var m in models) results.Add(await WebDesignModelBench.RunAsync(ollama, m));
+        var hw = (HardwareInfo)typeof(MainWindow).Assembly.GetType("Trendo.App.HardwareProbe")!.GetMethod("Read")!.Invoke(null, null)!;
+        var rec = WebDesignModelBench.Recommend(hw, results);
+        var log = System.Text.Json.JsonSerializer.Serialize(new { Datum = DateTimeOffset.Now, Hardware = new { RamGb = hw.RamBytes >> 30, hw.Gpu, VramGb = hw.VramBytes >> 30 }, Ergebnisse = results, Empfehlung = rec.Model, Hinweis = rec.Note }, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+        var dir = Path.Combine(Repo(), "reports"); Directory.CreateDirectory(dir);
+        var raw = Path.Combine(dir, $"web-modell-pruefung-{DateTime.Now:yyyy-MM-dd}.json");
+        File.WriteAllText(raw, log);
+        var sha = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(raw))).ToLowerInvariant();
+        var md = new System.Text.StringBuilder($"# Z6 – Prüflauf lokaler Modelle für Webdesign\n\nDatum: {DateTime.Now:dd.MM.yyyy HH:mm}. Rohdaten: `{Path.GetFileName(raw)}`, SHA-256 `{sha}`.\n\n| Modell | Bestanden | Zeit | Befunde |\n|---|---|---|---|\n");
+        foreach (var r in results) md.Append($"| {r.Model} | {r.Tasks.Count(t => t.Passed)} von {r.Tasks.Count} | {r.Seconds:0} s | {string.Join("; ", r.Tasks.Where(t => !t.Passed).Select(t => t.Task + ": " + t.Note.Replace("|", "/")))} |\n");
+        md.Append($"\nEmpfehlung: {rec.Note}\n");
+        File.WriteAllText(Path.ChangeExtension(raw, ".md"), md.ToString());
+        Assert.Equal(models.Count, results.Count);
     }
 
     [Fact(DisplayName = "Z2: Editor und Export (bewegung.js) berechnen Schlüsselbilder gleich wie C# (übersprungen ohne Node)")]

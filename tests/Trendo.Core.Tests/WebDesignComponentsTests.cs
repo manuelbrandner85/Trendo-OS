@@ -74,7 +74,7 @@ public class WebDesignComponentsTests
         var d = Dir(); try
         {
             var def = WebDesignComponents.Read(JsonNode.Parse(WithTwoUses())!["root"]!["props"]!["komponenten"]).Single();
-            var file = WebDesignComponents.SaveTemplate(Path.Combine(d, "vorlagen"), def);
+            var (file, replaced) = WebDesignComponents.SaveTemplate(Path.Combine(d, "vorlagen"), def); Assert.False(replaced);
             Assert.EndsWith("preiskarte.json", file);
             var t = WebDesignComponents.Templates(Path.Combine(d, "vorlagen")).Single();
             var other = Ok(WebDesign.Empty(), new JsonObject { ["aktion"] = "komponente_definieren", ["name"] = t.Name, ["komponente"] = "V-1", ["bausteine"] = WebDesignComponents.TemplateBlocks(t.Blocks) }.ToJsonString(),

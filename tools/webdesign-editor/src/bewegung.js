@@ -5,7 +5,7 @@ export const EIGENSCHAFTEN = { x: 0, y: 0, skalierung: 1, drehung: 0, deckkraft:
 
 /** Wert einer Eigenschaft zur Zeit t: vor dem ersten Schlüsselbild dessen Wert, danach der letzte, dazwischen linear. Ohne Schlüsselbild der Grundwert. */
 export function wertZurZeit(punkte, eigenschaft, t) {
-  const p = (punkte || []).filter((k) => k && k.eigenschaft === eigenschaft && Number.isFinite(+k.zeit) && Number.isFinite(+k.wert)).map((k) => ({ zeit: +k.zeit, wert: +k.wert })).sort((a, b) => a.zeit - b.zeit);
+  const p = (punkte || []).filter((k) => k && k.eigenschaft === eigenschaft && typeof k.zeit === "number" && typeof k.wert === "number" && Number.isFinite(k.zeit) && Number.isFinite(k.wert)).map((k) => ({ zeit: k.zeit, wert: k.wert })).sort((a, b) => a.zeit - b.zeit);
   if (!p.length) return EIGENSCHAFTEN[eigenschaft];
   if (t <= p[0].zeit) return p[0].wert;
   for (let i = 1; i < p.length; i++) if (t <= p[i].zeit) { const a = p[i - 1], b = p[i]; return b.zeit === a.zeit ? b.wert : a.wert + (b.wert - a.wert) * ((t - a.zeit) / (b.zeit - a.zeit)); }
@@ -45,7 +45,8 @@ export function starteBewegungen(wurzel) {
     let z; try { z = JSON.parse(el.dataset.zeitleiste); } catch { continue; }
     if (!z?.punkte?.length) continue;
     const dauer = Math.max(0.2, +z.dauer || 1) * 1000;
-    const a = el.animate(bilderDerZeitleiste(z), { duration: dauer, iterations: z.wiederholen === "ja" && z.ausloeser !== "scroll" ? Infinity : 1, fill: "both", easing: "linear" });
+    // Wiederholen höchstens etwa 5 Sekunden lang: Nichts bewegt sich endlos ohne Möglichkeit zum Anhalten (WCAG 2.2.2)
+    const a = el.animate(bilderDerZeitleiste(z), { duration: dauer, iterations: z.wiederholen === "ja" && z.ausloeser !== "scroll" ? Math.max(1, Math.floor(5000 / dauer)) : 1, fill: "both", easing: "linear" });
     aufraeumen.push(() => a.cancel());
     if (z.ausloeser === "scroll") {
       // an den Scroll-Fortschritt gebunden: 0 wenn das Element unten hereinkommt, 1 wenn es ganz zu sehen ist (auch am Seitenende erreichbar)

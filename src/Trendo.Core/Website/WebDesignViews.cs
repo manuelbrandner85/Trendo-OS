@@ -128,7 +128,7 @@ public static partial class WebDesignViews
     public static string Css(JsonObject doc, bool container = false)
     {
         var parts = new List<string>();
-        var blocks = Blocks(doc).ToList();
+        var blocks = Blocks(WebDesignComponents.Expand(doc)).ToList(); // auch Bausteine in Komponenten, mit den ids ihrer Verwendung
         foreach (var v in Of(doc["root"]?["props"] as JsonObject))
         {
             var rules = new StringBuilder();

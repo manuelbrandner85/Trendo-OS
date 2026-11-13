@@ -11,11 +11,21 @@ export function ansichtenVon(root) {
   return Array.isArray(a) ? [...a].filter((v) => v && typeof v.name === "string" && Number.isInteger(v.breite)).sort((x, y) => y.breite - x.breite) : STANDARD_ANSICHTEN;
 }
 
+// W5: Bausteine einer Verwendung: Original mit Überschreibungen, ids „verwendung--baustein“ (gleich wie WebDesignComponents.Instance in C#)
+export function instanz(def, verwendung, ueber) {
+  return (def?.bausteine || []).map((b) => {
+    const innen = b.props?.id || "b";
+    return { ...b, props: { ...(b.props || {}), ...((ueber || {})[innen] || {}), id: `${verwendung}--${innen}` } };
+  });
+}
+
 export function bloecke(data) {
+  const defs = Array.isArray(data?.root?.props?.komponenten) ? data.root.props.komponenten : [];
   const out = [];
   const walk = (list) => {
     for (const b of list || []) {
       if (!b || typeof b !== "object") continue;
+      if (b.type === "Komponente") { const def = defs.find((k) => k.id === b.props?.komponente); if (def) walk(instanz(def, b.props?.id || "k", b.props?.ueberschreibungen)); continue; }
       out.push(b);
       for (const v of Object.values(b.props || {})) if (Array.isArray(v) && v.length && v.every((x) => x && typeof x === "object" && x.type)) walk(v);
     }

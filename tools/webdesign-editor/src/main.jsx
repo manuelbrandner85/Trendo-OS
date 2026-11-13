@@ -7,7 +7,7 @@ import "@puckeditor/core/puck.css";
 import { Canvas, useFrame } from "@react-three/fiber";
 import "./trendo.css";
 import { de } from "./de.js";
-import { ansichtenVon, anpassungenCss, geerbt, BASIS } from "./ansichten.js";
+import { ansichtenVon, anpassungenCss, geerbt, BASIS, instanz } from "./ansichten.js";
 import { Check, ChevronDown } from "lucide-react";
 import { starteBewegungen, bilderDerZeitleiste } from "./bewegung.js";
 
@@ -61,7 +61,9 @@ const FONTS = { klar: '"Segoe UI", Helvetica, Arial, sans-serif', serif: 'Georgi
 const hex = (v, d) => (typeof v === "string" && /^#[0-9a-fA-F]{6}$/.test(v) ? v : d);
 const num = (v, d, lo, hi) => (Number.isFinite(+v) ? Math.min(hi, Math.max(lo, +v)) : d);
 export function tokens(t) {
-  const v = { "--t-accent": hex(t.accent, "#1d1d1f"), "--t-ink": hex(t.ink, "#1d1d1f"), "--t-paper": hex(t.paper, "#ffffff"), "--t-font": FONTS[t.font] || FONTS.klar,
+  // Z7: eigene Schrift aus den Medien als „eigene:Familie“; die Datei bindet der Export lokal ein
+  const eigene = typeof t.font === "string" && /^eigene:[\p{L}0-9 -]{1,40}$/u.test(t.font) ? `"${t.font.slice(7)}", ${FONTS.klar}` : null;
+  const v = { "--t-accent": hex(t.accent, "#1d1d1f"), "--t-ink": hex(t.ink, "#1d1d1f"), "--t-paper": hex(t.paper, "#ffffff"), "--t-font": eigene || FONTS[t.font] || FONTS.klar,
     "--t-radius": num(t.radius, 12, 0, 40) + "px", "--t-space": num(t.space, 24, 4, 48) + "px" };
   // W6: dunkler Satz, wird über „prefers-color-scheme: dark“ aktiv (Regel in trendo.css)
   if (t.dunkel) Object.assign(v, { "--t-accent-d": hex(t.accentDunkel, "#f0c75e"), "--t-ink-d": hex(t.inkDunkel, "#f2f2f2"), "--t-paper-d": hex(t.paperDunkel, "#121212") });
@@ -130,12 +132,6 @@ function AnpassungenFeld({ value, onChange, spalten }) {
 }
 // ---------- W5: Komponenten ----------
 // Original im Projekt (root.props.komponenten), Verwendung mit eigenen Überschreibungen; gleiche Regel wie in C# (WebDesignComponents.Instance): ids „verwendung--baustein“
-export function instanz(def, verwendung, ueber) {
-  return (def?.bausteine || []).map((b) => {
-    const innen = b.props?.id || "b";
-    return { ...b, props: { ...(b.props || {}), ...((ueber || {})[innen] || {}), id: `${verwendung}--${innen}` } };
-  });
-}
 const komponentenVon = (data) => (Array.isArray(data?.root?.props?.komponenten) ? data.root.props.komponenten : []);
 function KomponenteAnzeige({ komponente, ueberschreibungen, id }) {
   const data = React.useContext(DataCtx) || window.TRENDO_SEITE;
@@ -176,8 +172,8 @@ function UeberschreibungenFeld({ value, onChange }) {
           const hier = ueber[innen]?.[feld];
           return (
             <div className={"t-anp-zeile" + (hier !== undefined ? " t-anp-ueber" : "")} key={innen + feld} data-feld={`${innen}.${feld}`}>
-              <label>{(baseConfig.components[b.type]?.label || b.type) + " – " + (f.label || feld)}</label>
-              <input type="text" value={original ? (b.props?.[feld] ?? "") : (hier ?? b.props?.[feld] ?? "")} onChange={(e) => (original ? setzeOriginal(innen, feld, e.target.value) : setzeHier(innen, feld, e.target.value))} />
+              <label htmlFor={`t-ueber-${innen}-${feld}`}>{(baseConfig.components[b.type]?.label || b.type) + " – " + (f.label || feld)}</label>
+              <input id={`t-ueber-${innen}-${feld}`} type="text" value={original ? (b.props?.[feld] ?? "") : (hier ?? b.props?.[feld] ?? "")} onChange={(e) => (original ? setzeOriginal(innen, feld, e.target.value) : setzeHier(innen, feld, e.target.value))} />
               {!original && (hier !== undefined ? <button type="button" className="t-anp-reset" onClick={() => setzeHier(innen, feld, undefined)}>Zurücksetzen</button> : <span className="t-anp-erbe">wie im Original</span>)}
             </div>);
         });
@@ -196,7 +192,7 @@ function ZeitleisteFeld({ value, onChange }) {
     const zeit = Math.min(z.dauer, Math.max(0, +neu.zeit || 0)), wert = +neu.wert || 0;
     setze({ punkte: [...z.punkte.filter((p) => !(p.eigenschaft === neu.eigenschaft && +p.zeit === zeit)), { eigenschaft: neu.eigenschaft, zeit, wert }] });
   };
-  const abspielen = () => { const el = document.querySelector(`[data-b="${id}"]`); if (el && z.punkte.length) el.animate(bilderDerZeitleiste(z), { duration: z.dauer * 1000, easing: "linear" }); };
+  const abspielen = () => { const el = document.querySelector(`[data-b="${id}"]`); if (el && z.punkte.length && !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) el.animate(bilderDerZeitleiste(z), { duration: z.dauer * 1000, easing: "linear" }); };
   return (
     <div className="t-anp t-zeit"><b>Zeitleiste</b>
       <div className="t-zeit-kopf">
@@ -235,6 +231,18 @@ function rahmenProps(p) {
   return r;
 }
 
+// Z7: Bild aus den Medien des Projekts wählen oder einen Pfad eingeben
+function BildWahl({ value, onChange }) {
+  const medien = usePuckSel((s) => (Array.isArray(s.appState.data.root?.props?.medien) ? s.appState.data.root.props.medien : []));
+  return (
+    <div className="t-anp">
+      {medien.length > 0 && <select className="t-anp-ansicht t-bildwahl" aria-label="Bild aus den Medien" value={medien.some((m) => m.datei === value) ? value : ""} onChange={(e) => e.target.value && onChange(e.target.value)}>
+        <option value="">– aus den Medien wählen –</option>{medien.map((m) => <option key={m.datei} value={m.datei}>{m.titel}</option>)}</select>}
+      <input type="text" aria-label="Bilddatei im Projekt" value={value || ""} onChange={(e) => onChange(e.target.value)} />
+    </div>);
+}
+const bildFeld = (label) => ({ type: "custom", label, render: ({ value, onChange }) => <BildWahl value={value} onChange={onChange} /> });
+
 const anpassungenFeld = (spalten = false) => ({ anpassungen: { type: "custom", label: "Anpassungen je Ansicht", render: ({ value, onChange }) => <AnpassungenFeld value={value} onChange={onChange} spalten={spalten} /> } });
 
 // ---------- Bausteine ----------
@@ -271,7 +279,7 @@ const baseConfig = {
       defaultProps: { text: "Überschrift", level: "h2" }, render: ({ text, level }) => React.createElement(level, { className: "t-h" }, text) },
     Text: { label: "Text", fields: { text: { type: "textarea", label: "Text" }, align: { type: "radio", label: "Ausrichtung", options: [{ label: "Links", value: "left" }, { label: "Mitte", value: "center" }] }, ...anpassungenFeld(), ...bewegungFelder },
       defaultProps: { text: "Hier steht dein Text.", align: "left" }, render: ({ text, align }) => <p className={`t-text t-a-${align === "center" ? "center" : "left"}`}>{text}</p> },
-    Bild: { label: "Bild", fields: { src: { type: "text", label: "Bilddatei (im Projekt)" }, alt: { type: "text", label: "Beschreibung (Pflicht für Barrierefreiheit)" }, ...anpassungenFeld(), ...bewegungFelder },
+    Bild: { label: "Bild", fields: { src: bildFeld("Bild"), alt: { type: "text", label: "Beschreibung (Pflicht für Barrierefreiheit)" }, ...anpassungenFeld(), ...bewegungFelder },
       defaultProps: { src: "", alt: "" }, render: ({ src, alt }) => src ? <img className="t-img" src={src} alt={alt} loading="lazy" /> : <div className="t-img t-empty">Bild wählen</div> },
     Knopf: { label: "Knopf", fields: { label: { type: "text", label: "Text" }, href: { type: "text", label: "Ziel" }, ...anpassungenFeld(), ...bewegungFelder },
       defaultProps: { label: "Kontakt", href: "#kontakt" }, render: ({ label, href }) => <a className="t-btn" href={href}>{label}</a> },
@@ -292,7 +300,7 @@ const baseConfig = {
         </nav>) },
     Hero: { label: "Hero", fields: { kicker: { type: "text", label: "Zeile darüber" }, titel: { type: "text", label: "Titel" }, text: { type: "textarea", label: "Text" },
         knopf: { type: "text", label: "Knopf-Text" }, knopfZiel: { type: "text", label: "Knopf-Ziel" }, knopf2: { type: "text", label: "Zweiter Knopf" }, knopf2Ziel: { type: "text", label: "Ziel zweiter Knopf" },
-        bild: { type: "text", label: "Bilddatei (im Projekt)" }, bildAlt: { type: "text", label: "Bildbeschreibung" }, ...anpassungenFeld(), ...bewegungFelder },
+        bild: bildFeld("Bild"), bildAlt: { type: "text", label: "Bildbeschreibung" }, ...anpassungenFeld(), ...bewegungFelder },
       defaultProps: { kicker: "Neu", titel: "Ein klares Versprechen in einem Satz", text: "Zwei Sätze, die erklären, was Besucher hier bekommen und warum es ihnen hilft.", knopf: "Jetzt starten", knopfZiel: "#", knopf2: "Mehr erfahren", knopf2Ziel: "#", bild: "", bildAlt: "" },
       render: ({ kicker, titel, text, knopf, knopfZiel, knopf2, knopf2Ziel, bild, bildAlt }) => (
         <header className={"t-heroz" + (bild ? " t-heroz-bild" : "")}>
@@ -331,7 +339,7 @@ const baseConfig = {
           {(fragen || []).map((f, i) => <details key={i} className="t-frage"><summary>{f.frage}<ChevronDown aria-hidden="true" size={18} /></summary><p>{f.antwort}</p></details>)}
         </section>) },
     Galerie: { label: "Galerie", fields: { titel: { type: "text", label: "Überschrift" },
-        bilder: { type: "array", label: "Bilder", arrayFields: { src: { type: "text", label: "Bilddatei (im Projekt)" }, alt: { type: "text", label: "Beschreibung" } }, defaultItemProps: { src: "", alt: "" }, getItemSummary: (i) => i.alt || i.src || "Bild" },
+        bilder: { type: "array", label: "Bilder", arrayFields: { src: bildFeld("Bild"), alt: { type: "text", label: "Beschreibung" } }, defaultItemProps: { src: "", alt: "" }, getItemSummary: (i) => i.alt || i.src || "Bild" },
         spalten: { type: "select", label: "Spalten", options: [{ label: "2", value: 2 }, { label: "3", value: 3 }, { label: "4", value: 4 }] }, ...anpassungenFeld(), ...bewegungFelder },
       defaultProps: { titel: "", bilder: [], spalten: 3 },
       render: ({ titel, bilder, spalten }) => (

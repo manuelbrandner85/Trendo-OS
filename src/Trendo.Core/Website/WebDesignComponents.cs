@@ -29,12 +29,20 @@ public static partial class WebDesignComponents
         {
             var id = o["id"]?.ToString(); var name = o["name"]?.ToString();
             if (id is null || !IdPattern().IsMatch(id) || name is null || !NamePattern().IsMatch(name) || list.Any(c => c.Id == id)) continue;
-            if (o["bausteine"] is not JsonArray blocks || blocks.Count == 0 || blocks.Count > MaxBlocks || !blocks.All(b => b is JsonObject bo && bo["type"] is JsonValue && bo["type"]!.ToString() != "Komponente")) continue;
+            if (o["bausteine"] is not JsonArray blocks || blocks.Count == 0 || blocks.Count > MaxBlocks || !blocks.All(b => b is JsonObject bo && bo["type"] is JsonValue) || ContainsUsage(blocks)) continue;
             list.Add(new(id, name, (JsonArray)blocks.DeepClone()));
             if (list.Count >= MaxComponents) break;
         }
         return list;
     }
+
+    /// <summary>Steckt irgendwo (auch in Bereichen) eine Verwendung einer Komponente?</summary>
+    public static bool ContainsUsage(JsonNode? n) => n switch
+    {
+        JsonArray a => a.Any(ContainsUsage),
+        JsonObject o => o["type"]?.ToString() == "Komponente" || o.Any(kv => kv.Key != "komponenten" && ContainsUsage(kv.Value)),
+        _ => false,
+    };
 
     public static JsonArray ToJson(IEnumerable<Component> list) => new(list.Select(c => (JsonNode)new JsonObject { ["id"] = c.Id, ["name"] = c.Name, ["bausteine"] = c.Blocks.DeepClone() }).ToArray());
 
@@ -93,12 +101,14 @@ public static partial class WebDesignComponents
                 if (b["type"]?.ToString() == "Komponente")
                 {
                     list.RemoveAt(i);
+                    var inserted = new List<JsonObject>();
                     if (p?["komponente"]?.ToString() is { } k && defs.TryGetValue(k, out var def))
                     {
                         var usage = p["id"]?.ToString() ?? "k";
                         var over = p["ueberschreibungen"] as JsonObject;
-                        foreach (var inner in Instance(def, usage, over)) list.Insert(i++, inner);
+                        foreach (var inner in Instance(def, usage, over)) { list.Insert(i++, inner); inserted.Add(inner); }
                     }
+                    foreach (var inner in inserted) if (inner["props"] is JsonObject ip) foreach (var kv in ip.ToList()) if (kv.Value is JsonArray a && a.All(x => x is JsonObject o && o["type"] is not null)) Walk(a);
                     i--;
                     continue;
                 }
@@ -128,22 +138,28 @@ public static partial class WebDesignComponents
 
     static string TemplateFile(string templatesDir, string name) => Path.Combine(templatesDir, SkillFiles.Slug(name) + ".json");
 
-    /// <summary>Komponente als eigene Vorlage speichern (unabhängig vom Projekt).</summary>
-    public static string SaveTemplate(string templatesDir, Component c)
+    /// <summary>Komponente als eigene Vorlage speichern (unabhängig vom Projekt). Eine Vorlage gleichen Namens wird ersetzt (<paramref name="Replaced"/>), sonst bekommt jede eine eigene Datei.</summary>
+    public static (string File, bool Replaced) SaveTemplate(string templatesDir, Component c)
     {
         Directory.CreateDirectory(templatesDir);
-        var f = TemplateFile(templatesDir, c.Name);
-        System.IO.File.WriteAllText(f, new JsonObject { ["name"] = c.Name, ["bausteine"] = c.Blocks.DeepClone() }.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
-        return f;
+        string? same = null;
+        foreach (var f in Directory.GetFiles(templatesDir, "*.json"))
+            try { if (JsonNode.Parse(System.IO.File.ReadAllText(f))?["name"]?.ToString() == c.Name) { same = f; break; } }
+            catch (Exception e) when (e is JsonException or ArgumentException or InvalidOperationException or IOException) { }
+        var file = same ?? TemplateFile(templatesDir, c.Name);
+        for (var n = 2; same is null && System.IO.File.Exists(file); n++) file = Path.Combine(templatesDir, SkillFiles.Slug(c.Name) + "-" + n + ".json");
+        System.IO.File.WriteAllText(file, new JsonObject { ["name"] = c.Name, ["bausteine"] = c.Blocks.DeepClone() }.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
+        return (file, same is not null);
     }
 
-    /// <summary>Bausteine einer Vorlage als Angaben für „komponente_definieren“: nur Typ, id und einfache Felder (Bereiche und Ansichts-Anpassungen bleiben leer).</summary>
+    /// <summary>Bausteine einer Vorlage als Angaben für „komponente_definieren“: Typ, id und alle Felder samt Listen und Bewegung; Bereiche und Ansichts-Anpassungen bleiben leer.</summary>
     public static JsonArray TemplateBlocks(JsonArray blocks) => new(blocks.OfType<JsonObject>().Select(b =>
     {
         var props = new JsonObject();
+        var type = b["type"]?.ToString() ?? "";
         if (b["props"] is JsonObject p)
             foreach (var kv in p)
-                if (kv.Key is not ("id" or "anpassungen") && kv.Value is not JsonArray && kv.Value is not JsonObject) props[kv.Key] = kv.Value?.DeepClone();
+                if (kv.Key is not ("id" or "anpassungen") && !WebDesignActions.SlotFields(type).Contains(kv.Key)) props[kv.Key] = kv.Value?.DeepClone();
         var o = new JsonObject { ["typ"] = b["type"]?.ToString(), ["props"] = props };
         if (b["props"]?["id"]?.ToString() is { } id) o["id"] = id;
         return (JsonNode)o;

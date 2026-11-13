@@ -31,9 +31,9 @@ public partial class MainWindow
     {
         var c = WebDesignComponents.Read(JsonNode.Parse(WebDesignCurrent())?["root"]?["props"]?["komponenten"]).FirstOrDefault(x => x.Id == id);
         if (c is null) { _wdNote = "Diese Komponente gibt es nicht mehr."; Show("dev"); return; }
-        WebDesignComponents.SaveTemplate(WebDesignTemplatesDir, c);
+        var (_, replaced) = WebDesignComponents.SaveTemplate(WebDesignTemplatesDir, c);
         _core.Audit.Append(Principal.LocalOwner.Name, "web.visuell.vorlage", c.Name);
-        _wdNote = $"„{c.Name}“ ist als Vorlage gespeichert und steht in jedem Projekt bereit."; Show("dev");
+        _wdNote = replaced ? $"Die Vorlage „{c.Name}“ ist durch diese Fassung ersetzt." : $"„{c.Name}“ ist als Vorlage gespeichert und steht in jedem Projekt bereit."; Show("dev");
     }
 
     /// <summary>Vorlage ins Projekt holen: als neue Komponente samt einer Verwendung am Seitenende.</summary>
@@ -42,7 +42,8 @@ public partial class MainWindow
         var t = WebDesignComponents.Templates(WebDesignTemplatesDir).FirstOrDefault(x => x.Name == name);
         if (t.Blocks is null) { _wdNote = "Diese Vorlage gibt es nicht mehr."; Show("dev"); return; }
         var existing = WebDesignComponents.Read(JsonNode.Parse(WebDesignCurrent())?["root"]?["props"]?["komponenten"]);
-        var finalName = name; for (var n = 2; existing.Any(c => c.Name.Equals(finalName, StringComparison.OrdinalIgnoreCase)); n++) finalName = $"{name} {n}";
+        var baseName = name[..Math.Min(name.Length, 55)].TrimEnd();
+        var finalName = baseName; for (var n = 2; existing.Any(c => c.Name.Equals(finalName, StringComparison.OrdinalIgnoreCase)); n++) finalName = $"{baseName} {n}";
         var kid = "V-" + Guid.NewGuid().ToString("N")[..8];
         WebDesignHumanAction(Plan(
             new JsonObject { ["aktion"] = "komponente_definieren", ["name"] = finalName, ["komponente"] = kid, ["bausteine"] = WebDesignComponents.TemplateBlocks(t.Blocks) },
