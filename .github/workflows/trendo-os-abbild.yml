@@ -1,15 +1,14 @@
-# Trendo OS als eigenständiges System (USB-Stick / externe SSD): baut das Abbild bei jedem Release, prüft es und hängt es an das Release.
+# Trendo OS als eigenständiges System (USB-Stick / externe SSD): baut das Abbild, prüft es und legt es im eigenen Vor-Release „trendo-os-abbild“ ab.
+# Seit 13.11.2026 (Commercial Desktop Edition) getrennt von den Windows-Kundenreleases: läuft nur noch von Hand, nie automatisch bei einem Release.
 # Wunsch 04.11.2026: „alles über GitHub“. GitHub erlaubt höchstens 2 GB je Datei – darum wird das Abbild in Teile zerlegt,
 # jeder Teil und das Ganze mit Prüfsumme; Trendo setzt sie beim Schreiben auf den Stick wieder zusammen und prüft alles.
 name: Trendo-OS-Abbild
 
 on:
-  release:
-    types: [published]
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release, an das das Abbild gehängt wird (z. B. v0.9.70)"
+        description: "Stand, aus dem das Abbild gebaut wird (Tag, z. B. v0.9.92)"
         required: true
 
 permissions:
@@ -20,11 +19,12 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 180
     env:
-      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+      TAG: ${{ inputs.tag }}
+      CHANNEL: trendo-os-abbild
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name || github.ref }}  # Probelauf von Hand: aktueller Stand, Abbild wird an das genannte Release gehängt
+          ref: ${{ inputs.tag }}
 
       - name: Platz schaffen (das Abbild braucht viel Platz)
         run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL && df -h /
@@ -65,9 +65,12 @@ jobs:
           PY
           cat TrendoOS-Abbild.json
 
-      - name: An das Release hängen
+      - name: Im eigenen Abbild-Kanal ablegen (Vor-Release, nie „latest“)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           cd linux-image/out
-          gh release upload "$TAG" TrendoOS-Abbild.json TrendoOS-Abbild.part* --clobber --repo "$GITHUB_REPOSITORY"
+          if ! gh release view "$CHANNEL" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$CHANNEL" --repo "$GITHUB_REPOSITORY" --prerelease --latest=false --target "$(git rev-parse HEAD)" --title "Trendo OS – bootfähiges Abbild (USB/SSD)" --notes "Zusatzvariante, nicht Teil des Windows-Kundenangebots. Gebaut aus $TAG."
+          fi
+          gh release upload "$CHANNEL" TrendoOS-Abbild.json TrendoOS-Abbild.part* --clobber --repo "$GITHUB_REPOSITORY"

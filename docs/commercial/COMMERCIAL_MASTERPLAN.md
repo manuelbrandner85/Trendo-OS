@@ -34,6 +34,17 @@ Die geplanten Preise (Complete 299 € netto einmalig, Team 999 € netto für 5
 | E8 | Qwen2.5 3B | ersetzen oder kommerzielle Lizenz anfragen | durch 1.5B oder 7B ersetzen |
 | E9 | Code-Signatur | Certum Cloud, OV-Zertifikat, Azure (nur mit Organisation) | Certum Cloud |
 
+## 2a. Erweiterung „Commercial Desktop Edition & Hardware Compatibility“ (13.11.2026)
+
+Verbindliche Vorgaben des Inhabers, umgesetzt bzw. dokumentiert in:
+- `DESKTOP_PRODUCT_STRATEGY.md`: Windows-11-Desktop-Software, nicht als Windows-Ersatz beworben, Name bleibt
+- `RELEASE_VARIANTS.md`: Hauptprodukt ist die Windows-Installation. Linux-USB, Pi-Verbund und Portable bleiben erhalten, sind aber vorerst nicht im Angebot. Das Linux-Abbild ist von den Windows-Releases getrennt
+- `HARDWARE_COMPATIBILITY.md`: Systemcheck vor der Installation (`installer/systemcheck.ps1`), in Trendo und vor dem Kauf
+- `PERFORMANCE_PROFILES.md`: Basic, Standard, Professional (vorläufig), Eignung je Studio, Leistungsanpassung nach Zustimmung
+- `SYSTEM_REQUIREMENTS.md`: Entwurf. Es werden keine ungemessenen Werte veröffentlicht
+
+Neue Lücke **L12**: Die Profilgrenzen sind nicht auf echter Hardware gemessen. Die Messreihe gehört zu Phase 8.
+
 ## 3. Zielarchitektur (Vorschlag)
 
 - **Desktop-Client (dieses Repository):** Seite „Konto, Lizenz & Vollversion“, Prüfung signierter Berechtigungen mit dem **öffentlichen** Schlüssel, Freischaltung je Studio, Offline-Nachfrist. Kein privater Schlüssel, kein Paddle-Geheimnis, keine Kartendaten.
@@ -49,13 +60,13 @@ Ob Rust für einen Teil des Servers Vorteile bringt (Signatur, Webhook-Annahme),
 | Phase | Inhalt | Voraussetzung |
 |---|---|---|
 | 1 Audit | diese Dokumente | erledigt mit diesem Stand |
-| 2 Grundlagen | Editionsmodell und Berechtigungsformat im Client, eindeutige Version, Lizenzseite im Produkt, Qwen 3B ersetzen | E1, E2, E8 |
+| 2 Grundlagen | Editionsmodell und Berechtigungsformat im Client, eindeutige Version, Lizenzseite im Produkt, Qwen 3B ersetzen, Hardware-Check und Leistungsprofile, Linux-Abbild getrennt | E1, E2, E8 (umgesetzt auf `claude/T-0710-commercial`) |
 | 3 Free/Complete | Freischaltung je Studio, Testzeitraum, Offline-Nachfrist, Tests | Phase 2 |
 | 4 Owner Console | Server mit Konten, Grants per E-Mail, Protokoll | E3, E5 |
 | 5 Zahlungen | Paddle-Sandbox, Checkout, Webhooks, Berechtigung nach Zahlung | E4, Paddle-Sandbox-Konto vom Inhaber |
 | 6 Rechnungen | Paddle-Rechnungen abrufen, Mails in drei Sprachen | Phase 5, E6 |
 | 7 Finance & Tax | Abgleich, Archiv, Export | Phase 5, Commercialista |
-| 8 Qualität | Testmatrix, Sicherheitsprüfung, frischer Windows-Rechner | Phasen 2–7 |
+| 8 Qualität | Testmatrix, Sicherheitsprüfung, frischer Windows-Rechner, Messreihe der Leistungsprofile auf mindestens sechs Geräten | Phasen 2–7 |
 | 9 Commercial Beta | kleine Gruppe, nur Sandbox oder nach Freigabe live | Rechtstexte, Signatur, alle Punkte in `RIGHTS_AND_OWNERSHIP.md` geklärt |
 | 10 Release Readiness | Release Gate | ausdrückliche Freigabe des Inhabers |
 

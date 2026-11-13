@@ -16,7 +16,7 @@ public partial class MainWindow
         ("Geräte", "🖥", [("geraete", "Geräte & Laufwerke"), ("handy", "Handy verbinden"), ("verbund", "Geräteverbund"), ("teilen", "Im Heimnetz teilen")]),
         ("Programme", "▦", [("apps", "Apps"), ("appcenter", "Programme verwalten"), ("hinzufuegen", "Hinzufügen"), ("prog-pflege", "Pflegen & Aktualisieren"), ("components", "Zusatzprogramme"), ("downloads", "Downloads")]),
         ("Datenschutz & Sicherheit", "🛡", [("schutz", "Schutz & Datenschutz"), ("approvals", "Freigaben"), ("sicherung", "Sicherung"), ("heilung", "Selbstheilung"), ("netz-pruefen", "Sicher prüfen"), ("forensik", "Sicherheits-Werkzeuge"), ("system", "Protokoll & Abstürze")]),
-        ("Zustand & Leistung", "📈", [("ressourcen", "Speicher & Leistung"), ("qual-leistung", "Leistung messen"), ("systemcheck", "Systemcheck"), ("qualitaet", "Qualitäts-Ampel"), ("fortschritt", "Bau-Fortschritt")]),
+        ("Zustand & Leistung", "📈", [("hardware", "Hardware & Leistung"), ("ressourcen", "Speicher & Leistung"), ("qual-leistung", "Leistung messen"), ("systemcheck", "Systemcheck"), ("qualitaet", "Qualitäts-Ampel"), ("fortschritt", "Bau-Fortschritt")]),
     ];
 
     /// <summary>E2 (freigegeben 03.11.2026): KI-Zentrale wie LM Studio – alles rund um KI in einer App: fragen, Modelle, Anweisungen, Team & Abläufe, Verbindungen.</summary>

@@ -202,7 +202,7 @@
       "Ohne Unterschrift",
       "Brief prüfen",
       "Text von der KI verbessern lassen",
-      "11. November 2026",
+      "13. November 2026",
       "Alle 20 Vorlagen zeigen …",
       "Fertig – Brief speichern",
       "Als verschickt eintragen",
@@ -274,9 +274,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 76,
+    "WarmMs": 89,
     "WindowsOnly": []
   },
   {
@@ -435,9 +435,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 40,
+    "WarmMs": 43,
     "WindowsOnly": []
   },
   {
@@ -589,9 +589,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 41,
+    "WarmMs": 43,
     "WindowsOnly": []
   },
   {
@@ -791,9 +791,9 @@
       "src/Trendo.App/MainWindow.Pim.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 38,
+    "WarmMs": 46,
     "WindowsOnly": []
   },
   {
@@ -956,9 +956,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 25,
+    "WarmMs": 22,
     "WindowsOnly": []
   },
   {
@@ -1122,9 +1122,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 21,
     "WindowsOnly": []
   },
   {
@@ -1362,9 +1362,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -1616,9 +1616,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -1859,7 +1859,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -1951,9 +1951,9 @@
       "src/Trendo.App/MainWindow.W4Suite.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -2204,9 +2204,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -2435,7 +2435,7 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
     "WarmMs": 7,
     "WindowsOnly": []
@@ -2696,9 +2696,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -2975,9 +2975,9 @@
       "src/Trendo.App/MainWindow.Tabelle.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -3271,9 +3271,9 @@
       "src/Trendo.App/MainWindow.Text.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 20,
     "WindowsOnly": []
   },
   {
@@ -3357,9 +3357,9 @@
       "src/Trendo.App/MainWindow.W5Finance.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 43,
+    "WarmMs": 27,
     "WindowsOnly": []
   },
   {
@@ -3504,9 +3504,9 @@
       "src/Trendo.App/MainWindow.W5Business.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -3560,9 +3560,9 @@
       "src/Trendo.App/MainWindow.PodStudio.cs"
     ],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -3577,6 +3577,7 @@
       "LogoKit",
       "ComicKit",
       "PodcastKit",
+      "KreativSafe",
       "SummaryKit"
     ],
     "Tools": [
@@ -3592,6 +3593,7 @@
       ".jpg",
       ".md",
       ".mp3",
+      ".mp4",
       ".ogg",
       ".png",
       ".svg",
@@ -3617,9 +3619,9 @@
       "src/Trendo.App/MainWindow.KreativStudios.cs"
     ],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -3677,7 +3679,7 @@
       "src/Trendo.App/MainWindow.FilmStudio.cs"
     ],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": true,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -3842,7 +3844,7 @@
       "src/Trendo.App/MainWindow.W4Assets.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -4036,7 +4038,7 @@
       "src/Trendo.App/MainWindow.ProgMode.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": true,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -4225,15 +4227,18 @@
       ".jpg",
       ".json",
       ".md",
+      ".mp4",
       ".obj",
       ".ods",
       ".odt",
+      ".ogg",
       ".ply",
       ".png",
       ".pptx",
       ".srt",
       ".stl",
       ".txt",
+      ".wav",
       ".xlsx",
       ".xml"
     ],
@@ -4303,9 +4308,9 @@
       "src/Trendo.App/MainWindow.Spec15.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 57,
+    "WarmMs": 63,
     "WindowsOnly": []
   },
   {
@@ -4320,6 +4325,7 @@
       "LogoKit",
       "ComicKit",
       "PodcastKit",
+      "KreativSafe",
       "SummaryKit"
     ],
     "Tools": [
@@ -4340,6 +4346,7 @@
       ".jpg",
       ".md",
       ".mp3",
+      ".mp4",
       ".ogg",
       ".png",
       ".svg",
@@ -4365,7 +4372,7 @@
       "src/Trendo.App/MainWindow.KreativStudios.cs"
     ],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": true,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -4384,6 +4391,7 @@
       "LogoKit",
       "ComicKit",
       "PodcastKit",
+      "KreativSafe",
       "SummaryKit"
     ],
     "Tools": [
@@ -4398,6 +4406,7 @@
       ".jpg",
       ".md",
       ".mp3",
+      ".mp4",
       ".ogg",
       ".png",
       ".svg",
@@ -4424,9 +4433,9 @@
       "src/Trendo.App/MainWindow.KreativStudios.cs"
     ],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -4603,12 +4612,12 @@
       "Sounds",
       "Sprache",
       "Übernehmen",
-      "Do",
-      "Fr",
       "Sa",
       "So",
       "Mo",
       "Di",
+      "Mi",
+      "Do",
       "Heute",
       "Lied in meinem Geschmack",
       "Einfach",
@@ -4740,9 +4749,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 38,
+    "WarmMs": 27,
     "WindowsOnly": []
   },
   {
@@ -4815,7 +4824,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
     "WarmMs": 7,
     "WindowsOnly": []
@@ -5195,9 +5204,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -5537,9 +5546,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -5880,9 +5889,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 44,
+    "WarmMs": 57,
     "WindowsOnly": []
   },
   {
@@ -6263,7 +6272,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": true,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -6706,9 +6715,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 34,
     "WindowsOnly": []
   },
   {
@@ -7073,9 +7082,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -7463,9 +7472,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 52,
+    "WarmMs": 61,
     "WindowsOnly": []
   },
   {
@@ -7677,9 +7686,9 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -7893,7 +7902,7 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": true,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -7976,7 +7985,7 @@
       "src/Trendo.App/MainWindow.ConsolePort.cs"
     ],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": true,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -8244,6 +8253,7 @@
       ".json",
       ".md",
       ".mp3",
+      ".mp4",
       ".ogg",
       ".pdf",
       ".png",
@@ -8309,9 +8319,9 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": true,
-    "WarmMs": 11,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -8590,6 +8600,7 @@
       ".json",
       ".md",
       ".mp3",
+      ".mp4",
       ".ogg",
       ".pdf",
       ".png",
@@ -8674,7 +8685,7 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
     "WarmMs": 19,
     "WindowsOnly": []
@@ -8829,6 +8840,7 @@
       ".json",
       ".md",
       ".mp3",
+      ".mp4",
       ".obj",
       ".ogg",
       ".ply",
@@ -8880,9 +8892,9 @@
       "src/Trendo.App/MainWindow.Spec04.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 57,
+    "WarmMs": 55,
     "WindowsOnly": []
   },
   {
@@ -9044,7 +9056,10 @@
     "Formats": [
       ".csv",
       ".jpg",
-      ".png"
+      ".mp4",
+      ".ogg",
+      ".png",
+      ".wav"
     ],
     "Dependencies": [
       "Blender (optional, 3D-Fotos/Render)",
@@ -9083,9 +9098,9 @@
       "src/Trendo.App/MainWindow.Spec16.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 62,
+    "WarmMs": 71,
     "WindowsOnly": []
   },
   {
@@ -9285,9 +9300,9 @@
       "src/Trendo.App/MainWindow.Spec14.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -9459,8 +9474,11 @@
     "Formats": [
       ".csv",
       ".jpg",
+      ".mp4",
+      ".ogg",
       ".png",
-      ".svg"
+      ".svg",
+      ".wav"
     ],
     "Dependencies": [
       "FFmpeg"
@@ -9500,9 +9518,9 @@
       "src/Trendo.App/MainWindow.Spec10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 40,
+    "WarmMs": 41,
     "WindowsOnly": []
   },
   {
@@ -9679,7 +9697,10 @@
     "Formats": [
       ".csv",
       ".jpg",
-      ".png"
+      ".mp4",
+      ".ogg",
+      ".png",
+      ".wav"
     ],
     "Dependencies": [
       "FFmpeg"
@@ -9727,9 +9748,9 @@
       "src/Trendo.App/MainWindow.Core09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 48,
+    "WarmMs": 49,
     "WindowsOnly": []
   },
   {
@@ -9925,9 +9946,9 @@
       "src/Trendo.App/MainWindow.Spec13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -10107,7 +10128,7 @@
       "src/Trendo.App/MainWindow.Spec02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": true,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -10314,9 +10335,9 @@
       "src/Trendo.App/MainWindow.Spec03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -10515,9 +10536,9 @@
       "src/Trendo.App/MainWindow.Spec01.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -10651,7 +10672,10 @@
     "Formats": [
       ".csv",
       ".jpg",
-      ".png"
+      ".mp4",
+      ".ogg",
+      ".png",
+      ".wav"
     ],
     "Dependencies": [
       "Blender (optional, 3D-Fotos/Render)",
@@ -10690,7 +10714,7 @@
       "src/Trendo.App/MainWindow.Spec06.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -10879,9 +10903,9 @@
       "src/Trendo.App/MainWindow.Spec05.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -10938,9 +10962,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -11016,7 +11040,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
     "WarmMs": 11,
     "WindowsOnly": []
@@ -11151,9 +11175,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -11227,9 +11251,9 @@
       "src/Trendo.App/MainWindow.W5Fusion.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -11266,7 +11290,7 @@
       "Modell",
       "Fragen",
       "Qwen2.5 0.5B (klein, schnell) herunterladen (Zustimmung)",
-      "Qwen2.5 3B (besseres Deutsch, ~1,9 GB) herunterladen (Zustimmung)",
+      "Qwen2.5 7B (besseres Deutsch, ~4,7 GB) herunterladen (Zustimmung)",
       "KI einrichten",
       "btn-ki-send"
     ],
@@ -11327,7 +11351,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
     "WarmMs": 11,
     "WindowsOnly": []
@@ -11418,9 +11442,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -11501,7 +11525,7 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -11601,9 +11625,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 34,
+    "WarmMs": 33,
     "WindowsOnly": []
   },
   {
@@ -11716,9 +11740,9 @@
       "src/Trendo.App/MainWindow.Connections.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -11783,9 +11807,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -11861,9 +11885,9 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 22,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -11938,9 +11962,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -12044,9 +12068,9 @@
       "src/Trendo.App/MainWindow.KiLibrary.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -12095,7 +12119,6 @@
       "Programme einrichten …",
       "Freie Modelle (Apache-2.0, MIT) automatisch laden, passend zu diesem PC",
       "Jetzt laden (sonst automatisch)",
-      "Lizenz „Qwen Research“ bestätigen & laden",
       "Lizenz „Llama 3.2 Community“ bestätigen & laden",
       "Lizenz „Gemma Terms“ bestätigen & laden"
     ],
@@ -12153,9 +12176,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 20,
     "WindowsOnly": []
   },
   {
@@ -12218,7 +12241,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
     "WarmMs": 12,
     "WindowsOnly": []
@@ -12237,6 +12260,7 @@
       "LogoKit",
       "ComicKit",
       "PodcastKit",
+      "KreativSafe",
       "SummaryKit"
     ],
     "Tools": [
@@ -12251,6 +12275,7 @@
       ".jpg",
       ".md",
       ".mp3",
+      ".mp4",
       ".ogg",
       ".png",
       ".svg",
@@ -12277,9 +12302,9 @@
       "src/Trendo.App/MainWindow.KreativStudios.cs"
     ],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -12372,9 +12397,9 @@
       "src/Trendo.App/MainWindow.W4Builder.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -12423,9 +12448,9 @@
       "src/Trendo.App/MainWindow.W5CleanRoom.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 7,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -12469,8 +12494,11 @@
     "Formats": [
       ".jpg",
       ".json",
+      ".mp4",
+      ".ogg",
       ".png",
       ".txt",
+      ".wav",
       ".zip"
     ],
     "Dependencies": [
@@ -12527,7 +12555,7 @@
       "src/Trendo.App/MainWindow.W4Oss.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -12598,9 +12626,9 @@
       "src/Trendo.App/MainWindow.W5Ext.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -12759,9 +12787,9 @@
       "src/Trendo.App/MainWindow.W4Dev.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 52,
+    "WarmMs": 61,
     "WindowsOnly": []
   },
   {
@@ -12782,6 +12810,7 @@
       "Personen & Konten",
       "Sehen & Bedienhilfen",
       "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
       "Betriebsmodus",
       "Geräte & Laufwerke",
       "Handy verbinden",
@@ -12799,6 +12828,7 @@
       "Sicher prüfen",
       "Sicherheits-Werkzeuge",
       "Protokoll & Abstürze",
+      "Hardware & Leistung",
       "Speicher & Leistung",
       "Leistung messen",
       "Systemcheck",
@@ -12854,9 +12884,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 25,
+    "WarmMs": 27,
     "WindowsOnly": []
   },
   {
@@ -12877,6 +12907,7 @@
       "Personen & Konten",
       "Sehen & Bedienhilfen",
       "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
       "Betriebsmodus",
       "Geräte & Laufwerke",
       "Handy verbinden",
@@ -12894,6 +12925,7 @@
       "Sicher prüfen",
       "Sicherheits-Werkzeuge",
       "Protokoll & Abstürze",
+      "Hardware & Leistung",
       "Speicher & Leistung",
       "Leistung messen",
       "Systemcheck",
@@ -12942,9 +12974,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -12966,6 +12998,7 @@
       "Personen & Konten",
       "Sehen & Bedienhilfen",
       "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
       "Betriebsmodus",
       "Geräte & Laufwerke",
       "Handy verbinden",
@@ -12983,6 +13016,7 @@
       "Sicher prüfen",
       "Sicherheits-Werkzeuge",
       "Protokoll & Abstürze",
+      "Hardware & Leistung",
       "Speicher & Leistung",
       "Leistung messen",
       "Systemcheck",
@@ -13041,9 +13075,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -13064,6 +13098,7 @@
       "Personen & Konten",
       "Sehen & Bedienhilfen",
       "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
       "Betriebsmodus",
       "Geräte & Laufwerke",
       "Handy verbinden",
@@ -13081,6 +13116,7 @@
       "Sicher prüfen",
       "Sicherheits-Werkzeuge",
       "Protokoll & Abstürze",
+      "Hardware & Leistung",
       "Speicher & Leistung",
       "Leistung messen",
       "Systemcheck",
@@ -13111,9 +13147,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -13424,9 +13460,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 40,
+    "WarmMs": 45,
     "WindowsOnly": []
   },
   {
@@ -13685,9 +13721,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -13968,9 +14004,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 33,
     "WindowsOnly": []
   },
   {
@@ -14211,7 +14247,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
     "WarmMs": 7,
     "WindowsOnly": []
@@ -14480,9 +14516,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 6,
+    "WarmMs": 7,
     "WindowsOnly": []
   },
   {
@@ -14823,7 +14859,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
     "WarmMs": 6,
     "WindowsOnly": []
@@ -14846,6 +14882,7 @@
       "Personen & Konten",
       "Sehen & Bedienhilfen",
       "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
       "Betriebsmodus",
       "Geräte & Laufwerke",
       "Handy verbinden",
@@ -14863,6 +14900,7 @@
       "Sicher prüfen",
       "Sicherheits-Werkzeuge",
       "Protokoll & Abstürze",
+      "Hardware & Leistung",
       "Speicher & Leistung",
       "Leistung messen",
       "Systemcheck",
@@ -14900,9 +14938,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -14923,6 +14961,7 @@
       "Personen & Konten",
       "Sehen & Bedienhilfen",
       "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
       "Betriebsmodus",
       "Handy verbinden",
       "Geräteverbund",
@@ -14940,6 +14979,7 @@
       "Sicher prüfen",
       "Sicherheits-Werkzeuge",
       "Protokoll & Abstürze",
+      "Hardware & Leistung",
       "Speicher & Leistung",
       "Leistung messen",
       "Systemcheck",
@@ -14978,9 +15018,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -15001,6 +15041,7 @@
       "Personen & Konten",
       "Sehen & Bedienhilfen",
       "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
       "Betriebsmodus",
       "Geräte & Laufwerke",
       "Geräteverbund",
@@ -15018,6 +15059,7 @@
       "Sicher prüfen",
       "Sicherheits-Werkzeuge",
       "Protokoll & Abstürze",
+      "Hardware & Leistung",
       "Speicher & Leistung",
       "Leistung messen",
       "Systemcheck",
@@ -15075,9 +15117,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 39,
+    "WarmMs": 45,
     "WindowsOnly": []
   },
   {
@@ -15099,6 +15141,7 @@
       "Personen & Konten",
       "Sehen & Bedienhilfen",
       "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
       "Betriebsmodus",
       "Geräte & Laufwerke",
       "Handy verbinden",
@@ -15117,6 +15160,7 @@
       "Sicher prüfen",
       "Sicherheits-Werkzeuge",
       "Protokoll & Abstürze",
+      "Hardware & Leistung",
       "Leistung messen",
       "Systemcheck",
       "Qualitäts-Ampel",
@@ -15175,9 +15219,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -15199,6 +15243,7 @@
       "Personen & Konten",
       "Sehen & Bedienhilfen",
       "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
       "Betriebsmodus",
       "Geräte & Laufwerke",
       "Im Heimnetz teilen",
@@ -15215,6 +15260,7 @@
       "Sicher prüfen",
       "Sicherheits-Werkzeuge",
       "Protokoll & Abstürze",
+      "Hardware & Leistung",
       "Speicher & Leistung",
       "Leistung messen",
       "Systemcheck",
@@ -15258,9 +15304,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -15282,6 +15328,7 @@
       "Personen & Konten",
       "Sehen & Bedienhilfen",
       "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
       "Betriebsmodus",
       "Geräte & Laufwerke",
       "Handy verbinden",
@@ -15299,6 +15346,7 @@
       "Sicher prüfen",
       "Sicherheits-Werkzeuge",
       "Protokoll & Abstürze",
+      "Hardware & Leistung",
       "Speicher & Leistung",
       "Leistung messen",
       "Systemcheck",
@@ -15360,9 +15408,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -15516,6 +15564,7 @@
       "Personen & Konten",
       "Sehen & Bedienhilfen",
       "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
       "Betriebsmodus",
       "Geräte & Laufwerke",
       "Handy verbinden",
@@ -15533,6 +15582,7 @@
       "Sicher prüfen",
       "Sicherheits-Werkzeuge",
       "Protokoll & Abstürze",
+      "Hardware & Leistung",
       "Speicher & Leistung",
       "Leistung messen",
       "Systemcheck",
@@ -15629,9 +15679,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 20,
+    "WarmMs": 24,
     "WindowsOnly": []
   },
   {
@@ -15785,6 +15835,7 @@
       "Personen & Konten",
       "Sehen & Bedienhilfen",
       "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
       "Betriebsmodus",
       "Geräte & Laufwerke",
       "Handy verbinden",
@@ -15802,6 +15853,7 @@
       "Sicher prüfen",
       "Sicherheits-Werkzeuge",
       "Protokoll & Abstürze",
+      "Hardware & Leistung",
       "Speicher & Leistung",
       "Leistung messen",
       "Systemcheck",
@@ -15876,9 +15928,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 39,
     "WindowsOnly": []
   },
   {
@@ -16032,6 +16084,7 @@
       "Personen & Konten",
       "Sehen & Bedienhilfen",
       "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
       "Betriebsmodus",
       "Geräte & Laufwerke",
       "Handy verbinden",
@@ -16049,6 +16102,7 @@
       "Sicher prüfen",
       "Sicherheits-Werkzeuge",
       "Protokoll & Abstürze",
+      "Hardware & Leistung",
       "Speicher & Leistung",
       "Leistung messen",
       "Systemcheck",
@@ -16132,9 +16186,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -16288,6 +16342,7 @@
       "Personen & Konten",
       "Sehen & Bedienhilfen",
       "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
       "Betriebsmodus",
       "Geräte & Laufwerke",
       "Handy verbinden",
@@ -16305,6 +16360,7 @@
       "Sicher prüfen",
       "Sicherheits-Werkzeuge",
       "Protokoll & Abstürze",
+      "Hardware & Leistung",
       "Speicher & Leistung",
       "Leistung messen",
       "Systemcheck",
@@ -16421,9 +16477,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 40,
+    "WarmMs": 55,
     "WindowsOnly": []
   },
   {
@@ -16574,6 +16630,7 @@
       "Personen & Konten",
       "Sehen & Bedienhilfen",
       "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
       "Betriebsmodus",
       "Geräte & Laufwerke",
       "Handy verbinden",
@@ -16592,6 +16649,7 @@
       "Sicher prüfen",
       "Sicherheits-Werkzeuge",
       "Protokoll & Abstürze",
+      "Hardware & Leistung",
       "Speicher & Leistung",
       "Leistung messen",
       "Systemcheck",
@@ -16631,9 +16689,246 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 40,
+    "WarmMs": 36,
+    "WindowsOnly": []
+  },
+  {
+    "Id": "hardware",
+    "Name": "Hardware & Leistung",
+    "Studio": "SYS-13",
+    "StudioName": "Qualität prüfen",
+    "Area": "System & Sicherheit",
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
+    "Functions": [
+      {
+        "Nr": "SYS-13-P01",
+        "Name": "Absturzprotokoll",
+        "State": "vorhanden"
+      },
+      {
+        "Nr": "SYS-13-P02",
+        "Name": "Version anzeigen",
+        "State": "vorhanden"
+      },
+      {
+        "Nr": "SYS-13-P03",
+        "Name": "Release nur von main",
+        "State": "vorhanden"
+      },
+      {
+        "Nr": "SYS-13-P04",
+        "Name": "Auto-Update",
+        "State": "vorhanden"
+      },
+      {
+        "Nr": "SYS-13-P05",
+        "Name": "Anforderungsprüfung",
+        "State": "vorhanden"
+      },
+      {
+        "Nr": "SYS-13-P06",
+        "Name": "Bauplan",
+        "State": "vorhanden"
+      },
+      {
+        "Nr": "SYS-13-P07",
+        "Name": "Belege mit SHA",
+        "State": "vorhanden"
+      },
+      {
+        "Nr": "SYS-13-P08",
+        "Name": "Selbsttest",
+        "State": "vorhanden"
+      },
+      {
+        "Nr": "SYS-13-P09",
+        "Name": "Audit-Protokoll",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-13-P10",
+        "Name": "Datenschutz-Schwärzung",
+        "State": "vorhanden"
+      },
+      {
+        "Nr": "SYS-13-P11",
+        "Name": "Offline-Kern",
+        "State": "vorhanden"
+      },
+      {
+        "Nr": "SYS-13-P12",
+        "Name": "API lokal",
+        "State": "vorhanden"
+      },
+      {
+        "Nr": "SYS-13-P13",
+        "Name": "Modul-Register",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-13-P14",
+        "Name": "Fehlerseite",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-13-P15",
+        "Name": "Leistungsbudget",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-13-P16",
+        "Name": "Speicherleck-Test",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-13-P17",
+        "Name": "Signatur-Status",
+        "State": "vorhanden"
+      },
+      {
+        "Nr": "SYS-13-P18",
+        "Name": "Portable-Paket",
+        "State": "vorhanden"
+      },
+      {
+        "Nr": "SYS-13-P19",
+        "Name": "Datensicherung",
+        "State": "vorhanden"
+      },
+      {
+        "Nr": "SYS-13-P20",
+        "Name": "Migrationen",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-13-P21",
+        "Name": "Telemetrie aus",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-13-P22",
+        "Name": "Abhängigkeits-Lizenzen",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-13-P23",
+        "Name": "Sicherheits-Scan",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-13-P24",
+        "Name": "PC-Testlauf",
+        "State": "vorhanden"
+      },
+      {
+        "Nr": "SYS-13-P25",
+        "Name": "Rückfall-Version",
+        "State": "umgesetzt, Box getestet"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/SYS-13_KATALOG.md",
+    "Engine": [
+      "Quality",
+      "StudioFit",
+      "DependencyCatalog",
+      "CompatState",
+      "PerformanceProfiles",
+      "AdviceAction",
+      "CompatibilityCheck",
+      "CrashLog",
+      "HardwareScan",
+      "KiModel"
+    ],
+    "Tools": [
+      "Los",
+      "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
+      "Mehr ▾"
+    ],
+    "Formats": [
+      ".json",
+      ".md",
+      ".txt",
+      ".zip"
+    ],
+    "Dependencies": [
+      "Blender (optional, 3D-Fotos/Render)",
+      "Unreal Engine (optional)",
+      "Ollama – lokale KI (optional)",
+      "FFmpeg",
+      "LibreOffice (optional)",
+      "qpdf",
+      "Krita (optional)",
+      "Inkscape (optional)",
+      "Tesseract OCR",
+      "PDFsharp (MIT)",
+      "Hunspell-Wörterbücher",
+      "Git",
+      "OBS Studio (optional)",
+      "mpv (optional)",
+      "Python (optional)"
+    ],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
+    "Tabs": [
+      "Hardware & Leistung"
+    ],
+    "Tests": [
+      "Commercial Desktop Edition: Hardware & Leistung prüft den PC, zeigt Profil, Systemcheck und Eignung je Studio; auch vor dem Kauf",
+      "SYS-13 (UI): Rückfall-Sicherung und vorige Version; Protokoll-Prüfung",
+      "SYS-13-P09: Hash-Kette erkennt Ändern, Löschen und Vertauschen samt Stelle",
+      "SYS-13-P13: Jede Seite gehört zu einem Modul aus requirements.yaml",
+      "SYS-13-P14: Fehler in einer Seite zeigt freundliche Fehlerseite statt Absturz",
+      "SYS-13-P15/P16: Median-Budget und Leck-Grenze 50 MB",
+      "SYS-13-P15/P16: Start < 3 s, Seitenwechsel im Median < 300 ms, 100 Wechsel ohne > 50 MB Zuwachs",
+      "SYS-13-P20: Alte Einstellungsdatei (v1) wird gelesen und angehoben",
+      "SYS-13-P21: Keine Telemetrie-Bibliothek oder -Adresse im Quellcode",
+      "SYS-13-P22: NuGet-Lizenzliste ist vollständig (alle Pakete aus src/)",
+      "SYS-13-P23: Ausgabe von dotnet list package --vulnerable wird erkannt",
+      "SYS-13-P25: Rückfall – vorige Version, Sicherung, Anleitung vorhanden",
+      "SYS-13: Absturzprotokoll schwärzt Benutzerpfade und behält höchstens 20 Dateien",
+      "SYS-13: Release-Skript baut nur von sauberem main"
+    ],
+    "SourceFiles": [
+      "src/Trendo.App/MainWindow.Hardware.cs",
+      "src/Trendo.App/MainWindow.Sys13.cs"
+    ],
+    "Status": "IMPLEMENTED / Test PC_VERIFIED",
+    "Version": "0.9.92 (Stand 94252fc)",
+    "Shell": false,
+    "WarmMs": 19,
     "WindowsOnly": []
   },
   {
@@ -16784,6 +17079,7 @@
       "Personen & Konten",
       "Sehen & Bedienhilfen",
       "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
       "Betriebsmodus",
       "Geräte & Laufwerke",
       "Handy verbinden",
@@ -16802,6 +17098,7 @@
       "Sicher prüfen",
       "Sicherheits-Werkzeuge",
       "Protokoll & Abstürze",
+      "Hardware & Leistung",
       "Speicher & Leistung",
       "Systemcheck",
       "Qualitäts-Ampel",
@@ -16847,9 +17144,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -17000,6 +17297,7 @@
       "Personen & Konten",
       "Sehen & Bedienhilfen",
       "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
       "Betriebsmodus",
       "Geräte & Laufwerke",
       "Handy verbinden",
@@ -17017,6 +17315,7 @@
       "Selbstheilung",
       "Sicher prüfen",
       "Sicherheits-Werkzeuge",
+      "Hardware & Leistung",
       "Speicher & Leistung",
       "Leistung messen",
       "Systemcheck",
@@ -17070,7 +17369,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
     "WarmMs": 11,
     "WindowsOnly": []
@@ -17223,6 +17522,7 @@
       "Personen & Konten",
       "Sehen & Bedienhilfen",
       "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
       "Betriebsmodus",
       "Geräte & Laufwerke",
       "Handy verbinden",
@@ -17241,6 +17541,7 @@
       "Sicher prüfen",
       "Sicherheits-Werkzeuge",
       "Protokoll & Abstürze",
+      "Hardware & Leistung",
       "Speicher & Leistung",
       "Leistung messen",
       "Qualitäts-Ampel",
@@ -17284,9 +17585,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -17443,6 +17744,7 @@
       "Personen & Konten",
       "Sehen & Bedienhilfen",
       "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
       "Betriebsmodus",
       "Geräte & Laufwerke",
       "Handy verbinden",
@@ -17461,6 +17763,7 @@
       "Sicher prüfen",
       "Sicherheits-Werkzeuge",
       "Protokoll & Abstürze",
+      "Hardware & Leistung",
       "Speicher & Leistung",
       "Leistung messen",
       "Systemcheck",
@@ -17488,9 +17791,7 @@
       "Pink",
       "Bernstein",
       "Grün",
-      "Farbe passend zum Hintergrund wählen",
-      "Gold-Orbit",
-      "Orbit"
+      "Farbe passend zum Hintergrund wählen"
     ],
     "Formats": [],
     "Dependencies": [],
@@ -17588,9 +17889,244 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 98,
+    "WarmMs": 102,
+    "WindowsOnly": []
+  },
+  {
+    "Id": "lizenz",
+    "Name": "Konto, Lizenz & Vollversion",
+    "Studio": "SYS-12",
+    "StudioName": "Schrift & Farben anpassen",
+    "Area": "System & Sicherheit",
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
+    "Functions": [
+      {
+        "Nr": "SYS-12-P01",
+        "Name": "Designs",
+        "State": "vorhanden"
+      },
+      {
+        "Nr": "SYS-12-P02",
+        "Name": "UI-Skalierung",
+        "State": "vorhanden"
+      },
+      {
+        "Nr": "SYS-12-P03",
+        "Name": "Schriftgröße",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-12-P04",
+        "Name": "Tastatursteuerung",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-12-P05",
+        "Name": "Tastenkürzel",
+        "State": "vorhanden"
+      },
+      {
+        "Nr": "SYS-12-P06",
+        "Name": "Bildschirmleser",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-12-P07",
+        "Name": "Kontrastprüfung",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-12-P08",
+        "Name": "Animationen reduzieren",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-12-P09",
+        "Name": "Farbblind-Modus",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-12-P10",
+        "Name": "Leichte Sprache",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-12-P11",
+        "Name": "Hilfe F1",
+        "State": "vorhanden"
+      },
+      {
+        "Nr": "SYS-12-P12",
+        "Name": "Startseite anpassen",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-12-P13",
+        "Name": "Hintergrund",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-12-P14",
+        "Name": "Akzentfarbe",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-12-P15",
+        "Name": "Navigation 2 Ebenen",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-12-P16",
+        "Name": "Deutsche Beschriftung",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-12-P17",
+        "Name": "Profil-Name",
+        "State": "vorhanden"
+      },
+      {
+        "Nr": "SYS-12-P18",
+        "Name": "Benachrichtigungsstil",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-12-P19",
+        "Name": "Großer Mauszeiger-Hinweis",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-12-P20",
+        "Name": "Vorlesen",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-12-P21",
+        "Name": "Diktat-Hinweis",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-12-P22",
+        "Name": "Einstellungen sichern",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-12-P23",
+        "Name": "Mehrere Bildschirme",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-12-P24",
+        "Name": "Einfacher Modus",
+        "State": "umgesetzt, Box getestet"
+      },
+      {
+        "Nr": "SYS-12-P25",
+        "Name": "Barrierefreiheits-Bericht",
+        "State": "umgesetzt, Box getestet"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/SYS-12_KATALOG.md",
+    "Engine": [
+      "A11y",
+      "DeliveryMode",
+      "LicenseVerifier",
+      "DependencyCatalog",
+      "LicenseKeys",
+      "LicenseStore"
+    ],
+    "Tools": [
+      "Los",
+      "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Hardware & Leistung",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
+      "Mehr ▾",
+      "Freischalten",
+      "Systemcheck ansehen"
+    ],
+    "Formats": [
+      ".txt",
+      ".zip"
+    ],
+    "Dependencies": [
+      "Blender (optional, 3D-Fotos/Render)",
+      "Unreal Engine (optional)",
+      "Ollama – lokale KI (optional)",
+      "FFmpeg",
+      "LibreOffice (optional)",
+      "qpdf",
+      "Krita (optional)",
+      "Inkscape (optional)",
+      "Tesseract OCR",
+      "PDFsharp (MIT)",
+      "Hunspell-Wörterbücher",
+      "Git",
+      "OBS Studio (optional)",
+      "mpv (optional)",
+      "Python (optional)"
+    ],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
+    "Tabs": [
+      "Konto, Lizenz & Vollversion"
+    ],
+    "Tests": [
+      "Commercial Desktop Edition: Hardware & Leistung prüft den PC, zeigt Profil, Systemcheck und Eignung je Studio; auch vor dem Kauf",
+      "Commercial Phase 2: Seite Konto, Lizenz & Vollversion in den Einstellungen, Vorabversion, kaputter Code abgelehnt",
+      "SYS-12 (UI): Bericht über alle Seiten; keine Seite tiefer als 2 Ebenen; Prüfseite hat keine unbenannten Knöpfe",
+      "SYS-12 (UI): Leise Benachrichtigung; Einstellung bleibt gespeichert; einfacher Modus zeigt weniger Kacheln",
+      "SYS-12 (UI): Mindestschrift greift; Knöpfe haben Namen und sind per Tab erreichbar; Bewegung aus = keine Übergänge",
+      "SYS-12-P03/P09/P18: Mindestschrift, Status mit Zeichen, leise Meldungen",
+      "SYS-12-P07: WCAG-Kontrast (Schwarz/Weiß 21:1, AA-Grenzen)",
+      "SYS-12-P10: Leichte Sprache – höchstens 2 kurze Sätze, einfache Wörter",
+      "SYS-12-P14: Jede Akzentfarbe wird für Text auf jedem Design AA-tauglich",
+      "SYS-12-P15/P16: Navigation >2 Ebenen und englische Beschriftungen werden gefunden",
+      "SYS-12-P20: Vorlesen – Windows-SAPI-Befehl, Linux espeak oder nichts",
+      "SYS-12-P22: Einstellungen exportieren/importieren verlustfrei, Unsinn abgelehnt",
+      "SYS-12-P23: Fensterposition nur auf vorhandenem Bildschirm wiederherstellen",
+      "SYS-12-P25: Bericht listet Befunde je Seite",
+      "SYS-12: Anzeigegröße wird auf erlaubte Stufen begrenzt",
+      "SYS-12: Anzeigegröße „Sehr groß“ wird gespeichert; F1 zeigt die Hilfe"
+    ],
+    "SourceFiles": [
+      "src/Trendo.App/MainWindow.Lizenz.cs",
+      "src/Trendo.App/MainWindow.Sys12.cs"
+    ],
+    "Status": "IN_PROGRESS / Test PC_VERIFIED",
+    "Version": "0.9.92 (Stand 94252fc)",
+    "Shell": false,
+    "WarmMs": 38,
     "WindowsOnly": []
   },
   {
@@ -17739,6 +18275,7 @@
       "Darstellung & Sprache",
       "Sehen & Bedienhilfen",
       "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
       "Betriebsmodus",
       "Geräte & Laufwerke",
       "Handy verbinden",
@@ -17757,6 +18294,7 @@
       "Sicher prüfen",
       "Sicherheits-Werkzeuge",
       "Protokoll & Abstürze",
+      "Hardware & Leistung",
       "Speicher & Leistung",
       "Leistung messen",
       "Systemcheck",
@@ -17805,7 +18343,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
     "WarmMs": 12,
     "WindowsOnly": []
@@ -17956,6 +18494,7 @@
       "Darstellung & Sprache",
       "Personen & Konten",
       "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
       "Betriebsmodus",
       "Geräte & Laufwerke",
       "Handy verbinden",
@@ -17974,6 +18513,7 @@
       "Sicher prüfen",
       "Sicherheits-Werkzeuge",
       "Protokoll & Abstürze",
+      "Hardware & Leistung",
       "Speicher & Leistung",
       "Leistung messen",
       "Systemcheck",
@@ -18035,9 +18575,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -18186,6 +18726,7 @@
       "Darstellung & Sprache",
       "Personen & Konten",
       "Sehen & Bedienhilfen",
+      "Konto, Lizenz & Vollversion",
       "Betriebsmodus",
       "Geräte & Laufwerke",
       "Handy verbinden",
@@ -18204,6 +18745,7 @@
       "Sicher prüfen",
       "Sicherheits-Werkzeuge",
       "Protokoll & Abstürze",
+      "Hardware & Leistung",
       "Speicher & Leistung",
       "Leistung messen",
       "Systemcheck",
@@ -18250,9 +18792,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -18273,6 +18815,7 @@
       "Personen & Konten",
       "Sehen & Bedienhilfen",
       "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
       "Geräte & Laufwerke",
       "Handy verbinden",
       "Geräteverbund",
@@ -18290,6 +18833,7 @@
       "Sicher prüfen",
       "Sicherheits-Werkzeuge",
       "Protokoll & Abstürze",
+      "Hardware & Leistung",
       "Speicher & Leistung",
       "Leistung messen",
       "Systemcheck",
@@ -18327,9 +18871,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -18486,6 +19030,7 @@
       "Personen & Konten",
       "Sehen & Bedienhilfen",
       "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
       "Betriebsmodus",
       "Geräte & Laufwerke",
       "Handy verbinden",
@@ -18503,6 +19048,7 @@
       "Sicher prüfen",
       "Sicherheits-Werkzeuge",
       "Protokoll & Abstürze",
+      "Hardware & Leistung",
       "Speicher & Leistung",
       "Leistung messen",
       "Systemcheck",
@@ -18607,9 +19153,9 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 41,
+    "WarmMs": 45,
     "WindowsOnly": []
   },
   {
@@ -18766,6 +19312,7 @@
       "Personen & Konten",
       "Sehen & Bedienhilfen",
       "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
       "Betriebsmodus",
       "Geräte & Laufwerke",
       "Handy verbinden",
@@ -18783,6 +19330,7 @@
       "Selbstheilung",
       "Sicherheits-Werkzeuge",
       "Protokoll & Abstürze",
+      "Hardware & Leistung",
       "Speicher & Leistung",
       "Leistung messen",
       "Systemcheck",
@@ -18863,9 +19411,9 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 24,
+    "WarmMs": 19,
     "WindowsOnly": []
   },
   {
@@ -18886,6 +19434,7 @@
       "Personen & Konten",
       "Sehen & Bedienhilfen",
       "Trendo-Updates",
+      "Konto, Lizenz & Vollversion",
       "Betriebsmodus",
       "Geräte & Laufwerke",
       "Handy verbinden",
@@ -18903,6 +19452,7 @@
       "Selbstheilung",
       "Sicher prüfen",
       "Protokoll & Abstürze",
+      "Hardware & Leistung",
       "Speicher & Leistung",
       "Leistung messen",
       "Systemcheck",
@@ -18948,9 +19498,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.92 (Stand 94252fc)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 15,
     "WindowsOnly": []
   }
 ]

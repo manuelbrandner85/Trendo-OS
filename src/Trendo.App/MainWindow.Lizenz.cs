@@ -42,6 +42,17 @@ public partial class MainWindow
             box, new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 8, Children = { apply, remove } },
             new TextBlock { Name = "lic-msg", Text = _licMsg, Foreground = Accent, FontSize = 12, IsVisible = _licMsg.Length > 0 } } }));
 
+        // Vor dem Kauf: ehrlich zeigen, welche Studios auf diesem PC laufen (Auftrag „Commercial Desktop Edition“, Punkt 6)
+        var fit = new StackPanel { Name = "lic-hardware", Spacing = 6 };
+        if (_hw is null) { StartHardwareScan(); fit.Children.Add(P("Dein PC wird geprüft …", Text, 12)); }
+        else fit.Children.Add(StudioFitList(Trendo.Core.Compat.PerformanceProfiles.Classify(_hw), "lic-studios"));
+        var hwBtn = new Button { Name = "lic-to-hardware", Content = "Systemcheck ansehen" };
+        hwBtn.Click += (_, _) => Show("hardware");
+        fit.Children.Add(hwBtn);
+        sp.Children.Add(WCard(new StackPanel { Spacing = 4, Children = {
+            new TextBlock { Text = "Vor dem Kauf: Was läuft auf deinem PC?", Foreground = Text, FontSize = 15, FontWeight = FontWeight.SemiBold },
+            P("Nicht jedes Studio ist auf jedem PC gleich schnell. Die Liste zeigt, was hier läuft, was eingeschränkt läuft und was ein Zusatzprogramm oder stärkere Hardware braucht.", null, 12), fit } }));
+
         sp.Children.Add(WCard(new StackPanel { Spacing = 4, Children = {
             new TextBlock { Text = "Vollversion kaufen", Foreground = Text, FontSize = 15, FontWeight = FontWeight.SemiBold },
             P("Der Kauf ist noch nicht möglich. Er läuft später über einen Zahlungsanbieter, der auch die Rechnung ausstellt. Trendo speichert keine Kartendaten.", null, 12),
