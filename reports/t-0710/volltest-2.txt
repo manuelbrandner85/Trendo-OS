@@ -1,0 +1,66 @@
+  Wiederherzustellende Projekte werden ermittelt...
+  Alle Projekte sind für die Wiederherstellung auf dem neuesten Stand.
+  Trendo.Core -> C:\Users\<user>\Desktop\Trend Os-worktrees\T-0710-commercial\src\Trendo.Core\bin\Release\net10.0\Trendo.Core.dll
+  Trendo.Companion -> C:\Users\<user>\Desktop\Trend Os-worktrees\T-0710-commercial\src\Trendo.Companion\bin\Release\net10.0\trendo-companion.dll
+  Trendo.Api -> C:\Users\<user>\Desktop\Trend Os-worktrees\T-0710-commercial\src\Trendo.Api\bin\Release\net10.0\Trendo.Api.dll
+  Trendo.Core.Tests -> C:\Users\<user>\Desktop\Trend Os-worktrees\T-0710-commercial\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+Testlauf für "C:\Users\<user>\Desktop\Trend Os-worktrees\T-0710-commercial\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+  Trendo.App -> C:\Users\<user>\Desktop\Trend Os-worktrees\T-0710-commercial\src\Trendo.App\bin\Release\net10.0\TrendoOS.dll
+  Trendo.Api.Tests -> C:\Users\<user>\Desktop\Trend Os-worktrees\T-0710-commercial\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll
+Testlauf für "C:\Users\<user>\Desktop\Trend Os-worktrees\T-0710-commercial\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+  Trendo.App.Tests -> C:\Users\<user>\Desktop\Trend Os-worktrees\T-0710-commercial\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll
+Testlauf für "C:\Users\<user>\Desktop\Trend Os-worktrees\T-0710-commercial\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:04.95]     X-08: BlueZ sucht ohne zu koppeln, koppelt nur nach Zustimmung, OBEX und Akku [SKIP]
+  Übersprungen X-08: BlueZ sucht ohne zu koppeln, koppelt nur nach Zustimmung, OBEX und Akku [1 ms]
+[xUnit.net 00:00:10.25]     QA-019: Kernfunktionen laufen ohne Netzwerk (keine Netz-Abhängigkeit im Core) [FAIL]
+  Fehler QA-019: Kernfunktionen laufen ohne Netzwerk (keine Netz-Abhängigkeit im Core) [316 ms]
+  Fehlermeldung:
+   Assert.DoesNotContain() Failure: Item found in collection
+                                                                      ↓ (pos 30)
+Collection: [···, "Microsoft.Data.Sqlite", "System.Runtime.Numerics", "System.Net.Http", "System.Memory", "System.IO.Compression.ZipFile", ···]
+Found:      "System.Net.Http"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.QA019_Offline.Core_works_offline() in C:\Users\<user>\Desktop\Trend Os-worktrees\T-0710-commercial\tests\Trendo.Core.Tests\Tests.cs:line 251
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Bestanden!   : Fehler:     0, erfolgreich:    16, übersprungen:     0, gesamt:    16, Dauer: 2 s - Trendo.Api.Tests.dll (net10.0)
+[xUnit.net 00:00:20.62]     SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt [SKIP]
+[xUnit.net 00:00:20.62]     SYS-10-P08 (T-0244 getrennt): Scan → durchsuchbares PDF mit Tesseract [SKIP]
+  Übersprungen SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt [1 ms]
+  Übersprungen SYS-10-P08 (T-0244 getrennt): Scan → durchsuchbares PDF mit Tesseract [1 ms]
+[xUnit.net 00:00:37.26]     Briefe F3: Rechtschreibung im Brieftext – Tippfehler mit Stelle und Vorschlag, Platzhalter [Datum] und richtige Wörter nicht angestrichen [SKIP]
+  Übersprungen Briefe F3: Rechtschreibung im Brieftext – Tippfehler mit Stelle und Vorschlag, Platzhalter [Datum] und richtige Wörter nicht angestrichen [1 ms]
+[xUnit.net 00:00:56.46]     T-0223 T8: Rechtschreibung Deutsch – Fehler gefunden mit Vorschlägen, richtige Wörter, Zahlen, Adressen und eigene Wörter nicht angestrichen [SKIP]
+  Übersprungen T-0223 T8: Rechtschreibung Deutsch – Fehler gefunden mit Vorschlägen, richtige Wörter, Zahlen, Adressen und eigene Wörter nicht angestrichen [1 ms]
+
+Fehler!      : Fehler:     1, erfolgreich:  2253, übersprungen:     5, gesamt:  2259, Dauer: 1 m 21 s - Trendo.Core.Tests.dll (net10.0)
+[xUnit.net 00:09:35.19]     Musik-KI live: Paket prüfen, entpacken, Server starten, 30 s Lied erzeugen [SKIP]
+  Übersprungen Musik-KI live: Paket prüfen, entpacken, Server starten, 30 s Lied erzeugen [1 ms]
+[xUnit.net 00:10:49.75]     T-0202: Kein Klick auf irgendeiner Seite stürzt ab (Klick-Audit, Bericht der stummen Knöpfe) [SKIP]
+  Übersprungen T-0202: Kein Klick auf irgendeiner Seite stürzt ab (Klick-Audit, Bericht der stummen Knöpfe) [1 ms]
+[xUnit.net 00:11:04.87]     T-0306: mpv (echt) – Abspielen meldet Position und Länge, Springen, Pause, Titelende kommt genau einmal [SKIP]
+  Übersprungen T-0306: mpv (echt) – Abspielen meldet Position und Länge, Springen, Pause, Titelende kommt genau einmal [1 ms]
+[xUnit.net 00:20:30.88]     SYS-03-P14: Seite als PDF – A4, Prüfsumme im Protokoll (nur wenn Chrome/Edge da) [SKIP]
+  Übersprungen SYS-03-P14: Seite als PDF – A4, Prüfsumme im Protokoll (nur wenn Chrome/Edge da) [1 ms]
+[xUnit.net 00:23:33.96]     Programmkatalog UI: mitgelieferter Katalog ist aktuell (alle angemeldeten Programme), Suche nach Format, Bereich filtern, Öffnen startet das Programm [FAIL]
+  Fehler Programmkatalog UI: mitgelieferter Katalog ist aktuell (alle angemeldeten Programme), Suche nach Format, Bereich filtern, Öffnen startet das Programm [102 ms]
+  Fehlermeldung:
+   Katalog neu erzeugen (TRENDO_KATALOG), fehlt: hardware, lizenz
+  Stapelverfolgung:
+     at Trendo.App.Tests.ProgramCatalog_Ui.Catalog_page() in C:\Users\<user>\Desktop\Trend Os-worktrees\T-0710-commercial\tests\Trendo.App.Tests\ProgramCatalogUiTests.cs:line 18
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Fehler!      : Fehler:     1, erfolgreich:  1208, übersprungen:     4, gesamt:  1213, Dauer: 44 m 23 s - Trendo.App.Tests.dll (net10.0)
+EXIT=1
+...........
+----------------------------------------------------------------------
+Ran 11 tests in 36.275s
+
+OK
+PYEXIT=0

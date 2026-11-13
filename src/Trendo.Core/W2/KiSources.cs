@@ -32,7 +32,7 @@ public static class KiCatalog
     public static readonly IReadOnlyList<FreeModel> Models =
     [
         new("qwen2.5:0.5b", "Qwen2.5 0.5B", 0.4, 4, "Apache-2.0", "sehr schnell, einfache Fragen"),
-        new("qwen2.5:3b", "Qwen2.5 3B", 1.9, 8, "Qwen Research", "gutes Deutsch, Alltag"),
+        new("qwen2.5:1.5b", "Qwen2.5 1.5B", 1.0, 8, "Apache-2.0", "gutes Deutsch, Alltag"),
         new("llama3.2:3b", "Llama 3.2 3B", 2.0, 8, "Llama 3.2 Community", "Texte, Zusammenfassungen"),
         new("gemma2:2b", "Gemma 2 2B", 1.6, 8, "Gemma Terms", "kurze Antworten, sparsam"),
         new("mistral:7b", "Mistral 7B", 4.1, 16, "Apache-2.0", "längere Texte, mehr Wissen"),

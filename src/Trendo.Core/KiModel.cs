@@ -1,6 +1,6 @@
 namespace Trendo.Core;
 
-/// <summary>Auswahl des lokalen KI-Modells. Gespeichert in &lt;DataRoot&gt;/ki-model.txt; ohne Auswahl: 3B, wenn vorhanden und genug RAM.</summary>
+/// <summary>Auswahl des lokalen KI-Modells. Gespeichert in &lt;DataRoot&gt;/ki-model.txt; ohne Auswahl: 7B, wenn vorhanden und genug RAM.</summary>
 public static class KiModel
 {
     public const long RecommendLargeFromBytes = 15L * 1024 * 1024 * 1024; // 16-GB-Geräte melden etwas weniger

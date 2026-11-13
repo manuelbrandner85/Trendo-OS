@@ -38,7 +38,7 @@ public static class DependencyChecks
     {
         if (c.Mode == DeliveryMode.Bundled) return new(c, ToolState.Bundled, null, null, "im Setup enthalten");
         if (c.Mode == DeliveryMode.NotNeeded) return new(c, ToolState.NotNeeded, null, null, c.Reason);
-        if (c.Id == "model-3b") return m.HasModel(DependencyCatalog.LargeModel) ? new(c, ToolState.Working, null, DependencyCatalog.LargeModel, "Modell vorhanden") : new(c, ToolState.Missing, null, null, "optional, nicht geladen");
+        if (c.Id == "model-7b") return m.HasModel(DependencyCatalog.LargeModel) ? new(c, ToolState.Working, null, DependencyCatalog.LargeModel, "Modell vorhanden") : new(c, ToolState.Missing, null, null, "optional, nicht geladen");
         if (c.Id == "model") return m.ModelPresent ? new(c, ToolState.Working, null, DependencyCatalog.LocalModel, "Modell vorhanden") : new(c, ToolState.Missing, null, null, "Modell nicht geladen");
         // T-0222: die mitgelieferte, geprüfte Fassung geht vor einer früher gemerkten fremden Installation
         var path = Vollpaket.IncludedPath(m.ToolsRoot, c.Id) is { } inc && m.Exists(inc) ? inc

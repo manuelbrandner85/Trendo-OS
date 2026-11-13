@@ -53,7 +53,7 @@ public class Paket44_Fachprogramme
         {
             var c = DependencyCatalog.Get(p.Id);
             Assert.False(p.BrauchtGeheimnis);
-            Assert.DoesNotContain(p.Id, new[] { "ollama", "model", "model-3b", "sumatra", "mpv", "7zip" });
+            Assert.DoesNotContain(p.Id, new[] { "ollama", "model", "model-7b", "sumatra", "mpv", "7zip" });
             Assert.NotEqual(DeliveryMode.Bundled, c.Mode);
             Assert.NotEqual(DeliveryMode.NotNeeded, c.Mode);
         }

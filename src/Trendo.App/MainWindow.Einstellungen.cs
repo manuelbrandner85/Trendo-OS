@@ -12,11 +12,11 @@ public partial class MainWindow
     /// <summary>Bereiche der Einstellungen-App (Reihenfolge wie Windows: System, Geräte, Programme, Datenschutz & Sicherheit, Zustand).</summary>
     public static readonly (string Group, string Icon, (string Key, string Label)[] Pages)[] SettingsGroups =
     [
-        ("System", "⚙", [("settings", "Darstellung & Sprache"), ("personen", "Personen & Konten"), ("bedien-sehen", "Sehen & Bedienhilfen"), ("updates", "Trendo-Updates"), ("modus", "Betriebsmodus")]),
+        ("System", "⚙", [("settings", "Darstellung & Sprache"), ("personen", "Personen & Konten"), ("bedien-sehen", "Sehen & Bedienhilfen"), ("updates", "Trendo-Updates"), ("lizenz", "Konto, Lizenz & Vollversion"), ("modus", "Betriebsmodus")]),
         ("Geräte", "🖥", [("geraete", "Geräte & Laufwerke"), ("handy", "Handy verbinden"), ("verbund", "Geräteverbund"), ("teilen", "Im Heimnetz teilen")]),
         ("Programme", "▦", [("apps", "Apps"), ("appcenter", "Programme verwalten"), ("hinzufuegen", "Hinzufügen"), ("prog-pflege", "Pflegen & Aktualisieren"), ("components", "Zusatzprogramme"), ("downloads", "Downloads")]),
         ("Datenschutz & Sicherheit", "🛡", [("schutz", "Schutz & Datenschutz"), ("approvals", "Freigaben"), ("sicherung", "Sicherung"), ("heilung", "Selbstheilung"), ("netz-pruefen", "Sicher prüfen"), ("forensik", "Sicherheits-Werkzeuge"), ("system", "Protokoll & Abstürze")]),
-        ("Zustand & Leistung", "📈", [("ressourcen", "Speicher & Leistung"), ("qual-leistung", "Leistung messen"), ("systemcheck", "Systemcheck"), ("qualitaet", "Qualitäts-Ampel"), ("fortschritt", "Bau-Fortschritt")]),
+        ("Zustand & Leistung", "📈", [("hardware", "Hardware & Leistung"), ("ressourcen", "Speicher & Leistung"), ("qual-leistung", "Leistung messen"), ("systemcheck", "Systemcheck"), ("qualitaet", "Qualitäts-Ampel"), ("fortschritt", "Bau-Fortschritt")]),
     ];
 
     /// <summary>E2 (freigegeben 03.11.2026): KI-Zentrale wie LM Studio – alles rund um KI in einer App: fragen, Modelle, Anweisungen, Team & Abläufe, Verbindungen.</summary>

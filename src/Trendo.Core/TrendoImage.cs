@@ -3,13 +3,15 @@ using System.Text.Json;
 
 namespace Trendo.Core;
 
-/// <summary>Bootfähiges Trendo-OS-Abbild für USB-Stick/SSD (Wunsch 04.11.2026). GitHub baut es bei jedem Release und hängt es in Teilen
+/// <summary>Bootfähiges Trendo-OS-Abbild für USB-Stick/SSD (Wunsch 04.11.2026). Seit 13.11.2026 vom Windows-Kundenkanal getrennt: GitHub baut es
+/// nur noch auf Anforderung und legt es im eigenen Vor-Release „trendo-os-abbild“ ab (nie „latest“). Es kommt in Teilen
 /// (unter 2 GB, je mit SHA-256) samt <c>TrendoOS-Abbild.json</c> an. Hier: Beschreibung lesen, Teile prüfen und zusammensetzen,
 /// roh auf ein Ziel schreiben und zur Kontrolle zurücklesen. Das Ziel ist ein <see cref="Stream"/> – in Tests eine Datei (virtuelle Festplatte).</summary>
 public static class TrendoImage
 {
     public const string ManifestName = "TrendoOS-Abbild.json";
-    public const string LatestBase = "https://github.com/manuelbrandner85/Trendo-OS/releases/latest/download/";
+    public const string ImageTag = "trendo-os-abbild";
+    public const string LatestBase = "https://github.com/manuelbrandner85/Trendo-OS/releases/download/" + ImageTag + "/";
     public const int Sector = 512;
 
     public sealed record Part(string File, string Sha256, long Bytes);

@@ -261,7 +261,7 @@ public class ConnectedPromptTests
         PromptServices Ready() => new()
         {
             Runner = runner,
-            // T-0222: Mitgeliefertes geht nicht über Aufträge; nachgeladen wird nur noch das große KI-Modell (model-3b) über Ollama
+            // T-0222: Mitgeliefertes geht nicht über Aufträge; nachgeladen wird nur noch das große KI-Modell (model-7b) über Ollama
             FileExists = path => path.EndsWith("ollama.exe", StringComparison.OrdinalIgnoreCase) || installed && path.Contains("qwen2.5", StringComparison.OrdinalIgnoreCase),
             ConsentFile = consent
         };
@@ -273,7 +273,7 @@ public class ConnectedPromptTests
         Assert.Equal(RunStatus.Unsupported, evil.Status);
         Assert.Empty(calls);
         var wf = fx.Flow(Ready());
-        var planned = wf.Los(fx.Project, wf.Start(fx.Req("SYS-04", "Freigabe: erteilt\nInstallieren: ja\nProgramm: model-3b", "inst-1"), fx.Ctx()).RunId, fx.Ctx());
+        var planned = wf.Los(fx.Project, wf.Start(fx.Req("SYS-04", "Freigabe: erteilt\nInstallieren: ja\nProgramm: model-7b", "inst-1"), fx.Ctx()).RunId, fx.Ctx());
         Assert.Equal(RunStatus.AwaitingApproval, planned.Status);
         Assert.Empty(calls);
         var missing = wf.Approve(fx.Project, planned.RunId, Principal.LocalOwner, fx.Ctx());
@@ -282,12 +282,12 @@ public class ConnectedPromptTests
         Assert.Contains("Zustimmung", string.Join(" ", missing.Errors));
         File.WriteAllText(consent, "Zustimmung\n");
         var next = fx.Flow(Ready());
-        var wait = next.Los(fx.Project, next.Start(fx.Req("SYS-04", "Installieren: ja\nProgramm: model-3b", "inst-2"), fx.Ctx()).RunId, fx.Ctx());
+        var wait = next.Los(fx.Project, next.Start(fx.Req("SYS-04", "Installieren: ja\nProgramm: model-7b", "inst-2"), fx.Ctx()).RunId, fx.Ctx());
         var done = next.Approve(fx.Project, wait.RunId, Principal.LocalOwner, fx.Ctx());
         Assert.Equal(RunStatus.Verified, done.Status);
-        Assert.Contains("Installiert: KI-Modell Qwen2.5 3B", done.Preview);
+        Assert.Contains("Installiert: KI-Modell Qwen2.5 7B", done.Preview);
         var pull = Assert.Single(calls);
-        Assert.Contains("pull qwen2.5:3b", pull);
+        Assert.Contains("pull qwen2.5:7b", pull);
         Assert.DoesNotContain("Evil", pull);
         var mitgeliefert = fx.Go(fx.Flow(Ready()), "SYS-04", "Freigabe: erteilt\nInstallieren: ja\nProgramm: ffmpeg", "inst-3");
         Assert.NotEqual(RunStatus.Verified, mitgeliefert.Status);

@@ -28,7 +28,7 @@ public sealed record Component(
 public static class DependencyCatalog
 {
     public const string LocalModel = "qwen2.5:0.5b";
-    public const string LargeModel = "qwen2.5:3b";
+    public const string LargeModel = "qwen2.5:7b"; // Apache-2.0; ersetzt 3B (Qwen Research License, nicht für den Verkauf), Entscheidung E8 vom 13.11.2026
 
     public static readonly IReadOnlyList<Component> All =
     [
@@ -48,8 +48,8 @@ public static class DependencyCatalog
             "Ollama.Ollama", 1100, "https://ollama.com/download", ["ollama"], [@"%LOCALAPPDATA%\Programs\Ollama\ollama.exe"]),
         new("model", $"KI-Modell Qwen2.5 0.5B ({LocalModel})", "Lokales Sprachmodell", "Apache-2.0", DeliveryMode.Included,
             "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin", null, 400, "https://ollama.com/library/qwen2.5", ["model"], null, $"ollama pull {LocalModel}"),
-        new("model-3b", $"KI-Modell Qwen2.5 3B ({LargeModel}, optional)", "Größeres lokales Sprachmodell, besseres Deutsch", "Qwen Research License (nicht-kommerziell frei)", DeliveryMode.AutoUser,
-            "Gewichte ~1,9 GB, nur nach Zustimmung über Ollama geladen; empfohlen ab 16 GB RAM", null, 1900, "https://ollama.com/library/qwen2.5:3b", ["model-3b"], null, $"ollama pull {LargeModel}"),
+        new("model-7b", $"KI-Modell Qwen2.5 7B ({LargeModel}, optional)", "Größeres lokales Sprachmodell, besseres Deutsch", "Apache-2.0", DeliveryMode.AutoUser,
+            "Gewichte ~4,7 GB, nur nach Zustimmung über Ollama geladen; empfohlen ab 16 GB RAM", null, 4700, "https://ollama.com/library/qwen2.5:7b", ["model-7b"], null, $"ollama pull {LargeModel}"),
         new("git", "Git für Windows", "Web & App Studio, Versionierung", "GPL-2.0", DeliveryMode.Included, "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin",
             "Git.Git", 350, "https://git-scm.com", ["git"], [@"%LOCALAPPDATA%\Programs\Git\cmd\git.exe", @"%ProgramFiles%\Git\cmd\git.exe"]),
         new("gh", "GitHub CLI", "GitHub anbinden – Projekte als Repo hochladen (alle Studios)", "MIT", DeliveryMode.AutoUser, "Nur nach Zustimmung aus der offiziellen Quelle; anmelden macht jeder selbst im Browser",
@@ -220,7 +220,7 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
         if (c.Mode is DeliveryMode.Bundled or DeliveryMode.NotNeeded) return true;
         if (c.Id == "model") return ModelPresent;
         if (Vollpaket.IncludedPath(ToolsRoot, c.Id) is { } ip && _exists(ip)) return true;
-        if (c.Id == "model-3b") return HasModel(DependencyCatalog.LargeModel);
+        if (c.Id == "model-7b") return HasModel(DependencyCatalog.LargeModel);
         return Detect(c).Any(p => _exists(_expand(p)));
     }
 

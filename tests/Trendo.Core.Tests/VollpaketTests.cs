@@ -136,7 +136,7 @@ public class T0222_Vollpaket
             Assert.True(built.ContainsKey(pkg), $"{id}: Paket {pkg} fehlt in programme.json");
             if (id == pkg) Assert.Equal($"{pkg}/{built[pkg]}", exe);
         }
-        foreach (var id in new[] { "unreal", "chrome", "model-3b", "meshroom" })
+        foreach (var id in new[] { "unreal", "chrome", "model-7b", "meshroom" })
             Assert.NotEqual(DeliveryMode.Included, DependencyCatalog.Get(id).Mode);
         foreach (var url in spec.RootElement.GetProperty("programs").EnumerateArray().Select(p => p.GetProperty("url").GetString()!))
             Assert.StartsWith("https://", url);

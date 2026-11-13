@@ -11,6 +11,10 @@ public static class GameBoard
     public static List<JsonObject> Tasks(JsonObject d) => [.. (d["tasks"] as JsonArray ?? []).OfType<JsonObject>()];
 
     static JsonArray Arr(JsonObject d) { if (d["tasks"] is not JsonArray a) { a = []; d["tasks"] = a; } return a; }
+
+    /// <summary>T-0640: Aufgabe nach ihrer Nummer in <see cref="Tasks"/> – Einträge, die keine Aufgaben sind (z. B. aus einer KI-Bearbeitung), zählen nicht mit
+    /// und bleiben unverändert im Dokument. So zeigen Knopf und Aufgabe immer auf dasselbe, ohne dass vor einer Prüfung etwas geändert wird.</summary>
+    public static JsonObject? At(JsonObject d, int index) => index >= 0 ? Tasks(d).ElementAtOrDefault(index) : null;
     static string S(JsonNode? n) => n is JsonValue v && v.TryGetValue<string>(out var s) ? s : "";
     public static string StateOf(JsonObject t) => S(t["state"]) is var s && States.Contains(s) ? s : States[0];
 
@@ -26,12 +30,16 @@ public static class GameBoard
     /// <summary>Aufgabe eine Spalte weiter (+1) oder zurück (−1); bleibt an den Rändern stehen.</summary>
     public static void Move(JsonObject d, int index, int step)
     {
-        var a = Arr(d); if (index < 0 || index >= a.Count || a[index] is not JsonObject t) return;
+        if (At(d, index) is not { } t) return;
         var i = Math.Clamp(Array.IndexOf(States, StateOf(t)) + step, 0, States.Length - 1);
+        // T-0640: Stories mit Abnahmekriterien werden nur über die Abnahme fertig; wer eine fertige Story zurückschiebt, öffnet sie wieder
+        if (GameFlow.IsStory(t) && States[i] == "Fertig" && StateOf(t) != "Fertig" && GameFlow.ResultOf(t) is not (GameFlow.Done or GameFlow.DoneWithNotes))
+            throw new InvalidOperationException("Diese Story wird über ihre Abnahmekriterien abgeschlossen.");
+        if (GameFlow.IsStory(t) && step < 0 && StateOf(t) == "Fertig") t.Remove("result");
         t["state"] = States[i];
     }
 
-    public static void Remove(JsonObject d, int index) { var a = Arr(d); if (index >= 0 && index < a.Count) a.RemoveAt(index); }
+    public static void Remove(JsonObject d, int index) { if (At(d, index) is { } t) Arr(d).Remove(t); }
 
     /// <summary>Hinweise der Spielprüfung und offene Meilensteine als Aufgaben übernehmen (ohne Doppelte). Liefert die Zahl neuer Aufgaben.</summary>
     public static int Seed(JsonObject d)

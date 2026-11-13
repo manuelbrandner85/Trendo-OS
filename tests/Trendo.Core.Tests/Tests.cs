@@ -405,7 +405,7 @@ public class Dependencies_Core
     public async Task Model_flow()
     {
         var (m, r, files, f) = Make(); using var _ = f; m.GiveConsent(Principal.LocalOwner);
-        var model = DependencyCatalog.Get("model") with { Mode = DeliveryMode.AutoUser }; // Laden per Ollama bleibt für model-3b; model selbst liegt im Vollpaket
+        var model = DependencyCatalog.Get("model") with { Mode = DeliveryMode.AutoUser }; // Laden per Ollama bleibt für model-7b; model selbst liegt im Vollpaket
         await Assert.ThrowsAsync<InvalidOperationException>(() => m.InstallAsync(Principal.LocalOwner, model));
         files.Add(@"L\Programs\Ollama\ollama.exe");
         r.OnRun = () => files.Add(Path.Combine("U", ".ollama", "models", "manifests", "registry.ollama.ai", "library", "qwen2.5", "0.5b"));
