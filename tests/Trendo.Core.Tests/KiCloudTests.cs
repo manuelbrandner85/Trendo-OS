@@ -23,7 +23,7 @@ public class T0225_Ki
         Assert.NotEmpty(big);
         Assert.All(big, m => Assert.Contains(m.License, new[] { "Apache-2.0", "MIT" }));
         Assert.DoesNotContain(big, m => m.Tag == "qwen2.5:0.5b");
-        Assert.DoesNotContain(big, m => m.Tag is "qwen2.5:3b" or "llama3.2:3b" or "gemma2:2b"); // eigene Lizenzbedingungen: nur mit Bestätigung
+        Assert.DoesNotContain(big, m => m.Tag is "llama3.2:3b" or "gemma2:2b"); // eigene Lizenzbedingungen: nur mit Bestätigung
         Assert.Equal(big.OrderBy(m => m.SizeGb).Select(m => m.Tag), big.Select(m => m.Tag));
         var small = KiCatalog.AutoModels(new HardwareInfo(8 * G, null, 0), []);
         Assert.All(small, m => Assert.True(m.MinRamGb <= 8));

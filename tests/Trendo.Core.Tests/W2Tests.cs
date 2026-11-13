@@ -61,7 +61,7 @@ public class X05_FreeAi
     {
         Assert.All(KiCatalog.Sources, s => Assert.StartsWith("http://127.0.0.1:", s.BaseUrl));
         const long G = 1024L * 1024 * 1024;
-        Assert.True(KiCatalog.Fits(KiCatalog.Models.First(m => m.Tag == "qwen2.5:3b"), new HardwareInfo(8 * G, null, 0)));
+        Assert.True(KiCatalog.Fits(KiCatalog.Models.First(m => m.Tag == "qwen2.5:1.5b"), new HardwareInfo(8 * G, null, 0)));
         Assert.False(KiCatalog.Fits(KiCatalog.Models.First(m => m.Tag == "mistral:7b"), new HardwareInfo(8 * G, null, 0)));
     }
 }

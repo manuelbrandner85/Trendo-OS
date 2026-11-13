@@ -14,9 +14,9 @@ public class ChatStoreTests
         try
         {
             var s = new ChatStore(root);
-            var c = s.Append(new ChatStore.Chat(), "Wie plane ich ein Sommerfest für den Verein mit 80 Gästen und kleinem Budget?", "Erstelle zuerst eine Liste …", "qwen2.5:3b");
+            var c = s.Append(new ChatStore.Chat(), "Wie plane ich ein Sommerfest für den Verein mit 80 Gästen und kleinem Budget?", "Erstelle zuerst eine Liste …", "qwen2.5:7b");
             Assert.Equal("Wie plane ich ein Sommerfest für den Verein …", c.Title);
-            s.Append(c, "Und die Getränke?", "Rechne mit …", "qwen2.5:3b");
+            s.Append(c, "Und die Getränke?", "Rechne mit …", "qwen2.5:7b");
             Assert.Equal("Wie plane ich ein Sommerfest für den Verein …", s.Get(c.Id)!.Title); // Titel bleibt
             var d = s.Append(new ChatStore.Chat(), "Was ist eine Firewall?", "Eine Firewall …", null);
             Assert.Equal([d.Id, c.Id], s.All().Select(x => x.Id));

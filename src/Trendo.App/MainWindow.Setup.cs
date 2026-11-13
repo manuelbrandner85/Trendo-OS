@@ -387,7 +387,7 @@ public sealed partial class MainWindow
     {
         if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner);
         var list = SetupPacks.ComponentsFor(_settings.StudioPacks).ToList();
-        if (_settings.StudioPacks.Contains("ki") && model == DependencyCatalog.LargeModel) list.Add(DependencyCatalog.Get("model-3b"));
+        if (_settings.StudioPacks.Contains("ki") && model == DependencyCatalog.LargeModel) list.Add(DependencyCatalog.Get("model-7b"));
         var todo = list.Where(c => !_deps.IsInstalled(c) && c.Mode is DeliveryMode.AutoUser or DeliveryMode.AutoElevated or DeliveryMode.Included).ToList();
         for (var i = 0; i < todo.Count; i++)
         {

@@ -875,8 +875,8 @@ public sealed partial class MainWindow : Window
     private Control KiModelChooser()
     {
         var sp = new StackPanel { Spacing = 6 };
-        sp.Children.Add(P($"Modell: {KiModelName}. Arbeitsspeicher: {TotalRam / (1024 * 1024 * 1024.0):0} GB – {(KiModel.RecommendLarge(TotalRam) ? "Qwen2.5 3B empfohlen" : "Qwen2.5 0.5B empfohlen")}.", Text));
-        foreach (var (m, id, label) in new[] { (DependencyCatalog.LocalModel, "model", "Qwen2.5 0.5B (klein, schnell)"), (DependencyCatalog.LargeModel, "model-3b", "Qwen2.5 3B (besseres Deutsch, ~1,9 GB)") })
+        sp.Children.Add(P($"Modell: {KiModelName}. Arbeitsspeicher: {TotalRam / (1024 * 1024 * 1024.0):0} GB – {(KiModel.RecommendLarge(TotalRam) ? "Qwen2.5 7B empfohlen" : "Qwen2.5 0.5B empfohlen")}.", Text));
+        foreach (var (m, id, label) in new[] { (DependencyCatalog.LocalModel, "model", "Qwen2.5 0.5B (klein, schnell)"), (DependencyCatalog.LargeModel, "model-7b", "Qwen2.5 7B (besseres Deutsch, ~4,7 GB)") })
         {
             var have = _deps.HasModel(m);
             var b = new Button { Name = "btn-model-" + id, Content = have ? (KiModelName == m ? $"✓ {label}" : $"{label} verwenden") : $"{label} herunterladen (Zustimmung)", IsEnabled = !_depBusy, Background = KiModelName == m ? Accent : null };

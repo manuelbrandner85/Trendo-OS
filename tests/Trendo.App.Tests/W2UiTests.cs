@@ -65,14 +65,14 @@ public class CORE02_Backends
         var h = new StubHandler(r => r.RequestUri!.AbsolutePath switch
         {
             "/api/version" => (HttpStatusCode.OK, "{\"version\":\"0.5\"}"),
-            "/api/tags" => (HttpStatusCode.OK, "{\"models\":[{\"name\":\"qwen2.5:3b\"}]}"),
+            "/api/tags" => (HttpStatusCode.OK, "{\"models\":[{\"name\":\"qwen2.5:7b\"}]}"),
             "/api/chat" => (HttpStatusCode.OK, "{\"message\":{\"role\":\"assistant\",\"content\":\" Hallo! \"}}"),
             _ => (HttpStatusCode.NotFound, "{}"),
         });
         var b = new OllamaBackend(handler: h);
         Assert.True(await b.IsUpAsync(TestContext.Current.CancellationToken));
-        Assert.Equal(["qwen2.5:3b"], await b.ModelsAsync(TestContext.Current.CancellationToken));
-        Assert.Equal("Hallo!", await b.ChatAsync("qwen2.5:3b", [new("user", "hi")], TestContext.Current.CancellationToken));
+        Assert.Equal(["qwen2.5:7b"], await b.ModelsAsync(TestContext.Current.CancellationToken));
+        Assert.Equal("Hallo!", await b.ChatAsync("qwen2.5:7b", [new("user", "hi")], TestContext.Current.CancellationToken));
     }
 
 }
