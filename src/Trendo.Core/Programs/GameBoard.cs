@@ -28,6 +28,10 @@ public static class GameBoard
     {
         var a = Arr(d); if (index < 0 || index >= a.Count || a[index] is not JsonObject t) return;
         var i = Math.Clamp(Array.IndexOf(States, StateOf(t)) + step, 0, States.Length - 1);
+        // T-0640: Stories mit Abnahmekriterien werden nur über die Abnahme fertig; wer eine fertige Story zurückschiebt, öffnet sie wieder
+        if (GameFlow.IsStory(t) && States[i] == "Fertig" && StateOf(t) != "Fertig" && GameFlow.ResultOf(t) is not (GameFlow.Done or GameFlow.DoneWithNotes))
+            throw new InvalidOperationException("Diese Story wird über ihre Abnahmekriterien abgeschlossen.");
+        if (GameFlow.IsStory(t) && step < 0 && StateOf(t) == "Fertig") t.Remove("result");
         t["state"] = States[i];
     }
 
