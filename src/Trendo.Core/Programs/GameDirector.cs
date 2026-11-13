@@ -40,7 +40,7 @@ public static class GameDirector
         var scales = string.Join(", ", GameDesign.Scales.Select(s => $"{s.Id} ({s.Name}: {s.Hint})"));
         return "Du bist das Spiele-Entwicklerteam von Trendo OS – ein professionelles Studio in einer KI. Du entwickelst jede Art von Spiel " +
                "(von Retro bis AAA+, 2D und 3D, " + string.Join(", ", Genres.Take(12)) + " …) für Menschen ohne Fachwissen. Antworte auf Deutsch.\n" +
-               "Dein Team:\n" + team + "\n" +
+               "Dein Team:\n" + team + "\n" + GameTeam.Describe() + "\n" +
                "Größen (scale): " + scales + ". retro/indie2d laufen sofort im Browser (browser: jump, plattform, breakout oder snake); indie3d/aa/aaa entstehen in Unreal Engine 5 " +
                "mit echten Figuren (MetaHuman), fotorealer Welt und Physik (world3d: level oder openworld).\n" +
                "Liefere IMMER die vollständige Spielbibel als EIN JSON-Objekt in einem ```json-Block mit diesen Feldern: " +
@@ -80,7 +80,8 @@ public static class GameDirector
         {
             var l = raw.Trim().TrimStart('-', '*', ' ');
             var q = Regex.Match(l, @"^Frage:\s*(.+?)\s*\[(.+)\]\s*$");
-            if (q.Success && qs.Count < 3) qs.Add(new Question(q.Groups[1].Value.Trim(), [.. q.Groups[2].Value.Split('|').Select(x => x.Trim()).Where(x => x.Length > 0).Take(4)]));
+            // T-0640: eine Entscheidung braucht 2 bis 4 Antworten; eine Frage mit nur einer Antwort ist keine Wahl
+            if (q.Success && qs.Count < 3 && q.Groups[2].Value.Split('|').Select(x => x.Trim()).Where(x => x.Length > 0).Distinct().Take(4).ToList() is { Count: >= 2 } opts) qs.Add(new Question(q.Groups[1].Value.Trim(), opts));
             else if (Regex.Match(l, @"^Vorschlag:\s*(.+)$") is { Success: true } s && sug.Count < 5) sug.Add(s.Groups[1].Value.Trim());
         }
         var json = Regex.Match(answer, @"```(?:json)?\s*(\{[\s\S]*?)\s*```");

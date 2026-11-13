@@ -25,7 +25,8 @@ public partial class MainWindow
     {
         var ex = GameExperts.Pick(wish, GameEngineOf(d), _gpMode);
         return "\n\nFachleute für diesen Auftrag (Rat-Modus „" + GameExperts.Modes.First(m => m.Id == _gpMode).Label + "“):\n"
-            + string.Join("\n", ex.Select(e => $"- {e.Name}: {e.Does}. Leitlinien: {string.Join("; ", e.Rules)}. Grenze: {e.Limit}."))
+            + string.Join("\n", ex.Select(e => $"- {e.Name} (berichtet an {GameTeam.NameOf(GameTeam.Find(e.Id)?.Lead ?? GameTeam.Head)}): {e.Does}. Leitlinien: {string.Join("; ", e.Rules)}. Grenze: {e.Limit}."))
+            + (ex.Count >= 2 ? $"\nWiderspruch zwischen {ex[0].Name} und {ex[1].Name} entscheidet: {GameTeam.NameOf(GameTeam.Escalate(ex[0].Id, ex[1].Id))}." : "")
             + "\nBeziehe ihre Sicht ein und nenne bei wichtigen Entscheidungen, welche Fachperson sie trägt."
             + "\nPrüfschleife für Bilder: Prüfe jedes Bild, das du mit [[trendo:bild …]] bestellst, danach selbst (Datei ansehen) streng nach: " + AssetCheck.JudgeInstruction
             + " Ist es nicht bestanden, bestelle es höchstens zweimal neu mit nachgebessertem Prompt."
