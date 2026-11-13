@@ -41,6 +41,7 @@ public static class PromptActions
             new KnowledgeRememberAdapter(), new LearnCardAdapter(), new PromptFillAdapter(), new FashionSizeAdapter(),
             new StreamSendAdapter(), new RundownAdapter(), new TvListAdapter(), new SongPlanAdapter(), new FilmOutlineAdapter(), new PodPriceAdapter(), new ConsolePlanAdapter(),
             new SummaryPromptAdapter(), new LogoPromptAdapter(), new PodcastPromptAdapter(), new ComicPromptAdapter(),
+            new BookOutlineAdapter(), new AnimTitleAdapter(), new PhotoPlanAdapter(), new ImageAiPlanAdapter(),
             new LicenseFetchAdapter(), new LicenseNoteAdapter(),
             new XrBudgetAdapter(), new ScanBlockedAdapter(),
             ..SystemActions.Create()

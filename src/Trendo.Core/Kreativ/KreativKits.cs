@@ -44,6 +44,14 @@ public static class KreativSafe
         try { var f = new FileInfo(path); return f.Exists && f.Length <= maxBytes; }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException) { return false; }
     }
+
+    /// <summary>Vollständiger lokaler Pfad, keine Netzwerkfreigabe (\\rechner oder //rechner); muss nicht existieren.</summary>
+    public static bool LocalPath(string? path) =>
+        !string.IsNullOrWhiteSpace(path) && Path.IsPathFullyQualified(path) && !path.StartsWith(@"\\", StringComparison.Ordinal) && !path.StartsWith("//", StringComparison.Ordinal);
+
+    /// <summary>Wie <see cref="LocalFile"/>, für Ordner: vollständig, lokal, vorhanden.</summary>
+    public static bool LocalDir(string? path) =>
+        !string.IsNullOrWhiteSpace(path) && Path.IsPathFullyQualified(path) && !path.StartsWith(@"\\", StringComparison.Ordinal) && !path.StartsWith("//", StringComparison.Ordinal) && Directory.Exists(path);
 }
 
 /// <summary>Texte zusammenfassen ohne Internet: wichtigste Sätze nach Worthäufigkeit, in der ursprünglichen Reihenfolge. Claude kann es danach ausführlicher.</summary>

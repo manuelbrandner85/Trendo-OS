@@ -202,7 +202,7 @@
       "Ohne Unterschrift",
       "Brief prüfen",
       "Text von der KI verbessern lassen",
-      "11. November 2026",
+      "13. November 2026",
       "Alle 20 Vorlagen zeigen …",
       "Fertig – Brief speichern",
       "Als verschickt eintragen",
@@ -274,9 +274,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 76,
+    "WarmMs": 69,
     "WindowsOnly": []
   },
   {
@@ -435,9 +435,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 40,
+    "WarmMs": 35,
     "WindowsOnly": []
   },
   {
@@ -589,9 +589,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 41,
+    "WarmMs": 20,
     "WindowsOnly": []
   },
   {
@@ -791,9 +791,9 @@
       "src/Trendo.App/MainWindow.Pim.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 38,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -956,9 +956,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 25,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -1122,9 +1122,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -1362,7 +1362,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -1616,7 +1616,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -1859,7 +1859,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -1951,9 +1951,9 @@
       "src/Trendo.App/MainWindow.W4Suite.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -2204,9 +2204,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -2435,7 +2435,7 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
     "WarmMs": 7,
     "WindowsOnly": []
@@ -2696,7 +2696,7 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -2975,9 +2975,9 @@
       "src/Trendo.App/MainWindow.Tabelle.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -3271,9 +3271,9 @@
       "src/Trendo.App/MainWindow.Text.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -3357,9 +3357,9 @@
       "src/Trendo.App/MainWindow.W5Finance.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 43,
+    "WarmMs": 41,
     "WindowsOnly": []
   },
   {
@@ -3504,7 +3504,7 @@
       "src/Trendo.App/MainWindow.W5Business.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -3560,7 +3560,158 @@
       "src/Trendo.App/MainWindow.PodStudio.cs"
     ],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
+    "Shell": true,
+    "WarmMs": 8,
+    "WindowsOnly": []
+  },
+  {
+    "Id": "animation-programm",
+    "Name": "Animation & Motion",
+    "Studio": "STUDIO-ANIM-01",
+    "StudioName": "Animation & Motion",
+    "Area": "Kreativ & Medien",
+    "Type": [],
+    "Functions": [],
+    "Engine": [
+      "AnimKit",
+      "ImageAiKit",
+      "KreativSafe",
+      "BookKit",
+      "PhotoOrganizer",
+      "LogoKit",
+      "Renamer",
+      "Rect"
+    ],
+    "Tools": [
+      "Rechteck (Ebene)",
+      "Kreis (Ebene)",
+      "Text (Ebene)",
+      "Einblenden (Bewegung)",
+      "Einfliegen (Bewegung)",
+      "Pulsieren (Bewegung)",
+      "Drehen (Bewegung)",
+      "Video (MP4) (Ausgabe)",
+      "Animiertes SVG (.svg) (Exportieren)"
+    ],
+    "Formats": [
+      ".docx",
+      ".jpg",
+      ".json",
+      ".md",
+      ".mp3",
+      ".mp4",
+      ".ods",
+      ".odt",
+      ".ogg",
+      ".pdf",
+      ".png",
+      ".pptx",
+      ".svg",
+      ".tdoc",
+      ".txt",
+      ".wav",
+      ".webm",
+      ".xlsx",
+      ".xml",
+      ".zip"
+    ],
+    "Dependencies": [
+      "FFmpeg",
+      "VLC (optional)",
+      "mpv (optional)"
+    ],
+    "Ui": [
+      "Menüband",
+      "Eigenschaften",
+      "Statusleiste",
+      "Dokument-Reiter"
+    ],
+    "Tabs": [
+      "Animation & Motion"
+    ],
+    "Tests": [],
+    "SourceFiles": [
+      "src/Trendo.App/MainWindow.KreativStudios2.cs"
+    ],
+    "Status": "IN_PROGRESS / Test NOT_RUN",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
+    "Shell": true,
+    "WarmMs": 9,
+    "WindowsOnly": []
+  },
+  {
+    "Id": "buch-programm",
+    "Name": "Bücher schreiben",
+    "Studio": "STUDIO-BOOK-01",
+    "StudioName": "Bücher schreiben",
+    "Area": "Kreativ & Medien",
+    "Type": [
+      "Texteditor"
+    ],
+    "Functions": [],
+    "Engine": [
+      "AnimKit",
+      "ImageAiKit",
+      "KreativSafe",
+      "BookKit",
+      "PhotoOrganizer",
+      "LogoKit",
+      "Renamer",
+      "Rect"
+    ],
+    "Tools": [
+      "Neues Kapitel (Kapitel)",
+      "Weiterschreiben mit Claude (Claude)",
+      "Lektorat mit Claude (Claude)",
+      "E-Book (.epub) (Exportieren)",
+      "Manuskript (.md) (Exportieren)",
+      "Nur Text (.txt) (Exportieren)"
+    ],
+    "Formats": [
+      ".docx",
+      ".epub",
+      ".jpg",
+      ".json",
+      ".md",
+      ".mp3",
+      ".mp4",
+      ".ods",
+      ".odt",
+      ".ogg",
+      ".pdf",
+      ".png",
+      ".pptx",
+      ".svg",
+      ".tdoc",
+      ".txt",
+      ".wav",
+      ".webm",
+      ".xlsx",
+      ".xml",
+      ".zip"
+    ],
+    "Dependencies": [
+      "FFmpeg",
+      "VLC (optional)",
+      "mpv (optional)"
+    ],
+    "Ui": [
+      "Texteditor",
+      "Menüband",
+      "Eigenschaften",
+      "Statusleiste",
+      "Dokument-Reiter"
+    ],
+    "Tabs": [
+      "Bücher schreiben"
+    ],
+    "Tests": [],
+    "SourceFiles": [
+      "src/Trendo.App/MainWindow.KreativStudios2.cs"
+    ],
+    "Status": "IN_PROGRESS / Test NOT_RUN",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": true,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -3577,6 +3728,7 @@
       "LogoKit",
       "ComicKit",
       "PodcastKit",
+      "KreativSafe",
       "SummaryKit"
     ],
     "Tools": [
@@ -3592,6 +3744,7 @@
       ".jpg",
       ".md",
       ".mp3",
+      ".mp4",
       ".ogg",
       ".png",
       ".svg",
@@ -3617,7 +3770,7 @@
       "src/Trendo.App/MainWindow.KreativStudios.cs"
     ],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": true,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -3677,9 +3830,80 @@
       "src/Trendo.App/MainWindow.FilmStudio.cs"
     ],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": true,
     "WarmMs": 9,
+    "WindowsOnly": []
+  },
+  {
+    "Id": "fotos-verwalten-programm",
+    "Name": "Fotos verwalten",
+    "Studio": "STUDIO-PHOTOS-01",
+    "StudioName": "Fotos verwalten",
+    "Area": "Kreativ & Medien",
+    "Type": [],
+    "Functions": [],
+    "Engine": [
+      "AnimKit",
+      "ImageAiKit",
+      "KreativSafe",
+      "BookKit",
+      "PhotoOrganizer",
+      "LogoKit",
+      "Renamer",
+      "Rect"
+    ],
+    "Tools": [
+      "Jahr / Monat (Ordnung)",
+      "Nur Jahr (Ordnung)",
+      "Jahr / Tag (Ordnung)",
+      "Im Fotoalbum ansehen (Fotos)",
+      "Probelauf als Liste (.txt) (Exportieren)"
+    ],
+    "Formats": [
+      ".docx",
+      ".jpg",
+      ".json",
+      ".md",
+      ".mp3",
+      ".mp4",
+      ".ods",
+      ".odt",
+      ".ogg",
+      ".pdf",
+      ".png",
+      ".pptx",
+      ".svg",
+      ".tdoc",
+      ".txt",
+      ".wav",
+      ".webm",
+      ".xlsx",
+      ".xml",
+      ".zip"
+    ],
+    "Dependencies": [
+      "FFmpeg",
+      "VLC (optional)",
+      "mpv (optional)"
+    ],
+    "Ui": [
+      "Menüband",
+      "Eigenschaften",
+      "Statusleiste",
+      "Dokument-Reiter"
+    ],
+    "Tabs": [
+      "Fotos verwalten"
+    ],
+    "Tests": [],
+    "SourceFiles": [
+      "src/Trendo.App/MainWindow.KreativStudios2.cs"
+    ],
+    "Status": "IN_PROGRESS / Test NOT_RUN",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
+    "Shell": true,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -3842,7 +4066,7 @@
       "src/Trendo.App/MainWindow.W4Assets.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -4036,9 +4260,9 @@
       "src/Trendo.App/MainWindow.ProgMode.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -4225,15 +4449,18 @@
       ".jpg",
       ".json",
       ".md",
+      ".mp4",
       ".obj",
       ".ods",
       ".odt",
+      ".ogg",
       ".ply",
       ".png",
       ".pptx",
       ".srt",
       ".stl",
       ".txt",
+      ".wav",
       ".xlsx",
       ".xml"
     ],
@@ -4303,9 +4530,9 @@
       "src/Trendo.App/MainWindow.Spec15.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 57,
+    "WarmMs": 65,
     "WindowsOnly": []
   },
   {
@@ -4320,6 +4547,7 @@
       "LogoKit",
       "ComicKit",
       "PodcastKit",
+      "KreativSafe",
       "SummaryKit"
     ],
     "Tools": [
@@ -4340,6 +4568,7 @@
       ".jpg",
       ".md",
       ".mp3",
+      ".mp4",
       ".ogg",
       ".png",
       ".svg",
@@ -4365,7 +4594,7 @@
       "src/Trendo.App/MainWindow.KreativStudios.cs"
     ],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": true,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -4384,6 +4613,7 @@
       "LogoKit",
       "ComicKit",
       "PodcastKit",
+      "KreativSafe",
       "SummaryKit"
     ],
     "Tools": [
@@ -4398,6 +4628,7 @@
       ".jpg",
       ".md",
       ".mp3",
+      ".mp4",
       ".ogg",
       ".png",
       ".svg",
@@ -4424,7 +4655,7 @@
       "src/Trendo.App/MainWindow.KreativStudios.cs"
     ],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": true,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -4603,12 +4834,12 @@
       "Sounds",
       "Sprache",
       "Übernehmen",
-      "Do",
-      "Fr",
       "Sa",
       "So",
       "Mo",
       "Di",
+      "Mi",
+      "Do",
       "Heute",
       "Lied in meinem Geschmack",
       "Einfach",
@@ -4740,9 +4971,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 38,
+    "WarmMs": 37,
     "WindowsOnly": []
   },
   {
@@ -4815,7 +5046,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
     "WarmMs": 7,
     "WindowsOnly": []
@@ -5195,7 +5426,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": true,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -5537,9 +5768,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -5880,9 +6111,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 44,
+    "WarmMs": 34,
     "WindowsOnly": []
   },
   {
@@ -6263,7 +6494,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": true,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -6706,9 +6937,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 31,
     "WindowsOnly": []
   },
   {
@@ -7073,7 +7304,7 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -7463,7 +7694,7 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
     "WarmMs": 52,
     "WindowsOnly": []
@@ -7677,9 +7908,9 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -7893,7 +8124,7 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": true,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -7976,7 +8207,7 @@
       "src/Trendo.App/MainWindow.ConsolePort.cs"
     ],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": true,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -8244,6 +8475,7 @@
       ".json",
       ".md",
       ".mp3",
+      ".mp4",
       ".ogg",
       ".pdf",
       ".png",
@@ -8309,9 +8541,9 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": true,
-    "WarmMs": 11,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -8590,6 +8822,7 @@
       ".json",
       ".md",
       ".mp3",
+      ".mp4",
       ".ogg",
       ".pdf",
       ".png",
@@ -8674,9 +8907,9 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 18,
     "WindowsOnly": []
   },
   {
@@ -8829,6 +9062,7 @@
       ".json",
       ".md",
       ".mp3",
+      ".mp4",
       ".obj",
       ".ogg",
       ".ply",
@@ -8880,9 +9114,9 @@
       "src/Trendo.App/MainWindow.Spec04.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 57,
+    "WarmMs": 43,
     "WindowsOnly": []
   },
   {
@@ -9044,7 +9278,10 @@
     "Formats": [
       ".csv",
       ".jpg",
-      ".png"
+      ".mp4",
+      ".ogg",
+      ".png",
+      ".wav"
     ],
     "Dependencies": [
       "Blender (optional, 3D-Fotos/Render)",
@@ -9083,9 +9320,9 @@
       "src/Trendo.App/MainWindow.Spec16.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 62,
+    "WarmMs": 70,
     "WindowsOnly": []
   },
   {
@@ -9285,7 +9522,7 @@
       "src/Trendo.App/MainWindow.Spec14.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": true,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -9459,8 +9696,11 @@
     "Formats": [
       ".csv",
       ".jpg",
+      ".mp4",
+      ".ogg",
       ".png",
-      ".svg"
+      ".svg",
+      ".wav"
     ],
     "Dependencies": [
       "FFmpeg"
@@ -9500,9 +9740,9 @@
       "src/Trendo.App/MainWindow.Spec10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 40,
+    "WarmMs": 38,
     "WindowsOnly": []
   },
   {
@@ -9679,7 +9919,10 @@
     "Formats": [
       ".csv",
       ".jpg",
-      ".png"
+      ".mp4",
+      ".ogg",
+      ".png",
+      ".wav"
     ],
     "Dependencies": [
       "FFmpeg"
@@ -9727,9 +9970,9 @@
       "src/Trendo.App/MainWindow.Core09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 48,
+    "WarmMs": 45,
     "WindowsOnly": []
   },
   {
@@ -9925,7 +10168,7 @@
       "src/Trendo.App/MainWindow.Spec13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": true,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -10107,9 +10350,9 @@
       "src/Trendo.App/MainWindow.Spec02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": true,
-    "WarmMs": 10,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -10314,7 +10557,7 @@
       "src/Trendo.App/MainWindow.Spec03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": true,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -10515,7 +10758,7 @@
       "src/Trendo.App/MainWindow.Spec01.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": true,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -10651,7 +10894,10 @@
     "Formats": [
       ".csv",
       ".jpg",
-      ".png"
+      ".mp4",
+      ".ogg",
+      ".png",
+      ".wav"
     ],
     "Dependencies": [
       "Blender (optional, 3D-Fotos/Render)",
@@ -10690,9 +10936,9 @@
       "src/Trendo.App/MainWindow.Spec06.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -10830,13 +11076,13 @@
     ],
     "Formats": [
       ".csv",
+      ".json",
       ".md",
       ".svg",
-      ".tdoc"
+      ".tdoc",
+      ".xml"
     ],
-    "Dependencies": [
-      "FFmpeg"
-    ],
+    "Dependencies": [],
     "Rea": "docs/claude/vorbilder/messdaten-origin-scidavis.md",
     "ReaSummary": "Vorbild-Analyse Messdaten: Origin, SciDAVis, LabPlot (Clean-Room)",
     "Ui": [
@@ -10879,9 +11125,9 @@
       "src/Trendo.App/MainWindow.Spec05.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -10938,7 +11184,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -11016,9 +11262,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -11151,9 +11397,90 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
     "WarmMs": 10,
+    "WindowsOnly": []
+  },
+  {
+    "Id": "bild-ki-programm",
+    "Name": "Bilder mit KI",
+    "Studio": "STUDIO-IMAGEAI-01",
+    "StudioName": "Bilder mit KI",
+    "Area": "KI & Automatik",
+    "Type": [],
+    "Functions": [],
+    "Engine": [
+      "AnimKit",
+      "ImageAiKit",
+      "KreativSafe",
+      "BookKit",
+      "PhotoOrganizer",
+      "LogoKit",
+      "Renamer",
+      "Rect"
+    ],
+    "Tools": [
+      "Bilder malen (Malen)",
+      "Bild-KI einrichten (Malen)",
+      "Foto (Stil)",
+      "Illustration (Stil)",
+      "Aquarell (Stil)",
+      "3D-Render (Stil)",
+      "Pixel-Art (Stil)",
+      "Bleistiftskizze (Stil)",
+      "Ohne Stil (Stil)",
+      "Quadrat 1:1 (Format)",
+      "Quer 16:9 (Format)",
+      "Hoch 9:16 (Format)",
+      "Foto 4:3 (Format)",
+      "Neuestes Bild (.png) (Exportieren)",
+      "Alle Bilder mit Nachweis (.zip) (Exportieren)"
+    ],
+    "Formats": [
+      ".docx",
+      ".jpg",
+      ".json",
+      ".md",
+      ".mp3",
+      ".mp4",
+      ".ods",
+      ".odt",
+      ".ogg",
+      ".pdf",
+      ".png",
+      ".pptx",
+      ".svg",
+      ".tdoc",
+      ".txt",
+      ".wav",
+      ".webm",
+      ".xlsx",
+      ".xml",
+      ".zip"
+    ],
+    "Dependencies": [
+      "FFmpeg",
+      "VLC (optional)",
+      "mpv (optional)"
+    ],
+    "Ui": [
+      "Menüband",
+      "Eigenschaften",
+      "Statusleiste",
+      "Dokument-Reiter"
+    ],
+    "Tabs": [
+      "Bilder mit KI"
+    ],
+    "Tests": [],
+    "SourceFiles": [
+      "src/Trendo.App/MainWindow.KreativStudios2.cs"
+    ],
+    "Status": "IN_PROGRESS / Test NOT_RUN",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
+    "Shell": true,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -11227,9 +11554,9 @@
       "src/Trendo.App/MainWindow.W5Fusion.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -11327,7 +11654,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
     "WarmMs": 11,
     "WindowsOnly": []
@@ -11418,7 +11745,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
     "WarmMs": 13,
     "WindowsOnly": []
@@ -11501,9 +11828,9 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -11601,9 +11928,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 34,
+    "WarmMs": 20,
     "WindowsOnly": []
   },
   {
@@ -11716,7 +12043,7 @@
       "src/Trendo.App/MainWindow.Connections.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
     "WarmMs": 14,
     "WindowsOnly": []
@@ -11783,7 +12110,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -11861,9 +12188,9 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 22,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -11938,9 +12265,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -12044,9 +12371,9 @@
       "src/Trendo.App/MainWindow.KiLibrary.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -12153,9 +12480,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -12218,9 +12545,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -12237,6 +12564,7 @@
       "LogoKit",
       "ComicKit",
       "PodcastKit",
+      "KreativSafe",
       "SummaryKit"
     ],
     "Tools": [
@@ -12251,6 +12579,7 @@
       ".jpg",
       ".md",
       ".mp3",
+      ".mp4",
       ".ogg",
       ".png",
       ".svg",
@@ -12277,9 +12606,9 @@
       "src/Trendo.App/MainWindow.KreativStudios.cs"
     ],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -12372,7 +12701,7 @@
       "src/Trendo.App/MainWindow.W4Builder.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -12423,7 +12752,7 @@
       "src/Trendo.App/MainWindow.W5CleanRoom.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
     "WarmMs": 7,
     "WindowsOnly": []
@@ -12469,8 +12798,11 @@
     "Formats": [
       ".jpg",
       ".json",
+      ".mp4",
+      ".ogg",
       ".png",
       ".txt",
+      ".wav",
       ".zip"
     ],
     "Dependencies": [
@@ -12527,9 +12859,9 @@
       "src/Trendo.App/MainWindow.W4Oss.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -12598,9 +12930,9 @@
       "src/Trendo.App/MainWindow.W5Ext.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -12759,9 +13091,9 @@
       "src/Trendo.App/MainWindow.W4Dev.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 52,
+    "WarmMs": 51,
     "WindowsOnly": []
   },
   {
@@ -12854,9 +13186,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 25,
+    "WarmMs": 22,
     "WindowsOnly": []
   },
   {
@@ -12942,7 +13274,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -13041,9 +13373,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -13111,7 +13443,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -13322,23 +13654,27 @@
       "Alle",
       "Arbeiten & Büro (5)",
       "Business & Geld (3)",
-      "Kreativ & Medien (9)",
+      "Kreativ & Medien (12)",
       "3D, Spiele & VR (4)",
       "Technik & Fachgebiete (5)",
       "Wissen & Lernen (4)",
-      "KI & Automatik (3)",
+      "KI & Automatik (4)",
       "Entwickeln (2)",
       "System & Sicherheit (6)",
       "Bereit",
       "Briefe schreiben",
       "Print on Demand",
+      "Animation & Motion",
+      "Bücher schreiben",
       "Comics & Storyboards",
       "Filme machen",
+      "Fotos verwalten",
       "Logos & Marken",
       "Podcast aufnehmen",
       "Trendo Musik",
       "TV & Live",
       "Konsolenspiele portieren",
+      "Bilder mit KI",
       "Texte zusammenfassen",
       "PC, Pi & Handy verbinden",
       "KI fragen",
@@ -13407,7 +13743,7 @@
       "Startseite: die neun bekannten Studios öffnen aus dem Startmenü per echtem Mausklick eine eigene Seite",
       "Studio-Klick: Unreal nur geführt – kein Installieren-Knopf, offizieller Installer-Link",
       "Studio-Klick: fehlendes Programm → genau eine Frage 'Studio braucht X. Jetzt installieren?', 'Später' installiert nichts",
-      "Studio-Ordnung: 41 Studios in der Übersicht; jedes Ziel einer Zusammenlegung existiert und bleibt selbst sichtbar",
+      "Studio-Ordnung: 45 Studios in der Übersicht; jedes Ziel einer Zusammenlegung existiert und bleibt selbst sichtbar",
       "Studio-Ordnung: Das aufnehmende Studio und die Einstellungen zeigen die Leiste, der Knopf öffnet den Bereich",
       "Studio-Ordnung: Zusammengelegtes fehlt in der Übersicht, Suche findet es, SPEC-07 nirgends",
       "Studio-Ordnung: alphabetisch innerhalb einer Unterteilung, Umlaute deutsch sortiert",
@@ -13424,9 +13760,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 40,
+    "WarmMs": 41,
     "WindowsOnly": []
   },
   {
@@ -13685,9 +14021,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -13918,8 +14254,12 @@
       "Logos & Marken",
       "Podcast aufnehmen",
       "Comics & Storyboards",
+      "Bücher schreiben",
+      "Animation & Motion",
+      "Fotos verwalten",
       "Kleidung & Produkte entwerfen",
       "Texte zusammenfassen",
+      "Bilder mit KI",
       "KI fragen",
       "Aufgaben automatisieren",
       "3D-Modelle erstellen",
@@ -13968,9 +14308,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -14211,7 +14551,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
     "WarmMs": 7,
     "WindowsOnly": []
@@ -14480,9 +14820,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 6,
+    "WarmMs": 7,
     "WindowsOnly": []
   },
   {
@@ -14823,7 +15163,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
     "WarmMs": 6,
     "WindowsOnly": []
@@ -14900,9 +15240,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -14978,9 +15318,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -15075,9 +15415,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 39,
+    "WarmMs": 34,
     "WindowsOnly": []
   },
   {
@@ -15175,7 +15515,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -15258,9 +15598,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -15360,9 +15700,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -15629,9 +15969,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 20,
+    "WarmMs": 26,
     "WindowsOnly": []
   },
   {
@@ -15876,9 +16216,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -16132,7 +16472,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
     "WarmMs": 14,
     "WindowsOnly": []
@@ -16421,9 +16761,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 40,
+    "WarmMs": 44,
     "WindowsOnly": []
   },
   {
@@ -16631,9 +16971,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 40,
+    "WarmMs": 30,
     "WindowsOnly": []
   },
   {
@@ -16847,7 +17187,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -17070,9 +17410,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -17284,9 +17624,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -17567,7 +17907,7 @@
       "Studio-Fenster wie im System: Mac und GNOME – KI-Zeile ist die Titelleiste (Ampel bzw. Schließen, Titel, Zurück), Windows behält die Titelleiste; Schließen in der Kopfleiste schließt das Fenster",
       "Studio-Klick: Unreal nur geführt – kein Installieren-Knopf, offizieller Installer-Link",
       "Studio-Klick: fehlendes Programm → genau eine Frage 'Studio braucht X. Jetzt installieren?', 'Später' installiert nichts",
-      "Studio-Ordnung: 41 Studios in der Übersicht; jedes Ziel einer Zusammenlegung existiert und bleibt selbst sichtbar",
+      "Studio-Ordnung: 45 Studios in der Übersicht; jedes Ziel einer Zusammenlegung existiert und bleibt selbst sichtbar",
       "Studio-Ordnung: Das aufnehmende Studio und die Einstellungen zeigen die Leiste, der Knopf öffnet den Bereich",
       "Studio-Ordnung: Zusammengelegtes fehlt in der Übersicht, Suche findet es, SPEC-07 nirgends",
       "Studio-Seiten: Überschrift ist der Name aus dem Studio-Katalog",
@@ -17588,9 +17928,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 98,
+    "WarmMs": 100,
     "WindowsOnly": []
   },
   {
@@ -17805,9 +18145,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -18035,9 +18375,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -18250,9 +18590,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -18327,9 +18667,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -18607,9 +18947,9 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 41,
+    "WarmMs": 25,
     "WindowsOnly": []
   },
   {
@@ -18863,9 +19203,9 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 24,
+    "WarmMs": 32,
     "WindowsOnly": []
   },
   {
@@ -18948,9 +19288,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 9dda6f3)",
+    "Version": "0.9.36 (Stand 7f0f9e3)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 15,
     "WindowsOnly": []
   }
 ]
