@@ -58,11 +58,13 @@ public partial class MainWindow
     private List<StudioVerdict> StudioVerdicts(PerfProfile p) =>
         StudioCatalog.ById.Keys.Select(id => StudioNeeds.Verdict(id, p, HasProgram, ProgramName)).ToList();
 
-    private static (string Icon, string Color) FitLook(StudioFit f) => f switch
+    /// <summary>Statusfarbe als schlichter Punkt (Oberflächenumbau 13.11.2026: keine Emoji oder Sonderzeichen, kein Verlauf, kein Leuchten).</summary>
+    private static string FitColor(StudioFit f) => f switch
     {
-        StudioFit.Laeuft => ("✓", "#4ADE80"), StudioFit.Eingeschraenkt => ("•", "#FACC15"),
-        StudioFit.BrauchtProgramm => ("+", "#93C5FD"), _ => ("!", "#F87171"),
+        StudioFit.Laeuft => "#4ADE80", StudioFit.Eingeschraenkt => "#FACC15", StudioFit.BrauchtProgramm => "#93C5FD", _ => "#F87171",
     };
+
+    private static Control StatusDot(string color) => new Avalonia.Controls.Shapes.Ellipse { Width = 8, Height = 8, Fill = Brush.Parse(color), VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Left };
 
     private Control HardwareView()
     {
@@ -82,9 +84,9 @@ public partial class MainWindow
         var checks = new StackPanel { Name = "hw-checks", Spacing = 2 };
         foreach (var c in CompatibilityCheck.Items(_hw, HasProgram, _internet))
         {
-            var (dot, col) = c.State switch { CompatState.Ok => ("✓", "#4ADE80"), CompatState.Warn => ("•", "#FACC15"), CompatState.Fail => ("!", "#F87171"), _ => ("?", "#9DB0CF") };
+            var col = c.State switch { CompatState.Ok => "#4ADE80", CompatState.Warn => "#FACC15", CompatState.Fail => "#F87171", _ => "#9DB0CF" };
             checks.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("24,190,*"), Children = {
-                new TextBlock { Text = dot, Foreground = Brush.Parse(col), FontWeight = FontWeight.Bold },
+                StatusDot(col),
                 Pos(new TextBlock { Text = c.Title, Foreground = Text, FontSize = 12 }, 1),
                 Pos(new TextBlock { Text = $"{c.Value} – {c.Hint}", Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap }, 2) } });
         }
@@ -126,9 +128,9 @@ public partial class MainWindow
         list.Children.Add(P($"{v.Count(x => x.Fit == StudioFit.Laeuft)} laufen · {v.Count(x => x.Fit == StudioFit.Eingeschraenkt)} eingeschränkt · {v.Count(x => x.Fit == StudioFit.BrauchtProgramm)} brauchen ein Zusatzprogramm · {v.Count(x => x.Fit == StudioFit.ZuSchwach)} zu schwach", Text, 12));
         foreach (var x in v.OrderByDescending(x => x.Fit))
         {
-            var (icon, col) = FitLook(x.Fit);
+            var col = FitColor(x.Fit);
             list.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("24,220,*"), Children = {
-                new TextBlock { Text = icon, Foreground = Brush.Parse(col), FontWeight = FontWeight.Bold },
+                StatusDot(col),
                 Pos(new TextBlock { Text = StudioCatalog.ById[x.StudioId].Name, Foreground = Text, FontSize = 12 }, 1),
                 Pos(new TextBlock { Text = x.Text, Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap }, 2) } });
         }

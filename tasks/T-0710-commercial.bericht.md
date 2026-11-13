@@ -42,7 +42,9 @@ Ergebnisse:
 - Core vollständig: 2254 bestanden, 0 Fehler, 5 übersprungen
 - App gezielt (Programmkatalog, Hardware, Lizenz, SYS-13, Setup/Abbild, W2): 15/15 bestanden
 
-Die App-Tests liefen nach den Korrekturen **nicht** erneut vollständig, ein Lauf dauert 44 Minuten. Vor einem Merge ist ein vollständiger Lauf nötig.
+**App-Volltest 3** auf Stand `188714390` (`reports/t-0710/app-volltest-3.txt`, SHA-256 `2377214a40ffaf04ed95907b034cda7705a9c9b4f7b75d0fa77b749ff856cea4`): 1209 bestanden, 0 Fehler, 4 übersprungen, Exit 0, Dauer 40 m 33 s.
+
+Danach kam noch eine Änderung. Für den Oberflächenumbau von Sitzung A (keine Emoji oder Sonderzeichen) zeigt die Hardware-Seite den Status als farbige Punkte statt ✓ • ! ? +. Diese Seite wurde gezielt getestet (Hardware, Lizenz, Programmkatalog): 3/3 bestanden.
 
 **Vorab-Skript:** auf dem Entwicklungs-PC ausgeführt, Ergebnis Profil „Professional“ (vorläufige Grenzen).
 
