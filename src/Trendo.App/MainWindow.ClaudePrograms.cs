@@ -232,6 +232,7 @@ public partial class MainWindow
     /// <summary>Zusätzliche Knöpfe neben „✳ Claude“ auf jeder Studio-Seite: Markierung fragen, Weiter mit dem letzten Projekt.</summary>
     IEnumerable<Control> ClaudeBarExtras(string page, string studio)
     {
+        yield return KieBarButton(studio); // kie.ai in jedem Studio (Freigabe 13.11.2026), auch bei offenem Claude-Bereich
         if (Windows.Active?.Id is { } aw && ClaudeDockOpen(aw)) yield break; // offen: alles steht schon im Claude-Bereich
         if (page is "text" or "tabelle" or "praesentation")
         {

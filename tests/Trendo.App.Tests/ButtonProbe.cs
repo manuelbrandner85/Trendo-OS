@@ -23,6 +23,7 @@ public static class ButtonProbe
         ["prog-claude-ask"] = "Öffnet den Claude-Bereich mit der Markierung und verdeckt die Seite – eigener Test in ClaudeOperate_Ui.",
         ["auftrag-claude-markierung"] = "Öffnet den Claude-Bereich mit der Markierung – eigener Test in ClaudePrograms_Ui.",
         ["auftrag-claude-weiter"] = "Öffnet den Claude-Bereich mit dem letzten Projekt – eigener Test in ClaudePrograms_Ui.",
+        ["auftrag-kie"] = "Öffnet das kie.ai-Klappfeld (eigenes Fenster, im Test ohne Popup) – eigener Test des Feldes in Kie_Ui.",
     };
 
     public static IReadOnlyList<string> Require(MainWindow w, FakeLauncher launcher, string root, params string[] pages)

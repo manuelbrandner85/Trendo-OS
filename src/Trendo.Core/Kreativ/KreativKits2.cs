@@ -358,6 +358,9 @@ public static partial class ImageAiKit
         return BlockRx().IsMatch(prompt) ? "Solche Bilder malt Trendo nicht." : null;
     }
 
+    /// <summary>Nur die Inhaltssperre, ohne Längengrenze (für Liedtexte und andere lange Felder).</summary>
+    public static bool Offensive(string? text) => BlockRx().IsMatch(text ?? "");
+
     public static string FullPrompt(string prompt, string style) =>
         Styles.FirstOrDefault(s => s.Id == style) is { Prompt.Length: > 0 } s ? $"{prompt.Trim()}, {s.Prompt}" : prompt.Trim();
 
