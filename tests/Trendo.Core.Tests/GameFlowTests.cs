@@ -154,6 +154,59 @@ public class GameFlowTests
         Assert.True(GamePro.Accepted(d, "konzept"));
     }
 
+    [Fact(DisplayName = "Stories: erneutes Erzeugen nach fertigen Stories legt nichts doppelt an, nur Neues")]
+    public void Regenerate_keeps_done()
+    {
+        var d = Doc(); GameFlow.Generate(d); var i = Story(d, "Kernspiel"); CheckAll(d, i); GameFlow.Complete(d, i, GameFlow.Done);
+        var count = GameBoard.Tasks(d).Count;
+        ((JsonArray)d["characters"]!).Add(new JsonObject { ["name"] = "Krähe", ["role"] = "Begleiter", ["text"] = "Späherin" });
+        Assert.Equal(1, GameFlow.Generate(d));
+        Assert.Equal(count + 1, GameBoard.Tasks(d).Count);
+        Assert.Single(GameBoard.Tasks(d), t => ((string)t["title"]!).StartsWith("Kernspiel", StringComparison.Ordinal));
+    }
+
+    [Fact(DisplayName = "Stories: leere oder als Text geschriebene Kriterien hebeln die Abnahme nicht aus")]
+    public void Broken_criteria()
+    {
+        var d = new JsonObject { ["tasks"] = new JsonArray(
+            new JsonObject { ["title"] = "Leer", ["state"] = "Offen", ["criteria"] = new JsonArray() },
+            new JsonObject { ["title"] = "Text", ["state"] = "Offen", ["criteria"] = new JsonArray("A", 5, new JsonObject { ["text"] = "C", ["state"] = "ja" }) }) };
+        Assert.Throws<InvalidOperationException>(() => GameFlow.Complete(d, 0, GameFlow.Done));
+        GameFlow.Complete(d, 0, GameFlow.Blocked, "Kriterien fehlen");
+        var t = GameBoard.Tasks(d)[1];
+        Assert.Equal([("A", GameFlow.Open), ("(unlesbar)", GameFlow.Open), ("C", GameFlow.Yes)], GameFlow.Criteria(t));
+        Assert.Throws<InvalidOperationException>(() => GameFlow.Complete(d, 1, GameFlow.Done));
+        GameFlow.Check(d, 1, 0, true); GameFlow.Check(d, 1, 1, true); // Texte werden zu Einträgen
+        Assert.All(GameFlow.Criteria(GameBoard.Tasks(d)[1]), c => Assert.Equal(GameFlow.Yes, c.State));
+        GameFlow.Complete(d, 1, GameFlow.Done);
+        Assert.Equal("Fertig", GameBoard.StateOf(GameBoard.Tasks(d)[1]));
+    }
+
+    [Fact(DisplayName = "Board: ein Eintrag, der keine Aufgabe ist, verschiebt keine Knöpfe auf eine andere Story")]
+    public void Foreign_entries_do_not_shift()
+    {
+        var d = Doc(); GameFlow.Generate(d);
+        ((JsonArray)d["tasks"]!).Insert(0, JsonValue.Create("kaputt"));
+        var shown = GameBoard.Tasks(d); var i = shown.FindIndex(t => ((string)t["title"]!).StartsWith("Kernspiel", StringComparison.Ordinal));
+        GameFlow.Check(d, i, 0, true);
+        Assert.Equal(GameFlow.Yes, GameFlow.Criteria(GameBoard.Tasks(d)[i])[0].State);
+        Assert.StartsWith("Kernspiel", (string)GameBoard.Tasks(d)[i]["title"]!);
+    }
+
+    [Fact(DisplayName = "Tore: Risiko-Notiz wird beim Wiederöffnen und bei späterem Bestehen entfernt")]
+    public void Risks_cleaned()
+    {
+        var d = Doc(); GameFlow.SetRigor(d, "normal"); GameFlow.Generate(d); var i = Story(d, "Kernspiel");
+        CheckAll(d, i); GameFlow.Check(d, i, 2, false); GameFlow.Complete(d, i, GameFlow.DoneWithNotes, "Lücke");
+        GameFlow.Accept(d, "konzept", "angenommen");
+        Assert.Equal("angenommen", GameFlow.Risks(d)["konzept"]);
+        GameFlow.Reopen(d, "konzept");
+        Assert.Empty(GameFlow.Risks(d));
+        GameFlow.Check(d, i, 2, true); GameFlow.Complete(d, i, GameFlow.Done);
+        GameFlow.Accept(d, "konzept");
+        Assert.Empty(GameFlow.Risks(d));
+    }
+
     // ───────────── E4 ─────────────
 
     [Fact(DisplayName = "Prüfstufe: je Stufe genau die vorgesehenen Prüfungen")]

@@ -45,8 +45,13 @@ public static class GameFlow
     public static string ResultOf(JsonObject t) => S(t["result"]);
     public static string PhaseOf(JsonObject t) => S(t["phase"]);
 
+    /// <summary>Kriterien in derselben Reihenfolge wie im Dokument; ein Text statt eines Eintrags (z. B. von einer KI geschrieben) gilt als offenes Kriterium.</summary>
     public static List<(string Text, string State)> Criteria(JsonObject t) =>
-        [.. (t["criteria"] as JsonArray ?? []).OfType<JsonObject>().Select(c => (S(c["text"]), S(c["state"]) is var s && s is Yes or No ? s : Open))];
+        [.. (t["criteria"] as JsonArray ?? []).Select(c => c switch
+        {
+            JsonObject o => (S(o["text"]) is { Length: > 0 } x ? x : "(ohne Text)", S(o["state"]) is var s && s is Yes or No ? s : Open),
+            _ => (S(c) is { Length: > 0 } x ? x : "(unlesbar)", Open),
+        })];
 
     sealed record Story(string Epic, string Phase, string Title, string[] Criteria);
 
@@ -73,8 +78,11 @@ public static class GameFlow
     public static int Generate(JsonObject d)
     {
         var n = 0;
+        GameBoard.Clean(d);
         foreach (var s in Plan(d))
         {
+            // auch fertige Stories gleichen Namens zählen – erneutes Erzeugen legt nichts doppelt an
+            if (GameBoard.Tasks(d).Any(t => IsStory(t) && string.Equals(S(t["title"]), s.Title, StringComparison.OrdinalIgnoreCase))) continue;
             if (!GameBoard.Add(d, s.Title, "Story · " + s.Epic)) continue;
             var t = GameBoard.Tasks(d)[^1];
             t["epic"] = s.Epic; t["phase"] = s.Phase;
@@ -84,13 +92,14 @@ public static class GameFlow
         return n;
     }
 
-    static JsonObject Task(JsonObject d, int index) => (d["tasks"] as JsonArray)?.ElementAtOrDefault(index) as JsonObject ?? throw new ArgumentException("Diese Aufgabe gibt es nicht.");
+    static JsonObject Task(JsonObject d, int index) { GameBoard.Clean(d); return (d["tasks"] as JsonArray)?.ElementAtOrDefault(index) as JsonObject ?? throw new ArgumentException("Diese Aufgabe gibt es nicht."); }
 
     /// <summary>Ein Abnahmekriterium prüfen: erfüllt (true), nicht erfüllt (false) oder wieder offen (null). Ändert sich etwas, ist die Story wieder offen.</summary>
     public static void Check(JsonObject d, int index, int criterion, bool? ok)
     {
         var t = Task(d, index);
-        if ((t["criteria"] as JsonArray)?.ElementAtOrDefault(criterion) is not JsonObject c) throw new ArgumentException("Dieses Kriterium gibt es nicht.");
+        if (t["criteria"] is not JsonArray list || criterion < 0 || criterion >= list.Count) throw new ArgumentException("Dieses Kriterium gibt es nicht.");
+        if (list[criterion] is not JsonObject c) { c = new JsonObject { ["text"] = Criteria(t)[criterion].Text }; list[criterion] = c; } // Text in einen Eintrag umwandeln
         c["state"] = ok is null ? Open : ok.Value ? Yes : No;
         if (ResultOf(t).Length > 0) { t.Remove("result"); if (GameBoard.StateOf(t) == "Fertig") t["state"] = "In Arbeit"; }
     }
@@ -101,6 +110,7 @@ public static class GameFlow
         var t = Task(d, index);
         if (!IsStory(t)) throw new InvalidOperationException("Nur Stories mit Abnahmekriterien werden so abgeschlossen.");
         var crit = Criteria(t); note = (note ?? "").Trim();
+        if (crit.Count == 0 && result != Blocked) throw new InvalidOperationException("Diese Story hat keine Abnahmekriterien – erst Kriterien ergänzen.");
         switch (result)
         {
             case Done:
@@ -144,6 +154,19 @@ public static class GameFlow
         return notes.Count > 0 ? new(Concerns, notes) : new(Passed, reasons);
     }
 
+    /// <summary>Festgehaltene Risiko-Annahmen je Phase (Phase → Notiz).</summary>
+    public static Dictionary<string, string> Risks(JsonObject d) =>
+        (d["risks"] as JsonObject ?? []).Where(kv => S(kv.Value).Length > 0).ToDictionary(kv => kv.Key, kv => S(kv.Value));
+
+    /// <summary>Abnahme zurücknehmen (auch alle späteren Phasen) und deren Risiko-Notizen entfernen.</summary>
+    public static void Reopen(JsonObject d, string phase)
+    {
+        var i = Array.FindIndex(GamePro.Phases, p => p.Id == phase);
+        if (i < 0) return;
+        GamePro.Reopen(d, phase);
+        if (d["risks"] is JsonObject risks) foreach (var p in GamePro.Phases.Skip(i)) risks.Remove(p.Id);
+    }
+
     /// <summary>Phase abnehmen: bestanden rückt vor; Bedenken nur mit festgehaltener Risiko-Annahme (nicht in „streng“); nicht geprüft und durchgefallen nie.</summary>
     public static void Accept(JsonObject d, string phase, string riskNote = "")
     {
@@ -158,6 +181,7 @@ public static class GameFlow
             case Concerns when riskNote.Length == 0: throw new InvalidOperationException("Bedenken – bitte festhalten, warum das Risiko angenommen wird.");
         }
         GamePro.Accept(d, phase);
+        if (g.Verdict != Concerns) (d["risks"] as JsonObject)?.Remove(phase);
         if (g.Verdict == Concerns)
         {
             if (d["risks"] is not JsonObject risks) d["risks"] = risks = [];

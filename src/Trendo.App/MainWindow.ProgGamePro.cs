@@ -16,7 +16,7 @@ public partial class MainWindow
     /// <summary>Phase abnehmen nach der Prüfstufe des Projekts (T-0640); bei Bedenken nur mit festgehaltenem Risiko.</summary>
     public void GameAcceptPhase(ProgramDocument d, string phase, string risk = "") => d.Edit("Phase abnehmen", x => GameFlow.Accept(x, phase, risk));
     public void GameSetRigor(ProgramDocument d, string rigor) => d.Edit("Prüfstufe", x => GameFlow.SetRigor(x, rigor));
-    public void GameReopenPhase(ProgramDocument d, string phase) => d.Edit("Abnahme zurücknehmen", x => GamePro.Reopen(x, phase));
+    public void GameReopenPhase(ProgramDocument d, string phase) => d.Edit("Abnahme zurücknehmen", x => GameFlow.Reopen(x, phase));
 
     /// <summary>Phasen-Leiste: Konzept → … → Release; abgenommene Phasen mit Haken, die aktuelle hervorgehoben, darunter ihre Abnahme-Kriterien.</summary>
     private Control GamePhaseBar(ProgramDocument d, bool details)
@@ -48,6 +48,13 @@ public partial class MainWindow
             rigRow.Children.Add(b);
         }
         sp.Children.Add(rigRow);
+        var risks = GameFlow.Risks(d.Data);
+        if (risks.Count > 0)
+        {
+            var rp = new StackPanel { Name = "game-risks", Spacing = 2, Children = { P("Angenommene Risiken:", Muted, 11.5) } };
+            foreach (var p in GamePro.Phases.Where(p => risks.ContainsKey(p.Id))) rp.Children.Add(P($"⚠ {p.Label}: {risks[p.Id]}", Brush.Parse("#F5A524"), 11.5));
+            sp.Children.Add(rp);
+        }
         var allDone = GamePro.Phases.All(p => GamePro.Accepted(d.Data, p.Id));
         if (allDone) sp.Children.Add(P("✓ Alle Phasen abgenommen – das Spiel ist veröffentlicht.", Brush.Parse("#2FBF71"), 12.5));
         else

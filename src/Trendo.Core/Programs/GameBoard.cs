@@ -11,6 +11,13 @@ public static class GameBoard
     public static List<JsonObject> Tasks(JsonObject d) => [.. (d["tasks"] as JsonArray ?? []).OfType<JsonObject>()];
 
     static JsonArray Arr(JsonObject d) { if (d["tasks"] is not JsonArray a) { a = []; d["tasks"] = a; } return a; }
+
+    /// <summary>T-0640: Einträge, die keine Aufgaben sind (z. B. aus einer KI-Bearbeitung), entfernen – sonst zeigen Knopf und Index auf verschiedene Aufgaben.</summary>
+    public static void Clean(JsonObject d)
+    {
+        if (d["tasks"] is not JsonArray a) return;
+        for (var i = a.Count - 1; i >= 0; i--) if (a[i] is not JsonObject) a.RemoveAt(i);
+    }
     static string S(JsonNode? n) => n is JsonValue v && v.TryGetValue<string>(out var s) ? s : "";
     public static string StateOf(JsonObject t) => S(t["state"]) is var s && States.Contains(s) ? s : States[0];
 
@@ -26,7 +33,7 @@ public static class GameBoard
     /// <summary>Aufgabe eine Spalte weiter (+1) oder zurück (−1); bleibt an den Rändern stehen.</summary>
     public static void Move(JsonObject d, int index, int step)
     {
-        var a = Arr(d); if (index < 0 || index >= a.Count || a[index] is not JsonObject t) return;
+        Clean(d); var a = Arr(d); if (index < 0 || index >= a.Count || a[index] is not JsonObject t) return;
         var i = Math.Clamp(Array.IndexOf(States, StateOf(t)) + step, 0, States.Length - 1);
         // T-0640: Stories mit Abnahmekriterien werden nur über die Abnahme fertig; wer eine fertige Story zurückschiebt, öffnet sie wieder
         if (GameFlow.IsStory(t) && States[i] == "Fertig" && StateOf(t) != "Fertig" && GameFlow.ResultOf(t) is not (GameFlow.Done or GameFlow.DoneWithNotes))
@@ -35,7 +42,7 @@ public static class GameBoard
         t["state"] = States[i];
     }
 
-    public static void Remove(JsonObject d, int index) { var a = Arr(d); if (index >= 0 && index < a.Count) a.RemoveAt(index); }
+    public static void Remove(JsonObject d, int index) { Clean(d); var a = Arr(d); if (index >= 0 && index < a.Count) a.RemoveAt(index); }
 
     /// <summary>Hinweise der Spielprüfung und offene Meilensteine als Aufgaben übernehmen (ohne Doppelte). Liefert die Zahl neuer Aufgaben.</summary>
     public static int Seed(JsonObject d)
