@@ -40,7 +40,7 @@ try {
   };
   const call = (method, params = {}) => new Promise((r) => { const n = ++id; waiting.set(n, r); ws.send(JSON.stringify({ id: n, method, params })); });
   const run = async (expression) => { const r = await call("Runtime.evaluate", { expression, awaitPromise: true, returnByValue: true }); if (r.result?.exceptionDetails) throw new Error(r.result.exceptionDetails.exception?.description ?? "Skriptfehler"); return r.result?.result?.value; };
-  const until = async (expression, ms = 8000) => { for (let i = 0; i < ms / 50; i++) { if (await run(expression)) return true; await sleep(50); } return false; };
+  const until = async (expression, ms = 20000) => { for (let i = 0; i < ms / 50; i++) { if (await run(expression).catch(() => false)) return true; await sleep(50); } return false; };
 
   await call("Page.enable"); await call("Runtime.enable"); await call("Emulation.setFocusEmulationEnabled", { enabled: true });
   await call("Page.addScriptToEvaluateOnNewDocument", { source: "window.__m=[];window.invokeCSharpAction=(x)=>window.__m.push(JSON.parse(x));" });

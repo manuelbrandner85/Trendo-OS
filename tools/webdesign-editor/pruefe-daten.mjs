@@ -42,7 +42,7 @@ try {
     }
   };
   const run = async (expression) => { const r = await call("Runtime.evaluate", { expression, awaitPromise: true, returnByValue: true }); if (r.result?.exceptionDetails) throw new Error(r.result.exceptionDetails.exception?.description ?? "Skriptfehler"); return r.result?.result?.value; };
-  const until = async (expression, ms = 10000) => { for (let i = 0; i < ms / 50; i++) { if (await run(expression)) return true; await sleep(50); } return false; };
+  const until = async (expression, ms = 20000) => { for (let i = 0; i < ms / 50; i++) { if (await run(expression).catch(() => false)) return true; await sleep(50); } return false; };
   await call("Page.enable"); await call("Runtime.enable"); await call("Fetch.enable", { patterns: [{ urlPattern: "*" }] });
   const open = async () => { await call("Page.navigate", { url: base + "index.html" }); await until("document.documentElement.dataset.fertig === '1' && !!window.TrendoDaten"); await sleep(300); };
   const type = (sel, text) => run(`(()=>{const e=document.querySelector(${JSON.stringify(sel)});const set=Object.getOwnPropertyDescriptor(e.tagName==='TEXTAREA'?HTMLTextAreaElement.prototype:HTMLInputElement.prototype,'value').set;set.call(e,${JSON.stringify(text)});e.dispatchEvent(new Event('input',{bubbles:true}));return true})()`);

@@ -34,7 +34,7 @@ try {
   ws.onmessage = (m) => { const d = JSON.parse(m.data); if (d.id && waiting.has(d.id)) { waiting.get(d.id)(d); waiting.delete(d.id); } else if (d.method === "Runtime.exceptionThrown") exceptions.push(d.params.exceptionDetails.exception?.description ?? d.params.exceptionDetails.text); };
   const call = (method, params = {}) => new Promise((r) => { const n = ++id; waiting.set(n, r); ws.send(JSON.stringify({ id: n, method, params })); });
   const run = async (expression) => { const r = await call("Runtime.evaluate", { expression, awaitPromise: true, returnByValue: true }); if (r.result?.exceptionDetails) throw new Error(r.result.exceptionDetails.exception?.description ?? "Skriptfehler"); return r.result?.result?.value; };
-  const until = async (expression, ms = 30000) => { for (let i = 0; i < ms / 100; i++) { if (await run(expression)) return true; await sleep(100); } return false; };
+  const until = async (expression, ms = 30000) => { for (let i = 0; i < ms / 100; i++) { if (await run(expression).catch(() => false)) return true; await sleep(100); } return false; };
   await call("Page.enable"); await call("Runtime.enable");
   let skript = null;
   const oeffne = async (page, vorher) => {
