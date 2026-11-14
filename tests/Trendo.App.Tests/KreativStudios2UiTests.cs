@@ -146,6 +146,10 @@ public class KreativStudios2_Ui
                 Assert.Equal(2, calls.Count); Assert.NotEqual(calls[0].Seed, calls[1].Seed);
                 Assert.Contains("watercolor", calls[0].P);
                 Assert.All(d.List("images"), n => Assert.True(File.Exists((string)n! + ".json")));
+                // T-0619: der Bildordner steht im Dokument – nach dem Wiederöffnen (neue Dokument-Kennung) findet die Galerie die Bilder noch
+                var dir = d.Text("dir");
+                Assert.Matches("^[0-9a-f]{32}$", dir);
+                Assert.All(d.List("images"), n => Assert.Contains(Path.Combine("ki-bilder", dir), (string)n!));
                 w.Show(K); Settle();
                 Assert.Equal(2, w.Find<WrapPanel>("img-gallery").Children.Count);
                 using (var z = ZipFile.OpenRead(Export(w, K, "zip", root))) Assert.Equal(4, z.Entries.Count);
