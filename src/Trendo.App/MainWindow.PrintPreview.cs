@@ -53,7 +53,7 @@ public partial class MainWindow
         _prMeshFile = f; _prMesh = null; _prReport = null; _prLayer = -1; _prOrient = ""; _prSingle = null; _prScale = 100; PrintEstimate = null;
         if (Path.GetExtension(f).ToLowerInvariant() is not (".stl" or ".obj" or ".3mf" or ".glb" or ".gltf")) return;
         try { PrintSet(PrintPrep.Load(f), "wie geladen"); }
-        catch (Exception ex) when (ex is InvalidOperationException or IOException or InvalidDataException or System.Xml.XmlException or FormatException) { _prMsg = "Vorschau nicht möglich: " + ex.Message; }
+        catch (Exception ex) when (ex is InvalidOperationException or IOException or InvalidDataException or System.Xml.XmlException or FormatException) { _prMsg = "Vorschau nicht möglich: " + Trendo.Core.FriendlyError.Say(ex); }
     }
 
     void PrintSet(Mesh m, string orient, bool keepSingle = false)

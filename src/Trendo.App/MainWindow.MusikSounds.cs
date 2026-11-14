@@ -57,7 +57,7 @@ public partial class MainWindow
             _msSel = m.Id; _msMsg = $"✓ {note} – im Studio als Spur nutzbar (Lied → Profi → „Im Mischpult öffnen“).";
             return Songs.Get(m.Id);
         }
-        catch (InvalidOperationException e) { _msMsg = "Sound nicht brauchbar: " + e.Message + " Das Rohstück liegt in der Bibliothek."; return Songs.Get(m.Id); }
+        catch (InvalidOperationException e) { _msMsg = "Sound nicht brauchbar: " + Trendo.Core.FriendlyError.Say(e) + " Das Rohstück liegt in der Bibliothek."; return Songs.Get(m.Id); }
         finally { Show(MS); }
     }
 

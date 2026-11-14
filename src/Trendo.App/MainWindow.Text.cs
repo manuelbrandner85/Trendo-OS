@@ -193,12 +193,12 @@ public partial class MainWindow
         newBtn.ContextMenu = menu; newBtn.Click += (_, _) => menu.Open(newBtn);
         bar.Children.Add(newBtn);
         var open = new Button { Name = "text-open", Content = "Öffnen …", Focusable = false, Margin = new Thickness(0, 0, 4, 4), Padding = new Thickness(9, 4) };
-        open.Click += async (_, _) => { if (await PickText(false, "") is { } f) { try { TextOpen(f); } catch (Exception ex) when (ex is IOException or InvalidDataException or ArgumentException or System.Xml.XmlException) { _txMsg = "Öffnen ging nicht: " + ex.Message; } } Show("text"); };
+        open.Click += async (_, _) => { if (await PickText(false, "") is { } f) { try { TextOpen(f); } catch (Exception ex) when (ex is IOException or InvalidDataException or ArgumentException or System.Xml.XmlException) { _txMsg = "Öffnen ging nicht: " + Trendo.Core.FriendlyError.Say(ex); } } Show("text"); };
         bar.Children.Add(open);
         var save = new Button { Name = "text-save", Content = "Speichern", Focusable = false, Background = Accent, Margin = new Thickness(0, 0, 4, 4), Padding = new Thickness(9, 4) };
-        save.Click += (_, _) => { try { TextSaveAs(TextPath ?? DefaultTextName(".docx")); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _txMsg = "Nicht gespeichert: " + ex.Message; } Show("text"); };
+        save.Click += (_, _) => { try { TextSaveAs(TextPath ?? DefaultTextName(".docx")); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _txMsg = "Nicht gespeichert: " + Trendo.Core.FriendlyError.Say(ex); } Show("text"); };
         bar.Children.Add(save);
-        bar.Children.Add(TB("text-pdf", "Als PDF", () => { try { var f = DefaultTextName(".pdf"); var n = TextPdf.Export(TextDocument, f); _txMsg = $"PDF gespeichert: {Path.GetFileName(f)} ({n} Seiten)"; _core.Audit.Append(Principal.LocalOwner.Name, "text.pdf", Path.GetFileName(f)); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException) { _txMsg = "PDF ging nicht: " + ex.Message; } }, "Als PDF speichern"));
+        bar.Children.Add(TB("text-pdf", "Als PDF", () => { try { var f = DefaultTextName(".pdf"); var n = TextPdf.Export(TextDocument, f); _txMsg = $"PDF gespeichert: {Path.GetFileName(f)} ({n} Seiten)"; _core.Audit.Append(Principal.LocalOwner.Name, "text.pdf", Path.GetFileName(f)); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException) { _txMsg = "PDF ging nicht: " + Trendo.Core.FriendlyError.Say(ex); } }, "Als PDF speichern"));
         bar.Children.Add(TB("text-print", "Drucken", TextPrint, "Drucken (über PDF)"));
         bar.Children.Add(new Border { Width = 10 });
         bar.Children.Add(TB("text-undo", "↶", TextUndo, "Rückgängig (Strg+Z)", enabled: _txUndo.Count > 0));
@@ -243,7 +243,7 @@ public partial class MainWindow
         var bar = new WrapPanel { IsVisible = _txMore, Name = "text-more-bar" };
         var p = CurPara();
         var saveAs = new Button { Name = "text-saveas", Content = "Speichern unter …", Focusable = false, Margin = new Thickness(0, 0, 4, 4), Padding = new Thickness(9, 4) };
-        saveAs.Click += async (_, _) => { if (await PickText(true, Path.GetFileName(TextPath ?? DefaultTextName(".docx"))) is { } f) { try { TextSaveAs(f); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException) { _txMsg = "Nicht gespeichert: " + ex.Message; } } Show("text"); };
+        saveAs.Click += async (_, _) => { if (await PickText(true, Path.GetFileName(TextPath ?? DefaultTextName(".docx"))) is { } f) { try { TextSaveAs(f); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException) { _txMsg = "Nicht gespeichert: " + Trendo.Core.FriendlyError.Say(ex); } } Show("text"); };
         bar.Children.Add(saveAs);
         var recent = TextRecent();
         if (recent.Count > 0)
@@ -313,7 +313,7 @@ public partial class MainWindow
             _txMsg = "Druckansicht geöffnet – dort Drucker wählen.";
             _core.Audit.Append(Principal.LocalOwner.Name, "text.print", Path.GetFileName(f));
         }
-        catch (Exception ex) when (ex is IOException or System.ComponentModel.Win32Exception or InvalidOperationException) { _txMsg = "Drucken ging nicht: " + ex.Message; }
+        catch (Exception ex) when (ex is IOException or System.ComponentModel.Win32Exception or InvalidOperationException) { _txMsg = "Drucken ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
     }
 
     // ---------- Seite ----------

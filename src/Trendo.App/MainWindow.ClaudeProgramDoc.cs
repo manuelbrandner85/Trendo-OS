@@ -46,7 +46,7 @@ public partial class MainWindow
             _progMsg[page] = $"Claude arbeitet in „{doc.Title}“ – Änderungen erscheinen hier live.";
             _core.Audit.Append(Principal.LocalOwner.Name, "claude.programm.dokument", $"{studio} · {Path.GetFileName(doc.Path)}");
         }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException or InvalidDataException) { _claudeMsg = "Das Programm-Dokument ließ sich nicht anlegen: " + e.Message; return chat; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException or InvalidDataException) { _claudeMsg = "Das Programm-Dokument ließ sich nicht anlegen: " + Trendo.Core.FriendlyError.Say(e); return chat; }
         ClaudeMoveToPage(dock, page);
         return chat;
     }
@@ -72,21 +72,6 @@ public partial class MainWindow
 
     /// <summary>Was Claude neben dem Dokument gebaut hat, im Programm zeigen – im Spiele-Programm das spielbare Spiel (Vorschaubild, Spielen, Ordner).</summary>
     Avalonia.Controls.Control? ClaudeProgramExtra(string key) => key == GK && _gameClaude is { } gd && Directory.Exists(gd) ? ClaudeGameCard(gd) : null;
-
-    /// <summary>„✳ Claude“ und „Markierung“ in der Kopfzeile jedes Fachprogramms (statt einer eigenen Menüband-Gruppe, die die Arbeitsfläche kleiner machen würde).</summary>
-    Avalonia.Controls.Control ClaudeBand(string key)
-    {
-        var sp = new Avalonia.Controls.StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 4, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center };
-        if (ClaudeStudioOf(key) is not { } cst) return sp;
-        Avalonia.Controls.Button B(string name, string label, string tip, Action a)
-        {
-            var b = new Avalonia.Controls.Button { Name = name, Content = label, FontSize = 12, Padding = new Avalonia.Thickness(10, 3) }; // schlichter Standardknopf (Vorgabe 13.11.2026)
-            Avalonia.Controls.ToolTip.SetTip(b, tip); b.Click += (_, _) => a(); return b;
-        }
-        sp.Children.Add(B("prog-claude", "Claude", "Claude für dieses Programm – kennt dein offenes Dokument und kann das Programm für dich bedienen (erst nach deinem „Ausführen“)", () => { ClaudeOpenFor(cst); Show(key); }));
-        sp.Children.Add(B("prog-claude-ask", "Markierung", "Was du markiert hast, mit Claude besprechen (Strg+Umschalt+A, auch per Rechtsklick „Claude fragen“)", () => ClaudeAskSelection(key)));
-        return sp;
-    }
 
     /// <summary>Für Tests: Programm-Seite und Dokument des offenen Claude-Projekts.</summary>
     public (string? Page, string? Doc) ClaudeProjectProgram() => Windows.Active?.Id is { } id && _claudeDocks.TryGetValue(id, out var d) ? (ClaudeProgramPage(d), ClaudeChatCurrent()?.Doc) : (null, null);

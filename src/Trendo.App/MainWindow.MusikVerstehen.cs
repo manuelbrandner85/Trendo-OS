@@ -106,7 +106,7 @@ public partial class MainWindow
             Say("✓ Verstanden: " + SongUnderstanding.Summary(res) + (words is null && vocal is not null ? " – genauer mit einem Whisper-Modell aus der KI-Bibliothek." : ""));
             return res;
         }
-        catch (Exception e) when (e is IOException or System.Text.Json.JsonException or InvalidOperationException) { Say("Verstehen ging nicht: " + e.Message); return null; }
+        catch (Exception e) when (e is IOException or System.Text.Json.JsonException or InvalidOperationException) { Say("Verstehen ging nicht: " + Trendo.Core.FriendlyError.Say(e)); return null; }
         finally { _msUnderstanding = false; if (CurrentView == MS) Show(MS); }
     }
 

@@ -108,7 +108,7 @@ public partial class MainWindow
             if (Clipboard is { } cb && r.Text.Length > 0) _ = cb.SetTextAsync(r.Text);
             PdfSay(r.Text.Trim().Length == 0 ? "Auf dieser Seite wurde kein Text erkannt." : r.Message + " Text ist kopiert.");
         }
-        catch (Exception ex) when (ex is IOException or InvalidOperationException or UnauthorizedAccessException) { PdfSay("Texterkennung fehlgeschlagen: " + ex.Message); }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or UnauthorizedAccessException) { PdfSay("Texterkennung fehlgeschlagen: " + Trendo.Core.FriendlyError.Say(ex)); }
         finally { _pdfOcrBusy = false; try { Directory.Delete(dir, true); } catch (IOException) { } Show("pdf"); }
     }
 
@@ -131,7 +131,7 @@ public partial class MainWindow
             PdfSay($"✓ Durchsuchbar gespeichert: {Path.GetFileName(outFile)} ({n} Seiten) – Suchen und Kopieren gehen jetzt.");
             return outFile;
         }
-        catch (Exception ex) when (ex is IOException or InvalidOperationException or UnauthorizedAccessException) { PdfSay("Texterkennung fehlgeschlagen: " + ex.Message); return null; }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or UnauthorizedAccessException) { PdfSay("Texterkennung fehlgeschlagen: " + Trendo.Core.FriendlyError.Say(ex)); return null; }
         finally { _pdfOcrBusy = false; try { Directory.Delete(dir, true); } catch (IOException) { } Show("pdf"); }
     }
 }

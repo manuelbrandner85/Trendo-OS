@@ -104,8 +104,7 @@ public partial class MainWindow
             ClaudeAcceptDrop(cc, () => cs); // Dateien oder Text auf „✳ Claude“ ziehen
             cc.Margin = new Avalonia.Thickness(0);
             var slim = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Avalonia.Thickness(8, 6, 8, 2) };
-            foreach (var x in ClaudeBarExtras(key, cs)) slim.Children.Add(x);
-            slim.Children.Add(cc);
+            slim.Children.Add(KiMenu([cc, .. KiMenuOrder(ClaudeBarExtras(key, cs))], cs)); // E1: ein Knopf „KI ▾“
             DockPanel.SetDock(slim, Avalonia.Controls.Dock.Top);
             view.HorizontalAlignment = HorizontalAlignment.Stretch; view.VerticalAlignment = VerticalAlignment.Stretch;
             return new DockPanel { LastChildFill = true, Children = { slim, view } };
@@ -119,6 +118,36 @@ public partial class MainWindow
         dock.Children.Add(view);
         return dock;
     }
+
+    /// <summary>E1 (T-0616, freigegeben 14.11.2026): ein Knopf „KI ▾“ neben „Los“ statt einer Reihe von KI-Knöpfen – im Klappmenü Claude, Markierung an Claude,
+    /// Weiter mit dem letzten Projekt, kie.ai und Hinzufügen. Die Einträge behalten ihre Namen (Tests, Claude-Brücke) und stehen auch geschlossen im logischen Baum.
+    /// Einträge mit eigenem Klappfeld (kie.ai) öffnen es am Knopf „KI ▾“.</summary>
+    Control KiMenu(IReadOnlyList<Control> items, string? dropStudio)
+    {
+        var ki = new Button { Name = "ki-menu", Content = "KI ▾", Height = 32, MinWidth = 64 };
+        ToolTip.SetTip(ki, "Claude, kie.ai und weitere KI-Hilfen für dieses Studio – Dateien oder Text hierher ziehen gibt sie Claude");
+        AutomationProperties.SetName(ki, "KI-Menü");
+        var list = new StackPanel { Name = "ki-menu-list", Spacing = 2, MinWidth = 240 };
+        var pop = new Avalonia.Controls.Primitives.Popup { Name = "ki-menu-popup", PlacementTarget = ki, Placement = Avalonia.Controls.PlacementMode.BottomEdgeAlignedRight, IsLightDismissEnabled = true,
+            Child = new Border { Background = GlassStrong, BorderBrush = Edge, BorderThickness = new Avalonia.Thickness(1), CornerRadius = new Avalonia.CornerRadius(10), Padding = new Avalonia.Thickness(6), Child = list } };
+        foreach (var it in items)
+        {
+            if (it is Button b)
+            {
+                b.Height = double.NaN; b.MinHeight = 30; b.HorizontalAlignment = HorizontalAlignment.Stretch; b.HorizontalContentAlignment = HorizontalAlignment.Left;
+                b.Background = Brushes.Transparent; b.BorderThickness = new Avalonia.Thickness(0); b.Padding = new Avalonia.Thickness(10, 5);
+                if (b.Flyout is { } fl) { b.Flyout = null; b.Click += (_, _) => { pop.IsOpen = false; fl.ShowAt(ki); }; }
+                else b.Click += (_, _) => pop.IsOpen = false;
+            }
+            list.Children.Add(it);
+        }
+        ki.Click += (_, _) => pop.IsOpen = !pop.IsOpen;
+        if (dropStudio is not null) ClaudeAcceptDrop(ki, () => dropStudio); // ziehen auf „KI ▾“ wie früher auf „Claude“
+        return new Panel { Name = "ki-menu-host", VerticalAlignment = VerticalAlignment.Center, Children = { ki, pop } };
+    }
+
+    /// <summary>Reihenfolge im KI-Menü: Claude-Einträge zuerst, dann kie.ai.</summary>
+    static IEnumerable<Control> KiMenuOrder(IEnumerable<Control> extras) => extras.OrderBy(c => c.Name == "auftrag-kie" ? 1 : 0);
 
     /// <summary>Hinweis in der Auftragszeile mit einem Beispiel, das zum Studio passt.</summary>
     internal static string PromptHint(string studio) => PromptChips.TryGetValue(studio, out var chips) && chips.Length > 0
@@ -291,7 +320,7 @@ public partial class MainWindow
             catch (Exception ex)
             {
                 status.Text = "Fehlgeschlagen";
-                detail.Text = ex.Message;
+                detail.Text = Trendo.Core.FriendlyError.Say(ex); ToolTip.SetTip(detail, Trendo.Core.FriendlyError.From(ex).Technical); // E7
                 detail.IsVisible = true;
             }
             finally { check.IsEnabled = true; }
@@ -313,7 +342,7 @@ public partial class MainWindow
             catch (Exception ex)
             {
                 status.Text = "Fehlgeschlagen";
-                detail.Text = ex.Message;
+                detail.Text = Trendo.Core.FriendlyError.Say(ex); ToolTip.SetTip(detail, Trendo.Core.FriendlyError.From(ex).Technical); // E7
                 detail.IsVisible = true;
             }
         };
@@ -329,7 +358,7 @@ public partial class MainWindow
             catch (Exception ex)
             {
                 status.Text = "Fehlgeschlagen";
-                detail.Text = ex.Message;
+                detail.Text = Trendo.Core.FriendlyError.Say(ex); ToolTip.SetTip(detail, Trendo.Core.FriendlyError.From(ex).Technical); // E7
                 detail.IsVisible = true;
             }
             finally { approve.IsEnabled = true; }
@@ -345,7 +374,7 @@ public partial class MainWindow
             catch (Exception ex)
             {
                 status.Text = "Fehlgeschlagen";
-                detail.Text = ex.Message;
+                detail.Text = Trendo.Core.FriendlyError.Say(ex); ToolTip.SetTip(detail, Trendo.Core.FriendlyError.From(ex).Technical); // E7
                 detail.IsVisible = true;
             }
         };
@@ -363,7 +392,7 @@ public partial class MainWindow
             catch (Exception ex)
             {
                 status.Text = "Fehlgeschlagen";
-                detail.Text = ex.Message;
+                detail.Text = Trendo.Core.FriendlyError.Say(ex); ToolTip.SetTip(detail, Trendo.Core.FriendlyError.From(ex).Technical); // E7
                 detail.IsVisible = true;
             }
             finally { go.IsEnabled = true; }
@@ -385,7 +414,7 @@ public partial class MainWindow
             catch (Exception ex)
             {
                 status.Text = "Fehlgeschlagen";
-                detail.Text = ex.Message;
+                detail.Text = Trendo.Core.FriendlyError.Say(ex); ToolTip.SetTip(detail, Trendo.Core.FriendlyError.From(ex).Technical); // E7
                 detail.IsVisible = true;
             }
         };
@@ -435,20 +464,24 @@ public partial class MainWindow
             Spacing = 6,
             Children = { check, go, answer, approve, undo, cancel, mode }
         };
+        // E1 (T-0616): alle KI-Hilfen in einem Knopf „KI ▾“ neben „Los“
+        var menu = new List<Control>();
+        // Wunsch 01.11.2026: in jedem Studio – dein echtes Claude Code rechts im Studio-Fenster, im Projektordner, mit dem eingetippten Auftrag
+        var cc = new Button { Name = "auftrag-claude", Content = Windows.Active?.Id is { } aw && ClaudeDockOpen(aw) ? "Claude schließen" : "Claude", Height = 32 };
+        ToolTip.SetTip(cc, "Claude mit deinem Abo öffnen – wie im Web und in der App, mit eigenem Projekt für dieses Studio");
+        cc.Click += (_, _) => ClaudeDockToggle(studio, box.Text);
+        if (key is not null) menu.Add(cc); // ohne Seite (3D-Spalte): Claude sitzt schon oben rechts
+        string? drop = null;
+        if (key is not null && ClaudeStudioOf(key) is { } ccs) { drop = ccs; ClaudeAcceptDrop(cc, () => ccs); menu.AddRange(KiMenuOrder(ClaudeBarExtras(key, ccs))); }
         // A2: Studios, die Programme brauchen, bekommen „Hinzufügen …“ direkt in ihrer Leiste
         if (StudioTools.Required.ContainsKey(studio))
         {
-            var add = new Button { Name = "auftrag-hinzufuegen", Content = "Hinzufügen …", Height = 32 };
+            var add = new Button { Name = "auftrag-hinzufuegen", Content = "Programme hinzufügen …", Height = 32 };
             ToolTip.SetTip(add, "Programme und KI, die dieses Studio braucht, finden und installieren");
             add.Click += (_, _) => OpenAddHubFor(studio);
-            buttons.Children.Add(add);
+            menu.Add(add);
         }
-        // Wunsch 01.11.2026: in jedem Studio – dein echtes Claude Code rechts im Studio-Fenster, im Projektordner, mit dem eingetippten Auftrag
-        var cc = new Button { Name = "auftrag-claude", Content = Windows.Active?.Id is { } aw && ClaudeDockOpen(aw) ? "Claude ✕" : "Claude", Height = 32 };
-        ToolTip.SetTip(cc, "Claude mit deinem Abo öffnen – wie im Web und in der App, mit eigenem Projekt für dieses Studio");
-        cc.Click += (_, _) => ClaudeDockToggle(studio, box.Text);
-        if (key is not null && ClaudeStudioOf(key) is { } ccs) { ClaudeAcceptDrop(cc, () => ccs); foreach (var x in ClaudeBarExtras(key, ccs)) buttons.Children.Add(x); }
-        if (key is not null) buttons.Children.Add(cc); // ohne Seite (3D-Spalte): Claude sitzt schon oben rechts
+        if (menu.Count > 0) buttons.Children.Add(KiMenu(menu, drop));
         var spark = new TextBlock { Text = "✨", FontSize = 16, VerticalAlignment = VerticalAlignment.Center, Margin = new Avalonia.Thickness(4, 0, 0, 0) };
         ToolTip.SetTip(spark, "Sag der Trendo KI in deinen Worten, was dieses Studio für dich tun soll.");
         box.MaxHeight = 64; box.MinHeight = 34;

@@ -229,14 +229,14 @@ public partial class MainWindow
         _core.Audit.Append(Principal.LocalOwner.Name, "claude.weiter", studio);
     }
 
-    /// <summary>Zusätzliche Knöpfe neben „✳ Claude“ auf jeder Studio-Seite: Markierung fragen, Weiter mit dem letzten Projekt.</summary>
+    /// <summary>Zusätzliche Einträge im Menü „KI ▾“ jeder Studio-Seite: kie.ai, Markierung an Claude, Weiter mit dem letzten Projekt.</summary>
     IEnumerable<Control> ClaudeBarExtras(string page, string studio)
     {
         yield return KieBarButton(studio); // kie.ai in jedem Studio (Freigabe 13.11.2026), auch bei offenem Claude-Bereich
         if (Windows.Active?.Id is { } aw && ClaudeDockOpen(aw)) yield break; // offen: alles steht schon im Claude-Bereich
-        if (page is "text" or "tabelle" or "praesentation")
+        if (page is "text" or "tabelle" or "praesentation" || Programs.ContainsKey(page)) // E1: auch in jedem Fachprogramm (früher eigener Knopf im Programmband)
         {
-            var ask = new Button { Name = "auftrag-claude-markierung", Content = "Markierung fragen", Height = 32 };
+            var ask = new Button { Name = "auftrag-claude-markierung", Content = "Markierung an Claude", Height = 32 };
             ToolTip.SetTip(ask, "Was du markiert hast, mit Claude besprechen (Strg+Umschalt+A) – auch ziehen geht: Text oder Dateien einfach auf „Claude“ ziehen");
             ask.Click += (_, _) => ClaudeAskSelection(page);
             yield return ask;

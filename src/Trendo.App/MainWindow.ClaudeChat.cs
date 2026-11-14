@@ -810,7 +810,7 @@ public partial class MainWindow
             if (fresh.Data.ToJsonString() == LiveTarget(dock.Page, doc)) return; // schon übernommen (oder wird gerade live eingespielt)
             ClaudeApplyLive(dock, doc, fresh.Data); // live – viele neue Teile erscheinen nacheinander
         }
-        catch (InvalidDataException e) { _claudeMsg = "Claudes Änderung ließ sich nicht übernehmen: " + e.Message; }
+        catch (InvalidDataException e) { _claudeMsg = "Claudes Änderung ließ sich nicht übernehmen: " + Trendo.Core.FriendlyError.Say(e); }
         if (!dock.Max) Show(CurrentView);
     }
 
@@ -957,7 +957,7 @@ public partial class MainWindow
             var snapDir = Path.Combine(_core.DataRoot, "claude-chats", "sicherung", c.Id);
             if (Directory.Exists(snapDir)) Directory.Delete(snapDir, true); // eigene Sicherungskopie von Trendo, keine Nutzerdaten
         }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { _claudeMsg = "Ordner ließ sich nicht verschieben: " + e.Message; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { _claudeMsg = "Ordner ließ sich nicht verschieben: " + Trendo.Core.FriendlyError.Say(e); }
         _core.Audit.Append(Principal.LocalOwner.Name, "claude.chat.geloescht", c.Title);
         if (ui.ChatId == id) { ui.ChatId = CChats.All(ChatStudio(dock)).FirstOrDefault()?.Id; if (ui.LastSnapshotChat == id) ui.LastSnapshot = null; }
         RenderChatList(dock); RenderChat(dock);

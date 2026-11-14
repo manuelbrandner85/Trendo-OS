@@ -101,7 +101,7 @@ public partial class MainWindow
                 },
             });
         }
-        catch (Exception e) when (e is IOException or InvalidOperationException) { _n8nMsg = "⚠ Trendo-Schnittstelle konnte nicht starten: " + e.Message; }
+        catch (Exception e) when (e is IOException or InvalidOperationException) { _n8nMsg = "⚠ Trendo-Schnittstelle konnte nicht starten: " + Trendo.Core.FriendlyError.Say(e); }
     }
 
     public async Task AutomationStart(string which)
@@ -293,7 +293,7 @@ public partial class MainWindow
         foreach (var w in Workflows.All()) { var ww = w; right.Children.Add(B($"n8n-from-{k++}", "↦ " + w.Name, () => N8nPreview(N8n.FromTrendo(ww, AutoToken), "Trendo-Ablauf"))); }
         right.Children.Add(new TextBlock { Text = "Von Claude gebaut", Foreground = Text, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 6, 0, 0) });
         var files = N8nClaudeFiles(); var ci = 0;
-        foreach (var f in files) { var ff = f; right.Children.Add(B($"n8n-claude-{ci++}", "✳ " + Path.GetFileName(f), () => { try { N8nPreview(JsonNode.Parse(File.ReadAllText(ff).Replace("TRENDO_SCHLUESSEL", AutoToken)) as JsonObject ?? [], "Claude: " + Path.GetFileName(ff)); } catch (System.Text.Json.JsonException e) { _n8nMsg = "⚠ Claudes Datei ist kein gültiger Ablauf: " + e.Message; Show("ablaeufe"); } })); }
+        foreach (var f in files) { var ff = f; right.Children.Add(B($"n8n-claude-{ci++}", "✳ " + Path.GetFileName(f), () => { try { N8nPreview(JsonNode.Parse(File.ReadAllText(ff).Replace("TRENDO_SCHLUESSEL", AutoToken)) as JsonObject ?? [], "Claude: " + Path.GetFileName(ff)); } catch (System.Text.Json.JsonException e) { _n8nMsg = "⚠ Claudes Datei ist kein gültiger Ablauf: " + Trendo.Core.FriendlyError.Say(e); Show("ablaeufe"); } })); }
         if (files.Count == 0) right.Children.Add(P("Sag Claude, welchen Ablauf du brauchst – er legt ihn als „….n8n.json“ ab und er erscheint hier zur Prüfung.", Muted, 11));
 
         var grid = new Grid { Name = "n8n-workspace", ColumnDefinitions = new ColumnDefinitions("260,10,*,10,290") };

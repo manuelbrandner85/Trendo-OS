@@ -230,6 +230,7 @@ public class SPEC01_Ui
         Assert.Equal(500, dim.Length, 0); Assert.InRange(dim.Offset, -90, -70);
 
         // Text setzen und rechts ändern
+        Get<Button>(w, "arch-tool-text").BringIntoView(); Settle(); // Werkzeugleiste scrollt, wenn das Fenster niedrig ist
         RealClick(w, Get<Button>(w, "arch-tool-text"));
         Click(w, At(w, 250, 300));
         Assert.Single(Plan(w).Labels);

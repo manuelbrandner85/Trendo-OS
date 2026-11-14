@@ -89,7 +89,7 @@ public partial class MainWindow
             WebDesignAssetImport(file, "schrift", family, "Fontsource", license, "", "https://fontsource.org/fonts/" + id, "schrift", family);
             try { Directory.Delete(tmp, true); } catch (IOException) { }
         }
-        catch (Exception e) when (e is HttpRequestException or TaskCanceledException or InvalidOperationException or System.Text.Json.JsonException or IOException) { _wdNote = "Schrift ließ sich nicht holen: " + e.Message; Show("dev"); }
+        catch (Exception e) when (e is HttpRequestException or TaskCanceledException or InvalidOperationException or System.Text.Json.JsonException or IOException) { _wdNote = "Schrift ließ sich nicht holen: " + Trendo.Core.FriendlyError.Say(e); Show("dev"); }
     }
 
     public void WebDesignUseFont(string family) =>
@@ -117,14 +117,14 @@ public partial class MainWindow
             _core.Audit.Append(Principal.LocalOwner.Name, "web.visuell.modellpruefung", string.Join(", ", results.Select(r => $"{r.Model}={(r.Passed ? "ok" : "nein")}")));
             WebDesignBenchNote = WebDesignModelBench.Recommend(WebHardware, WebDesignModelBench.Load(_core.DataRoot)).Note;
         }
-        catch (Exception e) when (e is HttpRequestException or TaskCanceledException or InvalidOperationException) { WebDesignBenchNote = "Prüflauf abgebrochen: " + e.Message; }
+        catch (Exception e) when (e is HttpRequestException or TaskCanceledException or InvalidOperationException) { WebDesignBenchNote = "Prüflauf abgebrochen: " + Trendo.Core.FriendlyError.Say(e); }
         finally { _wdBenchBusy = false; Show("dev"); }
     }
 
     Control WebDesignAssetsPane()
     {
         var sp = new StackPanel { Spacing = 6, Name = "web-medien" };
-        sp.Children.Add(new TextBlock { Text = "🖼 Medien des Projekts", FontSize = 15, FontWeight = FontWeight.SemiBold, Foreground = Text });
+        sp.Children.Add(new TextBlock { Text = "Medien des Projekts", FontSize = 15, FontWeight = FontWeight.SemiBold, Foreground = Text });
         sp.Children.Add(P("Bilder, Videos, Schriften, Symbole und 3D-Modelle an einem Ort, jeweils mit Herkunft und Lizenz. Bilder werden für das Web verkleinert. Im Editor stehen sie bei Bild-Feldern zur Auswahl.", Muted, 12));
         var file = new TextBox { Name = "web-medium-datei", PlaceholderText = "Datei", Width = 240 };
         var art = new ComboBox { Name = "web-medium-art", ItemsSource = WebDesignAssets.Types.Keys.ToList(), SelectedIndex = 0, Width = 100 };
@@ -156,7 +156,7 @@ public partial class MainWindow
         sp.Children.Add(list);
 
         // Z6: lokales Modell für Webdesign
-        sp.Children.Add(new TextBlock { Text = "💻 KI auf diesem PC für Webdesign", FontSize = 13, FontWeight = FontWeight.SemiBold, Foreground = Text, Margin = new Thickness(0, 8, 0, 0) });
+        sp.Children.Add(new TextBlock { Text = "KI auf diesem PC für Webdesign", FontSize = 13, FontWeight = FontWeight.SemiBold, Foreground = Text, Margin = new Thickness(0, 8, 0, 0) });
         var rec = WebDesignModelBench.Recommend(WebHardware, WebDesignModelBench.Load(_core.DataRoot));
         sp.Children.Add(new TextBlock { Name = "web-modell-empfehlung", Text = WebDesignBenchNote.Length > 0 && _wdBenchBusy ? WebDesignBenchNote : rec.Note, FontSize = 12, Foreground = rec.Model is null ? Brush.Parse("#F5A524") : Text, TextWrapping = TextWrapping.Wrap });
         foreach (var r in WebDesignModelBench.Load(_core.DataRoot))

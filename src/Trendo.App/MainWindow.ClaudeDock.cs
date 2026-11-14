@@ -279,7 +279,7 @@ public partial class MainWindow
         var text = ClaudeWeb.ProjectInstructions(studioName, ClaudeRoleFor(dock.Studio), Skills.For(null, dock.Studio));
         LastClipboardText = text;
         try { if (Clipboard is { } cb) await cb.SetTextAsync(text); }
-        catch (Exception e) when (e is InvalidOperationException or NotSupportedException or System.Runtime.InteropServices.COMException) { _claudeMsg = "Kopieren ging nicht: " + e.Message; }
+        catch (Exception e) when (e is InvalidOperationException or NotSupportedException or System.Runtime.InteropServices.COMException) { _claudeMsg = "Kopieren ging nicht: " + Trendo.Core.FriendlyError.Say(e); }
         _core.Audit.Append(Principal.LocalOwner.Name, "claude.web.projekt.start", dock.Studio);
         WebGo(dock, ClaudeWeb.Projects);
         BuildWebBar(dock); BuildProjectList(dock);

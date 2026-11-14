@@ -51,7 +51,7 @@ public partial class MainWindow
             if (reference is { Length: > 0 } && File.Exists(reference))
             {
                 try { var (f, g) = MusicPro.MatchEq(MusicPro.BandLevels(AudioFile.Read(s.File)), MusicPro.BandLevels(AudioFile.Read(reference))); eq = f; }
-                catch (Exception e) when (e is InvalidOperationException or IOException) { MpSay("Referenz ließ sich nicht lesen (WAV oder MP3): " + e.Message); return null; }
+                catch (Exception e) when (e is InvalidOperationException or IOException) { MpSay("Referenz ließ sich nicht lesen (WAV oder MP3): " + Trendo.Core.FriendlyError.Say(e)); return null; }
             }
             var t = MusicPro.TargetOf(target); var st = MusicPro.Style(style);
             var outFile = Path.Combine(Path.GetDirectoryName(s.File)!, $".trendo-master-{Guid.NewGuid():N}.mp3");

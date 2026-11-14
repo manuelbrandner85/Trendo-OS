@@ -30,7 +30,7 @@ public partial class MainWindow
                 _devSelected = dir; _core.Audit.Append(Principal.LocalOwner.Name, "dev.create", t.Id);
                 Say($"„{Path.GetFileName(dir)}“ angelegt. {g}", "dev");
             }
-            catch (Exception ex) { Say("Hat nicht geklappt: " + ex.Message, "dev"); }
+            catch (Exception ex) { Say("Hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex), "dev"); }
         }, true);
         sp.Children.Add(Card(new StackPanel { Spacing = 6, Children = { H("Neues Projekt", 14), new WrapPanel { Children = { name, tpl } }, create } }));
 

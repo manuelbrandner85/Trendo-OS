@@ -341,7 +341,7 @@ public partial class MainWindow
                 case MenuItem m when BridgeLabel(m).Length > 0: items.Add(Item("menue", m)); break;
                 case SelectingItemsControl l: { var o = Item("auswahl", l); o["wert"] = l.SelectedItem is { } si ? ItemText(si) : null; o["eintraege"] = new JsonArray(l.Items.Select(ItemText).Where(x => x.Length > 0).Take(200).Select(x => (JsonNode)x).ToArray()); items.Add(o); break; }
                 case ToggleButton t: { var o = Item("schalter", t); o["wert"] = t.IsChecked == true; items.Add(o); break; }
-                case Button b when !(b.Name ?? "").StartsWith("claude-", StringComparison.Ordinal) && b.Name is not ("btn-help" or "prog-claude") && BridgeLabel(b).Length > 0: items.Add(Item("knopf", b)); break;
+                case Button b when !(b.Name ?? "").StartsWith("claude-", StringComparison.Ordinal) && b.Name is not ("btn-help" or "ki-menu") && BridgeLabel(b).Length > 0: items.Add(Item("knopf", b)); break;
                 case TextBlock t when t.Text is { Length: >= 2 } s && !texts.Contains(s) && texts.Count < 400: texts.Add(s.Length > 400 ? s[..400] + " …" : s); break;
             }
         var key = BridgeKey(run);

@@ -157,7 +157,7 @@ public partial class MainWindow
         }
         catch (Exception e) when (e is HttpRequestException or System.Text.Json.JsonException or InvalidOperationException or TaskCanceledException)
         {
-            _tvMsg += " Filme/Serien vom Anbieter ließen sich nicht laden: " + e.Message;
+            _tvMsg += " Filme/Serien vom Anbieter ließen sich nicht laden: " + Trendo.Core.FriendlyError.Say(e);
         }
         _tvVod = null; _tvSeries = null;
     }
@@ -175,7 +175,7 @@ public partial class MainWindow
             eps = Xtream.ParseEpisodes(json, s.Id, x.Server, x.User, x.Pass);
             if (eps.Count > 0) Tv.StoreEpisodes(s.Id, eps);
         }
-        catch (Exception e) when (e is HttpRequestException or System.Text.Json.JsonException or InvalidOperationException or TaskCanceledException) { _tvMsg = "Die Folgen ließen sich nicht laden: " + e.Message; }
+        catch (Exception e) when (e is HttpRequestException or System.Text.Json.JsonException or InvalidOperationException or TaskCanceledException) { _tvMsg = "Die Folgen ließen sich nicht laden: " + Trendo.Core.FriendlyError.Say(e); }
         return eps;
     }
 

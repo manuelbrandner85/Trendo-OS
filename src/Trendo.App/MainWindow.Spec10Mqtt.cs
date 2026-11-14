@@ -59,7 +59,7 @@ public partial class MainWindow
                 }
                 catch (Exception e) when (e is not OutOfMemoryException)
                 {
-                    Dispatcher.UIThread.Post(() => { _mqttCts = null; _mqttMsg = "⚠ MQTT: " + e.Message; if (CurrentView == "zwilling") Show("zwilling"); });
+                    Dispatcher.UIThread.Post(() => { _mqttCts = null; _mqttMsg = "⚠ MQTT: " + Trendo.Core.FriendlyError.Say(e); if (CurrentView == "zwilling") Show("zwilling"); });
                 }
             }, ct);
         }

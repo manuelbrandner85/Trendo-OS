@@ -538,8 +538,10 @@ public partial class MainWindow
     public static Func<string, int, string, int, int, Task<bool>>? ImageAiOverride { get; set; }
     bool _imgAiBusy;
 
-    static JsonObject ImgDoc(string prompt, string style) => new() { ["prompt"] = prompt, ["style"] = style, ["format"] = "quadrat", ["count"] = "2", ["seed"] = "42", ["negative"] = "", ["images"] = new JsonArray() };
-    string ImgDir(ProgramDocument d) => Path.Combine(_core.DataRoot, "ki-bilder", d.Id);
+    static JsonObject ImgDoc(string prompt, string style) => new() { ["dir"] = Guid.NewGuid().ToString("N"), ["prompt"] = prompt, ["style"] = style, ["format"] = "quadrat", ["count"] = "2", ["seed"] = "42", ["negative"] = "", ["images"] = new JsonArray() };
+    /// <summary>Bildordner je Dokument. Die Kennung steht im Dokument („dir“), damit die Bilder nach dem Wiederöffnen da sind (T-0619).</summary>
+    static bool ImgDirOk(string dir) => System.Text.RegularExpressions.Regex.IsMatch(dir, "^[0-9a-f]{32}$");
+    string ImgDir(ProgramDocument d) => Path.Combine(_core.DataRoot, "ki-bilder", ImgDirOk(d.Text("dir")) ? d.Text("dir") : d.Id);
 
     /// <summary>Nur eigene KI-Bilder: PNG im Bildordner dieses Dokuments, höchstens 25 MB. Eine fremde Projektdatei kann so keine anderen Dateien in einen Export ziehen.</summary>
     List<string> ImgList(ProgramDocument d)
@@ -605,7 +607,8 @@ public partial class MainWindow
         var (w, h) = ImageAiKit.Size(d.Text("format"), xl ? 1024 : 512);
         var count = int.TryParse(d.Text("count"), out var c) ? Math.Clamp(c, 1, 4) : 2;
         var baseSeed = int.TryParse(d.Text("seed"), out var s) ? s : 42;
-        var dir = Path.Combine(_core.DataRoot, "ki-bilder", d.Id);
+        if (!ImgDirOk(d.Text("dir"))) d.Set("dir", Guid.NewGuid().ToString("N"), "Bildordner"); // ältere Dokumente: Ordner einmal festlegen
+        var dir = ImgDir(d);
         Directory.CreateDirectory(dir);
         _imgAiBusy = true; var made = new List<string>();
         try

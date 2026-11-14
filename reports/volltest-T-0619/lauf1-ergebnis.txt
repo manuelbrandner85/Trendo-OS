@@ -1,0 +1,9 @@
+Bestanden!   : Fehler:     0, erfolgreich:    16, übersprungen:     0, gesamt:    16, Dauer: 2 s - Trendo.Api.Tests.dll (net10.0)
+[xUnit.net 00:00:13.52]     T-0241: Doppelte Dateien, zu viele Einträge, stark gepackte Dateien und fremde Kennung werden abgewiesen; alte Fassung bleibt heil [FAIL]
+Fehler!      : Fehler:     1, erfolgreich:  2486, übersprungen:     5, gesamt:  2492, Dauer: 1 m 40 s - Trendo.Core.Tests.dll (net10.0)
+[xUnit.net 00:01:43.28]     Eigene KI trainieren: Beispiel trainieren, Genauigkeit und Verwechslungstabelle, Ausprobieren mit Sicherheit, Änderung verlangt neues Training, Modell und CSV laden, Exporte [FAIL]
+[xUnit.net 00:08:31.99]     S4-09 Mischpult: Bus anlegen, Spur darauf leiten, EQ übernehmen (rückgängig machbar); Routing-Kreis über die Auswahl wird abgewiesen [FAIL]
+[xUnit.net 00:09:12.96]     W0b-02/04/05: Widgets ausblenden, Dock sortieren, Bewegung reduzieren, Hinweis einmalig – alles gespeichert [FAIL]
+[xUnit.net 00:14:10.16]     T-0257 UI: Doppelklick erkennt Raum, Raum Punkt für Punkt (Enter), Bemaßen mit drei Klicks, Text setzen und ändern [FAIL]
+Fehler!      : Fehler:     4, erfolgreich:  1279, übersprungen:     5, gesamt:  1288, Dauer: 43 m 45 s - Trendo.App.Tests.dll (net10.0)
+dotnet exit 1

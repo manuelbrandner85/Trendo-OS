@@ -92,7 +92,7 @@ public partial class MainWindow
             OvSay(ok ? "✓ Deine Stimme ist gelernt – unter Schritt 4 „Meine eigene Stimme“ wählen." : "Lernen ging nicht: " + Short(r.Err.Length > 0 ? r.Err : r.Out));
             return ok;
         }
-        catch (Exception e) when (e is InvalidOperationException or IOException or HttpRequestException or OperationCanceledException) { OvSay("Einrichten ging nicht: " + e.Message); return false; }
+        catch (Exception e) when (e is InvalidOperationException or IOException or HttpRequestException or OperationCanceledException) { OvSay("Einrichten ging nicht: " + Trendo.Core.FriendlyError.Say(e)); return false; }
         finally { _ovBusy = false; if (CurrentView == MS) Show(MS); }
     }
 

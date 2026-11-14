@@ -168,7 +168,7 @@ public partial class MainWindow
         if (!File.Exists(path)) { Toast($"Datei nicht gefunden: {Path.GetFileName(path)}"); return; }
         if (_opt.Isolated) return;
         try { Process.Start(new ProcessStartInfo(path) { UseShellExecute = true }); }
-        catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException) { Toast("Abspielen ging nicht: " + e.Message); }
+        catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException) { Toast("Abspielen ging nicht: " + Trendo.Core.FriendlyError.Say(e)); }
     }
 
     void UpdatePresenter()

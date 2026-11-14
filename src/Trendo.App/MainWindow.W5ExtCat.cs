@@ -55,7 +55,7 @@ public partial class MainWindow
             (ExtCatalog, _extCatErr) = ExtensionCatalog.Parse(json);
             ExtCatalog = ExtCatalog.Where(e => ExtensionCatalog.IsRemote(e.Url)).ToList();
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or InvalidOperationException) { Say("Katalog nicht erreichbar: " + ex.Message, "erweiterungen"); return; }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or InvalidOperationException) { Say("Katalog nicht erreichbar: " + Trendo.Core.FriendlyError.Say(ex), "erweiterungen"); return; }
         Show("erweiterungen");
     }
 
@@ -82,7 +82,7 @@ public partial class MainWindow
                 var bytes = await ExtFetch(e.Url, ExtensionStore.MaxBytes);
                 await File.WriteAllBytesAsync(tmp, bytes); file = tmp;
             }
-            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or InvalidOperationException) { return "Herunterladen fehlgeschlagen: " + ex.Message; }
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or InvalidOperationException) { return "Herunterladen fehlgeschlagen: " + Trendo.Core.FriendlyError.Say(ex); }
         }
         try
         {

@@ -116,7 +116,7 @@ public partial class MainWindow
         }
         catch (Exception e) when (e is HttpRequestException or IOException or TaskCanceledException or InvalidOperationException or System.Text.Json.JsonException)
         {
-            lines.Add("✗ Fotomaterialien nicht geladen: " + e.Message + " – das Spiel bleibt in der einfachen Open World."); skip(); return false;
+            lines.Add("✗ Fotomaterialien nicht geladen: " + Trendo.Core.FriendlyError.Say(e) + " – das Spiel bleibt in der einfachen Open World."); skip(); return false;
         }
         // Tiere (freie, geriggte Modelle mit Lizenz) legt der Welt-Bau mit an – sie leben dann in der offenen Welt
         var animals = UnrealGame.CopyAnimals(_opt.Isolated ? Path.Combine(_core.DataRoot, "tiere") : UnrealGame.AnimalsDir(_deps.ToolsRoot), built);

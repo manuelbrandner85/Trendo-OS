@@ -127,7 +127,7 @@ public partial class MainWindow
             }
             catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or IOException or TaskCanceledException or System.Text.Json.JsonException)
             {
-                status.Text = "Hat nicht geklappt: " + ex.Message;
+                status.Text = "Hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex);
                 go.IsEnabled = true;
             }
         };

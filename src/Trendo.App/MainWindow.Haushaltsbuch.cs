@@ -145,7 +145,7 @@ public partial class MainWindow
     public void HouseholdPreviewImport(string path)
     {
         try { _hbImport = HouseholdBook.Preview(Money.All(), Finance.ImportCsv(File.ReadAllText(path)), MoneyMemory); _hbImportName = Path.GetFileName(path); }
-        catch (Exception ex) when (ex is IOException or FormatException or UnauthorizedAccessException or ArgumentException or InvalidDataException) { Say("Kontoauszug nicht lesbar: " + ex.Message, "finanzen"); _hbImport = null; }
+        catch (Exception ex) when (ex is IOException or FormatException or UnauthorizedAccessException or ArgumentException or InvalidDataException) { Say("Kontoauszug nicht lesbar: " + Trendo.Core.FriendlyError.Say(ex), "finanzen"); _hbImport = null; }
         Show("finanzen");
     }
 

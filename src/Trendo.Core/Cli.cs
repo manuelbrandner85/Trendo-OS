@@ -28,7 +28,8 @@ public static class Cli
             using var p = Process.Start(psi)!;
             var o = p.StandardOutput.ReadToEndAsync(); var e = p.StandardError.ReadToEndAsync();
             if (!p.WaitForExit(timeoutMs)) { try { p.Kill(true); } catch { } return new(-2, o.IsCompleted ? o.Result : "", "Zeitüberschreitung"); }
-            p.WaitForExit();
+            // Ein Kindprozess kann die geerbte Ausgabe offen halten: nicht unbegrenzt auf das Ende der Ausgabe warten
+            if (!Task.WaitAll([o, e], 10000)) return new(p.ExitCode, o.IsCompleted ? o.Result : "", (e.IsCompleted ? e.Result + "\n" : "") + "Ausgabe unvollständig: ein gestartetes Unterprogramm läuft noch.");
             return new(p.ExitCode, o.Result, e.Result);
         }
         catch (Exception ex) { return new(-1, "", ex.Message); }

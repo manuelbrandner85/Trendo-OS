@@ -64,7 +64,7 @@ public partial class MainWindow
     private void Try(string view, Action a)
     {
         try { a(); }
-        catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or UnauthorizedAccessException or InvalidDataException or FormatException or OverflowException) { Say(ex is FormatException or OverflowException ? "Das ist keine gültige Zahl. Bitte z. B. 12,50 eingeben." : ex.Message, view); }
+        catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or UnauthorizedAccessException or InvalidDataException or FormatException or OverflowException) { Say(ex is FormatException or OverflowException ? "Das ist keine gültige Zahl. Bitte z. B. 12,50 eingeben." : RememberError(ex, () => Try(view, a)), view); } // E7: Alltagssatz und „Was tun?“
     }
 
     // ---------- Dateien ----------

@@ -154,7 +154,7 @@ public partial class MainWindow
             var f = await PickMedia("ms-ref-image", ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp"]);
             if (f is null) return;
             try { MsApplyImageMood(f); }
-            catch (Exception e) when (e is IOException or InvalidDataException or ArgumentException) { _msMsg = "Das Bild ließ sich nicht lesen: " + e.Message; }
+            catch (Exception e) when (e is IOException or InvalidDataException or ArgumentException) { _msMsg = "Das Bild ließ sich nicht lesen: " + Trendo.Core.FriendlyError.Say(e); }
             Show(MS);
         }));
         row.Children.Add(B("ms-dice", "Idee", "Liedidee würfeln", () => { var idea = MusicSuno.Idea(Random.Shared.Next()); if (_msPro) _msStyle = idea; else _msDesc = idea; Show(MS); return Task.CompletedTask; }));

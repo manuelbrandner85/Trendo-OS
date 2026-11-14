@@ -115,7 +115,7 @@ public partial class MainWindow
                 _shareFolder = folder.Text?.Trim().Trim('"') ?? "";
                 if (!Directory.Exists(_shareFolder)) { _shareMsg = "Diesen Ordner gibt es nicht."; Show("teilen"); return; }
                 try { await StartShareAsync(_shareFolder, TimeSpan.FromHours(new[] { 1, 4, 24 }[Math.Max(0, dur.SelectedIndex)]), ips[Math.Max(0, net.SelectedIndex)].Ip); }
-                catch (Exception ex) { _shareMsg = "Hat nicht geklappt: " + ex.Message; }
+                catch (Exception ex) { _shareMsg = "Hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex); }
                 Show("teilen");
             };
             // Y7 (07.11.2026): Teilen als Werkzeug-Karte

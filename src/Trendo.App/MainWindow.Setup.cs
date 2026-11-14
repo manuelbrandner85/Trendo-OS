@@ -7,6 +7,7 @@ using Avalonia.Media;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using Trendo.Core;
+using Trendo.Core.Programs;
 using Path = System.IO.Path;
 
 namespace Trendo.App;
@@ -76,7 +77,7 @@ public sealed partial class MainWindow
             }
             _settings.Avatar = "bild"; _settings.Save(_core.DataRoot);
         }
-        catch (Exception e) when (e is IOException or ArgumentException or InvalidOperationException or NotSupportedException) { _wizMsg = "Das Bild ließ sich nicht öffnen: " + e.Message; }
+        catch (Exception e) when (e is IOException or ArgumentException or InvalidOperationException or NotSupportedException) { _wizMsg = "Das Bild ließ sich nicht öffnen: " + Trendo.Core.FriendlyError.Say(e); }
         Show("einrichtung");
     }
 
@@ -246,9 +247,20 @@ public sealed partial class MainWindow
                     var val = v; b.Click += (_, _) => { _settings.UiScale = val; Show("einrichtung"); };
                     sizes.Children.Add(b);
                 }
-                var simple = new CheckBox { Name = "wiz-simple", Content = "Einfacher Modus (größere Knöpfe, weniger auf einmal)", IsChecked = _settings.SimpleMode, Foreground = Text };
+                var simple = new CheckBox { Name = "wiz-simple", Content = "Größere Knöpfe", IsChecked = _settings.SimpleMode, Foreground = Text };
                 simple.IsCheckedChanged += (_, _) => { _settings.SimpleMode = simple.IsChecked == true; Show("einrichtung"); };
+                // E9 (T-0616): eine Wahl für die Bedienung – Einfach, Erweitert oder Profi
+                var lvRow = new WrapPanel();
+                for (var li = 0; li < 3; li++)
+                {
+                    var lv = li; var on = UserLevel.Of(_settings.Level) == lv;
+                    var lb = new Button { Name = "wiz-level-" + UserLevel.Ids[li], Content = UserLevel.Names[li], Margin = new Thickness(0, 0, 8, 0), Background = on ? Accent : Brushes.Transparent, Foreground = on ? Brushes.White : Text };
+                    lb.Click += (_, _) => { _settings.Level = UserLevel.Id(lv); Show("einrichtung"); };
+                    lvRow.Children.Add(lb);
+                }
                 sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { new TextBlock { Text = "Schriftgröße:", Foreground = Text, VerticalAlignment = VerticalAlignment.Center }, sizes } });
+                sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { new TextBlock { Text = "Bedienung:", Foreground = Text, VerticalAlignment = VerticalAlignment.Center }, lvRow } });
+                sp.Children.Add(new TextBlock { Text = "Einfach zeigt nur das Wichtigste, alles Weitere liegt unter „Mehr“. Umstellen geht jederzeit in den Einstellungen.", Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap });
                 sp.Children.Add(simple);
                 // Live-Vorschau: kleiner Schreibtisch mit Hintergrund, Fenster in der gewählten Farbe und Schriftgröße
                 var (bg, fg, edge) = _settings.Theme switch { "hell" => ("#F4F7FC", "#0F1B2E", "#335C99"), "kontrast" => ("#000000", "#FFFFFF", "#FFFF00"), _ => ("#0B1730", "#E6EDF7", "#2F86F6") };
@@ -492,7 +504,7 @@ public sealed partial class MainWindow
         var sp = new StackPanel { Spacing = 6 };
         sp.Children.Add(P($"Trendo sichert deine Projekte und Einstellungen automatisch alle {_settings.BackupEveryHours} Stunden (die letzten 10 bleiben). Ablage: {Backups.Folder}", Text));
         var now = new Button { Name = "btn-backup-now", Content = "Jetzt sichern", Background = Accent };
-        now.Click += (_, _) => { try { _backupMsg = "Gesichert: " + Path.GetFileName(Backups.Create(DateTime.Now)); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _backupMsg = "Sichern hat nicht geklappt: " + ex.Message; } Show("sicherung"); };
+        now.Click += (_, _) => { try { _backupMsg = "Gesichert: " + Path.GetFileName(Backups.Create(DateTime.Now)); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _backupMsg = "Sichern hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex); } Show("sicherung"); };
         sp.Children.Add(now);
         if (_backupMsg.Length > 0) sp.Children.Add(P(_backupMsg, Brush.Parse("#4ADE80")));
         var all = Backups.List();
@@ -516,7 +528,7 @@ public sealed partial class MainWindow
                 {
                     _backupConfirm = null;
                     try { var n = Backups.Restore(file, DateTime.Now); _settings = UserSettings.Load(_core.DataRoot); _backupMsg = $"Wiederhergestellt: {n} Dateien. Der vorherige Stand wurde vorher gesichert."; }
-                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException) { _backupMsg = "Wiederherstellen hat nicht geklappt: " + ex.Message; }
+                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException) { _backupMsg = "Wiederherstellen hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex); }
                     Show("sicherung");
                 };
                 var no = new Button { Name = $"backup-restore-no-{idx}", Content = "Abbrechen", FontSize = 11 };
@@ -527,7 +539,7 @@ public sealed partial class MainWindow
                     var plan = Backups.Preview(file);
                     what = $"Ersetzt {plan.Replaced} Dateien, ergänzt {plan.Added}" + (plan.Examples.Count > 0 ? $" (z. B. {string.Join(", ", plan.Examples.Take(3))})" : "") + ". Der aktuelle Stand wird vorher gesichert. Sicher?";
                 }
-                catch (Exception ex) when (ex is IOException or InvalidDataException) { what = "Sicherung nicht lesbar: " + ex.Message; }
+                catch (Exception ex) when (ex is IOException or InvalidDataException) { what = "Sicherung nicht lesbar: " + Trendo.Core.FriendlyError.Say(ex); }
                 var info = P(what, Brush.Parse("#FACC15"), 11); info.Name = $"backup-restore-plan-{idx}";
                 row.Children.Add(info); row.Children.Add(yes); row.Children.Add(no);
             }

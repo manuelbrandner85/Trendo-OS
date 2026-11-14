@@ -103,14 +103,14 @@ public partial class MainWindow
             var page = PdfPage; OpenPdf(target, _pdfPassword); PdfGo(page);
             PdfSay($"{done} – gespeichert in {Path.GetFileName(target)}");
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException) { PdfSay("Nicht gespeichert: " + ex.Message); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException) { PdfSay("Nicht gespeichert: " + Trendo.Core.FriendlyError.Say(ex)); }
         finally { try { File.Delete(tmp); } catch (IOException) { } }
     }
 
     private void PdfTool(Func<string> run)
     {
         try { PdfSay(run()); }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException or PdfSharp.Pdf.IO.PdfReaderException) { PdfSay("Hat nicht geklappt: " + ex.Message); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException or PdfSharp.Pdf.IO.PdfReaderException) { PdfSay("Hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex)); }
         Show("pdf");
     }
 
@@ -341,7 +341,7 @@ public partial class MainWindow
             var index = PdfPage + k;
             Avalonia.Media.Imaging.Bitmap bmp; int pw, ph;
             try { bmp = PdfView.Render(PdfPath!, index, dpi, _pdfRot, _pdfPassword, out pw, out ph); }
-            catch (Exception ex) when (ex is InvalidOperationException or IOException or DllNotFoundException) { pagesRow.Children.Add(P("Seite lässt sich nicht zeichnen: " + ex.Message, Text)); continue; }
+            catch (Exception ex) when (ex is InvalidOperationException or IOException or DllNotFoundException) { pagesRow.Children.Add(P("Seite lässt sich nicht zeichnen: " + Trendo.Core.FriendlyError.Say(ex), Text)); continue; }
             var img = new Image { Name = "pdf-image-" + k, Source = bmp, Width = pw, Height = ph, Stretch = Stretch.Fill }; // 1 Bildpunkt = 1 Einheit, passt zur Umrechnung in PDF-Punkte
             var canvas = new Canvas { Width = pw, Height = ph, Background = Brushes.Transparent, Cursor = _pdfMode is null ? Cursor.Default : new Cursor(StandardCursorType.Cross) };
             var rect = new Rectangle { Stroke = Accent, StrokeThickness = 1.5, Fill = Brush.Parse("#33C9A227"), IsVisible = false };

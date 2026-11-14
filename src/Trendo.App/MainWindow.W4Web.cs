@@ -264,7 +264,7 @@ public partial class MainWindow
             await RefreshPreview();
             Say(result.Message, "dev");
         }
-        catch (Exception ex) { Say("Hat nicht geklappt: " + ex.Message, "dev"); }
+        catch (Exception ex) { Say("Hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex), "dev"); }
     }
 
     private async Task SetPreview(bool wide)
@@ -285,7 +285,7 @@ public partial class MainWindow
             _webPreview = shot.Ok ? shot.Path : null;
             _webPreviewNote = shot.Ok ? "Echte Browser-Vorschau, " + shot.Note + "." : shot.Note;
         }
-        catch (Exception ex) { _webPreview = null; _webPreviewNote = "Vorschau nicht möglich: " + ex.Message; }
+        catch (Exception ex) { _webPreview = null; _webPreviewNote = "Vorschau nicht möglich: " + Trendo.Core.FriendlyError.Say(ex); }
     }
 
     private bool Ready()
@@ -321,6 +321,6 @@ public partial class MainWindow
             _webApproval = null;
             Say("Lokal gespeichert: " + Path.GetFileName(zip) + ". Nichts wurde hochgeladen.", "dev");
         }
-        catch (Exception ex) { Say("Nicht gespeichert: " + ex.Message, "dev"); }
+        catch (Exception ex) { Say("Nicht gespeichert: " + Trendo.Core.FriendlyError.Say(ex), "dev"); }
     }
 }

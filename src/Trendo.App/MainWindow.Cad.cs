@@ -134,7 +134,7 @@ public partial class MainWindow
     void CadExportClick(string kind)
     {
         try { var f = CadExportAs(kind); Toast(_cadMsg, ("Öffnen", new Action(() => Launch(f))), ("Ordner öffnen", new Action(() => Launch(Path.GetDirectoryName(f)!)))); }
-        catch (Exception ex) when (ex is CadError or IOException or UnauthorizedAccessException) { _cadMsg = "Speichern ging nicht: " + ex.Message; }
+        catch (Exception ex) when (ex is CadError or IOException or UnauthorizedAccessException) { _cadMsg = "Speichern ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
     }
 
     async Task CadOpenClick()
@@ -142,7 +142,7 @@ public partial class MainWindow
         var req = new PickRequest("cad-open", false, false, ["tcad"]);
         var f = PickOverride is { } fake ? (await fake(req))?.FirstOrDefault() : (await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Bauteil öffnen", FileTypeFilter = [new FilePickerFileType("Trendo CAD") { Patterns = ["*.tcad"] }] })).Select(x => x.TryGetLocalPath()).OfType<string>().FirstOrDefault();
         if (f is null) return;
-        try { CadOpen(f); } catch (Exception ex) when (ex is IOException or System.Text.Json.JsonException) { _cadMsg = "Öffnen ging nicht: " + ex.Message; }
+        try { CadOpen(f); } catch (Exception ex) when (ex is IOException or System.Text.Json.JsonException) { _cadMsg = "Öffnen ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
         Show("cad");
     }
 
@@ -178,7 +178,7 @@ public partial class MainWindow
         MenuItem Mi(string name, string header, Action a) { var m = new MenuItem { Name = name, Header = header }; m.Click += (_, _) => { a(); Show("cad"); }; return m; }
         fm.Items.Add(Mi("cad-m-new", "Neues Bauteil", CadNew));
         fm.Items.Add(Mi("cad-m-open", "Öffnen …", () => _ = CadOpenClick()));
-        fm.Items.Add(Mi("cad-m-save", "Speichern", () => { try { CadSave(CadPath ?? Mesh3D.Unique(Path.Combine(CadFolder, CadName + ".tcad"))); } catch (IOException ex) { _cadMsg = "Speichern ging nicht: " + ex.Message; } }));
+        fm.Items.Add(Mi("cad-m-save", "Speichern", () => { try { CadSave(CadPath ?? Mesh3D.Unique(Path.Combine(CadFolder, CadName + ".tcad"))); } catch (IOException ex) { _cadMsg = "Speichern ging nicht: " + Trendo.Core.FriendlyError.Say(ex); } }));
         fm.Items.Add(Mi("cad-m-stl", "Als STL (3D-Druck)", () => CadExportClick("stl")));
         fm.Items.Add(Mi("cad-m-3mf", "Als 3MF (3D-Druck mit Farben, Bambu Studio)", () => CadExportClick("3mf")));
         fm.Items.Add(Mi("cad-m-step", "Als STEP (andere CAD-Programme)", () => CadExportClick("step")));

@@ -48,7 +48,7 @@ public partial class MainWindow
     {
         _wissenMsg = "Dokument-Umwandlung wird eingerichtet (einmalig, ca. 150 MB) …"; Show("ki-wissen");
         try { await KiPyInstall(DocsModel, KiPyApps.For(KiRuntime.Dokumente)!); _wissenMsg = "✓ Word, PDF, PowerPoint und Excel lassen sich jetzt einlesen."; }
-        catch (Exception e) when (e is InvalidOperationException or IOException or HttpRequestException or OperationCanceledException) { _wissenMsg = "Einrichten ging nicht: " + e.Message; }
+        catch (Exception e) when (e is InvalidOperationException or IOException or HttpRequestException or OperationCanceledException) { _wissenMsg = "Einrichten ging nicht: " + Trendo.Core.FriendlyError.Say(e); }
         Show("ki-wissen");
     }
 

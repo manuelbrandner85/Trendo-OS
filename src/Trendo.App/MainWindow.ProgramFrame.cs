@@ -48,6 +48,7 @@ public partial class MainWindow
     /// <summary>G7: Das Ergebnis einer Seite groß und gut lesbar, mit „Kopieren“ und den letzten Ergebnissen dieser Seite.</summary>
     private Control ResultCard(string msg)
     {
+        if (_lastError is { } le && le.Page == CurrentView && le.Error.Fix != ErrorFix.None && le.Error.Sentence == msg) return ErrorCard(le.Error, le.Retry, le.Studio); // E7: Fehler mit „Was tun?“
         var page = CurrentView;
         if (!_resultHistory.TryGetValue(page, out var hist)) _resultHistory[page] = hist = [];
         if (hist.Count == 0 || hist[^1] != msg) { hist.Add(msg); if (hist.Count > 6) hist.RemoveAt(0); }
@@ -67,6 +68,56 @@ public partial class MainWindow
         return box;
     }
 
+    // ---------- E7 (T-0616): Fehler mit „Was tun?“ ----------
+    /// <summary>Letzter Seitenfehler (Seiten mit Ergebnis-Karte), damit die Karte den passenden Knopf zeigt.</summary>
+    private (FriendlyError Error, Action? Retry, string? Studio, string Page)? _lastError;
+
+    /// <summary>Fehler merken und den Alltagssatz zurückgeben (für Seiten, die ihre Meldung selbst zeigen).</summary>
+    internal string RememberError(Exception ex, Action? retry = null)
+    {
+        var fe = FriendlyError.From(ex);
+        _lastError = (fe, retry, ClaudeBelongs(CurrentView) ? ClaudeStudioOf(CurrentView) : null, CurrentView);
+        return fe.Sentence;
+    }
+
+    /// <summary>Was der Knopf neben der Meldung tut: Nochmal, Einrichten über „Hinzufügen“, einen anderen Ort wählen, Claude fragen (mit der Meldung, abgeschickt wird nichts).</summary>
+    Action? ErrorFixAction(FriendlyError fe, Action? retry, string? studio, Action? pickFolder = null) => fe.Fix switch
+    {
+        ErrorFix.Retry => retry,
+        ErrorFix.Setup => () => { if (studio is not null) OpenAddHubFor(studio); else Show("hinzufuegen"); },
+        ErrorFix.PickFolder => pickFolder ?? (() => Show("dateien")),
+        ErrorFix.AskClaude => () => { var t = "Hilf mir bitte bei dieser Meldung in Trendo und sag mir in einfachen Worten, was ich tun kann:\n" + fe.Technical; if (studio is not null) ClaudeOpenFor(studio, t); else if (Windows.Active?.Id is { } id && _claudeDocks.ContainsKey(id)) { } else ClaudeDockToggle(null, t); }, // nur vorbefüllen, nie ein offenes Claude schließen
+        _ => null,
+    };
+
+    /// <summary>E7: Alltagssatz, ein Knopf und der technische Text zum Aufklappen.</summary>
+    internal Control ErrorCard(FriendlyError fe, Action? retry, string? studio, Action? pickFolder = null)
+    {
+        var card = new Border { Name = "w45-msg", Background = TileBg, BorderBrush = Brush.Parse("#C77A12"), BorderThickness = new Thickness(4, 0, 0, 0), CornerRadius = new CornerRadius(8), Padding = new Thickness(14, 10),
+            Child = new TextBlock { Name = "error-text", Text = "⚠ " + fe.Sentence, Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap } };
+        var box = new StackPanel { Name = "error-card", Spacing = 4, Children = { card } };
+        var row = new WrapPanel { Name = "error-actions" };
+        if (ErrorFixAction(fe, retry, studio, pickFolder) is { } go)
+        {
+            var b = new Button { Name = "error-fix", Content = fe.FixLabel, Background = Accent, Foreground = Brushes.White, Padding = new Thickness(12, 4), Margin = new Thickness(0, 0, 6, 0) };
+            ToolTip.SetTip(b, fe.Fix switch { ErrorFix.Retry => "Denselben Schritt noch einmal ausführen", ErrorFix.Setup => "Das fehlende Programm über „Hinzufügen“ einrichten – nur nach deiner Zustimmung", ErrorFix.PickFolder => "Einen anderen Ort wählen", _ => "Claude öffnen – die Meldung steht schon in der Eingabe, abgeschickt wird erst von dir" });
+            b.Click += (_, _) => go();
+            row.Children.Add(b);
+        }
+        if (row.Children.Count > 0) box.Children.Add(row);
+        box.Children.Add(new Expander { Name = "error-details", Header = new TextBlock { Text = "Technische Einzelheiten", Foreground = Muted, FontSize = 12 },
+            Content = new SelectableTextBlock { Text = fe.Technical, Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap } });
+        return box;
+    }
+
+    /// <summary>E7: Fehler als Benachrichtigung – Ton ausdrücklich „Problem“, mit dem passenden Knopf.</summary>
+    public void ToastError(Exception ex, Action? retry = null)
+    {
+        var fe = FriendlyError.From(ex);
+        var studio = ClaudeBelongs(CurrentView) ? ClaudeStudioOf(CurrentView) : null;
+        if (ErrorFixAction(fe, retry, studio) is { } go) Toast("⚠ " + fe.Sentence, (fe.FixLabel, go)); else Toast("⚠ " + fe.Sentence);
+    }
+
     // ---------- G12: Benachrichtigungen unten rechts ----------
     private readonly StackPanel _toastHost = new() { Name = "toast-host", Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(0, 0, 18, 90), ZIndex = 4000, Width = 380 };
 
@@ -78,6 +129,7 @@ public partial class MainWindow
     {
         var t = text.TrimStart();
         if (t.StartsWith('✓')) return ("✓", Gold());
+        if (t.StartsWith('⚠') || t.StartsWith('✕')) return ("!", Brush.Parse("#C77A12")); // E7: ausdrücklicher Ton, nicht aus Wörtern geraten
         if (System.Text.RegularExpressions.Regex.IsMatch(t, @"ging nicht|fehlgeschlagen|Fehler|fehlt|nicht möglich|abgelehnt", System.Text.RegularExpressions.RegexOptions.IgnoreCase)) return ("!", Brush.Parse("#C77A12"));
         return ("i", Brush.Parse("#3D3D3D"));
     }
@@ -200,6 +252,20 @@ public partial class MainWindow
                 var btn = b;
                 hits.Add((label, "Auf dieser Seite", () => btn.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent)), s + 1));
             }
+        // E11 (T-0616): alle Befehle des offenen Programms – auch die, die die Bedienstufe gerade ausblendet (früher eigene Profi-Suche)
+        if (Programs.TryGetValue(CurrentView, out var pspec) && ProgramActive(CurrentView) is { } pdoc)
+        {
+            var pkey = CurrentView;
+            var onPage = ActivePageRoot?.GetLogicalDescendants().OfType<Button>().Select(b => b.Name).Where(n => n is not null).ToHashSet() ?? [];
+            foreach (var (g, cmds) in pspec.Ribbon)
+                foreach (var c in cmds)
+                {
+                    if (onPage.Contains("prog-cmd-" + c.Name)) continue; // steht schon als Knopf der Seite in der Liste
+                    var s = Math.Max(Score(c.Label, q), q.Length > 0 && (Score(g, q) > 0 || Score(c.Tip ?? "", q) > 0) ? 2 : 0); if (s == 0) continue;
+                    var cmd = c;
+                    hits.Add((c.Label, "Befehl im Programm · " + g, () => ProgramRun(pkey, () => cmd.Run(pdoc)), s));
+                }
+        }
         // Claude: fragen, Markierung, Vorschläge, Abläufe, weitermachen (auch in anderen Studios)
         foreach (var h in ClaudePaletteHits(q, Score)) hits.Add(h);
         // 2) Studios und Seiten
@@ -241,7 +307,7 @@ public partial class MainWindow
     /// <summary>G2: Symbol je Treffer-Art.</summary>
     static string PaletteIcon(string kind) => kind switch
     {
-        "Auf dieser Seite" => "▸", "Studio öffnen" => "▦", "Seite öffnen" => "▤", "KI" => "✦", "Zuletzt benutzt" => "↺", var k when k.StartsWith("Claude") => "✳", _ => "•",
+        "Auf dieser Seite" => "▸", var p when p.StartsWith("Befehl im Programm") => "▸", "Studio öffnen" => "▦", "Seite öffnen" => "▤", "KI" => "✦", "Zuletzt benutzt" => "↺", var k when k.StartsWith("Claude") => "✳", _ => "•",
     };
 
     string PaletteRecentFile => Path.Combine(_core.DataRoot, "befehle-zuletzt.json");

@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia;
+using Avalonia.LogicalTree;
 using Avalonia.Headless.XUnit;
 using Trendo.App;
 using Xunit;
@@ -21,8 +22,10 @@ public class ClaudeEverywhere_Ui
             {
                 if (w.ModuleOf(key) is not { } studio || !w.ClaudeBelongs(key)) continue;
                 try { w.Show(key); Avalonia.Threading.Dispatcher.UIThread.RunJobs(); } catch (Exception ex) { missing.Add($"{key} ({studio}): Seite lädt nicht – {ex.GetType().Name}"); continue; }
-                var b = w.TryFind<Button>("auftrag-claude") ?? w.TryFind<Button>("prog-claude");
-                if (b is null) { missing.Add($"{key} ({studio})"); continue; }
+                // E1 (T-0616): Claude steht im Menü „KI ▾“ der Leiste (oder als schlanker Knopf) – sichtbar sein muss der Weg dorthin
+                if (w.TryFind<Button>("auftrag-claude") is null) { missing.Add($"{key} ({studio})"); continue; }
+                var b = w.GetLogicalDescendants().OfType<Button>().FirstOrDefault(x => x.Name == "auftrag-claude" && x.FindLogicalAncestorOfType<Avalonia.Controls.Primitives.Popup>() is null) // schlanker Knopf (3D, Fokus)
+                    ?? w.TryFind<Button>("ki-menu")!;
                 // sichtbar ohne Scrollen: der Knopf liegt ganz im Fenster (Wunsch 02.11.2026 – auf „3D-Modelle erstellen“ war er unten in einer Spalte versteckt)
                 // gemessen am Studio-Fenster (win-…): Trendo zeichnet auf einer Designfläche und skaliert sie aufs echte Fenster
                 var frame = Avalonia.VisualTree.VisualExtensions.GetVisualAncestors(b).OfType<Control>().FirstOrDefault(c => c.Name?.StartsWith("win-", StringComparison.Ordinal) == true && c.GetType().Name == "DeskFrame") ?? (Control)w;

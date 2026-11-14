@@ -50,7 +50,7 @@ public partial class MainWindow
             }
             else _msMsg = "Trennen ging nicht" + (err.Length > 0 ? ": " + err : ".");
         }
-        catch (Exception e) when (e is IOException or InvalidOperationException) { _msMsg = "Trennen ging nicht: " + e.Message; }
+        catch (Exception e) when (e is IOException or InvalidOperationException) { _msMsg = "Trennen ging nicht: " + Trendo.Core.FriendlyError.Say(e); }
         finally { _msSplitting = false; }
         if (CurrentView == MS) Show(MS);
         return made;
@@ -75,7 +75,7 @@ public partial class MainWindow
             sp.Children.Add(Act("ms-stems-setup", "Spuren trennen einrichten", async () =>
             {
                 try { await KiPyInstall(StemsModel, KiPyApps.For(KiRuntime.Spuren)!); _msMsg = "✓ Spuren trennen ist eingerichtet."; }
-                catch (Exception e) when (e is InvalidOperationException or IOException or HttpRequestException or OperationCanceledException) { _msMsg = "Einrichten ging nicht: " + e.Message; }
+                catch (Exception e) when (e is InvalidOperationException or IOException or HttpRequestException or OperationCanceledException) { _msMsg = "Einrichten ging nicht: " + Trendo.Core.FriendlyError.Say(e); }
                 Show(MS);
             }));
             return sp;

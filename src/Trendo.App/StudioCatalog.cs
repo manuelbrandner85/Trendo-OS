@@ -21,6 +21,7 @@ public static class StudioCatalog
         ["SYS-09"] = new("E-Mails & Termine", "E-Mails, Kontakte und Termine an einem Ort.", "Arbeiten & Büro"),
         ["X-11"] = new("Neues Projekt starten", "Ein Startpunkt für jedes Projekt – vom Dokument bis zum Video.", "Arbeiten & Büro"),
         ["SYS-02"] = new("Kleine Helfer & Musik", "Kleine Helfer: Rechner, Notizen, Bildschirmfoto, Musik und Videos abspielen.", "Arbeiten & Büro"),
+        ["STUDIO-DAYPLAN-01"] = new("Tagesplaner", "Aufgaben um feste Termine herum in den Tag legen – mit Pausen und einer Liste für morgen.", "Arbeiten & Büro"),
 
         ["STUDIO-ONLINE-BUSINESS-01"] = new("Online verkaufen", "Geschäftsidee planen, gründen und online verkaufen.", "Business & Geld"),
         ["STUDIO-POD-01"] = new("Print on Demand", "Eigene Motive auf Produkte bringen: Druckdatei prüfen, Preis rechnen, Rechtliches klären.", "Business & Geld"),
@@ -42,6 +43,10 @@ public static class StudioCatalog
         ["CORE-12"] = new("KI-Anweisungen schreiben", "Gute Anweisungen für die KI schreiben und sammeln.", "KI & Automatik"),
         ["STUDIO-SUMMARY-01"] = new("Texte zusammenfassen", "Lange Texte auf das Wichtigste bringen – mit Stichwörtern und Lesezeit, auch ohne Internet.", "KI & Automatik"),
         ["STUDIO-IMAGEAI-01"] = new("Bilder mit KI", "Bilder aus einer Beschreibung malen – lokal, mit Stil, Format und Herkunftsnachweis.", "KI & Automatik"),
+        ["STUDIO-VIDEOAI-01"] = new("Videos mit KI", "Kurze Videos aus einer Beschreibung: Szenen planen, Bilder lokal malen, mit Kamerafahrt und Überblendung als MP4.", "KI & Automatik"),
+        ["STUDIO-AGENTS-01"] = new("KI-Agenten bauen", "Eigene KI-Helfer entwerfen: Aufgabe, Anweisungen, erlaubte Werkzeuge und Grenzen – für Claude Code und das KI-Team.", "KI & Automatik"),
+        ["STUDIO-MODELS-01"] = new("KI-Modelle vergleichen", "Dieselbe Frage an mehrere KIs: Antworten nebeneinander, Zeit messen, blind bewerten, Ergebnis als Tabelle.", "KI & Automatik"),
+        ["STUDIO-TRAIN-01"] = new("Eigene KI trainieren", "Eine kleine KI mit eigenen Beispielen trainieren, die Texte in Kategorien sortiert – auf deinem Rechner.", "KI & Automatik"),
 
         ["CORE-05"] = new("3D-Modelle erstellen", "3D-Modelle bauen und ansehen – Blender optional.", "3D, Spiele & VR"),
         ["STUDIO-CONSOLE-01"] = new("Konsolenspiele portieren", "Dein eigenes PS2-Spiel als Programm für PC, Steam Deck oder Handy.", "3D, Spiele & VR"),
@@ -63,12 +68,15 @@ public static class StudioCatalog
         ["SPEC-07"] = new("Texte übersetzen", "Texte mit der lokalen KI übersetzen.", "Wissen & Lernen"),
         ["CORE-10"] = new("Wissen merken", "Merkt sich, was du gelernt und gemacht hast.", "Wissen & Lernen"),
         ["SYS-08"] = new("Sicher recherchieren", "Sicher im Netz recherchieren – nur lesen.", "Wissen & Lernen"),
+        ["STUDIO-CITE-01"] = new("Recherche mit Quellen", "Quellen und Zitate sammeln, sauber zitieren (APA, Harvard, DIN) und als Literaturverzeichnis ausgeben.", "Wissen & Lernen"),
 
         ["CORE-02"] = new("KI fragen", "Dein Helfer, der Fragen beantwortet und Aufgaben erledigt.", "KI & Automatik"),
         ["CORE-03"] = new("KI-Team einsetzen", "Mehrere KI-Helfer arbeiten gemeinsam an einer Aufgabe (lokale KI nötig).", "KI & Automatik"),
         ["X-05"] = new("Kostenlose KI finden", "Kostenlose KI-Modelle finden und als Ersatz nutzen.", "KI & Automatik"),
         ["SYS-05"] = new("Aufgaben automatisieren", "Wiederkehrende Aufgaben automatisch erledigen lassen.", "KI & Automatik"),
         ["X-01"] = new("Großprojekte umsetzen", "Mehrere Studios arbeiten zusammen an einem Projekt.", "KI & Automatik"),
+        ["STUDIO-CODEAI-01"] = new("Code mit KI", "Projekt öffnen, Dateien mit Claude erklären und ändern, Tests ausführen und Änderungen vergleichen.", "KI & Automatik"),
+        ["STUDIO-VISION-01"] = new("Bilder erkennen", "Bilder ohne Internet prüfen: Aufnahmedaten, Farben, Helligkeit, Schärfe und Text im Bild.", "KI & Automatik"),
 
         ["CORE-07"] = new("Webseite bauen", "Webseiten und Apps programmieren.", "Entwickeln"),
         ["X-03"] = new("Apps zusammenklicken", "Apps zusammenklicken – ganz ohne Programmieren.", "Entwickeln"),

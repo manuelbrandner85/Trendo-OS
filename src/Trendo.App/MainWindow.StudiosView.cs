@@ -35,19 +35,6 @@ public partial class MainWindow
         var list = _studios.Where(StudioHit).ToList();
         var main = new StackPanel { Spacing = 12 };
 
-        // Eingabezeile: Enter sucht in Studios, Seiten und Dateien
-        // S1/S2 (13.11.2026): schlichtes Such- und Auftragsfeld wie in der Kopfzeile – feiner Rand, kein Leuchten, keine Goldkugel
-        var ask = new TextBox { Name = "studios-ask", PlaceholderText = "Studio oder Aufgabe suchen", Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Text, FontSize = 14, VerticalContentAlignment = VerticalAlignment.Center };
-        void Go() { var q = ask.Text?.Trim() ?? ""; if (q.Length == 0) return; _query = q; Show("suche"); }
-        ask.KeyDown += (_, e) => { if (e.Key == Key.Enter) { e.Handled = true; Go(); } };
-        var goBtn = new Button { Name = "studios-ask-go", Width = 32, Height = 32, CornerRadius = new CornerRadius(4), Padding = new Thickness(0), Background = Accent, BorderThickness = new Thickness(0), Content = Ico(Mdi.ArrowRight, 16, Brushes.White), VerticalAlignment = VerticalAlignment.Center };
-        Avalonia.Automation.AutomationProperties.SetName(goBtn, "Suchen"); ToolTip.SetTip(goBtn, "Suchen");
-        goBtn.Click += (_, _) => { if (string.IsNullOrWhiteSpace(ask.Text)) ask.Focus(); else Go(); };
-        var askRow = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = {
-            new Border { Margin = new Thickness(4, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center, Child = Ico(Mdi.Magnify, 16, Muted) }, Pos(ask, 1), Pos(goBtn, 2) } };
-        main.Children.Add(new Border { Name = "studios-ask-bar", CornerRadius = new CornerRadius(6), Padding = new Thickness(8, 5, 6, 5), Background = Brush.Parse(C("#F21E1F22", "#FFFFFFFF")), BorderBrush = Brush.Parse(C("#33FFFFFF", "#26000000")), BorderThickness = new Thickness(1),
-            MaxWidth = 860, HorizontalAlignment = HorizontalAlignment.Stretch, Child = askRow });
-
         // Bereichs-Chips (Filter)
         var filters = new WrapPanel { HorizontalAlignment = HorizontalAlignment.Center };
         void ChipFilter(string? area, string label)
@@ -63,7 +50,10 @@ public partial class MainWindow
         main.Children.Add(filters);
 
         // Kopf „Studios“ mit Suche
-        var search = new TextBox { Name = "txt-studio-search", Text = _studioQuery, PlaceholderText = "Studio suchen", Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Text, FontSize = 12.5, MinWidth = 180 };
+        // E11 (T-0616): ein Suchfeld je Seite – Tippen filtert die Studios sofort, Enter sucht auch in Seiten, Projekten und Dateien (früher zwei Felder)
+        var search = new TextBox { Name = "txt-studio-search", Text = _studioQuery, PlaceholderText = "Studio oder Aufgabe suchen – Enter sucht überall", Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Text, FontSize = 13, MinWidth = 300 };
+        search.KeyDown += (_, e) => { if (e.Key == Key.Enter && (search.Text ?? "").Trim() is { Length: > 0 } q) { e.Handled = true; _query = q; Show("suche"); } };
+        ToolTip.SetTip(search, "Tippen filtert die Studios, Enter sucht zusätzlich in Seiten, Projekten und Dateien");
         search.TextChanged += (_, _) =>
         {
             if (_studioRebuild > 0) return;

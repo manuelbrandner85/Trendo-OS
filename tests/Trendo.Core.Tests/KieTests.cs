@@ -96,7 +96,7 @@ public class KieTests
         Assert.Equal(".webp", KieModels.Extension("https://x/y.webp?sig=1", KieKind.Bild));
         Assert.Contains(KieKind.Musik, KieModels.ForStudio("STUDIO-MUSIK-01"));
         Assert.Contains(KieKind.Bild, KieModels.ForStudio("SYS-99"));
-        Assert.Equal(["kling/ai-avatar-standard"], KieModels.Missing("google/nano-banana google/nano-banana-edit recraft/remove-background topaz/image-upscale kling-3-0 suno multilingual-v2"));
+        Assert.Equal(["kling/ai-avatar-standard"], KieModels.Missing("google/nano-banana google/nano-banana-edit recraft/remove-background topaz/image-upscale kling-3-0 suno multilingual-v2 veo3-api generate-sounds"));
         Assert.Contains("Credits", KieModels.CostText(KieModels.Find("google/nano-banana")!));
     }
 

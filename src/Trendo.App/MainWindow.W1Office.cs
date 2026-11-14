@@ -57,7 +57,7 @@ public partial class MainWindow
                 pdf.Click += async (_, _) =>
                 {
                     msg.Text = $"Erstelle PDF aus {f.Name} …";
-                    var (ok, m, p) = await Task.Run(() => { try { var o = Trendo.Core.Office.OfficeConvert.ToPdf(f.FullName); return (true, "PDF erstellt (ohne Zusatzprogramm)", o); } catch (Exception ex) when (ex is IOException or InvalidDataException or NotSupportedException or InvalidOperationException or System.Xml.XmlException) { return (false, "PDF ging nicht: " + ex.Message, ""); } });
+                    var (ok, m, p) = await Task.Run(() => { try { var o = Trendo.Core.Office.OfficeConvert.ToPdf(f.FullName); return (true, "PDF erstellt (ohne Zusatzprogramm)", o); } catch (Exception ex) when (ex is IOException or InvalidDataException or NotSupportedException or InvalidOperationException or System.Xml.XmlException) { return (false, "PDF ging nicht: " + Trendo.Core.FriendlyError.Say(ex), ""); } });
                     msg.Text = ok ? $"{m}: {Path.GetFileName(p)}" : m; _core.Audit.Append(Principal.LocalOwner.Name, "office.pdf", $"{f.Name} ok={ok}"); };
                 ((StackPanel)((Grid)r.Child!).Children[1]).Children.Insert(1, pdf);
             }
@@ -304,7 +304,7 @@ public partial class MainWindow
                 _core.Audit.Append(Principal.LocalOwner.Name, "letter.export", Path.GetFileName(target));
                 msg.Text = _letterMsg = "Exportiert: " + target; NotifyFileResult(_letterMsg);
             }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException) { msg.Text = "Exportieren fehlgeschlagen: " + ex.Message; }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException) { msg.Text = "Exportieren fehlgeschlagen: " + Trendo.Core.FriendlyError.Say(ex); }
         };
         pdf.Click += async (_, _) => await SafeSave(true, "Als PDF gespeichert");
         ToolTip.SetTip(send, "Per E-Mail (PDF im Anhang) oder zum Drucken – abschicken tust du selbst");

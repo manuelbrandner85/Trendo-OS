@@ -35,9 +35,22 @@ public class Sys13_Qualitaet
     {
         var d = Tmp(); File.WriteAllText(UserSettings.PathIn(d), "{\"Name\":\"Ana\",\"Theme\":\"Light\",\"UiScale\":115,\"Wallpaper\":\"default\",\"Altfeld\":1}");
         var s = UserSettings.Load(d);
-        Assert.Equal(("Ana", "hell", 1.15, "bergsee-nacht", 3), (s.Name, s.Theme, s.UiScale, s.Wallpaper, s.FormatVersion)); // Format 3 seit T-0224
-        s.Save(d); Assert.Contains("\"FormatVersion\": 3", File.ReadAllText(UserSettings.PathIn(d)));
+        Assert.Equal(("Ana", "hell", 1.15, "bergsee-nacht", 4), (s.Name, s.Theme, s.UiScale, s.Wallpaper, s.FormatVersion)); // Format 4 seit T-0616
+        s.Save(d); Assert.Contains("\"FormatVersion\": 4", File.ReadAllText(UserSettings.PathIn(d)));
         File.WriteAllText(UserSettings.PathIn(d), "{\"Theme\":5}"); Assert.Equal("dunkel", UserSettings.Load(d).Theme);
+    }
+
+    [Fact(DisplayName = "T-0616 E9: „Einfacher Modus“ an wird zur Bedienstufe „Einfach“, größere Knöpfe bleiben; ohne einfachen Modus bleibt die gewählte Stufe")]
+    public void Migration_simple_mode_to_level()
+    {
+        var d = Tmp(); File.WriteAllText(UserSettings.PathIn(d), "{\"FormatVersion\":3,\"SimpleMode\":true,\"Level\":\"profi\"}");
+        var s = UserSettings.Load(d);
+        Assert.Equal(("einfach", true, 4), (s.Level, s.SimpleMode, s.FormatVersion));
+        File.WriteAllText(UserSettings.PathIn(d), "{\"FormatVersion\":3,\"SimpleMode\":false,\"Level\":\"profi\"}");
+        Assert.Equal("profi", UserSettings.Load(d).Level);
+        File.WriteAllText(UserSettings.PathIn(d), "{\"FormatVersion\":4,\"SimpleMode\":true,\"Level\":\"erweitert\"}"); // schon umgestellt: neue Wahl bleibt
+        Assert.Equal("erweitert", UserSettings.Load(d).Level);
+        Assert.True(new UserSettings().AutoSave);
     }
 
     [Fact(DisplayName = "SYS-13-P21: Keine Telemetrie-Bibliothek oder -Adresse im Quellcode")]

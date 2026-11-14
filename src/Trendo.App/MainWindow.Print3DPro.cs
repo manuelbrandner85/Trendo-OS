@@ -37,7 +37,7 @@ public partial class MainWindow
             _prFound = DiscoverOverride is { } fake ? await fake() : _opt.Isolated ? [] : await BambuNetPro.DiscoverAsync(TimeSpan.FromSeconds(6));
             _prMsg = _prFound.Count == 0 ? "Kein Drucker gefunden. Ist er eingeschaltet und im selben WLAN wie dieser PC? Unter „Einrichtung“ steht, wie er ins WLAN kommt." : $"{_prFound.Count} Drucker gefunden – „Übernehmen“ trägt IP und Seriennummer ein.";
         }
-        catch (Exception ex) when (ex is System.Net.Sockets.SocketException or IOException) { _prMsg = "Suchen ging nicht: " + ex.Message + " (Port 2021 belegt oder von der Firewall gesperrt?)"; }
+        catch (Exception ex) when (ex is System.Net.Sockets.SocketException or IOException) { _prMsg = "Suchen ging nicht: " + Trendo.Core.FriendlyError.Say(ex) + " (Port 2021 belegt oder von der Firewall gesperrt?)"; }
         finally { _prSearching = false; }
         Show("3d-druck");
     }
@@ -83,7 +83,7 @@ public partial class MainWindow
     {
         if (_bambu is not { } c) { _prMsg = "Erst mit dem Drucker verbinden."; Show("3d-druck"); return; }
         try { await run(c); _prMsg = what + " – gesendet. Ohne Entwicklermodus ignoriert der Drucker Steuerbefehle."; _core.Audit.Append(Principal.LocalOwner.Name, "3ddruck.steuerung", $"{Printer?.Name}: {what}"); }
-        catch (Exception ex) when (ex is IOException or ArgumentException or ObjectDisposedException) { _prMsg = "Ging nicht: " + ex.Message; }
+        catch (Exception ex) when (ex is IOException or ArgumentException or ObjectDisposedException) { _prMsg = "Ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
         Show("3d-druck");
     }
     public Task PrinterLight(bool on) => PrinterDo(on ? "Licht an" : "Licht aus", c => c.Light(on));
@@ -114,7 +114,7 @@ public partial class MainWindow
             _prMsg = f is null ? "Auf der Speicherkarte liegt noch kein Zeitraffer – beim Druckstart „Zeitraffer aufnehmen“ ankreuzen." : "Zeitraffer gespeichert: " + Path.GetFileName(f);
             if (f is not null) Launch(Path.GetDirectoryName(f)!);
         }
-        catch (Exception ex) when (ex is IOException or System.Net.Sockets.SocketException or System.Security.Authentication.AuthenticationException) { _prMsg = "Zeitraffer holen ging nicht: " + ex.Message; }
+        catch (Exception ex) when (ex is IOException or System.Net.Sockets.SocketException or System.Security.Authentication.AuthenticationException) { _prMsg = "Zeitraffer holen ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
         Show("3d-druck");
     }
 

@@ -131,7 +131,7 @@ public partial class MainWindow
                 _ui.Post(() => Toast("Windows-Spiel fertig.", ("Ordner öffnen", () => Launch(outDir))));
             }
         }
-        catch (Exception e) when (e is IOException or InvalidOperationException or System.ComponentModel.Win32Exception or UnauthorizedAccessException) { msg = "✗ Windows-Spiel nicht gepackt: " + e.Message; }
+        catch (Exception e) when (e is IOException or InvalidOperationException or System.ComponentModel.Win32Exception or UnauthorizedAccessException) { msg = "✗ Windows-Spiel nicht gepackt: " + Trendo.Core.FriendlyError.Say(e); }
         finally { UnrealBusy = false; }
         _core.Audit.Append(Principal.LocalOwner.Name, "game.release.unreal", msg.StartsWith('✓') ? "ok" : "fehler");
         Step(msg);
@@ -155,7 +155,7 @@ public partial class MainWindow
             Show(GK); return;
         }
         try { Process.Start(new ProcessStartInfo("cmd.exe", "/k " + cmd) { UseShellExecute = true, WorkingDirectory = Path.GetDirectoryName(package)! }); _progMsg[GK] = $"Fenster zum Hochladen ist offen – melde dich dort mit deinem {GameRelease.Label(target)}-Konto an."; }
-        catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException) { _progMsg[GK] = "Das Fenster ließ sich nicht öffnen: " + e.Message; }
+        catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException) { _progMsg[GK] = "Das Fenster ließ sich nicht öffnen: " + Trendo.Core.FriendlyError.Say(e); }
         Show(GK);
     }
 }

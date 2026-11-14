@@ -220,7 +220,7 @@ public partial class MainWindow
             Say($"✓ {(preview ? "Vorschau" : "Endfassung")}: {done.Values.Count(c => c.Ok)} von {sc.Shots.Count} Einstellungen fertig und geprüft" + (red > 0 ? $", {red} rot – bitte ansehen: neu würfeln, ändern oder ersetzen." : ".") + " „Im Videoschnitt zusammensetzen“ legt alles auf den Takt.");
         }
         catch (OperationCanceledException) { Say("Abgebrochen – fertige Einstellungen bleiben, beim nächsten Start geht es dort weiter."); }
-        catch (Exception e) when (e is InvalidOperationException or IOException) { Say("Musikvideo ging nicht: " + e.Message); }
+        catch (Exception e) when (e is InvalidOperationException or IOException) { Say("Musikvideo ging nicht: " + Trendo.Core.FriendlyError.Say(e)); }
         finally { _mvKiCts = null; cts.Dispose(); if (CurrentView == MS) Show(MS); }
         return okCount;
     }

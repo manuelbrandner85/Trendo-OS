@@ -87,7 +87,7 @@ public partial class MainWindow
                 _dlStatus = "Lädt …"; var prog = new Progress<(long Done, long Total)>(p => { if (p.Total > 0) bar.Value = 100.0 * p.Done / p.Total; });
                 try { var n = await WebTools.DownloadAsync(u.AbsoluteUri, target, prog, _dlCts.Token); _dlStatus = $"Fertig: {Path.GetFileName(target)} ({ResourceMonitor.Size(n)}), Prüfsumme {J2.Sha(target)[..12]}…"; _core.Audit.Append("app", "download", $"{u.Host} {Path.GetFileName(target)}"); }
                 catch (OperationCanceledException) { _dlStatus = "Angehalten – „Weiter laden“ macht dort weiter."; }
-                catch (HttpRequestException ex) { _dlStatus = "Abgebrochen: " + ex.Message + " – „Weiter laden“ versucht es erneut."; }
+                catch (HttpRequestException ex) { _dlStatus = "Abgebrochen: " + Trendo.Core.FriendlyError.Say(ex) + " – „Weiter laden“ versucht es erneut."; }
                 Say(_dlStatus, V);
             }, true), Act("dl-stop", "Anhalten", () => { if (_dlCts is { IsCancellationRequested: false } c && _dlStatus == "Lädt …") { c.Cancel(); Say("Wird angehalten …", V); } else Say("Gerade läuft kein Download.", V); }), bar), P(_dlStatus ?? "", Text, 11))));
 
@@ -116,7 +116,7 @@ public partial class MainWindow
         var u = Browsers.Normalize(Clean(url)); if (u is null || u.AbsoluteUri.StartsWith(Web.SearchUrl(_core.DataRoot))) { Say($"„{what}“: Bitte zuerst eine Webseiten-Adresse eingeben.", view); return; }
         Say($"„{what}“ läuft …", view);
         try { var m = await job(u); Say(m, view); }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException or InvalidOperationException) { Say("Hat nicht geklappt: " + ex.Message, view); }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException or InvalidOperationException) { Say("Hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex), view); }
     }
 
     public string SavePdf(Uri u, string html)

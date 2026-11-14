@@ -83,7 +83,8 @@ public class ClaudeOperate_Ui
             await Run(w.ClaudeCheck(true));
             var page = Page();
             w.Show(page); w.ProgramNew(page); w.Show(page);
-            Assert.NotNull(w.TryFind<Button>("prog-claude")); Assert.NotNull(w.TryFind<Button>("prog-claude-ask"));
+            Assert.NotNull(w.TryFind<Button>("ki-menu")); Assert.NotNull(w.TryFind<Button>("auftrag-claude")); Assert.NotNull(w.TryFind<Button>("auftrag-claude-markierung")); // E1 (T-0616): beides im Menü „KI ▾“
+            Assert.Null(w.TryFind<Button>("prog-claude")); // kein zweites „Claude“ im Programmband
             // Rechtsklick auf einen Text der Seite
             var tb = w.ActivePageRootForTests!.GetLogicalDescendants().OfType<TextBlock>().First(t => t.Text is { Length: > 3 } && t.FindLogicalAncestorOfType<Button>() is null && !t.GetLogicalAncestors().OfType<Control>().Any(a => a.Name == "auftrag-leiste"));
             var args = new Avalonia.Input.ContextRequestedEventArgs { RoutedEvent = Control.ContextRequestedEvent };
@@ -98,8 +99,8 @@ public class ClaudeOperate_Ui
             Assert.StartsWith("Zu „Wohnzimmer 24 m²“", w.Find<TextBox>("claude-chat-input").Text);
             Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "claude.rechtsklick");
             w.ClaudeDockToggle(null); w.Show(page);
-            w.Find<Button>("prog-claude").Press();
-            Assert.NotNull(w.TryFind<TextBox>("claude-chat-input")); // aus dem Menüband geöffnet
+            w.Find<Button>("auftrag-claude").Press();
+            Assert.NotNull(w.TryFind<TextBox>("claude-chat-input")); // aus dem Menü „KI ▾“ geöffnet
         }
         finally { End(w); }
     }

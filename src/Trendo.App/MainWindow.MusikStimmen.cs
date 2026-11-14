@@ -38,7 +38,7 @@ public partial class MainWindow
         catch (Exception e) when (e is ArgumentException or InvalidOperationException) { OvSay(e.Message); return null; }
         int parts;
         try { parts = await Task.Run(() => Bank.Segment(v.Id, AudioFile.Read(voc.File))); }
-        catch (Exception e) when (e is InvalidOperationException or IOException or InvalidDataException) { Bank.Delete(v.Id); OvSay("Gesangsspur nicht lesbar: " + e.Message); return null; }
+        catch (Exception e) when (e is InvalidOperationException or IOException or InvalidDataException) { Bank.Delete(v.Id); OvSay("Gesangsspur nicht lesbar: " + Trendo.Core.FriendlyError.Say(e)); return null; }
         if (parts < VoiceBank.MinSegments)
         {
             Bank.Delete(v.Id);
@@ -62,7 +62,7 @@ public partial class MainWindow
             OvSay(ok ? $"✓ Stimme „{v.Name}“ gelernt – beim Erstellen unter „Gesang in“ wählen." : "Lernen ging nicht: " + Short(r.Err.Length > 0 ? r.Err : r.Out));
             return Bank.Get(v.Id);
         }
-        catch (Exception e) when (e is InvalidOperationException or IOException or HttpRequestException or OperationCanceledException) { OvSay("Einrichten ging nicht: " + e.Message); return Bank.Get(v.Id); }
+        catch (Exception e) when (e is InvalidOperationException or IOException or HttpRequestException or OperationCanceledException) { OvSay("Einrichten ging nicht: " + Trendo.Core.FriendlyError.Say(e)); return Bank.Get(v.Id); }
         finally { _ovBusy = false; if (CurrentView == MS) Show(MS); }
     }
 

@@ -34,7 +34,7 @@ public partial class MainWindow
         left.Children.Add(Act("clean-create", "＋ Anlegen", () =>
         {
             try { _cleanOpen = CleanRoom.Create(CleanFolder, string.IsNullOrWhiteSpace(name.Text) ? "Nachbau" : name.Text, orig.Text ?? ""); _cleanSims = null; Say("Angelegt. Schritt 1: Beschreibung schreiben.", "nachbau"); }
-            catch (Exception ex) { Say("Hat nicht geklappt: " + ex.Message, "nachbau"); }
+            catch (Exception ex) { Say("Hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex), "nachbau"); }
         }, true));
         var dirs = Directory.GetDirectories(CleanFolder).OrderByDescending(Directory.GetLastWriteTime).ToList();
         _cleanOpen ??= dirs.FirstOrDefault();

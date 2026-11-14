@@ -371,7 +371,7 @@ public partial class MainWindow
             if (e?.Kind == "briefkopf") Cases.RestoreLetterhead(id, Principal.LocalOwner); else new LetterTrash(ProjectsRoot).Restore(id);
             _caseMsg = $"✓ „{e?.Label}“ ist wieder da.";
         }
-        catch (Exception ex) when (ex is IOException or FileNotFoundException or UnauthorizedAccessException) { _caseMsg = "Zurückholen ging nicht: " + ex.Message; }
+        catch (Exception ex) when (ex is IOException or FileNotFoundException or UnauthorizedAccessException) { _caseMsg = "Zurückholen ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
         Show(view);
     }
 

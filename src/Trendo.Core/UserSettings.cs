@@ -43,7 +43,14 @@ public sealed class UserSettings
     public bool EasyLanguage { get; set; }
     public bool ColorBlind { get; set; }
     public string NotifyStyle { get; set; } = "normal";
+    /// <summary>Größere Knöpfe (Bedienhilfe). Hieß früher „Einfacher Modus“; die Wahl „Einfach“ ist seit T-0616 allein die Bedienstufe <see cref="Level"/>.</summary>
     public bool SimpleMode { get; set; }
+    /// <summary>E3 (T-0616): Dokumente der Programme werden nach jeder Änderung selbst gespeichert (Versionen sichern frühere Stände).</summary>
+    public bool AutoSave { get; set; } = true;
+    /// <summary>E12 (T-0616): Teile des Desktops, die „Einfach“ ausblendet, die die Person aber selbst wieder eingeblendet hat.</summary>
+    public List<string> ShownTiles { get; set; } = [];
+    /// <summary>E5 (T-0616): zuletzt bearbeitetes Dokument je Programm (Seite → Datei) für „Weitermachen“.</summary>
+    public Dictionary<string, string> LastProgramDoc { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     /// <summary>Masterprompt 131: Bedienstufe der Programme – einfach | erweitert | profi (siehe <see cref="Programs.UserLevel"/>).
     /// Seit 04.11.2026 (Nutzerwunsch „Einfach zuerst“) starten neue Nutzer mit „einfach“; eine gespeicherte Wahl bleibt erhalten.</summary>
     public string Level { get; set; } = "einfach";

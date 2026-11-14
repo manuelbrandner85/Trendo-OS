@@ -88,7 +88,7 @@ public partial class MainWindow
         {
             var psi = new ProcessStartInfo(exe) { WorkingDirectory = work, UseShellExecute = false, CreateNoWindow = true };
             foreach (var a in args) psi.ArgumentList.Add(a);
-            try { _mtx = Process.Start(psi); _mtxOn = _mtx is not null; } catch (System.ComponentModel.Win32Exception e) { _mtxMsg = "⚠ Sendeserver startet nicht: " + e.Message; Show("sendung"); return; }
+            try { _mtx = Process.Start(psi); _mtxOn = _mtx is not null; } catch (System.ComponentModel.Win32Exception e) { _mtxMsg = "⚠ Sendeserver startet nicht: " + Trendo.Core.FriendlyError.Say(e); Show("sendung"); return; }
             if (!_mtxHooked) { _mtxHooked = true; Closed += (_, _) => { try { if (_mtx is { HasExited: false }) _mtx.Kill(); } catch (InvalidOperationException) { } }; }
         }
         if (!_mtxOn) { _mtxMsg = "⚠ Sendeserver startet nicht."; Show("sendung"); return; }

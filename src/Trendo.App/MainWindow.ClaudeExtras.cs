@@ -314,7 +314,7 @@ public partial class MainWindow
             ui.LastSnapshot = null; ui.Panel = null;
             if (ui.PreviewFile is { } pf) ShowPreview(dock, pf);
         }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException) { _claudeMsg = "Zeitreise ging nicht: " + e.Message; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException) { _claudeMsg = "Zeitreise ging nicht: " + Trendo.Core.FriendlyError.Say(e); }
         RenderChat(dock);
     }
 

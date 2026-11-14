@@ -36,7 +36,7 @@ public partial class MainWindow
                     _gameEdit = dir; _gamePreview = null;
                     Launch(Path.Combine(dir, "index.html")); Say($"„{Path.GetFileName(dir)}“ angelegt und im Browser geöffnet. Unten kannst du Regeln, Aussehen und Level einstellen.", "spiele");
                 }
-                catch (Exception ex) { Say("Hat nicht geklappt: " + ex.Message, "spiele"); }
+                catch (Exception ex) { Say("Hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex), "spiele"); }
             }, true) } }));
 
         if (_gameEdit is { } ge && File.Exists(Path.Combine(ge, "config.js"))) center.Children.Add(GameEditor(ge));
@@ -62,7 +62,7 @@ public partial class MainWindow
                     if (File.Exists(exe)) _core.Integrations.LaunchDirect(Principal.LocalOwner, exe, _core.Audit, up);
                     Say($"Projekt „{Path.GetFileName(dir)}“ für Unreal {e.Version} angelegt." + (File.Exists(exe) ? " Der Editor startet (das dauert)." : ""), "spiele");
                 }
-                catch (Exception ex) { Say("Hat nicht geklappt: " + ex.Message, "spiele"); }
+                catch (Exception ex) { Say("Hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex), "spiele"); }
             }) } });
         }
         var uo = new TextBox { Name = "game-ue-file", PlaceholderText = "Vorhandenes Unreal-Projekt (.uproject)" };
@@ -147,12 +147,12 @@ public partial class MainWindow
                 _gamePreview = shot.Ok ? shot.Path : null; _gamePreviewNote = shot.Ok ? "Vorschau aus dem Browser." : shot.Note;
                 Say("Gespeichert." + (shot.Ok ? " Die Vorschau zeigt den neuen Stand." : " " + shot.Note), "spiele");
             }
-            catch (Exception ex) when (ex is ArgumentException or IOException) { Say("Hat nicht geklappt: " + ex.Message, "spiele"); }
+            catch (Exception ex) when (ex is ArgumentException or IOException) { Say("Hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex), "spiele"); }
         }
         box.Children.Add(new WrapPanel { Children = {
             Act("game-save", "Speichern und Vorschau", SaveAndPreview, true),
             Act("game-play", "Spielen", () => Launch(Path.Combine(dir, "index.html"))),
-            Act("game-export", "Als ZIP weitergeben", () => { try { var z = GameStudio.Export(dir, Path.Combine(GameFolder, "Export")); Say("Exportiert: " + Path.GetFileName(z) + " – index.html im ZIP öffnen genügt.", "spiele"); Launch(Path.GetDirectoryName(z)!); } catch (Exception ex) when (ex is IOException or InvalidOperationException) { Say("Export hat nicht geklappt: " + ex.Message, "spiele"); } }),
+            Act("game-export", "Als ZIP weitergeben", () => { try { var z = GameStudio.Export(dir, Path.Combine(GameFolder, "Export")); Say("Exportiert: " + Path.GetFileName(z) + " – index.html im ZIP öffnen genügt.", "spiele"); Launch(Path.GetDirectoryName(z)!); } catch (Exception ex) when (ex is IOException or InvalidOperationException) { Say("Export hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex), "spiele"); } }),
             Act("game-edit-close", "Fertig", () => { _gameEdit = null; Show("spiele"); }) } });
         box.Children.Add(img);
         if (_gamePreviewNote.Length > 0) box.Children.Add(P(_gamePreviewNote, null, 11));

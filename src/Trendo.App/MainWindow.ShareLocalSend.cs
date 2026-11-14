@@ -42,7 +42,7 @@ public partial class MainWindow
             catch (OperationCanceledException) { }
             _lsMsg = found.Count == 0 ? "Kein Handy gefunden. Ist LocalSend dort geöffnet und im selben WLAN?" : $"{found.Count} Gerät(e) gefunden.";
         }
-        catch (SocketException e) { _lsMsg = "⚠ Netzwerksuche ging nicht: " + e.Message; }
+        catch (SocketException e) { _lsMsg = "⚠ Netzwerksuche ging nicht: " + Trendo.Core.FriendlyError.Say(e); }
         LsPeers = [.. found.Values.OrderBy(p => p.Alias)];
         Show("teilen");
     }
@@ -83,7 +83,7 @@ public partial class MainWindow
         }
         catch (Exception e) when (e is HttpRequestException or IOException or InvalidOperationException or FormatException or System.Text.Json.JsonException or TaskCanceledException)
         {
-            _lsMsg = "⚠ Senden ging nicht: " + e.Message;
+            _lsMsg = "⚠ Senden ging nicht: " + Trendo.Core.FriendlyError.Say(e);
             if (session is not null) try { using var c = await http.PostAsync(LocalSend.CancelUrl(peer, session), null); } catch (HttpRequestException) { } // Sitzung am Handy freigeben
         }
         _core.Audit.Append(Principal.LocalOwner.Name, "share.localsend", $"{sent} Datei(en)");

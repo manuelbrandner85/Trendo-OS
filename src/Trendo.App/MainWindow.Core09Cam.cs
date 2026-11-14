@@ -200,7 +200,7 @@ public partial class MainWindow
                 ? "Keine ONVIF-Kamera hat geantwortet. Wenn du die Adresse kennst, trag sie als rtsp:// ein."
                 : found.Count + " Netzwerk-Kamera eingetragen.";
         }
-        catch (Exception ex) { Bench.CamStatus = "⚠ Die Suche ist fehlgeschlagen: " + ex.Message; }
+        catch (Exception ex) { Bench.CamStatus = "⚠ Die Suche ist fehlgeschlagen: " + Trendo.Core.FriendlyError.Say(ex); }
         Show("roboter");
     }
 

@@ -17,15 +17,17 @@ public partial class MainWindow
         foreach (var k in keys)
         {
             var key = k; var title = PageTitle(k);
+            // E5 (T-0616): bei Programmen das zuletzt bearbeitete Dokument nennen und öffnen
+            var doc = LastDocOf(k);
             var card = new Button { Name = "continue-" + i++, Width = 196, Height = 72, Margin = new Thickness(0, 0, 10, 10), Padding = new Thickness(12, 10), CornerRadius = new CornerRadius(14),
                 HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalContentAlignment = VerticalAlignment.Center, Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1),
                 Content = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), ColumnSpacing = 10, Children = {
                     Chip(Mdi.ArrowRight, "#F5D27A", "#9C7419", 34),
                     Pos(new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = {
                         new TextBlock { Text = title, Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
-                        new TextBlock { Text = i == 1 ? "zuletzt geöffnet" : "weitermachen", Foreground = Muted, FontSize = 11 } } }, 1) } } };
-            ToolTip.SetTip(card, $"„{title}“ öffnen");
-            card.Click += (_, _) => Show(key);
+                        new TextBlock { Text = doc is not null ? "weiter mit „" + Path.GetFileNameWithoutExtension(doc) + "“" : i == 1 ? "zuletzt geöffnet" : "weitermachen", Foreground = Muted, FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis } } }, 1) } } };
+            ToolTip.SetTip(card, doc is not null ? $"„{Path.GetFileNameWithoutExtension(doc)}“ in „{title}“ weiterbearbeiten" : $"„{title}“ öffnen");
+            card.Click += (_, _) => { if (!(doc is not null && ProgramActive(key) is null && ProgramContinue(key))) Show(key); };
             Hover(card); row.Children.Add(card);
         }
         var panel = Glass2(new StackPanel { Children = { Head("Weitermachen", "Zuletzt benutzt", null, Mdi.Restart), row } }, 10);

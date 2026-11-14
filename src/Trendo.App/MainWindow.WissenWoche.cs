@@ -30,7 +30,7 @@ public partial class MainWindow
             _wissenMsg = _weekSummary is null ? "Die KI hat gerade nicht geantwortet – der Rückblick unten ist trotzdem vollständig." : "";
             return _weekSummary;
         }
-        catch (Exception e) when (e is HttpRequestException or TaskCanceledException or InvalidOperationException) { _wissenMsg = "Zusammenfassen ging nicht: " + e.Message; return null; }
+        catch (Exception e) when (e is HttpRequestException or TaskCanceledException or InvalidOperationException) { _wissenMsg = "Zusammenfassen ging nicht: " + Trendo.Core.FriendlyError.Say(e); return null; }
         finally { _weekBusy = false; Show("ki-wissen"); }
     }
 

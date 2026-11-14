@@ -35,7 +35,7 @@ public partial class MainWindow
             Bench.CamStatus = $"Erkannt: {res.Summary} ({res.Ms} ms, YOLOX-S, lokal).";
             _core.Audit.Append(Principal.LocalOwner.Name, "camera.objects", res.Summary);
         }
-        catch (Exception e) when (e is IOException or FormatException or System.Text.Json.JsonException or InvalidOperationException) { Bench.CamStatus = "⚠ Ergebnis nicht lesbar: " + e.Message; }
+        catch (Exception e) when (e is IOException or FormatException or System.Text.Json.JsonException or InvalidOperationException) { Bench.CamStatus = "⚠ Ergebnis nicht lesbar: " + Trendo.Core.FriendlyError.Say(e); }
         finally { try { Directory.Delete(dir, true); } catch (IOException) { } }
         Show("roboter");
     }
@@ -51,7 +51,7 @@ public partial class MainWindow
             _core.Audit.Append(Principal.LocalOwner.Name, "deps.model", "yolox_s.onnx " + (ok ? "ok" : "verworfen"));
             Bench.CamStatus = ok ? "✓ Objekterkennung ist eingerichtet." : "⚠ " + msg;
         }
-        catch (Exception e) when (e is InvalidOperationException or IOException or HttpRequestException or OperationCanceledException) { Bench.CamStatus = "Einrichten ging nicht: " + e.Message; }
+        catch (Exception e) when (e is InvalidOperationException or IOException or HttpRequestException or OperationCanceledException) { Bench.CamStatus = "Einrichten ging nicht: " + Trendo.Core.FriendlyError.Say(e); }
         Show("roboter");
     }
 
