@@ -152,7 +152,7 @@ public partial class MainWindow
         box.Children.Add(new WrapPanel { Children = {
             Act("game-save", "Speichern und Vorschau", SaveAndPreview, true),
             Act("game-play", "Spielen", () => Launch(Path.Combine(dir, "index.html"))),
-            Act("game-export", "Als ZIP weitergeben", () => { try { var z = GameStudio.Export(dir, Path.Combine(GameFolder, "Export")); Say("Exportiert: " + Path.GetFileName(z) + " – index.html im ZIP öffnen genügt.", "spiele"); Launch(Path.GetDirectoryName(z)!); } catch (IOException ex) { Say("Export hat nicht geklappt: " + ex.Message, "spiele"); } }),
+            Act("game-export", "Als ZIP weitergeben", () => { try { var z = GameStudio.Export(dir, Path.Combine(GameFolder, "Export")); Say("Exportiert: " + Path.GetFileName(z) + " – index.html im ZIP öffnen genügt.", "spiele"); Launch(Path.GetDirectoryName(z)!); } catch (Exception ex) when (ex is IOException or InvalidOperationException) { Say("Export hat nicht geklappt: " + ex.Message, "spiele"); } }),
             Act("game-edit-close", "Fertig", () => { _gameEdit = null; Show("spiele"); }) } });
         box.Children.Add(img);
         if (_gamePreviewNote.Length > 0) box.Children.Add(P(_gamePreviewNote, null, 11));

@@ -104,7 +104,7 @@ public partial class MainWindow
         {
             "Ideen" => GameIdeasCard(),
             "Spielbibel" => GameBible(d),
-            "Figuren" => GameList(d, "characters", "Figuren und Bosse", [("name", "Name", 160), ("role", "Rolle", 0), ("text", "Beschreibung", 320), ("phases", "Phasen", 60)]),
+            "Figuren" => new StackPanel { Children = { GameMixamoCard(d), GameList(d, "characters", "Figuren und Bosse", [("name", "Name", 160), ("role", "Rolle", 0), ("text", "Beschreibung", 320), ("phases", "Phasen", 60)]) } }, // T-0660: Mixamo
             "Welt" => GameWorld(d),
             "Missionen" => GameList(d, "quests", "Missionen", [("title", "Titel", 170), ("kind", "Art", 0), ("goal", "Ziel", 240), ("needs", "braucht", 130), ("gives", "gibt", 130), ("giver", "Auftraggeber", 120)]),
             "Produktion" => GameProduction(d),

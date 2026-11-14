@@ -76,6 +76,7 @@ public static partial class GameRelease
         var name = Slug(d["title"].AsText() ?? "Spiel");
         Directory.CreateDirectory(outDir);
         var web = File.Exists(Path.Combine(built, "index.html"));
+        if (web) MixamoGuard.Ensure(MixamoGuard.Export, [built]); // T-0660 M6: lose Mixamo-Rohdateien nie in ein Paket zum Weitergeben
         foreach (var t in targets.Distinct())
         {
             if (!web) { notes.Add($"{Label(t)}: Dieses Spiel ist ein Unreal-Projekt – fertige Pakete baut Unreal selbst (Projekt öffnen → Plattformen → Windows → „Projekt packen“). Für Mac braucht Unreal einen Mac."); continue; }

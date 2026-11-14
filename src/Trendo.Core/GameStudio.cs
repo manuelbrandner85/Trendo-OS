@@ -203,6 +203,7 @@ public static class GameStudio
     /// <summary>Packt das Spiel als ZIP zum Weitergeben (index.html im ZIP öffnen genügt).</summary>
     public static string Export(string dir, string targetFolder)
     {
+        Trendo.Core.Programs.MixamoGuard.Ensure(Trendo.Core.Programs.MixamoGuard.Share, [dir]); // T-0660 M6
         Directory.CreateDirectory(targetFolder);
         var zip = Path.Combine(targetFolder, Path.GetFileName(dir) + ".zip");
         for (var i = 2; File.Exists(zip); i++) zip = Path.Combine(targetFolder, $"{Path.GetFileName(dir)}-{i}.zip");
