@@ -267,6 +267,33 @@ public class GameStage3Tests : IDisposable
         Assert.Contains(GameRuns.Compare(a, c).Changes, x => x.What == "WAGEN.Strecke" && x.Worse);
     }
 
+    [Fact(DisplayName = "E6: Aufräumen behält 20 Läufe und löscht nur Laufordner unterhalb des Laufverzeichnisses, nie über die Id aus der Datei")]
+    public void Prune_keeps_and_stays_inside()
+    {
+        var root = Path.Combine(_dir, "laeufe");
+        var outside = Path.Combine(_dir, "wichtig"); Directory.CreateDirectory(outside); File.WriteAllText(Path.Combine(outside, "lauf.json"), "{}");
+        var evil = Path.Combine(root, "fremd"); Directory.CreateDirectory(evil);
+        File.WriteAllText(Path.Combine(evil, "lauf.json"), new JsonObject { ["id"] = "../wichtig", ["at"] = "2020-01-01T00:00:00", ["seed"] = 1 }.ToJsonString());
+        for (var i = 0; i < 22; i++) GameRuns.Save(root, RunOf(Log, 1, new DateTime(2026, 11, 14, 10, 0, 0).AddMinutes(i)));
+        Assert.Equal(GameRuns.Keep, GameRuns.List(root).Count);
+        Assert.True(Directory.Exists(outside)); // nichts außerhalb gelöscht
+        Assert.False(Directory.Exists(evil)); // der älteste (fremde) Lauf ging selbst, über seinen eigenen Ordner
+        Assert.Equal(new DateTime(2026, 11, 14, 10, 21, 0), GameRuns.List(root)[0].At);
+    }
+
+    sealed class HalfWeb : IWebFetch
+    {
+        public Task<WebReply> GetAsync(string url, CancellationToken ct = default) =>
+            url.Contains("/de.") ? Task.FromResult(new WebReply(404, [])) : throw new HttpRequestException("weg");
+    }
+
+    [Fact(DisplayName = "D5: Teilausfall von Wikipedia gilt als nicht vollständig geprüft")]
+    public async Task References_partial_outage()
+    {
+        var r = await GameReferences.Verify(new HalfWeb(), ["Stardew Valley"]);
+        Assert.False(r.Reached);
+    }
+
     [Fact(DisplayName = "E1: Bericht älter als der letzte Bau gilt nicht als geprüft; „Engine erkannt“ ist erledigt, nicht geprüft")]
     public void Stale_report()
     {

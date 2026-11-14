@@ -93,15 +93,23 @@ public static partial class GameRuns
 
     static void Prune(string root, int keep)
     {
-        foreach (var r in List(root).Skip(keep))
-            try { var dir = Path.Combine(root, r.Id); if (File.Exists(Path.Combine(dir, "lauf.json"))) Directory.Delete(dir, true); }
+        var full = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+        foreach (var (_, dir) in Found(root).Skip(keep))
+            try
+            {
+                var d = Path.GetFullPath(dir);
+                if (d.StartsWith(full, StringComparison.OrdinalIgnoreCase) && Path.GetDirectoryName(d.TrimEnd(Path.DirectorySeparatorChar)) + Path.DirectorySeparatorChar == full) Directory.Delete(d, true);
+            }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
     }
 
     /// <summary>Gespeicherte Läufe, neueste zuerst; beschädigte werden übersprungen. Bildpfade zeigen auf die Kopien im Laufordner.</summary>
-    public static List<Run> List(string root)
+    public static List<Run> List(string root) => [.. Found(root).Select(x => x.Run)];
+
+    /// <summary>Läufe mit dem Ordner, in dem ihre lauf.json liegt (die Id aus der Datei bestimmt nie einen Pfad).</summary>
+    static List<(Run Run, string Dir)> Found(string root)
     {
-        var list = new List<Run>();
+        var list = new List<(Run, string)>();
         if (!Directory.Exists(root)) return list;
         foreach (var dir in Directory.EnumerateDirectories(root))
         {
@@ -109,16 +117,16 @@ public static partial class GameRuns
             try
             {
                 var o = JsonNode.Parse(File.ReadAllText(f))!.AsObject();
-                list.Add(new((string?)o["id"] ?? Path.GetFileName(dir), DateTime.Parse((string?)o["at"] ?? "", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
+                list.Add((new(Path.GetFileName(dir), DateTime.Parse((string?)o["at"] ?? "", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
                     (int?)o["seed"] ?? 0, (string?)o["engine"] ?? "",
                     [.. (o["inputs"] as JsonArray ?? []).Select(x => (string?)x ?? "")],
                     (o["checks"] as JsonObject ?? []).ToDictionary(kv => kv.Key, kv => (bool?)kv.Value ?? false),
                     (o["values"] as JsonObject ?? []).ToDictionary(kv => kv.Key, kv => (double?)kv.Value ?? double.NaN),
-                    (o["shots"] as JsonObject ?? []).ToDictionary(kv => kv.Key, kv => Path.Combine(dir, Path.GetFileName((string?)kv.Value ?? "")))));
+                    (o["shots"] as JsonObject ?? []).ToDictionary(kv => kv.Key, kv => Path.Combine(dir, Path.GetFileName((string?)kv.Value ?? "")))), dir));
             }
             catch (Exception e) when (e is JsonException or IOException or FormatException or InvalidOperationException or NullReferenceException) { }
         }
-        return [.. list.OrderByDescending(r => r.At).ThenByDescending(r => r.Id, StringComparer.Ordinal)];
+        return [.. list.OrderByDescending(r => r.Item1.At).ThenByDescending(r => r.Item1.Id, StringComparer.Ordinal)];
     }
 
     /// <summary>Messwerte mit bekannter Richtung: true = größer ist besser, false = näher an 0 ist besser, dazu die kleinste Änderung, die zählt

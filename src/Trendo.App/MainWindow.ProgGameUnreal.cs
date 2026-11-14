@@ -86,7 +86,7 @@ public partial class MainWindow
                 var run = await Task.Run(() => GameRunRecord(built, glog, checkArgs, seed, Trendo.Core.Programs.GamePlaytest.Shots(built), runStart, withShots));
                 LastRunComparison = run.Comparison; ok &= !run.Hard;
                 lines.AddRange(run.Lines);
-                var fresh = run.Tasks.Where(t => !GameBoard.Tasks(d.Data).Any(x => (string?)x["title"] == t)).Distinct().ToList();
+                var fresh = run.Tasks.Where(t => !GameBoard.Tasks(d.Data).Any(x => (string?)x["title"] == t && GameBoard.StateOf(x) != "Fertig")).Distinct().ToList(); // erledigt und wieder aufgetreten: neue Aufgabe
                 if (fresh.Count > 0) _ui.Post(() => d.Edit("Testlauf", x => { foreach (var t in fresh) GameBoard.Add(x, t, "Testspieler"); }));
             }
         }

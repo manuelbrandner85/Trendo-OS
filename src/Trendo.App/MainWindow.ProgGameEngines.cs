@@ -72,7 +72,7 @@ public partial class MainWindow
         var dir = d.Text(engine + "Project");
         if (dir.Length == 0 || !Directory.Exists(dir)) throw new InvalidOperationException("Zuerst das Projekt anlegen.");
         var e = EngineCheck().FirstOrDefault(x => x.Id == engine);
-        if (e is not { Installed: true, Exe: { } exe }) { _progMsg[GK] = engine == "unity" ? "Blockiert: Unity ist nicht installiert. Unity Hub und Editor installierst du selbst (Anmeldung bei Unity) – Trendo lädt nichts." : "Godot wurde nicht gefunden – Godot_v4…exe in den Werkzeugordner „godot“ legen."; LastEngineReport = "BLOCKED"; return; }
+        if (e is not { Installed: true, Exe: { } exe }) { GameEngineSay(engine == "unity" ? "Blockiert: Unity ist nicht installiert. Unity Hub und Editor installierst du selbst (Anmeldung bei Unity) – Trendo lädt nichts." : "Godot wurde nicht gefunden – Godot_v4…exe in den Werkzeugordner „godot“ legen."); LastEngineReport = "BLOCKED"; return; }
         var logs = Path.Combine(dir, "Trendo-Pruefung"); Directory.CreateDirectory(logs);
         var lines = new List<string>();
         if (engine == "unity")
@@ -99,8 +99,11 @@ public partial class MainWindow
         LastEngineReport = string.Join("\n", lines);
         File.WriteAllText(Path.Combine(logs, "bericht.txt"), $"{DateTime.Now:yyyy-MM-dd HH:mm} {e.Name} {e.Version}\n{LastEngineReport}\n");
         _core.Audit.Append(Principal.LocalOwner.Name, "game.engine.test", $"{engine}: {LastEngineReport.Replace('\n', ' ')}");
-        _progMsg[GK] = LastEngineReport;
+        GameEngineSay(LastEngineReport);
     }
+
+    /// <summary>Meldung der Engine-Prüfung: läuft sie im Hintergrund (Karte „Engine einrichten“), geht sie über den UI-Thread.</summary>
+    void GameEngineSay(string m) { if (Avalonia.Threading.Dispatcher.UIThread.CheckAccess()) _progMsg[GK] = m; else _ui.Post(() => _progMsg[GK] = m); }
 
     private Control GameEnginesView(ProgramDocument d)
     {
@@ -123,6 +126,7 @@ public partial class MainWindow
             sp.Children.Add(Act("game-unity-get", "Unity Hub (offizielle Seite)", () => Launch("https://unity.com/download")));
         var unityDir = d.Text("unityProject"); var godotDir = d.Text("godotProject");
         Button Btn(string name, string label, Action go, bool accent = false) { var b = Act(name, label, go, accent); b.Margin = new Thickness(0, 0, 6, 6); return b; }
+        Button Busy(Button b) { b.IsEnabled = !_engineBusy; if (_engineBusy) b.Content = "Prüfung läuft …"; return b; } // T-0650: kein zweiter Engine-Lauf am selben Projekt
         var row = new WrapPanel
         {
             Children =
@@ -131,8 +135,8 @@ public partial class MainWindow
                 Btn("game-to-godot", "Als Godot-Projekt", () => ProgramRun(GK, () => GameToEngine(d, "godot")), true),
             }
         };
-        if (unityDir.Length > 0) { row.Children.Add(Btn("game-unity-test", "Unity-Tests (EditMode + PlayMode)", () => ProgramRun(GK, () => GameEngineTest(d, "unity")))); row.Children.Add(Btn("game-unity-open", "Ordner", () => Launch(unityDir))); }
-        if (godotDir.Length > 0) { row.Children.Add(Btn("game-godot-test", "Godot prüfen", () => ProgramRun(GK, () => GameEngineTest(d, "godot")))); row.Children.Add(Btn("game-godot-open", "Ordner", () => Launch(godotDir))); }
+        if (unityDir.Length > 0) { row.Children.Add(Busy(Btn("game-unity-test", "Unity-Tests (EditMode + PlayMode)", () => ProgramRun(GK, () => GameEngineTest(d, "unity"))))); row.Children.Add(Btn("game-unity-open", "Ordner", () => Launch(unityDir))); }
+        if (godotDir.Length > 0) { row.Children.Add(Busy(Btn("game-godot-test", "Godot prüfen", () => ProgramRun(GK, () => GameEngineTest(d, "godot"))))); row.Children.Add(Btn("game-godot-open", "Ordner", () => Launch(godotDir))); }
         sp.Children.Add(row);
         var caps = EngineTargets.UnityCapStates(engines.Any(e => e.Id == "unity" && e.Installed), LastEngineReport.Contains("PlayMode") && !LastEngineReport.Contains("kein Ergebnis") && !LastEngineReport.Contains(" 0 von"));
         var capText = string.Join("  ", caps.Select(kv => $"{kv.Key.Replace("unity.", "")}: {EngineTargets.CapLabel(kv.Value)}"));

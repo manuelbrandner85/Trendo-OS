@@ -43,7 +43,7 @@ public static class GameReferences
 
     /// <summary>Nur eindeutige Wörter für Computer- und Videospiele; ausgeschlossen wird, was ein Film, eine Serie, ein Buch oder ein Brett- oder Kartenspiel ist.</summary>
     static readonly string[] GameWords = ["computerspiel", "videospiel", "video game", "videogame", "browserspiel", "handyspiel", "mobile game"];
-    static readonly string[] NotGame = ["film", "fernsehserie", "television", "tv series", "roman", "novel", "brettspiel", "board game", "kartenspiel", "card game", "tabletop", "pen-and-paper", "comic", "spielereihe", "video game series", "franchise", "begriffsklärung"];
+    static readonly string[] NotGame = ["film", "fernsehserie", "television", "tv series", "roman", "novel", "brettspiel", "board game", "kartenspiel", "card game", "tabletop", "pen-and-paper", "comic", "spielereihe", "spielreihe", "video game series", "franchise", "begriffsklärung"];
 
     static string Norm(string s) => new([.. s.ToLowerInvariant().Normalize(System.Text.NormalizationForm.FormD).Where(char.IsLetterOrDigit)]);
 
@@ -71,30 +71,29 @@ public static class GameReferences
         catch (Exception e) when (e is JsonException or InvalidOperationException or NullReferenceException) { return null; }
     }
 
-    /// <summary>Ergebnis der Prüfung. Reached: Wikipedia hat überhaupt geantwortet (sonst wurde nichts geprüft und nichts darf überschrieben werden).</summary>
+    /// <summary>Ergebnis der Prüfung. Reached: jede Anfrage bekam eine Antwort (sonst ist die Prüfung unvollständig und nichts darf überschrieben werden).</summary>
     public sealed record Checked(List<Ref> Refs, bool Reached);
 
     /// <summary>Jeden Titel belegen (erst deutsche, dann englische Wikipedia). Was sich nicht belegen lässt, fällt weg.</summary>
     public static async Task<Checked> Verify(IWebFetch http, IEnumerable<string> titles, CancellationToken ct = default)
     {
-        var found = new List<Ref>(); var reached = false; var asked = false;
+        var found = new List<Ref>(); var failed = false;
         foreach (var title in titles.Take(6))
             foreach (var lang in new[] { "de", "en" })
             {
                 try
                 {
-                    asked = true;
                     var r = await http.GetAsync(SummaryUrl(lang, title), ct);
-                    if (r.Ok || r.Status == 404) reached = true;
+                    if (!r.Ok && r.Status != 404) failed = true;
                     if (r.Ok && FromSummary(title, r.Text, lang) is { } hit)
                     {
                         if (!found.Any(f => Norm(f.Title) == Norm(hit.Title))) found.Add(hit);
                         break;
                     }
                 }
-                catch (Exception e) when (e is HttpRequestException or IOException or TaskCanceledException) { }
+                catch (Exception e) when (e is HttpRequestException or IOException or TaskCanceledException) { failed = true; }
             }
-        return new(found, reached || !asked);
+        return new(found, !failed); // schon ein Ausfall: nicht vollständig geprüft, nichts überschreiben
     }
 
     /// <summary>Belegte Referenzen ins Dokument (ersetzt die alten).</summary>

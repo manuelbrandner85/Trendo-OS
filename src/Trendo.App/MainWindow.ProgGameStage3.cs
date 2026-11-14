@@ -36,7 +36,7 @@ public partial class MainWindow
         }
     }
 
-    bool _refBusy, _engineBusy; string _refNote = ""; string _svcMsg = "";
+    bool _refBusy; volatile bool _engineBusy; string _refNote = ""; string _svcMsg = "";
 
     // ───────────── D5: Ähnliche Spiele ─────────────
 
@@ -88,7 +88,8 @@ public partial class MainWindow
         var dir = GameEngineSetup.ProjectDir(engine, d.Text("built"), d.Text("unityProject"), d.Text("godotProject"));
         string? report = null; var stale = false;
         if (dir is not null && engine != "browser" && Path.Combine(dir, "Trendo-Pruefung", "bericht.txt") is var f && File.Exists(f))
-            try { report = File.ReadAllText(f); stale = GameEngineSetup.Stale(engine, dir, f); } catch (IOException) { }
+            try { stale = GameEngineSetup.Stale(engine, dir, f); report = File.ReadAllText(f); }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { report = null; } // nicht lesbar: gilt als nicht geprüft
         return GameEngineSetup.Of(engine, GameEnginesSeen(), dir, report, stale);
     }
 
@@ -109,7 +110,7 @@ public partial class MainWindow
                     _ = Task.Run(() =>
                     {
                         try { GameEngineTest(d, s.Engine); }
-                        catch (Exception e) when (e is IOException or InvalidOperationException or UnauthorizedAccessException or System.ComponentModel.Win32Exception) { _progMsg[GK] = e.Message; }
+                        catch (Exception e) { GameEngineSay("Prüfung nicht möglich: " + e.Message); } // im Hintergrund darf kein Fehler verloren gehen
                         finally { _engineBusy = false; _ui.Post(() => { if (CurrentView == GK) Show(GK); }); }
                     });
                 }
@@ -171,13 +172,13 @@ public partial class MainWindow
                 findings.AddRange(GameShotCheck.Check(label, path).Where(f => !f.Ok));
                 if (before is not null && before.Seed == seed && before.Shots.TryGetValue(label, out var old) && GameShotCheck.AgainstBefore(label, path, old) is { } hint) findings.Add(hint);
             }
-            if (withShots && before is not null)
+            if (withShots && before is not null && before.Seed == seed)
                 foreach (var label in before.Shots.Keys.Where(k => list.All(s => s.Label != k)))
                     findings.Add(new(label, "", "fehlt", false, "Bild fehlt in diesem Lauf (im Vergleichslauf vorhanden) – der Lauf kam vielleicht nicht bis zu diesem Schritt", double.NaN));
             hard = findings.Any(f => f.Kind is "schwarz" or "einfarbig");
             if (withShots)
             {
-                lines.Add(findings.Count == 0 ? $"✓ Bildprüfung: {list.Count} Bilder unauffällig" : $"{(hard ? "✗" : "⚠")} Bildprüfung: {findings.Count} Befund(e) in {list.Count} Bildern");
+                lines.Add(list.Count == 0 && findings.Count == 0 ? "⚠ Bildprüfung: in diesem Lauf ist kein Bild entstanden – nichts geprüft" : findings.Count == 0 ? $"✓ Bildprüfung: {list.Count} Bilder unauffällig" : $"{(hard ? "✗" : "⚠")} Bildprüfung: {findings.Count} Befund(e) in {list.Count} Bildern");
                 foreach (var f in findings)
                 {
                     lines.Add($"  {(f.Kind is "schwarz" or "einfarbig" ? "✗" : "⚠")} {f.Shot}{(f.File.Length > 0 ? $" ({Path.GetFileName(f.File)})" : "")}: {f.Text}");
