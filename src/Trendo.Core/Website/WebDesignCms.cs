@@ -257,6 +257,9 @@ public static partial class WebDesignCms
         try { return d.ToString("d", CultureInfo.GetCultureInfo(sprache)); } catch (CultureNotFoundException) { return iso; }
     }
 
+    /// <summary>Z5: Eintrag gilt in einer Sprache als übersetzt, wenn mindestens ein Textfeld dort einen eigenen Wert hat.</summary>
+    public static bool IsTranslated(Eintrag e, string sprache, string standard) => sprache == standard || e.Sprachen.TryGetValue(sprache, out var t) && t.Count > 0;
+
     /// <summary>Pfad der Seite eines Eintrags im Export, relativ zur Wurzel (ohne Sprachordner).</summary>
     public static string EntryPath(string collection, string adresse) => collection + "/" + adresse + ".html";
 
@@ -264,10 +267,11 @@ public static partial class WebDesignCms
     public static JsonObject Fill(JsonObject template, Sammlung c, Eintrag e, IReadOnlyList<Sammlung> all, string sprache, string linkPrefix)
     {
         var doc = template.DeepClone().AsObject();
-        if (doc["root"]?["props"] is JsonObject rp)
+        var rpRef = doc["root"]?["props"] as JsonObject;
+        if (rpRef is not null)
         {
-            rp.Remove("vorlage");
-            if (c.TitelFeld is { } tf) rp["title"] = ValueOf(e, c.Felder.First(f => f.Name == tf), sprache) + (Str(rp["title"]) is { Length: > 0 } t && !t.Contains("{{") ? " – " + t : "");
+            rpRef.Remove("vorlage");
+            if (c.TitelFeld is { } tf && !Str(rpRef["title"]).Contains("{{")) rpRef["title"] = ValueOf(e, c.Felder.First(f => f.Name == tf), sprache) + (Str(rpRef["title"]) is { Length: > 0 } t ? " – " + t : "");
         }
         string Replace(string s) => Placeholder().Replace(s, m =>
         {
@@ -296,11 +300,15 @@ public static partial class WebDesignCms
             }
         }
         Walk(doc["content"]); Walk(doc["zones"]);
+        if (rpRef is not null) foreach (var k in new[] { "title", "description", "vorschaubild" }) if (Str(rpRef[k]) is { } v && v.Contains("{{")) rpRef[k] = Replace(v); // Titel, Beschreibung und Vorschaubild je Eintrag
         return doc;
     }
 
     /// <summary>Baustein „Sammlung“: Einträge als fertige Liste in die Seite schreiben (Editor und Export zeigen dasselbe, ohne Zugriff auf das CMS).</summary>
-    public static void Resolve(JsonObject doc, IReadOnlyList<Sammlung> all, string sprache, string linkPrefix, bool withPages)
+    public static void Resolve(JsonObject doc, IReadOnlyList<Sammlung> all, string sprache, string linkPrefix, bool withPages) => Resolve(doc, all, sprache, linkPrefix, withPages ? all.Select(c => c.Id).ToHashSet() : []);
+
+    /// <summary>Wie oben; Links auf Eintragsseiten nur für Sammlungen in <paramref name="withPages"/> (die eine Vorlage-Seite haben).</summary>
+    public static void Resolve(JsonObject doc, IReadOnlyList<Sammlung> all, string sprache, string linkPrefix, IReadOnlySet<string> withPages)
     {
         void Walk(JsonNode? n)
         {
@@ -326,7 +334,7 @@ public static partial class WebDesignCms
                                     ["text"] = text.Length > 220 ? text[..220].TrimEnd() + " …" : text,
                                     ["bild"] = c.Felder.FirstOrDefault(f => f.Art == "bild") is { } bf ? e.Werte.GetValueOrDefault(bf.Name, "") : "",
                                     ["datum"] = dateField is not null && e.Werte.TryGetValue(dateField.Name, out var dv) ? FormatDate(dv, sprache) : "",
-                                    ["href"] = withPages ? linkPrefix + EntryPath(c.Id, e.Adresse) : "",
+                                    ["href"] = withPages.Contains(c.Id) ? linkPrefix + EntryPath(c.Id, e.Adresse) : "",
                                 });
                             }
                         }

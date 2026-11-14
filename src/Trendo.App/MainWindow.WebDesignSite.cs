@@ -51,6 +51,7 @@ public partial class MainWindow
         if (_wdDeleteAsk != adresse) { _wdDeleteAsk = adresse; _wdSiteNote = $"/{adresse} mit allen Übersetzungen löschen? Noch einmal auf „Löschen“ klicken. Die Dateien landen im Papierkorb des Projekts."; Show("dev"); return; }
         _wdDeleteAsk = null;
         var wasActive = WebDesignSite.Active(WebDesignDir).Adresse == adresse;
+        if (wasActive) WebDesignKeepDraft("Vor Löschen der Seite");
         var err = WebDesignSite.Delete(WebDesignDir, adresse);
         _wdSiteNote = err ?? $"/{adresse} gelöscht (liegt im Papierkorb des Projekts).";
         _core.Audit.Append(Principal.LocalOwner.Name, "web.seite.loeschen", err ?? adresse);
@@ -124,6 +125,7 @@ public partial class MainWindow
         if (_wdLangDeleteAsk != code) { _wdLangDeleteAsk = code; _wdLangNote = $"{WebDesignI18n.LangName(code)} mit allen Übersetzungen entfernen? Noch einmal klicken. Die Dateien landen im Papierkorb des Projekts."; Show("dev"); return; }
         _wdLangDeleteAsk = null;
         var wasActive = WebDesignSite.Active(WebDesignDir).Sprache == code;
+        if (wasActive) WebDesignKeepDraft("Vor Entfernen der Sprache");
         _wdLangNote = WebDesignSite.RemoveLanguage(WebDesignDir, code) ?? $"{WebDesignI18n.LangName(code)} entfernt.";
         if (wasActive) { _wdDraft = null; _wdVariant = null; WebDesignReload(WebDesignStates.Read(WebDesignDir)); }
         Show("dev");
@@ -352,13 +354,16 @@ public partial class MainWindow
     /// <summary>Ganze Website exportieren, Inhalt jeder Seite vorrendern (Chrome/Edge) und den Export prüfen (W3).</summary>
     public async Task WebDesignExportSiteAsync()
     {
-        var r = Trendo.Core.WebDesignExport.ExportSite(WebDesignDir, WebDesignEditorDir);
+        Trendo.Core.WebDesignExport.Result r;
+        try { r = Trendo.Core.WebDesignExport.ExportSite(WebDesignDir, WebDesignEditorDir); }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { _wdNote = "Export abgebrochen: " + e.Message; Show("dev"); return; }
         if (r.Error is not null) { _wdNote = r.Error; Show("dev"); return; }
         _wdNote = $"Exportiert: {r.Pages.Count} Seite(n). Lege den Inhalt ins HTML …"; Show("dev");
         string? renderNote = null;
         try { (_, renderNote) = await WebsitePreview.RenderStaticAsync(r.Dir!, r.Pages.Select(p => p.RelPath).ToList()); }
-        catch (Exception e) when (e is TimeoutException or InvalidOperationException or IOException or System.Net.WebSockets.WebSocketException) { renderNote = "Vorrendern abgebrochen: " + e.Message; }
+        catch (Exception e) when (e is TimeoutException or InvalidOperationException or IOException or System.Net.WebSockets.WebSocketException or OperationCanceledException) { renderNote = "Vorrendern abgebrochen (" + e.Message + "). Seiten ohne vorgerenderten Inhalt laufen trotzdem, Suchmaschinen sehen den Text dort aber erst nach dem Laden."; }
         var check = Trendo.Core.WebDesignExport.CheckExport(r.Dir!, r.Pages);
+        _wdExportFindings = check; _wdPlan = null; _wdConsent = null; // K8: neue Prüfung nötig
         var lines = new List<string> { $"Fertige Website: {Path.Combine(r.Dir!, "index.html")} – {r.Pages.Count} Seite(n), läuft ohne Internet." };
         if (renderNote is not null) lines.Add(renderNote);
         lines.AddRange(r.Notes.Take(6)); lines.AddRange(check.Take(10));

@@ -237,6 +237,43 @@ function rahmenProps(p) {
   return r;
 }
 
+// Z8/K6: erlaubte Elemente und Attribute (gleiche Liste wie WebDesignHtml in Trendo, das den Baum schon beim Speichern prüft)
+const HTML_TAGS = new Set(["p", "br", "strong", "b", "em", "i", "u", "s", "small", "span", "a", "ul", "ol", "li", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "pre", "code", "table", "thead", "tbody", "tfoot", "tr", "th", "td", "caption", "figure", "figcaption", "img", "hr", "div", "section", "article", "header", "footer", "nav", "aside", "dl", "dt", "dd", "sup", "sub", "mark", "abbr", "time", "address", "main"]);
+const HTML_ATTRS = { a: { href: "href", title: "title" }, img: { src: "src", alt: "alt", width: "width", height: "height" }, td: { colspan: "colSpan", rowspan: "rowSpan" }, th: { colspan: "colSpan", rowspan: "rowSpan", scope: "scope" }, time: { datetime: "dateTime" }, abbr: { title: "title" }, ol: { start: "start" } };
+const sichererLink = (v) => !/^\s*[a-z][a-z0-9+.-]*:/i.test(v) || /^\s*(https?|mailto|tel):/i.test(v);
+function Knoten({ k }) {
+  if (!k || typeof k !== "object") return null;
+  if (typeof k.text === "string") return k.text;
+  const tag = String(k.tag || "");
+  if (!HTML_TAGS.has(tag)) return null;
+  const props = {}; const erlaubt = HTML_ATTRS[tag] || {};
+  for (const [name, wert] of Object.entries(k.attrs || {})) if (erlaubt[name] && typeof wert === "string" && (name !== "href" || sichererLink(wert))) props[erlaubt[name]] = wert;
+  if (tag === "br" || tag === "hr" || tag === "img") return React.createElement(tag, props);
+  return React.createElement(tag, props, ...(k.kinder || []).map((c, i) => <Knoten key={i} k={c} />));
+}
+
+// K3: Skizze auf die Seite zeichnen. Die Striche gehen als Bild an Trendo, das die aktuelle Seite darunterlegt und beides mit dem Satz an eine bildfähige KI gibt.
+function Skizze({ data, onBack }) {
+  const wrap = useRef(null), canvas = useRef(null), drawing = useRef(false), drawn = useRef(false);
+  useEffect(() => {
+    const t = setTimeout(() => { const w = wrap.current, c = canvas.current; if (!w || !c) return; c.width = w.scrollWidth; c.height = Math.min(w.scrollHeight, 8000); c.style.height = c.height + "px"; }, 80);
+    return () => clearTimeout(t);
+  }, []);
+  const pos = (e) => { const r = canvas.current.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  const down = (e) => { drawing.current = true; drawn.current = true; const g = canvas.current.getContext("2d"); g.strokeStyle = "#e11d48"; g.lineWidth = 4; g.lineCap = "round"; g.lineJoin = "round"; g.beginPath(); g.moveTo(...pos(e)); try { canvas.current.setPointerCapture(e.pointerId); } catch { } };
+  const move = (e) => { if (!drawing.current) return; const g = canvas.current.getContext("2d"); g.lineTo(...pos(e)); g.stroke(); };
+  const up = () => { drawing.current = false; };
+  const leeren = () => { const c = canvas.current; c.getContext("2d").clearRect(0, 0, c.width, c.height); drawn.current = false; };
+  const senden = () => { const c = canvas.current; if (!drawn.current) return; send({ art: "skizze", daten: { bild: c.toDataURL("image/png"), breite: c.width, hoehe: c.height } }); onBack(); };
+  return (
+    <div className="t-preview">
+      <div className="t-seltools"><span>Skizze: zeichne auf die Seite, was sich ändern soll</span>
+        <button className="t-tool" onClick={leeren}>Löschen</button><button className="t-tool" onClick={senden}>An Trendo geben</button><button className="t-tool" onClick={onBack}>← Zurück zum Editor</button></div>
+      <div ref={wrap} className="t-skizze"><Render config={config} data={data} />
+        <canvas ref={canvas} className="t-skizze-flaeche" aria-label="Zeichenfläche für die Skizze" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerLeave={up} /></div>
+    </div>);
+}
+
 // W2: Sammlung aus dem CMS wählen (Liste setzt Trendo beim Lesen in root.props.sammlungen)
 function SammlungWahl({ value, onChange }) {
   const liste = usePuckSel((s) => (Array.isArray(s.appState.data.root?.props?.sammlungen) ? s.appState.data.root.props.sammlungen : LEER));
@@ -267,6 +304,8 @@ const baseConfig = {
     inhalt: { title: "Inhalt", components: ["Kopfbereich", "Ueberschrift", "Text", "Bild", "Knopf"] },
     profi: { title: "Profi-Bausteine", components: ["Navigation", "Hero", "Preise", "Fragen", "Galerie", "Formular", "Fusszeile"] },
     inhalte: { title: "Inhalte (CMS)", components: ["Sammlung"] },
+    // Z8/K6: HTML-Blöcke entstehen nur beim Import oder aus dem Code, nicht aus der Bausteinliste
+    intern: { title: "Intern", components: ["Html"], visible: false },
     effekte: { title: "3D & Bewegung", components: ["Szene3D"] },
   },
   // Modul 05 Design-System: seitenweite Werte als CSS-Variablen – jeder Baustein nutzt sie; Trendo prüft die Werte beim Speichern (nur #Farben, sichere Schriftnamen)
@@ -388,6 +427,9 @@ const baseConfig = {
           <p>{text}</p>
           <ul>{(links || []).map((l, i) => <li key={i}><a href={l.href}>{l.label}</a></li>)}{impressum && <li><a href={impressum}>Impressum</a></li>}{datenschutz && <li><a href={datenschutz}>Datenschutz</a></li>}</ul>
         </footer>) },
+    // Z8/K6: nicht abbildbares HTML, als geprüfter Baum gespeichert und hier als Elemente gebaut (kein innerHTML)
+    Html: { label: "HTML-Block", fields: { ...anpassungenFeld(), ...bewegungFelder },
+      render: ({ knoten }) => <div className="t-html">{(knoten || []).map((k, i) => <Knoten key={i} k={k} />)}</div> },
     // W2: Einträge einer Sammlung aus dem CMS. Trendo setzt die Liste beim Lesen und im Export fertig ein (props.eintraege); gespeichert wird nur die Wahl.
     Sammlung: { label: "Sammlung", fields: { titel: { type: "text", label: "Überschrift" },
         sammlung: { type: "custom", label: "Sammlung", render: ({ value, onChange }) => <SammlungWahl value={value} onChange={onChange} /> },
@@ -528,12 +570,13 @@ function App() {
         <button className="t-tool" onClick={() => setMode("editor")}>← Zurück zum Editor</button></div>
       <div className="t-vorschau-rahmen" style={vorschauBreite ? { maxWidth: vorschauBreite + "px" } : undefined}><Render config={config} data={data} /></div>
     </div></DataCtx.Provider>);
+  if (mode === "skizze") return <DataCtx.Provider value={data}><Skizze data={data} onBack={() => setMode("editor")} /></DataCtx.Provider>;
   if (mode === "auswahl") return <DataCtx.Provider value={data}><Selectable key={key} data={data} selected={selected} setSelected={setSelected} onBack={() => setMode("editor")} /></DataCtx.Provider>;
   return (
     <DataCtx.Provider value={data}><Puck key={key} config={config} data={data} viewports={viewports} ui={ui} iframe={{ enabled: location.protocol !== "file:" && !location.search.includes("ohneRahmen") }} dictionary={de}
       onChange={(d) => { setData(d); try { localStorage.setItem("trendo-entwurf", JSON.stringify(d)); } catch { } send({ art: "geaendert" }); clearTimeout(draftTimer.current); draftTimer.current = setTimeout(() => send({ art: "entwurf", daten: d }), 400); }}
       onPublish={(d) => send({ art: "speichern", daten: d })}
-      overrides={{ headerActions: ({ children }) => <>{children}<button className="t-tool" onClick={() => setMode("auswahl")}>Auswählen</button><button className="t-tool" onClick={() => setMode("vorschau")}>Vorschau</button></>, drawerItem: DrawerItem }} /></DataCtx.Provider>
+      overrides={{ headerActions: ({ children }) => <>{children}<button className="t-tool" onClick={() => setMode("auswahl")}>Auswählen</button><button className="t-tool" onClick={() => setMode("vorschau")}>Vorschau</button><button className="t-tool" onClick={() => setMode("skizze")}>Skizze</button></>, drawerItem: DrawerItem }} /></DataCtx.Provider>
   );
 }
 

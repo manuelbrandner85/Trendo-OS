@@ -49,6 +49,8 @@ public static class WebDesignSeo
                 ? $"{name} ist in {WebDesignI18n.LangName(st.Sprache)} nicht übersetzt."
                 : $"{name} ({WebDesignI18n.LangName(st.Sprache)}): {st.Offen} von {st.Gesamt} Texten noch wie im Original.", "Hinweis"));
         }
+        if (s.Sprachen.Count > 1 && WebDesignComponents.Load(dir).Count > 0)
+            res.Add(new("Komponenten sind einsprachig: ihre Texte erscheinen in jeder Sprache gleich. Für übersetzte Navigation oder Fußzeile die Bausteine direkt auf die Seiten legen.", "Hinweis"));
         res.AddRange(WebDesignCms.Check(dir).Select(f => new Fund(f.Text, f.Ebene)));
         return res;
     }

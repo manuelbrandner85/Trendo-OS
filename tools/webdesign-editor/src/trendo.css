@@ -99,6 +99,15 @@ body { margin: 0; background: #fff; font-family: "Segoe UI", Inter, system-ui, s
 .t-frage summary::-webkit-details-marker { display: none; }
 .t-frage summary svg { flex: none; transition: transform .2s; } .t-frage[open] summary svg { transform: rotate(180deg); }
 .t-frage p { margin: 0 0 14px; line-height: 1.6; }
+/* Z8/K6: HTML-Block aus Import oder Code */
+.t-html { padding: calc(var(--t-space) * .5) var(--t-space); }
+.t-html table { border-collapse: collapse; width: 100%; }
+.t-html th, .t-html td { border: 1px solid color-mix(in srgb, var(--t-ink) 20%, var(--t-paper)); padding: 6px 10px; text-align: left; }
+.t-html img { max-width: 100%; height: auto; }
+.t-html blockquote { margin: 0; padding-left: var(--t-space); border-left: 3px solid var(--t-accent); }
+/* K3: Zeichenfläche über der Seite */
+.t-skizze { position: relative; }
+.t-skizze-flaeche { position: absolute; left: 0; top: 0; width: 100%; touch-action: none; cursor: crosshair; z-index: 5; }
 /* W2: Liste aus einer Sammlung */
 .t-sammlung { padding: calc(var(--t-space) * 2) var(--t-space); }
 .t-sammlung .t-h { padding: 0 0 var(--t-space); }

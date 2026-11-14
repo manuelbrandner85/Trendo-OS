@@ -326,4 +326,117 @@ public class WebDesignStufe3Tests
         }
         finally { Clean(d); }
     }
+
+    // ---------- Befunde der QA-Prüfung zu Teil 1 ----------
+
+    [Fact(DisplayName = "QA T1-1: Export ersetzt nur eigene Dateien; fremde (CNAME, .git) bleiben, alte eigene verschwinden, schreibgeschützt bricht ohne Löschen ab")]
+    public void Qa_export_keeps_foreign_files()
+    {
+        var d = Dir(); try
+        {
+            WebDesign.Save(d, PageWith("Start", "x"));
+            WebDesignSite.Create(d, "alt", "Alt"); WebDesign.Save(d, PageWith("Alt", "y"));
+            var outDir = Path.Combine(d, WebDesign.ExportDir);
+            Directory.CreateDirectory(Path.Combine(outDir, ".git")); File.WriteAllText(Path.Combine(outDir, ".git", "HEAD"), "ref"); File.WriteAllText(Path.Combine(outDir, "CNAME"), "www.beispiel.de");
+            var r = WebDesignExport.ExportSite(d, Editor());
+            Assert.Null(r.Error);
+            Assert.True(File.Exists(Path.Combine(outDir, "CNAME"))); Assert.True(File.Exists(Path.Combine(outDir, ".git", "HEAD")));
+            Assert.Contains(r.Notes, n => n.Contains("stammen nicht von Trendo"));
+            Assert.True(File.Exists(Path.Combine(outDir, "alt.html")));
+            Assert.Null(WebDesignSite.Delete(d, "alt"));
+            Assert.Null(WebDesignExport.ExportSite(d, Editor()).Error);
+            Assert.False(File.Exists(Path.Combine(outDir, "alt.html"))); // eigene alte Datei weg
+            Assert.True(File.Exists(Path.Combine(outDir, "CNAME")));
+            File.SetAttributes(Path.Combine(outDir, "index.html"), FileAttributes.ReadOnly);
+            var blocked = WebDesignExport.ExportSite(d, Editor());
+            Assert.Contains("schreibgeschützt", blocked.Error);
+            Assert.True(File.Exists(Path.Combine(outDir, "seite.js"))); // nichts gelöscht
+            File.SetAttributes(Path.Combine(outDir, "index.html"), FileAttributes.Normal);
+        }
+        finally { Clean(d); }
+    }
+
+    [Fact(DisplayName = "QA T1-3/4: Platzhalter in Titel, Beschreibung und Vorschaubild der Vorlage werden ersetzt; Liste ohne Vorlage verlinkt nichts")]
+    public void Qa_template_head_and_list_links()
+    {
+        var d = Dir(); try
+        {
+            var start = Doc(PageWith("Start", "x"));
+            start["content"]!.AsArray().Add(new JsonObject { ["type"] = "Sammlung", ["props"] = new JsonObject { ["id"] = "l1", ["sammlung"] = "termine" } });
+            start["content"]!.AsArray().Add(new JsonObject { ["type"] = "Sammlung", ["props"] = new JsonObject { ["id"] = "l2", ["sammlung"] = "rezepte" } });
+            WebDesign.Save(d, start.ToJsonString());
+            FillCms(d);
+            Assert.Null(WebDesignCms.CreateCollection(d, "termine", "Termine", "titel:text*"));
+            Assert.Null(WebDesignCms.SetEntry(d, "termine", "fest", new Dictionary<string, string> { ["titel"] = "Sommerfest" }));
+            WebDesignSite.Create(d, "rezept-vorlage", "Rezept");
+            var tpl = Doc(Template()); tpl["root"]!["props"]!["title"] = "{{titel}} – Rezept"; tpl["root"]!["props"]!["description"] = "{{titel}}: {{beschreibung}}"; tpl["root"]!["props"]!["vorschaubild"] = "{{bild}}";
+            Assert.Null(WebDesign.Save(d, tpl.ToJsonString()));
+            Assert.Null(WebDesignSite.SetBase(d, "https://beispiel.de"));
+            var r = WebDesignExport.ExportSite(d, Editor());
+            var brot = File.ReadAllText(Path.Combine(r.Dir!, "rezepte", "brot.html"));
+            Assert.Contains("<title>Bauernbrot – Rezept</title>", brot);
+            Assert.Contains("content=\"Bauernbrot: Kräftig\"", brot);
+            Assert.Contains("og:image\" content=\"https://beispiel.de/bilder/brot.png\"", brot);
+            Assert.DoesNotContain("{{", brot);
+            var data = Data(Path.Combine(r.Dir!, "seite.js"));
+            Assert.Contains("\"href\":\"\"", Doc(data)["content"]![3]!["props"]!["eintraege"]![0]!.ToJsonString()); // termine: keine Vorlage, kein Link ins Leere
+            Assert.Contains("rezepte/", Doc(data)["content"]![4]!["props"]!["eintraege"]![0]!["href"]!.ToString());
+        }
+        finally { Clean(d); }
+    }
+
+    [Fact(DisplayName = "QA T1-5/9: Weiterleitung über reservierte Namen abgelehnt; Gerätenamen als Adresse abgelehnt; unsichere Website-Adresse abgelehnt")]
+    public void Qa_reserved_redirects_and_base()
+    {
+        var d = Dir(); try
+        {
+            WebDesign.Save(d, PageWith("Start", "x"));
+            Assert.NotNull(WebDesignSite.AddRedirect(d, "/namensnennung", "index"));
+            Assert.NotNull(WebDesignSite.AddRedirect(d, "/assets/style", "index"));
+            foreach (var n in new[] { "con", "nul", "aux", "prn", "com1", "lpt1" }) Assert.NotNull(WebDesignSite.CheckSlug(n));
+            Assert.NotNull(WebDesignSite.SetBase(d, "https://x.de/\"><script>"));
+            Assert.Null(WebDesignSite.SetBase(d, "https://www.beispiel.de/shop"));
+        }
+        finally { Clean(d); }
+    }
+
+    [Fact(DisplayName = "QA T1-6: nicht übersetzter CMS-Eintrag steht in der Sprache als Original, kanonisch aufs Original, ohne hreflang, nicht in der Sitemap")]
+    public void Qa_untranslated_entry_fallback()
+    {
+        var d = Dir(); try
+        {
+            WebDesign.Save(d, PageWith("Start", "x"));
+            WebDesignSite.AddLanguage(d, "en");
+            FillCms(d);
+            WebDesignSite.Create(d, "rezept-vorlage", "Rezept"); WebDesign.Save(d, Template());
+            Assert.Null(WebDesignSite.SetBase(d, "https://beispiel.de"));
+            var r = WebDesignExport.ExportSite(d, Editor());
+            var en = File.ReadAllText(Path.Combine(r.Dir!, "en", "rezepte", "brot.html"));
+            Assert.Contains("<html lang=\"de\">", en);
+            Assert.Contains("<link rel=\"canonical\" href=\"https://beispiel.de/rezepte/brot.html\" />", en);
+            Assert.DoesNotContain("hreflang", en);
+            Assert.DoesNotContain("/en/rezepte/brot.html", File.ReadAllText(Path.Combine(r.Dir!, "sitemap.xml")));
+            Assert.DoesNotContain("hreflang", File.ReadAllText(Path.Combine(r.Dir!, "rezepte", "brot.html"))); // auch das Original verweist nicht auf eine Übersetzung, die es nicht gibt
+        }
+        finally { Clean(d); }
+    }
+
+    [Fact(DisplayName = "QA T1-7/9: zweimal Löschen in derselben Sekunde geht; Links mit führendem / werden zur Datei")]
+    public void Qa_delete_twice_and_root_links()
+    {
+        var d = Dir(); try
+        {
+            WebDesign.Save(d, PageWith("Start", "x"));
+            for (var i = 0; i < 2; i++) { Assert.Null(WebDesignSite.Create(d, "kontakt", "Kontakt")); Assert.Null(WebDesignSite.Delete(d, "kontakt")); }
+            for (var i = 0; i < 2; i++) { Assert.Null(WebDesignSite.AddLanguage(d, "en")); WebDesignSite.Activate(d, "index", "en"); Assert.Null(WebDesignSite.RemoveLanguage(d, "en")); }
+            WebDesignSite.Activate(d, "index");
+            WebDesignSite.Create(d, "ueber-uns", "Über uns");
+            WebDesignSite.Activate(d, "index");
+            var start = Doc(PageWith("Start", "x")); start["content"]![2]!["props"]!["href"] = "/ueber-uns";
+            WebDesign.Save(d, start.ToJsonString());
+            var r = WebDesignExport.ExportSite(d, Editor());
+            Assert.Contains("\"href\":\"ueber-uns.html\"", File.ReadAllText(Path.Combine(r.Dir!, "seite.js")));
+        }
+        finally { Clean(d); }
+    }
 }

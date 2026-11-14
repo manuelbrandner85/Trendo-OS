@@ -33,7 +33,8 @@ public static class WebDesignExport
         var notes = new List<string>();
         var outputs = new List<Output>();
         var usedDocs = new List<JsonObject>();
-        if (Directory.Exists(outDir)) Directory.Delete(outDir, true);
+        var (foreign, cerr) = ClearExport(outDir);
+        if (cerr is not null) return new(null, cerr, [], []);
         CopyBundle(editorDir, outDir);
         var tokens = WebDesignTokens.Load(dir);
         var cms = WebDesignCms.Load(dir);
@@ -42,6 +43,7 @@ public static class WebDesignExport
         var entryPaths = new HashSet<string>();
         foreach (var c in cms) if (WebDesignCms.TemplateOf(dir, c.Id) is { } t) { templates[c.Id] = t; foreach (var e in c.Eintraege) entryPaths.Add(c.Id + "/" + e.Adresse); }
         var normalPages = pages.Where(p => !templates.ContainsValue(p)).ToList();
+        var withPages = templates.Keys.ToHashSet(); // nur Sammlungen mit Vorlage haben Eintragsseiten
 
         // Welche Seiten gibt es in welcher Sprache wirklich (für hreflang)?
         // Übersetzt heißt: Seite in der Sprache vorhanden und nicht nur eine unveränderte Kopie des Originals
@@ -65,7 +67,7 @@ public static class WebDesignExport
                 var alts = isTranslated ? site.Sprachen.Where(l => translated[l].Contains(page)).Select(l => (l, PagePath(l, page))).ToList() : [];
                 var canonical = isTranslated ? rel : PagePath(site.Standardsprache, page); // nicht übersetzt: verweist auf das Original
                 if (!isTranslated) notes.Add($"„{page}“ ist in {WebDesignI18n.LangName(lang)} nicht übersetzt; unter /{rel} steht das Original.");
-                var o = WritePage(dir, raw, tokens, cms, outDir, rel, isTranslated ? lang : site.Standardsprache, prefix, pages, entryPaths, alts, canonical, site, notes, usedDocs);
+                var o = WritePage(dir, raw, tokens, cms, outDir, rel, isTranslated ? lang : site.Standardsprache, prefix, pages, entryPaths, alts, canonical, site, notes, usedDocs, withPages);
                 outputs.Add(o with { Fallback = !isTranslated });
             }
             foreach (var (coll, tpl) in templates)
@@ -76,11 +78,14 @@ public static class WebDesignExport
                 if (JsonNode.Parse(WebDesign.LoadFile(tfile, tpl)) is not JsonObject tdoc) continue;
                 foreach (var e in c.Eintraege)
                 {
-                    var filled = WebDesignCms.Fill(tdoc, c, e, cms, lang, prefix);
+                    var ok = WebDesignCms.IsTranslated(e, lang, site.Standardsprache);
+                    var contentLang = ok ? lang : site.Standardsprache;
+                    var filled = WebDesignCms.Fill(tdoc, c, e, cms, contentLang, prefix);
                     var rel = EntryRel(lang, coll, e.Adresse);
-                    var alts = site.Sprachen.Select(l => (l, EntryRel(l, coll, e.Adresse))).ToList();
-                    var o = WritePage(dir, filled.ToJsonString(), tokens, cms, outDir, rel, lang, prefix, pages, entryPaths, alts, rel, site, notes, usedDocs);
-                    outputs.Add(o);
+                    var alts = ok ? site.Sprachen.Where(l => WebDesignCms.IsTranslated(e, l, site.Standardsprache)).Select(l => (l, EntryRel(l, coll, e.Adresse))).ToList() : [];
+                    if (!ok) notes.Add($"Eintrag „{coll}/{e.Adresse}“ ist in {WebDesignI18n.LangName(lang)} nicht übersetzt; unter /{rel} steht das Original.");
+                    var o = WritePage(dir, filled.ToJsonString(), tokens, cms, outDir, rel, contentLang, prefix, pages, entryPaths, alts, ok ? rel : EntryRel(site.Standardsprache, coll, e.Adresse), site, notes, usedDocs, withPages);
+                    outputs.Add(o with { Fallback = !ok });
                 }
                 if (!tplTranslated) notes.Add($"Vorlage „{tpl}“ ist in {WebDesignI18n.LangName(lang)} nicht übersetzt; Einträge nutzen die übersetzten Felder, der Rest bleibt im Original.");
             }
@@ -119,7 +124,55 @@ public static class WebDesignExport
             Write(outDir, "robots.txt", "User-agent: *\nAllow: /\n");
             notes.Add("Ohne Adresse der Website gibt es keine Sitemap, keine kanonischen Adressen und keine Sprachverweise (hreflang).");
         }
+        var kept = WriteManifest(outDir, foreign);
+        if (kept > 0) notes.Add($"{kept} Datei(en) im Export-Ordner stammen nicht von Trendo und bleiben liegen (z. B. {foreign.Keys.First()}). Beim Veröffentlichen gehen sie mit.");
         return new(outDir, null, outputs, notes.Distinct().ToList());
+    }
+
+    public const string ManifestFile = ".trendo/export-dateien.txt";
+
+    /// <summary>Vor dem neuen Export nur die Dateien entfernen, die Trendo beim letzten Export selbst geschrieben hat (Liste in .trendo/export-dateien.txt).
+    /// Fremde Dateien (z. B. CNAME, .git) bleiben. Ein verknüpfter Ordner (Junction, Symlink) wird nicht angefasst. Schreibgeschützte Dateien brechen ab, bevor etwas gelöscht ist.
+    /// Liefert die fremden Dateien mit Größe und Zeitstempel, damit sie nach dem Export nicht in die eigene Liste geraten.</summary>
+    static (Dictionary<string, (long, DateTime)> Foreign, string? Error) ClearExport(string outDir)
+    {
+        var foreign = new Dictionary<string, (long, DateTime)>(StringComparer.OrdinalIgnoreCase);
+        if (!Directory.Exists(outDir)) return (foreign, null);
+        if ((File.GetAttributes(outDir) & FileAttributes.ReparsePoint) != 0) return (foreign, "Der Export-Ordner ist eine Verknüpfung auf einen anderen Ordner. Trendo exportiert dort nicht hinein.");
+        var manifest = Path.Combine(outDir, ManifestFile.Replace('/', Path.DirectorySeparatorChar));
+        var ours = File.Exists(manifest) ? File.ReadAllLines(manifest).Where(l => l.Length > 0 && !l.Contains("..") && !Path.IsPathRooted(l)).ToHashSet(StringComparer.OrdinalIgnoreCase) : [];
+        var full = Path.GetFullPath(outDir).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+        var delete = new List<string>();
+        foreach (var f in Directory.EnumerateFiles(outDir, "*", new EnumerationOptions { RecurseSubdirectories = true, AttributesToSkip = FileAttributes.ReparsePoint }))
+        {
+            var rel = Path.GetRelativePath(outDir, f).Replace(Path.DirectorySeparatorChar, '/');
+            if (rel.StartsWith(".trendo/", StringComparison.Ordinal)) continue;
+            if (ours.Contains(rel) && Path.GetFullPath(f).StartsWith(full, StringComparison.OrdinalIgnoreCase)) delete.Add(f);
+            else { var fi = new FileInfo(f); foreign[rel] = (fi.Length, fi.LastWriteTimeUtc); }
+        }
+        if (delete.FirstOrDefault(f => (File.GetAttributes(f) & FileAttributes.ReadOnly) != 0) is { } ro)
+            return (foreign, $"Im Export-Ordner ist „{Path.GetRelativePath(outDir, ro)}“ schreibgeschützt. Nichts wurde gelöscht; bitte den Schreibschutz aufheben.");
+        try { foreach (var f in delete) File.Delete(f); }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return (foreign, "Eine Datei im Export-Ordner ist gerade geöffnet: " + e.Message); }
+        return (foreign, null);
+    }
+
+    /// <summary>Nach dem Export: Liste der eigenen Dateien schreiben (alles außer unveränderten fremden Dateien).</summary>
+    static int WriteManifest(string outDir, Dictionary<string, (long, DateTime)> foreign)
+    {
+        var mine = new List<string>(); var kept = 0;
+        foreach (var f in Directory.EnumerateFiles(outDir, "*", new EnumerationOptions { RecurseSubdirectories = true, AttributesToSkip = FileAttributes.ReparsePoint }))
+        {
+            var rel = Path.GetRelativePath(outDir, f).Replace(Path.DirectorySeparatorChar, '/');
+            if (rel.StartsWith(".trendo/", StringComparison.Ordinal)) continue;
+            var fi = new FileInfo(f);
+            if (foreign.TryGetValue(rel, out var before) && before == (fi.Length, fi.LastWriteTimeUtc)) { kept++; continue; }
+            mine.Add(rel);
+        }
+        var m = Path.Combine(outDir, ManifestFile.Replace('/', Path.DirectorySeparatorChar));
+        Directory.CreateDirectory(Path.GetDirectoryName(m)!);
+        File.WriteAllLines(m, mine.OrderBy(x => x, StringComparer.Ordinal));
+        return kept;
     }
 
     static void CopyBundle(string editorDir, string outDir)
@@ -140,13 +193,13 @@ public static class WebDesignExport
 
     /// <summary>Eine Seite schreiben: Daten aufbereiten, Bilder und Schriften mitnehmen, Kopf mit SEO-Angaben, Platz für den vorgerenderten Inhalt.</summary>
     static Output WritePage(string dir, string raw, JsonObject? tokens, IReadOnlyList<WebDesignCms.Sammlung> cms, string outDir, string rel, string lang, string prefix,
-        IReadOnlyList<string> pages, HashSet<string> entryPaths, IReadOnlyList<(string Lang, string Rel)> alts, string canonicalRel, WebDesignSite.Settings site, List<string> notes, List<JsonObject> usedDocs)
+        IReadOnlyList<string> pages, HashSet<string> entryPaths, IReadOnlyList<(string Lang, string Rel)> alts, string canonicalRel, WebDesignSite.Settings site, List<string> notes, List<JsonObject> usedDocs, IReadOnlySet<string> withPages)
     {
         var json = WebDesignComponents.Inject(WebDesignTokens.Inject(raw, tokens), dir);
         var (data, err) = WebDesign.Validate(json);
         if (data is null) { notes.Add($"/{rel}: {err}"); data = WebDesign.Empty(); }
         var doc = JsonNode.Parse(data)!.AsObject();
-        WebDesignCms.Resolve(doc, cms, lang, prefix, true);
+        WebDesignCms.Resolve(doc, cms, lang, prefix, withPages);
         RewriteLinks(doc, rel, prefix, pages, entryPaths);
         var props = doc["root"]?["props"] as JsonObject ?? new JsonObject();
         props.Remove("medien"); props.Remove("sammlungen");
@@ -177,7 +230,8 @@ public static class WebDesignExport
         if (Str(props["vorschaubild"]) is { Length: > 0 } img && WebDesign.IsSafeImagePath(img) && WebDesignCheck.IsLocalFile(dir, img))
         {
             WebDesign.CopyImage(img, dir, outDir);
-            head.Append($"<meta property=\"og:image\" content=\"{Esc(site.Basis.Length > 0 ? site.Basis + "/" + img : img)}\" />\n");
+            if (site.Basis.Length > 0) head.Append($"<meta property=\"og:image\" content=\"{Esc(site.Basis + "/" + img)}\" />\n"); // Teilen-Vorschauen brauchen eine volle Adresse
+            else notes.Add("Vorschaubilder wirken erst mit der Adresse der Website.");
         }
         // Startseite der Standardsprache behält „seite.js“ (bisheriger Export), alle anderen Seiten haben ihre Daten unter daten/<sprache>/
         var dataRel = rel == "index.html" ? "seite.js" : "daten/" + rel[..^5] + ".js"; // aus dem Ausgabepfad, damit eine nicht übersetzte Seite nicht das Original überschreibt
@@ -219,7 +273,8 @@ public static class WebDesignExport
     static string Link(string s, string selfRel, string prefix, IReadOnlyList<string> pages, HashSet<string> entryPaths, bool deep)
     {
         var t = s.Trim();
-        if (t.Length == 0 || t.StartsWith('/') || t.Contains(':')) return s;
+        if (t.Length == 0 || t.StartsWith("//", StringComparison.Ordinal) || t.Contains(':')) return s;
+        if (t.StartsWith('/')) { t = t.TrimStart('/'); if (t.Length == 0) return prefix + "index.html"; } // „/ueber-uns“ läuft so auch offline und ohne Umschreibung beim Hoster
         if (t.StartsWith('#')) return t == "#" || !deep ? s : selfRel + t;
         var hash = t.IndexOf('#'); var anchor = hash >= 0 ? t[hash..] : ""; var path = hash >= 0 ? t[..hash] : t;
         var bare = path.EndsWith(".html", StringComparison.Ordinal) ? path[..^5] : path;

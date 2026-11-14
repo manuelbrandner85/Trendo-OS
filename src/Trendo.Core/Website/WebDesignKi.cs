@@ -9,7 +9,7 @@ public static class WebDesignKi
     /// <summary>Aufgaben der KI mit ihrem Bedarf.</summary>
     public static readonly IReadOnlyDictionary<string, KiBedarf> Tasks = new Dictionary<string, KiBedarf>
     {
-        ["seite_aus_text"] = KiBedarf.Text, ["seite_aus_bild"] = KiBedarf.Bild, ["auswahl_aendern"] = KiBedarf.Text, ["nachbessern"] = KiBedarf.Text, ["bild_bewerten"] = KiBedarf.Bild,
+        ["seite_aus_text"] = KiBedarf.Text, ["seite_aus_bild"] = KiBedarf.Bild, ["auswahl_aendern"] = KiBedarf.Text, ["nachbessern"] = KiBedarf.Text, ["bild_bewerten"] = KiBedarf.Bild, ["skizze"] = KiBedarf.Bild,
     };
 
     /// <summary>Lokale Modelle (Ollama), die Bilder sehen können, beste zuerst.</summary>
@@ -75,6 +75,11 @@ public static class WebDesignKi
         Walk(doc["content"]); Walk(doc["zones"]);
         return blocks.ToJsonString();
     }
+
+    /// <summary>K3: Auftrag aus Skizze und Satz. Das Bild zeigt die aktuelle Seite mit Markierungen; die KI ändert die Seite per Aktionen.</summary>
+    public static string SketchPrompt(string wish, string pageJson, string imageNote) =>
+        "Auf dem Bild siehst du die aktuelle Seite mit roten Markierungen und Notizen darüber. Setze um, was markiert ist, und nur das. Nutze die ids der vorhandenen Bausteine.\n"
+        + "Wunsch: " + (wish.Trim().Length > 0 ? wish.Trim() : "(kein Text, nur die Skizze)") + "\nZum Bild:\n" + imageNote + "\n\nAktuelle Seite:\n" + pageJson;
 
     /// <summary>Auftrag zum Nachbessern (A6): nur die gefundenen Fehler, gezielt. Mit <paramref name="ids"/> sieht die KI nur die Auswahl.</summary>
     public static string RepairPrompt(string pageJson, IEnumerable<WebsiteFinding> findings, IReadOnlyCollection<string>? ids = null) =>

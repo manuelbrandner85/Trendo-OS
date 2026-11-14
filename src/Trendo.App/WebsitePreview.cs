@@ -103,7 +103,8 @@ public static class WebsitePreview
         if (relPaths.Count == 0) return (0, null);
         var done = 0;
         using var host = WebsiteHost.Start(outDir);
-        await RunBrowserAsync(browser, 1440, 900, Math.Clamp(15 + relPaths.Count * 4, 30, 900), ct, null, async (cdp, tok) =>
+        // Zeitbudget: bis 8 s Warten je Seite plus Laden; bei sehr vielen Seiten höchstens 15 Minuten
+        await RunBrowserAsync(browser, 1440, 900, Math.Clamp(20 + relPaths.Count * 10, 30, 900), ct, null, async (cdp, tok) =>
         {
             await cdp.Call("Page.enable", new { }, tok);
             foreach (var rel in relPaths)
@@ -123,6 +124,26 @@ public static class WebsitePreview
             }
         });
         return (done, done < relPaths.Count ? $"{relPaths.Count - done} Seite(n) ließen sich nicht vorrendern." : null);
+    }
+
+    /// <summary>Z8/K6: HTML mit dem GrapesJS-Kern (assets/import.js im Editor-Bündel) in einen Baum übersetzen. Der Browser lädt dabei nur die Import-Seite aus dem Programm;
+    /// das HTML wird als Text übergeben, nicht geladen – Bilder, Skripte oder Adressen darin ruft niemand ab.</summary>
+    public static async Task<(string? Json, string? Error)> ParseHtmlAsync(string editorDir, string html, CancellationToken ct = default)
+    {
+        if (!File.Exists(Path.Combine(editorDir, "import.html")) || !File.Exists(Path.Combine(editorDir, "assets", "import.js"))) return (null, "Der HTML-Leser fehlt im Programm (Assets/webdesign/import.html).");
+        var browser = FindBrowser();
+        if (browser is null) return (null, "Zum Einlesen von HTML braucht Trendo Chrome oder Edge auf diesem PC.");
+        string? json = null;
+        using var host = WebsiteHost.Start(editorDir);
+        await RunBrowserAsync(browser, 800, 600, 60, ct, null, async (cdp, tok) =>
+        {
+            await cdp.Call("Page.enable", new { }, tok);
+            await cdp.Call("Page.navigate", new { url = host.Origin + "/import.html" }, tok);
+            await WaitReady(cdp, tok);
+            var r = await cdp.Call("Runtime.evaluate", new { expression = "window.trendoParseHtml(" + JsonSerializer.Serialize(html) + ")", returnByValue = true }, tok);
+            json = ResultValue(r);
+        });
+        return string.IsNullOrEmpty(json) ? (null, "Das HTML ließ sich nicht lesen.") : (json, null);
     }
 
     /// <summary>Chrome ohne Fenster starten, mit dem Debug-Kanal verbinden und <paramref name="work"/> ausführen. Danach endet Chrome samt Hilfsprozessen sicher.</summary>

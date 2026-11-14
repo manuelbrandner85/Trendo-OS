@@ -38,10 +38,13 @@ public partial class MainWindow
                 break;
             case "auswahl":
                 var ids = (System.Text.Json.Nodes.JsonNode.Parse(m.Data ?? "{}")?["ids"] as System.Text.Json.Nodes.JsonArray)?.Select(x => x?.ToString() ?? "").Where(x => x.Length > 0).ToList() ?? [];
-                if (!ids.SequenceEqual(_wdSelection)) { _wdSelection = ids; Dispatcher.UIThread.Post(() => Show("dev")); }
+                if (!ids.SequenceEqual(_wdSelection)) { _wdSelection = ids; if (ids.Count > 0) WebDesignCodeJump(ids[^1]); Dispatcher.UIThread.Post(() => Show("dev")); } // K6: Klick springt im Code zur Stelle
                 break;
             case "aktion":
                 WebDesignHumanAction(m.Data);
+                break;
+            case "skizze": // K3: Striche der Skizze als Bild
+                WebDesignSketchReceived(m.Data);
                 break;
         }
     }
@@ -72,8 +75,10 @@ public partial class MainWindow
         sp.Children.Add(WebDesignTokensPane());
         sp.Children.Add(WebDesignComponentsPane());
         sp.Children.Add(WebDesignAssetsPane());
+        sp.Children.Add(WebDesignCodePane()); // K6, Z8
         sp.Children.Add(WebDesignCmsPane()); // W2
         sp.Children.Add(WebDesignLanguagesPane()); // Z5
+        sp.Children.Add(WebDesignPublishPane()); // K8
         if (_wdNote.Length > 0) sp.Children.Add(new TextBlock { Name = "web-visual-note", Text = _wdNote, FontSize = 12, Foreground = Muted, TextWrapping = Avalonia.Media.TextWrapping.Wrap });
         if (_wdOpen && editorOk)
         {

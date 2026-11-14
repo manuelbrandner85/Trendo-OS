@@ -410,6 +410,7 @@ public partial class MainWindow
         var btnCheck = Act("web-ki-check", "Seite prüfen", () => WebDesignCheckNow());
         btnNew.IsEnabled = !_wdAiBusy; btnChange.IsEnabled = !_wdAiBusy && _wdSelection.Count > 0; btnCheck.IsEnabled = !_wdAiBusy;
         var row = new WrapPanel { Children = { btnNew, new Border { Width = 8 }, btnChange, new Border { Width = 8 }, btnCheck } };
+        if (_wdSketch is not null) { row.Children.Add(new Border { Width = 8 }); var bs = Act("web-ki-skizze", "Mit Skizze ändern", () => WebDesignAiSketch(wish.Text ?? ""), true); bs.IsEnabled = !_wdAiBusy; row.Children.Add(bs); } // K3
         if (_wdLastAuto is not null) { row.Children.Add(new Border { Width = 8 }); row.Children.Add(Act("web-ki-undo", "KI-Änderung rückgängig", WebDesignUndo)); }
         sp.Children.Add(row);
         sp.Children.Add(new TextBlock { Name = "web-ki-selection", FontSize = 12, Foreground = Muted, TextWrapping = TextWrapping.Wrap, Text = _wdSelection.Count == 0 ? "Im Editor unter „Auswählen“ Bausteine anklicken: Die KI ändert dann nur diese. Doppelklick auf einen Text ändert ihn direkt, ohne KI." : "Ausgewählt: " + string.Join(", ", _wdSelection) });

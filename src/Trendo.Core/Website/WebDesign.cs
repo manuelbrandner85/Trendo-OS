@@ -29,6 +29,7 @@ public static partial class WebDesign
             if (JsonNode.Parse(json) is not JsonObject o || o["root"] is not JsonObject || o["content"] is not JsonArray content) return (null, "Seitendaten unvollständig (root/content fehlt).");
             foreach (var c in content) if (c is not JsonObject co || string.IsNullOrWhiteSpace(co["type"]?.ToString())) return (null, "Ein Baustein hat keinen Typ.");
             Sanitize(o);
+            SanitizeHtmlBlocks(o); // Z8/K6: HTML-Blöcke nur aus erlaubten Elementen, auch bei veränderter Datei
             SanitizeTokens(o["root"]?["props"] as JsonObject);
             WebDesignViews.Sanitize(o);
             WebDesignCms.Strip(o); // W2: aufgelöste Listen entstehen beim Lesen neu
@@ -188,7 +189,7 @@ public static partial class WebDesign
         if (File.Exists(lic)) File.Copy(lic, Path.Combine(assets, "LIZENZEN.txt"), true);
         var doc = JsonNode.Parse(data)!;
         if (doc["root"]?["props"] is JsonObject rootProps) { rootProps.Remove("medien"); rootProps.Remove("sammlungen"); } // Liste aller Projektmedien gehört nur in den Editor, nicht in die veröffentlichte Seite
-        WebDesignCms.Resolve(doc.AsObject(), WebDesignCms.Load(projectDir), WebDesignSite.Load(projectDir).Standardsprache, "", false); // W2: Listen fertig in die Seite
+        WebDesignCms.Resolve(doc.AsObject(), WebDesignCms.Load(projectDir), WebDesignSite.Load(projectDir).Standardsprache, "", false); // W2: Listen fertig in die Seite (ohne Links, die Eintragsseiten gibt es hier nicht)
         data = doc.ToJsonString();
         CopyImages(doc, projectDir, outDir);
         // Z7: eigene Schriften reisen lokal mit; Namensnennung für Medien unter CC-BY
@@ -215,10 +216,22 @@ public static partial class WebDesign
         return (outDir, null);
     }
 
+    static void SanitizeHtmlBlocks(JsonNode? n)
+    {
+        switch (n)
+        {
+            case JsonObject o:
+                if (o["type"]?.ToString() == "Html" && o["props"] is JsonObject p) p["knoten"] = WebDesignHtml.Sanitize(p["knoten"]);
+                foreach (var kv in o.ToList()) SanitizeHtmlBlocks(kv.Value);
+                break;
+            case JsonArray a: foreach (var x in a.ToList()) SanitizeHtmlBlocks(x); break;
+        }
+    }
+
     /// <summary>W3: Seiten-Angaben prüfen: Vorschaubild nur als Bild im Projekt, „indexieren“ nur ja/nein, Vorlage nur als Sammlungs-Name.</summary>
     static void SanitizePageProps(JsonObject p)
     {
-        if (p["vorschaubild"] is not null && !(p["vorschaubild"] is JsonValue v && v.TryGetValue(out string? s) && (s.Length == 0 || IsSafeImagePath(s)))) p["vorschaubild"] = "";
+        if (p["vorschaubild"] is not null && !(p["vorschaubild"] is JsonValue v && v.TryGetValue(out string? s) && (s.Length == 0 || IsSafeImagePath(s) || CmsPlaceholder().IsMatch(s)))) p["vorschaubild"] = "";
         if (p["indexieren"] is not null && !(p["indexieren"] is JsonValue iv && iv.TryGetValue(out bool _))) p["indexieren"] = true;
         if (p["vorlage"] is not null && !(p["vorlage"] is JsonValue tv && tv.TryGetValue(out string? t) && (t.Length == 0 || WebDesignSite.CheckSlug(t) is null))) p.Remove("vorlage");
     }

@@ -13,7 +13,9 @@ public static partial class WebDesignSite
     public const int MaxPages = 200;
     public static readonly string[] Transitions = ["keiner", "einblenden", "schieben"];
     /// <summary>Namen, die der Export selbst braucht; Seiten und Sammlungen dürfen so nicht heißen.</summary>
-    public static readonly HashSet<string> Reserved = ["assets", "bilder", "medien", "daten", "sitemap", "robots", "namensnennung", "seiten", "sprachen", "veroeffentlichen", "404"];
+    public static readonly HashSet<string> Reserved = ["assets", "bilder", "medien", "daten", "sitemap", "robots", "namensnennung", "seiten", "sprachen", "veroeffentlichen", "404", "import", "pakete",
+        // Windows-Gerätenamen: als Datei- oder Ordnername auf manchen Systemen und beim Entpacken nicht nutzbar
+        "con", "prn", "aux", "nul", "com1", "com2", "com3", "com4", "com5", "com6", "com7", "com8", "com9", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9"];
 
     [GeneratedRegex("^[a-z0-9]+(-[a-z0-9]+)*$")] private static partial Regex SlugPattern();
     [GeneratedRegex("^[a-z]{2}(-[a-z]{2})?$")] private static partial Regex LangPattern();
@@ -85,7 +87,8 @@ public static partial class WebDesignSite
     public static string? CheckBase(string? basis)
     {
         if (string.IsNullOrEmpty(basis)) return null;
-        if (!Uri.TryCreate(basis, UriKind.Absolute, out var u) || u.Scheme != Uri.UriSchemeHttps || !string.IsNullOrEmpty(u.Query) || !string.IsNullOrEmpty(u.Fragment) || u.UserInfo.Length > 0 || basis.Any(char.IsWhiteSpace))
+        if (!Uri.TryCreate(basis, UriKind.Absolute, out var u) || u.Scheme != Uri.UriSchemeHttps || !string.IsNullOrEmpty(u.Query) || !string.IsNullOrEmpty(u.Fragment) || u.UserInfo.Length > 0
+            || basis.Any(c => char.IsWhiteSpace(c) || c is '"' or '<' or '>' or '\'' or '`' or '\\') || !Uri.IsWellFormedUriString(basis, UriKind.Absolute))
             return "Die Adresse der Website bitte vollständig mit https://, z. B. https://www.beispiel.de";
         return null;
     }
@@ -211,7 +214,7 @@ public static partial class WebDesignSite
         if (adresse == Index) return "Die Startseite lässt sich nicht löschen.";
         if (!Pages(dir).Contains(adresse)) return "Diese Seite gibt es nicht.";
         var s = Load(dir);
-        var bin = Path.Combine(dir, ".trendo-papierkorb", DateTime.Now.ToString("yyyyMMdd-HHmmss") + "-" + adresse);
+        var bin = Path.Combine(dir, ".trendo-papierkorb", DateTime.Now.ToString("yyyyMMdd-HHmmss") + "-" + Guid.NewGuid().ToString("N")[..6] + "-" + adresse);
         Directory.CreateDirectory(bin);
         foreach (var lang in s.Sprachen)
         {
@@ -259,7 +262,7 @@ public static partial class WebDesignSite
         var langDir = Path.Combine(dir, LangDir, code);
         if (Directory.Exists(langDir))
         {
-            var bin = Path.Combine(dir, ".trendo-papierkorb", DateTime.Now.ToString("yyyyMMdd-HHmmss") + "-sprache-" + code);
+            var bin = Path.Combine(dir, ".trendo-papierkorb", DateTime.Now.ToString("yyyyMMdd-HHmmss") + "-" + Guid.NewGuid().ToString("N")[..6] + "-sprache-" + code);
             Directory.CreateDirectory(Path.GetDirectoryName(bin)!);
             Directory.Move(langDir, bin);
         }
@@ -278,7 +281,7 @@ public static partial class WebDesignSite
         var v = von.Trim().TrimStart('/');
         if (v.EndsWith(".html", StringComparison.Ordinal)) v = v[..^5];
         var parts = v.Split('/');
-        if (parts.Length is < 1 or > 2 || parts.Any(p => !SlugPattern().IsMatch(p))) return null;
+        if (parts.Length is < 1 or > 2 || parts.Any(p => !SlugPattern().IsMatch(p) || Reserved.Contains(p))) return null; // keine Weiterleitung über Dateien, die der Export selbst braucht (z. B. namensnennung)
         return string.Join('/', parts);
     }
 
@@ -293,7 +296,7 @@ public static partial class WebDesignSite
 
     public static string? AddRedirect(string dir, string von, string nach)
     {
-        if (NormalizeFrom(von) is not { } v) return "Die alte Adresse bitte wie „/alt“ oder „alt.html“ (Kleinbuchstaben, Ziffern, Bindestriche).";
+        if (NormalizeFrom(von) is not { } v) return "Die alte Adresse bitte wie „/alt“ oder „alt.html“ (Kleinbuchstaben, Ziffern, Bindestriche; keine Namen, die der Export selbst braucht).";
         if (NormalizeTarget(nach) is not { } n) return "Das Ziel bitte als Seite dieser Website („ueber-uns“) oder als https-Adresse.";
         if (v == n) return "Eine Weiterleitung auf sich selbst geht nicht.";
         var s = Load(dir);

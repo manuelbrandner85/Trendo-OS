@@ -109,6 +109,8 @@ public static partial class WebDesignActions
             D(("text", "© Mein Laden"), ("links", new JsonArray()), ("impressum", "impressum.html"), ("datenschutz", "datenschutz.html"))),
         // W5: Verwendung einer Komponente; Inhalt kommt aus dem Original, Änderungen nur über die Komponenten-Aktionen
         ["Komponente"] = new(new(), D()),
+        // Z8/K6: nicht abbildbares HTML bleibt als HTML-Block erhalten (Inhalt nur über Import oder Code, nicht über KI-Aktionen)
+        ["Html"] = new(new(), D()),
         // W2: Liste der Einträge einer Sammlung aus dem CMS
         ["Sammlung"] = new(new() { ["titel"] = T, ["sammlung"] = T, ["anzahl"] = new(Art.Zahl, Min: 1, Max: 100), ["sortierung"] = new(Art.Wahl, ["alphabetisch", "neueste"]) },
             D(("titel", ""), ("sammlung", ""), ("anzahl", 12), ("sortierung", "alphabetisch"))),
@@ -119,6 +121,14 @@ public static partial class WebDesignActions
     public static IReadOnlyCollection<string> ComponentNames => Bausteine.Keys;
     /// <summary>Felder eines Bausteins, die Bereiche für weitere Bausteine sind.</summary>
     public static IReadOnlyCollection<string> SlotFields(string type) => Bausteine.TryGetValue(type, out var b) ? b.Felder.Where(f => f.Value.Art == Art.Slot).Select(f => f.Key).ToList() : [];
+    /// <summary>K6/Z8: Feld eines Bausteins mit seiner Art (text, link, bild, wahl, zahl, farbe, slot, stufe, liste, email, objekt) und bei Listen den Unterfeldern.</summary>
+    public sealed record FeldInfo(string Key, string Kind, IReadOnlyList<FeldInfo> Sub);
+
+    /// <summary>K6/Z8: Felder eines Bausteins (ohne die allgemeinen Felder Bewegung und Zeitleiste).</summary>
+    public static IReadOnlyList<FeldInfo> Fields(string type) => Bausteine.TryGetValue(type, out var b)
+        ? b.Felder.Select(kv => new FeldInfo(kv.Key, kv.Value.Art.ToString().ToLowerInvariant(), kv.Value.Sub?.Select(s => new FeldInfo(s.Key, s.Value.Art.ToString().ToLowerInvariant(), [])).ToList() ?? [])).ToList()
+        : [];
+
     /// <summary>Z5: übersetzbare Textfelder eines Bausteins; bei Listen das Listenfeld mit seinem Unterfeld. Kennungen wie „sammlung“ zählen nicht.</summary>
     public static IReadOnlyList<(string Feld, string? Sub)> TextFields(string type)
     {
