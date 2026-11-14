@@ -340,6 +340,14 @@ public partial class MainWindow
                     sp.Children.Add(inst);
                     sp.Children.Add(Label("Liedtext (nur eigener Text)")); sp.Children.Add(Box("lyrics", "kie-lyrics", "[Strophe]\n…", true));
                     sp.Children.Add(Label("Länge in Sekunden")); sp.Children.Add(Choice("seconds", "kie-seconds", ["60", "120", "180", "240"]));
+                    KieVoiceSection(sp, f, Pick, Render);
+                    break;
+                case KieKind.Geraeusch:
+                    sp.Children.Add(Label("Beschreibung (bis 500 Zeichen)")); sp.Children.Add(Box("prompt", "kie-prompt", "z. B. „Regen auf einem Blechdach, ruhig“ oder „kurzer Klick für einen Knopf“", true));
+                    var loop = new CheckBox { Name = "kie-loop", Content = "Als Endlosschleife (Loop)", IsChecked = f.GetValueOrDefault("loop") == "ja" };
+                    loop.IsCheckedChanged += (_, _) => { f["loop"] = loop.IsChecked == true ? "ja" : "nein"; ResetAsk(); };
+                    sp.Children.Add(loop);
+                    sp.Children.Add(Label("Tempo (Schläge pro Minute)")); sp.Children.Add(Choice("tempo", "kie-tempo", ["automatisch", "70", "90", "110", "130", "150"]));
                     break;
                 case KieKind.Sprache:
                     sp.Children.Add(Label("Text")); sp.Children.Add(Box("prompt", "kie-prompt", "Text zum Vorlesen, bis 5000 Zeichen", true));
@@ -359,7 +367,7 @@ public partial class MainWindow
             start.Classes.Add("accent");
             start.Click += (_, _) =>
             {
-                var input = KieInputFrom(f);
+                var input = KieInputFrom(f) with { PersonaId = f.GetValueOrDefault("persona") == "ja" ? KieVoiceId ?? "" : "" };
                 if (KieModels.Blocked(model, input with { ImageUrls = images.Count > 0 ? images : null, AudioUrl = audio }, consent) is { } why) { _kieMsg = why; Live(); return; }
                 if (!KieModels.PriceKnown(model, input) && !unknownOk) { _kieMsg = "Der Preis ist vorab unbekannt. Bitte das Häkchen setzen, wenn du trotzdem starten willst."; Live(); return; }
                 if (askAt == DateTime.MinValue) { askAt = DateTime.UtcNow; _kieMsg = $"Das kostet {KieModels.CostText(model, input)} von deinem kie.ai-Guthaben. Zum Starten bestätigen."; Render(); return; }
@@ -384,6 +392,62 @@ public partial class MainWindow
         int.TryParse(f.GetValueOrDefault("seconds", "5"), out var sec);
         return new KieInput(Prompt: f.GetValueOrDefault("prompt", "").Trim(), Aspect: f.GetValueOrDefault("aspect", "1:1"), Seconds: sec <= 0 ? 5 : sec,
             Title: f.GetValueOrDefault("title", "").Trim(), Style: f.GetValueOrDefault("style", "").Trim(), Lyrics: f.GetValueOrDefault("lyrics", "").Trim(),
-            Instrumental: f.GetValueOrDefault("instrumental") == "ja", Voice: f.GetValueOrDefault("voice", "").Trim(), Upscale: f.GetValueOrDefault("upscale", "2"));
+            Instrumental: f.GetValueOrDefault("instrumental") == "ja", Voice: f.GetValueOrDefault("voice", "").Trim(), Upscale: f.GetValueOrDefault("upscale", "2"),
+            Loop: f.GetValueOrDefault("loop") == "ja", Tempo: int.TryParse(f.GetValueOrDefault("tempo", ""), out var bpm) ? bpm : 0);
+    }
+
+    /// <summary>S2: Abschnitt „Eigene Stimme“ im Musik-Formular – vorhandene Stimme nutzen oder in zwei kostenlosen Schritten anlegen.</summary>
+    void KieVoiceSection(StackPanel sp, Dictionary<string, string> f, Func<string, string, string[], Action<string>, Button> pick, Action render)
+    {
+        string[] aud = ["*.mp3", "*.wav", "*.m4a", "*.ogg"];
+        sp.Children.Add(new TextBlock { Text = "Eigene Stimme", Foreground = Muted, FontSize = 11, Margin = new Thickness(0, 6, 0, 2) });
+        if (KieVoiceId is not null)
+        {
+            var use = new CheckBox { Name = "kie-own-voice", Content = "Mit meiner eigenen Stimme singen", IsChecked = f.GetValueOrDefault("persona") == "ja" };
+            use.IsCheckedChanged += (_, _) => f["persona"] = use.IsChecked == true ? "ja" : "nein";
+            var forget = new Button { Name = "kie-voice-forget", Content = "Stimme entfernen", Padding = new Thickness(8, 2), FontSize = 11 };
+            forget.Click += (_, _) => { KieVoiceForget(); f["persona"] = "nein"; render(); };
+            sp.Children.Add(new WrapPanel { Children = { use, new Border { Width = 8 }, forget } });
+        }
+        else if (f.GetValueOrDefault("voice-setup") != "ja")
+        {
+            var setup = new Button { Name = "kie-voice-setup", Content = "Eigene Stimme anlegen …", Padding = new Thickness(10, 4) };
+            setup.Click += (_, _) => { f["voice-setup"] = "ja"; render(); };
+            sp.Children.Add(setup);
+            sp.Children.Add(P("Kostenlos bei kie.ai: eine Aufnahme deiner Stimme, dann einen Prüfsatz einsprechen. Nur die eigene Stimme.", Muted, 11));
+        }
+        else
+        {
+            var own = new CheckBox { Name = "kie-voice-consent", IsChecked = f.GetValueOrDefault("voice-own") == "ja", Content = new TextBlock { Text = "Die Aufnahme ist meine eigene Stimme. Ich lege keine Stimme einer anderen Person an.", TextWrapping = TextWrapping.Wrap, MaxWidth = 460 } };
+            own.IsCheckedChanged += (_, _) => f["voice-own"] = own.IsChecked == true ? "ja" : "nein";
+            sp.Children.Add(own);
+            sp.Children.Add(pick("kie-voice-rec", f.TryGetValue("voice-rec", out var rec) ? "Aufnahme: " + Path.GetFileName(rec) : "1. Aufnahme deiner Stimme wählen (am besten gesungen, ohne Musik) …", aud, x => f["voice-rec"] = x));
+            var from = new TextBox { Name = "kie-voice-from", Text = f.GetValueOrDefault("voice-from", "0"), Width = 70 }; from.TextChanged += (_, _) => f["voice-from"] = from.Text ?? "";
+            var to = new TextBox { Name = "kie-voice-to", Text = f.GetValueOrDefault("voice-to", "20"), Width = 70 }; to.TextChanged += (_, _) => f["voice-to"] = to.Text ?? "";
+            sp.Children.Add(new WrapPanel { Children = { P("Abschnitt mit Gesang von Sekunde", Text, 12), from, P(" bis ", Text, 12), to } });
+            var phrase = new Button { Name = "kie-voice-phrase", Content = KieVoiceBusy ? "Bitte warten …" : "2. Prüfsatz holen (kostenlos)", Padding = new Thickness(10, 4), IsEnabled = !KieVoiceBusy };
+            phrase.Click += async (_, _) =>
+            {
+                if (!f.TryGetValue("voice-rec", out var file)) { _kieVoiceMsg = "Wähle zuerst eine Aufnahme deiner Stimme."; render(); return; }
+                int.TryParse(f.GetValueOrDefault("voice-from", "0"), out var a); int.TryParse(f.GetValueOrDefault("voice-to", "20"), out var b);
+                await KieVoicePhrase(file, a, b, "de", f.GetValueOrDefault("voice-own") == "ja"); render();
+            };
+            sp.Children.Add(phrase);
+            if (KieVoicePhraseText is { } text)
+            {
+                sp.Children.Add(new Border { Padding = new Thickness(10, 6), CornerRadius = new CornerRadius(4), BorderBrush = Edge, BorderThickness = new Thickness(1), Child = new SelectableTextBlock { Name = "kie-voice-phrase-text", Text = text, TextWrapping = TextWrapping.Wrap, Foreground = Text, FontSize = 14 } });
+                sp.Children.Add(pick("kie-voice-verify", f.TryGetValue("voice-verify", out var ver) ? "Aufnahme des Satzes: " + Path.GetFileName(ver) : "3. Aufnahme dieses Satzes wählen …", aud, x => f["voice-verify"] = x));
+                var create = new Button { Name = "kie-voice-create", Content = KieVoiceBusy ? "Bitte warten …" : "4. Stimme anlegen (kostenlos)", Padding = new Thickness(10, 4), IsEnabled = !KieVoiceBusy };
+                create.Classes.Add("accent");
+                create.Click += async (_, _) =>
+                {
+                    if (!f.TryGetValue("voice-verify", out var file)) { _kieVoiceMsg = "Wähle die Aufnahme des Prüfsatzes."; render(); return; }
+                    if (await KieVoiceCreate(file, "Meine Stimme", f.GetValueOrDefault("style", ""))) { f["voice-setup"] = "nein"; f["persona"] = "ja"; }
+                    render();
+                };
+                sp.Children.Add(create);
+            }
+        }
+        if (_kieVoiceMsg.Length > 0) sp.Children.Add(P(_kieVoiceMsg, _kieVoiceMsg.StartsWith('✓') ? Text : Brush.Parse("#E0A458"), 11));
     }
 }

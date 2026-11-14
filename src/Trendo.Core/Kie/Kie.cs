@@ -14,7 +14,7 @@ public sealed class KieException(int code, string message) : Exception(message)
     public int Code { get; } = code;
 }
 
-public sealed record KieTask(string Id, string State, IReadOnlyList<string> Urls, string? FailMessage, double? Credits, long? CostMs)
+public sealed record KieTask(string Id, string State, IReadOnlyList<string> Urls, string? FailMessage, double? Credits, long? CostMs, string? ResultJson = null)
 {
     public bool Done => State is "success" or "fail";
     public bool Ok => State == "success";
@@ -87,7 +87,7 @@ public sealed class KieClient(IWebSend web, string key)
         static string? S(JsonNode? n) => n is JsonValue v && v.TryGetValue<string>(out var s) ? s : null;
         static double? D(JsonNode? n) => n is JsonValue v && v.TryGetValue<double>(out var x) ? x : null;
         var state = S(d["state"]) ?? "waiting";
-        return new(taskId, state, ResultUrls(S(d["resultJson"])), S(d["failMsg"]) ?? S(d["failCode"]), D(d["creditsConsumed"]), d["costTime"] is JsonValue ct2 && ct2.TryGetValue<long>(out var ms) ? ms : null);
+        return new(taskId, state, ResultUrls(S(d["resultJson"])), S(d["failMsg"]) ?? S(d["failCode"]), D(d["creditsConsumed"]), d["costTime"] is JsonValue ct2 && ct2.TryGetValue<long>(out var ms) ? ms : null, S(d["resultJson"]));
     }
 
     /// <summary>Wartet auf das Ergebnis: erst alle 3 s, dann langsamer bis 15 s. Videos können über 10 Minuten brauchen.</summary>
@@ -167,9 +167,10 @@ public sealed class KieClient(IWebSend web, string key)
 /// <summary>Was ein Auftrag braucht. Nicht jedes Modell nutzt jedes Feld.</summary>
 public sealed record KieInput(
     string Prompt = "", string Aspect = "1:1", IReadOnlyList<string>? ImageUrls = null, string? AudioUrl = null, int Seconds = 5,
-    string Title = "", string Style = "", string Lyrics = "", bool Instrumental = false, string Voice = "", string Upscale = "2");
+    string Title = "", string Style = "", string Lyrics = "", bool Instrumental = false, string Voice = "", string Upscale = "2",
+    bool Loop = false, int Tempo = 0, string PersonaId = "");
 
-public enum KieKind { Bild, BildBearbeiten, Freistellen, Hochskalieren, Video, Avatar, Musik, Sprache }
+public enum KieKind { Bild, BildBearbeiten, Freistellen, Hochskalieren, Video, Avatar, Musik, Sprache, Geraeusch }
 
 /// <summary>Ein Modell bei kie.ai. <paramref name="Credits"/>: belegter Preis je Auftrag (null = Preis steht erst nach dem Auftrag fest).
 /// <paramref name="Verified"/>: Anfrageform aus der offiziellen Beschreibung belegt; sonst als „ungeprüft“ gekennzeichnet.</summary>
@@ -194,11 +195,23 @@ public static partial class KieModels
         new("kling-3.0/video", "Kling 3.0 Video", KieKind.Video, "Text oder Bild zu Video, 3–15 Sekunden", null, true, false, false,
             i => { var o = new JsonObject { ["prompt"] = i.Prompt, ["duration"] = Math.Clamp(i.Seconds, 3, 15).ToString(CultureInfo.InvariantCulture), ["aspect_ratio"] = i.Aspect is "16:9" or "9:16" or "1:1" ? i.Aspect : "16:9", ["sound"] = false };
                    if (i.ImageUrls is { Count: > 0 }) o["image_urls"] = Arr(i.ImageUrls.Take(2)); return o; }),
+        // Veo 3.1 (docs.kie.ai, Stand 14.11.2026): Modell „veo-3-1“, Stufe in input.model; Ton immer dabei; 1080p/4K kosten extra (hier 720p)
+        new("veo-3-1", "Veo 3.1 Fast (Google)", KieKind.Video, "Text oder Startbild zu Video, 8 Sekunden, mit Ton", null, true, false, false,
+            i => { var o = new JsonObject { ["prompt"] = i.Prompt, ["model"] = "veo3_fast", ["aspect_ratio"] = i.Aspect is "9:16" ? "9:16" : "16:9" };
+                   if (i.ImageUrls is { Count: > 0 }) { o["image_urls"] = Arr(i.ImageUrls.Take(2)); o["generation_type"] = "FIRST_AND_LAST_FRAMES_2_VIDEO"; }
+                   else o["generation_type"] = "TEXT_2_VIDEO";
+                   return o; }),
         new("kling/ai-avatar-standard", "Kling Avatar (sprechende Figur)", KieKind.Avatar, "Porträt plus Sprachaufnahme wird zum sprechenden Video", null, true, true, true,
             i => new JsonObject { ["image_url"] = i.ImageUrls?.FirstOrDefault() ?? "", ["audio_url"] = i.AudioUrl ?? "", ["prompt"] = string.IsNullOrWhiteSpace(i.Prompt) ? "natural talking, friendly" : i.Prompt }),
         new("ai-music-api/generate", "Suno V6 – Lied", KieKind.Musik, "Lied mit Gesang oder Instrumental, 10–360 Sekunden", null, true, false, false,
             i => { var o = new JsonObject { ["model"] = "V6", ["custom_mode"] = true, ["instrumental"] = i.Instrumental, ["title"] = KCut(i.Title, 80), ["style"] = KCut(i.Style, 1000), ["duration"] = Math.Clamp(i.Seconds, 10, 360) };
-                   if (!i.Instrumental && !string.IsNullOrWhiteSpace(i.Lyrics)) o["lyrics"] = KCut(i.Lyrics, 5000); return o; }),
+                   if (!i.Instrumental && !string.IsNullOrWhiteSpace(i.Lyrics)) o["lyrics"] = KCut(i.Lyrics, 5000);
+                   // S2: eigene Stimme (Voice-ID aus dem Prüfsatz-Ablauf) – nur mit Gesang
+                   if (!i.Instrumental && !string.IsNullOrWhiteSpace(i.PersonaId)) { o["persona_id"] = i.PersonaId.Trim(); o["persona_model"] = "voice_persona"; }
+                   return o; }),
+        new("ai-music-api/sounds", "Suno – Geräusche & Klänge", KieKind.Geraeusch, "Geräusch, Klangteppich oder Loop aus einer Beschreibung", null, true, false, false,
+            i => { var o = new JsonObject { ["prompt"] = KCut(i.Prompt, 500), ["model"] = "V6", ["sound_loop"] = i.Loop };
+                   if (i.Tempo is >= 1 and <= 300) o["sound_tempo"] = i.Tempo; return o; }),
         new("elevenlabs/text-to-speech-multilingual-v2", "ElevenLabs – Sprachausgabe", KieKind.Sprache, "Text vorlesen lassen, viele Sprachen", null, false, false, false,
             i => new JsonObject { ["text"] = KCut(i.Text(), 5000), ["voice"] = string.IsNullOrWhiteSpace(i.Voice) ? DefaultVoice : i.Voice.Trim() }),
     ];
@@ -215,7 +228,7 @@ public static partial class KieModels
     public static string KindLabel(KieKind k) => k switch
     {
         KieKind.Bild => "Bild erzeugen", KieKind.BildBearbeiten => "Bild bearbeiten", KieKind.Freistellen => "Hintergrund entfernen", KieKind.Hochskalieren => "Hochskalieren",
-        KieKind.Video => "Video", KieKind.Avatar => "Sprechende Figur", KieKind.Musik => "Musik (Suno)", _ => "Sprachausgabe",
+        KieKind.Video => "Video", KieKind.Avatar => "Sprechende Figur", KieKind.Musik => "Musik (Suno)", KieKind.Geraeusch => "Geräusche & Klänge", _ => "Sprachausgabe",
     };
 
     /// <summary>Welche Arten in welchem Studio zuerst stehen. Jedes Studio bekommt mindestens Bilder und Sprache.</summary>
@@ -223,13 +236,13 @@ public static partial class KieModels
     {
         "STUDIO-IMAGEAI-01" or "STUDIO-LOGO-01" or "STUDIO-COMIC-01" or "STUDIO-POD-01" or "CORE-07" or "X-07"
             => [KieKind.Bild, KieKind.BildBearbeiten, KieKind.Freistellen, KieKind.Hochskalieren],
-        "STUDIO-FILM-01" or "CORE-08" => [KieKind.Video, KieKind.Bild, KieKind.Avatar, KieKind.Sprache, KieKind.Musik, KieKind.BildBearbeiten],
+        "STUDIO-FILM-01" or "CORE-08" => [KieKind.Video, KieKind.Bild, KieKind.Avatar, KieKind.Sprache, KieKind.Musik, KieKind.Geraeusch, KieKind.BildBearbeiten],
         "STUDIO-ANIM-01" => [KieKind.Video, KieKind.Bild, KieKind.Freistellen],
-        "STUDIO-MUSIK-01" => [KieKind.Musik, KieKind.Video, KieKind.Bild],
-        "STUDIO-PODCAST-01" => [KieKind.Sprache, KieKind.Musik, KieKind.Avatar, KieKind.Bild],
+        "STUDIO-MUSIK-01" => [KieKind.Musik, KieKind.Geraeusch, KieKind.Video, KieKind.Bild],
+        "STUDIO-PODCAST-01" => [KieKind.Sprache, KieKind.Musik, KieKind.Geraeusch, KieKind.Avatar, KieKind.Bild],
         "STUDIO-BOOK-01" => [KieKind.Bild, KieKind.Sprache],
         "SPEC-15" or "STUDIO-SOCIAL-01" => [KieKind.Video, KieKind.Bild, KieKind.Avatar, KieKind.Sprache],
-        _ => [KieKind.Bild, KieKind.Sprache, KieKind.Video, KieKind.Musik],
+        _ => [KieKind.Bild, KieKind.Sprache, KieKind.Video, KieKind.Musik, KieKind.Geraeusch],
     };
 
     // Ausdrücklich eine fremde Stimme: immer gesperrt
@@ -245,20 +258,23 @@ public static partial class KieModels
         i.Style.Length > 1000 ? "Der Stil ist zu lang (höchstens 1000 Zeichen)." :
         i.Lyrics.Length > 5000 ? "Der Liedtext ist zu lang (höchstens 5000 Zeichen)." : null;
 
+    const int SoundMax = 500;
+
     /// <summary>Grund, warum ein Auftrag nicht losgeht, sonst null. Regeln von Trendo, weil kie.ai selbst kaum prüft.</summary>
     public static string? Blocked(KieModel m, KieInput i, bool consent)
     {
         var text = string.Join(" ", i.Prompt, i.Style, i.Title, i.Lyrics);
         if (Kreativ.ImageAiKit.Offensive(text)) return "Solche Inhalte erzeugt Trendo nicht.";
         if (TooLong(i) is { } tl) return tl;
-        if (m.Kind is KieKind.Musik or KieKind.Sprache or KieKind.Avatar && (VoiceRx().IsMatch(text) || ArtistRx().IsMatch(text)))
+        if (m.Kind == KieKind.Geraeusch && i.Prompt.Length > SoundMax) return "Die Beschreibung eines Geräuschs darf höchstens 500 Zeichen haben.";
+        if (m.Kind is KieKind.Musik or KieKind.Sprache or KieKind.Avatar or KieKind.Geraeusch && (VoiceRx().IsMatch(text) || ArtistRx().IsMatch(text)))
             return "Stimmen oder Stil echter Personen werden nicht nachgeahmt. Beschreibe Genre, Stimmung und Instrumente.";
         if (m.Kind == KieKind.Avatar && !consent) return "Für eine sprechende Figur bestätige, dass das Bild dich selbst oder eine erfundene Figur zeigt und die Stimme dir gehört oder du die Einwilligung hast.";
         if (m.NeedsImage && i.ImageUrls is not { Count: > 0 }) return "Wähle ein Bild aus.";
         if (m.NeedsAudio && string.IsNullOrWhiteSpace(i.AudioUrl)) return "Wähle eine Sprachaufnahme aus.";
         return m.Kind switch
         {
-            KieKind.Bild or KieKind.BildBearbeiten or KieKind.Video when string.IsNullOrWhiteSpace(i.Prompt) => "Beschreibe, was entstehen soll.",
+            KieKind.Bild or KieKind.BildBearbeiten or KieKind.Video or KieKind.Geraeusch when string.IsNullOrWhiteSpace(i.Prompt) => "Beschreibe, was entstehen soll.",
             KieKind.Musik when string.IsNullOrWhiteSpace(i.Title) || string.IsNullOrWhiteSpace(i.Style) => "Für ein Lied braucht es Titel und Stil (Genre, Stimmung, Instrumente).",
             KieKind.Sprache when string.IsNullOrWhiteSpace(i.Prompt) && string.IsNullOrWhiteSpace(i.Lyrics) => "Gib den Text ein, der vorgelesen werden soll.",
             _ => null,
@@ -292,7 +308,7 @@ public static partial class KieModels
         return kind switch
         {
             KieKind.Video or KieKind.Avatar => mp4 || webm,
-            KieKind.Musik or KieKind.Sprache => mp3 || wav || ogg || mp4,
+            KieKind.Musik or KieKind.Sprache or KieKind.Geraeusch => mp3 || wav || ogg || mp4,
             _ => png || jpg || webp,
         };
     }
@@ -324,6 +340,8 @@ public static partial class KieModels
         "ai-music-api/generate" => "suno",
         "kling/ai-avatar-standard" => "ai-avatar",
         "elevenlabs/text-to-speech-multilingual-v2" => "multilingual-v2",
+        "veo-3-1" => "veo3-api",
+        "ai-music-api/sounds" => "generate-sounds",
         _ => id,
     };
 
@@ -333,7 +351,7 @@ public static partial class KieModels
         var path = Uri.TryCreate(url, UriKind.Absolute, out var u) ? u.AbsolutePath : url;
         var ext = Path.GetExtension(path).ToLowerInvariant();
         if (ext is ".png" or ".jpg" or ".jpeg" or ".webp" or ".mp4" or ".mov" or ".webm" or ".mp3" or ".wav" or ".m4a" or ".ogg") return ext;
-        return kind switch { KieKind.Video or KieKind.Avatar => ".mp4", KieKind.Musik or KieKind.Sprache => ".mp3", _ => ".png" };
+        return kind switch { KieKind.Video or KieKind.Avatar => ".mp4", KieKind.Musik or KieKind.Sprache or KieKind.Geraeusch => ".mp3", _ => ".png" };
     }
 }
 
@@ -347,5 +365,51 @@ public sealed record KieProvenance(string Service, string Model, string Kind, st
         var json = file + ".json";
         File.WriteAllText(json, JsonSerializer.Serialize(p with { Sha256 = sha }, new JsonSerializerOptions { WriteIndented = true }));
         return json;
+    }
+}
+
+/// <summary>S2 (Freigabe 13.11.2026, Anfrageform belegt in docs.kie.ai am 14.11.2026): eigene Stimme für Suno.
+/// Ablauf: 1. Aufnahme der eigenen Stimme hochladen → „validation-phrase“ (kostenlos) liefert einen Prüfsatz; der Auftrag bleibt „generating“,
+/// bis der Satz da ist. 2. Den Prüfsatz selbst einsprechen oder singen, hochladen → „create-voice“ (kostenlos). 3. Die Stimme ist fertig, wenn der
+/// Prüfsatz-Auftrag „success“ meldet (bei „fail“ hat die Aufnahme die Prüfung nicht bestanden). Die Auftragsnummer des Prüfsatzes ist die Stimm-ID
+/// (persona_id mit persona_model „voice_persona“ beim Lied). Nur die eigene Stimme – die Einwilligung bestätigt die Person vorher.</summary>
+public static class KieVoice
+{
+    public const string PhraseModel = "ai-music-api/validation-phrase", CreateModel = "ai-music-api/create-voice";
+    public static readonly string[] Languages = ["de", "en", "es", "fr", "pt", "ja", "ko", "zh", "hi", "ru"];
+
+    /// <summary>Eingabe für den Prüfsatz. Der Abschnitt mit Gesang muss mindestens 5 und höchstens 60 Sekunden lang sein.</summary>
+    public static JsonObject PhraseInput(string voiceUrl, int startS, int endS, string language)
+    {
+        if (!voiceUrl.StartsWith("https://", StringComparison.Ordinal)) throw new ArgumentException("Die Aufnahme muss zuerst hochgeladen werden.");
+        if (startS < 0 || endS <= startS) throw new ArgumentException("Das Ende des Abschnitts muss nach dem Anfang liegen.");
+        if (endS - startS < 5) throw new ArgumentException("Der Abschnitt ist zu kurz – bitte mindestens 5 Sekunden.");
+        if (endS - startS > 60) throw new ArgumentException("Der Abschnitt ist zu lang – bitte höchstens 60 Sekunden.");
+        return new JsonObject { ["voice_url"] = voiceUrl, ["vocal_start_s"] = startS, ["vocal_end_s"] = endS, ["language"] = Languages.Contains(language) ? language : "de" };
+    }
+
+    public static JsonObject CreateInput(string phraseTaskId, string verifyUrl, string name, string style)
+    {
+        if (string.IsNullOrWhiteSpace(phraseTaskId)) throw new ArgumentException("Es fehlt der Prüfsatz-Auftrag.");
+        if (!verifyUrl.StartsWith("https://", StringComparison.Ordinal)) throw new ArgumentException("Die Aufnahme des Prüfsatzes muss zuerst hochgeladen werden.");
+        return new JsonObject
+        {
+            ["task_id"] = phraseTaskId, ["verify_url"] = verifyUrl,
+            ["voice_name"] = Kreativ.KreativSafe.Cut(string.IsNullOrWhiteSpace(name) ? "Meine Stimme" : name.Trim(), 60),
+            ["description"] = "Eigene Stimme, in Trendo OS angelegt", ["style"] = Kreativ.KreativSafe.Cut((style ?? "").Trim(), 200), ["singer_skill_level"] = "beginner",
+        };
+    }
+
+    /// <summary>Prüfsatz aus dem Auftragsstand (resultJson.data.verify_phrase_text), sonst null.</summary>
+    public static string? Phrase(string? resultJson)
+    {
+        if (string.IsNullOrWhiteSpace(resultJson)) return null;
+        try
+        {
+            var n = JsonNode.Parse(resultJson);
+            var t = n?["data"]?["verify_phrase_text"] ?? n?["verify_phrase_text"];
+            return t is JsonValue v && v.TryGetValue<string>(out var s) && s.Trim().Length > 0 ? s.Trim() : null;
+        }
+        catch (JsonException) { return null; }
     }
 }
