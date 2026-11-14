@@ -1031,11 +1031,19 @@ public static partial class CiteKit
         return (res, warn);
     }
 
+    /// <summary>Steht vor der Klammer ein @comment? Kommentare dürfen beliebigen Text (auch @ am Zeilenanfang) enthalten.</summary>
+    static bool Comment(string t, int open)
+    {
+        var a = t.LastIndexOf('@', Math.Max(0, open - 1), Math.Min(open, 40));
+        return a >= 0 && t.AsSpan(a + 1, open - a - 1).Trim().Equals("comment", StringComparison.OrdinalIgnoreCase);
+    }
+
     static int SkipBalanced(string t, int open)
     {
         var close = t[open] == '{' ? '}' : ')'; var openC = t[open]; var depth = 0;
         for (var i = open; i < t.Length && i - open < MaxBibSpan; i++)
         {
+            if (t[i] == '@' && i > open && t[i - 1] == '\n' && t[open] != '(' && openC == '{' && depth > 0 && !Comment(t, open)) return -1; // neuer Eintrag: die Klammer davor ist offen geblieben
             if (t[i] == '\\') { i++; continue; }
             if (t[i] == openC) depth++;
             else if (t[i] == close && --depth == 0) return i + 1;
@@ -1074,6 +1082,7 @@ public static partial class CiteKit
                 var depth = 0; var i = pos + 1;
                 for (; i < t.Length && i - pos < MaxBibSpan; i++)
                 {
+                    if (t[i] == '@' && t[i - 1] == '\n') { i = t.Length; break; } // neuer Eintrag: Anführungszeichen offen geblieben
                     if (t[i] == '\\') { i++; continue; }
                     if (t[i] == '{') depth++; else if (t[i] == '}') depth--;
                     else if (t[i] == '"' && depth == 0) break;

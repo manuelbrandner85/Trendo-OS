@@ -14,4 +14,5 @@
 
 ## Tests
 - Core: EinfachBedienenTests.Claude_auth_expired. App: ClaudeAuth_Ui (Claude nachgebildet: kein Fehlertext als Liedtext, Ersatz-KI antwortet, Claude wird danach nicht erneut gefragt); ClaudeFallback_Ui, ClaudeChat_Ui, Claude_Ui, MusikStudio_Ui grün.
-- Volltest: zusammen mit Release 0.9.96 (siehe reports/volltest-T-0621/).
+- Volltest (Stand 700d428c5): Api 16, App 1285, Paket-Tests OK; Core 3 Fehler – zwei „echt“-Tests mit Python-Werkzeugen (Startfehler von Python unter Last, einzeln grün), der neue BibTeX-Lasttest (10,5 s unter Last).
+- BibTeX-Suche hört jetzt an einem neuen Eintrag (Zeilenanfang mit @) auf – lineare Laufzeit, 17 Tests in 0,6 s. Danach Core vollständig: 2490 bestanden, 5 übersprungen, 0 Fehler; KreativStudios4_Ui 5 bestanden. Belege in reports/volltest-T-0621/.
