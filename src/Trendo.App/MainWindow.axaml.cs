@@ -609,24 +609,16 @@ public sealed partial class MainWindow : Window
         ToolTip.SetTip(trash, "Papierkorb"); Avalonia.Automation.AutomationProperties.SetName(trash, "Papierkorb");
         ToolTip.SetPlacement(trash, Avalonia.Controls.PlacementMode.Top); ToolTip.SetVerticalOffset(trash, -6);
         trash.Click += (_, _) => _core.Integrations.LaunchDirect(Principal.LocalOwner, OperatingSystem.IsWindows() ? "shell:RecycleBinFolder" : "trash://", _core.Audit);
-        Border Sep() => new() { Width = 1, Height = 38, VerticalAlignment = VerticalAlignment.Center,
-            Background = new LinearGradientBrush { StartPoint = new RelativePoint(0.5, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0.5, 1, RelativeUnit.Relative),
-                GradientStops = { new GradientStop(Color.Parse("#00D4A84B"), 0), new GradientStop(Color.Parse("#AAD4A84B"), 0.5), new GradientStop(Color.Parse("#00D4A84B"), 1) } } };
+        Border Sep() => new() { Width = 1, Height = 32, VerticalAlignment = VerticalAlignment.Center, Background = Brush.Parse(C("#26FFFFFF", "#1F000000")) };
         var webSep = Sep(); webSep.Bind(IsVisibleProperty, _dockWeb.GetObservable(IsVisibleProperty));
         var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { StartButton(), Sep(), bar, webSep, _dockWeb, Sep(), trash } };
-        // Leiste wie echtes Rauchglas: Verlauf, Lichtkante oben, feiner Goldrand, tiefer Schatten
-        var glass = new LinearGradientBrush { StartPoint = new RelativePoint(0.5, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0.5, 1, RelativeUnit.Relative),
-            GradientStops = { new GradientStop(Color.Parse(C("#D8383840", "#F2FFFFFF")), 0), new GradientStop(Color.Parse(C("#E01A1A1E", "#EAF3F5F9")), 0.5), new GradientStop(Color.Parse(C("#F00C0C0E", "#E6EEF1F6")), 1) } };
-        var shine = new Border { CornerRadius = new CornerRadius(22, 22, 8, 8), Height = 26, VerticalAlignment = VerticalAlignment.Top, IsHitTestVisible = false, Margin = new Thickness(1, 1, 1, 0),
-            Background = new LinearGradientBrush { StartPoint = new RelativePoint(0.5, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0.5, 1, RelativeUnit.Relative),
-                GradientStops = { new GradientStop(Color.Parse("#30FFFFFF"), 0), new GradientStop(Color.Parse("#00FFFFFF"), 1) } } };
+        // S3 (13.11.2026): Leiste als ruhige, fast deckende Fläche – kein Rauchglas-Verlauf, keine Lichtkante, kein Goldrand
         var dockBar = new Border
         {
-            Name = "dock-bar", Background = glass, CornerRadius = new CornerRadius(24), Padding = new Thickness(14, 9), BorderThickness = new Thickness(1),
-            BorderBrush = new LinearGradientBrush { StartPoint = new RelativePoint(0.5, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0.5, 1, RelativeUnit.Relative),
-                GradientStops = { new GradientStop(Color.Parse("#80F3D58A"), 0), new GradientStop(Color.Parse("#30B8862B"), 0.6), new GradientStop(Color.Parse("#50F3D58A"), 1) } },
-            HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 4, 0, 6), Child = new Grid { Children = { shine, row } },
-            BoxShadow = BoxShadows.Parse("0 14 34 0 #99000000, inset 0 1 0 0 #40FFFFFF")
+            Name = "dock-bar", Background = Brush.Parse(C("#F21C1D20", "#F5F7F8FA")), CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 7), BorderThickness = new Thickness(1),
+            BorderBrush = Brush.Parse(C("#2EFFFFFF", "#26000000")),
+            HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 4, 0, 6), Child = row,
+            BoxShadow = BoxShadows.Parse("0 6 18 0 #66000000")
         };
         _taskbar.IsVisible = false;
         return new StackPanel { Children = { _taskbar, dockBar }, HorizontalAlignment = HorizontalAlignment.Center };

@@ -132,10 +132,15 @@ public sealed partial class MainWindow
         }
     }
 
+    /// <summary>P4: Dichte „Kompakt“ als Stilklasse am Fenster (Stile in App.axaml).</summary>
+    public void ApplyDensity() => Classes.Set("kompakt", _settings.Density == "kompakt");
+
     /// <summary>Wird nach jedem Seitenwechsel aufgerufen: sanftes Einblenden und Hinweis beim ersten Öffnen.</summary>
     private void AfterShow(string key)
     {
         if (!Motionless) { _center.Opacity = 0; _ui.Post(() => _center.Opacity = 1, DispatcherPriority.Background); }
+        ApplyDensity();
+        _ui.Post(() => CalmLook.Apply(this), DispatcherPriority.Loaded); // D1 (13.11.2026): restliche Verläufe und Leuchten beruhigen
         ShowHelp(key, force: false);
         EnhancePathFields(ActivePageRoot, key);
         if (ActivePageRoot is { } c0) ApplyAccessibility(c0);
@@ -200,11 +205,12 @@ public sealed partial class MainWindow
         // Seiten ohne eigenen Hilfetext: beim „?“ trotzdem helfen – aus Studio-Katalog und Programm (G0-Befund: 15 Seiten ohne Wirkung)
         if (!HelpTexts.TryGetValue(key, out var text)) { if (!force || FallbackHelp(key) is not { } fb) return; text = fb; }
         if (!force && _settings.SeenHints.Contains(key)) return;
-        var ok = new Button { Name = "hint-ok", Content = "Verstanden", FontSize = 11, Background = Accent, VerticalAlignment = VerticalAlignment.Center };
+        var ok = new Button { Name = "hint-ok", Content = "Ausblenden", FontSize = 11, VerticalAlignment = VerticalAlignment.Center };
         ok.Click += (_, _) => { if (!_settings.SeenHints.Contains(key)) { _settings.SeenHints.Add(key); SaveSettings(); } _hintHost.Children.Clear(); };
-        _hintHost.Children.Add(new Border { Name = "hint", Background = Brush.Parse("#33C9A227"), BorderBrush = Accent, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 8),
+        // D1 (13.11.2026): Hinweis als ruhige Infozeile – neutrale Fläche, schmaler Akzentstrich links, Linien-Symbol statt Glühbirne
+        _hintHost.Children.Add(new Border { Name = "hint", Background = Brush.Parse(C("#FF232428", "#FFF4F5F7")), BorderBrush = Accent, BorderThickness = new Thickness(3, 0, 0, 0), CornerRadius = new CornerRadius(4), Padding = new Thickness(12, 8),
             Child = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = {
-                new TextBlock { Text = "💡", FontSize = 16, Margin = new Thickness(0, 0, 10, 0), VerticalAlignment = VerticalAlignment.Center },
+                new Border { Margin = new Thickness(0, 0, 10, 0), VerticalAlignment = VerticalAlignment.Center, Child = Ico(Mdi.HelpCircle, 15, Muted) },
                 Pos(new TextBlock { Text = _settings.EasyLanguage ? Trendo.Core.Sys.A11y.Easy(text) : text, Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center }, 1), Pos(ok, 2) } } });
     }
 
@@ -309,7 +315,16 @@ public sealed partial class MainWindow
             b.Click += (_, _) => { _settingsSection = "bedienung"; _settings.UiScale = v; SaveSettings(); Rescale?.Invoke(); Show("settings"); };
             sizes.Children.Add(b);
         }
+        var density = new WrapPanel();
+        foreach (var (id, label) in new[] { ("normal", "Normal"), ("kompakt", "Kompakt") })
+        {
+            var on = (_settings.Density ?? "normal") == id;
+            var b = new Button { Name = "density-" + id, Content = label, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(12, 6), Foreground = on ? Brushes.White : Text, Background = on ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1) };
+            b.Click += (_, _) => { _settingsSection = "bedienung"; _settings.Density = id; SaveSettings(); ApplyDensity(); Show("settings"); };
+            density.Children.Add(b);
+        }
         sections.Children.Add(Section("bedienung", "Bedienung", new StackPanel { Spacing = 4, Children = { motion, upd, P("Anzeigegröße (Schrift und Bedienelemente):", Text), sizes,
+            P("Dichte (Abstände in Knöpfen und Feldern):", Text), density,
             P(LowPower ? "Leistung: sparsam – ohne Unschärfe, Schatten und Animationen." : "Leistung (Sparsam: ohne Unschärfe, Schatten und Animationen):", Text), power,
             P("Tastatur: Strg+K Suche · F1 Hilfe zur Seite · Strg+1 bis 5 Hauptbereiche · Tab/Enter bedienen alles ohne Maus", null, 11) } }));
 
