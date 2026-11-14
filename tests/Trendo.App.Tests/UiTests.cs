@@ -385,6 +385,8 @@ public class W0b_Look
         Assert.NotNull(w.TryFind<Border>("hint")); // erster Besuch: Hinweis
         w.Find<Button>("hint-ok").Press();
         Assert.Contains("settings", UserSettings.Load(root).SeenHints);
+        // E12: in „Einfach“ ist die Geräte-Kachel anfangs aus – erst einblenden, dann bewusst ausblenden
+        w.Find<CheckBox>("show-widget-system").IsChecked = true; Dispatcher.UIThread.RunJobs();
         w.Find<CheckBox>("show-widget-system").IsChecked = false; Dispatcher.UIThread.RunJobs();
         Assert.Contains("widget-system", UserSettings.Load(root).HiddenTiles);
         w.Find<Button>("dock-files-vor").Press();

@@ -49,6 +49,16 @@ public class EinfachBedienenTests
 
     sealed class HttpRequestException(string m) : Exception(m); // gleicher Typname wie die Netz-Ausnahme, ohne Netz-Bibliothek
 
+    [Fact(DisplayName = "E7: eigene Meldungen ohne typische Füllwörter und mit kurzem Kopf („Routing-Kreis: …“) bleiben erhalten, englische werden übersetzt")]
+    public void Own_messages_survive()
+    {
+        Assert.Equal("Zum Trainieren braucht es Beispiele aus mindestens zwei Kategorien.", FriendlyError.Say(new InvalidOperationException("Zum Trainieren braucht es Beispiele aus mindestens zwei Kategorien.")));
+        var loop = "Routing-Kreis: „Bus A“ würde über „Bus B“ zu sich selbst führen.";
+        Assert.Equal(loop, FriendlyError.Say(new InvalidOperationException(loop)));
+        Assert.NotEqual("Sequence contains no elements", FriendlyError.Say(new InvalidOperationException("Sequence contains no elements")));
+        Assert.NotEqual("Operation is not valid due to the current state of the object.", FriendlyError.Say(new InvalidOperationException("Operation is not valid due to the current state of the object.")));
+    }
+
     [Fact(DisplayName = "E10: Alltagswörter in allen Stufen, Fachwort als Hinweis; Einfach-Wörter der Programme bleiben stufenabhängig")]
     public void Everyday_words()
     {

@@ -24,13 +24,15 @@ public sealed record FriendlyError(string Kind, string Sentence, ErrorFix Fix, s
     static readonly Regex English = new(@"\b(the|could not|cannot|can't|unable|denied|not found|does not|was not|is not|failed|invalid|value cannot|input string|access to|no such|timed out|refused|operation|exception|error)\b", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     /// <summary>Stammt die Meldung von Trendo selbst (deutsch, für Menschen geschrieben)?</summary>
-    static readonly Regex German = new(@"[äöüßÄÖÜ]|\b(nicht|kein|keine|bitte|wurde|wird|ist|sind|gibt|fehlt|zuerst|oder|und|der|die|das|den|dem|ein|eine|mit|für|noch|schon|hier|diese|dieser|dieses)\b", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    static readonly Regex German = new(@"[äöüßÄÖÜ„“]|\b(nicht|kein|keine|bitte|wurde|wird|ist|sind|gibt|fehlt|zuerst|oder|und|der|die|das|den|dem|ein|eine|mit|für|noch|schon|hier|diese|dieser|dieses|es|aus|zu|zum|zur|von|vom|auf|im|bei|als|nur|kann|muss|braucht|mindestens|sich|zwei|drei|wähle|prüfe)\b", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     public static bool IsOwnMessage(string? message)
     {
         if (message is not { Length: > 0 } m || m.Contains("0x", StringComparison.Ordinal)) return false;
         var head = m.Split(": ", 2)[0]; // „Eigener Satz: angehängte Systemmeldung“ – der eigene Teil zählt
-        return German.IsMatch(head) && !English.IsMatch(head);
+        if (German.IsMatch(head) && !English.IsMatch(head)) return true;
+        // kurzer Kopf wie „Routing-Kreis: …“: dann zählt die ganze Meldung
+        return !German.IsMatch(head) && !English.IsMatch(head) && German.IsMatch(m) && !English.IsMatch(m);
     }
 
     /// <summary>Eigener Satz vor einer angehängten englischen Systemmeldung: nur der eigene Teil (mit Punkt), sonst null.</summary>
