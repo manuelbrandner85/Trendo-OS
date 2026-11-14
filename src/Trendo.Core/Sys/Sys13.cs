@@ -89,7 +89,13 @@ public static class Quality
         // T-0224: neuer Desktop – der alte Standard „Abendrot“ wird einmalig zu „Orbit“; eine andere eigene Wahl bleibt
         if (v < 3 && o["Wallpaper"]?.GetValue<string>() is "abendrot") o["Wallpaper"] = "orbit";
         // E9 (T-0616): „Einfacher Modus“ und „Bedienstufe“ sind eine Wahl – wer den einfachen Modus an hatte, bekommt die Stufe „Einfach“; die größeren Knöpfe bleiben
-        if (v < 4 && o["SimpleMode"] is JsonValue sm && sm.TryGetValue<bool>(out var simple) && simple) o["Level"] = "einfach";
+        // E9 (T-0616/T-0620): aus zwei Schaltern wird einer. „Einfacher Modus“ an → Stufe „Einfach“ – außer es war ausdrücklich „Erweitert“ oder „Profi“ gewählt:
+        // dann bleibt diese Wahl (keine Funktion geht verloren) und der alte Schalter geht aus, damit beide Angaben zusammenpassen.
+        if (v < 4 && o["SimpleMode"] is JsonValue sm && sm.TryGetValue<bool>(out var simple) && simple)
+        {
+            if (o["Level"] is JsonValue lv && lv.TryGetValue<string>(out var level) && level is "erweitert" or "profi") o["SimpleMode"] = false;
+            else o["Level"] = "einfach";
+        }
         o["FormatVersion"] = SettingsFormat; return o;
     }
 

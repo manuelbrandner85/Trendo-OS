@@ -1,0 +1,10 @@
+Bestanden!   : Fehler:     0, erfolgreich:    16, übersprungen:     0, gesamt:    16, Dauer: 2 s - Trendo.Api.Tests.dll (net10.0)
+Fehler!      : Fehler:     3, erfolgreich:  2487, übersprungen:     5, gesamt:  2495, Dauer: 1 m 45 s - Trendo.Core.Tests.dll (net10.0)
+Bestanden!   : Fehler:     0, erfolgreich:  1285, übersprungen:     5, gesamt:  1290, Dauer: 47 m 12 s - Trendo.App.Tests.dll (net10.0)
+dotnet exit 1
+Ran 11 tests in 26.085s
+OK
+py exit 0
+Nachlauf nach BibTeX-Verbesserung:
+Bestanden!   : Fehler:     0, erfolgreich:  2490, übersprungen:     5, gesamt:  2495, Dauer: 1 m 22 s - Trendo.Core.Tests.dll (net10.0)
+KreativStudios4_Ui: 5 bestanden, 0 Fehler

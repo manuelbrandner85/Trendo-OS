@@ -45,7 +45,11 @@ public class Sys13_Qualitaet
     {
         var d = Tmp(); File.WriteAllText(UserSettings.PathIn(d), "{\"FormatVersion\":3,\"SimpleMode\":true,\"Level\":\"profi\"}");
         var s = UserSettings.Load(d);
-        Assert.Equal(("einfach", true, 4), (s.Level, s.SimpleMode, s.FormatVersion));
+        Assert.Equal(("profi", false, 4), (s.Level, s.SimpleMode, s.FormatVersion)); // T-0620: ausdrücklich gewählte Stufe bleibt, Schalter passt dazu
+        File.WriteAllText(UserSettings.PathIn(d), "{\"FormatVersion\":3,\"SimpleMode\":true,\"Level\":\"einfach\"}");
+        Assert.Equal(("einfach", true), (UserSettings.Load(d).Level, UserSettings.Load(d).SimpleMode));
+        File.WriteAllText(UserSettings.PathIn(d), "{\"FormatVersion\":3,\"SimpleMode\":true}");
+        Assert.Equal("einfach", UserSettings.Load(d).Level);
         File.WriteAllText(UserSettings.PathIn(d), "{\"FormatVersion\":3,\"SimpleMode\":false,\"Level\":\"profi\"}");
         Assert.Equal("profi", UserSettings.Load(d).Level);
         File.WriteAllText(UserSettings.PathIn(d), "{\"FormatVersion\":4,\"SimpleMode\":true,\"Level\":\"erweitert\"}"); // schon umgestellt: neue Wahl bleibt

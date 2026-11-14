@@ -115,6 +115,7 @@ public class ClaudeOperate_Ui
             w.Show("suche"); Assert.NotNull(w.TryFind<Button>("auftrag-claude"));
             w.ToggleFocusMode(); w.Show("tabelle");
             Assert.NotNull(w.TryFind<Button>("auftrag-claude")); Assert.Null(w.TryFind<TextBox>("auftrag-prompt")); // Fokusmodus: nur der schlanke Claude-Knopf
+            Assert.NotNull(w.TryFind<Button>("auftrag-claude-markierung")); // T-0620: Markierung an Claude auch im Fokusmodus
         }
         finally { End(w); }
     }

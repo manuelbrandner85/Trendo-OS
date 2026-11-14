@@ -25,11 +25,13 @@ public static class Cli
         if (env is not null) foreach (var kv in env) psi.Environment[kv.Key] = kv.Value;
         try
         {
+            var started = Stopwatch.StartNew();
             using var p = Process.Start(psi)!;
             var o = p.StandardOutput.ReadToEndAsync(); var e = p.StandardError.ReadToEndAsync();
             if (!p.WaitForExit(timeoutMs)) { try { p.Kill(true); } catch { } return new(-2, o.IsCompleted ? o.Result : "", "Zeitüberschreitung"); }
             // Ein Kindprozess kann die geerbte Ausgabe offen halten: nicht unbegrenzt auf das Ende der Ausgabe warten
-            if (!Task.WaitAll([o, e], 10000)) return new(p.ExitCode, o.IsCompleted ? o.Result : "", (e.IsCompleted ? e.Result + "\n" : "") + "Ausgabe unvollständig: ein gestartetes Unterprogramm läuft noch.");
+            // T-0620: auf langsamen oder ausgelasteten Rechnern braucht das Auslesen länger – der Rest des Zeitlimits, mindestens 10 s
+            if (!Task.WaitAll([o, e], (int)Math.Max(10000, timeoutMs - started.ElapsedMilliseconds))) return new(p.ExitCode, o.IsCompleted ? o.Result : "", (e.IsCompleted ? e.Result + "\n" : "") + "Ausgabe unvollständig: ein gestartetes Unterprogramm läuft noch.");
             return new(p.ExitCode, o.Result, e.Result);
         }
         catch (Exception ex) { return new(-1, "", ex.Message); }
