@@ -21,11 +21,15 @@ public static partial class WebDesignAssets
     {
         ["bild"] = [".png", ".jpg", ".jpeg", ".webp", ".gif", ".avif"], ["video"] = [".mp4", ".webm"], ["schrift"] = [".woff2", ".woff", ".ttf", ".otf"],
         ["symbol"] = [".svg", ".png"], ["modell"] = [".glb", ".gltf"],
+        // Z3: Gaussian Splats (Spark) und Umgebungsbilder (HDR) für den 3D-Baustein
+        ["splat"] = [".spz", ".splat", ".ksplat", ".ply"], ["umgebung"] = [".hdr"],
     };
 
     [GeneratedRegex(@"^[\p{L}0-9 -]{1,40}\z")] private static partial Regex FamilyPattern();
     /// <summary>Gültiger Pfad im Medienordner: medien/&lt;art&gt;/&lt;slug&gt;.&lt;endung&gt; – nichts anderes kommt aus dem Verzeichnis in Seite, CSS oder Export.</summary>
-    [GeneratedRegex(@"^medien/(bild|video|schrift|symbol|modell)/[a-z0-9-]{1,80}\.[a-z0-9]{2,5}\z")] private static partial Regex FilePattern();
+    [GeneratedRegex(@"^medien/(bild|video|schrift|symbol|modell|splat|umgebung)/[a-z0-9-]{1,80}\.[a-z0-9]{2,6}\z")] private static partial Regex FilePattern();
+    /// <summary>Gültiger Pfad im Medienordner (medien/&lt;art&gt;/&lt;name&gt;.&lt;endung&gt;).</summary>
+    public static bool IsMediaPath(string p) => FilePattern().IsMatch(p);
     public static bool ValidFamily(string f) => FamilyPattern().IsMatch(f);
 
     static string File(string dir) => Path.Combine(dir, FileName);

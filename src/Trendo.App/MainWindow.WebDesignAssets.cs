@@ -43,6 +43,7 @@ public partial class MainWindow
     public void WebDesignAssetImport(string path, string art, string titel, string herkunft, string lizenz, string urheber = "", string quelle = "", string stichworte = "", string? familie = null)
     {
         path = path.Trim().Trim('"');
+        if (art == "modell") { _ = WebDesignModelImport(path, titel, herkunft, lizenz, urheber, quelle); return; } // Z3: prüfen, bei Bedarf über Blender nach GLB
         string source = path;
         try { if (art == "bild" && File.Exists(path)) source = WebShrinkImage(path); }
         catch (Exception e) when (e is IOException or InvalidOperationException) { source = path; }

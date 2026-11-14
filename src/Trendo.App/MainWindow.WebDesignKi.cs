@@ -39,7 +39,7 @@ public partial class MainWindow
     string WebDesignCurrent() => _wdDraft ?? WebDesignStates.Read(WebDesignDir, _wdVariant);
     // Daten gehen als JSON-Text ins Skript, nie als Skriptcode
     static string JsArg(string? s) => System.Text.Json.JsonSerializer.Serialize(s);
-    void WebDesignReload(string json) => _wdView?.InvokeScript("window.trendoLoad(" + JsArg(json) + ")");
+    void WebDesignReload(string json) { _wdView?.InvokeScript("window.trendoLoad(" + JsArg(json) + ")"); WebDesignPush3DFiles(json); } // Z3: Modelle, Splats und Umgebungsbilder gleich mitgeben
     void WebDesignShowPreview(string? json) => _wdView?.InvokeScript("window.trendoVorschau(" + JsArg(json) + ")");
     void WebDesignClearSelection() { _wdSelection = []; _wdView?.InvokeScript("window.trendoAuswahl([])"); }
 

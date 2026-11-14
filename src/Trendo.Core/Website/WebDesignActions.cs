@@ -111,6 +111,14 @@ public static partial class WebDesignActions
         ["Komponente"] = new(new(), D()),
         // Z8/K6: nicht abbildbares HTML bleibt als HTML-Block erhalten (Inhalt nur über Import oder Code, nicht über KI-Aktionen)
         ["Html"] = new(new(), D()),
+        // Z3: eigenes 3D-Modell (GLB, auch aus Blender) oder Gaussian Splat; Kamera, Licht und Material einstellbar, Standbild ohne 3D
+        ["Modell3D"] = new(new() { ["quelle"] = new(Art.Wahl, ["modell", "splat"]), ["datei"] = T, ["standbild"] = new(Art.Bild), ["beschreibung"] = T, ["hoehe"] = new(Art.Zahl, Min: 200, Max: 1000),
+            ["brennweite"] = new(Art.Zahl, Min: 18, Max: 200), ["winkel"] = new(Art.Zahl, Min: -180, Max: 180), ["neigung"] = new(Art.Zahl, Min: -10, Max: 80),
+            ["umgebung"] = new(Art.Wahl, ["studio", "hdri", "keine"]), ["hdri"] = T, ["sonne"] = new(Art.Zahl, Min: 0, Max: 10), ["sonnenWinkel"] = new(Art.Zahl, Min: -180, Max: 180), ["sonnenHoehe"] = new(Art.Zahl, Min: 5, Max: 90),
+            ["schatten"] = new(Art.Wahl, ["ja", "nein"]), ["belichtung"] = new(Art.Zahl, Min: 0.25, Max: 4), ["material"] = new(Art.Wahl, ["modell", "eigen"]), ["farbe"] = new(Art.Farbe),
+            ["rauheit"] = new(Art.Zahl, Min: 0, Max: 1), ["metall"] = new(Art.Wahl, ["nein", "ja"]), ["drehen"] = new(Art.Zahl, Min: 0, Max: 2), ["bedienen"] = new(Art.Wahl, ["ja", "nein"]) },
+            D(("quelle", "modell"), ("datei", ""), ("standbild", ""), ("beschreibung", "3D-Modell"), ("hoehe", 480), ("brennweite", 50), ("winkel", 30), ("neigung", 15), ("umgebung", "studio"), ("hdri", ""),
+              ("sonne", 3), ("sonnenWinkel", -40), ("sonnenHoehe", 40), ("schatten", "ja"), ("belichtung", 1), ("material", "modell"), ("farbe", "#8a8a8a"), ("rauheit", 0.5), ("metall", "nein"), ("drehen", 0), ("bedienen", "ja"))),
         // K7: Web-App mit Daten, lokal im Browser (SQLite), optional eigenes Supabase-Projekt
         ["Datenliste"] = new(new() { ["titel"] = T, ["tabelle"] = T, ["felder"] = Liste(20, ("name", T), ("beschriftung", T), ("art", new(Art.Wahl, ["text", "langtext", "email", "zahl", "datum"])), ("pflicht", new(Art.Wahl, ["nein", "ja"]))),
             ["knopf"] = T, ["nurAngemeldet"] = new(Art.Wahl, ["nein", "ja"]), ["liste"] = new(Art.Wahl, ["alle", "eigene", "keine"]) },

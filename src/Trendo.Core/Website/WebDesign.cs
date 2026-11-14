@@ -30,6 +30,12 @@ public static partial class WebDesign
             foreach (var c in content) if (c is not JsonObject co || string.IsNullOrWhiteSpace(co["type"]?.ToString())) return (null, "Ein Baustein hat keinen Typ.");
             Sanitize(o);
             SanitizeHtmlBlocks(o); // Z8/K6: HTML-Blöcke nur aus erlaubten Elementen, auch bei veränderter Datei
+            foreach (var m in WebDesignModel.Blocks(o)) // Z3: nur Medien des Projekts der passenden Art
+            {
+                var art = m["quelle"]?.ToString() == "splat" ? "splat" : "modell";
+                if (m["datei"]?.ToString() is { Length: > 0 } dat && !WebDesignModel.IsModelPath(dat, art)) m["datei"] = "";
+                if (m["hdri"]?.ToString() is { Length: > 0 } h && !WebDesignModel.IsModelPath(h, "umgebung")) m["hdri"] = "";
+            }
             SanitizeTokens(o["root"]?["props"] as JsonObject);
             WebDesignViews.Sanitize(o);
             WebDesignCms.Strip(o); // W2: aufgelöste Listen entstehen beim Lesen neu
@@ -103,7 +109,7 @@ public static partial class WebDesign
     }
 
     /// <summary>Felder mit Zielen (Links) und Bildern in allen Bausteinen, auch in Listen.</summary>
-    static readonly HashSet<string> LinkKeys = ["href", "knopfZiel", "knopf2Ziel", "ziel", "impressum", "datenschutz"], ImageKeys = ["src", "bild"];
+    static readonly HashSet<string> LinkKeys = ["href", "knopfZiel", "knopf2Ziel", "ziel", "impressum", "datenschutz"], ImageKeys = ["src", "bild", "standbild"];
     [GeneratedRegex(@"^\{\{\s*[a-z][a-z0-9_]{0,29}\s*\}\}$")] private static partial Regex CmsPlaceholder();
     [GeneratedRegex(@"^[^@\s<>""'?&#]+@[^@\s<>""'?&#]+\.[^@\s<>""'?&#]+$")] private static partial Regex MailPattern();
 
@@ -211,7 +217,7 @@ public static partial class WebDesign
         File.WriteAllText(Path.Combine(outDir, "seite.js"), "window.TRENDO_SEITE = " + data.Replace("</", "<\\/") + ";\n");
         File.WriteAllText(Path.Combine(outDir, "index.html"),
             "<!doctype html>\n<html lang=\"de\">\n<head>\n<meta charset=\"UTF-8\" />\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n" + description +
-            $"<title>{title}</title>\n<link rel=\"stylesheet\" href=\"assets/style.css\">\n" + (extraCss.Length > 0 ? $"<style id=\"t-anpassungen\">\n{extraCss}\n</style>\n" : "") + $"<script src=\"seite.js\"></script>\n{WebDesignExport.DataScripts(doc.AsObject(), projectDir, outDir, editorDir, null)}<script defer src=\"assets/editor.js\"></script>\n</head>\n<body>\n<div id=\"root\"></div>\n" +
+            $"<title>{title}</title>\n<link rel=\"stylesheet\" href=\"assets/style.css\">\n" + (extraCss.Length > 0 ? $"<style id=\"t-anpassungen\">\n{extraCss}\n</style>\n" : "") + $"<script src=\"seite.js\"></script>\n{WebDesignExport.DataScripts(doc.AsObject(), projectDir, outDir, editorDir, null)}{WebDesignModel.Scripts(doc.AsObject(), projectDir, outDir, editorDir, null)}<script defer src=\"assets/editor.js\"></script>\n</head>\n<body>\n<div id=\"root\"></div>\n" +
             "<noscript>Diese Seite braucht JavaScript.</noscript>\n</body>\n</html>\n");
         return (outDir, null);
     }
@@ -242,7 +248,7 @@ public static partial class WebDesign
         if (n is JsonArray a) { foreach (var x in a) CopyImages(x, projectDir, outDir); return; }
         if (n is not JsonObject o) return;
         foreach (var kv in o)
-            if (kv.Key is "src" or "bild" && kv.Value is JsonValue v && v.TryGetValue(out string? src) && src.Length > 0)
+            if (kv.Key is "src" or "bild" or "standbild" && kv.Value is JsonValue v && v.TryGetValue(out string? src) && src.Length > 0)
             {
                 if (!IsSafeImagePath(src) || !WebDesignCheck.IsLocalFile(projectDir, src)) continue;
                 var clean = src.Trim().Split('#', '?')[0].Replace('/', Path.DirectorySeparatorChar);

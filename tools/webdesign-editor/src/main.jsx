@@ -274,6 +274,73 @@ function Skizze({ data, onBack }) {
     </div>);
 }
 
+// Z3: Dateien der 3D-Bausteine kommen eingebettet (window.TRENDO_DATEIEN, Base64): im Export als Skript-Dateien, im Editor von Trendo hineingereicht.
+const DATEI_WARTE = new Map();
+function dateiBytes(pfad) {
+  return new Promise((res) => {
+    const lies = () => { const b = window.TRENDO_DATEIEN && window.TRENDO_DATEIEN[pfad]; if (!b) return false; const s = atob(b); const a = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) a[i] = s.charCodeAt(i); res(a.buffer); return true; };
+    if (lies()) return;
+    const f = () => { if (lies()) { window.removeEventListener("trendo-datei", f); clearTimeout(t); } };
+    const t = setTimeout(() => { window.removeEventListener("trendo-datei", f); res(null); }, 30000);
+    window.addEventListener("trendo-datei", f);
+  });
+}
+if (typeof window !== "undefined") window.trendoDatei = (pfad, b64) => { (window.TRENDO_DATEIEN = window.TRENDO_DATEIEN || {})[pfad] = b64; window.dispatchEvent(new Event("trendo-datei")); return true; };
+const BUENDEL = {};
+function buendel(name, global, ereignis) {
+  if (window[global]) return Promise.resolve(window[global]);
+  if (!BUENDEL[name]) BUENDEL[name] = new Promise((res, rej) => {
+    window.addEventListener(ereignis, () => res(window[global]), { once: true });
+    if (!document.querySelector(`script[src$="assets/${name}"]`)) { const s = document.createElement("script"); s.src = "assets/" + name; s.onerror = () => rej(new Error("Bündel fehlt")); document.head.appendChild(s); }
+  });
+  return BUENDEL[name];
+}
+function kann3D() {
+  try { if (navigator.gpu) return true; const c = document.createElement("canvas"); return !!(c.getContext("webgl2") || c.getContext("webgl")); } catch { return false; }
+}
+const STEUERUNG = {};
+function Modell3D(p) {
+  const { id, datei, standbild, beschreibung, hoehe, quelle } = p;
+  const ref = useRef(null); const ctrl = useRef(null);
+  const [zustand, setZustand] = useState("laden"); // laden, bereit, ohne3d, fehler
+  const ohne = !kann3D();
+  useEffect(() => {
+    if (VORRENDERN || ohne || !datei) return;
+    let weg = false;
+    const [name, global, ev] = quelle === "splat" ? ["splat.js", "TrendoSplat", "trendo-splat"] : ["drei.js", "Trendo3D", "trendo-3d"];
+    buendel(name, global, ev).then((api) => api.mount(ref.current, p, dateiBytes)).then((c) => { if (weg) { c.entfernen(); return; } ctrl.current = c; STEUERUNG[id] = c; setZustand("bereit"); })
+      .catch(() => { if (!weg) setZustand("fehler"); });
+    return () => { weg = true; if (ctrl.current) { ctrl.current.entfernen(); ctrl.current = null; delete STEUERUNG[id]; } };
+  }, [datei, quelle]);
+  useEffect(() => { if (ctrl.current) ctrl.current.aktualisieren(p); }, [p.brennweite, p.winkel, p.neigung, p.umgebung, p.hdri, p.sonne, p.sonnenWinkel, p.sonnenHoehe, p.schatten, p.belichtung, p.material, p.farbe, p.rauheit, p.metall, p.drehen, p.bedienen]);
+  const zeigeBild = VORRENDERN || ohne || zustand !== "bereit";
+  return (
+    <figure className="t-modell" style={{ height: (Number(hoehe) || 480) + "px" }} role="img" aria-label={beschreibung || "3D-Modell"} data-zustand={ohne ? "ohne3d" : zustand}>
+      <div ref={ref} className="t-modell-flaeche" aria-hidden="true" />
+      {zeigeBild && (standbild ? <img className="t-modell-standbild" src={standbild} alt={beschreibung || "3D-Modell"} /> :
+        <div className="t-modell-hinweis">{!datei ? "3D-Modell wählen" : ohne ? "3D ist auf diesem Gerät nicht verfügbar." : zustand === "fehler" ? "Das 3D-Modell ließ sich nicht laden." : "3D lädt …"}</div>)}
+    </figure>);
+}
+// Datei aus den Medien des Projekts (Modelle und Splats)
+function DateiWahl({ value, onChange }) {
+  const medien = usePuckSel((s) => (Array.isArray(s.appState.data.root?.props?.medien) ? s.appState.data.root.props.medien : LEER));
+  const quelle = usePuckSel((s) => s.selectedItem?.props?.quelle) === "splat" ? "splat" : "modell";
+  const liste = medien.filter((m) => (m.datei || "").startsWith(`medien/${quelle}/`));
+  return <div className="t-anp"><b>Datei</b>
+    {liste.length === 0 ? <p>Noch kein {quelle === "splat" ? "Splat" : "Modell"} in den Medien. In Trendo unter „Medien des Projekts“ holen (auch .blend, .fbx, .obj – Blender wandelt um).</p> :
+      <select className="t-anp-ansicht" aria-label="Datei" value={value || ""} onChange={(e) => onChange(e.target.value)}><option value="">– wählen –</option>{liste.map((m) => <option key={m.datei} value={m.datei}>{m.titel}</option>)}</select>}
+  </div>;
+}
+// Standbild für Geräte ohne 3D: aus der aktuellen Ansicht aufnehmen (Trendo speichert es in den Medien) oder ein Bild wählen
+function StandbildFeld({ value, onChange }) {
+  const id = usePuckSel((s) => s.selectedItem?.props?.id);
+  const aufnehmen = () => { const c = STEUERUNG[id]; if (!c) return; send({ art: "standbild", daten: { id, bild: c.standbild() } }); };
+  return <div className="t-anp"><b>Standbild</b>
+    <BildWahl value={value} onChange={onChange} label="" />
+    <button type="button" className="t-anp-reset" onClick={aufnehmen} disabled={!STEUERUNG[id]}>Standbild aus der Ansicht</button>
+  </div>;
+}
+
 // K7: Daten-Bausteine. Im Editor nur eine Vorschau (es wird nichts gespeichert), in der fertigen Seite echt über window.TrendoDaten.
 const FERTIG = typeof window !== "undefined" && !!window.TRENDO_SEITE;
 function useDaten() {
@@ -376,7 +443,7 @@ const baseConfig = {
     app: { title: "Web-App mit Daten", components: ["Datenliste", "Anmeldung"] },
     // Z8/K6: HTML-Blöcke entstehen nur beim Import oder aus dem Code, nicht aus der Bausteinliste
     intern: { title: "Intern", components: ["Html"], visible: false },
-    effekte: { title: "3D & Bewegung", components: ["Szene3D"] },
+    effekte: { title: "3D & Bewegung", components: ["Modell3D", "Szene3D"] },
   },
   // Modul 05 Design-System: seitenweite Werte als CSS-Variablen – jeder Baustein nutzt sie; Trendo prüft die Werte beim Speichern (nur #Farben, sichere Schriftnamen)
   root: {
@@ -500,6 +567,27 @@ const baseConfig = {
     // Z8/K6: nicht abbildbares HTML, als geprüfter Baum gespeichert und hier als Elemente gebaut (kein innerHTML)
     Html: { label: "HTML-Block", fields: { ...anpassungenFeld(), ...bewegungFelder },
       render: ({ knoten }) => <div className="t-html">{(knoten || []).map((k, i) => <Knoten key={i} k={k} />)}</div> },
+    // Z3: eigenes 3D-Modell (GLB, auch aus Blender) oder Gaussian Splat. Bündel drei.js (WebGPU, sonst WebGL) bzw. splat.js (Spark) laden nur bei Bedarf.
+    Modell3D: { label: "3D-Modell", fields: {
+        quelle: { type: "radio", label: "Art", options: [{ label: "Modell (GLB)", value: "modell" }, { label: "Gaussian Splat", value: "splat" }] },
+        datei: { type: "custom", label: "Datei", render: ({ value, onChange }) => <DateiWahl value={value} onChange={onChange} /> },
+        beschreibung: { type: "text", label: "Beschreibung (für Screenreader)" },
+        standbild: { type: "custom", label: "Standbild", render: ({ value, onChange }) => <StandbildFeld value={value} onChange={onChange} /> },
+        hoehe: { type: "number", label: "Höhe (px)", min: 200, max: 1000 },
+        brennweite: { type: "number", label: "Brennweite (mm, Vollformat)", min: 18, max: 200 },
+        winkel: { type: "number", label: "Blickwinkel (°)", min: -180, max: 180 }, neigung: { type: "number", label: "Kamerahöhe (°)", min: -10, max: 80 },
+        umgebung: { type: "select", label: "Umgebungslicht", options: [{ label: "Studio", value: "studio" }, { label: "Eigenes HDR-Bild", value: "hdri" }, { label: "Keines", value: "keine" }] },
+        hdri: { type: "text", label: "HDR-Bild (medien/umgebung/…)" },
+        sonne: { type: "number", label: "Sonne (Stärke)", min: 0, max: 10, step: 0.1 }, sonnenWinkel: { type: "number", label: "Sonne: Richtung (°)", min: -180, max: 180 }, sonnenHoehe: { type: "number", label: "Sonne: Höhe (°)", min: 5, max: 90 },
+        schatten: { type: "radio", label: "Schatten", options: [{ label: "Ja", value: "ja" }, { label: "Nein", value: "nein" }] },
+        belichtung: { type: "number", label: "Belichtung", min: 0.25, max: 4, step: 0.05 },
+        material: { type: "radio", label: "Material", options: [{ label: "Wie im Modell", value: "modell" }, { label: "Eigenes", value: "eigen" }] },
+        farbe: { type: "text", label: "Farbe (#RRGGBB)" }, rauheit: { type: "number", label: "Rauheit", min: 0, max: 1, step: 0.05 },
+        metall: { type: "radio", label: "Metall", options: [{ label: "Nein", value: "nein" }, { label: "Ja", value: "ja" }] },
+        drehen: { type: "number", label: "Drehen (0 = aus)", min: 0, max: 2, step: 0.1 },
+        bedienen: { type: "radio", label: "Mit der Maus drehen", options: [{ label: "Ja", value: "ja" }, { label: "Nein", value: "nein" }] }, ...anpassungenFeld(), ...bewegungFelder },
+      defaultProps: { quelle: "modell", datei: "", beschreibung: "3D-Modell", standbild: "", hoehe: 480, brennweite: 50, winkel: 30, neigung: 15, umgebung: "studio", hdri: "", sonne: 3, sonnenWinkel: -40, sonnenHoehe: 40, schatten: "ja", belichtung: 1, material: "modell", farbe: "#8a8a8a", rauheit: 0.5, metall: "nein", drehen: 0, bedienen: "ja" },
+      render: (p) => <Modell3D {...p} /> },
     // K7: Formular mit Liste; Daten liegen in SQLite auf dem Gerät der Besucher (assets/daten.js), optional zusätzlich im eigenen Supabase-Projekt
     Datenliste: { label: "Datenliste", fields: { titel: { type: "text", label: "Überschrift" },
         tabelle: { type: "text", label: "Tabelle (z. B. bestellungen)" },

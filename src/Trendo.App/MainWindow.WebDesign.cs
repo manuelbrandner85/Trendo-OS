@@ -43,6 +43,9 @@ public partial class MainWindow
             case "aktion":
                 WebDesignHumanAction(m.Data);
                 break;
+            case "standbild": // Z3: Standbild aus der 3D-Ansicht
+                WebDesignStill(m.Data);
+                break;
             case "skizze": // K3: Striche der Skizze als Bild
                 WebDesignSketchReceived(m.Data);
                 break;

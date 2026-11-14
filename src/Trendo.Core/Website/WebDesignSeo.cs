@@ -38,7 +38,11 @@ public static class WebDesignSeo
                 if ((dl["felder"] as JsonArray ?? []).Count == 0) res.Add(new($"{name}: Datenliste ohne Felder.", "Fehler"));
                 if (dl["nurAngemeldet"]?.ToString() == "ja") needsLogin = true;
             }
-            if (JsonNode.Parse(raw) is JsonObject pd2 && Blocks(pd2, "Anmeldung").Any()) hasLogin = true;
+            if (JsonNode.Parse(raw) is JsonObject pd2)
+            {
+                if (Blocks(pd2, "Anmeldung").Any()) hasLogin = true;
+                foreach (var (text, ebene) in WebDesignModel.Check(dir, name, pd2)) res.Add(new(text, ebene)); // Z3
+            }
             if (title.Length > 0 && titles.TryGetValue(title, out var other)) res.Add(new($"{name} und {other} haben denselben Titel „{title}“.", "Hinweis"));
             else if (title.Length > 0) titles[title] = name;
         }

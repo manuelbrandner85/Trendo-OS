@@ -23,6 +23,7 @@
 | @radix-ui/react-use-size@1.1.5 | MIT |
 | @radix-ui/rect@1.1.3 | MIT |
 | @react-three/fiber@9.8.1 | MIT |
+| @sparkjsdev/spark@2.4.0 | MIT |
 | @tanstack/virtual-core@3.19.11 | MIT |
 | @tiptap/core@3.33.0 | MIT |
 | @tiptap/extension-blockquote@3.33.0 | MIT |

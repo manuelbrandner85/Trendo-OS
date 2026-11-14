@@ -99,6 +99,11 @@ body { margin: 0; background: #fff; font-family: "Segoe UI", Inter, system-ui, s
 .t-frage summary::-webkit-details-marker { display: none; }
 .t-frage summary svg { flex: none; transition: transform .2s; } .t-frage[open] summary svg { transform: rotate(180deg); }
 .t-frage p { margin: 0 0 14px; line-height: 1.6; }
+/* Z3: 3D-Modell mit Standbild */
+.t-modell { position: relative; margin: 0; width: 100%; overflow: hidden; }
+.t-modell-flaeche { position: absolute; inset: 0; }
+.t-modell-standbild { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.t-modell-hinweis { position: absolute; inset: 0; display: grid; place-items: center; color: color-mix(in srgb, var(--t-ink) 60%, var(--t-paper)); font-size: .95rem; }
 /* K7: Daten-Bausteine */
 .t-daten { padding: calc(var(--t-space) * 2) var(--t-space); }
 .t-daten .t-h { padding: 0 0 calc(var(--t-space) * .5); }

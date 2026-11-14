@@ -284,7 +284,8 @@ public static class WebDesignExport
         var dataRel = rel == "index.html" ? "seite.js" : "daten/" + rel[..^5] + ".js"; // aus dem Ausgabepfad, damit eine nicht übersetzte Seite nicht das Original überschreibt
         Write(outDir, dataRel, "window.TRENDO_SEITE = " + doc.ToJsonString().Replace("</", "<\\/") + ";\n");
         var b = BaseOf(rel);
-        var dataTags = DataScripts(doc, dir, outDir, editorDir, notes); // K7: nur Seiten mit Daten-Bausteinen bekommen die Datenbank
+        var dataTags = DataScripts(doc, dir, outDir, editorDir, notes) // K7: nur Seiten mit Daten-Bausteinen bekommen die Datenbank
+            + WebDesignModel.Scripts(doc, dir, outDir, editorDir, notes); // Z3: nur Seiten mit 3D bekommen das 3D-Bündel und ihre Dateien
         Write(outDir, rel, "<!doctype html>\n" + $"<html lang=\"{lang}\">\n<head>\n<meta charset=\"UTF-8\" />\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n" +
             (b.Length > 0 ? $"<base href=\"{b}\" />\n" : "") + head + $"<title>{Esc(title)}</title>\n<link rel=\"stylesheet\" href=\"assets/style.css\">\n" +
             (extraCss.Length > 0 ? $"<style id=\"t-anpassungen\">\n{extraCss}\n</style>\n" : "") +
