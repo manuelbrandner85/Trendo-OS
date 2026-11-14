@@ -44,6 +44,7 @@ public static class PromptActions
             new BookOutlineAdapter(), new AnimTitleAdapter(), new PhotoPlanAdapter(), new ImageAiPlanAdapter(),
             new LicenseFetchAdapter(), new LicenseNoteAdapter(),
             new XrBudgetAdapter(), new ScanBlockedAdapter(),
+            new CodeProjectAdapter(), new VisionFactsAdapter(), new CiteSourceAdapter(), new DayPlanAdapter(),
             ..SystemActions.Create()
         ];
 }

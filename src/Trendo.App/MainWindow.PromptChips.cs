@@ -38,6 +38,10 @@ public partial class MainWindow
         ["CORE-07"] = ["Webseite für ein Café", "Kontaktformular einbauen"],
         ["X-03"] = ["App für Einkaufslisten", "Vereins-App mit Terminen"],
         ["SYS-08"] = ["Recherche: Wärmepumpe Kosten 2026", "Quellen zu gesunder Ernährung"],
+        ["STUDIO-CODEAI-01"] = ["Erkläre mir diese Datei", "Schreib einen Test dafür", "Warum schlägt der Test fehl?"],
+        ["STUDIO-VISION-01"] = ["Beschreibe dieses Bild", "Finde unscharfe Fotos", "Lies den Text im Bild"],
+        ["STUDIO-CITE-01"] = ["Zitiere nach APA", "Belegt die Quelle die Aussage?", "Welche Angaben fehlen?"],
+        ["STUDIO-DAYPLAN-01"] = ["Plane meinen Tag", "Was schaffe ich bis Mittag?", "Rest auf morgen schieben"],
     };
 
     /// <summary>Chips für ein Studio (leer = keine Vorschläge hinterlegt).</summary>

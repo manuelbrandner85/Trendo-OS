@@ -268,6 +268,18 @@ public static class StudioTeams
         T("X-09", "Leistungs-Team",
             R("monitor", "Leistungs-Monitor", "zeigt, was Speicher und Prozessor tun", "Spitzen und Dauerlast erkennen"),
             R("optimierer", "Optimierer", "schlägt Verbesserungen vor", "nur Vorschläge – beendet nichts ohne Ja")),
+        T("STUDIO-CODEAI-01", "Code-Team",
+            R("code-entwickler", "Entwicklerin", "erklärt und ändert Code", "kleine Änderungen, Stil des Projekts", true),
+            R("code-tester", "Testerin", "schreibt und prüft Tests", "erst Test, dann Änderung; nichts ohne Ja ausführen")),
+        T("STUDIO-VISION-01", "Bild-Team",
+            R("vision-sicht", "Bildbeschreiberin", "beschreibt Inhalt, Licht und Farben", "nur Sichtbares, keine Personen erkennen", true),
+            R("vision-pruef", "Bildprüfer", "findet unscharfe und falsch belichtete Fotos", "Messwerte statt Bauchgefühl")),
+        T("STUDIO-CITE-01", "Quellen-Team",
+            R("cite-biblio", "Bibliothekarin", "erfasst und formatiert Quellen", "vollständige Angaben, einheitlicher Stil", true),
+            R("cite-pruef", "Faktenprüfer", "prüft, ob Quellen Aussagen belegen", "nichts erfinden, Unsicheres kennzeichnen")),
+        T("STUDIO-DAYPLAN-01", "Planungs-Team",
+            R("day-planer", "Planerin", "legt Aufgaben in den Tag", "Wichtiges zuerst, Pausen, Puffer", true),
+            R("day-pruef", "Prüfer", "achtet auf realistische Dauer", "nicht überladen, Rest auf morgen")),
     ];
 
     public static StudioTeam? For(string? studioId) => All.FirstOrDefault(t => t.StudioId == studioId);

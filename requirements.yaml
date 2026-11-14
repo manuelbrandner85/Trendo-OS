@@ -466,6 +466,34 @@ modules:
   test_status: PC_VERIFIED
   evidence: reports/pc-t0003/UEBERSICHT.md
   evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+- id: STUDIO-CODEAI-01
+  name: Code mit KI
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)
+- id: STUDIO-VISION-01
+  name: Bilder erkennen
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)
+- id: STUDIO-CITE-01
+  name: Recherche mit Quellen
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)
+- id: STUDIO-DAYPLAN-01
+  name: Tagesplaner
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)
 - id: STUDIO-MUSIK-01
   name: Trendo Musik (Lieder mit ACE-Step)
   approved_expansion_functions: '0'
