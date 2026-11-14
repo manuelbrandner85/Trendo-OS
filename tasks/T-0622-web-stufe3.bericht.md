@@ -2,7 +2,7 @@
 
 **Auftrag:** `tasks/T-0622-web-stufe3.md`. Vorgabe: `docs/nachbau/web-ki/anforderungen.md` (mehrere Seiten, W2, W3, K6, K3, A4, K7, K8, Rest von W4) und `anforderungen-ergaenzung.md` (Z8, Z3, Z5). Freigabe des Nutzers „Ja, Web Stufe 3“ am 14.11.2026, weitergeleitet über die Sitzung „Spiele-Studio Stufe 1“.
 **Branch/Worktree:** `claude/T-0622-web-stufe3`, `C:\Users\<user>\TrendoEntwicklung\wt-T-0622-web-stufe3`, Basis `origin/main` cce5c6261.
-**Status:** Alle Funktionen gebaut und mit Tests belegt. Vor dem Bau wurde der Iststand jeder Funktion im Code nachgeprüft; er ist jetzt in beiden Anforderungslisten eingetragen. QA je Teil und Security-Prüfung in eigenen Kopien, Befunde behoben (siehe unten). Kein Release.
+**Status:** Alle Funktionen gebaut und mit Tests belegt. Vor dem Bau wurde der Iststand jeder Funktion im Code nachgeprüft; er ist jetzt in beiden Anforderungslisten eingetragen. QA je Teil und Security-Prüfung in eigenen Kopien, Befunde behoben (siehe unten). Release 0.9.96 mit OK des Nutzers („ja ok mach“, weitergeleitet über die Sitzung „Spiele-Studio Stufe 1“).
 
 ## Was gebaut wurde
 
@@ -71,7 +71,12 @@ Unabhängig vom Implementierer, je Teil in eigener Kopie.
 
 ## Volltest
 
-VOLLTEST
+Am 14.11.2026 auf dem Stand nach dem Merge von `origin/main` (d9f9a394d), `dotnet test Trendo.sln -c Release`: Api 16/16, Core 2550/2555 (5 übersprungen), App 1305/1311 (6 übersprungen, darunter der PC-Lauf Z3), keine Fehler. Dazu `python -m unittest discover -s tests/claude_handoff`.
+
+Vorher behoben, was frühere Läufe zeigten:
+- Telemetrie-Prüfung schlug auf die Variable `_wdCmsEntry` an („sEntry“); umbenannt.
+- Die Prüfumgebungen für IFC, Open3D, Tiled und das Browser-Spiel scheiterten zufällig, weil dem gemeinsamen Basis-Python unter `%TEMP%	rendo-echt-stimme` die halbe Standardbibliothek fehlte (vermutlich beim vollen Datenträger entstanden). Mit `uv python install 3.12.16 --reinstall` am selben Ort repariert, nichts gelöscht.
+- Die Warteschleife der Chrome-Prüfskripte brach ab, wenn das Dokument beim Seitenwechsel kurz fehlte; sie wartet jetzt bis 20 s und wertet einen solchen Fehler als „noch nicht bereit“.
 
 ## Offen und Empfehlungen
 
