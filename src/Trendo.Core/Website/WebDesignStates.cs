@@ -12,8 +12,9 @@ public static partial class WebDesignStates
     /// <summary>So viele automatische Stände bleiben, ältere werden entfernt. Benannte Stände bleiben immer.</summary>
     public const int MaxAuto = 30;
 
-    public sealed record Stand(string Id, string Name, bool Auto, DateTimeOffset Zeit, string? Variante);
-    public sealed record Variante(string Id, string Name, DateTimeOffset Zeit);
+    /// <remarks>Stufe 3: Stand und Variante merken sich ihre Seite (Adresse und Sprache); ohne Angabe gilt die Startseite (ältere Stände).</remarks>
+    public sealed record Stand(string Id, string Name, bool Auto, DateTimeOffset Zeit, string? Variante, string Seite = WebDesignSite.Index, string? Sprache = null);
+    public sealed record Variante(string Id, string Name, DateTimeOffset Zeit, string Seite = WebDesignSite.Index, string? Sprache = null);
 
     [GeneratedRegex("^[0-9]{19}-[0-9a-f]{8}$")] private static partial Regex IdPattern();
     static string NewId() => $"{DateTime.UtcNow.Ticks:D19}-{Guid.NewGuid():N}"[..28];
@@ -28,16 +29,26 @@ public static partial class WebDesignStates
 
     static string PageRaw(string dir)
     {
-        var f = Path.Combine(dir, WebDesign.PageFile);
+        var f = WebDesignSite.ActiveFile(dir);
         return File.Exists(f) && WebDesign.Validate(File.ReadAllText(f)).Error is null ? File.ReadAllText(f) : WebDesign.Load(dir);
     }
 
     /// <summary>Inhalt der Seite oder einer Variante.</summary>
     /// <remarks>W6, W5: Gestaltungswerte und Komponenten des Projekts gelten für die Seite und den Export. Eine Variante bringt ihre eigenen mit (beim Anlegen kopiert),
     /// damit sich auch eine andere Farbwelt ausprobieren lässt, ohne die Seite zu ändern (K5); erst beim Übernehmen gelten sie fürs Projekt.</remarks>
-    public static string Read(string dir, string? variant = null) => WebDesignAssets.Inject(variant is null // Z7: Medienliste für die Auswahl im Editor
+    public static string Read(string dir, string? variant = null) => WithLists(dir, WebDesignAssets.Inject(variant is null // Z7: Medienliste für die Auswahl im Editor
         ? WebDesignComponents.Inject(WebDesignTokens.Inject(PageRaw(dir), WebDesignTokens.Load(dir)), dir)
-        : VariantContent(dir, variant) ?? WebDesign.Empty(), dir);
+        : VariantContent(dir, variant) ?? WebDesign.Empty(), dir));
+
+    /// <summary>W2: Listen aus dem CMS fertig in die Seite schreiben, damit der Editor sie zeigt. Beim Speichern fallen sie wieder weg.</summary>
+    static string WithLists(string dir, string json)
+    {
+        var cms = WebDesignCms.Load(dir);
+        if (cms.Count == 0 || JsonNode.Parse(json) is not JsonObject doc) return json;
+        WebDesignCms.Resolve(doc, cms, WebDesignSite.Active(dir).Sprache, "", false);
+        if (doc["root"]?["props"] is JsonObject rp) rp["sammlungen"] = new JsonArray(cms.Select(c => (JsonNode)new JsonObject { ["id"] = c.Id, ["name"] = c.Name }).ToArray()); // Auswahl im Editor
+        return doc.ToJsonString();
+    }
 
     /// <summary>Gestaltungswerte und Komponenten aus Seitendaten ins Projekt übernehmen.</summary>
     static void LiftProject(string dir, string json)
@@ -63,8 +74,9 @@ public static partial class WebDesignStates
         if (string.IsNullOrWhiteSpace(name)) return (null, "Bitte einen Namen für den Stand.");
         var (ok, err) = WebDesign.Validate(content); if (ok is null) return (null, err);
         var trimmed = name.Trim(); trimmed = trimmed[..Math.Min(120, trimmed.Length)];
-        var s = new Stand(NewId(), trimmed, auto, DateTimeOffset.Now, variant);
-        WriteAtomic(StateFile(dir, s.Id), new JsonObject { ["name"] = s.Name, ["auto"] = auto, ["zeit"] = s.Zeit.ToString("O"), ["variante"] = variant, ["seite"] = content }.ToJsonString());
+        var page = variant is { } vid ? VariantPage(dir, vid) : WebDesignSite.Active(dir);
+        var s = new Stand(NewId(), trimmed, auto, DateTimeOffset.Now, variant, page.Adresse, page.Sprache);
+        WriteAtomic(StateFile(dir, s.Id), new JsonObject { ["name"] = s.Name, ["auto"] = auto, ["zeit"] = s.Zeit.ToString("O"), ["variante"] = variant, ["seite"] = content, ["adresse"] = page.Adresse, ["sprache"] = page.Sprache }.ToJsonString());
         if (auto) Prune(dir);
         return (s, null);
     }
@@ -74,8 +86,9 @@ public static partial class WebDesignStates
         try
         {
             if (JsonNode.Parse(File.ReadAllText(file)) is not JsonObject o) return null;
+            var p = PageOf(o);
             return new(Path.GetFileNameWithoutExtension(file), o["name"]?.ToString() ?? "", o["auto"]?.GetValue<bool>() == true,
-                DateTimeOffset.TryParse(o["zeit"]?.ToString(), out var t) ? t : DateTimeOffset.MinValue, o["variante"]?.ToString());
+                DateTimeOffset.TryParse(o["zeit"]?.ToString(), out var t) ? t : DateTimeOffset.MinValue, o["variante"]?.ToString(), p.Adresse, p.Sprache);
         }
         catch (Exception e) when (e is JsonException or IOException or InvalidOperationException or ArgumentException) { return null; }
     }
@@ -106,13 +119,14 @@ public static partial class WebDesignStates
         if (Content(dir, id) is not { } text || ReadState(StateFile(dir, id)) is not { } s) return "Diesen Stand gibt es nicht mehr.";
         var (ok, err) = WebDesign.Validate(text); if (ok is null) return err;
         if (s.Variante is { } v && VariantContent(dir, v) is null) return "Die Variante dieses Stands gibt es nicht mehr.";
+        if (s.Variante is null && WebDesignSite.Activate(dir, s.Seite, s.Sprache) is { } perr) return "Die Seite dieses Stands gibt es nicht mehr: " + perr; // Stufe 3: zurück auf die Seite des Stands
         var (auto, aerr) = SaveContent(dir, "Vor Wiederherstellen", Read(dir, s.Variante), true, s.Variante);
         if (auto is null) return aerr;
         if (s.Variante is { } vv) WriteAtomic(VariantFile(dir, vv), VariantFileText(dir, vv, text));
         else
         {
-            var f = Path.Combine(dir, WebDesign.PageFile);
-            if (File.Exists(f)) File.Copy(f, Path.Combine(dir, WebDesign.BackupFile), true);
+            var f = WebDesignSite.ActiveFile(dir);
+            if (File.Exists(f)) File.Copy(f, f + ".bak", true);
             WriteAtomic(f, text);
             LiftProject(dir, text); // auch Gestaltungswerte und Komponenten kehren zum alten Stand zurück; die neuen liegen im automatischen Stand
         }
@@ -132,8 +146,9 @@ public static partial class WebDesignStates
     {
         if (string.IsNullOrWhiteSpace(name)) return (null, "Bitte einen Namen für die Variante.");
         var trimmed = name.Trim(); trimmed = trimmed[..Math.Min(80, trimmed.Length)];
-        var v = new Variante(NewId(), trimmed, DateTimeOffset.Now);
-        WriteAtomic(VariantFile(dir, v.Id), new JsonObject { ["name"] = v.Name, ["zeit"] = v.Zeit.ToString("O"), ["seite"] = Read(dir, from) }.ToJsonString());
+        var page = from is { } fid ? VariantPage(dir, fid) : WebDesignSite.Active(dir);
+        var v = new Variante(NewId(), trimmed, DateTimeOffset.Now, page.Adresse, page.Sprache);
+        WriteAtomic(VariantFile(dir, v.Id), new JsonObject { ["name"] = v.Name, ["zeit"] = v.Zeit.ToString("O"), ["seite"] = Read(dir, from), ["adresse"] = page.Adresse, ["sprache"] = page.Sprache }.ToJsonString());
         return (v, null);
     }
 
@@ -143,7 +158,14 @@ public static partial class WebDesignStates
         if (!Directory.Exists(d)) return [];
         var list = new List<Variante>();
         foreach (var f in Directory.GetFiles(d, "*.json").OrderBy(f => Path.GetFileName(f), StringComparer.Ordinal))
-            try { if (JsonNode.Parse(File.ReadAllText(f)) is JsonObject o) list.Add(new(Path.GetFileNameWithoutExtension(f), o["name"]?.ToString() ?? "", DateTimeOffset.TryParse(o["zeit"]?.ToString(), out var t) ? t : DateTimeOffset.MinValue)); }
+            try
+            {
+                if (JsonNode.Parse(File.ReadAllText(f)) is JsonObject o)
+                {
+                    var p = PageOf(o);
+                    list.Add(new(Path.GetFileNameWithoutExtension(f), o["name"]?.ToString() ?? "", DateTimeOffset.TryParse(o["zeit"]?.ToString(), out var t) ? t : DateTimeOffset.MinValue, p.Adresse, p.Sprache));
+                }
+            }
             catch (Exception e) when (e is JsonException or InvalidOperationException or ArgumentException) { }
         return list;
     }
@@ -175,11 +197,36 @@ public static partial class WebDesignStates
     public static string? AdoptVariant(string dir, string id)
     {
         if (VariantContent(dir, id) is not { } text) return "Diese Variante gibt es nicht mehr.";
+        var page = VariantPage(dir, id);
+        if (WebDesignSite.Activate(dir, page.Adresse, page.Sprache) is { } perr) return "Die Seite dieser Variante gibt es nicht mehr: " + perr; // Stufe 3: Variante gehört zu ihrer Seite
         var (auto, err) = SaveContent(dir, "Vor Übernahme einer Variante", Read(dir), true);
         if (auto is null) return err;
         var save = WebDesign.Save(dir, text);
         if (save is null) LiftProject(dir, text); // mit der Variante gelten ihre Gestaltungswerte und Komponenten fürs Projekt
         return save;
+    }
+
+    /// <summary>Seite aus einem Stand oder einer Variante; ohne Sprache (ältere Dateien) gilt null = Standardsprache.</summary>
+    static WebDesignSite.PageKey PageOf(JsonObject o)
+    {
+        var a = o["adresse"]?.ToString() is { } x && (x == WebDesignSite.Index || WebDesignSite.CheckSlug(x) is null) ? x : WebDesignSite.Index;
+        var l = o["sprache"]?.ToString() is { } y && WebDesignSite.IsLanguage(y) ? y : null;
+        return new(a, l!);
+    }
+
+    /// <summary>Seite, zu der eine Variante gehört.</summary>
+    public static WebDesignSite.PageKey VariantPage(string dir, string id)
+    {
+        try
+        {
+            if (IdPattern().IsMatch(id) && File.Exists(VariantFile(dir, id)) && JsonNode.Parse(File.ReadAllText(VariantFile(dir, id))) is JsonObject o)
+            {
+                var p = PageOf(o);
+                return p with { Sprache = p.Sprache ?? WebDesignSite.Load(dir).Standardsprache };
+            }
+        }
+        catch (Exception e) when (e is JsonException or IOException or ArgumentException) { }
+        return new(WebDesignSite.Index, WebDesignSite.Load(dir).Standardsprache);
     }
 
     public static bool DeleteVariant(string dir, string id)

@@ -31,6 +31,9 @@ public static partial class WebDesign
             Sanitize(o);
             SanitizeTokens(o["root"]?["props"] as JsonObject);
             WebDesignViews.Sanitize(o);
+            WebDesignCms.Strip(o); // W2: aufgelöste Listen entstehen beim Lesen neu
+            (o["root"]?["props"] as JsonObject)?.Remove("sammlungen");
+            if (o["root"]?["props"] is JsonObject rpv) SanitizePageProps(rpv);
             if (o["root"]?["props"] is JsonObject rp && rp["komponenten"] is not null) rp["komponenten"] = WebDesignComponents.ToJson(WebDesignComponents.Read(rp["komponenten"])); // nur gültige Komponenten
             return (o.ToJsonString(), null);
         }
@@ -100,6 +103,7 @@ public static partial class WebDesign
 
     /// <summary>Felder mit Zielen (Links) und Bildern in allen Bausteinen, auch in Listen.</summary>
     static readonly HashSet<string> LinkKeys = ["href", "knopfZiel", "knopf2Ziel", "ziel", "impressum", "datenschutz"], ImageKeys = ["src", "bild"];
+    [GeneratedRegex(@"^\{\{\s*[a-z][a-z0-9_]{0,29}\s*\}\}$")] private static partial Regex CmsPlaceholder();
     [GeneratedRegex(@"^[^@\s<>""'?&#]+@[^@\s<>""'?&#]+\.[^@\s<>""'?&#]+$")] private static partial Regex MailPattern();
 
     /// <summary>Gefährliche Links aus Link-Feldern entfernen – die fertige Seite soll niemanden angreifen können. Erlaubt sind nur http, https, mailto, tel und relative Ziele;
@@ -111,7 +115,7 @@ public static partial class WebDesign
             case JsonObject o:
                 foreach (var key in o.Select(kv => kv.Key).ToList())
                     if (LinkKeys.Contains(key) && o[key] is JsonValue v && v.TryGetValue(out string? s) && !IsAllowedUrl(s)) o[key] = "#";
-                    else if (ImageKeys.Contains(key) && o[key] is JsonValue iv && iv.TryGetValue(out string? img) && img.Length > 0 && !IsSafeImagePath(img)) o[key] = "";
+                    else if (ImageKeys.Contains(key) && o[key] is JsonValue iv && iv.TryGetValue(out string? img) && img.Length > 0 && !IsSafeImagePath(img) && !CmsPlaceholder().IsMatch(img)) o[key] = ""; // W2: „{{bild}}“ in Vorlagen, ersetzt beim Export
                     else if (key == "empfaenger" && o[key] is JsonValue mv && mv.TryGetValue(out string? mail) && !MailPattern().IsMatch(mail)) o[key] = "";
                     else Sanitize(o[key]);
                 break;
@@ -119,13 +123,16 @@ public static partial class WebDesign
         }
     }
 
-    public static string Load(string projectDir)
+    /// <summary>Stufe 3: liest die aktive Seite (Startseite, weitere Seite oder Übersetzung, siehe <see cref="WebDesignSite"/>).</summary>
+    public static string Load(string projectDir) => LoadFile(WebDesignSite.ActiveFile(projectDir), Path.GetFileName(projectDir));
+
+    /// <summary>Eine bestimmte Seitendatei lesen; beschädigt → letzte gute Fassung aus der Sicherung.</summary>
+    public static string LoadFile(string f, string title)
     {
-        var f = Path.Combine(projectDir, PageFile);
         if (File.Exists(f) && Validate(File.ReadAllText(f)) is { Json: { } ok }) return ok;
-        var b = Path.Combine(projectDir, BackupFile); // Wiederherstellung: beschädigte Datei → letzte gute Fassung
+        var b = f + ".bak";
         if (File.Exists(b) && Validate(File.ReadAllText(b)) is { Json: { } back }) return back;
-        return Empty(Path.GetFileName(projectDir));
+        return Empty(title);
     }
 
     /// <summary>Speichert atomar (erst Zwischendatei, dann ersetzen) und hält die vorige Fassung als Sicherung.</summary>
@@ -133,18 +140,41 @@ public static partial class WebDesign
     {
         var (ok, err) = Validate(json); if (ok is null) return err;
         Directory.CreateDirectory(projectDir);
-        var f = Path.Combine(projectDir, PageFile); var tmp = f + ".neu";
+        var f = WebDesignSite.ActiveFile(projectDir); var tmp = f + ".neu";
+        Directory.CreateDirectory(Path.GetDirectoryName(f)!);
         File.WriteAllText(tmp, ok);
-        if (File.Exists(f)) File.Copy(f, Path.Combine(projectDir, BackupFile), true);
+        if (File.Exists(f)) File.Copy(f, f + ".bak", true);
         File.Move(tmp, f, true);
         return null;
     }
 
     /// <summary>Exportiert die gespeicherte Seite als fertige Webseite: index.html, seite.js (Daten) und das Editor-Bündel im Anzeigemodus – läuft ohne Netz direkt aus dem Ordner.</summary>
+    /// <remarks>Stufe 3: exportiert die ganze Website (alle Seiten, Sprachen und CMS-Einträge), siehe <see cref="WebDesignExport.ExportSite(string, string)"/>.</remarks>
     public static (string? Dir, string? Error) Export(string projectDir, string editorDir)
     {
-        return ExportContent(WebDesignComponents.Inject(WebDesignTokens.Inject(Load(projectDir), WebDesignTokens.Load(projectDir)), projectDir), projectDir, Path.Combine(projectDir, ExportDir), editorDir);
+        var r = WebDesignExport.ExportSite(projectDir, editorDir);
+        return (r.Dir, r.Error);
     }
+
+    /// <summary>Bilder, eigene Schriften und Namensnennung einer Seite in den Export.</summary>
+    internal static void ExportAssets(JsonObject doc, string projectDir, string outDir)
+    {
+        CopyImages(doc, projectDir, outDir);
+        var media = WebDesignAssets.Load(projectDir); var used = WebDesignAssets.Used(doc, media);
+        foreach (var font in media.Where(a => a.Art == "schrift" && used.Contains(a.Datei) && IsSafeFontPath(a.Datei) && WebDesignCheck.IsLocalFile(projectDir, a.Datei)))
+        {
+            var target = Path.Combine(outDir, font.Datei.Replace('/', Path.DirectorySeparatorChar));
+            Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+            File.Copy(Path.Combine(projectDir, font.Datei.Replace('/', Path.DirectorySeparatorChar)), target, true);
+        }
+    }
+
+    /// <summary>Zusatz-CSS einer Seite: eigene Schriften und Anpassungen je Ansicht als Medienregeln.</summary>
+    internal static string PageCss(string projectDir, JsonObject doc) =>
+        string.Join("\n", new[] { WebDesignAssets.FontFaceCss(projectDir, doc), WebDesignViews.Css(doc) }.Where(s => s.Length > 0));
+
+    /// <summary>Ein Bild des Projekts in den Export kopieren (nur Dateien im Projektordner).</summary>
+    internal static void CopyImage(string src, string projectDir, string outDir) => CopyImages(new JsonObject { ["src"] = src }, projectDir, outDir);
 
     /// <summary>Exportiert bestimmte Seitendaten in einen Zielordner (auch eine Vorschau oder Variante, ohne die gespeicherte Seite zu berühren). Bilder aus dem Projekt reisen mit, damit die Seite vollständig bleibt.</summary>
     public static (string? Dir, string? Error) ExportContent(string json, string projectDir, string outDir, string editorDir)
@@ -157,7 +187,9 @@ public static partial class WebDesign
         var lic = Path.Combine(editorDir, "LIZENZEN.txt"); // MIT & Co. verlangen den Urheberhinweis auch in jeder weitergegebenen Seite
         if (File.Exists(lic)) File.Copy(lic, Path.Combine(assets, "LIZENZEN.txt"), true);
         var doc = JsonNode.Parse(data)!;
-        if (doc["root"]?["props"] is JsonObject rootProps && rootProps.Remove("medien")) data = doc.ToJsonString(); // Liste aller Projektmedien gehört nur in den Editor, nicht in die veröffentlichte Seite
+        if (doc["root"]?["props"] is JsonObject rootProps) { rootProps.Remove("medien"); rootProps.Remove("sammlungen"); } // Liste aller Projektmedien gehört nur in den Editor, nicht in die veröffentlichte Seite
+        WebDesignCms.Resolve(doc.AsObject(), WebDesignCms.Load(projectDir), WebDesignSite.Load(projectDir).Standardsprache, "", false); // W2: Listen fertig in die Seite
+        data = doc.ToJsonString();
         CopyImages(doc, projectDir, outDir);
         // Z7: eigene Schriften reisen lokal mit; Namensnennung für Medien unter CC-BY
         var media = WebDesignAssets.Load(projectDir); var used = WebDesignAssets.Used(doc, media);
@@ -181,6 +213,14 @@ public static partial class WebDesign
             $"<title>{title}</title>\n<link rel=\"stylesheet\" href=\"assets/style.css\">\n" + (extraCss.Length > 0 ? $"<style id=\"t-anpassungen\">\n{extraCss}\n</style>\n" : "") + $"<script src=\"seite.js\"></script>\n<script defer src=\"assets/editor.js\"></script>\n</head>\n<body>\n<div id=\"root\"></div>\n" +
             "<noscript>Diese Seite braucht JavaScript.</noscript>\n</body>\n</html>\n");
         return (outDir, null);
+    }
+
+    /// <summary>W3: Seiten-Angaben prüfen: Vorschaubild nur als Bild im Projekt, „indexieren“ nur ja/nein, Vorlage nur als Sammlungs-Name.</summary>
+    static void SanitizePageProps(JsonObject p)
+    {
+        if (p["vorschaubild"] is not null && !(p["vorschaubild"] is JsonValue v && v.TryGetValue(out string? s) && (s.Length == 0 || IsSafeImagePath(s)))) p["vorschaubild"] = "";
+        if (p["indexieren"] is not null && !(p["indexieren"] is JsonValue iv && iv.TryGetValue(out bool _))) p["indexieren"] = true;
+        if (p["vorlage"] is not null && !(p["vorlage"] is JsonValue tv && tv.TryGetValue(out string? t) && (t.Length == 0 || WebDesignSite.CheckSlug(t) is null))) p.Remove("vorlage");
     }
 
     /// <summary>Bilder des Projekts in den Export kopieren. Nur Dateien innerhalb des Projektordners.</summary>

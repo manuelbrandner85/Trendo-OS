@@ -28,7 +28,7 @@ public partial class MainWindow
                 break;
             case "speichern":
                 var err = WebDesignStates.Write(WebDesignDir, m.Data ?? "", _wdVariant);
-                _wdNote = err ?? $"Gespeichert ({DateTime.Now:HH:mm:ss}) – {Path.Combine(WebDesignDir, WebDesign.PageFile)}";
+                _wdNote = err ?? $"Gespeichert ({DateTime.Now:HH:mm:ss}) – {(_wdVariant is null ? WebDesignSite.ActiveFile(WebDesignDir) : "Variante")}";
                 _core.Audit.Append(Principal.LocalOwner.Name, "web.visuell.speichern", err ?? "ok");
                 if (err is null) _wdDraft = null;
                 Dispatcher.UIThread.Post(() => Show("dev"));
@@ -62,15 +62,18 @@ public partial class MainWindow
         sp.Children.Add(new WrapPanel { Children = {
             Act("web-visual-open", _wdOpen ? "Editor schließen" : "Editor öffnen", () => { _wdOpen = !_wdOpen; if (!_wdOpen) _wdView = null; Show("dev"); }, true),
             new Border { Width = 8 },
-            Act("web-visual-export", "Als fertige Webseite exportieren", () => { WebDesignExport(); Show("dev"); }),
+            Act("web-visual-export", "Als fertige Website exportieren", () => { _ = WebDesignExportSiteAsync(); }),
             new Border { Width = 8 },
             Act("web-visual-browser", "Export im Browser öffnen", () => { var f = Path.Combine(WebDesignDir, WebDesign.ExportDir, "index.html"); if (File.Exists(f)) Launch(f); else { _wdNote = "Zuerst exportieren."; Show("dev"); } }),
         } });
         if (!editorOk) sp.Children.Add(P("Editor-Bündel fehlt im Programm (Assets/webdesign) – bitte Trendo neu installieren.", Avalonia.Media.Brush.Parse("#F5A524"), 12));
         sp.Children.Add(WebDesignKiPane());
+        sp.Children.Add(WebDesignPagesPane()); // Stufe 3: Seiten, Adresse, Übergang, Weiterleitungen, Prüfung
         sp.Children.Add(WebDesignTokensPane());
         sp.Children.Add(WebDesignComponentsPane());
         sp.Children.Add(WebDesignAssetsPane());
+        sp.Children.Add(WebDesignCmsPane()); // W2
+        sp.Children.Add(WebDesignLanguagesPane()); // Z5
         if (_wdNote.Length > 0) sp.Children.Add(new TextBlock { Name = "web-visual-note", Text = _wdNote, FontSize = 12, Foreground = Muted, TextWrapping = Avalonia.Media.TextWrapping.Wrap });
         if (_wdOpen && editorOk)
         {

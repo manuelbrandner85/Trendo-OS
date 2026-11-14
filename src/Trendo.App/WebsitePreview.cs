@@ -56,7 +56,77 @@ public static class WebsitePreview
         return File.Exists(pngPath) ? new(true, pngPath, width < 700 ? "Handy" : "Desktop") : new(false, "", "Die Vorschau hat kein Bild geschrieben.");
     }
 
-    static async Task ShotAsync(string browser, string url, int width, int height, string pngPath, CancellationToken ct, List<string>? errors = null, string? domPath = null)
+    static Task ShotAsync(string browser, string url, int width, int height, string pngPath, CancellationToken ct, List<string>? errors = null, string? domPath = null) =>
+        RunBrowserAsync(browser, width, height, 45, ct, errors is null ? null : e => Collect(e, errors), async (cdp, tok) =>
+        {
+            await cdp.Call("Page.enable", new { }, tok);
+            if (errors is not null) { await cdp.Call("Runtime.enable", new { }, tok); await cdp.Call("Log.enable", new { }, tok); }
+            await cdp.Call("Emulation.setDeviceMetricsOverride", new { width, height, deviceScaleFactor = 1, mobile = width < 700 }, tok);
+            await cdp.Call("Page.navigate", new { url }, tok);
+            await WaitReady(cdp, tok);
+            await Task.Delay(errors is null ? 400 : 1200, tok); // beim echten Test etwas länger laufen lassen, damit späte Fehler auffallen
+            if (errors is not null) await cdp.Call("Runtime.evaluate", new { expression = "1" }, tok); // ausstehende Meldungen abholen
+            if (domPath is not null)
+            {
+                var dom = await cdp.Call("Runtime.evaluate", new { expression = "document.documentElement.outerHTML", returnByValue = true }, tok);
+                await File.WriteAllTextAsync(domPath, "<!doctype html>\n" + ResultValue(dom), tok);
+                var over = await cdp.Call("Runtime.evaluate", new { expression = "Math.max(document.documentElement.scrollWidth, document.body ? document.body.scrollWidth : 0) - window.innerWidth", returnByValue = true }, tok);
+                if (errors is not null && double.TryParse(ResultValue(over), System.Globalization.CultureInfo.InvariantCulture, out var extra) && extra > 1)
+                    lock (errors) errors.Add($"Waagerechtes Scrollen bei {width} Pixeln Breite ({extra:0} Pixel zu breit).");
+            }
+            var shot = await cdp.Call("Page.captureScreenshot", new { format = "png" }, tok);
+            var data = ResultString(shot, "data");
+            if (string.IsNullOrWhiteSpace(data)) throw new InvalidOperationException("Chrome hat kein Bild geliefert.");
+            await File.WriteAllBytesAsync(pngPath, Convert.FromBase64String(data), tok);
+        });
+
+    /// <summary>Warten, bis die Seite „fertig“ meldet (höchstens 8 s).</summary>
+    static async Task WaitReady(Cdp cdp, CancellationToken tok)
+    {
+        var until = DateTime.UtcNow.AddSeconds(8);
+        while (DateTime.UtcNow < until)
+        {
+            tok.ThrowIfCancellationRequested();
+            var state = await cdp.Call("Runtime.evaluate", new { expression = "document.documentElement && document.documentElement.dataset.fertig || ''", returnByValue = true }, tok);
+            if (ResultValue(state) == "1") break;
+            await Task.Delay(120, tok);
+        }
+    }
+
+    /// <summary>W3 (Stufe 3 Webseite bauen): Inhalt jeder exportierten Seite ins HTML legen, damit er ohne Skript lesbar ist (Suchmaschinen, Vorschauen).
+    /// Ein Browser für alle Seiten; die Seiten laufen mit „?vorrendern“, also ohne Bewegung, damit der ruhende Zustand gespeichert wird.
+    /// Liefert die Zahl der vorgerenderten Seiten oder einen Hinweis, wenn kein Chrome oder Edge da ist.</summary>
+    public static async Task<(int Done, string? Note)> RenderStaticAsync(string outDir, IReadOnlyList<string> relPaths, CancellationToken ct = default)
+    {
+        var browser = FindBrowser();
+        if (browser is null) return (0, "Kein Chrome oder Edge gefunden: Der Inhalt steht erst nach dem Laden der Seite im HTML.");
+        if (relPaths.Count == 0) return (0, null);
+        var done = 0;
+        using var host = WebsiteHost.Start(outDir);
+        await RunBrowserAsync(browser, 1440, 900, Math.Clamp(15 + relPaths.Count * 4, 30, 900), ct, null, async (cdp, tok) =>
+        {
+            await cdp.Call("Page.enable", new { }, tok);
+            foreach (var rel in relPaths)
+            {
+                var file = Path.Combine(outDir, rel.Replace('/', Path.DirectorySeparatorChar));
+                var html = await File.ReadAllTextAsync(file, tok);
+                if (!html.Contains(WebDesignExport.RootMarker, StringComparison.Ordinal)) continue; // schon vorgerendert
+                await cdp.Call("Page.navigate", new { url = host.Origin + "/" + string.Join('/', rel.Split('/').Select(Uri.EscapeDataString)) + "?vorrendern" }, tok);
+                await WaitReady(cdp, tok);
+                await Task.Delay(150, tok);
+                var inner = ResultValue(await cdp.Call("Runtime.evaluate", new { expression = "(function(){var r=document.getElementById('root');return document.documentElement.dataset.fertig==='1'&&r?r.innerHTML:'';})()", returnByValue = true }, tok));
+                if (inner.Length == 0) continue;
+                html = html.Replace(WebDesignExport.RootMarker, "<div id=\"root\">" + inner + "</div>", StringComparison.Ordinal)
+                           .Replace("<noscript>Diese Seite braucht JavaScript.</noscript>\n", "", StringComparison.Ordinal);
+                await File.WriteAllTextAsync(file, html, tok);
+                done++;
+            }
+        });
+        return (done, done < relPaths.Count ? $"{relPaths.Count - done} Seite(n) ließen sich nicht vorrendern." : null);
+    }
+
+    /// <summary>Chrome ohne Fenster starten, mit dem Debug-Kanal verbinden und <paramref name="work"/> ausführen. Danach endet Chrome samt Hilfsprozessen sicher.</summary>
+    static async Task RunBrowserAsync(string browser, int width, int height, int seconds, CancellationToken ct, Action<JsonElement>? onEvent, Func<Cdp, CancellationToken, Task> work)
     {
         var profile = Path.Combine(Path.GetTempPath(), "trendo-chrome-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(profile);
@@ -82,21 +152,21 @@ public static class WebsitePreview
         _ = process.StandardError.ReadToEndAsync();
         using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        timeout.CancelAfter(TimeSpan.FromSeconds(45));
+        timeout.CancelAfter(TimeSpan.FromSeconds(seconds));
         ClientWebSocket? socket = null;
         // ReceiveAsync und GetStringAsync lassen den Abbruch auf diesem Chrome oft liegen. Dann bleibt der Prozess stehen.
         using var wake = timeout.Token.Register(() => Cut(socket, http, process));
         try
         {
-            var work = TakeShot();
-            var done = await Task.WhenAny(work, Task.Delay(TimeSpan.FromSeconds(45))); // Prüfung 04.11.2026: unter Last (oder auf langsamen PCs) reichten 27 s nicht
-            if (done != work)
+            var task = Run();
+            var done = await Task.WhenAny(task, Task.Delay(TimeSpan.FromSeconds(seconds))); // Prüfung 04.11.2026: unter Last (oder auf langsamen PCs) reichten 27 s nicht
+            if (done != task)
             {
                 Cut(socket, http, process);
-                var again = await Task.WhenAny(work, Task.Delay(TimeSpan.FromSeconds(2)));
-                if (again != work) throw new TimeoutException("Die Vorschau hat nicht rechtzeitig geantwortet.");
+                var again = await Task.WhenAny(task, Task.Delay(TimeSpan.FromSeconds(2)));
+                if (again != task) throw new TimeoutException("Die Vorschau hat nicht rechtzeitig geantwortet.");
             }
-            await work;
+            await task;
         }
         finally
         {
@@ -107,39 +177,12 @@ public static class WebsitePreview
             try { Directory.Delete(profile, true); } catch { /* Chrome hält die Datei manchmal noch */ }
         }
 
-        async Task TakeShot()
+        async Task Run()
         {
             var wsUrl = await PageSocket(http, port, timeout.Token);
             socket = new ClientWebSocket();
             await socket.ConnectAsync(new Uri(wsUrl), timeout.Token);
-            var cdp = new Cdp(socket) { OnEvent = errors is null ? null : e => Collect(e, errors) };
-            await cdp.Call("Page.enable", new { }, timeout.Token);
-            if (errors is not null) { await cdp.Call("Runtime.enable", new { }, timeout.Token); await cdp.Call("Log.enable", new { }, timeout.Token); }
-            await cdp.Call("Emulation.setDeviceMetricsOverride", new { width, height, deviceScaleFactor = 1, mobile = width < 700 }, timeout.Token);
-            await cdp.Call("Page.navigate", new { url }, timeout.Token);
-            var until = DateTime.UtcNow.AddSeconds(8);
-            while (DateTime.UtcNow < until)
-            {
-                timeout.Token.ThrowIfCancellationRequested();
-                var state = await cdp.Call("Runtime.evaluate", new { expression = "document.documentElement && document.documentElement.dataset.fertig || ''", returnByValue = true }, timeout.Token);
-                var value = ResultValue(state);
-                if (value == "1") break;
-                await Task.Delay(120, timeout.Token);
-            }
-            await Task.Delay(errors is null ? 400 : 1200, timeout.Token); // beim echten Test etwas länger laufen lassen, damit späte Fehler auffallen
-            if (errors is not null) await cdp.Call("Runtime.evaluate", new { expression = "1" }, timeout.Token); // ausstehende Meldungen abholen
-            if (domPath is not null)
-            {
-                var dom = await cdp.Call("Runtime.evaluate", new { expression = "document.documentElement.outerHTML", returnByValue = true }, timeout.Token);
-                await File.WriteAllTextAsync(domPath, "<!doctype html>\n" + ResultValue(dom), timeout.Token);
-                var over = await cdp.Call("Runtime.evaluate", new { expression = "Math.max(document.documentElement.scrollWidth, document.body ? document.body.scrollWidth : 0) - window.innerWidth", returnByValue = true }, timeout.Token);
-                if (errors is not null && double.TryParse(ResultValue(over), System.Globalization.CultureInfo.InvariantCulture, out var extra) && extra > 1)
-                    lock (errors) errors.Add($"Waagerechtes Scrollen bei {width} Pixeln Breite ({extra:0} Pixel zu breit).");
-            }
-            var shot = await cdp.Call("Page.captureScreenshot", new { format = "png" }, timeout.Token);
-            var data = ResultString(shot, "data");
-            if (string.IsNullOrWhiteSpace(data)) throw new InvalidOperationException("Chrome hat kein Bild geliefert.");
-            await File.WriteAllBytesAsync(pngPath, Convert.FromBase64String(data), timeout.Token);
+            await work(new Cdp(socket) { OnEvent = onEvent }, timeout.Token);
         }
     }
 

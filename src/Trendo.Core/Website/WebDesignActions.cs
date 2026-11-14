@@ -109,6 +109,9 @@ public static partial class WebDesignActions
             D(("text", "© Mein Laden"), ("links", new JsonArray()), ("impressum", "impressum.html"), ("datenschutz", "datenschutz.html"))),
         // W5: Verwendung einer Komponente; Inhalt kommt aus dem Original, Änderungen nur über die Komponenten-Aktionen
         ["Komponente"] = new(new(), D()),
+        // W2: Liste der Einträge einer Sammlung aus dem CMS
+        ["Sammlung"] = new(new() { ["titel"] = T, ["sammlung"] = T, ["anzahl"] = new(Art.Zahl, Min: 1, Max: 100), ["sortierung"] = new(Art.Wahl, ["alphabetisch", "neueste"]) },
+            D(("titel", ""), ("sammlung", ""), ("anzahl", 12), ("sortierung", "alphabetisch"))),
         ["Stapel"] = new(new() { ["inhalt"] = new(Art.Slot), ["richtung"] = new(Art.Wahl, ["senkrecht", "waagerecht"]), ["abstand"] = new(Art.Stufe, Min: 0, Max: 4), ["breite"] = new(Art.Wahl, ["passt", "fuellt"]), ["ausrichtung"] = new(Art.Wahl, ["start", "mitte", "ende"]) },
             D(("richtung", "senkrecht"), ("abstand", 2), ("breite", "passt"), ("ausrichtung", "start"))),
     };
@@ -116,6 +119,17 @@ public static partial class WebDesignActions
     public static IReadOnlyCollection<string> ComponentNames => Bausteine.Keys;
     /// <summary>Felder eines Bausteins, die Bereiche für weitere Bausteine sind.</summary>
     public static IReadOnlyCollection<string> SlotFields(string type) => Bausteine.TryGetValue(type, out var b) ? b.Felder.Where(f => f.Value.Art == Art.Slot).Select(f => f.Key).ToList() : [];
+    /// <summary>Z5: übersetzbare Textfelder eines Bausteins; bei Listen das Listenfeld mit seinem Unterfeld. Kennungen wie „sammlung“ zählen nicht.</summary>
+    public static IReadOnlyList<(string Feld, string? Sub)> TextFields(string type)
+    {
+        if (!Bausteine.TryGetValue(type, out var b)) return [];
+        var list = new List<(string, string?)>();
+        foreach (var (k, f) in b.Felder)
+            if (f.Art == Art.Text && !(type == "Sammlung" && k == "sammlung")) list.Add((k, null));
+            else if (f.Art == Art.Liste) foreach (var (sk, sf) in f.Sub!) if (sf.Art == Art.Text) list.Add((k, sk));
+        return list;
+    }
+
     /// <summary>Feldnamen eines Bausteins (für den Abgleich mit dem Editor).</summary>
     public static IReadOnlyCollection<string> ComponentFields(string name) => Bausteine[name].Felder.Keys;
 

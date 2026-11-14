@@ -72,13 +72,16 @@ export function tokens(t) {
 
 // W1: Daten der ganzen Seite, damit die Seite die Anpassungen je Ansicht als Container-Regeln zeichnen kann (nur Editor und Vorschau; der Export bekommt Medienregeln von Trendo)
 const DataCtx = React.createContext(null);
+const VORRENDERN = typeof location !== "undefined" && location.search.includes("vorrendern");
 function PageRoot({ children, p }) {
   const data = React.useContext(DataCtx);
   const ref = useRef(null);
-  // W4: Bewegungen und Zeitleisten starten; bei „weniger Bewegung“ startet nichts und alles bleibt sichtbar
-  useEffect(() => starteBewegungen(ref.current), [data]);
+  // W4: Bewegungen und Zeitleisten starten; bei „weniger Bewegung“ startet nichts und alles bleibt sichtbar.
+  // W3: Beim Vorrendern (Trendo legt den Inhalt ins HTML) läuft keine Bewegung, damit der ruhende Zustand gespeichert wird.
+  useEffect(() => { if (!VORRENDERN) return starteBewegungen(ref.current); }, [data]);
   useEffect(() => {
     const el = ref.current;
+    if (VORRENDERN) return;
     if (p.uebergang === "einblenden" && el && !el.ownerDocument.defaultView?.matchMedia?.("(prefers-reduced-motion: reduce)").matches && el.animate) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 450, easing: "ease-out" });
   }, []);
   return (
@@ -234,6 +237,15 @@ function rahmenProps(p) {
   return r;
 }
 
+// W2: Sammlung aus dem CMS wählen (Liste setzt Trendo beim Lesen in root.props.sammlungen)
+function SammlungWahl({ value, onChange }) {
+  const liste = usePuckSel((s) => (Array.isArray(s.appState.data.root?.props?.sammlungen) ? s.appState.data.root.props.sammlungen : LEER));
+  return <div className="t-anp"><b>Sammlung</b>
+    {liste.length === 0 ? <p>Noch keine Sammlung. Anlegen in Trendo unter „Inhalte (CMS)“.</p> :
+      <select className="t-anp-ansicht" aria-label="Sammlung" value={value || ""} onChange={(e) => onChange(e.target.value)}><option value="">– wählen –</option>{liste.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>}
+  </div>;
+}
+
 // Z7: Bild aus den Medien des Projekts wählen oder einen Pfad eingeben
 function BildWahl({ value, onChange, label }) {
   const medien = usePuckSel((s) => (Array.isArray(s.appState.data.root?.props?.medien) ? s.appState.data.root.props.medien : LEER));
@@ -254,12 +266,16 @@ const baseConfig = {
     aufbau: { title: "Aufbau", components: ["Bereich", "Spalten", "Stapel", "Komponente"] },
     inhalt: { title: "Inhalt", components: ["Kopfbereich", "Ueberschrift", "Text", "Bild", "Knopf"] },
     profi: { title: "Profi-Bausteine", components: ["Navigation", "Hero", "Preise", "Fragen", "Galerie", "Formular", "Fusszeile"] },
+    inhalte: { title: "Inhalte (CMS)", components: ["Sammlung"] },
     effekte: { title: "3D & Bewegung", components: ["Szene3D"] },
   },
   // Modul 05 Design-System: seitenweite Werte als CSS-Variablen – jeder Baustein nutzt sie; Trendo prüft die Werte beim Speichern (nur #Farben, sichere Schriftnamen)
   root: {
     fields: {
       title: { type: "text", label: "Seitentitel" }, description: { type: "textarea", label: "Beschreibung (Suchmaschinen)" },
+      // W3: Vorschaubild beim Teilen und ob Suchmaschinen die Seite aufnehmen
+      vorschaubild: bildFeld("Vorschaubild beim Teilen"),
+      indexieren: { type: "radio", label: "Bei Suchmaschinen", options: [{ label: "Aufnehmen", value: true }, { label: "Nicht aufnehmen", value: false }] },
       accent: { type: "text", label: "Akzentfarbe (#RRGGBB)" }, ink: { type: "text", label: "Textfarbe (#RRGGBB)" }, paper: { type: "text", label: "Hintergrund (#RRGGBB)" },
       font: { type: "select", label: "Schrift", options: [{ label: "Klar (Segoe/Helvetica)", value: "klar" }, { label: "Serif (Georgia)", value: "serif" }, { label: "Rund (Trebuchet)", value: "rund" }, { label: "Technisch (Consolas)", value: "mono" }] },
       radius: { type: "number", label: "Rundung (px)", min: 0, max: 40 }, space: { type: "number", label: "Abstand-Grundwert (px)", min: 4, max: 48 },
@@ -372,6 +388,26 @@ const baseConfig = {
           <p>{text}</p>
           <ul>{(links || []).map((l, i) => <li key={i}><a href={l.href}>{l.label}</a></li>)}{impressum && <li><a href={impressum}>Impressum</a></li>}{datenschutz && <li><a href={datenschutz}>Datenschutz</a></li>}</ul>
         </footer>) },
+    // W2: Einträge einer Sammlung aus dem CMS. Trendo setzt die Liste beim Lesen und im Export fertig ein (props.eintraege); gespeichert wird nur die Wahl.
+    Sammlung: { label: "Sammlung", fields: { titel: { type: "text", label: "Überschrift" },
+        sammlung: { type: "custom", label: "Sammlung", render: ({ value, onChange }) => <SammlungWahl value={value} onChange={onChange} /> },
+        anzahl: { type: "number", label: "Höchstens", min: 1, max: 100 },
+        sortierung: { type: "radio", label: "Reihenfolge", options: [{ label: "Alphabetisch", value: "alphabetisch" }, { label: "Neueste zuerst", value: "neueste" }] }, ...anpassungenFeld(), ...bewegungFelder },
+      defaultProps: { titel: "", sammlung: "", anzahl: 12, sortierung: "alphabetisch" },
+      render: ({ titel, sammlung, eintraege }) => (
+        <section className="t-sammlung">
+          {titel && <h2 className="t-h">{titel}</h2>}
+          {!sammlung ? <div className="t-img t-empty">Sammlung wählen</div> : (eintraege || []).length === 0 ? <div className="t-img t-empty">Noch keine Einträge</div> :
+            <ul className="t-sammlung-liste">{eintraege.map((e, i) => (
+              <li key={i} className="t-karte">
+                {e.bild && <img src={e.bild} alt="" loading="lazy" />}
+                <div className="t-karte-text">
+                  {e.datum && <p className="t-karte-datum">{e.datum}</p>}
+                  <h3>{e.href ? <a href={e.href}>{e.titel}</a> : e.titel}</h3>
+                  {e.text && <p>{e.text}</p>}
+                </div>
+              </li>))}</ul>}
+        </section>) },
     Komponente: { label: "Komponente", fields: {
         komponente: { type: "custom", label: "Komponente", render: ({ value, onChange }) => <KomponenteWahl value={value} onChange={onChange} /> },
         ueberschreibungen: { type: "custom", label: "Felder", render: ({ value, onChange }) => <UeberschreibungenFeld value={value} onChange={onChange} /> }, ...anpassungenFeld(), ...bewegungFelder },

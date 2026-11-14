@@ -99,6 +99,17 @@ body { margin: 0; background: #fff; font-family: "Segoe UI", Inter, system-ui, s
 .t-frage summary::-webkit-details-marker { display: none; }
 .t-frage summary svg { flex: none; transition: transform .2s; } .t-frage[open] summary svg { transform: rotate(180deg); }
 .t-frage p { margin: 0 0 14px; line-height: 1.6; }
+/* W2: Liste aus einer Sammlung */
+.t-sammlung { padding: calc(var(--t-space) * 2) var(--t-space); }
+.t-sammlung .t-h { padding: 0 0 var(--t-space); }
+.t-sammlung-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--t-space); grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); }
+.t-karte { display: flex; flex-direction: column; border-radius: var(--t-radius); overflow: hidden; background: color-mix(in srgb, var(--t-ink) 4%, var(--t-paper)); }
+.t-karte img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; }
+.t-karte-text { padding: calc(var(--t-space) * .75); }
+.t-karte h3 { margin: 0 0 6px; font-size: calc(1.15rem * var(--t-schrift, 1)); }
+.t-karte h3 a { color: inherit; }
+.t-karte p { margin: 0; color: color-mix(in srgb, var(--t-ink) 78%, var(--t-paper)); }
+.t-karte-datum { font-size: .85rem; margin-bottom: 4px !important; }
 .t-galerie-raster { list-style: none; margin: 0; padding: 0; display: grid; gap: calc(var(--t-space) * .5); grid-template-columns: repeat(var(--t-galerie-spalten, 3), minmax(0, 1fr)); }
 @container seite (max-width: 600px) { .t-galerie-raster { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .t-galerie-raster img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: calc(var(--t-radius) / 1.5); display: block; }
