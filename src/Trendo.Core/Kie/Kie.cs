@@ -225,6 +225,7 @@ public static partial class KieModels
             => [KieKind.Bild, KieKind.BildBearbeiten, KieKind.Freistellen, KieKind.Hochskalieren],
         "STUDIO-FILM-01" or "CORE-08" => [KieKind.Video, KieKind.Bild, KieKind.Avatar, KieKind.Sprache, KieKind.Musik, KieKind.BildBearbeiten],
         "STUDIO-ANIM-01" => [KieKind.Video, KieKind.Bild, KieKind.Freistellen],
+        "STUDIO-VIDEOAI-01" => [KieKind.Video, KieKind.Bild, KieKind.Avatar],
         "STUDIO-MUSIK-01" => [KieKind.Musik, KieKind.Video, KieKind.Bild],
         "STUDIO-PODCAST-01" => [KieKind.Sprache, KieKind.Musik, KieKind.Avatar, KieKind.Bild],
         "STUDIO-BOOK-01" => [KieKind.Bild, KieKind.Sprache],
