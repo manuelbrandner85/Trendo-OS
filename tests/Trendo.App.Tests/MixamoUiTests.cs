@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Text;
 using System.Text.Json.Nodes;
 using Avalonia.Controls;
@@ -15,11 +16,12 @@ public class Mixamo_Ui
     const string GK = "spiele-programm";
     static void Pump() { for (var i = 0; i < 8; i++) Dispatcher.UIThread.RunJobs(); }
 
-    static string Fbx(string dir, string name, bool mesh)
+    static string Fbx(string dir, string name, bool mesh, bool anim = false)
     {
         var b = new List<byte>(Encoding.ASCII.GetBytes("Kaydara FBX Binary  \0")); b.AddRange(new byte[500]);
         b.AddRange(Encoding.ASCII.GetBytes("mixamorig:Hips\0\u0001Model"));
         if (mesh) b.AddRange(Encoding.ASCII.GetBytes("Body\0\u0001Geometry"));
+        if (anim) b.AddRange(Encoding.ASCII.GetBytes("\0\u0001AnimCurve"));
         var f = Path.Combine(dir, name); File.WriteAllBytes(f, [.. b]); return f;
     }
 
@@ -37,11 +39,19 @@ public class Mixamo_Ui
             w.Find<Button>("game-mixamo-open").Press(); Pump();
             Assert.Equal("Testmodus: mixamo.com wird nicht geladen.", w.Find<TextBlock>("game-mixamo-web").Text);
             // M2: neue Dateien im Download-Ordner
-            Fbx(dl, "Y Bot.fbx", true); Fbx(dl, "Walking.fbx", false); Fbx(dl, "Jumping.fbx", false);
+            Fbx(dl, "Y Bot.fbx", true); Fbx(dl, "Walking.fbx", true, anim: true); // Mixamos Standard „With Skin“
+            var pack = Path.Combine(dl, "Jump Pack.zip");
+            using (var z = System.IO.Compression.ZipFile.Open(pack, System.IO.Compression.ZipArchiveMode.Create)) z.CreateEntryFromFile(Fbx(root, "Jumping.fbx", false), "Jumping.fbx");
             File.WriteAllText(Path.Combine(dl, "fremd.fbx"), "kein Mixamo");
-            Assert.Equal(3, w.MixamoScan(d).Count);
-            Assert.Empty(w.MixamoScan(d)); // nichts doppelt
+            Assert.Equal(3, (await w.MixamoScan(d)).Count);
+            Assert.Empty(await w.MixamoScan(d)); // nichts doppelt, auch das Paket nicht
             Assert.Equal(3, Mixamo.Assets(d.Data).Count);
+            Assert.Equal("animation", (string?)Mixamo.Assets(d.Data).First(a => ((string)a["file"]!).EndsWith("Walking.fbx"))["kind"]);
+            // gleichnamige neue Datei: eigener Name, alte bleibt
+            Fbx(dl, "Walking.fbx", false); File.SetLastWriteTime(Path.Combine(dl, "Walking.fbx"), DateTime.Now);
+            Assert.Equal(["Walking-2.fbx"], await w.MixamoScan(d));
+            Assert.Empty(await w.MixamoScan(d));
+            d.Edit("weg", x => { var a = (System.Text.Json.Nodes.JsonArray)x["assets"]!; a.Remove(a.OfType<JsonObject>().First(o => ((string)o["file"]!).EndsWith("Walking-2.fbx"))); });
             Assert.All(Mixamo.Assets(d.Data), a => Assert.Equal(Mixamo.License, (string?)a["license"]));
             Assert.Equal(["gehen", "springen"], Mixamo.Assignments(d.Data).Keys.Order());
             w.Show(GK); Pump();
@@ -50,6 +60,8 @@ public class Mixamo_Ui
             w.Find<ComboBox>("game-mixamo-act-laufen").SelectedItem = "Walking.fbx"; Pump();
             Assert.EndsWith("Walking.fbx", Mixamo.Assignments(d.Data)["laufen"]);
             Assert.NotNull(w.Find<Button>("game-mixamo-act-fallen-s0"));
+            Assert.NotNull(w.Find<Button>("game-mixamo-signout")); // Browser war offen
+            Assert.NotNull(w.Find<StackPanel>("game-mixamo-files"));
             // M4: Blender (Testersatz)
             IReadOnlyDictionary<string, string>? asked = null; string? fig = null;
             w.MixamoPrepOverride = (figure, anims, outDir, motion) =>

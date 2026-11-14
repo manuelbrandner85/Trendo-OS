@@ -22,10 +22,11 @@ public partial class MainWindow
     public Func<string, string, MixamoBlender.RiggerReport>? MixamoRiggerOverride { get; set; }
 
     bool _mxWebOpen, _mxBusy; string _mxMsg = ""; string _mxMotion = MixamoBlender.InPlace;
-    DateTime _mxSince = DateTime.Now.AddHours(-1);
-    NativeWebView? _mxWeb; FileSystemWatcher? _mxWatch;
+    DateTime _mxSince = DateTime.Now.AddDays(-1); // Doppelte verhindert Known (Name und Größe), nicht die Zeit
+    NativeWebView? _mxWeb; FileSystemWatcher? _mxWatch; Avalonia.Threading.DispatcherTimer? _mxTimer; bool _mxScanning;
 
     string MixamoDir(ProgramDocument d, string sub) => Path.Combine(GameAssetDir(d), sub);
+    string MixamoProfile => Path.Combine(_core.DataRoot, "web-mixamo");
 
     string? BlenderExePath() => GameEnginesSeen().FirstOrDefault(e => e.Id == "blender" && e.Installed)?.Exe;
 
@@ -34,13 +35,20 @@ public partial class MainWindow
     NativeWebView MixamoWeb()
     {
         if (_mxWeb is not null) return _mxWeb;
+        var profile = MixamoProfile;
+        if (File.Exists(profile + ".loeschen")) { try { Directory.Delete(profile, true); File.Delete(profile + ".loeschen"); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } }
         var web = new NativeWebView { Name = "game-mixamo-web", Height = 620 };
-        var profile = Path.Combine(_core.DataRoot, "web-mixamo"); // eigenes Profil: die Anmeldung bleibt in Trendo, Trendo liest keine Anmeldedaten
+        // eigenes Profil: die Anmeldung bleibt in Trendo, Trendo liest keine Anmeldedaten; „Abmelden“ löscht es
         web.EnvironmentRequested += (_, e) => { if (e is WindowsWebView2EnvironmentRequestedEventArgs w) { Directory.CreateDirectory(profile); w.UserDataFolder = profile; } };
+        web.NavigationStarted += (_, e) =>
+        {
+            // im Fenster bleiben nur Mixamo und die Anmeldung; alles andere öffnet der normale Browser
+            if (e.Request is { } u && !Mixamo.Inside(u)) { e.Cancel = true; if (u.Scheme == "https") Launch(u.AbsoluteUri); }
+        };
         web.NewWindowRequested += (_, e) =>
         {
             if (e.Request is { } u && Mixamo.Inside(u)) { e.Handled = false; return; } // Adobe-Anmeldefenster in Trendo lassen
-            if (e.Request is { } l && l.Scheme is "https" or "http") Launch(l.AbsoluteUri);
+            if (e.Request is { } l && l.Scheme == "https") Launch(l.AbsoluteUri);
             e.Handled = true;
         };
         return _mxWeb = web;
@@ -48,8 +56,23 @@ public partial class MainWindow
 
     void MixamoGo(string url)
     {
-        _mxWebOpen = true; _mxSince = DateTime.Now; MixamoWatch();
+        _mxWebOpen = true; MixamoWatch();
         if (!_opt.Isolated) MixamoWeb().Navigate(new Uri(url));
+        Show(GK);
+    }
+
+    /// <summary>Abmelden: Browser schließen und das Mixamo-Profil (Sitzung, Cookies) löschen; klappt das nicht sofort, beim nächsten Öffnen.</summary>
+    public void MixamoSignOut()
+    {
+        _mxWebOpen = false; _mxWeb = null; Show(GK);
+        var profile = MixamoProfile;
+        try { if (Directory.Exists(profile)) Directory.Delete(profile, true); _mxMsg = "✓ Abgemeldet – die Mixamo-Sitzung ist gelöscht."; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            try { File.WriteAllText(profile + ".loeschen", ""); } catch (IOException) { }
+            _mxMsg = "Abgemeldet – die Sitzung wird beim nächsten Öffnen gelöscht (sie ist gerade noch in Benutzung).";
+        }
+        _core.Audit.Append(Principal.LocalOwner.Name, "game.mixamo.abmelden", "");
         Show(GK);
     }
 
@@ -60,29 +83,85 @@ public partial class MainWindow
         if (_mxWatch is not null || _opt.Isolated || !Directory.Exists(BibDownloads)) return;
         try
         {
-            _mxWatch = new FileSystemWatcher(BibDownloads, "*.fbx") { NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.Size, EnableRaisingEvents = true };
-            void Seen(object? _, FileSystemEventArgs __) => _ui.Post(async () => { await Task.Delay(1500); if (ProgramActive(GK) is { } d) MixamoScan(d); }); // fertig schreiben lassen
+            _mxWatch = new FileSystemWatcher(BibDownloads) { NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.Size, EnableRaisingEvents = true };
+            _mxWatch.Filters.Add("*.fbx"); _mxWatch.Filters.Add("*.zip");
+            void Seen(object? _, FileSystemEventArgs __) => _ui.Post(MixamoSoon);
             _mxWatch.Created += Seen; _mxWatch.Renamed += (s, e) => Seen(s, e); _mxWatch.Changed += Seen;
         }
         catch (Exception e) when (e is IOException or ArgumentException or UnauthorizedAccessException) { _mxWatch = null; }
     }
 
-    /// <summary>Neue Mixamo-Dateien im Download-Ordner übernehmen (auch per Knopf). Liefert die übernommenen Dateinamen.</summary>
-    public List<string> MixamoScan(ProgramDocument d)
+    /// <summary>Viele Ereignisse beim Schreiben einer Datei: gesammelt, erst 2 s nach dem letzten wird geprüft.</summary>
+    void MixamoSoon()
+    {
+        _mxTimer ??= new Avalonia.Threading.DispatcherTimer(TimeSpan.FromSeconds(2), Avalonia.Threading.DispatcherPriority.Background, (_, _) => { _mxTimer!.Stop(); if (ProgramActive(GK) is { } d) _ = MixamoScan(d); });
+        _mxTimer.Stop(); _mxTimer.Start();
+    }
+
+    /// <summary>Neue Mixamo-Dateien (FBX und Pakete als ZIP) aus dem Download-Ordner übernehmen, auch per Knopf. Prüfen, Entpacken und Kopieren laufen im
+    /// Hintergrund; übernommen wird nur, was fertig geschrieben ist (Größe stabil, Datei frei). Liefert die übernommenen Dateinamen.</summary>
+    public async Task<List<string>> MixamoScan(ProgramDocument d)
     {
         var taken = new List<string>();
-        foreach (var f in DownloadPickup.NewFiles(BibDownloads, _mxSince, [".fbx"]))
+        if (_mxScanning) return taken;
+        _mxScanning = true;
+        try
         {
-            if (!Mixamo.Detect(f).IsMixamo || Mixamo.Known(d.Data, f)) continue; // schon übernommen: kein leerer Schritt im Verlauf
+            var seenZips = d.Meta["mixamoZips"] as JsonArray ?? [];
+            var candidates = DownloadPickup.NewFiles(BibDownloads, _mxSince, [".fbx", ".zip"])
+                .Where(f => Path.GetExtension(f).Equals(".zip", StringComparison.OrdinalIgnoreCase) ? !seenZips.Any(z => (string?)z == ZipKey(f)) : !Mixamo.Known(d.Data, f)).ToList();
+            if (candidates.Count == 0) return taken;
+            var dir = MixamoDir(d, "mixamo");
+            var known = Mixamo.Assets(d.Data).Select(a => Path.GetFileName((string?)a["file"] ?? "")).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var (ready, zips) = await Task.Run(() => MixamoPrepare(candidates, dir, known));
+            foreach (var (file, info, origin) in ready)
+                try
+                {
+                    d.Edit("Mixamo: " + Path.GetFileName(file), x => { if (Mixamo.Take(x, dir, file, info) is { } e) { e["origin"] = origin; e["originBytes"] = info.Bytes; } });
+                    taken.Add(Path.GetFileName(file)); _core.Audit.Append(Principal.LocalOwner.Name, "game.mixamo.uebernommen", Path.GetFileName(file));
+                }
+                catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or UnauthorizedAccessException) { _mxMsg = "⚠ " + ex.Message; }
+            if (zips.Count > 0) d.EditMeta(m => { var a = m["mixamoZips"] as JsonArray ?? []; foreach (var z in zips) a.Add(z); m["mixamoZips"] = a; });
+            if (taken.Count > 0) { _mxMsg = $"✓ Übernommen: {string.Join(", ", taken)} (Quelle Mixamo, nur im fertigen Spiel)."; GameRefresh(); }
+        }
+        finally { _mxScanning = false; }
+        return taken;
+    }
+
+    static string ZipKey(string f) { try { return Path.GetFileName(f) + "|" + new FileInfo(f).Length; } catch (IOException) { return Path.GetFileName(f); } }
+
+    /// <summary>Hintergrund: fertig geschriebene Dateien finden, Mixamo erkennen, ZIP-Pakete entpacken, in den Asset-Ordner kopieren (eigener Name bei Gleichnamigen).</summary>
+    static (List<(string File, Mixamo.Info Info, string Origin)> Ready, List<string> Zips) MixamoPrepare(List<string> files, string dir, HashSet<string> taken)
+    {
+        var size = files.ToDictionary(f => f, f => { try { return new FileInfo(f).Length; } catch (IOException) { return -1L; } });
+        Thread.Sleep(700);
+        var ready = new List<(string, Mixamo.Info, string)>(); var zips = new List<string>();
+        foreach (var f in files)
+        {
             try
             {
-                d.Edit("Mixamo: " + Path.GetFileName(f), x => Mixamo.Take(x, MixamoDir(d, "mixamo"), f));
-                taken.Add(Path.GetFileName(f)); _core.Audit.Append(Principal.LocalOwner.Name, "game.mixamo.uebernommen", Path.GetFileName(f));
+                if (new FileInfo(f).Length != size[f] || size[f] <= 0) continue; // wird noch geschrieben
+                using (File.Open(f, FileMode.Open, FileAccess.Read, FileShare.None)) { } // niemand schreibt mehr
             }
-            catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or UnauthorizedAccessException) { _mxMsg = "⚠ " + ex.Message; }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { continue; }
+            try
+            {
+                var sources = new List<string>();
+                if (Path.GetExtension(f).Equals(".zip", StringComparison.OrdinalIgnoreCase)) { sources.AddRange(Mixamo.FromZip(f, Path.Combine(Path.GetTempPath(), "trendo-mixamo-zip-" + Guid.NewGuid().ToString("N")))); zips.Add(ZipKey(f)); }
+                else sources.Add(f);
+                foreach (var src in sources)
+                {
+                    var info = Mixamo.Detect(src) with { Bytes = new FileInfo(src).Length }; if (!info.IsMixamo) continue;
+                    Directory.CreateDirectory(dir);
+                    var name = Path.GetFileName(src); var target = Path.Combine(dir, name);
+                    for (var i = 2; File.Exists(target) || taken.Contains(Path.GetFileName(target)); i++) target = Path.Combine(dir, $"{Path.GetFileNameWithoutExtension(name)}-{i}{Path.GetExtension(name)}");
+                    File.Copy(src, target); taken.Add(Path.GetFileName(target));
+                    ready.Add((target, info, Path.GetFileName(src)));
+                }
+            }
+            catch (Exception e) when (e is IOException or InvalidDataException or UnauthorizedAccessException) { }
         }
-        if (taken.Count > 0) { _mxMsg = $"✓ Übernommen: {string.Join(", ", taken)} (Quelle Mixamo, nur im fertigen Spiel)."; GameRefresh(); }
-        return taken;
+        return (ready, zips);
     }
 
     // ───────────── M3: eigene Figur zum Auto-Rigger ─────────────
@@ -153,6 +232,7 @@ public partial class MainWindow
             var n = MixamoUnreal.Stage(built, files);
             var (exit, text) = await Task.Run(() => UnrealRun(UnrealGame.EditorCmd(engine), MixamoUnreal.Args(uproject, log), log, 1_800_000));
             var (ok, imported, retargeted, err) = MixamoUnreal.Parse(text);
+            if (ok) MixamoUnreal.Unstage(built); // importiert: die Rohdateien bleiben nicht lose im Projekt liegen
             _core.Audit.Append(Principal.LocalOwner.Name, "game.mixamo.unreal", ok ? $"{imported}/{retargeted}" : "fehler");
             _mxMsg = ok ? $"✓ Unreal: Figur {MixamoUnreal.HeightCm(text)} cm, {imported} von {n} Animation(en) importiert, {retargeted} auf die Engine-Figur übertragen (Ordner Trendo/Mixamo im Projekt)." : $"⚠ Unreal (Exitcode {exit}): {err}";
         }
@@ -168,6 +248,8 @@ public partial class MainWindow
         if (!File.Exists(glb)) throw new InvalidOperationException("Erst „Mit Blender aufbereiten“.");
         var target = Path.Combine(dir, "assets", "mixamo"); Directory.CreateDirectory(target);
         File.Copy(glb, Path.Combine(target, "mixamo.glb"), true);
+        // Godot braucht die Datei im Projekt; damit sie nicht über Git weitergegeben wird, schließt eine .gitignore sie aus
+        File.WriteAllText(Path.Combine(target, ".gitignore"), "# Mixamo-Dateien nur im fertigen Spiel, nicht weitergeben (Mixamo-Bedingungen)\n*.glb\n*.fbx\n");
         _mxMsg = "✓ mixamo.glb liegt in assets/mixamo – Godot importiert sie beim Öffnen (Animationen: " + string.Join(", ", Mixamo.Assignments(d.Data).Keys) + ").";
     }
 
@@ -181,7 +263,7 @@ public partial class MainWindow
         sp.Children.Add(P(Mixamo.Summary(d.Data), Text, 12));
         sp.Children.Add(new WrapPanel { Children = {
             Act("game-mixamo-open", _mxWebOpen ? "Mixamo schließen" : "Mixamo öffnen", () => { if (_mxWebOpen) { _mxWebOpen = false; Show(GK); } else MixamoGo(Mixamo.Url); }, true), new Border { Width = 6 },
-            Act("game-mixamo-scan", "Neue Downloads übernehmen", () => { var t = MixamoScan(d); if (t.Count == 0) { _mxMsg = "Keine neue Mixamo-Datei im Download-Ordner."; Show(GK); } }), new Border { Width = 6 },
+            Act("game-mixamo-scan", "Neue Downloads übernehmen", async () => { var t = await MixamoScan(d); if (t.Count == 0) { _mxMsg = "Keine neue, fertig geladene Mixamo-Datei im Download-Ordner."; Show(GK); } }), new Border { Width = 6 },
             Busy3(Act("game-mixamo-rigger", "Eigene Figur für den Auto-Rigger", () => _ = MixamoPickFigure(d))) } });
         if (_mxWebOpen)
         {
@@ -189,6 +271,23 @@ public partial class MainWindow
             if (view.Parent is Panel old) old.Children.Remove(view); else if (view.Parent is Decorator dec) dec.Child = null;
             sp.Children.Add(new Border { CornerRadius = new CornerRadius(8), ClipToBounds = true, BorderBrush = Edge, BorderThickness = new Thickness(1), Child = view });
             sp.Children.Add(P("Anmelden machst du selbst. Lade Figuren als FBX herunter – Trendo übernimmt neue Dateien aus dem Download-Ordner von selbst.", Muted, 11.5));
+        }
+        if (_mxWebOpen || Directory.Exists(MixamoProfile)) sp.Children.Add(Act("game-mixamo-signout", "Bei Mixamo abmelden (Sitzung löschen)", MixamoSignOut));
+
+        // Übernommene Dateien: Art änderbar (Figur oder Animation)
+        var all = Mixamo.Assets(d.Data);
+        if (all.Count > 0)
+        {
+            var list = new StackPanel { Name = "game-mixamo-files", Spacing = 2 };
+            for (var i = 0; i < all.Count; i++)
+            {
+                var file = all[i]["file"]!.GetValue<string>(); var kind = all[i]["kind"]?.GetValue<string>() ?? "";
+                var other = kind == "figur" ? "animation" : "figur";
+                var b = Act($"game-mixamo-kind-{i}", kind == "figur" ? "ist Animation" : "ist Figur", () => ProgramRun(GK, () => d.Edit("Mixamo-Art", x => Mixamo.SetKind(x, file, other))));
+                b.FontSize = 11; b.Padding = new Thickness(6, 2);
+                list.Children.Add(new DockPanel { Children = { Dk(b, Avalonia.Controls.Dock.Right), new TextBlock { Text = $"{Path.GetFileName(file)} – {(kind == "figur" ? "Figur" : "Animation")}", Foreground = Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center } } });
+            }
+            sp.Children.Add(list);
         }
 
         // M5: Aktionen zuordnen

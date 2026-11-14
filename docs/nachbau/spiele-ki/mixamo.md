@@ -20,8 +20,18 @@ Stand: 14.11.2026. Freigabe des Nutzers: M1 bis M6 („Ja alle“).
 | M5 | Spielaktionen | Stehen, Gehen, Laufen, Springen, Fallen, Getroffen; Zuordnung aus dem Dateinamen, änderbar; je Aktion drei Suchbegriffe, die Mixamo im eingebauten Browser öffnen | Kern- und Oberflächentest |
 | M6 | Lizenzwächter | Erkennt Mixamo-Rohdateien am Inhalt, auch in ZIP und umbenannt; bricht Browser-Paket, ZIP-Weitergabe und Export mit Meldung ab; der fertige Build ist erlaubt | Kerntests, Test „keine Mixamo-Dateien im Repo“ |
 
+## Ergänzungen nach der QA (14.11.2026)
+
+- M1: Auch Seitenwechsel im Fenster werden gefiltert. Im eingebauten Browser bleiben nur mixamo.com, Adobe und die Anmeldung über Google, Apple, Facebook oder Microsoft; alles andere öffnet der normale Browser. „Bei Mixamo abmelden“ löscht die Sitzung; sie wird nicht mitgesichert.
+- M2: Animationen „With Skin“ (Mixamos Standard: Mesh und Kurven) gelten als Animation, wenn der Name eine Aktion verrät; die Art lässt sich je Datei umschalten. Pakete (ZIP) werden mit Größengrenze entpackt. Übernommen wird erst, wenn die Datei fertig geschrieben ist; Prüfen und Kopieren laufen im Hintergrund, Ereignisse werden gebündelt.
+- M4: Mit eigener Figur heißen die Animationen in der GLB genau wie die Spielaktionen. Ohne eigene Figur wird das Skelett der ersten Animation die Figur, alle weiteren werden darauf übertragen. Unreal: wiederholter Lauf im selben Projekt geht (vorhandene Assets werden neu eingestellt); nach dem Import werden die Rohdateien aus dem Projektordner gelöscht. Godot: `.gitignore` in `assets/mixamo`.
+- M6: Erkennung am Dateianfang, unabhängig von der Endung, auch verschachtelte ZIPs (bis Tiefe 3) als Datenstrom mit Größengrenze. Was sich nicht prüfen lässt, gilt als nicht freigegeben.
+
 ## Grenzen
 
 - Kein automatischer Download, keine inoffizielle Schnittstelle, keine gespeicherten Adobe-Anmeldedaten.
 - Die Blender-Übertragung setzt gleiche Knochennamen voraus (Mixamo auf Mixamo-Figur). Andere Skelette überträgt Unreal per IK Retargeter.
 - Gekochte Engine-Pakete (.pak, .pck) prüft der Wächter nicht; darin stecken keine Rohdateien.
+- Drehungen der ganzen Figur (Kurven, Wenden) bleiben an der Hüfte, nicht am Wurzelknochen.
+- Die Blender-Übertragung ist mit gleicher Ruhehaltung geprüft (Testfigur); echte Mixamo-Dateien sind noch nicht durchgelaufen, weil sie nur über das Adobe-Konto der Person kommen.
+- Ein ganzer Engine-Projektordner, der außerhalb von Trendo weitergegeben wird, ist nicht überwacht.

@@ -150,8 +150,12 @@ def bake_root(arm, act, keep_root):
         bpy.context.view_layer.update()
         hips.matrix = arm.matrix_world.inverted() @ (world[i] if keep_root else Matrix.Translation(-d) @ world[i])
         hips.keyframe_insert("location", frame=f); hips.keyframe_insert("rotation_quaternion", frame=f)
-    sc.frame_set(e); bpy.context.view_layer.update()
-    drift = ((arm.matrix_world @ hips.matrix).translation - (arm.matrix_world @ root.matrix).translation - (world[0].translation - p0) - p0).xy.length
+    # Messung über alle Bilder: wie weit weicht die Hüfte (in der Ebene) von ihrem Platz über dem Wurzelknochen ab?
+    drift = 0.0
+    for f in range(s, e + 1):
+        sc.frame_set(f); bpy.context.view_layer.update()
+        off = (arm.matrix_world @ hips.matrix).translation - (arm.matrix_world @ root.matrix).translation
+        drift = max(drift, (off - p0).xy.length)
     return round(before, 4), round(drift, 4)
 
 def retarget(src, dst, act):
@@ -210,25 +214,25 @@ for spec in anims:
     scale = to_meters(arm, meshes)
     fps = bpy.context.scene.render.fps
     travel, drift = bake_root(arm, act, motion == "root")
-    act.name = action_id
     entry = {"action": action_id, "source": os.path.basename(path), "renamed": renamed, "scaleFromFile": round(scale, 6), "frames": frames(act)[1] - frames(act)[0] + 1, "fps": fps, "travel": travel, "drift": drift}
     if fig_arm is not None:
+        act.name = action_id + "_quelle"   # Name frei halten: die übertragene Aktion heißt genau wie die Spielaktion (sonst „gehen.001“)
         new, matched, total, ratio = retarget(arm, fig_arm, act)
         new.name = action_id; new.use_fake_user = True; actions.append(new)
         entry.update({"matched": matched, "bones": total, "heightRatio": ratio})
-        target = [fig_arm] + fig_meshes
+        for o in objs: bpy.data.objects.remove(o)  # Quelle wird nicht mehr gebraucht
     else:
-        act.use_fake_user = True; actions.append(act)
+        # ohne eigene Figur: das Skelett der ersten Animation wird die Figur, alle weiteren werden darauf übertragen
+        act.name = action_id; act.use_fake_user = True; actions.append(act)
+        fig_arm = arm; fig_meshes = meshes
         entry.update({"matched": len(arm.data.bones), "bones": len(arm.data.bones), "heightRatio": 1.0})
-        target = [arm] + meshes
         h, _ = height(meshes); entry["height"] = round(h, 4)
-    out = os.path.join(outdir, action_id + ".fbx"); export_fbx(out, target, actions[-1]); entry["fbx"] = out
+    target = [fig_arm] + fig_meshes
+    out = os.path.join(outdir, action_id + ".fbx"); fig_arm.animation_data.action = actions[-1]; export_fbx(out, target, actions[-1]); entry["fbx"] = out
     results.append(entry)
-    if fig_arm is None and spec != anims[-1]:
-        for o in objs: bpy.data.objects.remove(o)
 # Godot: eine GLB mit allen Aktionen
 glb = os.path.join(outdir, "mixamo-godot.glb")
-holder = fig_arm if fig_arm is not None else arm_of(list(bpy.data.objects))
+holder = fig_arm
 holder.animation_data_create()
 for a in actions:
     tr = holder.animation_data.nla_tracks.new(); tr.name = a.name; tr.strips.new(a.name, int(a.frame_range[0]), a)

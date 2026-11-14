@@ -15,24 +15,47 @@ public class MixamoTests : IDisposable
     public void Dispose() { try { Directory.Delete(_dir, true); } catch (IOException) { } }
 
     // Nachgebaute FBX-Bytes (Binär-Muster „Name\0\x01Klasse“), keine echten Mixamo-Dateien
-    string Fbx(string name, bool mesh, bool rig = true)
+    string Fbx(string name, bool mesh, bool rig = true, bool anim = false)
     {
         var sb = new List<byte>(Encoding.ASCII.GetBytes("Kaydara FBX Binary  \0"));
         sb.AddRange(new byte[3000]);
         if (rig) sb.AddRange(Encoding.ASCII.GetBytes("mixamorig:Hips\0\u0001Model"));
         else sb.AddRange(Encoding.ASCII.GetBytes("Bip01 Pelvis\0\u0001Model"));
         if (mesh) sb.AddRange(Encoding.ASCII.GetBytes("Body\0\u0001Geometry"));
+        if (anim) sb.AddRange(Encoding.ASCII.GetBytes("\0\u0001AnimCurve"));
         var f = Path.Combine(_dir, name); File.WriteAllBytes(f, [.. sb]); return f;
     }
 
-    [Fact(DisplayName = "M2: Mixamo-Skelett am Inhalt erkannt, Figur und Animation unterschieden, fremde Dateien nicht")]
+    [Fact(DisplayName = "M2: Mixamo-Skelett am Inhalt erkannt; Animation „With Skin“ (Mesh und Kurven) ist Animation, Figur bleibt Figur; fremde Dateien nicht")]
     public void Detect()
     {
-        Assert.Equal(new Mixamo.Info(true, true), Mixamo.Detect(Fbx("Ch01.fbx", true)));
-        Assert.Equal(new Mixamo.Info(true, false), Mixamo.Detect(Fbx("Walking.fbx", false)));
+        var fig = Mixamo.Detect(Fbx("Ch01.fbx", true)); Assert.Equal(new Mixamo.Info(true, true), fig);
+        Assert.Equal("figur", Mixamo.KindOf("Ch01.fbx", fig));
+        Assert.Equal("animation", Mixamo.KindOf("Walking.fbx", Mixamo.Detect(Fbx("Walking.fbx", false))));
+        var withSkin = Mixamo.Detect(Fbx("Running.fbx", true, anim: true));
+        Assert.True(withSkin.HasMesh && withSkin.HasAnim);
+        Assert.Equal("animation", Mixamo.KindOf("Running.fbx", withSkin)); // Mixamos Standard „With Skin“
+        Assert.Equal("figur", Mixamo.KindOf("Y Bot.fbx", Mixamo.Detect(Fbx("Y Bot.fbx", true, anim: true)))); // Figur-Download mit T-Haltung
         Assert.False(Mixamo.Detect(Fbx("andere.fbx", true, rig: false)).IsMixamo);
         File.WriteAllText(Path.Combine(_dir, "notiz.txt"), "mixamorig");
         Assert.False(Mixamo.Detect(Path.Combine(_dir, "notiz.txt")).IsMixamo); // nur 3D-Formate
+    }
+
+    [Fact(DisplayName = "M2: Art umschalten passt Zuordnung und gewählte Figur an; Pakete (ZIP) liefern ihre Mixamo-FBX")]
+    public void Kind_and_zip()
+    {
+        var d = new JsonObject(); var assets = Path.Combine(_dir, "assets");
+        var e = Mixamo.Take(d, assets, Fbx("Seltsam Walk.fbx", true))!; // Mesh ohne Kurven: Figur
+        Assert.Equal("figur", (string?)e["kind"]); Assert.Equal((string?)e["file"], (string?)d["mixamoFigure"]);
+        Mixamo.SetKind(d, (string)e["file"]!, "animation");
+        Assert.Equal("animation", (string?)e["kind"]); Assert.Null(d["mixamoFigure"]); Assert.Equal((string?)e["file"], Mixamo.Assignments(d)["gehen"]);
+        Mixamo.SetKind(d, (string)e["file"]!, "figur");
+        Assert.Empty(Mixamo.Assignments(d));
+        var zip = Path.Combine(_dir, "pack.zip");
+        using (var z = ZipFile.Open(zip, ZipArchiveMode.Create)) { z.CreateEntryFromFile(Fbx("Jump.fbx", false), "pack/Jump.fbx"); z.CreateEntryFromFile(Fbx("x.fbx", true, rig: false), "pack/x.fbx"); z.CreateEntry("../../boese.fbx"); }
+        var got = Mixamo.FromZip(zip, Path.Combine(_dir, "aus-zip"));
+        Assert.Equal(["Jump.fbx"], got.Select(Path.GetFileName));
+        Assert.All(got, g => Assert.StartsWith(Path.Combine(_dir, "aus-zip"), g));
     }
 
     [Fact(DisplayName = "M1: Im eingebauten Browser bleiben nur Mixamo und die Adobe-Anmeldung")]
@@ -93,6 +116,21 @@ public class MixamoTests : IDisposable
         Assert.Contains("paket.zip › anim/lauf.fbx", Assert.Throws<MixamoLicenseException>(() => MixamoGuard.Ensure(MixamoGuard.Share, [zip])).Files);
         var clean = Path.Combine(_dir, "sauber"); Directory.CreateDirectory(clean); File.Copy(Fbx("andere.fbx", true, rig: false), Path.Combine(clean, "x.fbx"));
         MixamoGuard.Ensure(MixamoGuard.Share, [clean]);
+    }
+
+    [Fact(DisplayName = "M6: Wächter erkennt umbenannte Dateien (.bin), verschachtelte ZIPs; nicht prüfbares Archiv gilt als nicht freigegeben")]
+    public void Guard_hard_cases()
+    {
+        var dir = Path.Combine(_dir, "weitergabe"); Directory.CreateDirectory(dir);
+        File.Copy(Fbx("Walking.fbx", false), Path.Combine(dir, "daten.bin"));
+        Assert.Contains("daten.bin", Assert.Throws<MixamoLicenseException>(() => MixamoGuard.Ensure(MixamoGuard.Share, [dir])).Message);
+        File.Delete(Path.Combine(dir, "daten.bin"));
+        var inner = Path.Combine(_dir, "innen.zip"); using (var z = ZipFile.Open(inner, ZipArchiveMode.Create)) z.CreateEntryFromFile(Path.Combine(_dir, "Walking.fbx"), "a.dat");
+        var outer = Path.Combine(dir, "aussen.zip"); using (var z = ZipFile.Open(outer, ZipArchiveMode.Create)) z.CreateEntryFromFile(inner, "pakete/innen.zip");
+        Assert.Contains("aussen.zip › pakete/innen.zip › a.dat", Assert.Throws<MixamoLicenseException>(() => MixamoGuard.Ensure(MixamoGuard.Package, [dir])).Files);
+        File.Delete(outer);
+        File.WriteAllBytes(Path.Combine(dir, "kaputt.zip"), [(byte)'P', (byte)'K', 3, 4, 1, 2, 3]);
+        Assert.Contains("ließen sich nicht", Assert.Throws<MixamoLicenseException>(() => MixamoGuard.Ensure(MixamoGuard.Share, [dir])).Message);
     }
 
     [Fact(DisplayName = "M6: Browser-Paket und ZIP-Weitergabe des Spiels brechen mit Mixamo-Rohdatei ab")]
@@ -172,5 +210,28 @@ public class MixamoTests : IDisposable
         var root = MixamoBlender.Prep(BlenderExe()!, "", new Dictionary<string, string> { ["gehen"] = Path.Combine(dir, "walking.fbx") }, Path.Combine(dir, "fertig-wurzel"), MixamoBlender.RootMotion);
         Assert.Equal(MixamoBlender.RootMotion, root.Motion);
         Assert.InRange(root.Animations[0].Height, 1.6, 1.9);
+    }
+
+    static List<string> GlbAnimations(string glb)
+    {
+        var b = File.ReadAllBytes(glb); var len = BitConverter.ToInt32(b, 12);
+        var json = JsonNode.Parse(Encoding.UTF8.GetString(b, 20, len))!;
+        return [.. (json["animations"] as JsonArray ?? []).Select(a => (string?)a?["name"] ?? "")];
+    }
+
+    [BlenderFact(DisplayName = "M2 + M4: echte Testdateien richtig eingestuft; zwei Animationen mit und ohne Figur heißen in der GLB genau wie die Spielaktionen")]
+    public void Prep_two_actions()
+    {
+        var dir = Rig();
+        var walk = Path.Combine(dir, "walking.fbx"); var run = Path.Combine(dir, "running.fbx"); File.Copy(walk, run);
+        Assert.Equal("animation", Mixamo.KindOf(walk, Mixamo.Detect(walk))); // „With Skin“: Mesh und Kurven
+        Assert.Equal("figur", Mixamo.KindOf(Path.Combine(dir, "figur.fbx"), Mixamo.Detect(Path.Combine(dir, "figur.fbx"))));
+        var anims = new Dictionary<string, string> { ["gehen"] = walk, ["laufen"] = run };
+        var withFig = MixamoBlender.Prep(BlenderExe()!, Path.Combine(dir, "figur.fbx"), anims, Path.Combine(dir, "mit"), MixamoBlender.InPlace);
+        Assert.Equal(["gehen", "laufen"], GlbAnimations(withFig.Glb).Order());
+        Assert.All(withFig.Animations, a => Assert.True(a.Drift < 0.01));
+        var without = MixamoBlender.Prep(BlenderExe()!, "", anims, Path.Combine(dir, "ohne"), MixamoBlender.InPlace);
+        Assert.Equal(["gehen", "laufen"], GlbAnimations(without.Glb).Order());
+        Assert.Empty(MixamoBlender.Check(without));
     }
 }

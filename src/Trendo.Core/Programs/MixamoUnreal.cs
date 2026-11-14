@@ -28,6 +28,13 @@ public static class MixamoUnreal
     /// <summary>Größe der Figur in Unreal (cm) aus dem Protokoll, 0 wenn nicht gemessen.</summary>
     public static int HeightCm(string log) => System.Text.RegularExpressions.Regex.Matches(log ?? "", @"TRENDO-MIXAMO hoehe_cm=(\d+)").Select(m => int.Parse(m.Groups[1].Value)).LastOrDefault();
 
+    /// <summary>Nach erfolgreichem Import: die Rohdateien im Projektordner löschen (die Assets liegen dann im Content-Ordner).</summary>
+    public static void Unstage(string projectDir)
+    {
+        var dir = Path.Combine(projectDir, FilesRel.Replace('/', Path.DirectorySeparatorChar));
+        if (Directory.Exists(dir)) foreach (var f in Directory.GetFiles(dir, "*.fbx")) File.Delete(f);
+    }
+
     /// <summary>Ergebnis aus dem Protokoll: ok, importierte Animationen, übertragene Animationen, Fehlertext.
     /// Eine Figur außerhalb von 50 bis 300 cm gilt als Maßstabsfehler (bekannte Faktor-100-Falle).</summary>
     public static (bool Ok, int Imported, int Retargeted, string Error) Parse(string log)
@@ -81,9 +88,16 @@ def run():
     # IK Retargeter Mixamo -> Engine-Figur
     if not eal.does_asset_exist(SRC + "Rigs/IK_Mannequin"):
         log("Hinweis: Engine-Figur (MoverExamples) fehlt – Animationen bleiben auf dem Mixamo-Skelett"); log("uebertragen=0"); return ""
-    rig = tools.create_asset("IK_Mixamo", ROOT, unreal.IKRigDefinition, unreal.IKRigDefinitionFactory())
+    # Wiederholter Lauf: vorhandene Assets wiederverwenden und neu einstellen (create_asset liefert sonst nichts); alte Ergebnisse ersetzen
+    def get(name, cls, factory):
+        p = ROOT + "/" + name
+        return unreal.load_asset(p) if eal.does_asset_exist(p) else tools.create_asset(name, ROOT, cls, factory)
+    if eal.does_directory_exist(ROOT + "/Mannequin"): eal.delete_directory(ROOT + "/Mannequin")
+    rig = get("IK_Mixamo", unreal.IKRigDefinition, unreal.IKRigDefinitionFactory())
+    if rig is None: return "IK Rig ließ sich nicht anlegen"
     rc = unreal.IKRigController.get_controller(rig); rc.set_skeletal_mesh(mesh); rc.apply_auto_generated_retarget_definition(); eal.save_loaded_asset(rig)
-    rtg = tools.create_asset("RTG_Mixamo_Mannequin", ROOT, unreal.IKRetargeter, unreal.IKRetargetFactory())
+    rtg = get("RTG_Mixamo_Mannequin", unreal.IKRetargeter, unreal.IKRetargetFactory())
+    if rtg is None: return "IK Retargeter ließ sich nicht anlegen"
     c = unreal.IKRetargeterController.get_controller(rtg)
     dst_rig = unreal.load_asset(SRC + "Rigs/IK_Mannequin"); manny = unreal.load_asset(SRC + "Meshes/SKM_Manny_Simple")
     c.set_ik_rig(unreal.RetargetSourceOrTarget.SOURCE, rig); c.set_ik_rig(unreal.RetargetSourceOrTarget.TARGET, dst_rig)
@@ -94,7 +108,7 @@ def run():
     out = unreal.IKRetargetBatchOperation.duplicate_and_retarget(assets_to_retarget=data, source_mesh=mesh, target_mesh=manny, ik_retarget_asset=rtg,
                                                                  prefix="MN_", target_path=ROOT + "/Mannequin", include_referenced_assets=False)
     eal.save_directory(ROOT)
-    log("uebertragen=%d" % len([p for p in eal.list_assets(ROOT + "/Mannequin", recursive=True) if "MN_" in p]))
+    log("uebertragen=%d" % len([a for a in (out or []) if "MN_" in str(a.get_editor_property("asset_name"))]))  # nur dieser Lauf
     return ""
 
 try:
