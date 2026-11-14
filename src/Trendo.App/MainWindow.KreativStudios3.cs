@@ -614,7 +614,7 @@ public partial class MainWindow
                     if (models.Count == 0) { missing.Add($"{b.Name}: kein Modell geladen"); continue; }
                     foreach (var m in models.Take(12)) found.Add(($"{b.Name}|{m}", $"{b.Name} · {m}", b is IRemoteKiBackend));
                 }
-                catch (Exception ex) when (ex is not OperationCanceledException) { missing.Add($"{b.Name}: {KreativSafe.Cut(ex.Message, 120)}"); }
+                catch (Exception ex) when (ex is not OperationCanceledException) { missing.Add($"{b.Name}: {KreativSafe.Cut(Trendo.Core.FriendlyError.Say(ex), 120)}"); }
             }
         }
         finally { _modelsBusy = false; }
@@ -651,7 +651,7 @@ public partial class MainWindow
                     var a = await core.AskAsync(new KiRequest(q, system.Length > 0 ? system : IntelligenceCore.DefaultSystem, model, UseKnowledge: false, AllowRemote: true));
                     answers.Add(new(label, a.Text, Math.Round(a.Took.TotalSeconds, 2), a.Ok));
                 }
-                catch (Exception ex) when (ex is not OperationCanceledException) { answers.Add(new(label, "Fehler: " + KreativSafe.Cut(ex.Message, 200), 0, false)); }
+                catch (Exception ex) when (ex is not OperationCanceledException) { answers.Add(new(label, "Fehler: " + KreativSafe.Cut(Trendo.Core.FriendlyError.Say(ex), 200), 0, false)); }
             }
             var baseSeed = int.TryParse(d.Text("seed"), out var s) ? s : 42;
             var round = ModelCompare.NewRound(q, answers, unchecked(baseSeed + d.List("rounds").Count * 7919));
