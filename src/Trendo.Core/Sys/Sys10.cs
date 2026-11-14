@@ -3,6 +3,7 @@ using System.IO.Compression;
 using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
+using Trendo.Core.Office;
 
 namespace Trendo.Core.Sys;
 
@@ -60,45 +61,66 @@ public static class Ooxml
         SafeFile.Move(path + ".tmp", path);
     }
 
-    static string Entry(string file, string name) { using var z = ZipFile.OpenRead(file); var e = z.GetEntry(name); if (e is null) return ""; using var r = new StreamReader(e.Open()); return r.ReadToEnd(); }
-    static string XmlText(string xml, string paraEnd) => System.Net.WebUtility.HtmlDecode(Regex.Replace(Regex.Replace(Regex.Replace(xml, paraEnd, "\n"), @"<w:tab/>|<text:tab/>", "\t"), "<[^>]+>", "")).Trim();
+    static string Entry(string file, string name) { using var z = OfficeZip.OpenRead(file); var e = z.GetEntry(name); if (e is null) return ""; using var r = new StreamReader(e.OpenLimited()); return r.ReadToEnd(); }
+
+    /// <summary>Diese einfachen Leser arbeiten mit Mustern: Unvollständige Marken ließen die Suche sonst quadratisch lange laufen.</summary>
+    static readonly TimeSpan PatternTime = TimeSpan.FromSeconds(10);
+    static T WithinTime<T>(Func<T> read)
+    {
+        try { return read(); }
+        catch (RegexMatchTimeoutException) { throw OfficeZip.Bad("der Inhalt lässt sich nicht in vertretbarer Zeit lesen."); }
+    }
+
+    static string Plain(string xml, string pattern, string with) => Regex.Replace(xml, pattern, with, RegexOptions.None, PatternTime);
+    static string XmlText(string xml, string paraEnd) => WithinTime(() => System.Net.WebUtility.HtmlDecode(Plain(Plain(Plain(xml, paraEnd, "\n"), @"<w:tab/>|<text:tab/>", "\t"), "<[^>]+>", "")).Trim());
     public static string DocxText(string f) => XmlText(Entry(f, "word/document.xml"), "</w:p>");
     public static string OdtText(string f) => XmlText(Entry(f, "content.xml"), "</text:p>|</text:h>");
 
     /// <summary>P11: Tabelle lesen ohne Office (erste Tabelle, höchstens „max“ Zeilen).</summary>
-    public static List<List<string>> ReadXlsx(string f, int max = 1000)
+    public static List<List<string>> ReadXlsx(string f, int max = 1000) => WithinTime(() =>
     {
-        var shared = Regex.Matches(Entry(f, "xl/sharedStrings.xml"), @"<si>(.*?)</si>", RegexOptions.Singleline).Select(m => System.Net.WebUtility.HtmlDecode(Regex.Replace(m.Groups[1].Value, "<[^>]+>", ""))).ToList();
+        var deadline = System.Diagnostics.Stopwatch.StartNew(); // die Frist je Muster reicht nicht, wenn viele Zeilen sie fast ausschöpfen
+        var shared = Regex.Matches(Entry(f, "xl/sharedStrings.xml"), @"<si>(.*?)</si>", RegexOptions.Singleline, PatternTime).Select(m => System.Net.WebUtility.HtmlDecode(Plain(m.Groups[1].Value, "<[^>]+>", ""))).ToList();
         var sheet = Entry(f, "xl/worksheets/sheet1.xml"); var res = new List<List<string>>();
-        foreach (Match row in Regex.Matches(sheet, @"<row\b[^>]*>(.*?)</row>", RegexOptions.Singleline))
+        foreach (Match row in Regex.Matches(sheet, @"<row\b[^>]*>(.*?)</row>", RegexOptions.Singleline, PatternTime))
         {
+            if (deadline.Elapsed > 6 * PatternTime) throw new RegexMatchTimeoutException();
             var cells = new List<string>();
-            foreach (Match c in Regex.Matches(row.Groups[1].Value, @"<c\b([^>]*?)(?:/>|>(.*?)</c>)", RegexOptions.Singleline))
+            foreach (Match c in Regex.Matches(row.Groups[1].Value, @"<c\b([^>]*?)(?:/>|>(.*?)</c>)", RegexOptions.Singleline, PatternTime))
             {
                 var attrs = c.Groups[1].Value; var inner = c.Groups[2].Value;
-                var col = Regex.Match(attrs, @"r=""([A-Z]+)\d+""").Groups[1].Value; var idx = col.Aggregate(0, (a, ch) => a * 26 + ch - 'A' + 1) - 1;
+                var col = Regex.Match(attrs, @"r=""([A-Z]+)\d+""", RegexOptions.None, PatternTime).Groups[1].Value;
+                if (col.Length > 3) continue; // gibt es in Excel nicht und würde die Zeile riesig auffüllen
+                var idx = col.Aggregate(0, (a, ch) => a * 26 + ch - 'A' + 1) - 1;
+                if (idx >= Addr.MaxCols) continue;
                 while (cells.Count < idx) cells.Add("");
-                var v = Regex.Match(inner, @"<v>(.*?)</v>").Groups[1].Value;
-                var t = Regex.Match(attrs, @"t=""(\w+)""").Groups[1].Value;
-                cells.Add(t == "s" && int.TryParse(v, out var si) && si < shared.Count ? shared[si] : t == "inlineStr" ? System.Net.WebUtility.HtmlDecode(Regex.Replace(inner, "<[^>]+>", "")) : System.Net.WebUtility.HtmlDecode(v));
+                var v = Regex.Match(inner, @"<v>(.*?)</v>", RegexOptions.None, PatternTime).Groups[1].Value;
+                var t = Regex.Match(attrs, @"t=""(\w+)""", RegexOptions.None, PatternTime).Groups[1].Value;
+                cells.Add(t == "s" && int.TryParse(v, out var si) && si < shared.Count ? shared[si] : t == "inlineStr" ? System.Net.WebUtility.HtmlDecode(Plain(inner, "<[^>]+>", "")) : System.Net.WebUtility.HtmlDecode(v));
             }
             res.Add(cells); if (res.Count >= max) break;
         }
         return res;
-    }
+    });
 
     /// <summary>P16: Autor/Firma/Bearbeiter aus DOCX/XLSX/PPTX entfernen – in eine Kopie.</summary>
     public static string StripOfficeMeta(string file)
     {
         var o = Path.Combine(Path.GetDirectoryName(file)!, Path.GetFileNameWithoutExtension(file) + "-ohne-metadaten" + Path.GetExtension(file));
+        using (OfficeZip.OpenRead(file)) { } // erst die ZIP-Prüfung: Zum Ändern entpackt .NET die Einträge in den Speicher
         File.Copy(file, o, true);
         using var z = ZipFile.Open(o, ZipArchiveMode.Update);
         foreach (var (name, tags) in new[] { ("docProps/core.xml", new[] { "dc:creator", "cp:lastModifiedBy", "dc:title", "dc:subject", "cp:keywords", "dc:description", "cp:lastPrinted" }), ("docProps/app.xml", new[] { "Company", "Manager", "Template" }), ("docProps/custom.xml", Array.Empty<string>()) })
         {
             var e = z.GetEntry(name); if (e is null) continue;
             string x; using (var r = new StreamReader(e.Open())) x = r.ReadToEnd();
-            if (name.EndsWith("custom.xml")) x = Regex.Replace(x, @"<property\b.*?</property>", "", RegexOptions.Singleline);
-            foreach (var t in tags) x = Regex.Replace(x, $@"<{t}\b([^>]*)>.*?</{t}>", $"<{t}$1></{t}>", RegexOptions.Singleline);
+            x = WithinTime(() =>
+            {
+                var s = x;
+                if (name.EndsWith("custom.xml")) s = Regex.Replace(s, @"<property\b.*?</property>", "", RegexOptions.Singleline, PatternTime);
+                foreach (var t in tags) s = Regex.Replace(s, $@"<{t}\b([^>]*)>.*?</{t}>", $"<{t}$1></{t}>", RegexOptions.Singleline, PatternTime);
+                return s;
+            });
             e.Delete(); using var w = new StreamWriter(z.CreateEntry(name).Open(), new UTF8Encoding(false)); w.Write(x);
         }
         return o;
@@ -106,19 +128,19 @@ public static class Ooxml
     public static Dictionary<string, string> OfficeMeta(string file)
     {
         var x = Entry(file, "docProps/core.xml") + Entry(file, "docProps/app.xml");
-        return Regex.Matches(x, @"<((?:dc|cp):\w+|Company|Manager)\b[^>]*>([^<]+)</\1>").ToDictionary(m => m.Groups[1].Value, m => m.Groups[2].Value);
+        return WithinTime(() => Regex.Matches(x, @"<((?:dc|cp):\w+|Company|Manager)\b[^>]*>([^<]+)</\1>", RegexOptions.None, PatternTime).ToDictionary(m => m.Groups[1].Value, m => m.Groups[2].Value));
     }
 
     /// <summary>P10: Serienbrief – Platzhalter {{Feld}} (auch über Formatierungsgrenzen hinweg) je CSV-Zeile ersetzen.</summary>
     public static List<string> MailMerge(string templateDocx, List<Dictionary<string, string>> rows, string outDir, string nameField = "")
     {
-        string xml; using (var z = ZipFile.OpenRead(templateDocx)) using (var r = new StreamReader(z.GetEntry("word/document.xml")!.Open())) xml = r.ReadToEnd();
-        xml = Regex.Replace(xml, @"\{(?:<[^>]+>)*\{((?:[^}<]|<[^>]+>)*?)\}(?:<[^>]+>)*\}", m => "{{" + Regex.Replace(m.Groups[1].Value, "<[^>]+>", "").Trim() + "}}");
+        string xml; using (var z = OfficeZip.OpenRead(templateDocx)) using (var r = new StreamReader(z.GetEntry("word/document.xml")!.OpenLimited())) xml = r.ReadToEnd();
+        xml = WithinTime(() => Regex.Replace(xml, @"\{(?:<[^>]+>)*\{((?:[^}<]|<[^>]+>)*?)\}(?:<[^>]+>)*\}", m => "{{" + Plain(m.Groups[1].Value, "<[^>]+>", "").Trim() + "}}", RegexOptions.None, PatternTime));
         Directory.CreateDirectory(outDir); var res = new List<string>(); var i = 0;
         foreach (var row in rows)
         {
             i++;
-            var filled = Regex.Replace(xml, @"\{\{([^}]+)\}\}", m => row.TryGetValue(m.Groups[1].Value.Trim(), out var v) ? SecurityElement.Escape(v) : m.Value);
+            var filled = WithinTime(() => Regex.Replace(xml, @"\{\{([^}]+)\}\}", m => row.TryGetValue(m.Groups[1].Value.Trim(), out var v) ? SecurityElement.Escape(v) : m.Value, RegexOptions.None, PatternTime));
             var stem = nameField.Length > 0 && row.TryGetValue(nameField, out var nm) && nm.Trim().Length > 0 ? string.Concat(nm.Where(c => !Path.GetInvalidFileNameChars().Contains(c))) : $"{i:000}";
             var o = Path.Combine(outDir, $"{Path.GetFileNameWithoutExtension(templateDocx)}-{i:000}-{stem}.docx");
             File.Copy(templateDocx, o, true);
@@ -127,7 +149,7 @@ public static class Ooxml
         }
         return res;
     }
-    public static List<string> Placeholders(string docx) => Regex.Matches(Regex.Replace(Entry(docx, "word/document.xml"), "<[^>]+>", ""), @"\{\{([^}]+)\}\}").Select(m => m.Groups[1].Value.Trim()).Distinct().ToList();
+    public static List<string> Placeholders(string docx) => WithinTime(() => Regex.Matches(Plain(Entry(docx, "word/document.xml"), "<[^>]+>", ""), @"\{\{([^}]+)\}\}", RegexOptions.None, PatternTime).Select(m => m.Groups[1].Value.Trim()).Distinct().ToList());
 
     /// <summary>P22: Unterschrift als Bild ans Ende einfügen (Kopie). Ausdrücklich keine qualifizierte elektronische Signatur.</summary>
     public static string InsertSignature(string docx, byte[] png, int widthPx, int heightPx, string caption)

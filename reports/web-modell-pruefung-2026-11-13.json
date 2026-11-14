@@ -1,0 +1,90 @@
+{
+  "Datum": "2026-11-13T21:26:14.8530964+01:00",
+  "Hardware": {
+    "RamGb": 31,
+    "Gpu": "NVIDIA GeForce RTX 5070",
+    "VramGb": 11
+  },
+  "Ergebnisse": [
+    {
+      "Model": "qwen2.5:3b",
+      "Tasks": [
+        {
+          "Task": "Seite aus einem Satz",
+          "Passed": false,
+          "Note": "ung\u00FCltig: Aktion 2 (baustein_einfuegen): unbekannter Baustein \u201Ekopfbereich\u201C.",
+          "Seconds": 3.3
+        },
+        {
+          "Task": "Nur die Auswahl \u00E4ndern",
+          "Passed": true,
+          "Note": "bestanden",
+          "Seconds": 0.4
+        },
+        {
+          "Task": "Gefundenen Fehler beheben",
+          "Passed": false,
+          "Note": "ung\u00FCltig: Die KI hat keinen Aktionsplan geliefert.",
+          "Seconds": 0.7
+        }
+      ],
+      "At": "2026-11-13T21:25:32.4693885+01:00",
+      "Passed": false,
+      "Seconds": 4.3999999999999995
+    },
+    {
+      "Model": "qwen2.5-coder:7b",
+      "Tasks": [
+        {
+          "Task": "Seite aus einem Satz",
+          "Passed": false,
+          "Note": "ung\u00FCltig: Aktion 2 (baustein_einfuegen): \u201Eposition\u201C muss eine ganze Zahl von 0 bis 0 sein.",
+          "Seconds": 5.7
+        },
+        {
+          "Task": "Nur die Auswahl \u00E4ndern",
+          "Passed": true,
+          "Note": "bestanden",
+          "Seconds": 0.6
+        },
+        {
+          "Task": "Gefundenen Fehler beheben",
+          "Passed": true,
+          "Note": "bestanden",
+          "Seconds": 0.5
+        }
+      ],
+      "At": "2026-11-13T21:25:39.3315381+01:00",
+      "Passed": false,
+      "Seconds": 6.8
+    },
+    {
+      "Model": "mistral:7b",
+      "Tasks": [
+        {
+          "Task": "Seite aus einem Satz",
+          "Passed": false,
+          "Note": "ung\u00FCltig: Aktion 4 (baustein_einfuegen): \u201Econtent\u201C ist ein Bereich f\u00FCr Bausteine und l\u00E4sst sich so nicht \u00E4ndern.",
+          "Seconds": 31.3
+        },
+        {
+          "Task": "Nur die Auswahl \u00E4ndern",
+          "Passed": false,
+          "Note": "ung\u00FCltig: Aktion 1: unbekannte Aktion \u201Etext_aendern\u201C.",
+          "Seconds": 0.8
+        },
+        {
+          "Task": "Gefundenen Fehler beheben",
+          "Passed": false,
+          "Note": "ung\u00FCltig: Aktion 1 (ansicht_entfernen): unbekannte Angabe \u201Eansicht\u201C.",
+          "Seconds": 3.5
+        }
+      ],
+      "At": "2026-11-13T21:26:14.8408989+01:00",
+      "Passed": false,
+      "Seconds": 35.6
+    }
+  ],
+  "Empfehlung": null,
+  "Hinweis": "Kein gepr\u00FCftes Modell hat alle Web-Aufgaben bestanden. Lade ein gr\u00F6\u00DFeres Modell aus der Liste oder nutze Claude \u00FCber dein Abo."
+}

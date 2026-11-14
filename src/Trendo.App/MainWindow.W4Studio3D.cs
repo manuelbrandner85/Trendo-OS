@@ -261,7 +261,7 @@ public partial class MainWindow
             Keep(objName);
             var files = e.DataTransfer.TryGetFiles()?.Select(f => f.TryGetLocalPath()).Where(p => !string.IsNullOrEmpty(p)).ToList() ?? [];
             if (files.Count == 0) { Say("Diese Angabe ist keine Datei.", "3d"); return; }
-            foreach (var f in files) ImportPath(f!);
+            foreach (var f in files) _ = ImportPath(f!);
             e.Handled = true;
         });
         return host;
@@ -424,6 +424,7 @@ public partial class MainWindow
         try
         {
             _scene = Scene3D.FromJson(_core.Projects.ReadFile(id, "3d/szene.json"));
+            _sceneEpoch++;
             _scene.ProjectId = id;
             _selId = _scene.Parts.FirstOrDefault()?.Id;
             _undo3d.Clear();
@@ -439,6 +440,7 @@ public partial class MainWindow
         Keep(objName);
         if (_scene.Parts.Count > 0) Push();
         _scene = new Scene3D();
+        _sceneEpoch++;
         _selId = null;
         _aiParts = null;
         _pngKey = "";
@@ -511,40 +513,68 @@ public partial class MainWindow
                 });
                 var picked = files.Select(f => f.TryGetLocalPath()).Where(p => !string.IsNullOrWhiteSpace(p)).Cast<string>().ToList();
                 if (picked.Count == 0) { Say("Keine Datei gewählt.", "3d"); return; }
-                foreach (var p in picked) ImportPath(p);
+                foreach (var p in picked) _ = ImportPath(p);
                 return;
             }
             catch (Exception ex) { Say("Die Dateiauswahl geht hier nicht: " + ex.Message, "3d"); return; }
         }
         if (string.IsNullOrWhiteSpace(path)) { Say("Keine Datei gewählt.", "3d"); return; }
-        ImportPath(path);
+        _ = ImportPath(path);
     }
 
-    public void Import3DFile(string path) => ImportPath(path);
+    public void Import3DFile(string path) => _ = ImportPath(path);
 
-    private void ImportPath(string path, string? displayName = null)
+    /// <summary>Ab dieser Größe liest Trendo im Hintergrund, damit die Oberfläche bedienbar bleibt. Kleinere Dateien sind sofort da.</summary>
+    const long ImportInBackgroundBytes = 32L * 1024 * 1024;
+
+    private Task ImportPath(string path, string? displayName = null)
     {
         var ext = Path.GetExtension(path).ToLowerInvariant();
-        if (!File.Exists(path)) { Say("Die Datei gibt es nicht.", "3d"); return; }
-        if (ext == ".blend" || (ext == ".fbx" && Mesh3D.IsBinaryFbx(path))) { _ = ImportViaBlender(path); return; }
-        if (ext is not ".obj" and not ".stl" and not ".glb" and not ".gltf" and not ".fbx") { Say("Trendo öffnet OBJ, STL, GLB, glTF und FBX. Blend geht über Blender.", "3d"); return; }
+        if (!File.Exists(path)) { Say("Die Datei gibt es nicht.", "3d"); return Task.CompletedTask; }
+        if (ext == ".blend" || (ext == ".fbx" && Mesh3D.IsBinaryFbx(path))) return ImportViaBlender(path);
+        if (ext is not ".obj" and not ".stl" and not ".glb" and not ".gltf" and not ".fbx") { Say("Trendo öffnet OBJ, STL, GLB, glTF und FBX. Blend geht über Blender.", "3d"); return Task.CompletedTask; }
+        // Eine Warteschlange: Mehrere Dateien kommen in der gewählten Reihenfolge an, auch wenn eine davon im Hintergrund gelesen wird.
+        // Ist nichts in Arbeit, läuft ein kleiner Import wie bisher sofort durch.
+        // Projekt und Einheit gelten so, wie sie beim Auswählen der Datei waren – auch wenn sie in der Schlange warten muss.
+        return _importTail = ImportAfter(_importTail, path, ext, displayName, new FileInfo(path).Length >= ImportInBackgroundBytes, _importUnit, _sceneEpoch);
+    }
+
+    private Task _importTail = Task.CompletedTask;
+    /// <summary>Zählt Projektwechsel und neue Szenen (nicht Rückgängig): Ein Import, der danach fertig wird, gehört nicht mehr hierher.</summary>
+    private int _sceneEpoch;
+
+    private async Task ImportAfter(Task previous, string path, string ext, string? displayName, bool large, string unit, int epoch)
+    {
+        try { await previous; } catch { } // Fehler des vorigen Imports sind schon gemeldet
         try
         {
-            var parts = Mesh3D.ImportParts(path, _importUnit);
-            if (displayName is { Length: > 0 } label)
+            List<Part3D> parts;
+            if (large)
             {
-                if (label.Length > 40) label = label[..40];
-                foreach (var part in parts)
-                    if (part.Name.StartsWith("trendo-3d-import-", StringComparison.Ordinal)) part.Name = label;
+                Say("Große Datei wird im Hintergrund gelesen …", "3d");
+                parts = await Task.Run(() => Mesh3D.ImportParts(path, unit));
             }
-            Push();
-            foreach (var part in parts) _scene.Parts.Add(part);
-            _selId = parts[^1].Id;
-            var tris = parts.Sum(p => p.Indices is null ? 0 : p.Indices.Length / 3);
-            var names = parts.Count == 1 ? parts[0].Name : parts.Count + " Teile";
-            Say($"Eingelesen: {names}, {tris} Dreiecke. {UnitNote(ext)}", "3d");
+            else parts = Mesh3D.ImportParts(path, unit);
+            if (epoch != _sceneEpoch) { Say($"„{Path.GetFileName(path)}“ wurde nicht eingefügt: Inzwischen ist ein anderes Projekt oder eine neue Szene offen.", "3d"); return; }
+            AddImported(parts, ext, displayName);
         }
         catch (Exception ex) { Say(ex.Message, "3d"); }
+    }
+
+    private void AddImported(List<Part3D> parts, string ext, string? displayName)
+    {
+        if (displayName is { Length: > 0 } label)
+        {
+            if (label.Length > 40) label = label[..40];
+            foreach (var part in parts)
+                if (part.Name.StartsWith("trendo-3d-import-", StringComparison.Ordinal)) part.Name = label;
+        }
+        Push();
+        foreach (var part in parts) _scene.Parts.Add(part);
+        _selId = parts[^1].Id;
+        var tris = parts.Sum(p => p.Indices is null ? 0 : p.Indices.Length / 3);
+        var names = parts.Count == 1 ? parts[0].Name : parts.Count + " Teile";
+        Say($"Eingelesen: {names}, {tris} Dreiecke. {UnitNote(ext)}", "3d");
     }
 
     private string UnitNote(string ext)
@@ -568,7 +598,7 @@ public partial class MainWindow
         {
             var (r, obj) = Studio3D.Convert(bl, path, ".obj", tmp);
             if (!r.Ok || !File.Exists(obj)) { Say("Blender konnte die Datei nicht lesen: " + Short(r.Err.Length > 0 ? r.Err : r.Out), "3d"); return; }
-            ImportPath(obj, Path.GetFileNameWithoutExtension(path));
+            await ImportPath(obj, Path.GetFileNameWithoutExtension(path)); // erst danach darf die Zwischendatei weg
         }
         finally
         {

@@ -62,6 +62,7 @@
 | ieee754@1.2.1 | BSD-3-Clause |
 | its-fine@2.1.1 | MIT |
 | linkifyjs@4.4.0 | MIT |
+| lucide-react@0.460.0 | ISC |
 | object-hash@3.0.0 | MIT |
 | react-dom@19.1.0 | MIT |
 | react-remove-scroll-bar@2.3.8 | MIT |
