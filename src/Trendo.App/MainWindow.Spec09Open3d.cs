@@ -27,7 +27,7 @@ public partial class MainWindow
         else r = await KiPyRun(KiRuntime.ScanNetz, [mode, _scanModel, tmp, n.ToString(System.Globalization.CultureInfo.InvariantCulture)], 600_000);
         if (!r.Ok || !File.Exists(tmp)) { _scanStatus = "⚠ Open3D: " + Short(r.Err.Length > 0 ? r.Err : r.Out); TryDelete(tmp); Show("scan3d"); return; }
         try { var result = Mesh3D.ReadMeshFile(tmp); ScanEdit(mode == "glaetten" ? $"Geglättet ({n}×, Open3D)" : $"Vereinfacht (Open3D)", _ => result); }
-        catch (Exception e) when (e is IOException or InvalidDataException or FormatException) { _scanStatus = "⚠ Ergebnis nicht lesbar: " + e.Message; Show("scan3d"); }
+        catch (Exception e) when (e is IOException or InvalidDataException or FormatException) { _scanStatus = "⚠ Ergebnis nicht lesbar: " + Trendo.Core.FriendlyError.Say(e); Show("scan3d"); }
         finally { TryDelete(tmp); }
     }
 
@@ -35,7 +35,7 @@ public partial class MainWindow
     {
         _scanStatus = "Open3D wird eingerichtet (einmalig, ca. 400 MB) …"; Show("scan3d");
         try { await KiPyInstall(Open3dModel, KiPyApps.For(KiRuntime.ScanNetz)!); _scanStatus = "✓ Open3D ist eingerichtet."; }
-        catch (Exception e) when (e is InvalidOperationException or IOException or HttpRequestException or OperationCanceledException) { _scanStatus = "Einrichten ging nicht: " + e.Message; }
+        catch (Exception e) when (e is InvalidOperationException or IOException or HttpRequestException or OperationCanceledException) { _scanStatus = "Einrichten ging nicht: " + Trendo.Core.FriendlyError.Say(e); }
         Show("scan3d");
     }
 

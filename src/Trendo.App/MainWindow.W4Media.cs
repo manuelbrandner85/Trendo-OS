@@ -76,7 +76,7 @@ public partial class MainWindow
             _imgEdit = e; var o = ImageTools.Apply(_mediaFile, e); _mediaLast = o;
             Say("Bild gespeichert: " + Path.GetFileName(o), "kreativ-medien"); return o;
         }
-        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or IOException) { Say("Hat nicht geklappt: " + ex.Message, "kreativ-medien"); return null; }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or IOException) { Say("Hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex), "kreativ-medien"); return null; }
     }
 
     static string Clock(double s) => TimeSpan.FromSeconds(Math.Max(0, s)).ToString(s >= 3600 ? @"h\:mm\:ss" : @"m\:ss");

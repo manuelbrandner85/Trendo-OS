@@ -144,7 +144,8 @@ public partial class MainWindow
         var nav = new StackPanel { Spacing = 1 };
         foreach (var (key, label, icon) in SideNav)
         {
-            var b = SideItem("side-" + key, Ico(icon, 17, Brush.Parse("#9FC8FF")), label, () => { if (key == "studios") { _studioFilter = null; _studioQuery = ""; } Show(key); }, 13);
+            var b = SideItem("side-" + key, Ico(icon, 17, Brush.Parse("#9FC8FF")), Trendo.Core.Programs.PlainWords.Plain(label), () => { if (key == "studios") { _studioFilter = null; _studioQuery = ""; } Show(key); }, 13);
+            if (Trendo.Core.Programs.PlainWords.Technical(label) is { } tech) ToolTip.SetTip(b, Trendo.Core.Programs.PlainWords.Plain(label) + " – " + tech); // E10: Fachwort als Hinweis
             _tabs[key] = b;
             if (key == "start") _sideStart = b;
             nav.Children.Add(b);
@@ -157,14 +158,15 @@ public partial class MainWindow
         Control Stat(Control chip, string label, TextBlock value) { value.Foreground = Text; value.FontSize = 12; value.FontWeight = FontWeight.SemiBold; return new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Margin = new Thickness(0, 0, 0, 7), Children = { chip,
             Pos(new StackPanel { Margin = new Thickness(9, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Children = { new TextBlock { Text = label, Foreground = Muted, FontSize = 10.5 }, value } }, 1) } }; }
         var eco = new StackPanel { Children = {
-            new TextBlock { Text = "Trendo Ökosystem", Foreground = Brush.Parse("#8FC3FF"), FontSize = 12.5, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 0, 0, 8) },
+            new TextBlock { Text = Trendo.Core.Programs.PlainWords.Plain("Trendo Ökosystem"), Foreground = Brush.Parse("#8FC3FF"), FontSize = 12.5, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 0, 0, 8) },
             Stat(Chip(Mdi.Wifi, "#29B6F6", "#0277BD", 26), "Verbunden", _ecoDevices),
-            Stat(Chip(Mdi.RobotHappy, "#66BB6A", "#2E7D32", 26), "Aktive Agenten", _ecoAgents),
+            Stat(Chip(Mdi.RobotHappy, "#66BB6A", "#2E7D32", 26), Trendo.Core.Programs.PlainWords.Plain("Aktive Agenten"), _ecoAgents),
             Stat(Chip(Mdi.Folder, "#42A5F5", "#1565C0", 26), "Laufende Projekte", _ecoProjects),
             Stat(Chip(Mdi.ShieldCheck, "#22C55E", "#15803D", 26), "System-Status", _ecoState) } };
         var ecoPanel = Glass2(eco, 10); ecoPanel.VerticalAlignment = VerticalAlignment.Bottom; ecoPanel.Margin = new Thickness(0);
         ecoPanel.Background = Brush.Parse(C("#A61A1A1A", "#E6F4F7FC"));
-        var earthBox = new Grid { Name = "widget-eco", ClipToBounds = true, Children = { earth, ecoPanel } };
+        var earthBox = new Grid { Name = "widget-eco", ClipToBounds = true, Children = { earth, ecoPanel }, IsVisible = TileShown("widget-eco") }; // E12: in „Einfach“ ausgeblendet
+        ToolTip.SetTip(ecoPanel, "Fachwort: Trendo Ökosystem");
 
         var owner = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = {
             new Border { Width = 34, Height = 34, CornerRadius = new CornerRadius(17), Background = Grad("#E8C26A", "#7A5512"), Child = new TextBlock { Text = Initial(_settings.Name), Foreground = Brushes.White, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } },
@@ -231,7 +233,7 @@ public partial class MainWindow
 
     private Control DesktopView()
     {
-        var chips = new WrapPanel { HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 0, 0, 6) };
+        var chips = new WrapPanel { Name = "desk-actions", HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 0, 0, 6), IsVisible = TileShown("desk-actions") }; // E12: in „Einfach“ ausgeblendet
         foreach (var (label, go) in new (string, Action)[] {
                      ("Erstellen", () => Show("projects")),
                      ("Analysieren", () => Show("system")),
@@ -279,15 +281,15 @@ public partial class MainWindow
 
     private Control RightColumn()
     {
-        var sp = new StackPanel { Name = "right-column" };
-        void Add(Border c, string key) { c.Name = key; c.IsVisible = !_settings.HiddenTiles.Contains(key); sp.Children.Add(c); }
+        var sp = new StackPanel { Name = "right-column" };        _rightCol = sp;
+        void Add(Border c, string key) { c.Name = key; c.IsVisible = TileShown(key); sp.Children.Add(c); } // E12: „Einfach“ blendet die Spalte aus, „Startbildschirm anpassen“ holt sie zurück
         Control Line(Control chip, string title, string sub, Control right) => new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Margin = new Thickness(0, 0, 0, 6), Children = { chip,
             Pos(new StackPanel { Margin = new Thickness(9, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center, Children = {
                 new TextBlock { Text = title, Foreground = Text, FontSize = 11.5, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
                 new TextBlock { Text = sub, Foreground = Muted, FontSize = 9.5, TextTrimming = TextTrimming.CharacterEllipsis } } }, 1), Pos(right, 2) } };
 
         // KI-Router: welche KI arbeitet – echt
-        var router = new StackPanel { Children = { Head("KI-Router", "Passende KI je Aufgabe", null, Mdi.Brain),
+        var router = new StackPanel { Children = { Head(Trendo.Core.Programs.PlainWords.Plain("KI-Router"), "Passende KI je Aufgabe", null, Mdi.Brain),
             Line(Chip(Mdi.StarFourPoints, "#8FD8FF", "#2F86F6", 30), "Trendo KI (lokal)", "Läuft auf diesem PC, ohne Internet", Pill(_routerLocal)),
             Line(Chip(Mdi.Brain, "#C7A6FF", "#7C4DFF", 30), "Großes Modell (3B)", "Besseres Deutsch, ab 16 GB RAM", Pill(_routerLarge)),
             Line(Chip(Mdi.ShieldCheck, "#FFD39A", "#F08A3C", 30), "Kostenlimit 0 €", "Keine kostenpflichtige KI", Pill(StateBadge("router-cost", "Aktiv", true))) } };
@@ -317,12 +319,12 @@ public partial class MainWindow
         var allA = SmallOutline("btn-all-agents", "Alle anzeigen"); allA.Click += (_, _) => Show("ki-rollen");
         _agentsCount.FontSize = 10.5; _agentsCount.Foreground = Muted;
         Detach(_agentRows);
-        var agentsHead = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { Head("Agenten Live", null, null, Mdi.RobotHappy), Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { _agentsCount, allA } }, 1) } };
+        var agentsHead = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { Head(Trendo.Core.Programs.PlainWords.Plain("Agenten Live"), null, null, Mdi.RobotHappy), Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { _agentsCount, allA } }, 1) } };
         Add(Glass2(new StackPanel { Children = { agentsHead, _agentRows } }, 10), "widget-agenten");
 
         // Studio Manager: Studios auf den Desktop legen oder wegnehmen (gespeichert)
         var mgrAll = SmallOutline("btn-desk-icons", "Alle"); mgrAll.Click += (_, _) => Show("desktop-symbole");
-        var mgr = new StackPanel { Children = { Head("Studio Manager", "Was auf dem Desktop liegt", mgrAll, Mdi.CogOutline) } };
+        var mgr = new StackPanel { Children = { Head(Trendo.Core.Programs.PlainWords.Plain("Studio Manager"), "Was auf dem Desktop liegt", mgrAll, Mdi.CogOutline) } };
         foreach (var f in FeaturedStudios.Take(4))
         {
             var name = StudioCatalog.NameOf(f.Id, f.Title); var fid = f.Id;
@@ -338,13 +340,27 @@ public partial class MainWindow
         // Open Source: mitgelieferte freie Programme – echt gezählt
         var progs = SmallOutline("btn-oss-programs", "Programme ansehen"); progs.Click += (_, _) => Show("components");
         _ossCount.FontSize = 11.5; _ossCount.Foreground = Text; _ossCount.FontWeight = FontWeight.SemiBold;
-        Add(Glass2(new StackPanel { Children = { Head("Open Source", null, progs, Mdi.CodeTags),
+        Add(Glass2(new StackPanel { Children = { Head(Trendo.Core.Programs.PlainWords.Plain("Open Source"), null, progs, Mdi.CodeTags),
             new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = { Chip(Mdi.Apps, "#7FD3FF", "#3F6BFF", 30),
                 Pos(new StackPanel { Margin = new Thickness(9, 0, 0, 0), Children = { _ossCount, new TextBlock { Text = "Freie Programme aus dem Vollpaket, ohne Download", Foreground = Muted, FontSize = 9.5, TextWrapping = TextWrapping.Wrap } } }, 1) } } } }, 10), "widget-github");
-        var right = new ScrollViewer { Content = sp, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled };
+        foreach (var (c, tech) in new[] { ("widget-ki", "KI-Router"), ("widget-agenten", "Agenten Live"), ("widget-studiomanager", "Studio Manager"), ("widget-github", "Open Source") })
+            if (sp.Children.OfType<Control>().FirstOrDefault(x => x.Name == c) is { } wc) ToolTip.SetTip(wc, "Fachwort: " + tech); // E10
+        var right = new ScrollViewer { Name = "right-scroll", Content = sp, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled };
         _shellParts.Add(right);
         return right;
     }
+
+    /// <summary>E12 (T-0616): nach einem Stufenwechsel die Teile des Desktops ein- oder ausblenden (ohne neuen Aufbau); ist die rechte Spalte leer, bekommt die Mitte den Platz.</summary>
+    void RefreshDesktopTiles()
+    {
+        foreach (var part in _shellParts)
+            foreach (var c in Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(part).OfType<Control>().Prepend(part))
+                if (c.Name is { } n && SimpleHiddenTiles.Contains(n)) c.IsVisible = TileShown(n);
+        if (OsStyle || _shellGrid is not { ColumnDefinitions.Count: 3 } shell || _rightCol is null) return;
+        shell.ColumnDefinitions[2].Width = new GridLength(_rightCol.Children.Any(c => c.IsVisible) ? 300 : 0);
+    }
+    private Grid? _shellGrid;
+    private StackPanel? _rightCol;
 
     private Control Ring(string key)
     {

@@ -50,7 +50,7 @@ public partial class MainWindow
         if (BackupSelected is not { } zip || !File.Exists(zip)) { sp.Children.Add(P("Einen Punkt auf der Zeitleiste anklicken, um hineinzusehen.", Muted, 12)); return sp; }
         IReadOnlyList<Backup.Diff> diff;
         try { diff = Backups.CompareWithNow(zip); }
-        catch (Exception ex) when (ex is IOException or InvalidDataException) { sp.Children.Add(P("Sicherung nicht lesbar: " + ex.Message, Brush.Parse("#F87171"), 12)); return sp; }
+        catch (Exception ex) when (ex is IOException or InvalidDataException) { sp.Children.Add(P("Sicherung nicht lesbar: " + Trendo.Core.FriendlyError.Say(ex), Brush.Parse("#F87171"), 12)); return sp; }
         int Cnt(Backup.Change c) => diff.Count(d => d.Kind == c);
         sp.Children.Add(new TextBlock { Name = "backup-summary", Text = $"Sicherung vom {File.GetLastWriteTime(zip):dd.MM.yyyy HH:mm}: {diff.Count(d => d.Kind != Backup.Change.Neu)} Dateien · seither {Cnt(Backup.Change.Geaendert)} geändert, {Cnt(Backup.Change.Geloescht)} gelöscht, {Cnt(Backup.Change.Neu)} neu", Foreground = Text, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
         var chips = new WrapPanel();
@@ -87,7 +87,7 @@ public partial class MainWindow
                         Child = new ScrollViewer { Content = new SelectableTextBlock { Name = "backup-preview-text", Text = System.Text.Encoding.UTF8.GetString(bytes, 0, Math.Min(bytes.Length, 8000)), FontFamily = new FontFamily("Consolas, Cascadia Mono, monospace"), FontSize = 11.5, Foreground = Text, TextWrapping = TextWrapping.Wrap } } });
                     else preview.Children.Add(P($"Keine Vorschau ({DiskMapView.Size(sel.Bytes)}).", Muted, 12));
                 }
-                catch (Exception ex) when (ex is IOException or InvalidDataException or ArgumentException or FileNotFoundException) { preview.Children.Add(P("Vorschau nicht möglich: " + ex.Message, Muted, 12)); }
+                catch (Exception ex) when (ex is IOException or InvalidDataException or ArgumentException or FileNotFoundException) { preview.Children.Add(P("Vorschau nicht möglich: " + Trendo.Core.FriendlyError.Say(ex), Muted, 12)); }
                 if (sel.Kind == Backup.Change.Gleich) preview.Children.Add(P("Gleich wie heute – nichts zurückzuholen.", Muted, 12));
                 else if (!_backupOneAsk) preview.Children.Add(Act("backup-one", sel.Kind == Backup.Change.Geloescht ? "Diese Datei zurückholen" : "Diese Fassung zurückholen …", () => { _backupOneAsk = true; Show("sicherung"); }, true));
                 else
@@ -95,7 +95,7 @@ public partial class MainWindow
                     var yes = Act("backup-one-yes", "Ja, zurückholen", () =>
                     {
                         try { var kept = Backups.RestoreOne(zip, bf, DateTime.Now); _backupMsg = $"„{Path.GetFileName(bf)}“ ist zurückgeholt." + (kept is null ? "" : " Die heutige Fassung liegt aufgehoben unter Sicherungen › einzeln."); }
-                        catch (Exception ex) when (ex is IOException or InvalidOperationException or UnauthorizedAccessException or FileNotFoundException) { _backupMsg = "Zurückholen hat nicht geklappt: " + ex.Message; }
+                        catch (Exception ex) when (ex is IOException or InvalidOperationException or UnauthorizedAccessException or FileNotFoundException) { _backupMsg = "Zurückholen hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex); }
                         _backupOneAsk = false; Show("sicherung");
                     }, true);
                     var no = Act("backup-one-no", "Nein", () => { _backupOneAsk = false; Show("sicherung"); });

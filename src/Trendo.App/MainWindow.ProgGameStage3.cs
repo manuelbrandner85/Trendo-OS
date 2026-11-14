@@ -110,7 +110,7 @@ public partial class MainWindow
                     _ = Task.Run(() =>
                     {
                         try { GameEngineTest(d, s.Engine); }
-                        catch (Exception e) { GameEngineSay("Prüfung nicht möglich: " + e.Message); } // im Hintergrund darf kein Fehler verloren gehen
+                        catch (Exception e) { GameEngineSay("Prüfung nicht möglich: " + Trendo.Core.FriendlyError.Say(e)); } // im Hintergrund darf kein Fehler verloren gehen
                         finally { _engineBusy = false; _ui.Post(() => { if (CurrentView == GK) Show(GK); }); }
                     });
                 }
@@ -195,7 +195,7 @@ public partial class MainWindow
             foreach (var ch in c.Changes.Take(12)) lines.Add($"  {(ch.Worse ? "⚠" : "•")} {ch.What}: {ch.Before} → {ch.After}");
             tasks.AddRange(c.Changes.Where(x => x.Worse).Select(x => $"Verschlechterung: {x.What}"));
         }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException) { lines.Add("⚠ Lauf nicht gespeichert: " + e.Message); }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException) { lines.Add("⚠ Lauf nicht gespeichert: " + Trendo.Core.FriendlyError.Say(e)); }
         return new(lines, tasks, hard, c);
     }
 

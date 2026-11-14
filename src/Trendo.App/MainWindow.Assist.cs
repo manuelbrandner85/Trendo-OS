@@ -177,7 +177,7 @@ public partial class MainWindow
             try { r.Session.Run(s); r.StepState[i] = "fertig"; }
             catch (Exception ex) when (ex is not OutOfMemoryException) { r.StepState[i] = "fehler"; r.Phase = "fehler"; r.Message = $"„{s.Text}“ hat nicht geklappt: {ex.Message}"; AssistRender(r, host); return; }
         }
-        try { r.Preview = r.Session.Preview(); } catch (Exception ex) when (ex is not OutOfMemoryException) { r.Preview = null; r.Log.Add("Keine Bildvorschau möglich: " + ex.Message); }
+        try { r.Preview = r.Session.Preview(); } catch (Exception ex) when (ex is not OutOfMemoryException) { r.Preview = null; r.Log.Add("Keine Bildvorschau möglich: " + Trendo.Core.FriendlyError.Say(ex)); }
         r.Phase = "vorschau";
         r.Message = r.Session.Changed || r.Plan.HasSideEffects ? "So sieht es aus. Behalten?" : "Das ändert nichts am Dokument.";
         AssistRender(r, host);
@@ -190,7 +190,7 @@ public partial class MainWindow
         if (r.Session is null) return;
         var label = r.Plan.Prompt.Length > 48 ? r.Plan.Prompt[..48] + "…" : r.Plan.Prompt;
         try { r.Session.Apply(label, r.Plan.Steps.Where(s => s.Action.SideEffect).ToList()); }
-        catch (Exception ex) when (ex is not OutOfMemoryException) { r.Phase = "fehler"; r.Message = "Übernehmen hat nicht geklappt: " + ex.Message; AssistRender(r, host); return; }
+        catch (Exception ex) when (ex is not OutOfMemoryException) { r.Phase = "fehler"; r.Message = "Übernehmen hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex); AssistRender(r, host); return; }
         _core.Audit.Append(Principal.LocalOwner.Name, "assist.apply", $"{r.Target.Key} „{label}“");
         r.Phase = "fertig"; r.Message = "✓ Behalten. Rückgängig geht hier oder mit Strg+Z.";
         r.Suggestions = AssistPlanner.Suggest(r.Plan.Steps.Select(s => s.Action), r.Target.Actions, r.Target.Hints()).ToList();

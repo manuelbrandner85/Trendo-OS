@@ -53,7 +53,7 @@ public partial class MainWindow
                     if (opts.Count > 0) choices.Add(new(n, Avalonia.Automation.AutomationProperties.GetName(cb) ?? (ToolTip.GetTip(cb) as string) ?? n, cb.SelectedItem is { } si ? ItemText(si) : null, opts));
                     break;
                 }
-                case Button b when b.Name is { Length: > 0 } n && b.IsEffectivelyEnabled && !n.StartsWith("claude-", StringComparison.Ordinal) && !n.StartsWith("auftrag-", StringComparison.Ordinal) && n is not ("btn-help" or "prog-claude"):
+                case Button b when b.Name is { Length: > 0 } n && b.IsEffectivelyEnabled && !n.StartsWith("claude-", StringComparison.Ordinal) && !n.StartsWith("auftrag-", StringComparison.Ordinal) && n is not ("btn-help" or "ki-menu"):
                 {
                     var label = ButtonText(b);
                     if (label.Length is > 0 and <= 60) buttons.Add(new(n, label));

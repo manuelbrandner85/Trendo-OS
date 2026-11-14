@@ -37,7 +37,7 @@ public partial class MainWindow
         if (!File.Exists(update)) { _imgStatus = "Trendo läuft hier ohne Installation – auf diesem PC ist nichts zu entfernen. Du kannst das Fenster schließen."; Show("einrichtung-abbild"); return; }
         try { File.WriteAllText(Path.Combine(_core.DataRoot, UninstallPrompt.StickOnlyMarker), "nur Stick/SSD gewählt"); } catch (IOException) { }
         try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(update) { UseShellExecute = false, ArgumentList = { "--uninstall", "-s" } }); }
-        catch (System.ComponentModel.Win32Exception e) { _imgStatus = "Entfernen ging nicht: " + e.Message + " – bitte über Windows „Apps“ deinstallieren."; Show("einrichtung-abbild"); return; }
+        catch (System.ComponentModel.Win32Exception e) { _imgStatus = "Entfernen ging nicht: " + Trendo.Core.FriendlyError.Say(e) + " – bitte über Windows „Apps“ deinstallieren."; Show("einrichtung-abbild"); return; }
         (Avalonia.Application.Current?.ApplicationLifetime as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.Shutdown();
     }
 

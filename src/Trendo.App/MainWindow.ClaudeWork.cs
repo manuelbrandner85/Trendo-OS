@@ -135,7 +135,7 @@ public partial class MainWindow
             var dir = Path.GetDirectoryName(zip)!;
             Toast("Fertig verpackt: " + Path.GetFileName(zip), ("Ordner öffnen", () => Launch(dir)));
         }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { _claudeMsg = "Verpacken ging nicht: " + e.Message; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { _claudeMsg = "Verpacken ging nicht: " + Trendo.Core.FriendlyError.Say(e); }
         if (_chatUis.TryGetValue(dock, out var ui)) ui.Panel = null;
         RenderChat(dock);
     }

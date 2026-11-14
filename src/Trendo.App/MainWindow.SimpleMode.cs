@@ -136,7 +136,7 @@ public partial class MainWindow
             Mesh3D.WriteStl(mesh, path); _last3dFile = path;
             Open3dPrint(path);
         }
-        catch (Exception ex) when (ex is IOException or InvalidOperationException or UnauthorizedAccessException) { Say("Das Modell ließ sich nicht für den Druck speichern: " + ex.Message, "3d"); }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or UnauthorizedAccessException) { Say("Das Modell ließ sich nicht für den Druck speichern: " + Trendo.Core.FriendlyError.Say(ex), "3d"); }
     }
 
     // ---------- Übrige Seiten: Rest hinter „Mehr anzeigen“ ----------

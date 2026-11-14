@@ -114,7 +114,7 @@ public partial class MainWindow
         catch (OperationCanceledException) when (SetupCancelRequested) { _hubMsg = "Abgebrochen."; }
         catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
         {
-            _hubMsg = "Telegram ließ sich nicht einrichten: " + ex.Message;
+            _hubMsg = "Telegram ließ sich nicht einrichten: " + Trendo.Core.FriendlyError.Say(ex);
             FinishSetupOverlay("Einrichten nicht möglich", _hubMsg, [ex.Message]);
         }
         finally { _depBusy = false; if (file is not null) TryDelete(file); }

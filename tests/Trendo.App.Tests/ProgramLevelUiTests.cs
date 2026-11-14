@@ -30,6 +30,8 @@ public class ProgramLevel_Ui
         Assert.NotNull(w.TryFind<Button>("prog-cmd-tk-m")); // Kernwerkzeug bleibt
         Assert.Equal(before, w.ProgramActive(key)!.Data.ToJsonString());
         Assert.Equal("einfach", UserSettings.Load(root).Level);
+        Assert.Null(w.TryFind<Button>("prog-level-erweitert")); // E2 (T-0616): in „Einfach“ eingeklappt …
+        RealClick(w, w.Find<Button>("prog-tools-more")); Settle(); // … „Mehr Werkzeuge“ holt die Stufenwahl
         RealClick(w, w.Find<Button>("prog-level-erweitert")); Settle();
         Assert.NotNull(w.TryFind<Button>("prog-cmd-tk-ec"));
         Assert.Equal(before, w.ProgramActive(key)!.Data.ToJsonString());
@@ -52,10 +54,11 @@ public class ProgramLevel_Ui
         RealClick(w, w.Find<Button>("prog-tpl-tshirt"));
         w.ProgramSetLevel(UserLevel.Profi, key); Settle();
         var d = w.ProgramActive(key)!;
-        // Befehlssuche: „Varianten“ finden und ausführen
-        var pal = w.Find<Button>("prog-palette");
-        var q = In<TextBox>(pal, "prog-palette-q"); q.Text = "variant";
-        In<Button>(pal, "prog-palette-0").Press(); Settle();
+        // Befehlssuche (E11, T-0616: in Strg+K aufgegangen): „Varianten“ finden und ausführen
+        Assert.Null(w.TryFind<Button>("prog-palette"));
+        w.OpenPalette("variant"); Settle();
+        Assert.Contains(w.PaletteResults, r => r.Label.Contains("ariant"));
+        w.GetLogicalDescendants().OfType<Button>().First(b => (b.Name ?? "").StartsWith("command-hit-") && b.GetLogicalDescendants().OfType<TextBlock>().Any(t => (t.Text ?? "")== "Varianten erzeugen")).Press(); Settle();
         Assert.Equal(12, w.ProgramActive(key)!.List("variants").Count);
         // zweite Änderung, dann im Verlauf zwei Schritte zurück
         w.ProgramActive(key)!.Set("name", "Shirt Pro"); w.Show(key); Settle();

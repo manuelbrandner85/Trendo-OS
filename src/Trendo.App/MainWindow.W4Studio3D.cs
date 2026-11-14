@@ -53,7 +53,7 @@ public partial class MainWindow
         }
         var aiOn = SceneAi is not null || _ollamaUp;
         try { _png3d = PreviewBytes(); _previewError = null; }
-        catch (Exception ex) { _png3d = null; _previewError = "Vorschau nicht möglich: " + ex.Message; }
+        catch (Exception ex) { _png3d = null; _previewError = "Vorschau nicht möglich: " + Trendo.Core.FriendlyError.Say(ex); }
 
         var objName = new TextBox { Name = "3d-name", Text = _scene.Name, Width = 200 };
         var header = new StackPanel
@@ -415,7 +415,7 @@ public partial class MainWindow
                 finally { try { Directory.Delete(tmp, true); } catch { } }
             }
         }
-        catch (Exception ex) { Say("Speichern nicht möglich: " + ex.Message, "3d"); return; }
+        catch (Exception ex) { Say("Speichern nicht möglich: " + Trendo.Core.FriendlyError.Say(ex), "3d"); return; }
         Say($"Gespeichert im Projekt „{_scene.Name}“. Du findest es unter Projekte.", "3d");
     }
 
@@ -432,7 +432,7 @@ public partial class MainWindow
             _pngKey = "";
             Say($"Projekt „{_scene.Name}“ geöffnet.", "3d");
         }
-        catch (Exception ex) { Say("Das Projekt lässt sich nicht öffnen: " + ex.Message, "3d"); }
+        catch (Exception ex) { Say("Das Projekt lässt sich nicht öffnen: " + Trendo.Core.FriendlyError.Say(ex), "3d"); }
     }
 
     private void NewScene(TextBox objName)
@@ -466,7 +466,7 @@ public partial class MainWindow
         Say("Die KI liest den Satz …", "3d");
         string raw;
         try { using var kiLabel = Trendo.Core.KiActivityHub.Label("3D-Szene planen"); raw = SceneAi is { } local ? await local(text) : await _ollama.ChatAsync(KiModelName, ScenePlan.Prompt(text)); }
-        catch (Exception ex) { _aiParts = null; Say("Die lokale KI antwortet nicht: " + ex.Message, "3d"); return; }
+        catch (Exception ex) { _aiParts = null; Say("Die lokale KI antwortet nicht: " + Trendo.Core.FriendlyError.Say(ex), "3d"); return; }
         if (!ScenePlan.TryRead(raw, out var parts, out var err)) { _aiParts = null; Say(err, "3d"); return; }
         _aiParts = parts;
         Say("So würde ich das bauen. Schau die Liste an, dann übernimm oder verwirf sie.", "3d");
@@ -516,7 +516,7 @@ public partial class MainWindow
                 foreach (var p in picked) _ = ImportPath(p);
                 return;
             }
-            catch (Exception ex) { Say("Die Dateiauswahl geht hier nicht: " + ex.Message, "3d"); return; }
+            catch (Exception ex) { Say("Die Dateiauswahl geht hier nicht: " + Trendo.Core.FriendlyError.Say(ex), "3d"); return; }
         }
         if (string.IsNullOrWhiteSpace(path)) { Say("Keine Datei gewählt.", "3d"); return; }
         _ = ImportPath(path);
@@ -621,7 +621,7 @@ public partial class MainWindow
             _last3dFile = path;
             Say($"Gespeichert: {Path.GetFileName(path)}. FBX in Zentimetern, ohne Blender.", "3d");
         }
-        catch (Exception ex) { Say("Export nicht möglich: " + ex.Message, "3d"); }
+        catch (Exception ex) { Say("Export nicht möglich: " + Trendo.Core.FriendlyError.Say(ex), "3d"); }
     }
 
     private void ExportNative(TextBox objName, string ext)
@@ -640,7 +640,7 @@ public partial class MainWindow
             var hint = ext switch { ".stl" => "Maße in Millimetern.", ".glb" => "Maße in Metern.", _ => "Maße in Zentimetern." };
             Say($"Gespeichert: {Path.GetFileName(path)}. {hint}", "3d");
         }
-        catch (Exception ex) { Say("Export nicht möglich: " + ex.Message, "3d"); }
+        catch (Exception ex) { Say("Export nicht möglich: " + Trendo.Core.FriendlyError.Say(ex), "3d"); }
     }
 
     private async Task ExportWithBlender(TextBox objName, string ext)

@@ -90,7 +90,7 @@ public partial class MainWindow
                 : ok ? "Vergleichsvorschau in der Zeitleiste; Spur als JSON und Moho/Papagayo-Datei im Ordner „Lippensynchron“." : "Nichts in die Zeitleiste übernommen – Spur und Vorschau liegen zur Kontrolle im Ordner „Lippensynchron“.");
             return ok && pr.Ok;
         }
-        catch (Exception e) when (e is IOException or InvalidDataException or InvalidOperationException) { _progMsg[VK] = "FAIL: " + e.Message; return false; }
+        catch (Exception e) when (e is IOException or InvalidDataException or InvalidOperationException) { _progMsg[VK] = "FAIL: " + Trendo.Core.FriendlyError.Say(e); return false; }
         finally { _veLipBusy = false; Show(VK); }
     }
 

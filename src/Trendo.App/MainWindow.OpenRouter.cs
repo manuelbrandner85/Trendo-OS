@@ -56,7 +56,7 @@ public partial class MainWindow
         }
         catch (Exception e) when (e is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException or InvalidOperationException or KeyNotFoundException)
         {
-            _orMsg = "Die Liste ließ sich gerade nicht laden: " + e.Message;
+            _orMsg = "Die Liste ließ sich gerade nicht laden: " + Trendo.Core.FriendlyError.Say(e);
             return OpenRouterFree.Load(_core.DataRoot).Models.Count;
         }
     }
@@ -120,7 +120,7 @@ public partial class MainWindow
         catch (Exception e) when (e is HttpRequestException or InvalidOperationException or IOException or TaskCanceledException or System.Text.Json.JsonException or KeyNotFoundException)
         {
             KiActivityHub.End(act, false, 0);
-            return "Hat nicht geklappt: " + e.Message;
+            return "Hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(e);
         }
     }
 

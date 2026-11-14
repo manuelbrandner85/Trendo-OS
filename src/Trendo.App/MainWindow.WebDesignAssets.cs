@@ -87,7 +87,7 @@ public partial class MainWindow
             WebDesignAssetImport(file, "schrift", family, "Fontsource", license, "", "https://fontsource.org/fonts/" + id, "schrift", family);
             try { Directory.Delete(tmp, true); } catch (IOException) { }
         }
-        catch (Exception e) when (e is HttpRequestException or TaskCanceledException or InvalidOperationException or System.Text.Json.JsonException or IOException) { _wdNote = "Schrift ließ sich nicht holen: " + e.Message; Show("dev"); }
+        catch (Exception e) when (e is HttpRequestException or TaskCanceledException or InvalidOperationException or System.Text.Json.JsonException or IOException) { _wdNote = "Schrift ließ sich nicht holen: " + Trendo.Core.FriendlyError.Say(e); Show("dev"); }
     }
 
     public void WebDesignUseFont(string family) =>
@@ -115,7 +115,7 @@ public partial class MainWindow
             _core.Audit.Append(Principal.LocalOwner.Name, "web.visuell.modellpruefung", string.Join(", ", results.Select(r => $"{r.Model}={(r.Passed ? "ok" : "nein")}")));
             WebDesignBenchNote = WebDesignModelBench.Recommend(WebHardware, WebDesignModelBench.Load(_core.DataRoot)).Note;
         }
-        catch (Exception e) when (e is HttpRequestException or TaskCanceledException or InvalidOperationException) { WebDesignBenchNote = "Prüflauf abgebrochen: " + e.Message; }
+        catch (Exception e) when (e is HttpRequestException or TaskCanceledException or InvalidOperationException) { WebDesignBenchNote = "Prüflauf abgebrochen: " + Trendo.Core.FriendlyError.Say(e); }
         finally { _wdBenchBusy = false; Show("dev"); }
     }
 

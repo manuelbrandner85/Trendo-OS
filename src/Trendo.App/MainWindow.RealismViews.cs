@@ -79,7 +79,7 @@ public partial class MainWindow
             CncStockMessage = CncStockImage is null ? "Blender hat kein Bild geliefert." : "Fertig: " + png;
             _core.Audit.Append(Principal.LocalOwner.Name, "cnc.foto", Path.GetFileName(png));
         }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException) { CncStockMessage = "Foto ging nicht: " + e.Message; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException) { CncStockMessage = "Foto ging nicht: " + Trendo.Core.FriendlyError.Say(e); }
         finally { _cncPhotoBusy = false; Show(CK); }
     }
 

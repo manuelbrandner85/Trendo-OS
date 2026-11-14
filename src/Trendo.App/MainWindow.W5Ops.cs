@@ -60,7 +60,7 @@ public partial class MainWindow
         psec.Children.Add(new WrapPanel { Children = { gn, gi, ga, gz, Act("op-g-make", "GiroCode erstellen", () =>
         {
             try { _giro = BusinessOps.GiroCode(gn.Text ?? "", gi.Text ?? "", Finance.ParseAmount(ga.Text ?? ""), gz.Text ?? ""); var f = System.IO.Path.Combine(BusinessFolder, "girocode.txt"); File.WriteAllText(f, _giro); Say("GiroCode-Inhalt gespeichert. Ein QR-Programm macht daraus das Bild für die Rechnung.", "biz-betrieb"); }
-            catch (Exception ex) when (ex is ArgumentException or FormatException) { Say("Hat nicht geklappt: " + ex.Message, "biz-betrieb"); }
+            catch (Exception ex) when (ex is ArgumentException or FormatException) { Say("Hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex), "biz-betrieb"); }
         }) } });
         if (_giro.Length > 0) psec.Children.Add(new SelectableTextBlock { Name = "op-g-out", Text = _giro, Foreground = Text, FontFamily = new FontFamily("monospace"), FontSize = 11 });
         psec.Children.Add(P("Online-Zahlungen (PayPal, Stripe) brauchen ein eigenes Konto beim Anbieter. Trendo verbindet sich noch nicht direkt damit.", null, 10.5));
@@ -99,7 +99,7 @@ public partial class MainWindow
             if (path.Length == 0) { Say("Bitte zuerst den Pfad zur CSV-Datei eintragen.", "biz-betrieb"); return; }
             try { var add = BusinessOps.ImportStats(File.ReadAllText(path)); var l = BizStats.All(); l.RemoveAll(x => add.Any(a => a.Date == x.Date)); l.AddRange(add); BizStats.Save(l.OrderBy(x => x.Date).ToList()); Say($"{add.Count} Tage übernommen.", "biz-betrieb"); }
             catch (IOException) { Say("Datei nicht gefunden.", "biz-betrieb"); }
-            catch (Exception ex) when (ex is UnauthorizedAccessException or ArgumentException or FormatException) { Say("CSV konnte nicht gelesen werden: " + ex.Message, "biz-betrieb"); }
+            catch (Exception ex) when (ex is UnauthorizedAccessException or ArgumentException or FormatException) { Say("CSV konnte nicht gelesen werden: " + Trendo.Core.FriendlyError.Say(ex), "biz-betrieb"); }
         }) } } } };
         if (stats.Count > 0) { var tr = BusinessOps.Analyze(stats); zsec.Children.Add(new TextBlock { Name = "op-trend", Text = $"Letzte 7 Tage: {tr.SignupRate:P1} melden sich an, {tr.SaleRate:P1} kaufen (davor {tr.PrevSaleRate:P1}). {tr.Text}", Foreground = Text, TextWrapping = TextWrapping.Wrap }); }
         var pv = BusinessOps.Compare(i, Money.All(), new DateOnly(today.Year, 1, 1), today);

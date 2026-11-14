@@ -225,7 +225,7 @@ public partial class MainWindow
             var v = Calc.Eval(expr, _rcDeg, null); _rcResult = Calc.Format(v);
             _rcHist.Insert(0, $"{expr} = {_rcResult}"); if (_rcHist.Count > 30) _rcHist.RemoveAt(30);
         }
-        catch (Exception ex) when (ex is FormatException or DivideByZeroException or OverflowException) { _rcResult = ex is DivideByZeroException ? ex.Message : "Fehler: " + ex.Message; }
+        catch (Exception ex) when (ex is FormatException or DivideByZeroException or OverflowException) { _rcResult = ex is DivideByZeroException ? ex.Message : "Fehler: " + Trendo.Core.FriendlyError.Say(ex); }
         _rcExpr = expr; return _rcResult;
     }
 

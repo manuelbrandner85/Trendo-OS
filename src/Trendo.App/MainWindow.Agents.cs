@@ -41,7 +41,7 @@ public partial class MainWindow
             if (team is not null) { var r = await Agents.RunTeamAsync(team, goal, Intel, _agentProject, KiModelName); _agentMsg = r.All(t => t.State == AgentTaskState.Fertig) ? $"Team fertig: {r.Count} Schritte." : "Team abgebrochen: " + r[^1].Result; }
             else { var t = await Agents.RunAsync(Agents.Create(_agentRole, goal, _agentProject), Intel, KiModelName); _agentMsg = t.State == AgentTaskState.Fertig ? "Fertig." : t.Result; }
         }
-        catch (Exception ex) { _agentMsg = "Hat nicht geklappt: " + ex.Message; }
+        catch (Exception ex) { _agentMsg = "Hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex); }
         _agentBusy = false;
     }
 

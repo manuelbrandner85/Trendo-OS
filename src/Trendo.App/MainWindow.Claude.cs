@@ -38,7 +38,7 @@ public partial class MainWindow
             ClaudeEnv(psi);
             Process.Start(psi);
         }
-        catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException or IOException) { _claudeMsg = "Claude Code ließ sich nicht öffnen: " + e.Message; RefreshKiPage(); }
+        catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException or IOException) { _claudeMsg = "Claude Code ließ sich nicht öffnen: " + Trendo.Core.FriendlyError.Say(e); RefreshKiPage(); }
     }
 
     /// <summary>Für Tests: Anmeldestand und Läufe ohne echtes Claude (Argumente, Ordner, Zeile → Exitcode).</summary>
@@ -177,7 +177,7 @@ public partial class MainWindow
             using var p = Process.Start(psi);
             if (p is not null) await p.WaitForExitAsync();
         }
-        catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException) { _claudeMsg = "Anmeldung ließ sich nicht starten: " + e.Message; }
+        catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException) { _claudeMsg = "Anmeldung ließ sich nicht starten: " + Trendo.Core.FriendlyError.Say(e); }
         var s = await ClaudeCheck(true);
         _claudeMsg = s.Ready ? "Verbunden. Claude ist jetzt deine Haupt-KI in Trendo." : _claudeMsg;
         _core.Audit.Append(Principal.LocalOwner.Name, s.Ready ? "claude.login.ok" : "claude.login.offen", s.Plan);
@@ -196,7 +196,7 @@ public partial class MainWindow
             foreach (var a in new[] { "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", "irm https://claude.ai/install.ps1 | iex" }) psi.ArgumentList.Add(a);
             using var p = Process.Start(psi); if (p is not null) await p.WaitForExitAsync();
         }
-        catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException) { _claudeMsg = "Einrichten ließ sich nicht starten: " + e.Message; }
+        catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException) { _claudeMsg = "Einrichten ließ sich nicht starten: " + Trendo.Core.FriendlyError.Say(e); }
         var s = await ClaudeCheck(true);
         _claudeMsg = s.Installed ? "Claude Code ist eingerichtet. Jetzt noch „Mit Claude verbinden“." : "Claude Code wurde nicht gefunden – bitte noch einmal versuchen.";
         _core.Audit.Append(Principal.LocalOwner.Name, s.Installed ? "claude.install.ok" : "claude.install.fail", "");

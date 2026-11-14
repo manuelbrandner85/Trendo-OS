@@ -24,8 +24,8 @@ public partial class MainWindow
     [
         ("Fragen", "✳", [("ki-fragen", "KI fragen"), ("ki", "Trendo KI (lokal)"), ("claude-verbinden", "Mit Claude verbinden")]),
         ("Modelle", "◈", [("ki-bibliothek", "KI-Bibliothek"), ("ki-quellen", "KI-Quellen"), ("ki-internet", "Kostenlose Internet-KIs")]),
-        ("Anweisungen", "✎", [("ki-vorlagen", "KI-Vorlagen"), ("ki-skills", "Skills")]),
-        ("Team & Abläufe", "⚡", [("ki-rollen", "KI-Rollen und Teams"), ("ablaeufe", "Abläufe"), ("produktion", "Produktion")]),
+        ("Anweisungen", "✎", [("ki-vorlagen", "KI-Vorlagen"), ("ki-skills", "KI-Fähigkeiten (Skills)")]),
+        ("Team & Abläufe", "⚡", [("ki-rollen", "KI-Helfer und Teams"), ("ablaeufe", "Abläufe"), ("produktion", "Produktion")]),
         ("Verbindungen", "⇄", [("verbindungen", "Verbindungen"), ("keys", "Online-Dienste")]),
     ];
 
@@ -36,6 +36,10 @@ public partial class MainWindow
     /// <summary>Seite gehört zu einer App-Hülle (Einstellungen oder KI-Zentrale).</summary>
     public static bool InAppShell(string key) => ShellOf.ContainsKey(key);
     string _setQuery = "";
+
+    /// <summary>E12 (T-0616): In „Einfach“ zeigen die Einstellungen diese Hauptseiten, alles Weitere nach einem Klick auf „Mehr Einstellungen“ (die Suche findet immer alles).</summary>
+    public static readonly string[] SimpleSettingsPages = ["settings", "bedien-sehen", "personen", "geraete", "sicherung", "updates"];
+    bool _setAllPages;
 
     /// <summary>Persönlicher Ordner (Bilder, Videos, Musik, Dokumente). Im Testmodus ein leerer eigener Ordner – Tests und Bildschirmfotos
     /// sehen nie echte Fotos oder Dateien der Person (Befund 04.11.2026: Medien zeigte im Testmodus echte Fotos).</summary>
@@ -64,9 +68,12 @@ public partial class MainWindow
         var def = ShellOf[key]; var n = def.Name;
         var nav = new StackPanel { Name = n + "-nav", Spacing = 1 };
         var hits = _setQuery.Length > 0 ? SettingsSearch(_setQuery, n).Select(h => h.Key).ToHashSet(StringComparer.OrdinalIgnoreCase) : null;
+        var slim = n == "settings" && IsSimple && !_setAllPages && hits is null; // E12
+        var hiddenCount = 0;
         foreach (var (group, icon, pages) in def.Groups)
         {
             var visible = pages.Where(p => _showMap.ContainsKey(p.Key) && (hits is null || hits.Contains(p.Key))).ToList();
+            if (slim) { var all = visible.Count; visible = visible.Where(p => SimpleSettingsPages.Contains(p.Key) || string.Equals(p.Key, key, StringComparison.OrdinalIgnoreCase)).ToList(); hiddenCount += all - visible.Count; }
             if (visible.Count == 0) continue;
             nav.Children.Add(new TextBlock { Text = icon + "  " + group, Foreground = Muted, FontSize = 11.5, FontWeight = FontWeight.SemiBold, Margin = new Thickness(10, 10, 0, 3) });
             foreach (var (k, label) in visible)
@@ -82,6 +89,13 @@ public partial class MainWindow
                 if (on) { var c = (Control)b.Content!; b.Content = null; nav.Children.Add(new Border { Name = n + "-nav-" + k, Background = b.Background, CornerRadius = b.CornerRadius, Padding = b.Padding, Child = c }); }
                 else nav.Children.Add(b);
             }
+        }
+        if (n == "settings" && IsSimple && hits is null && (hiddenCount > 0 || _setAllPages))
+        {
+            var more = new Button { Name = "settings-nav-more", Content = _setAllPages ? "Weniger anzeigen" : $"Mehr Einstellungen ({hiddenCount})", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(10, 6), Margin = new Thickness(0, 8, 0, 0), Background = Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8) };
+            ToolTip.SetTip(more, "In der Bedienstufe „Einfach“ stehen hier nur die wichtigsten Seiten – die Suche oben findet immer alle");
+            more.Click += (_, _) => { _setAllPages = !_setAllPages; Show(key); };
+            nav.Children.Add(more);
         }
         if (nav.Children.Count == 0) nav.Children.Add(new TextBlock { Name = n + "-none", Text = n == "settings" ? "Keine Einstellung gefunden." : "Nichts gefunden.", Foreground = Muted, FontSize = 12, Margin = new Thickness(10) });
         var search = new TextBox { Name = n + "-search", Watermark = n == "settings" ? "Einstellung suchen" : "In der " + def.Title + " suchen", Text = _setQuery, Margin = new Thickness(6, 4, 6, 6) };

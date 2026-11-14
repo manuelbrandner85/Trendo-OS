@@ -201,7 +201,7 @@ public partial class MainWindow
             Toast($"PDF gespeichert: {Path.GetFileName(f)}", ("Öffnen", new Action(() => Launch(f))), ("Ordner öffnen", new Action(() => Launch(Path.GetDirectoryName(f)!))));
             _core.Audit.Append(Principal.LocalOwner.Name, "tabelle.pdf", Path.GetFileName(f));
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException) { _shMsg = "PDF ging nicht: " + ex.Message; }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException) { _shMsg = "PDF ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
     }
 
     private void SheetPrint()
@@ -216,7 +216,7 @@ public partial class MainWindow
             _shMsg = "Druckansicht geöffnet – dort Drucker wählen.";
             _core.Audit.Append(Principal.LocalOwner.Name, "tabelle.print", Path.GetFileName(f));
         }
-        catch (Exception ex) when (ex is IOException or System.ComponentModel.Win32Exception or InvalidOperationException) { _shMsg = "Drucken ging nicht: " + ex.Message; }
+        catch (Exception ex) when (ex is IOException or System.ComponentModel.Win32Exception or InvalidOperationException) { _shMsg = "Drucken ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
     }
 
     // ---------- E5–E9 ----------
@@ -403,7 +403,7 @@ public partial class MainWindow
         var path = !asNew && SheetPath is not null ? SheetPath : await PickSheet(true);
         if (path is null) return;
         try { SheetSaveAs(path); Toast($"Gespeichert: {Path.GetFileName(path)}", ("Ordner öffnen", new Action(() => Launch(Path.GetDirectoryName(path)!)))); }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _shMsg = "Speichern ging nicht: " + ex.Message; }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _shMsg = "Speichern ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
         Show("tabelle");
     }
 
@@ -411,7 +411,7 @@ public partial class MainWindow
     {
         var path = await PickSheet(false);
         if (path is null) return;
-        try { SheetOpen(path); } catch (Exception ex) when (ex is IOException or InvalidDataException or System.Xml.XmlException) { _shMsg = "Öffnen ging nicht: " + ex.Message; }
+        try { SheetOpen(path); } catch (Exception ex) when (ex is IOException or InvalidDataException or System.Xml.XmlException) { _shMsg = "Öffnen ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
         Show("tabelle");
     }
 
@@ -490,7 +490,7 @@ public partial class MainWindow
                 Content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = {
                     new TextBlock { Text = "▦", FontSize = 18, Foreground = Brush.Parse("#34D399") },
                     new StackPanel { Children = { new TextBlock { Text = Path.GetFileName(path), Foreground = Text, FontSize = 13 }, new TextBlock { Text = $"{Path.GetDirectoryName(path)} · {File.GetLastWriteTime(path):dd.MM.yyyy HH:mm}", Foreground = Muted, FontSize = 12 } } } } } };
-            b.Click += (_, _) => { try { SheetOpen(path); } catch (Exception ex) when (ex is IOException or InvalidDataException or System.Xml.XmlException) { _shMsg = "Öffnen ging nicht: " + ex.Message; } Show("tabelle"); };
+            b.Click += (_, _) => { try { SheetOpen(path); } catch (Exception ex) when (ex is IOException or InvalidDataException or System.Xml.XmlException) { _shMsg = "Öffnen ging nicht: " + Trendo.Core.FriendlyError.Say(ex); } Show("tabelle"); };
             sp.Children.Add(b);
         }
         return new ScrollViewer { Content = sp };

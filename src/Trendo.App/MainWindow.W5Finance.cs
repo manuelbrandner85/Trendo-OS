@@ -17,7 +17,7 @@ public partial class MainWindow
     public int FinanceImport(string path)
     {
         try { var n = Money.Import(FinanceExtra.Categorize(Finance.ImportCsv(File.ReadAllText(path)), MoneyMemory)); BudgetWarn(); _core.Audit.Append(Principal.LocalOwner.Name, "finance.import", $"{n} neu"); Say($"{n} Buchungen übernommen (doppelte übersprungen).", "finanzen"); return n; }
-        catch (Exception ex) { Say("Import hat nicht geklappt: " + ex.Message, "finanzen"); return -1; }
+        catch (Exception ex) { Say("Import hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex), "finanzen"); return -1; }
     }
 
     private Control FinanceView()

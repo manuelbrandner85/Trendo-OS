@@ -219,7 +219,7 @@ public partial class MainWindow
         if (!File.Exists(seven)) // selbst nachgebaut (04.11.2026): ohne 7-Zip entpackt Trendo .7z selbst
         {
             try { Archive7z.Extract(archive, target); return; }
-            catch (Exception e) when (e is InvalidDataException or IOException or SharpCompress.Common.ArchiveException or NotSupportedException) { throw new InvalidOperationException("Entpacken fehlgeschlagen: " + e.Message); }
+            catch (Exception e) when (e is InvalidDataException or IOException or SharpCompress.Common.ArchiveException or NotSupportedException) { throw new InvalidOperationException("Entpacken fehlgeschlagen: " + Trendo.Core.FriendlyError.Say(e)); }
         }
         var r = Cli.Run(seven, ["x", archive, "-o" + target, "-y", "-bso0", "-bsp0", "-snl-"], timeoutMs: 3_600_000);
         if (!r.Ok) throw new InvalidOperationException("Entpacken fehlgeschlagen: " + Short(r.Err.Length > 0 ? r.Err : r.Out));

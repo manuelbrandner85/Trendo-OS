@@ -45,7 +45,7 @@ public partial class MainWindow
                 });
                 _promptTestId = t.Id; _promptMsg = "";
             }
-            catch (Exception ex) when (ex is not OperationCanceledException) { LastPromptTest = []; _promptMsg = "Test fehlgeschlagen: " + ex.Message; }
+            catch (Exception ex) when (ex is not OperationCanceledException) { LastPromptTest = []; _promptMsg = "Test fehlgeschlagen: " + Trendo.Core.FriendlyError.Say(ex); }
             Show("ki-vorlagen");
         };
         sp.Children.Add(box); sp.Children.Add(run);

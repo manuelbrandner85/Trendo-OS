@@ -119,7 +119,7 @@ public partial class MainWindow
         }
         catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or ArgumentException or IOException or TaskCanceledException or System.Text.Json.JsonException)
         {
-            _msMsg = "Hat nicht geklappt: " + ex.Message;
+            _msMsg = "Hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex);
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.fehler", ex.GetType().Name);
             return made;
         }
@@ -204,7 +204,7 @@ public partial class MainWindow
             _msLyrics = polished; _msPro = true; _msMsg = "✓ Liedtext eingesetzt – anpassen und dann „Erstellen“." + FloskelHint(left);
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.liedtext", lang);
         }
-        catch (Exception ex) when (ex is InvalidOperationException or HttpRequestException or TaskCanceledException) { _msMsg = "Liedtext ging nicht: " + ex.Message; }
+        catch (Exception ex) when (ex is InvalidOperationException or HttpRequestException or TaskCanceledException) { _msMsg = "Liedtext ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
         Show(MS);
     }
 

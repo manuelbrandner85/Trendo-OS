@@ -46,7 +46,7 @@ public partial class MainWindow
             Desk.Record(final, ReaderShown, body); _rsShownUrl = final.ToString();
             _rsMsg = $"Gelesen: {final.Host} · {ReaderShown.Text.Length} Zeichen · nichts wurde gespeichert außer in dieser Sitzung.";
         }
-        catch (Exception ex) { ReaderShown = null; _rsMsg = "Konnte die Seite nicht lesen: " + ex.Message; }
+        catch (Exception ex) { ReaderShown = null; _rsMsg = "Konnte die Seite nicht lesen: " + Trendo.Core.FriendlyError.Say(ex); }
     }
 
     /// <summary>Zwischen „nur der Artikel“ und „ganze Seite“ wechseln, ohne die Seite neu zu laden (öffentlich für Tests).</summary>
