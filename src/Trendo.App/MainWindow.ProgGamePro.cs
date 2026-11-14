@@ -28,7 +28,7 @@ public partial class MainWindow
             var p = GamePro.Phases[i]; var ok = GamePro.Accepted(d.Data, p.Id); var on = p.Id == cur.Id && !ok;
             var chip = new Border { Name = "game-phase-" + p.Id, CornerRadius = new CornerRadius(14), Padding = new Thickness(12, 5), Margin = new Thickness(0, 0, 4, 6),
                 Background = ok ? Brush.Parse("#2A2FBF71") : on ? Accent : Brushes.Transparent, BorderBrush = ok ? Brush.Parse("#2FBF71") : Edge, BorderThickness = new Thickness(on ? 0 : 1),
-                Child = new TextBlock { Text = (ok ? "✓ " : on ? "● " : "○ ") + p.Label, Foreground = on ? Brushes.White : Text, FontSize = 12.5 } };
+                Child = new TextBlock { Text = (ok ? "✓ " : on ? "• " : "") + p.Label, Foreground = on ? Brushes.White : Text, FontSize = 12.5 } };
             ToolTip.SetTip(chip, p.Goal);
             bar.Children.Add(chip);
             if (i < GamePro.Phases.Length - 1) bar.Children.Add(new TextBlock { Text = "→", Foreground = Muted, Margin = new Thickness(2, 4, 6, 0) });
@@ -109,11 +109,11 @@ public partial class MainWindow
         var sp = new StackPanel { Name = "game-team-tree", Spacing = 3, Children = { H("Aufbau des KI-Teams", 13), P($"Der {GameTeam.HeadName} führt. Aufgaben gehen von oben nach unten; widersprechen sich zwei Rollen, entscheidet ihre nächste gemeinsame Leitung.", Muted, 11.5) } };
         foreach (var dir in tree.Where(m => m.Level == 0))
         {
-            sp.Children.Add(new TextBlock { Text = "◆ " + dir.Name, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 4, 0, 0) });
+            sp.Children.Add(new TextBlock { Text = "" + dir.Name, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 4, 0, 0) });
             foreach (var lead in tree.Where(m => m.Level == 1 && m.Lead == dir.Id))
             {
                 var team = tree.Where(m => m.Level == 2 && m.Lead == lead.Id).Select(m => m.Name).ToList();
-                sp.Children.Add(P($"   ▸ {lead.Name} ({lead.Department}): {string.Join(", ", team)}", Muted, 11.5));
+                sp.Children.Add(P($"   {lead.Name} ({lead.Department}): {string.Join(", ", team)}", Muted, 11.5));
             }
         }
         return sp;
@@ -157,11 +157,11 @@ public partial class MainWindow
         for (var i = 0; i < notes.Count; i++)
         {
             var n = notes[i]; var idx = i; var done = n["done"]?.GetValueKind() == System.Text.Json.JsonValueKind.True;
-            var cb = new CheckBox { Name = $"game-note-done-{i}", IsChecked = done, Content = new TextBlock { Text = $"{(n["kind"].AsText() == "fehler" ? "🐞 Fehler" : "📝 Notiz")} · Level {n["level"]}, Spalte {(int)ProgramDocument.ToNumber(n["x"]) + 1}: {n["text"].AsText()}", Foreground = done ? Muted : Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap, TextDecorations = done ? TextDecorations.Strikethrough : null } };
+            var cb = new CheckBox { Name = $"game-note-done-{i}", IsChecked = done, Content = new TextBlock { Text = $"{(n["kind"].AsText() == "fehler" ? "Fehler" : "Notiz")} · Level {n["level"]}, Spalte {(int)ProgramDocument.ToNumber(n["x"]) + 1}: {n["text"].AsText()}", Foreground = done ? Muted : Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap, TextDecorations = done ? TextDecorations.Strikethrough : null } };
             cb.IsCheckedChanged += (_, _) => { if ((cb.IsChecked == true) != done) ProgramRun(GK, () => d.Edit("Notiz erledigt", x => ((JsonObject)((JsonArray)x["testnotes"]!)[idx]!)["done"] = cb.IsChecked == true)); };
             nl.Children.Add(new DockPanel { Children = { Dk(Act($"game-note-del-{i}", "✕", () => ProgramRun(GK, () => d.Edit("Notiz löschen", x => (x["testnotes"] as JsonArray)?.RemoveAt(idx)))), Avalonia.Controls.Dock.Right), cb } });
         }
-        if (notes.Count == 0) nl.Children.Add(P("Noch keine Notizen – im Bereich „Level“ auf „▶ Im Fenster spielen“, dann unten „Notiz“ oder „Fehler“.", Muted, 12));
+        if (notes.Count == 0) nl.Children.Add(P("Noch keine Notizen – im Bereich „Level“ auf „Im Fenster spielen“, dann unten „Notiz“ oder „Fehler“.", Muted, 12));
         sp.Children.Add(nl);
         var open = notes.Count(n => n["kind"].AsText() == "fehler" && n["done"]?.GetValueKind() != System.Text.Json.JsonValueKind.True);
         sp.Children.Add(P(open == 0 ? "✓ Keine offenen Fehler." : $"{open} offene(r) Fehler – Beta kann erst danach abgenommen werden.", open == 0 ? Brush.Parse("#2FBF71") : Brush.Parse("#F5A524"), 12));
@@ -172,8 +172,8 @@ public partial class MainWindow
     private Control GamePlayNoteBar(ProgramDocument d)
     {
         var t = new TextBox { Name = "game-play-note", PlaceholderText = "Was fällt auf? (z. B. „Sprung hier zu weit“)", Width = 320 };
-        void Add(bool bug) => ProgramRun(GK, () => { GameAddTestNote(d, t.Text ?? "", bug); _progMsg[GK] = bug ? "🐞 Fehler festgehalten – siehe Bereich „Test“." : "📝 Notiz festgehalten – siehe Bereich „Test“."; });
-        return new WrapPanel { Name = "game-play-notes", Children = { t, new Border { Width = 6 }, Act("game-play-note-add", "📝 Notiz", () => Add(false)), new Border { Width = 4 }, Act("game-play-bug-add", "🐞 Fehler", () => Add(true)) } };
+        void Add(bool bug) => ProgramRun(GK, () => { GameAddTestNote(d, t.Text ?? "", bug); _progMsg[GK] = bug ? "Fehler festgehalten – siehe Bereich „Test“." : "Notiz festgehalten – siehe Bereich „Test“."; });
+        return new WrapPanel { Name = "game-play-notes", Children = { t, new Border { Width = 6 }, Act("game-play-note-add", "Notiz", () => Add(false)), new Border { Width = 4 }, Act("game-play-bug-add", "Fehler", () => Add(true)) } };
     }
 
     // ───────────── Ton-Spur ─────────────

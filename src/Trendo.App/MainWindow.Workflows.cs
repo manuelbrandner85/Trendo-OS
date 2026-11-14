@@ -125,7 +125,7 @@ public partial class MainWindow
         if (all.Count == 0) left.Children.Add(P("Noch keine eigenen Abläufe – oben eine Vorlage antippen.", null, 12)); // Leerzustand groß in der Mitte (G6)
 
         var center = new StackPanel { Spacing = 8 };
-        var undo = new Button { Name = "wf-undo", Content = "↶ Rückgängig", IsEnabled = _wfUndo.Count > 0 }; undo.Click += (_, _) => { WfUndo(); Show("ablaeufe"); };
+        var undo = new Button { Name = "wf-undo", Content = "Rückgängig", IsEnabled = _wfUndo.Count > 0 }; undo.Click += (_, _) => { WfUndo(); Show("ablaeufe"); };
         center.Children.Add(new DockPanel { Children = { undo, new TextBlock { Name = "wf-msg", Text = _wfMsg, Foreground = Text, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0) } } });
         DockPanel.SetDock(undo, Avalonia.Controls.Dock.Left);
         var selW = WfSelected is { } sid ? Workflows.Get(sid) : null;
@@ -234,12 +234,12 @@ public partial class MainWindow
         var probe = _wfProbeId == w.Id ? _wfProbe : null; var probing = _wfProbing && _wfProbeId == w.Id;
         (string? Text, string Color) Badge(int i)
         {
-            if (probing) return i == _wfProbeStep ? ("◐ wird geprüft …", "#FACC15") : i < _wfProbeStep ? ("✓ geprüft", "#86EFAC") : (null, "");
+            if (probing) return i == _wfProbeStep ? ("wird geprüft …", "#FACC15") : i < _wfProbeStep ? ("✓ geprüft", "#86EFAC") : (null, "");
             if (probe is null) return (null, "");
             var r = probe.Steps.FirstOrDefault(x => x.Step == i);
             return r is null ? ("– nicht erreicht", "#94A3B8") : r.Ok ? ("✓ " + r.Summary, r.Count == 0 ? "#CBD5E1" : "#86EFAC") : ("✕ " + r.Summary, "#FCA5A5");
         }
-        var probeBtn = new Button { Name = "wf-probe", Content = probing ? "Probelauf läuft …" : "▶ Probelauf mit Anzeige", IsEnabled = !probing, Background = Accent, Foreground = Brushes.White, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 0, 0, 10) };
+        var probeBtn = new Button { Name = "wf-probe", Content = probing ? "Probelauf läuft …" : "Probelauf mit Anzeige", IsEnabled = !probing, Background = Accent, Foreground = Brushes.White, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 0, 0, 10) };
         probeBtn.Click += async (_, _) => await WfProbeRun(w);
         flow.Children.Add(probeBtn);
         Border Node(string name, int idx, string icon, string title, string sub, string c1, bool selected, string? badge = null, string badgeColor = "#CFE0F5", bool live = false)

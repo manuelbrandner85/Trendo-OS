@@ -199,7 +199,7 @@ public partial class MainWindow
         bar.Children.Add(B("pdf-double", _pdfDouble ? "Einzelseite" : "Doppelseite", () => _pdfDouble = !_pdfDouble));
         bar.Children.Add(B("pdf-rotate-view", "Ansicht drehen ⟳", () => _pdfRot = (_pdfRot + 90) % 360));
         bar.Children.Add(B("pdf-fullscreen", WindowState == WindowState.FullScreen ? "Vollbild aus" : "Vollbild", () => WindowState = WindowState == WindowState.FullScreen ? WindowState.Normal : WindowState.FullScreen));
-        var org = B("pdf-organize-start", _pdfOrg is null ? "▦ Seiten ordnen" : "▦ Ordnen beenden", () => { if (_pdfOrg is null) PdfOrgStart(); else { _pdfOrg = null; _pdfOrgSel.Clear(); } }); if (_pdfOrg is not null) org.Background = Accent;
+        var org = B("pdf-organize-start", _pdfOrg is null ? "Seiten ordnen" : "Ordnen beenden", () => { if (_pdfOrg is null) PdfOrgStart(); else { _pdfOrg = null; _pdfOrgSel.Clear(); } }); if (_pdfOrg is not null) org.Background = Accent;
         if (_pdfOrg is not null) bar.Children.Clear(); // beim Ordnen zählen nur die Ordnen-Werkzeuge
         bar.Children.Insert(0, org);
         Grid.SetRow(bar, 1); Grid.SetColumnSpan(bar, 2); root.Children.Add(bar);
@@ -241,7 +241,7 @@ public partial class MainWindow
         {
             var t = PdfView.Text(PdfPath!, PdfPage, _pdfPassword);
             if (Clipboard is { } cb) _ = cb.SetTextAsync(t);
-            PdfSay(t.Length == 0 ? "Diese Seite hat keinen Text (vielleicht ein Scan – dann hilft „🔎 Texterkennung“ darunter)." : $"{t.Length} Zeichen kopiert.");
+            PdfSay(t.Length == 0 ? "Diese Seite hat keinen Text (vielleicht ein Scan – dann hilft „Texterkennung“ darunter)." : $"{t.Length} Zeichen kopiert.");
         }));
 
         // P5 Markieren und Notizen

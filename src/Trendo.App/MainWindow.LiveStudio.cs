@@ -122,7 +122,7 @@ public partial class MainWindow
         if (warn != _liveWarn)
         {
             _liveWarn = warn;
-            if (warn is not null) { _core.Audit.Append(Principal.LocalOwner.Name, "live.tonwarnung", warn); Toast("🎙 " + warn); }
+            if (warn is not null) { _core.Audit.Append(Principal.LocalOwner.Name, "live.tonwarnung", warn); Toast("" + warn); }
             if (LiveCtrl<TextBlock>("live-audio-warn") is { } t) { t.Text = warn ?? ""; t.IsVisible = warn is not null; }
         }
         if (LiveCtrl<TextBlock>("live-plan-now") is { } pn && _liveStarted is { } st && LiveShowState.Plan.Count > 0)
@@ -167,7 +167,7 @@ public partial class MainWindow
             var on = s.Id == LiveShowState.Current?.Id; var id = s.Id;
             var b = new Button { Name = "live-scene-" + s.Id, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(10, 6), CornerRadius = new CornerRadius(8),
                 Background = on ? Brush.Parse("#33D4A84B") : Brush.Parse("#10FFFFFF"), BorderBrush = Brush.Parse(on ? "#D4A84B" : "#22FFFFFF"), BorderThickness = new Thickness(1),
-                Content = new StackPanel { Children = { new TextBlock { Text = (on ? "● " : "") + s.Name, Foreground = Text, FontWeight = on ? FontWeight.SemiBold : FontWeight.Normal, FontSize = 13 },
+                Content = new StackPanel { Children = { new TextBlock { Text = (on ? "• " : "") + s.Name, Foreground = Text, FontWeight = on ? FontWeight.SemiBold : FontWeight.Normal, FontSize = 13 },
                     new TextBlock { Text = (s.Main switch { VideoKind.Camera => "Kamera", VideoKind.Window => "Fenster", _ => "Bildschirm" }) + (s.Overlays.Count > 0 ? $" + {s.Overlays.Count} Einblendung{(s.Overlays.Count == 1 ? "" : "en")}" : ""), Foreground = Muted, FontSize = 11 } } } };
             b.Click += (_, _) => { try { LiveSelectScene(id); } catch (InvalidOperationException e) { _liveMsg = e.Message; Show("sendung"); } };
             sp.Children.Add(b);

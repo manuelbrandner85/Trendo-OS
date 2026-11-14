@@ -552,7 +552,7 @@ public partial class MainWindow
             });
         }
         if (wide) return LiveLayout(box, sourcesCard, pictureCard, liveCard, WCard(tools));
-        var open = new Button { Name = "live-open-studio", Content = "🎥 Studio öffnen – Szenen, Tonmischer, Probelauf", HorizontalAlignment = HorizontalAlignment.Stretch, Background = Accent, Foreground = Brushes.White };
+        var open = new Button { Name = "live-open-studio", Content = "Studio öffnen – Szenen, Tonmischer, Probelauf", HorizontalAlignment = HorizontalAlignment.Stretch, Background = Accent, Foreground = Brushes.White };
         open.Click += (_, _) => { BcMode = "studio"; Show("sendung"); };
         box.Children.Add(open); box.Children.Add(sourcesCard); box.Children.Add(pictureCard); box.Children.Add(liveCard); box.Children.Add(WCard(tools));
         return box;

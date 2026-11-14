@@ -36,7 +36,7 @@ public class MusikCoverUiTests
         return s;
     }
 
-    [AvaloniaFact(DisplayName = "Musik-Cover: „🎨 Cover-Bild erstellen“ – Motiv zum Genre (Jazz-Club), 1400 × 1400 JPEG mit Titel und Name, erscheint in Bibliothek und Lied; Layout wechseln, Neu würfeln")]
+    [AvaloniaFact(DisplayName = "Musik-Cover: „Cover-Bild erstellen“ – Motiv zum Genre (Jazz-Club), 1400 × 1400 JPEG mit Titel und Name, erscheint in Bibliothek und Lied; Layout wechseln, Neu würfeln")]
     public async Task Make_cover()
     {
         var (w, _, root) = Ui.Open();
@@ -56,7 +56,7 @@ public class MusikCoverUiTests
             Assert.Equal((byte)0xFF, File.ReadAllBytes(song.CoverFile)[0]); // JPEG
             if (Environment.GetEnvironmentVariable("TRENDO_COVER_OUT") is { } outDir) File.Copy(song.CoverFile, Path.Combine(outDir, "cover-unten.jpg"), true);
             Assert.True(w.Find<Border>("ms-detail").GetLogicalDescendants().OfType<Image>().Any());
-            Assert.Equal("🎲 Neu würfeln", w.Find<Button>("ms-art-make").Content);
+            Assert.Equal("Neu würfeln", w.Find<Button>("ms-art-make").Content);
 
             var first = song.CoverFile;
             w.Find<Button>("ms-art-layout-mittig").Press(); await Pump();

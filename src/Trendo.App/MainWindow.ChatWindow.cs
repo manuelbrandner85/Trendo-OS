@@ -112,7 +112,7 @@ public partial class MainWindow
         var send = new Button { Name = "ask-send", Content = "Senden", Background = Accent, IsEnabled = _askCts is null };
         send.Click += async (_, _) => { var q = input.Text ?? ""; if (q.Trim().Length > 0) input.Text = ""; await AskChat(q); };
         input.AddHandler(KeyDownEvent, (_, e) => { if (e.Key == Key.Enter && !e.KeyModifiers.HasFlag(KeyModifiers.Shift)) { e.Handled = true; send.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent)); } }, Avalonia.Interactivity.RoutingStrategies.Tunnel);
-        var stop = new Button { Name = "ask-stop", Content = "■ Stopp", IsVisible = _askCts is not null };
+        var stop = new Button { Name = "ask-stop", Content = "Stopp", IsVisible = _askCts is not null };
         stop.Click += (_, _) => _askCts?.Cancel();
         var clear = new Button { Name = "ask-clear", Content = "Neues Gespräch" };
         clear.Click += (_, _) => OpenChat(null);
@@ -142,7 +142,7 @@ public partial class MainWindow
         if (_chat.Count >= 2)
         {
             var (lq, la) = (_chat[^2].Content, _chat[^1].Content);
-            var good = new Button { Name = "ask-good", Content = "👍 Gut" };
+            var good = new Button { Name = "ask-good", Content = "Gut" };
             good.Click += (_, _) => { Wissen.Feedback(lq, la, true); _askState = "Danke für deine Rückmeldung."; Show("ki-fragen"); };
             var fix = new TextBox { Name = "ask-fix", PlaceholderText = "Was ist richtig? Trendo merkt es sich.", Width = 320 };
             var bad = new Button { Name = "ask-bad", Content = "Verbessern" };

@@ -134,7 +134,7 @@ public partial class MainWindow
             foreach (var c in MapColors) { var cc = c; var b = new Button { Name = "mk-color-" + c.TrimStart('#'), Width = 22, Height = 22, Margin = new Thickness(0, 0, 4, 4), Padding = new Thickness(0), Background = Brush.Parse(c), BorderBrush = Brushes.White, BorderThickness = new Thickness(c == tr.Color ? 2 : 0), CornerRadius = new CornerRadius(11) }; b.Click += (_, _) => MapEdit("Farbe", x => x.Tracks.First(t => t.Id == sel).Color = cc); colors.Children.Add(b); }
             sp.Children.Add(colors);
             Fact("Länge", $"{st.DistanceKm:0.00} km");
-            if (st.MaxEle > st.MinEle || tr.Points.Any(p => p.Ele is not null)) { Fact("Aufstieg / Abstieg", $"↑ {st.AscentM:0} m · ↓ {st.DescentM:0} m"); Fact("Höhe", $"{st.MinEle:0} – {st.MaxEle:0} m"); }
+            if (st.MaxEle > st.MinEle || tr.Points.Any(p => p.Ele is not null)) { Fact("Aufstieg / Abstieg", $"{st.AscentM:0} m auf · {st.DescentM:0} m ab"); Fact("Höhe", $"{st.MinEle:0} – {st.MaxEle:0} m"); }
             if (st.Duration is { } dur) Fact("Dauer / Schnitt", $"{(int)dur.TotalHours}:{dur.Minutes:00} h · {st.AvgKmh ?? 0:0.0} km/h");
             var hike = GeoPlus.HikingTime(st.DistanceKm, st.AscentM, st.DescentM); Fact("Gehzeit (DIN 33466)", $"{(int)hike.TotalHours}:{hike.Minutes:00} h ohne Pausen");
             Fact("Punkte", tr.Points.Count.ToString());

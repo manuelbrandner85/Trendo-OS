@@ -121,7 +121,7 @@ public partial class MainWindow
     Control GameIdeasCard()
     {
         var sp = new StackPanel { Spacing = 8 };
-        sp.Children.Add(new TextBlock { Text = "💡 Noch keine Idee?", FontSize = 16, FontWeight = FontWeight.SemiBold, Foreground = Text });
+        sp.Children.Add(new TextBlock { Text = "Noch keine Idee?", FontSize = 16, FontWeight = FontWeight.SemiBold, Foreground = Text });
         var open = new WrapPanel { Children = {
             Act("game-idea-form", "Ideen nach meinen Wünschen", () => { _gcMode = _gcMode == "form" ? "" : "form"; Show(GK); }),
             new Border { Width = 8 },
@@ -157,7 +157,7 @@ public partial class MainWindow
         for (var i = 0; i < _gcIdeas.Count; i++) sp.Children.Add(GameIdeaCard(_gcIdeas[i], i));
         if (_gcIdeas.Count > 0)
         {
-            var more = Act("game-idea-more", _gcBusy ? "Sucht …" : "↻ Neue Ideen nach meinen Bewertungen", () => GameIdeasRun(_gcOpts));
+            var more = Act("game-idea-more", _gcBusy ? "Sucht …" : "Neue Ideen nach meinen Bewertungen", () => GameIdeasRun(_gcOpts));
             more.IsEnabled = !_gcBusy;
             sp.Children.Add(more);
         }
@@ -176,9 +176,9 @@ public partial class MainWindow
         if (_gcImageNotes.TryGetValue(idea.Title, out var note)) sp.Children.Add(new TextBlock { Name = $"game-idea-{i}-note", Text = note, Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap });
         sp.Children.Add(new WrapPanel { Children = {
             Act($"game-idea-{i}-use", "✓ Daraus Spiel machen", () => GameIdeaUse(idea), true), new Border { Width = 6 },
-            Act($"game-idea-{i}-like", liked ? "👍 Gefällt" : "👍", () => GameIdeaRate(idea, true)), new Border { Width = 6 },
-            Act($"game-idea-{i}-dislike", disliked ? "👎 Gefällt nicht" : "👎", () => GameIdeaRate(idea, false)), new Border { Width = 6 },
-            Act($"game-idea-{i}-image", "🖼 Konzeptbild", () => GameIdeaImage(idea)) } });
+            Act($"game-idea-{i}-like", liked ? "Gefällt" : "👍", () => GameIdeaRate(idea, true)), new Border { Width = 6 },
+            Act($"game-idea-{i}-dislike", disliked ? "Gefällt nicht" : "👎", () => GameIdeaRate(idea, false)), new Border { Width = 6 },
+            Act($"game-idea-{i}-image", "Konzeptbild", () => GameIdeaImage(idea)) } });
         return new Border { Name = $"game-idea-{i}", Padding = new Thickness(12), CornerRadius = new CornerRadius(12), Background = Brush.Parse(C("#14FFFFFF", "#08000000")), BorderBrush = Edge, BorderThickness = new Thickness(1), Child = sp };
     }
 
@@ -236,9 +236,9 @@ public partial class MainWindow
         var head = new WrapPanel { Children = { heading,
             Small("-up", "▲", () => ProgramRun(GK, () => d.Edit("Abschnitt verschieben", x => GameDocument.Move(x, id, -1))), index > 0),
             Small("-down", "▼", () => ProgramRun(GK, () => d.Edit("Abschnitt verschieben", x => GameDocument.Move(x, id, 1))), index < count - 1),
-            Act(pre + "-img", "🖼 Bild", () => GameDocPickImage(d, id)),
+            Act(pre + "-img", "Bild", () => GameDocPickImage(d, id)),
             new Border { Width = 4 },
-            Small("-chat", chatOpen ? "💬 Chat schließen" : "💬 Mit KI besprechen", () => { _gdChat = chatOpen ? null : (d.Id, id); _gdPending = null; Show(GK); }) } };
+            Small("-chat", chatOpen ? "Chat schließen" : "Mit KI besprechen", () => { _gdChat = chatOpen ? null : (d.Id, id); _gdPending = null; Show(GK); }) } };
         if (s.Custom) head.Children.Add(Small("-del", "Entfernen", () => ProgramRun(GK, () => { d.Edit("Abschnitt entfernen", x => GameDocument.RemoveCustom(x, id)); GameDocument.ClearChat(d, id); })));
         var sp = new StackPanel { Spacing = 6, Children = { head } };
         if (s.Editable)
@@ -341,7 +341,7 @@ public partial class MainWindow
         }
         var input = new TextBox { Name = "game-doc-chat-input", PlaceholderText = "Frage oder Wunsch zu diesem Abschnitt", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 44 };
         var send = Act("game-doc-chat-send", _gdBusy ? "KI arbeitet …" : "Senden", () => GameDocChatSend(id, input.Text ?? ""), true);
-        var suggest = Act("game-doc-chat-suggest", "💡 Vorschlag machen", () => GameDocChatSend(id, "Mache einen konkreten Verbesserungsvorschlag für diesen Abschnitt."));
+        var suggest = Act("game-doc-chat-suggest", "Vorschlag machen", () => GameDocChatSend(id, "Mache einen konkreten Verbesserungsvorschlag für diesen Abschnitt."));
         send.IsEnabled = suggest.IsEnabled = !_gdBusy;
         sp.Children.Add(input);
         sp.Children.Add(new WrapPanel { Children = { send, new Border { Width = 8 }, suggest } });

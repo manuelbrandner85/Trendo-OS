@@ -50,7 +50,7 @@ public partial class MainWindow
         if (!_ovConsent) { OvSay("Bitte zuerst bestätigen: Das ist meine eigene Stimme."); return false; }
         if (_ovBusy) return false;
         var n = OwnTakeCount; if (n >= OwnTakes) { OvSay("Alle Aufnahmen sind da – jetzt „Stimme lernen“."); return false; }
-        _ovBusy = true; OvSay($"🎤 Aufnahme {n + 1} von {OwnTakes} läuft ({OwnTakeSeconds} s): {OwnTakeHints[n % OwnTakeHints.Length]}");
+        _ovBusy = true; OvSay($"Aufnahme {n + 1} von {OwnTakes} läuft ({OwnTakeSeconds} s): {OwnTakeHints[n % OwnTakeHints.Length]}");
         try
         {
             var wav = await RecordMic(OwnTakeSeconds);
@@ -84,12 +84,12 @@ public partial class MainWindow
                     await KiPyInstall(KiLibrary.Models.First(m => m.Id == "musik-stimme"), KiPyApps.For(KiRuntime.Stimme)!);
                 }
             }
-            OvSay("🧠 Trendo lernt deine Stimme … (mit NVIDIA-Grafikkarte etwa 30–40 Minuten; du kannst weiterarbeiten)");
+            OvSay("Trendo lernt deine Stimme … (mit NVIDIA-Grafikkarte etwa 30–40 Minuten; du kannst weiterarbeiten)");
             var r = await OvRun(["lernen", OwnVoiceName, OwnTakesDir, "60"], 4 * 3600_000);
             var ok = r.Ok && r.Out.Contains("\"ok\": true");
             if (ok) { Directory.CreateDirectory(OwnDir); File.WriteAllText(OwnReadyFile, DateTime.Now.ToString("O")); }
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.stimme.eigen.gelernt", ok ? "ok" : "fehler");
-            OvSay(ok ? "✓ Deine Stimme ist gelernt – unter ④ „Meine eigene Stimme“ wählen." : "Lernen ging nicht: " + Short(r.Err.Length > 0 ? r.Err : r.Out));
+            OvSay(ok ? "✓ Deine Stimme ist gelernt – unter Schritt 4 „Meine eigene Stimme“ wählen." : "Lernen ging nicht: " + Short(r.Err.Length > 0 ? r.Err : r.Out));
             return ok;
         }
         catch (Exception e) when (e is InvalidOperationException or IOException or HttpRequestException or OperationCanceledException) { OvSay("Einrichten ging nicht: " + e.Message); return false; }
@@ -108,7 +108,7 @@ public partial class MainWindow
         var stems = await MsSplit(s.Id);
         var vocal = stems.FirstOrDefault(x => x.Kind == "gesang"); var acc = stems.FirstOrDefault(x => x.Kind == "begleitung");
         if (vocal is null || acc is null) { OvSay("Trennen ging nicht: " + _msMsg); return null; }
-        OvSay($"🎙 Der Gesang wird in {(bankVoice is null ? "deiner Stimme" : "der Stimme „" + bankVoice.Name + "“")} gesungen …");
+        OvSay($"Der Gesang wird in {(bankVoice is null ? "deiner Stimme" : "der Stimme „" + bankVoice.Name + "“")} gesungen …");
         var dir = Path.GetDirectoryName(s.File)!;
         var voc = Path.Combine(dir, Path.GetFileNameWithoutExtension(s.File) + $" – Gesang ({label}).wav");
         var r = await OvRun(["singen", model, vocal.File, voc, semitones.ToString(System.Globalization.CultureInfo.InvariantCulture)], 1_800_000);
@@ -147,7 +147,7 @@ public partial class MainWindow
     Control MsOwnVoicePanel()
     {
         var sp = new StackPanel { Name = "ov-panel", Spacing = 6 };
-        sp.Children.Add(new TextBlock { Text = "🎙 Meine eigene Stimme", Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold });
+        sp.Children.Add(new TextBlock { Text = "Meine eigene Stimme", Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold });
         if (OwnVoiceReady)
         {
             sp.Children.Add(P("✓ Deine Stimme ist gelernt. Wähle oben „Meine eigene Stimme“ – dann singt das Cover in deiner Stimme.", Muted, 11));
@@ -162,9 +162,9 @@ public partial class MainWindow
             var bar = new ProgressBar { Name = "ov-takes", Minimum = 0, Maximum = OwnTakes, Value = n, Height = 6 };
             sp.Children.Add(bar);
             if (n < OwnTakes) sp.Children.Add(P($"Nächste Aufnahme ({n + 1}): {OwnTakeHints[n % OwnTakeHints.Length]}", Text, 11.5));
-            var rec = new Button { Name = "ov-record", Content = _ovBusy ? "Läuft …" : $"⏺ Aufnahme {Math.Min(n + 1, OwnTakes)} von {OwnTakes}", FontSize = 12, IsEnabled = _ovConsent && !_ovBusy && n < OwnTakes };
+            var rec = new Button { Name = "ov-record", Content = _ovBusy ? "Läuft …" : $"Aufnahme {Math.Min(n + 1, OwnTakes)} von {OwnTakes}", FontSize = 12, IsEnabled = _ovConsent && !_ovBusy && n < OwnTakes };
             rec.Click += async (_, _) => await MsOwnVoiceRecord();
-            var learn = new Button { Name = "ov-learn", Content = "🧠 Stimme lernen", FontSize = 12, IsEnabled = _ovConsent && !_ovBusy && n >= OwnMinTakes, Background = n >= OwnMinTakes ? Accent : null, Foreground = n >= OwnMinTakes ? Brushes.White : null };
+            var learn = new Button { Name = "ov-learn", Content = "Stimme lernen", FontSize = 12, IsEnabled = _ovConsent && !_ovBusy && n >= OwnMinTakes, Background = n >= OwnMinTakes ? Accent : null, Foreground = n >= OwnMinTakes ? Brushes.White : null };
             learn.Click += async (_, _) => await MsOwnVoiceLearn();
             sp.Children.Add(new WrapPanel { Children = { rec, new Border { Width = 6 }, learn } });
         }

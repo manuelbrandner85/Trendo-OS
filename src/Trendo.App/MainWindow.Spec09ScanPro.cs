@@ -73,7 +73,7 @@ public partial class MainWindow
         var (lo, hi) = ScanPro.Bounds(mesh);
         sp.Children.Add(new TextBlock { Name = "scan-dims", Text = $"Größe jetzt: {Part3D.Num(hi.X - lo.X)} × {Part3D.Num(hi.Y - lo.Y)} × {Part3D.Num(hi.Z - lo.Z)} cm", Foreground = Text, FontSize = 12 });
         var cams = _scanModel is null ? [] : ScanPro.LoadCameras(Path.GetDirectoryName(_scanModel)!);
-        if (cams.Count > 0) sp.Children.Add(Act("scan-cams", _scanShowCams ? $"📷 {cams.Count} Kameras ausblenden" : $"📷 {cams.Count} Kameras zeigen", () => { _scanShowCams = !_scanShowCams; Show("scan3d"); }));
+        if (cams.Count > 0) sp.Children.Add(Act("scan-cams", _scanShowCams ? $"{cams.Count} Kameras ausblenden" : $"{cams.Count} Kameras zeigen", () => { _scanShowCams = !_scanShowCams; Show("scan3d"); }));
         // Beschneiden: unten (Tisch/Boden) und rundum
         var bottom = new Slider { Name = "scan-crop-bottom", Minimum = 0, Maximum = 40, Value = 0, Width = 160 };
         var side = new Slider { Name = "scan-crop-side", Minimum = 0, Maximum = 40, Value = 0, Width = 160 };
@@ -81,7 +81,7 @@ public partial class MainWindow
         sp.Children.Add(new WrapPanel { Children = { new TextBlock { Text = "unten %", Width = 70, Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center }, bottom } });
         sp.Children.Add(new WrapPanel { Children = { new TextBlock { Text = "rundum %", Width = 70, Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center }, side } });
         sp.Children.Add(new WrapPanel { Children = {
-            Act("scan-crop", "✂ Abschneiden", () => { double b = bottom.Value / 100, s = side.Value / 100; ScanEdit("Beschnitten", m => ScanPro.Crop(m, (s, 1 - s), (s, 1 - s), (b, 1))); }),
+            Act("scan-crop", "Abschneiden", () => { double b = bottom.Value / 100, s = side.Value / 100; ScanEdit("Beschnitten", m => ScanPro.Crop(m, (s, 1 - s), (s, 1 - s), (b, 1))); }),
             new Border { Width = 4 }, Act("scan-largest", "Kleine Reste entfernen", () => ScanEdit("Reste entfernt", ScanPro.KeepLargest)),
             new Border { Width = 4 }, Act("scan-holes", "Löcher schließen", () => ScanEdit("Löcher geschlossen", m => ScanPro.FillHoles(m).Mesh)),
             new Border { Width = 4 }, Act("scan-undo", "Rückgängig", ScanUndo) } });

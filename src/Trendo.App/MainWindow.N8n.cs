@@ -83,7 +83,7 @@ public partial class MainWindow
         {
             _autoApi = await Trendo.Api.LocalApi.StartAsync(_core, new Trendo.Api.ApiTokens(_core.Secrets), "", _probe, N8n.TrendoApiPort, new Trendo.Api.AutomationHost
             {
-                Notify = t => _ui.Post(() => Toast("⚡ " + t)),
+                Notify = t => _ui.Post(() => Toast("" + t)),
                 ListWorkflows = () => [.. Workflows.All().Select(w => (object)new { id = w.Id, name = w.Name, enabled = w.Enabled, approved = w.IsApproved })],
                 RunWorkflow = async (id, dry) =>
                 {
@@ -302,8 +302,8 @@ public partial class MainWindow
         TextBlock Dig(string name, string t) => new() { Name = name, Text = t, Foreground = DawLook ? DawDigits : Text, FontFamily = new FontFamily("Consolas, monospace"), FontWeight = FontWeight.SemiBold, FontSize = 13, Margin = new Thickness(0, 0, 18, 0), VerticalAlignment = VerticalAlignment.Center };
         var lcd = new Border { Name = "n8n-lcd", Background = DawLook ? DawLcd : TileBg, BorderBrush = PaneEdge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(6), Padding = new Thickness(10, 6), Margin = new Thickness(0, 0, 16, 10),
             Child = new WrapPanel { Children = {
-                Dig("n8n-lcd-n8n", "N8N " + (N8nRunning ? "● LÄUFT" : N8nInstalled ? "○ AUS" : "– FEHLT")),
-                Dig("n8n-lcd-red", "NODE-RED " + (_noderedProc is { HasExited: false } ? "● LÄUFT" : NodeRedInstalled ? "○ AUS" : "– FEHLT")),
+                Dig("n8n-lcd-n8n", "N8N " + (N8nRunning ? "LÄUFT" : N8nInstalled ? "AUS" : "– FEHLT")),
+                Dig("n8n-lcd-red", "NODE-RED " + (_noderedProc is { HasExited: false } ? "LÄUFT" : NodeRedInstalled ? "AUS" : "– FEHLT")),
                 Dig("n8n-lcd-ki", $"KI {_kiUp.Count}/{N8n.Backends.Length}"),
                 Dig("n8n-lcd-ev", $"EREIGNISSE {Hooks.List().Count}"),
                 Dig("n8n-lcd-wf", $"ABLÄUFE {_n8nList.Count}") } } };

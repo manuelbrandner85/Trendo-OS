@@ -125,9 +125,9 @@ public class ClaudeStudio_Ui
             await Run(w.ClaudeChatSend("Mach die markierte Zelle fett"));
             Assert.Contains("[Gerade im Studio: Trendo Tabelle", calls[0][1]);
             Assert.DoesNotContain("--restricted", calls[0]); Assert.Equal("auto", Arg(calls[0], "--permission-mode")); // Vorgabe: bei Bedarf Internet und Befehle
-            Assert.Equal("🔓 Internet & Befehle an", w.Find<Button>("claude-chat-full").Content);
+            Assert.Equal("Internet & Befehle an", w.Find<Button>("claude-chat-full").Content);
             w.Find<Button>("claude-chat-full").Press(); w.Find<Button>("claude-chat-full-off").Press(); // dieses Projekt auf sicher
-            Assert.True(w.ClaudeChatCurrent()!.Safe); Assert.Equal("🔒 Sicher", w.Find<Button>("claude-chat-full").Content);
+            Assert.True(w.ClaudeChatCurrent()!.Safe); Assert.Equal("Sicher", w.Find<Button>("claude-chat-full").Content);
             await Run(w.ClaudeChatSend("Jetzt sicher"));
             Assert.Contains("--restricted", calls[1]); Assert.Equal("acceptEdits", Arg(calls[1], "--permission-mode"));
             w.Find<Button>("claude-chat-full").Press(); w.Find<Button>("claude-chat-full-yes").Press();

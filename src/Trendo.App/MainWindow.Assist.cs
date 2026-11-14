@@ -203,7 +203,7 @@ public partial class MainWindow
         host = r.Host;
         var sp = new StackPanel { Name = "assist-panel", Spacing = 6 };
         var head = new WrapPanel { Children = {
-            new TextBlock { Text = $"✨ Assistent · {r.Target.Title}", Foreground = Text, FontWeight = FontWeight.SemiBold, FontSize = 13, VerticalAlignment = VerticalAlignment.Center },
+            new TextBlock { Text = $"Assistent · {r.Target.Title}", Foreground = Text, FontWeight = FontWeight.SemiBold, FontSize = 13, VerticalAlignment = VerticalAlignment.Center },
             new TextBlock { Name = "assist-source", Text = $"   verstanden über: {r.Plan.Source}" + (r.Plan.Source == "Regeln" ? " (ohne KI)" : ""), Foreground = Muted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center } } };
         sp.Children.Add(head);
         for (var i = 0; i < r.Plan.Steps.Count; i++)
@@ -254,7 +254,7 @@ public partial class MainWindow
                 Child = new Viewbox { Stretch = Stretch.Uniform, Child = new Border { Width = 1100, Height = 650, Child = pv } } });
         var bar = new WrapPanel();
         void B(Control c) { c.Margin = new Thickness(0, 0, 6, 0); bar.Children.Add(c); }
-        if (r.Phase == "läuft") B(Act("assist-stop", "■ Stopp", () => r.Stop = true));
+        if (r.Phase == "läuft") B(Act("assist-stop", "Stopp", () => r.Stop = true));
         if (r.Phase == "vorschau")
         {
             var apply = Act("assist-apply", "Ja, behalten", () => AssistApply(r, host), true); apply.IsEnabled = r.Session?.Changed == true || r.Plan.HasSideEffects; B(apply);

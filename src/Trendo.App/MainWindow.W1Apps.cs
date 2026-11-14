@@ -152,7 +152,7 @@ public partial class MainWindow
             b.Click += (_, _) => StartTimer(TimeSpan.FromMinutes(min));
             presets.Children.Add(b);
         }
-        var stop = new Button { Name = "timer-stop", Content = "■ Stopp", Margin = new Thickness(0, 0, 6, 6), CornerRadius = new CornerRadius(12) }; stop.Click += (_, _) => { _timer?.Stop(); _timerText.Text = "00:00"; };
+        var stop = new Button { Name = "timer-stop", Content = "Stopp", Margin = new Thickness(0, 0, 6, 6), CornerRadius = new CornerRadius(12) }; stop.Click += (_, _) => { _timer?.Stop(); _timerText.Text = "00:00"; };
         presets.Children.Add(stop);
         var timerPanel = Panel("Kurzzeitwecker", "⏱", new StackPanel { Spacing = 14, Children = { dial, presets, P("Läuft weiter, auch wenn du die Seite wechselst – am Ende meldet sich Trendo.", Muted, 11.5) } });
 

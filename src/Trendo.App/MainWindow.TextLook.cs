@@ -125,7 +125,7 @@ public partial class MainWindow
         var p = TextDocument.Blocks.ElementAtOrDefault(index) as Para;
         string Selected() => p is null ? "" : _txSelLen > 0 && _txSel + _txSelLen <= p.Text.Length ? p.Text.Substring(_txSel, _txSelLen) : p.Text;
         if (ClaudeBelongs("text") && ClaudeStudioOf("text") is { } studio)
-            m.Items.Add(I("text-context-claude", "✳ Claude fragen", () => ClaudeContextAsk(Selected(), studio)));
+            m.Items.Add(I("text-context-claude", "Claude fragen", () => ClaudeContextAsk(Selected(), studio)));
         m.Items.Add(I("text-context-cut", "Ausschneiden", () => _txActive?.Cut()));
         m.Items.Add(I("text-context-copy", "Kopieren", () => _txActive?.Copy()));
         m.Items.Add(I("text-context-paste", "Einfügen", () => _txActive?.Paste()));

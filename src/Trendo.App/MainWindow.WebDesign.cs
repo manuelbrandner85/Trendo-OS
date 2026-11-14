@@ -56,7 +56,7 @@ public partial class MainWindow
     Control VisualEditorPane()
     {
         var sp = new StackPanel { Spacing = 8, Name = "web-visual" };
-        sp.Children.Add(H("🎨 Visueller Editor", 15));
+        sp.Children.Add(H("Visueller Editor", 15));
         sp.Children.Add(P("Seite wie in einem Profi-Programm gestalten: Bausteine ziehen oder doppelklicken, Eigenschaften rechts, Ebenen, Handy-/Tablet-/Desktop-Ansicht, Rückgängig, 3D-Szene und Bewegungen. „Speichern“ im Editor sichert die Seite im Projekt.", null, 12));
         var editorOk = File.Exists(Path.Combine(WebDesignEditorDir, "index.html"));
         sp.Children.Add(new WrapPanel { Children = {

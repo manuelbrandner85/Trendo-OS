@@ -107,7 +107,7 @@ public partial class MainWindow
         var pick = new TextBox { Name = "rob-pick-from", Text = "150 0 20", Width = 110 }; var place = new TextBox { Name = "rob-pick-to", Text = "0 150 20", Width = 110 };
         var actions = new WrapPanel { Children = {
             Btn("rob-pt-add", "＋ Ziel als Wegpunkt", () => RobRun(() => { var l = RobPoints(); var p = (Fach.Num(Bench.X, "x"), Fach.Num(Bench.Y, "y"), Fach.Num(Bench.Z, "z")); RobotArm.Inverse(arm, p.Item1, p.Item2, p.Item3); l.Add(p); RobSetPoints(l); _robMsg = ""; })),
-            Btn("rob-sim", RobSimulating ? "■ Simulation stoppen" : "▶ Weg simulieren", () => RobRun(() => RobSimulate()), true),
+            Btn("rob-sim", RobSimulating ? "Simulation stoppen" : "Weg simulieren", () => RobRun(() => RobSimulate()), true),
             Btn("rob-csv", "Programm (CSV)", () => RobRun(() => { var p = RobotArm.Program(arm, Bench.Points.Replace('|', '\n')); var f = System.IO.Path.Combine(WorkFolder("Roboter"), "programm.csv"); File.WriteAllText(f, RobotArm.Csv(p)); _robMsg = $"Gesamt {Fach.F(p.Sum(s => s.Seconds), 2)} s – gespeichert: {f}"; NotifyFileResult(_robMsg); })),
             new TextBlock { Text = "Pick & Place von", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 4, 4) }, pick,
             new TextBlock { Text = "nach", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 4, 4) }, place,

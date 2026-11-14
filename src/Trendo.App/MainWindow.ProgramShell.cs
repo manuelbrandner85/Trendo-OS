@@ -88,7 +88,7 @@ public partial class MainWindow
         var t = spec.Templates.FirstOrDefault(x => x.Id == templateId) ?? spec.Templates.FirstOrDefault();
         var d = new ProgramDocument(spec.Studio, t is null || t.Id == "leer" ? "Unbenannt" : t.Name, t?.Create() ?? []);
         var l = ProgramDocs(key); l.Add(d); _progActive[key] = l.Count - 1;
-        _progMsg[key] = t is null || t.Id == "leer" ? "Neues Dokument." : $"Vorlage „{t.Name}“ – einfach anpassen.";
+        _progMsg[key] = t is null || t.Id == "leer" ? "Neues Dokument." : $"Vorlage „{t.Name}“ geöffnet.";
         return d;
     }
 
@@ -175,20 +175,26 @@ public partial class MainWindow
                 Pos(new StackPanel { Margin = new Thickness(12, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Children = {
                     new TextBlock { Text = spec.Title, Foreground = Brushes.White, FontSize = 18, FontWeight = FontWeight.Bold },
                     spec.FillHeight && d is not null && _progMsg.GetValueOrDefault(key) is { Length: > 0 } bm
-                        ? new SelectableTextBlock { Name = "prog-msg", Text = "➜ " + bm, Foreground = Brushes.White, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap, MaxHeight = 40 }
+                        ? new SelectableTextBlock { Name = "prog-msg", Text = "" + bm, Foreground = Brushes.White, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap, MaxHeight = 40 }
                         : new TextBlock { Text = spec.Sentence, Foreground = Brush.Parse("#E6FFFFFF"), FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis } } }, 1),
                 Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, VerticalAlignment = VerticalAlignment.Center, Children = {
                     ClaudeBand(key), // Claude in der Kopfzeile jedes Programms – nimmt keine Zeile im Menüband weg
                     title is null ? LevelSwitch(key) : new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, VerticalAlignment = VerticalAlignment.Center, Children = {
-                    LevelSwitch(key), title, new TextBlock { Name = "prog-dirty", Text = d!.Dirty ? "● geändert" : d.Path is null ? "nicht gespeichert" : "✓ gespeichert", Foreground = Brushes.White, FontSize = 12, VerticalAlignment = VerticalAlignment.Center } } } } }, 2) } },
+                    LevelSwitch(key), title, new TextBlock { Name = "prog-dirty", Text = d!.Dirty ? "geändert" : d.Path is null ? "nicht gespeichert" : "✓ gespeichert", Foreground = Brushes.White, FontSize = 12, VerticalAlignment = VerticalAlignment.Center } } } } }, 2) } },
         };
 
-        if (OsStyle) // Programmkopf neutral wie im System (keine Studio-Farbfläche), Inhalt unverändert
+        // D2 (13.11.2026): Programmkopf immer schlicht – keine Studio-Farbfläche, kein Symbolblock, kein doppelter Titel.
+        // Den Namen zeigt sonst schon der Seitenkopf darüber; nur Programme in voller Fensterhöhe (ohne Seitenkopf) nennen ihn hier.
+        band.Background = Brushes.Transparent; band.BorderBrush = Edge; band.BorderThickness = new Thickness(0, 0, 0, 1); band.CornerRadius = new CornerRadius(0); band.BoxShadow = default;
+        band.Padding = new Thickness(2, 4, 2, 8);
+        if (band.Child is Grid bg && bg.Children.Count > 1)
         {
-            band.Background = GlassStrong; band.BorderBrush = Edge; band.BorderThickness = new Thickness(0, 0, 0, 1); band.CornerRadius = new CornerRadius(_style == "windows" ? 4 : 8); band.BoxShadow = default;
-            foreach (var tb in band.GetLogicalDescendants().OfType<TextBlock>()) if (ReferenceEquals(tb.Foreground, Brushes.White) || tb.Foreground is ISolidColorBrush { Color.A: > 200, Color.R: > 220, Color.G: > 220, Color.B: > 220 }) tb.Foreground = tb.FontSize >= 15 ? Text : Muted;
-            if (title is not null) { title.Foreground = Text; title.Background = Brushes.Transparent; }
+            bg.Children[0].IsVisible = false; // Symbolblock
+            if (bg.Children[1] is StackPanel ts) { ts.Margin = new Thickness(0); if (!spec.FillHeight) ts.IsVisible = false; } // Titel und Satz stehen schon im Seitenkopf
         }
+        foreach (var tb in band.GetLogicalDescendants().OfType<TextBlock>()) if (ReferenceEquals(tb.Foreground, Brushes.White) || tb.Foreground is ISolidColorBrush { Color.A: > 200, Color.R: > 220, Color.G: > 220, Color.B: > 220 }) tb.Foreground = tb.FontSize >= 15 ? Text : Muted;
+        foreach (var tb in band.GetLogicalDescendants().OfType<TextBlock>().Where(t => t.FontSize >= 18)) { tb.FontSize = 15; tb.FontWeight = FontWeight.SemiBold; }
+        if (title is not null) { title.Foreground = Text; title.Background = Brushes.Transparent; title.FontSize = 13; }
         Panel root;
         if (spec.FillHeight && d is not null)
         {
@@ -345,8 +351,8 @@ public partial class MainWindow
                 RBtn("prog-close", "Schließen", () => ProgramRun(key, () => { if (d.Dirty) d.Autosave(ProgBackup); ProgramClose(key, _progActive.GetValueOrDefault(key)); })),
             ]),
             ("Bearbeiten", [
-                RBtn("prog-undo", "↶ Rückgängig", () => ProgramRun(key, () => { if (!d.Undo()) throw new InvalidOperationException("Es gibt nichts rückgängig zu machen."); }), tip: d.UndoLabel is { } u ? "Rückgängig: " + u : "Nichts rückgängig zu machen"),
-                RBtn("prog-redo", "↷ Wiederholen", () => ProgramRun(key, () => { if (!d.Redo()) throw new InvalidOperationException("Es gibt nichts zu wiederholen."); })),
+                RBtn("prog-undo", "Rückgängig", () => ProgramRun(key, () => { if (!d.Undo()) throw new InvalidOperationException("Es gibt nichts rückgängig zu machen."); }), tip: d.UndoLabel is { } u ? "Rückgängig: " + u : "Nichts rückgängig zu machen"),
+                RBtn("prog-redo", "Wiederholen", () => ProgramRun(key, () => { if (!d.Redo()) throw new InvalidOperationException("Es gibt nichts zu wiederholen."); })),
             ]),
         };
         var level = ProgramLevel;
@@ -490,8 +496,9 @@ public partial class MainWindow
         {
             var lv = i; var on = ProgramLevel == lv;
             var b = new Button { Name = "prog-level-" + UserLevel.Ids[i], Content = UserLevel.Names[i], FontSize = 11.5, Padding = new Thickness(9, 3), Margin = new Thickness(0),
-                CornerRadius = i == 0 ? new CornerRadius(8, 0, 0, 8) : i == 2 ? new CornerRadius(0, 8, 8, 0) : new CornerRadius(0),
-                Background = on ? Brushes.White : Brush.Parse("#26FFFFFF"), Foreground = on ? Brush.Parse("#0B1424") : Brushes.White, BorderThickness = new Thickness(0) };
+                CornerRadius = i == 0 ? new CornerRadius(4, 0, 0, 4) : i == 2 ? new CornerRadius(0, 4, 4, 0) : new CornerRadius(0),
+                // neutraler Segmentschalter (Vorgabe 13.11.2026): aktive Stufe im Akzent, sonst ruhig mit feinem Rand
+                Background = on ? Accent : Brushes.Transparent, Foreground = on ? Brushes.White : Text, BorderBrush = Edge, BorderThickness = new Thickness(1) };
             ToolTip.SetTip(b, lv switch
             {
                 UserLevel.Einfach => "Einfach: nur das Wichtigste, große Schritte",

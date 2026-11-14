@@ -204,7 +204,7 @@ public partial class MainWindow
             sp.Children.Add(new WrapPanel { Children = { new TextBlock { Name = "ms-video-clips", Text = $"{_mvClips.Count} Clips gewählt", Foreground = Muted, FontSize = 11, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center },
                 new Border { Width = 6 }, Act("ms-video-clear", "leeren", () => { _mvClips.Clear(); Show(MS); }) } });
         sp.Children.Add(new WrapPanel { Children = { Act("ms-video-plan", "Shotliste", () => _ = MsVideoPlan(s.Id)), new Border { Width = 6 },
-            Act("ms-video-render", _mvBusy ? "Wird gerendert …" : "🎬 Video erstellen", () => { if (!_mvBusy) _ = MsVideoRender(s.Id); }) } });
+            Act("ms-video-render", _mvBusy ? "Wird gerendert …" : "Video erstellen", () => { if (!_mvBusy) _ = MsVideoRender(s.Id); }) } });
         if (_mvShots is { } shots && _mvFor == s.Id)
         {
             var list = new StackPanel { Name = "ms-video-shots", Spacing = 1 };

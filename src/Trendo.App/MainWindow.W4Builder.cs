@@ -148,7 +148,7 @@ public partial class MainWindow
                 "h1" => new TextBlock { Text = b.Text, Foreground = acc, FontSize = 26, FontWeight = FontWeight.Bold, TextWrapping = TextWrapping.Wrap },
                 "p" => new TextBlock { Text = b.Text, Foreground = Brush.Parse("#1B2333"), FontSize = 14, TextWrapping = TextWrapping.Wrap, LineHeight = 21 },
                 "button" => new Border { Background = acc, CornerRadius = new CornerRadius(8), Padding = new Thickness(16, 9), HorizontalAlignment = HorizontalAlignment.Left, Child = new TextBlock { Text = b.Text, Foreground = Brushes.White, FontWeight = FontWeight.SemiBold } },
-                "contact" => new Border { BorderBrush = acc, BorderThickness = new Thickness(2), CornerRadius = new CornerRadius(8), Padding = new Thickness(14, 8), HorizontalAlignment = HorizontalAlignment.Left, Child = new TextBlock { Text = "✉ " + b.Text, Foreground = acc, FontWeight = FontWeight.SemiBold } },
+                "contact" => new Border { BorderBrush = acc, BorderThickness = new Thickness(2), CornerRadius = new CornerRadius(8), Padding = new Thickness(14, 8), HorizontalAlignment = HorizontalAlignment.Left, Child = new TextBlock { Text = "" + b.Text, Foreground = acc, FontWeight = FontWeight.SemiBold } },
                 "list" => new StackPanel { Spacing = 3, Children = { } },
                 "hr" => new Border { Height = 1, Background = Brush.Parse("#D5DAE3"), Margin = new Thickness(0, 6) },
                 "img" => BuilderImage(b),
@@ -174,11 +174,11 @@ public partial class MainWindow
         var frame = new Border { Name = "builder-preview-frame", Width = BuilderPhone ? 390 : 760, MinHeight = 520, Background = Brushes.White, CornerRadius = new CornerRadius(BuilderPhone ? 28 : 10),
             BorderBrush = Brush.Parse("#3E3E3E"), BorderThickness = new Thickness(BuilderPhone ? 10 : 2), Padding = new Thickness(18, 22), HorizontalAlignment = HorizontalAlignment.Center, BoxShadow = CardShadow,
             Child = new StackPanel { Spacing = 10, Children = { new TextBlock { Text = pg.Title, Foreground = Brush.Parse("#8A94A6"), FontSize = 11, HorizontalAlignment = HorizontalAlignment.Center }, blocks } } };
-        var undo = Act("builder-undo", "↶ Rückgängig", BuilderUndo); undo.IsEnabled = _builderUndo.Count > 0;
+        var undo = Act("builder-undo", "Rückgängig", BuilderUndo); undo.IsEnabled = _builderUndo.Count > 0;
         var toolbar = new WrapPanel { Children = {
-            Act("builder-view-phone", "📱 Handy", () => { BuilderPhone = true; Show(V); }, BuilderPhone), new Border { Width = 4 },
-            Act("builder-view-desk", "🖥 Bildschirm", () => { BuilderPhone = false; Show(V); }, !BuilderPhone), new Border { Width = 12 }, undo, new Border { Width = 12 },
-            Act("builder-preview", "▶ Ausprobieren im Browser", () => { PersistBuilder(); Launch(BuilderPublish()); }, true), new Border { Width = 4 },
+            Act("builder-view-phone", "Handy", () => { BuilderPhone = true; Show(V); }, BuilderPhone), new Border { Width = 4 },
+            Act("builder-view-desk", "Bildschirm", () => { BuilderPhone = false; Show(V); }, !BuilderPhone), new Border { Width = 12 }, undo, new Border { Width = 12 },
+            Act("builder-preview", "Ausprobieren im Browser", () => { PersistBuilder(); Launch(BuilderPublish()); }, true), new Border { Width = 4 },
             Act("builder-export", "Exportieren (ZIP)", () => Try(V, () => { var z = BuilderExport(); Say("Exportiert: " + z, V); })), new Border { Width = 4 },
             Act("builder-folder", "Ordner mit fertiger Seite", () => { BuilderPublish(); Launch(Path.Combine(BuilderFolder, "fertig")); }) } };
         var center = new StackPanel { Spacing = 10, Children = { toolbar, new ScrollViewer { Content = frame, MaxHeight = 760, HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto } } };
@@ -239,6 +239,6 @@ public partial class MainWindow
             try { using var s = File.OpenRead(local); return new Image { Source = Avalonia.Media.Imaging.Bitmap.DecodeToWidth(s, 720), MaxHeight = 260, Stretch = Stretch.Uniform }; }
             catch (Exception e) when (e is IOException or ArgumentException or InvalidOperationException or NotSupportedException or NullReferenceException) { }
         return new Border { Height = 140, Background = Brush.Parse("#EEF1F6"), CornerRadius = new CornerRadius(8),
-            Child = new TextBlock { Text = "▧  " + (b.Text.Length > 0 ? b.Text : "Bild") + (b.Url.StartsWith("https://", StringComparison.Ordinal) ? "\n(Bild aus dem Internet – im Browser sichtbar)" : ""), Foreground = Brush.Parse("#8A94A6"), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, TextAlignment = TextAlignment.Center } };
+            Child = new TextBlock { Text = "" + (b.Text.Length > 0 ? b.Text : "Bild") + (b.Url.StartsWith("https://", StringComparison.Ordinal) ? "\n(Bild aus dem Internet – im Browser sichtbar)" : ""), Foreground = Brush.Parse("#8A94A6"), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, TextAlignment = TextAlignment.Center } };
     }
 }

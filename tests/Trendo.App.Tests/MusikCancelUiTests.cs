@@ -78,7 +78,7 @@ public class MusikCancelUiTests
         Assert.Equal(1, AceStepClient.ParseState("{\"data\":[{\"task_id\":\"t\",\"status\":1,\"result\":\"[{\\\"file\\\":\\\"/v1/audio?path=a.mp3\\\"}]\"}],\"code\":200}", "t").Progress);
     }
 
-    [AvaloniaFact(DisplayName = "Abbrechen: voller Grafikspeicher wird gemeldet, hängendes Lied zeigt „■ Abbrechen“, der Klick stoppt es, nichts landet in der Bibliothek, ehrlicher Hinweis")]
+    [AvaloniaFact(DisplayName = "Abbrechen: voller Grafikspeicher wird gemeldet, hängendes Lied zeigt „Abbrechen“, der Klick stoppt es, nichts landet in der Bibliothek, ehrlicher Hinweis")]
     public async Task Cancel_running_song()
     {
         var (w, _, root) = Ui.Open();

@@ -132,7 +132,7 @@ public partial class MainWindow
             var bpm = v.Analysis?.Bpm ?? v.Bpm; if (bpm is > 0) info.Add($"{bpm:0} BPM");
             var key = v.Analysis?.Key ?? v.Key; if (!string.IsNullOrEmpty(key)) info.Add(SongTools.KeyDe(key));
             if (v.Mastered) info.Add("gemastert");
-            var play = new Button { Name = "ms-compare-play-" + i, Content = playingThis ? "🔊 läuft" : $"▶ {letter} hören", FontSize = 12, Background = playingThis ? Accent : Brush.Parse("#22FFFFFF"), Foreground = playingThis ? Brushes.White : Text, Margin = new Thickness(0, 0, 4, 0) };
+            var play = new Button { Name = "ms-compare-play-" + i, Content = playingThis ? "läuft" : $"{letter} hören", FontSize = 12, Background = playingThis ? Accent : Brush.Parse("#22FFFFFF"), Foreground = playingThis ? Brushes.White : Text, Margin = new Thickness(0, 0, 4, 0) };
             ToolTip.SetTip(play, "An derselben Stelle weiterhören wie die laufende Fassung");
             play.Click += (_, _) => { MsCompareSwitch(vv); Show(MS); };
             var open = new Button { Name = "ms-compare-open-" + i, Content = isSel ? "✓ gewählt" : "Wählen", FontSize = 12, IsEnabled = !isSel };

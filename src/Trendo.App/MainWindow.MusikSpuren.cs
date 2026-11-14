@@ -82,7 +82,7 @@ public partial class MainWindow
         }
         sp.Children.Add(P("Begleitung ohne Gesang und Gesang allein werden eigene Lieder, Schlagzeug, Bass und Rest kommen in den Spuren-Ordner." +
             (s.Kind == "eigen" ? " Fremde Lieder nur privat nutzen." : ""), Muted, 11));
-        var go = Act("ms-stems", _msSplitting ? "Wird getrennt …" : MsStemDir(s) is null ? "🎚 Spuren trennen" : "🎚 Neu trennen", () => _ = MsSplit(s.Id));
+        var go = Act("ms-stems", _msSplitting ? "Wird getrennt …" : MsStemDir(s) is null ? "Spuren trennen" : "Neu trennen", () => _ = MsSplit(s.Id));
         go.IsEnabled = !_msSplitting;
         sp.Children.Add(MsStemModelBox()); // V7
         sp.Children.Add(go);

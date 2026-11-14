@@ -165,7 +165,7 @@ public partial class MainWindow
                 var skipped = new List<string>(); var list = Letters.SerialFromContacts(d, GroupContacts(), skipped);
                 if (list.Count == 0) throw new ArgumentException("In dieser Gruppe hat niemand eine vollständige Anschrift (Straße und Ort).");
                 _letterSerial = list; _letterSerialIdx = 0;
-                _letterMsg = $"{list.Count} Briefe – mit ◀ ▶ über der Vorschau durchblättern." + (skipped.Count > 0 ? $" Ohne Anschrift übersprungen: {string.Join(", ", skipped)}." : ""); Show(V);
+                _letterMsg = $"{list.Count} Briefe – mit über der Vorschau durchblättern." + (skipped.Count > 0 ? $" Ohne Anschrift übersprungen: {string.Join(", ", skipped)}." : ""); Show(V);
             })), B("letter-serial-group-run", "Alle als DOCX speichern", () => LetterTry(() =>
             {
                 var list = _letterSerial ?? Letters.SerialFromContacts(d, GroupContacts());
@@ -239,7 +239,7 @@ public partial class MainWindow
         };
         canvas.PointerReleased += (_, e) => { cur = null; curLine = null; e.Pointer.Capture(null); };
         var pad = new Border { CornerRadius = new CornerRadius(8), BorderBrush = Edge, BorderThickness = new Thickness(1), ClipToBounds = true, HorizontalAlignment = HorizontalAlignment.Left, Child = canvas };
-        var use = B(prefix + "-use", width < 300 ? "✍ Übernehmen" : "✍ Gezeichnete Unterschrift übernehmen", () =>
+        var use = B(prefix + "-use", width < 300 ? "Übernehmen" : "Gezeichnete Unterschrift übernehmen", () =>
         {
             var png = LetterSignature.ToPng(_sigStrokes.Select(x => (IReadOnlyList<(double, double)>)x.Select(p => (p.X, p.Y)).ToList()).ToList());
             if (png is null) { error("Bitte erst im weißen Feld unterschreiben."); return; }

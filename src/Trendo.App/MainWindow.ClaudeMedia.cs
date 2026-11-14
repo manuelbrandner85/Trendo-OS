@@ -92,7 +92,7 @@ public partial class MainWindow
         LastCopied = credits; try { _ = Clipboard?.SetTextAsync(credits); } catch (Exception) { }
         _mbListSel = list; _mbList = list;
         _core.Audit.Append(Principal.LocalOwner.Name, "claude.medien.merken", $"{list}: {added}");
-        _mbMsg = $"✳ Claude hat {added} Treffer in „{list}“ gemerkt – Namensnennungen stehen in „{Path.GetFileName(file)}“ und in der Zwischenablage." + (refused.Count > 0 ? " Abgelehnt: " + string.Join(" ", refused) : "");
+        _mbMsg = $"Claude hat {added} Treffer in „{list}“ gemerkt – Namensnennungen stehen in „{Path.GetFileName(file)}“ und in der Zwischenablage." + (refused.Count > 0 ? " Abgelehnt: " + string.Join(" ", refused) : "");
         return true;
     }
 }

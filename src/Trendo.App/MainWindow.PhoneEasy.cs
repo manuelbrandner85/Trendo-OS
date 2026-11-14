@@ -256,8 +256,8 @@ public partial class MainWindow
                 body.Children.Add(H("Wo möchtest du das Handy nutzen?", 15));
                 body.Children.Add(new WrapPanel { Children =
                 {
-                    BigButton("phone-where-home", "🏠  Zuhause (im selben WLAN)", async () => { _phoneWhere = "home"; await ShowPhoneQrAsync(); }),
-                    BigButton("phone-where-away", "🌍  Überall – auch unterwegs", () => { _phoneWhere = "away"; _phoneTsPhoneDone = false; Show("handy"); return Task.CompletedTask; }, false),
+                    BigButton("phone-where-home", "Zuhause (im selben WLAN)", async () => { _phoneWhere = "home"; await ShowPhoneQrAsync(); }),
+                    BigButton("phone-where-away", "Überall – auch unterwegs", () => { _phoneWhere = "away"; _phoneTsPhoneDone = false; Show("handy"); return Task.CompletedTask; }, false),
                 } });
                 body.Children.Add(P("Zuhause ist am schnellsten eingerichtet. „Überall“ nutzt Tailscale – ein kostenloses, verschlüsseltes Privatnetz nur für deine Geräte. Trendo richtet es mit dir zusammen ein.", null, 12.5));
                 break;
@@ -382,7 +382,7 @@ public partial class MainWindow
     {
         var dev = PhoneAccess.Devices().FirstOrDefault(d => d.Id == _phoneNewDevice);
         body.Children.Add(Ok($"{dev?.Name ?? "Dein Handy"} ist verbunden."));
-        body.Children.Add(H("Fertig! 🎉", 17));
+        body.Children.Add(H("Fertig!", 17));
         if (dev is not null && !_phoneRemoteAsked && !dev.Remote)
         {
             body.Children.Add(H($"Darf „{dev.Name}“ Trendo komplett bedienen?", 15));
@@ -425,7 +425,7 @@ public partial class MainWindow
             var remote = new Button { Name = "phone-easy-remote-" + d.Id, Content = on ? "Bedienen sperren" : "Trendo bedienen erlauben", Padding = new Thickness(10, 4), Background = on ? Brushes.Transparent : Accent };
             remote.Click += (_, _) => { PhoneSetRemote(id, nm, !on); Show("handy"); };
             sp.Children.Add(WCard(new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto"), Children = {
-                new StackPanel { Children = { new TextBlock { Text = "📱 " + d.Name, Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
+                new StackPanel { Children = { new TextBlock { Text = "" + d.Name, Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
                     P($"Verbunden seit {d.Paired.ToLocalTime():dd.MM.yyyy} · zuletzt gesehen {d.LastSeen.ToLocalTime():dd.MM. HH:mm}{(on ? " · darf Trendo bedienen" : "")}", null, 12) } },
                 Pos(Sp(remote), 1), Pos(Sp(rm), 2) } }));
         }

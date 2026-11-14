@@ -383,7 +383,7 @@ public partial class MainWindow
     {
         var trash = new LetterTrash(ProjectsRoot); var list = trash.List();
         var sp = new StackPanel { Name = "letter-trash", Spacing = 4, Margin = new Thickness(0, 12, 0, 0) };
-        sp.Children.Add(H($"🗑 Papierkorb ({list.Count})", 14));
+        sp.Children.Add(H($"Papierkorb ({list.Count})", 14));
         if (list.Count == 0) { sp.Children.Add(P("Leer. Gelöschte Briefe, Akten und Briefköpfe landen hier und lassen sich zurückholen.", null, 11.5)); return sp; }
         var i = 0;
         foreach (var e in list.Take(30))
@@ -408,7 +408,7 @@ public partial class MainWindow
         {
             var use = Btn("head-use-" + h.Id, _case?.LetterheadId == h.Id ? "✓ in dieser Akte" : "Für die Akte verwenden", () => { if (_case is null) throw new InvalidOperationException("Erst eine Akte öffnen."); _case.LetterheadId = h.Id; LetterKit.Compose(_case, h); SaveCase("Briefkopf"); Show("briefkoepfe"); });
             use.IsEnabled = _case is not null;
-            var hid = h.Id; var del = Btn("head-del-" + h.Id, "🗑 Löschen", () => LetterTrashed(Cases.DeleteLetterhead(hid, Principal.LocalOwner), "briefkoepfe"));
+            var hid = h.Id; var del = Btn("head-del-" + h.Id, "Löschen", () => LetterTrashed(Cases.DeleteLetterhead(hid, Principal.LocalOwner), "briefkoepfe"));
             sp.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 6), Child = Row(P($"{(h.Kind == "firma" ? "Firma" : "Privat")}: {h.Name}, {h.Street}, {h.City} {h.Contact}", Text, 12), use, del) });
         }
         if (heads.Count == 0) sp.Children.Add(P("Noch kein Briefkopf. Lege einen privaten und – falls nötig – einen Firmen-Briefkopf an. Sie werden nie vermischt."));

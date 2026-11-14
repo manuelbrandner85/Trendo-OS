@@ -79,7 +79,7 @@ public class Claude_Ui
         finally { MainWindow.ClaudeStatusOverride = null; MainWindow.ClaudeOpenOverride = null; }
     }
 
-    [AvaloniaFact(DisplayName = "T-0316: Studio – „✳ Claude“ immer in der Auftragsleiste; das Claude-Projekt des Studios trägt seine Rolle, kein Terminal")]
+    [AvaloniaFact(DisplayName = "T-0316: Studio – „Claude“ immer in der Auftragsleiste; das Claude-Projekt des Studios trägt seine Rolle, kein Terminal")]
     public async Task Open_from_code_studio()
     {
         var (w, _, _) = Ui.Open();

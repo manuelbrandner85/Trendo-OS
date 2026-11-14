@@ -73,7 +73,7 @@ public partial class MainWindow
     Control ClaudeSlimRow(string key, Control view)
     {
         var studio = ClaudeBelongs(key) ? ClaudeStudioOf(key) : null;
-        var cc = new Button { Name = "auftrag-claude", Content = Windows.Active?.Id is { } aw && ClaudeDockOpen(aw) ? "Claude ✕" : "✳ Claude", Height = 30 };
+        var cc = new Button { Name = "auftrag-claude", Content = Windows.Active?.Id is { } aw && ClaudeDockOpen(aw) ? "Claude ✕" : "Claude", Height = 30 };
         ToolTip.SetTip(cc, studio is null ? "Claude öffnen – allgemein, mit deinem Abo" : $"Claude für „{StudioCatalog.NameOf(studio, studio)}“ öffnen");
         cc.Click += (_, _) => ClaudeDockToggle(studio, null);
         if (studio is not null) ClaudeAcceptDrop(cc, () => studio);
@@ -98,7 +98,7 @@ public partial class MainWindow
         {
             // keine Auftragsleiste für dieses Modul – Claude gehört trotzdem in jedes Studio (Wunsch 02.11.2026): schlanke Leiste nur mit Claude
             if (!ClaudeBelongs(key) || ClaudeStudioOf(key) is not { } cs) return view;
-            var cc = new Button { Name = "auftrag-claude", Content = Windows.Active?.Id is { } aw && ClaudeDockOpen(aw) ? "Claude ✕" : "✳ Claude", Height = 32, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Avalonia.Thickness(8, 6, 8, 2) };
+            var cc = new Button { Name = "auftrag-claude", Content = Windows.Active?.Id is { } aw && ClaudeDockOpen(aw) ? "Claude ✕" : "Claude", Height = 32, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Avalonia.Thickness(8, 6, 8, 2) };
             ToolTip.SetTip(cc, $"Claude für „{StudioCatalog.NameOf(cs, cs)}“ öffnen – mit deinem Abo, passend zu diesem Studio");
             cc.Click += (_, _) => ClaudeDockToggle(cs, null);
             ClaudeAcceptDrop(cc, () => cs); // Dateien oder Text auf „✳ Claude“ ziehen
@@ -444,7 +444,7 @@ public partial class MainWindow
             buttons.Children.Add(add);
         }
         // Wunsch 01.11.2026: in jedem Studio – dein echtes Claude Code rechts im Studio-Fenster, im Projektordner, mit dem eingetippten Auftrag
-        var cc = new Button { Name = "auftrag-claude", Content = Windows.Active?.Id is { } aw && ClaudeDockOpen(aw) ? "Claude ✕" : "✳ Claude", Height = 32 };
+        var cc = new Button { Name = "auftrag-claude", Content = Windows.Active?.Id is { } aw && ClaudeDockOpen(aw) ? "Claude ✕" : "Claude", Height = 32 };
         ToolTip.SetTip(cc, "Claude mit deinem Abo öffnen – wie im Web und in der App, mit eigenem Projekt für dieses Studio");
         cc.Click += (_, _) => ClaudeDockToggle(studio, box.Text);
         if (key is not null && ClaudeStudioOf(key) is { } ccs) { ClaudeAcceptDrop(cc, () => ccs); foreach (var x in ClaudeBarExtras(key, ccs)) buttons.Children.Add(x); }

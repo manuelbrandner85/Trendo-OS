@@ -92,7 +92,7 @@ public partial class MainWindow
     {
         var emails = Mail.Contacts().Where(c => c.Email.Trim().Length > 0 && d.Recipient.Contains(c.Name.Trim().Length > 0 ? c.Name.Trim() : "\u0000", StringComparison.OrdinalIgnoreCase)).Select(c => c.Email.Trim()).Distinct().ToList();
         var to = new TextBox { Name = "letter-send-to", Text = string.Join(", ", emails), PlaceholderText = "E-Mail-Adresse des Empfängers (kannst du auch im Mailprogramm eintragen)", MinWidth = 300 };
-        var mail = new Button { Name = "letter-send-mail", Content = "✉ Per E-Mail senden …", Background = Accent, Foreground = Brushes.White, Padding = new Thickness(12, 6) };
+        var mail = new Button { Name = "letter-send-mail", Content = "Per E-Mail senden …", Background = Accent, Foreground = Brushes.White, Padding = new Thickness(12, 6) };
         ToolTip.SetTip(mail, "Öffnet dein Mailprogramm mit dem Brief als PDF im Anhang – dort prüfst du und klickst auf „Senden“");
         mail.Click += (_, _) =>
         {
@@ -103,11 +103,11 @@ public partial class MainWindow
             _core.Audit.Append(Principal.LocalOwner.Name, "letter.send.mail", Path.GetFileName(pdf));
             _letterMsg = "✓ Dein Mailprogramm öffnet den Entwurf mit dem PDF im Anhang – dort prüfen und auf „Senden“ klicken."; _letterSendOpen = false; Show("brief");
         };
-        var print = new Button { Name = "letter-send-print", Content = "🖨 Drucken (per Post)", Padding = new Thickness(12, 6) };
+        var print = new Button { Name = "letter-send-print", Content = "Drucken (per Post)", Padding = new Thickness(12, 6) };
         ToolTip.SetTip(print, "Öffnet das PDF – dort drucken, an den Marken falten und in einen Fensterumschlag stecken");
         print.Click += (_, _) => { Launch(pdf); _letterMsg = "PDF geöffnet – drucken, an den Falzmarken falten, in den Fensterumschlag."; _letterSendOpen = false; Show("brief"); };
         // Umschlag für genau diesen Brief wie „Umschläge“ in Word: DIN lang, Absender klein oben links, Anschrift im Empfängerfeld
-        var envelope = new Button { Name = "letter-send-envelope", Content = "✉ Umschlag (DIN lang)", Padding = new Thickness(12, 6) };
+        var envelope = new Button { Name = "letter-send-envelope", Content = "Umschlag (DIN lang)", Padding = new Thickness(12, 6) };
         ToolTip.SetTip(envelope, "Für Briefe ohne Fensterumschlag: Umschlag mit Absender und Anschrift als PDF zum Bedrucken");
         envelope.Click += (_, _) =>
         {
@@ -171,7 +171,7 @@ public partial class MainWindow
         }
         var all = new CheckBox { Name = "letter-wiz-all", Content = "Alles auf einer Seite", IsChecked = _letterAll, Foreground = Text, Margin = new Thickness(6, 0, 6, 6) };
         all.IsCheckedChanged += (_, _) => { _letterAll = all.IsChecked == true; Show("brief"); };
-        var clear = new Button { Name = "letter-clear", Content = "🗑 Alles leeren", Margin = new Thickness(0, 0, 0, 6) };
+        var clear = new Button { Name = "letter-clear", Content = "Alles leeren", Margin = new Thickness(0, 0, 0, 6) };
         clear.Click += (_, _) =>
         {
             var before = System.Text.Json.JsonSerializer.Serialize(d);
@@ -206,10 +206,10 @@ public partial class MainWindow
         s2.Children.Add(Field("recipient", "Firma, Name, Straße, PLZ Ort", d.Recipient, v => d.Recipient = v, multi: true));
         s2.Children.Add(new WrapPanel { Children = { Nav("letter-wiz-back-2", "← Zurück", 1), Nav("letter-wiz-next-2", "Weiter →", 3, true) } });
         // Wunsch 03.11.2026: Designs wie in Canva – gleich oben erreichbar
-        var toDesign = new Button { Name = "letter-goto-design", Content = "🎨 Design wählen (" + LetterDesigns.Styles.Length + " Vorlagen)", Margin = new Thickness(0, 4, 0, 0) };
+        var toDesign = new Button { Name = "letter-goto-design", Content = "Design wählen (" + LetterDesigns.Styles.Length + " Vorlagen)", Margin = new Thickness(0, 4, 0, 0) };
         toDesign.Click += (_, _) =>
         {
-            LetterNote("🎨 Vorlage anklicken – rechts siehst du sofort, wie dein Brief damit aussieht. Farbe, Kopf und Schrift kannst du danach ändern.");
+            LetterNote("Vorlage anklicken – rechts siehst du sofort, wie dein Brief damit aussieht. Farbe, Kopf und Schrift kannst du danach ändern.");
             Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(this).OfType<Control>().FirstOrDefault(c => c.Name == "letter-design-gallery")?.BringIntoView();
         };
         s3.Children.Add(toDesign);

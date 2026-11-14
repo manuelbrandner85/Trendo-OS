@@ -146,7 +146,7 @@ public partial class MainWindow
         // GitHub: Suche nach freien Programmen auf GitHub
         if (!mine && _hubTab is "alles" or "github")
         {
-            var gh = new Button { Name = "hub-github-search", Content = q.Length > 0 ? $"🔎 Auf GitHub nach „{q}“ suchen" : "🔎 Freie Programme auf GitHub suchen", IsEnabled = !_core.Offline, Margin = new Thickness(0, 6, 0, 0) };
+            var gh = new Button { Name = "hub-github-search", Content = q.Length > 0 ? $"Auf GitHub nach „{q}“ suchen" : "Freie Programme auf GitHub suchen", IsEnabled = !_core.Offline, Margin = new Thickness(0, 6, 0, 0) };
             gh.Click += async (_, _) => { Show("oss"); if (q.Length > 0) await OssSearch(q); };
             list.Children.Add(gh);
         }

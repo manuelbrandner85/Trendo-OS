@@ -62,7 +62,7 @@ public partial class MainWindow
             var on = p.Id == _projSel; var pid = p.Id;
             var b = new Button { Name = "proj-item-" + p.Id, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(8, 5),
                 Background = on ? Brush.Parse("#2A2410") : Brushes.Transparent, BorderBrush = on ? gold : Brushes.Transparent, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8),
-                Content = new StackPanel { Children = { new TextBlock { Text = "📁  " + p.Name, Foreground = on ? gold : Text, FontWeight = on ? FontWeight.SemiBold : FontWeight.Normal, TextTrimming = TextTrimming.CharacterEllipsis },
+                Content = new StackPanel { Children = { new TextBlock { Text = "" + p.Name, Foreground = on ? gold : Text, FontWeight = on ? FontWeight.SemiBold : FontWeight.Normal, TextTrimming = TextTrimming.CharacterEllipsis },
                     new TextBlock { Text = $"angelegt {p.CreatedAt:dd.MM.yyyy}", Foreground = Muted, FontSize = 10.5 } } } };
             b.Click += (_, _) => { _projSel = pid; _projMsg = ""; Show(V); };
             left.Children.Add(b);

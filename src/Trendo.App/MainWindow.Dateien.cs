@@ -212,7 +212,7 @@ public partial class MainWindow
     const string FolderPath = "M2 6 C2 4.9 2.9 4 4 4 H9.5 L11.5 6 H20 C21.1 6 22 6.9 22 8 V18 C22 19.1 21.1 20 20 20 H4 C2.9 20 2 19.1 2 18 Z";
     const string FilePath = "M6 2 H14 L20 8 V20 C20 21.1 19.1 22 18 22 H6 C4.9 22 4 21.1 4 20 V4 C4 2.9 4.9 2 6 2 Z";
     const string DrivePath = "M4 7 H20 C21.1 7 22 7.9 22 9 V15 C22 16.1 21.1 17 20 17 H4 C2.9 17 2 16.1 2 15 V9 C2 7.9 2.9 7 4 7 Z";
-    static Control FolderIcon(double s) => Ico(FolderPath, s, _style switch { "mac" => Grad("#8FD3FF", "#3A9BE8"), "linux" => Grad("#99C1F1", "#3584E4"), _ => Grad("#FFE38A", "#F2B33D") });
+    static Control FolderIcon(double s) => Ico(FolderPath, s, _style switch { "mac" => OsGrad("#8FD3FF", "#3A9BE8"), "linux" => OsGrad("#99C1F1", "#3584E4"), _ => Grad("#FFE38A", "#F2B33D") });
     static Control FileIcon(string name, double s)
     {
         var k = FileBrowser.Kind(name, false);

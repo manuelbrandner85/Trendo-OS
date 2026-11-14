@@ -45,7 +45,7 @@ public partial class MainWindow
             var b = new Button { Name = $"car-pick-{v.Name}".Replace(' ', '_'), HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(10, 8),
                 Background = on ? Brush.Parse("#C9A22733") : Brush.Parse("#2E2E2E"), BorderBrush = on ? Accent : Edge, BorderThickness = new Thickness(on ? 2 : 1), CornerRadius = new CornerRadius(10),
                 Content = new StackPanel { Spacing = 1, Children = {
-                    new TextBlock { Text = (v.Electric ? "⚡ " : "⛽ ") + v.Name, Foreground = Text, FontWeight = FontWeight.SemiBold, FontSize = 14 },
+                    new TextBlock { Text = v.Name + (v.Electric ? " · Elektro" : ""), Foreground = Text, FontWeight = FontWeight.SemiBold, FontSize = 14 },
                     new TextBlock { Text = $"{v.Plate} · {Fach.F(v.Odometer, 0)} km".Trim(' ', '·'), Foreground = Muted, FontSize = 11 },
                     new TextBlock { Text = rem.Any(r => r.Urgent) ? "⚠ " + rem.First(r => r.Urgent).Text : rem.Count > 0 ? "• " + rem[0].Text : "", Foreground = Brush.Parse(rem.Any(r => r.Urgent) ? "#FACC15" : "#8FA3BF"), FontSize = 11, TextWrapping = TextWrapping.Wrap } } } };
             b.Click += (_, _) => { CarSel = nm; _carMsg = ""; Show("fahrzeug"); };
@@ -215,7 +215,7 @@ public partial class MainWindow
             var m = months.FirstOrDefault(x => x.Month == grp.Key); var mon = grp.Key;
             var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Margin = new Thickness(0, 8, 0, 2), Children = {
                 new TextBlock { Text = $"{new DateTime(_carYear, mon, 1).ToString("MMMM", De)} · {Fach.F(m?.Business ?? 0, 0)} km dienstlich · {Fach.F(m?.Private ?? 0, 0)} km privat · {Fach.F(m?.Commute ?? 0, 0)} km Arbeitsweg", Foreground = GoldText(), FontSize = 13, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center } } };
-            head.Children.Add(Pos(m?.Locked == true ? new TextBlock { Name = $"car-t-locked-{mon}", Text = "🔒 festgeschrieben", Foreground = Muted, FontSize = 12 } : Btn($"car-t-lock-{mon}", "Monat festschreiben", () => CarRun(() => { var n = Cars.LockMonth(v.Name, _carYear, mon); _carMsg = $"{n} Fahrten im {new DateTime(_carYear, mon, 1).ToString("MMMM", De)} festgeschrieben – Änderungen sind nicht mehr möglich."; })), 1));
+            head.Children.Add(Pos(m?.Locked == true ? new TextBlock { Name = $"car-t-locked-{mon}", Text = "festgeschrieben", Foreground = Muted, FontSize = 12 } : Btn($"car-t-lock-{mon}", "Monat festschreiben", () => CarRun(() => { var n = Cars.LockMonth(v.Name, _carYear, mon); _carMsg = $"{n} Fahrten im {new DateTime(_carYear, mon, 1).ToString("MMMM", De)} festgeschrieben – Änderungen sind nicht mehr möglich."; })), 1));
             sp.Children.Add(head);
             foreach (var t in grp)
             {

@@ -53,7 +53,7 @@ public partial class MainWindow
                 .OrderByDescending(File.GetLastWriteTimeUtc).Take(8).ToList() : [];
             if (files.Count == 0) sp.Children.Add(P("Keine umwandelbare 3D-Datei im 3D-Ordner (FBX, DAE, 3DS, OBJ, PLY, STL …).", null, 11));
             var i = 0;
-            foreach (var f in files) { var file = f; sp.Children.Add(Act($"3d-assimp-{i++}", "→ GLB: " + Path.GetFileName(file), () => AssimpToGlb(file))); }
+            foreach (var f in files) { var file = f; sp.Children.Add(Act($"3d-assimp-{i++}", "GLB: " + Path.GetFileName(file), () => AssimpToGlb(file))); }
         }
         if (_assimpMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "3d-assimp-msg", Text = _assimpMsg, FontSize = 11, Foreground = Muted, TextWrapping = Avalonia.Media.TextWrapping.Wrap });
         return sp;

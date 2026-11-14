@@ -118,7 +118,7 @@ public sealed partial class MainWindow
                     row.Children.Add(b);
                 }
                 sp.Children.Add(row);
-                var photo = new Button { Name = "wiz-avatar-photo", Content = "📷 Eigenes Foto wählen …" };
+                var photo = new Button { Name = "wiz-avatar-photo", Content = "Eigenes Foto wählen …" };
                 photo.Click += async (_, _) => await PickAvatarPhoto();
                 var cam = new Button { Name = "wiz-avatar-camera", Content = "Mit der Kamera aufnehmen" };
                 ToolTip.SetTip(cam, "Öffnet die Windows-Kamera. Danach das Foto mit „Eigenes Foto wählen“ übernehmen (Ordner Bilder › Eigene Aufnahmen).");
@@ -363,7 +363,7 @@ public sealed partial class MainWindow
                 FinishSetup();
                 sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 14, Children = { AvatarView(64), P($"Alles bereit{(string.IsNullOrEmpty(_settings.Name) ? "" : ", " + _settings.Name)}! Hier ist dein Systemcheck:", Text, 14) } });
                 sp.Children.Add(SystemCheckPanel());
-                var done = new Button { Name = "wiz-done", Content = "Los geht's", Background = Accent, Padding = new Thickness(16, 6) }; done.Click += (_, _) => { LeaveSetupFullscreen(); Show("start"); };
+                var done = new Button { Name = "wiz-done", Content = "Fertig", Background = Accent, Padding = new Thickness(16, 6) }; done.Click += (_, _) => { LeaveSetupFullscreen(); Show("start"); };
                 sp.Children.Add(done);
                 return Page("Ersteinrichtung", sp);
         }

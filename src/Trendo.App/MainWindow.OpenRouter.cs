@@ -66,7 +66,7 @@ public partial class MainWindow
     {
         var n = RemoteCounter.Add();
         if (n == 1 || n % 10 == 0 || n >= OpenRouterFree.DailyFreeLimit - 5)
-            Toast($"🌐 Antwort kam über das Internet ({name}) · heute {n} von ca. {OpenRouterFree.DailyFreeLimit} kostenlosen Anfragen", ("Einstellen", new Action(() => Show("ki-internet"))));
+            Toast($"Antwort kam über das Internet ({name}) · heute {n} von ca. {OpenRouterFree.DailyFreeLimit} kostenlosen Anfragen", ("Einstellen", new Action(() => Show("ki-internet"))));
     }
 
     /// <summary>C2: Schlüssel prüfen, sicher ablegen (Windows-Schlüsselspeicher) und OpenRouter einschalten.</summary>
@@ -105,11 +105,11 @@ public partial class MainWindow
         var set = KiSourceSettings.Load(_core.DataRoot);
         if (OpenRouterFree.Best(models, area, set.OpenRouterModels.GetValueOrDefault(area)) is not { } m) return $"Gerade gibt es kein kostenloses Modell für „{area}“.";
         if (!OpenRouterReady && OpenRouterFileOverride is null) return "Bitte zuerst oben OpenRouter einrichten (kostenloses Konto und Schlüssel).";
-        using var label = KiActivityHub.Label("🌐 " + area);
+        using var label = KiActivityHub.Label("" + area);
         var act = KiActivityHub.Begin();
         try
         {
-            KiActivityHub.Update(act, phase: $"🌐 Geht ins Internet zu OpenRouter ({m.Name}) …", backend: "🌐 OpenRouter", model: m.Id);
+            KiActivityHub.Update(act, phase: $"Geht ins Internet zu OpenRouter ({m.Name}) …", backend: "OpenRouter", model: m.Id);
             var text = OpenRouterFileOverride is { } o ? await o(m.Id, question, file)
                 : await CloudKiBackend.For(OpenRouterService, _core.Secrets.Get(OpenRouterService.SecretName)!).AskWithFileAsync(m.Id, question, file, act.Token);
             _core.Audit.Append(Principal.LocalOwner.Name, "ki.ask", $"quelle=OpenRouter modell={m.Id} datei={Path.GetExtension(file)} extern");
@@ -129,7 +129,7 @@ public partial class MainWindow
         var sp = new StackPanel { Spacing = 10 };
         sp.Children.Add(P("Zusätzlich zur KI auf deinem PC kannst du kostenlose KIs aus dem Internet nutzen – über OpenRouter. Trendo hält die Liste der kostenlosen Modelle selbst aktuell.", Text, 13));
         sp.Children.Add(new Border { Name = "or-privacy", Background = Brush.Parse("#1AFACC15"), BorderBrush = Brush.Parse("#55FACC15"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 8),
-            Child = P("🌐 Wichtig: Was du diese KIs fragst, geht ins Internet zu OpenRouter und dem jeweiligen Anbieter. Deine eigenen Dokumente („Wissen“) gibt Trendo nie mit. Für Privates nimm die KI auf dem PC.", Text, 12.5) });
+            Child = P("Wichtig: Was du diese KIs fragst, geht ins Internet zu OpenRouter und dem jeweiligen Anbieter. Deine eigenen Dokumente („Wissen“) gibt Trendo nie mit. Für Privates nimm die KI auf dem PC.", Text, 12.5) });
         if (_orMsg.Length > 0) sp.Children.Add(P(_orMsg, _orMsg.StartsWith('✓') ? Brush.Parse("#4ADE80") : Brush.Parse("#FACC15"), 12.5));
 
         // C2: geführte Einrichtung
@@ -211,7 +211,7 @@ public partial class MainWindow
         // C3: Bild/Audio/Video verstehen
         var tryIt = new StackPanel { Name = "or-try", Spacing = 6 };
         tryIt.Children.Add(H("Bild, Audio oder Video verstehen lassen", 15));
-        var pick = new Button { Name = "or-file-pick", Content = _orFile.Length == 0 ? "Datei wählen …" : "📎 " + Path.GetFileName(_orFile) };
+        var pick = new Button { Name = "or-file-pick", Content = _orFile.Length == 0 ? "Datei wählen …" : "" + Path.GetFileName(_orFile) };
         pick.Click += async (_, _) =>
         {
             var req = new PickRequest("or-file", false, false, ["png", "jpg", "jpeg", "webp", "gif", "wav", "mp3", "ogg", "flac", "m4a", "mp4", "webm", "mov"]);
@@ -222,7 +222,7 @@ public partial class MainWindow
         };
         var q = new TextBox { Name = "or-question", Text = _orQuestion, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 44 };
         q.TextChanged += (_, _) => _orQuestion = q.Text ?? "";
-        var ask = new Button { Name = "or-ask", Content = "🌐 Fragen", Background = Accent, IsEnabled = _orFile.Length > 0 && !_core.Offline };
+        var ask = new Button { Name = "or-ask", Content = "Fragen", Background = Accent, IsEnabled = _orFile.Length > 0 && !_core.Offline };
         ask.Click += async (_, _) => { _orAnswer = "Wird gefragt …"; Show("ki-internet"); _orAnswer = await OpenRouterAskFile(_orFile, _orQuestion); Show("ki-internet"); };
         tryIt.Children.Add(new WrapPanel { Children = { Sp(pick), Sp(ask) } });
         tryIt.Children.Add(q);

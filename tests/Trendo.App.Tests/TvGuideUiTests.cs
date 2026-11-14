@@ -66,14 +66,14 @@ public class TvGuide_Ui
         Click("tv-prog-rec");
         Assert.Equal(2, w.Tv.Recordings.Count);
         Assert.Contains(w.GetLogicalTexts(), t => t.Contains("überschneidet sich mit „Tatort“"));
-        Assert.Contains(w.GetLogicalTexts(), t => t.StartsWith("⏺"));
+        Assert.Contains(w.GetLogicalTexts(), t => t.StartsWith("●"));
         Click("tv-prog-unrec");
         Assert.Single(w.Tv.Recordings);
         // Erinnerung: an, fällig → Hinweis mit „Einschalten“, nur einmal
         w.Find<Button>(Cell(kika, progs[4])).Press(); Settle();
         Click("tv-prog-remind");
         Assert.True(w.Tv.HasReminder(kika.Id, progs[4].Start));
-        Assert.Contains(w.GetLogicalTexts(), t => t.StartsWith("🔔"));
+        Assert.Contains(w.GetLogicalTexts(), t => t.StartsWith("Trendo erinnert dich"));
         w.TvReminderTick(); Settle();
         Assert.Contains(w.GetLogicalTexts(), t => t.Contains("„Sandmann“ auf Kinderkanal"));
         var toasts = w.Find<StackPanel>("toast-host").Children.Count;

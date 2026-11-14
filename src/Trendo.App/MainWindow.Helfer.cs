@@ -341,7 +341,7 @@ public partial class MainWindow
             foreach (var f in _rcGraph.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Take(GraphView.Palette.Length))
             {
                 gv.Series.Add((f, Calc.Plot(f, a, b, 600, false)));
-                legend.Children.Add(new TextBlock { Text = "■ f(x) = " + f, Foreground = Brush.Parse(GraphView.Palette[gv.Series.Count - 1]), FontSize = 12, Margin = new Thickness(0, 0, 14, 0) });
+                legend.Children.Add(new TextBlock { Text = "f(x) = " + f, Foreground = Brush.Parse(GraphView.Palette[gv.Series.Count - 1]), FontSize = 12, Margin = new Thickness(0, 0, 14, 0) });
             }
             gv.InvalidateVisual();
         }
@@ -562,11 +562,11 @@ public partial class MainWindow
         void Insert(string add) { var t = text.Text ?? ""; var at = Math.Clamp(text.CaretIndex, 0, t.Length); t = t.Insert(at, add); text.Text = t; nb.Write(sec, page, t); NoteReadMode = false; Show(V); }
         var bar = new WrapPanel { Name = "nb-tools" };
         void B(string name, string label, Action a, bool on = false) { var b = Act(name, label, a, on); b.Margin = new Thickness(0, 0, 4, 4); bar.Children.Add(b); }
-        B("nb-read", NoteReadMode ? "✎ Bearbeiten" : "👁 Lesen", () => { nb.Write(sec, page, NoteReadMode ? nb.Read(sec, page) : text.Text ?? ""); NoteReadMode = !NoteReadMode; Show(V); }, NoteReadMode);
-        B("nb-ins-check", "☐ Checkliste", () => Insert("\n- [ ] "));
+        B("nb-read", NoteReadMode ? "Bearbeiten" : "Lesen", () => { nb.Write(sec, page, NoteReadMode ? nb.Read(sec, page) : text.Text ?? ""); NoteReadMode = !NoteReadMode; Show(V); }, NoteReadMode);
+        B("nb-ins-check", "Checkliste", () => Insert("\n- [ ] "));
         B("nb-ins-link", "[[ ]] Verknüpfen", () => Insert("[[Seitenname]]"));
         var img = Field("nb-image-path", "Bilddatei", 170); img.Margin = new Thickness(0, 0, 4, 4); bar.Children.Add(img);
-        B("nb-ins-image", "🖼 Bild", () => Try(V, () => { var f = Need(img, "eine Bilddatei"); if (!File.Exists(f)) throw new FileNotFoundException("Bild nicht gefunden."); Insert($"\n![]({f})\n"); }));
+        B("nb-ins-image", "Bild", () => Try(V, () => { var f = Need(img, "eine Bilddatei"); if (!File.Exists(f)) throw new FileNotFoundException("Bild nicht gefunden."); Insert($"\n![]({f})\n"); }));
         B("nb-pdf", "Als PDF", () => Try(V, () => { nb.Write(sec, page, NoteReadMode ? nb.Read(sec, page) : text.Text ?? ""); var f = Path.Combine(WorkFolder("Notizen"), Notebook.SafeName(page) + ".pdf"); Trendo.Core.Office.TextPdf.Export(NoteText.ToDoc(page, nb.Read(sec, page)), f); Say("Gespeichert: " + f, V); }));
         return bar;
     }
@@ -631,7 +631,7 @@ public partial class MainWindow
         var back = NoteText.Backlinks(NbAllPages(nb), page);
         var sp = new StackPanel { Name = "nb-backlinks", Spacing = 2, Children = { new TextBlock { Text = "Verweist hierher", Foreground = Muted, FontSize = 11.5, FontWeight = FontWeight.SemiBold } } };
         if (back.Count == 0) { sp.Children.Add(P($"Noch keine Seite verweist hierher – schreib [[{page}]] in eine andere Seite.", Muted, 11)); return sp; }
-        for (var i = 0; i < back.Count; i++) { var (bs, bp) = back[i]; var b = Act($"nb-back-{i}", $"↩ {bs} › {bp}", () => { _nbSec = bs; _nbPage = bp; Show("notizbuch"); }); b.Margin = new Thickness(0, 0, 0, 2); sp.Children.Add(b); }
+        for (var i = 0; i < back.Count; i++) { var (bs, bp) = back[i]; var b = Act($"nb-back-{i}", $"{bs} › {bp}", () => { _nbSec = bs; _nbPage = bp; Show("notizbuch"); }); b.Margin = new Thickness(0, 0, 0, 2); sp.Children.Add(b); }
         return sp;
     }
     private string _nbQuery = "";

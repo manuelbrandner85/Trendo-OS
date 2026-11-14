@@ -66,7 +66,7 @@ public partial class MainWindow
         ui.Input = new TextBox { Name = "claude-chat-input", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 56, MaxHeight = 200, FontSize = 14,
             PlaceholderText = "Schreib Claude, was du bauen möchtest …", Background = ClaudeInput, Foreground = ClaudeFg, BorderBrush = ClaudeLine, CornerRadius = new CornerRadius(14), Padding = new Thickness(14, 10, 52, 10) };
         ui.Input.KeyDown += (_, e) => { if (e.Key == Key.Enter && !e.KeyModifiers.HasFlag(KeyModifiers.Shift)) { e.Handled = true; ClaudeChatSubmit(dock); } };
-        ui.Send = new Button { Name = "claude-chat-send", Content = "↑", Width = 34, Height = 34, CornerRadius = new CornerRadius(17), Background = ClaudeAccent, Foreground = Brushes.White, FontSize = 16, FontWeight = FontWeight.Bold,
+        ui.Send = new Button { Name = "claude-chat-send", [Avalonia.Automation.AutomationProperties.NameProperty] = "Senden", Content = "↑", Width = 34, Height = 34, CornerRadius = new CornerRadius(17), Background = ClaudeAccent, Foreground = Brushes.White, FontSize = 16, FontWeight = FontWeight.Bold,
             HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(0, 0, 10, 10), HorizontalContentAlignment = HorizontalAlignment.Center, Padding = new Thickness(0) };
         ToolTip.SetTip(ui.Send, "Senden (Enter) · neue Zeile mit Umschalt+Enter");
         ui.Send.Click += (_, _) => { if (ui.Running && string.IsNullOrWhiteSpace(ui.Input.Text)) ui.Cts?.Cancel(); else ClaudeChatSubmit(dock); };
@@ -77,11 +77,11 @@ public partial class MainWindow
         ui.Input.Padding = new Thickness(14, 10, 92, 10);
         var inputBox = new Grid { Margin = new Thickness(24, 0, 24, 6), Children = { ui.Input, attach, ui.Send } };
         ui.Chips = new WrapPanel { Name = "claude-chat-attachments", Margin = new Thickness(24, 0, 24, 4) };
-        var hint = new TextBlock { Text = "Claude arbeitet mit deinem Abo im Ordner dieses Projekts und darf bei Bedarf ins Internet und Befehle ausführen („🔒 Sicher“ schaltet das für ein Projekt ab). Änderungen kannst du nach jeder Antwort zurücknehmen.", Foreground = ClaudeMuted, FontSize = 11, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(26, 0, 26, 12), HorizontalAlignment = HorizontalAlignment.Center };
-        var folder = new Button { Name = "claude-chat-folder", Content = "📁 Ordner", FontSize = 12, Padding = new Thickness(10, 3), Background = ClaudeItem, Foreground = ClaudeFg, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(0) };
+        var hint = new TextBlock { Text = "Claude arbeitet mit deinem Abo im Ordner dieses Projekts und darf bei Bedarf ins Internet und Befehle ausführen („Sicher“ schaltet das für ein Projekt ab). Änderungen kannst du nach jeder Antwort zurücknehmen.", Foreground = ClaudeMuted, FontSize = 11, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(26, 0, 26, 12), HorizontalAlignment = HorizontalAlignment.Center };
+        var folder = new Button { Name = "claude-chat-folder", Content = "Ordner", FontSize = 12, Padding = new Thickness(10, 3), Background = ClaudeItem, Foreground = ClaudeFg, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(0) };
         ToolTip.SetTip(folder, "Ordner dieses Projekts öffnen");
         folder.Click += (_, _) => { if (ui.ChatId is { } id && CChats.Get(ChatStudio(dock), id) is { } c) Launch(c.Folder); };
-        var eye = new Button { Name = "claude-chat-preview-toggle", Content = "👁 Vorschau", FontSize = 12, Padding = new Thickness(10, 3), Margin = new Thickness(0, 0, 6, 0), Background = ClaudeItem, Foreground = ClaudeFg, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(0) };
+        var eye = new Button { Name = "claude-chat-preview-toggle", Content = "Vorschau", FontSize = 12, Padding = new Thickness(10, 3), Margin = new Thickness(0, 0, 6, 0), Background = ClaudeItem, Foreground = ClaudeFg, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(0) };
         ToolTip.SetTip(eye, "Vorschau ein- oder ausblenden – zeigt live, was Claude baut");
         eye.Click += (_, _) => { if (ui.PreviewCol.Width.Value > 0) ui.PreviewCol.Width = new GridLength(0); else ShowPreview(dock, ui.PreviewFile); };
         var full = new Button { Name = "claude-chat-full", FontSize = 12, Padding = new Thickness(10, 3), Margin = new Thickness(0, 0, 6, 0), Background = ClaudeItem, Foreground = ClaudeFg, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(0) };
@@ -98,15 +98,15 @@ public partial class MainWindow
             ToolTip.SetTip(b, tip); b.Click += (_, _) => a(); return b;
         }
         void TogglePanel(string p) { ui.Panel = ui.Panel == p ? null : p; RenderChat(dock); }
-        var memory = HeadBtn("claude-chat-memory", "🧠 Gedächtnis", "Projekt-Gedächtnis: was Claude sich für dieses Projekt dauerhaft merkt", () => TogglePanel("gedaechtnis"));
-        var travel = HeadBtn("claude-chat-timeline", "🕘 Zeitreise", "Zeitreise: zu einem früheren Stand des Projekts zurück", () => TogglePanel("zeitreise"));
-        var docs = HeadBtn("claude-chat-docs", "📎 Unterlagen", "Deine Unterlagen aus „Wissen“ für dieses Projekt an Claude freigeben – nur, was du auswählst", () => TogglePanel("unterlagen"));
-        var publish = HeadBtn("claude-chat-publish", "🚀 Veröffentlichen", "Projekt fertig verpacken (ZIP im Ordner „Veröffentlicht“) – erst nach deinem Ja, hochgeladen wird nichts", () => TogglePanel("veroeffentlichen"));
-        var github = HeadBtn("claude-chat-github", "⬆ GitHub", "Projekt als eigenes Repo auf GitHub hochladen – mit deiner GitHub-Anmeldung, erst nach deinem Ja", () => TogglePanel("github"));
-        var netlify = HeadBtn("claude-chat-netlify", "🌐 Netlify", "Webseite auf Netlify veröffentlichen – öffentlich im Internet, erst nach deinem Ja", () => TogglePanel("netlify"));
+        var memory = HeadBtn("claude-chat-memory", "Gedächtnis", "Projekt-Gedächtnis: was Claude sich für dieses Projekt dauerhaft merkt", () => TogglePanel("gedaechtnis"));
+        var travel = HeadBtn("claude-chat-timeline", "Zeitreise", "Zeitreise: zu einem früheren Stand des Projekts zurück", () => TogglePanel("zeitreise"));
+        var docs = HeadBtn("claude-chat-docs", "Unterlagen", "Deine Unterlagen aus „Wissen“ für dieses Projekt an Claude freigeben – nur, was du auswählst", () => TogglePanel("unterlagen"));
+        var publish = HeadBtn("claude-chat-publish", "Veröffentlichen", "Projekt fertig verpacken (ZIP im Ordner „Veröffentlicht“) – erst nach deinem Ja, hochgeladen wird nichts", () => TogglePanel("veroeffentlichen"));
+        var github = HeadBtn("claude-chat-github", "GitHub", "Projekt als eigenes Repo auf GitHub hochladen – mit deiner GitHub-Anmeldung, erst nach deinem Ja", () => TogglePanel("github"));
+        var netlify = HeadBtn("claude-chat-netlify", "Netlify", "Webseite auf Netlify veröffentlichen – öffentlich im Internet, erst nach deinem Ja", () => TogglePanel("netlify"));
         netlify.IsVisible = dock.Studio == "CORE-07"; // nur im Web-Studio: dort entstehen Webseiten
-        var rules = HeadBtn("claude-chat-rules", "📚 Regeln", "Regeln dieses Studios: was Claude hier immer beachtet – eingebaut, aus GAMEFORGE (Spiele) und aus deinen Projekten gelernt (nur mit deinem Ja)", () => TogglePanel("regeln"));
-        var review = HeadBtn("claude-chat-review", "🎓 Gutachter", "Zweite Meinung: ein Gutachter bewertet das Ergebnis mit Note 1–10 und sagt, was besser geht", () => _ = ClaudeReviewRun(dock));
+        var rules = HeadBtn("claude-chat-rules", "Regeln", "Regeln dieses Studios: was Claude hier immer beachtet – eingebaut, aus GAMEFORGE (Spiele) und aus deinen Projekten gelernt (nur mit deinem Ja)", () => TogglePanel("regeln"));
+        var review = HeadBtn("claude-chat-review", "Gutachter", "Zweite Meinung: ein Gutachter bewertet das Ergebnis mit Note 1–10 und sagt, was besser geht", () => _ = ClaudeReviewRun(dock));
         ui.SideToggle = new Button { Name = "claude-chat-side-toggle", Content = "☰", FontSize = 13, Padding = new Thickness(9, 3), Margin = new Thickness(0, 0, 8, 0), Background = ClaudeItem, Foreground = ClaudeFg, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(0), IsVisible = false };
         ToolTip.SetTip(ui.SideToggle, "Projekte dieses Studios ein- oder ausblenden");
         ui.SideToggle.Click += (_, _) => { ui.SideOpen = !ui.SideOpen; ui.SideCol.Width = new GridLength(ui.SideOpen ? 230 : 0); };
@@ -180,7 +180,7 @@ public partial class MainWindow
             void StartRename() { ui.Renaming = c.Id; ui.ConfirmDelete = null; RenderChatList(dock); }
             open.DoubleTapped += (_, e) => { e.Handled = true; StartRename(); };
             var ctx = new ContextMenu();
-            var miRename = new MenuItem { Name = $"claude-chat-ctx-rename-{i}", Header = "✎ Umbenennen" }; miRename.Click += (_, _) => StartRename();
+            var miRename = new MenuItem { Name = $"claude-chat-ctx-rename-{i}", Header = "Umbenennen" }; miRename.Click += (_, _) => StartRename();
             var miDelete = new MenuItem { Name = $"claude-chat-ctx-del-{i}", Header = "✕ Löschen …" }; miDelete.Click += (_, _) => { ui.ConfirmDelete = c.Id; ui.Renaming = null; RenderChatList(dock); };
             ctx.Items.Add(miRename); ctx.Items.Add(miDelete); open.ContextMenu = ctx;
             var ren = new Button { Name = $"claude-chat-rename-{i}", Content = "✎", Padding = new Thickness(6, 2), Background = Brushes.Transparent, Foreground = ClaudeMuted, VerticalAlignment = VerticalAlignment.Center };
@@ -234,7 +234,7 @@ public partial class MainWindow
         ui.ActiveKi.Text = ActiveKiText(ui.LastKi);
         ui.ActiveKi.Foreground = CLimit.Active(DateTimeOffset.Now) ? ClaudeAccent : ClaudeMuted;
         var fullOn = chat is null ? ClaudeAlways && !ui.SafeForNew || ui.FullForNew : chat.FullWith(ClaudeAlways);
-        if (ui.FullButton is { } fb) { fb.Content = fullOn ? "🔓 Internet & Befehle an" : "🔒 Sicher"; fb.Background = fullOn ? ClaudeAccent : ClaudeItem; }
+        if (ui.FullButton is { } fb) { fb.Content = fullOn ? "Internet & Befehle an" : "Sicher"; fb.Background = fullOn ? ClaudeAccent : ClaudeItem; }
         if (ui.AskFull) ui.Log.Children.Add(FullConsent(dock, chat));
         if (ui.Panel == "gedaechtnis") ui.Log.Children.Add(MemoryPanel(dock, chat));
         if (ui.Panel == "zeitreise") ui.Log.Children.Add(TimelinePanel(dock, chat));
@@ -312,8 +312,8 @@ public partial class MainWindow
         if (m.Role == "user")
         {
             var bubble = new StackPanel { Spacing = 4, Children = { new SelectableTextBlock { Text = m.Text, Foreground = ClaudeFg, FontSize = 14, TextWrapping = TextWrapping.Wrap } } };
-            if (m.Attachments is { Count: > 0 } att) bubble.Children.Add(new TextBlock { Text = "📎 " + string.Join(", ", att.Select(Path.GetFileName)), Foreground = ClaudeMuted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
-            if (m.Context is { Length: > 0 } cx) bubble.Children.Add(new TextBlock { Text = "◎ " + cx, Foreground = ClaudeMuted, FontSize = 11, TextWrapping = TextWrapping.Wrap });
+            if (m.Attachments is { Count: > 0 } att) bubble.Children.Add(new TextBlock { Text = "" + string.Join(", ", att.Select(Path.GetFileName)), Foreground = ClaudeMuted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
+            if (m.Context is { Length: > 0 } cx) bubble.Children.Add(new TextBlock { Text = "" + cx, Foreground = ClaudeMuted, FontSize = 11, TextWrapping = TextWrapping.Wrap });
             if (m == chat.Messages.LastOrDefault(x => x.Role == "user") && FlowSaveButton(dock, m.Text) is { } fs) bubble.Children.Add(fs); // Wiederholungen automatisieren
             return new Border { Background = ClaudeItem, BorderBrush = GlassEdge, BorderThickness = new Thickness(1), BoxShadow = BoxShadows.Parse("0 6 20 0 #40000000"), CornerRadius = new CornerRadius(16), Padding = new Thickness(14, 10), HorizontalAlignment = HorizontalAlignment.Right, MaxWidth = 620, Child = bubble };
         }
@@ -355,7 +355,7 @@ public partial class MainWindow
             sp.Children.Add(new TextBlock { Text = "Geändert: " + string.Join(", ", ch.Take(8)) + (ch.Count > 8 ? $" … (+{ch.Count - 8})" : ""), Foreground = ClaudeMuted, FontSize = 12, TextWrapping = TextWrapping.Wrap });
             if (last && _chatUis.TryGetValue(dock, out var ui) && ui.LastSnapshot is not null && ui.LastSnapshotChat == chat.Id)
             {
-                var undo = new Button { Name = "claude-chat-undo", Content = "↶ Zurücknehmen", Background = ClaudeItem, Foreground = ClaudeFg, CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 3), BorderThickness = new Thickness(0) };
+                var undo = new Button { Name = "claude-chat-undo", Content = "Zurücknehmen", Background = ClaudeItem, Foreground = ClaudeFg, CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 3), BorderThickness = new Thickness(0) };
                 ToolTip.SetTip(undo, "Die Änderungen dieser Antwort im Projektordner rückgängig machen");
                 undo.Click += (_, _) => ClaudeChatUndo(dock);
                 sp.Children.Add(undo);
@@ -364,7 +364,7 @@ public partial class MainWindow
         return sp;
     }
 
-    Control ChatStep(ClaudeChats.Step st) => new TextBlock { Text = (st.Error ? "⚠ " : st.Changes ? "✎ " : "● ") + st.Text, Foreground = st.Error ? Brush.Parse("#FFF87171") : ClaudeMuted, FontSize = 12, TextWrapping = TextWrapping.Wrap };
+    Control ChatStep(ClaudeChats.Step st) => new TextBlock { Text = (st.Error ? "⚠ " : st.Changes ? "• " : "") + st.Text, Foreground = st.Error ? Brush.Parse("#FFF87171") : ClaudeMuted, FontSize = 12, TextWrapping = TextWrapping.Wrap };
 
     /// <summary>Nachricht an Claude (öffentlich für Tests über das aktive Fenster). Ohne offenes Projekt legt die erste Nachricht eins an.</summary>
     public Task ClaudeChatSend(string text) => Windows.Active?.Id is { } id && _claudeDocks.TryGetValue(id, out var d) ? ClaudeChatSend(d, text) : Task.CompletedTask;
@@ -408,14 +408,14 @@ public partial class MainWindow
         if (shot is not null) attached.Add(shot);
         chat = chats.Add(studio, chat.Id, new ClaudeChats.Msg(check ? "check" : "user", text, [], DateTimeOffset.Now, null, 0, attached.Count > 0 ? attached : null, context));
         ui.Input.Text = ""; ui.Running = true; ui.Cts = new CancellationTokenSource();
-        ui.Send.Content = "■"; ToolTip.SetTip(ui.Send, "Anhalten");
+        ui.Send.Content = "■"; ToolTip.SetTip(ui.Send, "Anhalten"); Avalonia.Automation.AutomationProperties.SetName(ui.Send, "Anhalten");
         RenderChatList(dock); RenderChat(dock);
 
         // Live-Antwort
         var live = new StackPanel { Name = "claude-chat-live", Spacing = 6 };
         var stepsPanel = new StackPanel { Spacing = 2 }; var textPanel = new StackPanel { Spacing = 6 };
         var limited = CLimit.Active(DateTimeOffset.Now);
-        var thinking = new TextBlock { Text = limited ? "🌐 Die Ersatz-KI denkt nach …" : "✳ Claude denkt nach …", Foreground = ClaudeAccent, FontSize = 13 };
+        var thinking = new TextBlock { Text = limited ? "Die Ersatz-KI denkt nach …" : "Claude denkt nach …", Foreground = ClaudeAccent, FontSize = 13 };
         using var pulse = new CancellationTokenSource(); Pulse(thinking, pulse.Token); // lebendig: pulsiert, solange Claude arbeitet
         var skillChip = new Border { Name = "claude-chat-skill", IsVisible = false, Background = Brush.Parse("#26D97757"), BorderBrush = ClaudeAccent, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(10, 3), HorizontalAlignment = HorizontalAlignment.Left,
             Child = new TextBlock { Foreground = ClaudeFg, FontSize = 12 } };
@@ -470,19 +470,18 @@ public partial class MainWindow
                         case ClaudeCode.Say sy: say.AppendLine(sy.Text).AppendLine(); textPanel.Children.Clear(); foreach (var b in ChatBlocks(say.ToString())) textPanel.Children.Add(b); break;
                         case ClaudeCode.Tool t:
                         {
-                            var icon = t.Badge switch { "Skill" => "🧩 ", "Agent" => "🤖 ", "Connector" => "🔌 ", "Befehl" => "⌨ ", "Internet" => "🌐 ", _ => "" };
-                            var st = new ClaudeChats.Step(icon + t.Text, t.Changes); steps.Add(st); stepsPanel.Children.Add(TimelineRow(st, steps[0].At, true)); thinking.Text = "✳ " + t.Text + " …";
+                            var st = new ClaudeChats.Step(t.Text, t.Changes); steps.Add(st); stepsPanel.Children.Add(TimelineRow(st, steps[0].At, true)); thinking.Text = "" + t.Text + " …";
                             if (t.Badge is "Skill" or "Agent" or "Connector" && t.Detail is { } det)
                             {
-                                var u = $"{icon}{t.Badge} {det}"; if (!used.Contains(u)) used.Add(u);
-                                if (t.Badge == "Skill") { skillChip.IsVisible = true; ((TextBlock)skillChip.Child!).Text = $"🧩 Aktiver Skill: {det}"; }
+                                var u = $"{t.Badge} {det}"; if (!used.Contains(u)) used.Add(u);
+                                if (t.Badge == "Skill") { skillChip.IsVisible = true; ((TextBlock)skillChip.Child!).Text = $"Aktiver Skill: {det}"; }
                             }
                             if (t.Changes && t.File is { } tf) pendingFile = tf;
                             break;
                         }
                         case ClaudeCode.ToolDone td when td.Error: var se = new ClaudeChats.Step("Fehler: " + td.Text, false, true); steps.Add(se); stepsPanel.Children.Add(TimelineRow(se, steps[0].At, true)); pendingFile = null; break;
                         case ClaudeCode.ToolDone when pendingFile is { } pf: pendingFile = null; ClaudeLiveChanged(dock, Path.Combine(folder, pf), workFile, null); break; // live bei jedem Schritt
-                        case ClaudeCode.Todo todo: thinking.Text = "✳ " + (todo.Items.FirstOrDefault(x => x.State == "in_progress").Text ?? "arbeitet") + " …"; break;
+                        case ClaudeCode.Todo todo: thinking.Text = "" + (todo.Items.FirstOrDefault(x => x.State == "in_progress").Text ?? "arbeitet") + " …"; break;
                         case ClaudeCode.Done dn: ok = dn.Ok; tokens = dn.Tokens; if (dn.Session.Length > 0) session = dn.Session; if (ClaudeCode.IsLimit(dn.Text)) { limitRaw = dn.Text; error = ClaudeCode.LimitText; } else if (say.Length == 0 && dn.Text.Length > 0) say.Append(dn.Text); break;
                     }
                     ui.Scroll.ScrollToEnd();
@@ -515,7 +514,7 @@ public partial class MainWindow
         }
         if (limited && error is null)
         {
-            thinking.Text = "🌐 Die Ersatz-KI arbeitet …";
+            thinking.Text = "Die Ersatz-KI arbeitet …";
             var fb = await ClaudeFallbackRun(prompt, system, folder, ui.Cts.Token);
             if (fb.Error is not null) error = fb.Error;
             else
@@ -527,7 +526,7 @@ public partial class MainWindow
             }
         }
         // bestellte KI-Werkzeuge (Bild, Musik, …) kostenlos auf dem PC ausführen – die Dateien zählen zu den Änderungen dieser Antwort
-        if (error is null && ClaudeTools.Parse(say.ToString()).Count > 0) { thinking.Text = "🎨 Trendo erzeugt Bilder, Musik … (auf diesem PC)"; steps.AddRange(await ClaudeRunTools(dock, chat.Id, say.ToString(), folder)); }
+        if (error is null && ClaudeTools.Parse(say.ToString()).Count > 0) { thinking.Text = "Trendo erzeugt Bilder, Musik … (auf diesem PC)"; steps.AddRange(await ClaudeRunTools(dock, chat.Id, say.ToString(), folder)); }
         var changes = snap?.Changes() ?? [];
         var changed = changes.Where(c => !c.File.Replace('\\', '/').StartsWith(".versionen/", StringComparison.Ordinal)).Select(c => $"{c.File} ({c.Change})").ToList(); // Versionsablage ist kein Ergebnis
         var answer = say.ToString().Trim();
@@ -541,9 +540,9 @@ public partial class MainWindow
         }
         var finished = TrendoMcp.IsFinished(answer); answer = TrendoMcp.StripFinish(answer);
         // selbstlernend: „Lernregel: …“ wird ein Vorschlag (gilt erst nach Ja)
-        foreach (var lr in ClaudeLearnFrom(studio, answer, false, check, check ? null : text, chat.Title)) steps.Add(new ClaudeChats.Step("🎓 Regel-Vorschlag: " + lr.Text, false));
+        foreach (var lr in ClaudeLearnFrom(studio, answer, false, check, check ? null : text, chat.Title)) steps.Add(new ClaudeChats.Step("Regel-Vorschlag: " + lr.Text, false));
         answer = StudioLearning.Strip(answer);
-        foreach (var keep in ClaudeMemory.Extract(answer)) if (CMemory.Add(chat.Id, keep)) steps.Add(new ClaudeChats.Step("🧠 Gemerkt: " + keep, false));
+        foreach (var keep in ClaudeMemory.Extract(answer)) if (CMemory.Add(chat.Id, keep)) steps.Add(new ClaudeChats.Step("Gemerkt: " + keep, false));
         answer = ClaudeMemory.Strip(answer);
         if (snap is not null) try { CTimeline.Keep(chat.Id, point, check ? "Nachbesserung: " + text.Split('\n')[0] : text.Split('\n')[0], changes.Count); } catch (IOException) { }
         if (ClaudeCode.IsLimit(error)) error = ClaudeCode.LimitText;
@@ -554,7 +553,7 @@ public partial class MainWindow
         ui.LastSnapshot = changed.Count > 0 ? snap : null; ui.LastSnapshotChat = chat.Id;
         _core.Audit.Append(Principal.LocalOwner.Name, "claude.chat", $"{studio} · {changed.Count} Änderungen");
         pulse.Cancel();
-        ui.Running = false; ui.Cts = null; ui.Send.Content = "↑"; ToolTip.SetTip(ui.Send, "Senden (Enter) · neue Zeile mit Umschalt+Enter");
+        ui.Running = false; ui.Cts = null; ui.Send.Content = "↑"; ToolTip.SetTip(ui.Send, "Senden (Enter) · neue Zeile mit Umschalt+Enter"); Avalonia.Automation.AutomationProperties.SetName(ui.Send, "Senden");
         RenderChatList(dock); RenderChat(dock);
         if (autoPlan) await ClaudeRunPlan(dock);
         await ClaudeAfterRun(dock, folder, format, workFile, snap, changes);
@@ -573,9 +572,9 @@ public partial class MainWindow
             // am Programm vorbei gearbeitet? Dann zurück ins Studio-Dokument
             if (workFile is not null && !changes.Any(c => Path.GetFileName(c.File).Equals(workFile, StringComparison.OrdinalIgnoreCase)))
                 found.Insert(0, $"Du hast nicht im Programm gearbeitet: Das Studio-Dokument „{workFile}“ ist unverändert. Trage dein Ergebnis jetzt dort ein ({(workFile == LetterWorkFile ? "Text und – falls gewünscht – Design in den Feldern des Briefs" : "unter \"data\", vorhandene Felder und Aufbau beibehalten")}) – das ist das Projekt, das der Nutzer im Programm sieht.");
-            thinking.Text = "🧪 Trendo startet das Ergebnis und prüft es …";
+            thinking.Text = "Trendo startet das Ergebnis und prüft es …";
             var probe = ClaudeLooks || found.Count > 0 ? await ClaudeProbeRun(folder, alive) : new ClaudeProbe.Result([], null);
-            var look = round == 0 && ClaudeLooks && ki == ClaudeKi; // Bildschirmfoto ansehen kann nur Claude
+            var look = round == 0 && ClaudeLooks && IsClaudeKi(ki); // Bildschirmfoto ansehen kann nur Claude
             if (ClaudeProbe.Feedback(found, probe, look) is { } fb)
             {
                 _core.Audit.Append(Principal.LocalOwner.Name, "claude.chat.pruefung", $"{found.Count + probe.Errors.Count} Punkte · Durchgang {round + 1}");
@@ -656,7 +655,7 @@ public partial class MainWindow
     {
         if (i is null) return "Aus deinem Claude: deine Skills, Plugins (Mods), Agenten und Connectoren stehen hier nach der ersten Antwort.";
         static string L(IReadOnlyList<string>? l, int n = 4) => l is { Count: > 0 } ? string.Join(", ", l.Take(n)) + (l.Count > n ? $" +{l.Count - n}" : "") : "–";
-        return $"Aus deinem Claude: 🧩 {i.Skills?.Count ?? 0} Skills · 🔌 Connectoren: {L(i.Connectors)} · Plugins: {L(i.Plugins)} · 🤖 {i.Agents?.Count ?? 0} Agenten";
+        return $"Aus deinem Claude: {i.Skills?.Count ?? 0} Skills · Connectoren: {L(i.Connectors)} · Plugins: {L(i.Plugins)} · {i.Agents?.Count ?? 0} Agenten";
     }
 
     /// <summary>Zeile „Aktive KI“ oben im Chat: Claude oder die Ersatz-KI, mit Uhrzeit, ab wann Claude wieder übernimmt.</summary>
@@ -664,7 +663,7 @@ public partial class MainWindow
     {
         var l = CLimit;
         if (l.Active(DateTimeOffset.Now) && l.Until is { } u)
-            return $"Aktive KI: {(lastKi is { } k && k != ClaudeKi ? k : "🌐 kostenlose Ersatz-KI")} – dein Claude-Abo ist gerade aufgebraucht, Claude übernimmt wieder ab {u.LocalDateTime:HH:mm} Uhr.";
+            return $"Aktive KI: {(lastKi is { } k && !IsClaudeKi(k) ? k : "kostenlose Ersatz-KI")} – dein Claude-Abo ist gerade aufgebraucht, Claude übernimmt wieder ab {u.LocalDateTime:HH:mm} Uhr.";
         return "Aktive KI: " + ClaudeKi;
     }
 
@@ -690,12 +689,12 @@ public partial class MainWindow
         var i = 0;
         foreach (var q in ui.Queue)
         {
-            var now = new Button { Name = $"claude-chat-queue-now-{i++}", Content = "⏹ Stopp & jetzt", FontSize = 11.5, Padding = new Thickness(8, 2), Background = Brushes.Transparent, Foreground = ClaudeAccent, BorderThickness = new Thickness(1), BorderBrush = ClaudeAccent, CornerRadius = new CornerRadius(8) };
+            var now = new Button { Name = $"claude-chat-queue-now-{i++}", Content = "Stopp & jetzt", FontSize = 11.5, Padding = new Thickness(8, 2), Background = Brushes.Transparent, Foreground = ClaudeAccent, BorderThickness = new Thickness(1), BorderBrush = ClaudeAccent, CornerRadius = new CornerRadius(8) };
             ToolTip.SetTip(now, "Claude hält jetzt an und arbeitet gleich mit dieser Nachricht weiter – bisher Gemachtes bleibt");
             now.Click += (_, _) => ui.Cts?.Cancel();
             ui.QueuePanel.Children.Add(new Border { Background = ClaudeItem, BorderBrush = ClaudeLine, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(14, 8), HorizontalAlignment = HorizontalAlignment.Right, MaxWidth = 620,
                 Child = new StackPanel { Spacing = 4, Children = { new TextBlock { Text = q, Foreground = ClaudeFg, FontSize = 14, TextWrapping = TextWrapping.Wrap },
-                    new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { new TextBlock { Text = "⏳ wartet – Claude nimmt es gleich danach auf", Foreground = ClaudeMuted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center }, now } } } } });
+                    new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { new TextBlock { Text = "wartet – Claude nimmt es gleich danach auf", Foreground = ClaudeMuted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center }, now } } } } });
         }
         ui.Scroll.ScrollToEnd();
     }
@@ -714,7 +713,7 @@ public partial class MainWindow
             b.Click += (_, _) => _ = ClaudeChatSend(dock, idea);
             row.Children.Add(b);
         }
-        var more = new Button { Name = "claude-chat-ideas-more", Content = "🔄 Andere Ideen", Background = Brushes.Transparent, Foreground = ClaudeMuted, CornerRadius = new CornerRadius(16), Padding = new Thickness(12, 7), Margin = new Thickness(0, 0, 8, 8), BorderThickness = new Thickness(1), BorderBrush = ClaudeLine, FontSize = 12.5 };
+        var more = new Button { Name = "claude-chat-ideas-more", Content = "Andere Ideen", Background = Brushes.Transparent, Foreground = ClaudeMuted, CornerRadius = new CornerRadius(16), Padding = new Thickness(12, 7), Margin = new Thickness(0, 0, 8, 8), BorderThickness = new Thickness(1), BorderBrush = ClaudeLine, FontSize = 12.5 };
         more.Click += (_, _) => { ui.IdeaPage++; RenderChat(dock); };
         row.Children.Add(more);
         return row;
@@ -747,7 +746,7 @@ public partial class MainWindow
             var x = new Button { Name = $"claude-chat-attachment-del-{i}", Content = "✕", Padding = new Thickness(4, 0), Background = Brushes.Transparent, Foreground = ClaudeMuted, BorderThickness = new Thickness(0) };
             x.Click += (_, _) => { ui.Pending.Remove(f); RenderChips(dock); };
             ui.Chips.Children.Add(new Border { Background = ClaudeItem, CornerRadius = new CornerRadius(10), Padding = new Thickness(10, 3, 4, 3), Margin = new Thickness(0, 0, 6, 4),
-                Child = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, Children = { new TextBlock { Text = "📎 " + Path.GetFileName(f), Foreground = ClaudeFg, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, x } } });
+                Child = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, Children = { new TextBlock { Text = "" + Path.GetFileName(f), Foreground = ClaudeFg, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, x } } });
         }
     }
 
@@ -785,7 +784,7 @@ public partial class MainWindow
     /// <summary>Karte im Spiele-Studio: das Spiel, das Claude gerade gebaut hat – Vorschaubild, Spielen, Ordner.</summary>
     Control ClaudeGameCard(string dir)
     {
-        var sp = new StackPanel { Name = "game-claude", Spacing = 6, Children = { H("✳ Von Claude: „" + Path.GetFileName(dir) + "“", 14) } };
+        var sp = new StackPanel { Name = "game-claude", Spacing = 6, Children = { H("Von Claude: „" + Path.GetFileName(dir) + "“", 14) } };
         if (_gameClaudeShot is { } shot && File.Exists(shot)) try { sp.Children.Add(new Image { Source = new Avalonia.Media.Imaging.Bitmap(shot), MaxHeight = 260, HorizontalAlignment = HorizontalAlignment.Left }); } catch (Exception e) when (e is IOException or ArgumentException) { }
         var html = Path.Combine(dir, "index.html");
         sp.Children.Add(new WrapPanel { Children = { Act("game-claude-play", "Spielen", () => Launch(html), true), new Border { Width = 6 }, Act("game-claude-folder", "Ordner", () => Launch(dir)) } });
@@ -845,7 +844,7 @@ public partial class MainWindow
             }
         }
         if (shown && dock.Max) ClaudeDockSetMax(dock, false); // Studio links einblenden: dort steht jetzt, was Claude gebaut hat
-        if (shown) foreach (var b in dock.Panel.GetLogicalDescendantsOf<Button>().Where(b => b.Name == "claude-dock-max")) b.Content = "⤢ Groß";
+        if (shown) foreach (var b in dock.Panel.GetLogicalDescendantsOf<Button>().Where(b => b.Name == "claude-dock-max")) b.Content = "Groß";
         if (shown && CurrentView == dock.Page) Show(CurrentView);
         RenderPreview(dock);
     }
@@ -884,7 +883,7 @@ public partial class MainWindow
             if (ui.LastSnapshot is not null)
             {
                 if (!ClaudeNoClicks) B("claude-preview-keep", "✓ Behalten", "Änderung behalten", () => { ui.PreviewOriginal = null; ui.Compare = "nachher"; ui.LastSnapshot = null; RenderPreview(dock); RenderChat(dock); });
-                B("claude-preview-undo", "↶ Zurücknehmen", "Änderungen der letzten Antwort rückgängig machen", () => { ClaudeChatUndo(dock); ui.PreviewOriginal = null; ui.Compare = "nachher"; RenderPreview(dock); });
+                B("claude-preview-undo", "Zurücknehmen", "Änderungen der letzten Antwort rückgängig machen", () => { ClaudeChatUndo(dock); ui.PreviewOriginal = null; ui.Compare = "nachher"; RenderPreview(dock); });
             }
         }
         B("claude-preview-reload", "↻", "Neu laden", () => RenderPreview(dock));
@@ -921,7 +920,7 @@ public partial class MainWindow
         if (!_chatUis.TryGetValue(dock, out var ui) || ui.LastSnapshot is not { } snap || ui.LastSnapshotChat is not { } cid) return;
         snap.Restore(); ui.LastSnapshot = null;
         if (dock.Studio == LetterStudio && File.Exists(Path.Combine(snap.Root, LetterWorkFile))) ClaudeSyncLetter(Path.Combine(snap.Root, LetterWorkFile)); // Brief im Programm zurück
-        CChats.Add(ChatStudio(dock), cid, new ClaudeChats.Msg("assistant", "↶ Die Änderungen der letzten Antwort sind zurückgenommen.", [], DateTimeOffset.Now));
+        CChats.Add(ChatStudio(dock), cid, new ClaudeChats.Msg("assistant", "Die Änderungen der letzten Antwort sind zurückgenommen.", [], DateTimeOffset.Now));
         _core.Audit.Append(Principal.LocalOwner.Name, "claude.chat.zurueck", dock.Studio ?? "");
         RenderChat(dock);
     }

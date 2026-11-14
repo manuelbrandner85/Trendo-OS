@@ -81,7 +81,7 @@ public partial class MainWindow
             key.SelectionChanged += (_, _) => _msSoundKey = key.SelectedIndex <= 0 ? "" : AceStepClient.Keys[key.SelectedIndex - 1];
             sp.Children.Add(new WrapPanel { Children = { new TextBlock { Text = "BPM", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) }, bpm, new Border { Width = 8 }, bars, new Border { Width = 8 }, key } });
         }
-        var go = new Button { Name = "ms-sound-create", Content = "✨ Sound erzeugen", FontSize = 15, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Center,
+        var go = new Button { Name = "ms-sound-create", Content = "Sound erzeugen", FontSize = 15, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Center,
             Padding = new Thickness(0, 10), CornerRadius = new CornerRadius(12), Background = Accent, Foreground = Brushes.White, BorderThickness = new Thickness(0) };
         go.Click += (_, _) => { _msSoundDesc = desc.Text ?? ""; try { _ = MsMakeSound(_msSoundDesc, _msSoundLoop, _msSoundBpm, _msSoundBars, _msSoundKey); } catch (ArgumentException e) { _msMsg = e.Message; Show(MS); } };
         sp.Children.Add(go);
@@ -132,7 +132,7 @@ public partial class MainWindow
         var style = new TextBox { Name = "ms-speech-style", Text = _msSpeechStyle, Watermark = "Musik dazu, z. B. „sanftes Klavier“ oder „epische Trommeln“" };
         style.TextChanged += (_, _) => _msSpeechStyle = style.Text ?? "";
         sp.Children.Add(text); sp.Children.Add(style);
-        var go = new Button { Name = "ms-speech-create", Content = "✨ Sprache mit Musik", FontSize = 15, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Center,
+        var go = new Button { Name = "ms-speech-create", Content = "Sprache mit Musik", FontSize = 15, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Center,
             Padding = new Thickness(0, 10), CornerRadius = new CornerRadius(12), Background = Accent, Foreground = Brushes.White, BorderThickness = new Thickness(0) };
         go.Click += (_, _) => { _msSpeechText = text.Text ?? ""; _msSpeechStyle = style.Text ?? ""; _ = MsMakeSpeech(_msSpeechText, _msSpeechStyle); };
         sp.Children.Add(go);

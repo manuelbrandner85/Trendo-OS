@@ -26,9 +26,9 @@ public class ClaudeDock_Ui
             Assert.Null(w.LastClipboardText); // nichts kopiert – man tippt direkt in Claude
             Assert.Equal("chat", w.ClaudeDockTab(win)); // startet mit dem Claude-Chat; claude.ai ist der zweite Reiter
             w.Find<Button>("claude-tab-web").Press(); Assert.Equal("web", w.ClaudeDockTab(win));
-            Assert.True(w.ClaudeDockIsMax(win)); Assert.Equal("⤡ Studio zeigen", w.Find<Button>("claude-dock-max").Content);
+            Assert.True(w.ClaudeDockIsMax(win)); Assert.Equal("Studio zeigen", w.Find<Button>("claude-dock-max").Content);
             Assert.Null(w.TryFind<Button>("claude-tab-code")); Assert.Contains("Testmodus", string.Join("|", w.GetLogicalTexts()));
-            w.Find<Button>("claude-dock-max").Press(); Assert.False(w.ClaudeDockIsMax(win)); Assert.Equal("⤢ Groß", w.Find<Button>("claude-dock-max").Content);
+            w.Find<Button>("claude-dock-max").Press(); Assert.False(w.ClaudeDockIsMax(win)); Assert.Equal("Groß", w.Find<Button>("claude-dock-max").Content);
             w.Find<Button>("claude-dock-max").Press(); Assert.True(w.ClaudeDockIsMax(win));
             var pane = w.Find<Border>("claude-web-pane");
             w.Show("baukasten"); w.Show("baukasten"); Assert.Same(pane, w.Find<Border>("claude-web-pane")); // Neuzeichnen lädt claude.ai nicht neu

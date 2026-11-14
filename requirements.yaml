@@ -529,6 +529,34 @@ modules:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)
+- id: STUDIO-BOOK-01
+  name: Bücher schreiben
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)
+- id: STUDIO-ANIM-01
+  name: Animation & Motion
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)
+- id: STUDIO-PHOTOS-01
+  name: Fotos verwalten
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)
+- id: STUDIO-IMAGEAI-01
+  name: Bilder mit KI
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)
 - id: SPEC-16
   name: Transport & Vehicle 2.0
   approved_expansion_functions: '20'

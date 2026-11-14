@@ -160,6 +160,7 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
+      "kie.ai",
       "✳ Claude",
       "Kündigung meines Fitnessstudios",
       "Widerspruch gegen einen Bescheid",
@@ -202,7 +203,7 @@
       "Ohne Unterschrift",
       "Brief prüfen",
       "Text von der KI verbessern lassen",
-      "13. November 2026",
+      "14. November 2026",
       "Alle 20 Vorlagen zeigen …",
       "Fertig – Brief speichern",
       "Als verschickt eintragen",
@@ -274,9 +275,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 89,
+    "WarmMs": 87,
     "WindowsOnly": []
   },
   {
@@ -390,6 +391,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Antwort auf die letzte E-Mail entwerfen",
       "Termin nächste Woche Dienstag 10 Uhr",
@@ -435,9 +437,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 43,
+    "WarmMs": 39,
     "WindowsOnly": []
   },
   {
@@ -551,6 +553,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Antwort auf die letzte E-Mail entwerfen",
       "Termin nächste Woche Dienstag 10 Uhr",
@@ -589,9 +592,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 43,
+    "WarmMs": 46,
     "WindowsOnly": []
   },
   {
@@ -716,6 +719,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Antwort auf die letzte E-Mail entwerfen",
       "Termin nächste Woche Dienstag 10 Uhr",
@@ -791,9 +795,9 @@
       "src/Trendo.App/MainWindow.Pim.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 46,
+    "WarmMs": 62,
     "WindowsOnly": []
   },
   {
@@ -907,6 +911,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Antwort auf die letzte E-Mail entwerfen",
       "Termin nächste Woche Dienstag 10 Uhr",
@@ -956,9 +961,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 22,
+    "WarmMs": 26,
     "WindowsOnly": []
   },
   {
@@ -1072,6 +1077,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Antwort auf die letzte E-Mail entwerfen",
       "Termin nächste Woche Dienstag 10 Uhr",
@@ -1122,9 +1128,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 21,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -1278,6 +1284,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Verstanden",
       "Werkzeuge",
@@ -1362,9 +1369,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -1518,6 +1525,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Mehr ▾",
       "Übersicht",
@@ -1616,9 +1624,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -1772,6 +1780,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Verstanden",
       "Werkzeuge",
@@ -1859,9 +1868,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -1882,6 +1891,7 @@
     "Tools": [
       "Großprojekte umsetzen",
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Mehr ▾",
       "＋ Neues Projekt",
@@ -1951,9 +1961,9 @@
       "src/Trendo.App/MainWindow.W4Suite.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 17,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -2106,6 +2116,7 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
+      "kie.ai",
       "✳ Claude",
       "Haushaltsplan als Tabelle",
       "Präsentation über unser Projekt, 8 Folien",
@@ -2204,9 +2215,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -2360,6 +2371,7 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
+      "kie.ai",
       "✳ Claude",
       "Haushaltsplan als Tabelle",
       "Präsentation über unser Projekt, 8 Folien",
@@ -2435,9 +2447,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 7,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -2592,6 +2604,7 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
+      "kie.ai",
       "✳ Markierung fragen",
       "✳ Claude",
       "Haushaltsplan als Tabelle",
@@ -2696,7 +2709,7 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
     "WarmMs": 11,
     "WindowsOnly": []
@@ -2853,6 +2866,7 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
+      "kie.ai",
       "✳ Markierung fragen",
       "✳ Claude",
       "Haushaltsplan als Tabelle",
@@ -2975,9 +2989,9 @@
       "src/Trendo.App/MainWindow.Tabelle.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -3132,6 +3146,7 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
+      "kie.ai",
       "✳ Markierung fragen",
       "✳ Claude",
       "Haushaltsplan als Tabelle",
@@ -3271,9 +3286,9 @@
       "src/Trendo.App/MainWindow.Text.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 20,
+    "WarmMs": 33,
     "WindowsOnly": []
   },
   {
@@ -3294,6 +3309,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Monatsausgaben nach Kategorie",
       "Rechnung für Erika Muster schreiben",
@@ -3357,9 +3373,9 @@
       "src/Trendo.App/MainWindow.W5Finance.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 27,
+    "WarmMs": 52,
     "WindowsOnly": []
   },
   {
@@ -3452,6 +3468,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Produktbeschreibung für handgemachte Kerzen",
       "Preise kalkulieren",
@@ -3504,9 +3521,9 @@
       "src/Trendo.App/MainWindow.W5Business.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -3560,7 +3577,152 @@
       "src/Trendo.App/MainWindow.PodStudio.cs"
     ],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
+    "Shell": true,
+    "WarmMs": 9,
+    "WindowsOnly": []
+  },
+  {
+    "Id": "animation-programm",
+    "Name": "Animation & Motion",
+    "Studio": "STUDIO-ANIM-01",
+    "StudioName": "Animation & Motion",
+    "Area": "Kreativ & Medien",
+    "Type": [],
+    "Functions": [],
+    "Engine": [
+      "AnimKit",
+      "ImageAiKit",
+      "KreativSafe",
+      "BookKit",
+      "PhotoOrganizer",
+      "LogoKit",
+      "Rect"
+    ],
+    "Tools": [
+      "Rechteck (Ebene)",
+      "Kreis (Ebene)",
+      "Text (Ebene)",
+      "Einblenden (Bewegung)",
+      "Einfliegen (Bewegung)",
+      "Pulsieren (Bewegung)",
+      "Drehen (Bewegung)",
+      "Video (MP4) (Ausgabe)",
+      "Animiertes SVG (.svg) (Exportieren)"
+    ],
+    "Formats": [
+      ".docx",
+      ".jpg",
+      ".json",
+      ".md",
+      ".mp3",
+      ".mp4",
+      ".ods",
+      ".odt",
+      ".ogg",
+      ".pdf",
+      ".png",
+      ".pptx",
+      ".svg",
+      ".tdoc",
+      ".txt",
+      ".wav",
+      ".webm",
+      ".xlsx",
+      ".xml",
+      ".zip"
+    ],
+    "Dependencies": [
+      "FFmpeg"
+    ],
+    "Ui": [
+      "Menüband",
+      "Eigenschaften",
+      "Statusleiste",
+      "Dokument-Reiter"
+    ],
+    "Tabs": [
+      "Animation & Motion"
+    ],
+    "Tests": [],
+    "SourceFiles": [
+      "src/Trendo.App/MainWindow.KreativStudios2.cs"
+    ],
+    "Status": "IN_PROGRESS / Test NOT_RUN",
+    "Version": "0.9.93 (Stand 9c89aeb)",
+    "Shell": true,
+    "WarmMs": 9,
+    "WindowsOnly": []
+  },
+  {
+    "Id": "buch-programm",
+    "Name": "Bücher schreiben",
+    "Studio": "STUDIO-BOOK-01",
+    "StudioName": "Bücher schreiben",
+    "Area": "Kreativ & Medien",
+    "Type": [
+      "Texteditor"
+    ],
+    "Functions": [],
+    "Engine": [
+      "AnimKit",
+      "ImageAiKit",
+      "KreativSafe",
+      "BookKit",
+      "PhotoOrganizer",
+      "LogoKit",
+      "Rect"
+    ],
+    "Tools": [
+      "Neues Kapitel (Kapitel)",
+      "Weiterschreiben mit Claude (Claude)",
+      "Lektorat mit Claude (Claude)",
+      "E-Book (.epub) (Exportieren)",
+      "Manuskript (.md) (Exportieren)",
+      "Nur Text (.txt) (Exportieren)"
+    ],
+    "Formats": [
+      ".docx",
+      ".epub",
+      ".jpg",
+      ".json",
+      ".md",
+      ".mp3",
+      ".mp4",
+      ".ods",
+      ".odt",
+      ".ogg",
+      ".pdf",
+      ".png",
+      ".pptx",
+      ".svg",
+      ".tdoc",
+      ".txt",
+      ".wav",
+      ".webm",
+      ".xlsx",
+      ".xml",
+      ".zip"
+    ],
+    "Dependencies": [
+      "FFmpeg"
+    ],
+    "Ui": [
+      "Texteditor",
+      "Menüband",
+      "Eigenschaften",
+      "Statusleiste",
+      "Dokument-Reiter"
+    ],
+    "Tabs": [
+      "Bücher schreiben"
+    ],
+    "Tests": [],
+    "SourceFiles": [
+      "src/Trendo.App/MainWindow.KreativStudios2.cs"
+    ],
+    "Status": "IN_PROGRESS / Test NOT_RUN",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": true,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -3619,9 +3781,9 @@
       "src/Trendo.App/MainWindow.KreativStudios.cs"
     ],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -3679,7 +3841,75 @@
       "src/Trendo.App/MainWindow.FilmStudio.cs"
     ],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
+    "Shell": true,
+    "WarmMs": 11,
+    "WindowsOnly": []
+  },
+  {
+    "Id": "fotos-verwalten-programm",
+    "Name": "Fotos verwalten",
+    "Studio": "STUDIO-PHOTOS-01",
+    "StudioName": "Fotos verwalten",
+    "Area": "Kreativ & Medien",
+    "Type": [],
+    "Functions": [],
+    "Engine": [
+      "AnimKit",
+      "ImageAiKit",
+      "KreativSafe",
+      "BookKit",
+      "PhotoOrganizer",
+      "LogoKit",
+      "Rect"
+    ],
+    "Tools": [
+      "Jahr / Monat (Ordnung)",
+      "Nur Jahr (Ordnung)",
+      "Jahr / Tag (Ordnung)",
+      "Im Fotoalbum ansehen (Fotos)",
+      "Probelauf als Liste (.txt) (Exportieren)"
+    ],
+    "Formats": [
+      ".docx",
+      ".jpg",
+      ".json",
+      ".md",
+      ".mp3",
+      ".mp4",
+      ".ods",
+      ".odt",
+      ".ogg",
+      ".pdf",
+      ".png",
+      ".pptx",
+      ".svg",
+      ".tdoc",
+      ".txt",
+      ".wav",
+      ".webm",
+      ".xlsx",
+      ".xml",
+      ".zip"
+    ],
+    "Dependencies": [
+      "FFmpeg"
+    ],
+    "Ui": [
+      "Menüband",
+      "Eigenschaften",
+      "Statusleiste",
+      "Dokument-Reiter"
+    ],
+    "Tabs": [
+      "Fotos verwalten"
+    ],
+    "Tests": [],
+    "SourceFiles": [
+      "src/Trendo.App/MainWindow.KreativStudios2.cs"
+    ],
+    "Status": "IN_PROGRESS / Test NOT_RUN",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": true,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -3791,6 +4021,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Mehr ▾",
       "Bilder",
@@ -3844,9 +4075,9 @@
       "src/Trendo.App/MainWindow.W4Assets.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -4038,9 +4269,9 @@
       "src/Trendo.App/MainWindow.ProgMode.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -4184,6 +4415,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Stream-Szene mit Kamera und Bildschirm",
       "Ablauf für eine 30-Minuten-Sendung",
@@ -4308,9 +4540,9 @@
       "src/Trendo.App/MainWindow.Spec15.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 63,
+    "WarmMs": 74,
     "WindowsOnly": []
   },
   {
@@ -4372,9 +4604,9 @@
       "src/Trendo.App/MainWindow.KreativStudios.cs"
     ],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -4433,7 +4665,7 @@
       "src/Trendo.App/MainWindow.KreativStudios.cs"
     ],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": true,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -4598,6 +4830,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Sommerlied über einen Roadtrip",
       "Ruhige Klavierballade, instrumental",
@@ -4612,12 +4845,12 @@
       "Sounds",
       "Sprache",
       "Übernehmen",
-      "Sa",
       "So",
       "Mo",
       "Di",
       "Mi",
       "Do",
+      "Fr",
       "Heute",
       "Lied in meinem Geschmack",
       "Einfach",
@@ -4655,8 +4888,7 @@
       "Das ist meine eigene Stimme. Ich nehme sie hier selbst mit dem Mikrofon auf.",
       "⏺ Aufnahme 1 von 10",
       "\uD83E\uDDE0 Stimme lernen",
-      "\uD83C\uDF99 Cover erzeugen",
-      "\uD83C\uDFA4 Karaoke aus dem Original"
+      "\uD83C\uDF99 Cover erzeugen"
     ],
     "Formats": [],
     "Dependencies": [],
@@ -4749,9 +4981,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 27,
+    "WarmMs": 36,
     "WindowsOnly": []
   },
   {
@@ -4767,6 +4999,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Mehr ▾",
       "\uD83E\uDDF8 Kinder-Profil",
@@ -4824,9 +5057,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 7,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -5204,9 +5437,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": true,
-    "WarmMs": 11,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -5546,7 +5779,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": true,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -5820,6 +6053,7 @@
       "Freie Bilder & Klänge finden",
       "Los",
       "Hinzufügen …",
+      "kie.ai",
       "✳ Claude",
       "Urlaubsvideo mit Musik schneiden",
       "Foto aufhellen und zuschneiden",
@@ -5889,9 +6123,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 57,
+    "WarmMs": 51,
     "WindowsOnly": []
   },
   {
@@ -6272,7 +6506,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": true,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -6715,9 +6949,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 34,
+    "WarmMs": 25,
     "WindowsOnly": []
   },
   {
@@ -6993,6 +7227,7 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
+      "kie.ai",
       "✳ Claude",
       "Mehr ▾",
       "Datei wählen …",
@@ -7082,7 +7317,7 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
     "WarmMs": 11,
     "WindowsOnly": []
@@ -7360,6 +7595,7 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
+      "kie.ai",
       "✳ Claude",
       "Mehr ▾",
       "Datei ▾",
@@ -7472,9 +7708,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 61,
+    "WarmMs": 56,
     "WindowsOnly": []
   },
   {
@@ -7616,6 +7852,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Mehr ▾",
       "Gegenstände einscannen",
@@ -7686,7 +7923,7 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
     "WarmMs": 13,
     "WindowsOnly": []
@@ -7902,7 +8139,7 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": true,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -7922,6 +8159,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Erkläre mir den nächsten Schritt",
       "Was fehlt auf diesem PC?",
@@ -7985,7 +8223,7 @@
       "src/Trendo.App/MainWindow.ConsolePort.cs"
     ],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": true,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -8319,9 +8557,9 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": true,
-    "WarmMs": 13,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -8577,6 +8815,7 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
+      "kie.ai",
       "✳ Claude",
       "Mehr ▾",
       "Spiele bauen",
@@ -8685,9 +8924,9 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 21,
     "WindowsOnly": []
   },
   {
@@ -8812,6 +9051,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Mehr ▾",
       "Datei wählen …",
@@ -8892,9 +9132,9 @@
       "src/Trendo.App/MainWindow.Spec04.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 55,
+    "WarmMs": 47,
     "WindowsOnly": []
   },
   {
@@ -9040,6 +9280,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Mehr ▾",
       "⛽ Familienauto",
@@ -9098,9 +9339,9 @@
       "src/Trendo.App/MainWindow.Spec16.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 71,
+    "WarmMs": 79,
     "WindowsOnly": []
   },
   {
@@ -9300,9 +9541,9 @@
       "src/Trendo.App/MainWindow.Spec14.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -9447,6 +9688,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Mehr ▾",
       "Diesen PC jetzt messen",
@@ -9518,9 +9760,9 @@
       "src/Trendo.App/MainWindow.Spec10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 41,
+    "WarmMs": 45,
     "WindowsOnly": []
   },
   {
@@ -9666,6 +9908,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Mehr ▾",
       "Not-Aus",
@@ -9748,9 +9991,9 @@
       "src/Trendo.App/MainWindow.Core09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 49,
+    "WarmMs": 50,
     "WindowsOnly": []
   },
   {
@@ -9946,7 +10189,7 @@
       "src/Trendo.App/MainWindow.Spec13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": true,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -10128,7 +10371,7 @@
       "src/Trendo.App/MainWindow.Spec02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": true,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -10335,9 +10578,9 @@
       "src/Trendo.App/MainWindow.Spec03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": true,
-    "WarmMs": 10,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -10536,9 +10779,9 @@
       "src/Trendo.App/MainWindow.Spec01.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": true,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -10659,6 +10902,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Vokabeln Englisch Kapitel 3",
       "Prüfungsfragen zur Ersten Hilfe",
@@ -10714,9 +10958,9 @@
       "src/Trendo.App/MainWindow.Spec06.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -10854,13 +11098,13 @@
     ],
     "Formats": [
       ".csv",
+      ".json",
       ".md",
       ".svg",
-      ".tdoc"
+      ".tdoc",
+      ".xml"
     ],
-    "Dependencies": [
-      "FFmpeg"
-    ],
+    "Dependencies": [],
     "Rea": "docs/claude/vorbilder/messdaten-origin-scidavis.md",
     "ReaSummary": "Vorbild-Analyse Messdaten: Origin, SciDAVis, LabPlot (Clean-Room)",
     "Ui": [
@@ -10903,9 +11147,9 @@
       "src/Trendo.App/MainWindow.Spec05.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": true,
-    "WarmMs": 10,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -10921,6 +11165,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Recherche: Wärmepumpe Kosten 2026",
       "Quellen zu gesunder Ernährung",
@@ -10962,9 +11207,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -10980,6 +11225,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Mehr ▾",
       "＋ Neue Seite",
@@ -11040,9 +11286,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -11102,6 +11348,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Jeden Morgen Wetter und Termine zeigen",
       "Downloads-Ordner wöchentlich aufräumen",
@@ -11175,9 +11422,87 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 10,
+    "WindowsOnly": []
+  },
+  {
+    "Id": "bild-ki-programm",
+    "Name": "Bilder mit KI",
+    "Studio": "STUDIO-IMAGEAI-01",
+    "StudioName": "Bilder mit KI",
+    "Area": "KI & Automatik",
+    "Type": [],
+    "Functions": [],
+    "Engine": [
+      "AnimKit",
+      "ImageAiKit",
+      "KreativSafe",
+      "BookKit",
+      "PhotoOrganizer",
+      "LogoKit",
+      "Rect"
+    ],
+    "Tools": [
+      "Bilder malen (Malen)",
+      "Bild-KI einrichten (Malen)",
+      "Foto (Stil)",
+      "Illustration (Stil)",
+      "Aquarell (Stil)",
+      "3D-Render (Stil)",
+      "Pixel-Art (Stil)",
+      "Bleistiftskizze (Stil)",
+      "Ohne Stil (Stil)",
+      "Quadrat 1:1 (Format)",
+      "Quer 16:9 (Format)",
+      "Hoch 9:16 (Format)",
+      "Foto 4:3 (Format)",
+      "Neuestes Bild (.png) (Exportieren)",
+      "Alle Bilder mit Nachweis (.zip) (Exportieren)"
+    ],
+    "Formats": [
+      ".docx",
+      ".jpg",
+      ".json",
+      ".md",
+      ".mp3",
+      ".mp4",
+      ".ods",
+      ".odt",
+      ".ogg",
+      ".pdf",
+      ".png",
+      ".pptx",
+      ".svg",
+      ".tdoc",
+      ".txt",
+      ".wav",
+      ".webm",
+      ".xlsx",
+      ".xml",
+      ".zip"
+    ],
+    "Dependencies": [
+      "FFmpeg"
+    ],
+    "Ui": [
+      "Menüband",
+      "Eigenschaften",
+      "Statusleiste",
+      "Dokument-Reiter"
+    ],
+    "Tabs": [
+      "Bilder mit KI"
+    ],
+    "Tests": [],
+    "SourceFiles": [
+      "src/Trendo.App/MainWindow.KreativStudios2.cs"
+    ],
+    "Status": "IN_PROGRESS / Test NOT_RUN",
+    "Version": "0.9.93 (Stand 9c89aeb)",
+    "Shell": true,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -11196,6 +11521,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "KI fragen",
       "Trendo KI (lokal)",
@@ -11251,9 +11577,9 @@
       "src/Trendo.App/MainWindow.W5Fusion.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -11270,6 +11596,7 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
+      "kie.ai",
       "✳ Claude",
       "Erkläre mir Zinseszins",
       "Plane meine Woche",
@@ -11351,7 +11678,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
     "WarmMs": 11,
     "WindowsOnly": []
@@ -11373,6 +11700,7 @@
       "Kostenlose KI finden",
       "Los",
       "Hinzufügen …",
+      "kie.ai",
       "✳ Claude",
       "Erkläre mir Zinseszins",
       "Plane meine Woche",
@@ -11442,9 +11770,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -11468,6 +11796,7 @@
       "Kostenlose KI finden",
       "Los",
       "Hinzufügen …",
+      "kie.ai",
       "✳ Claude",
       "Erkläre mir Zinseszins",
       "Plane meine Woche",
@@ -11525,9 +11854,9 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -11544,6 +11873,7 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
+      "kie.ai",
       "✳ Claude",
       "Erkläre mir Zinseszins",
       "Plane meine Woche",
@@ -11625,9 +11955,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 33,
+    "WarmMs": 21,
     "WindowsOnly": []
   },
   {
@@ -11653,6 +11983,7 @@
       "Kostenlose KI finden",
       "Los",
       "Hinzufügen …",
+      "kie.ai",
       "✳ Claude",
       "Erkläre mir Zinseszins",
       "Plane meine Woche",
@@ -11740,9 +12071,9 @@
       "src/Trendo.App/MainWindow.Connections.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 20,
     "WindowsOnly": []
   },
   {
@@ -11758,6 +12089,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "KI fragen",
       "Trendo KI (lokal)",
@@ -11807,7 +12139,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -11829,6 +12161,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "KI fragen",
       "Trendo KI (lokal)",
@@ -11885,9 +12218,9 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 18,
     "WindowsOnly": []
   },
   {
@@ -11903,6 +12236,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "KI fragen",
       "Trendo KI (lokal)",
@@ -11962,9 +12296,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 18,
     "WindowsOnly": []
   },
   {
@@ -11989,6 +12323,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "KI fragen",
       "Trendo KI (lokal)",
@@ -12068,9 +12403,9 @@
       "src/Trendo.App/MainWindow.KiLibrary.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -12086,6 +12421,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "KI fragen",
       "Trendo KI (lokal)",
@@ -12176,9 +12512,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 20,
+    "WarmMs": 34,
     "WindowsOnly": []
   },
   {
@@ -12194,6 +12530,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "KI fragen",
       "Trendo KI (lokal)",
@@ -12241,9 +12578,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -12302,7 +12639,7 @@
       "src/Trendo.App/MainWindow.KreativStudios.cs"
     ],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": true,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -12323,6 +12660,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "App für Einkaufslisten",
       "Vereins-App mit Terminen",
@@ -12397,9 +12735,9 @@
       "src/Trendo.App/MainWindow.W4Builder.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -12417,6 +12755,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Mehr ▾",
       "Kopieren",
@@ -12448,7 +12787,7 @@
       "src/Trendo.App/MainWindow.W5CleanRoom.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -12473,6 +12812,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Mehr ▾",
       "Kopieren",
@@ -12555,9 +12895,9 @@
       "src/Trendo.App/MainWindow.W4Oss.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -12581,6 +12921,7 @@
       "Programme nachbauen",
       "Projekte von GitHub holen",
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Mehr ▾",
       "Kopieren",
@@ -12626,7 +12967,7 @@
       "src/Trendo.App/MainWindow.W5Ext.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -12648,6 +12989,7 @@
       "Apps zusammenklicken",
       "Los",
       "Hinzufügen …",
+      "kie.ai",
       "✳ Claude",
       "Webseite für ein Café",
       "Kontaktformular einbauen",
@@ -12787,9 +13129,9 @@
       "src/Trendo.App/MainWindow.W4Dev.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 61,
+    "WarmMs": 55,
     "WindowsOnly": []
   },
   {
@@ -12805,6 +13147,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -12884,7 +13227,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
     "WarmMs": 27,
     "WindowsOnly": []
@@ -12902,6 +13245,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -12974,9 +13318,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -12993,6 +13337,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -13075,9 +13420,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -13093,6 +13438,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -13147,9 +13493,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -13358,23 +13704,27 @@
       "Alle",
       "Arbeiten & Büro (5)",
       "Business & Geld (3)",
-      "Kreativ & Medien (9)",
+      "Kreativ & Medien (12)",
       "3D, Spiele & VR (4)",
       "Technik & Fachgebiete (5)",
       "Wissen & Lernen (4)",
-      "KI & Automatik (3)",
+      "KI & Automatik (4)",
       "Entwickeln (2)",
       "System & Sicherheit (6)",
       "Bereit",
       "Briefe schreiben",
       "Print on Demand",
+      "Animation & Motion",
+      "Bücher schreiben",
       "Comics & Storyboards",
       "Filme machen",
+      "Fotos verwalten",
       "Logos & Marken",
       "Podcast aufnehmen",
       "Trendo Musik",
       "TV & Live",
       "Konsolenspiele portieren",
+      "Bilder mit KI",
       "Texte zusammenfassen",
       "PC, Pi & Handy verbinden",
       "KI fragen",
@@ -13443,7 +13793,7 @@
       "Startseite: die neun bekannten Studios öffnen aus dem Startmenü per echtem Mausklick eine eigene Seite",
       "Studio-Klick: Unreal nur geführt – kein Installieren-Knopf, offizieller Installer-Link",
       "Studio-Klick: fehlendes Programm → genau eine Frage 'Studio braucht X. Jetzt installieren?', 'Später' installiert nichts",
-      "Studio-Ordnung: 41 Studios in der Übersicht; jedes Ziel einer Zusammenlegung existiert und bleibt selbst sichtbar",
+      "Studio-Ordnung: 45 Studios in der Übersicht; jedes Ziel einer Zusammenlegung existiert und bleibt selbst sichtbar",
       "Studio-Ordnung: Das aufnehmende Studio und die Einstellungen zeigen die Leiste, der Knopf öffnet den Bereich",
       "Studio-Ordnung: Zusammengelegtes fehlt in der Übersicht, Suche findet es, SPEC-07 nirgends",
       "Studio-Ordnung: alphabetisch innerhalb einer Unterteilung, Umlaute deutsch sortiert",
@@ -13460,7 +13810,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
     "WarmMs": 45,
     "WindowsOnly": []
@@ -13721,7 +14071,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -13927,6 +14277,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Trendo KI",
       "Agenten-Zentrale",
@@ -13954,8 +14305,12 @@
       "Logos & Marken",
       "Podcast aufnehmen",
       "Comics & Storyboards",
+      "Bücher schreiben",
+      "Animation & Motion",
+      "Fotos verwalten",
       "Kleidung & Produkte entwerfen",
       "Texte zusammenfassen",
+      "Bilder mit KI",
       "KI fragen",
       "Aufgaben automatisieren",
       "3D-Modelle erstellen",
@@ -14004,9 +14359,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 33,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -14210,6 +14565,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "\uD83D\uDCF7 Eigenes Foto wählen …",
       "Mit der Kamera aufnehmen",
@@ -14247,7 +14603,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
     "WarmMs": 7,
     "WindowsOnly": []
@@ -14453,6 +14809,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Verstanden",
       "＋ Projekt anlegen",
@@ -14516,9 +14873,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 7,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -14859,7 +15216,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
     "WarmMs": 6,
     "WindowsOnly": []
@@ -14877,6 +15234,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -14938,9 +15296,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -14956,6 +15314,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -15018,9 +15377,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 20,
     "WindowsOnly": []
   },
   {
@@ -15036,6 +15395,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -15117,7 +15477,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
     "WarmMs": 45,
     "WindowsOnly": []
@@ -15136,6 +15496,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -15219,9 +15580,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -15238,6 +15599,7 @@
     "Tools": [
       "Handy verbinden",
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -15304,7 +15666,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
     "WarmMs": 15,
     "WindowsOnly": []
@@ -15323,6 +15685,7 @@
     "Tools": [
       "Programme starten",
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -15408,9 +15771,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -15559,6 +15922,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -15679,9 +16043,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 24,
+    "WarmMs": 20,
     "WindowsOnly": []
   },
   {
@@ -15830,6 +16194,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -15928,9 +16293,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 39,
+    "WarmMs": 34,
     "WindowsOnly": []
   },
   {
@@ -16079,6 +16444,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -16186,7 +16552,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
     "WarmMs": 16,
     "WindowsOnly": []
@@ -16337,6 +16703,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -16477,9 +16844,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 55,
+    "WarmMs": 52,
     "WindowsOnly": []
   },
   {
@@ -16625,6 +16992,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -16689,9 +17057,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 36,
+    "WarmMs": 34,
     "WindowsOnly": []
   },
   {
@@ -16845,6 +17213,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -16926,9 +17295,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 37,
     "WindowsOnly": []
   },
   {
@@ -17074,6 +17443,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -17144,7 +17514,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
     "WarmMs": 11,
     "WindowsOnly": []
@@ -17292,6 +17662,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -17369,9 +17740,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -17517,6 +17888,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -17585,9 +17957,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -17740,6 +18112,7 @@
       "Schrift & Farben anpassen",
       "Startmodus wählen",
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Personen & Konten",
       "Sehen & Bedienhilfen",
@@ -17790,8 +18163,7 @@
       "Violett",
       "Pink",
       "Bernstein",
-      "Grün",
-      "Farbe passend zum Hintergrund wählen"
+      "Grün"
     ],
     "Formats": [],
     "Dependencies": [],
@@ -17868,7 +18240,7 @@
       "Studio-Fenster wie im System: Mac und GNOME – KI-Zeile ist die Titelleiste (Ampel bzw. Schließen, Titel, Zurück), Windows behält die Titelleiste; Schließen in der Kopfleiste schließt das Fenster",
       "Studio-Klick: Unreal nur geführt – kein Installieren-Knopf, offizieller Installer-Link",
       "Studio-Klick: fehlendes Programm → genau eine Frage 'Studio braucht X. Jetzt installieren?', 'Später' installiert nichts",
-      "Studio-Ordnung: 41 Studios in der Übersicht; jedes Ziel einer Zusammenlegung existiert und bleibt selbst sichtbar",
+      "Studio-Ordnung: 45 Studios in der Übersicht; jedes Ziel einer Zusammenlegung existiert und bleibt selbst sichtbar",
       "Studio-Ordnung: Das aufnehmende Studio und die Einstellungen zeigen die Leiste, der Knopf öffnet den Bereich",
       "Studio-Ordnung: Zusammengelegtes fehlt in der Übersicht, Suche findet es, SPEC-07 nirgends",
       "Studio-Seiten: Überschrift ist der Name aus dem Studio-Katalog",
@@ -17889,9 +18261,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 102,
+    "WarmMs": 106,
     "WindowsOnly": []
   },
   {
@@ -18041,6 +18413,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -18124,7 +18497,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
     "WarmMs": 38,
     "WindowsOnly": []
@@ -18271,6 +18644,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Sehen & Bedienhilfen",
@@ -18343,9 +18717,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -18490,6 +18864,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -18575,9 +18950,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -18722,6 +19097,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -18792,9 +19168,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -18810,6 +19186,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -18871,9 +19248,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -19025,6 +19402,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -19153,9 +19531,9 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 45,
+    "WarmMs": 47,
     "WindowsOnly": []
   },
   {
@@ -19307,6 +19685,7 @@
     ],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -19411,9 +19790,9 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -19429,6 +19808,7 @@
     "Engine": [],
     "Tools": [
       "Los",
+      "kie.ai",
       "✳ Claude",
       "Darstellung & Sprache",
       "Personen & Konten",
@@ -19498,9 +19878,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.92 (Stand 94252fc)",
+    "Version": "0.9.93 (Stand 9c89aeb)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 18,
     "WindowsOnly": []
   }
 ]

@@ -290,7 +290,7 @@ public partial class MainWindow
                 sp.Children.Add(P(st.Verdict, null, 11));
             }
             sp.Children.Add(new WrapPanel { Children = {
-                Act2("arch-rotate", "↻ 90°", () => ArchEdit("Drehen", pl => { var x = pl.Items.First(y => y.Id == sel); x.Rot = (x.Rot + 90) % 360; })),
+                Act2("arch-rotate", "90°", () => ArchEdit("Drehen", pl => { var x = pl.Items.First(y => y.Id == sel); x.Rot = (x.Rot + 90) % 360; })),
                 Act2("arch-mirror", it.Mirror ? "Spiegeln ⇄ (an)" : "Spiegeln ⇄", () => ArchEdit("Spiegeln", pl => { var x = pl.Items.First(y => y.Id == sel); x.Mirror = !x.Mirror; })),
                 Act2("arch-dup", "Duplizieren", () => ArchEdit("Duplizieren", pl => { var x = pl.Items.First(y => y.Id == sel); var c = new Item { Type = x.Type, Name = x.Name, X = x.X + 30, Y = x.Y + 30, W = x.W, D = x.D, Rot = x.Rot }; pl.Items.Add(c); ArchState.Selected = c.Id; })),
                 Act2("arch-del", "Löschen", () => { ArchState.Selected = null; ArchEdit("Möbel löschen", pl => pl.Remove(sel)); }) } });

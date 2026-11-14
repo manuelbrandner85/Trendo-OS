@@ -47,7 +47,7 @@ public partial class MainWindow
                 new TextBlock { Name = $"ve-exp-name-{idx}", Text = f.Name, Foreground = Text, FontSize = 12, TextTrimming = Avalonia.Media.TextTrimming.CharacterEllipsis },
                 new TextBlock { Text = $"{f.LastWriteTime:dd.MM. HH:mm} · {SizeText(f.Length)}", Foreground = Muted, FontSize = 10.5 },
                 new WrapPanel { Children = {
-                    B("ve-exp-play", "▶ Abspielen", () => Launch(f.FullName)),
+                    B("ve-exp-play", "Abspielen", () => Launch(f.FullName)),
                     B("ve-exp-folder", "Ordner öffnen", () => RevealInFolder(f.FullName)),
                     B("ve-exp-del", "🗑", () =>
                     {

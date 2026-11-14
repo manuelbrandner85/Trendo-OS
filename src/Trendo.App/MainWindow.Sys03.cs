@@ -141,7 +141,7 @@ public partial class MainWindow
         var list = new StackPanel { Spacing = 2 }; var bms = Bookmarks.Load(_core.DataRoot);
         foreach (var g in bms.GroupBy(b => b.Folder).Take(10))
         {
-            list.Children.Add(P(g.Key.Length > 0 ? "📁 " + g.Key : "Ohne Ordner", Text, 11.5));
+            list.Children.Add(P(g.Key.Length > 0 ? "" + g.Key : "Ohne Ordner", Text, 11.5));
             foreach (var b in g.Take(15)) { var url = b.Url; list.Children.Add(Act("bm-open-" + list.Children.Count, b.Title.Length > 0 ? b.Title : url, () => { if (!_core.Offline) Launch(url); })); }
         }
         sp.Children.Add(Card(Section("Lesezeichen", $"Deine Lesezeichen auf diesem Rechner ({bms.Count}). Einlesen aus Chrome, Edge oder Firefox: dort „Lesezeichen exportieren“ wählen und die HTML-Datei hier angeben.",

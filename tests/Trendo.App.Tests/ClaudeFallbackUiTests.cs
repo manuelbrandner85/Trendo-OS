@@ -133,8 +133,8 @@ public class ClaudeFallback_Ui
             var caps = w.Find<TextBlock>("claude-chat-caps").Text!;
             Assert.Contains("3 Skills", caps); Assert.Contains("claude.ai Gmail", caps); Assert.Contains("gameforge", caps);
             var m = w.ClaudeChatCurrent()!.Messages[^1];
-            Assert.Equal(["🧩 Skill gameforge:gameforge-studio", "🔌 Connector Gmail"], m.Used);
-            Assert.Contains(m.Steps, st => st.Text == "🧩 nutzt den Skill „gameforge:gameforge-studio“");
+            Assert.Equal(["Skill gameforge:gameforge-studio", "Connector Gmail"], m.Used);
+            Assert.Contains(m.Steps, st => st.Text == "nutzt den Skill „gameforge:gameforge-studio“");
             Assert.Contains("gameforge:gameforge-studio", w.Find<TextBlock>("claude-chat-used").Text);
             w.Find<Button>("claude-dock-close").Press(); w.ClaudeDockToggle("CORE-06"); Avalonia.Threading.Dispatcher.UIThread.RunJobs();
             Assert.Contains("3 Skills", w.Find<TextBlock>("claude-chat-caps").Text); // gemerkt

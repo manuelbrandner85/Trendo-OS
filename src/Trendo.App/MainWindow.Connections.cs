@@ -149,12 +149,12 @@ public partial class MainWindow
         var ghRow = gh is null ? ConnRow(Act("conn-gh-install", "GitHub CLI einrichten", () => _ = GitHubInstall(), true))
             : _ghUser is null ? ConnRow(Act("conn-gh-login", "Mit GitHub anmelden", () => _ = GitHubLogin(), true), Act("conn-gh-check", "Neu prüfen", () => { _ = GitHubCheck().ContinueWith(_ => _ui.Post(() => Show("verbindungen"))); }))
             : ConnRow(Act("conn-gh-logout", "Abmelden", () => ConnAsk("Von GitHub abmelden? Deine Repos bleiben, Trendo kann nur nichts mehr hochladen.", GitHubLogout)));
-        sp.Children.Add(ConnCard("conn-github", "🔗 GitHub", ghState,
-            P("Mit der offiziellen GitHub CLI. Danach lädt „⬆ GitHub“ im Claude-Chat jedes Projekt als eigenes Repo hoch (Vorgabe: privat).", Muted, 11.5), ghRow));
+        sp.Children.Add(ConnCard("conn-github", "GitHub", ghState,
+            P("Mit der offiziellen GitHub CLI. Danach lädt „GitHub“ im Claude-Chat jedes Projekt als eigenes Repo hoch (Vorgabe: privat).", Muted, 11.5), ghRow));
 
         // Netlify
         var nl = Netlify; var nlOn = nl.Connected;
-        var nlState = new TextBlock { Name = "conn-nl-state", Text = nlOn ? "✓ Verbunden – Webseiten veröffentlichst du im Claude-Chat mit „🌐 Netlify“." : "Nicht verbunden.", Foreground = nlOn ? Brush.Parse("#4ADE80") : Text, FontSize = 13, FontWeight = FontWeight.SemiBold };
+        var nlState = new TextBlock { Name = "conn-nl-state", Text = nlOn ? "✓ Verbunden – Webseiten veröffentlichst du im Claude-Chat mit „Netlify“." : "Nicht verbunden.", Foreground = nlOn ? Brush.Parse("#4ADE80") : Text, FontSize = 13, FontWeight = FontWeight.SemiBold };
         Control nlRow;
         if (nlOn) nlRow = ConnRow(Act("conn-nl-disconnect", "Trennen", () => ConnAsk("Netlify trennen? Der Zugangsschlüssel wird gelöscht; deine Seiten bleiben online.", () => { nl.Disconnect(); _connMsg = "Netlify getrennt."; _core.Audit.Append(Principal.LocalOwner.Name, "netlify.getrennt", ""); Show("verbindungen"); return Task.CompletedTask; })));
         else
@@ -170,7 +170,7 @@ public partial class MainWindow
                 P("1. Bei Netlify einen persönlichen Zugangsschlüssel anlegen (öffnet sich im Browser). 2. Hier einfügen. Der Schlüssel liegt geschützt im Tresor dieser Person.", Muted, 11.5),
                 ConnRow(Act("conn-nl-token-page", "Schlüssel bei Netlify anlegen", () => Launch(NetlifyLink.TokenPage)), tok, save) } };
         }
-        sp.Children.Add(ConnCard("conn-netlify", "🌐 Netlify", nlState, nlRow));
+        sp.Children.Add(ConnCard("conn-netlify", "Netlify", nlState, nlRow));
 
         // Erweiterungen von Claude Code
         var (cfg, json) = ClaudeCfg();
@@ -208,7 +208,7 @@ public partial class MainWindow
             catch (ArgumentException e) { _connMsg = e.Message; Show("verbindungen"); }
         })));
         ext.Children.Add(P("Konnektoren deines claude.ai-Kontos verwaltest du bei Claude selbst; Trendo meldet sich dort nicht an. Geheime Werte (Schlüssel in MCP-Einstellungen) zeigt Trendo nie an.", Muted, 11));
-        sp.Children.Add(ConnCard("conn-claude-ext", "🔌 Erweiterungen von Claude Code", ext));
+        sp.Children.Add(ConnCard("conn-claude-ext", "Erweiterungen von Claude Code", ext));
         return KiPage("Verbindungen", sp);
 
         void Ask(string? input, Func<string, (string Text, string[] Args, string Done)> make)
@@ -226,7 +226,7 @@ public partial class MainWindow
     Control GitHubPanel(ClaudeDock dock, ClaudeChats.Chat? chat)
     {
         var sp = new StackPanel { Spacing = 6 };
-        sp.Children.Add(new TextBlock { Text = "⬆ Auf GitHub hochladen", Foreground = CGold, FontSize = 15, FontWeight = FontWeight.SemiBold });
+        sp.Children.Add(new TextBlock { Text = "Auf GitHub hochladen", Foreground = CGold, FontSize = 15, FontWeight = FontWeight.SemiBold });
         if (chat is null) { sp.Children.Add(new TextBlock { Text = "Noch kein Projekt.", Foreground = ClaudeFg, FontSize = 13 }); return Appear(CGlass(sp, name: "claude-github")); }
         if (GhExe() is null || _ghUser is null)
         {
@@ -264,10 +264,10 @@ public partial class MainWindow
             }
             LastGitHubRepo = System.Text.RegularExpressions.Regex.Match(outp, @"https://github\.com/\S+") is { Success: true } m ? m.Value.TrimEnd('.') : $"https://github.com/{_ghUser}/{GitHubLink.SafeRepoName(repo)}";
             _core.Audit.Append(Principal.LocalOwner.Name, "github.repo.hochgeladen", (isPrivate ? "privat " : "öffentlich ") + GitHubLink.SafeRepoName(repo));
-            text = $"⬆ Auf GitHub hochgeladen ({(isPrivate ? "privat" : "öffentlich")}): {LastGitHubRepo}";
+            text = $"Auf GitHub hochgeladen ({(isPrivate ? "privat" : "öffentlich")}): {LastGitHubRepo}";
             var url = LastGitHubRepo; Toast("Auf GitHub hochgeladen", ("Ansehen", () => Launch(url)));
         }
-        catch (Exception e) when (e is InvalidOperationException or ArgumentException or IOException) { text = "⬆ GitHub: " + e.Message; }
+        catch (Exception e) when (e is InvalidOperationException or ArgumentException or IOException) { text = "GitHub: " + e.Message; }
         CChats.Add(ChatStudio(dock), chat.Id, new ClaudeChats.Msg("assistant", text, [], DateTimeOffset.Now));
         if (_chatUis.TryGetValue(dock, out var ui)) ui.Panel = null;
         RenderChat(dock);
@@ -276,7 +276,7 @@ public partial class MainWindow
     Control NetlifyPanel(ClaudeDock dock, ClaudeChats.Chat? chat)
     {
         var sp = new StackPanel { Spacing = 6 };
-        sp.Children.Add(new TextBlock { Text = "🌐 Auf Netlify veröffentlichen", Foreground = CGold, FontSize = 15, FontWeight = FontWeight.SemiBold });
+        sp.Children.Add(new TextBlock { Text = "Auf Netlify veröffentlichen", Foreground = CGold, FontSize = 15, FontWeight = FontWeight.SemiBold });
         if (chat is null) { sp.Children.Add(new TextBlock { Text = "Noch kein Projekt.", Foreground = ClaudeFg, FontSize = 13 }); return Appear(CGlass(sp, name: "claude-netlify")); }
         if (!Netlify.Connected)
         {
@@ -298,16 +298,16 @@ public partial class MainWindow
     async Task ClaudeNetlifyDeploy(ClaudeDock dock, ClaudeChats.Chat chat)
     {
         string text;
-        if (_opt.Isolated && NetlifyHandlerOverride is null) text = "🌐 Testmodus: es wird nichts hochgeladen.";
+        if (_opt.Isolated && NetlifyHandlerOverride is null) text = "Testmodus: es wird nichts hochgeladen.";
         else try
         {
             var url = await Netlify.DeployAsync(chat.Folder, chat.Title);
             LastNetlifyUrl = url;
             _core.Audit.Append(Principal.LocalOwner.Name, "netlify.veroeffentlicht", url);
-            text = $"🌐 Veröffentlicht: {url}";
+            text = $"Veröffentlicht: {url}";
             Toast("Auf Netlify veröffentlicht", ("Öffnen", () => Launch(url)));
         }
-        catch (Exception e) when (e is InvalidOperationException or HttpRequestException or IOException or TaskCanceledException) { text = "🌐 Netlify: " + e.Message; }
+        catch (Exception e) when (e is InvalidOperationException or HttpRequestException or IOException or TaskCanceledException) { text = "Netlify: " + e.Message; }
         CChats.Add(ChatStudio(dock), chat.Id, new ClaudeChats.Msg("assistant", text, [], DateTimeOffset.Now));
         if (_chatUis.TryGetValue(dock, out var ui)) ui.Panel = null;
         RenderChat(dock);

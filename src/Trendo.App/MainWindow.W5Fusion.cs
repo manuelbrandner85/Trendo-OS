@@ -177,8 +177,8 @@ public partial class MainWindow
                     var card = new Border { Name = $"big-card-{cid}", Background = TileBg, BorderBrush = on ? Brush.Parse("#FACC15") : Edge, BorderThickness = new Thickness(on ? 2 : 1), CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 6), Cursor = new Cursor(StandardCursorType.Hand),
                         Child = new StackPanel { Spacing = 4, Children = {
                             new TextBlock { Text = c.Title, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
-                            new WrapPanel { Children = { new Border { CornerRadius = new CornerRadius(8), Padding = new Thickness(6, 1), Background = Brush.Parse("#33C9A227"), Margin = new Thickness(0, 0, 6, 0), Child = new TextBlock { Text = "🤖 " + c.Role, Foreground = Text, FontSize = 10.5 } },
-                                new TextBlock { Text = c.Evidence.Count > 0 ? $"📎 {c.Evidence.Count}" : "", Foreground = Muted, FontSize = 10.5, VerticalAlignment = VerticalAlignment.Center } } },
+                            new WrapPanel { Children = { new Border { CornerRadius = new CornerRadius(8), Padding = new Thickness(6, 1), Background = Brush.Parse("#33C9A227"), Margin = new Thickness(0, 0, 6, 0), Child = new TextBlock { Text = "" + c.Role, Foreground = Text, FontSize = 10.5 } },
+                                new TextBlock { Text = c.Evidence.Count > 0 ? $"{c.Evidence.Count}" : "", Foreground = Muted, FontSize = 10.5, VerticalAlignment = VerticalAlignment.Center } } },
                             new ProgressBar { Value = c.Column == 2 ? 100 : c.Progress, Maximum = 100, Height = 4 } } } };
                     Point? from = null; var dragged = false;
                     card.PointerPressed += (_, e) => { from = e.GetPosition(this); dragged = false; e.Pointer.Capture(card); e.Handled = true; };

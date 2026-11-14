@@ -26,8 +26,8 @@ public partial class MainWindow
     /// <summary>Dunkle Glasfläche wie im Referenzbild (heller im hellen Design).</summary>
     private static Border Glass2(Control c, double pad = 12) => new()
     {
-        Background = Brush.Parse(C("#C71A1A1A", "#E6F4F7FC")), BorderBrush = Brush.Parse(C("#4D3B7BD6", "#663F7FD0")), BorderThickness = new Thickness(1),
-        CornerRadius = new CornerRadius(12), Padding = new Thickness(pad), Child = c, Margin = new Thickness(0, 0, 0, 7), BoxShadow = BoxShadows.Parse("0 6 22 0 #80000814"),
+        Background = Brush.Parse(C("#EB1E1F22", "#F2F7F8FA")), BorderBrush = Brush.Parse(C("#2EFFFFFF", "#1F000000")), BorderThickness = new Thickness(1),
+        CornerRadius = new CornerRadius(8), Padding = new Thickness(pad), Child = c, Margin = new Thickness(0, 0, 0, 7),
     };
 
     private static Control Head(string title, string? sub = null, Control? right = null, string? icon = null)
@@ -49,24 +49,22 @@ public partial class MainWindow
 
     private static Border Pill(TextBlock badge) => new() { CornerRadius = new CornerRadius(8), Background = badge.Background, Child = badge, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Right };
 
-    /// <summary>Leuchtende Kugel der KI (rein dekorativ).</summary>
+    /// <summary>Zeichen der KI-Eingabe: früher eine leuchtende Goldkugel, seit 13.11.2026 ein ruhiges Linien-Symbol (Name bleibt für bestehende Aufrufe).</summary>
     private static Control Orb(double size) => new Border
     {
-        Width = size, Height = size, CornerRadius = new CornerRadius(size / 2), VerticalAlignment = VerticalAlignment.Center, IsHitTestVisible = false,
-        Background = new RadialGradientBrush { GradientStops = { new GradientStop(Color.Parse("#FFFFFF"), 0), new GradientStop(Color.Parse("#FFF1B8"), 0.25), new GradientStop(Color.Parse("#D4A84B"), 0.6), new GradientStop(Color.Parse("#303030"), 1) } },
-        BorderBrush = Brush.Parse("#99F5D27A"), BorderThickness = new Thickness(1), BoxShadow = BoxShadows.Parse($"0 0 {size * 0.55:0} 2 #99E0B84A"),
+        Width = size * 0.8, Height = size * 0.8, VerticalAlignment = VerticalAlignment.Center, IsHitTestVisible = false,
+        Child = Ico(Mdi.Brain, size * 0.55, Muted),
     };
 
     // ---------- Kopfleiste: Marke · KI-Eingabe · Not-Stopp, Suche, Freigaben, Uhr, Benutzer ----------
-    private readonly TextBox _prompt = new() { Name = "desk-prompt-input", PlaceholderText = "Was möchtest du heute erstellen?" };
+    private readonly TextBox _prompt = new() { Name = "desk-prompt-input", PlaceholderText = "Auftrag oder Frage eingeben" };
 
     private Control TopBar()
     {
         var bar = new Grid { Name = "top-bar", ColumnDefinitions = new ColumnDefinitions("212,*,Auto"), Height = 68, Background = Brushes.Transparent };
         var brand = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Margin = new Thickness(16, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center,
-            Children = { Logo(38, glow: true), new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = {
-                new TextBlock { Text = "Trendo OS", Foreground = _theme == "kontrast" ? Text : GoldText(), FontSize = 21, FontWeight = FontWeight.Bold, LetterSpacing = 1.2 },
-                new TextBlock { Text = "DEIN SYSTEM. DEINE IDEEN.", Foreground = Brush.Parse(C("#9FB4D6", "#3A4A66")), FontSize = 7.5, LetterSpacing = 1.2 } } } } };
+            Children = { Logo(34), new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = {
+                new TextBlock { Text = "Trendo OS", Foreground = Text, FontSize = 18, FontWeight = FontWeight.SemiBold } } } } };
         bar.Children.Add(brand);
 
         // KI-Eingabe: Enter fragt die Trendo KI (Antwort auf der KI-Seite), ohne KI öffnet sich die Einrichtung
@@ -82,19 +80,19 @@ public partial class MainWindow
             if (_kiInput.IsEnabled) await AskKi(q);
         }
         _prompt.KeyDown += async (_, e) => { if (e.Key == Key.Enter) { e.Handled = true; await Go(); } };
-        var go = new Button { Name = "desk-prompt-go", Width = 36, Height = 36, CornerRadius = new CornerRadius(18), Padding = new Thickness(0), Background = Brush.Parse("#33C9A227"),
-            BorderBrush = Brush.Parse("#AAF5D27A"), BorderThickness = new Thickness(1.5), Content = Ico(Mdi.ArrowRight, 18, Text), VerticalAlignment = VerticalAlignment.Center };
+        var go = new Button { Name = "desk-prompt-go", Width = 32, Height = 32, CornerRadius = new CornerRadius(4), Padding = new Thickness(0), Background = Accent,
+            BorderThickness = new Thickness(0), Content = Ico(Mdi.ArrowRight, 16, Brushes.White), VerticalAlignment = VerticalAlignment.Center };
         Avalonia.Automation.AutomationProperties.SetName(go, "Trendo KI fragen"); ToolTip.SetTip(go, "Trendo KI fragen");
         go.Click += async (_, _) => await Go();
         var row = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto"), Children = {
             Orb(40),
-            Pos(new TextBlock { Text = "Trendo KI –", Foreground = Text, FontSize = 19, FontWeight = FontWeight.Bold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(14, 0, 6, 0) }, 1),
+            Pos(new TextBlock { Text = "Trendo KI", Foreground = Muted, FontSize = 13, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(6, 0, 10, 0) }, 1),
             Pos(_prompt, 2), Pos(go, 3) } };
-        var prompt = new Border { Name = "desk-prompt", Height = 54, MaxWidth = 820, Margin = new Thickness(8, 6, 12, 0), CornerRadius = new CornerRadius(27), Padding = new Thickness(8, 6, 10, 6),
-            Background = Brush.Parse(C("#D91A1A1A", "#F2FFFFFF")), BorderThickness = new Thickness(1.5), VerticalAlignment = VerticalAlignment.Center,
-            BorderBrush = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 0, RelativeUnit.Relative),
-                GradientStops = { new GradientStop(Color.Parse("#AA9C7419"), 0), new GradientStop(Color.Parse("#FFF5D27A"), 0.5), new GradientStop(Color.Parse("#AA9C7419"), 1) } },
-            BoxShadow = BoxShadows.Parse("0 0 26 0 #55E0B84A"), Child = row };
+        _prompt.FontSize = 14;
+        // D1/S2 (13.11.2026): schlichtes Eingabefeld – feiner Rand, keine Goldkante, kein Leuchten
+        var prompt = new Border { Name = "desk-prompt", Height = 44, MaxWidth = 820, Margin = new Thickness(8, 6, 12, 0), CornerRadius = new CornerRadius(6), Padding = new Thickness(8, 5, 6, 5),
+            Background = Brush.Parse(C("#F21E1F22", "#FFFFFFFF")), BorderThickness = new Thickness(1), VerticalAlignment = VerticalAlignment.Center,
+            BorderBrush = Brush.Parse(C("#33FFFFFF", "#26000000")), Child = row };
         Grid.SetColumn(prompt, 1); bar.Children.Add(prompt);
 
         Detach(_search);

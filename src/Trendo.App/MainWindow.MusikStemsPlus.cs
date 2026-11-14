@@ -106,9 +106,9 @@ public partial class MainWindow
                 new TextBlock { Text = label, Width = 110, Foreground = ch.Mute ? Muted : Text, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center },
                 T($"ms-stem-mute-{id}", "M", ch.Mute, () => ch with { Mute = !ch.Mute }), T($"ms-stem-solo-{id}", "S", ch.Solo, () => ch with { Solo = !ch.Solo }), vol, get, midi } });
         }
-        var play = Act("ms-stem-play", "▶ Mischung anhören", () => MsStemPlay(s));
+        var play = Act("ms-stem-play", "Mischung anhören", () => MsStemPlay(s));
         var save = Act("ms-stem-save", "Als Lied speichern", () => MsStemSave(s));
-        var karaoke = Act("ms-karaoke", "🎤 Karaoke (LRC)", () => _ = MsKaraoke(s)); // V8
+        var karaoke = Act("ms-karaoke", "Karaoke (LRC)", () => _ = MsKaraoke(s)); // V8
         sp.Children.Add(new WrapPanel { Children = { play, new Border { Width = 4 }, save, new Border { Width = 4 }, karaoke } });
         if (MsStemQuality is { } q) sp.Children.Add(P($"Letzte Trennung: {q.Reconstruction:0.0} dB Rekonstruktion, Übersprechen {q.Bleed:0.00}.", Muted, 10.5));
         return sp;
@@ -173,7 +173,7 @@ public partial class MainWindow
         await File.WriteAllTextAsync(lrc, TimedText.ToLrc(cues, root.Title, root.Language.Length > 0 ? root.Language : "de", acc.Seconds));
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.karaoke", Path.GetFileName(lrc));
         if (play) MusicPlay([acc.File], 0, MS);
-        _msMsg = $"🎤 Karaoke: {cues.Count} Zeilen mit Zeiten – „{Path.GetFileName(lrc)}“ liegt neben der Begleitung (für jeden Karaoke-Player)." + (play ? " Die Begleitung läuft." : "");
+        _msMsg = $"Karaoke: {cues.Count} Zeilen mit Zeiten – „{Path.GetFileName(lrc)}“ liegt neben der Begleitung (für jeden Karaoke-Player)." + (play ? " Die Begleitung läuft." : "");
         Show(MS);
         return lrc;
     }

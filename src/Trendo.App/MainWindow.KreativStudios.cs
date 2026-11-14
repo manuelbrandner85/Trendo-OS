@@ -34,9 +34,16 @@ public partial class MainWindow
     {
         var t = new TextBox { Name = name, Text = d.Text(key), PlaceholderText = label, AcceptsReturn = multi, TextWrapping = multi ? TextWrapping.Wrap : TextWrapping.NoWrap, MinHeight = multi ? 90 : 0, VerticalContentAlignment = multi ? VerticalAlignment.Top : VerticalAlignment.Center };
         var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
-        void Commit() { timer.Stop(); if ((t.Text ?? "") != d.Text(key)) d.Set(key, t.Text ?? "", label); }
+        // nur Getipptes übernehmen: Nach einem Befehl (z. B. „Neues Kapitel“) darf das alte Feld beim Neuzeichnen den neuen Stand nicht überschreiben
+        var shown = d.Text(key); // was das Feld beim Aufbau zeigte
+        void Commit()
+        {
+            timer.Stop();
+            var now = t.Text ?? "";
+            if (now != shown && now != d.Text(key)) { d.Set(key, now, label); shown = now; }
+        }
         timer.Tick += (_, _) => Commit();
-        t.TextChanged += (_, _) => { live?.Invoke(t.Text ?? ""); timer.Stop(); if ((t.Text ?? "") != d.Text(key)) timer.Start(); };
+        t.TextChanged += (_, _) => { live?.Invoke(t.Text ?? ""); timer.Stop(); if ((t.Text ?? "") != shown) timer.Start(); };
         t.LostFocus += (_, _) => Commit();
         t.DetachedFromVisualTree += (_, _) => Commit();
         return t;

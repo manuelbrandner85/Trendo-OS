@@ -29,30 +29,11 @@ public partial class MainWindow
     /// <summary>Glas-Kachel: Inhalt (Foto oder Zeichen), Lichtkante oben, feiner Goldrand, weicher Schatten.</summary>
     Control DockTile(Control content, double size = 46, bool photo = true)
     {
-        var r = new CornerRadius(size * 0.26);
-        var gloss = new Border
-        {
-            CornerRadius = r, IsHitTestVisible = false,
-            Background = new LinearGradientBrush { StartPoint = new RelativePoint(0.5, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0.5, 0.55, RelativeUnit.Relative),
-                GradientStops = { new GradientStop(Color.Parse("#40FFFFFF"), 0), new GradientStop(Color.Parse("#10FFFFFF"), 0.45), new GradientStop(Color.Parse("#00FFFFFF"), 1) } },
-        };
-        var rim = new Border
-        {
-            CornerRadius = r, IsHitTestVisible = false, BorderThickness = new Thickness(1),
-            BorderBrush = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
-                GradientStops = { new GradientStop(Color.Parse("#CCF3D58A"), 0), new GradientStop(Color.Parse("#40B8862B"), 0.5), new GradientStop(Color.Parse("#99F3D58A"), 1) } },
-        };
-        var bg = new Border
-        {
-            CornerRadius = r, ClipToBounds = true, Child = content,
-            Background = photo ? Brushes.Black : new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
-                GradientStops = { new GradientStop(Color.Parse("#FF2E2E33"), 0), new GradientStop(Color.Parse("#FF121214"), 1) } },
-        };
-        return new Border
-        {
-            Width = size, Height = size, CornerRadius = r, BoxShadow = BoxShadows.Parse("0 6 14 0 #A0000000"),
-            Child = new Grid { Children = { bg, gloss, rim } },
-        };
+        // S3 (13.11.2026): Bild bleibt; ohne Glanzschicht, ohne Goldrand, nur feiner neutraler Rand
+        var r = new CornerRadius(size * 0.2);
+        var rim = new Border { CornerRadius = r, IsHitTestVisible = false, BorderThickness = new Thickness(1), BorderBrush = Brush.Parse("#26FFFFFF") };
+        var bg = new Border { CornerRadius = r, ClipToBounds = true, Child = content, Background = photo ? Brushes.Black : Brush.Parse("#FF26272B") };
+        return new Border { Width = size, Height = size, CornerRadius = r, Child = new Grid { Children = { bg, rim } } };
     }
 
     /// <summary>Kachel für einen Dock-Eintrag: Foto, wenn es eins gibt, sonst das Zeichen auf dunklem Glas.</summary>

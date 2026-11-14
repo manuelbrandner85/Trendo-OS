@@ -92,7 +92,7 @@ public class KiPy_Ui
         finally { w.Close(); }
     }
 
-    [AvaloniaFact(DisplayName = "Vorschlag 36: Studios zeigen „✨ Freie KI hier“ – 3D-Studio schlägt „3D aus Bild“ vor, der Klick öffnet die KI-Bibliothek (geladen wird erst dort); jede Studio-Zuordnung gibt es wirklich")]
+    [AvaloniaFact(DisplayName = "Vorschlag 36: Studios zeigen „Freie KI hier“ – 3D-Studio schlägt „3D aus Bild“ vor, der Klick öffnet die KI-Bibliothek (geladen wird erst dort); jede Studio-Zuordnung gibt es wirklich")]
     public void Suggestions_in_studios()
     {
         var (w, _, _) = Ui.Open();

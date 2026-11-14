@@ -80,7 +80,7 @@ public class Pilot_TextLookUi
         finally { w.Close(); }
     }
 
-    [AvaloniaFact(DisplayName = "Pilot Text UI: Rechtsklick im Text zeigt Ausschneiden/Kopieren/Einfügen, Formate, Farbe, Absatzart, Link, Kommentar und „✳ Claude fragen“")]
+    [AvaloniaFact(DisplayName = "Pilot Text UI: Rechtsklick im Text zeigt Ausschneiden/Kopieren/Einfügen, Formate, Farbe, Absatzart, Link, Kommentar und „Claude fragen“")]
     public void Context_menu()
     {
         var (w, _, _) = Ui.Open();

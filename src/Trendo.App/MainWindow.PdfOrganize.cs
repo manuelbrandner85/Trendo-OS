@@ -116,13 +116,13 @@ public partial class MainWindow
         var info = new TextBlock { Name = "pdf-org-info", Foreground = GoldText(), FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 12, 5) };
         var selDep = new List<Button>();
         void Info() { info.Text = $"{ops.Count} Seiten" + (_pdfOrgSel.Count > 0 ? $" · {_pdfOrgSel.Count} ausgewählt" : " · Seiten anklicken (Strg: mehrere), ziehen zum Verschieben"); foreach (var b in selDep) b.IsEnabled = _pdfOrgSel.Count > 0; }
-        var left = B("pdf-org-left", "⟲ Drehen", () => PdfOrgRotate(-90)); var right = B("pdf-org-right", "⟳ Drehen", () => PdfOrgRotate(90)); var del = B("pdf-org-delete", "🗑 Löschen", PdfOrgDelete);
-        var back = B("pdf-org-back", "◀ Nach vorn", () => PdfOrgMove(_pdfOrgSel, Math.Max(0, _pdfOrgSel.Min() - 1)));
-        var fwd = B("pdf-org-fwd", "Nach hinten ▶", () => PdfOrgMove(_pdfOrgSel, Math.Min(ops.Count, _pdfOrgSel.Max() + 2)));
+        var left = B("pdf-org-left", "⟲ Drehen", () => PdfOrgRotate(-90)); var right = B("pdf-org-right", "⟳ Drehen", () => PdfOrgRotate(90)); var del = B("pdf-org-delete", "Löschen", PdfOrgDelete);
+        var back = B("pdf-org-back", "Nach vorn", () => PdfOrgMove(_pdfOrgSel, Math.Max(0, _pdfOrgSel.Min() - 1)));
+        var fwd = B("pdf-org-fwd", "Nach hinten", () => PdfOrgMove(_pdfOrgSel, Math.Min(ops.Count, _pdfOrgSel.Max() + 2)));
         selDep.AddRange([left, right, del, back, fwd]);
         var insert = new Button { Name = "pdf-org-insert", Content = "PDF einfügen …", Margin = new Thickness(0, 0, 5, 5), Padding = new Thickness(10, 4) };
         insert.Click += async (_, _) => { if (await PickPdf("pdf-org-insert", false) is [var f, ..]) { try { PdfOrgInsertFile(f); } catch (Exception ex) when (ex is IOException or InvalidOperationException) { PdfSay("Nicht lesbar: " + ex.Message); } } Show("pdf"); };
-        var undo = B("pdf-org-undo", "↶ Rückgängig", () => { if (_pdfOrgUndo.TryPop(out var b)) { _pdfOrg = b; _pdfOrgSel.Clear(); } }, _pdfOrgUndo.Count > 0);
+        var undo = B("pdf-org-undo", "Rückgängig", () => { if (_pdfOrgUndo.TryPop(out var b)) { _pdfOrg = b; _pdfOrgSel.Clear(); } }, _pdfOrgUndo.Count > 0);
         var bar = new WrapPanel { Children = { info, left, right, del, back, fwd, B("pdf-org-blank", "+ Leere Seite", PdfOrgBlank), insert, undo,
             B("pdf-org-save", "Als Kopie speichern", () => PdfOrgSave(), _pdfOrgUndo.Count > 0, true), B("pdf-org-cancel", "Abbrechen", () => { _pdfOrg = null; _pdfOrgSel.Clear(); }) } };
 

@@ -51,7 +51,7 @@ public partial class MainWindow
         var sp = new StackPanel { Name = "ms-song-videos", Spacing = 4 };
         var vids = SongVideos(s);
         sp.Children.Add(H("Videos zu diesem Lied", 13));
-        sp.Children.Add(Act("ms-open-schnitt", "✂ Im Videoschnitt öffnen (mit Abschnitten, Zeilen und Drehbuch)", () => MsToVideo(s)));
+        sp.Children.Add(Act("ms-open-schnitt", "Im Videoschnitt öffnen (mit Abschnitten, Zeilen und Drehbuch)", () => MsToVideo(s)));
         if (vids.Count == 0) { sp.Children.Add(P("Noch keins. Fertige Videos aus dem Videoschnitt erscheinen hier und unter „Meine Exporte“.", Muted, 11)); return sp; }
         var i = 0;
         foreach (var v in vids.Take(6))
@@ -59,9 +59,9 @@ public partial class MainWindow
             var f = v; var n = i++;
             var newer = File.GetLastWriteTimeUtc(s.File) > File.GetLastWriteTimeUtc(f);
             sp.Children.Add(new StackPanel { Spacing = 2, Children = {
-                new TextBlock { Text = "🎬 " + Path.GetFileName(f) + (newer ? "  · Lied wurde seitdem geändert" : ""), Foreground = newer ? Brush.Parse("#FACC15") : Text, FontSize = 11.5, TextTrimming = TextTrimming.CharacterEllipsis },
-                new WrapPanel { Children = { Act($"ms-vid-play-{n}", "▶ Abspielen", () => Launch(f)), Act($"ms-vid-folder-{n}", "Ordner öffnen", () => RevealInFolder(f)),
-                    Act($"ms-vid-audio-{n}", "♪ Ton erneuern", () => MsVideoNewAudio(s.Id, f), newer) } } } });
+                new TextBlock { Text = "" + Path.GetFileName(f) + (newer ? "  · Lied wurde seitdem geändert" : ""), Foreground = newer ? Brush.Parse("#FACC15") : Text, FontSize = 11.5, TextTrimming = TextTrimming.CharacterEllipsis },
+                new WrapPanel { Children = { Act($"ms-vid-play-{n}", "Abspielen", () => Launch(f)), Act($"ms-vid-folder-{n}", "Ordner öffnen", () => RevealInFolder(f)),
+                    Act($"ms-vid-audio-{n}", "Ton erneuern", () => MsVideoNewAudio(s.Id, f), newer) } } } });
         }
         return sp;
     }
@@ -135,7 +135,7 @@ public partial class MainWindow
         }
         sp.Children.Add(concepts);
         var sc = Script(s);
-        sp.Children.Add(Act("ms-script-plan", sc is null ? "🎬 Drehbuch erstellen" : "Drehbuch neu erstellen", () => _ = MsScriptPlan(s.Id), sc is null));
+        sp.Children.Add(Act("ms-script-plan", sc is null ? "Drehbuch erstellen" : "Drehbuch neu erstellen", () => _ = MsScriptPlan(s.Id), sc is null));
         if (sc is null) { sp.Children.Add(P("Trendo plant Einstellung für Einstellung wie bei einem echten Dreh: Größe, Kamerafahrt, Licht, Ort – und wer gerade singt, ist im Bild.", Muted, 11.5)); return sp; }
         sp.Children.Add(P(sc.Logline, Text, 11.5));
         sp.Children.Add(P(MusicScript.Summary(sc), Muted, 11));
@@ -145,7 +145,7 @@ public partial class MainWindow
             var fid = f.Id;
             var box = new TextBox { Name = "ms-figure-" + f.Id, Text = f.Look, TextWrapping = TextWrapping.Wrap, FontSize = 11, AcceptsReturn = false };
             box.LostFocus += (_, _) => { if (box.Text != f.Look) MsFigureEdit(s.Id, fid, box.Text ?? ""); };
-            sp.Children.Add(new StackPanel { Spacing = 2, Children = { new TextBlock { Text = (f.Gender == "w" ? "♀ " : "♂ ") + f.Role + " (erfunden – so sieht sie/er in jeder Einstellung aus)", Foreground = Text, FontSize = 11.5, FontWeight = FontWeight.SemiBold }, box } });
+            sp.Children.Add(new StackPanel { Spacing = 2, Children = { new TextBlock { Text = f.Role + (f.Gender == "w" ? " (w)" : f.Gender == "m" ? " (m)" : "") + " (erfunden – so sieht sie/er in jeder Einstellung aus)", Foreground = Text, FontSize = 11.5, FontWeight = FontWeight.SemiBold }, box } });
         }
         // Einstellungen: kompakte Liste, Klick öffnet den Editor
         var list = new StackPanel { Name = "ms-shots", Spacing = 1 };
@@ -157,7 +157,7 @@ public partial class MainWindow
                 Content = new Grid { ColumnDefinitions = new ColumnDefinitions("40,62,*"), Children = {
                     new TextBlock { Text = SongTime(x.Start), Foreground = Muted, FontSize = 11 },
                     Pos(new TextBlock { Text = x.Size, Foreground = Text, FontSize = 11 }, 1),
-                    Pos(new TextBlock { Text = (x.Singing ? "🎤 " + x.Who : "🎞 " + x.Place) + " · " + x.Move, Foreground = x.Singing ? Text : Muted, FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis }, 2) } } };
+                    Pos(new TextBlock { Text = (x.Singing ? "" + x.Who : "" + x.Place) + " · " + x.Move, Foreground = x.Singing ? Text : Muted, FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis }, 2) } } };
             row.Click += (_, _) => { _msShotSel = _msShotSel == i ? -1 : i; Show(MS); };
             list.Children.Add(row);
         }
@@ -189,7 +189,7 @@ public partial class MainWindow
         prompt.LostFocus += (_, _) => { if ((prompt.Text ?? "") != x.Prompt) MsShotEdit(s.Id, i, y => y with { Prompt = prompt.Text ?? "" }); };
         sp.Children.Add(prompt);
         sp.Children.Add(new WrapPanel { Children = {
-            Act("ms-shot-reroll", "↻ Neu würfeln", () => MsShotReroll(s.Id, i)), Gap(Act("ms-shot-delete", "🗑 Einstellung löschen", () => MsShotRemove(s.Id, i))) } });
+            Act("ms-shot-reroll", "Neu würfeln", () => MsShotReroll(s.Id, i)), Gap(Act("ms-shot-delete", "Einstellung löschen", () => MsShotRemove(s.Id, i))) } });
         return new Border { Background = Brush.Parse("#14FFFFFF"), CornerRadius = new CornerRadius(10), Padding = new Thickness(10, 8), Child = sp };
 
         static Control Gap(Control c) { c.Margin = new Thickness(6, 0, 0, 0); return c; }

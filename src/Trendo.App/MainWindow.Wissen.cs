@@ -64,8 +64,8 @@ public partial class MainWindow
         // ── links: Seiten ──
         var left = new StackPanel { Name = "wissen-pages", Spacing = 4 };
         left.Children.Add(Act("wissen-new", "＋ Neue Seite", () => { _wikiId = null; _wikiEdit = true; _wikiNewTitle = ""; _wikiTrashView = false; _wikiWeek = false; _wikiGraph = false; _wissenMsg = ""; Show(V); }, true));
-        left.Children.Add(Act("wissen-week", "📅 Wochenrückblick", () => { _wikiWeek = true; _wikiTrashView = false; _wikiId = null; _wikiEdit = false; _wissenMsg = ""; Show(V); })); // Vorschlag 32
-        left.Children.Add(Act("wissen-graph-open", "🕸 Wissensnetz", () => { _wikiGraph = true; _wikiWeek = false; _wikiTrashView = false; _wikiEdit = false; _wissenMsg = ""; Show(V); })); // W3 (07.11.2026)
+        left.Children.Add(Act("wissen-week", "Wochenrückblick", () => { _wikiWeek = true; _wikiTrashView = false; _wikiId = null; _wikiEdit = false; _wissenMsg = ""; Show(V); })); // Vorschlag 32
+        left.Children.Add(Act("wissen-graph-open", "Wissensnetz", () => { _wikiGraph = true; _wikiWeek = false; _wikiTrashView = false; _wikiEdit = false; _wissenMsg = ""; Show(V); })); // W3 (07.11.2026)
         var search = new TextBox { Name = "wissen-search", PlaceholderText = "Im Wissen suchen …", Text = _wissenQuery };
         search.KeyUp += (_, e) => { if (e.Key == Key.Enter || (search.Text ?? "").Length == 0) { _wissenQuery = search.Text ?? ""; Show(V); } };
         var go = new Button { Name = "wissen-go", Content = "Suchen" }; go.Click += (_, _) => { _wissenQuery = search.Text ?? ""; Show(V); };
@@ -98,7 +98,7 @@ public partial class MainWindow
         left.Children.Add(P("Dateien einlesen", Muted, 11)); left.Children.Add(folder); left.Children.Add(imp); left.Children.Add(WissenDocsButton(folder)); // Alle Studios, Runde 8: markitdown
         left.Children.Add(P($"{Wissen.All().Count} Seiten · Rückmeldungen: {good} gut, {bad} verbesserungswürdig", null, 10.5));
         var trashed = Wissen.Trashed().Count;
-        left.Children.Add(Act("wissen-trash", $"🗑 Papierkorb ({trashed})", () => { _wikiTrashView = true; _wikiId = null; _wikiEdit = false; Show(V); }));
+        left.Children.Add(Act("wissen-trash", $"Papierkorb ({trashed})", () => { _wikiTrashView = true; _wikiId = null; _wikiEdit = false; Show(V); }));
 
         // ── Mitte: lesen, bearbeiten, Papierkorb ──
         var center = new StackPanel { Name = "wissen-center", Spacing = 8 };
@@ -147,7 +147,7 @@ public partial class MainWindow
         else if (page is not null)
         {
             center.Children.Add(Row(H(page.Title, 18), new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = {
-                Act("wissen-edit", "✎ Bearbeiten", () => { _wikiEdit = true; _wissenMsg = ""; Show(V); }),
+                Act("wissen-edit", "Bearbeiten", () => { _wikiEdit = true; _wissenMsg = ""; Show(V); }),
                 Act("wissen-del", _wikiDelArmed ? "Wirklich in den Papierkorb?" : "In den Papierkorb", () =>
                 {
                     if (!_wikiDelArmed) { _wikiDelArmed = true; Show(V); return; }

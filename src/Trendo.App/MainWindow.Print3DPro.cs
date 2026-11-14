@@ -145,7 +145,7 @@ public partial class MainWindow
     private Control PrinterFindCard()
     {
         var sp = new StackPanel { Spacing = 6 };
-        var find = new Button { Name = "print-find", Content = _prSearching ? "Suche …" : "🔍 Drucker im Netz finden", Background = Accent, Foreground = Brushes.White, IsEnabled = !_prSearching };
+        var find = new Button { Name = "print-find", Content = _prSearching ? "Suche …" : "Drucker im Netz finden", Background = Accent, Foreground = Brushes.White, IsEnabled = !_prSearching };
         find.Click += (_, _) => _ = FindPrinters();
         var setup = new Button { Name = "print-setup", Content = _prSetupOpen ? "Einrichtung schließen" : "Einrichtung (WLAN, Nur LAN, Entwicklermodus)" };
         setup.Click += (_, _) => { _prSetupOpen = !_prSetupOpen; Show("3d-druck"); };
@@ -194,7 +194,7 @@ public partial class MainWindow
         if (_bambu is not { } c) return null;
         var d = c.Details;
         var sp = new StackPanel { Name = "print-control", Spacing = 6, Children = { H("Steuern", 14), P(d.WifiText, d.WifiDbm >= -67 || d.WifiDbm == int.MinValue ? Muted : Brush.Parse("#F5A524"), 12) } };
-        var light = new Button { Name = "print-light", Content = d.LightOn == true ? "💡 Licht aus" : "💡 Licht an" }; light.Click += (_, _) => _ = PrinterLight(d.LightOn != true);
+        var light = new Button { Name = "print-light", Content = d.LightOn == true ? "Licht aus" : "Licht an" }; light.Click += (_, _) => _ = PrinterLight(d.LightOn != true);
         var speed = new ComboBox { Name = "print-speed", ItemsSource = new[] { "Leise", "Normal", "Sport", "Maximal" }, SelectedIndex = d.SpeedLevel is >= 1 and <= 4 ? d.SpeedLevel - 1 : 1, Width = 110 };
         speed.SelectionChanged += (_, _) => { if (speed.SelectedIndex + 1 != d.SpeedLevel && speed.SelectedIndex >= 0) _ = PrinterSpeed(speed.SelectedIndex + 1); };
         sp.Children.Add(new WrapPanel { Children = { light, new Border { Width = 6 }, new TextBlock { Text = "Tempo", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) }, speed } });
@@ -220,7 +220,7 @@ public partial class MainWindow
                 sp.Children.Add(new DockPanel { Children = { Dk(look, Avalonia.Controls.Dock.Right), P("⚠ " + h.Text, Brush.Parse("#F5A524"), 12) } });
             }
         }
-        var live = new Button { Name = "print-live", Content = _prLive ? "⏹ Live-Kamera aus" : "▶ Live-Kamera" }; live.Click += (_, _) => PrinterLive(!_prLive);
+        var live = new Button { Name = "print-live", Content = _prLive ? "Live-Kamera aus" : "Live-Kamera" }; live.Click += (_, _) => PrinterLive(!_prLive);
         var tl = new Button { Name = "print-timelapse", Content = "Zeitraffer holen" }; tl.Click += (_, _) => _ = FetchTimelapse();
         sp.Children.Add(new WrapPanel { Children = { live, new Border { Width = 6 }, tl } });
         return sp;

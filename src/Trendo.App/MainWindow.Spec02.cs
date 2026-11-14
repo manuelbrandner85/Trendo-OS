@@ -59,7 +59,7 @@ public partial class MainWindow
         Ribbon =
         [
             ("Simulation", [
-                new ProgramCmd("ek-run", "▶ / ❚❚", _ => CircuitState.Running = !CircuitState.Running, true, "Simulation starten/anhalten"),
+                new ProgramCmd("ek-run", "/", _ => CircuitState.Running = !CircuitState.Running, true, "Simulation starten/anhalten"),
                 new ProgramCmd("ek-reset", "Neu starten", _ => _simKey = "", false, "Alle Kondensatoren entladen, Zeit auf 0"),
                 new ProgramCmd("ek-speed", "Tempo", _ => CircuitState.Speed = CircuitState.Speed >= 1 ? 0.1 : CircuitState.Speed >= 0.1 ? 0.01 : 1, false, "Echtzeit → 10× → 100× langsamer"),
             ]),
@@ -240,7 +240,7 @@ public partial class MainWindow
                 }
             }
             sp.Children.Add(new WrapPanel { Children = {
-                Act2("ek-rotate", "↻ Drehen (R)", () => CircuitEdit("Drehen", x => { var q = x.Part(sel)!; var (dx, dy) = (q.X2 - q.X1, q.Y2 - q.Y1); (q.X2, q.Y2) = (q.X1 - dy, q.Y1 + dx); })),
+                Act2("ek-rotate", "Drehen (R)", () => CircuitEdit("Drehen", x => { var q = x.Part(sel)!; var (dx, dy) = (q.X2 - q.X1, q.Y2 - q.Y1); (q.X2, q.Y2) = (q.X1 - dy, q.Y1 + dx); })),
                 Act2("ek-del", "Löschen", () => { CircuitState.Selected = null; CircuitEdit("Löschen", x => x.Remove(sel)); }) } });
         }
         else

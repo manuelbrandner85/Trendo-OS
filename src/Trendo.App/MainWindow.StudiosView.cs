@@ -36,26 +36,25 @@ public partial class MainWindow
         var main = new StackPanel { Spacing = 12 };
 
         // Eingabezeile: Enter sucht in Studios, Seiten und Dateien
-        var ask = new TextBox { Name = "studios-ask", PlaceholderText = "Was möchtest du heute erstellen?", Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Text, FontSize = 19, VerticalContentAlignment = VerticalAlignment.Center };
+        // S1/S2 (13.11.2026): schlichtes Such- und Auftragsfeld wie in der Kopfzeile – feiner Rand, kein Leuchten, keine Goldkugel
+        var ask = new TextBox { Name = "studios-ask", PlaceholderText = "Studio oder Aufgabe suchen", Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Text, FontSize = 14, VerticalContentAlignment = VerticalAlignment.Center };
         void Go() { var q = ask.Text?.Trim() ?? ""; if (q.Length == 0) return; _query = q; Show("suche"); }
         ask.KeyDown += (_, e) => { if (e.Key == Key.Enter) { e.Handled = true; Go(); } };
-        var goBtn = new Button { Name = "studios-ask-go", Width = 38, Height = 38, CornerRadius = new CornerRadius(19), Padding = new Thickness(0), Background = Brush.Parse("#33C9A227"), BorderBrush = Accent, BorderThickness = new Thickness(1), Content = Ico(Mdi.ChevronRight, 20, Text), VerticalAlignment = VerticalAlignment.Center };
+        var goBtn = new Button { Name = "studios-ask-go", Width = 32, Height = 32, CornerRadius = new CornerRadius(4), Padding = new Thickness(0), Background = Accent, BorderThickness = new Thickness(0), Content = Ico(Mdi.ArrowRight, 16, Brushes.White), VerticalAlignment = VerticalAlignment.Center };
         Avalonia.Automation.AutomationProperties.SetName(goBtn, "Suchen"); ToolTip.SetTip(goBtn, "Suchen");
         goBtn.Click += (_, _) => { if (string.IsNullOrWhiteSpace(ask.Text)) ask.Focus(); else Go(); };
-        var orb = new Border { Width = 46, Height = 46, CornerRadius = new CornerRadius(23), Background = new RadialGradientBrush { GradientStops = { new GradientStop(Color.Parse("#E6F4FF"), 0), new GradientStop(Color.Parse("#E0B84A"), 0.35), new GradientStop(Color.Parse("#3D3D3D"), 1) } },
-            BoxShadow = BoxShadows.Parse("0 0 22 2 #88E0B84A"), VerticalAlignment = VerticalAlignment.Center };
-        var askRow = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto"), Children = {
-            orb, Pos(new TextBlock { Text = "Trendo –", Foreground = Text, FontSize = 21, FontWeight = FontWeight.Bold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(14, 0, 8, 0) }, 1), Pos(ask, 2), Pos(goBtn, 3) } };
-        main.Children.Add(new Border { Name = "studios-ask-bar", CornerRadius = new CornerRadius(34), Padding = new Thickness(10, 8, 12, 8), Background = Brush.Parse(C("#B31E1E1E", "#E6FFFFFF")), BorderBrush = Brush.Parse("#995AA9FF"), BorderThickness = new Thickness(1.5),
-            BoxShadow = BoxShadows.Parse("0 0 26 0 #55E0B84A"), MaxWidth = 860, HorizontalAlignment = HorizontalAlignment.Stretch, Child = askRow });
+        var askRow = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = {
+            new Border { Margin = new Thickness(4, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center, Child = Ico(Mdi.Magnify, 16, Muted) }, Pos(ask, 1), Pos(goBtn, 2) } };
+        main.Children.Add(new Border { Name = "studios-ask-bar", CornerRadius = new CornerRadius(6), Padding = new Thickness(8, 5, 6, 5), Background = Brush.Parse(C("#F21E1F22", "#FFFFFFFF")), BorderBrush = Brush.Parse(C("#33FFFFFF", "#26000000")), BorderThickness = new Thickness(1),
+            MaxWidth = 860, HorizontalAlignment = HorizontalAlignment.Stretch, Child = askRow });
 
         // Bereichs-Chips (Filter)
         var filters = new WrapPanel { HorizontalAlignment = HorizontalAlignment.Center };
         void ChipFilter(string? area, string label)
         {
             var on = string.IsNullOrWhiteSpace(area) ? string.IsNullOrWhiteSpace(_studioFilter) : string.Equals(_studioFilter, area, StringComparison.OrdinalIgnoreCase);
-            var b = new Button { Name = "studio-filter-" + StudioFilterId(area), Content = label, Margin = new Thickness(0, 0, 8, 6), Padding = new Thickness(14, 5), CornerRadius = new CornerRadius(14), FontSize = 12.5, Foreground = Text,
-                Background = on ? Accent : Brush.Parse(C("#66292929", "#CCFFFFFF")), BorderBrush = Brush.Parse("#665AA9FF"), BorderThickness = new Thickness(on ? 0 : 1) };
+            var b = new Button { Name = "studio-filter-" + StudioFilterId(area), Content = label, Margin = new Thickness(0, 0, 6, 6), Padding = new Thickness(10, 4), CornerRadius = new CornerRadius(4), FontSize = 12, Foreground = on ? Brushes.White : Text,
+                Background = on ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1) };
             b.Click += (_, _) => { _studioFilter = string.IsNullOrWhiteSpace(area) ? null : area; _studioQuery = ""; Show("studios"); };
             filters.Children.Add(b);
         }
@@ -129,28 +128,25 @@ public partial class MainWindow
         var info = StudioCatalog.For(st.Id);
         var name = info?.Name ?? st.Name;
         var si = StudioIcons.For(st.Id);
-        var layers = new Grid { Height = 112, ClipToBounds = true };
+        // S1 (13.11.2026): Bild bleibt, aber ohne Farbschleier; Symbol, Name und Satz stehen darunter auf ruhiger Fläche
+        var layers = new Grid { Height = 92, ClipToBounds = true };
         if (StudioPicture(st.Id) is { } pic)
             layers.Children.Add(new Image { Source = pic, Stretch = Stretch.UniformToFill, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center });
         else
-            layers.Children.Add(new Border { Background = si is null ? Grad("#3C3C3C", "#060D1A") : Grad(si.C1, si.C2), Opacity = 0.55 });
-        layers.Children.Add(new Border { Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
-            GradientStops = { new GradientStop(Color.Parse("#00050B18"), 0.25), new GradientStop(Color.Parse("#E6050B18"), 1) } } });
-        var chip = si is null ? new Border { Name = "studio-icon-" + st.Id, Width = 26, Height = 26 } : Chip(si.Path, si.C1, si.C2, 26, 0.6);
-        chip.Name = "studio-icon-" + st.Id; chip.HorizontalAlignment = HorizontalAlignment.Left; chip.VerticalAlignment = VerticalAlignment.Top; chip.Margin = new Thickness(8);
-        chip.BoxShadow = BoxShadows.Parse("0 2 8 0 #88000000");
-        layers.Children.Add(chip);
-        var badge = Badge(st); badge.HorizontalAlignment = HorizontalAlignment.Right; badge.VerticalAlignment = VerticalAlignment.Top; badge.Margin = new Thickness(0, 8, 8, 0);
-        layers.Children.Add(new Border { HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0, 6, 6, 0), CornerRadius = new CornerRadius(6), Padding = new Thickness(5, 1),
-            Background = Brush.Parse("#99050B18"), IsVisible = badge.IsVisible, Child = badge });
-        badge.Margin = new Thickness(0);
-        var text = new StackPanel { VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(9, 0, 9, 7), Spacing = 1, Children = {
-            new TextBlock { Text = name, Foreground = Brushes.White, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
-            new TextBlock { Text = info?.Sentence ?? "", Foreground = Brush.Parse("#C9D6EA"), FontSize = 10.5, TextTrimming = TextTrimming.CharacterEllipsis } } };
-        layers.Children.Add(text);
-        var card = new Button { Name = "studio-card-" + st.Id, Width = 190, Padding = new Thickness(0), Margin = new Thickness(0, 0, 8, 8), CornerRadius = new CornerRadius(10), ClipToBounds = true,
-            Background = TileBg, BorderBrush = Brush.Parse("#4D5AA9FF"), BorderThickness = new Thickness(1), HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalContentAlignment = VerticalAlignment.Stretch,
-            Content = new Border { CornerRadius = new CornerRadius(9), ClipToBounds = true, Child = layers } };
+            layers.Children.Add(new Border { Background = Brush.Parse(C("#FF2C2D31", "#FFEDEEF1")) });
+        var badge = Badge(st); badge.Margin = new Thickness(0);
+        layers.Children.Add(new Border { HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0, 6, 6, 0), CornerRadius = new CornerRadius(3), Padding = new Thickness(5, 1),
+            Background = Brush.Parse("#CC1A1B1E"), IsVisible = badge.IsVisible, Child = badge });
+        var chip = si is null ? new Border { Width = 22, Height = 22 } : Chip(si.Path, si.C1, si.C2, 22, 0.62);
+        chip.Name = "studio-icon-" + st.Id; chip.VerticalAlignment = VerticalAlignment.Top;
+        var text = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Margin = new Thickness(8, 7, 8, 8), Children = {
+            chip,
+            Pos(new StackPanel { Margin = new Thickness(8, 0, 0, 0), Spacing = 1, Children = {
+                new TextBlock { Text = name, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
+                new TextBlock { Text = info?.Sentence ?? "", Foreground = Muted, FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis } } }, 1) } };
+        var card = new Button { Name = "studio-card-" + st.Id, Width = 190, Padding = new Thickness(0), Margin = new Thickness(0, 0, 8, 8), CornerRadius = new CornerRadius(6), ClipToBounds = true,
+            Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalContentAlignment = VerticalAlignment.Stretch,
+            Content = new Border { CornerRadius = new CornerRadius(5), ClipToBounds = true, Child = new StackPanel { Children = { layers, text } } } };
         Avalonia.Automation.AutomationProperties.SetName(card, name);
         ToolTip.SetTip(card, info is null ? name : $"{name} – {info.Sentence}");
         var sid = st.Id;

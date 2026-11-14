@@ -62,7 +62,7 @@ public partial class MainWindow
 
     void ClaudeLiveShown(string page)
     {
-        _progMsg[page] = "✳ Claude hat das Dokument geändert – oben vergleichen, behalten oder verwerfen.";
+        _progMsg[page] = "Claude hat das Dokument geändert – oben vergleichen, behalten oder verwerfen.";
         if (CurrentView == page) Show(page);
         _ui.Post(() => { if (ActivePageRoot?.GetLogicalDescendants().OfType<Avalonia.Controls.Control>().FirstOrDefault(c => c.Name == "prog-workspace") is { } ws) ClaudeFlash(ws); }, DispatcherPriority.Background); // zeigt, wo Claude gearbeitet hat
     }

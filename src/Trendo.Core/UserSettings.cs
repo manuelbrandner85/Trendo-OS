@@ -107,6 +107,8 @@ public sealed class UserSettings
     /// <summary>Kleinunternehmer nach § 19 UStG (Rechnungen ohne MwSt, Shop-Preise ohne MwSt).</summary>
     public bool SmallBusiness { get; set; } = true;
     public double UiScale { get; set; } = 1.0;
+    /// <summary>P4 (13.11.2026): Dichte der Bedienelemente – „normal“ oder „kompakt“ (weniger Innenabstand, wie in Explorer oder Outlook).</summary>
+    public string Density { get; set; } = "normal";
     public static readonly double[] UiScales = [1.0, 1.15, 1.3];
     public static double ClampScale(double v) => UiScales.OrderBy(x => Math.Abs(x - v)).First();
 

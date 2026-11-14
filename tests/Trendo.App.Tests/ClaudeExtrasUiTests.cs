@@ -76,7 +76,7 @@ public class ClaudeExtras_Ui
             await Send(w, "Meine Farben sind immer Dunkelblau und Gold");
             Assert.Equal(["Farben sind Dunkelblau und Gold"], w.ClaudeMemoryItems());
             Assert.DoesNotContain("Merken:", w.ClaudeChatCurrent()!.Messages[^1].Text);
-            Assert.Contains(w.ClaudeChatCurrent()!.Messages[^1].Steps, s => s.Text.StartsWith("🧠 Gemerkt"));
+            Assert.Contains(w.ClaudeChatCurrent()!.Messages[^1].Steps, s => s.Text.StartsWith("Gemerkt"));
             await Send(w, "Mach eine Kopfzeile");
             Assert.Contains("- Farben sind Dunkelblau und Gold", Arg(calls[1], "--append-system-prompt"));
             w.Find<Button>("claude-chat-memory").Press(); Avalonia.Threading.Dispatcher.UIThread.RunJobs();
@@ -176,7 +176,7 @@ public class ClaudeExtras_Ui
             Assert.False(w.ClaudeHandsFree());
             Assert.Single(calls); Assert.StartsWith("Baue eine Startseite", calls[0][1]);
             Assert.Equal(["Erledigt\nDie Startseite steht."], spoken); // ohne Markdown-Zeichen vorgelesen
-            Assert.Equal("🗣 Freihändig", w.Find<Button>("claude-tool-freihaendig").Content);
+            Assert.Equal("Freihändig", w.Find<Button>("claude-tool-freihaendig").Content);
             Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "claude.freihaendig.an");
         }
         finally { End(w); }

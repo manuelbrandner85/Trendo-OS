@@ -398,7 +398,7 @@ public partial class MainWindow
         {
             if (res.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase) || res.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
             {
-                var play = new Button { Name = "kilib-play-result", Content = "▶ Anhören", Background = Accent }; play.Click += (_, _) => Launch(res);
+                var play = new Button { Name = "kilib-play-result", Content = "Anhören", Background = Accent }; play.Click += (_, _) => Launch(res);
                 sp.Children.Add(play);
             }
             if (res.EndsWith(".png", StringComparison.OrdinalIgnoreCase))

@@ -56,7 +56,7 @@ public partial class MainWindow
         var chips = new WrapPanel();
         foreach (var (k, label) in new[] { ("Geändert", "Geändert"), ("Gelöscht", "Seither gelöscht"), ("Neu", "Seither neu"), ("Alle", "Alle") })
         { var kk = k; var b = Act("backup-filter-" + k.ToLowerInvariant(), label, () => { BackupFilter = kk; Show("sicherung"); }, BackupFilter == k); b.Margin = new Thickness(0, 0, 4, 4); chips.Children.Add(b); }
-        var q = new TextBox { Name = "backup-search", PlaceholderText = "🔎  Datei suchen …", Text = _backupQuery, Width = 220, CornerRadius = new CornerRadius(8), Margin = new Thickness(4, 0, 0, 4) }; q.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) { _backupQuery = q.Text ?? ""; Show("sicherung"); } };
+        var q = new TextBox { Name = "backup-search", PlaceholderText = "Datei suchen …", Text = _backupQuery, Width = 220, CornerRadius = new CornerRadius(8), Margin = new Thickness(4, 0, 0, 4) }; q.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) { _backupQuery = q.Text ?? ""; Show("sicherung"); } };
         chips.Children.Add(q); sp.Children.Add(chips);
         var shown = diff.Where(d => BackupFilter switch { "Geändert" => d.Kind == Backup.Change.Geaendert, "Gelöscht" => d.Kind == Backup.Change.Geloescht, "Neu" => d.Kind == Backup.Change.Neu, _ => d.Kind != Backup.Change.Neu })
             .Where(d => _backupQuery.Length == 0 || d.Path.Contains(_backupQuery, StringComparison.OrdinalIgnoreCase)).Take(200).ToList();

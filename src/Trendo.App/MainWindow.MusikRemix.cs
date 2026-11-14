@@ -18,20 +18,20 @@ public partial class MainWindow
     {
         void Tab(string t) { _msSel = s.Id; _msDetailTab = t; Show(MS); }
         return [
-            ("extend", "↦ Verlängern", () => Tab("bearbeiten")),
-            ("cover", "♫ Cover in anderem Stil", () => Tab("bearbeiten")),
-            ("replace", "✎ Abschnitt ersetzen", () => Tab("bearbeiten")),
-            ("crop", "✂ Zuschneiden oder Abschnitt entfernen", () => Tab("bearbeiten")),
-            ("remaster", "✨ Remaster (neu, nah am Original)", () => _ = MsRemaster(s.Id)),
-            ("reuse", "↺ Beschreibung wiederverwenden", () => MsReusePrompt(s.Id)),
-            ("mashup", "⇄ Mashup mit einem anderen Lied", () => Tab("bearbeiten")),
-            ("sample", "◧ Als Sample verwenden", () => Tab("bearbeiten")),
-            ("stems", "🎚 Spuren holen", () => Tab("spuren")),
-            ("midi", "🎹 MIDI holen", () => _ = MsMidi(s.Id)),
-            ("persona", "👤 Persona aus diesem Lied", () => Tab("bearbeiten")),
-            ("inspo", "🎧 Als Klangvorbild für ein neues Lied", () => { _msRefFile = s.File; _msMsg = $"Klangvorbild: „{s.Title}“ – jetzt beschreiben und „Erstellen“."; MsPage("erstellen"); }),
-            ("clip", "📱 Kurzvideo 9:16 (Reels, Shorts)", () => _ = MsShortVideo(s.Id)),
-            ("speak", "💬 Teil per Sprache ändern (Produzent)", () => Tab("profi")),
+            ("extend", "Verlängern", () => Tab("bearbeiten")),
+            ("cover", "Cover in anderem Stil", () => Tab("bearbeiten")),
+            ("replace", "Abschnitt ersetzen", () => Tab("bearbeiten")),
+            ("crop", "Zuschneiden oder Abschnitt entfernen", () => Tab("bearbeiten")),
+            ("remaster", "Remaster (neu, nah am Original)", () => _ = MsRemaster(s.Id)),
+            ("reuse", "Beschreibung wiederverwenden", () => MsReusePrompt(s.Id)),
+            ("mashup", "Mashup mit einem anderen Lied", () => Tab("bearbeiten")),
+            ("sample", "Als Sample verwenden", () => Tab("bearbeiten")),
+            ("stems", "Spuren holen", () => Tab("spuren")),
+            ("midi", "MIDI holen", () => _ = MsMidi(s.Id)),
+            ("persona", "Persona aus diesem Lied", () => Tab("bearbeiten")),
+            ("inspo", "Als Klangvorbild für ein neues Lied", () => { _msRefFile = s.File; _msMsg = $"Klangvorbild: „{s.Title}“ – jetzt beschreiben und „Erstellen“."; MsPage("erstellen"); }),
+            ("clip", "Kurzvideo 9:16 (Reels, Shorts)", () => _ = MsShortVideo(s.Id)),
+            ("speak", "Teil per Sprache ändern (Produzent)", () => Tab("profi")),
         ];
     }
 
@@ -120,6 +120,6 @@ public partial class MainWindow
             P("Ohne neue KI: schneidet die Datei, mit weichem Übergang. Das Original bleibt erhalten.", Muted, 11.5),
             new WrapPanel { Children = { new TextBlock { Text = "von", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) }, from,
                 new TextBlock { Text = "bis", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 6, 0) }, to, new TextBlock { Text = "s", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0) } } },
-            new WrapPanel { Children = { Act("ms-crop-keep", "✂ Nur das behalten", () => _ = Run(true)), new Border { Width = 6 }, Act("ms-crop-remove", "Diesen Teil entfernen", () => _ = Run(false)) } } } };
+            new WrapPanel { Children = { Act("ms-crop-keep", "Nur das behalten", () => _ = Run(true)), new Border { Width = 6 }, Act("ms-crop-remove", "Diesen Teil entfernen", () => _ = Run(false)) } } } };
     }
 }

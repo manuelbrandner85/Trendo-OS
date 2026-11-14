@@ -43,7 +43,7 @@ public class Teil4BueroUiTests
 
     static List<Button> DocTiles(Window w, string prefix) => w.GetLogicalDescendants().OfType<Button>().Where(b => b.Name is { } n && System.Text.RegularExpressions.Regex.IsMatch(n, "^" + prefix + @"-\d+$")).ToList();
 
-    [AvaloniaFact(DisplayName = "SYS-10 wie Microsoft 365: Dokumente suchen (alle Wörter im Namen), Anheften mit ★ zeigt sie oben unter „Angeheftet“, Lösen nimmt sie weg; gelöschte Datei verschwindet")]
+    [AvaloniaFact(DisplayName = "SYS-10 wie Microsoft 365: Dokumente suchen (alle Wörter im Namen), Anheften mit zeigt sie oben unter „Angeheftet“, Lösen nimmt sie weg; gelöschte Datei verschwindet")]
     public void Doku_search_and_pins()
     {
         var (w, _, _) = Ui.Open();

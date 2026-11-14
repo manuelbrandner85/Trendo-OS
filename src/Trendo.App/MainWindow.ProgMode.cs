@@ -263,7 +263,7 @@ public partial class MainWindow
         if (!derived)
         {
             bar.Children.Add(B("mode-marker-auto", "Automatisch legen", () => { d.Set("layout", MarkerJson(Marker.AutoLayout(pieces, width)), "Automatisch legen"); MarkerSelected = -1; }, true));
-            bar.Children.Add(B("mode-marker-rotate", "↻ Drehen", () => { if (MarkerSelected < 0 || MarkerSelected >= lay.Count) throw new InvalidOperationException("Erst ein Teil anklicken."); canvas.Rotated!(MarkerSelected); }));
+            bar.Children.Add(B("mode-marker-rotate", "Drehen", () => { if (MarkerSelected < 0 || MarkerSelected >= lay.Count) throw new InvalidOperationException("Erst ein Teil anklicken."); canvas.Rotated!(MarkerSelected); }));
         }
         var title = d.Text("name") + (sizeLabel.Length > 0 ? $" ({sizeLabel})" : "");
         bar.Children.Add(B("mode-marker-pdf", "Als PDF", () => { var f = Path.Combine(WorkFolder("Produkte"), MarkerFile(d, derived ? MarkerSize : "", ".pdf")); Marker.Pdf(f, title, pieces, lay, width); _progMsg[K] = "Gespeichert: " + f; NotifyFileResult(_progMsg[K]); }));

@@ -170,7 +170,7 @@ public partial class MainWindow
     {
         var bar = new WrapPanel();
         var p = CurPara();
-        var newBtn = new Button { Name = "text-new", Content = "Neu ▾", Focusable = false, Margin = new Thickness(0, 0, 4, 4), Padding = new Thickness(9, 4) };
+        var newBtn = new Button { Name = "text-new", Content = "Neu", Focusable = false, Margin = new Thickness(0, 0, 4, 4), Padding = new Thickness(9, 4) };
         ToolTip.SetTip(newBtn, "Neues Dokument oder Vorlage");
         var menu = new ContextMenu();
         foreach (var (id, name, hint) in TextTemplates.Builtin)
@@ -219,13 +219,13 @@ public partial class MainWindow
         bar.Children.Add(TB("text-numbers", "1. Liste", () => SetList(ListKind.Number), "Nummerierung", p?.List == ListKind.Number));
         // F3: mehrstufige Liste (auch Tab / Umschalt+Tab) und Formatierung löschen
         bar.Children.Add(TB("text-list-out", "⇤", () => TextListLevel(-1), "Listenebene höher (Umschalt+Tab)", enabled: p is { List: not ListKind.None, ListLevel: > 0 }));
-        bar.Children.Add(TB("text-list-in", "⇥", () => TextListLevel(1), "Listenebene tiefer (Tab) – 1. → a) → i. bzw. • → ◦ → ▪", enabled: p is { List: not ListKind.None } && p.ListLevel < TextTools.MaxListLevel));
-        bar.Children.Add(TB("text-clear-format", "A⌫", TextClearFormat, "Formatierung löschen – Markiertes bzw. ganzen Absatz wieder schlicht (Links, Kommentare und Liste bleiben)", enabled: p is not null));
+        bar.Children.Add(TB("text-list-in", "⇥", () => TextListLevel(1), "Listenebene tiefer (Tab) – 1. → a) → i. bzw. • → →", enabled: p is { List: not ListKind.None } && p.ListLevel < TextTools.MaxListLevel));
+        bar.Children.Add(TB("text-clear-format", "A", TextClearFormat, "Formatierung löschen – Markiertes bzw. ganzen Absatz wieder schlicht (Links, Kommentare und Liste bleiben)", enabled: p is not null));
         foreach (var (a, label, tip) in new[] { (Align.Left, "⯇", "Linksbündig"), (Align.Center, "≡", "Zentriert"), (Align.Right, "⯈", "Rechtsbündig"), (Align.Justify, "☰", "Blocksatz") })
             bar.Children.Add(TB("text-align-" + a.ToString().ToLowerInvariant(), label, () => { if (CurPara() is { } cp) { Snapshot(); cp.Align = a; Changed(); } }, tip, p?.Align == a));
         bar.Children.Add(new Border { Width = 10 });
         bar.Children.Add(TB("text-find", "Suchen", () => _txFind = !_txFind, "Suchen und Ersetzen (Strg+F)", _txFind));
-        bar.Children.Add(TB("text-assist", "✨ Schreibhilfe", () => _txAssistOn = !_txAssistOn, "Trendo schlägt Verbesserungen vor – du sagst Ja oder Nein", _txAssistOn));
+        bar.Children.Add(TB("text-assist", "Schreibhilfe", () => _txAssistOn = !_txAssistOn, "Trendo schlägt Verbesserungen vor – du sagst Ja oder Nein", _txAssistOn));
         bar.Children.Add(TB("text-spell", "Rechtschreibung", () => { _txSpellOn = !_txSpellOn; if (_txSpellOn) RunSpelling(); else _txMistakes = []; }, "Rechtschreibung prüfen", _txSpellOn));
         bar.Children.Add(TB("text-more", _txMore ? "Weniger" : "Mehr …", () => _txMore = !_txMore, "Alle weiteren Funktionen"));
         return bar;
@@ -248,7 +248,7 @@ public partial class MainWindow
         var recent = TextRecent();
         if (recent.Count > 0)
         {
-            var rb = new Button { Name = "text-recent", Content = "Zuletzt ▾", Focusable = false, Margin = new Thickness(0, 0, 4, 4), Padding = new Thickness(9, 4) };
+            var rb = new Button { Name = "text-recent", Content = "Zuletzt", Focusable = false, Margin = new Thickness(0, 0, 4, 4), Padding = new Thickness(9, 4) };
             var m = new ContextMenu();
             for (var i = 0; i < recent.Count; i++) { var f = recent[i]; var mi = new MenuItem { Header = Path.GetFileName(f), Name = "text-recent-" + i }; mi.Click += (_, _) => { TextOpen(f); Show("text"); }; m.Items.Add(mi); }
             rb.ContextMenu = m; rb.Click += (_, _) => m.Open(rb); bar.Children.Add(rb);

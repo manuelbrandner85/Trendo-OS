@@ -154,7 +154,7 @@ public partial class MainWindow
         }
         // Werkzeugleiste
         var bar = new WrapPanel { Name = "ce-toolbar", Margin = new Thickness(0, 0, 0, 8) };
-        var folderBtn = new Button { Name = "ce-open-folder", Content = "📂 Ordner öffnen …", FontSize = 12.5, Margin = new Thickness(0, 0, 6, 0), CornerRadius = new CornerRadius(7), Padding = new Thickness(10, 5), Background = Accent, Foreground = Brushes.White };
+        var folderBtn = new Button { Name = "ce-open-folder", Content = "Ordner öffnen …", FontSize = 12.5, Margin = new Thickness(0, 0, 6, 0), CornerRadius = new CornerRadius(7), Padding = new Thickness(10, 5), Background = Accent, Foreground = Brushes.White };
         folderBtn.Click += async (_, _) =>
         {
             string? dir;
@@ -166,12 +166,12 @@ public partial class MainWindow
         var newName = new TextBox { Name = "ce-new-name", PlaceholderText = "Name, z. B. src/hallo.py", Width = 220, FontSize = 12.5, Margin = new Thickness(0, 0, 4, 0) };
         bar.Children.Add(newName);
         bar.Children.Add(Btn("ce-new", "＋ Datei", "Neue Datei im Projekt anlegen", () => CodeNewFile((newName.Text ?? "").Trim() is { Length: > 0 } n ? n : throw new InvalidOperationException("Bitte einen Dateinamen eingeben."))));
-        bar.Children.Add(Btn("ce-save", "💾 Speichern", "Strg+S", () => CodeSave()));
+        bar.Children.Add(Btn("ce-save", "Speichern", "Strg+S", () => CodeSave()));
         bar.Children.Add(Btn("ce-save-all", "Alle speichern", "Strg+Umschalt+S", () => CodeSave(true)));
-        bar.Children.Add(Btn("ce-run", "▶ Ausführen", "Aktive Datei starten (Python, JavaScript, PowerShell) oder dotnet run", () => CodeRun(false), true));
+        bar.Children.Add(Btn("ce-run", "Ausführen", "Aktive Datei starten (Python, JavaScript, PowerShell) oder dotnet run", () => CodeRun(false), true));
         bar.Children.Add(Btn("ce-test", "✓ Testen", "Tests des Projekts (dotnet build, node --test, unittest)", () => CodeRun(true)));
-        bar.Children.Add(Btn("ce-find", "🔍 Suchen", "In der Datei: Strg+F. Hier: im ganzen Projekt", () => _ceTab = "suche"));
-        bar.Children.Add(Btn("ce-git", "⎇ Git", "Änderungen ansehen und als Stand speichern", () => _ceTab = "git"));
+        bar.Children.Add(Btn("ce-find", "Suchen", "In der Datei: Strg+F. Hier: im ganzen Projekt", () => _ceTab = "suche"));
+        bar.Children.Add(Btn("ce-git", "Git", "Änderungen ansehen und als Stand speichern", () => _ceTab = "git"));
 
         // Links: Projektbaum
         var tree = new StackPanel { Name = "ce-tree", Spacing = 0 };

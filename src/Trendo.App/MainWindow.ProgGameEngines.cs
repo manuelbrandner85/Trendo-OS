@@ -118,7 +118,7 @@ public partial class MainWindow
             {
                 Name = "game-engine-" + e.Id, Background = PaneBg, BorderBrush = PaneEdge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(6), Padding = new Thickness(10, 6),
                 Child = new DockPanel { Children = {
-                    Dk(new TextBlock { Text = ok ? "● " + (e.Version ?? "bereit") : "○ " + e.Status, Foreground = ok ? Brush.Parse("#2FBF71") : Brush.Parse("#F5A524"), FontFamily = new FontFamily("Consolas, monospace"), FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, Avalonia.Controls.Dock.Right),
+                    Dk(new TextBlock { Text = ok ? "" + (e.Version ?? "bereit") : "" + e.Status, Foreground = ok ? Brush.Parse("#2FBF71") : Brush.Parse("#F5A524"), FontFamily = new FontFamily("Consolas, monospace"), FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, Avalonia.Controls.Dock.Right),
                     new StackPanel { Children = { new TextBlock { Text = e.Name, Foreground = Text, FontWeight = FontWeight.SemiBold, FontSize = 12.5 }, new TextBlock { Text = e.Hint, Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap } } } } },
             });
         }

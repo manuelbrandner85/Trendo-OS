@@ -74,7 +74,7 @@ public partial class MainWindow
         bar.Children.Add(B("ms-roll-quant", "Quantisieren 1/16", () => MsRollEdit(MsRoll with { Notes = PianoRoll.Quantize(MsRoll.Notes, 120) })));
         bar.Children.Add(B("ms-roll-up", "＋1 Halbton", () => MsRollEdit(MsRoll with { Notes = PianoRoll.Transpose(MsRoll.Notes, 1) })));
         bar.Children.Add(B("ms-roll-down", "−1 Halbton", () => MsRollEdit(MsRoll with { Notes = PianoRoll.Transpose(MsRoll.Notes, -1) })));
-        bar.Children.Add(B("ms-roll-undo", "↶ Rückgängig", () => { if (_msRollUndo.Count > 0) MsRoll = _msRollUndo.Pop(); }));
+        bar.Children.Add(B("ms-roll-undo", "Rückgängig", () => { if (_msRollUndo.Count > 0) MsRoll = _msRollUndo.Pop(); }));
         bar.Children.Add(B("ms-roll-clear", "Leeren", () => MsRollEdit(MsRoll with { Notes = [] })));
         bar.Children.Add(name);
         bar.Children.Add(B("ms-roll-save", "MIDI speichern", () => MsRollSave((name.Text ?? "").Trim()), true));

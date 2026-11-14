@@ -43,7 +43,7 @@ public partial class MainWindow
                 }
             }
             chat = CChats.SetDoc(studio, chat.Id, doc.Path!);
-            _progMsg[page] = $"✳ Claude arbeitet in „{doc.Title}“ – Änderungen erscheinen hier live.";
+            _progMsg[page] = $"Claude arbeitet in „{doc.Title}“ – Änderungen erscheinen hier live.";
             _core.Audit.Append(Principal.LocalOwner.Name, "claude.programm.dokument", $"{studio} · {Path.GetFileName(doc.Path)}");
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException or InvalidDataException) { _claudeMsg = "Das Programm-Dokument ließ sich nicht anlegen: " + e.Message; return chat; }
@@ -67,7 +67,7 @@ public partial class MainWindow
         dock.Page = page;
         if (dock.Max) ClaudeDockSetMax(dock, false); // Programm links, Claude rechts
         Show(page);
-        foreach (var b in dock.Panel.GetLogicalDescendantsOf<Avalonia.Controls.Button>().Where(b => b.Name == "claude-dock-max")) b.Content = "⤢ Groß";
+        foreach (var b in dock.Panel.GetLogicalDescendantsOf<Avalonia.Controls.Button>().Where(b => b.Name == "claude-dock-max")) b.Content = "Groß";
     }
 
     /// <summary>Was Claude neben dem Dokument gebaut hat, im Programm zeigen – im Spiele-Programm das spielbare Spiel (Vorschaubild, Spielen, Ordner).</summary>
@@ -80,12 +80,11 @@ public partial class MainWindow
         if (ClaudeStudioOf(key) is not { } cst) return sp;
         Avalonia.Controls.Button B(string name, string label, string tip, Action a)
         {
-            var b = new Avalonia.Controls.Button { Name = name, Content = label, FontSize = 12, Padding = new Avalonia.Thickness(10, 3), Background = Avalonia.Media.Brush.Parse("#33FFFFFF"), Foreground = Avalonia.Media.Brushes.White,
-                BorderBrush = Avalonia.Media.Brush.Parse("#66FFFFFF"), BorderThickness = new Avalonia.Thickness(1), CornerRadius = new Avalonia.CornerRadius(10) };
+            var b = new Avalonia.Controls.Button { Name = name, Content = label, FontSize = 12, Padding = new Avalonia.Thickness(10, 3) }; // schlichter Standardknopf (Vorgabe 13.11.2026)
             Avalonia.Controls.ToolTip.SetTip(b, tip); b.Click += (_, _) => a(); return b;
         }
-        sp.Children.Add(B("prog-claude", "✳ Claude", "Claude für dieses Programm – kennt dein offenes Dokument und kann das Programm für dich bedienen (erst nach deinem „Ausführen“)", () => { ClaudeOpenFor(cst); Show(key); }));
-        sp.Children.Add(B("prog-claude-ask", "Markierung", "Was du markiert hast, mit Claude besprechen (Strg+Umschalt+A, auch per Rechtsklick „✳ Claude fragen“)", () => ClaudeAskSelection(key)));
+        sp.Children.Add(B("prog-claude", "Claude", "Claude für dieses Programm – kennt dein offenes Dokument und kann das Programm für dich bedienen (erst nach deinem „Ausführen“)", () => { ClaudeOpenFor(cst); Show(key); }));
+        sp.Children.Add(B("prog-claude-ask", "Markierung", "Was du markiert hast, mit Claude besprechen (Strg+Umschalt+A, auch per Rechtsklick „Claude fragen“)", () => ClaudeAskSelection(key)));
         return sp;
     }
 

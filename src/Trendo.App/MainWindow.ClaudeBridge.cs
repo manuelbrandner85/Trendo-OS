@@ -227,6 +227,7 @@ public partial class MainWindow
             S("bild_ansehen", "Bildschirmfoto der offenen Trendo-Seite.", TrendoMcp.Schema(), _ => BridgeShot()),
             .. StudioIntelTools(run),
             .. HandoffTools(run),
+            .. KieTools(run),
         ];
     }
 

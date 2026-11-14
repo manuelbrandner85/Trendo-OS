@@ -67,7 +67,7 @@ public partial class MainWindow
                 files.Add(new(Guid.NewGuid().ToString("N"), p, Path.GetFileName(p), s.Length, Convert.ToHexStringLower(await SHA256.HashDataAsync(s)), LocalSend.FileType(p)));
             }
             using var prep = await http.PostAsync(LocalSend.PrepareUrl(peer, pin), new StringContent(LocalSend.PrepareBody(LsFingerprint, files), Encoding.UTF8, "application/json"));
-            if ((int)prep.StatusCode == 204 || !prep.IsSuccessStatusCode) { _lsMsg = ((int)prep.StatusCode == 204 ? "" : "⚠ ") + LocalSend.Error((int)prep.StatusCode); Show("teilen"); return 0; }
+            if ((int)prep.StatusCode == 204 || !prep.IsSuccessStatusCode) { _lsMsg = ((int)prep.StatusCode == 204 ? "• " : "⚠ ") + LocalSend.Error((int)prep.StatusCode); Show("teilen"); return 0; }
             var (sid, tokens) = LocalSend.ParsePrepare(await prep.Content.ReadAsStringAsync()); session = sid;
             foreach (var f in files)
             {

@@ -129,7 +129,7 @@ public partial class MainWindow
         for (var i = 0; i < _scene.Parts.Count; i++)
         {
             var part = _scene.Parts[i]; var id = part.Id; var n = i;
-            var mark = part.Id == _selId ? "● " : "";
+            var mark = part.Id == _selId ? "• " : "";
             list.Children.Add(new WrapPanel
             {
                 Children =

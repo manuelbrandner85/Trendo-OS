@@ -55,7 +55,7 @@ public class TvPlus_Ui
             var url = played[^1];
             w.Tv.SaveResume(new Trendo.Core.Tv.TvResume(Trendo.Core.Tv.TvPlus.ResumeKey(w.TvVodList().First(v => v.Name == "Tatort Spezial").Url), "Tatort Spezial", w.TvVodList().First(v => v.Name == "Tatort Spezial").Url, 1234, 5400, DateTime.UtcNow));
             w.Find<Button>("tv-vod-stop").Press(); Pump();
-            Assert.StartsWith("▶ Weiter ab 20:34", w.Find<Button>("tv-film-play").Content as string);
+            Assert.StartsWith("Weiter ab 20:34", w.Find<Button>("tv-film-play").Content as string);
             w.Find<Button>("tv-film-close").Press(); Pump();
             Assert.NotNull(w.TryFind<StackPanel>("tv-continue-film"));
             // Serie: Folge 1 → „Nächste Folge“ spielt Folge 2
