@@ -92,7 +92,8 @@ def run():
     def get(name, cls, factory):
         p = ROOT + "/" + name
         return unreal.load_asset(p) if eal.does_asset_exist(p) else tools.create_asset(name, ROOT, cls, factory)
-    if eal.does_directory_exist(ROOT + "/Mannequin"): eal.delete_directory(ROOT + "/Mannequin")
+    NEU = ROOT + "/Mannequin_neu"
+    if eal.does_directory_exist(NEU): eal.delete_directory(NEU)  # nur der eigene Zwischenordner
     rig = get("IK_Mixamo", unreal.IKRigDefinition, unreal.IKRigDefinitionFactory())
     if rig is None: return "IK Rig ließ sich nicht anlegen"
     rc = unreal.IKRigController.get_controller(rig); rc.set_skeletal_mesh(mesh); rc.apply_auto_generated_retarget_definition(); eal.save_loaded_asset(rig)
@@ -106,9 +107,20 @@ def run():
     c.auto_map_chains(unreal.AutoMapChainType.FUZZY, True); eal.save_loaded_asset(rtg)
     data = [eal.find_asset_data(p) for p in anims]
     out = unreal.IKRetargetBatchOperation.duplicate_and_retarget(assets_to_retarget=data, source_mesh=mesh, target_mesh=manny, ik_retarget_asset=rtg,
-                                                                 prefix="MN_", target_path=ROOT + "/Mannequin", include_referenced_assets=False)
+                                                                 prefix="MN_", target_path=NEU, include_referenced_assets=False)
+    # Ergebnis nach Mannequin/: gleichnamige alte Animationen werden ersetzt, Verweise darauf (AnimBP, Blendspace) zeigen danach auf die neue; anderes bleibt unberührt
+    done = 0
+    for a in (out or []):
+        name = str(a.get_editor_property("asset_name"))
+        if not name.startswith("MN_"): continue
+        src = NEU + "/" + name; dst = ROOT + "/Mannequin/" + name
+        if eal.does_asset_exist(dst):
+            eal.consolidate_assets(unreal.load_asset(src), [unreal.load_asset(dst)])
+        if not eal.does_asset_exist(dst): eal.rename_asset(src, dst)
+        done += 1
+    if eal.does_directory_exist(NEU): eal.delete_directory(NEU)
     eal.save_directory(ROOT)
-    log("uebertragen=%d" % len([a for a in (out or []) if "MN_" in str(a.get_editor_property("asset_name"))]))  # nur dieser Lauf
+    log("uebertragen=%d" % done)  # nur dieser Lauf
     return ""
 
 try:

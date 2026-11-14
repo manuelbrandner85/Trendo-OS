@@ -52,6 +52,8 @@ public class Mixamo_Ui
             Assert.Equal(["Walking-2.fbx"], await w.MixamoScan(d));
             Assert.Empty(await w.MixamoScan(d));
             d.Edit("weg", x => { var a = (System.Text.Json.Nodes.JsonArray)x["assets"]!; a.Remove(a.OfType<JsonObject>().First(o => ((string)o["file"]!).EndsWith("Walking-2.fbx"))); });
+            Assert.Empty(await w.MixamoScan(d)); // entfernt bleibt entfernt (gesehen), keine verwaiste Kopie
+            Assert.False(File.Exists(Path.Combine(Path.GetDirectoryName((string)Mixamo.Assets(d.Data)[0]["file"]!)!, "Walking-3.fbx")));
             Assert.All(Mixamo.Assets(d.Data), a => Assert.Equal(Mixamo.License, (string?)a["license"]));
             Assert.Equal(["gehen", "springen"], Mixamo.Assignments(d.Data).Keys.Order());
             w.Show(GK); Pump();

@@ -14,10 +14,21 @@ public static class Mixamo
     public const string Source = "Mixamo";
     public const string License = "Mixamo-Bedingungen, nur im fertigen Spiel";
 
-    /// <summary>Seiten, die im eingebauten Browser bleiben dürfen: Mixamo selbst und die Adobe-Anmeldung.</summary>
+    /// <summary>Seiten, die im eingebauten Browser bleiben dürfen: Mixamo selbst und die Anmeldung bei Adobe (auch über Google, Apple, Facebook, Microsoft).</summary>
     public static bool Inside(Uri u) => u.Scheme == "https" && (Host(u, "mixamo.com") || Host(u, "adobe.com") || Host(u, "adobelogin.com") || Host(u, "adobe.io")
-        || u.Host is "accounts.google.com" or "appleid.apple.com" or "www.facebook.com" or "login.microsoftonline.com"); // Anmeldung bei Adobe über Google, Apple, Facebook, Microsoft
+        || u.Host.StartsWith("accounts.google.", StringComparison.OrdinalIgnoreCase) || u.Host is "accounts.youtube.com" or "appleid.apple.com" or "idmsa.apple.com"
+        || Host(u, "facebook.com") || u.Host is "login.microsoftonline.com" or "login.live.com" or "login.microsoft.com" or "account.live.com");
     static bool Host(Uri u, string d) => u.Host.Equals(d, StringComparison.OrdinalIgnoreCase) || u.Host.EndsWith("." + d, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>Darf eine Navigation im eingebauten Browser weiterlaufen? Erlaubt sind die Seiten aus <see cref="Inside"/> und Downloads: Mixamo liefert Dateien
+    /// über Speicher-Adressen (z. B. Amazon S3, CloudFront) oder als blob/data – die dürfen nicht abgefangen werden, sonst landet die Datei nicht im Download-Ordner.</summary>
+    public static bool Allowed(Uri u)
+    {
+        if (u.Scheme is "blob" or "data" or "about") return true;
+        if (u.Scheme != "https") return false;
+        if (Inside(u) || Host(u, "amazonaws.com") || Host(u, "cloudfront.net")) return true;
+        return Path.GetExtension(u.AbsolutePath).ToLowerInvariant() is ".fbx" or ".zip" or ".dae" or ".bvh";
+    }
 
     /// <summary>Suche auf Mixamo (Bewegungen) für einen Begriff.</summary>
     public static string SearchUrl(string query) => $"https://www.mixamo.com/#/?page=1&query={Uri.EscapeDataString(query.Trim())}&type=Motion%2CMotionPack";
@@ -36,9 +47,11 @@ public static class Mixamo
     /// <summary>Beginnt der Inhalt wie ein 3D-Format mit Skelett (FBX binär/Text, glTF binär/JSON, BVH, Collada)? Unabhängig von der Dateiendung.</summary>
     public static bool LooksLikeModel(ReadOnlySpan<byte> head)
     {
-        var t = Encoding.ASCII.GetString(head.Length > 64 ? head[..64] : head).TrimStart('﻿', ' ', '\r', '\n', '\t');
+        if (head.StartsWith((ReadOnlySpan<byte>)[0xEF, 0xBB, 0xBF])) head = head[3..]; // UTF-8-BOM auf Byte-Ebene entfernen
+        var t = Encoding.UTF8.GetString(head.Length > 64 ? head[..64] : head).TrimStart(' ', '\r', '\n', '\t');
+        // Textformate (JSON, XML) werden immer voll geprüft – ein glTF muss „asset“ nicht vorn haben
         return t.StartsWith("Kaydara FBX Binary", StringComparison.Ordinal) || t.StartsWith("; FBX", StringComparison.Ordinal) || t.StartsWith("glTF", StringComparison.Ordinal)
-            || t.StartsWith("HIERARCHY", StringComparison.Ordinal) || t.StartsWith("<?xml", StringComparison.Ordinal) || t.StartsWith("<COLLADA", StringComparison.Ordinal) || (t.StartsWith('{') && t.Contains("\"asset\"", StringComparison.Ordinal));
+            || t.StartsWith("HIERARCHY", StringComparison.Ordinal) || t.StartsWith('<') || t.StartsWith('{');
     }
 
     /// <summary>Datei enthält ein Mixamo-Skelett (Knochen „mixamorig…“)? Liest in Stücken. Nur 3D-Endungen, außer <paramref name="anyName"/> (Lizenzwächter).</summary>
@@ -90,9 +103,10 @@ public static class Mixamo
     /// <summary>Aktion aus dem Dateinamen („Running Jump.fbx“ → springen, „Walking.fbx“ → gehen); null, wenn nichts passt.</summary>
     public static string? Guess(string file)
     {
-        var n = Path.GetFileNameWithoutExtension(file).ToLowerInvariant();
+        // Wortanfänge statt Teilwörter: „Whiteclown“ ist kein Treffer („hit“), „Walking“ schon („walk“)
+        var words = System.Text.RegularExpressions.Regex.Split(Path.GetFileNameWithoutExtension(file).ToLowerInvariant(), "[^a-z]+").Where(w => w.Length > 0).ToList();
         foreach (var id in new[] { "springen", "fallen", "getroffen", "laufen", "gehen", "stehen" }) // Sprung vor Laufen: „Running Jump“ ist ein Sprung
-            if (Actions.First(a => a.Id == id).Words.Any(n.Contains)) return id;
+            if (Actions.First(a => a.Id == id).Words.Any(k => words.Any(w => w.StartsWith(k, StringComparison.Ordinal)))) return id;
         return null;
     }
 
@@ -184,6 +198,7 @@ public static class Mixamo
             if (!i.IsMixamo) continue;
             Directory.CreateDirectory(dir);
             var target = Path.Combine(dir, Path.GetFileName(e.Name));
+            for (var k = 2; File.Exists(target); k++) target = Path.Combine(dir, $"{Path.GetFileNameWithoutExtension(e.Name)}-{k}.fbx"); // gleichnamige Einträge in Unterordnern
             using (var s = e.Open()) using (var o = File.Create(target)) { CopyLimited(s, o, maxEntry); }
             res.Add(target);
         }

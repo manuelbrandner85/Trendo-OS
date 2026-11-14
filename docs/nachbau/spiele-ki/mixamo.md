@@ -27,6 +27,14 @@ Stand: 14.11.2026. Freigabe des Nutzers: M1 bis M6 („Ja alle“).
 - M4: Mit eigener Figur heißen die Animationen in der GLB genau wie die Spielaktionen. Ohne eigene Figur wird das Skelett der ersten Animation die Figur, alle weiteren werden darauf übertragen. Unreal: wiederholter Lauf im selben Projekt geht (vorhandene Assets werden neu eingestellt); nach dem Import werden die Rohdateien aus dem Projektordner gelöscht. Godot: `.gitignore` in `assets/mixamo`.
 - M6: Erkennung am Dateianfang, unabhängig von der Endung, auch verschachtelte ZIPs (bis Tiefe 3) als Datenstrom mit Größengrenze. Was sich nicht prüfen lässt, gilt als nicht freigegeben.
 
+## Zweite QA-Runde (14.11.2026)
+
+- Downloads im eingebauten Browser werden nicht abgefangen: Speicher-Adressen (Amazon S3, CloudFront), blob/data und Adressen auf .fbx/.zip laufen weiter. Weitere Anmeldewege (Microsoft-Privatkonto, Google-Länderseiten, Facebook mobil, Apple). Fremde Seiten öffnen höchstens einmal je 3 Sekunden im normalen Browser. Ein echter Mixamo-Download mit Anmeldung ist noch nicht geprüft (braucht das Adobe-Konto der Person).
+- Abmelden: Ist das Profil noch belegt, bekommt der Browser ein neues, leeres Profil; das alte wird beim nächsten Öffnen gelöscht.
+- Download-Beobachter: übernimmt nur in das Spiel, in dem Mixamo geöffnet wurde; wiederholt sich, solange eine Datei noch geschrieben oder gesperrt ist (höchstens 10-mal); einmal übernommene oder entfernte Downloads kommen nicht wieder; keine verwaisten Kopien; Zwischenordner beim Entpacken wird immer gelöscht.
+- Wächter: erkennt auch Dateien mit UTF-8-BOM und JSON/XML ohne Kennung am Anfang; öffnet Dateien, an denen gerade geschrieben wird.
+- Unreal: wiederholter Lauf überträgt in einen Zwischenordner und ersetzt gleichnamige Animationen per „Consolidate“, andere Assets im Ordner bleiben. Ob Verweise eigener Assets erhalten bleiben, ist nicht real geprüft (das Prüfskript konnte seine Testkopie nicht speichern).
+
 ## Grenzen
 
 - Kein automatischer Download, keine inoffizielle Schnittstelle, keine gespeicherten Adobe-Anmeldedaten.

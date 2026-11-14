@@ -34,7 +34,7 @@ public static class MixamoGuard
             {
                 try
                 {
-                    using var f = File.OpenRead(p);
+                    using var f = new FileStream(p, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete); // auch Dateien, an denen gerade jemand schreibt
                     var head = new byte[64]; var n = f.Read(head, 0, head.Length); f.Position = 0;
                     if (n >= 4 && head[0] == 'P' && head[1] == 'K' && head[2] == 3 && head[3] == 4) InZip(f, Path.GetFileName(p), 0, r);
                     else if (Mixamo.LooksLikeModel(head.AsSpan(0, n)) && Mixamo.Detect(f, Path.GetExtension(p).ToLowerInvariant(), long.MaxValue).IsMixamo) r.Hits.Add(p);

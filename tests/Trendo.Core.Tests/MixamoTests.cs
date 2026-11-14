@@ -68,6 +68,32 @@ public class MixamoTests : IDisposable
         Assert.StartsWith("https://www.mixamo.com/#/?page=1&query=Falling%20Idle", Mixamo.SearchUrl("Falling Idle"));
     }
 
+    [Fact(DisplayName = "M1: Downloads (S3, CloudFront, blob, .fbx) und Anmelde-Weiterleitungen laufen weiter; fremde Seiten nicht")]
+    public void Allowed()
+    {
+        Assert.True(Mixamo.Allowed(new Uri("https://s3.amazonaws.com/mixamo-downloads/abc.fbx?sig=1")));
+        Assert.True(Mixamo.Allowed(new Uri("https://d1abc.cloudfront.net/x")));
+        Assert.True(Mixamo.Allowed(new Uri("blob:https://www.mixamo.com/123")));
+        Assert.True(Mixamo.Allowed(new Uri("https://cdn.example.org/pack/Walking.zip")));
+        Assert.True(Mixamo.Allowed(new Uri("https://login.live.com/oauth20")));
+        Assert.True(Mixamo.Allowed(new Uri("https://accounts.google.de/x")));
+        Assert.True(Mixamo.Allowed(new Uri("https://m.facebook.com/login")));
+        Assert.False(Mixamo.Allowed(new Uri("https://www.example.com/")));
+        Assert.False(Mixamo.Allowed(new Uri("http://www.mixamo.com/")));
+    }
+
+    [Fact(DisplayName = "M6: Kopf-Erkennung auch mit UTF-8-BOM und glTF ohne frühes „asset“; Namen mit Wortanfängen")]
+    public void Header_and_words()
+    {
+        Assert.True(Mixamo.LooksLikeModel([0xEF, 0xBB, 0xBF, .. Encoding.ASCII.GetBytes("<?xml version")]));
+        Assert.True(Mixamo.LooksLikeModel(Encoding.ASCII.GetBytes("{\"accessors\":[],")));
+        Assert.False(Mixamo.LooksLikeModel(Encoding.ASCII.GetBytes("MZ\u0090\0")));
+        var g = Path.Combine(_dir, "anders.txt"); File.WriteAllText(g, "{\"accessors\":[],\"nodes\":[{\"name\":\"mixamorig:Hips\"}],\"asset\":{}}");
+        Assert.Contains("anders.txt", Assert.Throws<MixamoLicenseException>(() => MixamoGuard.Ensure(MixamoGuard.Share, [g])).Message);
+        Assert.Null(Mixamo.Guess("Whiteclown N Hallin.fbx")); // „hit“ steckt im Wort, ist aber kein Wortanfang
+        Assert.Equal("gehen", Mixamo.Guess("Female Walk.fbx"));
+    }
+
     [Fact(DisplayName = "M5: Aktion aus dem Dateinamen, jede Aktion mit Suchbegriffen")]
     public void Guess()
     {
