@@ -45,6 +45,7 @@ public static class PromptActions
             new VideoAiPlanAdapter(), new AgentDraftAdapter(), new ModelQuestionsAdapter(), new TrainClassifierAdapter(),
             new LicenseFetchAdapter(), new LicenseNoteAdapter(),
             new XrBudgetAdapter(), new ScanBlockedAdapter(),
+            new CodeProjectAdapter(), new VisionFactsAdapter(), new CiteSourceAdapter(), new DayPlanAdapter(),
             ..SystemActions.Create()
         ];
 }

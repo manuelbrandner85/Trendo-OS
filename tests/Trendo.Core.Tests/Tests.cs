@@ -202,7 +202,7 @@ public class QA015_StudioStatus
     public void Missing_tool_blocked()
     {
         var list = new StudioRegistry().Load(Req, new Probe());
-        Assert.Equal(71, list.Count); // + TV & Live (27.10.2026), + Trendo Musik (03.11.2026), + Filme machen und Print on Demand (08.11.2026), + vier + vier Studios Kreativ & KI (11.11.2026), + Teil 3 (14.11.2026)
+        Assert.Equal(75, list.Count); // + TV & Live (27.10.2026), + Trendo Musik (03.11.2026), + Filme machen und Print on Demand (08.11.2026), + vier + vier Studios Kreativ & KI (11.11.2026), + Teil 3 und 4 (14.11.2026)
         Assert.Equal(Capability.Blocked, list.Single(s => s.Id == "CORE-05").Capability);
         Assert.All(list.Where(s => StudioRegistry.RequiredTools.ContainsKey(s.Id)), s => Assert.NotEqual(Capability.Ready, s.Capability));
     }
