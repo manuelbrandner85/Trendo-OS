@@ -68,6 +68,7 @@ public partial class MainWindow
                 Step(No() + " Das Spiel startet zur Probe" + (screenshot ? " und macht ein Bild …" : " …"));
                 var seed = GameRunSeed(d);
                 var checkArgs = UnrealGame.CheckArgs(uproject, Path.Combine(logs, "start.txt"), screenshot && !_opt.Isolated, seed);
+                var runStart = DateTime.Now.AddSeconds(-2); // nur Bilder dieses Laufs zählen
                 var (_, glog) = await Task.Run(() => UnrealRun(UnrealGame.Editor(engine), checkArgs, Path.Combine(logs, "start.txt"), 900_000));
                 var (gok, gtext) = UnrealGame.ParseCheck(glog);
                 ok &= gok; lines.Add((gok ? "✓ Spiel läuft: " : "✗ Spiel: ") + gtext);
@@ -81,9 +82,12 @@ public partial class MainWindow
                     if (bad.Count > 0) _ui.Post(() => d.Edit("Testspieler", x => { foreach (var b in bad) GameBoard.Add(x, $"{b.Area}: {b.Text}", "Testspieler"); }));
                 }
                 // T-0650 E5 + E6: Bilder prüfen, Lauf speichern und mit dem vorigen vergleichen
-                var (runLines, runTasks) = await Task.Run(() => GameRunRecord(built, glog, checkArgs, seed, Trendo.Core.Programs.GamePlaytest.Shots(built)));
-                lines.AddRange(runLines);
-                if (runTasks.Count > 0) _ui.Post(() => d.Edit("Testlauf", x => { foreach (var t in runTasks) GameBoard.Add(x, t, "Testspieler"); }));
+                var withShots = screenshot && (!_opt.Isolated || UnrealRunOverride is not null); // ohne Bild-Lauf keine alten Bilder prüfen
+                var run = await Task.Run(() => GameRunRecord(built, glog, checkArgs, seed, Trendo.Core.Programs.GamePlaytest.Shots(built), runStart, withShots));
+                LastRunComparison = run.Comparison; ok &= !run.Hard;
+                lines.AddRange(run.Lines);
+                var fresh = run.Tasks.Where(t => !GameBoard.Tasks(d.Data).Any(x => (string?)x["title"] == t)).Distinct().ToList();
+                if (fresh.Count > 0) _ui.Post(() => d.Edit("Testlauf", x => { foreach (var t in fresh) GameBoard.Add(x, t, "Testspieler"); }));
             }
         }
         catch (Exception e) when (e is IOException or InvalidOperationException or System.ComponentModel.Win32Exception) { ok = false; lines.Add("✗ " + e.Message); }

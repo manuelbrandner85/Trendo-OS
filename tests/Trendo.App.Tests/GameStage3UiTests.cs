@@ -38,12 +38,15 @@ public class GameStage3_Ui
             if (exe.EndsWith("Build.bat")) return (0, "Result: Succeeded");
             if (args.Any(a => a.Contains("Automation RunTests"))) return (0, "Test Completed. Result={Success} Name={Daten} Path={Trendo.Daten}");
             startArgs.Add(args);
-            return (0, $"TRENDO-START Startwert=1\nTRENDO-WAGEN gesteuert=ja Klasse=TrendoCar Tempo=40 km/h Strecke={strecke} m Raddrehung=336° (Reifen drehen sich) Gang=2\nTRENDO-OK Spiel läuft");
+            BlackPng(Path.Combine(built, "Saved", "Screenshots", "trendo-kampf.png")); // das Spiel schreibt sein Bild in diesem Lauf
+            return (0, $"TRENDO-START Startwert=1\nTRENDO-WAGEN gesteuert=ja Klasse=TrendoCar Tempo=40 km/h Strecke={strecke} m Raddrehung=336° (Reifen drehen sich) Gang=2\nTRENDO-WAGEN ausgestiegen, Figur=sichtbar\nTRENDO-OK Spiel läuft");
         };
         try
         {
-            BlackPng(Path.Combine(built, "Saved", "Screenshots", "trendo-kampf.png"));
-            await w.GameUnrealCheck(d, screenshot: false); Pump();
+            var old = Path.Combine(built, "Saved", "Screenshots", "trendo-wagen.png"); BlackPng(old); File.SetLastWriteTime(old, DateTime.Now.AddDays(-1)); // altes Bild eines früheren Laufs
+            await w.GameUnrealCheck(d, screenshot: true); Pump();
+            Assert.DoesNotContain("trendo-wagen.png", w.LastUnrealReport); // alte Bilder zählen nicht
+            Assert.StartsWith("Nicht alles ging", w.LastUnrealReport); // schwarzes Bild: Lauf nicht bestanden
             var seedArg = Assert.Single(startArgs[0], a => a.StartsWith("-trendoseed=", StringComparison.Ordinal));
             Assert.Contains("Bildprüfung: 1 Befund", w.LastUnrealReport);
             Assert.Contains("Kampf (trendo-kampf.png): Bild ist schwarz", w.LastUnrealReport);
@@ -51,12 +54,13 @@ public class GameStage3_Ui
             Assert.Contains(GameBoard.Tasks(d.Data), t => ((string?)t["title"] ?? "").StartsWith("Bild Kampf", StringComparison.Ordinal));
             // zweiter Lauf, gleicher Startwert, Wagen kommt kaum noch weit
             strecke = "4";
-            await w.GameUnrealCheck(d, screenshot: false); Pump();
+            await w.GameUnrealCheck(d, screenshot: true); Pump();
             Assert.Equal(seedArg, Assert.Single(startArgs[1], a => a.StartsWith("-trendoseed=", StringComparison.Ordinal)));
             Assert.NotNull(w.LastRunComparison); Assert.True(w.LastRunComparison!.Comparable);
             Assert.True(w.LastRunComparison.Worse >= 2); // Fahrzeug ✓ → ⚠ und Strecke
             Assert.Contains("⚠ WAGEN.Strecke: 31,5 → 4", w.LastUnrealReport);
             Assert.Equal(2, GameRuns.List(MainWindow.GameRunsDir(built)).Count);
+            Assert.Single(GameBoard.Tasks(d.Data), t => (string?)t["title"] == "Bild Kampf: schwarzes Bild"); // gleicher Befund legt keine zweite Aufgabe an
             w.Show(GK); Pump();
             Assert.Contains(seedArg["-trendoseed=".Length..], w.Find<TextBlock>("game-run-seed").Text);
             w.Find<Button>("game-run-newseed").Press(); Pump();
@@ -92,6 +96,10 @@ public class GameStage3_Ui
             w.Show(GK); Pump();
             Assert.Equal("Alles geprüft.", w.Find<TextBlock>("game-engine-next").Text);
             Assert.Null(w.TryFind<Button>("game-engine-next-go"));
+            // erneut gebaut: der alte Bericht gilt nicht mehr
+            File.SetLastWriteTimeUtc(report, DateTime.UtcNow.AddMinutes(-5));
+            w.Find<Button>("game-build").Press(); Pump();
+            Assert.Contains("älter als der letzte Bau", w.Find<TextBlock>("game-engine-step-pruefung").Text);
         }
         finally { w.EngineProbeOverride = null; }
         w.Close();
@@ -131,6 +139,8 @@ public class GameStage3_Ui
         }
     }
 
+    sealed class Down : IWebFetch { public Task<WebReply> GetAsync(string url, CancellationToken ct = default) => Task.FromResult(new WebReply(503, [])); }
+
     [AvaloniaFact(DisplayName = "D5: Ähnliche Spiele zeigt nur belegte Titel mit Quelle; ohne Beleg „keine Referenz gefunden“")]
     public async Task References_card()
     {
@@ -145,6 +155,10 @@ public class GameStage3_Ui
             Assert.NotNull(w.Find<DockPanel>("game-ref-0"));
             Assert.Null(w.TryFind<DockPanel>("game-ref-1"));
             Assert.Equal("Stardew Valley", Assert.Single(GameReferences.Read(d.Data)).Title);
+            w.GameRefFetchOverride = new Down(); // Wikipedia nicht erreichbar: nichts überschreiben
+            await w.GameReferencesRun(d); w.Show(GK); Pump();
+            Assert.Single(GameReferences.Read(d.Data));
+            Assert.Null(w.TryFind<TextBlock>("game-refs-none"));
             w.GameRefFetchOverride = new Wiki(false);
             await w.GameReferencesRun(d); w.Show(GK); Pump();
             Assert.Equal(GameReferences.None, w.Find<TextBlock>("game-refs-none").Text);

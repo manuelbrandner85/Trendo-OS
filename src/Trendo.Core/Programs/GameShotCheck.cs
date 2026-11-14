@@ -3,7 +3,8 @@ using System.Globalization;
 namespace Trendo.Core.Programs;
 
 /// <summary>T-0650, E5: Bilder aus dem Testlauf automatisch auf sichtbare Fehler prüfen – schwarzes Bild, einfarbiges Bild (Welt oder Kamera fehlt),
-/// leuchtend pinke Flächen (fehlende Texturen oder Materialien) und starke Abweichung vom Bild desselben Schritts im Vergleichslauf (z. B. Figur fehlt).
+/// leuchtend pinke Flächen (so zeigen Godot und Unity fehlende Materialien; Unreals graues Schachbrett wird nicht erkannt) und starke Abweichung vom Bild
+/// desselben Schritts im Vergleichslauf (nur ein Hinweis: eine kleine fehlende Figur bleibt darunter, eine andere Kameralage kann darüber liegen).
 /// Jeder Befund nennt Bild und Messwert. Reine Pixel-Messung, keine KI: Flackern misst der Testspieler-Bot im Spiel selbst (TRENDO-FLACKERN).</summary>
 public static class GameShotCheck
 {
@@ -55,7 +56,7 @@ public static class GameShotCheck
         else if (st.Spread < FlatSpread)
             f.Add(new(label, file, "einfarbig", false, $"Bild ist einfarbig (Schwankung {st.Spread.ToString("0.#", De)}) – Welt oder Kamera fehlt?", st.Spread));
         if (st.PinkShare > PinkLimit)
-            f.Add(new(label, file, "textur", false, $"{(st.PinkShare * 100).ToString("0.#", De)} % leuchtend pinke Fläche – typisch für fehlende Texturen oder Materialien", st.PinkShare));
+            f.Add(new(label, file, "textur", false, $"{(st.PinkShare * 100).ToString("0.#", De)} % leuchtend pinke Fläche – so zeigen Godot und Unity fehlende Materialien (Hinweis)", st.PinkShare));
         if (f.Count == 0)
             f.Add(new(label, file, "ok", true, $"unauffällig (Helligkeit {st.Mean.ToString("0", De)}, Schwankung {st.Spread.ToString("0", De)})", st.Mean));
         return f;
@@ -82,7 +83,7 @@ public static class GameShotCheck
         try
         {
             var share = Changed(Vision.Load(now), Vision.Load(before));
-            return share > ChangedLimit ? new(label, now, "abweichung", false, $"weicht stark vom Vergleichslauf ab ({(share * 100).ToString("0", De)} % der Fläche) – fehlt etwas, zum Beispiel die Figur?", share) : null;
+            return share > ChangedLimit ? new(label, now, "abweichung", false, $"weicht stark vom Vergleichslauf ab ({(share * 100).ToString("0", De)} % der Fläche) – bitte ansehen (Hinweis, kein Nachweis)", share) : null;
         }
         catch (Exception e) when (e is IOException or InvalidOperationException or UnauthorizedAccessException or InvalidDataException) { return null; }
     }

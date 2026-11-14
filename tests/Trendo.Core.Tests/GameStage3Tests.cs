@@ -212,7 +212,8 @@ public class GameStage3Tests : IDisposable
         });
         var titles = GameReferences.Candidates("- Stardew Valley (2016)\n2. Celeste\n* Garten\nErfundenes Spiel XY\nStardew Valley");
         Assert.Equal(["Stardew Valley", "Celeste", "Garten", "Erfundenes Spiel XY"], titles);
-        var refs = await GameReferences.Verify(web, titles);
+        var check = await GameReferences.Verify(web, titles); var refs = check.Refs;
+        Assert.True(check.Reached);
         Assert.Equal(["Stardew Valley", "Celeste (video game)"], refs.Select(r => r.Title));
         Assert.All(refs, r => Assert.StartsWith("https://", r.Url));
         Assert.All(refs, r => Assert.Contains("wikipedia.org", r.Url));
@@ -221,7 +222,7 @@ public class GameStage3Tests : IDisposable
     [Fact(DisplayName = "D5: Lässt sich nichts belegen, bleibt die Liste leer; gespeicherte Einträge ohne Beleg werden nie gezeigt")]
     public async Task References_none()
     {
-        var refs = await GameReferences.Verify(new FakeWeb([]), GameReferences.Candidates("keine"));
+        var refs = (await GameReferences.Verify(new FakeWeb([]), GameReferences.Candidates("Erfunden"))).Refs;
         Assert.Empty(refs);
         var d = new JsonObject();
         GameReferences.Store(d, refs, new DateTime(2026, 11, 14));
@@ -229,5 +230,53 @@ public class GameStage3Tests : IDisposable
         d["references"] = new JsonArray(new JsonObject { ["title"] = "Ohne Quelle", ["url"] = "" }, new JsonObject { ["title"] = "Http", ["url"] = "http://x.example" });
         Assert.Empty(GameReferences.Read(d));
         Assert.Null(GameReferences.FromSummary("Spiel", Summary("Spiel", "Videospiel", "de").Replace("de.wikipedia.org", "evil.example"), "de"));
+        d["references"] = new JsonArray(new JsonObject { ["title"] = "Fremd", ["url"] = "https://evil.example/spiel" });
+        Assert.Empty(GameReferences.Read(d)); // nur Wikipedia gilt als Beleg, auch in fremden Spielständen
+    }
+
+    sealed class DownWeb : IWebFetch { public Task<WebReply> GetAsync(string url, CancellationToken ct = default) => throw new HttpRequestException("offline"); }
+
+    [Fact(DisplayName = "D5: Brettspiel, Film und Spielereihe gelten nicht als Beleg; Titel mit Gedankenstrich bleiben ganz; ohne Netz „nicht erreicht“")]
+    public async Task References_strict()
+    {
+        Assert.Null(GameReferences.FromSummary("Carcassonne", Summary("Carcassonne", "Brettspiel für 2–5 Personen", "de"), "de"));
+        Assert.Null(GameReferences.FromSummary("Warcraft", Summary("Warcraft", "Film von Duncan Jones nach der Computerspielreihe", "de"), "de"));
+        Assert.Null(GameReferences.FromSummary("Final Fantasy", Summary("Final Fantasy", "video game series", "en"), "en"));
+        Assert.Equal(["Star Wars – Knights of the Old Republic"], GameReferences.Candidates("Star Wars – Knights of the Old Republic"));
+        var down = await GameReferences.Verify(new DownWeb(), ["Stardew Valley"]);
+        Assert.False(down.Reached); Assert.Empty(down.Refs);
+    }
+
+    [Fact(DisplayName = "E6: Echtes Unreal-Protokoll mit mehreren WAGEN-Zeilen behält Strecke und Tempo; Boden −1 fehlt; Rauschen nahe 0 ist keine Verschlechterung")]
+    public void Real_log_values()
+    {
+        const string real = """
+            LogTrendo: Display: TRENDO-BODEN Gegner geht=ja Abstand Füße–Boden=0.5 cm
+            LogTrendo: Display: TRENDO-WAGEN gesteuert=ja Klasse=TrendoCar Tempo=38 km/h Strecke=27.4 m Raddrehung=900° (Reifen drehen sich) Gang=3 Neigung max=4°
+            LogTrendo: Display: TRENDO-AUFPRALL Bilanz: 0 Aufprall(e), stärkster 0 km/h, Wagen-Schaden 0 %, überfahren 0
+            LogTrendo: Display: TRENDO-WAGEN ausgestiegen, Figur=sichtbar
+            LogTrendo: Display: TRENDO-OK Spiel läuft
+            """;
+        var v = GameRuns.Values(real);
+        Assert.Equal(27.4, v["WAGEN.Strecke"]); Assert.Equal(38, v["WAGEN.Tempo"]); Assert.Equal(0.5, v["BODEN.Boden"]);
+        Assert.False(GameRuns.Values(real.Replace("Füße–Boden=0.5", "Füße–Boden=-1.0")).ContainsKey("BODEN.Boden"));
+        var a = RunOf(real, 5, new DateTime(2026, 11, 14, 10, 0, 0));
+        var b = RunOf(real.Replace("Füße–Boden=0.5", "Füße–Boden=0.8"), 5, new DateTime(2026, 11, 14, 11, 0, 0));
+        Assert.Empty(GameRuns.Compare(a, b).Changes);
+        var c = RunOf(real.Replace("Strecke=27.4", "Strecke=3.0"), 5, new DateTime(2026, 11, 14, 12, 0, 0));
+        Assert.Contains(GameRuns.Compare(a, c).Changes, x => x.What == "WAGEN.Strecke" && x.Worse);
+    }
+
+    [Fact(DisplayName = "E1: Bericht älter als der letzte Bau gilt nicht als geprüft; „Engine erkannt“ ist erledigt, nicht geprüft")]
+    public void Stale_report()
+    {
+        var dir = Path.Combine(_dir, "Spiel-Godot2"); Directory.CreateDirectory(Path.Combine(dir, "Trendo-Pruefung"));
+        var project = Path.Combine(dir, "project.godot"); File.WriteAllText(project, "");
+        var report = Path.Combine(dir, "Trendo-Pruefung", "bericht.txt"); File.WriteAllText(report, "d\nGodot A: ✓ ok");
+        File.SetLastWriteTimeUtc(report, DateTime.UtcNow.AddMinutes(-5)); File.SetLastWriteTimeUtc(project, DateTime.UtcNow);
+        Assert.True(GameEngineSetup.Stale("godot", dir, report));
+        var s = GameEngineSetup.Of("godot", Found(false, true), dir, File.ReadAllText(report), stale: true);
+        Assert.Equal("check", s.Action); Assert.Contains("älter", s.Steps[2].Evidence);
+        Assert.Equal(GameEngineSetup.Done, s.Steps[0].State);
     }
 }

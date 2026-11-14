@@ -36,7 +36,7 @@ public partial class MainWindow
         }
     }
 
-    bool _refBusy; string _refNote = ""; string _svcMsg = "";
+    bool _refBusy, _engineBusy; string _refNote = ""; string _svcMsg = "";
 
     // ───────────── D5: Ähnliche Spiele ─────────────
 
@@ -47,7 +47,9 @@ public partial class MainWindow
         try
         {
             var (text, ki) = await GameAsk(GameReferences.Instructions(), GameReferences.Prompt(d.Data));
-            var refs = await GameReferences.Verify(GameRefFetchOverride ?? (_opt.Isolated ? new NoWeb() : RefHttp), GameReferences.Candidates(text));
+            var check = await GameReferences.Verify(GameRefFetchOverride ?? (_opt.Isolated ? new NoWeb() : RefHttp), GameReferences.Candidates(text));
+            if (!check.Reached) { _refNote = "⚠ Wikipedia ist nicht erreichbar – nichts geprüft, die bisherigen Einträge bleiben."; return; }
+            var refs = check.Refs;
             d.Edit("Ähnliche Spiele", x => GameReferences.Store(x, refs, DateTime.Now));
             _core.Audit.Append(Principal.LocalOwner.Name, "game.referenzen", refs.Count.ToString(CultureInfo.InvariantCulture));
             _refNote = refs.Count > 0 ? $"{refs.Count} belegte Titel, vorgeschlagen von {ki}, geprüft über Wikipedia." : "";
@@ -84,10 +86,10 @@ public partial class MainWindow
     {
         var engine = GameTools.Decide(d.Data, GameToolsHere()).Engine;
         var dir = GameEngineSetup.ProjectDir(engine, d.Text("built"), d.Text("unityProject"), d.Text("godotProject"));
-        string? report = null;
+        string? report = null; var stale = false;
         if (dir is not null && engine != "browser" && Path.Combine(dir, "Trendo-Pruefung", "bericht.txt") is var f && File.Exists(f))
-            try { report = File.ReadAllText(f); } catch (IOException) { }
-        return GameEngineSetup.Of(engine, GameEnginesSeen(), dir, report);
+            try { report = File.ReadAllText(f); stale = GameEngineSetup.Stale(engine, dir, f); } catch (IOException) { }
+        return GameEngineSetup.Of(engine, GameEnginesSeen(), dir, report, stale);
     }
 
     void GameEngineNext(ProgramDocument d, GameEngineSetup.Status s)
@@ -99,7 +101,18 @@ public partial class MainWindow
             case "create": ProgramRun(GK, () => GameToEngine(d, s.Engine)); break;
             case "check":
                 if (s.Engine == "unreal") _ = GameUnrealCheck(d);
-                else ProgramRun(GK, () => GameEngineTest(d, s.Engine));
+                else
+                {
+                    // Engine-Tests dauern bis zu einer Stunde: im Hintergrund, die Seite bleibt bedienbar
+                    if (_engineBusy) return;
+                    _engineBusy = true; _progMsg[GK] = $"{GameTools.NameOf(s.Engine)} öffnet und baut das Projekt … das dauert einige Minuten."; Show(GK);
+                    _ = Task.Run(() =>
+                    {
+                        try { GameEngineTest(d, s.Engine); }
+                        catch (Exception e) when (e is IOException or InvalidOperationException or UnauthorizedAccessException or System.ComponentModel.Win32Exception) { _progMsg[GK] = e.Message; }
+                        finally { _engineBusy = false; _ui.Post(() => { if (CurrentView == GK) Show(GK); }); }
+                    });
+                }
                 break;
         }
     }
@@ -121,7 +134,7 @@ public partial class MainWindow
         {
             sp.Children.Add(new TextBlock { Name = "game-engine-next", Text = "Nächster Schritt: " + next, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap });
             var label = s.Action switch { "install" => "Offizielle Seite öffnen", "build" => "Bauen", "create" => "Projekt anlegen", _ => "Öffnen und bauen prüfen" };
-            var b = Act("game-engine-next-go", label, () => GameEngineNext(d, s), true); b.IsEnabled = !(s.Action == "check" && s.Engine == "unreal" && UnrealBusy);
+            var b = Act("game-engine-next-go", label, () => GameEngineNext(d, s), true); b.IsEnabled = !(s.Action == "check" && (s.Engine == "unreal" ? UnrealBusy : _engineBusy));
             sp.Children.Add(b);
         }
         else sp.Children.Add(new TextBlock { Name = "game-engine-next", Text = "Alles geprüft.", Foreground = Brush.Parse("#2FBF71"), FontSize = 12 });
@@ -139,35 +152,50 @@ public partial class MainWindow
 
     public static string GameRunsDir(string built) => Path.Combine(built, "Trendo-Pruefung", "laeufe");
 
-    /// <summary>Nach dem Startlauf: Bilder prüfen, Lauf speichern, mit dem vorigen vergleichen. Liefert Berichtszeilen und Auffälliges für das Board.</summary>
-    internal (List<string> Lines, List<string> Tasks) GameRunRecord(string built, string log, IReadOnlyList<string> args, int seed, IEnumerable<(string Path, string Label)> shots)
+    public sealed record RunOutcome(List<string> Lines, List<string> Tasks, bool Hard, GameRuns.Comparison? Comparison);
+
+    /// <summary>Nach dem Startlauf: Bilder dieses Laufs prüfen (nur ab <paramref name="since"/> geschriebene), Lauf speichern, mit dem vorigen vergleichen.
+    /// Hard: ein Bild ist schwarz oder einfarbig – dann gilt der Lauf nicht als bestanden. Fehler beim Speichern enden als Berichtszeile.</summary>
+    internal RunOutcome GameRunRecord(string built, string log, IReadOnlyList<string> args, int seed, IEnumerable<(string Path, string Label)> shots, DateTime since, bool withShots)
     {
-        var lines = new List<string>(); var tasks = new List<string>();
-        var list = shots.ToList();
-        var root = GameRunsDir(built);
-        var before = GameRuns.List(root).FirstOrDefault();
-        // E5: jedes Bild prüfen, dazu gegen das Bild desselben Schritts im vorigen Lauf
-        var findings = new List<GameShotCheck.Finding>();
-        foreach (var (path, label) in list)
+        var lines = new List<string>(); var tasks = new List<string>(); var hard = false; GameRuns.Comparison? c = null;
+        try
         {
-            findings.AddRange(GameShotCheck.Check(label, path).Where(f => !f.Ok));
-            if (before is not null && before.Seed == seed && before.Shots.TryGetValue(label, out var old) && GameShotCheck.AgainstBefore(label, path, old) is { } hint) findings.Add(hint);
+            var list = withShots ? shots.Where(s => File.GetLastWriteTime(s.Path) >= since).ToList() : [];
+            var root = GameRunsDir(built);
+            var before = GameRuns.List(root).FirstOrDefault();
+            // E5: jedes Bild prüfen, dazu gegen das Bild desselben Schritts im vorigen Lauf
+            var findings = new List<GameShotCheck.Finding>();
+            foreach (var (path, label) in list)
+            {
+                findings.AddRange(GameShotCheck.Check(label, path).Where(f => !f.Ok));
+                if (before is not null && before.Seed == seed && before.Shots.TryGetValue(label, out var old) && GameShotCheck.AgainstBefore(label, path, old) is { } hint) findings.Add(hint);
+            }
+            if (withShots && before is not null)
+                foreach (var label in before.Shots.Keys.Where(k => list.All(s => s.Label != k)))
+                    findings.Add(new(label, "", "fehlt", false, "Bild fehlt in diesem Lauf (im Vergleichslauf vorhanden) – der Lauf kam vielleicht nicht bis zu diesem Schritt", double.NaN));
+            hard = findings.Any(f => f.Kind is "schwarz" or "einfarbig");
+            if (withShots)
+            {
+                lines.Add(findings.Count == 0 ? $"✓ Bildprüfung: {list.Count} Bilder unauffällig" : $"{(hard ? "✗" : "⚠")} Bildprüfung: {findings.Count} Befund(e) in {list.Count} Bildern");
+                foreach (var f in findings)
+                {
+                    lines.Add($"  {(f.Kind is "schwarz" or "einfarbig" ? "✗" : "⚠")} {f.Shot}{(f.File.Length > 0 ? $" ({Path.GetFileName(f.File)})" : "")}: {f.Text}");
+                    tasks.Add($"Bild {f.Shot}: " + f.Kind switch { "schwarz" => "schwarzes Bild", "einfarbig" => "einfarbiges Bild", "textur" => "fehlende Materialien?", "fehlt" => "fehlt im Lauf", "abweichung" => "weicht vom Vergleichslauf ab", _ => "nicht lesbar" }); // ohne Messwert: kein neuer Eintrag je Lauf
+                }
+            }
+            // E6: Lauf festhalten und vergleichen
+            var now = GameRuns.From(log, seed, "unreal", args, list);
+            var saved = GameRuns.Save(root, now);
+            lines.Add($"Lauf {Path.GetFileName(saved)} gespeichert (Startwert {seed})");
+            if (before is null) { lines.Add("  Erster Lauf – beim nächsten Lauf vergleicht Trendo die Messwerte."); return new(lines, tasks, hard, null); }
+            c = GameRuns.Compare(before, now);
+            lines.Add(!c.Comparable ? $"Vergleich mit {before.Id}: {c.Note}" : c.Changes.Count == 0 ? $"✓ Vergleich mit {before.Id}: keine Veränderung" : $"{(c.Worse > 0 ? "⚠" : "•")} Vergleich mit {before.Id}: {c.Worse} Verschlechterung(en), {c.Changes.Count} Veränderung(en)");
+            foreach (var ch in c.Changes.Take(12)) lines.Add($"  {(ch.Worse ? "⚠" : "•")} {ch.What}: {ch.Before} → {ch.After}");
+            tasks.AddRange(c.Changes.Where(x => x.Worse).Select(x => $"Verschlechterung: {x.What}"));
         }
-        if (list.Count > 0)
-        {
-            lines.Add(findings.Count == 0 ? $"✓ Bildprüfung: {list.Count} Bilder unauffällig" : $"⚠ Bildprüfung: {findings.Count} Befund(e) in {list.Count} Bildern");
-            foreach (var f in findings) { lines.Add($"  ⚠ {f.Shot} ({Path.GetFileName(f.File)}): {f.Text}"); tasks.Add($"Bild {f.Shot}: {f.Text}"); }
-        }
-        // E6: Lauf festhalten und vergleichen
-        var now = GameRuns.From(log, seed, "unreal", args, list);
-        var saved = GameRuns.Save(root, now);
-        lines.Add($"Lauf {Path.GetFileName(saved)} gespeichert (Startwert {seed})");
-        if (before is null) { LastRunComparison = null; lines.Add("  Erster Lauf – beim nächsten Lauf vergleicht Trendo die Messwerte."); return (lines, tasks); }
-        var c = GameRuns.Compare(before, now); LastRunComparison = c;
-        lines.Add(!c.Comparable ? $"Vergleich mit {before.Id}: {c.Note}" : c.Changes.Count == 0 ? $"✓ Vergleich mit {before.Id}: keine Veränderung" : $"{(c.Worse > 0 ? "⚠" : "•")} Vergleich mit {before.Id}: {c.Worse} Verschlechterung(en), {c.Changes.Count} Veränderung(en)");
-        foreach (var ch in c.Changes.Take(12)) lines.Add($"  {(ch.Worse ? "⚠" : "•")} {ch.What}: {ch.Before} → {ch.After}");
-        tasks.AddRange(c.Changes.Where(x => x.Worse).Select(x => $"Verschlechterung {x.What}: {x.Before} → {x.After}"));
-        return (lines, tasks);
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException) { lines.Add("⚠ Lauf nicht gespeichert: " + e.Message); }
+        return new(lines, tasks, hard, c);
     }
 
     Control GameRunsPanel(ProgramDocument d)

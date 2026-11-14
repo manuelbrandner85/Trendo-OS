@@ -28,16 +28,23 @@ public static partial class GameRuns
     [GeneratedRegex(@"TRENDO-([A-ZÄÖÜ]+)\b(.*)$")] private static partial Regex Tag();
     [GeneratedRegex(@"([A-Za-zÄÖÜäöüß]+)=(-?\d+(?:\.\d+)?)")] private static partial Regex Pair();
 
-    /// <summary>Messwerte aus dem Protokoll: je TRENDO-Art die letzte Zeile, daraus jedes „Name=Zahl“ als „ART.Name“.</summary>
+    /// <summary>Messwerte aus dem Protokoll: jedes „Name=Zahl“ jeder TRENDO-Zeile als „ART.Name“; kommt ein Name öfter vor, gilt der letzte Wert.
+    /// Alle Zeilen einer Art zählen, denn manche Arten schreiben mehrere Zeilen (z. B. TRENDO-WAGEN „gesteuert=…“ und danach „ausgestiegen“).
+    /// Sonderwert −1 bei BODEN.Boden heißt „kein Boden getroffen“ und fehlt darum.</summary>
     public static SortedDictionary<string, double> Values(string log)
     {
-        var last = new Dictionary<string, string>();
-        foreach (var raw in (log ?? "").Split('\n'))
-            if (Tag().Match(raw.Trim()) is { Success: true } m) last[m.Groups[1].Value] = m.Groups[2].Value;
         var v = new SortedDictionary<string, double>(StringComparer.Ordinal);
-        foreach (var (tag, rest) in last)
-            foreach (Match p in Pair().Matches(rest))
-                if (double.TryParse(p.Groups[2].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var d)) v[$"{tag}.{p.Groups[1].Value}"] = d;
+        foreach (var raw in (log ?? "").Split('\n'))
+        {
+            if (Tag().Match(raw.Trim()) is not { Success: true } m) continue;
+            var tag = m.Groups[1].Value;
+            foreach (Match p in Pair().Matches(m.Groups[2].Value))
+                if (double.TryParse(p.Groups[2].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var d))
+                {
+                    var key = $"{tag}.{p.Groups[1].Value}";
+                    if (key == "BODEN.Boden" && d < 0) v.Remove(key); else v[key] = d;
+                }
+        }
         return v;
     }
 
@@ -77,7 +84,18 @@ public static partial class GameRuns
             ["shots"] = shots,
         };
         File.WriteAllText(Path.Combine(dir, "lauf.json"), o.ToJsonString(Opt));
+        Prune(root, Keep);
         return dir;
+    }
+
+    /// <summary>So viele Läufe bleiben liegen; ältere werden mit ihren Bildern entfernt.</summary>
+    public const int Keep = 20;
+
+    static void Prune(string root, int keep)
+    {
+        foreach (var r in List(root).Skip(keep))
+            try { var dir = Path.Combine(root, r.Id); if (File.Exists(Path.Combine(dir, "lauf.json"))) Directory.Delete(dir, true); }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
     }
 
     /// <summary>Gespeicherte Läufe, neueste zuerst; beschädigte werden übersprungen. Bildpfade zeigen auf die Kopien im Laufordner.</summary>
@@ -103,10 +121,11 @@ public static partial class GameRuns
         return [.. list.OrderByDescending(r => r.At).ThenByDescending(r => r.Id, StringComparer.Ordinal)];
     }
 
-    /// <summary>Messwerte mit bekannter Richtung: true = größer ist besser, false = näher an 0 ist besser. Andere Werte werden nur als „verändert“ gezeigt.</summary>
-    static readonly Dictionary<string, bool> Direction = new(StringComparer.Ordinal)
+    /// <summary>Messwerte mit bekannter Richtung: true = größer ist besser, false = näher an 0 ist besser, dazu die kleinste Änderung, die zählt
+    /// (Messrauschen bei Werten nahe 0). Andere Werte werden nur als „verändert“ gezeigt.</summary>
+    static readonly Dictionary<string, (bool Up, double Min)> Direction = new(StringComparer.Ordinal)
     {
-        ["WAGEN.Strecke"] = true, ["WAGEN.Tempo"] = true, ["BODEN.Boden"] = false,
+        ["WAGEN.Strecke"] = (true, 1.0), ["WAGEN.Tempo"] = (true, 2.0), ["BODEN.Boden"] = (false, 1.0),
     };
 
     static string Num(double v) => double.IsNaN(v) ? "–" : v.ToString("0.##", CultureInfo.GetCultureInfo("de-DE"));
@@ -133,8 +152,9 @@ public static partial class GameRuns
             var x = before.Values.GetValueOrDefault(k, double.NaN); var y = now.Values.GetValueOrDefault(k, double.NaN);
             if (double.IsNaN(x) && double.IsNaN(y)) continue;
             if (double.IsNaN(x) != double.IsNaN(y)) { ch.Add(new(k, Num(x), Num(y), comparable && double.IsNaN(y) && Direction.ContainsKey(k))); continue; }
-            if (Math.Abs(x - y) <= Math.Max(1e-9, Math.Abs(x) * tolerance)) continue;
-            var worse = comparable && Direction.TryGetValue(k, out var up) && (up ? y < x : Math.Abs(y) > Math.Abs(x));
+            var known = Direction.TryGetValue(k, out var dir);
+            if (Math.Abs(x - y) <= Math.Max(known ? dir.Min : 1e-9, Math.Abs(x) * tolerance)) continue;
+            var worse = comparable && known && (dir.Up ? y < x : Math.Abs(y) > Math.Abs(x));
             ch.Add(new(k, Num(x), Num(y), worse));
         }
         return new(comparable, comparable ? "gleicher Startwert und gleiche Eingaben" : "nicht vergleichbar: " + string.Join(", ", why), ch);

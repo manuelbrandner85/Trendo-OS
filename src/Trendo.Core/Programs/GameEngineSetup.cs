@@ -60,8 +60,22 @@ public static partial class GameEngineSetup
         return (false, "Für den Browser gibt es keinen Engine-Bericht");
     }
 
+    /// <summary>Ist der Bericht älter als die Projektdatei (nach erneutem Bauen oder Anlegen)?</summary>
+    public static bool Stale(string engine, string? dir, string reportFile)
+    {
+        if (dir is null || !File.Exists(reportFile)) return false;
+        var marker = engine switch
+        {
+            "unreal" => Directory.EnumerateFiles(dir, "*.uproject").FirstOrDefault(),
+            "unity" => Path.Combine(dir, "Packages", "manifest.json"),
+            "godot" => Path.Combine(dir, "project.godot"),
+            _ => null,
+        };
+        return marker is not null && File.Exists(marker) && File.GetLastWriteTimeUtc(marker) > File.GetLastWriteTimeUtc(reportFile);
+    }
+
     /// <summary>Stand für die gewählte Engine. found: Ergebnis der Erkennung; reportText: Inhalt von Trendo-Pruefung/bericht.txt oder null.</summary>
-    public static Status Of(string engine, IReadOnlyList<EngineFound> found, string? projectDir, string? reportText)
+    public static Status Of(string engine, IReadOnlyList<EngineFound> found, string? projectDir, string? reportText, bool stale = false)
     {
         var name = GameTools.NameOf(engine);
         var steps = new List<Step>();
@@ -74,12 +88,13 @@ public static partial class GameEngineSetup
         }
         var e = found.FirstOrDefault(f => f.Id == engine);
         var installed = e is { Installed: true };
-        steps.Add(new("erkannt", "Engine erkannt", installed ? Checked : Open, installed ? $"{e!.Name} {e.Version} – {Path.GetFileName(e.Exe ?? "")}".Trim() : "nicht auf diesem PC gefunden"));
+        steps.Add(new("erkannt", "Engine erkannt", installed ? Done : Open, installed ? $"{e!.Name} {e.Version} – {Path.GetFileName(e.Exe ?? "")}".Trim() : "nicht auf diesem PC gefunden"));
         var project = HasProject(engine, projectDir);
         steps.Add(new("projekt", "Projekt angelegt", project ? Done : Open, project ? Path.GetFileName(projectDir!.TrimEnd('/', '\\')) : "noch kein Projekt"));
+        if (stale) reportText = null; // Bericht älter als der letzte Bau: der neue Stand ist nicht geprüft
         var (ok, summary) = project && reportText is { Length: > 0 } ? ReadReport(engine, reportText) : (false, "");
         steps.Add(new("pruefung", "Öffnen und Bauen", !project || reportText is null ? Open : ok ? Checked : Failed,
-            !project ? "erst nach dem Projekt" : reportText is null ? "noch nicht geprüft" : summary));
+            !project ? "erst nach dem Projekt" : reportText is null ? (stale ? "Bericht ist älter als der letzte Bau" : "noch nicht geprüft") : summary));
 
         // Genau ein nächster Schritt, in dieser Reihenfolge
         var source = EngineTargets.Engines.FirstOrDefault(x => x.Id == engine).Source;
