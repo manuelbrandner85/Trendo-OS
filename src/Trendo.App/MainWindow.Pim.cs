@@ -224,7 +224,7 @@ public partial class MainWindow
             shown++;
             var b = new Button { Name = $"inbox-item-{i}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(8, 5), Background = InboxOpenUid == uid ? Accent : Brushes.Transparent,
                 Content = new StackPanel { Children = {
-                    new TextBlock { Text = (_settings.MailFlagged.Contains(uid) ? "• " : "") + (h.Subject.Length > 0 ? h.Subject : "(ohne Betreff)") + (threadOf?.GetValueOrDefault(uid) is > 1 and var tc ? $"  ({tc})" : ""), Foreground = Text, FontWeight = h.Seen ? FontWeight.Normal : FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
+                    new TextBlock { Text = (_settings.MailFlagged.Contains(uid) ? "★ " : "") + (h.Subject.Length > 0 ? h.Subject : "(ohne Betreff)") + (threadOf?.GetValueOrDefault(uid) is > 1 and var tc ? $"  ({tc})" : ""), Foreground = Text, FontWeight = h.Seen ? FontWeight.Normal : FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
                     new TextBlock { Text = $"{h.From} · {(h.Date is { } d ? d.LocalDateTime.ToString("dd.MM. HH:mm", De) : "")}{(cat is null ? "" : $"  [{cat}]")}", Foreground = Muted, FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis } } } };
             b.Click += async (_, _) => { await OpenInboxMail(uid); InboxOpenUid = uid; _composeOpen = false; _sentOpen = null; Show("posteingang"); };
             list.Children.Add(b);
@@ -274,7 +274,7 @@ public partial class MainWindow
                     var at = m.Attachments[k];
                     var risky = Browsers.Risky(at.Name);
                     var saveAtt = Act($"inbox-att-{k}", "Speichern", () => MailSaveAttachment(at), !risky);
-                    att.Children.Add(new WrapPanel { Children = { P($"{at.Name} · {(at.Size >= 1 << 20 ? $"{at.Size / (double)(1 << 20):0.0} MB" : $"{Math.Max(1, at.Size / 1024)} KB")}{(risky ? " · Programmdatei – nur speichern, wenn du dem Absender vertraust" : "")}", risky ? Brush.Parse("#FACC15") : null, 11.5), new Border { Width = 6 }, saveAtt } });
+                    att.Children.Add(new WrapPanel { Children = { P($"{at.Name} · {(at.Size >= 1 << 20 ? $"{at.Size / (double)(1 << 20):0.0} MB" : $"{Math.Max(1, at.Size / 1024)} KB")}{(risky ? " · ⚠ Programmdatei – nur speichern, wenn du dem Absender vertraust" : "")}", risky ? Brush.Parse("#FACC15") : null, 11.5), new Border { Width = 6 }, saveAtt } });
                 }
                 read.Children.Add(new Border { Background = Brush.Parse("#14FFFFFF"), CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 6), Child = att });
             }

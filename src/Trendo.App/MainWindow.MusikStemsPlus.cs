@@ -127,7 +127,7 @@ public partial class MainWindow
         MusicSong Add(string file, string title, string kind, bool voice) => Songs.Add(new MusicSong { Title = $"{root.Title} – {title}", Style = root.Style, Lyrics = voice ? root.Lyrics : "[Instrumental]",
             Language = root.Language, Seconds = Math.Round(alone.Seconds, 2), Bpm = root.Bpm, Key = root.Key, TimeSignature = root.TimeSignature, File = file, Kind = kind, ParentId = root.Id });
         var made = new List<MusicSong> { Add(fa, label, "spur-" + stemId, stemId == "gesang"), Add(fr, "ohne " + label, "ohne-" + stemId, stemId != "gesang" && !string.IsNullOrWhiteSpace(root.Lyrics)) };
-        _msSel = made[0].Id; _msMsg = $"„{label}“ allein und „ohne {label}“ sind jetzt eigene Lieder.";
+        _msSel = made[0].Id; _msMsg = $"✓ „{label}“ allein und „ohne {label}“ sind jetzt eigene Lieder.";
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.spur.geholt", $"{root.Id} {stemId}");
         Show(MS);
         return made;
@@ -151,7 +151,7 @@ public partial class MainWindow
         if (r.Notes.Count == 0) { _msMsg = $"In der Spur „{label}“ wurden keine Noten erkannt."; Show(MS); return null; }
         await File.WriteAllBytesAsync(mid, PianoRoll.ToMidi(AudioToMidi.ToSong(r, root.Bpm ?? 120, $"{root.Title} – {label}")));
         await File.WriteAllTextAsync(Path.Combine(dir, $"{stemId} – Unsicherheitsbericht.md"), AudioToMidi.Report($"{root.Title} – {label}", r));
-        _msMsg = $"MIDI „{label}“: {r.Notes.Count} Noten{(NotenReady ? $" (basic-pitch, {r.PolyphonicShare:P0} mehrstimmig)" : r.Exact ? "" : " (geschätzt – mehrstimmig, siehe Unsicherheitsbericht)")} – {Path.GetFileName(mid)} im Spuren-Ordner.";
+        _msMsg = $"✓ MIDI „{label}“: {r.Notes.Count} Noten{(NotenReady ? $" (basic-pitch, {r.PolyphonicShare:P0} mehrstimmig)" : r.Exact ? "" : " (geschätzt – mehrstimmig, siehe Unsicherheitsbericht)")} – {Path.GetFileName(mid)} im Spuren-Ordner.";
         Show(MS);
         return mid;
     }

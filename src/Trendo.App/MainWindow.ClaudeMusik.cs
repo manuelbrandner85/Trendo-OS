@@ -38,7 +38,7 @@ public partial class MainWindow
         if (page == "sendung" && s.Kind == "feld") return ClaudeLivePreview(s);
         if (page == MB) return ClaudeMediaPreview(s);
         if (page != MS || s.Kind != "feld" || s.Value is not { Length: > 0 } v || MsSelected is not { } song) return null;
-        TextBlock Warn(string t) => new() { Name = "claude-plan-warn", Text = "So nicht möglich: " + t, Foreground = Brush.Parse("#FFF8B26A"), FontSize = 12, TextWrapping = TextWrapping.Wrap };
+        TextBlock Warn(string t) => new() { Name = "claude-plan-warn", Text = "⚠ So nicht möglich: " + t, Foreground = Brush.Parse("#FFF8B26A"), FontSize = 12, TextWrapping = TextWrapping.Wrap };
         var bpm = song.Analysis?.Bpm ?? song.Bpm ?? 0; var meter = song.Analysis?.Meter ?? song.TimeSignature;
         switch (s.Target)
         {

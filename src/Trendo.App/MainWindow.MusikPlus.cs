@@ -50,7 +50,7 @@ public partial class MainWindow
         foreach (var n in _msGenres.ToList())
         {
             var g = MusicGenres.Find(n);
-            var b = new Button { Name = "ms-genre-x-" + Slug(n), Content = "" + n + "  ×", FontSize = 11.5, Padding = new Thickness(8, 2), Margin = new Thickness(0, 0, 4, 4), CornerRadius = new CornerRadius(10), Background = Accent, Foreground = Brushes.White, BorderThickness = new Thickness(0) };
+            var b = new Button { Name = "ms-genre-x-" + Slug(n), Content = "✓ " + n + "  ×", FontSize = 11.5, Padding = new Thickness(8, 2), Margin = new Thickness(0, 0, 4, 4), CornerRadius = new CornerRadius(10), Background = Accent, Foreground = Brushes.White, BorderThickness = new Thickness(0) };
             if (g is not null) ToolTip.SetTip(b, $"{g.Group} · üblich {g.BpmLow}–{g.BpmHigh} BPM · {g.Instruments}");
             var nn = n; b.Click += (_, _) => { sync(); _msGenres.Remove(nn); Show(MS); };
             chosen.Children.Add(b);
@@ -211,7 +211,7 @@ public partial class MainWindow
         var traits = System.Text.RegularExpressions.Regex.Replace(text.Replace("\n", " "), System.Text.RegularExpressions.Regex.Escape(a), "", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
         traits = string.Join(", ", traits.Split(',', ';').Select(t => t.Trim(' ', '.', '"', '„', '“')).Where(t => t.Length > 1).Take(12));
         if (_msPro) _msStyle = (_msStyle.Trim().Length > 0 ? _msStyle.TrimEnd(' ', ',') + ", " : "") + traits; else _msDesc = (_msDesc.Trim().Length > 0 ? _msDesc.TrimEnd(' ', ',') + ", " : "") + traits;
-        _msMsg = "Stilmerkmale eingesetzt" + (facts.Length > 0 ? " – aus dem Web nachgeschlagen" : "") + ", ohne Namen: die Musik-KI ahmt niemanden nach.";
+        _msMsg = "✓ Stilmerkmale eingesetzt" + (facts.Length > 0 ? " – aus dem Web nachgeschlagen" : "") + ", ohne Namen: die Musik-KI ahmt niemanden nach.";
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.stil", "merkmale");
         Show(MS);
         return traits;

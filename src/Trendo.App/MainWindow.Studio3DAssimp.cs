@@ -20,7 +20,7 @@ public partial class MainWindow
         var outFile = Path.Combine(Folder3D, "umgewandelt", Path.GetFileNameWithoutExtension(file) + ".glb");
         var exe = Environment.ProcessPath ?? "TrendoOS";
         var (ok, msg) = AssimpConvert.Convert(exe, AssimpDll ?? "", file, outFile, run: AssimpRunOverride ?? (_opt.Isolated ? (_, _, _) => new Cli.Result(-1, "", "Testmodus: assimp wird nicht gestartet.") : null));
-        _assimpMsg = ok ? $"Umgewandelt: {Path.GetFileName(outFile)} (im Ordner 3D/umgewandelt)" : "⚠ " + msg; _assimpLast = ok ? outFile : _assimpLast;
+        _assimpMsg = ok ? $"✓ Umgewandelt: {Path.GetFileName(outFile)} (im Ordner 3D/umgewandelt)" : "⚠ " + msg; _assimpLast = ok ? outFile : _assimpLast;
         _core.Audit.Append(Principal.LocalOwner.Name, "3d.assimp.umwandeln", ok ? Path.GetFileName(file) : "fehler");
         Show("3d");
     }

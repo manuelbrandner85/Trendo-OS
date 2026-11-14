@@ -19,22 +19,22 @@ public partial class MainWindow
     public async Task ScanOpen3d(string mode, int n)
     {
         if (_scanModel is null || !File.Exists(_scanModel)) { _scanStatus = "Noch kein Modell."; Show("scan3d"); return; }
-        if (mode is not ("glaetten" or "vereinfachen") || mode == "glaetten" && n is < 1 or > 50 || mode == "vereinfachen" && n is < 100 or > 5_000_000) { _scanStatus = "Ungültige Einstellung."; Show("scan3d"); return; }
+        if (mode is not ("glaetten" or "vereinfachen") || mode == "glaetten" && n is < 1 or > 50 || mode == "vereinfachen" && n is < 100 or > 5_000_000) { _scanStatus = "⚠ Ungültige Einstellung."; Show("scan3d"); return; }
         var dir = Path.GetDirectoryName(_scanModel)!; var tmp = Path.Combine(dir, "open3d-ergebnis.obj");
         _scanStatus = mode == "glaetten" ? "Wird geglättet …" : "Wird vereinfacht …"; Show("scan3d");
         Cli.Result r;
         if (Open3dRunOverride is { } o) r = o(mode, _scanModel, tmp, n);
         else r = await KiPyRun(KiRuntime.ScanNetz, [mode, _scanModel, tmp, n.ToString(System.Globalization.CultureInfo.InvariantCulture)], 600_000);
-        if (!r.Ok || !File.Exists(tmp)) { _scanStatus = "Open3D: " + Short(r.Err.Length > 0 ? r.Err : r.Out); TryDelete(tmp); Show("scan3d"); return; }
+        if (!r.Ok || !File.Exists(tmp)) { _scanStatus = "⚠ Open3D: " + Short(r.Err.Length > 0 ? r.Err : r.Out); TryDelete(tmp); Show("scan3d"); return; }
         try { var result = Mesh3D.ReadMeshFile(tmp); ScanEdit(mode == "glaetten" ? $"Geglättet ({n}×, Open3D)" : $"Vereinfacht (Open3D)", _ => result); }
-        catch (Exception e) when (e is IOException or InvalidDataException or FormatException) { _scanStatus = "Ergebnis nicht lesbar: " + e.Message; Show("scan3d"); }
+        catch (Exception e) when (e is IOException or InvalidDataException or FormatException) { _scanStatus = "⚠ Ergebnis nicht lesbar: " + e.Message; Show("scan3d"); }
         finally { TryDelete(tmp); }
     }
 
     async Task ScanOpen3dSetup()
     {
         _scanStatus = "Open3D wird eingerichtet (einmalig, ca. 400 MB) …"; Show("scan3d");
-        try { await KiPyInstall(Open3dModel, KiPyApps.For(KiRuntime.ScanNetz)!); _scanStatus = "Open3D ist eingerichtet."; }
+        try { await KiPyInstall(Open3dModel, KiPyApps.For(KiRuntime.ScanNetz)!); _scanStatus = "✓ Open3D ist eingerichtet."; }
         catch (Exception e) when (e is InvalidOperationException or IOException or HttpRequestException or OperationCanceledException) { _scanStatus = "Einrichten ging nicht: " + e.Message; }
         Show("scan3d");
     }

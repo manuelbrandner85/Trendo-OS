@@ -37,7 +37,7 @@ public partial class MainWindow
             else missing.Add("Tonart und Tempo (keine Messung – mit eigener Aufnahme unter Schritt 2 genau)");
         MsCoverTaken = taken;
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.cover.vorlage", h.Mbid);
-        _msMsg = $"„{h.Title}“ als Vorlage übernommen: {string.Join(", ", taken)}." + (missing.Count > 0 ? $" Noch offen: {string.Join(", ", missing)}." : "") + " Jetzt links „Erstellen“ – Melodie und Text entstehen neu, ein Cover fremder Lieder nur privat nutzen.";
+        _msMsg = $"✓ „{h.Title}“ als Vorlage übernommen: {string.Join(", ", taken)}." + (missing.Count > 0 ? $" Noch offen: {string.Join(", ", missing)}." : "") + " Jetzt links „Erstellen“ – Melodie und Text entstehen neu, ein Cover fremder Lieder nur privat nutzen.";
         CwSay(_msMsg);
     }
 }

@@ -631,7 +631,7 @@ public partial class MainWindow
         {
             var box = new StackPanel { Spacing = 4, Children = { H("Rechtschreibung", 13) } };
             if (_spelling is null) box.Children.Add(P("Das deutsche Wörterbuch fehlt. Es kommt mit dem Trendo-Vollpaket (LibreOffice-Paket) – unter „Zusatzprogramme“ einrichten.", null, 11));
-            else if (_txMistakes.Count == 0) box.Children.Add(P("Keine Fehler gefunden", Brush.Parse("#4ADE80"), 12));
+            else if (_txMistakes.Count == 0) box.Children.Add(P("Keine Fehler gefunden ✓", Brush.Parse("#4ADE80"), 12));
             else
             {
                 box.Children.Add(P($"{_txMistakes.Count} unbekannte Wörter – rot unterstrichen.", null, 11));
@@ -674,7 +674,7 @@ public partial class MainWindow
     {
         var hints = TextHints();
         var box = new StackPanel { Name = "text-assist-panel", Spacing = 6, Children = { H("Schreibhilfe", 13) } };
-        if (hints.Count == 0) { box.Children.Add(P("Keine Vorschläge – der Text sieht gut aus", Brush.Parse("#4ADE80"), 12)); return box; }
+        if (hints.Count == 0) { box.Children.Add(P("Keine Vorschläge – der Text sieht gut aus ✓", Brush.Parse("#4ADE80"), 12)); return box; }
         box.Children.Add(P($"{hints.Count} Vorschläge · „Ja“ ändert die Stelle (Rückgängig mit Strg+Z), „Nein“ wird gemerkt.", Muted, 11));
         var items = hints.Select(h => (new Trendo.Core.Assist.Suggestion(h.Key, h.Title, h.Detail, h.Kind switch { "rechtschreibung" => "ABC", "lang" => "📏", "fuellwort" => "✂", "anfuehrung" => "„“", _ => "✎" }),
             (Action)(() =>

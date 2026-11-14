@@ -82,7 +82,7 @@ public partial class MainWindow
             _core.Secrets.Set(OpenRouterService.SecretName, key);
             KiSourceSettings.Update(_core.DataRoot, s => { if (!s.Cloud.Contains("openrouter")) s.Cloud.Insert(0, "openrouter"); });
             _core.Audit.Append(Principal.LocalOwner.Name, "ki.cloud.key", "openrouter");
-            _orKeyDraft = ""; _orMsg = "Verbunden. Die kostenlosen Internet-KIs stehen bereit.";
+            _orKeyDraft = ""; _orMsg = "✓ Verbunden. Die kostenlosen Internet-KIs stehen bereit.";
             return true;
         }
         finally { _orBusy = false; Show("ki-internet"); }
@@ -136,7 +136,7 @@ public partial class MainWindow
         var setup = new StackPanel { Name = "or-setup", Spacing = 6 };
         if (OpenRouterReady)
         {
-            setup.Children.Add(new TextBlock { Text = "OpenRouter ist verbunden", Foreground = Brush.Parse("#4ADE80"), FontSize = 14, FontWeight = FontWeight.SemiBold });
+            setup.Children.Add(new TextBlock { Text = "✓ OpenRouter ist verbunden", Foreground = Brush.Parse("#4ADE80"), FontSize = 14, FontWeight = FontWeight.SemiBold });
             var rm = new Button { Name = "or-key-remove", Content = "Schlüssel entfernen" };
             rm.Click += (_, _) => { OpenRouterRemoveKey(); Show("ki-internet"); };
             setup.Children.Add(rm);
@@ -196,7 +196,7 @@ public partial class MainWindow
             foreach (var m in inArea.Take(8))
             {
                 var on = chosen?.Id == m.Id;
-                var use = new Button { Name = "or-use-" + area.GetHashCode().ToString("x") + "-" + m.Id.Replace('/', '-').Replace(':', '-').Replace('.', '-'), Content = on ? "genutzt" : "Nutzen", Background = on ? Accent : Brushes.Transparent, Padding = new Thickness(8, 2) };
+                var use = new Button { Name = "or-use-" + area.GetHashCode().ToString("x") + "-" + m.Id.Replace('/', '-').Replace(':', '-').Replace('.', '-'), Content = on ? "✓ genutzt" : "Nutzen", Background = on ? Accent : Brushes.Transparent, Padding = new Thickness(8, 2) };
                 var ar = area; var id = m.Id;
                 use.Click += (_, _) => { KiSourceSettings.Update(_core.DataRoot, s => s.OpenRouterModels[ar] = id); Show("ki-internet"); };
                 list.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = {

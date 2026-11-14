@@ -31,11 +31,11 @@ public class W5_SmallBusiness_Ui
         w.Money.Add(new(new DateOnly(DateTime.Today.Year, 1, 5), "Auftrag", 1190m, "Einnahmen", 19m));
         w.Show("finanzen");
         Assert.Equal("1000", w.Find<TextBox>("fin-ku-cur").Text);
-        Assert.StartsWith("Ja", W6Ui.Run(w, "fin-ku"));
+        Assert.StartsWith("✓ Ja", W6Ui.Run(w, "fin-ku"));
         Assert.Contains("Vorjahresumsatz über 25.000 €", W6Ui.Run(w, "fin-ku", ("prev", "30000")));
         Assert.Contains("Gründungsjahr", W6Ui.Run(w, "fin-ku", ("cur", "26000"), ("new", "j")));
         w.Show("business");
-        Assert.StartsWith("Nein", W6Ui.Run(w, "biz-ku", ("cur", "100001")));
+        Assert.StartsWith("✗ Nein", W6Ui.Run(w, "biz-ku", ("cur", "100001")));
         w.Close();
     }
 }

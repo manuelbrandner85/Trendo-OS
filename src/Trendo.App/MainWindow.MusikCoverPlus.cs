@@ -74,7 +74,7 @@ public partial class MainWindow
             Songs.Update(s.Id, x => x.CoverVideo = clip);
             if (old.Length > 0 && old != clip && File.Exists(old) && Path.GetDirectoryName(old) == dir) { TryDelete(old); TryDelete(GenVideo.ProvenancePath(old)); }
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.cover.bewegt", $"{s.Id} s{seed}");
-            _msMsg = $"Bewegtes Cover fertig: {Path.GetFileName(clip)} – Schleife 1080 × 1080, Herkunftsnachweis daneben.";
+            _msMsg = $"✓ Bewegtes Cover fertig: {Path.GetFileName(clip)} – Schleife 1080 × 1080, Herkunftsnachweis daneben.";
             return clip;
         }
         finally { TryDelete(raw); _msMotionBusy = false; Show(MS); }

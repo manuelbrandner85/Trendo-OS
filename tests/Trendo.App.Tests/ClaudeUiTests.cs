@@ -13,13 +13,13 @@ public class Claude_Ui
     static Task<ClaudeCode.Status> St(bool inst, bool on) => Task.FromResult(inst ? new ClaudeCode.Status(true, on, on ? "claude.ai" : "", on ? "max" : "", @"C:\x\claude.exe") : ClaudeCode.Status.Missing);
     static async Task Run(Task t) { while (!t.IsCompleted) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); await Task.Delay(20); } await t; }
 
-    [AvaloniaFact(DisplayName = "T-0316: Claude-Karte – nicht installiert → „Claude Code einrichten“, nicht angemeldet → „Mit Claude verbinden“, verbunden → „Mit deinem Claude-Abo verbunden (Max)“")]
+    [AvaloniaFact(DisplayName = "T-0316: Claude-Karte – nicht installiert → „Claude Code einrichten“, nicht angemeldet → „Mit Claude verbinden“, verbunden → „✓ Mit deinem Claude-Abo verbunden (Max)“")]
     public async Task Card_states()
     {
         var (w, _, _) = Ui.Open();
         try
         {
-            foreach (var (inst, on, button, text) in new[] { (false, false, "claude-install", "nicht installiert"), (true, false, "claude-connect", "nicht angemeldet"), (true, true, (string?)null, "Mit deinem Claude-Abo verbunden (Max)") })
+            foreach (var (inst, on, button, text) in new[] { (false, false, "claude-install", "nicht installiert"), (true, false, "claude-connect", "nicht angemeldet"), (true, true, (string?)null, "✓ Mit deinem Claude-Abo verbunden (Max)") })
             {
                 MainWindow.ClaudeStatusOverride = () => St(inst, on);
                 await Run(w.ClaudeCheck(true));

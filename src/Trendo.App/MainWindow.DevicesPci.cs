@@ -16,7 +16,7 @@ public partial class MainWindow
         using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(2) };
         var (ok, msg) = await PciIds.DownloadAsync(PciFetchOverride ?? http.GetStreamAsync, _core.DataRoot);
         _core.Audit.Append(Principal.LocalOwner.Name, "deps.download", "pci.ids " + PciIds.Commit[..8] + (ok ? "" : " (fehlgeschlagen)"));
-        if (ok) await ScanDevicesAsync(); else _devMsg = "" + msg;
+        if (ok) await ScanDevicesAsync(); else _devMsg = "⚠ " + msg;
         Show("geraete");
     }
 

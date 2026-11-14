@@ -96,13 +96,13 @@ public partial class MainWindow
         var result = PodResult(d); var p = PodProductOf(d);
         var preview = PodPreview(d, p, result);
         var info = new StackPanel { Name = "pod-check", Spacing = 6 };
-        if (d.Text("motif").Length > 0 && !File.Exists(d.Text("motif"))) info.Children.Add(P("Die Motiv-Datei wurde nicht gefunden: " + IoPath.GetFileName(d.Text("motif")), Brush.Parse("#F5A524"), 12));
+        if (d.Text("motif").Length > 0 && !File.Exists(d.Text("motif"))) info.Children.Add(P("⚠ Die Motiv-Datei wurde nicht gefunden: " + IoPath.GetFileName(d.Text("motif")), Brush.Parse("#F5A524"), 12));
         if (result is null) info.Children.Add(P("Wähle ein Motiv, dann prüft Trendo die Druckqualität. Ein Bild erzeugst du auch über die Zeile ganz oben.", Muted, 12));
         else
         {
-            info.Children.Add(H(result.Level switch { PodLevel.Gut => "Druckdatei passt", PodLevel.Pruefen => "Bitte prüfen", _ => "So nicht drucken" }, 14));
+            info.Children.Add(H(result.Level switch { PodLevel.Gut => "✓ Druckdatei passt", PodLevel.Pruefen => "Bitte prüfen", _ => "So nicht drucken" }, 14));
             info.Children.Add(P($"{result.Dpi.ToString("0", De)} DPI · Motiv {result.PrintedWidthCm.ToString("0.#", De)} × {result.PrintedHeightCm.ToString("0.#", De)} cm auf {p.PrintWidthCm.ToString("0.#", De)} × {p.PrintHeightCm.ToString("0.#", De)} cm Druckbereich", Text, 12));
-            foreach (var f in result.Findings) info.Children.Add(P((f.Level == PodLevel.Problem ? "• " : "") + f.Text, Brush.Parse(f.Level == PodLevel.Problem ? "#FF6B6B" : "#F5A524"), 12));
+            foreach (var f in result.Findings) info.Children.Add(P((f.Level == PodLevel.Problem ? "✕ " : "⚠ ") + f.Text, Brush.Parse(f.Level == PodLevel.Problem ? "#FF6B6B" : "#F5A524"), 12));
             info.Children.Add(P("Die Druckbereiche sind Richtwerte. Die genauen Maße nennt der Anbieter je Artikel.", Muted, 11));
         }
         sp.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("340,16,*"), Children = { preview, Pos(info, 2) } });
@@ -184,7 +184,7 @@ public partial class MainWindow
         sp.Children.Add(PodField(d, "motifText", "Text oder Name des Motivs, z. B. der Spruch auf dem Shirt"));
         var hits = PodLegal.MarkHits($"{d.Text("motifText")} {d.Title} {d.Text("description")} {d.Text("tags")}");
         sp.Children.Add(new TextBlock { Name = "pod-marks", TextWrapping = TextWrapping.Wrap, FontSize = 12, Foreground = Brush.Parse(hits.Count > 0 ? "#FF6B6B" : "#3DDC84"),
-            Text = hits.Count > 0 ? "Bekannte Marke oder Figur gefunden: " + string.Join(", ", hits) : "Keine der häufigsten Marken gefunden. Das heißt nicht, dass der Text frei ist. Bitte im Register suchen." });
+            Text = hits.Count > 0 ? "✕ Bekannte Marke oder Figur gefunden: " + string.Join(", ", hits) : "Keine der häufigsten Marken gefunden. Das heißt nicht, dass der Text frei ist. Bitte im Register suchen." });
         var dpma = new Button { Name = "pod-dpma", Content = "Deutsche Marken suchen (DPMA)", Padding = new Thickness(12, 5) };
         dpma.Click += (_, _) => Launch(PodLegal.DpmaSearch);
         var euipo = new Button { Name = "pod-euipo", Content = "EU-Marken suchen (EUIPO)", Padding = new Thickness(12, 5) };

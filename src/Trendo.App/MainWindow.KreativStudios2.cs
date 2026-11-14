@@ -650,7 +650,7 @@ public partial class MainWindow
         go.Classes.Add("accent");
         go.Click += (_, _) => _ = ImgGenerate(d);
         sp.Children.Add(KrCard(new StackPanel { Spacing = 8, Children = { box, new WrapPanel { Children = { go, new TextBlock { Text = $"Stil: {style.Label} · Format: {fmt.Label}", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0) } } } } }, "img-card"));
-        if (ImageAiKit.Blocked(d.Text("prompt")) is { } why && d.Text("prompt").Length > 0) sp.Children.Add(P("" + why, Brush.Parse("#F5A524"), 12));
+        if (ImageAiKit.Blocked(d.Text("prompt")) is { } why && d.Text("prompt").Length > 0) sp.Children.Add(P("⚠ " + why, Brush.Parse("#F5A524"), 12));
         var imgs = ImgList(d).Where(p => KreativSafe.LocalFile(p, KreativSafe.MaxImageBytes)).Reverse().ToList();
         var gallery = new WrapPanel { Name = "img-gallery" };
         foreach (var p in imgs.Take(48))

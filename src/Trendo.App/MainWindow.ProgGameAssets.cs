@@ -29,7 +29,7 @@ public partial class MainWindow
         _gaQuery = query;
         if (_core.Offline || (_opt.Isolated && BibHttpOverride is null)) { _gaMsg = "Offline – die Suche braucht Internet."; Show(GK); return; }
         try { _gaHits = await GameAssets.SearchGodot(GaHttp, query); _gaMsg = _gaHits.Count == 0 ? "Nichts gefunden." : $"{_gaHits.Count} Treffer in der Godot Asset Library."; }
-        catch (Exception ex) when (ex is HttpRequestException or IOException or TaskCanceledException or System.Text.Json.JsonException) { _gaMsg = "" + ex.Message; }
+        catch (Exception ex) when (ex is HttpRequestException or IOException or TaskCanceledException or System.Text.Json.JsonException) { _gaMsg = "⚠ " + ex.Message; }
         Show(GK);
     }
 
@@ -41,9 +41,9 @@ public partial class MainWindow
             foreach (var f in Directory.GetFiles(dir, "*.*", SearchOption.AllDirectories).Where(f => GameAssets.IsImage(f) || GameAssets.IsSound(f) || f.EndsWith(".glb", StringComparison.OrdinalIgnoreCase)).Take(60))
                 _gaPending.Add((f, "Godot Asset Library", hit.License, hit.Author, $"https://godotengine.org/asset-library/asset/{hit.Id}"));
             _core.Audit.Append(Principal.LocalOwner.Name, "spiele.asset.download", $"Godot {hit.Id} ({hit.License})");
-            _gaMsg = $"„{hit.Title}“ geladen – unten die Dateien einer Verwendung zuordnen.";
+            _gaMsg = $"✓ „{hit.Title}“ geladen – unten die Dateien einer Verwendung zuordnen.";
         }
-        catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidDataException or System.Text.Json.JsonException or KeyNotFoundException) { _gaMsg = "" + ex.Message; }
+        catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidDataException or System.Text.Json.JsonException or KeyNotFoundException) { _gaMsg = "⚠ " + ex.Message; }
         Show(GK);
     }
 
@@ -84,7 +84,7 @@ public partial class MainWindow
         });
         _gaPending.RemoveAll(p => p.File == file);
         _core.Audit.Append(Principal.LocalOwner.Name, "spiele.asset.verwendet", $"{Path.GetFileName(file)} als {use} ({license})");
-        _gaMsg = $"{Path.GetFileName(file)}: {GameAssets.Uses.First(u => u.Id == use).Label}.";
+        _gaMsg = $"✓ {Path.GetFileName(file)}: {GameAssets.Uses.First(u => u.Id == use).Label}.";
     }
 
     private Control GameAssetsView(ProgramDocument d)
@@ -137,7 +137,7 @@ public partial class MainWindow
             sp.Children.Add(new DockPanel { Children = { Dk(Act($"game-asset-del-{i}", "✕", () => ProgramRun(GK, () => d.Edit("Asset entfernen", x => (x["assets"] as JsonArray)?.RemoveAt(idx)))), Avalonia.Controls.Dock.Right),
                 P($"{a["name"].AsText()} · {GameAssets.Uses.FirstOrDefault(u => u.Id == a["use"].AsText()).Label} · {a["source"].AsText()} · {a["license"].AsText()}" + (a["author"].AsText() is { Length: > 0 } au ? " · " + au : ""), Text, 12) } });
         }
-        foreach (var w in GameAssets.Check(d.Data, commercial: true)) sp.Children.Add(P("" + w, Brush.Parse("#F5A524"), 12));
+        foreach (var w in GameAssets.Check(d.Data, commercial: true)) sp.Children.Add(P("⚠ " + w, Brush.Parse("#F5A524"), 12));
         if (GameAssets.Credits(d.Data) is { Length: > 0 } credits)
             sp.Children.Add(new TextBox { Name = "game-asset-credits", Text = credits, IsReadOnly = true, TextWrapping = TextWrapping.Wrap, FontSize = 11, MaxHeight = 160 });
         return sp;

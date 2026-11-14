@@ -73,7 +73,7 @@ public partial class MainWindow
     private Control WorkflowsView()
     {
         var left = new StackPanel { Spacing = 6, Children = { P("Abläufe erledigen Wiederkehrendes von allein. „Probelauf“ zeigt vorher, was passieren würde – ohne etwas zu ändern.", null, 12) } };
-        if (LastWfError is { } err) left.Children.Add(new TextBlock { Name = "wf-error", Text = "Ein geplanter Ablauf ist fehlgeschlagen – " + err, Foreground = Brush.Parse("#FACC15"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
+        if (LastWfError is { } err) left.Children.Add(new TextBlock { Name = "wf-error", Text = "⚠ Ein geplanter Ablauf ist fehlgeschlagen – " + err, Foreground = Brush.Parse("#FACC15"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
         var tpl = new WrapPanel();
         foreach (var (id, name, make) in WorkflowEngine.Templates)
         {
@@ -234,10 +234,10 @@ public partial class MainWindow
         var probe = _wfProbeId == w.Id ? _wfProbe : null; var probing = _wfProbing && _wfProbeId == w.Id;
         (string? Text, string Color) Badge(int i)
         {
-            if (probing) return i == _wfProbeStep ? ("wird geprüft …", "#FACC15") : i < _wfProbeStep ? ("geprüft", "#86EFAC") : (null, "");
+            if (probing) return i == _wfProbeStep ? ("wird geprüft …", "#FACC15") : i < _wfProbeStep ? ("✓ geprüft", "#86EFAC") : (null, "");
             if (probe is null) return (null, "");
             var r = probe.Steps.FirstOrDefault(x => x.Step == i);
-            return r is null ? ("– nicht erreicht", "#94A3B8") : r.Ok ? ("" + r.Summary, r.Count == 0 ? "#CBD5E1" : "#86EFAC") : ("" + r.Summary, "#FCA5A5");
+            return r is null ? ("– nicht erreicht", "#94A3B8") : r.Ok ? ("✓ " + r.Summary, r.Count == 0 ? "#CBD5E1" : "#86EFAC") : ("✕ " + r.Summary, "#FCA5A5");
         }
         var probeBtn = new Button { Name = "wf-probe", Content = probing ? "Probelauf läuft …" : "Probelauf mit Anzeige", IsEnabled = !probing, Background = Accent, Foreground = Brushes.White, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 0, 0, 10) };
         probeBtn.Click += async (_, _) => await WfProbeRun(w);

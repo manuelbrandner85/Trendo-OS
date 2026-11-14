@@ -94,7 +94,7 @@ public partial class MainWindow
             r = Cli.Run(cmd.Exe, cmd.Args, cmd.Cwd, 120000);
         }
         _core.Audit.Append(Principal.LocalOwner.Name, tests ? "code.test" : "code.run", $"{Path.GetFileName(root)} exit={r.Exit}");
-        _ceOut = (r.Ok ? "Fertig (Exit 0)\n" : $"Exit {r.Exit}\n") + (r.Out + "\n" + r.Err).Trim();
+        _ceOut = (r.Ok ? "✓ Fertig (Exit 0)\n" : $"✗ Exit {r.Exit}\n") + (r.Out + "\n" + r.Err).Trim();
         _ceTab = "ausgabe";
     }
 
@@ -169,7 +169,7 @@ public partial class MainWindow
         bar.Children.Add(Btn("ce-save", "Speichern", "Strg+S", () => CodeSave()));
         bar.Children.Add(Btn("ce-save-all", "Alle speichern", "Strg+Umschalt+S", () => CodeSave(true)));
         bar.Children.Add(Btn("ce-run", "Ausführen", "Aktive Datei starten (Python, JavaScript, PowerShell) oder dotnet run", () => CodeRun(false), true));
-        bar.Children.Add(Btn("ce-test", "Testen", "Tests des Projekts (dotnet build, node --test, unittest)", () => CodeRun(true)));
+        bar.Children.Add(Btn("ce-test", "✓ Testen", "Tests des Projekts (dotnet build, node --test, unittest)", () => CodeRun(true)));
         bar.Children.Add(Btn("ce-find", "Suchen", "In der Datei: Strg+F. Hier: im ganzen Projekt", () => _ceTab = "suche"));
         bar.Children.Add(Btn("ce-git", "Git", "Änderungen ansehen und als Stand speichern", () => _ceTab = "git"));
 

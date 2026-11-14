@@ -129,7 +129,7 @@ public partial class MainWindow
     {
         var project = LibProject(d, e);
         var built = GameLibrary.IsBuilt(project);
-        info.Children.Add(new TextBlock { Name = "lib-state", Text = built ? "Projekt vorhanden" : "Noch nicht auf diesem PC", Foreground = Muted, FontSize = 12 });
+        info.Children.Add(new TextBlock { Name = "lib-state", Text = built ? "✓ Projekt vorhanden" : "Noch nicht auf diesem PC", Foreground = Muted, FontSize = 12 });
         var main = new Button { Name = e.Kind == GameLibrary.Kind.Frei ? "lib-fetch" : "lib-build", Content = e.Kind == GameLibrary.Kind.Frei ? (built ? "Neu holen" : "Spiel holen") : (built ? "Weiterbauen lassen" : "Spiel bauen lassen"), Padding = new Thickness(14, 6) };
         if (!built) main.Classes.Add("accent");
         main.Click += async (_, _) => { if (e.Kind == GameLibrary.Kind.Frei) await LibFetch(d, e); else await LibSend(GameLibrary.BuildPrompt(e, project), project); };

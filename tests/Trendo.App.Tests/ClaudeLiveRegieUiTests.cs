@@ -44,7 +44,7 @@ public class ClaudeLiveRegie_Ui
             Assert.Contains("live-claude-szenen", calls[^1][1]);
             Assert.True(w.ClaudePlanPending());
             Assert.NotNull(w.TryFind<WrapPanel>("claude-plan-live"));
-            Assert.Contains(w.GetLogicalDescendantsText(), t => t.StartsWith("So nicht möglich") && t.Contains("drohne"));
+            Assert.Contains(w.GetLogicalDescendantsText(), t => t.StartsWith("⚠ So nicht möglich") && t.Contains("drohne"));
             Assert.Equal(4, w.LiveShowState.Scenes.Count); // noch nichts geändert
             w.Find<Button>("claude-plan-run").Press(); await Run(Task.Delay(150));
             var show = w.LiveShowState;

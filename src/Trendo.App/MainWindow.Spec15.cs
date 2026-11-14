@@ -29,7 +29,7 @@ public partial class MainWindow
     /// <summary>Für Tests: Uhrzeit der On-Air-Uhr (null = jetzt).</summary>
     public DateTime? BcClockOverride { get; set; }
 
-    void BcRun(Action a) { try { a(); } catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or FormatException or UnauthorizedAccessException) { _bcMsg = "" + ex.Message; } Show("sendung"); }
+    void BcRun(Action a) { try { a(); } catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or FormatException or UnauthorizedAccessException) { _bcMsg = "⚠ " + ex.Message; } Show("sendung"); }
 
     /// <summary>On-Air-Uhr nachziehen: was läuft, wie lange noch, was kommt.</summary>
     public void BcTick()
@@ -170,7 +170,7 @@ public partial class MainWindow
         LiveCalc(calcs, "bc-speak", "Sprechzeit", [("t", "Moderationstext", "", null), ("wpm", "Wörter pro Minute", "130", ["110", "130", "160"])],
             v => { var (w, t) = BroadcastPlus.SpeakingTime(v("t"), Fach.Num(v("wpm"))); return $"{w} Wörter → etwa {BroadcastDesk.Clock(t)}"; });
         LiveCalc(calcs, "bc-loud", "Lautheit", [("pf", "Plattform", "YouTube", [.. BroadcastPlus.LoudTargets.Keys]), ("lufs", "Gemessen (LUFS)", "-18", null), ("tp", "Spitze (dBTP)", "-6", null)],
-            v => { var l = BroadcastPlus.Loudness(v("pf"), Fach.Num(v("lufs")), Fach.Num(v("tp"))); return $"Ziel {Fach.F(l.Target, 0)} LUFS → {(l.Gain >= 0 ? "+" : "")}{Fach.F(l.Gain, 1)} dB · Spitze danach {Fach.F(l.PeakAfter, 1)} dBTP" + (l.Clips ? " · vorher Limiter einsetzen" : ""); });
+            v => { var l = BroadcastPlus.Loudness(v("pf"), Fach.Num(v("lufs")), Fach.Num(v("tp"))); return $"Ziel {Fach.F(l.Target, 0)} LUFS → {(l.Gain >= 0 ? "+" : "")}{Fach.F(l.Gain, 1)} dB · Spitze danach {Fach.F(l.PeakAfter, 1)} dBTP" + (l.Clips ? " · ⚠ vorher Limiter einsetzen" : ""); });
         LiveCalc(calcs, "bc-crop", "Hochkant-Ausschnitt", [("w", "Breite", "1920", null), ("h", "Höhe", "1080", null), ("ratio", "Ziel", "9:16", ["9:16", "4:5", "1:1"]), ("c", "Lage (%)", "50", null)],
             v => { var r = v("ratio").Split(':'); var c = BroadcastPlus.Crop((int)Fach.Num(v("w")), (int)Fach.Num(v("h")), (int)Fach.Num(r[0]), (int)Fach.Num(r[1]), Fach.Num(v("c"))); return $"Ausschnitt {c.W} × {c.H} px ab x = {c.X}, y = {c.Y} · ffmpeg/OBS: crop={c.W}:{c.H}:{c.X}:{c.Y}"; });
         LiveCalc(calcs, "bc-aspect", "Seitenverhältnis", [("w", "Breite", "1920", null), ("h", "Höhe", "1080", null)], v => { var a = BroadcastPlus.Aspect((int)Fach.Num(v("w")), (int)Fach.Num(v("h"))); return $"{a.W}:{a.H} – {a.Name}"; });
@@ -181,12 +181,12 @@ public partial class MainWindow
         sp.Children.Add(H("Wochenplan", 12));
         var week = new TextBox { Name = "bc-week-spec", AcceptsReturn = true, MinHeight = 54, Text = "Mo 20:00 60 Talk\nFr 18:00 45 Musik", TextWrapping = TextWrapping.Wrap };
         sp.Children.Add(P("Eine Sendung pro Zeile: Tag, Beginn, Minuten, Titel", null, 11)); sp.Children.Add(week);
-        sp.Children.Add(B("bc-week", "Zwei Wochen planen", () => { var (sl, c) = BroadcastPlus.Weekly(week.Text ?? "", DateTime.Today, 2); var p = Path.Combine(d, "wochenplan.csv"); File.WriteAllText(p, "Datum;Beginn;Ende;Sendung\n" + string.Concat(sl.Select(x => $"{x.Start:dd.MM.yyyy};{x.Start:HH:mm};{x.End:HH:mm};{x.Title}\n"))); _bcMsg = $"{sl.Count} Termine" + (c.Count == 0 ? " ohne Überschneidung" : " · " + string.Join(" · ", c)) + $" – gespeichert: {p}"; }));
+        sp.Children.Add(B("bc-week", "Zwei Wochen planen", () => { var (sl, c) = BroadcastPlus.Weekly(week.Text ?? "", DateTime.Today, 2); var p = Path.Combine(d, "wochenplan.csv"); File.WriteAllText(p, "Datum;Beginn;Ende;Sendung\n" + string.Concat(sl.Select(x => $"{x.Start:dd.MM.yyyy};{x.Start:HH:mm};{x.End:HH:mm};{x.Title}\n"))); _bcMsg = $"{sl.Count} Termine" + (c.Count == 0 ? " ohne Überschneidung" : " · ⚠ " + string.Join(" · ", c)) + $" – gespeichert: {p}"; }));
         sp.Children.Add(H("Untertitel verschieben", 12));
         var srt = Field("bc-srt-path", "SRT-Datei (.srt)", 150); sp.Children.Add(srt);
         var shift = new TextBox { Name = "bc-srt-shift", Text = "0", Width = 70 };
         sp.Children.Add(Row(P("Versatz in Sekunden (− = früher)", Text, 12), shift));
-        sp.Children.Add(B("bc-srt", "Kopie verschieben", () => { var f = Need(srt, "die SRT-Datei"); if (!File.Exists(f)) throw new IOException("Diese Datei gibt es nicht."); var (s2, n, p) = BroadcastPlus.ShiftSrt(File.ReadAllText(f), TimeSpan.FromSeconds(Fach.Num(shift.Text ?? "0"))); var o = Path.Combine(Path.GetDirectoryName(f) ?? ".", Path.GetFileNameWithoutExtension(f) + ".versetzt.srt"); File.WriteAllText(o, s2); _bcMsg = $"{n} Untertitel" + (p.Count == 0 ? "" : " · " + string.Join(" · ", p)) + $" – gespeichert: {o}"; }));
+        sp.Children.Add(B("bc-srt", "Kopie verschieben", () => { var f = Need(srt, "die SRT-Datei"); if (!File.Exists(f)) throw new IOException("Diese Datei gibt es nicht."); var (s2, n, p) = BroadcastPlus.ShiftSrt(File.ReadAllText(f), TimeSpan.FromSeconds(Fach.Num(shift.Text ?? "0"))); var o = Path.Combine(Path.GetDirectoryName(f) ?? ".", Path.GetFileNameWithoutExtension(f) + ".versetzt.srt"); File.WriteAllText(o, s2); _bcMsg = $"{n} Untertitel" + (p.Count == 0 ? "" : " · ⚠ " + string.Join(" · ", p)) + $" – gespeichert: {o}"; }));
         return sp;
     }
     /// <summary>T-0203: schreibt die OBS-Szenensammlung zur aktuellen Sendung.</summary>

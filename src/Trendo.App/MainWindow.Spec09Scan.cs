@@ -62,7 +62,7 @@ public partial class MainWindow
             photos.Children.Add(new TextBlock { Name = "scan-count", Text = $"{rep.Count} Fotos · {rep.Bytes / 1048576.0:0.#} MB" + (rep.Largest is { } lg ? $" · bis {lg.W} × {lg.H} Pixel" : ""), Foreground = rep.Ready ? Brush.Parse("#22B35E") : Brush.Parse("#F97316"), FontWeight = FontWeight.SemiBold });
             var wi = 0;
             foreach (var w in rep.Warnings) photos.Children.Add(new TextBlock { Name = $"scan-warn-{wi++}", Text = "⚠ " + w, Foreground = Brush.Parse("#F5A524"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
-            if (rep.Count > 0 && rep.Warnings.Count == 0) photos.Children.Add(P("Gute Serie – los geht's mit „Modell rechnen“.", Brush.Parse("#22B35E"), 11.5));
+            if (rep.Count > 0 && rep.Warnings.Count == 0) photos.Children.Add(P("✓ Gute Serie – los geht's mit „Modell rechnen“.", Brush.Parse("#22B35E"), 11.5));
             var thumbs = new WrapPanel { Name = "scan-thumbs" }; var ti = 0;
             foreach (var f in rep.Files.Take(24))
             {

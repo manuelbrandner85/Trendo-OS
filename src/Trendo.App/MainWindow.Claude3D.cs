@@ -93,12 +93,12 @@ public partial class MainWindow
     {
         if (s.Kind != "feld" || s.Target != F3DParts || s.Value is not { Length: > 0 } v) return null;
         var (parts, err) = Parse3DParts(v);
-        if (parts is null) return new TextBlock { Name = "claude-plan-warn", Text = "So nicht möglich: " + err, Foreground = Brush.Parse("#FFF8B26A"), FontSize = 12, TextWrapping = TextWrapping.Wrap };
+        if (parts is null) return new TextBlock { Name = "claude-plan-warn", Text = "⚠ So nicht möglich: " + err, Foreground = Brush.Parse("#FFF8B26A"), FontSize = 12, TextWrapping = TextWrapping.Wrap };
         var view = new CadView { Name = "claude-plan-3d", Width = 300, Height = 200, IsHitTestVisible = false, Parts = parts.Select(p => (p.Color, PartSolid(p), false)).ToList(),
             Looks = parts.Select(p => p.Material is { } m ? (Studio3DPro.MaterialOf(m).Metallic, Studio3DPro.MaterialOf(m).Roughness, Studio3DPro.MaterialOf(m).Transmission) : (0.0, 0.5, 0.0)).ToList() };
         var bs = parts.Select(Bounds3D).ToList();
         var size = $"{N(bs.Max(b => b.Max.X) - bs.Min(b => b.Min.X))} × {N(bs.Max(b => b.Max.Y) - bs.Min(b => b.Min.Y))} × {N(bs.Max(b => b.Max.Z) - bs.Min(b => b.Min.Z))} cm";
-        var floating = bs.Min(b => b.Min.Z) > 0.5 ? " · schwebt über dem Boden" : "";
+        var floating = bs.Min(b => b.Min.Z) > 0.5 ? " · ⚠ schwebt über dem Boden" : "";
         return new StackPanel { Spacing = 2, Children = { new Border { CornerRadius = new CornerRadius(8), ClipToBounds = true, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left, Child = view },
             new TextBlock { Name = "claude-plan-3d-info", Text = $"{parts.Count} Teile · gesamt {size}{floating}", Foreground = ClaudeMuted, FontSize = 11.5 } } };
     }

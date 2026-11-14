@@ -105,7 +105,7 @@ public partial class MainWindow
 
         if (_imgOk is true)
         {
-            sp.Children.Add(new TextBlock { Name = "wiz-img-done", Text = "" + _imgStatus, Foreground = Brush.Parse("#4ADE80"), FontSize = 15, TextWrapping = TextWrapping.Wrap });
+            sp.Children.Add(new TextBlock { Name = "wiz-img-done", Text = "✓ " + _imgStatus, Foreground = Brush.Parse("#4ADE80"), FontSize = 15, TextWrapping = TextWrapping.Wrap });
             sp.Children.Add(H("So startest du Trendo OS", 16));
             sp.Children.Add(P("PC neu starten und gleich nach dem Einschalten mehrmals die Boot-Taste drücken, dann das Laufwerk wählen. Windows bleibt dabei unberührt – ohne Laufwerk startet der PC wie immer.", Text, 13));
             var keys = new WrapPanel { Name = "wiz-img-keys" };

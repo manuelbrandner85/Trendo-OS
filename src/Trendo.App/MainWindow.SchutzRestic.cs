@@ -26,7 +26,7 @@ public partial class MainWindow
         _resticMsg = "Wird verschlüsselt gesichert …"; Show("schutz");
         var dir = ResticDir; var run = ResticRunOverride; var r = _resticRepo;
         var (s, msg) = await Task.Run(() => ResticBackup.Backup(dir, r, password, paths, run));
-        _resticMsg = (s is null ? "• " : "") + msg + (s is not null ? " Passwort gut aufbewahren – ohne Passwort lässt sich die Sicherung nicht öffnen." : "");
+        _resticMsg = (s is null ? "⚠ " : "✓ ") + msg + (s is not null ? " Passwort gut aufbewahren – ohne Passwort lässt sich die Sicherung nicht öffnen." : "");
         _core.Audit.Append(Principal.LocalOwner.Name, "backup.restic", s is null ? "fehler" : $"Stand {s.SnapshotId[..Math.Min(8, s.SnapshotId.Length)]}");
         if (s is not null) ResticSnapshots = null;
         Show("schutz");
@@ -37,7 +37,7 @@ public partial class MainWindow
     {
         _resticRepo = repo.Trim().Trim('"'); var dir = ResticDir; var run = ResticRunOverride; var r = _resticRepo;
         var (l, msg) = await Task.Run(() => ResticBackup.Snapshots(dir, r, password, run));
-        ResticSnapshots = l; _resticMsg = (l is null ? "• " : "") + msg; Show("schutz");
+        ResticSnapshots = l; _resticMsg = (l is null ? "⚠ " : "") + msg; Show("schutz");
     }
 
     /// <summary>Stand in einen neuen Ordner „Wiederhergestellt/&lt;Datum&gt;“ zurückholen (öffentlich für Tests). Rückgabe: Zielordner oder null.</summary>
@@ -46,7 +46,7 @@ public partial class MainWindow
         var target = Path.Combine(WorkFolder("Wiederhergestellt"), $"{snap.Time.LocalDateTime:yyyy-MM-dd HHmm} ({snap.ShortId})");
         var dir = ResticDir; var run = ResticRunOverride; var repo = _resticRepo;
         var (ok, msg) = await Task.Run(() => ResticBackup.Restore(dir, repo, password, snap.Id, target, run, snap.Paths));
-        _resticMsg = (ok ? "• " : "") + msg; _core.Audit.Append(Principal.LocalOwner.Name, "backup.restic.restore", ok ? snap.ShortId : "fehler");
+        _resticMsg = (ok ? "✓ " : "⚠ ") + msg; _core.Audit.Append(Principal.LocalOwner.Name, "backup.restic.restore", ok ? snap.ShortId : "fehler");
         Show("schutz"); return ok ? target : null;
     }
 
@@ -58,7 +58,7 @@ public partial class MainWindow
         var (zip, m) = await YaraScan.FetchAsync(http.GetStreamAsync, ResticBackup.ZipUrl, ResticBackup.ZipSha256);
         var ok = zip is not null && ResticBackup.ExtractExe(zip, ResticDir);
         _core.Audit.Append(Principal.LocalOwner.Name, "deps.download", "restic " + ResticBackup.Version + (ok ? "" : " (fehlgeschlagen)"));
-        _resticMsg = ok ? "restic ist eingerichtet." : "Einrichten ging nicht: " + m;
+        _resticMsg = ok ? "✓ restic ist eingerichtet." : "⚠ Einrichten ging nicht: " + m;
         Show("schutz");
     }
 

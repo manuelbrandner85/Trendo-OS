@@ -74,7 +74,7 @@ public partial class MainWindow
         try { await ConnRun(gh, GitHubLink.LoginArgs, Path.GetTempPath(), GhEnv(), visible: true); }
         catch (Exception e) when (e is InvalidOperationException or System.ComponentModel.Win32Exception) { _connMsg = e.Message; }
         await GitHubCheck();
-        if (_ghUser is not null) _connMsg = $"Mit GitHub verbunden als {_ghUser}.";
+        if (_ghUser is not null) _connMsg = $"✓ Mit GitHub verbunden als {_ghUser}.";
         _core.Audit.Append(Principal.LocalOwner.Name, _ghUser is null ? "github.login.offen" : "github.login.ok", "");
         Show("verbindungen");
     }
@@ -136,7 +136,7 @@ public partial class MainWindow
         sp.Children.Add(P("Hier verbindest du Trendo mit GitHub und Netlify und verwaltest die Erweiterungen deines Claude Code. Jede Person hat ihre eigene Anmeldung; geändert oder hochgeladen wird nur nach deinem Ja.", Muted, 12.5));
         if (_connAsk is { } ask)
         {
-            var yes = Act("conn-yes", "Ja", () => { _ = ConnYes(); }, true); var no = Act("conn-no", "Abbrechen", () => { _connAsk = null; Show("verbindungen"); });
+            var yes = Act("conn-yes", "✓ Ja", () => { _ = ConnYes(); }, true); var no = Act("conn-no", "Abbrechen", () => { _connAsk = null; Show("verbindungen"); });
             sp.Children.Add(ConnCard("conn-ask", "Bitte bestätigen", P(ask.Text, Text, 13), ConnRow(yes, no)));
         }
         if (_connMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "conn-msg", Text = _connMsg, Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 6) });
@@ -144,7 +144,7 @@ public partial class MainWindow
         // GitHub
         if (!_ghChecked) { _ghChecked = true; _ = GitHubCheck().ContinueWith(_ => _ui.Post(() => { if (CurrentView == "verbindungen") Show("verbindungen"); })); }
         var gh = GhExe();
-        var ghState = new TextBlock { Name = "conn-gh-state", Text = gh is null ? "GitHub CLI ist noch nicht installiert." : _ghUser is { } u ? $"Angemeldet als {u}" : "Nicht angemeldet.",
+        var ghState = new TextBlock { Name = "conn-gh-state", Text = gh is null ? "GitHub CLI ist noch nicht installiert." : _ghUser is { } u ? $"✓ Angemeldet als {u}" : "Nicht angemeldet.",
             Foreground = _ghUser is not null ? Brush.Parse("#4ADE80") : Text, FontSize = 13, FontWeight = FontWeight.SemiBold };
         var ghRow = gh is null ? ConnRow(Act("conn-gh-install", "GitHub CLI einrichten", () => _ = GitHubInstall(), true))
             : _ghUser is null ? ConnRow(Act("conn-gh-login", "Mit GitHub anmelden", () => _ = GitHubLogin(), true), Act("conn-gh-check", "Neu prüfen", () => { _ = GitHubCheck().ContinueWith(_ => _ui.Post(() => Show("verbindungen"))); }))
@@ -154,7 +154,7 @@ public partial class MainWindow
 
         // Netlify
         var nl = Netlify; var nlOn = nl.Connected;
-        var nlState = new TextBlock { Name = "conn-nl-state", Text = nlOn ? "Verbunden – Webseiten veröffentlichst du im Claude-Chat mit „Netlify“." : "Nicht verbunden.", Foreground = nlOn ? Brush.Parse("#4ADE80") : Text, FontSize = 13, FontWeight = FontWeight.SemiBold };
+        var nlState = new TextBlock { Name = "conn-nl-state", Text = nlOn ? "✓ Verbunden – Webseiten veröffentlichst du im Claude-Chat mit „Netlify“." : "Nicht verbunden.", Foreground = nlOn ? Brush.Parse("#4ADE80") : Text, FontSize = 13, FontWeight = FontWeight.SemiBold };
         Control nlRow;
         if (nlOn) nlRow = ConnRow(Act("conn-nl-disconnect", "Trennen", () => ConnAsk("Netlify trennen? Der Zugangsschlüssel wird gelöscht; deine Seiten bleiben online.", () => { nl.Disconnect(); _connMsg = "Netlify getrennt."; _core.Audit.Append(Principal.LocalOwner.Name, "netlify.getrennt", ""); Show("verbindungen"); return Task.CompletedTask; })));
         else
@@ -162,7 +162,7 @@ public partial class MainWindow
             var tok = ConnBox("conn-nl-token", "Zugangsschlüssel einfügen", 320); tok.PasswordChar = '•';
             var save = Act("conn-nl-save", "Verbinden", () =>
             {
-                try { nl.Connect(tok.Text ?? ""); _connMsg = "Mit Netlify verbunden."; _core.Audit.Append(Principal.LocalOwner.Name, "netlify.verbunden", ""); }
+                try { nl.Connect(tok.Text ?? ""); _connMsg = "✓ Mit Netlify verbunden."; _core.Audit.Append(Principal.LocalOwner.Name, "netlify.verbunden", ""); }
                 catch (ArgumentException e) { _connMsg = e.Message; }
                 Show("verbindungen");
             }, true);
@@ -241,7 +241,7 @@ public partial class MainWindow
         var priv = new CheckBox { Name = "claude-github-private", Content = "Privat (nur du siehst es)", IsChecked = true, Foreground = ClaudeFg };
         sp.Children.Add(new TextBlock { Text = $"Trendo legt bei {_ghUser} ein neues Repo an und lädt „{chat.Title}“ hoch – ohne Trendo-Hilfsdateien (.trendo) und ohne Schlüsseldateien.", Foreground = ClaudeFg, FontSize = 12.5, TextWrapping = TextWrapping.Wrap });
         sp.Children.Add(name); sp.Children.Add(priv);
-        var yes = new Button { Name = "claude-github-yes", Content = "Ja, hochladen", FontSize = 12.5, Padding = new Thickness(12, 4), Margin = new Thickness(0, 4, 6, 0), Background = ClaudeAccent, Foreground = Brushes.White, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(0) };
+        var yes = new Button { Name = "claude-github-yes", Content = "✓ Ja, hochladen", FontSize = 12.5, Padding = new Thickness(12, 4), Margin = new Thickness(0, 4, 6, 0), Background = ClaudeAccent, Foreground = Brushes.White, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(0) };
         var no = new Button { Name = "claude-github-no", Content = "Abbrechen", FontSize = 12.5, Padding = new Thickness(12, 4), Margin = new Thickness(0, 4, 0, 0), Background = Brushes.Transparent, Foreground = ClaudeFg, BorderBrush = GlassEdge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8) };
         yes.Click += (_, _) => _ = ClaudeGitHubPush(dock, chat, name.Text ?? "", priv.IsChecked == true);
         no.Click += (_, _) => { if (_chatUis.TryGetValue(dock, out var ui)) { ui.Panel = null; RenderChat(dock); } };
@@ -287,7 +287,7 @@ public partial class MainWindow
         }
         var (site, url) = NetlifyLink.SiteOf(chat.Folder);
         sp.Children.Add(new TextBlock { Text = site is null ? $"Trendo legt bei Netlify eine neue Seite an und lädt „{chat.Title}“ hoch. Danach ist sie öffentlich im Internet erreichbar." : $"Trendo lädt den neuen Stand auf deine Seite {url} hoch – sie ist öffentlich erreichbar.", Foreground = ClaudeFg, FontSize = 12.5, TextWrapping = TextWrapping.Wrap });
-        var yes = new Button { Name = "claude-netlify-yes", Content = "Ja, veröffentlichen", FontSize = 12.5, Padding = new Thickness(12, 4), Margin = new Thickness(0, 4, 6, 0), Background = ClaudeAccent, Foreground = Brushes.White, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(0) };
+        var yes = new Button { Name = "claude-netlify-yes", Content = "✓ Ja, veröffentlichen", FontSize = 12.5, Padding = new Thickness(12, 4), Margin = new Thickness(0, 4, 6, 0), Background = ClaudeAccent, Foreground = Brushes.White, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(0) };
         var no = new Button { Name = "claude-netlify-no", Content = "Abbrechen", FontSize = 12.5, Padding = new Thickness(12, 4), Margin = new Thickness(0, 4, 0, 0), Background = Brushes.Transparent, Foreground = ClaudeFg, BorderBrush = GlassEdge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8) };
         yes.Click += (_, _) => _ = ClaudeNetlifyDeploy(dock, chat);
         no.Click += (_, _) => { if (_chatUis.TryGetValue(dock, out var ui)) { ui.Panel = null; RenderChat(dock); } };

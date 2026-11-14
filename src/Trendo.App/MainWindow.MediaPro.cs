@@ -53,7 +53,7 @@ public partial class MainWindow
         var credits = Path.Combine(AssetFolder, "Medien", $"Namensnennungen – {string.Concat(list.Split(Path.GetInvalidFileNameChars()))}.txt");
         await File.WriteAllTextAsync(credits, Collections.Credits(list));
         _core.Audit.Append(Principal.LocalOwner.Name, "medien.merkliste.laden", $"{list}: {n}");
-        return $"{n} Einträge aus „{list}“ in der Bibliothek" + (failed > 0 ? $", {failed} gingen nicht" : "") + $" – Namensnennungen in „{Path.GetFileName(credits)}“.";
+        return $"✓ {n} Einträge aus „{list}“ in der Bibliothek" + (failed > 0 ? $", {failed} gingen nicht" : "") + $" – Namensnennungen in „{Path.GetFileName(credits)}“.";
     });
 
     /// <summary>Preview-Teil „Ähnliche“ und „Merken“ unter dem gewählten Treffer.</summary>

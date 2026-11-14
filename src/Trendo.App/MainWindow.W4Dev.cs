@@ -35,7 +35,7 @@ public partial class MainWindow
         sp.Children.Add(Card(new StackPanel { Spacing = 6, Children = { H("Neues Projekt", 14), new WrapPanel { Children = { name, tpl } }, create } }));
 
         var tools = string.Join(" · ", new[] { ("git", "Git"), ("dotnet", ".NET"), (OperatingSystem.IsWindows() ? "python" : "python3", "Python"), ("node", "Node") }
-            .Select(x => (Cli.Find(x.Item1) is null ? "• " : "") + x.Item2));
+            .Select(x => (Cli.Find(x.Item1) is null ? "✗ " : "✓ ") + x.Item2));
         sp.Children.Add(P("Werkzeuge auf diesem PC: " + tools, null, 11));
 
         sp.Children.Add(H("Deine Projekte", 14));

@@ -101,7 +101,7 @@ public partial class MainWindow
         var sp = new StackPanel { Spacing = 8 };
         // Umbau 04.11.2026: wie in Chat-Programmen zuerst das Gespräch – Claude-Einstellungen als kurze Zeile zum Aufklappen
         var cs = _claude;
-        var state = !cs.Installed ? "Claude: nicht eingerichtet – aufklappen zum Einrichten" : !cs.Ready ? "Claude: nicht verbunden – aufklappen zum Verbinden" : "Claude verbunden – Einstellungen";
+        var state = !cs.Installed ? "Claude: nicht eingerichtet – aufklappen zum Einrichten" : !cs.Ready ? "Claude: nicht verbunden – aufklappen zum Verbinden" : "✓ Claude verbunden – Einstellungen";
         var cbox = new Expander { Name = "ask-claude-box", IsExpanded = _askClaudeOpen, HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(0, 6, 0, 0), Content = ClaudeCard(),
             Header = new TextBlock { Text = state, Foreground = cs.Ready ? Brush.Parse("#22B35E") : Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold } };
         cbox.PropertyChanged += (_, e) => { if (e.Property == Expander.IsExpandedProperty) _askClaudeOpen = cbox.IsExpanded; };

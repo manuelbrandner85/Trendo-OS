@@ -181,7 +181,7 @@ public partial class MainWindow
             open.DoubleTapped += (_, e) => { e.Handled = true; StartRename(); };
             var ctx = new ContextMenu();
             var miRename = new MenuItem { Name = $"claude-chat-ctx-rename-{i}", Header = "Umbenennen" }; miRename.Click += (_, _) => StartRename();
-            var miDelete = new MenuItem { Name = $"claude-chat-ctx-del-{i}", Header = "Löschen …" }; miDelete.Click += (_, _) => { ui.ConfirmDelete = c.Id; ui.Renaming = null; RenderChatList(dock); };
+            var miDelete = new MenuItem { Name = $"claude-chat-ctx-del-{i}", Header = "✕ Löschen …" }; miDelete.Click += (_, _) => { ui.ConfirmDelete = c.Id; ui.Renaming = null; RenderChatList(dock); };
             ctx.Items.Add(miRename); ctx.Items.Add(miDelete); open.ContextMenu = ctx;
             var ren = new Button { Name = $"claude-chat-rename-{i}", Content = "✎", Padding = new Thickness(6, 2), Background = Brushes.Transparent, Foreground = ClaudeMuted, VerticalAlignment = VerticalAlignment.Center };
             ToolTip.SetTip(ren, "Projekt umbenennen"); ren.Click += (_, _) => StartRename();
@@ -364,7 +364,7 @@ public partial class MainWindow
         return sp;
     }
 
-    Control ChatStep(ClaudeChats.Step st) => new TextBlock { Text = (st.Error ? "" : st.Changes ? "• " : "") + st.Text, Foreground = st.Error ? Brush.Parse("#FFF87171") : ClaudeMuted, FontSize = 12, TextWrapping = TextWrapping.Wrap };
+    Control ChatStep(ClaudeChats.Step st) => new TextBlock { Text = (st.Error ? "⚠ " : st.Changes ? "• " : "") + st.Text, Foreground = st.Error ? Brush.Parse("#FFF87171") : ClaudeMuted, FontSize = 12, TextWrapping = TextWrapping.Wrap };
 
     /// <summary>Nachricht an Claude (öffentlich für Tests über das aktive Fenster). Ohne offenes Projekt legt die erste Nachricht eins an.</summary>
     public Task ClaudeChatSend(string text) => Windows.Active?.Id is { } id && _claudeDocks.TryGetValue(id, out var d) ? ClaudeChatSend(d, text) : Task.CompletedTask;
@@ -470,11 +470,10 @@ public partial class MainWindow
                         case ClaudeCode.Say sy: say.AppendLine(sy.Text).AppendLine(); textPanel.Children.Clear(); foreach (var b in ChatBlocks(say.ToString())) textPanel.Children.Add(b); break;
                         case ClaudeCode.Tool t:
                         {
-                            var icon = t.Badge switch { "Skill" => "Skill: ", "Agent" => "Agent: ", "Connector" => "Verbindung: ", "Befehl" => "Befehl: ", "Internet" => "Internet: ", _ => "" };
-                            var st = new ClaudeChats.Step(icon + t.Text, t.Changes); steps.Add(st); stepsPanel.Children.Add(TimelineRow(st, steps[0].At, true)); thinking.Text = "" + t.Text + " …";
+                            var st = new ClaudeChats.Step(t.Text, t.Changes); steps.Add(st); stepsPanel.Children.Add(TimelineRow(st, steps[0].At, true)); thinking.Text = "" + t.Text + " …";
                             if (t.Badge is "Skill" or "Agent" or "Connector" && t.Detail is { } det)
                             {
-                                var u = $"{icon}{t.Badge} {det}"; if (!used.Contains(u)) used.Add(u);
+                                var u = $"{t.Badge} {det}"; if (!used.Contains(u)) used.Add(u);
                                 if (t.Badge == "Skill") { skillChip.IsVisible = true; ((TextBlock)skillChip.Child!).Text = $"Aktiver Skill: {det}"; }
                             }
                             if (t.Changes && t.File is { } tf) pendingFile = tf;
@@ -547,8 +546,8 @@ public partial class MainWindow
         answer = ClaudeMemory.Strip(answer);
         if (snap is not null) try { CTimeline.Keep(chat.Id, point, check ? "Nachbesserung: " + text.Split('\n')[0] : text.Split('\n')[0], changes.Count); } catch (IOException) { }
         if (ClaudeCode.IsLimit(error)) error = ClaudeCode.LimitText;
-        if (error is not null) answer = (answer.Length > 0 ? answer + "\n\n" : "") + "" + error;
-        else if (!ok && answer.Length == 0) answer = "Claude hat die Antwort nicht fertigbekommen.";
+        if (error is not null) answer = (answer.Length > 0 ? answer + "\n\n" : "") + "⚠ " + error;
+        else if (!ok && answer.Length == 0) answer = "⚠ Claude hat die Antwort nicht fertigbekommen.";
         if (session is { Length: > 0 }) chats.SetSession(studio, chat.Id, session);
         chats.Add(studio, chat.Id, new ClaudeChats.Msg("assistant", answer, steps, DateTimeOffset.Now, changed.Count > 0 ? changed : null, tokens, null, null, error is null ? ki : null, used.Count > 0 ? used : null));
         ui.LastSnapshot = changed.Count > 0 ? snap : null; ui.LastSnapshotChat = chat.Id;
@@ -883,7 +882,7 @@ public partial class MainWindow
             B("claude-preview-after", "Nachher", "So ist es jetzt", () => { ui.Compare = "nachher"; RenderPreview(dock); }, ui.Compare == "nachher");
             if (ui.LastSnapshot is not null)
             {
-                if (!ClaudeNoClicks) B("claude-preview-keep", "Behalten", "Änderung behalten", () => { ui.PreviewOriginal = null; ui.Compare = "nachher"; ui.LastSnapshot = null; RenderPreview(dock); RenderChat(dock); });
+                if (!ClaudeNoClicks) B("claude-preview-keep", "✓ Behalten", "Änderung behalten", () => { ui.PreviewOriginal = null; ui.Compare = "nachher"; ui.LastSnapshot = null; RenderPreview(dock); RenderChat(dock); });
                 B("claude-preview-undo", "Zurücknehmen", "Änderungen der letzten Antwort rückgängig machen", () => { ClaudeChatUndo(dock); ui.PreviewOriginal = null; ui.Compare = "nachher"; RenderPreview(dock); });
             }
         }

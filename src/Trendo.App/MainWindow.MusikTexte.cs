@@ -79,7 +79,7 @@ public partial class MainWindow
         var ans = await AskLyrics(LyricsEditor.WholePrompt(_msLyrics, wish, CurrentLyricist()));
         if (ans is not { Length: > 20 } || !ans.Contains('[')) { _msMsg = "Die Text-KI hat keinen vollständigen Liedtext geliefert – nichts geändert."; Show(MS); return false; }
         var (polished, left) = await MsPolishLyrics(ans.Trim().Trim('`').Trim());
-        _msLyrics = polished; _msMsg = "Text überarbeitet – Strg+Z im Feld macht es rückgängig." + FloskelHint(left); Show(MS);
+        _msLyrics = polished; _msMsg = "✓ Text überarbeitet – Strg+Z im Feld macht es rückgängig." + FloskelHint(left); Show(MS);
         return true;
     }
 
@@ -103,7 +103,7 @@ public partial class MainWindow
             tags.Children.Add(b);
         }
         var head = new DockPanel { Children = {
-            Dk(Act("ms-lyrics-full-close", "Schließen", () => MsLyricsFullscreen(false)), Avalonia.Controls.Dock.Right),
+            Dk(Act("ms-lyrics-full-close", "✕ Schließen", () => MsLyricsFullscreen(false)), Avalonia.Controls.Dock.Right),
             new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, Children = { H("Liedtext", 16), new TextBlock { Name = "ms-lyf-stats", Text = $"{lines} Zeilen · {words} Wörter · {sections} Abschnitte · wird automatisch übernommen", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center } } } } };
         var left = new DockPanel { Children = { Dk(head, Avalonia.Controls.Dock.Top), Dk(tags, Avalonia.Controls.Dock.Top), box } };
 

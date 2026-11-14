@@ -8,7 +8,7 @@
         <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
         <!-- Vorgabe 13.11.2026 „nicht KI-generiert“: eine Schriftfamilie, ruhige Bedienelemente ohne Anheben oder Hüpfen -->
         <Style Selector="Window">
-            <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI, Inter, Noto Sans, sans-serif" />
+            
         </Style>
         <Style Selector="TextBox">
             <Setter Property="CornerRadius" Value="4" />

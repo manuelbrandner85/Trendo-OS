@@ -92,7 +92,7 @@ public partial class MainWindow
             var json = await GitHubJson("https://api.github.com/rate_limit", CancellationToken.None);
             using var d = System.Text.Json.JsonDocument.Parse(json); var limit = d.RootElement.GetProperty("resources").GetProperty("core").GetProperty("limit").GetInt32();
             _core.Secrets.Set(GitHubTokenKey, token); _core.Audit.Append(Principal.LocalOwner.Name, "github.token.set", $"Limit {limit}/h");
-            _ghTokenMsg = $"Angemeldet – {limit} Abfragen pro Stunde. Der Schlüssel liegt im sicheren Windows-Speicher."; Show("oss"); return true;
+            _ghTokenMsg = $"✓ Angemeldet – {limit} Abfragen pro Stunde. Der Schlüssel liegt im sicheren Windows-Speicher."; Show("oss"); return true;
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
@@ -108,8 +108,8 @@ public partial class MainWindow
             P("Freiwillig. Ohne Anmeldung erlaubt GitHub 60 Abfragen pro Stunde, mit eigenem Schlüssel 5000. Ein Schlüssel ohne besondere Rechte reicht (github.com › Settings › Developer settings › Personal access tokens). Trendo schickt ihn nur an api.github.com.", Muted, 11.5),
             GitHubToken is null
                 ? new WrapPanel { Children = { box, new Border { Width = 6 }, Act("oss-token-save", "Prüfen & speichern", () => _ = GitHubSetToken(box.Text ?? ""), true) } }
-                : new WrapPanel { Children = { new TextBlock { Text = "Angemeldet (Schlüssel im sicheren Windows-Speicher)", Foreground = Brush.Parse("#4ADE80"), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) }, Act("oss-token-remove", "Abmelden", GitHubRemoveToken) } },
+                : new WrapPanel { Children = { new TextBlock { Text = "✓ Angemeldet (Schlüssel im sicheren Windows-Speicher)", Foreground = Brush.Parse("#4ADE80"), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) }, Act("oss-token-remove", "Abmelden", GitHubRemoveToken) } },
             new TextBlock { Name = "oss-token-msg", Text = _ghTokenMsg, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap, IsVisible = _ghTokenMsg.Length > 0 } } };
-        return new Expander { Name = "oss-token-box", Header = GitHubToken is null ? "GitHub-Anmeldung (optional, mehr Abfragen)" : "GitHub-Anmeldung", Content = content, IsExpanded = _ghTokenMsg.Length > 0 };
+        return new Expander { Name = "oss-token-box", Header = GitHubToken is null ? "GitHub-Anmeldung (optional, mehr Abfragen)" : "GitHub-Anmeldung ✓", Content = content, IsExpanded = _ghTokenMsg.Length > 0 };
     }
 }

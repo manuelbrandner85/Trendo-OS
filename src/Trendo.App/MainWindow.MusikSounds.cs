@@ -54,7 +54,7 @@ public partial class MainWindow
             var raw = Path.Combine(Path.GetDirectoryName(m.File)!, ".roh"); Directory.CreateDirectory(raw);
             File.Move(m.File, Path.Combine(raw, Path.GetFileName(m.File)), true); // Rohstück aufheben, nicht in der Liste
             Songs.Update(m.Id, x => { x.File = outFile; x.Seconds = Math.Round(result.Seconds, 2); x.Kind = "sound"; x.Style = description.Trim() + " · " + note; x.Bpm = loop ? bpm : null; x.Key = loop && key is { Length: > 0 } ? key : null; });
-            _msSel = m.Id; _msMsg = $"{note} – im Studio als Spur nutzbar (Lied → Profi → „Im Mischpult öffnen“).";
+            _msSel = m.Id; _msMsg = $"✓ {note} – im Studio als Spur nutzbar (Lied → Profi → „Im Mischpult öffnen“).";
             return Songs.Get(m.Id);
         }
         catch (InvalidOperationException e) { _msMsg = "Sound nicht brauchbar: " + e.Message + " Das Rohstück liegt in der Bibliothek."; return Songs.Get(m.Id); }
@@ -119,7 +119,7 @@ public partial class MainWindow
         var raw = Path.Combine(dir, ".roh"); Directory.CreateDirectory(raw);
         File.Move(m.File, Path.Combine(raw, Path.GetFileName(m.File)), true); File.Move(voice, Path.Combine(raw, Path.GetFileName(voice)), true);
         Songs.Update(m.Id, x => { x.File = outFile; x.Seconds = Math.Round(2.0 + vsec + 3.0, 2); x.Kind = "sprache"; x.Lyrics = text.Trim(); x.Style = "Sprache mit Musik · " + (style.Trim().Length > 0 ? style.Trim() : "ruhige Hintergrundmusik"); });
-        _msSel = m.Id; _msMsg = $"Sprache mit Musik fertig ({SongTime(2.0 + vsec + 3.0)}) – die Musik wird beim Sprechen leiser."; Show(MS);
+        _msSel = m.Id; _msMsg = $"✓ Sprache mit Musik fertig ({SongTime(2.0 + vsec + 3.0)}) – die Musik wird beim Sprechen leiser."; Show(MS);
         return Songs.Get(m.Id);
     }
 

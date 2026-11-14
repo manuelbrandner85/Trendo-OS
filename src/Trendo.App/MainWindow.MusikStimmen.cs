@@ -59,7 +59,7 @@ public partial class MainWindow
             var ok = r.Ok && r.Out.Contains("\"ok\": true");
             if (ok) Bank.MarkReady(v.Id);
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.stimme.bibliothek.gelernt", ok ? v.Id : "fehler");
-            OvSay(ok ? $"Stimme „{v.Name}“ gelernt – beim Erstellen unter „Gesang in“ wählen." : "Lernen ging nicht: " + Short(r.Err.Length > 0 ? r.Err : r.Out));
+            OvSay(ok ? $"✓ Stimme „{v.Name}“ gelernt – beim Erstellen unter „Gesang in“ wählen." : "Lernen ging nicht: " + Short(r.Err.Length > 0 ? r.Err : r.Out));
             return Bank.Get(v.Id);
         }
         catch (Exception e) when (e is InvalidOperationException or IOException or HttpRequestException or OperationCanceledException) { OvSay("Einrichten ging nicht: " + e.Message); return Bank.Get(v.Id); }

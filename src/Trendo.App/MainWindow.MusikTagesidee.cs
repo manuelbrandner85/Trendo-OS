@@ -58,7 +58,7 @@ public partial class MainWindow
     {
         _msSel = songId; _msDetailTab = "profi";
         var f = await MsHookClip(songId, 30);
-        _msMsg = f is null ? MusicProMessage : $"Kurzvideo 9:16 fertig: {Path.GetFileName(f)} (Ordner „Musik/Kurzclips“).";
+        _msMsg = f is null ? MusicProMessage : $"✓ Kurzvideo 9:16 fertig: {Path.GetFileName(f)} (Ordner „Musik/Kurzclips“).";
         Show(MS); return f;
     }
 }

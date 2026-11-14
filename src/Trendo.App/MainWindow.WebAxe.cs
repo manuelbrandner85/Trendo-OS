@@ -20,11 +20,11 @@ public partial class MainWindow
     {
         if (_webDir is null) { _axeMsg = "Erst eine Seite anlegen oder öffnen."; Show("dev"); return; }
         var node = AxeRunOverride is not null ? "node" : Cli.Find("node");
-        if (node is null) { _axeMsg = "Node.js fehlt – zuerst unter Programme „Node.js“ einrichten."; Show("dev"); return; }
+        if (node is null) { _axeMsg = "⚠ Node.js fehlt – zuerst unter Programme „Node.js“ einrichten."; Show("dev"); return; }
         var (r, msg) = AxeCheck.Run(node, AxeDir, _webDir, run: AxeRunOverride);
         AxeLast = r;
-        _axeMsg = r is null ? "" + msg
-            : msg + (r.Findings.Count == 0 ? " Keine Probleme gefunden (Farbkontrast prüft die eigene Prüfung)." : "\n" + string.Join("\n", r.Findings.Take(12).Select(f => (f.Level == "Fehler" ? "" : "• ") + f.Text)) + (r.Findings.Count > 12 ? $"\n… und {r.Findings.Count - 12} weitere." : ""));
+        _axeMsg = r is null ? "⚠ " + msg
+            : msg + (r.Findings.Count == 0 ? " Keine Probleme gefunden (Farbkontrast prüft die eigene Prüfung)." : "\n" + string.Join("\n", r.Findings.Take(12).Select(f => (f.Level == "Fehler" ? "✗ " : "• ") + f.Text)) + (r.Findings.Count > 12 ? $"\n… und {r.Findings.Count - 12} weitere." : ""));
         _core.Audit.Append(Principal.LocalOwner.Name, "web.axe", r is null ? "fehler" : $"{r.Findings.Count} Befunde");
         Show("dev");
     }
@@ -33,7 +33,7 @@ public partial class MainWindow
     {
         var npm = Cli.Find("npm") ?? Cli.Find("npm.cmd");
         if (_opt.Isolated) _axeMsg = "Testmodus: nichts installiert.";
-        else if (npm is null) _axeMsg = "Node.js mit npm fehlt – zuerst unter Programme „Node.js“ einrichten.";
+        else if (npm is null) _axeMsg = "⚠ Node.js mit npm fehlt – zuerst unter Programme „Node.js“ einrichten.";
         else
         {
             _axeMsg = "axe-core und jsdom werden aus der offiziellen npm-Quelle geladen (feste Fassungen, ohne Installationsskripte) …"; Show("dev");
@@ -41,7 +41,7 @@ public partial class MainWindow
             var r = await Task.Run(() => Cli.Run(npm, AxeCheck.InstallArgs(AxeDir), AxeDir, 600_000));
             var ok = r.Ok && AxeCheck.Ready(AxeDir);
             _core.Audit.Append(Principal.LocalOwner.Name, "deps.npm", $"axe-core@{AxeCheck.AxeVersion} jsdom@{AxeCheck.JsdomVersion}" + (ok ? "" : " (fehlgeschlagen)"));
-            _axeMsg = ok ? "axe-core ist eingerichtet." : "Einrichten ging nicht: " + (r.Err.Length > 0 ? r.Err : r.Out).Trim().Split('\n')[0];
+            _axeMsg = ok ? "✓ axe-core ist eingerichtet." : "⚠ Einrichten ging nicht: " + (r.Err.Length > 0 ? r.Err : r.Out).Trim().Split('\n')[0];
         }
         Show("dev");
     }

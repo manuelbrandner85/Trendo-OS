@@ -25,7 +25,7 @@ public class GltfUi
             MainWindow.GltfRunOverride = (_, a, _) => { calls.Add(a); if (a.Count > 1 && a[1] == "optimize") File.Copy(a[2], a[3], true); return new Cli.Result(0, a[0] == "-o" ? Bericht : "", ""); };
             w.Show("xr");
             w.Find<Button>("xr-gltf-validate").Press();
-            Assert.StartsWith("Khronos-Prüfung bestanden", w.GltfMessage); Assert.True(w.GltfLastReport!.Ok);
+            Assert.StartsWith("✓ Khronos-Prüfung bestanden", w.GltfMessage); Assert.True(w.GltfLastReport!.Ok);
             w.Find<Button>("xr-gltf-pack").Press();
             Assert.EndsWith("-web.glb", w.XrFile); Assert.True(File.Exists(original)); Assert.Contains("Blender und Unreal das Original", w.GltfMessage);
             Assert.Contains(calls, a => a.Count > 1 && a[1] == "optimize" && a.Contains("meshopt"));

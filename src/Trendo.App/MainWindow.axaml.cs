@@ -79,6 +79,7 @@ public sealed partial class MainWindow : Window
     {
         StartupTrace.Mark("window.ctor");
         GlyphIcons.Enable(); // D3 (13.11.2026): Zeichen-Knöpfe zeigen Linien-Symbole
+        FontFamily = UiFont(); // D2: eine Schriftfamilie, einmal ermittelt (eine Liste mit fehlenden Schriften kostet bei jedem Text Zeit)
         _opt = opt; _core = core; _probe = probe;
         // Isolated: nichts außerhalb des Datenordners erkennen (Tests sind unabhängig von installierten Programmen/laufendem Ollama)
         Func<string, bool>? exists = opt.Isolated ? p => Path.GetFullPath(p).StartsWith(Path.GetFullPath(core.DataRoot), StringComparison.OrdinalIgnoreCase) && File.Exists(p) : null;
@@ -340,6 +341,17 @@ public sealed partial class MainWindow : Window
 
     // ======================= Design-Bausteine (nach Konzept) =======================
     /// <summary>Früher ein Farbverlauf; seit der Vorgabe 13.11.2026 („nicht KI-generiert“) eine ruhige, einfarbige Fläche aus der dunkleren Farbe.</summary>
+    static FontFamily? _uiFont;
+    /// <summary>D2 (13.11.2026): Systemschrift wie in Windows 11 – die erste vorhandene aus Segoe UI Variable, Segoe UI, Inter, Noto Sans.</summary>
+    public static FontFamily UiFont()
+    {
+        if (_uiFont is not null) return _uiFont;
+        var have = FontManager.Current.SystemFonts.Select(f => f.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        foreach (var n in (string[])["Segoe UI Variable Text", "Segoe UI Variable", "Segoe UI", "Inter", "Noto Sans"])
+            if (have.Contains(n)) return _uiFont = new FontFamily(n);
+        return _uiFont = FontFamily.Default;
+    }
+
     private static IBrush Grad(string a, string b) => new SolidColorBrush(Calm(Color.Parse(b)));
 
     /// <summary>Farbe dämpfen: weniger Sättigung, gleiche Richtung – Farben bleiben erkennbar, wirken aber nicht grell.</summary>

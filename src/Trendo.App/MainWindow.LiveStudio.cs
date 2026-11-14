@@ -152,7 +152,7 @@ public partial class MainWindow
         var bytes = File.Exists(file) ? new FileInfo(file).Length : 0;
         _liveProbe = LiveProbe.Evaluate(err, dur, bytes, choice.VideoKbps + choice.AudioKbps, _liveMic || LiveShowState.Mix.MusicFile is { Length: > 0 });
         _liveProbing = false;
-        _liveMsg = _liveProbe.Any(c => c.Light == "rot") ? "Probelauf: bitte die roten Punkte beheben, dann noch einmal." : _liveProbe.Any(c => c.Light == "gelb") ? "Probelauf: fast bereit – gelbe Punkte ansehen." : "Probelauf bestanden – bereit zum Senden.";
+        _liveMsg = _liveProbe.Any(c => c.Light == "rot") ? "Probelauf: bitte die roten Punkte beheben, dann noch einmal." : _liveProbe.Any(c => c.Light == "gelb") ? "Probelauf: fast bereit – gelbe Punkte ansehen." : "✓ Probelauf bestanden – bereit zum Senden.";
         _core.Audit.Append(Principal.LocalOwner.Name, "live.probelauf", string.Join(",", _liveProbe.Select(c => c.Light)));
         Show("sendung");
     }

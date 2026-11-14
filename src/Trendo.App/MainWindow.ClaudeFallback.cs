@@ -88,7 +88,7 @@ public partial class MainWindow
                 Directory.CreateDirectory(System.IO.Path.GetDirectoryName(target)!);
                 if (File.Exists(d.Path)) File.Move(d.Path, target, true);
                 ui.Drafts.RemoveAt(index);
-                CChats.Add(ChatStudio(dock), d.ChatId, new ClaudeChats.Msg("assistant", $"{label} übernommen: {d.File}", [new ClaudeChats.Step($"{label}: {d.File}", true)], DateTimeOffset.Now, [d.File + " (neu)"], 0, null, null, "KI-Bibliothek (auf diesem PC)"));
+                CChats.Add(ChatStudio(dock), d.ChatId, new ClaudeChats.Msg("assistant", $"✓ {label} übernommen: {d.File}", [new ClaudeChats.Step($"{label}: {d.File}", true)], DateTimeOffset.Now, [d.File + " (neu)"], 0, null, null, "KI-Bibliothek (auf diesem PC)"));
                 _core.Audit.Append(Principal.LocalOwner.Name, "claude.entwurf.ok", d.File);
                 RenderChat(dock);
                 if (StudioFormat.PreviewKind(target) != "none") ShowPreview(dock, target);
@@ -132,7 +132,7 @@ public partial class MainWindow
             var b = new Button { Name = name, Content = text, Background = primary ? ClaudeAccent : ClaudeItem, Foreground = primary ? Brushes.White : ClaudeFg, CornerRadius = new CornerRadius(8), Padding = new Thickness(12, 5), Margin = new Thickness(0, 0, 6, 0), BorderThickness = new Thickness(0) };
             b.Click += async (_, _) => await ClaudeDraftDecide(i, what); row.Children.Add(b); return b;
         }
-        B($"claude-draft-ok-{i}", "Übernehmen", true, "ok"); B($"claude-draft-again-{i}", "Neu erzeugen", false, "neu"); B($"claude-draft-no-{i}", "Verwerfen", false, "no");
+        B($"claude-draft-ok-{i}", "✓ Übernehmen", true, "ok"); B($"claude-draft-again-{i}", "Neu erzeugen", false, "neu"); B($"claude-draft-no-{i}", "✕ Verwerfen", false, "no");
         sp.Children.Add(row);
         return new Border { Name = $"claude-draft-{i}", Background = Brush.Parse("#14FFFFFF"), BorderBrush = ClaudeAccent, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(14, 10), Child = sp };
     }

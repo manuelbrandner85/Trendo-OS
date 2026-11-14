@@ -117,8 +117,8 @@ public partial class MainWindow
         if (AuPluginChecked is { } r)
         {
             sp.Children.Add(P($"{r.Format} · {r.Arch} · Signatur {(r.Signed ? "vorhanden" : "keine")} · SHA-256 {(r.Sha256.Length > 12 ? r.Sha256[..12] + "…" : "–")}", Text, 11));
-            if (r.Problem is not null) sp.Children.Add(P("" + r.Problem, Brush.Parse("#F87171"), 11));
-            foreach (var x in r.Risks.Take(8)) sp.Children.Add(P((x.Serious ? "" : "• ") + x.Text, x.Serious ? Brush.Parse("#FACC15") : Muted, 10.5));
+            if (r.Problem is not null) sp.Children.Add(P("✗ " + r.Problem, Brush.Parse("#F87171"), 11));
+            foreach (var x in r.Risks.Take(8)) sp.Children.Add(P((x.Serious ? "⚠ " : "• ") + x.Text, x.Serious ? Brush.Parse("#FACC15") : Muted, 10.5));
             var approved = PluginApprovals.IsApproved(r);
             if (r.Loadable && !approved)
             {
@@ -127,7 +127,7 @@ public partial class MainWindow
             }
             if (approved)
             {
-                sp.Children.Add(P("freigegeben – läuft nur abgeschottet (eigener Prozess, keine Schreibrechte auf deine Dateien, Zeit- und Speichergrenze).", Text, 11));
+                sp.Children.Add(P("✓ freigegeben – läuft nur abgeschottet (eigener Prozess, keine Schreibrechte auf deine Dateien, Zeit- und Speichergrenze).", Text, 11));
                 sp.Children.Add(Box("au-plug-params", _auPlugParams, "Parameter: name=wert, name2=wert2 (leer = Voreinstellung)", v => _auPlugParams = v));
                 sp.Children.Add(Box("au-plug-preset", _auPlugPreset, "Optional: Preset-Datei (.vstpreset)", v => _auPlugPreset = v));
                 var info = Act("au-plug-info", "Parameter lesen", () => { if (!_auPlugBusy) _ = AuPluginRun(d, "info"); });

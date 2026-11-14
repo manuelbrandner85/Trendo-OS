@@ -189,7 +189,7 @@ Dann bleibt mir nur noch eins.
         var b = FilmOf(d);
         var sp = new StackPanel { Name = "film-shots", Spacing = 6, Margin = new Thickness(4, 0, 10, 4) };
         sp.Children.Add(P($"{b.ShotCount} Einstellungen. Eine KI-Einstellung ist höchstens etwa 5 Sekunden lang. Längere Einstellungen werden aus mehreren Clips zusammengesetzt.", Muted, 12));
-        foreach (var p in b.Problems) sp.Children.Add(P("" + p, Brush.Parse("#F5A524"), 12));
+        foreach (var p in b.Problems) sp.Children.Add(P("⚠ " + p, Brush.Parse("#F5A524"), 12));
         foreach (var s in b.Scenes)
         {
             sp.Children.Add(H($"{s.Code} · {s.Place}. {s.Location}{(s.Time.Length > 0 ? " – " + s.Time : "")}", 13));

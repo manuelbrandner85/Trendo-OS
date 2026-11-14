@@ -68,7 +68,7 @@ public partial class MainWindow
             var n = VideoExport.ReadSrt(await File.ReadAllTextAsync(srt)).Count;
             d.Edit("Untertitel", x => x["subs"] = srt);
             _core.Audit.Append(Principal.LocalOwner.Name, "video.untertitel", $"{n} Zeilen");
-            _progMsg[VK] = $"{n} Untertitel erkannt – gespeichert als {Path.GetFileName(srt)}. Beim Export einbrennen oder als SRT mitgeben.";
+            _progMsg[VK] = $"✓ {n} Untertitel erkannt – gespeichert als {Path.GetFileName(srt)}. Beim Export einbrennen oder als SRT mitgeben.";
         }
         catch (Exception e) when (e is InvalidOperationException or IOException or FileNotFoundException) { _progMsg[VK] = e.Message; }
         finally { _veSubsBusy = false; try { Directory.Delete(tmp, true); } catch (IOException) { } Show(VK); }

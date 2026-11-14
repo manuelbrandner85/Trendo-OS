@@ -173,7 +173,7 @@ public partial class MainWindow
         if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner);
         _tvMsg = "Player wird eingerichtet …"; Show("tv");
         await InstallOne(mpv);
-        _tvMsg = MpvExe is not null ? "Player ist eingerichtet – Sender antippen und los." : "Der Player ließ sich nicht einrichten. Ist Internet da? Sonst das Trendo-Vollpaket anschließen.";
+        _tvMsg = MpvExe is not null ? "✓ Player ist eingerichtet – Sender antippen und los." : "✗ Der Player ließ sich nicht einrichten. Ist Internet da? Sonst das Trendo-Vollpaket anschließen.";
         Show("tv");
     }
     List<TvProgramme> TvProgs() => _tvProgs ??= Tv.Programmes();
@@ -247,7 +247,7 @@ public partial class MainWindow
         {
             string text;
             // Auch eine früher als Adresse gespeicherte get.php-Quelle ist ein Xtream-Zugang (schneller: Sender über die Schnittstelle)
-            if (Tv.Reveal(src.Url) is not { } realUrl) { _tvMsg = "Das Passwort für diese Quelle fehlt im sicheren Speicher – bitte die Quelle unter „Quellen“ entfernen und neu anlegen."; return 0; }
+            if (Tv.Reveal(src.Url) is not { } realUrl) { _tvMsg = "✗ Das Passwort für diese Quelle fehlt im sicheren Speicher – bitte die Quelle unter „Quellen“ entfernen und neu anlegen."; return 0; }
             var xt = src.Kind is "xtream" or "url" ? Xtream.FromPlaylistUrl(realUrl) : null;
             if (xt is { } x && await TvXtreamLive(src, x) is { } fromApi) text = fromApi;
             else if (src.Kind == "xtream" && _tvMsg.StartsWith('✗')) return 0; // Konto abgelehnt: klare Meldung steht schon da
@@ -258,7 +258,7 @@ public partial class MainWindow
             await Task.Run(() => Tv.StorePlaylist(src.Id, text));
             if (src.EpgUrl is null && epgHead is not null) { Tv.SetEpgUrl(src.Id, epgHead); src = src with { EpgUrl = epgHead }; }
             TvReload();
-            _tvMsg = $"„{src.Name}“ geladen: {ch.Count - films - series} Sender{(films > 0 ? $", {films} Filme" : "")}{(series > 0 ? $", {series} Serienfolgen" : "")}.";
+            _tvMsg = $"✓ „{src.Name}“ geladen: {ch.Count - films - series} Sender{(films > 0 ? $", {films} Filme" : "")}{(series > 0 ? $", {series} Serienfolgen" : "")}.";
             if (src.EpgUrl is not null) await TvRefreshEpg(src);
             if (xt is not null) await TvRefreshXtreamVod(src);
             _tvVod = null; _tvSeries = null;
@@ -266,7 +266,7 @@ public partial class MainWindow
         }
         catch (Exception e) when (e is HttpRequestException or IOException or InvalidOperationException or TaskCanceledException or UnauthorizedAccessException)
         {
-            _tvMsg = $"„{src.Name}“ ließ sich nicht laden: {TvWhy(e)}";
+            _tvMsg = $"✗ „{src.Name}“ ließ sich nicht laden: {TvWhy(e)}";
             return 0;
         }
     }
@@ -289,8 +289,8 @@ public partial class MainWindow
         string Api(string action) => Xtream.Api(x.Server, x.User, x.Pass, action);
         string info;
         try { info = Encoding.UTF8.GetString(await TvFetch(Xtream.Api(x.Server, x.User, x.Pass, "").Replace("&action=", ""))); }
-        catch (Exception e) when (e is HttpRequestException or TaskCanceledException or InvalidOperationException) { _tvMsg = "" + TvWhy(e); return null; }
-        if (Xtream.AccountProblem(info) is { } problem) { _tvMsg = "" + problem; return null; }
+        catch (Exception e) when (e is HttpRequestException or TaskCanceledException or InvalidOperationException) { _tvMsg = "✗ " + TvWhy(e); return null; }
+        if (Xtream.AccountProblem(info) is { } problem) { _tvMsg = "✗ " + problem; return null; }
         try
         {
             var live = Xtream.ParseLive(Encoding.UTF8.GetString(await TvFetch(Api("get_live_streams"))), Encoding.UTF8.GetString(await TvFetch(Api("get_live_categories"))), x.Server, x.User, x.Pass, src.Id);
@@ -335,7 +335,7 @@ public partial class MainWindow
     bool TvPlayUrl(string url, string slot, TvChannel? c = null)
     {
         if (slot == "main") { _tvChannel = c?.Id ?? _tvChannel; if (c is not null) { Tv.Watched(c.Id); _tvPlayingTitle = null; _tvVodPlaying = false; } }
-        if (Tv.Reveal(url) is not { } real) { _tvMsg = "Das Passwort für diese Quelle fehlt im sicheren Speicher – bitte die Quelle unter „Quellen“ entfernen und neu anlegen."; return false; }
+        if (Tv.Reveal(url) is not { } real) { _tvMsg = "✗ Das Passwort für diese Quelle fehlt im sicheren Speicher – bitte die Quelle unter „Quellen“ entfernen und neu anlegen."; return false; }
         url = real;
         TvApplyLanguage();
         if (TvPlayOverride is { } o) { o(slot, url); TvUpdateNow(); return true; }
@@ -632,7 +632,7 @@ public partial class MainWindow
             if (_tvChannel is null || TvChannels().FirstOrDefault(x => x.Id == _tvChannel) is not { } c) { _tvMsg = "Erst einen Sender wählen."; Show("tv"); return; }
             var (np, _) = TvLibrary.NowNext(TvProgs(), c, DateTime.UtcNow);
             TvPlanRecording(c, np?.Title ?? c.Name, DateTime.UtcNow, np?.Stop ?? DateTime.UtcNow.AddHours(1));
-            _tvMsg = $"Aufnahme läuft: {np?.Title ?? c.Name} (bis {(np?.Stop ?? DateTime.UtcNow.AddHours(1)).ToLocalTime():HH:mm})."; Show("tv");
+            _tvMsg = $"✓ Aufnahme läuft: {np?.Title ?? c.Name} (bis {(np?.Stop ?? DateTime.UtcNow.AddHours(1)).ToLocalTime():HH:mm})."; Show("tv");
         });
         rec.Margin = new Thickness(0);
         var bar = new Grid { Name = "tv-controls", ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = {
@@ -729,7 +729,7 @@ public partial class MainWindow
         sp.Children.Add(P("Trendo bringt keine Sender mit. Füge die Senderliste deines Anbieters hinzu – bitte nur legale Quellen (z. B. frei empfangbare Sender oder dein eigenes Abo).", Text, 12.5));
         // Wunsch 02.11.2026: alles Ausländische aus – nur Deutsch (und Erwachsene nach Wahl)
         var onlyDe = new CheckBox { Name = "tv-only-german", Content = "Nur deutschsprachige Sender, Filme und Serien (Deutschland, Österreich, Schweiz) – alles Ausländische ausblenden", IsChecked = Tv.OnlyGerman, Foreground = Text };
-        onlyDe.IsCheckedChanged += (_, _) => { Tv.SetOnlyGerman(onlyDe.IsChecked == true); _tvChannels = null; _core.Audit.Append(Principal.LocalOwner.Name, "tv.filter.deutsch", onlyDe.IsChecked == true ? "an" : "aus"); _tvMsg = onlyDe.IsChecked == true ? "Nur noch deutschsprachige Inhalte." : "Wieder alle Sprachen."; Show("tv"); };
+        onlyDe.IsCheckedChanged += (_, _) => { Tv.SetOnlyGerman(onlyDe.IsChecked == true); _tvChannels = null; _core.Audit.Append(Principal.LocalOwner.Name, "tv.filter.deutsch", onlyDe.IsChecked == true ? "an" : "aus"); _tvMsg = onlyDe.IsChecked == true ? "✓ Nur noch deutschsprachige Inhalte." : "✓ Wieder alle Sprachen."; Show("tv"); };
         var adult = new CheckBox { Name = "tv-show-adult", Content = "Inhalte für Erwachsene zeigen (bleiben auch bei „nur deutschsprachig“ sichtbar)", IsChecked = Tv.ShowAdult, Foreground = Text };
         adult.IsCheckedChanged += (_, _) => { Tv.SetShowAdult(adult.IsChecked == true); _tvChannels = null; _core.Audit.Append(Principal.LocalOwner.Name, "tv.filter.erwachsene", adult.IsChecked == true ? "an" : "aus"); Show("tv"); };
         var langs = new (string Id, string Label)[] { ("de", "Deutsch"), ("en", "Englisch"), ("tr", "Türkisch"), ("fr", "Französisch") };
@@ -740,7 +740,7 @@ public partial class MainWindow
         var rules = new StackPanel { Name = "tv-rules", Spacing = 4 };
         foreach (var r in Tv.RecordRules) { var rid = r.Id; rules.Children.Add(new WrapPanel { Children = { new TextBlock { Text = "" + r.Keyword, Foreground = Text, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) }, TvButton("tv-rule-del-" + rid, "Entfernen", () => { Tv.RemoveRecordRule(rid); Show("tv"); }) } }); }
         var ruleBox = new TextBox { Name = "tv-rule-text", PlaceholderText = "z. B. FC Bayern, Tatort, Tagesschau", Width = 260 };
-        rules.Children.Add(new WrapPanel { Children = { ruleBox, TvButton("tv-rule-add", "Immer aufnehmen", () => { try { Tv.AddRecordRule(ruleBox.Text ?? ""); var n = TvRuleTick(); _tvMsg = $"Aufnahme-Regel angelegt{(n > 0 ? $" – {n} Sendung(en) schon eingeplant" : "")}."; } catch (ArgumentException e) { _tvMsg = e.Message; } Show("tv"); }, true) } });
+        rules.Children.Add(new WrapPanel { Children = { ruleBox, TvButton("tv-rule-add", "Immer aufnehmen", () => { try { Tv.AddRecordRule(ruleBox.Text ?? ""); var n = TvRuleTick(); _tvMsg = $"✓ Aufnahme-Regel angelegt{(n > 0 ? $" – {n} Sendung(en) schon eingeplant" : "")}."; } catch (ArgumentException e) { _tvMsg = e.Message; } Show("tv"); }, true) } });
         sp.Children.Add(WCard(new StackPanel { Name = "tv-prefs", Spacing = 6, Children = { H("Ton, Untertitel und Sender", 14),
             new WrapPanel { Children = { new TextBlock { Text = "Sprache für Ton und Untertitel: ", Foreground = Text, VerticalAlignment = VerticalAlignment.Center }, lang } },
             P("Der Ton läuft in dieser Sprache, wenn es sie gibt. Untertitel in dieser Sprache erscheinen nur, wenn der Ton fremdsprachig ist.", null, 11.5), merge,
@@ -802,7 +802,7 @@ public partial class MainWindow
                 gp.Children.Add(new WrapPanel { Children = { Sp(pin), TvButton("tv-unlock", _tvUnlocked ? "Gesperrte Gruppen schließen" : "Gesperrte Gruppen öffnen", () =>
                 {
                     if (_tvUnlocked) { _tvUnlocked = false; _tvMsg = "Gesperrte Gruppen sind wieder zu."; }
-                    else if (!Lock.Enabled || Lock.Verify(pin.Text ?? "")) { _tvUnlocked = true; _tvMsg = "Gesperrte Gruppen sind bis zum Schließen von Trendo offen."; }
+                    else if (!Lock.Enabled || Lock.Verify(pin.Text ?? "")) { _tvUnlocked = true; _tvMsg = "✓ Gesperrte Gruppen sind bis zum Schließen von Trendo offen."; }
                     else _tvMsg = "Die PIN stimmt nicht.";
                     Show("tv");
                 }) } });

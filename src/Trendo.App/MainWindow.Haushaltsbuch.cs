@@ -84,8 +84,8 @@ public partial class MainWindow
         var find = new TextBox { Name = "hb-find", Text = _hbFind, PlaceholderText = "Buchung suchen …", Width = 240, CornerRadius = new CornerRadius(8) };
         find.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) { _hbFind = find.Text ?? ""; Show("finanzen"); } };
         var tools = new WrapPanel { Children = { find } };
-        if (_hbCat is not null) { var chip = Act("hb-cat-clear", $"Nur {_hbCat}", () => { _hbCat = null; Show("finanzen"); }, true); chip.Margin = new Thickness(6, 0, 0, 0); tools.Children.Add(chip); }
-        if (_hbFind.Length > 0) { var chip = Act("hb-find-clear", $"„{_hbFind}“", () => { _hbFind = ""; Show("finanzen"); }); chip.Margin = new Thickness(6, 0, 0, 0); tools.Children.Add(chip); }
+        if (_hbCat is not null) { var chip = Act("hb-cat-clear", $"Nur {_hbCat}  ✕", () => { _hbCat = null; Show("finanzen"); }, true); chip.Margin = new Thickness(6, 0, 0, 0); tools.Children.Add(chip); }
+        if (_hbFind.Length > 0) { var chip = Act("hb-find-clear", $"„{_hbFind}“  ✕", () => { _hbFind = ""; Show("finanzen"); }); chip.Margin = new Thickness(6, 0, 0, 0); tools.Children.Add(chip); }
         var rows = month.Where(x => _hbCat is null || x.Entry.Category == _hbCat).Where(x => _hbFind.Length == 0 || x.Entry.Text.Contains(_hbFind, StringComparison.CurrentCultureIgnoreCase)).ToList();
         var table = new StackPanel { Name = "fin-table", Spacing = 1 };
         for (var k = 0; k < rows.Count; k++)

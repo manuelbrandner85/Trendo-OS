@@ -128,7 +128,7 @@ public partial class MainWindow
             foreach (var (k, get) in values) _fachIn[$"{id}-{k}"] = get();
             string res;
             try { res = run(k => values.TryGetValue(k, out var get) ? get() : ""); }
-            catch (Exception ex) when (ex is FormatException or ArgumentException or InvalidOperationException or IOException) { res = "" + ex.Message; }
+            catch (Exception ex) when (ex is FormatException or ArgumentException or InvalidOperationException or IOException) { res = "⚠ " + ex.Message; }
             _fachOut[id] = res; outp.Text = res;
             ShowPicture(res);
             foreach (var o in Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(this).OfType<SelectableTextBlock>().Where(c => c.Name == outp.Name)) o.Text = res;

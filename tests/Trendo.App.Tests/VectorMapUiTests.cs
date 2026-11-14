@@ -29,7 +29,7 @@ public class VectorMapUi
         {
             w.VectorScriptOverride = sent.Add;
             w.MapLoadPack(Vector(root));
-            Assert.NotNull(w.VectorMapOpen); Assert.StartsWith("Vektorkarte „stadt“", w.VectorMapNote);
+            Assert.NotNull(w.VectorMapOpen); Assert.StartsWith("✓ Vektorkarte „stadt“", w.VectorMapNote);
             w.ProgramNew("karten"); w.Show("karten");
             Assert.NotNull(w.Find<StackPanel>("mk-vector")); Assert.NotNull(w.Find<Button>("mk-vector-close"));
             Assert.NotNull(w.Find<Border>("mk-vector-area")); // Karte füllt die Arbeitsfläche

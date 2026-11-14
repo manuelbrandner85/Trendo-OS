@@ -47,7 +47,7 @@ public class Sys12_Bedienung_Ui
         w.Close();
     }
 
-    [AvaloniaFact(DisplayName = "T-0212: Schalter zeigt Zustand; „Status mit Zeichen“ setzt an echte Statuspunkte")]
+    [AvaloniaFact(DisplayName = "T-0212: Schalter zeigt Zustand; „Status mit Zeichen“ setzt ✓ ⚠ ✕ an echte Statuspunkte")]
     public void Symbols_on_real_status()
     {
         var (w, _, _) = Ui.Open();

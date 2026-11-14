@@ -68,12 +68,12 @@ public partial class MainWindow
             }
             if (ArchPhotoFile is { } old && old != file && old.StartsWith(Path.Combine(_core.DataRoot, "cache", "foto"))) try { File.Delete(old); } catch (IOException) { }
             ArchPhotoFile = file;
-            _archPhotoMsg = $"Foto fertig ({(ArchPhotoFinal ? "fertige Qualität" : "Vorschau")}, {(ArchPhotoMode == "raum" ? "Raumansicht" : "Vogelperspektive")}).";
+            _archPhotoMsg = $"✓ Foto fertig ({(ArchPhotoFinal ? "fertige Qualität" : "Vorschau")}, {(ArchPhotoMode == "raum" ? "Raumansicht" : "Vogelperspektive")}).";
         }
-        catch (OperationCanceledException) { _archPhotoMsg = "Foto abgebrochen."; }
+        catch (OperationCanceledException) { _archPhotoMsg = "⚠ Foto abgebrochen."; }
         catch (Exception ex) when (ex is InvalidOperationException or InvalidDataException or TimeoutException or IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
-        { _archPhotoMsg = "" + ex.Message; }
-        catch (Exception ex) { _archPhotoMsg = "Unerwarteter Fehler beim Foto: " + ex.Message; } // Hintergrundaufgabe: nie stumm hängen bleiben
+        { _archPhotoMsg = "⚠ " + ex.Message; }
+        catch (Exception ex) { _archPhotoMsg = "⚠ Unerwarteter Fehler beim Foto: " + ex.Message; } // Hintergrundaufgabe: nie stumm hängen bleiben
         finally { ArchPhotoBusy = false; _archPhotoCts?.Dispose(); _archPhotoCts = null; }
         Show(AK);
     }
@@ -139,7 +139,7 @@ public partial class MainWindow
         bar.Children.Add(Btn("arch-photo-q-final", "Fertig (hohe Auflösung)", () => { ArchPhotoFinal = true; Show(AK); }, ArchPhotoFinal));
         if (ArchPhotoBusy) bar.Children.Add(Btn("arch-photo-cancel", "Abbrechen", ArchPhotoCancel));
         else bar.Children.Add(Btn("arch-photo-go", "Foto rechnen", () => { _ = ArchPhotoRender(); }, accent: true));
-        if (ArchPhotoFile is not null && !ArchPhotoBusy) bar.Children.Add(Btn("arch-photo-save", "Speichern", () => { try { _archPhotoMsg = "Gespeichert: " + Path.GetFileName(ArchPhotoSave()); } catch (Exception ex) when (ex is InvalidOperationException or IOException or UnauthorizedAccessException) { _archPhotoMsg = "" + ex.Message; } Show(AK); }));
+        if (ArchPhotoFile is not null && !ArchPhotoBusy) bar.Children.Add(Btn("arch-photo-save", "Speichern", () => { try { _archPhotoMsg = "✓ Gespeichert: " + Path.GetFileName(ArchPhotoSave()); } catch (Exception ex) when (ex is InvalidOperationException or IOException or UnauthorizedAccessException) { _archPhotoMsg = "⚠ " + ex.Message; } Show(AK); }));
 
         Control body;
         if (ArchPhotoBusy)

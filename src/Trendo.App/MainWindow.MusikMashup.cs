@@ -54,7 +54,7 @@ public partial class MainWindow
             if (!r2.Ok || !File.Exists(outFile)) { _msMsg = "Mischen ging nicht: " + (r2.Err.Trim().Split('\n').LastOrDefault() ?? ""); return null; }
             var m = Songs.Add(new MusicSong { Title = title, Style = $"Mashup: Gesang aus „{a.Title}“, Musik aus „{b.Title}“ · {plan.Text.Split(" – ")[0]}", Lyrics = a.Lyrics, Language = a.Language,
                 Seconds = acc.Seconds, Bpm = b.Bpm, Key = b.Key, TimeSignature = b.TimeSignature, File = outFile, Kind = "mashup", ParentId = b.Id });
-            _msSel = m.Id; _msMsg = $"Mashup fertig – {plan.Text}";
+            _msSel = m.Id; _msMsg = $"✓ Mashup fertig – {plan.Text}";
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.mashup", $"{a.Id}+{b.Id} t={plan.Tempo} s={plan.Semitones}");
             return m;
         }
@@ -76,7 +76,7 @@ public partial class MainWindow
         var made = await MusicStudioCreate(job, (prompt.Trim().Length > 30 ? prompt.Trim()[..30] : prompt.Trim()) + " (Sample)");
         if (made.FirstOrDefault() is not { } m) return null;
         Songs.Update(m.Id, x => { x.Kind = "sample"; x.ParentId = s.Id; x.Style = prompt.Trim() + $" · Sample aus „{s.Title}“ {from:0.0}–{to:0.0} s"; });
-        _msMsg = $"Neues Lied aus dem Sample ({from:0.0}–{to:0.0} s von „{s.Title}“)."; Show(MS);
+        _msMsg = $"✓ Neues Lied aus dem Sample ({from:0.0}–{to:0.0} s von „{s.Title}“)."; Show(MS);
         return Songs.Get(m.Id);
     }
 

@@ -121,10 +121,10 @@ public partial class MainWindow
         var c = _case; var sp = new StackPanel { Spacing = 8 };
         var cat = LetterKit.Category(c.Category);
         sp.Children.Add(P($"{cat.Label} · Status: {StateLabel(c.State)} · Rechtsraum: {c.Jurisdiction}", Text, 12.5));
-        if (cat.Warning.Length > 0) sp.Children.Add(P("" + cat.Warning, Brush.Parse("#FACC15"), 11.5));
+        if (cat.Warning.Length > 0) sp.Children.Add(P("⚠ " + cat.Warning, Brush.Parse("#FACC15"), 11.5));
         // Verfahrensart
         var proc = Box("case-procedure", "Verfahrensart (z. B. Widerspruchsverfahren)", c.Procedure);
-        sp.Children.Add(Row(proc, Btn("case-procedure-ok", c.ProcedureConfirmed ? "Verfahrensart bestätigt" : "Verfahrensart bestätigen", () => { if (string.IsNullOrWhiteSpace(proc.Text)) throw new InvalidOperationException("Bitte die Verfahrensart eintragen."); c.Procedure = proc.Text!.Trim(); c.ProcedureConfirmed = true; SaveCase("Verfahren"); Show("akte"); })));
+        sp.Children.Add(Row(proc, Btn("case-procedure-ok", c.ProcedureConfirmed ? "✓ Verfahrensart bestätigt" : "Verfahrensart bestätigen", () => { if (string.IsNullOrWhiteSpace(proc.Text)) throw new InvalidOperationException("Bitte die Verfahrensart eintragen."); c.Procedure = proc.Text!.Trim(); c.ProcedureConfirmed = true; SaveCase("Verfahren"); Show("akte"); })));
         // Rückfragen
         var q = LetterKit.Questions(c);
         if (q.Count > 0) { sp.Children.Add(H("Trendo braucht noch", 14)); foreach (var x in q.Take(10)) sp.Children.Add(P("? " + x, Text, 11.5)); }
@@ -154,7 +154,7 @@ public partial class MainWindow
         {
             var an = LetterKit.Analyze(inc.Text);
             var box = new StackPanel { Spacing = 2, Children = { P($"{inc.Id} · {Path.GetFileName(inc.File)} · Texterkennung {inc.Confidence:0} %{(inc.Unreadable.Count > 0 ? $", {inc.Unreadable.Count} unsichere Stellen [?…?]" : "")}{(inc.Ephemeral ? " · forensisch: Löschung nach 120 h" : "")}", Text, 12) } };
-            foreach (var w in an.InjectionWarnings) box.Children.Add(P("" + w, Brush.Parse("#F87171"), 11));
+            foreach (var w in an.InjectionWarnings) box.Children.Add(P("⚠ " + w, Brush.Parse("#F87171"), 11));
             if (an.Demands.Count > 0) box.Children.Add(P("Aufforderungen an dich: " + string.Join(" | ", an.Demands.Take(4)), Text, 11));
             if (an.Claims.Count > 0) box.Children.Add(P("Behauptungen des Absenders (nicht geprüft): " + string.Join(" | ", an.Claims.Take(3)), null, 11));
             if (an.References.Count + an.Amounts.Count > 0) box.Children.Add(P($"Zeichen: {string.Join(", ", an.References)}   Beträge: {string.Join(", ", an.Amounts)}", null, 11));
@@ -197,9 +197,9 @@ public partial class MainWindow
         foreach (var (ci, i) in cites.Select((x, i) => (x, i)))
         {
             var ok = c.Sources.FirstOrDefault(s => s.Verified && LetterKit.Norm(s.Citation) == LetterKit.Norm(ci));
-            if (ok is not null) { sp.Children.Add(P($"{ci} – {ok.Url} (abgerufen {ok.Retrieved:dd.MM.yyyy}, {ok.Jurisdiction})", Brush.Parse("#4ADE80"), 11.5)); continue; }
+            if (ok is not null) { sp.Children.Add(P($"✓ {ci} – {ok.Url} (abgerufen {ok.Retrieved:dd.MM.yyyy}, {ok.Jurisdiction})", Brush.Parse("#4ADE80"), 11.5)); continue; }
             var url = Box($"src-url-{i}", "Link zur amtlichen Fundstelle (https://…)", LetterKit.LookupUrl(ci), w: 380);
-            sp.Children.Add(P($"{ci} – nicht belegt", Brush.Parse("#F87171"), 11.5));
+            sp.Children.Add(P($"✗ {ci} – nicht belegt", Brush.Parse("#F87171"), 11.5));
             sp.Children.Add(Row(url, Btn($"src-open-{i}", "Nachschlagen", () => { if (!_core.Offline && Browsers.Normalize(url.Text ?? "") is { } u) Launch(u.AbsoluteUri); }),
                 Btn($"src-ok-{i}", "Ich habe es geprüft", () =>
                 {
@@ -255,7 +255,7 @@ public partial class MainWindow
         var c = _case; var sp = new StackPanel { Spacing = 6 };
         // Ton
         var tones = new WrapPanel();
-        foreach (var t in LetterKit.Tones) { var b = Btn("tone-" + t.Id, (c.Tone == t.Id ? "• " : "") + t.Label, () => { LetterKit.ApplyTone(c, t.Id); SaveCase("Ton " + t.Id); Show("ausgabe"); }); b.Margin = new Thickness(0, 0, 6, 6); tones.Children.Add(b); }
+        foreach (var t in LetterKit.Tones) { var b = Btn("tone-" + t.Id, (c.Tone == t.Id ? "✓ " : "") + t.Label, () => { LetterKit.ApplyTone(c, t.Id); SaveCase("Ton " + t.Id); Show("ausgabe"); }); b.Margin = new Thickness(0, 0, 6, 6); tones.Children.Add(b); }
         sp.Children.Add(new StackPanel { Spacing = 4, Children = { H("Ton", 14), tones, P("Der Ton ändert nur Anrede, Schluss und einen Rahmensatz – Fakten, Beträge und Zeichen bleiben gleich.", null, 10.5) } });
         // Prüfung
         var issues = LetterKit.ValidateCase(c); var proof = Proofread.Check(c.Draft);
@@ -318,12 +318,12 @@ public partial class MainWindow
             var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("*,12,*"), Children = { P(d.Body, Text, 11), Pos(P(t.Text, Text, 11), 2) } };
             sp.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(8), Padding = new Thickness(10), Child = new StackPanel { Spacing = 4, Children = {
                 P($"Deutsch ↔ {t.Language.ToUpperInvariant()} · ENTWURF – bitte von jemandem prüfen lassen, der die Sprache sicher kann" + (stale ? " · VERALTET: das Original wurde geändert" : ""), stale ? Brush.Parse("#FACC15") : null, 10.5),
-                lost.Count > 0 ? P("Fehlt in der Übersetzung: " + string.Join(", ", lost), Brush.Parse("#F87171"), 11) : P("Zahlen, Daten und Zeichen stimmen überein.", Brush.Parse("#4ADE80"), 11), grid } } });
+                lost.Count > 0 ? P("⚠ Fehlt in der Übersetzung: " + string.Join(", ", lost), Brush.Parse("#F87171"), 11) : P("✓ Zahlen, Daten und Zeichen stimmen überein.", Brush.Parse("#4ADE80"), 11), grid } } });
         }
         // Versandweg + Freigabe
         sp.Children.Add(H("Versandweg und Freigabe", 14));
         var ch = new WrapPanel();
-        foreach (var x in LetterKit.Channels) { var b = Btn("ch-" + x.Id, (c.FilingChannel == x.Id ? "• " : "") + x.Label, () => { c.FilingChannel = x.Id; _approval = null; SaveCase("Kanal " + x.Id); Show("ausgabe"); }); b.Margin = new Thickness(0, 0, 6, 6); ch.Children.Add(b); }
+        foreach (var x in LetterKit.Channels) { var b = Btn("ch-" + x.Id, (c.FilingChannel == x.Id ? "✓ " : "") + x.Label, () => { c.FilingChannel = x.Id; _approval = null; SaveCase("Kanal " + x.Id); Show("ausgabe"); }); b.Margin = new Thickness(0, 0, 6, 6); ch.Children.Add(b); }
         sp.Children.Add(ch);
         if (LetterKit.Channels.FirstOrDefault(x => x.Id == c.FilingChannel) is { Id: not null } sel) sp.Children.Add(P(sel.Hint, null, 11));
         if (c.Category is "gericht" or "behoerde")
@@ -335,7 +335,7 @@ public partial class MainWindow
             sp.Children.Add(Row(law, form));
         }
         var (ready, blockers) = LetterKit.ReadyForDelivery(c);
-        foreach (var b in blockers) sp.Children.Add(P("" + b, Brush.Parse("#F87171"), 11.5));
+        foreach (var b in blockers) sp.Children.Add(P("✗ " + b, Brush.Parse("#F87171"), 11.5));
         var approve = Btn("out-approve", "Endgültige Fassung freigeben", () =>
         {
             if (_finalFile is null) throw new InvalidOperationException("Bitte zuerst eine Ausgabe (PDF/DOCX) erzeugen.");
@@ -369,7 +369,7 @@ public partial class MainWindow
         {
             var e = new LetterTrash(ProjectsRoot).List().FirstOrDefault(x => x.Id == id);
             if (e?.Kind == "briefkopf") Cases.RestoreLetterhead(id, Principal.LocalOwner); else new LetterTrash(ProjectsRoot).Restore(id);
-            _caseMsg = $"„{e?.Label}“ ist wieder da.";
+            _caseMsg = $"✓ „{e?.Label}“ ist wieder da.";
         }
         catch (Exception ex) when (ex is IOException or FileNotFoundException or UnauthorizedAccessException) { _caseMsg = "Zurückholen ging nicht: " + ex.Message; }
         Show(view);
@@ -394,7 +394,7 @@ public partial class MainWindow
         sp.Children.Add(Btn("trash-empty", "Papierkorb leeren (in den Windows-Papierkorb)", () =>
         {
             var n = trash.Empty(p => { if (LetterRecycleOverride is { } o) o(p); else RecycleBin.Move(p); });
-            _caseMsg = $"{n} Einträge sind im Windows-Papierkorb – dort kannst du sie noch zurückholen.";
+            _caseMsg = $"✓ {n} Einträge sind im Windows-Papierkorb – dort kannst du sie noch zurückholen.";
             _core.Audit.Append(Principal.LocalOwner.Name, "letter.trash.empty", n.ToString()); Show("akten");
         }));
         return sp;
@@ -406,7 +406,7 @@ public partial class MainWindow
         var heads = Cases.Letterheads(Principal.LocalOwner);
         foreach (var h in heads)
         {
-            var use = Btn("head-use-" + h.Id, _case?.LetterheadId == h.Id ? "in dieser Akte" : "Für die Akte verwenden", () => { if (_case is null) throw new InvalidOperationException("Erst eine Akte öffnen."); _case.LetterheadId = h.Id; LetterKit.Compose(_case, h); SaveCase("Briefkopf"); Show("briefkoepfe"); });
+            var use = Btn("head-use-" + h.Id, _case?.LetterheadId == h.Id ? "✓ in dieser Akte" : "Für die Akte verwenden", () => { if (_case is null) throw new InvalidOperationException("Erst eine Akte öffnen."); _case.LetterheadId = h.Id; LetterKit.Compose(_case, h); SaveCase("Briefkopf"); Show("briefkoepfe"); });
             use.IsEnabled = _case is not null;
             var hid = h.Id; var del = Btn("head-del-" + h.Id, "Löschen", () => LetterTrashed(Cases.DeleteLetterhead(hid, Principal.LocalOwner), "briefkoepfe"));
             sp.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 6), Child = Row(P($"{(h.Kind == "firma" ? "Firma" : "Privat")}: {h.Name}, {h.Street}, {h.City} {h.Contact}", Text, 12), use, del) });

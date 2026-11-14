@@ -116,11 +116,11 @@ public partial class MainWindow
             case "nachher" when c.ShowingBefore: doc.ReplaceData(c.After); c.ShowingBefore = false; _progMsg[page] = "Du siehst Claudes Fassung."; break;
             case "behalten":
                 if (c.ShowingBefore) doc.ReplaceData(c.After);
-                _claudeChanges.Remove(page); _progMsg[page] = "Claudes Änderungen übernommen – Strg+Z nimmt sie trotzdem noch zurück.";
+                _claudeChanges.Remove(page); _progMsg[page] = "✓ Claudes Änderungen übernommen – Strg+Z nimmt sie trotzdem noch zurück.";
                 _core.Audit.Append(Principal.LocalOwner.Name, "claude.programm.behalten", page); break;
             case "verwerfen":
                 if (!c.ShowingBefore) doc.Rollback(c.Before);
-                _claudeChanges.Remove(page); _progMsg[page] = "Claudes Änderungen verworfen – das Dokument ist wie vorher.";
+                _claudeChanges.Remove(page); _progMsg[page] = "✕ Claudes Änderungen verworfen – das Dokument ist wie vorher.";
                 _core.Audit.Append(Principal.LocalOwner.Name, "claude.programm.verworfen", page); break;
         }
         if (CurrentView == page) Show(page);
@@ -148,7 +148,7 @@ public partial class MainWindow
         }
         var row = new WrapPanel { Children = {
             B("claude-change-before", "Vorher", "vorher", c.ShowingBefore), B("claude-change-after", "Nachher", "nachher", !c.ShowingBefore),
-            new Border { Width = 10 }, B("claude-change-keep", "Behalten", "behalten", main: true), B("claude-change-drop", "Verwerfen", "verwerfen") } };
+            new Border { Width = 10 }, B("claude-change-keep", "✓ Behalten", "behalten", main: true), B("claude-change-drop", "✕ Verwerfen", "verwerfen") } };
         var sp = new StackPanel { Spacing = 6, Children = {
             new TextBlock { Text = $"Claude hat „{doc.Title}“ geändert" + (c.ShowingBefore ? " – du siehst gerade den Stand vorher." : " – du siehst Claudes Fassung."), Foreground = Text, FontSize = 13.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
             row } };

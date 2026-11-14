@@ -60,10 +60,10 @@ public partial class MainWindow
                     IfcSend($"window.trendoIfc(\"{b64}\",{JsonSerializer.Serialize(Path.GetFileNameWithoutExtension(_ifcViewFile))})");
                     break;
                 case "geladen": _ifcViewNote = $"{N("waende")} Wände, {N("tueren")} Türen, {N("fenster")} Fenster, {N("raeume")} Räume"; break;
-                case "fehler": _ifcViewNote = "" + (r.TryGetProperty("text", out var t) ? t.GetString() : "Fehler"); break;
+                case "fehler": _ifcViewNote = "⚠ " + (r.TryGetProperty("text", out var t) ? t.GetString() : "Fehler"); break;
             }
         }
-        catch (Exception e) when (e is JsonException or IOException or UnauthorizedAccessException) { _ifcViewNote = "IFC-Datei nicht lesbar."; }
+        catch (Exception e) when (e is JsonException or IOException or UnauthorizedAccessException) { _ifcViewNote = "⚠ IFC-Datei nicht lesbar."; }
     }
 
     /// <summary>Arbeitsfläche bei offener IFC-Ansicht (sonst null).</summary>

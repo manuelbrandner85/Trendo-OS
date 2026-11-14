@@ -31,7 +31,7 @@ public partial class MainWindow
         bsec.Children.Add(new WrapPanel { Children = { P("Hauptfarbe  "), color, Act("br-palette", "Farben berechnen", () => { if (!System.Text.RegularExpressions.Regex.IsMatch(color.Text?.Trim() ?? "", "^#[0-9A-Fa-f]{6}$")) { Say("Bitte die Hauptfarbe als Farbcode eintragen, z. B. #2F86F6.", "biz-marke"); return; } _brandColor = color.Text!.Trim(); Say($"Farben aus {_brandColor} berechnet.", "biz-marke"); }) } });
         bsec.Children.Add(sw);
         var ctr = BusinessBrand.Contrast(pal[4].Hex, pal[5].Hex);
-        bsec.Children.Add(P($"Lesbarkeit Text auf Hintergrund: {ctr:0.0} : 1 {(ctr >= 4.5 ? "✓ gut lesbar" : "zu wenig Kontrast")}", null, 11));
+        bsec.Children.Add(P($"Lesbarkeit Text auf Hintergrund: {ctr:0.0} : 1 {(ctr >= 4.5 ? "✓ gut lesbar" : "⚠ zu wenig Kontrast")}", null, 11));
         foreach (var t in BusinessBrand.Taglines(i)) bsec.Children.Add(P("„" + t + "“", Text, 11.5));
         bsec.Children.Add(Act("br-export", "Marke speichern (Farben als CSS)", () =>
         {

@@ -93,7 +93,7 @@ public partial class MainWindow
         }
         catch (Exception e) when (e is InvalidOperationException or IOException or UnauthorizedAccessException or TaskCanceledException or HttpRequestException)
         {
-            a.Status = "" + e.Message + (a.Snapshot is not null ? " – Bisheriges kannst du unten zurücknehmen." : "");
+            a.Status = "⚠ " + e.Message + (a.Snapshot is not null ? " – Bisheriges kannst du unten zurücknehmen." : "");
             a.Done = a.Snapshot is not null;
         }
         a.Busy = false; BuildAgentPane(dock);
@@ -141,7 +141,7 @@ public partial class MainWindow
             if (a.Shot is { } shot && File.Exists(shot))
                 try { using var s = File.OpenRead(shot); sp.Children.Add(new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, Child = new Image { Name = "agent-shot", Source = Avalonia.Media.Imaging.Bitmap.DecodeToWidth(s, 520), Stretch = Stretch.Uniform } }); }
                 catch (Exception e) when (e is IOException or ArgumentException or InvalidOperationException) { }
-            var keep = Act("agent-keep", "Ja, behalten", () => { a.Snapshot = null; a.Done = false; a.Status = "Behalten."; _core.Audit.Append(Principal.LocalOwner.Name, "agent.keep", dock.Studio ?? ""); BuildAgentPane(dock); }, true);
+            var keep = Act("agent-keep", "Ja, behalten", () => { a.Snapshot = null; a.Done = false; a.Status = "✓ Behalten."; _core.Audit.Append(Principal.LocalOwner.Name, "agent.keep", dock.Studio ?? ""); BuildAgentPane(dock); }, true);
             var undo = Act("agent-undo", "Nein, rückgängig", () =>
             {
                 a.Snapshot?.Restore(); a.Snapshot = null; a.Done = false; a.Status = "Alles ist wieder wie vorher."; a.Applied.Clear(); a.Checks = [];
@@ -164,8 +164,8 @@ public partial class MainWindow
         if (a.Applied.Count > 0 || a.Checks.Count > 0)
         {
             var det = new StackPanel { Spacing = 4 };
-            foreach (var c in a.Checks) det.Children.Add(new TextBlock { Text = (c.Ok ? "• " : "") + c.Text, Foreground = c.Ok ? Brush.Parse("#86EFAC") : Brush.Parse("#FCA5A5"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
-            foreach (var r in a.Rejected) det.Children.Add(P("" + r, Brush.Parse("#F5A524"), 11));
+            foreach (var c in a.Checks) det.Children.Add(new TextBlock { Text = (c.Ok ? "✓ " : "✕ ") + c.Text, Foreground = c.Ok ? Brush.Parse("#86EFAC") : Brush.Parse("#FCA5A5"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
+            foreach (var r in a.Rejected) det.Children.Add(P("⚠ " + r, Brush.Parse("#F5A524"), 11));
             var k = 0;
             foreach (var c in a.Applied.GroupBy(c => c.Path).Select(g => new AgentChange(g.Key, g.First().Before, g.Last().After, 0, 0)))
             {

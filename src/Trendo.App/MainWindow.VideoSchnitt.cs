@@ -434,7 +434,7 @@ public partial class MainWindow
                 _thumbs.Clear(); _progMsg[VK] = n == 0 ? "In diesem Ordner wurden die fehlenden Dateien nicht gefunden." : $"{n} von {miss.Count} Dateien wieder verknüpft."; Show(VK);
             };
             outer.Children.Insert(0, new Border { Name = "ve-missing", Background = Brush.Parse("#33F59E0B"), BorderBrush = Brush.Parse("#F59E0B"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 8), Margin = new Thickness(0, 0, 0, 8),
-                Child = new StackPanel { Spacing = 6, Children = { P($"{miss.Count} Datei(en) nicht gefunden – verschoben oder umbenannt? z. B. „{Path.GetFileName(miss[0])}“.", Text, 12), relink } } });
+                Child = new StackPanel { Spacing = 6, Children = { P($"⚠ {miss.Count} Datei(en) nicht gefunden – verschoben oder umbenannt? z. B. „{Path.GetFileName(miss[0])}“.", Text, 12), relink } } });
         }
         return outer;
     }

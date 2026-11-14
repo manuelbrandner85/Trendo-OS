@@ -195,7 +195,7 @@ public sealed class CircuitCanvas : Control
         if (ScopeHeight > 0 && _s.Selected is { } sid && c.Part(sid) is { } sp2) DrawScope(ctx, size, sp2);
         var info = st is null ? "" : $"t = {st.Time:0.000} s · {(_s.Running ? (_s.Speed >= 1 ? "läuft (Echtzeit)" : $"läuft ({1 / _s.Speed:0}× langsamer)") : "angehalten")}";
         if (info.Length > 0) Label(ctx, info, new Point(10, size.Height - 24 - ScopeHeight), "#C9D6EA", "#AA1C1C1C");
-        var hint = _problem is { } pr ? "" + pr : _s.Hint.Length > 0 ? _s.Hint : ToolHint();
+        var hint = _problem is { } pr ? "⚠ " + pr : _s.Hint.Length > 0 ? _s.Hint : ToolHint();
         if (hint.Length > 0) Label(ctx, hint, new Point(10, 10), "#FFFFFF", _problem is null ? "#CC2C2C2C" : "#DDB91C1C");
         if (c.Parts.Count == 0 && _s.Tool == "auswahl")
         {

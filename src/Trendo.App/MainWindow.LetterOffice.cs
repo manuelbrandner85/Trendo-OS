@@ -37,8 +37,8 @@ public partial class MainWindow
         sp.Children.Add(new TextBlock { Name = "letter-kind-name", Text = k is null ? "Noch keine bestimmte Briefart erkannt – Betreff und Text schreiben." : $"Erkannt: {k.Label}", Foreground = k is null ? Muted : GoldText(), FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
         if (k is not null) sp.Children.Add(P(k.Hint, null, 11));
         var missing = LetterOffice.Missing(d, k);
-        foreach (var m in missing) sp.Children.Add(P("Fehlt: " + m, Brush.Parse("#F5A524"), 11.5));
-        if (missing.Count == 0) sp.Children.Add(P("Pflichtangaben nach DIN 5008 vollständig.", Brush.Parse("#2FBF71"), 11.5));
+        foreach (var m in missing) sp.Children.Add(P("⚠ Fehlt: " + m, Brush.Parse("#F5A524"), 11.5));
+        if (missing.Count == 0) sp.Children.Add(P("✓ Pflichtangaben nach DIN 5008 vollständig.", Brush.Parse("#2FBF71"), 11.5));
         var row = new WrapPanel();
         if (k is { Attachments.Length: > 0 } && string.IsNullOrWhiteSpace(d.Attachments))
             row.Children.Add(Act("letter-kind-attach", "Anlagen eintragen", () => { d.Attachments = string.Join("\n", k.Attachments); _letterMsg = "Anlagen eingetragen – bitte prüfen."; Show(V); }));
@@ -53,7 +53,7 @@ public partial class MainWindow
                 {
                     Cal.Add(new Trendo.Core.Sys.CalEvent(Guid.NewGuid().ToString("N"), dl.Date, dl.Date.AddDays(1), "Frist: " + (d.Subject.Trim().Length > 0 ? d.Subject.Trim() : k.Label), AllDay: true, RemindMin: 2 * 24 * 60));
                     _core.Audit.Append(Principal.LocalOwner.Name, "letter.frist.kalender", $"{k.Id} {dl.Date:yyyy-MM-dd}");
-                    _kindAsk = null; _letterMsg = $"Frist am {dl.Date:dd.MM.yyyy} im Kalender."; Show(V);
+                    _kindAsk = null; _letterMsg = $"✓ Frist am {dl.Date:dd.MM.yyyy} im Kalender."; Show(V);
                 }, true));
                 row.Children.Add(Act("letter-kind-cal-no", "Nein", () => { _kindAsk = null; _letterMsg = "Nicht eingetragen."; Show(V); }));
             }
@@ -64,7 +64,7 @@ public partial class MainWindow
         row.Children.Add(new Border { Width = 8 }); row.Children.Add(channel);
         row.Children.Add(Act("letter-post-add", "Als verschickt eintragen", () =>
         {
-            try { var e = LetterPostOut(d, LetterOffice.Channels[Math.Max(0, channel.SelectedIndex)].Id, Today); _letterMsg = $"Im Postausgangsbuch: {e.Date:dd.MM.yyyy} an {e.Recipient}."; }
+            try { var e = LetterPostOut(d, LetterOffice.Channels[Math.Max(0, channel.SelectedIndex)].Id, Today); _letterMsg = $"✓ Im Postausgangsbuch: {e.Date:dd.MM.yyyy} an {e.Recipient}."; }
             catch (ArgumentException ex) { _letterMsg = ex.Message; }
             Show(V);
         }));

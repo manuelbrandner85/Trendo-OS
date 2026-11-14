@@ -50,7 +50,7 @@ public partial class MainWindow
         {
             var r = FileRow(f, i++, "dl");
             if (Browsers.Unfinished(f.Name)) sp.Children.Add(new StackPanel { Children = { r, P("   noch nicht fertig heruntergeladen", Brush.Parse("#FACC15"), 10.5) } });
-            else if (Browsers.Risky(f.Name)) sp.Children.Add(new StackPanel { Children = { r, P("   Programmdatei – nur öffnen, wenn du der Quelle vertraust", Brush.Parse("#FACC15"), 10.5) } });
+            else if (Browsers.Risky(f.Name)) sp.Children.Add(new StackPanel { Children = { r, P("   ⚠ Programmdatei – nur öffnen, wenn du der Quelle vertraust", Brush.Parse("#FACC15"), 10.5) } });
             else sp.Children.Add(r);
         }
         return AppsPage("Browser & Downloads", sp);

@@ -41,7 +41,7 @@ public partial class MainWindow
         else { _msMsg = "Zum Ersetzen des Tons braucht Trendo FFmpeg (unter „Programme“ einrichten)."; Show(MS); return null; }
         if (!ok) { _msMsg = "Ton ersetzen ging nicht."; Show(MS); return null; }
         SongVideoAdd(s, o);
-        _msMsg = $"Neuer Ton im Video: {Path.GetFileName(o)}"; _core.Audit.Append(Principal.LocalOwner.Name, "musik.video.ton", Path.GetFileName(o));
+        _msMsg = $"✓ Neuer Ton im Video: {Path.GetFileName(o)}"; _core.Audit.Append(Principal.LocalOwner.Name, "musik.video.ton", Path.GetFileName(o));
         if (CurrentView == MS) Show(MS);
         return o;
     }
@@ -81,7 +81,7 @@ public partial class MainWindow
         if (old is not null && old.Figures.Count == sc.Figures.Count) sc = sc with { Figures = old.Figures }; // eigene Figurenbeschreibungen behalten
         sc = sc with { Shots = sc.Shots.Select(x => x with { Prompt = MusicScript.Prompt(x, sc.Figures, s.Style, u.Theme) }).ToList() };
         SaveScript(s, sc); _msShotSel = -1;
-        _msMsg = "Drehbuch: " + MusicScript.Summary(sc) + ". Einstellung anklicken zum Ändern.";
+        _msMsg = "✓ Drehbuch: " + MusicScript.Summary(sc) + ". Einstellung anklicken zum Ändern.";
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.drehbuch", $"{s.Id}: {sc.Shots.Count} Einstellungen");
         if (CurrentView == MS) Show(MS);
         return sc;

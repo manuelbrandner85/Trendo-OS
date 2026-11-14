@@ -99,7 +99,7 @@ public partial class MainWindow
         claude.Children.Add(P("Mit Claude arbeitet Trendo besonders klug: Texte, Programme, Ideen. Du meldest dich mit deinem eigenen Claude-Konto an – Trendo speichert keine Zugangsdaten. Ohne Claude arbeitet Trendo mit den freien KIs auf deinem PC.", Text, 13));
         var cs = _claude;
         claude.Children.Add(new WrapPanel { Children = {
-            cs.Installed ? (Control)new TextBlock { Name = "wiz-claude-ok", Text = "Claude Code ist eingerichtet", Foreground = Brush.Parse("#4ADE80"), FontSize = 13, VerticalAlignment = VerticalAlignment.Center }
+            cs.Installed ? (Control)new TextBlock { Name = "wiz-claude-ok", Text = "✓ Claude Code ist eingerichtet", Foreground = Brush.Parse("#4ADE80"), FontSize = 13, VerticalAlignment = VerticalAlignment.Center }
                 : Act("wiz-claude", "Claude einrichten", () => _ = ClaudeInstall(), true),
             new Border { Width = 8 },
             new TextBlock { Text = "– oder einfach überspringen", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center } } });
@@ -137,7 +137,7 @@ public partial class MainWindow
                 if (ok && ImageReady)
                 {
                     var name = d.Name; var on = _wizDrive == name;
-                    var pick = new Button { Name = "wiz-pick-" + name.TrimEnd(':'), Content = on ? "gewählt" : "Dieses nehmen", Padding = new Thickness(10, 3), FontSize = 12,
+                    var pick = new Button { Name = "wiz-pick-" + name.TrimEnd(':'), Content = on ? "✓ gewählt" : "Dieses nehmen", Padding = new Thickness(10, 3), FontSize = 12,
                         Background = on ? Brush.Parse("#33D4A84B") : Brush.Parse("#14FFFFFF"), BorderBrush = Brush.Parse(on ? "#D4A84B" : "#22FFFFFF"), BorderThickness = new Thickness(1) };
                     pick.Click += (_, _) => SetupPickDrive(name);
                     row.Children.Add(pick);

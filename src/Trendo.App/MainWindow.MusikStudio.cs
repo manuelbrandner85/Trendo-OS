@@ -96,7 +96,7 @@ public partial class MainWindow
                     foreach (var m in made) if (await MsMaster(m.Id, quiet: true)) mastered++;
                     made = [.. made.Select(m => Songs.Get(m.Id) ?? m)];
                     if (CoverImageOverride is not null || (!_opt.Isolated && CoverModel() is not null)) _ = MsMakeCover(made[0].Id, auto: true); // gleich ein passendes Cover dazu
-                    _msMsg = (made.Count > 1 ? $"{made.Count} Varianten fertig – anhören und die schönere behalten." : "Fertig.") + (mastered > 0 ? " Gemastert auf −14 LUFS." : "");
+                    _msMsg = (made.Count > 1 ? $"✓ {made.Count} Varianten fertig – anhören und die schönere behalten." : "✓ Fertig.") + (mastered > 0 ? " Gemastert auf −14 LUFS." : "");
                     _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.fertig", $"{kind} {made.Count}");
                     if (MsSingVoice.Length > 0 && kind is "neu" or "cover") _ = MsApplySingVoice(made); // V4: in der gewählten Stimme singen
                     return made;
@@ -201,7 +201,7 @@ public partial class MainWindow
         {
             var text = MusicLyricsOverride is { } o ? await o(prompt) : await Intel.AskAsync(new KiRequest(prompt, PreferredModel: KiModelName, UseKnowledge: false, AllowRemote: true)) is { Ok: true } a ? a.Text : throw new InvalidOperationException("Die KI hat gerade keinen Text geliefert.");
             var (polished, left) = await MsPolishLyrics(text.Trim().Trim('`').Trim());
-            _msLyrics = polished; _msPro = true; _msMsg = "Liedtext eingesetzt – anpassen und dann „Erstellen“." + FloskelHint(left);
+            _msLyrics = polished; _msPro = true; _msMsg = "✓ Liedtext eingesetzt – anpassen und dann „Erstellen“." + FloskelHint(left);
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.liedtext", lang);
         }
         catch (Exception ex) when (ex is InvalidOperationException or HttpRequestException or TaskCanceledException) { _msMsg = "Liedtext ging nicht: " + ex.Message; }
@@ -235,7 +235,7 @@ public partial class MainWindow
             ("edit", "Bearbeiten: Abschnitt neu, Verlängern, anderer Stil", () => Tab("bearbeiten")),
             ("stems", "Spuren trennen und Mitsingen", () => Tab("spuren")),
             ("video", "Musikvideo", () => Tab("video")),
-            ("master", s.Mastered ? "Gemastert" : "Mastern (−14 LUFS)", () => _ = MsMaster(s.Id)),
+            ("master", s.Mastered ? "✓ Gemastert" : "Mastern (−14 LUFS)", () => _ = MsMaster(s.Id)),
             ("mp3", "MP3 mit Cover", () => MsExportMp3WithCover(s)),
             ("wav", "Als WAV", () => MsExport(s, "wav")),
             ("flac", "Als FLAC", () => MsExport(s, "flac")),
@@ -541,7 +541,7 @@ public partial class MainWindow
         var actions = new WrapPanel { Children = {
             Act("ms-rename-ok", "Umbenennen", () => { Songs.Rename(s.Id, name.Text ?? ""); Show(MS); }),
             Act("ms-to-video", "In den Videoschnitt", () => MsToVideo(s)),
-            Act("ms-master", s.Mastered ? "Gemastert" : "Mastern (−14 LUFS)", () => _ = MsMaster(s.Id)),
+            Act("ms-master", s.Mastered ? "✓ Gemastert" : "Mastern (−14 LUFS)", () => _ = MsMaster(s.Id)),
             Act("ms-export-mp3c", "MP3 mit Cover", () => MsExportMp3WithCover(s)),
             Act("ms-export-wav", "Als WAV", () => MsExport(s, "wav")), Act("ms-export-flac", "Als FLAC", () => MsExport(s, "flac")),
             Act("ms-folder", "Ordner öffnen", () => Launch(Path.GetDirectoryName(s.File)!)),
@@ -557,7 +557,7 @@ public partial class MainWindow
         var target = Path.ChangeExtension(s.File, fmt);
         if (File.Exists(target)) { _msMsg = "Gibt es schon: " + target; Show(MS); return; }
         var r = _opt.Isolated && SongExportOverride is null ? new Cli.Result(-1, "", "Testmodus") : SongExportOverride?.Invoke(s.File, target) ?? Cli.Run(ff, ["-y", "-i", s.File, target], timeoutMs: 600_000);
-        _msMsg = r.Ok && File.Exists(target) ? "Gespeichert: " + target : "Umwandeln ging nicht: " + Short(r.Err);
+        _msMsg = r.Ok && File.Exists(target) ? "✓ Gespeichert: " + target : "Umwandeln ging nicht: " + Short(r.Err);
         if (r.Ok) _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.export", fmt);
         Show(MS);
     }

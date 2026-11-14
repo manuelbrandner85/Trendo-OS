@@ -113,7 +113,7 @@ public partial class MainWindow
             Line(pf, Act("print-preview", "Vorschau", () => Try(V, () =>
             {
                 var f = Need(pf, "die PDF-Datei für die Vorschau"); if (!File.Exists(f)) { Say("Datei nicht gefunden: " + Path.GetFileName(f), V); return; } var b = Pdf.MediaBox(f); _printFile = f; info.Children.Clear();
-                info.Children.Add(P($"{Pdf.Pages(f)} Seiten · {(b is { } x ? $"{x.W / 72 * 25.4:0} × {x.H / 72 * 25.4:0} mm" : "Format unbekannt")} · {(Pdf.IsA4(b) ? "A4" : "nicht A4")}", Text));
+                info.Children.Add(P($"{Pdf.Pages(f)} Seiten · {(b is { } x ? $"{x.W / 72 * 25.4:0} × {x.H / 72 * 25.4:0} mm" : "Format unbekannt")} · {(Pdf.IsA4(b) ? "A4 ✓" : "nicht A4")}", Text));
                 info.Children.Add(PageImages(f));
                 if (!_opt.Isolated) { OpenPdf(f); } // Vorschau in Trendo PDF selbst (statt SumatraPDF)
             })), _printAsk ? Line(P("Jetzt auf dem Standarddrucker drucken?", Text), Act("print-yes", "Ja, drucken", () => Try(V, () => { PrintNow(_printFile, sumatra); _printAsk = false; Say("An den Drucker geschickt.", V); }), true), Act("print-no", "Abbrechen", () => { _printAsk = false; Show(V); }))

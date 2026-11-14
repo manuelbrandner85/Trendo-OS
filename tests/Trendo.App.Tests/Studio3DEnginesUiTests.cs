@@ -34,7 +34,7 @@ public class Studio3DEngines_Ui
         w.Find<Button>("3d-add").Press(); Pump();
         w.Find<Button>("3d-engine-unity").Press(); Pump();
         Assert.Equal(["unity"], calls);
-        Assert.True(w.LastEngineExport!.Ok); Assert.StartsWith("Unity", Msg(w));
+        Assert.True(w.LastEngineExport!.Ok); Assert.StartsWith("✓ Unity", Msg(w));
         Assert.True(File.Exists(Path.Combine(w.Folder3D, "Engine-Export", "Tisch-unity-bericht.txt")));
         w.Find<Button>("3d-engine-web").Press(); Pump();
         Assert.False(w.LastEngineExport!.Ok); Assert.Contains("Materialien verloren", Msg(w));

@@ -266,7 +266,7 @@ public partial class MainWindow
                 throw new InvalidOperationException($"Eingerichtet, aber die Startdatei „{st.Exe}“ fehlt. Das Projekt braucht wohl eine andere Startweise – „Quellcode holen“ und die Anleitung (README) helfen weiter.");
             var entry = SourceApps.Register(_deps.ToolsRoot, repo.FullName, sha, plan, repo.LicenseId, repo.Description, _core.Audit);
             if (Directory.Exists(old)) try { Directory.Delete(old, true); } catch (IOException) { }
-            SetupOverlayProgress(4, 4, "Fertig");
+            SetupOverlayProgress(4, 4, "Fertig ✓");
             var msg = $"„{name}“ ist aus dem Quellcode eingerichtet{(start ? " und startet gerade" : "")}. Du findest es unter „Programme“ › „Aus Quellcode eingerichtet“.";
             FinishSetupOverlay("Bereit", msg, []); Say(msg, "oss");
             if (start) await SourceStart(entry);

@@ -55,7 +55,7 @@ public partial class MainWindow
             var (a, why) = VoiceAnalysis.Parse(json);
             if (a is null) { _msMsg = "Keine Stimme erkannt: " + why + "."; return null; }
             var p = Voices.Upsert(name, a);
-            _msMsg = $"Stimme von „{p.Name}“: {a.Summary}.";
+            _msMsg = $"✓ Stimme von „{p.Name}“: {a.Summary}.";
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.stimme.analyse", p.Id); // keine Aufnahme gespeichert, nur das Ergebnis
             return p;
         }

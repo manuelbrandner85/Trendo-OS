@@ -21,12 +21,12 @@ public class ForensikYara_Ui
             MainWindow.YaraRunOverride = (_, a, _) => { seen = a; return new Cli.Result(0, "{\"path\":\"" + f.Replace("\\", "\\\\") + "\",\"rules\":[{\"identifier\":\"Win32_Ransomware_WannaCry\",\"meta\":{\"tc_detection_type\":\"Ransomware\",\"tc_detection_name\":\"WannaCry\",\"tc_detection_factor\":5}}]}\n", ""); };
             w.Show("forensik"); Assert.NotNull(w.Find<Button>("for-yara-run"));
             await w.ForensicsYara("\"" + dir + "\"");
-            Assert.StartsWith("1 Datei(en) mit 1 Treffer(n): rechnung.exe → Erpressersoftware WannaCry", w.YaraMessage);
+            Assert.StartsWith("⚠ 1 Datei(en) mit 1 Treffer(n): rechnung.exe → Erpressersoftware WannaCry", w.YaraMessage);
             Assert.Equal(dir, seen![^1]); Assert.True(File.Exists(f)); Assert.Equal(5, w.YaraLast!.Single().Severity);
             Assert.Contains("Erpressersoftware", w.Find<SelectableTextBlock>("for-yara-msg").Text);
             MainWindow.YaraRunOverride = (_, _, _) => new Cli.Result(0, "", "");
-            await w.ForensicsYara(dir); Assert.StartsWith("Keine bekannten Schadsoftware-Merkmale", w.YaraMessage);
-            await w.ForensicsYara(Path.Combine(root, "gibtsnicht")); Assert.Equal("Diese Datei oder diesen Ordner gibt es nicht.", w.YaraMessage);
+            await w.ForensicsYara(dir); Assert.StartsWith("✓ Keine bekannten Schadsoftware-Merkmale", w.YaraMessage);
+            await w.ForensicsYara(Path.Combine(root, "gibtsnicht")); Assert.Equal("⚠ Diese Datei oder diesen Ordner gibt es nicht.", w.YaraMessage);
         }
         finally { MainWindow.YaraDirOverride = null; MainWindow.YaraRunOverride = null; w.Close(); }
     }

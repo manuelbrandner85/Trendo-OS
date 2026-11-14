@@ -50,8 +50,8 @@ public partial class MainWindow
 
     async Task ArchIfcSetup()
     {
-        if (KiStore.RuntimeReady(KiRuntime.Ifc)) { _progMsg[AK] = "IFC-Austausch ist schon eingerichtet."; Show(AK); return; }
-        try { await KiPyInstall(IfcModel, KiPyApps.For(KiRuntime.Ifc)!); _progMsg[AK] = "IFC-Austausch ist eingerichtet – jetzt unter Exportieren „IFC (BIM)“."; }
+        if (KiStore.RuntimeReady(KiRuntime.Ifc)) { _progMsg[AK] = "✓ IFC-Austausch ist schon eingerichtet."; Show(AK); return; }
+        try { await KiPyInstall(IfcModel, KiPyApps.For(KiRuntime.Ifc)!); _progMsg[AK] = "✓ IFC-Austausch ist eingerichtet – jetzt unter Exportieren „IFC (BIM)“."; }
         catch (Exception e) when (e is InvalidOperationException or IOException or HttpRequestException or OperationCanceledException) { _progMsg[AK] = "Einrichten ging nicht: " + e.Message; }
         Show(AK);
     }

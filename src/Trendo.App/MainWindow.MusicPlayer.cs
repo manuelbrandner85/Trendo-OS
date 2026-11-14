@@ -205,7 +205,7 @@ public partial class MainWindow
                 new WrapPanel { Children = { Act("music-album-play", "Abspielen", () => MusicPlay(paths), true), new Border { Width = 6 },
                     Act("music-album-shuffle", "Zufällig", () => { _queue.SetShuffle(true); MusicPlay(paths); }), new Border { Width = 6 },
                     Act("music-album-queue", "+ Warteschlange", () => { foreach (var p in paths) _queue.Enqueue(p); Say($"{paths.Count} Titel in der Warteschlange.", "medien"); if (_queue.Items.Count == paths.Count) MusicStart(); }), new Border { Width = 6 },
-                    Act("music-back", "Alle Alben", () => { _musicView = "alben"; Show("medien"); }) } } } }, 2) } };
+                    Act("music-back", "← Alle Alben", () => { _musicView = "alben"; Show("medien"); }) } } } }, 2) } };
         return new StackPanel { Spacing = 14, Children = { head, MusicTable(tracks, null, showAlbum: false) } };
     }
 
@@ -325,6 +325,6 @@ public partial class MainWindow
     {
         if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner);
         Say("Player wird eingerichtet …", "medien"); await InstallOne(DependencyCatalog.Get("mpv"));
-        Say(MpvExe is not null ? "Player ist eingerichtet." : "Der Player ließ sich nicht einrichten. Ist Internet da? Sonst das Trendo-Vollpaket anschließen.", "medien"); Show("medien");
+        Say(MpvExe is not null ? "✓ Player ist eingerichtet." : "✗ Der Player ließ sich nicht einrichten. Ist Internet da? Sonst das Trendo-Vollpaket anschließen.", "medien"); Show("medien");
     }
 }

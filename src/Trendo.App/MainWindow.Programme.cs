@@ -186,7 +186,7 @@ public partial class MainWindow
                 SetupOverlayProgress(3, 4, $"Installer wird still für dich ausgeführt ({io.Kind}) …");
                 exe = await GitHubRunInstaller(io, repo, rel, asset);
             }
-            SetupOverlayProgress(4, 4, "Fertig");
+            SetupOverlayProgress(4, 4, "Fertig ✓");
             if (start && exe is not null) { Launch(exe); _core.Audit.Append(Principal.LocalOwner.Name, "github.start", repo.FullName); }
             var msg = $"„{repo.FullName.Split('/')[1]}“ ist eingerichtet{(start ? " und startet gerade" : "")}. Du findest es unter „Programme“ und im Startmenü.";
             FinishSetupOverlay("Bereit", msg, []);

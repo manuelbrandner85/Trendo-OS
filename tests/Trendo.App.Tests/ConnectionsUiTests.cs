@@ -29,8 +29,8 @@ public class Connections_Ui
             lock (calls) calls.Add(new(exe, [.. args], cwd, env.ToDictionary(), vis));
             if (args is ["auth", "login", ..]) loggedIn = true;
             if (args is ["auth", "logout", ..]) loggedIn = false;
-            if (args is ["auth", "status", ..]) return Task.FromResult(loggedIn ? (0, "github.com\n  Logged in to github.com account erika-muster (keyring)") : (1, "You are not logged into any GitHub hosts."));
-            if (args is ["repo", "create", var name, ..]) return Task.FromResult((0, $"Created repository erika-muster/{name} on GitHub\n  https://github.com/erika-muster/{name}"));
+            if (args is ["auth", "status", ..]) return Task.FromResult(loggedIn ? (0, "github.com\n  ✓ Logged in to github.com account erika-muster (keyring)") : (1, "You are not logged into any GitHub hosts."));
+            if (args is ["repo", "create", var name, ..]) return Task.FromResult((0, $"✓ Created repository erika-muster/{name} on GitHub\n  https://github.com/erika-muster/{name}"));
             return Task.FromResult((0, ""));
         };
     }
@@ -72,7 +72,7 @@ public class Connections_Ui
             var login = calls.Single(c => c.Args is ["auth", "login", ..]);
             Assert.True(login.Visible); Assert.Contains("--web", login.Args); // Code und Browser-Anmeldung macht die Person selbst
             Assert.Equal(GitHubLink.ConfigDir(w.Core.DataRoot), login.Env["GH_CONFIG_DIR"]);
-            Assert.StartsWith("Angemeldet als erika-muster", w.Find<TextBlock>("conn-gh-state").Text);
+            Assert.StartsWith("✓ Angemeldet als erika-muster", w.Find<TextBlock>("conn-gh-state").Text);
             Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "github.login.ok");
 
             // Netlify: falscher Schlüssel abgelehnt, richtiger landet im Tresor (nie im Audit)

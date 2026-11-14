@@ -42,11 +42,11 @@ public class MediaIcons_Ui
                 return;
             }
             w.Find<Button>("mb-icon-0").Press();
-            Assert.StartsWith("Gespeichert: mdi-", w.IconMessage); Assert.Contains("frei nutzbar", w.IconMessage);
+            Assert.StartsWith("✓ Gespeichert: mdi-", w.IconMessage); Assert.Contains("frei nutzbar", w.IconMessage);
             await w.IconSearch("gi", "sword"); var f = w.IconSave("sword")!;
             Assert.Contains("Namensnennung nötig", w.IconMessage);
             Assert.Contains("„Game Icons“ von GI – CC BY 3.0", File.ReadAllText(Path.Combine(Path.GetDirectoryName(f)!, "Lizenzen.txt")));
-            await w.IconSearch("nc", ""); Assert.StartsWith("Diesen Symbolsatz bietet Trendo nicht an", w.IconMessage);
+            await w.IconSearch("nc", ""); Assert.StartsWith("⚠ Diesen Symbolsatz bietet Trendo nicht an", w.IconMessage);
             Assert.All(urls, u => Assert.Contains(IconSets.Commit, u));
             Assert.Equal(1, urls.Count(u => u.EndsWith("mdi.json"))); // danach aus dem Zwischenspeicher
         }

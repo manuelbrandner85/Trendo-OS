@@ -237,7 +237,7 @@ public partial class MainWindow
         var n = _codeBlocks++;
         var copy = new Button { Name = $"claude-code-copy-{n}", Content = "Kopieren", FontSize = 11, Padding = new Thickness(8, 2), Background = Brushes.Transparent, Foreground = ClaudeMuted, BorderThickness = new Thickness(0) };
         ToolTip.SetTip(copy, "Code in die Zwischenablage kopieren");
-        copy.Click += async (_, _) => { ResearchCopy(c.Text); copy.Content = "Kopiert"; await Task.Delay(1500); copy.Content = "Kopieren"; };
+        copy.Click += async (_, _) => { ResearchCopy(c.Text); copy.Content = "✓ Kopiert"; await Task.Delay(1500); copy.Content = "Kopieren"; };
         var head = new DockPanel { Margin = new Thickness(12, 4, 4, 0), Children = { Dk(copy, Avalonia.Controls.Dock.Right), new TextBlock { Text = c.Lang.Length > 0 ? c.Lang : "code", Foreground = CGold, FontSize = 11, VerticalAlignment = VerticalAlignment.Center } } };
         return new Border { Name = "claude-code", Background = CodeBg, BorderBrush = GlassEdge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10),
             Child = new StackPanel { Children = { head, new Border { Padding = new Thickness(12, 4, 12, 10), Child = tb } } } };
@@ -341,7 +341,7 @@ public partial class MainWindow
             else if (CLimit.Active(DateTimeOffset.Now))
             {
                 var fb = await ClaudeFallbackRun(prompt, ClaudeReview.Rule, chat.Folder, ui.Cts.Token);
-                text = fb.Error is { } fe ? "" + fe : fb.Text; ki = fb.Ki;
+                text = fb.Error is { } fe ? "⚠ " + fe : fb.Text; ki = fb.Ki;
             }
             else
             {
@@ -351,9 +351,9 @@ public partial class MainWindow
                 text = say.ToString().Trim();
             }
         }
-        catch (OperationCanceledException) { text = "Gutachten angehalten."; }
-        catch (InvalidOperationException e) { text = "" + e.Message; }
-        if (text.Length == 0) text = "Der Gutachter hat nichts geliefert.";
+        catch (OperationCanceledException) { text = "⚠ Gutachten angehalten."; }
+        catch (InvalidOperationException e) { text = "⚠ " + e.Message; }
+        if (text.Length == 0) text = "⚠ Der Gutachter hat nichts geliefert.";
         ClaudeLearnFrom(studio, text, true, false, null, chat.Title); text = StudioLearning.Strip(text); // Gutachten lehrt das Studio (Vorschlag, gilt erst nach Ja)
         CChats.Add(studio, cid, new ClaudeChats.Msg("review", text, [], DateTimeOffset.Now, null, 0, null, null, ki));
         _core.Audit.Append(Principal.LocalOwner.Name, "claude.gutachten", $"{studio} · Note {ClaudeReview.Grade(text)?.ToString() ?? "–"}");

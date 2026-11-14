@@ -162,7 +162,7 @@ public partial class MainWindow
         var w = CWeb; var was = w.Connected; var pending = w.PendingOf(dock.Studio);
         if (!w.Navigated(u, dock.Studio)) { BuildWebBar(dock); BuildProjectList(dock); return; } // z. B. fremdes Projekt: „übernehmen“ anbieten
         if (!was && w.Connected) _core.Audit.Append(Principal.LocalOwner.Name, "claude.web.verbunden", "");
-        if (pending is not null && w.PendingOf(dock.Studio) is null) { _core.Audit.Append(Principal.LocalOwner.Name, "claude.web.projekt", dock.Studio ?? ""); _claudeMsg = $"Projekt „{pending}“ gehört jetzt zu diesem Studio – du findest es links und kannst es jederzeit fortsetzen."; }
+        if (pending is not null && w.PendingOf(dock.Studio) is null) { _core.Audit.Append(Principal.LocalOwner.Name, "claude.web.projekt", dock.Studio ?? ""); _claudeMsg = $"✓ Projekt „{pending}“ gehört jetzt zu diesem Studio – du findest es links und kannst es jederzeit fortsetzen."; }
         BuildWebBar(dock); BuildProjectList(dock);
     }
 
@@ -238,7 +238,7 @@ public partial class MainWindow
         var stateText = !connected ? "Einmal anmelden: Melde dich unten mit deinem Claude-Abo an – danach ist Claude in allen Studios verbunden."
             : pending is not null ? $"Neues Projekt „{pending}“: In Claude oben „Neues Projekt“, als Namen „{ClaudeWeb.ProjectName(studioName, pending)}“, bei „Anweisungen“ Strg+V, dann erstellen."
             : w.ProjectOf(dock.Studio) is not null ? $"Claude für {studioName} – tipp einfach unten in Claude."
-            : $"Verbunden. Leg links ein Projekt an – dann bleibt Claude bei {studioName}.";
+            : $"✓ Verbunden. Leg links ein Projekt an – dann bleibt Claude bei {studioName}.";
         dock.WebBar.Children.Add(new TextBlock { Name = "claude-web-state", Text = stateText, Foreground = connected && pending is null ? ClaudeFg : ClaudeAccent, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
         var row = new WrapPanel();
         void B(string name, string label, string tip, Action a, bool primary = false)
@@ -258,7 +258,7 @@ public partial class MainWindow
         B("claude-web-reload", "↻", "Neu laden", () => dock.Web?.Refresh());
         dock.WebBar.Children.Add(row);
         if (!connected) dock.WebBar.Children.Add(ClaudeLoginLinkRow("claude-web-link", u => WebGo(dock, u.AbsoluteUri)));
-        if (_claudeMsg.Length > 0 && (_claudeMsg.StartsWith("Fachregeln") || _claudeMsg.StartsWith("Projekt") || _claudeMsg.Contains("aus der Liste entfernt")))
+        if (_claudeMsg.Length > 0 && (_claudeMsg.StartsWith("Fachregeln") || _claudeMsg.StartsWith("✓ Projekt") || _claudeMsg.Contains("aus der Liste entfernt")))
             dock.WebBar.Children.Add(new TextBlock { Name = "claude-web-msg", Text = _claudeMsg, Foreground = ClaudeAccent, FontSize = 12, TextWrapping = TextWrapping.Wrap });
     }
 

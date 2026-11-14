@@ -24,7 +24,7 @@ public partial class MainWindow
 
     private void InitCore09() => RegisterTab(FachTabs, "roboter", "Roboter-Werkstatt", "CORE-09", RobotView, "roboter", "robotik", "roboterarm", "kamera", "bilderkennung", "vision", "servo", "kinematik", "greifer", "pick and place");
 
-    void RobRun(Action a) { try { a(); } catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or FormatException or UnauthorizedAccessException or InvalidDataException) { _robMsg = "" + ex.Message; } Show("roboter"); }
+    void RobRun(Action a) { try { a(); } catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or FormatException or UnauthorizedAccessException or InvalidDataException) { _robMsg = "⚠ " + ex.Message; } Show("roboter"); }
 
     List<(double X, double Y, double Z)> RobPoints() => Bench.Points.Split('|', StringSplitOptions.RemoveEmptyEntries).Select(p => p.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries)).Where(p => p.Length == 3)
         .Select(p => (Fach.Num(p[0], "x"), Fach.Num(p[1], "y"), Fach.Num(p[2], "z"))).ToList();
@@ -85,7 +85,7 @@ public partial class MainWindow
         var arm = new ArmConfig();
         (double X, double Y, double Z)? target = null; Joints j = Bench.Drive.Pose ?? new(0, 90, -90);
         try { var t = (Fach.Num(Bench.X, "x"), Fach.Num(Bench.Y, "y"), Fach.Num(Bench.Z, "z")); target = t; j = RobotArm.Inverse(arm, t.Item1, t.Item2, t.Item3); } // geplante Stellung zum Ziel; die echte Stellung steht in der Steuerung
-        catch (Exception ex) when (ex is ArgumentException or FormatException) { if (_robMsg.Length == 0) _robMsg = "" + ex.Message; }
+        catch (Exception ex) when (ex is ArgumentException or FormatException) { if (_robMsg.Length == 0) _robMsg = "⚠ " + ex.Message; }
         List<(double X, double Y, double Z)> pts; try { pts = RobPoints(); } catch (FormatException) { pts = []; }
         var view = new ArmView { Name = "rob-arm-view", Arm = arm, J = j, Target = target, Points = pts, MinHeight = 260 };
         view.Picked = (x, y) => RobRun(() => { RobotArm.Inverse(arm, x, y, Fach.Num(Bench.Z, "z")); Bench.X = x.ToString("0"); Bench.Y = y.ToString("0"); _robMsg = $"Ziel {x:0} / {y:0} / {Bench.Z} mm – mit „Fahren“ anfahren oder als Wegpunkt übernehmen."; });

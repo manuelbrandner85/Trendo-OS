@@ -189,7 +189,7 @@ public partial class MainWindow
             sp.Children.Add(H("Offline-Kartenpaket", 12));
             var pack = Field("mk-pack-path", "Kartenpaket (.mbtiles, .pmtiles, .zip) oder Kachel-Ordner", 150, MapPackPath); sp.Children.Add(pack);
             sp.Children.Add(new WrapPanel { Children = {
-                Act2("mk-pack-load", "Laden", () => { try { MapLoadPack(Need(pack, "das Kartenpaket")); } catch (Exception ex) when (ex is ArgumentException or InvalidDataException or IOException or UnauthorizedAccessException) { _mapNetMsg = "" + ex.Message; Show(MK); } }),
+                Act2("mk-pack-load", "Laden", () => { try { MapLoadPack(Need(pack, "das Kartenpaket")); } catch (Exception ex) when (ex is ArgumentException or InvalidDataException or IOException or UnauthorizedAccessException) { _mapNetMsg = "⚠ " + ex.Message; Show(MK); } }),
                 Act2("mk-pack-off", "Entfernen", () => { MapPackPath = ""; Tiles.Pack = null; _mapNetMsg = "Kartenpaket entfernt."; Show(MK); }) } });
             if (Tiles.Pack is { } tp) sp.Children.Add(new TextBlock { Name = "mk-pack-info", Text = $"{tp.Count} Kacheln, Zoom {tp.MinZoom}–{tp.MaxZoom} · {Path.GetFileName(tp.Source.TrimEnd('/', '\\'))}", Foreground = Brush.Parse("#7FD3FF"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
             if (VectorMapPane() is { } vp) sp.Children.Add(vp); // Alle Studios, Runde 1: Vektorkarte (MapLibre)
@@ -245,9 +245,9 @@ public partial class MainWindow
             var svc = new ElevationService(new HttpFetch(MapHttp), Path.Combine(_core.DataRoot, "karten", "hoehen.json"));
             var pts = await svc.AddElevation(tr.Points.Select(p => p.Geo()).ToList());
             MapEdit("Höhen ergänzen", x => x.Tracks.First(t => t.Id == sel).Points = pts.Select(MapPoint.From).ToList());
-            _mapNetMsg = $"{pts.Count(p => p.Ele is not null)} Höhen von OpenTopoData (EU-DEM/SRTM) übernommen.";
+            _mapNetMsg = $"✓ {pts.Count(p => p.Ele is not null)} Höhen von OpenTopoData (EU-DEM/SRTM) übernommen.";
         }
-        catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidOperationException or TaskCanceledException or System.Text.Json.JsonException) { _mapNetMsg = "" + ex.Message; }
+        catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidOperationException or TaskCanceledException or System.Text.Json.JsonException) { _mapNetMsg = "⚠ " + ex.Message; }
         Show(MK);
     }
 
@@ -262,9 +262,9 @@ public partial class MainWindow
             var json = await MapHttp.GetStringAsync(RouteService.Url(MapRoutingServer, MapProfile, via));
             var (pts, m, s) = RouteService.Parse(json);
             MapEdit("Route entlang von Wegen", x => x.Tracks.First(t => t.Id == sel).Points = pts.Select(MapPoint.From).ToList());
-            _mapNetMsg = $"Route entlang von Wegen: {m / 1000:0.0} km, etwa {TimeSpan.FromSeconds(s):h\\:mm} h.";
+            _mapNetMsg = $"✓ Route entlang von Wegen: {m / 1000:0.0} km, etwa {TimeSpan.FromSeconds(s):h\\:mm} h.";
         }
-        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or ArgumentException or TaskCanceledException or System.Text.Json.JsonException or KeyNotFoundException) { _mapNetMsg = "" + ex.Message; }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or ArgumentException or TaskCanceledException or System.Text.Json.JsonException or KeyNotFoundException) { _mapNetMsg = "⚠ " + ex.Message; }
         Show(MK);
     }
 
@@ -278,6 +278,6 @@ public partial class MainWindow
         _vec?.Dispose(); _vec = null; _vecView = null; _vecNote = "";
         var p = new TilePack(path); Tiles.Pack = p; MapPackPath = path;
         var (s, w, n, e) = p.Bounds(); MapState.Lat = (s + n) / 2; MapState.Lon = (w + e) / 2; MapState.Zoom = p.MaxZoom; MapState.Tiles = true;
-        _mapNetMsg = $"Kartenpaket geladen: {p.Count} Kacheln, Zoom {p.MinZoom}–{p.MaxZoom}."; Show(MK);
+        _mapNetMsg = $"✓ Kartenpaket geladen: {p.Count} Kacheln, Zoom {p.MinZoom}–{p.MaxZoom}."; Show(MK);
     }
 }

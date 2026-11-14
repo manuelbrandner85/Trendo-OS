@@ -95,7 +95,7 @@ public partial class MainWindow
         }
         catch (Exception e) when (e is IOException or InvalidOperationException) { }
         var b = CoverStudio.Build(a, sections, melody);
-        CwSay($"Bauplan: {b.Bpm:0} BPM · {b.Meter} · {b.KeyDe} · {b.Sections.Count} Teile" + (b.Melody.Count > 0 ? $" · Melodie {CoverStudio.Note(b.MelodyLow)}–{CoverStudio.Note(b.MelodyHigh)}" : ""));
+        CwSay($"✓ Bauplan: {b.Bpm:0} BPM · {b.Meter} · {b.KeyDe} · {b.Sections.Count} Teile" + (b.Melody.Count > 0 ? $" · Melodie {CoverStudio.Note(b.MelodyLow)}–{CoverStudio.Note(b.MelodyHigh)}" : ""));
         return b;
     }
 
@@ -137,7 +137,7 @@ public partial class MainWindow
             // M8: Klang der Epoche (Stimme bringt ihren Klang mit, eigene Wahl hat Vorrang)
             var soundId = _cwSound != "heute" ? _cwSound : voice.Sound;
             if (soundId != "heute") best = await CwApplySound(best, soundId) ?? best;
-            CwSay($"Cover fertig: „{best.Title}“" + (bestR is null ? "." : $" – Ampel {LightDe(bestR.Light)} ({bestR.Score * 100:0} % wie das Original)."));
+            CwSay($"✓ Cover fertig: „{best.Title}“" + (bestR is null ? "." : $" – Ampel {LightDe(bestR.Light)} ({bestR.Score * 100:0} % wie das Original)."));
             return best;
         }
         finally { _cwBusy = false; if (CurrentView == MS) Show(MS); }
@@ -208,7 +208,7 @@ public partial class MainWindow
         }
         if (_cwHit is { } hit)
         {
-            if (MsCoverTaken.Count > 0) sp.Children.Add(new TextBlock { Name = "cw-taken", Text = "Übernommen: " + string.Join(", ", MsCoverTaken), Foreground = Brush.Parse("#4ADE80"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
+            if (MsCoverTaken.Count > 0) sp.Children.Add(new TextBlock { Name = "cw-taken", Text = "✓ Übernommen: " + string.Join(", ", MsCoverTaken), Foreground = Brush.Parse("#4ADE80"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
             var link = new Button { Name = "cw-page", Content = "Infos bei MusicBrainz ansehen", FontSize = 11.5, Padding = new Thickness(8, 2) };
             link.Click += (_, _) => Launch(hit.Page);
             sp.Children.Add(link);

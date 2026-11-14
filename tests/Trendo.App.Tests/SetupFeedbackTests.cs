@@ -44,7 +44,7 @@ public class SetupFeedbackTests
         fix!.Press();
         TextBlock? msg = null;
         for (var i = 0; i < 200; i++) { await Task.Delay(20); Dispatcher.UIThread.RunJobs(); msg = w.TryFind<TextBlock>("repair-msg"); if (msg?.Text?.Contains('✓') == true) break; }
-        Assert.NotNull(msg); Assert.Contains("repariert", msg!.Text);
+        Assert.NotNull(msg); Assert.Contains("repariert ✓", msg!.Text);
     }
 
     [AvaloniaFact(DisplayName = "T-0210: „Ordner wählen …“ im Assistenten öffnet den Ordnerdialog und übernimmt die Wahl")]

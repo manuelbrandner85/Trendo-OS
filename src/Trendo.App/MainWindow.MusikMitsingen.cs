@@ -67,7 +67,7 @@ public partial class MainWindow
             {
                 if (_singLive is null) return;
                 _singLive.Text = (last.Target is double t ? $"Ziel {SingAlong.NoteName(t)}" : "Pause") + (last.SungMidi is double m ? $" · du {SingAlong.NoteName(m)}" : "") +
-                    v switch { SingAlong.Verdict.Treffer => "  Treffer", SingAlong.Verdict.Hoeher => "  etwas höher", SingAlong.Verdict.Tiefer => "  etwas tiefer", _ => "" } +
+                    v switch { SingAlong.Verdict.Treffer => "  ✓ Treffer", SingAlong.Verdict.Hoeher => "  etwas höher", SingAlong.Verdict.Tiefer => "  etwas tiefer", _ => "" } +
                     $"   ·   {_singTake.HitPercent:0} % getroffen";
                 _singLive.Foreground = v switch { SingAlong.Verdict.Treffer => Brush.Parse("#4ADE80"), SingAlong.Verdict.Hoeher or SingAlong.Verdict.Tiefer => Brush.Parse("#FACC15"), _ => Muted };
                 if (double.IsFinite(_mDur) && _mDur > 1 && _mPos >= _mDur - 0.3) MsSingStop(); // Lied zu Ende
@@ -78,7 +78,7 @@ public partial class MainWindow
         _audio?.Stop(); _mPaused = true;
         _singCts.Dispose(); _singCts = null;
         if (file is not null && File.Exists(file)) { _takeFile = file; _takeFor = songId; }
-        _msMsg = _takeFile is null ? "Die Aufnahme ging nicht." : $"Aufnahme fertig – {_singTake.HitPercent:0} % der gesungenen Töne getroffen. Unten mischen, dann wird ein neues Lied daraus.";
+        _msMsg = _takeFile is null ? "Die Aufnahme ging nicht." : $"✓ Aufnahme fertig – {_singTake.HitPercent:0} % der gesungenen Töne getroffen. Unten mischen, dann wird ein neues Lied daraus.";
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.mitsingen.ende", $"{_singTake.HitPercent:0}%");
         Show(MS);
         return _takeFile is not null;
@@ -133,7 +133,7 @@ public partial class MainWindow
         var song = Songs.Add(new MusicSong { Title = root.Title + " – mit meiner Stimme", Style = root.Style, Lyrics = root.Lyrics, Language = root.Language, Seconds = acc.Seconds,
             Bpm = root.Bpm, Key = root.Key, TimeSignature = root.TimeSignature, File = outFile, Kind = "aufnahme", ParentId = root.Id });
         await MsMaster(song.Id, quiet: true);
-        _msSel = song.Id; _msMsg = "Gemischt und gemastert – dein Lied mit deiner Stimme ist in der Bibliothek.";
+        _msSel = song.Id; _msMsg = "✓ Gemischt und gemastert – dein Lied mit deiner Stimme ist in der Bibliothek.";
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.mischen", song.Id);
         Show(MS);
         return Songs.Get(song.Id);

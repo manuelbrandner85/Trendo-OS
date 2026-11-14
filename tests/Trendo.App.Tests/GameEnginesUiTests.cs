@@ -56,11 +56,11 @@ public class GameEngines_Ui
         Assert.Contains("geprüft", w.Find<TextBlock>("game-unity-caps").Text);
         w.Find<Button>("game-godot-test").Press(); Pump();
         Assert.Contains(runs, r => r.StartsWith("G.exe") && r.Contains("--import"));
-        Assert.Contains("Level-Prüfung: 1 Level", w.LastEngineReport);
-        Assert.Contains("Spiel-Prüfung: Spiel läuft", w.LastEngineReport);
-        Assert.Contains("Spielstand-Prüfung: Spielstand", w.LastEngineReport);
-        Assert.Contains("Gameplay-Prüfung: Gameplay", w.LastEngineReport);
-        Assert.Contains("Menü-Prüfung: Menü", w.LastEngineReport);
+        Assert.Contains("Level-Prüfung: ✓ 1 Level", w.LastEngineReport);
+        Assert.Contains("Spiel-Prüfung: ✓ Spiel läuft", w.LastEngineReport);
+        Assert.Contains("Spielstand-Prüfung: ✓ Spielstand", w.LastEngineReport);
+        Assert.Contains("Gameplay-Prüfung: ✓ Gameplay", w.LastEngineReport);
+        Assert.Contains("Menü-Prüfung: ✓ Menü", w.LastEngineReport);
         w.Close();
     }
 }

@@ -68,7 +68,7 @@ public partial class MainWindow
         var timed = _msFollowPlan.All(l => l.Timed);
         var sp = new StackPanel { Spacing = 6, Children = {
             new DockPanel { Children = {
-                Dk(new TextBlock { Text = timed ? "Zeiten gemessen" : "Zeiten geschätzt", Foreground = timed ? Brush.Parse("#4ADE80") : Muted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 12, 0) }, Avalonia.Controls.Dock.Right),
+                Dk(new TextBlock { Text = timed ? "✓ Zeiten gemessen" : "Zeiten geschätzt", Foreground = timed ? Brush.Parse("#4ADE80") : Muted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 12, 0) }, Avalonia.Controls.Dock.Right),
                 H("Mitlaufender Liedtext", 13) } },
             new Border { Name = "ms-follow", CornerRadius = new CornerRadius(12), Padding = new Thickness(14, 10), MaxHeight = 260,
                 Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#26D4A84B"), 0), new GradientStop(Color.Parse("#0AFFFFFF"), 1) } },
@@ -135,7 +135,7 @@ public partial class MainWindow
             var play = new Button { Name = "ms-compare-play-" + i, Content = playingThis ? "läuft" : $"{letter} hören", FontSize = 12, Background = playingThis ? Accent : Brush.Parse("#22FFFFFF"), Foreground = playingThis ? Brushes.White : Text, Margin = new Thickness(0, 0, 4, 0) };
             ToolTip.SetTip(play, "An derselben Stelle weiterhören wie die laufende Fassung");
             play.Click += (_, _) => { MsCompareSwitch(vv); Show(MS); };
-            var open = new Button { Name = "ms-compare-open-" + i, Content = isSel ? "gewählt" : "Wählen", FontSize = 12, IsEnabled = !isSel };
+            var open = new Button { Name = "ms-compare-open-" + i, Content = isSel ? "✓ gewählt" : "Wählen", FontSize = 12, IsEnabled = !isSel };
             open.Click += (_, _) => { _msSel = vv.Id; Show(MS); };
             row.Children.Add(new Border
             {

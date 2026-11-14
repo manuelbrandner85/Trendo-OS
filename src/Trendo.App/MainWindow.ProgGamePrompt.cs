@@ -105,7 +105,7 @@ public partial class MainWindow
             new WrapPanel { Children = { btnNew, new Border { Width = 8 }, btnChange, new Border { Width = 8 }, btnTeam, new Border { Width = 12 }, IsSimple ? new Border() : ki } } } };
         if (_gpResult is { } r)
         {
-            if (r.Error is { } err) sp.Children.Add(P("" + err, Brush.Parse("#F5A524"), 12.5));
+            if (r.Error is { } err) sp.Children.Add(P("⚠ " + err, Brush.Parse("#F5A524"), 12.5));
             if (r.Doc is { } neu)
             {
                 var diff = GameDirector.Diff(_gpBase ?? new JsonObject(), neu);
@@ -115,7 +115,7 @@ public partial class MainWindow
                 foreach (var l in diff.Take(14)) prev.Children.Add(P(l, Muted, 12));
                 if (diff.Count > 14) prev.Children.Add(P($"… und {diff.Count - 14} weitere Änderungen", Muted, 12));
                 sp.Children.Add(prev);
-                sp.Children.Add(new WrapPanel { Children = { Act("game-prompt-accept", "Übernehmen", GamePromptAccept, true), new Border { Width = 8 }, Act("game-prompt-discard", "Verwerfen", GamePromptDiscard) } });
+                sp.Children.Add(new WrapPanel { Children = { Act("game-prompt-accept", "✓ Übernehmen", GamePromptAccept, true), new Border { Width = 8 }, Act("game-prompt-discard", "✕ Verwerfen", GamePromptDiscard) } });
             }
             var qi = 0;
             foreach (var q in r.Questions)

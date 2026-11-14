@@ -23,7 +23,7 @@ public partial class MainWindow
         {
             var p = Personas.Create(s, name);
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.persona.neu", $"{p.Id} aus {s.Id}");
-            _msMsg = $"Persona „{p.Name}“ gemerkt – beim Erstellen unter „+ Persona“ wählen."; Show(MS);
+            _msMsg = $"✓ Persona „{p.Name}“ gemerkt – beim Erstellen unter „+ Persona“ wählen."; Show(MS);
             return p;
         }
         catch (ArgumentException e) { _msMsg = e.Message; Show(MS); return null; }
@@ -47,7 +47,7 @@ public partial class MainWindow
     Control MsPersonaChip(Func<string, string, string, Func<Task>, Button> b)
     {
         var p = _msPersona is null ? null : Personas.Get(_msPersona);
-        return b("ms-ref-persona", p is null ? "+ Persona" : "Persona: " + p.Name, "Klang eines deiner Lieder wiederverwenden (Stimme, Stil, Stimmung) – unter „Stimmen“ verwalten.", () => { MsPage("stimmen"); return Task.CompletedTask; });
+        return b("ms-ref-persona", p is null ? "+ Persona" : "✓ Persona: " + p.Name, "Klang eines deiner Lieder wiederverwenden (Stimme, Stil, Stimmung) – unter „Stimmen“ verwalten.", () => { MsPage("stimmen"); return Task.CompletedTask; });
     }
 
     /// <summary>Abschnitt „Personas“ auf der Seite „Stimmen“.</summary>
@@ -63,7 +63,7 @@ public partial class MainWindow
         {
             var i = n++; var id = p.Id;
             var active = _msPersona == id;
-            var use = new Button { Name = $"ms-persona-use-{i}", Content = active ? "gewählt" : "Benutzen", FontSize = 11.5, Padding = new Thickness(10, 3), CornerRadius = new CornerRadius(12), BorderThickness = new Thickness(0),
+            var use = new Button { Name = $"ms-persona-use-{i}", Content = active ? "✓ gewählt" : "Benutzen", FontSize = 11.5, Padding = new Thickness(10, 3), CornerRadius = new CornerRadius(12), BorderThickness = new Thickness(0),
                 Background = active ? Brush.Parse("#55D4AF37") : Brush.Parse("#22FFFFFF") };
             use.Click += (_, _) => MsUsePersona(active ? null : id);
             var del = new Button { Name = $"ms-persona-del-{i}", Content = "🗑", FontSize = 12, Padding = new Thickness(8, 3), Background = Brushes.Transparent, BorderThickness = new Thickness(0) };

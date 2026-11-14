@@ -21,13 +21,13 @@ public partial class MainWindow
     public string? SewingDraft(ProgramDocument d, string design, int seamMm = 10)
     {
         var node = SewingRunOverride is not null ? "node" : Cli.Find("node");
-        if (node is null) { _sewMsg = "Node.js fehlt – zuerst unter Programme „Node.js“ einrichten."; Show("mode-programm"); return null; }
+        if (node is null) { _sewMsg = "⚠ Node.js fehlt – zuerst unter Programme „Node.js“ einrichten."; Show("mode-programm"); return null; }
         var cm = new Dictionary<string, double> { ["chest"] = d.Number("chest"), ["waist"] = d.Number("waist"), ["hip"] = d.Number("hip") };
         foreach (var k in SewingExtras) if (d.Number("fs-" + k) > 0) cm[k] = d.Number("fs-" + k);
         var label = Sewing.Designs.FirstOrDefault(x => x.Id == design).Label ?? design;
         var svg = Path.Combine(WorkFolder("Mode"), "Schnittmuster", $"{DevStudio.SafeName(d.Text("name", "Entwurf"))}-{design}.svg");
         var (r, msg) = Sewing.Draft(node, SewingDir, design, cm, !d.Flag("women"), seamMm, svg, run: SewingRunOverride);
-        _sewMsg = r is null ? "" + msg : $"{label}: {msg} Gespeichert als {Path.GetFileName(svg)} – im Maßstab 1:1 drucken (100 %, nicht „an Seite anpassen“).";
+        _sewMsg = r is null ? "⚠ " + msg : $"✓ {label}: {msg} Gespeichert als {Path.GetFileName(svg)} – im Maßstab 1:1 drucken (100 %, nicht „an Seite anpassen“).";
         SewingLastSvg = r is null ? null : svg;
         _core.Audit.Append(Principal.LocalOwner.Name, "mode.schnitt", r is null ? "fehler" : $"{design} {r.Size}");
         Show("mode-programm"); return SewingLastSvg;
@@ -37,7 +37,7 @@ public partial class MainWindow
     {
         var npm = Cli.Find("npm") ?? Cli.Find("npm.cmd");
         if (_opt.Isolated) _sewMsg = "Testmodus: nichts installiert.";
-        else if (npm is null) _sewMsg = "Node.js mit npm fehlt – zuerst unter Programme „Node.js“ einrichten.";
+        else if (npm is null) _sewMsg = "⚠ Node.js mit npm fehlt – zuerst unter Programme „Node.js“ einrichten.";
         else
         {
             _sewMsg = "FreeSewing wird aus der offiziellen npm-Quelle geladen (feste Fassung, ohne Installationsskripte) …"; Show("mode-programm");
@@ -45,7 +45,7 @@ public partial class MainWindow
             var r = await Task.Run(() => Cli.Run(npm, Sewing.InstallArgs(SewingDir), SewingDir, 600_000));
             var ok = r.Ok && Sewing.Ready(SewingDir);
             _core.Audit.Append(Principal.LocalOwner.Name, "deps.npm", "@freesewing@" + Sewing.Version + (ok ? "" : " (fehlgeschlagen)"));
-            _sewMsg = ok ? "FreeSewing ist eingerichtet." : "Einrichten ging nicht: " + (r.Err.Length > 0 ? r.Err : r.Out).Trim().Split('\n')[0];
+            _sewMsg = ok ? "✓ FreeSewing ist eingerichtet." : "⚠ Einrichten ging nicht: " + (r.Err.Length > 0 ? r.Err : r.Out).Trim().Split('\n')[0];
         }
         Show("mode-programm");
     }

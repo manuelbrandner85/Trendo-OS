@@ -27,7 +27,7 @@ public partial class MainWindow
         var last = SelfHealer.Last(_core.DataRoot);
         var res = LastHeal.Count > 0 ? LastHeal : last?.Results ?? [];
         sp.Children.Add(new TextBlock { Name = "heal-summary", Foreground = Text, FontSize = 14, Text = res.Count == 0 ? "Noch nicht geprüft." :
-            res.All(r => r.State == HealState.Ok) ? "Alles in Ordnung." : $"{res.Count(r => r.State == HealState.Repaired)} repariert · {res.Count(r => r.State == HealState.NeedsYou)} brauchen dich" });
+            res.All(r => r.State == HealState.Ok) ? "✓ Alles in Ordnung." : $"{res.Count(r => r.State == HealState.Repaired)} repariert · {res.Count(r => r.State == HealState.NeedsYou)} brauchen dich" });
         if (last is { } l) sp.Children.Add(P($"Zuletzt geprüft: {l.At:dd.MM.yyyy HH:mm}", null, 11));
         foreach (var r in res)
             sp.Children.Add(WCard(new StackPanel { Children = {

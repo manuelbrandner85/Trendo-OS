@@ -153,7 +153,7 @@ public partial class MainWindow
             sp.Children.Add(Card(new StackPanel { Name = $"dlm-job-{k}", Spacing = 4, Children = {
                 Row(new StackPanel { Children = { new TextBlock { Text = j.Name, Foreground = Text, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis }, P(new Uri(j.Url).Host, Muted, 10.5) } }, btn),
                 bar, info,
-                risky ? P("Programmdatei – nur öffnen, wenn du der Quelle vertraust.", Brush.Parse("#FACC15"), 10.5) : new Panel() } }));
+                risky ? P("⚠ Programmdatei – nur öffnen, wenn du der Quelle vertraust.", Brush.Parse("#FACC15"), 10.5) : new Panel() } }));
         }
         return sp;
     }

@@ -23,7 +23,7 @@ public partial class MainWindow
         if (_scanReport is not { } rep || rep.Files.Count == 0) { _scanStatus = "Erst Fotos einlesen."; Show("scan3d"); return; }
         _scanRank = ScanPro.RankPhotos(rep.Files, f => { try { var head = new byte[65536]; using var s = File.OpenRead(f); var n = s.Read(head, 0, head.Length); var (w, h) = XrPlus.ImageSize(head[..n]); return w > 0 && h > 0 ? (w, h) : null; } catch (Exception e) when (e is IOException or ArgumentException or IndexOutOfRangeException) { return null; } });
         var bad = _scanRank.Count(r => !r.Keep);
-        _scanStatus = bad == 0 ? "Alle Fotos sehen brauchbar aus." : $"{bad} von {_scanRank.Count} Fotos aussortieren empfohlen – „Nur gute verwenden“ übernimmt den Rest.";
+        _scanStatus = bad == 0 ? "✓ Alle Fotos sehen brauchbar aus." : $"{bad} von {_scanRank.Count} Fotos aussortieren empfohlen – „Nur gute verwenden“ übernimmt den Rest.";
         Show("scan3d");
     }
 
@@ -38,7 +38,7 @@ public partial class MainWindow
         foreach (var f in keep) File.Copy(f, Path.Combine(dir, Path.GetFileName(f)), true);
         _core.Audit.Append(Principal.LocalOwner.Name, "scan.auswahl", $"{keep.Count} von {_scanRank.Count} Fotos");
         _scanRank = null; ScanLoad(dir);
-        _scanStatus = $"{keep.Count} gute Fotos übernommen (Kopie) – jetzt „Modell rechnen“.";
+        _scanStatus = $"✓ {keep.Count} gute Fotos übernommen (Kopie) – jetzt „Modell rechnen“.";
         Show("scan3d");
     }
 
@@ -53,10 +53,10 @@ public partial class MainWindow
             File.Copy(_scanModel, Path.Combine(Path.GetDirectoryName(_scanModel)!, "modell-vorher.obj"), true);
             Mesh3D.WriteObj(o, _scanModel);
             if (what.StartsWith("Größe", StringComparison.Ordinal)) _scanShowCams = false; // Kameras liegen noch im alten Maßstab
-            _scanStatus = $"{what}: {before:N0} → {o.Triangles:N0} Dreiecke. „Rückgängig“ holt den vorigen Stand.";
+            _scanStatus = $"✓ {what}: {before:N0} → {o.Triangles:N0} Dreiecke. „Rückgängig“ holt den vorigen Stand.";
             _core.Audit.Append(Principal.LocalOwner.Name, "scan.bearbeitet", what);
         }
-        catch (Exception e) when (e is InvalidOperationException or ArgumentException or IOException or InvalidDataException) { _scanStatus = "" + e.Message; }
+        catch (Exception e) when (e is InvalidOperationException or ArgumentException or IOException or InvalidDataException) { _scanStatus = "⚠ " + e.Message; }
         Show("scan3d");
     }
     public void ScanUndo()
@@ -120,7 +120,7 @@ public partial class MainWindow
         sp.Children.Add(new WrapPanel { Children = { Act("scan-rank", "Gute Fotos auswählen", ScanRankPhotos), new Border { Width = 4 }, Act("scan-use-good", "Nur gute verwenden", ScanUseGoodPhotos, _scanRank is { } rr && rr.Any(r => !r.Keep)) } });
         if (_scanRank is { } rank)
             foreach (var (f, keep, why) in rank.Where(r => !r.Keep).Take(20))
-                sp.Children.Add(P($"{Path.GetFileName(f)}: {why}", Brush.Parse("#F97316"), 11));
+                sp.Children.Add(P($"✗ {Path.GetFileName(f)}: {why}", Brush.Parse("#F97316"), 11));
         return sp;
     }
 
@@ -135,7 +135,7 @@ public partial class MainWindow
         ScanCoverageResult = r;
         var advice = new StackPanel { Spacing = 3, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center };
         advice.Children.Add(P($"{r.Cameras} Kameras · Abdeckung {r.Percent} %", Text, 12.5));
-        if (r.Gaps.Count == 0) advice.Children.Add(P("Rundum und in allen Höhen fotografiert.", Brush.Parse("#2FBF71"), 11.5));
+        if (r.Gaps.Count == 0) advice.Children.Add(P("✓ Rundum und in allen Höhen fotografiert.", Brush.Parse("#2FBF71"), 11.5));
         foreach (var g in r.Gaps) advice.Children.Add(P("• " + g, Brush.Parse("#F5A524"), 11.5));
         advice.Children.Add(P("Außen flach, Mitte schräg, innen von oben · 0° = erstes Foto, im Uhrzeigersinn · rot fehlt, gelb 1 Foto, grün 2+", Muted, 10.5));
         return new Border { Name = "scan-coverage", CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Background = Brush.Parse("#1A1F2A"), BorderBrush = EdgeLit, BorderThickness = new Thickness(1),

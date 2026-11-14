@@ -382,7 +382,7 @@ public partial class MainWindow
             foreach (var l in p.Changes.Take(14)) box.Children.Add(P("• " + l, Muted, 12));
             if (p.Changes.Count > 14) box.Children.Add(P($"… und {p.Changes.Count - 14} weitere Änderungen", Muted, 12));
             sp.Children.Add(box);
-            sp.Children.Add(new WrapPanel { Children = { Act("web-ki-accept", "Übernehmen", WebDesignAccept, true), new Border { Width = 8 }, Act("web-ki-discard", "Verwerfen", WebDesignDiscard) } });
+            sp.Children.Add(new WrapPanel { Children = { Act("web-ki-accept", "✓ Übernehmen", WebDesignAccept, true), new Border { Width = 8 }, Act("web-ki-discard", "✕ Verwerfen", WebDesignDiscard) } });
         }
         if (_wdLoop is { } loop)
         {
@@ -390,7 +390,7 @@ public partial class MainWindow
             var errors = loop.Findings.Where(f => f.Level == "Fehler").ToList();
             var what = _wdAudit is { Images.Count: 0 } ? "Prüfung nur der Editor-Daten, nicht vollständig" : "Prüfung auf dem Export";
             box.Children.Add(P(loop.Clean ? $"{what}: keine Fehler{(loop.Repairs > 0 ? $" nach {loop.Repairs} Nachbesserung(en)" : "")}." : $"{what}: {errors.Count} Fehler offen{(loop.LimitReached ? $", Obergrenze von {WebDesignCheck.MaxRepairs} Nachbesserungen erreicht" : "")}.", loop.Clean ? Text : Brush.Parse("#F5A524"), 12.5));
-            foreach (var f in errors.Take(10)) box.Children.Add(P("" + f.Area + ": " + f.Text, Muted, 12));
+            foreach (var f in errors.Take(10)) box.Children.Add(P("✗ " + f.Area + ": " + f.Text, Muted, 12));
             foreach (var f in loop.Findings.Where(f => f.Level == "Hinweis").Take(6)) box.Children.Add(P("• " + f.Area + ": " + f.Text, Muted, 12));
             if (_wdAudit is { Note.Length: > 0 } a) box.Children.Add(P(a.Note, Muted, 12));
             if (_wdAudit is { Images.Count: > 0 } imgs)

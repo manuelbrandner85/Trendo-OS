@@ -73,7 +73,7 @@ public partial class MainWindow
     {
         var sp = new StackPanel { Name = "prompt-hints", Spacing = 2 };
         foreach (var h in PromptLibrary.Check(text))
-            sp.Children.Add(P((h.Level == "ok" ? "" : h.Level == "warn" ? "• " : "") + h.Text, h.Level == "warn" ? Brush.Parse("#FACC15") : null, 11));
+            sp.Children.Add(P((h.Level == "ok" ? "✓ " : h.Level == "warn" ? "⚠ " : "") + h.Text, h.Level == "warn" ? Brush.Parse("#FACC15") : null, 11));
         return sp;
     }
 

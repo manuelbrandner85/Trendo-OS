@@ -66,7 +66,7 @@ public partial class MainWindow
         ],
         Workspace = FrameWorkspace,
         Properties = FrameProperties,
-        Status = d => { var m = FrameModel.From(d.Data); var (r, err) = FrameSolve(m); return $"{FrameTools.FirstOrDefault(t => t.Id == FrameState.Tool).Label} · {m.Members.Count} Stäbe · {m.Nodes.Count(n => n.Support != "")} Lager · {m.Loads.Count} Lasten · " + (err is not null ? "⚠ " + err : r is null ? "" : r.Ok ? "alle Stäbe halten" : $"{r.Members.Count(x => !x.Ok)} Stab/Stäbe reichen nicht"); },
+        Status = d => { var m = FrameModel.From(d.Data); var (r, err) = FrameSolve(m); return $"{FrameTools.FirstOrDefault(t => t.Id == FrameState.Tool).Label} · {m.Members.Count} Stäbe · {m.Nodes.Count(n => n.Support != "")} Lager · {m.Loads.Count} Lasten · " + (err is not null ? "⚠ " + err : r is null ? "" : r.Ok ? "✓ alle Stäbe halten" : $"⚠ {r.Members.Count(x => !x.Ok)} Stab/Stäbe reichen nicht"); },
         Help = "Links das Werkzeug wählen. Stab: Punkt für Punkt klicken, Länge in m tippen und Enter. Lager/Last/Gelenk: auf Knoten oder Stab klicken – Art und Wert rechts einstellen. "
              + "Auswahl: Knoten ziehen, Entf löscht. Ergebnisse rechnen sofort mit. Vorbemessung – ersetzt keine geprüfte Statik.",
     }, "technik", "statik", "balken", "träger", "simulation", "biegung", "festigkeit", "einheiten", "umrechnen", "rahmen", "fachwerk", "tragwerk");
@@ -157,7 +157,7 @@ public partial class MainWindow
             t.LostFocus += (_, _) => Commit(); OnEnter(t, Commit);
             sp.Children.Add(Row(P($"{label} ({unit})", Text, 12), t));
         }
-        if (err is not null) sp.Children.Add(new Border { Name = "tk-error", Background = Brush.Parse("#33EF4444"), CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 6), Child = new TextBlock { Text = "" + err, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap } });
+        if (err is not null) sp.Children.Add(new Border { Name = "tk-error", Background = Brush.Parse("#33EF4444"), CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 6), Child = new TextBlock { Text = "⚠ " + err, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap } });
 
         if (sel is not null && m.Node(sel) is { } n)
         {
@@ -250,7 +250,7 @@ public partial class MainWindow
             Fact("Eigengewicht", m.SelfWeight ? "mitgerechnet" : "nicht mitgerechnet");
             if (r is not null)
             {
-                sp.Children.Add(new TextBlock { Name = "tk-verdict", Text = r.Ok ? "Alle Stäbe halten." : $"{r.Members.Count(x => !x.Ok)} Stab/Stäbe reichen nicht – rot markiert.", Foreground = Brush.Parse(r.Ok ? "#4ADE80" : "#F87171"), FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
+                sp.Children.Add(new TextBlock { Name = "tk-verdict", Text = r.Ok ? "✓ Alle Stäbe halten." : $"⚠ {r.Members.Count(x => !x.Ok)} Stab/Stäbe reichen nicht – rot markiert.", Foreground = Brush.Parse(r.Ok ? "#4ADE80" : "#F87171"), FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
                 var k = 0;
                 foreach (var x in r.Members)
                 {

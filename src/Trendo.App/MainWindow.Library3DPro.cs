@@ -55,10 +55,10 @@ public partial class MainWindow
         {
             var have = BibKey(src.Name) is not null;
             var key = new TextBox { Name = "bib-key", PasswordChar = '•', PlaceholderText = have ? "Schlüssel gespeichert – zum Ändern neu eingeben" : "Dein kostenloser Schlüssel", Width = 260 };
-            var save = btn("bib-key-save", "Speichern", () => { BibSetKey(src.Name, key.Text ?? ""); _bibMsg = string.IsNullOrWhiteSpace(key.Text) ? "Schlüssel entfernt." : "Schlüssel geschützt gespeichert."; Show(BIB); }, false);
+            var save = btn("bib-key-save", "Speichern", () => { BibSetKey(src.Name, key.Text ?? ""); _bibMsg = string.IsNullOrWhiteSpace(key.Text) ? "Schlüssel entfernt." : "✓ Schlüssel geschützt gespeichert."; Show(BIB); }, false);
             var get = btn("bib-key-get", "Schlüssel holen", () => Launch(src.KeyHelpUrl!), false);
             sp.Children.Add(new WrapPanel { Children = { new TextBlock { Text = $"{src.Name}-Schlüssel", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 4) }, key, new Border { Width = 4 }, save, get,
-                new TextBlock { Text = have ? "eingerichtet" : src.Name == FreeModels.Sketchfab ? "Suchen geht ohne – Laden braucht ihn" : "nötig zum Suchen und Laden", Foreground = have ? Brush.Parse("#4ADE80") : Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 4) } } });
+                new TextBlock { Text = have ? "✓ eingerichtet" : src.Name == FreeModels.Sketchfab ? "Suchen geht ohne – Laden braucht ihn" : "nötig zum Suchen und Laden", Foreground = have ? Brush.Parse("#4ADE80") : Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 4) } } });
         }
         return sp;
     }
@@ -91,9 +91,9 @@ public partial class MainWindow
                 {
                     var item = BibFree.Pickup(Bib, ff, _bibPickupSite, licenses[Math.Max(0, lic.SelectedIndex)], (author.Text ?? "").Trim(), DownloadPickup.Sites.First(s => s.Name == _bibPickupSite).Url);
                     _core.Audit.Append(Principal.LocalOwner.Name, "bibliothek3d.download", $"{_bibPickupSite}/{Path.GetFileName(ff)} ({item.License})");
-                    _bibMsg = $"„{item.Name}“ liegt in deiner Bibliothek ({item.License}).";
+                    _bibMsg = $"✓ „{item.Name}“ liegt in deiner Bibliothek ({item.License}).";
                 }
-                catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException) { _bibMsg = "" + ex.Message; }
+                catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException) { _bibMsg = "⚠ " + ex.Message; }
                 Show(BIB);
             }, true);
             sp.Children.Add(new Border { Background = Brush.Parse("#2C2C2C"), CornerRadius = new CornerRadius(8), Padding = new Thickness(8), Child = new StackPanel { Spacing = 4, Children = {

@@ -22,7 +22,7 @@ public partial class MainWindow
         RegisterTab(NetzTabs, "netz-browser", "Browser", "SYS-03", NetBrowserView, "lesezeichen", "inkognito", "privat", "tor", "standardbrowser", "suchmaschine", "verlauf löschen", "proxy", "netzwerk");
     }
     private Control NetzPage(string title, Control body) => W45Page(title, NetzTabs, "netz", body);
-    private Control Hints(string name, List<string> h, string ok) => new StackPanel { Name = name, Children = { h.Count == 0 ? P(ok, Text) : P("" + string.Join("\n⚠ ", h), Warn) } };
+    private Control Hints(string name, List<string> h, string ok) => new StackPanel { Name = name, Children = { h.Count == 0 ? P(ok, Text) : P("⚠ " + string.Join("\n⚠ ", h), Warn) } };
 
     // ---------- Sicher prüfen ----------
     private Control NetCheckView()
@@ -34,7 +34,7 @@ public partial class MainWindow
             Line(hf, he, Act("hash-run", "Vergleichen", () => Try(V, () =>
             {
                 var (ok, algo, act) = Web.VerifyHash(Clean(hf), he.Text ?? ""); ho.Children.Clear();
-                ho.Children.Add(P(ok ? $"Stimmt überein ({algo})." : $"Stimmt NICHT überein ({algo}). Datei nicht öffnen.\nBerechnet: {act}", ok ? Brush.Parse("#22C55E") : Brush.Parse("#EF4444"), 12.5));
+                ho.Children.Add(P(ok ? $"✓ Stimmt überein ({algo})." : $"✗ Stimmt NICHT überein ({algo}). Datei nicht öffnen.\nBerechnet: {act}", ok ? Brush.Parse("#22C55E") : Brush.Parse("#EF4444"), 12.5));
                 _core.Audit.Append("app", "hash.verify", $"{Path.GetFileName(Clean(hf))} {algo} {(ok ? "ok" : "abweichend")}");
             }), true)), ho)));
 
@@ -156,7 +156,7 @@ public partial class MainWindow
             Line(tor is not null ? Act("tor-open", "Tor-Browser starten", () => _core.Integrations.LaunchDirect(Principal.LocalOwner, tor, _core.Audit)) : Act("tor-get", "Tor-Browser offiziell holen", () => { if (_core.Offline) { Say("Offline-Modus: Die Tor-Seite kann nicht geöffnet werden.", V); return; } Launch(Web.TorOfficial); Say("Offizielle Tor-Seite geöffnet – nach der Installation hier „Tor-Browser starten“.", V); })))));
 
         var eng = Line(); var cur = Web.Engine(_core.DataRoot);
-        foreach (var (id, name, _) in Web.Engines) eng.Children.Add(Act("engine-" + id, (cur == id ? "• " : "") + name, () => { Web.SetEngine(_core.DataRoot, id); Show(V); }, cur == id));
+        foreach (var (id, name, _) in Web.Engines) eng.Children.Add(Act("engine-" + id, (cur == id ? "✓ " : "") + name, () => { Web.SetEngine(_core.DataRoot, id); Show(V); }, cur == id));
         sp.Children.Add(Card(Section("Suchmaschine", "Gilt für die Trendo-Suche (Strg+K → „Im Internet suchen“) und das Adressfeld unter Browser & Downloads.", eng)));
 
         var steps = new StackPanel { Spacing = 4 };
@@ -171,7 +171,7 @@ public partial class MainWindow
             {
                 if (_core.Offline) { _netStatus = "Offline-Modus ist an – Trendo geht nicht ins Internet."; Show(V); return; }
                 var (dns, web) = await WebTools.NetworkCheckAsync();
-                _netStatus = (dns ? "Namensauflösung klappt" : "Namensauflösung klappt nicht") + " · " + (web ? "Internet erreichbar" : "Internet nicht erreichbar"); Show(V);
+                _netStatus = (dns ? "✓ Namensauflösung klappt" : "✗ Namensauflösung klappt nicht") + " · " + (web ? "✓ Internet erreichbar" : "✗ Internet nicht erreichbar"); Show(V);
             }), P(_netStatus, Text)), P("Proxy: " + proxy, null, 11.5))));
         return NetzPage("Browser", sp);
     }

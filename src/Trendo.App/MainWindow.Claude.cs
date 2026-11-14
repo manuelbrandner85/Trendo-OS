@@ -291,7 +291,7 @@ public partial class MainWindow
     Control ClaudeWebRow()
     {
         var w = CWeb;
-        var state = new TextBlock { Name = "claude-web-connected", Text = w.Connected ? $"Claude im Web verbunden (seit {w.ConnectedAt!.Value.LocalDateTime.ToString("dd.MM.yyyy", De)}) – in jedem Studio rechts unter „Claude“" : "Claude im Web: noch nicht verbunden",
+        var state = new TextBlock { Name = "claude-web-connected", Text = w.Connected ? $"✓ Claude im Web verbunden (seit {w.ConnectedAt!.Value.LocalDateTime.ToString("dd.MM.yyyy", De)}) – in jedem Studio rechts unter „Claude“" : "Claude im Web: noch nicht verbunden",
             Foreground = w.Connected ? Brush.Parse("#4ADE80") : Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap };
         var row = new WrapPanel { Children = { state } };
         if (!w.Connected) { var b = Act("claude-web-connect", "Mit Claude verbinden", () => Show("claude-verbinden"), true); b.Margin = new Thickness(8, 0, 0, 0); row.Children.Add(b); }
@@ -313,7 +313,7 @@ public partial class MainWindow
     {
         var sp = new StackPanel { Spacing = 8 };
         var w = CWeb;
-        sp.Children.Add(new TextBlock { Name = "claude-connect-state", Text = w.Connected ? "Verbunden. Claude ist jetzt in jedem Studio rechts unter „Claude Code“ → Reiter „Claude“ angemeldet – mit eigenem Chat je Studio." : "Melde dich unten einmal mit deinem Claude-Abo an (E-Mail, Google oder Apple). Trendo merkt sich die Anmeldung in einem eigenen, geschützten Profil – dein Passwort sieht Trendo nie.",
+        sp.Children.Add(new TextBlock { Name = "claude-connect-state", Text = w.Connected ? "✓ Verbunden. Claude ist jetzt in jedem Studio rechts unter „Claude Code“ → Reiter „Claude“ angemeldet – mit eigenem Chat je Studio." : "Melde dich unten einmal mit deinem Claude-Abo an (E-Mail, Google oder Apple). Trendo merkt sich die Anmeldung in einem eigenen, geschützten Profil – dein Passwort sieht Trendo nie.",
             Foreground = w.Connected ? Brush.Parse("#4ADE80") : Text, FontSize = 14, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
         if (w.Connected) sp.Children.Add(Act("claude-connect-done", "Fertig", () => Show("ki-quellen"), true));
         Control view = _opt.Isolated ? new Border { Name = "claude-connect-web", Height = 200, Child = P("Testmodus: claude.ai wird nicht geladen.", Muted, 12) }

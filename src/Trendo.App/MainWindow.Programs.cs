@@ -44,7 +44,7 @@ public partial class MainWindow
             _core.Integrations.LaunchArgs(Principal.LocalOwner, exe, _core.Audit, args);
             return $"{a.Name} öffnet „{Path.GetFileName((file ?? "").TrimEnd('/', '\\'))}“.";
         }
-        catch (Exception e) when (e is ArgumentException or IOException or InvalidOperationException or UnauthorizedAccessException or System.ComponentModel.Win32Exception) { return "" + e.Message; }
+        catch (Exception e) when (e is ArgumentException or IOException or InvalidOperationException or UnauthorizedAccessException or System.ComponentModel.Win32Exception) { return "⚠ " + e.Message; }
     }
 
     /// <summary>Knopf „In … öffnen“ bzw. „… einrichten“. Spiele und 3D bleiben beim alten Weg, bis deren Aufträge gemergt sind.</summary>
@@ -56,7 +56,7 @@ public partial class MainWindow
     {
         var a = ExternalApps.Get(appId); var id = $"{appId}-{page}{suffix}";
         if (AppPath(appId) is not null)
-            return Act($"open-{id}", $"In {a.Name} öffnen", () => { string m; try { m = OpenInApp(appId, file()); } catch (Exception e) when (e is InvalidOperationException or IOException) { m = "" + e.Message; } Say(m, page); });
+            return Act($"open-{id}", $"In {a.Name} öffnen", () => { string m; try { m = OpenInApp(appId, file()); } catch (Exception e) when (e is InvalidOperationException or IOException) { m = "⚠ " + e.Message; } Say(m, page); });
         if (!_appAsk.Contains(id))
             return Act($"setup-{id}", $"{a.Name} einrichten …", () => { _appAsk.Add(id); Show(page); });
         var c = DependencyCatalog.All.FirstOrDefault(x => x.Id == a.ComponentId);
@@ -97,7 +97,7 @@ public partial class MainWindow
                 }
                 catch (Exception e) when (e is ArgumentException or IOException or InvalidOperationException or UnauthorizedAccessException)
                 {
-                    Say("" + e.Message, page);
+                    Say("⚠ " + e.Message, page);
                     return;
                 }
                 Say(MitFreigabeOeffnen(appId, a.Name, args).Hinweis, page);
@@ -225,7 +225,7 @@ public partial class MainWindow
         foreach (var a in ExternalApps.All)
         {
             var path = AppPath(a.Id);
-            var line = new TextBlock { Name = $"prog-state-{a.Id}", Text = path is not null ? $"{a.Name} – {a.Use}\n{path}" : $"{a.Name} – {a.Use} – nicht gefunden", Foreground = Text, TextWrapping = Avalonia.Media.TextWrapping.Wrap };
+            var line = new TextBlock { Name = $"prog-state-{a.Id}", Text = path is not null ? $"✓ {a.Name} – {a.Use}\n{path}" : $"✗ {a.Name} – {a.Use} – nicht gefunden", Foreground = Text, TextWrapping = Avalonia.Media.TextWrapping.Wrap };
             Control act = path is not null
                 ? Act($"prog-run-{a.Id}", "Starten", () =>
                 {

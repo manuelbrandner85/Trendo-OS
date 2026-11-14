@@ -72,7 +72,7 @@ public partial class MainWindow
             if (exe is null) throw new InvalidOperationException(s.Portable ? "Das Programm wurde nicht gefunden." : $"{info.Name} wurde nicht fertig installiert (Installer abgebrochen?).");
             KiSourceSettings.Update(_core.DataRoot, set => set.Disabled.Remove(id));
             _core.Audit.Append(Principal.LocalOwner.Name, "ki.source.install.ok", $"{id} {Path.GetFileName(exe)}");
-            SetupOverlayProgress(3, 3, "Fertig");
+            SetupOverlayProgress(3, 3, "Fertig ✓");
             _srcMsg = s.Portable ? $"{info.Name} ist eingerichtet. Mit „Starten“ läuft der lokale Server." : $"{info.Name} ist installiert. {info.Hint}";
             FinishSetupOverlay($"{info.Name} ist bereit", _srcMsg, []);
             return true;

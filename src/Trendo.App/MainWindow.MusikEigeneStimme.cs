@@ -58,7 +58,7 @@ public partial class MainWindow
             Directory.CreateDirectory(OwnTakesDir);
             File.Move(wav, Path.Combine(OwnTakesDir, $"teil{n:00}.wav"), true);
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.stimme.eigen.aufnahme", $"{n + 1}");
-            OvSay(n + 1 >= OwnMinTakes ? $"Aufnahme {n + 1} gespeichert – genug zum Lernen (mehr Aufnahmen = natürlicher)." : $"Aufnahme {n + 1} gespeichert – noch {OwnMinTakes - n - 1} bis zum Lernen.");
+            OvSay(n + 1 >= OwnMinTakes ? $"✓ Aufnahme {n + 1} gespeichert – genug zum Lernen (mehr Aufnahmen = natürlicher)." : $"✓ Aufnahme {n + 1} gespeichert – noch {OwnMinTakes - n - 1} bis zum Lernen.");
             return true;
         }
         finally { _ovBusy = false; if (CurrentView == MS) Show(MS); }
@@ -89,7 +89,7 @@ public partial class MainWindow
             var ok = r.Ok && r.Out.Contains("\"ok\": true");
             if (ok) { Directory.CreateDirectory(OwnDir); File.WriteAllText(OwnReadyFile, DateTime.Now.ToString("O")); }
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.stimme.eigen.gelernt", ok ? "ok" : "fehler");
-            OvSay(ok ? "Deine Stimme ist gelernt – unter Schritt 4 „Meine eigene Stimme“ wählen." : "Lernen ging nicht: " + Short(r.Err.Length > 0 ? r.Err : r.Out));
+            OvSay(ok ? "✓ Deine Stimme ist gelernt – unter Schritt 4 „Meine eigene Stimme“ wählen." : "Lernen ging nicht: " + Short(r.Err.Length > 0 ? r.Err : r.Out));
             return ok;
         }
         catch (Exception e) when (e is InvalidOperationException or IOException or HttpRequestException or OperationCanceledException) { OvSay("Einrichten ging nicht: " + e.Message); return false; }
@@ -129,7 +129,7 @@ public partial class MainWindow
         Songs.Update(v.Id, x => { x.Title = s.Title + $" ({label})"; x.Lyrics = s.Lyrics; x.Style = s.Style; });
         TryDelete(mix);
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.stimme.eigen.gesungen", v.Id);
-        OvSay($"„{s.Title}“ in {(bankVoice is null ? "deiner Stimme" : "der Stimme „" + bankVoice.Name + "“")} ist fertig.");
+        OvSay($"✓ „{s.Title}“ in {(bankVoice is null ? "deiner Stimme" : "der Stimme „" + bankVoice.Name + "“")} ist fertig.");
         return Songs.Get(v.Id);
     }
 
@@ -150,7 +150,7 @@ public partial class MainWindow
         sp.Children.Add(new TextBlock { Text = "Meine eigene Stimme", Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold });
         if (OwnVoiceReady)
         {
-            sp.Children.Add(P("Deine Stimme ist gelernt. Wähle oben „Meine eigene Stimme“ – dann singt das Cover in deiner Stimme.", Muted, 11));
+            sp.Children.Add(P("✓ Deine Stimme ist gelernt. Wähle oben „Meine eigene Stimme“ – dann singt das Cover in deiner Stimme.", Muted, 11));
         }
         else
         {

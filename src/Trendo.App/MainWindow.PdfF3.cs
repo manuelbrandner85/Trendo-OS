@@ -40,7 +40,7 @@ public partial class MainWindow
         }
         else
         {
-            sp.Children.Add(SignaturePad("pdf-sig", "pdf", _ => { _pdfSignDraw = false; _pdfMode = "Sign"; PdfSay("Unterschrift gespeichert – jetzt auf die Stelle der Seite klicken."); Show("pdf"); },
+            sp.Children.Add(SignaturePad("pdf-sig", "pdf", _ => { _pdfSignDraw = false; _pdfMode = "Sign"; PdfSay("✓ Unterschrift gespeichert – jetzt auf die Stelle der Seite klicken."); Show("pdf"); },
                 m => { PdfSay(m); Show("pdf"); }, 205, 90)); // passt in die Seitenleiste
             if (have) { var back = new Button { Name = "pdf-sign-keep", Content = "Bisherige behalten" }; back.Click += (_, _) => { _pdfSignDraw = false; _sigStrokes.Clear(); Show("pdf"); }; sp.Children.Add(back); }
         }
@@ -128,7 +128,7 @@ public partial class MainWindow
                 i => _ui.Post(() => { PdfSay($"Texterkennung: Seite {i + 1} von {pages} …"); }), _core.Audit);
             if (err is not null) { PdfSay(err); return null; }
             OpenPdf(outFile);
-            PdfSay($"Durchsuchbar gespeichert: {Path.GetFileName(outFile)} ({n} Seiten) – Suchen und Kopieren gehen jetzt.");
+            PdfSay($"✓ Durchsuchbar gespeichert: {Path.GetFileName(outFile)} ({n} Seiten) – Suchen und Kopieren gehen jetzt.");
             return outFile;
         }
         catch (Exception ex) when (ex is IOException or InvalidOperationException or UnauthorizedAccessException) { PdfSay("Texterkennung fehlgeschlagen: " + ex.Message); return null; }

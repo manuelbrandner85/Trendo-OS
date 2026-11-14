@@ -27,7 +27,7 @@ public partial class MainWindow
         foreach (var t in GameRelease.Targets)
         {
             var on = targets.Contains(t.Id); var id = t.Id;
-            var b = new Button { Name = "game-rel-target-" + t.Id, Content = (on ? "• " : "") + t.Label, FontSize = 12.5, Padding = new Thickness(12, 5), Margin = new Thickness(0, 0, 6, 6), CornerRadius = new CornerRadius(10),
+            var b = new Button { Name = "game-rel-target-" + t.Id, Content = (on ? "✓ " : "") + t.Label, FontSize = 12.5, Padding = new Thickness(12, 5), Margin = new Thickness(0, 0, 6, 6), CornerRadius = new CornerRadius(10),
                 Background = on ? Accent : Brushes.Transparent, Foreground = on ? Brushes.White : Text, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1) };
             ToolTip.SetTip(b, t.Hint);
             b.Click += (_, _) => ProgramRun(GK, () => { var l = GameRelease.TargetsOf(d.Data).ToList(); if (!l.Remove(id)) l.Add(id); d.Edit("Ziele", data => GameRelease.SetTargets(data, l)); _progMsg[GK] = l.Count == 0 ? "Noch kein Ziel gewählt." : "Ziele: " + string.Join(", ", l.Select(GameRelease.Label)); });
@@ -50,7 +50,7 @@ public partial class MainWindow
         if (targets.Contains("steam")) sp.Children.Add(new WrapPanel { Children = { F("steamApp", "steamApp", "Steam App-ID"), new Border { Width = 6 }, F("steamUser", "steamUser", "Steam-Anmeldename (für SteamCMD)") } });
 
         // G3: Lizenzen der Assets prüfen, bevor es nach draußen geht
-        foreach (var w in GameAssets.Check(d.Data, commercial: true)) sp.Children.Add(P("" + w, Brush.Parse("#F5A524"), 12));
+        foreach (var w in GameAssets.Check(d.Data, commercial: true)) sp.Children.Add(P("⚠ " + w, Brush.Parse("#F5A524"), 12));
         // Checkliste wie in Spielestudios
         var items = GameRelease.ChecklistFor(targets);
         var done = items.Count(i => GameRelease.Done(d.Data, i.Id));
@@ -69,7 +69,7 @@ public partial class MainWindow
         pack.IsEnabled = targets.Count > 0;
         sp.Children.Add(new WrapPanel { Children = { pack } });
         if (built.Length == 0) sp.Children.Add(P("Tipp: Zuerst im Reiter „Bauen“ das Spiel bauen – daraus entstehen die Pakete.", null, 11.5));
-        foreach (var f in _gamePackages) sp.Children.Add(P("" + Path.GetFileName(f), Brush.Parse("#2FBF71"), 12));
+        foreach (var f in _gamePackages) sp.Children.Add(P("✓ " + Path.GetFileName(f), Brush.Parse("#2FBF71"), 12));
         foreach (var t in targets.Where(t => t is "itchio" or "steam"))
         {
             var tt = t;
@@ -121,17 +121,17 @@ public partial class MainWindow
         {
             Step("Unreal baut das fertige Windows-Spiel: Code (Shipping), Inhalte kochen und packen … beim ersten Mal kann das lange dauern.");
             var (code, log) = await Task.Run(() => UnrealRun(UnrealPackage.RunUat(engine), UnrealPackage.Args(uproject, archive), Path.Combine(logs, "paket.txt"), 14_400_000));
-            if (!UnrealPackage.Ok(log)) msg = $"Windows-Spiel nicht fertig (Exitcode {code}): {UnrealPackage.Reason(log)}";
+            if (!UnrealPackage.Ok(log)) msg = $"✗ Windows-Spiel nicht fertig (Exitcode {code}): {UnrealPackage.Reason(log)}";
             else
             {
                 Step("Windows-Spiel fertig – Trendo packt es als ZIP …");
                 var zip = await Task.Run(() => UnrealPackage.Zip(archive, Path.Combine(outDir, slug + "-windows.zip")));
                 _gamePackages.Add(zip);
-                msg = $"Windows-Spiel fertig: {Path.GetFileName(zip)} ({new FileInfo(zip).Length / 1048576.0:0} MB) – entpacken und {Path.GetFileName(UnrealPackage.Exe(archive) ?? "das Spiel")} starten.";
+                msg = $"✓ Windows-Spiel fertig: {Path.GetFileName(zip)} ({new FileInfo(zip).Length / 1048576.0:0} MB) – entpacken und {Path.GetFileName(UnrealPackage.Exe(archive) ?? "das Spiel")} starten.";
                 _ui.Post(() => Toast("Windows-Spiel fertig.", ("Ordner öffnen", () => Launch(outDir))));
             }
         }
-        catch (Exception e) when (e is IOException or InvalidOperationException or System.ComponentModel.Win32Exception or UnauthorizedAccessException) { msg = "Windows-Spiel nicht gepackt: " + e.Message; }
+        catch (Exception e) when (e is IOException or InvalidOperationException or System.ComponentModel.Win32Exception or UnauthorizedAccessException) { msg = "✗ Windows-Spiel nicht gepackt: " + e.Message; }
         finally { UnrealBusy = false; }
         _core.Audit.Append(Principal.LocalOwner.Name, "game.release.unreal", msg.StartsWith('✓') ? "ok" : "fehler");
         Step(msg);

@@ -79,7 +79,7 @@ public class ClaudeMusik_Ui
             Assert.Contains("ms-prod-master", calls[^1][1]);
             Assert.True(w.ClaudePlanPending());
             Assert.Contains(w.GetLogicalDescendantsText(), t => t.StartsWith("Nachher:") && t.Contains("Rhythmus gleichmäßig"));
-            Assert.Contains(w.GetLogicalDescendantsText(), t => t.StartsWith("So nicht möglich") && t.Contains("superlaut"));
+            Assert.Contains(w.GetLogicalDescendantsText(), t => t.StartsWith("⚠ So nicht möglich") && t.Contains("superlaut"));
             Assert.Null(w.MsProducerParent); Assert.Empty(master); // noch nichts passiert
             w.Find<Button>("claude-plan-run").Press(); await Run(Task.Delay(150));
             Assert.Equal(orig.Id, w.MsProducerParent);

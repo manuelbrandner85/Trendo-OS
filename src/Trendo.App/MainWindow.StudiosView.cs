@@ -37,7 +37,7 @@ public partial class MainWindow
 
         // Eingabezeile: Enter sucht in Studios, Seiten und Dateien
         // S1/S2 (13.11.2026): schlichtes Such- und Auftragsfeld wie in der Kopfzeile – feiner Rand, kein Leuchten, keine Goldkugel
-        var ask = new TextBox { Name = "studios-ask", PlaceholderText = "Studio, Aufgabe oder Datei suchen", Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Text, FontSize = 14, VerticalContentAlignment = VerticalAlignment.Center };
+        var ask = new TextBox { Name = "studios-ask", PlaceholderText = "Studio oder Aufgabe suchen", Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Text, FontSize = 14, VerticalContentAlignment = VerticalAlignment.Center };
         void Go() { var q = ask.Text?.Trim() ?? ""; if (q.Length == 0) return; _query = q; Show("suche"); }
         ask.KeyDown += (_, e) => { if (e.Key == Key.Enter) { e.Handled = true; Go(); } };
         var goBtn = new Button { Name = "studios-ask-go", Width = 32, Height = 32, CornerRadius = new CornerRadius(4), Padding = new Thickness(0), Background = Accent, BorderThickness = new Thickness(0), Content = Ico(Mdi.ArrowRight, 16, Brushes.White), VerticalAlignment = VerticalAlignment.Center };

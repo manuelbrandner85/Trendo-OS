@@ -151,7 +151,7 @@ public partial class MainWindow
             var state = t.State switch { AgentTaskState.Fertig => "fertig", AgentTaskState.Fehler => "nicht geklappt", AgentTaskState.Laeuft => "läuft", AgentTaskState.WartetAufFreigabe => "wartet auf Freigabe", AgentTaskState.Gespeichert => $"gespeichert als {t.SavedAs}", _ => "neu" };
             sp.Children.Add(WCard(new StackPanel { Spacing = 3, Children = {
                 new TextBlock { Text = $"{role.Name}: {t.Goal}", Foreground = Text, FontSize = 13, TextWrapping = TextWrapping.Wrap },
-                P($"{state} · {t.Created:dd.MM. HH:mm}{(t.TeamId is null ? "" : " · Team")}{(role.Shape is { Count: > 0 } ? (t.Data is null ? " · Antwortform ungeprüft" : " · Antwortform geprüft") : "")}", null, 10.5),
+                P($"{state} · {t.Created:dd.MM. HH:mm}{(t.TeamId is null ? "" : " · Team")}{(role.Shape is { Count: > 0 } ? (t.Data is null ? " · Antwortform ungeprüft" : " · ✓ Antwortform geprüft") : "")}", null, 10.5),
                 new SelectableTextBlock { Name = $"agent-result-{n}", Text = t.Result.Length > 600 ? t.Result[..600] + " …" : t.Result, Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap },
                 row } }));
         }
@@ -176,7 +176,7 @@ public partial class MainWindow
             {
                 var sid = studio.SelectedIndex < 0 ? "" : all[studio.SelectedIndex].Key;
                 var r = Agents.AddCustomRole(name.Text ?? "", does.Text ?? "", focus.Text ?? "", sid, write.IsChecked == true, id => StudioCatalog.For(id)?.Name);
-                _agentNewRole = false; _agentStudio = sid; _agentRole = r.Id; _agentMsg = $"Rolle „{r.Name}“ gehört jetzt zum Studio „{StudioCatalog.For(sid)?.Name}“.";
+                _agentNewRole = false; _agentStudio = sid; _agentRole = r.Id; _agentMsg = $"✓ Rolle „{r.Name}“ gehört jetzt zum Studio „{StudioCatalog.For(sid)?.Name}“.";
             }
             catch (ArgumentException ex) { _agentMsg = ex.Message; }
             Show("ki-rollen");

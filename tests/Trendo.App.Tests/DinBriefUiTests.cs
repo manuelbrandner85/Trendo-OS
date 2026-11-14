@@ -26,7 +26,7 @@ public class DinBriefUi
             w.Find<TextBox>("din-recipient").Text = "Max Beispiel GmbH\nHauptstraße 5\n54321 Beispielort";
             w.Find<TextBox>("din-our").Text = "EM-41";
             w.Find<Button>("din-run").Press();
-            Assert.StartsWith("Brief nach DIN 5008 (Form B) gespeichert: brief-Ihr-Angebot-vom-3--November.pdf", w.TypstMessage);
+            Assert.StartsWith("✓ Brief nach DIN 5008 (Form B) gespeichert: brief-Ihr-Angebot-vom-3--November.pdf", w.TypstMessage);
             var src = File.ReadAllText(seen![3]);
             Assert.Contains("DIN 5008 Form B", src); Assert.Contains("[Unser Zeichen:], [EM\\-41]", src); Assert.Contains("Max Beispiel GmbH", src); Assert.Contains("<din-anschrift>", src);
             Assert.NotNull(w.TypstDinLetter("Erika Muster\nMusterweg 1\n12345 Musterstadt", "Max Beispiel GmbH\n54321 Beispielort", "Kurz", "Text", true));

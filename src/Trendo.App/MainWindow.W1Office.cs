@@ -101,7 +101,7 @@ public partial class MainWindow
             LastDraftFile = Mail.SaveDraft(draft, MailDraftFolder, DateTimeOffset.Now);
             Launch(LastDraftFile);
             _core.Audit.Append(Principal.LocalOwner.Name, "letter.send.mail", Path.GetFileName(pdf));
-            _letterMsg = "Dein Mailprogramm öffnet den Entwurf mit dem PDF im Anhang – dort prüfen und auf „Senden“ klicken."; _letterSendOpen = false; Show("brief");
+            _letterMsg = "✓ Dein Mailprogramm öffnet den Entwurf mit dem PDF im Anhang – dort prüfen und auf „Senden“ klicken."; _letterSendOpen = false; Show("brief");
         };
         var print = new Button { Name = "letter-send-print", Content = "Drucken (per Post)", Padding = new Thickness(12, 6) };
         ToolTip.SetTip(print, "Öffnet das PDF – dort drucken, an den Marken falten und in einen Fensterumschlag stecken");
@@ -117,7 +117,7 @@ public partial class MainWindow
             Trendo.Core.Office.TextTools.Envelopes(sender, [d.Recipient.Trim()], f);
             _letterEnvelope = f; Launch(f);
             _core.Audit.Append(Principal.LocalOwner.Name, "letter.envelope", Path.GetFileName(f));
-            _letterMsg = $"Umschlag gespeichert: {Path.GetFileName(f)} – im Drucker als Umschlag DIN lang einlegen."; Show("brief");
+            _letterMsg = $"✓ Umschlag gespeichert: {Path.GetFileName(f)} – im Drucker als Umschlag DIN lang einlegen."; Show("brief");
         };
         var folder = new Button { Name = "letter-send-folder", Content = "Ordner öffnen", Padding = new Thickness(12, 6) };
         folder.Click += (_, _) => Launch(Path.GetDirectoryName(pdf)!);
@@ -204,7 +204,7 @@ public partial class MainWindow
         s2.Children.Add(Field("sender-contact", "Telefon / E-Mail (optional)", d.SenderContact, v => d.SenderContact = v));
         s2.Children.Add(FieldLabel("Empfänger"));
         s2.Children.Add(Field("recipient", "Firma, Name, Straße, PLZ Ort", d.Recipient, v => d.Recipient = v, multi: true));
-        s2.Children.Add(new WrapPanel { Children = { Nav("letter-wiz-back-2", "Zurück", 1), Nav("letter-wiz-next-2", "Weiter →", 3, true) } });
+        s2.Children.Add(new WrapPanel { Children = { Nav("letter-wiz-back-2", "← Zurück", 1), Nav("letter-wiz-next-2", "Weiter →", 3, true) } });
         // Wunsch 03.11.2026: Designs wie in Canva – gleich oben erreichbar
         var toDesign = new Button { Name = "letter-goto-design", Content = "Design wählen (" + LetterDesigns.Styles.Length + " Vorlagen)", Margin = new Thickness(0, 4, 0, 0) };
         toDesign.Click += (_, _) =>
@@ -237,7 +237,7 @@ public partial class MainWindow
         {
             issues.Children.Clear();
             var l = Letters.Validate(d);
-            issues.Children.Add(P(l.Count == 0 ? "Alles da – der Brief kann so raus." : $"{l.Count(x => x.Blocking)} Pflichtpunkte, {l.Count(x => !x.Blocking)} Hinweise:", l.Any(x => x.Blocking) ? Brush.Parse("#F87171") : Brush.Parse("#4ADE80"), 12));
+            issues.Children.Add(P(l.Count == 0 ? "✓ Alles da – der Brief kann so raus." : $"{l.Count(x => x.Blocking)} Pflichtpunkte, {l.Count(x => !x.Blocking)} Hinweise:", l.Any(x => x.Blocking) ? Brush.Parse("#F87171") : Brush.Parse("#4ADE80"), 12));
             foreach (var x in l) issues.Children.Add(P($"{(x.Blocking ? "✗" : "•")} {x.Field}: {x.Message}", x.Blocking ? Text : null, 11.5));
         }
         var check = new Button { Name = "letter-check", Content = "Brief prüfen" }; check.Click += (_, _) => Check();
@@ -328,9 +328,9 @@ public partial class MainWindow
         s3.Children.Add(new WrapPanel { Margin = new Thickness(0, 8, 0, 0), Children = { check, Sp(improve), Sp(reset) } });
         s3.Children.Add(issues); s3.Children.Add(suggestion);
         s3.Children.Add(FieldLabel("Design")); s3.Children.Add(LetterDesignBox(d)); // Wunsch 02.11.2026: Bewerbung & Co. zeitgemäß gestalten
-        var done = new Button { Name = "letter-wiz-done", Content = "Fertig – Brief speichern", Padding = new Thickness(18, 8), Margin = new Thickness(0, 10, 6, 0), CornerRadius = new CornerRadius(10), Background = Accent, Foreground = Brushes.White, FontWeight = FontWeight.SemiBold };
+        var done = new Button { Name = "letter-wiz-done", Content = "✓ Fertig – Brief speichern", Padding = new Thickness(18, 8), Margin = new Thickness(0, 10, 6, 0), CornerRadius = new CornerRadius(10), Background = Accent, Foreground = Brushes.White, FontWeight = FontWeight.SemiBold };
         done.Click += async (_, _) => await SafeSave(pdf.IsEnabled, "Fertig – gespeichert");
-        s3.Children.Add(new WrapPanel { Children = { Nav("letter-wiz-back-3", "Zurück", 2), done } });
+        s3.Children.Add(new WrapPanel { Children = { Nav("letter-wiz-back-3", "← Zurück", 2), done } });
         form.Children.Insert(1, msg);
         if (_letterSendOpen && _letterPdf is { } sentPdf && File.Exists(sentPdf)) form.Children.Insert(2, LetterSendCard(d, sentPdf));
         form.Children.Add(new Expander { Name = "letter-more", Header = "Mehr – Ort, Anlagen, Frist, Serienbrief, Druck", IsExpanded = _letterAll, HorizontalAlignment = HorizontalAlignment.Stretch,

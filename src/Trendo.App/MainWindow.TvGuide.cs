@@ -69,7 +69,7 @@ public partial class MainWindow
             var hits = Trendo.Core.Tv.TvGuide.Search(progs, TvChannels(), _tvGuideFind, now);
             var list = new StackPanel { Name = "tv-guide-hits", Spacing = 2 };
             list.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { H(hits.Count == 0 ? $"Nichts gefunden für „{_tvGuideFind}“" : $"{hits.Count} Termine für „{_tvGuideFind}“", 13),
-                Pos(Chip("tv-guide-find-clear", "Suche schließen", false, () => { _tvGuideFind = ""; Show("tv"); }), 1) } });
+                Pos(Chip("tv-guide-find-clear", "✕ Suche schließen", false, () => { _tvGuideFind = ""; Show("tv"); }), 1) } });
             for (var i = 0; i < hits.Count; i++)
             {
                 var (c, p) = hits[i]; var key = $"{c.Id}|{p.Start:O}"; var local = p.Start.ToLocalTime();
@@ -120,7 +120,7 @@ public partial class MainWindow
                 var s = p.Start < from ? from : p.Start; var e = p.Stop > to ? to : p.Stop; var w = Math.Max(8, X(e) - X(s) - 2);
                 var on = p.IsOn(now); var past = p.Stop <= now; var kind = Trendo.Core.Tv.TvGuide.Kind(p); var key = $"{c.Id}|{p.Start:O}";
                 var rec = Trendo.Core.Tv.TvGuide.Planned(recs, c, p); var bell = Tv.HasReminder(c.Id, p.Start);
-                var marks = (rec ? "• " : "") + (bell ? "• " : "");
+                var marks = (rec ? "● " : "") + (bell ? "◆ " : "");
                 var title = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2, Children = { new TextBlock { Text = p.Title, Foreground = Text, FontSize = 12, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis } } };
                 if (marks.Length > 0) title.Children.Insert(0, new TextBlock { Text = marks, Foreground = Brush.Parse(rec ? "#F87171" : "#FACC15"), FontSize = 11 });
                 var inner = new StackPanel { Spacing = 1, Margin = new Thickness(7, 0, 4, 0), VerticalAlignment = VerticalAlignment.Center, Children = { title } };
@@ -177,7 +177,7 @@ public partial class MainWindow
             {
                 var r = TvPlanRecording(ch, sel.Title, sel.Start, sel.Stop);
                 var clash = Trendo.Core.Tv.TvGuide.Overlaps(Tv.Recordings, sel.Start, sel.Stop, r?.Id);
-                _tvMsg = $"Aufnahme geplant: {sel.Title} ({sel.Start.ToLocalTime():dd.MM. HH:mm})." + (clash.Count > 0 ? $" Hinweis: überschneidet sich mit „{clash[0].Title}“ ({clash[0].ChannelName}) – beide laufen gleichzeitig, wenn dein Anbieter das erlaubt." : "");
+                _tvMsg = $"✓ Aufnahme geplant: {sel.Title} ({sel.Start.ToLocalTime():dd.MM. HH:mm})." + (clash.Count > 0 ? $" Hinweis: überschneidet sich mit „{clash[0].Title}“ ({clash[0].ChannelName}) – beide laufen gleichzeitig, wenn dein Anbieter das erlaubt." : "");
                 Show("tv");
             }));
             else if (planned.State == "geplant") acts.Children.Add(TvButton("tv-prog-unrec", "Aufnahme geplant – entfernen", () => { Tv.RemoveRecording(planned.Id); _tvMsg = "Aufnahme entfernt."; Show("tv"); }));

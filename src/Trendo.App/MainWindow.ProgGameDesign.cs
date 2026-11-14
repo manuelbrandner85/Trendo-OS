@@ -175,7 +175,7 @@ public partial class MainWindow
         if (_gcImages.TryGetValue(idea.Title, out var image)) sp.Children.Add(GameThumb(image, $"game-idea-{i}-picture", 260));
         if (_gcImageNotes.TryGetValue(idea.Title, out var note)) sp.Children.Add(new TextBlock { Name = $"game-idea-{i}-note", Text = note, Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap });
         sp.Children.Add(new WrapPanel { Children = {
-            Act($"game-idea-{i}-use", "Daraus Spiel machen", () => GameIdeaUse(idea), true), new Border { Width = 6 },
+            Act($"game-idea-{i}-use", "✓ Daraus Spiel machen", () => GameIdeaUse(idea), true), new Border { Width = 6 },
             Act($"game-idea-{i}-like", liked ? "Gefällt" : "👍", () => GameIdeaRate(idea, true)), new Border { Width = 6 },
             Act($"game-idea-{i}-dislike", disliked ? "Gefällt nicht" : "👎", () => GameIdeaRate(idea, false)), new Border { Width = 6 },
             Act($"game-idea-{i}-image", "Konzeptbild", () => GameIdeaImage(idea)) } });
@@ -336,7 +336,7 @@ public partial class MainWindow
             var preview = new StackPanel { Name = "game-doc-preview", Spacing = 2, Children = { P("Vorschlag (noch nicht übernommen):", Text, 12.5) } };
             foreach (var line in GameDocument.Preview(d.Data, s, p.Text).Take(14)) preview.Children.Add(P(line, Muted, 12));
             sp.Children.Add(preview);
-            sp.Children.Add(new WrapPanel { Children = { Act("game-doc-accept", "Übernehmen", GameDocAccept, true), new Border { Width = 8 }, Act("game-doc-discard", "Verwerfen", () => { _gdPending = null; Show(GK); }) } });
+            sp.Children.Add(new WrapPanel { Children = { Act("game-doc-accept", "✓ Übernehmen", GameDocAccept, true), new Border { Width = 8 }, Act("game-doc-discard", "✕ Verwerfen", () => { _gdPending = null; Show(GK); }) } });
         }
         var input = new TextBox { Name = "game-doc-chat-input", PlaceholderText = "Frage oder Wunsch zu diesem Abschnitt", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 44 };
         var send = Act("game-doc-chat-send", _gdBusy ? "KI arbeitet …" : "Senden", () => GameDocChatSend(id, input.Text ?? ""), true);

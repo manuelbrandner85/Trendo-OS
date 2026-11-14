@@ -57,7 +57,7 @@ public partial class MainWindow
         CopyKiScript(app, p);
         File.WriteAllText(p.Marker, app.Commit);
         _core.Audit.Append(Principal.LocalOwner.Name, "ki.pyapp.fertig", $"{app.Repo}@{app.Commit}");
-        SetupOverlayProgress(total, total, "Fertig");
+        SetupOverlayProgress(total, total, "Fertig ✓");
     }
 
     static void CopyKiScript(KiPyApp app, KiPyApps.Paths p)
@@ -134,7 +134,7 @@ public partial class MainWindow
         {
             var kk = k;
             var ready = KiLibrary.OfKind(k).Any(m => m.Runtime != KiRuntime.Ollama && store.ModelReady(m));
-            var b = new Button { Name = "page-freeki-" + k, Content = (ready ? "• " : "") + KiLibrary.Kinds[k].Name, FontSize = 12, Padding = new Thickness(9, 2), Margin = new Thickness(0, 0, 5, 3),
+            var b = new Button { Name = "page-freeki-" + k, Content = (ready ? "✓ " : "") + KiLibrary.Kinds[k].Name, FontSize = 12, Padding = new Thickness(9, 2), Margin = new Thickness(0, 0, 5, 3),
                 CornerRadius = new CornerRadius(10), Background = Brush.Parse("#22FFFFFF"), Foreground = Text, BorderThickness = new Thickness(0) };
             ToolTip.SetTip(b, KiLibrary.Kinds[k].Description + (ready ? " (schon eingerichtet)" : " – kostenlos, läuft auf deinem PC; geladen wird erst nach deinem Klick dort."));
             b.Click += (_, _) => KiLibraryShow(kk);

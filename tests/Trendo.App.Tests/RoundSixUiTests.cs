@@ -29,7 +29,7 @@ public class RoundSix_Ui
         Assert.Equal("lernen", w.LearnMode);
         w.LearnReveal(); w.LearnGrade(Grade.Gut); w.LearnReveal(); w.LearnGrade(Grade.Gut);
         w.LearnMode = "plan"; w.Show("lernen");
-        Assert.StartsWith("Tagesziel geschafft – 2 Karten gelernt", w.Find<TextBlock>("learn-today-text").Text);
+        Assert.StartsWith("✓ Tagesziel geschafft – 2 Karten gelernt", w.Find<TextBlock>("learn-today-text").Text);
         Assert.False(w.Find<Button>("learn-plan-go").IsEnabled);
         w.Find<TextBox>("learn-plan-exam-0").Text = "31.02."; w.Find<Button>("learn-plan-save-0").Press();
         Assert.Contains("TT.MM.JJJJ", w.Find<TextBlock>("learn-plan-msg").Text);

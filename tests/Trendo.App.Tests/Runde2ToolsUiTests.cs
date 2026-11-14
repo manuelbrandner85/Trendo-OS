@@ -26,7 +26,7 @@ public class Runde2ToolsUi
             w.Find<TextBox>("typst-title").Text = "Rechnung 17"; w.Find<TextBox>("typst-body").Text = "Sehr geehrte Frau Muster,";
             w.Find<TextBox>("typst-items").Text = "2;Stühle;59,50\n1;Tisch;349";
             w.Find<Button>("typst-run").Press();
-            Assert.StartsWith("PDF gespeichert: Rechnung-17.pdf", w.TypstMessage);
+            Assert.StartsWith("✓ PDF gespeichert: Rechnung-17.pdf", w.TypstMessage);
             Assert.Contains("Gesamt: 468,00 €", File.ReadAllText(seen![3]));
             w.Find<TextBox>("typst-items").Text = "zwei Stühle"; w.Find<Button>("typst-run").Press();
             Assert.Contains("Menge;Artikel;Preis", w.TypstMessage);
@@ -63,7 +63,7 @@ public class Runde2ToolsUi
             var (w, _, _) = Ui.Open(); w.TvTab = "mediathek"; w.Show("tv");
             Assert.NotNull(w.Find<Button>("sl-play-1"));
             w.Find<Button>("sl-play-0").Press();
-            await Until(() => w.LiveResolveMessage.StartsWith('▶'));
+            await Until(() => w.LiveResolveMessage.StartsWith("Läuft", StringComparison.Ordinal));
             Assert.Equal(LiveResolve.Channels[0].Url, seen![3]); Assert.Equal("live", w.TvTab);
         }
         finally { MainWindow.ToolExeOverride.Clear(); MainWindow.ToolRunOverride = null; File.Delete(exe); }

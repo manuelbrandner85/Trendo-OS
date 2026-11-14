@@ -86,7 +86,7 @@ public partial class MainWindow
         var decor = s.Target.StartsWith(GameDecorField, StringComparison.Ordinal);
         if (!decor && !s.Target.StartsWith(GameLevelField, StringComparison.Ordinal)) return null;
         var (rows, err) = GameParseRows(v, decor, d.Text("browser"));
-        if (rows is null) return new TextBlock { Name = "claude-plan-warn", Text = "So nicht möglich: " + err, Foreground = Brush.Parse("#FFF8B26A"), FontSize = 12, TextWrapping = TextWrapping.Wrap };
+        if (rows is null) return new TextBlock { Name = "claude-plan-warn", Text = "⚠ So nicht möglich: " + err, Foreground = Brush.Parse("#FFF8B26A"), FontSize = 12, TextWrapping = TextWrapping.Wrap };
         var cell = Math.Clamp(300.0 / Math.Max(1, rows.Max(r => r.Length)), 6, 14);
         var canvas = new LevelCanvas { Name = "claude-plan-level", Rows = rows, Cell = cell, IsHitTestVisible = false };
         if (int.TryParse(s.Target[(decor ? GameDecorField : GameLevelField).Length..], out var no) && no >= 1 && no <= GameLevelCount(d))

@@ -423,7 +423,7 @@ public partial class MainWindow
             return b;
         }
         return Appear(CGlass(new StackPanel { Spacing = 6, Children = {
-            new TextBlock { Text = $"Claude möchte {what}. Das wirkt nach außen oder lässt sich nicht zurückholen.", Foreground = ClaudeFg, FontSize = 13.5, TextWrapping = TextWrapping.Wrap },
+            new TextBlock { Text = $"⚠ Claude möchte {what}. Das wirkt nach außen oder lässt sich nicht zurückholen.", Foreground = ClaudeFg, FontSize = 13.5, TextWrapping = TextWrapping.Wrap },
             new StackPanel { Orientation = Orientation.Horizontal, Children = { B("claude-consent-yes", "Ja, machen", true), B("claude-consent-no", "Nein", false) } } } }, name: "claude-consent"));
     }
 }

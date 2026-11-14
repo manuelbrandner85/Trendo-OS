@@ -180,7 +180,7 @@ public partial class MainWindow
                 Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, VerticalAlignment = VerticalAlignment.Center, Children = {
                     ClaudeBand(key), // Claude in der Kopfzeile jedes Programms – nimmt keine Zeile im Menüband weg
                     title is null ? LevelSwitch(key) : new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, VerticalAlignment = VerticalAlignment.Center, Children = {
-                    LevelSwitch(key), title, new TextBlock { Name = "prog-dirty", Text = d!.Dirty ? "geändert" : d.Path is null ? "nicht gespeichert" : "gespeichert", Foreground = Brushes.White, FontSize = 12, VerticalAlignment = VerticalAlignment.Center } } } } }, 2) } },
+                    LevelSwitch(key), title, new TextBlock { Name = "prog-dirty", Text = d!.Dirty ? "geändert" : d.Path is null ? "nicht gespeichert" : "✓ gespeichert", Foreground = Brushes.White, FontSize = 12, VerticalAlignment = VerticalAlignment.Center } } } } }, 2) } },
         };
 
         // D2 (13.11.2026): Programmkopf immer schlicht – keine Studio-Farbfläche, kein Symbolblock, kein doppelter Titel.

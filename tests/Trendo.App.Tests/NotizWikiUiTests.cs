@@ -29,7 +29,7 @@ public class NotizWiki_Ui
         w.Find<TextBox>("wissen-text").Text = "Rasen samstags mähen. Zurück zum [[Haushalt]].";
         w.Find<Button>("wissen-add").Press();
         // Rückverweis: Garten ← Haushalt
-        Assert.Equal("Haushalt", w.Find<Button>("wissen-back-0").Content);
+        Assert.Equal("← Haushalt", w.Find<Button>("wissen-back-0").Content);
         w.Find<Button>("wissen-back-0").Press(); Assert.Equal("Haushalt", w.Wissen.Get(w.WikiPage!)!.Title);
         Assert.Equal("unseren Garten", w.Find<Button>("wissen-link-0").Content); // jetzt vorhanden
         // Bearbeiten

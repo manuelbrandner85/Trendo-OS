@@ -71,7 +71,7 @@ public partial class MainWindow
         _fleet[p.Serial] = c;
         c.Finished += (st, ok) => _ui.Post(() =>
         {
-            var text = ok ? $"„{p.Name}“: Druck fertig – {st.File}" : $"„{p.Name}“: Druck fehlgeschlagen – {st.File}";
+            var text = ok ? $"✓ „{p.Name}“: Druck fertig – {st.File}" : $"⚠ „{p.Name}“: Druck fehlgeschlagen – {st.File}";
             Toast(text); _core.Audit.Append(Principal.LocalOwner.Name, ok ? "3ddruck.fertig" : "3ddruck.fehler", p.Name);
             if (CurrentView == "3d-druck") { _prMsg = text; Show("3d-druck"); }
             _ = RaiseEvent("druck-fertig", text); // n8n/Node-RED-Ereignis (N3), nur an Webhooks auf diesem PC
@@ -135,7 +135,7 @@ public partial class MainWindow
         else { _prMsg = "Bambu Studio ist noch nicht eingerichtet (links: „Bambu Studio einrichten“)."; Show("3d-druck"); return; }
         if (!ok || !File.Exists(out3mf)) { _prMsg = "Vorbereiten fehlgeschlagen."; Show("3d-druck"); return; }
         _core.Audit.Append(Principal.LocalOwner.Name, "3ddruck.vorbereitet", Path.GetFileName(out3mf));
-        PrintFile = out3mf; _prMsg = $"Druckfertig: {Path.GetFileName(out3mf)} – jetzt „Hochladen und drucken“."; Show("3d-druck");
+        PrintFile = out3mf; _prMsg = $"✓ Druckfertig: {Path.GetFileName(out3mf)} – jetzt „Hochladen und drucken“."; Show("3d-druck");
     }
 
     public bool PrintTimelapse { get; set; }
@@ -164,7 +164,7 @@ public partial class MainWindow
                 steps.Children.Add(new StackPanel { Spacing = 1, Children = { new TextBlock { Text = $"{i + 1}. {s.Title}", Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold }, P(s.How, Muted, 11.5) } });
             var ips = _opt.Isolated ? [] : BambuNetPro.OwnIps();
             var same = Printer is { } p0 && BambuDiscovery.SameNetwork(ips, p0.Ip);
-            steps.Children.Add(P(Printer is null ? "Danach „Drucker im Netz finden“." : same ? $"„{Printer.Name}“ ({Printer.Ip}) ist im selben Netz wie dieser PC." : $"„{Printer.Name}“ ({Printer.Ip}) scheint in einem anderen Netz zu sein als dieser PC – beide müssen im selben WLAN bzw. Router hängen.",
+            steps.Children.Add(P(Printer is null ? "Danach „Drucker im Netz finden“." : same ? $"✓ „{Printer.Name}“ ({Printer.Ip}) ist im selben Netz wie dieser PC." : $"⚠ „{Printer.Name}“ ({Printer.Ip}) scheint in einem anderen Netz zu sein als dieser PC – beide müssen im selben WLAN bzw. Router hängen.",
                 same ? Brush.Parse("#2FBF71") : Brush.Parse("#F5A524"), 12));
             sp.Children.Add(new Border { CornerRadius = new CornerRadius(8), Background = Brush.Parse("#1A3D8BFF"), Padding = new Thickness(10), Child = steps });
         }
@@ -217,7 +217,7 @@ public partial class MainWindow
             {
                 var hh = h;
                 var look = new Button { Name = $"print-hms-{i}", Content = "Nachschlagen", Padding = new Thickness(8, 2) }; look.Click += (_, _) => Launch(hh.HelpUrl);
-                sp.Children.Add(new DockPanel { Children = { Dk(look, Avalonia.Controls.Dock.Right), P("" + h.Text, Brush.Parse("#F5A524"), 12) } });
+                sp.Children.Add(new DockPanel { Children = { Dk(look, Avalonia.Controls.Dock.Right), P("⚠ " + h.Text, Brush.Parse("#F5A524"), 12) } });
             }
         }
         var live = new Button { Name = "print-live", Content = _prLive ? "Live-Kamera aus" : "Live-Kamera" }; live.Click += (_, _) => PrinterLive(!_prLive);

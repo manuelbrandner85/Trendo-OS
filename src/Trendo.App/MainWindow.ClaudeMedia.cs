@@ -58,7 +58,7 @@ public partial class MainWindow
     Control? ClaudeMediaPreview(ClaudeActions.Step s)
     {
         if (s.Kind != "feld" || s.Value is not { Length: > 0 } v) return null;
-        TextBlock Warn(string t) => new() { Name = "claude-plan-warn", Text = "So nicht möglich: " + t, Foreground = Brush.Parse("#FFF8B26A"), FontSize = 12, TextWrapping = TextWrapping.Wrap };
+        TextBlock Warn(string t) => new() { Name = "claude-plan-warn", Text = "⚠ So nicht möglich: " + t, Foreground = Brush.Parse("#FFF8B26A"), FontSize = 12, TextWrapping = TextWrapping.Wrap };
         if (s.Target == MediaClaudeSearch) return v.Trim().Length < 2 ? Warn("zu kurzes Suchwort") : null;
         if (s.Target != MediaClaudeCollect) return null;
         var (list, nums, err) = ParseCollect(v); if (list is null) return Warn(err!);
@@ -78,13 +78,13 @@ public partial class MainWindow
         if (s.Kind != "feld" || s.Value is not { Length: > 0 } v) return false;
         if (s.Target == MediaClaudeSearch) { if (v.Trim().Length < 2) return false; _ = MediaSearch(v.Trim()); return true; }
         if (s.Target != MediaClaudeCollect) return false;
-        var (list, nums, err) = ParseCollect(v); if (list is null) { _mbMsg = "Claudes Auswahl nicht übernommen: " + err + "."; return false; }
+        var (list, nums, err) = ParseCollect(v); if (list is null) { _mbMsg = "⚠ Claudes Auswahl nicht übernommen: " + err + "."; return false; }
         var added = 0; var refused = new List<string>();
         foreach (var n in nums!)
         {
             try { if (Collections.Add(list, MediaHits[n - 1])) added++; } catch (InvalidOperationException e) { refused.Add(e.Message); }
         }
-        if (added == 0 && refused.Count > 0) { _mbMsg = "" + string.Join(" ", refused); return false; }
+        if (added == 0 && refused.Count > 0) { _mbMsg = "⚠ " + string.Join(" ", refused); return false; }
         // Namensnennungen automatisch: Datei in der Medien-Bibliothek und Zwischenablage
         var credits = Collections.Credits(list);
         var file = Path.Combine(AssetFolder, "Medien", $"Namensnennungen – {string.Concat(list.Split(Path.GetInvalidFileNameChars()))}.txt");

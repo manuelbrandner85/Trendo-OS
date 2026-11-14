@@ -192,7 +192,7 @@ public partial class MainWindow
         try { r.Session.Apply(label, r.Plan.Steps.Where(s => s.Action.SideEffect).ToList()); }
         catch (Exception ex) when (ex is not OutOfMemoryException) { r.Phase = "fehler"; r.Message = "Übernehmen hat nicht geklappt: " + ex.Message; AssistRender(r, host); return; }
         _core.Audit.Append(Principal.LocalOwner.Name, "assist.apply", $"{r.Target.Key} „{label}“");
-        r.Phase = "fertig"; r.Message = "Behalten. Rückgängig geht hier oder mit Strg+Z.";
+        r.Phase = "fertig"; r.Message = "✓ Behalten. Rückgängig geht hier oder mit Strg+Z.";
         r.Suggestions = AssistPlanner.Suggest(r.Plan.Steps.Select(s => s.Action), r.Target.Actions, r.Target.Hints()).ToList();
         var page = CurrentView; Show(page); // neue Leiste übernimmt das Panel (AssistAttach)
     }

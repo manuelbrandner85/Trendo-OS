@@ -75,8 +75,8 @@ public partial class MainWindow
             Songs.Update(s.Id, x => { x.CoverFile = file; x.CoverLayout = lay; x.CoverSeed = sd; x.Artist = name; });
             if (old.Length > 0 && old != file && File.Exists(old) && Path.GetDirectoryName(old) == dir) try { File.Delete(old); } catch (IOException) { } // altes Cover desselben Lieds (von Trendo erzeugt)
             _msMsg = motif is null && !ownPhoto
-                ? "Cover mit Farbfläche erstellt. Für ein gemaltes Motiv in der KI-Bibliothek unter „Bilder erzeugen“ SDXL Turbo einrichten – oder ein eigenes Foto wählen."
-                : "Cover fertig – gefällt es nicht, „Neu würfeln“.";
+                ? "✓ Cover mit Farbfläche erstellt. Für ein gemaltes Motiv in der KI-Bibliothek unter „Bilder erzeugen“ SDXL Turbo einrichten – oder ein eigenes Foto wählen."
+                : "✓ Cover fertig – gefällt es nicht, „Neu würfeln“.";
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.cover", $"{s.Id} {lay} {(ownPhoto ? "foto" : motif is null ? "farbe" : "ki")}");
             return file;
         }
@@ -239,7 +239,7 @@ public partial class MainWindow
         try
         {
             File.WriteAllBytes(target, SongCover.EmbedInMp3(File.ReadAllBytes(s.File), File.ReadAllBytes(s.CoverFile), s.Title, s.Artist));
-            _msMsg = "MP3 mit Cover gespeichert: " + target; _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.export", "mp3+cover");
+            _msMsg = "✓ MP3 mit Cover gespeichert: " + target; _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.export", "mp3+cover");
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException) { _msMsg = "Speichern ging nicht: " + e.Message; }
         Show(MS);

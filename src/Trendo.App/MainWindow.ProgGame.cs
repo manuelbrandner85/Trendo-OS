@@ -25,7 +25,7 @@ public partial class MainWindow
         Ribbon =
         [
             ("Spiel", [
-                new ProgramCmd("check", "Spiel prüfen", d => _progMsg[GK] = GameDesign.Check(d.Data) is { Count: > 0 } w ? "Hinweise:\n• " + string.Join("\n• ", w) : "Keine Probleme gefunden", true),
+                new ProgramCmd("check", "Spiel prüfen", d => _progMsg[GK] = GameDesign.Check(d.Data) is { Count: > 0 } w ? "Hinweise:\n• " + string.Join("\n• ", w) : "Keine Probleme gefunden ✓", true),
                 new ProgramCmd("build", "Bauen", d => GameBuild(d)),
                 new ProgramCmd("play", "Spielen / Öffnen", d => GamePlay(d)),
             ]),
@@ -130,8 +130,8 @@ public partial class MainWindow
         var scale = GameDesign.ScaleOf(d.Text("scale"));
         var warn = GameDesign.Check(d.Data);
         var w = new StackPanel { Name = "game-warnings", Spacing = 3 };
-        foreach (var x in warn) w.Children.Add(P("" + x, Brush.Parse("#F5A524"), 12));
-        if (warn.Count == 0) w.Children.Add(P("Keine Probleme gefunden.", Brush.Parse("#2FBF71"), 12));
+        foreach (var x in warn) w.Children.Add(P("⚠ " + x, Brush.Parse("#F5A524"), 12));
+        if (warn.Count == 0) w.Children.Add(P("✓ Keine Probleme gefunden.", Brush.Parse("#2FBF71"), 12));
         var ms = d.List("milestones").OfType<JsonObject>().ToList(); var done = ms.Count(m => m["done"]?.GetValueKind() == System.Text.Json.JsonValueKind.True);
         return new StackPanel { Spacing = 10, Children = {
             new WrapPanel { Children = {
@@ -495,8 +495,8 @@ public partial class MainWindow
         tools.Children.Add(test);
         Control? levelBar = kind == "plattform" ? GameLevelBar(d, li) : null;
         var hints = new StackPanel { Name = "game-level-hints", Spacing = 2 };
-        foreach (var h in kind == "plattform" ? GameStudio.CheckPlatform(rows) : []) hints.Children.Add(P("" + h, Brush.Parse("#F5A524"), 12));
-        if (hints.Children.Count == 0 && kind == "plattform") hints.Children.Add(P("Start, Ziel und Boden sind da – „Im Fenster spielen“ startet sofort, „Im Browser testen“ baut das fertige Spiel.", Brush.Parse("#2FBF71"), 12));
+        foreach (var h in kind == "plattform" ? GameStudio.CheckPlatform(rows) : []) hints.Children.Add(P("⚠ " + h, Brush.Parse("#F5A524"), 12));
+        if (hints.Children.Count == 0 && kind == "plattform") hints.Children.Add(P("✓ Start, Ziel und Boden sind da – „Im Fenster spielen“ startet sofort, „Im Browser testen“ baut das fertige Spiel.", Brush.Parse("#2FBF71"), 12));
         var stats = string.Concat(rows);
         var info = P(kind == "plattform" ? $"{rows.Max(x => x.Length)} × {rows.Count} Kacheln · {stats.Count(ch => ch == 'o')} Münzen · {stats.Count(ch => ch == 'E')} Gegner · {stats.Count(ch => ch == '^')} Stacheln" : $"{rows.Max(x => x.Length)} × {rows.Count} Kacheln", Muted, 11.5);
         Control scene = new ScrollViewer { Content = canvas, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Disabled, MaxHeight = 16 * 22 + 20, VerticalAlignment = VerticalAlignment.Top };
@@ -720,6 +720,6 @@ public partial class MainWindow
             new WrapPanel { Children = { status, again, new Border { Width = 6 }, save, new Border { Width = 4 }, load, new Border { Width = 6 }, stop } },
             GamePlayNoteBar(d),
             new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = canvas },
-            P("oder A/D laufen · Leertaste, ↑ oder W springt · Esc zurück zum Editor · gleiche Regeln wie im gebauten Spiel", Muted, 11.5) } };
+            P("← → oder A/D laufen · Leertaste, ↑ oder W springt · Esc zurück zum Editor · gleiche Regeln wie im gebauten Spiel", Muted, 11.5) } };
     }
 }

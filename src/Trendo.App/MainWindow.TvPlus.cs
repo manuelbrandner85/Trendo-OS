@@ -33,7 +33,7 @@ public partial class MainWindow
         _tvVodUrl = url; _tvNextCancelled = false;
         if (Tv.ResumeFor(url) is { Open: true } r)
         {
-            _tvMsg = $"Weiter ab {TvClock(r.Pos)}.";
+            _tvMsg = $"✓ Weiter ab {TvClock(r.Pos)}.";
             _ = Task.Delay(1500).ContinueWith(_ => _ui.Post(() => _tvPlayer?.Send("seek", Math.Round(r.Pos), "absolute")));
         }
     }
@@ -155,10 +155,10 @@ public partial class MainWindow
     /// <summary>Kinder-Profil an/aus. Aus geht mit PIN (wenn eine eingerichtet ist).</summary>
     public bool TvSetKids(bool on, string? pin = null)
     {
-        if (on) { Tv.SetKidsMode(true); _tvChannels = null; _tvKidsAsk = false; _tvMsg = "Kinder-Profil an – nur Kindersender und Kinderfilme."; _core.Audit.Append(Principal.LocalOwner.Name, "tv.kinder", "an"); return true; }
+        if (on) { Tv.SetKidsMode(true); _tvChannels = null; _tvKidsAsk = false; _tvMsg = "✓ Kinder-Profil an – nur Kindersender und Kinderfilme."; _core.Audit.Append(Principal.LocalOwner.Name, "tv.kinder", "an"); return true; }
         if (Lock.Enabled && !Lock.Verify(pin ?? "")) { _tvKidsAsk = true; _tvMsg = pin is null ? "Zum Beenden des Kinder-Profils die PIN eingeben." : "Die PIN stimmt nicht."; return false; }
         Tv.SetKidsMode(false); _tvChannels = null; _tvKidsAsk = false;
-        _tvMsg = Lock.Enabled ? "Kinder-Profil aus." : "Kinder-Profil aus. Tipp: unter Einstellungen → Sicherheit eine PIN setzen, dann können Kinder es nicht selbst beenden.";
+        _tvMsg = Lock.Enabled ? "✓ Kinder-Profil aus." : "✓ Kinder-Profil aus. Tipp: unter Einstellungen → Sicherheit eine PIN setzen, dann können Kinder es nicht selbst beenden.";
         _core.Audit.Append(Principal.LocalOwner.Name, "tv.kinder", "aus");
         return true;
     }

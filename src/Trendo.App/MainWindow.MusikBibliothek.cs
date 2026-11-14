@@ -89,13 +89,13 @@ public partial class MainWindow
             foreach (var c in col.OfKind(kind))
             {
                 var cc = c; var inIt = kind == MusicCollections.Workspace ? col.WorkspaceOf(s.Id) == c.Id : c.SongIds.Contains(s.Id);
-                var item = new MenuItem { Header = (inIt ? "• " : "") + c.Name };
+                var item = new MenuItem { Header = (inIt ? "✓ " : "") + c.Name };
                 item.Click += (_, _) => { if (kind == MusicCollections.Workspace) col.MoveToWorkspace(s.Id, cc.Id); else if (inIt) col.RemoveSong(cc.Id, s.Id); else col.AddSong(cc.Id, s.Id); _msMsg = $"„{s.Title}“ → {cc.Name}"; Show(MS); };
                 mi.Items.Add(item);
             }
             if (kind == MusicCollections.Workspace)
             {
-                var home = new MenuItem { Header = (col.WorkspaceOf(s.Id) is null ? "• " : "") + MusicCollections.DefaultWorkspace };
+                var home = new MenuItem { Header = (col.WorkspaceOf(s.Id) is null ? "✓ " : "") + MusicCollections.DefaultWorkspace };
                 home.Click += (_, _) => { col.MoveToWorkspace(s.Id, null); Show(MS); };
                 mi.Items.Insert(0, home);
             }

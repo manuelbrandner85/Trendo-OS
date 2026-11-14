@@ -6,7 +6,7 @@ namespace Trendo.App.Tests;
 
 public class W5_X01_Ui
 {
-    [AvaloniaFact(DisplayName = "X-01 (UI): Ohne Angaben gesperrt; Plan freigeben → Ja → alle Schritte")]
+    [AvaloniaFact(DisplayName = "X-01 (UI): Ohne Angaben gesperrt; Plan freigeben → Ja → alle Schritte ✓")]
     public void Run()
     {
         var (w, _, _) = Ui.Open();

@@ -100,7 +100,7 @@ public partial class MainWindow
         }
         var result = GameFlow.ResultOf(t);
         if (result.Length > 0)
-            sp.Children.Add(new TextBlock { Name = $"game-task-{i}-result", Text = (result == GameFlow.Done ? "Fertig" : result == GameFlow.DoneWithNotes ? "Fertig mit Hinweisen" : "Blockiert") + (t["note"].AsText() is { Length: > 0 } n ? ": " + n : ""),
+            sp.Children.Add(new TextBlock { Name = $"game-task-{i}-result", Text = (result == GameFlow.Done ? "✓ Fertig" : result == GameFlow.DoneWithNotes ? "✓ Fertig mit Hinweisen" : "⛔ Blockiert") + (t["note"].AsText() is { Length: > 0 } n ? ": " + n : ""),
                 FontSize = 11, TextWrapping = TextWrapping.Wrap, Foreground = result == GameFlow.Blocked ? Brush.Parse("#F06A6A") : Brush.Parse("#2FBF71") });
         if (GameBoard.StateOf(t) != "Fertig")
         {

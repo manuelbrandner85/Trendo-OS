@@ -41,7 +41,7 @@ public partial class MainWindow
                    "ok, msg = download_submodel('" + AceStepClient.BaseModel + "', get_checkpoints_dir()); print(msg); sys.exit(0 if ok else 1)";
         var r = await KiStep(py, ["-c", code], dir, AceStepClient.ServerEnvironment(), 3_600_000);
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.grundmodell", $"exit={r.Exit}");
-        _msMsg = r.Ok ? "Grundmodell geladen – jetzt „Verlängern“." : "Laden ging nicht: " + Short(r.Err.Length > 0 ? r.Err : r.Out);
+        _msMsg = r.Ok ? "✓ Grundmodell geladen – jetzt „Verlängern“." : "Laden ging nicht: " + Short(r.Err.Length > 0 ? r.Err : r.Out);
         Show(MS);
     }
 

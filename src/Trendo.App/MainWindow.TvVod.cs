@@ -339,7 +339,7 @@ public partial class MainWindow
                 list.Children.Add(row);
             }
             if (eps.Count == 0) list.Children.Add(P(_tvEps is null ? "Folgen werden geladen …" : "Keine Folgen gefunden.", null, 12));
-            sp.Children.Add(TvButton("tv-series-back", "Alle Serien", () => { _tvSerSel = null; Show("tv"); }));
+            sp.Children.Add(TvButton("tv-series-back", "← Alle Serien", () => { _tvSerSel = null; Show("tv"); }));
             sp.Children.Add(WCard(new Grid { Name = "tv-series-detail", ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = {
                 new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, Child = img, Margin = new Thickness(0, 0, 14, 0), VerticalAlignment = VerticalAlignment.Top },
                 Pos(new StackPanel { Spacing = 6, Children = { H(ser.Name, 17),

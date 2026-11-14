@@ -141,7 +141,7 @@ public partial class MainWindow
         if (_cart.Count > 0) pay.Children.Add(Act("kasse-clear", "Warenkorb leeren", () => { _cart.Clear(); Show(V); }));
         if (_kasseLast is { } last)
             pay.Children.Add(new Border { Name = "kasse-done", Background = Brush.Parse("#332FBF71"), BorderBrush = Brush.Parse("#2FBF71"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(12), Child = new StackPanel { Spacing = 6, Children = {
-                new TextBlock { Text = $"{last.No} · {Eu(last.Gross)} € {(last.Payment == "bar" ? "bar" : "mit Karte")}", Foreground = Text, FontWeight = FontWeight.SemiBold },
+                new TextBlock { Text = $"✓ {last.No} · {Eu(last.Gross)} € {(last.Payment == "bar" ? "bar" : "mit Karte")}", Foreground = Text, FontWeight = FontWeight.SemiBold },
                 last.Payment == "bar" ? new TextBlock { Name = "kasse-done-change", Text = $"Rückgeld: {Eu(last.Change)} €", Foreground = GoldText(), FontSize = 22, FontWeight = FontWeight.Bold } : new TextBlock { Text = "Bezahlt.", Foreground = Muted },
                 Act("kasse-receipt", "Bon als PDF", () => Try(V, () => { var f = Path.Combine(BusinessFolder, "Kasse", last.No + ".pdf"); Directory.CreateDirectory(Path.GetDirectoryName(f)!); CashRegister.ReceiptPdf(f, last, Seller); NotifyFileResult("Gespeichert: " + f); Say("Bon gespeichert: " + Path.GetFileName(f), V); })) } } });
         var right = Glass2(new StackPanel { Spacing = 10, Width = 400, Children = { H("Warenkorb", 15), new ScrollViewer { Content = cart, MaxHeight = 300 }, pay } }, 14);

@@ -59,7 +59,7 @@ public partial class MainWindow
             if (!r.Ok || !File.Exists(outFile)) { MpSay("Mastern ging nicht: " + Short(r.Err)); return null; }
             var v = await MpAddVersion(s, outFile, $"Master {st.Label}, {t.Lufs:0} LUFS" + (eq is { Length: > 0 } ? " nach Referenz" : ""));
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.master.pro", $"{st.Id} {t.Id} ref={(eq is null ? "nein" : "ja")}");
-            MpSay(v is null ? "Mastern ging nicht." : $"Gemastert ({st.Label}, Ziel {t.Label} {t.Lufs:0} LUFS{(eq is { Length: > 0 } ? ", Klang an die Referenz angeglichen" : "")}).");
+            MpSay(v is null ? "Mastern ging nicht." : $"✓ Gemastert ({st.Label}, Ziel {t.Label} {t.Lufs:0} LUFS{(eq is { Length: > 0 } ? ", Klang an die Referenz angeglichen" : "")}).");
             return v;
         }
         finally { _mpBusy = false; if (CurrentView == MS) Show(MS); }
@@ -94,7 +94,7 @@ public partial class MainWindow
             var label = $"Üben {tempo * 100:0} %" + (semitones != 0 ? $", {(semitones > 0 ? "+" : "")}{semitones} Halbtöne" : "") + (click ? ", mit Klick" : "");
             var v = await MpAddVersion(s, outFile, label);
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.ueben", label);
-            MpSay(v is null ? "Ging nicht." : $"Übe-Fassung „{label}“ ist fertig." + quality + (check.Light == "gelb" ? "" + check.Text : ""));
+            MpSay(v is null ? "Ging nicht." : $"✓ Übe-Fassung „{label}“ ist fertig." + quality + (check.Light == "gelb" ? " ⚠ " + check.Text : ""));
             return v;
         }
         finally { _mpBusy = false; if (CurrentView == MS) Show(MS); }
@@ -114,7 +114,7 @@ public partial class MainWindow
         var bytes = MusicPro.Midi(notes, an.Chords, an.Bpm, int.TryParse(an.MeterValue, out var m) ? m : 4, an.Duration);
         var file = Path.Combine(WorkFolder("Musik"), DevStudio.SafeName(s.Title) + ".mid"); await File.WriteAllBytesAsync(file, bytes);
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.midi", Path.GetFileName(file));
-        MpSay($"MIDI gespeichert: {Path.GetFileName(file)} – {notes.Count} Noten, {an.Chords.Count} Akkorde (zum Weiterbearbeiten in jedem Notenprogramm).");
+        MpSay($"✓ MIDI gespeichert: {Path.GetFileName(file)} – {notes.Count} Noten, {an.Chords.Count} Akkorde (zum Weiterbearbeiten in jedem Notenprogramm).");
         return file;
     }
 
@@ -128,7 +128,7 @@ public partial class MainWindow
             var loop = MusicPro.MakeLoop(a, bpm, bpb, bars);
             var f = Path.Combine(Path.GetDirectoryName(s.File)!, $".trendo-loop-{Guid.NewGuid():N}.wav"); AudioFile.WriteWav(loop, f, 24);
             var v = await MpAddVersion(s, f, $"Loop {bars} Takte ({bpm:0} BPM)");
-            MpSay(v is null ? "Ging nicht." : $"Loop mit {bars} Takten – läuft ohne Knacken endlos weiter.");
+            MpSay(v is null ? "Ging nicht." : $"✓ Loop mit {bars} Takten – läuft ohne Knacken endlos weiter.");
             return v;
         }
         catch (InvalidOperationException e) { MpSay(e.Message); return null; }
@@ -150,7 +150,7 @@ public partial class MainWindow
             var r = await MasterRun(ff, MusicPro.HookArgs(s.File, cover, file, start, seconds, s.Title));
             if (!r.Ok || !File.Exists(file)) { MpSay("Kurzclip ging nicht: " + Short(r.Err)); return null; }
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.kurzclip", Path.GetFileName(file));
-            MpSay($"Kurzclip ({seconds:0} s ab {CoverStudio.Time(start)}) gespeichert: {Path.GetFileName(file)}");
+            MpSay($"✓ Kurzclip ({seconds:0} s ab {CoverStudio.Time(start)}) gespeichert: {Path.GetFileName(file)}");
             return file;
         }
         finally { _mpBusy = false; if (CurrentView == MS) Show(MS); }
@@ -229,7 +229,7 @@ public partial class MainWindow
         _msLyrics = MusicPro.PlanLyrics(parts, existing);
         var bpm = int.TryParse(_msBpm, out var bp) ? bp : 110; var sec = MusicPro.PlanSeconds(parts, bpm, _msTime is { Length: > 0 } t && int.TryParse(t, out var bb) ? bb : 4);
         _msPro = true; _msPlanText = text;
-        _msMsg = $"Gerüst mit {parts.Count} Teilen – etwa {CoverStudio.Time(sec)} bei {bpm} BPM. Texte unter den Marken eintragen.";
+        _msMsg = $"✓ Gerüst mit {parts.Count} Teilen – etwa {CoverStudio.Time(sec)} bei {bpm} BPM. Texte unter den Marken eintragen.";
         Show(MS); return _msLyrics;
     }
 }

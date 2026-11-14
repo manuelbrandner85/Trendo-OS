@@ -38,7 +38,7 @@ public partial class MainWindow
     {
         LastCopied = text;
         try { if (Clipboard is { } cb) await cb.SetTextAsync(text); _mbMsg = $"{what} kopiert."; }
-        catch (Exception) { _mbMsg = $"{what} ließ sich nicht kopieren."; }
+        catch (Exception) { _mbMsg = $"⚠ {what} ließ sich nicht kopieren."; }
         Show(MB);
     }
 
@@ -47,7 +47,7 @@ public partial class MainWindow
         _mbBusy = true; _mbMsg = busy; Show(MB);
         try { _mbMsg = await work(); }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or TimeoutException or InvalidDataException or InvalidOperationException or IOException or ArgumentException
-            or UnauthorizedAccessException or System.Text.Json.JsonException) { _mbMsg = "" + ex.Message; }
+            or UnauthorizedAccessException or System.Text.Json.JsonException) { _mbMsg = "⚠ " + ex.Message; }
         _mbBusy = false; Show(MB);
     }
 
@@ -79,7 +79,7 @@ public partial class MainWindow
         if (!MediaOnline) throw new InvalidOperationException("Offline – Laden geht erst mit Internet.");
         var item = await MediaLib.Download(h);
         _core.Audit.Append(Principal.LocalOwner.Name, "medien.download", $"{h.Provider}/{h.Id} ({h.License})");
-        return $"„{item.Name}“ liegt in deiner Bibliothek – {(h.Free ? "frei nutzbar" : "bitte den Urheber nennen")} ({h.License}).";
+        return $"✓ „{item.Name}“ liegt in deiner Bibliothek – {(h.Free ? "frei nutzbar" : "bitte den Urheber nennen")} ({h.License}).";
     });
 
     /// <summary>Freie Schriften suchen (Fontsource, wie Google Fonts).</summary>
@@ -97,7 +97,7 @@ public partial class MainWindow
         if (!MediaOnline) throw new InvalidOperationException("Offline – Laden geht erst mit Internet.");
         await Fonts.Download(f);
         _core.Audit.Append(Principal.LocalOwner.Name, "medien.schrift", $"{f.Id} ({f.License})");
-        return $"Schrift „{f.Family}“ liegt unter Medien › Schriften ({f.License}, frei nutzbar).";
+        return $"✓ Schrift „{f.Family}“ liegt unter Medien › Schriften ({f.License}, frei nutzbar).";
     });
 
     /// <summary>Geladenes Bild in der Bildbearbeitung bzw. Klang im Audio-Editor öffnen (wie Adobe Stock in Photoshop).</summary>

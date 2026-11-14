@@ -31,7 +31,7 @@ public partial class MainWindow
         var body = new TextBox { Name = "mail-body", PlaceholderText = "Nachricht", Text = _mailBody, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 100 };
         MailDraft D() { _mailTo = to.Text ?? ""; _mailSubj = subj.Text ?? ""; _mailBody = body.Text ?? ""; return new(_mailTo, _mailSubj, _mailBody); }
         var check = new Button { Name = "mail-check", Content = "Prüfen" };
-        check.Click += (_, _) => { var p = MailCenter.Check(D()); _mailMsg = p.Count == 0 ? "Sieht gut aus." : string.Join(" ", p); Show("post"); };
+        check.Click += (_, _) => { var p = MailCenter.Check(D()); _mailMsg = p.Count == 0 ? "✓ Sieht gut aus." : string.Join(" ", p); Show("post"); };
         var open = new Button { Name = "mail-open", Content = "Im Mailprogramm öffnen", Background = Accent };
         open.Click += (_, _) =>
         {

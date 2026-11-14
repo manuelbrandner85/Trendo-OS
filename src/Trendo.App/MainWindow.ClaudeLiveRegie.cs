@@ -62,7 +62,7 @@ public partial class MainWindow
     {
         if (s.Target != LiveClaudeScenes || s.Value is not { Length: > 0 } v) return null;
         var (list, err) = ParseLiveScenes(v);
-        if (list is null) return new TextBlock { Name = "claude-plan-warn", Text = "So nicht möglich: " + err, Foreground = Brush.Parse("#FFF8B26A"), FontSize = 12, TextWrapping = TextWrapping.Wrap };
+        if (list is null) return new TextBlock { Name = "claude-plan-warn", Text = "⚠ So nicht möglich: " + err, Foreground = Brush.Parse("#FFF8B26A"), FontSize = 12, TextWrapping = TextWrapping.Wrap };
         var wp = new WrapPanel { Name = "claude-plan-live" };
         foreach (var (name, main, texts) in list)
         {

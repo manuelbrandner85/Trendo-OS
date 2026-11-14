@@ -95,8 +95,8 @@ public partial class MainWindow
         var sp = new StackPanel { Spacing = 6 };
         sp.Children.Add(H("Vorschau", 14));
         sp.Children.Add(new WrapPanel { Children = {
-            Act("web-desktop", _webWide ? "Desktop" : "Desktop", async () => await SetPreview(true)),
-            Act("web-handy", !_webWide ? "Handy" : "Handy", async () => await SetPreview(false)),
+            Act("web-desktop", _webWide ? "✓ Desktop" : "Desktop", async () => await SetPreview(true)),
+            Act("web-handy", !_webWide ? "✓ Handy" : "Handy", async () => await SetPreview(false)),
             Act("web-open", "Im Browser öffnen", () => { if (_webDir is null) Say("Zuerst eine Seite bauen.", "dev"); else Launch(Path.Combine(_webDir, "index.html")); })
         } });
         var img = new Image { Name = "web-preview", MaxWidth = 320, MaxHeight = 420, Stretch = Stretch.Uniform };

@@ -103,7 +103,7 @@ public partial class MainWindow
             var res = SongUnderstanding.Build(s.Lyrics, sections, singers, words, theme);
             await File.WriteAllTextAsync(UnderstandFile(s), SongUnderstanding.Save(res));
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.verstanden", $"{s.Id}: {res.Source}");
-            Say("Verstanden: " + SongUnderstanding.Summary(res) + (words is null && vocal is not null ? " – genauer mit einem Whisper-Modell aus der KI-Bibliothek." : ""));
+            Say("✓ Verstanden: " + SongUnderstanding.Summary(res) + (words is null && vocal is not null ? " – genauer mit einem Whisper-Modell aus der KI-Bibliothek." : ""));
             return res;
         }
         catch (Exception e) when (e is IOException or System.Text.Json.JsonException or InvalidOperationException) { Say("Verstehen ging nicht: " + e.Message); return null; }

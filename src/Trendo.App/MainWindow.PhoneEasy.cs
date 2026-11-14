@@ -85,7 +85,7 @@ public partial class MainWindow
                 (dev, file) => _ui.Post(() => Toast($"Vom Handy ({dev}): {Path.GetFileName(file)}", ("Ordner öffnen", new Action(() => Launch(PhoneInbox))))),
                 (dev, text) => _ui.Post(() =>
                 {
-                    if (text == "\u0001verbunden") { Toast($"{dev} ist jetzt verbunden."); if (CurrentView == "handy") Show("handy"); return; }
+                    if (text == "\u0001verbunden") { Toast($"✓ {dev} ist jetzt verbunden."); if (CurrentView == "handy") Show("handy"); return; }
                     _phoneTexts.Insert(0, (dev, text)); if (_phoneTexts.Count > 10) _phoneTexts.RemoveAt(10);
                     Toast($"Vom Handy ({dev}): {(text.Length > 80 ? text[..80] + " …" : text)}", ("Kopieren", new Action(() => { if (Clipboard is { } cb) _ = cb.SetTextAsync(text); })));
                     if (CurrentView == "handy") Show("handy");
@@ -238,7 +238,7 @@ public partial class MainWindow
         return b;
     }
 
-    static TextBlock Ok(string t) => new() { Text = "" + t, Foreground = Brush.Parse("#4ADE80"), FontSize = 13, TextWrapping = TextWrapping.Wrap };
+    static TextBlock Ok(string t) => new() { Text = "✓ " + t, Foreground = Brush.Parse("#4ADE80"), FontSize = 13, TextWrapping = TextWrapping.Wrap };
 
     private Control PhoneEasyCard()
     {
@@ -440,7 +440,7 @@ public partial class MainWindow
         var away = new StackPanel { Name = "phone-easy-away", Spacing = 6 };
         away.Children.Add(H("Auch unterwegs verbinden", 14));
         if (ts is not null)
-            away.Children.Add(P($"Bereit: Tailscale läuft auf dem PC ({ts}). Unterwegs erreicht dein Handy den PC, wenn dort Tailscale an ist.", Brush.Parse("#4ADE80"), 13));
+            away.Children.Add(P($"✓ Bereit: Tailscale läuft auf dem PC ({ts}). Unterwegs erreicht dein Handy den PC, wenn dort Tailscale an ist.", Brush.Parse("#4ADE80"), 13));
         else
             away.Children.Add(P("Damit dein Handy den PC auch außerhalb des WLANs erreicht, nutzt Trendo Tailscale: ein privates, verschlüsseltes Netz nur für deine Geräte. Kostenlos für Privatnutzer, kein Port im Router, nichts ist öffentlich. Trendo führt dich Schritt für Schritt durch.", Text, 13));
         if (_phoneWhere != "away")
@@ -541,7 +541,7 @@ public partial class MainWindow
             }
             catch (System.ComponentModel.Win32Exception) { ok = false; } // Windows-Frage mit „Nein“ beantwortet
         }
-        _phoneMsg = ok ? "Windows-Freigabe ist eingerichtet. Jetzt den Code noch einmal scannen." : "Die Windows-Freigabe wurde nicht eingerichtet (Frage abgelehnt?).";
+        _phoneMsg = ok ? "✓ Windows-Freigabe ist eingerichtet. Jetzt den Code noch einmal scannen." : "Die Windows-Freigabe wurde nicht eingerichtet (Frage abgelehnt?).";
         _phoneQrAt = DateTime.UtcNow;
     }
 }

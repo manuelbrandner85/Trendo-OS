@@ -13,13 +13,6 @@ public static class CalmLook
 {
     static readonly string[] KeepNames = ["wall", "backdrop", "trendo-logo", "splash"];
 
-    static bool Kept(Visual v)
-    {
-        for (var x = v; x is not null; x = x.GetVisualParent())
-            if (x is Control c && c.Name is { Length: > 0 } n && KeepNames.Any(k => n.StartsWith(k, StringComparison.Ordinal))) return true;
-        return false;
-    }
-
     static bool OverImage(Control c) =>
         c.GetVisualParent() is Panel p && p.Children.Any(s => !ReferenceEquals(s, c) && (s is Image || s.GetVisualDescendants().OfType<Image>().Any()));
 
@@ -36,30 +29,43 @@ public static class CalmLook
         return new SolidColorBrush(Color.FromArgb(c.A, M(c.R), M(c.G), M(c.B)));
     }
 
-    /// <summary>Einmal über einen Teilbaum gehen. Kostet wenige Millisekunden je Seite.</summary>
+    /// <summary>Einmal über einen Teilbaum gehen (ein Durchlauf, geschützte Teilbäume werden ganz übersprungen).</summary>
     public static void Apply(Visual root)
     {
-        foreach (var v in root.GetSelfAndVisualDescendants().ToList())
+        for (var x = root; x is not null; x = x.GetVisualParent())
+            if (x is Control k && k.Name is { Length: > 0 } kn && KeepNames.Any(n => kn.StartsWith(n, StringComparison.Ordinal))) return;
+        var stack = new Stack<Visual>(); stack.Push(root);
+        while (stack.Count > 0)
         {
-            if (v is not Control c || Kept(c)) continue;
-            if (c.Effect is DropShadowEffect) c.Effect = null; // kein Leuchten
-            switch (c)
+            var v = stack.Pop();
+            if (v is Control c)
             {
-                case Border bd:
-                    if (bd.Background is GradientBrush bg && !OverImage(bd)) bd.Background = Flatten(bg);
-                    if (bd.BorderBrush is GradientBrush bb) bd.BorderBrush = Flatten(bb);
-                    if (bd.BoxShadow.Count > 0 && bd.GetType().Name != "DeskFrame") bd.BoxShadow = default; // Fensterrahmen behalten ihren weichen Schatten
-                    break;
-                case Panel p when p.Background is GradientBrush pg && !OverImage(p):
-                    p.Background = Flatten(pg); break;
+                if (c.Name is { Length: > 0 } nm && KeepNames.Any(n => nm.StartsWith(n, StringComparison.Ordinal))) continue;
+                Calm(c);
             }
-            if (c is Avalonia.Controls.Primitives.TemplatedControl tc)
-            {
-                if (tc.Background is GradientBrush tb) tc.Background = Flatten(tb);
-                if (tc.BorderBrush is GradientBrush tbb) tc.BorderBrush = Flatten(tbb);
-                if (tc.Foreground is GradientBrush tf) tc.Foreground = Flatten(tf);
-            }
-            if (c is TextBlock tx && tx.Foreground is GradientBrush txf) tx.Foreground = Flatten(txf);
+            foreach (var ch in v.GetVisualChildren()) stack.Push(ch);
         }
+    }
+
+    static void Calm(Control c)
+    {
+        if (c.Effect is DropShadowEffect) c.Effect = null; // kein Leuchten
+        switch (c)
+        {
+            case Border bd:
+                if (bd.Background is GradientBrush bg && !OverImage(bd)) bd.Background = Flatten(bg);
+                if (bd.BorderBrush is GradientBrush bb) bd.BorderBrush = Flatten(bb);
+                if (bd.BoxShadow.Count > 0 && bd.GetType().Name != "DeskFrame") bd.BoxShadow = default; // Fensterrahmen behalten ihren weichen Schatten
+                break;
+            case Panel p when p.Background is GradientBrush pg && !OverImage(p):
+                p.Background = Flatten(pg); break;
+        }
+        if (c is Avalonia.Controls.Primitives.TemplatedControl tc)
+        {
+            if (tc.Background is GradientBrush tb) tc.Background = Flatten(tb);
+            if (tc.BorderBrush is GradientBrush tbb) tc.BorderBrush = Flatten(tbb);
+            if (tc.Foreground is GradientBrush tf) tc.Foreground = Flatten(tf);
+        }
+        if (c is TextBlock tx && tx.Foreground is GradientBrush txf) tx.Foreground = Flatten(txf);
     }
 }

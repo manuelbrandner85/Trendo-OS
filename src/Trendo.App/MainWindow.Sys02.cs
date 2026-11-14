@@ -108,7 +108,7 @@ public partial class MainWindow
         void ZipAsk(ArchiveConflictException ex, Func<ArchiveConflict, string> run)
         {
             zipAsk.Children.Clear();
-            zipAsk.Children.Add(P("" + ex.Message + (ex.Names.Count > 1 ? " " + string.Join(", ", ex.Names.Take(5).Select(Path.GetFileName)) + (ex.Names.Count > 5 ? " …" : "") : "") + " Was soll passieren?", Text, 12.5));
+            zipAsk.Children.Add(P("⚠ " + ex.Message + (ex.Names.Count > 1 ? " " + string.Join(", ", ex.Names.Take(5).Select(Path.GetFileName)) + (ex.Names.Count > 5 ? " …" : "") : "") + " Was soll passieren?", Text, 12.5));
             var row = new WrapPanel();
             foreach (var (mode, id, label) in new[] { (ArchiveConflict.KeepBoth, "keep", "Beide behalten"), (ArchiveConflict.Skip, "skip", "Vorhandene behalten"), (ArchiveConflict.Overwrite, "replace", "Ersetzen") })
             {

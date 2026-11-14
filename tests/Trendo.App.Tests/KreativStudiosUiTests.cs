@@ -87,7 +87,7 @@ public class KreativStudios_Ui
             var view = w.Find<StackPanel>("podc-chapters-view").GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text).ToList();
             Assert.Contains("14:40", view); Assert.Contains("Die besten Pflanzen", view);
             var box = w.Find<TextBox>("podc-chapters"); box.Focus(); box.Text ="00:00 Start\nkaputt"; Settle();
-            Assert.Contains(w.Find<StackPanel>("podc-chapters-view").GetVisualDescendants().OfType<TextBlock>(), t => t.Text?.StartsWith("Zeile 2") == true);
+            Assert.Contains(w.Find<StackPanel>("podc-chapters-view").GetVisualDescendants().OfType<TextBlock>(), t => t.Text?.StartsWith("⚠ Zeile 2") == true);
             box.Text = "00:00 Start\n03:00 Thema"; w.Find<TextBox>("podc-p-title").Focus(); Settle();
             Assert.Contains("03:00 Thema", File.ReadAllText(Export(w, K, "notes", root)));
             Assert.Contains("START=180000", File.ReadAllText(Export(w, K, "meta", root)));

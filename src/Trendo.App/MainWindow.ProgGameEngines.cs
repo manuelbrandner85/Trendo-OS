@@ -93,7 +93,7 @@ public partial class MainWindow
                 var (exit, output) = EngineRun(exe, args, dir, 300_000);
                 File.WriteAllText(Path.Combine(logs, file), output);
                 var (ok, text) = EngineTargets.ParseGodotCheck(output);
-                lines.Add($"Godot {label}: {(ok ? "• " : "")}{text} (Exitcode {exit})");
+                lines.Add($"Godot {label}: {(ok ? "✓ " : "⚠ ")}{text} (Exitcode {exit})");
             }
         }
         LastEngineReport = string.Join("\n", lines);

@@ -11,13 +11,13 @@ public partial class MainWindow
     public string? TypstDinLetter(string sender, string recipient, string subject, string body, bool formA, string yourRef = "", string ourRef = "")
     {
         var l = new TypstDoc.DinLetter(sender, recipient, subject, body, DateOnly.FromDateTime(DateTime.Today), formA, yourRef, ourRef);
-        if (TypstDoc.DinCheck(l) is { Count: > 0 } errors) { _typstMsg = "" + string.Join(" ", errors); Show("doku-schreiben"); return null; }
+        if (TypstDoc.DinCheck(l) is { Count: > 0 } errors) { _typstMsg = "⚠ " + string.Join(" ", errors); Show("doku-schreiben"); return null; }
         var dir = DokuOut; Directory.CreateDirectory(dir);
         var name = "brief-" + string.Concat(subject.Trim().Select(c => char.IsLetterOrDigit(c) ? c : '-')).Trim('-');
         if (name.Length > 60) name = name[..60].TrimEnd('-');
         var typ = Path.Combine(dir, name + ".typ"); File.WriteAllText(typ, TypstDoc.Din5008(l));
         var (ok, msg) = TypstDoc.Compile(ToolExe("typst") ?? "", typ, Path.Combine(dir, name + ".pdf"), dir, run: ToolRunOverride);
-        _typstMsg = ok ? $"Brief nach DIN 5008 (Form {(formA ? "A" : "B")}) gespeichert: {Path.GetFileName(msg)} – passt ins Fensterkuvert DL/C6; Quelle {Path.GetFileName(typ)} bleibt bearbeitbar." : "⚠ " + msg;
+        _typstMsg = ok ? $"✓ Brief nach DIN 5008 (Form {(formA ? "A" : "B")}) gespeichert: {Path.GetFileName(msg)} – passt ins Fensterkuvert DL/C6; Quelle {Path.GetFileName(typ)} bleibt bearbeitbar." : "⚠ " + msg;
         _core.Audit.Append(Principal.LocalOwner.Name, "office.typst.din5008", ok ? Path.GetFileName(msg) : "fehler");
         Show("doku-schreiben"); return ok ? msg : null;
     }

@@ -241,7 +241,7 @@ public partial class MainWindow
             {
                 var ok = BigBoards.Intact(_core.Projects, BigProject!, ev); var full = _core.Projects.ResolveInProject(BigProject!, ev.Path);
                 var eb = new Button { Name = $"big-ev-{ei++}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Background = Brushes.Transparent, Padding = new Thickness(4, 2),
-                    Content = new StackPanel { Children = { new TextBlock { Text = (ok ? "• " : "") + Path.GetFileName(ev.Path)[(cid.Length + 1)..], Foreground = ok ? Text : Brush.Parse("#F97316"), FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis },
+                    Content = new StackPanel { Children = { new TextBlock { Text = (ok ? "✓ " : "⚠ ") + Path.GetFileName(ev.Path)[(cid.Length + 1)..], Foreground = ok ? Text : Brush.Parse("#F97316"), FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis },
                         new TextBlock { Text = (ev.Note.Length > 0 ? ev.Note + " · " : "") + (ok ? "Prüfsumme stimmt" : "Datei verändert oder fehlt") + $" · {ev.Added.LocalDateTime.ToString("dd.MM. HH:mm", De)}", Foreground = Muted, FontSize = 10.5, TextWrapping = TextWrapping.Wrap } } } };
                 ToolTip.SetTip(eb, "SHA-256: " + ev.Sha256); eb.Click += (_, _) => { if (File.Exists(full)) Launch(full); };
                 right.Children.Add(eb);

@@ -94,7 +94,7 @@ public class ClaudeFallback_Ui
             Assert.Single(w.ClaudeDrafts);
             w.Find<Button>("claude-draft-ok-0").Press(); await Run(Task.Delay(50));
             Assert.True(File.Exists(Path.Combine(chat.Folder, "bilder", "titel.png"))); Assert.Empty(w.ClaudeDrafts);
-            Assert.StartsWith("Bild erzeugen übernommen", w.ClaudeChatCurrent()!.Messages[^1].Text);
+            Assert.StartsWith("✓ Bild erzeugen übernommen", w.ClaudeChatCurrent()!.Messages[^1].Text);
 
             w.Find<TextBox>("claude-chat-input").Text = "Ein Leuchtturm";
             w.Find<Button>("claude-tool-bild").Press(); while (w.ClaudeChatRunning() || tools.Count < 3) await Run(Task.Delay(20));
