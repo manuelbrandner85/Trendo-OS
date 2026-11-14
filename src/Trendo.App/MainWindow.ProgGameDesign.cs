@@ -215,6 +215,7 @@ public partial class MainWindow
         sp.Children.Add(new WrapPanel { Children = { title, new Border { Width = 8 }, Act("game-doc-add", "＋ Abschnitt hinzufügen", () => ProgramRun(GK, () => d.Edit("Abschnitt hinzufügen", x => GameDocument.AddCustom(x, title.Text ?? "")))) } });
         var vault = GameDocument.Vault(d.Data);
         if (vault.Count > 0) sp.Children.Add(GameDocVault(d, vault, sections));
+        sp.Children.Add(GameReferencesCard(d)); // T-0650 D5
         return sp;
     }
 

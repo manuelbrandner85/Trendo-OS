@@ -186,9 +186,14 @@ public static class UnrealGame
     public static string Editor(string engineDir) => Path.Combine(engineDir, "Engine", "Binaries", "Win64", "UnrealEditor.exe");
     public static List<string> CompileArgs(string uproject) => [Path.GetFileNameWithoutExtension(uproject) + "Editor", "Win64", "Development", "-Project=" + uproject, "-WaitMutex", "-NoHotReload"];
     public static List<string> TestArgs(string uproject, string log) => [uproject, "-ExecCmds=Automation RunTests Trendo", "-TestExit=Automation Test Queue Empty", "-unattended", "-nullrhi", "-nosplash", "-nopause", "-log", "-abslog=" + log];
-    public static List<string> CheckArgs(string uproject, string log, bool screenshot) =>
-        screenshot ? [uproject, "-game", "-trendocheck", "-trendoshot", "-windowed", "-ResX=1600", "-ResY=900", "-unattended", "-nosplash", "-log", "-abslog=" + log]
-                   : [uproject, "-game", "-trendocheck", "-nullrhi", "-unattended", "-nosplash", "-nopause", "-log", "-abslog=" + log];
+    /// <summary>Startlauf; mit seed &gt; 0 setzt das Spiel seinen Zufall darauf (wiederholbare Testläufe, T-0650).</summary>
+    public static List<string> CheckArgs(string uproject, string log, bool screenshot, int seed = 0)
+    {
+        List<string> a = screenshot ? [uproject, "-game", "-trendocheck", "-trendoshot", "-windowed", "-ResX=1600", "-ResY=900", "-unattended", "-nosplash", "-log", "-abslog=" + log]
+                                    : [uproject, "-game", "-trendocheck", "-nullrhi", "-unattended", "-nosplash", "-nopause", "-log", "-abslog=" + log];
+        if (seed > 0) a.Add(GameRuns.SeedArg(seed));
+        return a;
+    }
     public static List<string> WeltArgs(string uproject, string log) =>
         [uproject, "-ExecutePythonScript=" + Path.Combine(Path.GetDirectoryName(uproject)!, WeltScriptRel.Replace('/', Path.DirectorySeparatorChar)), "-unattended", "-nullrhi", "-nosplash", "-nopause", "-log", "-abslog=" + log];
     /// <summary>Mensch bauen: mit Grafik ohne Fenster (Hauttexturen entstehen auf der Grafikkarte).</summary>
@@ -2488,6 +2493,7 @@ void ATrendoGameMode::BeginPlay()
 	if (bHasSave)
 		if (UTrendoSaveGame* S = Cast<UTrendoSaveGame>(UGameplayStatics::LoadGameFromSlot(TEXT("Trendo"), 0)); S && S->Version <= 1 && Data.Levels.IsValidIndex(S->Level))
 		{ State.Level = S->Level; State.Score = S->Score; State.Lives = FMath::Max(1, S->Lives); State.Inventory = S->Inventory; }
+	{ int32 TrendoSeed = 0; if (FParse::Value(FCommandLine::Get(), TEXT("trendoseed="), TrendoSeed)) { FMath::RandInit(TrendoSeed); FMath::SRandInit(TrendoSeed); UE_LOG(LogTemp, Display, TEXT("TRENDO-START Startwert=%d"), TrendoSeed); } } // wiederholbare Testlaeufe
 	Mode = Data.bMenu ? TEXT("menu") : TEXT("play");
 	LoadModels();
 	if (Data.Levels.Num() > 0) BuildWorld(State.Level);

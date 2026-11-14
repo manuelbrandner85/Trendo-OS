@@ -232,6 +232,7 @@ public partial class MainWindow
             cb.IsCheckedChanged += (_, _) => { if ((cb.IsChecked == true) != on) { d.Edit("Meilenstein", x => ((JsonObject)((JsonArray)x["milestones"]!)[idx]!)["done"] = cb.IsChecked == true); Show(GK); } };
             sp.Children.Add(cb);
         }
+        if (d.Text("browser") is not ("plattform" or "jump" or "breakout")) sp.Children.Add(GameServicesCard(d)); // T-0650 E7: ohne Assets-Bereich hier
         return sp;
     }
 
@@ -253,6 +254,7 @@ public partial class MainWindow
         var built = d.Text("built");
         sp.Children.Add(P(built.Length > 0 ? "Zuletzt gebaut: " + built : "Noch nicht gebaut.", Text, 12));
         sp.Children.Add(new WrapPanel { Children = { Act("game-build", "Bauen", () => ProgramRun(GK, () => GameBuild(d)), true), new Border { Width = 6 }, Act("game-play", scale.Engine == "browser" ? "Spielen" : "In Unreal öffnen", () => ProgramRun(GK, () => GamePlay(d))) } });
+        sp.Children.Add(GameEngineSetupCard(d)); // T-0650 E1: Engine einrichten, nur Geprüftes gilt
         if (scale.Engine == "unreal") sp.Children.Add(GameUnrealView(d)); // 3D-Spiel in Unreal: kompilieren, prüfen, spielen
         sp.Children.Add(GameEnginesView(d)); // Paket 01 S1-01: Unreal, Unity, Godot, Blender
         return sp;

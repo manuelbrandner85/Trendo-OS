@@ -1,0 +1,104 @@
+using System.Globalization;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+
+namespace Trendo.Core.Programs;
+
+/// <summary>T-0650, D5: ähnliche, real existierende Spiele als Vergleich für Designentscheidungen. Die KI schlägt nur Titel vor; gezeigt wird ein Titel erst,
+/// wenn ein Wikipedia-Artikel ihn als Computer- oder Videospiel belegt. Lässt sich nichts belegen, steht dort „keine Referenz gefunden“ – nie ein erfundener Titel.
+/// Übernommen werden nur Titel, Kurzbeschreibung und Link, keine Inhalte oder Figuren.</summary>
+public static class GameReferences
+{
+    public const string None = "keine Referenz gefunden";
+    public sealed record Ref(string Title, string Url, string Note, string Source);
+
+    public static string Instructions() =>
+        "Du nennst real existierende, veröffentlichte Computer- oder Videospiele, die einer Spielidee ähneln. Nur Titel, die es wirklich gibt. " +
+        "Antworte mit höchstens 6 Zeilen, je Zeile nur der offizielle Titel. Keine Erklärungen, keine Nummern. Kennst du keines sicher, antworte mit „keine“.";
+
+    public static string Prompt(JsonObject d)
+    {
+        string S(string k) => d[k] is JsonValue v && v.TryGetValue<string>(out var s) ? s.Trim() : "";
+        var parts = new[] { ("Titel", S("title")), ("Genre", S("genre")), ("Stil", S("style")), ("Idee", S("logline")), ("Spielablauf", S("loop")), ("Perspektive", S("perspective")) }
+            .Where(p => p.Item2.Length > 0).Select(p => $"{p.Item1}: {p.Item2}");
+        return "Welche veröffentlichten Spiele ähneln dieser Idee am meisten?\n" + string.Join("\n", parts);
+    }
+
+    /// <summary>Titel aus der KI-Antwort: Aufzählungszeichen und Jahreszahlen entfernt, ohne Doppelte, höchstens 6.</summary>
+    public static List<string> Candidates(string answer)
+    {
+        var list = new List<string>();
+        foreach (var raw in (answer ?? "").Split('\n'))
+        {
+            var t = raw.Trim().TrimStart('-', '*', '•', ' ').Trim();
+            t = System.Text.RegularExpressions.Regex.Replace(t, @"^\d+[.)]\s*", "");
+            t = System.Text.RegularExpressions.Regex.Replace(t, @"\s*[\(\[]\d{4}[\)\]]\s*$", "").Trim().Trim('"', '„', '“', '*');
+            var cut = t.IndexOfAny(['|', '–']); if (cut > 0) t = t[..cut].Trim();
+            if (t.Length is < 2 or > 80 || t.Equals("keine", StringComparison.OrdinalIgnoreCase)) continue;
+            if (!list.Contains(t, StringComparer.OrdinalIgnoreCase)) list.Add(t);
+            if (list.Count == 6) break;
+        }
+        return list;
+    }
+
+    static readonly string[] GameWords = ["computerspiel", "videospiel", "video game", "videogame", "spiel für", "browserspiel", "handyspiel", "indie-spiel", "rollenspiel", "jump ’n’ run", "jump 'n' run", "action-adventure", "ego-shooter"];
+
+    static string Norm(string s) => new([.. s.ToLowerInvariant().Normalize(System.Text.NormalizationForm.FormD).Where(char.IsLetterOrDigit)]);
+
+    public static string SummaryUrl(string lang, string title) =>
+        $"https://{lang}.wikipedia.org/api/rest_v1/page/summary/{Uri.EscapeDataString(title.Trim().Replace(' ', '_'))}?redirect=true";
+
+    /// <summary>Wikipedia-Zusammenfassung prüfen: kein Begriffsklärungs-Artikel, als Spiel beschrieben, Titel passt zum Vorschlag.</summary>
+    public static Ref? FromSummary(string asked, string json, string lang)
+    {
+        try
+        {
+            var o = JsonNode.Parse(json)!.AsObject();
+            if ((string?)o["type"] == "disambiguation") return null;
+            var title = (string?)o["title"] ?? ""; var desc = (string?)o["description"] ?? ""; var extract = (string?)o["extract"] ?? "";
+            var url = (string?)o["content_urls"]?["desktop"]?["page"] ?? "";
+            if (title.Length == 0 || !Uri.TryCreate(url, UriKind.Absolute, out var u) || u.Scheme != "https" || u.Host != $"{lang}.wikipedia.org") return null;
+            var text = (desc + " " + (extract.Length > 400 ? extract[..400] : extract)).ToLowerInvariant();
+            if (!GameWords.Any(text.Contains)) return null;
+            var a = Norm(asked); var t = Norm(title);
+            if (a.Length == 0 || !(t == a || t.StartsWith(a, StringComparison.Ordinal) || a.StartsWith(t, StringComparison.Ordinal))) return null;
+            var note = desc.Length > 0 ? desc : extract.Split(". ")[0];
+            return new(title, u.AbsoluteUri, note.Length > 160 ? note[..160] + "…" : note, "Wikipedia");
+        }
+        catch (Exception e) when (e is JsonException or InvalidOperationException or NullReferenceException) { return null; }
+    }
+
+    /// <summary>Jeden Titel belegen (erst deutsche, dann englische Wikipedia). Was sich nicht belegen lässt, fällt weg.</summary>
+    public static async Task<List<Ref>> Verify(IWebFetch http, IEnumerable<string> titles, CancellationToken ct = default)
+    {
+        var found = new List<Ref>();
+        foreach (var title in titles.Take(6))
+            foreach (var lang in new[] { "de", "en" })
+            {
+                try
+                {
+                    var r = await http.GetAsync(SummaryUrl(lang, title), ct);
+                    if (r.Ok && FromSummary(title, r.Text, lang) is { } hit)
+                    {
+                        if (!found.Any(f => Norm(f.Title) == Norm(hit.Title))) found.Add(hit);
+                        break;
+                    }
+                }
+                catch (Exception e) when (e is HttpRequestException or IOException or TaskCanceledException) { }
+            }
+        return found;
+    }
+
+    /// <summary>Belegte Referenzen ins Dokument (ersetzt die alten).</summary>
+    public static void Store(JsonObject d, IEnumerable<Ref> refs, DateTime when)
+    {
+        d["references"] = new JsonArray([.. refs.Select(r => (JsonNode)new JsonObject { ["title"] = r.Title, ["url"] = r.Url, ["note"] = r.Note, ["source"] = r.Source })]);
+        d["referencesChecked"] = when.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    }
+
+    /// <summary>Gespeicherte Referenzen; Einträge ohne https-Beleg werden nie gezeigt.</summary>
+    public static List<Ref> Read(JsonObject d) =>
+        [.. (d["references"] as JsonArray ?? []).OfType<JsonObject>()
+            .Select(o => new Ref((string?)o["title"] ?? "", (string?)o["url"] ?? "", (string?)o["note"] ?? "", (string?)o["source"] ?? ""))
+            .Where(r => r.Title.Length > 0 && Uri.TryCreate(r.Url, UriKind.Absolute, out var u) && u.Scheme == "https")];
+}
