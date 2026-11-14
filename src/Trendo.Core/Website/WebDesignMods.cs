@@ -191,7 +191,13 @@ public static partial class WebDesignMods
             // „Senden an › ZIP-komprimierter Ordner“ legt alles in einen Hauptordner: den als Mod-Wurzel nehmen
             if (!File.Exists(Path.Combine(folder, ManifestName)) && Directory.GetFiles(folder).Length == 0 && Directory.GetDirectories(folder) is [var only])
             {
-                var flat = folder + "-x"; Directory.Move(only, flat); Directory.Delete(folder); Directory.Move(flat, folder);
+                var flat = folder + "-x";
+                try { Directory.Move(only, flat); Directory.Delete(folder); Directory.Move(flat, folder); }
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+                {
+                    foreach (var d in new[] { folder, flat }) try { if (Directory.Exists(d)) Directory.Delete(d, true); } catch (Exception e2) when (e2 is IOException or UnauthorizedAccessException) { }
+                    return new(null, "Die ZIP-Datei ließ sich nicht entpacken (Dateien gesperrt, z. B. vom Virenschutz). Bitte noch einmal versuchen.", "", null);
+                }
             }
         }
         else if (Directory.Exists(p)) folder = p;

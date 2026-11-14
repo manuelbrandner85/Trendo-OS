@@ -84,7 +84,9 @@ public class WebDesignStufe3Teil3QaTests
             File.WriteAllText(Path.Combine(outDir, "seite.js"), "window.TRENDO_SEITE={}"); // Spur eines alten Trendo-Exports ohne Liste
             Directory.CreateDirectory(Path.Combine(outDir, "daten"));
             File.WriteAllText(Path.Combine(outDir, "daten", "preisliste.pdf"), "%PDF-1.4 eigene Datei");
+            var pdf = Path.Combine(outDir, "dokument.pdf"); File.WriteAllText(pdf, "%PDF-1.4"); File.SetAttributes(pdf, FileAttributes.ReadOnly); // fremd und schreibgeschützt (QA N1)
             for (var i = 0; i < 3; i++) Assert.Null(WebDesignExport.ExportSite(d, Editor()).Error);
+            Assert.True(File.Exists(pdf));
             Assert.True(File.Exists(gitFile));
             Assert.True(File.Exists(Path.Combine(outDir, "daten", "preisliste.pdf")));
             var backup = Path.Combine(outDir, ".trendo", "vorher", "index.html");

@@ -50,13 +50,15 @@ public static class ModelConverter
             + "meshes = [o for o in bpy.context.scene.objects if o.type in ('MESH', 'CURVE', 'SURFACE', 'META', 'FONT')]\n"
             + "if not meshes:\n    print('TRENDO_FEHLER keine Netze'); sys.exit(3)\n"
             + (onlyLocalTextures ? $"import os\nbase = os.path.normcase(os.path.realpath(os.path.dirname(os.path.abspath({Py(input)}))))\n"
+                + "def drin(p):\n    p = os.path.normcase(os.path.realpath(p))\n    try:\n        return os.path.commonpath([base, p]) == base\n    except ValueError:\n        return False\n"
+                // Verknüpfte Bibliotheken einer .blend-Datei: nur aus dem Modellordner
+                + "for lib in bpy.data.libraries:\n    if not drin(bpy.path.abspath(lib.filepath)):\n        print('TRENDO_FEHLER Verknuepfte Datei liegt nicht im Ordner des Modells:', os.path.basename(lib.filepath)); sys.exit(4)\n"
                 + "for img in bpy.data.images:\n"
-                // In einer .blend-Datei eingepackte Bilder stammen aus der Datei selbst; Importer (glTF, FBX …) packen dagegen Bilder von der Platte ein – die werden mitgeprüft
-                + (ext == ".blend" ? "    if img.packed_file:\n        continue\n" : "")
+                // In der .blend-Datei selbst eingepackte Bilder stammen aus der Datei; Importer (glTF, FBX …) packen dagegen Bilder von der Platte ein – die werden mitgeprüft
+                + (ext == ".blend" ? "    if img.packed_file and img.library is None:\n        continue\n" : "")
                 + "    if not img.filepath or img.source not in ('FILE', 'SEQUENCE', 'TILED'):\n        continue\n"
-                + "    p = os.path.normcase(os.path.realpath(bpy.path.abspath(img.filepath)))\n"
-                + "    try:\n        drin = os.path.commonpath([base, p]) == base\n    except ValueError:\n        drin = False\n"
-                + "    if not drin:\n        print('TRENDO_FEHLER Textur liegt nicht im Ordner des Modells:', os.path.basename(p)); sys.exit(4)\n" : "")
+                // Nur Bilder, die es auf diesem PC wirklich gibt: Pfade vom Rechner des Erstellers (häufig in FBX) bringen nichts von hier mit
+                + "    q = bpy.path.abspath(img.filepath, library=img.library)\n    if os.path.exists(q) and not drin(q):\n        print('TRENDO_FEHLER Textur liegt nicht im Ordner des Modells:', os.path.basename(img.filepath)); sys.exit(4)\n" : "")
             + $"bpy.ops.export_scene.gltf(filepath={Py(output)}, export_format='GLB', use_selection=False, export_apply=True, export_yup=True, export_materials='EXPORT', export_image_format='AUTO')\n"
             + "print('TRENDO_OK', len(meshes))\n";
     }

@@ -30,7 +30,9 @@ public static class WebDesignModel
         if (!File.Exists(file)) return "Die Modelldatei fehlt.";
         var len = new FileInfo(file).Length;
         if (len > MaxBytes) return "Das Modell ist zu groß für eine Website (über 50 MB). In Blender Texturen verkleinern oder Polygone reduzieren.";
-        using var fs = File.OpenRead(file);
+        FileStream fs;
+        try { fs = File.OpenRead(file); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return "Die Modelldatei ist gesperrt oder nicht lesbar."; }
+        using var _ = fs;
         Span<byte> head = stackalloc byte[20];
         if (fs.Read(head) != 20 || Encoding.ASCII.GetString(head[..4]) != "glTF") return "Keine GLB-Datei (glTF binär).";
         if (BinaryPrimitives.ReadUInt32LittleEndian(head[4..8]) != 2) return "Nur glTF 2.0 wird unterstützt.";
@@ -104,9 +106,16 @@ public static class WebDesignModel
             using var fs = File.OpenRead(file); var b = new byte[Math.Min(fs.Length, 8192)]; fs.ReadExactly(b);
             var head = Encoding.ASCII.GetString(b);
             if (!head.StartsWith("#?RADIANCE", StringComparison.Ordinal) && !head.StartsWith("#?RGBE", StringComparison.Ordinal)) return "Kein HDR-Bild (Radiance).";
-            var m = System.Text.RegularExpressions.Regex.Match(head, @"\n\n([-+])Y (\d{1,6}) ([-+])X (\d{1,6})\n");
-            if (!m.Success) return "Die Abmessungen des HDR-Bilds fehlen im Kopf.";
-            var hgt = int.Parse(m.Groups[2].Value); var wid = int.Parse(m.Groups[4].Value);
+            // Wie der Lader im Browser (three.js HDRLoader): die erste Zeile mit Abmessungen zählt, auch ohne Leerzeile davor. Andere Ausrichtungen lehnt er ab, wir auch.
+            int hgt = 0, wid = 0;
+            foreach (var line in head.Split('\n').Skip(1))
+            {
+                if (!System.Text.RegularExpressions.Regex.IsMatch(line, @"[-+]\s*[XY]\s+\d")) continue;
+                var m = System.Text.RegularExpressions.Regex.Match(line, @"^\s*-Y\s+(\d{1,9})\s+\+X\s+(\d{1,9})\s*$");
+                if (!m.Success) return "Das HDR-Bild hat eine Ausrichtung, die die Seite nicht lesen kann (nur -Y … +X …).";
+                hgt = int.Parse(m.Groups[1].Value); wid = int.Parse(m.Groups[2].Value); break;
+            }
+            if (hgt == 0 && wid == 0) return "Die Abmessungen des HDR-Bilds fehlen im Kopf.";
             if (wid < 1 || hgt < 1 || wid > MaxHdrWidth || hgt > MaxHdrHeight) return $"Das HDR-Bild ist zu groß (höchstens {MaxHdrWidth} × {MaxHdrHeight}). 2K oder 4K reichen für Spiegelungen.";
         }
         catch (Exception e) when (e is IOException or FormatException or OverflowException) { return "Das HDR-Bild ist beschädigt."; }

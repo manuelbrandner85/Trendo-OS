@@ -137,6 +137,8 @@ public class WebDesignZ3
             Assert.Contains("Netzwerk", WebDesignAssets.Import(d, @"\\server\freigabe\licht.hdr", "umgebung", "Licht", "x", "CC0-1.0").Error);
             var hdr = Path.Combine(tmp, "gross.hdr"); File.WriteAllText(hdr, "#?RADIANCE\nFORMAT=32-bit_rle_rgbe\n\n-Y 30000 +X 30000\n");
             Assert.Contains("zu groß", WebDesignAssets.Import(d, hdr, "umgebung", "Licht", "x", "CC0-1.0").Error);
+            File.WriteAllText(hdr, "#?RADIANCE\nFORMAT=32-bit_rle_rgbe\n-Y 30000 +X 30000\n\n-Y 10 +X 10\n"); Assert.NotNull(WebDesignModel.CheckHdr(hdr)); // erste Zeile zählt wie im Browser
+            File.WriteAllText(hdr, "#?RADIANCE\nFORMAT=32-bit_rle_rgbe\n\n+Y 1024 +X 2048\n"); Assert.NotNull(WebDesignModel.CheckHdr(hdr));
             File.WriteAllText(hdr, "#?RADIANCE\nFORMAT=32-bit_rle_rgbe\n\n-Y 1024 +X 2048\n"); Assert.Null(WebDesignModel.CheckHdr(hdr));
             var ply = Path.Combine(tmp, "viel.ply"); File.WriteAllText(ply, "ply\nformat binary_little_endian 1.0\nelement vertex 6000000\nproperty float x\nend_header\n");
             Assert.Contains("zu viele Punkte", WebDesignAssets.Import(d, ply, "splat", "Viel", "x", "CC0-1.0").Error);

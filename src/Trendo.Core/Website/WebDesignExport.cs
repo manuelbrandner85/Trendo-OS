@@ -35,7 +35,7 @@ public static class WebDesignExport
         var usedDocs = new List<JsonObject>();
         var (foreign, cerr) = ClearExport(outDir);
         if (cerr is not null) return new(null, cerr, [], []);
-        BackupForeign(outDir, foreign);
+        if (BackupForeign(outDir, foreign) is { } berr) return new(null, berr, [], []);
         CopyBundle(editorDir, outDir);
         var tokens = WebDesignTokens.Load(dir);
         var cms = WebDesignCms.Load(dir);
@@ -184,15 +184,22 @@ public static class WebDesignExport
     }
 
     /// <summary>Fremde Dateien vor dem Export sichern (.trendo/vorher/), damit Trendo nichts Eigenes still überschreibt.</summary>
-    static void BackupForeign(string outDir, Dictionary<string, (long, DateTime)> foreign)
+    static string? BackupForeign(string outDir, Dictionary<string, (long, DateTime)> foreign)
     {
         var dir = Path.Combine(outDir, ".trendo", "vorher"); // Sicherungen bleiben über spätere Exporte erhalten
         foreach (var rel in foreign.Keys.Where(r => !r.Split('/').Any(p => p.StartsWith('.')))) // versteckte Ordner wie .git schreibt Trendo nie
         {
             var dest = Path.Combine(dir, rel.Replace('/', Path.DirectorySeparatorChar));
-            Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
-            File.Copy(Path.Combine(outDir, rel.Replace('/', Path.DirectorySeparatorChar)), dest, true);
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
+                if (File.Exists(dest)) File.SetAttributes(dest, FileAttributes.Normal); // Sicherung einer schreibgeschützten Datei aus dem letzten Export
+                File.Copy(Path.Combine(outDir, rel.Replace('/', Path.DirectorySeparatorChar)), dest, true);
+                File.SetAttributes(dest, FileAttributes.Normal);
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return $"„{rel}“ im Export-Ordner ließ sich nicht sichern (gesperrt oder kein Zugriff). Nichts wurde überschrieben."; }
         }
+        return null;
     }
 
     /// <summary>Nach dem Export: fremde Dateien, die Trendo überschrieben hat, melden; robots.txt, _redirects und CNAME des Nutzers wiederherstellen.</summary>
