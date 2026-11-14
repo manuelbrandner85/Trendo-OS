@@ -50,5 +50,5 @@ Iststand: **fehlt**, **teilweise** oder **vorhanden**.
 - `shadcn/ui` und Magic UI setzen auf Tailwind und wurden nicht übernommen (T-0621). Z1 ist eine eigene Umsetzung mit den Gestaltungswerten; aus den genannten Quellen wird nur Lucide (ISC) für Symbole genutzt.
 - Z2 nutzt weder `@theatre/core` noch Motion, sondern eine eigene kleine Laufzeit über die Web Animations API (T-0621): keine Lizenzfragen, deckt Schlüsselbilder, Abspielen und Scroll-Bindung ab. Abweichung vom Wortlaut der Zeile Z2; Entscheidung des Nutzers offen.
 - Z3: PC-Lauf am 14.11.2026 bestanden (RTX 5070, WebGPU, WebGL und Splat je 60 fps). Z8 mit Figma vom Security-Agenten geprüft, Befunde behoben (T-0622).
-- Z3 Grenze: Schattenkante überall gleich weich (kein PCSS in beiden Renderern von three.js); Splat-Realismus nur mit einer synthetischen Prüfkugel geprüft, nicht mit einer echten Aufnahme.
+- Z3 Grenze: Schattenkante überall gleich weich (kein PCSS in beiden Renderern von three.js); Splat mit echter Aufnahme geprüft (T-0623, Tanks and Temples „Train“, 60 fps); Rest: leichte Schlieren am Himmelsrand, typisch für Gaussian Splats.
 - `requirements.yaml` und `decisions.yaml` sind unverändert.

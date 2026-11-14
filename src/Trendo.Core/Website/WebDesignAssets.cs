@@ -144,15 +144,30 @@ public static partial class WebDesignAssets
         return list.Concat(ModAssets(dir).Where(m => list.All(a => a.Datei != m.Datei))).Where(a => used.Contains(a.Datei) && NeedsAttribution(a.Lizenz)).ToList();
     }
 
-    /// <summary>Bilder installierter Mods (mods/&lt;id&gt;/bilder/…): Lizenz und Urheber stehen in der Beschreibung der Mod, nicht im Medienverzeichnis.</summary>
+    /// <summary>Bilder installierter Mods (mods/&lt;id&gt;/bilder/…): Lizenz und Urheber stehen in der Beschreibung der Mod, nicht im Medienverzeichnis.
+    /// Das Prüfen der Mods liest alle ihre Dateien; Export und Live-Prüfung fragen das je Seite und Sprache ab. Darum ein Zwischenspeicher je Projekt,
+    /// der nur neu rechnet, wenn sich im Mod-Ordner etwas geändert hat (Namen, Größen, Zeiten – ohne Inhalte zu lesen).</summary>
     static List<Asset> ModAssets(string dir)
     {
+        var root = Path.Combine(dir, WebDesignMods.Folder);
+        if (!Directory.Exists(root)) return [];
+        var stamp = new StringBuilder();
+        try
+        {
+            foreach (var f in Directory.EnumerateFiles(root, "*", new EnumerationOptions { RecurseSubdirectories = true, AttributesToSkip = FileAttributes.ReparsePoint }).Order(StringComparer.Ordinal))
+            { var fi = new FileInfo(f); stamp.Append(f).Append('|').Append(fi.Length).Append('|').Append(fi.LastWriteTimeUtc.Ticks).Append('\n'); }
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { stamp.Clear().Append(Guid.NewGuid()); }
+        var key = Path.GetFullPath(root); var s = stamp.ToString();
+        if (ModCache.TryGetValue(key, out var hit) && hit.Stamp == s) return hit.List;
         var res = new List<Asset>();
         foreach (var m in WebDesignMods.Installed(dir))
             foreach (var f in m.Dateien.Where(f => f.StartsWith("bilder/", StringComparison.Ordinal)))
                 res.Add(new($"{WebDesignMods.Folder}/{m.Id}/{f}", "bild", $"{Path.GetFileNameWithoutExtension(f)} (Mod „{m.Name}“)", "", $"Mod „{m.Name}“ {m.Version}", m.Lizenz, m.Autor, ""));
+        ModCache[key] = (s, res);
         return res;
     }
+    static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (string Stamp, List<Asset> List)> ModCache = new(StringComparer.OrdinalIgnoreCase);
 
     public static string AttributionHtml(IReadOnlyList<Asset> items)
     {

@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { HDRLoader } from "three/addons/loaders/HDRLoader.js";
+import { nahgrenze, tiefeZurKamera } from "./kern.js";
 
 const rad = (d) => (d * Math.PI) / 180;
 const zahl = (v, d, lo, hi) => (Number.isFinite(+v) ? Math.min(hi, Math.max(lo, +v)) : d);
@@ -96,6 +97,13 @@ export async function starte({ renderer, el, props, datei, inhalt, backend, geba
     }
   }
 
+  // Nahgrenze aus dem aktuellen Blick: wie tief reicht der Kasten des Motivs in Richtung Kamera (je Winkel, Zoom und Drehung neu)
+  const halb = size.clone().multiplyScalar(0.5), blick = new THREE.Vector3();
+  function naheJetzt() {
+    blick.subVectors(camera.position, controls.target); const d = blick.length(); blick.divideScalar(Math.max(d, 1e-9));
+    return nahgrenze(d, tiefeZurKamera([halb.x, halb.y, halb.z], [blick.x, blick.y, blick.z]));
+  }
+
   let props0 = props;
   async function aktualisieren(p) {
     props0 = p;
@@ -111,9 +119,10 @@ export async function starte({ renderer, el, props, datei, inhalt, backend, geba
     const az = rad(zahl(p.winkel, 30, -180, 180)), el2 = rad(zahl(p.neigung, 15, -10, 80));
     camera.position.set(Math.sin(az) * Math.cos(el2) * abstand, ziel.y + Math.sin(el2) * abstand, Math.cos(az) * Math.cos(el2) * abstand);
     // Aufnahmen: Dinge direkt vor der Linse (Pfosten, Ausreißer zwischen Kamera und Motiv) ausblenden, sonst verdecken sie das Motiv unscharf
-    camera.near = gebacken ? Math.max((abstand - halbT) * 0.7, 0.001) : Math.max(abstand / 1000, 0.001); camera.far = abstand * 50;
+    camera.far = abstand * 50;
     camera.updateProjectionMatrix();
     controls.target.copy(ziel); controls.enabled = p.bedienen !== "nein";
+    camera.near = gebacken ? naheJetzt() : Math.max(abstand / 1000, 0.001); camera.updateProjectionMatrix();
     controls.autoRotate = zahl(p.drehen, 0, 0, 2) > 0 && !wenigerBewegung(); controls.autoRotateSpeed = zahl(p.drehen, 0, 0, 2) * 2;
     controls.update();
     sonne.intensity = zahl(p.sonne, 3, 0, 10);
@@ -133,6 +142,10 @@ export async function starte({ renderer, el, props, datei, inhalt, backend, geba
   let frames = 0, seit = performance.now(), fps = 0;
   renderer.setAnimationLoop(() => {
     controls.update();
+    if (gebacken) { // Nahgrenze folgt dem Abstand beim Zoomen und Drehen mit der Maus, das Motiv wird nie angeschnitten
+      const n = naheJetzt();
+      if (Math.abs(n - camera.near) > camera.near * 0.01) { camera.near = n; camera.updateProjectionMatrix(); }
+    }
     renderer.render(scene, camera);
     frames++; const jetzt = performance.now();
     if (jetzt - seit >= 1000) { fps = (frames * 1000) / (jetzt - seit); frames = 0; seit = jetzt; el.dataset.fps = fps.toFixed(1); }

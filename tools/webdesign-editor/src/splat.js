@@ -3,9 +3,10 @@
 import * as THREE from "three";
 import { SplatMesh, SparkRenderer } from "@sparkjsdev/spark";
 import { starte } from "./szene.js";
+import { ausschnitt } from "./kern.js";
 
-// Echte Aufnahmen haben Punkte bis weit in den Hintergrund (Himmel, Ausreißer). Der Bildausschnitt richtet sich darum nach dem dichten Kern:
-// je Achse 30.–70. Perzentil der gut sichtbaren Punkte (Stichprobe), in Weltkoordinaten. Kleine Objekte ohne Hintergrund bleiben praktisch gleich.
+// Echte Aufnahmen haben Punkte bis weit in den Hintergrund (Himmel, Ausreißer). Der Bildausschnitt richtet sich dann nach dem dichten Kern;
+// ein einzelnes Objekt behält seine volle Ausdehnung (Rechnung in kern.js). Grundlage sind die gut sichtbaren Punkte (Stichprobe) in Weltkoordinaten.
 function kernBox(splat) {
   const n = splat.packedSplats ? splat.packedSplats.numSplats : 0;
   const schritt = Math.max(1, Math.floor(n / 60000));
@@ -15,8 +16,8 @@ function kernBox(splat) {
     v.copy(center).applyMatrix4(splat.matrixWorld); xs.push(v.x); ys.push(v.y); zs.push(v.z);
   });
   if (xs.length < 50) return splat.getBoundingBox(true).clone().applyMatrix4(splat.matrixWorld);
-  const p = (a, q) => { a.sort((x, y) => x - y); return a[Math.min(a.length - 1, Math.floor(q * a.length))]; };
-  return new THREE.Box3(new THREE.Vector3(p(xs, 0.3), p(ys, 0.3), p(zs, 0.3)), new THREE.Vector3(p(xs, 0.7), p(ys, 0.7), p(zs, 0.7)));
+  const a = ausschnitt(xs, ys, zs);
+  return new THREE.Box3(new THREE.Vector3(...a.min), new THREE.Vector3(...a.max));
 }
 
 window.TrendoSplat = {

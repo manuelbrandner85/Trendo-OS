@@ -146,7 +146,7 @@ public class WebDesignStufe3Teil3QaTests
             var (plan, err) = WebDesignMods.Expand("""{"aktionen":[{"aktion":"mod:laden.bausteine/vorrat","werte":{"anzahl":3}}]}""", mods);
             Assert.Null(err); Assert.Contains("Noch 3 Stück", Text(plan));
             Assert.Contains("Noch 2.5 Stück", Text(WebDesignMods.Expand("""{"aktionen":[{"aktion":"mod:laden.bausteine/vorrat","werte":{"anzahl":2.5}}]}""", mods).Plan));
-            Assert.Contains("Noch true Stück", Text(WebDesignMods.Expand("""{"aktionen":[{"aktion":"mod:laden.bausteine/vorrat","werte":{"anzahl":true}}]}""", mods).Plan));
+            Assert.Contains("Noch ja Stück", Text(WebDesignMods.Expand("""{"aktionen":[{"aktion":"mod:laden.bausteine/vorrat","werte":{"anzahl":true}}]}""", mods).Plan));
             var bad = WebDesignMods.Expand("""{"aktionen":[{"aktion":"mod:laden.bausteine/vorrat","werte":{"anzahl":[1,2]}}]}""", mods);
             Assert.Null(bad.Plan); Assert.Contains("„anzahl“", bad.Error);
         }

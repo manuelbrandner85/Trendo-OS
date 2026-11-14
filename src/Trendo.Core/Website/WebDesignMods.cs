@@ -322,7 +322,7 @@ public static partial class WebDesignMods
 
     /// <summary>Mod-Aktionen für die KI beschreiben: Name „mod:id/name“, Zweck und Parameter.</summary>
     public static string CatalogText(IReadOnlyList<Mod> mods) => string.Join("\n", mods.SelectMany(m => m.Aktionen.Select(a =>
-        $"- mod:{m.Id}/{a.Name} (aus der Mod „{m.Name}“): {a.Beschreibung} Angaben: {(a.Parameter.Count == 0 ? "keine" : string.Join(", ", a.Parameter))} (in \"werte\", Text oder Zahl)."))) ;
+        $"- mod:{m.Id}/{a.Name} (aus der Mod „{m.Name}“): {a.Beschreibung} Angaben: {(a.Parameter.Count == 0 ? "keine" : string.Join(", ", a.Parameter))} (in \"werte\", Text oder Zahl; Ja/Nein als \"ja\"/\"nein\")."))) ;
 
     /// <summary>Skills der Mods für die KI, gekürzt auf <paramref name="maxChars"/>.</summary>
     public static string SkillsText(IReadOnlyList<Mod> mods, int maxChars)
@@ -362,11 +362,11 @@ public static partial class WebDesignMods
         return (new JsonObject { ["aktionen"] = result }.ToJsonString(), null);
     }
 
-    /// <summary>Wert einer Mod-Angabe als Text: Text bleibt, Zahlen ohne Ländereinstellung (3.5 statt 3,5), Ja/Nein als true/false.</summary>
+    /// <summary>Wert einer Mod-Angabe als Text: Text bleibt, Zahlen ohne Ländereinstellung (3.5 statt 3,5), Ja/Nein als „ja“/„nein“ wie in allen Bausteinen.</summary>
     static string ValueText(JsonNode? n) => n switch
     {
         JsonValue v when v.TryGetValue(out string? s) => s,
-        JsonValue v when v.TryGetValue(out bool b) => b ? "true" : "false",
+        JsonValue v when v.TryGetValue(out bool b) => b ? "ja" : "nein",
         JsonValue v when v.TryGetValue(out decimal d) => d.ToString(System.Globalization.CultureInfo.InvariantCulture),
         JsonValue v when v.TryGetValue(out double x) => x.ToString("R", System.Globalization.CultureInfo.InvariantCulture),
         _ => "",

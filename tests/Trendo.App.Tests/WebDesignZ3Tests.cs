@@ -155,6 +155,7 @@ public class WebDesignZ3
     {
         var sent = new List<string>(); MainWindow.WebDesignScriptSink = sent.Add;
         var tmp = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "trendo-z3e-" + Guid.NewGuid().ToString("N"))).FullName;
+        string? link = null;
         try
         {
             var (w, _, _) = Ui.Open();
@@ -168,10 +169,26 @@ public class WebDesignZ3
             Assert.Single(sent); // nicht bei jeder Änderung neu
             w.WebDesignMessage("{\"art\":\"bereit\",\"daten\":{}}"); Pump();
             Assert.Equal(2, sent.Count); // neue Editor-Seite kennt die Datei noch nicht
-            w.WebDesignMessage("{\"art\":\"entwurf\",\"daten\":" + Page("../geheim.glb", "modell", standbild: "") + "}"); Pump();
-            Assert.Equal(2, sent.Count); // nur Medien des Projekts
+            // Gültiger Pfad im Projekt, aber der Ordner ist eine Verknüpfung nach draußen: Die fremde Datei darf nicht an den Editor gehen
+            var aussen = Directory.CreateDirectory(Path.Combine(tmp, "aussen")).FullName; File.WriteAllBytes(Path.Combine(aussen, "fremd.splat"), new byte[64]);
+            link = Path.Combine(w.WebDesignDir, "medien", "splat");
+            var mk = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("cmd.exe", ["/c", "mklink", "/J", link, aussen]) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true })!;
+            mk.WaitForExit(10_000);
+            Assert.True(File.Exists(Path.Combine(link, "fremd.splat")), "Verknüpfung ließ sich nicht anlegen");
+            var fremd = Page("medien/splat/fremd.splat", "splat", standbild: "");
+            Assert.Equal("medien/splat/fremd.splat", JsonNode.Parse(WebDesign.Validate(fremd).Json!)!["content"]![0]!["props"]!["datei"]!.ToString()); // die Form des Pfads ist erlaubt
+            w.WebDesignMessage("{\"art\":\"entwurf\",\"daten\":" + fremd + "}"); Pump();
+            Assert.Equal(2, sent.Count); // die Verknüpfung wird erkannt
         }
-        finally { MainWindow.WebDesignScriptSink = null; Directory.Delete(tmp, true); }
+        finally { MainWindow.WebDesignScriptSink = null; if (link is not null && Directory.Exists(link)) Directory.Delete(link); Directory.Delete(tmp, true); }
+    }
+
+    [Fact(DisplayName = "Z3: Ausschnitt und Nahgrenze für Splats (ohne Browser): Objekt behält seine Größe, Aufnahme mit Landschaft wird auf das Motiv begrenzt, Motiv wird nie angeschnitten (übersprungen ohne Node)")]
+    public void Splat_framing_math()
+    {
+        if (Cli.Find("node") is not { } node) { Assert.Skip("Übersprungen – Node.js fehlt auf diesem PC."); return; }
+        var run = Cli.Run(node, [Path.Combine(WebDesignKi_Ui.Repo(), "tools", "webdesign-editor", "pruefe-kern.mjs")], timeoutMs: 60_000);
+        Assert.True(run.Ok, run.Out + run.Err);
     }
 
     [AvaloniaFact(DisplayName = "K7 (QA 13): eigenes Supabase-Projekt in der Oberfläche verbinden; geheimer Schlüssel wird abgelehnt; SQL ohne Leseregel")]

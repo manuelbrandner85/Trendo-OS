@@ -43,10 +43,10 @@ public partial class MainWindow
         finally { _wd3dBusy = false; try { Directory.Delete(temp, true); } catch (IOException) { } Show("dev"); }
     }
 
-    /// <summary>Dateien der 3D-Bausteine an den Editor geben (der Editor läuft aus dem Programmordner und darf Projektdateien nicht selbst lesen).</summary>
     /// <summary>Für Tests: Skripte, die sonst an den Editor (WebView) gingen; im Testmodus gibt es kein WebView.</summary>
     public static Action<string>? WebDesignScriptSink { get; set; }
 
+    /// <summary>Dateien der 3D-Bausteine an den Editor geben (der Editor läuft aus dem Programmordner und darf Projektdateien nicht selbst lesen).</summary>
     void WebDesignPush3DFiles(string json)
     {
         if (_wdView is null && WebDesignScriptSink is null) return;
