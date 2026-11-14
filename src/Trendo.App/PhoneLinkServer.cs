@@ -448,7 +448,7 @@ hello();tick();setInterval(tick,10000);fetch('/api/apps').then(function(r){retur
         $"<h1>Verbunden mit {E(pc)}</h1><p class=\"ok\">✓ {E(device)} ist mit Trendo verbunden.</p>" +
         (remote ? "<div class=\"card\"><b>Trendo bedienen</b><p>Trendo als App auf dem Handy: alle Programme und Studios, in Handy-Größe, mit dem Finger bedienen.</p><a class=\"btn\" id=\"fern\" href=\"/app\">Trendo öffnen</a></div>"
                 : "<div class=\"card\"><b>Trendo bedienen</b><p>Möchtest du Trendo komplett vom Handy aus bedienen? Am PC unter „Handy“ bei diesem Handy „Trendo bedienen erlauben“ antippen.</p></div>") +
-        (remote ? "<div class=\"card\"><b>📺 TV-Fernbedienung</b><p id=\"tvs\">Steuert TV &amp; Live am PC.</p><div class=\"tvr\">" +
+        (remote ? "<div class=\"card\"><b>TV-Fernbedienung</b><p id=\"tvs\">Steuert TV &amp; Live am PC.</p><div class=\"tvr\">" +
             string.Concat(new[] { ("sender-", "Sender"), ("pause", "⏯"), ("sender+", "Sender"), ("zurueck", "30 s"), ("vor", "30 s"), ("naechste", "Folge"), ("leiser", "🔉"), ("stumm", "🔇"), ("lauter", "🔊"), ("vollbild", "Vollbild") }
                 .Select(x => $"<button class=\"sec\" onclick=\"tv('{x.Item1}')\">{x.Item2}</button>")) +
             "</div><style>.tvr{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.tvr button{padding:14px 4px;font-size:18px}</style>" +

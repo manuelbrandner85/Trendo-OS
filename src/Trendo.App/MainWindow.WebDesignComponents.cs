@@ -55,7 +55,7 @@ public partial class MainWindow
         var current = JsonNode.Parse(WebDesignCurrent()) as JsonObject;
         var defs = WebDesignComponents.Read(current?["root"]?["props"]?["komponenten"]);
         var sp = new StackPanel { Spacing = 6, Name = "web-komponenten" };
-        sp.Children.Add(new TextBlock { Text = "🧩 Komponenten und Vorlagen", FontSize = 15, FontWeight = FontWeight.SemiBold, Foreground = Text });
+        sp.Children.Add(new TextBlock { Text = "Komponenten und Vorlagen", FontSize = 15, FontWeight = FontWeight.SemiBold, Foreground = Text });
         sp.Children.Add(P("Eine Gruppe von Bausteinen wird zur Komponente: Änderungen am Original wirken überall, einzelne Verwendungen überschreiben Felder im Editor unter „Felder“.", Muted, 12));
         var name = new TextBox { Name = "web-komp-name", Text = _wdCompName, PlaceholderText = "Name, z. B. Preiskarte", Width = 220 };
         name.TextChanged += (_, _) => _wdCompName = name.Text ?? "";

@@ -134,7 +134,7 @@ public sealed partial class MainWindow
 
     /// <summary>P4: Dichte „Kompakt“ als Stilklasse am Fenster (Stile in App.axaml).</summary>
     bool _calmShell;
-    public void ApplyDensity() => Classes.Set("kompakt", _settings.Density == "kompakt");
+    public void ApplyDensity() { Classes.Set("kompakt", _settings.Density == "kompakt"); Density.Apply(this, _settings.Density == "kompakt"); }
 
     /// <summary>Wird nach jedem Seitenwechsel aufgerufen: sanftes Einblenden und Hinweis beim ersten Öffnen.</summary>
     private void AfterShow(string key)
@@ -142,7 +142,7 @@ public sealed partial class MainWindow
         if (!Motionless) { _center.Opacity = 0; _ui.Post(() => _center.Opacity = 1, DispatcherPriority.Background); }
         ApplyDensity();
         // D1 (13.11.2026): restliche Verläufe und Leuchten beruhigen – einmal das ganze Fenster, danach nur die neue Seite
-        _ui.Post(() => { if (!_calmShell) { _calmShell = true; CalmLook.Apply(this); } else if (ActivePageRoot is { } pr) CalmLook.Apply(pr); }, DispatcherPriority.Loaded);
+        _ui.Post(() => { if (!_calmShell) { _calmShell = true; CalmLook.Apply(this); } else if (ActivePageRoot is { } pr) CalmLook.Apply(pr); if (_settings.Density == "kompakt") Density.Apply(this, true); }, DispatcherPriority.Loaded);
         ShowHelp(key, force: false);
         EnhancePathFields(ActivePageRoot, key);
         if (ActivePageRoot is { } c0) ApplyAccessibility(c0);

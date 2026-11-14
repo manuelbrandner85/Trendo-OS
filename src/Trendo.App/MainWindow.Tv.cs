@@ -644,7 +644,7 @@ public partial class MainWindow
                 TvRound("tv-next", "⏭", "Nächster Sender (↓)", () => TvZap(1)),
                 TvRound("tv-live-now", "●", "Zurück zu Live", () => Ctrl("seek", 100, "absolute-percent")) } },
             Pos(new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Spacing = 6, Children = {
-                new TextBlock { Text = "🔊", Foreground = Text, VerticalAlignment = VerticalAlignment.Center }, vol } }, 1),
+                new TextBlock { Text = "Lautstärke", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, vol } }, 1),
             Pos(new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Children = { rec, _tvFavBtn,
                 TvRound("tv-full", "⛶", "Vollbild (F)", () => TvFullscreen(true)) } }, 2) } };
         _tvFavBtn.Margin = new Thickness(8, 0, 8, 0);
@@ -689,7 +689,7 @@ public partial class MainWindow
     Control TvMultiView()
     {
         var sp = new StackPanel { Spacing = 8, Name = "tv-multi" };
-        sp.Children.Add(P("Bis zu 4 Sender gleichzeitig. Ton kommt vom ersten Bild – tippe auf „🔊“ bei einem anderen, um umzuschalten.", Text, 12.5));
+        sp.Children.Add(P("Bis zu 4 Sender gleichzeitig. Ton kommt vom ersten Bild – tippe bei einem anderen Bild auf das Lautsprecher-Symbol, um umzuschalten.", Text, 12.5));
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("*,*"), RowDefinitions = new RowDefinitions("Auto,Auto") };
         var names = TvChannels().Select(c => $"{c.Number} {c.Name}").ToList();
         for (var i = 0; i < 4; i++)

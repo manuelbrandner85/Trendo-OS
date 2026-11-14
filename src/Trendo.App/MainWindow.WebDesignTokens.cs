@@ -65,7 +65,7 @@ public partial class MainWindow
         var current = JsonNode.Parse(WebDesignCurrent())?["root"]?["props"] as JsonObject ?? new JsonObject();
         string Val(string k, string d) => current[k] is JsonValue v ? (v.TryGetValue(out string? s) ? s : v.ToJsonString()) : d;
         var sp = new StackPanel { Spacing = 6, Name = "web-gestaltung" };
-        sp.Children.Add(new TextBlock { Text = "🎨 Gestaltung für das ganze Projekt", FontSize = 15, FontWeight = FontWeight.SemiBold, Foreground = Text });
+        sp.Children.Add(new TextBlock { Text = "Gestaltung für das ganze Projekt", FontSize = 15, FontWeight = FontWeight.SemiBold, Foreground = Text });
         sp.Children.Add(P("Farben, Schrift, Rundung und Abstand gelten für die Seite, den Export und neue Varianten. Eine bestehende Variante behält ihre Gestaltung, bis du sie übernimmst. Der dunkle Satz greift, wenn das Gerät auf dunkel steht.", Muted, 12));
         var boxes = new Dictionary<string, TextBox>();
         var check = new TextBlock { Name = "web-tok-check", FontSize = 12, TextWrapping = TextWrapping.Wrap };
@@ -104,7 +104,7 @@ public partial class MainWindow
         if (_wdTokNote.Length > 0) sp.Children.Add(new TextBlock { Name = "web-tok-note", Text = _wdTokNote, FontSize = 12, TextWrapping = TextWrapping.Wrap, Foreground = Brush.Parse("#F5A524") });
 
         // W1, Z4: Ansichten
-        sp.Children.Add(new TextBlock { Text = "📱 Geräte-Ansichten", FontSize = 13, FontWeight = FontWeight.SemiBold, Foreground = Text, Margin = new Thickness(0, 8, 0, 0) });
+        sp.Children.Add(new TextBlock { Text = "Geräte-Ansichten", FontSize = 13, FontWeight = FontWeight.SemiBold, Foreground = Text, Margin = new Thickness(0, 8, 0, 0) });
         sp.Children.Add(P($"{WebDesignViews.Base} ist die Grundlage. Eine Ansicht gilt bis zu ihrer Breite; Anpassungen dort wirken auch in allen schmaleren Ansichten, nie nach oben. Anpassen im Editor unter „Anpassungen je Ansicht“.", Muted, 12));
         var views = new StackPanel { Name = "web-ansichten", Spacing = 3 };
         var vi = 0;
