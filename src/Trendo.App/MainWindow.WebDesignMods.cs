@@ -63,7 +63,7 @@ public partial class MainWindow
     Control WebDesignModsPane()
     {
         var sp = new StackPanel { Spacing = 6, Name = "web-mods" };
-        sp.Children.Add(new TextBlock { Text = "🧩 Mods", FontSize = 15, FontWeight = FontWeight.SemiBold, Foreground = Text });
+        sp.Children.Add(new TextBlock { Text = "Mods", FontSize = 15, FontWeight = FontWeight.SemiBold, Foreground = Text });
         sp.Children.Add(P("Erweiterungen mit Vorlagen, Aktionen oder Fachwissen für die KI. Mods enthalten nur Daten, keinen Programmcode, und liegen nur in diesem Projekt. Installiert wird erst nach deiner Zustimmung.", Muted, 12));
         var src = new TextBox { Name = "web-mod-quelle", PlaceholderText = "Mod-Ordner oder ZIP-Datei auf diesem PC", Width = 380 };
         var pick = Act("web-mod-waehlen", "ZIP wählen …", async () =>
@@ -124,7 +124,7 @@ public partial class MainWindow
     Control WebDesignDataPane()
     {
         var sp = new StackPanel { Spacing = 6, Name = "web-daten" };
-        sp.Children.Add(new TextBlock { Text = "🗄 Daten der Website", FontSize = 15, FontWeight = FontWeight.SemiBold, Foreground = Text });
+        sp.Children.Add(new TextBlock { Text = "Daten der Website", FontSize = 15, FontWeight = FontWeight.SemiBold, Foreground = Text });
         sp.Children.Add(P("Datenlisten und Anmeldung speichern auf dem Gerät der Besucher. Optional zusätzlich in deinem eigenen Supabase-Projekt – nur mit dem öffentlichen Schlüssel, nie mit dem geheimen.", Muted, 12));
         var cur = WebDesignData.Load(WebDesignDir);
         var url = new TextBox { Name = "web-supabase-url", PlaceholderText = "https://deinprojekt.supabase.co", Width = 300, Text = cur?.Url ?? "" };

@@ -353,7 +353,7 @@ public partial class MainWindow
     Control WebDesignPublishPane()
     {
         var sp = new StackPanel { Spacing = 6, Name = "web-veroeffentlichen" };
-        sp.Children.Add(new TextBlock { Text = "🚀 Veröffentlichen", FontSize = 15, FontWeight = FontWeight.SemiBold, Foreground = Text });
+        sp.Children.Add(new TextBlock { Text = "Veröffentlichen", FontSize = 15, FontWeight = FontWeight.SemiBold, Foreground = Text });
         sp.Children.Add(P("Erst exportieren, dann prüfen. Danach als Paket speichern oder mit deinem eigenen Netlify-Konto hochladen. Hochgeladen wird nur nach deiner Zustimmung für genau die gezeigten Dateien.", Muted, 12));
         sp.Children.Add(new WrapPanel { Children = { Act("web-pub-pruefen", "Prüfen und Dateiliste zeigen", WebDesignPublishPrepare) } });
         if (_wdPlan is { } plan)

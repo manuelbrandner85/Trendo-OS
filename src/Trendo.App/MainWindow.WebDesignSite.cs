@@ -71,7 +71,7 @@ public partial class MainWindow
     {
         var dir = WebDesignDir; var site = WebDesignSite.Load(dir); var active = WebDesignSite.Active(dir);
         var sp = new StackPanel { Spacing = 6, Name = "web-seiten" };
-        sp.Children.Add(new TextBlock { Text = "📄 Seiten der Website", FontSize = 15, FontWeight = FontWeight.SemiBold, Foreground = Text });
+        sp.Children.Add(new TextBlock { Text = "Seiten der Website", FontSize = 15, FontWeight = FontWeight.SemiBold, Foreground = Text });
         sp.Children.Add(P("Jede Seite hat eine eigene Adresse. Gestaltung und Komponenten gelten für alle Seiten. Links auf eine Seite schreibst du als ihre Adresse, z. B. „ueber-uns“.", Muted, 12));
         var i = 0;
         foreach (var page in WebDesignSite.Pages(dir))
@@ -171,7 +171,7 @@ public partial class MainWindow
     {
         var dir = WebDesignDir; var site = WebDesignSite.Load(dir); var active = WebDesignSite.Active(dir);
         var sp = new StackPanel { Spacing = 6, Name = "web-sprachen" };
-        sp.Children.Add(new TextBlock { Text = "🌐 Sprachen der Website", FontSize = 15, FontWeight = FontWeight.SemiBold, Foreground = Text });
+        sp.Children.Add(new TextBlock { Text = "Sprachen der Website", FontSize = 15, FontWeight = FontWeight.SemiBold, Foreground = Text });
         sp.Children.Add(P("Jede Sprache bekommt eigene Adressen (z. B. /en/ueber-uns.html) mit Sprachverweisen. Die KI übersetzt nur als Vorschlag. Trendo selbst bleibt deutsch.", Muted, 12));
         sp.Children.Add(P($"Standardsprache: {WebDesignI18n.LangName(site.Standardsprache)} ({site.Standardsprache})", Text, 12.5));
         var report = WebDesignI18n.Report(dir);
@@ -271,7 +271,7 @@ public partial class MainWindow
     {
         var dir = WebDesignDir; var site = WebDesignSite.Load(dir); var all = WebDesignCms.Load(dir);
         var sp = new StackPanel { Spacing = 6, Name = "web-cms" };
-        sp.Children.Add(new TextBlock { Text = "🗂 Inhalte (CMS)", FontSize = 15, FontWeight = FontWeight.SemiBold, Foreground = Text });
+        sp.Children.Add(new TextBlock { Text = "Inhalte (CMS)", FontSize = 15, FontWeight = FontWeight.SemiBold, Foreground = Text });
         sp.Children.Add(P("Sammlungen wie Rezepte, Termine oder Mitarbeitende: Felder festlegen, Einträge pflegen. Der Baustein „Sammlung“ zeigt sie als Liste, eine Vorlage-Seite macht aus jedem Eintrag eine eigene Seite.", Muted, 12));
         var ci = 0;
         foreach (var coll in all)
