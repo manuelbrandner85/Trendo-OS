@@ -44,8 +44,26 @@ Ebenfalls umgesetzt aus den nicht blockierenden: Knotenbudget je Datei, glTF-Arb
   - App: 881 erfolgreich, 4 übersprungen, 885 gesamt
 - `python -m unittest discover -s tests/claude_handoff`: 9 Tests, OK.
 
+## Zweite Prüfrunde (Stand f35691342)
+- **QA (nur lesend):** `TESTED`, keine blockierenden Befunde.
+- **Sicherheit (nur lesend):** `BLOCKED`, zwei Befunde, beide behoben:
+  - Das ODP-Textbudget galt je Zelle bzw. Seite, mit eigenem Grundbetrag.
+  - `FillText` (Listen) hatte kein Budget.
+- **Korrekturen in 81a7a85d6:**
+  - Textbudget einmal je Datei (8 × entpackter Inhalt + 1 Mio. Zeichen) für DOCX-Kopf- und Fußzeilen, ODP-Notizen, -Tabellen, -Listen und -Diagrammtitel.
+  - Knotengrenze 40 Mio. statt 20 Mio., damit große echte ODS nicht abgelehnt werden.
+  - STL-Binär als Datenstrom, gezählt werden nur echte Dreiecke.
+  - Der erste glTF-Puffer ist in der Größe begrenzt.
+  - Die Import-Schlange merkt sich Projekt und Einheit beim Auswählen der Datei. Rückgängig verwirft keinen Import mehr.
+  - Neuer Test `Odp_text_budget_per_file`; der ODS-Test prüft jetzt auch den Inhalt.
+- **Tests auf 81a7a85d6:**
+  - `dotnet test Trendo.sln -c Release`, Exitcode 0: Api 16 von 16; Core 1992 erfolgreich, 5 übersprungen, 1997 gesamt; App 881 erfolgreich, 4 übersprungen, 885 gesamt.
+  - Paket-Tests OK.
+  - Vergleich alt/neu: 617 Lesevorgänge, gleich bis auf die zwei bekannten glTF-Ablehnungen.
+
 ## Offen / nicht geprüft
-- Keine zweite QA- und Sicherheitsprüfung nach den Korrekturen.
+- Keine dritte Prüfrunde über die Korrekturen aus 81a7a85d6.
+- Für die Import-Warteschlange gibt es keinen App-Test.
 - Keine Messung auf dem Pi oder unter Linux; der Symlink-Test lief nur mit einer Windows-Junction.
 - Der Hintergrund-Import hängt nur an der Dateigröße. Kleine glTF-Dateien können bis zur Arbeitsgrenze noch kurz auf dem UI-Thread rechnen.
 - Weitere Regex-Stellen in `Sys10` für PDF haben keine Zeitgrenze (außerhalb des Auftrags).
