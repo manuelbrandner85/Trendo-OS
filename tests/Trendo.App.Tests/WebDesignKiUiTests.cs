@@ -33,12 +33,17 @@ public class WebDesignKi_Ui : IDisposable
     public async Task K4_sentence_to_page()
     {
         var (w, _, _) = Ui.Open(); var asked = new List<(string Sys, string Prompt)>();
-        MainWindow.WebDesignKiOverride = (s, p) => { asked.Add((s, p)); return Task.FromResult(NewPagePlan); };
+        const string directions = """{"richtungen":[{"name":"Ruhig","stimmung":"Klar.","schrift":"klar","akzent":"#1f4e79","text":"#1d1d1f","hintergrund":"#ffffff","aufbau":["Hero","Text"]},{"name":"Warm","stimmung":"Herzlich.","schrift":"serif","akzent":"#7a1f2b","text":"#2b1d14","hintergrund":"#fbf6ee","aufbau":["Hero","Galerie"]}]}""";
+        MainWindow.WebDesignKiOverride = (s, p) => { if (s.Contains("Gestaltungsrichtungen")) return Task.FromResult(directions); asked.Add((s, p)); return Task.FromResult(NewPagePlan); };
         w.Show("dev"); Pump();
         w.Find<TextBox>("web-ki-wish").Text = "Eine Seite für ein Café";
         w.Find<Button>("web-ki-new").Press(); Pump();
+        await Until(() => w.WebDesignDirectionsShown is not null); Pump(); // A8: erst Richtungen, noch nichts gebaut
+        Assert.Empty(asked); Assert.Null(w.WebDesignPending);
+        w.Find<Button>("web-ki-richtung-0").Press(); Pump();
         await Until(() => w.WebDesignPending is not null);
         Pump();
+        Assert.Contains("Ruhig", asked[0].Prompt);
         Assert.Contains("aktionen", asked[0].Sys); Assert.Contains("baustein_einfuegen", asked[0].Sys); Assert.Contains("Eine Seite für ein Café", asked[0].Prompt);
         Assert.False(File.Exists(PageFile(w))); // nur Vorschau
         Assert.NotNull(w.Find<StackPanel>("web-ki-preview")); Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Kopfbereich eingefügt"));

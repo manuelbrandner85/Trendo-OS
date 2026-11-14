@@ -95,7 +95,45 @@ public partial class MainWindow
         return a.Text;
     }
 
-    string? WebSkills(string task, bool claude) => Skills.PromptText(null, "CORE-07", task, claude ? SkillLibrary.MaxPromptChars : SkillLibrary.MaxPromptCharsLocal);
+    string? WebSkills(string task, bool claude)
+    {
+        var skills = Skills.PromptText(null, "CORE-07", task, claude ? SkillLibrary.MaxPromptChars : SkillLibrary.MaxPromptCharsLocal);
+        // A2: passende Web-Techniken aus dem Verzeichnis, mit Stand und Ersatzweg; auch die KI auf diesem PC wählt nur daraus
+        var tech = WebDesignTechniques.PromptText(WebDesignTechniques.ForTask(task), claude ? 2500 : 800);
+        return tech.Length == 0 ? skills : (skills is null ? "" : skills + "\n\n") + $"Web-Techniken (Verzeichnis, Stand {WebDesignTechniques.Checked}):\n" + tech;
+    }
+
+    // ---------- A8: Gestaltungsrichtung zuerst ----------
+    List<WebDesignDirections.Richtung>? _wdDirections; string? _wdDirectionsImage;
+    public IReadOnlyList<WebDesignDirections.Richtung>? WebDesignDirectionsShown => _wdDirections;
+
+    /// <summary>A8: Vor dem Bau zwei bis drei deutlich verschiedene Richtungen vorschlagen lassen. Gebaut wird erst nach der Wahl. Mit eigenem Bild gibt das Bild die Richtung vor.</summary>
+    public async Task WebDesignAiDirections(string wish, string? image = null)
+    {
+        if (_wdAiBusy || string.IsNullOrWhiteSpace(wish)) return;
+        if (!string.IsNullOrWhiteSpace(image)) { await WebDesignAiRun(wish, image); return; }
+        _wdAiBusy = true;
+        try
+        {
+            _wdAiText = wish; _wdDirections = null; _wdNote = "Die KI schlägt Gestaltungsrichtungen vor …"; Show("dev");
+            var (claude, local, backends) = await WebKiState();
+            var choice = WebDesignKi.Choose(KiBedarf.Text, claude, local, false);
+            if (!choice.Ok) { _wdNote = choice.Note; return; }
+            var (list, err) = WebDesignDirections.Parse(await WebKiAsk(WebDesignDirections.Instructions(), WebDesignDirections.Prompt(wish), backends));
+            if (list is null) { _wdNote = "Die Richtungen der KI wurden abgelehnt: " + err; return; }
+            _wdDirections = list; _wdDirectionsImage = image;
+            _wdNote = "Wähle eine Richtung. Erst dann baut die KI die Seite.";
+        }
+        catch (Exception e) when (e is InvalidOperationException or HttpRequestException or TaskCanceledException) { _wdNote = e.Message; }
+        finally { _wdAiBusy = false; Show("dev"); }
+    }
+
+    public Task WebDesignChooseDirection(int index)
+    {
+        if (_wdDirections is not { } list || index < 0 || index >= list.Count) return Task.CompletedTask;
+        var r = list[index]; _wdDirections = null;
+        return WebDesignAiRun(_wdAiText, _wdDirectionsImage, r);
+    }
 
     /// <summary>Beschreibung bzw. Hinweis zu einem eigenen Bild für die Text-KI. Null: es geht gerade nicht, der Grund steht dann in <see cref="WebDesignNote"/>.</summary>
     async Task<string?> WebImageNote(string image, bool claude)
@@ -122,7 +160,7 @@ public partial class MainWindow
     }
 
     /// <summary>K4: Neue Seite aus einem Satz und optional einem eigenen Bild. Das Ergebnis sind Editor-Daten, zuerst als Vorschau.</summary>
-    public async Task WebDesignAiRun(string wish, string? image = null)
+    public async Task WebDesignAiRun(string wish, string? image = null, WebDesignDirections.Richtung? direction = null)
     {
         if (_wdAiBusy || string.IsNullOrWhiteSpace(wish)) return;
         _wdAiBusy = true; var handed = false; // sofort belegt: kein Doppelstart, solange noch geprüft wird, welche KI da ist
@@ -141,9 +179,9 @@ public partial class MainWindow
                 string? note = null;
                 if (image is not null) { note = await WebImageNote(image, claude); if (note is null) return null; }
                 var ask = _wdTempImage is null ? backends : backends.Where(b => b is IMainKiBackend).ToList(); // nur Claude kann die Bilddatei lesen; eine lokale Text-KI bekäme den Hinweis ohne Bild
-                try { return await WebKiAsk(WebDesignKi.Instructions(WebSkills(task, claude)), WebDesignKi.NewPagePrompt(wish, note), ask); }
+                try { return await WebKiAsk(WebDesignKi.Instructions(WebSkills(task, claude)), direction is null ? WebDesignKi.NewPagePrompt(wish, note) : WebDesignDirections.BuildPrompt(wish, direction), ask); }
                 finally { if (_wdTempImage is { } t) { try { File.Delete(t); } catch (IOException) { } _wdTempImage = null; } } // die Kopie für Claude bleibt nicht liegen
-            }, WebDesign.Empty(), null, backends, claude);
+            }, WebDesign.Empty(), null, backends, claude, direction is null ? null : r => WebDesignDirections.Enforce(r, direction));
         }
         finally { if (!handed) { _wdAiBusy = false; Show("dev"); } }
     }
@@ -168,7 +206,7 @@ public partial class MainWindow
     }
 
     /// <summary>Gemeinsamer Weg jeder KI-Änderung: Plan holen, prüfen, im Prüfkreislauf nachbessern, als Vorschau bereitstellen. Geschrieben wird erst beim Übernehmen.</summary>
-    async Task WebDesignAiPlan(string label, string task, Func<Task<string?>> ask, string planBase, WebPlanScope? scope, IReadOnlyList<IKiBackend> backends, bool claude)
+    async Task WebDesignAiPlan(string label, string task, Func<Task<string?>> ask, string planBase, WebPlanScope? scope, IReadOnlyList<IKiBackend> backends, bool claude, Func<WebPlanResult, WebPlanResult>? post = null)
     {
         _wdAiBusy = true;
         try
@@ -180,6 +218,7 @@ public partial class MainWindow
             _core.Audit.Append(Principal.LocalOwner.Name, "web.visuell.ki", label);
             var r = WebDesignActions.Apply(planBase, answer, scope);
             if (r.Json is null) { _wdNote = "Die Antwort der KI wurde abgelehnt, nichts wurde geändert: " + r.Error; return; }
+            if (post is not null) r = post(r);
             WebAuditResult? audit = null;
             var loop = await WebDesignCheck.RunAsync(r.Json, async j => { audit = await WebDesignProbe(j); return audit.Findings; }, async (doc, errors) =>
             {
@@ -303,7 +342,7 @@ public partial class MainWindow
         WebDesignDropPending(); WebDesignKeepDraft("Entwurf vor Wechsel der Fassung");
         _wdVariant = id; WebDesignClearSelection();
         WebDesignReload(WebDesignStates.Read(WebDesignDir, id));
-        _wdNote = id is null ? "Du bearbeitest wieder die Seite." : "Du bearbeitest jetzt eine Variante. Die Seite bleibt unverändert.";
+        _wdNote = id is null ? "Du bearbeitest wieder die Seite." : "Du bearbeitest jetzt eine Variante mit eigener Gestaltung. Die Seite bleibt unverändert, bis du die Variante übernimmst.";
         Show("dev");
     }
 
@@ -366,7 +405,7 @@ public partial class MainWindow
             var got = await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Bild als Vorlage", FileTypeFilter = [new("Bilder") { Patterns = ["*.png", "*.jpg", "*.jpeg", "*.webp"] }] });
             if (got.Select(f => Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(f)).OfType<string>().FirstOrDefault() is { } path) image.Text = path;
         }) } });
-        var btnNew = Act("web-ki-new", _wdAiBusy ? "KI arbeitet …" : "▶ Neue Seite daraus", () => WebDesignAiRun(wish.Text ?? "", image.Text), _wdSelection.Count == 0);
+        var btnNew = Act("web-ki-new", _wdAiBusy ? "KI arbeitet …" : "▶ Neue Seite daraus", () => WebDesignAiDirections(wish.Text ?? "", image.Text), _wdSelection.Count == 0);
         var btnChange = Act("web-ki-change", _wdSelection.Count == 0 ? "Auswahl ändern" : $"✎ Nur Auswahl ändern ({_wdSelection.Count})", () => WebDesignAiChange(wish.Text ?? ""), _wdSelection.Count > 0);
         var btnCheck = Act("web-ki-check", "Seite prüfen", () => WebDesignCheckNow());
         btnNew.IsEnabled = !_wdAiBusy; btnChange.IsEnabled = !_wdAiBusy && _wdSelection.Count > 0; btnCheck.IsEnabled = !_wdAiBusy;
@@ -375,6 +414,27 @@ public partial class MainWindow
         sp.Children.Add(row);
         sp.Children.Add(new TextBlock { Name = "web-ki-selection", FontSize = 12, Foreground = Muted, TextWrapping = TextWrapping.Wrap, Text = _wdSelection.Count == 0 ? "Im Editor unter „Auswählen“ Bausteine anklicken: Die KI ändert dann nur diese. Doppelklick auf einen Text ändert ihn direkt, ohne KI." : "Ausgewählt: " + string.Join(", ", _wdSelection) });
 
+        if (_wdDirections is { } dirs)
+        {
+            sp.Children.Add(new TextBlock { Text = "Wähle eine Gestaltungsrichtung", FontSize = 13, FontWeight = FontWeight.SemiBold, Foreground = Text });
+            var row2 = new WrapPanel { Name = "web-ki-richtungen" };
+            for (var di = 0; di < dirs.Count; di++)
+            {
+                var r = dirs[di]; var idx = di;
+                var font = new FontFamily(r.Schrift switch { "serif" => "Georgia", "rund" => "Trebuchet MS", "mono" => "Consolas", _ => "Segoe UI" });
+                var mini = new Border // kleine Vorschau: Hintergrund, Überschrift in der Schrift, Text, Knopf in der Akzentfarbe
+                {
+                    Width = 220, Height = 120, CornerRadius = new CornerRadius(10), Background = Brush.Parse(r.Hintergrund), Padding = new Thickness(12), BoxShadow = CardShadow,
+                    Child = new StackPanel { Spacing = 6, Children = {
+                        new TextBlock { Text = r.Name, FontFamily = font, FontSize = 17, FontWeight = FontWeight.Bold, Foreground = Brush.Parse(r.Text) },
+                        new TextBlock { Text = string.Join(" · ", r.Aufbau.Take(4)), FontFamily = font, FontSize = 11, Foreground = Brush.Parse(r.Text), TextTrimming = TextTrimming.CharacterEllipsis },
+                        new Border { CornerRadius = new CornerRadius(12), Background = Brush.Parse(r.Akzent), Padding = new Thickness(10, 4), HorizontalAlignment = HorizontalAlignment.Left,
+                            Child = new TextBlock { Text = "Knopf", FontFamily = font, FontSize = 11, Foreground = Brush.Parse(r.Hintergrund) } } } },
+                };
+                row2.Children.Add(new StackPanel { Spacing = 4, Width = 230, Margin = new Thickness(0, 4, 10, 4), Children = { mini, P(r.Stimmung, Muted, 11.5), Act($"web-ki-richtung-{idx}", "Diese Richtung bauen", () => WebDesignChooseDirection(idx), true) } });
+            }
+            sp.Children.Add(row2);
+        }
         if (_wdPending is { Json: not null } p)
         {
             var box = new StackPanel { Name = "web-ki-preview", Spacing = 3 };

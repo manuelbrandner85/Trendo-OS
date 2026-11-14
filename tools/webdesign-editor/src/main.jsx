@@ -7,6 +7,9 @@ import "@puckeditor/core/puck.css";
 import { Canvas, useFrame } from "@react-three/fiber";
 import "./trendo.css";
 import { de } from "./de.js";
+import { ansichtenVon, anpassungenCss, geerbt, BASIS, instanz } from "./ansichten.js";
+import { Check, ChevronDown } from "lucide-react";
+import { starteBewegungen, bilderDerZeitleiste } from "./bewegung.js";
 
 const send = (msg) => { try { if (typeof window.invokeCSharpAction === "function") window.invokeCSharpAction(JSON.stringify(msg)); } catch { /* ohne Trendo (Test im Browser) */ } };
 
@@ -53,19 +56,204 @@ const motionFields = {
 };
 
 // ---------- Design-Tokens (Modul 05) ----------
+const usePuckSel = createUsePuck();
 const FONTS = { klar: '"Segoe UI", Helvetica, Arial, sans-serif', serif: 'Georgia, "Times New Roman", serif', rund: '"Trebuchet MS", "Segoe UI", sans-serif', mono: 'Consolas, "Courier New", monospace' };
 const hex = (v, d) => (typeof v === "string" && /^#[0-9a-fA-F]{6}$/.test(v) ? v : d);
 const num = (v, d, lo, hi) => (Number.isFinite(+v) ? Math.min(hi, Math.max(lo, +v)) : d);
 export function tokens(t) {
-  return { "--t-accent": hex(t.accent, "#1d1d1f"), "--t-ink": hex(t.ink, "#1d1d1f"), "--t-paper": hex(t.paper, "#ffffff"), "--t-font": FONTS[t.font] || FONTS.klar,
+  // Z7: eigene Schrift aus den Medien als „eigene:Familie“; die Datei bindet der Export lokal ein
+  const eigene = typeof t.font === "string" && /^eigene:[\p{L}0-9 -]{1,40}$/u.test(t.font) ? `"${t.font.slice(7)}", ${FONTS.klar}` : null;
+  const v = { "--t-accent": hex(t.accent, "#1d1d1f"), "--t-ink": hex(t.ink, "#1d1d1f"), "--t-paper": hex(t.paper, "#ffffff"), "--t-font": eigene || FONTS[t.font] || FONTS.klar,
     "--t-radius": num(t.radius, 12, 0, 40) + "px", "--t-space": num(t.space, 24, 4, 48) + "px" };
+  // W6: dunkler Satz, wird über „prefers-color-scheme: dark“ aktiv (Regel in trendo.css)
+  if (t.dunkel) Object.assign(v, { "--t-accent-d": hex(t.accentDunkel, "#f0c75e"), "--t-ink-d": hex(t.inkDunkel, "#f2f2f2"), "--t-paper-d": hex(t.paperDunkel, "#121212") });
+  return v;
 }
 
+// W1: Daten der ganzen Seite, damit die Seite die Anpassungen je Ansicht als Container-Regeln zeichnen kann (nur Editor und Vorschau; der Export bekommt Medienregeln von Trendo)
+const DataCtx = React.createContext(null);
+function PageRoot({ children, p }) {
+  const data = React.useContext(DataCtx);
+  const ref = useRef(null);
+  // W4: Bewegungen und Zeitleisten starten; bei „weniger Bewegung“ startet nichts und alles bleibt sichtbar
+  useEffect(() => starteBewegungen(ref.current), [data]);
+  useEffect(() => {
+    const el = ref.current;
+    if (p.uebergang === "einblenden" && el && !el.ownerDocument.defaultView?.matchMedia?.("(prefers-reduced-motion: reduce)").matches && el.animate) el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 450, easing: "ease-out" });
+  }, []);
+  return (
+    <main ref={ref} className={"t-page" + (p.dunkel ? " t-hat-dunkel" : "")} style={tokens(p)}>
+      {data && <style>{anpassungenCss(data, "container")}</style>}
+      {children}
+    </main>);
+}
+
+// W1: Anpassungen je Ansicht im Eigenschaftenfeld. Zeigt, was überschrieben ist und woher ein Wert kommt; „Zurücksetzen“ nimmt die Überschreibung weg.
+function AnpassungenFeld({ value, onChange, spalten }) {
+  // Eigene Wahl der Ansicht: Die Ansichtsumschaltung des Editors gibt es nur mit Rahmen (iframe), in Trendo läuft der Editor ohne
+  const width = usePuckSel((s) => s.appState.ui.viewports.current.width);
+  const root = usePuckSel((s) => s.appState.data.root);
+  const ansichten = ansichtenVon(root);
+  const [gewaehlt, setGewaehlt] = useState(null);
+  const ansicht = gewaehlt === BASIS ? undefined : ansichten.find((v) => v.name === gewaehlt) ?? (gewaehlt ? undefined : ansichten.find((v) => v.breite === width));
+  const alle = value && typeof value === "object" ? value : {};
+  const liste = Object.entries(alle).filter(([, a]) => a && Object.keys(a).length).map(([n, a]) => `${n}: ${Object.entries(a).map(([k, w]) => `${k} ${w}`).join(", ")}`);
+  const wahl = (
+    <select className="t-anp-ansicht" aria-label="Ansicht" value={ansicht?.name ?? BASIS} onChange={(e) => setGewaehlt(e.target.value)}>
+      <option value={BASIS}>{BASIS} (Grundlage)</option>
+      {ansichten.map((v) => <option key={v.name} value={v.name}>{v.name} – bis {v.breite} px</option>)}
+    </select>);
+  if (!ansicht) return <div className="t-anp"><b>Anpassungen je Ansicht</b>{wahl}<p>{BASIS} ist die Grundlage. Wähle eine kleinere Ansicht, um dort abzuweichen.</p>{liste.length > 0 && <p className="t-anp-liste">Überschrieben: {liste.join(" · ")}</p>}</div>;
+  const eigen = alle[ansicht.name] || {};
+  const setze = (feld, wert) => {
+    const n = { ...eigen }; if (wert === undefined || wert === "" || Number.isNaN(wert)) delete n[feld]; else n[feld] = wert;
+    const neu = { ...alle }; if (Object.keys(n).length) neu[ansicht.name] = n; else delete neu[ansicht.name];
+    onChange(neu);
+  };
+  const zeile = (feld, label, eingabe) => {
+    const { wert, von } = geerbt(alle, ansichten, ansicht.name, feld);
+    const ueber = eigen[feld] !== undefined;
+    return (
+      <div className={"t-anp-zeile" + (ueber ? " t-anp-ueber" : "")} key={feld}>
+        <label>{label}</label>{eingabe}
+        {ueber ? <button type="button" className="t-anp-reset" onClick={() => setze(feld, undefined)}>Zurücksetzen</button>
+          : <span className="t-anp-erbe">{von ? `geerbt aus ${von}: ${wert}` : `wie ${BASIS}`}</span>}
+      </div>);
+  };
+  return (
+    <div className="t-anp"><b>Anpassungen je Ansicht</b>
+      {wahl}
+      <p>Gilt für <b>{ansicht.name}</b> (bis {ansicht.breite} px) und alle kleineren Ansichten.</p>
+      {zeile("ausblenden", "Sichtbarkeit", <select value={eigen.ausblenden === true ? "aus" : eigen.ausblenden === false ? "an" : ""} onChange={(e) => setze("ausblenden", e.target.value === "aus" ? true : e.target.value === "an" ? false : undefined)}><option value="">–</option><option value="aus">Ausblenden</option><option value="an">Wieder einblenden</option></select>)}
+      {zeile("ausrichtung", "Ausrichtung", <select value={eigen.ausrichtung || ""} onChange={(e) => setze("ausrichtung", e.target.value)}><option value="">–</option><option value="left">Links</option><option value="center">Mitte</option><option value="right">Rechts</option></select>)}
+      {zeile("schrift", "Schriftgröße %", <input type="number" min={50} max={200} step={5} value={eigen.schrift ?? ""} onChange={(e) => setze("schrift", e.target.value === "" ? undefined : Math.round(+e.target.value))} />)}
+      {spalten && zeile("spalten", "Spalten", <select value={eigen.spalten ?? ""} onChange={(e) => setze("spalten", e.target.value === "" ? undefined : +e.target.value)}><option value="">–</option><option value="1">1</option><option value="2">2</option></select>)}
+    </div>);
+}
+// ---------- W5: Komponenten ----------
+// Original im Projekt (root.props.komponenten), Verwendung mit eigenen Überschreibungen; gleiche Regel wie in C# (WebDesignComponents.Instance): ids „verwendung--baustein“
+// Feste leere Liste: Selektoren des Editors dürfen nicht bei jedem Aufruf ein neues Objekt liefern, sonst zeichnet React endlos neu (Fehler 185)
+const LEER = Object.freeze([]);
+const komponentenVon = (data) => (Array.isArray(data?.root?.props?.komponenten) ? data.root.props.komponenten : LEER);
+function KomponenteAnzeige({ komponente, ueberschreibungen, id }) {
+  const data = React.useContext(DataCtx) || window.TRENDO_SEITE;
+  const def = komponentenVon(data).find((k) => k.id === komponente);
+  if (!def) return <div className="t-img t-empty">Komponente fehlt</div>;
+  return <Render config={innerConfig} data={{ root: { props: {} }, content: instanz(def, id, ueberschreibungen), zones: {} }} />;
+}
+function KomponenteWahl({ value, onChange }) {
+  const defs = usePuckSel((s) => komponentenVon(s.appState.data));
+  // Eigene Felder bekommen von Puck keine Beschriftung, deshalb steht sie hier (Live-Test 13.11.2026)
+  return <div className="t-anp"><b>Komponente</b><select className="t-anp-ansicht" aria-label="Komponente" value={value || ""} onChange={(e) => onChange(e.target.value)}><option value="">– wählen –</option>{defs.map((k) => <option key={k.id} value={k.id}>{k.name}</option>)}</select></div>;
+}
+// Felder der Komponente: „Nur hier“ überschreibt in dieser Verwendung, „Original“ ändert alle Verwendungen
+function UeberschreibungenFeld({ value, onChange }) {
+  const data = usePuckSel((s) => s.appState.data);
+  const sel = usePuckSel((s) => s.selectedItem?.props);
+  const dispatch = usePuckSel((s) => s.dispatch);
+  const [original, setOriginal] = useState(false);
+  const defs = komponentenVon(data);
+  const def = defs.find((k) => k.id === sel?.komponente);
+  if (!def) return <div className="t-anp">Erst eine Komponente wählen.</div>;
+  const ueber = value && typeof value === "object" ? value : {};
+  const setzeHier = (innen, feld, wert) => {
+    const e = { ...(ueber[innen] || {}) }; if (wert === undefined) delete e[feld]; else e[feld] = wert;
+    const neu = { ...ueber }; if (Object.keys(e).length) neu[innen] = e; else delete neu[innen];
+    onChange(neu);
+  };
+  const setzeOriginal = (innen, feld, wert) => {
+    const kompo = defs.map((k) => k.id !== def.id ? k : { ...k, bausteine: k.bausteine.map((b) => b.props?.id !== innen ? b : { ...b, props: { ...b.props, [feld]: wert } }) });
+    dispatch({ type: "setData", data: { ...data, root: { ...data.root, props: { ...data.root.props, komponenten: kompo } } } });
+  };
+  return (
+    <div className="t-anp"><b>{def.name}</b>
+      <label className="t-anp-zeile"><span>Original ändern (alle Verwendungen)</span><input type="checkbox" checked={original} onChange={(e) => setOriginal(e.target.checked)} /></label>
+      {def.bausteine.map((b) => {
+        const felder = Object.entries(baseConfig.components[b.type]?.fields || {}).filter(([, f]) => f.type === "text" || f.type === "textarea");
+        const innen = b.props?.id;
+        return felder.map(([feld, f]) => {
+          const hier = ueber[innen]?.[feld];
+          return (
+            <div className={"t-anp-zeile" + (hier !== undefined ? " t-anp-ueber" : "")} key={innen + feld} data-feld={`${innen}.${feld}`}>
+              <label htmlFor={`t-ueber-${innen}-${feld}`}>{(baseConfig.components[b.type]?.label || b.type) + " – " + (f.label || feld)}</label>
+              <input id={`t-ueber-${innen}-${feld}`} type="text" value={original ? (b.props?.[feld] ?? "") : (hier ?? b.props?.[feld] ?? "")} onChange={(e) => (original ? setzeOriginal(innen, feld, e.target.value) : setzeHier(innen, feld, e.target.value))} />
+              {!original && (hier !== undefined ? <button type="button" className="t-anp-reset" onClick={() => setzeHier(innen, feld, undefined)}>Zurücksetzen</button> : <span className="t-anp-erbe">wie im Original</span>)}
+            </div>);
+        });
+      })}
+    </div>);
+}
+
+// ---------- W4 und Z2: Bewegung je Baustein und Zeitleiste ----------
+const ZEIT_EIGENSCHAFTEN = [["x", "Verschiebung waagerecht (px)"], ["y", "Verschiebung senkrecht (px)"], ["skalierung", "Größe (×)"], ["drehung", "Drehung (°)"], ["deckkraft", "Deckkraft (0 bis 1)"]];
+function ZeitleisteFeld({ value, onChange }) {
+  const id = usePuckSel((s) => s.selectedItem?.props?.id);
+  const z = { dauer: 2, ausloeser: "laden", wiederholen: "nein", punkte: [], ...(value && typeof value === "object" ? value : {}) };
+  const [neu, setNeu] = useState({ eigenschaft: "y", zeit: 0, wert: 0 });
+  const setze = (teil) => onChange({ ...z, ...teil });
+  const punktSetzen = () => {
+    const zeit = Math.min(z.dauer, Math.max(0, +neu.zeit || 0)), wert = +neu.wert || 0;
+    setze({ punkte: [...z.punkte.filter((p) => !(p.eigenschaft === neu.eigenschaft && +p.zeit === zeit)), { eigenschaft: neu.eigenschaft, zeit, wert }] });
+  };
+  const abspielen = () => { const el = document.querySelector(`[data-b="${id}"]`); if (el && z.punkte.length && !window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) el.animate(bilderDerZeitleiste(z), { duration: z.dauer * 1000, easing: "linear" }); };
+  return (
+    <div className="t-anp t-zeit"><b>Zeitleiste</b>
+      <div className="t-zeit-kopf">
+        <label>Dauer (s)<input type="number" min={0.2} max={30} step={0.1} value={z.dauer} onChange={(e) => setze({ dauer: Math.min(30, Math.max(0.2, +e.target.value || 1)) })} /></label>
+        <label>Auslöser<select value={z.ausloeser} onChange={(e) => setze({ ausloeser: e.target.value })}><option value="laden">Beim Laden</option><option value="scroll">Beim Scrollen</option></select></label>
+        <label><input type="checkbox" checked={z.wiederholen === "ja"} onChange={(e) => setze({ wiederholen: e.target.checked ? "ja" : "nein" })} />Wiederholen</label>
+      </div>
+      {ZEIT_EIGENSCHAFTEN.map(([k, label]) => (
+        <div className="t-spur" key={k}><span>{label}</span>
+          <div className="t-spur-bahn">{z.punkte.filter((p) => p.eigenschaft === k).map((p, i) => (
+            <button type="button" key={i} className="t-punkt" style={{ left: `${(p.zeit / z.dauer) * 100}%` }} title={`${p.zeit} s: ${p.wert} – klicken zum Entfernen`}
+              aria-label={`Schlüsselbild ${label} bei ${p.zeit} Sekunden, Wert ${p.wert}, entfernen`} onClick={() => setze({ punkte: z.punkte.filter((q) => q !== p) })} />))}</div>
+        </div>))}
+      <div className="t-zeit-neu">
+        <select aria-label="Eigenschaft" value={neu.eigenschaft} onChange={(e) => setNeu({ ...neu, eigenschaft: e.target.value })}>{ZEIT_EIGENSCHAFTEN.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
+        <input aria-label="Zeit in Sekunden" type="number" min={0} max={z.dauer} step={0.1} value={neu.zeit} onChange={(e) => setNeu({ ...neu, zeit: e.target.value })} />
+        <input aria-label="Wert" type="number" step={0.1} value={neu.wert} onChange={(e) => setNeu({ ...neu, wert: e.target.value })} />
+        <button type="button" className="t-anp-reset" onClick={punktSetzen}>Schlüsselbild setzen</button>
+        <button type="button" className="t-anp-reset" onClick={abspielen}>Abspielen</button>
+      </div>
+    </div>);
+}
+const bewegungFelder = {
+  bewegung: { type: "object", label: "Bewegung", objectFields: {
+    erscheinen: { type: "select", label: "Beim Erscheinen", options: [{ label: "Keine", value: "keine" }, { label: "Einblenden", value: "einblenden" }, { label: "Hochgleiten", value: "hochgleiten" }, { label: "Heranzoomen", value: "zoomen" }] },
+    darueber: { type: "select", label: "Beim Darüberfahren", options: [{ label: "Keine", value: "keine" }, { label: "Anheben", value: "anheben" }, { label: "Vergrößern", value: "vergroessern" }, { label: "Aufhellen", value: "aufhellen" }] },
+    dauer: { type: "number", label: "Dauer (s)", min: 0.2, max: 3, step: 0.1 }, verzoegerung: { type: "number", label: "Verzögerung (s)", min: 0, max: 2, step: 0.1 } } },
+  zeitleiste: { type: "custom", label: "Zeitleiste", render: ({ value, onChange }) => <ZeitleisteFeld value={value} onChange={onChange} /> },
+};
+// Rahmen eines Bausteins: id für Anpassungen, dazu Bewegung und Zeitleiste als Daten für den Ablauf in bewegung.js
+function rahmenProps(p) {
+  const b = p.bewegung || {}, z = p.zeitleiste;
+  const r = { className: "t-b" + (b.darueber && b.darueber !== "keine" ? " t-hov-" + b.darueber : ""), "data-b": p.id };
+  if (b.erscheinen && b.erscheinen !== "keine") Object.assign(r, { "data-erscheinen": b.erscheinen, "data-dauer": b.dauer ?? 0.8, "data-verzoegerung": b.verzoegerung ?? 0 });
+  if (z && Array.isArray(z.punkte) && z.punkte.length) r["data-zeitleiste"] = JSON.stringify(z);
+  return r;
+}
+
+// Z7: Bild aus den Medien des Projekts wählen oder einen Pfad eingeben
+function BildWahl({ value, onChange, label }) {
+  const medien = usePuckSel((s) => (Array.isArray(s.appState.data.root?.props?.medien) ? s.appState.data.root.props.medien : LEER));
+  return (
+    <div className="t-anp"><b>{label}</b>
+      {medien.length > 0 && <select className="t-anp-ansicht t-bildwahl" aria-label="Bild aus den Medien" value={medien.some((m) => m.datei === value) ? value : ""} onChange={(e) => e.target.value && onChange(e.target.value)}>
+        <option value="">– aus den Medien wählen –</option>{medien.map((m) => <option key={m.datei} value={m.datei}>{m.titel}</option>)}</select>}
+      <input type="text" aria-label="Bilddatei im Projekt" value={value || ""} onChange={(e) => onChange(e.target.value)} />
+    </div>);
+}
+const bildFeld = (label) => ({ type: "custom", label, render: ({ value, onChange }) => <BildWahl value={value} onChange={onChange} label={label} /> });
+
+const anpassungenFeld = (spalten = false) => ({ anpassungen: { type: "custom", label: "Anpassungen je Ansicht", render: ({ value, onChange }) => <AnpassungenFeld value={value} onChange={onChange} spalten={spalten} /> } });
+
 // ---------- Bausteine ----------
-export const config = {
+const baseConfig = {
   categories: {
-    aufbau: { title: "Aufbau", components: ["Bereich", "Spalten"] },
+    aufbau: { title: "Aufbau", components: ["Bereich", "Spalten", "Stapel", "Komponente"] },
     inhalt: { title: "Inhalt", components: ["Kopfbereich", "Ueberschrift", "Text", "Bild", "Knopf"] },
+    profi: { title: "Profi-Bausteine", components: ["Navigation", "Hero", "Preise", "Fragen", "Galerie", "Formular", "Fusszeile"] },
     effekte: { title: "3D & Bewegung", components: ["Szene3D"] },
   },
   // Modul 05 Design-System: seitenweite Werte als CSS-Variablen – jeder Baustein nutzt sie; Trendo prüft die Werte beim Speichern (nur #Farben, sichere Schriftnamen)
@@ -75,38 +263,141 @@ export const config = {
       accent: { type: "text", label: "Akzentfarbe (#RRGGBB)" }, ink: { type: "text", label: "Textfarbe (#RRGGBB)" }, paper: { type: "text", label: "Hintergrund (#RRGGBB)" },
       font: { type: "select", label: "Schrift", options: [{ label: "Klar (Segoe/Helvetica)", value: "klar" }, { label: "Serif (Georgia)", value: "serif" }, { label: "Rund (Trebuchet)", value: "rund" }, { label: "Technisch (Consolas)", value: "mono" }] },
       radius: { type: "number", label: "Rundung (px)", min: 0, max: 40 }, space: { type: "number", label: "Abstand-Grundwert (px)", min: 4, max: 48 },
+      uebergang: { type: "select", label: "Seitenübergang beim Öffnen", options: [{ label: "Keiner", value: "keiner" }, { label: "Einblenden", value: "einblenden" }] },
+      dunkel: { type: "radio", label: "Dunkler Satz", options: [{ label: "Aus", value: false }, { label: "An", value: true }] },
+      accentDunkel: { type: "text", label: "Akzent dunkel (#RRGGBB)" }, inkDunkel: { type: "text", label: "Text dunkel (#RRGGBB)" }, paperDunkel: { type: "text", label: "Hintergrund dunkel (#RRGGBB)" },
     },
-    defaultProps: { title: "Neue Seite", description: "", accent: "#1d1d1f", ink: "#1d1d1f", paper: "#ffffff", font: "klar", radius: 12, space: 24 },
-    render: ({ children, accent, ink, paper, font, radius, space }) => <main className="t-page" style={tokens({ accent, ink, paper, font, radius, space })}>{children}</main>,
+    defaultProps: { title: "Neue Seite", description: "", accent: "#1d1d1f", ink: "#1d1d1f", paper: "#ffffff", font: "klar", radius: 12, space: 24, dunkel: false, accentDunkel: "#f0c75e", inkDunkel: "#f2f2f2", paperDunkel: "#121212" },
+    render: ({ children, ...p }) => <PageRoot p={p}>{children}</PageRoot>,
   },
   components: {
     Kopfbereich: {
       label: "Kopfbereich",
-      fields: { title: { type: "text", label: "Titel" }, sub: { type: "textarea", label: "Untertitel" }, cta: { type: "text", label: "Knopf-Text" }, href: { type: "text", label: "Knopf-Ziel" }, ...motionFields },
+      fields: { title: { type: "text", label: "Titel" }, sub: { type: "textarea", label: "Untertitel" }, cta: { type: "text", label: "Knopf-Text" }, href: { type: "text", label: "Knopf-Ziel" }, ...motionFields, ...anpassungenFeld(), ...bewegungFelder },
       defaultProps: { title: "Willkommen", sub: "Eine Seite, gebaut mit Trendo.", cta: "Mehr erfahren", href: "#", motion: "einblenden", seconds: 0.9 },
       render: ({ title, sub, cta, href, motion, seconds, id }) => (
         <Animated motion={motion} seconds={seconds} id={id}><header className="t-hero"><h1>{title}</h1><p>{sub}</p>{cta && <a className="t-btn" href={href}>{cta}</a>}</header></Animated>),
     },
-    Ueberschrift: { label: "Überschrift", fields: { text: { type: "text", label: "Text" }, level: { type: "select", label: "Ebene", options: [{ label: "H2", value: "h2" }, { label: "H3", value: "h3" }] } },
+    Ueberschrift: { label: "Überschrift", fields: { text: { type: "text", label: "Text" }, level: { type: "select", label: "Ebene", options: [{ label: "H2", value: "h2" }, { label: "H3", value: "h3" }] }, ...anpassungenFeld(), ...bewegungFelder },
       defaultProps: { text: "Überschrift", level: "h2" }, render: ({ text, level }) => React.createElement(level, { className: "t-h" }, text) },
-    Text: { label: "Text", fields: { text: { type: "textarea", label: "Text" }, align: { type: "radio", label: "Ausrichtung", options: [{ label: "Links", value: "left" }, { label: "Mitte", value: "center" }] } },
-      defaultProps: { text: "Hier steht dein Text.", align: "left" }, render: ({ text, align }) => <p className="t-text" style={{ textAlign: align }}>{text}</p> },
-    Bild: { label: "Bild", fields: { src: { type: "text", label: "Bilddatei (im Projekt)" }, alt: { type: "text", label: "Beschreibung (Pflicht für Barrierefreiheit)" } },
+    Text: { label: "Text", fields: { text: { type: "textarea", label: "Text" }, align: { type: "radio", label: "Ausrichtung", options: [{ label: "Links", value: "left" }, { label: "Mitte", value: "center" }] }, ...anpassungenFeld(), ...bewegungFelder },
+      defaultProps: { text: "Hier steht dein Text.", align: "left" }, render: ({ text, align }) => <p className={`t-text t-a-${align === "center" ? "center" : "left"}`}>{text}</p> },
+    Bild: { label: "Bild", fields: { src: bildFeld("Bild"), alt: { type: "text", label: "Beschreibung (Pflicht für Barrierefreiheit)" }, ...anpassungenFeld(), ...bewegungFelder },
       defaultProps: { src: "", alt: "" }, render: ({ src, alt }) => src ? <img className="t-img" src={src} alt={alt} loading="lazy" /> : <div className="t-img t-empty">Bild wählen</div> },
-    Knopf: { label: "Knopf", fields: { label: { type: "text", label: "Text" }, href: { type: "text", label: "Ziel" } },
+    Knopf: { label: "Knopf", fields: { label: { type: "text", label: "Text" }, href: { type: "text", label: "Ziel" }, ...anpassungenFeld(), ...bewegungFelder },
       defaultProps: { label: "Kontakt", href: "#kontakt" }, render: ({ label, href }) => <a className="t-btn" href={href}>{label}</a> },
-    Bereich: { label: "Bereich", fields: { content: { type: "slot" }, tone: { type: "select", label: "Hintergrund", options: [{ label: "Hell", value: "hell" }, { label: "Dunkel", value: "dunkel" }] } },
+    Bereich: { label: "Bereich", fields: { content: { type: "slot" }, tone: { type: "select", label: "Hintergrund", options: [{ label: "Hell", value: "hell" }, { label: "Dunkel", value: "dunkel" }] }, ...anpassungenFeld(), ...bewegungFelder },
       defaultProps: { tone: "hell" }, render: ({ content: Content, tone }) => <section className={`t-section t-${tone}`}><Content /></section> },
-    Spalten: { label: "Spalten", fields: { left: { type: "slot" }, right: { type: "slot" } },
-      render: ({ left: Left, right: Right }) => <div className="t-cols"><div><Left /></div><div><Right /></div></div> },
+    Spalten: { label: "Spalten", fields: { left: { type: "slot" }, right: { type: "slot" }, ...anpassungenFeld(true), ...bewegungFelder },
+      render: ({ left: Left, right: Right }) => <div className="t-cols-box"><div className="t-cols"><div><Left /></div><div><Right /></div></div></div> },
+    // ---------- Z1: Bausteine in Profi-Qualität (eigene Umsetzung, Symbole von Lucide, ISC) ----------
+    Navigation: { label: "Navigation", fields: { marke: { type: "text", label: "Name oder Marke" },
+        links: { type: "array", label: "Links", arrayFields: { label: { type: "text", label: "Text" }, href: { type: "text", label: "Ziel" } }, defaultItemProps: { label: "Angebot", href: "#" }, getItemSummary: (i) => i.label || "Link" },
+        knopf: { type: "text", label: "Knopf-Text" }, knopfZiel: { type: "text", label: "Knopf-Ziel" }, ...anpassungenFeld(), ...bewegungFelder },
+      defaultProps: { marke: "Mein Laden", links: [{ label: "Angebot", href: "#" }, { label: "Über uns", href: "#" }, { label: "Kontakt", href: "#" }], knopf: "Termin buchen", knopfZiel: "#" },
+      render: ({ marke, links, knopf, knopfZiel }) => (
+        <nav className="t-nav" aria-label="Hauptnavigation">
+          <a className="t-nav-marke" href="#">{marke}</a>
+          <ul className="t-nav-links">{(links || []).map((l, i) => <li key={i}><a href={l.href}>{l.label}</a></li>)}</ul>
+          {knopf && <a className="t-btn t-nav-knopf" href={knopfZiel}>{knopf}</a>}
+        </nav>) },
+    Hero: { label: "Hero", fields: { kicker: { type: "text", label: "Zeile darüber" }, titel: { type: "text", label: "Titel" }, text: { type: "textarea", label: "Text" },
+        knopf: { type: "text", label: "Knopf-Text" }, knopfZiel: { type: "text", label: "Knopf-Ziel" }, knopf2: { type: "text", label: "Zweiter Knopf" }, knopf2Ziel: { type: "text", label: "Ziel zweiter Knopf" },
+        bild: bildFeld("Bild"), bildAlt: { type: "text", label: "Bildbeschreibung" }, ...anpassungenFeld(), ...bewegungFelder },
+      defaultProps: { kicker: "Neu", titel: "Ein klares Versprechen in einem Satz", text: "Zwei Sätze, die erklären, was Besucher hier bekommen und warum es ihnen hilft.", knopf: "Jetzt starten", knopfZiel: "#", knopf2: "Mehr erfahren", knopf2Ziel: "#", bild: "", bildAlt: "" },
+      render: ({ kicker, titel, text, knopf, knopfZiel, knopf2, knopf2Ziel, bild, bildAlt }) => (
+        <header className={"t-heroz" + (bild ? " t-heroz-bild" : "")}>
+          <div className="t-heroz-text">
+            {kicker && <p className="t-kicker">{kicker}</p>}
+            <h1>{titel}</h1><p className="t-heroz-lead">{text}</p>
+            <div className="t-knoepfe">{knopf && <a className="t-btn" href={knopfZiel}>{knopf}</a>}{knopf2 && <a className="t-btn t-btn-leise" href={knopf2Ziel}>{knopf2}</a>}</div>
+          </div>
+          {bild && <img className="t-heroz-img" src={bild} alt={bildAlt} />}
+        </header>) },
+    Preise: { label: "Preise", fields: { titel: { type: "text", label: "Überschrift" },
+        tarife: { type: "array", label: "Tarife", arrayFields: { name: { type: "text", label: "Name" }, preis: { type: "text", label: "Preis" }, zeitraum: { type: "text", label: "Zeitraum" },
+            merkmale: { type: "textarea", label: "Merkmale (eins je Zeile)" }, knopf: { type: "text", label: "Knopf-Text" }, ziel: { type: "text", label: "Knopf-Ziel" },
+            hervorgehoben: { type: "radio", label: "Hervorheben", options: [{ label: "Nein", value: "nein" }, { label: "Ja", value: "ja" }] } },
+          defaultItemProps: { name: "Tarif", preis: "0 €", zeitraum: "im Monat", merkmale: "Merkmal", knopf: "Wählen", ziel: "#", hervorgehoben: "nein" }, getItemSummary: (i) => i.name || "Tarif" }, ...anpassungenFeld(), ...bewegungFelder },
+      defaultProps: { titel: "Preise", tarife: [
+        { name: "Basis", preis: "9 €", zeitraum: "im Monat", merkmale: "Ein Projekt\nE-Mail-Hilfe", knopf: "Basis wählen", ziel: "#", hervorgehoben: "nein" },
+        { name: "Profi", preis: "29 €", zeitraum: "im Monat", merkmale: "Zehn Projekte\nTelefon-Hilfe\nEigene Adresse", knopf: "Profi wählen", ziel: "#", hervorgehoben: "ja" },
+        { name: "Team", preis: "79 €", zeitraum: "im Monat", merkmale: "Unbegrenzte Projekte\nPersönliche Betreuung", knopf: "Team wählen", ziel: "#", hervorgehoben: "nein" }] },
+      render: ({ titel, tarife }) => (
+        <section className="t-preise">
+          {titel && <h2 className="t-h">{titel}</h2>}
+          <div className="t-preise-raster">{(tarife || []).map((t, i) => (
+            <article key={i} className={"t-tarif" + (t.hervorgehoben === "ja" ? " t-tarif-an" : "")}>
+              <h3>{t.name}</h3><p className="t-preis"><span>{t.preis}</span> {t.zeitraum}</p>
+              <ul>{String(t.merkmale || "").split("\n").filter((m) => m.trim()).map((m, j) => <li key={j}><Check aria-hidden="true" size={18} />{m}</li>)}</ul>
+              {t.knopf && <a className={"t-btn" + (t.hervorgehoben === "ja" ? "" : " t-btn-leise")} href={t.ziel}>{t.knopf}</a>}
+            </article>))}</div>
+        </section>) },
+    Fragen: { label: "Häufige Fragen", fields: { titel: { type: "text", label: "Überschrift" },
+        fragen: { type: "array", label: "Fragen", arrayFields: { frage: { type: "text", label: "Frage" }, antwort: { type: "textarea", label: "Antwort" } }, defaultItemProps: { frage: "Frage?", antwort: "Antwort." }, getItemSummary: (i) => i.frage || "Frage" }, ...anpassungenFeld(), ...bewegungFelder },
+      defaultProps: { titel: "Häufige Fragen", fragen: [{ frage: "Wie lange dauert die Lieferung?", antwort: "In der Regel zwei bis drei Werktage." }, { frage: "Kann ich zurückgeben?", antwort: "Ja, innerhalb von 30 Tagen ohne Angabe von Gründen." }] },
+      render: ({ titel, fragen }) => (
+        <section className="t-fragen">
+          {titel && <h2 className="t-h">{titel}</h2>}
+          {(fragen || []).map((f, i) => <details key={i} className="t-frage"><summary>{f.frage}<ChevronDown aria-hidden="true" size={18} /></summary><p>{f.antwort}</p></details>)}
+        </section>) },
+    Galerie: { label: "Galerie", fields: { titel: { type: "text", label: "Überschrift" },
+        bilder: { type: "array", label: "Bilder", arrayFields: { src: bildFeld("Bild"), alt: { type: "text", label: "Beschreibung" } }, defaultItemProps: { src: "", alt: "" }, getItemSummary: (i) => i.alt || i.src || "Bild" },
+        spalten: { type: "select", label: "Spalten", options: [{ label: "2", value: 2 }, { label: "3", value: 3 }, { label: "4", value: 4 }] }, ...anpassungenFeld(), ...bewegungFelder },
+      defaultProps: { titel: "", bilder: [], spalten: 3 },
+      render: ({ titel, bilder, spalten }) => (
+        <section className="t-galerie">
+          {titel && <h2 className="t-h">{titel}</h2>}
+          <ul className="t-galerie-raster" style={{ "--t-galerie-spalten": spalten || 3 }}>{(bilder || []).length === 0 ? <li className="t-img t-empty">Bilder hinzufügen</li> : bilder.map((b, i) => <li key={i}>{b.src ? <img src={b.src} alt={b.alt} loading="lazy" /> : <div className="t-img t-empty">Bild wählen</div>}</li>)}</ul>
+        </section>) },
+    Formular: { label: "Kontaktformular", fields: { titel: { type: "text", label: "Überschrift" }, empfaenger: { type: "text", label: "E-Mail-Adresse des Empfängers" }, knopf: { type: "text", label: "Knopf-Text" }, hinweis: { type: "textarea", label: "Hinweis unter dem Formular" }, ...anpassungenFeld(), ...bewegungFelder },
+      defaultProps: { titel: "Schreib uns", empfaenger: "kontakt@example.org", knopf: "Nachricht senden", hinweis: "Senden öffnet dein E-Mail-Programm. Es wird nichts im Internet gespeichert." },
+      render: ({ id, titel, empfaenger, knopf, hinweis }) => (
+        <section className="t-formular">
+          {titel && <h2 className="t-h">{titel}</h2>}
+          <form action={"mailto:" + empfaenger} method="post" encType="text/plain">
+            <label htmlFor={id + "-name"}>Name</label><input id={id + "-name"} name="Name" autoComplete="name" required />
+            <label htmlFor={id + "-mail"}>E-Mail</label><input id={id + "-mail"} name="E-Mail" type="email" autoComplete="email" required />
+            <label htmlFor={id + "-text"}>Nachricht</label><textarea id={id + "-text"} name="Nachricht" rows={5} required />
+            <button type="submit" className="t-btn">{knopf}</button>
+            {hinweis && <p className="t-klein">{hinweis}</p>}
+          </form>
+        </section>) },
+    Fusszeile: { label: "Fußzeile", fields: { text: { type: "textarea", label: "Text" },
+        links: { type: "array", label: "Links", arrayFields: { label: { type: "text", label: "Text" }, href: { type: "text", label: "Ziel" } }, defaultItemProps: { label: "Link", href: "#" }, getItemSummary: (i) => i.label || "Link" },
+        impressum: { type: "text", label: "Ziel Impressum" }, datenschutz: { type: "text", label: "Ziel Datenschutz" }, ...anpassungenFeld(), ...bewegungFelder },
+      defaultProps: { text: "© Mein Laden", links: [], impressum: "impressum.html", datenschutz: "datenschutz.html" },
+      render: ({ text, links, impressum, datenschutz }) => (
+        <footer className="t-fuss">
+          <p>{text}</p>
+          <ul>{(links || []).map((l, i) => <li key={i}><a href={l.href}>{l.label}</a></li>)}{impressum && <li><a href={impressum}>Impressum</a></li>}{datenschutz && <li><a href={datenschutz}>Datenschutz</a></li>}</ul>
+        </footer>) },
+    Komponente: { label: "Komponente", fields: {
+        komponente: { type: "custom", label: "Komponente", render: ({ value, onChange }) => <KomponenteWahl value={value} onChange={onChange} /> },
+        ueberschreibungen: { type: "custom", label: "Felder", render: ({ value, onChange }) => <UeberschreibungenFeld value={value} onChange={onChange} /> }, ...anpassungenFeld(), ...bewegungFelder },
+      render: ({ komponente, ueberschreibungen, id }) => <KomponenteAnzeige komponente={komponente} ueberschreibungen={ueberschreibungen} id={id} /> },
+    // A5: Stapel mit Abstand aus den Gestaltungswerten (Stufen statt Pixel), „passt sich an“ oder „füllt aus“, bricht bei schmaler Breite um
+    Stapel: { label: "Stapel", fields: { inhalt: { type: "slot" },
+        richtung: { type: "radio", label: "Richtung", options: [{ label: "Untereinander", value: "senkrecht" }, { label: "Nebeneinander", value: "waagerecht" }] },
+        abstand: { type: "select", label: "Abstand", options: [0, 1, 2, 3, 4].map((n) => ({ label: ["Keiner", "Klein", "Mittel", "Groß", "Sehr groß"][n], value: n })) },
+        breite: { type: "radio", label: "Breite der Teile", options: [{ label: "Passt sich an", value: "passt" }, { label: "Füllt aus", value: "fuellt" }] },
+        ausrichtung: { type: "select", label: "Ausrichtung", options: [{ label: "Anfang", value: "start" }, { label: "Mitte", value: "mitte" }, { label: "Ende", value: "ende" }] }, ...anpassungenFeld(), ...bewegungFelder },
+      defaultProps: { richtung: "senkrecht", abstand: 2, breite: "passt", ausrichtung: "start" },
+      render: ({ inhalt: Inhalt, richtung, abstand, breite, ausrichtung }) => <Inhalt className={`t-stack t-stack-${richtung} t-stack-${breite} t-stack-a-${ausrichtung}`} style={{ gap: `calc(var(--t-space) * ${[0, 0.25, 0.5, 1, 1.5][abstand] ?? 0.5})` }} /> },
     Szene3D: { label: "3D-Szene", fields: { form: { type: "select", label: "Form", options: [{ label: "Würfel", value: "wuerfel" }, { label: "Kugel", value: "kugel" }, { label: "Knoten", value: "ring" }] },
-        color: { type: "text", label: "Farbe" }, spin: { type: "number", label: "Drehung", min: 0, max: 3, step: 0.1 }, height: { type: "number", label: "Höhe (px)", min: 160, max: 900 } },
+        color: { type: "text", label: "Farbe" }, spin: { type: "number", label: "Drehung", min: 0, max: 3, step: 0.1 }, height: { type: "number", label: "Höhe (px)", min: 160, max: 900 }, ...anpassungenFeld(), ...bewegungFelder },
       defaultProps: { form: "ring", color: "#d4a73a", spin: 0.6, height: 380 }, render: (p) => <Scene3D {...p} /> },
   },
 };
 
+// Jeder Baustein steckt in einem Rahmen mit seiner id: daran hängen die Anpassungen je Ansicht (Editor, Vorschau und Export)
+export const config = { ...baseConfig, components: Object.fromEntries(Object.entries(baseConfig.components).map(([name, c]) =>
+  [name, { ...c, render: (p) => <div {...rahmenProps(p)}>{c.render(p)}</div> }])) };
+
+// Bausteine einer Komponente: ohne eigene Seitenhülle
+const innerConfig = { ...config, root: { render: ({ children }) => <>{children}</> } };
+
 // Baustein per Doppelklick oder Eingabetaste am Seitenende einfügen (Bedienung ohne Ziehen, Tastatur, Barrierefreiheit)
-const usePuckSel = createUsePuck();
 function DrawerItem({ children, name }) {
   const dispatch = usePuckSel((s) => s.dispatch); const count = usePuckSel((s) => s.appState.data.content.length);
   const add = () => dispatch({ type: "insert", componentType: name, destinationIndex: count, destinationZone: "root:default-zone" });
@@ -114,7 +405,8 @@ function DrawerItem({ children, name }) {
 }
 
 const empty = { root: { props: { title: "Neue Seite", description: "" } }, content: [], zones: {} };
-const viewports = [{ width: 390, height: "auto", label: "Handy", icon: "Smartphone" }, { width: 820, height: "auto", label: "Tablet", icon: "Tablet" }, { width: 1440, height: "auto", label: "Desktop", icon: "Monitor" }];
+// Editor-Ansichten aus den Ansichten der Seite: Desktop als Grundlage, jede kleinere in ihrer Breite
+const viewportsVon = (root) => [{ width: 1440, height: "auto", label: BASIS, icon: "Monitor" }, ...ansichtenVon(root).map((v) => ({ width: v.breite, height: "auto", label: v.name, icon: v.breite < 700 ? "Smartphone" : "Tablet" }))];
 
 // Fertige Seite (Export): kein Editor, nur die Seite aus window.TRENDO_SEITE (seite.js neben index.html)
 function Viewer() {
@@ -178,6 +470,7 @@ function App() {
   const [key, setKey] = useState(0); const [mode, setMode] = useState("editor"); // editor, vorschau, auswahl
   const [kiPreview, setKiPreview] = useState(null); // KI-Ergebnis, das noch nicht übernommen ist
   const [selected, setSelected] = useState([]);
+  const [vorschauBreite, setVorschauBreite] = useState(null); // Breite der Vorschau je Ansicht (Container-Regeln greifen an der Seitenbreite)
   const dataRef = useRef(data); dataRef.current = data;
   const draftTimer = useRef(0);
   useEffect(() => {
@@ -189,15 +482,22 @@ function App() {
     send({ art: "bereit" });
   }, []);
   useEffect(() => { send({ art: "auswahl", daten: { ids: selected } }); }, [selected]);
+  const viewports = useMemo(() => viewportsVon(data.root), [key]);
   const ui = useMemo(() => { const v = viewports.find((x) => x.label.toLowerCase() === data.root?.props?.ansicht); return v ? { viewports: { current: { width: v.width, height: "auto" } } } : undefined; }, [key]);
-  if (kiPreview) return <div className="t-preview"><div className="t-seltools"><span>Vorschau des KI-Vorschlags – noch nicht übernommen</span></div><Render config={config} data={kiPreview} /></div>;
-  if (mode === "vorschau") return <div className="t-preview"><button className="t-back" onClick={() => setMode("editor")}>← Zurück zum Editor</button><Render config={config} data={data} /></div>;
-  if (mode === "auswahl") return <Selectable key={key} data={data} selected={selected} setSelected={setSelected} onBack={() => setMode("editor")} />;
+  if (kiPreview) return <DataCtx.Provider value={kiPreview}><div className="t-preview"><div className="t-seltools"><span>Vorschau des KI-Vorschlags – noch nicht übernommen</span></div><Render config={config} data={kiPreview} /></div></DataCtx.Provider>;
+  if (mode === "vorschau") return (
+    <DataCtx.Provider value={data}><div className="t-preview">
+      <div className="t-seltools"><span>Vorschau</span>
+        {[{ name: BASIS, breite: null }, ...ansichtenVon(data.root)].map((v) => <button key={v.name} className={"t-tool" + (vorschauBreite === v.breite ? " t-tool-an" : "")} onClick={() => setVorschauBreite(v.breite)}>{v.name}</button>)}
+        <button className="t-tool" onClick={() => setMode("editor")}>← Zurück zum Editor</button></div>
+      <div className="t-vorschau-rahmen" style={vorschauBreite ? { maxWidth: vorschauBreite + "px" } : undefined}><Render config={config} data={data} /></div>
+    </div></DataCtx.Provider>);
+  if (mode === "auswahl") return <DataCtx.Provider value={data}><Selectable key={key} data={data} selected={selected} setSelected={setSelected} onBack={() => setMode("editor")} /></DataCtx.Provider>;
   return (
-    <Puck key={key} config={config} data={data} viewports={viewports} ui={ui} iframe={{ enabled: location.protocol !== "file:" && !location.search.includes("ohneRahmen") }} dictionary={de}
+    <DataCtx.Provider value={data}><Puck key={key} config={config} data={data} viewports={viewports} ui={ui} iframe={{ enabled: location.protocol !== "file:" && !location.search.includes("ohneRahmen") }} dictionary={de}
       onChange={(d) => { setData(d); try { localStorage.setItem("trendo-entwurf", JSON.stringify(d)); } catch { } send({ art: "geaendert" }); clearTimeout(draftTimer.current); draftTimer.current = setTimeout(() => send({ art: "entwurf", daten: d }), 400); }}
       onPublish={(d) => send({ art: "speichern", daten: d })}
-      overrides={{ headerActions: ({ children }) => <>{children}<button className="t-tool" onClick={() => setMode("auswahl")}>Auswählen</button><button className="t-tool" onClick={() => setMode("vorschau")}>Vorschau</button></>, drawerItem: DrawerItem }} />
+      overrides={{ headerActions: ({ children }) => <>{children}<button className="t-tool" onClick={() => setMode("auswahl")}>Auswählen</button><button className="t-tool" onClick={() => setMode("vorschau")}>Vorschau</button></>, drawerItem: DrawerItem }} /></DataCtx.Provider>
   );
 }
 

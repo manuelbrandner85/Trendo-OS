@@ -46,7 +46,8 @@ public static partial class WebDesignCheck
     public static IReadOnlyList<WebsiteFinding> CheckData(string json, string projectDir)
     {
         var f = new List<WebsiteFinding>();
-        if (JsonNode.Parse(json) is not JsonObject doc) return [new("SEO", "Fehler", "Die Seitendaten sind unlesbar.", "data")];
+        if (JsonNode.Parse(json) is not JsonObject raw) return [new("SEO", "Fehler", "Die Seitendaten sind unlesbar.", "data")];
+        var doc = WebDesignComponents.Expand(raw); // geprüft wird, was Besucher sehen: Komponenten mit ihren Überschreibungen
         var blocks = new List<JsonObject>();
         void Walk(JsonNode? n)
         {
@@ -57,9 +58,9 @@ public static partial class WebDesignCheck
         var root = doc["root"]?["props"] as JsonObject;
         if (string.IsNullOrWhiteSpace(root?["title"]?.ToString())) f.Add(new("SEO", "Fehler", "Der Seite fehlt ein Titel.", "title"));
         if (string.IsNullOrWhiteSpace(root?["description"]?.ToString())) f.Add(new("SEO", "Hinweis", "Die Seite hat keine Beschreibung für Suchmaschinen.", "description"));
-        if (root?["ink"]?.ToString() is { Length: 7 } ink && root["paper"]?.ToString() is { Length: 7 } paper && WebsiteColor.Contrast(ink, paper) < 4.5)
-            f.Add(new("Barrierefreiheit", "Fehler", $"Text auf dem Hintergrund ist zu schwach ({WebsiteColor.Contrast(ink, paper):0.0}:1).", "contrast"));
-        var heroes = blocks.Count(b => b["type"]!.ToString() == "Kopfbereich");
+        f.AddRange(WebDesignAssets.Check(projectDir, doc)); // Z7: genutzte Medien brauchen Herkunft und Lizenz
+        if (root is not null) f.AddRange(WebDesignTokens.Check(root)); // W6: Kontrast im hellen und, wenn eingeschaltet, im dunklen Satz
+        var heroes = blocks.Count(b => b["type"]!.ToString() is "Kopfbereich" or "Hero"); // beide tragen die Hauptüberschrift
         if (heroes == 0) f.Add(new("SEO", "Fehler", "Die Seite hat keine Hauptüberschrift (Kopfbereich fehlt).", "h1"));
         if (heroes > 1) f.Add(new("SEO", "Fehler", $"Die Seite hat {heroes} Hauptüberschriften, es sollte eine sein.", "h1"));
         var previous = 1;
@@ -70,6 +71,20 @@ public static partial class WebDesignCheck
             {
                 if (level > previous + 1) f.Add(new("Barrierefreiheit", "Fehler", $"Überschrift „{id}“ springt von Ebene {previous} auf {level}.", "heading-order"));
                 previous = level;
+            }
+            // Z1: Bilder in Galerie und Hero brauchen ebenfalls Datei und Beschreibung
+            var extra = t switch
+            {
+                "Galerie" => (p?["bilder"] as JsonArray)?.OfType<JsonObject>().Select((x, i) => (Src: x["src"]?.ToString() ?? "", Alt: x["alt"]?.ToString() ?? "", Name: $"{id}, Bild {i + 1}")).ToList(),
+                "Hero" when !string.IsNullOrEmpty(p?["bild"]?.ToString()) => [(p!["bild"]!.ToString(), p["bildAlt"]?.ToString() ?? "", id)],
+                _ => null,
+            };
+            foreach (var (src, alt, name) in extra ?? [])
+            {
+                if (src.Length == 0) { f.Add(new("Links", "Fehler", $"„{name}“ hat keine Datei.", "image-empty")); continue; }
+                if (string.IsNullOrWhiteSpace(alt)) f.Add(new("Barrierefreiheit", "Fehler", $"„{name}“ hat keinen Alternativtext.", "alt"));
+                if (!WebDesign.IsSafeImagePath(src)) f.Add(new("Links", "Fehler", $"„{name}“: „{src}“ ist keine Bilddatei, die in den Export darf.", "image-unsafe"));
+                else if (!IsLocalFile(projectDir, src)) f.Add(new("Links", "Fehler", $"„{name}“: Die Datei „{src}“ liegt nicht im Projekt.", "missing"));
             }
             if (t == "Bild")
             {
