@@ -1,6 +1,6 @@
 # Nachbau Spiele-Studio mit KI: Anforderungen
 
-Stand: 14.11.2026. Status: Stufe 1 (D1 bis D4, T-0610) in main; Stufe 2 (E2 bis E4, T-0640) in main seit 13.11.2026; Stufe 3 (E1, E5 bis E7, D5) gebaut auf `claude/T-0650-spiele-stufe3`, noch nicht in main.
+Stand: 14.11.2026. Status: Stufe 1 (D1 bis D4, T-0610) in main; Stufe 2 (E2 bis E4, T-0640) in main seit 13.11.2026; Stufe 3 (E1, E5 bis E7, D5, T-0650) in main seit 14.11.2026.
 Iststand der Stufe-3-Zeilen: Stand nach T-0650, belegt durch Tests mit Testersatz für Engine, KI und Netz; nicht an einer echten Engine oder mit echtem Wikipedia-Abruf gelaufen.
 Iststand D1 bis D4: Stand nach T-0610, belegt durch Tests, App nicht von Hand bedient. Iststand aller anderen Zeilen: geprüft gegen `origin/main` (023a6d742) per Stichwortsuche und Lesen einzelner Dateien, nicht durch Bedienen der App.
 
