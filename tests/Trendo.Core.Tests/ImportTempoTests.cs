@@ -918,6 +918,7 @@ public class ImportTempoTests
             var f = Path.Combine(d, "a.ods");
             ZipTo(f, ("content.xml", OdsContent($"""<t:table-row t:number-rows-repeated="1000"><t:table-cell o:value-type="string"><x:p>{Comment(100_000)}</x:p></t:table-cell></t:table-row>""")));
             var s = SheetFiles.ReadOds(f).Sheets[0];
+            Assert.Equal(Comment(100_000), s.Raw(0, 0));
             Assert.Same(s.Raw(0, 0), s.Raw(999, 0));
         }
         finally { Directory.Delete(d, true); }
@@ -969,6 +970,31 @@ public class ImportTempoTests
             var normal = DocxFormat.Read(Make("<w:p><w:r><w:t>Außen </w:t></w:r><w:r><w:txbxContent><w:p><w:r><w:t>innen</w:t></w:r></w:p></w:txbxContent></w:r></w:p>"));
             Assert.Equal("Außen innen innen", normal.Page.Footer); // Textfeld-Absatz zählt wie bisher auch einzeln
             AssertBad(() => DocxFormat.Read(Make(Nest(200, "<w:p>", "</w:p>", $"<w:r><w:t>{Comment(10_000)}</w:t></w:r>"))));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    static string OdpWith(string dir, string frame)
+    {
+        const string Dr = "urn:oasis:names:tc:opendocument:xmlns:drawing:1.0", Svg = "urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0";
+        var f = Path.Combine(dir, Guid.NewGuid().ToString("N") + ".odp");
+        ZipTo(f, ("content.xml", $"""<o:document-content xmlns:o="{ONs}" xmlns:draw="{Dr}" xmlns:svg="{Svg}" xmlns:t="{TNs}" xmlns:x="{XNs}"><o:body><o:presentation><draw:page>{frame}</draw:page></o:presentation></o:body></o:document-content>"""));
+        return f;
+    }
+
+    [Fact(DisplayName = "T-0505: ODP – verschachtelte Absätze in vielen Tabellenzellen und Listen teilen sich ein Budget je Datei")]
+    public void Odp_text_budget_per_file()
+    {
+        var d = Tmp();
+        try
+        {
+            var deepP = Nest(200, "<x:p>", "</x:p>", Comment(4_000));
+            var cells = string.Concat(Enumerable.Repeat($"<t:table-cell>{deepP}</t:table-cell>", 40));
+            AssertBad(() => SlideFiles.ReadOdp(OdpWith(d, $"""<draw:frame><t:table><t:table-row>{cells}</t:table-row></t:table></draw:frame>""")));
+            var deepList = Nest(80, "<x:list><x:list-item><x:p>", "</x:p></x:list-item></x:list>", Comment(20_000));
+            AssertBad(() => SlideFiles.ReadOdp(OdpWith(d, $"""<draw:frame><draw:text-box>{deepList}</draw:text-box></draw:frame>""")));
+            var normal = SlideFiles.ReadOdp(OdpWith(d, """<draw:frame><t:table><t:table-row><t:table-cell><x:p>A</x:p></t:table-cell><t:table-cell><x:p>B</x:p><x:p>C</x:p></t:table-cell></t:table-row></t:table></draw:frame>"""));
+            Assert.Equal(["A", "B\nC"], normal.Slides.Single().Shapes.Single().Table![0]);
         }
         finally { Directory.Delete(d, true); }
     }

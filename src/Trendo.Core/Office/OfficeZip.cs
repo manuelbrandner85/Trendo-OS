@@ -18,12 +18,27 @@ public static class OfficeZip
     /// <summary>Echte Excel-Teile sind kaum 30 Ebenen tief. Der XML-Baum läuft beim Aufbau je Knoten alle Eltern ab, und sein Text wird rekursiv gelesen: Sehr tiefes XML kostet sonst quadratische Zeit und kann das ganze Programm beenden.</summary>
     public const int MaxXmlDepth = 256;
     /// <summary>Höchstzahl der Knoten (Elemente, Attribute, Texte) aller XML-Bäume einer Datei zusammen: Ein Knoten belegt ein Vielfaches seiner Bytes,
-    /// stark gepackte oder mehrfach verwiesene Teile füllen sonst den Speicher oder werden endlos neu gelesen.</summary>
-    public const int MaxXmlNodes = 20_000_000;
+    /// stark gepackte oder mehrfach verwiesene Teile füllen sonst den Speicher oder werden endlos neu gelesen.
+    /// Große echte ODS-Tabellen brauchen etwa 6 Knoten je gefüllter Zelle; 40 Mio. reichen für rund 6,6 Mio. Zellen.</summary>
+    public const int MaxXmlNodes = 40_000_000;
 
     /// <summary>Gezählte Knoten je geöffneter Datei.</summary>
     static readonly System.Runtime.CompilerServices.ConditionalWeakTable<ZipArchive, System.Runtime.CompilerServices.StrongBox<long>> NodeCount = new();
     internal static System.Runtime.CompilerServices.StrongBox<long> NodesOf(ZipArchive z) => NodeCount.GetValue(z, _ => new(0));
+
+    /// <summary>Zeichen, die aus Absatztexten einer Datei zusammen entstehen dürfen: das Achtfache ihres entpackten Inhalts.
+    /// Verschachtelte Absätze werden wie bisher einzeln gelesen; nur hundertfache Verschachtelung überschreitet das.</summary>
+    static readonly System.Runtime.CompilerServices.ConditionalWeakTable<ZipArchive, System.Runtime.CompilerServices.StrongBox<long>> TextLeft = new();
+    static System.Runtime.CompilerServices.StrongBox<long> TextOf(ZipArchive z) => TextLeft.GetValue(z, a => new(8L * a.Entries.Sum(e => e.Length) + 1_000_000));
+
+    /// <summary>Bucht einen gelesenen Text auf das Textbudget der Datei.</summary>
+    internal static string Charge(this ZipArchive z, string text)
+    {
+        var left = TextOf(z);
+        left.Value -= text.Length;
+        if (left.Value < 0) throw Bad("verschachtelte Absätze würden den Text vervielfachen.");
+        return text;
+    }
 
     internal static InvalidDataException Bad(string why) => new($"Die Datei wurde aus Sicherheitsgründen nicht geöffnet: {why}");
 
@@ -86,17 +101,10 @@ public static class OfficeZip
 
     internal static IEnumerable<XElement> Outermost(this XElement root, XName name) => root.Outermost(e => e.Name == name);
 
-    /// <summary>Absatztexte wie bisher, auch verschachtelte (Textfelder) einzeln – aber zusammen höchstens das Achtfache des Gesamttexts von <paramref name="part"/>.
-    /// Mehr entsteht nur, wenn eine präparierte Datei Absätze hundertfach ineinander steckt.</summary>
-    internal static IEnumerable<string> WithinTextBudget(this IEnumerable<string> texts, XElement part)
+    /// <summary>Absatztexte wie bisher, auch verschachtelte (Textfelder) einzeln – gebucht auf das gemeinsame Textbudget der Datei.</summary>
+    internal static IEnumerable<string> WithinTextBudget(this IEnumerable<string> texts, ZipArchive z)
     {
-        var left = 8L * part.Value.Length + 1_000_000;
-        foreach (var t in texts)
-        {
-            left -= t.Length;
-            if (left < 0) throw Bad("verschachtelte Absätze würden den Text vervielfachen.");
-            yield return t;
-        }
+        foreach (var t in texts) yield return z.Charge(t);
     }
 
     /// <summary>Begrenzt einen XML-Baum auf <see cref="MaxXmlDepth"/> Ebenen unter der Startstelle und <see cref="MaxXmlNodes"/> Knoten.</summary>

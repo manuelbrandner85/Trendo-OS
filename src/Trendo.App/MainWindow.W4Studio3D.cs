@@ -424,6 +424,7 @@ public partial class MainWindow
         try
         {
             _scene = Scene3D.FromJson(_core.Projects.ReadFile(id, "3d/szene.json"));
+            _sceneEpoch++;
             _scene.ProjectId = id;
             _selId = _scene.Parts.FirstOrDefault()?.Id;
             _undo3d.Clear();
@@ -439,6 +440,7 @@ public partial class MainWindow
         Keep(objName);
         if (_scene.Parts.Count > 0) Push();
         _scene = new Scene3D();
+        _sceneEpoch++;
         _selId = null;
         _aiParts = null;
         _pngKey = "";
@@ -533,15 +535,17 @@ public partial class MainWindow
         if (ext is not ".obj" and not ".stl" and not ".glb" and not ".gltf" and not ".fbx") { Say("Trendo öffnet OBJ, STL, GLB, glTF und FBX. Blend geht über Blender.", "3d"); return Task.CompletedTask; }
         // Eine Warteschlange: Mehrere Dateien kommen in der gewählten Reihenfolge an, auch wenn eine davon im Hintergrund gelesen wird.
         // Ist nichts in Arbeit, läuft ein kleiner Import wie bisher sofort durch.
-        return _importTail = ImportAfter(_importTail, path, ext, displayName, new FileInfo(path).Length >= ImportInBackgroundBytes);
+        // Projekt und Einheit gelten so, wie sie beim Auswählen der Datei waren – auch wenn sie in der Schlange warten muss.
+        return _importTail = ImportAfter(_importTail, path, ext, displayName, new FileInfo(path).Length >= ImportInBackgroundBytes, _importUnit, _sceneEpoch);
     }
 
     private Task _importTail = Task.CompletedTask;
+    /// <summary>Zählt Projektwechsel und neue Szenen (nicht Rückgängig): Ein Import, der danach fertig wird, gehört nicht mehr hierher.</summary>
+    private int _sceneEpoch;
 
-    private async Task ImportAfter(Task previous, string path, string ext, string? displayName, bool large)
+    private async Task ImportAfter(Task previous, string path, string ext, string? displayName, bool large, string unit, int epoch)
     {
         try { await previous; } catch { } // Fehler des vorigen Imports sind schon gemeldet
-        var unit = _importUnit; var scene = _scene;
         try
         {
             List<Part3D> parts;
@@ -549,9 +553,9 @@ public partial class MainWindow
             {
                 Say("Große Datei wird im Hintergrund gelesen …", "3d");
                 parts = await Task.Run(() => Mesh3D.ImportParts(path, unit));
-                if (!ReferenceEquals(scene, _scene)) { Say("Während des Lesens wurde das Projekt gewechselt; die Datei wurde nicht eingefügt.", "3d"); return; }
             }
             else parts = Mesh3D.ImportParts(path, unit);
+            if (epoch != _sceneEpoch) { Say($"„{Path.GetFileName(path)}“ wurde nicht eingefügt: Inzwischen ist ein anderes Projekt oder eine neue Szene offen.", "3d"); return; }
             AddImported(parts, ext, displayName);
         }
         catch (Exception ex) { Say(ex.Message, "3d"); }

@@ -9,6 +9,7 @@ public static partial class SlideFiles
     // ================= PPTX lesen =================
     sealed class Pkg(ZipArchive z)
     {
+        public ZipArchive Zip => z;
         public XDocument? Load(string name) { var e = z.GetEntry(name); if (e is null) return null; return e.LoadXml(); }
         public byte[]? Bytes(string name) { var e = z.GetEntry(name); if (e is null) return null; return e.ReadBytes(); }
         static string Dir(string f) { var i = f.LastIndexOf('/'); return i < 0 ? "" : f[..i]; }
@@ -226,7 +227,7 @@ public static partial class SlideFiles
             {
                 if (el.Name == Pres + "notes")
                 {
-                    slide.Notes = string.Join('\n', el.Descendants(Dr + "text-box").SelectMany(b => b.Descendants(Tx + "p")).Select(p => p.Value).WithinTextBudget(el)).Trim();
+                    slide.Notes = string.Join('\n', el.Descendants(Dr + "text-box").SelectMany(b => b.Descendants(Tx + "p")).Select(p => p.Value).WithinTextBudget(z)).Trim();
                     continue;
                 }
                 var s = new SlideShape { X = Cm((string?)el.Attribute(Svg + "x")), Y = Cm((string?)el.Attribute(Svg + "y")), W = Cm((string?)el.Attribute(Svg + "width")), H = Cm((string?)el.Attribute(Svg + "height")) };
@@ -238,11 +239,11 @@ public static partial class SlideFiles
                     if (el.Element(Tb + "table") is { } tbl)
                     {
                         s.Kind = ShapeKind.Tabelle; s.FontSize = 16;
-                        s.Table = tbl.Descendants(Tb + "table-row").Select(r => r.Elements(Tb + "table-cell").Select(c => string.Join('\n', c.Descendants(Tx + "p").Select(p => p.Value).WithinTextBudget(c))).ToList()).ToList();
+                        s.Table = tbl.Descendants(Tb + "table-row").Select(r => r.Elements(Tb + "table-cell").Select(c => string.Join('\n', c.Descendants(Tx + "p").Select(p => p.Value).WithinTextBudget(z))).ToList()).ToList();
                     }
                     else if (el.Element(Dr + "object") is { } obj && ReadOdpChart(pkg, (string?)obj.Attribute(Xl + "href"), s)) { }
                     else if (el.Element(Dr + "image") is { } img && (string?)img.Attribute(Xl + "href") is { } href && pkg.Bytes(href.TrimStart('.', '/')) is { } bytes) { s.Kind = ShapeKind.Bild; s.Image = bytes; }
-                    else if (el.Element(Dr + "text-box") is { } box) FillText(s, box, cls);
+                    else if (el.Element(Dr + "text-box") is { } box) FillText(s, box, cls, z);
                     else continue;
                 }
                 else if (el.Name.LocalName is "custom-shape" or "rect" or "ellipse")
@@ -251,7 +252,7 @@ public static partial class SlideFiles
                     var gp = Props((string?)el.Attribute(Dr + "style-name"), "graphic-properties");
                     var filled = (string?)gp?.Attribute(Dr + "fill") is "solid" or null && gp?.Attribute(Dr + "fill-color") is not null;
                     s.Role ??= RoleOf((string?)el.Attribute(Dr + "name"));
-                    FillText(s, el, s.Role switch { "title" => "title", "sub" => "subtitle", "body" or "body2" => "outline", _ => null });
+                    FillText(s, el, s.Role switch { "title" => "title", "sub" => "subtitle", "body" or "body2" => "outline", _ => null }, z);
                     s.Kind = el.Name.LocalName == "ellipse" || type.Contains("ellipse") ? ShapeKind.Ellipse : type.Contains("arrow") ? ShapeKind.Pfeil : filled && s.Role is null ? ShapeKind.Rechteck : ShapeKind.Text;
                     if (filled) s.Fill = ((string)gp!.Attribute(Dr + "fill-color")!).ToUpperInvariant();
                     if (s.Kind != ShapeKind.Text) { s.Bullets = false; if (s.Role is null) s.Align = Align.Center; }
@@ -284,14 +285,14 @@ public static partial class SlideFiles
         if (pkg.Load(dir + "/content.xml") is not { } c || c.Descendants(Ch + "chart").FirstOrDefault() is not { } chart) return false;
         s.Kind = ShapeKind.Diagramm;
         s.ChartKind = ((string?)chart.Attribute(Ch + "class") ?? "") switch { "chart:circle" or "chart:ring" => ChartKind.Kreis, "chart:line" or "chart:area" or "chart:scatter" => ChartKind.Linie, _ => ChartKind.Balken };
-        s.Text = chart.Element(Ch + "title") is { } title ? string.Concat(title.Descendants(Tx + "p").Select(p => p.Value).WithinTextBudget(title)) : "";
+        s.Text = chart.Element(Ch + "title") is { } title ? string.Concat(title.Descendants(Tx + "p").Select(p => p.Value).WithinTextBudget(pkg.Zip)) : "";
         var rows = chart.Descendants(Tb + "table-rows").FirstOrDefault()?.Elements(Tb + "table-row").ToList() ?? [];
         s.ChartLabels = rows.Select(r => r.Elements(Tb + "table-cell").FirstOrDefault()?.Descendants(Tx + "p").FirstOrDefault()?.Value ?? "").ToList();
         s.ChartValues = rows.Select(r => double.TryParse((string?)r.Elements(Tb + "table-cell").Skip(1).FirstOrDefault()?.Attribute(Od + "value"), NumberStyles.Float, CultureInfo.InvariantCulture, out var d) ? d : 0).ToList();
         return true;
     }
 
-    static void FillText(SlideShape s, XElement box, string? cls)
+    static void FillText(SlideShape s, XElement box, string? cls, ZipArchive z)
     {
         var lines = new List<string>(); var bullets = false;
         foreach (var el in box.Elements())
@@ -302,10 +303,10 @@ public static partial class SlideFiles
                 foreach (var item in el.Descendants(Tx + "list-item"))
                 {
                     var depth = item.Ancestors(Tx + "list").TakeWhile(a => a != box).Count();
-                    foreach (var p in item.Elements(Tx + "p")) lines.Add((depth > 1 ? "\t" : "") + p.Value);
+                    foreach (var p in item.Elements(Tx + "p")) lines.Add((depth > 1 ? "\t" : "") + z.Charge(p.Value));
                 }
             }
-            else if (el.Name == Tx + "p" || el.Name == Tx + "h") lines.Add(el.Value);
+            else if (el.Name == Tx + "p" || el.Name == Tx + "h") lines.Add(z.Charge(el.Value));
         }
         s.Kind = ShapeKind.Text; s.Text = string.Join('\n', lines); s.Bullets = bullets || cls == "outline";
         s.FontSize = cls switch { "title" => 36, "subtitle" => 22, _ => 20 }; s.Bold = cls == "title";

@@ -424,10 +424,7 @@ public static partial class Mesh3D
             var count = BitConverter.ToUInt32(head, 80);
             if (length == 84L + count * 50L && count > 0 && !LooksAscii(head.AsSpan(0, got).ToArray()))
             {
-                if (count > 2L * maxTriangles) throw TooBig(maxTriangles); // grob vorab; genau zählen nur die echten (nicht entarteten) Dreiecke
-                var m = ReadStlBinary(File.ReadAllBytes(path), (int)count, scale);
-                if (m.Triangles > maxTriangles) throw TooBig(maxTriangles);
-                return m;
+                return ReadStlBinary(path, count, scale, maxTriangles); // Datenstrom: Es zählen nur echte (nicht entartete) Dreiecke, und es wird nie mehr gelesen als nötig
             }
         }
         return ReadStlAscii(path, scale, maxTriangles);
@@ -439,17 +436,18 @@ public static partial class Mesh3D
         return head.Contains("facet", StringComparison.Ordinal);
     }
 
-    static Mesh ReadStlBinary(byte[] bytes, int count, double scale)
+    static Mesh ReadStlBinary(string path, uint count, double scale, int maxTriangles)
     {
         var m = Gray();
-        var o = 84;
-        for (var i = 0; i < count; i++)
+        using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1 << 16);
+        fs.Position = 84;
+        var rec = new byte[50];
+        for (var i = 0u; i < count; i++)
         {
-            o += 12;
-            Vec3 P() { var v = new Vec3(BitConverter.ToSingle(bytes, o), BitConverter.ToSingle(bytes, o + 4), BitConverter.ToSingle(bytes, o + 8)); o += 12; return v * scale; }
-            var a = P(); var b = P(); var c = P();
-            o += 2;
-            m.Add(a, b, c);
+            fs.ReadExactly(rec);
+            Vec3 P(int o) => new Vec3(BitConverter.ToSingle(rec, o), BitConverter.ToSingle(rec, o + 4), BitConverter.ToSingle(rec, o + 8)) * scale;
+            m.Add(P(12), P(24), P(36));
+            if (m.Triangles > maxTriangles) throw TooBig(maxTriangles);
         }
         return m;
     }
@@ -506,7 +504,12 @@ public static partial class Mesh3D
             var comma = uri.IndexOf(',');
             bin = Convert.FromBase64String(uri[(comma + 1)..]);
         }
-        else bin = File.ReadAllBytes(FileBeside(Path.GetDirectoryName(path)!, Uri.UnescapeDataString(uri)) ?? throw new InvalidOperationException("Zur glTF-Datei fehlt die Binärdatei daneben."));
+        else
+        {
+            var bp = FileBeside(Path.GetDirectoryName(path)!, Uri.UnescapeDataString(uri)) ?? throw new InvalidOperationException("Zur glTF-Datei fehlt die Binärdatei daneben.");
+            if (new FileInfo(bp).Length > MaxGltfBytes) throw new InvalidDataException("Die Datei ist zu groß: Sie verlangt mehr Arbeit, als Trendo beim Einlesen zulässt.");
+            bin = File.ReadAllBytes(bp);
+        }
         return ParseGltf(json, bin, Path.GetDirectoryName(path)!, maxTriangles);
     }
 
