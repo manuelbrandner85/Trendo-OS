@@ -77,7 +77,10 @@ public static partial class WebDesignFigma
     static double Y(JsonObject n) => Num(n["absoluteBoundingBox"]?["y"]);
     static double X(JsonObject n) => Num(n["absoluteBoundingBox"]?["x"]);
 
-    static bool HasImageFill(JsonObject n) => (n["fills"] as JsonArray ?? []).OfType<JsonObject>().Any(f => Str(f["type"]) == "IMAGE" && f["visible"]?.GetValue<bool>() != false);
+    static bool HasImageFill(JsonObject n) => (n["fills"] as JsonArray ?? []).OfType<JsonObject>().Any(f => Str(f["type"]) == "IMAGE" && !(f["visible"] is JsonValue v && (!v.TryGetValue(out bool b) || !b)));
+
+    /// <summary>Dateiname für ein Figma-Bild: umkehrbar aus der Knoten-id und dem Datei-Schlüssel, damit sich Bilder nicht gegenseitig überschreiben.</summary>
+    public static string ImageName(string fileKey, string nodeId) => $"figma-{fileKey[..Math.Min(8, fileKey.Length)]}-{nodeId.Replace(':', '-').Replace(';', '_')}.png";
 
     static void Collect(JsonObject n, List<JsonObject> leaves, ref int count, int depth)
     {
@@ -85,7 +88,7 @@ public static partial class WebDesignFigma
         foreach (var c in (n["children"] as JsonArray ?? []).OfType<JsonObject>())
         {
             if (++count > MaxNodes) return;
-            if (c["visible"] is JsonValue v && v.TryGetValue(out bool vis) && !vis) continue;
+            if (c["visible"] is JsonValue v && (!v.TryGetValue(out bool vis) || !vis)) continue; // falscher Typ: wie unsichtbar behandeln
             var type = Str(c["type"]);
             if (type == "TEXT" || HasImageFill(c)) leaves.Add(c);
             else Collect(c, leaves, ref count, depth + 1);
@@ -122,7 +125,7 @@ public static partial class WebDesignFigma
     /// <summary>Nur Bild-Adressen, die Figma für Exporte nutzt (https, bekannte Speicher-Hosts).</summary>
     public static bool IsImageUrl(string? url) =>
         Uri.TryCreate(url, UriKind.Absolute, out var u) && u.Scheme == Uri.UriSchemeHttps && u.UserInfo.Length == 0 &&
-        (u.Host.EndsWith(".amazonaws.com", StringComparison.OrdinalIgnoreCase) || u.Host.EndsWith(".figma.com", StringComparison.OrdinalIgnoreCase) || u.Host.Equals("figma.com", StringComparison.OrdinalIgnoreCase));
+        (u.Host.StartsWith("figma-alpha-api.s3.", StringComparison.OrdinalIgnoreCase) && u.Host.EndsWith(".amazonaws.com", StringComparison.OrdinalIgnoreCase) || u.Host.EndsWith(".figma.com", StringComparison.OrdinalIgnoreCase)) && u.IsDefaultPort;
 
     /// <summary>Knoten-ids für die Bild-Abfrage (nur gültige Form).</summary>
     public static string IdsParam(IEnumerable<string> ids) => string.Join(",", ids.Where(i => NodeIdPattern().IsMatch(i)).Select(Uri.EscapeDataString));

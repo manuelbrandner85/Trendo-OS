@@ -18,10 +18,28 @@ public static class WebDesignImport
         if (p.Contains("://", StringComparison.Ordinal) || p.StartsWith("www.", StringComparison.OrdinalIgnoreCase) || p.StartsWith("//", StringComparison.Ordinal) || p.StartsWith(@"\\", StringComparison.Ordinal))
             return "Eine Internet-Adresse ist als Quelle nicht erlaubt. Trendo importiert nur eigene Dateien auf diesem PC, keine fremden Websites.";
         if (!Path.IsPathFullyQualified(p)) return "Bitte den vollständigen Pfad einer Datei auf diesem PC angeben.";
+        if (LocalPathError(p) is { } lerr) return lerr;
         if (Path.GetExtension(p).ToLowerInvariant() is not (".html" or ".htm")) return "Nur HTML-Dateien (.html, .htm) lassen sich importieren.";
         if (!File.Exists(p)) return "Diese Datei gibt es nicht.";
         if ((File.GetAttributes(p) & FileAttributes.ReparsePoint) != 0) return "Verknüpfungen werden nicht importiert. Bitte die Datei selbst wählen.";
         if (new FileInfo(p).Length > MaxBytes) return "Die Datei ist zu groß (über 5 MB).";
+        return null;
+    }
+
+    /// <summary>Nur Dateien auf einem lokalen Laufwerk: Netzwerkpfade (\\server, \\?\UNC, /\server …) und Netzlaufwerke werden abgelehnt,
+    /// auch wenn sie erst nach dem Auflösen des Pfads als solche erkennbar sind (sonst baute Windows eine Verbindung zum fremden Server auf).</summary>
+    public static string? LocalPathError(string path)
+    {
+        string full;
+        try { full = Path.GetFullPath(path); } catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { return "Dieser Pfad ist ungültig."; }
+        if (full.StartsWith(@"\\", StringComparison.Ordinal) || full.StartsWith("//", StringComparison.Ordinal) || full.StartsWith(@"\??\", StringComparison.Ordinal) || !OperatingSystem.IsWindows() && !full.StartsWith('/'))
+            return "Netzwerkpfade sind nicht erlaubt. Bitte eine Datei auf diesem PC wählen.";
+        if (OperatingSystem.IsWindows())
+        {
+            if (full.Length < 3 || full[1] != ':' || !char.IsLetter(full[0])) return "Bitte eine Datei auf einem Laufwerk dieses PCs wählen.";
+            try { if (new DriveInfo(full[..3]).DriveType is DriveType.Network or DriveType.NoRootDirectory) return "Netzlaufwerke sind nicht erlaubt. Bitte die Datei zuerst auf diesen PC kopieren."; }
+            catch (Exception e) when (e is ArgumentException or IOException) { return "Dieses Laufwerk ist nicht erreichbar."; }
+        }
         return null;
     }
 
@@ -44,7 +62,7 @@ public static class WebDesignImport
         if (r.Content.Count == 0) return new(null, "In der Datei steht kein übernehmbarer Inhalt.", report, 0, 0);
         var name = titel?.Trim() is { Length: > 0 } t ? t : TitleFrom(File.ReadAllText(sourceFile)) ?? Path.GetFileNameWithoutExtension(sourceFile);
         var slug = WebDesignSite.SlugOf(Path.GetFileNameWithoutExtension(sourceFile));
-        if (slug is "" or "index" || WebDesignSite.CheckSlug(slug) is not null) slug = "import";
+        if (slug is "" or "index" || WebDesignSite.CheckSlug(slug) is not null) slug = "importierte-seite"; // z. B. index.html, de.html, sitemap.html
         var pages = WebDesignSite.Pages(projectDir);
         var baseSlug = slug; for (var i = 2; pages.Contains(slug) || WebDesignCms.Load(projectDir).Any(c => c.Id == slug); i++) slug = $"{baseSlug}-{i}";
         if (WebDesignSite.Create(projectDir, slug, name) is { } cerr) return new(null, cerr, report, r.Mapped, r.HtmlBlocks);

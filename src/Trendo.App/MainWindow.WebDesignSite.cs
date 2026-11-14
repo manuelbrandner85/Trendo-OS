@@ -24,6 +24,7 @@ public partial class MainWindow
     public void WebDesignOpenPage(string adresse, string? sprache = null)
     {
         WebDesignKeepDraft("Vor Seitenwechsel");
+        WebDesignCodeClose(); // der gezeigte Code gehört zur bisherigen Seite
         var err = WebDesignSite.Activate(WebDesignDir, adresse, sprache);
         if (err is not null) { _wdSiteNote = err; Show("dev"); return; }
         _wdVariant = null; WebDesignClearSelection();

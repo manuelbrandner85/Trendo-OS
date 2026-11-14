@@ -51,20 +51,33 @@ public static partial class SecurityCenter
             try
             {
                 if (new FileInfo(f).Length > maxBytes) continue;
-                var n = 0;
-                foreach (var line in File.ReadLines(f))
-                {
-                    n++;
-                    foreach (Match m in Pw().Matches(line)) res.Add(new(f, n, "Passwort", Mask(m.Groups[2].Value)));
-                    foreach (Match m in Key().Matches(line)) res.Add(new(f, n, "Schlüssel", Mask(m.Groups[2].Value)));
-                    foreach (Match m in Known().Matches(line)) if (!res.Any(r => r.File == f && r.Line == n)) res.Add(new(f, n, "Schlüssel", Mask(m.Value)));
-                    foreach (Match m in Iban().Matches(line)) if (IbanOk(m.Value)) res.Add(new(f, n, "IBAN", Mask(m.Value.Replace(" ", ""))));
-                    foreach (Match m in Card().Matches(line)) { var d = new string(m.Value.Where(char.IsDigit).ToArray()); if (d.Length is >= 13 and <= 19 && Luhn(d)) res.Add(new(f, n, "Kartennummer", Mask(d))); }
-                }
+                ScanLines(f, File.ReadLines(f), res);
             }
             catch (IOException) { } catch (UnauthorizedAccessException) { }
         }
         return res;
+    }
+
+    /// <summary>Text prüfen (z. B. Seitendaten vor dem Export, K7). Gleiche Muster wie <see cref="ScanFolder"/>; Treffer maskiert.</summary>
+    public static IReadOnlyList<PrivacyFinding> ScanText(string name, string text)
+    {
+        var res = new List<PrivacyFinding>();
+        ScanLines(name, text.Split('\n'), res);
+        return res;
+    }
+
+    static void ScanLines(string f, IEnumerable<string> lines, List<PrivacyFinding> res)
+    {
+        var n = 0;
+        foreach (var line in lines)
+        {
+            n++;
+            foreach (Match m in Pw().Matches(line)) res.Add(new(f, n, "Passwort", Mask(m.Groups[2].Value)));
+            foreach (Match m in Key().Matches(line)) res.Add(new(f, n, "Schlüssel", Mask(m.Groups[2].Value)));
+            foreach (Match m in Known().Matches(line)) if (!res.Any(r => r.File == f && r.Line == n)) res.Add(new(f, n, "Schlüssel", Mask(m.Value)));
+            foreach (Match m in Iban().Matches(line)) if (IbanOk(m.Value)) res.Add(new(f, n, "IBAN", Mask(m.Value.Replace(" ", ""))));
+            foreach (Match m in Card().Matches(line)) { var d = new string(m.Value.Where(char.IsDigit).ToArray()); if (d.Length is >= 13 and <= 19 && Luhn(d)) res.Add(new(f, n, "Kartennummer", Mask(d))); }
+        }
     }
 
     public static string Mask(string s) => s.Length <= 4 ? "****" : s[..2] + new string('•', Math.Min(8, s.Length - 4)) + s[^2..];

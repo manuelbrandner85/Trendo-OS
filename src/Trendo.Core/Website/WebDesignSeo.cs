@@ -16,6 +16,7 @@ public static class WebDesignSeo
         var pages = WebDesignSite.Pages(dir);
         var cms = WebDesignCms.Load(dir);
         var titles = new Dictionary<string, string>();
+        bool needsLogin = false, hasLogin = false;
         foreach (var p in pages)
         {
             JsonObject? props = null;
@@ -28,6 +29,16 @@ public static class WebDesignSeo
             else if (title.Length > TitleMax) res.Add(new($"{name}: Titel ist mit {title.Length} Zeichen lang; Suchmaschinen zeigen etwa {TitleMax}.", "Hinweis"));
             if (desc.Length == 0) res.Add(new($"{name}: keine Beschreibung für Suchmaschinen.", "Hinweis"));
             else if (desc.Length > DescriptionMax) res.Add(new($"{name}: Beschreibung ist mit {desc.Length} Zeichen lang; gezeigt werden etwa {DescriptionMax}.", "Hinweis"));
+            // K7: Geheimnisse in den Seitendaten und Daten-Bausteine ohne gültige Tabelle
+            var raw = WebDesign.LoadFile(WebDesignSite.FileOf(dir, p, s.Standardsprache, s.Standardsprache), p);
+            foreach (var secret in WebDesignData.CheckSecrets(name, raw)) res.Add(new(secret, "Fehler"));
+            if (JsonNode.Parse(raw) is JsonObject pageDoc) foreach (var dl in Blocks(pageDoc, "Datenliste"))
+            {
+                if (!System.Text.RegularExpressions.Regex.IsMatch(dl["tabelle"]?.ToString() ?? "", "^[a-z][a-z0-9_]{0,29}$")) res.Add(new($"{name}: Datenliste braucht eine Tabelle aus Kleinbuchstaben, Ziffern und _ (z. B. bestellungen).", "Fehler"));
+                if ((dl["felder"] as JsonArray ?? []).Count == 0) res.Add(new($"{name}: Datenliste ohne Felder.", "Fehler"));
+                if (dl["nurAngemeldet"]?.ToString() == "ja") needsLogin = true;
+            }
+            if (JsonNode.Parse(raw) is JsonObject pd2 && Blocks(pd2, "Anmeldung").Any()) hasLogin = true;
             if (title.Length > 0 && titles.TryGetValue(title, out var other)) res.Add(new($"{name} und {other} haben denselben Titel „{title}“.", "Hinweis"));
             else if (title.Length > 0) titles[title] = name;
         }
@@ -41,6 +52,7 @@ public static class WebDesignSeo
                 res.Add(new($"Weiterleitung /{r.Von} zeigt auf „{r.Nach}“, diese Seite gibt es nicht.", "Fehler"));
             if (s.Weiterleitungen.Any(x => x.Von == r.Nach)) res.Add(new($"Weiterleitung /{r.Von} führt auf eine weitere Weiterleitung. Bitte direkt auf das Ziel zeigen.", "Hinweis"));
         }
+        if (needsLogin && !hasLogin) res.Add(new("Eine Datenliste gilt nur nach Anmeldung, aber keine Seite hat den Baustein „Anmeldung“.", "Fehler"));
         if (s.Basis.Length == 0) res.Add(new("Adresse der Website fehlt: ohne sie gibt es keine Sitemap, keine kanonischen Adressen und keine Sprachverweise.", "Hinweis"));
         foreach (var st in WebDesignI18n.Report(dir).Where(x => x.Fehlt || x.Offen > 0))
         {
@@ -53,5 +65,13 @@ public static class WebDesignSeo
             res.Add(new("Komponenten sind einsprachig: ihre Texte erscheinen in jeder Sprache gleich. Für übersetzte Navigation oder Fußzeile die Bausteine direkt auf die Seiten legen.", "Hinweis"));
         res.AddRange(WebDesignCms.Check(dir).Select(f => new Fund(f.Text, f.Ebene)));
         return res;
+    }
+
+    static IEnumerable<JsonObject> Blocks(JsonNode? n, string type)
+    {
+        if (n is JsonArray a) { foreach (var x in a) foreach (var b in Blocks(x, type)) yield return b; yield break; }
+        if (n is not JsonObject o) yield break;
+        if (o["type"]?.ToString() == type && o["props"] is JsonObject p) yield return p;
+        foreach (var kv in o) foreach (var b in Blocks(kv.Value, type)) yield return b;
     }
 }

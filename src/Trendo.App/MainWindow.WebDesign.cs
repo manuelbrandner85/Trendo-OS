@@ -78,6 +78,7 @@ public partial class MainWindow
         sp.Children.Add(WebDesignCodePane()); // K6, Z8
         sp.Children.Add(WebDesignCmsPane()); // W2
         sp.Children.Add(WebDesignLanguagesPane()); // Z5
+        sp.Children.Add(WebDesignModsPane()); // A4
         sp.Children.Add(WebDesignPublishPane()); // K8
         if (_wdNote.Length > 0) sp.Children.Add(new TextBlock { Name = "web-visual-note", Text = _wdNote, FontSize = 12, Foreground = Muted, TextWrapping = Avalonia.Media.TextWrapping.Wrap });
         if (_wdOpen && editorOk)

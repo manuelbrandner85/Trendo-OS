@@ -18,7 +18,7 @@ public partial class MainWindow
     string _wdCodeNote = "", _wdImportNote = "", _wdPublishNote = "";
     bool _wdCodeOpen, _wdCodeBusy, _wdImportBusy, _wdPublishBusy;
     TextEditor? _wdCode;
-    string? _wdCodeText;
+    string? _wdCodeText, _wdCodeBase, _wdCodeWhere;
     int _wdCodeLine;
     (byte[] Png, int W, int H)? _wdSketch;
     WebDesignPublish.Plan? _wdPlan; string? _wdConsent; bool _wdAskConsent;
@@ -42,11 +42,17 @@ public partial class MainWindow
     public void WebDesignCodeShow()
     {
         _wdCodeOpen = true;
-        _wdCodeText = JsonNode.Parse(WebDesignCurrent()) is JsonObject doc ? WebDesignHtml.ToHtml(doc) : "";
+        _wdCodeBase = WebDesignCurrent(); _wdCodeWhere = CodeWhere();
+        _wdCodeText = JsonNode.Parse(_wdCodeBase) is JsonObject doc ? WebDesignHtml.ToHtml(doc) : "";
         if (_wdCode is not null) _wdCode.Text = _wdCodeText;
         _wdCodeNote = "Code der Seite. Änderst du ihn hier, übernimmt „Code übernehmen“ ihn in den Editor. Ein Klick auf einen Baustein im Editor („Auswählen“) springt hierher.";
         Show("dev");
     }
+
+    string CodeWhere() { var a = WebDesignSite.Active(WebDesignDir); return $"{a.Adresse}|{a.Sprache}|{_wdVariant}"; }
+
+    /// <summary>Code schließen (beim Seitenwechsel): er gehört zur vorigen Seite.</summary>
+    void WebDesignCodeClose() { _wdCodeOpen = false; _wdCodeText = null; _wdCodeBase = null; if (_wdCode is not null) _wdCode.Text = ""; }
 
     /// <summary>K6: Klick auf ein Element springt zur passenden Stelle im Code.</summary>
     public void WebDesignCodeJump(string id)
@@ -62,6 +68,11 @@ public partial class MainWindow
     {
         if (_wdCodeBusy) return;
         var html = code ?? WebDesignCodeText ?? "";
+        // Nur übernehmen, was zum aktuellen Stand passt: sonst gingen Änderungen im Editor oder eine andere Seite verloren
+        if (_wdCodeBase is null || _wdCodeWhere != CodeWhere()) { _wdCodeNote = "Der Code gehört zu einer anderen Seite oder Variante. Bitte „Code neu aus dem Editor“ holen."; Show("dev"); return; }
+        if (WebDesignCurrent() != _wdCodeBase) { _wdCodeNote = "Seit „Code zeigen“ wurde die Seite im Editor geändert. Nicht übernommen, damit nichts verloren geht. Bitte „Code neu aus dem Editor“ holen und die Änderung dort machen."; Show("dev"); return; }
+        if (_wdAiBusy) { _wdCodeNote = "Die KI arbeitet gerade an der Seite. Bitte warten."; Show("dev"); return; }
+        if (html.Trim().Length == 0) { _wdCodeNote = "Der Code ist leer. Nicht übernommen, sonst wäre die Seite leer."; Show("dev"); return; }
         _wdCodeBusy = true;
         try
         {
@@ -80,6 +91,7 @@ public partial class MainWindow
             if (werr is not null) { _wdCodeNote = werr; return; }
             WebDesignReload(WebDesignStates.Read(WebDesignDir, _wdVariant));
             _wdCodeText = WebDesignHtml.ToHtml(JsonNode.Parse(ok)!.AsObject()); if (_wdCode is not null) _wdCode.Text = _wdCodeText;
+            _wdCodeBase = WebDesignCurrent(); _wdCodeWhere = CodeWhere();
             _wdCodeNote = $"Übernommen: {r.Mapped} Bausteine{(r.HtmlBlocks > 0 ? $", {r.HtmlBlocks} als HTML-Block erhalten" : "")}. Der vorige Stand liegt bereit."
                 + (r.Report.Count > 0 ? "\n" + string.Join("\n", r.Report.Take(8).Select(x => "• " + x)) : "");
             _core.Audit.Append(Principal.LocalOwner.Name, "web.code.uebernehmen", $"{r.Mapped}/{r.HtmlBlocks}");
@@ -124,11 +136,13 @@ public partial class MainWindow
         try
         {
             _wdImportNote = "Trendo holt die Figma-Datei …"; Show("dev");
-            using var http = FigmaHandlerOverride is null ? new HttpClient() : new HttpClient(FigmaHandlerOverride, false);
-            http.Timeout = TimeSpan.FromSeconds(60);
+            // Keine Weiterleitungen: der Schlüssel geht nur an api.figma.com, nie an ein Weiterleitungsziel
+            using var http = FigmaHandlerOverride is null ? new HttpClient(new HttpClientHandler { AllowAutoRedirect = false }) : new HttpClient(FigmaHandlerOverride, false);
+            http.Timeout = TimeSpan.FromSeconds(60); http.MaxResponseContentBufferSize = 50_000_000;
             http.DefaultRequestHeaders.Add("X-Figma-Token", token.Trim());
             http.DefaultRequestHeaders.UserAgent.ParseAdd("TrendoOS");
             using var r = await http.GetAsync($"https://{WebDesignFigma.ApiHost}/v1/files/{Uri.EscapeDataString(key)}");
+            if ((int)r.StatusCode is >= 300 and < 400) { _wdImportNote = "Figma hat auf eine andere Adresse umgeleitet. Aus Sicherheitsgründen bricht Trendo ab; dein Schlüssel ging nur an api.figma.com."; return; }
             if (!r.IsSuccessStatusCode) { _wdImportNote = (int)r.StatusCode is 401 or 403 ? "Figma hat den Schlüssel abgelehnt oder die Datei gehört nicht zu deinem Konto." : $"Figma meldet Fehler {(int)r.StatusCode}."; return; }
             if (r.Content.Headers.ContentLength > 50_000_000) { _wdImportNote = "Die Figma-Datei ist zu groß für den Import."; return; }
             if (JsonNode.Parse(await r.Content.ReadAsStringAsync()) is not JsonObject file) { _wdImportNote = "Figma hat keine lesbare Datei geliefert."; return; }
@@ -140,8 +154,8 @@ public partial class MainWindow
                 using var ir = await http.GetAsync($"https://{WebDesignFigma.ApiHost}/v1/images/{Uri.EscapeDataString(key)}?ids={WebDesignFigma.IdsParam(map.ImageNodes)}&format=png&scale=2");
                 var urls = ir.IsSuccessStatusCode ? JsonNode.Parse(await ir.Content.ReadAsStringAsync())?["images"] as JsonObject : null;
                 var dir = Path.Combine(WebDesignDir, "bilder", "figma"); Directory.CreateDirectory(dir);
-                using var plain = FigmaHandlerOverride is null ? new HttpClient() : new HttpClient(FigmaHandlerOverride, false); // Bild-Adressen ohne den Schlüssel abrufen
-                plain.Timeout = TimeSpan.FromSeconds(60);
+                using var plain = FigmaHandlerOverride is null ? new HttpClient(new HttpClientHandler { AllowAutoRedirect = false }) : new HttpClient(FigmaHandlerOverride, false); // Bild-Adressen ohne den Schlüssel abrufen
+                plain.Timeout = TimeSpan.FromSeconds(60); plain.MaxResponseContentBufferSize = 15_000_000;
                 foreach (var id in map.ImageNodes)
                 {
                     var url = urls?[id]?.ToString();
@@ -150,7 +164,7 @@ public partial class MainWindow
                     if (!img.IsSuccessStatusCode || img.Content.Headers.ContentLength > 15_000_000) { report.Add($"Bild {id} ließ sich nicht laden."); continue; }
                     var bytes = await img.Content.ReadAsByteArrayAsync();
                     if (bytes.Length > 15_000_000 || bytes.Length < 8 || bytes[0] != 0x89 || bytes[1] != 0x50) { report.Add($"Bild {id} ist kein PNG."); continue; }
-                    var name = "figma-" + string.Concat(id.Where(char.IsLetterOrDigit)) + ".png";
+                    var name = WebDesignFigma.ImageName(key, id);
                     await File.WriteAllBytesAsync(Path.Combine(dir, name), bytes);
                     files[id] = "bilder/figma/" + name;
                 }
@@ -166,7 +180,7 @@ public partial class MainWindow
             _wdImportNote = $"Aus Figma importiert als /{slug} ({files.Count} Bilder). Dein Schlüssel wurde nicht gespeichert.\nMeldeliste:\n" + string.Join("\n", report.Select(x => "• " + x));
             _core.Audit.Append(Principal.LocalOwner.Name, "web.import.figma", slug); // ohne Schlüssel und ohne Link
         }
-        catch (Exception e) when (e is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException or IOException) { _wdImportNote = "Figma-Import abgebrochen: " + e.Message.Replace(token.Trim(), "…"); }
+        catch (Exception e) when (e is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException or IOException or InvalidOperationException) { _wdImportNote = "Figma-Import abgebrochen: " + e.Message.Replace(token.Trim(), "…"); }
         finally { _wdImportBusy = false; Show("dev"); }
     }
 
@@ -224,6 +238,8 @@ public partial class MainWindow
             var bytes = Convert.FromBase64String(url[prefix.Length..]);
             var w = (int)Math.Clamp(WebDesign.Number(o!["breite"]) ?? 0, 0, 4000); var h = (int)Math.Clamp(WebDesign.Number(o["hoehe"]) ?? 0, 0, 8000);
             if (w < 50 || h < 50 || bytes.Length < 8 || bytes[0] != 0x89) { _wdNote = "Die Skizze ist leer oder zu klein."; return; }
+            using (var codec = SKCodec.Create(new MemoryStream(bytes)))
+                if (codec is null || codec.EncodedFormat != SKEncodedImageFormat.Png || codec.Info.Width > w || codec.Info.Height > h) { _wdNote = "Die Skizze hat ein unerwartetes Format."; return; } // schützt vor riesigen Bildern im kleinen PNG
             _wdSketch = (bytes, w, h);
             _wdNote = "Skizze bereit. Schreib dazu, was passieren soll, und klicke „Mit Skizze ändern“.";
         }
@@ -324,7 +340,9 @@ public partial class MainWindow
         try
         {
             _wdPublishNote = "Lädt hoch …"; Show("dev");
-            var url = await Netlify.DeployAsync(Path.Combine(WebDesignDir, WebDesign.ExportDir), WebDesignSite.TitleOf(WebDesignDir, WebDesignSite.Index));
+            var (zip, zerr) = WebDesignPublish.ZipExactly(WebDesignDir, plan); // genau die gezeigten Dateien, Fingerabdruck über dieselben Bytes
+            if (zip is null) { _wdPublishNote = "Nicht hochgeladen: " + zerr; return; }
+            var url = await Netlify.DeployZipAsync(Path.Combine(WebDesignDir, WebDesign.ExportDir), zip, WebDesignSite.TitleOf(WebDesignDir, WebDesignSite.Index));
             _wdPublishNote = WebDesignPublish.Report(plan, url.Length > 0 ? url : "Netlify");
             _core.Audit.Append(Principal.LocalOwner.Name, "web.hochladen", $"{plan.Files.Count} Dateien → {url}");
         }
@@ -344,7 +362,8 @@ public partial class MainWindow
             foreach (var n in plan.Notes.Take(5)) sp.Children.Add(P("• " + n, Muted, 12));
             if (plan.Ok)
             {
-                sp.Children.Add(P(string.Join("\n", plan.Files.Take(12).Select(f => $"• {f.Rel} ({f.Bytes / 1024.0:0.#} KB)")) + (plan.Files.Count > 12 ? $"\n• … und {plan.Files.Count - 12} weitere" : ""), Muted, 11.5));
+                // Alle Dateien sichtbar, für die zugestimmt wird (in einer scrollbaren Liste)
+                sp.Children.Add(new ScrollViewer { Name = "web-pub-liste", MaxHeight = 220, Content = P(string.Join("\n", plan.Files.Select(f => $"• {f.Rel} ({f.Bytes / 1024.0:0.#} KB)")), Muted, 11.5) });
                 var row = new WrapPanel();
                 row.Children.Add(Act("web-pub-paket", "Als Paket speichern (ZIP)", WebDesignPublishPackage));
                 row.Children.Add(new Border { Width = 8 });

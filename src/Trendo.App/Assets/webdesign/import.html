@@ -2,6 +2,8 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8" />
+<!-- Keine Netzverbindung beim Einlesen: auch ein @import in fremdem CSS lädt nichts nach -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'unsafe-inline'" />
 <title>Trendo Import</title>
 </head>
 <body>

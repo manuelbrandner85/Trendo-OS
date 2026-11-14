@@ -100,7 +100,12 @@ public partial class MainWindow
         var skills = Skills.PromptText(null, "CORE-07", task, claude ? SkillLibrary.MaxPromptChars : SkillLibrary.MaxPromptCharsLocal);
         // A2: passende Web-Techniken aus dem Verzeichnis, mit Stand und Ersatzweg; auch die KI auf diesem PC wählt nur daraus
         var tech = WebDesignTechniques.PromptText(WebDesignTechniques.ForTask(task), claude ? 2500 : 800);
-        return tech.Length == 0 ? skills : (skills is null ? "" : skills + "\n\n") + $"Web-Techniken (Verzeichnis, Stand {WebDesignTechniques.Checked}):\n" + tech;
+        var text = tech.Length == 0 ? skills : (skills is null ? "" : skills + "\n\n") + $"Web-Techniken (Verzeichnis, Stand {WebDesignTechniques.Checked}):\n" + tech;
+        // A4: Mods des Projekts – ihre Aktionen sieht die KI als weitere Aktionen, ihre Skills als Fachwissen
+        var mods = WebDesignMods.Installed(WebDesignDir);
+        if (mods.Count == 0) return text;
+        var cat = WebDesignMods.CatalogText(mods); var ms = WebDesignMods.SkillsText(mods, claude ? 4000 : 800);
+        return (text is null ? "" : text + "\n\n") + (cat.Length > 0 ? "Zusätzliche Aktionen aus Mods (Form: {\"aktion\":\"mod:id/name\",\"werte\":{…}}):\n" + cat + "\n\n" : "") + (ms.Length > 0 ? "Fachwissen aus Mods:\n" + ms : "");
     }
 
     // ---------- A8: Gestaltungsrichtung zuerst ----------
@@ -216,7 +221,9 @@ public partial class MainWindow
             var answer = await ask();
             if (answer is null) return;
             _core.Audit.Append(Principal.LocalOwner.Name, "web.visuell.ki", label);
-            var r = WebDesignActions.Apply(planBase, answer, scope);
+            var (expanded, merr) = WebDesignMods.Expand(answer, WebDesignMods.Installed(WebDesignDir)); // A4: Mod-Aktionen werden zu den geprüften Aktionen
+            if (expanded is null) { _wdNote = "Die Antwort der KI wurde abgelehnt, nichts wurde geändert: " + merr; return; }
+            var r = WebDesignActions.Apply(planBase, expanded, scope);
             if (r.Json is null) { _wdNote = "Die Antwort der KI wurde abgelehnt, nichts wurde geändert: " + r.Error; return; }
             if (post is not null) r = post(r);
             WebAuditResult? audit = null;

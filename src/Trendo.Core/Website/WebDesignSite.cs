@@ -13,7 +13,7 @@ public static partial class WebDesignSite
     public const int MaxPages = 200;
     public static readonly string[] Transitions = ["keiner", "einblenden", "schieben"];
     /// <summary>Namen, die der Export selbst braucht; Seiten und Sammlungen dürfen so nicht heißen.</summary>
-    public static readonly HashSet<string> Reserved = ["assets", "bilder", "medien", "daten", "sitemap", "robots", "namensnennung", "seiten", "sprachen", "veroeffentlichen", "404", "import", "pakete",
+    public static readonly HashSet<string> Reserved = ["assets", "bilder", "medien", "daten", "sitemap", "robots", "namensnennung", "seiten", "sprachen", "veroeffentlichen", "404", "import", "pakete", "mods",
         // Windows-Gerätenamen: als Datei- oder Ordnername auf manchen Systemen und beim Entpacken nicht nutzbar
         "con", "prn", "aux", "nul", "com1", "com2", "com3", "com4", "com5", "com6", "com7", "com8", "com9", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9"];
 

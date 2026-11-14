@@ -111,6 +111,11 @@ public static partial class WebDesignActions
         ["Komponente"] = new(new(), D()),
         // Z8/K6: nicht abbildbares HTML bleibt als HTML-Block erhalten (Inhalt nur über Import oder Code, nicht über KI-Aktionen)
         ["Html"] = new(new(), D()),
+        // K7: Web-App mit Daten, lokal im Browser (SQLite), optional eigenes Supabase-Projekt
+        ["Datenliste"] = new(new() { ["titel"] = T, ["tabelle"] = T, ["felder"] = Liste(20, ("name", T), ("beschriftung", T), ("art", new(Art.Wahl, ["text", "langtext", "email", "zahl", "datum"])), ("pflicht", new(Art.Wahl, ["nein", "ja"]))),
+            ["knopf"] = T, ["nurAngemeldet"] = new(Art.Wahl, ["nein", "ja"]), ["liste"] = new(Art.Wahl, ["alle", "eigene", "keine"]) },
+            D(("titel", "Gästebuch"), ("tabelle", "eintraege"), ("felder", Items([("name", "name"), ("beschriftung", "Name"), ("art", "text"), ("pflicht", "ja")], [("name", "nachricht"), ("beschriftung", "Nachricht"), ("art", "langtext"), ("pflicht", "ja")])), ("knopf", "Speichern"), ("nurAngemeldet", "nein"), ("liste", "alle"))),
+        ["Anmeldung"] = new(new() { ["titel"] = T }, D(("titel", "Anmelden"))),
         // W2: Liste der Einträge einer Sammlung aus dem CMS
         ["Sammlung"] = new(new() { ["titel"] = T, ["sammlung"] = T, ["anzahl"] = new(Art.Zahl, Min: 1, Max: 100), ["sortierung"] = new(Art.Wahl, ["alphabetisch", "neueste"]) },
             D(("titel", ""), ("sammlung", ""), ("anzahl", 12), ("sortierung", "alphabetisch"))),

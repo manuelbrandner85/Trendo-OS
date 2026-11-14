@@ -47,10 +47,12 @@ public sealed class NetlifyLink(ISecretStore secrets, HttpMessageHandler? handle
     }
 
     /// <summary>Veröffentlichen: neue Seite anlegen (beim ersten Mal) und den Ordner hochladen. Liefert die öffentliche Adresse.</summary>
-    public async Task<string> DeployAsync(string folder, string? siteName = null, CancellationToken ct = default)
+    public Task<string> DeployAsync(string folder, string? siteName = null, CancellationToken ct = default) => DeployZipAsync(folder, Zip(folder), siteName, ct); // zuerst prüfen und packen – ohne index.html wird bei Netlify gar nichts angelegt
+
+    /// <summary>Genau dieses ZIP hochladen (K8: aus der geprüften Dateiliste gebaut). <paramref name="folder"/> nur für die gemerkte Netlify-Seite.</summary>
+    public async Task<string> DeployZipAsync(string folder, byte[] bytes, string? siteName = null, CancellationToken ct = default)
     {
         var token = secrets.Get(SecretKey) ?? throw new InvalidOperationException("Erst mit Netlify verbinden.");
-        var bytes = Zip(folder); // zuerst prüfen und packen – ohne index.html wird bei Netlify gar nichts angelegt
         using var http = handler is null ? new HttpClient() : new HttpClient(handler, false);
         http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         http.DefaultRequestHeaders.UserAgent.ParseAdd("TrendoOS");

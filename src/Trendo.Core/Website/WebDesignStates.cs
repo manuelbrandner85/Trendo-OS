@@ -30,7 +30,7 @@ public static partial class WebDesignStates
     static string PageRaw(string dir)
     {
         var f = WebDesignSite.ActiveFile(dir);
-        return File.Exists(f) && WebDesign.Validate(File.ReadAllText(f)).Error is null ? File.ReadAllText(f) : WebDesign.Load(dir);
+        return File.Exists(f) && WebDesign.Validate(File.ReadAllText(f)).Json is { } ok ? ok : WebDesign.Load(dir); // bereinigt: auch eine von außen veränderte Datei kommt ohne gefährliche Links in den Editor
     }
 
     /// <summary>Inhalt der Seite oder einer Variante.</summary>
@@ -173,7 +173,7 @@ public static partial class WebDesignStates
     public static string? VariantContent(string dir, string id)
     {
         if (!IdPattern().IsMatch(id) || !File.Exists(VariantFile(dir, id))) return null;
-        try { return JsonNode.Parse(File.ReadAllText(VariantFile(dir, id)))?["seite"]?.ToString() is { } s && WebDesign.Validate(s).Error is null ? s : null; } // kaputte oder manipulierte Datei gilt als nicht vorhanden
+        try { return JsonNode.Parse(File.ReadAllText(VariantFile(dir, id)))?["seite"]?.ToString() is { } s ? WebDesign.Validate(s).Json : null; } // kaputte Datei gilt als nicht vorhanden, eine veränderte kommt bereinigt
         catch (Exception e) when (e is JsonException or InvalidOperationException or ArgumentException) { return null; }
     }
 

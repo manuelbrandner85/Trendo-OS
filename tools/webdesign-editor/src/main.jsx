@@ -240,7 +240,7 @@ function rahmenProps(p) {
 // Z8/K6: erlaubte Elemente und Attribute (gleiche Liste wie WebDesignHtml in Trendo, das den Baum schon beim Speichern prüft)
 const HTML_TAGS = new Set(["p", "br", "strong", "b", "em", "i", "u", "s", "small", "span", "a", "ul", "ol", "li", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "pre", "code", "table", "thead", "tbody", "tfoot", "tr", "th", "td", "caption", "figure", "figcaption", "img", "hr", "div", "section", "article", "header", "footer", "nav", "aside", "dl", "dt", "dd", "sup", "sub", "mark", "abbr", "time", "address", "main"]);
 const HTML_ATTRS = { a: { href: "href", title: "title" }, img: { src: "src", alt: "alt", width: "width", height: "height" }, td: { colspan: "colSpan", rowspan: "rowSpan" }, th: { colspan: "colSpan", rowspan: "rowSpan", scope: "scope" }, time: { datetime: "dateTime" }, abbr: { title: "title" }, ol: { start: "start" } };
-const sichererLink = (v) => !/^\s*[a-z][a-z0-9+.-]*:/i.test(v) || /^\s*(https?|mailto|tel):/i.test(v);
+const sichererLink = (roh) => { const v = String(roh).replace(/[\u0000-\u0020\u007f-\u009f]/g, ""); return !/^[a-z][a-z0-9+.-]*:/i.test(v) || /^(https?|mailto|tel):/i.test(v); }; // wie StripUrl in Trendo: „java<Tab>script:“ gilt als javascript:
 function Knoten({ k }) {
   if (!k || typeof k !== "object") return null;
   if (typeof k.text === "string") return k.text;
@@ -274,6 +274,75 @@ function Skizze({ data, onBack }) {
     </div>);
 }
 
+// K7: Daten-Bausteine. Im Editor nur eine Vorschau (es wird nichts gespeichert), in der fertigen Seite echt über window.TrendoDaten.
+const FERTIG = typeof window !== "undefined" && !!window.TRENDO_SEITE;
+function useDaten() {
+  const [api, setApi] = useState(() => (FERTIG && window.TrendoDaten) || null);
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    if (!FERTIG) return;
+    const bereit = () => setApi(window.TrendoDaten || null);
+    if (!window.TrendoDaten) window.addEventListener("trendo-daten", bereit, { once: true });
+    return () => window.removeEventListener("trendo-daten", bereit);
+  }, []);
+  useEffect(() => (api ? api.beobachten(() => setTick((t) => t + 1)) : undefined), [api]);
+  return api;
+}
+const INPUT_ART = { text: "text", email: "email", zahl: "number", datum: "date" };
+function Datenliste({ titel, tabelle, felder, knopf, nurAngemeldet, liste, id }) {
+  const api = useDaten();
+  const [eintraege, setEintraege] = useState([]); const [meldung, setMeldung] = useState("");
+  const fs = (felder || []).filter((f) => /^[a-z][a-z0-9_]{0,29}$/.test(f.name || ""));
+  const nutzer = api ? api.aktuell() : "";
+  const gesperrt = nurAngemeldet === "ja" && !nutzer;
+  useEffect(() => { if (api && liste !== "keine") api.liste(tabelle, liste === "eigene").then(setEintraege); }, [api, tabelle, liste, nutzer, meldung]);
+  const senden = async (e) => {
+    e.preventDefault(); if (!api) return;
+    const werte = Object.fromEntries(fs.map((f) => [f.name, e.target.elements[f.name]?.value ?? ""]));
+    const fehlt = fs.find((f) => f.pflicht === "ja" && !String(werte[f.name]).trim());
+    if (fehlt) { setMeldung(`Bitte „${fehlt.beschriftung || fehlt.name}“ ausfüllen.`); return; }
+    const err = await api.speichern(tabelle, werte);
+    if (err) { setMeldung(err); return; }
+    e.target.reset(); setMeldung("Gespeichert.");
+  };
+  return (
+    <section className="t-daten">
+      {titel && <h2 className="t-h">{titel}</h2>}
+      {!FERTIG && <p className="t-daten-hinweis">Vorschau: In der fertigen Seite speichert dieses Formular in einer Datenbank auf dem Gerät der Besucher.</p>}
+      {gesperrt ? <p className="t-daten-hinweis">Bitte zuerst anmelden.</p> :
+        <form className="t-form" onSubmit={senden}>
+          {fs.map((f) => <label key={f.name} className="t-form-feld"><span>{f.beschriftung || f.name}{f.pflicht === "ja" ? " *" : ""}</span>
+            {f.art === "langtext" ? <textarea name={f.name} rows={4} disabled={!FERTIG} /> : <input name={f.name} type={INPUT_ART[f.art] || "text"} disabled={!FERTIG} />}</label>)}
+          <button className="t-btn" type="submit" disabled={!FERTIG}>{knopf || "Speichern"}</button>
+          {meldung && <p className="t-daten-meldung" role="status">{meldung}</p>}
+        </form>}
+      {FERTIG && liste !== "keine" && eintraege.length > 0 && <ul className="t-daten-liste">{eintraege.map((x, i) => <li key={i}>{fs.map((f) => x[f.name] ? <p key={f.name}><b>{f.beschriftung || f.name}:</b> {x[f.name]}</p> : null)}<small>{new Date(x.erstellt).toLocaleString()}</small></li>)}</ul>}
+    </section>);
+}
+function Anmeldung({ titel }) {
+  const api = useDaten(); const [meldung, setMeldung] = useState(""); const [neu, setNeu] = useState(false);
+  const nutzer = api ? api.aktuell() : "";
+  const senden = async (e) => {
+    e.preventDefault(); if (!api) return;
+    const n = e.target.elements.name.value, p = e.target.elements.passwort.value;
+    const err = neu ? await api.registrieren(n, p) : await api.anmelden(n, p);
+    setMeldung(err || ""); if (!err) e.target.reset();
+  };
+  return (
+    <section className="t-daten t-anmeldung">
+      {titel && <h2 className="t-h">{titel}</h2>}
+      <p className="t-daten-hinweis">Die Anmeldung gilt nur auf diesem Gerät. Sie ersetzt kein echtes Konto auf einem Server.</p>
+      {nutzer ? <p>Angemeldet als <b>{nutzer}</b>. <button className="t-btn t-btn-leise" type="button" onClick={() => api.abmelden()}>Abmelden</button></p> :
+        <form className="t-form" onSubmit={senden}>
+          <label className="t-form-feld"><span>Name</span><input name="name" autoComplete="username" disabled={!FERTIG} /></label>
+          <label className="t-form-feld"><span>Passwort{neu ? " (mindestens 10 Zeichen)" : ""}</span><input name="passwort" type="password" autoComplete={neu ? "new-password" : "current-password"} disabled={!FERTIG} /></label>
+          <button className="t-btn" type="submit" disabled={!FERTIG}>{neu ? "Konto anlegen" : "Anmelden"}</button>
+          <button className="t-btn t-btn-leise" type="button" onClick={() => setNeu(!neu)}>{neu ? "Ich habe schon ein Konto" : "Neues Konto"}</button>
+          {meldung && <p className="t-daten-meldung" role="alert">{meldung}</p>}
+        </form>}
+    </section>);
+}
+
 // W2: Sammlung aus dem CMS wählen (Liste setzt Trendo beim Lesen in root.props.sammlungen)
 function SammlungWahl({ value, onChange }) {
   const liste = usePuckSel((s) => (Array.isArray(s.appState.data.root?.props?.sammlungen) ? s.appState.data.root.props.sammlungen : LEER));
@@ -304,6 +373,7 @@ const baseConfig = {
     inhalt: { title: "Inhalt", components: ["Kopfbereich", "Ueberschrift", "Text", "Bild", "Knopf"] },
     profi: { title: "Profi-Bausteine", components: ["Navigation", "Hero", "Preise", "Fragen", "Galerie", "Formular", "Fusszeile"] },
     inhalte: { title: "Inhalte (CMS)", components: ["Sammlung"] },
+    app: { title: "Web-App mit Daten", components: ["Datenliste", "Anmeldung"] },
     // Z8/K6: HTML-Blöcke entstehen nur beim Import oder aus dem Code, nicht aus der Bausteinliste
     intern: { title: "Intern", components: ["Html"], visible: false },
     effekte: { title: "3D & Bewegung", components: ["Szene3D"] },
@@ -430,6 +500,20 @@ const baseConfig = {
     // Z8/K6: nicht abbildbares HTML, als geprüfter Baum gespeichert und hier als Elemente gebaut (kein innerHTML)
     Html: { label: "HTML-Block", fields: { ...anpassungenFeld(), ...bewegungFelder },
       render: ({ knoten }) => <div className="t-html">{(knoten || []).map((k, i) => <Knoten key={i} k={k} />)}</div> },
+    // K7: Formular mit Liste; Daten liegen in SQLite auf dem Gerät der Besucher (assets/daten.js), optional zusätzlich im eigenen Supabase-Projekt
+    Datenliste: { label: "Datenliste", fields: { titel: { type: "text", label: "Überschrift" },
+        tabelle: { type: "text", label: "Tabelle (z. B. bestellungen)" },
+        felder: { type: "array", label: "Felder", arrayFields: { name: { type: "text", label: "Name (klein, z. B. email)" }, beschriftung: { type: "text", label: "Beschriftung" },
+            art: { type: "select", label: "Art", options: [{ label: "Text", value: "text" }, { label: "Langer Text", value: "langtext" }, { label: "E-Mail", value: "email" }, { label: "Zahl", value: "zahl" }, { label: "Datum", value: "datum" }] },
+            pflicht: { type: "radio", label: "Pflicht", options: [{ label: "Nein", value: "nein" }, { label: "Ja", value: "ja" }] } },
+          defaultItemProps: { name: "feld", beschriftung: "Feld", art: "text", pflicht: "nein" }, getItemSummary: (i) => i.beschriftung || i.name || "Feld" },
+        knopf: { type: "text", label: "Knopf-Text" },
+        nurAngemeldet: { type: "radio", label: "Nur nach Anmeldung", options: [{ label: "Nein", value: "nein" }, { label: "Ja", value: "ja" }] },
+        liste: { type: "select", label: "Einträge zeigen", options: [{ label: "Alle", value: "alle" }, { label: "Nur eigene", value: "eigene" }, { label: "Nicht zeigen", value: "keine" }] }, ...anpassungenFeld(), ...bewegungFelder },
+      defaultProps: { titel: "Gästebuch", tabelle: "eintraege", felder: [{ name: "name", beschriftung: "Name", art: "text", pflicht: "ja" }, { name: "nachricht", beschriftung: "Nachricht", art: "langtext", pflicht: "ja" }], knopf: "Speichern", nurAngemeldet: "nein", liste: "alle" },
+      render: (p) => <Datenliste {...p} /> },
+    Anmeldung: { label: "Anmeldung", fields: { titel: { type: "text", label: "Überschrift" }, ...anpassungenFeld(), ...bewegungFelder },
+      defaultProps: { titel: "Anmelden" }, render: (p) => <Anmeldung {...p} /> },
     // W2: Einträge einer Sammlung aus dem CMS. Trendo setzt die Liste beim Lesen und im Export fertig ein (props.eintraege); gespeichert wird nur die Wahl.
     Sammlung: { label: "Sammlung", fields: { titel: { type: "text", label: "Überschrift" },
         sammlung: { type: "custom", label: "Sammlung", render: ({ value, onChange }) => <SammlungWahl value={value} onChange={onChange} /> },

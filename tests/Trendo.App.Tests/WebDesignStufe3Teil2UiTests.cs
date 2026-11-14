@@ -103,7 +103,7 @@ public class WebDesignStufe3Teil2_Ui
             Assert.Contains("nicht gespeichert", w.WebDesignImportNote);
             Assert.All(fake.Calls.Where(c => c.Url.Contains("api.figma.com")), c => Assert.True(c.Token));
             Assert.All(fake.Calls.Where(c => !c.Url.Contains("api.figma.com")), c => Assert.False(c.Token)); // Bild-Speicher bekommt den Schlüssel nicht
-            Assert.True(File.Exists(Path.Combine(w.WebDesignDir, "bilder", "figma", "figma-13.png")));
+            Assert.True(File.Exists(Path.Combine(w.WebDesignDir, "bilder", "figma", WebDesignFigma.ImageName("AbCdEf123456", "1:3"))));
             Assert.Contains("Titel aus Figma", WebDesignStates.Read(w.WebDesignDir));
             foreach (var f in Directory.EnumerateFiles(w.Core.DataRoot, "*", SearchOption.AllDirectories).Where(f => new FileInfo(f).Length < 5_000_000))
                 Assert.DoesNotContain(token, File.ReadAllText(f)); // nirgends gespeichert, auch nicht im Protokoll

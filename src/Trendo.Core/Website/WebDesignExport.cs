@@ -35,6 +35,7 @@ public static class WebDesignExport
         var usedDocs = new List<JsonObject>();
         var (foreign, cerr) = ClearExport(outDir);
         if (cerr is not null) return new(null, cerr, [], []);
+        BackupForeign(outDir, foreign);
         CopyBundle(editorDir, outDir);
         var tokens = WebDesignTokens.Load(dir);
         var cms = WebDesignCms.Load(dir);
@@ -67,7 +68,7 @@ public static class WebDesignExport
                 var alts = isTranslated ? site.Sprachen.Where(l => translated[l].Contains(page)).Select(l => (l, PagePath(l, page))).ToList() : [];
                 var canonical = isTranslated ? rel : PagePath(site.Standardsprache, page); // nicht übersetzt: verweist auf das Original
                 if (!isTranslated) notes.Add($"„{page}“ ist in {WebDesignI18n.LangName(lang)} nicht übersetzt; unter /{rel} steht das Original.");
-                var o = WritePage(dir, raw, tokens, cms, outDir, rel, isTranslated ? lang : site.Standardsprache, prefix, pages, entryPaths, alts, canonical, site, notes, usedDocs, withPages);
+                var o = WritePage(dir, raw, tokens, cms, outDir, rel, isTranslated ? lang : site.Standardsprache, prefix, pages, entryPaths, alts, canonical, site, notes, usedDocs, withPages, editorDir);
                 outputs.Add(o with { Fallback = !isTranslated });
             }
             foreach (var (coll, tpl) in templates)
@@ -84,7 +85,7 @@ public static class WebDesignExport
                     var rel = EntryRel(lang, coll, e.Adresse);
                     var alts = ok ? site.Sprachen.Where(l => WebDesignCms.IsTranslated(e, l, site.Standardsprache)).Select(l => (l, EntryRel(l, coll, e.Adresse))).ToList() : [];
                     if (!ok) notes.Add($"Eintrag „{coll}/{e.Adresse}“ ist in {WebDesignI18n.LangName(lang)} nicht übersetzt; unter /{rel} steht das Original.");
-                    var o = WritePage(dir, filled.ToJsonString(), tokens, cms, outDir, rel, contentLang, prefix, pages, entryPaths, alts, ok ? rel : EntryRel(site.Standardsprache, coll, e.Adresse), site, notes, usedDocs, withPages);
+                    var o = WritePage(dir, filled.ToJsonString(), tokens, cms, outDir, rel, contentLang, prefix, pages, entryPaths, alts, ok ? rel : EntryRel(site.Standardsprache, coll, e.Adresse), site, notes, usedDocs, withPages, editorDir);
                     outputs.Add(o with { Fallback = !ok });
                 }
                 if (!tplTranslated) notes.Add($"Vorlage „{tpl}“ ist in {WebDesignI18n.LangName(lang)} nicht übersetzt; Einträge nutzen die übersetzten Felder, der Rest bleibt im Original.");
@@ -124,6 +125,7 @@ public static class WebDesignExport
             Write(outDir, "robots.txt", "User-agent: *\nAllow: /\n");
             notes.Add("Ohne Adresse der Website gibt es keine Sitemap, keine kanonischen Adressen und keine Sprachverweise (hreflang).");
         }
+        RestoreForeign(outDir, foreign, notes);
         var kept = WriteManifest(outDir, foreign);
         if (kept > 0) notes.Add($"{kept} Datei(en) im Export-Ordner stammen nicht von Trendo und bleiben liegen (z. B. {foreign.Keys.First()}). Beim Veröffentlichen gehen sie mit.");
         return new(outDir, null, outputs, notes.Distinct().ToList());
@@ -140,21 +142,66 @@ public static class WebDesignExport
         if (!Directory.Exists(outDir)) return (foreign, null);
         if ((File.GetAttributes(outDir) & FileAttributes.ReparsePoint) != 0) return (foreign, "Der Export-Ordner ist eine Verknüpfung auf einen anderen Ordner. Trendo exportiert dort nicht hinein.");
         var manifest = Path.Combine(outDir, ManifestFile.Replace('/', Path.DirectorySeparatorChar));
-        var ours = File.Exists(manifest) ? File.ReadAllLines(manifest).Where(l => l.Length > 0 && !l.Contains("..") && !Path.IsPathRooted(l)).ToHashSet(StringComparer.OrdinalIgnoreCase) : [];
+        var hasManifest = File.Exists(manifest);
+        var ours = hasManifest ? File.ReadAllLines(manifest).Where(l => l.Length > 0 && !l.Contains("..") && !Path.IsPathRooted(l)).ToHashSet(StringComparer.OrdinalIgnoreCase) : [];
         var full = Path.GetFullPath(outDir).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
         var delete = new List<string>();
         foreach (var f in Directory.EnumerateFiles(outDir, "*", new EnumerationOptions { RecurseSubdirectories = true, AttributesToSkip = FileAttributes.ReparsePoint }))
         {
             var rel = Path.GetRelativePath(outDir, f).Replace(Path.DirectorySeparatorChar, '/');
             if (rel.StartsWith(".trendo/", StringComparison.Ordinal)) continue;
-            if (ours.Contains(rel) && Path.GetFullPath(f).StartsWith(full, StringComparison.OrdinalIgnoreCase)) delete.Add(f);
+            var mine = hasManifest ? ours.Contains(rel) : LooksLikeTrendo(f, rel); // Export aus der Zeit vor der Liste: an Trendos Spuren erkennen
+            if (mine && Path.GetFullPath(f).StartsWith(full, StringComparison.OrdinalIgnoreCase)) delete.Add(f);
             else { var fi = new FileInfo(f); foreign[rel] = (fi.Length, fi.LastWriteTimeUtc); }
         }
-        if (delete.FirstOrDefault(f => (File.GetAttributes(f) & FileAttributes.ReadOnly) != 0) is { } ro)
+        // Schreibschutz vorab prüfen – bei eigenen und fremden Dateien, damit kein halber Export entsteht
+        if (Directory.EnumerateFiles(outDir, "*", new EnumerationOptions { RecurseSubdirectories = true, AttributesToSkip = FileAttributes.ReparsePoint }).FirstOrDefault(f => !Path.GetRelativePath(outDir, f).StartsWith(".trendo", StringComparison.Ordinal) && (File.GetAttributes(f) & FileAttributes.ReadOnly) != 0) is { } ro)
             return (foreign, $"Im Export-Ordner ist „{Path.GetRelativePath(outDir, ro)}“ schreibgeschützt. Nichts wurde gelöscht; bitte den Schreibschutz aufheben.");
         try { foreach (var f in delete) File.Delete(f); }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return (foreign, "Eine Datei im Export-Ordner ist gerade geöffnet: " + e.Message); }
         return (foreign, null);
+    }
+
+    /// <summary>Datei aus einem älteren Trendo-Export (ohne Liste)? Feste Namen, Datenordner und Seiten, die das Editor-Bündel laden.</summary>
+    static bool LooksLikeTrendo(string file, string rel)
+    {
+        if (rel is "seite.js" or "sitemap.xml" or "_redirects" or "namensnennung.html" || rel.StartsWith("daten/", StringComparison.Ordinal)) return true;
+        if (rel.StartsWith("assets/", StringComparison.Ordinal) && Path.GetFileName(rel) is "editor.js" or "style.css" or "LIZENZEN.txt" or "daten.js") return true;
+        if (!rel.EndsWith(".html", StringComparison.OrdinalIgnoreCase) || new FileInfo(file).Length > 2_000_000) return false;
+        var t = File.ReadAllText(file);
+        return t.Contains("assets/editor.js", StringComparison.Ordinal) || t.Contains("Diese Seite ist umgezogen:", StringComparison.Ordinal);
+    }
+
+    /// <summary>Fremde Dateien vor dem Export sichern (.trendo/vorher/), damit Trendo nichts Eigenes still überschreibt.</summary>
+    static void BackupForeign(string outDir, Dictionary<string, (long, DateTime)> foreign)
+    {
+        var dir = Path.Combine(outDir, ".trendo", "vorher");
+        if (Directory.Exists(dir)) Directory.Delete(dir, true);
+        foreach (var rel in foreign.Keys.Where(r => !r.Split('/').Any(p => p.StartsWith('.')))) // versteckte Ordner wie .git schreibt Trendo nie
+        {
+            var dest = Path.Combine(dir, rel.Replace('/', Path.DirectorySeparatorChar));
+            Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
+            File.Copy(Path.Combine(outDir, rel.Replace('/', Path.DirectorySeparatorChar)), dest, true);
+        }
+    }
+
+    /// <summary>Nach dem Export: fremde Dateien, die Trendo überschrieben hat, melden; robots.txt, _redirects und CNAME des Nutzers wiederherstellen.</summary>
+    static void RestoreForeign(string outDir, Dictionary<string, (long, DateTime)> foreign, List<string> notes)
+    {
+        var dir = Path.Combine(outDir, ".trendo", "vorher");
+        foreach (var (rel, before) in foreign)
+        {
+            var f = Path.Combine(outDir, rel.Replace('/', Path.DirectorySeparatorChar)); var backup = Path.Combine(dir, rel.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(f) || !File.Exists(backup)) continue;
+            var fi = new FileInfo(f);
+            if ((fi.Length, fi.LastWriteTimeUtc) == before && File.ReadAllBytes(f).AsSpan().SequenceEqual(File.ReadAllBytes(backup))) continue;
+            if (rel is "robots.txt" or "_redirects" or "CNAME" or "_headers")
+            {
+                File.Copy(backup, f, true); foreign[rel] = (new FileInfo(f).Length, new FileInfo(f).LastWriteTimeUtc);
+                notes.Add($"Deine eigene {rel} bleibt; Trendo hat seine Fassung nicht geschrieben." + (rel == "robots.txt" ? " Ergänze dort bei Bedarf den Verweis auf die Sitemap." : ""));
+            }
+            else notes.Add($"Deine Datei „{rel}“ wurde durch Trendos Seite gleichen Namens ersetzt. Die vorige Fassung liegt in veroeffentlichen/.trendo/vorher/.");
+        }
     }
 
     /// <summary>Nach dem Export: Liste der eigenen Dateien schreiben (alles außer unveränderten fremden Dateien).</summary>
@@ -193,7 +240,7 @@ public static class WebDesignExport
 
     /// <summary>Eine Seite schreiben: Daten aufbereiten, Bilder und Schriften mitnehmen, Kopf mit SEO-Angaben, Platz für den vorgerenderten Inhalt.</summary>
     static Output WritePage(string dir, string raw, JsonObject? tokens, IReadOnlyList<WebDesignCms.Sammlung> cms, string outDir, string rel, string lang, string prefix,
-        IReadOnlyList<string> pages, HashSet<string> entryPaths, IReadOnlyList<(string Lang, string Rel)> alts, string canonicalRel, WebDesignSite.Settings site, List<string> notes, List<JsonObject> usedDocs, IReadOnlySet<string> withPages)
+        IReadOnlyList<string> pages, HashSet<string> entryPaths, IReadOnlyList<(string Lang, string Rel)> alts, string canonicalRel, WebDesignSite.Settings site, List<string> notes, List<JsonObject> usedDocs, IReadOnlySet<string> withPages, string editorDir)
     {
         var json = WebDesignComponents.Inject(WebDesignTokens.Inject(raw, tokens), dir);
         var (data, err) = WebDesign.Validate(json);
@@ -237,11 +284,23 @@ public static class WebDesignExport
         var dataRel = rel == "index.html" ? "seite.js" : "daten/" + rel[..^5] + ".js"; // aus dem Ausgabepfad, damit eine nicht übersetzte Seite nicht das Original überschreibt
         Write(outDir, dataRel, "window.TRENDO_SEITE = " + doc.ToJsonString().Replace("</", "<\\/") + ";\n");
         var b = BaseOf(rel);
+        var dataTags = DataScripts(doc, dir, outDir, editorDir, notes); // K7: nur Seiten mit Daten-Bausteinen bekommen die Datenbank
         Write(outDir, rel, "<!doctype html>\n" + $"<html lang=\"{lang}\">\n<head>\n<meta charset=\"UTF-8\" />\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n" +
             (b.Length > 0 ? $"<base href=\"{b}\" />\n" : "") + head + $"<title>{Esc(title)}</title>\n<link rel=\"stylesheet\" href=\"assets/style.css\">\n" +
             (extraCss.Length > 0 ? $"<style id=\"t-anpassungen\">\n{extraCss}\n</style>\n" : "") +
-            $"<script src=\"{dataRel}\"></script>\n<script defer src=\"assets/editor.js\"></script>\n</head>\n<body>\n{RootMarker}\n<noscript>Diese Seite braucht JavaScript.</noscript>\n</body>\n</html>\n");
+            $"<script src=\"{dataRel}\"></script>\n{dataTags}<script defer src=\"assets/editor.js\"></script>\n</head>\n<body>\n{RootMarker}\n<noscript>Diese Seite braucht JavaScript.</noscript>\n</body>\n</html>\n");
         return new(rel, lang, false, indexable);
+    }
+
+    /// <summary>K7: Datenbank-Bündel und Einstellungen für Seiten mit „Datenliste“ oder „Anmeldung“. Das Bündel liegt nur einmal im Export.</summary>
+    public static string DataScripts(JsonObject doc, string dir, string outDir, string editorDir, List<string>? notes)
+    {
+        if (!WebDesignData.UsesData(doc)) return "";
+        var src = Path.Combine(editorDir, "assets", WebDesignData.Bundle);
+        if (!File.Exists(src)) { notes?.Add("Das Datenbank-Bündel fehlt im Programm; Daten-Bausteine speichern so nichts."); return ""; }
+        var dest = Path.Combine(outDir, "assets", WebDesignData.Bundle);
+        if (!File.Exists(dest)) File.Copy(src, dest, true);
+        return $"<script>{WebDesignData.ConfigScript(dir)}</script>\n<script defer src=\"assets/{WebDesignData.Bundle}\"></script>\n";
     }
 
     /// <summary>W4: Übergang zwischen Seiten über View Transitions; ohne Unterstützung oder bei „weniger Bewegung“ wechselt die Seite einfach.</summary>
@@ -285,6 +344,18 @@ public static class WebDesignExport
     }
 
     // ---------- Prüfung auf dem Export (W3) ----------
+
+    /// <summary>K8: den Export auf der Platte prüfen (auch nach einem Neustart): Seiten mit Inhalt im HTML, Titel und Beschreibung. Weiterleitungsseiten zählen nicht.</summary>
+    public static IReadOnlyList<string> CheckFolder(string outDir)
+    {
+        if (!Directory.Exists(outDir)) return [];
+        var pages = Directory.EnumerateFiles(outDir, "*.html", new EnumerationOptions { RecurseSubdirectories = true, AttributesToSkip = FileAttributes.ReparsePoint })
+            .Select(f => Path.GetRelativePath(outDir, f).Replace(Path.DirectorySeparatorChar, '/'))
+            .Where(r => !r.Split('/').Any(p => p.StartsWith('.')) && r != "namensnennung.html")
+            .Where(r => { var t = File.ReadAllText(Path.Combine(outDir, r.Replace('/', Path.DirectorySeparatorChar))); return t.Contains("assets/editor.js", StringComparison.Ordinal); })
+            .Select(r => new Output(r, "", false, true)).ToList();
+        return CheckExport(outDir, pages).Where(x => !x.StartsWith("Sitemap:", StringComparison.Ordinal)).ToList();
+    }
 
     /// <summary>Prüft den fertigen Export: Inhalt steht im HTML (ohne Skript), Titel und Beschreibung vorhanden, Sitemap vollständig.</summary>
     public static IReadOnlyList<string> CheckExport(string outDir, IReadOnlyList<Output> pages)

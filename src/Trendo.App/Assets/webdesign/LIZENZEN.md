@@ -81,6 +81,7 @@
 | react-use-measure@2.1.7 | MIT |
 | react@19.1.0 | MIT |
 | scheduler@0.28.0 | MIT |
+| sql.js@1.15.2 | MIT |
 | suspend-react@0.1.3 | MIT |
 | three@0.180.0 | MIT |
 | tslib@2.9.1 | 0BSD |

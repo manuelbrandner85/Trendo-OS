@@ -211,7 +211,7 @@ public static partial class WebDesign
         File.WriteAllText(Path.Combine(outDir, "seite.js"), "window.TRENDO_SEITE = " + data.Replace("</", "<\\/") + ";\n");
         File.WriteAllText(Path.Combine(outDir, "index.html"),
             "<!doctype html>\n<html lang=\"de\">\n<head>\n<meta charset=\"UTF-8\" />\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n" + description +
-            $"<title>{title}</title>\n<link rel=\"stylesheet\" href=\"assets/style.css\">\n" + (extraCss.Length > 0 ? $"<style id=\"t-anpassungen\">\n{extraCss}\n</style>\n" : "") + $"<script src=\"seite.js\"></script>\n<script defer src=\"assets/editor.js\"></script>\n</head>\n<body>\n<div id=\"root\"></div>\n" +
+            $"<title>{title}</title>\n<link rel=\"stylesheet\" href=\"assets/style.css\">\n" + (extraCss.Length > 0 ? $"<style id=\"t-anpassungen\">\n{extraCss}\n</style>\n" : "") + $"<script src=\"seite.js\"></script>\n{WebDesignExport.DataScripts(doc.AsObject(), projectDir, outDir, editorDir, null)}<script defer src=\"assets/editor.js\"></script>\n</head>\n<body>\n<div id=\"root\"></div>\n" +
             "<noscript>Diese Seite braucht JavaScript.</noscript>\n</body>\n</html>\n");
         return (outDir, null);
     }

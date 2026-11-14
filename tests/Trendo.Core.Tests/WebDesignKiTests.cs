@@ -201,7 +201,7 @@ public class WebDesignKiTests
     public void Components_match_editor()
     {
         var src = File.ReadAllText(Path.Combine(Repo(), "tools", "webdesign-editor", "src", "main.jsx"));
-        Assert.Equal(19, WebDesignActions.ComponentNames.Count);
+        Assert.Equal(21, WebDesignActions.ComponentNames.Count);
         var names = WebDesignActions.ComponentNames.ToList();
         foreach (var c in names)
         {

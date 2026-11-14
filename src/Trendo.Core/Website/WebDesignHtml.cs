@@ -159,6 +159,21 @@ public static partial class WebDesignHtml
         return result;
     }
 
+    /// <summary>Text genau wie im eigenen Code: Leerraum bleibt, &lt;br&gt; wird Zeilenumbruch (für den Rundlauf Seite → Code → Seite).</summary>
+    static string RawText(JsonNode? n)
+    {
+        var sb = new StringBuilder();
+        void Walk(JsonNode? x)
+        {
+            if (x is not JsonObject o) return;
+            if (o["text"] is not null) { sb.Append(Str(o["text"])); return; }
+            if (Str(o["tag"]) == "br") { sb.Append('\n'); return; }
+            if (o["kinder"] is JsonArray k) foreach (var c in k) Walk(c);
+        }
+        Walk(n);
+        return sb.ToString();
+    }
+
     /// <summary>Text eines Teilbaums wie im Browser: Leerraum zusammengefasst, &lt;br&gt; als Zeilenumbruch.</summary>
     public static string TextOf(JsonNode? n)
     {
@@ -184,6 +199,8 @@ public static partial class WebDesignHtml
         public List<string> Report { get; } = [];
         public int Mapped, HtmlBlocks, Ids;
         public HashSet<string> UsedIds { get; } = [];
+        /// <summary>ids, die beim Einlesen schon vergeben wurden (doppelte ids im Code bekommen eine neue).</summary>
+        public HashSet<string> Seen { get; } = [];
         public string NewId(string type) { string id; do id = $"{type.ToLowerInvariant()}-i{++Ids}"; while (!UsedIds.Add(id)); return id; }
     }
 
@@ -241,6 +258,7 @@ public static partial class WebDesignHtml
         var attrs = o["attrs"] as JsonObject ?? new JsonObject();
         var typ = Str(attrs["data-typ"]);
         if (typ.Length > 0 && WebDesignActions.ComponentNames.Contains(typ)) { yield return Own(o, typ, ctx, depth); yield break; }
+        if (typ.Length > 0) ctx.Report.Add($"Unbekannter Baustein „{Short(typ)}“: Inhalt wurde übernommen, die Art des Bausteins nicht.");
         if (DropTags.Contains(tag)) { ctx.Report.Add($"<{tag}> nicht übernommen (kein Seiteninhalt oder nicht sicher)."); yield break; }
         switch (tag)
         {
@@ -334,20 +352,30 @@ public static partial class WebDesignHtml
     {
         var src = Str(attrs["src"]).Trim();
         if (src.Length == 0) return null;
+        try { if (src.Contains('%')) src = Uri.UnescapeDataString(src); } catch (UriFormatException) { } // „foto%20bild.jpg“ ist im HTML die übliche Schreibweise
         if (src.StartsWith("http:", StringComparison.OrdinalIgnoreCase) || src.StartsWith("https:", StringComparison.OrdinalIgnoreCase) || src.StartsWith("//", StringComparison.Ordinal) || src.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
         { ctx.Report.Add($"Bild „{Short(src)}“ liegt nicht im Ordner der Seite und wurde nicht übernommen. Lade es über die Medien des Projekts."); return null; }
         if (ctx.SourceDir is null) return WebDesign.IsSafeImagePath(src) && WebDesignCheck.IsLocalFile(ctx.ProjectDir, src) ? src : null;
         if (!WebDesign.IsSafeImagePath(src)) { ctx.Report.Add($"Bild „{Short(src)}“ ist keine Bilddatei im Ordner der Seite."); return null; }
         var root = Path.GetFullPath(ctx.SourceDir).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
         var file = Path.GetFullPath(Path.Combine(ctx.SourceDir, src.Split('#', '?')[0].Replace('/', Path.DirectorySeparatorChar)));
-        if (!file.StartsWith(root, StringComparison.OrdinalIgnoreCase) || !File.Exists(file) || (File.GetAttributes(file) & FileAttributes.ReparsePoint) != 0)
+        if (!file.StartsWith(root, StringComparison.OrdinalIgnoreCase) || !File.Exists(file) || LinkOnTheWay(root, file))
         { ctx.Report.Add($"Bild „{Short(src)}“ fehlt im Ordner der Seite."); return null; }
+        if (new FileInfo(file).Length > 15_000_000) { ctx.Report.Add($"Bild „{Short(src)}“ ist zu groß (über 15 MB)."); return null; }
         var target = Path.Combine(ctx.ProjectDir, "bilder", "import");
         Directory.CreateDirectory(target);
         var name = Path.GetFileName(file); var dest = Path.Combine(target, name);
         for (var i = 2; File.Exists(dest) && !SameFile(dest, file); i++) dest = Path.Combine(target, $"{Path.GetFileNameWithoutExtension(name)}-{i}{Path.GetExtension(name)}");
         if (!File.Exists(dest)) File.Copy(file, dest);
         return "bilder/import/" + Path.GetFileName(dest);
+    }
+
+    /// <summary>Liegt auf dem Weg vom Quellordner zur Datei eine Verknüpfung (Junction, Symlink)? Dann könnte das Bild aus einem fremden Ordner kommen.</summary>
+    static bool LinkOnTheWay(string root, string file)
+    {
+        for (var p = file; p.Length > root.TrimEnd(Path.DirectorySeparatorChar).Length; p = Path.GetDirectoryName(p) ?? "")
+            if ((File.GetAttributes(p) & FileAttributes.ReparsePoint) != 0) return true;
+        return false;
     }
 
     static bool SameFile(string a, string b) => new FileInfo(a).Length == new FileInfo(b).Length && File.ReadAllBytes(a).AsSpan().SequenceEqual(File.ReadAllBytes(b));
@@ -364,17 +392,22 @@ public static partial class WebDesignHtml
         var attrs = el["attrs"] as JsonObject ?? new JsonObject();
         var props = new JsonObject();
         var id = Str(attrs["data-b"]);
-        props["id"] = IdPattern().IsMatch(id) ? id : ctx.NewId(type);
+        if (IdPattern().IsMatch(id) && ctx.Seen.Add(id)) props["id"] = id;
+        else { props["id"] = ctx.NewId(type); if (id.Length > 0) ctx.Report.Add($"Baustein-id „{id}“ kam doppelt vor; die Kopie heißt jetzt „{props["id"]}“."); }
         var fields = WebDesignActions.Fields(type);
         foreach (var f in fields)
             switch (f.Kind)
             {
-                case "text": if (Field(el, f.Key) is { } t) props[f.Key] = TextOf(t); break;
-                case "link": if (Field(el, f.Key) is { } l) props[f.Key] = Link(Str(l["attrs"]?["href"])); break;
+                case "text": if (Field(el, f.Key) is { } t) props[f.Key] = RawText(t); break; // eigener Code: Text genau so, wie er dasteht
+                case "link": if (Field(el, f.Key) is { } l) props[f.Key] = Str(l["attrs"]?["href"]) is { Length: > 0 } h ? Link(h) : ""; break;
                 case "bild": if (Field(el, f.Key) is { } im) props[f.Key] = Str(im["attrs"]?["src"]) is { Length: > 0 } s && (WebDesign.IsSafeImagePath(s) || s.StartsWith("{{", StringComparison.Ordinal)) ? s : ""; break;
                 case "wahl" or "farbe" or "email": if (attrs["data-p-" + f.Key.ToLowerInvariant()] is { } v) props[f.Key] = Str(v); break;
                 case "zahl" or "stufe":
-                    if (attrs["data-p-" + f.Key.ToLowerInvariant()] is { } z && double.TryParse(Str(z), NumberStyles.Float, CultureInfo.InvariantCulture, out var d)) props[f.Key] = d == Math.Floor(d) && Math.Abs(d) < int.MaxValue ? (int)d : d;
+                    if (attrs["data-p-" + f.Key.ToLowerInvariant()] is { } z)
+                    {
+                        if (double.TryParse(Str(z), NumberStyles.Float, CultureInfo.InvariantCulture, out var d)) props[f.Key] = d == Math.Floor(d) && Math.Abs(d) < int.MaxValue ? (int)d : d;
+                        else ctx.Report.Add($"{type} {props["id"]}: „{f.Key}“ = „{Short(Str(z))}“ ist keine Zahl und wurde weggelassen.");
+                    }
                     break;
                 case "liste":
                     if (Find(el, x => Str(x["attrs"]?["data-liste"]) == f.Key) is { } ul)
@@ -387,9 +420,9 @@ public static partial class WebDesignHtml
                                 if (Field(li, sf.Key) is { } fe)
                                     item[sf.Key] = sf.Kind switch
                                     {
-                                        "link" => Link(Str(fe["attrs"]?["href"])),
+                                        "link" => Str(fe["attrs"]?["href"]) is { Length: > 0 } lh ? Link(lh) : "",
                                         "bild" => Str(fe["attrs"]?["src"]) is { Length: > 0 } s2 && WebDesign.IsSafeImagePath(s2) ? s2 : "",
-                                        "text" => TextOf(fe),
+                                        "text" => RawText(fe),
                                         _ => Str(fe["attrs"]?["data-wert"]),
                                     };
                             items.Add(item);

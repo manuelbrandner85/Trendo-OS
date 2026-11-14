@@ -13,6 +13,7 @@
     "lucide-react": "0.460.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "sql.js": "1.15.2",
     "three": "0.180.0"
   },
   "devDependencies": {
