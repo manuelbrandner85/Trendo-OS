@@ -155,17 +155,28 @@ public static class WebDesignExport
             else { var fi = new FileInfo(f); foreign[rel] = (fi.Length, fi.LastWriteTimeUtc); }
         }
         // Schreibschutz vorab prüfen – bei eigenen und fremden Dateien, damit kein halber Export entsteht
-        if (Directory.EnumerateFiles(outDir, "*", new EnumerationOptions { RecurseSubdirectories = true, AttributesToSkip = FileAttributes.ReparsePoint }).FirstOrDefault(f => !Path.GetRelativePath(outDir, f).StartsWith(".trendo", StringComparison.Ordinal) && (File.GetAttributes(f) & FileAttributes.ReadOnly) != 0) is { } ro)
+        // Geprüft werden nur Dateien, die Trendo löscht oder überschreiben kann; versteckte Ordner wie .git (dort ist vieles schreibgeschützt) und andere fremde Dateien nicht
+        if (delete.Concat(foreign.Keys.Where(MayWrite).Select(r => Path.Combine(outDir, r.Replace('/', Path.DirectorySeparatorChar)))).FirstOrDefault(f => (File.GetAttributes(f) & FileAttributes.ReadOnly) != 0) is { } ro)
             return (foreign, $"Im Export-Ordner ist „{Path.GetRelativePath(outDir, ro)}“ schreibgeschützt. Nichts wurde gelöscht; bitte den Schreibschutz aufheben.");
         try { foreach (var f in delete) File.Delete(f); }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return (foreign, "Eine Datei im Export-Ordner ist gerade geöffnet: " + e.Message); }
         return (foreign, null);
     }
 
+    /// <summary>Kann der Export diese Datei schreiben? Seiten, Bündel, Daten und die festen Dateien – nichts in versteckten Ordnern.</summary>
+    static bool MayWrite(string rel) => !rel.Split('/').Any(p => p.StartsWith('.')) && (rel.EndsWith(".html", StringComparison.OrdinalIgnoreCase) || rel.StartsWith("assets/", StringComparison.Ordinal)
+        || rel.StartsWith("daten/", StringComparison.Ordinal) || rel.StartsWith("medien/", StringComparison.Ordinal) || rel.StartsWith("bilder/", StringComparison.Ordinal) || rel.StartsWith("mods/", StringComparison.Ordinal) || rel is "seite.js" or "sitemap.xml" or "robots.txt" or "_redirects");
+
     /// <summary>Datei aus einem älteren Trendo-Export (ohne Liste)? Feste Namen, Datenordner und Seiten, die das Editor-Bündel laden.</summary>
     static bool LooksLikeTrendo(string file, string rel)
     {
-        if (rel is "seite.js" or "sitemap.xml" or "_redirects" or "namensnennung.html" || rel.StartsWith("daten/", StringComparison.Ordinal)) return true;
+        if (rel is "seite.js" or "sitemap.xml" or "_redirects" or "namensnennung.html") return true;
+        if (rel.StartsWith("daten/", StringComparison.Ordinal)) // nur Trendos Datenskripte, keine eigenen Dateien wie daten/preisliste.pdf
+        {
+            if (!rel.EndsWith(".js", StringComparison.OrdinalIgnoreCase)) return false;
+            try { using var fs = File.OpenRead(file); var b = new byte[64]; var n = fs.Read(b); var kopf = Encoding.UTF8.GetString(b, 0, n); return kopf.StartsWith("window.TRENDO_", StringComparison.Ordinal) || kopf.StartsWith("(window.TRENDO_", StringComparison.Ordinal); }
+            catch (IOException) { return false; }
+        }
         if (rel.StartsWith("assets/", StringComparison.Ordinal) && Path.GetFileName(rel) is "editor.js" or "style.css" or "LIZENZEN.txt" or "daten.js") return true;
         if (!rel.EndsWith(".html", StringComparison.OrdinalIgnoreCase) || new FileInfo(file).Length > 2_000_000) return false;
         var t = File.ReadAllText(file);
@@ -175,8 +186,7 @@ public static class WebDesignExport
     /// <summary>Fremde Dateien vor dem Export sichern (.trendo/vorher/), damit Trendo nichts Eigenes still überschreibt.</summary>
     static void BackupForeign(string outDir, Dictionary<string, (long, DateTime)> foreign)
     {
-        var dir = Path.Combine(outDir, ".trendo", "vorher");
-        if (Directory.Exists(dir)) Directory.Delete(dir, true);
+        var dir = Path.Combine(outDir, ".trendo", "vorher"); // Sicherungen bleiben über spätere Exporte erhalten
         foreach (var rel in foreign.Keys.Where(r => !r.Split('/').Any(p => p.StartsWith('.')))) // versteckte Ordner wie .git schreibt Trendo nie
         {
             var dest = Path.Combine(dir, rel.Replace('/', Path.DirectorySeparatorChar));

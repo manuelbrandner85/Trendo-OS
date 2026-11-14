@@ -30,17 +30,20 @@ function open() {
 }
 
 const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
-async function hash(passwort, salzHex) {
+// Salz mit Durchlaufzahl („600000:…“, OWASP 2023); ältere Einträge ohne Zahl nutzten 210 000 und bleiben gültig
+const DURCHLAEUFE = 600000;
+async function hash(passwort, salzFeld) {
+  const [n, salzHex] = salzFeld.includes(":") ? [parseInt(salzFeld, 10), salzFeld.split(":")[1]] : [210000, salzFeld];
   const salz = new Uint8Array(salzHex.match(/../g).map((h) => parseInt(h, 16)));
   const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(passwort), "PBKDF2", false, ["deriveBits"]);
-  return hex(await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: salz, iterations: 210000 }, key, 256));
+  return hex(await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: salz, iterations: n }, key, 256));
 }
 
 // Supabase nur mit eigenem Projekt: https://<projekt>.supabase.co und öffentlicher Schlüssel. Ohne Angaben bleibt alles auf dem Gerät.
 function supabase() { const s = cfg().supabase; return s && /^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(s.url || "") && typeof s.schluessel === "string" ? s : null; }
 async function nachSupabase(tabelle, row) {
   const s = supabase(); if (!s) return;
-  try { await fetch(`${s.url}/rest/v1/${encodeURIComponent(tabelle)}`, { method: "POST", headers: { apikey: s.schluessel, Authorization: `Bearer ${s.schluessel}`, "Content-Type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify(row) }); }
+  try { const r = await fetch(`${s.url}/rest/v1/${encodeURIComponent(tabelle)}`, { method: "POST", headers: { apikey: s.schluessel, Authorization: `Bearer ${s.schluessel}`, "Content-Type": "application/json", Prefer: "return=minimal" }, body: JSON.stringify(row) }); if (!r.ok) console.warn("Supabase hat den Eintrag nicht angenommen (" + r.status + "). Tabelle und Spalten mit dem SQL aus Trendo anlegen."); }
   catch { /* offline: der Eintrag bleibt lokal gespeichert */ }
 }
 
@@ -57,7 +60,7 @@ window.TrendoDaten = {
     if (String(passwort || "").length < 10) return "Das Passwort braucht mindestens 10 Zeichen.";
     const db = await open();
     const r = db.exec("SELECT 1 FROM nutzer WHERE name = ?", [name]); if (r.length) return "Diesen Namen gibt es auf diesem Gerät schon.";
-    const salz = hex(crypto.getRandomValues(new Uint8Array(16)));
+    const salz = DURCHLAEUFE + ":" + hex(crypto.getRandomValues(new Uint8Array(16)));
     db.run("INSERT INTO nutzer (name, salz, hash, erstellt) VALUES (?, ?, ?, ?)", [name, salz, await hash(passwort, salz), new Date().toISOString()]);
     await sichern(db);
     try { sessionStorage.setItem("trendo-nutzer", name); } catch { }

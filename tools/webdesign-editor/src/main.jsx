@@ -295,8 +295,11 @@ function buendel(name, global, ereignis) {
   });
   return BUENDEL[name];
 }
+let KANN3D = null;
 function kann3D() {
-  try { if (navigator.gpu) return true; const c = document.createElement("canvas"); return !!(c.getContext("webgl2") || c.getContext("webgl")); } catch { return false; }
+  if (KANN3D !== null) return KANN3D;
+  try { if (navigator.gpu) return (KANN3D = true); const c = document.createElement("canvas"); const g = c.getContext("webgl2") || c.getContext("webgl"); KANN3D = !!g; if (g && g.getExtension("WEBGL_lose_context")) g.getExtension("WEBGL_lose_context").loseContext(); } catch { KANN3D = false; }
+  return KANN3D;
 }
 const STEUERUNG = {};
 function Modell3D(p) {
@@ -308,7 +311,7 @@ function Modell3D(p) {
     if (VORRENDERN || ohne || !datei) return;
     let weg = false;
     const [name, global, ev] = quelle === "splat" ? ["splat.js", "TrendoSplat", "trendo-splat"] : ["drei.js", "Trendo3D", "trendo-3d"];
-    buendel(name, global, ev).then((api) => api.mount(ref.current, p, dateiBytes)).then((c) => { if (weg) { c.entfernen(); return; } ctrl.current = c; STEUERUNG[id] = c; setZustand("bereit"); })
+    buendel(name, global, ev).then((api) => api.mount(ref.current, p, dateiBytes)).then((c) => { if (weg) { c.entfernen(); return; } ctrl.current = c; STEUERUNG[id] = c; setZustand("bereit"); window.dispatchEvent(new Event("trendo-3d-bereit")); })
       .catch(() => { if (!weg) setZustand("fehler"); });
     return () => { weg = true; if (ctrl.current) { ctrl.current.entfernen(); ctrl.current = null; delete STEUERUNG[id]; } };
   }, [datei, quelle]);
@@ -334,6 +337,8 @@ function DateiWahl({ value, onChange }) {
 // Standbild für Geräte ohne 3D: aus der aktuellen Ansicht aufnehmen (Trendo speichert es in den Medien) oder ein Bild wählen
 function StandbildFeld({ value, onChange }) {
   const id = usePuckSel((s) => s.selectedItem?.props?.id);
+  const [, neu] = useState(0);
+  useEffect(() => { const f = () => neu((n) => n + 1); window.addEventListener("trendo-3d-bereit", f); return () => window.removeEventListener("trendo-3d-bereit", f); }, []);
   const aufnehmen = () => { const c = STEUERUNG[id]; if (!c) return; send({ art: "standbild", daten: { id, bild: c.standbild() } }); };
   return <div className="t-anp"><b>Standbild</b>
     <BildWahl value={value} onChange={onChange} label="" />
@@ -358,11 +363,12 @@ function useDaten() {
 const INPUT_ART = { text: "text", email: "email", zahl: "number", datum: "date" };
 function Datenliste({ titel, tabelle, felder, knopf, nurAngemeldet, liste, id }) {
   const api = useDaten();
-  const [eintraege, setEintraege] = useState([]); const [meldung, setMeldung] = useState("");
-  const fs = (felder || []).filter((f) => /^[a-z][a-z0-9_]{0,29}$/.test(f.name || ""));
+  const [eintraege, setEintraege] = useState([]); const [meldung, setMeldung] = useState(""); const [stand, setStand] = useState(0);
+  useEffect(() => (api ? api.beobachten(() => setStand((n) => n + 1)) : undefined), [api]);
+  const fs = (felder || []).filter((f) => /^[a-z][a-z0-9_]{0,29}$/.test(f.name || "") && !["id", "erstellt", "nutzer"].includes(f.name));
   const nutzer = api ? api.aktuell() : "";
   const gesperrt = nurAngemeldet === "ja" && !nutzer;
-  useEffect(() => { if (api && liste !== "keine") api.liste(tabelle, liste === "eigene").then(setEintraege); }, [api, tabelle, liste, nutzer, meldung]);
+  useEffect(() => { if (api && liste !== "keine") api.liste(tabelle, liste === "eigene").then(setEintraege); }, [api, tabelle, liste, nutzer, meldung, stand]);
   const senden = async (e) => {
     e.preventDefault(); if (!api) return;
     const werte = Object.fromEntries(fs.map((f) => [f.name, e.target.elements[f.name]?.value ?? ""]));
@@ -421,7 +427,8 @@ function SammlungWahl({ value, onChange }) {
 
 // Z7: Bild aus den Medien des Projekts wählen oder einen Pfad eingeben
 function BildWahl({ value, onChange, label }) {
-  const medien = usePuckSel((s) => (Array.isArray(s.appState.data.root?.props?.medien) ? s.appState.data.root.props.medien : LEER));
+  const alle = usePuckSel((s) => (Array.isArray(s.appState.data.root?.props?.medien) ? s.appState.data.root.props.medien : LEER));
+  const medien = useMemo(() => alle.filter((m) => !m.art || m.art === "bild" || m.art === "symbol"), [alle]);
   return (
     <div className="t-anp"><b>{label}</b>
       {medien.length > 0 && <select className="t-anp-ansicht t-bildwahl" aria-label="Bild aus den Medien" value={medien.some((m) => m.datei === value) ? value : ""} onChange={(e) => e.target.value && onChange(e.target.value)}>
@@ -596,7 +603,7 @@ const baseConfig = {
             pflicht: { type: "radio", label: "Pflicht", options: [{ label: "Nein", value: "nein" }, { label: "Ja", value: "ja" }] } },
           defaultItemProps: { name: "feld", beschriftung: "Feld", art: "text", pflicht: "nein" }, getItemSummary: (i) => i.beschriftung || i.name || "Feld" },
         knopf: { type: "text", label: "Knopf-Text" },
-        nurAngemeldet: { type: "radio", label: "Nur nach Anmeldung", options: [{ label: "Nein", value: "nein" }, { label: "Ja", value: "ja" }] },
+        nurAngemeldet: { type: "radio", label: "Nur nach Anmeldung (Bequemlichkeit, kein Zugriffsschutz)", options: [{ label: "Nein", value: "nein" }, { label: "Ja", value: "ja" }] },
         liste: { type: "select", label: "Einträge zeigen", options: [{ label: "Alle", value: "alle" }, { label: "Nur eigene", value: "eigene" }, { label: "Nicht zeigen", value: "keine" }] }, ...anpassungenFeld(), ...bewegungFelder },
       defaultProps: { titel: "Gästebuch", tabelle: "eintraege", felder: [{ name: "name", beschriftung: "Name", art: "text", pflicht: "ja" }, { name: "nachricht", beschriftung: "Nachricht", art: "langtext", pflicht: "ja" }], knopf: "Speichern", nurAngemeldet: "nein", liste: "alle" },
       render: (p) => <Datenliste {...p} /> },

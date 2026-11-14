@@ -134,10 +134,23 @@ public static partial class WebDesignMods
             if (bad is not null) return (null, $"Bild „{bad}“ liegt nicht im Ordner bilder/ der Mod.");
             var page = new JsonObject { ["root"] = new JsonObject { ["props"] = new JsonObject() }, ["content"] = copy, ["zones"] = new JsonObject() };
             if (WebDesign.Validate(page.ToJsonString()) is { Json: null, Error: var e }) return (null, e);
-            if (copy.OfType<JsonObject>().Any(b => !WebDesignActions.ComponentNames.Contains(Str(b["type"])) || Str(b["type"]) is "Html" or "Komponente")) return (null, "Vorlage nutzt einen unbekannten oder nicht erlaubten Baustein.");
+            if (BlockTypes(copy).Any(t => !WebDesignActions.ComponentNames.Contains(t) || t is "Html" or "Komponente")) return (null, "Vorlage nutzt einen unbekannten oder nicht erlaubten Baustein.");
             return (new(name, Str(o["beschreibung"]).Trim(), copy), null);
         }
         catch (Exception e) when (e is JsonException or ArgumentException) { return (null, "kein gültiges JSON."); }
+    }
+
+    /// <summary>Typen aller Bausteine in jeder Tiefe (auch in Slots von Bereichen und Spalten).</summary>
+    static IEnumerable<string> BlockTypes(JsonNode? n)
+    {
+        switch (n)
+        {
+            case JsonArray a: foreach (var x in a) foreach (var t in BlockTypes(x)) yield return t; break;
+            case JsonObject o:
+                if (o.ContainsKey("type") || o["props"] is JsonObject) yield return Str(o["type"]);
+                foreach (var kv in o) if (kv.Key != "type") foreach (var t in BlockTypes(kv.Value)) yield return t;
+                break;
+        }
     }
 
     static (Aktion? A, string? Error) ReadAction(string folder, string rel)
@@ -175,6 +188,11 @@ public static partial class WebDesignMods
         {
             folder = Path.Combine(Path.GetTempPath(), "trendo-mod-" + Guid.NewGuid().ToString("N"));
             if (Unzip(p, folder) is { } zerr) { Cleanup(new(null, null, "", folder, true)); return new(null, zerr, "", null); }
+            // „Senden an › ZIP-komprimierter Ordner“ legt alles in einen Hauptordner: den als Mod-Wurzel nehmen
+            if (!File.Exists(Path.Combine(folder, ManifestName)) && Directory.GetFiles(folder).Length == 0 && Directory.GetDirectories(folder) is [var only])
+            {
+                var flat = folder + "-x"; Directory.Move(only, flat); Directory.Delete(folder); Directory.Move(flat, folder);
+            }
         }
         else if (Directory.Exists(p)) folder = p;
         else return new(null, "Bitte einen Mod-Ordner oder eine ZIP-Datei wählen.", "", null);
@@ -224,12 +242,28 @@ public static partial class WebDesignMods
         var target = Path.Combine(projectDir, Folder, mod.Id);
         var full = Path.GetFullPath(target);
         if (!full.StartsWith(Path.GetFullPath(Path.Combine(projectDir, Folder)) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)) return "Ungültige Mod-id.";
-        if (Directory.Exists(target)) Directory.Delete(target, true);
-        foreach (var f in mod.Dateien)
+        var source = Path.GetFullPath(prepared.Folder).TrimEnd(Path.DirectorySeparatorChar);
+        if (source.Equals(full, StringComparison.OrdinalIgnoreCase) || source.StartsWith(full + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) || full.StartsWith(source + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            return "Diese Mod liegt schon im Projekt. Zum Erneuern bitte die neue Fassung aus einem anderen Ordner oder einer ZIP-Datei wählen.";
+        // erst vollständig neben das Ziel kopieren, dann austauschen: Bei einem Fehler bleibt die alte Fassung erhalten
+        var fresh = Path.Combine(projectDir, Folder, ".neu-" + mod.Id); var old = Path.Combine(projectDir, Folder, ".alt-" + mod.Id);
+        try
         {
-            var dest = Path.Combine(target, f.Replace('/', Path.DirectorySeparatorChar));
-            Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
-            File.Copy(Path.Combine(prepared.Folder, f.Replace('/', Path.DirectorySeparatorChar)), dest);
+            foreach (var d in new[] { fresh, old }) if (Directory.Exists(d)) Directory.Delete(d, true);
+            foreach (var f in mod.Dateien)
+            {
+                var dest = Path.Combine(fresh, f.Replace('/', Path.DirectorySeparatorChar));
+                Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
+                File.Copy(Path.Combine(prepared.Folder, f.Replace('/', Path.DirectorySeparatorChar)), dest);
+            }
+            if (Directory.Exists(target)) Directory.Move(target, old);
+            Directory.Move(fresh, target);
+            if (Directory.Exists(old)) try { Directory.Delete(old, true); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            try { if (Directory.Exists(fresh)) Directory.Delete(fresh, true); if (!Directory.Exists(target) && Directory.Exists(old)) Directory.Move(old, target); } catch (Exception e2) when (e2 is IOException or UnauthorizedAccessException) { }
+            return "Die Mod ließ sich nicht installieren (Datei gesperrt oder kein Schreibrecht). Die bisherige Fassung bleibt erhalten.";
         }
         return null;
     }
@@ -254,7 +288,7 @@ public static partial class WebDesignMods
     }
 
     /// <summary>Entpack-Ordner einer ZIP-Datei aufräumen. Ein Mod-Ordner der Person wird nie gelöscht.</summary>
-    public static void Cleanup(Prepared? p) { if (p is { Extracted: true, Folder: { } f } && Path.GetFileName(f).StartsWith("trendo-mod-", StringComparison.Ordinal) && f.StartsWith(Path.GetTempPath(), StringComparison.OrdinalIgnoreCase)) try { Directory.Delete(f, true); } catch (IOException) { } }
+    public static void Cleanup(Prepared? p) { if (p is { Extracted: true, Folder: { } f } && Path.GetFileName(f).StartsWith("trendo-mod-", StringComparison.Ordinal) && f.StartsWith(Path.GetTempPath(), StringComparison.OrdinalIgnoreCase)) try { Directory.Delete(f, true); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } }
 
     // ---------- Nutzen ----------
 

@@ -30,8 +30,11 @@ export async function starte({ renderer, el, props, datei, inhalt, backend }) {
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
 
-  // Inhalt laden und auf den Boden stellen
-  const { objekt, box } = await inhalt(scene);
+  // Inhalt laden und auf den Boden stellen; scheitert das, Renderer und Zeichenfläche wieder entfernen
+  let geladen;
+  try { geladen = await inhalt(scene); }
+  catch (e) { controls.dispose(); renderer.setAnimationLoop(null); renderer.dispose(); renderer.domElement.remove(); throw e; }
+  const { objekt, box } = geladen;
   const center = box.getCenter(new THREE.Vector3());
   const size = box.getSize(new THREE.Vector3());
   const radius = Math.max(size.length() / 2, 0.001);

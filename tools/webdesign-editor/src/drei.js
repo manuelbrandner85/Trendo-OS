@@ -17,7 +17,7 @@ window.Trendo3D = {
     const bytes = await datei(props.datei);
     if (!bytes) throw new Error("Modell fehlt");
     const renderer = new THREE.WebGPURenderer({ antialias: true, alpha: true, forceWebGL: props.renderer === "webgl" });
-    await renderer.init();
+    try { await renderer.init(); } catch (e) { renderer.dispose(); throw e; }
     const backend = () => (renderer.backend && renderer.backend.isWebGPUBackend ? "webgpu" : "webgl");
     return starte({ renderer, el, props, datei, backend, inhalt: async (scene) => {
       const objekt = await parse(bytes);

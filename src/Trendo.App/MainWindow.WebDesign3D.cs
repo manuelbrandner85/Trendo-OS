@@ -8,17 +8,20 @@ namespace Trendo.App;
 public partial class MainWindow
 {
     bool _wd3dBusy;
+    /// <summary>Schon an den Editor gegebene 3D-Dateien (Pfad, Größe, Zeit): jede geht nur einmal hinein, nicht bei jeder Änderung neu.</summary>
+    readonly HashSet<string> _wd3dSent = [];
     /// <summary>Für Tests: Umwandlung nach GLB ersetzen (sonst Blender über ModelConverter).</summary>
     public static Func<string, string, Task>? WebDesignGlbConvertOverride { get; set; }
 
     /// <summary>Modell aus einem anderen Format über Blender nach GLB wandeln, prüfen und mit Herkunft und Lizenz in die Medien legen.</summary>
     public async Task WebDesignModelImport(string path, string titel, string herkunft, string lizenz, string urheber = "", string quelle = "")
     {
-        if (_wd3dBusy) return;
+        if (_wd3dBusy) { _wdNote = "Es wird gerade ein Modell umgewandelt. Bitte warten, bis es fertig ist."; Show("dev"); return; }
         path = path.Trim().Trim('"');
         if (WebDesignImport.LocalPathError(path) is { } lerr || !File.Exists(path)) { _wdNote = WebDesignImport.LocalPathError(path) ?? "Diese Datei gibt es nicht."; Show("dev"); return; }
         var ext = Path.GetExtension(path).ToLowerInvariant();
         if (!ModelConverter.Extensions.Contains(ext)) { _wdNote = "Dieses 3D-Format kennt Trendo nicht. Möglich: " + string.Join(", ", ModelConverter.Extensions); Show("dev"); return; }
+        if (new FileInfo(path).Length > ModelConverter.MaxInputBytes) { _wdNote = "Die Datei ist zu groß (über 1 GB). Bitte in Blender verkleinern."; Show("dev"); return; }
         _wd3dBusy = true;
         var temp = Path.Combine(Path.GetTempPath(), "trendo-glb-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(temp);
         try
@@ -28,7 +31,7 @@ public partial class MainWindow
             {
                 _wdNote = "Blender wandelt das Modell in GLB um …"; Show("dev");
                 glb = Path.Combine(temp, Path.GetFileNameWithoutExtension(path) + ".glb");
-                if (WebDesignGlbConvertOverride is { } o) await o(path, glb); else await ModelConverter.ToGlb(path, glb);
+                if (WebDesignGlbConvertOverride is { } o) await o(path, glb); else await ModelConverter.ToGlb(path, glb, onlyLocalTextures: true);
             }
             if (WebDesignModel.CheckGlb(glb) is { } gerr) { _wdNote = "Nicht übernommen: " + gerr; return; }
             var (a, err) = WebDesignAssets.Import(WebDesignDir, glb, "modell", titel.Trim().Length > 0 ? titel : Path.GetFileNameWithoutExtension(path), herkunft.Trim().Length > 0 ? herkunft : (ext == ".blend" ? "eigenes Blender-Modell" : "eigene Datei"), lizenz, urheber, quelle);
@@ -47,7 +50,9 @@ public partial class MainWindow
         foreach (var rel in WebDesignModel.Blocks(doc).SelectMany(WebDesignModel.Files).Distinct())
         {
             var file = Path.Combine(WebDesignDir, rel.Replace('/', Path.DirectorySeparatorChar));
-            if (!File.Exists(file) || new FileInfo(file).Length > WebDesignModel.MaxBytes) continue;
+            if (!WebDesignCheck.IsLocalFile(WebDesignDir, rel) || !File.Exists(file) || new FileInfo(file).Length > WebDesignModel.MaxBytes) continue; // keine Verknüpfung aus dem Projekt heraus
+            var fi = new FileInfo(file);
+            if (!_wd3dSent.Add($"{rel}|{fi.Length}|{fi.LastWriteTimeUtc.Ticks}")) continue;
             _wdView.InvokeScript(WebDesignModel.FileScript(rel, File.ReadAllBytes(file)));
         }
     }
@@ -69,10 +74,12 @@ public partial class MainWindow
             var (a, err) = WebDesignAssets.Import(WebDesignDir, file, "bild", "Standbild 3D " + id, "Standbild aus dem 3D-Baustein", "eigenes Werk");
             try { Directory.Delete(temp, true); } catch (IOException) { }
             if (a is null) { _wdNote = err ?? "Das Standbild ließ sich nicht speichern."; return; }
+            _wdNote = "";
             WebDesignHumanAction(new JsonObject { ["aktionen"] = new JsonArray(new JsonObject { ["aktion"] = "element_aendern", ["id"] = id, ["props"] = new JsonObject { ["standbild"] = a.Datei } }) }.ToJsonString());
-            _wdNote = $"Standbild gespeichert ({a.Datei}). Geräte ohne 3D zeigen es statt der Szene.";
+            _wdNote = _wdNote.Length > 0 ? $"Standbild gespeichert ({a.Datei}), aber nicht eingetragen: {_wdNote}" : $"Standbild gespeichert ({a.Datei}). Geräte ohne 3D zeigen es statt der Szene.";
         }
         catch (FormatException) { _wdNote = "Das Standbild ließ sich nicht lesen."; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { _wdNote = "Das Standbild ließ sich nicht speichern (kein Schreibrecht im Projekt)."; }
         catch (System.Text.Json.JsonException) { _wdNote = "Das Standbild ließ sich nicht lesen."; }
         finally { Avalonia.Threading.Dispatcher.UIThread.Post(() => Show("dev")); }
     }

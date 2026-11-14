@@ -34,11 +34,13 @@ public static class WebDesignModel
         Span<byte> head = stackalloc byte[20];
         if (fs.Read(head) != 20 || Encoding.ASCII.GetString(head[..4]) != "glTF") return "Keine GLB-Datei (glTF binär).";
         if (BinaryPrimitives.ReadUInt32LittleEndian(head[4..8]) != 2) return "Nur glTF 2.0 wird unterstützt.";
+        if (BinaryPrimitives.ReadUInt32LittleEndian(head[8..12]) != len) return "Die GLB-Datei ist unvollständig oder beschädigt (Länge stimmt nicht). Bitte neu exportieren.";
         var jsonLen = BinaryPrimitives.ReadUInt32LittleEndian(head[12..16]);
-        if (Encoding.ASCII.GetString(head[16..20]) != "JSON" || jsonLen > 50_000_000 || jsonLen > len) return "Die GLB-Datei ist beschädigt.";
-        var buf = new byte[jsonLen]; fs.ReadExactly(buf);
+        if (Encoding.ASCII.GetString(head[16..20]) != "JSON" || jsonLen > 50_000_000 || jsonLen > len - 20) return "Die GLB-Datei ist beschädigt.";
+        var buf = new byte[jsonLen];
         try
         {
+            fs.ReadExactly(buf);
             var o = JsonNode.Parse(buf) as JsonObject;
             var required = (o?["extensionsRequired"] as JsonArray ?? []).Select(x => Str(x)).ToList();
             if (required.FirstOrDefault(r => !SupportedExtensions.Contains(r)) is { } bad)
@@ -51,7 +53,7 @@ public static class WebDesignModel
             if ((o?["buffers"] as JsonArray ?? []).OfType<JsonObject>().Any(b => Str(b["uri"]).Length > 0) || (o?["images"] as JsonArray ?? []).OfType<JsonObject>().Any(i => Str(i["uri"]) is { Length: > 0 } u && !u.StartsWith("data:", StringComparison.Ordinal)))
                 return "Das Modell verweist auf Dateien neben sich. Bitte als ein einziges GLB mit eingebetteten Texturen exportieren.";
         }
-        catch (Exception e) when (e is JsonException or ArgumentException) { return "Der Aufbau der GLB-Datei ist nicht lesbar."; }
+        catch (Exception e) when (e is JsonException or ArgumentException or EndOfStreamException) { return "Der Aufbau der GLB-Datei ist nicht lesbar."; }
         return null;
     }
 
@@ -60,11 +62,54 @@ public static class WebDesignModel
     {
         if (!File.Exists(file)) return "Die Splat-Datei fehlt.";
         if (new FileInfo(file).Length > MaxBytes) return "Der Splat ist zu groß für eine Website (über 50 MB). In .spz umwandeln verkleinert ihn stark.";
-        if (Path.GetExtension(file).Equals(".ply", StringComparison.OrdinalIgnoreCase))
+        var ext = Path.GetExtension(file).ToLowerInvariant();
+        try
         {
-            using var fs = File.OpenRead(file); var b = new byte[3]; fs.ReadExactly(b);
-            if (Encoding.ASCII.GetString(b) != "ply") return "Keine PLY-Datei.";
+            if (ext == ".ply")
+            {
+                // Kopf lesen: Punktzahl begrenzen, sonst fordert der Browser riesige Speicherblöcke an und die Seite stürzt ab
+                using var fs = File.OpenRead(file); var b = new byte[Math.Min(fs.Length, 16384)]; fs.ReadExactly(b);
+                var head = Encoding.ASCII.GetString(b);
+                if (!head.StartsWith("ply", StringComparison.Ordinal)) return "Keine PLY-Datei.";
+                var end = head.IndexOf("end_header", StringComparison.Ordinal); if (end < 0) return "Der Kopf der PLY-Datei ist unvollständig.";
+                var m = System.Text.RegularExpressions.Regex.Match(head[..end], @"element vertex (\d{1,12})");
+                if (!m.Success) return "Die PLY-Datei nennt keine Punktzahl.";
+                if (long.Parse(m.Groups[1].Value) > MaxSplatPoints) return $"Der Splat hat zu viele Punkte für eine Website (höchstens {MaxSplatPoints:N0}).";
+            }
+            else if (ext == ".spz")
+            {
+                // SPZ ist mit gzip gepackt; Kopf: Kennung „NGSP“, Version, Punktzahl
+                using var fs = File.OpenRead(file); using var gz = new System.IO.Compression.GZipStream(fs, System.IO.Compression.CompressionMode.Decompress);
+                var h = new byte[16]; gz.ReadExactly(h);
+                if (BinaryPrimitives.ReadUInt32LittleEndian(h.AsSpan(0, 4)) != 0x5053474e) return "Keine SPZ-Datei.";
+                if (BinaryPrimitives.ReadUInt32LittleEndian(h.AsSpan(8, 4)) > MaxSplatPoints) return $"Der Splat hat zu viele Punkte für eine Website (höchstens {MaxSplatPoints:N0}).";
+            }
         }
+        catch (Exception e) when (e is IOException or InvalidDataException or FormatException or OverflowException) { return "Die Splat-Datei ist beschädigt."; }
+        return null;
+    }
+
+    /// <summary>Höchste Punktzahl eines Splats (.splat mit 32 Byte je Punkt liegt bei 50 MB darunter).</summary>
+    public const long MaxSplatPoints = 5_000_000;
+    /// <summary>Größtes HDR-Umgebungsbild (Breite × Höhe); mehr bringt für Spiegelungen nichts und kostet im Browser Speicher.</summary>
+    public const int MaxHdrWidth = 8192, MaxHdrHeight = 4096;
+
+    /// <summary>HDR-Bild (Radiance) prüfen: Kennung, Format, Abmessungen aus dem Kopf, bevor der Browser es dekodiert.</summary>
+    public static string? CheckHdr(string file)
+    {
+        if (!File.Exists(file)) return "Das HDR-Bild fehlt.";
+        if (new FileInfo(file).Length > MaxBytes) return "Das HDR-Bild ist größer als 50 MB.";
+        try
+        {
+            using var fs = File.OpenRead(file); var b = new byte[Math.Min(fs.Length, 8192)]; fs.ReadExactly(b);
+            var head = Encoding.ASCII.GetString(b);
+            if (!head.StartsWith("#?RADIANCE", StringComparison.Ordinal) && !head.StartsWith("#?RGBE", StringComparison.Ordinal)) return "Kein HDR-Bild (Radiance).";
+            var m = System.Text.RegularExpressions.Regex.Match(head, @"\n\n([-+])Y (\d{1,6}) ([-+])X (\d{1,6})\n");
+            if (!m.Success) return "Die Abmessungen des HDR-Bilds fehlen im Kopf.";
+            var hgt = int.Parse(m.Groups[2].Value); var wid = int.Parse(m.Groups[4].Value);
+            if (wid < 1 || hgt < 1 || wid > MaxHdrWidth || hgt > MaxHdrHeight) return $"Das HDR-Bild ist zu groß (höchstens {MaxHdrWidth} × {MaxHdrHeight}). 2K oder 4K reichen für Spiegelungen.";
+        }
+        catch (Exception e) when (e is IOException or FormatException or OverflowException) { return "Das HDR-Bild ist beschädigt."; }
         return null;
     }
 
@@ -107,6 +152,7 @@ public static class WebDesignModel
         foreach (var rel in blocks.SelectMany(Files).Distinct())
         {
             var file = Path.Combine(projectDir, rel.Replace('/', Path.DirectorySeparatorChar));
+            if (!WebDesignCheck.IsLocalFile(projectDir, rel)) { notes?.Add($"3D-Datei {rel} liegt nicht im Projekt (Verknüpfung) und wird nicht übernommen."); continue; }
             if (!File.Exists(file) || new FileInfo(file).Length > MaxBytes) { notes?.Add($"3D-Datei {rel} fehlt oder ist zu groß."); continue; }
             var bytes = File.ReadAllBytes(file);
             var name = "daten/dateien/" + Convert.ToHexString(SHA256.HashData(bytes))[..16].ToLowerInvariant() + ".js";

@@ -24,6 +24,7 @@ public partial class MainWindow
         switch (m.Kind)
         {
             case "bereit": // Editor geladen → gespeicherte Seite hineinreichen
+                _wd3dSent.Clear(); // neue Editor-Seite: alle 3D-Dateien neu geben
                 WebDesignReload(WebDesignCurrent()); // auch nach Schließen und Öffnen: ein ungespeicherter Entwurf bleibt sichtbar
                 break;
             case "speichern":
@@ -31,10 +32,11 @@ public partial class MainWindow
                 _wdNote = err ?? $"Gespeichert ({DateTime.Now:HH:mm:ss}) – {(_wdVariant is null ? WebDesignSite.ActiveFile(WebDesignDir) : "Variante")}";
                 _core.Audit.Append(Principal.LocalOwner.Name, "web.visuell.speichern", err ?? "ok");
                 if (err is null) _wdDraft = null;
+                if (m.Data is { } saved) Dispatcher.UIThread.Post(() => WebDesignPush3DFiles(saved)); // Z3: im Editor neu gewählte Datei
                 Dispatcher.UIThread.Post(() => Show("dev"));
                 break;
             case "entwurf": // ungespeicherte Änderung im Editor: Grundlage für die nächste KI-Änderung, nichts wird geschrieben
-                if (WebDesign.Validate(m.Data).Json is { } draft) _wdDraft = draft;
+                if (WebDesign.Validate(m.Data).Json is { } draft) { _wdDraft = draft; Dispatcher.UIThread.Post(() => WebDesignPush3DFiles(draft)); } // Z3: im Editor neu gewählte Datei
                 break;
             case "auswahl":
                 var ids = (System.Text.Json.Nodes.JsonNode.Parse(m.Data ?? "{}")?["ids"] as System.Text.Json.Nodes.JsonArray)?.Select(x => x?.ToString() ?? "").Where(x => x.Length > 0).ToList() ?? [];
@@ -82,6 +84,7 @@ public partial class MainWindow
         sp.Children.Add(WebDesignCmsPane()); // W2
         sp.Children.Add(WebDesignLanguagesPane()); // Z5
         sp.Children.Add(WebDesignModsPane()); // A4
+        sp.Children.Add(WebDesignDataPane()); // K7
         sp.Children.Add(WebDesignPublishPane()); // K8
         if (_wdNote.Length > 0) sp.Children.Add(new TextBlock { Name = "web-visual-note", Text = _wdNote, FontSize = 12, Foreground = Muted, TextWrapping = Avalonia.Media.TextWrapping.Wrap });
         if (_wdOpen && editorOk)

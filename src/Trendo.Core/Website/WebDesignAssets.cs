@@ -59,10 +59,13 @@ public static partial class WebDesignAssets
     public static (Asset? Asset, string? Error) Import(string dir, string source, string art, string titel, string herkunft, string lizenz, string urheber = "", string quelle = "", string stichworte = "", string? familie = null)
     {
         if (!Types.TryGetValue(art, out var exts)) return (null, "Unbekannte Medienart.");
+        if (WebDesignImport.LocalPathError(source) is { } pathError) return (null, pathError); // kein Netzwerkpfad: Windows würde sonst eine SMB-Verbindung aufbauen
         if (!System.IO.File.Exists(source)) return (null, "Die Datei gibt es nicht.");
         var ext = Path.GetExtension(source).ToLowerInvariant();
         if (!exts.Contains(ext)) return (null, $"Für „{art}“ sind nur {string.Join(", ", exts)} erlaubt.");
         if (new FileInfo(source).Length > MaxBytes) return (null, "Die Datei ist größer als 50 MB.");
+        if (art == "splat" && WebDesignModel.CheckSplat(source) is { } splatError) return (null, splatError);
+        if (art == "umgebung" && WebDesignModel.CheckHdr(source) is { } hdrError) return (null, hdrError);
         if (art == "schrift" && (familie is null || !ValidFamily(familie))) return (null, "Eine Schrift braucht einen Familiennamen aus Buchstaben, Ziffern, Leerzeichen oder Strich.");
         var (loaded, broken) = TryLoad(dir);
         if (broken || loaded is null) return (null, "Das Medienverzeichnis (medien.trendo.json) ist beschädigt. Es wird nicht überschrieben, damit keine Lizenzangaben verloren gehen.");
@@ -107,11 +110,12 @@ public static partial class WebDesignAssets
             if (n is JsonArray a) foreach (var x in a) Walk(x);
             else if (n is JsonObject o) foreach (var kv in o)
             {
-                if (kv.Key is "src" or "bild" && kv.Value is JsonValue v && v.TryGetValue(out string? s) && s.Length > 0) used.Add(s.Split('#', '?')[0].Replace('\\', '/'));
+                if (kv.Key is "src" or "bild" or "standbild" && kv.Value is JsonValue v && v.TryGetValue(out string? s) && s.Length > 0) used.Add(s.Split('#', '?')[0].Replace('\\', '/'));
                 else if (kv.Key != "medien") Walk(kv.Value);
             }
         }
         Walk(doc);
+        foreach (var f in WebDesignModel.Blocks(doc).SelectMany(WebDesignModel.Files)) used.Add(f); // Z3: Modelle, Splats, Umgebungsbilder (Lizenz und Namensnennung)
         if (FontFamilyOf(doc?["root"]?["props"]?["font"]?.ToString()) is { } fam) foreach (var a in list.Where(x => x.Art == "schrift" && x.Familie == fam)) used.Add(a.Datei);
         return used;
     }
@@ -167,7 +171,7 @@ public static partial class WebDesignAssets
     }
 
     /// <summary>Liste für den Editor (Auswahl in Bild-Feldern), ohne Lizenzangaben.</summary>
-    public static JsonArray EditorList(string dir) => new(Load(dir).Where(a => a.Art == "bild" || a.Art == "symbol" && WebDesign.IsSafeImagePath(a.Datei)).Select(a => (JsonNode)new JsonObject { ["datei"] = a.Datei, ["titel"] = a.Titel, ["art"] = a.Art }).ToArray());
+    public static JsonArray EditorList(string dir) => new(Load(dir).Where(a => a.Art == "bild" || a.Art == "symbol" && WebDesign.IsSafeImagePath(a.Datei) || a.Art is "modell" or "splat" or "umgebung" && WebDesignModel.IsModelPath(a.Datei, a.Art)).Select(a => (JsonNode)new JsonObject { ["datei"] = a.Datei, ["titel"] = a.Titel, ["art"] = a.Art }).ToArray());
 
     /// <summary>Medienliste für den Editor in Seitendaten einsetzen.</summary>
     public static string Inject(string json, string dir)

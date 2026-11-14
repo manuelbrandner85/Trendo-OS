@@ -12,6 +12,8 @@ public static partial class WebDesignData
 {
     public const string FileName = "daten.trendo.json", Bundle = "daten.js";
     public static readonly string[] DataBlocks = ["Datenliste", "Anmeldung"];
+    /// <summary>Feldnamen, die die Datenliste selbst belegt.</summary>
+    public static readonly HashSet<string> ReservedFields = ["id", "erstellt", "nutzer"];
 
     [GeneratedRegex(@"^https://[a-z0-9-]{3,63}\.supabase\.co$")] private static partial Regex SupabaseUrl();
     [GeneratedRegex(@"sb_secret_[A-Za-z0-9_-]{10,}")] private static partial Regex SecretKey();
@@ -97,20 +99,20 @@ public static partial class WebDesignData
         return "window.TRENDO_DATEN = " + o.ToJsonString().Replace("</", "<\\/") + ";";
     }
 
-    /// <summary>SQL für das eigene Supabase-Projekt: Tabellen der Datenlisten mit Zeilenschutz (RLS): Besucher dürfen einfügen, lesen nur, wenn die Liste es zeigt.</summary>
+    /// <summary>SQL für das eigene Supabase-Projekt: Tabellen der Datenlisten mit Zeilenschutz (RLS): Besucher dürfen nur einfügen. Gelesen wird aus Supabase nichts (die Liste zeigt die Einträge auf dem Gerät), darum gibt es keine öffentliche Leseregel.</summary>
     public static string SupabaseSql(IEnumerable<JsonObject> datenlisten)
     {
         var sb = new StringBuilder("-- Für den SQL-Editor deines Supabase-Projekts. Trendo führt nichts aus.\n");
         foreach (var p in datenlisten)
         {
             var t = Str(p["tabelle"]); if (!TableName().IsMatch(t)) continue;
-            var cols = (p["felder"] as JsonArray ?? []).OfType<JsonObject>().Select(f => Str(f["name"])).Where(n => TableName().IsMatch(n)).Distinct().ToList();
+            var cols = (p["felder"] as JsonArray ?? []).OfType<JsonObject>().Select(f => Str(f["name"])).Where(n => TableName().IsMatch(n) && !ReservedFields.Contains(n)).Distinct().ToList();
             sb.Append($"create table if not exists public.{t} (id bigint generated always as identity primary key, erstellt timestamptz default now()");
-            foreach (var c in cols) sb.Append($", {c} text");
+            foreach (var c in cols) sb.Append($", {c} text check (length({c}) <= 5000)");
             sb.Append(");\n");
             sb.Append($"alter table public.{t} enable row level security;\n");
             sb.Append($"create policy \"{t}_einfuegen\" on public.{t} for insert to anon with check (true);\n");
-            if (Str(p["liste"]) == "alle") sb.Append($"create policy \"{t}_lesen\" on public.{t} for select to anon using (true);\n");
+            sb.Append($"-- Hinweis: Jeder mit dem öffentlichen Schlüssel kann Einträge anlegen. Gegen Massen-Einträge eine Ratenbegrenzung oder Captcha in Supabase einrichten.\n");
         }
         return sb.ToString();
     }

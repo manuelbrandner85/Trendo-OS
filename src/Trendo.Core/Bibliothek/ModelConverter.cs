@@ -6,6 +6,8 @@ namespace Trendo.Core.Bibliothek;
 /// oder eine .blend-Datei im Hintergrund und schreibt ein GLB (Meter, Y oben, Materialien und Texturen eingebettet).</summary>
 public static class ModelConverter
 {
+    /// <summary>Größte Eingabedatei für die Umwandlung.</summary>
+    public const long MaxInputBytes = 1L << 30;
     public static readonly string[] Extensions = [".fbx", ".obj", ".usd", ".usda", ".usdc", ".usdz", ".abc", ".ply", ".stl", ".blend", ".gltf", ".glb"];
 
     /// <summary>Blender suchen: Umgebungsvariable TRENDO_BLENDER, sonst die übliche Installation.</summary>
@@ -24,7 +26,9 @@ public static class ModelConverter
     }
 
     /// <summary>Python-Skript für Blender: Szene leeren, Datei importieren (bzw. öffnen), alles als GLB schreiben.</summary>
-    public static string Script(string input, string output)
+    /// <param name="onlyLocalTextures">Nur eingebettete Bilder oder Bilder im Ordner des Modells zulassen. Für Websites: Ein fremdes Modell könnte sonst Bilder von
+    /// beliebigen Stellen des PCs einbetten, die dann mit der Seite veröffentlicht würden.</param>
+    public static string Script(string input, string output, bool onlyLocalTextures = false)
     {
         var ext = Path.GetExtension(input).ToLowerInvariant();
         if (!Extensions.Contains(ext)) throw new ArgumentException($"Das Format {ext} kann Trendo nicht übernehmen. Möglich: {string.Join(", ", Extensions)}.");
@@ -38,29 +42,38 @@ public static class ModelConverter
             ".ply" => $"bpy.ops.wm.ply_import(filepath={Py(input)})",
             ".stl" => $"bpy.ops.wm.stl_import(filepath={Py(input)})",
             ".gltf" or ".glb" => $"bpy.ops.import_scene.gltf(filepath={Py(input)})",
-            _ => $"bpy.ops.wm.open_mainfile(filepath={Py(input)})",
+            _ => $"bpy.ops.wm.open_mainfile(filepath={Py(input)}, use_scripts=False)", // Skripte in der .blend-Datei laufen nie
         };
         return "import bpy, sys\n"
             + (ext == ".blend" ? "" : "bpy.ops.wm.read_homefile(use_empty=True)\n")
             + $"try:\n    {import}\nexcept Exception as e:\n    print('TRENDO_FEHLER', e); sys.exit(2)\n"
             + "meshes = [o for o in bpy.context.scene.objects if o.type in ('MESH', 'CURVE', 'SURFACE', 'META', 'FONT')]\n"
             + "if not meshes:\n    print('TRENDO_FEHLER keine Netze'); sys.exit(3)\n"
+            + (onlyLocalTextures ? $"import os\nbase = os.path.normcase(os.path.realpath(os.path.dirname(os.path.abspath({Py(input)}))))\n"
+                + "for img in bpy.data.images:\n"
+                // In einer .blend-Datei eingepackte Bilder stammen aus der Datei selbst; Importer (glTF, FBX …) packen dagegen Bilder von der Platte ein – die werden mitgeprüft
+                + (ext == ".blend" ? "    if img.packed_file:\n        continue\n" : "")
+                + "    if not img.filepath or img.source not in ('FILE', 'SEQUENCE', 'TILED'):\n        continue\n"
+                + "    p = os.path.normcase(os.path.realpath(bpy.path.abspath(img.filepath)))\n"
+                + "    try:\n        drin = os.path.commonpath([base, p]) == base\n    except ValueError:\n        drin = False\n"
+                + "    if not drin:\n        print('TRENDO_FEHLER Textur liegt nicht im Ordner des Modells:', os.path.basename(p)); sys.exit(4)\n" : "")
             + $"bpy.ops.export_scene.gltf(filepath={Py(output)}, export_format='GLB', use_selection=False, export_apply=True, export_yup=True, export_materials='EXPORT', export_image_format='AUTO')\n"
             + "print('TRENDO_OK', len(meshes))\n";
     }
 
     /// <summary>Umwandeln (Blender im Hintergrund, ohne Fenster, höchstens <paramref name="timeout"/>).</summary>
-    public static async Task<string> ToGlb(string input, string output, string? blender = null, TimeSpan? timeout = null, CancellationToken ct = default)
+    public static async Task<string> ToGlb(string input, string output, string? blender = null, TimeSpan? timeout = null, CancellationToken ct = default, bool onlyLocalTextures = false)
     {
         if (!File.Exists(input)) throw new FileNotFoundException("Diese Datei gibt es nicht.");
+        if (new FileInfo(input).Length > MaxInputBytes) throw new InvalidDataException("Die Datei ist zu groß (über 1 GB).");
         blender ??= FindBlender() ?? throw new InvalidOperationException("Blender wurde nicht gefunden – es gehört zum Trendo-Vollpaket und lässt sich unter Programme einrichten.");
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output))!);
         var script = Path.Combine(Path.GetTempPath(), $"trendo-convert-{Guid.NewGuid():N}.py");
-        await File.WriteAllTextAsync(script, Script(Path.GetFullPath(input), Path.GetFullPath(output)), ct);
+        await File.WriteAllTextAsync(script, Script(Path.GetFullPath(input), Path.GetFullPath(output), onlyLocalTextures), ct);
         try
         {
             var psi = new ProcessStartInfo(blender) { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true };
-            foreach (var a in new[] { "-b", "--factory-startup", "--python", script }) psi.ArgumentList.Add(a);
+            foreach (var a in new[] { "-b", "--factory-startup", "--disable-autoexec", "--python", script }) psi.ArgumentList.Add(a);
             using var p = Process.Start(psi) ?? throw new InvalidOperationException("Blender ließ sich nicht starten.");
             var outTask = p.StandardOutput.ReadToEndAsync(ct); var errTask = p.StandardError.ReadToEndAsync(ct);
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct); cts.CancelAfter(timeout ?? TimeSpan.FromMinutes(3));

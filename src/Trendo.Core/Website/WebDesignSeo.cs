@@ -35,6 +35,8 @@ public static class WebDesignSeo
             if (JsonNode.Parse(raw) is JsonObject pageDoc) foreach (var dl in Blocks(pageDoc, "Datenliste"))
             {
                 if (!System.Text.RegularExpressions.Regex.IsMatch(dl["tabelle"]?.ToString() ?? "", "^[a-z][a-z0-9_]{0,29}$")) res.Add(new($"{name}: Datenliste braucht eine Tabelle aus Kleinbuchstaben, Ziffern und _ (z. B. bestellungen).", "Fehler"));
+                foreach (var feld in (dl["felder"] as JsonArray ?? []).OfType<JsonObject>().Select(f => f["name"]?.ToString() ?? "").Where(WebDesignData.ReservedFields.Contains).Distinct())
+                    res.Add(new($"{name}: Das Feld „{feld}“ belegt die Datenliste selbst. Bitte anders nennen (z. B. „{feld}_eintrag“).", "Fehler"));
                 if ((dl["felder"] as JsonArray ?? []).Count == 0) res.Add(new($"{name}: Datenliste ohne Felder.", "Fehler"));
                 if (dl["nurAngemeldet"]?.ToString() == "ja") needsLogin = true;
             }
@@ -71,7 +73,7 @@ public static class WebDesignSeo
         return res;
     }
 
-    static IEnumerable<JsonObject> Blocks(JsonNode? n, string type)
+    public static IEnumerable<JsonObject> Blocks(JsonNode? n, string type)
     {
         if (n is JsonArray a) { foreach (var x in a) foreach (var b in Blocks(x, type)) yield return b; yield break; }
         if (n is not JsonObject o) yield break;

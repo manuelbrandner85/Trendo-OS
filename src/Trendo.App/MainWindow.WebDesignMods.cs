@@ -58,7 +58,7 @@ public partial class MainWindow
         Show("dev");
     }
 
-    public void WebDesignModRemove(string id) { _wdModNote = WebDesignMods.Uninstall(WebDesignDir, id) ?? "Mod entfernt. Bereits eingefügte Bausteine bleiben auf der Seite."; Show("dev"); }
+    public void WebDesignModRemove(string id) { _wdModNote = WebDesignMods.Uninstall(WebDesignDir, id) ?? "Mod entfernt. Bereits eingefügte Bausteine bleiben auf der Seite; Bilder aus der Mod fehlen dort jetzt und lassen sich in den Medien ersetzen."; Show("dev"); }
 
     Control WebDesignModsPane()
     {
@@ -96,4 +96,50 @@ public partial class MainWindow
         if (_wdModNote.Length > 0) sp.Children.Add(new TextBlock { Name = "web-mod-note", Text = _wdModNote, FontSize = 12, TextWrapping = TextWrapping.Wrap, Foreground = AccentText });
         return Card("web-mods-card", sp);
     }
+
+    // ---------- K7: eigenes Supabase-Projekt (optional) ----------
+    string _wdDataNote = "";
+
+    public void WebDesignSupabaseSave(string url, string key)
+    {
+        var err = WebDesignData.SetSupabase(WebDesignDir, url, key);
+        _wdDataNote = err ?? "Supabase ist verbunden. Einträge der Datenlisten gehen zusätzlich an dein Projekt. Bitte dort einmal das SQL ausführen.";
+        _core.Audit.Append(Principal.LocalOwner.Name, "web.daten.supabase", err is null ? "verbunden" : "abgelehnt");
+        Show("dev");
+    }
+
+    public void WebDesignSupabaseRemove() { WebDesignData.RemoveSupabase(WebDesignDir); _wdDataNote = "Supabase ist getrennt. Alles bleibt auf dem Gerät der Besucher."; Show("dev"); }
+
+    /// <summary>SQL für alle Datenlisten der Website (alle Seiten).</summary>
+    public string WebDesignSupabaseSqlText()
+    {
+        var lists = new List<System.Text.Json.Nodes.JsonObject>();
+        var std = WebDesignSite.Load(WebDesignDir).Standardsprache;
+        foreach (var slug in WebDesignSite.Pages(WebDesignDir))
+            try { var f = WebDesignSite.FileOf(WebDesignDir, slug, std, std); if (File.Exists(f) && System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(f)) is { } doc) lists.AddRange(WebDesignSeo.Blocks(doc, "Datenliste")); }
+            catch (Exception e) when (e is System.Text.Json.JsonException or IOException) { }
+        return WebDesignData.SupabaseSql(lists);
+    }
+
+    Control WebDesignDataPane()
+    {
+        var sp = new StackPanel { Spacing = 6, Name = "web-daten" };
+        sp.Children.Add(new TextBlock { Text = "🗄 Daten der Website", FontSize = 15, FontWeight = FontWeight.SemiBold, Foreground = Text });
+        sp.Children.Add(P("Datenlisten und Anmeldung speichern auf dem Gerät der Besucher. Optional zusätzlich in deinem eigenen Supabase-Projekt – nur mit dem öffentlichen Schlüssel, nie mit dem geheimen.", Muted, 12));
+        var cur = WebDesignData.Load(WebDesignDir);
+        var url = new TextBox { Name = "web-supabase-url", PlaceholderText = "https://deinprojekt.supabase.co", Width = 300, Text = cur?.Url ?? "" };
+        var key = new TextBox { Name = "web-supabase-key", PlaceholderText = "öffentlicher Schlüssel (sb_publishable_… oder anon)", Width = 300, Text = cur?.Schluessel ?? "" };
+        sp.Children.Add(new WrapPanel { Children = { url, new Border { Width = 6 }, key } });
+        var row = new WrapPanel { Children = { Act("web-supabase-speichern", "Verbinden", () => WebDesignSupabaseSave(url.Text ?? "", key.Text ?? ""), true) } };
+        if (cur is not null)
+        {
+            row.Children.Add(new Border { Width = 8 }); row.Children.Add(Act("web-supabase-trennen", "Trennen", WebDesignSupabaseRemove));
+            row.Children.Add(new Border { Width = 8 }); row.Children.Add(Act("web-supabase-sql", "SQL für Supabase zeigen", () => { _wdDataNote = "SQL für den SQL-Editor deines Supabase-Projekts (Trendo führt nichts aus):"; _wdDataSql = WebDesignSupabaseSqlText(); Show("dev"); }));
+        }
+        sp.Children.Add(row);
+        if (_wdDataNote.Length > 0) sp.Children.Add(new TextBlock { Name = "web-daten-note", Text = _wdDataNote, FontSize = 12, TextWrapping = TextWrapping.Wrap, Foreground = AccentText });
+        if (_wdDataSql.Length > 0 && cur is not null) sp.Children.Add(new TextBox { Name = "web-supabase-sqltext", Text = _wdDataSql, IsReadOnly = true, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, FontFamily = new FontFamily("Consolas, monospace"), FontSize = 11.5, MaxHeight = 220 });
+        return Card("web-daten-card", sp);
+    }
+    string _wdDataSql = "";
 }

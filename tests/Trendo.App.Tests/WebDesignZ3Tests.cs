@@ -111,6 +111,57 @@ public class WebDesignZ3
         finally { Directory.Delete(d, true); }
     }
 
+    [Fact(DisplayName = "Z3 (QA 1, 2, 4): Seite mit 3D lässt sich veröffentlichen; Editor bekommt Modelle zur Auswahl; Lizenzprüfung sieht Modell, Umgebung und Standbild")]
+    public void Publish_list_and_license()
+    {
+        var d = Projekt(); try
+        {
+            Assert.Null(WebDesign.Save(d, Page("medien/modell/wuerfel.glb", "modell")));
+            Assert.Null(WebDesignSite.Create(d, "splat", "Splat")); Assert.Null(WebDesign.Save(d, Page("medien/splat/kugel.splat", "splat")));
+            Assert.Null(Trendo.Core.WebDesignExport.ExportSite(d, Editor()).Error);
+            var plan = WebDesignPublish.Prepare(d, []);
+            Assert.DoesNotContain(plan.Blockers, b => b.Contains("drei.js") || b.Contains("splat.js"));
+            var list = WebDesignAssets.EditorList(d).Select(x => x!["art"]!.ToString()).ToList();
+            Assert.Contains("modell", list); Assert.Contains("splat", list); Assert.Contains("bild", list);
+            var used = WebDesignAssets.Used(JsonNode.Parse(Page("medien/modell/wuerfel.glb", "modell", umgebung: "hdri", hdri: "medien/umgebung/licht.hdr")), []);
+            Assert.Contains("medien/modell/wuerfel.glb", used); Assert.Contains("medien/umgebung/licht.hdr", used); Assert.Contains("medien/bild/standbild.png", used);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "Z3 (QA 9, Security 1, 6, 7): Netzwerkpfad, zu großes HDR, zu viele Splat-Punkte und abgeschnittenes GLB werden mit klarer Meldung abgelehnt")]
+    public void Import_checks()
+    {
+        var d = Projekt(); var tmp = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "trendo-z3q-" + Guid.NewGuid().ToString("N"))).FullName; try
+        {
+            Assert.Contains("Netzwerk", WebDesignAssets.Import(d, @"\\server\freigabe\licht.hdr", "umgebung", "Licht", "x", "CC0-1.0").Error);
+            var hdr = Path.Combine(tmp, "gross.hdr"); File.WriteAllText(hdr, "#?RADIANCE\nFORMAT=32-bit_rle_rgbe\n\n-Y 30000 +X 30000\n");
+            Assert.Contains("zu groß", WebDesignAssets.Import(d, hdr, "umgebung", "Licht", "x", "CC0-1.0").Error);
+            File.WriteAllText(hdr, "#?RADIANCE\nFORMAT=32-bit_rle_rgbe\n\n-Y 1024 +X 2048\n"); Assert.Null(WebDesignModel.CheckHdr(hdr));
+            var ply = Path.Combine(tmp, "viel.ply"); File.WriteAllText(ply, "ply\nformat binary_little_endian 1.0\nelement vertex 6000000\nproperty float x\nend_header\n");
+            Assert.Contains("zu viele Punkte", WebDesignAssets.Import(d, ply, "splat", "Viel", "x", "CC0-1.0").Error);
+            var glb = Path.Combine(tmp, "kurz.glb"); var bytes = BoxGlb(); File.WriteAllBytes(glb, bytes[..(bytes.Length - 40)]);
+            Assert.Contains("unvollständig", WebDesignModel.CheckGlb(glb)); // keine Ausnahme
+            var head = bytes[..20].ToArray(); BitConverter.GetBytes((uint)24).CopyTo(head, 8); BitConverter.GetBytes((uint)200).CopyTo(head, 12); File.WriteAllBytes(glb, [.. head, 0, 0, 0, 0]);
+            Assert.NotNull(WebDesignModel.CheckGlb(glb));
+        }
+        finally { Directory.Delete(d, true); Directory.Delete(tmp, true); }
+    }
+
+    [AvaloniaFact(DisplayName = "K7 (QA 13): eigenes Supabase-Projekt in der Oberfläche verbinden; geheimer Schlüssel wird abgelehnt; SQL ohne Leseregel")]
+    public void Supabase_ui()
+    {
+        var (w, _, _) = Ui.Open();
+        Assert.Null(WebDesign.Save(w.WebDesignDir, """{"root":{"props":{"title":"Start","description":"Gästebuch der Seite"}},"content":[{"type":"Datenliste","props":{"id":"dl","titel":"G","tabelle":"gaeste","felder":[{"name":"name","beschriftung":"Name","art":"text","pflicht":"ja"}],"knopf":"Speichern","nurAngemeldet":"nein","liste":"alle"}}],"zones":{}}"""));
+        w.WebDesignSupabaseSave("https://meinprojekt.supabase.co", "sb_secret_abcdefghijklmnopqrstuvwxyz123456");
+        Assert.Null(WebDesignData.Load(w.WebDesignDir));
+        w.WebDesignSupabaseSave("https://meinprojekt.supabase.co", "sb_publishable_abcdefghijklmnopqrstuvwxyz123456");
+        Assert.NotNull(WebDesignData.Load(w.WebDesignDir));
+        var sql = w.WebDesignSupabaseSqlText();
+        Assert.Contains("public.gaeste", sql); Assert.DoesNotContain("for select", sql);
+        w.WebDesignSupabaseRemove(); Assert.Null(WebDesignData.Load(w.WebDesignDir));
+    }
+
     [Fact(DisplayName = "Z3 in echtem Chrome (Software-Grafik): Modell erscheint, ohne WebGPU läuft WebGL, ohne 3D erscheint das Standbild, Splat erscheint (übersprungen ohne Chrome/Node)")]
     public void Real_browser_3d()
     {

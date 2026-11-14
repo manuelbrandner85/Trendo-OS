@@ -40,7 +40,7 @@ public static class WebDesignPublish
             if (BinaryTypes.Contains(ext)) continue;
             if (!TextTypes.Contains(ext)) { yield return $"„{f.Rel}“ hat eine Dateiart, die Trendo nicht auf Geheimnisse prüfen kann. Bitte aus dem Export entfernen."; continue; }
             if (f.Bytes > 100_000_000) { yield return $"„{f.Rel}“ ist zu groß für die Prüfung (über 100 MB)."; continue; }
-            if (f.Rel.StartsWith("assets/", StringComparison.Ordinal) && Path.GetFileName(f.Rel) is "editor.js" or "daten.js" or "LIZENZEN.txt") continue; // Programmteile von Trendo, unverändert aus dem Programm
+            if (f.Rel.StartsWith("assets/", StringComparison.Ordinal) && Path.GetFileName(f.Rel) is "editor.js" or "daten.js" or "drei.js" or "splat.js" or "LIZENZEN.txt") continue; // Programmteile von Trendo, unverändert aus dem Programm
             var text = File.ReadAllText(Path.Combine(exportDir, f.Rel.Replace('/', Path.DirectorySeparatorChar)));
             foreach (var s in SecurityCenter.ScanText(f.Rel, text).Take(3)) yield return $"Mögliches Geheimnis in {s.File} Zeile {s.Line} ({s.Kind}: {s.Masked}). Bitte entfernen, bevor etwas hochgeladen wird.";
             foreach (var k in WebDesignData.SecretKeys(text).Take(3)) yield return $"Geheimer Schlüssel in {f.Rel} ({k}). Geheime Schlüssel gehören nie in eine Website.";
