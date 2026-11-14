@@ -24,7 +24,20 @@ public sealed partial class MainWindow
         [("#C9A227", "Gold"), ("#2F86F6", "Blau"), ("#22C3A6", "Türkis"), ("#8B5CF6", "Violett"), ("#F472B6", "Pink"), ("#F59E0B", "Bernstein"), ("#22C55E", "Grün")];
 
     public static readonly (string Id, string Label)[] WidgetChoices =
-        [("widget-weiter", "Weitermachen"), ("widget-projekte", "Aktuelle Projekte"), ("widget-ki", "KI-Router"), ("widget-system", "Geräte und Messwerte"), ("widget-agenten", "Agenten Live"), ("widget-studiomanager", "Studio Manager"), ("widget-github", "Open Source")];
+        [("widget-weiter", "Weitermachen"), ("widget-projekte", "Aktuelle Projekte"), ("widget-ki", "Welche KI hilft"), ("widget-system", "Geräte und Messwerte"), ("widget-agenten", "KI-Helfer bei der Arbeit"), ("widget-studiomanager", "Studios auf dem Desktop"), ("widget-github", "Freie Programme"),
+         ("widget-eco", "Erdkugel mit Überblick (Dein Trendo)"), ("desk-actions", "Schnellaktionen über dem Desktop")];
+
+    /// <summary>E12 (T-0616): Diese Teile des Desktops blendet „Einfach“ aus; „Startbildschirm anpassen“ holt sie zurück (gemerkt in ShownTiles).</summary>
+    public static readonly HashSet<string> SimpleHiddenTiles = ["widget-ki", "widget-system", "widget-agenten", "widget-studiomanager", "widget-github", "widget-eco", "desk-actions"];
+
+    /// <summary>Ist dieser Teil des Desktops sichtbar? Ausgeblendet von der Person (HiddenTiles) oder von „Einfach“ (außer selbst wieder eingeblendet).</summary>
+    public bool TileShown(string id) => !_settings.HiddenTiles.Contains(id) && !(IsSimple && SimpleHiddenTiles.Contains(id) && !_settings.ShownTiles.Contains(id));
+
+    void SetTileShown(string id, bool on)
+    {
+        if (on) { _settings.HiddenTiles.Remove(id); if (SimpleHiddenTiles.Contains(id) && !_settings.ShownTiles.Contains(id)) _settings.ShownTiles.Add(id); }
+        else { if (!_settings.HiddenTiles.Contains(id)) _settings.HiddenTiles.Add(id); _settings.ShownTiles.Remove(id); }
+    }
 
     private static string _theme = "dunkel";
     /// <summary>Bedienstil: trendo, windows, mac, linux (Fensterknöpfe, Ecken, Titel).</summary>
@@ -194,7 +207,7 @@ public sealed partial class MainWindow
         ["akte"] = "Trag hier ein, was belegt ist, was du nur vermutest und was offen ist. Trendo fragt nach, statt etwas zu erfinden. Fristen gelten erst, wenn du sie mit Quelle bestätigst.",
         ["ausgabe"] = "Prüfen, Ton wählen, als Word/ODT/PDF ausgeben und freigeben. Trendo verschickt nie selbst – du sendest, und trägst danach den Nachweis ein.",
         ["briefkoepfe"] = "Deine Absender: privat und Firma getrennt. In jeder Akte wählst du bewusst, welcher Briefkopf gilt.",
-        ["suche"] = "Die Suche findet Seiten, Studios, Projekte und Dateien in deinem Projektordner. Mit Strg+K springst du jederzeit ins Suchfeld.",
+        ["suche"] = "Die Suche findet Seiten, Studios, Projekte und Dateien in deinem Projektordner. Mit Strg+Umschalt+F springst du jederzeit ins Suchfeld, Strg+K öffnet die Befehlsleiste mit allen Befehlen.",
         ["fortschritt"] = "So weit ist Trendo OS gebaut. Die Angaben kommen direkt aus der Projektliste – nichts ist geschönt.",
         ["keys"] = "Für einige Online-Dienste brauchst du einen Zugangsschlüssel. Er wird sicher in Windows gespeichert, nicht in einer Datei.",
         ["3d"] = "Baue ein Objekt aus Würfel, Kugel und den anderen Formen. Stell Größe, Lage und Farbe ein, runde Kanten ab oder bohre ein Loch. Die Vorschau siehst du hier, von mehreren Seiten. Speichern legt eine Datei in den 3D-Ordner. Blender öffnet genau dieses Objekt und wird nur installiert, wenn du zustimmst.",
@@ -328,13 +341,14 @@ public sealed partial class MainWindow
         sections.Children.Add(Section("bedienung", "Bedienung", new StackPanel { Spacing = 4, Children = { motion, upd, P("Anzeigegröße (Schrift und Bedienelemente):", Text), sizes,
             P("Dichte (Abstände in Knöpfen und Feldern):", Text), density,
             P(LowPower ? "Leistung: sparsam – ohne Unschärfe, Schatten und Animationen." : "Leistung (Sparsam: ohne Unschärfe, Schatten und Animationen):", Text), power,
-            P("Tastatur: Strg+K Suche · F1 Hilfe zur Seite · Strg+1 bis 5 Hauptbereiche · Tab/Enter bedienen alles ohne Maus", null, 11) } }));
+            P("Tastatur: Strg+K Befehlsleiste (alle Befehle, auch Claude) · Strg+Umschalt+F Suche · F1 Hilfe zur Seite · Strg+1 bis 5 Hauptbereiche · Tab/Enter bedienen alles ohne Maus", null, 11) } }));
 
         var desk = new StackPanel { Spacing = 4 };
         foreach (var (id, label) in WidgetChoices)
         {
-            var cb = new CheckBox { Name = "show-" + id, Content = label, IsChecked = !_settings.HiddenTiles.Contains(id), Foreground = Text };
-            cb.IsCheckedChanged += (_, _) => { if (cb.IsChecked == true) _settings.HiddenTiles.Remove(id); else if (!_settings.HiddenTiles.Contains(id)) _settings.HiddenTiles.Add(id); SaveSettings(); };
+            var cb = new CheckBox { Name = "show-" + id, Content = label, IsChecked = TileShown(id), Foreground = Text };
+            if (IsSimple && SimpleHiddenTiles.Contains(id)) ToolTip.SetTip(cb, "In der Bedienstufe „Einfach“ anfangs ausgeblendet – hier wieder einblenden");
+            cb.IsCheckedChanged += (_, _) => { SetTileShown(id, cb.IsChecked == true); SaveSettings(); };
             desk.Children.Add(cb);
         }
         desk.Children.Add(P("Reihenfolge der Studio-Kacheln:", Text));

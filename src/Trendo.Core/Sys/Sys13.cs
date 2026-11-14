@@ -75,7 +75,7 @@ public static class Quality
     }
 
     // P20 Migrationen
-    public const int SettingsFormat = 3;
+    public const int SettingsFormat = 4;
     /// <summary>Hebt alte settings.json auf das aktuelle Format: v1 (ohne Nummer) kannte englische Designnamen und Prozent-Skalierung.</summary>
     public static JsonObject MigrateSettings(JsonObject o)
     {
@@ -88,6 +88,8 @@ public static class Quality
         }
         // T-0224: neuer Desktop – der alte Standard „Abendrot“ wird einmalig zu „Orbit“; eine andere eigene Wahl bleibt
         if (v < 3 && o["Wallpaper"]?.GetValue<string>() is "abendrot") o["Wallpaper"] = "orbit";
+        // E9 (T-0616): „Einfacher Modus“ und „Bedienstufe“ sind eine Wahl – wer den einfachen Modus an hatte, bekommt die Stufe „Einfach“; die größeren Knöpfe bleiben
+        if (v < 4 && o["SimpleMode"] is JsonValue sm && sm.TryGetValue<bool>(out var simple) && simple) o["Level"] = "einfach";
         o["FormatVersion"] = SettingsFormat; return o;
     }
 

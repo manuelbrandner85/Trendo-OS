@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json.Nodes;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 using Trendo.App;
 using Trendo.Core;
@@ -49,7 +50,8 @@ public class Kie_Ui
             foreach (var page in new[] { "bild-ki-programm", "film-programm", "podcast-programm" })
             {
                 w.Show(page); Settle();
-                Assert.Contains(w.GetVisualDescendants().OfType<Button>(), b => b.Name == "auftrag-kie");
+                Assert.Contains(w.GetLogicalDescendants().OfType<Button>(), b => b.Name == "auftrag-kie"); // E1: im Menü „KI ▾“
+                Assert.Contains(w.GetVisualDescendants().OfType<Button>(), b => b.Name == "ki-menu" && b.IsEffectivelyVisible);
             }
             var host = new Window { Content = w.KiePanelForTest("STUDIO-MUSIK-01"), Width = 600, Height = 700 }; host.Show(); Settle();
             Assert.Contains(host.GetVisualDescendants().OfType<TextBox>(), t => t.Name == "kie-key" && t.PasswordChar != default);

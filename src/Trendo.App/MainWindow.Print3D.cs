@@ -73,7 +73,7 @@ public partial class MainWindow
         }
         catch (Exception ex) when (ex is IOException or System.Net.Sockets.SocketException or InvalidOperationException or System.Security.Authentication.AuthenticationException or TimeoutException)
         {
-            _prMsg = ex is System.Security.Authentication.AuthenticationException ? "Der Drucker meldet sich mit einem anderen Zertifikat als beim ersten Mal – aus Sicherheit nicht verbunden." : "Verbinden ging nicht: " + ex.Message + " – Ist der LAN-Modus am Drucker an und der PC im selben Netz?";
+            _prMsg = ex is System.Security.Authentication.AuthenticationException ? "Der Drucker meldet sich mit einem anderen Zertifikat als beim ersten Mal – aus Sicherheit nicht verbunden." : "Verbinden ging nicht: " + Trendo.Core.FriendlyError.Say(ex) + " – Ist der LAN-Modus am Drucker an und der PC im selben Netz?";
             return false;
         }
     }
@@ -101,7 +101,7 @@ public partial class MainWindow
             _prMsg = $"Druck gestartet: {Path.GetFileName(f)}.";
             _core.Audit.Append(Principal.LocalOwner.Name, "3ddruck.start", $"{p.Name} {Path.GetFileName(f)}");
         }
-        catch (Exception ex) when (ex is IOException or System.Net.Sockets.SocketException or System.Security.Authentication.AuthenticationException) { _prMsg = "Übertragen ging nicht: " + ex.Message; }
+        catch (Exception ex) when (ex is IOException or System.Net.Sockets.SocketException or System.Security.Authentication.AuthenticationException) { _prMsg = "Übertragen ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
         Show("3d-druck");
     }
 
@@ -109,7 +109,7 @@ public partial class MainWindow
     {
         if (_bambu is null) return;
         try { await _bambu.Command(cmd); _prMsg = cmd switch { "pause" => "Pausiert.", "resume" => "Geht weiter.", _ => "Druck abgebrochen." }; _core.Audit.Append(Principal.LocalOwner.Name, "3ddruck." + cmd, Printer?.Name ?? ""); }
-        catch (IOException ex) { _prMsg = "Befehl ging nicht: " + ex.Message; }
+        catch (IOException ex) { _prMsg = "Befehl ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
         Show("3d-druck");
     }
 
@@ -126,7 +126,7 @@ public partial class MainWindow
                 var r = await Task.Run(() => Cli.Run(ff, BambuCamera.RtspArgs(p.Ip, code, o), timeoutMs: 20_000));
                 if (r.Ok && File.Exists(o)) { _prCamera = File.ReadAllBytes(o); TryDelete(o); _prMsg = "Kamerabild aktualisiert."; Show("3d-druck"); return; }
             }
-            _prMsg = "Kamerabild ging nicht: " + ex.Message;
+            _prMsg = "Kamerabild ging nicht: " + Trendo.Core.FriendlyError.Say(ex);
         }
         Show("3d-druck");
     }

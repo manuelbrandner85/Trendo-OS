@@ -475,7 +475,7 @@ public partial class MainWindow
         catch (OperationCanceledException) when (SetupCancelRequested) { _phoneMsg = "Abgebrochen."; }
         catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
         {
-            _phoneMsg = "Tailscale ließ sich nicht einrichten: " + ex.Message;
+            _phoneMsg = "Tailscale ließ sich nicht einrichten: " + Trendo.Core.FriendlyError.Say(ex);
             FinishSetupOverlay("Einrichten nicht möglich", _phoneMsg, [ex.Message]);
         }
         finally { _depBusy = false; if (file is not null) TryDelete(file); }

@@ -34,7 +34,7 @@ public partial class MainWindow
             if (ok && action != "install") _appUpdates = _appUpdates.Where(x => x.Id != p.Id).ToList();
             if (ok && action == "uninstall") _appInstalled = _appInstalled.Where(x => x.Id != p.Id).ToList();
         }
-        catch (Exception ex) { _appMsg = "Hat nicht geklappt: " + ex.Message; }
+        catch (Exception ex) { _appMsg = "Hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex); }
         _appBusy = false;
     }
 

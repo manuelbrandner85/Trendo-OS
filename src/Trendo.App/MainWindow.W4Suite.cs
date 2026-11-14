@@ -125,7 +125,7 @@ public partial class MainWindow
                     _suiteNew = false; SuiteMode = "uebersicht";
                     _core.Audit.Append(Principal.LocalOwner.Name, "suite.create", kit.Id); Say($"„{Path.GetFileName(_suiteOpen)}“ ist eingerichtet. Los geht's mit Schritt 1.", V);
                 }
-                catch (Exception ex) when (ex is IOException or ArgumentException or UnauthorizedAccessException) { Say("Hat nicht geklappt: " + ex.Message, V); }
+                catch (Exception ex) when (ex is IOException or ArgumentException or UnauthorizedAccessException) { Say("Hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex), V); }
             };
             wrap.Children.Add(b);
         }

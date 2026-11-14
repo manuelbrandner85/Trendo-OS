@@ -103,7 +103,7 @@ public partial class MainWindow
             sp.Children.Add(new TextBlock { Name = "garment-nest-facts", Text = $"{meters:0.00} m Stoff · Ausnutzung {nest.Efficiency * 100:0} % · Stoffkosten {meters * fabric.PricePerM:0.00} €", Foreground = Text, FontSize = 12.5 });
             sp.Children.Add(GarmentNestCanvas(g, nest, fabric.WidthCm));
         }
-        catch (Exception e) when (e is ArgumentException or InvalidOperationException) { sp.Children.Add(P("Zuschnitt nicht möglich: " + e.Message, Brush.Parse("#FACC15"), 12)); }
+        catch (Exception e) when (e is ArgumentException or InvalidOperationException) { sp.Children.Add(P("Zuschnitt nicht möglich: " + Trendo.Core.FriendlyError.Say(e), Brush.Parse("#FACC15"), 12)); }
 
         sp.Children.Add(H("3D-Anprobe", 13));
         var run = Act("garment-tryon", _garmentBusy ? "Rechnet …" : "In 3D anprobieren", () => _ = GarmentTryOn(d), true); run.IsEnabled = !_garmentBusy;
@@ -202,7 +202,7 @@ public partial class MainWindow
             Show("mode-programm");
             return file;
         }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException) { GarmentMessage = "Speichern ging nicht: " + e.Message; Show("mode-programm"); return null; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException) { GarmentMessage = "Speichern ging nicht: " + Trendo.Core.FriendlyError.Say(e); Show("mode-programm"); return null; }
     }
 
     private Task<string?> GarmentTextures(FabricInfo fabric) => AmbientTexture(fabric.TextureId);
@@ -248,7 +248,7 @@ public partial class MainWindow
             GarmentImages = new[] { "nah", "vorn", "schraeg", "hinten" }.Select(v => Path.Combine(dir, $"bild-{v}.png")).Where(File.Exists).ToList();
             GarmentMessage = problem is not null ? "Anprobe abgebrochen: " + problem : GarmentImages.Count == 0 ? "Blender hat kein Bild geliefert." : "Fertig. Die Bilder liegen in: " + dir;
         }
-        catch (Exception e) when (e is IOException or InvalidOperationException or HttpRequestException or UnauthorizedAccessException or System.Text.Json.JsonException) { GarmentMessage = "Anprobe ging nicht: " + e.Message; }
+        catch (Exception e) when (e is IOException or InvalidOperationException or HttpRequestException or UnauthorizedAccessException or System.Text.Json.JsonException) { GarmentMessage = "Anprobe ging nicht: " + Trendo.Core.FriendlyError.Say(e); }
         finally { _garmentBusy = false; Show("mode-programm"); }
     }
 }

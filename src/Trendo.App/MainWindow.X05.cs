@@ -106,7 +106,7 @@ public partial class MainWindow
         {
             scan.IsEnabled = false; _srcMsg = "Suche läuft …"; srcMsg.Text = _srcMsg;
             try { await ScanSourcesAsync(); }
-            catch (Exception ex) { _srcMsg = "Suche hat nicht geklappt: " + ex.Message; }
+            catch (Exception ex) { _srcMsg = "Suche hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex); }
             Show("ki-quellen");
         };
         sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { scan, srcMsg } });

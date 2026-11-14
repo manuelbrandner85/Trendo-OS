@@ -267,7 +267,7 @@ public partial class MainWindow
             text = $"Auf GitHub hochgeladen ({(isPrivate ? "privat" : "öffentlich")}): {LastGitHubRepo}";
             var url = LastGitHubRepo; Toast("Auf GitHub hochgeladen", ("Ansehen", () => Launch(url)));
         }
-        catch (Exception e) when (e is InvalidOperationException or ArgumentException or IOException) { text = "GitHub: " + e.Message; }
+        catch (Exception e) when (e is InvalidOperationException or ArgumentException or IOException) { text = "GitHub: " + Trendo.Core.FriendlyError.Say(e); }
         CChats.Add(ChatStudio(dock), chat.Id, new ClaudeChats.Msg("assistant", text, [], DateTimeOffset.Now));
         if (_chatUis.TryGetValue(dock, out var ui)) ui.Panel = null;
         RenderChat(dock);
@@ -307,7 +307,7 @@ public partial class MainWindow
             text = $"Veröffentlicht: {url}";
             Toast("Auf Netlify veröffentlicht", ("Öffnen", () => Launch(url)));
         }
-        catch (Exception e) when (e is InvalidOperationException or HttpRequestException or IOException or TaskCanceledException) { text = "Netlify: " + e.Message; }
+        catch (Exception e) when (e is InvalidOperationException or HttpRequestException or IOException or TaskCanceledException) { text = "Netlify: " + Trendo.Core.FriendlyError.Say(e); }
         CChats.Add(ChatStudio(dock), chat.Id, new ClaudeChats.Msg("assistant", text, [], DateTimeOffset.Now));
         if (_chatUis.TryGetValue(dock, out var ui)) ui.Panel = null;
         RenderChat(dock);

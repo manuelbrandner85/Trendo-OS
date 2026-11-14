@@ -42,7 +42,7 @@ public partial class MainWindow
             _core.Audit.Append(Principal.LocalOwner.Name, "3d.engine.export", $"{target}: {Path.GetFileName(rep.File)} ({(rep.Ok ? "ok" : rep.Findings.Count(f => f.Error) + " Fehler")})");
             Say(text, "3d");
         }
-        catch (Exception ex) when (ex is IOException or InvalidOperationException or System.Text.Json.JsonException or KeyNotFoundException) { Say("Export nicht möglich: " + ex.Message, "3d"); }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or System.Text.Json.JsonException or KeyNotFoundException) { Say("Export nicht möglich: " + Trendo.Core.FriendlyError.Say(ex), "3d"); }
     }
 
     /// <summary>Karte „Für Engine“ in der linken Seitenleiste: Unity, Unreal, Godot, Web.</summary>

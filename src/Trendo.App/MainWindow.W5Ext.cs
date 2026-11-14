@@ -48,7 +48,7 @@ public partial class MainWindow
         if (!yes) { Say("Abgebrochen – nichts verändert.", "erweiterungen"); return; }
         string msg;
         try { msg = await a.Run(); }
-        catch (ApprovalException e) { msg = "Nicht ausgeführt: " + e.Message; }
+        catch (ApprovalException e) { msg = "Nicht ausgeführt: " + Trendo.Core.FriendlyError.Say(e); }
         Say(msg, "erweiterungen");
     }
 
@@ -56,7 +56,7 @@ public partial class MainWindow
     public string ExtRemoveApproved(string id)
     {
         try { return Exts.Remove(id, ExtApprove(ExtensionStore.RemoveAction, $"Erweiterung {id} entfernen", id)) is { } err ? "Nicht entfernt: " + err : "Entfernt."; }
-        catch (ApprovalException e) { return "Nicht entfernt: " + e.Message; }
+        catch (ApprovalException e) { return "Nicht entfernt: " + Trendo.Core.FriendlyError.Say(e); }
     }
 
     private void InitW5Ext() => RegisterTab(BusinessTabs, "erweiterungen", "Erweiterungen", "X-04", ExtView, "erweiterung", "plugin", "add-on", "vorlage", "marktplatz");

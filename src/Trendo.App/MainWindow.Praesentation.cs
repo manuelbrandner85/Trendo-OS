@@ -232,14 +232,14 @@ public partial class MainWindow
         var path = !asNew && DeckPath is not null ? DeckPath : await PickDeck(true);
         if (path is null) return;
         try { DeckSaveAs(path); Toast($"Gespeichert: {Path.GetFileName(path)}", ("Ordner öffnen", new Action(() => Launch(Path.GetDirectoryName(path)!)))); }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _dkMsg = "Speichern ging nicht: " + ex.Message; }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _dkMsg = "Speichern ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
         Show("praesentation");
     }
 
     async Task DeckOpenClick()
     {
         var path = await PickDeck(false); if (path is null) return;
-        try { DeckOpen(path); } catch (Exception ex) when (ex is IOException or InvalidDataException or System.Xml.XmlException) { _dkMsg = "Öffnen ging nicht: " + ex.Message; }
+        try { DeckOpen(path); } catch (Exception ex) when (ex is IOException or InvalidDataException or System.Xml.XmlException) { _dkMsg = "Öffnen ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
         Show("praesentation");
     }
 
@@ -330,7 +330,7 @@ public partial class MainWindow
                 if (string.IsNullOrWhiteSpace(a.Text)) _dkMsg = "Die KI hat nichts geliefert. Ist ein Sprachmodell in der KI-Bibliothek geladen?";
                 else { _dkOutline = a.Text.Trim(); DeckFromOutline(_dkOutline); _dkMsg = $"Die KI hat {Deck.Slides.Count} Folien entworfen – bitte prüfen und anpassen."; }
             }
-            catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or TaskCanceledException) { _dkMsg = "Die KI ist gerade nicht erreichbar: " + ex.Message; }
+            catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or TaskCanceledException) { _dkMsg = "Die KI ist gerade nicht erreichbar: " + Trendo.Core.FriendlyError.Say(ex); }
             Show("praesentation");
         };
         sp.Children.Add(new TextBlock { Text = "Aus Stichpunkten oder mit der KI", Foreground = Text, FontSize = 16, FontWeight = FontWeight.SemiBold });
@@ -350,7 +350,7 @@ public partial class MainWindow
             var b = new Button { Name = $"praesentation-recent-{i++}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(10, 6),
                 Content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { new TextBlock { Text = "▭", FontSize = 18, Foreground = Brush.Parse("#F97316") },
                     new StackPanel { Children = { new TextBlock { Text = Path.GetFileName(path), Foreground = Text, FontSize = 13 }, new TextBlock { Text = $"{Path.GetDirectoryName(path)} · {File.GetLastWriteTime(path):dd.MM.yyyy HH:mm}", Foreground = Muted, FontSize = 12 } } } } } };
-            b.Click += (_, _) => { try { DeckOpen(path); } catch (Exception ex) when (ex is IOException or InvalidDataException or System.Xml.XmlException) { _dkMsg = "Öffnen ging nicht: " + ex.Message; } Show("praesentation"); };
+            b.Click += (_, _) => { try { DeckOpen(path); } catch (Exception ex) when (ex is IOException or InvalidDataException or System.Xml.XmlException) { _dkMsg = "Öffnen ging nicht: " + Trendo.Core.FriendlyError.Say(ex); } Show("praesentation"); };
             sp.Children.Add(b);
         }
         return new ScrollViewer { Content = sp };
@@ -508,7 +508,7 @@ public partial class MainWindow
     {
         var f = await PickMediaFile("praesentation-image", "Bild", ["*.png", "*.jpg", "*.jpeg"]);
         if (f is null) return;
-        try { DeckInsertImage(f); } catch (IOException ex) { _dkMsg = "Bild ging nicht: " + ex.Message; }
+        try { DeckInsertImage(f); } catch (IOException ex) { _dkMsg = "Bild ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
         Show("praesentation");
     }
 

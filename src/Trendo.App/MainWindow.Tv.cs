@@ -318,7 +318,7 @@ public partial class MainWindow
         }
         catch (Exception e) when (e is HttpRequestException or IOException or InvalidOperationException or System.Xml.XmlException or TaskCanceledException or InvalidDataException)
         {
-            _tvMsg += " Der Programmführer ließ sich nicht laden: " + e.Message;
+            _tvMsg += " Der Programmführer ließ sich nicht laden: " + Trendo.Core.FriendlyError.Say(e);
         }
     }
 

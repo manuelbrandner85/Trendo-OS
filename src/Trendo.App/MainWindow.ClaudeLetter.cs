@@ -133,6 +133,6 @@ public partial class MainWindow
             _letterMsg = "Claude hat den Brief geändert – Text und Design siehst du in der Vorschau.";
             if (CurrentView == "brief") Show("brief");
         }
-        catch (Exception e) when (e is JsonException or IOException or NotSupportedException) { _claudeMsg = "Claudes Brief ließ sich nicht übernehmen: " + e.Message; }
+        catch (Exception e) when (e is JsonException or IOException or NotSupportedException) { _claudeMsg = "Claudes Brief ließ sich nicht übernehmen: " + Trendo.Core.FriendlyError.Say(e); }
     }
 }

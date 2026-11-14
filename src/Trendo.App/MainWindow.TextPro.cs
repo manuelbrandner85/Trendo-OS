@@ -184,7 +184,7 @@ public partial class MainWindow
             else if (neu == src) _txMsg = "Die KI hat nichts zu verbessern gefunden.";
             else { _txAiProp = (TextFocusBlock, start, len, src, neu); _txMsg = "Vorschlag der KI – erst prüfen, dann „Übernehmen“ oder „Verwerfen“."; }
         }
-        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or TaskCanceledException) { _txMsg = "Die KI ist gerade nicht erreichbar: " + ex.Message; }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or TaskCanceledException) { _txMsg = "Die KI ist gerade nicht erreichbar: " + Trendo.Core.FriendlyError.Say(ex); }
         Show("text");
     }
 
@@ -395,7 +395,7 @@ public partial class MainWindow
         var req = new PickRequest("text-merge-source", false, false, ["csv", "xlsx", "ods"]);
         var f = PickOverride is { } fake ? (await fake(req))?.FirstOrDefault() : (await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Datenquelle wählen", FileTypeFilter = [new FilePickerFileType("Tabellen") { Patterns = ["*.csv", "*.xlsx", "*.ods"] }] })).Select(x => x.TryGetLocalPath()).OfType<string>().FirstOrDefault();
         if (f is null) return;
-        try { TextMergeSource(f); } catch (Exception ex) when (ex is IOException or InvalidDataException or System.Xml.XmlException) { _txMsg = "Datenquelle ging nicht: " + ex.Message; }
+        try { TextMergeSource(f); } catch (Exception ex) when (ex is IOException or InvalidDataException or System.Xml.XmlException) { _txMsg = "Datenquelle ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
         Show("text");
     }
 
@@ -403,7 +403,7 @@ public partial class MainWindow
     {
         var f = await PickText(false, "");
         if (f is null) return;
-        try { TextCompareWith(f); } catch (Exception ex) when (ex is IOException or InvalidDataException or System.Xml.XmlException) { _txMsg = "Vergleichen ging nicht: " + ex.Message; }
+        try { TextCompareWith(f); } catch (Exception ex) when (ex is IOException or InvalidDataException or System.Xml.XmlException) { _txMsg = "Vergleichen ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
         Show("text");
     }
 

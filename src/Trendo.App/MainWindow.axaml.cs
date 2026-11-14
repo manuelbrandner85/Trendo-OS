@@ -121,6 +121,7 @@ public sealed partial class MainWindow : Window
         var right = RightColumn(); Grid.SetColumn(right, 2); Grid.SetRowSpan(right, 2); body.Children.Add(right);
         StartupTrace.Mark("ctor.left+dock");
         ApplyOsShell(root, ui, body, topBar, left, right, dock); // Bedienstil wie Windows/Mac/Linux (Trendo bleibt unverändert)
+        _shellGrid = body; RefreshDesktopTiles(); // E12: in „Einfach“ bekommt die Mitte den Platz der leeren rechten Spalte
         // Maximiert (Wunsch 02.11.2026): das Studio-Fenster füllt den ganzen Bildschirm – über Kopfleiste, Seitenspalten, Dock und Taskleiste hinweg
         Grid.SetRowSpan(_workArea, 2); _workArea.ZIndex = 30; ui.Children.Add(_workArea);
         _status.IsVisible = false;
@@ -1324,7 +1325,7 @@ public sealed partial class MainWindow : Window
         }
         catch (Exception ex) when (ex is InvalidOperationException or IOException or UnauthorizedAccessException)
         {
-            _depLog.Text = "Vollpaket: " + ex.Message;
+            _depLog.Text = "Vollpaket: " + Trendo.Core.FriendlyError.Say(ex);
             FinishSetupOverlay("Einrichtung nicht möglich", "Die mitgelieferten Programme konnten nicht eingerichtet werden.", [ex.Message]);
         }
         finally { _depBusy = false; }

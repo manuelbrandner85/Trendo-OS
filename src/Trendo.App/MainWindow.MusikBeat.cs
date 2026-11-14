@@ -86,7 +86,7 @@ public partial class MainWindow
         save.Click += (_, _) =>
         {
             try { Read(); MsBeatSave((title.Text ?? "").Trim()); }
-            catch (Exception ex) when (ex is ArgumentException or IOException or UnauthorizedAccessException) { _msMsg = "Beat nicht gespeichert: " + ex.Message; }
+            catch (Exception ex) when (ex is ArgumentException or IOException or UnauthorizedAccessException) { _msMsg = "Beat nicht gespeichert: " + Trendo.Core.FriendlyError.Say(ex); }
             Show(MS);
         };
         var edm = new Button { Name = "ms-beat-edm", Content = "Vorlage EDM" };

@@ -77,15 +77,18 @@ public partial class MainWindow
     private Control BedienSeeView()
     {
         var sp = new StackPanel { Spacing = 10 }; const string V = "bedien-sehen";
+        // E9 (T-0616): eine Wahl statt zwei Schalter („Einfacher Modus“ und „Bedienstufe“) – gilt für Desktop, Einstellungen und alle Programme
+        var levels = Line(); for (var i = 0; i < 3; i++)
+        { var lv = i; var on = ProgramLevel == lv; levels.Children.Add(Act("level-" + Trendo.Core.Programs.UserLevel.Ids[i], (on ? "✓ " : "") + Trendo.Core.Programs.UserLevel.Names[i], () => ProgramSetLevel(lv, V), on)); }
+        sp.Children.Add(Card(Section("Bedienung: Einfach, Erweitert oder Profi", "Einfach: nur das Wichtigste, ein aufgeräumter Desktop, alles Weitere unter „Mehr“. Erweitert: alle Fachwerkzeuge. Professionell: zusätzlich Verlauf und gespeicherte Daten. Deine Dokumente bleiben beim Wechsel unverändert.", levels)));
+        sp.Children.Add(Card(Section("Speichern", "Dokumente der Programme werden nach jeder Änderung selbst gespeichert, frühere Stände bleiben als Versionen. Ausgeschaltet speicherst du mit Strg+S; Trendo sichert zusätzlich alle 30 Sekunden.",
+            Opt("auto-save", "Automatisch speichern", _settings.AutoSave, v => _settings.AutoSave = v, V))));
         var fonts = Line(); foreach (var m in A11y.FontMins)
         { var on = _settings.FontMin == m; fonts.Children.Add(Act($"font-{m}", (on ? "✓ " : "") + (m == 0 ? "Wie gestaltet" : $"mindestens {m} pt"), () => { _settings.FontMin = m; SaveSettings(); Show(V); }, on)); }
         sp.Children.Add(Card(Section("Schriftgröße", "Unabhängig von der Anzeigegröße: kleine Schrift wird auf diese Mindestgröße angehoben.", fonts)));
         sp.Children.Add(ReadFontSection(V)); // Alle Studios, Runde 10: gut lesbare Schrift
-        sp.Children.Add(Card(Section("Einfacher Modus", "Nur die wichtigsten Kacheln auf dem Startbildschirm und größere Knöpfe.",
-            Opt("simple-mode", "Einfachen Modus einschalten", _settings.SimpleMode, v => _settings.SimpleMode = v, V))));
-        var levels = Line(); for (var i = 0; i < 3; i++)
-        { var lv = i; var on = ProgramLevel == lv; levels.Children.Add(Act("level-" + Trendo.Core.Programs.UserLevel.Ids[i], (on ? "✓ " : "") + Trendo.Core.Programs.UserLevel.Names[i], () => ProgramSetLevel(lv, V), on)); }
-        sp.Children.Add(Card(Section("Bedienstufe der Programme", "Einfach: nur das Wichtigste. Erweitert: alle Fachwerkzeuge. Professionell: zusätzlich Befehlssuche, Verlauf und Projektdaten. Deine Dokumente bleiben beim Wechsel unverändert.", levels)));
+        sp.Children.Add(Card(Section("Größere Knöpfe", "Alle Knöpfe bekommen eine größere Schrift – unabhängig von der Bedienstufe.",
+            Opt("simple-mode", "Größere Knöpfe", _settings.SimpleMode, v => _settings.SimpleMode = v, V))));
         sp.Children.Add(Card(Section("Farben und Bewegung", "Status zusätzlich mit Zeichen (✓ ⚠ ✕), damit man ihn auch ohne Farben erkennt.",
             Opt("color-blind", "Status mit Zeichen statt nur Farbe", _settings.ColorBlind, v => _settings.ColorBlind = v, V),
             Opt("a11y-motion", "Bewegung reduzieren (keine Animationen)", _settings.ReduceMotion, v => _settings.ReduceMotion = v, V),

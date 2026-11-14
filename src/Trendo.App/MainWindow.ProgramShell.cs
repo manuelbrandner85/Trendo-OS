@@ -1,4 +1,5 @@
 using Avalonia.LogicalTree;
+using Avalonia.Platform.Storage;
 using System.Text.Json.Nodes;
 using Avalonia;
 using Avalonia.Controls;
@@ -61,6 +62,16 @@ public partial class MainWindow
     private readonly Dictionary<string, int> _progActive = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> _progMsg = new(StringComparer.OrdinalIgnoreCase);
     private DispatcherTimer? _progAutosave;
+    /// <summary>E7: letzter Fehler je Programm mit „Was tun?“ (Nochmal = derselbe Befehl).</summary>
+    private readonly Dictionary<string, (FriendlyError Error, Action? Retry)> _progErr = new(StringComparer.OrdinalIgnoreCase);
+    /// <summary>E2: Programme, in denen die Person in „Einfach“ die weiteren Werkzeuge aufgeklappt hat (gilt bis zum Neustart).</summary>
+    private readonly HashSet<string> _simpleToolsOpen = new(StringComparer.OrdinalIgnoreCase);
+    private bool? _autoSaveDocs;
+    /// <summary>E3 (T-0616): Dokumente nach jeder Änderung selbst speichern. Abgeschottete Tests schalten es aus (wie das Abo), eigene Tests schalten es ein.</summary>
+    public bool AutoSaveDocs { get => _autoSaveDocs ?? (!_opt.Isolated && _settings.AutoSave); set => _autoSaveDocs = value; }
+    /// <summary>E3: höchstens so oft behält das automatische Speichern einen früheren Stand als Version.</summary>
+    public static readonly TimeSpan AutoVersionGap = TimeSpan.FromMinutes(10);
+    private DispatcherTimer? _progSaveSoon;
     public ProgramRecent ProgRecent => new(_core.DataRoot);
     string ProgBackup => Path.Combine(_core.DataRoot, "programme", "sicherung");
 
@@ -74,6 +85,7 @@ public partial class MainWindow
             _progAutosave = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
             _progAutosave.Tick += (_, _) => ProgramAutosaveAll();
             _progAutosave.Start();
+            Closing += (_, _) => ProgramAutosaveAll(); // E3: beim Beenden nichts verlieren
         }
     }
 
@@ -81,6 +93,8 @@ public partial class MainWindow
     public List<ProgramDocument> ProgramDocs(string key) => _progDocs.TryGetValue(key, out var l) ? l : _progDocs[key] = [];
     public ProgramDocument? ProgramActive(string key) { var l = ProgramDocs(key); return l.Count == 0 ? null : l[Math.Clamp(_progActive.GetValueOrDefault(key), 0, l.Count - 1)]; }
     public string ProgramMessage(string key) => _progMsg.GetValueOrDefault(key, "");
+    /// <summary>E7: letzter Fehler des Programms (für Tests und Claude), null = keiner.</summary>
+    public FriendlyError? ProgramError(string key) => _progErr.TryGetValue(key, out var e) && _progMsg.GetValueOrDefault(key) == e.Error.Sentence ? e.Error : null;
 
     public ProgramDocument ProgramNew(string key, string? templateId = null)
     {
@@ -98,7 +112,7 @@ public partial class MainWindow
         var have = l.FindIndex(x => x.Path is not null && string.Equals(Path.GetFullPath(x.Path), Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase));
         if (have >= 0) { _progActive[key] = have; return l[have]; }
         var d = ProgramDocument.Load(path, spec.Studio);
-        l.Add(d); _progActive[key] = l.Count - 1; ProgRecent.Add(spec.Studio, path);
+        l.Add(d); _progActive[key] = l.Count - 1; ProgRecent.Add(spec.Studio, path); RememberLastDoc(key, path);
         _progMsg[key] = "Geöffnet: " + Path.GetFileName(path);
         _core.Audit.Append(Principal.LocalOwner.Name, "program.open", $"{spec.Studio} {Path.GetFileName(path)}");
         return d;
@@ -109,16 +123,85 @@ public partial class MainWindow
     {
         var spec = Programs[key]; var d = ProgramActive(key) ?? throw new InvalidOperationException("Es ist kein Dokument offen.");
         var target = path ?? d.Path;
-        if (target is null)
-        {
-            var dir = WorkFolder(spec.Folder); var stem = DevStudio.SafeName(d.Title); target = Path.Combine(dir, stem + ProgramDocument.Extension);
-            for (var n = 2; File.Exists(target); n++) target = Path.Combine(dir, $"{stem} ({n}){ProgramDocument.Extension}");
-        }
+        if (target is null) target = ProgramNewTarget(spec, d);
         else if (!Path.IsPathRooted(target)) // nur ein Name: neben das Dokument, sonst in den Ordner des Programms, nie ins Arbeitsverzeichnis des Prozesses
             target = Path.Combine(d.Path is { } current && Path.IsPathRooted(current) ? Path.GetDirectoryName(current)! : WorkFolder(spec.Folder), target);
-        d.Save(target); ProgRecent.Add(spec.Studio, d.Path!);
+        d.Save(target); ProgRecent.Add(spec.Studio, d.Path!); RememberLastDoc(key, d.Path!); DropBackup(d);
         _core.Audit.Append(Principal.LocalOwner.Name, "program.save", $"{spec.Studio} {Path.GetFileName(d.Path)}");
         _progMsg[key] = "Gespeichert: " + d.Path; return d.Path!;
+    }
+
+    /// <summary>Freier Dateiname im Studio-Ordner der Projekte (vorhandene Dateien werden nie überschrieben).</summary>
+    string ProgramNewTarget(ProgramSpec spec, ProgramDocument d)
+    {
+        var dir = WorkFolder(spec.Folder); var stem = DevStudio.SafeName(d.Title); var target = Path.Combine(dir, stem + ProgramDocument.Extension);
+        for (var n = 2; File.Exists(target); n++) target = Path.Combine(dir, $"{stem} ({n}){ProgramDocument.Extension}");
+        return target;
+    }
+
+    /// <summary>Gespeichert: die Absturz-Sicherung des noch unbenannten Dokuments wird nicht mehr gebraucht.</summary>
+    void DropBackup(ProgramDocument d)
+    {
+        try { var f = Path.Combine(ProgBackup, $"{d.Studio}-{d.Id}{ProgramDocument.Extension}"); if (File.Exists(f)) File.Delete(f); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+    }
+
+    /// <summary>E3 (T-0616): geändertes Dokument selbst speichern – ein neues landet beim ersten Speichern im Studio-Ordner. Leere, unveränderte Dokumente
+    /// legen keine Datei an. Höchstens alle <see cref="AutoVersionGap"/> bleibt ein früherer Stand als Version. false = nicht gespeichert (aus oder Fehler).</summary>
+    public bool ProgramAutoSave(string key, ProgramDocument d)
+    {
+        if (!AutoSaveDocs || !d.Dirty || !Programs.TryGetValue(key, out var spec)) return false;
+        // Claude hat geändert und du hast noch nicht entschieden (behalten/verwerfen) oder eine Live-Animation läuft: erst danach speichern – „Verwerfen“ lässt die Datei so unverändert
+        if (_claudeChanges.TryGetValue(key, out var pending) && pending.DocId == d.Id || _liveAnim.ContainsKey(key)) return false;
+        try
+        {
+            if (d.Path is null)
+            {
+                d.Save(ProgramNewTarget(spec, d));
+                ProgRecent.Add(spec.Studio, d.Path!); RememberLastDoc(key, d.Path!);
+                _core.Audit.Append(Principal.LocalOwner.Name, "program.autosave", $"{spec.Studio} {Path.GetFileName(d.Path)}");
+            }
+            else d.Save(keepVersion: ProgramDocument.VersionDue(d.Path, AutoVersionGap));
+            DropBackup(d);
+            if (_progErr.TryGetValue(key, out var old) && old.Error.Kind == "speichern") { _progErr.Remove(key); if (_progMsg.GetValueOrDefault(key) == old.Error.Sentence) _progMsg.Remove(key); }
+            return true;
+        }
+        catch (Exception e) when (e is not OutOfMemoryException)
+        {
+            // 9: nicht stumm – Meldung mit „Anderen Ort wählen“; die Sicherung im Hintergrund bleibt
+            var f0 = FriendlyError.From(e);
+            var fe = f0 with { Kind = "speichern", Sentence = "Automatisch speichern ging nicht: " + f0.Sentence, Fix = ErrorFix.PickFolder };
+            _progErr[key] = (fe, null); _progMsg[key] = fe.Sentence;
+            return false;
+        }
+    }
+
+    /// <summary>E3: alle geänderten Dokumente jetzt speichern (sonst nach kurzer Pause von selbst). Gibt die Zahl der gespeicherten zurück.</summary>
+    public int ProgramAutosaveNow()
+    {
+        _progSaveSoon?.Stop();
+        var n = 0;
+        foreach (var (key, l) in _progDocs) foreach (var d in l.ToList()) if (ProgramAutoSave(key, d)) n++;
+        if (n > 0 && Programs.ContainsKey(CurrentView) && ProgramActive(CurrentView) is { Dirty: false, Path: not null } shown && ActivePageRoot is { } root) // nur die Anzeige des sichtbaren Dokuments, nicht neu zeichnen – beim Tippen geht nichts verloren
+        {
+            foreach (var tb in root.GetLogicalDescendants().OfType<TextBlock>().Where(t => t.Name == "prog-dirty")) tb.Text = SaveStateText(shown);
+            foreach (var tb in root.GetLogicalDescendants().OfType<TextBlock>().Where(t => t.Name == "prog-saved")) tb.Text = Path.GetFileName(shown.Path) + " · ✓ Gespeichert" + $" · {shown.Changed:HH:mm}";
+        }
+        return n;
+    }
+
+    /// <summary>E3: entprellt – nach einer kurzen Pause ohne weitere Änderung speichern.</summary>
+    void ProgramSaveSoon()
+    {
+        if (!AutoSaveDocs) return;
+        if (_progSaveSoon is null) { _progSaveSoon = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.5) }; _progSaveSoon.Tick += (_, _) => ProgramAutosaveNow(); }
+        _progSaveSoon.Stop(); _progSaveSoon.Start();
+    }
+
+    /// <summary>Vor dem Schließen: speichern (automatisch) oder wenigstens sichern.</summary>
+    void ProgramKeep(string key, ProgramDocument d)
+    {
+        if (!d.Dirty || ProgramAutoSave(key, d)) return;
+        d.Autosave(ProgBackup);
     }
 
     public void ProgramClose(string key, int index)
@@ -129,7 +212,7 @@ public partial class MainWindow
 
     public void ProgramAutosaveAll()
     {
-        foreach (var l in _progDocs.Values) foreach (var d in l) try { d.Autosave(ProgBackup); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+        foreach (var (key, l) in _progDocs) foreach (var d in l.ToList()) try { if (!ProgramAutoSave(key, d)) d.Autosave(ProgBackup); } catch (IOException) { } catch (UnauthorizedAccessException) { }
         OfficeAutosave(); // T-0254: Text, Tabelle, Präsentation
     }
 
@@ -149,8 +232,12 @@ public partial class MainWindow
     private void ProgramRun(string key, Action a)
     {
         if (AssistQuiet > 0) { a(); return; } // T-0315: Vorschau-Lauf des Assistenten – kein Neuzeichnen, Fehler gehen an den Assistenten
-        try { a(); }
-        catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or UnauthorizedAccessException or InvalidDataException or FormatException or KeyNotFoundException) { _progMsg[key] = ex.Message; }
+        try { a(); _progErr.Remove(key); }
+        catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or UnauthorizedAccessException or InvalidDataException or FormatException or KeyNotFoundException)
+        {
+            // E7: Alltagssatz statt Systemtext, dazu ein Knopf (Nochmal, Einrichten, anderen Ort wählen, Claude fragen); der technische Text bleibt aufklappbar
+            var fe = FriendlyError.From(ex); _progMsg[key] = fe.Sentence; _progErr[key] = (fe, () => ProgramRun(key, a));
+        }
         Show(key);
     }
 
@@ -164,7 +251,7 @@ public partial class MainWindow
 
         // V6: Kopfband in der Farbwelt des Studios
         var title = d is null ? null : new TextBox { Name = "prog-title", Text = d.Title, FontSize = 15, FontWeight = FontWeight.SemiBold, MinWidth = 260, Background = Brush.Parse("#26FFFFFF"), Foreground = Brushes.White, BorderThickness = new Thickness(0) };
-        if (title is not null) title.LostFocus += (_, _) => { if (d is not null && !string.IsNullOrWhiteSpace(title.Text) && title.Text.Trim() != d.Title) { d.Title = title.Text.Trim(); d.Edit("Titel", _ => { }); Show(key); } };
+        if (title is not null) title.LostFocus += (_, _) => { if (d is not null && !string.IsNullOrWhiteSpace(title.Text) && title.Text.Trim() != d.Title) { d.Title = title.Text.Trim(); d.EditMeta(_ => { }); Show(key); } };
         var band = new Border
         {
             Name = "prog-band", CornerRadius = new CornerRadius(16), Padding = new Thickness(16, 12), BoxShadow = CardShadow,
@@ -178,9 +265,9 @@ public partial class MainWindow
                         ? new SelectableTextBlock { Name = "prog-msg", Text = "" + bm, Foreground = Brushes.White, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap, MaxHeight = 40 }
                         : new TextBlock { Text = spec.Sentence, Foreground = Brush.Parse("#E6FFFFFF"), FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis } } }, 1),
                 Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, VerticalAlignment = VerticalAlignment.Center, Children = {
-                    ClaudeBand(key), // Claude in der Kopfzeile jedes Programms – nimmt keine Zeile im Menüband weg
-                    title is null ? LevelSwitch(key) : new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, VerticalAlignment = VerticalAlignment.Center, Children = {
-                    LevelSwitch(key), title, new TextBlock { Name = "prog-dirty", Text = d!.Dirty ? "geändert" : d.Path is null ? "nicht gespeichert" : "✓ gespeichert", Foreground = Brushes.White, FontSize = 12, VerticalAlignment = VerticalAlignment.Center } } } } }, 2) } },
+                    // E1 (T-0616): Claude und „Markierung“ stehen im Knopf „KI ▾“ der KI-Leiste darüber – nicht noch einmal hier
+                    title is null ? LevelArea(key) : new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, VerticalAlignment = VerticalAlignment.Center, Children = {
+                    LevelArea(key), title, new TextBlock { Name = "prog-dirty", Text = SaveStateText(d!), Foreground = Brushes.White, FontSize = 12, VerticalAlignment = VerticalAlignment.Center } } } } }, 2) } },
         };
 
         // D2 (13.11.2026): Programmkopf immer schlicht – keine Studio-Farbfläche, kein Symbolblock, kein doppelter Titel.
@@ -202,6 +289,8 @@ public partial class MainWindow
             var (top, grid, status) = ProgramWorkParts(spec, d, docs);
             band.Padding = new Thickness(14, 8);
             var head = new StackPanel { Spacing = 6, Children = { band, top } };
+            if (_progErr.TryGetValue(key, out var fhe) && fhe.Error.Fix != ErrorFix.None && _progMsg.GetValueOrDefault(key) == fhe.Error.Sentence) head.Children.Insert(1, ProgramErrorCard(key, fhe.Error, fhe.Retry)); // E7
+            if (ProgramIntro(key) is { } fi) head.Children.Insert(1, fi); // E8
             if (ClaudeChangeBanner(key, d) is { } cb) head.Children.Insert(1, cb); // Claude hat geändert: vergleichen, behalten, verwerfen
             if (ClaudeProgramExtra(key) is { } cx) head.Children.Insert(1, cx); // z. B. das spielbare Spiel, das Claude gebaut hat
             // DockPanel: Kopf und Statusleiste bekommen die echte Breite (Menüband bricht richtig um), die Arbeitsfläche den Rest
@@ -213,7 +302,9 @@ public partial class MainWindow
         {
             Control body = d is null ? ProgramStart(spec) : ProgramWork(spec, d, docs);
             root = new StackPanel { Name = "prog-root", Spacing = 10, Children = { band, body } };
-            if (_progMsg.GetValueOrDefault(key) is { Length: > 0 } msg) root.Children.Insert(1, ResultCard(msg));
+            if (_progMsg.GetValueOrDefault(key) is { Length: > 0 } msg)
+                root.Children.Insert(1, _progErr.TryGetValue(key, out var pe) && pe.Error.Fix != ErrorFix.None && pe.Error.Sentence == msg ? ProgramErrorCard(key, pe.Error, pe.Retry) : ResultCard(msg)); // E7: Fehler mit „Was tun?“
+            if (ProgramIntro(key) is { } pi) root.Children.Insert(1, pi); // E8: kurze Einführung beim ersten Öffnen
             if (ClaudeChangeBanner(key, d) is { } cb) root.Children.Insert(1, cb); // Claude hat geändert: vergleichen, behalten, verwerfen
             if (ClaudeProgramExtra(key) is { } cx) root.Children.Insert(1, cx); // z. B. das spielbare Spiel, das Claude gebaut hat
         }
@@ -226,11 +317,134 @@ public partial class MainWindow
                 case Key.Z when d is not null: ProgramRun(key, () => d.Undo()); e.Handled = true; break;
                 case Key.Y when d is not null: ProgramRun(key, () => d.Redo()); e.Handled = true; break;
                 case Key.N: ProgramRun(key, () => ProgramNew(key)); e.Handled = true; break;
-                case Key.W when d is not null: ProgramRun(key, () => ProgramClose(key, _progActive.GetValueOrDefault(key))); e.Handled = true; break;
+                case Key.W when d is not null: ProgramRun(key, () => { ProgramKeep(key, d); ProgramClose(key, _progActive.GetValueOrDefault(key)); }); e.Handled = true; break;
             }
         };
+        if (d is { Dirty: true }) ProgramSaveSoon(); // E3: kurz nach der letzten Änderung von selbst speichern
         return spec.FillHeight && d is not null ? FitPage(spec.Title, new Panel(), root, pageHead: false) : Page(spec.Title, root);
     }
+
+    /// <summary>E3: Speicherstand in einem Wort – mit automatischem Speichern nur „Gespeichert“.</summary>
+    string SaveStateText(ProgramDocument d) => AutoSaveDocs
+        ? (d.Dirty ? "Wird gespeichert …" : d.Path is null ? "" : "✓ Gespeichert")
+        : (d.Dirty ? "geändert" : d.Path is null ? "nicht gespeichert" : "✓ gespeichert");
+
+    /// <summary>E2 (T-0616): In „Einfach“ ist die Stufenwahl eingeklappt – „Mehr Werkzeuge“ holt Stufenwahl, Eigenschaften und Rand-Schalter.</summary>
+    Control LevelArea(string key)
+    {
+        if (!IsSimple) return LevelSwitch(key);
+        var open = _simpleToolsOpen.Contains(key);
+        var b = new Button { Name = "prog-tools-more", Content = open ? "Weniger Werkzeuge" : "Mehr Werkzeuge", FontSize = 12, Padding = new Thickness(10, 3), VerticalAlignment = VerticalAlignment.Center };
+        ToolTip.SetTip(b, open ? "Stufenwahl, Eigenschaften und Rand-Schalter wieder einklappen" : "Stufenwahl, Eigenschaften und Rand-Schalter zeigen – die Bedienstufe wählst du auch unter „Mehr“ und in den Einstellungen");
+        b.Click += (_, _) => { if (!_simpleToolsOpen.Remove(key)) _simpleToolsOpen.Add(key); Show(key); };
+        return open ? new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, VerticalAlignment = VerticalAlignment.Center, Children = { LevelSwitch(key), b } } : b;
+    }
+
+    /// <summary>E2: In „Einfach“ sind Eigenschaften und Rand-Schalter eingeklappt, bis „Mehr Werkzeuge“ sie holt.</summary>
+    bool SimpleCollapsed(string key) => IsSimple && !_simpleToolsOpen.Contains(key);
+
+    /// <summary>E4: Dateiauswahl des Systems (Tests ersetzen sie über <see cref="PickOverride"/>). save: „Speichern unter“ mit Vorschlag.</summary>
+    async Task<string?> PickProgramFile(bool save, string suggested)
+    {
+        var req = new PickRequest(save ? "prog-saveas" : "prog-open", false, false, [ProgramDocument.Extension.TrimStart('.')]);
+        if (PickOverride is { } fake) return (await fake(req)) is [var f, ..] ? f : null;
+        var type = new Avalonia.Platform.Storage.FilePickerFileType("Trendo-Dokument") { Patterns = ["*" + ProgramDocument.Extension] };
+        if (save)
+        {
+            var file = await StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions { Title = "Speichern unter", SuggestedFileName = suggested, DefaultExtension = ProgramDocument.Extension.TrimStart('.'), FileTypeChoices = [type] });
+            return file?.TryGetLocalPath();
+        }
+        var got = await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Dokument öffnen", AllowMultiple = false, FileTypeFilter = [type] });
+        return got.Select(f => f.TryGetLocalPath()).OfType<string>().FirstOrDefault();
+    }
+
+    /// <summary>E4: „Speichern unter …“ mit der Dateiauswahl; nie überschreiben ohne Rückfrage (die Auswahl des Systems fragt selbst nach).</summary>
+    async Task ProgramSaveAsPick(string key)
+    {
+        if (ProgramActive(key) is not { } d) return;
+        string? f;
+        try { f = await PickProgramFile(true, DevStudio.SafeName(d.Title) + ProgramDocument.Extension); }
+        catch (Exception e) when (e is not OutOfMemoryException) { ProgramRun(key, () => throw new IOException(FriendlyError.Say(e), e)); return; }
+        if (f is { Length: > 0 }) ProgramRun(key, () => ProgramSave(key, f));
+    }
+
+    /// <summary>E4: „Öffnen …“ mit der Dateiauswahl.</summary>
+    async Task ProgramOpenPick(string key)
+    {
+        string? f;
+        try { f = await PickProgramFile(false, ""); }
+        catch (Exception e) when (e is not OutOfMemoryException) { ProgramRun(key, () => throw new IOException(FriendlyError.Say(e), e)); return; }
+        if (f is { Length: > 0 }) ProgramRun(key, () => { if (!File.Exists(f)) throw new FileNotFoundException("Diese Datei gibt es nicht."); ProgramOpen(key, f); });
+    }
+
+    /// <summary>E5: zuletzt bearbeitetes Dokument genau dieses Programms – „Zuletzt“ ist je Studio, ein Studio kann mehrere Programme haben
+    /// (z. B. Bild und Ton). Ohne eigenen Eintrag nur dann aus „Zuletzt“, wenn das Studio genau ein Programm hat.</summary>
+    public string? LastDocOf(string key)
+    {
+        if (!Programs.TryGetValue(key, out var spec)) return null;
+        if (_settings.LastProgramDoc.TryGetValue(key, out var f) && File.Exists(f)) return f;
+        return Programs.Values.Count(p => p.Studio == spec.Studio) == 1 ? ProgRecent.Get(spec.Studio).FirstOrDefault() : null;
+    }
+
+    void RememberLastDoc(string key, string path)
+    {
+        if (_settings.LastProgramDoc.GetValueOrDefault(key) == path) return;
+        _settings.LastProgramDoc[key] = path; SaveSettings();
+    }
+
+    /// <summary>E5 (T-0616): das zuletzt bearbeitete Dokument des Programms öffnen (Desktop „Weitermachen“, oberste Karte der Startansicht). false = keines da.</summary>
+    public bool ProgramContinue(string key)
+    {
+        if (LastDocOf(key) is not { } last) return false;
+        ProgramRun(key, () => ProgramOpen(key, last));
+        return true;
+    }
+
+    // ---------- E8: kurze Einführung beim ersten Öffnen ----------
+    private readonly Dictionary<string, int> _introStep = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _introAsked = new(StringComparer.OrdinalIgnoreCase);
+    private bool? _introOn;
+    /// <summary>E8 (T-0616): drei kurze Schritte beim ersten Öffnen eines Programms. Abgeschottete Tests zeigen sie nicht (nichts darf dort warten); über „Einführung“ in der Hilfe kommt sie immer.</summary>
+    public bool ProgramIntroOn { get => _introOn ?? !_opt.Isolated; set => _introOn = value; }
+
+    /// <summary>Die drei Schritte der Einführung.</summary>
+    public string[] ProgramIntroSteps() =>
+    [
+        "Hier anfangen: Wähle unter „Neu“ eine Vorlage oder öffne unter „Zuletzt“, woran du gearbeitet hast.",
+        "Hier hilft die KI: Schreib oben in die Zeile, was entstehen soll, und drück „Los“. Unter „KI ▾“ findest du Claude, kie.ai und mehr.",
+        AutoSaveDocs ? "Speichern passiert von selbst: Jede Änderung wird gesichert, frühere Stände findest du unter „Versionen“."
+                     : "Speichern mit Strg+S – ungespeicherte Änderungen sichert Trendo zusätzlich alle 30 Sekunden.",
+    ];
+
+    Control? ProgramIntro(string key)
+    {
+        var id = "intro:" + key;
+        if (!(ProgramIntroOn || _introAsked.Contains(key)) || _settings.SeenHints.Contains(id)) return null;
+        var steps = ProgramIntroSteps(); var i = Math.Clamp(_introStep.GetValueOrDefault(key), 0, steps.Length - 1);
+        void Done() { _introStep.Remove(key); _introAsked.Remove(key); if (!_settings.SeenHints.Contains(id)) { _settings.SeenHints.Add(id); SaveSettings(); } Show(key); }
+        var next = new Button { Name = "prog-intro-next", Content = i < steps.Length - 1 ? "Weiter" : "Fertig", Background = Accent, Foreground = Brushes.White, Padding = new Thickness(12, 4) };
+        next.Click += (_, _) => { if (i < steps.Length - 1) { _introStep[key] = i + 1; Show(key); } else Done(); };
+        var skip = new Button { Name = "prog-intro-skip", Content = "Überspringen", Padding = new Thickness(12, 4), Background = Brushes.Transparent };
+        ToolTip.SetTip(skip, "Die Einführung kommt über „Hilfe“ → „Einführung“ wieder");
+        skip.Click += (_, _) => Done();
+        return new Border { Name = "prog-intro", Background = TileBg, BorderBrush = Accent, BorderThickness = new Thickness(3, 0, 0, 0), CornerRadius = new CornerRadius(4), Padding = new Thickness(12, 8),
+            Child = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = {
+                new StackPanel { Spacing = 2, VerticalAlignment = VerticalAlignment.Center, Children = {
+                    new TextBlock { Name = "prog-intro-step", Text = $"Kurze Einführung · Schritt {i + 1} von {steps.Length}", Foreground = Muted, FontSize = 11.5 },
+                    new TextBlock { Name = "prog-intro-text", Text = steps[i], Foreground = Text, FontSize = 13, TextWrapping = TextWrapping.Wrap } } },
+                Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 0, 0), Children = { skip, next } }, 1) } } };
+    }
+
+    /// <summary>E8: Einführung über die Hilfe wieder abrufen.</summary>
+    public void ProgramIntroShow(string key)
+    {
+        _settings.SeenHints.Remove("intro:" + key); _introStep[key] = 0; _introAsked.Add(key); SaveSettings();
+        Show(key);
+    }
+
+    /// <summary>E7: Fehlerkarte des Programms – Alltagssatz, ein Knopf „Was tun?“, technischer Text aufklappbar.</summary>
+    Control ProgramErrorCard(string key, FriendlyError fe, Action? retry) =>
+        ErrorCard(fe, retry, Programs.TryGetValue(key, out var sp) ? sp.Studio : null, () => _ = fe.Kind == "speichern" && ProgramActive(key) is not null ? ProgramSaveAsPick(key) : ProgramOpenPick(key));
 
     /// <summary>G1/V2: Startseite des Programms.</summary>
     private Control ProgramStart(ProgramSpec spec)
@@ -260,8 +474,10 @@ public partial class MainWindow
             recent.Children.Add(b);
         }
         if (i == 0) recent.Children.Add(P("Noch nichts gespeichert.", null, 12));
-        var open = Field("prog-open-path", "Projektdatei öffnen (" + ProgramDocument.Extension + ")", 320);
-        recent.Children.Add(Line(open, Act("prog-open", "Öffnen", () => ProgramRun(key, () => { var p = Need(open, "die Datei"); if (!File.Exists(p)) throw new FileNotFoundException("Diese Datei gibt es nicht."); ProgramOpen(key, p); }))));
+        // E4 (T-0616): Öffnen über die Dateiauswahl statt eines getippten Pfads
+        var open = Act("prog-open", "Anderes Dokument öffnen …", () => _ = ProgramOpenPick(key));
+        ToolTip.SetTip(open, "Ein gespeichertes Dokument (" + ProgramDocument.Extension + ") von einem beliebigen Ort öffnen");
+        recent.Children.Add(Line(open));
         var sp = new StackPanel { Spacing = 10, Children = {
             Card(new StackPanel { Spacing = 8, Children = { H("Neu", 15), tpl } }),
             Card(new StackPanel { Spacing = 6, Children = { H("Zuletzt", 15), recent } }) } };
@@ -280,6 +496,18 @@ public partial class MainWindow
                 k++;
             }
             sp.Children.Insert(0, Card(rs));
+        }
+        // E5 (T-0616): oberste Karte „Weitermachen“ – das zuletzt bearbeitete Dokument mit einem Klick
+        if (LastDocOf(key) is { } last)
+        {
+            var go = new Button { Name = "prog-continue", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(14, 10), CornerRadius = new CornerRadius(10),
+                Background = TileBg, BorderBrush = Accent, BorderThickness = new Thickness(1),
+                Content = new StackPanel { Spacing = 2, Children = {
+                    new TextBlock { Text = "Weitermachen: " + Path.GetFileNameWithoutExtension(last), Foreground = Text, FontSize = 15, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
+                    new TextBlock { Text = "Zuletzt bearbeitet am " + File.GetLastWriteTime(last).ToString("dd.MM.yyyy 'um' HH:mm", De), Foreground = Muted, FontSize = 12 } } } };
+            ToolTip.SetTip(go, last);
+            go.Click += (_, _) => ProgramContinue(key);
+            sp.Children.Insert(0, go);
         }
         if (spec.StartTop is { } top) sp.Children.Insert(0, top());
         return sp;
@@ -305,8 +533,8 @@ public partial class MainWindow
                 Background = on ? TileBg : Brushes.Transparent, Foreground = on ? Text : Muted, BorderBrush = on ? EdgeLit : Edge, BorderThickness = new Thickness(1, 1, 1, 0) };
             t.Click += (_, _) => { _progActive[key] = idx; Show(key); };
             var x = new Button { Name = $"prog-tab-close-{k}", Content = "×", Padding = new Thickness(6, 1), Margin = new Thickness(0, 0, 8, 0), Background = Brushes.Transparent, FontSize = 12 };
-            ToolTip.SetTip(x, doc.Dirty ? "Schließen (Änderungen sind automatisch gesichert)" : "Schließen");
-            x.Click += (_, _) => ProgramRun(key, () => { if (doc.Dirty) doc.Autosave(ProgBackup); ProgramClose(key, idx); });
+            ToolTip.SetTip(x, doc.Dirty ? (AutoSaveDocs ? "Schließen (Änderungen werden gespeichert)" : "Schließen (Änderungen sind automatisch gesichert)") : "Schließen");
+            x.Click += (_, _) => ProgramRun(key, () => { ProgramKeep(key, doc); ProgramClose(key, idx); });
             tabs.Children.Add(t); tabs.Children.Add(x);
         }
         var plus = new Button { Name = "prog-tab-new", Content = "＋", Padding = new Thickness(10, 3), Background = Brushes.Transparent };
@@ -315,14 +543,14 @@ public partial class MainWindow
 
         // Menüband
         var saveAs = Field("prog-saveas-path", "Speichern unter: Ordner\\Name", 240);
-        // Zeichenprogramme: „Speichern unter …“ klappt das Feld auf, statt Platz im Menüband zu belegen
+        // E4 (T-0616): „Speichern unter …“ öffnet die Dateiauswahl; eintippen geht weiter im Klappfeld (auch für Claude)
         List<Control> SaveAsControls()
         {
-            var go = RBtn("prog-saveas", "Speichern unter", () => ProgramRun(key, () => ProgramSave(key, Need(saveAs, "Ordner und Namen"))));
-            if (!spec.FillHeight) return [saveAs, go];
             var open = RBtn("prog-saveas-open", "Speichern unter …", () => { });
+            var pick = RBtn("prog-saveas-pick", "Ort wählen …", () => { open.Flyout?.Hide(); _ = ProgramSaveAsPick(key); }, true);
+            var go = RBtn("prog-saveas", "Speichern unter", () => { open.Flyout?.Hide(); ProgramRun(key, () => ProgramSave(key, Need(saveAs, "Ordner und Namen"))); });
             go.Margin = new Thickness(0, 6, 0, 0);
-            open.Flyout = new Flyout { Content = new StackPanel { Width = 380, Spacing = 4, Children = { P("Ordner und Dateiname", null, 12), saveAs, go } } };
+            open.Flyout = new Flyout { Content = new StackPanel { Width = 380, Spacing = 4, Children = { pick, P("oder Ordner und Dateinamen eintippen", null, 12), saveAs, go } } };
             return [open];
         }
         // X17: frühere Stände – jedes Speichern behält den alten Stand (höchstens 20)
@@ -348,7 +576,8 @@ public partial class MainWindow
                 RBtn("prog-save", "Speichern", () => ProgramRun(key, () => ProgramSave(key)), true),
                 .. SaveAsControls(),
                 .. VersionControls(),
-                RBtn("prog-close", "Schließen", () => ProgramRun(key, () => { if (d.Dirty) d.Autosave(ProgBackup); ProgramClose(key, _progActive.GetValueOrDefault(key)); })),
+                RBtn("prog-open-pick", "Öffnen …", () => _ = ProgramOpenPick(key)),
+                RBtn("prog-close", "Schließen", () => ProgramRun(key, () => { ProgramKeep(key, d); ProgramClose(key, _progActive.GetValueOrDefault(key)); })),
             ]),
             ("Bearbeiten", [
                 RBtn("prog-undo", "Rückgängig", () => ProgramRun(key, () => { if (!d.Undo()) throw new InvalidOperationException("Es gibt nichts rückgängig zu machen."); }), tip: d.UndoLabel is { } u ? "Rückgängig: " + u : "Nichts rückgängig zu machen"),
@@ -371,8 +600,16 @@ public partial class MainWindow
                 _progMsg[key] = "Exportiert: " + res; NotifyFileResult(_progMsg[key]);
             }))).ToList()));
         if (level == UserLevel.Profi) groups.Add(("Profi", ProTools(spec, d)));
-        if (spec.Help.Length > 0) groups.Add(("Hilfe", [RBtn("prog-help", "? Hilfe", () => Toast(spec.Help))]));
-        if (level == UserLevel.Einfach && !OsStyle) groups = SimpleRibbon(groups, spec); // Wunsch 08.11.2026: Wichtigstes sichtbar, alles andere hinter „Mehr“
+        var help = new List<Control>();
+        if (spec.Help.Length > 0) help.Add(RBtn("prog-help", "? Hilfe", () => Toast(spec.Help)));
+        help.Add(RBtn("prog-intro-show", "Einführung", () => ProgramIntroShow(key), tip: "Die drei kurzen Schritte zum Anfangen noch einmal zeigen"));
+        groups.Add(("Hilfe", help));
+        if (level == UserLevel.Einfach && !OsStyle)
+        {
+            // E2: die Bedienstufe bleibt auch im „Mehr“-Menü wählbar
+            groups.Add(("Bedienstufe", [RBtn("prog-stufe-erweitert", "Mehr Werkzeuge (Erweitert)", () => ProgramSetLevel(UserLevel.Erweitert, key)), RBtn("prog-stufe-profi", "Alle Werkzeuge (Professionell)", () => ProgramSetLevel(UserLevel.Profi, key))]));
+            groups = SimpleRibbon(groups, spec); // Wunsch 08.11.2026: Wichtigstes sichtbar, alles andere hinter „Mehr“
+        }
         Control? osChrome = OsStyle ? OsProgramChrome(spec, groups, tabs, docs.Count) : null; // Windows-Menüzeile, Mac-Menüleiste, GNOME-Kopfleiste
         var ribbon = new WrapPanel { Name = osChrome is null ? "prog-ribbon" : "prog-ribbon-trendo" };
         string? lastGroup = null;
@@ -412,7 +649,7 @@ public partial class MainWindow
         var work = new Border { Name = "prog-workspace", ClipToBounds = true, CornerRadius = new CornerRadius(14), Background = PaneBg, BorderBrush = PaneEdge, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(spec.FillHeight ? 8 : 12), MinHeight = spec.FillHeight ? 220 : 420, Child = spec.FillHeight && spec.ScrollWorkspace ? new ScrollViewer { Name = "prog-workspace-scroll", Content = spec.Workspace(d), HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled } : spec.Workspace(d) };
         // Paket F (A1 Profi-Bauplan): Werkzeuge links · große Mitte · Eigenschaften rechts · Bereich unten – jeder Rand einklappbar
         bool Hidden(string part) => _settings.HiddenPanels.Contains(key + ":" + part);
-        var showTools = spec.Tools.Count > 0 && !Hidden("werkzeuge"); var showProps = spec.Properties is not null && !Hidden("eigenschaften"); var showBottom = spec.Bottom is not null && !Hidden("unten");
+        var showTools = spec.Tools.Count > 0 && !Hidden("werkzeuge"); var showProps = spec.Properties is not null && !Hidden("eigenschaften") && !SimpleCollapsed(key); var showBottom = spec.Bottom is not null && !Hidden("unten");
         Control center = work;
         if (spec.Bottom is { } bottom && showBottom)
         {
@@ -458,12 +695,14 @@ public partial class MainWindow
         if (spec.Tools.Count > 0) Toggle("werkzeuge", "◧", "Werkzeuge", showTools);
         if (spec.Bottom is not null) Toggle("unten", "⬓", spec.Bottom.Title, showBottom);
         if (spec.Properties is not null) Toggle("eigenschaften", "◨", "Eigenschaften", showProps);
+        toggles.IsVisible = !SimpleCollapsed(key); // E2: in „Einfach“ erst nach „Mehr Werkzeuge“
 
         // Statusleiste
         var status = new Border { Name = "prog-status", CornerRadius = new CornerRadius(10), Background = DawLook ? DawLcd : Brush.Parse(C("#331A1A1A", "#14000000")), BorderBrush = DawLook ? DawEdge : null, BorderThickness = new Thickness(DawLook ? 1 : 0), Padding = new Thickness(12, 5),
             Child = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto"), Children = {
                 new TextBlock { Name = "prog-status-text", Text = spec.Status?.Invoke(d) ?? "", Foreground = DawLook ? DawDigits : Muted, FontSize = 12, FontFamily = DawLook ? new FontFamily("Consolas, monospace") : FontFamily.Default, VerticalAlignment = VerticalAlignment.Center },
-                Pos(new TextBlock { Text = (d.Path is null ? "Noch nicht gespeichert" : Path.GetFileName(d.Path)) + (d.Dirty ? " · geändert, wird automatisch gesichert" : "") + $" · {d.Changed:HH:mm}", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, 1),
+                Pos(new TextBlock { Name = "prog-saved", Text = AutoSaveDocs ? (d.Path is null && !d.Dirty ? "Noch leer" : (d.Path is null ? "" : Path.GetFileName(d.Path) + " · ") + (d.Dirty ? "wird gespeichert …" : "✓ Gespeichert") + $" · {d.Changed:HH:mm}")
+                    : (d.Path is null ? "Noch nicht gespeichert" : Path.GetFileName(d.Path)) + (d.Dirty ? " · geändert, wird automatisch gesichert" : "") + $" · {d.Changed:HH:mm}", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, 1),
                 Pos(toggles, 2) } } };
         if (osChrome is not null) return (new StackPanel { Spacing = 0, Children = { new Border(), new StackPanel { Spacing = 8, Children = { osChrome } } } }, grid, status);
         Control ribbonHost = DawLook ? new Border { Name = "prog-ribbon-strip", CornerRadius = new CornerRadius(12), Background = DawPanel, BorderBrush = DawEdge, BorderThickness = new Thickness(1), Padding = new Thickness(8, 2, 8, 0), Child = ribbon } : ribbon; // DAW-Werkzeugleiste
@@ -486,6 +725,7 @@ public partial class MainWindow
     {
         _settings.Level = UserLevel.Id(level); SaveSettings();
         _core.Audit.Append(Principal.LocalOwner.Name, "program.level", _settings.Level);
+        RefreshDesktopTiles(); // E12: Desktop folgt der Stufe
         if (reopen is not null) Show(reopen);
     }
 
@@ -503,7 +743,7 @@ public partial class MainWindow
             {
                 UserLevel.Einfach => "Einfach: nur das Wichtigste, große Schritte",
                 UserLevel.Erweitert => "Erweitert: alle Fachwerkzeuge",
-                _ => "Professionell: zusätzlich Befehlssuche, Verlauf und Projektdaten",
+                _ => "Professionell: zusätzlich Verlauf und gespeicherte Daten; alle Befehle findest du mit Strg+K",
             });
             b.Click += (_, _) => ProgramSetLevel(lv, key);
             bar.Children.Add(b);
@@ -511,7 +751,7 @@ public partial class MainWindow
         return bar;
     }
 
-    /// <summary>Profi-Werkzeuge: alle Befehle durchsuchen (auch die der Stufe verborgenen), Verlauf mit Sprung zurück, Projektdaten direkt bearbeiten.</summary>
+    /// <summary>Profi-Werkzeuge: Verlauf mit Sprung zurück, Projektdaten direkt bearbeiten. Alle Befehle (auch die der Stufe verborgenen) findet die Befehlsleiste Strg+K (E11).</summary>
     private List<Control> ProTools(ProgramSpec spec, ProgramDocument d)
     {
         var key = spec.Key;
@@ -521,25 +761,6 @@ public partial class MainWindow
                 Flyout = new Flyout { Content = content } };
             ToolTip.SetTip(b, tip); return b;
         }
-        // Befehlssuche
-        var all = spec.Ribbon.SelectMany(g => g.Cmds.Select(c => (g.Group, Cmd: c))).ToList();
-        var q = new TextBox { Name = "prog-palette-q", PlaceholderText = "Befehl suchen …", Width = 300 };
-        var hits = new StackPanel { Name = "prog-palette-list", Spacing = 2 };
-        void Fill()
-        {
-            hits.Children.Clear(); var t = (q.Text ?? "").Trim(); var k = 0;
-            foreach (var (g, c) in all.Where(x => t.Length == 0 || x.Cmd.Label.Contains(t, StringComparison.OrdinalIgnoreCase) || x.Group.Contains(t, StringComparison.OrdinalIgnoreCase) || (x.Cmd.Tip ?? "").Contains(t, StringComparison.OrdinalIgnoreCase)).Take(12))
-            {
-                var cmd = c;
-                var b = new Button { Name = $"prog-palette-{k++}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Background = Brushes.Transparent, Padding = new Thickness(8, 4),
-                    Content = new TextBlock { Text = $"{cmd.Label}  ·  {g}", Foreground = Text, FontSize = 12.5 } };
-                b.Click += (_, _) => ProgramRun(key, () => cmd.Run(d));
-                hits.Children.Add(b);
-            }
-            if (k == 0) hits.Children.Add(P("Kein Befehl gefunden.", null, 12));
-        }
-        q.TextChanged += (_, _) => Fill(); Fill();
-
         // Verlauf
         var hist = new StackPanel { Name = "prog-history-list", Spacing = 2 };
         var steps = d.History;
@@ -560,9 +781,8 @@ public partial class MainWindow
         apply.Click += (_, _) => ProgramRun(key, () => { d.ReplaceData(json.Text ?? ""); _progMsg[key] = "Projektdaten übernommen – „Rückgängig“ stellt den alten Stand her."; });
 
         return [
-            Tool("prog-palette", "Befehle suchen", "Alle Befehle des Programms durchsuchen und ausführen", new StackPanel { Spacing = 6, Children = { q, hits } }),
             Tool("prog-history", $"Verlauf ({steps.Count})", "Änderungen ansehen und zu einem früheren Stand zurückspringen", new ScrollViewer { MaxHeight = 360, Width = 320, Content = hist }),
-            Tool("prog-data", "{ } Projektdaten", "Die gespeicherten Daten des Dokuments direkt bearbeiten", new StackPanel { Spacing = 6, Children = { P("Genau das, was gespeichert wird. Übernehmen ist ein Schritt im Verlauf.", null, 12), json, apply } }),
+            Tool("prog-data", PlainWords.Plain("Projektdaten"), "Die gespeicherten Daten des Dokuments direkt bearbeiten (Fachwort: Projektdaten, JSON)", new StackPanel { Spacing = 6, Children = { P("Genau das, was gespeichert wird. Übernehmen ist ein Schritt im Verlauf.", null, 12), json, apply } }),
         ];
     }
 }

@@ -62,7 +62,7 @@ public partial class MainWindow
             var n = i++; var st = Lab.State(c);
             var add = new TextBox { Name = $"for-add-file-{n}", PlaceholderText = "Datei hinzufügen", Width = 260 };
             var addB = new Button { Name = $"for-add-{n}", Content = "Sichern", Padding = new Thickness(8, 2) };
-            addB.Click += (_, _) => { try { var it = Lab.Add(c, add.Text?.Trim().Trim('"') ?? ""); _forMsg = $"Gesichert: {it.Name} ({it.Sha256[..12]}…)"; } catch (Exception ex) { _forMsg = "Hat nicht geklappt: " + ex.Message; } Show("forensik"); };
+            addB.Click += (_, _) => { try { var it = Lab.Add(c, add.Text?.Trim().Trim('"') ?? ""); _forMsg = $"Gesichert: {it.Name} ({it.Sha256[..12]}…)"; } catch (Exception ex) { _forMsg = "Hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex); } Show("forensik"); };
             var ver = new Button { Name = $"for-verify-{n}", Content = "Bericht", Padding = new Thickness(8, 2) };
             ver.Click += (_, _) => { var f = Lab.Report(c); var (ok, it) = Lab.Verify(c); _forMsg = $"{(ok && it.All(x => x.Ok) ? "✓ Alles unverändert." : "⚠ Etwas wurde verändert!")} Bericht: {f}"; Launch(f); Show("forensik"); };
             var del = new Button { Name = $"for-del-{n}", Content = "Jetzt löschen", Padding = new Thickness(8, 2) };

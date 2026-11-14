@@ -30,7 +30,7 @@ public partial class MainWindow
         _ossQuery = q;
         if (_core.Offline) { Say("Trendo ist offline. Die Suche braucht Internet.", "oss"); return; }
         try { _ossHits = OssSearchOverride is not null ? await OssSearchOverride(q) : await OssSearchHttp(OssHttp, q); _w45Msg = _ossHits.Count == 0 ? "Nichts gefunden." : ""; }
-        catch (Exception ex) { _ossHits = []; _w45Msg = "Suche hat nicht geklappt: " + ex.Message; }
+        catch (Exception ex) { _ossHits = []; _w45Msg = "Suche hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex); }
         // Masterprompt 131: gleich zeigen, ob es ein fertiges Windows-Programm gibt (ohne Anmeldung nur die ersten 6 – schont das GitHub-Limit)
         if (_ossHits.Count > 0 && (OssSearchOverride is null || GitHubHandlerOverride is not null)) _ = OssCheckAvailability(_ossHits.Take(GitHubToken is null ? 6 : 20).Select(h => h.FullName));
         _core.Audit.Append(Principal.LocalOwner.Name, "oss.search", q);

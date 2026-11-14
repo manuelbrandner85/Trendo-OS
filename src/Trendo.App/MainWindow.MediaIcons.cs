@@ -31,7 +31,7 @@ public partial class MainWindow
     public async Task IconLoadSets()
     {
         try { _iconSets = IconSets.ParseCollections(await IconGet(IconSets.CollectionsUrl, Path.Combine(IconCache, "collections.json"))); IconMessage = ""; }
-        catch (Exception e) when (e is HttpRequestException or IOException or FormatException or System.Text.Json.JsonException or TaskCanceledException) { IconMessage = "⚠ Symbolsätze nicht ladbar: " + e.Message; }
+        catch (Exception e) when (e is HttpRequestException or IOException or FormatException or System.Text.Json.JsonException or TaskCanceledException) { IconMessage = "⚠ Symbolsätze nicht ladbar: " + Trendo.Core.FriendlyError.Say(e); }
         Show(MB);
     }
 
@@ -47,7 +47,7 @@ public partial class MainWindow
             IconHits = _icons.Search(query, 48);
             IconMessage = IconHits.Count == 0 ? "Nichts gefunden – englische Begriffe probieren (z. B. home, arrow, heart)." : $"{IconHits.Count} Symbole aus „{set.Name}“ ({set.LicenseTitle}).";
         }
-        catch (Exception e) when (e is HttpRequestException or IOException or FormatException or System.Text.Json.JsonException or TaskCanceledException) { IconMessage = "⚠ Symbolsatz nicht ladbar: " + e.Message; }
+        catch (Exception e) when (e is HttpRequestException or IOException or FormatException or System.Text.Json.JsonException or TaskCanceledException) { IconMessage = "⚠ Symbolsatz nicht ladbar: " + Trendo.Core.FriendlyError.Say(e); }
         Show(MB);
     }
 

@@ -39,7 +39,7 @@ public partial class MainWindow
                 else _msMsg = "Analyse ging nicht: " + Short(r.Err.Length > 0 ? r.Err : r.Out);
             }
         }
-        catch (Exception e) when (e is IOException or InvalidOperationException) { _msMsg = "Analyse ging nicht: " + e.Message; }
+        catch (Exception e) when (e is IOException or InvalidOperationException) { _msMsg = "Analyse ging nicht: " + Trendo.Core.FriendlyError.Say(e); }
         var a = json is null ? null : SongAnalysis.Parse(json);
         if (a is not null)
         {
@@ -74,7 +74,7 @@ public partial class MainWindow
         else sp.Children.Add(Act("ms-analyse-setup", "Song-Analyse einrichten (einmalig, ca. 300 MB)", async () =>
         {
             try { await KiPyInstall(AnalyseModel, KiPyApps.For(KiRuntime.MusikAnalyse)!); _msMsg = "✓ Song-Analyse ist eingerichtet."; }
-            catch (Exception e) when (e is InvalidOperationException or IOException or HttpRequestException or OperationCanceledException) { _msMsg = "Einrichten ging nicht: " + e.Message; }
+            catch (Exception e) when (e is InvalidOperationException or IOException or HttpRequestException or OperationCanceledException) { _msMsg = "Einrichten ging nicht: " + Trendo.Core.FriendlyError.Say(e); }
             Show(MS);
         }));
         if (s.Kind == "eigen")
@@ -193,7 +193,7 @@ public partial class MainWindow
             if (t is { Length: > 20 } && t.Contains('[')) { _msLyrics = t.Trim().Trim('`').Trim(); _msMsg = "✓ Refrain überarbeitet – lies ihn gegen."; }
             else _msMsg = "Dafür braucht es eine Text-KI (unter „KI einsetzen“ einrichten).";
         }
-        catch (Exception e) when (e is InvalidOperationException or HttpRequestException or TaskCanceledException) { _msMsg = "Ging nicht: " + e.Message; }
+        catch (Exception e) when (e is InvalidOperationException or HttpRequestException or TaskCanceledException) { _msMsg = "Ging nicht: " + Trendo.Core.FriendlyError.Say(e); }
         Show(MS);
     }
 

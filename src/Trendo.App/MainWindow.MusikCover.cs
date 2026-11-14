@@ -80,7 +80,7 @@ public partial class MainWindow
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.cover", $"{s.Id} {lay} {(ownPhoto ? "foto" : motif is null ? "farbe" : "ki")}");
             return file;
         }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException) { _msMsg = "Cover ging nicht: " + e.Message; return null; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException) { _msMsg = "Cover ging nicht: " + Trendo.Core.FriendlyError.Say(e); return null; }
         finally
         {
             _msArtBusy = false;
@@ -241,7 +241,7 @@ public partial class MainWindow
             File.WriteAllBytes(target, SongCover.EmbedInMp3(File.ReadAllBytes(s.File), File.ReadAllBytes(s.CoverFile), s.Title, s.Artist));
             _msMsg = "✓ MP3 mit Cover gespeichert: " + target; _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.export", "mp3+cover");
         }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException) { _msMsg = "Speichern ging nicht: " + e.Message; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException) { _msMsg = "Speichern ging nicht: " + Trendo.Core.FriendlyError.Say(e); }
         Show(MS);
     }
 }

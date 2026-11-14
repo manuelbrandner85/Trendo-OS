@@ -135,12 +135,13 @@ public sealed class ProgramDocument
         return root.ToJsonString(Pretty);
     }
 
-    public void Save(string? path = null)
+    /// <param name="keepVersion">false: den alten Stand nicht als Version behalten (automatisches Speichern zwischen zwei Versionen, siehe <see cref="VersionDue"/>).</param>
+    public void Save(string? path = null, bool keepVersion = true)
     {
         var target = path ?? Path ?? throw new InvalidOperationException("Bitte einen Speicherort wählen.");
         if (!target.EndsWith(Extension, StringComparison.OrdinalIgnoreCase)) target += Extension;
         Directory.CreateDirectory(System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(target))!);
-        var json = Serialize(); KeepVersion(target, json);
+        var json = Serialize(); if (keepVersion) KeepVersion(target, json);
         var tmp = target + ".tmp"; File.WriteAllText(tmp, json); SafeFile.Move(tmp, target);
         Path = target; Dirty = false;
         if (File.Exists(AutosaveFile(target))) File.Delete(AutosaveFile(target));
@@ -170,6 +171,15 @@ public sealed class ProgramDocument
             foreach (var x in Directory.GetFiles(dir, "*" + Extension).Order(StringComparer.Ordinal).SkipLast(MaxVersions)) File.Delete(x);
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } // Versionen sind ein Zusatz – Speichern geht trotzdem
+    }
+
+    /// <summary>E3 (T-0616): Beim automatischen Speichern nach jeder Änderung wird höchstens alle <paramref name="gap"/> ein früherer Stand behalten,
+    /// damit die 20 Versionen nicht nach 20 Klicks voll sind. Gibt es noch keine Version, ist eine fällig.</summary>
+    public static bool VersionDue(string file, TimeSpan gap, DateTime? now = null)
+    {
+        if (!File.Exists(file)) return false;
+        var last = Versions(file).FirstOrDefault();
+        return last.File is null || (now ?? DateTime.Now) - last.When >= gap;
     }
 
     /// <summary>Versionen einer Datei, neueste zuerst: (Datei, Zeitpunkt).</summary>

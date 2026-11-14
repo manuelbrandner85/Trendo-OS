@@ -150,15 +150,56 @@ public partial class MainWindow
             b.Click += (_, _) => StudioTaskStart(task);
             row.Children.Add(b);
         }
-        return Card(new StackPanel { Spacing = 8, Children = { H("Was möchtest du machen?", 17), row } });
+        return Card(new StackPanel { Spacing = 8, Children = { H("Was möchtest du machen?", 17), row, new ContentControl { Name = "studio-task-ask" } } });
     }
 
-    /// <summary>Aufgabe gewählt: Satzanfang in die Eingabe des Studios, Fokus dorthin.</summary>
+    /// <summary>E6 (T-0616): Aufgabe gewählt – Satzanfang in die Eingabe des Studios. Braucht die Aufgabe noch Angaben (Thema, offenes Dokument …), fragt Trendo kurz
+    /// direkt unter den Aufgaben nach; „Los“ startet sie dann mit der Antwort. Braucht sie nichts, startet sie sofort über den normalen Ablauf
+    /// (Plan → Rückfrage nur bei Bedarf → Freigabe bei sensiblen Schritten → am Ende „Behalten?“). Ohne Eingabe auf der Seite: false.</summary>
     public bool StudioTaskStart(StudioTask task)
     {
-        var box = (ActivePageRoot ?? this).GetLogicalDescendantsOfType<TextBox>().FirstOrDefault(t => t.Name == "auftrag-prompt" && t.IsVisible);
+        var root = ActivePageRoot ?? this;
+        var box = root.GetLogicalDescendantsOfType<TextBox>().FirstOrDefault(t => t.Name == "auftrag-prompt" && t.IsVisible);
         if (box is null) return false;
         box.Text = task.Starter; box.Focus(); box.CaretIndex = task.Starter.Length;
+        var open = TaskNeeds(task);
+        var ask = root.GetLogicalDescendantsOfType<ContentControl>().FirstOrDefault(c => c.Name == "studio-task-ask");
+        if (open.Count == 0) { if (ask is not null) ask.Content = null; return RunPromptBox(box); }
+        if (ask is null) return true; // ohne Platz für die Rückfrage: wie bisher, die Person ergänzt in der Eingabe
+        var answer = new TextBox { Name = "studio-task-answer", PlaceholderText = string.Join(", ", open), MinWidth = 320, FontSize = 13 };
+        var go = new Button { Name = "studio-task-go", Content = "Los", Background = Accent, Foreground = Brushes.White, Padding = new Thickness(14, 5) };
+        void Go()
+        {
+            var a = (answer.Text ?? "").Trim();
+            if (a.Length == 0) { answer.Focus(); return; }
+            box.Text = task.Starter + a; ask.Content = null; RunPromptBox(box);
+        }
+        go.Click += (_, _) => Go();
+        answer.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) { e.Handled = true; Go(); } };
+        var cancel = new Button { Name = "studio-task-cancel", Content = "Abbrechen", Padding = new Thickness(12, 5), Background = Brushes.Transparent };
+        cancel.Click += (_, _) => ask.Content = null;
+        ask.Content = new Border { Name = "studio-task-question", Background = TileBg, BorderBrush = Accent, BorderThickness = new Thickness(3, 0, 0, 0), CornerRadius = new CornerRadius(4), Padding = new Thickness(12, 8), Margin = new Thickness(0, 4, 0, 0),
+            Child = new StackPanel { Spacing = 6, Children = {
+                new TextBlock { Name = "studio-task-q", Text = $"„{task.Label}“ – kurz noch: {string.Join(", ", open)}?", Foreground = Text, FontSize = 13, TextWrapping = TextWrapping.Wrap },
+                new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { answer, go, cancel } } } } };
+        return true;
+    }
+
+    /// <summary>Angaben, die eine Aufgabe noch braucht: „offenes …“ ist erledigt, wenn ein Dokument offen ist; alles andere fragt Trendo nach.</summary>
+    List<string> TaskNeeds(StudioTask task)
+    {
+        var open = task.Needs.Where(n => !(n.StartsWith("offene", StringComparison.OrdinalIgnoreCase) && Programs.ContainsKey(CurrentView) && ProgramActive(CurrentView) is not null)).ToList();
+        // Satzanfang wie „Baue ein Level mit “ oder „Figur: “: ohne Ergänzung ergibt der Auftrag keinen Sinn – Trendo fragt „Was genau?“
+        if (open.Count == 0 && (task.Starter.EndsWith(' ') || task.Starter.TrimEnd().EndsWith(':'))) open.Add("Was genau");
+        return open;
+    }
+
+    /// <summary>Den Auftrag in der Eingabe abschicken – wie „Los“ (Enter).</summary>
+    static bool RunPromptBox(TextBox box)
+    {
+        if (Avalonia.LogicalTree.LogicalExtensions.GetLogicalAncestors(box).OfType<Control>().FirstOrDefault(c => c.Name == "auftrag-leiste") is not { } bar) return false;
+        if (bar.GetLogicalDescendantsOfType<Button>().FirstOrDefault(b => b.Name == "auftrag-pruefen") is not { IsEnabled: true } los) return false;
+        los.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
         return true;
     }
 }

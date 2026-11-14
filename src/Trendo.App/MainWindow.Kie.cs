@@ -237,7 +237,8 @@ public partial class MainWindow
         // Nur Kontostand, Meldung und Auftragsliste werden laufend erneuert – das Formular bleibt stehen, damit beim Tippen nichts verloren geht
         void Live()
         {
-            balance.Text = _kieCredits is { } cr ? $"Guthaben: {cr.ToString("N0", De)} Credits (≈ {(cr * KieClient.UsdPerCredit).ToString("0.00", De)} $)" : "Guthaben: wird abgefragt …";
+            balance.Text = _kieCredits is { } cr ? $"Guthaben: {cr.ToString("N0", De)} {Trendo.Core.Programs.PlainWords.Plain("Credits")} (≈ {(cr * KieClient.UsdPerCredit).ToString("0.00", De)} $)" : "Guthaben: wird abgefragt …";
+            ToolTip.SetTip(balance, "kie.ai rechnet in Punkten (Fachwort: Credits)");
             msg.Text = _kieMsg; msg.IsVisible = _kieMsg.Length > 0;
             jobsBox.Children.Clear();
             var jobs = _kieJobs.Where(j => j.Studio == studio).Take(8).ToList();

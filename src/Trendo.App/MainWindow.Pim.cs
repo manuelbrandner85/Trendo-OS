@@ -94,7 +94,7 @@ public partial class MainWindow
             return true;
         }
         catch (Exception ex) when (ex is IOException or InvalidOperationException or System.Net.Sockets.SocketException or System.Security.Authentication.AuthenticationException)
-        { _pimMsg = "Abrufen ging nicht: " + ex.Message; return false; }
+        { _pimMsg = "Abrufen ging nicht: " + Trendo.Core.FriendlyError.Say(ex); return false; }
     }
 
     public async Task OpenInboxMail(long uid)
@@ -109,7 +109,7 @@ public partial class MainWindow
             InboxOpen = await imap.MessageAsync(uid); InboxOpenUid = uid;
             await imap.LogoutAsync();
         }
-        catch (Exception ex) when (ex is IOException or InvalidOperationException or System.Net.Sockets.SocketException or System.Security.Authentication.AuthenticationException) { _pimMsg = "Öffnen ging nicht: " + ex.Message; }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or System.Net.Sockets.SocketException or System.Security.Authentication.AuthenticationException) { _pimMsg = "Öffnen ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
     }
 
     /// <summary>O2: Senden vorbereiten – die Nachricht geht erst nach „Ja, jetzt senden“ raus.</summary>
@@ -134,7 +134,7 @@ public partial class MainWindow
             MailBoxes.AddSent(_sendDraft, _draftId); _draftId = null;
             _sendDraft = new("", "", ""); _composeOpen = false;
         }
-        catch (Exception ex) when (ex is IOException or InvalidOperationException or System.Net.Sockets.SocketException or System.Security.Authentication.AuthenticationException) { _pimMsg = "Senden ging nicht: " + ex.Message; }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or System.Net.Sockets.SocketException or System.Security.Authentication.AuthenticationException) { _pimMsg = "Senden ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
     }
 
     /// <summary>O3: Erinnerungen aus dem Kalender (alle 30 Sekunden geprüft) als Benachrichtigung.</summary>
@@ -567,7 +567,7 @@ public partial class MainWindow
             _pimMsg = $"{r.Events} Termine und {r.Todos} Aufgaben eingelesen." + (full ? " Wiederholungen mit Ende, Ausnahmen und Zeitzonen wurden genau übernommen; Reihen mit Regeln stehen als einzelne Termine (ein Jahr zurück bis zwei Jahre voraus)." : "");
             return r;
         }
-        catch (Exception ex) when (ex is FormatException or IOException or UnauthorizedAccessException) { _pimMsg = "Kalenderdatei ließ sich nicht einlesen: " + ex.Message; return null; }
+        catch (Exception ex) when (ex is FormatException or IOException or UnauthorizedAccessException) { _pimMsg = "Kalenderdatei ließ sich nicht einlesen: " + Trendo.Core.FriendlyError.Say(ex); return null; }
     }
 
     // ---------- Aufgaben: Tafel (Offen · In Arbeit · Erledigt) ----------

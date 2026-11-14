@@ -73,7 +73,7 @@ public partial class MainWindow
         catch (OperationCanceledException) { _archPhotoMsg = "⚠ Foto abgebrochen."; }
         catch (Exception ex) when (ex is InvalidOperationException or InvalidDataException or TimeoutException or IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
         { _archPhotoMsg = "⚠ " + ex.Message; }
-        catch (Exception ex) { _archPhotoMsg = "⚠ Unerwarteter Fehler beim Foto: " + ex.Message; } // Hintergrundaufgabe: nie stumm hängen bleiben
+        catch (Exception ex) { _archPhotoMsg = "⚠ Unerwarteter Fehler beim Foto: " + Trendo.Core.FriendlyError.Say(ex); } // Hintergrundaufgabe: nie stumm hängen bleiben
         finally { ArchPhotoBusy = false; _archPhotoCts?.Dispose(); _archPhotoCts = null; }
         Show(AK);
     }
