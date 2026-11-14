@@ -44,16 +44,23 @@ public partial class MainWindow
     }
 
     /// <summary>Dateien der 3D-Bausteine an den Editor geben (der Editor läuft aus dem Programmordner und darf Projektdateien nicht selbst lesen).</summary>
+    /// <summary>Für Tests: Skripte, die sonst an den Editor (WebView) gingen; im Testmodus gibt es kein WebView.</summary>
+    public static Action<string>? WebDesignScriptSink { get; set; }
+
     void WebDesignPush3DFiles(string json)
     {
-        if (_wdView is null || JsonNode.Parse(json) is not JsonObject doc) return;
+        if (_wdView is null && WebDesignScriptSink is null) return;
+        JsonNode? parsed;
+        try { parsed = JsonNode.Parse(json); } catch (System.Text.Json.JsonException) { return; }
+        if (parsed is not JsonObject doc) return;
         foreach (var rel in WebDesignModel.Blocks(doc).SelectMany(WebDesignModel.Files).Distinct())
         {
             var file = Path.Combine(WebDesignDir, rel.Replace('/', Path.DirectorySeparatorChar));
             if (!WebDesignCheck.IsLocalFile(WebDesignDir, rel) || !File.Exists(file) || new FileInfo(file).Length > WebDesignModel.MaxBytes) continue; // keine Verknüpfung aus dem Projekt heraus
             var fi = new FileInfo(file);
             if (!_wd3dSent.Add($"{rel}|{fi.Length}|{fi.LastWriteTimeUtc.Ticks}")) continue;
-            _wdView.InvokeScript(WebDesignModel.FileScript(rel, File.ReadAllBytes(file)));
+            var script = WebDesignModel.FileScript(rel, File.ReadAllBytes(file));
+            if (_wdView is not null) _wdView.InvokeScript(script); else WebDesignScriptSink?.Invoke(script);
         }
     }
 

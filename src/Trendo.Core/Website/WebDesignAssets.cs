@@ -126,10 +126,10 @@ public static partial class WebDesignAssets
     /// <summary>Prüfung vor dem Export: genutzte Medien ohne Lizenz sind Fehler, CC-BY ohne Urheber ebenfalls; nicht verzeichnete Dateien ein Hinweis.</summary>
     public static IReadOnlyList<WebsiteFinding> Check(string dir, JsonNode? doc)
     {
-        var list = Load(dir); var f = new List<WebsiteFinding>();
+        var list = Load(dir); var f = new List<WebsiteFinding>(); var mods = ModAssets(dir);
         foreach (var file in Used(doc, list))
         {
-            var a = list.FirstOrDefault(x => x.Datei == file);
+            var a = list.FirstOrDefault(x => x.Datei == file) ?? mods.FirstOrDefault(x => x.Datei == file);
             if (a is null) { if (file.StartsWith(Folder + "/", StringComparison.Ordinal) || WebDesignCheck.IsLocalFile(dir, file)) f.Add(new("Lizenzen", "Hinweis", $"„{file}“ steht nicht im Medienverzeichnis: Herkunft und Lizenz sind unbekannt.", "license-unknown")); continue; }
             if (a.Lizenz.Length == 0) f.Add(new("Lizenzen", "Fehler", $"„{a.Titel}“ ({a.Datei}) hat keinen Lizenzeintrag.", "license"));
             else if (NeedsAttribution(a.Lizenz) && a.Urheber.Length == 0) f.Add(new("Lizenzen", "Fehler", $"„{a.Titel}“ steht unter {a.Lizenz}, der Urheber für die Namensnennung fehlt.", "license-author"));
@@ -141,7 +141,17 @@ public static partial class WebDesignAssets
     public static IReadOnlyList<Asset> AttributionFor(string dir, JsonNode? doc)
     {
         var list = Load(dir); var used = Used(doc, list);
-        return list.Where(a => used.Contains(a.Datei) && NeedsAttribution(a.Lizenz)).ToList();
+        return list.Concat(ModAssets(dir).Where(m => list.All(a => a.Datei != m.Datei))).Where(a => used.Contains(a.Datei) && NeedsAttribution(a.Lizenz)).ToList();
+    }
+
+    /// <summary>Bilder installierter Mods (mods/&lt;id&gt;/bilder/…): Lizenz und Urheber stehen in der Beschreibung der Mod, nicht im Medienverzeichnis.</summary>
+    static List<Asset> ModAssets(string dir)
+    {
+        var res = new List<Asset>();
+        foreach (var m in WebDesignMods.Installed(dir))
+            foreach (var f in m.Dateien.Where(f => f.StartsWith("bilder/", StringComparison.Ordinal)))
+                res.Add(new($"{WebDesignMods.Folder}/{m.Id}/{f}", "bild", $"{Path.GetFileNameWithoutExtension(f)} (Mod „{m.Name}“)", "", $"Mod „{m.Name}“ {m.Version}", m.Lizenz, m.Autor, ""));
+        return res;
     }
 
     public static string AttributionHtml(IReadOnlyList<Asset> items)

@@ -150,6 +150,30 @@ public class WebDesignZ3
         finally { Directory.Delete(d, true); Directory.Delete(tmp, true); }
     }
 
+    [AvaloniaFact(DisplayName = "Z3 (QA 3): Im Editor gewählte 3D-Datei geht bei Entwurf an den Editor, jede nur einmal; nach „bereit“ (neue Editor-Seite) wieder")]
+    public void Editor_gets_files()
+    {
+        var sent = new List<string>(); MainWindow.WebDesignScriptSink = sent.Add;
+        var tmp = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "trendo-z3e-" + Guid.NewGuid().ToString("N"))).FullName;
+        try
+        {
+            var (w, _, _) = Ui.Open();
+            var glb = Path.Combine(tmp, "wuerfel.glb"); File.WriteAllBytes(glb, BoxGlb());
+            Assert.Null(WebDesignAssets.Import(w.WebDesignDir, glb, "modell", "Würfel", "selbst erzeugt", "CC0-1.0").Error);
+            var page = Page("medien/modell/wuerfel.glb", "modell", standbild: "");
+            static void Pump() { for (var i = 0; i < 6; i++) Avalonia.Threading.Dispatcher.UIThread.RunJobs(); }
+            w.WebDesignMessage("{\"art\":\"entwurf\",\"daten\":" + page + "}"); Pump();
+            Assert.Single(sent); Assert.Contains("\"medien/modell/wuerfel.glb\"", sent[0]); Assert.Contains("trendo-datei", sent[0]);
+            w.WebDesignMessage("{\"art\":\"entwurf\",\"daten\":" + page + "}"); Pump();
+            Assert.Single(sent); // nicht bei jeder Änderung neu
+            w.WebDesignMessage("{\"art\":\"bereit\",\"daten\":{}}"); Pump();
+            Assert.Equal(2, sent.Count); // neue Editor-Seite kennt die Datei noch nicht
+            w.WebDesignMessage("{\"art\":\"entwurf\",\"daten\":" + Page("../geheim.glb", "modell", standbild: "") + "}"); Pump();
+            Assert.Equal(2, sent.Count); // nur Medien des Projekts
+        }
+        finally { MainWindow.WebDesignScriptSink = null; Directory.Delete(tmp, true); }
+    }
+
     [AvaloniaFact(DisplayName = "K7 (QA 13): eigenes Supabase-Projekt in der Oberfläche verbinden; geheimer Schlüssel wird abgelehnt; SQL ohne Leseregel")]
     public void Supabase_ui()
     {
