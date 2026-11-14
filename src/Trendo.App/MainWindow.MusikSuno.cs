@@ -157,7 +157,7 @@ public partial class MainWindow
             catch (Exception e) when (e is IOException or InvalidDataException or ArgumentException) { _msMsg = "Das Bild ließ sich nicht lesen: " + e.Message; }
             Show(MS);
         }));
-        row.Children.Add(B("ms-dice", "🎲 Idee", "Liedidee würfeln", () => { var idea = MusicSuno.Idea(Random.Shared.Next()); if (_msPro) _msStyle = idea; else _msDesc = idea; Show(MS); return Task.CompletedTask; }));
+        row.Children.Add(B("ms-dice", "Idee", "Liedidee würfeln", () => { var idea = MusicSuno.Idea(Random.Shared.Next()); if (_msPro) _msStyle = idea; else _msDesc = idea; Show(MS); return Task.CompletedTask; }));
         return row;
     }
 

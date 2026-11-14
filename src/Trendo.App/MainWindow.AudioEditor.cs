@@ -46,19 +46,19 @@ public partial class MainWindow
         Ribbon =
         [
             ("Bearbeiten", [
-                new ProgramCmd("au-cut", "✂ Ausschneiden", d => { AuCopy(d); AuOp(d, "cut", true); }, Tip: "Auswahl entfernen und merken"),
-                new ProgramCmd("au-copy", "⧉ Kopieren", d => AuCopy(d), Tip: "Auswahl merken"),
-                new ProgramCmd("au-paste", "📋 Einfügen", d => AuPaste(d), Tip: "Gemerkten Ton an der Marke einfügen"),
+                new ProgramCmd("au-cut", "Ausschneiden", d => { AuCopy(d); AuOp(d, "cut", true); }, Tip: "Auswahl entfernen und merken"),
+                new ProgramCmd("au-copy", "Kopieren", d => AuCopy(d), Tip: "Auswahl merken"),
+                new ProgramCmd("au-paste", "Einfügen", d => AuPaste(d), Tip: "Gemerkten Ton an der Marke einfügen"),
                 new ProgramCmd("au-del", "Löschen", d => AuOp(d, "cut", true)),
                 new ProgramCmd("au-keep", "Zuschneiden", d => AuOp(d, "keep", true), Tip: "Nur die Auswahl behalten"),
                 new ProgramCmd("au-silence", "Stille", d => AuOp(d, "silence", true)),
                 new ProgramCmd("au-dup", "Duplizieren", d => AuOp(d, "duplicate", true)),
             ]),
             ("Effekte", [
-                new ProgramCmd("au-fadein", "◢ Einblenden", d => AuOp(d, "fade-in", fallback: (0, 2)), Tip: "Ohne Auswahl: die ersten 2 Sekunden"),
-                new ProgramCmd("au-fadeout", "◣ Ausblenden", d => AuOp(d, "fade-out", fallback: (-2, 0)), Tip: "Ohne Auswahl: die letzten 2 Sekunden"),
-                new ProgramCmd("au-louder", "🔊 Lauter", d => AuOp(d, "gain", v: 3), Tip: "+3 dB (Auswahl oder alles)"),
-                new ProgramCmd("au-quieter", "🔉 Leiser", d => AuOp(d, "gain", v: -3), Tip: "−3 dB (Auswahl oder alles)"),
+                new ProgramCmd("au-fadein", "Einblenden", d => AuOp(d, "fade-in", fallback: (0, 2)), Tip: "Ohne Auswahl: die ersten 2 Sekunden"),
+                new ProgramCmd("au-fadeout", "Ausblenden", d => AuOp(d, "fade-out", fallback: (-2, 0)), Tip: "Ohne Auswahl: die letzten 2 Sekunden"),
+                new ProgramCmd("au-louder", "Lauter", d => AuOp(d, "gain", v: 3), Tip: "+3 dB (Auswahl oder alles)"),
+                new ProgramCmd("au-quieter", "Leiser", d => AuOp(d, "gain", v: -3), Tip: "−3 dB (Auswahl oder alles)"),
                 new ProgramCmd("au-norm", "Normalisieren", d => AuOp(d, "normalize", v: -1), Primary: true, Tip: "Lautester Punkt auf −1 dB"),
                 new ProgramCmd("au-gate", "Rauschen unterdrücken", d => AuOp(d, "gate", v: -45), Tip: "Leises Rauschen zwischen Wörtern absenken"),
                 new ProgramCmd("au-echo", "Echo", d => AuOp(d, "echo", v: 0.3)),
@@ -83,19 +83,19 @@ public partial class MainWindow
                 new ProgramCmd("au-spectral", "Spektral absenken", d => AuSpectral(d, -30), Tip: "Im Spektrogramm ein Rechteck um Husten, Pfeifton oder Klingeln ziehen – nur das wird leiser"),
             ]),
             ("Abspielen", [
-                new ProgramCmd("au-play", "▶ Abspielen", d => AuPlay(d), Primary: true, Tip: "Auswahl – oder ab der Marke"),
-                new ProgramCmd("au-stop", "■ Stopp", _ => AuStop()),
+                new ProgramCmd("au-play", "Abspielen", d => AuPlay(d), Primary: true, Tip: "Auswahl – oder ab der Marke"),
+                new ProgramCmd("au-stop", "Stopp", _ => AuStop()),
                 new ProgramCmd("au-all", "Alles wählen", d => AuSel = (0, AudioEdit.Render(d.Data).Seconds)),
                 new ProgramCmd("au-none", "Auswahl aufheben", _ => AuSel = default),
                 new ProgramCmd("au-spectro", "Spektrogramm", _ => AuSpectro = !AuSpectro, Tip: "Frequenzen über die Zeit – Störgeräusche sieht man sofort"),
-                new ProgramCmd("au-record", "⏺ Aufnehmen (10 s)", d => _ = AuRecord(d, 10), Tip: "Mikrofon an der Marke einfügen"),
-                new ProgramCmd("au-mixdown-cmd", "⤓ Abmischen", d => AuMixdown(d), Tip: "Mehrspur-Projekt zu einer Datei abmischen"),
+                new ProgramCmd("au-record", "Aufnehmen (10 s)", d => _ = AuRecord(d, 10), Tip: "Mikrofon an der Marke einfügen"),
+                new ProgramCmd("au-mixdown-cmd", "Abmischen", d => AuMixdown(d), Tip: "Mehrspur-Projekt zu einer Datei abmischen"),
             ]),
             ("Prüfen", [ // Paket 01 S4-20
-                new ProgramCmd("au-qa-cmd", "✅ Prüfen", d => AuQa(d), Tip: "Lautheit, True Peak, Übersteuerung, Format, Phase, Herkunft – rechts das Ziel wählen"),
-                new ProgramCmd("au-release-cmd", "📦 Freigeben", d => AuRelease(d), Tip: "Nur ohne Rot: WAV 24 Bit und Prüfbericht mit Prüfsumme"),
-                new ProgramCmd("au-midi-cmd", "🎼 Melodie → Noten", d => AuMelodyToMidi(d), Tip: "Einstimmige Melodie als MIDI mit Sicherheit je Note – Mehrstimmiges wird als unsicher gemeldet"),
-                new ProgramCmd("au-plugins-cmd", "🔌 Plugins prüfen", _ => AuPluginScan(), Tip: "VST3 und CLAP finden und beschreiben – ohne sie zu laden", Level: 1),
+                new ProgramCmd("au-qa-cmd", "Prüfen", d => AuQa(d), Tip: "Lautheit, True Peak, Übersteuerung, Format, Phase, Herkunft – rechts das Ziel wählen"),
+                new ProgramCmd("au-release-cmd", "Freigeben", d => AuRelease(d), Tip: "Nur ohne Rot: WAV 24 Bit und Prüfbericht mit Prüfsumme"),
+                new ProgramCmd("au-midi-cmd", "Melodie → Noten", d => AuMelodyToMidi(d), Tip: "Einstimmige Melodie als MIDI mit Sicherheit je Note – Mehrstimmiges wird als unsicher gemeldet"),
+                new ProgramCmd("au-plugins-cmd", "Plugins prüfen", _ => AuPluginScan(), Tip: "VST3 und CLAP finden und beschreiben – ohne sie zu laden", Level: 1),
             ]),
         ],
         Exports =
@@ -109,7 +109,7 @@ public partial class MainWindow
         Workspace = AuWorkspace,
         Properties = AuProperties,
         Status = d => { var a = AuRendered(d); var (s, e) = AuSel; return a is null ? "Keine Tondatei" : $"{AudioEdit.Time(a.Seconds)} · {a.Rate} Hz · {(a.Channels == 1 ? "Mono" : "Stereo")} · " + (e > s ? $"Auswahl {AudioEdit.Time(s)}–{AudioEdit.Time(e)} ({e - s:0.00} s)" : $"Marke {AudioEdit.Time(s)}"); },
-        Help = "Rechts eine WAV- oder MP3-Datei öffnen. In der Wellenform mit der Maus einen Bereich ziehen – oder klicken, um die Marke zu setzen. Oben schneiden, Effekte anwenden, ▶ zum Anhören. Ohne Auswahl wirken Effekte auf die ganze Spur. Exportieren speichert das Ergebnis; das Original bleibt unverändert.",
+        Help = "Rechts eine WAV- oder MP3-Datei öffnen. In der Wellenform mit der Maus einen Bereich ziehen – oder klicken, um die Marke zu setzen. Oben schneiden, Effekte anwenden, zum Anhören. Ohne Auswahl wirken Effekte auf die ganze Spur. Exportieren speichert das Ergebnis; das Original bleibt unverändert.",
     }, "audio bearbeiten", "ton bearbeiten", "tonstudio", "aufnahme schneiden", "wav", "mp3 schneiden", "rauschen entfernen", "normalisieren", "podcast", "audacity");
 
     /// <summary>Spektrogramm statt Wellenform zeigen (Audition „Spektral-Ansicht“).</summary>
@@ -136,7 +136,7 @@ public partial class MainWindow
     /// <summary>Mikrofon aufnehmen und an der Marke einfügen.</summary>
     public async Task AuRecord(ProgramDocument d, int seconds)
     {
-        _progMsg[AUK] = $"⏺ Aufnahme läuft ({seconds} s) …"; Show(AUK);
+        _progMsg[AUK] = $"Aufnahme läuft ({seconds} s) …"; Show(AUK);
         var wav = await RecordMic(seconds);
         if (wav is null) { _progMsg[AUK] = _msMsg.Length > 0 ? _msMsg : "Aufnahme ging nicht."; Show(AUK); return; }
         var dir = Path.Combine(WorkFolder("Medien"), "Aufnahmen"); Directory.CreateDirectory(dir);

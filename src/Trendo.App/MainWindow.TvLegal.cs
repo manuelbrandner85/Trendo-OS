@@ -55,7 +55,7 @@ public partial class MainWindow
         foreach (var k in Enum.GetValues<LegalSources.Kind>())
         {
             var kk = k;
-            kinds.Children.Add(TvChip("tv-legal-kind-" + k.ToString().ToLowerInvariant(), k switch { LegalSources.Kind.Mediathek => "📺 Mediatheken", LegalSources.Kind.Kostenlos => "🆓 Kostenlos mit Werbung", _ => "⭐ Abo-Dienste" },
+            kinds.Children.Add(TvChip("tv-legal-kind-" + k.ToString().ToLowerInvariant(), k switch { LegalSources.Kind.Mediathek => "Mediatheken", LegalSources.Kind.Kostenlos => "Kostenlos mit Werbung", _ => "Abo-Dienste" },
                 _tvLegalKind == k, () => { _tvLegalKind = kk; Show("tv"); }));
         }
         sp.Children.Add(kinds);
@@ -80,7 +80,7 @@ public partial class MainWindow
             var pick = LegalSources.Of(LegalSources.Kind.Mediathek).ToList();
             senders.SelectedIndex = Math.Max(0, pick.FindIndex(p => p.Channel == _tvLegalChannel) + 1);
             string? Ch() => senders.SelectedIndex > 0 ? pick[senders.SelectedIndex - 1].Channel : null;
-            var go = TvButton("tv-legal-go", "🔍 Suchen", () => _ = TvLegalSearchAsync(box.Text ?? "", _tvLegalCat, Ch()), true);
+            var go = TvButton("tv-legal-go", "Suchen", () => _ = TvLegalSearchAsync(box.Text ?? "", _tvLegalCat, Ch()), true);
             box.KeyDown += (_, e) => { if (e.Key == Key.Enter) { e.Handled = true; _ = TvLegalSearchAsync(box.Text ?? "", _tvLegalCat, Ch()); } };
             sp.Children.Add(new WrapPanel { Children = { box, new Border { Width = 8 }, senders, new Border { Width = 8 }, go } });
             if (_tvLegalStatus.Length > 0) sp.Children.Add(new TextBlock { Name = "tv-legal-status", Text = _tvLegalStatus, Foreground = Muted, FontSize = 12.5 });
@@ -90,7 +90,7 @@ public partial class MainWindow
                 for (var i = 0; i < res.Count; i++)
                 {
                     var v = res[i]; var color = LegalSources.All.FirstOrDefault(p => p.Channel is { } ch && v.Channel.StartsWith(ch, StringComparison.OrdinalIgnoreCase))?.Color ?? "#475569";
-                    var play = TvButton("tv-legal-play-" + i, "▶ Abspielen", () => TvPlayVideo(v.UrlHd ?? v.Url, v.Title), true);
+                    var play = TvButton("tv-legal-play-" + i, "Abspielen", () => TvPlayVideo(v.UrlHd ?? v.Url, v.Title), true);
                     var web = TvButton("tv-legal-web-" + i, "Seite", () => TvLegalOpen(v.Website.StartsWith("https://", StringComparison.Ordinal) ? v.Website : v.Url));
                     grid.Children.Add(new Border
                     {

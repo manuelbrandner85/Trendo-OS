@@ -209,7 +209,7 @@ public partial class MainWindow
         }
         var artist = new TextBox { Name = "ms-art-artist", Text = s.Artist, Watermark = "Name auf dem Cover (z. B. dein Künstlername)", MinWidth = 220 };
         artist.LostFocus += (_, _) => { if ((artist.Text ?? "") != s.Artist) Songs.Update(s.Id, x => x.Artist = (artist.Text ?? "").Trim()); };
-        var make = Act("ms-art-make", s.CoverFile.Length > 0 ? "🎲 Neu würfeln" : "🎨 Cover-Bild erstellen", () =>
+        var make = Act("ms-art-make", s.CoverFile.Length > 0 ? "Neu würfeln" : "Cover-Bild erstellen", () =>
         {
             Songs.Update(s.Id, x => x.Artist = (artist.Text ?? "").Trim());
             _ = MsMakeCover(s.Id, s.CoverFile.Length > 0 ? Random.Shared.Next(1, 1_000_000) : null, null, null, (artist.Text ?? "").Trim());

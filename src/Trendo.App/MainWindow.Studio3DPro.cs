@@ -110,7 +110,7 @@ public partial class MainWindow
         foreach (var g in Studio3DPro.Groups(_scene))
         {
             var gg = g; var on = _selGroup == g;
-            var head = Act("3d-group-" + Scene3D.Slug(g), (on ? "● " : "") + "▾ " + g + $" ({Studio3DPro.InGroup(_scene, g).Count})", () => Studio3DSelectGroup(on ? null : gg));
+            var head = Act("3d-group-" + Scene3D.Slug(g), (on ? "• " : "") + "" + g + $" ({Studio3DPro.InGroup(_scene, g).Count})", () => Studio3DSelectGroup(on ? null : gg));
             head.FontWeight = FontWeight.SemiBold; head.FontSize = 12.5; head.Padding = new Thickness(8, 2); ToolTip.SetTip(head, "Gruppe auswählen – die Anfasser bewegen dann alle ihre Teile");
             tree.Children.Add(head);
             foreach (var p in Studio3DPro.InGroup(_scene, g)) tree.Children.Add(Row(p, 16));
@@ -209,7 +209,7 @@ public partial class MainWindow
         {
             var ll = l; var on = _scene.Light == l.Id;
             var b = new Button { Name = "3d-light-" + l.Id, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(10, 6), Margin = new Thickness(0, 0, 0, 4), Background = on ? Accent : Brushes.Transparent,
-                Content = new StackPanel { Children = { new TextBlock { Text = (on ? "● " : "") + l.Label, FontWeight = FontWeight.SemiBold, Foreground = on ? Brushes.White : Text }, new TextBlock { Text = l.Hint, FontSize = 11, TextWrapping = TextWrapping.Wrap, Foreground = on ? Brushes.White : Muted } } } };
+                Content = new StackPanel { Children = { new TextBlock { Text = (on ? "• " : "") + l.Label, FontWeight = FontWeight.SemiBold, Foreground = on ? Brushes.White : Text }, new TextBlock { Text = l.Hint, FontSize = 11, TextWrapping = TextWrapping.Wrap, Foreground = on ? Brushes.White : Muted } } } };
             b.Click += (_, _) => Studio3DSetLight(ll.Id, _scene.LightPower);
             sp.Children.Add(b);
         }
@@ -282,7 +282,7 @@ public partial class MainWindow
     private Control RenderPanel3D()
     {
         var sp = new StackPanel { Spacing = 6, Children = { H("Render", 14), P("Fotorealistisch in Blender (Cycles, Entrauschen, AgX-Farbumfang) mit deinem Licht und deiner Kamera. Jedes Bild bleibt im Verlauf.", null, 12) } };
-        var go = Act("3d-render", Studio3DRendering ? "Rendert …" : "▶ Rendern", () => _ = Studio3DRender(), true); go.IsEnabled = !Studio3DRendering;
+        var go = Act("3d-render", Studio3DRendering ? "Rendert …" : "Rendern", () => _ = Studio3DRender(), true); go.IsEnabled = !Studio3DRendering;
         sp.Children.Add(go);
         var renders = Studio3DPro.Renders(Dir3D());
         if (renders.Count == 0) { sp.Children.Add(P("Noch kein Bild.", Muted, 12)); return sp; }

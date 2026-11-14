@@ -14,7 +14,7 @@ public class StudioTeams_Ui
     static void Pump() { for (var i = 0; i < 5; i++) Avalonia.Threading.Dispatcher.UIThread.RunJobs(); }
     static async Task Run(Task t) { while (!t.IsCompleted) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); await Task.Delay(20); } await t; }
 
-    [AvaloniaFact(DisplayName = "Teams: jedes Studio (außer dem abgelehnten SPEC-07) hat ein Profi-Team; „👥 Team“ im 3D-Studio öffnet „KI einsetzen“ mit dem 3D-Team; eigene Rolle nur mit Studio")]
+    [AvaloniaFact(DisplayName = "Teams: jedes Studio (außer dem abgelehnten SPEC-07) hat ein Profi-Team; „Team“ im 3D-Studio öffnet „KI einsetzen“ mit dem 3D-Team; eigene Rolle nur mit Studio")]
     public void Teams_in_studios()
     {
         foreach (var (id, _) in StudioCatalog.ById.Where(kv => kv.Key != "SPEC-07")) Assert.True(StudioTeams.For(id) is not null, "Ohne Team: " + id);

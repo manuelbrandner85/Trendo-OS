@@ -242,8 +242,8 @@ public sealed partial class MainWindow
         }
         if (_style == "windows")
         {
-            Ic("os-desk-pc", new Border { Width = 48, Height = 40, CornerRadius = new CornerRadius(3), Background = Grad("#4FC3F7", "#0277BD"), Child = Ico(Mdi.Monitor, 30, Brushes.White) }, "Dieser PC", () => { FilesGo(PcPlace); return Task.CompletedTask; });
-            Ic("os-desk-trash", Ico(Mdi.Delete, 44, Grad("#ECEFF1", "#90A4AE")), "Papierkorb", () => { if (_dockButtons.TryGetValue("trash", out var t)) t.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); return Task.CompletedTask; });
+            Ic("os-desk-pc", new Border { Width = 48, Height = 40, CornerRadius = new CornerRadius(3), Background = OsGrad("#4FC3F7", "#0277BD"), Child = Ico(Mdi.Monitor, 30, Brushes.White) }, "Dieser PC", () => { FilesGo(PcPlace); return Task.CompletedTask; });
+            Ic("os-desk-trash", Ico(Mdi.Delete, 44, OsGrad("#ECEFF1", "#90A4AE")), "Papierkorb", () => { if (_dockButtons.TryGetValue("trash", out var t)) t.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); return Task.CompletedTask; });
         }
         foreach (var id in _settings.DesktopIcons)
         {
@@ -346,9 +346,9 @@ public sealed partial class MainWindow
     Button OsAppButton(DockApp a, double box, double icon, double radius, bool squircle)
     {
         Control face = squircle
-            ? new Border { Width = icon, Height = icon, CornerRadius = new CornerRadius(icon * 0.225), Background = Grad(a.C1, a.C2), BoxShadow = BoxShadows.Parse("0 1 3 0 #40000000"),
+            ? new Border { Width = icon, Height = icon, CornerRadius = new CornerRadius(icon * 0.225), Background = OsGrad(a.C1, a.C2), BoxShadow = BoxShadows.Parse("0 1 3 0 #40000000"),
                 Child = Ico(a.Icon, icon * 0.58, a.Fg ?? Brushes.White) }
-            : Ico(a.Icon, icon, a.Fg ?? Grad(a.C1, a.C2));
+            : Ico(a.Icon, icon, a.Fg ?? OsGrad(a.C1, a.C2));
         var b = OsFlat("os-app-" + a.Id, face, a.Label, () => { if (_dockButtons.TryGetValue(a.Id, out var d)) d.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); }, box, box, radius);
         b.Padding = new Thickness(0);
         if (_dockButtons.TryGetValue(a.Id, out var orig)) { b.IsVisible = orig.IsVisible; b.IsEnabled = orig.IsEnabled; }
@@ -370,7 +370,7 @@ public sealed partial class MainWindow
         foreach (var a in _dockApps) center.Children.Add(OsAppButton(a, 40, 24, 4, false));
         center.Children.Add(_osRunning);
         var widgets = OsFlat("os-toggle-widgets", new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = {
-            Ico(Mdi.StarFourPoints, 22, Grad("#FFE08A", "#C9A227")),
+            Ico(Mdi.StarFourPoints, 22, OsGrad("#FFE08A", "#C9A227")),
             new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = { new TextBlock { Text = "Trendo KI", FontSize = 12, Foreground = fg }, new TextBlock { Text = "Widgets", FontSize = 11, Foreground = Brush.Parse(OsLight ? "#FF5C5C5C" : "#FFC5C5C5") } } } } },
             "Widgets", ToggleOsWidgets, double.NaN, 40);
         widgets.Margin = new Thickness(8, 0, 0, 0); widgets.HorizontalAlignment = HorizontalAlignment.Left; widgets.Padding = new Thickness(8, 0);
@@ -443,12 +443,12 @@ public sealed partial class MainWindow
     private Control MacDock()
     {
         var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, VerticalAlignment = VerticalAlignment.Bottom };
-        var lp = new Border { Width = 50, Height = 50, CornerRadius = new CornerRadius(11), Background = Grad("#F4F4F6", "#B9BCC4"), Child = Ico(Mdi.ViewGrid, 28, Grad("#FF6B6B", "#4D7CFE")) };
+        var lp = new Border { Width = 50, Height = 50, CornerRadius = new CornerRadius(11), Background = OsGrad("#F4F4F6", "#B9BCC4"), Child = Ico(Mdi.ViewGrid, 28, OsGrad("#FF6B6B", "#4D7CFE")) };
         var launch = OsFlat("os-toggle-start", lp, "Launchpad", () => ToggleOsLauncher("start"), 54, 54, 12); launch.Padding = new Thickness(0);
         row.Children.Add(launch);
         foreach (var a in _dockApps) row.Children.Add(Dot(OsAppButton(a, 54, 50, 12, true), false));
         row.Children.Add(Sep()); row.Children.Add(_osRunning); row.Children.Add(Sep());
-        var trash = OsFlat("os-trash", new Border { Width = 50, Height = 50, CornerRadius = new CornerRadius(11), Background = Grad("#ECEFF1", "#90A4AE"), Child = Ico(Mdi.Delete, 28, Brush.Parse("#455A64")) },
+        var trash = OsFlat("os-trash", new Border { Width = 50, Height = 50, CornerRadius = new CornerRadius(11), Background = OsGrad("#ECEFF1", "#90A4AE"), Child = Ico(Mdi.Delete, 28, Brush.Parse("#455A64")) },
             "Papierkorb", () => { if (_dockButtons.TryGetValue("trash", out var t)) t.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); }, 54, 54, 12);
         trash.Padding = new Thickness(0); row.Children.Add(trash);
         var dock = new Border { Name = "os-dock", ZIndex = 40, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(0, 0, 0, 4), Padding = new Thickness(5, 4, 5, 6),

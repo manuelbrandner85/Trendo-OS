@@ -111,7 +111,7 @@ public partial class MainWindow
         if (!TvIsFullscreen) Detach(_tvPlayer);
         var screen = new Border { Name = "tv-vod-screen", Background = Brushes.Black, CornerRadius = new CornerRadius(16), ClipToBounds = true, Height = 420,
             BorderBrush = Brush.Parse("#88D4A84B"), BorderThickness = new Thickness(1.5), BoxShadow = BoxShadows.Parse("0 18 40 0 #A0000000"),
-            Child = TvIsFullscreen ? P("Läuft im Vollbild – Esc zum Verkleinern", Brushes.White, 13) : _tvPip is not null ? P("Läuft im Bild im Bild – „⧉ Zurückholen“ holt es hierher.", Brushes.White, 13) : _tvPlayer };
+            Child = TvIsFullscreen ? P("Läuft im Vollbild – Esc zum Verkleinern", Brushes.White, 13) : _tvPip is not null ? P("Läuft im Bild im Bild – „Zurückholen“ holt es hierher.", Brushes.White, 13) : _tvPlayer };
         var vol = new Slider { Name = "tv-vod-volume", Minimum = 0, Maximum = 130, Value = 100, Width = 120, VerticalAlignment = VerticalAlignment.Center };
         vol.ValueChanged += (_, _) => _tvPlayer?.Send("set_property", "volume", Math.Round(vol.Value));
         var ctl = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2, VerticalAlignment = VerticalAlignment.Center, Children = {
@@ -121,12 +121,12 @@ public partial class MainWindow
             TvRound("tv-vod-fwd10", "↻", "10 Sekunden vor", () => _tvPlayer?.Send("seek", 10)),
             TvRound("tv-vod-fwd", "⏩", "30 Sekunden vor", () => _tvPlayer?.Send("seek", 30)) } };
         var extra = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Children = {
-            TvButton("tv-vod-audio", "🔈 Tonspur", () => _tvPlayer?.Send("cycle", "aid")),
-            TvButton("tv-vod-sub", "💬 Untertitel", () => _tvPlayer?.Send("cycle", "sid")),
+            TvButton("tv-vod-audio", "Tonspur", () => _tvPlayer?.Send("cycle", "aid")),
+            TvButton("tv-vod-sub", "Untertitel", () => _tvPlayer?.Send("cycle", "sid")),
             new TextBlock { Text = "🔊", Foreground = Text, VerticalAlignment = VerticalAlignment.Center }, vol,
             TvRound("tv-vod-full", "⛶", "Vollbild (F)", () => TvFullscreen(true)),
-            TvButton("tv-vod-stop", "■ Beenden", () => { _tvPlayer?.Stop(); _tvVodPlaying = false; _tvPlayingTitle = null; Show("tv"); }) } };
-        var head = new TextBlock { Name = "tv-vod-title", Text = "🎬 " + _tvPlayingTitle, Foreground = GoldText(), FontSize = 18, FontWeight = FontWeight.Bold, TextTrimming = TextTrimming.CharacterEllipsis };
+            TvButton("tv-vod-stop", "Beenden", () => { _tvPlayer?.Stop(); _tvVodPlaying = false; _tvPlayingTitle = null; Show("tv"); }) } };
+        var head = new TextBlock { Name = "tv-vod-title", Text = "" + _tvPlayingTitle, Foreground = GoldText(), FontSize = 18, FontWeight = FontWeight.Bold, TextTrimming = TextTrimming.CharacterEllipsis };
         return Glass2(new StackPanel { Name = "tv-vod-stage", Spacing = 10, Children = { head, screen, TvSeekRow("tv-vod"),
             new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = { ctl, Pos(extra, 2) } }, TvVodExtras() } }, 12);
     }
@@ -188,8 +188,8 @@ public partial class MainWindow
         Show("tv");
         var ok = TvPlayUrl(url, "main");
         if (ok) TvAfterPlay(url); // an der gemerkten Stelle weiter
-        if (_tvNowTitle is not null) _tvNowTitle.Text = "🎬 " + title;
-        if (_tvNowInfo is not null) _tvNowInfo.Text = "Film/Folge – mit ⏪ ⏩ spulen, ⏯ pausieren";
+        if (_tvNowTitle is not null) _tvNowTitle.Text = "" + title;
+        if (_tvNowInfo is not null) _tvNowInfo.Text = "Film/Folge – mit spulen, pausieren";
         return ok;
     }
 
@@ -276,7 +276,7 @@ public partial class MainWindow
             foreach (var v in all.Where(v => ok.Contains(v.Category) && (_tvVodCat == "Alle" || v.Category == _tvVodCat) && (q.Length == 0 || v.Name.Contains(q, StringComparison.OrdinalIgnoreCase))).Take(240))
             {
                 var vv = v;
-                grid.Children.Add(TvPoster("tv-film-item-" + Safe(v.Id), v.Name, string.Join(" · ", new[] { v.Year, v.Rating is { Length: > 0 } r ? "★ " + r : null }.Where(x => !string.IsNullOrEmpty(x))), v.Cover,
+                grid.Children.Add(TvPoster("tv-film-item-" + Safe(v.Id), v.Name, string.Join(" · ", new[] { v.Year, v.Rating is { Length: > 0 } r ? "" + r : null }.Where(x => !string.IsNullOrEmpty(x))), v.Cover,
                     () => { _tvVodSel = vv.Id; Show("tv"); }, _tvVodSel == v.Id));
             }
             if (grid.Children.Count == 0) grid.Children.Add(P("Nichts gefunden.", null, 12));
@@ -291,10 +291,10 @@ public partial class MainWindow
                 new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, Child = img, Margin = new Thickness(0, 0, 14, 0) },
                 Pos(new StackPanel { Spacing = 6, Children = {
                     H(film.Name, 17),
-                    P(string.Join(" · ", new[] { film.Category, film.Year, film.Rating is { Length: > 0 } r ? "★ " + r : null }.Where(x => !string.IsNullOrEmpty(x))), null, 12),
+                    P(string.Join(" · ", new[] { film.Category, film.Year, film.Rating is { Length: > 0 } r ? "" + r : null }.Where(x => !string.IsNullOrEmpty(x))), null, 12),
                     P(film.Plot ?? "Keine Beschreibung.", Text, 12.5),
                     TvVodInfoBlock() ?? new Border(),
-                    new WrapPanel { Children = { TvButton("tv-film-play", Tv.ResumeFor(film.Url) is { Open: true } rs ? $"▶ Weiter ab {TvClock(rs.Pos)}" : "▶ Abspielen", () => { _tvEp = null; TvPlayVideo(film.Url, film.Name); }, true), TvButton("tv-film-close", "Schließen", () => { _tvVodSel = null; Show("tv"); }) } } } }, 1) } }));
+                    new WrapPanel { Children = { TvButton("tv-film-play", Tv.ResumeFor(film.Url) is { Open: true } rs ? $"Weiter ab {TvClock(rs.Pos)}" : "Abspielen", () => { _tvEp = null; TvPlayVideo(film.Url, film.Name); }, true), TvButton("tv-film-close", "Schließen", () => { _tvVodSel = null; Show("tv"); }) } } } }, 1) } }));
             _ = TvLoadVodInfo(film); // Bewertung, Darsteller, Trailer vom Anbieter
         }
         Fill();
@@ -333,7 +333,7 @@ public partial class MainWindow
             {
                 var ee = e;
                 var row = new Button { Name = $"tv-ep-{e.Season}-{e.Episode}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(10, 6), CornerRadius = new CornerRadius(8), Background = Brush.Parse("#14FFFFFF"),
-                    Content = new StackPanel { Children = { new TextBlock { Text = $"▶  Folge {e.Episode}: {e.Title}", Foreground = Text, FontSize = 13, TextWrapping = TextWrapping.Wrap },
+                    Content = new StackPanel { Children = { new TextBlock { Text = $"Folge {e.Episode}: {e.Title}", Foreground = Text, FontSize = 13, TextWrapping = TextWrapping.Wrap },
                         new TextBlock { Text = (e.Seconds > 0 ? $"{e.Seconds / 60} Min. · " : "") + (e.Plot ?? ""), Foreground = Muted, FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis, IsVisible = e.Seconds > 0 || e.Plot is not null } } } };
                 row.Click += (_, _) => TvPlayEpisode(ser, ee, eps);
                 list.Children.Add(row);
@@ -343,7 +343,7 @@ public partial class MainWindow
             sp.Children.Add(WCard(new Grid { Name = "tv-series-detail", ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = {
                 new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, Child = img, Margin = new Thickness(0, 0, 14, 0), VerticalAlignment = VerticalAlignment.Top },
                 Pos(new StackPanel { Spacing = 6, Children = { H(ser.Name, 17),
-                    P(string.Join(" · ", new[] { ser.Category, ser.Year, ser.Rating is { Length: > 0 } r ? "★ " + r : null, seasons.Count > 0 ? $"{seasons.Count} Staffel(n)" : null }.Where(x => !string.IsNullOrEmpty(x))), null, 12),
+                    P(string.Join(" · ", new[] { ser.Category, ser.Year, ser.Rating is { Length: > 0 } r ? "" + r : null, seasons.Count > 0 ? $"{seasons.Count} Staffel(n)" : null }.Where(x => !string.IsNullOrEmpty(x))), null, 12),
                     P(ser.Plot ?? "", Text, 12.5), sw, list } }, 1) } }));
             return sp;
         }
@@ -357,7 +357,7 @@ public partial class MainWindow
             foreach (var s in all.Where(s => ok.Contains(s.Category) && (_tvSerCat == "Alle" || s.Category == _tvSerCat) && (q.Length == 0 || s.Name.Contains(q, StringComparison.OrdinalIgnoreCase))).Take(240))
             {
                 var ss = s;
-                grid.Children.Add(TvPoster("tv-serie-item-" + Safe(s.Id), s.Name, string.Join(" · ", new[] { s.Year, s.Rating is { Length: > 0 } r ? "★ " + r : null }.Where(x => !string.IsNullOrEmpty(x))), s.Cover,
+                grid.Children.Add(TvPoster("tv-serie-item-" + Safe(s.Id), s.Name, string.Join(" · ", new[] { s.Year, s.Rating is { Length: > 0 } r ? "" + r : null }.Where(x => !string.IsNullOrEmpty(x))), s.Cover,
                     () => { _tvSerSel = ss.Id; _tvSeason = 0; Show("tv"); }, false));
             }
             if (grid.Children.Count == 0) grid.Children.Add(P("Nichts gefunden.", null, 12));

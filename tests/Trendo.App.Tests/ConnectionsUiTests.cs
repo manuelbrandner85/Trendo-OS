@@ -113,7 +113,7 @@ public class Connections_Ui
         return Task.FromResult(0);
     };
 
-    [AvaloniaFact(DisplayName = "Claude-Chat: „⬆ GitHub“ lädt das Projekt nach Ja als privates Repo hoch (gh-Ordner der Person); „🌐 Netlify“ nur im Web-Studio, veröffentlicht nach Ja")]
+    [AvaloniaFact(DisplayName = "Claude-Chat: „GitHub“ lädt das Projekt nach Ja als privates Repo hoch (gh-Ordner der Person); „Netlify“ nur im Web-Studio, veröffentlicht nach Ja")]
     public async Task Chat_github_netlify()
     {
         var (w, _, _) = Ui.Open();
@@ -143,7 +143,7 @@ public class Connections_Ui
             Assert.Contains(calls, c => c.Exe == "git" && c.Args is ["init", ..]);
             Assert.Equal("https://github.com/erika-muster/baue-eine-kontaktseite", w.LastGitHubRepo);
             Assert.Contains(".trendo/", File.ReadAllText(Path.Combine(chat.Folder, ".gitignore")));
-            Assert.StartsWith("⬆ Auf GitHub hochgeladen (privat)", w.ClaudeChatCurrent()!.Messages[^1].Text);
+            Assert.StartsWith("Auf GitHub hochgeladen (privat)", w.ClaudeChatCurrent()!.Messages[^1].Text);
 
             // Netlify: ohne Verbindung Hinweis, dann nach Ja veröffentlichen
             w.Find<Button>("claude-chat-netlify").Press(); Pump();

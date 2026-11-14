@@ -232,6 +232,7 @@ public partial class MainWindow
             cb.IsCheckedChanged += (_, _) => { if ((cb.IsChecked == true) != on) { d.Edit("Meilenstein", x => ((JsonObject)((JsonArray)x["milestones"]!)[idx]!)["done"] = cb.IsChecked == true); Show(GK); } };
             sp.Children.Add(cb);
         }
+        if (d.Text("browser") is not ("plattform" or "jump" or "breakout")) sp.Children.Add(GameServicesCard(d)); // T-0650 E7: ohne Assets-Bereich hier
         return sp;
     }
 
@@ -253,6 +254,7 @@ public partial class MainWindow
         var built = d.Text("built");
         sp.Children.Add(P(built.Length > 0 ? "Zuletzt gebaut: " + built : "Noch nicht gebaut.", Text, 12));
         sp.Children.Add(new WrapPanel { Children = { Act("game-build", "Bauen", () => ProgramRun(GK, () => GameBuild(d)), true), new Border { Width = 6 }, Act("game-play", scale.Engine == "browser" ? "Spielen" : "In Unreal öffnen", () => ProgramRun(GK, () => GamePlay(d))) } });
+        sp.Children.Add(GameEngineSetupCard(d)); // T-0650 E1: Engine einrichten, nur Geprüftes gilt
         if (scale.Engine == "unreal") sp.Children.Add(GameUnrealView(d)); // 3D-Spiel in Unreal: kompilieren, prüfen, spielen
         sp.Children.Add(GameEnginesView(d)); // Paket 01 S1-01: Unreal, Unity, Godot, Blender
         return sp;
@@ -458,7 +460,7 @@ public partial class MainWindow
         var tiles = deco
             ? new (char Ch, string Id, string Label)[] { ('w', "wolke", "Wolke"), ('m', "berg", "Berg"), ('t', "baum", "Baum"), ('b', "busch", "Busch"), ('g', "gras", "Gras"), ('.', "radierer", "Radierer") }
             : kind == "plattform"
-            ? new (char Ch, string Id, string Label)[] { (LevelCanvas.PickTool, "auswahl", "⬚ Auswählen"), ('#', "boden", "Boden"), ('o', "muenze", "Münze"), ('E', "gegner", "Gegner"), ('^', "stacheln", "Stacheln"), ('S', "start", "Start"), ('F', "feder", "Sprungfeder"), ('C', "speicher", "Speicherpunkt"), ('K', "schluessel", "Schlüssel"), ('D', "tuer", "Tür"), ('G', "gegenstand", "Gegenstand"), ('N', "figur", "Sprechende Figur"), ('V', "fahrzeug", "Fahrzeug"), ('Z', "ziel", "Ziel"), ('.', "radierer", "Radierer") }
+            ? new (char Ch, string Id, string Label)[] { (LevelCanvas.PickTool, "auswahl", "Auswählen"), ('#', "boden", "Boden"), ('o', "muenze", "Münze"), ('E', "gegner", "Gegner"), ('^', "stacheln", "Stacheln"), ('S', "start", "Start"), ('F', "feder", "Sprungfeder"), ('C', "speicher", "Speicherpunkt"), ('K', "schluessel", "Schlüssel"), ('D', "tuer", "Tür"), ('G', "gegenstand", "Gegenstand"), ('N', "figur", "Sprechende Figur"), ('V', "fahrzeug", "Fahrzeug"), ('Z', "ziel", "Ziel"), ('.', "radierer", "Radierer") }
             : [('#', "boden", kind == "breakout" ? "Stein" : "Hindernis"), ('.', "radierer", "Radierer")];
         if (!tiles.Any(t => t.Ch == GameTile)) GameTile = tiles[deco ? 0 : kind == "plattform" ? 1 : 0].Ch;
         var canvas = new LevelCanvas { Name = "game-level", Rows = deco ? GameDecorRows(d, li) : rows, Tile = GameTile, Cell = kind == "jump" ? 18 : 22, Selected = deco ? null : GameObjSel,
@@ -482,13 +484,13 @@ public partial class MainWindow
         });
         var more = new Button { Name = "game-level-wider", Content = "＋ 10 Spalten" }; more.Click += (_, _) => Resize(10);
         var less = new Button { Name = "game-level-narrower", Content = "－ 10 Spalten" }; less.Click += (_, _) => Resize(-10);
-        var test = new Button { Name = "game-level-test", Content = kind == "plattform" ? "Im Browser testen" : "▶ Testen" };
+        var test = new Button { Name = "game-level-test", Content = kind == "plattform" ? "Im Browser testen" : "Testen" };
         if (kind != "plattform") { test.Background = Accent; test.Foreground = Brushes.White; }
         test.Click += (_, _) => ProgramRun(GK, () => { if (d.List("level").Count == 0) d.Set("level", new JsonArray([.. rows.Select(x => (JsonNode)x)]), "Level"); GameBuild(d); GamePlay(d); });
         var tools = new WrapPanel { Children = { palette, new Border { Width = 12 }, more, new Border { Width = 4 }, less, new Border { Width = 12 } } };
         if (kind == "plattform")
         {
-            var play = new Button { Name = "game-level-play", Content = "▶ Im Fenster spielen", Background = Accent, Foreground = Brushes.White, Margin = new Thickness(0, 0, 4, 0) };
+            var play = new Button { Name = "game-level-play", Content = "Im Fenster spielen", Background = Accent, Foreground = Brushes.White, Margin = new Thickness(0, 0, 4, 0) };
             play.Click += (_, _) => ProgramRun(GK, () => GamePlayHere(d));
             tools.Children.Add(play);
         }
@@ -530,7 +532,7 @@ public partial class MainWindow
         name.LostFocus += (_, _) => Rename(); OnEnter(name, Rename);
         TextBlock Lbl(string t) => new() { Text = t, Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center };
         var manage = new WrapPanel { Children = { Lbl("Name"), new Border { Width = 6 }, name, new Border { Width = 6 } } };
-        if (li >= 2) manage.Children.Add(Act("game-lv-up", "◀ früher", () => ProgramRun(GK, () => GameMoveLevelUp(d, li))));
+        if (li >= 2) manage.Children.Add(Act("game-lv-up", "früher", () => ProgramRun(GK, () => GameMoveLevelUp(d, li))));
         if (li >= 1) manage.Children.Add(Act("game-lv-del", "Level löschen", () => ProgramRun(GK, () => GameDeleteLevel(d, li))));
         var layers = new WrapPanel { Name = "game-layers", VerticalAlignment = VerticalAlignment.Center, Children = { Lbl("Ebene"), new Border { Width = 6 } } };
         foreach (var (id, label) in new[] { ("spiel", "Spiel (Boden, Gegner …)"), ("hintergrund", "Hintergrund (nur Deko)") })
@@ -711,10 +713,10 @@ public partial class MainWindow
         GamePlaytestCanvas = canvas;
         canvas.Ticked = () => status.Text = Status();
         canvas.Stop = () => { _gamePlay = null; GamePlaytestCanvas = null; Show(GK); };
-        var again = Act("game-play-again", "↻ Nochmal", () => { _gamePlay = sim.Restart(); Show(GK); }, true);
-        var stop = Act("game-play-stop", "■ Zurück zum Editor", () => canvas.Stop());
-        var save = Act("game-play-save", "💾 Speichern", () => ProgramRun(GK, () => GameSaveHere(d)));
-        var load = Act("game-play-load", "⤴ Fortsetzen", () => ProgramRun(GK, () => GameLoadHere(d)));
+        var again = Act("game-play-again", "Nochmal", () => { _gamePlay = sim.Restart(); Show(GK); }, true);
+        var stop = Act("game-play-stop", "Zurück zum Editor", () => canvas.Stop());
+        var save = Act("game-play-save", "Speichern", () => ProgramRun(GK, () => GameSaveHere(d)));
+        var load = Act("game-play-load", "Fortsetzen", () => ProgramRun(GK, () => GameLoadHere(d)));
         load.IsEnabled = File.Exists(GameSavePath(d));
         return new StackPanel { Spacing = 8, Children = {
             new WrapPanel { Children = { status, again, new Border { Width = 6 }, save, new Border { Width = 4 }, load, new Border { Width = 6 }, stop } },

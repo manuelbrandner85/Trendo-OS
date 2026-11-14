@@ -78,7 +78,7 @@ public partial class MainWindow
     {
         var head = new Grid { Name = "claude-head", ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto") };
         var tabs = new StackPanel { Name = "claude-tabs", Orientation = Orientation.Horizontal, Spacing = 4, VerticalAlignment = VerticalAlignment.Center };
-        foreach (var (k, l, tip) in new[] { ("chat", "✳ Claude", "Claude mit deinem Abo – arbeitet wie in Claude direkt in den Projekten dieses Studios"), ("web", "claude.ai", "claude.ai mit deinem Abo – Chats, Projekte und Claude Code im Web"), ("agent", "Trendo-Agent", "Arbeitet mit der KI, die Trendo hat – auch ohne Abo: Wunsch eintippen, „Los“, am Ende nur Ja oder Nein") })
+        foreach (var (k, l, tip) in new[] { ("chat", "Claude", "Claude mit deinem Abo – arbeitet wie in Claude direkt in den Projekten dieses Studios"), ("web", "claude.ai", "claude.ai mit deinem Abo – Chats, Projekte und Claude Code im Web"), ("agent", "Trendo-Agent", "Arbeitet mit der KI, die Trendo hat – auch ohne Abo: Wunsch eintippen, „Los“, am Ende nur Ja oder Nein") })
         {
             var tab = k;
             var b = new Button { Name = "claude-tab-" + k, Content = l, Padding = new Thickness(12, 4), CornerRadius = new CornerRadius(8), Foreground = ClaudeFg, BorderThickness = new Thickness(0), FontSize = 13 };
@@ -88,9 +88,9 @@ public partial class MainWindow
         var where = new TextBlock { Name = "claude-dock-studio", Text = StudioCatalog.NameOf(dock.Studio ?? "", ""), Foreground = ClaudeMuted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0), TextTrimming = TextTrimming.CharacterEllipsis };
         var close = new Button { Name = "claude-dock-close", Content = "✕", Padding = new Thickness(8, 2), Background = Brushes.Transparent, Foreground = ClaudeFg };
         ToolTip.SetTip(close, "Claude schließen"); close.Click += (_, _) => ClaudeDockToggle(dock.Studio, null);
-        var max = new Button { Name = "claude-dock-max", Content = dock.Max ? "⤡ Studio zeigen" : "⤢ Groß", Padding = new Thickness(8, 2), Background = Brushes.Transparent, Foreground = ClaudeFg };
+        var max = new Button { Name = "claude-dock-max", Content = dock.Max ? "Studio zeigen" : "Groß", Padding = new Thickness(8, 2), Background = Brushes.Transparent, Foreground = ClaudeFg };
         ToolTip.SetTip(max, "Claude im ganzen Fenster – wie in der Claude-App; noch einmal klicken holt das Studio zurück");
-        max.Click += (_, _) => { ClaudeDockSetMax(dock, !dock.Max); max.Content = dock.Max ? "⤡ Studio zeigen" : "⤢ Groß"; };
+        max.Click += (_, _) => { ClaudeDockSetMax(dock, !dock.Max); max.Content = dock.Max ? "Studio zeigen" : "Groß"; };
         head.Children.Add(tabs); head.Children.Add(Pos(where, 1)); head.Children.Add(Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, Children = { max, close } }, 2));
         var headBar = new Border { Background = ClaudeBar, BorderBrush = ClaudeLine, BorderThickness = new Thickness(0, 0, 0, 1), Padding = new Thickness(10, 6), Child = head };
         DockPanel.SetDock(headBar, Avalonia.Controls.Dock.Top);
@@ -237,7 +237,7 @@ public partial class MainWindow
         var pending = w.PendingOf(dock.Studio);
         var stateText = !connected ? "Einmal anmelden: Melde dich unten mit deinem Claude-Abo an – danach ist Claude in allen Studios verbunden."
             : pending is not null ? $"Neues Projekt „{pending}“: In Claude oben „Neues Projekt“, als Namen „{ClaudeWeb.ProjectName(studioName, pending)}“, bei „Anweisungen“ Strg+V, dann erstellen."
-            : w.ProjectOf(dock.Studio) is not null ? $"✳ Claude für {studioName} – tipp einfach unten in Claude."
+            : w.ProjectOf(dock.Studio) is not null ? $"Claude für {studioName} – tipp einfach unten in Claude."
             : $"✓ Verbunden. Leg links ein Projekt an – dann bleibt Claude bei {studioName}.";
         dock.WebBar.Children.Add(new TextBlock { Name = "claude-web-state", Text = stateText, Foreground = connected && pending is null ? ClaudeFg : ClaudeAccent, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
         var row = new WrapPanel();

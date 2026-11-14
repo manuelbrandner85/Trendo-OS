@@ -287,7 +287,7 @@ public partial class MainWindow
         if (_mvKiCts is not null)
         {
             sp.Children.Add(new TextBlock { Name = "ms-vk-status", Text = _mvKiStatus, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap });
-            sp.Children.Add(Act("ms-vk-cancel", "■ Abbrechen", MsRenderCancel));
+            sp.Children.Add(Act("ms-vk-cancel", "Abbrechen", MsRenderCancel));
             return sp;
         }
         var finBtn = Act("ms-vk-final", fin.Count == 0 ? "2. Endfassung rendern" : $"Endfassung ({fin.Count(c => c.Ok)}/{sc.Shots.Count}) weiter", () => _ = MsRenderVideo(s.Id, false), prev.Count > 0 && fin.Count == 0);
@@ -296,7 +296,7 @@ public partial class MainWindow
         sp.Children.Add(new WrapPanel { Children = {
             Act("ms-vk-preview", prev.Count == 0 ? "1. Schnelle Vorschau rendern" : $"Vorschau ({prev.Count(c => c.Ok)}/{sc.Shots.Count}) weiter", () => _ = MsRenderVideo(s.Id, true), prev.Count == 0), finBtn } });
         if (prev.Count > 0 || fin.Count > 0)
-            sp.Children.Add(Act("ms-vk-assemble", "✂ Im Videoschnitt zusammensetzen", () => MsAssembleVideo(s.Id, fin.Count == 0)));
+            sp.Children.Add(Act("ms-vk-assemble", "Im Videoschnitt zusammensetzen", () => MsAssembleVideo(s.Id, fin.Count == 0)));
         var show = fin.Count > 0 ? fin : prev;
         if (show.Count > 0)
         {

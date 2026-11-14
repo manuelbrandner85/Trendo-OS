@@ -39,9 +39,9 @@ public partial class MainWindow
         Ribbon =
         [
             ("Simulation", [
-                new ProgramCmd("cnc-play", "▶ Abspielen / Pause", _ => CncPlay(), true),
-                new ProgramCmd("cnc-start", "⏮ Anfang", _ => { CncStop(); CncSeek(0); }),
-                new ProgramCmd("cnc-end", "⏭ Ende", _ => { CncStop(); CncSeek(-1); }),
+                new ProgramCmd("cnc-play", "Abspielen / Pause", _ => CncPlay(), true),
+                new ProgramCmd("cnc-start", "Anfang", _ => { CncStop(); CncSeek(0); }),
+                new ProgramCmd("cnc-end", "Ende", _ => { CncStop(); CncSeek(-1); }),
             ]),
             ("Ansicht", [
                 new ProgramCmd("cnc-v-top", "Von oben", _ => { _cncIso = false; Show(CK); }),

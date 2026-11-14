@@ -10,7 +10,7 @@ namespace Trendo.App.Tests;
 [Collection("Claude")]
 public class ClaudeEverywhere_Ui
 {
-    [AvaloniaFact(DisplayName = "Claude in jedem Studio: jede Studio-Seite hat „✳ Claude“, und Claude öffnet mit dem passenden Studio", Timeout = 600000)]
+    [AvaloniaFact(DisplayName = "Claude in jedem Studio: jede Studio-Seite hat „Claude“, und Claude öffnet mit dem passenden Studio", Timeout = 600000)]
     public void Every_studio_page_has_claude()
     {
         var (w, _, _) = Ui.Open();

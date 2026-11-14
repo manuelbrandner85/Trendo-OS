@@ -21,7 +21,7 @@ public partial class MainWindow
     {
         var open = items.Where(x => !SuggestionDismissed(x.S.Key)).Take(4).ToList();
         if (open.Count == 0) return null;
-        var sp = new StackPanel { Name = "sugg-card", Spacing = 6, Children = { new TextBlock { Text = "✨ Trendo schlägt vor", Foreground = Brush.Parse("#FCD34D"), FontWeight = FontWeight.SemiBold, FontSize = 13 } } };
+        var sp = new StackPanel { Name = "sugg-card", Spacing = 6, Children = { new TextBlock { Text = "Trendo schlägt vor", Foreground = Brush.Parse("#FCD34D"), FontWeight = FontWeight.SemiBold, FontSize = 13 } } };
         var i = 0;
         foreach (var (s, yes) in open)
         {

@@ -93,7 +93,7 @@ public partial class MainWindow
         var side = new StackPanel { Spacing = 6, Width = 300 };
         if (_diskSel is { } s)
         {
-            side.Children.Add(new TextBlock { Name = "disk-sel", Text = (s.IsDir ? "📁 " : "") + s.Name, Foreground = Text, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
+            side.Children.Add(new TextBlock { Name = "disk-sel", Text = (s.IsDir ? "• " : "") + s.Name, Foreground = Text, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
             side.Children.Add(P($"{DiskMapView.Size(s.Bytes)}{(s.IsDir ? $" · {s.Files:N0} Dateien" : " · " + DiskMap.Kind(s.Name))} · {s.Bytes * 100.0 / Math.Max(1, at.Bytes):0.#} % hiervon", Muted, 12));
             var row = new WrapPanel();
             if (s.IsDir && s.Children.Count > 0) { var o = new Button { Name = "disk-open", Content = "Hinein", Margin = new Thickness(0, 0, 4, 4) }; o.Click += (_, _) => DiskOpen(s); row.Children.Add(o); }

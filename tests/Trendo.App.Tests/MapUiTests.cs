@@ -32,7 +32,7 @@ public class SPEC13_Ui
         Get<TextBox>(w, "mk-gpx-path").Text = f; Press(w, "mk-gpx-load");
         var t = Assert.Single(Model(w).Tracks);
         Assert.Equal(t.Id, w.MapState.Selected);
-        Assert.Contains("↑ 100 m", string.Join(" ", w.GetVisualDescendants().OfType<TextBlock>().Select(x => x.Text)));
+        Assert.Contains("100 m", string.Join(" ", w.GetVisualDescendants().OfType<TextBlock>().Select(x => x.Text)));
         Assert.NotNull(Get<Border>(w, "mk-profile"));
         Click(w, At(w, 47.403, 10.995)); Assert.Null(w.MapState.Selected); // ins Leere: abwählen
         Click(w, At(w, 47.4025, 10.9825)); Assert.Equal(t.Id, w.MapState.Selected); // Spur treffen

@@ -61,18 +61,17 @@ public sealed partial class MainWindow
                 Glass = Brush.Parse("#FF000000"); GlassStrong = Brush.Parse("#FF000000"); TileBg = Brush.Parse("#FF000000");
                 Edge = Brush.Parse("#FFFFFF00"); Muted = Brush.Parse("#FFFFFFFF"); Text = Brush.Parse("#FFFFFFFF"); break;
             default:
-                // Wunsch 02.11.2026: Farbwelt wie Windows im Dunkelmodus – neutrale Grautöne (Mica/Acryl), Kanten mit einem Hauch Gold
-                Glass = Brush.Parse("#C7202020"); GlassStrong = Brush.Parse("#F51C1C1C"); TileBg = Brush.Parse("#B02B2B2B");
-                Edge = Brush.Parse("#33D4A84B"); Muted = Brush.Parse("#A8A8A8"); Text = Brush.Parse("#F3F3F3"); break;
+                // Vorgabe 13.11.2026 „nicht KI-generiert“: ruhige, fast deckende Flächen in neutralem Grau, feine neutrale Kanten statt Goldglanz
+                Glass = Brush.Parse("#EB1E1F22"); GlassStrong = Brush.Parse("#FA1A1B1E"); TileBg = Brush.Parse("#FF26272B");
+                Edge = Brush.Parse("#2EFFFFFF"); Muted = Brush.Parse("#A3A6AD"); Text = Brush.Parse("#ECEDEF"); break;
         }
         var acc = AccentChoices.Any(a => a.Id == s.EffectiveAccent(DateTime.Now)) ? s.EffectiveAccent(DateTime.Now) : "#C9A227";
-        Accent = _theme == "kontrast" ? Brush.Parse("#FFD400") : acc == "#C9A227" ? Gold() : Brush.Parse(acc);
-        // Vorgabe 27.10.2026: hochwertig statt flach – Flächen mit Verlauf, Kanten mit Lichtkante oben, weiche Schatten (nicht im Kontrast-Design)
-        if (_theme == "kontrast") { EdgeLit = Edge; CardShadow = default; return; }
-        var light = _theme == "hell";
-        TileBg = Vertical(light ? "#F7FFFFFF" : "#B82D2D2D", light ? "#E0E9F0FA" : "#A8202020");
-        EdgeLit = Vertical(light ? "#CCE8C77A" : "#80F5C451", light ? "#40B8892C" : "#22FFFFFF"); // Lichtkante Gold oben, darunter neutral (Dunkel-Gold-Look 02.11.2026)
-        CardShadow = BoxShadows.Parse(light ? "0 8 22 -10 #40223355" : "0 10 26 -10 #99000614");
+        // Gold als einziger Akzent, flach statt Metallverlauf; etwas dunkler, damit weiße Schrift darauf lesbar bleibt
+        Accent = _theme == "kontrast" ? Brush.Parse("#FFD400") : acc == "#C9A227" ? Brush.Parse("#B38B22") : Brush.Parse(acc);
+        // Vorgabe 13.11.2026: keine Verläufe, keine Lichtkanten, keine Kartenschatten – Tiefe nur über Flächenstufen und Ränder
+        EdgeLit = Edge; CardShadow = default;
+        if (_theme == "kontrast") return;
+        if (_theme == "hell") TileBg = Brush.Parse("#FFFFFFFF");
         if (_style != "trendo") ApplyOsPalette(s); // Farben wie im Original-System
     }
 
@@ -116,9 +115,8 @@ public sealed partial class MainWindow
         OwnTimer(t);
         if (!Motionless)
         {
-            // G5 (07.11.2026): Seitenwechsel blendet ein und gleitet 10 px nach oben – ruhig, unter einer Viertelsekunde
-            _center.Transitions = [new DoubleTransition { Property = OpacityProperty, Duration = TimeSpan.FromMilliseconds(220), Easing = new Avalonia.Animation.Easings.CubicEaseOut() },
-                new TransformOperationsTransition { Property = RenderTransformProperty, Duration = TimeSpan.FromMilliseconds(240), Easing = new Avalonia.Animation.Easings.CubicEaseOut() }];
+            // P3 (13.11.2026): Seitenwechsel nur kurz einblenden, kein Gleiten
+            _center.Transitions = [new DoubleTransition { Property = OpacityProperty, Duration = TimeSpan.FromMilliseconds(120) }];
             // Ruhiger Startbildschirm: Logo blendet sanft aus
             if (opt.ScreenshotPath is null && !_reopening)
             {
@@ -134,10 +132,17 @@ public sealed partial class MainWindow
         }
     }
 
+    /// <summary>P4: Dichte „Kompakt“ als Stilklasse am Fenster (Stile in App.axaml).</summary>
+    bool _calmShell;
+    public void ApplyDensity() => Classes.Set("kompakt", _settings.Density == "kompakt");
+
     /// <summary>Wird nach jedem Seitenwechsel aufgerufen: sanftes Einblenden und Hinweis beim ersten Öffnen.</summary>
     private void AfterShow(string key)
     {
-        if (!Motionless) { _center.Opacity = 0; _center.RenderTransform = Avalonia.Media.Transformation.TransformOperations.Parse("translateY(10px)"); _ui.Post(() => { _center.Opacity = 1; _center.RenderTransform = Avalonia.Media.Transformation.TransformOperations.Identity; }, DispatcherPriority.Background); }
+        if (!Motionless) { _center.Opacity = 0; _ui.Post(() => _center.Opacity = 1, DispatcherPriority.Background); }
+        ApplyDensity();
+        // D1 (13.11.2026): restliche Verläufe und Leuchten beruhigen – einmal das ganze Fenster, danach nur die neue Seite
+        _ui.Post(() => { if (!_calmShell) { _calmShell = true; CalmLook.Apply(this); } else if (ActivePageRoot is { } pr) CalmLook.Apply(pr); }, DispatcherPriority.Loaded);
         ShowHelp(key, force: false);
         EnhancePathFields(ActivePageRoot, key);
         if (ActivePageRoot is { } c0) ApplyAccessibility(c0);
@@ -202,11 +207,12 @@ public sealed partial class MainWindow
         // Seiten ohne eigenen Hilfetext: beim „?“ trotzdem helfen – aus Studio-Katalog und Programm (G0-Befund: 15 Seiten ohne Wirkung)
         if (!HelpTexts.TryGetValue(key, out var text)) { if (!force || FallbackHelp(key) is not { } fb) return; text = fb; }
         if (!force && _settings.SeenHints.Contains(key)) return;
-        var ok = new Button { Name = "hint-ok", Content = "Verstanden", FontSize = 11, Background = Accent, VerticalAlignment = VerticalAlignment.Center };
+        var ok = new Button { Name = "hint-ok", Content = "Ausblenden", FontSize = 11, VerticalAlignment = VerticalAlignment.Center };
         ok.Click += (_, _) => { if (!_settings.SeenHints.Contains(key)) { _settings.SeenHints.Add(key); SaveSettings(); } _hintHost.Children.Clear(); };
-        _hintHost.Children.Add(new Border { Name = "hint", Background = Brush.Parse("#33C9A227"), BorderBrush = Accent, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 8),
+        // D1 (13.11.2026): Hinweis als ruhige Infozeile – neutrale Fläche, schmaler Akzentstrich links, Linien-Symbol statt Glühbirne
+        _hintHost.Children.Add(new Border { Name = "hint", Background = Brush.Parse(C("#FF232428", "#FFF4F5F7")), BorderBrush = Accent, BorderThickness = new Thickness(3, 0, 0, 0), CornerRadius = new CornerRadius(4), Padding = new Thickness(12, 8),
             Child = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = {
-                new TextBlock { Text = "💡", FontSize = 16, Margin = new Thickness(0, 0, 10, 0), VerticalAlignment = VerticalAlignment.Center },
+                new Border { Margin = new Thickness(0, 0, 10, 0), VerticalAlignment = VerticalAlignment.Center, Child = Ico(Mdi.HelpCircle, 15, Muted) },
                 Pos(new TextBlock { Text = _settings.EasyLanguage ? Trendo.Core.Sys.A11y.Easy(text) : text, Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center }, 1), Pos(ok, 2) } } });
     }
 
@@ -215,7 +221,7 @@ public sealed partial class MainWindow
     {
         var what = Programs.TryGetValue(key, out var spec) ? (spec.Help.Length > 0 ? spec.Help : spec.Sentence)
             : ModuleOf(key) is { } m && StudioCatalog.For(m) is { } info ? info.Sentence : null;
-        return (what is { Length: > 0 } ? what + " " : "") + "Tipp: Strg+K öffnet die Befehlsleiste (alle Befehle dieser Seite), „✳ Claude“ hilft dir hier direkt – auch per Rechtsklick auf ein Element.";
+        return (what is { Length: > 0 } ? what + " " : "") + "Tipp: Strg+K öffnet die Befehlsleiste (alle Befehle dieser Seite), „Claude“ hilft dir hier direkt – auch per Rechtsklick auf ein Element.";
     }
 
     private void SaveSettings() { try { _settings.Save(_core.DataRoot); } catch (Exception ex) { _core.Audit.Append("app", "settings.save_failed", ex.GetType().Name); } }
@@ -250,7 +256,7 @@ public sealed partial class MainWindow
         {
             var on = _settings.Style == id;
             var b = new Button { Name = "style-" + id, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(12, 8), CornerRadius = new CornerRadius(10), Foreground = Text, Background = on ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1),
-                Content = new StackPanel { Children = { new TextBlock { Text = (on ? "✓ " : "") + label, FontWeight = FontWeight.SemiBold, Foreground = Text }, new TextBlock { Text = hint, FontSize = 11, Foreground = Muted } } } };
+                Content = new StackPanel { Children = { new TextBlock { Text = (on ? "• " : "") + label, FontWeight = FontWeight.SemiBold, Foreground = Text }, new TextBlock { Text = hint, FontSize = 11, Foreground = Muted } } } };
             var sid = id; b.Click += (_, _) => { _settings.Style = sid; SaveSettings(); ApplyTheme(_settings); _core.Audit.Append(Principal.LocalOwner.Name, "look.style", sid); Reopen("settings"); };
             styles.Children.Add(b);
         }
@@ -258,7 +264,7 @@ public sealed partial class MainWindow
         foreach (var (id, label) in new[] { ("dunkel", "Dunkel Premium"), ("hell", "Hell"), ("system", "Wie Windows (hell/dunkel)"), ("kontrast", "Hoher Kontrast") })
         {
             var on = _settings.Theme == id;
-            var b = new Button { Name = "theme-" + id, Content = (on ? "✓ " : "") + label, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(12, 8), CornerRadius = new CornerRadius(10), Foreground = Text, Background = on ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1) };
+            var b = new Button { Name = "theme-" + id, Content = (on ? "• " : "") + label, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(12, 8), CornerRadius = new CornerRadius(10), Foreground = Text, Background = on ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1) };
             b.Click += (_, _) => { _settings.Theme = id; Reopen("settings"); };
             themes.Children.Add(b);
         }
@@ -297,7 +303,7 @@ public sealed partial class MainWindow
         foreach (var (id, label) in new[] { ("auto", "Automatisch"), ("hoch", "Volle Effekte"), ("sparsam", "Sparsam (Raspberry Pi)") })
         {
             var on = _settings.PowerProfile == id;
-            var b = new Button { Name = "power-" + id, Content = (on ? "✓ " : "") + label, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(12, 8), CornerRadius = new CornerRadius(10), Foreground = Text, Background = on ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1) };
+            var b = new Button { Name = "power-" + id, Content = (on ? "• " : "") + label, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(12, 8), CornerRadius = new CornerRadius(10), Foreground = Text, Background = on ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1) };
             b.Click += (_, _) => { _settingsSection = "bedienung"; _settings.PowerProfile = id; Reopen("settings"); };
             power.Children.Add(b);
         }
@@ -307,11 +313,20 @@ public sealed partial class MainWindow
         foreach (var (v, label) in new[] { (1.0, "Normal"), (1.15, "Groß"), (1.3, "Sehr groß") })
         {
             var on = Math.Abs(_settings.UiScale - v) < 0.01;
-            var b = new Button { Name = "size-" + (int)(v * 100), Content = (on ? "✓ " : "") + label, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(12, 8), CornerRadius = new CornerRadius(10), Foreground = Text, Background = on ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1) };
+            var b = new Button { Name = "size-" + (int)(v * 100), Content = (on ? "• " : "") + label, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(12, 8), CornerRadius = new CornerRadius(10), Foreground = Text, Background = on ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1) };
             b.Click += (_, _) => { _settingsSection = "bedienung"; _settings.UiScale = v; SaveSettings(); Rescale?.Invoke(); Show("settings"); };
             sizes.Children.Add(b);
         }
+        var density = new WrapPanel();
+        foreach (var (id, label) in new[] { ("normal", "Normal"), ("kompakt", "Kompakt") })
+        {
+            var on = (_settings.Density ?? "normal") == id;
+            var b = new Button { Name = "density-" + id, Content = label, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(12, 6), Foreground = on ? Brushes.White : Text, Background = on ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1) };
+            b.Click += (_, _) => { _settingsSection = "bedienung"; _settings.Density = id; SaveSettings(); ApplyDensity(); Show("settings"); };
+            density.Children.Add(b);
+        }
         sections.Children.Add(Section("bedienung", "Bedienung", new StackPanel { Spacing = 4, Children = { motion, upd, P("Anzeigegröße (Schrift und Bedienelemente):", Text), sizes,
+            P("Dichte (Abstände in Knöpfen und Feldern):", Text), density,
             P(LowPower ? "Leistung: sparsam – ohne Unschärfe, Schatten und Animationen." : "Leistung (Sparsam: ohne Unschärfe, Schatten und Animationen):", Text), power,
             P("Tastatur: Strg+K Suche · F1 Hilfe zur Seite · Strg+1 bis 5 Hauptbereiche · Tab/Enter bedienen alles ohne Maus", null, 11) } }));
 

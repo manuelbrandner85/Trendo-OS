@@ -150,7 +150,7 @@ public partial class MainWindow
             for (var i = 0; i < Bench.Cameras.Count; i++)
             {
                 var cam = Bench.Cameras[i]; var n = i;
-                var mark = n == Bench.Selected ? "● " : "";
+                var mark = n == Bench.Selected ? "• " : "";
                 list.Children.Add(MSp(Act("cam-pick-" + n, mark + cam.KindLabel + ": " + cam.Name, () => { Bench.Selected = n; Show("roboter"); })));
             }
             sp.Children.Add(list);

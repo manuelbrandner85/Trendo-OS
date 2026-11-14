@@ -128,7 +128,7 @@ public partial class MainWindow
         var kinds = KiSuggestions.For(studioId);
         if (kinds.Count == 0) return null;
         var row = new WrapPanel { Name = "page-freeki", MaxWidth = 380, HorizontalAlignment = HorizontalAlignment.Right };
-        row.Children.Add(new TextBlock { Text = "✨ Freie KI:", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 5, 3) });
+        row.Children.Add(new TextBlock { Text = "Freie KI:", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 5, 3) });
         var store = KiStore;
         foreach (var k in kinds)
         {

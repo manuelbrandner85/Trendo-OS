@@ -54,7 +54,7 @@ public partial class MainWindow
                     await TwinMqtt.ListenAsync(Twin, host, port, parsed, ct, (topic, n) =>
                     {
                         _mqttCount += n; // läuft im UI-Thread (siehe run)
-                        _mqttMsg = $"● Live: {_mqttCount} Werte empfangen (zuletzt „{topic}“, {DateTime.Now:HH:mm:ss})."; if (CurrentView == "zwilling") Show("zwilling");
+                        _mqttMsg = $"Live: {_mqttCount} Werte empfangen (zuletzt „{topic}“, {DateTime.Now:HH:mm:ss})."; if (CurrentView == "zwilling") Show("zwilling");
                     }, user.Length > 0 ? user : null, password.Length > 0 ? password : null, run: a => Dispatcher.UIThread.Post(a));
                 }
                 catch (Exception e) when (e is not OutOfMemoryException)
@@ -88,8 +88,8 @@ public partial class MainWindow
         sp.Children.Add(host); sp.Children.Add(new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 4, Children = { P("Port", null, 11), port } });
         sp.Children.Add(user); sp.Children.Add(pass); sp.Children.Add(links);
         sp.Children.Add(TwinMqttRunning
-            ? Act("twin-mqtt-stop", "■ MQTT trennen", TwinMqttStop)
-            : Act("twin-mqtt-start", "● MQTT verbinden", () => TwinMqttStart(host.Text ?? "", int.TryParse(port.Text, out var p) ? p : 0, user.Text ?? "", pass.Text ?? "", links.Text ?? ""), true));
+            ? Act("twin-mqtt-stop", "MQTT trennen", TwinMqttStop)
+            : Act("twin-mqtt-start", "MQTT verbinden", () => TwinMqttStart(host.Text ?? "", int.TryParse(port.Text, out var p) ? p : 0, user.Text ?? "", pass.Text ?? "", links.Text ?? ""), true));
         if (_mqttMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "twin-mqtt-msg", Text = _mqttMsg, FontSize = 11, Foreground = Muted, TextWrapping = Avalonia.Media.TextWrapping.Wrap });
         return new Expander { Name = "twin-mqtt-box", Header = "Live über MQTT", IsExpanded = TwinMqttRunning || _mqttMsg.Length > 0, Content = sp, Margin = new Avalonia.Thickness(0, 6, 0, 0) };
     }

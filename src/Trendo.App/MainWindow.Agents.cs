@@ -70,7 +70,7 @@ public partial class MainWindow
                     new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = {
                         new Border { Width = 26, Height = 26, CornerRadius = new CornerRadius(13), Background = on ? Accent : Brush.Parse("#2AFFFFFF"),
                             Child = new TextBlock { Text = r.Name.Length > 0 ? r.Name[..1].ToUpperInvariant() : "?", Foreground = Brushes.White, FontWeight = FontWeight.Bold, FontSize = 12, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } },
-                        new TextBlock { Text = (r.Id.StartsWith("eigen.") ? "✎ " : "") + r.Name, Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis } } },
+                        new TextBlock { Text = (r.Id.StartsWith("eigen.") ? "• " : "") + r.Name, Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis } } },
                     new TextBlock { Text = r.Does, Foreground = Muted, FontSize = 10.5, TextWrapping = TextWrapping.Wrap, MaxHeight = 28, TextTrimming = TextTrimming.CharacterEllipsis },
                     new TextBlock { Text = r.MayWriteFiles ? "darf nach Freigabe speichern" : "nur Vorschläge", Foreground = r.MayWriteFiles ? Brush.Parse("#FACC15") : Muted, FontSize = 9.5 } } } };
             Hover(b);

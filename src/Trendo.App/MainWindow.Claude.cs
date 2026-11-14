@@ -254,14 +254,14 @@ public partial class MainWindow
         if (!s.Installed) Add(Act("claude-install", "Claude Code einrichten", () => _ = ClaudeInstall(), true));
         else if (!s.Ready) Add(Act("claude-connect", "Mit Claude verbinden", () => _ = ClaudeConnect(), true));
         Add(Act("claude-check", "Neu prüfen", () => _ = ClaudeRecheck()));
-        Add(Act("claude-links", "🔗 GitHub, Netlify & Erweiterungen", () => Show("verbindungen")));
+        Add(Act("claude-links", "GitHub, Netlify & Erweiterungen", () => Show("verbindungen")));
         var main = new CheckBox { Name = "claude-main", Content = "Claude als Haupt-KI nutzen (wenn verbunden)", IsChecked = set.ClaudeMain, Foreground = Text, IsVisible = ClaudeEmbedApproved };
         var gate = P("Mit „Claude Code öffnen“ startest du dein echtes Claude Code im passenden Ordner und arbeitest dort direkt mit deinem Abo – so, wie Anthropic es für das Abo vorsieht. " +
             "Im Hintergrund der Trendo-Programme nutzt Trendo dein Abo nicht; dort arbeitet die KI auf diesem PC.", Brush.Parse("#FACC15"), 11.5);
         gate.Name = "claude-gate"; gate.IsVisible = !ClaudeEmbedApproved;
         main.IsCheckedChanged += (_, _) => KiSourceSettings.Update(_core.DataRoot, x => x.ClaudeMain = main.IsChecked == true);
         var always = new CheckBox { Name = "claude-always-full", Content = "Claude darf im Claude-Chat bei Bedarf ins Internet und Befehle ausführen", IsChecked = set.ClaudeAlwaysFull, Foreground = Text };
-        ToolTip.SetTip(always, "Volle Claude-Code-Funktionen in allen Studios (auch deine Skills, Agenten, Plugins und MCP-Werkzeuge). Einzelne Projekte stellst du im Chat mit „🔒 Sicher“ ab.");
+        ToolTip.SetTip(always, "Volle Claude-Code-Funktionen in allen Studios (auch deine Skills, Agenten, Plugins und MCP-Werkzeuge). Einzelne Projekte stellst du im Chat mit „Sicher“ ab.");
         var noClicks = new CheckBox { Name = "claude-no-clicks", Content = "Claude arbeitet selbständig ohne Klicks (aus: Plan und Vergleich zum Bestätigen)", IsChecked = set.ClaudeNoClicks, Foreground = Text };
         noClicks.IsCheckedChanged += (_, _) => { KiSourceSettings.Update(_core.DataRoot, x => x.ClaudeNoClicks = noClicks.IsChecked == true); _core.Audit.Append(Principal.LocalOwner.Name, "claude.ohne-klicks", noClicks.IsChecked == true ? "an" : "aus"); };
         always.IsCheckedChanged += (_, _) => { KiSourceSettings.Update(_core.DataRoot, x => x.ClaudeAlwaysFull = always.IsChecked == true); _core.Audit.Append(Principal.LocalOwner.Name, always.IsChecked == true ? "claude.immer.voll.an" : "claude.immer.voll.aus", ""); };
@@ -313,7 +313,7 @@ public partial class MainWindow
     {
         var sp = new StackPanel { Spacing = 8 };
         var w = CWeb;
-        sp.Children.Add(new TextBlock { Name = "claude-connect-state", Text = w.Connected ? "✓ Verbunden. Claude ist jetzt in jedem Studio rechts unter „✳ Claude Code“ → Reiter „Claude“ angemeldet – mit eigenem Chat je Studio." : "Melde dich unten einmal mit deinem Claude-Abo an (E-Mail, Google oder Apple). Trendo merkt sich die Anmeldung in einem eigenen, geschützten Profil – dein Passwort sieht Trendo nie.",
+        sp.Children.Add(new TextBlock { Name = "claude-connect-state", Text = w.Connected ? "✓ Verbunden. Claude ist jetzt in jedem Studio rechts unter „Claude Code“ → Reiter „Claude“ angemeldet – mit eigenem Chat je Studio." : "Melde dich unten einmal mit deinem Claude-Abo an (E-Mail, Google oder Apple). Trendo merkt sich die Anmeldung in einem eigenen, geschützten Profil – dein Passwort sieht Trendo nie.",
             Foreground = w.Connected ? Brush.Parse("#4ADE80") : Text, FontSize = 14, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
         if (w.Connected) sp.Children.Add(Act("claude-connect-done", "Fertig", () => Show("ki-quellen"), true));
         Control view = _opt.Isolated ? new Border { Name = "claude-connect-web", Height = 200, Child = P("Testmodus: claude.ai wird nicht geladen.", Muted, 12) }

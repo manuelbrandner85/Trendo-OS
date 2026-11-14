@@ -141,7 +141,7 @@ public partial class MainWindow
     public List<(CalEvent Event, DateTime Start)> CheckCalendarReminders(DateTime now)
     {
         var due = Cal.DueReminders(_calLastCheck, now); _calLastCheck = now;
-        foreach (var (e, start) in due) Toast($"⏰ {e.Title} – {(e.AllDay ? start.ToString("dddd, d. MMMM", De) : start.ToString("HH:mm", De) + " Uhr")}{(e.Location.Length > 0 ? " · " + e.Location : "")}");
+        foreach (var (e, start) in due) Toast($"{e.Title} – {(e.AllDay ? start.ToString("dddd, d. MMMM", De) : start.ToString("HH:mm", De) + " Uhr")}{(e.Location.Length > 0 ? " · " + e.Location : "")}");
         if (due.Count > 0) _core.Audit.Append("app", "kalender.erinnerung", string.Join(", ", due.Select(d => d.Event.Title)));
         return due;
     }
@@ -175,21 +175,21 @@ public partial class MainWindow
         }
         folders.Children.Add(Folder("inbox-folder-alle", $"Posteingang ({Inbox.Count})", _inboxFolder is null, () => _inboxFolder = null));
         folders.Children.Add(Folder("inbox-folder-ungelesen", $"Ungelesen ({Inbox.Count(h => !h.Seen)})", _inboxFolder == "\u0001", () => _inboxFolder = "\u0001"));
-        folders.Children.Add(Folder("inbox-folder-entwuerfe", $"✎ Entwürfe ({MailBoxes.Drafts.Count})", _inboxFolder == "\u0003", () => { _inboxFolder = "\u0003"; _sentOpen = null; }));
-        folders.Children.Add(Folder("inbox-folder-gesendet", $"➤ Gesendet ({MailBoxes.Sent.Count})", _inboxFolder == "\u0004", () => { _inboxFolder = "\u0004"; _sentOpen = null; }));
-        folders.Children.Add(Folder("inbox-folder-merker", $"⭐ Gemerkt ({Inbox.Count(h => _settings.MailFlagged.Contains(h.Uid))})", _inboxFolder == "\u0002", () => _inboxFolder = "\u0002"));
+        folders.Children.Add(Folder("inbox-folder-entwuerfe", $"Entwürfe ({MailBoxes.Drafts.Count})", _inboxFolder == "\u0003", () => { _inboxFolder = "\u0003"; _sentOpen = null; }));
+        folders.Children.Add(Folder("inbox-folder-gesendet", $"Gesendet ({MailBoxes.Sent.Count})", _inboxFolder == "\u0004", () => { _inboxFolder = "\u0004"; _sentOpen = null; }));
+        folders.Children.Add(Folder("inbox-folder-merker", $"Gemerkt ({Inbox.Count(h => _settings.MailFlagged.Contains(h.Uid))})", _inboxFolder == "\u0002", () => _inboxFolder = "\u0002"));
         foreach (var (cat, k) in active.Select(r => r.Category).Distinct().Select((c, k) => (c, k)))
             folders.Children.Add(Folder($"inbox-folder-{k}", $"{cat} ({Inbox.Count(h => active.FirstOrDefault(r => r.Matches(h))?.Category == cat)})", _inboxFolder == cat, () => _inboxFolder = cat));
         var threads = new CheckBox { Name = "inbox-threads", Content = "Als Unterhaltungen", IsChecked = _inboxThreads, Foreground = Text, Margin = new Thickness(4, 6, 0, 0) };
         threads.IsCheckedChanged += (_, _) => { _inboxThreads = threads.IsChecked == true; Show("posteingang"); };
         folders.Children.Add(threads);
         folders.Children.Add(new Border { Height = 10 });
-        var compose = new Button { Name = "inbox-new", Content = "✉ Neue Nachricht", Background = Accent, IsEnabled = a is not null, HorizontalAlignment = HorizontalAlignment.Stretch };
+        var compose = new Button { Name = "inbox-new", Content = "Neue Nachricht", Background = Accent, IsEnabled = a is not null, HorizontalAlignment = HorizontalAlignment.Stretch };
         compose.Click += (_, _) => MailCompose(new("", "", ""));
         folders.Children.Add(compose);
-        folders.Children.Add(Folder("inbox-go-kalender", "📅 Kalender", false, () => { }));
+        folders.Children.Add(Folder("inbox-go-kalender", "Kalender", false, () => { }));
         ((Button)folders.Children[^1]).Click += (_, _) => Show("kalender");
-        folders.Children.Add(Folder("inbox-go-aufgaben", "☑ Aufgaben", false, () => { }));
+        folders.Children.Add(Folder("inbox-go-aufgaben", "Aufgaben", false, () => { }));
         ((Button)folders.Children[^1]).Click += (_, _) => Show("aufgaben");
 
         var list = new StackPanel { Name = "inbox-list", Spacing = 2 };
@@ -224,7 +224,7 @@ public partial class MainWindow
             shown++;
             var b = new Button { Name = $"inbox-item-{i}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(8, 5), Background = InboxOpenUid == uid ? Accent : Brushes.Transparent,
                 Content = new StackPanel { Children = {
-                    new TextBlock { Text = (_settings.MailFlagged.Contains(uid) ? "⭐ " : "") + (h.Subject.Length > 0 ? h.Subject : "(ohne Betreff)") + (threadOf?.GetValueOrDefault(uid) is > 1 and var tc ? $"  ({tc})" : ""), Foreground = Text, FontWeight = h.Seen ? FontWeight.Normal : FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
+                    new TextBlock { Text = (_settings.MailFlagged.Contains(uid) ? "★ " : "") + (h.Subject.Length > 0 ? h.Subject : "(ohne Betreff)") + (threadOf?.GetValueOrDefault(uid) is > 1 and var tc ? $"  ({tc})" : ""), Foreground = Text, FontWeight = h.Seen ? FontWeight.Normal : FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
                     new TextBlock { Text = $"{h.From} · {(h.Date is { } d ? d.LocalDateTime.ToString("dd.MM. HH:mm", De) : "")}{(cat is null ? "" : $"  [{cat}]")}", Foreground = Muted, FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis } } } };
             b.Click += async (_, _) => { await OpenInboxMail(uid); InboxOpenUid = uid; _composeOpen = false; _sentOpen = null; Show("posteingang"); };
             list.Children.Add(b);
@@ -253,7 +253,7 @@ public partial class MainWindow
                 for (var k = 0; k < hints.Count; k++)
                 {
                     var hint = hints[k];
-                    var hb = new Button { Name = $"inbox-cal-{k}", Content = $"📅 {(hint.HasTime ? hint.Start.ToString("ddd dd.MM.yyyy, HH:mm", De) : hint.Start.ToString("ddd dd.MM.yyyy", De))} als Termin", FontSize = 12, Margin = new Thickness(0, 0, 6, 4) };
+                    var hb = new Button { Name = $"inbox-cal-{k}", Content = $"{(hint.HasTime ? hint.Start.ToString("ddd dd.MM.yyyy, HH:mm", De) : hint.Start.ToString("ddd dd.MM.yyyy", De))} als Termin", FontSize = 12, Margin = new Thickness(0, 0, 6, 4) };
                     ToolTip.SetTip(hb, $"Gefunden: „{hint.Text}“");
                     hb.Click += (_, _) =>
                     {
@@ -268,7 +268,7 @@ public partial class MainWindow
             // Anhänge: ansehen und speichern – nie automatisch öffnen
             if (m.Attachments.Count > 0)
             {
-                var att = new StackPanel { Name = "inbox-attachments", Spacing = 3, Children = { P($"📎 {m.Attachments.Count} Anhang/Anhänge", Text, 12) } };
+                var att = new StackPanel { Name = "inbox-attachments", Spacing = 3, Children = { P($"{m.Attachments.Count} Anhang/Anhänge", Text, 12) } };
                 for (var k = 0; k < m.Attachments.Count; k++)
                 {
                     var at = m.Attachments[k];
@@ -284,11 +284,11 @@ public partial class MainWindow
             var replyAll = new Button { Name = "inbox-reply-all", Content = "Allen antworten" };
             replyAll.Click += (_, _) => { var (rt, rc) = MailFolders.ReplyAll(m, a?.Email ?? ""); MailCompose(new MailDraft(rt.Length > 0 ? rt : from, MailFolders.ReplySubject(m.Subject, false), MailFolders.Quote(m), rc)); };
             var uidOpen = InboxOpenUid ?? 0; var flagged = _settings.MailFlagged.Contains(uidOpen);
-            var flag = new Button { Name = "inbox-flag", Content = flagged ? "⭐ Gemerkt" : "☆ Merken" };
+            var flag = new Button { Name = "inbox-flag", Content = flagged ? "Gemerkt" : "Merken" };
             flag.Click += (_, _) => { if (flagged) _settings.MailFlagged.Remove(uidOpen); else _settings.MailFlagged.Add(uidOpen); SaveSettings(); Show("posteingang"); };
             var fwd = new Button { Name = "inbox-forward", Content = "Weiterleiten" };
             fwd.Click += (_, _) => { _sendDraft = new MailDraft("", MailFolders.ReplySubject(m.Subject, true), $"\n\n---------- Weitergeleitete Nachricht ----------\nVon: {m.From}\nDatum: {m.Date}\nBetreff: {m.Subject}\n\n{m.Body}"); _composeOpen = true; Show("posteingang"); };
-            var task = new Button { Name = "inbox-task", Content = "☑ Als Aufgabe" };
+            var task = new Button { Name = "inbox-task", Content = "Als Aufgabe" };
             task.Click += (_, _) =>
             {
                 var due = MailDates.Find(m.Subject + "\n" + m.Body, reference).Select(x => (DateTime?)x.Start.Date).FirstOrDefault();
@@ -355,7 +355,7 @@ public partial class MainWindow
         Btn("cal-today", "Heute", () => CalDay = DateTime.Today);
         Btn("cal-next", "▶", () => CalDay = CalMode switch { "tag" => CalDay.AddDays(1), "woche" => CalDay.AddDays(7), _ => CalDay.AddMonths(1) });
         foreach (var (m, l) in new[] { ("tag", "Tag"), ("woche", "Woche"), ("monat", "Monat") }) { var mm = m; Btn("cal-mode-" + m, l, () => CalMode = mm, CalMode == m); }
-        Btn("cal-undo", "↶ Rückgängig", CalUndo);
+        Btn("cal-undo", "Rückgängig", CalUndo);
         if (_calUndo.Count == 0) ((Button)nav.Children[^1]).IsEnabled = false;
         var title = CalMode switch { "tag" => CalDay.ToString("dddd, d. MMMM yyyy", De), "woche" => $"Woche {ISOWeek.GetWeekOfYear(CalDay)} · {Monday(CalDay):d. MMM} – {Monday(CalDay).AddDays(6):d. MMM yyyy}", _ => CalDay.ToString("MMMM yyyy", De) };
         sp.Children.Add(new DockPanel { Children = { nav, new TextBlock { Name = "cal-title", Text = title, Foreground = Text, FontSize = 18, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0) } } });
@@ -612,7 +612,7 @@ public partial class MainWindow
             TodoChange(t.Uid, () => { Cal.AddTodo(t); return t; }, "");
         };
         title.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) add.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent)); };
-        var undo = new Button { Name = "todo-undo", Content = "↶ Rückgängig", IsEnabled = _todoUndoUid.Count > 0 };
+        var undo = new Button { Name = "todo-undo", Content = "Rückgängig", IsEnabled = _todoUndoUid.Count > 0 };
         undo.Click += (_, _) => { TodoUndo(); Show("aufgaben"); };
         sp.Children.Add(Card(new WrapPanel { Children = { title, new Border { Width = 4 }, due, new Border { Width = 4 }, prio, new Border { Width = 4 }, list, new Border { Width = 4 }, add, new Border { Width = 12 }, undo } }));
 

@@ -67,10 +67,10 @@ public partial class MainWindow
             var tools = new WrapPanel { Margin = new Thickness(0, 6, 0, 0) };
             foreach (var (id, label) in new[] { ("iso", "Schräg"), ("vorne", "Vorne"), ("seite", "Seite"), ("oben", "Oben") }) { var v = id; tools.Children.Add(Btn("xr-v-" + id, label, () => view.SetView(v))); }
             tools.Children.Add(Btn("xr-wire", _xrWire ? "Drahtgitter aus" : "Drahtgitter an", () => { _xrWire = !_xrWire; Show("xr"); }));
-            tools.Children.Add(Btn("xr-eye", _xrEye ? "👁 Augenhöhe aus" : "👁 Aus Augenhöhe", () => { _xrEye = !_xrEye; Show("xr"); }, _xrEye)); // wie mit der Brille: 1,60 m, 2 m Abstand
+            tools.Children.Add(Btn("xr-eye", _xrEye ? "Augenhöhe aus" : "Aus Augenhöhe", () => { _xrEye = !_xrEye; Show("xr"); }, _xrEye)); // wie mit der Brille: 1,60 m, 2 m Abstand
             if (XrPro.HeadsetOf(XrDevice) is { } hs) // S3: beide Augen wie in der Brille (Sichtfeld und Augenabstand des Zielgeräts)
             {
-                tools.Children.Add(Btn("xr-hmd", _xrHmd ? "🥽 Brillen-Ansicht aus" : "🥽 Brillen-Ansicht", () => { _xrHmd = !_xrHmd; Show("xr"); }, _xrHmd));
+                tools.Children.Add(Btn("xr-hmd", _xrHmd ? "Brillen-Ansicht aus" : "Brillen-Ansicht", () => { _xrHmd = !_xrHmd; Show("xr"); }, _xrHmd));
                 if (_xrHmd) { var hv = XrHeadsetView(mesh, hs, view); view = hv.Left; headset = hv.Panel; }
             }
             var size = det is null ? "" : XrPlus.ScaleVerdict(det);

@@ -170,7 +170,7 @@ public partial class MainWindow
                 var items = MediaLibrary.Index([UserFolder(Environment.SpecialFolder.MyMusic), UserFolder(Environment.SpecialFolder.MyVideos), UserFolder(Environment.SpecialFolder.MyPictures), ProjectsRoot]);
                 lib.Children.Add(P($"{items.Count} Dateien gefunden ({items.Count(i => i.Kind == "Musik")} Musik, {items.Count(i => i.Kind == "Video")} Videos, {items.Count(i => i.Kind == "Bild")} Bilder) in {sw.Elapsed.TotalSeconds:0.0} s.", Text));
                 var i = 0;
-                foreach (var m in items.Where(x => x.Kind != "Bild").OrderByDescending(x => x.Changed).Take(25)) { var f = m.Path; lib.Children.Add(Act($"lib-play-{i++}", $"▶ {Path.GetFileName(f)}", () => Play(f))); }
+                foreach (var m in items.Where(x => x.Kind != "Bild").OrderByDescending(x => x.Changed).Take(25)) { var f = m.Path; lib.Children.Add(Act($"lib-play-{i++}", $"{Path.GetFileName(f)}", () => Play(f))); }
             })), lib)));
 
         var img = Field("img-file", "Bilddatei (PNG, JPG …)");

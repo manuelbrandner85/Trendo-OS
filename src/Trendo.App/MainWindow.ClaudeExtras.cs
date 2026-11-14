@@ -235,9 +235,9 @@ public partial class MainWindow
                 CodeColors.Kind.Number => Brush.Parse("#FFF78C6C"), CodeColors.Kind.Tag => Brush.Parse("#FF82AAFF"), _ => Brush.Parse("#FFE6E4DC"),
             }, FontStyle = tok.Kind == CodeColors.Kind.Comment ? FontStyle.Italic : FontStyle.Normal });
         var n = _codeBlocks++;
-        var copy = new Button { Name = $"claude-code-copy-{n}", Content = "⧉ Kopieren", FontSize = 11, Padding = new Thickness(8, 2), Background = Brushes.Transparent, Foreground = ClaudeMuted, BorderThickness = new Thickness(0) };
+        var copy = new Button { Name = $"claude-code-copy-{n}", Content = "Kopieren", FontSize = 11, Padding = new Thickness(8, 2), Background = Brushes.Transparent, Foreground = ClaudeMuted, BorderThickness = new Thickness(0) };
         ToolTip.SetTip(copy, "Code in die Zwischenablage kopieren");
-        copy.Click += async (_, _) => { ResearchCopy(c.Text); copy.Content = "✓ Kopiert"; await Task.Delay(1500); copy.Content = "⧉ Kopieren"; };
+        copy.Click += async (_, _) => { ResearchCopy(c.Text); copy.Content = "✓ Kopiert"; await Task.Delay(1500); copy.Content = "Kopieren"; };
         var head = new DockPanel { Margin = new Thickness(12, 4, 4, 0), Children = { Dk(copy, Avalonia.Controls.Dock.Right), new TextBlock { Text = c.Lang.Length > 0 ? c.Lang : "code", Foreground = CGold, FontSize = 11, VerticalAlignment = VerticalAlignment.Center } } };
         return new Border { Name = "claude-code", Background = CodeBg, BorderBrush = GlassEdge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10),
             Child = new StackPanel { Children = { head, new Border { Padding = new Thickness(12, 4, 12, 10), Child = tb } } } };
@@ -251,7 +251,7 @@ public partial class MainWindow
     Control MemoryPanel(ClaudeDock dock, ClaudeChats.Chat? chat)
     {
         var sp = new StackPanel { Spacing = 6 };
-        sp.Children.Add(new TextBlock { Text = "🧠 Projekt-Gedächtnis", Foreground = CGold, FontSize = 15, FontWeight = FontWeight.SemiBold });
+        sp.Children.Add(new TextBlock { Text = "Projekt-Gedächtnis", Foreground = CGold, FontSize = 15, FontWeight = FontWeight.SemiBold });
         sp.Children.Add(new TextBlock { Text = "Das merkt sich Claude für dieses Projekt – es gilt bei jeder Nachricht, auch nach Tagen. Claude ergänzt es selbst, wenn du etwas Dauerhaftes sagst.", Foreground = ClaudeMuted, FontSize = 12, TextWrapping = TextWrapping.Wrap });
         if (chat is null) { sp.Children.Add(new TextBlock { Text = "Schreib die erste Nachricht – dann hat das Projekt ein Gedächtnis.", Foreground = ClaudeFg, FontSize = 13 }); return Appear(CGlass(sp, name: "claude-memory")); }
         var items = CMemory.Items(chat.Id);
@@ -280,7 +280,7 @@ public partial class MainWindow
     Control TimelinePanel(ClaudeDock dock, ClaudeChats.Chat? chat)
     {
         var sp = new StackPanel { Spacing = 6 };
-        sp.Children.Add(new TextBlock { Text = "🕘 Zeitreise", Foreground = CGold, FontSize = 15, FontWeight = FontWeight.SemiBold });
+        sp.Children.Add(new TextBlock { Text = "Zeitreise", Foreground = CGold, FontSize = 15, FontWeight = FontWeight.SemiBold });
         sp.Children.Add(new TextBlock { Text = "Vor jeder Antwort mit Änderungen sichert Trendo das Projekt. Spring zu jedem Stand zurück – den Stand von jetzt sichert Trendo vorher, du kannst also jederzeit wieder vor.", Foreground = ClaudeMuted, FontSize = 12, TextWrapping = TextWrapping.Wrap });
         var points = chat is null ? [] : CTimeline.Points(chat.Id);
         if (points.Count == 0) sp.Children.Add(new TextBlock { Name = "claude-timeline-empty", Text = "Noch keine Versionspunkte – sie entstehen, sobald Claude etwas ändert.", Foreground = ClaudeFg, FontSize = 13, TextWrapping = TextWrapping.Wrap });
@@ -309,7 +309,7 @@ public partial class MainWindow
         try
         {
             CTimeline.Travel(cid, pointId, chat.Folder);
-            CChats.Add(ChatStudio(dock), cid, new ClaudeChats.Msg("assistant", $"🕘 Zeitreise: Das Projekt ist jetzt auf dem Stand vor „{p?.Label}“ ({p?.At.LocalDateTime:dd.MM. HH:mm}). Der Stand davor ist als „Vor der Zeitreise“ gesichert.", [], DateTimeOffset.Now));
+            CChats.Add(ChatStudio(dock), cid, new ClaudeChats.Msg("assistant", $"Zeitreise: Das Projekt ist jetzt auf dem Stand vor „{p?.Label}“ ({p?.At.LocalDateTime:dd.MM. HH:mm}). Der Stand davor ist als „Vor der Zeitreise“ gesichert.", [], DateTimeOffset.Now));
             _core.Audit.Append(Principal.LocalOwner.Name, "claude.zeitreise", ChatStudio(dock));
             ui.LastSnapshot = null; ui.Panel = null;
             if (ui.PreviewFile is { } pf) ShowPreview(dock, pf);
@@ -332,7 +332,7 @@ public partial class MainWindow
         var files = chat.Messages.Where(m => m.Changed is not null).SelectMany(m => m.Changed!).Select(c => c.Split(" (")[0]).Distinct().ToList();
         var prompt = ClaudeReview.Prompt(name, request, files);
         ui.Running = true; ui.Cts = new CancellationTokenSource();
-        var wait = Appear(CGlass(new TextBlock { Text = "🎓 Der Gutachter sieht sich das Ergebnis an …", Foreground = CGold, FontSize = 13 }, name: "claude-review-wait"));
+        var wait = Appear(CGlass(new TextBlock { Text = "Der Gutachter sieht sich das Ergebnis an …", Foreground = CGold, FontSize = 13 }, name: "claude-review-wait"));
         ui.Log.Children.Add(wait); Pulse(wait, ui.Cts.Token); ui.Scroll.ScrollToEnd();
         string text; string? ki = ClaudeKi;
         try
@@ -368,16 +368,16 @@ public partial class MainWindow
         var badge = new Border { Width = 64, Height = 64, CornerRadius = new CornerRadius(32), BorderBrush = GlassEdge, BorderThickness = new Thickness(2), Margin = new Thickness(0, 0, 14, 0), VerticalAlignment = VerticalAlignment.Top,
             Background = grade is >= 8 ? Brush.Parse("#2634D399") : grade is >= 5 ? Brush.Parse("#26E8C26A") : Brush.Parse("#26F87171"),
             Child = new TextBlock { Name = last ? "claude-review-grade" : null, Text = grade is { } g ? $"{g}/10" : "–", Foreground = ClaudeFg, FontSize = 17, FontWeight = FontWeight.Bold, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } };
-        var body = new StackPanel { Spacing = 6, Children = { new TextBlock { Text = "🎓 Gutachten – zweite Meinung", Foreground = CGold, FontSize = 14, FontWeight = FontWeight.SemiBold } } };
+        var body = new StackPanel { Spacing = 6, Children = { new TextBlock { Text = "Gutachten – zweite Meinung", Foreground = CGold, FontSize = 14, FontWeight = FontWeight.SemiBold } } };
         foreach (var b in ChatBlocks(System.Text.RegularExpressions.Regex.Replace(m.Text, @"^[ \t*_]*Note\b[^\n]*\n?", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Multiline))) body.Children.Add(b); // Note steht schon groß links
         if (last && grade is < 10 && !m.Text.StartsWith('⚠'))
         {
-            var fix = new Button { Name = "claude-review-improve", Content = "✨ Verbessern lassen", FontSize = 12, Padding = new Thickness(12, 4), Background = ClaudeAccent, Foreground = Brushes.White, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(0), HorizontalAlignment = HorizontalAlignment.Left };
+            var fix = new Button { Name = "claude-review-improve", Content = "Verbessern lassen", FontSize = 12, Padding = new Thickness(12, 4), Background = ClaudeAccent, Foreground = Brushes.White, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(0), HorizontalAlignment = HorizontalAlignment.Left };
             ToolTip.SetTip(fix, "Claude setzt die Verbesserungen des Gutachters um");
             fix.Click += (_, _) => _ = ClaudeChatSend(dock, ClaudeReview.Improve(m.Text));
             body.Children.Add(fix);
         }
-        if (m.Ki is { Length: > 0 } ki && ki != ClaudeKi) body.Children.Add(new TextBlock { Text = "Gutachten von: " + ki, Foreground = ClaudeAccent, FontSize = 10.5 });
+        if (m.Ki is { Length: > 0 } ki && !IsClaudeKi(ki)) body.Children.Add(new TextBlock { Text = "Gutachten von: " + ki, Foreground = ClaudeAccent, FontSize = 10.5 });
         var card = CGlass(new DockPanel { Children = { Dk(badge, Avalonia.Controls.Dock.Left), body } }, name: "claude-review");
         return last ? Appear(card) : card;
     }
@@ -445,16 +445,16 @@ public partial class MainWindow
         if (!_chatUis.TryGetValue(dock, out var ui)) return;
         ui.HandsFree = !ui.HandsFree;
         var btn = dock.Panel.GetLogicalDescendantsOf<Button>().FirstOrDefault(b => b.Name == "claude-tool-freihaendig");
-        if (btn is not null) { btn.Content = ui.HandsFree ? "⏹ Freihändig aus" : "🗣 Freihändig"; btn.Background = ui.HandsFree ? ClaudeAccent : ClaudeItem; }
+        if (btn is not null) { btn.Content = ui.HandsFree ? "Freihändig aus" : "Freihändig"; btn.Background = ui.HandsFree ? ClaudeAccent : ClaudeItem; }
         _core.Audit.Append(Principal.LocalOwner.Name, ui.HandsFree ? "claude.freihaendig.an" : "claude.freihaendig.aus", ChatStudio(dock));
         if (!ui.HandsFree) { ui.HandsCts?.Cancel(); ui.Input.PlaceholderText = "Schreib Claude, was du bauen möchtest …"; return; }
         ui.HandsCts = new CancellationTokenSource(); var ct = ui.HandsCts.Token;
         while (ui.HandsFree && !ct.IsCancellationRequested)
         {
-            ui.Input.PlaceholderText = "🗣 Ich höre zu – sprich einfach, nach einer kurzen Pause schicke ich es ab.";
+            ui.Input.PlaceholderText = "Ich höre zu – sprich einfach, nach einer kurzen Pause schicke ich es ab.";
             var heard = await ListenOnce(ct);
             if (ct.IsCancellationRequested || !ui.HandsFree) break;
-            if (heard is null) { ui.HandsFree = false; if (btn is not null) { btn.Content = "🗣 Freihändig"; btn.Background = ClaudeItem; } break; } // kein Mikrofon o. Ä. – Hinweis steht im Eingabefeld
+            if (heard is null) { ui.HandsFree = false; if (btn is not null) { btn.Content = "Freihändig"; btn.Background = ClaudeItem; } break; } // kein Mikrofon o. Ä. – Hinweis steht im Eingabefeld
             if (heard.Trim().Length < 2) continue;
             await ClaudeChatSend(dock, heard);
             var answer = ClaudeChatCurrent()?.Messages.LastOrDefault(m => m.Role == "assistant")?.Text;

@@ -76,7 +76,7 @@ public partial class MainWindow
         // Kopf: Werkzeugleiste
         var bar = new WrapPanel { Name = "twin-bar" };
         bar.Children.Add(Btn("twin-pc", "Diesen PC jetzt messen", () => TwinRun(() => { MeasureThisPc(); TwinAsset = "Dieser PC"; }), true));
-        bar.Children.Add(Btn("twin-live", TwinLive ? "■ Live stoppen" : "● Live (alle 5 s)", TwinToggleLive));
+        bar.Children.Add(Btn("twin-live", TwinLive ? "Live stoppen" : "Live (alle 5 s)", TwinToggleLive));
         if (Twin.Model.Assets.Count == 0 || !Twin.Model.Assets.Any(a => a.Name == "Heizung")) bar.Children.Add(Btn("twin-demo", "Beispielanlagen laden", () => TwinRun(() => { var n = TwinDemo.Seed(Twin, DateTime.Now); TwinAsset = "Kühlraum"; TwinSensor = "Temperatur"; _twMsg = $"{Fach.F(n, 0)} Beispielwerte geladen (erfunden)."; })));
         foreach (var (id, label) in new[] { ("24h", "24 h"), ("7d", "7 Tage"), ("30d", "30 Tage"), ("all", "Alles") })
         {

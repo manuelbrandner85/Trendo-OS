@@ -73,7 +73,7 @@ public class ClaudeOperate_Ui
         finally { End(w); }
     }
 
-    [AvaloniaFact(DisplayName = "Claude im Menüband jedes Fachprogramms und Rechtsklick „✳ Claude fragen“ auf Elemente der Seite")]
+    [AvaloniaFact(DisplayName = "Claude im Menüband jedes Fachprogramms und Rechtsklick „Claude fragen“ auf Elemente der Seite")]
     public async Task Ribbon_and_context()
     {
         var (w, _, _) = Ui.Open();

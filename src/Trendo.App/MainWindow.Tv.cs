@@ -350,14 +350,14 @@ public partial class MainWindow
 
     void TvUpdateNow()
     {
-        if (_tvPlayingTitle is { } film) { if (_tvNowTitle is not null) _tvNowTitle.Text = "🎬 " + film; return; }
+        if (_tvPlayingTitle is { } film) { if (_tvNowTitle is not null) _tvNowTitle.Text = "" + film; return; }
         if (_tvChannel is null || TvChannels().FirstOrDefault(x => x.Id == _tvChannel) is not { } c) return;
         var (now, next) = TvLibrary.NowNext(TvProgs(), c, DateTime.UtcNow);
         if (_tvNowTitle is not null) _tvNowTitle.Text = $"{c.Number}  {c.Name}";
         if (_tvNowInfo is not null) _tvNowInfo.Text = now is null ? "Keine Programminfo" : $"Jetzt: {now.Title} ({now.Start.ToLocalTime():HH:mm}–{now.Stop.ToLocalTime():HH:mm})";
         if (_tvNextInfo is not null) _tvNextInfo.Text = next is null ? "" : $"Danach: {next.Title} ({next.Start.ToLocalTime():HH:mm})";
         if (_tvNowBar is not null) _tvNowBar.Value = now?.Progress(DateTime.UtcNow) * 100 ?? 0;
-        if (_tvFavBtn is not null) _tvFavBtn.Content = Tv.Favorites.Contains(c.Id) ? "★ Favorit" : "☆ Favorit";
+        if (_tvFavBtn is not null) _tvFavBtn.Content = Tv.Favorites.Contains(c.Id) ? "Favorit" : "Favorit";
     }
 
     /// <summary>Nächster/vorheriger Sender in der aktuellen Liste (Pfeiltasten, Kanal +/−).</summary>
@@ -435,7 +435,7 @@ public partial class MainWindow
                     _tvRecProcs.Remove(id);
                     var ok = File.Exists(file) && new FileInfo(file).Length > 0;
                     Tv.UpdateRecording(id, ok ? "fertig" : "fehlgeschlagen");
-                    Toast(ok ? $"⏺ Aufnahme fertig: {r.Title}" : $"Aufnahme „{r.Title}“ hat nicht geklappt.", ("Ansehen", new Action(() => { _tvTab = "rec"; Show("tv"); })));
+                    Toast(ok ? $"Aufnahme fertig: {r.Title}" : $"Aufnahme „{r.Title}“ hat nicht geklappt.", ("Ansehen", new Action(() => { _tvTab = "rec"; Show("tv"); })));
                 });
                 _core.Audit.Append(Principal.LocalOwner.Name, "tv.record.start", c.Name);
             }
@@ -450,7 +450,7 @@ public partial class MainWindow
     }
 
     // ---------- Oberfläche ----------
-    static readonly (string Id, string Label)[] TvTabs = [("live", "📺 Live-TV"), ("film", "🎬 Filme"), ("serie", "🍿 Serien"), ("mediathek", "🎞 Mediatheken & Streaming"), ("videos", "▶ Video-Plattformen"), ("guide", "🗓 Programmführer"), ("rec", "⏺ Aufnahmen"), ("multi", "▦ Mehrfachansicht"), ("quellen", "⚙ Quellen")];
+    static readonly (string Id, string Label)[] TvTabs = [("live", "Live-TV"), ("film", "Filme"), ("serie", "Serien"), ("mediathek", "Mediatheken & Streaming"), ("videos", "Video-Plattformen"), ("guide", "Programmführer"), ("rec", "Aufnahmen"), ("multi", "Mehrfachansicht"), ("quellen", "Quellen")];
 
     Control TvView()
     {
@@ -474,7 +474,7 @@ public partial class MainWindow
             BorderBrush = EdgeLit, BorderThickness = new Thickness(1),
             Child = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = {
                 new StackPanel { Spacing = 2, VerticalAlignment = VerticalAlignment.Center, Children = {
-                    new TextBlock { Text = _tvPlayingTitle is { } pt ? "🎬 " + pt : _tvChannel is not null && TvChannels().FirstOrDefault(c => c.Id == _tvChannel) is { } cur ? "Jetzt: " + cur.Name : "Dein Fernsehen", Foreground = GoldText(), FontSize = 24, FontWeight = FontWeight.Bold, TextTrimming = TextTrimming.CharacterEllipsis },
+                    new TextBlock { Text = _tvPlayingTitle is { } pt ? "" + pt : _tvChannel is not null && TvChannels().FirstOrDefault(c => c.Id == _tvChannel) is { } cur ? "Jetzt: " + cur.Name : "Dein Fernsehen", Foreground = GoldText(), FontSize = 24, FontWeight = FontWeight.Bold, TextTrimming = TextTrimming.CharacterEllipsis },
                     new TextBlock { Text = "Live-TV, Filme und Serien – alles an einem Ort", Foreground = Brush.Parse("#C9D6EA"), FontSize = 13 } } },
                 Pos(new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Children = { Stat("📺", live.ToString("N0"), "Sender"), Stat("🎬", films.ToString("N0"), "Filme"), Stat("🍿", series.ToString("N0"), "Serien"), Stat("🕘", DateTime.Now.ToString("HH:mm"), DateTime.Now.ToString("ddd, dd.MM.", System.Globalization.CultureInfo.GetCultureInfo("de-DE"))) } }, 1) } },
         };
@@ -510,8 +510,8 @@ public partial class MainWindow
                 new TextBlock { Text = "Willkommen bei TV & Live", Foreground = GoldText(), FontSize = 20, FontWeight = FontWeight.Bold },
                 P("Füge deine Senderliste hinzu – eine M3U-Adresse (auch get.php von Xtream), eine M3U-Datei oder deinen Xtream-Zugang. Trendo bringt keine Sender mit; bitte nur legale Quellen nutzen.", Text, 13),
                 TvButton("tv-start-sources", "Senderliste hinzufügen", () => { _tvTab = "quellen"; Show("tv"); }, true),
-                TvButton("tv-start-mediathek", "🎞 Ohne Senderliste: Mediatheken & Streaming", () => { _tvTab = "mediathek"; Show("tv"); }),
-                TvButton("tv-start-videos", "▶ YouTube, PeerTube & Co.", () => { _tvTab = "videos"; Show("tv"); }) } }, 18));
+                TvButton("tv-start-mediathek", "Ohne Senderliste: Mediatheken & Streaming", () => { _tvTab = "mediathek"; Show("tv"); }),
+                TvButton("tv-start-videos", "YouTube, PeerTube & Co.", () => { _tvTab = "videos"; Show("tv"); }) } }, 18));
             return Page("TV & Live", sp);
         }
         sp.Children.Add(_tvTab switch { "film" => TvFilms(), "serie" => TvSeriesView(), "guide" => TvGuide(), "rec" => TvRecordings(), "multi" => TvMultiView(), "quellen" => TvSources(), "mediathek" => TvLegalView(), "videos" => TvVideosView(), _ => TvLive() });
@@ -553,7 +553,7 @@ public partial class MainWindow
         groups.AddRange(TvChannels().Select(c => c.Group).Distinct().OrderBy(g => g));
         var gsel = new ComboBox { Name = "tv-group", ItemsSource = groups, SelectedItem = groups.Contains(_tvGroup) ? _tvGroup : "Alle", HorizontalAlignment = HorizontalAlignment.Stretch, CornerRadius = new CornerRadius(12) };
         gsel.SelectionChanged += (_, _) => { if (gsel.SelectedItem is string g && g != _tvGroup) { _tvGroup = g; Show("tv"); } };
-        var search = new TextBox { Name = "tv-search", Text = _tvQuery, PlaceholderText = "🔎  Sender suchen oder Nummer …", CornerRadius = new CornerRadius(12) };
+        var search = new TextBox { Name = "tv-search", Text = _tvQuery, PlaceholderText = "Sender suchen oder Nummer …", CornerRadius = new CornerRadius(12) };
         var list = new StackPanel { Name = "tv-channels", Spacing = 6 };
         void Fill()
         {
@@ -605,29 +605,29 @@ public partial class MainWindow
             new StackPanel { VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, Spacing = 8, Children = {
                 new TextBlock { Text = "📺", FontSize = 46, HorizontalAlignment = HorizontalAlignment.Center },
                 new TextBlock { Text = "Wähle links einen Sender", Foreground = GoldText(), FontSize = 18, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Center },
-                new TextBlock { Text = "↑ ↓ Sender · Leertaste Pause · F Vollbild", Foreground = Muted, FontSize = 12, HorizontalAlignment = HorizontalAlignment.Center } } } } };
+                new TextBlock { Text = "Sender · Leertaste Pause · F Vollbild", Foreground = Muted, FontSize = 12, HorizontalAlignment = HorizontalAlignment.Center } } } } };
         var screen = new Border
         {
             Name = "tv-screen", Background = Brushes.Black, CornerRadius = new CornerRadius(16), ClipToBounds = true, MinHeight = 280, Height = 420,
             BorderBrush = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#AAF1C870"), 0), new GradientStop(Color.Parse("#55C9A227"), 1) } },
             BorderThickness = new Thickness(1.5), BoxShadow = BoxShadows.Parse("0 18 40 0 #A0000000, 0 0 30 0 #26C9A227"),
-            Child = TvIsFullscreen ? P("Läuft im Vollbild – Esc zum Verkleinern", Brushes.White, 13) : _tvPip is not null ? P("Läuft im Bild im Bild – „⧉ Zurückholen“ holt es hierher.", Brushes.White, 13) : _tvChannel is null && _tvPlayingTitle is null ? idle : _tvPlayer,
+            Child = TvIsFullscreen ? P("Läuft im Vollbild – Esc zum Verkleinern", Brushes.White, 13) : _tvPip is not null ? P("Läuft im Bild im Bild – „Zurückholen“ holt es hierher.", Brushes.White, 13) : _tvChannel is null && _tvPlayingTitle is null ? idle : _tvPlayer,
         };
         if (MpvExe is null && TvPlayOverride is null)
             screen.Child = new StackPanel { VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, Spacing = 8, Children = {
                 P("Für das Bild braucht Trendo den freien Player mpv – einmal einrichten, dann läuft alles.", Brushes.White, 13),
-                TvButton("tv-get-mpv", "▶ Player jetzt einrichten", () => _ = TvSetupPlayer(), true) } };
+                TvButton("tv-get-mpv", "Player jetzt einrichten", () => _ = TvSetupPlayer(), true) } };
         right.Children.Add(screen);
         var vol = new Slider { Name = "tv-volume", Minimum = 0, Maximum = 130, Value = 100, Width = 130, VerticalAlignment = VerticalAlignment.Center };
         vol.ValueChanged += (_, _) => _tvPlayer?.Send("set_property", "volume", Math.Round(vol.Value));
         void Ctrl(params object[] cmd) { if (_tvPlayer?.Send(cmd) != true && TvPlayOverride is null) { _tvMsg = "Erst einen Sender wählen."; Show("tv"); } }
-        _tvFavBtn = TvButton("tv-fav", "☆ Favorit", () =>
+        _tvFavBtn = TvButton("tv-fav", "Favorit", () =>
         {
             if (_tvChannel is null) { _tvMsg = "Erst einen Sender wählen."; Show("tv"); return; }
-            var on = Tv.ToggleFavorite(_tvChannel); _tvFavBtn!.Content = on ? "★ Favorit" : "☆ Favorit"; Fill();
+            var on = Tv.ToggleFavorite(_tvChannel); _tvFavBtn!.Content = on ? "Favorit" : "Favorit"; Fill();
         });
         _tvFavBtn.Margin = new Thickness(8, 0, 0, 0);
-        var rec = TvButton("tv-rec-now", "⏺ Aufnehmen", () =>
+        var rec = TvButton("tv-rec-now", "Aufnehmen", () =>
         {
             if (_tvChannel is null || TvChannels().FirstOrDefault(x => x.Id == _tvChannel) is not { } c) { _tvMsg = "Erst einen Sender wählen."; Show("tv"); return; }
             var (np, _) = TvLibrary.NowNext(TvProgs(), c, DateTime.UtcNow);
@@ -657,7 +657,7 @@ public partial class MainWindow
         _tvNextInfo = new TextBlock { Name = "tv-next-info", Foreground = Muted, FontSize = 12.5, TextWrapping = TextWrapping.Wrap };
         _tvNowBar = new ProgressBar { Name = "tv-now-bar", Height = 5, MinHeight = 5, CornerRadius = new CornerRadius(3), Foreground = Brush.Parse("#D4A84B"), Background = Brush.Parse("#22FFFFFF") };
         right.Children.Add(Glass2(new StackPanel { Spacing = 6, Children = { _tvNowTitle, _tvNowInfo, _tvNowBar, _tvNextInfo,
-            P("Zeitversetzt: Pause und ⏪ spulen bis etwa 30 Minuten zurück. Sendungen von früher findest du im Programmführer, wenn dein Anbieter das anbietet.", null, 11) } }, 14));
+            P("Zeitversetzt: Pause und spulen bis etwa 30 Minuten zurück. Sendungen von früher findest du im Programmführer, wenn dein Anbieter das anbietet.", null, 11) } }, 14));
         Grid.SetColumn(right, 1); grid.Children.Add(right);
         TvUpdateNow();
         grid.KeyDown += (_, e) => { if (e.Key is Key.Up or Key.PageUp) { TvZap(-1); e.Handled = true; } else if (e.Key is Key.Down or Key.PageDown) { TvZap(1); e.Handled = true; } };
@@ -670,13 +670,13 @@ public partial class MainWindow
         sp.Children.Add(P($"Aufnahmen landen im Ordner „TV-Aufnahmen“. Aufnehmen braucht ffmpeg{(FfmpegExe is null ? " – fehlt noch (unten hinzufügen)" : " ✓")}.", Text, 12.5));
         if (FfmpegExe is null && TvRecordOverride is null) sp.Children.Add(TvButton("tv-get-ffmpeg", "ffmpeg hinzufügen", () => OpenAddHub("alles", "ffmpeg"), true));
         var recs = Tv.Recordings.OrderByDescending(r => r.Start).ToList();
-        if (recs.Count == 0) sp.Children.Add(P("Noch keine Aufnahmen. Im Programmführer eine Sendung antippen und „⏺ Aufnehmen“.", null, 12));
+        if (recs.Count == 0) sp.Children.Add(P("Noch keine Aufnahmen. Im Programmführer eine Sendung antippen und „Aufnehmen“.", null, 12));
         foreach (var r in recs)
         {
             var acts = new WrapPanel { VerticalAlignment = VerticalAlignment.Center };
             var id = r.Id;
-            if (r.State == "läuft") acts.Children.Add(TvButton("tv-rec-stop-" + id, "⏹ Beenden", () => { TvStopRecording(id); Show("tv"); }));
-            if (r.File is { } f && File.Exists(f)) { acts.Children.Add(TvButton("tv-rec-play-" + id, "▶ Abspielen", () => { _tvTab = "live"; Show("tv"); TvPlayUrl(f, "main"); }, true)); acts.Children.Add(TvButton("tv-rec-folder-" + id, "Ordner", () => Launch(Path.GetDirectoryName(f)!))); }
+            if (r.State == "läuft") acts.Children.Add(TvButton("tv-rec-stop-" + id, "Beenden", () => { TvStopRecording(id); Show("tv"); }));
+            if (r.File is { } f && File.Exists(f)) { acts.Children.Add(TvButton("tv-rec-play-" + id, "Abspielen", () => { _tvTab = "live"; Show("tv"); TvPlayUrl(f, "main"); }, true)); acts.Children.Add(TvButton("tv-rec-folder-" + id, "Ordner", () => Launch(Path.GetDirectoryName(f)!))); }
             acts.Children.Add(ConfirmRemoveButton("tvrec:" + id, "tv-rec-remove-" + id, "tv", () => { TvStopRecording(id); Tv.RemoveRecording(id); return Task.CompletedTask; }));
             sp.Children.Add(WCard(new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = {
                 new StackPanel { Children = { new TextBlock { Text = r.Title, Foreground = Text, FontSize = 13.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
@@ -738,7 +738,7 @@ public partial class MainWindow
         var merge = new CheckBox { Name = "tv-merge", Content = "Doppelte Sender (HD/FHD/SD) zusammenfassen – es läuft die beste Qualität, andere über „Qualität ▾“", IsChecked = Tv.MergeDuplicates, Foreground = Text };
         merge.IsCheckedChanged += (_, _) => { Tv.SetMergeDuplicates(merge.IsChecked == true); Show("tv"); };
         var rules = new StackPanel { Name = "tv-rules", Spacing = 4 };
-        foreach (var r in Tv.RecordRules) { var rid = r.Id; rules.Children.Add(new WrapPanel { Children = { new TextBlock { Text = "⏺ " + r.Keyword, Foreground = Text, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) }, TvButton("tv-rule-del-" + rid, "Entfernen", () => { Tv.RemoveRecordRule(rid); Show("tv"); }) } }); }
+        foreach (var r in Tv.RecordRules) { var rid = r.Id; rules.Children.Add(new WrapPanel { Children = { new TextBlock { Text = "" + r.Keyword, Foreground = Text, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) }, TvButton("tv-rule-del-" + rid, "Entfernen", () => { Tv.RemoveRecordRule(rid); Show("tv"); }) } }); }
         var ruleBox = new TextBox { Name = "tv-rule-text", PlaceholderText = "z. B. FC Bayern, Tatort, Tagesschau", Width = 260 };
         rules.Children.Add(new WrapPanel { Children = { ruleBox, TvButton("tv-rule-add", "Immer aufnehmen", () => { try { Tv.AddRecordRule(ruleBox.Text ?? ""); var n = TvRuleTick(); _tvMsg = $"✓ Aufnahme-Regel angelegt{(n > 0 ? $" – {n} Sendung(en) schon eingeplant" : "")}."; } catch (ArgumentException e) { _tvMsg = e.Message; } Show("tv"); }, true) } });
         sp.Children.Add(WCard(new StackPanel { Name = "tv-prefs", Spacing = 6, Children = { H("Ton, Untertitel und Sender", 14),
@@ -762,7 +762,7 @@ public partial class MainWindow
             if (got is { Length: > 0 }) { await TvAddSource(name.Text is { Length: > 0 } n ? n : Path.GetFileNameWithoutExtension(got[0]), "datei", got[0], epg.Text); Show("tv"); }
         });
         // Adressen kann man eintippen oder aus der Zwischenablage einfügen (Wunsch 27.10.2026) – „Datei wählen“ ist nur der zusätzliche Weg
-        var paste = TvButton("tv-src-paste", "📋 Einfügen", async () => { if (Clipboard is { } cb && await cb.TryGetTextAsync() is { Length: > 0 } t) { url.Text = t.Trim(); _tvUrl = url.Text; } });
+        var paste = TvButton("tv-src-paste", "Einfügen", async () => { if (Clipboard is { } cb && await cb.TryGetTextAsync() is { Length: > 0 } t) { url.Text = t.Trim(); _tvUrl = url.Text; } });
         m3u.Children.Add(new WrapPanel { Children = { Sp(name), Sp(url), paste } }); m3u.Children.Add(epg); m3u.Children.Add(new WrapPanel { Children = { add, file } });
         sp.Children.Add(WCard(m3u));
         // Xtream
@@ -814,7 +814,7 @@ public partial class MainWindow
                 gp.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto"), Children = {
                     new TextBlock { Text = g, Foreground = Text, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis },
                     Pos(TvButton("tv-group-hide-" + safe, hidden ? "Einblenden" : "Ausblenden", () => { Tv.ToggleHiddenGroup(gg); Show("tv"); }), 1),
-                    Pos(TvButton("tv-group-lock-" + safe, locked ? "🔓 Entsperren" : "🔒 Sperren", () =>
+                    Pos(TvButton("tv-group-lock-" + safe, locked ? "Entsperren" : "Sperren", () =>
                     {
                         if (locked && Lock.Enabled && !_tvUnlocked) { _tvMsg = "Zum Entsperren erst oben „Gesperrte Gruppen öffnen“."; Show("tv"); return; }
                         Tv.ToggleLockedGroup(gg); Show("tv");

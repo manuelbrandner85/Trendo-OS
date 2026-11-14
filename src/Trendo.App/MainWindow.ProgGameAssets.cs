@@ -92,6 +92,7 @@ public partial class MainWindow
         var sp = new StackPanel { Name = "game-assets", Spacing = 8 };
         sp.Children.Add(H("Freie Assets", 14));
         sp.Children.Add(P("Grafik, Figuren, Töne und Musik aus freien Quellen – nur kostenlose, jede Datei mit Lizenz. Trendo schreibt daraus den Abspann und prüft vor dem Veröffentlichen.", null, 12));
+        sp.Children.Add(GameServicesCard(d)); // T-0650 E7: gemeinsame Auswahl
         // Godot Asset Library
         var q = new TextBox { Name = "game-asset-query", Text = _gaQuery, PlaceholderText = "z. B. platformer, tileset, sound", Width = 240 };
         void Go() => _ = GameAssetSearch(q.Text ?? "");

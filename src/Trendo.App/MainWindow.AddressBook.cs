@@ -55,10 +55,10 @@ public partial class MainWindow
                 Content = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { new TextBlock { Text = label, Foreground = Text, FontSize = 13, TextTrimming = TextTrimming.CharacterEllipsis }, Pos(new TextBlock { Text = n.ToString(), Foreground = Muted, FontSize = 12 }, 1) } } };
             b.Click += (_, _) => { _abGroup = g; _abEdit = false; Show(AB); }; Hover(b); return b;
         }
-        side.Children.Add(Nav("ab-g-alle", "👥 Alle Kontakte", "alle", all.Count));
-        side.Children.Add(Nav("ab-g-fav", "★ Favoriten", "fav", all.Count(c => c.Favorite)));
-        side.Children.Add(Nav("ab-g-bday", "🎂 Bald Geburtstag", "bday", bdays.Count));
-        side.Children.Add(Nav("ab-g-dups", "⧉ Doppelte", "dups", dups.Sum(d => d.Count - 1)));
+        side.Children.Add(Nav("ab-g-alle", "Alle Kontakte", "alle", all.Count));
+        side.Children.Add(Nav("ab-g-fav", "Favoriten", "fav", all.Count(c => c.Favorite)));
+        side.Children.Add(Nav("ab-g-bday", "Bald Geburtstag", "bday", bdays.Count));
+        side.Children.Add(Nav("ab-g-dups", "Doppelte", "dups", dups.Sum(d => d.Count - 1)));
         if (groups.Count > 0) side.Children.Add(H("Gruppen", 12));
         for (var i = 0; i < groups.Count; i++) side.Children.Add(Nav($"ab-g-{i}", "▣ " + groups[i].Name, "g:" + groups[i].Name, groups[i].Count));
 
@@ -94,14 +94,14 @@ public partial class MainWindow
                 foreach (var c in Mail.Contacts().Where(c => c.Birthday is not null))
                 {
                     var next = MailCenter.NextBirthday(c.Birthday!.Value, today).ToDateTime(TimeOnly.MinValue);
-                    Cal.Add(new Trendo.Core.Sys.CalEvent("geburtstag-" + c.Id, next, next.AddDays(1), $"🎂 {c.Name}", Notes: $"Geburtstag ({c.Birthday:dd.MM.yyyy})", AllDay: true, RemindMin: 24 * 60, Repeat: Trendo.Core.Sys.Repeat.Jaehrlich)); n++;
+                    Cal.Add(new Trendo.Core.Sys.CalEvent("geburtstag-" + c.Id, next, next.AddDays(1), $"{c.Name}", Notes: $"Geburtstag ({c.Birthday:dd.MM.yyyy})", AllDay: true, RemindMin: 24 * 60, Repeat: Trendo.Core.Sys.Repeat.Jaehrlich)); n++;
                 }
                 Say(n == 0 ? "Noch kein Kontakt hat einen Geburtstag eingetragen." : $"{n} Geburtstage stehen jährlich im Kalender (mit Erinnerung am Vortag).", AB);
             })) } };
         foreach (var c in head.Children.OfType<Control>()) c.Margin = new Thickness(0, 0, 6, 6);
 
         // Mitte: Liste
-        var find = new TextBox { Name = "ab-find", Text = _abFind, PlaceholderText = "🔎  Name, Firma, Ort, Nummer …" };
+        var find = new TextBox { Name = "ab-find", Text = _abFind, PlaceholderText = "Name, Firma, Ort, Nummer …" };
         find.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) { _abFind = find.Text ?? ""; Show(AB); } };
         var shown = Shown();
         var list = new StackPanel { Name = "ab-list", Spacing = 1 };
@@ -125,7 +125,7 @@ public partial class MainWindow
             b.Click += (_, _) => { _abSel = id; _abEdit = false; _abDeleteAsk = null; Show(AB); }; Hover(b);
             list.Children.Add(b);
         }
-        if (shown.Count == 0) list.Children.Add(P(_abGroup switch { "dups" => "Keine doppelten Kontakte. 👍", "bday" => "In den nächsten 30 Tagen hat niemand Geburtstag.", _ => all.Count == 0 ? "Noch keine Kontakte. Oben „+ Neuer Kontakt“ oder eine vCard einlesen." : "Niemand passt zur Suche." }, Muted, 12.5));
+        if (shown.Count == 0) list.Children.Add(P(_abGroup switch { "dups" => "Keine doppelten Kontakte.", "bday" => "In den nächsten 30 Tagen hat niemand Geburtstag.", _ => all.Count == 0 ? "Noch keine Kontakte. Oben „+ Neuer Kontakt“ oder eine vCard einlesen." : "Niemand passt zur Suche." }, Muted, 12.5));
         var middle = new StackPanel { Spacing = 6, Width = 330, Children = { find, new ScrollViewer { Content = list, MaxHeight = 560 } } };
 
         if (_abSel is null && shown.Count > 0 && _abGroup != "dups") _abSel = shown[0].Id; // wie Outlook „Personen“: gleich den ersten Kontakt zeigen
@@ -143,9 +143,9 @@ public partial class MainWindow
             new TextBlock { Text = c.Company, Foreground = GoldText(), FontSize = 14, IsVisible = c.Company.Length > 0 },
             new TextBlock { Text = string.Join(" · ", c.Groups ?? []), Foreground = Muted, FontSize = 12, IsVisible = c.Groups is { Count: > 0 } } } } } });
         var acts = new WrapPanel();
-        if (c.Email.Length > 0) acts.Children.Add(Act("ab-mail", "✉ E-Mail schreiben", () => { _mailTo = c.Email; Show("post"); }, true));
+        if (c.Email.Length > 0) acts.Children.Add(Act("ab-mail", "E-Mail schreiben", () => { _mailTo = c.Email; Show("post"); }, true));
         acts.Children.Add(Act("ab-edit", "Bearbeiten", () => { _abEdit = true; Show(AB); }));
-        acts.Children.Add(Act("ab-fav", c.Favorite ? "★ Favorit" : "☆ Favorit", () => { Mail.UpdateContact(c with { Favorite = !c.Favorite }); Show(AB); }, c.Favorite));
+        acts.Children.Add(Act("ab-fav", c.Favorite ? "Favorit" : "Favorit", () => { Mail.UpdateContact(c with { Favorite = !c.Favorite }); Show(AB); }, c.Favorite));
         acts.Children.Add(Act("ab-vcard", "Als vCard", () => Try(AB, () => { Directory.CreateDirectory(MailDraftFolder); var f = Path.Combine(MailDraftFolder, DevStudio.SafeName(c.Name) + ".vcf"); File.WriteAllText(f, MailCenter.Vcard(c)); NotifyFileResult("Gespeichert: " + f); Say("Gespeichert: " + f, AB); })));
         foreach (var b in acts.Children.OfType<Control>()) b.Margin = new Thickness(0, 0, 6, 6);
         sp.Children.Add(acts);
@@ -192,7 +192,7 @@ public partial class MainWindow
 
     Control AbDuplicates(List<List<Contact>> dups)
     {
-        var sp = new StackPanel { Name = "ab-dups", Spacing = 10, Children = { H("⧉ Doppelte Kontakte", 18), P("Gleicher Name, gleiche E-Mail oder gleiche Nummer. Beim Zusammenführen bleibt der erste, fehlende Angaben kommen aus den anderen.", Muted, 12) } };
+        var sp = new StackPanel { Name = "ab-dups", Spacing = 10, Children = { H("Doppelte Kontakte", 18), P("Gleicher Name, gleiche E-Mail oder gleiche Nummer. Beim Zusammenführen bleibt der erste, fehlende Angaben kommen aus den anderen.", Muted, 12) } };
         for (var i = 0; i < dups.Count; i++)
         {
             var g = dups[i]; var key = string.Join(",", g.Select(c => c.Id)); var idx = i;

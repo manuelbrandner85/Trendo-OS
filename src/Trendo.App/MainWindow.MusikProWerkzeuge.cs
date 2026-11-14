@@ -168,7 +168,7 @@ public partial class MainWindow
         var refBox = new TextBox { Name = "mp-ref-file", Text = _mpRefFile, PlaceholderText = "Referenz-Lied (WAV/MP3), optional" };
         refBox.TextChanged += (_, _) => _mpRefFile = (refBox.Text ?? "").Trim().Trim('"');
         sp.Children.Add(new StackPanel { Spacing = 4, Children = { H("Mastern wie im Studio", 13), P("Stil und Ziel je Plattform – mit Referenz klingt dein Lied wie ein Lied, das du magst (Klangbild, nicht die Musik).", Muted, 11.5), style, target, refBox,
-            B("mp-master", "🎚 Mastern (neue Fassung)", () => MsMasterPro(s.Id, _mpStyle, _mpTarget, _mpRefFile.Length > 0 ? _mpRefFile : null), true) } });
+            B("mp-master", "Mastern (neue Fassung)", () => MsMasterPro(s.Id, _mpStyle, _mpTarget, _mpRefFile.Length > 0 ? _mpRefFile : null), true) } });
 
         // Üben
         var tempo = new Slider { Name = "mp-tempo", Minimum = 0.5, Maximum = 1.5, Value = _mpTempo, Width = 200 };
@@ -184,9 +184,9 @@ public partial class MainWindow
 
         // Weitergeben
         sp.Children.Add(new StackPanel { Spacing = 4, Children = { H("Weitergeben", 13),
-            new WrapPanel { Children = { B("mp-midi", "🎹 MIDI (Melodie + Akkorde)", async () => { await MsMidi(s.Id); }), new Border { Width = 6 },
-                B("mp-loop-4", "🔁 Loop 4 Takte", async () => { await MsLoop(s.Id, 4); }), new Border { Width = 6 }, B("mp-loop-8", "Loop 8 Takte", async () => { await MsLoop(s.Id, 8); }) } },
-            new WrapPanel { Children = { B("mp-hook-15", "📱 Kurzclip 15 s", async () => { await MsHookClip(s.Id, 15); }), new Border { Width = 6 }, B("mp-hook-30", "Kurzclip 30 s", async () => { await MsHookClip(s.Id, 30); }) } },
+            new WrapPanel { Children = { B("mp-midi", "MIDI (Melodie + Akkorde)", async () => { await MsMidi(s.Id); }), new Border { Width = 6 },
+                B("mp-loop-4", "Loop 4 Takte", async () => { await MsLoop(s.Id, 4); }), new Border { Width = 6 }, B("mp-loop-8", "Loop 8 Takte", async () => { await MsLoop(s.Id, 8); }) } },
+            new WrapPanel { Children = { B("mp-hook-15", "Kurzclip 15 s", async () => { await MsHookClip(s.Id, 15); }), new Border { Width = 6 }, B("mp-hook-30", "Kurzclip 30 s", async () => { await MsHookClip(s.Id, 30); }) } },
             P("Kurzclip: Hochkant-Video aus dem stärksten Teil (meist der Refrain) mit Titelbild und Wellenform – für Reels, Shorts, Status.", Muted, 11) } });
         if (_mpMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "mp-msg", Text = _mpMsg, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap });
         return sp;
@@ -199,7 +199,7 @@ public partial class MainWindow
         sp.Children.Add(H("Klang wie …", 13));
         sp.Children.Add(P("Neues Lied klingt wie eine Datei oder eines deiner Lieder (Klang und Stimmung, keine Melodie).", Muted, 11));
         var mine = Songs.All().Where(x => File.Exists(x.File) && x.Kind is not ("gesang" or "begleitung")).Take(30).ToList();
-        var pick = new ComboBox { Name = "ms-ref-song", ItemsSource = new[] { "– keine Referenz –" }.Concat(mine.Select(x => "🎵 " + x.Title)).ToList(), MinWidth = 220,
+        var pick = new ComboBox { Name = "ms-ref-song", ItemsSource = new[] { "– keine Referenz –" }.Concat(mine.Select(x => "" + x.Title)).ToList(), MinWidth = 220,
             SelectedIndex = _msRefFile is null ? 0 : Math.Max(0, mine.FindIndex(x => x.File == _msRefFile) + 1) };
         pick.SelectionChanged += (_, _) => { _msRefFile = pick.SelectedIndex <= 0 ? null : mine[pick.SelectedIndex - 1].File; };
         var file = new TextBox { Name = "ms-ref-file", PlaceholderText = "… oder eigene Tondatei (WAV/MP3)", Text = _msRefFile is { } r && mine.All(x => x.File != r) ? r : "" };

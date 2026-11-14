@@ -66,7 +66,10 @@ public partial class MainWindow
                 ok &= tests.Count > 0 && tests.All(t => t.Ok);
                 lines.Add(tests.Count == 0 ? "✗ Keine Unreal-Tests gefunden – Protokoll tests.txt" : $"{(tests.All(t => t.Ok) ? "✓" : "✗")} Unreal-Tests: {tests.Count(t => t.Ok)} von {tests.Count} bestanden ({string.Join(", ", tests.Select(t => t.Test.Replace("Trendo.", "") + (t.Ok ? "" : " ✗")))})");
                 Step(No() + " Das Spiel startet zur Probe" + (screenshot ? " und macht ein Bild …" : " …"));
-                var (_, glog) = await Task.Run(() => UnrealRun(UnrealGame.Editor(engine), UnrealGame.CheckArgs(uproject, Path.Combine(logs, "start.txt"), screenshot && !_opt.Isolated), Path.Combine(logs, "start.txt"), 900_000));
+                var seed = GameRunSeed(d);
+                var checkArgs = UnrealGame.CheckArgs(uproject, Path.Combine(logs, "start.txt"), screenshot && !_opt.Isolated, seed);
+                var runStart = DateTime.Now.AddSeconds(-2); // nur Bilder dieses Laufs zählen
+                var (_, glog) = await Task.Run(() => UnrealRun(UnrealGame.Editor(engine), checkArgs, Path.Combine(logs, "start.txt"), 900_000));
                 var (gok, gtext) = UnrealGame.ParseCheck(glog);
                 ok &= gok; lines.Add((gok ? "✓ Spiel läuft: " : "✗ Spiel: ") + gtext);
                 // Testspieler-Bot: der Startlauf hat das Spiel angespielt – Prüfpunkte mit Messwert; Auffälliges kommt als Aufgabe ins Board
@@ -78,6 +81,13 @@ public partial class MainWindow
                     var bad = bot.Where(b => !b.Ok).ToList();
                     if (bad.Count > 0) _ui.Post(() => d.Edit("Testspieler", x => { foreach (var b in bad) GameBoard.Add(x, $"{b.Area}: {b.Text}", "Testspieler"); }));
                 }
+                // T-0650 E5 + E6: Bilder prüfen, Lauf speichern und mit dem vorigen vergleichen
+                var withShots = screenshot && (!_opt.Isolated || UnrealRunOverride is not null); // ohne Bild-Lauf keine alten Bilder prüfen
+                var run = await Task.Run(() => GameRunRecord(built, glog, checkArgs, seed, Trendo.Core.Programs.GamePlaytest.Shots(built), runStart, withShots));
+                LastRunComparison = run.Comparison; ok &= !run.Hard;
+                lines.AddRange(run.Lines);
+                var fresh = run.Tasks.Where(t => !GameBoard.Tasks(d.Data).Any(x => (string?)x["title"] == t && GameBoard.StateOf(x) != "Fertig")).Distinct().ToList(); // erledigt und wieder aufgetreten: neue Aufgabe
+                if (fresh.Count > 0) _ui.Post(() => d.Edit("Testlauf", x => { foreach (var t in fresh) GameBoard.Add(x, t, "Testspieler"); }));
             }
         }
         catch (Exception e) when (e is IOException or InvalidOperationException or System.ComponentModel.Win32Exception) { ok = false; lines.Add("✗ " + e.Message); }
@@ -182,6 +192,7 @@ public partial class MainWindow
         var check = Act("game-ue-check", UnrealBusy ? "Prüfung läuft …" : "Kompilieren und prüfen", () => _ = GameUnrealCheck(d), true); check.IsEnabled = !UnrealBusy;
         var play = Act("game-ue-play", "Spielen (Unreal)", () => ProgramRun(GK, () => GameUnrealPlay(d)));
         sp.Children.Add(new WrapPanel { Children = { check, new Border { Width = 6 }, play } });
+        sp.Children.Add(GameRunsPanel(d)); // T-0650 E6
         var built = d.Text("built");
         if (LastUnrealReport.Length > 0) sp.Children.Add(new TextBlock { Name = "game-ue-report", Text = LastUnrealReport, Foreground = Text, FontFamily = new FontFamily("Consolas, monospace"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
         var shot = built.Length > 0 ? Path.Combine(built, "Saved", "Screenshots", "trendo-start.png") : "";

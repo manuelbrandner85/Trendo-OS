@@ -64,7 +64,7 @@ public partial class MainWindow
             var client = AceClient;
             // D3 (vorgezogen 03.11.2026): ist der Grafikspeicher fast voll, rechnet die Musik-KI extrem langsam – das ehrlich sagen statt endlos zu laden
             if ((GpuMemoryOverride ?? (() => AceClientOverride is null && !_opt.Isolated ? SystemMetrics.GpuMemory() : null))() is { } gm && gm.FreeGb < 1.5)
-                _msMsg = $"Achtung: Grafikspeicher fast voll (nur {gm.FreeGb:0.0} von {gm.TotalGb:0} GB frei) – andere KI-Programme belegen ihn. Das Lied kann sehr lange dauern; mit „■ Abbrechen“ stoppen und die anderen Programme schließen."; // sichtbar machen
+                _msMsg = $"Achtung: Grafikspeicher fast voll (nur {gm.FreeGb:0.0} von {gm.TotalGb:0} GB frei) – andere KI-Programme belegen ihn. Das Lied kann sehr lange dauern; mit „Abbrechen“ stoppen und die anderen Programme schließen."; // sichtbar machen
             if (_msMsg.StartsWith("Achtung: Grafikspeicher")) Show(MS);
             var task = await client.SubmitAsync(job, src?.File);
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.start", $"{job.Task} {job.Seconds}s {job.Language} x{job.Variants}");
@@ -230,19 +230,19 @@ public partial class MainWindow
     {
         void Tab(string t) { _msSel = s.Id; _msDetailTab = t; Show(MS); }
         return [
-            ("play", "▶ Abspielen", () => MsPlay(s)),
-            ("fav", s.Favorite ? "★ Aus Favoriten" : "☆ Zu Favoriten", () => { Songs.ToggleFavorite(s.Id); Show(MS); }),
-            ("edit", "✎ Bearbeiten: Abschnitt neu, Verlängern, anderer Stil", () => Tab("bearbeiten")),
-            ("stems", "🎚 Spuren trennen und Mitsingen", () => Tab("spuren")),
-            ("video", "🎬 Musikvideo", () => Tab("video")),
+            ("play", "Abspielen", () => MsPlay(s)),
+            ("fav", s.Favorite ? "Aus Favoriten" : "Zu Favoriten", () => { Songs.ToggleFavorite(s.Id); Show(MS); }),
+            ("edit", "Bearbeiten: Abschnitt neu, Verlängern, anderer Stil", () => Tab("bearbeiten")),
+            ("stems", "Spuren trennen und Mitsingen", () => Tab("spuren")),
+            ("video", "Musikvideo", () => Tab("video")),
             ("master", s.Mastered ? "✓ Gemastert" : "Mastern (−14 LUFS)", () => _ = MsMaster(s.Id)),
-            ("mp3", "⬇ MP3 mit Cover", () => MsExportMp3WithCover(s)),
-            ("wav", "⬇ Als WAV", () => MsExport(s, "wav")),
-            ("flac", "⬇ Als FLAC", () => MsExport(s, "flac")),
+            ("mp3", "MP3 mit Cover", () => MsExportMp3WithCover(s)),
+            ("wav", "Als WAV", () => MsExport(s, "wav")),
+            ("flac", "Als FLAC", () => MsExport(s, "flac")),
             ("tovideo", "In den Videoschnitt", () => MsToVideo(s)),
             ("folder", "Ordner öffnen", () => Launch(Path.GetDirectoryName(s.File)!)),
             ("rename", "Umbenennen", () => Tab("lied")),
-            ("delete", "🗑 Löschen", () => { Songs.Remove(s.Id, p => { if (SongRecycleOverride is { } o) o(p); else RecycleBin.Move(p); }); if (_msSel == s.Id) _msSel = null; _msMsg = $"„{s.Title}“ liegt im Papierkorb."; _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.geloescht", s.Id); Show(MS); }),
+            ("delete", "Löschen", () => { Songs.Remove(s.Id, p => { if (SongRecycleOverride is { } o) o(p); else RecycleBin.Move(p); }); if (_msSel == s.Id) _msSel = null; _msMsg = $"„{s.Title}“ liegt im Papierkorb."; _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.geloescht", s.Id); Show(MS); }),
         ];
     }
 
@@ -299,7 +299,7 @@ public partial class MainWindow
                 b.Click += (_, _) => { Sync(); _msLyrics = (_msLyrics.TrimEnd() + "\n[" + l + "]\n").TrimStart(); Show(MS); };
                 tags.Children.Add(b);
             }
-            var claude = Act("ms-lyrics-ki", "✳ Liedtext mit KI", () => { Sync(); _ = MsWriteLyrics(); });
+            var claude = Act("ms-lyrics-ki", "Liedtext mit KI", () => { Sync(); _ = MsWriteLyrics(); });
             sp.Children.Add(new StackPanel { Spacing = 4, Children = { new DockPanel { Children = { Dk(claude, Avalonia.Controls.Dock.Right), H("Liedtext", 13) } }, lyr, tags, MsLyricsFullButton(), MsLyricsTools(Sync) } }); // V6: Vollbild-Editor wie Suno
             more.Children.Add(MsFactsPanel(Sync)); // M7: Tonart und Tempo eines bekannten Songs
             // Tempo, Tonart, Takt
@@ -332,7 +332,7 @@ public partial class MainWindow
         sp.Children.Add(moreBox);
         sp.Children.Add(MsCoverWorkshopBox()); // M1–M8: Cover nach dem eigenen Original
         if (MsVoiceChoices().Count > 1) sp.Children.Add(MsSingVoiceBox()); // V4: neue Lieder in einer gelernten Stimme
-        var go = new Button { Name = "ms-create", Content = "✨ Erstellen", FontSize = 15, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Center,
+        var go = new Button { Name = "ms-create", Content = "Erstellen", FontSize = 15, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Center,
             Padding = new Thickness(0, 10), CornerRadius = new CornerRadius(12), Background = Accent, Foreground = Brushes.White, BorderThickness = new Thickness(0), Margin = new Thickness(0, 6, 0, 0) };
         go.Click += (_, _) =>
         {
@@ -353,7 +353,7 @@ public partial class MainWindow
         static Control Spacer(Control c) { c.Margin = new Thickness(6, 0, 0, 0); return c; }
     }
 
-    static string KeyDe(string k) => k.Replace(" major", "-Dur").Replace(" minor", "-Moll").Replace("#", "♯").Replace("Eb", "E♭").Replace("Ab", "A♭").Replace("Bb", "B");
+    static string KeyDe(string k) => k.Replace(" major", "-Dur").Replace(" minor", "-Moll").Replace("#", "♯").Replace("Eb", "E").Replace("Ab", "A").Replace("Bb", "B");
 
     /// <summary>Titelbild: das Cover-Bild des Lieds (siehe MusikCover), sonst ruhiger Farbverlauf je Lied mit Notenzeichen.</summary>
     Border MsCover(MusicSong s, double size)
@@ -378,7 +378,7 @@ public partial class MainWindow
         import.Click += async (_, _) => await MsImport();
         search.TextChanged += (_, _) => { _msSearch = search.Text ?? ""; };
         search.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) Show(MS); };
-        var fav = new Avalonia.Controls.Primitives.ToggleButton { Name = "ms-fav-filter", Content = "★ Favoriten", IsChecked = _msFav };
+        var fav = new Avalonia.Controls.Primitives.ToggleButton { Name = "ms-fav-filter", Content = "Favoriten", IsChecked = _msFav };
         fav.IsCheckedChanged += (_, _) => { _msFav = fav.IsChecked == true; Show(MS); };
         sp.Children.Add(H("Meine Lieder", 16)); // Überschrift eigene Zeile – die Mittelspalte ist neben der Navigation schmaler
         sp.Children.Add(MsLibraryToolbar(import, search, fav)); // V4: Arbeitsbereich, Filter, Sortierung, Ansicht
@@ -388,7 +388,7 @@ public partial class MainWindow
             _msRunningText = new TextBlock { Name = "ms-running", Text = RunningText(title, (int)(DateTime.Now - started).TotalSeconds), Foreground = Text, FontSize = 13, VerticalAlignment = VerticalAlignment.Center };
             var known = _msProgress.TryGetValue(title, out var pr);
             _msRunningBar = new ProgressBar { Name = "ms-running-bar", IsIndeterminate = !known, Minimum = 0, Maximum = 100, Value = known ? pr * 100 : 0, Width = 90, VerticalAlignment = VerticalAlignment.Center };
-            var stop = new Button { Name = "ms-cancel", Content = "■ Abbrechen", FontSize = 11.5, Padding = new Thickness(9, 3), VerticalAlignment = VerticalAlignment.Center };
+            var stop = new Button { Name = "ms-cancel", Content = "Abbrechen", FontSize = 11.5, Padding = new Thickness(9, 3), VerticalAlignment = VerticalAlignment.Center };
             stop.Click += (_, _) => MsCancelCreate(t);
             sp.Children.Add(new Border { CornerRadius = new CornerRadius(12), Background = Brush.Parse("#22C9A227"), Padding = new Thickness(12, 10),
                 Child = new DockPanel { Children = { Dk(stop, Avalonia.Controls.Dock.Right), new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { _msRunningBar, _msRunningText } } } } });
@@ -545,7 +545,7 @@ public partial class MainWindow
             Act("ms-export-mp3c", "MP3 mit Cover", () => MsExportMp3WithCover(s)),
             Act("ms-export-wav", "Als WAV", () => MsExport(s, "wav")), Act("ms-export-flac", "Als FLAC", () => MsExport(s, "flac")),
             Act("ms-folder", "Ordner öffnen", () => Launch(Path.GetDirectoryName(s.File)!)),
-            Act("ms-delete", "🗑 Löschen", () => { Songs.Remove(s.Id, p => { if (SongRecycleOverride is { } o) o(p); else RecycleBin.Move(p); }); _msSel = null; _msMsg = $"„{s.Title}“ liegt im Papierkorb."; _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.geloescht", s.Id); Show(MS); }) } };
+            Act("ms-delete", "Löschen", () => { Songs.Remove(s.Id, p => { if (SongRecycleOverride is { } o) o(p); else RecycleBin.Move(p); }); _msSel = null; _msMsg = $"„{s.Title}“ liegt im Papierkorb."; _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.geloescht", s.Id); Show(MS); }) } };
         foreach (var c in actions.Children) c.Margin = new Thickness(0, 0, 6, 6);
         lied.Children.Add(new StackPanel { Spacing = 4, Children = { H("Weitergeben", 13), name, actions } });
         return MsCard("ms-detail", new ScrollViewer { Content = sp });

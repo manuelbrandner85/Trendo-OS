@@ -65,7 +65,7 @@ public partial class MainWindow
 
         // Pakete und Hochladen
         var built = d.Text("built");
-        var pack = Act("game-rel-pack", "📦 Pakete bauen", () => ProgramRun(GK, () => GameReleasePack(d)), true);
+        var pack = Act("game-rel-pack", "Pakete bauen", () => ProgramRun(GK, () => GameReleasePack(d)), true);
         pack.IsEnabled = targets.Count > 0;
         sp.Children.Add(new WrapPanel { Children = { pack } });
         if (built.Length == 0) sp.Children.Add(P("Tipp: Zuerst im Reiter „Bauen“ das Spiel bauen – daraus entstehen die Pakete.", null, 11.5));
@@ -82,7 +82,7 @@ public partial class MainWindow
                         P($"Wirklich zu {GameRelease.Label(t)} hochladen? Trendo öffnet dazu ein Fenster ({(t == "steam" ? "SteamCMD" : "butler")}) – dort meldest du dich selbst mit deinem Konto an. Trendo sieht dein Passwort nie.", Text, 12),
                         new WrapPanel { Children = { yes, new Border { Width = 6 }, no } } } } });
             }
-            else sp.Children.Add(Act("game-rel-upload-" + t, $"⬆ Zu {GameRelease.Label(t)} hochladen …", () => { _gameUploadAsk = tt; Show(GK); }));
+            else sp.Children.Add(Act("game-rel-upload-" + t, $"Zu {GameRelease.Label(t)} hochladen …", () => { _gameUploadAsk = tt; Show(GK); }));
         }
         return sp;
     }
@@ -119,12 +119,12 @@ public partial class MainWindow
         string msg;
         try
         {
-            Step("📦 Unreal baut das fertige Windows-Spiel: Code (Shipping), Inhalte kochen und packen … beim ersten Mal kann das lange dauern.");
+            Step("Unreal baut das fertige Windows-Spiel: Code (Shipping), Inhalte kochen und packen … beim ersten Mal kann das lange dauern.");
             var (code, log) = await Task.Run(() => UnrealRun(UnrealPackage.RunUat(engine), UnrealPackage.Args(uproject, archive), Path.Combine(logs, "paket.txt"), 14_400_000));
             if (!UnrealPackage.Ok(log)) msg = $"✗ Windows-Spiel nicht fertig (Exitcode {code}): {UnrealPackage.Reason(log)}";
             else
             {
-                Step("📦 Windows-Spiel fertig – Trendo packt es als ZIP …");
+                Step("Windows-Spiel fertig – Trendo packt es als ZIP …");
                 var zip = await Task.Run(() => UnrealPackage.Zip(archive, Path.Combine(outDir, slug + "-windows.zip")));
                 _gamePackages.Add(zip);
                 msg = $"✓ Windows-Spiel fertig: {Path.GetFileName(zip)} ({new FileInfo(zip).Length / 1048576.0:0} MB) – entpacken und {Path.GetFileName(UnrealPackage.Exe(archive) ?? "das Spiel")} starten.";
@@ -142,7 +142,7 @@ public partial class MainWindow
     {
         _gameUploadAsk = null;
         var package = target == "steam" ? _gamePackages.FirstOrDefault(Directory.Exists) : _gamePackages.FirstOrDefault(f => f.EndsWith("-web.zip", StringComparison.OrdinalIgnoreCase));
-        if (package is null) { _progMsg[GK] = "Zuerst „📦 Pakete bauen“."; Show(GK); return; }
+        if (package is null) { _progMsg[GK] = "Zuerst „Pakete bauen“."; Show(GK); return; }
         if (GameRelease.Upload(d.Data, target, package) is not { } cmd) { _progMsg[GK] = target == "steam" ? "Bitte zuerst deine Steam App-ID und deinen Anmeldenamen eintragen." : "Bitte zuerst deine itch.io-Seite eintragen (dein-name/dein-spiel)."; Show(GK); return; }
         var tool = target == "steam" ? "steamcmd" : "butler";
         _core.Audit.Append(Principal.LocalOwner.Name, "game.release.upload", target);

@@ -134,7 +134,7 @@ Dann bleibt mir nur noch eins.
                     case FountainKind.Parenthetical: t.Margin = new Thickness(130, 0, 90, 0); break;
                     case FountainKind.Dialogue: t.Margin = new Thickness(90, 0, 60, 0); break;
                     case FountainKind.Transition: t.HorizontalAlignment = HorizontalAlignment.Right; break;
-                    case FountainKind.Shot: t.Foreground = Brush.Parse("#8A6D1F"); t.FontSize = 11; t.Text = "▸ " + l.Text; break;
+                    case FountainKind.Shot: t.Foreground = Brush.Parse("#8A6D1F"); t.FontSize = 11; t.Text = "" + l.Text; break;
                     case FountainKind.Section or FountainKind.Synopsis: t.Foreground = Brush.Parse("#7B8794"); t.FontStyle = FontStyle.Italic; break;
                 }
                 preview.Children.Add(t);

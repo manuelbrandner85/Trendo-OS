@@ -55,7 +55,7 @@ public partial class MainWindow
             var nn = n; b.Click += (_, _) => { sync(); _msGenres.Remove(nn); Show(MS); };
             chosen.Children.Add(b);
         }
-        var open = new Button { Name = "ms-genre-open", Content = _msGenreOpen ? "Genres schließen" : $"🎼 Genre wählen ({MusicGenres.All.Length})", FontSize = 12, Padding = new Thickness(10, 3), Margin = new Thickness(0, 0, 4, 4) };
+        var open = new Button { Name = "ms-genre-open", Content = _msGenreOpen ? "Genres schließen" : $"Genre wählen ({MusicGenres.All.Length})", FontSize = 12, Padding = new Thickness(10, 3), Margin = new Thickness(0, 0, 4, 4) };
         open.Click += (_, _) => { sync(); _msGenreOpen = !_msGenreOpen; Show(MS); };
         chosen.Children.Add(open);
         sp.Children.Add(chosen);

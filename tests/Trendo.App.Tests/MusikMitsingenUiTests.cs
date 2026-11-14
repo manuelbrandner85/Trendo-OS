@@ -75,7 +75,7 @@ public class MusikMitsingenUiTests
             feed(Tone(261.6)); await Pump(); // C4 = Ziel → Treffer
             Assert.Contains("Ziel C4 · du C4  ✓ Treffer", w.Find<TextBlock>("ms-sing-live").Text);
             feed(Tone(233.1)); await Pump(); // B3 → höher
-            Assert.Contains("▲ etwas höher", w.Find<TextBlock>("ms-sing-live").Text);
+            Assert.Contains("etwas höher", w.Find<TextBlock>("ms-sing-live").Text);
             Assert.Contains("50 % getroffen", w.Find<TextBlock>("ms-sing-live").Text);
             w.Find<Button>("ms-sing-stop").Press();
             Assert.True(await sing); await Pump();

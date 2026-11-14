@@ -300,7 +300,7 @@ public class OsStyles_Ui
         finally { Back(w ?? w0); }
     }
 
-    [AvaloniaFact(DisplayName = "Programme im Stil des Systems: Windows-Menüzeile im Fenster, Mac-Menüs oben in der Menüleiste (Ablage …), GNOME-Kopfleiste mit „Speichern“ blau und Hauptmenü ☰ – Menüeinträge lösen dieselben Befehle aus")]
+    [AvaloniaFact(DisplayName = "Programme im Stil des Systems: Windows-Menüzeile im Fenster, Mac-Menüs oben in der Menüleiste (Ablage …), GNOME-Kopfleiste mit „Speichern“ blau und Hauptmenü – Menüeinträge lösen dieselben Befehle aus")]
     public void Programs_like_os()
     {
         var (w0, _, _) = Ui.Open(); MainWindow? w = null;

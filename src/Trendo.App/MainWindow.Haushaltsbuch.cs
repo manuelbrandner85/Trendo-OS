@@ -35,7 +35,7 @@ public partial class MainWindow
         var (inc, exp, left, rate) = HouseholdBook.Sum(month.Select(x => x.Entry));
         var title = new DateTime(_hbYear, _hbMonth, 1).ToString("MMMM yyyy", de);
         void Go(int d) { var t = new DateTime(_hbYear, _hbMonth, 1).AddMonths(d); _hbYear = t.Year; _hbMonth = t.Month; _hbCat = null; _hbEdit = -1; Show("finanzen"); }
-        var undo = Act("hb-undo", _hbUndo.TryPeek(out var u) ? "↶ " + u.Label : "↶ Rückgängig", () => { if (_hbUndo.TryPop(out var x)) { Money.Save(x.Before); Say("Rückgängig: " + x.Label, "finanzen"); Show("finanzen"); } });
+        var undo = Act("hb-undo", _hbUndo.TryPeek(out var u) ? "↶ " + u.Label : "Rückgängig", () => { if (_hbUndo.TryPop(out var x)) { Money.Save(x.Before); Say("Rückgängig: " + x.Label, "finanzen"); Show("finanzen"); } });
         undo.IsEnabled = _hbUndo.Count > 0;
         var head = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = {
             new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { Act("hb-prev", "◀", () => Go(-1)),
@@ -81,7 +81,7 @@ public partial class MainWindow
         var leftCol = new StackPanel { Spacing = 8, Width = 300, Children = { donut, legend } };
 
         // Rechts: Buchungen des Monats
-        var find = new TextBox { Name = "hb-find", Text = _hbFind, PlaceholderText = "🔎  Buchung suchen …", Width = 240, CornerRadius = new CornerRadius(8) };
+        var find = new TextBox { Name = "hb-find", Text = _hbFind, PlaceholderText = "Buchung suchen …", Width = 240, CornerRadius = new CornerRadius(8) };
         find.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) { _hbFind = find.Text ?? ""; Show("finanzen"); } };
         var tools = new WrapPanel { Children = { find } };
         if (_hbCat is not null) { var chip = Act("hb-cat-clear", $"Nur {_hbCat}  ✕", () => { _hbCat = null; Show("finanzen"); }, true); chip.Margin = new Thickness(6, 0, 0, 0); tools.Children.Add(chip); }

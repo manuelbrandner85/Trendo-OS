@@ -29,7 +29,7 @@ public partial class MainWindow
 
     Control TvAssistantBar()
     {
-        var box = new TextBox { Name = "tv-ki", Text = _tvAsk, PlaceholderText = "✨  Sag, was Trendo tun soll – z. B. „Behalte nur deutsche Sender“", CornerRadius = new CornerRadius(14), FontSize = 14, Padding = new Thickness(12, 9) };
+        var box = new TextBox { Name = "tv-ki", Text = _tvAsk, PlaceholderText = "Sag, was Trendo tun soll – z. B. „Behalte nur deutsche Sender“", CornerRadius = new CornerRadius(14), FontSize = 14, Padding = new Thickness(12, 9) };
         var go = new Button { Name = "tv-ki-go", Content = "Ausführen", CornerRadius = new CornerRadius(14), Padding = new Thickness(18, 9), Foreground = Brush.Parse("#1B1406"), FontWeight = FontWeight.SemiBold,
             Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#FFF1C870"), 0), new GradientStop(Color.Parse("#FFD4A84B"), 1) } } };
         go.Click += async (_, _) => { _tvAsk = box.Text ?? ""; await TvDo(_tvAsk); };

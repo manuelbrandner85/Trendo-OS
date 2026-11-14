@@ -54,7 +54,7 @@ public partial class MainWindow
         Button Btn(string name, string label, Action go, bool accent = false) { var b = new Button { Name = name, Content = label, Padding = new Thickness(10, 4), Margin = new Thickness(0, 0, 4, 4) }; if (accent) { b.Background = Accent; b.Foreground = Brushes.White; } b.Click += (_, _) => go(); return b; }
         // Kopf: Modus und Sendung
         var bar = new WrapPanel { Name = "bc-bar" };
-        foreach (var (id, label) in new[] { ("ablauf", "Ablauf"), ("onair", "On-Air-Uhr"), ("studio", "🎥 Studio") })
+        foreach (var (id, label) in new[] { ("ablauf", "Ablauf"), ("onair", "On-Air-Uhr"), ("studio", "Studio") })
         {
             var mid = id; var b = Btn("bc-mode-" + id, label, () => { BcMode = mid; Show("sendung"); }); if (BcMode == id) { b.Background = Accent; b.Foreground = Brushes.White; }
             bar.Children.Add(b);
@@ -147,7 +147,7 @@ public partial class MainWindow
         _bcNowNext = new TextBlock { Name = "bc-now-next", Foreground = Brush.Parse("#7FD3FF"), FontSize = 20, HorizontalAlignment = HorizontalAlignment.Center };
         _bcNowShow = new TextBlock { Name = "bc-now-show", Foreground = Muted, FontSize = 14, HorizontalAlignment = HorizontalAlignment.Center };
         BcTick();
-        return new StackPanel { Spacing = 14, VerticalAlignment = VerticalAlignment.Center, Children = { new TextBlock { Text = "● ON AIR", Foreground = Brush.Parse("#F87171"), FontWeight = FontWeight.Bold, HorizontalAlignment = HorizontalAlignment.Center }, _bcNowTitle, _bcNowLeft, _bcNowBar, _bcNowNext, _bcNowShow } };
+        return new StackPanel { Spacing = 14, VerticalAlignment = VerticalAlignment.Center, Children = { new TextBlock { Text = "ON AIR", Foreground = Brush.Parse("#F87171"), FontWeight = FontWeight.Bold, HorizontalAlignment = HorizontalAlignment.Center }, _bcNowTitle, _bcNowLeft, _bcNowBar, _bcNowNext, _bcNowShow } };
     }
 
     Control BcSide()

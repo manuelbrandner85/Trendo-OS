@@ -62,7 +62,7 @@ public partial class MainWindow
             yes.Click += (_, _) => { CLearn.Approve(studio, r.Id); _core.Audit.Append(Principal.LocalOwner.Name, "studio.regel.an", studio); Toast($"Neue Regel für „{name}“ gilt ab jetzt für alle Projekte."); RenderChat(dock); };
             no.Click += (_, _) => { CLearn.Reject(studio, r.Id); _core.Audit.Append(Principal.LocalOwner.Name, "studio.regel.nein", studio); RenderChat(dock); };
             ui.Log.Children.Add(Appear(CGlass(new StackPanel { Spacing = 4, Children = {
-                new TextBlock { Text = $"🎓 Neue Regel für alle Projekte in „{name}“?", Foreground = CGold, FontSize = 13.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
+                new TextBlock { Text = $"Neue Regel für alle Projekte in „{name}“?", Foreground = CGold, FontSize = 13.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
                 new TextBlock { Name = $"claude-learn-text-{i}", Text = r.Text, Foreground = ClaudeFg, FontSize = 13.5, TextWrapping = TextWrapping.Wrap },
                 new TextBlock { Text = $"Gelernt aus: {r.Source}" + (r.Project is { Length: > 0 } p ? $" · Projekt „{p}“" : ""), Foreground = ClaudeMuted, FontSize = 11 },
                 new StackPanel { Orientation = Orientation.Horizontal, Children = { yes, no } } } }, name: "claude-learn")));
@@ -74,7 +74,7 @@ public partial class MainWindow
     {
         var studio = ChatStudio(dock); var name = StudioCatalog.NameOf(dock.Studio ?? "", "Trendo");
         var sp = new StackPanel { Spacing = 6 };
-        sp.Children.Add(new TextBlock { Text = $"📚 Regeln in „{name}“", Foreground = CGold, FontSize = 15, FontWeight = FontWeight.SemiBold });
+        sp.Children.Add(new TextBlock { Text = $"Regeln in „{name}“", Foreground = CGold, FontSize = 15, FontWeight = FontWeight.SemiBold });
         if (dock.Studio == GameRules.Studio)
         {
             var gf = FindGameForge();

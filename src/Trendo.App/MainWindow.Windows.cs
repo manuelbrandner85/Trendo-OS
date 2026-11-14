@@ -335,10 +335,11 @@ public partial class MainWindow
         {
             var f = _frames[w.Id].Frame; f.ZIndex = ++z; f.IsVisible = !w.Minimized && (coveredBy is null || w.Id == coveredBy);
             var on = active?.Id == w.Id;
-            f.BorderBrush = on && _style == "trendo" ? GoldEdge : on ? Brush.Parse(_theme == "hell" ? "#33000000" : "#40FFFFFF") : Edge; f.Opacity = on ? 1 : 0.9;
-            f.BoxShadow = LowPower ? default : on ? BoxShadows.Parse("0 22 50 0 #BB000000, 0 0 0 1 #66F5C451, 0 0 24 0 #33C9A227") : BoxShadows.Parse("0 8 18 0 #66000000");
+            // S3 (13.11.2026): Fenster wie im Desktop-System – feiner neutraler Rand, weicher Schatten, kein Goldleuchten
+            f.BorderBrush = on ? Brush.Parse(_theme == "hell" ? "#40000000" : "#4DFFFFFF") : Edge; f.Opacity = 1;
+            f.BoxShadow = LowPower ? default : on ? BoxShadows.Parse("0 12 32 0 #80000000") : BoxShadows.Parse("0 4 12 0 #4D000000");
             _frames[w.Id].Title.Foreground = on ? Text : Muted;
-            if (f.Child is Panel { Children: [Grid g, ..] } && g.Children[0] is Border bar) bar.Background = on ? Brush.Parse("#55305078") : Brush.Parse("#22222222");
+            if (f.Child is Panel { Children: [Grid g, ..] } && g.Children[0] is Border bar) bar.Background = Brush.Parse(_theme == "hell" ? (on ? "#FFF3F4F6" : "#FFEAEBEE") : (on ? "#FF26272B" : "#FF202124"));
             // Schließen-Knopf einmal suchen und merken – vorher wurde bei jedem Seitenaufbau der ganze Inhalt jedes Fensters durchsucht
             if (!_closeButtons.TryGetValue(w.Id, out var close)) { close = f.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Name == "win-close-" + w.Id); if (close is not null) _closeButtons[w.Id] = close; }
             if (close is not null)

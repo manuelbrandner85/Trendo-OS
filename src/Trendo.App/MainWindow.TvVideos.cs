@@ -92,7 +92,7 @@ public partial class MainWindow
         foreach (var p in VideoPlatforms.All)
         {
             var pp = p; var on = _tvVidPlatform == p.Id;
-            var b = TvChip("tv-vid-platform-" + p.Id, (p.Mode == VideoPlatforms.Mode.InTrendo ? "▶ " : p.Mode == VideoPlatforms.Mode.Suche ? "🔍 " : "↗ ") + p.Name, on, () => TvVideoSelect(pp.Id));
+            var b = TvChip("tv-vid-platform-" + p.Id, p.Name + (p.Mode == VideoPlatforms.Mode.InTrendo ? "" : p.Mode == VideoPlatforms.Mode.Suche ? " · Suche" : " ↗"), on, () => TvVideoSelect(pp.Id));
             ToolTip.SetTip(b, p.Note); plats.Children.Add(b);
         }
         sp.Children.Add(plats);
@@ -116,7 +116,7 @@ public partial class MainWindow
             PlaceholderText = pf.Id == "youtube" ? "Auf YouTube suchen – oder einen YouTube-Link einfügen" : $"Auf {pf.Name} suchen – oder einen YouTube-Link einfügen" };
         void Go() => _ = TvVideoSearchAsync(box.Text ?? "", _tvVidCat);
         box.KeyDown += (_, e) => { if (e.Key == Key.Enter) { e.Handled = true; Go(); } };
-        sp.Children.Add(new WrapPanel { Children = { box, new Border { Width = 8 }, TvButton("tv-vid-go", pf.Mode == VideoPlatforms.Mode.Original ? $"↗ Auf {pf.Name} suchen" : "🔍 Suchen", Go, true),
+        sp.Children.Add(new WrapPanel { Children = { box, new Border { Width = 8 }, TvButton("tv-vid-go", pf.Mode == VideoPlatforms.Mode.Original ? $"Auf {pf.Name} suchen" : "Suchen", Go, true),
             new Border { Width = 8 }, TvButton("tv-vid-home", $"{pf.Name} öffnen", () => TvLegalOpen(pf.Home)) } });
         if (_tvVidStatus.Length > 0) sp.Children.Add(new TextBlock { Name = "tv-vid-status", Text = _tvVidStatus, Foreground = Muted, FontSize = 12.5, TextWrapping = TextWrapping.Wrap });
 
@@ -137,7 +137,7 @@ public partial class MainWindow
                     cover.Children.Add(new Border { HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(6), CornerRadius = new CornerRadius(5), Background = Brush.Parse("#CC000000"), Padding = new Thickness(5, 1),
                         Child = new TextBlock { Text = TvClock(v.Duration.TotalSeconds), Foreground = Brushes.White, FontSize = 11, FontWeight = FontWeight.SemiBold } });
                 var vv = v;
-                var play = TvButton("tv-vid-play-" + i, pf.Mode == VideoPlatforms.Mode.InTrendo ? "▶ Abspielen" : $"↗ Auf {pf.Name} ansehen", () => _ = TvVideoPlayAsync(vv), true);
+                var play = TvButton("tv-vid-play-" + i, pf.Mode == VideoPlatforms.Mode.InTrendo ? "Abspielen" : $"Auf {pf.Name} ansehen", () => _ = TvVideoPlayAsync(vv), true);
                 var web = TvButton("tv-vid-web-" + i, "Seite", () => TvLegalOpen(vv.PageUrl));
                 var card = new Border
                 {

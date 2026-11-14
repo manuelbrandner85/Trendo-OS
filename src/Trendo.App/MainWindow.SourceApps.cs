@@ -117,7 +117,7 @@ public partial class MainWindow
                 {
                     var rel = await GitHubLatestOrEmpty(f.FullName, CancellationToken.None);
                     var a = GitHubApps.Availability(rel, Arm64, Has7z); _ossAvail[f.FullName] = a;
-                    if (a.Kind == "windows") { var fork = f with { LicenseId = f.LicenseId.Length > 0 ? f.LicenseId : r.LicenseId }; list.Add(("Diesen Fork installieren", $"Fork {f.FullName} (★ {f.Stars}): {a.Text}", () => GitHubInstall(fork))); }
+                    if (a.Kind == "windows") { var fork = f with { LicenseId = f.LicenseId.Length > 0 ? f.LicenseId : r.LicenseId }; list.Add(("Diesen Fork installieren", $"Fork {f.FullName} ({f.Stars}): {a.Text}", () => GitHubInstall(fork))); }
                 }
             }
             catch (Exception ex) when (ex is not OutOfMemoryException) { if (ex.Message.Contains("Abfragen")) _w45Msg = ex.Message; }

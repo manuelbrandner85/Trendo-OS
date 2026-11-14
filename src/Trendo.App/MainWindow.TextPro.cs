@@ -157,7 +157,7 @@ public partial class MainWindow
         reject.Click += (_, _) => { TextAiDecide(false); Show("text"); };
         return new Border { Name = "text-ai-card", Background = Brush.Parse("#1AC9A227"), BorderBrush = Brush.Parse("#55C9A227"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 8), Margin = new Thickness(0, 4, 0, 4),
             Child = new StackPanel { Spacing = 6, Children = {
-                new TextBlock { Text = "✨ Vorschlag der KI – noch nichts geändert", Foreground = Text, FontWeight = FontWeight.SemiBold },
+                new TextBlock { Text = "Vorschlag der KI – noch nichts geändert", Foreground = Text, FontWeight = FontWeight.SemiBold },
                 tb, new StackPanel { Orientation = Orientation.Horizontal, Children = { accept, reject } } } } };
     }
 

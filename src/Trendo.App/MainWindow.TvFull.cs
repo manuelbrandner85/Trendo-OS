@@ -81,24 +81,24 @@ public partial class MainWindow
             row.Children.Insert(0, logo);
             row.Children.Add(new TextBlock { Name = "tv-full-now", Text = (np is null ? "" : $"Jetzt: {np.Title}") + (nx is null ? "" : $"  ·  Danach {nx.Start.ToLocalTime():HH:mm}: {nx.Title}"), Foreground = Brush.Parse("#E7E1D5"), FontSize = 12.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 14, 0), MaxWidth = 420, TextTrimming = TextTrimming.CharacterEllipsis });
         }
-        if (!_tvVodPlaying) { row.Children.Add(B("tv-full-prev", "◀ Sender", () => TvZap(-1))); }
-        row.Children.Add(B("tv-full-back10", "⏪ 10 s", () => _tvPlayer?.Send("seek", -10)));
-        row.Children.Add(B("tv-full-back", "⏪ 30 s", () => _tvPlayer?.Send("seek", -30)));
+        if (!_tvVodPlaying) { row.Children.Add(B("tv-full-prev", "Sender", () => TvZap(-1))); }
+        row.Children.Add(B("tv-full-back10", "10 s", () => _tvPlayer?.Send("seek", -10)));
+        row.Children.Add(B("tv-full-back", "30 s", () => _tvPlayer?.Send("seek", -30)));
         row.Children.Add(B("tv-full-pause", "⏯", () => _tvPlayer?.Send("cycle", "pause"), true));
-        row.Children.Add(B("tv-full-fwd", "⏩ 30 s", () => _tvPlayer?.Send("seek", 30)));
-        row.Children.Add(B("tv-full-fwd10", "10 s ⏩", () => _tvPlayer?.Send("seek", 10)));
-        if (!_tvVodPlaying) { row.Children.Add(B("tv-full-next", "Sender ▶", () => TvZap(1))); row.Children.Add(B("tv-full-live", "● Live", () => _tvPlayer?.Send("seek", 100, "absolute-percent"))); }
-        row.Children.Add(B("tv-full-audio", "🔈 Tonspur", () => _tvPlayer?.Send("cycle", "aid")));
-        row.Children.Add(B("tv-full-sub", "💬 Untertitel", () => _tvPlayer?.Send("cycle", "sid")));
-        row.Children.Add(B("tv-full-aspect", "▭ Bildformat", () => _tvPlayer?.Send("cycle-values", "video-aspect-override", "16:9", "4:3", "2.35:1", "-1")));
+        row.Children.Add(B("tv-full-fwd", "30 s", () => _tvPlayer?.Send("seek", 30)));
+        row.Children.Add(B("tv-full-fwd10", "10 s", () => _tvPlayer?.Send("seek", 10)));
+        if (!_tvVodPlaying) { row.Children.Add(B("tv-full-next", "Sender", () => TvZap(1))); row.Children.Add(B("tv-full-live", "Live", () => _tvPlayer?.Send("seek", 100, "absolute-percent"))); }
+        row.Children.Add(B("tv-full-audio", "Tonspur", () => _tvPlayer?.Send("cycle", "aid")));
+        row.Children.Add(B("tv-full-sub", "Untertitel", () => _tvPlayer?.Send("cycle", "sid")));
+        row.Children.Add(B("tv-full-aspect", "Bildformat", () => _tvPlayer?.Send("cycle-values", "video-aspect-override", "16:9", "4:3", "2.35:1", "-1")));
         row.Children.Add(B("tv-full-mute", "🔇", () => _tvPlayer?.Send("cycle", "mute")));
         var vol = new Slider { Name = "tv-full-volume", Minimum = 0, Maximum = 130, Value = 100, Width = 110, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 0) };
         vol.ValueChanged += (_, _) => { _tvPlayer?.Send("set_property", "volume", Math.Round(vol.Value)); TvShowBar(); };
         row.Children.Add(vol);
         row.Children.Add(TvTuneButton("tv-full-tune"));
-        row.Children.Add(B("tv-full-pip", "⧉ Bild im Bild", () => TvPip(true)));
-        if (_tvVodPlaying && _tvEp is not null) row.Children.Add(B("tv-full-nextep", "⏭ Nächste Folge", () => TvPlayNextEpisode()));
-        row.Children.Add(B("tv-full-exit", "⤡ Verkleinern (Esc)", () => TvFullscreen(false)));
+        row.Children.Add(B("tv-full-pip", "Bild im Bild", () => TvPip(true)));
+        if (_tvVodPlaying && _tvEp is not null) row.Children.Add(B("tv-full-nextep", "Nächste Folge", () => TvPlayNextEpisode()));
+        row.Children.Add(B("tv-full-exit", "Verkleinern (Esc)", () => TvFullscreen(false)));
         var stack = new StackPanel { Spacing = 8, Children = { TvSeekRow("tv-full"), new ScrollViewer { Content = row, HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled } } };
         return new Border { Name = "tv-full-bar", Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
             GradientStops = { new GradientStop(Color.Parse("#E61B1B1B"), 0), new GradientStop(Color.Parse("#FF050B18"), 1) } }, BorderBrush = Brush.Parse("#55D4A84B"), BorderThickness = new Thickness(0, 1, 0, 0), Padding = new Thickness(16, 10), Child = stack };
@@ -183,7 +183,7 @@ public partial class MainWindow
         _tvMiniUntil = DateTime.UtcNow.AddSeconds(3);
         if (_tvMini is null)
         {
-            var btn = new Button { Name = "tv-mini-exit", Content = "⤡  Verkleinern", Foreground = Brush.Parse("#1B1406"), FontSize = 15, FontWeight = FontWeight.SemiBold, Padding = new Thickness(16, 8), CornerRadius = new CornerRadius(12),
+            var btn = new Button { Name = "tv-mini-exit", Content = "Verkleinern", Foreground = Brush.Parse("#1B1406"), FontSize = 15, FontWeight = FontWeight.SemiBold, Padding = new Thickness(16, 8), CornerRadius = new CornerRadius(12),
                 Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#FFF1C870"), 0), new GradientStop(Color.Parse("#FFD4A84B"), 1) } } };
             btn.Click += (_, _) => TvFullscreen(false);
             if (!_tvMiniHooked) { _tvMiniHooked = true; Closed += (_, _) => { _tvWatch?.Stop(); _tvMini?.Close(); _tvMini = null; }; } // mit Trendo schließen, nicht nur verstecken

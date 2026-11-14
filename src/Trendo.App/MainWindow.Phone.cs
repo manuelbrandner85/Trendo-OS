@@ -406,7 +406,7 @@ public partial class MainWindow
                 Spacing = 4,
                 Children =
                 {
-                    new TextBlock { Name = $"phone-dev-{i}", Text = $"📱 {d.Model} – {MobileBridge.StateText(d.State, d.Link)} · {MobileBridge.LinkText(d.Link)}", Foreground = Text, TextWrapping = TextWrapping.Wrap },
+                    new TextBlock { Name = $"phone-dev-{i}", Text = $"{d.Model} – {MobileBridge.StateText(d.State, d.Link)} · {MobileBridge.LinkText(d.Link)}", Foreground = Text, TextWrapping = TextWrapping.Wrap },
                     new WrapPanel { Children = { file, ok, Act($"phone-push-{i}", "Senden", () => _ = PushToPhoneAsync(dev, file.Text?.Trim('"', ' ') ?? "", Yes())) } },
                     new WrapPanel
                     {

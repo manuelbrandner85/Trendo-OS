@@ -76,7 +76,7 @@ public partial class MainWindow
                 var full = Path.Combine(cur, e.Relative); var entry = e;
                 var tb = new Button { Name = $"suite-tree-{t++}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Background = Brushes.Transparent,
                     Padding = new Thickness(6 + 14 * e.Depth, 2, 6, 2), CornerRadius = new CornerRadius(4),
-                    Content = new TextBlock { Text = e.IsFolder ? $"▸ {e.Name}  ({e.Count})" : e.Name, Foreground = e.IsFolder ? Text : Muted, FontSize = 11.5, FontWeight = e.IsFolder ? FontWeight.SemiBold : FontWeight.Normal, TextTrimming = TextTrimming.CharacterEllipsis } };
+                    Content = new TextBlock { Text = e.IsFolder ? $"{e.Name}  ({e.Count})" : e.Name, Foreground = e.IsFolder ? Text : Muted, FontSize = 11.5, FontWeight = e.IsFolder ? FontWeight.SemiBold : FontWeight.Normal, TextTrimming = TextTrimming.CharacterEllipsis } };
                 ToolTip.SetTip(tb, e.IsFolder ? "Ordner öffnen" : "Öffnen");
                 tb.Click += (_, _) => Try(V, () => { if (entry.IsFolder) Launch(full); else OpenOfficeDoc(full); });
                 side.Children.Add(tb);
@@ -269,7 +269,7 @@ public partial class MainWindow
                 if (c < 2) { var r = new Button { Name = $"suite-right-{s.Line}", Content = "→", Padding = new Thickness(8, 1) }; ToolTip.SetTip(r, titles[c + 1]); r.Click += (_, _) => { CreationSuite.SetState(open, st.Line, c + 1); Show(V); }; moves.Children.Add(r); }
                 stack.Children.Add(new Border { Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 6),
                     Child = new StackPanel { Spacing = 4, Children = {
-                        new TextBlock { Text = (s.Milestone ? "◆ " : "") + s.Text, Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap },
+                        new TextBlock { Text = (s.Milestone ? "• " : "") + s.Text, Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap },
                         Row(P(s.Due is { } d ? d.ToString("dd.MM.", De) : "", s.Due < DateTime.Today && c < 2 ? Brush.Parse("#F97316") : null, 10.5), moves) } } });
             }
             Grid.SetColumn(stack, col * 2);
@@ -313,7 +313,7 @@ public partial class MainWindow
             canvas.Linked = (fromNo, toNo) => PlanChange(open, "Abhängigkeit", () => { CreationSuite.AddAfter(open, toNo, fromNo); return CreationSuite.Reschedule(open); });
             canvas.Clicked = row => { _planSel = row; Show(V); };
             var crit = bars.Count(b => b.Critical); var end = bars.Max(b => b.End);
-            var undo = Act("suite-plan-undo", _planUndo.TryPeek(out var u) ? "↶ " + u.Label : "↶ Rückgängig", () => { if (_planUndo.TryPop(out var x)) { File.WriteAllText(x.File, x.Text); Show(V); } });
+            var undo = Act("suite-plan-undo", _planUndo.TryPeek(out var u) ? "↶ " + u.Label : "Rückgängig", () => { if (_planUndo.TryPop(out var x)) { File.WriteAllText(x.File, x.Text); Show(V); } });
             undo.IsEnabled = _planUndo.Count > 0;
             sp.Children.Add(new WrapPanel { Children = {
                 new TextBlock { Name = "suite-plan-info", Text = $"Fertig am {end:ddd dd.MM.yyyy} · {(end - bars.Min(b => b.Start)).Days + 1} Tage · {crit} Schritte auf dem kritischen Pfad (rot)", Foreground = GoldText(), FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 12, 0) },

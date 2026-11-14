@@ -140,9 +140,9 @@ public partial class MainWindow
             void B(string n, string t, Action a, bool primary = false) { var b = Act($"dlm-{n}-{k}", t, a, primary); b.FontSize = 11; b.Margin = new Thickness(0, 0, 4, 0); btn.Children.Add(b); }
             switch (j.Status)
             {
-                case S.Lädt or S.Wartet: B("pause", "❚❚ Anhalten", () => DownloadPause(id)); break;
-                case S.Angehalten: B("resume", "▶ Fortsetzen", () => DownloadResume(id), true); break;
-                case S.Fehler: B("retry", "↻ Erneut versuchen", () => DownloadResume(id), true); break;
+                case S.Lädt or S.Wartet: B("pause", "Anhalten", () => DownloadPause(id)); break;
+                case S.Angehalten: B("resume", "Fortsetzen", () => DownloadResume(id), true); break;
+                case S.Fehler: B("retry", "Erneut versuchen", () => DownloadResume(id), true); break;
                 case S.Fertig:
                     B("open", "Öffnen", () => Launch(j.Target), true);
                     B("folder", "Ordner", () => Launch(Path.GetDirectoryName(j.Target)!)); break;

@@ -70,7 +70,7 @@ public partial class MainWindow
                 _msMsg = $"Tonart, Tempo und Takt von „{s.Title}“ übernommen – links im Profi-Modus."; Show(MS);
             }));
         }
-        else if (AnalyseReady) sp.Children.Add(Act("ms-analyse", "🔍 Analysieren (Tonart, Tempo, Akkorde, Tonumfang)", () => _ = MsAnalyse(s.File, s.Id)));
+        else if (AnalyseReady) sp.Children.Add(Act("ms-analyse", "Analysieren (Tonart, Tempo, Akkorde, Tonumfang)", () => _ = MsAnalyse(s.File, s.Id)));
         else sp.Children.Add(Act("ms-analyse-setup", "Song-Analyse einrichten (einmalig, ca. 300 MB)", async () =>
         {
             try { await KiPyInstall(AnalyseModel, KiPyApps.For(KiRuntime.MusikAnalyse)!); _msMsg = "✓ Song-Analyse ist eingerichtet."; }
@@ -151,7 +151,7 @@ public partial class MainWindow
         { try { _msLyrics = SongTools.RepeatChorus(_msLyrics); _msMsg = ""; } catch (ArgumentException e) { _msMsg = e.Message; } Show(MS); }));
         row.Children.Add(B("ms-lyrics-syllables", _msShowSyllables ? "Silben aus" : "Silben zählen", "Silben je Zeile – gleich lange Zeilen singen sich besser", () => { _msShowSyllables = !_msShowSyllables; Show(MS); }));
         row.Children.Add(B("ms-lyrics-floskeln", "KI-Floskeln prüfen", "Sucht abgegriffene KI-Phrasen wie „Neonlicht“ oder „Herz in Flammen“", MsCheckFloskeln));
-        row.Children.Add(B("ms-lyrics-catchy", "✳ Refrain eingängiger", "Die KI macht den Refrain einprägsamer – der Rest bleibt", () => _ = MsCatchyChorus()));
+        row.Children.Add(B("ms-lyrics-catchy", "Refrain eingängiger", "Die KI macht den Refrain einprägsamer – der Rest bleibt", () => _ = MsCatchyChorus()));
         sp.Children.Add(row);
         if (_msShowSyllables)
         {

@@ -63,7 +63,7 @@ public class Runde2ToolsUi
             var (w, _, _) = Ui.Open(); w.TvTab = "mediathek"; w.Show("tv");
             Assert.NotNull(w.Find<Button>("sl-play-1"));
             w.Find<Button>("sl-play-0").Press();
-            await Until(() => w.LiveResolveMessage.StartsWith('▶'));
+            await Until(() => w.LiveResolveMessage.StartsWith("Läuft", StringComparison.Ordinal));
             Assert.Equal(LiveResolve.Channels[0].Url, seen![3]); Assert.Equal("live", w.TvTab);
         }
         finally { MainWindow.ToolExeOverride.Clear(); MainWindow.ToolRunOverride = null; File.Delete(exe); }

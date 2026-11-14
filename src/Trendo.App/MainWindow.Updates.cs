@@ -102,7 +102,7 @@ public partial class MainWindow
                 if (_settings.UpdateWhen == "start") Updater.ApplyOnExit();
                 _updateMsg = _settings.UpdateWhen == "start" ? $"Version {u.Version} ist geladen und wird beim nächsten Start von Trendo installiert."
                     : $"Version {u.Version} ist geladen und wird heute Nacht um {_settings.UpdateHour} Uhr installiert.";
-                Toast($"⬆ Trendo {u.Version} ist bereit.", ("Jetzt installieren", new Action(InstallUpdateNow)), ("Was ist neu?", new Action(() => Show("neu"))));
+                Toast($"Trendo {u.Version} ist bereit.", ("Jetzt installieren", new Action(InstallUpdateNow)), ("Was ist neu?", new Action(() => Show("neu"))));
             }
             return true;
         }
@@ -196,7 +196,7 @@ public partial class MainWindow
         var notes = ReleaseNotes.For(_core.DataRoot, cur) ?? ReleaseNotes.For(_core.DataRoot, _updateReady ?? "");
         var points = notes is null ? [] : ReleaseNotes.Points(notes);
         var list = new StackPanel { Name = "neu-list", Spacing = 6 };
-        foreach (var p in points.Take(30)) list.Children.Add(new TextBlock { Text = "✦  " + p, Foreground = Text, FontSize = 13.5, TextWrapping = TextWrapping.Wrap });
+        foreach (var p in points.Take(30)) list.Children.Add(new TextBlock { Text = "" + p, Foreground = Text, FontSize = 13.5, TextWrapping = TextWrapping.Wrap });
         if (points.Count == 0) list.Children.Add(P("Für diese Version gibt es noch keine Beschreibung.", null, 12.5));
         sp.Children.Add(WCard(list));
         var ok = new Button { Name = "neu-ok", Content = "Super, weiter", Background = Accent }; ok.Click += (_, _) => Show("start");

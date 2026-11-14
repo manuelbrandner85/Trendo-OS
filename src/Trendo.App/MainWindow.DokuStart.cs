@@ -128,7 +128,7 @@ public partial class MainWindow
         var pi = 0;
         foreach (var p in pinned.Where(p => Trendo.Core.Office.DocPins.Matches(Path.GetFileName(p), _dsFind))) { pinGrid.Children.Add(Tile(new FileInfo(p), pinGrid, "doku-pinned", pi)); pi++; }
         if (i == 0) grid.Children.Add(P(_dsFind.Length > 0 ? $"Nichts gefunden für „{_dsFind}“." : _dsType == "Alle" && _dsDays == 0 ? "Noch keine Dokumente – leg oben eins an." : "Keine Dokumente für diesen Filter.", Text));
-        var find = new TextBox { Name = "doku-find", Text = _dsFind, PlaceholderText = "🔎  Dokumente suchen …", Width = 320, HorizontalAlignment = HorizontalAlignment.Left };
+        var find = new TextBox { Name = "doku-find", Text = _dsFind, PlaceholderText = "Dokumente suchen …", Width = 320, HorizontalAlignment = HorizontalAlignment.Left };
         find.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) { _dsFind = (find.Text ?? "").Trim(); Show(V); } };
 
         return DokuPage("Texte & Tabellen", new StackPanel { Spacing = 10, Children = {

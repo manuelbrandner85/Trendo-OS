@@ -54,7 +54,7 @@ public partial class MainWindow
                 if (_opt.Isolated) { OvSay("Testmodus: Trendo lernt keine Stimme."); return v; }
                 if (!KiStore.RuntimeReady(KiRuntime.Stimme)) { OvSay("Stimmen lernen wird eingerichtet (Applio, frei, MIT – einmalig mehrere GB) …"); await KiPyInstall(KiLibrary.Models.First(m => m.Id == "musik-stimme"), KiPyApps.For(KiRuntime.Stimme)!); }
             }
-            OvSay($"🧠 Trendo lernt die Stimme „{v.Name}“ aus {parts} Abschnitten … (mit NVIDIA-Grafikkarte etwa 30–40 Minuten)");
+            OvSay($"Trendo lernt die Stimme „{v.Name}“ aus {parts} Abschnitten … (mit NVIDIA-Grafikkarte etwa 30–40 Minuten)");
             var r = await OvRun(["lernen", v.Id, Bank.TakesDir(v.Id), "60"], 4 * 3600_000);
             var ok = r.Ok && r.Out.Contains("\"ok\": true");
             if (ok) Bank.MarkReady(v.Id);
@@ -114,7 +114,7 @@ public partial class MainWindow
         sp.Children.Add(new TextBlock { Text = "NEUER TEXT AUF DIESE MUSIK", Foreground = Muted, FontSize = 10, FontWeight = FontWeight.Bold });
         var lyr = new TextBox { Name = "ms-newlyrics", Text = _vbNewLyrics, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 60, FontSize = 12, Watermark = "Dein eigener Text – die Begleitung bleibt, der Gesang ist neu" };
         lyr.TextChanged += (_, _) => _vbNewLyrics = lyr.Text ?? "";
-        sp.Children.Add(lyr); sp.Children.Add(Act("ms-newlyrics-go", "♫ Mit neuem Text singen", () => _ = MsNewLyricsOnMusic(s, lyr.Text ?? "")));
+        sp.Children.Add(lyr); sp.Children.Add(Act("ms-newlyrics-go", "Mit neuem Text singen", () => _ = MsNewLyricsOnMusic(s, lyr.Text ?? "")));
         // V3
         sp.Children.Add(new TextBlock { Text = "STIMME AUS DIESEM GESANG LERNEN", Foreground = Muted, FontSize = 10, FontWeight = FontWeight.Bold, Margin = new Thickness(0, 6, 0, 0) });
         var name = new TextBox { Name = "vb-name", Text = _vbName, Watermark = "Name der Stimme", FontSize = 12 }; name.TextChanged += (_, _) => _vbName = name.Text ?? "";
@@ -131,7 +131,7 @@ public partial class MainWindow
         var famous = new CheckBox { Name = "vb-notfamous", IsChecked = _vbNotFamous, FontSize = 11.5, Content = new TextBlock { Text = "Keine bekannte Künstlerin, kein bekannter Künstler, keine prominente Person", TextWrapping = TextWrapping.Wrap } };
         famous.IsCheckedChanged += (_, _) => _vbNotFamous = famous.IsChecked == true;
         sp.Children.Add(famous);
-        sp.Children.Add(Act("vb-learn", _ovBusy ? "Läuft …" : "🧠 Stimme lernen", () => _ = MsVoiceLearnFromSong(s, _vbName,
+        sp.Children.Add(Act("vb-learn", _ovBusy ? "Läuft …" : "Stimme lernen", () => _ = MsVoiceLearnFromSong(s, _vbName,
             new VoiceBank.Consent(_vbKind, _vbKind == "person" ? _vbPerson : "", DateTimeOffset.Now, _vbKind == "person" ? _vbStatement : "Das ist meine eigene Stimme."), _vbNotFamous)));
         // V6
         var voices = Bank.All();

@@ -173,7 +173,7 @@ public partial class MainWindow
 
     Control CadRibbon()
     {
-        var file = new Button { Name = "cad-file", Content = "Datei ▾", Focusable = false, Padding = new Thickness(10, 4), Background = Accent, VerticalAlignment = VerticalAlignment.Top };
+        var file = new Button { Name = "cad-file", Content = "Datei", Focusable = false, Padding = new Thickness(10, 4), Background = Accent, VerticalAlignment = VerticalAlignment.Top };
         var fm = new ContextMenu();
         MenuItem Mi(string name, string header, Action a) { var m = new MenuItem { Name = name, Header = header }; m.Click += (_, _) => { a(); Show("cad"); }; return m; }
         fm.Items.Add(Mi("cad-m-new", "Neues Bauteil", CadNew));

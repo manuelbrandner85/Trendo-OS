@@ -69,7 +69,7 @@ public partial class MainWindow
             var del = new Button { Name = $"ms-persona-del-{i}", Content = "🗑", FontSize = 12, Padding = new Thickness(8, 3), Background = Brushes.Transparent, BorderThickness = new Thickness(0) };
             ToolTip.SetTip(del, "Persona löschen (das Lied bleibt)");
             del.Click += (_, _) => { Personas.Delete(id); if (_msPersona == id) _msPersona = null; _msMsg = $"Persona „{p.Name}“ gelöscht."; Show(MS); };
-            var info = new StackPanel { Children = { new TextBlock { Text = "👤 " + p.Name, Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold },
+            var info = new StackPanel { Children = { new TextBlock { Text = "" + p.Name, Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold },
                 new TextBlock { Text = (p.Style.Length > 0 ? p.Style : "ohne Stil-Wörter") + $" · aus „{p.SongTitle}“" + (p.Uses > 0 ? $" · {p.Uses}× benutzt" : ""), Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap } } };
             var row = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto"), ColumnSpacing = 8, Children = { info, Pos(use, 1), Pos(del, 2) } };
             use.VerticalAlignment = VerticalAlignment.Center; del.VerticalAlignment = VerticalAlignment.Center;
@@ -88,7 +88,7 @@ public partial class MainWindow
         var name = new TextBox { Name = "ms-persona-name", Text = _msPersonaName, Watermark = "Name, z. B. „Sommerstimme“ (leer = Liedtitel)", FontSize = 12 };
         name.TextChanged += (_, _) => _msPersonaName = name.Text ?? "";
         sp.Children.Add(name);
-        sp.Children.Add(Act("ms-persona-go", "👤 Persona merken", () => { if (MsMakePersona(s.Id, name.Text ?? "") is not null) _msPersonaName = ""; }));
+        sp.Children.Add(Act("ms-persona-go", "Persona merken", () => { if (MsMakePersona(s.Id, name.Text ?? "") is not null) _msPersonaName = ""; }));
         return sp;
     }
 }

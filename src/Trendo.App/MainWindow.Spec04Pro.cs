@@ -75,7 +75,7 @@ public partial class MainWindow
         foreach (var s in plan.Steps) sp.Children.Add(P("• " + s, s.StartsWith("Hinweis", StringComparison.Ordinal) ? Muted : Text, 11.5));
         if (plan.Needed)
         {
-            var b = new Button { Name = "xr-fix", Content = $"🛠 Für {dev} reparieren", Padding = new Thickness(10, 4), Background = Accent, Foreground = Brushes.White };
+            var b = new Button { Name = "xr-fix", Content = $"Für {dev} reparieren", Padding = new Thickness(10, 4), Background = Accent, Foreground = Brushes.White };
             ToolTip.SetTip(b, "Blender rechnet eine neue Datei „…-brille.glb“ – das Original bleibt");
             b.Click += (_, _) => _ = XrFix();
             sp.Children.Add(b);

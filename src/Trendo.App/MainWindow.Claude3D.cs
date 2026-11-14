@@ -75,7 +75,7 @@ public partial class MainWindow
                 var (parts, err) = Parse3DParts(s.Value);
                 if (parts is null) { Say("Claude-Vorschlag nicht übernommen: " + err + ".", "3d"); return false; }
                 Push(); _scene.Parts = parts; _selId = parts.FirstOrDefault()?.Id; _selGroup = null; _step3d = "modell";
-                Say($"✳ Claude hat {parts.Count} Teil(e) gebaut – „Rückgängig“ holt den alten Stand zurück.", "3d");
+                Say($"Claude hat {parts.Count} Teil(e) gebaut – „Rückgängig“ holt den alten Stand zurück.", "3d");
                 return true;
             case F3DLight:
                 if (!Studio3DPro.Lights.Any(l => l.Id == s.Value.Trim())) return false;

@@ -75,7 +75,7 @@ public partial class MainWindow
         sp.Children.Add(new WrapPanel { Children = { run, new Border { Width = 6 }, rel } });
         if (AuQaLast is { } r)
             foreach (var c in r.Checks)
-                sp.Children.Add(new TextBlock { Text = (c.Light switch { "rot" => "🔴 ", "gelb" => "🟡 ", _ => "🟢 " }) + c.Text, Foreground = Text, FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
+                sp.Children.Add(new TextBlock { Text = c.Text, Foreground = Brush.Parse(c.Light switch { "rot" => "#F87171", "gelb" => "#FACC15", _ => "#4ADE80" }), FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
         return sp;
     }
 }

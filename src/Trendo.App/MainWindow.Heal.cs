@@ -31,7 +31,7 @@ public partial class MainWindow
         if (last is { } l) sp.Children.Add(P($"Zuletzt geprüft: {l.At:dd.MM.yyyy HH:mm}", null, 11));
         foreach (var r in res)
             sp.Children.Add(WCard(new StackPanel { Children = {
-                new TextBlock { Text = r.State switch { HealState.Ok => "✓ ", HealState.Repaired => "🔧 ", HealState.NeedsYou => "• ", _ => "⚠ " } + r.Title, Foreground = Text, FontSize = 13 },
+                new TextBlock { Text = r.Title, Foreground = Brush.Parse(r.State switch { HealState.Ok => "#4ADE80", HealState.Repaired => "#60A5FA", HealState.NeedsYou => "#FACC15", _ => "#ECEDEF" }), FontSize = 13 },
                 P(r.Detail, r.State == HealState.NeedsYou ? Brush.Parse("#FACC15") : null, 11) } }));
         var go = new Button { Name = "heal-run", Content = "Jetzt prüfen und reparieren", Background = Accent };
         go.Click += async (_, _) => { go.IsEnabled = false; var root = _core.DataRoot; LastHeal = await Task.Run(() => new SelfHealer(root, _core.Audit).Run(true, DateTime.Now)); Show("heilung"); };

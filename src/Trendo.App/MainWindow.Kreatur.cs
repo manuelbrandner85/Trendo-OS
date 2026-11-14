@@ -73,7 +73,7 @@ public partial class MainWindow
     Control KreaturBlock()
     {
         var sp = new StackPanel { Name = "3d-kreatur", Spacing = 6 };
-        sp.Children.Add(H("🐉 Kreatur bauen", 14));
+        sp.Children.Add(H("Kreatur bauen", 14));
         sp.Children.Add(P("Komplexe Figur in echten Maßen mit Haut, Schuppen, Flügeln und Knochengerüst – Blender baut sie.", Muted, 12));
         var art = new ComboBox { Name = "3d-kreatur-art", ItemsSource = KreaturArten.Select(a => a.Label).ToList(), SelectedIndex = Array.FindIndex(KreaturArten, a => a.Id == _kreaturArt), MinWidth = 120 };
         art.SelectionChanged += (_, _) => { if (art.SelectedIndex >= 0) _kreaturArt = KreaturArten[art.SelectedIndex].Id; };

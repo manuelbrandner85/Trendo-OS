@@ -84,7 +84,7 @@ public partial class MainWindow
     }
 
     /// <summary>Knopf unter dem Liedtext (Erweitert): Vollbild-Editor öffnen.</summary>
-    Control MsLyricsFullButton() => Act("ms-lyrics-full", "⛶ Vollbild-Editor", () => MsLyricsFullscreen(true));
+    Control MsLyricsFullButton() => Act("ms-lyrics-full", "Vollbild-Editor", () => MsLyricsFullscreen(true));
 
     /// <summary>V6: Vollbild-Editor (Spalten 2–6).</summary>
     Control MsLyricsFullEditor()

@@ -135,7 +135,7 @@ public partial class MainWindow
         var (ok, msg) = await Task.Run(() => LiveResolve.StreamUrl(exe, url, "best", run: run));
         _core.Audit.Append(Principal.LocalOwner.Name, "tv.live.oeffentlich", ok ? new Uri(url).Host : "fehler");
         if (!ok) { _slMsg = "⚠ " + msg; Show("tv"); return; }
-        _slMsg = "▶ Läuft im Player."; _tvTab = "live"; Show("tv"); TvPlayUrl(msg, "main");
+        _slMsg = "Läuft im Player."; _tvTab = "live"; Show("tv"); TvPlayUrl(msg, "main");
     }
 
     Control LiveChannelsCard()

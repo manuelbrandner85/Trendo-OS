@@ -348,7 +348,7 @@ public partial class MainWindow
                 Background = new SolidColorBrush(Color.FromArgb((byte)(20 + 140 * load), 47, 134, 246)), BorderBrush = isExam ? GoldEdge : Edge, BorderThickness = new Thickness(isExam ? 2 : 1),
                 Child = new StackPanel { Children = {
                     new TextBlock { Text = d == 0 ? "heute" : day.ToString("ddd dd.MM.", De), Foreground = Text, FontSize = 10.5, FontWeight = FontWeight.SemiBold },
-                    new TextBlock { Text = isExam ? "🎓 Prüfung" : r + n == 0 ? "frei" : $"{r} wdh. · {n} neu", Foreground = isExam ? GoldEdge : Muted, FontSize = 10 } } } });
+                    new TextBlock { Text = isExam ? "Prüfung" : r + n == 0 ? "frei" : $"{r} wdh. · {n} neu", Foreground = isExam ? GoldEdge : Muted, FontSize = 10 } } } });
         }
         sp.Children.Add(grid);
 

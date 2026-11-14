@@ -67,7 +67,7 @@ public sealed class DiskMapView : Control
             if (r.Width > 54 && r.Height > 16)
                 using (ctx.PushClip(r.Deflate(3)))
                 {
-                    ctx.DrawText(new FormattedText((n.IsDir ? "📁 " : "") + n.Name, De, FlowDirection.LeftToRight, bold, 11.5, Brushes.White), new Point(r.X + 5, r.Y + 3));
+                    ctx.DrawText(new FormattedText((n.IsDir ? "• " : "") + n.Name, De, FlowDirection.LeftToRight, bold, 11.5, Brushes.White), new Point(r.X + 5, r.Y + 3));
                     if (r.Height > 32) ctx.DrawText(new FormattedText(Size(n.Bytes), De, FlowDirection.LeftToRight, font, 10.5, new SolidColorBrush(Color.Parse("#DDFFFFFF"))), new Point(r.X + 5, r.Y + 18));
                 }
         }
