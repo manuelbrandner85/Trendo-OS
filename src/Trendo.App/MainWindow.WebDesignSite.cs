@@ -11,7 +11,7 @@ namespace Trendo.App;
 public partial class MainWindow
 {
     string _wdSiteNote = "", _wdLangNote = "", _wdCmsNote = "";
-    string? _wdDeleteAsk, _wdLangDeleteAsk, _wdCollDeleteAsk, _wdCmsSel, _wdCmsEntry, _wdCmsLang;
+    string? _wdDeleteAsk, _wdLangDeleteAsk, _wdCollDeleteAsk, _wdCmsSel, _wdCmsItem, _wdCmsLang;
     IReadOnlyList<WebDesignSeo.Fund>? _wdSeo;
     bool _wdTranslating;
     public string WebDesignSiteNote => _wdSiteNote;
@@ -233,7 +233,7 @@ public partial class MainWindow
     {
         var err = WebDesignCms.SetEntry(WebDesignDir, collection, adresse.Trim(), werte, sprache);
         _wdCmsNote = err ?? $"Eintrag „{adresse.Trim()}“ gespeichert.";
-        if (err is null) { _wdCmsEntry = adresse.Trim(); WebDesignReloadIfOpen(); }
+        if (err is null) { _wdCmsItem = adresse.Trim(); WebDesignReloadIfOpen(); }
         Show("dev");
     }
 
@@ -280,7 +280,7 @@ public partial class MainWindow
             var tpl = WebDesignCms.TemplateOf(dir, c.Id);
             var row = new WrapPanel { Name = $"web-cms-sammlung-{n}" };
             row.Children.Add(new TextBlock { Text = $"{(_wdCmsSel == c.Id ? "▸ " : "")}{c.Name} ({c.Id}) · {c.Eintraege.Count} Einträge · {(tpl is null ? "keine Vorlage" : "Vorlage /" + tpl)}", Foreground = Text, FontSize = 12.5, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 0) });
-            row.Children.Add(Act($"web-cms-waehlen-{n}", "Einträge", () => { _wdCmsSel = c.Id; _wdCmsEntry = null; Show("dev"); }));
+            row.Children.Add(Act($"web-cms-waehlen-{n}", "Einträge", () => { _wdCmsSel = c.Id; _wdCmsItem = null; Show("dev"); }));
             if (tpl is null) row.Children.Add(Act($"web-cms-vorlage-{n}", "Vorlage-Seite anlegen", () => WebDesignCreateTemplate(c.Id)));
             row.Children.Add(Act($"web-cms-loeschen-{n}", _wdCollDeleteAsk == c.Id ? "Wirklich löschen" : "Löschen", () => WebDesignDeleteCollection(c.Id)));
             sp.Children.Add(row);
@@ -299,12 +299,12 @@ public partial class MainWindow
             {
                 var e = entry; var en = ei++;
                 var title = sel.TitelFeld is { } tf ? e.Werte.GetValueOrDefault(tf, e.Adresse) : e.Adresse;
-                sp.Children.Add(new WrapPanel { Children = { P($"{(_wdCmsEntry == e.Adresse ? "▸ " : "")}{title} ({e.Adresse})", Text, 12.5), new Border { Width = 8 },
-                    Act($"web-cms-eintrag-{en}", "Bearbeiten", () => { _wdCmsEntry = e.Adresse; Show("dev"); }),
-                    Act($"web-cms-eintrag-weg-{en}", "Löschen", () => { _wdCmsNote = WebDesignCms.DeleteEntry(dir, sel.Id, e.Adresse) ?? "Eintrag gelöscht."; if (_wdCmsEntry == e.Adresse) _wdCmsEntry = null; WebDesignReloadIfOpen(); Show("dev"); }) } });
+                sp.Children.Add(new WrapPanel { Children = { P($"{(_wdCmsItem == e.Adresse ? "▸ " : "")}{title} ({e.Adresse})", Text, 12.5), new Border { Width = 8 },
+                    Act($"web-cms-eintrag-{en}", "Bearbeiten", () => { _wdCmsItem = e.Adresse; Show("dev"); }),
+                    Act($"web-cms-eintrag-weg-{en}", "Löschen", () => { _wdCmsNote = WebDesignCms.DeleteEntry(dir, sel.Id, e.Adresse) ?? "Eintrag gelöscht."; if (_wdCmsItem == e.Adresse) _wdCmsItem = null; WebDesignReloadIfOpen(); Show("dev"); }) } });
             }
             // Formular: Eintrag in der Standardsprache oder Übersetzung der Textfelder
-            var current = sel.Eintraege.FirstOrDefault(x => x.Adresse == _wdCmsEntry);
+            var current = sel.Eintraege.FirstOrDefault(x => x.Adresse == _wdCmsItem);
             var langs = site.Sprachen.ToList();
             var lang = langs.Contains(_wdCmsLang ?? "") ? _wdCmsLang! : site.Standardsprache;
             var form = new StackPanel { Spacing = 4, Name = "web-cms-formular", Margin = new Thickness(0, 6, 0, 0) };
@@ -340,7 +340,7 @@ public partial class MainWindow
                 form.Children.Add(new StackPanel { Children = { new TextBlock { Text = label, FontSize = 11.5, Foreground = Muted }, box } });
             }
             form.Children.Add(new WrapPanel { Children = { Act("web-cms-speichern", "Eintrag speichern", () => WebDesignSaveEntry(sel.Id, adr.Text ?? "", inputs.ToDictionary(kv => kv.Key, kv => kv.Value()), lang == site.Standardsprache ? null : lang), true),
-                new Border { Width = 8 }, Act("web-cms-neu", "Neuer Eintrag", () => { _wdCmsEntry = null; Show("dev"); }) } });
+                new Border { Width = 8 }, Act("web-cms-neu", "Neuer Eintrag", () => { _wdCmsItem = null; Show("dev"); }) } });
             sp.Children.Add(form);
         }
         foreach (var f in WebDesignCms.Check(dir).Take(12)) sp.Children.Add(P((f.Ebene == "Fehler" ? "✗ " : "• ") + f.Text, f.Ebene == "Fehler" ? Brush.Parse("#F5A524") : Muted, 12));
