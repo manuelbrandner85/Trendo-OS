@@ -396,6 +396,22 @@ public class KreativKits4Tests
         Assert.Empty(CiteKit.ParseBibTex("").Sources);
     }
 
+    [Fact(DisplayName = "T-0620: Präparierte BibTeX-Datei mit vielen offenen Klammern ist schnell abgewiesen; gute Einträge danach werden trotzdem gelesen")]
+    public void BibTex_offene_Klammern_schnell()
+    {
+        var sb = new System.Text.StringBuilder();
+        for (var i = 0; i < 40_000; i++) sb.Append("@article{k").Append(i).Append(", title = {offen\n");
+        sb.Append("\n@book{gut, title = {Ein gutes Buch}, author = {Muster, Erika}, year = {2024}}\n");
+        Assert.True(sb.Length < CiteKit.MaxBibChars);
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        var (src, warn) = CiteKit.ParseBibTex(sb.ToString());
+        Assert.True(sw.Elapsed < TimeSpan.FromSeconds(10), $"Import dauerte {sw.Elapsed.TotalSeconds:0.0} s");
+        Assert.Contains(src, s => s.Title == "Ein gutes Buch");
+        Assert.NotEmpty(warn);
+        var langerKommentar = "@comment{" + new string('a', CiteKit.MaxBibSpan + 10) + "\n@misc{x, title = {Nach dem Kommentar}}";
+        Assert.Contains(CiteKit.ParseBibTex(langerKommentar).Sources, s => s.Title == "Nach dem Kommentar");
+    }
+
     // ---------------- Tagesplaner ----------------
 
     static readonly DateTime Mon = new(2026, 11, 16);

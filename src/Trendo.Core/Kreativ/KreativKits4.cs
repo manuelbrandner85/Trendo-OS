@@ -968,6 +968,9 @@ public static partial class CiteKit
     }
 
     public const int MaxBibChars = 5_000_000;
+    /// <summary>T-0620: Höchstlänge, die eine einzelne Klammer oder ein Anführungszeichen umfassen darf – kein echter Eintrag ist so lang.
+    /// Verhindert, dass viele offene Klammern jede Suche bis zum Dateiende laufen lassen (sonst quadratische Laufzeit).</summary>
+    public const int MaxBibSpan = 100_000;
     static readonly Dictionary<string, string> Months = new(StringComparer.OrdinalIgnoreCase) { ["jan"] = "1", ["feb"] = "2", ["mar"] = "3", ["apr"] = "4", ["may"] = "5", ["jun"] = "6", ["jul"] = "7", ["aug"] = "8", ["sep"] = "9", ["oct"] = "10", ["nov"] = "11", ["dec"] = "12" };
 
     /// <summary>Liest BibTeX/BibLaTeX robust: Werte in {…}, "…", Zahlen und @string-Kürzel mit #, LaTeX-Akzente werden zu Umlauten.
@@ -990,7 +993,7 @@ public static partial class CiteKit
             if (pos >= text.Length || (text[pos] != '{' && text[pos] != '(')) continue;
             var close = text[pos] == '{' ? '}' : ')';
             var bodyStart = pos + 1;
-            if (type is "comment" or "preamble") { var after = SkipBalanced(text, pos); pos = after < 0 ? text.Length : after; continue; }
+            if (type is "comment" or "preamble") { var after = SkipBalanced(text, pos); if (after < 0) { var nx = text.IndexOf("\n@", pos, StringComparison.Ordinal); pos = nx < 0 ? text.Length : nx + 1; } else pos = after; continue; }
             if (type == "string")
             {
                 try { var (name, value, after) = ReadField(text, bodyStart, macros); macros[name] = value; pos = SkipTo(text, after, close) + 1; }
@@ -1031,7 +1034,7 @@ public static partial class CiteKit
     static int SkipBalanced(string t, int open)
     {
         var close = t[open] == '{' ? '}' : ')'; var openC = t[open]; var depth = 0;
-        for (var i = open; i < t.Length; i++)
+        for (var i = open; i < t.Length && i - open < MaxBibSpan; i++)
         {
             if (t[i] == '\\') { i++; continue; }
             if (t[i] == openC) depth++;
@@ -1069,13 +1072,13 @@ public static partial class CiteKit
             else if (t[pos] == '"')
             {
                 var depth = 0; var i = pos + 1;
-                for (; i < t.Length; i++)
+                for (; i < t.Length && i - pos < MaxBibSpan; i++)
                 {
                     if (t[i] == '\\') { i++; continue; }
                     if (t[i] == '{') depth++; else if (t[i] == '}') depth--;
                     else if (t[i] == '"' && depth == 0) break;
                 }
-                if (i >= t.Length) throw new FormatException("Anführungszeichen nicht geschlossen.");
+                if (i >= t.Length || i - pos >= MaxBibSpan) throw new FormatException("Anführungszeichen nicht geschlossen.");
                 value.Append(t, pos + 1, i - pos - 1); pos = i + 1;
             }
             else

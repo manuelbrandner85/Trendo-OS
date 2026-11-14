@@ -78,6 +78,14 @@ public partial class MainWindow
         cc.Click += (_, _) => ClaudeDockToggle(studio, null);
         if (studio is not null) ClaudeAcceptDrop(cc, () => studio);
         var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Avalonia.Thickness(8, 4, 8, 2), Children = { cc } };
+        // T-0620: im Fokusmodus fehlte „Markierung an Claude“ – in Fachprogrammen steht es wieder neben „Claude“
+        if (FocusMode && studio is not null && (key is "text" or "tabelle" or "praesentation" || Programs.ContainsKey(key)) && !(Windows.Active?.Id is { } aw2 && ClaudeDockOpen(aw2)))
+        {
+            var ask = new Button { Name = "auftrag-claude-markierung", Content = "Markierung an Claude", Height = 30 };
+            ToolTip.SetTip(ask, "Was du markiert hast, mit Claude besprechen (Strg+Umschalt+A)");
+            ask.Click += (_, _) => ClaudeAskSelection(key);
+            row.Children.Insert(0, ask);
+        }
         DockPanel.SetDock(row, Avalonia.Controls.Dock.Top);
         view.HorizontalAlignment = HorizontalAlignment.Stretch; view.VerticalAlignment = VerticalAlignment.Stretch;
         return new DockPanel { LastChildFill = true, Children = { row, view } };

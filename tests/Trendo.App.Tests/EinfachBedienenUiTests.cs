@@ -111,6 +111,34 @@ public class EinfachBedienen_Ui
         finally { w.Close(); }
     }
 
+    [AvaloniaFact(DisplayName = "T-0620: Von selbst angelegte Datei folgt dem neuen Titel (samt Versionen); selbst benannte Dateien bleiben, wie sie sind")]
+    public void Autosave_rename()
+    {
+        var (w, _, root) = Ui.Open();
+        try
+        {
+            w.AutoSaveDocs = true;
+            w.Show(MP); Settle(); w.Find<Button>("prog-tpl-tshirt").Press(); Settle();
+            var d = w.ProgramActive(MP)!;
+            d.Set("name", "Erstes Shirt"); Assert.Equal(1, w.ProgramAutosaveNow());
+            var first = d.Path!;
+            d.Title = "Sommer-Kollektion"; d.Set("name", "Zweites Shirt");
+            Assert.Equal(1, w.ProgramAutosaveNow());
+            Assert.Equal("Sommer-Kollektion.tdoc", Path.GetFileName(d.Path));
+            Assert.False(File.Exists(first)); // keine verwaiste „Unbenannt“-Datei
+            Assert.Equal("Zweites Shirt", ProgramDocument.Load(d.Path!).Text("name"));
+            Assert.Single(Directory.GetFiles(Path.GetDirectoryName(d.Path!)!, "*.tdoc"));
+            Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "program.autosave.rename");
+            // selbst gespeichert unter eigenem Namen: Titeländerung benennt die Datei nicht mehr um
+            var own = Path.Combine(root, "eigen", "Mein Name.tdoc");
+            w.ProgramSave(MP, own);
+            d.Title = "Anderer Titel"; d.Set("name", "Drittes Shirt");
+            Assert.Equal(1, w.ProgramAutosaveNow());
+            Assert.Equal(own, d.Path);
+        }
+        finally { w.Close(); }
+    }
+
     [AvaloniaFact(DisplayName = "E4 + E5: Speichern unter und Öffnen mit der Dateiauswahl; „Weitermachen“ öffnet das zuletzt bearbeitete Dokument – auf der Startansicht und auf dem Desktop")]
     public async Task Pick_and_continue()
     {

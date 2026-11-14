@@ -127,6 +127,7 @@ public partial class MainWindow
         else if (!Path.IsPathRooted(target)) // nur ein Name: neben das Dokument, sonst in den Ordner des Programms, nie ins Arbeitsverzeichnis des Prozesses
             target = Path.Combine(d.Path is { } current && Path.IsPathRooted(current) ? Path.GetDirectoryName(current)! : WorkFolder(spec.Folder), target);
         d.Save(target); ProgRecent.Add(spec.Studio, d.Path!); RememberLastDoc(key, d.Path!); DropBackup(d);
+        if (path is not null) _progAutoNamed.Remove(d.Id); // selbst benannt: nicht mehr umbenennen
         _core.Audit.Append(Principal.LocalOwner.Name, "program.save", $"{spec.Studio} {Path.GetFileName(d.Path)}");
         _progMsg[key] = "Gespeichert: " + d.Path; return d.Path!;
     }
@@ -137,6 +138,22 @@ public partial class MainWindow
         var dir = WorkFolder(spec.Folder); var stem = DevStudio.SafeName(d.Title); var target = Path.Combine(dir, stem + ProgramDocument.Extension);
         for (var n = 2; File.Exists(target); n++) target = Path.Combine(dir, $"{stem} ({n}){ProgramDocument.Extension}");
         return target;
+    }
+
+    /// <summary>Dokumente, deren Datei das automatische Speichern selbst angelegt und benannt hat (nur diese Sitzung).</summary>
+    readonly HashSet<string> _progAutoNamed = [];
+
+    /// <summary>T-0620: Neuer Dateiname, wenn eine von selbst angelegte Datei noch nach dem alten Titel heißt; sonst null.
+    /// Nur im Studio-Ordner und nur für Dateien, die das automatische Speichern in dieser Sitzung angelegt hat.</summary>
+    string? ProgramAutoRename(ProgramSpec spec, ProgramDocument d)
+    {
+        if (d.Path is not { } cur || !_progAutoNamed.Contains(d.Id)) return null;
+        var stem = DevStudio.SafeName(d.Title);
+        var name = Path.GetFileNameWithoutExtension(cur);
+        if (name == stem || name.StartsWith(stem + " (", StringComparison.Ordinal)) return null;
+        var dir = Path.GetFullPath(WorkFolder(spec.Folder));
+        if (!string.Equals(Path.GetDirectoryName(Path.GetFullPath(cur)), dir, StringComparison.OrdinalIgnoreCase)) return null;
+        return ProgramNewTarget(spec, d);
     }
 
     /// <summary>Gespeichert: die Absturz-Sicherung des noch unbenannten Dokuments wird nicht mehr gebraucht.</summary>
@@ -157,8 +174,23 @@ public partial class MainWindow
             if (d.Path is null)
             {
                 d.Save(ProgramNewTarget(spec, d));
-                ProgRecent.Add(spec.Studio, d.Path!); RememberLastDoc(key, d.Path!);
+                ProgRecent.Add(spec.Studio, d.Path!); RememberLastDoc(key, d.Path!); _progAutoNamed.Add(d.Id);
                 _core.Audit.Append(Principal.LocalOwner.Name, "program.autosave", $"{spec.Studio} {Path.GetFileName(d.Path)}");
+            }
+            else if (ProgramAutoRename(spec, d) is { } renamed)
+            {
+                // T-0620: von selbst angelegte Datei („Unbenannt.tdoc“) folgt dem neuen Titel – samt Versionen; die alte Datei verschwindet
+                var oldPath = d.Path;
+                d.Save(renamed, keepVersion: false);
+                try
+                {
+                    var ov = ProgramDocument.VersionDir(oldPath); var nv = ProgramDocument.VersionDir(renamed);
+                    if (Directory.Exists(ov) && !Directory.Exists(nv)) Directory.Move(ov, nv);
+                    if (File.Exists(oldPath)) File.Delete(oldPath);
+                }
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+                ProgRecent.Add(spec.Studio, d.Path!); RememberLastDoc(key, d.Path!);
+                _core.Audit.Append(Principal.LocalOwner.Name, "program.autosave.rename", $"{Path.GetFileName(oldPath)} -> {Path.GetFileName(d.Path)}");
             }
             else d.Save(keepVersion: ProgramDocument.VersionDue(d.Path, AutoVersionGap));
             DropBackup(d);
