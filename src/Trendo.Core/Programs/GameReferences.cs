@@ -91,7 +91,7 @@ public static class GameReferences
                         break;
                     }
                 }
-                catch (Exception e) when (e is HttpRequestException or IOException or TaskCanceledException) { failed = true; }
+                catch (Exception e) when (e is IOException or TaskCanceledException || e.GetType().Name == "HttpRequestException") { failed = true; } // Kern ohne Netz-Bibliothek (QA-019): Netzfehler am Namen erkennen
             }
         return new(found, !failed); // schon ein Ausfall: nicht vollständig geprüft, nichts überschreiben
     }
