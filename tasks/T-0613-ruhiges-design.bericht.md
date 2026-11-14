@@ -27,7 +27,8 @@ Erster Volltest: App 86 min statt ~44 min. Messung (40 Seiten): 30 s neu gegen 1
 
 - Lauf 1: 38 Fehler (Statuszeichen mit entfernt, zwei Zeitüberschreitungen) – behoben.
 - Lauf 2 (Stand a690cff2b): Exitcode 0 – Api 16; Core 2281 bestanden, 5 übersprungen; App 1228 bestanden, 4 übersprungen (36 min).
-- Nach den Prüf-Befunden: 102 betroffene Tests grün; Abschluss-Volltest siehe `reports/volltest-T-0613/`.
+- Nach den Prüf-Befunden: 102 betroffene Tests grün.
+- Abschluss-Volltest nach Zusammenführung mit `main` (0.9.94, Stand 4f689f49a): Exitcode 0 – Api 16; Core 2417 bestanden, 5 übersprungen; App 1238 bestanden, 5 übersprungen (49 min); Paket-Tests OK. Auszug `reports/volltest-T-0613/lauf3-abschluss.txt`.
 
 ## Belege
 
