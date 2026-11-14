@@ -59,6 +59,18 @@ public class EinfachBedienenTests
         Assert.NotEqual("Operation is not valid due to the current state of the object.", FriendlyError.Say(new InvalidOperationException("Operation is not valid due to the current state of the object.")));
     }
 
+    [Fact(DisplayName = "T-0621: Abgelaufene oder fehlende Claude-Anmeldung wird erkannt, normale Antworten und Kontingent-Meldungen nicht")]
+    public void Claude_auth_expired()
+    {
+        Assert.True(ClaudeCode.IsAuthExpired("Failed to authenticate: this login reached its time limit and cannot be renewed. Run `claude auth login` to sign in again"));
+        Assert.True(ClaudeCode.IsAuthExpired("Invalid API key · Please run /login"));
+        Assert.True(ClaudeCode.IsAuthExpired("API Error: 401 {\"type\":\"error\",\"error\":{\"type\":\"authentication_error\",\"message\":\"OAuth token has expired.\"}}"));
+        Assert.False(ClaudeCode.IsAuthExpired("[Strophe]\nWir fahren an den See und singen laut"));
+        Assert.False(ClaudeCode.IsAuthExpired("Claude usage limit reached. Your limit will reset at 5pm"));
+        Assert.False(ClaudeCode.IsAuthExpired(null));
+        Assert.Contains("neu anmelden", ClaudeCode.AuthText);
+    }
+
     [Fact(DisplayName = "E10: Alltagswörter in allen Stufen, Fachwort als Hinweis; Einfach-Wörter der Programme bleiben stufenabhängig")]
     public void Everyday_words()
     {

@@ -162,6 +162,21 @@ public partial class MainWindow
         return p.ExitCode;
     }
 
+    /// <summary>T-0621: Claude hat „Anmeldung abgelaufen“ gemeldet. Bis zur neuen Anmeldung gilt Claude als nicht bereit, die Ersatz-KI übernimmt.</summary>
+    public bool ClaudeAuthLost { get; private set; }
+    DateTime _claudeAuthToast;
+
+    /// <summary>Abgelaufene Claude-Anmeldung merken und einmal (höchstens alle 10 Minuten) mit Knopf „Claude neu anmelden“ melden.</summary>
+    public void ClaudeAuthExpired()
+    {
+        var first = !ClaudeAuthLost;
+        ClaudeAuthLost = true;
+        if (first) _core.Audit.Append(Principal.LocalOwner.Name, "claude.anmeldung.abgelaufen", "");
+        if (DateTime.UtcNow - _claudeAuthToast < TimeSpan.FromMinutes(10)) return;
+        _claudeAuthToast = DateTime.UtcNow;
+        _ui.Post(() => Toast(ClaudeCode.AuthText, ("Claude neu anmelden", () => _ = ClaudeConnect())));
+    }
+
     /// <summary>„Mit Claude verbinden“: offizielle Anmeldung von Claude im Browser (Abo). Trendo sieht dabei weder Passwort noch Schlüssel.</summary>
     public async Task ClaudeConnect()
     {
@@ -179,6 +194,7 @@ public partial class MainWindow
         }
         catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException) { _claudeMsg = "Anmeldung ließ sich nicht starten: " + Trendo.Core.FriendlyError.Say(e); }
         var s = await ClaudeCheck(true);
+        if (s.Ready) ClaudeAuthLost = false; // neu angemeldet: Claude ist wieder Haupt-KI
         _claudeMsg = s.Ready ? "Verbunden. Claude ist jetzt deine Haupt-KI in Trendo." : _claudeMsg;
         _core.Audit.Append(Principal.LocalOwner.Name, s.Ready ? "claude.login.ok" : "claude.login.offen", s.Plan);
         RefreshKiPage();
@@ -331,7 +347,7 @@ public sealed class ClaudeKiBackend(MainWindow owner, Func<string> model) : IMai
 {
     public string Name => "Claude (dein Abo)";
     public string BaseUrl => "claude-code";
-    public async Task<bool> IsUpAsync(CancellationToken ct = default) => !owner.CLimit.Active(DateTimeOffset.Now) && (await owner.ClaudeCheck()).Ready; // nur über das Abo; Kontingent aufgebraucht → Ersatz-KI
+    public async Task<bool> IsUpAsync(CancellationToken ct = default) => !owner.ClaudeAuthLost && !owner.CLimit.Active(DateTimeOffset.Now) && (await owner.ClaudeCheck()).Ready; // nur über das Abo; Kontingent aufgebraucht → Ersatz-KI
     public Task<IReadOnlyList<string>> ModelsAsync(CancellationToken ct = default) => Task.FromResult<IReadOnlyList<string>>([model() is { Length: > 0 } m ? m : "claude"]);
     public Task<string> ChatAsync(string m, IReadOnlyList<KiMessage> messages, CancellationToken ct = default) => ChatStreamAsync(m, messages, _ => { }, ct);
 
@@ -342,14 +358,18 @@ public sealed class ClaudeKiBackend(MainWindow owner, Func<string> model) : IMai
         var question = turns.LastOrDefault()?.Content ?? "";
         var prompt = turns.Count > 1 ? "Bisheriger Verlauf:\n" + string.Join("\n", turns.SkipLast(1).Select(t => (t.Role == "user" ? "Nutzer: " : "Trendo-KI: ") + t.Content)) + "\n\nNeue Frage: " + question : question;
         var dir = Path.Combine(Path.GetTempPath(), "trendo-claude-frage"); Directory.CreateDirectory(dir);
-        var text = new System.Text.StringBuilder(); string? final = null; string? error = null;
+        var text = new System.Text.StringBuilder(); string? final = null; string? error = null; bool? doneOk = null;
         var code = await owner.ClaudeRun(ClaudeCode.Args(prompt, ClaudeCode.Phase.Ask, system: system, model: m == "claude" ? null : m), dir, l =>
         {
             if (l.Contains("\"trendo_error\"")) { error = System.Text.Json.Nodes.JsonNode.Parse(l)?["text"]?.ToString(); return; }
             foreach (var ev in ClaudeCode.Parse(l, dir))
                 if (ev is ClaudeCode.Say say) { text.AppendLine(say.Text); onDelta(say.Text + "\n"); }
-                else if (ev is ClaudeCode.Done d) final = d.Text;
+                else if (ev is ClaudeCode.Done d) { final = d.Text; doneOk = d.Ok; }
         }, ct);
+        // T-0621: „Anmeldung abgelaufen“ kommt als normale Antwort zurück – nie als Ergebnis (z. B. als Liedtext) weitergeben, sondern die nächste KI fragen
+        var all = string.Join("\n", final, text.ToString(), error);
+        if (ClaudeCode.IsAuthExpired(all) && (doneOk is not true || all.Length < 600)) { owner.ClaudeAuthExpired(); throw new KiModelBusyException(ClaudeCode.AuthText, false); }
+        if (doneOk is false && ClaudeCode.IsLimit(all)) throw new KiModelBusyException(ClaudeCode.LimitText, false);
         if (final is { Length: > 0 }) return final;
         if (text.Length > 0) return text.ToString().Trim();
         throw new InvalidOperationException(error ?? $"Claude hat nicht geantwortet (Code {code}).");

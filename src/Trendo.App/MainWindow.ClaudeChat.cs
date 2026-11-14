@@ -502,6 +502,12 @@ public partial class MainWindow
             catch (InvalidOperationException e) { error = e.Message; }
             await _ui.InvokeAsync(() => { }, DispatcherPriority.Background); // ausstehende Ereignisse abarbeiten
             if (pendingFile is { } lastPf) ClaudeLiveChanged(dock, Path.Combine(folder, lastPf), workFile, null);
+            if (limitRaw is null && (ClaudeCode.IsAuthExpired(error) || !ok && ClaudeCode.IsAuthExpired(say.ToString())))
+            {
+                // T-0621: Anmeldung abgelaufen – kein Fehlertext als Antwort; die Ersatz-KI übernimmt, „Claude neu anmelden“ stellt Claude wieder her
+                ClaudeAuthExpired(); limited = true; error = null; say.Clear();
+                steps.Add(new ClaudeChats.Step("Claude-Anmeldung abgelaufen – die Ersatz-KI übernimmt. „Claude neu anmelden“ verbindet Claude wieder.", false));
+            }
             if (limitRaw is null && ClaudeCode.IsLimit(error)) limitRaw = error;
             if (limitRaw is not null)
             {
@@ -546,6 +552,7 @@ public partial class MainWindow
         answer = ClaudeMemory.Strip(answer);
         if (snap is not null) try { CTimeline.Keep(chat.Id, point, check ? "Nachbesserung: " + text.Split('\n')[0] : text.Split('\n')[0], changes.Count); } catch (IOException) { }
         if (ClaudeCode.IsLimit(error)) error = ClaudeCode.LimitText;
+        else if (ClaudeCode.IsAuthExpired(error)) { ClaudeAuthExpired(); error = ClaudeCode.AuthText; }
         if (error is not null) answer = (answer.Length > 0 ? answer + "\n\n" : "") + "⚠ " + error;
         else if (!ok && answer.Length == 0) answer = "⚠ Claude hat die Antwort nicht fertigbekommen.";
         if (session is { Length: > 0 }) chats.SetSession(studio, chat.Id, session);

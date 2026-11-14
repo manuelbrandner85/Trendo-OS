@@ -214,6 +214,13 @@ public static partial class ClaudeCode
 
     /// <summary>Meldet Claude, dass das Abo-Kontingent gerade aufgebraucht ist? Dann sagt Trendo das verständlich statt einer Fehlermeldung.</summary>
     public static bool IsLimit(string? text) => text is not null && Regex.IsMatch(text, @"usage limit|rate limit|limit (?:reached|exceeded)|out of (?:extra )?usage|5-hour limit|weekly limit", RegexOptions.IgnoreCase);
+    /// <summary>T-0621: Meldet Claude Code, dass die Anmeldung abgelaufen oder ungültig ist? Dann ist die Antwort KEIN Ergebnis (z. B. kein Liedtext),
+    /// sondern Trendo bittet um eine neue Anmeldung und lässt bis dahin die Ersatz-KI arbeiten. Trendo kann eine abgelaufene Anmeldung nicht selbst
+    /// verlängern – angemeldet wird nur über Anthropics eigenen Ablauf, Trendo speichert keine Tokens.</summary>
+    public static bool IsAuthExpired(string? text) => text is not null && Regex.IsMatch(text,
+        @"failed to authenticate|reached its time limit and cannot be renewed|cannot be renewed|not logged in|please (?:run )?/login|run `?claude (?:auth )?login|oauth token (?:has )?expired|token (?:has )?expired|invalid api key|authentication_error|invalid (?:x-api-key|bearer token)|401 unauthorized",
+        RegexOptions.IgnoreCase);
+    public const string AuthText = "Deine Claude-Anmeldung ist abgelaufen. Mit „Claude neu anmelden“ öffnet sich die Anmeldung von Anthropic im Browser – bis dahin übernimmt die Ersatz-KI.";
     public const string LimitText = "Dein Claude-Kontingent ist für den Moment aufgebraucht. Es füllt sich von selbst wieder auf – versuch es etwas später noch einmal (Stand siehst du in Claude unter Einstellungen → Nutzung).";
 
     /// <summary>Planschritte aus der Antwort der Planphase (nummerierte oder Aufzählungs-Zeilen); dazu die Rückfrage, falls die Antwort mit einer Frage endet.</summary>
