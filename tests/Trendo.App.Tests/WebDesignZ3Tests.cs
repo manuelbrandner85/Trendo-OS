@@ -238,9 +238,12 @@ public class WebDesignZ3
         File.WriteAllBytes(Path.Combine(d, "s.png"), Png); Assert.Null(WebDesignAssets.Import(d, Path.Combine(d, "s.png"), "bild", "Standbild", "selbst", "CC0-1.0").Error);
         var modell = WebDesignAssets.Load(d).Single(a => a.Art == "modell").Datei; var hdr = WebDesignAssets.Load(d).Single(a => a.Art == "umgebung").Datei;
         Assert.Null(WebDesign.Save(d, Page(modell, "modell", "medien/bild/s.png", "hdri", hdr)));
-        var tmp = Directory.CreateDirectory(Path.Combine(d, "_s")).FullName; File.WriteAllBytes(Path.Combine(tmp, "kugel.splat"), Splat(60000));
-        Assert.Null(WebDesignAssets.Import(d, Path.Combine(tmp, "kugel.splat"), "splat", "Kugel", "selbst erzeugt", "CC0-1.0").Error);
-        Assert.Null(WebDesignSite.Create(d, "splat", "Splat")); Assert.Null(WebDesign.Save(d, Page("medien/splat/kugel.splat", "splat")));
+        // Echte Aufnahme: „Train“ aus Tanks and Temples, 3DGS-Rekonstruktion aus Voxel51/gaussian_splatting (Apache-2.0), nach .splat gewandelt (742 000 Punkte)
+        var echt = Path.Combine(quellen, "splat-train", "train.splat");
+        if (File.Exists(echt)) Assert.Null(WebDesignAssets.Import(d, echt, "splat", "Train (echte Aufnahme)", "Tanks and Temples, Rekonstruktion Voxel51/gaussian_splatting", "Apache-2.0", "", "https://huggingface.co/datasets/Voxel51/gaussian_splatting").Error);
+        else { var tmp = Directory.CreateDirectory(Path.Combine(d, "_s")).FullName; File.WriteAllBytes(Path.Combine(tmp, "train.splat"), Splat(60000)); Assert.Null(WebDesignAssets.Import(d, Path.Combine(tmp, "train.splat"), "splat", "Kugel", "selbst erzeugt", "CC0-1.0").Error); }
+        var splatDatei = WebDesignAssets.Load(d).Single(a => a.Art == "splat").Datei;
+        Assert.Null(WebDesignSite.Create(d, "splat", "Splat")); Assert.Null(WebDesign.Save(d, Page(splatDatei, "splat")));
         var r = Trendo.Core.WebDesignExport.ExportSite(d, Editor()); Assert.Null(r.Error);
         var report = Path.Combine(WebDesignKi_Ui.Repo(), "reports", $"web-3d-pruefung-{DateTime.Now:yyyy-MM-dd}");
         var run = Cli.Run(node, [Path.Combine(WebDesignKi_Ui.Repo(), "tools", "webdesign-editor", "pruefe-3d.mjs"), chrome, r.Dir!, report, "gpu"], timeoutMs: 300_000);
