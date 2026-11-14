@@ -45,7 +45,7 @@ public partial class MainWindow
             var b = new Button { Name = $"car-pick-{v.Name}".Replace(' ', '_'), HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(10, 8),
                 Background = on ? Brush.Parse("#C9A22733") : Brush.Parse("#2E2E2E"), BorderBrush = on ? Accent : Edge, BorderThickness = new Thickness(on ? 2 : 1), CornerRadius = new CornerRadius(10),
                 Content = new StackPanel { Spacing = 1, Children = {
-                    new TextBlock { Text = (v.Electric ? "• " : "") + v.Name, Foreground = Text, FontWeight = FontWeight.SemiBold, FontSize = 14 },
+                    new TextBlock { Text = v.Name + (v.Electric ? " · Elektro" : ""), Foreground = Text, FontWeight = FontWeight.SemiBold, FontSize = 14 },
                     new TextBlock { Text = $"{v.Plate} · {Fach.F(v.Odometer, 0)} km".Trim(' ', '·'), Foreground = Muted, FontSize = 11 },
                     new TextBlock { Text = rem.Any(r => r.Urgent) ? "⚠ " + rem.First(r => r.Urgent).Text : rem.Count > 0 ? "• " + rem[0].Text : "", Foreground = Brush.Parse(rem.Any(r => r.Urgent) ? "#FACC15" : "#8FA3BF"), FontSize = 11, TextWrapping = TextWrapping.Wrap } } } };
             b.Click += (_, _) => { CarSel = nm; _carMsg = ""; Show("fahrzeug"); };

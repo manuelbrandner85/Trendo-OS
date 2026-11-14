@@ -353,6 +353,9 @@ public sealed partial class MainWindow : Window
     }
 
     private static IBrush Grad(string a, string b) => new SolidColorBrush(Calm(Color.Parse(b)));
+    /// <summary>Echter Verlauf für die Stile Windows/Mac/Linux (sollen wie das Original aussehen); der Ruhe-Durchgang lässt ihn stehen.</summary>
+    private static IBrush OsGrad(string a, string b) => CalmLook.Keep(new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
+        GradientStops = { new GradientStop(Color.Parse(a), 0), new GradientStop(Color.Parse(b), 1) } });
 
     /// <summary>Farbe dämpfen: weniger Sättigung, gleiche Richtung – Farben bleiben erkennbar, wirken aber nicht grell.</summary>
     static Color Calm(Color c, double keep = 0.55)

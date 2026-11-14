@@ -377,7 +377,7 @@ public partial class MainWindow
             fix.Click += (_, _) => _ = ClaudeChatSend(dock, ClaudeReview.Improve(m.Text));
             body.Children.Add(fix);
         }
-        if (m.Ki is { Length: > 0 } ki && ki != ClaudeKi) body.Children.Add(new TextBlock { Text = "Gutachten von: " + ki, Foreground = ClaudeAccent, FontSize = 10.5 });
+        if (m.Ki is { Length: > 0 } ki && !IsClaudeKi(ki)) body.Children.Add(new TextBlock { Text = "Gutachten von: " + ki, Foreground = ClaudeAccent, FontSize = 10.5 });
         var card = CGlass(new DockPanel { Children = { Dk(badge, Avalonia.Controls.Dock.Left), body } }, name: "claude-review");
         return last ? Appear(card) : card;
     }

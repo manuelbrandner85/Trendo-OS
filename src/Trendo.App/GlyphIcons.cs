@@ -8,7 +8,7 @@ namespace Trendo.App;
 
 /// <summary>D3 (Vorgabe 13.11.2026 „nicht KI-generiert“): Knöpfe, die nur aus einem Zeichen bestehen (▶, ✕, ☰ …), bekommen automatisch ein
 /// ruhiges Linien-Symbol statt des Sonderzeichens – überall, auch in künftigem Code. Die Pfade sind schlichte eigene Formen im 24er-Raster.
-/// Der Knopf behält seinen Namen für Bildschirmleser (aus der Tabelle) und seinen Hinweis.</summary>
+/// Ohne eigenen Namen/Hinweis bekommt der Knopf beides aus der Tabelle (wechselt mit dem Zeichen); das Zeichen bleibt über <see cref="GetGlyph"/> abrufbar.</summary>
 public static class GlyphIcons
 {
     public sealed record Glyph(string Path, string Name);
@@ -25,7 +25,7 @@ public static class GlyphIcons
         ["✕"] = G("M6.4,5L5,6.4L10.6,12L5,17.6L6.4,19L12,13.4L17.6,19L19,17.6L13.4,12L19,6.4L17.6,5L12,10.6Z", "Schließen"),
         ["✗"] = G("M6.4,5L5,6.4L10.6,12L5,17.6L6.4,19L12,13.4L17.6,19L19,17.6L13.4,12L19,6.4L17.6,5L12,10.6Z", "Nein"),
         ["✖"] = G("M6.4,5L5,6.4L10.6,12L5,17.6L6.4,19L12,13.4L17.6,19L19,17.6L13.4,12L19,6.4L17.6,5L12,10.6Z", "Schließen"),
-        ["✓"] = G("M9,16.2L4.8,12L3.4,13.4L9,19L21,7L19.6,5.6Z", "Ja"), ["✔"] = G("M9,16.2L4.8,12L3.4,13.4L9,19L21,7L19.6,5.6Z", "Ja"),
+        ["✓"] = G("M9,16.2L4.8,12L3.4,13.4L9,19L21,7L19.6,5.6Z", "Bestätigen"), ["✔"] = G("M9,16.2L4.8,12L3.4,13.4L9,19L21,7L19.6,5.6Z", "Bestätigen"),
         ["☰"] = G("M3,6H21V8H3ZM3,11H21V13H3ZM3,16H21V18H3Z", "Menü"),
         ["▲"] = G("M7.4,15.4L12,10.8L16.6,15.4L18,14L12,8L6,14Z", "Nach oben"), ["▼"] = G("M7.4,8.6L12,13.2L16.6,8.6L18,10L12,16L6,10Z", "Nach unten"),
         ["↑"] = G("M11,20V7.8L5.4,13.4L4,12L12,4L20,12L18.6,13.4L13,7.8V20Z", "Nach oben"), ["↓"] = G("M13,4V16.2L18.6,10.6L20,12L12,20L4,12L5.4,10.6L11,16.2V4Z", "Nach unten"),
@@ -50,10 +50,16 @@ public static class GlyphIcons
         ["💾"] = G("M5,3H17L21,7V21H3V3ZM6,5V9H15V5ZM12,13A3,3 0 1,0 12,19A3,3 0 1,0 12,13Z", "Speichern"),
         ["⬇"] = G("M11,4H13V15.2L17.6,10.6L19,12L12,19L5,12L6.4,10.6L11,15.2Z", "Herunterladen"), ["⬆"] = G("M13,20H11V8.8L6.4,13.4L5,12L12,5L19,12L17.6,13.4L13,8.8Z", "Hochladen"),
         ["⏏"] = G("M12,5L5,14H19ZM5,16H19V19H5Z", "Auswerfen"),
-        ["●"] = G("M12,6A6,6 0 1,0 12,18A6,6 0 1,0 12,6Z", "Aufnahme"), ["⏺"] = G("M12,6A6,6 0 1,0 12,18A6,6 0 1,0 12,6Z", "Aufnahme"),
+        ["●"] = G("M12,6A6,6 0 1,0 12,18A6,6 0 1,0 12,6Z", ""), ["⏺"] = G("M12,6A6,6 0 1,0 12,18A6,6 0 1,0 12,6Z", "Aufnahme"),
     };
 
     static bool _on;
+
+    /// <summary>Ursprüngliches Zeichen eines Symbol-Knopfs (für Claude, Suche und Tests – der Inhalt ist dann ein Linien-Symbol).</summary>
+    public static readonly AttachedProperty<string?> GlyphProperty = AvaloniaProperty.RegisterAttached<Button, string?>("Glyph", typeof(GlyphIcons));
+    /// <summary>Name und Hinweis stammen von hier (und dürfen beim nächsten Zeichenwechsel mitwechseln).</summary>
+    static readonly AttachedProperty<int> AutoNamedProperty = AvaloniaProperty.RegisterAttached<Button, int>("AutoNamed", typeof(GlyphIcons)); // 1 = Name, 2 = Hinweis
+    public static string? GetGlyph(Button b) => b.GetValue(GlyphProperty);
 
     /// <summary>Einmal beim Start: jeder Knopf, dessen Inhalt nur ein bekanntes Zeichen ist, zeigt stattdessen das Linien-Symbol in seiner Schriftfarbe.</summary>
     public static void Enable()
@@ -62,13 +68,26 @@ public static class GlyphIcons
         _on = true;
         ContentControl.ContentProperty.Changed.AddClassHandler<Button>((b, e) =>
         {
-            if (e.NewValue is not string s || !Map.TryGetValue(s.Trim(), out var g)) return;
+            if (e.NewValue is not string s) { if (e.NewValue is not Avalonia.Controls.Shapes.Path) b.SetValue(GlyphProperty, null); return; }
+            if (!Map.TryGetValue(s.Trim(), out var g)) { b.SetValue(GlyphProperty, null); return; }
             var size = Math.Max(10, (double.IsNaN(b.FontSize) || b.FontSize <= 0 ? 13 : b.FontSize) * 1.05);
-            var path = new Avalonia.Controls.Shapes.Path { Data = Geometry.Parse(g.Path), Stretch = Stretch.Uniform, Width = size, Height = size, [!Shape.FillProperty] = b[!Avalonia.Controls.Primitives.TemplatedControl.ForegroundProperty] };
-            if (string.IsNullOrEmpty(AutomationProperties.GetName(b))) AutomationProperties.SetName(b, g.Name);
-            if (ToolTip.GetTip(b) is null) ToolTip.SetTip(b, g.Name);
-            b.Tag ??= s.Trim(); // ursprüngliches Zeichen für Tests und Auswertung
+            var path = new Avalonia.Controls.Shapes.Path { Data = Geometry.Parse(g.Path), Stretch = Stretch.Uniform, Width = size, Height = size, Opacity = b.IsEffectivelyEnabled ? 1 : 0.4,
+                [!Shape.FillProperty] = b[!Avalonia.Controls.Primitives.TemplatedControl.ForegroundProperty] };
+            b.SetValue(GlyphProperty, s.Trim());
+            // Name und Hinweis nur setzen, wenn der Knopf keine eigenen hat – und bei jedem Zeichenwechsel nachziehen, solange sie von hier stammen
+            if (g.Name.Length > 0)
+            {
+                var auto = b.GetValue(AutoNamedProperty);
+                if ((auto & 1) != 0 || string.IsNullOrEmpty(AutomationProperties.GetName(b))) { AutomationProperties.SetName(b, g.Name); auto |= 1; }
+                if ((auto & 2) != 0 || ToolTip.GetTip(b) is null) { ToolTip.SetTip(b, g.Name); auto |= 2; }
+                b.SetValue(AutoNamedProperty, auto);
+            }
             Avalonia.Threading.Dispatcher.UIThread.Post(() => { if (Equals(b.Content, e.NewValue)) b.Content = path; });
+        });
+        // gesperrte Symbol-Knöpfe sichtbar blass (die Vorlage färbt nur Text, nicht das Symbol)
+        Avalonia.Input.InputElement.IsEffectivelyEnabledProperty.Changed.AddClassHandler<Button>((b, _) =>
+        {
+            if (b.Content is Avalonia.Controls.Shapes.Path p && b.GetValue(GlyphProperty) is not null) p.Opacity = b.IsEffectivelyEnabled ? 1 : 0.4;
         });
     }
 }

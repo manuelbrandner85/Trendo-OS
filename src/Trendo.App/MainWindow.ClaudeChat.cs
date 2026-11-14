@@ -66,7 +66,7 @@ public partial class MainWindow
         ui.Input = new TextBox { Name = "claude-chat-input", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 56, MaxHeight = 200, FontSize = 14,
             PlaceholderText = "Schreib Claude, was du bauen möchtest …", Background = ClaudeInput, Foreground = ClaudeFg, BorderBrush = ClaudeLine, CornerRadius = new CornerRadius(14), Padding = new Thickness(14, 10, 52, 10) };
         ui.Input.KeyDown += (_, e) => { if (e.Key == Key.Enter && !e.KeyModifiers.HasFlag(KeyModifiers.Shift)) { e.Handled = true; ClaudeChatSubmit(dock); } };
-        ui.Send = new Button { Name = "claude-chat-send", Content = "↑", Width = 34, Height = 34, CornerRadius = new CornerRadius(17), Background = ClaudeAccent, Foreground = Brushes.White, FontSize = 16, FontWeight = FontWeight.Bold,
+        ui.Send = new Button { Name = "claude-chat-send", [Avalonia.Automation.AutomationProperties.NameProperty] = "Senden", Content = "↑", Width = 34, Height = 34, CornerRadius = new CornerRadius(17), Background = ClaudeAccent, Foreground = Brushes.White, FontSize = 16, FontWeight = FontWeight.Bold,
             HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(0, 0, 10, 10), HorizontalContentAlignment = HorizontalAlignment.Center, Padding = new Thickness(0) };
         ToolTip.SetTip(ui.Send, "Senden (Enter) · neue Zeile mit Umschalt+Enter");
         ui.Send.Click += (_, _) => { if (ui.Running && string.IsNullOrWhiteSpace(ui.Input.Text)) ui.Cts?.Cancel(); else ClaudeChatSubmit(dock); };
@@ -408,7 +408,7 @@ public partial class MainWindow
         if (shot is not null) attached.Add(shot);
         chat = chats.Add(studio, chat.Id, new ClaudeChats.Msg(check ? "check" : "user", text, [], DateTimeOffset.Now, null, 0, attached.Count > 0 ? attached : null, context));
         ui.Input.Text = ""; ui.Running = true; ui.Cts = new CancellationTokenSource();
-        ui.Send.Content = "■"; ToolTip.SetTip(ui.Send, "Anhalten");
+        ui.Send.Content = "■"; ToolTip.SetTip(ui.Send, "Anhalten"); Avalonia.Automation.AutomationProperties.SetName(ui.Send, "Anhalten");
         RenderChatList(dock); RenderChat(dock);
 
         // Live-Antwort
@@ -553,7 +553,7 @@ public partial class MainWindow
         ui.LastSnapshot = changed.Count > 0 ? snap : null; ui.LastSnapshotChat = chat.Id;
         _core.Audit.Append(Principal.LocalOwner.Name, "claude.chat", $"{studio} · {changed.Count} Änderungen");
         pulse.Cancel();
-        ui.Running = false; ui.Cts = null; ui.Send.Content = "↑"; ToolTip.SetTip(ui.Send, "Senden (Enter) · neue Zeile mit Umschalt+Enter");
+        ui.Running = false; ui.Cts = null; ui.Send.Content = "↑"; ToolTip.SetTip(ui.Send, "Senden (Enter) · neue Zeile mit Umschalt+Enter"); Avalonia.Automation.AutomationProperties.SetName(ui.Send, "Senden");
         RenderChatList(dock); RenderChat(dock);
         if (autoPlan) await ClaudeRunPlan(dock);
         await ClaudeAfterRun(dock, folder, format, workFile, snap, changes);
@@ -574,7 +574,7 @@ public partial class MainWindow
                 found.Insert(0, $"Du hast nicht im Programm gearbeitet: Das Studio-Dokument „{workFile}“ ist unverändert. Trage dein Ergebnis jetzt dort ein ({(workFile == LetterWorkFile ? "Text und – falls gewünscht – Design in den Feldern des Briefs" : "unter \"data\", vorhandene Felder und Aufbau beibehalten")}) – das ist das Projekt, das der Nutzer im Programm sieht.");
             thinking.Text = "Trendo startet das Ergebnis und prüft es …";
             var probe = ClaudeLooks || found.Count > 0 ? await ClaudeProbeRun(folder, alive) : new ClaudeProbe.Result([], null);
-            var look = round == 0 && ClaudeLooks && ki == ClaudeKi; // Bildschirmfoto ansehen kann nur Claude
+            var look = round == 0 && ClaudeLooks && IsClaudeKi(ki); // Bildschirmfoto ansehen kann nur Claude
             if (ClaudeProbe.Feedback(found, probe, look) is { } fb)
             {
                 _core.Audit.Append(Principal.LocalOwner.Name, "claude.chat.pruefung", $"{found.Count + probe.Errors.Count} Punkte · Durchgang {round + 1}");
@@ -663,7 +663,7 @@ public partial class MainWindow
     {
         var l = CLimit;
         if (l.Active(DateTimeOffset.Now) && l.Until is { } u)
-            return $"Aktive KI: {(lastKi is { } k && k != ClaudeKi ? k : "🌐 kostenlose Ersatz-KI")} – dein Claude-Abo ist gerade aufgebraucht, Claude übernimmt wieder ab {u.LocalDateTime:HH:mm} Uhr.";
+            return $"Aktive KI: {(lastKi is { } k && !IsClaudeKi(k) ? k : "kostenlose Ersatz-KI")} – dein Claude-Abo ist gerade aufgebraucht, Claude übernimmt wieder ab {u.LocalDateTime:HH:mm} Uhr.";
         return "Aktive KI: " + ClaudeKi;
     }
 

@@ -7,9 +7,6 @@
         <!-- Code-Editor (AvaloniaEdit, MIT) -->
         <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
         <!-- Vorgabe 13.11.2026 „nicht KI-generiert“: eine Schriftfamilie, ruhige Bedienelemente ohne Anheben oder Hüpfen -->
-        <Style Selector="Window">
-            
-        </Style>
         <Style Selector="TextBox">
             <Setter Property="CornerRadius" Value="4" />
         </Style>
@@ -22,15 +19,12 @@
         <!-- P4 Dichte „Kompakt“: weniger Innenabstand wie in Explorer oder Outlook -->
         <Style Selector="Window.kompakt Button">
             <Setter Property="Padding" Value="8,3" />
-            <Setter Property="MinHeight" Value="26" />
         </Style>
         <Style Selector="Window.kompakt TextBox">
             <Setter Property="Padding" Value="6,3" />
-            <Setter Property="MinHeight" Value="26" />
         </Style>
         <Style Selector="Window.kompakt ComboBox">
             <Setter Property="Padding" Value="6,2" />
-            <Setter Property="MinHeight" Value="26" />
         </Style>
     </Application.Styles>
 </Application>

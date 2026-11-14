@@ -487,7 +487,7 @@ public partial class MainWindow
                 var dir = key == Key.L ? 1 : -1;
                 EditRate = _vePlay is not null && Math.Sign(EditRate) == dir ? Math.Clamp(EditRate * 2, -4, 4) : dir;
                 if (_vePlay is null) { if (dir < 0 && at <= 0.05) { EditRate = 1; break; } EditTogglePlay(d); }
-                _progMsg[VK] = (EditRate > 0 ? "• " : "") + $"{Math.Abs(EditRate):0}× (K hält an)"; break;
+                _progMsg[VK] = (EditRate > 0 ? "Vorwärts " : "Rückwärts ") + $"{Math.Abs(EditRate):0}× (K hält an)"; break;
             }
             case Key.I: EditRange = (Math.Round(at, 2), EditRange.To > at ? EditRange.To : len); _progMsg[VK] = $"Bereich ab {ClockMs(at)} (Export → „Nur einen Bereich“)."; Show(VK); break;
             case Key.O: EditRange = (Math.Min(EditRange.From, at), Math.Round(at, 2)); _progMsg[VK] = $"Bereich {ClockMs(EditRange.From)}–{ClockMs(at)}."; Show(VK); break;

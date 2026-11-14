@@ -16,8 +16,13 @@ public static class CalmLook
     static bool OverImage(Control c) =>
         c.GetVisualParent() is Panel p && p.Children.Any(s => !ReferenceEquals(s, c) && (s is Image || s.GetVisualDescendants().OfType<Image>().Any()));
 
+    static readonly System.Runtime.CompilerServices.ConditionalWeakTable<IBrush, object> _keep = new();
+    /// <summary>Verlauf bewusst behalten (z. B. Symbole der Stile Windows/Mac/Linux, die wie das Original aussehen sollen).</summary>
+    public static T Keep<T>(T brush) where T : IBrush { _keep.AddOrUpdate(brush, true); return brush; }
+
     public static IBrush Flatten(GradientBrush g)
     {
+        if (_keep.TryGetValue(g, out _)) return g;
         var stops = g.GradientStops;
         if (stops.Count == 0) return Brushes.Transparent;
         double a = 0, r = 0, gr = 0, b = 0;
@@ -49,13 +54,14 @@ public static class CalmLook
 
     static void Calm(Control c)
     {
-        if (c.Effect is DropShadowEffect) c.Effect = null; // kein Leuchten
+        // nur Leuchten (Schatten ohne Versatz) entfernen – echte Schatten aus Entwürfen, Video-Titeln und Systemstilen bleiben
+        if (c.Effect is DropShadowEffect { OffsetX: 0, OffsetY: 0 } && c is not TextBlock && c is not Avalonia.Controls.Shapes.Shape) c.Effect = null;
         switch (c)
         {
             case Border bd:
                 if (bd.Background is GradientBrush bg && !OverImage(bd)) bd.Background = Flatten(bg);
                 if (bd.BorderBrush is GradientBrush bb) bd.BorderBrush = Flatten(bb);
-                if (bd.BoxShadow.Count > 0 && bd.GetType().Name != "DeskFrame") bd.BoxShadow = default; // Fensterrahmen behalten ihren weichen Schatten
+                if (bd.BoxShadow.Count > 0 && bd.GetType().Name != "DeskFrame" && !(bd.Background is { } kb && _keep.TryGetValue(kb, out _))) bd.BoxShadow = default; // Fensterrahmen behalten ihren weichen Schatten
                 break;
             case Panel p when p.Background is GradientBrush pg && !OverImage(p):
                 p.Background = Flatten(pg); break;

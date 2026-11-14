@@ -92,7 +92,7 @@ public partial class MainWindow
         foreach (var p in VideoPlatforms.All)
         {
             var pp = p; var on = _tvVidPlatform == p.Id;
-            var b = TvChip("tv-vid-platform-" + p.Id, (p.Mode == VideoPlatforms.Mode.InTrendo ? "" : p.Mode == VideoPlatforms.Mode.Suche ? "" : "↗ ") + p.Name, on, () => TvVideoSelect(pp.Id));
+            var b = TvChip("tv-vid-platform-" + p.Id, p.Name + (p.Mode == VideoPlatforms.Mode.InTrendo ? "" : p.Mode == VideoPlatforms.Mode.Suche ? " · Suche" : " ↗"), on, () => TvVideoSelect(pp.Id));
             ToolTip.SetTip(b, p.Note); plats.Children.Add(b);
         }
         sp.Children.Add(plats);

@@ -232,6 +232,7 @@ public partial class MainWindow
     static string ButtonText(Button b) => b.Content switch
     {
         string s => s,
+        Avalonia.Controls.Shapes.Path when GlyphIcons.GetGlyph(b) is { } g => g,
         TextBlock t => t.Text ?? "",
         Control c => string.Join(" ", c.GetLogicalDescendants().OfType<TextBlock>().Select(t => t.Text).Where(x => !string.IsNullOrWhiteSpace(x))),
         _ => "",

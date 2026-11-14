@@ -132,7 +132,7 @@ public partial class MainWindow
     {
         null => "",
         string s => s,
-        ContentControl cc => cc.Content as string ?? (cc.Content as TextBlock)?.Text ?? cc.Content?.ToString() ?? "",
+        ContentControl cc => cc.Content as string ?? (cc.Content as TextBlock)?.Text ?? (cc is Button gb && GlyphIcons.GetGlyph(gb) is { } g ? g : null) ?? cc.Content?.ToString() ?? "",
         TextBlock tb => tb.Text ?? "",
         _ => o.ToString() ?? "",
     };

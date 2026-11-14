@@ -21,6 +21,8 @@ public partial class MainWindow
     /// <summary>Für Tests: Diktat nachbilden (liefert den erkannten Text).</summary>
     public static Func<Task<string?>>? DictateOverride { get; set; }
     public const string ClaudeKi = "Claude (dein Abo)";
+    /// <summary>T-0613: gespeicherte Chats tragen noch den früheren Namen „✳ Claude (dein Abo)“.</summary>
+    public static bool IsClaudeKi(string? ki) => ki is ClaudeKi or "✳ Claude (dein Abo)";
 
     /// <summary>Anzeigename einer KI: Internet-KIs mit 🌐, KI auf dem PC mit 💻.</summary>
     static string KiLabel(KiAnswer a, IReadOnlyList<IKiBackend> backends)

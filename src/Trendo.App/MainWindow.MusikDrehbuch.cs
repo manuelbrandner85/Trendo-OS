@@ -145,7 +145,7 @@ public partial class MainWindow
             var fid = f.Id;
             var box = new TextBox { Name = "ms-figure-" + f.Id, Text = f.Look, TextWrapping = TextWrapping.Wrap, FontSize = 11, AcceptsReturn = false };
             box.LostFocus += (_, _) => { if (box.Text != f.Look) MsFigureEdit(s.Id, fid, box.Text ?? ""); };
-            sp.Children.Add(new StackPanel { Spacing = 2, Children = { new TextBlock { Text = (f.Gender == "w" ? "• " : "") + f.Role + " (erfunden – so sieht sie/er in jeder Einstellung aus)", Foreground = Text, FontSize = 11.5, FontWeight = FontWeight.SemiBold }, box } });
+            sp.Children.Add(new StackPanel { Spacing = 2, Children = { new TextBlock { Text = f.Role + (f.Gender == "w" ? " (w)" : f.Gender == "m" ? " (m)" : "") + " (erfunden – so sieht sie/er in jeder Einstellung aus)", Foreground = Text, FontSize = 11.5, FontWeight = FontWeight.SemiBold }, box } });
         }
         // Einstellungen: kompakte Liste, Klick öffnet den Editor
         var list = new StackPanel { Name = "ms-shots", Spacing = 1 };

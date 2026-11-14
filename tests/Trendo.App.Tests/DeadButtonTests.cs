@@ -145,7 +145,7 @@ public class DeadButtonTests
 
     static string Describe(Button b)
     {
-        var text = b.Content as string;
+        var text = b.Content as string ?? GlyphIcons.GetGlyph(b);
         if (string.IsNullOrWhiteSpace(text))
             text = string.Join(" ", b.GetLogicalDescendants().OfType<TextBlock>().Select(t => t.Text).Where(t => !string.IsNullOrWhiteSpace(t)));
         if (text.Length > 80) text = text[..80];

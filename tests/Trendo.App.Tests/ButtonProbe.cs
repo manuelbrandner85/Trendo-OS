@@ -120,7 +120,7 @@ public static class ButtonProbe
     static ContentControl? Body(MainWindow w, string page) =>
         w.GetLogicalDescendants().OfType<ContentControl>().FirstOrDefault(c => c.Name == "win-body-" + w.WindowGroupOf(page));
 
-    static string Label(Button b) => b.Content as string
+    static string Label(Button b) => b.Content as string ?? GlyphIcons.GetGlyph(b)
         ?? string.Join(" ", b.GetLogicalDescendants().OfType<TextBlock>().Select(t => t.Text));
 
     static string Texts(Control root)
@@ -132,7 +132,7 @@ public static class ButtonProbe
             if (c is TextBlock t) sb.Append(t.Text).Append('|');
             else if (c is SelectableTextBlock s) sb.Append(s.Text).Append('|');
             else if (c is TextBox x) sb.Append(x.Text).Append('|');
-            else if (c is Button btn && btn.Content is string label) sb.Append(label).Append('|');
+            else if (c is Button btn && (btn.Content as string ?? GlyphIcons.GetGlyph(btn)) is { } label) sb.Append(label).Append('|');
         }
         return sb.ToString();
     }
