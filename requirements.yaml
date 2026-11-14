@@ -557,6 +557,34 @@ modules:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)
+- id: STUDIO-VIDEOAI-01
+  name: Videos mit KI
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)
+- id: STUDIO-AGENTS-01
+  name: KI-Agenten bauen
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)
+- id: STUDIO-MODELS-01
+  name: KI-Modelle vergleichen
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)
+- id: STUDIO-TRAIN-01
+  name: Eigene KI trainieren
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)
 - id: SPEC-16
   name: Transport & Vehicle 2.0
   approved_expansion_functions: '20'

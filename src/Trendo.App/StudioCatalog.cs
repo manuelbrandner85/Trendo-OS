@@ -42,6 +42,10 @@ public static class StudioCatalog
         ["CORE-12"] = new("KI-Anweisungen schreiben", "Gute Anweisungen für die KI schreiben und sammeln.", "KI & Automatik"),
         ["STUDIO-SUMMARY-01"] = new("Texte zusammenfassen", "Lange Texte auf das Wichtigste bringen – mit Stichwörtern und Lesezeit, auch ohne Internet.", "KI & Automatik"),
         ["STUDIO-IMAGEAI-01"] = new("Bilder mit KI", "Bilder aus einer Beschreibung malen – lokal, mit Stil, Format und Herkunftsnachweis.", "KI & Automatik"),
+        ["STUDIO-VIDEOAI-01"] = new("Videos mit KI", "Kurze Videos aus einer Beschreibung: Szenen planen, Bilder lokal malen, mit Kamerafahrt und Überblendung als MP4.", "KI & Automatik"),
+        ["STUDIO-AGENTS-01"] = new("KI-Agenten bauen", "Eigene KI-Helfer entwerfen: Aufgabe, Anweisungen, erlaubte Werkzeuge und Grenzen – für Claude Code und das KI-Team.", "KI & Automatik"),
+        ["STUDIO-MODELS-01"] = new("KI-Modelle vergleichen", "Dieselbe Frage an mehrere KIs: Antworten nebeneinander, Zeit messen, blind bewerten, Ergebnis als Tabelle.", "KI & Automatik"),
+        ["STUDIO-TRAIN-01"] = new("Eigene KI trainieren", "Eine kleine KI mit eigenen Beispielen trainieren, die Texte in Kategorien sortiert – auf deinem Rechner.", "KI & Automatik"),
 
         ["CORE-05"] = new("3D-Modelle erstellen", "3D-Modelle bauen und ansehen – Blender optional.", "3D, Spiele & VR"),
         ["STUDIO-CONSOLE-01"] = new("Konsolenspiele portieren", "Dein eigenes PS2-Spiel als Programm für PC, Steam Deck oder Handy.", "3D, Spiele & VR"),

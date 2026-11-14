@@ -10,10 +10,10 @@ namespace Trendo.App.Tests;
 /// <summary>Aufgeräumte Studio-Liste: Zusammengelegte Studios bleiben erreichbar.</summary>
 public class StudioFolds_Ui
 {
-    [Fact(DisplayName = "Studio-Ordnung: 45 Studios in der Übersicht; jedes Ziel einer Zusammenlegung existiert und bleibt selbst sichtbar")]
+    [Fact(DisplayName = "Studio-Ordnung: 49 Studios in der Übersicht; jedes Ziel einer Zusammenlegung existiert und bleibt selbst sichtbar")]
     public void Plan_is_consistent()
     {
-        Assert.Equal(45, StudioCatalog.ById.Keys.Count(StudioCatalog.InOverview));
+        Assert.Equal(49, StudioCatalog.ById.Keys.Count(StudioCatalog.InOverview));
         Assert.Equal(18, StudioCatalog.FoldedInto.Count);
         foreach (var (id, host) in StudioCatalog.FoldedInto)
         {
@@ -27,7 +27,7 @@ public class StudioFolds_Ui
     {
         var (w, _, _) = Ui.Open(); w.Width = 1600; w.Height = 1000;
         w.Show("studios"); Settle();
-        Assert.Equal("45 Studios", w.Find<TextBlock>("studios-count").Text![..10]);
+        Assert.Equal("49 Studios", w.Find<TextBlock>("studios-count").Text![..10]);
         w.Find<TextBox>("txt-studio-search").Text = "Kostenlose KI finden"; Settle();
         Assert.StartsWith("1 Studios", w.Find<TextBlock>("studios-count").Text);
         w.Find<TextBox>("txt-studio-search").Text = "Texte übersetzen"; Settle();
