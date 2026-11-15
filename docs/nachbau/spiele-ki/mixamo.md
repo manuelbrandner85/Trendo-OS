@@ -35,11 +35,28 @@ Stand: 14.11.2026. Freigabe des Nutzers: M1 bis M6 („Ja alle“).
 - Wächter: erkennt auch Dateien mit UTF-8-BOM und JSON/XML ohne Kennung am Anfang; öffnet Dateien, an denen gerade geschrieben wird.
 - Unreal: wiederholter Lauf überträgt in einen Zwischenordner und ersetzt gleichnamige Animationen per „Consolidate“, andere Assets im Ordner bleiben. Ob Verweise eigener Assets erhalten bleiben, ist nicht real geprüft (das Prüfskript konnte seine Testkopie nicht speichern).
 
+## Prüfung mit echter Mixamo-Datei (15.11.2026, T-0661)
+
+Datei der Person „Walking Left Turn.fbx“ (FBX binär, With Skin, 30 Bilder/s, 1,87 MB), selbst über das Adobe-Konto geladen. Sie liegt nur im Download-Ordner der Person; nichts davon steht im Repo oder in Testdaten.
+
+- M2: aus dem Download-Ordner erkannt (Mixamo, Mesh und Kurven), als Animation eingestuft, Aktion „Gehen“, Quelle und Lizenz gesetzt, zweite Übernahme abgelehnt.
+- M6: Asset-Paket, Browser-Paket (Datei als „.bin“ umbenannt) und ZIP-Weitergabe abgebrochen; fertiger Build erlaubt; aufbereitete FBX weiter als Mixamo erkannt.
+- M4 Blender: 66 von 66 Knochen, Maßstab 0,01 → Meter, Figur 1,79 m, 37 Bilder. Auf der Stelle: 1,68 m Weg → 0 cm Abweichung über alle Bilder; Wurzelbewegung: Weg des Originals bleibt. Bilder: Pose und Linksdrehung wie im Original, Füße am Boden.
+- M4 Godot 4.7: GLB importiert, Animation „gehen“ 1,23 s, 66 Knochen, Figur 1,81 m.
+- M4 Unreal 5.8 – fünf Fehler gefunden und behoben, jeweils am Bild bzw. an Messwerten belegt:
+  1. Kettenzuordnung FUZZY hängte Drehknochen ans Schlüsselbein und die Wurzel an den rechten Fuß → jetzt exakte Namen plus Fuß-Ziele (20 sinnvolle Ketten).
+  2. Die veraltete Batch-Funktion `duplicate_and_retarget` lieferte eine leere Animation (0 Bilder), gemeldet wurde trotzdem „übertragen“ → jetzt `run_batch_retarget`, gezählt wird nur Inhalt (Bilder, Spuren).
+  3. Beim Ersetzen blieb die alte, leere Animation stehen → alte wird nach „Consolidate“ gelöscht, neue verschoben und erneut geprüft.
+  4. FBX in Metern: Unreal legte den Maßstab 100 in den Wurzelknochen, die Hüfte stand bei 1,0 → Unreal-FBX jetzt in Zentimetern (Wurzel 1,0, Hüfte 102 cm, Figur 179 cm).
+  5. Becken der Engine-Figur am Boden (z = 0), Oberschenkel oben → Mesh zog sich wie ein Rock nach unten. Ursache: Wurzelbewegungs-Operation von UE 5.8. Auf der Stelle ist sie jetzt aus; mit Wurzelbewegung sind ihre Knochen ausdrücklich gesetzt. Ergebnis: Becken 95 cm; mit Wurzelbewegung läuft die Engine-Figur 1,51 m und dreht sich mit. Jeder Lauf prüft die Beckenhöhe und meldet „Becken am Boden“ als Fehler.
+- Bilder und Protokoll liegen nur lokal (Scratchpad der Sitzung), nicht im Repo.
+
 ## Grenzen
 
 - Kein automatischer Download, keine inoffizielle Schnittstelle, keine gespeicherten Adobe-Anmeldedaten.
 - Die Blender-Übertragung setzt gleiche Knochennamen voraus (Mixamo auf Mixamo-Figur). Andere Skelette überträgt Unreal per IK Retargeter.
 - Gekochte Engine-Pakete (.pak, .pck) prüft der Wächter nicht; darin stecken keine Rohdateien.
-- Drehungen der ganzen Figur (Kurven, Wenden) bleiben an der Hüfte, nicht am Wurzelknochen.
-- Die Blender-Übertragung ist mit gleicher Ruhehaltung geprüft (Testfigur); echte Mixamo-Dateien sind noch nicht durchgelaufen, weil sie nur über das Adobe-Konto der Person kommen.
+- Drehungen der ganzen Figur (Kurven, Wenden) bleiben in Blender an der Hüfte; in Unreal überträgt die Wurzelbewegung sie auf die Engine-Figur.
+- Auf der Engine-Figur bleiben die Drehknochen (Twist) und Mittelhandknochen ohne eigene Quelle; sie folgen ihren Eltern.
+- Geprüft ist eine echte Mixamo-Animation mit Standardfigur; eigene Figuren aus dem Auto-Rigger noch nicht.
 - Ein ganzer Engine-Projektordner, der außerhalb von Trendo weitergegeben wird, ist nicht überwacht.

@@ -227,10 +227,9 @@ for spec in anims:
         fig_arm = arm; fig_meshes = meshes
         entry.update({"matched": len(arm.data.bones), "bones": len(arm.data.bones), "heightRatio": 1.0})
         h, _ = height(meshes); entry["height"] = round(h, 4)
-    target = [fig_arm] + fig_meshes
-    out = os.path.join(outdir, action_id + ".fbx"); fig_arm.animation_data.action = actions[-1]; export_fbx(out, target, actions[-1]); entry["fbx"] = out
+    entry["fbx"] = os.path.join(outdir, action_id + ".fbx")
     results.append(entry)
-# Godot: eine GLB mit allen Aktionen
+# Godot: eine GLB mit allen Aktionen (glTF rechnet in Metern)
 glb = os.path.join(outdir, "mixamo-godot.glb")
 holder = fig_arm
 holder.animation_data_create()
@@ -239,6 +238,25 @@ for a in actions:
 holder.animation_data.action = None
 select([holder] + [o for o in bpy.data.objects if o.type == "MESH" and (o.parent == holder or o.find_armature() == holder)])
 bpy.ops.export_scene.gltf(filepath=glb, export_format="GLB", use_selection=True, export_animations=True, export_animation_mode="NLA_TRACKS", export_skins=True, export_yup=True)
+for tr in list(holder.animation_data.nla_tracks): holder.animation_data.nla_tracks.remove(tr)
+
+# Unreal: Szene und Skelett in Zentimetern. In Metern exportiert faltet Unreal die Umrechnung als Maßstab 100 in den Wurzelknochen,
+# die Hüfte steht dann bei 1,0 statt ~100 und der IK Retargeter setzt das Becken der Engine-Figur auf den Boden (an echter Mixamo-Datei gemessen).
+def to_cm(arm, meshes, acts):
+    bpy.context.scene.unit_settings.scale_length = 0.01
+    for m in meshes:
+        w = m.matrix_world.copy(); m.parent = None; m.matrix_world = w
+    for o in [arm] + meshes: o.matrix_world = Matrix.Scale(100, 4) @ o.matrix_world
+    select([arm] + meshes); bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    for a in acts:
+        for fc in fcurves(a):
+            if fc.data_path.endswith(".location"):
+                for k in fc.keyframe_points: k.co.y *= 100; k.handle_left.y *= 100; k.handle_right.y *= 100
+    for m in meshes: m.parent = arm; m.matrix_parent_inverse = arm.matrix_world.inverted()
+to_cm(fig_arm, fig_meshes, actions)
+for entry, a in zip(results, actions):
+    fig_arm.animation_data.action = a
+    export_fbx(entry["fbx"], [fig_arm] + fig_meshes, a)
 with open(report, "w", encoding="utf-8") as f:
     json.dump({"mode": mode, "motion": motion, "figureHeight": round(fig_height, 4), "glb": glb, "animations": results}, f)
 print("TRENDO_MIXAMO ok")

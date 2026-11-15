@@ -287,7 +287,7 @@ public partial class MainWindow
         try
         {
             var log = Path.Combine(built, "Trendo-Pruefung", "mixamo.txt"); Directory.CreateDirectory(Path.GetDirectoryName(log)!);
-            var n = MixamoUnreal.Stage(built, files);
+            var n = MixamoUnreal.Stage(built, files, d.Data["mixamoPrepared"]?["motion"]?.GetValue<string>() ?? MixamoBlender.InPlace);
             var (exit, text) = await Task.Run(() => UnrealRun(UnrealGame.EditorCmd(engine), MixamoUnreal.Args(uproject, log), log, 1_800_000));
             var (ok, imported, retargeted, err) = MixamoUnreal.Parse(text);
             if (ok) try { MixamoUnreal.Unstage(built); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { _core.Audit.Append(Principal.LocalOwner.Name, "game.mixamo.aufraeumen", e.Message); } // importiert: Rohdateien nicht lose liegen lassen
