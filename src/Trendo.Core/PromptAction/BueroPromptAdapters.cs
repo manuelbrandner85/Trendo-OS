@@ -94,7 +94,7 @@ public sealed partial class LebenslaufAdapter : IStudioActionAdapter
 public sealed class KarteAdapter : IStudioActionAdapter
 {
     public string StudioId => "STUDIO-CARDS-01";
-    public string ActionId => "karte.anlegen";
+    public string ActionId => "grusskarte.anlegen";
     public string Label => "Karte anlegen";
     public SideEffectClass Effect => SideEffectClass.None;
     public CapabilityLevel DeclaredLevel => CapabilityLevel.Partial;

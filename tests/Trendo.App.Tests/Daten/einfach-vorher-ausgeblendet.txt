@@ -1950,3 +1950,146 @@ kuenstler-programm (Dokument): prog-level-einfach
 kuenstler-programm (Dokument): prog-level-erweitert
 kuenstler-programm (Dokument): prog-level-profi
 qualitaet: ql-open-117
+# T-0674 Arbeiten & Büro (15.11.2026): sieben neue Studios – in „Einfach“ sind wie überall die Eigenschaften eingeklappt (Knopf „Eigenschaften“), Stufe und Profi-Exporte über „Mehr Werkzeuge“; ql-open: sieben Programme mehr im Katalog.
+bewerbung-programm: prog-level-einfach
+bewerbung-programm: prog-level-erweitert
+bewerbung-programm: prog-level-profi
+bewerbung-programm (Dokument): cv-accent-0
+bewerbung-programm (Dokument): cv-accent-1
+bewerbung-programm (Dokument): cv-accent-2
+bewerbung-programm (Dokument): cv-accent-3
+bewerbung-programm (Dokument): cv-accent-4
+bewerbung-programm (Dokument): cv-accent-5
+bewerbung-programm (Dokument): cv-layout
+bewerbung-programm (Dokument): prog-export-anschreiben
+bewerbung-programm (Dokument): prog-export-ats
+bewerbung-programm (Dokument): prog-export-csv
+bewerbung-programm (Dokument): prog-export-mappe
+bewerbung-programm (Dokument): prog-level-einfach
+bewerbung-programm (Dokument): prog-level-erweitert
+bewerbung-programm (Dokument): prog-level-profi
+formulare-programm: prog-level-einfach
+formulare-programm: prog-level-erweitert
+formulare-programm: prog-level-profi
+formulare-programm (Dokument): fo-me-anrede
+formulare-programm (Dokument): fo-me-bank
+formulare-programm (Dokument): fo-me-bic
+formulare-programm (Dokument): fo-me-delete
+formulare-programm (Dokument): fo-me-email
+formulare-programm (Dokument): fo-me-geburtsdatum
+formulare-programm (Dokument): fo-me-geburtsname
+formulare-programm (Dokument): fo-me-geburtsort
+formulare-programm (Dokument): fo-me-hausnummer
+formulare-programm (Dokument): fo-me-iban
+formulare-programm (Dokument): fo-me-land
+formulare-programm (Dokument): fo-me-nachname
+formulare-programm (Dokument): fo-me-ort
+formulare-programm (Dokument): fo-me-plz
+formulare-programm (Dokument): fo-me-save
+formulare-programm (Dokument): fo-me-staatsangehoerigkeit
+formulare-programm (Dokument): fo-me-steuerid
+formulare-programm (Dokument): fo-me-strasse
+formulare-programm (Dokument): fo-me-telefon
+formulare-programm (Dokument): fo-me-titel
+formulare-programm (Dokument): fo-me-vorname
+formulare-programm (Dokument): fo-sig-clear
+formulare-programm (Dokument): fo-sig-use
+formulare-programm (Dokument): prog-export-pdf-flach
+formulare-programm (Dokument): prog-level-einfach
+formulare-programm (Dokument): prog-level-erweitert
+formulare-programm (Dokument): prog-level-profi
+karten-programm: prog-level-einfach
+karten-programm: prog-level-erweitert
+karten-programm: prog-level-profi
+karten-programm (Dokument): cards-antwort
+karten-programm (Dokument): cards-bg-0
+karten-programm (Dokument): cards-bg-1
+karten-programm (Dokument): cards-bg-2
+karten-programm (Dokument): cards-bg-3
+karten-programm (Dokument): cards-bg-4
+karten-programm (Dokument): cards-bg-5
+karten-programm (Dokument): cards-bg-6
+karten-programm (Dokument): cards-bg-7
+karten-programm (Dokument): cards-bg-8
+karten-programm (Dokument): cards-bg-9
+karten-programm (Dokument): cards-bleed
+karten-programm (Dokument): cards-datum
+karten-programm (Dokument): cards-format
+karten-programm (Dokument): cards-img-add
+karten-programm (Dokument): cards-marks
+karten-programm (Dokument): cards-ort
+karten-programm (Dokument): cards-page-bg
+karten-programm (Dokument): cards-t-align
+karten-programm (Dokument): cards-t-bold
+karten-programm (Dokument): cards-t-color
+karten-programm (Dokument): cards-t-del
+karten-programm (Dokument): cards-t-font
+karten-programm (Dokument): cards-t-italic
+karten-programm (Dokument): cards-t-size
+karten-programm (Dokument): cards-t-text
+karten-programm (Dokument): cards-t-y
+karten-programm (Dokument): prog-export-csv
+karten-programm (Dokument): prog-level-einfach
+karten-programm (Dokument): prog-level-erweitert
+karten-programm (Dokument): prog-level-profi
+pdf-werkstatt-programm: prog-level-einfach
+pdf-werkstatt-programm: prog-level-erweitert
+pdf-werkstatt-programm: prog-level-profi
+pdf-werkstatt-programm (Dokument): prog-export-vergleich
+pdf-werkstatt-programm (Dokument): prog-level-einfach
+pdf-werkstatt-programm (Dokument): prog-level-erweitert
+pdf-werkstatt-programm (Dokument): prog-level-profi
+praesentation-gestalten-programm: prog-level-einfach
+praesentation-gestalten-programm: prog-level-erweitert
+praesentation-gestalten-programm: prog-level-profi
+praesentation-gestalten-programm (Dokument): dd-ai-go
+praesentation-gestalten-programm (Dokument): dd-auto-notes
+praesentation-gestalten-programm (Dokument): dd-color-accent
+praesentation-gestalten-programm (Dokument): dd-color-bg
+praesentation-gestalten-programm (Dokument): dd-color-text
+praesentation-gestalten-programm (Dokument): dd-color-title
+praesentation-gestalten-programm (Dokument): dd-fix-auto
+praesentation-gestalten-programm (Dokument): dd-font
+praesentation-gestalten-programm (Dokument): dd-max-points
+praesentation-gestalten-programm (Dokument): dd-minutes
+praesentation-gestalten-programm (Dokument): dd-slide-layout
+praesentation-gestalten-programm (Dokument): dd-theme
+praesentation-gestalten-programm (Dokument): dd-topic
+praesentation-gestalten-programm (Dokument): prog-export-handzettel
+praesentation-gestalten-programm (Dokument): prog-export-plan
+praesentation-gestalten-programm (Dokument): prog-level-einfach
+praesentation-gestalten-programm (Dokument): prog-level-erweitert
+praesentation-gestalten-programm (Dokument): prog-level-profi
+qualitaet: ql-open-118
+qualitaet: ql-open-119
+qualitaet: ql-open-120
+qualitaet: ql-open-121
+qualitaet: ql-open-122
+qualitaet: ql-open-123
+qualitaet: ql-open-124
+scannen-programm: prog-level-einfach
+scannen-programm: prog-level-erweitert
+scannen-programm: prog-level-profi
+scannen-programm (Dokument): prog-export-png
+scannen-programm (Dokument): prog-level-einfach
+scannen-programm (Dokument): prog-level-erweitert
+scannen-programm (Dokument): prog-level-profi
+scannen-programm (Dokument): scan-all-dokument
+scannen-programm (Dokument): scan-all-foto
+scannen-programm (Dokument): scan-all-grau
+scannen-programm (Dokument): scan-all-original
+scannen-programm (Dokument): scan-all-whiteboard
+scannen-programm (Dokument): scan-date
+scannen-programm (Dokument): scan-folder-box
+scannen-programm (Dokument): scan-folder-box-pickdir
+scannen-programm (Dokument): scan-folder-box-recent
+scannen-programm (Dokument): scan-page-size
+scannen-programm (Dokument): scan-skip-blank
+scannen-programm (Dokument): scan-title
+vertraege-programm: prog-level-einfach
+vertraege-programm: prog-level-erweitert
+vertraege-programm: prog-level-profi
+vertraege-programm (Dokument): prog-export-kuendigung
+vertraege-programm (Dokument): prog-level-einfach
+vertraege-programm (Dokument): prog-level-erweitert
+vertraege-programm (Dokument): prog-level-profi
