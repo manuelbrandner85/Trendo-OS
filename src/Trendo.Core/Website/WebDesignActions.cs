@@ -15,10 +15,14 @@ public sealed record WebAktion(string Name, string Beschreibung, KiBedarf Bedarf
 public sealed record WebPlanScope(IReadOnlySet<string> Ids);
 
 /// <summary>Ergebnis eines Plans. <see cref="Error"/> gesetzt: der Plan wurde ganz abgelehnt, <see cref="Json"/> ist null und nichts wurde geschrieben.</summary>
-public sealed record WebPlanResult(string? Json, string? Error, IReadOnlyList<string> Changes, IReadOnlyList<string> States, IReadOnlyList<KiBedarf> Needs)
+/// <para><see cref="NeueSeite"/> gesetzt: Der Plan legt eine weitere Seite der Website an (seite_anlegen mit adresse); die aktuelle Seite bleibt unverändert.</para>
+public sealed record WebPlanResult(string? Json, string? Error, IReadOnlyList<string> Changes, IReadOnlyList<string> States, IReadOnlyList<KiBedarf> Needs, WebNeueSeite? NeueSeite = null)
 {
     public static WebPlanResult Fail(string error) => new(null, error, [], [], []);
 }
+
+/// <summary>Neue Seite der Website, die ein Plan anlegt: Adresse und Titel.</summary>
+public sealed record WebNeueSeite(string Adresse, string Titel);
 
 /// <summary>A1: Jede Editor-Funktion als benannte, geprüfte Aktion. Die KI liefert einen JSON-Plan aus Aktionen, der Mensch nutzt dieselben Aktionen (Text direkt ändern, Stand speichern).
 /// Ein Plan wird ganz oder gar nicht ausgeführt; das Ergebnis hängt nur von Plan und Seite ab, nicht davon, wer den Plan geliefert hat.</summary>
@@ -28,7 +32,7 @@ public static partial class WebDesignActions
 
     public static readonly IReadOnlyList<WebAktion> Catalog =
     [
-        new("seite_anlegen", "Beginnt eine neue, leere Seite. Nur als erste Aktion erlaubt.", KiBedarf.Text, ["titel"], ["beschreibung"]),
+        new("seite_anlegen", "Beginnt eine neue Seite. Nur als erste Aktion erlaubt. Ohne adresse ersetzt sie die aktuelle Seite; mit adresse (kleine Buchstaben, Ziffern, Bindestrich, z. B. \"kontakt\") entsteht eine weitere Seite der Website. bausteine: Liste wie bei baustein_einfuegen ({\"typ\", \"id\", \"props\"}), die nacheinander oben auf die Seite kommen. Die Seite selbst hat keine id; Bausteine der obersten Ebene brauchen kein \"in\".", KiBedarf.Text, ["titel"], ["beschreibung", "adresse", "bausteine"]),
         new("seite_beschreiben", "Ändert Titel oder Beschreibung für Suchmaschinen.", KiBedarf.Text, [], ["titel", "beschreibung"]),
         new("baustein_einfuegen", "Fügt einen Baustein ein: typ, optional eigene id, props, in (id eines Bereichs oder Spalten-Bausteins), slot und position.", KiBedarf.Text, ["typ"], ["id", "props", "in", "slot", "position"]),
         new("element_aendern", "Ändert Felder eines Bausteins.", KiBedarf.Text, ["id", "props"], [], true),
@@ -209,7 +213,7 @@ public static partial class WebDesignActions
         if (plan["aktionen"] is not JsonArray actions || actions.Count == 0) return WebPlanResult.Fail("Der Plan enthält keine Aktionen.");
         if (actions.Count > MaxActions) return WebPlanResult.Fail($"Der Plan ist zu lang (höchstens {MaxActions} Aktionen).");
         var doc = JsonNode.Parse(valid)!.AsObject();
-        var changes = new List<string>(); var states = new List<string>(); var needs = new List<KiBedarf>();
+        var changes = new List<string>(); var states = new List<string>(); var needs = new List<KiBedarf>(); WebNeueSeite? neu = null;
         for (var i = 0; i < actions.Count; i++)
         {
             var nr = i + 1;
@@ -217,6 +221,18 @@ public static partial class WebDesignActions
             var name = S(a["aktion"]);
             var def = Catalog.FirstOrDefault(x => x.Name == name);
             if (def is null) return WebPlanResult.Fail($"Aktion {nr}: unbekannte Aktion „{name ?? "(ohne Namen)"}“.");
+            if (a["props"] is JsonObject wrapped && !def.Pflicht.Contains("props") && !def.Optional.Contains("props"))
+            {
+                // Aktion ohne props, deren Angaben die KI trotzdem in props gepackt hat: wie direkt angegeben; doppelt ist ein Fehler
+                var flat = new JsonObject();
+                foreach (var kv in a) if (kv.Key != "props") flat[kv.Key] = kv.Value?.DeepClone();
+                foreach (var kv in wrapped)
+                {
+                    if (flat.ContainsKey(kv.Key)) return WebPlanResult.Fail($"Aktion {nr} ({name}): „{kv.Key}“ steht doppelt (neben und in props).");
+                    flat[kv.Key] = kv.Value?.DeepClone();
+                }
+                a = flat;
+            }
             foreach (var kv in a) if (kv.Key != "aktion" && !def.Pflicht.Contains(kv.Key) && !def.Optional.Contains(kv.Key)) return WebPlanResult.Fail($"Aktion {nr} ({name}): unbekannte Angabe „{kv.Key}“.");
             foreach (var p in def.Pflicht) if (a[p] is null) return WebPlanResult.Fail($"Aktion {nr} ({name}): „{p}“ fehlt.");
             if (scope is not null && !def.FuerAuswahl) return WebPlanResult.Fail($"Aktion {nr}: „{name}“ würde mehr als die Auswahl ändern.");
@@ -228,25 +244,90 @@ public static partial class WebDesignActions
                     if (!InScope(doc, scope, target)) throw new PlanError($"Baustein „{target}“ gehört nicht zur Auswahl.");
                 }
                 if (name == "seite_anlegen" && i != 0) throw new PlanError("nur als erste Aktion erlaubt.");
+                if (name == "seite_anlegen" && a["adresse"] is { } adr)
+                {
+                    var slug = NeedS(adr, "adresse");
+                    if (WebDesignSite.CheckSlug(slug) is { } serr) throw new PlanError(serr);
+                    neu = new(slug, NeedS(a["titel"], "titel").Trim());
+                }
+                if (name == "seite_anlegen" && S(a["titel"]) is { } tt && tt.Trim().Length == 0) throw new PlanError("„titel“ muss ein nicht leerer Text sein.");
+                if (name == "seite_anlegen" && a["bausteine"] is { } bl && (bl is not JsonArray arr || arr.Count + actions.Count > MaxActions))
+                    throw new PlanError(bl is JsonArray ? $"zu viele Bausteine (höchstens {MaxActions} Aktionen samt Bausteinen)." : "„bausteine“ muss eine Liste sein.");
                 doc = Run(name!, a, doc, changes, states);
             }
             catch (PlanError e) { return WebPlanResult.Fail($"Aktion {nr} ({name}): {e.Message}"); }
             if (!needs.Contains(def.Bedarf)) needs.Add(def.Bedarf);
         }
         var (final, ferr) = WebDesign.Validate(doc.ToJsonString());
-        return final is null ? WebPlanResult.Fail(ferr!) : new(final, null, changes, states, needs);
+        return final is null ? WebPlanResult.Fail(ferr!) : new(final, null, changes, states, needs, neu);
     }
 
     /// <summary>Übernimmt ein Ergebnis als einen Schritt: erst ein automatischer Stand der bisherigen Fassung, dann Schreiben, dann die im Plan benannten Stände. Liefert die Nummer des automatischen Stands.</summary>
     public static (string? AutoId, string? Error) Commit(string projectDir, WebPlanResult result, string baseJson, string label, string? variant = null)
     {
         if (result.Json is null) return (null, result.Error ?? "Nichts zu übernehmen.");
+        if (result.NeueSeite is not null)
+        {
+            // Weitere Seite: Die bisherige Seite bleibt unberührt, darum kein automatischer Stand (AutoId ist leer); Rückgängig über UndoNewPage.
+            var (stand, nerr) = CommitNewPage(projectDir, result, variant);
+            return stand is null ? (null, nerr) : ("", null);
+        }
         var (auto, err) = WebDesignStates.SaveContent(projectDir, "Vor KI: " + label, baseJson, true, variant);
         if (auto is null) return (null, err);
         var write = WebDesignStates.Write(projectDir, result.Json, variant);
         if (write is not null) return (null, write);
         foreach (var n in result.States) WebDesignStates.SaveContent(projectDir, n, result.Json, false, variant);
         return (auto.Id, null);
+    }
+
+    /// <summary>Was zum Rückgängigmachen einer von einem Plan angelegten Seite nötig ist: die Seite, ihr geschriebener Inhalt, die vorher bearbeitete Seite
+    /// und die Gestaltungswerte und Komponenten des Projekts von vorher (das Schreiben der neuen Seite hebt ihre Werte auf das ganze Projekt).</summary>
+    public sealed record WebNeueSeiteStand(string Adresse, string Inhalt, WebDesignSite.PageKey Vorher, JsonObject? Tokens, IReadOnlyList<WebDesignComponents.Component> Komponenten);
+
+    /// <summary>Vorprüfung für eine neue Seite, bevor etwas geschrieben wird: keine Variante, Adresse frei, Platz für eine weitere Seite.</summary>
+    public static string? CheckNewPage(string projectDir, WebPlanResult result, string? variant)
+    {
+        if (result.NeueSeite is not { } neu) return null;
+        if (variant is not null) return "Neue Seiten entstehen nur in der Hauptfassung, nicht in einer Variante.";
+        if (WebDesignSite.CheckSlug(neu.Adresse) is { } serr) return serr;
+        var pages = WebDesignSite.Pages(projectDir);
+        if (pages.Contains(neu.Adresse)) return $"Die Adresse „{neu.Adresse}“ gibt es schon.";
+        if (pages.Count >= WebDesignSite.MaxPages) return $"Höchstens {WebDesignSite.MaxPages} Seiten je Projekt.";
+        if (WebDesignCms.Load(projectDir).Any(c => c.Id == neu.Adresse)) return $"„{neu.Adresse}“ ist schon der Name einer Sammlung.";
+        return null;
+    }
+
+    /// <summary>Neue Seite anlegen, Inhalt schreiben und öffnen. Misslingt das Schreiben, verschwindet die Seite wieder und die vorige Seite ist wieder offen.</summary>
+    public static (WebNeueSeiteStand? Stand, string? Error) CommitNewPage(string projectDir, WebPlanResult result, string? variant = null)
+    {
+        if (result.Json is null || result.NeueSeite is not { } neu) return (null, result.Error ?? "Der Plan legt keine neue Seite an.");
+        if (CheckNewPage(projectDir, result, variant) is { } perr) return (null, perr);
+        var before = WebDesignSite.Active(projectDir);
+        var stand = new WebNeueSeiteStand(neu.Adresse, "", before, WebDesignTokens.Load(projectDir), WebDesignComponents.Load(projectDir));
+        if (WebDesignSite.Create(projectDir, neu.Adresse, neu.Titel) is { } cerr) return (null, cerr);
+        if (WebDesignStates.Write(projectDir, result.Json) is { } werr) { Revert(projectDir, stand); return (null, werr); }
+        foreach (var n in result.States) WebDesignStates.SaveContent(projectDir, n, result.Json, false);
+        return (stand with { Inhalt = File.ReadAllText(WebDesignSite.ActiveFile(projectDir)) }, null);
+    }
+
+    /// <summary>Rückgängig für eine angelegte Seite. Nur solange sie offen und seit dem Anlegen unverändert ist; sonst eine Meldung und nichts passiert.
+    /// Die Seite wandert in den Papierkorb des Projekts, Gestaltungswerte und Komponenten kommen zurück, die vorige Seite ist wieder offen.</summary>
+    public static string? UndoNewPage(string projectDir, WebNeueSeiteStand stand)
+    {
+        if (!WebDesignSite.Pages(projectDir).Contains(stand.Adresse)) return $"/{stand.Adresse} gibt es nicht mehr.";
+        if (WebDesignSite.Active(projectDir).Adresse != stand.Adresse) return $"/{stand.Adresse} ist nicht mehr geöffnet. Löschen geht über die Seitenliste.";
+        var file = WebDesignSite.ActiveFile(projectDir);
+        if (!File.Exists(file) || File.ReadAllText(file) != stand.Inhalt) return $"/{stand.Adresse} wurde seit dem Anlegen geändert. Löschen geht über die Seitenliste.";
+        return Revert(projectDir, stand);
+    }
+
+    static string? Revert(string projectDir, WebNeueSeiteStand stand)
+    {
+        if (WebDesignSite.Delete(projectDir, stand.Adresse) is { } derr) return derr;
+        if (stand.Tokens is { } t) WebDesignTokens.Save(projectDir, t); else File.Delete(Path.Combine(projectDir, WebDesignTokens.FileName)); // vorher keine Projektwerte: wieder keine
+        WebDesignComponents.Save(projectDir, stand.Komponenten);
+        if (WebDesignSite.Pages(projectDir).Contains(stand.Vorher.Adresse)) WebDesignSite.Activate(projectDir, stand.Vorher.Adresse, stand.Vorher.Sprache);
+        return null;
     }
 
     sealed class PlanError(string message) : Exception(message);
@@ -294,9 +375,14 @@ public static partial class WebDesignActions
         switch (f.Art)
         {
             case Art.Text:
-                if (value is JsonValue v && v.TryGetValue(out string? t)) return t.Length <= MaxTextChars ? JsonValue.Create(t) : throw new PlanError($"„{feld}“ ist zu lang.");
-                throw new PlanError($"„{feld}“ muss Text sein.");
+                // Eine Liste aus Texten gilt als Zeilen (so schreiben lokale Modelle oft Merkmale); alles andere muss Text sein
+                var t = value is JsonValue v && v.TryGetValue(out string? one) ? one
+                    : value is JsonArray lines && lines.Count > 0 && lines.All(x => x is JsonValue lv && lv.TryGetValue(out string? _)) ? string.Join("\n", lines.Select(x => x!.GetValue<string>()))
+                    : throw new PlanError($"„{feld}“ muss Text sein.");
+                return t.Length <= MaxTextChars ? JsonValue.Create(t) : throw new PlanError($"„{feld}“ ist zu lang.");
             case Art.Wahl:
+                // true/false bei einer Ja/Nein-Wahl gilt als „ja“/„nein“ (lokale Modelle schreiben oft JSON-Wahrheitswerte)
+                if (value is JsonValue jb && jb.TryGetValue(out bool yes) && f.Werte!.Contains("ja") && f.Werte!.Contains("nein")) return JsonValue.Create(yes ? "ja" : "nein");
                 return S(value) is { } w && f.Werte!.Contains(w) ? JsonValue.Create(w) : throw new PlanError($"„{feld}“ muss einer von {string.Join(", ", f.Werte!)} sein.");
             case Art.Zahl:
                 if (WebDesign.Number(value) is { } d && d >= f.Min && d <= f.Max) return JsonValue.Create(d);
@@ -414,7 +500,32 @@ public static partial class WebDesignActions
                 var titel = NeedS(a["titel"], "titel");
                 var fresh = JsonNode.Parse(WebDesign.Empty(titel))!.AsObject();
                 fresh["root"]!["props"]!["description"] = S(a["beschreibung"]) ?? "";
-                changes.Add($"Neue Seite „{titel}“");
+                changes.Add(S(a["adresse"]) is { } slug ? $"Neue Seite „{titel}“ unter „{slug}“" : $"Neue Seite „{titel}“");
+                if (a["bausteine"] is JsonArray list)
+                    for (var k = 0; k < list.Count; k++)
+                    {
+                        if (list[k] is not JsonObject blk) throw new PlanError($"Baustein {k + 1} ist kein Objekt.");
+                        var step = new JsonObject { ["aktion"] = "baustein_einfuegen" };
+                        var bdef = Bausteine.GetValueOrDefault(S(blk["typ"]) ?? "");
+                        foreach (var kv in blk) if (kv.Key is "typ" or "id" or "props") step[kv.Key] = kv.Value?.DeepClone();
+                        foreach (var kv in blk)
+                        {
+                            if (kv.Key is "typ" or "id" or "props") continue;
+                            // Felder des Bausteins direkt neben typ gelten wie in props (häufiger Fehler lokaler Modelle); doppelt angegeben ist ein Fehler
+                            if (bdef is null || !bdef.Felder.ContainsKey(kv.Key)) throw new PlanError($"Baustein {k + 1}: unbekannte Angabe „{kv.Key}“ (erlaubt: typ, id, props und die Felder des Bausteins).");
+                            if (step["props"] is { } sp && sp is not JsonObject) break; // falsches props meldet baustein_einfuegen selbst
+                            var into = step["props"] as JsonObject ?? (JsonObject)(step["props"] = new JsonObject());
+                            if (into.ContainsKey(kv.Key)) throw new PlanError($"Baustein {k + 1}: „{kv.Key}“ steht doppelt (neben und in props).");
+                            into[kv.Key] = kv.Value?.DeepClone();
+                        }
+                        // Ein Bild, das nicht im Projekt liegt (oft eine erfundene Adresse), bleibt leer statt den ganzen Seitenplan zu verwerfen; die Änderungsliste nennt es
+                        if (bdef is not null && step["props"] is JsonObject bprops)
+                            foreach (var f in bdef.Felder.Where(f => f.Value.Art == Art.Bild && bprops[f.Key] is not null).Select(f => f.Key).ToList())
+                                try { Check(f, bdef.Felder[f], bprops[f]); }
+                                catch (PlanError e) { bprops.Remove(f); changes.Add($"Bild „{f}“ in Baustein {k + 1} leer gelassen: {e.Message}"); }
+                        try { fresh = Run("baustein_einfuegen", step, fresh, changes, states); }
+                        catch (PlanError e) { throw new PlanError($"Baustein {k + 1}: {e.Message}"); }
+                    }
                 return fresh;
             }
             case "seite_beschreiben":

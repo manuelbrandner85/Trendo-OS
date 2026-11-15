@@ -68,6 +68,28 @@ public class WebDesignKi_Ui : IDisposable
         Assert.Contains("abgelehnt", w.WebDesignNote); Assert.Null(w.WebDesignPending); Assert.False(File.Exists(PageFile(w)));
     }
 
+    [AvaloniaFact(DisplayName = "T-0662: Abgelehnter Plan bekommt genau eine Nachfrage mit der Meldung; die berichtigte Antwort wird zur Vorschau")]
+    public async Task K4_one_follow_up()
+    {
+        var (w, _, _) = Ui.Open(); var prompts = new List<string>();
+        MainWindow.WebDesignKiOverride = (_, p) =>
+        {
+            prompts.Add(p);
+            return Task.FromResult(p.Contains("abgelehnt") ? NewPagePlan : """{"aktionen":[{"aktion":"seite_anlegen","titel":"Café"},{"aktion":"baustein_einfuegen","typ":"Gibtsnicht"}]}""");
+        };
+        w.Show("dev"); Pump();
+        await w.WebDesignAiRun("Eine Seite"); Pump();
+        var fix = Assert.Single(prompts, p => p.Contains("abgelehnt"));
+        Assert.Contains("Gibtsnicht", fix); // Meldung und eigener Plan gehen mit
+        Assert.NotNull(w.WebDesignPending); Assert.False(File.Exists(PageFile(w))); // nur Vorschau
+        // bleibt auch die Nachfrage fehlerhaft: abgelehnt, keine dritte Anfrage
+        prompts.Clear(); w.WebDesignDiscard();
+        MainWindow.WebDesignKiOverride = (_, p) => { prompts.Add(p); return Task.FromResult("kein Plan"); };
+        await w.WebDesignAiRun("Eine Seite"); Pump();
+        Assert.Equal(2, prompts.Count(p => !p.Contains("Prüfung der fertigen Seite")));
+        Assert.Contains("abgelehnt", w.WebDesignNote); Assert.Null(w.WebDesignPending);
+    }
+
     [AvaloniaFact(DisplayName = "K4 und A7: Bild ohne bildfähige KI ergibt einen Hinweis statt eines Fehlers, nichts wird gefragt; mit bildfähiger KI fließt das Bild in den Auftrag")]
     public async Task K4_image()
     {
@@ -151,6 +173,36 @@ public class WebDesignKi_Ui : IDisposable
         Assert.Equal("Öffnungszeiten", c[2]!["props"]!["text"]!.ToString()); Assert.Equal("Guter Kaffee", c[0]!["props"]!["title"]!.ToString());
         w.WebDesignUndo(); Pump();
         Assert.Equal(before, File.ReadAllText(PageFile(w)));
+    }
+
+    [AvaloniaFact(DisplayName = "T-0662: KI legt eine weitere Seite an (seite_anlegen mit adresse); die Startseite bleibt, Rückgängig legt die neue Seite in den Papierkorb")]
+    public async Task New_site_page_and_undo()
+    {
+        var (w, before) = await WithPage();
+        MainWindow.WebDesignKiOverride = (_, _) => Task.FromResult("""{"aktionen":[{"aktion":"seite_anlegen","titel":"Kontakt","adresse":"kontakt","bausteine":[{"typ":"Kopfbereich","id":"k","props":{"title":"Schreib uns","sub":"Wir antworten schnell"}},{"typ":"Formular"}]}]}""");
+        await w.WebDesignAiRun("Kontaktseite"); Pump();
+        Assert.NotNull(w.WebDesignPending); Assert.DoesNotContain("kontakt", WebDesignSite.Pages(w.WebDesignDir)); // nur Vorschau
+        w.WebDesignAccept(); Pump();
+        Assert.Contains("kontakt", WebDesignSite.Pages(w.WebDesignDir)); Assert.Equal("kontakt", WebDesignSite.Active(w.WebDesignDir).Adresse);
+        Assert.Equal(before, File.ReadAllText(PageFile(w))); // Startseite unverändert
+        Assert.Contains("Schreib uns", WebDesignStates.Read(w.WebDesignDir));
+        Assert.NotNull(w.Find<Button>("web-ki-undo"));
+        w.WebDesignUndo(); Pump();
+        Assert.DoesNotContain("kontakt", WebDesignSite.Pages(w.WebDesignDir)); Assert.Equal(WebDesignSite.Index, WebDesignSite.Active(w.WebDesignDir).Adresse);
+        Assert.Contains("Papierkorb", w.WebDesignNote); Assert.Equal(before, File.ReadAllText(PageFile(w)));
+        // ein Mensch legt Seiten über die Seitenliste an, nicht über den Aktionsweg
+        w.WebDesignHumanAction("""{"aktionen":[{"aktion":"seite_anlegen","titel":"X","adresse":"x"}]}"""); Pump();
+        Assert.Contains("Seitenliste", w.WebDesignNote); Assert.DoesNotContain("x", WebDesignSite.Pages(w.WebDesignDir));
+        // nach einer Änderung an der neuen Seite löscht Rückgängig nichts, der Knopf verschwindet
+        await w.WebDesignAiRun("Kontaktseite"); Pump(); w.WebDesignAccept(); Pump();
+        w.WebDesignHumanAction("""{"aktionen":[{"aktion":"element_aendern","id":"k","props":{"title":"Von Hand"}}]}"""); Pump();
+        w.WebDesignUndo(); Pump();
+        Assert.Contains("geändert", w.WebDesignNote); Assert.Contains("kontakt", WebDesignSite.Pages(w.WebDesignDir));
+        Assert.Contains("Von Hand", WebDesignStates.Read(w.WebDesignDir));
+        Assert.Null(w.TryFind<Button>("web-ki-undo"));
+        // dieselbe Adresse noch einmal: sofort abgelehnt, nichts geschrieben
+        await w.WebDesignAiRun("Kontaktseite"); Pump(); w.WebDesignAccept(); Pump();
+        Assert.Contains("gibt es schon", w.WebDesignNote); Assert.Contains("Von Hand", WebDesignStates.Read(w.WebDesignDir));
     }
 
     [AvaloniaFact(DisplayName = "K1: Auftrag außerhalb der Auswahl wird abgelehnt; ohne Auswahl ein Hinweis")]

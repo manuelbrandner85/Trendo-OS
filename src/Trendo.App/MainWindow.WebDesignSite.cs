@@ -27,7 +27,7 @@ public partial class MainWindow
         WebDesignCodeClose(); // der gezeigte Code gehört zur bisherigen Seite
         var err = WebDesignSite.Activate(WebDesignDir, adresse, sprache);
         if (err is not null) { _wdSiteNote = err; Show("dev"); return; }
-        _wdVariant = null; WebDesignClearSelection();
+        _wdVariant = null; _wdLastNewPage = null; WebDesignClearSelection(); // Rückgängig gilt nur für die gerade angelegte Seite
         _wdSiteNote = $"Bearbeitet wird jetzt: {PageLabel(adresse)}{(sprache is null || sprache == WebDesignSite.Load(WebDesignDir).Standardsprache ? "" : $" ({WebDesignI18n.LangName(sprache)})")}.";
         WebDesignReload(WebDesignStates.Read(WebDesignDir));
         Show("dev");
@@ -38,7 +38,7 @@ public partial class MainWindow
     public void WebDesignCreatePage(string titel, string adresse, bool kopie)
     {
         var slug = adresse.Trim().Length > 0 ? adresse.Trim() : WebDesignSite.SlugOf(titel);
-        WebDesignKeepDraft("Vor neuer Seite");
+        WebDesignKeepDraft("Vor neuer Seite"); _wdLastNewPage = null;
         var err = WebDesignSite.Create(WebDesignDir, slug, titel.Trim().Length > 0 ? titel.Trim() : slug, kopie ? WebDesignSite.Active(WebDesignDir).Adresse : null);
         _wdSiteNote = err ?? $"Seite /{slug} angelegt und geöffnet.";
         _core.Audit.Append(Principal.LocalOwner.Name, "web.seite.anlegen", err ?? slug);
@@ -50,7 +50,7 @@ public partial class MainWindow
     public void WebDesignDeletePage(string adresse)
     {
         if (_wdDeleteAsk != adresse) { _wdDeleteAsk = adresse; _wdSiteNote = $"/{adresse} mit allen Übersetzungen löschen? Noch einmal auf „Löschen“ klicken. Die Dateien landen im Papierkorb des Projekts."; Show("dev"); return; }
-        _wdDeleteAsk = null;
+        _wdDeleteAsk = null; _wdLastNewPage = null;
         var wasActive = WebDesignSite.Active(WebDesignDir).Adresse == adresse;
         if (wasActive) WebDesignKeepDraft("Vor Löschen der Seite");
         var err = WebDesignSite.Delete(WebDesignDir, adresse);

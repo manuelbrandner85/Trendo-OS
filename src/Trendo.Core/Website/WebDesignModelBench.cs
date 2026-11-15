@@ -53,6 +53,17 @@ public static class WebDesignModelBench
             try { answer = await backend.ChatAsync(model, [new("system", WebDesignKi.Instructions(skills, t.Scope)), new("user", t.Prompt)], ct); }
             catch (Exception e) when (e is not OperationCanceledException) { results.Add(new(t.Name, false, "keine Antwort: " + e.Message, sw.Elapsed.TotalSeconds)); continue; }
             var (ok, note) = Score(t, answer);
+            if (!ok && WebDesignActions.Apply(t.Page, answer, t.Scope).Error is { } planError)
+            {
+                // wie im Studio (T-0662): ein abgelehnter Plan bekommt genau eine Nachfrage mit der Meldung
+                try
+                {
+                    var second = await backend.ChatAsync(model, [new("system", WebDesignKi.Instructions(skills, t.Scope)), new("user", WebDesignKi.FixPlanPrompt(answer, planError))], ct);
+                    var (ok2, note2) = Score(t, second);
+                    (ok, note) = (ok2, ok2 ? "bestanden nach einer Nachfrage" : note2 + " (auch nach einer Nachfrage)");
+                }
+                catch (Exception e) when (e is not OperationCanceledException) { note += " (Nachfrage ohne Antwort)"; }
+            }
             results.Add(new(t.Name, ok, note, Math.Round(sw.Elapsed.TotalSeconds, 1)));
         }
         return new(model, results, DateTimeOffset.Now);

@@ -52,8 +52,21 @@ public static class WebDesignKi
 
     /// <summary>Auftrag für eine neue Seite (K4). <paramref name="imageNote"/>: Beschreibung oder Hinweis zu einem eigenen Bild.</summary>
     public static string NewPagePrompt(string wish, string? imageNote = null) =>
-        "Baue eine vollständige, bearbeitbare Seite für diesen Wunsch. Beginne mit seite_anlegen, dann baustein_einfuegen. Genau ein Kopfbereich.\nWunsch: " + wish.Trim()
+        "Baue eine vollständige, bearbeitbare Seite für diesen Wunsch. Nutze genau eine Aktion seite_anlegen und gib in „bausteine“ alle Bausteine der Seite der Reihe nach an, ohne „in“: "
+        + "zuerst Navigation, dann genau ein Kopfbereich oder Hero, dann für jeden Teil des Wunsches eigene Bausteine (zum Beispiel Ueberschrift und Text, Preise, Fragen, Formular), zum Schluss eine Fusszeile. "
+        + "Titel, Beschreibung und bausteine stehen direkt in der Aktion, nicht in props. Keine adresse: Die Seite ersetzt die aktuelle Seite. "
+        + "Nur die Felder aus der Liste, kein HTML in Texten, keine erfundenen Bildadressen.\nWunsch: " + wish.Trim()
         + (imageNote is { Length: > 0 } ? "\nOrientiere dich an diesem Bild:\n" + imageNote : "");
+
+    /// <summary>Höchstzahl Zeichen der abgelehnten Antwort, die bei der Nachfrage mitgeht.</summary>
+    public const int MaxFixAnswerChars = 20000;
+
+    /// <summary>Nachfrage, wenn der Plan abgelehnt wurde: die eigene Antwort und die genaue Meldung, Bitte um den ganzen berichtigten Plan.
+    /// So arbeiten Programmier-Agenten: Fehler zurückgeben statt aufgeben. Es gibt genau eine Nachfrage.</summary>
+    public static string FixPlanPrompt(string answer, string error) =>
+        "Dein Aktionsplan wurde abgelehnt, es wurde nichts geändert.\nMeldung: " + error.Trim()
+        + "\nBerichtige genau diese Stelle und liefere den ganzen Plan noch einmal, wieder nur als JSON. Behalte alles andere bei.\nDein Plan:\n"
+        + (answer.Length > MaxFixAnswerChars ? answer[..MaxFixAnswerChars] : answer);
 
     /// <summary>Auftrag für eine Änderung an ausgewählten Bausteinen (K1). Die KI sieht nur die Auswahl.</summary>
     public static string SelectionPrompt(string wish, string pageJson, IReadOnlyCollection<string> ids) =>

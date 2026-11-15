@@ -33,6 +33,7 @@ public static partial class WebDesignCheck
             if (answer is null) { rounds.Add(new(nr, errors, [], "Die KI hat nicht nachgebessert.")); return new(current, false, false, repairs, findings, rounds); }
             var r = WebDesignActions.Apply(current, answer, scope);
             if (r.Json is null) { rounds.Add(new(nr, errors, [], "Nachbesserung verworfen: " + r.Error)); return new(current, false, false, repairs, findings, rounds); }
+            if (r.NeueSeite is not null) { rounds.Add(new(nr, errors, [], "Nachbesserung verworfen: Sie wollte eine weitere Seite anlegen.")); return new(current, false, false, repairs, findings, rounds); }
             rounds.Add(new(nr, errors, r.Changes, null));
             if (r.Json == current) return new(current, false, false, repairs, findings, rounds);
             current = r.Json;

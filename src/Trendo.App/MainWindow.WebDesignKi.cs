@@ -23,6 +23,7 @@ public partial class MainWindow
     public static (bool Claude, bool Local)? WebDesignKiStateOverride { get; set; }
 
     string _wdAiText = "", _wdAiImage = "", _wdStandName = "", _wdVariantName = "", _wdKiWho = "", _wdLabel = "";
+    WebDesignActions.WebNeueSeiteStand? _wdLastNewPage; // Rückgängig für eine von der KI angelegte Seite
     bool _wdAiBusy; string? _wdDraft, _wdBase, _wdLastAuto, _wdVariant, _wdPendingVariant, _wdTempImage;
     WebPlanResult? _wdPending; WebPlanScope? _wdPendingScope; WebDesignCheck.LoopResult? _wdLoop; WebAuditResult? _wdAudit;
     List<string> _wdSelection = [];
@@ -224,10 +225,23 @@ public partial class MainWindow
             var answer = await ask();
             if (answer is null) return;
             _core.Audit.Append(Principal.LocalOwner.Name, "web.visuell.ki", label);
-            var (expanded, merr) = WebDesignMods.Expand(answer, WebDesignMods.Installed(WebDesignDir)); // A4: Mod-Aktionen werden zu den geprüften Aktionen
-            if (expanded is null) { _wdNote = "Die Antwort der KI wurde abgelehnt, nichts wurde geändert: " + merr; return; }
-            var r = WebDesignActions.Apply(planBase, expanded, scope);
-            if (r.Json is null) { _wdNote = "Die Antwort der KI wurde abgelehnt, nichts wurde geändert: " + r.Error; return; }
+            WebPlanResult Plan(string a) // A4: Mod-Aktionen werden zu den geprüften Aktionen
+            {
+                var (expanded, merr) = WebDesignMods.Expand(a, WebDesignMods.Installed(WebDesignDir));
+                return expanded is null ? WebPlanResult.Fail(merr ?? "Der Plan ist fehlerhaft.") : WebDesignActions.Apply(planBase, expanded, scope);
+            }
+            var r = Plan(answer);
+            if (r.Json is null)
+            {
+                // T-0662: genau eine Nachfrage mit der Meldung, bevor der Vorschlag verworfen wird
+                _wdNote = "Der Plan der KI war fehlerhaft, die KI bessert einmal nach …"; Show("dev");
+                string? second = null;
+                try { second = await WebKiAsk(WebDesignKi.Instructions(WebSkills(task, claude), scope), WebDesignKi.FixPlanPrompt(answer, r.Error!), backends); }
+                catch (Exception e) when (e is InvalidOperationException or HttpRequestException or TaskCanceledException) { }
+                var r2 = second is null ? null : Plan(second);
+                if (r2?.Json is null) { _wdNote = "Die Antwort der KI wurde abgelehnt, nichts wurde geändert: " + (r2?.Error ?? r.Error); return; }
+                r = r2;
+            }
             if (post is not null) r = post(r);
             WebAuditResult? audit = null;
             var loop = await WebDesignCheck.RunAsync(r.Json, async j => { audit = await WebDesignProbe(j); return audit.Findings; }, async (doc, errors) =>
@@ -269,9 +283,22 @@ public partial class MainWindow
         if (_wdPending is not { Json: { } json } p || _wdBase is null) return;
         if (!WebDesignIdle()) return;
         if (_wdPendingVariant != _wdVariant) { WebDesignDropPending(); _wdNote = "Der Vorschlag gehörte zu einer anderen Fassung und wurde verworfen."; Show("dev"); return; }
-        var (auto, err) = WebDesignActions.Commit(WebDesignDir, p, _wdBase, _wdLabel, _wdVariant);
-        if (auto is null) { _wdNote = err ?? "Übernehmen ging nicht."; Show("dev"); return; }
-        _wdLastAuto = auto; _wdDraft = null; _wdPending = null; WebDesignClearSelection();
+        if (p.NeueSeite is { } ns)
+        {
+            // Weitere Seite: die bisherige Seite bleibt unberührt; erst prüfen, dann den Entwurf der bisherigen Seite sichern, dann anlegen
+            if (WebDesignActions.CheckNewPage(WebDesignDir, p, _wdVariant) is { } perr) { _wdNote = perr; Show("dev"); return; }
+            WebDesignKeepDraft("Vor neuer Seite");
+            var (stand, nerr) = WebDesignActions.CommitNewPage(WebDesignDir, p, _wdVariant);
+            if (stand is null) { _wdNote = nerr ?? "Übernehmen ging nicht."; Show("dev"); return; }
+            _wdLastAuto = null; _wdLastNewPage = stand; _wdSiteNote = $"Seite /{ns.Adresse} angelegt und geöffnet.";
+        }
+        else
+        {
+            var (auto, err) = WebDesignActions.Commit(WebDesignDir, p, _wdBase, _wdLabel, _wdVariant);
+            if (auto is null) { _wdNote = err ?? "Übernehmen ging nicht."; Show("dev"); return; }
+            _wdLastAuto = auto; _wdLastNewPage = null;
+        }
+        _wdDraft = null; _wdPending = null; WebDesignClearSelection();
         _core.Audit.Append(Principal.LocalOwner.Name, "web.visuell.ki.uebernehmen", _wdLabel);
         WebDesignShowPreview(null); WebDesignReload(json);
         _wdNote = "Übernommen. Du kannst weiter im Editor ändern oder die KI-Änderung rückgängig machen.";
@@ -283,6 +310,18 @@ public partial class MainWindow
     /// <summary>Letzte KI-Änderung in einem Schritt zurücknehmen.</summary>
     public void WebDesignUndo()
     {
+        if (_wdLastNewPage is { } neu)
+        {
+            if (!WebDesignIdle()) return;
+            WebDesignDropPending();
+            // nur solange die Seite offen und unverändert ist; sonst bleibt alles, wie es ist (auch ein ungesicherter Entwurf)
+            var derr = _wdDraft is { } d && d != WebDesignStates.Read(WebDesignDir) ? $"/{neu.Adresse} wurde seit dem Anlegen geändert. Löschen geht über die Seitenliste." : WebDesignActions.UndoNewPage(WebDesignDir, neu);
+            _wdLastNewPage = null;
+            _wdNote = derr ?? $"KI-Änderung rückgängig gemacht: /{neu.Adresse} liegt im Papierkorb des Projekts.";
+            _core.Audit.Append(Principal.LocalOwner.Name, "web.visuell.rueckgaengig", derr ?? "neue Seite " + neu.Adresse);
+            if (derr is null) { _wdDraft = null; _wdVariant = null; _wdSiteNote = $"/{neu.Adresse} entfernt."; WebDesignReload(WebDesignStates.Read(WebDesignDir)); }
+            Show("dev"); return;
+        }
         if (_wdLastAuto is not { } id || !WebDesignIdle()) return;
         WebDesignDropPending(); WebDesignKeepDraft("Entwurf vor Rückgängig");
         var err = WebDesignStates.Restore(WebDesignDir, id);
@@ -296,7 +335,7 @@ public partial class MainWindow
     public void WebDesignHumanAction(string? planJson)
     {
         var r = WebDesignActions.Apply(WebDesignCurrent(), planJson ?? "");
-        var err = r.Error ?? WebDesignStates.Write(WebDesignDir, r.Json!, _wdVariant);
+        var err = r.Error ?? (r.NeueSeite is not null ? "Neue Seiten bitte über die Seitenliste anlegen." : null) ?? WebDesignStates.Write(WebDesignDir, r.Json!, _wdVariant);
         if (err is null) { foreach (var n in r.States) WebDesignStates.SaveContent(WebDesignDir, n, r.Json!, false, _wdVariant); _wdDraft = null; WebDesignReload(r.Json!); }
         _wdNote = err ?? "Gespeichert: " + string.Join(", ", r.Changes);
         _core.Audit.Append(Principal.LocalOwner.Name, "web.visuell.aktion", err ?? "ok");
@@ -421,7 +460,7 @@ public partial class MainWindow
         btnNew.IsEnabled = !_wdAiBusy; btnChange.IsEnabled = !_wdAiBusy && _wdSelection.Count > 0; btnCheck.IsEnabled = !_wdAiBusy;
         var row = new WrapPanel { Children = { btnNew, new Border { Width = 8 }, btnChange, new Border { Width = 8 }, btnCheck } };
         if (_wdSketch is not null) { row.Children.Add(new Border { Width = 8 }); var bs = Act("web-ki-skizze", "Mit Skizze ändern", () => WebDesignAiSketch(wish.Text ?? ""), true); bs.IsEnabled = !_wdAiBusy; row.Children.Add(bs); } // K3
-        if (_wdLastAuto is not null) { row.Children.Add(new Border { Width = 8 }); row.Children.Add(Act("web-ki-undo", "KI-Änderung rückgängig", WebDesignUndo)); }
+        if (_wdLastAuto is not null || _wdLastNewPage is not null) { row.Children.Add(new Border { Width = 8 }); row.Children.Add(Act("web-ki-undo", "KI-Änderung rückgängig", WebDesignUndo)); }
         sp.Children.Add(row);
         sp.Children.Add(new TextBlock { Name = "web-ki-selection", FontSize = 12, Foreground = Muted, TextWrapping = TextWrapping.Wrap, Text = _wdSelection.Count == 0 ? "Im Editor unter „Auswählen“ Bausteine anklicken: Die KI ändert dann nur diese. Doppelklick auf einen Text ändert ihn direkt, ohne KI." : "Ausgewählt: " + string.Join(", ", _wdSelection) });
 

@@ -126,6 +126,8 @@ public static class KiLibrary
         // Programmieren
         O("qwen2.5-coder-3b", KiKind.Code, "Qwen 2.5 Coder – 3B", "qwen2.5-coder:3b", 1.9, 8, "Qwen Research", "Code-Hilfe auf schwächeren PCs"),
         O("qwen2.5-coder-7b", KiKind.Code, "Qwen 2.5 Coder – 7B", "qwen2.5-coder:7b", 4.7, 16, "Apache-2.0", "Programmieren in allen gängigen Sprachen"),
+        // T-0662: hat im Z6-Prüflauf alle Web-Aufgaben bestanden (RTX 5070, 12 GB); braucht eine Grafikkarte mit etwa 10 GB oder viel Arbeitsspeicher
+        O("qwen2.5-coder-14b", KiKind.Code, "Qwen 2.5 Coder – 14B", "qwen2.5-coder:14b", 9.0, 16, "Apache-2.0", "Webseiten bauen im Studio „Webseite bauen“ (geprüft) und größere Programme"),
         // Bilder verstehen
         O("qwen2.5vl-7b", KiKind.BildVerstehen, "Qwen 2.5 VL – 7B", "qwen2.5vl:7b", 6.0, 16, "Apache-2.0", "Fotos beschreiben, Texte in Bildern lesen"),
         O("gemma3-4b-vision", KiKind.BildVerstehen, "Google Gemma 3 – 4B (sieht Bilder)", "gemma3:4b", 3.3, 8, "Gemma Terms", "Bilder beschreiben auf schwächeren PCs"),

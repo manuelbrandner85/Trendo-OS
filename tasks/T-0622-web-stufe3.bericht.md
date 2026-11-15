@@ -80,7 +80,7 @@ Vorher behoben, was frühere Läufe zeigten:
 
 ## Offen und Empfehlungen
 
-- A1-Aktion „seite_anlegen“ fehlt noch. Seiten legt bisher nur die Oberfläche an.
+- Erledigt in T-0662: „seite_anlegen“ legt auch weitere Seiten an (`adresse`) und baut die ganze Seite in einer Aktion (`bausteine`).
 - Komponenten sind einsprachig. Das wird als Hinweis angezeigt.
 - `Validate` begrenzt Zahlenwerte nicht auf ihren erlaubten Bereich. Editor und Laufzeit begrenzen sie.
 - K7 mit Supabase: Trendo schreibt nur hinein, die Liste zeigt die Einträge auf dem Gerät. Lesen aus Supabase mit Anmeldung (Supabase Auth) wäre ein eigener Schritt.

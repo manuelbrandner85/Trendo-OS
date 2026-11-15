@@ -59,7 +59,7 @@ public sealed class OllamaBackend(string baseUrl = "http://127.0.0.1:11434", Htt
 
     public async Task<string> ChatAsync(string model, IReadOnlyList<KiMessage> messages, CancellationToken ct = default)
     {
-        var body = new { model, stream = false, keep_alive = KiBackendsShared.OllamaKeepAlive, messages = messages.Select(m => new { role = m.Role, content = m.Content }).ToArray() };
+        var body = new { model, stream = false, keep_alive = KiBackendsShared.OllamaKeepAlive, options = new { num_ctx = KiBackendsShared.OllamaContext(messages) }, messages = messages.Select(m => new { role = m.Role, content = m.Content }).ToArray() };
         using var r = await _http.PostAsJsonAsync("/api/chat", body, ct);
         r.EnsureSuccessStatusCode();
         var doc = await r.Content.ReadFromJsonAsync<JsonElement>(ct);
@@ -69,7 +69,7 @@ public sealed class OllamaBackend(string baseUrl = "http://127.0.0.1:11434", Htt
     /// <summary>Antwort Stück für Stück (NDJSON von /api/chat mit stream=true) – für die Fortschrittsanzeige.</summary>
     public async Task<string> ChatStreamAsync(string model, IReadOnlyList<KiMessage> messages, Action<string> onDelta, CancellationToken ct = default)
     {
-        var body = new { model, stream = true, keep_alive = KiBackendsShared.OllamaKeepAlive, messages = messages.Select(m => new { role = m.Role, content = m.Content }).ToArray() };
+        var body = new { model, stream = true, keep_alive = KiBackendsShared.OllamaKeepAlive, options = new { num_ctx = KiBackendsShared.OllamaContext(messages) }, messages = messages.Select(m => new { role = m.Role, content = m.Content }).ToArray() };
         using var req = new HttpRequestMessage(HttpMethod.Post, "/api/chat") { Content = JsonContent.Create(body) };
         using var r = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
         r.EnsureSuccessStatusCode();
@@ -248,4 +248,9 @@ public sealed class CloudKiBackend : IKiFailoverBackend
 public static class KiBackendsShared
 {
     public const string OllamaKeepAlive = "2m";
+
+    /// <summary>Kontextfenster für Ollama. Ohne Angabe nutzt Ollama nur 4096 Token; lange Anweisungen (z. B. Webdesign-Aktionen, etwa 2500 Token)
+    /// lassen dann kaum Platz für die Antwort, sie bricht mitten im JSON ab. Zwei feste Stufen, damit das Modell nicht bei jeder Anfrage neu lädt;
+    /// geschätzt mit drei Zeichen je Token und 4096 Token Platz für Antwort und Überlegung.</summary>
+    public static int OllamaContext(IEnumerable<KiMessage> messages) => messages.Sum(m => m.Content.Length) / 3 + 4096 <= 8192 ? 8192 : 16384;
 }
