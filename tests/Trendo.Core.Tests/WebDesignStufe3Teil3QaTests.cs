@@ -119,4 +119,57 @@ public class WebDesignStufe3Teil3QaTests
         Assert.Contains("commonpath", blend);
         Assert.DoesNotContain("commonpath", ModelConverter.Script("/m/haus.fbx", "/o/haus.glb")); // Bibliothek: wie bisher
     }
+
+    /// <summary>Mod mit Aktion (Angabe „anzahl“), Bild und wählbarer Lizenz, installiert in <paramref name="proj"/>.</summary>
+    static void InstallShopMod(string root, string proj, string lizenz, string autor)
+    {
+        var d = Directory.CreateDirectory(Path.Combine(root, "mod-" + Guid.NewGuid().ToString("N")[..6])).FullName;
+        File.WriteAllText(Path.Combine(d, WebDesignMods.ManifestName), $$"""{"id":"laden.bausteine","name":"Laden","version":"1.0.0","beschreibung":"Bausteine für einen Laden.","lizenz":"{{lizenz}}","autor":"{{autor}}","rechte":["vorlagen","aktionen"]}""");
+        foreach (var s in new[] { "vorlagen", "aktionen", "bilder" }) Directory.CreateDirectory(Path.Combine(d, s));
+        File.WriteAllBytes(Path.Combine(d, "bilder", "brot.png"), [137, 80, 78, 71]);
+        File.WriteAllText(Path.Combine(d, "vorlagen", "angebot.json"), """{"name":"Angebot","inhalt":[{"type":"Bild","props":{"id":"b","src":"bilder/brot.png","alt":"Brot"}}]}""");
+        File.WriteAllText(Path.Combine(d, "aktionen", "vorrat.json"), """{"name":"vorrat","beschreibung":"Zeigt den Vorrat an.","parameter":["anzahl"],"schritte":[{"aktion":"baustein_einfuegen","typ":"Text","id":"vorrat","props":{"text":"Noch {{anzahl}} Stück","align":"left"}}]}""");
+        var prep = WebDesignMods.Prepare(d);
+        Assert.Null(prep.Error);
+        Assert.Null(WebDesignMods.Install(proj, prep, prep.Fingerprint));
+    }
+
+    static string Text(string? plan) => JsonNode.Parse(plan!)!["aktionen"]![0]!["props"]!["text"]!.ToString();
+
+    [Fact(DisplayName = "A4 (QA 20): Zahlen und Ja/Nein als Mod-Angaben werden als Text eingesetzt; Listen werden mit Meldung abgelehnt")]
+    public void Mod_values_numbers()
+    {
+        var root = Dir(); var proj = Dir(); try
+        {
+            InstallShopMod(root, proj, "MIT", "Beispiel");
+            var mods = WebDesignMods.Installed(proj);
+            var (plan, err) = WebDesignMods.Expand("""{"aktionen":[{"aktion":"mod:laden.bausteine/vorrat","werte":{"anzahl":3}}]}""", mods);
+            Assert.Null(err); Assert.Contains("Noch 3 Stück", Text(plan));
+            Assert.Contains("Noch 2.5 Stück", Text(WebDesignMods.Expand("""{"aktionen":[{"aktion":"mod:laden.bausteine/vorrat","werte":{"anzahl":2.5}}]}""", mods).Plan));
+            Assert.Contains("Noch ja Stück", Text(WebDesignMods.Expand("""{"aktionen":[{"aktion":"mod:laden.bausteine/vorrat","werte":{"anzahl":true}}]}""", mods).Plan));
+            var bad = WebDesignMods.Expand("""{"aktionen":[{"aktion":"mod:laden.bausteine/vorrat","werte":{"anzahl":[1,2]}}]}""", mods);
+            Assert.Null(bad.Plan); Assert.Contains("„anzahl“", bad.Error);
+        }
+        finally { Clean(root); Clean(proj); }
+    }
+
+    [Fact(DisplayName = "A4 (QA 22): Bilder einer Mod gelten mit der Lizenz der Mod; CC-BY ergibt eine Namensnennung, ohne Autor einen Fehler")]
+    public void Mod_images_license()
+    {
+        var root = Dir(); var proj = Dir(); try
+        {
+            InstallShopMod(root, proj, "CC-BY-4.0", "Bäckerei Beispiel");
+            var page = JsonNode.Parse("""{"root":{"props":{"title":"Start"}},"content":[{"type":"Bild","props":{"id":"b","src":"mods/laden.bausteine/bilder/brot.png","alt":"Brot"}}],"zones":{}}""");
+            var f = WebDesignAssets.Check(proj, page);
+            Assert.DoesNotContain(f, x => x.Code == "license-unknown");
+            Assert.DoesNotContain(f, x => x.Level == "Fehler");
+            var credit = Assert.Single(WebDesignAssets.AttributionFor(proj, page));
+            Assert.Equal("Bäckerei Beispiel", credit.Urheber); Assert.Equal("CC-BY-4.0", credit.Lizenz);
+            Assert.Contains(System.Net.WebUtility.HtmlEncode("Bäckerei Beispiel"), WebDesignAssets.AttributionHtml([credit]));
+            Clean(proj); proj = Dir();
+            InstallShopMod(root, proj, "CC-BY-4.0", "");
+            Assert.Contains(WebDesignAssets.Check(proj, page), x => x.Code == "license-author");
+        }
+        finally { Clean(root); Clean(proj); }
+    }
 }

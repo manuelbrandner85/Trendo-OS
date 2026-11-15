@@ -43,7 +43,7 @@ public static class WebDesignTokens
         WebDesign.SanitizeTokens(t);
         Directory.CreateDirectory(dir);
         System.IO.File.WriteAllText(File(dir) + ".neu", t.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
-        System.IO.File.Move(File(dir) + ".neu", File(dir), true);
+        SafeFile.Move(File(dir) + ".neu", File(dir));
     }
 
     /// <summary>Gestaltungswerte des Projekts in Seitendaten einsetzen. Ohne Projektwerte bleiben die Daten unverändert.</summary>

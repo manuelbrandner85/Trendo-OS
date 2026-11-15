@@ -52,7 +52,7 @@ public static partial class WebDesignAssets
     static void Save(string dir, List<Asset> list)
     {
         System.IO.File.WriteAllText(File(dir) + ".neu", JsonSerializer.Serialize(list, new JsonSerializerOptions { WriteIndented = true }));
-        System.IO.File.Move(File(dir) + ".neu", File(dir), true);
+        SafeFile.Move(File(dir) + ".neu", File(dir));
     }
 
     /// <summary>Datei ins Projekt übernehmen (Kopie) und mit Herkunft und Lizenz verzeichnen. Liefert den Eintrag oder einen Fehlertext.</summary>
@@ -126,10 +126,10 @@ public static partial class WebDesignAssets
     /// <summary>Prüfung vor dem Export: genutzte Medien ohne Lizenz sind Fehler, CC-BY ohne Urheber ebenfalls; nicht verzeichnete Dateien ein Hinweis.</summary>
     public static IReadOnlyList<WebsiteFinding> Check(string dir, JsonNode? doc)
     {
-        var list = Load(dir); var f = new List<WebsiteFinding>();
+        var list = Load(dir); var f = new List<WebsiteFinding>(); var mods = ModAssets(dir);
         foreach (var file in Used(doc, list))
         {
-            var a = list.FirstOrDefault(x => x.Datei == file);
+            var a = list.FirstOrDefault(x => x.Datei == file) ?? mods.FirstOrDefault(x => x.Datei == file);
             if (a is null) { if (file.StartsWith(Folder + "/", StringComparison.Ordinal) || WebDesignCheck.IsLocalFile(dir, file)) f.Add(new("Lizenzen", "Hinweis", $"„{file}“ steht nicht im Medienverzeichnis: Herkunft und Lizenz sind unbekannt.", "license-unknown")); continue; }
             if (a.Lizenz.Length == 0) f.Add(new("Lizenzen", "Fehler", $"„{a.Titel}“ ({a.Datei}) hat keinen Lizenzeintrag.", "license"));
             else if (NeedsAttribution(a.Lizenz) && a.Urheber.Length == 0) f.Add(new("Lizenzen", "Fehler", $"„{a.Titel}“ steht unter {a.Lizenz}, der Urheber für die Namensnennung fehlt.", "license-author"));
@@ -141,8 +141,33 @@ public static partial class WebDesignAssets
     public static IReadOnlyList<Asset> AttributionFor(string dir, JsonNode? doc)
     {
         var list = Load(dir); var used = Used(doc, list);
-        return list.Where(a => used.Contains(a.Datei) && NeedsAttribution(a.Lizenz)).ToList();
+        return list.Concat(ModAssets(dir).Where(m => list.All(a => a.Datei != m.Datei))).Where(a => used.Contains(a.Datei) && NeedsAttribution(a.Lizenz)).ToList();
     }
+
+    /// <summary>Bilder installierter Mods (mods/&lt;id&gt;/bilder/…): Lizenz und Urheber stehen in der Beschreibung der Mod, nicht im Medienverzeichnis.
+    /// Das Prüfen der Mods liest alle ihre Dateien; Export und Live-Prüfung fragen das je Seite und Sprache ab. Darum ein Zwischenspeicher je Projekt,
+    /// der nur neu rechnet, wenn sich im Mod-Ordner etwas geändert hat (Namen, Größen, Zeiten – ohne Inhalte zu lesen).</summary>
+    static List<Asset> ModAssets(string dir)
+    {
+        var root = Path.Combine(dir, WebDesignMods.Folder);
+        if (!Directory.Exists(root)) return [];
+        var stamp = new StringBuilder();
+        try
+        {
+            foreach (var f in Directory.EnumerateFiles(root, "*", new EnumerationOptions { RecurseSubdirectories = true, AttributesToSkip = FileAttributes.ReparsePoint }).Order(StringComparer.Ordinal))
+            { var fi = new FileInfo(f); stamp.Append(f).Append('|').Append(fi.Length).Append('|').Append(fi.LastWriteTimeUtc.Ticks).Append('\n'); }
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { stamp.Clear().Append(Guid.NewGuid()); }
+        var key = Path.GetFullPath(root); var s = stamp.ToString();
+        if (ModCache.TryGetValue(key, out var hit) && hit.Stamp == s) return hit.List;
+        var res = new List<Asset>();
+        foreach (var m in WebDesignMods.Installed(dir))
+            foreach (var f in m.Dateien.Where(f => f.StartsWith("bilder/", StringComparison.Ordinal)))
+                res.Add(new($"{WebDesignMods.Folder}/{m.Id}/{f}", "bild", $"{Path.GetFileNameWithoutExtension(f)} (Mod „{m.Name}“)", "", $"Mod „{m.Name}“ {m.Version}", m.Lizenz, m.Autor, ""));
+        ModCache[key] = (s, res);
+        return res;
+    }
+    static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (string Stamp, List<Asset> List)> ModCache = new(StringComparer.OrdinalIgnoreCase);
 
     public static string AttributionHtml(IReadOnlyList<Asset> items)
     {

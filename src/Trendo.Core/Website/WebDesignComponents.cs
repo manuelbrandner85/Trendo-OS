@@ -57,7 +57,7 @@ public static partial class WebDesignComponents
     {
         Directory.CreateDirectory(dir);
         System.IO.File.WriteAllText(File(dir) + ".neu", new JsonObject { ["komponenten"] = ToJson(list) }.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
-        System.IO.File.Move(File(dir) + ".neu", File(dir), true);
+        SafeFile.Move(File(dir) + ".neu", File(dir));
     }
 
     /// <summary>Komponenten des Projekts in Seitendaten einsetzen (für Editor, Export und Prüfung).</summary>

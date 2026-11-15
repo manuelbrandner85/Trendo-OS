@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { HDRLoader } from "three/addons/loaders/HDRLoader.js";
+import { nahgrenze, tiefeZurKamera } from "./kern.js";
 
 const rad = (d) => (d * Math.PI) / 180;
 const zahl = (v, d, lo, hi) => (Number.isFinite(+v) ? Math.min(hi, Math.max(lo, +v)) : d);
@@ -16,11 +17,12 @@ const wenigerBewegung = () => typeof matchMedia === "function" && matchMedia("(p
  * Szene aufbauen. inhalt(scene) lädt Modell oder Splat und liefert { objekt, box } (Bounding-Box in Weltkoordinaten).
  * Liefert eine Steuerung: aktualisieren(props), standbild(), fps(), entfernen().
  */
-export async function starte({ renderer, el, props, datei, inhalt, backend }) {
+export async function starte({ renderer, el, props, datei, inhalt, backend, gebacken = false }) {
   const scene = new THREE.Scene();
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
-  renderer.toneMapping = THREE.AgXToneMapping;
+  // Aufnahmen (Splats) sind schon ein fertiges Kamerabild: keine zweite Tonwertkurve, sonst wirken sie ausgewaschen
+  renderer.toneMapping = gebacken ? THREE.NoToneMapping : THREE.AgXToneMapping;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.VSMShadowMap; // weiche Schattenkante wie bei einer echten Sonne (0,5° Winkeldurchmesser), nicht messerscharf
   el.appendChild(renderer.domElement);
@@ -95,6 +97,13 @@ export async function starte({ renderer, el, props, datei, inhalt, backend }) {
     }
   }
 
+  // Nahgrenze aus dem aktuellen Blick: wie tief reicht der Kasten des Motivs in Richtung Kamera (je Winkel, Zoom und Drehung neu)
+  const halb = size.clone().multiplyScalar(0.5), blick = new THREE.Vector3();
+  function naheJetzt() {
+    blick.subVectors(camera.position, controls.target); const d = blick.length(); blick.divideScalar(Math.max(d, 1e-9));
+    return nahgrenze(d, tiefeZurKamera([halb.x, halb.y, halb.z], [blick.x, blick.y, blick.z]));
+  }
+
   let props0 = props;
   async function aktualisieren(p) {
     props0 = p;
@@ -109,15 +118,18 @@ export async function starte({ renderer, el, props, datei, inhalt, backend }) {
     const abstand = Math.max(halbH / Math.tan(vfov / 2), halbB / Math.tan(hfov / 2)) * 1.15 + halbT;
     const az = rad(zahl(p.winkel, 30, -180, 180)), el2 = rad(zahl(p.neigung, 15, -10, 80));
     camera.position.set(Math.sin(az) * Math.cos(el2) * abstand, ziel.y + Math.sin(el2) * abstand, Math.cos(az) * Math.cos(el2) * abstand);
-    camera.near = Math.max(abstand / 1000, 0.001); camera.far = abstand * 50;
+    // Aufnahmen: Dinge direkt vor der Linse (Pfosten, Ausreißer zwischen Kamera und Motiv) ausblenden, sonst verdecken sie das Motiv unscharf
+    camera.far = abstand * 50;
     camera.updateProjectionMatrix();
     controls.target.copy(ziel); controls.enabled = p.bedienen !== "nein";
+    camera.near = gebacken ? naheJetzt() : Math.max(abstand / 1000, 0.001); camera.updateProjectionMatrix();
     controls.autoRotate = zahl(p.drehen, 0, 0, 2) > 0 && !wenigerBewegung(); controls.autoRotateSpeed = zahl(p.drehen, 0, 0, 2) * 2;
     controls.update();
     sonne.intensity = zahl(p.sonne, 3, 0, 10);
     const sa = rad(zahl(p.sonnenWinkel, -40, -180, 180)), sh = rad(zahl(p.sonnenHoehe, 40, 5, 90));
     sonne.position.set(Math.sin(sa) * Math.cos(sh) * radius * 6, ziel.y + Math.sin(sh) * radius * 6, Math.cos(sa) * Math.cos(sh) * radius * 6);
-    sonne.castShadow = p.schatten !== "nein"; boden.visible = p.schatten !== "nein"; kontakt.visible = p.schatten !== "nein";
+    const schatten = p.schatten !== "nein" && !gebacken; // in einer Aufnahme liegen Schatten und Boden schon im Bild
+    sonne.castShadow = schatten; boden.visible = schatten; kontakt.visible = schatten;
     material(p);
     await umgebung(p);
   }
@@ -130,6 +142,10 @@ export async function starte({ renderer, el, props, datei, inhalt, backend }) {
   let frames = 0, seit = performance.now(), fps = 0;
   renderer.setAnimationLoop(() => {
     controls.update();
+    if (gebacken) { // Nahgrenze folgt dem Abstand beim Zoomen und Drehen mit der Maus, das Motiv wird nie angeschnitten
+      const n = naheJetzt();
+      if (Math.abs(n - camera.near) > camera.near * 0.01) { camera.near = n; camera.updateProjectionMatrix(); }
+    }
     renderer.render(scene, camera);
     frames++; const jetzt = performance.now();
     if (jetzt - seit >= 1000) { fps = (frames * 1000) / (jetzt - seit); frames = 0; seit = jetzt; el.dataset.fps = fps.toFixed(1); }

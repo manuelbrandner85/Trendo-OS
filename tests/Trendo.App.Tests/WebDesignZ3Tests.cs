@@ -150,6 +150,47 @@ public class WebDesignZ3
         finally { Directory.Delete(d, true); Directory.Delete(tmp, true); }
     }
 
+    [AvaloniaFact(DisplayName = "Z3 (QA 3): Im Editor gewählte 3D-Datei geht bei Entwurf an den Editor, jede nur einmal; nach „bereit“ (neue Editor-Seite) wieder")]
+    public void Editor_gets_files()
+    {
+        var sent = new List<string>(); MainWindow.WebDesignScriptSink = sent.Add;
+        var tmp = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "trendo-z3e-" + Guid.NewGuid().ToString("N"))).FullName;
+        string? link = null;
+        try
+        {
+            var (w, _, _) = Ui.Open();
+            var glb = Path.Combine(tmp, "wuerfel.glb"); File.WriteAllBytes(glb, BoxGlb());
+            Assert.Null(WebDesignAssets.Import(w.WebDesignDir, glb, "modell", "Würfel", "selbst erzeugt", "CC0-1.0").Error);
+            var page = Page("medien/modell/wuerfel.glb", "modell", standbild: "");
+            static void Pump() { for (var i = 0; i < 6; i++) Avalonia.Threading.Dispatcher.UIThread.RunJobs(); }
+            w.WebDesignMessage("{\"art\":\"entwurf\",\"daten\":" + page + "}"); Pump();
+            Assert.Single(sent); Assert.Contains("\"medien/modell/wuerfel.glb\"", sent[0]); Assert.Contains("trendo-datei", sent[0]);
+            w.WebDesignMessage("{\"art\":\"entwurf\",\"daten\":" + page + "}"); Pump();
+            Assert.Single(sent); // nicht bei jeder Änderung neu
+            w.WebDesignMessage("{\"art\":\"bereit\",\"daten\":{}}"); Pump();
+            Assert.Equal(2, sent.Count); // neue Editor-Seite kennt die Datei noch nicht
+            // Gültiger Pfad im Projekt, aber der Ordner ist eine Verknüpfung nach draußen: Die fremde Datei darf nicht an den Editor gehen
+            var aussen = Directory.CreateDirectory(Path.Combine(tmp, "aussen")).FullName; File.WriteAllBytes(Path.Combine(aussen, "fremd.splat"), new byte[64]);
+            link = Path.Combine(w.WebDesignDir, "medien", "splat");
+            var mk = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("cmd.exe", ["/c", "mklink", "/J", link, aussen]) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true })!;
+            mk.WaitForExit(10_000);
+            Assert.True(File.Exists(Path.Combine(link, "fremd.splat")), "Verknüpfung ließ sich nicht anlegen");
+            var fremd = Page("medien/splat/fremd.splat", "splat", standbild: "");
+            Assert.Equal("medien/splat/fremd.splat", JsonNode.Parse(WebDesign.Validate(fremd).Json!)!["content"]![0]!["props"]!["datei"]!.ToString()); // die Form des Pfads ist erlaubt
+            w.WebDesignMessage("{\"art\":\"entwurf\",\"daten\":" + fremd + "}"); Pump();
+            Assert.Equal(2, sent.Count); // die Verknüpfung wird erkannt
+        }
+        finally { MainWindow.WebDesignScriptSink = null; if (link is not null && Directory.Exists(link)) Directory.Delete(link); Directory.Delete(tmp, true); }
+    }
+
+    [Fact(DisplayName = "Z3: Ausschnitt und Nahgrenze für Splats (ohne Browser): Objekt behält seine Größe, Aufnahme mit Landschaft wird auf das Motiv begrenzt, Motiv wird nie angeschnitten (übersprungen ohne Node)")]
+    public void Splat_framing_math()
+    {
+        if (Cli.Find("node") is not { } node) { Assert.Skip("Übersprungen – Node.js fehlt auf diesem PC."); return; }
+        var run = Cli.Run(node, [Path.Combine(WebDesignKi_Ui.Repo(), "tools", "webdesign-editor", "pruefe-kern.mjs")], timeoutMs: 60_000);
+        Assert.True(run.Ok, run.Out + run.Err);
+    }
+
     [AvaloniaFact(DisplayName = "K7 (QA 13): eigenes Supabase-Projekt in der Oberfläche verbinden; geheimer Schlüssel wird abgelehnt; SQL ohne Leseregel")]
     public void Supabase_ui()
     {
@@ -214,9 +255,12 @@ public class WebDesignZ3
         File.WriteAllBytes(Path.Combine(d, "s.png"), Png); Assert.Null(WebDesignAssets.Import(d, Path.Combine(d, "s.png"), "bild", "Standbild", "selbst", "CC0-1.0").Error);
         var modell = WebDesignAssets.Load(d).Single(a => a.Art == "modell").Datei; var hdr = WebDesignAssets.Load(d).Single(a => a.Art == "umgebung").Datei;
         Assert.Null(WebDesign.Save(d, Page(modell, "modell", "medien/bild/s.png", "hdri", hdr)));
-        var tmp = Directory.CreateDirectory(Path.Combine(d, "_s")).FullName; File.WriteAllBytes(Path.Combine(tmp, "kugel.splat"), Splat(60000));
-        Assert.Null(WebDesignAssets.Import(d, Path.Combine(tmp, "kugel.splat"), "splat", "Kugel", "selbst erzeugt", "CC0-1.0").Error);
-        Assert.Null(WebDesignSite.Create(d, "splat", "Splat")); Assert.Null(WebDesign.Save(d, Page("medien/splat/kugel.splat", "splat")));
+        // Echte Aufnahme: „Train“ aus Tanks and Temples, 3DGS-Rekonstruktion aus Voxel51/gaussian_splatting (Apache-2.0), nach .splat gewandelt (742 000 Punkte)
+        var echt = Path.Combine(quellen, "splat-train", "train.splat");
+        if (File.Exists(echt)) Assert.Null(WebDesignAssets.Import(d, echt, "splat", "Train (echte Aufnahme)", "Tanks and Temples, Rekonstruktion Voxel51/gaussian_splatting", "Apache-2.0", "", "https://huggingface.co/datasets/Voxel51/gaussian_splatting").Error);
+        else { var tmp = Directory.CreateDirectory(Path.Combine(d, "_s")).FullName; File.WriteAllBytes(Path.Combine(tmp, "train.splat"), Splat(60000)); Assert.Null(WebDesignAssets.Import(d, Path.Combine(tmp, "train.splat"), "splat", "Kugel", "selbst erzeugt", "CC0-1.0").Error); }
+        var splatDatei = WebDesignAssets.Load(d).Single(a => a.Art == "splat").Datei;
+        Assert.Null(WebDesignSite.Create(d, "splat", "Splat")); Assert.Null(WebDesign.Save(d, Page(splatDatei, "splat")));
         var r = Trendo.Core.WebDesignExport.ExportSite(d, Editor()); Assert.Null(r.Error);
         var report = Path.Combine(WebDesignKi_Ui.Repo(), "reports", $"web-3d-pruefung-{DateTime.Now:yyyy-MM-dd}");
         var run = Cli.Run(node, [Path.Combine(WebDesignKi_Ui.Repo(), "tools", "webdesign-editor", "pruefe-3d.mjs"), chrome, r.Dir!, report, "gpu"], timeoutMs: 300_000);

@@ -151,7 +151,7 @@ public static partial class WebDesign
         Directory.CreateDirectory(Path.GetDirectoryName(f)!);
         File.WriteAllText(tmp, ok);
         if (File.Exists(f)) File.Copy(f, f + ".bak", true);
-        File.Move(tmp, f, true);
+        SafeFile.Move(tmp, f);
         return null;
     }
 

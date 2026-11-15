@@ -118,7 +118,7 @@ public static partial class WebDesignCms
     static void Save(string dir, IReadOnlyList<Sammlung> list)
     {
         var f = Path.Combine(dir, FileName);
-        File.WriteAllText(f + ".neu", ToJson(list).ToJsonString(new JsonSerializerOptions { WriteIndented = true })); File.Move(f + ".neu", f, true);
+        File.WriteAllText(f + ".neu", ToJson(list).ToJsonString(new JsonSerializerOptions { WriteIndented = true })); SafeFile.Move(f + ".neu", f);
     }
 
     // ---------- Bearbeiten ----------

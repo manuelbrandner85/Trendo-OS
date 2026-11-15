@@ -52,7 +52,7 @@ Quality Gate: 1. Wirkt das Ergebnis glaubwürdig real? Ja, für ein Produktbild 
 Bewusste Grenzen:
 
 - Die Schattenkante ist überall gleich weich. PCSS, also eine Kante, die mit dem Abstand weicher wird, gibt es in three.js nicht für beide Renderer.
-- Der Splat wurde nur mit einer synthetischen Prüfkugel geprüft, nicht mit einer echten Aufnahme.
+- Splat mit echter Aufnahme (T-0623, 15.11.2026): „Train“ aus Tanks and Temples, 3DGS-Rekonstruktion aus `Voxel51/gaussian_splatting` (Apache-2.0), 742 000 Punkte, als `.splat` 24 MB. Erster Lauf durchgefallen: Der Ausschnitt richtete sich nach der ganzen Landschaft, die Kamera stand weit außerhalb, das Bild zeigte nur verwaschene Flecken. Behoben: Bei Aufnahmen mit Landschaft richtet sich der Ausschnitt nach dem dichten Kern (30.–70. Perzentil), ein einzelnes Objekt behält seine volle Ausdehnung (2.–98. Perzentil); Dinge vor dem Motiv werden ausgeblendet, die Nahgrenze folgt je Bild der Tiefe des Motivs entlang der Blickachse (schneidet es also auch beim Zoomen und Drehen nie an); keine zweite Tonwertkurve und kein Schattenboden (Licht und Schatten sind schon in der Aufnahme). QA-Prüfung dazu: 2 Muss (Kern schnitt kompakte Objekte ab; Nahgrenze beim Zoomen), 2 Soll, 3 Kann – alle behoben; Rechnungen ohne Browser geprüft mit `tools/webdesign-editor/pruefe-kern.mjs`. Ergebnis `reports/web-3d-pruefung-2026-11-15/4-splat.png` entspricht dem Referenzfoto (Lok 713, Schriftzug, Rost, Schotter, Leitkegel), 60 fps. Rest: leichte Schlieren am Himmelsrand, typisch für Gaussian Splats.
 
 ## QA-Prüfung
 
@@ -61,7 +61,7 @@ Unabhängig vom Implementierer, je Teil in eigener Kopie.
 - **Teil 1:** 2 Muss- und 5 Soll-Befunde, alle behoben, mit Tests (Commit bde21c593).
 - **Teil 2:** B1–B8 und A1–A4, alle behoben, mit Tests (Commit ed6247aff).
 - **Teil 3** (A4, K7, Z3) mit Gegenprüfung von Teil 2: 23 Befunde (6 Muss, 11 Soll, 6 Kann). Die wichtigsten: Seiten mit 3D ließen sich nicht veröffentlichen (Fehlalarm der Geheimnis-Suche in drei.js), im Editor ließ sich kein Modell wählen und eine gewählte Datei kam nicht an, die Lizenzprüfung sah 3D-Dateien nicht, Neu-Installieren einer Mod konnte sie löschen, ein Export-Ordner mit `.git` war nicht mehr exportierbar. Alle Muss- und Soll-Befunde behoben (Commit 8795bc37e), dazu Kann 18, 19, 21, 23. Nachprüfung: 1–17 behoben; ein neuer Muss-Befund aus dem Fix (schreibgeschützte fremde Datei ließ ab dem dritten Export die Sicherung scheitern) und drei kleinere Befunde ebenfalls behoben, mit Test. Gegenprüfung Teil 2: alle benannten Befunde behoben; B5, B7, B8 ohne eigenen benannten Test.
-  Bewusst offen: Kann 20 (Zahlen als Mod-Werte werden zu leerem Text), Kann 22 nur Meldetext (Mod-Bilder gelten in der Lizenzprüfung als „Lizenz unbekannt“), Befund 3 ohne automatischen Test im Editor.
+  Nachgeholt in T-0623 (15.11.2026): Kann 20 (Zahlen und Ja/Nein als Mod-Angaben werden als Text eingesetzt, Listen abgelehnt), Kann 22 (Mod-Bilder gelten mit Lizenz und Autor der Mod, CC-BY ergibt eine Namensnennung), Befund 3 mit automatischem Test der Übergabe an den Editor.
 
 ## Security-Prüfung
 
@@ -84,7 +84,6 @@ Vorher behoben, was frühere Läufe zeigten:
 - Komponenten sind einsprachig. Das wird als Hinweis angezeigt.
 - `Validate` begrenzt Zahlenwerte nicht auf ihren erlaubten Bereich. Editor und Laufzeit begrenzen sie.
 - K7 mit Supabase: Trendo schreibt nur hinein, die Liste zeigt die Einträge auf dem Gerät. Lesen aus Supabase mit Anmeldung (Supabase Auth) wäre ein eigener Schritt.
-- Splat mit einer echten Aufnahme prüfen, sobald eine vorliegt.
 - `requirements.yaml` und `decisions.yaml` sind unverändert.
 
 ## Sprachwahl

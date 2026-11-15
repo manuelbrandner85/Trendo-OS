@@ -25,7 +25,7 @@ const results = {}; const problems = []; let ws;
 const check = (name, ok, detail) => { results[name] = ok; if (!ok) problems.push(name + (detail === undefined ? "" : ": " + JSON.stringify(detail))); };
 try {
   let target;
-  for (let i = 0; i < 80 && !target; i++) { try { target = (await (await fetch(`http://127.0.0.1:${port}/json/list`)).json()).find((t) => t.type === "page"); } catch { } if (!target) await sleep(150); }
+  for (let i = 0; i < 200 && !target; i++) { try { target = (await (await fetch(`http://127.0.0.1:${port}/json/list`)).json()).find((t) => t.type === "page"); } catch { } if (!target) await sleep(150); }
   ws = new WebSocket(target.webSocketDebuggerUrl); await new Promise((r, e) => { ws.onopen = r; ws.onerror = e; });
   let id = 0; const waiting = new Map(); const exceptions = []; const supa = []; const fremd = [];
   const call = (method, params = {}) => new Promise((r) => { const n = ++id; waiting.set(n, r); ws.send(JSON.stringify({ id: n, method, params })); });

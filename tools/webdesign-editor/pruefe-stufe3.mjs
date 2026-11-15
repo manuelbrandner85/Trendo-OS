@@ -34,7 +34,7 @@ try {
   check("W4: Übergang zwischen Seiten mit Ersatzweg im Kopf", raw.includes("@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }"));
 
   let target;
-  for (let i = 0; i < 80 && !target; i++) {
+  for (let i = 0; i < 200 && !target; i++) {
     try { target = (await (await fetch(`http://127.0.0.1:${port}/json/list`)).json()).find((t) => t.type === "page"); } catch { /* Chrome startet noch */ }
     if (!target) await sleep(150);
   }

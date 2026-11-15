@@ -322,7 +322,7 @@ public static partial class WebDesignMods
 
     /// <summary>Mod-Aktionen für die KI beschreiben: Name „mod:id/name“, Zweck und Parameter.</summary>
     public static string CatalogText(IReadOnlyList<Mod> mods) => string.Join("\n", mods.SelectMany(m => m.Aktionen.Select(a =>
-        $"- mod:{m.Id}/{a.Name} (aus der Mod „{m.Name}“): {a.Beschreibung} Angaben: {(a.Parameter.Count == 0 ? "keine" : string.Join(", ", a.Parameter))} (als Text in \"werte\")."))) ;
+        $"- mod:{m.Id}/{a.Name} (aus der Mod „{m.Name}“): {a.Beschreibung} Angaben: {(a.Parameter.Count == 0 ? "keine" : string.Join(", ", a.Parameter))} (in \"werte\", Text oder Zahl; Ja/Nein als \"ja\"/\"nein\")."))) ;
 
     /// <summary>Skills der Mods für die KI, gekürzt auf <paramref name="maxChars"/>.</summary>
     public static string SkillsText(IReadOnlyList<Mod> mods, int maxChars)
@@ -348,7 +348,9 @@ public static partial class WebDesignMods
             var act = parts.Length == 2 ? mod?.Aktionen.FirstOrDefault(a => a.Name == parts[1]) : null;
             if (act is null) return (null, $"Die Mod-Aktion „{name}“ gibt es in diesem Projekt nicht.");
             var werte = step?["werte"] as JsonObject ?? new JsonObject();
-            var map = act.Parameter.ToDictionary(p => p, p => Str(werte[p]));
+            // Zahlen und Ja/Nein kommen als Text in die Schritte; Listen oder Objekte passen in keinen Platzhalter
+            if (act.Parameter.FirstOrDefault(p => werte[p] is JsonArray or JsonObject) is { } bad) return (null, $"Die Angabe „{bad}“ für „{name}“ muss Text oder eine Zahl sein.");
+            var map = act.Parameter.ToDictionary(p => p, p => ValueText(werte[p]));
             foreach (var s in act.Schritte)
             {
                 var copy = s!.DeepClone();
@@ -359,6 +361,16 @@ public static partial class WebDesignMods
         }
         return (new JsonObject { ["aktionen"] = result }.ToJsonString(), null);
     }
+
+    /// <summary>Wert einer Mod-Angabe als Text: Text bleibt, Zahlen ohne Ländereinstellung (3.5 statt 3,5), Ja/Nein als „ja“/„nein“ wie in allen Bausteinen.</summary>
+    static string ValueText(JsonNode? n) => n switch
+    {
+        JsonValue v when v.TryGetValue(out string? s) => s,
+        JsonValue v when v.TryGetValue(out bool b) => b ? "ja" : "nein",
+        JsonValue v when v.TryGetValue(out decimal d) => d.ToString(System.Globalization.CultureInfo.InvariantCulture),
+        JsonValue v when v.TryGetValue(out double x) => x.ToString("R", System.Globalization.CultureInfo.InvariantCulture),
+        _ => "",
+    };
 
     static void Fill(JsonNode? n, IReadOnlyDictionary<string, string> map)
     {

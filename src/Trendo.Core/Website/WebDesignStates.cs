@@ -24,7 +24,7 @@ public static partial class WebDesignStates
     static void WriteAtomic(string file, string text)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(file)!);
-        File.WriteAllText(file + ".neu", text); File.Move(file + ".neu", file, true);
+        File.WriteAllText(file + ".neu", text); SafeFile.Move(file + ".neu", file);
     }
 
     static string PageRaw(string dir)

@@ -25,7 +25,7 @@ const results = {}; const problems = []; let ws;
 const check = (name, ok, detail) => { results[name] = ok; if (!ok) problems.push(name + (detail === undefined ? "" : ": " + JSON.stringify(detail))); };
 try {
   let target;
-  for (let i = 0; i < 80 && !target; i++) {
+  for (let i = 0; i < 200 && !target; i++) {
     try { target = (await (await fetch(`http://127.0.0.1:${port}/json/list`)).json()).find((t) => t.type === "page"); } catch { /* Chrome startet noch */ }
     if (!target) await sleep(150);
   }
