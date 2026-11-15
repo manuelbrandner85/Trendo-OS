@@ -39,6 +39,8 @@ PROMPTS = {
     'STUDIO-VISION-01': 'a magnifying glass and a camera lens lying on a printed photograph of a forest on a dark desk, light reflections in the glass, warm light, no readable text, no faces',
     'STUDIO-CITE-01': 'open old books with colorful paper bookmarks and a card catalog drawer in a library reading room, dark wood, warm reading lamp, no readable text',
     'STUDIO-DAYPLAN-01': 'a paper day planner with time blocks colored by soft markers next to a brass alarm clock and a cup of tea on a dark desk at morning light, no readable text',
+    'STUDIO-PDFTOOLS-01': 'a tidy office desk with a neat stack of printed pages held by a black binder clip, a paper cutter, a rubber stamp and an ink pad, a few pages fanned out with a black redaction bar on one line, cool daylight from a window, no readable text',
+    'STUDIO-FORMS-01': 'a printed application form on a clipboard with check boxes partly ticked, a fountain pen resting on the signature line, reading glasses and a cup of coffee on a light wooden desk, soft morning light, no readable text',
     'STUDIO-SUMMARY-01': 'a thick stack of printed documents next to a single neat index card with a few highlighted lines and a yellow highlighter on a dark wooden desk, warm desk lamp light',
     'STUDIO-LOGO-01': 'a designer desk with color swatches, a sketchbook with simple geometric emblem sketches, pencils and a pantone-like fan deck, soft daylight, no text, no brand names',
     'STUDIO-PODCAST-01': 'a broadcast microphone on a boom arm with a pop filter, studio headphones and a small audio mixer on a dark desk with acoustic foam panels behind, warm light',

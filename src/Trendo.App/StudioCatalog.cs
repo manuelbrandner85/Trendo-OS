@@ -22,6 +22,8 @@ public static class StudioCatalog
         ["X-11"] = new("Neues Projekt starten", "Ein Startpunkt für jedes Projekt – vom Dokument bis zum Video.", "Arbeiten & Büro"),
         ["SYS-02"] = new("Kleine Helfer & Musik", "Kleine Helfer: Rechner, Notizen, Bildschirmfoto, Musik und Videos abspielen.", "Arbeiten & Büro"),
         ["STUDIO-DAYPLAN-01"] = new("Tagesplaner", "Aufgaben um feste Termine herum in den Tag legen – mit Pausen und einer Liste für morgen.", "Arbeiten & Büro"),
+        ["STUDIO-PDFTOOLS-01"] = new("PDF-Werkstatt", "PDFs zusammenfügen, teilen, ordnen, verkleinern, schwärzen und vergleichen – jede Aktion ergibt eine neue Datei.", "Arbeiten & Büro"),
+        ["STUDIO-FORMS-01"] = new("Formulare ausfüllen", "PDF-Formulare ausfüllen und unterschreiben – mit deinen Angaben als Vorschlag und Prüfung der Pflichtfelder.", "Arbeiten & Büro"),
 
         ["STUDIO-ONLINE-BUSINESS-01"] = new("Online verkaufen", "Geschäftsidee planen, gründen und online verkaufen.", "Business & Geld"),
         ["STUDIO-POD-01"] = new("Print on Demand", "Eigene Motive auf Produkte bringen: Druckdatei prüfen, Preis rechnen, Rechtliches klären.", "Business & Geld"),

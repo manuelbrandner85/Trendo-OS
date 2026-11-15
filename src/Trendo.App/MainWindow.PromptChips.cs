@@ -47,6 +47,8 @@ public partial class MainWindow
         ["STUDIO-VISION-01"] = ["Beschreibe dieses Bild", "Finde unscharfe Fotos", "Lies den Text im Bild"],
         ["STUDIO-CITE-01"] = ["Zitiere nach APA", "Belegt die Quelle die Aussage?", "Welche Angaben fehlen?"],
         ["STUDIO-DAYPLAN-01"] = ["Plane meinen Tag", "Was schaffe ich bis Mittag?", "Rest auf morgen schieben"],
+        ["STUDIO-PDFTOOLS-01"] = ["PDFs zusammenfügen", "PDF kleiner machen", "Seiten 1-3 herauslösen"],
+        ["STUDIO-FORMS-01"] = ["Formular mit meinen Angaben ausfüllen", "Welche Pflichtfelder fehlen?", "Unterschrift einsetzen"],
     };
 
     /// <summary>Chips für ein Studio (leer = keine Vorschläge hinterlegt).</summary>
