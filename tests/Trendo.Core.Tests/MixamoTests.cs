@@ -194,7 +194,18 @@ public class MixamoTests : IDisposable
         var proj = Path.Combine(_dir, "Spiel"); Directory.CreateDirectory(proj);
         Assert.Equal(1, MixamoUnreal.Stage(proj, [Fbx("gehen.fbx", true), Path.Combine(_dir, "gibtsnicht.fbx")]));
         Assert.True(File.Exists(Path.Combine(proj, "Trendo", "trendo_mixamo.py")));
-        Assert.Contains("IKRetargeter", File.ReadAllText(Path.Combine(proj, "Trendo", "trendo_mixamo.py")));
+        var script = File.ReadAllText(Path.Combine(proj, "Trendo", "trendo_mixamo.py"));
+        Assert.Contains("IKRetargeter", script);
+        // Erkenntnisse aus der echten Mixamo-Datei (15.11.2026), damit sie nicht zurückfallen:
+        Assert.Contains("AutoMapChainType.EXACT", script); Assert.DoesNotContain("AutoMapChainType.FUZZY", script); // FUZZY hängte Drehknochen ans Schlüsselbein
+        Assert.Contains("run_batch_retarget", script); Assert.DoesNotContain("duplicate_and_retarget(", script);      // veraltet, lieferte leere Animation
+        Assert.Contains("run_op_initial_setup", script); Assert.Contains("set_target_pelvis_bone", script);
+        Assert.Contains("Becken am Boden", script);                                                                   // Qualitätsprüfung im Lauf
+        Assert.Equal("inplace", File.ReadAllText(Path.Combine(proj, "Trendo", "Mixamo", "bewegung.txt")));
+        MixamoUnreal.Stage(proj, [Fbx("gehen.fbx", true)], MixamoBlender.RootMotion);
+        Assert.Equal("root", File.ReadAllText(Path.Combine(proj, "Trendo", "Mixamo", "bewegung.txt")));
+        Assert.Contains("Becken am Boden", MixamoUnreal.Parse("LogPython: TRENDO-MIXAMO-FEHLER Übertragung auf die Engine-Figur ergab leere Animation(en): MN_MX_gehen (Becken am Boden)").Error);
+        Assert.Contains("scale_length = 0.01", MixamoBlender.Script); // Unreal-FBX in Zentimetern (sonst Wurzel mit Maßstab 100, Hüfte bei 1,0)
     }
 
     // ───────────── Blender (echt, mit selbst gebauter Testfigur) ─────────────
