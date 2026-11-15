@@ -24,4 +24,23 @@ public class SafeFileTests
         }
         finally { Directory.Delete(dir, true); }
     }
+
+    [Fact(DisplayName = "SafeFile: Ordner umbenennen gelingt, auch wenn eine Datei darin kurz festgehalten wird")]
+    public void Move_directory_waits_for_lock()
+    {
+        var root = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "trendo-safefile-" + Guid.NewGuid().ToString("N"))).FullName;
+        try
+        {
+            var src = Directory.CreateDirectory(Path.Combine(root, "neu")).FullName; var dst = Path.Combine(root, "fertig");
+            var f = Path.Combine(src, "datei.txt"); File.WriteAllText(f, "x");
+            var held = new ManualResetEventSlim();
+            var holder = Task.Run(() => { using var s = new FileStream(f, FileMode.Open, FileAccess.Read, FileShare.None); held.Set(); Thread.Sleep(300); }); // wie ein Scanner, der die Datei gerade liest
+            held.Wait();
+            SafeFile.MoveDirectory(src, dst);
+            holder.Wait();
+            Assert.True(File.Exists(Path.Combine(dst, "datei.txt"))); Assert.False(Directory.Exists(src));
+            Assert.Throws<DirectoryNotFoundException>(() => SafeFile.MoveDirectory(Path.Combine(root, "fehlt"), Path.Combine(root, "x")));
+        }
+        finally { Directory.Delete(root, true); }
+    }
 }

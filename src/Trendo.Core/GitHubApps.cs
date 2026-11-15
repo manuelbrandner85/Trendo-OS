@@ -158,7 +158,7 @@ public static partial class GitHubApps
             else File.Copy(downloadedFile, Path.Combine(tmp, Path.GetFileName(asset.Name)));
             var exe = MainExe(tmp, repo) ?? throw new InvalidOperationException("Im Paket ist kein Windows-Programm (.exe).");
             if (Directory.Exists(dir)) Directory.Delete(dir, true);
-            Directory.Move(tmp, dir);
+            SafeFile.MoveDirectory(tmp, dir);
             var entry = new Installed(id, repo, release.Tag, Path.GetRelativePath(tmp, exe).Replace('\\', '/'), license, asset.Name, sha, description, DateTimeOffset.Now);
             Save(toolsRoot, List(toolsRoot).Where(i => i.Id != id).Append(entry));
             audit?.Append("app", "github.install", $"{repo} {release.Tag} {asset.Name} sha256={sha}");

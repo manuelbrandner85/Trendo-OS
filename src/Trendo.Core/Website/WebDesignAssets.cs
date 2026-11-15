@@ -52,7 +52,7 @@ public static partial class WebDesignAssets
     static void Save(string dir, List<Asset> list)
     {
         System.IO.File.WriteAllText(File(dir) + ".neu", JsonSerializer.Serialize(list, new JsonSerializerOptions { WriteIndented = true }));
-        System.IO.File.Move(File(dir) + ".neu", File(dir), true);
+        SafeFile.Move(File(dir) + ".neu", File(dir));
     }
 
     /// <summary>Datei ins Projekt übernehmen (Kopie) und mit Herkunft und Lizenz verzeichnen. Liefert den Eintrag oder einen Fehlertext.</summary>

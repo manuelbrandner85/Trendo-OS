@@ -60,7 +60,7 @@ public static partial class WebDesignSite
     {
         Directory.CreateDirectory(dir);
         var f = Path.Combine(dir, SiteFile);
-        File.WriteAllText(f + ".neu", o.ToJsonString(new JsonSerializerOptions { WriteIndented = true })); File.Move(f + ".neu", f, true);
+        File.WriteAllText(f + ".neu", o.ToJsonString(new JsonSerializerOptions { WriteIndented = true })); SafeFile.Move(f + ".neu", f);
     }
 
     static string Str(JsonNode? n, string d = "") => n is JsonValue v && v.TryGetValue(out string? s) ? s : d;

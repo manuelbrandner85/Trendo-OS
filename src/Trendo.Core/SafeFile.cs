@@ -14,4 +14,13 @@ public static class SafeFile
             catch (Exception e) when ((e is UnauthorizedAccessException || e is IOException and not FileNotFoundException and not DirectoryNotFoundException) && i < Attempts - 1)
             { Thread.Sleep(25 * (i + 1)); }
     }
+
+    /// <summary>Ordner umbenennen wie <see cref="Move"/>: Virenschutz oder Suchindex halten frisch angelegte Dateien kurz fest – dann kurz warten und erneut versuchen.</summary>
+    public static void MoveDirectory(string source, string destination)
+    {
+        for (var i = 0; ; i++)
+            try { Directory.Move(source, destination); return; }
+            catch (Exception e) when ((e is UnauthorizedAccessException || e is IOException and not FileNotFoundException and not DirectoryNotFoundException) && Directory.Exists(source) && !Directory.Exists(destination) && i < Attempts - 1)
+            { Thread.Sleep(25 * (i + 1)); }
+    }
 }
