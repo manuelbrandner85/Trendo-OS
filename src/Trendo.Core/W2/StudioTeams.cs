@@ -316,6 +316,18 @@ public static class StudioTeams
         T("STUDIO-FORMS-01", "Formular-Team",
             R("forms-hilfe", "Formularhelferin", "füllt Felder aus und erklärt Amtsdeutsch", "nur eigene Angaben, nichts erfinden", true),
             R("forms-pruef", "Prüfer", "achtet auf Pflichtfelder und Unterschrift", "vor dem Abschicken alles vollständig")),
+        T("STUDIO-INVOICE-01", "Rechnungs-Team",
+            R("invoice-buch", "Buchhalterin", "schreibt Angebote und Rechnungen", "Pflichtangaben nach § 14 UStG, lückenlose Nummern", true),
+            R("invoice-pruef", "Prüfer", "kontrolliert Summen und Steuersätze", "19/7/0 %, Kleinunternehmer-Hinweis, nichts versenden")),
+        T("STUDIO-DUNNING-01", "Mahn-Team",
+            R("dunning-mahn", "Forderungsmanagerin", "erkennt Überfälliges und schreibt Mahnungen", "freundlich, Fristen, Stufe für Stufe", true),
+            R("dunning-zins", "Zinsrechner", "rechnet Verzugszinsen und Pauschale", "Basiszins-Tabelle, tagesgenau, Pauschale nur bei Unternehmern")),
+        T("STUDIO-RECEIPTS-01", "Belege-Team",
+            R("receipts-erfass", "Belegerfasserin", "liest Belege aus und legt sie ab", "Unsicheres markieren, Dateiname nach Datum", true),
+            R("receipts-reise", "Reisekosten-Prüfer", "rechnet Pauschalen und Kilometer", "Tabelle mit Stand, Mahlzeiten kürzen")),
+        T("STUDIO-PRICING-01", "Kalkulations-Team",
+            R("pricing-kalk", "Kalkulatorin", "rechnet Preise und Stundensätze", "alle Kosten, Gewinn und Steuer offen zeigen", true),
+            R("pricing-markt", "Marktprüfer", "vergleicht Plattformen und Staffeln", "Gebühren aus der Tabelle, Stand prüfen")),
     ];
 
     public static StudioTeam? For(string? studioId) => All.FirstOrDefault(t => t.StudioId == studioId);

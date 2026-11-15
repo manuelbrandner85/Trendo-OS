@@ -5,6 +5,9 @@ using s2industries.ZUGFeRD;
 namespace Trendo.Core;
 
 /// <summary>Anschrift und Kennungen einer Partei für die E-Rechnung (Name, Straße, PLZ, Ort, Land, USt-IdNr. oder Steuernummer, E-Mail).</summary>
+/// <summary>T-0675: Position der E-Rechnung mit Einheit und Steuersatz (Netto-Einzelpreis nach Rabatt, Netto-Gesamt gerundet).</summary>
+public sealed record ERechnungZeile(string Text, decimal Menge, string Einheit, decimal NettoEinzel, decimal NettoGesamt, decimal Ust);
+
 public sealed record ERechnungPartei(string Name, string Street, string Zip, string City, string Country = "DE", string VatId = "", string TaxNumber = "", string Email = "");
 
 /// <summary>Alle Studios, Runde 6 – SPEC-11 „Geld &amp; Rechnungen“: E-Rechnung als XRechnung (CII, Version 2.3) mit ZUGFeRD-csharp 18 (Apache-2.0).
@@ -96,6 +99,54 @@ public static partial class ERechnung
         d.AddCreditorFinancialAccount(new string(iban.Where(char.IsLetterOrDigit).ToArray()).ToUpperInvariant(), null, name: seller.Name);
         d.AddTradePaymentTerms($"Zahlbar innerhalb von {paymentDays} Tagen ohne Abzug.", inv.Date.ToDateTime(TimeOnly.MinValue).AddDays(paymentDays));
         d.SetTotals(t.Net, 0m, 0m, t.Net, t.Vat, t.Gross, 0m, t.Gross);
+        using var ms = new MemoryStream();
+        d.Save(ms, ZUGFeRDVersion.Version23, Profile.XRechnung, ZUGFeRDFormats.CII);
+        return ms.ToArray();
+    }
+
+    /// <summary>T-0675 (Rechnungen &amp; Angebote): Einheit als UN/ECE-Code (Rec. 20) – Stück H87, Stunde HUR, Tag DAY, Pauschale LS, Monat MON, km KMT, kg KGM, m MTR, m² MTK, Liter LTR.</summary>
+    public static QuantityCodes Unit(string einheit) => (einheit ?? "").Trim().ToLowerInvariant().TrimEnd('.') switch
+    {
+        "std" or "stunde" or "stunden" or "h" => QuantityCodes.HUR, "tag" or "tage" => QuantityCodes.DAY, "pauschal" or "pauschale" => QuantityCodes.LS,
+        "monat" or "monate" => QuantityCodes.MON, "km" => QuantityCodes.KMT, "kg" => QuantityCodes.KGM, "m" => QuantityCodes.MTR, "m²" or "qm" => QuantityCodes.MTK,
+        "liter" or "l" => QuantityCodes.LTR, _ => QuantityCodes.H87,
+    };
+
+    /// <summary>T-0675: XRechnung mit Steuersatz und Einheit je Position (mehrere Sätze, 19/7/0 %). Kleinunternehmer → Kategorie E mit § 19-Hinweis;
+    /// 0 % ohne Kleinunternehmer → Kategorie E mit dem angegebenen Befreiungsgrund. Prüft die Pflichtangaben wie <see cref="Check"/>.</summary>
+    public static byte[] WriteDetailed(string number, DateOnly date, DateOnly? delivery, ERechnungPartei seller, ERechnungPartei buyer, string iban, string buyerReference,
+        IReadOnlyList<ERechnungZeile> lines, bool smallBusiness, int paymentDays = 14, string exemptionReason = "")
+    {
+        var probe = new Invoice(number, date, seller.Name, buyer.Name, [.. lines.Select(l => new InvoiceLine(l.Text, l.Menge, l.NettoEinzel))], 0, smallBusiness);
+        var errors = Check(probe, seller, buyer, iban, buyerReference).ToList();
+        if (!smallBusiness && lines.Any(l => l.Ust == 0) && string.IsNullOrWhiteSpace(exemptionReason)) errors.Add("Bei 0 % fehlt der Befreiungsgrund.");
+        if (errors.Count > 0) throw new ArgumentException(string.Join(" ", errors));
+        var d = InvoiceDescriptor.CreateInvoice(number, date.ToDateTime(TimeOnly.MinValue), CurrencyCodes.EUR);
+        d.ReferenceOrderNo = buyerReference.Trim();
+        if (delivery is { } dl) d.ActualDeliveryDate = dl.ToDateTime(TimeOnly.MinValue);
+        d.SetSeller(seller.Name, seller.Zip, seller.City, seller.Street, Country(seller.Country));
+        d.SetSellerContact(name: seller.Name, emailAddress: seller.Email);
+        d.SetSellerElectronicAddress(seller.Email, ElectronicAddressSchemeIdentifiers.ElectronicMailSmtp);
+        if (seller.VatId.Length > 0) d.AddSellerTaxRegistration(seller.VatId, TaxRegistrationSchemeID.VA);
+        if (seller.TaxNumber.Length > 0) d.AddSellerTaxRegistration(seller.TaxNumber, TaxRegistrationSchemeID.FC);
+        d.SetBuyer(buyer.Name, buyer.Zip, buyer.City, buyer.Street, Country(buyer.Country));
+        d.SetBuyerElectronicAddress(buyer.Email, ElectronicAddressSchemeIdentifiers.ElectronicMailSmtp);
+        TaxCategoryCodes Cat(decimal rate) => smallBusiness || rate == 0 ? TaxCategoryCodes.E : TaxCategoryCodes.S;
+        foreach (var l in lines)
+            d.AddTradeLineItem(name: l.Text, netUnitPrice: l.NettoEinzel, unitCode: Unit(l.Einheit), billedQuantity: l.Menge, lineTotalAmount: l.NettoGesamt,
+                taxType: TaxTypes.VAT, categoryCode: Cat(l.Ust), taxPercent: smallBusiness ? 0 : l.Ust);
+        decimal net = 0, tax = 0;
+        foreach (var g in lines.GroupBy(l => smallBusiness ? 0 : l.Ust).OrderByDescending(g => g.Key))
+        {
+            var n = g.Sum(l => l.NettoGesamt); var t = Math.Round(n * g.Key / 100m, 2, MidpointRounding.AwayFromZero); net += n; tax += t;
+            if (Cat(g.Key) == TaxCategoryCodes.E)
+                d.AddApplicableTradeTax(n, 0m, 0m, TaxTypes.VAT, TaxCategoryCodes.E, exemptionReason: smallBusiness ? "Kein Ausweis von Umsatzsteuer, da Kleinunternehmer gemäß § 19 UStG" : exemptionReason.Trim());
+            else d.AddApplicableTradeTax(n, g.Key, t, TaxTypes.VAT, TaxCategoryCodes.S);
+        }
+        d.SetPaymentMeans(PaymentMeansTypeCodes.SEPACreditTransfer, "Überweisung");
+        d.AddCreditorFinancialAccount(new string(iban.Where(char.IsLetterOrDigit).ToArray()).ToUpperInvariant(), null, name: seller.Name);
+        d.AddTradePaymentTerms($"Zahlbar innerhalb von {paymentDays} Tagen ohne Abzug.", date.ToDateTime(TimeOnly.MinValue).AddDays(paymentDays));
+        d.SetTotals(net, 0m, 0m, net, tax, net + tax, 0m, net + tax);
         using var ms = new MemoryStream();
         d.Save(ms, ZUGFeRDVersion.Version23, Profile.XRechnung, ZUGFeRDFormats.CII);
         return ms.ToArray();

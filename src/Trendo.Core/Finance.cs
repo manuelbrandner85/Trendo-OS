@@ -169,6 +169,7 @@ public sealed class Ledger(string dataRoot)
         all.Any(x => x.Text == ReversalPrefix + e.Text + $" (vom {e.Date:dd.MM.yyyy})" && x.Amount == -e.Amount);
     /// <summary>Kategorie einer Buchung ändern (Index wie in <see cref="All"/>).</summary>
     public void SetCategory(int i, string category) { var a = All(); if (i >= 0 && i < a.Count) { a[i] = a[i] with { Category = category }; Save(a); } }
-    public IEnumerable<string> InvoiceNumbers() => Directory.Exists(InvoiceDir) ? Directory.GetFiles(InvoiceDir, "RE-*.html").Select(f => Path.GetFileNameWithoutExtension(f)) : [];
+    /// <summary>Vergebene Rechnungsnummern: eigene HTML-Rechnungen und (T-0675) die im Studio „Rechnungen &amp; Angebote“ festgeschriebenen (RE-*.json) – ein gemeinsamer Nummernkreis.</summary>
+    public IEnumerable<string> InvoiceNumbers() => Directory.Exists(InvoiceDir) ? Directory.GetFiles(InvoiceDir, "RE-*.html").Concat(Directory.GetFiles(InvoiceDir, "RE-*.json")).Select(f => Path.GetFileNameWithoutExtension(f)).Distinct() : [];
     public string WriteInvoice(Invoice i) { Directory.CreateDirectory(InvoiceDir); var p = Path.Combine(InvoiceDir, i.Number + ".html"); if (File.Exists(p)) throw new IOException("Diese Rechnungsnummer gibt es schon."); File.WriteAllText(p, Finance.InvoiceHtml(i)); return p; }
 }
