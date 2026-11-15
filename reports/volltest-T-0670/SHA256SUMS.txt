@@ -1,0 +1,3 @@
+5d7cf3a3f14438e94aabf6a9a3b47f95499efe3a513917ca82d129dcfffcc44c *core-nachlauf-1-wackler.txt
+40e707ec45e0264aa79f0f1e749c23a781d838036ea826b36a9a56913a805251 *core-nachlauf-2-3.txt
+913e1f688680867e6bbaa854ccb115bc3f543c7bfadba3bcabf5c3f4ab8c55e8 *volltest-0ff66ff50.txt

@@ -1,0 +1,14 @@
+d36a5a3f1 T-0663: Programme übersichtlicher in „Einfach“ (V1–V10), linke Leiste mit Fensternamen, Version 0.9.101
+0ff66ff50
+Bestanden!   : Fehler:     0, erfolgreich:    16, übersprungen:     0, gesamt:    16, Dauer: 2 s - Trendo.Api.Tests.dll (net10.0)
+[xUnit.net 00:00:11.86]     Vorbild-Analysen: jedes Arbeitsprogramm hat eine Analyse (Clean-Room) mit Funktionsliste ✓/◐/✗, Bedienkonzept und nächsten Schritten; nur echte Programmnamen [FAIL]
+[xUnit.net 00:00:33.52]     QA-015: Fehlendes Programm → Blockiert, auch wenn gebaut; echte Liste hat 71 Module [FAIL]
+Fehler!      : Fehler:     2, erfolgreich:  2590, übersprungen:     5, gesamt:  2597, Dauer: 1 m 35 s - Trendo.Core.Tests.dll (net10.0)
+Bestanden!   : Fehler:     0, erfolgreich:  1335, übersprungen:     6, gesamt:  1341, Dauer: 42 m 26 s - Trendo.App.Tests.dll (net10.0)
+dotnet exit 1
+Ran 11 tests in 36.824s
+
+OK
+py exit 0
+
+[exited with code 0]

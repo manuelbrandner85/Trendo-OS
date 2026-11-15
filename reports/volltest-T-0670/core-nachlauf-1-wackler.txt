@@ -1,0 +1,1 @@
+Fehler!      : Fehler:     1, erfolgreich:  2591, übersprungen:     5, gesamt:  2597, Dauer: 1 m 30 s - Trendo.Core.Tests.dll (net10.0)

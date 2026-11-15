@@ -1,6 +1,6 @@
 # Vorbild-Analyse Webseite bauen: Visual Studio Code, Webflow, Framer (Clean-Room)
 
-- Programme: „Software“
+- Programme: „Webseite bauen“
 - Vorbilder: Visual Studio Code, Webflow, Framer
 - Werkzeug: Funktionsumfang aus öffentlicher Doku und Bedienkonzept; kein fremder Code, keine fremden Grafiken oder Texte. Trendo-Stand aus dem Programmkatalog (Werkzeuge der Oberfläche) und dem Code, Stand 0.9.51.
 
