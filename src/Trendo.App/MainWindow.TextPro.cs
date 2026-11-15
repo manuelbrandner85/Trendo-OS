@@ -231,15 +231,28 @@ public partial class MainWindow
     Control TextRibbonTabs()
     {
         var row = new StackPanel { Name = "text-ribbon-tabs", Orientation = Orientation.Horizontal, Spacing = 2, Margin = new Thickness(0, 0, 0, 4) };
+        // V5 (T-0663): in „Einfach“ drei Reiter (Start, Einfügen, Ansicht); die übrigen unter „Mehr ▾“ – keine Funktion fällt weg
+        string[] simple = ["start", "einfuegen", "ansicht"];
+        var few = ProgramLevel == Trendo.Core.Programs.UserLevel.Einfach && !_txAllTabs && simple.Contains(_txRibbon);
         foreach (var (id, label) in new[] { ("start", "Start"), ("einfuegen", "Einfügen"), ("entwurf", "Entwurf"), ("layout", "Layout"), ("referenzen", "Referenzen"), ("sendungen", "Sendungen"), ("pruefen", "Überprüfen"), ("ansicht", "Ansicht"), ("ki", "KI") })
         {
             var key = id;
+            if (few && !simple.Contains(id)) continue;
             var b = new Button { Name = "text-rib-" + id, Content = label, Focusable = false, Padding = new Thickness(12, 4), Background = _txRibbon == id ? Brush.Parse("#33C9A227") : Brushes.Transparent, FontWeight = _txRibbon == id ? FontWeight.SemiBold : FontWeight.Normal };
             b.Click += (_, _) => { _txRibbon = key; Show("text"); };
             row.Children.Add(b);
         }
+        if (ProgramLevel == Trendo.Core.Programs.UserLevel.Einfach)
+        {
+            var more = new Button { Name = "text-rib-more", Content = few ? "Mehr ▾" : "Weniger ▴", Focusable = false, Padding = new Thickness(12, 4), Background = Brushes.Transparent };
+            ToolTip.SetTip(more, few ? "Weitere Reiter: Entwurf, Layout, Referenzen, Sendungen, Überprüfen, KI" : "Nur die drei wichtigsten Reiter zeigen");
+            more.Click += (_, _) => { _txAllTabs = few; if (!few && !simple.Contains(_txRibbon)) _txRibbon = "start"; Show("text"); };
+            row.Children.Add(more);
+        }
         return row;
     }
+
+    bool _txAllTabs;
 
     Button XB(string name, string icon, string label, Action go, string tip, bool on = false) => SB(name, icon, label, go, tip, on, "text");
 
@@ -281,7 +294,8 @@ public partial class MainWindow
     {
         var row = new StackPanel { Name = "text-style-gallery", Orientation = Orientation.Horizontal, Spacing = 4 };
         var cur = CurPara()?.Style;
-        foreach (var s in Enum.GetValues<ParaStyle>())
+        // V5 (T-0663): in „Einfach“ wählt die Liste „Absatzart“ im Menüband dieselben Formatvorlagen – die Vorschau-Kacheln zeigen Erweitert und Profi
+        foreach (var s in ProgramLevel == Trendo.Core.Programs.UserLevel.Einfach ? [] : Enum.GetValues<ParaStyle>())
         {
             var st = s;
             var preview = new TextBlock { Text = TextDoc.StyleName(s), FontSize = Math.Min(17, 9 + TextDoc.StyleSize(s) * 0.35), FontWeight = s is ParaStyle.Title or ParaStyle.Heading1 or ParaStyle.Heading2 or ParaStyle.Heading3 ? FontWeight.Bold : FontWeight.Normal,

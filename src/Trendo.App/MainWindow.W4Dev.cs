@@ -11,12 +11,15 @@ public partial class MainWindow
     private string? _devSelected;
     public string DevFolder => WorkFolder("Software");
 
-    private void InitW4Dev() => RegisterTab(KreativTabs, "dev", "Software", "CORE-07", DevView, "programmieren", "code", "git", "app", "software", "webseite", "landingpage", "homepage");
+    private void InitW4Dev() => RegisterTab(KreativTabs, "dev", "Webseite bauen", "CORE-07", DevView, "programmieren", "code", "git", "app", "software", "webseite", "landingpage", "homepage");
 
     private Control DevView()
     {
+        var all = new StackPanel { Spacing = 8 };
+        all.Children.Add(WebsitePanel());
         var sp = new StackPanel { Spacing = 8 };
-        sp.Children.Add(WebsitePanel());
+        // V1 (T-0663): Programme aus Vorlagen und eigene Projekte in „Einfach“ unter einem Klappbereich
+        all.Children.Add(SimpleFold("dev-more-projects", "Programme aus einer Vorlage und deine Projekte", sp));
         sp.Children.Add(P("Darunter kannst du auch ein Programm aus einer Vorlage anlegen. Trendo speichert jeden Stand mit Git."));
         var name = new TextBox { Name = "dev-name", PlaceholderText = "Name, z. B. Meine Webseite", Width = 260 };
         var tpl = new ComboBox { Name = "dev-template", ItemsSource = DevStudio.Templates.Select(t => t.Name).ToList(), SelectedIndex = 0, Width = 260 };
@@ -60,7 +63,7 @@ public partial class MainWindow
             }
             i++;
         }
-        return KreativPage("Software-Studio", sp);
+        return KreativPage("Webseite bauen", all); // T-0663: ein Name für Studio, linke Leiste und Fenster
     }
 
     private static string Short(string s) { s = s.Trim().Replace('\n', ' '); return s.Length > 160 ? s[..160] + " …" : s; }

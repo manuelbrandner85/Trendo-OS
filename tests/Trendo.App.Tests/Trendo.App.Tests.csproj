@@ -16,5 +16,6 @@
     <ProjectReference Include="..\..\src\Trendo.App\Trendo.App.csproj" />
     <ProjectReference Include="..\..\src\Trendo.Companion\Trendo.Companion.csproj" />
     <None Include="..\..\requirements.yaml" Link="requirements.yaml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Daten\einfach-vorher-ausgeblendet.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

@@ -240,10 +240,10 @@ public partial class MainWindow
 
         var top = new WrapPanel { Margin = new Thickness(0, 0, 0, 6), [DockPanel.DockProperty] = Avalonia.Controls.Dock.Top };
         Button T(string name, string label, Action a, bool accent = false) { var b = new Button { Name = name, Content = label, Padding = new Thickness(10, 4), Margin = new Thickness(0, 0, 4, 4) }; if (accent) b.Classes.Add("accent"); b.Click += (_, _) => a(); return b; }
-        top.Children.Add(T("pod-zoom-out", "−", () => PodZoomBy(1 / 1.25)));
+        top.Children.Add(T("pod-zoom-out", "−", () => PodZoomBy(1 / 1.25))); ToolTip.SetTip(top.Children[^1], "Verkleinern");
         zoomLabel = new TextBlock { Name = "pod-zoom", Text = $"{PodZoom * 100:0} %", Foreground = Text, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 8, 4) };
         top.Children.Add(zoomLabel);
-        top.Children.Add(T("pod-zoom-in", "+", () => PodZoomBy(1.25)));
+        top.Children.Add(T("pod-zoom-in", "+", () => PodZoomBy(1.25))); ToolTip.SetTip(top.Children[^1], "Vergrößern");
         top.Children.Add(T("pod-fit", "Einpassen", () => { _podFitted = ""; Show(PodKey); }));
         top.Children.Add(T("pod-grid", PodGrid ? "Raster aus" : "Raster", () => { PodGrid = !PodGrid; Show(PodKey); }));
         top.Children.Add(T("pod-rulers", PodRulers ? "Lineale aus" : "Lineale", () => { PodRulers = !PodRulers; Show(PodKey); }));

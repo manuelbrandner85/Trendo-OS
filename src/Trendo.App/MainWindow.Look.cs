@@ -158,6 +158,7 @@ public sealed partial class MainWindow
         _ui.Post(() => { if (!_calmShell) { _calmShell = true; CalmLook.Apply(this); } else if (ActivePageRoot is { } pr) CalmLook.Apply(pr); if (_settings.Density == "kompakt") Density.Apply(this, true); }, DispatcherPriority.Loaded);
         ShowHelp(key, force: false);
         EnhancePathFields(ActivePageRoot, key);
+        if (ActivePageRoot is { } sv) SimplifyView(key, sv); // V2 + V8 (T-0663): lange Listen und Beschreibungen in „Einfach“ kürzen
         if (ActivePageRoot is { } c0) ApplyAccessibility(c0);
         ApplyAccessibility(_hintHost);
         ApplyShellAccessibility();

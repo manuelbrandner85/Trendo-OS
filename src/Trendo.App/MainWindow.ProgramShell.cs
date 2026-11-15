@@ -756,9 +756,12 @@ public partial class MainWindow
     public void ProgramSetLevel(int level, string? reopen = null)
     {
         _settings.Level = UserLevel.Id(level); SaveSettings();
+        SimpleWords.AnySimple = ProgramLevel == UserLevel.Einfach;
         _core.Audit.Append(Principal.LocalOwner.Name, "program.level", _settings.Level);
         RefreshDesktopTiles(); // E12: Desktop folgt der Stufe
+        _txAllTabs = false; // V5: „Mehr ▾“ gilt nur bis zum nächsten Stufenwechsel
         if (reopen is not null) Show(reopen);
+        SimpleWords.Refresh(this); // V3/V7: Wörter an Knöpfen der Stufe anpassen (auch bei Teilen, die nicht neu gebaut werden)
     }
 
     private Control LevelSwitch(string key)

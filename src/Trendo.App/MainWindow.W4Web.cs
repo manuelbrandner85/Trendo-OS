@@ -70,10 +70,13 @@ public partial class MainWindow
         var left = new StackPanel { Spacing = 8 };
         left.Children.Add(P("Beschreibe die Seite. Trendo legt einen Ordner mit HTML, CSS und JavaScript an. Eine lokale KI schreibt mit, wenn sie auf diesem PC läuft. Sonst entstehen die Texte aus deiner Beschreibung."));
         left.Children.Add(prompt);
-        left.Children.Add(new WrapPanel { Children = { name, kind, tech } });
+        // V1 (T-0663): in „Einfach“ Beschreibung, Name, Stil und „Seite bauen“; Art, Technik, Farben, Schrift und Vite unter „Mehr Einstellungen“
+        left.Children.Add(SimpleLevel ? name : new WrapPanel { Children = { name, kind, tech } });
         left.Children.Add(styles);
-        left.Children.Add(new WrapPanel { Children = { font, bg, fg, accent, Act("web-style-save", "Farben übernehmen", async () => await SaveStyle(font.Text, bg.Text, fg.Text, accent.Text)) } });
-        left.Children.Add(new WrapPanel { Children = { vite, build } });
+        var colors = new WrapPanel { Children = { font, bg, fg, accent, Act("web-style-save", "Farben übernehmen", async () => await SaveStyle(font.Text, bg.Text, fg.Text, accent.Text)) } };
+        if (SimpleLevel) left.Children.Add(SimpleFold("web-more-settings", "Mehr Einstellungen: Art, Technik, Farben, Schrift, Vite", new WrapPanel { Children = { kind, tech } }, colors, vite));
+        else left.Children.Add(colors);
+        left.Children.Add(SimpleLevel ? build : new WrapPanel { Children = { vite, build } });
 
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("*,16,340") };
         grid.Children.Add(left);
@@ -82,6 +85,15 @@ public partial class MainWindow
         grid.Children.Add(preview);
 
         var root = new StackPanel { Spacing = 8 };
+        if (SimpleLevel)
+        {
+            // V1 (T-0663): geführter Weg zuerst – beschreiben und bauen lassen, ansehen, im Editor ändern, veröffentlichen
+            root.Children.Add(P("So geht es: 1. Beschreiben und „Seite bauen“ · 2. Vorschau ansehen · 3. Im Editor oder mit der KI ändern · 4. Veröffentlichen", Text, 13));
+            root.Children.Add(Card(grid));
+            root.Children.Add(Card(VisualEditorPane()));
+            root.Children.Add(Card(SimpleFold("web-more-extras", "Mehr Werkzeuge: 3D und Videos, Code-Ansicht, Qualitätsprüfung", ToolsPane(), CodePane(), QualityPane())));
+            return root;
+        }
         root.Children.Add(Card(VisualEditorPane())); // Web Design Studio: visueller Editor
         root.Children.Add(Card(grid));
         root.Children.Add(Card(ToolsPane()));

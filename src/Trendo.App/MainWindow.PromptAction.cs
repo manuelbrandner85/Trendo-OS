@@ -77,7 +77,19 @@ public partial class MainWindow
         ToolTip.SetTip(cc, studio is null ? "Claude öffnen – allgemein, mit deinem Abo" : $"Claude für „{StudioCatalog.NameOf(studio, studio)}“ öffnen");
         cc.Click += (_, _) => ClaudeDockToggle(studio, null);
         if (studio is not null) ClaudeAcceptDrop(cc, () => studio);
-        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Avalonia.Thickness(8, 4, 8, 2), Children = { cc } };
+        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Avalonia.Thickness(8, 4, 8, 2) };
+        // V4 (T-0663): außerhalb des Fokusmodus nur ein KI-Weg – Claude steht im Menü „KI ▾“ wie auf jeder anderen Seite (3D: samt „Programme hinzufügen“)
+        if (KiMenuTop(key))
+        {
+            var items = new List<Control> { cc };
+            if (studio is not null) items.AddRange(KiMenuOrder(ClaudeBarExtras(key, studio)));
+            if (key == "3d" && studio is not null && StudioTools.Required.ContainsKey(studio)) items.Add(AddHubButton(studio));
+            row.Children.Add(KiMenu(items, studio));
+            DockPanel.SetDock(row, Avalonia.Controls.Dock.Top);
+            view.HorizontalAlignment = HorizontalAlignment.Stretch; view.VerticalAlignment = VerticalAlignment.Stretch;
+            return new DockPanel { LastChildFill = true, Children = { row, view } };
+        }
+        row.Children.Add(cc);
         // T-0620: im Fokusmodus fehlte „Markierung an Claude“ – in Fachprogrammen steht es wieder neben „Claude“
         if (FocusMode && studio is not null && (key is "text" or "tabelle" or "praesentation" || Programs.ContainsKey(key)) && !(Windows.Active?.Id is { } aw2 && ClaudeDockOpen(aw2)))
         {
@@ -152,6 +164,18 @@ public partial class MainWindow
         ki.Click += (_, _) => pop.IsOpen = !pop.IsOpen;
         if (dropStudio is not null) ClaudeAcceptDrop(ki, () => dropStudio); // ziehen auf „KI ▾“ wie früher auf „Claude“
         return new Panel { Name = "ki-menu-host", VerticalAlignment = VerticalAlignment.Center, Children = { ki, pop } };
+    }
+
+    /// <summary>V4 (T-0663): In „Einfach“ (ohne Fokusmodus) steht Claude auf Studio-Übersicht, Suche und 3D im Menü „KI ▾“ oben rechts statt als eigener Knopf.</summary>
+    bool KiMenuTop(string key) => !FocusMode && ProgramLevel == Trendo.Core.Programs.UserLevel.Einfach && key is "studios" or "suche" or "3d";
+
+    /// <summary>A2: „Programme hinzufügen …“ für Studios, die Programme brauchen (Eintrag im Menü „KI ▾“).</summary>
+    Button AddHubButton(string studio)
+    {
+        var add = new Button { Name = "auftrag-hinzufuegen", Content = "Programme hinzufügen …", Height = 32 };
+        ToolTip.SetTip(add, "Programme und KI, die dieses Studio braucht, finden und installieren");
+        add.Click += (_, _) => OpenAddHubFor(studio);
+        return add;
     }
 
     /// <summary>Reihenfolge im KI-Menü: Claude-Einträge zuerst, dann kie.ai.</summary>
@@ -482,14 +506,9 @@ public partial class MainWindow
         string? drop = null;
         if (key is not null && ClaudeStudioOf(key) is { } ccs) { drop = ccs; ClaudeAcceptDrop(cc, () => ccs); menu.AddRange(KiMenuOrder(ClaudeBarExtras(key, ccs))); }
         // A2: Studios, die Programme brauchen, bekommen „Hinzufügen …“ direkt in ihrer Leiste
-        if (StudioTools.Required.ContainsKey(studio))
-        {
-            var add = new Button { Name = "auftrag-hinzufuegen", Content = "Programme hinzufügen …", Height = 32 };
-            ToolTip.SetTip(add, "Programme und KI, die dieses Studio braucht, finden und installieren");
-            add.Click += (_, _) => OpenAddHubFor(studio);
-            menu.Add(add);
-        }
-        if (menu.Count > 0) buttons.Children.Add(KiMenu(menu, drop));
+        if (StudioTools.Required.ContainsKey(studio)) menu.Add(AddHubButton(studio));
+        // V4 (T-0663): ohne Seite (3D-Spalte) steht das KI-Menü oben rechts – hier kein zweites „KI ▾“
+        if (menu.Count > 0 && (key is not null || !KiMenuTop("3d"))) buttons.Children.Add(KiMenu(menu, drop));
         var spark = new TextBlock { Text = "✨", FontSize = 16, VerticalAlignment = VerticalAlignment.Center, Margin = new Avalonia.Thickness(4, 0, 0, 0) };
         ToolTip.SetTip(spark, "Sag der Trendo KI in deinen Worten, was dieses Studio für dich tun soll.");
         box.MaxHeight = 64; box.MinHeight = 34;

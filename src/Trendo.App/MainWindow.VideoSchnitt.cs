@@ -261,7 +261,7 @@ public partial class MainWindow
         void Lane(string kind, int lane, string text, double top, double h)
         {
             var name = new TextBlock { Text = text, Foreground = Muted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(6, 0, 0, 0) };
-            Button Sw(string id, string label, bool on, Action a) { var b = new Button { Name = $"ve-lane-{kind}-{lane}-{id}", Content = label, FontSize = 10, Width = 18, Height = 18, Padding = new Thickness(0), HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center }; if (on) b.Classes.Add("accent"); b.Click += (_, _) => ProgramRun(VK, a); return b; }
+            Button Sw(string id, string label, bool on, Action a) { var b = new Button { Name = $"ve-lane-{kind}-{lane}-{id}", Content = label, FontSize = 10, Width = 18, Height = 18, Padding = new Thickness(0), HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center }; if (on) b.Classes.Add("accent"); b.Click += (_, _) => ProgramRun(VK, a); ToolTip.SetTip(b, id == "m" ? "Stumm schalten" : "Solo – nur diese Spur hören"); return SimpleWords.Keep(b); }
             var row = new Grid { Width = 92, Height = h, ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto") };
             row.Children.Add(name);
             row.Children.Add(Pos(Sw("m", "M", VideoLanes.IsMuted(p, kind, lane), () => d.Edit("Stumm", x => VideoLanes.ToggleMute(x, kind, lane))), 1));

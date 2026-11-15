@@ -96,6 +96,7 @@ public partial class MainWindow
     public string PageTitle(string key)
     {
         if (string.Equals(key, "programmkatalog", StringComparison.OrdinalIgnoreCase)) return "Programmkatalog";
+        if (key == "ki") return "KI-Zentrale"; // T-0663: wie in der linken Leiste und im Kopf der Seite
         if (key.StartsWith("studio-status-", StringComparison.OrdinalIgnoreCase))
             return StudioCatalog.NameOf(key["studio-status-".Length..], key);
         if (IsStudioWorkspace(key) && ModuleOf(key) is { } mid && StudioCatalog.For(mid) is { } info) return info.Name;

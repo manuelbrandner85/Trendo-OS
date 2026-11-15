@@ -120,7 +120,23 @@ public partial class MainWindow
         }
 
         sp.Children.Add(H("Für die Produktion", 13));
-        sp.Children.Add(new WrapPanel { Children = {
+        if (ProgramLevel == Trendo.Core.Programs.UserLevel.Einfach)
+        {
+            // V2 (T-0663): in „Einfach“ ein Knopf mit den drei Ausgaben im Menü
+            var prod = Act("garment-production", "Für die Produktion speichern …", () => { });
+            var list = new StackPanel { Spacing = 2 };
+            var fly = new Flyout { Content = list };
+            foreach (var (n, h, ext) in new[] { ("garment-pdf", "Schnitt als PDF (A4, 1:1)", ".pdf"), ("garment-dxf", "Datei für den Schneideplotter (DXF)", ".dxf"), ("garment-techpack", "Technisches Datenblatt", ".md") })
+            {
+                var e = ext;
+                var item = new Button { Name = n, Content = h, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left };
+                item.Click += (_, _) => { fly.Hide(); GarmentExport(d, e); };
+                list.Children.Add(item);
+            }
+            prod.Flyout = fly; // Claude und Strg+K finden die Einträge über das Klappmenü
+            sp.Children.Add(new WrapPanel { Children = { MSp(prod) } });
+        }
+        else sp.Children.Add(new WrapPanel { Children = {
             MSp(Act("garment-pdf", "Schnitt als PDF (A4, 1:1)", () => GarmentExport(d, ".pdf"))),
             MSp(Act("garment-dxf", "Plotter-Datei (DXF)", () => GarmentExport(d, ".dxf"))),
             MSp(Act("garment-techpack", "Technisches Datenblatt", () => GarmentExport(d, ".md"))) } });
@@ -136,9 +152,12 @@ public partial class MainWindow
         WrapPanel Swatches(string prefix, string field, string current)
         {
             var row = new WrapPanel();
+            // V2 (T-0663): in „Einfach“ acht Grundfarben (und die gewählte); jede andere Farbe geht über „Eigene Farbe“
+            var simple = ProgramLevel == Trendo.Core.Programs.UserLevel.Einfach;
             for (var i = 0; i < Fabrics.Palette.Length; i++)
             {
                 var hex = Fabrics.Palette[i]; var on = string.Equals(hex, current, StringComparison.OrdinalIgnoreCase);
+                if (simple && i >= 8 && !on) continue;
                 var b = new Button { Name = $"{prefix}-{i}", Width = 26, Height = 26, Padding = new Thickness(0), CornerRadius = new CornerRadius(13), Margin = new Thickness(0, 0, 5, 5), Background = Brush.Parse(hex), BorderBrush = on ? Accent : Edge, BorderThickness = new Thickness(on ? 3 : 1) };
                 ToolTip.SetTip(b, hex);
                 b.Click += (_, _) => ProgramRun(ModeKey, () => d.Set(field, hex, "Farbe wählen"));

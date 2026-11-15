@@ -76,15 +76,17 @@ public partial class MainWindow
         } });
         if (!editorOk) sp.Children.Add(P("Editor-Bündel fehlt im Programm (Assets/webdesign) – bitte Trendo neu installieren.", Avalonia.Media.Brush.Parse("#F5A524"), 12));
         sp.Children.Add(WebDesignKiPane());
-        sp.Children.Add(WebDesignPagesPane()); // Stufe 3: Seiten, Adresse, Übergang, Weiterleitungen, Prüfung
-        sp.Children.Add(WebDesignTokensPane());
-        sp.Children.Add(WebDesignComponentsPane());
-        sp.Children.Add(WebDesignAssetsPane());
-        sp.Children.Add(WebDesignCodePane()); // K6, Z8
-        sp.Children.Add(WebDesignCmsPane()); // W2
-        sp.Children.Add(WebDesignLanguagesPane()); // Z5
-        sp.Children.Add(WebDesignModsPane()); // A4
-        sp.Children.Add(WebDesignDataPane()); // K7
+        // V1 (T-0663): in „Einfach“ der geführte Weg (beschreiben, KI baut, ansehen, veröffentlichen); alle Fachbereiche geordnet unter „Mehr Werkzeuge“
+        sp.Children.Add(SimpleFold("web-more-tools", "Mehr Werkzeuge: Seiten und Adressen, Gestaltung, Bausteine, Bilder und Schriften, Code, Inhalte, Sprachen, Erweiterungen, Daten",
+            WebDesignPagesPane(), // Stufe 3: Seiten, Adresse, Übergang, Weiterleitungen, Prüfung
+            WebDesignTokensPane(),
+            WebDesignComponentsPane(),
+            WebDesignAssetsPane(),
+            WebDesignCodePane(), // K6, Z8
+            WebDesignCmsPane(), // W2
+            WebDesignLanguagesPane(), // Z5
+            WebDesignModsPane(), // A4
+            WebDesignDataPane())); // K7
         sp.Children.Add(WebDesignPublishPane()); // K8
         if (_wdNote.Length > 0) sp.Children.Add(new TextBlock { Name = "web-visual-note", Text = _wdNote, FontSize = 12, Foreground = Muted, TextWrapping = Avalonia.Media.TextWrapping.Wrap });
         if (_wdOpen && editorOk)

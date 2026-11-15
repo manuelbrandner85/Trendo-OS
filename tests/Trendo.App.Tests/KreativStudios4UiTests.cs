@@ -143,7 +143,7 @@ public class KreativStudios4_Ui
             Assert.Contains("Tesseract", w.ProgramMessage(K));
             Assert.StartsWith("⚠", w.ProgramMessage(K));
 
-            RealClick(w, w.Find<Button>("prog-cmd-vi-folder")); WaitFor(() => w.ProgramMessage(K).Contains("geprüft"));
+            RealClick(w, w.Find<Button>("prog-cmd-vi-folder")); WaitFor(() => w.ProgramMessage(K).Contains("Bilder geprüft")); // nicht schon bei „Bilder werden geprüft …“
             Assert.Equal("3 Bilder geprüft, 2 auffällig, 1 nicht lesbar.", w.ProgramMessage(K));
             var list = Texts(w.Find<StackPanel>("vi-folder-list"));
             Assert.Contains("⚠ dunkel.png – zu dunkel", list);

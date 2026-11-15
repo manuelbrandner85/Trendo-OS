@@ -123,8 +123,8 @@ public partial class MainWindow
             Act("ed-save", "Speichern", () => Try(V, () => { EditorSave(d.Path ?? Need(path, "einen Dateinamen")); Say("Gespeichert: " + d.Path, V); }), true),
             Act("ed-saveas", "Speichern unter", () => Try(V, () => { EditorSave(Need(path, "den neuen Dateinamen")); Say("Gespeichert: " + d.Path, V); })),
             enc, bom, eol, wrap,
-            Act("ed-font-minus", "A−", () => { _edFont = Math.Max(9, _edFont - 1); Show(V); }),
-            Act("ed-font-plus", "A+", () => { _edFont = Math.Min(28, _edFont + 1); Show(V); }));
+            SimpleWords.Tip(Act("ed-font-minus", "A−", () => { _edFont = Math.Max(9, _edFont - 1); Show(V); }), "Schrift kleiner"),
+            SimpleWords.Tip(Act("ed-font-plus", "A+", () => { _edFont = Math.Min(28, _edFont + 1); Show(V); }), "Schrift größer"));
 
         // Reiter der offenen Dateien
         var tabs = new WrapPanel { Name = "ed-tabs" };

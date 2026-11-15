@@ -135,8 +135,9 @@ public partial class MainWindow
     private static readonly (string Key, string Label, string Icon)[] SideNav =
     [
         ("start", "Start", Mdi.Home), ("ki", "Command Center", Mdi.StarFourPoints), ("studios", "Studios", Mdi.ViewGridOutline), ("projects", "Projekte", Mdi.Folder),
-        ("ki-rollen", "Agenten", Mdi.RobotHappy), ("ki-quellen", "Assets", Mdi.Image), ("dev", "GitHub & Code", Mdi.CodeTags), ("geraete", "Geräte", Mdi.Monitor),
-        ("handy", "Mobile", Mdi.Cellphone), ("settings", "Einstellungen", Mdi.CogOutline),
+        // T-0663 (15.11.2026): jeder Eintrag heißt wie das Fenster, das er öffnet (Fachwort bleibt im Hinweis)
+        ("ki-rollen", "KI-Team einsetzen", Mdi.RobotHappy), ("ki-quellen", "Kostenlose KI finden", Mdi.Image), ("dev", "Webseite bauen", Mdi.CodeTags), ("geraete", "Geräte erkennen", Mdi.Monitor),
+        ("handy", "Handy verbinden", Mdi.Cellphone), ("settings", "Einstellungen", Mdi.CogOutline),
     ];
 
     private Control LeftColumn()

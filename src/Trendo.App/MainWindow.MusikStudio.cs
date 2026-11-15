@@ -252,10 +252,12 @@ public partial class MainWindow
         var more = new StackPanel { Name = "ms-more-body", Spacing = 10 };
         // V2 wie Suno: Einfach | Erweitert (Beat und Noten sind ins Studio gewandert)
         var modes = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
-        foreach (var (pro, label) in new[] { (false, "Einfach"), (true, "Erweitert") })
+        // V6 (T-0663): eigene Namen statt „Einfach/Erweitert“ – das sind die Bedienstufen von Trendo, hier geht es um die Art der Eingabe
+        foreach (var (pro, label) in new[] { (false, "Nur beschreiben"), (true, "Mit eigenem Songtext") })
         {
             var on = _msPro == pro; var p = pro;
             var b = new Button { Name = "ms-mode-" + (pro ? "profi" : "einfach"), Content = label, Padding = new Thickness(16, 5), CornerRadius = new CornerRadius(14), Background = on ? Accent : Brush.Parse("#22FFFFFF"), Foreground = on ? Brushes.White : Text, BorderThickness = new Thickness(0) };
+            ToolTip.SetTip(b, pro ? "Songtext, Stil, Titel und Stimme selbst festlegen" : "In einem Satz sagen, wie das Lied klingen soll – den Rest macht die KI");
             b.Click += (_, _) => { _msPro = p; Show(MS); };
             modes.Children.Add(b);
         }

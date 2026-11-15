@@ -87,7 +87,28 @@ public partial class MainWindow
 
         // Bildkarten, nach Bereichen gruppiert
         var groups = list.GroupBy(s => StudioCatalog.For(s.Id)?.Area ?? "Weitere")
-            .OrderBy(g => Array.IndexOf(StudioCatalog.Areas, g.Key) is var k && k < 0 ? 99 : k);
+            .OrderBy(g => Array.IndexOf(StudioCatalog.Areas, g.Key) is var k && k < 0 ? 99 : k).ToList();
+        // V9 (T-0663): in „Einfach“ ohne Suche und Filter zuerst „Zuletzt benutzt“ und je Bereich eine Kachel – ein Klick zeigt die Studios des Bereichs
+        if (ProgramLevel == Trendo.Core.Programs.UserLevel.Einfach && string.IsNullOrWhiteSpace(_studioFilter) && _studioQuery.Trim().Length == 0 && list.Count > 0)
+        {
+            filters.IsVisible = false;
+            var tiles = new WrapPanel { Name = "studio-areas" };
+            foreach (var g in groups)
+            {
+                var area = g.Key;
+                var names = StudioCatalog.Sorted(g, s => s.Id, s => s.Name).Select(s => StudioCatalog.For(s.Id)?.Name ?? s.Name).ToList();
+                var tile = new Button { Name = "studio-area-tile-" + StudioFilterId(area), Width = 280, Margin = new Thickness(0, 0, 10, 10), Padding = new Thickness(14, 10), CornerRadius = new CornerRadius(8),
+                    Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                    Content = new StackPanel { Spacing = 3, Children = {
+                        new TextBlock { Text = $"{area} ({names.Count})", Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
+                        new TextBlock { Text = string.Join(", ", names.Take(3)) + (names.Count > 3 ? " …" : ""), Foreground = Muted, FontSize = 11.5, TextTrimming = TextTrimming.CharacterEllipsis } } } };
+                ToolTip.SetTip(tile, "Alle Studios: " + string.Join(", ", names));
+                tile.Click += (_, _) => { _studioFilter = area; _studioQuery = ""; Show("studios"); };
+                tiles.Children.Add(tile);
+            }
+            main.Children.Add(new StackPanel { Spacing = 4, Children = { new TextBlock { Name = "studio-areas-head", Text = "Bereiche", Foreground = Muted, FontSize = 12, FontWeight = FontWeight.SemiBold, Margin = new Thickness(2, 4, 0, 0) }, tiles } });
+            groups = [];
+        }
         foreach (var g in groups)
         {
             var head = new TextBlock { Name = "studio-area-" + g.Key, Text = g.Key, Foreground = Muted, FontSize = 12, FontWeight = FontWeight.SemiBold, Margin = new Thickness(2, 4, 0, 0) };

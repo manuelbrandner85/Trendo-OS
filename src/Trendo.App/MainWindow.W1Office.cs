@@ -375,6 +375,7 @@ public partial class MainWindow
         var actions = new WrapPanel { Orientation = Orientation.Horizontal, Children = { save, Sp(export), Sp(pdf), Sp(send) } };
         var stack = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto,*") };
         var steps = LetterSteps(d);
+        steps.IsVisible = ProgramLevel != Trendo.Core.Programs.UserLevel.Einfach; // V2 (T-0663): in „Einfach“ nur eine Schrittfolge (Was? → An wen? → Text & Design); die Fortschrittsleiste zeigen Erweitert und Profi
         stack.Children.Add(steps); Grid.SetRow(toggle, 1); stack.Children.Add(toggle); Grid.SetRow(grid, 2); stack.Children.Add(grid);
         return LetterShell(stack, actions);
     }

@@ -21,6 +21,14 @@ public partial class MainWindow
 
     Control MsKindTabs()
     {
+        // V6 (T-0663): in „Einfach“ nur eine Reiterleiste im Studio – die Art (Lied, Sound, Sprache) wählt eine Liste
+        if (ProgramLevel == Trendo.Core.Programs.UserLevel.Einfach)
+        {
+            (string Id, string Label)[] kinds = [("lieder", "Ein Lied"), ("sounds", "Einen Sound oder Loop"), ("sprache", "Gesprochenen Text")];
+            var pick = new ComboBox { Name = "ms-kind-pick", ItemsSource = kinds.Select(k => k.Label).ToList(), SelectedIndex = Math.Max(0, Array.FindIndex(kinds, k => k.Id == _msKind)), MinWidth = 220 };
+            pick.SelectionChanged += (_, _) => { if (pick.SelectedIndex >= 0 && kinds[pick.SelectedIndex].Id != _msKind) MsCreateKind(kinds[pick.SelectedIndex].Id); };
+            return new StackPanel { Name = "ms-kind-tabs", Orientation = Orientation.Horizontal, Spacing = 8, Children = { new TextBlock { Text = "Was erstellen?", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center }, pick } };
+        }
         var row = new StackPanel { Name = "ms-kind-tabs", Orientation = Orientation.Horizontal, Spacing = 2 };
         foreach (var (id, label) in new[] { ("lieder", "Lieder"), ("sounds", "Sounds"), ("sprache", "Sprache") })
         {

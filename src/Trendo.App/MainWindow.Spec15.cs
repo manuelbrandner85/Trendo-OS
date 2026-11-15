@@ -132,7 +132,7 @@ public partial class MainWindow
         var nt = new TextBox { Name = "bc-new-title", PlaceholderText = "Neuer Programmpunkt", Margin = new Thickness(2, 0) }; var nd = new TextBox { Name = "bc-new-dur", PlaceholderText = "2:00", Margin = new Thickness(2, 0) }; var nn = new TextBox { Name = "bc-new-note", PlaceholderText = "Hinweis", Margin = new Thickness(2, 0) };
         void Add() => BcRun(() => { var title = string.IsNullOrWhiteSpace(nt.Text) ? throw new ArgumentException("Bitte einen Titel eintragen.") : nt.Text.Trim(); Broadcast.Add(title, BroadcastDesk.ParseDuration(string.IsNullOrWhiteSpace(nd.Text) ? "2:00" : nd.Text), nn.Text?.Trim() ?? ""); _bcMsg = ""; });
         OnEnter(nt, Add); OnEnter(nd, Add); OnEnter(nn, Add);
-        var add = new Button { Name = "bc-new-add", Content = "＋", Padding = new Thickness(10, 2), Background = Accent, Foreground = Brushes.White }; add.Click += (_, _) => Add();
+        var add = new Button { Name = "bc-new-add", Content = "＋", Padding = new Thickness(10, 2), Background = Accent, Foreground = Brushes.White }; ToolTip.SetTip(add, "Hinzufügen"); add.Click += (_, _) => Add();
         table.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("30,80,*,70,*,Auto"), Margin = new Thickness(0, 6, 0, 0), Children = { Pos(nt, 2), Pos(nd, 3), Pos(nn, 4), Pos(add, 5) } });
         if (rows.Count == 0) table.Children.Add(P("Noch kein Ablauf – oben den ersten Programmpunkt eintragen und Enter drücken.", null, 12));
         sp.Children.Add(new ScrollViewer { Content = table });

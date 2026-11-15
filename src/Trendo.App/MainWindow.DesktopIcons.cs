@@ -140,10 +140,18 @@ public partial class MainWindow
         var all = SystemModules.Select(m => ("page:" + m.Key, m.Title, "Trendo"))
             .Concat(MenuStudios().Select(s => (s.Id, s.Name, StudioCatalog.For(s.Id)?.Area ?? "Weitere")))
             .Where(x => q.Length == 0 || x.Item2.Contains(q, StringComparison.OrdinalIgnoreCase) || x.Item3.Contains(q, StringComparison.OrdinalIgnoreCase)).ToList();
+        // V2 (T-0663): in „Einfach“ jede Gruppe als Klappbereich mit Anzahl – ohne Suche sind sie zu, die Suche öffnet alle Treffer
+        var fold = ProgramLevel == Trendo.Core.Programs.UserLevel.Einfach;
         foreach (var grp in all.GroupBy(x => x.Item3))
         {
-            sp.Children.Add(H(grp.Key, 14));
             var wrap = new WrapPanel();
+            if (fold)
+            {
+                var on = grp.Count(x => OnDesktop(x.Item1));
+                sp.Children.Add(new Expander { Name = "desk-group-" + grp.Key.Replace(' ', '-').Replace("&", "und").Replace(",", ""), Header = $"{grp.Key} ({grp.Count()}{(on > 0 ? $", {on} auf dem Desktop" : "")})",
+                    IsExpanded = q.Length > 0, Content = wrap, HorizontalAlignment = HorizontalAlignment.Stretch, Margin = new Thickness(0, 0, 0, 4) });
+            }
+            else sp.Children.Add(H(grp.Key, 14));
             foreach (var (id, title, _) in grp)
             {
                 var on = OnDesktop(id);
@@ -157,7 +165,7 @@ public partial class MainWindow
                 b.Click += (_, _) => { SetOnDesktop(sid, !OnDesktop(sid)); Show("desktop-symbole"); };
                 wrap.Children.Add(b);
             }
-            sp.Children.Add(wrap);
+            if (!fold) sp.Children.Add(wrap);
         }
     }
 }

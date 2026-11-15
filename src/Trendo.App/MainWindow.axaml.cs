@@ -79,6 +79,8 @@ public sealed partial class MainWindow : Window
     {
         StartupTrace.Mark("window.ctor");
         GlyphIcons.Enable(); // D3 (13.11.2026): Zeichen-Knöpfe zeigen Linien-Symbole
+        SimpleWords.Enable(); // V3 (T-0663): in „Einfach“ tragen Symbol-Knöpfe ein Wort
+        SimpleWords.IsSimple = c => Avalonia.LogicalTree.LogicalExtensions.FindLogicalAncestorOfType<MainWindow>(c) is { } mw && mw.SimpleWordsHere(c);
         FontFamily = UiFont(); // D2: eine Schriftfamilie, einmal ermittelt (eine Liste mit fehlenden Schriften kostet bei jedem Text Zeit)
         _opt = opt; _core = core; _probe = probe;
         // Isolated: nichts außerhalb des Datenordners erkennen (Tests sind unabhängig von installierten Programmen/laufendem Ollama)
@@ -90,6 +92,7 @@ public sealed partial class MainWindow : Window
         InitVollpaketOnline(); // ohne Vollpaket: dieselben Pakete vom GitHub-Release
         StartupTrace.Mark("ctor.deps");
         _settings = UserSettings.Load(core.DataRoot);
+        SimpleWords.AnySimple = ProgramLevel == Trendo.Core.Programs.UserLevel.Einfach; // V3: schneller Ausstieg, wenn „Einfach“ nicht gilt
         if (_settings.LookVersion < 2) { if (_settings.Accent == "#2F86F6") _settings.Accent = "#C9A227"; _settings.LookVersion = 2; } // Dunkel-Gold-Look (02.11.2026): alte Blau-Vorgabe wird Gold
         ApplyTheme(_settings);
         // Felder wurden vor ApplyTheme erzeugt: Schriftfarben nachziehen
@@ -861,7 +864,9 @@ public sealed partial class MainWindow : Window
                 for (var c = 0; c < 3; c++) { Grid.SetRow(cells[c], r); Grid.SetColumn(cells[c], c); grid.Children.Add(cells[c]); }
                 r++;
             }
-            sp.Children.Add(grid);
+            // V8 (T-0663): in „Einfach“ je Welle nur die Zeile mit dem Stand, die Module auf Klick
+            if (ProgramLevel == Trendo.Core.Programs.UserLevel.Einfach) sp.Children.Add(new Expander { Name = "progress-wave-" + w.Key, Header = "Einzelheiten", Content = grid, HorizontalAlignment = HorizontalAlignment.Stretch });
+            else sp.Children.Add(grid);
         }
         return Page("Fortschritt", sp);
     }
@@ -1012,13 +1017,23 @@ public sealed partial class MainWindow : Window
                     : "Programme wie LibreOffice, Blender oder mpv kommen automatisch von GitHub, jede Datei mit Prüfsumme geprüft. Fehlen welche, lädt Trendo sie hier nach.", null, 12),
                 vpGo, vpMsg } } });
         sp.Children.Add(consent); sp.Children.Add(_depProgress); sp.Children.Add(_depLog);
+        // V2 (T-0663): in „Einfach“ jede Gruppe als Klappbereich mit Anzahl; „Fehlende … installieren“ oben erledigt alles auf einmal
+        var foldDeps = ProgramLevel == Trendo.Core.Programs.UserLevel.Einfach;
+        var outer = sp;
         foreach (var grp in DependencyCatalog.All.GroupBy(c => c.Mode))
         {
-            sp.Children.Add(H(grp.Key switch
+            var title = grp.Key switch
             {
                 DeliveryMode.Bundled => "Im Setup enthalten", DeliveryMode.Included => "Mitgeliefert mit Trendo OS (Vollpaket, ohne Internet)", DeliveryMode.AutoUser => "Automatisch pro Benutzer (ohne Admin)",
                 DeliveryMode.AutoElevated => "Automatisch, Windows fragt nach Admin-Rechten", DeliveryMode.Guided => "Nur offizieller Herstellerweg (geführt)", _ => "Nicht erforderlich",
-            }, 13));
+            };
+            if (foldDeps)
+            {
+                sp = new StackPanel { Spacing = 6 };
+                var missing = grp.Count(c => c.Mode is not (DeliveryMode.Bundled or DeliveryMode.NotNeeded) && !_deps.IsInstalled(c));
+                outer.Children.Add(new Expander { Name = "deps-group-" + grp.Key.ToString().ToLowerInvariant(), Header = $"{title} – {grp.Count()} Programme{(missing > 0 ? $", {missing} fehlen" : "")}", Content = sp, HorizontalAlignment = HorizontalAlignment.Stretch });
+            }
+            else sp.Children.Add(H(title, 13));
             foreach (var c in grp)
             {
                 var inst = _deps.IsInstalled(c);
@@ -1045,6 +1060,7 @@ public sealed partial class MainWindow : Window
                 if (c.Mode == DeliveryMode.Included && IncludedExtras(c, inst) is { } extras) sp.Children.Add(extras);
             }
         }
+        sp = outer;
         AddGitHubPrograms(sp);
         AddSourcePrograms(sp);
         var re = new Button { Name = "btn-deps-recheck", Content = "Neu prüfen" }; re.Click += (_, _) => { ReloadStudios(); Show("components"); };

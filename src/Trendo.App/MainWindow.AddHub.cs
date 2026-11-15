@@ -141,7 +141,16 @@ public partial class MainWindow
         foreach (var grp in all.GroupBy(i => i.Tab))
         {
             list.Children.Add(H(HubTabs.First(t => t.Id == grp.Key).Label, 14));
-            foreach (var it in grp.OrderBy(i => i.Installed && !mine).ThenBy(i => i.Name).Take(q.Length > 0 || _hubTab != "alles" ? 60 : 8)) list.Children.Add(HubRow(it, mine));
+            // V2 (T-0663): in „Einfach“ zeigt „Alles“ je Gruppe vier Einträge und führt mit einem Knopf zur ganzen Gruppe
+            var few = q.Length > 0 || _hubTab != "alles" ? 60 : ProgramLevel == Trendo.Core.Programs.UserLevel.Einfach ? 4 : 8;
+            foreach (var it in grp.OrderBy(i => i.Installed && !mine).ThenBy(i => i.Name).Take(few)) list.Children.Add(HubRow(it, mine));
+            if (grp.Count() > few)
+            {
+                var gid = grp.Key;
+                var allOf = new Button { Name = "hub-all-" + gid, Content = $"Alle {grp.Count()} zeigen", HorizontalAlignment = HorizontalAlignment.Left };
+                allOf.Click += (_, _) => { _hubTab = gid; Show("hinzufuegen"); };
+                list.Children.Add(allOf);
+            }
         }
         // GitHub: Suche nach freien Programmen auf GitHub
         if (!mine && _hubTab is "alles" or "github")

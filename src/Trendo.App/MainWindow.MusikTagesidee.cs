@@ -30,7 +30,8 @@ public partial class MainWindow
     {
         var today = MsToday; var day = _msIdeaDay ?? today;
         var made = Songs.All().Select(s => DateOnly.FromDateTime(s.Created.LocalDateTime)).ToHashSet();
-        var week = new UniformGrid { Name = "ms-idea-week", Columns = 7, Margin = new Thickness(0, 4, 0, 0) };
+        // V6 (T-0663): in „Einfach“ nur die Idee von heute; die Woche zum Durchblättern zeigen Erweitert und Profi
+        var week = new UniformGrid { Name = "ms-idea-week", Columns = 7, Margin = new Thickness(0, 4, 0, 0), IsVisible = ProgramLevel != Trendo.Core.Programs.UserLevel.Einfach };
         for (var i = 6; i >= 0; i--)
         {
             var d = today.AddDays(-i); var sel = d == day;
