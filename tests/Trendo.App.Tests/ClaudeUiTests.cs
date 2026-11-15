@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.LogicalTree;
 using Trendo.Core;
 using Xunit;
 
@@ -55,6 +56,26 @@ public class Claude_Ui
         Assert.False(w.ClaudeForgetStoredToken());
         Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "claude.token.entfernt");
         w.Show("ki-quellen"); Assert.Null(w.TryFind<TextBox>("claude-token")); Assert.Null(w.TryFind<Expander>("claude-token-box"));
+    }
+
+    [AvaloniaFact(DisplayName = "T-0683: Claude nur über das eigene Abo – ein früher gespeicherter API-Schlüssel wird beim Start gelöscht, der Dienst steht nicht mehr zur Wahl")]
+    public void No_claude_api()
+    {
+        var (w, _, _) = Ui.Open();
+        try
+        {
+            w.Core.Secrets.Set(Trendo.Core.KiCatalog.ClaudeApiSecret, "test-schluessel-" + new string('z', 20));
+            Assert.True(w.ClaudeForgetStoredToken()); // derselbe Aufruf wie beim Start
+            Assert.Null(w.Core.Secrets.Get(Trendo.Core.KiCatalog.ClaudeApiSecret));
+            Assert.False(w.ClaudeForgetApiKey());
+            Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "claude.api-schluessel.entfernt");
+            // auch eine alte Einstellung, die den Dienst eingeschaltet hatte, bringt ihn nicht zurück
+            Trendo.Core.KiSourceSettings.Update(w.Core.DataRoot, s => s.Cloud.Add("anthropic"));
+            Assert.DoesNotContain("anthropic", Trendo.Core.KiSourceSettings.Load(w.Core.DataRoot).Cloud);
+            w.Show("ki-quellen");
+            Assert.DoesNotContain(w.GetLogicalDescendants().OfType<TextBlock>(), t => (t.Text ?? "").Contains("Claude (Anthropic)"));
+        }
+        finally { w.Close(); }
     }
 
     [AvaloniaFact(DisplayName = "Claude-Regeln 01.11.2026: Claude Code aus Trendo erlaubt (eigene Anmeldung je Nutzer) – kein Sperr-Hinweis; „Claude Code öffnen“ startet das echte Claude Code im Projektordner")]

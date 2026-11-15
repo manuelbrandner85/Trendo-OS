@@ -166,7 +166,6 @@ public sealed class CloudKiBackend : IKiFailoverBackend
         _http = new HttpClient(handler ?? new HttpClientHandler { AllowAutoRedirect = false }) { BaseAddress = new Uri(u.GetLeftPart(UriPartial.Authority)), Timeout = TimeSpan.FromSeconds(120) };
         _http.MaxResponseContentBufferSize = 8 * 1024 * 1024;
         _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", key);
-        if (u.Host == "api.anthropic.com") { _http.DefaultRequestHeaders.Add("x-api-key", key); _http.DefaultRequestHeaders.Add("anthropic-version", "2023-06-01"); }
         _http.DefaultRequestHeaders.UserAgent.ParseAdd("TrendoOS/1.0");
     }
 

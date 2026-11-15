@@ -72,9 +72,20 @@ public partial class MainWindow
     /// <summary>Alten gespeicherten Token entfernen (einmal beim Start; öffentlich für Tests). Gibt true zurück, wenn einer da war.</summary>
     public bool ClaudeForgetStoredToken()
     {
-        try { if (_core.Secrets.Get(ClaudeTokenKey) is null) return false; _core.Secrets.Delete(ClaudeTokenKey); }
-        catch (Exception e) when (e is InvalidOperationException or System.ComponentModel.Win32Exception) { return false; }
+        var api = ClaudeForgetApiKey();
+        try { if (_core.Secrets.Get(ClaudeTokenKey) is null) return api; _core.Secrets.Delete(ClaudeTokenKey); }
+        catch (Exception e) when (e is InvalidOperationException or System.ComponentModel.Win32Exception) { return api; }
         _core.Audit.Append(Principal.LocalOwner.Name, "claude.token.entfernt", "Anmeldung nur noch über Claude selbst");
+        return true;
+    }
+
+    /// <summary>T-0683 (Entscheidung 16.11.2026: Claude nur über das eigene Abo, nie über die kostenpflichtige API): einen früher gespeicherten
+    /// API-Schlüssel für Claude beim Start entfernen. Der Dienst steht nicht mehr in der Liste der KI-Dienste.</summary>
+    public bool ClaudeForgetApiKey()
+    {
+        try { if (_core.Secrets.Get(KiCatalog.ClaudeApiSecret) is null) return false; _core.Secrets.Delete(KiCatalog.ClaudeApiSecret); }
+        catch (Exception e) when (e is InvalidOperationException or System.ComponentModel.Win32Exception) { return false; }
+        _core.Audit.Append(Principal.LocalOwner.Name, "claude.api-schluessel.entfernt", "Claude läuft nur noch über das eigene Abo");
         return true;
     }
 

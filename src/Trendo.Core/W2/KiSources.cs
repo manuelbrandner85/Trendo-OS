@@ -41,13 +41,16 @@ public static class KiCatalog
     ];
 
     /// <summary>KI-Dienste mit Schlüssel (Stand 2026-10-25, offizielle Adressen der Anbieter).</summary>
+    /// <summary>T-0683: Claude gibt es in Trendo nur über das eigene Abo (Claude Code), nie über die kostenpflichtige API – der Dienst steht deshalb nicht in <see cref="Cloud"/>.
+    /// Unter diesem Namen lag früher ein API-Schlüssel; er wird beim Start gelöscht.</summary>
+    public const string ClaudeApiSecret = "TrendoOS:ki-anthropic";
+
     public static readonly IReadOnlyList<KiCloudService> Cloud =
     [
         new("openrouter", "OpenRouter", "https://openrouter.ai/api/v1", "https://openrouter.ai/settings/keys", ":free", true, "Viele Modelle, darunter kostenlose (Endung „:free“). Kostenloses Konto genügt."),
         new("gemini", "Google Gemini", "https://generativelanguage.googleapis.com/v1beta/openai", "https://aistudio.google.com/apikey", "gemini-2.5-flash", true, "Kostenlose Stufe mit Google-Konto; Google darf Eingaben der kostenlosen Stufe auswerten."),
         new("mistral", "Mistral AI", "https://api.mistral.ai/v1", "https://console.mistral.ai/api-keys", "mistral-small-latest", true, "Europäischer Anbieter; kostenlose Stufe „Experiment“ nach Anmeldung."),
         new("huggingface", "Hugging Face", "https://router.huggingface.co/v1", "https://huggingface.co/settings/tokens", "meta-llama/Llama-3.1-8B-Instruct", true, "Kostenloses Konto mit monatlichem Guthaben; Token mit Recht „Inference“ anlegen."),
-        new("anthropic", "Claude (Anthropic)", "https://api.anthropic.com/v1", "https://console.anthropic.com/settings/keys", "claude-haiku-4-5", false, "Kostenpflichtig je Nutzung – nur, wenn du das willst."),
         new("openai", "OpenAI", "https://api.openai.com/v1", "https://platform.openai.com/api-keys", "gpt-4.1-mini", false, "Kostenpflichtig je Nutzung – nur, wenn du das willst."),
     ];
 
