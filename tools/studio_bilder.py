@@ -27,6 +27,7 @@ PROMPTS = {
     'STUDIO-POD-01': 'a screen printing workbench in a dark workshop: a freshly printed plain t-shirt, a ceramic mug and rolled posters with abstract colorful artwork, a squeegee and ink tins, warm lamp light',
     'STUDIO-CONSOLE-01': 'a retro video game console with a disc tray open and a modern handheld game device and a laptop side by side on a dark workbench, cables, warm lamp light, no brand names',
     'STUDIO-BOOK-01': 'an open handwritten manuscript notebook with a fountain pen, a stack of hardcover books and a cup of tea on a dark wooden writing desk, warm lamp light, no readable text',
+    'STUDIO-ART-01': 'an artist desk at night with a graphics pen tablet and stylus, an open sketchbook with a pencil portrait sketch, watercolor paint pans, brushes in a glass jar and a wooden artist mannequin, warm golden lamp light, no readable text',
     'STUDIO-ANIM-01': 'a graphics tablet with a stylus next to a small flipbook showing a bouncing ball in motion blur on a dark desk, soft colorful rim light, no text',
     'STUDIO-PHOTOS-01': 'neatly arranged printed photographs in labeled wooden boxes and a vintage camera on a dark table, warm light, no readable text, no faces',
     'STUDIO-IMAGEAI-01': 'an artist easel with a canvas where a glowing landscape painting seems to emerge from soft light particles, dark studio, golden accent light, no text',

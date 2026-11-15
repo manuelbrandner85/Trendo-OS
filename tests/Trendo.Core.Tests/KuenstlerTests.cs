@@ -1,4 +1,5 @@
 using Trendo.Core.Kreativ;
+using Trendo.Core.PromptAction;
 using Xunit;
 
 namespace Trendo.Core.Tests;
@@ -273,5 +274,31 @@ public class KuenstlerTests
         d.Add(); Assert.Equal(2, Courses.Progress(c, Courses.Of(d, "aus", "aus", 0, 1, false)));
         Assert.True(Courses.All.Length >= 5); Assert.All(Courses.All, k => Assert.NotEmpty(k.Steps));
         Assert.Throws<ArgumentException>(() => Courses.Get("gibtsnicht"));
+    }
+
+    [Fact(DisplayName = "STUDIO-ART-01 Adapter: Malvorlage mit Format, Spiegeln, Palette und Schritten – ohne Nebenwirkung, Pflichtfeld Motiv")]
+    public void Adapter()
+    {
+        var all = PromptActions.CreateDefault(); var ad = all.Single(a => a.StudioId == "STUDIO-ART-01");
+        Assert.False(ad.CanPerformSideEffect); Assert.Equal(SideEffectClass.None, ad.Effect);
+        Assert.NotEmpty(ad.Missing(new Dictionary<string, string>()));
+        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("STUDIO-ART-01", all));
+        Assert.NotEmpty(ad.Validate(new Dictionary<string, string> { ["motiv"] = "x", ["farbe"] = "blau" }));
+        Assert.NotEmpty(ad.Validate(new Dictionary<string, string> { ["motiv"] = "x", ["teile"] = "99" }));
+        var root = Path.Combine(Path.GetTempPath(), "trendo-kunst-ad-" + Guid.NewGuid().ToString("N")[..8]); Directory.CreateDirectory(root);
+        try
+        {
+            var core = new TrendoCore(Path.Combine(root, "daten"), new InMemorySecretStore(), offline: true);
+            var project = core.Projects.Create("probe", "Probe").Id;
+            var wf = new StudioWorkflow(core, all);
+            var ctx = new StudioExecutionContext(project, Principal.LocalOwner, CancellationToken.None, ResourceBudget.Default);
+            var req = new StudioPromptRequest("kunst-1", project, "STUDIO-ART-01", "Motiv: Fuchs im Schnee\nFormat: quadrat\nFarbe: #FF0000\nHarmonie: triade\nTeile: 8", [], "de", null, PrivacyMode.Local, new Provenance("test", null, null));
+            var done = wf.Los(project, wf.Start(req, ctx).RunId, ctx);
+            Assert.Equal(RunStatus.Verified, done.Status);
+            var text = File.ReadAllText(core.Projects.ResolveInProject(project, done.Artifacts.Single(a => a.RelativePath.EndsWith("malvorlage.txt")).RelativePath));
+            Assert.Contains("Quadrat (1600 × 1600 px)", text); Assert.Contains("radial, 8 Teile", text);
+            Assert.Contains("#FF0000, #00FF00, #0000FF", text); Assert.Contains("GIMP Palette", text);
+        }
+        finally { Directory.Delete(root, true); }
     }
 }

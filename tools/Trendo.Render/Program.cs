@@ -745,6 +745,14 @@ else if (shot == "seite")
     }
     if (Environment.GetEnvironmentVariable("TRENDO_3D") is { Length: > 0 }) { win.Show("3d"); foreach (var sh in new[] { "cube", "sphere", "cylinder", "torus" }) win.Studio3DAddShape(sh); win.Studio3DSelect(1); } // 3D-Modelle erstellen mit Arbeitsfläche
     if (Environment.GetEnvironmentVariable("TRENDO_PROGTPL") is { Length: > 0 } tpl) { if (Environment.GetEnvironmentVariable("TRENDO_LEVEL") is { Length: > 0 } lv) win.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Of(lv)); win.ProgramNew(page, tpl); if (Environment.GetEnvironmentVariable("TRENDO_GAMESEC") is { Length: > 0 } gs) win.GameSection = gs; win.Show(page); } // Programm mit Vorlage öffnen
+    if (Environment.GetEnvironmentVariable("TRENDO_ART_DEMO") is { Length: > 0 } && win.ProgramActive(Trendo.App.MainWindow.ArtKey) is { } artDoc) // Künstlerstudio mit Beispielstrichen
+    {
+        win.ArtBrush = "tusche"; win.ArtColor = "#1F2937"; win.ArtSize = 8; win.ArtSmooth = 0;
+        win.ArtPaint(artDoc, Enumerable.Range(0, 60).Select(i => (800 + 40 * Math.Sin(i / 9.0), 300.0 + i * 8, 1.0 - i / 80.0)));
+        win.ArtBrush = "aquarell"; win.ArtColor = "#0EA5E9"; win.ArtSize = 60;
+        win.ArtPaint(artDoc, Enumerable.Range(0, 40).Select(i => (760.0 + i * 3, 450.0 + i * 6, 1.0)));
+        win.Show(Trendo.App.MainWindow.ArtKey);
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_POD_EXPORT") is { Length: > 0 } podFile) // Design-Editor: Beispiel-Entwurf, echte Druckdatei mit Skia
     {
         var pd = win.ProgramActive("pod-programm")!;

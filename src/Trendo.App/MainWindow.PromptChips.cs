@@ -26,6 +26,7 @@ public partial class MainWindow
         ["STUDIO-COMIC-01"] = ["Vier-Bilder-Comic über einen Kater", "Storyboard für einen Werbeclip", "Pointe für das letzte Bild"],
         ["STUDIO-BOOK-01"] = ["Gliedere einen Krimi in zwölf Kapitel", "Schreib den Anfang von Kapitel 1", "Lektorat für dieses Kapitel"],
         ["STUDIO-ANIM-01"] = ["Titel soll von links einfliegen", "Logo sanft einblenden", "Ein Ball springt dreimal"],
+        ["STUDIO-ART-01"] = ["Mandala mit 8 Teilen", "Palette aus meinem Foto", "Würfel in Perspektive üben"],
         ["STUDIO-PHOTOS-01"] = ["Urlaubsfotos nach Monat sortieren", "Doppelte Fotos finden", "Nach Datum umbenennen"],
         ["STUDIO-IMAGEAI-01"] = ["Titelbild für meinen Blog", "Leuchtturm als Aquarell", "Vier Varianten für ein Poster"],
         ["STUDIO-VIDEOAI-01"] = ["Video über einen Morgen am Meer", "Fünf Szenen für eine Produktvorstellung", "Kürze das Video auf 20 Sekunden"],

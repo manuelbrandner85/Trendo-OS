@@ -37,6 +37,7 @@ public static class StudioCatalog
         ["STUDIO-COMIC-01"] = new("Comics & Storyboards", "Comicseiten und Storyboards mit Bildaufteilung, Sprechblasen und Texten.", "Kreativ & Medien"),
         ["STUDIO-BOOK-01"] = new("Bücher schreiben", "Romane und Sachbücher in Kapiteln schreiben – mit Wortziel und als E-Book.", "Kreativ & Medien"),
         ["STUDIO-ANIM-01"] = new("Animation & Motion", "Formen und Titel mit Schlüsselbildern bewegen – als animiertes SVG oder Video.", "Kreativ & Medien"),
+        ["STUDIO-ART-01"] = new("Künstlerstudio", "Zeichnen und Malen wie auf Papier – Pinsel mit Stiftdruck, Ebenen, Farbrad, Spiegeln, Perspektive und Malkurse.", "Kreativ & Medien"),
         ["STUDIO-PHOTOS-01"] = new("Fotos verwalten", "Fotos nach Aufnahmedatum einsortieren, umbenennen und Doppelte finden.", "Kreativ & Medien"),
         ["SPEC-08"] = new("Kleidung & Produkte entwerfen", "Kleidergrößen, Schnitte und Produktideen.", "Kreativ & Medien"),
         ["X-07"] = new("Freie Bilder & Klänge finden", "Kostenlose Bilder, Klänge und Schriften finden.", "Kreativ & Medien"),

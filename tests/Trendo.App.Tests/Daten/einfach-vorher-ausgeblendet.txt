@@ -1894,3 +1894,59 @@ zusammenfassen-programm: prog-level-einfach
 zusammenfassen-programm: prog-level-erweitert
 zusammenfassen-programm: prog-level-profi
 zwilling: page-team
+# T-0670 Künstlerstudio (15.11.2026): wie bei allen Programmen sind in „Einfach“ die Eigenschaften eingeklappt (Knopf „Eigenschaften“ öffnet sie), Stufe und Profi-Exporte über „Mehr Werkzeuge“; Schnellfarben stehen über der Malfläche. ql-open-117: ein Programm mehr im Katalog.
+kuenstler-programm: prog-level-einfach
+kuenstler-programm: prog-level-erweitert
+kuenstler-programm: prog-level-profi
+kuenstler-programm (Dokument): art-alpha-lock
+kuenstler-programm (Dokument): art-assist
+kuenstler-programm (Dokument): art-course
+kuenstler-programm (Dokument): art-grid-box
+kuenstler-programm (Dokument): art-harm-372d1f
+kuenstler-programm (Dokument): art-harmony-kind
+kuenstler-programm (Dokument): art-hex
+kuenstler-programm (Dokument): art-hex-ok
+kuenstler-programm (Dokument): art-idea
+kuenstler-programm (Dokument): art-idea-go
+kuenstler-programm (Dokument): art-layer-0
+kuenstler-programm (Dokument): art-layer-blend
+kuenstler-programm (Dokument): art-layer-name
+kuenstler-programm (Dokument): art-layer-opacity
+kuenstler-programm (Dokument): art-lock-0
+kuenstler-programm (Dokument): art-pal-add
+kuenstler-programm (Dokument): art-pal-clear
+kuenstler-programm (Dokument): art-pal-harm
+kuenstler-programm (Dokument): art-pal-load
+kuenstler-programm (Dokument): art-pal-ref
+kuenstler-programm (Dokument): art-pose
+kuenstler-programm (Dokument): art-pose-yaw
+kuenstler-programm (Dokument): art-puppet-add
+kuenstler-programm (Dokument): art-ref-clear
+kuenstler-programm (Dokument): art-ref-load
+kuenstler-programm (Dokument): art-sw-000000
+kuenstler-programm (Dokument): art-sw-0ea5e9
+kuenstler-programm (Dokument): art-sw-15803d
+kuenstler-programm (Dokument): art-sw-1d4ed8
+kuenstler-programm (Dokument): art-sw-1f2937
+kuenstler-programm (Dokument): art-sw-7c2d12
+kuenstler-programm (Dokument): art-sw-7c3aed
+kuenstler-programm (Dokument): art-sw-a8a29e
+kuenstler-programm (Dokument): art-sw-b91c1c
+kuenstler-programm (Dokument): art-sw-db2777
+kuenstler-programm (Dokument): art-sw-ea580c
+kuenstler-programm (Dokument): art-sw-f59e0b
+kuenstler-programm (Dokument): art-sw-fde68a
+kuenstler-programm (Dokument): art-sw-ffffff
+kuenstler-programm (Dokument): art-sym
+kuenstler-programm (Dokument): art-timelapse
+kuenstler-programm (Dokument): art-vis-0
+kuenstler-programm (Dokument): prog-export-druck-a3
+kuenstler-programm (Dokument): prog-export-druck-a4
+kuenstler-programm (Dokument): prog-export-druck-postkarte
+kuenstler-programm (Dokument): prog-export-palette
+kuenstler-programm (Dokument): prog-export-png-transparent
+kuenstler-programm (Dokument): prog-export-psd
+kuenstler-programm (Dokument): prog-level-einfach
+kuenstler-programm (Dokument): prog-level-erweitert
+kuenstler-programm (Dokument): prog-level-profi
+qualitaet: ql-open-117

@@ -280,6 +280,16 @@ public sealed class StrokeEngine
     public int DirtyX0 { get; private set; } = int.MaxValue; public int DirtyY0 { get; private set; } = int.MaxValue;
     public int DirtyX1 { get; private set; } = -1; public int DirtyY1 { get; private set; } = -1;
     public int Dabs { get; private set; }
+    int _px0 = int.MaxValue, _py0 = int.MaxValue, _px1 = -1, _py1 = -1;
+    /// <summary>Geänderter Bereich seit dem letzten Aufruf (x0, y0, x1, y1 einschließlich) – für schnelles Neuzeichnen; null = nichts geändert.</summary>
+    public (int X0, int Y0, int X1, int Y1)? TakeDirty()
+    {
+        if (_px1 < 0) return null;
+        var r = (_px0, _py0, _px1, _py1); _px0 = _py0 = int.MaxValue; _px1 = _py1 = -1; return r;
+    }
+    void Mark(int x0, int y0, int x1, int y1) { _px0 = Math.Min(_px0, x0); _py0 = Math.Min(_py0, y0); _px1 = Math.Max(_px1, x1); _py1 = Math.Max(_py1, y1); }
+    /// <summary>Ebene, auf der gemalt wird.</summary>
+    public Pixmap Layer => _layer;
 
     public StrokeEngine(Pixmap layer, BrushPreset brush, string color, double? size = null, double? opacity = null, PaintSymmetry? sym = null, DrawAssist? assist = null, double smoothing = 0, bool alphaLock = false)
     {
@@ -301,6 +311,7 @@ public sealed class StrokeEngine
     void ReStraight(double x, double y, double p)
     {   // gerade Linie: bei jeder Bewegung neu vom Startpunkt aus zeichnen
         Array.Clear(_mask); Buffer.BlockCopy(_before.Px, 0, _layer.Px, 0, _before.Px.Length); _last = null; _carry = 0;
+        if (DirtyX1 >= 0) Mark(DirtyX0, DirtyY0, DirtyX1, DirtyY1); // alte Linie verschwindet
         Seg(_start!.Value.X, _start.Value.Y, p); Seg(x, y, p);
     }
 
@@ -344,7 +355,7 @@ public sealed class StrokeEngine
                 _mask[k] = (float)(_b.BuildUp ? m + a * (1 - m) : Math.Max(m, a));
                 Apply(k);
             }
-        DirtyX0 = Math.Min(DirtyX0, x0); DirtyY0 = Math.Min(DirtyY0, y0); DirtyX1 = Math.Max(DirtyX1, x1); DirtyY1 = Math.Max(DirtyY1, y1);
+        DirtyX0 = Math.Min(DirtyX0, x0); DirtyY0 = Math.Min(DirtyY0, y0); DirtyX1 = Math.Max(DirtyX1, x1); DirtyY1 = Math.Max(DirtyY1, y1); Mark(x0, y0, x1, y1);
     }
     static double Smooth(double t) { t = Math.Clamp(t, 0, 1); return t * t * (3 - 2 * t); }
 
