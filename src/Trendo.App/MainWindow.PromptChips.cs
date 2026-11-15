@@ -46,6 +46,8 @@ public partial class MainWindow
         ["STUDIO-CODEAI-01"] = ["Erkläre mir diese Datei", "Schreib einen Test dafür", "Warum schlägt der Test fehl?"],
         ["STUDIO-VISION-01"] = ["Beschreibe dieses Bild", "Finde unscharfe Fotos", "Lies den Text im Bild"],
         ["STUDIO-CITE-01"] = ["Zitiere nach APA", "Belegt die Quelle die Aussage?", "Welche Angaben fehlen?"],
+        ["STUDIO-DECKDESIGN-01"] = ["Gestalte meine Präsentation", "Folien zum Thema entwerfen", "10 Minuten Redezeit planen"],
+        ["STUDIO-DOCSCAN-01"] = ["Rechnung als PDF scannen", "Whiteboard-Foto aufbereiten", "Scan durchsuchbar machen"],
         ["STUDIO-DAYPLAN-01"] = ["Plane meinen Tag", "Was schaffe ich bis Mittag?", "Rest auf morgen schieben"],
     };
 

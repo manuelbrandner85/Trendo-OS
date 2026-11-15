@@ -38,6 +38,8 @@ PROMPTS = {
     'STUDIO-CODEAI-01': 'a mechanical keyboard and a wide monitor with blurred colorful source code lines in a dark room, a coffee cup and a small brass lamp, warm accent light, no readable text',
     'STUDIO-VISION-01': 'a magnifying glass and a camera lens lying on a printed photograph of a forest on a dark desk, light reflections in the glass, warm light, no readable text, no faces',
     'STUDIO-CITE-01': 'open old books with colorful paper bookmarks and a card catalog drawer in a library reading room, dark wood, warm reading lamp, no readable text',
+    'STUDIO-DECKDESIGN-01': 'a laptop on a dark desk showing an elegant presentation slide with a large golden number and a simple timeline, a slide clicker and printed slide thumbnails beside it, warm golden accent light, no readable text',
+    'STUDIO-DOCSCAN-01': 'a smartphone held above a sheet of paper on a dark wooden desk, the phone screen shows the page outlined with corner markers, a stapled letter and a receipt nearby, soft cool daylight, no readable text',
     'STUDIO-DAYPLAN-01': 'a paper day planner with time blocks colored by soft markers next to a brass alarm clock and a cup of tea on a dark desk at morning light, no readable text',
     'STUDIO-SUMMARY-01': 'a thick stack of printed documents next to a single neat index card with a few highlighted lines and a yellow highlighter on a dark wooden desk, warm desk lamp light',
     'STUDIO-LOGO-01': 'a designer desk with color swatches, a sketchbook with simple geometric emblem sketches, pencils and a pantone-like fan deck, soft daylight, no text, no brand names',
