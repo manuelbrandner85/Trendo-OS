@@ -494,6 +494,27 @@ modules:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)
+- id: STUDIO-CV-01
+  name: Bewerbung & Lebenslauf
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Arbeiten & Büro), 15.11.2026 „Ja, weiter“
+- id: STUDIO-CARDS-01
+  name: Karten & Einladungen
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Arbeiten & Büro), 15.11.2026 „Ja, weiter“
+- id: STUDIO-CONTRACTS-01
+  name: Verträge-Ordner
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Arbeiten & Büro), 15.11.2026 „Ja, weiter“
 - id: STUDIO-MUSIK-01
   name: Trendo Musik (Lieder mit ACE-Step)
   approved_expansion_functions: '0'

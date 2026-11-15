@@ -22,6 +22,9 @@ public static class StudioCatalog
         ["X-11"] = new("Neues Projekt starten", "Ein Startpunkt für jedes Projekt – vom Dokument bis zum Video.", "Arbeiten & Büro"),
         ["SYS-02"] = new("Kleine Helfer & Musik", "Kleine Helfer: Rechner, Notizen, Bildschirmfoto, Musik und Videos abspielen.", "Arbeiten & Büro"),
         ["STUDIO-DAYPLAN-01"] = new("Tagesplaner", "Aufgaben um feste Termine herum in den Tag legen – mit Pausen und einer Liste für morgen.", "Arbeiten & Büro"),
+        ["STUDIO-CV-01"] = new("Bewerbung & Lebenslauf", "Lebenslauf in mehreren Layouts, Anschreiben zur Stelle, Prüfung auf Lücken und eine fertige Bewerbungsmappe als PDF.", "Arbeiten & Büro"),
+        ["STUDIO-CARDS-01"] = new("Karten & Einladungen", "Klappkarten und Postkarten für Geburtstag, Hochzeit und Feste – mit Gästeliste, Zu- und Absagen und Druck-PDF.", "Arbeiten & Büro"),
+        ["STUDIO-CONTRACTS-01"] = new("Verträge-Ordner", "Alle Verträge mit Kosten und Kündigungsfrist – Ampel, Erinnerung im Kalender und Kündigungsschreiben als Entwurf.", "Arbeiten & Büro"),
 
         ["STUDIO-ONLINE-BUSINESS-01"] = new("Online verkaufen", "Geschäftsidee planen, gründen und online verkaufen.", "Business & Geld"),
         ["STUDIO-POD-01"] = new("Print on Demand", "Eigene Motive auf Produkte bringen: Druckdatei prüfen, Preis rechnen, Rechtliches klären.", "Business & Geld"),

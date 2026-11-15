@@ -295,6 +295,15 @@ public static class StudioTeams
         T("STUDIO-DAYPLAN-01", "Planungs-Team",
             R("day-planer", "Planerin", "legt Aufgaben in den Tag", "Wichtiges zuerst, Pausen, Puffer", true),
             R("day-pruef", "Prüfer", "achtet auf realistische Dauer", "nicht überladen, Rest auf morgen")),
+        T("STUDIO-CV-01", "Bewerbungs-Team",
+            R("cv-coach", "Bewerbungscoach", "schreibt Anschreiben und Profil", "ehrlich, passend zur Stelle, nichts erfinden", true),
+            R("cv-pruef", "Personalerin", "prüft Lebenslauf wie bei der Auswahl", "Lücken, Länge, Stichwörter, Form")),
+        T("STUDIO-CARDS-01", "Karten-Team",
+            R("cards-design", "Gestalterin", "wählt Vorlage, Schrift und Farben", "gut lesbar, passend zum Anlass", true),
+            R("cards-text", "Texterin", "schreibt herzliche, kurze Texte", "alle Angaben: wann, wo, Antwort bis")),
+        T("STUDIO-CONTRACTS-01", "Vertrags-Team",
+            R("contracts-frist", "Fristen-Rechnerin", "rechnet Laufzeit und Kündigungsfrist", "rückwärts vom Vertragsende, Monatsende beachten", true),
+            R("contracts-brief", "Schreibhilfe", "entwirft das Kündigungsschreiben", "mit Kundennummer, nichts versenden")),
     ];
 
     public static StudioTeam? For(string? studioId) => All.FirstOrDefault(t => t.StudioId == studioId);

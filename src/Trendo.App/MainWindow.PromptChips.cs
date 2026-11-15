@@ -47,6 +47,9 @@ public partial class MainWindow
         ["STUDIO-VISION-01"] = ["Beschreibe dieses Bild", "Finde unscharfe Fotos", "Lies den Text im Bild"],
         ["STUDIO-CITE-01"] = ["Zitiere nach APA", "Belegt die Quelle die Aussage?", "Welche Angaben fehlen?"],
         ["STUDIO-DAYPLAN-01"] = ["Plane meinen Tag", "Was schaffe ich bis Mittag?", "Rest auf morgen schieben"],
+        ["STUDIO-CV-01"] = ["Prüf meinen Lebenslauf auf Lücken", "Anschreiben für diese Stelle", "Lebenslauf für Bewerbungsportale"],
+        ["STUDIO-CARDS-01"] = ["Einladung zur Hochzeit", "Geburtstagskarte für Oma", "Wer hat schon zugesagt?"],
+        ["STUDIO-CONTRACTS-01"] = ["Bis wann kann ich kündigen?", "Was kosten meine Verträge im Jahr?", "Kündigung für den Handyvertrag"],
     };
 
     /// <summary>Chips für ein Studio (leer = keine Vorschläge hinterlegt).</summary>
