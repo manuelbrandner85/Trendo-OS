@@ -44,6 +44,8 @@ PROMPTS = {
     'STUDIO-CV-01': 'a printed resume page with a small portrait photo placeholder and neat sections on a dark wooden desk next to a fountain pen, a leather folder and a cup of coffee, warm lamp light, no readable text, no faces',
     'STUDIO-CARDS-01': 'handmade folded greeting cards and an elegant invitation card with gold foil ornaments and a wax sealed envelope on a dark table with dried flowers and ribbon, warm golden light, no readable text',
     'STUDIO-CONTRACTS-01': 'a tidy ring binder with colored tabs and contract papers, a calendar with a circled date and a reading glasses on a dark desk, warm lamp light, no readable text, no logos',
+    'STUDIO-PDFTOOLS-01': 'a tidy office desk with a neat stack of printed pages held by a black binder clip, a paper cutter, a rubber stamp and an ink pad, a few pages fanned out with a black redaction bar on one line, cool daylight from a window, no readable text',
+    'STUDIO-FORMS-01': 'a printed application form on a clipboard with check boxes partly ticked, a fountain pen resting on the signature line, reading glasses and a cup of coffee on a light wooden desk, soft morning light, no readable text',
     'STUDIO-SUMMARY-01': 'a thick stack of printed documents next to a single neat index card with a few highlighted lines and a yellow highlighter on a dark wooden desk, warm desk lamp light',
     'STUDIO-LOGO-01': 'a designer desk with color swatches, a sketchbook with simple geometric emblem sketches, pencils and a pantone-like fan deck, soft daylight, no text, no brand names',
     'STUDIO-PODCAST-01': 'a broadcast microphone on a boom arm with a pop filter, studio headphones and a small audio mixer on a dark desk with acoustic foam panels behind, warm light',

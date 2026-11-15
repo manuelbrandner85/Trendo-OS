@@ -27,6 +27,8 @@ public static class StudioCatalog
         ["STUDIO-CV-01"] = new("Bewerbung & Lebenslauf", "Lebenslauf in mehreren Layouts, Anschreiben zur Stelle, Prüfung auf Lücken und eine fertige Bewerbungsmappe als PDF.", "Arbeiten & Büro"),
         ["STUDIO-CARDS-01"] = new("Karten & Einladungen", "Klappkarten und Postkarten für Geburtstag, Hochzeit und Feste – mit Gästeliste, Zu- und Absagen und Druck-PDF.", "Arbeiten & Büro"),
         ["STUDIO-CONTRACTS-01"] = new("Verträge-Ordner", "Alle Verträge mit Kosten und Kündigungsfrist – Ampel, Erinnerung im Kalender und Kündigungsschreiben als Entwurf.", "Arbeiten & Büro"),
+        ["STUDIO-PDFTOOLS-01"] = new("PDF-Werkstatt", "PDFs zusammenfügen, teilen, ordnen, verkleinern, schwärzen und vergleichen – jede Aktion ergibt eine neue Datei.", "Arbeiten & Büro"),
+        ["STUDIO-FORMS-01"] = new("Formulare ausfüllen", "PDF-Formulare ausfüllen und unterschreiben – mit deinen Angaben als Vorschlag und Prüfung der Pflichtfelder.", "Arbeiten & Büro"),
 
         ["STUDIO-ONLINE-BUSINESS-01"] = new("Online verkaufen", "Geschäftsidee planen, gründen und online verkaufen.", "Business & Geld"),
         ["STUDIO-POD-01"] = new("Print on Demand", "Eigene Motive auf Produkte bringen: Druckdatei prüfen, Preis rechnen, Rechtliches klären.", "Business & Geld"),

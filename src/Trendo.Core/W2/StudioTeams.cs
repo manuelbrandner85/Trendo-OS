@@ -310,6 +310,12 @@ public static class StudioTeams
         T("STUDIO-CONTRACTS-01", "Vertrags-Team",
             R("contracts-frist", "Fristen-Rechnerin", "rechnet Laufzeit und Kündigungsfrist", "rückwärts vom Vertragsende, Monatsende beachten", true),
             R("contracts-brief", "Schreibhilfe", "entwirft das Kündigungsschreiben", "mit Kundennummer, nichts versenden")),
+        T("STUDIO-PDFTOOLS-01", "PDF-Team",
+            R("pdfw-sachb", "Sachbearbeiterin", "ordnet, teilt und fügt Dateien zusammen", "Original bleibt, klare Dateinamen", true),
+            R("pdfw-pruef", "Prüfer", "kontrolliert Ergebnis, Größe und Schwärzungen", "nichts Verdecktes bleibt lesbar")),
+        T("STUDIO-FORMS-01", "Formular-Team",
+            R("forms-hilfe", "Formularhelferin", "füllt Felder aus und erklärt Amtsdeutsch", "nur eigene Angaben, nichts erfinden", true),
+            R("forms-pruef", "Prüfer", "achtet auf Pflichtfelder und Unterschrift", "vor dem Abschicken alles vollständig")),
     ];
 
     public static StudioTeam? For(string? studioId) => All.FirstOrDefault(t => t.StudioId == studioId);

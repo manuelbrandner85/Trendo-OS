@@ -47,6 +47,7 @@ public static class PromptActions
             new XrBudgetAdapter(), new ScanBlockedAdapter(),
             new CodeProjectAdapter(), new VisionFactsAdapter(), new CiteSourceAdapter(), new DayPlanAdapter(), new KunstVorlageAdapter(), new LebenslaufAdapter(), new KarteAdapter(), new VertragFristAdapter(),
             new DeckDesignAdapter(), new DocScanAdapter(),
+            new PdfWerkstattAdapter(), new FormularZuordnenAdapter(),
             ..SystemActions.Create()
         ];
 }
