@@ -172,4 +172,15 @@ public class WebDesignStufe3Teil3QaTests
         }
         finally { Clean(root); Clean(proj); }
     }
+
+    [Fact(DisplayName = "Z6: Antworten denkender Modelle (<think>…</think> mit Klammern) ergeben den Plan dahinter; nur Überlegung ohne Plan wird klar gemeldet")]
+    public void Plan_after_think_block()
+    {
+        const string plan = """{"aktionen":[{"aktion":"element_aendern","id":"t","props":{"text":"Hallo"}}]}""";
+        var (p, err) = WebDesignActions.Parse("<think>Ich brauche {\"aktionen\": …} und vielleicht { id: t }.</think>\n" + plan);
+        Assert.Null(err); Assert.Equal("element_aendern", p!["aktionen"]![0]!["aktion"]!.ToString());
+        Assert.Null(WebDesignActions.Parse("<THINK>{x}</THINK>```json\n" + plan + "\n```").Error);
+        Assert.Contains("nur überlegt", WebDesignActions.Parse("<think>{ abgebrochen mitten im Gedanken").Error);
+        Assert.Null(WebDesignActions.Parse(plan).Error); // ohne Denkblock wie bisher
+    }
 }

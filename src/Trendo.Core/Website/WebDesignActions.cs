@@ -176,6 +176,9 @@ public static partial class WebDesignActions
     public static (JsonObject? Plan, string? Error) Parse(string? answer)
     {
         if (string.IsNullOrWhiteSpace(answer)) return (null, "Die KI hat nichts geliefert.");
+        // Denkende Modelle (Qwen 3, DeepSeek R1) schreiben ihre Überlegungen in <think>…</think> vor die Antwort; darin stehen oft geschweifte Klammern
+        answer = Regex.Replace(answer, @"<think>[\s\S]*?(</think>|$)", "", RegexOptions.IgnoreCase);
+        if (string.IsNullOrWhiteSpace(answer)) return (null, "Die KI hat nur überlegt und keinen Aktionsplan geliefert.");
         var fence = Regex.Match(answer, @"```(?:json)?\s*(\{[\s\S]*?\})\s*```");
         var a = answer.IndexOf('{'); var b = answer.LastIndexOf('}');
         var text = fence.Success ? fence.Groups[1].Value : a >= 0 && b > a ? answer[a..(b + 1)] : null;

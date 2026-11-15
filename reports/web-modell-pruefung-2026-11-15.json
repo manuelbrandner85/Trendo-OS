@@ -1,0 +1,90 @@
+{
+  "Datum": "2026-11-15T02:48:40.8453711+01:00",
+  "Hardware": {
+    "RamGb": 31,
+    "Gpu": "NVIDIA GeForce RTX 5070",
+    "VramGb": 11
+  },
+  "Ergebnisse": [
+    {
+      "Model": "qwen2.5-coder:14b",
+      "Tasks": [
+        {
+          "Task": "Seite aus einem Satz",
+          "Passed": false,
+          "Note": "weniger als drei Bausteine",
+          "Seconds": 15.2
+        },
+        {
+          "Task": "Nur die Auswahl \u00E4ndern",
+          "Passed": true,
+          "Note": "bestanden",
+          "Seconds": 2.1
+        },
+        {
+          "Task": "Gefundenen Fehler beheben",
+          "Passed": true,
+          "Note": "bestanden",
+          "Seconds": 0.9
+        }
+      ],
+      "At": "2026-11-15T02:47:48.0715398+01:00",
+      "Passed": false,
+      "Seconds": 18.2
+    },
+    {
+      "Model": "qwen3:14b",
+      "Tasks": [
+        {
+          "Task": "Seite aus einem Satz",
+          "Passed": false,
+          "Note": "weniger als drei Bausteine",
+          "Seconds": 27.8
+        },
+        {
+          "Task": "Nur die Auswahl \u00E4ndern",
+          "Passed": true,
+          "Note": "bestanden",
+          "Seconds": 7.4
+        },
+        {
+          "Task": "Gefundenen Fehler beheben",
+          "Passed": true,
+          "Note": "bestanden",
+          "Seconds": 9.3
+        }
+      ],
+      "At": "2026-11-15T02:48:32.5745461+01:00",
+      "Passed": false,
+      "Seconds": 44.5
+    },
+    {
+      "Model": "qwen2.5-coder:7b",
+      "Tasks": [
+        {
+          "Task": "Seite aus einem Satz",
+          "Passed": false,
+          "Note": "ung\u00FCltig: Aktion 2 (baustein_einfuegen): \u201Eposition\u201C muss eine ganze Zahl von 0 bis 0 sein.",
+          "Seconds": 7.1
+        },
+        {
+          "Task": "Nur die Auswahl \u00E4ndern",
+          "Passed": true,
+          "Note": "bestanden",
+          "Seconds": 0.8
+        },
+        {
+          "Task": "Gefundenen Fehler beheben",
+          "Passed": false,
+          "Note": "ung\u00FCltig: Der Aktionsplan der KI ist kein g\u00FCltiges JSON.",
+          "Seconds": 0.3
+        }
+      ],
+      "At": "2026-11-15T02:48:40.8300364+01:00",
+      "Passed": false,
+      "Seconds": 8.2
+    }
+  ],
+  "Empfehlung": null,
+  "Hinweis": "Kein gepr\u00FCftes Modell hat alle Web-Aufgaben bestanden. Lade ein gr\u00F6\u00DFeres Modell aus der Liste oder nutze Claude \u00FCber dein Abo."
+}
