@@ -49,7 +49,7 @@ public class ShotPlanTests
     [Fact(DisplayName = "S3-03 echt mit FFmpeg: Storyboard-Tafel je Einstellung in Plan-Länge (MP4, 4 s), Code sichtbar")]
     public void Real_slate()
     {
-        var ff = Cli.Find("ffmpeg"); var font = VideoEdit.FontFile(); if (ff is null || font is null) return;
+        var ff = Cli.Find("ffmpeg"); var font = VideoEdit.FontFile(); if (ff is null || font is null) { Ueberspringen.Weil("FFmpeg oder eine Schriftdatei fehlt auf diesem PC."); return; }
         var dir = Path.Combine(Path.GetTempPath(), "trendo-shot-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
         try
         {

@@ -33,7 +33,7 @@ public class MulticamTests
     [Fact(DisplayName = "S3-02 Multicam echt mit FFmpeg: zwei Kameradateien mit 2,25 s Versatz werden über den Ton gefunden; Kamera ohne gemeinsamen Ton wird abgewiesen")]
     public void Real_sync()
     {
-        var ff = Cli.Find("ffmpeg"); if (ff is null) return;
+        var ff = Cli.Find("ffmpeg"); if (ff is null) { Ueberspringen.Weil("FFmpeg fehlt auf diesem PC."); return; }
         var dir = Path.Combine(Path.GetTempPath(), "trendo-mc-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
         try
         {

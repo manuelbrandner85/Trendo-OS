@@ -16,7 +16,7 @@ public class SandboxTests
     [Fact(DisplayName = "S4-06 Abschottung: Schreiben nur im eigenen Arbeitsordner – Datei außerhalb (normaler Ordner) wird verweigert; Ausgabe kommt an")]
     public void Write_only_inside()
     {
-        if (!OperatingSystem.IsWindows() || !File.Exists(Ps)) return;
+        if (!OperatingSystem.IsWindows() || !File.Exists(Ps)) { Ueberspringen.Weil("braucht Windows mit PowerShell."); return; }
         var box = NewDir("box"); var outside = NewDir("draussen");
         try
         {
@@ -39,7 +39,7 @@ public class SandboxTests
     [Fact(DisplayName = "S4-06-N Abschottung: Absturz (Zugriffsverletzung) wird erkannt und erklärt; Zeitgrenze beendet hängende Prozesse; weitere Programme starten ist gesperrt")]
     public void Crash_timeout_children()
     {
-        if (!OperatingSystem.IsWindows() || !File.Exists(Ps)) return;
+        if (!OperatingSystem.IsWindows() || !File.Exists(Ps)) { Ueberspringen.Weil("braucht Windows mit PowerShell."); return; }
         var box = NewDir("crash");
         try
         {

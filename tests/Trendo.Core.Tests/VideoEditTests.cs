@@ -53,7 +53,7 @@ public class VideoEditTests
     [Fact(DisplayName = "Videoschnitt-Export mit echtem FFmpeg: Testbild mit Ton + Standbild + Musik → MP4 mit Bild und Ton in der erwarteten Länge")]
     public void Export_real()
     {
-        var ff = Cli.Find("ffmpeg"); if (ff is null) return; // ohne FFmpeg nur der Aufruf-Test oben
+        var ff = Cli.Find("ffmpeg"); if (ff is null) { Ueberspringen.Weil("FFmpeg fehlt auf diesem PC."); return; } // ohne FFmpeg nur der Aufruf-Test oben
         var dir = Path.Combine(Path.GetTempPath(), "trendo-ve-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(dir);
         try
         {

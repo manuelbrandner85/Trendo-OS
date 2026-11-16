@@ -27,7 +27,7 @@ public class VideoEditPlusTests
     [Fact(DisplayName = "Mit echtem FFmpeg: Überblenden + Titel im Hintergrund exportiert (Fortschritt steigt bis 100 %), Abbrechen beendet FFmpeg und löscht die halbe Datei")]
     public async Task Export_async_real()
     {
-        var ff = Cli.Find("ffmpeg"); if (ff is null) return; // ohne FFmpeg nur der Aufruf-Test oben
+        var ff = Cli.Find("ffmpeg"); if (ff is null) { Ueberspringen.Weil("FFmpeg fehlt auf diesem PC."); return; } // ohne FFmpeg nur der Aufruf-Test oben
         var dir = Path.Combine(Path.GetTempPath(), "trendo-ve2-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(dir);
         try
         {

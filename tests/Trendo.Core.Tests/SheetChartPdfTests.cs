@@ -88,7 +88,7 @@ public class SheetChartPdfTests
     [Fact(DisplayName = "T-0228 E2: LibreOffice Calc erkennt Trendos Diagramme (öffnet XLSX, speichert XLSX, Diagramme bleiben) (nur mit LibreOffice)")]
     public void Charts_in_libreoffice()
     {
-        if (Soffice() is not { } soffice) return;
+        if (Soffice() is not { } soffice) { Ueberspringen.Weil("LibreOffice fehlt auf diesem PC."); return; }
         var dir = Temp();
         try
         {

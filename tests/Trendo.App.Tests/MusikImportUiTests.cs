@@ -14,7 +14,7 @@ public class MusikImport_Ui
     [AvaloniaFact(DisplayName = "Trendo Musik „＋ Eigene Aufnahme“: Dialog bietet MP3, M4A, AAC, OPUS, WMA, MP4 … an; M4A und MP4 werden echt in WAV umgewandelt und landen in der Bibliothek; Datei ohne Ton wird gemeldet")]
     public async Task Import_any_music()
     {
-        var ff = Cli.Find("ffmpeg"); if (ff is null) return;
+        var ff = Cli.Find("ffmpeg"); if (ff is null) { Assert.Skip("Übersprungen – FFmpeg fehlt auf diesem PC."); return; }
         var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
         try
         {

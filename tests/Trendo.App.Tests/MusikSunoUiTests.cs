@@ -291,7 +291,7 @@ public class MusikSuno_Ui
             Assert.Equal(MusicSuno.DailyIdea(today.AddDays(-2)), w.Find<TextBox>("ms-desc").Text); Assert.Contains("05.11.", w.Find<TextBlock>("ms-msg").Text);
             // Kurzvideo
             Assert.Contains(w.MsRemixActions(s), a => a.Id == "clip");
-            if (Cli.Find("ffmpeg") is not { } ff) return;
+            if (Cli.Find("ffmpeg") is not { } ff) { Assert.Skip("Übersprungen – FFmpeg fehlt auf diesem PC."); return; }
             w.MasterRunOverride = a => Task.Run(() => Cli.Run(ff, a, root, 300_000));
             var mp4 = await w.MsShortVideo(s.Id);
             Assert.True(mp4 is not null, w.Find<TextBlock>("ms-msg").Text); Assert.True(File.Exists(mp4)); Assert.Contains("9:16", w.Find<TextBlock>("ms-msg").Text);
@@ -346,7 +346,7 @@ public class MusikSuno_Ui
             Assert.Equal("lighthouse in fog at sunrise", lib.Get(s.Id)!.CoverHint);
             // ohne Video-Modell
             Assert.Null(await w.MsMotionCover(s.Id)); Assert.Contains("Wan 2.2", w.Find<TextBlock>("ms-msg").Text);
-            if (Cli.Find("ffmpeg") is not { } ff) return;
+            if (Cli.Find("ffmpeg") is not { } ff) { Assert.Skip("Übersprungen – FFmpeg fehlt auf diesem PC."); return; }
             string F(string n) { var p = Path.Combine(root, n); File.WriteAllBytes(p, [1]); return p; }
             w.EditGenModelOverride = new Trendo.Core.Media.GenVideo.Model("wan2.2-szenen", "Wan 2.2 – Filmszenen (5B)", "Apache-2.0", F("a.gguf"), F("t5.gguf"), F("vae.safetensors"));
             List<string>? args = null;

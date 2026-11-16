@@ -41,7 +41,7 @@ public class VideoProTests
     [Fact(DisplayName = "CORE-08 Videoschnitt echt mit FFmpeg: Schwarzweiß auf Stück 1 macht die Pixel grau, Stück 2 bleibt farbig, Logo auf der zweiten Spur erscheint, Länge stimmt")]
     public void Real_export()
     {
-        var ff = Cli.Find("ffmpeg"); if (ff is null) return; // ohne FFmpeg nur die Befehlsprüfung oben
+        var ff = Cli.Find("ffmpeg"); if (ff is null) { Ueberspringen.Weil("FFmpeg fehlt auf diesem PC."); return; } // ohne FFmpeg nur die Befehlsprüfung oben
         var dir = Path.Combine(Path.GetTempPath(), "trendo-vpro-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
         try
         {

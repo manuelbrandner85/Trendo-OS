@@ -32,7 +32,7 @@ public class W7_Ui
     [AvaloniaFact(DisplayName = "CORE-04 UI: mit echtem Begleiter koppeln (Code vom Gerät), Details holen, Erreichbarkeit, Aufgabe zuordnen, entfernen")]
     public async Task Verbund()
     {
-        if (OperatingSystem.IsWindows()) return; // Begleiter-Server läuft nur unter Linux
+        if (OperatingSystem.IsWindows()) { Assert.Skip("Übersprungen – nur unter Linux prüfbar."); return; } // Begleiter-Server läuft nur unter Linux
         var (w, _, root) = Ui.Open();
         var stateFile = Path.Combine(root, "begleiter", "zustand.json");
         using var srv = StartFrei(stateFile);

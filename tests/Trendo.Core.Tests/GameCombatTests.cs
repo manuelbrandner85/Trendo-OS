@@ -76,7 +76,7 @@ public class GameCombatTests
     [Fact(DisplayName = "Kampf S1-05 Browser-Spiel (echt mit Node): Schwert besiegt Gegner vor der Figur; Boss braucht zwei Schläge; Geschoss fliegt und trifft; ohne Waffe nichts")]
     public void Browser_js()
     {
-        if (Cli.Find("node") is not { } node) return;
+        if (Cli.Find("node") is not { } node) { Ueberspringen.Weil("Node.js fehlt auf diesem PC."); return; }
         var dir = Path.Combine(Path.GetTempPath(), "trendo-kampf-js-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
         try
         {

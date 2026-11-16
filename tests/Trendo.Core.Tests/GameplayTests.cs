@@ -76,7 +76,7 @@ public class GameplayTests
     [Fact(DisplayName = "Gameplay S1-05 Browser-Spiel (echt mit Node): Doppelsprung per neuem Tastendruck in der Luft, nur mit Fähigkeit; Sprint mit Umschalt")]
     public void Browser_js()
     {
-        if (Cli.Find("node") is not { } node) return;
+        if (Cli.Find("node") is not { } node) { Ueberspringen.Weil("Node.js fehlt auf diesem PC."); return; }
         var dir = Path.Combine(Path.GetTempPath(), "trendo-gameplay-js-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
         try
         {

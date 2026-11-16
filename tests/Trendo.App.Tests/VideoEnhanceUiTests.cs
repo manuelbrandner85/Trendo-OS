@@ -138,7 +138,7 @@ public class VideoProxy_Ui
     [AvaloniaFact(DisplayName = "S3-02 Videoschnitt: Proxys erstellen (echtes FFmpeg) – Vorschau nutzt den Proxy, Export bleibt beim Original; ausschalten geht")]
     public async Task Proxies()
     {
-        var ff = Cli.Find("ffmpeg"); if (ff is null) return;
+        var ff = Cli.Find("ffmpeg"); if (ff is null) { Assert.Skip("Übersprungen – FFmpeg fehlt auf diesem PC."); return; }
         var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000; Directory.CreateDirectory(root);
         try
         {
@@ -196,7 +196,7 @@ public class VideoMulticam_Ui
     [AvaloniaFact(DisplayName = "S3-02 Multicam: zwei echte Kameradateien über den Ton synchronisieren (echtes FFmpeg), Wechsel 0:1, 3:2, 6:1 → drei Bild-Abschnitte mit richtigen Einstiegspunkten, Ton von Kamera 1 durchgehend; Unsinn bei den Wechseln wird gemeldet")]
     public async Task Multicam_cut()
     {
-        var ff = Cli.Find("ffmpeg"); if (ff is null) return;
+        var ff = Cli.Find("ffmpeg"); if (ff is null) { Assert.Skip("Übersprungen – FFmpeg fehlt auf diesem PC."); return; }
         var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000; Directory.CreateDirectory(root);
         try
         {

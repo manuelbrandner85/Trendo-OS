@@ -50,7 +50,7 @@ public class TimedTextTests
     [Fact(DisplayName = "S3-16 echt mit FFmpeg: WebVTT und SRT werden von FFmpeg gelesen und ins Video eingebettet (drei Untertitelspuren de/it/en)")]
     public void Real_ffmpeg()
     {
-        var ff = Cli.Find("ffmpeg"); var fp = Cli.Find("ffprobe"); if (ff is null || fp is null) return;
+        var ff = Cli.Find("ffmpeg"); var fp = Cli.Find("ffprobe"); if (ff is null || fp is null) { Ueberspringen.Weil("FFmpeg oder ffprobe fehlt auf diesem PC."); return; }
         var dir = Path.Combine(Path.GetTempPath(), "trendo-subs-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
         try
         {

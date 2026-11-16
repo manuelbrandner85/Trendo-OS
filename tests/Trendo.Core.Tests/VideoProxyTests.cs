@@ -10,7 +10,7 @@ public class VideoProxyTests
     [Fact(DisplayName = "S3-02 echt mit FFmpeg: Proxy 540p gleich lang wie das Original, Vorschau nimmt den Proxy, Export immer das Original; fehlt das Original, wird nicht der Proxy ausgeliefert")]
     public void Real_proxy()
     {
-        var ff = Cli.Find("ffmpeg"); if (ff is null) return;
+        var ff = Cli.Find("ffmpeg"); if (ff is null) { Ueberspringen.Weil("FFmpeg fehlt auf diesem PC."); return; }
         var dir = Path.Combine(Path.GetTempPath(), "trendo-proxy-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
         try
         {

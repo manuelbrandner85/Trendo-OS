@@ -68,7 +68,7 @@ public class FilmDeliveryTests
     [Fact(DisplayName = "Echt mit FFmpeg: ganze Auslieferung – Film, Stems gleich lang wie der Film, EDL, OTIO, Cue-Liste, Prüfbericht mit SHA-256")]
     public void Real_delivery()
     {
-        var ff = Cli.Find("ffmpeg"); if (ff is null) return;
+        var ff = Cli.Find("ffmpeg"); if (ff is null) { Ueberspringen.Weil("FFmpeg fehlt auf diesem PC."); return; }
         var dir = Path.Combine(Path.GetTempPath(), "trendo-film-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
         try
         {

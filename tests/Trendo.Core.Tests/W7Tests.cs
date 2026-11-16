@@ -82,7 +82,7 @@ public class W7Tests
     [Fact(DisplayName = "CORE-04 Begleiter: echter HTTP-Server – Health offen, alles andere nur mit Token, Kopplung, echte OCR, Entkoppeln")]
     public async Task Companion_http()
     {
-        if (OperatingSystem.IsWindows()) return; // Begleiter ist für Linux/Pi; auf Windows bräuchte HttpListener eine URL-Freigabe
+        if (OperatingSystem.IsWindows()) { Ueberspringen.Weil("nur unter Linux prüfbar."); return; } // Begleiter ist für Linux/Pi; auf Windows bräuchte HttpListener eine URL-Freigabe
         var (_, _, r) = Make(); var f = Path.Combine(r, "zustand.json");
         var port = 18000 + Random.Shared.Next(2000);
         using var srv = new Trendo.Companion.CompanionServer(port, f, loopbackOnly: true); srv.Start();
@@ -289,7 +289,7 @@ public class W7Tests
     [Fact(DisplayName = "CORE-04 Begleiter: echter Server hört standardmäßig nur auf 127.0.0.1, 127.0.0.2 erst nach Freigabe")]
     public async Task Companion_bind_loopback()
     {
-        if (OperatingSystem.IsWindows()) return;
+        if (OperatingSystem.IsWindows()) { Ueberspringen.Weil("nur unter Linux prüfbar."); return; }
         var (_, _, r) = Make(); var f = Path.Combine(r, "zustand.json");
         var port = FreePort();
         using (var srv = new Trendo.Companion.CompanionServer(port, f))
@@ -314,7 +314,7 @@ public class W7Tests
     [Fact(DisplayName = "CORE-04 Begleiter: echter Server begrenzt Kopplung pro Client, sperrt Fehlversuche, anderer Client koppelt weiter")]
     public async Task Companion_http_rate_and_lock()
     {
-        if (OperatingSystem.IsWindows()) return;
+        if (OperatingSystem.IsWindows()) { Ueberspringen.Weil("nur unter Linux prüfbar."); return; }
         var (_, _, r) = Make(); var f = Path.Combine(r, "zustand.json");
         var now = new DateTime(2026, 10, 22, 12, 0, 0);
         var port = FreePort();
@@ -370,7 +370,7 @@ public class W7Tests
     [Fact(DisplayName = "CORE-04 Begleiter: echter Server lehnt abgelaufenes Zugriffstoken ab, frisches Token funktioniert")]
     public async Task Companion_http_token_expiry()
     {
-        if (OperatingSystem.IsWindows()) return;
+        if (OperatingSystem.IsWindows()) { Ueberspringen.Weil("nur unter Linux prüfbar."); return; }
         var (_, _, r) = Make(); var f = Path.Combine(r, "zustand.json");
         var now = new DateTime(2026, 10, 22, 18, 0, 0);
         var st = new CompanionState { TokenValidHours = 1 };

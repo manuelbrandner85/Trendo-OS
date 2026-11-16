@@ -14,7 +14,7 @@ public class VideoLipSync_Ui
     [AvaloniaFact(DisplayName = "S3-09 Videoschnitt: Sprachaufnahme + Wortzeiten → Mundbilder (JSON, Moho), Prüfung OK, Vergleichsvorschau (echtes FFmpeg) in die Zeitleiste; Gesichtsvideo 150 ms versetzt → FAIL, nichts eingefügt; fehlende Aufnahme → FAIL")]
     public async Task Lipsync_track()
     {
-        var ff = Cli.Find("ffmpeg"); if (ff is null) return;
+        var ff = Cli.Find("ffmpeg"); if (ff is null) { Assert.Skip("Übersprungen – FFmpeg fehlt auf diesem PC."); return; }
         var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000; Directory.CreateDirectory(root);
         try
         {
