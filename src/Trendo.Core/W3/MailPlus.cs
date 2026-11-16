@@ -7,7 +7,24 @@ namespace Trendo.Core;
 /// Senden bleibt wie bisher nur nach ausdrücklicher Bestätigung (Posteingang-Seite); hier nur Regeln und Ablage.</summary>
 public sealed partial class MailFolders
 {
-    public sealed record Stored(string Id, string To, string Cc, string Subject, string Body, DateTimeOffset At);
+    public sealed record Stored(string Id, string To, string Cc, string Subject, string Body, DateTimeOffset At)
+    {
+        public string Bcc { get; init; } = "";
+        /// <summary>Anhänge als Dateipfade (die Dateien selbst bleiben, wo sie sind).</summary>
+        public List<string> Attachments { get; init; } = [];
+        /// <summary>Als formatierte Nachricht (HTML) senden.</summary>
+        public bool Formatted { get; init; }
+        public string InReplyTo { get; init; } = "";
+        public string References { get; init; } = "";
+        /// <summary>Kennung der Kopie im Entwürfe-Ordner des Servers (leer = nur lokal).</summary>
+        public string MessageId { get; init; } = "";
+
+        public MailDraft ToDraft() => new(To, Subject, Body, Cc, Attachments.Count > 0 ? Attachments : null)
+            { Bcc = Bcc, Html = Formatted ? MailMime.TextToHtml(Body) : "", InReplyTo = InReplyTo, References = References };
+    }
+
+    static Stored Of(MailDraft d, string id, string messageId = "") => new(id, d.To, d.Cc, d.Subject, d.Body, DateTimeOffset.Now)
+        { Bcc = d.Bcc, Attachments = [.. d.Attachments ?? []], Formatted = d.Html.Length > 0, InReplyTo = d.InReplyTo, References = d.References, MessageId = messageId };
     sealed record Saved(List<Stored> Drafts, List<Stored> Sent);
 
     readonly string _file;
@@ -24,14 +41,14 @@ public sealed partial class MailFolders
     void Save()
     {
         Directory.CreateDirectory(Path.GetDirectoryName(_file)!);
-        File.WriteAllText(_file + ".tmp", JsonSerializer.Serialize(new Saved(Drafts, Sent))); SafeFile.Move(_file + ".tmp", _file);
+        AtomicFile.WriteAllText(_file, JsonSerializer.Serialize(new Saved(Drafts, Sent)));
     }
 
     /// <summary>Entwurf speichern (neu oder vorhandenen ersetzen). Leere Entwürfe werden nicht gespeichert.</summary>
-    public Stored? SaveDraft(MailDraft d, string? id = null)
+    public Stored? SaveDraft(MailDraft d, string? id = null, string messageId = "")
     {
-        if (d.To.Trim().Length == 0 && d.Subject.Trim().Length == 0 && d.Body.Trim().Length == 0) { if (id is not null) DeleteDraft(id); return null; }
-        var s = new Stored(id ?? Guid.NewGuid().ToString("N")[..10], d.To, d.Cc, d.Subject, d.Body, DateTimeOffset.Now);
+        if (d.To.Trim().Length == 0 && d.Subject.Trim().Length == 0 && d.Body.Trim().Length == 0 && (d.Attachments?.Count ?? 0) == 0) { if (id is not null) DeleteDraft(id); return null; }
+        var s = Of(d, id ?? Guid.NewGuid().ToString("N")[..10], messageId.Length > 0 ? messageId : Drafts.FirstOrDefault(x => x.Id == id)?.MessageId ?? "");
         Drafts.RemoveAll(x => x.Id == s.Id); Drafts.Insert(0, s); Save(); return s;
     }
 
@@ -40,7 +57,7 @@ public sealed partial class MailFolders
     /// <summary>Nach dem Senden: in „Gesendet“ ablegen (höchstens 500, älteste fallen weg) und den Entwurf entfernen.</summary>
     public Stored AddSent(MailDraft d, string? draftId = null)
     {
-        var s = new Stored(Guid.NewGuid().ToString("N")[..10], d.To, d.Cc, d.Subject, d.Body, DateTimeOffset.Now);
+        var s = Of(d, Guid.NewGuid().ToString("N")[..10]);
         Sent.Insert(0, s); if (Sent.Count > 500) Sent.RemoveRange(500, Sent.Count - 500);
         if (draftId is not null) Drafts.RemoveAll(x => x.Id == draftId);
         Save(); return s;
