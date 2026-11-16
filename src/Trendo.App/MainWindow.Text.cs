@@ -44,7 +44,7 @@ public partial class MainWindow
     // ---------- Öffentliche Wege (auch für Tests und die KI) ----------
     public void TextNew(string template = "leer")
     {
-        TextDocument = TextTemplates.Create(template); TextPath = null; TextDirty = false; TextFocusBlock = 0; _txSel = _txSelLen = 0;
+        TextDocument = TextTemplates.Create(template); TextPath = null; TextDirty = false; TextFocusBlock = 0; _txSel = _txSelLen = 0; ImportGuardClear("text");
         _txUndo.Clear(); _txRedo.Clear(); _txMistakes = []; _txHits = [];
         _txMsg = template == "leer" ? "Neues Dokument." : $"Vorlage „{TextTemplates.Builtin.First(t => t.Id == template).Name}“ – Platzhalter in [Klammern] einfach überschreiben.";
     }
@@ -54,16 +54,20 @@ public partial class MainWindow
         TextDocument = TextFiles.Open(path); TextPath = Path.GetExtension(path).Equals(".txt", StringComparison.OrdinalIgnoreCase) || Path.GetExtension(path).Equals(".odt", StringComparison.OrdinalIgnoreCase) || Path.GetExtension(path).Equals(".docx", StringComparison.OrdinalIgnoreCase) ? path : null;
         TextDirty = false; TextFocusBlock = 0; _txSel = _txSelLen = 0; _txUndo.Clear(); _txRedo.Clear(); _txMistakes = []; _txHits = [];
         _txMsg = $"Geöffnet: {Path.GetFileName(path)}";
+        ImportGuardSet("text", path, TextDocument.Import); // T-0682: fremde Inhalte, die Trendo nicht hält – Original vor stillem Überschreiben schützen
         RememberRecent(path);
         _core.Audit.Append(Principal.LocalOwner.Name, "text.open", Path.GetFileName(path));
     }
 
-    public void TextSaveAs(string path)
+    /// <summary>Speichert das Dokument. Liefert false, wenn das Speichern aufgehalten wurde, weil es eine fremde Datei mit nicht übernommenen Inhalten überschriebe (T-0682).</summary>
+    public bool TextSaveAs(string path)
     {
+        if (ImportGuardStops("text", path)) { _txMsg = ImportStopMessage("text"); return false; }
         TextFiles.Save(TextDocument, path);
-        if (!path.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)) { TextPath = path; TextDirty = false; RememberRecent(path); RecoveryClear("text"); }
+        if (!path.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)) { TextPath = path; TextDirty = false; RememberRecent(path); RecoveryClear("text"); ImportGuardClear("text"); }
         _txMsg = $"Gespeichert: {Path.GetFileName(path)}";
         _core.Audit.Append(Principal.LocalOwner.Name, "text.save", Path.GetFileName(path));
+        return true;
     }
 
     /// <summary>Cursor/Auswahl setzen (wie Klicken und Markieren).</summary>
@@ -145,6 +149,7 @@ public partial class MainWindow
         if (TextPromptBar() is { } prompt) ribbon.Children.Add(prompt);
         if (TextAiProposalCard() is { } proposal) ribbon.Children.Add(proposal); // 108-49: Vorschlag statt sofort ersetzen
         if (RecoveryBanner("text", TextDirty) is { } recovery) ribbon.Children.Add(recovery); // T-0254
+        if (ImportBanner("text") is { } import) ribbon.Children.Add(import); // T-0682
         Grid.SetRow(ribbon, 1); Grid.SetColumnSpan(ribbon, 2); g.Children.Add(ribbon);
         var more = TextMoreBar(); more.IsVisible = _txMore && _txRibbon == "start"; Grid.SetRow(more, 2); Grid.SetColumnSpan(more, 2); g.Children.Add(more);
         var page = TextPaper(); Grid.SetRow(page, 3); g.Children.Add(page);
@@ -186,7 +191,7 @@ public partial class MainWindow
             {
                 var tmp = Path.Combine(Path.GetTempPath(), $"trendo-vorlage-{Guid.NewGuid():N}.docx");
                 using (var s = Avalonia.Platform.AssetLoader.Open(new Uri($"avares://TrendoOS/Assets/templates/{file}"))) using (var f = File.Create(tmp)) s.CopyTo(f);
-                TextDocument = TextFiles.Open(tmp); File.Delete(tmp); TextPath = null; TextDirty = false; TextFocusBlock = 0; _txUndo.Clear(); _txMsg = $"Vorlage „{label}“."; Show("text");
+                TextDocument = TextFiles.Open(tmp); File.Delete(tmp); TextPath = null; TextDirty = false; ImportGuardClear("text"); TextFocusBlock = 0; _txUndo.Clear(); _txMsg = $"Vorlage „{label}“."; Show("text");
             };
             menu.Items.Add(mi);
         }

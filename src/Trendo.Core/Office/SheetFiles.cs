@@ -17,7 +17,10 @@ public static class SheetFiles
     static readonly XNamespace R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
     static readonly XNamespace Pr = "http://schemas.openxmlformats.org/package/2006/relationships";
 
-    public static SheetDoc Open(string path) => Path.GetExtension(path).ToLowerInvariant() switch
+    /// <summary>Öffnet die Datei und hängt den Importbericht an (T-0682): was die Datei enthält, das Trendo Tabelle nicht hält.</summary>
+    public static SheetDoc Open(string path) { var d = Read(path); d.Import = ImportCheck.For(path); return d; }
+
+    static SheetDoc Read(string path) => Path.GetExtension(path).ToLowerInvariant() switch
     {
         ".xlsx" => ReadXlsx(path),
         ".ods" => ReadOds(path),
@@ -211,7 +214,7 @@ public static class SheetFiles
         return parts;
     }
 
-    static string ChartXml(Sheet sh, SheetCalc calc, SheetChart ch)
+    internal static string ChartXml(Sheet sh, SheetCalc calc, SheetChart ch)
     {
         var lay = ChartData.Analyze(sh, calc, ch.Range);
         var sb = new StringBuilder($"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><c:chartSpace xmlns:c=\"{C}\" xmlns:a=\"{A}\" xmlns:r=\"{R}\"><c:chart>");

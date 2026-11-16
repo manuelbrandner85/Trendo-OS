@@ -497,7 +497,10 @@ public static class TextFiles
 {
     public static readonly string[] Extensions = ["docx", "odt", "txt"];
 
-    public static TextDoc Open(string path) => Path.GetExtension(path).ToLowerInvariant() switch
+    /// <summary>Öffnet die Datei und hängt den Importbericht an (T-0682): was die Datei enthält, das Trendo Text nicht hält.</summary>
+    public static TextDoc Open(string path) { var d = Read(path); d.Import = ImportCheck.For(path); return d; }
+
+    static TextDoc Read(string path) => Path.GetExtension(path).ToLowerInvariant() switch
     {
         ".docx" => DocxFormat.Read(path), ".odt" => OdtFormat.Read(path), ".txt" or ".md" => OdtFormat.ReadTxt(path),
         var e => throw new ArgumentException($"Das Format {e} kann Trendo Text (noch) nicht öffnen."),

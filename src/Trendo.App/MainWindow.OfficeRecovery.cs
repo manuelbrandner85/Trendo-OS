@@ -38,7 +38,7 @@ public partial class MainWindow
         {
             switch (kind)
             {
-                case "text": TextDocument = TextFiles.Open(f); TextPath = null; TextDirty = true; TextFocusBlock = 0; _txSel = _txSelLen = 0; _txUndo.Clear(); _txRedo.Clear(); _txMsg = "Wiederhergestellt – bitte speichern."; break;
+                case "text": TextDocument = TextFiles.Open(f); TextPath = null; TextDirty = true; TextFocusBlock = 0; _txSel = _txSelLen = 0; _txUndo.Clear(); _txRedo.Clear(); _txMsg = "Wiederhergestellt – bitte speichern."; ImportGuardClear("text"); break;
                 case "tabelle": SheetOpen(f); SheetPath = null; SheetDirty = true; break;
                 default: DeckOpen(f); DeckPath = null; DeckDirty = true; break;
             }
@@ -62,7 +62,14 @@ public partial class MainWindow
                 new TextBlock { Text = $"Es gibt nicht gespeicherte Änderungen vom {at:dd.MM.yyyy, HH:mm} Uhr, die automatisch gesichert wurden.", Foreground = Text, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center } } } };
     }
 
-    /// <summary>Hinweis über eine Programmseite legen, ohne deren Aufbau zu ändern.</summary>
-    Control WithRecovery(string kind, bool dirty, Control page) =>
-        RecoveryBanner(kind, dirty) is { } b ? new DockPanel { Children = { new ContentControl { Content = b, [DockPanel.DockProperty] = Avalonia.Controls.Dock.Top }, page } } : page;
+    /// <summary>Hinweise über eine Programmseite legen, ohne deren Aufbau zu ändern: Wiederherstellung (T-0254) und fremde Inhalte (T-0682).</summary>
+    Control WithRecovery(string kind, bool dirty, Control page)
+    {
+        var banners = new[] { RecoveryBanner(kind, dirty), ImportBanner(kind) }.OfType<Control>().ToList();
+        if (banners.Count == 0) return page;
+        var dock = new DockPanel();
+        foreach (var b in banners) dock.Children.Add(new ContentControl { Content = b, [DockPanel.DockProperty] = Avalonia.Controls.Dock.Top });
+        dock.Children.Add(page);
+        return dock;
+    }
 }

@@ -44,7 +44,7 @@ public partial class MainWindow
             "fotoalbum" => PhotoAlbum(),
             _ => SlideDoc.Empty(),
         };
-        DeckPath = null; DeckDirty = false; ResetDeckState();
+        DeckPath = null; DeckDirty = false; ResetDeckState(); ImportGuardClear("praesentation");
         _dkMsg = template == "leer" ? "Neue Präsentation." : "Vorlage geöffnet – Texte einfach anklicken und überschreiben.";
     }
 
@@ -59,7 +59,7 @@ public partial class MainWindow
     /// <summary>P7: Präsentation aus Stichpunkten (eine Zeile = Folie, eingerückt oder mit „-“ = Punkt, „&gt;“ = Notiz).</summary>
     public void DeckFromOutline(string outline)
     {
-        Deck = SlideOutline.FromOutline(outline, Deck.Theme); DeckPath = null; DeckDirty = true; ResetDeckState();
+        Deck = SlideOutline.FromOutline(outline, Deck.Theme); DeckPath = null; DeckDirty = true; ResetDeckState(); ImportGuardClear("praesentation");
         _dkMsg = $"{Deck.Slides.Count} Folien aus deinen Stichpunkten erstellt.";
     }
 
@@ -68,15 +68,19 @@ public partial class MainWindow
         Deck = SlideFiles.Open(path); ResetDeckState();
         DeckPath = path.EndsWith(".pptx", StringComparison.OrdinalIgnoreCase) ? path : null; DeckDirty = false;
         _dkMsg = $"Geöffnet: {Path.GetFileName(path)}"; RememberDeckRecent(path);
+        ImportGuardSet("praesentation", path, Deck.Import); // T-0682
         _core.Audit.Append(Principal.LocalOwner.Name, "praesentation.open", Path.GetFileName(path));
     }
 
-    public void DeckSaveAs(string path)
+    /// <summary>Speichert die Präsentation. Liefert false, wenn das Speichern aufgehalten wurde, weil es eine fremde Datei mit nicht übernommenen Inhalten überschriebe (T-0682).</summary>
+    public bool DeckSaveAs(string path)
     {
+        if (ImportGuardStops("praesentation", path)) { _dkMsg = ImportStopMessage("praesentation"); return false; }
         SlideFiles.Save(Deck, path);
-        if (path.EndsWith(".pptx", StringComparison.OrdinalIgnoreCase)) { DeckPath = path; DeckDirty = false; RememberDeckRecent(path); RecoveryClear("praesentation"); }
+        if (path.EndsWith(".pptx", StringComparison.OrdinalIgnoreCase)) { DeckPath = path; DeckDirty = false; RememberDeckRecent(path); RecoveryClear("praesentation"); ImportGuardClear("praesentation"); }
         _dkMsg = $"Gespeichert: {Path.GetFileName(path)}";
         _core.Audit.Append(Principal.LocalOwner.Name, "praesentation.save", Path.GetFileName(path));
+        return true;
     }
 
     public void DeckGo(int index) { CloseDeckEditor(true); DeckIndex = Math.Clamp(index, 0, Deck.Slides.Count - 1); _dkSel = -1; }
@@ -231,7 +235,7 @@ public partial class MainWindow
     {
         var path = !asNew && DeckPath is not null ? DeckPath : await PickDeck(true);
         if (path is null) return;
-        try { DeckSaveAs(path); Toast($"Gespeichert: {Path.GetFileName(path)}", ("Ordner öffnen", new Action(() => Launch(Path.GetDirectoryName(path)!)))); }
+        try { if (DeckSaveAs(path)) Toast($"Gespeichert: {Path.GetFileName(path)}", ("Ordner öffnen", new Action(() => Launch(Path.GetDirectoryName(path)!)))); }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _dkMsg = "Speichern ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
         Show("praesentation");
     }

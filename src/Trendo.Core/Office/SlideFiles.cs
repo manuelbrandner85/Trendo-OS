@@ -20,7 +20,10 @@ public static partial class SlideFiles
     const string Xml = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>";
     const string RelT = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/";
 
-    public static SlideDoc Open(string path) => Path.GetExtension(path).ToLowerInvariant() switch
+    /// <summary>Öffnet die Datei und hängt den Importbericht an (T-0682): was die Datei enthält, das Trendo Präsentation nicht hält.</summary>
+    public static SlideDoc Open(string path) { var d = Read(path); d.Import = ImportCheck.For(path); return d; }
+
+    static SlideDoc Read(string path) => Path.GetExtension(path).ToLowerInvariant() switch
     {
         ".pptx" => ReadPptx(path),
         ".odp" => ReadOdp(path),
@@ -200,7 +203,7 @@ public static partial class SlideFiles
             "</a:themeElements><a:objectDefaults/><a:extraClrSchemeLst/></a:theme>";
     }
 
-    static string ChartXml(SlideShape s, SlideTheme th)
+    internal static string ChartXml(SlideShape s, SlideTheme th)
     {
         var labels = s.ChartLabels ?? []; var vals = s.ChartValues ?? [];
         var inv = CultureInfo.InvariantCulture;
