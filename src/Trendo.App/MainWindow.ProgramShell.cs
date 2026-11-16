@@ -75,6 +75,218 @@ public partial class MainWindow
     public ProgramRecent ProgRecent => new(_core.DataRoot);
     string ProgBackup => Path.Combine(_core.DataRoot, "programme", "sicherung");
 
+    // ---------- T-0680: absturzsicher – Sperre, Wiederherstellung, Rückfragen ----------
+    /// <summary>So oft sichert die Hülle alle geänderten Dokumente, auch wenn ein Programm ohne Neuzeichnen ändert (dann greift die kurze Pause nach der
+    /// letzten Änderung nicht). 20 s + Schreibzeit bleibt sicher unter dem Ziel „höchstens 30 s Verlust nach einem Absturz“.</summary>
+    public static readonly TimeSpan ProgramAutosaveEvery = TimeSpan.FromSeconds(20);
+    /// <summary>Kurze Pause nach der letzten Änderung, dann wird von selbst gespeichert.</summary>
+    public static readonly TimeSpan ProgramSaveDelay = TimeSpan.FromSeconds(1.5);
+    private ProgramLocks? _progLocks;
+    /// <summary>Sperren dieses Fensters (eine Datei – ein Fenster). Beim Schließen des Fensters werden sie freigegeben.</summary>
+    public ProgramLocks ProgLocks
+    {
+        get
+        {
+            if (_progLocks is not null) return _progLocks;
+            var l = _progLocks = new ProgramLocks(Path.Combine(_core.DataRoot, "programme", "sperren"));
+            Closed += (_, _) => l.Dispose();
+            return l;
+        }
+    }
+    /// <summary>Dokumente, die in einem anderen Fenster offen sind (hier nur lesen) – bis die Person gewählt hat.</summary>
+    private readonly Dictionary<string, ProgramLocks.Holder> _progLocked = [];
+    /// <summary>Gefundene Notsicherung je Dokument: Datei und Zeitpunkt – bis „Wiederherstellen“ oder „Verwerfen“.</summary>
+    private readonly Dictionary<string, (string File, DateTime When)> _progRecover = [];
+    /// <summary>Dokumente, deren Datei von außen geändert wurde – bis entschieden ist, welche Fassung bleibt.</summary>
+    private readonly HashSet<string> _progConflict = [];
+    /// <summary>Beschädigte Datei je Programm mit den Ständen, aus denen sie sich zurückholen lässt.</summary>
+    private readonly Dictionary<string, (string Path, List<ProgramDocument.Recovery> From)> _progRescue = new(StringComparer.OrdinalIgnoreCase);
+    private bool _progConflictNew;
+
+    public bool ProgramIsLocked(ProgramDocument d) => _progLocked.ContainsKey(d.Id);
+    public (string File, DateTime When)? ProgramRecovery(ProgramDocument d) => _progRecover.TryGetValue(d.Id, out var r) ? r : null;
+    public bool ProgramHasConflict(ProgramDocument d) => _progConflict.Contains(d.Id);
+    public IReadOnlyList<ProgramDocument.Recovery> ProgramRescueOffers(string key) => _progRescue.TryGetValue(key, out var r) ? r.From : [];
+
+    static string Clock(DateTime t) => t.Date == DateTime.Today ? $"heute um {t:HH:mm} Uhr" : $"am {t:dd.MM.yyyy} um {t:HH:mm} Uhr";
+
+    /// <summary>Alle Speicherwege der Hülle: erst die Sperre für das Ziel, dann speichern (atomar), dann die alte Sperre freigeben.</summary>
+    void DocSave(ProgramDocument d, string? target = null, bool keepVersion = true, bool overwriteChanged = false)
+    {
+        var to = ProgramDocument.TargetOf(target ?? d.Path ?? throw new InvalidOperationException("Bitte einen Speicherort wählen."));
+        var old = d.Path; var same = old is not null && ProgramDocument.SameFile(old, to);
+        if (!(same && d.ReadOnly) && ProgLocks.Acquire(to) is { } other)
+        {
+            if (same) { d.ReadOnly = true; _progLocked[d.Id] = other; } // die Sperre ging verloren (z. B. Datenordner aufgeräumt) und ein anderes Fenster hat die Datei jetzt
+            throw new IOException($"„{Path.GetFileName(to)}“ ist gerade in einem anderen Trendo-Fenster geöffnet (seit {Clock(other.Since)}). Bitte wähle einen anderen Namen – so wird dort nichts überschrieben.");
+        }
+        try { d.Save(to, keepVersion, overwriteChanged); }
+        catch (FileChangedOutsideException) { if (_progConflict.Add(d.Id)) _progConflictNew = true; throw; }
+        catch { if (!same) ProgLocks.Release(to); throw; }
+        _progConflict.Remove(d.Id);
+        if (!d.ReadOnly) _progLocked.Remove(d.Id); // unter neuem Namen gespeichert: kein „nur lesen“ mehr
+        if (!same && old is not null) ProgLocks.Release(old);
+    }
+
+    /// <summary>Notsicherung schreiben; die eines noch unbenannten Dokuments wird für dieses Fenster gesperrt, damit ein zweites Fenster sie nicht als „abgestürzt“ anbietet.</summary>
+    void DocBackup(ProgramDocument d)
+    {
+        if (d.Autosave(ProgBackup) is { } f && ProgramDocument.SameFile(f, d.BackupFile(ProgBackup))) ProgLocks.Acquire(f);
+    }
+
+    /// <summary>Nach dem Laden: Sperre holen (sonst nur lesen) und nach einer Notsicherung sehen.</summary>
+    string DocAttach(ProgramSpec spec, ProgramDocument d, string path)
+    {
+        if (ProgLocks.Acquire(path) is { } holder)
+        {
+            d.ReadOnly = true; _progLocked[d.Id] = holder;
+            return $"„{Path.GetFileName(path)}“ ist schon in einem anderen Trendo-Fenster geöffnet – hier nur zum Lesen.";
+        }
+        // Notsicherung neben der Datei: neuer als die Datei = nicht gespeicherte Arbeit aus einer abgebrochenen Sitzung
+        var side = ProgramDocument.AutosaveFile(path); var keep = ProgramDocument.RecoveryFile(path); var note = "";
+        try
+        {
+            if (File.Exists(side))
+            {
+                if (File.GetLastWriteTimeUtc(side) <= File.GetLastWriteTimeUtc(path)) { }  // älter als die Datei: überholt, nichts anbieten
+                else if (ProgramDocument.Readable(side, spec.Studio)) SafeFile.Move(side, keep); // ab jetzt unter eigenem Namen – weiteres Speichern löscht das Angebot nicht
+                else { SafeFile.Move(side, side + ".beschaedigt"); note = " Eine automatische Sicherung dazu war beschädigt und wurde übersprungen."; }
+            }
+            if (File.Exists(keep))
+            {
+                if (ProgramDocument.Readable(keep, spec.Studio)) _progRecover[d.Id] = (keep, File.GetLastWriteTime(keep));
+                else { SafeFile.Move(keep, side + ".beschaedigt"); note = " Eine automatische Sicherung dazu war beschädigt und wurde übersprungen."; }
+            }
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        return "Geöffnet: " + Path.GetFileName(path) + note;
+    }
+
+    /// <summary>Gefundene Notsicherung übernehmen (ein Schritt, rückgängig machbar) oder verwerfen. Die Sicherung verschwindet erst danach.</summary>
+    public void ProgramRecoverApply(string key, bool restore)
+    {
+        if (ProgramActive(key) is not { } d || !_progRecover.TryGetValue(d.Id, out var r)) return;
+        if (restore)
+        {
+            d.TakeOver(ProgramDocument.Load(r.File, d.Studio), "Sicherung wiederhergestellt");
+            _progMsg[key] = $"Der gesicherte Stand von {Clock(r.When)} ist zurück – Strg+Z macht es rückgängig.";
+        }
+        else _progMsg[key] = "Sicherung verworfen.";
+        _progRecover.Remove(d.Id);
+        // Die gefundene Sicherung darf erst weg, wenn ihr Inhalt woanders sicher liegt: in der Datei (automatisches Speichern) oder als normale Notsicherung daneben
+        if (restore && d.Dirty && !ProgramAutoSave(key, d)) DocBackup(d);
+        try { File.Delete(r.File); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+    }
+
+    /// <summary>Datei in einem anderen Fenster offen: „lesen“ (so lassen), „kopie“ (als eigene Datei weiterarbeiten) oder „pruefen“ (ist das andere Fenster inzwischen zu?).</summary>
+    public void ProgramLockChoice(string key, string choice)
+    {
+        if (ProgramActive(key) is not { } d) return;
+        switch (choice)
+        {
+            case "kopie":
+                d.Detach(d.Title + " (Kopie)"); _progLocked.Remove(d.Id);
+                _progMsg[key] = "Du arbeitest jetzt mit einer Kopie – das andere Dokument bleibt unverändert.";
+                break;
+            case "pruefen" when d.Path is { } p && d.ReadOnly:
+                if (ProgLocks.Acquire(p) is { } still) { _progLocked[d.Id] = still; _progMsg[key] = "Das Dokument ist noch im anderen Fenster offen."; break; }
+                _progLocked.Remove(d.Id);
+                if (!d.Dirty) d.ReloadFromDisk(); // den neuesten Stand zeigen; eigene Änderungen bleiben (dann fragt das Speichern nach)
+                d.ReadOnly = false; _progMsg[key] = "Das andere Fenster ist zu – du kannst jetzt hier weiterarbeiten.";
+                break;
+            default:
+                _progLocked.Remove(d.Id); _progMsg[key] = "Nur zum Lesen geöffnet. Zum Ändern: „Speichern unter …“ oder das andere Fenster schließen.";
+                break;
+        }
+    }
+
+    /// <summary>Datei von außen geändert: „meine“ (überschreiben – die andere Fassung bleibt als Version), „kopie“ (unter neuem Namen speichern) oder „laden“ (die andere Fassung übernehmen).</summary>
+    public void ProgramResolveConflict(string key, string choice)
+    {
+        if (ProgramActive(key) is not { } d || d.Path is not { } p) return;
+        var spec = Programs[key];
+        switch (choice)
+        {
+            case "meine":
+                DocSave(d, overwriteChanged: true);
+                _progMsg[key] = "Deine Fassung ist gespeichert. Die andere findest du unter „Versionen“.";
+                break;
+            case "kopie":
+                var dir = Path.GetDirectoryName(Path.GetFullPath(p))!; var stem = Path.GetFileNameWithoutExtension(p); var copy = Path.Combine(dir, $"{stem} (Kopie){ProgramDocument.Extension}");
+                for (var n = 2; File.Exists(copy); n++) copy = Path.Combine(dir, $"{stem} (Kopie {n}){ProgramDocument.Extension}");
+                DocSave(d, copy); ProgRecent.Add(spec.Studio, d.Path!); RememberLastDoc(key, d.Path!);
+                _progMsg[key] = "Als Kopie gespeichert: " + d.Path;
+                break;
+            case "laden":
+                d.ReloadFromDisk();
+                _progMsg[key] = "Die Fassung von der Platte ist geladen – Strg+Z holt deine zurück.";
+                break;
+            default: return;
+        }
+        _progConflict.Remove(d.Id);
+    }
+
+    /// <summary>Beschädigte Datei: aus einem früheren Stand zurückholen. Die beschädigte Datei bleibt daneben als „….beschaedigt“ liegen.</summary>
+    public ProgramDocument ProgramRescue(string key, int index)
+    {
+        var spec = Programs[key];
+        if (!_progRescue.TryGetValue(key, out var r) || index < 0 || index >= r.From.Count) throw new InvalidOperationException("Es gibt keinen Stand zum Zurückholen.");
+        var from = r.From[index]; var src = from.File;
+        // eine schon einmal angebotene Sicherung wieder als normale Notsicherung führen – das nächste Speichern räumt sie dann weg
+        if (ProgramDocument.SameFile(src, ProgramDocument.RecoveryFile(r.Path))) { src = ProgramDocument.AutosaveFile(r.Path); SafeFile.Move(from.File, src); }
+        var d = ProgramDocument.Restore(src, r.Path);
+        if (ProgLocks.Acquire(r.Path) is { } holder) { d.ReadOnly = true; _progLocked[d.Id] = holder; }
+        else try { File.Copy(r.Path, r.Path + ".beschaedigt", true); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        var l = ProgramDocs(key); l.Add(d); _progActive[key] = l.Count - 1; _progRescue.Remove(key);
+        _progMsg[key] = $"Zurückgeholt: Stand von {Clock(from.When)}." + (AutoSaveDocs ? "" : " Bitte speichern.");
+        _core.Audit.Append(Principal.LocalOwner.Name, "program.rescue", $"{spec.Studio} {Path.GetFileName(r.Path)}");
+        return d;
+    }
+
+    /// <summary>T-0680: Karten über der Arbeitsfläche – beschädigte Datei, gefundene Sicherung, anderes Fenster, von außen geändert. Jede mit klaren Knöpfen.</summary>
+    List<Control> ProgramSafetyCards(string key, ProgramDocument? d)
+    {
+        var cards = new List<Control>();
+        Control Card(string name, string text, params Control[] buttons)
+        {
+            var row = new WrapPanel(); row.Children.AddRange(buttons);
+            return new Border { Name = name, Background = TileBg, BorderBrush = Accent, BorderThickness = new Thickness(3, 0, 0, 0), CornerRadius = new CornerRadius(4), Padding = new Thickness(12, 8),
+                Child = new StackPanel { Spacing = 6, Children = { new TextBlock { Name = name + "-text", Text = text, Foreground = Text, FontSize = 13, TextWrapping = TextWrapping.Wrap }, row } } };
+        }
+        Button B(string name, string label, Action run, bool primary = false)
+        {
+            var b = new Button { Name = name, Content = label, Padding = new Thickness(12, 4), Margin = new Thickness(0, 0, 6, 4) };
+            if (primary) { b.Background = Accent; b.Foreground = Brushes.White; }
+            b.Click += (_, _) => ProgramRun(key, run);
+            return b;
+        }
+        if (_progRescue.TryGetValue(key, out var rescue))
+        {
+            var name = Path.GetFileName(rescue.Path);
+            var bs = rescue.From.Take(3).Select((f, i) => (Control)B($"prog-rescue-{i}", $"Stand von {Clock(f.When)} öffnen" + (f.Kind == "sicherung" ? " (automatisch gesichert)" : " (frühere Version)"), () => ProgramRescue(key, i), i == 0)).ToList();
+            bs.Add(B("prog-rescue-close", rescue.From.Count == 0 ? "Verstanden" : "Nicht jetzt", () => _progRescue.Remove(key)));
+            cards.Add(Card("prog-rescue", rescue.From.Count == 0
+                ? $"„{name}“ ist beschädigt und lässt sich nicht öffnen. Es gibt davon leider keinen früheren Stand. Die Datei bleibt unverändert liegen."
+                : $"„{name}“ ist beschädigt und lässt sich nicht öffnen. Du kannst den letzten gesicherten Stand zurückholen – die beschädigte Datei bleibt zur Sicherheit daneben liegen.", [.. bs]));
+        }
+        if (d is null) return cards;
+        if (_progRecover.TryGetValue(d.Id, out var rec))
+            cards.Add(Card("prog-recover", $"Von „{d.Title}“ gibt es einen Stand von {Clock(rec.When)}, der nicht mehr gespeichert wurde – Trendo hat ihn automatisch gesichert. Möchtest du ihn zurückholen?",
+                B("prog-recover-yes", "Wiederherstellen", () => ProgramRecoverApply(key, true), true),
+                B("prog-recover-no", "Verwerfen", () => ProgramRecoverApply(key, false))));
+        if (_progLocked.TryGetValue(d.Id, out var holder))
+            cards.Add(Card("prog-lock", $"„{d.Title}“ ist schon in einem anderen Trendo-Fenster geöffnet (seit {Clock(holder.Since)}). Damit dort nichts überschrieben wird, siehst du es hier nur zum Lesen.",
+                B("prog-lock-readonly", "Nur lesen", () => ProgramLockChoice(key, "lesen"), true),
+                B("prog-lock-copy", "Als Kopie öffnen", () => ProgramLockChoice(key, "kopie")),
+                B("prog-lock-retry", "Nochmal prüfen", () => ProgramLockChoice(key, "pruefen"))));
+        if (_progConflict.Contains(d.Id))
+            cards.Add(Card("prog-conflict", $"„{Path.GetFileName(d.Path)}“ wurde außerhalb dieses Fensters geändert" + (d.DiskTime is { } t ? $" ({Clock(t)})" : "") + ". Welche Fassung soll bleiben? Bis du entschieden hast, wird hier nichts überschrieben.",
+                B("prog-conflict-keep", "Meine Fassung speichern", () => ProgramResolveConflict(key, "meine"), true),
+                B("prog-conflict-copy", "Meine als Kopie speichern", () => ProgramResolveConflict(key, "kopie")),
+                B("prog-conflict-load", "Die andere Fassung laden", () => ProgramResolveConflict(key, "laden"))));
+        return cards;
+    }
+
     /// <summary>Studio-Programm anmelden: Seite, Reiter und Suchbegriffe wie bei jeder Studio-Seite.</summary>
     private void RegisterProgram(List<(string, string, string)> tabs, ProgramSpec spec, params string[] words)
     {
@@ -82,7 +294,7 @@ public partial class MainWindow
         RegisterTab(tabs, spec.Key, spec.Title, spec.Studio, () => ProgramView(spec), words);
         if (_progAutosave is null)
         {
-            _progAutosave = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
+            _progAutosave = new DispatcherTimer { Interval = ProgramAutosaveEvery };
             _progAutosave.Tick += (_, _) => ProgramAutosaveAll();
             _progAutosave.Start();
             Closing += (_, _) => ProgramAutosaveAll(); // E3: beim Beenden nichts verlieren
@@ -111,9 +323,19 @@ public partial class MainWindow
         var spec = Programs[key]; var l = ProgramDocs(key);
         var have = l.FindIndex(x => x.Path is not null && string.Equals(Path.GetFullPath(x.Path), Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase));
         if (have >= 0) { _progActive[key] = have; return l[have]; }
-        var d = ProgramDocument.Load(path, spec.Studio);
+        ProgramDocument d;
+        try { d = ProgramDocument.Load(path, spec.Studio); }
+        catch (InvalidDataException e) when (ProgramDocument.ProblemOf(e) == ProgramDocument.LoadProblem.Damaged)
+        {
+            // T-0680: beschädigte Datei – kein stilles leeres Dokument, sondern eine klare Meldung mit den Ständen, aus denen sie sich zurückholen lässt
+            var from = ProgramDocument.Recoveries(path, spec.Studio);
+            _progRescue[key] = (path, from);
+            throw new InvalidDataException($"„{Path.GetFileName(path)}“ ist beschädigt und lässt sich nicht öffnen." + (from.Count > 0 ? " Du kannst den letzten gesicherten Stand zurückholen." : " Es gibt davon leider keinen früheren Stand."));
+        }
+        _progRescue.Remove(key);
+        var opened = DocAttach(spec, d, path);
         l.Add(d); _progActive[key] = l.Count - 1; ProgRecent.Add(spec.Studio, path); RememberLastDoc(key, path);
-        _progMsg[key] = "Geöffnet: " + Path.GetFileName(path);
+        _progMsg[key] = opened;
         _core.Audit.Append(Principal.LocalOwner.Name, "program.open", $"{spec.Studio} {Path.GetFileName(path)}");
         return d;
     }
@@ -126,7 +348,7 @@ public partial class MainWindow
         if (target is null) target = ProgramNewTarget(spec, d);
         else if (!Path.IsPathRooted(target)) // nur ein Name: neben das Dokument, sonst in den Ordner des Programms, nie ins Arbeitsverzeichnis des Prozesses
             target = Path.Combine(d.Path is { } current && Path.IsPathRooted(current) ? Path.GetDirectoryName(current)! : WorkFolder(spec.Folder), target);
-        d.Save(target); ProgRecent.Add(spec.Studio, d.Path!); RememberLastDoc(key, d.Path!); DropBackup(d);
+        DocSave(d, target); ProgRecent.Add(spec.Studio, d.Path!); RememberLastDoc(key, d.Path!); DropBackup(d);
         if (path is not null) _progAutoNamed.Remove(d.Id); // selbst benannt: nicht mehr umbenennen
         _core.Audit.Append(Principal.LocalOwner.Name, "program.save", $"{spec.Studio} {Path.GetFileName(d.Path)}");
         _progMsg[key] = "Gespeichert: " + d.Path; return d.Path!;
@@ -159,7 +381,7 @@ public partial class MainWindow
     /// <summary>Gespeichert: die Absturz-Sicherung des noch unbenannten Dokuments wird nicht mehr gebraucht.</summary>
     void DropBackup(ProgramDocument d)
     {
-        try { var f = Path.Combine(ProgBackup, $"{d.Studio}-{d.Id}{ProgramDocument.Extension}"); if (File.Exists(f)) File.Delete(f); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        try { var f = d.BackupFile(ProgBackup); ProgLocks.Release(f); if (File.Exists(f)) File.Delete(f); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
     }
 
     /// <summary>E3 (T-0616): geändertes Dokument selbst speichern – ein neues landet beim ersten Speichern im Studio-Ordner. Leere, unveränderte Dokumente
@@ -167,13 +389,15 @@ public partial class MainWindow
     public bool ProgramAutoSave(string key, ProgramDocument d)
     {
         if (!AutoSaveDocs || !d.Dirty || !Programs.TryGetValue(key, out var spec)) return false;
+        // T-0680: nur zum Lesen offen (anderes Fenster) oder von außen geändert und noch nicht entschieden: nichts überschreiben – die Notsicherung läuft weiter
+        if (d.ReadOnly && d.Path is not null || _progConflict.Contains(d.Id)) return false;
         // Claude hat geändert und du hast noch nicht entschieden (behalten/verwerfen) oder eine Live-Animation läuft: erst danach speichern – „Verwerfen“ lässt die Datei so unverändert
         if (_claudeChanges.TryGetValue(key, out var pending) && pending.DocId == d.Id || _liveAnim.ContainsKey(key)) return false;
         try
         {
             if (d.Path is null)
             {
-                d.Save(ProgramNewTarget(spec, d));
+                DocSave(d, ProgramNewTarget(spec, d));
                 ProgRecent.Add(spec.Studio, d.Path!); RememberLastDoc(key, d.Path!); _progAutoNamed.Add(d.Id);
                 _core.Audit.Append(Principal.LocalOwner.Name, "program.autosave", $"{spec.Studio} {Path.GetFileName(d.Path)}");
             }
@@ -181,7 +405,7 @@ public partial class MainWindow
             {
                 // T-0620: von selbst angelegte Datei („Unbenannt.tdoc“) folgt dem neuen Titel – samt Versionen; die alte Datei verschwindet
                 var oldPath = d.Path;
-                d.Save(renamed, keepVersion: false);
+                DocSave(d, renamed, keepVersion: false);
                 try
                 {
                     var ov = ProgramDocument.VersionDir(oldPath); var nv = ProgramDocument.VersionDir(renamed);
@@ -192,10 +416,16 @@ public partial class MainWindow
                 ProgRecent.Add(spec.Studio, d.Path!); RememberLastDoc(key, d.Path!);
                 _core.Audit.Append(Principal.LocalOwner.Name, "program.autosave.rename", $"{Path.GetFileName(oldPath)} -> {Path.GetFileName(d.Path)}");
             }
-            else d.Save(keepVersion: ProgramDocument.VersionDue(d.Path, AutoVersionGap));
+            else DocSave(d, keepVersion: ProgramDocument.VersionDue(d.Path, AutoVersionGap));
             DropBackup(d);
             if (_progErr.TryGetValue(key, out var old) && old.Error.Kind == "speichern") { _progErr.Remove(key); if (_progMsg.GetValueOrDefault(key) == old.Error.Sentence) _progMsg.Remove(key); }
             return true;
+        }
+        catch (FileChangedOutsideException e)
+        {
+            // T-0680: von außen geändert – nicht überschreiben, sondern nachfragen (Karte mit drei Knöpfen); bis dahin sichert die Notsicherung
+            _progMsg[key] = e.Message;
+            return false;
         }
         catch (Exception e) when (e is not OutOfMemoryException)
         {
@@ -212,7 +442,10 @@ public partial class MainWindow
     {
         _progSaveSoon?.Stop();
         var n = 0;
-        foreach (var (key, l) in _progDocs) foreach (var d in l.ToList()) if (ProgramAutoSave(key, d)) n++;
+        foreach (var (key, l) in _progDocs) foreach (var d in l.ToList())
+            if (ProgramAutoSave(key, d)) n++;
+            else if (d.Dirty) try { DocBackup(d); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } // T-0680: nicht gespeichert (aus, Rückfrage offen, Fehler) – dann wenigstens sichern
+        if (_progConflictNew) { _progConflictNew = false; if (Programs.ContainsKey(CurrentView)) Show(CurrentView); return n; } // die Rückfrage „von außen geändert“ zeigen
         if (n > 0 && Programs.ContainsKey(CurrentView) && ProgramActive(CurrentView) is { Dirty: false, Path: not null } shown && ActivePageRoot is { } root) // nur die Anzeige des sichtbaren Dokuments, nicht neu zeichnen – beim Tippen geht nichts verloren
         {
             foreach (var tb in root.GetLogicalDescendants().OfType<TextBlock>().Where(t => t.Name == "prog-dirty")) tb.Text = SaveStateText(shown);
@@ -225,7 +458,7 @@ public partial class MainWindow
     void ProgramSaveSoon()
     {
         if (!AutoSaveDocs) return;
-        if (_progSaveSoon is null) { _progSaveSoon = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.5) }; _progSaveSoon.Tick += (_, _) => ProgramAutosaveNow(); }
+        if (_progSaveSoon is null) { _progSaveSoon = new DispatcherTimer { Interval = ProgramSaveDelay }; _progSaveSoon.Tick += (_, _) => ProgramAutosaveNow(); }
         _progSaveSoon.Stop(); _progSaveSoon.Start();
     }
 
@@ -233,18 +466,21 @@ public partial class MainWindow
     void ProgramKeep(string key, ProgramDocument d)
     {
         if (!d.Dirty || ProgramAutoSave(key, d)) return;
-        d.Autosave(ProgBackup);
+        DocBackup(d);
     }
 
     public void ProgramClose(string key, int index)
     {
         var l = ProgramDocs(key); if (index < 0 || index >= l.Count) return;
+        var gone = l[index];
+        if (gone.Path is { } gp && !gone.ReadOnly) ProgLocks.Release(gp); // T-0680: Datei für andere Fenster freigeben
+        ProgLocks.Release(gone.BackupFile(ProgBackup)); _progLocked.Remove(gone.Id); _progRecover.Remove(gone.Id); _progConflict.Remove(gone.Id);
         l.RemoveAt(index); _progActive[key] = Math.Max(0, Math.Min(_progActive.GetValueOrDefault(key), l.Count - 1));
     }
 
     public void ProgramAutosaveAll()
     {
-        foreach (var (key, l) in _progDocs) foreach (var d in l.ToList()) try { if (!ProgramAutoSave(key, d)) d.Autosave(ProgBackup); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+        foreach (var (key, l) in _progDocs) foreach (var d in l.ToList()) try { if (!ProgramAutoSave(key, d)) DocBackup(d); } catch (IOException) { } catch (UnauthorizedAccessException) { }
         OfficeAutosave(); // T-0254: Text, Tabelle, Präsentation
     }
 
@@ -323,6 +559,7 @@ public partial class MainWindow
             var head = new StackPanel { Spacing = 6, Children = { band, top } };
             if (_progErr.TryGetValue(key, out var fhe) && fhe.Error.Fix != ErrorFix.None && _progMsg.GetValueOrDefault(key) == fhe.Error.Sentence) head.Children.Insert(1, ProgramErrorCard(key, fhe.Error, fhe.Retry)); // E7
             if (ProgramIntro(key) is { } fi) head.Children.Insert(1, fi); // E8
+            foreach (var sc in ProgramSafetyCards(key, d).AsEnumerable().Reverse()) head.Children.Insert(1, sc); // T-0680
             if (ClaudeChangeBanner(key, d) is { } cb) head.Children.Insert(1, cb); // Claude hat geändert: vergleichen, behalten, verwerfen
             if (ClaudeProgramExtra(key) is { } cx) head.Children.Insert(1, cx); // z. B. das spielbare Spiel, das Claude gebaut hat
             // DockPanel: Kopf und Statusleiste bekommen die echte Breite (Menüband bricht richtig um), die Arbeitsfläche den Rest
@@ -337,6 +574,7 @@ public partial class MainWindow
             if (_progMsg.GetValueOrDefault(key) is { Length: > 0 } msg)
                 root.Children.Insert(1, _progErr.TryGetValue(key, out var pe) && pe.Error.Fix != ErrorFix.None && pe.Error.Sentence == msg ? ProgramErrorCard(key, pe.Error, pe.Retry) : ResultCard(msg)); // E7: Fehler mit „Was tun?“
             if (ProgramIntro(key) is { } pi) root.Children.Insert(1, pi); // E8: kurze Einführung beim ersten Öffnen
+            foreach (var sc in ProgramSafetyCards(key, d).AsEnumerable().Reverse()) root.Children.Insert(1, sc); // T-0680: Sicherung gefunden, anderes Fenster, von außen geändert, beschädigt
             if (ClaudeChangeBanner(key, d) is { } cb) root.Children.Insert(1, cb); // Claude hat geändert: vergleichen, behalten, verwerfen
             if (ClaudeProgramExtra(key) is { } cx) root.Children.Insert(1, cx); // z. B. das spielbare Spiel, das Claude gebaut hat
         }
@@ -357,7 +595,7 @@ public partial class MainWindow
     }
 
     /// <summary>E3: Speicherstand in einem Wort – mit automatischem Speichern nur „Gespeichert“.</summary>
-    string SaveStateText(ProgramDocument d) => AutoSaveDocs
+    string SaveStateText(ProgramDocument d) => d.ReadOnly && d.Path is not null ? "Nur lesen" : AutoSaveDocs
         ? (d.Dirty ? "Wird gespeichert …" : d.Path is null ? "" : "✓ Gespeichert")
         : (d.Dirty ? "geändert" : d.Path is null ? "nicht gespeichert" : "✓ gespeichert");
 
@@ -445,7 +683,7 @@ public partial class MainWindow
         "Hier anfangen: Wähle unter „Neu“ eine Vorlage oder öffne unter „Zuletzt“, woran du gearbeitet hast.",
         "Hier hilft die KI: Schreib oben in die Zeile, was entstehen soll, und drück „Los“. Unter „KI ▾“ findest du Claude, kie.ai und mehr.",
         AutoSaveDocs ? "Speichern passiert von selbst: Jede Änderung wird gesichert, frühere Stände findest du unter „Versionen“."
-                     : "Speichern mit Strg+S – ungespeicherte Änderungen sichert Trendo zusätzlich alle 30 Sekunden.",
+                     : "Speichern mit Strg+S – ungespeicherte Änderungen sichert Trendo zusätzlich alle 20 Sekunden.",
     ];
 
     Control? ProgramIntro(string key)
@@ -514,18 +752,29 @@ public partial class MainWindow
             Card(new StackPanel { Spacing = 8, Children = { H("Neu", 15), tpl } }),
             Card(new StackPanel { Spacing = 6, Children = { H("Zuletzt", 15), recent } }) } };
         if (StudioTaskCard(spec.Studio, spec.Key) is { } tasks) sp.Children.Insert(1, tasks); // unter „Neu“: Die Vorlagen bleiben dort, wo man sie kennt
-        var orphans = ProgramDocument.Orphans(ProgBackup, spec.Studio);
-        if (orphans.Count > 0)
+        // T-0680: geprüfte Sicherungen – unlesbare werden gemeldet statt geladen; offene Dokumente dieses und anderer Fenster sind keine „abgestürzten“
+        var (good, broken) = ProgramDocument.OrphanScan(ProgBackup, spec.Studio);
+        var openHere = _progDocs.Values.SelectMany(x => x).Select(x => Path.GetFullPath(x.BackupFile(ProgBackup))).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        good = good.Where(o => !openHere.Contains(Path.GetFullPath(o.File)) && ProgLocks.HeldByOther(o.File) is null).ToList();
+        if (good.Count > 0 || broken.Count > 0)
         {
-            var rs = new StackPanel { Spacing = 4, Children = { H("Wiederherstellen", 15), P("Diese Dokumente wurden nicht gespeichert, aber automatisch gesichert.", null, 12) } };
+            var rs = new StackPanel { Name = "prog-restore", Spacing = 4, Children = { H("Wiederherstellen", 15) } };
+            if (good.Count > 0) rs.Children.Add(P("Diese Dokumente wurden nicht gespeichert, aber automatisch gesichert. Du kannst sie zurückholen oder verwerfen.", null, 12));
             var k = 0;
-            foreach (var o in orphans.Take(5))
+            foreach (var o in good.Take(5))
             {
-                var file = o;
-                rs.Children.Add(Row(P($"{ProgramDocument.Load(file).Title} · gesichert {File.GetLastWriteTime(file):dd.MM. HH:mm}", Text, 12.5), new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = {
-                    Act($"prog-restore-{k}", "Wiederherstellen", () => ProgramRun(key, () => { var d = ProgramDocument.Restore(file); File.Delete(file); var l = ProgramDocs(key); l.Add(d); _progActive[key] = l.Count - 1; _progMsg[key] = "Wiederhergestellt – bitte speichern."; }), true),
+                var file = o.File;
+                rs.Children.Add(Row(P($"{o.Title} · gesichert {Clock(o.When)}", Text, 12.5), new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = {
+                    // die Sicherung bleibt liegen, bis das Dokument wirklich gespeichert ist (dann räumt DropBackup sie weg)
+                    Act($"prog-restore-{k}", "Wiederherstellen", () => ProgramRun(key, () => { var d = ProgramDocument.Restore(file); ProgLocks.Acquire(file); var l = ProgramDocs(key); l.Add(d); _progActive[key] = l.Count - 1; _progMsg[key] = AutoSaveDocs ? "Wiederhergestellt." : "Wiederhergestellt – bitte speichern."; }), true),
                     Act($"prog-discard-{k}", "Verwerfen", () => ProgramRun(key, () => File.Delete(file))) } }));
                 k++;
+            }
+            if (broken.Count > 0)
+            {
+                var note = P(broken.Count == 1 ? "Eine Sicherung ist beschädigt und lässt sich nicht zurückholen." : $"{broken.Count} Sicherungen sind beschädigt und lassen sich nicht zurückholen.", Text, 12.5);
+                note.Name = "prog-restore-broken";
+                rs.Children.Add(Row(note, Act("prog-restore-broken-drop", "Entfernen", () => ProgramRun(key, () => { foreach (var f in broken) File.Delete(f); }))));
             }
             sp.Children.Insert(0, Card(rs));
         }

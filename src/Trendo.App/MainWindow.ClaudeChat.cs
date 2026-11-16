@@ -430,7 +430,7 @@ public partial class MainWindow
         var shell = Programs.ContainsKey(dock.Page) && ProgramActive(dock.Page) is not null;
         string? workFile = null;
         if (shell && ProgramActive(dock.Page) is { } doc)
-            try { workFile = Regex.Replace(doc.Title, @"[\\/:*?""<>|]", "-") + ProgramDocument.Extension; File.WriteAllText(Path.Combine(folder, workFile), doc.Serialize()); }
+            try { workFile = Regex.Replace(doc.Title, @"[\\/:*?""<>|]", "-") + ProgramDocument.Extension; var wf = Path.Combine(folder, workFile); if (!(doc.ReadOnly && doc.Path is { } own && ProgramDocument.SameFile(own, wf))) AtomicFile.WriteAllText(wf, doc.Serialize()); ClaudeDocSeen(doc, wf); } // T-0680: atomar; ein nur zum Lesen offenes Dokument (anderes Fenster) wird nicht überschrieben
             catch (Exception e) when (e is IOException or UnauthorizedAccessException) { workFile = null; }
         // Brief-Studio: der offene Brief ist das Dokument (Text UND Design) – Claude arbeitet darin, Trendo übernimmt jede Änderung live ins Brief-Programm
         var letterDoc = !shell && dock.Studio == LetterStudio;
@@ -808,12 +808,17 @@ public partial class MainWindow
     }
 
     /// <summary>Studio-Dokument aus der Datei übernehmen, die Claude bearbeitet hat (ein Rückgängig-Schritt im Studio).</summary>
+    /// <summary>T-0680: Die Arbeitsdatei für Claude ist das Dokument selbst. Schreibt Trendo sie für Claude oder übernimmt Trendo Claudes Stand ins Dokument,
+    /// ist das keine „Änderung von außen“ – sonst würde das nächste Speichern nachfragen.</summary>
+    static void ClaudeDocSeen(ProgramDocument doc, string file) { if (doc.Path is { } p && ProgramDocument.SameFile(p, file)) doc.AcceptDisk(); }
+
     void ClaudeSyncProgram(ClaudeDock dock, string file)
     {
         if (ProgramActive(dock.Page) is not { } doc) return;
         try
         {
             var fresh = ProgramDocument.Load(file);
+            ClaudeDocSeen(doc, file);
             if (fresh.Data.ToJsonString() == LiveTarget(dock.Page, doc)) return; // schon übernommen (oder wird gerade live eingespielt)
             ClaudeApplyLive(dock, doc, fresh.Data); // live – viele neue Teile erscheinen nacheinander
         }
