@@ -487,6 +487,20 @@ modules:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)
+- id: STUDIO-DECKDESIGN-01
+  name: Präsentationen gestalten
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios), 15.11.2026 „Ja, weiter“ (Etappe Arbeiten & Büro, T-0673)
+- id: STUDIO-DOCSCAN-01
+  name: Dokumente scannen
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios), 15.11.2026 „Ja, weiter“ (Etappe Arbeiten & Büro, T-0673)
 - id: STUDIO-DAYPLAN-01
   name: Tagesplaner
   approved_expansion_functions: '0'
@@ -494,6 +508,41 @@ modules:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)
+- id: STUDIO-CV-01
+  name: Bewerbung & Lebenslauf
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Arbeiten & Büro), 15.11.2026 „Ja, weiter“
+- id: STUDIO-CARDS-01
+  name: Karten & Einladungen
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Arbeiten & Büro), 15.11.2026 „Ja, weiter“
+- id: STUDIO-CONTRACTS-01
+  name: Verträge-Ordner
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Arbeiten & Büro), 15.11.2026 „Ja, weiter“
+- id: STUDIO-PDFTOOLS-01
+  name: PDF-Werkstatt
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Arbeiten & BÃ¼ro), â€žJa, weiterâ€œ 15.11.2026
+- id: STUDIO-FORMS-01
+  name: Formulare ausfÃ¼llen
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Arbeiten & BÃ¼ro), â€žJa, weiterâ€œ 15.11.2026
 - id: STUDIO-MUSIK-01
   name: Trendo Musik (Lieder mit ACE-Step)
   approved_expansion_functions: '0'

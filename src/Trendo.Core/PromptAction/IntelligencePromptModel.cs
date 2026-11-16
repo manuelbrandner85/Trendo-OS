@@ -45,7 +45,9 @@ public static class PromptActions
             new VideoAiPlanAdapter(), new AgentDraftAdapter(), new ModelQuestionsAdapter(), new TrainClassifierAdapter(),
             new LicenseFetchAdapter(), new LicenseNoteAdapter(),
             new XrBudgetAdapter(), new ScanBlockedAdapter(),
-            new CodeProjectAdapter(), new VisionFactsAdapter(), new CiteSourceAdapter(), new DayPlanAdapter(), new KunstVorlageAdapter(),
+            new CodeProjectAdapter(), new VisionFactsAdapter(), new CiteSourceAdapter(), new DayPlanAdapter(), new KunstVorlageAdapter(), new LebenslaufAdapter(), new KarteAdapter(), new VertragFristAdapter(),
+            new DeckDesignAdapter(), new DocScanAdapter(),
+            new PdfWerkstattAdapter(), new FormularZuordnenAdapter(),
             ..SystemActions.Create()
         ];
 }
