@@ -466,8 +466,8 @@ public sealed partial class MainWindow
                 ch.State == ToolState.Working || c.Mode is not (DeliveryMode.AutoUser or DeliveryMode.AutoElevated or DeliveryMode.Included) ? null : c));
         rows.Add(("Benutzerdaten", Directory.Exists(_core.DataRoot) ? "Bereit" : "Fehlt", _core.DataRoot, null));
         rows.Add(("Projektordner", Directory.Exists(_settings.ProjectsFolder) ? "Bereit" : "Fehlt", _settings.ProjectsFolder, null));
-        var last = Backups.List().FirstOrDefault();
-        rows.Add(("Sicherung", last is null ? "Fehlt" : "Bereit", last is null ? "noch keine" : $"zuletzt {last.LastWriteTime:dd.MM.yyyy HH:mm}", null));
+        var last = Backups.Latest(); var lastNote = last is null ? null : Backups.Describe(last.FullName);
+        rows.Add(("Sicherung", last is null ? "Fehlt" : lastNote is { Complete: false } ? "Hinweis" : "Bereit", last is null ? "noch keine" : $"zuletzt {last.LastWriteTime:dd.MM.yyyy HH:mm}" + (lastNote is { Complete: false } ? $" – unvollständig ({lastNote.NotSavedCount} nicht gesichert)" : ""), null));
         rows.Add(("Updates", !_settings.AutoUpdate ? "Aus" : _updateInfo.StartsWith("Aktuell") || _updateInfo.StartsWith("Update") ? "Bereit" : "Hinweis", _updateInfo, null));
         rows.Add(("Protokoll", _core.Audit.Verify() ? "Bereit" : "Defekt", "unverändert und vollständig", null));
         for (var i = 0; i < rows.Count; i++)
@@ -504,9 +504,9 @@ public sealed partial class MainWindow
         var sp = new StackPanel { Spacing = 6 };
         sp.Children.Add(P($"Trendo sichert deine Projekte und Einstellungen automatisch alle {_settings.BackupEveryHours} Stunden (die letzten 10 bleiben). Ablage: {Backups.Folder}", Text));
         var now = new Button { Name = "btn-backup-now", Content = "Jetzt sichern", Background = Accent };
-        now.Click += (_, _) => { try { _backupMsg = "Gesichert: " + Path.GetFileName(Backups.Create(DateTime.Now)); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _backupMsg = "Sichern hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex); } Show("sicherung"); };
+        now.Click += (_, _) => { try { _backupMsg = Backups.CreateChecked(DateTime.Now).Say(); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _backupMsg = "Sichern hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex); } Show("sicherung"); };
         sp.Children.Add(now);
-        if (_backupMsg.Length > 0) sp.Children.Add(P(_backupMsg, Brush.Parse("#4ADE80")));
+        if (_backupMsg.Length > 0) { var bm = P(_backupMsg, Brush.Parse(_backupMsg.StartsWith("Unvollständig") || _backupMsg.Contains("nicht geklappt") || _backupMsg.Contains("beschädigt") ? "#FACC15" : "#4ADE80")); bm.Name = "backup-msg"; sp.Children.Add(bm); }
         var all = Backups.List();
         if (all.Count > 0)
         {
@@ -520,7 +520,12 @@ public sealed partial class MainWindow
         foreach (var f in Backups.List())
         {
             var file = f.FullName; var idx = bi++;
-            var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { P($"{f.LastWriteTime:dd.MM.yyyy HH:mm} · {f.Length / 1024} KB", Text) } };
+            // T-0681: unvollständige und beschädigte Sicherungen stehen als solche in der Liste
+            var note = Backups.Describe(file); var broken = !Backup.Readable(file);
+            var state = broken ? " · beschädigt – nicht verwendbar" : note is { Complete: false } ? $" · unvollständig: {note.NotSavedCount} Datei(en) nicht gesichert" : "";
+            var line = P($"{f.LastWriteTime:dd.MM.yyyy HH:mm} · {f.Length / 1024} KB{state}", state.Length > 0 ? Brush.Parse("#FACC15") : Text); line.Name = $"backup-row-{idx}";
+            if (note is { Complete: false }) ToolTip.SetTip(line, "Nicht gesichert: " + string.Join(", ", note.NotSaved.Take(20)));
+            var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { line } };
             if (_backupConfirm == file)
             {
                 var yes = new Button { Name = $"backup-restore-yes-{idx}", Content = "Ja, wiederherstellen", FontSize = 11, Background = Accent };

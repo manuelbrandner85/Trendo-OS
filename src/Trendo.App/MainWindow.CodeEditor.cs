@@ -28,7 +28,11 @@ public partial class MainWindow
     public TextEditor? CodeEditorForTests => _ceEditor;
     public bool CodeDirty(string path) => _ceFiles.FirstOrDefault(f => f.Path == path)?.Dirty ?? false;
 
-    private void InitCodeEditor() => RegisterTab(KreativTabs, CEK, "Code-Editor", "CORE-07", CodeEditorView, "code-editor", "code bearbeiten", "quelltext", "editor", "programmieren", "vs code", "vscodium", "syntax");
+    private void InitCodeEditor()
+    {
+        Closed += (_, _) => CodeStop(); // kein verwaistes Programm, wenn Trendo geschlossen wird
+        RegisterTab(KreativTabs, CEK, "Code-Editor", "CORE-07", CodeEditorView, "code-editor", "code bearbeiten", "quelltext", "editor", "programmieren", "vs code", "vscodium", "syntax");
+    }
 
     /// <summary>Projektordner öffnen (öffentlich für Tests, die Software-Seite und die KI).</summary>
     public void CodeOpenFolder(string dir)
@@ -81,21 +85,65 @@ public partial class MainWindow
 
     public List<CodeProject.Hit> CodeSearch(string q) { _ceQuery = q; _ceTab = "suche"; return _ceRoot is null ? [] : CodeProject.Search(_ceRoot, q); }
 
+    // T-0681: „Ausführen“ und „Testen“ laufen im Hintergrund – die Oberfläche bleibt bedienbar, die Ausgabe kommt laufend, „Abbrechen“ beendet das Programm.
+    CancellationTokenSource? _ceRunCts; Task? _ceRunTask; int _ceRunPid; SelectableTextBlock? _ceOutBox;
+    /// <summary>Läuft gerade ein Programm oder Test aus dem Code-Editor?</summary>
+    public bool CodeRunning => _ceRunCts is not null;
+    /// <summary>Der laufende bzw. letzte Lauf (für Tests und zum Abwarten).</summary>
+    public Task? CodeRunTask => _ceRunTask;
+    /// <summary>Prozessnummer des zuletzt gestarteten Programms (0 = noch keins).</summary>
+    public int CodeRunPid => _ceRunPid;
+    /// <summary>Tests: dieses Kommando starten statt des erkannten – auch im abgeschotteten Testmodus, der sonst nichts startet.</summary>
+    public (string Exe, string[] Args, string Cwd)? CodeRunOverride { get; set; }
+    const int CeOutMax = 200_000;
+
     void CodeRun(bool tests)
     {
         var root = _ceRoot ?? throw new InvalidOperationException("Erst einen Projektordner öffnen.");
+        if (_ceRunCts is not null) throw new InvalidOperationException("Es läuft schon ein Programm. Warte, bis es fertig ist – oder klick auf „Abbrechen“.");
         CodeSave(all: true);
-        if (_opt.Isolated) { _ceOut = "Testmodus: Trendo startet keine Programme."; _ceTab = "ausgabe"; return; }
-        Cli.Result r;
-        if (tests) r = DevStudio.RunTests(root);
-        else
-        {
-            var cmd = CodeProject.RunCommand(root, CodeActiveFile ?? root) ?? throw new InvalidOperationException("Für diese Datei kennt Trendo kein „Ausführen“ (Python, JavaScript, PowerShell oder ein .NET-Projekt).");
-            r = Cli.Run(cmd.Exe, cmd.Args, cmd.Cwd, 120000);
-        }
-        _core.Audit.Append(Principal.LocalOwner.Name, tests ? "code.test" : "code.run", $"{Path.GetFileName(root)} exit={r.Exit}");
-        _ceOut = (r.Ok ? "✓ Fertig (Exit 0)\n" : $"✗ Exit {r.Exit}\n") + (r.Out + "\n" + r.Err).Trim();
         _ceTab = "ausgabe";
+        if (_opt.Isolated && CodeRunOverride is null) { _ceOut = "Testmodus: Trendo startet keine Programme."; return; }
+        (string Exe, string[] Args, string Cwd) cmd;
+        if (CodeRunOverride is { } forced) cmd = forced;
+        else if (tests)
+        {
+            if (DevStudio.TestCommand(root) is not { } tc) { _ceOut = "✗ Exit -1\nFür dieses Projekt kennt Trendo keinen Test."; return; }
+            cmd = (tc.Exe, tc.Args, root);
+        }
+        else cmd = CodeProject.RunCommand(root, CodeActiveFile ?? root) ?? throw new InvalidOperationException("Für diese Datei kennt Trendo kein „Ausführen“ (Python, JavaScript, PowerShell oder ein .NET-Projekt).");
+        var cts = _ceRunCts = new CancellationTokenSource(); _ceRunPid = 0;
+        _ceOut = (tests ? "Test läuft …" : "Programm läuft …") + " („Abbrechen“ beendet es.)\n";
+        _ceRunTask = CodeRunInBackground(tests, root, cmd, tests ? 180000 : 120000, cts);
+    }
+
+    async Task CodeRunInBackground(bool tests, string root, (string Exe, string[] Args, string Cwd) cmd, int timeoutMs, CancellationTokenSource cts)
+    {
+        // Ausgabe laufend: Zeilen kommen aus dem Hintergrund und werden gebündelt in die Ausgabe geschrieben, ohne die Seite neu zu bauen
+        void Line(string l) => Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+            if (!ReferenceEquals(_ceRunCts, cts)) return;
+            _ceOut += l + "\n"; if (_ceOut.Length > CeOutMax) _ceOut = "… (Anfang gekürzt)\n" + _ceOut[^(CeOutMax / 2)..];
+            if (_ceOutBox is { } box) box.Text = _ceOut;
+        });
+        Cli.Result r;
+        try { r = await Task.Run(() => Cli.RunStreamAsync(cmd.Exe, cmd.Args, cmd.Cwd, Line, cts.Token, timeoutMs, pid => _ceRunPid = pid)); }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or System.ComponentModel.Win32Exception or OperationCanceledException) { r = new(-1, "", ex.Message); }
+        // ab hier wieder im Oberflächen-Thread
+        var cancelled = r.Exit == Cli.Cancelled;
+        _ceRunCts = null; cts.Dispose();
+        _core.Audit.Append(Principal.LocalOwner.Name, tests ? "code.test" : "code.run", $"{Path.GetFileName(root)} exit={r.Exit}{(cancelled ? " abgebrochen" : "")}");
+        var body = (r.Out + "\n" + r.Err).Trim(); if (body.Length > CeOutMax) body = "… (Anfang gekürzt)\n" + body[^(CeOutMax / 2)..];
+        _ceOut = (r.Ok ? "✓ Fertig (Exit 0)\n" : cancelled ? "■ Abgebrochen – das Programm wurde beendet.\n" : $"✗ Exit {r.Exit}\n") + body;
+        if (CurrentView == CEK) Show(CEK);
+    }
+
+    /// <summary>„Abbrechen“: beendet das laufende Programm samt Unterprozessen.</summary>
+    public void CodeStop()
+    {
+        if (_ceRunCts is not { } cts) return;
+        _ceOut += "Wird abgebrochen …\n";
+        try { cts.Cancel(); } catch (ObjectDisposedException) { }
     }
 
     /// <summary>Farben der mitgelieferten Sprachen für dunklen Hintergrund (Original ist für helle Flächen gedacht).</summary>
@@ -168,8 +216,15 @@ public partial class MainWindow
         bar.Children.Add(Btn("ce-new", "＋ Datei", "Neue Datei im Projekt anlegen", () => CodeNewFile((newName.Text ?? "").Trim() is { Length: > 0 } n ? n : throw new InvalidOperationException("Bitte einen Dateinamen eingeben."))));
         bar.Children.Add(Btn("ce-save", "Speichern", "Strg+S", () => CodeSave()));
         bar.Children.Add(Btn("ce-save-all", "Alle speichern", "Strg+Umschalt+S", () => CodeSave(true)));
-        bar.Children.Add(Btn("ce-run", "Ausführen", "Aktive Datei starten (Python, JavaScript, PowerShell) oder dotnet run", () => CodeRun(false), true));
-        bar.Children.Add(Btn("ce-test", "✓ Testen", "Tests des Projekts (dotnet build, node --test, unittest)", () => CodeRun(true)));
+        var runBtn = Btn("ce-run", "Ausführen", "Aktive Datei starten (Python, JavaScript, PowerShell) oder dotnet run", () => CodeRun(false), true);
+        var testBtn = Btn("ce-test", "✓ Testen", "Tests des Projekts (dotnet build, node --test, unittest)", () => CodeRun(true));
+        bar.Children.Add(runBtn); bar.Children.Add(testBtn);
+        if (CodeRunning)
+        {
+            runBtn.IsEnabled = testBtn.IsEnabled = false;
+            var stop = Btn("ce-stop", "■ Abbrechen", "Das laufende Programm beenden", CodeStop);
+            stop.Background = Brush.Parse("#7F1D1D"); stop.Foreground = Brushes.White; bar.Children.Add(stop);
+        }
         bar.Children.Add(Btn("ce-find", "Suchen", "In der Datei: Strg+F. Hier: im ganzen Projekt", () => _ceTab = "suche"));
         bar.Children.Add(Btn("ce-git", "Git", "Änderungen ansehen und als Stand speichern", () => _ceTab = "git"));
 
@@ -234,7 +289,8 @@ public partial class MainWindow
             var b = new Button { Name = $"ce-panel-{id}", Content = lbl, FontSize = 12, Padding = new Thickness(10, 3), Margin = new Thickness(0, 0, 4, 0), Background = on ? Brush.Parse("#2A2410") : Brushes.Transparent, Foreground = on ? gold : Muted, BorderThickness = new Thickness(0) };
             b.Click += (_, _) => { _ceTab = ii; Show(CEK); }; bottomTabs.Children.Add(b);
         }
-        Control body = _ceTab switch { "suche" => CodeSearchPanel(), "git" => CodeGitPanel(), _ => new SelectableTextBlock { Name = "ce-output", Text = _ceOut.Length == 0 ? "Hier erscheinen Ausgaben von „Ausführen“ und „Testen“." : _ceOut,
+        _ceOutBox = null;
+        Control body = _ceTab switch { "suche" => CodeSearchPanel(), "git" => CodeGitPanel(), _ => _ceOutBox = new SelectableTextBlock { Name = "ce-output", Text = _ceOut.Length == 0 ? "Hier erscheinen Ausgaben von „Ausführen“ und „Testen“." : _ceOut,
             FontFamily = new FontFamily("Cascadia Code, Consolas, monospace"), FontSize = 12, Foreground = _ceOut.StartsWith('✗') ? Brush.Parse("#FCA5A5") : Brush.Parse("#C9D1D9"), TextWrapping = TextWrapping.Wrap } };
         var bottom = new Border { Name = "ce-bottom", Height = 170, Background = panelBg, BorderBrush = edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(8, 6), Margin = new Thickness(0, 8, 0, 0),
             Child = new DockPanel { Children = { bottomTabs, new ScrollViewer { Content = body } } } };

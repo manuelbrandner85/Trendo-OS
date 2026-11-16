@@ -73,6 +73,7 @@ public partial class MainWindow
     private Control WorkflowsView()
     {
         var left = new StackPanel { Spacing = 6, Children = { P("Abläufe erledigen Wiederkehrendes von allein. „Probelauf“ zeigt vorher, was passieren würde – ohne etwas zu ändern.", null, 12) } };
+        if (Workflows.LoadProblem is { } lp) left.Children.Add(new TextBlock { Name = "wf-load-problem", Text = "⚠ " + lp, Foreground = Brush.Parse("#FACC15"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
         if (LastWfError is { } err) left.Children.Add(new TextBlock { Name = "wf-error", Text = "⚠ Ein geplanter Ablauf ist fehlgeschlagen – " + err, Foreground = Brush.Parse("#FACC15"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
         var tpl = new WrapPanel();
         foreach (var (id, name, make) in WorkflowEngine.Templates)
@@ -116,7 +117,9 @@ public partial class MainWindow
                 Content = new StackPanel { Spacing = 2, Children = {
                     new TextBlock { Text = w.Name + (w.Enabled ? "" : " (pausiert)"), Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold },
                     new TextBlock { Text = $"Startet {TriggerText(w)}{(w.NeedsApproval ? w.IsApproved ? " · freigegeben" : " · braucht Freigabe" : "")}", Foreground = w.IsApproved ? Muted : Brush.Parse("#FACC15"), FontSize = 11, TextWrapping = TextWrapping.Wrap },
-                    new TextBlock { Text = last is null ? "Noch nie gelaufen." : $"Zuletzt {last.At:dd.MM. HH:mm}: {(last.Ok ? "ok" : "mit Fehler")}", Foreground = Muted, FontSize = 10.5 } } } };
+                    new TextBlock { Text = last is null ? "Noch nie gelaufen." : $"Zuletzt {last.At:dd.MM. HH:mm}: {(last.Ok ? "ok" : "mit Fehler")}" + (w.LastRun is { } good && !last.Ok ? $" · zuletzt geklappt {good:dd.MM. HH:mm}" : ""), Foreground = Muted, FontSize = 10.5 } } } };
+            // T-0681: sichtbarer Fehlerstand – ein Fehlschlag gilt nicht als gelaufen
+            if (WorkflowEngine.FailText(w) is { } fail && sel.Content is StackPanel selBox) selBox.Children.Add(new TextBlock { Name = $"wf-fail-{n}", Text = "⚠ " + fail, Foreground = Brush.Parse("#F87171"), FontSize = 10.5, TextWrapping = TextWrapping.Wrap });
             sel.Click += (_, _) => { WfSelected = w.Id; WfNode = -1; _wfNew = false; Show("ablaeufe"); };
             var card = WCard(new StackPanel { Spacing = 2, Children = { sel, row } });
             if (on && card is Border cb) { cb.BorderBrush = Brush.Parse("#FACC15"); cb.BorderThickness = new Thickness(1.5); }

@@ -269,20 +269,23 @@ public partial class MainWindow
     }
 
     bool _podcBusy;
+    /// <summary>Tests: Pfad zu FFmpeg für „Lautheit angleichen“ ersetzen; leer = fehlt (wie <see cref="LiveFfmpegPath"/>).</summary>
+    public string? PodcFfmpegPath { get; set; }
 
     async Task PodcLoudness(ProgramDocument d)
     {
         var src = d.Text("audio");
         if (!KreativSafe.LocalFile(src)) { _progMsg[PodcKey] = "Lade zuerst eine Aufnahme von diesem Rechner."; Show(PodcKey); return; }
         if (_podcBusy) { _progMsg[PodcKey] = "Die Lautheit wird schon angeglichen – einen Moment."; Show(PodcKey); return; }
-        _podcBusy = true;
-        if (FfmpegPath is not { } ff) { _progMsg[PodcKey] = "FFmpeg fehlt. Du richtest es im Studio „Videos schneiden“ mit einem Klick ein."; Show(PodcKey); return; }
+        // T-0681: erst prüfen, dann „beschäftigt“ – früher blieb der Merker ohne FFmpeg gesetzt und der Knopf war bis zum Neustart tot
+        if ((PodcFfmpegPath is { } own ? (own.Length > 0 ? own : null) : FfmpegPath) is not { } ff) { _progMsg[PodcKey] = "FFmpeg fehlt – ohne geht „Lautheit angleichen“ nicht. So richtest du es ein: Einstellungen › Programme › Zusatzprogramme, dort bei FFmpeg auf „Einrichten“. Danach hier noch einmal klicken."; Show(PodcKey); return; }
         var dir = Path.GetDirectoryName(src)!;
         var meta = Path.Combine(Path.GetTempPath(), "trendo-podcast-" + Guid.NewGuid().ToString("N") + ".txt");
         var output = Path.Combine(dir, Path.GetFileNameWithoutExtension(src) + "-fertig.mp3");
-        _progMsg[PodcKey] = "Lautheit wird angeglichen …"; Show(PodcKey);
+        _podcBusy = true; // ab hier setzt das finally unten den Merker in jedem Fall zurück
         try
         {
+            _progMsg[PodcKey] = "Lautheit wird angeglichen …"; Show(PodcKey);
             File.WriteAllText(meta, PodcastKit.FfMetadata(d.Text("title"), PodcastKit.ParseChapters(d.Text("chapters")).Chapters, PodcLength(d)));
             var args = PodcastKit.LoudnessArgs(src, output).ToList();
             args.InsertRange(3, ["-i", meta, "-map_metadata", "1", "-map_chapters", "1", "-map", "0:a"]);
