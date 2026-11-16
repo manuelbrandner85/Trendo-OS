@@ -10,10 +10,11 @@ public static class DevStudio
 {
     public static readonly IReadOnlyList<DevTemplate> Templates =
     [
-        new("web", "Webseite (HTML, CSS, JavaScript)", "", "Eine Seite, die sofort im Browser läuft."),
-        new("python", "Python-Programm", "python3", "Ein kleines Programm mit Test."),
-        new("dotnet-console", "C#-Programm (.NET)", "dotnet", "Ein Konsolenprogramm, das du bauen und starten kannst."),
-        new("node", "JavaScript-Programm (Node)", "node", "Ein Node-Programm mit Test."),
+        new("web", "Web-App (HTML, CSS, JavaScript)", "", "Eine Einkaufsliste, die sofort im Browser läuft – mit Test und kleinem Server, wenn Node eingerichtet ist."),
+        new("python", "Python-Programm", "python3", "Wertet Zahlen aus (Summe, Mittelwert, Median) – mit Tests."),
+        new("dotnet-console", "C#-Programm für die Konsole (.NET)", "dotnet", "Ein Konsolenprogramm mit Rechenkern und eigenem Testprojekt."),
+        new("dotnet-desktop", "C#-Programm mit Fenster (.NET, Avalonia)", "dotnet", "Ein Einheiten-Umrechner mit Fenster und eigenem Testprojekt."),
+        new("node", "JavaScript-Programm (Node)", "node", "Zählt Wörter und Zeichen – mit Tests."),
     ];
 
     public static string SafeName(string name)
@@ -31,43 +32,22 @@ public static class DevStudio
         if (Directory.Exists(dir)) throw new IOException($"Den Ordner „{safe}“ gibt es schon.");
         Directory.CreateDirectory(dir);
         void W(string rel, string text) { var p = Path.Combine(dir, rel); Directory.CreateDirectory(Path.GetDirectoryName(p)!); File.WriteAllText(p, text.Replace("\r\n", "\n"), new UTF8Encoding(false)); }
-        W("README.md", $"# {name}\n\nVorlage: {t.Name}.\n");
-        W(".gitignore", "bin/\nobj/\nnode_modules/\n__pycache__/\n*.pyc\n");
-        switch (t.Id)
-        {
-            case "web":
-                W("index.html", $"<!doctype html>\n<html lang=\"de\">\n<head><meta charset=\"utf-8\"><title>{System.Net.WebUtility.HtmlEncode(name)}</title><link rel=\"stylesheet\" href=\"style.css\"></head>\n<body><h1>{System.Net.WebUtility.HtmlEncode(name)}</h1><button id=\"b\">Klick mich</button><p id=\"o\"></p><script src=\"app.js\"></script></body>\n</html>\n");
-                W("style.css", "body{font-family:system-ui,sans-serif;background:#0b1730;color:#eef;padding:2rem}button{padding:.5rem 1rem}\n");
-                W("app.js", "let n=0;document.getElementById('b').onclick=()=>{n++;document.getElementById('o').textContent=n+' mal geklickt';};\n");
-                break;
-            case "python":
-                W("main.py", "def gruss(name: str) -> str:\n    return f\"Hallo {name}!\"\n\n\nif __name__ == \"__main__\":\n    print(gruss(\"Welt\"))\n");
-                W("test_main.py", "import unittest\nfrom main import gruss\n\n\nclass T(unittest.TestCase):\n    def test_gruss(self):\n        self.assertEqual(gruss(\"Anna\"), \"Hallo Anna!\")\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n");
-                break;
-            case "dotnet-console":
-                W(safe + ".csproj", "<Project Sdk=\"Microsoft.NET.Sdk\">\n  <PropertyGroup>\n    <OutputType>Exe</OutputType>\n    <TargetFramework>net10.0</TargetFramework>\n    <Nullable>enable</Nullable>\n    <ImplicitUsings>enable</ImplicitUsings>\n  </PropertyGroup>\n</Project>\n");
-                W("Program.cs", "Console.WriteLine(\"Hallo aus Trendo OS!\");\n");
-                break;
-            case "node":
-                W("package.json", "{\n  \"name\": \"" + safe.ToLowerInvariant() + "\",\n  \"version\": \"0.1.0\",\n  \"type\": \"module\",\n  \"scripts\": { \"start\": \"node index.js\", \"test\": \"node --test\" }\n}\n");
-                W("index.js", "export const gruss = (n) => `Hallo ${n}!`;\nif (import.meta.url === `file://${process.argv[1]}`) console.log(gruss('Welt'));\n");
-                W("index.test.js", "import test from 'node:test';\nimport assert from 'node:assert';\nimport { gruss } from './index.js';\ntest('gruss', () => assert.equal(gruss('Anna'), 'Hallo Anna!'));\n");
-                break;
-        }
+        // T-0688: echte Vorlagen mit kleiner Funktion und Test (Inhalte in DevTemplates)
+        var lower = safe.ToLowerInvariant();
+        foreach (var (rel, text) in DevTemplates.Files(t.Id))
+            W(rel.Replace("__SAFE__", safe), text.Replace("__HTML__", System.Net.WebUtility.HtmlEncode(name)).Replace("__NAME__", name.Replace("\"", "'").Replace("\\", "/")).Replace("__SAFE__", safe).Replace("__LOWER__", lower));
         return dir;
     }
 
-    /// <summary>Was „Testen“ für den Projektordner bedeutet (erkannt an den Dateien).</summary>
-    public static (string Exe, string[] Args)? TestCommand(string dir)
-    {
-        if (Directory.GetFiles(dir, "*.csproj").Length > 0) return ("dotnet", ["build", "--nologo", "-v", "q"]);
-        if (File.Exists(Path.Combine(dir, "package.json"))) return ("node", ["--test"]);
-        if (Directory.GetFiles(dir, "test_*.py").Length > 0) return (OperatingSystem.IsWindows() ? "python" : "python3", ["-m", "unittest", "-q"]);
-        return null;
-    }
+    /// <summary>Was „Testen“ für den Projektordner bedeutet (erkannt an den Dateien). T-0688: bei .NET ein echter Testlauf (dotnet test) statt nur Bauen;
+    /// ohne Testprojekt bzw. ohne Tests gibt es keinen Befehl.</summary>
+    public static (string Exe, string[] Args)? TestCommand(string dir) => DevBuild.Test(DevBuild.Detect(dir)).Cmd is { } c ? (c.Exe, c.Args) : null;
 
-    public static Cli.Result RunTests(string dir, int timeoutMs = 180000) =>
-        TestCommand(dir) is { } c ? Cli.Run(c.Exe, c.Args, dir, timeoutMs) : new(-1, "", "Für dieses Projekt kennt Trendo keinen Test.");
+    public static Cli.Result RunTests(string dir, int timeoutMs = 180000)
+    {
+        var plan = DevBuild.Test(DevBuild.Detect(dir));
+        return plan.Cmd is { } c ? Cli.Run(c.Exe, c.Args, c.Cwd, timeoutMs, c.Env, c.Utf8 ? new UTF8Encoding(false) : null) : new(-1, "", plan.Blocked ?? "Für dieses Projekt kennt Trendo keinen Test.");
+    }
 
     public static Cli.Result GitInit(string dir)
     {

@@ -1,0 +1,59 @@
+# T-0688 Beleg: Vorlage dotnet-console (C#-Programm für die Konsole (.NET)) – 2026-11-16 07:27:04
+Projekt angelegt: C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-console
+Erkannt: .NET-Programm, Programm: C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-console\Beleg-dotnet-console.csproj, Tests: C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-console\tests\Beleg-dotnet-console.Tests.csproj
+  Datei: .gitignore (70 Bytes, SHA-256 7c9329fd99d6e05849bda52d2cae5a7ad563cfdd87a3e5ea612b59dac1b194c9)
+  Datei: Beleg-dotnet-console.csproj (426 Bytes, SHA-256 bdc941a0c39329e37efe15b3b392f77f564b313e208583fb8aabb9db6a4ada80)
+  Datei: Program.cs (742 Bytes, SHA-256 dcf0174e0c4a5a03319965927763ce34b0349ad04340e5cc2fe22aaabe1d8022)
+  Datei: README.md (443 Bytes, SHA-256 685ac8c817ed1a3be79b69bd2688934747034a8819abddebfae5f017d057675f)
+  Datei: Rechner.cs (1042 Bytes, SHA-256 3cecd81180ad4f553cde4968507706d7a6ce225f302cb0a5ead75cf3c3be4396)
+  Datei: tests\Beleg-dotnet-console.Tests.csproj (574 Bytes, SHA-256 bff0f7d6d18fcedbc411b2874b40bad3145b047af6a6bb6b7d9e9045a729bf94)
+  Datei: tests\RechnerTests.cs (678 Bytes, SHA-256 6c1061c4f7d6754921f6bf5bbed95c3092b2c2bdf913d0637df9410a88c09335)
+
+## Bauen
+$ C:\Program Files\dotnet\dotnet.exe build C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-console\Beleg-dotnet-console.csproj --nologo -v m -clp:NoSummary
+  Wiederherzustellende Projekte werden ermittelt...
+  "C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-console\Beleg-dotnet-console.csproj" wiederhergestellt (in 76 ms.).
+  Beleg-dotnet-console -> C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-console\bin\Debug\net10.0\Beleg-dotnet-console.dll
+
+Der Buildvorgang wurde erfolgreich ausgeführt.
+    0 Warnung(en)
+    0 Fehler
+
+Verstrichene Zeit 00:00:01.21
+Exit 0 nach 1,5 s
+
+## Testen
+$ C:\Program Files\dotnet\dotnet.exe test C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-console\tests\Beleg-dotnet-console.Tests.csproj --nologo --logger trx;LogFileName=ergebnis.trx --results-directory C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\ergebnisse-dotnet-console
+  Wiederherzustellende Projekte werden ermittelt...
+  "C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-console\tests\Beleg-dotnet-console.Tests.csproj" wiederhergestellt (in 315 ms.).
+  1 von 2 Projekten sind für die Wiederherstellung auf dem neuesten Stand.
+  Beleg-dotnet-console -> C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-console\bin\Debug\net10.0\Beleg-dotnet-console.dll
+  Beleg-dotnet-console.Tests -> C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-console\tests\bin\Debug\net10.0\Beleg-dotnet-console.Tests.dll
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-console\tests\bin\Debug\net10.0\Beleg-dotnet-console.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\ergebnisse-dotnet-console\ergebnis.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     5, übersprungen:     0, gesamt:     5, Dauer: 970 ms - Beleg-dotnet-console.Tests.dll (net10.0)
+Exit 0 nach 22,4 s
+  BESTANDEN: RechnerTests.Lesen_meldet_falsche_Eingabe
+  BESTANDEN: RechnerTests.Lesen_versteht_Komma_und_Punkt
+  BESTANDEN: RechnerTests.Mittelwert_ohne_Zahlen_meldet_einen_Fehler
+  BESTANDEN: RechnerTests.Mittelwert_rundet_auf_zwei_Stellen
+  BESTANDEN: RechnerTests.Summe_addiert_alle_Zahlen
+Auswertung: 5 bestanden, 0 fehlgeschlagen
+
+## Paket bauen und starten
+$ C:\Program Files\dotnet\dotnet.exe publish C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-console\Beleg-dotnet-console.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none -p:DebugSymbols=false --nologo -v m -o C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-console\trendo-paket\Beleg-dotnet-console-win-x64
+  Wiederherzustellende Projekte werden ermittelt...
+  "C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-console\Beleg-dotnet-console.csproj" wiederhergestellt (in 294 ms.).
+  Beleg-dotnet-console -> C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-console\bin\Release\net10.0\win-x64\Beleg-dotnet-console.dll
+  Beleg-dotnet-console -> C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-console\trendo-paket\Beleg-dotnet-console-win-x64\
+Paket: C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-console\trendo-paket\Beleg-dotnet-console-win-x64.zip (33.024.236 Bytes, SHA-256 a67e3071a885912d87a3795b4bb7caab44166b05c4c2521ed8a994f2f7d314a7)
+Hallo aus Trendo OS!
+Zahlen: 2; 3; 5
+Summe: 10
+Mittelwert: 3,33
+Minimum: 2, Maximum: 5
+✓ Startprobe: gestartet aus leerem Ordner, Exit 0. Ausgabe: Hallo aus Trendo OS! | Zahlen: 2; 3; 5 | Summe: 10 | Mittelwert: 3,33 | Minimum: 2, Maximum: 5
+Ergebnis: Paket fertig und gestartet. · Art: Eigenständiges Programm (win-x64), läuft ohne installiertes .NET · Ordner C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-console\trendo-paket\Beleg-dotnet-console-win-x64 (73545531 Bytes) · ZIP C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-console\trendo-paket\Beleg-dotnet-console-win-x64.zip (33024236 Bytes) · SHA-256 a67e3071a885912d87a3795b4bb7caab44166b05c4c2521ed8a994f2f7d314a7
+Startprobe: BESTANDEN – gestartet aus leerem Ordner, Exit 0. Ausgabe: Hallo aus Trendo OS! | Zahlen: 2; 3; 5 | Summe: 10 | Mittelwert: 3,33 | Minimum: 2, Maximum: 5

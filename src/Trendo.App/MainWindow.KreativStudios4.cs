@@ -231,6 +231,140 @@ public partial class MainWindow
         finally { _caBusy = false; Show(CodeAiKey); }
     }
 
+    // ───────────── T-0688: „Mit Claude ändern“ ändert wirklich ─────────────
+    // Claude Code arbeitet mit dem eigenen Abo der Person direkt im geöffneten Projektordner. Vorher merkt sich Trendo alle Dateien
+    // (Schnappschuss für den Zeilen-Diff und eine vollständige Sicherung zum Zurücknehmen), danach zeigt es je Datei, was Claude geändert hat.
+
+    string? _caClaudeStore; bool _caClaudeBusy; CancellationTokenSource? _caClaudeCts; Task<bool>? _caClaudeTask;
+    /// <summary>Läuft gerade ein Claude-Auftrag aus „Code mit KI“? Und der zuletzt gestartete (für Tests zum Abwarten).</summary>
+    public bool CodeAiClaudeBusy => _caClaudeBusy;
+    public Task<bool>? CodeAiClaudeTask => _caClaudeTask;
+    /// <summary>Gibt es Änderungen von Claude, die noch auf „Übernehmen“ oder „Zurücknehmen“ warten?</summary>
+    public bool CodeAiClaudePending => _caClaudeStore is not null;
+    string CaClaudeStore(string root) => Path.Combine(Path.GetDirectoryName(CaSnapFile(root))!, "vor-claude");
+
+    /// <summary>„Mit Claude ändern“: Wunsch rechts, Claude ändert die Dateien im Projektordner. true = Claude hat etwas geändert.</summary>
+    public Task<bool> CodeAiClaudeChange(ProgramDocument d) => _caClaudeTask = CaClaudeChangeRun(d);
+
+    async Task<bool> CaClaudeChangeRun(ProgramDocument d)
+    {
+        CaState(d);
+        if (CaRoot(d) is not { } r) { _progMsg[CodeAiKey] = "Öffne zuerst einen Projektordner."; Show(CodeAiKey); return false; }
+        var wish = d.Text("wish").Trim();
+        if (wish.Length == 0) { _progMsg[CodeAiKey] = "Schreib rechts unter „Was soll Claude ändern?“ deinen Wunsch."; Show(CodeAiKey); return false; }
+        if (_caClaudeBusy) { _progMsg[CodeAiKey] = "Claude arbeitet schon an einem Auftrag."; Show(CodeAiKey); return false; }
+        if (_caClaudeStore is not null) { _progMsg[CodeAiKey] = "Erst die letzten Änderungen von Claude übernehmen oder zurücknehmen."; Show(CodeAiKey); return false; }
+        // nur über das eigene Abo (Claude Code) – nie über einen API-Schlüssel; Trendo meldet niemanden selbst an
+        var status = ClaudeRunOverride is null ? await ClaudeCheck(fresh: true) : null;
+        if (status is { Ready: false })
+        {
+            _progMsg[CodeAiKey] = (status.Installed ? "Claude Code ist auf diesem PC nicht mit deinem Claude-Abo angemeldet." : "Claude Code ist auf diesem PC nicht eingerichtet.")
+                + " Verbinde rechts unter „Claude“ deinen eigenen Zugang – danach ändert Claude hier die Dateien. Trendo nutzt nie einen API-Schlüssel.";
+            Show(CodeAiKey); return false;
+        }
+        try
+        {
+            if (_caDoc is not null && _caDocFile is not null && _caDoc.Text != _caSaved) CodeAiSaveFile(d); // sonst arbeitet Claude an einem alten Stand
+            CodeAiSnapshot(d); // Grundlage für den Zeilen-Diff
+            var store = CaClaudeStore(r); FolderSnapshot.Take(r, store); _caClaudeStore = store; // vollständige Sicherung zum Zurücknehmen
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException) { _caClaudeStore = null; _progMsg[CodeAiKey] = "Die Sicherung vor dem Claude-Lauf ging nicht: " + e.Message; Show(CodeAiKey); return false; }
+        var rel = _caDocFile is { } f ? Path.GetRelativePath(r, f).Replace('\\', '/') : null;
+        var prompt = $"Wunsch: {wish}\n" + (rel is null ? "" : $"Geöffnet ist die Datei „{rel}“.\n")
+            + "Ändere die Dateien direkt in diesem Projektordner (Werkzeuge Edit oder Write). Ändere nur, was für den Wunsch nötig ist, halte den Stil des Projekts ein und führe keine Programme aus. "
+            + "Fasse am Ende in höchstens zwei Sätzen auf Deutsch zusammen, was du geändert hast.";
+        var args = ClaudeCode.Args(prompt, ClaudeCode.Phase.Chat, null, "Du arbeitest im Studio „Code mit KI“ von Trendo OS. Arbeitsordner ist der Projektordner der Person.", null, ClaudeCode.Level.Sicher);
+        var say = new StringBuilder(); string? error = null; bool? doneOk = null;
+        _caClaudeBusy = true; using var cts = _caClaudeCts = new CancellationTokenSource();
+        _caOut = $"Claude arbeitet im Projektordner „{Path.GetFileName(r.TrimEnd(Path.DirectorySeparatorChar))}“ …"; _progMsg[CodeAiKey] = "Claude arbeitet …"; Show(CodeAiKey);
+        _core.Audit.Append(Principal.LocalOwner.Name, "code-ki.claude.start", Path.GetFileName(r.TrimEnd(Path.DirectorySeparatorChar)));
+        try
+        {
+            await Task.Run(() => ClaudeRun(args, r, l =>
+            {
+                if (l.Contains("\"trendo_error\"")) { try { error = System.Text.Json.Nodes.JsonNode.Parse(l)?["text"]?.ToString(); } catch (System.Text.Json.JsonException) { } return; }
+                foreach (var ev in ClaudeCode.Parse(l, r))
+                    if (ev is ClaudeCode.Say s) lock (say) say.AppendLine(s.Text);
+                    else if (ev is ClaudeCode.Done dn) { doneOk = dn.Ok; if (dn.Text.Length > 0 && say.Length == 0) lock (say) say.AppendLine(dn.Text); }
+            }, cts.Token));
+        }
+        catch (OperationCanceledException) { error = "Angehalten."; }
+        catch (InvalidOperationException e) { error = e.Message; }
+        finally { _caClaudeBusy = false; _caClaudeCts = null; }
+        if (ClaudeCode.IsAuthExpired(error) || doneOk is not true && ClaudeCode.IsAuthExpired(say.ToString())) error = ClaudeCode.AuthText;
+        else if (ClaudeCode.IsLimit(error) || doneOk is not true && ClaudeCode.IsLimit(say.ToString())) error = ClaudeCode.LimitText;
+        var changes = CodeAiChanges(d);
+        if (_caDocFile is { } open && File.Exists(open)) try { CaLoad(open); } catch (Exception e) when (e is IOException or InvalidOperationException or UnauthorizedAccessException) { }
+        _core.Audit.Append(Principal.LocalOwner.Name, "code-ki.claude", $"{Path.GetFileName(r.TrimEnd(Path.DirectorySeparatorChar))}: {changes.Count} Dateien geändert{(error is null ? "" : " – " + error)}");
+        if (changes.Count == 0) { try { Directory.Delete(_caClaudeStore!, true); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } _caClaudeStore = null; }
+        _caOut = (error is not null ? "✕ " + error : changes.Count == 0 ? "Claude hat keine Datei geändert." : $"✓ Claude hat {changes.Count} Dateien geändert.") + (say.Length > 0 ? "\n\n" + say.ToString().Trim() : "");
+        _progMsg[CodeAiKey] = changes.Count == 0 ? (error ?? "Claude hat keine Datei geändert.") : $"Claude hat {changes.Count} Dateien geändert. Unten Zeile für Zeile ansehen – dann „Übernehmen“ oder „Zurücknehmen“.";
+        Show(CodeAiKey);
+        return changes.Count > 0;
+    }
+
+    /// <summary>Änderungen von Claude behalten: Sicherung löschen, neuer Schnappschuss als Ausgangspunkt.</summary>
+    public void CodeAiClaudeAccept(ProgramDocument d)
+    {
+        CaState(d);
+        if (_caClaudeStore is not { } store || CaRoot(d) is not { } r) throw new InvalidOperationException("Es gibt keine Änderung von Claude, die auf eine Entscheidung wartet.");
+        var n = FolderSnapshot.Open(r, store).Changes().Count;
+        try { Directory.Delete(store, true); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        _caClaudeStore = null; CodeAiSnapshot(d);
+        _core.Audit.Append(Principal.LocalOwner.Name, "code-ki.claude.uebernommen", n.ToString(CultureInfo.InvariantCulture));
+        _progMsg[CodeAiKey] = $"Übernommen: {n} Dateien bleiben so, wie Claude sie geändert hat.";
+    }
+
+    /// <summary>Änderungen von Claude zurücknehmen – alle oder nur eine Datei (relativer Pfad).</summary>
+    public void CodeAiClaudeRevert(ProgramDocument d, string? rel = null)
+    {
+        CaState(d);
+        if (_caClaudeStore is not { } store || CaRoot(d) is not { } r) throw new InvalidOperationException("Es gibt keine Änderung von Claude, die auf eine Entscheidung wartet.");
+        var snap = FolderSnapshot.Open(r, store);
+        var all = snap.Changes();
+        var todo = rel is null ? all : all.Where(c => string.Equals(c.File, rel.Replace('\\', '/'), StringComparison.OrdinalIgnoreCase)).ToList();
+        foreach (var (file, change) in todo)
+        {
+            var target = Path.Combine(r, file.Replace('/', Path.DirectorySeparatorChar));
+            if (!CodeAiKit.InsideNoLinks(r, target)) continue;
+            if (change == "neu") File.Delete(target);
+            else { Directory.CreateDirectory(Path.GetDirectoryName(target)!); File.Copy(Path.Combine(store, file.Replace('/', Path.DirectorySeparatorChar)), target, true); }
+        }
+        if (snap.Changes().Count == 0) { try { Directory.Delete(store, true); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } _caClaudeStore = null; }
+        CodeAiChanges(d);
+        if (_caDocFile is { } open) { if (File.Exists(open)) CaLoad(open); else { _caDoc = null; _caDocFile = null; } }
+        _core.Audit.Append(Principal.LocalOwner.Name, "code-ki.claude.zurueck", rel ?? "alle");
+        _progMsg[CodeAiKey] = rel is null ? $"Zurückgenommen: {todo.Count} Dateien sind wieder wie vor Claude." : $"„{rel}“ ist wieder wie vor Claude.";
+    }
+
+    Control CaClaudeDecision(ProgramDocument d)
+    {
+        var sp = new StackPanel { Name = "ca-claude", Spacing = 6 };
+        if (_caClaudeBusy)
+        {
+            var stop = new Button { Name = "ca-claude-stop", Content = "Claude anhalten", Padding = new Thickness(10, 4) };
+            stop.Click += (_, _) => { try { _caClaudeCts?.Cancel(); } catch (ObjectDisposedException) { } };
+            sp.Children.Add(new WrapPanel { Children = { new TextBlock { Text = "Claude arbeitet im Projektordner …", Foreground = K4Warn, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 0) }, stop } });
+            return sp;
+        }
+        if (_caClaudeStore is null) return sp;
+        sp.Children.Add(P("Claude hat Dateien geändert. Prüfe unten jede Datei – dann entscheide:", Text, 12));
+        var row = new WrapPanel();
+        var ok = new Button { Name = "ca-claude-accept", Content = "Übernehmen", Padding = new Thickness(12, 4), Margin = new Thickness(0, 0, 6, 6) };
+        ok.Click += (_, _) => ProgramRun(CodeAiKey, () => CodeAiClaudeAccept(d));
+        var back = new Button { Name = "ca-claude-revert", Content = "Alles zurücknehmen", Padding = new Thickness(12, 4), Margin = new Thickness(0, 0, 6, 6) };
+        back.Click += (_, _) => ProgramRun(CodeAiKey, () => CodeAiClaudeRevert(d));
+        row.Children.Add(ok); row.Children.Add(back);
+        if (_caDiffPath is { } dp)
+        {
+            var one = new Button { Name = "ca-claude-revert-file", Content = $"Nur „{Path.GetFileName(dp)}“ zurücknehmen", Padding = new Thickness(12, 4), Margin = new Thickness(0, 0, 6, 6) };
+            one.Click += (_, _) => ProgramRun(CodeAiKey, () => CodeAiClaudeRevert(d, dp));
+            row.Children.Add(one);
+        }
+        sp.Children.Add(row);
+        return sp;
+    }
+
     string CaExcerpt(ProgramDocument d, out string rel)
     {
         CaState(d);
@@ -244,6 +378,7 @@ public partial class MainWindow
 
     void CaClaude(ProgramDocument d, string what)
     {
+        if (what == "aendern") { _ = CodeAiClaudeChange(d); return; } // T-0688: Claude ändert die Dateien selbst, im Projektordner
         string excerpt, rel;
         try { excerpt = CaExcerpt(d, out rel); }
         catch (InvalidOperationException ex) { _progMsg[CodeAiKey] = ex.Message; Show(CodeAiKey); return; }
@@ -251,13 +386,6 @@ public partial class MainWindow
         string prompt;
         switch (what)
         {
-            case "aendern":
-                var wish = d.Text("wish").Trim();
-                if (wish.Length == 0) { _progMsg[CodeAiKey] = "Schreib rechts unter „Was soll Claude ändern?“ deinen Wunsch."; Show(CodeAiKey); return; }
-                // vorher ein Schnappschuss, damit jede Änderung vergleichbar ist
-                if (CaSnapshot(d) is null) CodeAiSnapshot(d);
-                prompt = $"Ändere „{rel}“: {wish}\nÄndere nur, was dafür nötig ist, und halte den Stil des Projekts ein. Führe keine Programme aus. Zeig die Änderung als vollständige Datei oder als Diff.\n\n{excerpt}";
-                break;
             case "test":
                 prompt = $"Schreib Unit-Tests für „{rel}“, passend zum Projekt ({kind?.Label ?? "unbekannte Projektart"}{(cmd is null ? "" : $", Testbefehl „{cmd.Display}“")}). Nenne Dateiname und Inhalt der Testdatei. Führe nichts aus.\n\n{excerpt}";
                 break;
@@ -319,7 +447,7 @@ public partial class MainWindow
             ]),
             ("Claude", [
                 new ProgramCmd("ca-explain", "Mit Claude erklären", d => CaClaude(d, "erklaeren"), Tip: "Schickt die offene Datei an Claude (dein Zugang)."),
-                new ProgramCmd("ca-change", "Mit Claude ändern", d => CaClaude(d, "aendern"), Tip: "Dein Wunsch steht rechts. Vorher entsteht ein Schnappschuss zum Vergleichen."),
+                new ProgramCmd("ca-change", "Mit Claude ändern", d => CaClaude(d, "aendern"), Tip: "Dein Wunsch steht rechts. Claude ändert die Dateien im Projektordner; vorher sichert Trendo alles. Danach Zeile für Zeile prüfen und übernehmen oder zurücknehmen."),
                 new ProgramCmd("ca-testwrite", "Test schreiben mit Claude", d => CaClaude(d, "test")),
             ]),
             ("Prüfen", [
@@ -444,6 +572,7 @@ public partial class MainWindow
         var snap = CaSnapshot(d);
         var cmp = new StackPanel { Spacing = 6 };
         cmp.Children.Add(H("Änderungen", 14));
+        cmp.Children.Add(CaClaudeDecision(d));
         cmp.Children.Add(P(snap is null ? "Noch kein Schnappschuss. „Schnappschuss“ merkt sich jetzt alle Dateien." : $"Schnappschuss vom {snap.TakenUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm", De)} mit {snap.Files.Count} Dateien.", Muted, 12));
         var row = new WrapPanel();
         var snapBtn = new Button { Name = "ca-snap-now", Content = snap is null ? "Schnappschuss" : "Neuer Schnappschuss", Padding = new Thickness(10, 4), Margin = new Thickness(0, 0, 6, 6) };
@@ -499,7 +628,7 @@ public partial class MainWindow
         sp.Children.Add(P("Zeitlimit für Tests (Sekunden)", null, 11));
         sp.Children.Add(KrBox(d, "timeout", "ca-p-timeout", "300"));
         sp.Children.Add(H("Sicherheit", 13));
-        sp.Children.Add(P("Trendo führt Befehle nur nach deinem zweiten Klick aus, im Projektordner und mit Zeitlimit. Claude arbeitet mit deinem eigenen Zugang. Geheimnisse (Passwörter, Schlüssel) gehören nicht in Dateien, die du an Claude gibst.", Muted, 11));
+        sp.Children.Add(P("Trendo führt Befehle nur nach deinem zweiten Klick aus, im Projektordner und mit Zeitlimit. Claude arbeitet mit deinem eigenen Zugang im Projektordner; vorher sichert Trendo alle Dateien, danach entscheidest du je Datei. Geheimnisse (Passwörter, Schlüssel) gehören nicht in Dateien, die du an Claude gibst.", Muted, 11));
         return sp;
     }
 

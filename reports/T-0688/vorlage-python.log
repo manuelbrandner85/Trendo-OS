@@ -1,0 +1,49 @@
+# T-0688 Beleg: Vorlage python (Python-Programm) – 2026-11-16 07:27:03
+Projekt angelegt: C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-python
+Erkannt: Python-Programm, Programm: C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-python\main.py, Tests: unittest
+  Datei: .gitignore (70 Bytes, SHA-256 7c9329fd99d6e05849bda52d2cae5a7ad563cfdd87a3e5ea612b59dac1b194c9)
+  Datei: main.py (734 Bytes, SHA-256 f4d052b867ea64fcc3523b1f71390d85741601140888587163e3d4a96218f4b0)
+  Datei: README.md (314 Bytes, SHA-256 4f427fcd92c10bf471e5354f2c80d107615ae042fa11cac0c301bdb3eb70845c)
+  Datei: rechner.py (926 Bytes, SHA-256 dd3997cfba1de82749b058f5ae7b5eaec257b5b966618bc5a86a1bd4a9ee84a6)
+  Datei: test_rechner.py (805 Bytes, SHA-256 d2a1a4b03f9d9d86151f0d77a5773fd9def36115bff93ecc7bed9e4375d94748)
+
+## Bauen
+$ python -m compileall -q -x (trendo-paket|\.venv|venv|\.git)[\\/] .
+
+Exit 0 nach 0,1 s
+
+## Testen
+$ python -m unittest -v
+
+[stderr]
+test_gruss (test_rechner.RechnerTest.test_gruss) ... ok
+test_lesen_meldet_falsche_eingabe (test_rechner.RechnerTest.test_lesen_meldet_falsche_eingabe) ... ok
+test_lesen_versteht_komma (test_rechner.RechnerTest.test_lesen_versteht_komma) ... ok
+test_median_gerade_und_ungerade (test_rechner.RechnerTest.test_median_gerade_und_ungerade) ... ok
+test_mittelwert_rundet (test_rechner.RechnerTest.test_mittelwert_rundet) ... ok
+test_summe (test_rechner.RechnerTest.test_summe) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.000s
+
+OK
+Exit 0 nach 0,2 s
+  BESTANDEN: test_rechner.RechnerTest.test_gruss
+  BESTANDEN: test_rechner.RechnerTest.test_lesen_meldet_falsche_eingabe
+  BESTANDEN: test_rechner.RechnerTest.test_lesen_versteht_komma
+  BESTANDEN: test_rechner.RechnerTest.test_median_gerade_und_ungerade
+  BESTANDEN: test_rechner.RechnerTest.test_mittelwert_rundet
+  BESTANDEN: test_rechner.RechnerTest.test_summe
+Auswertung: 6 bestanden, 0 fehlgeschlagen
+
+## Paket bauen und starten
+6 Dateien mit Startskript nach C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-python\trendo-paket\Beleg-python-python
+Paket: C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-python\trendo-paket\Beleg-python-python.zip (2.166 Bytes, SHA-256 1d83e2e0a3f2e295e2b031c8a63981c902ecd1ba916362b3b6697d5a8598968e)
+Hallo Welt!
+Zahlen: 2; 3; 5
+Summe: 10
+Mittelwert: 3.33
+Median: 3
+✓ Startprobe: Startskript aus leerem Ordner gestartet, Exit 0. Ausgabe: Hallo Welt! | Zahlen: 2; 3; 5 | Summe: 10 | Mittelwert: 3.33 | Median: 3
+Ergebnis: Paket fertig und gestartet. · Art: ZIP mit Startskript (braucht Python auf dem Ziel-PC) · Ordner C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-python\trendo-paket\Beleg-python-python (2996 Bytes) · ZIP C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-python\trendo-paket\Beleg-python-python.zip (2166 Bytes) · SHA-256 1d83e2e0a3f2e295e2b031c8a63981c902ecd1ba916362b3b6697d5a8598968e
+Startprobe: BESTANDEN – Startskript aus leerem Ordner gestartet, Exit 0. Ausgabe: Hallo Welt! | Zahlen: 2; 3; 5 | Summe: 10 | Mittelwert: 3.33 | Median: 3

@@ -44,9 +44,10 @@ public static class Cli
     /// (aus einem Hintergrund-Thread), und über <paramref name="ct"/> lässt sich der Lauf abbrechen – dann wird der gestartete Prozess samt seinen
     /// Unterprozessen beendet (Exit <see cref="Cancelled"/>). Zeitlimit wie bisher (Exit -2).</summary>
     /// <param name="onStart">Meldet die Prozessnummer des gestarteten Programms.</param>
-    public static async Task<Result> RunStreamAsync(string exe, IEnumerable<string> args, string? cwd, Action<string>? onLine, CancellationToken ct, int timeoutMs = 120000, Action<int>? onStart = null, IDictionary<string, string>? env = null)
+    public static async Task<Result> RunStreamAsync(string exe, IEnumerable<string> args, string? cwd, Action<string>? onLine, CancellationToken ct, int timeoutMs = 120000, Action<int>? onStart = null, IDictionary<string, string>? env = null, System.Text.Encoding? encoding = null)
     {
         var psi = new ProcessStartInfo(Find(exe) ?? exe) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true, WorkingDirectory = cwd ?? Environment.CurrentDirectory };
+        if (encoding is not null) { psi.StandardOutputEncoding = encoding; psi.StandardErrorEncoding = encoding; }
         foreach (var a in args) psi.ArgumentList.Add(a);
         if (env is not null) foreach (var kv in env) psi.Environment[kv.Key] = kv.Value;
         Process p;

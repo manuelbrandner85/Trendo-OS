@@ -1,0 +1,56 @@
+# T-0688 Beleg: Vorlage dotnet-desktop (C#-Programm mit Fenster (.NET, Avalonia)) – 2026-11-16 07:27:37
+Projekt angelegt: C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-desktop
+Erkannt: .NET-Programm mit Fenster, Programm: C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-desktop\Beleg-dotnet-desktop.csproj, Tests: C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-desktop\tests\Beleg-dotnet-desktop.Tests.csproj
+  Datei: .gitignore (70 Bytes, SHA-256 7c9329fd99d6e05849bda52d2cae5a7ad563cfdd87a3e5ea612b59dac1b194c9)
+  Datei: Anwendung.cs (576 Bytes, SHA-256 9c52d760fa5d281ca40899f0159c3b992bcc11f501fd84f2234f737ddf54ed3d)
+  Datei: Beleg-dotnet-desktop.csproj (663 Bytes, SHA-256 78db7aa855d6cd1d5665ce66aed2e5def56505b2d4fcf7a1804e5edb5eb0aec9)
+  Datei: Hauptfenster.cs (1627 Bytes, SHA-256 a2a6fe4d51a9b12377183d97700d127a7ab190e8a896ac9a39f2410496e72d40)
+  Datei: Program.cs (511 Bytes, SHA-256 598e740f37b1eca41ce1bee313058c2f2578e46b371fcc9d8d0df02a0c9047da)
+  Datei: README.md (511 Bytes, SHA-256 f465edfa0782f9ef9e258c7824e93a14bfcdab6f44479efb51b8c179b549a0fb)
+  Datei: Umrechner.cs (1615 Bytes, SHA-256 f4a5e0f3be7aa3ae86f79d673af9b21dcf711d9363eb64c2f65fa34b4ee91011)
+  Datei: tests\Beleg-dotnet-desktop.Tests.csproj (574 Bytes, SHA-256 e05518fb54ea64e6c1fcd756ff6fc5a4558d5ed7af53e167de806ce2b1ab92e1)
+  Datei: tests\UmrechnerTests.cs (984 Bytes, SHA-256 39022c5dd0eeb2cc2d34bb150dbd4211f7123af10505a8717cc06bf61ae73fb3)
+
+## Bauen
+$ C:\Program Files\dotnet\dotnet.exe build C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-desktop\Beleg-dotnet-desktop.csproj --nologo -v m -clp:NoSummary
+  Wiederherzustellende Projekte werden ermittelt...
+  "C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-desktop\Beleg-dotnet-desktop.csproj" wiederhergestellt (in 488 ms.).
+  Beleg-dotnet-desktop -> C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-desktop\bin\Debug\net10.0\Beleg-dotnet-desktop.dll
+
+Der Buildvorgang wurde erfolgreich ausgeführt.
+    0 Warnung(en)
+    0 Fehler
+
+Verstrichene Zeit 00:00:05.69
+Exit 0 nach 6,0 s
+
+## Testen
+$ C:\Program Files\dotnet\dotnet.exe test C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-desktop\tests\Beleg-dotnet-desktop.Tests.csproj --nologo --logger trx;LogFileName=ergebnis.trx --results-directory C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\ergebnisse-dotnet-desktop
+  Wiederherzustellende Projekte werden ermittelt...
+  "C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-desktop\tests\Beleg-dotnet-desktop.Tests.csproj" wiederhergestellt (in 432 ms.).
+  1 von 2 Projekten sind für die Wiederherstellung auf dem neuesten Stand.
+  Beleg-dotnet-desktop -> C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-desktop\bin\Debug\net10.0\Beleg-dotnet-desktop.dll
+  Beleg-dotnet-desktop.Tests -> C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-desktop\tests\bin\Debug\net10.0\Beleg-dotnet-desktop.Tests.dll
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-desktop\tests\bin\Debug\net10.0\Beleg-dotnet-desktop.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\ergebnisse-dotnet-desktop\ergebnis.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     5, übersprungen:     0, gesamt:     5, Dauer: 16 s - Beleg-dotnet-desktop.Tests.dll (net10.0)
+Exit 0 nach 24,2 s
+  BESTANDEN: UmrechnerTests.Hin_und_zurueck_ergibt_wieder_den_Anfang
+  BESTANDEN: UmrechnerTests.Hundert_Grad_Celsius_sind_212_Fahrenheit
+  BESTANDEN: UmrechnerTests.Lesen_versteht_Komma_und_lehnt_Text_ab
+  BESTANDEN: UmrechnerTests.Unbekannte_Richtung_meldet_einen_Fehler
+  BESTANDEN: UmrechnerTests.Zehn_Kilometer_sind_gut_sechs_Meilen
+Auswertung: 5 bestanden, 0 fehlgeschlagen
+
+## Paket bauen und starten
+$ C:\Program Files\dotnet\dotnet.exe publish C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-desktop\Beleg-dotnet-desktop.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none -p:DebugSymbols=false --nologo -v m -o C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-desktop\trendo-paket\Beleg-dotnet-desktop-win-x64
+  Wiederherzustellende Projekte werden ermittelt...
+  "C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-desktop\Beleg-dotnet-desktop.csproj" wiederhergestellt (in 388 ms.).
+  Beleg-dotnet-desktop -> C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-desktop\bin\Release\net10.0\win-x64\Beleg-dotnet-desktop.dll
+  Beleg-dotnet-desktop -> C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-desktop\trendo-paket\Beleg-dotnet-desktop-win-x64\
+Paket: C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-desktop\trendo-paket\Beleg-dotnet-desktop-win-x64.zip (71.289.757 Bytes, SHA-256 016b416e07f9f8b5464ab8a5fffa995661f8a81c165a8bfee9d6ca9052353afc)
+✓ Startprobe: gestartet aus leerem Ordner, Fenster „Beleg dotnet-desktop“ nach 1,8 s offen, danach beendet.
+Ergebnis: Paket fertig und gestartet. · Art: Eigenständiges Programm (win-x64), läuft ohne installiertes .NET · Ordner C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-desktop\trendo-paket\Beleg-dotnet-desktop-win-x64 (206551831 Bytes) · ZIP C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-dotnet-desktop\trendo-paket\Beleg-dotnet-desktop-win-x64.zip (71289757 Bytes) · SHA-256 016b416e07f9f8b5464ab8a5fffa995661f8a81c165a8bfee9d6ca9052353afc
+Startprobe: BESTANDEN – gestartet aus leerem Ordner, Fenster „Beleg dotnet-desktop“ nach 1,8 s offen, danach beendet.

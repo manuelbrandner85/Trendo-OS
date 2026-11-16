@@ -37,8 +37,8 @@ public partial class MainWindow
         }, true);
         sp.Children.Add(Card(new StackPanel { Spacing = 6, Children = { H("Neues Projekt", 14), new WrapPanel { Children = { name, tpl } }, create } }));
 
-        var tools = string.Join(" · ", new[] { ("git", "Git"), ("dotnet", ".NET"), (OperatingSystem.IsWindows() ? "python" : "python3", "Python"), ("node", "Node") }
-            .Select(x => (Cli.Find(x.Item1) is null ? "✗ " : "✓ ") + x.Item2));
+        var tools = string.Join(" · ", new[] { ("git", "Git"), ("dotnet", ".NET SDK"), (OperatingSystem.IsWindows() ? "python" : "python3", "Python"), ("node", "Node") }
+            .Select(x => ((x.Item1 == "dotnet" ? DevBuild.Missing("dotnet") is null : Cli.Find(x.Item1) is not null) ? "✓ " : "✗ ") + x.Item2));
         sp.Children.Add(P("Werkzeuge auf diesem PC: " + tools, null, 11));
 
         sp.Children.Add(H("Deine Projekte", 14));
@@ -53,7 +53,9 @@ public partial class MainWindow
                 Act($"dev-edit-{i}", "Bearbeiten", () => { CodeOpenFolder(dir); Show("code"); }, true), // eigener Code-Editor statt VS Code
                 Act($"dev-open-{i}", "Ordner", () => Launch(dir)),
                 OpenInButton("vscode", () => dir, "dev", $"-{i}"),
-                Act($"dev-test-{i}", "Testen", () => { var r = DevStudio.RunTests(dir); _core.Audit.Append(Principal.LocalOwner.Name, "dev.test", $"{Path.GetFileName(dir)} exit={r.Exit}"); Say(r.Ok ? $"„{Path.GetFileName(dir)}“: Test bestanden." : $"„{Path.GetFileName(dir)}“: Test nicht bestanden. {Short(r.Err + r.Out)}", "dev"); }),
+                // T-0688: Testen und Paket bauen laufen im Code-Editor im Hintergrund (Ausgabe laufend, Ergebnis je Test, Abbrechen) – die Seite blockiert nicht mehr
+                Act($"dev-test-{i}", "Testen", () => Try("dev", () => { _core.Audit.Append(Principal.LocalOwner.Name, "dev.test", Path.GetFileName(dir)); DevInEditor(dir); CodeTest(); Show("code"); })),
+                Act($"dev-publish-{i}", "Paket bauen", () => Try("dev", () => { DevInEditor(dir); CodePublish(); Show("code"); })),
                 Act($"dev-select-{i}", "Stand speichern …", () => { _devSelected = dir; Show("dev"); }) } };
             sp.Children.Add(Card(Row(new StackPanel { Children = { new TextBlock { Text = Path.GetFileName(dir), Foreground = Text, FontSize = 12.5 }, P(info, null, 10.5) } }, buttons)));
             if (_devSelected == dir && g.IsRepo)
@@ -64,6 +66,14 @@ public partial class MainWindow
             i++;
         }
         return KreativPage("Webseite bauen", all); // T-0663: ein Name für Studio, linke Leiste und Fenster
+    }
+
+    /// <summary>Projekt im Code-Editor öffnen (falls dort ein anderes offen ist und gerade nichts läuft).</summary>
+    void DevInEditor(string dir)
+    {
+        if (CodeRoot is { } r && string.Equals(Path.GetFullPath(r), Path.GetFullPath(dir), StringComparison.OrdinalIgnoreCase)) return;
+        if (CodeRunning) throw new InvalidOperationException("Im Code-Editor läuft gerade noch etwas – erst abwarten oder abbrechen.");
+        CodeOpenFolder(dir);
     }
 
     private static string Short(string s) { s = s.Trim().Replace('\n', ' '); return s.Length > 160 ? s[..160] + " …" : s; }

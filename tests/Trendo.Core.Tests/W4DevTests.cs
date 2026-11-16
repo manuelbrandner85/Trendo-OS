@@ -49,6 +49,9 @@ public class W4_Core07_DevStudio
             var r = DevStudio.RunTests(DevStudio.Create(root, "dotnet-console", "cs"));
             Assert.True(r.Ok, r.Err + r.Out);
         }
-        Assert.False(DevStudio.RunTests(DevStudio.Create(root, "web", "w")).Ok);
+        // T-0688: die Web-Vorlage bringt jetzt echte Tests mit (node --test) – sie müssen bestehen; ein Ordner ohne Tests hat weiter keinen Test
+        if (Cli.Find("node") is not null) { var w = DevStudio.RunTests(DevStudio.Create(root, "web", "w")); Assert.True(w.Ok, w.Err + w.Out); }
+        var leer = Path.Combine(root, "leer"); Directory.CreateDirectory(leer); File.WriteAllText(Path.Combine(leer, "index.html"), "<p>x</p>");
+        Assert.False(DevStudio.RunTests(leer).Ok);
     }
 }

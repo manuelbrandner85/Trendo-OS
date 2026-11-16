@@ -1,0 +1,32 @@
+# T-0688 Claude-Echtlauf 2026-11-16 07:26:52
+Arbeitsordner (= Projektordner): C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-claude-58cb3907\Claude-Beleg
+Argumente: -p Wunsch: Die Funktion median in rechner.py soll bei einer leeren Liste die Meldun… --output-format stream-json --verbose --restricted --strict-mcp-config --append-system-prompt 
+Du arbeitest im Studio „Code mit KI“ von Trendo OS. Arbeitsordner ist der Proje… --permission-mode acceptEdits
+
+Werkzeug: Read rechner.py
+Werkzeug: Grep 
+Werkzeug: Edit rechner.py
+Fertig: ok=True, Runden 4
+Exit 0 nach 10 s
+
+Antwort von Claude:
+In `rechner.py:27` meldet die Funktion `median` bei einer leeren Liste jetzt „Die Liste ist leer.“ statt „Ohne Zahlen gibt es keinen Median.“. Sonst habe ich nichts geändert, und die alte Meldung kommt im Projekt nirgends mehr vor.
+
+Geänderte Dateien laut Trendo-Vergleich: rechner.py (Geaendert)
+
+```diff
+--- a/rechner.py
++++ b/rechner.py
+@@ -24,7 +24,7 @@
+ 
+ def median(zahlen: list[float]) -> float:
+     if not zahlen:
+-        raise ValueError("Ohne Zahlen gibt es keinen Median.")
++        raise ValueError("Die Liste ist leer.")
+     sortiert = sorted(zahlen)
+     mitte = len(sortiert) // 2
+     return sortiert[mitte] if len(sortiert) % 2 else (sortiert[mitte - 1] + sortiert[mitte]) / 2
+```
+
+Tests nach der Änderung: Exit 0 – 6 bestanden, 0 fehlgeschlagen
+Nach „Alles zurücknehmen“: 0 Abweichungen vom Stand vor Claude.

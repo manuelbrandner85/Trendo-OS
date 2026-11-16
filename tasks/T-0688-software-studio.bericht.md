@@ -1,0 +1,53 @@
+# Bericht T-0688: Software-Studio baut, testet und paketiert wirklich
+
+Zweig `claude/T-0688-software-studio` (Basis `claude/T-0685-b1-integration`, bf19f45cf).
+
+## Was war (gegen den Code geprüft) → was ist jetzt
+| Befund | Vorher (Beleg) | Jetzt | Nachweis |
+|---|---|---|---|
+| Vorlagen | 4 „Hallo“-Vorlagen, .NET ohne Test (`DevStudio.cs:11-60` alt) | 5 Vorlagen mit echter Funktion und echtem Test: .NET-Konsole (Rechner, xunit-Testprojekt, 5 Tests), .NET-Desktop Avalonia (Einheiten-Umrechner mit Fenster, 5 Tests), Python (Zahlenauswertung, 6 Tests), Web-App (Einkaufsliste mit localStorage, `server.js`, 4 Node-Tests), Node (Wortzähler, 3 Tests). Inhalte in `DevTemplates.cs`, alles selbst geschrieben; fremd nur NuGet xunit (Apache-2.0), Test.Sdk (MIT), Avalonia (MIT) | echt: `T0688_DevBuild`, `reports/T-0688/vorlagen-zusammenfassung.md` |
+| „Testen“ bei .NET | nur `dotnet build` (`DevStudio.cs:66` alt) | `dotnet test` auf das Testprojekt, Auswertung je Test aus TRX; Python `unittest -v` (bzw. `pytest -rA`, wenn das Projekt pytest nutzt und es eingerichtet ist), Node `node --test` mit TAP-Datei | echt: `T0688_DevBuild.DotNet_ganz/Python_ganz/Web_ganz` (inkl. absichtlich kaputtem Test → Name, Meldung, Datei, Zeile) |
+| Paket | keins | `DevBuild.PublishAsync`: .NET `dotnet publish -r win-x64 --self-contained -p:PublishSingleFile=true` nach `trendo-paket/<name>-win-x64` + ZIP; Python/Node: Kopie + `start.cmd`/`start.sh` + ZIP; Web: Ordner ohne Server/Tests + ZIP. Danach Startprobe: ZIP in leeren Ordner auspacken und starten (Konsole: Exit 0 + Ausgabe; Fenster: Fenster muss erscheinen, dann beendet; Web: Server des Projekts liefert Seite und alle verknüpften Dateien mit 200) | echt: Beleg aller 5 Vorlagen, UI-Test Python |
+| Software-Seite „Testen“ blockiert bis 180 s | `MainWindow.W4Dev.cs:56` | öffnet das Projekt im Code-Editor und startet dort den Test im Hintergrund; neu „Paket bauen“ | echt: `T0688_SoftwareStudio_Ui.Software_Seite_testet_im_Hintergrund` (Klick < 5 s) |
+| Code-Editor ohne Autosave/Wiederherstellung | nur Speicher | Entwurf jeder geänderten Datei 2 s nach dem Tippen atomar (`AtomicFile`) in `<Daten>/code-editor/entwuerfe`; neues Fenster zeigt „Ungespeicherte Änderungen von vorher … Wiederherstellen/Verwerfen“; Speichern löscht den Entwurf; Schalter „Automatisch speichern“ schreibt direkt in die Dateien | `Entwurf_nach_Absturz` (Zeitgeber schreibt selbst, zweites Fenster auf demselben Datenordner) |
+| kein Terminal | – | Reiter „Terminal“: Befehl → Eingabeaufforderung im Projektordner (Befehl unverändert in einer Skriptdatei, kein Filter), jeder Start im Protokoll (`code.terminal`), Abbrechen beendet den Prozessbaum | echt im UI-Test (Arbeitsordner = Projekt, Abbrechen eines 300-s-Befehls) |
+| keine Fehlerliste | – | Reiter „Fehler“ aus Bauen/Testen/Ausführen (MSBuild `datei(z,s): error CS…`, Python-Traceback, Node-Stack), Klick springt zur Stelle; Reiter „Tests“ je Test, Klick springt zur Stelle; Reiter „Paket“ mit Ordner, ZIP, Größe, SHA-256, Startprobe, „Ordner öffnen“ | echt: `DotNet_bauen_Fehlerliste_testen` (CS0103 → Program.cs Zeile), `Python_vom_Klick_bis_zum_Paket` |
+| „Mit Claude ändern“ ändert nichts | Claude im Chat-Ordner, Ausschnitt, „zeig als Diff“ (`KreativStudios4.cs:259` alt) | `CodeAiClaudeChange`: Anmeldestand über `ClaudeCheck` (Abo, nie API), offene Datei speichern, Schnappschuss + vollständige Sicherung (`FolderSnapshot`) im Datenordner, `ClaudeRun` mit Arbeitsordner = Projektordner, Stufe „Sicher“ (`acceptEdits`, `--restricted`), danach Zeilen-Diff je Datei, „Übernehmen“, „Alles zurücknehmen“, „Nur <Datei> zurücknehmen“, „Claude anhalten“; ohne Anmeldung klare Meldung, keine Sicherung offen | UI-Test mit **ersetztem** Claude (`ClaudeRunOverride`); **Echtlauf** mit dem installierten, per Abo angemeldeten Claude Code: `reports/T-0688/claude-echtlauf.log` |
+
+Weitere: Leerzustand des Code-Editors zeigt „Neues Projekt“ (Vorlage, Name, „Projekt anlegen“) als ersten Schritt; „Ordner öffnen“ ist dann die goldene Hauptaktion, mit Projekt „▶ Ausführen“. Tastenkürzel F5 (Ausführen), Umschalt+F5 (Abbrechen), Strg+Umschalt+B (Bauen), Strg+Umschalt+T (Testen). Rechtsklick im Dateibaum (Öffnen, Im Ordner zeigen, Terminal hier). Dateinamen mit „_“ im Baum und in Trefferlisten werden nicht mehr als Tastenkürzel verschluckt (`test_rechner.py` stand vorher als „testrechner.py“ da – im Bild gefunden). Fehlt ein Werkzeug (`DevBuild.Missing`), gibt es keinen Befehl, sondern „BLOCKIERT: … Einrichten: …“ (Test `Fehlendes_Werkzeug_blockiert`).
+
+## Belege (`reports/T-0688/`, echte Werkzeuge: dotnet 10.0.404, Python 3.13.15, Node 24.22.2)
+- `vorlagen-zusammenfassung.md` + `vorlage-<id>.log` (Rohlogs, Pfade anonymisiert): alle 5 Vorlagen angelegt → gebaut → getestet (4/6/5/5/3 bestanden) → paketiert → Paket aus leerem Ordner gestartet, je mit SHA-256 des ZIPs und des Rohlogs. .NET-Konsole 31,5 MB ZIP, .NET-Desktop 68,0 MB ZIP (Fenster nach 1,8 s offen).
+- `claude-echtlauf.log`: echtes Claude Code (Abo `claude.ai`, Status über `claude auth status --json`, nicht angemeldet wurde nichts), Arbeitsordner = Projektordner, gleiche Argumente wie Trendo (`ClaudeCode.Args`, Stufe Sicher): Claude las und änderte `rechner.py` (Edit), Diff im Log, Tests danach 6/6, „Alles zurücknehmen“ → 0 Abweichungen. Erneut erzeugbar mit `TRENDO_BELEG_T0688=<ordner> TRENDO_CLAUDE_ECHT=1 dotnet test tests/Trendo.Core.Tests -c Release --filter "FullyQualifiedName~T0688_Beleg"` (ohne die Variablen übersprungen, verlängert den Volltest nicht).
+
+## Tests (gezielt, kein Volltest)
+- `dotnet build Trendo.sln -c Release` → 0 Fehler.
+- Core: `T0688_DevBuild` (7, davon 3 mit echtem python/node/dotnet inkl. publish), `T0688_Beleg` (2, ohne Variable übersprungen), `W4_Core07_DevStudio`, `CodeProjectTests`, `ClaudeCodeTests`, `KreativKits4Tests`, `T0681_Cli`, `PromptAction*` → 128 bestanden, 2 übersprungen (Beleg).
+- App: `T0688_SoftwareStudio_Ui` 6/6 (3 mit echten Werkzeugen über `CodeRealToolsInTests`, 2 mit **ersetztem** Claude), `CodeEditor_Ui` 1/1, `T0681_Ui` 6/6, `KreativStudios4_Ui` 5/5, `W4_Core07_Ui` 2/2, `ClaudeStudio_Ui` 4/4, `PageSweep_Ui` 1/1, `Einfachheit_Ui` 2/2.
+- Geänderter Test: `W4_Core07_DevStudio.Templates_build` prüfte „Web-Vorlage hat keinen Test (nicht bestanden)“. Die Web-Vorlage hat jetzt echte Tests – die Prüfung verlangt nun, dass sie **bestehen**, und prüft „kein Test“ an einem Ordner ohne Tests weiter. Rot-Grün: die neuen Testklassen kompilieren auf dem alten Stand nicht (fehlende Vorlage `dotnet-desktop`, `DevBuild`, `CodeTerminal`, `CodeAiClaudeChange`).
+- **Auffällig, nicht gelöst:** `ClaudeRunFix_Ui.Back_into_program` schlägt auf meinem Stand wechselnd fehl („The calling thread cannot access this object“ beim ersten Zeichnen in `Ui.Open`, statischer Pinsel auf fremdem Thread). Ausgangsstand frisch gebaut: 9/9 grün. Eingrenzung: Der Fehler tritt auch auf, wenn alle drei App-Dateien und `CodeProject.cs`, `ClaudeCode.cs`, `DevStudio.cs` auf dem Ausgangsstand sind und nur die neuen, von der App nicht benutzten Core-Dateien plus der optionale `Cli`-Parameter dazukommen (1 von 3 bzw. 1 von 3 rot). Ursache vermutlich die Reihenfolge, in der die statischen Pinsel von `MainWindow` (z. B. `Glass`, `Edge` als veränderliche `SolidColorBrush`) erstmals auf dem Test-Thread der beiden vorangehenden `[Fact]`-Tests angelegt werden – nicht bewiesen. Bitte im Volltest beobachten.
+
+## Abnahmekriterien
+1. Aus leerer Vorlage entsteht über die Oberfläche ein echtes Ergebnis: **VOLLWERTIG** – UI-Test Klick „Projekt anlegen“ → Testen → Paket → Startprobe (Python echt); .NET über UI gebaut und getestet; alle 5 Vorlagen bis zum gestarteten Paket im Beleg.
+2. Fremddatei importieren/bearbeiten/exportieren, Export im Fremdprogramm: **TEILWEISE** – vorhandene Ordner lassen sich öffnen, bauen, testen und paketieren; das Paket läuft eigenständig (ohne Trendo, ohne installiertes .NET). Ein fremdes, großes Projekt (z. B. ein GitHub-Repo) wurde nicht durchgespielt.
+3. Prozessabbruch verliert höchstens 30 s: **VOLLWERTIG (Code-Editor)** – Entwurf 2 s nach dem Tippen, atomar; Wiederherstellen im neuen Fenster getestet. Ein echter Kill des Prozesses wurde nicht ausgeführt (Fenster geschlossen ohne Speichern). „Code mit KI“-Editor: unverändert (Hülle sichert nur das .tdoc) – **TEILWEISE**.
+4. Claude führt eine Fachaufgabe aus, Ergebnis im Dokument, rückgängig: **VOLLWERTIG** – UI-Ablauf mit ersetztem Claude, Kern-Ablauf mit echtem Claude Code (Änderung, Diff, Tests, Zurücknehmen). Der App-Weg `ClaudeRun` selbst lief im Echtlauf **nicht** (im Testmodus gesperrt) – der Echtlauf nutzt dieselben Argumente, Parser, Snapshot und Sicherung, aber einen eigenen Prozessstart.
+5. Test vom Klick bis zur echten Datei: **VOLLWERTIG** – `T0688_SoftwareStudio_Ui` mit echtem python/dotnet/cmd.
+6. Einfach/Profi, Tastenkürzel, Rechtsklick, Ziehen: **TEILWEISE** – Tastenkürzel und Rechtsklick im Baum neu, Bedienstufen unverändert; Ziehen und Ablegen im Baum fehlt weiter.
+
+## Nicht geprüft
+- Startprobe des Desktop-Programms unter Linux/macOS (nur Windows); `pytest`-Weg (pytest ist hier nicht installiert – BLOCKIERT-Meldung nur per Code geprüft, nicht mit pytest-Projekt).
+- Web-App-„Ausführen“ öffnet den Browser nur außerhalb des Testmodus (nicht geklickt).
+- Größere Fremdprojekte (mehrere Programme/Testprojekte in einer .sln: Trendo nimmt das erste Programm und das erste Testprojekt).
+
+## Offene Punkte
+- `ClaudeRunFix_Ui` wechselnd rot (siehe oben).
+- Reiter im Code-Editor zeigen neben „×“ das Wort „Schließen“ (schon vorher so, nicht angefasst).
+- Dateiverwaltung im Baum (Umbenennen, Löschen, Ziehen), Debugger, Diff vor Git-Commit fehlen weiter.
+- Erster .NET-Bau einer Vorlage lädt NuGet-Pakete (xunit, Avalonia) – ohne Internet und ohne Paket-Zwischenspeicher scheitert er mit der Meldung von `dotnet` (nicht als eigene BLOCKIERT-Meldung aufbereitet).
+
+## Berührte Dateien
+`src/Trendo.Core/DevStudio.cs`, `src/Trendo.Core/DevBuild.cs` (neu), `src/Trendo.Core/DevTemplates.cs` (neu), `src/Trendo.Core/CodeDrafts.cs` (neu), `src/Trendo.Core/Cli.cs`, `src/Trendo.Core/CodeProject.cs`, `src/Trendo.Core/W2/ClaudeCode.cs`, `src/Trendo.App/MainWindow.CodeEditor.cs`, `src/Trendo.App/MainWindow.W4Dev.cs`, `src/Trendo.App/MainWindow.KreativStudios4.cs`, `tests/Trendo.Core.Tests/DevBuildTests.cs` (neu), `tests/Trendo.Core.Tests/T0688BelegTests.cs` (neu), `tests/Trendo.Core.Tests/W4DevTests.cs`, `tests/Trendo.App.Tests/T0688SoftwareStudioUiTests.cs` (neu), `reports/T-0688/*`, `tasks/T-0688-software-studio*.md`.
+
+## Rust
+Nicht eingesetzt: die Arbeit ist Prozesssteuerung und Auswertung von Werkzeugausgaben in der bestehenden C#-App; kein messbarer Vorteil.
