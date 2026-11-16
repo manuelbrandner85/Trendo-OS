@@ -24,7 +24,10 @@ public class ProfiRahmen_Ui
             w.Find<Button>("prog-cmd-img-tool-brush").Press(); Pump();
             Assert.Equal("brush", w.ImgTool);
             Assert.Contains("Pinsel", w.Find<TextBlock>("prog-status-text").Text);
-            Assert.Equal(w.Find<Button>("prog-cmd-img-tool-brush").Background, w.TryFind<Button>("prog-save")!.Background); // aktiv = Akzentfarbe wie der Hauptknopf
+            // T-0686 (V-03): „gewählt“ ist ein goldener Rand; golden gefüllt ist nur die Hauptaktion – „Speichern“ nicht mehr (früher: aktiv = Akzentfläche wie „Speichern“)
+            var brush = w.Find<Button>("prog-cmd-img-tool-brush"); var other = w.Find<Button>("prog-cmd-img-tool-eraser");
+            Assert.NotEqual(other.BorderBrush, brush.BorderBrush); Assert.NotEqual(other.Background, brush.Background);
+            Assert.False(MainWindow.IsGold(brush)); Assert.False(MainWindow.IsGold(w.Find<Button>("prog-save")));
 
             w.Find<Button>("prog-toggle-werkzeuge").Press(); Pump();
             Assert.Null(w.TryFind<Panel>("prog-tools"));

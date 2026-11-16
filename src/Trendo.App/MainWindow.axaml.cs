@@ -689,13 +689,14 @@ public sealed partial class MainWindow : Window
         || key is "brief" or "akten" or "akte" or "ausgabe" or "briefkoepfe" or "office"
         || StudioPages.Any(kv => string.Equals(kv.Value, key, StringComparison.OrdinalIgnoreCase));
 
-    private Control Page(string title, Control content, Control? dock = null)
+    /// <param name="pageHead">false (T-0686, V-01): ohne Kopfkarte – Programme mit offenem Dokument nennen Namen und Speicherstand in ihrer eigenen schmalen Kopfzeile.</param>
+    private Control Page(string title, Control content, Control? dock = null, bool pageHead = true)
     {
         SimplifyPage(CurrentView, content); // Stufe „Einfach“: Rest hinter „Mehr anzeigen“
-        var sp = new StackPanel { Spacing = 8, Children = { FocusMode ? new Panel() : PageHead(title), Readable(content) } };
+        var sp = new StackPanel { Spacing = 8, Children = { FocusMode || !pageHead ? new Panel() : PageHead(title), Readable(content) } };
         Detach(_hintHost); sp.Children.Insert(1, _hintHost);
         var scroll = new ScrollViewer { Content = sp };
-        if (dock is null) return Panel(scroll, 18);
+        if (dock is null) return Panel(scroll, pageHead ? 18 : 12);
         Detach(dock); dock.Margin = new Thickness(0, 10, 0, 0);
         var grid = new Grid { RowDefinitions = new RowDefinitions("*,Auto") };
         grid.Children.Add(scroll); Grid.SetRow(dock, 1); grid.Children.Add(dock);

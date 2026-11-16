@@ -3,7 +3,13 @@
              x:Class="Trendo.App.App"
              RequestedThemeVariant="Dark">
     <Application.Styles>
-        <FluentTheme />
+        <!-- T-0686 (V-03) „Gold statt Blau“: Akzentfarbe der Bedienelemente (Knöpfe der Klasse accent, Schieberegler, Häkchen, Fokusrahmen) ist das Trendo-Gold, nicht das Blau des Systems -->
+        <FluentTheme>
+            <FluentTheme.Palettes>
+                <ColorPaletteResources x:Key="Dark" Accent="#C9A227" />
+                <ColorPaletteResources x:Key="Light" Accent="#B8901C" />
+            </FluentTheme.Palettes>
+        </FluentTheme>
         <!-- Code-Editor (AvaloniaEdit, MIT) -->
         <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
         <!-- Vorgabe 13.11.2026 „nicht KI-generiert“: eine Schriftfamilie, ruhige Bedienelemente ohne Anheben oder Hüpfen -->

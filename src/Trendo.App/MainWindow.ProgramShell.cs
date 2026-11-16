@@ -22,6 +22,9 @@ public sealed record ProgramExport(string Name, string Label, string Extension, 
 public sealed record ProgramTool(string Name, string Icon, string Label, string Tip, Action<ProgramDocument> Select, Func<bool> Active);
 /// <summary>Paket F (A1): Bereich unten (Zeitleiste, Ebenen, Messwerte …).</summary>
 public sealed record ProgramPanel(string Title, Func<ProgramDocument, Control> Build, double Height = 180);
+/// <summary>T-0686 (V-02): der erste Schritt in einem leeren Dokument – die Hülle zeigt dafür einen großen Knopf mitten auf der Arbeitsfläche.
+/// <paramref name="Run"/> löst die echte Funktion aus (auch wenn die Eigenschaften-Spalte in „Einfach“ eingeklappt ist); <paramref name="Empty"/> sagt, ob das Dokument noch leer ist.</summary>
+public sealed record ProgramFirstStep(string Label, string Hint, Action<ProgramDocument> Run, Func<ProgramDocument, bool> Empty);
 
 public sealed class ProgramSpec(string key, string studio, string title)
 {
@@ -52,6 +55,8 @@ public sealed class ProgramSpec(string key, string studio, string title)
     public Dictionary<string, int> CmdLevels { get; init; } = [];
     /// <summary>Arbeitsfläche aus Karten und Listen (statt einer Zeichenfläche): bei voller Fensterhöhe senkrecht scrollbar.</summary>
     public bool ScrollWorkspace { get; init; }
+    /// <summary>T-0686 (V-02): erster Schritt im leeren Dokument (Text + Aktion); fehlt = kein Knopf.</summary>
+    public ProgramFirstStep? FirstStep { get; init; }
     public int LevelOf(ProgramCmd c) => Math.Max(c.Level, CmdLevels.GetValueOrDefault(c.Name));
 }
 
@@ -447,10 +452,7 @@ public partial class MainWindow
             else if (d.Dirty) try { DocBackup(d); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } // T-0680: nicht gespeichert (aus, Rückfrage offen, Fehler) – dann wenigstens sichern
         if (_progConflictNew) { _progConflictNew = false; if (Programs.ContainsKey(CurrentView)) Show(CurrentView); return n; } // die Rückfrage „von außen geändert“ zeigen
         if (n > 0 && Programs.ContainsKey(CurrentView) && ProgramActive(CurrentView) is { Dirty: false, Path: not null } shown && ActivePageRoot is { } root) // nur die Anzeige des sichtbaren Dokuments, nicht neu zeichnen – beim Tippen geht nichts verloren
-        {
-            foreach (var tb in root.GetLogicalDescendants().OfType<TextBlock>().Where(t => t.Name == "prog-dirty")) tb.Text = SaveStateText(shown);
-            foreach (var tb in root.GetLogicalDescendants().OfType<TextBlock>().Where(t => t.Name == "prog-saved")) tb.Text = Path.GetFileName(shown.Path) + " · ✓ Gespeichert" + $" · {shown.Changed:HH:mm}";
-        }
+            PaintSaveState(root, CurrentView, shown);
         return n;
     }
 
@@ -513,70 +515,49 @@ public partial class MainWindow
     private Control ProgramView(ProgramSpec spec)
     {
         var key = spec.Key;
-        var icon = StudioIcons.For(spec.Studio);
-        var (c1, c2) = icon is null ? ("#7FD3FF", "#2F6BF6") : (icon.C1, icon.C2);
         var docs = ProgramDocs(key); var d = ProgramActive(key);
-
-        // V6: Kopfband in der Farbwelt des Studios
-        var title = d is null ? null : new TextBox { Name = "prog-title", Text = d.Title, FontSize = 15, FontWeight = FontWeight.SemiBold, MinWidth = 260, Background = Brush.Parse("#26FFFFFF"), Foreground = Brushes.White, BorderThickness = new Thickness(0) };
-        if (title is not null) title.LostFocus += (_, _) => { if (d is not null && !string.IsNullOrWhiteSpace(title.Text) && title.Text.Trim() != d.Title) { d.Title = title.Text.Trim(); d.EditMeta(_ => { }); Show(key); } };
-        var band = new Border
-        {
-            Name = "prog-band", CornerRadius = new CornerRadius(16), Padding = new Thickness(16, 12), BoxShadow = CardShadow,
-            Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse(c2), 0), new GradientStop(Color.Parse(c1), 1) } },
-            BorderBrush = Brush.Parse("#55FFFFFF"), BorderThickness = new Thickness(1, 1, 1, 0),
-            Child = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = {
-                new Border { Width = 46, Height = 46, CornerRadius = new CornerRadius(12), Background = Brush.Parse("#33FFFFFF"), Child = icon is null ? null : Ico(icon.Path, 26, Brushes.White) },
-                Pos(new StackPanel { Margin = new Thickness(12, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Children = {
-                    new TextBlock { Text = spec.Title, Foreground = Brushes.White, FontSize = 18, FontWeight = FontWeight.Bold },
-                    spec.FillHeight && d is not null && _progMsg.GetValueOrDefault(key) is { Length: > 0 } bm
-                        ? new SelectableTextBlock { Name = "prog-msg", Text = "" + bm, Foreground = Brushes.White, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap, MaxHeight = 40 }
-                        : new TextBlock { Text = spec.Sentence, Foreground = Brush.Parse("#E6FFFFFF"), FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis } } }, 1),
-                Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, VerticalAlignment = VerticalAlignment.Center, Children = {
-                    // E1 (T-0616): Claude und „Markierung“ stehen im Knopf „KI ▾“ der KI-Leiste darüber – nicht noch einmal hier
-                    title is null ? LevelArea(key) : new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, VerticalAlignment = VerticalAlignment.Center, Children = {
-                    LevelArea(key), title, new TextBlock { Name = "prog-dirty", Text = SaveStateText(d!), Foreground = Brushes.White, FontSize = 12, VerticalAlignment = VerticalAlignment.Center } } } } }, 2) } },
-        };
-
-        // D2 (13.11.2026): Programmkopf immer schlicht – keine Studio-Farbfläche, kein Symbolblock, kein doppelter Titel.
-        // Den Namen zeigt sonst schon der Seitenkopf darüber; nur Programme in voller Fensterhöhe (ohne Seitenkopf) nennen ihn hier.
-        band.Background = Brushes.Transparent; band.BorderBrush = Edge; band.BorderThickness = new Thickness(0, 0, 0, 1); band.CornerRadius = new CornerRadius(0); band.BoxShadow = default;
-        band.Padding = new Thickness(2, 4, 2, 8);
-        if (band.Child is Grid bg && bg.Children.Count > 1)
-        {
-            bg.Children[0].IsVisible = false; // Symbolblock
-            if (bg.Children[1] is StackPanel ts) { ts.Margin = new Thickness(0); if (!spec.FillHeight) ts.IsVisible = false; } // Titel und Satz stehen schon im Seitenkopf
-        }
-        foreach (var tb in band.GetLogicalDescendants().OfType<TextBlock>()) if (ReferenceEquals(tb.Foreground, Brushes.White) || tb.Foreground is ISolidColorBrush { Color.A: > 200, Color.R: > 220, Color.G: > 220, Color.B: > 220 }) tb.Foreground = tb.FontSize >= 15 ? Text : Muted;
-        foreach (var tb in band.GetLogicalDescendants().OfType<TextBlock>().Where(t => t.FontSize >= 18)) { tb.FontSize = 15; tb.FontWeight = FontWeight.SemiBold; }
-        if (title is not null) { title.Foreground = Text; title.Background = Brushes.Transparent; title.FontSize = 13; }
+        var msg = _progMsg.GetValueOrDefault(key) is { Length: > 0 } m0 ? m0 : null;
+        var isErr = msg is not null && _progErr.TryGetValue(key, out var pe) && pe.Error.Sentence == msg;
+        var errCard = isErr && _progErr[key].Error.Fix != ErrorFix.None ? ProgramErrorCard(key, _progErr[key].Error, _progErr[key].Retry) : null; // E7: Fehler mit „Was tun?“
+        // Karten über der Arbeit – nur wenn es etwas zu entscheiden gibt (sonst beginnt die Arbeitsfläche direkt unter den Werkzeugen)
+        var cards = new List<Control>();
+        if (ClaudeProgramExtra(key) is { } cx) cards.Add(cx); // z. B. das spielbare Spiel, das Claude gebaut hat
+        if (ClaudeChangeBanner(key, d) is { } cb) cards.Add(cb); // Claude hat geändert: vergleichen, behalten, verwerfen
+        cards.AddRange(ProgramSafetyCards(key, d)); // T-0680: Sicherung gefunden, anderes Fenster, von außen geändert, beschädigt
+        if (ProgramIntro(key) is { } pi) cards.Add(pi); // E8: kurze Einführung beim ersten Öffnen
         Panel root;
-        if (spec.FillHeight && d is not null)
+        if (d is null)
         {
-            // Kopf (Band, Meldung, Reiter, Menüband) fest, darunter Arbeitsfläche + Eigenschaften in voller Höhe, Statusleiste unten
-            var (top, grid, status) = ProgramWorkParts(spec, d, docs);
-            band.Padding = new Thickness(14, 8);
-            var head = new StackPanel { Spacing = 6, Children = { band, top } };
-            if (_progErr.TryGetValue(key, out var fhe) && fhe.Error.Fix != ErrorFix.None && _progMsg.GetValueOrDefault(key) == fhe.Error.Sentence) head.Children.Insert(1, ProgramErrorCard(key, fhe.Error, fhe.Retry)); // E7
-            if (ProgramIntro(key) is { } fi) head.Children.Insert(1, fi); // E8
-            foreach (var sc in ProgramSafetyCards(key, d).AsEnumerable().Reverse()) head.Children.Insert(1, sc); // T-0680
-            if (ClaudeChangeBanner(key, d) is { } cb) head.Children.Insert(1, cb); // Claude hat geändert: vergleichen, behalten, verwerfen
-            if (ClaudeProgramExtra(key) is { } cx) head.Children.Insert(1, cx); // z. B. das spielbare Spiel, das Claude gebaut hat
-            // DockPanel: Kopf und Statusleiste bekommen die echte Breite (Menüband bricht richtig um), die Arbeitsfläche den Rest
-            head.Margin = new Thickness(0, 0, 0, 8); status.Margin = new Thickness(0, 8, 0, 0);
-            DockPanel.SetDock(head, Avalonia.Controls.Dock.Top); DockPanel.SetDock(status, Avalonia.Controls.Dock.Bottom);
-            root = new DockPanel { Name = "prog-root", LastChildFill = true, Children = { head, status, grid } };
+            // Startseite: Name und Erklärsatz stehen im Seitenkopf (und hinter „?“)
+            if (errCard is not null) cards.Add(errCard); else if (msg is not null) cards.Add(ResultCard(msg));
+            root = new StackPanel { Name = "prog-root", Spacing = 10, Children = { ProgramStartBand(spec) } };
+            root.Children.AddRange(cards); root.Children.Add(ProgramStart(spec));
         }
         else
         {
-            Control body = d is null ? ProgramStart(spec) : ProgramWork(spec, d, docs);
-            root = new StackPanel { Name = "prog-root", Spacing = 10, Children = { band, body } };
-            if (_progMsg.GetValueOrDefault(key) is { Length: > 0 } msg)
-                root.Children.Insert(1, _progErr.TryGetValue(key, out var pe) && pe.Error.Fix != ErrorFix.None && pe.Error.Sentence == msg ? ProgramErrorCard(key, pe.Error, pe.Retry) : ResultCard(msg)); // E7: Fehler mit „Was tun?“
-            if (ProgramIntro(key) is { } pi) root.Children.Insert(1, pi); // E8: kurze Einführung beim ersten Öffnen
-            foreach (var sc in ProgramSafetyCards(key, d).AsEnumerable().Reverse()) root.Children.Insert(1, sc); // T-0680: Sicherung gefunden, anderes Fenster, von außen geändert, beschädigt
-            if (ClaudeChangeBanner(key, d) is { } cb) root.Children.Insert(1, cb); // Claude hat geändert: vergleichen, behalten, verwerfen
-            if (ClaudeProgramExtra(key) is { } cx) root.Children.Insert(1, cx); // z. B. das spielbare Spiel, das Claude gebaut hat
+            // T-0686 (V-01): in jedem Programm derselbe schmale Kopf – eine Zeile mit Programmname, Dokumenttitel und Speicherstand, darunter sofort die Werkzeuge.
+            // Vorher hatten nur die Programme in voller Fensterhöhe diesen Kopf; alle anderen bekamen zusätzlich Seitenkopf-Karte, Hinweis-Karte mit „Kopieren“ und eine eigene Reiterzeile.
+            var parts = ProgramWorkParts(spec, d, docs);
+            // lange Ergebnisse und Fehler bleiben eine gut lesbare Karte; kurze Hinweise („Vorlage … geöffnet.“) stehen in der Kopfzeile
+            var asCard = msg is not null && errCard is null && !spec.FillHeight && (isErr || msg.Length > 140 || msg.Contains('\n'));
+            var head = ProgramHead(spec, d, docs, parts.Tabs, errCard is null && !asCard ? msg : null, isErr);
+            if (errCard is not null) cards.Add(errCard); else if (asCard) cards.Add(ResultCard(msg!));
+            if (spec.FillHeight)
+            {
+                // Kopf (Zeile, Karten, Menüband) fest, darunter Arbeitsfläche + Eigenschaften in voller Höhe, Statusleiste unten
+                var top = new StackPanel { Spacing = 6, Margin = new Thickness(0, 0, 0, 8), Children = { head } };
+                top.Children.AddRange(cards); top.Children.Add(parts.Top);
+                parts.Status.Margin = new Thickness(0, 8, 0, 0);
+                // DockPanel: Kopf und Statusleiste bekommen die echte Breite (Menüband bricht richtig um), die Arbeitsfläche den Rest
+                DockPanel.SetDock(top, Avalonia.Controls.Dock.Top); DockPanel.SetDock(parts.Status, Avalonia.Controls.Dock.Bottom);
+                root = new DockPanel { Name = "prog-root", LastChildFill = true, Children = { top, parts.Status, parts.Grid } };
+            }
+            else
+            {
+                root = new StackPanel { Name = "prog-root", Spacing = 8, Margin = new Thickness(0, 0, 10, 0), Children = { head } }; // rechts Platz für den Rollbalken der Seite – nichts liegt mehr darunter
+                root.Children.AddRange(cards);
+                root.Children.Add(parts.Top); root.Children.Add(parts.Grid); root.Children.Add(parts.Status);
+            }
         }
         root.KeyDown += (_, e) =>
         {
@@ -590,14 +571,183 @@ public partial class MainWindow
                 case Key.W when d is not null: ProgramRun(key, () => { ProgramKeep(key, d); ProgramClose(key, _progActive.GetValueOrDefault(key)); }); e.Handled = true; break;
             }
         };
+        ProgramOneGold(root); // V-03: je Ansicht genau ein goldener Knopf
         if (d is { Dirty: true }) ProgramSaveSoon(); // E3: kurz nach der letzten Änderung von selbst speichern
-        return spec.FillHeight && d is not null ? FitPage(spec.Title, new Panel(), root, pageHead: false) : Page(spec.Title, root);
+        return d is null ? Page(spec.Title, root) : spec.FillHeight ? FitPage(spec.Title, new Panel(), root, pageHead: false) : Page(spec.Title, root, pageHead: false);
     }
 
-    /// <summary>E3: Speicherstand in einem Wort – mit automatischem Speichern nur „Gespeichert“.</summary>
-    string SaveStateText(ProgramDocument d) => d.ReadOnly && d.Path is not null ? "Nur lesen" : AutoSaveDocs
-        ? (d.Dirty ? "Wird gespeichert …" : d.Path is null ? "" : "✓ Gespeichert")
-        : (d.Dirty ? "geändert" : d.Path is null ? "nicht gespeichert" : "✓ gespeichert");
+    /// <summary>Startseite (kein Dokument offen): nur die Stufenwahl; Programme in voller Fensterhöhe nennen hier ihren eigenen Namen (der Seitenkopf nennt das Studio).</summary>
+    Control ProgramStartBand(ProgramSpec spec)
+    {
+        var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto") };
+        if (spec.FillHeight)
+            grid.Children.Add(new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = {
+                new TextBlock { Text = spec.Title, Foreground = Text, FontSize = 15, FontWeight = FontWeight.SemiBold },
+                new TextBlock { Text = spec.Sentence, Foreground = Muted, FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis } } });
+        grid.Children.Add(Pos(LevelArea(spec.Key), 1));
+        return new Border { Name = "prog-band", BorderBrush = Edge, BorderThickness = new Thickness(0, 0, 0, 1), Padding = new Thickness(2, 4, 2, 8), Child = grid };
+    }
+
+    /// <summary>T-0686 (V-01, V-08): die eine Kopfzeile eines offenen Dokuments – Programmname · Dokumenttitel (änderbar) · Reiter · kurzer Hinweis · Speicherstand · „Mehr Werkzeuge“ bzw. Stufenwahl · „?“.</summary>
+    Control ProgramHead(ProgramSpec spec, ProgramDocument d, List<ProgramDocument> docs, Panel? tabs, string? msg, bool msgIsError)
+    {
+        var key = spec.Key;
+        var name = new TextBlock { Name = "prog-name", Text = spec.Title, Foreground = Text, FontSize = 15, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(2, 0, 4, 0) };
+        var title = new TextBox { Name = "prog-title", Text = d.Title, FontSize = 13, FontWeight = FontWeight.SemiBold, MinWidth = 170, MaxWidth = 340, MinHeight = 0, Padding = new Thickness(8, 4), VerticalAlignment = VerticalAlignment.Center,
+            Background = Brushes.Transparent, Foreground = Text, BorderBrush = Edge, BorderThickness = new Thickness(1) };
+        ToolTip.SetTip(title, "Name des Dokuments – zum Ändern hineinklicken");
+        title.LostFocus += (_, _) => { if (!string.IsNullOrWhiteSpace(title.Text) && title.Text.Trim() != d.Title) { d.Title = title.Text.Trim(); d.EditMeta(_ => { }); Show(key); } };
+
+        // V-08: der Speicherstand steht nur hier
+        var state = new TextBlock { Name = "prog-dirty", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center };
+        var saveNow = new Button { Name = "prog-save-now", Content = "Speichern", FontSize = 12, Padding = new Thickness(9, 2), VerticalAlignment = VerticalAlignment.Center, Background = Brushes.Transparent, Foreground = Text, BorderBrush = Accent, BorderThickness = new Thickness(1) };
+        ToolTip.SetTip(saveNow, "Jetzt speichern (Strg+S)");
+        saveNow.Click += (_, _) => ProgramRun(key, () => ProgramSave(key));
+        var save = new StackPanel { Name = "prog-save-state", Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Children = { state, saveNow } };
+        PaintSaveState(save, key, d);
+
+        var help = new Button { Name = "btn-help", Content = "?", Width = 26, Height = 26, Padding = new Thickness(0), CornerRadius = new CornerRadius(13), HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center,
+            FontWeight = FontWeight.Bold, Background = Brush.Parse("#22FFFFFF"), Foreground = Text, VerticalAlignment = VerticalAlignment.Center };
+        ToolTip.SetTip(help, "Was kann ich hier tun?");
+        help.Click += (_, _) => { if (_hintHost.Children.Count > 0) { _hintHost.Children.Clear(); return; } ShowHelp(key, force: true); };
+
+        var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,Auto,*,Auto,Auto"), ColumnSpacing = 10 };
+        grid.Children.Add(name); grid.Children.Add(Pos(title, 1));
+        if (tabs is not null)
+        {
+            // der Titel steht schon im Feld daneben: bei einem einzigen Dokument bleibt nur „×“ und „＋“ sichtbar, ab zwei Dokumenten die Reiter zum Wechseln
+            if (docs.Count == 1 && tabs.Children.Count > 0) tabs.Children[0].IsVisible = false;
+            tabs.VerticalAlignment = VerticalAlignment.Center;
+            if (docs.Count > 3) { grid.RowDefinitions = new RowDefinitions("Auto,Auto"); Grid.SetRow(tabs, 1); Grid.SetColumnSpan(tabs, 6); tabs.Margin = new Thickness(0, 6, 0, 0); grid.Children.Add(tabs); }
+            else grid.Children.Add(Pos(tabs, 2));
+        }
+        // „Neues Dokument.“ / „Vorlage … geöffnet.“ sagt nur, was gerade geschah: nach ein paar Sekunden verschwindet es wieder (die Meldung selbst bleibt abrufbar)
+        var passing = msg is not null && !msgIsError && (msg == "Neues Dokument." || msg.StartsWith("Vorlage „", StringComparison.Ordinal));
+        if (passing && _progNoteGone.GetValueOrDefault(key) == d.Id + msg) msg = null;
+        if (msg is { Length: > 0 })
+        {
+            var note = new SelectableTextBlock { Name = "prog-msg", Text = msg, Foreground = msgIsError ? Text : Muted, FontSize = 12.5, FontWeight = msgIsError ? FontWeight.SemiBold : FontWeight.Normal, TextWrapping = TextWrapping.Wrap, MaxLines = 2, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center };
+            ToolTip.SetTip(note, msg);
+            grid.Children.Add(Pos(note, 3));
+            if (passing && _progNoteTimed.Add(key + d.Id + msg)) // ein Zeitgeber je Hinweis, auch wenn die Seite inzwischen neu gezeichnet wird
+            {
+                var gone = d.Id + msg; var text = msg;
+                Later(() =>
+                {
+                    _progNoteGone[key] = gone; _progNoteTimed.Remove(key + gone);
+                    foreach (var t in ActivePageRoot?.GetLogicalDescendants().OfType<SelectableTextBlock>().Where(t => t.Name == "prog-msg" && t.Text == text).ToList() ?? []) t.IsVisible = false;
+                }, PassingNoteTime);
+            }
+        }
+        grid.Children.Add(Pos(save, 4));
+        grid.Children.Add(Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, VerticalAlignment = VerticalAlignment.Center, Children = { LevelArea(key), help } }, 5));
+        return new Border { Name = "prog-band", BorderBrush = Edge, BorderThickness = new Thickness(0, 0, 0, 1), Padding = new Thickness(2, 0, 2, 6), Child = grid };
+    }
+
+    /// <summary>V-01: so lange steht ein flüchtiger Hinweis („Vorlage … geöffnet.“) in der Kopfzeile.</summary>
+    public static readonly TimeSpan PassingNoteTime = TimeSpan.FromSeconds(4);
+    /// <summary>Flüchtiger Hinweis je Programm, der schon wieder ausgeblendet ist (Dokument + Text) – er kommt beim Neuzeichnen nicht zurück.</summary>
+    private readonly Dictionary<string, string> _progNoteGone = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _progNoteTimed = [];
+
+    /// <summary>V-08: muss die Person selbst speichern? Ja, wenn das automatische Speichern aus ist (oder gerade nicht ging) und es etwas zu speichern gibt.</summary>
+    bool SaveByHand(ProgramDocument d, string? key)
+    {
+        if (d.ReadOnly && d.Path is not null || _progConflict.Contains(d.Id)) return false; // dort entscheidet die Karte darüber
+        if (!AutoSaveDocs) return d.Dirty || d.Path is null;
+        return d.Dirty && key is not null && _progErr.TryGetValue(key, out var e) && e.Error.Kind == "speichern";
+    }
+
+    /// <summary>V-08 (T-0686): Speicherstand in einem Satz – „Wird automatisch gespeichert“, „Gespeichert um HH:MM“ oder „Nicht gespeichert –“ (dann steht der Knopf „Speichern“ daneben).
+    /// Nie „nicht gespeichert“, solange das automatische Speichern läuft.</summary>
+    public string SaveStateText(ProgramDocument d, string? key = null) =>
+        d.ReadOnly && d.Path is not null ? "Nur lesen"
+        : _progConflict.Contains(d.Id) ? "Nicht gespeichert – bitte oben entscheiden"
+        : SaveByHand(d, key) ? "Nicht gespeichert –"
+        : d.Dirty || d.Path is null ? "Wird automatisch gespeichert"
+        : $"Gespeichert um {d.DiskTime ?? d.Changed:HH:mm}";
+
+    /// <summary>Speicherstand in der Kopfzeile und Dateiname in der Statusleiste nachziehen, ohne die Seite neu zu zeichnen (beim Tippen geht nichts verloren).</summary>
+    void PaintSaveState(Control root, string key, ProgramDocument d)
+    {
+        foreach (var c in new[] { root }.Concat(root.GetLogicalDescendants().OfType<Control>()))
+            switch (c)
+            {
+                case TextBlock { Name: "prog-dirty" } tb: tb.Text = SaveStateText(d, key); break;
+                case Button { Name: "prog-save-now" } b: b.IsVisible = SaveByHand(d, key); break;
+                case TextBlock { Name: "prog-saved" } f: f.Text = d.Path is null ? "" : Path.GetFileName(d.Path); ToolTip.SetTip(f, d.Path); break;
+            }
+    }
+
+    /// <summary>V-04: Breite der Werkzeugleiste in „Einfach“ (Symbol und Wort).</summary>
+    public const double ToolRailWidth = 164;
+
+    // ---------- T-0686 (V-03): genau ein goldener Knopf je Ansicht ----------
+    /// <summary>Golden gefüllt = der nächste sinnvolle Schritt. Gilt für Knöpfe mit der Akzentfläche oder der Klasse „accent“.</summary>
+    public static bool IsGold(Button b) => b.Classes.Contains("accent")
+        || b.Background is ISolidColorBrush { Opacity: > 0.98 } s && Accent is ISolidColorBrush a && s.Color == a.Color;
+
+    /// <summary>Ruhige Hervorhebung für „gewählt“ (Reiter, Werkzeug, Stufe) und für Hauptaktionen, die nicht die eine goldene sind: goldener Rand, zarter Goldton, normale Schrift.</summary>
+    internal static void QuietGold(Button b)
+    {
+        b.Classes.Remove("accent");
+        var c = Accent is ISolidColorBrush a ? a.Color : Color.Parse("#C9A227");
+        b.Background = new SolidColorBrush(c, 0.16); b.BorderBrush = Accent; b.BorderThickness = new Thickness(1); b.Foreground = Text;
+    }
+
+    /// <summary>Regel der Hülle: Von allen golden gefüllten Knöpfen der Ansicht bleibt genau einer – der erste Schritt im leeren Dokument, sonst eine Rückfrage-Karte
+    /// (Sicherung, Einführung, Fehler), sonst die Hauptaktion im Menüband. Alle anderen (auch die in der Arbeitsfläche) werden ruhig hervorgehoben; keine Funktion ändert sich.</summary>
+    void ProgramOneGold(Control root)
+    {
+        var gold = root.GetLogicalDescendants().OfType<Button>().Where(IsGold).ToList();
+        static bool Inside(Button b) => b.GetLogicalAncestors().OfType<Control>().Any(c => c.Name is "prog-workspace" or "prog-properties" or "prog-bottom" or "prog-tools-panel" or "prog-level");
+        var keep = gold.FirstOrDefault(b => b.Name == "prog-first-step") ?? gold.FirstOrDefault(b => !Inside(b));
+        foreach (var b in gold) if (!ReferenceEquals(b, keep)) QuietGold(b);
+    }
+
+    /// <summary>V-02: Eigenschaften-Spalte zeigen, auch wenn sie in „Einfach“ eingeklappt oder von Hand ausgeblendet ist (für erste Schritte wie „Namen eingeben“).</summary>
+    public void ProgramShowProperties(string key)
+    {
+        _simpleToolsOpen.Add(key);
+        if (_settings.HiddenPanels.Remove(key + ":eigenschaften")) SaveSettings();
+    }
+
+    /// <summary>V-02: Dateiauswahl für einen ersten Schritt („Video hinzufügen“, „Foto öffnen“) – danach läuft <paramref name="use"/> als normaler Befehl (Fehler werden zur Meldung).
+    /// Tests ersetzen die Auswahl über <see cref="PickOverride"/>.</summary>
+    public async Task ProgramPickThen(string key, string field, string title, IReadOnlyList<string> extensions, bool multiple, Action<string[]> use)
+    {
+        string[]? got;
+        try
+        {
+            if (PickOverride is { } fake) got = await fake(new PickRequest(field, false, multiple, extensions));
+            else
+            {
+                var filters = new List<FilePickerFileType>();
+                if (extensions.Count > 0) filters.Add(new FilePickerFileType(title) { Patterns = extensions.Select(e => "*." + e.TrimStart('.')).ToList() });
+                filters.Add(new FilePickerFileType("Alle Dateien") { Patterns = ["*"] });
+                got = (await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = title, AllowMultiple = multiple, FileTypeFilter = filters })).Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
+            }
+        }
+        catch (Exception e) when (e is not OutOfMemoryException) { ProgramRun(key, () => throw new IOException(FriendlyError.Say(e), e)); return; }
+        if (got is { Length: > 0 }) ProgramRun(key, () => use(got));
+    }
+
+    /// <summary>V-02: so weit sitzt die Karte des ersten Schritts über der genauen Mitte (halber Wert) – unten liegen oft Zeitleiste und Abspielknöpfe.</summary>
+    public const double FirstStepLift = 90;
+
+    /// <summary>V-02: großer Knopf für den ersten Schritt, mittig über der leeren Arbeitsfläche. Nur die Karte nimmt Klicks an – daneben bleibt die Fläche bedienbar.</summary>
+    Control ProgramFirstStepCard(ProgramSpec spec, ProgramDocument d, ProgramFirstStep step)
+    {
+        var key = spec.Key;
+        var go = new Button { Name = "prog-first-step", Content = step.Label, FontSize = 16, FontWeight = FontWeight.SemiBold, Padding = new Thickness(26, 12), CornerRadius = new CornerRadius(10), HorizontalAlignment = HorizontalAlignment.Center,
+            Background = Accent, Foreground = Brushes.White, BorderThickness = new Thickness(0) };
+        go.Click += (_, _) => ProgramRun(key, () => step.Run(d));
+        return new Border { Name = "prog-first", HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 0, FirstStepLift), MaxWidth = 460, Padding = new Thickness(26, 20), CornerRadius = new CornerRadius(14),
+            Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), BoxShadow = CardShadow,
+            Child = new StackPanel { Spacing = 12, Children = {
+                new TextBlock { Name = "prog-first-hint", Text = step.Hint, Foreground = Text, FontSize = 14, TextWrapping = TextWrapping.Wrap, TextAlignment = TextAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center },
+                go } } };
+    }
 
     /// <summary>E2 (T-0616): In „Einfach“ ist die Stufenwahl eingeklappt – „Mehr Werkzeuge“ holt Stufenwahl, Eigenschaften und Rand-Schalter.</summary>
     Control LevelArea(string key)
@@ -794,17 +944,11 @@ public partial class MainWindow
         return sp;
     }
 
-    /// <summary>V2/V9: Reiter, Menüband, Arbeitsfläche, Eigenschaften, Statusleiste.</summary>
-    private Control ProgramWork(ProgramSpec spec, ProgramDocument d, List<ProgramDocument> docs)
-    {
-        var (top, grid, status) = ProgramWorkParts(spec, d, docs);
-        var inner = (StackPanel)((StackPanel)top).Children[1]; inner.Children.Add(grid); inner.Children.Add(status);
-        return top;
-    }
-
-    private (Control Top, Control Grid, Control Status) ProgramWorkParts(ProgramSpec spec, ProgramDocument d, List<ProgramDocument> docs)
+    /// <summary>V2/V9: Reiter, Menüband, Arbeitsfläche, Eigenschaften, Statusleiste. <c>Tabs</c> ist null, wenn der Bedienstil (Windows, Mac, GNOME) die Reiter selbst in seinen Kopf setzt.</summary>
+    private (Panel? Tabs, Control Top, Control Grid, Control Status) ProgramWorkParts(ProgramSpec spec, ProgramDocument d, List<ProgramDocument> docs)
     {
         var key = spec.Key;
+        var goldGiven = false; // V-03: nur der erste sichtbare Hauptbefehl des Programms ist golden
         // V9: Reiter der offenen Dokumente
         var tabs = new WrapPanel { Name = "prog-tabs" };
         for (var k = 0; k < docs.Count; k++)
@@ -854,7 +998,7 @@ public partial class MainWindow
         {
             ("Datei", [
                 RBtn("prog-new", "Neu", () => ProgramRun(key, () => ProgramNew(key))),
-                RBtn("prog-save", "Speichern", () => ProgramRun(key, () => ProgramSave(key)), true),
+                RBtn("prog-save", "Speichern", () => ProgramRun(key, () => ProgramSave(key)), tip: AutoSaveDocs ? "Jetzt speichern (Strg+S) – Änderungen werden sonst von selbst gespeichert" : "Speichern (Strg+S)"), // V-03: nicht mehr golden – gespeichert wird von selbst
                 .. SaveAsControls(),
                 .. VersionControls(),
                 RBtn("prog-open-pick", "Öffnen …", () => _ = ProgramOpenPick(key)),
@@ -869,7 +1013,7 @@ public partial class MainWindow
         foreach (var (g, cmds) in spec.Ribbon)
         {
             if (!UserLevel.Shows(level, spec.GroupLevels.GetValueOrDefault(g))) continue;
-            var shown = cmds.Where(c => UserLevel.Shows(level, spec.LevelOf(c))).Select(c => (Control)RBtn("prog-cmd-" + c.Name, c.Label, () => ProgramRun(key, () => c.Run(d)), c.Primary, c.Tip)).ToList();
+            var shown = cmds.Where(c => UserLevel.Shows(level, spec.LevelOf(c))).Select(c => (Control)RBtn("prog-cmd-" + c.Name, c.Label, () => ProgramRun(key, () => c.Run(d)), c.Primary && !goldGiven && (goldGiven = true), c.Tip)).ToList();
             if (shown.Count > 0) groups.Add((g, shown));
         }
         if (spec.Exports.Count > 0)
@@ -884,6 +1028,11 @@ public partial class MainWindow
         var help = new List<Control>();
         if (spec.Help.Length > 0) help.Add(RBtn("prog-help", "? Hilfe", () => Toast(spec.Help)));
         help.Add(RBtn("prog-intro-show", "Einführung", () => ProgramIntroShow(key), tip: "Die drei kurzen Schritte zum Anfangen noch einmal zeigen"));
+        // T-0686 (V-01): ohne die Kopfkarte der Seite bleiben „Team“ und die freien KIs des Studios hier erreichbar (in „Einfach“ unter „Mehr“)
+        if (!spec.FillHeight && StudioTeams.For(spec.Studio) is { } team)
+            help.Add(RBtn("page-team", "Team", () => AgentsForStudio(spec.Studio), tip: $"{team.Name}: {string.Join(", ", team.Roles.Select(r => r.Name))} – unter „KI einsetzen“ starten"));
+        if (!spec.FillHeight && FreeKiRow(spec.Studio) is Panel free)
+            foreach (var fb in free.Children.OfType<Button>().ToList()) { free.Children.Remove(fb); fb.Padding = new Thickness(12, 6); fb.Background = Brushes.Transparent; fb.BorderBrush = Edge; fb.BorderThickness = new Thickness(1); ToolTip.SetTip(fb, "Freie KI: " + ToolTip.GetTip(fb)); help.Add(fb); }
         groups.Add(("Hilfe", help));
         if (level == UserLevel.Einfach && !OsStyle)
         {
@@ -901,13 +1050,13 @@ public partial class MainWindow
                 // DAW-Stil (Wunsch 06.11.2026): Gruppe als Segment wie in Bitwig („FILE · PLAY · EDIT“) – Beschriftung links, Knöpfe dicht nebeneinander
                 var seg = new WrapPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center }; // bricht bei vielen Befehlen innerhalb der Gruppe um
                 if (g != lastGroup) seg.Children.Add(new TextBlock { Name = "prog-group-label", Text = g.ToUpperInvariant(), Foreground = Muted, FontSize = 9.5, FontWeight = FontWeight.Bold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(2, 0, 6, 0) });
-                foreach (var it in items) { it.Margin = new Thickness(0, 1, 2, 1); it.VerticalAlignment = VerticalAlignment.Center; seg.Children.Add(it); }
+                foreach (var it in items) { it.Margin = new Thickness(0, 2, 6, 2); it.VerticalAlignment = VerticalAlignment.Center; seg.Children.Add(it); } // V-04: sichtbarer Abstand zwischen den Knöpfen
                 var box = new Border { Margin = new Thickness(0, 4, 6, 4), Padding = new Thickness(6, 3), CornerRadius = new CornerRadius(8), Background = GroupBg, BorderBrush = PaneEdge, BorderThickness = new Thickness(1), Child = seg };
                 ToolTip.SetTip(box, g); lastGroup = g;
                 ribbon.Children.Add(box);
                 continue;
             }
-            var row = new WrapPanel(); foreach (var it in items) { it.Margin = new Thickness(0, 0, 4, 4); it.VerticalAlignment = VerticalAlignment.Center; row.Children.Add(it); }
+            var row = new WrapPanel(); foreach (var it in items) { it.Margin = new Thickness(0, 0, 6, 4); it.VerticalAlignment = VerticalAlignment.Center; row.Children.Add(it); }
             if (spec.FillHeight)
             {
                 // Gruppenname klein über den Befehlen (wie die Gruppen in Word), damit man sieht, was zusammengehört; gleicher Name direkt hintereinander nur einmal (Prüfung „Einfachheit“, 04.11.2026)
@@ -928,6 +1077,8 @@ public partial class MainWindow
 
         // Arbeitsfläche und Eigenschaften
         var work = new Border { Name = "prog-workspace", ClipToBounds = true, CornerRadius = new CornerRadius(14), Background = PaneBg, BorderBrush = PaneEdge, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(spec.FillHeight ? 8 : 12), MinHeight = spec.FillHeight ? 220 : 420, Child = spec.FillHeight && spec.ScrollWorkspace ? new ScrollViewer { Name = "prog-workspace-scroll", Content = spec.Workspace(d), HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled } : spec.Workspace(d) };
+        // V-02 (T-0686): leeres Dokument – großer Knopf für den ersten Schritt mitten auf der Arbeitsfläche
+        if (spec.FirstStep is { } step && !d.ReadOnly && step.Empty(d)) { var body = work.Child!; work.Child = null; work.Child = new Panel { Children = { body, ProgramFirstStepCard(spec, d, step) } }; }
         // Paket F (A1 Profi-Bauplan): Werkzeuge links · große Mitte · Eigenschaften rechts · Bereich unten – jeder Rand einklappbar
         bool Hidden(string part) => _settings.HiddenPanels.Contains(key + ":" + part);
         var showTools = spec.Tools.Count > 0 && !Hidden("werkzeuge"); var showProps = spec.Properties is not null && !Hidden("eigenschaften") && !SimpleCollapsed(key); var showBottom = spec.Bottom is not null && !Hidden("unten");
@@ -938,25 +1089,44 @@ public partial class MainWindow
                 Child = new DockPanel { Children = { Dk(new TextBlock { Text = bottom.Title, Foreground = Muted, FontSize = 12, FontWeight = FontWeight.SemiBold, Margin = new Thickness(2, 0, 0, 4) }, Avalonia.Controls.Dock.Top), bottom.Build(d) } } };
             var g2 = new Grid { RowDefinitions = new RowDefinitions("*,10,Auto"), Children = { work } }; Grid.SetRow(bp, 2); g2.Children.Add(bp); center = g2;
         }
-        var dawOrder = DawLook; // DAW-Stil: Inspektor links (wie Bitwig, Studio One), Werkzeuge als Leiste rechts
+        var wordy = IsSimple; // V-04: Werkzeuge mit Symbol und Wort
+        var dawOrder = DawLook && !wordy; // DAW-Stil: Inspektor links (wie Bitwig, Studio One), Werkzeuge als Leiste rechts – in „Einfach“ stehen die Werkzeuge immer links
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions(dawOrder ? (showProps ? "300,12," : "") + "*" + (showTools ? ",10,Auto" : "") : (showTools ? "Auto,10," : "") + (showProps ? "*,12,300" : "*")) };
         var col = dawOrder && showProps ? 2 : 0;
         if (showTools)
         {
             // viele Werkzeuge: zwei Spalten wie in Photoshop/GIMP, damit nichts unten aus dem Bild läuft
-            var two = spec.Tools.Count > 9;
-            Panel rail = two ? new WrapPanel { Name = "prog-tools", Width = 88 } : new StackPanel { Name = "prog-tools", Spacing = 4 };
+            var two = spec.Tools.Count > 9 && !wordy;
+            // V-04 (T-0686): in „Einfach“ eine breitere Leiste links mit Symbol und Wort – nichts wird mehr abgeschnitten; in den höheren Stufen nur das Symbol, das Wort steht im Hinweis
+            Panel rail = wordy ? new StackPanel { Name = "prog-tools", Spacing = 4, Width = ToolRailWidth } : two ? new WrapPanel { Name = "prog-tools", Width = 88 } : new StackPanel { Name = "prog-tools", Spacing = 4 };
             foreach (var t in spec.Tools)
             {
                 var on = t.Active(); var tt = t;
-                var b = new Button { Name = "prog-cmd-" + t.Name, Content = t.Icon, Width = DawLook ? 36 : 40, Height = DawLook ? 36 : 40, Padding = new Thickness(0), FontSize = DawLook ? 15 : 17, CornerRadius = new CornerRadius(DawLook ? 6 : 10),
-                    HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center,
-                    Background = on ? Accent : Brushes.Transparent, Foreground = on ? Brushes.White : Text, BorderBrush = on ? Brushes.Transparent : Edge, BorderThickness = new Thickness(1), Margin = two ? new Thickness(2) : default };
+                var b = new Button { Name = "prog-cmd-" + t.Name, BorderBrush = Edge, BorderThickness = new Thickness(1), Background = Brushes.Transparent, Foreground = Text };
+                if (wordy)
+                {
+                    b.HorizontalAlignment = HorizontalAlignment.Stretch; b.HorizontalContentAlignment = HorizontalAlignment.Left; b.Padding = new Thickness(8, 6); b.CornerRadius = new CornerRadius(8);
+                    // dasselbe ruhige Linien-Symbol wie in den höheren Stufen (GlyphIcons), sonst das Zeichen des Werkzeugs
+                    Control icon = GlyphIcons.Map.TryGetValue(t.Icon.Trim(), out var gl)
+                        ? new Avalonia.Controls.Shapes.Path { Data = Geometry.Parse(gl.Path), Stretch = Stretch.Uniform, Width = 15, Height = 15, Margin = new Thickness(2.5, 0), VerticalAlignment = VerticalAlignment.Center, [!Avalonia.Controls.Shapes.Shape.FillProperty] = b[!Avalonia.Controls.Primitives.TemplatedControl.ForegroundProperty] }
+                        : new TextBlock { Text = t.Icon, FontSize = 15, Width = 20, TextAlignment = TextAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+                    b.Content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = {
+                        icon,
+                        new TextBlock { Text = t.Label, FontSize = 12.5, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis } } };
+                    b.SetValue(GlyphIcons.GlyphProperty, t.Icon); // das Zeichen bleibt für Claude, Befehlsleiste und Tests abrufbar
+                }
+                else
+                {
+                    b.Content = t.Icon; b.Width = b.Height = DawLook ? 36 : 40; b.Padding = new Thickness(0); b.FontSize = DawLook ? 15 : 17; b.CornerRadius = new CornerRadius(DawLook ? 6 : 10);
+                    b.HorizontalContentAlignment = HorizontalAlignment.Center; b.VerticalContentAlignment = VerticalAlignment.Center; if (two) b.Margin = new Thickness(2);
+                }
+                if (on) QuietGold(b); // V-03: „gewählt“ ist ein goldener Rand – golden gefüllt ist nur die Hauptaktion
                 ToolTip.SetTip(b, $"{t.Label} – {t.Tip}"); Avalonia.Automation.AutomationProperties.SetName(b, t.Label);
                 b.Click += (_, _) => ProgramRun(key, () => tt.Select(d));
                 rail.Children.Add(b);
             }
-            var toolsBorder = new Border { Name = "prog-tools-panel", CornerRadius = new CornerRadius(14), Background = PaneBg, BorderBrush = PaneEdge, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(6), Child = rail };
+            var toolsBorder = new Border { Name = "prog-tools-panel", CornerRadius = new CornerRadius(14), Background = PaneBg, BorderBrush = PaneEdge, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(6),
+                Child = wordy ? new ScrollViewer { Content = rail, HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto } : rail };
             if (dawOrder) grid.Children.Add(Pos(toolsBorder, showProps ? 4 : 2)); else { grid.Children.Add(toolsBorder); col = 2; }
         }
         grid.Children.Add(Pos(center, col));
@@ -982,12 +1152,12 @@ public partial class MainWindow
         var status = new Border { Name = "prog-status", CornerRadius = new CornerRadius(10), Background = DawLook ? DawLcd : Brush.Parse(C("#331A1A1A", "#14000000")), BorderBrush = DawLook ? DawEdge : null, BorderThickness = new Thickness(DawLook ? 1 : 0), Padding = new Thickness(12, 5),
             Child = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto"), Children = {
                 new TextBlock { Name = "prog-status-text", Text = spec.Status?.Invoke(d) ?? "", Foreground = DawLook ? DawDigits : Muted, FontSize = 12, FontFamily = DawLook ? new FontFamily("Consolas, monospace") : FontFamily.Default, VerticalAlignment = VerticalAlignment.Center },
-                Pos(new TextBlock { Name = "prog-saved", Text = AutoSaveDocs ? (d.Path is null && !d.Dirty ? "Noch leer" : (d.Path is null ? "" : Path.GetFileName(d.Path) + " · ") + (d.Dirty ? "wird gespeichert …" : "✓ Gespeichert") + $" · {d.Changed:HH:mm}")
-                    : (d.Path is null ? "Noch nicht gespeichert" : Path.GetFileName(d.Path)) + (d.Dirty ? " · geändert, wird automatisch gesichert" : "") + $" · {d.Changed:HH:mm}", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, 1),
+                // V-08 (T-0686): der Speicherstand steht nur noch in der Kopfzeile – hier nur, unter welchem Namen die Datei liegt (Hinweis: voller Pfad)
+                Pos(new TextBlock { Name = "prog-saved", Text = d.Path is null ? "" : Path.GetFileName(d.Path), [ToolTip.TipProperty] = d.Path, Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, 1),
                 Pos(toggles, 2) } } };
-        if (osChrome is not null) return (new StackPanel { Spacing = 0, Children = { new Border(), new StackPanel { Spacing = 8, Children = { osChrome } } } }, grid, status);
+        if (osChrome is not null) return (null, osChrome, grid, status);
         Control ribbonHost = DawLook ? new Border { Name = "prog-ribbon-strip", CornerRadius = new CornerRadius(12), Background = DawPanel, BorderBrush = DawEdge, BorderThickness = new Thickness(1), Padding = new Thickness(8, 2, 8, 0), Child = ribbon } : ribbon; // DAW-Werkzeugleiste
-        return (new StackPanel { Spacing = 0, Children = { tabs, new StackPanel { Spacing = 8, Children = { ribbonHost } } } }, grid, status);
+        return (tabs, ribbonHost, grid, status);
 
         Button RBtn(string name, string label, Action go, bool primary = false, string? tip = null)
         {
@@ -1022,7 +1192,8 @@ public partial class MainWindow
             var b = new Button { Name = "prog-level-" + UserLevel.Ids[i], Content = UserLevel.Names[i], FontSize = 11.5, Padding = new Thickness(9, 3), Margin = new Thickness(0),
                 CornerRadius = i == 0 ? new CornerRadius(4, 0, 0, 4) : i == 2 ? new CornerRadius(0, 4, 4, 0) : new CornerRadius(0),
                 // neutraler Segmentschalter (Vorgabe 13.11.2026): aktive Stufe im Akzent, sonst ruhig mit feinem Rand
-                Background = on ? Accent : Brushes.Transparent, Foreground = on ? Brushes.White : Text, BorderBrush = Edge, BorderThickness = new Thickness(1) };
+                Background = Brushes.Transparent, Foreground = Text, BorderBrush = Edge, BorderThickness = new Thickness(1) };
+            if (on) QuietGold(b); // V-03 (T-0686): gewählte Stufe mit goldenem Rand – golden gefüllt ist nur die Hauptaktion
             ToolTip.SetTip(b, lv switch
             {
                 UserLevel.Einfach => "Einfach: nur das Wichtigste, große Schritte",

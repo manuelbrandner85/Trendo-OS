@@ -134,6 +134,9 @@ public partial class MainWindow
     {
         Sentence = "Logo, Farben und Schrift für deine Marke – als SVG für Druck und Web, mit Kontrastprüfung.",
         Folder = "Logos",
+        // T-0686 (V-02): Name und Farben stehen in den Eigenschaften, die „Einfach“ einklappt – der erste Schritt holt sie
+        FirstStep = new("Namen eingeben", "Trag den Namen deiner Marke ein – Form und Farben wählst du danach.", _ => ProgramShowProperties(LogoKey),
+            d => SimpleCollapsed(LogoKey) && d.Text("name") is "Meine Marke" or ""),
         Templates =
         [
             new("leer", "Neues Logo", "Name eintragen, Form und Farben wählen", () => LogoDoc("Meine Marke", "", "#1E3A8A", "#D4A017", "kreis")),
@@ -154,7 +157,7 @@ public partial class MainWindow
         Workspace = LogoWorkspace,
         Properties = LogoProperties,
         Status = d => { var s = LogoSpec(d); return $"Kontrast Schrift auf Hauptfarbe {LogoKit.Contrast(s.Primary, LogoKit.TextOn(s.Primary)).ToString("0.0", De)}:1"; },
-        Help = "Rechts Namen, Untertitel und Farben eintragen, oben die Form wählen. Die Vorschau zeigt das Logo auf hellem und dunklem Grund. Vor einer Markenanmeldung prüfen, ob es den Namen schon gibt.",
+        Help = "In den Eigenschaften Namen, Untertitel und Farben eintragen (in „Einfach“ über „Namen eingeben“ oder „Mehr Werkzeuge“), oben die Form wählen. Die Vorschau zeigt das Logo auf hellem und dunklem Grund. Vor einer Markenanmeldung prüfen, ob es den Namen schon gibt.",
     }, "logo", "logos", "marke", "branding", "markenzeichen", "wortmarke", "firmenlogo", "corporate design", "markenfarben");
 
     /// <summary>Zeichnet das Logo nativ, gleiche Maße wie das SVG (640 × 180).</summary>
@@ -375,6 +378,9 @@ public partial class MainWindow
         Sentence = "Comicseiten und Storyboards: Bildaufteilung wählen, Bilder einsetzen, Sprechblasen und Texte schreiben.",
         Folder = "Comics",
         FillHeight = true,
+        // T-0686 (V-02): Sprechblasen, Texte und Bilder stehen in den Eigenschaften, die „Einfach“ einklappt – der erste Schritt holt sie
+        FirstStep = new("Texte und Bilder eintragen", "Schreib für jedes Bild eine Sprechblase oder wähle ein Bild aus.", _ => ProgramShowProperties(ComicKey),
+            d => SimpleCollapsed(ComicKey) && ComicPanels(d).All(p => p.Speech.Trim().Length == 0 && p.Caption.Trim().Length == 0 && p.ImagePath.Trim().Length == 0)),
         Templates =
         [
             new("leer", "Leere Seite", "Vier Bilder", () => ComicDoc("", "2x2", ("", ""), ("", ""), ("", ""), ("", ""))),
@@ -396,7 +402,7 @@ public partial class MainWindow
         Workspace = ComicWorkspace,
         Properties = ComicProperties,
         Status = d => $"{ComicKit.Boxes(d.Text("layout")).Count} Bilder · {ComicPanels(d).Count(p => KreativSafe.LocalFile(p.ImagePath))} mit Bild",
-        Help = "Oben die Aufteilung wählen. Rechts für jedes Bild Sprechblase, Bildunterschrift und ein Bild (PNG/JPEG) eintragen. Bilder machst du z. B. im Studio „Bilder mit KI“ oder mit einer Zeichnung.",
+        Help = "Oben die Aufteilung wählen. In den Eigenschaften (in „Einfach“ über „Texte und Bilder eintragen“ oder „Mehr Werkzeuge“) für jedes Bild Sprechblase, Bildunterschrift und ein Bild (PNG/JPEG) eintragen. Bilder machst du z. B. im Studio „Bilder mit KI“ oder mit einer Zeichnung.",
     }, "comic", "comics", "storyboard", "manga", "bildergeschichte", "sprechblase", "panel", "graphic novel");
 
     Control ComicWorkspace(ProgramDocument d)

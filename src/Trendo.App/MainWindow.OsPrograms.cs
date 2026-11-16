@@ -86,7 +86,7 @@ public sealed partial class MainWindow
         Control Group(string g, List<Control> items, bool label)
         {
             var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2 };
-            foreach (var it in items) { it.Margin = new Thickness(0); it.VerticalAlignment = VerticalAlignment.Center; Flatten(it, _style == "linux" && it.Name == "prog-save"); row.Children.Add(it); }
+            foreach (var it in items) { it.Margin = new Thickness(0); it.VerticalAlignment = VerticalAlignment.Center; Flatten(it, it is Button gb && IsGold(gb)); row.Children.Add(it); } // T-0686 (V-03): hervorgehoben bleibt nur die eine Hauptaktion des Programms, nicht mehr „Speichern“
             return label ? new StackPanel { Spacing = 1, Children = { row, new TextBlock { Text = g, FontSize = 10.5, Foreground = Muted, HorizontalAlignment = HorizontalAlignment.Center } } } : row;
         }
         Control Sep(double h) => new Border { Width = 1, Height = h, Background = Edge, Margin = new Thickness(8, 0), VerticalAlignment = VerticalAlignment.Center };
@@ -123,7 +123,7 @@ public sealed partial class MainWindow
                 Control? Take(string name) { var c = file.FirstOrDefault(x => x.Name == name); if (c is not null) { file.Remove(c); c.Margin = new Thickness(0); } return c; }
                 var neu = Take("prog-new"); var save = Take("prog-save");
                 if (neu is Button nb) { Flatten(nb); nb.Content = "＋ Neu"; }
-                if (save is Button sb) Flatten(sb, true);
+                if (save is Button sb) Flatten(sb); // T-0686 (V-03): gespeichert wird von selbst – Speichern ist nicht mehr die hervorgehobene Aktion
                 var main = new Button { Name = "prog-mainmenu", Content = "☰", Width = 34, Height = 34, Padding = new Thickness(0), CornerRadius = new CornerRadius(6), HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center };
                 Flatten(main); ToolTip.SetTip(main, "Hauptmenü");
                 var fl = new MenuFlyout();

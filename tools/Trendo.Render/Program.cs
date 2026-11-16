@@ -97,6 +97,7 @@ if (Environment.GetEnvironmentVariable("TRENDO_TV_DEMO") is { Length: > 0 }) // 
 { var us = UserSettings.Load(root); if (string.IsNullOrEmpty(us.ProjectsFolder)) { us.ProjectsFolder = Path.Combine(root, "Projekte"); us.Save(root); } }
 // Immer Testmodus: Katalog und Bilder landen im öffentlichen Repository – nie echte Ordner des Nutzers lesen (z. B. „Zuletzt benutzt“ aus Dokumente).
 var win = new MainWindow(core, new AppOptions(root, null, 0, Page: args.Length > 3 ? args[3] : null, Query: Environment.GetEnvironmentVariable("TRENDO_QUERY"), Isolated: true), new DefaultToolProbe()) { Width = w, Height = h, WindowState = Avalonia.Controls.WindowState.Normal };
+if (Environment.GetEnvironmentVariable("TRENDO_AUTOSAVE") is { Length: > 0 }) win.AutoSaveDocs = true; // T-0686: Speicherstand so zeigen, wie ihn Nutzer sehen (im Render-Lauf ist das automatische Speichern sonst aus)
 if (Environment.GetEnvironmentVariable("TRENDO_GAME_LEVELS") is { Length: > 0 }) // Spiele bauen: Level-Reiter, Ebenen, Hintergrund und Figur-Animationen zeigen
 {
     var gd = win.ProgramNew("spiele-programm", "retro-plattform"); win.GameSection = "Level";

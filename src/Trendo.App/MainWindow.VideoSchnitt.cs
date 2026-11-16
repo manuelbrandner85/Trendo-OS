@@ -30,6 +30,9 @@ public partial class MainWindow
     {
         Sentence = "Videos, Fotos und Musik auf die Zeitleiste legen, schneiden und als MP4 speichern.",
         FillHeight = true,
+        // T-0686 (V-02): leere Zeitleiste – „Video hinzufügen“ öffnet die Dateiauswahl, auch wenn die Medien-Spalte in „Einfach“ eingeklappt ist
+        FirstStep = new("Video hinzufügen", "Hol Videos, Fotos oder Musik dazu – sie landen unten auf der Zeitleiste.", _ => EditPickMedia(),
+            d => VideoEdit.Clips(d.Data).Count == 0 && VideoEdit.Clips(d.Data, "music").Count == 0),
         Folder = "Medien",
         Templates =
         [
@@ -40,6 +43,7 @@ public partial class MainWindow
         Ribbon =
         [
             ("Schneiden", [
+                new ProgramCmd("ve-add-pick", "Video hinzufügen", _ => EditPickMedia(), false, "Videos, Fotos oder Musik auswählen – sie landen auf der Zeitleiste"),
                 new ProgramCmd("ve-split", "Teilen (S)", d => d.Edit("Teilen", x => { if (!VideoEdit.Split(x, d.Number("playhead"))) throw new InvalidOperationException("Am Abspielkopf liegt kein Stück – oder er steht zu nah an einer Schnittkante."); }), true, "Stück am Abspielkopf in zwei teilen"),
                 new ProgramCmd("ve-delete", "Löschen (Entf)", d => EditDelete(d), false, "Ausgewähltes Stück entfernen"),
                 new ProgramCmd("ve-play", "Abspielen (Leertaste)", d => EditTogglePlay(d), false, "Im Programm abspielen – noch einmal: anhalten"),
@@ -74,11 +78,14 @@ public partial class MainWindow
         Workspace = EditWorkspace,
         Properties = EditProperties,
         Status = d => { var p = d.Data; return $"{VideoEdit.Clips(p).Count} Stücke · Musik {VideoEdit.Clips(p, "music").Count} · Länge {Clock(VideoEdit.Duration(p))} · {(int)d.Number("width")} × {(int)d.Number("height")}" + (FfmpegPath is null ? " · FFmpeg fehlt (Vorschau und Export)" : ""); },
-        Help = "Rechts Medien hinzufügen. Unten auf der Zeitleiste: Stück ziehen ordnet um, Kanten ziehen kürzt, Klick ins Lineal setzt den Abspielkopf, S teilt, Entf löscht. Export unter „Exportieren“.",
+        Help = "Mit „Video hinzufügen“ holst du Videos, Fotos oder Musik dazu. Unten auf der Zeitleiste: Stück ziehen ordnet um, Kanten ziehen kürzt, Klick ins Lineal setzt den Abspielkopf, S teilt, Entf löscht. Export unter „Exportieren“.",
     }, "videoschnitt", "video schneiden", "zeitleiste", "timeline", "film", "clip", "musik unterlegen", "mp4", "schnitt");
 
     // ---------- Bearbeiten (öffentlich für Tests und die KI) ----------
     /// <summary>Datei auf die Bild- oder Musikspur legen; Länge und Ton werden mit FFmpeg ermittelt (oder angegeben).</summary>
+    /// <summary>T-0686 (V-02): Dateiauswahl für Videos, Fotos und Musik – Tondateien kommen auf die Musikspur, alles andere auf die Bildspur.</summary>
+    public void EditPickMedia() => _ = ProgramPickThen(VK, "ve-add-pick", "Videos, Fotos und Musik", MediaStudio.Inputs, true, files => { foreach (var f in files) EditAdd(f, music: MediaStudio.IsAudio(f)); });
+
     public void EditAdd(string file, bool music = false, double? length = null, bool? audio = null)
     {
         var d = ProgramActive(VK) ?? ProgramNew(VK);
@@ -186,7 +193,7 @@ public partial class MainWindow
         var (pw, ph) = (Math.Max(16, d.Number("width")), Math.Max(16, d.Number("height")));
         var frame = EditFrame(d);
         Control screen = frame is not null ? new Image { Name = "ve-preview", Source = frame, Stretch = Stretch.Uniform }
-            : new TextBlock { Name = "ve-preview-empty", Text = clips.Count == 0 ? "Rechts Videos, Fotos oder Musik hinzufügen." : FfmpegPath is null ? "Vorschau von Videos braucht FFmpeg." : "Abspielkopf ins Video setzen.", Foreground = Muted, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap, TextAlignment = TextAlignment.Center };
+            : new TextBlock { Name = "ve-preview-empty", Text = clips.Count == 0 ? (music.Count == 0 ? "" : "Noch kein Bild auf der Bildspur.") : FfmpegPath is null ? "Vorschau von Videos braucht FFmpeg." : "Abspielkopf ins Video setzen.", Foreground = Muted, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap, TextAlignment = TextAlignment.Center };
         var titleAt = VideoEdit.At(p, d.Number("playhead")) is { } at0 ? clips[at0.Index].Title : "";
         var overlay = new TextBlock { Name = "ve-title-overlay", Text = titleAt, Foreground = Brushes.White, FontSize = ph / 14, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(0, 0, 0, ph / 10), IsVisible = titleAt.Length > 0,
             Effect = new DropShadowEffect { BlurRadius = 6, OffsetX = 0, OffsetY = 2, Color = Colors.Black, Opacity = 0.9 } };

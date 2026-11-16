@@ -35,17 +35,21 @@ public partial class MainWindow
         Sentence = "Aufnahmen und Musik schneiden, verbessern und speichern – wie ein Tonstudio, direkt in Trendo.",
         FillHeight = true,
         Folder = "Medien",
+        // T-0686 (V-02): noch kein Ton – „Tondatei öffnen“ öffnet die Dateiauswahl, auch wenn die Spalte „Tondatei“ in „Einfach“ eingeklappt ist
+        FirstStep = new("Tondatei öffnen", "Öffne eine Tondatei (WAV oder MP3), um sie zu schneiden und zu verbessern.", _ => AuPickOpen(),
+            d => d.Text("source").Length == 0 && d.Number("length") <= 0 && d.List("ops").Count == 0 && (!AudioMulti.IsMulti(d.Data) || AudioMulti.Tracks(d.Data).Count == 0)),
         GroupLevels = new() { ["Filter"] = 2 },
         CmdLevels = new() { ["au-spectral"] = 1, ["au-mixdown-cmd"] = 1, ["au-echo"] = 2, ["au-rev"] = 2, ["au-compress"] = 2, ["au-loud-music"] = 1, ["au-dup"] = 1, ["au-silence"] = 1 }, // Profi zeigt alles – Erweitert bleibt übersichtlich
         Templates =
         [
-            new("leer", "Tondatei öffnen", "WAV oder MP3 rechts wählen", () => AudioEdit.New(null, 0)),
+            new("leer", "Tondatei öffnen", "WAV oder MP3 wählen", () => AudioEdit.New(null, 0)),
             new("stille", "Leere Spur (30 s)", "Zum Zusammensetzen aus mehreren Dateien", () => AudioEdit.New(null, 30)),
             new("mehrspur", "Mehrspur-Projekt", "Stimme, Musik und Geräusche auf eigenen Spuren mischen", AudioMulti.New),
         ],
         Ribbon =
         [
             ("Bearbeiten", [
+                new ProgramCmd("au-open-pick", "Tondatei öffnen", _ => AuPickOpen(), Tip: "Eine Tondatei (WAV oder MP3) auswählen und öffnen"),
                 new ProgramCmd("au-cut", "Ausschneiden", d => { AuCopy(d); AuOp(d, "cut", true); }, Tip: "Auswahl entfernen und merken"),
                 new ProgramCmd("au-copy", "Kopieren", d => AuCopy(d), Tip: "Auswahl merken"),
                 new ProgramCmd("au-paste", "Einfügen", d => AuPaste(d), Tip: "Gemerkten Ton an der Marke einfügen"),
@@ -109,7 +113,7 @@ public partial class MainWindow
         Workspace = AuWorkspace,
         Properties = AuProperties,
         Status = d => { var a = AuRendered(d); var (s, e) = AuSel; return a is null ? "Keine Tondatei" : $"{AudioEdit.Time(a.Seconds)} · {a.Rate} Hz · {(a.Channels == 1 ? "Mono" : "Stereo")} · " + (e > s ? $"Auswahl {AudioEdit.Time(s)}–{AudioEdit.Time(e)} ({e - s:0.00} s)" : $"Marke {AudioEdit.Time(s)}"); },
-        Help = "Rechts eine WAV- oder MP3-Datei öffnen. In der Wellenform mit der Maus einen Bereich ziehen – oder klicken, um die Marke zu setzen. Oben schneiden, Effekte anwenden, zum Anhören. Ohne Auswahl wirken Effekte auf die ganze Spur. Exportieren speichert das Ergebnis; das Original bleibt unverändert.",
+        Help = "Mit „Tondatei öffnen“ eine WAV- oder MP3-Datei öffnen. In der Wellenform mit der Maus einen Bereich ziehen – oder klicken, um die Marke zu setzen. Oben schneiden, Effekte anwenden, zum Anhören. Ohne Auswahl wirken Effekte auf die ganze Spur. Exportieren speichert das Ergebnis; das Original bleibt unverändert.",
     }, "audio bearbeiten", "ton bearbeiten", "tonstudio", "aufnahme schneiden", "wav", "mp3 schneiden", "rauschen entfernen", "normalisieren", "podcast", "audacity");
 
     /// <summary>Spektrogramm statt Wellenform zeigen (Audition „Spektral-Ansicht“).</summary>
@@ -153,6 +157,8 @@ public partial class MainWindow
     }
 
     /// <summary>Tondatei öffnen (öffentlich für Tests und die KI). Ist die aktive Spur leer, wird sie benutzt, sonst entsteht eine neue.</summary>
+    public void AuPickOpen() => _ = ProgramPickThen(AUK, "au-open-pick", "Tondateien", ["wav", "mp3"], false, files => AuOpen(files[0]));
+
     public ProgramDocument AuOpen(string file)
     {
         file = file.Trim().Trim('"');
