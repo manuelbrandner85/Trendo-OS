@@ -261,9 +261,11 @@ public partial class MainWindow
                 _bigDelArmed = false; BigCard = null; BigChange(b => BigBoards.Remove(b, cid));
             }));
         }
-        else right.Children.Add(P(board is null ? "" : "Tippe eine Karte an: Titel, Aufgabe, zuständige KI-Rolle, Fortschritt und Belege.", Muted, 11.5));
+        else if (board is not null) right.Children.Add(P("Tippe eine Karte an: Titel, Aufgabe, zuständige KI-Rolle, Fortschritt und Belege.", Muted, 11.5));
 
         Border Col(Control c) => new() { CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(10), VerticalAlignment = VerticalAlignment.Top, Child = c };
+        // V-16 (T-0684): ohne Großprojekt gibt es rechts nichts zu zeigen – der leere Kasten wird nicht gezeichnet
+        if (right.Children.Count == 0) return new Grid { Name = "big-window", ColumnDefinitions = new ColumnDefinitions("240,12,*"), Children = { Col(left), Pos(center, 2) } };
         return new Grid { Name = "big-window", ColumnDefinitions = new ColumnDefinitions("240,12,*,12,280"), Children = { Col(left), Pos(center, 2), Pos(Col(right), 4) } };
     }
 }

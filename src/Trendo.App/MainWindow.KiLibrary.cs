@@ -74,6 +74,9 @@ public partial class MainWindow
                 (ready ? "✓ eingerichtet." : rt.FromVollpaket ? (rt.Id == KiRuntime.Ollama ? "Startet automatisch, sobald die Trendo KI läuft." : "Kommt aus dem Vollpaket.") : $"Wird beim ersten Laden mit eingerichtet ({rt.Bytes / (1 << 20)} MB, {(rt.Url is null ? $"offizielle GitHub-Seite {rt.Repo}" : $"offizielles Paket {new Uri(rt.Url).Host}, verlinkt auf github.com/{rt.Repo}")})."), null, 11));
         }
         if (!ol.Up && KiLibrary.OfKind(_kiLibKind).Any(m => m.Runtime == KiRuntime.Ollama)) sp.Children.Add(OllamaHint("ki-bibliothek"));
+        // T-0684 (V-06/V-16): Gilt für alle Modelle dieser Art derselbe Satz „So geht's“, steht er einmal über der Liste – nicht auf jeder Karte
+        var sameHowTo = KiLibrary.OfKind(_kiLibKind).Select(m => m.HowTo).Distinct().Count() == 1 && KiLibrary.OfKind(_kiLibKind).Count() > 1;
+        if (sameHowTo) { var how = P("So geht's: " + KiLibrary.OfKind(_kiLibKind).First().HowTo, null, 11); how.Name = "kilib-howto"; sp.Children.Add(how); }
         foreach (var m in KiLibrary.OfKind(_kiLibKind))
         {
             var fits = hw.RamBytes <= 0 || hw.RamBytes >= m.MinRamGb * 1024L * 1024 * 1024 * 0.9;
@@ -114,7 +117,8 @@ public partial class MainWindow
             var info = new StackPanel { Children = {
                 new TextBlock { Text = m.Name + (got ? "  ✓" : ""), Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold },
                 P($"{m.GoodFor} · {(m.Bytes >= 1L << 30 ? $"{m.Bytes / (double)(1L << 30):0.0} GB" : $"{Math.Max(1, m.Bytes / (1 << 20))} MB")} · {(fits ? "passt zu deinem PC" : $"braucht {m.MinRamGb} GB Arbeitsspeicher")} · Lizenz: {m.License}", fits ? null : Brush.Parse("#FACC15"), 10.5),
-                P("So geht's: " + m.HowTo, null, 10.5) } };
+            } };
+            if (!sameHowTo) info.Children.Add(P("So geht's: " + m.HowTo, null, 10.5));
             sp.Children.Add(WCard(new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { info, Pos(buttons, 1) } }));
             if (_kiTry == m.Id && got) sp.Children.Add(KiTryPanel(m));
         }

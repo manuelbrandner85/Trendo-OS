@@ -56,8 +56,8 @@ public partial class MainWindow
                 var idx = i; var src = tasks[i]["source"].AsText();
                 var row = new DockPanel { LastChildFill = true };
                 var tools = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2 };
-                if (c > 0) tools.Children.Add(SmallBtn($"game-task-{i}-back", "◀", () => GameBoardEdit(d, "Aufgabe zurück", x => GameBoard.Move(x, idx, -1))));
-                if (c < 2) tools.Children.Add(SmallBtn($"game-task-{i}-next", "▶", () => GameBoardEdit(d, "Aufgabe weiter", x => GameBoard.Move(x, idx, +1))));
+                if (c > 0) tools.Children.Add(SimpleWords.Named(SmallBtn($"game-task-{i}-back", "◀", () => GameBoardEdit(d, "Aufgabe zurück", x => GameBoard.Move(x, idx, -1))), "Eine Spalte zurück"));
+                if (c < 2) tools.Children.Add(SimpleWords.Named(SmallBtn($"game-task-{i}-next", "▶", () => GameBoardEdit(d, "Aufgabe weiter", x => GameBoard.Move(x, idx, +1))), "Eine Spalte weiter"));
                 tools.Children.Add(SmallBtn($"game-task-{i}-del", "×", () => GameBoardEdit(d, "Aufgabe entfernt", x => GameBoard.Remove(x, idx))));
                 DockPanel.SetDock(tools, Avalonia.Controls.Dock.Bottom); row.Children.Add(tools);
                 var info = new StackPanel { Spacing = 2, Children = { new TextBlock { Text = tasks[i]["title"].AsText(), Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap },

@@ -84,13 +84,16 @@ public partial class MainWindow
     }
 
     /// <summary>„Einfach“: Zusatzknöpfe im Seitenkopf (Freie KI, Team) wandern in ein kleines „Mehr“.</summary>
-    private void SimplifyHeadExtras(Panel right)
+    /// <remarks>V-13 (T-0684): Im selben Menü stehen die „Verwandten Programme“ (früher die Zeile „Gehört hierher:“ über der Seite) – in jeder Stufe.</remarks>
+    private void SimplifyHeadExtras(Avalonia.Controls.Panel right, IReadOnlyList<Button>? related = null)
     {
-        if (!IsSimple || right.Children.Count == 0) return;
-        var extras = right.Children.ToList();
-        var more = new Button { Name = "page-head-more", Content = "Mehr", FontSize = 12, Padding = new Thickness(9, 2), CornerRadius = new CornerRadius(10), Background = Brush.Parse("#22FFFFFF"), Foreground = Text, BorderThickness = new Thickness(0) };
-        var list = new StackPanel { Spacing = 6, MaxWidth = 340 };
+        var extras = IsSimple ? right.Children.ToList() : [];
+        if (extras.Count == 0 && related is not { Count: > 0 }) return;
+        var more = new Button { Name = "page-head-more", Content = "Mehr", FontSize = 12, Padding = new Thickness(9, 2), CornerRadius = new CornerRadius(10), Background = Brush.Parse("#22FFFFFF"), Foreground = Text, BorderThickness = new Thickness(0), VerticalAlignment = VerticalAlignment.Top };
+        ToolTip.SetTip(more, related is { Count: > 0 } ? "Verwandte Programme und weitere Hilfen" : "Weitere Hilfen zu dieser Seite");
+        var list = new StackPanel { Name = "page-head-more-list", Spacing = 6, MaxWidth = 340 };
         foreach (var c in extras) { right.Children.Remove(c); list.Children.Add(c); }
+        if (related is { Count: > 0 }) list.Children.Add(RelatedList(related, more));
         more.Flyout = new Flyout { Content = list };
         right.Children.Add(more);
     }
@@ -161,6 +164,45 @@ public partial class MainWindow
 
     private static int ButtonsIn(Control c) => (c is Button and not Avalonia.Controls.Primitives.ToggleButton ? 1 : 0) + c.GetLogicalDescendants().OfType<Button>().Count(b => b is not Avalonia.Controls.Primitives.ToggleButton); // Auswahlfelder zählen nicht als Knöpfe
 
+    /// <summary>Block ohne Bedienelement, der nur aus Text besteht (Überschrift, Erklärsatz).</summary>
+    internal static bool TextOnly(Control c) => c is TextBlock || c is Avalonia.Controls.Panel p && p.Children.Count > 0 && p.Children.All(x => x is TextBlock);
+
+    static string? Heading(TextBlock t) => t.FontWeight >= FontWeight.SemiBold && t.Text is { Length: > 0 and <= 48 } s && !s.Contains(". ") ? s.Trim().TrimEnd(':') : null;
+
+    /// <summary>Name eines Abschnitts: seine fette Überschrift oder der Kopf eines Klappbereichs. Null, wenn der Block keinen Namen trägt.</summary>
+    internal static string? SectionName(Control c)
+    {
+        switch (c)
+        {
+            case TextBlock t: return Heading(t);
+            case Expander { Header: string h }: return h;
+            case Expander { Header: TextBlock ht }: return ht.Text;
+            case Border { Child: { } bc }: return SectionName(bc);
+            case Avalonia.Controls.Panel p:
+                foreach (var k in p.Children.Take(2))
+                    if (k is TextBlock or Border or Avalonia.Controls.Panel && SectionName(k) is { } n) return n;
+                return null;
+            default: return null;
+        }
+    }
+
+    /// <summary>Steht direkt vor dem Schnitt eine Überschrift, deren Inhalt sonst ganz verschwände?</summary>
+    static bool SectionHeadBefore(StackPanel main, int cut)
+    {
+        for (var j = cut - 1; j >= 0 && TextOnly(main.Children[j]); j--)
+            if (SectionName(main.Children[j]) is not null) return true;
+        return false;
+    }
+
+    /// <summary>V-06 (T-0684): Der Knopf nennt, was folgt – die Namen der eingeklappten Abschnitte. Ohne Namen bleibt die Zahl der Funktionen.</summary>
+    internal static string MoreLabel(IReadOnlyList<Control> rest, int extra)
+    {
+        var names = rest.Select(SectionName).Where(n => !string.IsNullOrWhiteSpace(n)).Select(n => System.Text.RegularExpressions.Regex.Replace(n!, @"\s*[–(].*$", "").Trim()).Where(n => n.Length > 1).Distinct().ToList();
+        if (names.Count == 0) return $"Mehr anzeigen ({extra} weitere Funktionen)";
+        var shown = names.Take(2).ToList();
+        return "Mehr anzeigen: " + string.Join(", ", shown) + (names.Count > shown.Count ? $" und {names.Count - shown.Count} weitere" : "");
+    }
+
     /// <summary>„Einfach“: Die ersten Bereiche einer Seite bleiben, der Rest erscheint nach einem Klick. Reine Texte (Meldungen, Ergebnisse) bleiben immer sichtbar.</summary>
     private void SimplifyPage(string view, Control content)
     {
@@ -173,12 +215,20 @@ public partial class MainWindow
             if (sum > SimplePageButtons && i > 0) { cut = i; break; }
         }
         if (cut < 0) return;
+        // V-06 (T-0684): „Mehr anzeigen“ versteckt nie den Hauptinhalt. Steht direkt vor dem Schnitt eine Überschrift (mit Erklärtext),
+        // bleibt ihr Abschnitt offen – der Schnitt rückt bis vor die nächste Überschrift.
+        if (SectionHeadBefore(main, cut))
+        {
+            cut++;
+            while (cut < main.Children.Count && !(TextOnly(main.Children[cut]) && SectionName(main.Children[cut]) is not null)) cut++;
+            if (cut >= main.Children.Count) return;
+        }
         static bool IsMessage(Control c) => (c.Name ?? "") is { Length: > 0 } n && (n.EndsWith("-msg") || n.EndsWith("-state") || n.EndsWith("-status") || n.EndsWith("-result")); // Meldungen bleiben sichtbar
         var rest = main.Children.Skip(cut).Where(c => !IsMessage(c)).ToList();
         if (!rest.Any(c => ButtonsIn(c) > 0)) return;
         var open = _pageMoreOpen.Contains(view);
         var extra = rest.Sum(ButtonsIn);
-        var toggle = new Button { Name = "page-more", Content = open ? "Weniger anzeigen" : $"Mehr anzeigen ({extra} weitere Funktionen)", HorizontalAlignment = HorizontalAlignment.Center, Padding = new Thickness(18, 7), CornerRadius = new CornerRadius(10), Foreground = Text, Background = Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(1), Margin = new Thickness(0, 6) };
+        var toggle = new Button { Name = "page-more", Content = open ? "Weniger anzeigen" : MoreLabel(rest, extra), HorizontalAlignment = HorizontalAlignment.Center, Padding = new Thickness(18, 7), CornerRadius = new CornerRadius(10), Foreground = Text, Background = Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(1), Margin = new Thickness(0, 6) };
         toggle.Click += (_, _) => { if (!_pageMoreOpen.Remove(view)) _pageMoreOpen.Add(view); Show(view); };
         main.Children.Insert(cut, toggle);
         if (!open) foreach (var c in rest) main.Children.Remove(c);

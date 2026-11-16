@@ -93,10 +93,26 @@ public partial class MainWindow
         if (!l.SequenceEqual(_settings.RecentPages)) { _settings.RecentPages = l; SaveSettings(); }
     }
 
+    /// <summary>V-10 (T-0684, freigegeben 16.11.2026): eigener Name einer Seite, wenn sie nicht einfach „das Studio“ ist – der Eintrag in der
+    /// linken Leiste der Einstellungen und der KI-Zentrale, sonst der Name des Programms (z. B. „Audio bearbeiten“). Fenstertitel und
+    /// Seitenkopf zeigen diesen Namen statt des Studios, in das die Seite einsortiert ist („Lizenz“ hieß „Schrift & Farben anpassen“).
+    /// Ausnahmen: Die Einstiegsseiten der beiden Apps behalten deren Namen („Einstellungen“, „KI-Zentrale“). Die Startseite eines Studios heißt
+    /// wie das Studio – unter diesem Namen steht es in Startmenü, Studio-Übersicht und linker Leiste des Desktops (T-0663), und so heißt dann auch das Fenster.</summary>
+    public string? PageOwnName(string key)
+    {
+        var own = key is not ("settings" or "ki") && ShellOf.TryGetValue(key, out var shell)
+            ? shell.Groups.SelectMany(g => g.Pages).First(p => string.Equals(p.Key, key, StringComparison.OrdinalIgnoreCase)).Label
+            : Programs.TryGetValue(key, out var spec) ? spec.Title : null;
+        if (own is null) return null;
+        var studioStart = ModuleOf(key) is { } m && StudioCatalog.For(m) is not null && string.Equals(PageForStudio(m), key, StringComparison.OrdinalIgnoreCase);
+        return studioStart ? null : own;
+    }
+
     public string PageTitle(string key)
     {
         if (string.Equals(key, "programmkatalog", StringComparison.OrdinalIgnoreCase)) return "Programmkatalog";
         if (key == "ki") return "KI-Zentrale"; // T-0663: wie in der linken Leiste und im Kopf der Seite
+        if (PageOwnName(key) is { } own) return own; // V-10: der Fenstertitel ist der Name der Seite, die man sieht
         if (key.StartsWith("studio-status-", StringComparison.OrdinalIgnoreCase))
             return StudioCatalog.NameOf(key["studio-status-".Length..], key);
         if (IsStudioWorkspace(key) && ModuleOf(key) is { } mid && StudioCatalog.For(mid) is { } info) return info.Name;

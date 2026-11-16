@@ -350,10 +350,11 @@ public partial class MainWindow
     {
         var sp = new StackPanel { Spacing = 8 };
         var nav = new WrapPanel();
-        void Btn(string name, string label, Action a, bool on = false) { var b = new Button { Name = name, Content = label, Margin = new Thickness(0, 0, 4, 0) }; if (on) b.Background = Accent; /* ohne eigenen Hintergrund (null) wäre der Knopf nur auf der Schrift anklickbar */ b.Click += (_, _) => { a(); Show("kalender"); }; nav.Children.Add(b); }
-        Btn("cal-prev", "◀", () => CalDay = CalMode switch { "tag" => CalDay.AddDays(-1), "woche" => CalDay.AddDays(-7), _ => CalDay.AddMonths(-1) });
+        void Btn(string name, string label, Action a, bool on = false, string? tip = null) { var b = new Button { Name = name, Content = label, Margin = new Thickness(0, 0, 4, 0) }; if (tip is not null) SimpleWords.Named(b, tip); if (on) b.Background = Accent; /* ohne eigenen Hintergrund (null) wäre der Knopf nur auf der Schrift anklickbar */ b.Click += (_, _) => { a(); Show("kalender"); }; nav.Children.Add(b); }
+        // V-05 (T-0684): die Pfeile sagen, wohin sie blättern – nicht „Abspielen“
+        Btn("cal-prev", "◀", () => CalDay = CalMode switch { "tag" => CalDay.AddDays(-1), "woche" => CalDay.AddDays(-7), _ => CalDay.AddMonths(-1) }, tip: CalMode switch { "tag" => "Voriger Tag", "woche" => "Vorige Woche", _ => "Voriger Monat" });
         Btn("cal-today", "Heute", () => CalDay = DateTime.Today);
-        Btn("cal-next", "▶", () => CalDay = CalMode switch { "tag" => CalDay.AddDays(1), "woche" => CalDay.AddDays(7), _ => CalDay.AddMonths(1) });
+        Btn("cal-next", "▶", () => CalDay = CalMode switch { "tag" => CalDay.AddDays(1), "woche" => CalDay.AddDays(7), _ => CalDay.AddMonths(1) }, tip: CalMode switch { "tag" => "Nächster Tag", "woche" => "Nächste Woche", _ => "Nächster Monat" });
         foreach (var (m, l) in new[] { ("tag", "Tag"), ("woche", "Woche"), ("monat", "Monat") }) { var mm = m; Btn("cal-mode-" + m, l, () => CalMode = mm, CalMode == m); }
         Btn("cal-undo", "Rückgängig", CalUndo);
         if (_calUndo.Count == 0) ((Button)nav.Children[^1]).IsEnabled = false;
@@ -650,12 +651,17 @@ public partial class MainWindow
             var lane = new Border { Name = $"todo-col-{stage}", Tag = stage, MinHeight = 360, Padding = new Thickness(10), CornerRadius = new CornerRadius(12), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = col };
             Grid.SetColumn(lane, stage * 2); board.Children.Add(lane);
         }
-        if (Cal.Todos().Count == 0) sp.Children.Add(EmptyState("todo-empty", "✅", "Keine Aufgaben", "Oben eintragen – mit Fälligkeit und Priorität. Karten zieht man zwischen Offen, In Arbeit und Erledigt."));
+        // V-16 (T-0684): ein Leerzustand je Seite – ohne Aufgaben steht nur der Hinweis da, nicht zusätzlich drei leere Spalten, die dasselbe sagen
+        var noTodos = Cal.Todos().Count == 0;
+        if (noTodos) sp.Children.Add(EmptyState("todo-empty", "✅", "Keine Aufgaben", "Oben eintragen – mit Fälligkeit und Priorität. Danach erscheinen hier die Spalten Offen, In Arbeit und Erledigt."));
         var side = TodoSelected is { } su && Cal.GetTodo(su) is { } sel ? TodoEditPanel(sel) : null;
         var split = new Grid { ColumnDefinitions = new ColumnDefinitions(side is null ? "*" : "*,12,320") };
         split.Children.Add(board); if (side is not null) { Grid.SetColumn(side, 2); split.Children.Add(side); }
-        sp.Children.Add(split);
-        sp.Children.Add(new TextBlock { Text = "Karte ziehen: in eine andere Spalte setzen · Klick: bearbeiten · Häkchen: erledigt", Foreground = Muted, FontSize = 11.5 });
+        if (!noTodos)
+        {
+            sp.Children.Add(split);
+            sp.Children.Add(new TextBlock { Text = "Karte ziehen: in eine andere Spalte setzen · Klick: bearbeiten · Häkchen: erledigt", Foreground = Muted, FontSize = 11.5 });
+        }
         sp.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Z && e.KeyModifiers == Avalonia.Input.KeyModifiers.Control) { TodoUndo(); Show("aufgaben"); e.Handled = true; } };
         return SysPage("Aufgaben", sp);
     }

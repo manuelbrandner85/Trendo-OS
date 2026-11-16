@@ -55,6 +55,23 @@ public static class GlyphIcons
 
     static bool _on;
 
+    /// <summary>V-05 (T-0684): Zeichen, die je nach Stelle etwas anderes bedeuten – das Dreieck ist „Abspielen“ in einer Abspiel-Leiste,
+    /// aber „Weiter“ beim Blättern. Für sie rät die Tabelle nicht: Das Wort hängt vom Namen des Knopfs ab, sonst gibt es keines.</summary>
+    static readonly HashSet<string> Ambiguous = ["▶", "⏵", "◀", "⏴"];
+
+    static bool Has(string? name, params string[] parts) => name is not null && parts.Any(p => name.Contains(p, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>Wort zu einem Zeichen an dieser Stelle. Leer, wenn das Zeichen mehrdeutig ist und der Name des Knopfs nichts verrät –
+    /// ein falsches Wort ist schlimmer als keines.</summary>
+    public static string NameFor(string glyph, string? buttonName)
+    {
+        if (!Map.TryGetValue(glyph, out var g)) return "";
+        if (!Ambiguous.Contains(glyph)) return g.Name;
+        if (glyph is "▶" or "⏵")
+            return Has(buttonName, "next", "forward", "fwd", "weiter", "right") ? "Weiter" : Has(buttonName, "play", "abspiel", "preview", "listen") ? "Abspielen" : "";
+        return Has(buttonName, "prev", "back", "zurueck", "left") ? "Zurück" : "";
+    }
+
     /// <summary>Ursprüngliches Zeichen eines Symbol-Knopfs (für Claude, Suche und Tests – der Inhalt ist dann ein Linien-Symbol).</summary>
     public static readonly AttachedProperty<string?> GlyphProperty = AvaloniaProperty.RegisterAttached<Button, string?>("Glyph", typeof(GlyphIcons));
     /// <summary>Name und Hinweis stammen von hier (und dürfen beim nächsten Zeichenwechsel mitwechseln).</summary>
@@ -75,11 +92,12 @@ public static class GlyphIcons
                 [!Shape.FillProperty] = b[!Avalonia.Controls.Primitives.TemplatedControl.ForegroundProperty] };
             b.SetValue(GlyphProperty, s.Trim());
             // Name und Hinweis nur setzen, wenn der Knopf keine eigenen hat – und bei jedem Zeichenwechsel nachziehen, solange sie von hier stammen
-            if (g.Name.Length > 0)
+            var word = NameFor(s.Trim(), b.Name); // V-05: mehrdeutige Zeichen nicht raten
+            if (word.Length > 0)
             {
                 var auto = b.GetValue(AutoNamedProperty);
-                if ((auto & 1) != 0 || string.IsNullOrEmpty(AutomationProperties.GetName(b))) { AutomationProperties.SetName(b, g.Name); auto |= 1; }
-                if ((auto & 2) != 0 || ToolTip.GetTip(b) is null) { ToolTip.SetTip(b, g.Name); auto |= 2; }
+                if ((auto & 1) != 0 || string.IsNullOrEmpty(AutomationProperties.GetName(b))) { AutomationProperties.SetName(b, word); auto |= 1; }
+                if ((auto & 2) != 0 || ToolTip.GetTip(b) is null) { ToolTip.SetTip(b, word); auto |= 2; }
                 b.SetValue(AutoNamedProperty, auto);
             }
             Avalonia.Threading.Dispatcher.UIThread.Post(() => { if (Equals(b.Content, e.NewValue)) b.Content = path; });

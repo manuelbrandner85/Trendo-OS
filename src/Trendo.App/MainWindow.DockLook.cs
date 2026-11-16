@@ -42,6 +42,30 @@ public partial class MainWindow
             ? DockTile(new Image { Source = art, Stretch = Stretch.UniformToFill, RenderTransformOrigin = RelativePoint.Center, RenderTransform = new ScaleTransform(1.45, 1.45) }) // Objekt füllt die Kachel
             : DockTile(new Border { Padding = new Thickness(7), Child = glyph }, photo: false);
 
+    /// <summary>V-19 (T-0684, freigegeben 16.11.2026): kurze Wörter unter den Symbolen der Leiste – man erkennt jedes Programm, bevor man klickt.
+    /// Der ausführliche Name bleibt im Hinweis und für Bildschirmleser.</summary>
+    public static readonly IReadOnlyDictionary<string, string> DockWords = new Dictionary<string, string>
+    {
+        ["files"] = "Dateien", ["browser"] = "Browser", ["mail"] = "E-Mail", ["ki"] = "Trendo KI", ["media"] = "Medien", ["settings"] = "Einstellungen",
+        ["blender"] = "Blender", ["unreal"] = "Unreal", ["components"] = "Hinzufügen", ["code"] = "Webseite", ["office"] = "Texte", ["security"] = "Schutz",
+    };
+
+    /// <summary>Breite eines Leisten-Eintrags mit Wort.</summary>
+    public const double DockItemWidth = 72;
+
+    /// <summary>Setzt das Wort unter das Symbol eines Leisten-Knopfs (Symbol bleibt 48 hoch, das Wort steht einzeilig darunter).</summary>
+    Button DockWord(Button b, string word)
+    {
+        var face = b.Content as Control; b.Content = null;
+        var size = double.IsNaN(b.Height) ? 48 : b.Height;
+        b.Content = new StackPanel { Spacing = 2, Children = {
+            new Border { Width = size, Height = size, HorizontalAlignment = HorizontalAlignment.Center, Child = face },
+            new TextBlock { Name = (b.Name ?? "dock") + "-word", Text = word, FontSize = 11, Foreground = Brush.Parse(C("#E6FFFFFF", "#E6101114")), HorizontalAlignment = HorizontalAlignment.Center, TextAlignment = TextAlignment.Center,
+                MaxWidth = DockItemWidth, TextTrimming = TextTrimming.CharacterEllipsis, MaxLines = 1 } } };
+        b.Width = DockItemWidth; b.Height = size + 18;
+        return b;
+    }
+
     /// <summary>Hover wie in einer echten Leiste: anheben und leicht vergrößern.</summary>
     void DockLift(Control c)
     {
@@ -64,6 +88,7 @@ public partial class MainWindow
             ToolTip.SetTip(b, app.Name); Avalonia.Automation.AutomationProperties.SetName(b, app.Name);
             ToolTip.SetPlacement(b, Avalonia.Controls.PlacementMode.Top); ToolTip.SetVerticalOffset(b, -6);
             var aid = id; b.Click += (_, _) => { if (!OpenWebApp(aid) && _hubMsg.Length > 0) Toast(_hubMsg); };
+            DockWord(b, app.Name);
             DockLift(b); _dockWeb.Children.Add(b);
             // Symbol einmal holen – Tests (abgeschottet) gehen nie von selbst ins Netz
             if (WebAppIcons.Cached(_core.DataRoot, id) is null && !_core.Offline && (!_opt.Isolated || WebIconFetchOverride is not null)) _ = FetchWebAppIcon(id);

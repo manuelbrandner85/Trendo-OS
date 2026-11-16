@@ -6,7 +6,10 @@ using Xunit;
 
 namespace Trendo.App.Tests;
 
-/// <summary>Seitenüberschrift einer Studio-Seite ist der Name aus StudioCatalog, nicht ein zweiter fest eingetragener Text.</summary>
+/// <summary>Seitenüberschrift einer Studio-Seite ist der Name aus StudioCatalog, nicht ein zweiter fest eingetragener Text.
+/// T-0684 V-10 (freigegeben 16.11.2026): Seiten mit eigenem Namen – Einträge der linken Leiste in Einstellungen und KI-Zentrale, Programme wie
+/// „Audio bearbeiten“ – heißen im Kopf wie im Fenstertitel so wie die Seite (<see cref="MainWindow.PageOwnName"/>), nicht wie das Studio,
+/// in das sie einsortiert sind.</summary>
 public class StudioHeadingTests
 {
     [Fact(DisplayName = "StudioCatalog.NameOf: Katalogname, sonst der bisherige Text")]
@@ -39,7 +42,9 @@ public class StudioHeadingTests
         {
             w.Show(key);
             var title = w.ActivePageRoot!.GetLogicalDescendants().OfType<TextBlock>().Where(t => t.Name == "page-title").Select(t => t.Text).ToList() is [var one] ? one : $"{key}: keine oder mehrere Überschriften";
-            Assert.True(title == StudioCatalog.ById[id].Name, $"{key} ({id}): „{title}“ statt „{StudioCatalog.ById[id].Name}“");
+            var expected = w.PageOwnName(key) ?? StudioCatalog.ById[id].Name;
+            Assert.True(title == expected, $"{key} ({id}): „{title}“ statt „{expected}“");
+            Assert.Equal(expected, w.PageTitle(key)); // V-10: Fenstertitel und Seitenkopf nennen dasselbe
         }
 
         // Seiten ohne Studio und Studios ohne Katalogeintrag behalten ihre Überschrift. Reiter bleiben kurz.
@@ -47,6 +52,7 @@ public class StudioHeadingTests
         w.Show("settings"); Assert.Equal("Einstellungen", Heading(w));
         w.Show("ki"); Assert.Equal("KI", Heading(w));
         w.Show("apps"); Assert.Equal("Apps", Heading(w));
+        w.Show("lizenz"); Assert.Equal("Konto, Lizenz & Vollversion", Heading(w)); // V-10: nicht mehr „Schrift & Farben anpassen“
         w.Show("biz-markt"); Assert.Equal("Markt", Heading(w));
         // G3 (27.10.2026): Fachstudios zeigen keine Reiter-Wolke aller anderen Studios mehr
         w.Show("architektur");
