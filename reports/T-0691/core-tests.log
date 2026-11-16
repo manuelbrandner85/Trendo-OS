@@ -1,0 +1,39 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0691\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0691\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.13]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:00.89]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:00.92]   Starting:    Trendo.Core.Tests
+  Bestanden T-0691 Netz: Normalen neu berechnen richtet umgedrehte Flächen wieder nach außen [24 ms]
+  Bestanden T-0691 Netz: Kante teilen, Punkte verschmelzen, nach Abstand verschmelzen [14 ms]
+  Bestanden T-0691 Netz: ins Teil zurückschreiben – Lage, Drehung und Form bleiben, Werkzeuge (Abrunden) sind eingerechnet [11 ms]
+  Bestanden T-0691 Netz: Fläche löschen öffnet das Netz, Fläche aus 4 Punkten füllen schließt es wieder (nach außen gerichtet) [5 ms]
+  Bestanden T-0691 Netz: Würfel wird ein verschweißtes Netz (8 Punkte, 12 Flächen, 18 Kanten, geschlossen, 1000 cm³) [< 1 ms]
+  Bestanden T-0691 DXF-Rundreise: Fremd-DXF lesen → Ebene ändern → schreiben → wieder lesen → alles gleich [30 ms]
+  Bestanden T-0691 Rundreise: Blender-Datei importieren → Punkt verschieben → als glTF/GLB/OBJ/STL exportieren → wieder einlesen → Geometrie stimmt(fixture: "affe-blender.glb", ext: ".glb") [47 ms]
+  Bestanden T-0691 Rundreise: Blender-Datei importieren → Punkt verschieben → als glTF/GLB/OBJ/STL exportieren → wieder einlesen → Geometrie stimmt(fixture: "affe-blender.stl", ext: ".stl") [25 ms]
+  Bestanden T-0691 Rundreise: Blender-Datei importieren → Punkt verschieben → als glTF/GLB/OBJ/STL exportieren → wieder einlesen → Geometrie stimmt(fixture: "affe-blender.obj", ext: ".obj") [31 ms]
+  Bestanden T-0691 Rundreise: Blender-Datei importieren → Punkt verschieben → als glTF/GLB/OBJ/STL exportieren → wieder einlesen → Geometrie stimmt(fixture: "affe-blender.glb", ext: ".gltf") [43 ms]
+  Bestanden T-0691 glTF-Export besteht den Khronos-glTF-Validator ohne Fehler (echtes Werkzeug, falls eingerichtet) [134 ms]
+  Bestanden T-0691 DXF: handgeschriebene Fremd-DXF lesen – Ebenen, Polylinie mit Bogen, Kreise, Bogen, Linie, Text, MTEXT; Bemaßung wird gemeldet [5 ms]
+  Bestanden T-0691 Netz: Punkte verschieben, drehen, skalieren wirken nur auf die Auswahl [3 ms]
+  Bestanden T-0691 CAD-Dokument: Zeichnung und Referenzkörper werden gespeichert und geladen; alte .tcad ohne diese Angaben bleiben lesbar [75 ms]
+  Bestanden T-0691 STEP: Trendos facettiertes STEP wird als Referenzkörper wieder gelesen (Volumen gleich); echtes B-Rep-STEP meldet ehrlich, dass es nicht geht [42 ms]
+  Bestanden T-0691 Netz: Fläche oben extrudieren – 5 cm höher, Volumen 1500 cm³, weiterhin geschlossen [< 1 ms]
+  Bestanden T-0691 Absturz: 3D-Szene – 16-mal hart beendet, die Sicherung ist jedes Mal vollständig lesbar, kein fertig gesicherter Stand fehlt [7 s]
+  Standardausgabemeldungen:
+ szene3d: 16 harte Abbrüche, 16 mitten im Schreiben, höchstens 1 Schritt verloren.
+
+
+[xUnit.net 00:00:15.99]   Finished:    Trendo.Core.Tests
+  Bestanden T-0691 Absturz: CAD-Bauteil – 16-mal hart beendet, die Sicherung ist jedes Mal vollständig lesbar, kein fertig gesicherter Stand fehlt [7 s]
+  Standardausgabemeldungen:
+ cad: 16 harte Abbrüche, 16 mitten im Schreiben, höchstens 1 Schritt verloren.
+
+
+
+Der Testlauf war erfolgreich.
+Gesamtzahl Tests: 18
+     Bestanden: 18
+ Gesamtzeit: 16,4726 Sekunden

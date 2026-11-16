@@ -3,7 +3,8 @@ using System.Text.Json.Nodes;
 using Trendo.Core.Programs;
 
 // T-0680: Hilfsprogramm für die Absturz-Tests. Es arbeitet endlos und wird vom Test mitten in der Arbeit hart beendet.
-// Aufruf: <art> <ordner> [zeilen]   – art: speichern | sichern | sperre | roh; zeilen: Umfang des Dokuments (je Zeile rund 50 Zeichen)
+// Aufruf: <art> <ordner> [zeilen]   – art: speichern | sichern | sperre | roh | szene3d | cad; zeilen: Umfang des Dokuments (je Zeile rund 50 Zeichen)
+// T-0691: „szene3d“ und „cad“ schreiben die automatische Sicherung des 3D-Studios (Scene3D.SaveTo) bzw. von Trendo CAD (CadDoc.Save) – wie die App alle 20 s.
 // Protokoll <ordner>/protokoll.txt: je Zeile „start <n>“ vor dem Schreiben und „fertig <n> <ms>“ nach dem Schreiben.
 // (Das Protokoll wird angehängt und nach jeder Zeile geleert; eine abgeschnittene letzte Zeile ignoriert der Test.)
 if (args.Length < 2) { Console.Error.WriteLine("Aufruf: <speichern|sichern|sperre|roh> <ordner>"); return 2; }
@@ -24,6 +25,30 @@ if (mode == "sperre")
 
 using var log = new FileStream(Path.Combine(dir, "protokoll.txt"), FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
 void Log(string line) { log.Write(System.Text.Encoding.ASCII.GetBytes(line + "\n")); log.Flush(true); }
+
+if (mode is "szene3d" or "cad")
+{
+    var rec = Path.Combine(dir, mode == "cad" ? "cad.tcad" : "3d-szene.json");
+    var size = args.Length > 2 ? int.Parse(args[2]) : 6000;
+    // großes Netz, damit ein Schreibvorgang einige Millisekunden dauert
+    var pos = new float[size * 9]; var idx = new int[size * 3];
+    for (var i = 0; i < pos.Length; i++) pos[i] = (i % 97) * 0.37f;
+    for (var i = 0; i < idx.Length; i++) idx[i] = i;
+    var k = 0;
+    if (File.Exists(rec))
+        k = mode == "cad" ? (int)Trendo.Core.Cad.CadDoc.Load(rec).Params["n"] : int.Parse(Trendo.Core.Scene3D.Load(rec).Name.Split(' ')[1], System.Globalization.CultureInfo.InvariantCulture);
+    var scene = new Trendo.Core.Scene3D { Parts = { new Trendo.Core.Part3D { Shape = "mesh", Name = "Netz", Positions = pos, Indices = idx } } };
+    var cad = new Trendo.Core.Cad.CadDoc { References = { new Trendo.Core.Cad.CadReference { Name = "Netz", Positions = pos, Indices = idx } } };
+    var sw3 = new Stopwatch();
+    while (true)
+    {
+        k++;
+        Log("start " + k); sw3.Restart();
+        if (mode == "cad") { cad.Params["n"] = k; cad.Save(rec); }
+        else { scene.Name = "Stand " + k; scene.SaveTo(rec); }
+        Log($"fertig {k} {sw3.ElapsedMilliseconds}");
+    }
+}
 
 // Fortsetzen, wo der letzte (abgebrochene) Lauf stand – wie ein Programm nach dem Neustart
 ProgramDocument doc;

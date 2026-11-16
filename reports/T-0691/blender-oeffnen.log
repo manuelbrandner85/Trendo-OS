@@ -1,0 +1,16 @@
+07:43:00 | INFO: Data are loaded, start creating Blender stuff
+07:43:00 | INFO: Blender create Mesh node 0
+07:43:00 | INFO: glTF import finished in 0.01s
+BELEG affe.gltf: Objekte=1 Dreiecke=967 Ausdehnung X/Y/Z=2.7344/1.7031/2.0438 (Blender-Einheiten)
+07:43:01 | INFO: Data are loaded, start creating Blender stuff
+07:43:01 | INFO: Blender create Mesh node 0
+07:43:01 | INFO: glTF import finished in 0.01s
+BELEG affe.glb: Objekte=1 Dreiecke=967 Ausdehnung X/Y/Z=2.7344/1.7031/2.0438 (Blender-Einheiten)
+BELEG affe.obj: Objekte=1 Dreiecke=967 Ausdehnung X/Y/Z=2.7344/9.2031/1.9687 (Blender-Einheiten)
+BELEG affe.stl: Objekte=1 Dreiecke=967 Ausdehnung X/Y/Z=27.3438/17.0312/94.6875 (Blender-Einheiten)
+BELEG Blender 5.2.3 LTS
+Blender 5.2.3 LTS (hash e13b728c6880 built 2026-10-22 01:37:16)
+OBJ import of 'affe.obj' took 1.27 ms
+Timer 'STL Import' took 0.54 ms
+
+Blender quit

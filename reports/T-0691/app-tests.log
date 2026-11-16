@@ -1,0 +1,77 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0691 3D: Punkte-Modus – Punkt anklicken, Umschalt+Klick erweitert, Pfeil hoch verschiebt nur die Auswahl; Fläche füllen und Normalen über die Knöpfe [STARTING]
+    T-0691 3D: Punkte-Modus – Punkt anklicken, Umschalt+Klick erweitert, Pfeil hoch verschiebt nur die Auswahl; Fläche füllen und Normalen über die Knöpfe [FINISHED] Time: 4,4834989s
+    Kreativ und 3D: Fachwissen ist vollständig und verweist nur auf Vorhandenes(id: "CORE-08") [STARTING]
+    Kreativ und 3D: Fachwissen ist vollständig und verweist nur auf Vorhandenes(id: "CORE-08") [FINISHED] Time: 0,1951262s
+    T-0691 3D: Fremde Blender-Datei einlesen (wie Ziehen auf die Fläche), Punkt verschieben, Wiederherstellung nach Neustart bietet die ungespeicherte Szene vollständig an [STARTING]
+    T-0691 3D: Fremde Blender-Datei einlesen (wie Ziehen auf die Fläche), Punkt verschieben, Wiederherstellung nach Neustart bietet die ungespeicherte Szene vollständig an [FINISHED] Time: 1,6857597s
+    Kreativ und 3D: Fachwissen ist vollständig und verweist nur auf Vorhandenes(id: "STUDIO-FILM-01") [STARTING]
+    Kreativ und 3D: Fachwissen ist vollständig und verweist nur auf Vorhandenes(id: "STUDIO-FILM-01") [FINISHED] Time: 0,1573974s
+    T-0691 CAD: Fremd-DXF einlesen → Ebenen sichtbar → Kontur als Körper hochziehen → als DXF speichern; Strg+Z nimmt zurück; Wiederherstellung nach Neustart [STARTING]
+    T-0691 CAD: Fremd-DXF einlesen → Ebenen sichtbar → Kontur als Körper hochziehen → als DXF speichern; Strg+Z nimmt zurück; Wiederherstellung nach Neustart [FINISHED] Time: 1,2598124s
+    Kreativ und 3D: Fachwissen ist vollständig und verweist nur auf Vorhandenes(id: "STUDIO-MUSIK-01") [STARTING]
+    Kreativ und 3D: Fachwissen ist vollständig und verweist nur auf Vorhandenes(id: "STUDIO-MUSIK-01") [FINISHED] Time: 0,176948s
+    T-0691 CAD: STL (von Blender) und facettiertes STEP als Referenzkörper; echtes B-Rep-STEP wird ehrlich abgelehnt; STEP-Export heißt „facettiert“ [STARTING]
+    T-0691 CAD: STL (von Blender) und facettiertes STEP als Referenzkörper; echtes B-Rep-STEP wird ehrlich abgelehnt; STEP-Export heißt „facettiert“ [FINISHED] Time: 0,6083844s
+    Kreativ und 3D: Fachwissen ist vollständig und verweist nur auf Vorhandenes(id: "CORE-05") [STARTING]
+    Kreativ und 3D: Fachwissen ist vollständig und verweist nur auf Vorhandenes(id: "CORE-05") [FINISHED] Time: 0,1842498s
+    T-0691 3D: Würfel einsetzen → Tab (Bearbeiten) → Taste 3 → Fläche anklicken → E extrudiert → Strg+Z / Strg+Y → als glTF exportiert, Datei wieder lesbar [STARTING]
+    T-0691 3D: Würfel einsetzen → Tab (Bearbeiten) → Taste 3 → Fläche anklicken → E extrudiert → Strg+Z / Strg+Y → als glTF exportiert, Datei wieder lesbar [FINISHED] Time: 2,5770238s
+    Kreativ und 3D: Fachwissen ist vollständig und verweist nur auf Vorhandenes(id: "CORE-07") [STARTING]
+    Kreativ und 3D: Fachwissen ist vollständig und verweist nur auf Vorhandenes(id: "CORE-07") [FINISHED] Time: 0,1323453s
+    3D: Claude liest und ändert die Szene bis ins Detail, Rückgängig holt sie zurück, ungültige Szenen werden abgelehnt [STARTING]
+    3D: Claude liest und ändert die Szene bis ins Detail, Rückgängig holt sie zurück, ungültige Szenen werden abgelehnt [FINISHED] Time: 0,6787381s
+    Kreativ und 3D: Vorhandenes ffmpeg gilt erst als startbar, wenn es wirklich startet [STARTING]
+    Kreativ und 3D: Vorhandenes ffmpeg gilt erst als startbar, wenn es wirklich startet [FINISHED] Time: 0,1508279s
+    Kreativ und 3D: Fehlende Fachprogramme werden ehrlich gemeldet(studio: "CORE-08", program: "ffmpeg") [STARTING]
+    Kreativ und 3D: Fehlende Fachprogramme werden ehrlich gemeldet(studio: "CORE-08", program: "ffmpeg") [FINISHED] Time: 0,1529176s
+    Kreativ und 3D: Fehlende Fachprogramme werden ehrlich gemeldet(studio: "CORE-05", program: "blender") [STARTING]
+    Kreativ und 3D: Fehlende Fachprogramme werden ehrlich gemeldet(studio: "CORE-05", program: "blender") [FINISHED] Time: 0,1528189s
+    Kreativ und 3D: Fehlende Fachprogramme werden ehrlich gemeldet(studio: "CORE-07", program: "git") [STARTING]
+    Kreativ und 3D: Fehlende Fachprogramme werden ehrlich gemeldet(studio: "CORE-07", program: "git") [FINISHED] Time: 0,1548661s
+    Kreativ und 3D: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "CORE-08", request: "Schneide aus meinen Clips ein Urlaubsvideo", task: "schnitt") [STARTING]
+    Kreativ und 3D: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "CORE-08", request: "Schneide aus meinen Clips ein Urlaubsvideo", task: "schnitt") [FINISHED] Time: 0,0120282s
+    Kreativ und 3D: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "CORE-08", request: "Gestalte ein Plakat für das Stadtfest", task: "bild") [STARTING]
+    Kreativ und 3D: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "CORE-08", request: "Gestalte ein Plakat für das Stadtfest", task: "bild") [FINISHED] Time: 0,0002371s
+    Kreativ und 3D: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "CORE-08", request: "Mach das Rauschen aus meiner Aufnahme weg", task: "ton") [STARTING]
+    Kreativ und 3D: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "CORE-08", request: "Mach das Rauschen aus meiner Aufnahme weg", task: "ton") [FINISHED] Time: 0,0000203s
+    Kreativ und 3D: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "STUDIO-FILM-01", request: "Plane die Kamera-Einstellungen", task: "shots") [STARTING]
+    Kreativ und 3D: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "STUDIO-FILM-01", request: "Plane die Kamera-Einstellungen", task: "shots") [FINISHED] Time: 0,0000158s
+    Kreativ und 3D: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "STUDIO-FILM-01", request: "Mach mir einen Trailer", task: "trailer") [STARTING]
+    Kreativ und 3D: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "STUDIO-FILM-01", request: "Mach mir einen Trailer", task: "trailer") [FINISHED] Time: 0,0000137s
+    Kreativ und 3D: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "STUDIO-MUSIK-01", request: "Trenne Gesang und Begleitung, ich brauche Karaoke", task: "trennen") [STARTING]
+    Kreativ und 3D: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "STUDIO-MUSIK-01", request: "Trenne Gesang und Begleitung, ich brauche Karaoke", task: "trennen") [FINISHED] Time: 0,0000142s
+    Kreativ und 3D: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "STUDIO-MUSIK-01", request: "Ich brauche ein Cover", task: "cover") [STARTING]
+    Kreativ und 3D: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "STUDIO-MUSIK-01", request: "Ich brauche ein Cover", task: "cover") [FINISHED] Time: 0,0000125s
+    Kreativ und 3D: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "CORE-05", request: "Baue mir eine realistische mittelalterliche Burg", task: "modell") [STARTING]
+    Kreativ und 3D: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "CORE-05", request: "Baue mir eine realistische mittelalterliche Burg", task: "modell") [FINISHED] Time: 0,0000155s
+    Kreativ und 3D: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "CORE-05", request: "Das soll auf den Bambu Drucker", task: "druck") [STARTING]
+    Kreativ und 3D: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "CORE-05", request: "Das soll auf den Bambu Drucker", task: "druck") [FINISHED] Time: 0,0000146s
+    Kreativ und 3D: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "CORE-07", request: "Baue mir eine moderne Firmenwebseite", task: "seite") [STARTING]
+    Kreativ und 3D: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "CORE-07", request: "Baue mir eine moderne Firmenwebseite", task: "seite") [FINISHED] Time: 0,000016s
+    Kreativ und 3D: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "CORE-07", request: "Bau ein Kontaktformular ein", task: "funktion") [STARTING]
+    Kreativ und 3D: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "CORE-07", request: "Bau ein Kontaktformular ein", task: "funktion") [FINISHED] Time: 0,0000141s
+    Kreativ und 3D: Dokumentprogramme zeigen nur ihre eigenen Aufgaben, ein Klick füllt die Eingabe(page: "schnitt", shown: "schnitt", hidden: "bild") [STARTING]
+    Kreativ und 3D: Dokumentprogramme zeigen nur ihre eigenen Aufgaben, ein Klick füllt die Eingabe(page: "schnitt", shown: "schnitt", hidden: "bild") [FINISHED] Time: 0,2407009s
+    Kreativ und 3D: Dokumentprogramme zeigen nur ihre eigenen Aufgaben, ein Klick füllt die Eingabe(page: "bild", shown: "bild", hidden: "ton") [STARTING]
+    Kreativ und 3D: Dokumentprogramme zeigen nur ihre eigenen Aufgaben, ein Klick füllt die Eingabe(page: "bild", shown: "bild", hidden: "ton") [FINISHED] Time: 0,1954746s
+    Kreativ und 3D: Dokumentprogramme zeigen nur ihre eigenen Aufgaben, ein Klick füllt die Eingabe(page: "ton", shown: "ton", hidden: "schnitt") [STARTING]
+    Kreativ und 3D: Dokumentprogramme zeigen nur ihre eigenen Aufgaben, ein Klick füllt die Eingabe(page: "ton", shown: "ton", hidden: "schnitt") [FINISHED] Time: 0,1909082s
+    Kreativ und 3D: Dokumentprogramme zeigen nur ihre eigenen Aufgaben, ein Klick füllt die Eingabe(page: "film-programm", shown: "drehbuch", hidden: "schnitt") [STARTING]
+    Kreativ und 3D: Dokumentprogramme zeigen nur ihre eigenen Aufgaben, ein Klick füllt die Eingabe(page: "film-programm", shown: "drehbuch", hidden: "schnitt") [FINISHED] Time: 0,279778s
+    Kreativ und 3D: Claude erreicht jedes Studio und bekommt dort das richtige Fachwissen(page: "schnitt", studio: "CORE-08") [STARTING]
+    Kreativ und 3D: Claude erreicht jedes Studio und bekommt dort das richtige Fachwissen(page: "schnitt", studio: "CORE-08") [FINISHED] Time: 0,3566795s
+    Kreativ und 3D: Claude erreicht jedes Studio und bekommt dort das richtige Fachwissen(page: "film-programm", studio: "STUDIO-FILM-01") [STARTING]
+    Kreativ und 3D: Claude erreicht jedes Studio und bekommt dort das richtige Fachwissen(page: "film-programm", studio: "STUDIO-FILM-01") [FINISHED] Time: 0,2268555s
+    Kreativ und 3D: Claude erreicht jedes Studio und bekommt dort das richtige Fachwissen(page: "musik-studio", studio: "STUDIO-MUSIK-01") [STARTING]
+    Kreativ und 3D: Claude erreicht jedes Studio und bekommt dort das richtige Fachwissen(page: "musik-studio", studio: "STUDIO-MUSIK-01") [FINISHED] Time: 0,2831804s
+    Kreativ und 3D: Claude erreicht jedes Studio und bekommt dort das richtige Fachwissen(page: "3d", studio: "CORE-05") [STARTING]
+    Kreativ und 3D: Claude erreicht jedes Studio und bekommt dort das richtige Fachwissen(page: "3d", studio: "CORE-05") [FINISHED] Time: 0,2615631s
+    Kreativ und 3D: Claude erreicht jedes Studio und bekommt dort das richtige Fachwissen(page: "dev", studio: "CORE-07") [STARTING]
+    Kreativ und 3D: Claude erreicht jedes Studio und bekommt dort das richtige Fachwissen(page: "dev", studio: "CORE-07") [FINISHED] Time: 0,4202162s
+  Finished:    Trendo.App.Tests (ID = '04a407e316aa3f79f8ec7efeac30d34997b3e2d501e3f5c9dc8cda83e037bf41')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 35, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 15,546s

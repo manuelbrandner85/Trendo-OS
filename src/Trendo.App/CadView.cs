@@ -97,6 +97,69 @@ public sealed class CadView : Control
             _ => $"Skalieren {ax}: × {a.ToString("0.00", de)}",
         };
     }
+    // ---------- T-0691: Bearbeitungsmodus (Punkte, Kanten, Flächen eines Netzes) ----------
+    /// <summary>Punkte des bearbeiteten Netzes in Weltkoordinaten; null = Objektmodus.</summary>
+    public IReadOnlyList<Vec3>? EditVerts { get; set; }
+    /// <summary>Dreiecke des bearbeiteten Netzes (je drei Punktnummern).</summary>
+    public IReadOnlyList<int>? EditTris { get; set; }
+    public IReadOnlyList<(int A, int B)>? EditEdges { get; set; }
+    /// <summary>„punkt“, „kante“ oder „flaeche“.</summary>
+    public string EditMode { get; set; } = "punkt";
+    public IReadOnlySet<int> EditSelVerts { get; set; } = new HashSet<int>();
+    public IReadOnlySet<(int A, int B)> EditSelEdges { get; set; } = new HashSet<(int, int)>();
+    public IReadOnlySet<int> EditSelFaces { get; set; } = new HashSet<int>();
+    /// <summary>Klick im Bearbeitungsmodus: Art, Nummer(n) (−1 = ins Leere) und ob Umschalt gedrückt war (Auswahl erweitern).</summary>
+    public Action<string, int, int, bool>? ElementClicked { get; set; }
+    Point[] _editScreen = []; double[] _editDepth = [];
+
+    /// <summary>Bildpunkt eines Netzpunkts (nach der letzten Darstellung).</summary>
+    public Point? EditScreenOf(int v) => v >= 0 && v < _editScreen.Length ? _editScreen[v] : null;
+
+    /// <summary>Element unter einem Bildpunkt je nach Auswahlart: Punkt (nächster im Umkreis von 9 px, vorderster zuerst),
+    /// Kante (Abstand ≤ 6 px) oder Fläche (vorderstes nach vorn zeigendes Dreieck). (−1, −1) = nichts.</summary>
+    public (int A, int B) EditPick(Point p)
+    {
+        if (EditVerts is null || EditTris is null || _editScreen.Length != EditVerts.Count) return (-1, -1);
+        static double D2(Point a, Point b) => (a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y);
+        switch (EditMode)
+        {
+            case "punkt":
+            {
+                var best = -1; var bestD = double.MinValue;
+                for (var i = 0; i < _editScreen.Length; i++)
+                    if (D2(_editScreen[i], p) <= 81 && _editDepth[i] > bestD) { best = i; bestD = _editDepth[i]; }
+                return (best, -1);
+            }
+            case "kante":
+            {
+                (int, int) best = (-1, -1); var bestD = double.MaxValue;
+                foreach (var (a, b) in EditEdges ?? [])
+                {
+                    var d = DistToSeg(p, _editScreen[a], _editScreen[b]);
+                    var score = d - (_editDepth[a] + _editDepth[b]) * 1e-6; // gleich nah: die vordere
+                    if (d <= 6 && score < bestD) { best = (a, b); bestD = score; }
+                }
+                return best;
+            }
+            default:
+            {
+                var best = -1; var bestD = double.MinValue;
+                for (var t = 0; t + 2 < EditTris.Count; t += 3)
+                {
+                    var a = _editScreen[EditTris[t]]; var b = _editScreen[EditTris[t + 1]]; var c = _editScreen[EditTris[t + 2]];
+                    if ((b.X - a.X) * (c.Y - a.Y) - (b.Y - a.Y) * (c.X - a.X) > 0) continue; // Rückseite
+                    if (!Inside([a, b, c], p)) continue;
+                    var depth = (_editDepth[EditTris[t]] + _editDepth[EditTris[t + 1]] + _editDepth[EditTris[t + 2]]) / 3;
+                    if (depth > bestD) { best = t / 3; bestD = depth; }
+                }
+                return (best, -1);
+            }
+        }
+    }
+
+    /// <summary>Klick im Bearbeitungsmodus nachspielen (Tests, Tastatur).</summary>
+    public void EditClickAt(Point p, bool add = false) { var (a, b) = EditPick(p); ElementClicked?.Invoke(EditMode, a, b, add); }
+
     public Vec3 DragOffset { get; private set; }
     int _moving = -1; bool _dragged;
     readonly List<(int Part, double D, Point[] Pts)> _hit = [];
@@ -135,6 +198,11 @@ public sealed class CadView : Control
 
     public CadView() { ClipToBounds = true; Focusable = true; }
 
+    /// <summary>T-0691: Linien einer 2D-Zeichnung (Weltkoordinaten, Farbe als #RRGGBB).</summary>
+    public IReadOnlyList<(Vec3 A, Vec3 B, string Color)> Wires { get; set; } = [];
+    /// <summary>T-0691: Texte der 2D-Zeichnung (Ort, Text, Farbe, Schrifthöhe in Weltmaß).</summary>
+    public IReadOnlyList<(Vec3 At, string Text, string Color, double Size)> Labels { get; set; } = [];
+
     public void SetView(string v) { (Yaw, Pitch) = v switch { "vorne" => (0, 0), "oben" => (0, 90), "rechts" => (-90, 0), _ => (-35, 28) }; Zoom = 1; InvalidateVisual(); }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
@@ -156,10 +224,12 @@ public sealed class CadView : Control
         {
             _gizmo = null; GizmoLabel = ""; _drag = null;
             if (_dragged) DragHandle(g.Axis, new Point(pos.X - g.Start.X, pos.Y - g.Start.Y));
+            else if (e.InitialPressMouseButton == MouseButton.Left && ElementClicked is not null) EditClickAt(pos, e.KeyModifiers.HasFlag(KeyModifiers.Shift));
             else if (e.InitialPressMouseButton == MouseButton.Left) PartClicked?.Invoke(PickAt(pos)); // nur geklickt, nicht gezogen: normale Auswahl
             InvalidateVisual(); return;
         }
         if (_moving >= 0 && _dragged) { var off = Snapped(DragOffset); var i = _moving; _moving = -1; DragOffset = new(0, 0, 0); PartMoved?.Invoke(i, off); }
+        else if (!_dragged && e.InitialPressMouseButton == MouseButton.Left && ElementClicked is not null) EditClickAt(pos, e.KeyModifiers.HasFlag(KeyModifiers.Shift));
         else if (!_dragged && e.InitialPressMouseButton == MouseButton.Left) PartClicked?.Invoke(PickAt(pos));
         _moving = -1; _drag = null; DragOffset = new(0, 0, 0); InvalidateVisual();
     }
@@ -200,6 +270,8 @@ public sealed class CadView : Control
         ctx.FillRectangle(new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#FF1B2A44"), 0), new GradientStop(Color.Parse("#FF0B1424"), 1) } }, new Rect(Bounds.Size));
         // Umfang aller Teile → Maßstab und Mitte
         var boxes = Parts.Where(p => p.Solid.Polys.Count > 0).Select(p => p.Solid.Bounds()).ToList();
+        if (Wires.Count > 0) // T-0691: die Zeichnung gehört mit ins Bild
+            boxes.Add((new Vec3(Wires.Min(w => Math.Min(w.A.X, w.B.X)), Wires.Min(w => Math.Min(w.A.Y, w.B.Y)), 0), new Vec3(Wires.Max(w => Math.Max(w.A.X, w.B.X)), Wires.Max(w => Math.Max(w.A.Y, w.B.Y)), 0)));
         Vec3 min = boxes.Count == 0 ? new(-20, -20, 0) : new(boxes.Min(b => b.Min.X), boxes.Min(b => b.Min.Y), boxes.Min(b => b.Min.Z));
         Vec3 max = boxes.Count == 0 ? new(20, 20, 20) : new(boxes.Max(b => b.Max.X), boxes.Max(b => b.Max.Y), boxes.Max(b => b.Max.Z));
         var center = (min + max) * 0.5; var size = Math.Max(10, (max - min).Len);
@@ -284,6 +356,55 @@ public sealed class CadView : Control
             var seeThrough = f.Fill is SolidColorBrush { Color.A: < 255 }; // Glas: ohne Fugenstrich, sonst doppelt deckende Ränder (Gitter)
             ctx.DrawGeometry(f.Fill, seeThrough ? null : new Pen(f.Fill, 0.8), new PolylineGeometry(f.Pts, true)); // Fläche ohne Fugen
             foreach (var (a, b) in f.Edges) ctx.DrawLine(f.Sel ? selEdge : edge, a, b);
+        }
+        // T-0691: Netz im Bearbeitungsmodus – Kanten, Punkte, gewählte Flächen
+        if (EditVerts is { } ev && EditTris is { } et)
+        {
+            _editScreen = new Point[ev.Count]; _editDepth = new double[ev.Count];
+            for (var i = 0; i < ev.Count; i++) { var q = Proj(ev[i]); _editScreen[i] = new Point(q.X, q.Y); _editDepth[i] = q.D; }
+            var gold = Color.Parse("#FFFACC15");
+            if (EditSelFaces.Count > 0)
+            {
+                var fill = new SolidColorBrush(Color.FromArgb(110, gold.R, gold.G, gold.B));
+                foreach (var f in EditSelFaces)
+                {
+                    if (f * 3 + 2 >= et.Count) continue;
+                    var a = _editScreen[et[f * 3]]; var b = _editScreen[et[f * 3 + 1]]; var c = _editScreen[et[f * 3 + 2]];
+                    if ((b.X - a.X) * (c.Y - a.Y) - (b.Y - a.Y) * (c.X - a.X) > 0) continue; // Rückseite: verdeckt
+                    ctx.DrawGeometry(fill, null, new PolylineGeometry([a, b, c], true));
+                }
+            }
+            var wire = new Pen(new SolidColorBrush(Color.Parse("#99E5E7EB")), 0.8); var selPen = new Pen(new SolidColorBrush(gold), 2);
+            var selVerts = EditSelVerts; var selEdges = EditSelEdges;
+            var edgesOfFaces = new HashSet<(int, int)>();
+            foreach (var f in EditSelFaces) if (f * 3 + 2 < et.Count) for (var j = 0; j < 3; j++) { var a = et[f * 3 + j]; var b = et[f * 3 + (j + 1) % 3]; edgesOfFaces.Add(a < b ? (a, b) : (b, a)); }
+            foreach (var (a, b) in EditEdges ?? [])
+            {
+                var sel = selEdges.Contains((a, b)) || edgesOfFaces.Contains((a, b)) || EditMode == "punkt" && selVerts.Contains(a) && selVerts.Contains(b);
+                ctx.DrawLine(sel ? selPen : wire, _editScreen[a], _editScreen[b]);
+            }
+            if (EditMode == "punkt")
+            {
+                var dot = new SolidColorBrush(Color.Parse("#FF111827")); var dotEdge = new Pen(new SolidColorBrush(Color.Parse("#FFE5E7EB")), 1);
+                var selDot = new SolidColorBrush(gold);
+                for (var i = 0; i < _editScreen.Length; i++)
+                {
+                    var s0 = selVerts.Contains(i); var r = s0 ? 3.5 : 2.4;
+                    ctx.DrawRectangle(s0 ? selDot : dot, s0 ? null : dotEdge, new Rect(_editScreen[i].X - r, _editScreen[i].Y - r, 2 * r, 2 * r));
+                }
+            }
+        }
+        else { _editScreen = []; _editDepth = []; }
+        // T-0691: 2D-Zeichnung (DXF) als Linien auf dem Boden, Texte als Beschriftung
+        foreach (var (a, b, col) in Wires)
+        {
+            var pa = Proj(a); var pb = Proj(b);
+            ctx.DrawLine(new Pen(new SolidColorBrush(Color.TryParse(col, out var wc) ? wc : Colors.White), 1.2), new Point(pa.X, pa.Y), new Point(pb.X, pb.Y));
+        }
+        foreach (var (at, text, col, textSize) in Labels)
+        {
+            var q = Proj(at); var px = Math.Clamp(textSize * k, 8, 28);
+            ctx.DrawText(new FormattedText(text, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Inter"), px, new SolidColorBrush(Color.TryParse(col, out var tc) ? tc : Colors.White)), new Point(q.X, q.Y - px));
         }
         // Anfasser am ausgewählten Teil (oder der Gruppe)
         _handles.Clear();

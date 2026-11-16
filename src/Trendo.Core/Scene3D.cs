@@ -40,6 +40,10 @@ public sealed partial class Scene3D
 
     public string ToJson() => JsonSerializer.Serialize(this, Opt);
 
+    /// <summary>T-0691: absturzsicher speichern (Zwischendatei, dann austauschen) – für Speichern und die automatische Sicherung.</summary>
+    public void SaveTo(string path) => AtomicFile.WriteAllText(path, ToJson());
+    public static Scene3D Load(string path) => FromJson(File.ReadAllText(path));
+
     public static Scene3D FromJson(string json)
     {
         var s = JsonSerializer.Deserialize<Scene3D>(json, Opt) ?? new Scene3D();

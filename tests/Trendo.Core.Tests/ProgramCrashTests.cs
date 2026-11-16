@@ -16,7 +16,7 @@ public class ProgramCrashTests(ITestOutputHelper output)
     static string Tmp() { var d = Path.Combine(Path.GetTempPath(), "trendo-absturz-" + Guid.NewGuid().ToString("N")[..8]); Directory.CreateDirectory(d); return d; }
 
     /// <summary>Das gebaute Hilfsprogramm: gleiche Konfiguration (Debug/Release) wie dieser Test.</summary>
-    static ProcessStartInfo Probe(string mode, string dir)
+    internal static ProcessStartInfo Probe(string mode, string dir)
     {
         var here = new DirectoryInfo(AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
         var config = here.Parent!.Name; // …/bin/<Konfiguration>/net10.0
@@ -33,7 +33,7 @@ public class ProgramCrashTests(ITestOutputHelper output)
     const int Lines = 40_000;
 
     /// <summary>Protokoll des Hilfsprogramms: zuletzt begonnener und zuletzt fertig gemeldeter Schritt, dazu die Schreibzeiten.</summary>
-    static (int Started, int Done, List<int> Ms) ReadLog(string dir)
+    internal static (int Started, int Done, List<int> Ms) ReadLog(string dir)
     {
         var f = Path.Combine(dir, "protokoll.txt");
         if (!File.Exists(f)) return (0, 0, []);
@@ -52,7 +52,7 @@ public class ProgramCrashTests(ITestOutputHelper output)
 
     /// <summary>Hilfsprogramm starten, warten bis es mindestens <paramref name="more"/> weitere Schritte geschafft hat und der nächste begonnen ist,
     /// dann zu einem zufälligen Zeitpunkt innerhalb der üblichen Dauer eines Schritts hart beenden. Rückgabe: Lief beim Abbruch gerade ein Schreibvorgang?</summary>
-    static bool RunAndKill(string mode, string dir, int more, Random rnd)
+    internal static bool RunAndKill(string mode, string dir, int more, Random rnd)
     {
         var before = ReadLog(dir).Done;
         using var p = Process.Start(Probe(mode, dir))!;

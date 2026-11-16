@@ -1,0 +1,318 @@
+999
+Handgeschrieben fuer T-0691 - Halteplatte 80 x 50 mm
+  0
+SECTION
+  2
+HEADER
+  9
+$ACADVER
+  1
+AC1015
+  9
+$INSUNITS
+ 70
+4
+  0
+ENDSEC
+  0
+SECTION
+  2
+TABLES
+  0
+TABLE
+  2
+LTYPE
+ 70
+1
+  0
+LTYPE
+  2
+CONTINUOUS
+ 70
+0
+  3
+Solid line
+ 72
+65
+ 73
+0
+ 40
+0.0
+  0
+ENDTAB
+  0
+TABLE
+  2
+LAYER
+ 70
+5
+  0
+LAYER
+  2
+0
+ 70
+0
+ 62
+7
+  6
+CONTINUOUS
+  0
+LAYER
+  2
+Kontur
+ 70
+0
+ 62
+1
+  6
+CONTINUOUS
+  0
+LAYER
+  2
+Bohrungen
+ 70
+0
+ 62
+3
+  6
+CONTINUOUS
+  0
+LAYER
+  2
+Beschriftung
+ 70
+0
+ 62
+5
+  6
+CONTINUOUS
+  0
+LAYER
+  2
+Hilfslinien
+ 70
+0
+ 62
+-8
+  6
+CONTINUOUS
+  0
+ENDTAB
+  0
+ENDSEC
+  0
+SECTION
+  2
+BLOCKS
+  0
+BLOCK
+  8
+0
+  2
+*Model_Space
+ 70
+0
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  0
+ENDBLK
+  8
+0
+  0
+ENDSEC
+  0
+SECTION
+  2
+ENTITIES
+  0
+LWPOLYLINE
+  5
+2A
+100
+AcDbEntity
+  8
+Kontur
+100
+AcDbPolyline
+ 90
+5
+ 70
+1
+ 10
+0.0
+ 20
+0.0
+ 10
+80.0
+ 20
+0.0
+ 10
+80.0
+ 20
+40.0
+ 42
+0.414213562373095
+ 10
+70.0
+ 20
+50.0
+ 10
+0.0
+ 20
+50.0
+  0
+CIRCLE
+  5
+2B
+100
+AcDbEntity
+  8
+Bohrungen
+100
+AcDbCircle
+ 10
+15.0
+ 20
+25.0
+ 30
+0.0
+ 40
+4.5
+  0
+CIRCLE
+  5
+2C
+100
+AcDbEntity
+  8
+Bohrungen
+100
+AcDbCircle
+ 10
+60.0
+ 20
+25.0
+ 30
+0.0
+ 40
+4.5
+  0
+ARC
+  5
+2D
+100
+AcDbEntity
+  8
+Hilfslinien
+100
+AcDbCircle
+ 10
+40.0
+ 20
+25.0
+ 30
+0.0
+ 40
+12.0
+100
+AcDbArc
+ 50
+30.0
+ 51
+150.0
+  0
+LINE
+  5
+2E
+100
+AcDbEntity
+  8
+Hilfslinien
+100
+AcDbLine
+ 10
+0.0
+ 20
+25.0
+ 30
+0.0
+ 11
+80.0
+ 21
+25.0
+ 31
+0.0
+  0
+TEXT
+  5
+2F
+100
+AcDbEntity
+  8
+Beschriftung
+100
+AcDbText
+ 10
+5.0
+ 20
+55.0
+ 30
+0.0
+ 40
+3.5
+  1
+Halteplatte A
+100
+AcDbText
+  0
+MTEXT
+  5
+30
+100
+AcDbEntity
+  8
+Beschriftung
+100
+AcDbMText
+ 10
+5.0
+ 20
+-6.0
+ 30
+0.0
+ 40
+2.5
+ 71
+1
+  1
+{\fArial|b0|i0;Werkstoff PLA}\PDicke 6 mm
+  0
+DIMENSION
+  5
+31
+100
+AcDbEntity
+  8
+Beschriftung
+100
+AcDbDimension
+  2
+*D1
+ 10
+80.0
+ 20
+-12.0
+ 30
+0.0
+ 70
+32
+  1
+80
+  0
+ENDSEC
+  0
+EOF

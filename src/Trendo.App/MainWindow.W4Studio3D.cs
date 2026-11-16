@@ -25,6 +25,10 @@ public partial class MainWindow
     private string? _selId;
     private string _view3d = "angle";
     private readonly List<string> _undo3d = [];
+    /// <summary>T-0691: Wiederholen (Strg+Y) – leert sich bei jeder neuen Änderung.</summary>
+    private readonly List<string> _redo3d = [];
+    /// <summary>T-0691: ungespeicherte Änderungen; die automatische Sicherung (alle 20 s, beim Schließen) schreibt dann nach „wiederherstellen“.</summary>
+    public bool Scene3DDirty { get; private set; }
     private List<Part3D>? _aiParts;
     private List<(Part3D Part, TextBox Sx, TextBox Sy, TextBox Sz, TextBox X, TextBox Y, TextBox Z)>? _aiFields;
     private string _importUnit = "auto";
@@ -74,7 +78,7 @@ public partial class MainWindow
         var left = Side("3d-left",
             Card(new StackPanel { Spacing = 8, Children = {
                 H("Objekt", 14),
-                new WrapPanel { Children = { Labeled("Name", objName), Act("3d-save", "Speichern", () => SaveScene(objName)), Act("3d-new", "Neues Objekt", () => NewScene(objName)), Act("3d-undo", "Rückgängig", UndoScene) } },
+                new WrapPanel { Children = { Labeled("Name", objName), Act("3d-save", "Speichern", () => SaveScene(objName)), Act("3d-new", "Neues Objekt", () => NewScene(objName)), Act("3d-undo", "Rückgängig", UndoScene), Act("3d-redo", "Wiederholen", RedoScene) } },
                 H("Szene", 14), SceneTree(objName) } }),
             PrintAndModelsCard(objName),
             Card(SavedBlock()),
@@ -85,6 +89,7 @@ public partial class MainWindow
         var partCard = Card(new StackPanel { Spacing = 8, Children = { H(Selected is { } sp0 ? "Teil: " + sp0.Name : "Neues Teil", 14), PartForm(objName) } });
         var right = Side("3d-editor-scroll",
             Card(new StackPanel { Spacing = 4, Children = { H("Arbeitsschritte", 13), StepsBar3D() } }),
+            MeshEditCard(), // T-0691: Netz bearbeiten (nur im Bearbeitungsmodus sichtbar)
             stepPanel is null ? partCard : Card(stepPanel),
             stepPanel is null ? new Border() : partCard,
             BuildPromptBar("CORE-05"),
@@ -95,7 +100,7 @@ public partial class MainWindow
         split.Children.Add(left); Grid.SetColumn(center, 1); split.Children.Add(center);
         Grid.SetColumn(right, 2); split.Children.Add(right);
         Simplify3D(header, left, right, objName);
-        return FitKreativPage("3D-Modelle erstellen", header, split);
+        return WithRecovery("3d", Scene3DDirty, FitKreativPage("3D-Modelle erstellen", header, split)); // T-0691: nach Absturz „Wiederherstellen“
     }
 
     private Control BlenderRow()
@@ -245,6 +250,7 @@ public partial class MainWindow
                         Act("3d-export-obj", "Als OBJ", () => ExportNative(objName, ".obj")),
                         Act("3d-export-stl", "Als STL", () => ExportNative(objName, ".stl")),
                         Act("3d-export-glb", "Als GLB", () => ExportNative(objName, ".glb")),
+                        Act("3d-export-gltf", "Als glTF", () => ExportNative(objName, ".gltf")),
                         Act("3d-export-fbx", "Als FBX", () => ExportFbx(objName)),
                         Act("3d-export-blend", "Als Blender-Datei", () => _ = ExportWithBlender(objName, ".blend")),
                     },
@@ -398,7 +404,9 @@ public partial class MainWindow
         {
             if (_core.Projects.List().All(p => p.Id != id)) _core.Projects.Create(id, _scene.Name);
             _scene.ProjectId = id;
-            _core.Projects.WriteFile(id, "3d/szene.json", _scene.ToJson());
+            // T-0691: absturzsicher (Zwischendatei, dann austauschen) – ein Abbruch beim Speichern hinterlässt nie eine halbe Szene
+            _scene.SaveTo(Path.Combine(_core.Projects.ProjectFilesRoot(id), "3d", "szene.json"));
+            _core.Audit.Append("user", "file.write", $"{id}:3d/szene.json");
             var mesh = Mesh3D.FromScene(_scene);
             if (mesh.Triangles > 0)
             {
@@ -416,6 +424,7 @@ public partial class MainWindow
             }
         }
         catch (Exception ex) { Say("Speichern nicht möglich: " + Trendo.Core.FriendlyError.Say(ex), "3d"); return; }
+        Scene3DDirty = false; RecoveryClear("3d");
         Say($"Gespeichert im Projekt „{_scene.Name}“. Du findest es unter Projekte.", "3d");
     }
 
@@ -427,7 +436,7 @@ public partial class MainWindow
             _sceneEpoch++;
             _scene.ProjectId = id;
             _selId = _scene.Parts.FirstOrDefault()?.Id;
-            _undo3d.Clear();
+            _undo3d.Clear(); _redo3d.Clear(); Scene3DDirty = false; MeshEditReset();
             _aiParts = null;
             _pngKey = "";
             Say($"Projekt „{_scene.Name}“ geöffnet.", "3d");
@@ -441,19 +450,37 @@ public partial class MainWindow
         if (_scene.Parts.Count > 0) Push();
         _scene = new Scene3D();
         _sceneEpoch++;
-        _selId = null;
+        _selId = null; Scene3DDirty = false; MeshEditReset();
         _aiParts = null;
         _pngKey = "";
         Say("Neues Objekt. Gespeicherte Projekte bleiben erhalten.", "3d");
     }
 
-    private void UndoScene()
+    public void UndoScene()
     {
         if (_undo3d.Count == 0) { Say("Nichts zum Rückgängigmachen.", "3d"); return; }
+        _redo3d.Add(_scene.ToJson());
         _scene = Scene3D.FromJson(_undo3d[^1]);
         _undo3d.RemoveAt(_undo3d.Count - 1);
-        if (_selId is null || _scene.Parts.All(p => p.Id != _selId)) _selId = _scene.Parts.LastOrDefault()?.Id;
+        AfterSwap3D();
         Say("Rückgängig.", "3d");
+    }
+
+    /// <summary>T-0691: zuletzt Rückgängiggemachtes wiederholen.</summary>
+    public void RedoScene()
+    {
+        if (_redo3d.Count == 0) { Say("Nichts zum Wiederholen.", "3d"); return; }
+        _undo3d.Add(_scene.ToJson());
+        _scene = Scene3D.FromJson(_redo3d[^1]);
+        _redo3d.RemoveAt(_redo3d.Count - 1);
+        AfterSwap3D();
+        Say("Wiederholt.", "3d");
+    }
+
+    void AfterSwap3D()
+    {
+        if (_selId is null || _scene.Parts.All(p => p.Id != _selId)) _selId = _scene.Parts.LastOrDefault()?.Id;
+        Scene3DDirty = true; _pngKey = ""; MeshEditAfterSwap();
     }
 
     private void SetView(string view, string msg) { _view3d = view; Say(msg, "3d"); }
@@ -523,6 +550,11 @@ public partial class MainWindow
     }
 
     public void Import3DFile(string path) => _ = ImportPath(path);
+    /// <summary>T-0691: Import abwarten (Tests, Ziehen und Ablegen).</summary>
+    public Task Import3DFileAsync(string path) => ImportPath(path);
+    public int Undo3DCount => _undo3d.Count;
+    public int Redo3DCount => _redo3d.Count;
+    public Scene3D Studio3DScene => _scene;
 
     /// <summary>Ab dieser Größe liest Trendo im Hintergrund, damit die Oberfläche bedienbar bleibt. Kleinere Dateien sind sofort da.</summary>
     const long ImportInBackgroundBytes = 32L * 1024 * 1024;
@@ -635,9 +667,10 @@ public partial class MainWindow
             var path = Mesh3D.Unique(Path.Combine(Folder3D, DevStudio.SafeName(_scene.Name) + ext));
             if (ext == ".stl") Mesh3D.WriteStl(mesh, path);
             else if (ext == ".glb") Mesh3D.WriteGlb(mesh, path);
+            else if (ext == ".gltf") Mesh3D.WriteGltf(mesh, path);
             else Mesh3D.WriteObj(mesh, path);
             _last3dFile = path;
-            var hint = ext switch { ".stl" => "Maße in Millimetern.", ".glb" => "Maße in Metern.", _ => "Maße in Zentimetern." };
+            var hint = ext switch { ".stl" => "Maße in Millimetern.", ".glb" or ".gltf" => "Maße in Metern.", _ => "Maße in Zentimetern." };
             Say($"Gespeichert: {Path.GetFileName(path)}. {hint}", "3d");
         }
         catch (Exception ex) { Say("Export nicht möglich: " + Trendo.Core.FriendlyError.Say(ex), "3d"); }
@@ -720,7 +753,11 @@ public partial class MainWindow
     private void Push()
     {
         _undo3d.Add(_scene.ToJson());
-        if (_undo3d.Count > 30) _undo3d.RemoveAt(0);
+        // T-0691: bis 100 Schritte, aber höchstens rund 300 MB Text (große eingelesene Netze)
+        long total = 0; foreach (var u in _undo3d) total += u.Length;
+        while (_undo3d.Count > 100 || _undo3d.Count > 1 && total > 150_000_000) { total -= _undo3d[0].Length; _undo3d.RemoveAt(0); }
+        _redo3d.Clear();
+        Scene3DDirty = true;
         _pngKey = "";
     }
 

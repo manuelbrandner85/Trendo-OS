@@ -427,6 +427,12 @@ else if (shot == "seite")
     win.Show(page);
     if (win.Windows.Active is { Maximized: false } pageWin) win.Windows.ToggleMaximize(pageWin.Id);
     win.Show(page);
+    if (Environment.GetEnvironmentVariable("TRENDO_3D_DEMO") is "bearbeiten") // T-0691: Bearbeitungsmodus zeigen (Würfel, Flächen gewählt und extrudiert)
+    {
+        win.Studio3DAddShape("cube"); win.Studio3DEditMode(true); win.Studio3DSelectMode("flaeche");
+        win.Studio3DMeshSelect("flaeche", 1); win.Studio3DMeshSelect("flaeche", 0, add: true); win.Studio3DMeshExtrude(4);
+        win.Show(page);
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_TEAM_STUDIO") is { Length: > 0 } teamStudio) win.AgentsForStudio(teamStudio); // Profi-Team eines Studios unter „KI einsetzen“
     if (Environment.GetEnvironmentVariable("TRENDO_ICONS_DIR") is { Length: > 0 } iconDir) // Alle Studios, Runde 8: Reiter „Symbole“ mit Iconify-Daten aus einem Ordner (Name;Suche in TRENDO_ICONS_QUERY)
     {

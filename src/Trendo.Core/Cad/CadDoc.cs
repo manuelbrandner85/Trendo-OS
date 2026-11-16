@@ -52,13 +52,18 @@ public sealed class CadDoc
     public Dictionary<string, double> Params { get; set; } = [];
     public List<CadBody> Bodies { get; set; } = [new()];
     public int Segments { get; set; } = 48;
+    /// <summary>T-0691: 2D-Zeichnung (DXF-Import/-Export); null = keine. Ältere .tcad-Dateien ohne diese Angabe bleiben lesbar.</summary>
+    public CadDrawing? Drawing { get; set; }
+    /// <summary>T-0691: Referenzkörper (STL, facettiertes STEP) – angezeigt und vermessen, nicht Teil des Bauplans.</summary>
+    public List<CadReference> References { get; set; } = [];
 
-    public CadDoc Clone() => new() { Params = new(Params), Bodies = Bodies.Select(b => b.Clone()).ToList(), Segments = Segments };
+    public CadDoc Clone() => new() { Params = new(Params), Bodies = Bodies.Select(b => b.Clone()).ToList(), Segments = Segments, Drawing = Drawing?.Clone(), References = References.Select(r => r.Clone()).ToList() };
 
     static readonly JsonSerializerOptions Json = new() { WriteIndented = true, Converters = { new JsonStringEnumConverter() } };
     public string ToJson() => JsonSerializer.Serialize(this, Json);
-    public static CadDoc FromJson(string json) => JsonSerializer.Deserialize<CadDoc>(json, Json) ?? new CadDoc();
-    public void Save(string path) { Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!); File.WriteAllText(path, ToJson()); }
+    public static CadDoc FromJson(string json) { var d = JsonSerializer.Deserialize<CadDoc>(json, Json) ?? new CadDoc(); d.References ??= []; d.Bodies ??= [new()]; return d; }
+    /// <summary>T-0691: absturzsicher speichern (erst Zwischendatei, dann austauschen) – nach einem Abbruch liegt die alte oder die neue Fassung da, nie eine halbe.</summary>
+    public void Save(string path) => AtomicFile.WriteAllText(path, ToJson());
     public static CadDoc Load(string path) => FromJson(File.ReadAllText(path));
 
     /// <summary>Formel ausrechnen: Zahlen (Komma oder Punkt), + − × ÷ ^, Klammern, Parameter, sin/cos/tan (Grad), wurzel, min, max, pi.</summary>

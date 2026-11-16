@@ -9,11 +9,12 @@ namespace Trendo.App;
 
 /// <summary>T-0254 (100): Text, Tabelle und Präsentation sichern ungespeicherte Änderungen automatisch (mit dem Zeitgeber der Programme, alle 30 s).
 /// Nach einem Absturz oder Schließen ohne Speichern bietet das Programm „Wiederherstellen“ an. Gespeichert wird im eigenen Datenordner,
-/// nie über die Originaldatei; nach dem Speichern oder Verwerfen wird die Sicherung gelöscht.</summary>
+/// nie über die Originaldatei; nach dem Speichern oder Verwerfen wird die Sicherung gelöscht.
+/// T-0691: „3D-Modelle erstellen“ (3d) und Trendo CAD (cad) nutzen denselben Weg, geschrieben absturzsicher über AtomicFile.</summary>
 public partial class MainWindow
 {
     string RecoveryDir => Path.Combine(_core.DataRoot, "wiederherstellen");
-    string RecoveryFile(string kind) => Path.Combine(RecoveryDir, kind switch { "text" => "text.docx", "tabelle" => "tabelle.xlsx", _ => "praesentation.pptx" });
+    string RecoveryFile(string kind) => Path.Combine(RecoveryDir, kind switch { "text" => "text.docx", "tabelle" => "tabelle.xlsx", "3d" => "3d-szene.json", "cad" => "cad.tcad", _ => "praesentation.pptx" });
 
     /// <summary>Ungespeicherte Dokumente sichern (öffentlich für Tests).</summary>
     public void OfficeAutosave()
@@ -22,6 +23,8 @@ public partial class MainWindow
         if (TextDirty) Try(() => TextFiles.Save(TextDocument, RecoveryFile("text")));
         if (SheetDirty) Try(() => SheetFiles.Save(SheetDocument, RecoveryFile("tabelle")));
         if (DeckDirty) Try(() => SlideFiles.Save(Deck, RecoveryFile("praesentation")));
+        if (Scene3DDirty && _scene.Parts.Count > 0) Try(() => _scene.SaveTo(RecoveryFile("3d"))); // T-0691
+        if (CadDirty) Try(() => Cad.Save(RecoveryFile("cad")));
     }
 
     /// <summary>Nach dem Speichern: Sicherung ist überflüssig.</summary>
@@ -40,6 +43,8 @@ public partial class MainWindow
             {
                 case "text": TextDocument = TextFiles.Open(f); TextPath = null; TextDirty = true; TextFocusBlock = 0; _txSel = _txSelLen = 0; _txUndo.Clear(); _txRedo.Clear(); _txMsg = "Wiederhergestellt – bitte speichern."; ImportGuardClear("text"); break;
                 case "tabelle": SheetOpen(f); SheetPath = null; SheetDirty = true; break;
+                case "3d": Restore3D(Scene3D.Load(f)); break;
+                case "cad": CadRestore(f); break;
                 default: DeckOpen(f); DeckPath = null; DeckDirty = true; break;
             }
             _core.Audit.Append(Principal.LocalOwner.Name, "office.recover", kind);

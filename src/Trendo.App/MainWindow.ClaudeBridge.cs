@@ -185,7 +185,7 @@ public partial class MainWindow
                     var scene = JsonNode.Parse(_scene.ToJson())!.AsObject();
                     if (a["loeschen"].AsBool()) DocPath.Remove(scene, Need(a, "pfad")); else DocPath.Set(scene, Need(a, "pfad"), DocPath.Unwrap(a["wert"]?.DeepClone()));
                     var changed = Scene3D.FromJson(scene.ToJsonString()); // erst prüfen, dann übernehmen
-                    _undo3d.Add(_scene.ToJson()); _scene = changed;
+                    Push(); _scene = changed; // T-0691: wie jede Änderung – Wiederholen leeren, als ungespeichert sichern
                     Show("3d"); await Pump();
                     return BridgeDone(run);
                 }

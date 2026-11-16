@@ -107,7 +107,7 @@ public partial class MainWindow
     void CadSnapshot() { _cadUndo.Add(Cad.Clone()); if (_cadUndo.Count > 80) _cadUndo.RemoveAt(0); _cadRedo.Clear(); }
     void CadChanged() { CadDirty = true; _cadBuilt = Cad.Build(); }
 
-    public void CadSave(string path) { Cad.Save(path); CadPath = path; CadDirty = false; _cadMsg = $"Gespeichert: {Path.GetFileName(path)}"; _core.Audit.Append(Principal.LocalOwner.Name, "cad.save", Path.GetFileName(path)); }
+    public void CadSave(string path) { Cad.Save(path); CadPath = path; CadDirty = false; RecoveryClear("cad"); _cadMsg = $"Gespeichert: {Path.GetFileName(path)}"; _core.Audit.Append(Principal.LocalOwner.Name, "cad.save", Path.GetFileName(path)); }
     public void CadOpen(string path) { Cad = CadDoc.Load(path); CadPath = path; CadDirty = false; _cadUndo.Clear(); _cadRedo.Clear(); CadBodyIndex = 0; CadFeatureIndex = -1; _cadBuilt = Cad.Build(); _cadMsg = $"Geöffnet: {Path.GetFileName(path)}"; }
 
     string CadFolder { get { var d = Path.Combine(ProjectsRoot, "3D", "CAD"); Directory.CreateDirectory(d); return d; } }
@@ -155,8 +155,10 @@ public partial class MainWindow
         var rib = CadRibbon(); Grid.SetRow(rib, 1); Grid.SetColumnSpan(rib, 3); g.Children.Add(rib);
         var tree = CadTree(); Grid.SetRow(tree, 2); g.Children.Add(tree);
         var view = new CadView { Name = "cad-view", MinHeight = 380, Parts = _cadBuilt.Select(b => (b.Body.Color, b.Solid, ReferenceEquals(b.Body, CurBody))).ToList() };
+        CadDrawingToView(view); // T-0691: DXF-Zeichnung und Referenzkörper
         CadCanvas = view;
-        var stage = new Border { CornerRadius = new CornerRadius(8), ClipToBounds = true, Child = view, Margin = new Thickness(8, 0) }; Grid.SetRow(stage, 2); Grid.SetColumn(stage, 1); g.Children.Add(stage);
+        var stage = new Border { Name = "cad-stage", CornerRadius = new CornerRadius(8), ClipToBounds = true, Child = view, Margin = new Thickness(8, 0) }; Grid.SetRow(stage, 2); Grid.SetColumn(stage, 1); g.Children.Add(stage);
+        CadWireInput(view, stage); // T-0691: Strg+Z/Y/S, Entf, Rechtsklick, Datei hineinziehen
         var side = CadSide(); Grid.SetRow(side, 2); Grid.SetColumn(side, 2); g.Children.Add(side);
         var errors = _cadBuilt.Where(b => b.Error is not null).Select(b => $"{b.Body.Name}: {b.Error}").ToList();
         var cur = Built(CurBody);
@@ -164,7 +166,7 @@ public partial class MainWindow
         var status = new TextBlock { Name = "cad-status", Foreground = errors.Count > 0 ? Brush.Parse("#F87171") : Muted, FontSize = 12, Margin = new Thickness(4, 6, 0, 0), TextWrapping = TextWrapping.Wrap,
             Text = string.Join(" · ", new[] { CadPath is null ? "Noch nicht gespeichert" : Path.GetFileName(CadPath) + (CadDirty ? " · geändert" : ""), info }.Concat(errors).Append(_cadMsg).Where(x => x.Length > 0)) };
         Grid.SetRow(status, 3); Grid.SetColumnSpan(status, 3); g.Children.Add(status);
-        return new Border { Name = "cad-page-root", Background = Brush.Parse(C("#F2081329", "#F7F4F7FC")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = g };
+        return WithRecovery("cad", CadDirty, new Border { Name = "cad-page-root", Background = Brush.Parse(C("#F2081329", "#F7F4F7FC")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = g }); // T-0691: nach Absturz „Wiederherstellen“
     }
 
     static string Dim(Solid s) { var (mn, mx) = s.Bounds(); return $"{mx.X - mn.X:0.##} × {mx.Y - mn.Y:0.##} × {mx.Z - mn.Z:0.##}"; }
@@ -178,10 +180,12 @@ public partial class MainWindow
         MenuItem Mi(string name, string header, Action a) { var m = new MenuItem { Name = name, Header = header }; m.Click += (_, _) => { a(); Show("cad"); }; return m; }
         fm.Items.Add(Mi("cad-m-new", "Neues Bauteil", CadNew));
         fm.Items.Add(Mi("cad-m-open", "Öffnen …", () => _ = CadOpenClick()));
-        fm.Items.Add(Mi("cad-m-save", "Speichern", () => { try { CadSave(CadPath ?? Mesh3D.Unique(Path.Combine(CadFolder, CadName + ".tcad"))); } catch (IOException ex) { _cadMsg = "Speichern ging nicht: " + Trendo.Core.FriendlyError.Say(ex); } }));
+        fm.Items.Add(Mi("cad-m-import", "Einlesen (DXF, STL, STEP) …", () => _ = CadImportClick()));
+        fm.Items.Add(Mi("cad-m-save", "Speichern", CadSaveHere));
         fm.Items.Add(Mi("cad-m-stl", "Als STL (3D-Druck)", () => CadExportClick("stl")));
         fm.Items.Add(Mi("cad-m-3mf", "Als 3MF (3D-Druck mit Farben, Bambu Studio)", () => CadExportClick("3mf")));
-        fm.Items.Add(Mi("cad-m-step", "Als STEP (andere CAD-Programme)", () => CadExportClick("step")));
+        fm.Items.Add(Mi("cad-m-step", "Als STEP – facettiert (Dreiecksflächen, keine echten Rundungen)", () => CadExportClick("step")));
+        fm.Items.Add(Mi("cad-m-dxf", "Als DXF (Zeichnung und Umriss von oben)", () => { try { var f = CadExportDxf(); Toast(_cadMsg, ("Ordner öffnen", new Action(() => Launch(Path.GetDirectoryName(f)!)))); } catch (Exception ex) when (ex is CadError or IOException or UnauthorizedAccessException) { _cadMsg = "Speichern ging nicht: " + Trendo.Core.FriendlyError.Say(ex); } }));
         fm.Items.Add(Mi("cad-m-pdf", "Technische Zeichnung (PDF)", () => CadExportClick("pdf")));
         file.ContextMenu = fm; file.Click += (_, _) => fm.Open(file);
         var groups = new WrapPanel();
@@ -317,6 +321,7 @@ public partial class MainWindow
                     pr.VolumeCm3, pr.AreaCm2, pr.MassG, pr.Center.X, pr.Center.Y, pr.Center.Z, CadSectionZ, sec) });
         }
         catch (CadError ex) { sp.Children.Add(new TextBlock { Name = "cad-mass", Text = ex.Message, Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap }); }
+        if (CadDrawingPanel() is { } drawing) sp.Children.Add(drawing); // T-0691: Ebenen der DXF-Zeichnung, Referenzkörper
         // Parameter
         sp.Children.Add(new TextBlock { Text = "Parameter", Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 10, 0, 0) });
         sp.Children.Add(new TextBlock { Text = "Benannte Maße – in jedem Feld als Formel nutzbar, z. B. „Breite/2“.", Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap });

@@ -1,3 +1,4 @@
+using Avalonia.Platform.Storage;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -97,10 +98,16 @@ public partial class MainWindow
         }
         vp.PartClicked = i => { SaveCam(vp); _selGroup = null; _selId = i >= 0 ? visible[i].Id : null; Show("3d"); };
         vp.PartMoved = (i, by) => { SaveCam(vp); if (_selGroup is null) Studio3DMove(_scene.Parts.IndexOf(visible[i]), by); else Studio3DMoveTargets(by); };
+        if (MeshEditing) MeshEditToView(vp); // T-0691: Punkte, Kanten, Flächen statt ganzer Teile
+        vp.ContextMenu = Menu3D(vp); // T-0691: Rechtsklick
         vp.PointerWheelChanged += (_, _) => SaveCam(vp);
         vp.PointerReleased += (_, _) => SaveCam(vp);
         vp.KeyDown += (_, e) =>
         {
+            // T-0691: Rückgängig/Wiederholen und der Bearbeitungsmodus haben Vorrang
+            if (e.Key == Key.Z && e.KeyModifiers == KeyModifiers.Control) { SaveCam(vp); UndoScene(); e.Handled = true; return; }
+            if (e.Key == Key.Y && e.KeyModifiers == KeyModifiers.Control || e.Key == Key.Z && e.KeyModifiers == (KeyModifiers.Control | KeyModifiers.Shift)) { SaveCam(vp); RedoScene(); e.Handled = true; return; }
+            if (MeshEditKey(e)) { SaveCam(vp); e.Handled = true; Show("3d"); return; }
             var idx = _scene.Parts.FindIndex(p => p.Id == _selId);
             var step = e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? 10 : 1;
             Vec3? by = e.Key switch { Key.Left => new(-step, 0, 0), Key.Right => new(step, 0, 0), Key.Up => new(0, step, 0), Key.Down => new(0, -step, 0), Key.PageUp => new(0, 0, step), Key.PageDown => new(0, 0, -step), _ => null };
@@ -128,6 +135,13 @@ public partial class MainWindow
             b.Background = _gizmo3d == id ? Accent : Brush.Parse("#CC101826"); b.Foreground = Brushes.White;
             gizmoBar.Children.Add(b);
         }
+        // T-0691: Objektmodus / Bearbeitungsmodus wie in Blender (Tab)
+        var modeObj = Tool("3d-mode-object", "Objekt", "Ganze Teile wählen und verschieben (Tab wechselt)", () => Studio3DEditMode(false));
+        var modeEdit = Tool("3d-mode-edit", "Bearbeiten", "Punkte, Kanten und Flächen des gewählten Teils bearbeiten (Tab)", () => Studio3DEditMode(true));
+        foreach (var mb in new[] { modeObj, modeEdit }) { mb.Background = Brush.Parse("#CC101826"); mb.Foreground = Brushes.White; mb.Margin = new Thickness(0, 0, 3, 0); }
+        (MeshEditing ? modeEdit : modeObj).Background = Accent;
+        // schwebend oben links in der Ansicht (wie der Moduswähler in Blender) – kostet keine Höhe
+        var modeBar = new StackPanel { Name = "3d-mode-bar", Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(8, 8, 0, 0), Children = { modeObj, modeEdit } };
         edit.Children.Add(Tool("3d-dup", "Verdoppeln", "Ausgewähltes Teil kopieren (Strg+D)", Studio3DDuplicate));
         edit.Children.Add(Tool("3d-drop-floor", "Auf den Boden", "Unterkante des ausgewählten Teils auf den Boden setzen", Studio3DDrop));
         edit.Children.Add(Tool("3d-remove", "Löschen", "Ausgewähltes Teil löschen (Entf)", Studio3DDeleteSelected));
@@ -141,9 +155,21 @@ public partial class MainWindow
         foreach (var (id, label) in new[] { ("back", "Hinten"), ("left", "Links") }) edit.Children.Add(Tool("3d-view-" + id, label, "Ansicht " + label.ToLowerInvariant(), () => SetView(id, "Ansicht von " + (id == "back" ? "hinten." : "links."))));
         var sel = Selected;
         var info = new TextBlock { Name = "3d-vp-info", Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap,
-            Text = sel is null ? (_scene.Parts.Count == 0 ? "Oben eine Form einsetzen. Klick wählt ein Teil, Ziehen am gewählten Teil verschiebt es, Ziehen daneben dreht die Ansicht, Mausrad zoomt." : "Teil anklicken zum Auswählen · Ziehen dreht die Ansicht · Mausrad zoomt · Doppelklick: Ansicht zurücksetzen")
+            Text = MeshEditing ? "Klick wählt, Umschalt erweitert · 1/2/3 Punkte/Kanten/Flächen · E extrudieren · Rechtsklick: Werkzeuge · Tab: zurück"
+            : sel is null ? (_scene.Parts.Count == 0 ? "Oben eine Form einsetzen. Klick wählt ein Teil, Ziehen am gewählten Teil verschiebt es, Ziehen daneben dreht die Ansicht, Mausrad zoomt." : "Teil anklicken zum Auswählen · Ziehen dreht die Ansicht · Mausrad zoomt · Doppelklick: Ansicht zurücksetzen")
                 : $"{sel.Name}: {Part3D.Num(sel.Sx)} × {Part3D.Num(sel.Sy)} × {Part3D.Num(sel.Sz)} cm bei X {Part3D.Num(sel.X)} · Y {Part3D.Num(sel.Y)} · Z {Part3D.Num(sel.Z)} – ziehen verschiebt (0,5-cm-Raster), Pfeiltasten 1 cm (Umschalt 10 cm), Bild↑/↓ Höhe, Entf löscht" };
-        var stage = new Border { CornerRadius = new CornerRadius(12), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = new Grid { Children = { vp, gizmoBar } } };
+        var stage = new Border { Name = "3d-stage-drop", CornerRadius = new CornerRadius(12), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = new Grid { Children = { vp, gizmoBar, modeBar } } };
+        // T-0691: Datei aus dem Explorer auf die 3D-Fläche ziehen = einlesen (als bearbeitbares Netz)
+        DragDrop.SetAllowDrop(stage, true);
+        stage.AddHandler(DragDrop.DragOverEvent, (_, e) => { e.DragEffects = DragDropEffects.Copy; e.Handled = true; });
+        stage.AddHandler(DragDrop.DropEvent, (_, e) =>
+        {
+            SaveCam(vp);
+            var files = e.DataTransfer.TryGetFiles()?.Select(f => f.TryGetLocalPath()).Where(p => !string.IsNullOrEmpty(p)).ToList() ?? [];
+            if (files.Count == 0) { Say("Diese Angabe ist keine Datei.", "3d"); return; }
+            foreach (var f in files) _ = ImportPath(f!);
+            e.Handled = true;
+        });
         var grid = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto,*,Auto"), Children = { add, Pos2(edit, 1), Pos2(stage, 2), Pos2(info, 3) } };
         return grid;
         static Control Pos2(Control c, int row) { Grid.SetRow(c, row); if (row == 3) c.Margin = new Thickness(2, 6, 0, 0); return c; }
