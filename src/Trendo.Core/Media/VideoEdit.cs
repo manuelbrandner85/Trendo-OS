@@ -178,7 +178,14 @@ public static class VideoEdit
                     f.Add($"[{ca}][a{ids[i]}]acrossfade=d={F(fd)}[{na}]");
                     len += clips[i].Length - fd;
                 }
-                else { f.Add($"[{cv}][{ca}][v{ids[i]}][a{ids[i]}]concat=n=2:v=1:a=1[{nv}][{na}]"); len += clips[i].Length; }
+                else
+                {
+                    // T-0693: Folgt nach einem harten Schnitt noch eine Überblendung, braucht xfade wieder die Zeitbasis der Bildrate – concat liefert eine andere, FFmpeg bricht sonst ab
+                    var hard = i == clips.Count - 1 ? nv : "c" + nv;
+                    f.Add($"[{cv}][{ca}][v{ids[i]}][a{ids[i]}]concat=n=2:v=1:a=1[{hard}][{na}]");
+                    if (hard != nv) f.Add($"[{hard}]fps={fps}[{nv}]");
+                    len += clips[i].Length;
+                }
                 cv = nv; ca = na;
             }
             if (clips.Count == 1) { f.Add($"[{cv}]null[vbase]"); f.Add($"[{ca}]anull[abase]"); }

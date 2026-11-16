@@ -152,7 +152,8 @@ public sealed class SongPlanAdapter : IStudioActionAdapter
     public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked("Das Lied entsteht im Studio „Trendo Musik“.");
 }
 
-/// <summary>STUDIO-FILM-01: Drehbuch-Gerüst aus einer Idee im Fountain-Format – ohne KI, nur die Struktur. Bilder und Clips entstehen im Studio.</summary>
+/// <summary>STUDIO-FILM-01: Drehbuch-Gerüst aus einer Idee im Fountain-Format mit Shotliste – ohne KI, nur die Struktur (drei Akte, je Szene eine Einstellung).
+/// T-0693: Das Studio „Filme machen“ übernimmt das Ergebnis ins offene Dokument (bearbeitbar, rückgängig). Ein ausgeschriebenes Drehbuch schreibt dort „Drehbuch mit KI schreiben“; gerendert wird nur auf Klick.</summary>
 public sealed class FilmOutlineAdapter : IStudioActionAdapter
 {
     public string StudioId => "STUDIO-FILM-01";
@@ -173,11 +174,11 @@ public sealed class FilmOutlineAdapter : IStudioActionAdapter
         var idee = FieldKit.Text(call.Parameters, "idee").Trim();
         var titel = FieldKit.Text(call.Parameters, "titel").Trim();
         if (titel.Length == 0) titel = idee.Length <= 40 ? idee : idee[..40].TrimEnd() + "…";
-        var body = $"Titel: {titel}\n\n= {idee}\n\n# Anfang\n\nINNEN. ORT – TAG\n\nZeig, wer die Hauptfigur ist und was sie will.\n\n# Mitte\n\nAUSSEN. ORT – TAG\n\nEin Hindernis stellt sich in den Weg.\n\n# Schluss\n\nINNEN. ORT – NACHT\n\nDie Figur entscheidet sich. Was hat sich verändert?\n";
-        var qa = new QaResult(ActionId, true, "Drehbuch-Gerüst erstellt. Die Szenen füllst du im Studio „Filme machen“.", null, titel, "Fountain");
+        var body = Trendo.Core.Film.Fountain.InsertSuggestedShots($"Titel: {titel}\n\n= {idee}\n\n# Anfang\n\nINNEN. ORT – TAG\n\nZeig, wer die Hauptfigur ist und was sie will.\n\n# Mitte\n\nAUSSEN. ORT – TAG\n\nEin Hindernis stellt sich in den Weg.\n\n# Schluss\n\nINNEN. ORT – NACHT\n\nDie Figur entscheidet sich. Was hat sich verändert?\n");
+        var qa = new QaResult(ActionId, true, "Drehbuch-Gerüst mit Shotliste erstellt – es steht im Studio „Filme machen“ im offenen Dokument. Dort füllst du die Szenen, weist Clips und Fotos zu und renderst den Film.", null, titel, "Fountain");
         return FieldKit.Save(call, FieldKit.Slot("film", call.Version, "drehbuch.fountain"), body, titel, qa);
     }
-    public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked("Bilder und Clips entstehen im Studio „Filme machen“.");
+    public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked("Den Film renderst du selbst im Studio „Filme machen“ mit „Film rendern“.");
 }
 
 /// <summary>STUDIO-POD-01: Preis und Gewinn je Stück rechnen. Es ist kein Anbieter angeschlossen, nichts wird eingestellt oder bestellt.</summary>

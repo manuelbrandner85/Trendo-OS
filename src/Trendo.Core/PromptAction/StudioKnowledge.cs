@@ -281,7 +281,7 @@ public static class StudioKnowledgeBase
             ["STUDIO-MUSIK-01", "X-07", "STUDIO-FILM-01"],
             true),
         ["STUDIO-FILM-01"] = new("STUDIO-FILM-01",
-            "Kurzfilme und Trailer planen: Drehbuch, Figuren, Orte, Einstellungen und Abgabe.",
+            "Kurzfilme und Trailer vom Drehbuch bis zum fertigen Film: Drehbuch, Figuren, Orte, Einstellungen, eigene Clips und Fotos je Einstellung, Rohschnitt mit Titeln, Musik und Untertiteln, Rendern als MP4.",
             [
                 T("drehbuch", "Drehbuch schreiben", "Vom Einfall zur fertigen Szene", "Schreibe ein Drehbuch über ", ["drehbuch", "film", "kurzfilm", "szene", "geschichte"], "Idee oder Thema"),
                 T("shots", "Einstellungen planen", "Shotliste aus dem Drehbuch", "Plane die Einstellungen für ", ["einstellung", "shot", "kamera", "storyboard"], "Drehbuch"),

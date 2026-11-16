@@ -745,6 +745,14 @@ else if (shot == "seite")
     }
     if (Environment.GetEnvironmentVariable("TRENDO_3D") is { Length: > 0 }) { win.Show("3d"); foreach (var sh in new[] { "cube", "sphere", "cylinder", "torus" }) win.Studio3DAddShape(sh); win.Studio3DSelect(1); } // 3D-Modelle erstellen mit Arbeitsfläche
     if (Environment.GetEnvironmentVariable("TRENDO_PROGTPL") is { Length: > 0 } tpl) { if (Environment.GetEnvironmentVariable("TRENDO_LEVEL") is { Length: > 0 } lv) win.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Of(lv)); win.ProgramNew(page, tpl); if (Environment.GetEnvironmentVariable("TRENDO_GAMESEC") is { Length: > 0 } gs) win.GameSection = gs; win.Show(page); } // Programm mit Vorlage öffnen
+    if (Environment.GetEnvironmentVariable("TRENDO_FILM_DEMO") is { } filmDemo && win.ProgramActive("film-programm") is { } filmDoc) // T-0693: „Filme machen“, Schritt 3 – mit Einstellungen und (optional, durch ; getrennt) eigenen Bildern
+    {
+        if (Trendo.Core.Film.FilmCut.Shots(filmDoc.Data).Count == 0 && filmDemo != "leer") filmDoc.Set("script", Trendo.Core.Film.Fountain.InsertSuggestedShots(filmDoc.Text("script")), "Einstellungen vorgeschlagen");
+        win.FilmStep = "shots";
+        var filmFiles = filmDemo.Split(';', StringSplitOptions.RemoveEmptyEntries).Where(File.Exists).ToArray();
+        if (filmFiles.Length > 0) { var imp = win.FilmImport(filmDoc, filmFiles); var t0 = DateTime.UtcNow; while (!imp.IsCompleted && DateTime.UtcNow - t0 < TimeSpan.FromSeconds(20)) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); } }
+        win.Show("film-programm");
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_ART_DEMO") is { Length: > 0 } && win.ProgramActive(Trendo.App.MainWindow.ArtKey) is { } artDoc) // Künstlerstudio mit Beispielstrichen
     {
         win.ArtBrush = "tusche"; win.ArtColor = "#1F2937"; win.ArtSize = 8; win.ArtSmooth = 0;

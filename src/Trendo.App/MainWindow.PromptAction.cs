@@ -302,6 +302,7 @@ public partial class MainWindow
             FillPro();
             Sync();
             if (result.Artifacts.Count > 0) RefreshStudioBody();
+            FilmAdoptResult(result); // T-0693: Drehbuch aus dem KI-Auftrag ins offene Dokument von „Filme machen“
         }
 
         void RefreshStudioBody()
