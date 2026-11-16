@@ -17,14 +17,16 @@ public partial class MainWindow
 
     private void InitSys09()
     {
-        _showMap["post"] = MailView; SysTabs.Add(("post", "E-Mail & Kontakte"));
+        _showMap["post"] = MailView; SysTabs.Add(("post", "Schreiben"));
         StudioPages["SYS-09"] = "post";
         ExtraPages.Add(("E-Mail & Kontakte", "post", ["mail", "email", "kontakt", "adresse", "nachricht", "vcard", "eml", "outlook", "thunderbird"]));
     }
 
     private Control MailView()
     {
-        var sp = new StackPanel { Spacing = 6, Children = { P("Schreib hier in Ruhe. Trendo prüft die Nachricht und öffnet sie in deinem Mailprogramm – abschicken tust du selbst.") } };
+        var sp = new StackPanel { Spacing = 6, Children = { P(MailAccountCfg is null
+            ? "Schreib hier in Ruhe. Mit eigenem Konto sendet Trendo selbst (nach Rückfrage) – ohne Konto öffnet Trendo die Nachricht in deinem Mailprogramm."
+            : $"Schreib hier in Ruhe. „Senden …“ öffnet das Schreibfenster mit Anhängen und Rückfrage – gesendet wird über {MailAccountCfg.Email}.") } };
         sp.Children.Add(H("Neue E-Mail", 14));
         var to = new TextBox { Name = "mail-to", PlaceholderText = "An (E-Mail, mehrere mit Komma)", Text = _mailTo };
         var subj = new TextBox { Name = "mail-subject", PlaceholderText = "Betreff", Text = _mailSubj };
@@ -32,7 +34,15 @@ public partial class MainWindow
         MailDraft D() { _mailTo = to.Text ?? ""; _mailSubj = subj.Text ?? ""; _mailBody = body.Text ?? ""; return new(_mailTo, _mailSubj, _mailBody); }
         var check = new Button { Name = "mail-check", Content = "Prüfen" };
         check.Click += (_, _) => { var p = MailCenter.Check(D()); _mailMsg = p.Count == 0 ? "✓ Sieht gut aus." : string.Join(" ", p); Show("post"); };
-        var open = new Button { Name = "mail-open", Content = "Im Mailprogramm öffnen", Background = Accent };
+        // T-0689: eine goldene Hauptaktion – mit Konto sendet Trendo selbst (Schreibfenster im Posteingang, Rückfrage vor dem Senden), sonst zuerst das Konto
+        var send = new Button { Name = "mail-send", Content = MailAccountCfg is null ? "Konto einrichten" : "Senden …", Background = Accent };
+        send.Click += (_, _) =>
+        {
+            var d = D();
+            if (MailAccountCfg is null) { _mailWizard = true; _pimMsg = "Trag dein Konto ein – deine Nachricht bleibt im Schreibfenster stehen."; }
+            MailCompose(d);
+        };
+        var open = new Button { Name = "mail-open", Content = "Im Mailprogramm öffnen" };
         open.Click += (_, _) =>
         {
             var d = D(); var p = MailCenter.Check(d);
@@ -57,7 +67,7 @@ public partial class MainWindow
         pick.SelectionChanged += (_, _) => { if (pick.SelectedIndex < 0) return; var c = people.Where(x => x.Email != "").ElementAt(pick.SelectedIndex); to.Text = string.IsNullOrWhiteSpace(to.Text) ? c.Email : to.Text.TrimEnd(',', ' ') + ", " + c.Email; };
         sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { pick } });
         sp.Children.Add(to); sp.Children.Add(subj); sp.Children.Add(body);
-        sp.Children.Add(new WrapPanel { Children = { MSp(check), MSp(open), MSp(link), MSp(ki) } });
+        sp.Children.Add(new WrapPanel { Children = { MSp(send), MSp(check), MSp(open), MSp(link), MSp(ki) } });
         sp.Children.Add(new TextBlock { Name = "mail-msg", Text = _mailMsg, Foreground = Text, TextWrapping = TextWrapping.Wrap });
 
         sp.Children.Add(H("Kontakt schnell anlegen", 14));

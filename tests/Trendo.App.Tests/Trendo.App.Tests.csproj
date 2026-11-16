@@ -17,5 +17,7 @@
     <ProjectReference Include="..\..\src\Trendo.Companion\Trendo.Companion.csproj" />
     <None Include="..\..\requirements.yaml" Link="requirements.yaml" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Daten\einfach-vorher-ausgeblendet.txt" CopyToOutputDirectory="PreserveNewest" />
+    <!-- T-0689: derselbe echte lokale Mailserver wie in den Kern-Tests -->
+    <Compile Include="..\Trendo.Core.Tests\MailTestServer.cs" Link="MailTestServer.cs" />
   </ItemGroup>
 </Project>

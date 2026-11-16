@@ -274,7 +274,7 @@ public partial class MainWindow
             go.IsVisible = result.Phase == WorkflowPhase.Planned;
             FillPro();
             Sync();
-            if (result.Artifacts.Count > 0) RefreshStudioBody();
+            if (result.Artifacts.Count > 0) { MailTakeArtifacts(_promptProject, result); RefreshStudioBody(); } // T-0689: KI-Entwurf „mail.entwurf“ kommt ins offene Schreibfenster
         }
 
         void RefreshStudioBody()
