@@ -16,6 +16,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Trendo.Core\Trendo.Core.csproj" />
     <ProjectReference Include="..\..\src\Trendo.Companion\Trendo.Companion.csproj" />
+    <!-- T-0680: Hilfsprogramm für die Absturz-Tests – nur mitbauen, nicht einbinden (der Test startet es aus seinem eigenen Ausgabeordner) -->
+    <ProjectReference Include="..\Trendo.CrashProbe\Trendo.CrashProbe.csproj" ReferenceOutputAssembly="false" />
     <None Include="..\fixtures\ocr-pi.png" Link="fixtures/ocr-pi.png" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\docs\spec\decisions.yaml" Link="decisions.yaml" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\requirements.yaml" Link="requirements.yaml" CopyToOutputDirectory="PreserveNewest" />
