@@ -37,6 +37,10 @@ public partial class MainWindow
     public static bool InAppShell(string key) => ShellOf.ContainsKey(key);
     string _setQuery = "";
 
+    /// <summary>V-18 (T-0684, freigegeben 16.11.2026): Entwicklerseiten – in der Leiste der Einstellungen und in der Suche nur in „Professionell“.
+    /// Die Seite selbst bleibt (Stufe umschalten oder direkter Aufruf), es entfällt nichts.</summary>
+    public static readonly IReadOnlySet<string> ProOnlyPages = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "fortschritt" };
+
     /// <summary>E12 (T-0616): In „Einfach“ zeigen die Einstellungen diese Hauptseiten, alles Weitere nach einem Klick auf „Mehr Einstellungen“ (die Suche findet immer alles).</summary>
     public static readonly string[] SimpleSettingsPages = ["settings", "bedien-sehen", "personen", "geraete", "sicherung", "updates"];
     bool _setAllPages;
@@ -72,7 +76,8 @@ public partial class MainWindow
         var hiddenCount = 0;
         foreach (var (group, icon, pages) in def.Groups)
         {
-            var visible = pages.Where(p => _showMap.ContainsKey(p.Key) && (hits is null || hits.Contains(p.Key))).ToList();
+            var visible = pages.Where(p => _showMap.ContainsKey(p.Key) && (hits is null || hits.Contains(p.Key)))
+                .Where(p => !ProOnlyPages.Contains(p.Key) || ProgramLevel == Trendo.Core.Programs.UserLevel.Profi || string.Equals(p.Key, key, StringComparison.OrdinalIgnoreCase)).ToList(); // V-18
             if (slim) { var all = visible.Count; visible = visible.Where(p => SimpleSettingsPages.Contains(p.Key) || string.Equals(p.Key, key, StringComparison.OrdinalIgnoreCase)).ToList(); hiddenCount += all - visible.Count; }
             if (visible.Count == 0) continue;
             nav.Children.Add(new TextBlock { Text = icon + "  " + group, Foreground = Muted, FontSize = 11.5, FontWeight = FontWeight.SemiBold, Margin = new Thickness(10, 10, 0, 3) });

@@ -1950,3 +1950,11 @@ kuenstler-programm (Dokument): prog-level-einfach
 kuenstler-programm (Dokument): prog-level-erweitert
 kuenstler-programm (Dokument): prog-level-profi
 qualitaet: ql-open-117
+# T-0684 (16.11.2026, Design-Paket 1): Dieses Paket blendet in „Einfach“ nichts aus, was „Erweitert“ zeigt – deshalb stehen hier keine neuen Zeilen.
+# Was sich für beide Stufen geändert hat, bleibt so erreichbar:
+#   V-13 fold-open-* („Verwandte Programme“): im Menü „Mehr“ des Seitenkopfs (page-head-more), auf Seiten ohne Kopf unter „Verwandte Programme ▾“ (fold-menu).
+#   V-13 auftrag-* auf ki-fragen, ki, dev: über „KI ▾“ → „Auftragszeile zeigen“ (auftrag-zeile-zeigen); die Seite selbst ist dort die Eingabe.
+#   V-18 settings-nav-fortschritt, Knopf „Bau-Fortschritt“, rohe Protokollzeilen: Bedienstufe „Professionell“.
+#   V-18 fix-* (Reparieren je Zeile im Systemcheck): in „Einfach“ unter „Einzelheiten“ (syscheck-details), sonst wie bisher sichtbar.
+#   V-05 result-copy unter kurzen Hinweisen: Rechtsklick auf die Meldung → „Kopieren“ (result-copy-menu); unter langen Ergebnissen bleibt der Knopf.
+#   V-16 todo-col-*, proj-right, big-details: erscheinen, sobald es eine Aufgabe, ein gewähltes Projekt oder ein Großprojekt gibt.

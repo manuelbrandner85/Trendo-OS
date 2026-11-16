@@ -38,9 +38,9 @@ public partial class MainWindow
         var undo = Act("hb-undo", _hbUndo.TryPeek(out var u) ? "↶ " + u.Label : "Rückgängig", () => { if (_hbUndo.TryPop(out var x)) { Money.Save(x.Before); Say("Rückgängig: " + x.Label, "finanzen"); Show("finanzen"); } });
         undo.IsEnabled = _hbUndo.Count > 0;
         var head = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = {
-            new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { Act("hb-prev", "◀", () => Go(-1)),
+            new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { SimpleWords.Named(Act("hb-prev", "◀", () => Go(-1)), "Voriger Monat"),
                 new TextBlock { Name = "hb-month", Text = title, FontSize = 20, FontWeight = FontWeight.SemiBold, Foreground = GoldText(), VerticalAlignment = VerticalAlignment.Center, MinWidth = 170, TextAlignment = TextAlignment.Center },
-                Act("hb-next", "▶", () => Go(1)), Act("hb-today", "Heute", () => { _hbYear = DateTime.Today.Year; _hbMonth = DateTime.Today.Month; _hbCat = null; Show("finanzen"); }) } },
+                SimpleWords.Named(Act("hb-next", "▶", () => Go(1)), "Nächster Monat"), Act("hb-today", "Heute", () => { _hbYear = DateTime.Today.Year; _hbMonth = DateTime.Today.Month; _hbCat = null; Show("finanzen"); }) } },
             Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { undo, Act("fin-to-sheet", "In Trendo Tabelle öffnen", () => Try("finanzen", () =>
             {
                 var f = Path.Combine(BusinessFolder, $"Buchungen-{DateTime.Today:yyyy-MM-dd}.csv");

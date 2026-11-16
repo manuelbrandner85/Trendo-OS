@@ -37,6 +37,10 @@ public static class SimpleWords
     public static readonly AttachedProperty<bool> KeepProperty = AvaloniaProperty.RegisterAttached<Button, bool>("Keep", typeof(SimpleWords));
     public static Button Keep(Button b) { b.SetValue(KeepProperty, true); return b; }
 
+    /// <summary>V-05 (T-0684): Zeichen-Knopf, dessen Wort vom Zusammenhang abhängt (Pfeil = „Nächster Monat“, nicht „Abspielen“):
+    /// Hinweis und Name für Bildschirmleser fest setzen. In „Einfach“ steht dieses Wort am Knopf.</summary>
+    public static Button Named(Button b, string word) { ToolTip.SetTip(b, word); AutomationProperties.SetName(b, word); return b; }
+
     /// <summary>Hinweis setzen und den Knopf zurückgeben (für Zeichen-Knöpfe in Listen).</summary>
     public static T Tip<T>(T c, string tip) where T : Control { ToolTip.SetTip(c, tip); return c; }
 
@@ -84,7 +88,7 @@ public static class SimpleWords
 
     /// <summary>Wort für diesen Knopf: Hinweis, sonst Name für Bildschirmleser, sonst der Name des Linien-Symbols.</summary>
     public static string? WordFor(Button b) =>
-        Short(ToolTip.GetTip(b) as string) ?? Short(AutomationProperties.GetName(b)) ?? (GlyphIcons.GetGlyph(b) is { } g && GlyphIcons.Map.TryGetValue(g, out var gl) ? Short(gl.Name) : null);
+        Short(ToolTip.GetTip(b) as string) ?? Short(AutomationProperties.GetName(b)) ?? (GlyphIcons.GetGlyph(b) is { } g ? Short(GlyphIcons.NameFor(g, b.Name)) : null); // V-05: mehrdeutige Zeichen nie raten
 
     public static void Enable()
     {

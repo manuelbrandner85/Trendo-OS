@@ -396,7 +396,7 @@ public sealed partial class MainWindow
         foreach (var id in cur)
         {
             var label = items.First(x => x.Id == id).Label;
-            Button Arrow(string t, int d) { var b = new Button { Name = $"{prefix}-{id}-{(d < 0 ? "vor" : "zurueck")}", Content = t, Padding = new Thickness(5, 0), FontSize = 11 }; b.Click += (_, _) => { set(UserSettings.Move(cur, id, d)); SaveSettings(); Show("settings"); }; return b; }
+            Button Arrow(string t, int d) { var b = new Button { Name = $"{prefix}-{id}-{(d < 0 ? "vor" : "zurueck")}", Content = t, Padding = new Thickness(5, 0), FontSize = 11 }; b.Click += (_, _) => { set(UserSettings.Move(cur, id, d)); SaveSettings(); Show("settings"); }; return SimpleWords.Named(b, d < 0 ? "Nach vorn" : "Nach hinten"); }
             wrap.Children.Add(new Border { Background = Brush.Parse("#22FFFFFF"), CornerRadius = new CornerRadius(8), Padding = new Thickness(6, 3), Margin = new Thickness(0, 0, 6, 6),
                 Child = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, Children = { Arrow("◀", -1), new TextBlock { Text = label, Foreground = Text, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center }, Arrow("▶", 1) } } });
         }

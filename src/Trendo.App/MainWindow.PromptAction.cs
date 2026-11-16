@@ -103,6 +103,11 @@ public partial class MainWindow
         return new DockPanel { LastChildFill = true, Children = { row, view } };
     }
 
+    /// <summary>V-13 (T-0684): Seiten, die selbst ein KI-Gespräch oder eine geführte Beschreibung sind – dort steht keine zweite Eingabe darüber.</summary>
+    public static readonly IReadOnlySet<string> OwnKiInputPages = new HashSet<string> { "ki-fragen", "ki", "dev" };
+    /// <summary>Seiten, auf denen die Person die Auftragszeile ausdrücklich eingeblendet hat (bis Trendo beendet wird).</summary>
+    readonly HashSet<string> _promptBarOpen = [];
+
     /// <summary>Hängt die Leiste an. Der Startbildschirm bleibt unverändert, damit der parallele Desktop-Auftrag dort frei bleibt.</summary>
     private Control WithPromptBar(string key, Control view)
     {
@@ -128,6 +133,28 @@ public partial class MainWindow
             DockPanel.SetDock(slim, Avalonia.Controls.Dock.Top);
             view.HorizontalAlignment = HorizontalAlignment.Stretch; view.VerticalAlignment = VerticalAlignment.Stretch;
             return new DockPanel { LastChildFill = true, Children = { slim, view } };
+        }
+        // V-13 (T-0684, freigegeben 16.11.2026): Auf Seiten mit eigenem KI-Gespräch ist die Seite selbst die Eingabe – oben steht nur „KI ▾“.
+        // Die Auftragszeile bleibt einen Klick entfernt („Auftragszeile zeigen“ im Menü), keine Funktion entfällt.
+        if (OwnKiInputPages.Contains(key) && !_promptBarOpen.Contains(key))
+        {
+            var items = new List<Control>();
+            if (ClaudeBelongs(key) && ClaudeStudioOf(key) is { } ks)
+            {
+                var kc = new Button { Name = "auftrag-claude", Content = Windows.Active?.Id is { } kw && ClaudeDockOpen(kw) ? "Claude ✕" : "Claude", Height = 32 };
+                ToolTip.SetTip(kc, $"Claude für „{StudioCatalog.NameOf(ks, ks)}“ öffnen – mit deinem Abo, passend zu diesem Studio");
+                kc.Click += (_, _) => ClaudeDockToggle(ks, null);
+                items.Add(kc); items.AddRange(KiMenuOrder(ClaudeBarExtras(key, ks)));
+            }
+            var showBar = new Button { Name = "auftrag-zeile-zeigen", Content = "Auftragszeile zeigen", Height = 32 };
+            ToolTip.SetTip(showBar, "Die Eingabezeile für Aufträge an dieses Studio über der Seite einblenden");
+            showBar.Click += (_, _) => { _promptBarOpen.Add(key); Show(key); };
+            items.Add(showBar);
+            var only = new StackPanel { Name = "auftrag-nur-ki", Orientation = Orientation.Horizontal, Spacing = 6, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Avalonia.Thickness(8, 6, 8, 2) };
+            only.Children.Add(KiMenu(items, ClaudeBelongs(key) ? ClaudeStudioOf(key) : null));
+            DockPanel.SetDock(only, Avalonia.Controls.Dock.Top);
+            view.HorizontalAlignment = HorizontalAlignment.Stretch; view.VerticalAlignment = VerticalAlignment.Stretch;
+            return new DockPanel { LastChildFill = true, Children = { only, view } };
         }
         var dock = new DockPanel { LastChildFill = true, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
         var bar = BuildPromptBar(studio, key);

@@ -510,6 +510,17 @@ public partial class MainWindow
         var g = new StackPanel { Spacing = 2 };
         foreach (var s in MobileBridge.Guide) g.Children.Add(P("• " + s, null, 11.5));
         sp.Children.Add(WCard(g));
+        // T-0684 (V-18; Audit: „Profi-Teil unter dem einfachen Weg sichtbar“): In „Einfach“ steht der Teil für den Entwicklermodus zugeklappt unter
+        // dem geführten Weg. Meldungen bleiben sichtbar; ist dort gerade etwas los (gefundenes Handy, Meldung), ist der Teil offen.
+        if (SimpleLevel)
+        {
+            static bool Message(Control c) => Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(c).OfType<TextBlock>().Prepend(c as TextBlock).Any(t => t?.Name is "w7-msg" or "phone-detail");
+            var pro = sp.Children.Skip(1).Where(c => !Message(c)).ToList();
+            foreach (var c in pro) sp.Children.Remove(c);
+            var fold = SimpleFold("phone-pro", "Bildschirm und Apps steuern (Android, Entwicklermodus)", [.. pro.Skip(1)]); // ohne die Überschrift, sie steht im Kopf des Klappbereichs
+            if (fold is Expander ex && (Phones.Count > 0 || W7Msg.Length > 0 || PhoneDetail.Length > 0)) ex.IsExpanded = true;
+            sp.Children.Add(fold);
+        }
         return SysPage("Handy", sp);
     }
 

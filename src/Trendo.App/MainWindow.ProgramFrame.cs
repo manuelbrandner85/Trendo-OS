@@ -42,6 +42,9 @@ public partial class MainWindow
         return root;
     }
 
+    /// <summary>V-05 (T-0684): Ein Ergebnis, das man weiterverwenden will (mehrere Zeilen oder mehr als ein kurzer Satz) – nur dann steht „Kopieren“ als Knopf darunter.</summary>
+    public static bool ResultWorthCopying(string msg) => msg.Contains('\n') || msg.Length > 140;
+
     // ---------- G7: Ergebnis-Karte mit Kopieren und Verlauf ----------
     readonly Dictionary<string, List<string>> _resultHistory = [];
 
@@ -54,11 +57,19 @@ public partial class MainWindow
         if (hist.Count == 0 || hist[^1] != msg) { hist.Add(msg); if (hist.Count > 6) hist.RemoveAt(0); }
         var text = new TextBlock { Text = msg, Foreground = Text, FontSize = 15, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap };
         var card = new Border { Name = "w45-msg", Background = TileBg, BorderBrush = Accent, BorderThickness = new Thickness(4, 0, 0, 0), CornerRadius = new CornerRadius(8), Padding = new Thickness(14, 10), Child = text };
-        var copy = new Button { Name = "result-copy", Content = "Kopieren", Padding = new Thickness(10, 4) };
-        copy.Click += async (_, _) => { if (Clipboard is { } cb) { await cb.SetTextAsync(msg); Toast("Ergebnis kopiert."); } };
-        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { copy } };
+        async void CopyMsg() { if (Clipboard is { } cb) { await cb.SetTextAsync(msg); Toast("Ergebnis kopiert."); } }
+        // V-05 (T-0684): kein Knopf „Kopieren“ unter jedem kurzen Hinweis („Vorlage geöffnet.“). Der Knopf steht nur unter einem echten Ergebnis
+        // (mehrzeilig oder lang); kopieren lässt sich jede Meldung weiter über den Rechtsklick.
+        var copyItem = new MenuItem { Name = "result-copy-menu", Header = "Kopieren" }; copyItem.Click += (_, _) => CopyMsg();
+        card.ContextMenu = new ContextMenu { Items = { copyItem } };
+        var box = new StackPanel { Name = "result-card", Spacing = 4, Children = { card } };
+        if (ResultWorthCopying(msg))
+        {
+            var copy = new Button { Name = "result-copy", Content = "Kopieren", Padding = new Thickness(10, 4) };
+            copy.Click += (_, _) => CopyMsg();
+            box.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { copy } });
+        }
         var older = hist.Take(hist.Count - 1).Reverse().ToList();
-        var box = new StackPanel { Name = "result-card", Spacing = 4, Children = { card, row } };
         if (older.Count > 0)
         {
             var list = new StackPanel { Spacing = 2 };
@@ -374,6 +385,25 @@ public partial class MainWindow
 
     // ---------- G11: leere Zustände mit Beispiel statt leerer Fläche ----------
     /// <summary>G11: großes Symbol, kurzer Satz, was hier passiert, und die erste Aktion bzw. Beispiele zum Antippen.</summary>
+    /// <summary>V-16 (T-0684): Spalten füllen das Fenster. Auf einer rollenden Seite bekommt das Element die Höhe, die bis zum unteren Rand
+    /// des sichtbaren Bereichs frei ist (mindestens <paramref name="min"/>) – und passt sich an, wenn das Fenster seine Größe ändert.</summary>
+    internal static T FillDown<T>(T c, double min = 320) where T : Control
+    {
+        void Fit()
+        {
+            if (Avalonia.VisualTree.VisualExtensions.FindAncestorOfType<ScrollViewer>(c) is not { } sv || sv.Viewport.Height <= 0) return;
+            if (c.TranslatePoint(new Point(0, 0), sv) is not { } p) return;
+            var h = Math.Max(min, Math.Floor(sv.Viewport.Height - (p.Y + sv.Offset.Y) - 6));
+            if (double.IsNaN(c.Height) || Math.Abs(c.Height - h) > 1) c.Height = h;
+        }
+        c.AttachedToVisualTree += (_, _) =>
+        {
+            Dispatcher.UIThread.Post(Fit, DispatcherPriority.Loaded);
+            if (Avalonia.VisualTree.VisualExtensions.FindAncestorOfType<ScrollViewer>(c) is { } sv) sv.SizeChanged += (_, _) => Fit();
+        };
+        return c;
+    }
+
     internal Control EmptyState(string name, string icon, string title, string text, params Control[] actions)
     {
         var row = new WrapPanel { HorizontalAlignment = HorizontalAlignment.Center };

@@ -141,8 +141,11 @@ public partial class MainWindow
         }
 
         Border Panel(Control c, string name, double? w = null) => new() { Name = name, Child = new ScrollViewer { Content = c }, Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(10), BoxShadow = CardShadow, Width = w ?? double.NaN };
-        var g = new Grid { Name = "proj-workspace", ColumnDefinitions = new ColumnDefinitions("240,*,290"), ColumnSpacing = 10 };
-        g.Children.Add(Panel(left, "proj-left")); g.Children.Add(Pos(Panel(center, "proj-center"), 1)); g.Children.Add(Pos(Panel(right, "proj-right"), 2));
+        // V-16 (T-0684): ohne gewähltes Projekt gibt es keine Details – der leere Kasten rechts wird nicht gezeichnet, die Mitte füllt das Fenster
+        var details = right.Children.Count > 0;
+        var g = new Grid { Name = "proj-workspace", ColumnDefinitions = new ColumnDefinitions(details ? "240,*,290" : "240,*"), ColumnSpacing = 10 };
+        g.Children.Add(Panel(left, "proj-left")); g.Children.Add(Pos(Panel(center, "proj-center"), 1));
+        if (details) g.Children.Add(Pos(Panel(right, "proj-right"), 2));
         return FitPage("Projekte", new Panel(), g);
     }
 }

@@ -620,17 +620,19 @@ public sealed partial class MainWindow : Window
             };
             if (a.Id is "browser" or "mail" && _core.Offline) { b.IsEnabled = false; ToolTip.SetTip(b, $"{a.Label} – offline deaktiviert"); }
             if (!installed) b.IsEnabled = false;
+            DockWord(b, DockWords.GetValueOrDefault(a.Id, a.Label)); // V-19 (T-0684): Wort unter dem Symbol
             DockLift(b); bar.Children.Add(b); _dockButtons[a.Id] = b;
         }
         RefreshDockWebApps(); // WhatsApp, Telegram … mit Original-Symbol
         var trash = new Button { Name = "dock-trash", Width = 48, Height = 48, Padding = new Thickness(0), Background = Brushes.Transparent, BorderThickness = new Thickness(0), Content = DockFace("trash", Ico(Mdi.Delete, 28, Grad("#ECEFF1", "#90A4AE"))) };
+        DockWord(trash, "Papierkorb");
         DockLift(trash); _dockButtons["trash"] = trash;
         ToolTip.SetTip(trash, "Papierkorb"); Avalonia.Automation.AutomationProperties.SetName(trash, "Papierkorb");
         ToolTip.SetPlacement(trash, Avalonia.Controls.PlacementMode.Top); ToolTip.SetVerticalOffset(trash, -6);
         trash.Click += (_, _) => _core.Integrations.LaunchDirect(Principal.LocalOwner, OperatingSystem.IsWindows() ? "shell:RecycleBinFolder" : "trash://", _core.Audit);
         Border Sep() => new() { Width = 1, Height = 32, VerticalAlignment = VerticalAlignment.Center, Background = Brush.Parse(C("#26FFFFFF", "#1F000000")) };
         var webSep = Sep(); webSep.Bind(IsVisibleProperty, _dockWeb.GetObservable(IsVisibleProperty));
-        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { StartButton(), Sep(), bar, webSep, _dockWeb, Sep(), trash } };
+        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { DockWord(StartButton(), "Start"), Sep(), bar, webSep, _dockWeb, Sep(), trash } };
         // S3 (13.11.2026): Leiste als ruhige, fast deckende Fläche – kein Rauchglas-Verlauf, keine Lichtkante, kein Goldrand
         var dockBar = new Border
         {
@@ -680,6 +682,7 @@ public sealed partial class MainWindow : Window
     {
         if (CurrentView == "studio-deps" && _depStudio.Length > 0)
             return StudioCatalog.NameOf(_depStudio, string.IsNullOrWhiteSpace(_depStudioTitle) ? fallback : _depStudioTitle);
+        if (PageOwnName(CurrentView) is { } own) return own; // V-10 (T-0684): Seite mit eigenem Namen heißt im Kopf wie im Fenstertitel
         return StudioIdForPage(CurrentView) is { } id ? StudioCatalog.NameOf(id, fallback) : fallback;
     }
 
@@ -727,13 +730,22 @@ public sealed partial class MainWindow : Window
         };
         var heading = H(title, 22); heading.Name = "page-title";
         var titleCol = new StackPanel { Spacing = 2, VerticalAlignment = VerticalAlignment.Center, Children = { heading } };
+        var related = RelatedPrograms(key); _relatedPlaced = true; // V-13 (T-0684): „Verwandte Programme“ stehen im Menü „Mehr“ des Seitenkopfs
         if (StudioIdForPage(CurrentView) is { } sid && StudioCatalog.For(sid) is { } info)
         {
-            // Kopfkarte (Vorgabe 2026-10-26 „schönere, verständlichere Oberfläche“): großes Studio-Symbol, Name, ein Satz, was man hier tut
-            titleCol.Children.Add(new TextBlock { Name = "page-sentence", Text = info.Sentence, Foreground = Muted, FontSize = 13.5, TextWrapping = TextWrapping.Wrap });
-            var card = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), ColumnSpacing = 14 };
-            if (StudioIcons.For(sid) is { } si) card.Children.Add(new Border { VerticalAlignment = VerticalAlignment.Center, Child = Chip(si.Path, si.C1, si.C2, 46, 0.6) });
-            card.Children.Add(Pos(titleCol, 1));
+            // V-10 (T-0684): Die Titelkarte des Studios (Symbol, Name, Satz) steht nur auf Seiten, die so heißen wie das Studio.
+            // Eine Seite mit eigenem Namen (Lizenz, Hardware, Audio bearbeiten …) bekommt einen schlichten Kopf mit ihrem Namen.
+            var studioCard = title == info.Name;
+            var card = new Grid { ColumnDefinitions = new ColumnDefinitions(studioCard ? "Auto,*,Auto" : "*,Auto"), ColumnSpacing = 14 };
+            if (studioCard)
+            {
+                // Kopfkarte (Vorgabe 2026-10-26 „schönere, verständlichere Oberfläche“): großes Studio-Symbol, Name, ein Satz, was man hier tut
+                titleCol.Children.Add(new TextBlock { Name = "page-sentence", Text = info.Sentence, Foreground = Muted, FontSize = 13.5, TextWrapping = TextWrapping.Wrap });
+                if (StudioIcons.For(sid) is { } si) card.Children.Add(new Border { VerticalAlignment = VerticalAlignment.Center, Child = Chip(si.Path, si.C1, si.C2, 46, 0.6) });
+            }
+            // Programme zeigen ihren Namen schon in der eigenen Kopfzeile – hier nicht ein zweites Mal (der Name bleibt für Bildschirmleser und Tests)
+            if (!studioCard && Programs.ContainsKey(key)) heading.IsVisible = false;
+            card.Children.Add(Pos(titleCol, studioCard ? 1 : 0));
             help.VerticalAlignment = VerticalAlignment.Top;
             // Vorschlag 36: freie KIs rechts oben neben „?“ – ohne den Kopf höher zu machen (sonst rutschen Arbeitsflächen wie die 3D-Ansicht)
             var right = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Top };
@@ -746,9 +758,10 @@ public sealed partial class MainWindow : Window
                 var tsid = sid; tb.Click += (_, _) => AgentsForStudio(tsid);
                 right.Children.Add(tb);
             }
-            SimplifyHeadExtras(right);
+            SimplifyHeadExtras(right, related);
             right.Children.Add(help);
-            card.Children.Add(Pos(right, 2));
+            card.Children.Add(Pos(right, studioCard ? 2 : 1));
+            if (!studioCard) return card;
             return new Border
             {
                 Name = "page-hero", Child = card, CornerRadius = new CornerRadius(14), Padding = new Thickness(14, 12), BorderBrush = Edge, BorderThickness = new Thickness(1),
@@ -760,7 +773,10 @@ public sealed partial class MainWindow : Window
                 },
             };
         }
-        var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { titleCol, Pos(help, 1) } };
+        var plainRight = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Top };
+        SimplifyHeadExtras(plainRight, related);
+        plainRight.Children.Add(help);
+        var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { titleCol, Pos(plainRight, 1) } };
         return head;
     }
 
@@ -874,16 +890,36 @@ public sealed partial class MainWindow : Window
     private Control SystemView()
     {
         var sp = new StackPanel { Spacing = 4 };
-        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { Nav2("Schutz & Geräte", "schutz"), Nav2("Systemcheck", "systemcheck"), Nav2("Sicherung", "sicherung"), Nav2("Bau-Fortschritt", "fortschritt"), Nav2("Einrichtung erneut", "einrichtung") } });
+        // V-18 (T-0684, freigegeben 16.11.2026): Entwicklerseite „Bau-Fortschritt“ und die rohen Protokollzeilen nur in „Professionell“
+        var pro = ProgramLevel == Trendo.Core.Programs.UserLevel.Profi;
+        var links = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { Nav2("Schutz & Geräte", "schutz"), Nav2("Systemcheck", "systemcheck"), Nav2("Sicherung", "sicherung"), Nav2("Einrichtung erneut", "einrichtung") } };
+        if (pro) links.Children.Insert(3, Nav2("Bau-Fortschritt", "fortschritt"));
+        sp.Children.Add(links);
         var crashes = CrashLog.List(_core.DataRoot);
         sp.Children.Add(P($"Trendo OS {CrashLog.AppVersion()} · Updates kommen nur aus geprüften Versionen (main) · nicht code-signiert", Text));
         sp.Children.Add(P(crashes.Count == 0 ? "Absturzprotokolle: keine – alles stabil." : $"Absturzprotokolle: {crashes.Count}, zuletzt {File.GetLastWriteTime(crashes[0]):dd.MM.yyyy HH:mm} (Ordner logs, ohne Benutzernamen)", crashes.Count == 0 ? null : Brush.Parse("#FACC15")));
-        sp.Children.Add(P($"Benutzerdaten: {_core.DataRoot} (bleiben bei Update und Deinstallation erhalten)"));
-        sp.Children.Add(P($"Passwörter und Schlüssel: sicher gespeichert ({_core.Secrets.BackendName})"));
+        var dataLine = P($"Benutzerdaten: {(pro ? _core.DataRoot : ShortPath(_core.DataRoot))} (bleiben bei Update und Deinstallation erhalten)"); dataLine.Name = "system-data";
+        if (!pro) ToolTip.SetTip(dataLine, _core.DataRoot);
+        sp.Children.Add(dataLine);
+        sp.Children.Add(P(pro ? $"Passwörter und Schlüssel: sicher gespeichert ({_core.Secrets.BackendName})" : "Passwörter und Schlüssel: sicher gespeichert"));
         sp.Children.Add(P($"Protokoll: {_core.Audit.ReadAll().Count} Einträge, {(_core.Audit.Verify() ? "vollständig und unverändert" : "BESCHÄDIGT – bitte prüfen")}"));
-        foreach (var e in _core.Audit.ReadAll().TakeLast(15).Reverse())
-            sp.Children.Add(P($"{e.At:HH:mm:ss}  {e.Actor}  {e.Action}  {e.Detail}", null, 11));
+        if (pro)
+        {
+            var raw = new StackPanel { Name = "system-rawlog", Spacing = 4 };
+            foreach (var e in _core.Audit.ReadAll().TakeLast(15).Reverse())
+                raw.Children.Add(P($"{e.At:HH:mm:ss}  {e.Actor}  {e.Action}  {e.Detail}", null, 11));
+            sp.Children.Add(raw);
+        }
+        else sp.Children.Add(new TextBlock { Name = "system-rawlog-hint", Text = "Die einzelnen Protokollzeilen zeigt die Bedienstufe „Professionell“.", Foreground = Muted, FontSize = 12 });
         return Page("System & Sicherheit", sp);
+    }
+
+    /// <summary>V-18 (T-0684): Ordner kurz zeigen – die letzten zwei Teile des Pfads, der ganze Pfad steht im Hinweis.</summary>
+    public static string ShortPath(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path)) return "";
+        var parts = path.Split(['\\', '/'], StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length <= 2 ? path : "…" + Path.DirectorySeparatorChar + string.Join(Path.DirectorySeparatorChar, parts[^2..]);
     }
 
     private static long TotalRam => GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;

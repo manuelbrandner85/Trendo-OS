@@ -126,12 +126,28 @@ public partial class MainWindow
             list.Children.Add(b);
         }
         if (shown.Count == 0) list.Children.Add(P(_abGroup switch { "dups" => "Keine doppelten Kontakte.", "bday" => "In den nächsten 30 Tagen hat niemand Geburtstag.", _ => all.Count == 0 ? "Noch keine Kontakte. Oben „+ Neuer Kontakt“ oder eine vCard einlesen." : "Niemand passt zur Suche." }, Muted, 12.5));
-        var middle = new StackPanel { Spacing = 6, Width = 330, Children = { find, new ScrollViewer { Content = list, MaxHeight = 560 } } };
+        var middle = new DockPanel { Width = 330, Children = { Dk(find, Avalonia.Controls.Dock.Top), new ScrollViewer { Content = list, Margin = new Thickness(0, 6, 0, 0) } } };
 
         if (_abSel is null && shown.Count > 0 && _abGroup != "dups") _abSel = shown[0].Id; // wie Outlook „Personen“: gleich den ersten Kontakt zeigen
         // rechts: Karte oder Bearbeiten oder Doppelte
-        Control right = _abGroup == "dups" ? AbDuplicates(dups) : _abSel is { } sid && all.FirstOrDefault(c => c.Id == sid) is { } sel ? (_abEdit ? AbEditor(sel) : AbCard(sel, today)) : P("Links einen Kontakt anklicken.", Muted, 13);
-        var body = new Grid { Name = "ab-book", ColumnDefinitions = new ColumnDefinitions("Auto,12,Auto,14,*"), Children = { Glass2(side, 10), Pos(Glass2(middle, 10), 2), Pos(Glass2(new ScrollViewer { Content = right, MaxHeight = 600 }, 18), 4) } };
+        Control right = _abGroup == "dups" ? AbDuplicates(dups) : _abSel is { } sid && all.FirstOrDefault(c => c.Id == sid) is { } sel ? (_abEdit ? AbEditor(sel) : AbCard(sel, today)) : P(all.Count == 0 ? "" : "Links einen Kontakt anklicken.", Muted, 13);
+        // V-16 (T-0684): die drei Spalten füllen die Fensterhöhe (statt nach wenigen Zeilen zu enden); ohne Kontakte steht nur ein Leerzustand da,
+        // der leere Kasten rechts wird nicht gezeichnet
+        var body = new Grid { Name = "ab-book", ColumnDefinitions = new ColumnDefinitions(all.Count == 0 ? "Auto,12,*" : "Auto,12,Auto,14,*"), MinHeight = 320 };
+        FillDown(body);
+        body.Children.Add(Glass2(side, 10));
+        if (all.Count == 0)
+        {
+            var add = Act("ab-empty-new", "+ Neuer Kontakt", () => { var c = Mail.UpdateContact(new Contact(Guid.NewGuid().ToString("N")[..8], "Neuer Kontakt", "")); _abSel = c.Id; _abEdit = true; _abGroup = "alle"; Show(AB); }, true);
+            var empty = EmptyState("ab-empty", "👤", "Noch keine Kontakte", "Leg deinen ersten Kontakt an – oder lies oben eine Kontaktdatei ein.", add);
+            empty.Margin = new Thickness(0);
+            body.Children.Add(Pos(empty, 2));
+        }
+        else
+        {
+            body.Children.Add(Pos(Glass2(middle, 10), 2));
+            body.Children.Add(Pos(Glass2(new ScrollViewer { Content = right }, 18), 4));
+        }
         return SysPage("Adressbuch", new StackPanel { Spacing = 8, Children = { head, body } });
     }
 
