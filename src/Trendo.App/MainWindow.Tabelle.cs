@@ -44,7 +44,7 @@ public partial class MainWindow
     // ---------- Öffentliche Wege (auch für Tests und die KI) ----------
     public void SheetNew(string template = "leer")
     {
-        SheetDocument = SheetTemplates.Create(template); SheetPath = null; SheetDirty = false; SheetIndex = 0; ResetSheetState();
+        SheetDocument = SheetTemplates.Create(template); SheetPath = null; SheetDirty = false; SheetIndex = 0; ResetSheetState(); ImportGuardClear("tabelle");
         _shMsg = template == "leer" ? "Neue Mappe." : $"Vorlage „{SheetTemplates.Builtin.First(t => t.Id == template).Name}“ – Werte einfach überschreiben, die Formeln rechnen mit.";
     }
 
@@ -53,15 +53,19 @@ public partial class MainWindow
         SheetDocument = SheetFiles.Open(path); SheetIndex = 0; ResetSheetState();
         SheetPath = Path.GetExtension(path).ToLowerInvariant() is ".xlsx" or ".ods" ? path : null; SheetDirty = false;
         _shMsg = $"Geöffnet: {Path.GetFileName(path)}"; RememberSheetRecent(path);
+        ImportGuardSet("tabelle", path, SheetDocument.Import); // T-0682
         _core.Audit.Append(Principal.LocalOwner.Name, "tabelle.open", Path.GetFileName(path));
     }
 
-    public void SheetSaveAs(string path)
+    /// <summary>Speichert die Mappe. Liefert false, wenn das Speichern aufgehalten wurde, weil es eine fremde Datei mit nicht übernommenen Inhalten überschriebe (T-0682).</summary>
+    public bool SheetSaveAs(string path)
     {
+        if (ImportGuardStops("tabelle", path)) { _shMsg = ImportStopMessage("tabelle"); return false; }
         if (path.EndsWith(".csv", StringComparison.OrdinalIgnoreCase)) SheetFiles.WriteCsv(SheetDocument, ActiveSheet, path);
-        else { SheetFiles.Save(SheetDocument, path); if (!path.EndsWith(".ods", StringComparison.OrdinalIgnoreCase)) { SheetPath = path; SheetDirty = false; RecoveryClear("tabelle"); } }
+        else { SheetFiles.Save(SheetDocument, path); if (!path.EndsWith(".ods", StringComparison.OrdinalIgnoreCase)) { SheetPath = path; SheetDirty = false; RecoveryClear("tabelle"); ImportGuardClear("tabelle"); } }
         RememberSheetRecent(path); _shMsg = $"Gespeichert: {Path.GetFileName(path)}";
         _core.Audit.Append(Principal.LocalOwner.Name, "tabelle.save", Path.GetFileName(path));
+        return true;
     }
 
     public void SheetShowStart() => SheetStartVisible = true;
@@ -402,8 +406,8 @@ public partial class MainWindow
     {
         var path = !asNew && SheetPath is not null ? SheetPath : await PickSheet(true);
         if (path is null) return;
-        try { SheetSaveAs(path); Toast($"Gespeichert: {Path.GetFileName(path)}", ("Ordner öffnen", new Action(() => Launch(Path.GetDirectoryName(path)!)))); }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _shMsg = "Speichern ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
+        try { if (SheetSaveAs(path)) Toast($"Gespeichert: {Path.GetFileName(path)}", ("Ordner öffnen", new Action(() => Launch(Path.GetDirectoryName(path)!)))); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException) { _shMsg = "Speichern ging nicht: " + Trendo.Core.FriendlyError.Say(ex); } // ArgumentException: Format, das Trendo Tabelle nicht schreibt (ODS)
         Show("tabelle");
     }
 

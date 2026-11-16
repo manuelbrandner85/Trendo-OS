@@ -163,6 +163,8 @@ public sealed class TextDoc
     public List<Block> Blocks { get; set; } = [];
     public string? Title { get; set; }
     public PageSetup Page { get; set; } = new();
+    /// <summary>T-0682: Was beim Öffnen einer fremden Datei nicht übernommen wurde (null = neu angelegt oder nicht geprüft).</summary>
+    public ImportReport? Import { get; set; }
 
     public static TextDoc Empty() => new() { Blocks = [new Para()] };
     public TextDoc Copy() => new() { Blocks = Blocks.Select(b => b.Copy()).ToList(), Title = Title, Page = Page.Copy() };

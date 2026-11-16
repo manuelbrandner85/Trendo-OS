@@ -8,6 +8,8 @@ namespace Trendo.Core.Office;
 public sealed class SheetDoc
 {
     public List<Sheet> Sheets { get; } = [new Sheet("Tabelle1")];
+    /// <summary>T-0682: Was beim Öffnen einer fremden Datei nicht übernommen wurde (null = neu angelegt oder nicht geprüft).</summary>
+    public ImportReport? Import { get; set; }
 
     public Sheet this[string name] => Sheets.First(s => string.Equals(s.Name, name, StringComparison.OrdinalIgnoreCase));
     public Sheet? Find(string name) => Sheets.FirstOrDefault(s => string.Equals(s.Name, name, StringComparison.OrdinalIgnoreCase));

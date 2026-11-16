@@ -82,6 +82,8 @@ public sealed class SlideDoc
     public const double WidthCm = 33.867, HeightCm = 19.05;
     public List<Slide> Slides { get; } = [];
     public SlideTheme Theme { get; set; } = SlideThemes.All[0];
+    /// <summary>T-0682: Was beim Öffnen einer fremden Datei nicht übernommen wurde (null = neu angelegt oder nicht geprüft).</summary>
+    public ImportReport? Import { get; set; }
 
     public SlideDoc Clone()
     {
