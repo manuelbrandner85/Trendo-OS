@@ -88,7 +88,7 @@ public partial class MainWindow
         exp.Click += (_, _) => { Directory.CreateDirectory(MailDraftFolder); var f = Path.Combine(MailDraftFolder, "kontakte.vcf"); File.WriteAllText(f, Mail.ExportVcf()); _mailMsg = $"Gespeichert: {f}"; Show("post"); };
         sp.Children.Add(new WrapPanel { Children = { MSp(cn), MSp(ce), MSp(cp), MSp(add) } });
         sp.Children.Add(new WrapPanel { Children = { MSp(path), MSp(imp), MSp(exp) } });
-        sp.Children.Add(Act("mail-to-addressbook", $"Zum Adressbuch ({people.Count} Kontakte) →", () => Show("kontakte"), true));
+        sp.Children.Add(Act("mail-to-addressbook", $"Zum Adressbuch ({people.Count} Kontakte) →", () => Show("kontakte")));
         if (_mailRead is { } m)
             sp.Children.Add(WCard(new StackPanel { Name = "mail-read", Spacing = 3, Children = { H(m.Subject, 14), P($"Von {m.From} · an {m.To} · {m.Date}", null, 11), new SelectableTextBlock { Text = m.Body, Foreground = Text, TextWrapping = TextWrapping.Wrap } } }));
         return SysPage("E-Mail & Kontakte", sp);

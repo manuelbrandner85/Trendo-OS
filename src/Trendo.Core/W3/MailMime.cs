@@ -116,16 +116,25 @@ public static partial class MailMime
         Base64(sb, Encoding.UTF8.GetBytes(Crlf(text)));
     }
 
-    /// <summary>Dateiname für die Kopfzeilen: ASCII-Ausweichname plus RFC-2231-Angabe (UTF-8), in „name=“ zusätzlich als kodiertes Wort für ältere Programme.</summary>
+    /// <summary>Dateiname für die Kopfzeilen: reines ASCII bleibt; sonst nur die RFC-2231-Angabe „filename*“ (UTF-8, bei langen Namen in Stücken)
+    /// und in „name=“ ein kodiertes Wort für ältere Programme. Kein verlustbehafteter ASCII-Ausweichname – manche Leser nehmen sonst den
+    /// (gefunden mit dem Python-Standardparser, Beleg reports/T-0689).</summary>
     static (string TypeName, string Disposition) FileParams(string name)
     {
         name = name.Replace("\r", "").Replace("\n", "").Replace("\"", "'");
         if (Ascii(name)) return ($"name=\"{name}\"", $"filename=\"{name}\"");
-        var fallback = new string(name.Normalize(NormalizationForm.FormD).Where(c => c < 127 && c >= ' ').ToArray());
-        if (Path.GetFileNameWithoutExtension(fallback).Trim().Length == 0) fallback = "anhang" + Path.GetExtension(fallback);
-        var word = string.Concat($"=?UTF-8?B?{Convert.ToBase64String(Encoding.UTF8.GetBytes(name))}?=");
+        var word = EncodeWord(name); // bei langen Namen mehrere Wörter, gefaltet
         var star = string.Concat(Encoding.UTF8.GetBytes(name).Select(b => b < 128 && (char.IsAsciiLetterOrDigit((char)b) || b is (byte)'.' or (byte)'-' or (byte)'_') ? ((char)b).ToString() : "%" + b.ToString("X2", CultureInfo.InvariantCulture)));
-        return ($"name=\"{word}\"", $"filename=\"{fallback}\";\r\n filename*=UTF-8''{star}");
+        if (star.Length <= 50) return ($"name=\"{word}\"", $"filename*=UTF-8''{star}");
+        // Fortsetzungen „filename*0*=UTF-8''…; filename*1*=…“ – nie mitten in einem %XX trennen
+        var parts = new List<string>(); var i = 0;
+        while (i < star.Length)
+        {
+            var n = Math.Min(50, star.Length - i);
+            if (i + n < star.Length) { var pct = star.LastIndexOf('%', i + n - 1, Math.Min(n, 3)); if (pct >= 0 && pct + 3 > i + n) n = pct - i; }
+            parts.Add(star.Substring(i, n)); i += n;
+        }
+        return ($"name=\"{word}\"", string.Join(";\r\n ", parts.Select((p, k) => $"filename*{k}*={(k == 0 ? "UTF-8''" : "")}{p}")));
     }
 
     /// <summary>Neue Nachrichtenkennung für das Konto.</summary>

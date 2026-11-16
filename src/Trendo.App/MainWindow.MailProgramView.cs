@@ -54,6 +54,7 @@ public partial class MainWindow
             else { info.Text = $"Diesen Anbieter kennt Trendo nicht. Versucht wird {g.ImapHost} (Abrufen) und {g.SmtpHost} (Senden, Port {g.SmtpPort}). Stimmt das nicht, trage die Server unter „Server von Hand eintragen“ ein – sie stehen in der Hilfe deines Anbieters."; infoBox.Background = Brush.Parse("#14FFFFFF"); }
         }
         email.TextChanged += (_, _) => Info(); Info();
+        foreach (var tb in new[] { email, name, pw }) tb.HorizontalAlignment = HorizontalAlignment.Left;
         var save = MailBtn("inbox-save", a is null ? "Konto einrichten" : "Speichern und verbinden", async () =>
         {
             try

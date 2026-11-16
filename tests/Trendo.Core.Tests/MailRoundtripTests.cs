@@ -177,6 +177,18 @@ public class MailRoundtripTests
         var reply = Encoding.ASCII.GetString(MailMime.Build(acc, new MailDraft("a@example.com", "AW: Hallo", "ok") { InReplyTo = "<1@example.com>", References = "<0@example.com> <1@example.com>" }, DateTimeOffset.Now));
         Assert.Contains("In-Reply-To: <1@example.com>\r\n", reply); Assert.Contains("References: <0@example.com>\r\n <1@example.com>\r\n", reply);
         Assert.Contains("Content-Type: text/plain; charset=utf-8", reply); Assert.DoesNotContain("multipart", reply);
+        // langer Dateiname mit Umlauten: in Stücken (RFC 2231), jede Zeile kurz, beim Lesen wieder vollständig
+        var dir = Temp();
+        try
+        {
+            var longName = Path.Combine(dir, "Jahresübersicht Größen Maße Gebühren für Äpfel und Öl – zweite Fassung März 2026 überarbeitet.txt");
+            File.WriteAllText(longName, "x");
+            var raw = MailMime.Build(acc, new MailDraft("a@example.com", "x", "y", "", [longName]), DateTimeOffset.Now);
+            Assert.All(Encoding.ASCII.GetString(raw).Split("\r\n"), l => Assert.True(l.Length <= 78, "Zeile zu lang: " + l));
+            Assert.Contains("filename*1*=", Encoding.ASCII.GetString(raw));
+            Assert.Equal(Path.GetFileName(longName), Assert.Single(MailMime.Parse(raw).Attachments).Name);
+        }
+        finally { Directory.Delete(dir, true); }
         Assert.Throws<InvalidOperationException>(() => MailMime.Build(acc, new MailDraft("a@example.com", "x", "y", "", [Path.Combine(Path.GetTempPath(), "gibt-es-nicht-" + Guid.NewGuid().ToString("N") + ".pdf")]), DateTimeOffset.Now));
     }
 
@@ -278,6 +290,23 @@ public class MailRoundtripTests
             Assert.DoesNotContain("Erika", Path.GetFileName(again.Root)); // Ordnername klein und ohne Sonderzeichen
         }
         finally { Directory.Delete(root, true); }
+    }
+
+    /// <summary>Beleg für den Fremdleser: Mit TRENDO_MAIL_BELEG = Ordner schreibt der Test die von Trendo gebaute Nachricht (Text + HTML + zwei Anhänge,
+    /// Umlaute, langer Betreff) samt Anhängen dorthin; geprüft wird sie danach mit dem Python-Standardparser (reports/T-0689/pruefe_eml.py).</summary>
+    [Fact(DisplayName = "T-0689 Beleg: gebaute Nachricht für den Fremdleser schreiben (nur mit TRENDO_MAIL_BELEG)")]
+    public void Write_beleg()
+    {
+        if (Environment.GetEnvironmentVariable("TRENDO_MAIL_BELEG") is not { Length: > 0 } dir) return;
+        Directory.CreateDirectory(dir);
+        var bin = new byte[40_000]; new Random(4711).NextBytes(bin);
+        var f1 = Path.Combine(dir, "Übersicht März – Größe.bin"); File.WriteAllBytes(f1, bin);
+        var f2 = Path.Combine(dir, "angebot.pdf"); File.WriteAllBytes(f2, Encoding.ASCII.GetBytes("%PDF-1.4\n%%EOF\n"));
+        var acc = new MailAccount("erika@example.org", "Erika Müßig", "localhost", 993, "localhost", 465, true, "erika@example.org");
+        var body = "Hallo Jörg,\n\nanbei die **Übersicht** – 12,50 €.\n\n- Äpfel\n- Birnen\n\nViele Grüße";
+        var d = new MailDraft("Jörg Größe <joerg@example.com>", "Größere Übersicht für März: Zähler, Maße und Öffnungszeiten – bitte bis Freitag prüfen 😀", body, "\"Muster, Erika\" <kopie@example.com>", [f1, f2])
+            { Bcc = "geheim@example.net", Html = MailMime.TextToHtml(body) };
+        File.WriteAllBytes(Path.Combine(dir, "trendo-nachricht.eml"), MailMime.Build(acc, d, new DateTimeOffset(2026, 11, 16, 9, 30, 0, TimeSpan.FromHours(1))));
     }
 
     [Fact(DisplayName = "T-0689 Anbieter-Tabelle: bekannte Server, App-Passwort-Hinweis, Outlook.com ehrlich blockiert; unbekannte Adresse → imap./smtp. + Domain")]
