@@ -35,18 +35,27 @@ public class StudioFolds_Ui
         w.Close();
     }
 
-    [AvaloniaFact(DisplayName = "Studio-Ordnung: Das aufnehmende Studio und die Einstellungen zeigen die Leiste, der Knopf öffnet den Bereich")]
+    /// <summary>Einträge „Verwandte Programme“ im Menü „Mehr“ des Seitenkopfs (liegen erst nach dem Öffnen im Baum).</summary>
+    static List<Button> Related(MainWindow w)
+    {
+        var more = w.ActivePageRoot!.GetLogicalDescendants().OfType<Button>().First(b => b.Name == "page-head-more");
+        return more.Flyout is Flyout { Content: Control c } ? c.GetLogicalDescendants().OfType<Button>().Where(b => b.Name?.StartsWith("fold-open-", StringComparison.Ordinal) == true).ToList() : [];
+    }
+
+    // T-0684 V-13 (freigegeben 16.11.2026): Die Zeile „Gehört hierher:“ über der Seite ist ins Menü „Mehr“ gewandert („Verwandte Programme“).
+    // Der Test hält weiter fest, dass jeder eingegliederte Bereich vom aufnehmenden Studio aus mit einem Klick erreichbar ist.
+    [AvaloniaFact(DisplayName = "Studio-Ordnung: Das aufnehmende Studio und die Einstellungen führen die Bereiche unter „Mehr“ → „Verwandte Programme“, der Eintrag öffnet den Bereich")]
     public void Host_strip_opens_page()
     {
         var (w, _, _) = Ui.Open(); w.Width = 1600; w.Height = 1000;
         w.Show(w.PageForStudio("CORE-04")!); Settle();
-        Assert.NotNull(w.GetLogicalDescendants().OfType<DockPanel>().FirstOrDefault(d => d.Name == "fold-strip"));
-        RealClick(w, w.Find<Button>("fold-open-X-08")); Settle();
+        RealClick(w, w.ActivePageRoot!.GetLogicalDescendants().OfType<Button>().First(b => b.Name == "page-head-more")); Settle(); // „Mehr“ ist sichtbar und anklickbar
+        Related(w).Single(b => b.Name == "fold-open-X-08").Press(); Settle();
         Assert.Equal(w.PageForStudio("X-08"), w.CurrentView);
 
         w.Show("settings"); Settle();
-        Assert.NotNull(w.TryFind<Button>("fold-open-X-09"));
-        Assert.NotNull(w.TryFind<Button>("fold-open-SYS-13"));
+        Assert.Contains(Related(w), b => b.Name == "fold-open-X-09");
+        Assert.Contains(Related(w), b => b.Name == "fold-open-SYS-13");
         w.Close();
     }
 }

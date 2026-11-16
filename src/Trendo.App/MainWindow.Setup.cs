@@ -441,7 +441,7 @@ public sealed partial class MainWindow
 
     // ---------- Systemcheck: bereit / fehlt / Ein-Klick-Reparatur ----------
     private Control SystemCheckView() => Page("Systemcheck", new StackPanel { Spacing = 8, Children = {
-        P("Was Trendo auf diesem PC braucht – und ob es funktioniert. Fehlt etwas, reicht ein Klick auf „Reparieren“.", Text, 13), SystemCheckPanel() } });
+        P("Was Trendo auf diesem PC braucht – und ob es funktioniert.", Text, 13), SystemCheckPanel() } });
 
     private Control SystemCheckPanel()
     {
@@ -456,6 +456,12 @@ public sealed partial class MainWindow
         return host;
     }
 
+    /// <summary>Ein Satz für den Systemcheck: was fehlt, sonst was nicht stimmt, sonst „alles in Ordnung“.</summary>
+    public static string SystemCheckSentence(int missingPrograms, int trouble, int ready, int all) =>
+        missingPrograms > 0 ? (missingPrograms == 1 ? "1 Zusatzprogramm fehlt." : $"{missingPrograms} Zusatzprogramme fehlen.")
+        : trouble > 0 ? (trouble == 1 ? "Fast alles in Ordnung – 1 Punkt braucht deine Aufmerksamkeit." : $"Fast alles in Ordnung – {trouble} Punkte brauchen deine Aufmerksamkeit.")
+        : $"Alles in Ordnung: {ready} von {all} Punkten bereit.";
+
     private string _repairMsg = "";
     private Control BuildCheckGrid(List<(Component C, ToolCheck R)> checks)
     {
@@ -464,8 +470,10 @@ public sealed partial class MainWindow
         foreach (var (c, ch) in checks)
             rows.Add((c.Name, ch.State switch { ToolState.Working => "Bereit", ToolState.Broken => "Defekt", _ => "Fehlt" }, ch.Version ?? ch.Detail ?? "",
                 ch.State == ToolState.Working || c.Mode is not (DeliveryMode.AutoUser or DeliveryMode.AutoElevated or DeliveryMode.Included) ? null : c));
-        rows.Add(("Benutzerdaten", Directory.Exists(_core.DataRoot) ? "Bereit" : "Fehlt", _core.DataRoot, null));
-        rows.Add(("Projektordner", Directory.Exists(_settings.ProjectsFolder) ? "Bereit" : "Fehlt", _settings.ProjectsFolder, null));
+        // V-18 (T-0684): Pfade gekürzt, der ganze Pfad nur in „Professionell“
+        var proLevel = ProgramLevel == Trendo.Core.Programs.UserLevel.Profi;
+        rows.Add(("Benutzerdaten", Directory.Exists(_core.DataRoot) ? "Bereit" : "Fehlt", proLevel ? _core.DataRoot : ShortPath(_core.DataRoot), null));
+        rows.Add(("Projektordner", Directory.Exists(_settings.ProjectsFolder) ? "Bereit" : "Fehlt", proLevel ? _settings.ProjectsFolder : ShortPath(_settings.ProjectsFolder), null));
         var last = Backups.List().FirstOrDefault();
         rows.Add(("Sicherung", last is null ? "Fehlt" : "Bereit", last is null ? "noch keine" : $"zuletzt {last.LastWriteTime:dd.MM.yyyy HH:mm}", null));
         rows.Add(("Updates", !_settings.AutoUpdate ? "Aus" : _updateInfo.StartsWith("Aktuell") || _updateInfo.StartsWith("Update") ? "Bereit" : "Hinweis", _updateInfo, null));
@@ -479,7 +487,20 @@ public sealed partial class MainWindow
             for (var k = 0; k < 3; k++) { Grid.SetRow(cells[k], i); Grid.SetColumn(cells[k], k); cells[k].Margin = new Thickness(0, 2); cells[k].VerticalAlignment = VerticalAlignment.Center; grid.Children.Add(cells[k]); }
         }
         var sum = rows.Count(r => r.State == "Bereit");
-        var panel = new StackPanel { Spacing = 6, Children = { P($"{sum} von {rows.Count} Punkten bereit.", Text), grid } };
+        // V-18 (T-0684, freigegeben 16.11.2026): Systemcheck als ein Satz mit einem Knopf – die Liste steht in „Einfach“ zugeklappt unter „Einzelheiten“
+        var missing = rows.Count(r => r.Fix is not null);
+        var trouble = rows.Count(r => r.State is "Fehlt" or "Defekt");
+        var sentence = new TextBlock { Name = "syscheck-summary", FontSize = 15, FontWeight = FontWeight.SemiBold, Foreground = Text, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center,
+            Text = SystemCheckSentence(missing, trouble, sum, rows.Count) };
+        var top = new WrapPanel { Name = "syscheck-top", Children = { sentence } };
+        if (missing > 0)
+        {
+            var setup = Act("syscheck-setup", "Jetzt einrichten", () => Show("components"), true);
+            setup.Margin = new Thickness(12, 0, 0, 0);
+            ToolTip.SetTip(setup, "Zusatzprogramme öffnen – dort richtest du die fehlenden Programme nach deiner Zustimmung mit einem Klick ein");
+            top.Children.Add(setup);
+        }
+        var panel = new StackPanel { Spacing = 8, Children = { top, SimpleFold("syscheck-details", $"Einzelheiten ({sum} von {rows.Count} Punkten bereit)", grid) } };
         if (_repairMsg.Length > 0) panel.Children.Insert(0, new TextBlock { Name = "repair-msg", Text = _repairMsg, Foreground = _repairMsg.Contains('✓') ? Brush.Parse("#4ADE80") : Brush.Parse("#FACC15"), TextWrapping = TextWrapping.Wrap });
         return panel;
         Control MakeFix(Component c)

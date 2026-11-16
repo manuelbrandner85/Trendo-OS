@@ -49,7 +49,7 @@ public partial class MainWindow
             P($"Einnahmen {Eu(y.IncomeNet)} € · Ausgaben {Eu(-y.ExpenseNet)} € · MwSt eingenommen {Eu(y.VatIn)} € · MwSt gezahlt {Eu(-y.VatOut)} € → an das Finanzamt etwa {Eu((y.VatIn + y.VatOut))} €", Text, 11) } };
         foreach (var m in Finance.Months(all).Where(m => m.Year == _finYear)) sum.Children.Add(P($"{new DateTime(m.Year, m.Month, 1).ToString("MMMM", System.Globalization.CultureInfo.GetCultureInfo("de-DE"))}: +{Eu(m.Income)} € / {Eu(m.Expenses)} € = {Eu(m.Result)} €", null, 11));
         sp.Children.Add(Card(new StackPanel { Children = { Row(H("Übersicht", 14), new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, Children = {
-            Act("fin-prev", "◀", () => { _finYear--; Show("finanzen"); }), Act("fin-next", "▶", () => { _finYear++; Show("finanzen"); }) } }), sum } }));
+            SimpleWords.Named(Act("fin-prev", "◀", () => { _finYear--; Show("finanzen"); }), "Voriges Jahr"), SimpleWords.Named(Act("fin-next", "▶", () => { _finYear++; Show("finanzen"); }), "Nächstes Jahr") } }), sum } }));
 
         // Rechnung
         var seller = new TextBox { Name = "inv-seller", PlaceholderText = "Dein Name und Adresse", AcceptsReturn = true, Width = 260, Height = 60 };

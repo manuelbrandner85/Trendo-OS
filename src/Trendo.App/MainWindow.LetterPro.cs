@@ -427,9 +427,9 @@ public partial class MainWindow
             if (_letterSerial is { Count: > 0 } s2)
                 serialBar.Children.Add(new Border { Name = "letter-serial-bar", Background = Brush.Parse("#33C9A227"), BorderBrush = Brush.Parse("#D4A84B"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 4),
                     Child = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = {
-                        Act("letter-serial-prev", "◀", () => { _letterSerialIdx = Math.Max(0, _letterSerialIdx - 1); _letterSync?.Invoke(); }),
+                        SimpleWords.Named(Act("letter-serial-prev", "◀", () => { _letterSerialIdx = Math.Max(0, _letterSerialIdx - 1); _letterSync?.Invoke(); }), "Voriger Brief"),
                         new TextBlock { Name = "letter-serial-pos", Text = $"Serienbrief {_letterSerialIdx + 1} von {s2.Count}: {s2[_letterSerialIdx].Recipient.Split('\n')[0]}", Foreground = Text, VerticalAlignment = VerticalAlignment.Center, FontWeight = FontWeight.SemiBold },
-                        Act("letter-serial-next", "▶", () => { _letterSerialIdx = Math.Min(s2.Count - 1, _letterSerialIdx + 1); _letterSync?.Invoke(); }),
+                        SimpleWords.Named(Act("letter-serial-next", "▶", () => { _letterSerialIdx = Math.Min(s2.Count - 1, _letterSerialIdx + 1); _letterSync?.Invoke(); }), "Nächster Brief"),
                         Act("letter-serial-close", "Zurück zum Entwurf", () => { _letterSerial = null; _letterSerialIdx = 0; _letterSync?.Invoke(); }) } } });
             _letterStepSync?.Invoke();
         }
