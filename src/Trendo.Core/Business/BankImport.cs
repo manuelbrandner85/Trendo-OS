@@ -279,6 +279,7 @@ public static partial class BankImport
 
     // ---------------------------------------------------------------- MT940 (SWIFT)
     [GeneratedRegex(@"(?m)^:61:")] private static partial Regex Tag61();
+    [GeneratedRegex(@" \(\d+(,\d+)? %\)$")] private static partial Regex SatzTeil();
     [GeneratedRegex(@"^(\d{6})(\d{4})?(R?[CD])([A-Z])?(\d{1,12},\d{0,2})")] private static partial Regex Line61();
     [GeneratedRegex(@"^([CD])(\d{6})([A-Z]{3})(\d{1,12},\d{0,2})")] private static partial Regex Balance();
     [GeneratedRegex(@"(EREF|KREF|MREF|CRED|DEBT|SVWZ|ABWA|ABWE|IBAN|BIC|COAM|OAMT)\+")] private static partial Regex SepaTag();
@@ -378,7 +379,14 @@ public static partial class BankImport
     /// oder der eine Text den anderen enthält (CSV und CAMT derselben Bank schneiden den Zweck verschieden ab). Auch doppelte Zeilen innerhalb der Datei.</summary>
     public static List<(Entry Entry, bool Duplicate)> Vorschau(IEnumerable<Entry> existing, IEnumerable<Entry> incoming)
     {
-        var have = existing.GroupBy(e => (e.Date, e.Amount)).ToDictionary(g => g.Key, g => g.Select(e => Norm(e.Text)).ToList());
+        var list0 = existing.ToList();
+        var have = list0.GroupBy(e => (e.Date, e.Amount)).ToDictionary(g => g.Key, g => g.Select(e => Norm(e.Text)).ToList());
+        // Eine Zahlung, die beim Zuordnen zu einer Rechnung je Steuersatz aufgeteilt wurde („… (19 %)“, „… (7 %)“), zählt mit ihrer Summe als die ursprüngliche Bankbuchung.
+        foreach (var g in list0.Select(e => (e, m: SatzTeil().Match(e.Text))).Where(x => x.m.Success).GroupBy(x => (x.e.Date, Basis: x.e.Text[..x.m.Index])).Where(g => g.Count() > 1))
+        {
+            var key = (g.Key.Date, g.Sum(x => x.e.Amount));
+            (have.TryGetValue(key, out var l0) ? l0 : have[key] = []).Add(Norm(g.Key.Basis));
+        }
         var res = new List<(Entry, bool)>();
         foreach (var e in incoming)
         {

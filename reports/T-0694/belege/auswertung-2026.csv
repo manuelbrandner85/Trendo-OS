@@ -1,0 +1,30 @@
+Auswertung 2026
+
+Art;Kategorie;Netto;Steuer;Brutto;Buchungen
+Einnahme;"Einnahmen";1000,00;190,00;1190,00;1
+Ausgabe;"Lebensmittel";50,00;0,00;50,00;1
+Ausgabe;"Büro";10,00;1,90;11,90;1
+Ausgabe;"Gebühren";5,00;0,00;5,00;1
+
+Einnahmen netto;1000,00
+Ausgaben netto;65,00
+Überschuss;935,00
+Umsatzsteuer eingenommen;190,00
+Vorsteuer gezahlt;1,90
+Differenz (etwa ans Finanzamt);188,10
+
+Monat;Einnahmen;Ausgaben;Ergebnis
+Januar;0,00;0,00;0,00
+Februar;0,00;0,00;0,00
+März;1190,00;11,90;1178,10
+April;0,00;55,00;-55,00
+Mai;0,00;0,00;0,00
+Juni;0,00;0,00;0,00
+Juli;0,00;0,00;0,00
+August;0,00;0,00;0,00
+September;0,00;0,00;0,00
+Oktober;0,00;0,00;0,00
+November;0,00;0,00;0,00
+Dezember;0,00;0,00;0,00
+
+"Zusammenstellung aus deinen Buchungen. Ersetzt keine Steuerberatung; ELSTER-Übermittlung ist bewusst nicht eingebaut."

@@ -15,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Trendo.App\Trendo.App.csproj" />
     <ProjectReference Include="..\..\src\Trendo.Companion\Trendo.Companion.csproj" />
+    <Compile Include="..\Trendo.Core.Tests\GeldBeispiele.cs" Link="GeldBeispiele.cs" /><!-- T-0694: gemeinsame Beispiel-Kontoauszüge und pdftotext-Aufruf -->
     <None Include="..\..\requirements.yaml" Link="requirements.yaml" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Daten\einfach-vorher-ausgeblendet.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

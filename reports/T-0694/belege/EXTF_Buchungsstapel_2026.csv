@@ -1,0 +1,6 @@
+"EXTF";700;21;"Buchungsstapel";13;20261116074852976;;"TR";"";"";1001;456;20260101;4;20260101;20261231;"Trendo Geld 2026";"";1;0;0;"EUR";;;;;;;;;
+Umsatz (ohne Soll/Haben-Kz);Soll/Haben-Kennzeichen;WKZ Umsatz;Kurs;Basis-Umsatz;WKZ Basis-Umsatz;Konto;Gegenkonto (ohne BU-Schlüssel);BU-Schlüssel;Belegdatum;Belegfeld 1;Belegfeld 2;Skonto;Buchungstext
+1190,00;"S";"EUR";;;;1200;8400;"";0103;"RE-2026-001";"";;"Rechnung RE-2026-001"
+11,90;"H";"EUR";;;;1200;4930;"9";1203;"";"";;"Papier"
+5,00;"H";"EUR";;;;1200;4970;"";0104;"";"";;"Kontoführung"
+50,00;"H";"EUR";;;;1200;1800;"";0304;"";"";;"Rewe Markt"

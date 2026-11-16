@@ -1,0 +1,165 @@
+### pdftotext rechnung-RE-2026-001.pdf
+Erika Muster Webdesign                                             Rechnungsnummer                RE-2026-001
+                                                                   Datum                          15.11.2026
+Musterstraße 1 · 12345 Musterstadt                                 Leistungsdatum                 03.11.2026
+                                                                   Kundennummer                   K-1001
+      Erika Muster Webdesign · Musterstraße 1 · 12345 Musterstadt  Steuernummer                   12/345/67890
+
+    Beispiel GmbH
+    z. Hd. Frau Beispiel
+    Hauptstraße 5
+    54321 Beispielhausen
+
+Rechnung RE-2026-001
+
+Sehr geehrte Damen und Herren,
+vielen Dank für Ihren Auftrag. Wir berechnen Ihnen:
+
+Pos.  Bezeichnung                 Menge Einheit                    Einzelpreis   Rabatt            USt      Gesamt
+1     Webseite Grundpaket                1 Pauschal                 1.200,00 €     10 %           19 %  1.200,00 €
+2     Beratung                           6 Std.                         85,00 €                   19 %
+3     Fachbuch „Gutes Webdesign“         2 Stück                        28,04 €                            459,00 €
+                                                                                                   7 %       56,08 €
+
+                                                                   Summe netto                          1.715,08 €
+                                                                   zzgl. 19 % USt auf 1.659,00 €          315,21 €
+                                                                   zzgl. 7 % USt auf 56,08 €                 3,93 €
+
+                                                                   Gesamtbetrag                         2.034,22 €
+
+Bitte überweisen Sie den Betrag bis zum 29.11.2026 ohne Abzug auf das Konto IBAN
+DE89370400440532013000 (Beispielbank) unter Angabe der Rechnungsnummer RE-2026-001.
+
+Mit freundlichen Grüßen
+Erika Muster Webdesign
+
+      Erika Muster Webdesign · Musterstraße 1 · 12345 Musterstadt · 0123 456789 · rechnung@example.org
+                       Steuernummer 12/345/67890 · Beispielbank · IBAN DE89370400440532013000
+### pdftotext rechnung-RE-2026-001-zugferd.pdf
+Erika Muster Webdesign                                             Rechnungsnummer                RE-2026-001
+                                                                   Datum                          15.11.2026
+Musterstraße 1 · 12345 Musterstadt                                 Leistungsdatum                 03.11.2026
+                                                                   Kundennummer                   K-1001
+      Erika Muster Webdesign · Musterstraße 1 · 12345 Musterstadt  Steuernummer                   12/345/67890
+
+    Beispiel GmbH
+    z. Hd. Frau Beispiel
+    Hauptstraße 5
+    54321 Beispielhausen
+
+Rechnung RE-2026-001
+
+Sehr geehrte Damen und Herren,
+vielen Dank für Ihren Auftrag. Wir berechnen Ihnen:
+
+Pos.  Bezeichnung                 Menge Einheit                    Einzelpreis   Rabatt            USt      Gesamt
+1     Webseite Grundpaket                1 Pauschal                 1.200,00 €     10 %           19 %  1.200,00 €
+2     Beratung                           6 Std.                         85,00 €                   19 %
+3     Fachbuch „Gutes Webdesign“         2 Stück                        28,04 €                            459,00 €
+                                                                                                   7 %       56,08 €
+
+                                                                   Summe netto                          1.715,08 €
+                                                                   zzgl. 19 % USt auf 1.659,00 €          315,21 €
+                                                                   zzgl. 7 % USt auf 56,08 €                 3,93 €
+
+                                                                   Gesamtbetrag                         2.034,22 €
+
+Bitte überweisen Sie den Betrag bis zum 29.11.2026 ohne Abzug auf das Konto IBAN
+DE89370400440532013000 (Beispielbank) unter Angabe der Rechnungsnummer RE-2026-001.
+
+Mit freundlichen Grüßen
+Erika Muster Webdesign
+
+      Erika Muster Webdesign · Musterstraße 1 · 12345 Musterstadt · 0123 456789 · rechnung@example.org
+                       Steuernummer 12/345/67890 · Beispielbank · IBAN DE89370400440532013000
+### pdftotext auswertung-2026.pdf
+Auswertung 2026
+
+Erika Muster Webdesign
+
+Einnahmen netto 1.000,00 € · Ausgaben netto 65,00 € · Überschuss 935,00 €
+Umsatzsteuer eingenommen 190,00 € · Vorsteuer gezahlt 1,90 € · Differenz 188,10 €
+
+max. 1.190,00 €
+
+Jan        Feb  Mär       Apr  Mai  Jun  Jul           Aug  Sep           Okt  Nov                                                Dez
+
+Einnahmen       Ausgaben
+
+Einnahmen                                       Netto    Steuer                Brutto   Buchungen
+                                         1.000,00 €    190,00 €           1.190,00 €                  1
+Kategorie                                1.000,00 €    190,00 €           1.190,00 €                  1
+Einnahmen
+Summe                                           Netto
+                                              50,00 €
+Ausgaben                                      10,00 €       Steuer              Brutto  Buchungen
+                                                             0,00 €            50,00 €                1
+Kategorie                                      5,00 €        1,90 €            11,90 €                1
+Lebensmittel                                  65,00 €        0,00 €                                   1
+Büro                                                         1,90 €             5,00 €                3
+Gebühren                            Einnahmen                                  66,90 €
+Summe                                      0,00 €
+                                           0,00 €
+Monate                                                      Ausgaben                                                               Ergebnis
+                                      1.190,00 €                  0,00 €                                                               0,00 €
+Monat                                      0,00 €                 0,00 €                                                               0,00 €
+Januar                                     0,00 €
+Februar                                    0,00 €               11,90 €                                                           1.178,10 €
+März                                       0,00 €               55,00 €                                                              -55,00 €
+April                                      0,00 €                                                                                      0,00 €
+Mai                                        0,00 €                 0,00 €                                                               0,00 €
+Juni                                       0,00 €                 0,00 €                                                               0,00 €
+Juli                                       0,00 €                 0,00 €                                                               0,00 €
+August                                     0,00 €                 0,00 €                                                               0,00 €
+September                                                         0,00 €                                                               0,00 €
+Oktober                                                           0,00 €                                                               0,00 €
+November                                                          0,00 €                                                               0,00 €
+Dezember                                                          0,00 €
+
+           Zusammenstellung aus deinen Buchungen. Ersetzt keine Steuerberatung; ELSTER-Übermittlung ist bewusst nicht eingebaut.
+### pdftotext tilgungsplan-10000-5-60.pdf
+Tilgungsplan
+
+Kreditbetrag 10.000,00 € · Sollzins 5 % p. a. · Monatsrate 188,71 € · Laufzeit 5 Jahre
+Zinsen gesamt 1.322,74 € · Sondertilgungen 0,00 € · insgesamt gezahlt 11.322,74 € · Restschuld am Ende
+0,00 € · Effektivzins etwa 5,12 % p. a.
+
+Monat Datum               Rate  Zinsen   Tilgung   Sondertilgung  Restschuld
+       1 15.12.2026  188,71 €   41,67 €  147,04 €                   9.852,96 €
+       2 15.01.2027  188,71 €   41,05 €  147,66 €                   9.705,30 €
+       3 15.02.2027  188,71 €   40,44 €  148,27 €                   9.557,03 €
+       4 15.03.2027  188,71 €   39,82 €  148,89 €                   9.408,14 €
+       5 15.04.2027  188,71 €   39,20 €  149,51 €                   9.258,63 €
+       6 15.05.2027  188,71 €   38,58 €  150,13 €                   9.108,50 €
+       7 15.06.2027  188,71 €   37,95 €  150,76 €                   8.957,74 €
+       8 15.07.2027  188,71 €   37,32 €  151,39 €                   8.806,35 €
+       9 15.08.2027  188,71 €   36,69 €  152,02 €                   8.654,33 €
+                     188,71 €   36,06 €  152,65 €                   8.501,68 €
+     10 15.09.2027   188,71 €   35,42 €  153,29 €                   8.348,39 €
+     11 15.10.2027   188,71 €   34,78 €  153,93 €                   8.194,46 €
+     12 15.11.2027   188,71 €   34,14 €  154,57 €                   8.039,89 €
+     13 15.12.2027   188,71 €   33,50 €  155,21 €                   7.884,68 €
+     14 15.01.2028   188,71 €   32,85 €  155,86 €                   7.728,82 €
+     15 15.02.2028   188,71 €   32,20 €  156,51 €                   7.572,31 €
+     16 15.03.2028   188,71 €   31,55 €  157,16 €                   7.415,15 €
+     17 15.04.2028   188,71 €   30,90 €  157,81 €                   7.257,34 €
+     18 15.05.2028   188,71 €   30,24 €  158,47 €                   7.098,87 €
+     19 15.06.2028   188,71 €   29,58 €  159,13 €                   6.939,74 €
+     20 15.07.2028   188,71 €   28,92 €  159,79 €                   6.779,95 €
+     21 15.08.2028   188,71 €   28,25 €  160,46 €                   6.619,49 €
+     22 15.09.2028   188,71 €   27,58 €  161,13 €                   6.458,36 €
+     23 15.10.2028   188,71 €   26,91 €  161,80 €                   6.296,56 €
+     24 15.11.2028   188,71 €   26,24 €  162,47 €                   6.134,09 €
+     25 15.12.2028   188,71 €   25,56 €  163,15 €                   5.970,94 €
+     26 15.01.2029   188,71 €   24,88 €  163,83 €                   5.807,11 €
+     27 15.02.2029   188,71 €   24,20 €  164,51 €                   5.642,60 €
+     28 15.03.2029   188,71 €   23,51 €  165,20 €                   5.477,40 €
+     29 15.04.2029   188,71 €   22,82 €  165,89 €                   5.311,51 €
+     30 15.05.2029   188,71 €   22,13 €  166,58 €                   5.144,93 €
+     31 15.06.2029   188,71 €   21,44 €  167,27 €                   4.977,66 €
+     32 15.07.2029   188,71 €   20,74 €  167,97 €                   4.809,69 €
+     33 15.08.2029   188,71 €   20,04 €  168,67 €                   4.641,02 €
+     34 15.09.2029   188,71 €   19,34 €  169,37 €                   4.471,65 €
+     35 15.10.2029   188,71 €   18,63 €  170,08 €                   4.301,57 €
+     36 15.11.2029   188,71 €   17,92 €  170,79 €                   4.130,78 €
+     37 15.12.2029   188,71 €   17,21 €  171,50 €                   3.959,28 €

@@ -428,6 +428,45 @@ public static partial class Rechnungen
     }
     [GeneratedRegex(@"^([A-Z]{2})-(\d{4})-(\d{3,})$")] internal static partial Regex NrRx();
 
+    /// <summary>T-0694: Entwurf aus einer Beschreibung – Zeilen „Kunde: Name, Straße, PLZ Ort“, „Position: Leistung | Menge | Einheit | Preis netto | USt % | Rabatt %“
+    /// (Einheit, USt und Rabatt dürfen fehlen), „Leistung: …“, „Referenz: …“, „E-Mail: …“, „Art: Angebot“. Ein Artikel aus dem Stamm darf statt einer Position genannt werden
+    /// („Position: Beratung | 6“ nimmt Preis, Einheit und USt des Artikels). Fehler = FormatException mit klarem Satz.</summary>
+    public static Vorgang AusText(RechnungsBuch b, string text, DateOnly heute)
+    {
+        var fields = new List<(string Key, string Value)>();
+        foreach (var raw in (text ?? "").Replace("\r", "").Split('\n'))
+        {
+            var i = raw.IndexOf(':'); if (i <= 0) continue;
+            fields.Add((raw[..i].Trim().ToLowerInvariant().Replace("ä", "ae").Replace("ü", "ue").Replace("ö", "oe"), raw[(i + 1)..].Trim()));
+        }
+        string Get(params string[] keys) => fields.FirstOrDefault(f => keys.Contains(f.Key)).Value ?? "";
+        var art = Get("art").ToLowerInvariant(); art = art.StartsWith("angebot", StringComparison.Ordinal) ? "angebot" : art.StartsWith("auftrag", StringComparison.Ordinal) ? "auftrag" : "rechnung";
+        var v = Neu(b, art, heute);
+        var kunde = Get("kunde", "kaeufer", "empfaenger");
+        var k = b.Kunden.FirstOrDefault(x => x.Name.Length > 0 && string.Equals(x.Name, kunde.Split(',')[0].Trim(), StringComparison.OrdinalIgnoreCase));
+        if (k is not null) KundeSetzen(v, k); else v.KundeAnschrift = string.Join("\n", kunde.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+        v.KundeEmail = Get("e-mail", "email", "mail"); v.Referenz = Get("referenz", "bestellnummer", "leitweg-id");
+        if (Get("leistung", "leistungsdatum", "zeitraum") is { Length: > 0 } l) v.Leistung = l;
+        if (BizJson.Datum(Get("datum")) is { } d) { v.Datum = BizJson.Iso(d); if (Get("leistung", "leistungsdatum", "zeitraum").Length == 0 && art == "rechnung") v.Leistung = BizJson.Text(d); }
+        foreach (var (key, val) in fields.Where(f => f.Key is "position" or "pos" or "posten"))
+        {
+            var p = val.Split('|').Select(x => x.Trim()).ToArray();
+            var a = b.Artikel.FirstOrDefault(x => string.Equals(x.Name, p[0], StringComparison.OrdinalIgnoreCase));
+            if (p.Length < 2 || p.Length < 3 && a is null) throw new FormatException($"Position „{val}“ bitte so: „Leistung | Menge | Einheit | Preis | USt“, z. B. „Beratung | 6 | Std. | 85 | 19“.");
+            if (!BizJson.TryBetrag(p[1], out var menge) || menge == 0) throw new FormatException($"„{val}“: Die Menge fehlt oder ist 0.");
+            var hasUnit = p.Length >= 4 && !BizJson.TryBetrag(p[2], out _); var off = hasUnit ? 1 : 0;
+            var pos = a is not null && p.Length < 3 ? AusArtikel(a, menge) : new Position { Text = p[0], Menge = menge, Einheit = hasUnit ? p[2] : a?.Einheit ?? "Stück", Ust = a?.Ust ?? b.Steuer.Erlaubt().First() };
+            if (p.Length > 2 + off) { if (!BizJson.TryBetrag(p[2 + off], out var preis) || preis < 0) throw new FormatException($"„{val}“: Den Preis verstehe ich nicht."); pos.Preis = preis; }
+            if (p.Length > 3 + off) { if (!BizJson.TryBetrag(p[3 + off].TrimEnd('%', ' '), out var ust)) throw new FormatException($"„{val}“: USt bitte als Zahl, z. B. 19."); pos.Ust = ust; }
+            if (p.Length > 4 + off) { if (!BizJson.TryBetrag(p[4 + off].TrimEnd('%', ' '), out var rab) || rab is < 0 or > 100) throw new FormatException($"„{val}“: Rabatt in Prozent zwischen 0 und 100."); pos.Rabatt = rab; }
+            if (v.Kleinunternehmer) pos.Ust = 0;
+            v.Positionen.Add(pos);
+        }
+        if (v.Positionen.Count == 0) throw new FormatException("Es fehlt mindestens eine Zeile „Position: Leistung | Menge | Einheit | Preis | USt“.");
+        if (Get("befreiung") is { Length: > 0 } bf) v.Befreiung = bf;
+        return v;
+    }
+
     /// <summary>Beispiel mit neutralen Daten (Erika Muster, Beispiel GmbH).</summary>
     public static RechnungsBuch Beispiel(DateOnly heute)
     {
