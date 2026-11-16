@@ -73,8 +73,9 @@ public static class FinanceExtra
         eur.Append($"\"Umsatzsteuer eingenommen\";{y.VatIn.ToString("0.00", De)}\n\"Vorsteuer gezahlt\";{(-y.VatOut).ToString("0.00", De)}\n");
         Text($"Uebersicht-{year}.csv", eur.ToString());
         if (Directory.Exists(invoiceDir))
-            foreach (var f in Directory.GetFiles(invoiceDir, $"RE-{year}-*.html")) z.CreateEntryFromFile(f, "Rechnungen/" + Path.GetFileName(f));
-        Text("LIESMICH.txt", $"Buchungen und Rechnungen {year}, zusammengestellt am {DateTime.Now:dd.MM.yyyy}.\r\nBuchungen-{year}.csv: alle Buchungen mit Netto und MwSt.\r\nUebersicht-{year}.csv: Summen je Kategorie.\r\nRechnungen: alle geschriebenen Rechnungen als HTML.\r\nDiese Zusammenstellung ersetzt keine Steuerberatung.\r\n");
+            foreach (var f in Directory.GetFiles(invoiceDir).Where(f => Path.GetFileName(f).Contains($"-{year}-", StringComparison.Ordinal) && Path.GetExtension(f).ToLowerInvariant() is ".html" or ".pdf" or ".xml").Order(StringComparer.Ordinal))
+                z.CreateEntryFromFile(f, "Rechnungen/" + Path.GetFileName(f));
+        Text("LIESMICH.txt", $"Buchungen und Rechnungen {year}, zusammengestellt am {DateTime.Now:dd.MM.yyyy}.\r\nBuchungen-{year}.csv: alle Buchungen mit Netto und MwSt.\r\nUebersicht-{year}.csv: Summen je Kategorie.\r\nRechnungen: alle geschriebenen Rechnungen (PDF, E-Rechnung als XML, ältere als HTML).\r\nDiese Zusammenstellung ersetzt keine Steuerberatung.\r\n");
         return zipPath;
     }
 
@@ -104,11 +105,11 @@ public sealed class CategoryMemory(string dataRoot)
     public void Learn(string text, string category)
     {
         var k = Key(text); if (k.Length == 0) return;
-        var d = Load(); d[k] = category; Directory.CreateDirectory(Path.GetDirectoryName(F)!); File.WriteAllText(F, JsonSerializer.Serialize(d));
+        var d = Load(); d[k] = category; AtomicFile.WriteAllText(F, JsonSerializer.Serialize(d));
     }
     /// <summary>Alle gelernten Zuordnungen (Stichwort → Kategorie), alphabetisch.</summary>
     public IReadOnlyList<(string Key, string Category)> All() => Load().OrderBy(p => p.Key, StringComparer.CurrentCultureIgnoreCase).Select(p => (p.Key, p.Value)).ToList();
-    public void Forget(string key) { var d = Load(); if (d.Remove(key)) File.WriteAllText(F, JsonSerializer.Serialize(d)); }
+    public void Forget(string key) { var d = Load(); if (d.Remove(key)) AtomicFile.WriteAllText(F, JsonSerializer.Serialize(d)); }
     /// <summary>Gleicher Anfang reicht: „Wochenmarkt“ gelernt passt auch zu „Wochenmarkt Samstag“; der längste gelernte Schlüssel gewinnt.</summary>
     public string? Lookup(string text)
     {
@@ -131,7 +132,7 @@ public sealed class BudgetStore(string dataRoot)
     public void Set(string category, decimal limit)
     {
         var d = All(); if (limit <= 0) d.Remove(category); else d[category] = limit;
-        Directory.CreateDirectory(Path.GetDirectoryName(F)!); File.WriteAllText(F, JsonSerializer.Serialize(d));
+        AtomicFile.WriteAllText(F, JsonSerializer.Serialize(d));
     }
     public List<BudgetState> Status(IEnumerable<Entry> entries, int year, int month)
     {

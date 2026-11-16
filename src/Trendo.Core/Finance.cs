@@ -136,8 +136,26 @@ public sealed class Ledger(string dataRoot)
 {
     private readonly string _file = Path.Combine(dataRoot, "finanzen", "buchungen.json");
     public string InvoiceDir => Path.Combine(dataRoot, "finanzen", "rechnungen");
-    public List<Entry> All() => File.Exists(_file) ? JsonSerializer.Deserialize<List<Entry>>(File.ReadAllText(_file)) ?? [] : [];
-    public void Save(List<Entry> all) { Directory.CreateDirectory(Path.GetDirectoryName(_file)!); File.WriteAllText(_file, JsonSerializer.Serialize(all.OrderByDescending(e => e.Date).ToList())); }
+    /// <summary>T-0694: Hinweis, falls die Buchungen nach einem Schaden aus der Sicherung zurückgeholt wurden (die Oberfläche zeigt ihn einmal).</summary>
+    public string RecoveryNoteFile => Path.Combine(dataRoot, "finanzen", "wiederhergestellt.txt");
+    public string? RecoveryNote() { try { return File.Exists(RecoveryNoteFile) ? File.ReadAllText(RecoveryNoteFile) : null; } catch (IOException) { return null; } }
+    public void RecoveryNoteSeen() { try { File.Delete(RecoveryNoteFile); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } }
+
+    /// <summary>Alle Buchungen. T-0694: Eine beschädigte Datei wirft nicht mehr und wird nicht still geleert – sie wird beiseitegelegt und der letzte
+    /// gesicherte Stand (.bak) zurückgeholt; <see cref="RecoveryNote"/> sagt es.</summary>
+    public List<Entry> All()
+    {
+        var (text, note) = Business.SichereDatei.Lesen(_file);
+        if (note is not null) try { AtomicFile.WriteAllText(RecoveryNoteFile, note); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        if (text is null) return [];
+        try { return JsonSerializer.Deserialize<List<Entry>>(text) ?? []; }
+        catch (JsonException) { return []; } // gültiges JSON, aber keine Buchungsliste: wie leer behandeln, die Datei bleibt bis zum nächsten Speichern liegen
+    }
+    /// <summary>Speichern absturzsicher (Zwischendatei + Umbenennen), die vorige Fassung bleibt als .bak daneben.</summary>
+    public void Save(List<Entry> all) => Business.SichereDatei.Schreiben(_file, JsonSerializer.Serialize(all.OrderByDescending(e => e.Date).ToList()));
+    public string Raw() => File.Exists(_file) ? File.ReadAllText(_file) : "";
+    /// <summary>Für Rückgängig: genau diesen früheren Stand zurückschreiben (leer = keine Buchungen).</summary>
+    public void RawSet(string json) => Business.SichereDatei.Schreiben(_file, json.Length == 0 ? "[]" : json);
     public void Add(Entry e) { var a = All(); a.Add(e); Save(a); }
     /// <summary>Fügt importierte Buchungen hinzu, doppelte (gleiches Datum, Betrag, Text) werden übersprungen.</summary>
     public int Import(IEnumerable<Entry> e)
@@ -169,6 +187,7 @@ public sealed class Ledger(string dataRoot)
         all.Any(x => x.Text == ReversalPrefix + e.Text + $" (vom {e.Date:dd.MM.yyyy})" && x.Amount == -e.Amount);
     /// <summary>Kategorie einer Buchung ändern (Index wie in <see cref="All"/>).</summary>
     public void SetCategory(int i, string category) { var a = All(); if (i >= 0 && i < a.Count) { a[i] = a[i] with { Category = category }; Save(a); } }
-    public IEnumerable<string> InvoiceNumbers() => Directory.Exists(InvoiceDir) ? Directory.GetFiles(InvoiceDir, "RE-*.html").Select(f => Path.GetFileNameWithoutExtension(f)) : [];
-    public string WriteInvoice(Invoice i) { Directory.CreateDirectory(InvoiceDir); var p = Path.Combine(InvoiceDir, i.Number + ".html"); if (File.Exists(p)) throw new IOException("Diese Rechnungsnummer gibt es schon."); File.WriteAllText(p, Finance.InvoiceHtml(i)); return p; }
+    /// <summary>Vergebene Rechnungsnummern: eigene HTML-Rechnungen und (T-0675) die im Studio „Rechnungen &amp; Angebote“ festgeschriebenen (RE-*.json) – ein gemeinsamer Nummernkreis.</summary>
+    public IEnumerable<string> InvoiceNumbers() => Directory.Exists(InvoiceDir) ? Directory.GetFiles(InvoiceDir, "RE-*.html").Concat(Directory.GetFiles(InvoiceDir, "RE-*.json")).Select(f => Path.GetFileNameWithoutExtension(f)).Distinct() : [];
+    public string WriteInvoice(Invoice i) { Directory.CreateDirectory(InvoiceDir); var p = Path.Combine(InvoiceDir, i.Number + ".html"); if (File.Exists(p)) throw new IOException("Diese Rechnungsnummer gibt es schon."); AtomicFile.WriteAllText(p, Finance.InvoiceHtml(i)); return p; }
 }
