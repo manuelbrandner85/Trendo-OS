@@ -1,0 +1,6 @@
+Fremdprogramm-Prüfung 2026-11-16T06:40:07Z
+C:\Program Files\LibreOffice\program: logs 
+soffice.exe vorhanden: nein
+Microsoft Office/Word: nicht vorhanden
+where soffice/winword: INFORMATION: Es konnten keine Dateien mit dem angegebenen Muster gefunden werden. 
+=> Abgleich mit Fremdprogramm: NICHT GETESTET (kein LibreOffice, kein Word auf diesem PC)

@@ -17,22 +17,22 @@ public class T0223_TrendoTextUi
     {
         var (w, _, root) = Ui.Open();
         w.TextNew(); w.Show("text");
-        var box = w.Find<TextBox>("text-edit");
-        box.Text = "Hallo Welt"; Dispatcher.UIThread.RunJobs();
+        var box = w.Find<TextPageView>("text-edit"); // T-0692: ein Schreibfeld über das ganze Dokument statt eines Eingabefelds je Absatz
+        box.Type("Hallo Welt"); Dispatcher.UIThread.RunJobs();
         Assert.Equal("Hallo Welt", ((Para)w.TextDocument.Blocks[0]).Text);
         Assert.True(w.TextDirty);
-        box.CaretIndex = 5; Key(box, Avalonia.Input.Key.Enter); // teilen
+        w.TextSelect(0, 5); Key(box, Avalonia.Input.Key.Enter); // teilen
         Assert.Equal(["Hallo", " Welt"], w.TextDocument.Paras.Select(p => p.Text));
         Assert.Equal(1, w.TextFocusBlock);
-        var second = w.Find<TextBox>("text-edit"); second.CaretIndex = 0; second.SelectionStart = second.SelectionEnd = 0;
+        var second = w.Find<TextPageView>("text-edit"); Assert.Equal(new TextPos(1, 0), second.Caret);
         Key(second, Avalonia.Input.Key.Back); // wieder verbinden
         Assert.Equal(["Hallo Welt"], w.TextDocument.Paras.Select(p => p.Text));
         w.TextSelect(0, 6, 4);
         w.Find<Button>("text-bold").Press();
         Assert.True(TextDoc.Has((Para)w.TextDocument.Blocks[0], 6, 4, Fmt.Bold));
-        Assert.NotNull(w.TryFind<TextBlock>("text-para-0") ?? (object?)w.TryFind<TextBox>("text-edit"));
+        Assert.Contains(w.TextView.Flow.Pages[0].Items.OfType<FlowText>(), t => t.Text == "Welt" && t.Font.Bold); // das Blatt zeigt den fetten Abschnitt
         w.TextSelect(0, 0, 5);
-        Key(w.Find<TextBox>("text-edit"), Avalonia.Input.Key.I, KeyModifiers.Control);
+        Key(w.Find<TextPageView>("text-edit"), Avalonia.Input.Key.I, KeyModifiers.Control);
         Assert.True(TextDoc.Has((Para)w.TextDocument.Blocks[0], 0, 5, Fmt.Italic));
         w.Find<ComboBox>("text-style").SelectedIndex = (int)ParaStyle.Heading1;
         Assert.Equal(ParaStyle.Heading1, ((Para)w.TextDocument.Blocks[0]).Style);
@@ -55,7 +55,7 @@ public class T0223_TrendoTextUi
         w.Find<Button>("text-table").Press();
         Assert.IsType<Table>(w.TextDocument.Blocks[1]);
         Assert.True(w.TextDocument.Blocks.Count >= before + 1);
-        var cell = w.Find<TextBox>("text-cell-1-0-0"); cell.Text = "Kosten"; Dispatcher.UIThread.RunJobs();
+        w.TextSelectCell(1, 0, 0); w.TextView.Type("Kosten"); w.Show("text"); Dispatcher.UIThread.RunJobs(); // in die Zelle klicken und tippen
         Assert.Equal("Kosten", ((Table)w.TextDocument.Blocks[1]).Rows[0][0]);
         w.Find<Button>("text-row-add-1").Press(); Assert.Equal(4, ((Table)w.TextDocument.Blocks[1]).Rows.Count);
         w.Find<Button>("text-pagebreak").Press();

@@ -181,7 +181,8 @@ public static partial class ImportCheck
     static bool DocxMapsStyle(string id) => id.ToLowerInvariant().Replace("(user)", "").Replace("user", "").Replace(" ", "") is "title" or "titel" or "subtitle" or "untertitel" or "heading1" or "berschrift1" or "überschrift1"
         or "heading2" or "berschrift2" or "überschrift2" or "heading3" or "berschrift3" or "überschrift3" or "quote" or "quotations" or "zitat" or "blockzitat" or "intensequote";
 
-    /// <summary>Tabelle im Text: Der Leser übernimmt je Zelle nur den reinen Text.</summary>
+    /// <summary>Tabelle im Text. Seit T-0692 übernimmt der Leser je Zelle Text mit Zeichenformaten, Schrift, Farbe, Links, Zeilenumbrüchen, die Ausrichtung,
+    /// verbundene Zellen (gridSpan, vMerge) und Spaltenbreiten – gemeldet wird nur noch, was weiterhin fehlt.</summary>
     static void DocxTable(XElement tbl, int no, Losses l)
     {
         var wo = "Tabelle " + no;
@@ -191,17 +192,14 @@ public static partial class ImportCheck
         foreach (var tc in tbl.Elements(W + "tr").Elements(W + "tc"))
         {
             var pr = tc.Element(W + "tcPr");
-            if (int.TryParse((string?)pr?.Element(W + "gridSpan")?.Attribute(W + "val"), out var span) && span > 1 || pr?.Element(W + "vMerge") is { } vm && (string?)vm.Attribute(W + "val") == "restart" || pr?.Element(W + "hMerge") is { } hm && (string?)hm.Attribute(W + "val") == "restart")
-                l.Add("docx.verbunden", "Verbundene Zellen in Tabellen", 1, wo);
+            if (pr?.Element(W + "hMerge") is { } hm && (string?)hm.Attribute(W + "val") == "restart") l.Add("docx.verbunden", "Verbundene Zellen in alter Schreibweise (hMerge)", 1, wo);
             l.Add("docx.tabelle.verschachtelt", "Tabellen in Tabellenzellen", tc.Elements(W + "tbl").Count(), wo);
             var own = tc.Elements(W + "p").ToList();
-            var formatted = (string?)pr?.Element(W + "shd")?.Attribute(W + "fill") is { } fill && fill is not ("auto" or "FFFFFF")
-                || own.Any(p => (string?)p.Element(W + "pPr")?.Element(W + "jc")?.Attribute(W + "val") is not (null or "left" or "start"))
-                || own.Descendants(W + "rPr").Any(rp => rp.Parent?.Name == W + "r" && rp.Elements().Any(e => e.Name.Namespace == W && e.Name.LocalName is "b" or "i" or "u" or "strike" or "dstrike" or "color" or "highlight" or "shd" or "vertAlign" or "sz" && Truthy((string?)e.Attribute(W + "val") ?? "1")));
-            if (formatted) l.Add("docx.zelle.format", "Formatierung in Tabellenzellen (z. B. fett, Farbe, Ausrichtung, Schattierung)", 1, wo);
+            var aligns = own.Select(p => (string?)p.Element(W + "pPr")?.Element(W + "jc")?.Attribute(W + "val") ?? "left").Distinct().Count();
+            var formatted = (string?)pr?.Element(W + "shd")?.Attribute(W + "fill") is { } fill && fill is not ("auto" or "FFFFFF") || aligns > 1;
+            if (formatted) l.Add("docx.zelle.format", "Hintergrundfarbe von Tabellenzellen und je Absatz eigene Ausrichtung in einer Zelle", 1, wo);
             if (own.Any(p => p.Element(W + "pPr")?.Element(W + "numPr") is not null)) l.Add("docx.zelle.liste", "Aufzählungen in Tabellenzellen", 1, wo);
-            if (own.Descendants().Any(e => e.Name == W + "br" || e.Name == W + "tab" && e.Parent?.Name == W + "r")) l.Add("docx.zelle.umbruch", "Zeilenumbrüche und Tabulatoren in Tabellenzellen", 1, wo);
-            if (own.Descendants().Any(e => e.Name == W + "hyperlink" || e.Name == W + "footnoteReference" || e.Name == W + "endnoteReference" || e.Name == W + "commentReference")) l.Add("docx.zelle.verweis", "Links, Fußnoten und Kommentare in Tabellenzellen", 1, wo);
+            if (own.Descendants().Any(e => e.Name == W + "footnoteReference" || e.Name == W + "endnoteReference")) l.Add("docx.zelle.verweis", "Fußnoten in Tabellenzellen", 1, wo);
         }
     }
 
@@ -333,18 +331,16 @@ public static partial class ImportCheck
         return unit switch { "cm" => d, "mm" => d / 10, "in" => d * 2.54, "pt" => d * 2.54 / 72, _ => null };
     }
 
-    /// <summary>ODT-Tabelle: Der Leser nimmt je Zelle den Text der direkten Absätze.</summary>
+    /// <summary>ODT-Tabelle. Seit T-0692 übernimmt der Leser je Zelle die direkten Absätze mit Zeichenformaten, verbundene Zellen und Spaltenbreiten.</summary>
     static void OdtTable(XElement tbl, int no, Losses l)
     {
         var wo = "Tabelle " + no;
         foreach (var cell in tbl.Descendants(OTable + "table-cell").Where(c => c.Ancestors(OTable + "table").First() == tbl))
         {
-            if (int.TryParse((string?)cell.Attribute(OTable + "number-columns-spanned"), out var cs) && cs > 1 || int.TryParse((string?)cell.Attribute(OTable + "number-rows-spanned"), out var rs) && rs > 1) l.Add("odt.verbunden", "Verbundene Zellen in Tabellen", 1, wo);
             l.Add("odt.tabelle.verschachtelt", "Tabellen in Tabellenzellen", cell.Elements(OTable + "table").Count(), wo);
             if (cell.Elements(OText + "list").Any()) l.Add("odt.zelle.liste", "Aufzählungen in Tabellenzellen (der Text fehlt in Trendo)", 1, wo);
-            if (cell.Elements(OText + "p").Descendants(OText + "span").Any(s => s.Attribute(OText + "style-name") is not null)) l.Add("odt.zelle.format", "Formatierung in Tabellenzellen (z. B. fett, Farbe)", 1, wo);
             if (cell.Descendants(ODraw + "image").Any()) l.Add("odt.zelle.bild", "Bilder in Tabellenzellen", 1, wo);
-            if (cell.Elements(OText + "p").Descendants().Any(e => e.Name == OText + "a" || e.Name == OText + "note" || e.Name == OOffice + "annotation")) l.Add("odt.zelle.verweis", "Links, Fußnoten und Kommentare in Tabellenzellen", 1, wo);
+            if (cell.Elements(OText + "p").Descendants().Any(e => e.Name == OText + "note")) l.Add("odt.zelle.verweis", "Fußnoten in Tabellenzellen", 1, wo);
         }
     }
 }

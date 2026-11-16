@@ -131,13 +131,194 @@ public sealed class Para : Block
     }
 }
 
+/// <summary>T-0692: Format einer Tabellenzelle – Zeichenformate und Markierungen (Schrift, Farbe, Hervorhebung, Link, Kommentar, Änderung) zum Zellentext,
+/// Ausrichtung, und wie viele Spalten/Zeilen die Zelle überdeckt (verbundene Zellen). Der Zellentext selbst bleibt in <see cref="Table.Rows"/>.</summary>
+public sealed class CellFmt
+{
+    public List<Span> Spans { get; set; } = [];
+    public List<Mark> Marks { get; set; } = [];
+    public Align Align { get; set; }
+    public int ColSpan { get; set; } = 1;
+    public int RowSpan { get; set; } = 1;
+    public bool IsPlain => Spans.Count == 0 && Marks.Count == 0 && Align == Align.Left && ColSpan <= 1 && RowSpan <= 1;
+    public CellFmt Copy() => new() { Spans = [.. Spans], Marks = [.. Marks], Align = Align, ColSpan = ColSpan, RowSpan = RowSpan };
+}
+
 public sealed class Table : Block
 {
     public List<List<string>> Rows { get; set; } = [];
+    /// <summary>T-0692: Zellformate und verbundene Zellen; nur Zellen mit Format stehen hier. Schlüssel = (Zeile, Spalte) der Zelle oben links.</summary>
+    public Dictionary<(int Row, int Col), CellFmt> Cells { get; set; } = [];
+    /// <summary>T-0692: Spaltenbreiten als Anteile (leer = alle gleich breit).</summary>
+    public List<double> Widths { get; set; } = [];
     public Table() { }
     public Table(int rows, int cols) { for (var r = 0; r < rows; r++) Rows.Add(Enumerable.Repeat("", cols).ToList()); }
     public int Cols => Rows.Count == 0 ? 0 : Rows.Max(r => r.Count);
-    public override Block Copy() => new Table { Rows = Rows.Select(r => r.ToList()).ToList() };
+    public override Block Copy() => new Table { Rows = Rows.Select(r => r.ToList()).ToList(), Cells = Cells.ToDictionary(k => k.Key, k => k.Value.Copy()), Widths = [.. Widths] };
+
+    /// <summary>Alle Zeilen auf gleiche Spaltenzahl bringen.</summary>
+    public void Pad() { var n = Cols; foreach (var r in Rows) while (r.Count < n) r.Add(""); }
+
+    public string Text(int r, int c) => r >= 0 && r < Rows.Count && c >= 0 && c < Rows[r].Count ? Rows[r][c] : "";
+
+    /// <summary>Spaltenbreiten als Anteile, Summe 1.</summary>
+    public double[] Fractions()
+    {
+        var n = Math.Max(1, Cols); var w = new double[n];
+        for (var i = 0; i < n; i++) w[i] = Widths.Count > 0 && i < Widths.Count && Widths[i] > 0 ? Widths[i] : Widths.Count > 0 ? Widths.Average() : 1;
+        var sum = w.Sum(); for (var i = 0; i < n; i++) w[i] /= sum;
+        return w;
+    }
+
+    /// <summary>Spaltenbreiten setzen (beliebige Einheit, es zählt das Verhältnis); mindestens 5 % je Spalte.</summary>
+    public void SetWidths(IEnumerable<double> widths)
+    {
+        var w = widths.Take(Math.Max(1, Cols)).Select(x => Math.Max(0, x)).ToList(); while (w.Count < Cols) w.Add(w.Count > 0 ? w.Average() : 1);
+        var sum = w.Sum(); if (sum <= 0) { Widths = []; return; }
+        w = w.Select(x => Math.Max(0.05, x / sum)).ToList(); sum = w.Sum();
+        Widths = w.Select(x => Math.Round(x / sum, 4)).ToList();
+        if (Widths.All(x => Math.Abs(x - Widths[0]) < 0.0005)) Widths = [];
+    }
+
+    public (int ColSpan, int RowSpan) SpanOf(int r, int c) => Cells.TryGetValue((r, c), out var f) ? (Math.Max(1, f.ColSpan), Math.Max(1, f.RowSpan)) : (1, 1);
+
+    /// <summary>Die Zelle oben links, zu der (r, c) gehört – bei verbundenen Zellen die sichtbare Zelle, sonst (r, c) selbst.</summary>
+    public (int Row, int Col) Anchor(int r, int c)
+    {
+        foreach (var (k, f) in Cells)
+            if ((f.ColSpan > 1 || f.RowSpan > 1) && r >= k.Row && r < k.Row + f.RowSpan && c >= k.Col && c < k.Col + f.ColSpan) return k;
+        return (r, c);
+    }
+
+    public bool IsCovered(int r, int c) => Anchor(r, c) != (r, c);
+
+    /// <summary>Zelle als Absatz (Text aus <see cref="Rows"/>, Formate aus <see cref="Cells"/>) – nach dem Ändern mit <see cref="SetCell"/> zurückschreiben.</summary>
+    public Para CellPara(int r, int c)
+    {
+        var text = Text(r, c); var p = new Para(text);
+        if (Cells.TryGetValue((r, c), out var f))
+        {
+            p.Align = f.Align;
+            p.Spans = f.Spans.Where(s => s.Start < text.Length && s.Length > 0).Select(s => s with { Length = Math.Min(s.Length, text.Length - s.Start) }).ToList();
+            p.Marks = f.Marks.Where(m => m.Start < text.Length && m.Length > 0).Select(m => m with { Length = Math.Min(m.Length, text.Length - m.Start) }).ToList();
+        }
+        return p;
+    }
+
+    /// <summary>Kommentar ohne markierten Text (aus einer fremden Datei) an ein Zeichen heften – in Zellen gibt es nur Markierungen mit Länge.</summary>
+    public static void PinComments(Para cell)
+    {
+        if (cell.Text.Length == 0) return;
+        cell.Marks = cell.Marks.Select(m => m.Kind == MarkKind.Comment && m.Length == 0 ? m with { Start = Math.Min(m.Start, cell.Text.Length - 1), Length = 1 } : m).ToList();
+    }
+
+    public void SetCell(int r, int c, Para p)
+    {
+        if (r < 0 || r >= Rows.Count || c < 0) return;
+        while (Rows[r].Count <= c) Rows[r].Add("");
+        Rows[r][c] = p.Text;
+        var marks = p.Marks.Where(m => m.Length > 0).ToList(); // Fuß- und Endnoten (ohne Länge) gibt es in Zellen nicht
+        if (p.Spans.Count == 0 && marks.Count == 0 && p.Align == Align.Left && !Cells.ContainsKey((r, c))) return;
+        var f = Cells.TryGetValue((r, c), out var old) ? old : Cells[(r, c)] = new CellFmt();
+        f.Spans = [.. p.Spans]; f.Marks = marks; f.Align = p.Align;
+        if (f.IsPlain) Cells.Remove((r, c));
+    }
+
+    /// <summary>Zellen verbinden: (r, c) überdeckt <paramref name="cols"/> Spalten und <paramref name="rows"/> Zeilen. Texte der überdeckten Zellen wandern in die erste Zelle.
+    /// Liefert false, wenn der Bereich nicht passt oder eine andere Verbindung schneidet.</summary>
+    public bool Merge(int r, int c, int cols, int rows)
+    {
+        Pad();
+        if (r < 0 || c < 0 || cols < 1 || rows < 1 || r + rows > Rows.Count || c + cols > Cols || cols == 1 && rows == 1 || IsCovered(r, c)) return false;
+        for (var y = r; y < r + rows; y++)
+            for (var x = c; x < c + cols; x++)
+            {
+                var a = Anchor(y, x); var (cs, rs) = SpanOf(a.Row, a.Col);
+                if (a.Row < r || a.Col < c || a.Row + rs > r + rows || a.Col + cs > c + cols) return false; // ragt hinaus
+            }
+        var first = CellPara(r, c);
+        for (var y = r; y < r + rows; y++)
+            for (var x = c; x < c + cols; x++)
+            {
+                if ((y, x) == (r, c)) continue;
+                var other = CellPara(y, x);
+                if (other.Text.Length > 0)
+                {
+                    var glue = first.Text.Length > 0; var at = first.Text.Length + (glue ? 1 : 0);
+                    var runs = first.Runs().ToList(); if (glue) runs.Add(("\n", Fmt.None, null)); runs.AddRange(other.Runs());
+                    first.SetRuns(runs);
+                    first.Marks.AddRange(other.Marks.Select(m => m with { Start = m.Start + at }));
+                }
+                Rows[y][x] = ""; Cells.Remove((y, x));
+            }
+        SetCell(r, c, first);
+        var f = Cells.TryGetValue((r, c), out var cur) ? cur : Cells[(r, c)] = new CellFmt();
+        f.ColSpan = cols; f.RowSpan = rows;
+        return true;
+    }
+
+    /// <summary>Verbindung lösen; der Text bleibt in der ersten Zelle.</summary>
+    public bool Unmerge(int r, int c)
+    {
+        var a = Anchor(r, c);
+        if (!Cells.TryGetValue(a, out var f) || f.ColSpan <= 1 && f.RowSpan <= 1) return false;
+        f.ColSpan = f.RowSpan = 1; if (f.IsPlain) Cells.Remove(a);
+        return true;
+    }
+
+    void Rekey(Func<(int Row, int Col), CellFmt, (int Row, int Col)?> map)
+    {
+        var res = new Dictionary<(int, int), CellFmt>();
+        foreach (var (k, f) in Cells) if (map(k, f) is { } nk) res[nk] = f;
+        Cells = res;
+    }
+
+    public void InsertRow(int at)
+    {
+        at = Math.Clamp(at, 0, Rows.Count);
+        Rows.Insert(at, Enumerable.Repeat("", Math.Max(1, Cols)).ToList());
+        Rekey((k, f) => { if (k.Row >= at) return (k.Row + 1, k.Col); if (k.Row + f.RowSpan > at) f.RowSpan++; return k; });
+    }
+
+    public void InsertColumn(int at)
+    {
+        Pad(); at = Math.Clamp(at, 0, Cols);
+        foreach (var r in Rows) r.Insert(Math.Clamp(at, 0, r.Count), "");
+        Rekey((k, f) => { if (k.Col >= at) return (k.Row, k.Col + 1); if (k.Col + f.ColSpan > at) f.ColSpan++; return k; });
+        if (Widths.Count > 0) { var w = Widths.ToList(); w.Insert(Math.Min(at, w.Count), w.Average()); SetWidths(w); }
+    }
+
+    public void DeleteRow(int at)
+    {
+        if (Rows.Count <= 1 || at < 0 || at >= Rows.Count) return;
+        Pad();
+        // Verbundene Zelle beginnt in dieser Zeile und reicht weiter: Inhalt und Format rücken in die nächste Zeile
+        foreach (var (k, f) in Cells.Where(x => x.Key.Row == at && x.Value.RowSpan > 1).ToList()) { Rows[at + 1][k.Col] = Rows[at][k.Col]; Cells.Remove(k); f.RowSpan--; Cells[(at + 1, k.Col)] = f; }
+        Rows.RemoveAt(at);
+        Rekey((k, f) =>
+        {
+            if (k.Row == at) return null;
+            if (k.Row > at) return (k.Row - 1, k.Col);
+            if (k.Row + f.RowSpan > at) f.RowSpan--;
+            return k;
+        });
+    }
+
+    public void DeleteColumn(int at)
+    {
+        if (Cols <= 1 || at < 0 || at >= Cols) return;
+        Pad();
+        foreach (var (k, f) in Cells.Where(x => x.Key.Col == at && x.Value.ColSpan > 1).ToList()) { Rows[k.Row][at + 1] = Rows[k.Row][at]; Cells.Remove(k); f.ColSpan--; Cells[(k.Row, at + 1)] = f; }
+        foreach (var r in Rows) r.RemoveAt(at);
+        Rekey((k, f) =>
+        {
+            if (k.Col == at) return null;
+            if (k.Col > at) return (k.Row, k.Col - 1);
+            if (k.Col + f.ColSpan > at) f.ColSpan--;
+            return k;
+        });
+        if (at < Widths.Count) { var w = Widths.ToList(); w.RemoveAt(at); SetWidths(w); }
+    }
 }
 
 public sealed class Picture : Block
@@ -258,6 +439,62 @@ public sealed class TextDoc
                 if (cut[k + 1] > cut[k]) res.Add((t[(cut[k] - a)..(cut[k + 1] - a)], f, size, k == 1));
         }
         return res;
+    }
+
+    /// <summary>T-0692: Text an einer Stelle eintippen. Das Eingefügte erbt das Format des Zeichens davor (am Absatzanfang das des ersten Zeichens);
+    /// Schrift, Farbe und Links laufen weiter wie beim Weitertippen.</summary>
+    public static void InsertAt(Para p, int at, string s)
+    {
+        if (s.Length == 0) return;
+        at = Math.Clamp(at, 0, p.Text.Length); var n = s.Length;
+        var spans = new List<Span>();
+        foreach (var sp in p.Spans)
+        {
+            if (sp.Start >= at && !(at == 0 && sp.Start == 0)) spans.Add(sp with { Start = sp.Start + n });
+            else if (sp.End >= at) spans.Add(sp with { Length = sp.Length + n });
+            else spans.Add(sp);
+        }
+        MapMarks(p, at, 0, n);
+        p.Text = p.Text.Insert(at, s); p.Spans = spans;
+        p.SetRuns(p.Runs().ToList()); // normalisieren
+    }
+
+    /// <summary>T-0692: Einen formatierten Absatzteil an einer Stelle einfügen (Einfügen aus der Zwischenablage, Verbinden von Absätzen) – der Teil behält sein eigenes Format.</summary>
+    public static void InsertPara(Para p, int at, Para piece)
+    {
+        if (piece.Text.Length == 0) return;
+        at = Math.Clamp(at, 0, p.Text.Length); var n = piece.Text.Length;
+        var runs = new List<(string, Fmt, double?)>(); var pos = 0; var done = false;
+        foreach (var (t, f, size) in p.Runs())
+        {
+            if (!done && at >= pos && at <= pos + t.Length)
+            {
+                runs.Add((t[..(at - pos)], f, size)); runs.AddRange(piece.Runs()); runs.Add((t[(at - pos)..], f, size)); done = true;
+            }
+            else runs.Add((t, f, size));
+            pos += t.Length;
+        }
+        if (!done) runs.AddRange(piece.Runs());
+        var marks = new List<Mark>();
+        foreach (var m in p.Marks)
+        {
+            if (m.Start >= at && (m.Length > 0 || m.Start > at)) marks.Add(m with { Start = m.Start + n });
+            else if (m.Length > 0 && m.End > at) { marks.Add(m with { Length = at - m.Start }); marks.Add(m with { Start = at + n, Length = m.End - at }); } // Markierung um das Eingefügte herum teilen
+            else marks.Add(m);
+        }
+        marks.AddRange(piece.Marks.Select(m => m with { Start = m.Start + at }));
+        p.SetRuns(runs); p.Marks = marks; NormalizeInk(p);
+        p.Marks.Sort((x, y) => x.Start.CompareTo(y.Start));
+    }
+
+    /// <summary>T-0692: Ausschnitt eines Absatzes als eigener Absatz (mit Formaten und Markierungen).</summary>
+    public static Para Slice(Para p, int start, int length)
+    {
+        (start, length) = Clamp(p, start, length);
+        var c = (Para)p.Copy();
+        ReplaceAt(c, start + length, c.Text.Length - start - length, "");
+        ReplaceAt(c, 0, start, "");
+        return c;
     }
 
     /// <summary>Neuer Absatztext aus dem Eingabefeld: Formate wandern mit (gemeinsamer Anfang und Ende bleiben, Eingefügtes erbt das Format davor).</summary>
@@ -397,10 +634,10 @@ public sealed class TextDoc
     };
 
     // ---------- T5 Tabellen ----------
-    public static void InsertRow(Table t, int at) { t.Rows.Insert(Math.Clamp(at, 0, t.Rows.Count), Enumerable.Repeat("", Math.Max(1, t.Cols)).ToList()); }
-    public static void InsertColumn(Table t, int at) { foreach (var r in t.Rows) r.Insert(Math.Clamp(at, 0, r.Count), ""); }
-    public static void DeleteRow(Table t, int at) { if (t.Rows.Count > 1 && at >= 0 && at < t.Rows.Count) t.Rows.RemoveAt(at); }
-    public static void DeleteColumn(Table t, int at) { if (t.Cols > 1) foreach (var r in t.Rows) if (at >= 0 && at < r.Count) r.RemoveAt(at); }
+    public static void InsertRow(Table t, int at) => t.InsertRow(at);
+    public static void InsertColumn(Table t, int at) => t.InsertColumn(at);
+    public static void DeleteRow(Table t, int at) => t.DeleteRow(at);
+    public static void DeleteColumn(Table t, int at) => t.DeleteColumn(at);
 
     // ---------- T7 Suchen, Ersetzen, Zählen ----------
     public sealed record Hit(int Block, int Row, int Col, int Start, int Length);
@@ -434,7 +671,7 @@ public sealed class TextDoc
             foreach (var h in g.OrderByDescending(h => h.Start))
             {
                 if (Blocks[h.Block] is Para p) ReplaceAt(p, h.Start, h.Length, with);
-                else if (Blocks[h.Block] is Table t) t.Rows[h.Row][h.Col] = t.Rows[h.Row][h.Col].Remove(h.Start, h.Length).Insert(h.Start, with);
+                else if (Blocks[h.Block] is Table t) { var cp = t.CellPara(h.Row, h.Col); ReplaceAt(cp, h.Start, h.Length, with); t.SetCell(h.Row, h.Col, cp); } // Zellformate wandern mit
             }
         return hits.Count;
     }

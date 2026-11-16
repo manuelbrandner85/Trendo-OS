@@ -23,17 +23,19 @@ public class T0682_ImportBericht
     static string AllXml(string file) { using var z = ZipFile.OpenRead(file); return string.Concat(z.Entries.Where(e => e.FullName.EndsWith(".xml") || e.FullName.EndsWith(".rels")).Select(e => { using var s = new StreamReader(e.Open()); return s.ReadToEnd(); })); }
     static readonly byte[] Png = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==");
 
-    [Fact(DisplayName = "T-0682: fremde DOCX – Bericht nennt genau verbundene Zellen, Textfeld und die Besonderheiten der Kopfzeile; beim Speichern gehen sie wirklich verloren")]
+    [Fact(DisplayName = "T-0682/T-0692: fremde DOCX – Bericht nennt genau Textfeld und die Besonderheiten der Kopfzeile (beim Speichern gehen sie wirklich verloren); verbundene Zellen bleiben seit T-0692 erhalten und stehen nicht mehr im Bericht")]
     public void Docx_fremd()
     {
         var f = Fremd("fremd-text.docx");
         var doc = TextFiles.Open(f);
         var r = doc.Import!;
-        Assert.Equal(["docx.kopf.weitere", "docx.kopf.zeilen", "docx.textfeld", "docx.verbunden"], Ids(r));
-        Assert.Equal(2, One(r, "docx.verbunden").Anzahl); Assert.Equal("Tabelle 1", One(r, "docx.verbunden").Wo); // eine Zelle über drei Spalten, eine über zwei Zeilen
+        Assert.Equal(["docx.kopf.weitere", "docx.kopf.zeilen", "docx.textfeld"], Ids(r));
+        // T-0692: die verbundenen Zellen (eine über drei Spalten, eine über zwei Zeilen) sind jetzt im Dokument – deshalb kein Punkt im Bericht mehr
+        var tbl = doc.Blocks.OfType<Table>().Single();
+        Assert.Equal((3, 1), tbl.SpanOf(0, 0)); Assert.Equal((1, 2), tbl.SpanOf(1, 0)); Assert.Equal("Nord", tbl.Rows[1][0]); Assert.True(tbl.IsCovered(2, 0)); Assert.Equal("Q2", tbl.Rows[2][1]);
         Assert.Equal(1, One(r, "docx.textfeld").Anzahl); Assert.Contains("Hinweis im Textfeld", One(r, "docx.textfeld").Wo); // Word legt das Feld doppelt ab (neu + Rückfall) – gezählt wird es einmal
         Assert.Contains("Kopfzeile", One(r, "docx.kopf.zeilen").Was); Assert.Contains("erste Seite", One(r, "docx.kopf.weitere").Was);
-        Assert.True(r.HasLoss); Assert.Contains("Verbundene Zellen", r.Kurz()); Assert.Contains("Tabelle 1", r.Lang());
+        Assert.True(r.HasLoss); Assert.Contains("Textfelder", r.Kurz()); Assert.DoesNotContain("Verbundene Zellen", r.Lang());
 
         // Der Bericht behauptet nichts: Genau das fehlt im gelesenen Dokument und in der von Trendo geschriebenen Datei.
         Assert.Contains("Umsatz nach Quartal", doc.PlainText());          // Tabellentext ist da …
@@ -45,7 +47,10 @@ public class T0682_ImportBericht
             var copy = Path.Combine(d, "kopie.docx"); TextFiles.Save(doc, copy);
             Assert.Contains("gridSpan", Part(f, "word/document.xml")); Assert.Contains("txbxContent", Part(f, "word/document.xml"));
             var xml = AllXml(copy);
-            Assert.DoesNotContain("gridSpan", xml); Assert.DoesNotContain("vMerge", xml); Assert.DoesNotContain("txbxContent", xml); Assert.DoesNotContain("Deckblatt", xml);
+            Assert.Contains("<w:gridSpan w:val=\"3\"/>", xml); Assert.Contains("<w:vMerge w:val=\"restart\"/>", xml); Assert.Contains("<w:vMerge/>", xml); // T-0692: verbundene Zellen werden geschrieben
+            Assert.DoesNotContain("txbxContent", xml); Assert.DoesNotContain("Deckblatt", xml);
+            var again = TextFiles.Open(copy).Blocks.OfType<Table>().Single();
+            Assert.Equal((3, 1), again.SpanOf(0, 0)); Assert.Equal((1, 2), again.SpanOf(1, 0));
             Assert.False(ImportCheck.For(copy).HasLoss); // Trendos eigene Datei: nichts mehr zu verlieren
         }
         finally { Directory.Delete(d, true); }
@@ -100,11 +105,13 @@ public class T0682_ImportBericht
         finally { Directory.Delete(d, true); }
     }
 
-    [Fact(DisplayName = "T-0682: fremde ODT, ODS und ODP – Bericht nennt verbundene Zellen, Textrahmen, Feld, Zellformat, Notiz, Textformat und Animation")]
+    [Fact(DisplayName = "T-0682/T-0692: fremde ODT, ODS und ODP – Bericht nennt Textrahmen, Feld, Zellformat, Notiz, Textformat und Animation; verbundene Zellen der ODT bleiben seit T-0692 erhalten")]
     public void Odf_fremd()
     {
         var t = TextFiles.Open(Fremd("fremd-text.odt"));
-        Assert.Equal(["odt.feld", "odt.textfeld", "odt.verbunden"], Ids(t.Import!));
+        Assert.Equal(["odt.feld", "odt.textfeld"], Ids(t.Import!));
+        var odtTable = t.Blocks.OfType<Table>().Single();
+        Assert.Equal((2, 1), odtTable.SpanOf(0, 0)); Assert.Equal("Kassenbericht", odtTable.Rows[0][0]); Assert.Equal("480", odtTable.Rows[1][1]); // T-0692: Zelle über zwei Spalten ist im Dokument
         Assert.Contains("date", One(t.Import!, "odt.feld").Wo); Assert.Contains("Notiz im Textrahmen", One(t.Import!, "odt.textfeld").Wo);
         Assert.DoesNotContain("Notiz im Textrahmen", t.PlainText()); Assert.DoesNotContain("01.01.2026", t.PlainText()); // beides fehlt wirklich
         Assert.Equal("Musterverein e. V.", t.Page.Header); // die einfache Kopfzeile kommt an und steht deshalb nicht im Bericht

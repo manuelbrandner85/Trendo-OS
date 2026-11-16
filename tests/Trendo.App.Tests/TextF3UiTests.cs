@@ -23,22 +23,22 @@ public class TextF3UiTests
         try
         {
             w.TextNew(); w.Show("text"); Pump();
-            var box = w.Find<TextBox>("text-edit"); box.Text = "Obst"; Pump();
+            var box = w.Find<TextPageView>("text-edit"); box.Type("Obst"); Pump();
             Press(box, Avalonia.Input.Key.Tab); Assert.Equal(0, P(w, 0).ListLevel); // kein Listenpunkt
             w.Find<Button>("text-numbers").Press(); Pump();
             Assert.False(w.Find<Button>("text-list-out").IsEnabled);
-            box = w.Find<TextBox>("text-edit"); box.CaretIndex = 4; Press(box, Avalonia.Input.Key.Enter); Pump();
-            box = w.Find<TextBox>("text-edit"); box.Text = "Äpfel"; Pump();
+            w.TextSelect(0, 4); Press(box, Avalonia.Input.Key.Enter); Pump();
+            box.Type("Äpfel"); Pump();
             Press(box, Avalonia.Input.Key.Tab); Pump();
             Assert.Equal(1, P(w, 1).ListLevel);
-            Assert.Equal("a)", w.Find<TextBlock>("text-list-label-1").Text);
-            Assert.Equal("1.", w.Find<TextBlock>("text-list-label-0").Text);
-            Press(w.Find<TextBox>("text-edit"), Avalonia.Input.Key.Tab); Pump();
-            Assert.Equal("i.", w.Find<TextBlock>("text-list-label-1").Text);
-            Press(w.Find<TextBox>("text-edit"), Avalonia.Input.Key.Tab, KeyModifiers.Shift); Pump();
+            Assert.Equal("a)", w.TextView.ListLabel(1));
+            Assert.Equal("1.", w.TextView.ListLabel(0));
+            Press(w.Find<TextPageView>("text-edit"), Avalonia.Input.Key.Tab); Pump();
+            Assert.Equal("i.", w.TextView.ListLabel(1));
+            Press(w.Find<TextPageView>("text-edit"), Avalonia.Input.Key.Tab, KeyModifiers.Shift); Pump();
             Assert.Equal(1, P(w, 1).ListLevel);
             w.Find<Button>("text-list-out").Press(); Pump();
-            Assert.Equal(0, P(w, 1).ListLevel); Assert.Equal("2.", w.Find<TextBlock>("text-list-label-1").Text);
+            Assert.Equal(0, P(w, 1).ListLevel); Assert.Equal("2.", w.TextView.ListLabel(1));
             w.Find<Button>("text-list-in").Press(); Pump();
             Assert.Equal(1, P(w, 1).ListLevel);
             w.Find<Button>("text-undo").Press(); Pump();
@@ -54,7 +54,7 @@ public class TextF3UiTests
         try
         {
             w.TextNew(); w.Show("text"); Pump();
-            w.Find<TextBox>("text-edit").Text = "Hallo schöne Welt"; Pump();
+            w.TextView.Type("Hallo schöne Welt"); Pump();
             w.TextSelect(0, 0, 17); w.Find<Button>("text-bold").Press(); Pump();
             w.Find<Button>("text-align-center").Press(); Pump();
             P(w, 0).Style = ParaStyle.Heading2; w.Show("text"); Pump();

@@ -16,7 +16,7 @@ public class OfficeRecoveryUiTests
     public void Recover_after_restart()
     {
         var (w, _, root) = Ui.Open();
-        w.TextNew(); w.TextDocument.Blocks[0] = new Para("Ungespeicherter Entwurf"); w.TextSelect(0, 0, 0);
+        w.TextNew(); w.TextDocument.Blocks[0] = new Para("Ungespeicherter Entwurf"); w.TextSelect(0, 0, 14); // T-0692: Fett ohne Markierung gilt nur fürs Weitertippen – hier echt markieren
         w.Show("text"); Pump();
         // Änderung über den normalen Weg markieren
         w.TextToggle(Fmt.Bold);

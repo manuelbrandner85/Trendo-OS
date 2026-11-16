@@ -35,17 +35,17 @@ public class OfficeImportUiTests
         var (w, _, root) = Ui.Open();
         var f = Fremd(root, "fremd-text.docx"); var before = File.ReadAllBytes(f);
         w.TextOpen(f); w.Show("text"); Pump();
-        Assert.Equal(["docx.kopf.weitere", "docx.kopf.zeilen", "docx.textfeld", "docx.verbunden"], w.OfficeImportReport("text")!.Verluste.Select(v => v.Id).Order());
+        Assert.Equal(["docx.kopf.weitere", "docx.kopf.zeilen", "docx.textfeld"], w.OfficeImportReport("text")!.Verluste.Select(v => v.Id).Order()); // T-0692: verbundene Zellen bleiben erhalten – nicht mehr im Bericht
         var banner = BannerText(w, "text");
         Assert.StartsWith("Diese Datei enthält Dinge, die Trendo nicht darstellt:", banner);
-        Assert.Contains("Verbundene Zellen in Tabellen (2×)", banner); Assert.Contains("Textfelder", banner); Assert.Contains("Beim Speichern in diese Datei gingen sie verloren.", banner);
+        Assert.DoesNotContain("Verbundene Zellen", banner); Assert.Contains("Textfelder", banner); Assert.Contains("Beim Speichern in diese Datei gingen sie verloren.", banner);
         w.Find<Button>("office-import-details-text").Press(); Pump();
-        Assert.Contains("Tabelle 1", w.Find<TextBlock>("office-import-list-text").Text); Assert.Contains("Hinweis im Textfeld", w.Find<TextBlock>("office-import-list-text").Text);
+        Assert.Contains("Kopfzeile", w.Find<TextBlock>("office-import-list-text").Text); Assert.Contains("Hinweis im Textfeld", w.Find<TextBlock>("office-import-list-text").Text);
 
         // Der Nutzer ändert etwas und drückt Strg+S – nichts wird geschrieben
         w.TextSelect(0, 0, 5); w.TextToggle(Fmt.Bold); w.Show("text"); Pump();
         Assert.True(w.TextDirty);
-        Key(w.Find<TextBox>("text-edit"), Avalonia.Input.Key.S, KeyModifiers.Control);
+        Key(w.Find<TextPageView>("text-edit"), Avalonia.Input.Key.S, KeyModifiers.Control);
         Assert.Equal(before, File.ReadAllBytes(f));
         Assert.True(w.TextDirty); Assert.Contains("Nicht gespeichert", w.Find<TextBlock>("text-status").Text);
         w.Find<Button>("text-save").Press(); Pump();                       // der Knopf „Speichern“
@@ -65,7 +65,7 @@ public class OfficeImportUiTests
         // Danach speichert Strg+S ganz normal – in die Kopie
         w.TextSelect(0, 0, 5); w.TextToggle(Fmt.Italic); w.Show("text"); Pump();
         var copyBefore = File.ReadAllBytes(copy);
-        Key(w.Find<TextBox>("text-edit"), Avalonia.Input.Key.S, KeyModifiers.Control);
+        Key(w.Find<TextPageView>("text-edit"), Avalonia.Input.Key.S, KeyModifiers.Control);
         Assert.False(w.TextDirty); Assert.NotEqual(copyBefore, File.ReadAllBytes(copy)); Assert.Equal(before, File.ReadAllBytes(f));
         w.Close();
     }
@@ -93,7 +93,7 @@ public class OfficeImportUiTests
 
         // Weiteres Speichern: keine Rückfrage, keine zweite Sicherung, die erste bleibt unverändert
         w.TextSelect(0, 0, 5); w.TextToggle(Fmt.Bold); w.Show("text"); Pump();
-        Key(w.Find<TextBox>("text-edit"), Avalonia.Input.Key.S, KeyModifiers.Control);
+        Key(w.Find<TextPageView>("text-edit"), Avalonia.Input.Key.S, KeyModifiers.Control);
         Assert.False(w.TextDirty); Assert.Equal(2, Directory.GetFiles(dir).Length); Assert.Equal(before, File.ReadAllBytes(backup));
 
         // Eigene Datei wieder öffnen: kein Hinweis, Speichern wie bisher
