@@ -26,6 +26,9 @@ public static class StudioCatalog
         ["STUDIO-ONLINE-BUSINESS-01"] = new("Online verkaufen", "Geschäftsidee planen, gründen und online verkaufen.", "Business & Geld"),
         ["STUDIO-POD-01"] = new("Print on Demand", "Eigene Motive auf Produkte bringen: Druckdatei prüfen, Preis rechnen, Rechtliches klären.", "Business & Geld"),
         ["SPEC-11"] = new("Geld & Rechnungen", "Haushaltsbuch, Rechnungen, Kredite und Steuern im Blick.", "Business & Geld"),
+        ["STUDIO-PRODUCTPHOTO-01"] = new("Produktfotos für Shops", "Viele Produktfotos auf einmal freistellen, auf weißen Grund setzen, für Amazon, Etsy, eBay und Shopify zuschneiden und prüfen.", "Business & Geld"),
+        ["STUDIO-REVIEWS-01"] = new("Kundenmeinungen", "Echte Bewertungen sammeln und auswerten – Sterne, Themen, Stimmung, Antwort-Entwürfe, Zitat-Grafiken und ein Widget für die eigene Seite.", "Business & Geld"),
+        ["STUDIO-MARKET-01"] = new("Marktanalyse", "Wettbewerber, SWOT, Zielgruppen und Marktgröße mit Quelle je Zahl – als Bericht und Präsentation.", "Business & Geld"),
 
         ["CORE-08"] = new("Videos & Fotos bearbeiten", "Videos schneiden, Musik aufnehmen und Bilder gestalten.", "Kreativ & Medien"),
         ["SPEC-15"] = new("Live streamen", "Livestreams und Sendungen planen und durchführen.", "Kreativ & Medien"),

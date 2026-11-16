@@ -564,6 +564,27 @@ modules:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)
+- id: STUDIO-PRODUCTPHOTO-01
+  name: Produktfotos für Shops
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Business & Geld), 15.11.2026 „Ja, weiter“
+- id: STUDIO-REVIEWS-01
+  name: Kundenmeinungen
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Business & Geld), 15.11.2026 „Ja, weiter“
+- id: STUDIO-MARKET-01
+  name: Marktanalyse
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Business & Geld), 15.11.2026 „Ja, weiter“
 - id: STUDIO-ART-01
   name: Künstlerstudio (Zeichnen & Malen)
   approved_expansion_functions: '0'
