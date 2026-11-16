@@ -17,7 +17,7 @@ public class MusicToolsTests
         Assert.Equal("jazz ballad, smooth jazz, female vocals", MusicGenres.Style([MusicGenres.Find("Jazz-Ballade")!, MusicGenres.Find("Smooth Jazz")!], "female vocals"));
         Assert.True(MusicGenres.Voices.Length >= 12); Assert.Contains(MusicGenres.Voices, v => v.Name.StartsWith("Duett"));
         var vocab = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), DataLocation.ToolsFolderName, "ki", "laufzeit", "acestep", "acestep", "genres_vocab.txt");
-        if (!File.Exists(vocab)) return; // ACE-Step nicht eingerichtet – Begriffe sind am 03.11.2026 gegen die Liste geprüft
+        if (!File.Exists(vocab)) { Ueberspringen.Weil("ACE-Step ist auf diesem PC nicht eingerichtet (Wortliste fehlt)."); return; } // ACE-Step nicht eingerichtet – Begriffe sind am 03.11.2026 gegen die Liste geprüft
         var known = File.ReadLines(vocab).Select(l => l.Trim().ToLowerInvariant()).ToHashSet();
         Assert.All(MusicGenres.All, g => Assert.Contains(g.Tag.ToLowerInvariant(), known));
     }

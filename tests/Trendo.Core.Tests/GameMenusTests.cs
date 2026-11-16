@@ -28,7 +28,7 @@ public class GameMenusTests
     [Fact(DisplayName = "Spielmenü S1-14: Start im Menü (Spielen, Einstellungen, Steuerung), das Spiel steht still, Tasten erreichen das Spiel nicht; Enter (oder Leertaste) auf „Spielen“ startet")]
     public void Start_menu()
     {
-        if (Cli.Find("node") is null) return;
+        if (Cli.Find("node") is null) { Ueberspringen.Weil("Node.js fehlt auf diesem PC."); return; }
         var r = Run(new() { Level = Lv }, "{}", "const m0=mode,it=items().join('|');key('ArrowLeft');step();step();const f0=fr,kl=k.ArrowLeft?1:0;key('Enter');out({m0,it,f0,kl,m1:mode});");
         Assert.Equal("menu", r["m0"]!.GetValue<string>()); Assert.Equal("Spielen|Einstellungen|Steuerung", r["it"]!.GetValue<string>());
         Assert.Equal(0, r["f0"]!.GetValue<int>()); Assert.Equal(0, r["kl"]!.GetValue<int>());
@@ -38,7 +38,7 @@ public class GameMenusTests
     [Fact(DisplayName = "Spielmenü S1-14: mit Spielstand steht „Fortsetzen“ oben und setzt fort; „Spielen“ beginnt neu")]
     public void Continue()
     {
-        if (Cli.Find("node") is null) return;
+        if (Cli.Find("node") is null) { Ueberspringen.Weil("Node.js fehlt auf diesem PC."); return; }
         var store = new JsonObject { ["trendo-spielstand:Test"] = """{"version":1,"level":0,"score":42,"lives":2,"checkX":-1,"checkY":-1}""" }.ToJsonString();
         var cont = Run(new() { Level = Lv }, store, "const it=items()[0];key('Enter');out({it,mode,p});");
         Assert.Equal(("Fortsetzen", "play", 42), (cont["it"]!.GetValue<string>(), cont["mode"]!.GetValue<string>(), cont["p"]!.GetValue<int>()));
@@ -49,7 +49,7 @@ public class GameMenusTests
     [Fact(DisplayName = "Spielmenü S1-14: Esc pausiert (Spiel steht), Esc setzt fort; „Zum Menü“ führt zurück")]
     public void Pause()
     {
-        if (Cli.Find("node") is null) return;
+        if (Cli.Find("node") is null) { Ueberspringen.Weil("Node.js fehlt auf diesem PC."); return; }
         var r = Run(new() { Level = Lv, Menu = false }, "{}", "const m0=mode;step();key('Escape');const m1=mode,f1=fr;step();step();const f2=fr;key('Escape');const m2=mode;key('KeyP');key('ArrowDown');key('ArrowDown');key('ArrowDown');key('Enter');out({m0,m1,f1,f2,m2,m3:mode});");
         Assert.Equal(("play", "pause", "play", "menu"), (r["m0"]!.GetValue<string>(), r["m1"]!.GetValue<string>(), r["m2"]!.GetValue<string>(), r["m3"]!.GetValue<string>()));
         Assert.Equal(r["f1"]!.GetValue<int>(), r["f2"]!.GetValue<int>());
@@ -58,7 +58,7 @@ public class GameMenusTests
     [Fact(DisplayName = "Spielmenü S1-14: Einstellungen – Lautstärke in 25er-Schritten, hoher Kontrast, große Schrift, ruhige Effekte, Karte; bleiben beim nächsten Start; Steuerungshilfe")]
     public void Settings()
     {
-        if (Cli.Find("node") is null) return;
+        if (Cli.Find("node") is null) { Ueberspringen.Weil("Node.js fehlt auf diesem PC."); return; }
         var r = Run(new() { Level = Lv }, "{}",
             "key('ArrowDown');key('Enter');const m=mode;key('Enter');key('ArrowDown');key('Enter');key('ArrowDown');key('Enter');key('ArrowDown');key('Enter');key('ArrowDown');key('Enter');out({m,S,store:localStorage.getItem(MK)});");
         Assert.Equal("settings", r["m"]!.GetValue<string>());
@@ -76,7 +76,7 @@ public class GameMenusTests
         Assert.Contains("\"menu\":false", GameStudio.ConfigJs(new GameStudio.GameSettings { Menu = false }));
         Assert.Contains("function drawMenu()", GameStudio.GameJs("plattform")); Assert.DoesNotContain("/*MENUS*/", GameStudio.GameJs("plattform"));
         Assert.DoesNotContain("drawMenu", GameStudio.GameJs("snake"));
-        if (Cli.Find("node") is null) return;
+        if (Cli.Find("node") is null) { Ueberspringen.Weil("Node.js fehlt auf diesem PC."); return; }
         var r = Run(new() { Level = Lv, Menu = false }, "{}", "S.contrast=true;S.big=true;S.map=true;step();drawMenu();mode='settings';drawMenu();mode='help';drawMenu();out({ok:1,mode});");
         Assert.Equal(1, r["ok"]!.GetValue<int>());
     }

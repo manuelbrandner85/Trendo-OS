@@ -170,7 +170,7 @@ public class TextProTests
             var f = Path.Combine(dir, "bericht.odt"); OdtFormat.Write(Sample(), f);
             using (var z = ZipFile.OpenRead(f)) Assert.DoesNotContain("Trendo", string.Concat(z.Entries.Where(e => e.Name.EndsWith(".xml", StringComparison.Ordinal)).Select(e => new StreamReader(e.Open()).ReadToEnd())));
             CheckOdt(OdtFormat.Read(f));
-            if (Soffice() is not { } soffice) return;
+            if (Soffice() is not { } soffice) { Ueberspringen.Weil("LibreOffice fehlt auf diesem PC."); return; }
             var outDir = Path.Combine(dir, "out"); Directory.CreateDirectory(outDir);
             var psi = new ProcessStartInfo(soffice) { UseShellExecute = false, CreateNoWindow = true };
             foreach (var x in new[] { "-env:UserInstallation=" + new Uri(Path.Combine(dir, "profil")).AbsoluteUri, "--headless", "--norestore", "--convert-to", "odt", "--outdir", outDir, f }) psi.ArgumentList.Add(x);
@@ -190,7 +190,7 @@ public class TextProTests
     [Fact(DisplayName = "T-0230: Abgleich mit LibreOffice Writer – Writer öffnet Trendos DOCX und speichert DOCX, Trendo liest Seite, Kopf-/Fußzeile, Links, Kommentare, Fußnoten, Änderungen, Verzeichnis (nur mit LibreOffice)")]
     public void Writer_roundtrip()
     {
-        if (Soffice() is not { } soffice) return;
+        if (Soffice() is not { } soffice) { Ueberspringen.Weil("LibreOffice fehlt auf diesem PC."); return; }
         var dir = Temp();
         try
         {

@@ -70,7 +70,7 @@ public class LipSyncTests
     public void Real_whisper()
     {
         string? cli = Environment.GetEnvironmentVariable("TRENDO_LIP_WHISPER"), model = Environment.GetEnvironmentVariable("TRENDO_LIP_MODEL"), src = Environment.GetEnvironmentVariable("TRENDO_LIP_WAV");
-        var ff = Cli.Find("ffmpeg"); if (cli is null || model is null || src is null || ff is null) return;
+        var ff = Cli.Find("ffmpeg"); if (cli is null || model is null || src is null || ff is null) { Ueberspringen.Weil("Lippensync-Werkzeug, Modell, Beispielvideo oder FFmpeg fehlt auf diesem PC."); return; }
         var keep = Environment.GetEnvironmentVariable("TRENDO_LIP_BELEG");
         var dir = keep ?? Path.Combine(Path.GetTempPath(), "trendo-lipecht-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
         var log = new List<string>();
@@ -104,7 +104,7 @@ public class LipSyncTests
     public void Real_video_compare()
     {
         string? mj = Environment.GetEnvironmentVariable("TRENDO_LIP_MOUTH"), mw = Environment.GetEnvironmentVariable("TRENDO_LIP_MOUTH_WAV");
-        var ff = Cli.Find("ffmpeg"); if (mj is null || mw is null || ff is null) return;
+        var ff = Cli.Find("ffmpeg"); if (mj is null || mw is null || ff is null) { Ueberspringen.Weil("MuseTalk/Wav2Lip-Modelle oder FFmpeg fehlen auf diesem PC."); return; }
         var dir = Path.GetDirectoryName(mj)!;
         var j = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(mj))!; var fps = (double)j["fps"]!;
         var mouth = j["mund"]!.AsArray().Select(v => v is null ? 0 : (double)v).ToArray();
@@ -121,7 +121,7 @@ public class LipSyncTests
     [Fact(DisplayName = "S3-09 echt mit FFmpeg: Vergleichsvorschau (Mund mit Namen, Tonwelle, Ton) als MP4 in Länge der Aufnahme")]
     public void Real_preview()
     {
-        var ff = Cli.Find("ffmpeg"); if (ff is null) return;
+        var ff = Cli.Find("ffmpeg"); if (ff is null) { Ueberspringen.Weil("FFmpeg fehlt auf diesem PC."); return; }
         var dir = Path.Combine(Path.GetTempPath(), "trendo-lip-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
         try
         {

@@ -20,7 +20,7 @@ public class W4_Core07_DevStudio
     [NeedsFact("git", DisplayName = "CORE-07: Git-Stand anlegen, Änderung erkennen, speichern (echtes git)")]
     public void Git_roundtrip()
     {
-        if (Cli.Find("git") is null) return;
+        if (Cli.Find("git") is null) { Trendo.Core.Tests.Ueberspringen.Weil("Git fehlt auf diesem PC."); return; }
         var dir = DevStudio.Create(Tmp(), "web", "g");
         Assert.False(DevStudio.Git(dir).IsRepo);
         Assert.True(DevStudio.GitInit(dir).Ok);

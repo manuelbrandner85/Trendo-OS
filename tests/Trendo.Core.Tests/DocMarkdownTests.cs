@@ -46,7 +46,7 @@ public class CliEncodingTests
     public void Utf8_umlauts()
     {
         var py = Cli.Find("python") ?? Cli.Find("python3");
-        if (py is null) return; // ohne Python nichts zu prüfen
+        if (py is null) { Ueberspringen.Weil("Python fehlt auf diesem PC."); return; } // ohne Python nichts zu prüfen
         var r = Cli.Run(py, ["-I", "-X", "utf8", "-c", "import sys; print('Prüfung äöü'); print('beschädigt ß', file=sys.stderr)"], env: new Dictionary<string, string> { ["PYTHONIOENCODING"] = "utf-8" }, encoding: System.Text.Encoding.UTF8);
         Assert.Equal("Prüfung äöü", r.Out.Trim()); Assert.Equal("beschädigt ß", r.Err.Trim());
     }

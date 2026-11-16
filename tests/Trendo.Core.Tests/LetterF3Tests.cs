@@ -58,7 +58,7 @@ public class LetterF3Tests
         string? dic = null;
         for (var d = new DirectoryInfo(AppContext.BaseDirectory); d is not null && dic is null; d = d.Parent)
             if (File.Exists(Path.Combine(d.FullName, "Trendo.sln"))) dic = Path.Combine(d.FullName, "artifacts/vollpaket/staging/libreoffice/App/libreoffice/share/extensions/dict-de/de_DE_frami.dic");
-        if (dic is null || !File.Exists(dic)) return;
+        if (dic is null || !File.Exists(dic)) { Ueberspringen.Weil("das deutsche Wörterbuch aus dem Vollpaket fehlt."); return; }
         var s = Spelling.Load([dic])!;
         var text = "Hiermit kündige ich meinen Vertrag zum [Datumm].\nMit freundlichen Grüssen und Dankee";
         var m = s.CheckText(text);

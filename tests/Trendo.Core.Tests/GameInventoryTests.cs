@@ -58,7 +58,7 @@ public class GameInventoryTests
     [Fact(DisplayName = "Inventar S1-05 Browser-Spiel (echt mit Node): Apfel einsammeln, der Figur geben, +1 Leben; Inventar im Spielstand")]
     public void Browser_js()
     {
-        if (Cli.Find("node") is not { } node) return;
+        if (Cli.Find("node") is not { } node) { Ueberspringen.Weil("Node.js fehlt auf diesem PC."); return; }
         var dir = Path.Combine(Path.GetTempPath(), "trendo-inv-js-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
         try
         {

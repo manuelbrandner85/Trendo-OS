@@ -20,7 +20,7 @@ public class TimePitchTests
     [Fact(DisplayName = "S4-12-P echt mit FFmpeg/Rubber Band: Tempo 80 % und +2 Halbtöne sowie Intonation +30 Cent bleiben im Toleranzbereich (Länge ±1 %, Tonhöhe ±10 Cent, Phase stabil)")]
     public void Real_rubberband()
     {
-        var ff = Cli.Find("ffmpeg"); if (ff is null) return;
+        var ff = Cli.Find("ffmpeg"); if (ff is null) { Ueberspringen.Weil("FFmpeg fehlt auf diesem PC."); return; }
         var dir = Path.Combine(Path.GetTempPath(), "trendo-tp-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
         try
         {

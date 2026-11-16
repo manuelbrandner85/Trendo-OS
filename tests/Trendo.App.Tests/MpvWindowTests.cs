@@ -14,7 +14,7 @@ public class MpvWindowTests
         Assert.Contains("--force-window=no", args); Assert.Contains("--vo=null", args); Assert.Contains("--no-video", args);
         var mpv = new[] { Environment.ExpandEnvironmentVariables(@"%LOCALAPPDATA%\TrendoWerkzeuge\mpv\mpv.exe"), Cli.Find("mpv") ?? "" }.FirstOrDefault(File.Exists);
         var ff = Cli.Find("ffmpeg");
-        if (mpv is null || ff is null || !OperatingSystem.IsWindows()) return;
+        if (mpv is null || ff is null || !OperatingSystem.IsWindows()) { Assert.Skip("Übersprungen – braucht Windows, mpv und FFmpeg."); return; }
         var wav = Path.Combine(Path.GetTempPath(), "trendo-mpvwin-" + Guid.NewGuid().ToString("N")[..6] + ".wav");
         try
         {

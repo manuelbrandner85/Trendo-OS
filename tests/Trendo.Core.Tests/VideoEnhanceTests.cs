@@ -54,7 +54,7 @@ public class VideoEnhanceTests
     [Fact(DisplayName = "S3-12-P echt mit FFmpeg: verrauschter Clip entrauscht – gegen das saubere Original messbar besser (SSIM, PSNR); 2× hochskaliert ohne Artefakte, absichtlich kaputtes Hochskalieren rot")]
     public void Real_denoise_measured()
     {
-        var ff = Cli.Find("ffmpeg"); if (ff is null) return;
+        var ff = Cli.Find("ffmpeg"); if (ff is null) { Ueberspringen.Weil("FFmpeg fehlt auf diesem PC."); return; }
         var dir = Path.Combine(Path.GetTempPath(), "trendo-enh-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
         try
         {

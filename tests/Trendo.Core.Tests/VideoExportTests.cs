@@ -60,7 +60,7 @@ public class VideoExportTests
     [Fact(DisplayName = "Echter Export mit FFmpeg (Software-Encoder): Bereich 1–3 s als Hochformat 1080 × 1920 mit Lautheit; nur Ton als M4A")]
     public void Export_real()
     {
-        var ff = Cli.Find("ffmpeg"); if (ff is null) return;
+        var ff = Cli.Find("ffmpeg"); if (ff is null) { Ueberspringen.Weil("FFmpeg fehlt auf diesem PC."); return; }
         var (dir, P) = Dir();
         try
         {

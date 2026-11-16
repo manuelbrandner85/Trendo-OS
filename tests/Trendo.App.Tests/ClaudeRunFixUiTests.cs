@@ -22,7 +22,7 @@ public class ClaudeRunFix_Ui
     [Fact(DisplayName = "Claude-Lauf: „result“ gemeldet, Prozess bleibt offen (wie mit MCP-Werkzeugen) – Trendo ist trotzdem gleich fertig und räumt den Prozess auf; Mitschrift im Projekt")]
     public async Task Result_ends_run_even_if_process_stays()
     {
-        if (!OperatingSystem.IsWindows()) return;
+        if (!OperatingSystem.IsWindows()) { Assert.Skip("Übersprungen – nur unter Windows prüfbar."); return; }
         var dir = Temp(); var lines = new List<string>();
         try
         {
@@ -40,7 +40,7 @@ public class ClaudeRunFix_Ui
     [Fact(DisplayName = "Claude-Lauf: meldet zu lange nichts – Wächter beendet ihn mit verständlichem Hinweis")]
     public async Task Silence_watchdog()
     {
-        if (!OperatingSystem.IsWindows()) return;
+        if (!OperatingSystem.IsWindows()) { Assert.Skip("Übersprungen – nur unter Windows prüfbar."); return; }
         var dir = Temp(); var lines = new List<string>(); var before = MainWindow.ClaudeSilenceLimit;
         try
         {

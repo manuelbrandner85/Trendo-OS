@@ -176,7 +176,7 @@ public class UebersichtVorschlaege_Ui
         try
         {
             var waves = w.GetLogicalDescendants().OfType<Expander>().Where(e => e.Name?.StartsWith("progress-wave-", StringComparison.Ordinal) == true).ToList();
-            if (waves.Count == 0) return; // ohne Bauplan im Testordner keine Wellen
+            if (waves.Count == 0) { Assert.Skip("Übersprungen – kein Bauplan im Testordner, also keine Wellen zu prüfen."); return; } // ohne Bauplan im Testordner keine Wellen
             Assert.All(waves, e => Assert.False(e.IsExpanded));
         }
         finally { w.Close(); }

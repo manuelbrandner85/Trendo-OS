@@ -9,7 +9,7 @@ public class PluginInspectTests
     [Fact(DisplayName = "S4-06: statische Prüfung liest Architektur, Importe und Einstiegspunkt aus echten Windows-Programmdateien; Netz-Bibliothek als Hinweis; ohne VST3-Einstieg nicht ladbar")]
     public void System_dlls()
     {
-        if (!OperatingSystem.IsWindows()) return;
+        if (!OperatingSystem.IsWindows()) { Ueberspringen.Weil("nur unter Windows prüfbar."); return; }
         var sys = Environment.GetFolderPath(Environment.SpecialFolder.System);
         var r = PluginInspect.Inspect(Path.Combine(sys, "urlmon.dll"));
         Assert.Equal("x64", r.Arch); Assert.False(r.EntryFound); Assert.False(r.Loadable); Assert.Contains("GetPluginFactory", r.Problem);
@@ -42,7 +42,7 @@ public class PluginInspectTests
     [Fact(DisplayName = "S4-06 echt (nur lesen): Airwindows Consolidated VST3 und CLAP – x64, Einstiegspunkt gefunden, ladbar; Bericht mit Prüfsumme")]
     public void Real_plugin()
     {
-        if (Environment.GetEnvironmentVariable("TRENDO_PLUGIN_ECHT") is not { Length: > 0 } d) return;
+        if (Environment.GetEnvironmentVariable("TRENDO_PLUGIN_ECHT") is not { Length: > 0 } d) { Ueberspringen.Weil("nur mit gesetzter Umgebungsvariable TRENDO_PLUGIN_ECHT (echter Lauf)."); return; }
         var v = PluginInspect.Inspect(Path.Combine(d, "Airwindows Consolidated.vst3"));
         Assert.True(v.Loadable, v.Problem); Assert.Equal("x64", v.Arch);
         var c = PluginInspect.Inspect(Path.Combine(d, "Airwindows Consolidated.clap"));

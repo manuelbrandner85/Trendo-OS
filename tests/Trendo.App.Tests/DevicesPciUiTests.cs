@@ -18,7 +18,7 @@ public class DevicesPci_Ui
     [AvaloniaFact(DisplayName = "Geräte: namenloses PCI-Gerät erscheint mit Kennung und Angebot; „Namen nachschlagen“ lädt die Liste (Prüfsumme) und zeigt Hersteller und Modell; danach kein Angebot mehr")]
     public async Task Names()
     {
-        if (!OperatingSystem.IsWindows() || !File.Exists(Real)) return; // braucht Windows-Weg und pci.ids im Prüfordner
+        if (!OperatingSystem.IsWindows() || !File.Exists(Real)) { Assert.Skip("Übersprungen – braucht Windows und pci.ids im Prüfordner."); return; } // braucht Windows-Weg und pci.ids im Prüfordner
         var (w, _, _) = Ui.Open();
         try
         {

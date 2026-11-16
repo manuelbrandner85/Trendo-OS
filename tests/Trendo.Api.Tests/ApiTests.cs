@@ -40,7 +40,7 @@ public class Api_Auth_Binding(ApiFixture f) : IClassFixture<ApiFixture>
     {
         Assert.Equal("127.0.0.1", f.Api.BaseAddress.Host);
         var other = (await Dns.GetHostAddressesAsync(Dns.GetHostName())).FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(a));
-        if (other is null) return; // keine Nicht-Loopback-Adresse vorhanden → nicht prüfbar
+        if (other is null) { Ueberspringen.Weil("dieser PC hat keine Netzwerkadresse außer 127.0.0.1."); return; } // keine Nicht-Loopback-Adresse vorhanden → nicht prüfbar
         using var c = new TcpClient();
         await Assert.ThrowsAnyAsync<SocketException>(() => c.ConnectAsync(other, f.Api.Port).WaitAsync(TimeSpan.FromSeconds(5)));
     }

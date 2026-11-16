@@ -50,7 +50,7 @@ public class PluginHostTests
     public void Real_sandbox_host()
     {
         string? env = Environment.GetEnvironmentVariable("TRENDO_PLUGINHOST_ENV"), script = Environment.GetEnvironmentVariable("TRENDO_PLUGINHOST_SCRIPT"), crash = Environment.GetEnvironmentVariable("TRENDO_PLUGIN_CRASH");
-        if (env is null || script is null || crash is null || !OperatingSystem.IsWindows()) return;
+        if (env is null || script is null || crash is null || !OperatingSystem.IsWindows()) { Ueberspringen.Weil("braucht Windows und die eingerichtete Plugin-Umgebung."); return; }
         var keep = Environment.GetEnvironmentVariable("TRENDO_PLUGIN_BELEG"); var log = new List<string>();
         var root = Path.Combine(Path.GetTempPath(), "trendo-phr-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(root);
         try

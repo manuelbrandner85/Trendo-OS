@@ -61,7 +61,7 @@ public class GameVehicleTests
     [Fact(DisplayName = "Fahrzeug S1-05 Browser-Spiel (echt mit Node): Wagen einsteigen und schneller, Treffer kostet nur den Wagen; Ufo fliegt mit Treibstoff; E steigt aus")]
     public void Browser_js()
     {
-        if (Cli.Find("node") is not { } node) return;
+        if (Cli.Find("node") is not { } node) { Ueberspringen.Weil("Node.js fehlt auf diesem PC."); return; }
         var dir = Path.Combine(Path.GetTempPath(), "trendo-fahr-js-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
         try
         {

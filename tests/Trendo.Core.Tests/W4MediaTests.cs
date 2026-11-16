@@ -15,7 +15,7 @@ public class W4_Core08_Media
     [NeedsFact("ffmpeg", DisplayName = "CORE-08: Alle Aufgaben laufen mit echtem FFmpeg, Original bleibt, nichts wird überschrieben")]
     public void All_jobs()
     {
-        var src = Sample(out var dir); if (src is null) return;
+        var src = Sample(out var dir); if (src is null) { Trendo.Core.Tests.Ueberspringen.Weil("FFmpeg fehlt auf diesem PC (kein Beispielvideo erzeugbar)."); return; }
         var before = File.ReadAllBytes(src);
         foreach (var j in MediaStudio.Jobs.Where(j => j.Id != "image"))
         {

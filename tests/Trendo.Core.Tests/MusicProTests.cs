@@ -70,7 +70,7 @@ public class MusicProTests
     {
         Assert.Equal(30, MusicPro.HookStart([new(0, 30, 0.3), new(30, 60, 0.9), new(60, 90, 0.5)], 90, 20));
         Assert.Equal(70, MusicPro.HookStart([new(80, 90, 0.9)], 90, 20));
-        var ff = Cli.Find("ffmpeg"); if (ff is null) return;
+        var ff = Cli.Find("ffmpeg"); if (ff is null) { Ueberspringen.Weil("FFmpeg fehlt auf diesem PC."); return; }
         var dir = Path.Combine(Path.GetTempPath(), "trendo-hook-" + Guid.NewGuid().ToString("N")[..8]); Directory.CreateDirectory(dir);
         try
         {

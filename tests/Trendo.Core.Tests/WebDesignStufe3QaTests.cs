@@ -233,7 +233,7 @@ public class WebDesignStufe3QaTests
         var src = Dir(); var outside = Dir(); var proj = Dir(); try
         {
             File.WriteAllBytes(Path.Combine(outside, "fremd.png"), [137, 80, 78, 71]);
-            if (!Junction(Path.Combine(src, "verlinkt"), outside)) return; // ohne mklink (kein Windows) nicht prüfbar
+            if (!Junction(Path.Combine(src, "verlinkt"), outside)) { Ueberspringen.Weil("Ordner-Verknüpfung (mklink) lässt sich hier nicht anlegen."); return; } // ohne mklink (kein Windows) nicht prüfbar
             var r = WebDesignHtml.FromTree(new JsonArray(E("img", new JsonObject { ["src"] = "verlinkt/fremd.png" })), new WebDesignHtml.Context(proj, src));
             Assert.False(Directory.Exists(Path.Combine(proj, "bilder", "import")) && Directory.GetFiles(Path.Combine(proj, "bilder", "import")).Length > 0);
             Assert.Contains(r.Report, x => x.Contains("fremd.png"));

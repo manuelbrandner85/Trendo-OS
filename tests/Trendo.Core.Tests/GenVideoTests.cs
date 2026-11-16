@@ -61,7 +61,7 @@ public class GenVideoTests
     [Fact(DisplayName = "S3-13 echt: Wan 2.2 erzeugt einen Clip (1280 × 704); gleicher Zufallswert ergibt praktisch dieselben Bilder, anderer Zufallswert andere; Nachweis passt")]
     public void Real_generation()
     {
-        if (Environment.GetEnvironmentVariable("TRENDO_GENVIDEO_ECHT") is not { Length: > 0 } tools) return;
+        if (Environment.GetEnvironmentVariable("TRENDO_GENVIDEO_ECHT") is not { Length: > 0 } tools) { Ueberspringen.Weil("nur mit gesetzter Umgebungsvariable TRENDO_GENVIDEO_ECHT (echter Lauf)."); return; }
         var md = Path.Combine(tools, "ki", "modelle", "wan2.2-szenen"); var sd = Path.Combine(tools, "ki", "laufzeit", "stablediffusioncpp", "sd-cli.exe");
         var ff = Cli.Find("ffmpeg"); Assert.NotNull(ff); Assert.True(File.Exists(sd), sd);
         var m = new GenVideo.Model("wan2.2-szenen", "Wan 2.2 – Filmszenen (5B)", "Apache-2.0", Path.Combine(md, "Wan2.2-TI2V-5B-Q6_K.gguf"), Path.Combine(md, "umt5-xxl-encoder-Q8_0.gguf"), Path.Combine(md, "wan2.2_vae.safetensors"));

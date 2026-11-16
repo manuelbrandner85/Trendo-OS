@@ -176,7 +176,7 @@ public class QA004_ApprovalGate
     [Fact(DisplayName = "Secrets (nur Windows): Credential Manager Roundtrip")]
     public void Windows_credential_roundtrip()
     {
-        if (!OperatingSystem.IsWindows()) return; // auf Linux nicht anwendbar
+        if (!OperatingSystem.IsWindows()) { Ueberspringen.Weil("nur unter Windows prüfbar."); return; } // auf Linux nicht anwendbar
         var s = new WindowsCredentialStore();
         var key = "selftest-" + Guid.NewGuid().ToString("N");
         s.Set(key, "wert-äöü");

@@ -65,7 +65,7 @@ public class Sys10_Office
     [NeedsFact("dep:libreoffice", DisplayName = "SYS-10-P05/P06: Seitenzahl und A4 eines echten LibreOffice-PDFs")]
     public void PdfPages()
     {
-        if (Lo is null) return;
+        if (Lo is null) { Ueberspringen.Weil("LibreOffice fehlt auf diesem PC."); return; }
         var d = Tmp(); var a = Path.Combine(d, "a.docx"); Ooxml.NewDocx(a, "A", Enumerable.Range(0, 120).Select(i => "Zeile " + i)); var pa = ToPdf(a);
         var b = Path.Combine(d, "b.docx"); Ooxml.NewDocx(b, "B", ["x"]); var pb = ToPdf(b);
         var na = Pdf.Pages(pa); Assert.True(na >= 2); Assert.Equal(1, Pdf.Pages(pb)); Assert.True(Pdf.IsA4(Pdf.MediaBox(pa)));
@@ -74,7 +74,7 @@ public class Sys10_Office
     [NeedsFact("dep:libreoffice", "pdftotext", DisplayName = "SYS-10-P07: Text aus einem echten PDF")]
     public void Text()
     {
-        if (Lo is null || Cli.Find("pdftotext") is null) return;
+        if (Lo is null || Cli.Find("pdftotext") is null) { Ueberspringen.Weil("LibreOffice oder pdftotext fehlt auf diesem PC."); return; }
         var d = Tmp(); var a = Path.Combine(d, "a.docx"); Ooxml.NewDocx(a, "Rechnung Nummer 4711", ["Betrag 12,50 Euro"]); var pdf = ToPdf(a);
         var (ok, t, _) = PdfText.Extract(pdf, Cli.Find("pdftotext"), null, null); Assert.True(ok); Assert.Contains("4711", t);
     }

@@ -79,7 +79,7 @@ public class CORE09_Cameras
     {
         var args = CameraFfmpeg.RecordArgs(new CameraDevice("d", "Cam", CameraKind.Webcam, "/dev/video0"), "out.mp4", false);
         Assert.Equal("out.mp4", args[^1]);
-        if (!OperatingSystem.IsLinux()) return;
+        if (!OperatingSystem.IsLinux()) { Ueberspringen.Weil("nur unter Linux prüfbar."); return; }
         var dir = Path.Combine(Path.GetTempPath(), "trendo-rec-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(dir);
         var script = Path.Combine(dir, "fake-ffmpeg");

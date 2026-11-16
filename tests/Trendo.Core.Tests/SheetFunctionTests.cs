@@ -136,7 +136,7 @@ public class SheetFunctionTests
     [Fact(DisplayName = "T-0228 E4: Abgleich mit LibreOffice Calc – Calc rechnet alle Formeln selbst nach (ohne gespeicherte Ergebnisse) (nur mit LibreOffice)")]
     public void Same_as_libreoffice()
     {
-        if (Soffice() is not { } soffice) return;
+        if (Soffice() is not { } soffice) { Ueberspringen.Weil("LibreOffice fehlt auf diesem PC."); return; }
         var dir = Path.Combine(Path.GetTempPath(), "trendo-fn-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(dir);
         try
         {
