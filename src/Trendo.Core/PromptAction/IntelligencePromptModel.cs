@@ -46,6 +46,7 @@ public static class PromptActions
             new LicenseFetchAdapter(), new LicenseNoteAdapter(),
             new XrBudgetAdapter(), new ScanBlockedAdapter(),
             new CodeProjectAdapter(), new VisionFactsAdapter(), new CiteSourceAdapter(), new DayPlanAdapter(), new KunstVorlageAdapter(),
+            new SocialPlanAdapter(), new NewsletterDraftAdapter(), new FlyerSpecAdapter(), new LandingPageAdapter(),
             ..SystemActions.Create()
         ];
 }
