@@ -103,6 +103,8 @@ if (Environment.GetEnvironmentVariable("TRENDO_GAME_LEVELS") is { Length: > 0 })
     win.GameRenameLevel(gd, 0, "Wiese"); win.GameAddLevel(gd); win.GameRenameLevel(gd, 1, "Höhle"); win.GameLevelIndex = 0;
     gd.Edit("Hintergrund", x => x["decor"] = new System.Text.Json.Nodes.JsonArray("..w.......w.........w.....", "......m.........w.........", "..............t.......t...", ".....t....b.........b....."));
     win.GameLayer = Environment.GetEnvironmentVariable("TRENDO_GAME_LEVELS") == "hintergrund" ? "hintergrund" : "spiel";
+    if (Environment.GetEnvironmentVariable("TRENDO_LEVEL") is { Length: > 0 } glv) win.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Of(glv));
+    if (Environment.GetEnvironmentVariable("TRENDO_GAME_VIEW") == "oben") { win.GameSetView(gd, "oben"); gd.Set("level", new System.Text.Json.Nodes.JsonArray([.. Trendo.Core.Programs.GameDesign.DefaultTopDown.Select(r => (System.Text.Json.Nodes.JsonNode)r)]), "Level"); } // T-0690: Blick von oben
     if (Environment.GetEnvironmentVariable("TRENDO_GAME_LEVELS") is "produktion" or "test") { win.GameSection = Environment.GetEnvironmentVariable("TRENDO_GAME_LEVELS") == "test" ? "Test" : "Produktion"; gd.Edit("Notiz", x => Trendo.Core.Programs.GamePro.AddNote(x, 1, 18, 8, "Gegner kommt zu früh", true)); }
     win.Show("spiele-programm");
 }

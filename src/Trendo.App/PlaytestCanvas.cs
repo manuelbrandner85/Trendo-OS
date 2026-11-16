@@ -43,16 +43,17 @@ public sealed class PlaytestCanvas : Control
     {
         base.OnKeyDown(e);
         if (e.Key == Key.Escape) { Stop?.Invoke(); e.Handled = true; return; }
-        if (e.Key is Key.Left or Key.Right or Key.Up or Key.Space or Key.A or Key.D or Key.W or Key.LeftShift or Key.RightShift or Key.X or Key.J or Key.E) { _down.Add(e.Key); e.Handled = true; }
+        if (e.Key is Key.Left or Key.Right or Key.Up or Key.Down or Key.S or Key.Space or Key.A or Key.D or Key.W or Key.LeftShift or Key.RightShift or Key.X or Key.J or Key.E) { _down.Add(e.Key); e.Handled = true; }
     }
     protected override void OnKeyUp(KeyEventArgs e) { base.OnKeyUp(e); _down.Remove(e.Key); }
     protected override void OnPointerPressed(PointerPressedEventArgs e) { base.OnPointerPressed(e); Focus(); }
 
     /// <summary>Ein Bild weiter mit den gehaltenen Tasten (öffentlich für Tests).</summary>
-    public void Tick(bool? left = null, bool? right = null, bool? jump = null, bool? sprint = null, bool? attack = null, bool? use = null)
+    public void Tick(bool? left = null, bool? right = null, bool? jump = null, bool? sprint = null, bool? attack = null, bool? use = null, bool? up = null, bool? down = null)
     {
         Sim.Step(left ?? (_down.Contains(Key.Left) || _down.Contains(Key.A)), right ?? (_down.Contains(Key.Right) || _down.Contains(Key.D)),
-            jump ?? (_down.Contains(Key.Space) || _down.Contains(Key.Up) || _down.Contains(Key.W)), sprint ?? (_down.Contains(Key.LeftShift) || _down.Contains(Key.RightShift)), attack ?? (_down.Contains(Key.X) || _down.Contains(Key.J)), use ?? _down.Contains(Key.E));
+            jump ?? (_down.Contains(Key.Space) || _down.Contains(Key.Up) || _down.Contains(Key.W)), sprint ?? (_down.Contains(Key.LeftShift) || _down.Contains(Key.RightShift)), attack ?? (_down.Contains(Key.X) || _down.Contains(Key.J)), use ?? _down.Contains(Key.E),
+            up ?? (_down.Contains(Key.Up) || _down.Contains(Key.W)), down ?? (_down.Contains(Key.Down) || _down.Contains(Key.S)));
         InvalidateVisual(); Ticked?.Invoke();
         if (Sim.Over && !_wasOver) { _wasOver = true; Ended?.Invoke(); }
         _wasOver = Sim.Over;
@@ -82,12 +83,12 @@ public sealed class PlaytestCanvas : Control
                 for (var x = Math.Max(0, x0); x <= x1 && x < s.Cols; x++)
                 {
                     var ch = s.At(x, y); if (ch is 'o' or 'E' or 'S' or '.' || (ch == 'D' && s.DoorsOpen)) continue; // offene Türen verschwinden // Münzen und Gegner bewegen sich bzw. verschwinden
-                    LevelCanvas.DrawTile(ctx, ch, new Rect(x * c, y * c, c, c), y == 0 || s.At(x, y - 1) != '#');
+                    LevelCanvas.DrawTile(ctx, ch, new Rect(x * c, y * c, c, c), !s.TopDown && (y == 0 || s.At(x, y - 1) != '#'), s.TopDown);
                 }
             foreach (var q in s.Coins.Where(q => !q.Taken)) LevelCanvas.DrawTile(ctx, 'o', new Rect(q.Col * c, q.Row * c, c, c), false);
             foreach (var f in s.Foes.Where(f => f.Alive))
             {
-                if (!(f.Hurt > 0 && f.Hurt % 4 < 2)) LevelCanvas.DrawTile(ctx, 'E', new Rect(f.X * k - 4 * k, f.Y * k - 6 * k, c, c), false);
+                if (!(f.Hurt > 0 && f.Hurt % 4 < 2)) LevelCanvas.DrawTile(ctx, 'E', new Rect(f.X * k - 4 * k, f.Y * k - (s.TopDown ? 3 : 6) * k, c, c), false);
                 if (f.MaxHp > 1) { ctx.FillRectangle(Brushes.Black, new Rect((f.X - 2) * k, (f.Y - 8) * k, 28 * k, 4 * k)); ctx.FillRectangle(HpBar, new Rect((f.X - 2) * k, (f.Y - 8) * k, 28 * k * f.Hp / f.MaxHp, 4 * k)); }
             }
             foreach (var sh in s.Shots) ctx.DrawEllipse(LevelCanvas.Coin, null, new Point(sh.X * k, sh.Y * k), 4 * k, 4 * k);
@@ -119,7 +120,7 @@ public sealed class PlaytestCanvas : Control
         }
         else if (!IsFocused)
         {
-            var t = new FormattedText("Hier klicken, dann spielen: ← → laufen · Leertaste springt · Esc beendet", System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Inter"), 13, Brushes.White);
+            var t = new FormattedText(s.TopDown ? "Hier klicken, dann spielen: Pfeiltasten laufen in alle vier Richtungen · Esc beendet" : "Hier klicken, dann spielen: ← → laufen · Leertaste springt · Esc beendet", System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Inter"), 13, Brushes.White);
             ctx.FillRectangle(Shade, new Rect((Bounds.Width - t.Width) / 2 - 10, Bounds.Height - t.Height - 22, t.Width + 20, t.Height + 10)); ctx.DrawText(t, new Point((Bounds.Width - t.Width) / 2, Bounds.Height - t.Height - 17));
         }
     }

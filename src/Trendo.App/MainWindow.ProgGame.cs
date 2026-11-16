@@ -19,7 +19,7 @@ public partial class MainWindow
 
     private void InitProgGame() => RegisterProgram(KreativTabs, new ProgramSpec(GK, "CORE-06", "Spiele bauen")
     {
-        Sentence = "Vom kleinen Retro-Spiel bis zum AAA+-Projekt in Unreal Engine 5 – mit Spielbibel, Figuren, Welt, Missionen und Produktion.",
+        Sentence = "Eigene 2D-Spiele malen und sofort spielen – größere 3D-Vorhaben als Unreal-Projekt, mit Spielbibel, Figuren, Welt, Missionen und Produktion.",
         Folder = "Spiele",
         Templates = [.. GameDesign.Templates.Select(t => new ProgramTemplate(t.Id, t.Name, $"{t.Hint} · {GameDesign.ScaleOf(t.Scale).Name}", t.Bible))],
         Ribbon =
@@ -45,7 +45,7 @@ public partial class MainWindow
         SimpleExports = 2, // PDF und Text
         StartTop = () => new StackPanel { Children = { GamePromptBar(null), GameIdeasCard() } }, // Spiele-Prompt: Spiel aus einem Satz; T-0610: Ideen finden
         Status = d => { var s = GameDesign.ScaleOf(d.Text("scale")); var w = GameDesign.Check(d.Data).Count; return $"{s.Name} · {(s.Engine == "unreal" ? "Unreal Engine 5" : "Browser")} · {GameDesign.Overall(d.Data)} % geplant · {(w == 0 ? "keine Hinweise" : $"{w} Hinweis(e)")}"; },
-        Help = "Wähle oben den Bereich: Übersicht, Ideen, Spielbibel, Figuren, Welt, Missionen, Produktion oder Bauen. In der Spielbibel lässt sich jeder Abschnitt verschieben, bebildern und mit der KI besprechen. Retro-Spiele sind sofort im Browser spielbar, 3D bis AAA+ entsteht als Unreal-Projekt mit deiner Spielbibel.",
+        Help = "Wähle oben den Bereich: Übersicht, Ideen, Spielbibel, Figuren, Welt, Missionen, Produktion oder Bauen. In der Spielbibel lässt sich jeder Abschnitt verschieben, bebildern und mit der KI besprechen. Kachelspiele (von der Seite oder von oben) sind sofort im Fenster und im Browser spielbar; 3D entsteht als Unreal-Projekt mit deiner Spielbibel.",
     }, "spiel", "spiele", "game", "retro", "unreal", "aaa", "rpg", "level", "boss", "spielbibel");
 
     static void GameAdd(ProgramDocument d, string key, JsonObject item) => d.Edit("Hinzufügen", x => { var l = x[key] as JsonArray ?? []; l.Add(item); x[key] = l; });
@@ -242,18 +242,29 @@ public partial class MainWindow
         var sp = new StackPanel { Spacing = 8, Children = { H(scale.Engine == "browser" ? "Spielbar im Browser" : "Unreal Engine 5", 14) } };
         if (scale.Engine == "browser")
         {
-            sp.Children.Add(P("„Bauen“ legt ein spielbares Spiel an (HTML und JavaScript, ohne Internet). „Spielen“ öffnet es. Grafik und Farben stellst du danach im Reiter „Werkstatt“ ein.", null, 12));
+            sp.Children.Add(P("„Bauen“ legt ein spielbares Spiel an (HTML und JavaScript, ohne Internet) – ein Ordner, den du weitergeben kannst. „Spielen“ öffnet es im Browser. Level, Regeln, Bilder und Töne änderst du im Bereich „Level“.", null, 12));
         }
         else
         {
             var engines = _opt.Isolated ? [] : GameStudio.FindEngines();
             sp.Children.Add(P(engines.Count > 0 ? $"Gefunden: Unreal Engine {string.Join(", ", engines.Select(e => e.Version))}." : "Unreal Engine 5 ist auf diesem PC nicht installiert. Sie ist kostenlos und kommt über den Epic Games Launcher.", engines.Count > 0 ? Text : Brush.Parse("#F5A524"), 12));
-            sp.Children.Add(P("„Bauen“ legt ein spielbares Unreal-Spiel an: C++-Code mit deinen Leveln und Regeln plus Spielbibel (Ordner „Design“). " + (scale.Id is "aa" or "aaa" ? "Für AA und AAA+ sind Lumen (globale Beleuchtung), virtuelle Schatten und Distanzfelder eingeschaltet; Nanite-Modelle kommen aus dem 3D-Studio und Blender." : ""), null, 12));
+            sp.Children.Add(P("„Bauen“ legt ein spielbares Unreal-Spiel an: C++-Code mit deinen Leveln und Regeln plus Spielbibel (Ordner „Design“). " + (scale.Id is "aa" or "aaa" ? "Bei diesem Umfang schaltet Trendo zusätzlich fünf Bild-Einstellungen ein (Lumen für Licht und Spiegelungen, virtuelle Schatten, Distanzfelder). Mehr nicht: Welt, Figuren und Qualität eines großen Spiels entstehen erst durch die Arbeit in Unreal." : ""), null, 12));
             if (engines.Count == 0 && !_opt.Isolated) sp.Children.Add(Act("game-epic", "Epic Games Launcher (offizielle Seite)", () => Launch("https://www.unrealengine.com/de/download")));
         }
         var built = d.Text("built");
         sp.Children.Add(P(built.Length > 0 ? "Zuletzt gebaut: " + built : "Noch nicht gebaut.", Text, 12));
         sp.Children.Add(new WrapPanel { Children = { Act("game-build", "Bauen", () => ProgramRun(GK, () => GameBuild(d)), true), new Border { Width = 6 }, Act("game-play", scale.Engine == "browser" ? "Spielen" : "In Unreal öffnen", () => ProgramRun(GK, () => GamePlay(d))) } });
+        if (scale.Engine == "browser" && d.Text("browser") == "plattform")
+        {
+            // T-0690: das gebaute Spiel in echtem Chrome/Edge starten und mit echten Tastendrücken anspielen
+            sp.Children.Add(Act("game-browser-check", "Im echten Browser prüfen", async () =>
+            {
+                try { await GameBrowserCheck(d); }
+                catch (Exception e) when (e is InvalidOperationException or IOException or TimeoutException) { _progMsg[GK] = e.Message; }
+                Show(GK);
+            }));
+            if (LastBrowserCheck.Length > 0) sp.Children.Add(new TextBlock { Name = "game-browser-result", Text = LastBrowserCheck, Foreground = LastBrowserCheck.StartsWith("✓") ? Brush.Parse("#2FBF71") : Brush.Parse("#F5A524"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
+        }
         sp.Children.Add(GameEngineSetupCard(d)); // T-0650 E1: Engine einrichten, nur Geprüftes gilt
         if (scale.Engine == "unreal") sp.Children.Add(GameUnrealView(d)); // 3D-Spiel in Unreal: kompilieren, prüfen, spielen
         sp.Children.Add(GameEnginesView(d)); // Paket 01 S1-01: Unreal, Unity, Godot, Blender
@@ -443,9 +454,10 @@ public partial class MainWindow
     public void GamePlayHere(ProgramDocument d)
     {
         var rows = GameRows(d);
-        if (GameStudio.CheckPlatform(rows) is { Count: > 0 } w && w.Any(x => x.StartsWith("Kein"))) throw new InvalidOperationException(w.First(x => x.StartsWith("Kein")));
+        var view = GameDesign.View(d.Data);
+        if (GameStudio.CheckPlatform(rows, view == "oben") is { Count: > 0 } w && w.Any(x => x.StartsWith("Kein"))) throw new InvalidOperationException(w.First(x => x.StartsWith("Kein")));
         var more = Enumerable.Range(1, GameLevelCount(d) - 1).Select(i => (IReadOnlyList<string>)GameLevelRows(d, i)).ToList();
-        _gamePlay = new PlatformSim(rows, (int)d.Number("speed", 5), (int)d.Number("lives", 3), GameProps(d), (int)d.Number("timeLimit", 0), GameDesign.Rules(d.Data), more, GameDesign.Abilities(d.Data), GameDesign.Texts(d.Data), GameDesign.Weapon(d.Data));
+        _gamePlay = new PlatformSim(rows, (int)d.Number("speed", 5), (int)d.Number("lives", 3), GameProps(d), (int)d.Number("timeLimit", 0), GameDesign.Rules(d.Data), more, GameDesign.Abilities(d.Data), GameDesign.Texts(d.Data), GameDesign.Weapon(d.Data), view);
         _core.Audit.Append(Principal.LocalOwner.Name, "game.playtest", d.Text("title"));
     }
 
@@ -455,7 +467,7 @@ public partial class MainWindow
         if (kind == "plattform" && _gamePlay is not null) return GamePlayView(d);
         if (kind != "plattform") { _gameLevelIdx = 0; GameLayer = "spiel"; }
         _gameLevelIdx = Math.Min(_gameLevelIdx, GameLevelCount(d) - 1);
-        var li = _gameLevelIdx; var deco = kind == "plattform" && GameLayer == "hintergrund";
+        var li = _gameLevelIdx; var deco = kind == "plattform" && GameLayer == "hintergrund"; var top = kind == "plattform" && GameDesign.View(d.Data) == "oben";
         var rows = GameLevelRows(d, li);
         var tiles = deco
             ? new (char Ch, string Id, string Label)[] { ('w', "wolke", "Wolke"), ('m', "berg", "Berg"), ('t', "baum", "Baum"), ('b', "busch", "Busch"), ('g', "gras", "Gras"), ('.', "radierer", "Radierer") }
@@ -463,7 +475,7 @@ public partial class MainWindow
             ? new (char Ch, string Id, string Label)[] { (LevelCanvas.PickTool, "auswahl", "Auswählen"), ('#', "boden", "Boden"), ('o', "muenze", "Münze"), ('E', "gegner", "Gegner"), ('^', "stacheln", "Stacheln"), ('S', "start", "Start"), ('F', "feder", "Sprungfeder"), ('C', "speicher", "Speicherpunkt"), ('K', "schluessel", "Schlüssel"), ('D', "tuer", "Tür"), ('G', "gegenstand", "Gegenstand"), ('N', "figur", "Sprechende Figur"), ('V', "fahrzeug", "Fahrzeug"), ('Z', "ziel", "Ziel"), ('.', "radierer", "Radierer") }
             : [('#', "boden", kind == "breakout" ? "Stein" : "Hindernis"), ('.', "radierer", "Radierer")];
         if (!tiles.Any(t => t.Ch == GameTile)) GameTile = tiles[deco ? 0 : kind == "plattform" ? 1 : 0].Ch;
-        var canvas = new LevelCanvas { Name = "game-level", Rows = deco ? GameDecorRows(d, li) : rows, Tile = GameTile, Cell = kind == "jump" ? 18 : 22, Selected = deco ? null : GameObjSel,
+        var canvas = new LevelCanvas { Name = "game-level", Rows = deco ? GameDecorRows(d, li) : rows, Tile = GameTile, Cell = kind == "jump" ? 18 : 22, Selected = deco ? null : GameObjSel, TopDown = top,
             Ghost = kind != "plattform" ? null : deco ? rows : GameDecorRows(d, li) };
         GameLevelForTests = canvas;
         canvas.LevelChanged = l => ProgramRun(GK, () => GameSetRows(d, li, l, deco ? "Hintergrund malen" : "Level malen", deco ? "decor" : "rows"));
@@ -490,22 +502,23 @@ public partial class MainWindow
         var tools = new WrapPanel { Children = { palette, new Border { Width = 12 }, more, new Border { Width = 4 }, less, new Border { Width = 12 } } };
         if (kind == "plattform")
         {
-            var play = new Button { Name = "game-level-play", Content = "Im Fenster spielen", Background = Accent, Foreground = Brushes.White, Margin = new Thickness(0, 0, 4, 0) };
+            var play = new Button { Name = "game-level-play", Content = "▶ Spielen", Background = Accent, Foreground = Brushes.White, FontWeight = FontWeight.SemiBold, Padding = new Thickness(16, 6), Margin = new Thickness(0, 0, 4, 0) };
+            ToolTip.SetTip(play, "Spielt das Level sofort hier im Fenster – mit denselben Regeln wie das gebaute Spiel. Esc bringt dich zurück zum Malen.");
             play.Click += (_, _) => ProgramRun(GK, () => GamePlayHere(d));
             tools.Children.Add(play);
         }
         tools.Children.Add(test);
         Control? levelBar = kind == "plattform" ? GameLevelBar(d, li) : null;
         var hints = new StackPanel { Name = "game-level-hints", Spacing = 2 };
-        foreach (var h in kind == "plattform" ? GameStudio.CheckPlatform(rows) : []) hints.Children.Add(P("⚠ " + h, Brush.Parse("#F5A524"), 12));
-        if (hints.Children.Count == 0 && kind == "plattform") hints.Children.Add(P("✓ Start, Ziel und Boden sind da – „Im Fenster spielen“ startet sofort, „Im Browser testen“ baut das fertige Spiel.", Brush.Parse("#2FBF71"), 12));
+        foreach (var h in kind == "plattform" ? GameStudio.CheckPlatform(rows, top) : []) hints.Children.Add(P("⚠ " + h, Brush.Parse("#F5A524"), 12));
+        if (hints.Children.Count == 0 && kind == "plattform") hints.Children.Add(P(top ? "✓ Start und Ziel sind da – „Spielen“ startet sofort im Fenster, „Im Browser testen“ baut das fertige Spiel." : "✓ Start, Ziel und Boden sind da – „Spielen“ startet sofort im Fenster, „Im Browser testen“ baut das fertige Spiel.", Brush.Parse("#2FBF71"), 12));
         var stats = string.Concat(rows);
         var info = P(kind == "plattform" ? $"{rows.Max(x => x.Length)} × {rows.Count} Kacheln · {stats.Count(ch => ch == 'o')} Münzen · {stats.Count(ch => ch == 'E')} Gegner · {stats.Count(ch => ch == '^')} Stacheln" : $"{rows.Max(x => x.Length)} × {rows.Count} Kacheln", Muted, 11.5);
         Control scene = new ScrollViewer { Content = canvas, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Disabled, MaxHeight = 16 * 22 + 20, VerticalAlignment = VerticalAlignment.Top };
         if (kind == "plattform")
             scene = new Grid { ColumnDefinitions = new ColumnDefinitions("*,12,260"), Children = { scene, Pos(GameObjPanel(d, rows), 2) } };
         var outer = new StackPanel { Spacing = 8 };
-        if (levelBar is not null) outer.Children.Add(levelBar);
+        if (levelBar is not null) { outer.Children.Add(levelBar); outer.Children.Add(GameViewRow(d)); }
         outer.Children.Add(new StackPanel { Spacing = 8, Children = {
             tools,
             new TextBlock { Text = deco ? "Hintergrund: Wolken, Berge, Bäume, Büsche und Gras sind nur Deko – die Figur läuft hindurch. Die Spiel-Ebene ist blass zu sehen." : kind == "plattform" ? "Linke Maustaste malt (auch ziehen), rechte radiert · „Auswählen“ zeigt rechts die Eigenschaften eines Objekts" : "Linke Maustaste malt (auch ziehen), rechte radiert. Jeder Strich ist ein Schritt im Rückgängig.", Foreground = Muted, FontSize = 11.5 },
@@ -606,6 +619,7 @@ public partial class MainWindow
         sp.Children.Add(Row(P("Waffe", Muted, 11.5), weapon));
         sp.Children.Add(GameAnimPanel(d));
         sp.Children.Add(GameSoundPanel(d));
+        sp.Children.Add(GameImagePanel(d));
         sp.Children.Add(H("Objekt", 13));
         if (GameObjSel is not { } sel || sel.Y >= rows.Count || sel.X >= rows[sel.Y].Length)
         {
@@ -615,7 +629,7 @@ public partial class MainWindow
         var ch = rows[sel.Y][sel.X]; var key = GameKeyPrefix(_gameLevelIdx) + $"{sel.X},{sel.Y}"; var lvi = _gameLevelIdx;
         var (name, what) = ch switch
         {
-            'E' => ("Gegner", "Läuft hin und her und kehrt an Wand oder Kante um. Draufspringen besiegt ihn."),
+            'E' => ("Gegner", GameDesign.View(d.Data) == "oben" ? "Läuft hin und her und kehrt an Wänden um. Berühren kostet ein Leben – besiegen geht nur mit einer Waffe." : "Läuft hin und her und kehrt an Wand oder Kante um. Draufspringen besiegt ihn."),
             'o' => ("Münze", "Bringt Punkte."), '#' => ("Boden", "Fester Boden oder Wand."), '^' => ("Stacheln", "Kostet ein Leben."),
             'S' => ("Start", "Hier beginnt die Figur."), 'Z' => ("Ziel", "Erreichen = geschafft (+10 Punkte)."),
             'F' => ("Sprungfeder", "Draufstehen schleudert die Figur hoch."), 'C' => ("Speicherpunkt", "Berühren: nach einem Treffer geht es hier weiter."),
@@ -630,6 +644,12 @@ public partial class MainWindow
         void SetProp(string k, double v, string label) => d.Edit(label, x => { var o = x["objects"] as JsonObject ?? []; o[$"{key}:{k}"] = v; x["objects"] = o; });
         if (ch == 'E') Num("game-obj-speed", "Tempo (× 0,25–4)", props.GetValueOrDefault(key + ":speed", 1), 0.25, 4, v => SetProp("speed", Math.Round(v, 2), "Gegner-Tempo"));
         if (ch == 'E') Num("game-obj-hp", "Treffer bis besiegt (1–9, ab 2 Boss)", props.GetValueOrDefault(key + ":hp", 1), 1, 9, v => SetProp("hp", Math.Round(v), "Gegner-Trefferpunkte"));
+        if (ch == 'E')
+        {
+            var chase = new CheckBox { Name = "game-obj-chase", IsChecked = props.GetValueOrDefault(key + ":chase", 0) >= 0.5, Content = new TextBlock { Text = "Verfolgt die Spielfigur in der Nähe", Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap } };
+            chase.IsCheckedChanged += (_, _) => ProgramRun(GK, () => SetProp("chase", chase.IsChecked == true ? 1 : 0, chase.IsChecked == true ? "Gegner verfolgt" : "Gegner läuft hin und her"));
+            sp.Children.Add(chase);
+        }
         if (ch == 'o') Num("game-obj-value", "Wert (Punkte)", props.GetValueOrDefault(key + ":value", 1), 1, 100, v => SetProp("value", Math.Round(v), "Münzwert"));
         if (ch is 'G' or 'N') GameObjTexts(d, sp, ch, key);
         if (ch == 'V')
@@ -722,6 +742,6 @@ public partial class MainWindow
             new WrapPanel { Children = { status, again, new Border { Width = 6 }, save, new Border { Width = 4 }, load, new Border { Width = 6 }, stop } },
             GamePlayNoteBar(d),
             new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = canvas },
-            P("← → oder A/D laufen · Leertaste, ↑ oder W springt · Esc zurück zum Editor · gleiche Regeln wie im gebauten Spiel", Muted, 11.5) } };
+            P(sim.TopDown ? "Pfeiltasten oder W/A/S/D laufen in alle vier Richtungen · X greift an · Esc zurück zum Editor · gleiche Regeln wie im gebauten Spiel" : "← → oder A/D laufen · Leertaste, ↑ oder W springt · Esc zurück zum Editor · gleiche Regeln wie im gebauten Spiel", Muted, 11.5) } };
     }
 }

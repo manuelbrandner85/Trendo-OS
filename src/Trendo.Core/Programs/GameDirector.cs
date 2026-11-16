@@ -31,7 +31,7 @@ public static class GameDirector
     ];
 
     static readonly string[] Keys = ["title", "scale", "genre", "logline", "loop", "controls", "style", "audience", "platforms", "sound", "menus", "systems", "browser", "world3d",
-        "mechanics", "characters", "world", "quests", "level", "weapon", "abilities", "violence", "engine", "engineReason", "blender"];
+        "mechanics", "characters", "world", "quests", "level", "weapon", "abilities", "violence", "engine", "engineReason", "blender", "view"];
 
     /// <summary>Anweisungen für die KI (lokal oder Claude): Profi-Team, Liefer-Format (eine Spielbibel als JSON), Rückfragen und Vorschläge.</summary>
     public static string Instructions(bool claude)
@@ -46,7 +46,8 @@ public static class GameDirector
                "Liefere IMMER die vollständige Spielbibel als EIN JSON-Objekt in einem ```json-Block mit diesen Feldern: " +
                "title, scale, genre, logline (ein Satz), loop (Kernschleife), mechanics (Liste), controls, style, audience, platforms, sound, menus, systems, browser, world3d, engine, engineReason, blender, " +
                "characters (Liste: name, role = Held|Begleiter|Gegner|Boss|Nebenfigur, text, phases = Zahl, Bosse 2–4), world (Liste: name, text), " +
-               "quests (Liste: title, kind = Haupt|Neben, goal, needs, gives, giver = Name einer Figur), level (nur Browser: Zeilen aus # . o E ^ S Z F C K D G N), " +
+               "quests (Liste: title, kind = Haupt|Neben, goal, needs, gives, giver = Name einer Figur), level (nur Browser: Zeilen aus # . o E ^ S Z F C K D G N, genau ein S und mindestens ein Z), " +
+               "view (nur Browser mit browser = plattform: seite = Laufen und Springen mit Schwerkraft | oben = Blick von oben, laufen in vier Richtungen, für Labyrinth, Abenteuer, Sammelspiel; dann das Level rundum mit # einrahmen), " +
                "weapon (schwert|werfen oder leer), abilities (doppelsprung, sprint …), " +
                "violence = keine (Kinder, ab 0/6) | normal (ab 12: Treffer, Blut am Boden, Körper fallen) | brutal (ab 18: harte Treffer, Blut, abgetrennte Körperteile) – passend zu Zielgruppe und Spielart.\n" +
                "Alles muss zur Welt passen: Fahrzeuge, Häuser und Gegenstände nach Ort und Zeit (Wald: Geländewagen, Hütte; Stadt: Autos, Hochhäuser; Mittelalter: Pferde, Burg).\n" +
@@ -138,14 +139,20 @@ public static class GameDirector
             if (browser is not ("jump" or "plattform" or "breakout" or "snake"))
                 browser = genre.Contains("snake") || genre.Contains("schlange") ? "snake" : genre.Contains("arcade") || genre.Contains("breakout") || genre.Contains("mauer") ? "breakout" : genre.Contains("jump") ? "jump" : "plattform";
             o["browser"] = browser;
+            var view = S(o["view"]).ToLowerInvariant() is "oben" ? "oben" : S(o["view"]).ToLowerInvariant() is "seite" ? "seite"
+                : genre.Contains("top-down") || genre.Contains("topdown") || genre.Contains("von oben") || genre.Contains("labyrinth") ? "oben" : "seite";
             var rows = Arr(o["level"]).Select(S).Where(r => r.Length > 0).ToList();
             if (rows.Count == 0 || rows.Any(r => r.Any(ch => !GameStudio.Tiles.Contains(ch))))
-                rows = browser == "jump" ? [.. GameStudio.DefaultJump] : browser == "breakout" ? [.. GameStudio.DefaultBreakout] : browser == "plattform" ? [.. GameStudio.DefaultPlatform] : [];
+                rows = browser == "jump" ? [.. GameStudio.DefaultJump] : browser == "breakout" ? [.. GameStudio.DefaultBreakout] : browser == "plattform" ? [.. (view == "oben" ? GameDesign.DefaultTopDown : GameStudio.DefaultPlatform)] : [];
+            // T-0690: ein Kachelspiel ohne Start oder Ziel ist nicht spielbar – dann gilt das Startlevel der Blickrichtung (im Level-Editor änderbar)
+            if (browser == "plattform" && GameStudio.CheckPlatform(rows, view == "oben").Any(h => h.StartsWith("Kein") || h.Contains("Startpunkte")))
+                rows = [.. (view == "oben" ? GameDesign.DefaultTopDown : GameStudio.DefaultPlatform)];
+            if (browser == "plattform") o["view"] = view; else o.Remove("view");
             o["level"] = new JsonArray([.. rows.Select(r => (JsonNode)r)]);
         }
         else
         {
-            o["browser"] = "";
+            o["browser"] = ""; o.Remove("view");
             o["world3d"] = S(o["world3d"]) is "level" or "openworld" ? S(o["world3d"]) : scale is "aaa" || genre.Contains("open world") ? "openworld" : "level";
         }
         o["engine"] = GameTools.Engines.Contains(S(o["engine"]).ToLowerInvariant()) ? S(o["engine"]).ToLowerInvariant() : "";
@@ -166,7 +173,7 @@ public static class GameDirector
     {
         var lines = new List<string>();
         var labels = new Dictionary<string, string> { ["title"] = "Titel", ["scale"] = "Umfang", ["genre"] = "Genre", ["logline"] = "Idee", ["loop"] = "Kernschleife", ["controls"] = "Steuerung",
-            ["style"] = "Stil", ["sound"] = "Ton", ["browser"] = "Spielart", ["world3d"] = "Welt", ["weapon"] = "Waffe", ["violence"] = "Gewalt", ["engine"] = "Engine" };
+            ["style"] = "Stil", ["sound"] = "Ton", ["browser"] = "Spielart", ["view"] = "Blickrichtung", ["world3d"] = "Welt", ["weapon"] = "Waffe", ["violence"] = "Gewalt", ["engine"] = "Engine" };
         foreach (var (k, l) in labels)
             if (S(old[k]) != S(neu[k])) lines.Add($"{l}: {Short(S(old[k]))} → {Short(S(neu[k]))}");
         void Named(string key, string label, string nameKey)

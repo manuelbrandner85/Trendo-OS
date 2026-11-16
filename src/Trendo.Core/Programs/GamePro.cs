@@ -40,7 +40,8 @@ public static class GamePro
     {
         var levels = Levels(d).Where(l => l.Length > 0).ToList();
         var plat = S(d["browser"]) == "plattform";
-        bool Playable(string[] l) => !plat ? l.Length > 0 : GameStudio.CheckPlatform(l).All(x => !x.StartsWith("Kein")) && Fairness(l, (int)ProgramDocument.ToNumber(d["speed"] ?? 5)).GoalReachable;
+        var top = GameDesign.View(d) == "oben";
+        bool Playable(string[] l) => !plat ? l.Length > 0 : GameStudio.CheckPlatform(l, top).All(x => !x.StartsWith("Kein")) && Fairness(l, (int)ProgramDocument.ToNumber(d["speed"] ?? 5), top).GoalReachable;
         var notes = (d["testnotes"] as JsonArray ?? []).OfType<JsonObject>().ToList();
         return phase switch
         {
@@ -95,8 +96,38 @@ public static class GamePro
     static double Need(int dx) => dx * 32 - 54;
 
     /// <summary>Spielt das Level als Prüfer durch (Laufen, Springen, Fallen, Sprungfedern; Türen öffnen, wenn alle Schlüssel erreichbar sind) und meldet unfaire Stellen.</summary>
-    public static Report Fairness(IReadOnlyList<string> level, int speed = 5)
+    /// <summary>T-0690: Blick von oben – ohne Schwerkraft zählt nur, ob ein Weg zu allen Schlüsseln und zum Ziel führt (Stacheln und geschlossene Türen versperren).</summary>
+    public static Report FairnessTopDown(IReadOnlyList<string> level)
     {
+        var R = level.Count; var C = R == 0 ? 0 : level.Max(r => r.Length);
+        char At(int x, int y) => y < 0 || x < 0 || x >= C || y >= R ? '#' : x < level[y].Length ? level[y][x] : '.';
+        (int X, int Y)? start = null, goal = null; var keys = new List<(int X, int Y)>();
+        for (var y = 0; y < R; y++) for (var x = 0; x < level[y].Length; x++) { if (level[y][x] == 'S') start ??= (x, y); if (level[y][x] == 'Z') goal ??= (x, y); if (level[y][x] == 'K') keys.Add((x, y)); }
+        if (start is null || goal is null) return new(false, [new(start?.X ?? 0, start?.Y ?? 0, start is null ? "Kein Start (S)." : "Kein Ziel (Z).", true)], 0);
+        HashSet<(int, int)> Reach(bool doorsOpen)
+        {
+            var seen = new HashSet<(int, int)> { start.Value }; var q = new Queue<(int X, int Y)>(); q.Enqueue(start.Value);
+            while (q.TryDequeue(out var n))
+                foreach (var (dx, dy) in new[] { (1, 0), (-1, 0), (0, 1), (0, -1) })
+                {
+                    var ch = At(n.X + dx, n.Y + dy);
+                    if (ch is '#' or 'F' or '^' || (ch == 'D' && !doorsOpen)) continue;
+                    if (seen.Add((n.X + dx, n.Y + dy))) q.Enqueue((n.X + dx, n.Y + dy));
+                }
+            return seen;
+        }
+        var findings = new List<Finding>();
+        var first = Reach(false); var open = keys.Count > 0 && keys.All(k => first.Contains(k));
+        if (keys.FirstOrDefault(k => !first.Contains(k)) is var miss && keys.Count > 0 && !open) findings.Add(new(miss.X, miss.Y, "Schlüssel nicht erreichbar – die Türen bleiben zu.", true));
+        var seen2 = open ? Reach(true) : first;
+        var ok = seen2.Contains(goal.Value);
+        if (!ok) findings.Add(new(goal.Value.X, goal.Value.Y, "Ziel nicht erreichbar – der Weg ist durch Wände, Stacheln oder eine Tür versperrt.", true));
+        return new(ok, findings, 0);
+    }
+
+    public static Report Fairness(IReadOnlyList<string> level, int speed = 5, bool topDown = false)
+    {
+        if (topDown) return FairnessTopDown(level);
         var R = level.Count; var C = level.Count == 0 ? 0 : level.Max(r => r.Length);
         char At(int x, int y) => y < 0 || x < 0 || x >= C ? '#' : y >= R ? '.' : x < level[y].Length ? level[y][x] : '.';
         var findings = new List<Finding>();

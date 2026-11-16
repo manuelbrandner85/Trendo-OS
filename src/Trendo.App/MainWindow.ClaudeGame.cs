@@ -33,6 +33,7 @@ public partial class MainWindow
         if (ProgramActive(GK) is not { } d || d.Text("browser") is not ("plattform" or "jump" or "breakout")) return null;
         var kind = d.Text("browser"); var plat = kind == "plattform";
         var sb = new System.Text.StringBuilder($"Spiele bauen: Dokument „{d.Title}“, Spielart {kind}. ");
+        if (plat) sb.Append(Trendo.Core.Programs.GameDesign.View(d.Data) == "oben" ? "Blick von oben: keine Schwerkraft, die Figur läuft in alle vier Richtungen – das Level rundum mit # einrahmen, Wege mindestens eine Kachel breit, kein Boden unter dem Start nötig. " : "Blick von der Seite: Schwerkraft, die Figur läuft und springt. ");
         sb.Append(plat ? "Level-Zeichen: # Boden, . frei, o Münze, E Gegner, ^ Stacheln, S Start (genau eins), Z Ziel, F Sprungfeder, C Speicherpunkt, K Schlüssel, D Tür (öffnet mit allen Schlüsseln). Hintergrund nur Deko: w Wolke, m Berg, t Baum, b Busch, g Gras, . frei. "
             : $"Zeichen: # {(kind == "breakout" ? "Stein" : "Hindernis")}, . frei. ");
         sb.Append("Ein Level änderst du mit [[trendo:feld | game-level-N | Zeile1/Zeile2/…]] (höchstens 16 Zeilen, 200 Spalten), den Hintergrund mit game-decor-N; ein neues Level mit der nächsten freien Nummer.");

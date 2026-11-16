@@ -10,7 +10,7 @@ public sealed class PlatformSim
     public const int T = 32;
     public sealed class Body { public double X, Y, Vx, Vy; public double W = 24, H = 30; public bool On; public int Facing = 1; }
     public sealed record Coin(int Col, int Row, double X, double Y, int Value) { public bool Taken { get; set; } }
-    public sealed class Foe { public int Col, Row; public double X, Y, Dir = 1, Speed = 1; public bool Alive = true; public int Hp = 1, MaxHp = 1, Hurt; }
+    public sealed class Foe { public int Col, Row; public double X, Y, Dir = 1, Speed = 1; public bool Alive = true, Chase; public int Hp = 1, MaxHp = 1, Hurt; }
     /// <summary>Geschoss (Waffe „werfen“).</summary>
     public sealed class Shot { public double X, Y, Dir; public int Life = 60; }
 
@@ -37,6 +37,8 @@ public sealed class PlatformSim
     public int ItemsCollected { get; private set; }
     string Text(int x, int y, string k, string def) => _texts.TryGetValue($"{(LevelIndex == 0 ? "" : $"{LevelIndex + 1}:")}{x},{y}:{k}", out var v) && v.Length > 0 ? v : def;
     public bool Has(string ability) => _abilities.Contains(ability);
+    /// <summary>T-0690: Blick von oben – keine Schwerkraft, die Figur läuft in alle vier Richtungen (gleiche Regeln wie game.js mit view = „oben“).</summary>
+    public bool TopDown { get; }
     /// <summary>Aufgaben (Regeln mit Titel) mit Fortschritt – wie das Aufgabenbuch in Spielen.</summary>
     public IEnumerable<(GameStudio.GameRule Rule, double Value, bool Done)> Quests => _rules.Select((r, i) => (r, RuleValue(r), _fired[i])).Where(q => q.r.Title is not null);
     public int Rows => _rows.Length;
@@ -69,11 +71,12 @@ public sealed class PlatformSim
     int _levelFrames;
 
     /// <summary>Zustand der Figur: stehen, laufen, springen (steigt) oder fallen.</summary>
-    public string State => Flash > 0 ? "treffen" : !Player.On ? (Player.Vy < 0 ? "springen" : "fallen") : Math.Abs(Player.Vx) > 0.1 ? "laufen" : "stehen";
+    public string State => TopDown ? (Flash > 0 ? "treffen" : Math.Abs(Player.Vx) > 0.1 || Math.Abs(Player.Vy) > 0.1 ? "laufen" : "stehen") : Flash > 0 ? "treffen" : !Player.On ? (Player.Vy < 0 ? "springen" : "fallen") : Math.Abs(Player.Vx) > 0.1 ? "laufen" : "stehen";
 
     public PlatformSim(IReadOnlyList<string> level, int speed = 5, int lives = 3, IReadOnlyDictionary<string, double>? props = null, int timeLimit = 0,
-        IReadOnlyList<GameStudio.GameRule>? rules = null, IReadOnlyList<IReadOnlyList<string>>? moreLevels = null, IReadOnlyList<string>? abilities = null, IReadOnlyDictionary<string, string>? texts = null, string? weapon = null)
+        IReadOnlyList<GameStudio.GameRule>? rules = null, IReadOnlyList<IReadOnlyList<string>>? moreLevels = null, IReadOnlyList<string>? abilities = null, IReadOnlyDictionary<string, string>? texts = null, string? weapon = null, string? view = null)
     {
+        TopDown = view == "oben";
         _abilities = abilities ?? []; _texts = texts ?? new Dictionary<string, string>(); Weapon = weapon ?? "";
         var first = level.Count > 0 ? level.ToArray() : ["S.....Z", "#######"];
         _levels = [first, .. (moreLevels ?? []).Where(l => l.Count > 0).Select(l => l.ToArray())];
@@ -96,15 +99,21 @@ public sealed class PlatformSim
             for (var x = 0; x < _rows[y].Length; x++)
             {
                 if (_rows[y][x] == 'o') Coins.Add(new(x, y, x * T + 16, y * T + 16, (int)Math.Clamp(P(x, y, "value", 1), 1, 100)));
-                if (_rows[y][x] == 'E') { var hp = (int)Math.Clamp(Math.Round(P(x, y, "hp", 1)), 1, 9); Foes.Add(new Foe { Col = x, Row = y, X = x * T + 4, Y = y * T + 6, Speed = Math.Clamp(P(x, y, "speed", 1), 0.25, 4), Hp = hp, MaxHp = hp }); }
+                if (_rows[y][x] == 'E') { var hp = (int)Math.Clamp(Math.Round(P(x, y, "hp", 1)), 1, 9); Foes.Add(new Foe { Col = x, Row = y, X = x * T + 4, Y = y * T + (TopDown ? 3 : 6), Speed = Math.Clamp(P(x, y, "speed", 1), 0.25, 4), Chase = P(x, y, "chase", 0) >= 0.5, Hp = hp, MaxHp = hp }); }
             }
         ResetPlayer();
     }
 
     void ResetPlayer() => Player = new Body { X = _sx * T + 4, Y = _sy * T };
 
-    public char At(int cx, int cy) => cy < 0 || cx < 0 || cx >= Cols ? '#' : cy >= Rows ? '.' : cx < _grid[cy].Length ? _grid[cy][cx] : '.';
+    public char At(int cx, int cy) => cy < 0 || cx < 0 || cx >= Cols ? '#' : cy >= Rows ? (TopDown ? '#' : '.') : cx < _grid[cy].Length ? _grid[cy][cx] : '.';
     bool Solid(int cx, int cy) { var c = At(cx, cy); return c is '#' or 'F' || (c == 'D' && !DoorsOpen); }
+    /// <summary>Stößt ein Gegner (24 × 26) an dieser Stelle an eine Wand?</summary>
+    bool FoeBlocked(double fx, double fy)
+    {
+        int l = (int)Math.Floor(fx / T), r = (int)Math.Floor((fx + 23) / T), t = (int)Math.Floor(fy / T), b = (int)Math.Floor((fy + 25) / T);
+        return Solid(l, t) || Solid(r, t) || Solid(l, b) || Solid(r, b);
+    }
 
     void Move(Body o, double dx, double dy)
     {
@@ -121,7 +130,7 @@ public sealed class PlatformSim
     /// <summary>Treffer: im Fahrzeug geht das Fahrzeug kaputt (kurz unverwundbar), sonst ein Leben weniger. Absturz trifft immer.</summary>
     void Hit(bool fall = false)
     {
-        if (Vehicle is not null && !fall) { Vehicle = null; Flash = 20; _safe = 45; Player.Vy = -6; Note = "Fahrzeug kaputt – zu Fuß weiter"; return; }
+        if (Vehicle is not null && !fall) { Vehicle = null; Flash = 20; _safe = 45; if (!TopDown) Player.Vy = -6; Note = "Fahrzeug kaputt – zu Fuß weiter"; return; }
         if (_safe > 0 && !fall) return;
         Vehicle = null; Lives--; Flash = 20; if (!Lost) ResetPlayer();
     }
@@ -172,7 +181,8 @@ public sealed class PlatformSim
         if (f.MaxHp > 1) Note = "Boss besiegt!";
     }
 
-    double RuleValue(GameStudio.GameRule r) => r.When switch { "muenzen" => Coins.Count(c => c.Taken), "punkte" => Score, "gegner" => FoesDefeated, "sekunden" => Frames / 60.0, "gegenstaende" => ItemsCollected, _ => 0 };
+    double RuleValue(GameStudio.GameRule r) => r.When switch { "muenzen" => Coins.Count(c => c.Taken), "punkte" => Score, "gegner" => FoesDefeated, "sekunden" => Frames / 60.0, "gegenstaende" => ItemsCollected,
+        "alle_muenzen" => Coins.Count > 0 && Coins.All(c => c.Taken) ? 1 : 0, "alle_gegner" => Foes.Count > 0 && Foes.All(f => !f.Alive) ? 1 : 0, _ => 0 };
 
     /// <summary>Ereignis-Regeln prüfen: jede feuert höchstens einmal.</summary>
     void Rules()
@@ -198,6 +208,7 @@ public sealed class PlatformSim
             case "schneller": _boost = 2; break;
             case "punkte": Score += 10; break;
             case "sieg": Won = true; break;
+            case "verloren": Lives = 0; Note = "Verloren"; break;
         }
     }
 
@@ -210,7 +221,7 @@ public sealed class PlatformSim
     }
 
     /// <summary>Ein Bild weiter (60 je Sekunde). <paramref name="jump"/> springt nur vom Boden aus.</summary>
-    public void Step(bool left, bool right, bool jump, bool sprint = false, bool attack = false, bool use = false)
+    public void Step(bool left, bool right, bool jump, bool sprint = false, bool attack = false, bool use = false, bool up = false, bool down = false)
     {
         var strike = attack && !_attackPrev; _attackPrev = attack;
         var exit = use && !_usePrev; _usePrev = use;
@@ -219,17 +230,21 @@ public sealed class PlatformSim
         if (Over) return;
         Frames++; _levelFrames++;
         var pl = Player; var sp = (2.2 + _speed * .35 + _boost) * (sprint && Has("sprint") ? 1.6 : 1) * (Vehicle == "wagen" ? 1.8 : Vehicle == "ufo" ? 1.3 : 1);
+        if (TopDown) { pl.Vx = (right ? sp : 0) - (left ? sp : 0); pl.Vy = (down ? sp : 0) - (up ? sp : 0); }
+        else
+        {
         if (jump && pl.On) pl.Vy = -11.5;
         else if (press && !pl.On && _airJumps > 0) { _airJumps--; pl.Vy = -10.5; } // Doppelsprung
         pl.Vx = (right ? sp : 0) - (left ? sp : 0); pl.Vy = Math.Min(14, pl.Vy + .6);
-        if (Vehicle == "ufo" && jump && Fuel > 0) { pl.Vy = Math.Max(-6, pl.Vy - 1.8); if (--Fuel == 0) { Vehicle = null; Note = "Treibstoff leer"; } }
+        }
+        if (!TopDown && Vehicle == "ufo" && jump && Fuel > 0) { pl.Vy = Math.Max(-6, pl.Vy - 1.8); if (--Fuel == 0) { Vehicle = null; Note = "Treibstoff leer"; } }
         if (_safe > 0) _safe--; if (_noEnter > 0) _noEnter--;
         if (exit && Vehicle is not null) Dismount();
         if (pl.Vx > 0) pl.Facing = 1; else if (pl.Vx < 0) pl.Facing = -1;
         Move(pl, pl.Vx, 0); Move(pl, 0, pl.Vy);
         if (pl.On) _airJumps = Has("doppelsprung") ? 1 : 0;
         Combat(strike);
-        if (pl.On && At((int)Math.Floor((pl.X + 12) / T), (int)Math.Floor((pl.Y + pl.H + 1) / T)) == 'F') { pl.Vy = -17; pl.On = false; } // Sprungfeder
+        if (!TopDown && pl.On && At((int)Math.Floor((pl.X + 12) / T), (int)Math.Floor((pl.Y + pl.H + 1) / T)) == 'F') { pl.Vy = -17; pl.On = false; } // Sprungfeder
         if (pl.Y > Rows * T + 60) { Hit(true); return; }
         int cx = (int)Math.Floor((pl.X + 12) / T), cy = (int)Math.Floor((pl.Y + 15) / T), cb = (int)Math.Floor((pl.Y + 29) / T);
         if (At(cx, cb) == '^' || At(cx, cy) == '^') { Hit(); return; }
@@ -257,11 +272,21 @@ public sealed class PlatformSim
         foreach (var f in Foes)
         {
             if (!f.Alive) continue;
-            var nx = f.X + f.Dir * 1.2 * f.Speed; int fx = (int)Math.Floor((f.Dir > 0 ? nx + 24 : nx) / T), fy = (int)Math.Floor((f.Y + 20) / T);
-            if (Solid(fx, fy) || !Solid(fx, fy + 1)) f.Dir *= -1; else f.X = nx;
+            var fv = 1.2 * f.Speed;
+            if (f.Chase && Math.Abs(pl.X - f.X) < T * 7 && Math.Abs(pl.Y - f.Y) < T * 7)
+            {
+                double ddx = pl.X - f.X, ddy = pl.Y - f.Y; // verfolgt die Figur in der Nähe
+                if (Math.Abs(ddx) > 2) { var cx2 = f.X + Math.Sign(ddx) * fv * .8; if (!FoeBlocked(cx2, f.Y) && (TopDown || Solid((int)Math.Floor((ddx > 0 ? cx2 + 24 : cx2) / T), (int)Math.Floor((f.Y + 20) / T) + 1))) { f.X = cx2; f.Dir = Math.Sign(ddx); } }
+                if (TopDown && Math.Abs(ddy) > 2) { var cy2 = f.Y + Math.Sign(ddy) * fv * .8; if (!FoeBlocked(f.X, cy2)) f.Y = cy2; }
+            }
+            else
+            {
+            var nx = f.X + f.Dir * fv; int fx = (int)Math.Floor((f.Dir > 0 ? nx + 24 : nx) / T), fy = (int)Math.Floor((f.Y + 20) / T);
+            if (Solid(fx, fy) || (TopDown ? FoeBlocked(nx, f.Y) : !Solid(fx, fy + 1))) f.Dir *= -1; else f.X = nx;
+            }
             if (Math.Abs(f.X - pl.X) < 24 && Math.Abs(f.Y - pl.Y) < 26)
             {
-                if (pl.Vy > 1 && pl.Y < f.Y - 8) { Damage(f); pl.Vy = -8; }
+                if (!TopDown && pl.Vy > 1 && pl.Y < f.Y - 8) { Damage(f); pl.Vy = -8; }
                 else { Hit(); return; }
             }
         }
@@ -283,5 +308,5 @@ public sealed class PlatformSim
         Inventory.Clear(); if (s.Flags.TryGetValue("inventar", out var inv)) Inventory.AddRange(inv.Split('|', StringSplitOptions.RemoveEmptyEntries));
     }
 
-    public PlatformSim Restart() => new(_levels[0], _speed, _startLives, _props, _timeLimit, _rules, [.. _levels.Skip(1)], _abilities, _texts, Weapon);
+    public PlatformSim Restart() => new(_levels[0], _speed, _startLives, _props, _timeLimit, _rules, [.. _levels.Skip(1)], _abilities, _texts, Weapon, TopDown ? "oben" : "seite");
 }

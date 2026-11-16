@@ -146,6 +146,64 @@ public static class WebsitePreview
         return string.IsNullOrEmpty(json) ? (null, "Das HTML ließ sich nicht lesen.") : (json, null);
     }
 
+    /// <summary>T-0690: Eine Seite (z. B. ein gebautes Spiel) in echtem Chrome bedienen – mit echten Tastendrücken über den Debug-Kanal, nicht mit nachgebildeten Ereignissen.
+    /// Schritte: „down“/„up“ (Taste, z. B. ArrowRight, Space, Enter, KeyX), „wait“ (Millisekunden), „eval“ (JavaScript, Wert kommt in die Ergebnisliste),
+    /// „until“ (wartet höchstens <see cref="PlayStep.Ms"/> ms, bis der Ausdruck wahr ist; Ergebnis „true“ oder „false“), „shot“ (Bild als PNG nach <see cref="PlayStep.Arg"/>).</summary>
+    public sealed record PlayStep(string Kind, string Arg = "", int Ms = 0);
+
+    static readonly Dictionary<string, (int Vk, string Key)> PlayKeys = new()
+    {
+        ["ArrowLeft"] = (37, "ArrowLeft"), ["ArrowUp"] = (38, "ArrowUp"), ["ArrowRight"] = (39, "ArrowRight"), ["ArrowDown"] = (40, "ArrowDown"),
+        ["Space"] = (32, " "), ["Enter"] = (13, "Enter"), ["Escape"] = (27, "Escape"), ["KeyX"] = (88, "x"), ["KeyE"] = (69, "e"), ["KeyN"] = (78, "n"), ["KeyP"] = (80, "p"), ["ShiftLeft"] = (16, "Shift"),
+    };
+
+    /// <summary>Liefert die Werte aller „eval“- und „until“-Schritte in Reihenfolge. Ohne Chrome/Edge: Ok = false mit Hinweis (nichts wird nachgebildet).</summary>
+    public static async Task<(bool Ok, string Note, List<string> Values)> PlayAsync(string projectDir, IReadOnlyList<PlayStep> steps, int width = 800, int height = 640, List<string>? errors = null, int seconds = 90, CancellationToken ct = default)
+    {
+        var values = new List<string>();
+        if (!File.Exists(Path.Combine(projectDir, "index.html"))) return (false, "Im Ordner liegt keine index.html.", values);
+        var browser = FindBrowser();
+        if (browser is null) return (false, "Kein Chrome oder Edge auf diesem PC – das Spiel lässt sich hier nicht automatisch im Browser prüfen.", values);
+        using var host = WebsiteHost.Start(projectDir);
+        await RunBrowserAsync(browser, width, height, seconds, ct, errors is null ? null : e => Collect(e, errors), async (cdp, tok) =>
+        {
+            await cdp.Call("Page.enable", new { }, tok);
+            if (errors is not null) { await cdp.Call("Runtime.enable", new { }, tok); await cdp.Call("Log.enable", new { }, tok); }
+            await cdp.Call("Emulation.setDeviceMetricsOverride", new { width, height, deviceScaleFactor = 1, mobile = false }, tok);
+            await cdp.Call("Page.navigate", new { url = host.Origin + "/index.html" }, tok);
+            async Task<string> Eval(string js) => ResultValue(await cdp.Call("Runtime.evaluate", new { expression = js, returnByValue = true }, tok));
+            async Task<bool> Until(string js, int ms)
+            {
+                var end = DateTime.UtcNow.AddMilliseconds(Math.Max(100, ms));
+                while (DateTime.UtcNow < end) { if (await Eval("!!(" + js + ")") is "True" or "true") return true; await Task.Delay(50, tok); }
+                return false;
+            }
+            await Until("document.readyState==='complete'", 8000);
+            foreach (var s in steps)
+            {
+                tok.ThrowIfCancellationRequested();
+                switch (s.Kind)
+                {
+                    case "down" or "up":
+                        if (!PlayKeys.TryGetValue(s.Arg, out var k)) throw new ArgumentException("Unbekannte Taste: " + s.Arg);
+                        await cdp.Call("Input.dispatchKeyEvent", new { type = s.Kind == "down" ? "rawKeyDown" : "keyUp", code = s.Arg, key = k.Key, windowsVirtualKeyCode = k.Vk, nativeVirtualKeyCode = k.Vk }, tok);
+                        if (s.Ms > 0) await Task.Delay(s.Ms, tok);
+                        break;
+                    case "wait": await Task.Delay(s.Ms, tok); break;
+                    case "eval": values.Add(await Eval(s.Arg)); break;
+                    case "until": values.Add(await Until(s.Arg, s.Ms) ? "true" : "false"); break;
+                    case "shot":
+                        var data = ResultString(await cdp.Call("Page.captureScreenshot", new { format = "png" }, tok), "data");
+                        if (!string.IsNullOrWhiteSpace(data)) { Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(s.Arg))!); await File.WriteAllBytesAsync(s.Arg, Convert.FromBase64String(data), tok); }
+                        break;
+                    default: throw new ArgumentException("Unbekannter Schritt: " + s.Kind);
+                }
+            }
+            if (errors is not null) await Eval("1"); // ausstehende Fehlermeldungen abholen
+        });
+        return (true, Path.GetFileName(browser), values);
+    }
+
     /// <summary>Chrome ohne Fenster starten, mit dem Debug-Kanal verbinden und <paramref name="work"/> ausführen. Danach endet Chrome samt Hilfsprozessen sicher.</summary>
     static async Task RunBrowserAsync(string browser, int width, int height, int seconds, CancellationToken ct, Action<JsonElement>? onEvent, Func<Cdp, CancellationToken, Task> work)
     {

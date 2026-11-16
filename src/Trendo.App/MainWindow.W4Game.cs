@@ -51,7 +51,7 @@ public partial class MainWindow
         {
             var uname = new TextBox { Name = "game-ue-name", Text = "MeinUnrealSpiel", Width = 200 };
             ue.Children.Add(P($"Gefunden: Unreal {string.Join(", ", engines.Select(e => e.Version))}"));
-            ue.Children.Add(new WrapPanel { Children = { uname, Act("game-ue-create", "Unreal-Projekt anlegen", () =>
+            ue.Children.Add(new WrapPanel { Children = { uname, Act("game-ue-create", "Leeres Unreal-Projekt anlegen", () =>
             {
                 try
                 {

@@ -48,7 +48,7 @@ x.fillStyle=S.contrast?'#FFFF00':CFG.accent;x.fillRect(ox+(Math.floor((pl.x+12)/
 if(mode==='play')return;
 x.fillStyle=S.contrast?'rgba(0,0,0,.94)':'rgba(5,10,25,.84)';x.fillRect(0,0,c.width,c.height);x.textAlign='center';x.fillStyle='#FFF';
 x.font='bold '+Math.round(26*big)+'px system-ui';x.fillText(mode==='menu'?document.title:mode==='pause'?'Pause':mode==='settings'?'Einstellungen':'Steuerung',c.width/2,64);
-if(mode==='help'){x.font=Math.round(13*big)+'px system-ui';['← → laufen · Leertaste springen · Umschalt sprinten','X oder J angreifen · E aussteigen','Esc oder P Pause · N neues Spiel','Controller: Stick laufen · A springen · X angreifen · B aussteigen · Start Pause'].forEach((t,i)=>x.fillText(t,c.width/2,104+i*24*big));}
+if(mode==='help'){x.font=Math.round(13*big)+'px system-ui';[(typeof TD!=='undefined'&&TD?'Pfeiltasten laufen in alle vier Richtungen':'← → laufen · Leertaste springen')+' · Umschalt sprinten','X oder J angreifen · E aussteigen','Esc oder P Pause · N neues Spiel','Controller: Stick laufen · A springen · X angreifen · B aussteigen · Start Pause'].forEach((t,i)=>x.fillText(t,c.width/2,104+i*24*big));}
 const it=items();x.font=Math.round(17*big)+'px system-ui';it.forEach((t,i)=>{const y=(mode==='help'?220:120)+i*32*big;if(i===sel){x.fillStyle=S.contrast?'#FFFF00':CFG.accent;x.fillRect(c.width/2-140,y-21*big,280,29*big);x.fillStyle='#000';}else x.fillStyle='#FFF';x.fillText(t,c.width/2,y);});
 x.font='12px system-ui';x.fillStyle='#AAB';x.fillText('↑ ↓ wählen · Enter bestätigen'+(mode==='pause'?' · Esc weiter':''),c.width/2,c.height-14);x.textAlign='left';}
 
