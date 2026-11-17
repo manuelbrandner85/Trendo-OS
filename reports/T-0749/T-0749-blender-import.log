@@ -1,0 +1,13 @@
+T0749_IMPORT obj: objekte=1 punkte=12495 dreiecke=4165 ausmass=[18.712, 18.855, 20.0]
+T0749_IMPORT stl: objekte=1 punkte=2129 dreiecke=4165 ausmass=[187.122, 188.554, 200.0]
+22:09:10 | INFO: Data are loaded, start creating Blender stuff
+22:09:10 | INFO: Blender create Mesh node 0
+22:09:10 | INFO: glTF import finished in 0.04s
+00:04.375  render           | Saved: 'C:\Users\<user>\AppData\Local\Temp\trendo-T-0749-scan\beleg\T-0749-blender-ansicht.png'
+T0749_IMPORT glb: objekte=1 punkte=12495 dreiecke=4165 ausmass=[0.187, 0.189, 0.2]
+T0749_PRUEFUNG {"obj": {"objekte": 1, "punkte": 12495, "dreiecke": 4165, "ausmass": [18.712, 18.855, 20.0]}, "stl": {"objekte": 1, "punkte": 2129, "dreiecke": 4165, "ausmass": [187.122, 188.554, 200.0]}, "glb": {"objekte": 1, "punkte": 12495, "dreiecke": 4165, "ausmass": [0.187, 0.189, 0.2]}}
+Blender 5.2.3 LTS (hash e13b728c6880 built 2026-10-22 01:37:16)
+OBJ import of 'T-0749-scan.obj' took 9.89 ms
+Timer 'STL Import' took 1.16 ms
+
+Blender quit

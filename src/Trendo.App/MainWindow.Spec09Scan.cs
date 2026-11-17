@@ -34,6 +34,10 @@ public partial class MainWindow
     public IReadOnlyList<string> ScanSteps => _scanSteps;
     public int ScanStepIndex => _scanStepIdx;
     public string? ScanModelPath => _scanModel;
+    /// <summary>Rechnung läuft (für Tests, T-0749).</summary>
+    public bool ScanBusy => _scanBusy;
+    /// <summary>Statuszeile unter der Rechnung (für Tests, T-0749).</summary>
+    public string ScanStatusText => _scanStatus;
 
     /// <summary>Fotos einlesen und prüfen (öffentlich für Tests).</summary>
     public void ScanLoad(string folder) { _photoFolder = folder.Trim().Trim('"'); _scanReport = _photoFolder.Length == 0 ? null : PhotoSet.Check(_photoFolder); Show("scan3d"); }

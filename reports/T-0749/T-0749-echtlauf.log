@@ -1,0 +1,13 @@
+# T-0749 Echtlauf Einscannen – 2026-11-17 22:08:50
+COLMAP: colmap.exe (Erkennung der App)
+Fotos: 48, 48 Fotos · 2,4 MB · bis 960 × 720 Pixel
+Schritte: Merkmale in den Fotos suchen → Gleiche Stellen in den Fotos finden → Kameras und die grobe Form rechnen → Oberfläche bauen
+Laufzeit über die Oberfläche: 15,1 s
+Status: Fertig. 4165 Dreiecke. Die längste Seite steht auf 20 cm, weil Fotos keine echten Maße haben. Die Form kommt aus den gefundenen Merkmalspunkten – sie ist grob, feine Details fehlen. Rechts siehst du es in 3D – oder mit „Im 3D-Studio öffnen“.
+Rohlog: T-0749-colmap-rohlog.txt
+Kameramodell: 48 Kameras eingepasst, 3819 3D-Punkte
+COLMAP-Netz meshed-delaunay.ply: 2135 Punkte, 4165 Dreiecke
+Trendo-Netz modell.obj: 4165 Dreiecke (Anzeige scan-view)
+Export obj: 449433 Bytes, SHA-256 9ad6241f0e38f6f4bd69d691f458a4863b9f8189206b42593b8e2603224a4e83
+Export stl: 208334 Bytes, SHA-256 2b9ad39b90dbd1763ce51f12bd858197c03f69614a9ef5bbc7f966ddb3ac7686
+Export glb: 350780 Bytes, SHA-256 fced26254aa343e8275555c8eb7e2c444689b1677cfd61280909adfa2ed4ba07

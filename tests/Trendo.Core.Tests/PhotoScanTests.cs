@@ -41,11 +41,20 @@ public class PhotoScanTests
         var args = string.Join("\n", steps.Select(s => s.Args));
         Assert.Contains("feature_extractor", args);
         Assert.Contains("exhaustive_matcher", args);
-        Assert.Contains("SiftExtraction.use_gpu 0", args);
-        Assert.Contains("SiftMatching.use_gpu 0", args);
+        // T-0749: COLMAP 4.2.1 (Vollpaket) kennt nur FeatureExtraction/FeatureMatching – mit SiftExtraction brach schon Schritt 1 ab (Beleg reports/T-0749)
+        Assert.Contains("FeatureExtraction.use_gpu 0", args);
+        Assert.Contains("FeatureMatching.use_gpu 0", args);
+        Assert.DoesNotContain("SiftExtraction", args);
         Assert.DoesNotContain("patch_match", args);
         Assert.Contains(PhotoScan.ModelMark, args);
         Assert.Equal("Oberfläche bauen", steps[^1].Title);
+        // T-0749: Oberfläche aus dem Kameramodell (sparse) – „dicht“ bräuchte fused.ply aus CUDA-Stereo, delaunay_mesher stürzte sonst ab
+        Assert.Contains("delaunay_mesher --input_type sparse --input_path " + PhotoScan.ModelMark, steps[^1].Args);
+        Assert.True(steps[^1].NeedsModel);
+        Assert.Contains("--DelaunayMeshing.max_side_length_factor 2", steps[^1].Args); // T-0749: ohne den Wert ragte ein Keil zu einem Ausreißerpunkt aus dem Scan
+        Assert.DoesNotContain("image_undistorter", args);
+        Assert.Equal("feature_extractor --SiftExtraction.use_gpu 0 --SiftExtraction.max_image_size 1600 x --SiftMatching.use_gpu 0",
+            PhotoScan.Legacy("feature_extractor --FeatureExtraction.use_gpu 0 --FeatureExtraction.max_image_size 1600 x --FeatureMatching.use_gpu 0"));
 
         var video = Path.Combine(d, "rundgang.mp4"); File.WriteAllText(video, "x");
         var vsteps = PhotoScan.Steps(new(work, null, video, PhotoEngine.Colmap), "/opt/colmap", "/usr/bin/ffmpeg");
@@ -86,6 +95,7 @@ public class PhotoScanTests
             calls.Add(args);
             if (args.Contains("mapper"))
             {
+                Assert.True(Directory.Exists(Path.Combine(work, "sparse")), "T-0749: echtes COLMAP verlangt den Ausgabeordner vor mapper");
                 var sparse = Path.Combine(work, "sparse", "0");
                 Directory.CreateDirectory(sparse);
                 File.WriteAllText(Path.Combine(sparse, "cameras.bin"), "cams");
@@ -103,7 +113,11 @@ public class PhotoScanTests
         Assert.False(result.OuterShell);
         Assert.Contains("Merkmale in den Fotos suchen", progress);
         Assert.Contains("Oberfläche bauen", progress);
-        Assert.Contains(Path.Combine(work, "sparse", "0"), calls.First(a => a.Contains("image_undistorter")));
+        Assert.Contains(Path.Combine(work, "sparse", "0"), calls.First(a => a.Contains("delaunay_mesher"))); // T-0749: Modell geht direkt an den Vernetzer
+        var protocol = File.ReadAllText(Path.Combine(work, PhotoScan.LogName)); // T-0749: volle Ausgabe je Schritt
+        Assert.Contains("### Merkmale in den Fotos suchen", protocol);
+        Assert.Contains("Schritt ok", protocol);
+        Assert.Contains("### Ende: Rückgabewert 0", protocol);
         var part = Mesh3D.Import(result.ObjPath);
         Assert.Equal(4, part.Indices!.Length / 3);
         Assert.Equal(20, Longest(result.ObjPath), 3);
@@ -151,6 +165,41 @@ public class PhotoScanTests
         var line = Path.Combine(d, "linie.ply");
         File.WriteAllText(line, PointsPly((0, 0, 0), (1, 0, 0), (2, 0, 0)));
         Assert.Contains("Linie", Assert.Throws<InvalidOperationException>(() => PhotoScan.LoadSurface(line)).Message);
+    }
+
+    [Fact(DisplayName = "T-0749 Foto: ältere COLMAP-Fassung bekommt einmal die alten Optionsnamen, Absturz wird als Code gemeldet")]
+    public async Task Alte_fassung_und_absturz()
+    {
+        var d = Tmp();
+        var photos = Path.Combine(d, "fotos"); Directory.CreateDirectory(photos);
+        foreach (var n in new[] { "1.jpg", "2.jpg", "3.jpg" }) File.WriteAllText(Path.Combine(photos, n), "x");
+        var work = Path.Combine(d, "arbeit");
+        var calls = new List<string>();
+        // Fake verhält sich wie COLMAP 3.x: neue Namen sind unbekannt (Ersatz – eine echte 3.x-Fassung gibt es auf diesem PC nicht)
+        var old = new ScanFake((file, args) =>
+        {
+            calls.Add(args);
+            if (args.Contains("--Feature")) return (1, "Failed to parse options - unrecognised option '--FeatureExtraction.use_gpu'.");
+            if (args.Contains("mapper")) { var sp = Path.Combine(work, "sparse", "0"); Directory.CreateDirectory(sp); File.WriteAllText(Path.Combine(sp, "cameras.bin"), "cams"); }
+            if (args.Contains("delaunay_mesher")) File.WriteAllText(Path.Combine(work, "meshed-delaunay.ply"), TetraPly());
+            return (0, "ok");
+        });
+        var result = await PhotoScan.RunAsync(new(work, photos, null, PhotoEngine.Colmap), "/opt/colmap", null, old);
+        Assert.True(File.Exists(result.ObjPath));
+        Assert.Contains("grob", result.Note);
+        Assert.Equal(2, calls.Count(a => a.StartsWith("feature_extractor", StringComparison.Ordinal))); // genau ein zweiter Versuch
+        Assert.Contains("--SiftMatching.use_gpu 0", calls.Single(a => a.StartsWith("exhaustive_matcher", StringComparison.Ordinal))); // danach gleich alte Namen
+        Assert.Contains("unrecognised option", File.ReadAllText(Path.Combine(work, PhotoScan.LogName)));
+
+        var crash = new ScanFake((file, args) =>
+        {
+            if (args.Contains("mapper")) { var sp = Path.Combine(d, "absturz", "sparse", "0"); Directory.CreateDirectory(sp); File.WriteAllText(Path.Combine(sp, "cameras.bin"), "cams"); }
+            return args.Contains("delaunay_mesher") ? (-1073740791, "") : (0, "ok");
+        });
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => PhotoScan.RunAsync(new(Path.Combine(d, "absturz"), photos, null, PhotoEngine.Colmap), "/opt/colmap", null, crash));
+        Assert.Contains("„Oberfläche bauen“ ist fehlgeschlagen (abgestürzt, Code 0xC0000409)", ex.Message);
+        Assert.Contains(PhotoScan.LogName, ex.Message);
+        Assert.Equal("Rückgabewert 2", PhotoScan.ExitText(2));
     }
 
     [Fact(DisplayName = "SPEC-09 Katalog: COLMAP als geprüftes Windows-ZIP, Meshroom nur über die offizielle Seite")]

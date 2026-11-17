@@ -1,0 +1,4 @@
+    T-0749 Echtlauf: Fotos → COLMAP → Netz im Scan-Arbeitsplatz → OBJ/STL/GLB [SKIP]
+      Echtlauf aus: TRENDO_T0749_FOTOS (Ordner mit mindestens 3 Fotos) ist nicht gesetzt.
+    T-0749 Echtlauf: „Stopp“ beendet COLMAP sofort, es bleibt kein Prozess und kein halbes Modell [SKIP]
+      Echtlauf aus: TRENDO_T0749_FOTOS (Ordner mit mindestens 3 Fotos) ist nicht gesetzt.
