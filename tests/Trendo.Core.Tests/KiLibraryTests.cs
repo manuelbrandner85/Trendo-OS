@@ -130,6 +130,26 @@ public class KiLibraryTests
         finally { Directory.Delete(d, true); }
     }
 
+    [Fact(DisplayName = "T-0739 Gegenprüfung: Prüfung einer vorhandenen Modelldatei hört auf „Abbrechen“ (Token wird beim Hashen beachtet)")]
+    public void ModelFileOk_cancellable()
+    {
+        var d = Temp();
+        try
+        {
+            var store = new KiLibraryStore(d);
+            var m = KiLibrary.Models.First(x => x.Id == "piper-eva");
+            var bytes = new byte[2 * 1024 * 1024]; new Random(3).NextBytes(bytes);
+            var f = m.Files[0] with { Bytes = bytes.Length, Sha256 = Convert.ToHexStringLower(SHA256.HashData(bytes)), ShaSource = "Test" };
+            Directory.CreateDirectory(store.ModelDir(m)); File.WriteAllBytes(store.ModelFile(m, f), bytes);
+            Assert.True(store.ModelFileOk(m, f, CancellationToken.None));
+            using var cts = new CancellationTokenSource(); cts.Cancel();
+            Assert.ThrowsAny<OperationCanceledException>(() => store.ModelFileOk(m, f, cts.Token));
+            bytes[^1] ^= 1; File.WriteAllBytes(store.ModelFile(m, f), bytes);
+            Assert.False(store.ModelFileOk(m, f, CancellationToken.None));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
     [Fact(DisplayName = "KI-Bibliothek: Laufzeit-ZIP mit falscher Größe oder Prüfsumme wird abgelehnt")]
     public void Runtime_checked()
     {

@@ -99,11 +99,25 @@ public sealed class KiLibraryStore(string toolsRoot)
 
     /// <summary>T-0739: Liegt die Modelldatei schon vollständig und unverändert da? Größe muss stimmen; mit fester Katalog-Summe wird zusätzlich
     /// die SHA-256 gerechnet (einmal beim Laden – so überspringt Trendo keine veränderte Datei, die nur zufällig gleich groß ist).</summary>
-    public bool ModelFileOk(KiLibraryModel m, KiFile f)
+    public bool ModelFileOk(KiLibraryModel m, KiFile f) => ModelFileOk(m, f, CancellationToken.None);
+
+    /// <summary>Wie <see cref="ModelFileOk(KiLibraryModel, KiFile)"/>, aber abbrechbar: Die SHA-256 läuft in Blöcken zu 1 MB und prüft dazwischen
+    /// <paramref name="ct"/> (Gegenprüfung T-0739: Modelldateien bis 13,8 GB – „Abbrechen“ muss auch mitten im Rechnen greifen).</summary>
+    public bool ModelFileOk(KiLibraryModel m, KiFile f, CancellationToken ct)
     {
+        ct.ThrowIfCancellationRequested();
         var fi = new FileInfo(ModelFile(m, f));
         if (!fi.Exists || fi.Length != f.Bytes) return false;
-        return !f.HasSha || string.Equals(Sha256(fi.FullName), f.Sha256, StringComparison.OrdinalIgnoreCase);
+        return !f.HasSha || string.Equals(Sha256(fi.FullName, ct), f.Sha256, StringComparison.OrdinalIgnoreCase);
+    }
+
+    static string Sha256(string file, CancellationToken ct)
+    {
+        using var s = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, 1 << 20, FileOptions.SequentialScan);
+        using var h = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        var buf = new byte[1 << 20]; int n;
+        while ((n = s.Read(buf, 0, buf.Length)) > 0) { ct.ThrowIfCancellationRequested(); h.AppendData(buf, 0, n); }
+        return Convert.ToHexStringLower(h.GetHashAndReset());
     }
 
     /// <summary>Modell entfernen (nur der eigene Ordner unter „ki/modelle“).</summary>

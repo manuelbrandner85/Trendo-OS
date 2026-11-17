@@ -125,8 +125,12 @@ public partial class MainWindow
             if (!sameHowTo) info.Children.Add(P("So geht's: " + m.HowTo, null, 10.5));
             // T-0739 (X-05): ehrlich je Modell, ob die Dateien eine feste Prüfsumme haben
             var (fixedSha, shaText) = m.Checksum;
-            var shaLine = P((fixedSha ? "✓ " : "⚠ ") + shaText, fixedSha ? null : Brush.Parse("#FACC15"), 10.5); shaLine.Name = "kilib-sha-" + m.Id;
-            if (m.Files.FirstOrDefault(f => f.HasSha)?.ShaSource is { } shaSrc) ToolTip.SetTip(shaLine, "Herkunft: " + shaSrc);
+            // „Einfach“ (V10: höchstens 400 Wörter je Ansicht): kurzer Satz, der volle Text steht im Hinweis beim Darüberfahren
+            var simple = ProgramLevel == Trendo.Core.Programs.UserLevel.Einfach;
+            var shaShort = fixedSha ? "Prüfsumme fest" : m.Runtime == KiRuntime.Ollama ? "Ollama-Prüfsumme" : "ohne Prüfsumme";
+            var shaLine = P((fixedSha ? "✓ " : "⚠ ") + (simple ? shaShort : shaText), fixedSha ? null : Brush.Parse("#FACC15"), 10.5); shaLine.Name = "kilib-sha-" + m.Id;
+            var shaTip = m.Files.FirstOrDefault(f => f.HasSha)?.ShaSource is { } shaSrc ? "Herkunft: " + shaSrc : null;
+            if (simple || shaTip is not null) ToolTip.SetTip(shaLine, simple ? shaText + (shaTip is null ? "" : "\n" + shaTip) : shaTip);
             info.Children.Add(shaLine);
             sp.Children.Add(WCard(new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { info, Pos(buttons, 1) } }));
             if (_kiTry == m.Id && got) sp.Children.Add(KiTryPanel(m));
@@ -231,7 +235,15 @@ public partial class MainWindow
             {
                 SetupToken.ThrowIfCancellationRequested();
                 if (_core.Approvals.Halted) throw new ApprovalException("Not-Stopp ist aktiv – Laden angehalten.");
-                if (store.ModelFileOk(m, f)) { step++; continue; } // T-0739: mit fester Katalog-Summe auch die SHA-256 der vorhandenen Datei
+                // T-0739: mit fester Katalog-Summe auch die SHA-256 der vorhandenen Datei. Gegenprüfung: Das dauert bei 13,8 GB Minuten – darum im
+                // Hintergrund mit Fortschrittsanzeige, und „Abbrechen“ greift auch mitten im Rechnen (Token wird zwischen den 1-MB-Blöcken geprüft)
+                if (File.Exists(store.ModelFile(m, f)))
+                {
+                    SetupOverlayProgress(step, steps, $"{f.FileName} wird geprüft … (SHA-256 der vorhandenen Datei)");
+                    KiFileCheckStepForTests = SetupOverlayStepText;
+                }
+                var ct = SetupToken;
+                if (await Task.Run(() => { KiFileCheckThreadForTests = Environment.CurrentManagedThreadId; return store.ModelFileOk(m, f, ct); }, ct)) { step++; continue; }
                 SetupOverlayProgress(step, steps, $"{f.FileName} wird geladen …");
                 var (file, sha) = await KiDownload(f.Url, f.FileName, f.Bytes, step, steps);
                 try { await Task.Run(() => store.InstallModelFile(m, f, file, sha, _core.Audit)); } finally { TryDelete(file); }
@@ -253,6 +265,11 @@ public partial class MainWindow
         finally { _depBusy = false; EndSetupOverlay(); }
         Show("ki-bibliothek");
     }
+
+    /// <summary>Gegenprüfung T-0739: Faden, auf dem zuletzt eine vorhandene Modelldatei gegen die Katalog-Summe geprüft wurde, und die Anzeige dabei –
+    /// für den Test, dass das Hashen großer Dateien nicht den Oberflächen-Faden blockiert.</summary>
+    public int KiFileCheckThreadForTests { get; private set; }
+    public string KiFileCheckStepForTests { get; private set; } = "";
 
     static void TryDelete(string f) { try { if (File.Exists(f)) File.Delete(f); } catch (IOException) { } catch (UnauthorizedAccessException) { } }
 

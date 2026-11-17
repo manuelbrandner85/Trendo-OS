@@ -144,7 +144,7 @@ public static class ModelBatch
         }).ToList();
 
     static readonly CultureInfo De = CultureInfo.GetCultureInfo("de-DE");
-    static string CsvCell(string s) => s.IndexOfAny([';', '"', '\n', '\r']) >= 0 ? "\"" + s.Replace("\"", "\"\"") + "\"" : s;
+    static string CsvCell(string s) => KreativSafe.CsvCell(s); // Gegenprüfung T-0739: Formeln entschärft, reine Zahlen bleiben
     static string MdCell(string s) => s.Replace("|", "\\|").Replace("\r", "").Replace("\n", " ");
 
     /// <summary>Eine Zeile je Frage und Modell, Semikolon, Dezimalpunkt (für Tabellenprogramme und Skripte gleich lesbar). Zeilenende „\n“.</summary>

@@ -77,6 +77,38 @@ Hinweis zur Messung: Während Durchgang 1 belegte ein anderer, paralleler Lauf O
 - geändert: `src/Trendo.App/MainWindow.KreativStudios3.cs` (nur Abschnitt „KI-Modelle vergleichen“), `src/Trendo.Core/W2/KiLibrary.cs`, `src/Trendo.Core/W2/KiLibraryStore.cs`, `src/Trendo.App/MainWindow.KiLibrary.cs`, `tests/Trendo.Core.Tests/KiLibraryTests.cs`, `tests/Trendo.App.Tests/KiLibraryUiTests.cs`
 - gemeinsam: `.gitattributes` (eine Zeile `reports/T-0739/** -text`)
 
+## Gegenprüfung behoben
+Vier Befunde der unabhängigen Gegenprüfung, jeweils Rot-Grün (neuer Test auf dem gepushten Stand rot, nach der Behebung grün).
+
+1. **MITTEL – CSV-Export entschärfte keine Formeln** (`ModelBatch.Csv`, alter `ModelCompare.Csv`). Jetzt eine gemeinsame kleine Hilfe `KreativSafe.CsvCell`:
+   Zellen, die mit `= + - @`, Tab oder CR beginnen, bekommen ein Hochkomma; reine Zahlen wie `-5` oder `+3,2` bleiben unverändert. Beide Exporte nutzen sie.
+   Beleg: `ModelBatchTests.Export_csv_formula_guard` („- Karotte“, „=1+1“, „@SUMME(A1)“, „+Quelle“, Tab-Frage, `-5`, `+3,2`, dazu `ModelCompare.Csv`).
+   Rot vorher: `Assert.StartsWith() Failure … Expected start: "1;'=1+1;Ollama|a;ja;"`.
+2. **MITTEL – SHA-256 vorhandener Modelldateien lief auf dem UI-Faden** (`MainWindow.KiLibrary.cs`). Jetzt `await Task.Run(() => store.ModelFileOk(m, f, ct), ct)`,
+   vorher die Anzeige „<Datei> wird geprüft … (SHA-256 der vorhandenen Datei)“ im Einrichtungsfenster. Neues `KiLibraryStore.ModelFileOk(m, f, ct)` hasht in
+   1-MB-Blöcken und prüft das Token dazwischen – „Abbrechen“ greift auch mitten in einer 13,8-GB-Datei.
+   Belege: `KiLibraryUiTests.Existing_file_hashed_off_ui_thread` (3-MB-Datei mit passender Katalog-Summe: kein Download, Prüfung auf anderem Faden, Anzeige „wird geprüft“) –
+   rot vorher: `Assert.NotEqual() Failure: Values are equal (7)`; `KiLibraryTests.ModelFileOk_cancellable` – rot vorher: `Assert.ThrowsAny() Failure: No exception was thrown`.
+3. **MITTEL – kein Fortsetzen nach Absturz** (`ModelsBatchRun`). Fortsetzen hängt nicht mehr am Merker `batchCancelled`: Liegen zur unveränderten Liste
+   Antworten vor und fehlen noch Paare, heißt der Knopf „Fragenreihe fortsetzen“ und fragt nur das Fehlende. Daneben „Neu starten“ – fragt vorher in einem
+   eigenen Fenster („Abbrechen“ vorbelegt); „Nein“ lässt alles stehen, „Ja“ fragt alles neu (ein Rückgängig-Schritt holt die alten Antworten zurück).
+   Beleg: `ModelsBatch_Ui.Batch_resume_after_crash_and_restart_asks` (Dokument mit zwei Teilergebnissen ohne Merker → nur Frage 3 wird gefragt; Rückfrage „Nein“/„Ja“).
+   Rot vorher: `Expected: Fragenreihe fortsetzen · Actual: Fragenreihe starten`.
+4. **NIEDRIG – Rückgängig während des Laufs** hängte danach Antworten an den zurückgeholten Stand. Jetzt gesperrt (Strg+Z/Strg+Y, Knöpfe, Menü, Verlauf,
+   Version zurückholen) mit Hinweis „Rückgängig ist gesperrt, solange die Fragenreihe läuft – erst „Abbrechen“ drücken …“. Zusätzlich trägt jeder Lauf eine
+   Kennung im Dokument; wird sein Stand auf anderem Weg verdrängt, hält er an und schreibt nichts mehr hinein.
+   Beleg: `ModelsBatch_Ui.Batch_undo_blocked_while_running` – rot vorher: `Assert.Contains() Failure: Sub-string not found` (Rückgängig griff mitten im Lauf).
+
+Ersetzt blieb in allen vier Belegen die KI-Quelle bzw. der Download (Test-Ersatz); kein Ollama-Echtlauf in dieser Runde (Vorgabe). Oberfläche („Neu starten“, Hinweiszeile) nicht im Bild nachgeprüft – der Zustand „Teilergebnisse vorhanden“ lässt sich mit `Trendo.Render` nicht herstellen.
+
+Tests dieser Runde (ohne Volltest): Build 0 Fehler. Core `ModelBatchTests|KiLibraryTests|KreativKits3Tests` 25/25. App: ModelsBatch_Ui 4/4, KiLibraryUiTests 4/4, KreativStudios3_Ui 5/5, KiModelT0703_Ui 5/5, KiPy_Ui 3/3, DesignPaket1_Ui 31/31, Runde12_Ui 4/4, UebersichtEinfach_Ui 2/2.
+
+**Nebenbefund dieser Runde (vom ersten T-0739-Stand, in der ersten Runde nicht ausgeführt):** `UebersichtEinfach_Ui` war 0/2 –
+(a) die neuen Exporte „Fragenreihe (.csv/.md)“ fehlten in „Einfach“ ohne genannten Ersatzweg → in `UebersichtEinfachUiTests.Replaced` eingetragen (Weg: Menüleiste „Datei ▸ Exportieren“, dort zeigt jede Stufe alle Exporte – wie bei den 0.9.104-Formaten);
+(b) „KI-Bibliothek“ hatte in „Einfach“ 447 statt höchstens 400 Wörter wegen der neuen Prüfsummen-Zeile → in „Einfach“ jetzt Kurzform („✓ Prüfsumme fest“, „⚠ Ollama-Prüfsumme“, „⚠ ohne Prüfsumme“), voller Text und Herkunft im Hinweis beim Darüberfahren; „Erweitert/Profi“ unverändert. Jetzt 391 Wörter.
+
+Zusätzlich berührt: `src/Trendo.Core/Kreativ/KreativKits.cs` (`KreativSafe.CsvCell`), `src/Trendo.Core/Kreativ/KreativKits3.cs` (eine Zeile), `src/Trendo.App/MainWindow.ProgramShell.cs` (Sperre an den Rückgängig-Wegen), `tests/Trendo.App.Tests/ModelsBatchUiTests.cs`, `tests/Trendo.App.Tests/UebersichtEinfachUiTests.cs` (zwei Ersatzweg-Einträge).
+
 ## ENTWICKLUNGSBERICHT
 - Projekt: Trendo OS · Sprachen: C# (.NET 10, Avalonia) · Rust eingesetzt: NEIN
 - Grund: Erweiterung bestehender C#-Module (IntelligenceCore, KiLibraryStore); Engpass ist die KI-Antwortzeit, nicht der eigene Code – Rust brächte keinen Vorteil.

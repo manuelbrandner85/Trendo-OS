@@ -27,6 +27,18 @@ public static class KreativSafe
         return SecurityElement.Escape(b.ToString()) ?? "";
     }
 
+    static readonly Regex PlainNumber = new(@"^[+-]?\d+([.,]\d+)?$", RegexOptions.CultureInvariant);
+
+    /// <summary>T-0739 (Gegenprüfung): CSV-Zelle mit Semikolon-Trenner. Beginnt der Text wie eine Formel (= + - @ Tab CR), bekommt er ein Hochkomma
+    /// vorangestellt, damit Tabellenprogramme ihn nicht ausführen – wie bei <c>ImageInfo.Csv</c>. Reine Zahlen wie „-5“ oder „+3,2“ bleiben unverändert.
+    /// Felder mit Trenner, Anführungszeichen oder Zeilenumbruch kommen in Anführungszeichen.</summary>
+    public static string CsvCell(string? s)
+    {
+        s ??= "";
+        if (s.Length > 0 && "=+-@\t\r".Contains(s[0]) && !PlainNumber.IsMatch(s)) s = "'" + s;
+        return s.IndexOfAny([';', '"', '\n', '\r']) >= 0 ? "\"" + s.Replace("\"", "\"\"") + "\"" : s;
+    }
+
     /// <summary>Kürzt auf höchstens <paramref name="max"/> Textzeichen, ohne ein Emoji oder Ersatzpaar zu zerschneiden.</summary>
     public static string Cut(string s, int max)
     {

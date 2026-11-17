@@ -109,4 +109,27 @@ public class ModelBatchTests
         Assert.Contains("⚠ Quelle oder Modell nicht erreichbar.", md);
         Assert.Contains("Das ist \"vier\"; also 4.", md);
     }
+
+    [Fact(DisplayName = "Fragenreihe (Gegenprüfung T-0739): CSV entschärft Formeln – „- Karotte“ und „=1+1“ bekommen ein Hochkomma, reine Zahlen bleiben")]
+    public void Export_csv_formula_guard()
+    {
+        ModelBatch.Result[] res =
+        [
+            new(1, "=1+1", "Ollama|a", true, "- Karotte", 1, ""),
+            new(2, "@SUMME(A1)", "+Quelle|b", false, "", 0, "-5"),
+            new(3, "Zahl?", "Ollama|a", true, "+3,2", 1, ""),
+            new(4, "\tTab?", "Ollama|a", true, "x", 1, ""), // die Antwort wird getrimmt, die Frage nicht
+        ];
+        var lines = ModelBatch.Csv(res).Split('\n');
+        Assert.StartsWith("1;'=1+1;Ollama|a;ja;", lines[1]);
+        Assert.EndsWith(";'- Karotte;", lines[1]);
+        Assert.StartsWith("2;'@SUMME(A1);'+Quelle|b;nein;", lines[2]);
+        Assert.EndsWith(";;-5", lines[2]); // reine Zahl bleibt unverändert
+        Assert.EndsWith(";+3,2;", lines[3]);
+        Assert.StartsWith("4;'\tTab?;", lines[4]);
+        // derselbe Schutz im alten Einzelvergleich (ModelCompare.Csv)
+        var mc = ModelCompare.Csv([ModelCompare.NewRound("=1+1", [new("-Quelle", "x", 1, true)], 1) with { Revealed = true }]).Split('\n');
+        Assert.StartsWith("'=1+1;'-Quelle;", mc[1]);
+        Assert.StartsWith("-5;", ModelCompare.Csv([ModelCompare.NewRound("-5", [new("Q", "x", 1, true)], 1)]).Split('\n')[1]);
+    }
 }

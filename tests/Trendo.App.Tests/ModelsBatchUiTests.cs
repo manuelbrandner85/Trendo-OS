@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using System.Text.Json.Nodes;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.LogicalTree;
@@ -136,6 +137,82 @@ public class ModelsBatch_Ui
             Assert.Equal(6, a.Calls); // 2 vorher + 1 abgebrochen + 3 fehlende – die ersten beiden wurden nicht noch einmal gefragt
             Assert.Equal([1, 2, 3, 4, 5], MainWindow.ModelsBatchResults(d).Select(r => r.Question));
             Assert.False(d.Flag("batchCancelled"));
+        }
+        finally { w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0739 Gegenprüfung: nach Absturz (Teilergebnisse ohne Abbruch-Merker) bietet „Fortsetzen“ nur die fehlenden Paare an; „Neu starten“ fragt vorher")]
+    public void Batch_resume_after_crash_and_restart_asks()
+    {
+        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
+        var a = new Ki("Quelle A", true, "a1");
+        w.KiBackendsOverride = () => [a];
+        try
+        {
+            w.Show(K); Settle(); RealClick(w, w.Find<Button>("prog-tpl-leer")); Settle();
+            var d = w.ProgramActive(K)!;
+            // Stand wie nach einem Absturz mitten im Lauf: Notsicherung hat zwei Antworten, der Merker „abgebrochen“ wurde nie geschrieben
+            d.Edit("Stand nach Absturz", x =>
+            {
+                x["series"] = "Frage eins?\nFrage zwei?\nFrage drei?"; x["sources"] = new JsonArray("Quelle A|a1");
+                x["batchSeries"] = "Frage eins?\nFrage zwei?\nFrage drei?"; x["batchCancelled"] = false; x["batchQuestions"] = 3;
+                x["batch"] = new JsonArray(
+                    new JsonObject { ["n"] = 1, ["q"] = "Frage eins?", ["source"] = "Quelle A|a1", ["ok"] = true, ["text"] = "alt 1", ["sec"] = 1.0, ["error"] = "" },
+                    new JsonObject { ["n"] = 2, ["q"] = "Frage zwei?", ["source"] = "Quelle A|a1", ["ok"] = true, ["text"] = "alt 2", ["sec"] = 1.0, ["error"] = "" });
+            });
+            w.Show(K); Settle();
+            Assert.Equal("Fragenreihe fortsetzen", w.Find<Button>("models-batch-run").Content);
+            Tap(w, "models-batch-run");
+            WaitFor(() => w.ProgramMessage(K).StartsWith("Fragenreihe fertig"));
+            Assert.Equal(["Frage drei?"], a.Asked); // nur das fehlende Paar
+            var res = MainWindow.ModelsBatchResults(d);
+            Assert.Equal([1, 2, 3], res.Select(r => r.Question));
+            Assert.Equal(["alt 1", "alt 2"], res.Take(2).Select(r => r.Answer)); // Teilergebnisse blieben
+
+            // Nochmal ein Absturz-Stand, dann „Neu starten“: erst die Rückfrage – „Nein“ ändert nichts, „Ja“ fragt alles neu
+            d.Edit("Stand nach Absturz", x => ((JsonArray)x["batch"]!).RemoveAt(2));
+            w.Show(K); Settle();
+            Assert.Equal("Fragenreihe fortsetzen", w.Find<Button>("models-batch-run").Content);
+            string? asked = null; var answer = false;
+            w.ModelsRestartConfirm = t => { asked = t; return Task.FromResult(answer); };
+            Tap(w, "models-batch-restart"); Settle();
+            Assert.Contains("2 vorhandene Antworten", asked);
+            Assert.Single(a.Asked); Assert.Equal(2, MainWindow.ModelsBatchResults(d).Count);
+            answer = true;
+            Tap(w, "models-batch-restart");
+            WaitFor(() => w.ProgramMessage(K).StartsWith("Fragenreihe fertig"));
+            Assert.Equal(["Frage drei?", "Frage eins?", "Frage zwei?", "Frage drei?"], a.Asked);
+            Assert.DoesNotContain(MainWindow.ModelsBatchResults(d), r => r.Answer.StartsWith("alt"));
+        }
+        finally { w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0739 Gegenprüfung: Rückgängig während eines laufenden Durchgangs ist gesperrt, mit Hinweis; danach bleibt der Stand sauber")]
+    public void Batch_undo_blocked_while_running()
+    {
+        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
+        var a = new Ki("Quelle A", true, "a1") { HoldOn = 2 };
+        w.KiBackendsOverride = () => [a];
+        try
+        {
+            w.Show(K); Settle(); RealClick(w, w.Find<Button>("prog-tpl-leer")); Settle();
+            var d = w.ProgramActive(K)!;
+            d.Edit("Fragen", x => { x["series"] = "Eins?\nZwei?\nDrei?"; x["sources"] = new JsonArray("Quelle A|a1"); });
+            w.Show(K); Settle();
+            Tap(w, "models-batch-run");
+            WaitFor(() => a.Calls == 2);
+            Assert.Single(MainWindow.ModelsBatchResults(d));
+            w.Show(K); Settle();
+            Tap(w, "prog-undo");
+            Assert.Contains("Rückgängig ist gesperrt", w.ProgramMessage(K));
+            Assert.Equal("Fragenreihe", d.UndoLabel); // nichts zurückgeholt
+            Assert.Single(MainWindow.ModelsBatchResults(d));
+            Tap(w, "models-batch-cancel");
+            WaitFor(() => w.ProgramMessage(K).StartsWith("Abgebrochen"), 3000);
+            // nach dem Lauf greift Rückgängig wieder – und nichts hängt danach am zurückgeholten Stand
+            Tap(w, "prog-undo"); Settle();
+            Assert.Empty(MainWindow.ModelsBatchResults(d));
+            Assert.Equal("Fragen", d.UndoLabel);
         }
         finally { w.Close(); }
     }
