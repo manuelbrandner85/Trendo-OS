@@ -9,24 +9,34 @@ public sealed record CrossCheckItem(string What, double Main, double Reference, 
     public bool Ok => DeviationPct <= FrameCrossCheck.TolerancePct;
 }
 
-/// <summary>Ergebnis der Gegenprobe. <see cref="Skipped"/> nennt, was nicht unabhängig nachgerechnet werden konnte (ehrlich, statt still zu fehlen).</summary>
-public sealed record CrossCheckResult(List<CrossCheckItem> Items, List<string> Methods, string? Skipped)
+/// <summary>Ergebnis der Gegenprobe. <see cref="Skipped"/> nennt, was nicht unabhängig nachgerechnet werden konnte (ehrlich, statt still zu fehlen).
+/// <see cref="TooLarge"/>: zweite Rechnung wegen der Größe ausgelassen. <see cref="Pending"/>: Gegenprobe läuft noch im Hintergrund.</summary>
+public sealed record CrossCheckResult(List<CrossCheckItem> Items, List<string> Methods, string? Skipped, bool TooLarge = false, bool Pending = false)
 {
-    public bool Ok => Items.Count > 0 && Items.All(i => i.Ok);
+    /// <summary>Platzhalter, solange die Gegenprobe im Hintergrund rechnet.</summary>
+    public static CrossCheckResult Running => new([], [], null, Pending: true);
+    public bool Ok => !Pending && Items.Count > 0 && Items.All(i => i.Ok);
     public double MaxDeviationPct => Items.Count == 0 ? 0 : Items.Max(i => i.DeviationPct);
     public CrossCheckItem? Worst => Items.OrderByDescending(i => i.DeviationPct).FirstOrDefault();
-    /// <summary>Kurzzeile für die Oberfläche: „Gegenprobe ✓ Abweichung 0,02 %“ oder eine Warnung.</summary>
-    public string Text => Items.Count == 0 ? "Gegenprobe nicht möglich" + (Skipped is null ? "" : " – " + Skipped)
-        : Ok ? $"Gegenprobe ✓ Abweichung {FrameCrossCheck.Pct(MaxDeviationPct)} %"
-        : $"⚠ Gegenprobe weicht ab: {Worst!.What} {FrameCrossCheck.Pct(Worst.DeviationPct)} % (erlaubt {FrameCrossCheck.Pct(FrameCrossCheck.TolerancePct)} %) – Ergebnis nicht verwenden, Eingaben prüfen";
+    /// <summary>Nur das Gleichgewicht ist geprüft (keine Formel, keine zweite Rechnung) – dann kein „✓ Abweichung“, sondern ehrlich „nur Gleichgewicht geprüft“.</summary>
+    public bool OnlyEquilibrium => Methods.Count > 0 && Methods.All(m => m == "Gleichgewicht");
+    /// <summary>Kurzzeile für die Oberfläche: „Gegenprobe ✓ Abweichung 0,02 %“, „nur Gleichgewicht geprüft“, „läuft …“ oder eine Warnung.</summary>
+    public string Text => Pending ? "Gegenprobe läuft …"
+        : Items.Count == 0 ? "Gegenprobe nicht möglich" + (Skipped is null ? "" : " – " + Skipped)
+        : !Ok ? $"⚠ Gegenprobe weicht ab: {Worst!.What} {FrameCrossCheck.Pct(Worst.DeviationPct)} % (erlaubt {FrameCrossCheck.Pct(FrameCrossCheck.TolerancePct)} %) – Ergebnis nicht verwenden, Eingaben prüfen"
+        : TooLarge && OnlyEquilibrium ? "Gegenprobe zu groß – nur Gleichgewicht geprüft"
+        : OnlyEquilibrium ? "Gegenprobe: nur Gleichgewicht geprüft" + (Reason is { } why ? $" ({why})" : "")
+        : $"Gegenprobe ✓ Abweichung {FrameCrossCheck.Pct(MaxDeviationPct)} %" + (TooLarge ? " – zweite Rechnung zu groß" : "");
+    string? Reason => Skipped?.Replace(" – nur Gleichgewicht geprüft", "");
 }
 
 /// <summary>T-0748 (SPEC-03): Gegenprobe jeder Tragwerksrechnung gegen unabhängige Werte.
 /// 1. Gleichgewicht: Summe der Lagerkräfte und -momente gegen die Summe der Lasten (aus den Eingaben direkt aufsummiert).
 /// 2. Formel (wenn das System eine Lehrbuchform hat): Einfeldträger (qL²/8, 5qL⁴/384EI, FL/4, FL³/48EI), Kragarm (qL²/2, qL⁴/8EI, FL, FL³/3EI),
 ///    Zweifeldträger mit gleichen Feldern und Gleichlast (Stützmoment qL²/8, Lager 3/8·qL und 10/8·qL, Durchbiegung aus der Biegelinie des einseitig eingespannten Trägers).
-/// 3. Zweite Rechnung mit anderer Methode: jeder Stab in viele Teilstäbe zerlegt, Lasten als Knotenkräfte verteilt (statt Volleinspann-Lasten),
-///    Gelenke als eigener Drehfreiheitsgrad (statt statischer Kondensation), Lösung mit Cholesky-Zerlegung (statt Gauß).
+/// 3. Zweite Rechnung mit anderer Methode (eigener Code): jeder Stab in feste Teilstäbe zerlegt, Streckenlast je Teilstab als konsistenter Lastvektor,
+///    Gelenke als eigener Drehfreiheitsgrad (statt statischer Kondensation), Nummerierung nach Reverse Cuthill-McKee, Cholesky im Hüllenspeicher (statt dichter Matrix und Gauß).
+///    Zu große Tragwerke (Speicher über <see cref="MaxEnvelope"/>) werden ehrlich als „zu groß – nur Gleichgewicht geprüft“ gemeldet.
 /// Ersetzt keine Prüfstatik.</summary>
 public static class FrameCrossCheck
 {
@@ -36,20 +46,22 @@ public static class FrameCrossCheck
     static readonly CultureInfo De = CultureInfo.GetCultureInfo("de-DE");
     public static string Pct(double v) => v < 0.005 ? "< 0,01" : v.ToString(v < 10 ? "0.00" : "0.#", De);
 
-    public static CrossCheckResult Check(FrameModel f)
+    public static CrossCheckResult Check(FrameModel f, CancellationToken ct = default, long maxEnvelope = MaxEnvelope)
     {
         var r = FrameSolver.Solve(f, 201); // Hauptrechnung, fein abgetastet (sonst läge ein Größtwert zwischen zwei Punkten)
         var items = new List<CrossCheckItem>(); var methods = new List<string>(); var skipped = new List<string>();
         Equilibrium(f, r, items); methods.Add("Gleichgewicht");
         if (Formula(f, r, items) is { } name) methods.Add("Formel " + name);
-        var why = SecondMethodBlocker(f);
+        var why = SecondMethodBlocker(f); var tooLarge = false;
+        ct.ThrowIfCancellationRequested();
         if (why is null)
         {
-            try { SecondMethod(f, r, items); methods.Add("zweite Rechnung (Teilstäbe)"); }
+            try { SecondMethod(f, r, items, ct, maxEnvelope); methods.Add("zweite Rechnung (Teilstäbe)"); }
+            catch (TooLargeException e) { tooLarge = true; skipped.Add("zweite Rechnung: " + e.Message + " – nur Gleichgewicht geprüft"); }
             catch (InvalidOperationException e) { skipped.Add("zweite Rechnung: " + e.Message); }
         }
         else skipped.Add("zweite Rechnung nicht für " + why + " – nur Gleichgewicht geprüft");
-        return new(items, methods, skipped.Count == 0 ? null : string.Join("; ", skipped));
+        return new(items, methods, skipped.Count == 0 ? null : string.Join("; ", skipped), tooLarge);
     }
 
     static double Dev(double main, double reference, double scale)
@@ -178,22 +190,41 @@ public static class FrameCrossCheck
         return null;
     }
 
-    /// <summary>Unabhängige Rechnung: Teilstäbe, Knotenkräfte statt Volleinspann-Lasten, Gelenk = eigener Drehwinkel, Cholesky.</summary>
-    public static (Dictionary<string, (double Rx, double Ry, double M)> Reactions, Dictionary<string, double> MaxMoment, double MaxDisp) Solve(FrameModel f)
+    /// <summary>Feste Teilung jedes Stabs in der zweiten Rechnung (dazu ein Schnitt an jeder Einzellast). Mit konsistenten Lastvektoren sind die Knotenwerte
+    /// eines Euler-Bernoulli-Balkens exakt – die Teilung dient der Abtastung von Moment und Verschiebung, nicht der Genauigkeit an den Knoten.</summary>
+    public const int Parts = 8;
+    /// <summary>Obergrenze des Hüllenspeichers (Einträge der zerlegten Steifigkeitsmatrix, je 8 Byte). Darüber wäre die Gegenprobe zu groß – dann nur Gleichgewicht.</summary>
+    public const long MaxEnvelope = 25_000_000;
+
+    /// <summary>Das Tragwerk ist für die zweite Rechnung zu groß (Speicher über <see cref="MaxEnvelope"/>).</summary>
+    public sealed class TooLargeException(string message) : InvalidOperationException(message);
+
+    sealed class Sub
     {
-        var parts = Math.Clamp(240 / Math.Max(1, f.Members.Count), 6, 40);
+        public required string Member; public required int[] Map; public double L, C, S, EA, EI;
+        public double Pa, Pb, Xa, Xb; // Last am Teilstab im örtlichen System: quer (Pa → Pb) und längs (Xa → Xb), kN/m
+        public required double[,] Kg; public required double[] Fl;
+    }
+
+    /// <summary>Unabhängige Rechnung: jeder Stab in <see cref="Parts"/> Teilstäbe, Streckenlast je Teilstab als konsistenter Lastvektor
+    /// (Volleinspann-Kräfte und -Momente), Gelenk = eigener Drehwinkel (statt statischer Kondensation), Knoten nach Reverse Cuthill-McKee nummeriert,
+    /// Lösung mit Cholesky im Hüllenspeicher (statt dichter Matrix und Gauß), Lagerkräfte aus den Teilstab-Endkräften.
+    /// Moment und Verschiebung im Teilstab aus der geschlossenen Lösung der Balkengleichung. <paramref name="ct"/> bricht ab (neue Änderung).</summary>
+    public static (Dictionary<string, (double Rx, double Ry, double M)> Reactions, Dictionary<string, double> MaxMoment, double MaxDisp) Solve(FrameModel f, CancellationToken ct = default, long maxEnvelope = MaxEnvelope)
+    {
         var dofOfNode = new Dictionary<string, int>(); var dofs = 0;
         foreach (var n in f.Nodes) { dofOfNode[n.Id] = dofs; dofs += 3; }
-        var sub = new List<(string Member, int[] Map, double L, double C, double S, double EA, double EI)>();
-        var forces = new List<(int Dof, double V)>();
+        var subs = new List<Sub>(); var nodal = new List<(int Dof, double V)>();
         foreach (var m in f.Members)
         {
+            ct.ThrowIfCancellationRequested();
             var a = f.Node(m.A)!; var b = f.Node(m.B)!; var L = Len(a, b); var c = (b.X - a.X) / L; var s = (b.Y - a.Y) / L;
             var sec = Sections.Get(m.Section); var mat = Engineering.Mat(m.Material); var E = mat.E_GPa * 1e6;
             double EA = E * sec.A_mm2 * 1e-6, EI = E * sec.I_mm4 * 1e-12;
             // Teilungspunkte: gleichmäßig plus jede Einzellast
-            var ts = Enumerable.Range(0, parts + 1).Select(i => (double)i / parts).ToList();
-            foreach (var l in f.Loads.Where(l => l.Kind == "einzel" && l.Target == m.Id)) ts.Add(Math.Clamp(l.At, 0, 1));
+            var ts = Enumerable.Range(0, Parts + 1).Select(i => (double)i / Parts).ToList();
+            var points = f.Loads.Where(l => l.Kind == "einzel" && l.Target == m.Id).ToList();
+            foreach (var l in points) ts.Add(Math.Clamp(l.At, 0, 1));
             ts = ts.OrderBy(t => t).Aggregate(new List<double>(), (acc, t) => { if (acc.Count == 0 || t - acc[^1] > 1e-9) acc.Add(t); return acc; });
             // Freiheitsgrade der Teilungspunkte: Enden = Knoten des Tragwerks (Gelenk: eigener Drehwinkel), innen neu
             var pts = new int[ts.Count][];
@@ -212,21 +243,26 @@ public static class FrameCrossCheck
             for (var i = 1; i < ts.Count; i++)
             {
                 var h = (ts[i] - ts[i - 1]) * L; double qa = Q(ts[i - 1]), qb = Q(ts[i]);
-                sub.Add((m.Id, [.. pts[i - 1], .. pts[i]], h, c, s, EA, EI));
-                // Streckenlast als zwei Knotenkräfte (wie ein Einfeldträger je Teilstab), global nach unten
-                forces.Add((pts[i - 1][1], -h * (2 * qa + qb) / 6)); forces.Add((pts[i][1], -h * (qa + 2 * qb) / 6));
+                // global senkrecht nach unten → örtlich: längs −q·s, quer −q·c
+                double pa = -qa * c, pb = -qb * c, xa = -qa * s, xb = -qb * s;
+                // konsistenter Lastvektor (Trapez): Längskraft linear, Querkraft und Einspannmoment mit Hermite-Formfunktionen
+                double[] fl = [h * (2 * xa + xb) / 6, h * (7 * pa + 3 * pb) / 20, h * h * (3 * pa + 2 * pb) / 60,
+                               h * (xa + 2 * xb) / 6, h * (3 * pa + 7 * pb) / 20, -h * h * (2 * pa + 3 * pb) / 60];
+                subs.Add(new Sub { Member = m.Id, Map = [.. pts[i - 1], .. pts[i]], L = h, C = c, S = s, EA = EA, EI = EI, Pa = pa, Pb = pb, Xa = xa, Xb = xb, Kg = GlobalStiffness(EA, EI, h, c, s), Fl = fl });
             }
-            foreach (var l in f.Loads.Where(l => l.Kind == "einzel" && l.Target == m.Id))
-            { var i = ts.FindIndex(t => Math.Abs(t - Math.Clamp(l.At, 0, 1)) < 1e-9); forces.Add((pts[i][1], -l.Value)); }
+            foreach (var l in points)
+            { var i = ts.FindIndex(t => Math.Abs(t - Math.Clamp(l.At, 0, 1)) < 1e-9); nodal.Add((pts[i][1], -l.Value)); }
         }
-        foreach (var l in f.Loads.Where(l => l.Kind == "knoten")) { var k = dofOfNode[l.Target]; forces.Add((k, l.Fx)); forces.Add((k + 1, -l.Value)); forces.Add((k + 2, l.M)); }
+        foreach (var l in f.Loads.Where(l => l.Kind == "knoten" && dofOfNode.ContainsKey(l.Target)))
+        { var k = dofOfNode[l.Target]; nodal.Add((k, l.Fx)); nodal.Add((k + 1, -l.Value)); nodal.Add((k + 2, l.M)); }
 
-        var K = new double[dofs, dofs]; var F = new double[dofs];
-        foreach (var (d, v) in forces) F[d] += v;
-        foreach (var e in sub)
+        // Lastvektor und Hauptdiagonale aus den Teilstäben (keine Gesamtmatrix)
+        var F = new double[dofs]; var diag = new double[dofs];
+        foreach (var (d, v) in nodal) F[d] += v;
+        foreach (var e in subs)
         {
-            var kg = GlobalStiffness(e.EA, e.EI, e.L, e.C, e.S);
-            for (var i = 0; i < 6; i++) for (var j = 0; j < 6; j++) K[e.Map[i], e.Map[j]] += kg[i, j];
+            var fg = ToGlobal(e.Fl, e.C, e.S);
+            for (var i = 0; i < 6; i++) { F[e.Map[i]] += fg[i]; diag[e.Map[i]] += e.Kg[i, i]; }
         }
         var fixedDof = new bool[dofs];
         foreach (var n in f.Nodes)
@@ -237,39 +273,145 @@ public static class FrameCrossCheck
             if (n.Support == "einspannung") fixedDof[k + 2] = true;
         }
         // Drehwinkel ohne Steifigkeit (Knoten, an dem alle Stäbe gelenkig hängen) haben keinen Einfluss: festhalten
-        for (var i = 0; i < dofs; i++) if (!fixedDof[i] && Math.Abs(K[i, i]) < 1e-12) fixedDof[i] = true;
-        var free = Enumerable.Range(0, dofs).Where(i => !fixedDof[i]).ToArray();
-        var Kff = new double[free.Length, free.Length]; var Ff = new double[free.Length];
-        for (var i = 0; i < free.Length; i++) { Ff[i] = F[free[i]]; for (var j = 0; j < free.Length; j++) Kff[i, j] = K[free[i], free[j]]; }
-        var uf = Cholesky(Kff, Ff);
-        var U = new double[dofs]; for (var i = 0; i < free.Length; i++) U[free[i]] = uf[i];
+        for (var i = 0; i < dofs; i++) if (!fixedDof[i] && Math.Abs(diag[i]) < 1e-12) fixedDof[i] = true;
 
+        var uf = SolveEnvelope(subs, fixedDof, F, diag, ct, maxEnvelope, out var newIndex);
+        var U = new double[dofs]; for (var i = 0; i < dofs; i++) if (newIndex[i] >= 0) U[i] = uf[newIndex[i]];
+
+        // Lagerkräfte R = Σ (k·d − f) über die Teilstäbe − Knotenlasten
+        var R = new double[dofs];
+        foreach (var e in subs)
+        {
+            var fg = ToGlobal(e.Fl, e.C, e.S);
+            for (var i = 0; i < 6; i++) { double sum = -fg[i]; for (var j = 0; j < 6; j++) sum += e.Kg[i, j] * U[e.Map[j]]; R[e.Map[i]] += sum; }
+        }
+        foreach (var (d, v) in nodal) R[d] -= v;
         var reactions = new Dictionary<string, (double, double, double)>();
         foreach (var n in f.Nodes.Where(n => n.Support != ""))
         {
-            var k = dofOfNode[n.Id]; var rr = new double[3];
-            for (var c = 0; c < 3; c++) { if (!fixedDof[k + c]) continue; double sum = 0; for (var j = 0; j < dofs; j++) sum += K[k + c, j] * U[j]; rr[c] = sum - F[k + c]; }
-            reactions[n.Id] = (rr[0], rr[1], rr[2]);
+            var k = dofOfNode[n.Id];
+            reactions[n.Id] = (fixedDof[k] ? R[k] : 0, fixedDof[k + 1] ? R[k + 1] : 0, fixedDof[k + 2] ? R[k + 2] : 0);
         }
-        var maxM = new Dictionary<string, double>();
-        foreach (var e in sub)
+
+        // Moment und Verschiebung im Teilstab aus der geschlossenen Lösung (Biegelinie = Hermite-Anteil + Lösung der eingespannten Teilstab-Last)
+        var maxM = new Dictionary<string, double>(); double disp = 0;
+        foreach (var e in subs)
         {
             var d = e.Map.Select(i => U[i]).ToArray();
-            // Endkräfte am Teilstab im örtlichen System: Drehung der Verschiebungen, dann k_örtlich · d
             double[] dl = [e.C * d[0] + e.S * d[1], -e.S * d[0] + e.C * d[1], d[2], e.C * d[3] + e.S * d[4], -e.S * d[3] + e.C * d[4], d[5]];
-            double b12 = 12 * e.EI / (e.L * e.L * e.L), b6 = 6 * e.EI / (e.L * e.L), b4 = 4 * e.EI / e.L, b2 = 2 * e.EI / e.L;
-            var mA = b6 * dl[1] + b4 * dl[2] - b6 * dl[4] + b2 * dl[5];
-            var mB = b6 * dl[1] + b2 * dl[2] - b6 * dl[4] + b4 * dl[5];
-            maxM[e.Member] = Math.Max(maxM.GetValueOrDefault(e.Member), Math.Max(Math.Abs(mA), Math.Abs(mB)));
+            double h = e.L, b12 = 12 * e.EI / (h * h * h), b6 = 6 * e.EI / (h * h), b4 = 4 * e.EI / h, b2 = 2 * e.EI / h;
+            var vA = b12 * dl[1] + b6 * dl[2] - b12 * dl[4] + b6 * dl[5] - e.Fl[1]; // Endkräfte am Teilstab (örtlich) = k·d − f
+            var mA = b6 * dl[1] + b4 * dl[2] - b6 * dl[4] + b2 * dl[5] - e.Fl[2];
+            double dp = e.Pb - e.Pa;
+            double Mx(double x) => -mA + vA * x + e.Pa * x * x / 2 + dp * x * x * x / (6 * h); // Biegemoment im Schnitt x
+            var best = Math.Max(Math.Abs(Mx(0)), Math.Abs(Mx(h)));
+            // Extremwerte: dM/dx = vA + Pa·x + dp·x²/(2h) = 0
+            double qa2 = dp / (2 * h), qa1 = e.Pa, qa0 = vA;
+            if (Math.Abs(qa2) < 1e-15) { if (Math.Abs(qa1) > 1e-15) { var x = -qa0 / qa1; if (x > 0 && x < h) best = Math.Max(best, Math.Abs(Mx(x))); } }
+            else
+            {
+                var disc = qa1 * qa1 - 4 * qa2 * qa0;
+                if (disc >= 0) foreach (var x in new[] { (-qa1 + Math.Sqrt(disc)) / (2 * qa2), (-qa1 - Math.Sqrt(disc)) / (2 * qa2) }) if (x > 0 && x < h) best = Math.Max(best, Math.Abs(Mx(x)));
+            }
+            maxM[e.Member] = Math.Max(maxM.GetValueOrDefault(e.Member), best);
+            for (var k = 0; k <= 8; k++)
+            {
+                var x = h * k / 8; var xi = x / h;
+                var v = (1 - 3 * xi * xi + 2 * xi * xi * xi) * dl[1] + h * (xi - 2 * xi * xi + xi * xi * xi) * dl[2] + (3 * xi * xi - 2 * xi * xi * xi) * dl[4] + h * (-xi * xi + xi * xi * xi) * dl[5]
+                    + e.Pa * x * x * (h - x) * (h - x) / (24 * e.EI) + dp * x * x * (h - x) * (h - x) * (x + 2 * h) / (120 * e.EI * h);
+                var u = (1 - xi) * dl[0] + xi * dl[3] + e.Xa * x * (h - x) / (2 * e.EA) + (e.Xb - e.Xa) * x * (h * h - x * x) / (6 * e.EA * h);
+                double gx = e.C * u - e.S * v, gy = e.S * u + e.C * v;
+                disp = Math.Max(disp, Math.Sqrt(gx * gx + gy * gy));
+            }
         }
-        double disp = 0; // größte Verschiebung über alle Teilungspunkte
-        foreach (var e in sub) { disp = Math.Max(disp, Math.Sqrt(U[e.Map[0]] * U[e.Map[0]] + U[e.Map[1]] * U[e.Map[1]])); disp = Math.Max(disp, Math.Sqrt(U[e.Map[3]] * U[e.Map[3]] + U[e.Map[4]] * U[e.Map[4]])); }
         return (reactions, maxM, disp);
     }
 
-    static void SecondMethod(FrameModel f, FrameResult r, List<CrossCheckItem> items)
+    static double[] ToGlobal(double[] l, double c, double s) => [c * l[0] - s * l[1], s * l[0] + c * l[1], l[2], c * l[3] - s * l[4], s * l[3] + c * l[4], l[5]];
+
+    /// <summary>Freie Freiheitsgrade nach Reverse Cuthill-McKee nummerieren, Steifigkeit im Hüllenspeicher (je Zeile ab der ersten belegten Spalte) aufbauen,
+    /// mit Cholesky zerlegen und lösen. <paramref name="newIndex"/>: neue Nummer je Freiheitsgrad, −1 = festgehalten.</summary>
+    static double[] SolveEnvelope(List<Sub> subs, bool[] fixedDof, double[] F, double[] diag, CancellationToken ct, long maxEnvelope, out int[] newIndex)
     {
-        var (reac, maxM, disp) = Solve(f);
+        var dofs = fixedDof.Length; var freeOf = new int[dofs]; var n = 0;
+        for (var i = 0; i < dofs; i++) freeOf[i] = fixedDof[i] ? -1 : n++;
+        // Nachbarn je freiem Freiheitsgrad
+        var adj = new List<int>[n]; for (var i = 0; i < n; i++) adj[i] = [];
+        foreach (var e in subs)
+            foreach (var a in e.Map) if (freeOf[a] >= 0) foreach (var b in e.Map) if (b != a && freeOf[b] >= 0) adj[freeOf[a]].Add(freeOf[b]);
+        for (var i = 0; i < n; i++) { adj[i].Sort(); var w = 0; for (var k = 0; k < adj[i].Count; k++) if (k == 0 || adj[i][k] != adj[i][k - 1]) adj[i][w++] = adj[i][k]; adj[i].RemoveRange(w, adj[i].Count - w); }
+        ct.ThrowIfCancellationRequested();
+        var order = ReverseCuthillMcKee(adj); var pos = new int[n]; for (var k = 0; k < n; k++) pos[order[k]] = k;
+        newIndex = new int[dofs]; for (var i = 0; i < dofs; i++) newIndex[i] = freeOf[i] < 0 ? -1 : pos[freeOf[i]];
+        // Hülle: erste belegte Spalte je Zeile
+        var first = new int[n]; long total = 0;
+        for (var r = 0; r < n; r++) { var v = order[r]; var lo = r; foreach (var nb in adj[v]) lo = Math.Min(lo, pos[nb]); first[r] = lo; total += r - lo + 1; }
+        if (total > maxEnvelope) throw new TooLargeException($"das Tragwerk ist zu groß für die zweite Rechnung ({total.ToString("N0", De)} Matrixeinträge, Grenze {maxEnvelope.ToString("N0", De)})");
+        var row = new double[n][]; for (var r = 0; r < n; r++) row[r] = new double[r - first[r] + 1];
+        foreach (var e in subs)
+            for (var a = 0; a < 6; a++)
+            {
+                var ia = newIndex[e.Map[a]]; if (ia < 0) continue;
+                for (var b = 0; b < 6; b++) { var ib = newIndex[e.Map[b]]; if (ib < 0 || ib > ia) continue; row[ia][ib - first[ia]] += e.Kg[a, b]; }
+            }
+        var scale = 0.0; for (var i = 0; i < dofs; i++) if (!fixedDof[i]) scale = Math.Max(scale, Math.Abs(diag[i]));
+        // Cholesky K = L·Lᵀ zeilenweise in der Hülle (K symmetrisch positiv definit, sonst ist das System beweglich)
+        for (var i = 0; i < n; i++)
+        {
+            if ((i & 63) == 0) ct.ThrowIfCancellationRequested();
+            var ri = row[i]; var fi = first[i];
+            for (var j = fi; j < i; j++)
+            {
+                var rj = row[j]; var fj = first[j]; var k0 = Math.Max(fi, fj); double sum = ri[j - fi];
+                for (var k = k0; k < j; k++) sum -= ri[k - fi] * rj[k - fj];
+                ri[j - fi] = sum / rj[j - fj];
+            }
+            double dd = ri[i - fi]; for (var k = fi; k < i; k++) dd -= ri[k - fi] * ri[k - fi];
+            if (dd <= scale * 1e-12) throw new InvalidOperationException("das System ist beweglich");
+            ri[i - fi] = Math.Sqrt(dd);
+        }
+        var x = new double[n];
+        for (var i = 0; i < dofs; i++) if (newIndex[i] >= 0) x[newIndex[i]] = F[i];
+        for (var i = 0; i < n; i++) { var ri = row[i]; var fi = first[i]; double s = x[i]; for (var k = fi; k < i; k++) s -= ri[k - fi] * x[k]; x[i] = s / ri[i - fi]; }
+        for (var i = n - 1; i >= 0; i--) { var ri = row[i]; var fi = first[i]; x[i] /= ri[i - fi]; var xi = x[i]; for (var k = fi; k < i; k++) x[k] -= ri[k - fi] * xi; }
+        return x;
+    }
+
+    /// <summary>Reverse Cuthill-McKee: Breitensuche ab einem fast peripheren Knoten je Teilgraph (getrennte Tragwerke einzeln), Nachbarn nach Grad;
+    /// umgekehrt ergibt das eine kleine Bandbreite. Rückgabe: Reihenfolge der Knoten.</summary>
+    static int[] ReverseCuthillMcKee(List<int>[] adj)
+    {
+        var n = adj.Length; var order = new List<int>(n); var done = new bool[n]; var stamp = new int[n]; var mark = 0;
+        (int Far, int Depth) Bfs(int start)
+        {
+            mark++; var q = new Queue<int>(); q.Enqueue(start); stamp[start] = mark; var depth = new Dictionary<int, int> { [start] = 0 }; var last = start; var lastDepth = 0;
+            while (q.Count > 0)
+            {
+                var u = q.Dequeue(); var du = depth[u];
+                if (du > lastDepth || du == lastDepth && adj[u].Count < adj[last].Count) { last = u; lastDepth = du; }
+                foreach (var v in adj[u]) if (stamp[v] != mark) { stamp[v] = mark; depth[v] = du + 1; q.Enqueue(v); }
+            }
+            return (last, lastDepth);
+        }
+        foreach (var seed in Enumerable.Range(0, n).OrderBy(v => adj[v].Count))
+        {
+            if (done[seed]) continue;
+            var (start, ecc) = (seed, -1);
+            for (var it = 0; it < 6; it++) { var (far, d) = Bfs(start); if (d <= ecc) break; ecc = d; start = far; }
+            var q = new Queue<int>(); q.Enqueue(start); done[start] = true;
+            while (q.Count > 0)
+            {
+                var u = q.Dequeue(); order.Add(u);
+                foreach (var v in adj[u].Where(v => !done[v]).OrderBy(v => adj[v].Count)) { done[v] = true; q.Enqueue(v); }
+            }
+        }
+        order.Reverse();
+        return [.. order];
+    }
+
+    static void SecondMethod(FrameModel f, FrameResult r, List<CrossCheckItem> items, CancellationToken ct, long maxEnvelope)
+    {
+        var (reac, maxM, disp) = Solve(f, ct, maxEnvelope);
         var scaleR = Math.Max(1e-6, r.Reactions.Values.Max(x => Math.Max(Math.Abs(x.Rx), Math.Abs(x.Ry))) * 0.01);
         var scaleMr = Math.Max(1e-6, r.Reactions.Values.Max(x => Math.Abs(x.M)) * 0.01);
         foreach (var (id, (rx, ry, rm)) in r.Reactions)
@@ -308,25 +450,6 @@ public static class FrameCrossCheck
                 r[3 * bi + i, 3 * bj + j] = sum;
             }
         return r;
-    }
-
-    /// <summary>Cholesky-Zerlegung K = L·Lᵀ (K symmetrisch positiv definit, sonst ist das System beweglich).</summary>
-    static double[] Cholesky(double[,] A, double[] b)
-    {
-        var n = b.Length; var L = new double[n, n];
-        var scale = 0.0; for (var i = 0; i < n; i++) scale = Math.Max(scale, Math.Abs(A[i, i]));
-        for (var j = 0; j < n; j++)
-        {
-            double sum = A[j, j]; for (var k = 0; k < j; k++) sum -= L[j, k] * L[j, k];
-            if (sum <= scale * 1e-12) throw new InvalidOperationException("das System ist beweglich");
-            L[j, j] = Math.Sqrt(sum);
-            for (var i = j + 1; i < n; i++) { double s = A[i, j]; for (var k = 0; k < j; k++) s -= L[i, k] * L[j, k]; L[i, j] = s / L[j, j]; }
-        }
-        var y = new double[n];
-        for (var i = 0; i < n; i++) { double s = b[i]; for (var k = 0; k < i; k++) s -= L[i, k] * y[k]; y[i] = s / L[i, i]; }
-        var x = new double[n];
-        for (var i = n - 1; i >= 0; i--) { double s = y[i]; for (var k = i + 1; k < n; k++) s -= L[k, i] * x[k]; x[i] = s / L[i, i]; }
-        return x;
     }
 
     /// <summary>Gegenprobe als Bericht (Markdown) – jede Zeile mit Hauptrechnung, Vergleichswert, Quelle und Abweichung.</summary>

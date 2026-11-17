@@ -72,15 +72,16 @@ public partial class MainWindow
                 new ProgramCmd("ek-fabcheck", "Fertigungsdaten prüfen", CircuitFabCheck, false, "Gerber- und Bohrdateien erzeugen und wie ein Betrachter einlesen: Format, Blenden, Umriss, Bohrungen auf Lötflächen"),
             ]),
             ("Austausch", [
-                new ProgramCmd("ek-kicad", "KiCad-Netzliste öffnen …", d => _ = ProgramPickThen(EK, "ek-kicad-datei", "KiCad-Netzliste", ["net"], false, f => CircuitImportKiCad(f[0])), false,
+                new ProgramCmd("ek-kicad", "KiCad-Netzliste öffnen …", d => _ = ProgramPickThen(EK, "ek-kicad-datei", "KiCad-Netzliste", ["net"], false, f => CircuitImportKiCadInBackground(f[0])), false,
                     "Netzliste aus KiCad (.net) als neue Schaltung öffnen – Bauteile werden neu angeordnet, die Simulation läuft sofort", Level: 1),
             ]),
         ],
         Exports =
         [
-            new("fab", "Fertigungsdaten (Gerber, ZIP)", ".zip", (d, f) => { var c = Circuit.From(d.Data); if (c.Pcb.Places.Count == 0) Pcb.AutoPlace(c); Pcb.WriteFabZip(c, f);
-                // T-0748: jede Ausgabe gleich wieder einlesen – kaputte Fertigungsdaten verlassen das Programm nicht stillschweigend
-                if (GerberCheck.ReadZip(f) is { Ok: false } bad) throw new InvalidDataException(bad.Text); return f; }),
+            new("fab", "Fertigungsdaten (Gerber, ZIP)", ".zip", (d, f) => { var c = Circuit.From(d.Data); if (c.Pcb.Places.Count == 0) Pcb.AutoPlace(c);
+                // T-0748: jede Ausgabe wieder einlesen – kaputte Fertigungsdaten verlassen das Programm nicht stillschweigend.
+                // T-0748-fix: erst im Speicher prüfen, dann atomar speichern – bei einem Fehler bleibt die vorige Datei unberührt.
+                Pcb.WriteFabZip(c, f, FabVerifyOverride ?? Pcb.CheckFab); return f; }),
             new("spice", "SPICE-Netzliste", ".cir", (d, f) => { File.WriteAllText(f, Circuit.From(d.Data).Spice()); return f; }),
             new("bom", "Stückliste (CSV)", ".csv", (d, f) => { File.WriteAllText(f, Circuit.From(d.Data).BomCsv(), new System.Text.UTF8Encoding(true)); return f; }),
             new("svg", "Schaltplan (SVG)", ".svg", (d, f) => { File.WriteAllText(f, CircuitDrawing.Svg(Circuit.From(d.Data))); return f; }),
@@ -149,28 +150,52 @@ public partial class MainWindow
 
     private string _pcbMsg = "";
 
-    /// <summary>T-0748: Fertigungsdaten erzeugen (in einen eigenen Temp-Ordner) und mit dem Gerber/Excellon-Leser prüfen. Ergebnis als Meldung.</summary>
+    /// <summary>T-0748-fix: Tests erzwingen hier einen Prüffehler beim Export der Fertigungsdaten (Rückgabe: Fehlertext oder null).</summary>
+    public Func<byte[], string?>? FabVerifyOverride { get; set; }
+
+    /// <summary>T-0748: Fertigungsdaten erzeugen und mit dem Gerber/Excellon-Leser prüfen (T-0748-fix: im Speicher, ohne Temp-Ordner). Ergebnis als Meldung.</summary>
     public void CircuitFabCheck(ProgramDocument d)
     {
         var c = Circuit.From(d.Data);
         if (Pcb.Placeable(c).Count() == 0) throw new InvalidOperationException("Es gibt noch keine Bauteile für die Platine.");
         if (c.Pcb.Places.Count == 0) Pcb.AutoPlace(c);
-        var dir = Path.Combine(Path.GetTempPath(), "trendo-fabcheck-" + Guid.NewGuid().ToString("N")[..8]); Directory.CreateDirectory(dir);
-        try
+        using var zip = new MemoryStream(Pcb.FabZipBytes(c), false);
+        var r = GerberCheck.ReadZip(zip);
+        _pcbMsg = r.Text; _progMsg[EK] = r.Text + (r.Ok ? " (eigener Leser – ersetzt nicht die Sichtprüfung im Betrachter des Herstellers)" : "");
+    }
+
+    /// <summary>T-0748-fix: die gerade im Hintergrund laufende KiCad-Einlesung (null = keine) – für Tests.</summary>
+    public Task? CircuitImportRunning { get; private set; }
+
+    /// <summary>T-0748-fix: Netzliste im Hintergrund lesen (große Dateien blockieren die Oberfläche nicht), danach als neue Schaltung öffnen.</summary>
+    public void CircuitImportKiCadInBackground(string path)
+    {
+        _progMsg[EK] = "KiCad-Netzliste wird gelesen …";
+        var task = Task.Run(() => CircuitReadKiCad(path));
+        CircuitImportRunning = task;
+        task.ContinueWith(t => Dispatcher.UIThread.Post(() =>
         {
-            var zip = Path.Combine(dir, "platine.zip"); Pcb.WriteFabZip(c, zip);
-            var r = GerberCheck.ReadZip(zip);
-            _pcbMsg = r.Text; _progMsg[EK] = r.Text + (r.Ok ? " (eigener Leser – ersetzt nicht die Sichtprüfung im Betrachter des Herstellers)" : "");
-        }
-        finally { try { Directory.Delete(dir, true); } catch (IOException) { } }
+            if (CircuitImportRunning == t) CircuitImportRunning = null;
+            ProgramRun(EK, () =>
+            {
+                if (t.IsFaulted) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(t.Exception!.GetBaseException()).Throw();
+                CircuitOpenKiCad(t.Result);
+            });
+        }), TaskScheduler.Default);
     }
 
     /// <summary>T-0748: KiCad-Netzliste (.net) als neue Schaltung öffnen (öffentlich für Tests).</summary>
-    public ProgramDocument CircuitImportKiCad(string path)
+    public ProgramDocument CircuitImportKiCad(string path) => CircuitOpenKiCad(CircuitReadKiCad(path));
+
+    static KiCadImportResult CircuitReadKiCad(string path)
     {
         var info = new FileInfo(path);
         if (info.Length > 20_000_000) throw new InvalidDataException("Die Datei ist zu groß für eine Netzliste.");
-        var r = KiCadNetlist.Import(File.ReadAllText(path), Path.GetFileNameWithoutExtension(path));
+        return KiCadNetlist.Import(File.ReadAllText(path), Path.GetFileNameWithoutExtension(path));
+    }
+
+    ProgramDocument CircuitOpenKiCad(KiCadImportResult r)
+    {
         var spec = Programs[EK]; var doc = new ProgramDocument(spec.Studio, r.Circuit.Name, CircuitDoc(r.Circuit));
         var l = ProgramDocs(EK); l.Add(doc); _progActive[EK] = l.Count - 1;
         CircuitState.Pcb = false; CircuitState.Selected = null; CircuitState.Fitted = false;

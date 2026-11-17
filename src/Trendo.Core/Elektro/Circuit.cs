@@ -31,7 +31,8 @@ public sealed class Circuit
         Parts.Add(p); return p;
     }
 
-    string NextName(string prefix) { if (prefix == "") return ""; var n = 1; while (Parts.Any(p => p.Name == prefix + n)) n++; return prefix + n; }
+    // T-0748-fix: Namen einmal in eine Menge – vorher je Versuch eine Suche über alle Bauteile (KiCad-Import mit 3000 Teilen: über eine Minute)
+    string NextName(string prefix) { if (prefix == "") return ""; var used = Parts.Select(p => p.Name).ToHashSet(); var n = 1; while (used.Contains(prefix + n)) n++; return prefix + n; }
 
     public bool Remove(string id) => Parts.RemoveAll(p => p.Id == id) > 0;
 

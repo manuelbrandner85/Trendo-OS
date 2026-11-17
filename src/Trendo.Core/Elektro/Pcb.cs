@@ -220,12 +220,28 @@ public static class Pcb
     }
 
     /// <summary>Fertigungspaket als ZIP: Kupfer oben/unten, Bestückungsdruck, Umriss, Bohrdaten – so nehmen es Platinenhersteller an.</summary>
-    public static void WriteFabZip(Circuit c, string zipPath)
+    public static byte[] FabZipBytes(Circuit c)
     {
-        if (File.Exists(zipPath)) File.Delete(zipPath);
-        using var z = ZipFile.Open(zipPath, ZipArchiveMode.Create);
-        void Add(string name, string text) { using var w = new StreamWriter(z.CreateEntry(name).Open(), new UTF8Encoding(false)); w.Write(text); }
-        var b = string.Concat((c.Name.Length > 0 ? c.Name : "platine").Where(ch => char.IsLetterOrDigit(ch) || ch is '-' or '_'));
-        Add($"{b}-F_Cu.gbr", Gerber(c, "F_Cu")); Add($"{b}-B_Cu.gbr", Gerber(c, "B_Cu")); Add($"{b}-F_SilkS.gbr", Gerber(c, "F_SilkS")); Add($"{b}-Edge_Cuts.gbr", Gerber(c, "Edge_Cuts")); Add($"{b}.drl", Drill(c));
+        using var ms = new MemoryStream();
+        using (var z = new ZipArchive(ms, ZipArchiveMode.Create, leaveOpen: true))
+        {
+            void Add(string name, string text) { using var w = new StreamWriter(z.CreateEntry(name).Open(), new UTF8Encoding(false)); w.Write(text); }
+            var b = string.Concat((c.Name.Length > 0 ? c.Name : "platine").Where(ch => char.IsLetterOrDigit(ch) || ch is '-' or '_'));
+            Add($"{b}-F_Cu.gbr", Gerber(c, "F_Cu")); Add($"{b}-B_Cu.gbr", Gerber(c, "B_Cu")); Add($"{b}-F_SilkS.gbr", Gerber(c, "F_SilkS")); Add($"{b}-Edge_Cuts.gbr", Gerber(c, "Edge_Cuts")); Add($"{b}.drl", Drill(c));
+        }
+        return ms.ToArray();
     }
+
+    /// <summary>T-0748-fix: Fertigungspaket speichern. Erst im Speicher bauen, dann prüfen (<paramref name="verify"/> liefert eine Fehlermeldung oder null),
+    /// erst danach atomar schreiben (<see cref="AtomicFile"/>: Zwischendatei, dann Verschieben). Schlägt die Prüfung fehl, bleibt eine vorhandene Datei unberührt
+    /// und es bleibt keine Zwischendatei liegen.</summary>
+    public static void WriteFabZip(Circuit c, string zipPath, Func<byte[], string?>? verify = null)
+    {
+        var bytes = FabZipBytes(c);
+        if (verify?.Invoke(bytes) is { } problem) throw new InvalidDataException(problem);
+        AtomicFile.WriteAllBytes(zipPath, bytes);
+    }
+
+    /// <summary>Prüfung für <see cref="WriteFabZip"/>: das Paket mit dem eigenen Gerber/Excellon-Leser lesen; Fehlertext oder null.</summary>
+    public static string? CheckFab(byte[] zip) { using var ms = new MemoryStream(zip, false); var r = GerberCheck.ReadZip(ms); return r.Ok ? null : r.Text; }
 }

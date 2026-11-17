@@ -14,9 +14,11 @@ public sealed record GerberFileReport(string Name, string Kind, List<string> Err
 
 public sealed record GerberPackageReport(List<GerberFileReport> Files, List<string> Errors)
 {
+    /// <summary>Was die Prüfung abdeckt – steht in jeder Erfolgsmeldung, damit „✓“ nicht mehr verspricht, als geprüft wurde.</summary>
+    public const string Scope = "geprüft sind Format und Geometrie, nicht die Netze (Verbindungen, Kurzschlüsse)";
     public bool Ok => Errors.Count == 0 && Files.All(f => f.Ok);
     public string Text => Ok
-        ? $"✓ Fertigungsdaten gelesen: {Files.Count} Dateien, {Files.Sum(f => f.Flashes)} Lötflächen, {Files.Sum(f => f.Strokes)} Bahnstücke, Bohrungen passen auf die Lötflächen"
+        ? $"✓ Fertigungsdaten gelesen: {Files.Count} Dateien, {Files.Sum(f => f.Flashes)} Lötflächen, {Files.Sum(f => f.Strokes)} Bahnstücke, Bohrungen passen auf die Lötflächen – {Scope}"
         : "⚠ Fertigungsdaten fehlerhaft: " + string.Join("; ", Errors.Concat(Files.SelectMany(f => f.Errors.Select(e => $"{f.Name}: {e}"))).Take(5));
 }
 
@@ -24,7 +26,8 @@ public sealed record GerberPackageReport(List<GerberFileReport> Files, List<stri
 /// Er liest die Dateien so, wie ein Betrachter sie liest – Befehl für Befehl, mit Koordinatenformat, Einheit, Blenden und Belichtungsart –,
 /// und prüft: Kopf (%FS…%, %MO…%), jede benutzte Blende ist vorher definiert, Befehle enden mit „*“, Koordinaten passen ins Format,
 /// Dateiende M02, Bohrdatei mit Kopf M48 … %, Werkzeugdurchmessern und M30; über alle Dateien: alles liegt im Platinenumriss,
-/// jede Bohrung trifft eine Lötfläche auf Ober- und Unterseite. Das ist eine Plausibilitätsprüfung, KEIN Fremdwerkzeug (gerbv/KiCad);
+/// jede Bohrung trifft eine Lötfläche auf Ober- und Unterseite. Geprüft werden Format und Geometrie – NICHT die Netze (ob Bahnen richtig verbinden oder sich kurzschließen).
+/// Trendo erzeugt nur Durchsteck-Bauteile (THT); jede Lötfläche auf Kupfer braucht daher eine Bohrung. Das ist eine Plausibilitätsprüfung, KEIN Fremdwerkzeug (gerbv/KiCad);
 /// sie ersetzt die Sichtprüfung im Betrachter des Platinenherstellers nicht.</summary>
 public static class GerberCheck
 {
@@ -63,9 +66,12 @@ public static class GerberCheck
                     {
                         var m = Regex.Match(c, @"^ADD(\d+)([CROP]|[A-Za-z_][\w.]*),?([\d.X]*)$");
                         if (!m.Success) { err.Add($"Blende „{c}“ nicht lesbar"); continue; }
-                        var num = int.Parse(m.Groups[1].Value, Inv); if (num < 10) err.Add($"Blende D{num}: Nummern unter 10 sind reserviert");
+                        if (!int.TryParse(m.Groups[1].Value, NumberStyles.None, Inv, out var num)) { err.Add($"Blende „{c}“: Nummer zu groß"); continue; }
+                        if (num < 10) err.Add($"Blende D{num}: Nummern unter 10 sind reserviert");
                         if (apertures.ContainsKey(num)) err.Add($"Blende D{num} doppelt definiert");
-                        var size = m.Groups[3].Value.Split('X', StringSplitOptions.RemoveEmptyEntries).Select(v => double.Parse(v, Inv)).DefaultIfEmpty(0).Max();
+                        var sizes = m.Groups[3].Value.Split('X', StringSplitOptions.RemoveEmptyEntries).Select(v => double.TryParse(v, NumberStyles.AllowDecimalPoint, Inv, out var d) && double.IsFinite(d) ? d : double.NaN).ToList();
+                        if (sizes.Any(double.IsNaN) || m.Groups[3].Value.Length > 0 && sizes.Count == 0) { err.Add($"Blende „{c}“: Größe nicht lesbar"); continue; }
+                        var size = sizes.DefaultIfEmpty(0).Max();
                         if (m.Groups[2].Value is "C" or "R" or "O" && size <= 0) err.Add($"Blende D{num} ohne Größe");
                         apertures[num] = size;
                     }
@@ -86,20 +92,20 @@ public static class GerberCheck
             var dsel = Regex.Match(cmd, @"^(?:G54)?D(\d+)$");
             if (dsel.Success)
             {
-                var n = int.Parse(dsel.Groups[1].Value, Inv);
+                if (!int.TryParse(dsel.Groups[1].Value, NumberStyles.None, Inv, out var n)) { err.Add($"Blende „{cmd}“: Nummer zu groß"); continue; }
                 if (n >= 10) { if (!apertures.ContainsKey(n)) err.Add($"Blende D{n} benutzt, aber nicht definiert"); current = n; continue; }
             }
             var mc = Coord.Match(cmd);
             if (!mc.Success || cmd.Length == 0) { err.Add($"Befehl „{cmd}“ nicht lesbar"); continue; }
             if (intX < 0 || unit is null) { err.Add("Koordinaten vor %FS…% oder %MO…%"); break; }
-            double Val(string digits, int ip, int dp, string axis)
+            double? Val(string digits, int ip, int dp, string axis)
             {
                 var neg = digits.StartsWith('-'); var d = digits.TrimStart('+', '-');
-                if (d.Length > ip + dp) err.Add($"{axis}-Koordinate {digits} hat mehr Stellen als das Format {ip}.{dp}");
-                return (neg ? -1 : 1) * long.Parse(d, Inv) / Math.Pow(10, dp) * (unit == "IN" ? 25.4 : 1);
+                if (d.Length > ip + dp) { err.Add($"{axis}-Koordinate {(digits.Length > 24 ? digits[..24] + "…" : digits)} hat mehr Stellen als das Format {ip}.{dp}"); return null; }
+                return (neg ? -1 : 1) * long.Parse(d, Inv) / Math.Pow(10, dp) * (unit == "IN" ? 25.4 : 1); // höchstens 2 × 9 Stellen (Format geprüft) – passt in long
             }
-            if (mc.Groups["x"].Success) x = Val(mc.Groups["x"].Value, intX, decX, "X");
-            if (mc.Groups["y"].Success) y = Val(mc.Groups["y"].Value, intY, decY, "Y");
+            if (mc.Groups["x"].Success) { if (Val(mc.Groups["x"].Value, intX, decX, "X") is { } vx) x = vx; else continue; }
+            if (mc.Groups["y"].Success) { if (Val(mc.Groups["y"].Value, intY, decY, "Y") is { } vy) y = vy; else continue; }
             if (!mc.Groups["d"].Success) continue;
             var dc = mc.Groups["d"].Value;
             if (dc != "2" && current is null) { err.Add("Belichtung ohne gewählte Blende"); continue; }
@@ -133,7 +139,11 @@ public static class GerberCheck
             {
                 if (l.StartsWith("METRIC")) metric = true;
                 else if (l.StartsWith("INCH")) metric = false;
-                else if (Regex.Match(l, @"^T(\d+)C([\d.]+)$") is { Success: true } t) { var n = int.Parse(t.Groups[1].Value, Inv); var d = double.Parse(t.Groups[2].Value, Inv); if (d <= 0) err.Add($"Werkzeug T{n} ohne Durchmesser"); tools[n] = d; }
+                else if (Regex.Match(l, @"^T(\d+)C([\d.]+)$") is { Success: true } t)
+                {
+                    if (!int.TryParse(t.Groups[1].Value, NumberStyles.None, Inv, out var n) || !double.TryParse(t.Groups[2].Value, NumberStyles.AllowDecimalPoint, Inv, out var d)) { err.Add($"Werkzeug „{l}“ nicht lesbar"); continue; }
+                    if (d <= 0) err.Add($"Werkzeug T{n} ohne Durchmesser"); tools[n] = d;
+                }
                 else if (l is "FMAT,2" or "FMAT,1" || l.StartsWith("VER")) { }
                 else err.Add($"Kopfzeile „{l}“ unbekannt");
                 continue;
@@ -143,14 +153,17 @@ public static class GerberCheck
             if (l == "M30") { ended = true; continue; }
             if (Regex.Match(l, @"^T(\d+)$") is { Success: true } ts)
             {
-                var n = int.Parse(ts.Groups[1].Value, Inv); if (n == 0) { tool = null; continue; }
+                if (!int.TryParse(ts.Groups[1].Value, NumberStyles.None, Inv, out var n)) { err.Add($"Werkzeug „{l}“ nicht lesbar"); continue; }
+                if (n == 0) { tool = null; continue; }
                 if (!tools.ContainsKey(n)) err.Add($"Werkzeug T{n} benutzt, aber nicht im Kopf"); tool = n; continue;
             }
             var m = Regex.Match(l, @"^X([+-]?[\d.]+)Y([+-]?[\d.]+)$");
             if (!m.Success) { err.Add($"Zeile „{l}“ nicht lesbar"); continue; }
             if (!m.Groups[1].Value.Contains('.') || !m.Groups[2].Value.Contains('.')) err.Add("Koordinaten ohne Dezimalpunkt – Format nicht eindeutig");
             if (tool is null) { err.Add("Bohrung ohne gewähltes Werkzeug"); continue; }
-            var f = metric ? 1 : 25.4; double px = double.Parse(m.Groups[1].Value, Inv) * f, py = double.Parse(m.Groups[2].Value, Inv) * f;
+            const NumberStyles Num = NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint;
+            if (!double.TryParse(m.Groups[1].Value, Num, Inv, out var rx) || !double.TryParse(m.Groups[2].Value, Num, Inv, out var ry)) { err.Add($"Zeile „{l}“: Zahl nicht lesbar"); continue; }
+            var f = metric ? 1 : 25.4; double px = rx * f, py = ry * f;
             pts.Add((px, py, tools[tool.Value] * f)); minX = Math.Min(minX, px); minY = Math.Min(minY, py); maxX = Math.Max(maxX, px); maxY = Math.Max(maxY, py);
         }
         if (!ended) err.Add("Dateiende M30 fehlt");
@@ -162,7 +175,13 @@ public static class GerberCheck
     /// <summary>Ganzes Fertigungspaket (ZIP) lesen und die Lagen gegeneinander prüfen.</summary>
     public static GerberPackageReport ReadZip(string zipPath)
     {
-        using var z = ZipFile.OpenRead(zipPath);
+        using var s = File.OpenRead(zipPath); return ReadZip(s);
+    }
+
+    /// <summary>Fertigungspaket aus einem Datenstrom (z. B. noch im Speicher, bevor es gespeichert wird).</summary>
+    public static GerberPackageReport ReadZip(Stream zip)
+    {
+        using var z = new ZipArchive(zip, ZipArchiveMode.Read, leaveOpen: true);
         var files = new List<GerberFileReport>();
         foreach (var e in z.Entries.OrderBy(e => e.Name, StringComparer.Ordinal))
         {
@@ -192,7 +211,8 @@ public static class GerberCheck
                     if (pad == default) { err.Add($"Bohrung bei X {x.ToString("0.###", Inv)} Y {y.ToString("0.###", Inv)} trifft keine Lötfläche in {cu.Name}"); continue; }
                     if (pad.D <= d) err.Add($"Lötfläche bei X {x.ToString("0.###", Inv)} Y {y.ToString("0.###", Inv)} ist nicht größer als die Bohrung");
                 }
-                if (cu.Points.Count != drill.Points.Count) err.Add($"{cu.Name}: {cu.Points.Count} Lötflächen, aber {drill.Points.Count} Bohrungen");
+                // Trendo setzt nur Durchsteck-Bauteile (THT): jede Lötfläche hat eine Bohrung. SMD-Lötflächen (ohne Bohrung) erzeugt Trendo nicht.
+                if (cu.Points.Count != drill.Points.Count) err.Add($"{cu.Name}: {cu.Points.Count} Lötflächen, aber {drill.Points.Count} Bohrungen – Trendo erzeugt nur Durchsteck-Bauteile, jede Lötfläche braucht eine Bohrung");
             }
         return new(files, err.Distinct().ToList());
     }

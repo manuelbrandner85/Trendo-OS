@@ -75,13 +75,57 @@ public partial class MainWindow
     }, "technik", "statik", "balken", "träger", "simulation", "biegung", "festigkeit", "einheiten", "umrechnen", "rahmen", "fachwerk", "tragwerk");
 
     private (string Key, CrossCheckResult? R) _frameCheck = ("", null);
-    /// <summary>T-0748: Gegenprobe zum offenen Tragwerk (je Stand nur einmal gerechnet); null, wenn sich nichts rechnen lässt.</summary>
+    private (string Key, CancellationTokenSource Cts, Task<CrossCheckResult?> Task)? _frameCheckRun;
+    /// <summary>T-0748-fix: die gerade im Hintergrund laufende Gegenprobe (null = keine) – für Tests, die auf das Ergebnis warten.</summary>
+    public Task? FrameCheckRunning => _frameCheckRun?.Task;
+    /// <summary>So lange wartet die Oberfläche auf eine kurze Gegenprobe, bevor sie „Gegenprobe läuft …“ zeigt (kein Flackern bei kleinen Tragwerken).</summary>
+    public TimeSpan FrameCheckGrace { get; set; } = TimeSpan.FromMilliseconds(60);
+
+    /// <summary>T-0748: Gegenprobe zum offenen Tragwerk (je Stand nur einmal gerechnet); null, wenn sich nichts rechnen lässt.
+    /// T-0748-fix: rechnet im Hintergrund; eine neue Änderung bricht die laufende Rechnung ab. Solange sie läuft: <see cref="CrossCheckResult.Running"/>.</summary>
     public CrossCheckResult? FrameCheckOf(ProgramDocument d, FrameModel m)
     {
         var key = d.Data.ToJsonString(); if (key == _frameCheck.Key) return _frameCheck.R;
-        CrossCheckResult? r = null;
-        try { if (m.Members.Count > 0) r = FrameCrossCheck.Check(m); } catch (Exception ex) when (ex is InvalidOperationException or ArgumentException) { }
-        _frameCheck = (key, r); return r;
+        if (_frameCheckRun is { } run && run.Key == key) return CrossCheckResult.Running;
+        _frameCheckRun?.Cts.Cancel(); _frameCheckRun = null; // überholt
+        if (m.Members.Count == 0) { _frameCheck = (key, null); return null; }
+        var copy = FrameModel.From(d.Data); var cts = new CancellationTokenSource(); var token = cts.Token;
+        var task = Task.Run(() =>
+        {
+            try { return FrameCrossCheck.Check(copy, token); }
+            catch (Exception ex) when (ex is InvalidOperationException or ArgumentException) { return (CrossCheckResult?)null; }
+        }, token);
+        try { if (task.Wait(FrameCheckGrace)) { _frameCheck = (key, task.Result); cts.Dispose(); return task.Result; } }
+        catch (AggregateException) { _frameCheck = (key, null); cts.Dispose(); return null; }
+        _frameCheckRun = (key, cts, task);
+        task.ContinueWith(t => Avalonia.Threading.Dispatcher.UIThread.Post(() => FrameCheckDone(key, t)), TaskScheduler.Default);
+        return CrossCheckResult.Running;
+    }
+
+    /// <summary>Gegenprobe fertig: merken und nur Statuszeile und Inspektor-Zeile auffrischen – die Seite wird nicht neu gebaut (Eingaben behalten den Fokus).</summary>
+    void FrameCheckDone(string key, Task<CrossCheckResult?> t)
+    {
+        if (_frameCheckRun is not { } run || run.Task != t) return; // inzwischen überholt
+        _frameCheckRun = null; run.Cts.Dispose();
+        if (t.IsCanceled) return;
+        var r = t.IsCompletedSuccessfully ? t.Result : null;
+        _frameCheck = (key, r);
+        if (CurrentView != TK || ActivePageRoot is not { } root || ProgramActive(TK) is not { } doc || doc.Data.ToJsonString() != key) return;
+        foreach (var tb in Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(root).OfType<TextBlock>().ToList())
+        {
+            if (tb.Name == "prog-status-text") tb.Text = Programs[TK].Status?.Invoke(doc) ?? "";
+            else if (tb.Name == "tk-crosscheck") FrameCheckShow(tb, r);
+            else if (tb.Name == "tk-crosscheck-skip") { tb.Text = r?.Skipped ?? ""; tb.IsVisible = r?.Skipped is not null; }
+        }
+    }
+
+    /// <summary>Text, Farbe und Erklärung der Gegenprobe-Zeile im Inspektor.</summary>
+    static void FrameCheckShow(TextBlock ct, CrossCheckResult? cc)
+    {
+        ct.Text = cc?.Text ?? "Gegenprobe nicht möglich";
+        ct.Foreground = Brush.Parse(cc is { Pending: true } ? "#9CA3AF" : cc is { Ok: true } ? "#4ADE80" : "#F87171");
+        ToolTip.SetTip(ct, cc is null or { Pending: true } ? "Die Gegenprobe rechnet im Hintergrund – jede Änderung startet sie neu." :
+            "Geprüft mit: " + string.Join(", ", cc.Methods) + (cc.Skipped is null ? "" : ". Nicht geprüft: " + cc.Skipped) + ". Einzelwerte im Export „Gegenprobe (Bericht)“.");
     }
 
     static System.Text.Json.Nodes.JsonObject FrameDoc(FrameModel m) { var o = new System.Text.Json.Nodes.JsonObject(); m.WriteTo(o); return o; }
@@ -275,10 +319,10 @@ public partial class MainWindow
                 // T-0748: Gegenprobe – Gleichgewicht, Lehrbuchformel (wenn passend) und zweite Rechnung mit Teilstäben
                 if (FrameCheckOf(d, m) is { } cc)
                 {
-                    var ct = new TextBlock { Name = "tk-crosscheck", Text = cc.Text, Foreground = Brush.Parse(cc.Ok ? "#4ADE80" : "#F87171"), FontSize = 12, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap };
-                    ToolTip.SetTip(ct, "Geprüft mit: " + string.Join(", ", cc.Methods) + (cc.Skipped is null ? "" : ". Nicht geprüft: " + cc.Skipped) + ". Einzelwerte im Export „Gegenprobe (Bericht)“.");
-                    sp.Children.Add(ct);
-                    if (cc.Skipped is not null) sp.Children.Add(P(cc.Skipped, null, 10.5));
+                    var ct = new TextBlock { Name = "tk-crosscheck", FontSize = 12, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap };
+                    FrameCheckShow(ct, cc); sp.Children.Add(ct);
+                    // T-0748-fix: eigene Zeile mit Namen, damit das Hintergrund-Ergebnis sie auffrischen kann
+                    sp.Children.Add(new TextBlock { Name = "tk-crosscheck-skip", Text = cc.Skipped ?? "", IsVisible = cc.Skipped is not null, Foreground = Muted, FontSize = 10.5, TextWrapping = TextWrapping.Wrap });
                 }
                 sp.Children.Add(H("Lagerkräfte", 12));
                 foreach (var (nid, (rx, ry, rm)) in r.Reactions) { var nn = m.Node(nid)!; Fact($"K{m.Nodes.IndexOf(nn) + 1} {FrameDrawing.SupportName(nn.Support)}", $"{ry:0.##} kN ↑{(Math.Abs(rx) > 1e-6 ? $" · {rx:0.##} kN →" : "")}{(Math.Abs(rm) > 1e-6 ? $" · {rm:0.##} kNm" : "")}"); }

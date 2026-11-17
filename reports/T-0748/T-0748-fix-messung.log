@@ -1,0 +1,28 @@
+# T-0748-fix – Messung vorher/nachher (Release, gleicher PC, eigener Messaufbau im Temp-Ordner, nicht im Repo)
+# Modelle: Rahmen = Stiele HEA 200 (3,5 m), Riegel IPE 300 (6 m) mit 12 kN/m, Fusspunkte fest, 5 kN waagerecht oben links.
+# Durchlauftraeger = Staebe a 1 m, IPE 200, 8 kN/m, Lager alle 4 Staebe. Getrennte Einfeldtraeger = 8 x 5 m, IPE 200, 10 kN/m.
+# "vorher" = Stand f88bf8480 (gepushter T-0748), "nachher" = T-0748-fix.
+
+## Befund 1 – groesste Abweichung der Gegenprobe (Hauptrechnung gegen zweite Rechnung)
+Modell                         Staebe   vorher                          nachher
+Rahmen 2 Geschosse x 1 Feld        6   1,291 % (groesstes Moment S1)   0,002 %  -> Gegenprobe ✓ < 0,01 %
+Rahmen 2 x 2                      10   0,598 % (groesstes Moment S1)   0,004 %
+Rahmen 3 x 2                      15   1,084 % (groesstes Moment S1)   0,001 %
+Rahmen 5 x 3                      35   5,209 % (groesstes Moment S1)   0,003 %
+Rahmen 10 x 10                   210  15,5 %   (groesstes Moment S21)  < 0,01 %
+Durchlauftraeger                 200   0,472 %                         0 %
+8 getrennte Einfeldtraeger         8   0,085 %                         0,004 %
+
+## Befund 2 – Laufzeit und Speicher der ganzen Gegenprobe (inkl. Hauptrechnung mit 201 Abtastpunkten)
+Modell                        Staebe   vorher                       nachher
+Durchlauftraeger                 200   11,30 s, Spitze 308 MB       0,16 s, Spitze 65 MB
+Rahmen 10 x 10                   210   10,67 s, Spitze 293 MB       0,15 s, Spitze 51 MB
+Rahmen 20 x 14                   580   (Pruefer: 600 Staebe 191 s,  0,31 s, Spitze 108 MB
+                                        2,5 GB; hier nicht erneut
+                                        gemessen)
+Test T0748_CrossCheck.Leistung_200_Staebe: < 1 s und < 100 MB angelegter Speicher je Lauf (auf altem Code rot: 12-14 s).
+
+## Befund 4 – KiCad-Import 3000 Widerstaende (Kette, 3001 Netze)
+vorher: 94,8 s (Pruefer: 133 s)
+nur Pin-Index per Dictionary: 88,7 s  -> Hauptursache war Circuit.NextName (Suche ueber alle Bauteile je Namensversuch, kubisch)
+nachher (Index + NextName mit Namensmenge): 0,54-0,71 s; Test Import_3000_parts_fast < 2 s (auf altem Code rot: 1 min 46 s)

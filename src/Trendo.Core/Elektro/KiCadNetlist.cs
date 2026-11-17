@@ -48,10 +48,12 @@ public sealed class SExpr
     }
 }
 
-/// <summary>Ergebnis des Imports: Schaltung plus ehrliche Liste dessen, was nicht übernommen werden konnte.</summary>
-public sealed record KiCadImportResult(Circuit Circuit, int Parts, int Nets, List<string> Skipped)
+/// <summary>Ergebnis des Imports: Schaltung plus ehrliche Liste dessen, was nicht übernommen werden konnte.
+/// <see cref="Notes"/>: übernommen, aber auffällig (offenes Netz mit nur einem Anschluss, unlesbarer Wert → Standardwert).</summary>
+public sealed record KiCadImportResult(Circuit Circuit, int Parts, int Nets, List<string> Skipped, List<string>? Notes = null)
 {
-    public string Text => $"{Parts} Bauteile und {Nets} Netze aus KiCad übernommen" + (Skipped.Count == 0 ? "." : $" – nicht übernommen: {string.Join("; ", Skipped)}.");
+    public string Text => $"{Parts} Bauteile und {Nets} Netze aus KiCad übernommen" + (Skipped.Count == 0 ? "." : $" – nicht übernommen: {string.Join("; ", Skipped)}.")
+        + (Notes is { Count: > 0 } n ? $" Hinweis: {string.Join("; ", n.Take(8))}{(n.Count > 8 ? $" (und {n.Count - 8} weitere)" : "")}." : "");
 }
 
 /// <summary>T-0748 (SPEC-02): Import einer KiCad-Netzliste (.net, „KiCad-S-Ausdruck“ ab KiCad 5, Dateien mit „(export (version …“).
@@ -84,14 +86,26 @@ public static class KiCadNetlist
             nets.Add((n.Value("name") ?? "", pins));
         }
         if (comps.Count == 0) throw new FormatException("Die Netzliste enthält keine Bauteile.");
+        // T-0748-fix: doppelte Bezeichner („R?“) – die Netze lassen sich dann keinem Bauteil zuordnen
+        var dup = comps.GroupBy(x => x.Ref).Where(g => g.Count() > 1).Select(g => $"„{g.Key}“ ({g.Count()}-mal)").ToList();
+        if (dup.Count > 0)
+            throw new FormatException($"Die Schaltung ist nicht annotiert: Bezeichner {string.Join(", ", dup.Take(5))}{(dup.Count > 5 ? $" und {dup.Count - 5} weitere" : "")} kommen mehrfach vor. "
+                + "In KiCad zuerst „Schaltplan annotieren“ (Menü Werkzeuge) ausführen und die Netzliste neu exportieren.");
 
-        var c = new Circuit { Name = name }; var skipped = new List<string>();
-        var netOf = new Dictionary<(string Ref, string Pin), int>();
-        for (var k = 0; k < nets.Count; k++) foreach (var p in nets[k].Pins) netOf[(p.Ref, p.Pin)] = k;
+        var c = new Circuit { Name = name }; var skipped = new List<string>(); var notes = new List<string>();
+        // T-0748-fix: Verzeichnisse je Anschluss (linear statt jede Suche über alle Netze)
+        var netOf = new Dictionary<(string Ref, string Pin), int>(); var fnOf = new Dictionary<(string Ref, string Pin), string>(); var pinsOf = new Dictionary<string, List<string>>();
+        for (var k = 0; k < nets.Count; k++)
+            foreach (var p in nets[k].Pins)
+            {
+                if (netOf.TryAdd((p.Ref, p.Pin), k)) { if (!pinsOf.TryGetValue(p.Ref, out var l)) pinsOf[p.Ref] = l = []; l.Add(p.Pin); }
+                else netOf[(p.Ref, p.Pin)] = k;
+                if (p.Function.Length > 0) fnOf.TryAdd((p.Ref, p.Pin), p.Function);
+            }
         string Fn(Comp comp, string pin) =>
-            nets.SelectMany(n => n.Pins).FirstOrDefault(p => p.Ref == comp.Ref && p.Pin == pin)?.Function is { Length: > 0 } f ? f
+            fnOf.TryGetValue((comp.Ref, pin), out var f) ? f
             : libPins.TryGetValue((comp.Lib, comp.PartName), out var lp) && lp.TryGetValue(pin, out var nm) ? nm : "";
-        var compPins = comps.ToDictionary(x => x.Ref, x => netOf.Keys.Where(k => k.Ref == x.Ref).Select(k => k.Pin).OrderBy(p => p, StringComparer.Ordinal).ToList());
+        var compPins = comps.ToDictionary(x => x.Ref, x => (pinsOf.GetValueOrDefault(x.Ref) ?? []).OrderBy(p => p, StringComparer.Ordinal).ToList());
 
         // Bauteile setzen; je Anschluss: (Punkt, Netz, Fallrichtung über eine eigene Spalte)
         var drops = new List<(int X, int Y, int Net, int Column)>(); var slot = 0; var placed = 0;
@@ -112,6 +126,8 @@ public static class KiCadNetlist
             }
             p.Name = comp.Ref;
             if (Number(comp.Value, kind) is { } v) p.Value = v;
+            else if (kind is "widerstand" or "kondensator" or "spule" or "spannung" or "wechsel" && comp.Value.Length > 0)
+                notes.Add($"{comp.Ref}: Wert „{comp.Value}“ nicht lesbar – Standardwert {p.Value.ToString("G4", Inv)} gesetzt");
             if (kind == "led") p.Color = comp.Value.ToLowerInvariant() switch { var s when s.Contains("green") || s.Contains("grün") || s.Contains("gruen") => "gruen", var s when s.Contains("blue") || s.Contains("blau") => "blau", var s when s.Contains("yellow") || s.Contains("gelb") => "gelb", var s when s.Contains("white") || s.Contains("weiß") || s.Contains("weiss") => "weiss", _ => "rot" };
             placed++;
             void Drop((int X, int Y) at, string pin, int column) { if (netOf.TryGetValue((comp.Ref, pin), out var net)) drops.Add((at.X, at.Y, net, column)); }
@@ -120,11 +136,12 @@ public static class KiCadNetlist
         }
         // Sammelleitungen je benutztem Netz; Masse-Netz bekommt das Massezeichen
         var used = drops.Select(d => d.Net).Distinct().OrderBy(n => IsGround(nets[n].Name) ? 0 : 1).ThenBy(n => n).ToList();
+        var dropsOf = drops.ToLookup(d => d.Net);
         var right = slot * Slot;
         for (var k = 0; k < used.Count; k++)
         {
             var y = FirstBus + k * BusGap; var net = used[k];
-            var mine = drops.Where(d => d.Net == net).ToList();
+            var mine = dropsOf[net].ToList();
             foreach (var d in mine)
             {
                 if (d.Column != d.X) c.Add("draht", d.X, d.Y, d.Column, d.Y); // seitlich zur eigenen Spalte
@@ -133,8 +150,9 @@ public static class KiCadNetlist
             if (mine.Count > 1 || IsGround(nets[net].Name)) c.Add("draht", -2, y, right, y);
             if (IsGround(nets[net].Name)) c.Add("masse", -2, y, -2, y + 1);
         }
-        foreach (var n in nets.Where(n => n.Pins.Count == 1)) skipped.Add($"Netz „{n.Name}“ hat nur einen Anschluss");
-        return new(c, placed, used.Count, skipped);
+        // übernommen, aber offen: kein „nicht übernommen“, sondern ein Hinweis (in KiCad oft ein vergessener Draht)
+        foreach (var n in nets.Where(n => n.Pins.Count == 1)) notes.Add($"Netz „{n.Name}“ hat nur einen Anschluss ({n.Pins[0].Ref} Pin {n.Pins[0].Pin}) – offenes Ende");
+        return new(c, placed, used.Count, skipped, notes);
     }
 
     static bool IsGround(string net) => net.Trim('/').ToUpperInvariant() is "GND" or "0" or "MASSE" or "GNDREF" or "VSS" or "GNDA" or "GNDD";
@@ -180,8 +198,17 @@ public static class KiCadNetlist
         }
     }
 
-    /// <summary>Wert aus KiCad-Schreibweise: „4k7“, „10K“, „100n“, „2.2uF“, „4R7“, „9V“, „dc 5“, „470µ“.</summary>
+    /// <summary>Wert aus KiCad-Schreibweise: „4k7“, „10K“, „100n“, „2.2uF“, „4R7“, „9V“, „dc 5“, „470µ“. Nicht lesbar (null): leerer Zahlteil („k“),
+    /// unendlich/NaN, und für Widerstand, Kondensator und Spule Werte ≤ 0.</summary>
     public static double? Number(string value, string kind)
+    {
+        var r = Parse(value, kind);
+        if (r is not { } v || !double.IsFinite(v)) return null;
+        if (kind is "widerstand" or "kondensator" or "spule" && v <= 0) return null;
+        return v;
+    }
+
+    static double? Parse(string value, string kind)
     {
         if (kind is "led" or "diode" or "schalter" or "npn" or "pnp") return null;
         var v = value.Trim().Replace("µ", "u").Replace("μ", "u").Replace(',', '.');
@@ -195,11 +222,11 @@ public static class KiCadNetlist
                 if (v.Length >= 3 && v.Substring(i).Equals("meg", StringComparison.OrdinalIgnoreCase)) { m = 1e6; }
                 var head = v[..i]; var tail = v[(i + 1)..];
                 if (tail.Equals("eg", StringComparison.OrdinalIgnoreCase)) tail = "";
-                if (!double.TryParse(head.Length == 0 ? "0" : head, NumberStyles.Float, Inv, out var a)) return null;
+                if (head.Length == 0 || !double.TryParse(head, NumberStyles.Float, Inv, out var a)) return null; // „k“ allein ist kein Wert
                 if (tail.Length > 0 && !tail.All(char.IsDigit)) return null;
                 var frac = tail.Length > 0 ? double.Parse("0." + tail, Inv) : 0;
                 return (a + frac) * m;
             }
-        return double.TryParse(v, NumberStyles.Float, Inv, out var d) ? d : null;
+        return double.TryParse(v, NumberStyles.Float, Inv, out var d) ? d : null; // NumberStyles.Float: kein Tausendertrenner, „∞“ fällt danach heraus
     }
 }

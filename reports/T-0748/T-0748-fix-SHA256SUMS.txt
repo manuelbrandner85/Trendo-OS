@@ -1,0 +1,5 @@
+df227522e752ea0505e5c5153d2ea280bf30994e37bb1f6edde0b08a49071cbe *T-0748-fix-app-tests.log
+aeae6e3b60282c84bf26232c4b34cf27c1fb041f676a11b52c7041aac349af23 *T-0748-fix-core-tests.log
+3bf6d070b53ba8cd0a429ed16c1b83d005c1416e11f2ad415320e6a8dd0ff509 *T-0748-fix-messung.log
+538f066fc0d669f2b8be90b3cf1d3bdf819888ab8985b4b25fbef1f7c879ec49 *T-0748-fix-gegenprobe-rahmen-2x1.md
+3491ff5e65700063ab86032a22de2365478c9f0e31e71ad9dcfe2b52df656be3 *T-0748-fix-gegenprobe-rahmen-5x3.md
