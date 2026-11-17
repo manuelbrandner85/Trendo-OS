@@ -173,4 +173,181 @@ public class T0742_Ablauf_aus_Satz
         var audit = File.ReadAllText(Path.Combine(f.Root, "audit", "audit.jsonl"));
         Assert.Contains("workflow.windows-aufgabe.angelegt", audit); Assert.Contains("workflow.windows-aufgabe.entfernt", audit);
     }
+    // ---------- Gegenprüfung T-0742: Aufgabenprozess schreibt nur seine Laufstände, prüft vorher frisch ----------
+    static string Datei(Fixture f) => Path.Combine(f.Root, "ablaeufe", "ablaeufe.json");
+    static List<Workflow> Frisch(Fixture f) => JsonSerializer.Deserialize<List<Workflow>>(File.ReadAllText(Datei(f)))!;
+
+    [Fact(DisplayName = "T-0742 Gegenprüfung: Pausiert das offene Trendo den Ablauf, schaltet ihn die Windows-Aufgabe nicht wieder ein und läuft nicht")]
+    public async Task Pausieren_bleibt_erhalten()
+    {
+        var (f, app, home) = Make(); using var _ = f;
+        var w = app.Add(new Workflow { Name = "W", Trigger = TriggerKind.Intervall, EveryMinutes = 60,
+            Steps = [new() { Kind = StepKind.TextSchreiben, To = Path.Combine(home, "w-{zeit}.txt"), Text = "x" }] });
+        var aufgabe = new WorkflowEngine(f.Root, f.Core.Audit, f.Core.Approvals, [home]); // Aufgabenprozess hat die Datei schon geladen
+        w.Enabled = false; app.Update(w); // offenes Trendo: pausieren
+        var (run, why) = await aufgabe.RunOneIfDueAsync(w.Id, new DateTimeOffset(2026, 11, 17, 9, 0, 0, TimeSpan.Zero));
+        Assert.Null(run); Assert.Contains("ausgeschaltet", why);
+        Assert.False(Frisch(f).Single(x => x.Id == w.Id).Enabled);
+        Assert.Empty(Directory.GetFiles(home, "w-*.txt"));
+    }
+
+    [Fact(DisplayName = "T-0742 Gegenprüfung: Während die Aufgabe läuft, bleiben neu angelegte, gelöschte und freigegebene Abläufe des offenen Trendo erhalten")]
+    public async Task Neu_geloescht_Freigabe_bleiben()
+    {
+        var (f, app, home) = Make(); using var _ = f;
+        var w = app.Add(new Workflow { Name = "W", Trigger = TriggerKind.Intervall, EveryMinutes = 60,
+            Steps = [new() { Kind = StepKind.TextSchreiben, To = Path.Combine(home, "w-{zeit}.txt"), Text = "x" }] });
+        var y = app.Add(new Workflow { Name = "Y", Trigger = TriggerKind.Manuell, Steps = [new() { Kind = StepKind.OrdnerAnlegen, To = Path.Combine(home, "y") }] });
+        var z = app.Add(new Workflow { Name = "Z", Trigger = TriggerKind.Manuell, Steps = [new() { Kind = StepKind.Verschieben, From = home, To = Path.Combine(home, "z"), Pattern = "*.pdf" }] });
+        var aufgabe = new WorkflowEngine(f.Root, f.Core.Audit, f.Core.Approvals, [home]);
+        var x = app.Add(new Workflow { Name = "X", Trigger = TriggerKind.Manuell, Steps = [new() { Kind = StepKind.OrdnerAnlegen, To = Path.Combine(home, "x") }] });
+        app.Remove(y.Id);
+        var req = app.RequestApproval(z); f.Core.Approvals.Approve(req.Id, Principal.LocalOwner); app.ApplyApproval(z, req.Id);
+        var t = new DateTimeOffset(2026, 11, 17, 9, 0, 0, TimeSpan.Zero);
+        Assert.True((await aufgabe.RunOneIfDueAsync(w.Id, t)).Run!.Ok);
+        var disk = Frisch(f);
+        Assert.Contains(disk, d => d.Id == x.Id);
+        Assert.DoesNotContain(disk, d => d.Id == y.Id);
+        Assert.True(disk.Single(d => d.Id == z.Id).IsApproved);
+        Assert.Equal(t, disk.Single(d => d.Id == w.Id).LastRun); // der Laufstand der Aufgabe ist da
+        app.Update(app.Get(z.Id)!); // offenes Trendo speichert danach: Laufstand der Aufgabe bleibt
+        Assert.Equal(t, Frisch(f).Single(d => d.Id == w.Id).LastRun);
+    }
+
+    [Fact(DisplayName = "T-0742 Gegenprüfung: Nachträglich eingefügter KI-Schritt oder geänderter freigabepflichtiger Inhalt – die Windows-Aufgabe führt nichts aus")]
+    public async Task KI_Schritt_und_Freigabe_vor_dem_Lauf()
+    {
+        var (f, app, home) = Make(); using var _ = f;
+        var w = app.Add(new Workflow { Name = "W", Trigger = TriggerKind.Intervall, EveryMinutes = 60,
+            Steps = [new() { Kind = StepKind.TextSchreiben, To = Path.Combine(home, "w.txt"), Text = "x" }] });
+        w.Steps.Add(new() { Kind = StepKind.KiZusammenfassen, From = home }); app.Update(w);
+        var t = new DateTimeOffset(2026, 11, 17, 9, 0, 0, TimeSpan.Zero);
+        var (r1, why1) = await new WorkflowEngine(f.Root, f.Core.Audit, f.Core.Approvals, [home]).RunOneIfDueAsync(w.Id, t);
+        Assert.Null(r1); Assert.Contains("offen", why1);
+        Assert.False(File.Exists(Path.Combine(home, "w.txt")));
+        var v = app.Add(new Workflow { Name = "V", Trigger = TriggerKind.Intervall, EveryMinutes = 60,
+            Steps = [new() { Kind = StepKind.Verschieben, From = home, To = Path.Combine(home, "ziel"), Pattern = "*.pdf" }] });
+        var req = app.RequestApproval(v); f.Core.Approvals.Approve(req.Id, Principal.LocalOwner); app.ApplyApproval(v, req.Id);
+        v.Steps[0].Pattern = "*.*"; app.Update(v); // Inhalt geändert → Freigabe gilt nicht mehr
+        var (r2, why2) = await new WorkflowEngine(f.Root, f.Core.Audit, f.Core.Approvals, [home]).RunOneIfDueAsync(v.Id, t);
+        Assert.Null(r2); Assert.Contains("Freigabe", why2);
+        Assert.Equal(0, Frisch(f).Single(d => d.Id == v.Id).FailCount); // kein Fehlversuch eingetragen
+    }
+
+    [Theory(DisplayName = "T-0742 Gegenprüfung: Argumente der Aufgabe – Id nur aus Buchstaben, Ziffern, Bindestrich; Datenordner ohne abschließenden Backslash")]
+    [InlineData("abc 12")]
+    [InlineData("abc\"12")]
+    [InlineData("")]
+    [InlineData("a&b")]
+    public void Arguments_lehnt_unsichere_Id_ab(string id) =>
+        Assert.Throws<ArgumentException>(() => WorkflowTaskPlan.Arguments(id, Path.GetTempPath()));
+
+    [Fact(DisplayName = "T-0742 Gegenprüfung: Datenordner mit Backslash am Ende zerbricht die Anführungszeichen nicht")]
+    public void Arguments_ohne_abschliessenden_Backslash()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "t0742-daten") + Path.DirectorySeparatorChar;
+        var a = WorkflowTaskPlan.Arguments("abc-123", root);
+        Assert.Equal($"--ablauf-faellig abc-123 --data-root \"{Path.TrimEndingDirectorySeparator(Path.GetFullPath(root))}\"", a);
+        Assert.DoesNotContain("\\\"", a);
+        Assert.Equal(WorkflowTaskPlan.TaskName(root, "abc-123"), WorkflowTaskPlan.TaskName(root.TrimEnd(Path.DirectorySeparatorChar), "abc-123"));
+    }
+    [Fact(DisplayName = "T-0742 Gegenprüfung: Pausiert das offene Trendo den Ablauf WÄHREND die Aufgabe läuft, bleibt er pausiert; nur der Laufstand kommt hinzu")]
+    public async Task Pausieren_waehrend_des_Laufs_bleibt()
+    {
+        var (f, app, home) = Make(); using var _ = f;
+        var w = app.Add(new Workflow { Name = "W", Trigger = TriggerKind.Intervall, EveryMinutes = 60,
+            Steps = [new() { Kind = StepKind.TextSchreiben, To = Path.Combine(home, "w-{zeit}.txt"), Text = "x" }] });
+        var aufgabe = new WorkflowEngine(f.Root, f.Core.Audit, f.Core.Approvals, [home]);
+        var t = new DateTimeOffset(2026, 11, 17, 9, 0, 0, TimeSpan.Zero);
+        Workflow? x = null;
+        var (run, _) = await aufgabe.RunOneIfDueAsync(w.Id, t, onStep: _ =>
+        {
+            w.Enabled = false; w.Name = "W neu"; app.Update(w); // offenes Trendo: pausieren und umbenennen, während die Aufgabe läuft
+            x = app.Add(new Workflow { Name = "X", Trigger = TriggerKind.Manuell, Steps = [new() { Kind = StepKind.OrdnerAnlegen, To = Path.Combine(home, "x") }] });
+            return Task.CompletedTask;
+        });
+        Assert.True(run!.Ok);
+        var d = Frisch(f).Single(v => v.Id == w.Id);
+        Assert.False(d.Enabled); Assert.Equal("W neu", d.Name); Assert.Equal(t, d.LastRun);
+        Assert.Contains(Frisch(f), v => v.Id == x!.Id);
+        // gelöscht während des Laufs: die Aufgabe legt ihn nicht wieder an
+        var g = app.Add(new Workflow { Name = "G", Trigger = TriggerKind.Intervall, EveryMinutes = 60, Steps = [new() { Kind = StepKind.OrdnerAnlegen, To = Path.Combine(home, "g") }] });
+        var (rg, _) = await new WorkflowEngine(f.Root, f.Core.Audit, f.Core.Approvals, [home]).RunOneIfDueAsync(g.Id, t, onStep: _ => { app.Remove(g.Id); return Task.CompletedTask; });
+        Assert.True(rg!.Ok);
+        Assert.DoesNotContain(Frisch(f), v => v.Id == g.Id);
+        Assert.False(File.Exists(Path.Combine(f.Root, "ablaeufe", "ablaeufe.json.sperre")) && IsLocked(Path.Combine(f.Root, "ablaeufe", "ablaeufe.json.sperre"))); // Sperre wieder frei
+    }
+
+    static bool IsLocked(string p) { try { using var s = new FileStream(p, FileMode.Open, FileAccess.ReadWrite, FileShare.None); return false; } catch (IOException) { return true; } }
+
+    [Fact(DisplayName = "T-0742 Gegenprüfung: Nach dem Belegen wird erneut geprüft – hat ein anderer Prozess den Ablauf gerade erledigt, läuft er nicht doppelt (kein Fehler)")]
+    public async Task Nach_der_Sperre_erneut_pruefen()
+    {
+        var (f, app, home) = Make(); using var _ = f;
+        var w = app.Add(new Workflow { Name = "W", Trigger = TriggerKind.Intervall, EveryMinutes = 60,
+            Steps = [new() { Kind = StepKind.TextSchreiben, To = Path.Combine(home, "w-{zeit}.txt"), Text = "x" }] });
+        var t = new DateTimeOffset(2026, 11, 17, 9, 0, 0, TimeSpan.Zero);
+        Assert.True(WorkflowEngine.IsTimeDue(w, t)); // das offene Trendo hält ihn für fällig (Stand von vorhin)
+        Assert.True((await new WorkflowEngine(f.Root, f.Core.Audit, f.Core.Approvals, [home]).RunOneIfDueAsync(w.Id, t)).Run!.Ok); // Aufgabe erledigt ihn
+        var r = await app.RunAsync(w, false, null, t.AddMinutes(1), onlyIfDue: true);
+        Assert.True(r.Skipped); Assert.Contains("Nicht mehr dran", r.Lines[0]);
+        Assert.Single(Directory.GetFiles(home, "w-*.txt"));
+        Assert.Equal(0, app.Get(w.Id)!.FailCount); Assert.Null(app.Get(w.Id)!.LastError);
+        Assert.False((await app.RunAsync(w, false, null, t.AddMinutes(2))).Skipped); // „Jetzt ausführen“ von Hand prüft nicht nach
+    }
+
+    const string Liste = """
+        <Tasks>
+        <!-- \Fremd -->
+        <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task"><RegistrationInfo><URI>\Fremd</URI></RegistrationInfo>
+          <Actions><Exec><Command>C:\Programme\Trendo\TrendoOS.exe</Command><Arguments>--ablauf-faellig a1 --data-root "C:\x"</Arguments></Exec></Actions></Task>
+        {0}
+        </Tasks>
+        """;
+    static string Eintrag(string name, string exe, string args) =>
+        $"<!-- \\{name} -->\n<Task version=\"1.2\" xmlns=\"http://schemas.microsoft.com/windows/2004/02/mit/task\"><RegistrationInfo><URI>\\{name}</URI></RegistrationInfo><Actions Context=\"Author\"><Exec><Command>{System.Security.SecurityElement.Escape(exe)}</Command><Arguments>{System.Security.SecurityElement.Escape(args)}</Arguments></Exec></Actions></Task>\n";
+
+    [Fact(DisplayName = "T-0742 Gegenprüfung: Aufräumen beim Start und Deinstallieren – nur eigene Aufgaben (Namensmuster + eigenes Programm), verwaiste weg, passende bleiben (schtasks ersetzt)")]
+    public void Verwaiste_Aufgaben_aufraeumen()
+    {
+        if (!WorkflowTaskPlan.Supported) Ueberspringen.Weil("nur unter Windows.");
+        var (f, app, home) = Make(); using var _ = f;
+        var exe = Path.Combine(f.Root, "TrendoOS.exe"); var fremdExe = Path.Combine(f.Root, "Anderes.exe");
+        var lebt = app.Add(new Workflow { Name = "lebt", Trigger = TriggerKind.Taeglich, At = "08:00", Steps = [new() { Kind = StepKind.OrdnerAnlegen, To = Path.Combine(home, "a") }] });
+        var alterOrdner = Path.Combine(f.Root, "alter-datenordner"); // Datenordner gewechselt: den alten gibt es nicht mehr
+        string N(string root, string id) => WorkflowTaskPlan.TaskName(root, id);
+        var tasks = new Dictionary<string, (string Exe, string Args)>
+        {
+            [N(f.Root, lebt.Id)] = (exe, WorkflowTaskPlan.Arguments(lebt.Id, f.Root)),               // passt → bleibt
+            [N(f.Root, "geloescht1")] = (exe, WorkflowTaskPlan.Arguments("geloescht1", f.Root)),    // Ablauf gelöscht → weg
+            [N(alterOrdner, lebt.Id)] = (exe, WorkflowTaskPlan.Arguments(lebt.Id, alterOrdner)),   // alter Datenordner → weg
+            [N(f.Root, "fremd123")] = (fremdExe, WorkflowTaskPlan.Arguments("fremd123", f.Root)), // anderes Programm → nie anfassen
+        };
+        var calls = new List<string>();
+        var plan = new WorkflowTaskPlan { Run = a =>
+        {
+            calls.Add(string.Join(" ", a));
+            if (a[0] == "/Query") return (0, string.Format(Liste, string.Concat(tasks.Select(t => Eintrag(t.Key, t.Value.Exe, t.Value.Args)))));
+            if (a[0] == "/Delete") return tasks.Remove(a[2]) ? (0, "ERFOLGREICH") : (1, "nicht gefunden");
+            return (1, "unerwartet");
+        } };
+        var own = WorkflowTaskPlan.ParseOwn(string.Format(Liste, string.Concat(tasks.Select(t => Eintrag(t.Key, t.Value.Exe, t.Value.Args)))), exe);
+        Assert.Equal(3, own.Count); // „Fremd“ (anderer Name) und das andere Programm zählen nicht
+        var gone = plan.CleanupOrphans(exe);
+        Assert.Equal(2, gone.Count);
+        Assert.Equal(new[] { N(f.Root, lebt.Id), N(f.Root, "fremd123") }.Order(), tasks.Keys.Order());
+        Assert.Equal("/Query /XML ONE", calls[0]);
+        Assert.DoesNotContain(calls, c => c.StartsWith("/Create") || c.StartsWith("/Run"));
+        Assert.False(Directory.Exists(alterOrdner)); // nichts neu angelegt
+        // Deinstallieren: alle eigenen Aufgaben dieses Programms, die fremde bleibt
+        Assert.Equal(1, plan.RemoveAllOwn(exe));
+        Assert.Equal([N(f.Root, "fremd123")], tasks.Keys.ToList());
+        // Start durch eine Aufgabe mit fehlendem Datenordner: nichts anlegen, eigene Aufgabe entfernen
+        calls.Clear();
+        Assert.True(plan.RemoveIfRootMissing("abc123", alterOrdner));
+        Assert.False(Directory.Exists(alterOrdner));
+        Assert.Equal([$"/Delete /TN {N(alterOrdner, "abc123")} /F"], calls);
+        Assert.False(plan.RemoveIfRootMissing("abc123", f.Root));
+        Assert.False(plan.DeleteByName("Fremde-Aufgabe")); // fremdes Namensmuster wird nie gelöscht
+    }
 }

@@ -56,6 +56,8 @@ public sealed class Workflow
 
 public sealed record WfRun(string WorkflowId, DateTimeOffset At, bool DryRun, bool Ok, List<string> Lines)
 {
+    /// <summary>T-0742: Nicht ausgeführt, weil der Ablauf gerade schon läuft oder inzwischen nicht mehr dran ist – kein Fehler.</summary>
+    public bool Skipped { get; init; }
     /// <summary>Ablauf-Editor: Ergebnis je Schritt (für die Anzeige am Baustein). Schritte nach einem Fehler fehlen.</summary>
     public List<WfStepResult> Steps { get; init; } = [];
 }
@@ -223,18 +225,33 @@ public sealed class WorkflowEngine
         }
     }
 
-    /// <summary>T-0742: Start durch die Windows-Aufgabe (Trendo geschlossen): genau diesen Ablauf ausführen, wenn er dran ist – sonst nichts.
+    /// <summary>T-0742: Start durch die Windows-Aufgabe (Trendo geschlossen oder offen): genau diesen Ablauf ausführen, wenn er dran ist – sonst nichts.
+    /// Liest die Ablaufdatei frisch (das offene Trendo kann ihn inzwischen pausiert, geändert oder gelöscht haben) und läuft nur, wenn er noch existiert,
+    /// eingeschaltet und freigegeben ist und ohne offenes Trendo laufen kann. Danach schreibt dieser Prozess NUR die Laufstände dieses einen Ablaufs
+    /// in die frisch gelesene Datei – alles andere (Pausieren, neue/gelöschte Abläufe, Freigaben, Inhalte) bleibt, wie das offene Trendo es gespeichert hat.
     /// Liefert den Lauf oder null mit Grund. Andere Abläufe (z. B. „neue Datei“) werden nicht angefasst.</summary>
-    public async Task<(WfRun? Run, string Why)> RunOneIfDueAsync(string id, DateTimeOffset now)
+    public async Task<(WfRun? Run, string Why)> RunOneIfDueAsync(string id, DateTimeOffset now, Func<int, Task>? onStep = null)
     {
-        SyncFromDisk();
-        if (Get(id) is not { } w) return (null, "Diesen Ablauf gibt es nicht (mehr).");
+        if (_saveBlocked) return (null, LoadProblem ?? "Die Datei mit den Abläufen ist nicht lesbar.");
+        if (ReadDisk() is not { } disk) return (null, "Die Datei mit den Abläufen ist gerade nicht lesbar – nichts ausgeführt.");
+        var fresh = disk.FirstOrDefault(x => x.Id == id);
+        var w = Get(id);
+        if (fresh is null) { if (w is not null) _items.Remove(w); return (null, NotThere); }
+        if (w is null) _items.Add(w = fresh);
+        else foreach (var p in typeof(Workflow).GetProperties()) if (p.CanWrite) p.SetValue(w, p.GetValue(fresh)); // frischer Stand statt des beim Start geladenen
         if (!w.Enabled) return (null, "Der Ablauf ist ausgeschaltet.");
         if (w.Trigger is not (TriggerKind.Taeglich or TriggerKind.Intervall)) return (null, "Nur zeitgesteuerte Abläufe starten über die Windows-Aufgabe.");
+        if (WorkflowTaskPlan.WhyNotWithoutApp(w) is { } why) return (null, "Läuft nur bei offenem Trendo: " + why);
+        if (!w.IsApproved) return (null, "Der Ablauf wurde geändert und braucht zuerst wieder deine Freigabe – nichts ausgeführt.");
         if (_gate.Halted) return (null, "Der Not-Stopp ist aktiv.");
         if (!IsTimeDue(w, now)) return (null, "Der Ablauf ist gerade nicht dran (schon gelaufen oder andere Uhrzeit/Wochentag).");
-        return (await RunAsync(w, false, null, now), "gelaufen");
+        _runStateOnly.Value = id; // ab hier schreibt dieser Prozess nur noch die Laufstände dieses Ablaufs (gilt nur für diesen Aufruf)
+        var run = await RunAsync(w, false, null, now, onStep, onlyIfDue: true);
+        return run.Skipped ? (null, run.Lines.FirstOrDefault() ?? "nicht gestartet") : (run, "gelaufen");
     }
+
+    /// <summary>Grund, wenn der Ablauf in der Datei fehlt (die Windows-Aufgabe passt dann zu keinem Ablauf mehr).</summary>
+    public const string NotThere = "Diesen Ablauf gibt es nicht (mehr).";
 
     /// <summary>Welche Abläufe sind jetzt dran? Neue-Datei-Auslöser merken sich bekannte Dateien.</summary>
     public IReadOnlyList<(Workflow W, string? File)> Due(DateTimeOffset now)
@@ -259,14 +276,23 @@ public sealed class WorkflowEngine
     }
 
     /// <param name="onStep">Wird vor jedem Schritt aufgerufen (Ablauf-Editor: Baustein leuchtet auf).</param>
-    public async Task<WfRun> RunAsync(Workflow w, bool dryRun, string? triggerFile = null, DateTimeOffset? now = null, Func<int, Task>? onStep = null)
+    /// <param name="onlyIfDue">T-0742: Nach dem Belegen noch einmal prüfen, ob der Ablauf dran ist (ein anderer Prozess kann ihn gerade erledigt haben).</param>
+    public async Task<WfRun> RunAsync(Workflow w, bool dryRun, string? triggerFile = null, DateTimeOffset? now = null, Func<int, Task>? onStep = null, bool onlyIfDue = false)
     {
         var t = now ?? DateTimeOffset.Now; var lines = new List<string>();
         string V(string s) => s.Replace("{datum}", t.ToString("yyyy-MM-dd")).Replace("{zeit}", t.ToString("HH-mm")).Replace("{datei}", triggerFile is null ? "" : Path.GetFileName(triggerFile));
         if (!dryRun && !w.IsApproved) { lines.Add("Gestoppt: Dieser Ablauf verschiebt oder benennt Dateien um und braucht zuerst deine Freigabe."); Mark(w, t, false, lines[^1], triggerFile); return Log(new(w.Id, t, dryRun, false, lines)); }
         if (!dryRun && _gate.Halted) { lines.Add("Gestoppt: Der Not-Stopp ist aktiv. Es wurde nichts geändert."); return Log(new(w.Id, t, dryRun, false, lines)); }
-        if (!dryRun && !Lease(w.Id)) { lines.Add("Läuft gerade schon – nicht doppelt gestartet."); _audit.Append("ablauf", "workflow.skipped", w.Id + " läuft schon"); return new(w.Id, t, dryRun, false, lines); }
-        try { return await RunLeasedAsync(w, dryRun, triggerFile, t, lines, V, onStep); }
+        if (!dryRun && !Lease(w.Id)) { lines.Add("Läuft gerade schon – nicht doppelt gestartet."); _audit.Append("ablauf", "workflow.skipped", w.Id + " läuft schon"); return new(w.Id, t, dryRun, false, lines) { Skipped = true }; }
+        try
+        {
+            if (!dryRun && onlyIfDue && w.Trigger is TriggerKind.Taeglich or TriggerKind.Intervall)
+            {
+                SyncFromDisk(force: true); // Laufstand eines anderen Prozesses, der gerade fertig wurde
+                if (!IsTimeDue(w, t)) { lines.Add("Nicht mehr dran – gerade schon erledigt."); _audit.Append("ablauf", "workflow.skipped", w.Id + " schon erledigt"); return new(w.Id, t, dryRun, false, lines) { Skipped = true }; }
+            }
+            return await RunLeasedAsync(w, dryRun, triggerFile, t, lines, V, onStep);
+        }
         finally { if (!dryRun) Release(w.Id); }
     }
 
@@ -352,7 +378,7 @@ public sealed class WorkflowEngine
         var res = new List<WfRun>();
         if (_gate.Halted) return res; // Not-Stopp: zeitgesteuerte Abläufe ruhen
         if (Interlocked.Exchange(ref _dueBusy, 1) == 1) return res; // der vorige Zeitgeber-Durchlauf ist noch nicht fertig
-        try { SyncFromDisk(); foreach (var (w, f) in Due(now)) res.Add(await RunAsync(w, false, f, now)); }
+        try { SyncFromDisk(); foreach (var (w, f) in Due(now)) if (await RunAsync(w, false, f, now, onlyIfDue: true) is { Skipped: false } r) res.Add(r); }
         finally { Volatile.Write(ref _dueBusy, 0); }
         return res;
     }
@@ -390,17 +416,33 @@ public sealed class WorkflowEngine
     }
 
     /// <summary>T-0681: atomar speichern – erst vollständig in eine eigene Datei schreiben, dann in einem Schritt ersetzen.
-    /// Ein Absturz mitten im Speichern lässt die bisherige Datei unversehrt.</summary>
+    /// Ein Absturz mitten im Speichern lässt die bisherige Datei unversehrt.
+    /// T-0742: Lesen–Ändern–Schreiben unter einer Sperre über alle Trendo-Prozesse (offenes Trendo und Start durch die Windows-Aufgabe).
+    /// Das offene Trendo übernimmt dabei die Laufstände, die die Aufgabe eingetragen hat; der Aufgabenprozess schreibt nur seine Laufstände.</summary>
     private void Save()
     {
         if (_saveBlocked) throw new IOException(LoadProblem);
-        SyncFromDisk(); // T-0742: Laufstände eines anderen Trendo-Prozesses nicht überschreiben
+        using var _ = FileLock();
+        if (_runStateOnly.Value is { } only)
+        {
+            var disk = ReadDisk() ?? throw new IOException("Die Datei mit den Abläufen ist gerade nicht lesbar – Laufstand nicht eingetragen.");
+            if (Get(only) is not { } m || disk.FirstOrDefault(d => d.Id == only) is not { } d) return; // inzwischen gelöscht: nichts zurückschreiben
+            d.LastRun = m.LastRun; d.LastAttempt = m.LastAttempt; d.FailCount = m.FailCount; d.LastError = m.LastError;
+            Write(disk);
+            return;
+        }
+        if (ReadDisk() is { } fresh) MergeRunStates(fresh);
+        Write(_items);
+    }
+
+    private void Write(List<Workflow> list)
+    {
         var tmp = _file + "." + Guid.NewGuid().ToString("N")[..8] + ".tmp";
         try
         {
             using (var fs = new FileStream(tmp, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             {
-                JsonSerializer.Serialize(fs, _items);
+                JsonSerializer.Serialize(fs, list);
                 fs.Flush(flushToDisk: true);
             }
             for (var i = 0; ; i++)
@@ -411,25 +453,63 @@ public sealed class WorkflowEngine
         finally { try { File.Delete(tmp); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { } }
     }
 
+    // T-0742: Im Aufgabenprozess (RunOneIfDueAsync) schreibt Speichern nur die Laufstände dieses einen Ablaufs – gilt nur für diesen Aufruf.
+    private readonly AsyncLocal<string?> _runStateOnly = new();
+
+    /// <summary>T-0742: Sperre über Prozessgrenzen (Sperrdatei neben der Ablaufdatei, exklusiv geöffnet; belegt → kurz warten und erneut versuchen).
+    /// Gehalten wird sie nur für Lesen–Ändern–Schreiben, nie während ein Ablauf läuft; beim Schließen verschwindet die Sperrdatei wieder.</summary>
+    private FileStream FileLock()
+    {
+        var path = _file + ".sperre";
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        for (; ; )
+        {
+            try { return new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, 1, FileOptions.DeleteOnClose); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                if (clock.Elapsed > TimeSpan.FromSeconds(15)) throw new IOException("Die Datei mit deinen Abläufen ist gerade von einem anderen Trendo belegt – bitte gleich noch einmal versuchen.", ex);
+                Thread.Sleep(20);
+            }
+        }
+    }
+
+    /// <summary>Ablaufdatei frisch lesen (null = gerade nicht lesbar oder beschädigt; fehlt sie, ist die Liste leer).</summary>
+    private List<Workflow>? ReadDisk()
+    {
+        for (var i = 0; ; i++)
+            try
+            {
+                if (!File.Exists(_file)) return [];
+                var list = JsonSerializer.Deserialize<List<Workflow>>(File.ReadAllText(_file));
+                return list is null || list.Any(w => w is null) ? null : list;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException && i < 20) { Thread.Sleep(25); } // gerade ersetzt
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException) { return null; }
+    }
+
+    /// <summary>Laufstände (zuletzt gelaufen, Versuch, Fehler) eines anderen Prozesses übernehmen, wenn sie neuer sind. Inhalte bleiben, wie sie hier sind.</summary>
+    private void MergeRunStates(IEnumerable<Workflow> disk)
+    {
+        foreach (var d in disk)
+            if (Get(d.Id) is { } m && d.LastAttempt is { } da && (m.LastAttempt is null || da > m.LastAttempt))
+            { m.LastRun = d.LastRun; m.LastAttempt = d.LastAttempt; m.FailCount = d.FailCount; m.LastError = d.LastError; }
+    }
+
     // T-0742: Stand der Datei beim letzten eigenen Lesen/Schreiben – ändert ihn ein anderer Prozess (Start durch die Windows-Aufgabe), wird abgeglichen.
     private DateTime _stamp;
     private void Stamp() { try { _stamp = File.Exists(_file) ? File.GetLastWriteTimeUtc(_file) : default; } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { } }
 
     /// <summary>T-0742: Hat ein anderer Trendo-Prozess (z. B. der Start durch die Windows-Aufgabe, während Trendo offen ist) Läufe eingetragen,
-    /// übernimmt dieser Prozess die Laufstände (zuletzt gelaufen, Fehler) – sonst liefe ein Ablauf doppelt oder der Eintrag ginge beim nächsten Speichern verloren.
-    /// Inhalte (Schritte, Auslöser) bleiben, wie sie hier sind.</summary>
-    public void SyncFromDisk()
+    /// übernimmt dieser Prozess die Laufstände (zuletzt gelaufen, Fehler) – sonst liefe ein Ablauf doppelt.
+    /// Inhalte (Schritte, Auslöser) bleiben, wie sie hier sind. <paramref name="force"/>: auch lesen, wenn sich der Zeitstempel nicht geändert hat.</summary>
+    public void SyncFromDisk(bool force = false)
     {
         if (_saveBlocked || !File.Exists(_file)) return;
         DateTime t;
         try { t = File.GetLastWriteTimeUtc(_file); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { return; }
-        if (t == _stamp) return;
-        List<Workflow>? disk;
-        try { disk = JsonSerializer.Deserialize<List<Workflow>>(File.ReadAllText(_file)); }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException) { return; }
+        if (!force && t == _stamp) return;
+        if (ReadDisk() is not { } disk) return;
         _stamp = t;
-        foreach (var d in disk ?? [])
-            if (d is not null && Get(d.Id) is { } m && d.LastAttempt is { } da && (m.LastAttempt is null || da > m.LastAttempt))
-            { m.LastRun = d.LastRun; m.LastAttempt = d.LastAttempt; m.FailCount = d.FailCount; m.LastError = d.LastError; }
+        MergeRunStates(disk);
     }
 }

@@ -51,7 +51,7 @@ Hinweis: Die Aufgabe wurde mit `schtasks /Run` sofort gestartet statt um 0:01 zu
 ## Offene Punkte / Risiken
 
 - PromptAction-Kette (`ablauf.planen`, Capability „Nur der Plan“) bewusst unverändert – der echte Weg ist das Satzfeld auf der Seite Abläufe; die Kette könnte später dorthin verweisen.
-- Läuft Trendo offen und die Aufgabe gleichzeitig, verhindert die Sperrdatei einen Doppelstart; der Abgleich der Laufstände nutzt den Datei-Zeitstempel.
+- Läuft Trendo offen und die Aufgabe gleichzeitig, verhindert die Sperrdatei einen Doppelstart; Laufstände werden unter einer Sperre über beide Prozesse eingemischt (siehe „Gegenprüfung behoben“).
 - Import/Export eigener Trendo-Abläufe (Kriterium 2) fehlt weiter.
 - Abläufe mit KI-/Agent-Schritt bleiben an das offene Trendo gebunden.
 
@@ -63,6 +63,28 @@ Hinweis: Die Aufgabe wurde mit `schtasks /Run` sofort gestartet statt um 0:01 zu
 - gemeinsam: `src/Trendo.App/MainWindow.ItemLinks.cs` (nur `WfLink`: Rückgängig/Wiederholen des Anlegens), `src/Trendo.App/Program.cs` (Schalter `--ablauf-faellig` vor dem Fenster), `.gitattributes` (eine Zeile)
 - Tests: `tests/Trendo.Core.Tests/T0742AblaufAusSatzTests.cs`, `tests/Trendo.App.Tests/T0742AblaufAusSatzUiTests.cs`
 - Beleg: `reports/T-0742/*`; Auftrag/Bericht: `tasks/T-0742-automatisieren*.md`
+
+## Gegenprüfung behoben (17.11.2026)
+
+Alle Prüfungen mit ersetztem schtasks (`WorkflowTaskPlan.Run`); es wurde **keine** Windows-Aufgabe angelegt, kein `schtasks /Create` oder `/Run` ausgeführt, `T0742_Echtlauf_Ui` nicht gestartet. Nachher `schtasks /Query /FO CSV | grep -i Trendo-Ablauf` leer.
+
+| # | Befund | Jetzt | Test (Rot-Probe) |
+|---|---|---|---|
+| 1 | MITTEL: Aufgabenprozess schrieb die ganze, beim Start geladene Liste zurück (Pausieren usw. überschrieben) | `RunOneIfDueAsync` liest die Datei frisch, prüft Existenz, eingeschaltet, Freigabe, `WhyNotWithoutApp`, Not-Stopp, fällig; danach schreibt der Prozess nur `LastRun/LastAttempt/FailCount/LastError` dieses einen Ablaufs in die frisch gelesene Datei. Lesen–Ändern–Schreiben in beiden Prozessen unter einer Sperrdatei (`ablaeufe.json.sperre`, `FileShare.None`, Wiederholung bis 15 s, beim Schließen gelöscht); das offene Trendo mischt beim Speichern die Laufstände der Aufgabe ein | Kern `Pausieren_bleibt_erhalten`, `Neu_geloescht_Freigabe_bleiben` (rot auf altem Code), `Pausieren_waehrend_des_Laufs_bleibt` (Rot-Probe: Nur-Laufstand-Modus abgeschaltet → rot); **echt zwei Prozesse**: `T0742_Gegenpruefung_Ui.Zwei_Prozesse_Sperre_echt` startet das gebaute `TrendoOS.exe --ablauf-faellig`, hält die Sperre, pausiert dazwischen – Pausieren bleibt, Laufstand kommt hinzu (Rot-Probe → rot) |
+| 2a | MITTEL: Deinstallieren ließ Aufgaben zurück | Velopack 1.2.161 hat `OnBeforeUninstallFastCallback` (schon für `UninstallPrompt` genutzt); `UninstallPrompt.Run` ruft zuerst `RemoveWorkflowTasks` → entfernt alle `Trendo-Ablauf-*`-Aufgaben, die dieses Programm starten. Installer-Vertrag unverändert | App `UninstallPromptTests.Ablauf_Aufgaben_werden_entfernt` (schtasks ersetzt) |
+| 2b | Verwaiste Aufgaben nach Löschen/Ordnerwechsel | Beim Start (Hintergrund) `CleanupOrphans`: `schtasks /Query /XML ONE` (ohne Admin) → nur Namensmuster `Trendo-Ablauf-<id>-<6 hex>` **und** Programm = eigene exe **und** Argumente im eigenen Format; entfernt, wenn Datenordner fehlt, Name nicht zu Ordner/Id passt oder der Ablauf dort fehlt; unlesbare Ablaufdatei → bleibt | Kern `Verwaiste_Aufgaben_aufraeumen` (fremdes Programm und fremder Name bleiben; Rot-Probe → rot) |
+| 2c | Aufgabe legte fehlenden Datenordner neu an | `MainWindow.RunFromTask`: Ordner fehlt → nichts anlegen, eigene Aufgabe entfernen, still Rückgabe 0; Ablauf fehlt im vorhandenen Ordner → Aufgabe entfernt sich ebenfalls | App `Fehlender_Datenordner_wird_nicht_angelegt`, `Ablauf_weg_oder_KI_Schritt` (Rot-Proben → rot) |
+| 2d | Löschen bei gescheitertem Entfernen | `WfDelete`: Aufgabe nicht entfernbar → Ablauf bleibt mit Hinweis; Rückgängig des KI-Anlegens: Aufräumen beim nächsten Start bzw. Selbstentfernen der Aufgabe | App `Loeschen_ohne_entfernte_Aufgabe_behaelt_Ablauf` (rot auf altem Code) |
+| 3 | NIEDRIG: Doppellauf, „läuft schon“ als Fehler | `RunAsync(onlyIfDue)` prüft nach dem Belegen erneut (Laufstand frisch von der Platte); „läuft schon“/„nicht mehr dran“ = `WfRun.Skipped`, kein Fehlversuch, Rückgabe 0, neutral protokolliert | Kern `Nach_der_Sperre_erneut_pruefen` (Rot-Probe → rot), App `Laeuft_schon_ist_kein_Fehler` (rot auf altem Code) |
+| 4 | NIEDRIG: Argumente | Id nur `[A-Za-z0-9-]` (sonst `ArgumentException`, `Create` meldet es), Datenordner über `WorkflowTaskPlan.Root` ohne abschließenden Trenner (auch im Aufgabennamen) | Kern `Arguments_lehnt_unsichere_Id_ab`, `Arguments_ohne_abschliessenden_Backslash` (rot auf altem Code) |
+| 5 | NIEDRIG: nachträglicher KI-/Agent-Schritt | Aufgabenprozess prüft `WhyNotWithoutApp` vor dem Lauf; Karte zeigt „⏸ Läuft nur, solange Trendo offen ist …“ plus Hinweis und Knopf „Windows-Aufgabe entfernen“ | Kern `KI_Schritt_und_Freigabe_vor_dem_Lauf` (rot auf altem Code), App `Ablauf_weg_oder_KI_Schritt` |
+| 6 | INFO: Einrückung | `sp.Children.Add(L("Alle … Minuten"…` eingerückt | – |
+
+Testzahlen (gezielt, kein Volltest): Kern 78/78 (T0742_Ablauf_aus_Satz, SYS05_Workflows, T0681_*, WorkflowStepsTests, FreigabenKern, T0005_NotStopp, CORE02/03/10/12, X05_FreeAi, AgentRunTests); App 58/58 (T0742_Ui, T0742_Gegenpruefung_Ui, SYS05_Ui, T0681_Ui, AblaufEditor_Ui, WorkflowFlow_Ui, WorkflowError_Ui, Startargumente, T0717_HuelleE5_Ui, FreigabenKernUi, UninstallPromptTests, W2_Ui, AgentRun_Ui, Suggestions_Ui, CORE02_Backends, CORE03/10/12_Ui, X05_Ui).
+
+Offen nach der Gegenprüfung: Die geänderte Zeitplan-Karte ist nur über den Oberflächentest geprüft, nicht im Bild (das Render-Werkzeug startet ohne Abläufe, der Kopflos-Test zeichnet nicht). Das Aufräumen beim Start und der Deinstallations-Hook liefen nur mit ersetztem schtasks, nicht mit einer echten Aufgabe und nicht aus einer per Velopack installierten Fassung.
+
+Berührte Dateien (Gegenprüfung): `src/Trendo.Core/W2/Workflows.cs`, `src/Trendo.Core/W2/WorkflowTaskPlan.cs`, `src/Trendo.App/MainWindow.Workflows.cs`, `src/Trendo.App/Program.cs`, `src/Trendo.App/UninstallPrompt.cs`; Tests `tests/Trendo.Core.Tests/T0742AblaufAusSatzTests.cs`, `tests/Trendo.App.Tests/T0742AblaufAusSatzUiTests.cs`, `tests/Trendo.App.Tests/UninstallPromptTests.cs`.
 
 ## Sprache
 

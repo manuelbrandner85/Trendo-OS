@@ -1,3 +1,4 @@
+using Trendo.Core;
 using Trendo.App;
 using Xunit;
 
@@ -45,5 +46,20 @@ public class UninstallPromptTests
         Directory.CreateDirectory(d);
         try { Assert.Equal(Path.GetFullPath(d).TrimEnd(Path.DirectorySeparatorChar), Trendo.Core.DataLocation.RemovableTools(d)!.TrimEnd(Path.DirectorySeparatorChar)); }
         finally { Directory.Delete(Path.GetDirectoryName(d)!, true); }
+    }
+    [Fact(DisplayName = "T-0742 Gegenprüfung: Deinstallieren entfernt die eigenen Windows-Aufgaben der Abläufe (schtasks ersetzt)")]
+    public void Ablauf_Aufgaben_werden_entfernt()
+    {
+        if (!WorkflowTaskPlan.Supported) return;
+        var exe = Path.Combine(Path.GetTempPath(), "TrendoOS.exe"); var root = Path.Combine(Path.GetTempPath(), "t0742-daten");
+        var name = WorkflowTaskPlan.TaskName(root, "abc123");
+        var xml = $"<Tasks><!-- \\{name} --><Task><RegistrationInfo><URI>\\{name}</URI></RegistrationInfo><Actions><Exec><Command>{exe}</Command><Arguments>{System.Security.SecurityElement.Escape(WorkflowTaskPlan.Arguments("abc123", root))}</Arguments></Exec></Actions></Task></Tasks>";
+        var calls = new List<string>(); var log = new List<string>();
+        var plan = new WorkflowTaskPlan { Run = a => { calls.Add(string.Join(" ", a)); return (0, a[0] == "/Query" ? xml : ""); } };
+        Assert.Equal(1, UninstallPrompt.RemoveWorkflowTasks(plan, exe, log.Add));
+        Assert.Equal(["/Query /XML ONE", $"/Delete /TN {name} /F"], calls);
+        Assert.Contains(log, l => l.Contains("entfernt: 1"));
+        // Abfrage scheitert: Deinstallation läuft weiter
+        Assert.Equal(0, UninstallPrompt.RemoveWorkflowTasks(new WorkflowTaskPlan { Run = _ => (1, "Fehler") }, exe, null));
     }
 }

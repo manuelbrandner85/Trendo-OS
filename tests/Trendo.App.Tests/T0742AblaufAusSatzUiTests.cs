@@ -148,6 +148,128 @@ public class T0742_Ui
     }
 }
 
+/// <summary>T-0742 Gegenprüfung: Start durch die Windows-Aufgabe und Aufräumen (schtasks ersetzt; es wird keine echte Windows-Aufgabe angelegt).</summary>
+public class T0742_Gegenpruefung_Ui
+{
+    [AvaloniaFact(DisplayName = "T-0742 Gegenprüfung: „läuft gerade schon“ ist für die Windows-Aufgabe kein Fehler – Rückgabe 0, neutral protokolliert")]
+    public void Laeuft_schon_ist_kein_Fehler()
+    {
+        var (w, _, root) = Ui.Open();
+        var home = Path.Combine(root, "heim"); Directory.CreateDirectory(home); MainWindow.WorkflowHome = home;
+        try
+        {
+            var wf = w.Workflows.Add(new Workflow { Name = "Notiz", Trigger = TriggerKind.Intervall, EveryMinutes = 60,
+                Steps = [new() { Kind = StepKind.TextSchreiben, To = Path.Combine(home, "n-{zeit}.txt"), Text = "x" }] });
+            var lease = Path.Combine(w.Core.DataRoot, "ablaeufe", "laeuft-" + wf.Id + ".lock"); File.WriteAllText(lease, ""); // ein anderer Prozess führt ihn gerade aus
+            var o = new StringWriter();
+            Assert.Equal(0, MainWindow.RunWorkflowHeadless(w.Core, wf.Id, o));
+            Assert.Contains("läuft gerade schon", o.ToString(), StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("Fehler", o.ToString());
+            Assert.Empty(Directory.GetFiles(home, "n-*.txt"));
+        }
+        finally { MainWindow.WorkflowHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile); w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0742 Gegenprüfung: Start durch eine Aufgabe mit fehlendem Datenordner legt ihn nicht an und entfernt die eigene Aufgabe; ungültige Id wird abgelehnt")]
+    public void Fehlender_Datenordner_wird_nicht_angelegt()
+    {
+        if (!WorkflowTaskPlan.Supported) return;
+        var root = Path.Combine(Path.GetTempPath(), "trendo-t0742-weg-" + Guid.NewGuid().ToString("N"));
+        var calls = new List<string>();
+        var plan = new WorkflowTaskPlan { Run = a => { calls.Add(string.Join(" ", a)); return (0, ""); } };
+        Assert.Equal(0, MainWindow.RunFromTask("abc123", root, TextWriter.Null, plan));
+        Assert.False(Directory.Exists(root));
+        Assert.Equal([$"/Delete /TN {WorkflowTaskPlan.TaskName(root, "abc123")} /F"], calls);
+        Assert.Equal(2, MainWindow.RunFromTask("abc 123", root, TextWriter.Null, plan));
+        Assert.False(Directory.Exists(root));
+    }
+
+    [AvaloniaFact(DisplayName = "T-0742 Gegenprüfung: Gibt es den Ablauf nicht mehr, entfernt die Aufgabe sich selbst; im offenen Trendo zeigt ein Ablauf mit KI-Schritt „nur bei offenem Trendo“ und bietet das Entfernen an")]
+    public void Ablauf_weg_oder_KI_Schritt()
+    {
+        if (!WorkflowTaskPlan.Supported) return;
+        var (w, _, root) = Ui.Open();
+        var home = Path.Combine(root, "heim"); Directory.CreateDirectory(home); MainWindow.WorkflowHome = home;
+        var calls = new List<string>(); var exists = true;
+        w.WfTasks.Run = a => { calls.Add(a[0]); if (a[0] == "/Delete") exists = false; return (a[0] == "/Query" && !exists ? 1 : 0, ""); };
+        try
+        {
+            var plan = new WorkflowTaskPlan { Run = a => { calls.Add(string.Join(" ", a)); return (0, ""); } };
+            Assert.Equal(0, MainWindow.RunWorkflowHeadless(w.Core, "weg12345", TextWriter.Null, plan));
+            Assert.Contains($"/Delete /TN {WorkflowTaskPlan.TaskName(w.Core.DataRoot, "weg12345")} /F", calls);
+            calls.Clear();
+            w.Show("ablaeufe"); w.Find<Button>("wf-tpl-notiz").Press(); Settle();
+            var wf = w.Workflows.All().Single(); w.Workflows.NoteWinTask(wf, WorkflowTaskPlan.ScheduleKey(wf));
+            w.WfChange(wf, x => x.Steps.Add(new WfStep { Kind = StepKind.KiZusammenfassen, From = home }), "Baustein ergänzt."); Settle();
+            w.Show("ablaeufe"); Settle();
+            Assert.StartsWith("⏸ Läuft nur, solange Trendo offen ist.", w.Find<TextBlock>("wf-zeitplan-text").Text);
+            Assert.Contains(w.GetLogicalTexts(), t => t.Contains("führt diesen Ablauf aber nicht mehr aus"));
+            w.Find<Button>("wf-task-remove").Press(); Settle();
+            Assert.Contains("/Delete", calls); Assert.Null(w.Workflows.Get(wf.Id)!.WinTask);
+            Assert.Null(w.TryFind<Button>("wf-task-remove"));
+        }
+        finally { MainWindow.WorkflowHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile); w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0742 Gegenprüfung ECHT (zwei Prozesse, ohne schtasks): Das gebaute TrendoOS.exe mit --ablauf-faellig wartet auf die Sperre und schreibt nur seinen Laufstand – das Pausieren des offenen Trendo bleibt")]
+    public void Zwei_Prozesse_Sperre_echt()
+    {
+        var repo = AppContext.BaseDirectory; while (repo is not null && !File.Exists(Path.Combine(repo, "Trendo.sln"))) repo = Path.GetDirectoryName(repo);
+        var exe = repo is null ? "" : Path.Combine(repo, "src", "Trendo.App", "bin", "Release", "net10.0", OperatingSystem.IsWindows() ? "TrendoOS.exe" : "TrendoOS");
+        if (!File.Exists(exe)) return; // nicht gebaut: dieser Nachweis braucht das gebaute Programm
+        var (w, _, root) = Ui.Open();
+        var home = Path.Combine(root, "heim"); Directory.CreateDirectory(home); MainWindow.WorkflowHome = home;
+        try
+        {
+            var wf = w.Workflows.Add(new Workflow { Name = "Zwei Prozesse", Trigger = TriggerKind.Intervall, EveryMinutes = 60,
+                Steps = [new() { Kind = StepKind.TextSchreiben, To = Path.Combine(home, "lauf-{zeit}.txt"), Text = "x" }] });
+            var file = Path.Combine(w.Core.DataRoot, "ablaeufe", "ablaeufe.json");
+            Process p;
+            using (var hold = new FileStream(file + ".sperre", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None)) // das „offene Trendo“ hält die Sperre
+            {
+                var psi = new ProcessStartInfo(exe) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true };
+                foreach (var a in new[] { WorkflowTaskPlan.Switch, wf.Id, "--data-root", w.Core.DataRoot }) psi.ArgumentList.Add(a);
+                p = Process.Start(psi)!;
+                var sw = Stopwatch.StartNew();
+                while (Directory.GetFiles(home, "lauf-*.txt").Length == 0 && sw.ElapsedMilliseconds < 60_000 && !p.HasExited) Thread.Sleep(50);
+                Assert.Single(Directory.GetFiles(home, "lauf-*.txt")); // der zweite Prozess hat den Schritt ausgeführt …
+                Thread.Sleep(700);
+                Assert.False(p.HasExited); // … und wartet jetzt auf die Sperre, um seinen Laufstand einzutragen
+                var list = System.Text.Json.JsonSerializer.Deserialize<List<Workflow>>(File.ReadAllText(file))!;
+                list.Single(x => x.Id == wf.Id).Enabled = false; // währenddessen speichert das offene Trendo: pausiert
+                File.WriteAllText(file, System.Text.Json.JsonSerializer.Serialize(list));
+            }
+            Assert.True(p.WaitForExit(60_000));
+            var output = p.StandardOutput.ReadToEnd();
+            Assert.True(p.ExitCode == 0, output + p.StandardError.ReadToEnd());
+            var disk = System.Text.Json.JsonSerializer.Deserialize<List<Workflow>>(File.ReadAllText(file))!.Single(x => x.Id == wf.Id);
+            Assert.False(disk.Enabled); // Pausieren bleibt
+            Assert.NotNull(disk.LastRun); Assert.Equal(0, disk.FailCount); // Laufstand der Aufgabe ist eingetragen
+            Assert.Contains("ok:", output);
+        }
+        finally { MainWindow.WorkflowHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile); w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0742 Gegenprüfung: Lässt sich die Windows-Aufgabe beim Löschen nicht entfernen, bleibt der Ablauf mit Hinweis bestehen")]
+    public void Loeschen_ohne_entfernte_Aufgabe_behaelt_Ablauf()
+    {
+        if (!WorkflowTaskPlan.Supported) return;
+        var (w, _, root) = Ui.Open();
+        var home = Path.Combine(root, "heim"); Directory.CreateDirectory(home); MainWindow.WorkflowHome = home;
+        w.WfTasks.Run = a => a[0] == "/Delete" ? (1, "Zugriff verweigert") : (0, ""); // Aufgabe da, Entfernen scheitert
+        try
+        {
+            w.Show("ablaeufe"); w.Find<Button>("wf-tpl-notiz").Press(); Settle();
+            var wf = w.Workflows.All().Single(); w.Workflows.NoteWinTask(wf, WorkflowTaskPlan.ScheduleKey(wf));
+            w.Show("ablaeufe"); Settle();
+            w.Find<Button>("wf-del-0").Press(); Settle();
+            Assert.NotNull(w.Workflows.Get(wf.Id));
+            Assert.Contains("nicht entfernen", w.Find<TextBlock>("wf-msg").Text);
+        }
+        finally { MainWindow.WorkflowHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile); w.Close(); }
+    }
+}
+
 /// <summary>T-0742 ECHTLAUF (ersetzt ist nur die Fensterdarstellung und die Antwort „Ja“ im Rückfrage-Dialog): Satz über die Oberfläche → echtes Claude Code
 /// (eigenes Abo, schon angemeldet) → Ablauf in der Engine → Einschalten → echte Windows-Aufgabe per schtasks.exe (eigenes Konto, ohne Admin) →
 /// die Aufgabe startet das gebaute TrendoOS.exe mit „--ablauf-faellig“ (ohne Fenster) → der Ablauf erzeugt die Datei → Aufgabe per Klick entfernt.

@@ -127,12 +127,25 @@ public partial class MainWindow
         _wfMsg = $"Windows-Aufgabe „{name}“ angelegt. „{w.Name}“ läuft jetzt auch, wenn Trendo geschlossen ist.";
     }
 
-    /// <summary>Windows-Aufgabe entfernen (ein Klick; auch beim Löschen des Ablaufs).</summary>
-    public void WfRemoveTask(Workflow w)
+    /// <summary>Windows-Aufgabe entfernen (ein Klick; auch beim Löschen des Ablaufs). true = jetzt keine Aufgabe mehr da.</summary>
+    public bool WfRemoveTask(Workflow w)
     {
         var ok = WfTasks.Delete(w, _core.DataRoot, _core.Audit, CurrentPrincipal); _wfTaskSeen.Remove(w.Id);
         if (ok && Workflows.Get(w.Id) is not null) Workflows.NoteWinTask(w, null);
         _wfMsg = ok ? $"Windows-Aufgabe zu „{w.Name}“ entfernt – der Ablauf läuft nur noch, solange Trendo offen ist." : "Die Windows-Aufgabe ließ sich nicht entfernen – bitte in der Aufgabenplanung nachsehen.";
+        return ok;
+    }
+
+    /// <summary>T-0742: Ablauf löschen – mit seiner Windows-Aufgabe. Lässt die sich nicht entfernen, bleibt der Ablauf (mit Hinweis) bestehen,
+    /// damit keine unsichtbare Aufgabe übrig bleibt; sonst erledigt das Aufräumen beim nächsten Start den Rest.</summary>
+    public void WfDelete(Workflow w)
+    {
+        if ((w.WinTask is not null || WfTaskExists(w)) && !WfRemoveTask(w))
+        {
+            _wfMsg = $"„{w.Name}“ bleibt bestehen: Seine Windows-Aufgabe ließ sich nicht entfernen. Versuch es gleich noch einmal oder entferne „{WorkflowTaskPlan.TaskName(_core.DataRoot, w.Id)}“ in der Aufgabenplanung.";
+            return;
+        }
+        Workflows.Remove(w.Id); if (WfSelected == w.Id) WfSelected = null;
     }
 
     /// <summary>Unter dem Ablaufplan: läuft er auch bei geschlossenem Trendo? Deutlich sichtbar, mit Knopf zum Anlegen bzw. Entfernen.</summary>
@@ -143,7 +156,12 @@ public partial class MainWindow
         if (WorkflowTaskPlan.WhyNot(w) is { } why)
         {
             sp.Children.Add(new TextBlock { Name = "wf-zeitplan-text", Text = (w.Trigger == TriggerKind.Manuell ? "▶ " : "⏸ Läuft nur, solange Trendo offen ist. ") + why, Foreground = w.Trigger == TriggerKind.Manuell ? Muted : warn, FontSize = 12, TextWrapping = TextWrapping.Wrap });
-            if (w.WinTask is not null || (w.Trigger != TriggerKind.Manuell && WfTaskExists(w))) { var rm = new Button { Name = "wf-task-remove", Content = "Alte Windows-Aufgabe entfernen" }; rm.Click += (_, _) => { WfRemoveTask(w); Show("ablaeufe"); }; sp.Children.Add(rm); }
+            if (w.WinTask is not null || (w.Trigger != TriggerKind.Manuell && WfTaskExists(w)))
+            {
+                // T-0742: z. B. nachträglich ein KI-Schritt – die Aufgabe startet ihn nicht mehr (Trendo prüft das vor jedem Lauf); anbieten, sie zu entfernen
+                sp.Children.Add(P("Die Windows-Aufgabe dazu gibt es noch, sie führt diesen Ablauf aber nicht mehr aus. Entferne sie hier.", warn, 11));
+                var rm = new Button { Name = "wf-task-remove", Content = "Windows-Aufgabe entfernen" }; rm.Click += (_, _) => { WfRemoveTask(w); Show("ablaeufe"); }; sp.Children.Add(rm);
+            }
             return WCard(sp);
         }
         var exists = WfTaskExists(w); var name = WorkflowTaskPlan.TaskName(_core.DataRoot, w.Id);
@@ -165,12 +183,26 @@ public partial class MainWindow
         return WCard(sp);
     }
 
+    /// <summary>T-0742: Einstieg für „TrendoOS.exe --ablauf-faellig &lt;Id&gt; --data-root …“. Ungültige Id → 2. Gibt es den Datenordner nicht (mehr),
+    /// legt Trendo ihn NICHT neu an, entfernt seine eigene Aufgabe und beendet sich still (0).</summary>
+    public static int RunFromTask(string id, string dataRoot, TextWriter output, WorkflowTaskPlan? plan = null)
+    {
+        if (!WorkflowTaskPlan.IdOk(id)) return 2;
+        plan ??= new WorkflowTaskPlan();
+        if (plan.RemoveIfRootMissing(id, dataRoot)) return 0;
+        var core = new TrendoCore(WorkflowTaskPlan.Root(dataRoot), launcher: new NoopLauncher());
+        try { return RunWorkflowHeadless(core, id, output, plan); }
+        finally { core.Shutdown(); }
+    }
+
     /// <summary>Start durch die Windows-Aufgabe (ohne Fenster): genau diesen Ablauf ausführen, wenn er dran ist. Ergebnis ins Protokoll der Abläufe
-    /// und in „ablaeufe/windows-aufgabe.log“. Rückgabe 0 = gelaufen oder nicht dran, 1 = Lauf fehlgeschlagen.</summary>
-    public static int RunWorkflowHeadless(TrendoCore core, string id, TextWriter output)
+    /// und in „ablaeufe/windows-aufgabe.log“. Rückgabe 0 = gelaufen, nicht dran oder läuft gerade schon (kein Fehler), 1 = Lauf fehlgeschlagen.
+    /// Mit <paramref name="plan"/> (Start durch die Aufgabe): gibt es den Ablauf nicht mehr, entfernt sie sich selbst.</summary>
+    public static int RunWorkflowHeadless(TrendoCore core, string id, TextWriter output, WorkflowTaskPlan? plan = null)
     {
         var engine = new WorkflowEngine(core.DataRoot, core.Audit, core.Approvals, [WorkflowHome]);
         var (run, why) = engine.RunOneIfDueAsync(id, DateTimeOffset.Now).GetAwaiter().GetResult();
+        if (run is null && why == WorkflowEngine.NotThere && engine.LoadProblem is null && WorkflowTaskPlan.IdOk(id)) plan?.DeleteByName(WorkflowTaskPlan.TaskName(core.DataRoot, id));
         var line = $"{DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss zzz} {id} {(run is null ? "nicht gestartet: " + why : run.Ok ? "ok: " + string.Join(" | ", run.Lines) : "Fehler: " + string.Join(" | ", run.Lines))}";
         try { File.AppendAllText(Path.Combine(core.DataRoot, "ablaeufe", "windows-aufgabe.log"), line + "\n"); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
         output.WriteLine(line);
@@ -257,7 +289,7 @@ public partial class MainWindow
                 _wfMsg = $"„{w.Name}“ ist freigegeben. Änderst du den Ablauf, fragt Trendo erneut.";
             });
             B("toggle", w.Enabled ? "Pausieren" : w.Origin is null ? "Einschalten" : "Einschalten …", async () => { if (w.Enabled) { w.Enabled = false; Workflows.Update(w); } else await WfEnableAsync(w); });
-            B("del", "Löschen", () => { if (w.WinTask is not null || WfTaskExists(w)) WfRemoveTask(w); Workflows.Remove(w.Id); if (WfSelected == w.Id) WfSelected = null; return Task.CompletedTask; }); // T-0742: Windows-Aufgabe geht mit
+            B("del", "Löschen", () => { WfDelete(w); return Task.CompletedTask; }); // T-0742: Windows-Aufgabe geht mit
             var last = Workflows.History(w.Id, 1).FirstOrDefault();
             var sel = new Button { Name = $"wf-sel-{n}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Background = Brushes.Transparent, Padding = new Thickness(0),
                 Content = new StackPanel { Spacing = 2, Children = {
@@ -494,7 +526,7 @@ public partial class MainWindow
             sp.Children.Add(H("Start", 14)); sp.Children.Add(L("Name", name)); sp.Children.Add(L("Wann", trig));
             sp.Children.Add(L("Uhrzeit (jeden Tag)", at)); sp.Children.Add(L("Nur an diesen Tagen", days));
             if (w.Origin is { } origin) sp.Children.Add(P($"Von der KI angelegt aus: „{origin}“", Muted, 11));
-sp.Children.Add(L("Alle … Minuten", every)); sp.Children.Add(L("Ordner (neue Datei)", folder)); sp.Children.Add(L("Muster", pat));
+            sp.Children.Add(L("Alle … Minuten", every)); sp.Children.Add(L("Ordner (neue Datei)", folder)); sp.Children.Add(L("Muster", pat));
             sp.Children.Add(save);
         }
         else
