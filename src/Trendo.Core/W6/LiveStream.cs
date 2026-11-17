@@ -173,12 +173,15 @@ public static class LiveFfmpeg
             return a;
         }
         var scale = c.Width.ToString(CultureInfo.InvariantCulture) + ":" + c.Height.ToString(CultureInfo.InvariantCulture);
+        // T-0746 (Echtlauf): Stream und Kopie brauchen je einen eigenen Bildausgang – ein Filterausgang lässt sich nur einmal zuordnen,
+        // sonst startet FFmpeg nicht („Output with label 'vout' does not exist … or was already used elsewhere“)
+        var copy = output == LiveOutput.Broadcast && !string.IsNullOrWhiteSpace(mediaPath);
         a.Add("-filter_complex");
-        a.Add($"[0:v]scale={scale}:force_original_aspect_ratio=decrease,pad={scale}:(ow-iw)/2:(oh-ih)/2,split=2[vout][p];[p]fps=2,scale=640:-2[prev]");
+        a.Add($"[0:v]scale={scale}:force_original_aspect_ratio=decrease,pad={scale}:(ow-iw)/2:(oh-ih)/2,{(copy ? "split=3[vout][vcopy][p]" : "split=2[vout][p]")};[p]fps=2,scale=640:-2[prev]");
         a.AddRange(["-map", "[prev]", "-an", "-q:v", "5", "-f", "image2", "-update", "1", previewPath]);
-        void Encode(bool live)
+        void Encode(bool live, string video = "[vout]")
         {
-            a.AddRange(["-map", "[vout]"]);
+            a.AddRange(["-map", video]);
             if (audio is int i) a.AddRange(["-map", i.ToString(CultureInfo.InvariantCulture) + ":a"]);
             a.AddRange(["-c:v", "libx264", "-preset", "veryfast"]);
             if (live) a.AddRange(["-tune", "zerolatency"]);
@@ -191,7 +194,7 @@ public static class LiveFfmpeg
                 throw new ArgumentException("Dem Stream fehlt die Zieladresse.");
             Encode(true);
             a.AddRange(["-f", "flv", rtmpUrl]);
-            if (!string.IsNullOrWhiteSpace(mediaPath)) { Encode(false); a.AddRange(["-f", "mp4", "-movflags", "frag_keyframe+empty_moov", mediaPath]); }
+            if (copy) { Encode(false, "[vcopy]"); a.AddRange(["-f", "mp4", "-movflags", "frag_keyframe+empty_moov", mediaPath!]); }
         }
         else
         {
@@ -218,13 +221,17 @@ public static class LiveFfmpeg
             a.AddRange(["-filter_complex", vg + ";[vmain]fps=2,scale=640:-2[prev]", "-map", "[prev]", "-an", "-q:v", "5", "-f", "image2", "-update", "1", previewPath]);
             return a;
         }
-        a.AddRange(["-filter_complex", vg + ";[vmain]split=2[vout][p];[p]fps=2,scale=640:-2[prev]" + (ag is null ? "" : ";" + ag)]);
+        // T-0746 (Echtlauf): mit Kopie je ein eigener Bild- und Tonausgang für Stream und Kopie (Filterausgänge lassen sich nur einmal zuordnen)
+        var copy = output == LiveOutput.Broadcast && !string.IsNullOrWhiteSpace(mediaPath);
+        a.AddRange(["-filter_complex", vg + (copy ? ";[vmain]split=3[vout][vcopy][p]" : ";[vmain]split=2[vout][p]") + ";[p]fps=2,scale=640:-2[prev]"
+            + (ag is null ? "" : ";" + ag + (copy ? ";[aout]asplit=2[alive][acopy]" : ""))]);
         a.AddRange(["-map", "[prev]", "-an", "-q:v", "5", "-f", "image2", "-update", "1", previewPath]);
-        var audioMap = ag is not null ? "[aout]" : micIn is int mi ? mi.ToString(CultureInfo.InvariantCulture) + ":a" : silent is int si ? si.ToString(CultureInfo.InvariantCulture) + ":a" : null;
-        void Encode(bool live)
+        var audioMap = ag is not null ? copy ? "[alive]" : "[aout]" : micIn is int mi ? mi.ToString(CultureInfo.InvariantCulture) + ":a" : silent is int si ? si.ToString(CultureInfo.InvariantCulture) + ":a" : null;
+        void Encode(bool live, string video = "[vout]")
         {
-            a.AddRange(["-map", "[vout]"]);
-            if (audioMap is not null) a.AddRange(["-map", audioMap]);
+            a.AddRange(["-map", video]);
+            var am = !live && ag is not null && copy ? "[acopy]" : audioMap;
+            if (am is not null) a.AddRange(["-map", am]);
             a.AddRange(["-c:v", "libx264", "-preset", "veryfast"]);
             if (live) a.AddRange(["-tune", "zerolatency"]);
             a.AddRange(["-pix_fmt", "yuv420p", "-r", c.Fps.ToString(CultureInfo.InvariantCulture), "-b:v", c.VideoKbps.ToString(CultureInfo.InvariantCulture) + "k", "-maxrate", c.VideoKbps.ToString(CultureInfo.InvariantCulture) + "k", "-bufsize", (c.VideoKbps * 2).ToString(CultureInfo.InvariantCulture) + "k", "-g", (c.Fps * 2).ToString(CultureInfo.InvariantCulture)]);
@@ -234,7 +241,7 @@ public static class LiveFfmpeg
         {
             if (string.IsNullOrWhiteSpace(rtmpUrl) || !rtmpUrl.StartsWith("rtmp", StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("Dem Stream fehlt die Zieladresse.");
             Encode(true); a.AddRange(["-f", "flv", rtmpUrl]);
-            if (!string.IsNullOrWhiteSpace(mediaPath)) { Encode(false); a.AddRange(["-f", "mp4", "-movflags", "frag_keyframe+empty_moov", mediaPath]); }
+            if (copy) { Encode(false, "[vcopy]"); a.AddRange(["-f", "mp4", "-movflags", "frag_keyframe+empty_moov", mediaPath!]); }
         }
         else
         {
@@ -469,15 +476,40 @@ public sealed class FfmpegCaptureFactory : ICaptureProcessFactory
     {
         private readonly Process _proc;
         private readonly StringBuilder _err = new();
+        private string _progress = "";
         public Capture(Process proc)
         {
             _proc = proc;
-            proc.ErrorDataReceived += (_, e) => { if (e.Data is null) return; lock (_err) { _err.AppendLine(e.Data); if (_err.Length > 4000) _err.Remove(0, _err.Length - 2000); } };
+            proc.ErrorDataReceived += (_, e) =>
+            {
+                if (e.Data is not { } d || d.Trim().Length == 0) return;
+                lock (_err)
+                {
+                    // T-0746 (Echtlauf): Fortschrittszeilen (zweimal je Sekunde) nur als letzte Zeile merken – sonst schieben sie eine
+                    // Fehlermeldung wie „Error muxing a packet … -10054“ binnen Sekunden aus dem Ende, und der Abbruch bleibt unbemerkt
+                    if (d.TrimStart().StartsWith("frame=", StringComparison.Ordinal) || d.TrimStart().StartsWith("size=", StringComparison.Ordinal)) { _progress = d.Trim(); return; }
+                    // Verbindungsfehler bleiben vorn stehen – am Ende schreibt FFmpeg noch viele Statistikzeilen (libx264), die sie sonst verdrängen
+                    if (LiveStats.ConnectionLost(d)) { _alerts.Add(d.Trim()); if (_alerts.Count > 3) _alerts.RemoveAt(0); }
+                    _err.Append(d).Append('\n'); if (_err.Length > 4000) _err.Remove(0, _err.Length - 2000);
+                }
+            };
             proc.OutputDataReceived += (_, _) => { };
             try { proc.BeginErrorReadLine(); proc.BeginOutputReadLine(); } catch { /* schon zu Ende */ }
         }
+        private readonly List<string> _alerts = [];
         public bool Running => !_proc.HasExited;
-        public string Tail { get { lock (_err) { var s = _err.ToString(); return s.Length <= 600 ? s : s[^600..]; } } }
+        public string Tail
+        {
+            get
+            {
+                lock (_err)
+                {
+                    var s = _err.ToString(); s = s.Length <= 600 ? s : s[^600..];
+                    var head = string.Concat(_alerts.Where(x => !s.Contains(x, StringComparison.Ordinal)).Select(x => x + "\n"));
+                    return head + s + _progress;
+                }
+            }
+        }
         public void Stop()
         {
             if (_proc.HasExited) return;
@@ -487,19 +519,79 @@ public sealed class FfmpegCaptureFactory : ICaptureProcessFactory
     }
 }
 
-/// <summary>Eine Aufnahme oder ein Stream. Der Livestream startet nur über <see cref="LiveBroadcast.Go"/>.</summary>
+/// <summary>T-0746: Fortschritt und Verbindungsfehler aus der Ausgabe von FFmpeg lesen (Echtlauf mit lokalem Empfänger, 17.11.2026).</summary>
+public static partial class LiveStats
+{
+    [System.Text.RegularExpressions.GeneratedRegex(@"time=\s*(\d+):(\d\d):(\d\d)(?:\.\d+)?")] private static partial System.Text.RegularExpressions.Regex TimeRx();
+    [System.Text.RegularExpressions.GeneratedRegex(@"bitrate=\s*([\d.]+)\s*kbits/s")] private static partial System.Text.RegularExpressions.Regex RateRx();
+
+    /// <summary>Letzte Zeit- und Bitratenangabe der Statuszeilen („frame=… time=00:00:12.34 bitrate=2480.1kbits/s“).</summary>
+    public static (TimeSpan? Time, int? Kbps) Parse(string? tail)
+    {
+        if (string.IsNullOrEmpty(tail)) return (null, null);
+        TimeSpan? t = null; int? k = null;
+        var tm = TimeRx().Matches(tail);
+        if (tm.Count > 0)
+        {
+            var m = tm[^1];
+            t = new TimeSpan(int.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture), int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture), int.Parse(m.Groups[3].Value, CultureInfo.InvariantCulture));
+        }
+        var rm = RateRx().Matches(tail);
+        if (rm.Count > 0 && double.TryParse(rm[^1].Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var r)) k = (int)Math.Round(r);
+        return (t, k);
+    }
+
+    /// <summary>„0:12 · 2480 kbit/s“ – null, solange FFmpeg noch nichts gemeldet hat.</summary>
+    public static string? Line(string? tail)
+    {
+        var (t, k) = Parse(tail);
+        if (t is null && k is null) return null;
+        var parts = new List<string>();
+        if (t is { } ts) parts.Add(ts.TotalHours >= 1 ? ts.ToString(@"h\:mm\:ss", CultureInfo.InvariantCulture) : ts.ToString(@"m\:ss", CultureInfo.InvariantCulture));
+        if (k is { } kb && kb > 0) parts.Add(kb.ToString(CultureInfo.InvariantCulture) + " kbit/s"); // „0 kbit/s“ am Anfang sagt nichts
+        return string.Join(" · ", parts);
+    }
+
+    /// <summary>Endete FFmpeg wegen der Verbindung zum Sendeserver (abgebrochen, abgewiesen, nicht erreichbar)?</summary>
+    public static bool ConnectionLost(string? tail) =>
+        !string.IsNullOrEmpty(tail) && Markers.Any(s => tail.Contains(s, StringComparison.OrdinalIgnoreCase));
+
+    private static readonly string[] Markers = ["-10054", "-10053", "-10060", "-10061", "-138", "Connection reset", "Connection refused", "Broken pipe", "Cannot open connection", "Error muxing", "Error writing trailer", "Connection timed out"];
+}
+
+/// <summary>Eine Aufnahme oder ein Stream. Der Livestream startet nur über <see cref="LiveBroadcast.Go"/>.
+/// T-0746: Bricht die Verbindung eines laufenden Streams ab, verbindet die Sitzung bis zu <see cref="MaxRetries"/>-mal neu
+/// (nach 2, 4, 8 s) – nur zum freigegebenen Ziel derselben Sendung; Stopp beendet auch die Wiederholung.</summary>
 public sealed class LiveSession(ICaptureProcessFactory factory)
 {
+    public const int MaxRetries = 3;
     private ICaptureProcess? _proc;
     private string? _secret;
+    private string? _ffmpeg;
+    private List<string>? _bcArgs;
+    private string? _copyFirst;
+    private DateTime _started;
+    private DateTime? _retryAt;
     public LiveMode Mode { get; private set; } = LiveMode.Idle;
     public string Status { get; private set; } = "Bereit.";
     public string? PreviewFile { get; private set; }
     public string? OutputFile { get; private set; }
     public IReadOnlyList<string> LastArguments { get; private set; } = [];
     public bool Exited => _proc is { Running: false };
+    /// <summary>Uhr (für Tests ersetzbar).</summary>
+    public Func<DateTime> Clock { get; set; } = () => DateTime.UtcNow;
+    /// <summary>Neuverbindungen der laufenden Sendung.</summary>
+    public int Retries { get; private set; }
+    /// <summary>Wartet gerade auf den nächsten Verbindungsversuch.</summary>
+    public bool Retrying => _retryAt is not null;
+    /// <summary>Alle Kopien auf diesem PC (je Verbindung eine Datei, damit beim Neuverbinden nichts überschrieben wird).</summary>
+    public List<string> CopyFiles { get; } = [];
+    /// <summary>Letzte Ausgabe von FFmpeg (ohne Schlüssel) – für die Fehlersuche.</summary>
+    public string LastLog { get; private set; } = "";
+    /// <summary>„0:12 · 2480 kbit/s“, solange aufgenommen oder gesendet wird.</summary>
+    public string? Stats => _proc is { Running: true } p && Mode is LiveMode.Recording or LiveMode.Broadcasting ? LiveStats.Line(p.Tail) : null;
 
-    public string StatusLine() => Ingest.Redact(Status, _secret);
+    public string StatusLine() => Ingest.Redact(Stats is { } s && !Retrying ? Status + " – " + s : Status, _secret);
 
     public void StartPreview(string ffmpeg, CaptureChoice choice, string previewPath) =>
         Run(LiveMode.Preview, ffmpeg, LiveFfmpeg.Args(LiveOutput.Preview, choice, previewPath, null, null), previewPath, null, null, "Vorschau läuft. Mit Stopp beenden.");
@@ -513,9 +605,73 @@ public sealed class LiveSession(ICaptureProcessFactory factory)
         _secret = secret;
         try
         {
-            Run(LiveMode.Broadcasting, ffmpeg, LiveFfmpeg.Args(LiveOutput.Broadcast, choice, previewPath, copyFile, rtmpUrl), previewPath, copyFile, secret, "Live. Mit Stopp beenden.");
+            var args = LiveFfmpeg.Args(LiveOutput.Broadcast, choice, previewPath, copyFile, rtmpUrl);
+            Run(LiveMode.Broadcasting, ffmpeg, args, previewPath, copyFile, secret, "Live. Mit Stopp beenden.");
+            _ffmpeg = ffmpeg; _bcArgs = args; _copyFirst = copyFile; Retries = 0; CopyFiles.Clear();
+            if (copyFile is not null) CopyFiles.Add(copyFile);
         }
         catch { _secret = null; throw; }
+    }
+
+    /// <summary>Vom Zeitgeber der Oberfläche (alle 0,5 s): Ende von FFmpeg bemerken, bei Verbindungsabbruch neu verbinden.</summary>
+    public void Tick()
+    {
+        var now = Clock();
+        if (_retryAt is { } at)
+        {
+            if (now >= at) Reconnect(now);
+            return;
+        }
+        if (_proc is null || Mode == LiveMode.Idle) return;
+        if (_proc.Running)
+        {
+            // Echtlauf 17.11.2026: Mit Vorschau und Kopie als weiteren Ausgängen läuft FFmpeg weiter, wenn nur der Stream abbricht –
+            // die Anzeige stand dann auf „Live“, obwohl nichts mehr ankam. Abbruch an der Ausgabe erkennen und diesen Lauf beenden.
+            if (Mode != LiveMode.Broadcasting || !LiveStats.ConnectionLost(_proc.Tail)) return;
+            try { _proc.Stop(); } catch { /* schon zu Ende */ }
+        }
+        var tail = Ingest.Redact(_proc.Tail, _secret).Trim();
+        // Nur eine Sendung, die schon lief (≥ 5 s verbunden), wird neu verbunden – ein Ziel, das von Anfang an nicht antwortet, nicht
+        if (Mode == LiveMode.Broadcasting && _bcArgs is not null && LiveStats.ConnectionLost(tail) && now - _started >= TimeSpan.FromSeconds(5))
+        {
+            if (now - _started >= TimeSpan.FromSeconds(30)) Retries = 0; // lief eine Weile stabil: wieder alle Versuche
+            if (Retries < MaxRetries)
+            {
+                Retries++;
+                var wait = TimeSpan.FromSeconds(2 << (Retries - 1));
+                LastLog = tail;
+                _proc = null;
+                _retryAt = now + wait;
+                Status = $"Verbindung zum Sendeserver abgebrochen. Neuer Versuch in {wait.TotalSeconds:0} s ({Retries} von {MaxRetries}). Mit Stopp beenden.";
+                return;
+            }
+        }
+        NoteExit();
+    }
+
+    private void Reconnect(DateTime now)
+    {
+        _retryAt = null;
+        if (_bcArgs is null || _ffmpeg is null || Mode != LiveMode.Broadcasting) return;
+        var args = _bcArgs.ToList();
+        if (_copyFirst is not null)
+        {
+            // Kopie je Verbindung (aufnahme-….mp4, aufnahme-…-teil2.mp4) – FFmpeg würde die erste sonst überschreiben (-y)
+            var next = Path.Combine(Path.GetDirectoryName(_copyFirst) ?? "", Path.GetFileNameWithoutExtension(_copyFirst) + "-teil" + (CopyFiles.Count + 1).ToString(CultureInfo.InvariantCulture) + Path.GetExtension(_copyFirst));
+            var i = args.LastIndexOf(_copyFirst);
+            if (i >= 0) args[i] = next;
+            OutputFile = next; CopyFiles.Add(next);
+        }
+        try { _proc = factory.Start(_ffmpeg, args); }
+        catch (Exception ex) when (ex is InvalidOperationException or FileNotFoundException or IOException)
+        {
+            _proc = null; Mode = LiveMode.Idle; _bcArgs = null; _secret = null;
+            Status = "Neu verbinden hat nicht geklappt: " + ex.Message;
+            return;
+        }
+        LastArguments = args;
+        _started = now;
+        Status = $"Wieder verbunden (Versuch {Retries} von {MaxRetries}). Mit Stopp beenden.";
     }
 
     private void Run(LiveMode mode, string ffmpeg, List<string> args, string preview, string? file, string? secret, string status)
@@ -534,6 +690,9 @@ public sealed class LiveSession(ICaptureProcessFactory factory)
         PreviewFile = preview;
         if (file is not null) OutputFile = file;
         Status = status;
+        _started = Clock();
+        _retryAt = null;
+        _bcArgs = null;
     }
 
     public void NoteExit()
@@ -541,17 +700,29 @@ public sealed class LiveSession(ICaptureProcessFactory factory)
         if (_proc is null || Mode == LiveMode.Idle || _proc.Running) return;
         var tail = Ingest.Redact(_proc.Tail, _secret).Trim();
         if (tail.Length > 400) tail = tail[^400..];
+        var wasLive = Mode == LiveMode.Broadcasting;
+        LastLog = tail;
         _proc = null;
         _secret = null;
+        _bcArgs = null;
         Mode = LiveMode.Idle;
-        Status = tail.Length == 0 ? "Beendet." : "FFmpeg hat aufgehört. " + tail;
+        // T-0746: verständliche Meldung statt der rohen FFmpeg-Zeile („Error number -10054 occurred“); die Zeile steht in LastLog
+        Status = wasLive && LiveStats.ConnectionLost(tail)
+            ? Retries >= MaxRetries
+                ? $"Die Verbindung zum Sendeserver ist abgebrochen und kam nach {MaxRetries} Versuchen nicht wieder. Prüfe Internet und Server, dann erneut „Live anfragen“."
+                : "Der Sendeserver ist nicht erreichbar oder hat die Verbindung beendet. Prüfe Adresse und Internet, dann erneut „Live anfragen“."
+            : tail.Length == 0 ? "Beendet." : "FFmpeg hat aufgehört. " + tail;
+        if (wasLive && CopyFiles.Any(f => File.Exists(f) && new FileInfo(f).Length > 0)) Status += " Die Kopie auf diesem PC ist bis dahin gespeichert.";
     }
 
     public void Stop()
     {
         var p = _proc;
-        if (p is null) { Status = "Es läuft nichts."; return; }
-        try { p.Stop(); } catch { /* Stopp darf die Oberfläche nicht abbrechen */ }
+        var waiting = _retryAt is not null;
+        _retryAt = null;
+        _bcArgs = null;
+        if (p is null && !waiting) { Status = "Es läuft nichts."; return; }
+        if (p is not null) try { p.Stop(); } catch { /* Stopp darf die Oberfläche nicht abbrechen */ }
         _proc = null;
         _secret = null;
         Mode = LiveMode.Idle;
