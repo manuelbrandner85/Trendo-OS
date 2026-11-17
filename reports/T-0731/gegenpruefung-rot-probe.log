@@ -1,0 +1,382 @@
+Rot-Probe auf altem Code (Stand a18e9a40b, nur die neuen Tests hinzugefügt), Trendo.App.Tests.exe -method Corrupt_mp3_pcm_source -method Corrupt_mp3_run_thread_does_not_throw
+(vollständige Rohausgabe des Testläufers)
+
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0731 Gegenprüfung: Ton-Thread (WinAudio.Run) wirft bei beschädigter MP3 nicht – er räumt auf und meldet den Fehler [FAIL]
+      Ton-Thread warf IndexOutOfRangeException: Index was outside the bounds of the array. – im echten Hintergrund-Thread beendet das den ganzen Trendo-Prozess
+      Stack Trace:
+        tests\Trendo.App.Tests\T0731HelferUiTests.cs(134,0): at Trendo.App.Tests.T0731HelferUiTests.Corrupt_mp3_run_thread_does_not_throw()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    T-0731 Gegenprüfung: beschädigte MP3 (Fuzz, festes Muster 0…299) – PcmSource meldet „beschädigt“ statt NLayer-Interna (IndexOutOfRange) [FAIL]
+      Assert.All() Failure: 90 out of 90 items in the collection did not pass.
+      [0]:  Item:  "5: IndexOutOfRangeException – Index was outside th"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "5: IndexOutOfRangeException – Index was outside th"···
+                   Not found: "InvalidDataException – "
+      [1]:  Item:  "11: IndexOutOfRangeException – Index was outside t"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "11: IndexOutOfRangeException – Index was outside t"···
+                   Not found: "InvalidDataException – "
+      [2]:  Item:  "12: IndexOutOfRangeException – Index was outside t"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "12: IndexOutOfRangeException – Index was outside t"···
+                   Not found: "InvalidDataException – "
+      [3]:  Item:  "15: IndexOutOfRangeException – Index was outside t"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "15: IndexOutOfRangeException – Index was outside t"···
+                   Not found: "InvalidDataException – "
+      [4]:  Item:  "27: IndexOutOfRangeException – Index was outside t"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "27: IndexOutOfRangeException – Index was outside t"···
+                   Not found: "InvalidDataException – "
+      [5]:  Item:  "28: IndexOutOfRangeException – Index was outside t"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "28: IndexOutOfRangeException – Index was outside t"···
+                   Not found: "InvalidDataException – "
+      [6]:  Item:  "29: IndexOutOfRangeException – Index was outside t"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "29: IndexOutOfRangeException – Index was outside t"···
+                   Not found: "InvalidDataException – "
+      [7]:  Item:  "35: IndexOutOfRangeException – Index was outside t"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "35: IndexOutOfRangeException – Index was outside t"···
+                   Not found: "InvalidDataException – "
+      [8]:  Item:  "39: IndexOutOfRangeException – Index was outside t"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "39: IndexOutOfRangeException – Index was outside t"···
+                   Not found: "InvalidDataException – "
+      [9]:  Item:  "41: IndexOutOfRangeException – Index was outside t"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "41: IndexOutOfRangeException – Index was outside t"···
+                   Not found: "InvalidDataException – "
+      [10]: Item:  "42: ArgumentOutOfRangeException – Specified argume"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "42: ArgumentOutOfRangeException – Specified argume"···
+                   Not found: "InvalidDataException – "
+      [11]: Item:  "43: IndexOutOfRangeException – Index was outside t"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "43: IndexOutOfRangeException – Index was outside t"···
+                   Not found: "InvalidDataException – "
+      [12]: Item:  "44: ArgumentOutOfRangeException – Specified argume"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "44: ArgumentOutOfRangeException – Specified argume"···
+                   Not found: "InvalidDataException – "
+      [13]: Item:  "45: ArgumentOutOfRangeException – Specified argume"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "45: ArgumentOutOfRangeException – Specified argume"···
+                   Not found: "InvalidDataException – "
+      [14]: Item:  "54: IndexOutOfRangeException – Index was outside t"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "54: IndexOutOfRangeException – Index was outside t"···
+                   Not found: "InvalidDataException – "
+      [15]: Item:  "55: IndexOutOfRangeException – Index was outside t"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "55: IndexOutOfRangeException – Index was outside t"···
+                   Not found: "InvalidDataException – "
+      [16]: Item:  "62: IndexOutOfRangeException – Index was outside t"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "62: IndexOutOfRangeException – Index was outside t"···
+                   Not found: "InvalidDataException – "
+      [17]: Item:  "67: IndexOutOfRangeException – Index was outside t"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "67: IndexOutOfRangeException – Index was outside t"···
+                   Not found: "InvalidDataException – "
+      [18]: Item:  "68: ArgumentOutOfRangeException – Specified argume"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "68: ArgumentOutOfRangeException – Specified argume"···
+                   Not found: "InvalidDataException – "
+      [19]: Item:  "70: ArgumentOutOfRangeException – Specified argume"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "70: ArgumentOutOfRangeException – Specified argume"···
+                   Not found: "InvalidDataException – "
+      [20]: Item:  "71: IndexOutOfRangeException – Index was outside t"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "71: IndexOutOfRangeException – Index was outside t"···
+                   Not found: "InvalidDataException – "
+      [21]: Item:  "74: IndexOutOfRangeException – Index was outside t"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "74: IndexOutOfRangeException – Index was outside t"···
+                   Not found: "InvalidDataException – "
+      [22]: Item:  "82: IndexOutOfRangeException – Index was outside t"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "82: IndexOutOfRangeException – Index was outside t"···
+                   Not found: "InvalidDataException – "
+      [23]: Item:  "84: IndexOutOfRangeException – Index was outside t"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "84: IndexOutOfRangeException – Index was outside t"···
+                   Not found: "InvalidDataException – "
+      [24]: Item:  "89: IndexOutOfRangeException – Index was outside t"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "89: IndexOutOfRangeException – Index was outside t"···
+                   Not found: "InvalidDataException – "
+      [25]: Item:  "91: IndexOutOfRangeException – Index was outside t"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "91: IndexOutOfRangeException – Index was outside t"···
+                   Not found: "InvalidDataException – "
+      [26]: Item:  "96: IndexOutOfRangeException – Index was outside t"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "96: IndexOutOfRangeException – Index was outside t"···
+                   Not found: "InvalidDataException – "
+      [27]: Item:  "100: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "100: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [28]: Item:  "105: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "105: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [29]: Item:  "106: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "106: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [30]: Item:  "109: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "109: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [31]: Item:  "118: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "118: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [32]: Item:  "119: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "119: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [33]: Item:  "127: ArgumentOutOfRangeException – Specified argum"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "127: ArgumentOutOfRangeException – Specified argum"···
+                   Not found: "InvalidDataException – "
+      [34]: Item:  "128: ArgumentOutOfRangeException – Specified argum"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "128: ArgumentOutOfRangeException – Specified argum"···
+                   Not found: "InvalidDataException – "
+      [35]: Item:  "129: ArgumentOutOfRangeException – Specified argum"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "129: ArgumentOutOfRangeException – Specified argum"···
+                   Not found: "InvalidDataException – "
+      [36]: Item:  "132: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "132: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [37]: Item:  "136: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "136: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [38]: Item:  "138: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "138: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [39]: Item:  "140: ArgumentOutOfRangeException – Specified argum"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "140: ArgumentOutOfRangeException – Specified argum"···
+                   Not found: "InvalidDataException – "
+      [40]: Item:  "142: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "142: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [41]: Item:  "143: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "143: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [42]: Item:  "144: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "144: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [43]: Item:  "145: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "145: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [44]: Item:  "146: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "146: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [45]: Item:  "150: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "150: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [46]: Item:  "152: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "152: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [47]: Item:  "155: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "155: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [48]: Item:  "161: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "161: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [49]: Item:  "163: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "163: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [50]: Item:  "170: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "170: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [51]: Item:  "172: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "172: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [52]: Item:  "177: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "177: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [53]: Item:  "179: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "179: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [54]: Item:  "181: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "181: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [55]: Item:  "182: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "182: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [56]: Item:  "186: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "186: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [57]: Item:  "190: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "190: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [58]: Item:  "193: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "193: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [59]: Item:  "199: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "199: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [60]: Item:  "201: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "201: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [61]: Item:  "203: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "203: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [62]: Item:  "205: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "205: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [63]: Item:  "206: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "206: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [64]: Item:  "207: ArgumentOutOfRangeException – Specified argum"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "207: ArgumentOutOfRangeException – Specified argum"···
+                   Not found: "InvalidDataException – "
+      [65]: Item:  "211: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "211: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [66]: Item:  "215: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "215: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [67]: Item:  "218: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "218: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [68]: Item:  "221: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "221: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [69]: Item:  "228: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "228: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [70]: Item:  "231: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "231: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [71]: Item:  "235: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "235: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [72]: Item:  "237: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "237: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [73]: Item:  "238: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "238: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [74]: Item:  "240: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "240: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [75]: Item:  "246: ArgumentOutOfRangeException – Specified argum"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "246: ArgumentOutOfRangeException – Specified argum"···
+                   Not found: "InvalidDataException – "
+      [76]: Item:  "247: ArgumentOutOfRangeException – Specified argum"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "247: ArgumentOutOfRangeException – Specified argum"···
+                   Not found: "InvalidDataException – "
+      [77]: Item:  "252: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "252: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [78]: Item:  "254: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "254: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [79]: Item:  "262: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "262: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [80]: Item:  "264: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "264: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [81]: Item:  "266: ArgumentOutOfRangeException – Specified argum"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "266: ArgumentOutOfRangeException – Specified argum"···
+                   Not found: "InvalidDataException – "
+      [82]: Item:  "267: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "267: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [83]: Item:  "270: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "270: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [84]: Item:  "274: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "274: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [85]: Item:  "276: ArgumentOutOfRangeException – Specified argum"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "276: ArgumentOutOfRangeException – Specified argum"···
+                   Not found: "InvalidDataException – "
+      [86]: Item:  "277: ArgumentOutOfRangeException – Specified argum"···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "277: ArgumentOutOfRangeException – Specified argum"···
+                   Not found: "InvalidDataException – "
+      [87]: Item:  "294: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "294: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [88]: Item:  "295: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "295: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      [89]: Item:  "298: IndexOutOfRangeException – Index was outside "···
+            Error: Assert.Contains() Failure: Sub-string not found
+                   String:    "298: IndexOutOfRangeException – Index was outside "···
+                   Not found: "InvalidDataException – "
+      Stack Trace:
+        tests\Trendo.App.Tests\T0731HelferUiTests.cs(116,0): at Trendo.App.Tests.T0731HelferUiTests.Corrupt_mp3_pcm_source()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    Trendo.App.Tests (ID = '9b40fc8de34a469043fa3f53fa472e51db5b73bb09cdf0dca4e4c53203beff0f')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 2, Skipped: 0, Not Run: 0, Time: 7,201s

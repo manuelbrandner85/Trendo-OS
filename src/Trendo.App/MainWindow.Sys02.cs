@@ -163,7 +163,7 @@ public partial class MainWindow
         var ffmpeg = ToolPath("ffmpeg") ?? Cli.Find("ffmpeg");
 
         var lib = new StackPanel { Name = "lib-list", Spacing = 2 };
-        sp.Children.Add(Card(Section("Mediathek", "Musik, Videos und Bilder aus deinen Ordnern (bis 2000 Dateien). Klick spielt mit mpv oder VLC ab, sonst mit dem Windows-Programm.",
+        sp.Children.Add(Card(Section("Mediathek", "Musik, Videos und Bilder aus deinen Ordnern (bis 2000 Dateien). Musik spielt Trendo selbst ab (MP3 und WAV eingebaut, weitere Formate mit mpv). Videos und übrige Musik öffnen im Player mpv oder VLC, sonst im Windows-Programm.",
             Line(Act("lib-scan", "Ordner durchsuchen", () =>
             {
                 lib.Children.Clear();
@@ -171,8 +171,8 @@ public partial class MainWindow
                 var items = MediaLibrary.Index([UserFolder(Environment.SpecialFolder.MyMusic), UserFolder(Environment.SpecialFolder.MyVideos), UserFolder(Environment.SpecialFolder.MyPictures), ProjectsRoot]);
                 lib.Children.Add(P($"{items.Count} Dateien gefunden ({items.Count(i => i.Kind == "Musik")} Musik, {items.Count(i => i.Kind == "Video")} Videos, {items.Count(i => i.Kind == "Bild")} Bilder) in {sw.Elapsed.TotalSeconds:0.0} s.", Text));
                 var i = 0;
-                foreach (var m in items.Where(x => x.Kind != "Bild").OrderByDescending(x => x.Changed).Take(25)) { var f = m.Path; lib.Children.Add(Act($"lib-play-{i++}", $"{Path.GetFileName(f)}", () => Play(f))); }
-            })), lib)));
+                foreach (var m in items.Where(x => x.Kind != "Bild").OrderByDescending(x => x.Changed).Take(25)) { var f = m.Path; lib.Children.Add(Act($"lib-play-{i++}", $"{Path.GetFileName(f)}", () => LibraryPlay(f))); }
+            }), Act("lib-stop", "Musik anhalten", () => { _side?.Stop(); SidePlaying = null; Say("Musik angehalten.", V); })), lib)));
 
         var img = Field("img-file", "Bilddatei (PNG, JPG …)");
         var size = Field("img-size", "längste Seite in Pixeln", 160, "1600");
@@ -269,11 +269,51 @@ public partial class MainWindow
 
     private string ShotPath() => Path.Combine(WorkFolder("bildschirmfotos"), $"bildschirmfoto-{DateTime.Now:yyyyMMdd-HHmmssfff}.png");
 
-    private void Play(string file)
+    /// <summary>Für Tests: Ersatz für den kleinen Abspieler der Mediathek-Karte und des Weckers.</summary>
+    public Func<IAudioOut>? SideAudioOverride { get; set; }
+    /// <summary>Lautstärke des Wecktons in Prozent; ohne Angabe 100 – im abgeschotteten Testmodus 0, damit Testläufe nicht laut klingeln (der Weg bleibt echt).</summary>
+    public int? AlarmVolume { get; set; }
+    /// <summary>Was der kleine Abspieler gerade spielt (Mediathek oder Weckton) – null, wenn nichts.</summary>
+    public string? SidePlaying { get; private set; }
+    /// <summary>Weg des kleinen Abspielers: „eingebaut“ (ohne Zusatzprogramm), „mpv“ oder null.</summary>
+    public string? SideAudioRoute => (_side as AutoAudio)?.Route;
+    IAudioOut? _side;
+
+    /// <summary>Kleiner Abspieler neben dem Musik-Player (T-0731 Gegenprüfung): MP3/WAV ohne Zusatzprogramm über <see cref="AutoAudio"/>,
+    /// eigene Instanz, damit Mediathek-Klick und Wecker die Warteschlange des Musik-Players nicht verändern.</summary>
+    IAudioOut SideAudio()
+    {
+        if (_side is not null) return _side;
+        _side = SideAudioOverride?.Invoke() ?? new AutoAudio(() => MpvExe);
+        _side.Ended += () => _ui.Post(() => SidePlaying = null);
+        if (_side is IAudioFailure f) f.Failed += m => _ui.Post(() => { SidePlaying = null; Toast("⚠ " + m); });
+        Closed += (_, _) => _side?.Dispose();
+        return _side;
+    }
+
+    /// <summary>Mediathek-Klick (öffentlich für Tests): Musik spielt Trendo selbst (eingebaut bzw. mpv); was der eingebaute Weg nicht kann
+    /// (Videos, Musikformate ohne mpv) öffnet wie bisher im Player mpv oder VLC, sonst im Windows-Programm – ehrlich als fremdes Programm.</summary>
+    public void LibraryPlay(string file)
+    {
+        const string V = "alltag-bilder";
+        if (MediaLibrary.KindOf(file) == "Musik")
+            try
+            {
+                var a = SideAudio(); a.SetVolume(80); a.Load(file); SidePlaying = file;
+                _core.Audit.Append("app", "media.play", Path.GetFileName(file));
+                Say($"Spielt in Trendo: {Path.GetFileName(file)}", V); return;
+            }
+            catch (AudioBlockedException) { /* Format kann Trendo nicht selbst – wie bisher im fremden Player öffnen */ }
+        var by = Play(file);
+        Say(by is null ? $"Öffnet im Windows-Programm: {Path.GetFileName(file)}" : $"Öffnet im Player {by}: {Path.GetFileName(file)}", V);
+    }
+
+    /// <summary>Im fremden Player öffnen: mpv, sonst VLC, sonst das Windows-Programm (null). Liefert den Namen des Players.</summary>
+    private string? Play(string file)
     {
         var p = MediaLibrary.Player(file, ToolPath("mpv"), Cli.Find("vlc"));
-        if (p is { } x) { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(x.Exe) { ArgumentList = { x.Args[0], x.Args[1] }, UseShellExecute = false }); _core.Audit.Append("app", "media.play", Path.GetFileName(file)); }
-        else Launch(file);
+        if (p is { } x) { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(x.Exe) { ArgumentList = { x.Args[0], x.Args[1] }, UseShellExecute = false }); _core.Audit.Append("app", "media.play", Path.GetFileName(file)); return Path.GetFileNameWithoutExtension(x.Exe); }
+        Launch(file); return null;
     }
 
     // ---------- Zeit & Kalender ----------

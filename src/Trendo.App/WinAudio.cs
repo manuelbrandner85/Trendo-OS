@@ -7,12 +7,21 @@ namespace Trendo.App;
 /// <summary>Wiedergabe gesperrt – mit ehrlichem Grund und was zu tun ist (z. B. „Player einrichten“). Kein stiller Fehler (T-0731).</summary>
 public sealed class AudioBlockedException(string message) : InvalidOperationException(message);
 
+/// <summary>Wiedergabe brach mitten im Titel ab (z. B. beschädigte MP3) – verständliche Meldung statt Prozessabbruch (Gegenprüfung T-0731).
+/// Getrennt von <see cref="IAudioOut"/>, damit bestehende Ersatz-Player in Tests unverändert bleiben.</summary>
+public interface IAudioFailure
+{
+    /// <summary>Titel ist wegen eines Fehlers beendet (aus einem Hintergrund-Thread); kein <see cref="IAudioOut.Ended"/>.</summary>
+    event Action<string>? Failed;
+}
+
 /// <summary>Eigene Tonausgabe ohne Zusatzprogramm (T-0731): MP3/WAV dekodiert Trendo selbst, abgespielt über die Windows-Tonausgabe
 /// (waveOut aus winmm.dll – gehört zu jedem Windows, ohne Admin). Meldet Position/Länge wie der mpv-Player und das Titelende genau einmal.</summary>
-public sealed class WinAudio : IAudioOut
+public sealed class WinAudio : IAudioOut, IAudioFailure
 {
     public event Action<double, double>? Progress;
     public event Action? Ended;
+    public event Action<string>? Failed;
 
     /// <summary>Gibt es auf diesem PC überhaupt eine Tonausgabe?</summary>
     public static bool Available => OperatingSystem.IsWindows() && Native.waveOutGetNumDevs() > 0;
@@ -68,7 +77,7 @@ public sealed class WinAudio : IAudioOut
         var frames = Math.Max(256, (int)(src.Rate * BufferSeconds)); var samples = frames * ch;
         var hdrSize = Marshal.SizeOf<Native.WAVEHDR>(); var flagsAt = (int)Marshal.OffsetOf<Native.WAVEHDR>(nameof(Native.WAVEHDR.dwFlags));
         var data = new IntPtr[Buffers]; var hdr = new IntPtr[Buffers]; var queued = new bool[Buffers];
-        var f = new float[samples]; var pcm = new short[samples]; var drained = false; var lastTick = 0L;
+        var f = new float[samples]; var pcm = new short[samples]; var drained = false; var lastTick = 0L; string? failed = null;
         try
         {
             for (var i = 0; i < Buffers; i++)
@@ -117,14 +126,20 @@ public sealed class WinAudio : IAudioOut
                 _wake.WaitOne(50);
             }
         }
+        catch (Exception x) // Gegenprüfung T-0731: Eigener Thread – eine Ausnahme hier würde den ganzen Trendo-Prozess beenden.
+        {
+            failed = x is InvalidDataException ? x.Message + " Der Titel ist beendet."
+                : $"Die Wiedergabe brach ab – die Datei ist beschädigt oder nicht lesbar ({x.GetType().Name}: {x.Message}). Der Titel ist beendet.";
+        }
         finally
         {
             Native.waveOutReset(h);
             for (var i = 0; i < Buffers; i++) if (hdr[i] != IntPtr.Zero) { Native.waveOutUnprepareHeader(h, hdr[i], (uint)hdrSize); Marshal.FreeHGlobal(hdr[i]); Marshal.FreeHGlobal(data[i]); }
             Native.waveOutClose(h);
-            src.Dispose();
+            try { src.Dispose(); } catch (Exception) { /* Aufräumen darf den Ton-Thread nicht mehr beenden */ }
             if (ReferenceEquals(_src, src)) { _src = null; _h = IntPtr.Zero; }
         }
+        if (failed is not null && !_stop) try { Failed?.Invoke(failed); } catch (Exception) { /* Meldung an die Oberfläche darf den Ton-Thread nicht beenden */ }
     }
 
     static long DevicePosition(IntPtr h)
@@ -157,11 +172,12 @@ public sealed class WinAudio : IAudioOut
 
 /// <summary>Wählt je Titel den Weg (T-0731): MP3/WAV spielt Trendo selbst; andere Formate über den freien Player mpv, wenn eingerichtet;
 /// sonst eine ehrliche Sperre (<see cref="AudioBlockedException"/>) statt stiller Fehlfunktion.</summary>
-public sealed class AutoAudio(Func<string?> mpvPath, Func<bool>? builtinAvailable = null) : IAudioOut
+public sealed class AutoAudio(Func<string?> mpvPath, Func<bool>? builtinAvailable = null) : IAudioOut, IAudioFailure
 {
     WinAudio? _own; MpvAudio? _mpv; IAudioOut? _cur; string? _mpvFor; int _vol = 80;
     public event Action<double, double>? Progress;
     public event Action? Ended;
+    public event Action<string>? Failed;
     /// <summary>Welcher Weg zuletzt gespielt hat: „eingebaut“, „mpv“ oder null.</summary>
     public string? Route => _cur is null ? null : _cur == _own ? "eingebaut" : "mpv";
 
@@ -186,6 +202,7 @@ public sealed class AutoAudio(Func<string?> mpvPath, Func<bool>? builtinAvailabl
     {
         a.Progress += (p, d) => { if (ReferenceEquals(_cur, a)) Progress?.Invoke(p, d); };
         a.Ended += () => { if (ReferenceEquals(_cur, a)) Ended?.Invoke(); };
+        if (a is IAudioFailure f) f.Failed += m => { if (ReferenceEquals(_cur, a)) Failed?.Invoke(m); };
         return a;
     }
 

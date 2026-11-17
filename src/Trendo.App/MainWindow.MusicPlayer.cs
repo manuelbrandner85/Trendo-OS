@@ -42,13 +42,16 @@ public partial class MainWindow
 
     Track? TrackOf(string path) => _tracks?.FirstOrDefault(t => string.Equals(t.Path, path, StringComparison.OrdinalIgnoreCase));
 
-    IAudioOut? Audio()
+    /// <summary>Gemeinsamer Abspieler (Musik, Audio-Editor, Podcast, Vorhören). Gibt es immer: Kann ein Titel nicht spielen,
+    /// meldet <see cref="AutoAudio"/> beim Laden eine ehrliche Sperre (<see cref="AudioBlockedException"/>) statt null.</summary>
+    IAudioOut Audio()
     {
         if (_audio is not null) return _audio;
         if (AudioOverride is { } o) _audio = o();
         else _audio = new AutoAudio(() => MpvExe); // T-0731: ohne Zusatzprogramm für MP3/WAV, sonst mpv oder ehrliche Sperre
         _audio.Progress += (pos, dur) => _ui.Post(() => { _mPos = pos; _mDur = dur; MusicTick(); });
         _audio.Ended += () => _ui.Post(MusicEnded);
+        if (_audio is IAudioFailure fail) fail.Failed += m => _ui.Post(() => AudioFailed(m)); // Gegenprüfung T-0731: beschädigte Datei → Meldung, kein Absturz
         _audio.SetVolume(_mVol);
         Closed += (_, _) => _audio?.Dispose();
         return _audio;
@@ -62,7 +65,7 @@ public partial class MainWindow
     void MusicStart()
     {
         if (_queue.Current is not { } cur) { _audio?.Stop(); MusicShow(); return; }
-        if (Audio() is not { } a) { Say("Zum Abspielen braucht Trendo den freien Player mpv – unten „Player einrichten“ antippen.", "medien"); Show("medien"); return; }
+        var a = Audio(); _mFailed = null;
         try { a.Load(cur); _mBlocked = null; }
         catch (AudioBlockedException x) { _mBlocked = x.Message; _mPaused = true; _mPos = 0; _mDur = double.NaN; Say("BLOCKIERT: " + x.Message, "medien"); MusicShow(); return; } // T-0731: ehrlich statt still
         _mPaused = false; _mPos = 0; _mDur = double.NaN;
@@ -72,6 +75,21 @@ public partial class MainWindow
     /// <summary>Grund, warum der letzte Titel nicht spielen konnte (T-0731) – null, wenn alles läuft.</summary>
     public string? MusicBlocked => _mBlocked;
     string? _mBlocked;
+    /// <summary>Warum der letzte Titel mittendrin abbrach (z. B. beschädigte MP3) – null, wenn nichts passiert ist.</summary>
+    public string? MusicFailed => _mFailed;
+    string? _mFailed;
+
+    /// <summary>Der Abspieler hat einen Titel wegen eines Fehlers beendet: Wiedergabe steht, die Meldung erscheint dort, wo gerade gespielt wurde.</summary>
+    void AudioFailed(string message)
+    {
+        _mFailed = message; _mPaused = true;
+        _core.Audit.Append(Principal.LocalOwner.Name, "musik.fehler", message);
+        Toast("⚠ " + message);
+        var v = CurrentView;
+        if (v == "medien" || v == MS) MusicShow();
+        else if (v == MB) { _mbMsg = "⚠ " + message; Show(MB); }
+        else if (_progMsg.ContainsKey(v)) { _progMsg[v] = "⚠ " + message; Show(v); }
+    }
     /// <summary>Titel zu Ende (vom Player gemeldet) – öffentlich für Tests.</summary>
     public void MusicEnded() { if (_queue.Next(auto: true) is null) { _mPaused = true; _audio?.Stop(); MusicShow(); } else MusicStart(); }
     public void MusicNext() { if (_queue.Next() is not null) MusicStart(); }
@@ -311,6 +329,7 @@ public partial class MainWindow
         seek.AddHandler(PointerReleasedEvent, (_, _) => { _mSeeking = false; _mPos = seek.Value; _audio?.Seek(seek.Value); }, Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
         var progress = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = { _mTimeL, Pos(seek, 1), Pos(_mTimeR, 2) } };
         var center = new StackPanel { Spacing = 2, Children = { ctl, progress } };
+        if (_mFailed is not null && _mBlocked is null) center.Children.Add(new TextBlock { Name = "music-failed", Text = "⚠ " + _mFailed, Foreground = Brush.Parse("#E8B04B"), FontSize = 11, TextWrapping = TextWrapping.Wrap, TextAlignment = TextAlignment.Center }); // Gegenprüfung T-0731
         if (_mBlocked is not null) center.Children.Add(new TextBlock { Name = "music-blocked", Text = "BLOCKIERT: " + _mBlocked, Foreground = Brush.Parse("#E8B04B"), FontSize = 11, TextWrapping = TextWrapping.Wrap, TextAlignment = TextAlignment.Center }); // T-0731
         bar.Children.Add(Pos(center, 1));
         // rechts: Lautstärke, Warteschlange, Player einrichten

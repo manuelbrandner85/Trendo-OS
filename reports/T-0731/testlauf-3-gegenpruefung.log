@@ -1,0 +1,12 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0306: mpv (echt) – Abspielen meldet Position und Länge, Springen, Pause, Titelende kommt genau einmal [SKIP]
+      Übersprungen – mpv ist auf diesem PC nicht installiert.
+T-0727 B6 echt: 9 Modelle von Ollama, Grafikspeicher 11,9 GB → Standard qwen3:14b
+    T-0731: Bildschirmfoto ohne ffmpeg (echt, GDI) – nimmt ein fremdes Fenster eines anderen Prozesses auf, PNG enthält dessen Pixel [SKIP]
+      Übersprungen – das Testfenster ist von einem anderen Fenster verdeckt (oben liegt 0x2C20740); der Bildschirm zeigt gerade etwas anderes.
+  Finished:    Trendo.App.Tests (ID = '9b40fc8de34a469043fa3f53fa472e51db5b73bb09cdf0dca4e4c53203beff0f')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 144, Errors: 0, Failed: 0, Skipped: 2, Not Run: 0, Time: 335,494s

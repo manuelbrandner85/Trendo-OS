@@ -34,17 +34,30 @@ public static class PcmSource
 
     sealed class Mp3Source : IPcmSource
     {
-        readonly NLayer.MpegFile _f;
+        readonly NLayer.MpegFile _f; readonly string _name;
         public Mp3Source(string path)
         {
+            _name = Path.GetFileName(path);
             _f = new NLayer.MpegFile(path);
             if (_f.SampleRate <= 0 || _f.Channels <= 0) { _f.Dispose(); throw new InvalidDataException("Die MP3-Datei hat keine lesbaren Tondaten."); }
         }
         public int Rate => _f.SampleRate;
         public int Channels => _f.Channels;
         public double Seconds => _f.Duration.TotalSeconds;
-        public int Read(float[] buffer, int offset, int count) => _f.ReadSamples(buffer, offset, count);
-        public void Seek(double seconds) { if (_f.CanSeek) _f.Time = TimeSpan.FromSeconds(Math.Clamp(seconds, 0, Math.Max(0, Seconds))); }
+        public int Read(float[] buffer, int offset, int count)
+        {
+            try { return _f.ReadSamples(buffer, offset, count); }
+            catch (Exception x) when (Damaged(x)) { throw Broken(x); }
+        }
+        public void Seek(double seconds)
+        {
+            try { if (_f.CanSeek) _f.Time = TimeSpan.FromSeconds(Math.Clamp(seconds, 0, Math.Max(0, Seconds))); }
+            catch (Exception x) when (Damaged(x)) { throw Broken(x); }
+        }
+        /// <summary>NLayer meldet kaputte Rahmen mit internen Fehlern (Gegenprüfung T-0731: 91 von 300 beschädigten MP3s, meist IndexOutOfRange) –
+        /// daraus wird eine verständliche Meldung, damit die Wiedergabe sauber endet statt Trendo zu beenden.</summary>
+        static bool Damaged(Exception x) => x is IndexOutOfRangeException or ArgumentException or InvalidOperationException or NullReferenceException or OverflowException or EndOfStreamException or InvalidDataException;
+        InvalidDataException Broken(Exception x) => new($"„{_name}“ ist beschädigt – Trendo kann die MP3-Datei ab hier nicht weiter dekodieren ({x.GetType().Name}).", x);
         public void Dispose() => _f.Dispose();
     }
 
