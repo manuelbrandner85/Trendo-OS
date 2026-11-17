@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Platform.Storage;
 using Trendo.Core;
 
 namespace Trendo.App;
@@ -30,28 +31,91 @@ public partial class MainWindow
         Show("ki-fragen");
     }
 
+    /// <summary>T-0734: Dateien, die mit der nächsten Frage mitgehen (Knopf „Datei anhängen“ oder Ablegen auf dem Chat).</summary>
+    readonly List<string> _askFiles = [];
+    public IReadOnlyList<string> AskFiles => _askFiles;
+    /// <summary>T-0734: bisher geschriebene Antwort, während sie entsteht (wird aus dem KI-Faden gesetzt, die Anzeige folgt über den UI-Faden).</summary>
+    volatile string _streamText = ""; SelectableTextBlock? _streamBlock;
+    public string AskStreamText => _streamText;
+    /// <summary>Für Tests: Text, den die Sprechblase „ask-stream“ gerade zeigt.</summary>
+    public string? AskStreamShown => _streamBlock?.Text;
+
+    /// <summary>T-0734: Dateien an die nächste Frage hängen (höchstens <see cref="KiAttachments.MaxFiles"/>). Nicht lesbare Arten werden mit Hinweis abgelehnt.</summary>
+    public void AskAttach(IEnumerable<string> paths)
+    {
+        var skipped = new List<string>();
+        foreach (var p in paths)
+        {
+            if (!File.Exists(p) || !KiAttachments.IsSupported(p) || _askFiles.Count >= KiAttachments.MaxFiles) { skipped.Add(Path.GetFileName(p)); continue; }
+            if (!_askFiles.Contains(p, StringComparer.OrdinalIgnoreCase)) _askFiles.Add(p);
+        }
+        _askState = skipped.Count > 0 ? $"Nicht angehängt: {string.Join(", ", skipped)} – möglich sind Text (TXT, MD, CSV), PDF, Word (DOCX, ODT) und Bilder, höchstens {KiAttachments.MaxFiles} Dateien." : _askFiles.Count > 0 ? AskAttachHint() : _askState;
+        Show("ki-fragen");
+    }
+
+    async Task AskAttachPick()
+    {
+        string[]? got;
+        if (PickOverride is { } fake) got = await fake(new PickRequest("ask-attach", false, true, KiAttachments.Patterns));
+        else got = (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Datei an die Frage hängen", AllowMultiple = true,
+            FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Text, PDF, Word, Bild") { Patterns = KiAttachments.Patterns }] })).Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
+        if (got is { Length: > 0 }) AskAttach(got);
+    }
+
+    /// <summary>T-0734: Wohin gehen die angehängten Dateien? Bilder bleiben immer auf diesem PC; Text geht an Claude (dein Abo), wenn Claude die Haupt-KI ist, sonst nur an die KI auf diesem PC.</summary>
+    public string AskAttachHint()
+    {
+        var img = _askFiles.Any(KiAttachments.IsImage); var txt = _askFiles.Any(f => !KiAttachments.IsImage(f));
+        var set = KiSourceSettings.Load(_core.DataRoot);
+        var claude = ClaudeEmbedApproved && set.ClaudeMain && _claude.Ready && !_core.Offline;
+        var parts = new List<string>();
+        if (txt) parts.Add(claude ? "Der Text der Datei geht mit deiner Frage an Claude (dein Abo, außerhalb des PCs). Antwortet Claude nicht, liest ihn die KI auf diesem PC." : "Der Text der Datei bleibt auf diesem PC – nur die KI auf diesem PC liest ihn.");
+        if (img) parts.Add("Bilder bleiben auf diesem PC und gehen nur an ein Bildmodell der KI auf diesem PC (z. B. qwen2.5vl).");
+        parts.Add("An andere KI-Dienste im Internet geht kein Anhang.");
+        return string.Join(" ", parts);
+    }
+
     /// <summary>Frage stellen (auch von außen/Tests). Speichert Frage und Antwort im aktuellen Gespräch.</summary>
     public async Task AskChat(string q)
     {
         q = q.Trim();
+        if (q.Length == 0 && _askFiles.Count > 0) q = _askFiles.All(KiAttachments.IsImage) ? "Was ist auf dem Bild zu sehen?" : "Fasse die angehängte Datei kurz zusammen.";
         if (q.Length == 0) { _askState = "Bitte schreib zuerst eine Frage."; Show("ki-fragen"); return; }
         if (_askCts is not null) return;
-        _askCts = new CancellationTokenSource(); _askState = "Trendo denkt nach …"; _chatPending = q; Show("ki-fragen");
+        // T-0734: Anhänge vor dem Senden lesen – geht etwas nicht, bleibt alles stehen und die Meldung sagt, was fehlt
+        var files = new List<KiAttachment>();
+        foreach (var f in _askFiles)
+            try { files.Add(KiAttachments.Load(f, Tool("pdftotext"))); }
+            catch (Exception e) when (e is InvalidOperationException or IOException or UnauthorizedAccessException) { _askState = e is InvalidOperationException ? e.Message : $"„{Path.GetFileName(f)}“ lässt sich nicht lesen: {e.Message}"; Show("ki-fragen"); return; }
+        var shown = files.Count > 0 ? q + "\n\n📎 " + string.Join(", ", files.Select(f => f.Name)) : q;
+        _askCts = new CancellationTokenSource(); _askState = files.Count > 0 ? "Trendo liest die Datei und denkt nach …" : "Trendo denkt nach …"; _chatPending = shown; _streamText = ""; Show("ki-fragen");
         try
         {
             using var kiLabel = KiActivityHub.Label("Trendo KI");
-            var a = await Intel.AskAsync(new KiRequest(q, PreferredModel: KiModelName, History: _chat.ToList(), AllowRemote: true, Personal: true), _askCts.Token);
+            void OnText(string t) { _streamText = t; _ui.Post(() => { if (_streamBlock is { } sb) sb.Text = _streamText.Length > 0 ? _streamText : "Trendo denkt nach …"; }); }
+            var a = await Intel.AskAsync(new KiRequest(q, PreferredModel: KiModelName, History: _chat.ToList(), AllowRemote: true, Personal: true, Attachments: files, OnText: OnText), _askCts.Token);
             LastAnswer = a.Text;
             if (a.Ok)
             {
-                _chat.Add(new("user", q)); _chat.Add(new("assistant", a.Text));
+                _chat.Add(new("user", KiAttachments.Compose(q, files))); _chat.Add(new("assistant", a.Text)); // Folgefragen kennen den Dateitext
                 LearnFromChat(q);
-                var c = Chats.Append(CurrentChat(), q, a.Text, a.Model is null ? null : $"{a.Model} · {a.Backend}"); _chatId = c.Id;
+                var c = Chats.Append(CurrentChat(), shown, a.Text, a.Model is null ? null : $"{a.Model} · {a.Backend}"); _chatId = c.Id;
+                _askFiles.Clear();
             }
-            _askState = a.Ok ? $"Antwort von {a.Model} ({a.Backend}{(KiCatalog.Cloud.Any(c => c.Name == a.Backend) ? ", außerhalb des PCs" : "")}) in {a.Took.TotalSeconds:0.0} s{(a.Sources.Count > 0 ? " · Wissen: " + string.Join(", ", a.Sources) : "")}" : a.Text;
+            _askState = a.Ok ? $"Antwort von {a.Model} ({a.Backend}{(KiCatalog.Cloud.Any(c => c.Name == a.Backend) || a.Backend?.StartsWith("Claude", StringComparison.Ordinal) == true ? ", außerhalb des PCs" : "")}) in {a.Took.TotalSeconds:0.0} s{(a.Sources.Count > 0 ? " · Wissen: " + string.Join(", ", a.Sources) : "")}" : a.Text;
         }
-        catch (OperationCanceledException) { _askState = "Abgebrochen."; }
-        finally { _askCts?.Dispose(); _askCts = null; _chatPending = null; Show("ki-fragen"); }
+        catch (OperationCanceledException)
+        {
+            // T-0734: was bis zum Stopp geschrieben war, bleibt im Gespräch stehen (wie in Chat-Programmen)
+            if (_streamText.Trim().Length > 0)
+            {
+                var part = _streamText.Trim() + "\n\n(abgebrochen)";
+                _chat.Add(new("user", KiAttachments.Compose(q, files))); _chat.Add(new("assistant", part));
+                var c = Chats.Append(CurrentChat(), shown, part, "abgebrochen"); _chatId = c.Id; _askFiles.Clear();
+            }
+            _askState = "Abgebrochen.";
+        }
+        finally { _askCts?.Dispose(); _askCts = null; _chatPending = null; _streamText = ""; _streamBlock = null; Show("ki-fragen"); }
     }
     string? _chatPending;
 
@@ -123,7 +187,11 @@ public partial class MainWindow
         if (_chatPending is { } pending)
         {
             log.Children.Add(ChatBubble(new ChatStore.Message("user", pending, DateTimeOffset.Now), -1));
-            log.Children.Add(new TextBlock { Name = "ask-thinking", Text = "Trendo denkt nach …", Foreground = Muted, FontStyle = FontStyle.Italic });
+            // T-0734: die Antwort wächst sichtbar in ihrer Sprechblase, während sie entsteht
+            _streamBlock = new SelectableTextBlock { Name = "ask-stream-text", Text = _streamText.Length > 0 ? _streamText : "Trendo denkt nach …", Foreground = Text, FontSize = 13, TextWrapping = TextWrapping.Wrap };
+            log.Children.Add(new Border { Name = "ask-stream", MaxWidth = 760, HorizontalAlignment = HorizontalAlignment.Left, Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(14, 14, 14, 4), Padding = new Thickness(12, 8), Child = new StackPanel { Spacing = 4, Children = { _streamBlock,
+                    new TextBlock { Name = "ask-thinking", Text = "schreibt … – „Stopp“ bricht ab", Foreground = Muted, FontSize = 10.5, FontStyle = FontStyle.Italic } } } });
         }
         if (msgs.Count == 0 && _chatPending is null)
         {
@@ -137,9 +205,25 @@ public partial class MainWindow
         if (log.Children.Count > 0 && log.Children[^1] is Control lastMsg) lastMsg.AttachedToVisualTree += (_, _) => _ui.Post(() => lastMsg.BringIntoView(), Avalonia.Threading.DispatcherPriority.Background);
         // Eingabe fest am unteren Rand (wie in Chatprogrammen) – der Verlauf rollt darüber
         var (aUndo, aRedo) = LinkButtons(al);
+        // T-0734: Datei anhängen (Knopf oder auf den Chat ziehen) – mit klarem Hinweis, wohin die Datei geht
+        var attach = new Button { Name = "ask-attach", Content = "📎 Datei anhängen", IsEnabled = _askCts is null };
+        ToolTip.SetTip(attach, "Text, PDF, Word oder Bild an die Frage hängen – oder die Datei einfach auf den Chat ziehen");
+        attach.Click += async (_, _) => await AskAttachPick();
+        var chips = new WrapPanel { Name = "ask-files", IsVisible = _askFiles.Count > 0 };
+        for (var f = 0; f < _askFiles.Count; f++)
+        {
+            var path = _askFiles[f];
+            var x = new Button { Name = $"ask-file-del-{f}", Content = "✕", Padding = new Thickness(4, 0), Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Muted };
+            ToolTip.SetTip(x, "Anhang entfernen");
+            x.Click += (_, _) => { _askFiles.Remove(path); _askState = _askFiles.Count > 0 ? AskAttachHint() : ""; Show("ki-fragen"); };
+            chips.Children.Add(new Border { Name = $"ask-file-{f}", Background = Brush.Parse("#22C9A227"), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(10, 3, 4, 3), Margin = new Thickness(0, 0, 6, 4),
+                Child = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, Children = { new TextBlock { Text = (KiAttachments.IsImage(path) ? "🖼 " : "📄 ") + Path.GetFileName(path), Foreground = Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, x } } });
+        }
+        var hint = new TextBlock { Name = "ask-attach-hint", Text = _askFiles.Count > 0 ? "🔒 " + AskAttachHint() : "", IsVisible = _askFiles.Count > 0, Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap };
         var dock = new StackPanel { Name = "ask-dock", Spacing = 6, Children = {
+            chips, hint,
             input,
-            new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { send, stop, clear, aUndo, aRedo } },
+            new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { send, stop, attach, clear, aUndo, aRedo } },
             new TextBlock { Name = "ask-state", Text = _askState, Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap } } };
         if (LinkRecoveryCard(al) is { } askCard) dock.Children.Insert(0, askCard); // T-0717: nicht gesendete Nachricht aus einer früheren Sitzung
         if (_chat.Count >= 2)
@@ -166,6 +250,17 @@ public partial class MainWindow
         var body = new Grid { Name = "ask-window", ColumnDefinitions = new ColumnDefinitions("240,12,*"), Children = {
             new Border { Name = "ask-side", CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(10), Child = new ScrollViewer { Content = left } },
             Pos(sp, 2) } };
+        // T-0734: Dateien auf den Chat (oder die Eingabe) ziehen hängt sie an die Frage
+        foreach (var target in new Control[] { body, dock })
+        {
+            DragDrop.SetAllowDrop(target, true);
+            target.AddHandler(DragDrop.DragOverEvent, (_, e) => { e.DragEffects = e.DataTransfer.Contains(DataFormat.File) ? DragDropEffects.Copy : DragDropEffects.None; e.Handled = true; });
+            target.AddHandler(DragDrop.DropEvent, (_, e) =>
+            {
+                var paths = e.DataTransfer.TryGetFiles()?.Select(f => f.TryGetLocalPath()).OfType<string>().ToList() ?? [];
+                if (paths.Count > 0) { e.Handled = true; AskAttach(paths); }
+            });
+        }
         return Page("KI fragen", new StackPanel { Spacing = 8, Children = { KiNav(), body } }, dock);
     }
 

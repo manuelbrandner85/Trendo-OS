@@ -100,7 +100,7 @@ public sealed class OllamaBackend(string baseUrl = "http://127.0.0.1:11434", Htt
 
     public async Task<string> ChatAsync(string model, IReadOnlyList<KiMessage> messages, CancellationToken ct = default)
     {
-        var body = new { model, stream = false, keep_alive = KiBackendsShared.OllamaKeepAlive, options = new { num_ctx = KiBackendsShared.OllamaContext(messages) }, messages = messages.Select(m => new { role = m.Role, content = m.Content }).ToArray() };
+        var body = new { model, stream = false, keep_alive = KiBackendsShared.OllamaKeepAlive, options = new { num_ctx = KiBackendsShared.OllamaContext(messages) }, messages = KiBackendsShared.OllamaMessages(messages) };
         using var r = await _http.PostAsJsonAsync("/api/chat", body, ct);
         r.EnsureSuccessStatusCode();
         var doc = await r.Content.ReadFromJsonAsync<JsonElement>(ct);
@@ -110,7 +110,7 @@ public sealed class OllamaBackend(string baseUrl = "http://127.0.0.1:11434", Htt
     /// <summary>Antwort Stück für Stück (NDJSON von /api/chat mit stream=true) – für die Fortschrittsanzeige.</summary>
     public async Task<string> ChatStreamAsync(string model, IReadOnlyList<KiMessage> messages, Action<string> onDelta, CancellationToken ct = default)
     {
-        var body = new { model, stream = true, keep_alive = KiBackendsShared.OllamaKeepAlive, options = new { num_ctx = KiBackendsShared.OllamaContext(messages) }, messages = messages.Select(m => new { role = m.Role, content = m.Content }).ToArray() };
+        var body = new { model, stream = true, keep_alive = KiBackendsShared.OllamaKeepAlive, options = new { num_ctx = KiBackendsShared.OllamaContext(messages) }, messages = KiBackendsShared.OllamaMessages(messages) };
         using var req = new HttpRequestMessage(HttpMethod.Post, "/api/chat") { Content = JsonContent.Create(body) };
         using var r = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
         r.EnsureSuccessStatusCode();
@@ -172,7 +172,7 @@ public sealed class OpenAiCompatBackend(string name, string baseUrl, HttpMessage
 
     public async Task<string> ChatAsync(string model, IReadOnlyList<KiMessage> messages, CancellationToken ct = default)
     {
-        var body = new { model, stream = false, messages = messages.Select(m => new { role = m.Role, content = m.Content }).ToArray() };
+        var body = new { model, stream = false, messages = KiBackendsShared.OpenAiMessages(messages) };
         using var r = await _http.PostAsJsonAsync("/v1/chat/completions", body, ct);
         r.EnsureSuccessStatusCode();
         var doc = await r.Content.ReadFromJsonAsync<JsonElement>(ct);
@@ -182,7 +182,7 @@ public sealed class OpenAiCompatBackend(string name, string baseUrl, HttpMessage
     /// <summary>Antwort Stück für Stück (Server-Sent Events) – für die Fortschrittsanzeige.</summary>
     public async Task<string> ChatStreamAsync(string model, IReadOnlyList<KiMessage> messages, Action<string> onDelta, CancellationToken ct = default)
     {
-        var body = new { model, stream = true, messages = messages.Select(m => new { role = m.Role, content = m.Content }).ToArray() };
+        var body = new { model, stream = true, messages = KiBackendsShared.OpenAiMessages(messages) };
         using var req = new HttpRequestMessage(HttpMethod.Post, "/v1/chat/completions") { Content = JsonContent.Create(body) };
         using var r = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
         r.EnsureSuccessStatusCode();
@@ -294,7 +294,17 @@ public static class KiBackendsShared
     /// <summary>Kontextfenster für Ollama. Ohne Angabe nutzt Ollama nur 4096 Token; lange Anweisungen (z. B. Webdesign-Aktionen, etwa 2500 Token)
     /// lassen dann kaum Platz für die Antwort, sie bricht mitten im JSON ab. Zwei feste Stufen, damit das Modell nicht bei jeder Anfrage neu lädt;
     /// geschätzt mit drei Zeichen je Token und 4096 Token Platz für Antwort und Überlegung.</summary>
-    public static int OllamaContext(IEnumerable<KiMessage> messages) => messages.Sum(m => m.Content.Length) / 3 + 4096 <= 8192 ? 8192 : 16384;
+    public static int OllamaContext(IEnumerable<KiMessage> messages) => messages.Sum(m => m.Content.Length + (m.Images?.Count ?? 0) * 4500) / 3 + 4096 <= 8192 ? 8192 : 16384; // T-0734: ein Bild belegt grob 1500 Token
+
+    /// <summary>T-0734: Nachrichten im Ollama-Format; Bilder als „images“ (Base64) an der Nachricht.</summary>
+    public static object[] OllamaMessages(IEnumerable<KiMessage> messages) => [.. messages.Select(m => m.Images is { Count: > 0 } img
+        ? (object)new { role = m.Role, content = m.Content, images = img }
+        : new { role = m.Role, content = m.Content })];
+
+    /// <summary>T-0734: Nachrichten im OpenAI-Format; Bilder als „image_url“ mit data-Adresse (nur lokale Server, siehe <see cref="LocalOnly"/>).</summary>
+    public static object[] OpenAiMessages(IEnumerable<KiMessage> messages) => [.. messages.Select(m => m.Images is { Count: > 0 } img
+        ? (object)new { role = m.Role, content = new object[] { new { type = "text", text = m.Content } }.Concat(img.Select(b => (object)new { type = "image_url", image_url = new { url = "data:image/png;base64," + b } })).ToArray() }
+        : new { role = m.Role, content = m.Content })];
 }
 
 /// <summary>Ein Schritt beim Laden eines Ollama-Modells: Zustand („pulling …“, „verifying sha256 digest“, „success“), Schicht und Bytes.</summary>
