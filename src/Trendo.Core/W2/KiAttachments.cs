@@ -99,7 +99,7 @@ public static class KiAttachments
     }
 
     /// <summary>Beim Kürzen nicht mitten in einem Zeichen aufhören (sonst hielte die Erkennung UTF-8 für Windows-1252).</summary>
-    static int WholeChars(byte[] b, int n)
+    internal static int WholeChars(byte[] b, int n)
     {
         if (n >= 2 && ((b[0] == 0xFF && b[1] == 0xFE) || (b[0] == 0xFE && b[1] == 0xFF))) return n - (n % 2); // UTF-16
         var i = n - 1; var back = 0;

@@ -46,9 +46,9 @@ public class T0740_Ui
             var input = Path.Combine(Daten, "neue-texte.csv");
             w.PickOverride = _ => Task.FromResult<string[]?>([input]);
             Click(w, "prog-cmd-train-apply-csv");
-            WaitFor(() => !w.TrainBatchBusy && d.Text("batch").Length > 0);
+            WaitFor(() => !w.TrainBatchBusy && w.TrainBatchCsv(d).Length > 0);
             Assert.StartsWith("✓ 30 Zeilen eingeordnet", w.ProgramMessage(K));
-            var rows = Trendo.Core.Sys.Csv.Parse(d.Text("batch"));
+            var rows = Trendo.Core.Sys.Csv.Parse(w.TrainBatchCsv(d));
             Assert.Equal(["nr", "text", "erwartet", "Vorhersage", "Sicherheit", "Bekannte Wörter"], rows[0]);
             Assert.Equal(31, rows.Count(r => r.Count > 1));
             var right = rows.Skip(1).Count(r => r.Count > 3 && r[2] == r[3]);
@@ -66,15 +66,15 @@ public class T0740_Ui
             WaitFor(() => File.Exists(outFile));
             var bytes = File.ReadAllBytes(outFile);
             Assert.Equal(Encoding.UTF8.GetPreamble(), bytes[..3]);
-            Assert.Equal(d.Text("batch"), Encoding.UTF8.GetString(bytes[3..]));
+            Assert.Equal(w.TrainBatchCsv(d), Encoding.UTF8.GetString(bytes[3..]));
             Keep(input, "eingabe-neue-texte.csv"); Keep(outFile, "ausgabe-neue-texte-vorhersagen.csv");
             // derselbe Inhalt über Datei ▸ Exportieren
             var viaExport = MainWindow.Programs[K].Exports.Single(e => e.Name == "pred").Write(d, Path.Combine(root, "export.csv"));
             Assert.Equal(bytes, File.ReadAllBytes(viaExport));
 
             // Rückgängig nimmt die Vorhersagen zurück, Wiederholen bringt sie wieder
-            Assert.True(d.Undo()); Assert.Equal("", d.Text("batch"));
-            Assert.True(d.Redo()); Assert.NotEqual("", d.Text("batch"));
+            Assert.True(d.Undo()); Assert.Equal("", w.TrainBatchCsv(d));
+            Assert.True(d.Redo()); Assert.NotEqual("", w.TrainBatchCsv(d));
 
             // Ordner einordnen (Menüband) – je Datei eine Zeile
             var folder = Path.Combine(Daten, "ordner");
@@ -82,7 +82,7 @@ public class T0740_Ui
             MainWindow.FolderPickOverride = _ => folder;
             try { w.Show(K); Settle(); Click(w, "prog-cmd-train-apply-folder"); WaitFor(() => !w.TrainBatchBusy && d.Text("batchKind") == "ordner"); }
             finally { MainWindow.FolderPickOverride = keepPick; }
-            var f = Trendo.Core.Sys.Csv.Parse(d.Text("batch")).Where(r => r.Count > 1).ToDictionary(r => r[0], r => r[1]);
+            var f = Trendo.Core.Sys.Csv.Parse(w.TrainBatchCsv(d)).Where(r => r.Count > 1).ToDictionary(r => r[0], r => r[1]);
             Assert.Equal("Rechnung", f["rechnung-strom.txt"]); Assert.Equal("Rechnung", f["mahnung.txt"]);
             Assert.Equal("Termin", f["einladung-besprechung.txt"]); Assert.Equal("Termin", f["arzttermin.md"]);
             Assert.Equal("Werbung", f["newsletter.txt"]); Assert.Equal("Werbung", f["gewinnspiel.txt"]);
@@ -126,7 +126,7 @@ public class T0740_Ui
             Click(w, "train-batch-cancel");
             WaitFor(() => !w.TrainBatchBusy);
             Assert.StartsWith("Abgebrochen nach ", w.ProgramMessage(K));
-            Assert.Equal("", d.Text("batch"));
+            Assert.Equal("", w.TrainBatchCsv(d));
             Assert.False(Has(w, "train-batch-progress"));
         }
         finally { MainWindow.TrainBatchTestDelayMs = 0; w.PickOverride = null; w.Close(); }

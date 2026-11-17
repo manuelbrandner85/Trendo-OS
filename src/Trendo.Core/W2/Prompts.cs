@@ -78,6 +78,15 @@ public sealed partial class PromptLibrary
     public static IReadOnlyList<(string Name, string? Default)> Variables(string text) =>
         VarRx().Matches(text).Select(m => (m.Groups[1].Value.Trim(), m.Groups[2].Success ? m.Groups[2].Value : null)).DistinctBy(v => v.Item1).ToList();
 
+    /// <summary>T-0740: Lücken im Text für die Hervorhebung im Editor – nach genau der Regel, nach der <see cref="Variables"/> und <see cref="Fill"/> sie lesen.
+    /// Ok = echte Lücke (golden); sonst ein „{{“, das keine gültige Lücke beginnt (rot unterlegt).</summary>
+    public static IReadOnlyList<(int Start, int Length, bool Ok)> PlaceholderSpans(string text)
+    {
+        var ok = VarRx().Matches(text ?? "").Select(m => (m.Index, m.Length, true)).ToList();
+        var bad = Regex.Matches(text ?? "", @"\{\{").Where(m => !ok.Any(o => m.Index >= o.Index && m.Index < o.Index + o.Length)).Select(m => (m.Index, m.Length, false));
+        return [.. ok.Concat(bad).OrderBy(s => s.Item1)];
+    }
+
     public static (string Text, IReadOnlyList<string> Missing) Fill(string text, IReadOnlyDictionary<string, string> values)
     {
         var missing = new List<string>();

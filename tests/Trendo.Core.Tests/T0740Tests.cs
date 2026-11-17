@@ -83,6 +83,63 @@ public class T0740Tests
         Assert.InRange(p.Last, 1, 200);
     }
 
+    // ---------------- Gegenprüfung T-0740 ----------------
+
+    [Fact(DisplayName = "T-0740 Gegenprüfung: Ordnerdatei in Windows-1252 (deutsches Excel/Editor) – Umlaute bleiben, kein U+FFFD")]
+    public void Folder_windows1252()
+    {
+        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+        var d = Temp();
+        try
+        {
+            File.WriteAllBytes(Path.Combine(d, "brief.txt"), System.Text.Encoding.GetEncoding(1252).GetBytes("Rechnung für März: Betrag überweisen, Größe egal"));
+            var r = ClassifierBatch.ApplyFolder(Model(), d);
+            Assert.Equal("Rechnung", r.Rows[0][1]);
+            Assert.True(int.Parse(r.Rows[0][3]) >= 2, "Umlaut-Wörter wurden nicht erkannt: " + r.Rows[0][3]);
+            var csv = Path.Combine(d, "liste.csv");
+            File.WriteAllBytes(csv, System.Text.Encoding.GetEncoding(1252).GetBytes("text;notiz\nBitte Betrag überweisen;Grüße aus Köln\n"));
+            var c = ClassifierBatch.ApplyCsvFile(Model(), csv);
+            Assert.Equal("Grüße aus Köln", c.Rows[0][1]);
+            Assert.DoesNotContain('�', ClassifierBatch.ToCsv(c));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0740 Gegenprüfung: CSV-Entschärfung – Zahlen wie -5 und +3,2 bleiben, Formeln, Tab und CR am Anfang bekommen ein Hochkomma")]
+    public void Csv_formula_guard()
+    {
+        var r = new ClassifierBatch.Result(["a", "b", "c", "d", "e", "f", "g"], [["-5", "+3,2", "=1+1", "-1+A1", "\tx", "\rx", "@SUMME(A1)"]], 0, "x", "csv");
+        var line = Trendo.Core.Sys.Csv.Parse(ClassifierBatch.ToCsv(r))[1];
+        Assert.Equal(["-5", "+3,2", "'=1+1", "'-1+A1", "'\tx", "'\rx", "'@SUMME(A1)"], line.Take(7));
+    }
+
+    [Fact(DisplayName = "T-0740 Gegenprüfung: CSV ohne Kopfzeile, erste Zelle ein kurzes Wort, das das Modell kennt – die erste Zeile bleibt Daten")]
+    public void Csv_short_first_word()
+    {
+        var r = ClassifierBatch.ApplyCsv(Model(), "Rechnung\nTermin am Montag um zehn Uhr\nBitte den Betrag überweisen\n", "k.csv");
+        Assert.Equal(["Text", "Vorhersage", "Sicherheit", "Bekannte Wörter"], r.Header);
+        Assert.Equal(3, r.Rows.Count);
+        Assert.Equal("Rechnung", r.Rows[0][0]);
+        // echte Kopfzeile mit einem Wort, das das Modell nicht kennt, wird weiter erkannt
+        var h = ClassifierBatch.ApplyCsv(Model(), "Anliegen\nTermin am Montag um zehn Uhr\nBitte den Betrag überweisen\n", "k.csv");
+        Assert.Equal("Anliegen", h.Header[0]); Assert.Equal(2, h.Rows.Count);
+        Assert.False(r.HasHeader); Assert.True(h.HasHeader);
+        // Schalter „Erste Zeile ist Überschrift“ in der Oberfläche: setzt die Erkennung außer Kraft
+        Assert.Equal(2, ClassifierBatch.ApplyCsv(Model(), "Rechnung\nTermin am Montag um zehn Uhr\nBitte den Betrag überweisen\n", "k.csv", header: true).Rows.Count);
+        Assert.Equal(3, ClassifierBatch.ApplyCsv(Model(), "Anliegen\nTermin am Montag um zehn Uhr\nBitte den Betrag überweisen\n", "k.csv", header: false).Rows.Count);
+    }
+
+    [Fact(DisplayName = "T-0740 Gegenprüfung: Über 50 000 Zeilen wird nicht still gekürzt – Ergebnis sagt „gekürzt“ und nennt die Gesamtzahl")]
+    public void Csv_truncated()
+    {
+        var n = ClassifierBatch.MaxItems + 3;
+        var sb = new StringBuilder("text\n"); for (var i = 0; i < n; i++) sb.Append("Rechnung Betrag ").Append(i).Append('\n');
+        var r = ClassifierBatch.ApplyCsv(Model(), sb.ToString(), "gross.csv");
+        Assert.True(r.Truncated); Assert.Equal(n, r.Total); Assert.Equal(ClassifierBatch.MaxItems, r.Rows.Count);
+        var small = ClassifierBatch.ApplyCsv(Model(), "text\nRechnung Betrag\n", "k.csv");
+        Assert.False(small.Truncated); Assert.Equal(1, small.Total);
+    }
+
     sealed class SyncProgress(List<(int, int)> seen) : IProgress<(int Done, int Total)> { public void Report((int Done, int Total) v) => seen.Add(v); }
     sealed class CancelAt(CancellationTokenSource cts, int at) : IProgress<(int Done, int Total)>
     {

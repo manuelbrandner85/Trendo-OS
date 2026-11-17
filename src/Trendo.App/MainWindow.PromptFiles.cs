@@ -119,18 +119,23 @@ public partial class MainWindow
 
     // ---------- Texteditor für den Anweisungstext ----------
 
-    /// <summary>Hebt Lücken „{{Name}}“ und „{{Name|Standard}}“ golden hervor; ein „{{“ ohne Schluss wird rot unterlegt.</summary>
+    /// <summary>Hebt Lücken „{{Name}}“ und „{{Name|Standard}}“ golden hervor; ein „{{“, das keine gültige Lücke beginnt, wird rot unterlegt.
+    /// Regel: <see cref="PromptHighlightSpans"/> = <see cref="PromptLibrary.PlaceholderSpans"/> – dieselbe, nach der „Ausfüllen“ die Lücken liest.</summary>
     sealed class PlaceholderColorizer : DocumentColorizingTransformer
     {
-        static readonly Regex Rx = new(@"\{\{[^{}\n]*\}\}|\{\{", RegexOptions.Compiled);
         static readonly IBrush Gold = new SolidColorBrush(Color.Parse("#F5B83D")), GoldBg = new SolidColorBrush(Color.Parse("#33F5B83D")), BadBg = new SolidColorBrush(Color.Parse("#55F87171"));
+        object? _version; IReadOnlyList<(int Start, int Length, bool Ok)> _spans = [];
         protected override void ColorizeLine(DocumentLine line)
         {
-            var text = CurrentContext.Document.GetText(line);
-            foreach (Match m in Rx.Matches(text))
+            var doc = CurrentContext.Document;
+            // auf dem ganzen Text bestimmen (eine Lücke darf wie beim Ausfüllen über eine Zeile gehen), je Textstand nur einmal
+            if (!ReferenceEquals(_version, doc.Version) || doc.Version is null) { _spans = PromptHighlightSpans(doc.Text); _version = doc.Version; }
+            int from = line.Offset, to = line.EndOffset;
+            foreach (var (start, length, ok) in _spans)
             {
-                var ok = m.Length > 2;
-                ChangeLinePart(line.Offset + m.Index, line.Offset + m.Index + m.Length, el =>
+                int a = Math.Max(start, from), b = Math.Min(start + length, to);
+                if (a >= b) continue;
+                ChangeLinePart(a, b, el =>
                 {
                     if (ok) { el.TextRunProperties.SetForegroundBrush(Gold); el.TextRunProperties.SetBackgroundBrush(GoldBg); el.TextRunProperties.SetTypeface(new Typeface(el.TextRunProperties.Typeface.FontFamily, FontStyle.Normal, FontWeight.SemiBold)); }
                     else el.TextRunProperties.SetBackgroundBrush(BadBg);
@@ -139,9 +144,12 @@ public partial class MainWindow
         }
     }
 
-    /// <summary>Lücken im Text als Bereiche (Anfang, Länge) – dieselbe Regel wie die Hervorhebung (für Tests).</summary>
+    /// <summary>Was der Editor hervorhebt (Anfang, Länge, gültig) – genau die Regel der Hervorhebung, für Tests offen.</summary>
+    public static IReadOnlyList<(int Start, int Length, bool Ok)> PromptHighlightSpans(string text) => PromptLibrary.PlaceholderSpans(text);
+
+    /// <summary>Gültige Lücken im Text als Bereiche (Anfang, Länge) – aus <see cref="PromptHighlightSpans"/>.</summary>
     public static IReadOnlyList<(int Start, int Length)> PromptPlaceholderSpans(string text) =>
-        Regex.Matches(text, @"\{\{[^{}\n]*\}\}").Select(m => (m.Index, m.Length)).ToList();
+        PromptHighlightSpans(text).Where(s => s.Ok).Select(s => (s.Start, s.Length)).ToList();
 
     /// <summary>Editor für den Anweisungstext: Zeilenumbruch, Rückgängig im Feld, hervorgehobene Lücken, dunkle Fläche im Trendo-Look.</summary>
     TextEditor PromptTextEditor(string text)

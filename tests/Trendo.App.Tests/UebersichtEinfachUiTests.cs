@@ -129,6 +129,8 @@ public class UebersichtEinfach_Ui(ITestOutputHelper log)
         ("mk-tiles-stop", "T-0726: „Karte aus dem Internet …“ im Menüband (Reiter Start) schaltet wieder aus"),
         // 0.9.104: neue Formate – in „Einfach“ wie die übrigen Zusatzformate über die Menüleiste „Datei ▸ Exportieren“ (T-0710: dort in jeder Stufe alle Formate)
         ("prog-export-webp", "Menüleiste „Datei ▸ Exportieren ▸ WebP“"), ("prog-export-ris", "Menüleiste „Datei ▸ Exportieren ▸ RIS“"), ("prog-export-csl", "Menüleiste „Datei ▸ Exportieren ▸ CSL-JSON“"),
+        // T-0740: in „Einfach“ über die Menüleiste (geprüft in T0740Gegenpruefung_Ui.Simple_export_via_menu) und den Knopf „Vorhersagen speichern …“ auf der Arbeitsfläche
+        ("prog-export-pred", "Menüleiste „Datei ▸ Exportieren ▸ Vorhersagen (.csv)“ und Knopf „Vorhersagen speichern …“ auf der Arbeitsfläche"),
     ];
 
     /// <summary>Was „Einfach“ schon vor T-0663 bewusst nicht baute (Stand origin/main 1fc842acc) – siehe Kopf der Datei.</summary>
