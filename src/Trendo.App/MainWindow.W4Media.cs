@@ -121,6 +121,7 @@ public partial class MainWindow
         var left = new StackPanel { Name = "media-bin", Spacing = 6 };
         var center = new StackPanel { Name = "media-center", Spacing = 8 };
         center.Children.Add(LinkBar(MediaLink)); // T-0715: Wiederherstellen-Karte, Rückgängig · Wiederholen des Arbeitsstands
+        center.Children.Add(MediaBatchCard()); // T-0732: mehrere Dateien auf einmal – Fortschritt je Datei, Abbruch, Ausgabeordner
         var right = new StackPanel { Name = "media-side", Spacing = 8 };
         if (FfmpegPath is null) center.Children.Add(Card(new StackPanel { Spacing = 4, Children = { P("FFmpeg fehlt noch. Videos und Ton gehen erst damit; Bilder kannst du trotzdem bearbeiten.", Brush.Parse("#FACC15")), Nav2("Einrichten", "components") } }));
         var files = FileShelf.Recent([MediaFolder, UserFolder(Environment.SpecialFolder.MyVideos), UserFolder(Environment.SpecialFolder.MyMusic), UserFolder(Environment.SpecialFolder.MyPictures)], MediaStudio.Inputs);
@@ -152,10 +153,11 @@ public partial class MainWindow
             right.Children.Add(Card(new StackPanel { Spacing = 6, Children = { P(Path.GetFileName(last), Text, 12), new WrapPanel { Children = { Act("media-play", "Abspielen / Öffnen", () => Launch(last)), Act("media-show", "Im Ordner zeigen", () => Launch(Path.GetDirectoryName(last)!)) } } } }));
         else right.Children.Add(P("Noch nichts erzeugt. Fertige Dateien landen im Medienordner – das Original bleibt unverändert.", Muted, 11.5));
         right.Children.Add(H("Tipp", 13));
-        right.Children.Add(P("Mehrere Clips aneinanderhängen: links in der Clipliste sammeln. Für richtigen Schnitt mit Zeitleiste gibt es den Videoschnitt, für Ton „Audio bearbeiten“.", Muted, 11.5));
+        right.Children.Add(P("Viele Dateien gleich umwandeln: oben in der Mitte „Mehrere Dateien auf einmal“ – oder Dateien auf die Werkbank ziehen. Mehrere Clips aneinanderhängen: links in der Clipliste sammeln. Für richtigen Schnitt mit Zeitleiste gibt es den Videoschnitt, für Ton „Audio bearbeiten“.", Muted, 11.5));
         Border Pane(Control c, string name) => new() { Name = name, Child = new ScrollViewer { Content = c }, Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(10), BoxShadow = CardShadow };
         var g = new Grid { Name = "media-workbench", ColumnDefinitions = new ColumnDefinitions("270,*,250"), ColumnSpacing = 10 };
         g.Children.Add(Pane(left, "media-left")); g.Children.Add(Pos(Pane(center, "media-mid"), 1)); g.Children.Add(Pos(Pane(right, "media-right"), 2));
+        MediaWireDrop(g, batchOnly: false); // T-0732: Dateien aus dem Explorer auf die Werkbank – eine wird gewählt, mehrere kommen in den Stapel
         return FitKreativPage("Medien-Studio", new Panel(), g);
     }
 

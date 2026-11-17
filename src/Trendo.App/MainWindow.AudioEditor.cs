@@ -59,22 +59,22 @@ public partial class MainWindow
                 new ProgramCmd("au-dup", "Duplizieren", d => AuOp(d, "duplicate", true)),
             ]),
             ("Effekte", [
-                new ProgramCmd("au-fadein", "Einblenden", d => AuOp(d, "fade-in", fallback: (0, 2)), Tip: "Ohne Auswahl: die ersten 2 Sekunden"),
-                new ProgramCmd("au-fadeout", "Ausblenden", d => AuOp(d, "fade-out", fallback: (-2, 0)), Tip: "Ohne Auswahl: die letzten 2 Sekunden"),
-                new ProgramCmd("au-louder", "Lauter", d => AuOp(d, "gain", v: 3), Tip: "+3 dB (Auswahl oder alles)"),
-                new ProgramCmd("au-quieter", "Leiser", d => AuOp(d, "gain", v: -3), Tip: "−3 dB (Auswahl oder alles)"),
-                new ProgramCmd("au-norm", "Normalisieren", d => AuOp(d, "normalize", v: -1), Primary: true, Tip: "Lautester Punkt auf −1 dB"),
-                new ProgramCmd("au-gate", "Rauschen unterdrücken", d => AuOp(d, "gate", v: -45), Tip: "Leises Rauschen zwischen Wörtern absenken"),
-                new ProgramCmd("au-echo", "Echo", d => AuOp(d, "echo", v: 0.3)),
+                new ProgramCmd("au-fadein", "Einblenden", d => AuOp(d, "fade-in", fallback: (0, AuFx.FadeSec)), Tip: "Ohne Auswahl: der Anfang – Länge rechts unter „Effekt-Werte“"),
+                new ProgramCmd("au-fadeout", "Ausblenden", d => AuOp(d, "fade-out", fallback: (-AuFx.FadeSec, 0)), Tip: "Ohne Auswahl: das Ende – Länge rechts unter „Effekt-Werte“"),
+                new ProgramCmd("au-louder", "Lauter", d => AuOp(d, "gain", v: AuFx.GainDb), Tip: "Auswahl oder alles – um wie viel dB: rechts unter „Effekt-Werte“"),
+                new ProgramCmd("au-quieter", "Leiser", d => AuOp(d, "gain", v: -AuFx.GainDb), Tip: "Auswahl oder alles – um wie viel dB: rechts unter „Effekt-Werte“"),
+                new ProgramCmd("au-norm", "Normalisieren", d => AuOp(d, "normalize", v: AuFx.NormalizeDb), Primary: true, Tip: "Lautester Punkt auf den Zielwert (Standard −1 dB, rechts einstellbar)"),
+                new ProgramCmd("au-gate", "Rauschen unterdrücken", d => AuOp(d, "gate", v: AuFx.GateDb), Tip: "Leises Rauschen zwischen Wörtern absenken – Schwelle rechts einstellbar"),
+                new ProgramCmd("au-echo", "Echo", d => AuOp(d, "echo", v: AuFx.EchoSec), Tip: "Abstand rechts unter „Effekt-Werte“"),
                 new ProgramCmd("au-rev", "Umkehren", d => AuOp(d, "reverse")),
             ]),
             ("Filter", [
-                new ProgramCmd("au-hp", "Tiefen weg", d => AuOp(d, "highpass", v: 80), Tip: "Trittschall und Brummen unter 80 Hz"),
-                new ProgramCmd("au-lp", "Höhen weg", d => AuOp(d, "lowpass", v: 8000), Tip: "Zischen über 8 kHz"),
+                new ProgramCmd("au-hp", "Tiefen weg", d => AuOp(d, "highpass", v: AuFx.HighpassHz), Tip: "Trittschall und Brummen (Standard unter 80 Hz, rechts einstellbar)"),
+                new ProgramCmd("au-lp", "Höhen weg", d => AuOp(d, "lowpass", v: AuFx.LowpassHz), Tip: "Zischen (Standard über 8 kHz, rechts einstellbar)"),
                 new ProgramCmd("au-mono", "Zu Mono", d => AuOp(d, "mono")),
-                new ProgramCmd("au-faster", "Schneller", d => AuOp(d, "speed", v: 1.1), Tip: "+10 % Tempo (Tonhöhe steigt mit)"),
-                new ProgramCmd("au-slower", "Langsamer", d => AuOp(d, "speed", v: 0.9), Tip: "−10 % Tempo"),
-                new ProgramCmd("au-sil1", "1 s Stille einfügen", d => AuOp(d, "insert-silence", v: 1)),
+                new ProgramCmd("au-faster", "Schneller", d => AuOp(d, "speed", v: 1 + AuFx.SpeedPct / 100), Tip: "Tempo hoch (Tonhöhe steigt mit) – Schritt rechts einstellbar"),
+                new ProgramCmd("au-slower", "Langsamer", d => AuOp(d, "speed", v: Math.Max(0.25, 1 - AuFx.SpeedPct / 100)), Tip: "Tempo runter – Schritt rechts einstellbar"),
+                new ProgramCmd("au-sil1", "Stille einfügen", d => AuOp(d, "insert-silence", v: AuFx.SilenceSec), Tip: "An der Marke – Länge rechts unter „Effekt-Werte“ (Standard 1 s)"),
             ]),
             ("Reparieren", [ // Vorbilder iZotope RX, Audacity, Audition (04.11.2026)
                 new ProgramCmd("au-noise-profile", "Rauschprofil merken", _ => AuNoiseProfile(), Tip: "Erst ein Stück mit reinem Rauschen (ohne Stimme) wählen"),
@@ -83,7 +83,7 @@ public partial class MainWindow
                 new ProgramCmd("au-truncate", "Stille kürzen", d => AuOp(d, "truncate", v: -45), Tip: "Pausen über 0,6 s auf 0,3 s"),
                 new ProgramCmd("au-loud-podcast", "Lautheit Sprache (−16 LUFS)", d => AuOp(d, "loudness", v: -16)),
                 new ProgramCmd("au-loud-music", "Lautheit Musik (−14 LUFS)", d => AuOp(d, "loudness", v: -14)),
-                new ProgramCmd("au-compress", "Kompressor", d => AuOp(d, "compress", v: -20), Tip: "Leise und laute Stellen näher zusammen"),
+                new ProgramCmd("au-compress", "Kompressor", d => AuOp(d, "compress", v: AuFx.CompressDb), Tip: "Leise und laute Stellen näher zusammen – Schwelle rechts einstellbar"),
                 new ProgramCmd("au-spectral", "Spektral absenken", d => AuSpectral(d, -30), Tip: "Im Spektrogramm ein Rechteck um Husten, Pfeifton oder Klingeln ziehen – nur das wird leiser"),
             ]),
             ("Abspielen", [
@@ -92,7 +92,7 @@ public partial class MainWindow
                 new ProgramCmd("au-all", "Alles wählen", d => AuSel = (0, AudioEdit.Render(d.Data).Seconds)),
                 new ProgramCmd("au-none", "Auswahl aufheben", _ => AuSel = default),
                 new ProgramCmd("au-spectro", "Spektrogramm", _ => AuSpectro = !AuSpectro, Tip: "Frequenzen über die Zeit – Störgeräusche sieht man sofort"),
-                new ProgramCmd("au-record", "Aufnehmen (10 s)", d => _ = AuRecord(d, 10), Tip: "Mikrofon an der Marke einfügen"),
+                new ProgramCmd("au-record", "Aufnehmen", d => AuRecordToggle(d), Tip: "Mikrofon aufnehmen, bis „Stopp“ gedrückt wird – mit Pegelanzeige; danach an der Marke eingefügt"),
                 new ProgramCmd("au-mixdown-cmd", "Abmischen", d => AuMixdown(d), Tip: "Mehrspur-Projekt zu einer Datei abmischen"),
             ]),
             ("Prüfen", [ // Paket 01 S4-20
@@ -100,6 +100,15 @@ public partial class MainWindow
                 new ProgramCmd("au-release-cmd", "Freigeben", d => AuRelease(d), Tip: "Nur ohne Rot: WAV 24 Bit und Prüfbericht mit Prüfsumme"),
                 new ProgramCmd("au-midi-cmd", "Melodie → Noten", d => AuMelodyToMidi(d), Tip: "Einstimmige Melodie als MIDI mit Sicherheit je Note – Mehrstimmiges wird als unsicher gemeldet"),
                 new ProgramCmd("au-plugins-cmd", "Plugins prüfen", _ => AuPluginScan(), Tip: "VST3 und CLAP finden und beschreiben – ohne sie zu laden", Level: 1),
+            ]),
+        ],
+        // T-0732: Leertaste startet und hält die Wiedergabe an (wie in Audacity/Audition) – derselbe Eintrag in der Menüleiste
+        Menus = d =>
+        [
+            new("Wiedergabe",
+            [
+                new("au-key-play", "Abspielen / Anhalten", () => ProgramRun(AUK, () => AuTogglePlay(d)), "Leertaste", Tip: "Auswahl – oder ab der Marke"),
+                new("au-key-rec", AuRecording ? "Aufnahme beenden" : "Aufnahme starten", () => ProgramRun(AUK, () => AuRecordToggle(d)), Tip: "Läuft bis „Stopp“"),
             ]),
         ],
         Exports =
@@ -113,7 +122,7 @@ public partial class MainWindow
         Workspace = AuWorkspace,
         Properties = AuProperties,
         Status = d => { var a = AuRendered(d); var (s, e) = AuSel; return a is null ? "Keine Tondatei" : $"{AudioEdit.Time(a.Seconds)} · {a.Rate} Hz · {(a.Channels == 1 ? "Mono" : "Stereo")} · " + (e > s ? $"Auswahl {AudioEdit.Time(s)}–{AudioEdit.Time(e)} ({e - s:0.00} s)" : $"Marke {AudioEdit.Time(s)}"); },
-        Help = "Mit „Tondatei öffnen“ eine WAV- oder MP3-Datei öffnen. In der Wellenform mit der Maus einen Bereich ziehen – oder klicken, um die Marke zu setzen. Oben schneiden, Effekte anwenden, zum Anhören. Ohne Auswahl wirken Effekte auf die ganze Spur. Exportieren speichert das Ergebnis; das Original bleibt unverändert.",
+        Help = "Mit „Tondatei öffnen“ eine WAV- oder MP3-Datei öffnen. In der Wellenform mit der Maus einen Bereich ziehen – oder klicken, um die Marke zu setzen. Oben schneiden, Effekte anwenden – wie stark, steht rechts unter „Effekt-Werte“. Die Leertaste spielt ab und hält an. „Aufnehmen“ läuft, bis du „Stopp“ drückst. Ohne Auswahl wirken Effekte auf die ganze Spur. Exportieren speichert das Ergebnis; das Original bleibt unverändert.",
     }, "audio bearbeiten", "ton bearbeiten", "tonstudio", "aufnahme schneiden", "wav", "mp3 schneiden", "rauschen entfernen", "normalisieren", "podcast", "audacity");
 
     /// <summary>Spektrogramm statt Wellenform zeigen (Audition „Spektral-Ansicht“).</summary>
@@ -230,7 +239,7 @@ public partial class MainWindow
         var f = Path.Combine(AuTemp(), "anhoeren.wav");
         AudioFile.WriteWav(a.Slice((int)(s * a.Rate), (int)(e * a.Rate)), f);
         var o = Audio() ?? throw new InvalidOperationException("Zum Anhören fehlt der Abspieler (mpv) – unter Werkzeuge mit einem Klick laden.");
-        _auPlayFrom = s; _mPos = 0; o.Load(f);
+        _auPlayFrom = s; _auPlayLen = e - s; _mPos = 0; o.Load(f);
         _auTimer ??= new DispatcherTimer(TimeSpan.FromMilliseconds(80), DispatcherPriority.Background, (_, _) =>
         {
             if (CurrentView != AUK) return;
@@ -263,7 +272,19 @@ public partial class MainWindow
 
     private Control AuWorkspace(ProgramDocument d)
     {
+        // T-0732: während der Aufnahme steht oben die Leiste mit Zeit, Pegel und Stopp
+        if (AuRecBar() is { } rec)
+        {
+            var inner = AudioMulti.IsMulti(d.Data) && !AuSpectro ? AuMultiWorkspace(d) : AuWaveWorkspace(d);
+            var dp = new DockPanel { LastChildFill = true }; DockPanel.SetDock(rec, Avalonia.Controls.Dock.Top); dp.Children.Add(rec); dp.Children.Add(inner);
+            return dp;
+        }
         if (AudioMulti.IsMulti(d.Data) && !AuSpectro) return AuMultiWorkspace(d);
+        return AuWaveWorkspace(d);
+    }
+
+    private Control AuWaveWorkspace(ProgramDocument d)
+    {
         _auLanes.Clear();
         var a = AuRendered(d);
         var (s, e) = AuSel;
@@ -276,6 +297,12 @@ public partial class MainWindow
             wave.Spectro = _auSpecCache;
         }
         _auWave = wave;
+        // T-0732: die Welle nimmt den Tastaturfokus (nach jedem Neuaufbau, solange niemand anderes ihn hat) – so wirkt die Leertaste sofort
+        wave.Focusable = true;
+        wave.AttachedToVisualTree += (_, _) => Dispatcher.UIThread.Post(() =>
+        {
+            if (TopLevel.GetTopLevel(wave)?.FocusManager?.GetFocusedElement() is not Visual fv || TopLevel.GetTopLevel(fv) is null) wave.Focus();
+        }, DispatcherPriority.Background);
         wave.Selected = (x, y) => { AuSel = (x, y); AuFreq = default; Show(AUK); };
         wave.SelectedBox = (x, y, f1, f2) => { AuSel = (x, y); AuFreq = (f1, f2); _progMsg[AUK] = $"Bereich {AudioEdit.Time(x)}–{AudioEdit.Time(y)} · {AuHz(f1)}–{AuHz(f2)} – rechts „Bereich absenken“."; Show(AUK); };
         // Transportleiste wie im Videoschnitt: groß, mittig, mit Zeitanzeige
@@ -350,6 +377,7 @@ public partial class MainWindow
         if (AuRendered(d) is not null) sp.Children.Add(AuQaPanel(d)); // Paket 01 S4-20: Prüfen und freigeben
         if (AuRendered(d) is not null) sp.Children.Add(AuPluginPanel(d)); // Paket 01 S4-06: Plugin-Host (abgeschottet, nur freigegeben)
         if (AudioMulti.IsMulti(d.Data)) { sp.Children.Add(AuAutomationPanel(d)); sp.Children.Add(AuBusPanel(d)); } // Paket 01 S4-01/S4-09: Automation, Busse, Sends, Sidechain
+        sp.Children.Add(AuFxPanel()); // T-0732: Werte der Effekte einstellbar statt fest
         sp.Children.Add(AuFoleyPanel(d)); // Paket 01 S4-17: Geräusch-Werkstatt
         return sp;
     }

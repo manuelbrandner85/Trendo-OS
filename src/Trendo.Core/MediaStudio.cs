@@ -20,9 +20,10 @@ public static class MediaStudio
 
     public static readonly string[] Inputs = [".mp4", ".mkv", ".mov", ".avi", ".webm", ".mp3", ".wav", ".flac", ".m4a", ".ogg", ".png", ".jpg", ".jpeg", ".webp", ".bmp"];
 
-    public static string OutputPath(string input, MediaJob job)
+    /// <param name="dir">T-0732: Ausgabeordner (Stapel); ohne Angabe neben der Quelle.</param>
+    public static string OutputPath(string input, MediaJob job, string? dir = null)
     {
-        var dir = Path.GetDirectoryName(Path.GetFullPath(input))!; var b = Path.GetFileNameWithoutExtension(input) + "-" + job.Id;
+        dir ??= Path.GetDirectoryName(Path.GetFullPath(input))!; var b = Path.GetFileNameWithoutExtension(input) + "-" + job.Id;
         var p = Path.Combine(dir, b + job.Ext);
         for (var i = 2; File.Exists(p); i++) p = Path.Combine(dir, $"{b}-{i}{job.Ext}");
         return p;
