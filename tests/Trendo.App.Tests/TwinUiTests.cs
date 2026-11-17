@@ -60,7 +60,8 @@ public class SPEC10_Ui
         Assert.Equal(("Werkstatt", "Druck"), (w.TwinAsset, w.TwinSensor));
         var f = Path.Combine(root, "druck.csv");
         File.WriteAllText(f, "Zeit;Anlage;Sensor;Wert\n" + string.Join("\n", Enumerable.Range(0, 12).Select(i => $"{new DateTime(2026, 10, 30, 8, 0, 0).AddHours(i):dd.MM.yyyy HH:mm};Werkstatt;Druck;{6 + i * 0.1:0.0}".Replace('.', ','))));
-        Get<TextBox>(w, "twin-csv-path").Text = f; Press(w, "twin-csv-load");
+        // V-07 (T-0700): das Pfadfeld ist außer in „Professionell“ ausgeblendet – „Datei wählen …“ trägt die Auswahl, „Einlesen“ läuft danach von selbst
+        w.PickOverride = _ => Task.FromResult<string[]?>([f]); Press(w, "twin-csv-path-pick");
         Assert.Contains("12 Messwerte übernommen", Get<TextBlock>(w, "twin-msg").Text);
         Get<TextBox>(w, "twin-derive-name").Text = "Druck psi"; Get<TextBox>(w, "twin-derive-a").Text = "14,5"; Get<TextBox>(w, "twin-derive-b").Text = "0";
         Press(w, "twin-derive"); Assert.Equal("Druck psi", w.TwinSensor);

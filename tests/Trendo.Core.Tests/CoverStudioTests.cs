@@ -92,7 +92,7 @@ public class CoverStudioTests
     [Fact(DisplayName = "M4 mit echten Analysen (optional): Ampel und Punkte werden ausgegeben")]
     public void Compare_real()
     {
-        if (Environment.GetEnvironmentVariable("TRENDO_COVER_ECHT") is not { Length: > 0 } d || !Directory.Exists(d)) return;
+        if (Environment.GetEnvironmentVariable("TRENDO_COVER_ECHT") is not { Length: > 0 } d || !Directory.Exists(d)) { Ueberspringen.Weil("nur mit gesetzter Umgebungsvariable TRENDO_COVER_ECHT (echter Lauf)."); return; }
         CoverStudio.Blueprint B(string pre) => CoverStudio.Build(SongAnalysis.Parse(File.ReadAllText(Path.Combine(d, pre + "_grund.json")))!,
             File.ReadAllText(Path.Combine(d, pre + "--abschnitte.json")), File.ReadAllText(Path.Combine(d, pre + "--melodie.json")));
         var o = B("orig");

@@ -32,6 +32,7 @@ public static class Fach
     public static void Save<T>(string dataRoot, string studio, string name, T value)
     {
         var p = Path.Combine(StoreDir(dataRoot, studio), name + ".json");
-        File.WriteAllText(p + ".tmp", JsonSerializer.Serialize(value, Json)); SafeFile.Move(p + ".tmp", p);
+        // T-0726: atomar über AtomicFile – eigene Zwischendatei je Schreibvorgang (zwei Fenster kommen sich nicht in die Quere), auf den Datenträger geleert
+        AtomicFile.WriteAllText(p, JsonSerializer.Serialize(value, Json));
     }
 }

@@ -1,6 +1,6 @@
-# Vorbild-Analyse Modell-Prüfer: glTF-Viewer, Validator, Brillen-Leistungsanzeigen (Clean-Room)
+# Vorbild-Analyse Modell-Prüfer: glTF-Viewer, Validator (Clean-Room)
 
-- Programme: „VR & AR gestalten“
+- Programme: „3D-Modelle ansehen“
 - Recherche: glTF-Viewer (Web-Betrachter mit Statistik), glTF-Validator (Khronos), Leistungsrichtwerte für Standalone-Brillen und Handy-AR
 - Werkzeug: Funktionsumfang aus öffentlicher Doku; kein Download, kein Code übernommen. REA nicht eingesetzt.
 
@@ -14,3 +14,8 @@
 
 ## Noch nicht
 Texturen in der Ansicht, Animationen abspielen, volle Validierung nach Khronos-Regeln, Live-Vorschau auf der Brille.
+
+## T-0722 (16.11.2026, Nutzerentscheidung)
+Die Seitengruppe heißt „3D-Modelle ansehen“. Entfernt sind die VR-Teile: Richtwert-Ampel je Brille, Texturgrenze je Brille, Brillen-Ansicht,
+„Für die Brille reparieren“, Komfort- und Bildzeit-Rechner. Statt der Geräte-Ampel zeigt der Prüfer Maße, Dreiecke, Teile, Materialien,
+Texturen und „Fehler im Modell“ ohne Zielgerät – für 3D-Druck und Architektur. Die Vorschau aus Augenhöhe bleibt (stehend im Raum).

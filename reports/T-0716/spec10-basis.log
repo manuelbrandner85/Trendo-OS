@@ -1,0 +1,4 @@
+    SPEC-10 UI: Sensor anlegen, CSV einlesen, ableiten, umbenennen, CSV/SVG speichern, löschen nur mit Bestätigung; PC messen und Live [FAIL]
+        tests\Trendo.App.Tests\TwinUiTests.cs(15,0): at Trendo.App.Tests.SPEC10_Ui.Get[T](MainWindow w, String name)
+        tests\Trendo.App.Tests\TwinUiTests.cs(63,0): at Trendo.App.Tests.SPEC10_Ui.Manage_and_live()
+   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 23,013s

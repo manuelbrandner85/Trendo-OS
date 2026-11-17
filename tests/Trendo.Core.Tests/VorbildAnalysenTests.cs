@@ -14,9 +14,9 @@ public class VorbildAnalysenTests
     [
         "Briefe schreiben", "Trendo Text", "Trendo Tabelle", "Trendo Präsentation", "Trendo PDF", "E-Mail & Kontakte", "Posteingang", "Kalender", "Aufgaben", "Adressbuch",
         "Medien", "Geld", "Verkaufen", "Bildbearbeitung", "Medien bearbeiten", "Videoschnitt", "Live streamen", "TV & Live", "Kleidung & Produkte", "KI-Vorlagen",
-        "3D", "Trendo CAD", "Trendo 3D-Druck", "Aus Fotos", "Punktwolke", "Spiele bauen", "Werkstatt", "VR & AR gestalten", "Grundriss & Wohnen", "Schaltung & Simulation",
-        "Tragwerk & Mechanik", "Geräte überwachen", "Karten & Touren", "CNC-Werkstatt", "Auto & Fahrten", "Kameras & Roboter steuern", "Messdaten & Auswertung", "Trendo Musik",
-        "Lernen mit Karteikarten", "Wissen für die KI", "Recherche im Lesemodus", "KI fragen", "Abläufe (Automatisch erledigen)", "Produktion", "Webseite bauen", "Baukasten", "Künstlerstudio",
+        "3D", "Trendo CAD", "Trendo 3D-Druck", "Aus Fotos", "Punktwolke", "Spiele bauen", "Werkstatt", "3D-Modelle ansehen", "Grundriss & Wohnen", "Schaltung & Simulation",
+        "Tragwerk & Mechanik", "Geräte überwachen", "Karten & Touren", "CNC-Werkstatt", "Messdaten & Auswertung", "Trendo Musik",
+        "Lernen mit Karteikarten", "Wissen für die KI", "Recherche im Lesemodus", "KI fragen", "Abläufe (Automatisch erledigen)", "Produktion", "Webseite bauen", "Baukasten", "Künstlerstudio", "Bewerbung & Lebenslauf", "Karten & Einladungen", "Verträge-Ordner", "Präsentationen gestalten", "Dokumente scannen", "PDF-Werkstatt", "Formulare ausfüllen",
     ];
 
     [Fact(DisplayName = "Vorbild-Analysen: jedes Arbeitsprogramm hat eine Analyse (Clean-Room) mit Funktionsliste ✓/◐/✗, Bedienkonzept und nächsten Schritten; nur echte Programmnamen")]

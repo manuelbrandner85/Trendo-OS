@@ -74,8 +74,11 @@ public partial class MainWindow
         if (d is null) { ProgramNew(GK, "leer"); d = ProgramActive(GK)!; }
         d.Edit(_gpChange ? "Spiel-Auftrag: " + _gpText : "Spiel aus einem Satz", x => { foreach (var (k, v) in neu) x[k] = v?.DeepClone(); });
         _core.Audit.Append(Principal.LocalOwner.Name, "game.prompt.apply", d.Text("title"));
-        _progMsg[GK] = $"„{d.Text("title")}“ übernommen – „Bauen“ macht es spielbar. Rückgängig mit Strg+Z.";
-        _gpResult = null; _gameSection = "Übersicht"; Show(GK);
+        // T-0690: ein Kachelspiel ist sofort spielbar und auf der Mal-Fläche änderbar – dorthin geht es direkt
+        var tile = d.Text("browser") == "plattform";
+        _progMsg[GK] = tile ? $"„{d.Text("title")}“ übernommen – „▶ Spielen“ startet es sofort hier im Fenster, auf der Fläche malst du weiter. Rückgängig mit Strg+Z."
+            : $"„{d.Text("title")}“ übernommen – „Bauen“ macht es spielbar. Rückgängig mit Strg+Z.";
+        _gpResult = null; _gameSection = tile ? "Level" : "Übersicht"; if (tile) { _gameLevelIdx = 0; GameLayer = "spiel"; _gamePlay = null; } Show(GK);
     }
 
     public void GamePromptDiscard() { _gpResult = null; _progMsg[GK] = "Verworfen."; Show(GK); }

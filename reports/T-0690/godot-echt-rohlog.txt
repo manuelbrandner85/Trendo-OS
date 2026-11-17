@@ -1,0 +1,21 @@
+Godot: Godot_v4.7.2-stable_win64.exe
+[Von oben] --import Exitcode 0
+[Von oben] Level: OK 1 Level (Exitcode 0)
+[Von oben] Spiel: OK Spiel läuft, Figur steht (Blick von oben) (Exitcode 0)
+[Von oben] Gameplay: OK Gameplay: Inventar, Figur, Aufgabe, Schwert, Boss, Fahrzeug, Doppelsprung (Exitcode 0)
+[Von oben] Spielstand: OK Spielstand speichern, fortsetzen und prüfen (Exitcode 0)
+[Von oben] Menü: OK Menü: Start, Einstellungen gespeichert, Pause, Weiter (Exitcode 0)
+[Von oben] Durchspiel: OK Durchgespielt: von der Seite (laufen, Münze, Wand, Sprung, Ziel), von oben (laufen, Münze, Wand, Ziel), Stacheln (verloren) (Exitcode 0)
+[Von der Seite] --import Exitcode 0
+[Von der Seite] Level: OK 1 Level (Exitcode 0)
+[Von der Seite] Spiel: OK Spiel läuft, Figur steht (Exitcode 0)
+[Von der Seite] Gameplay: OK Gameplay: Inventar, Figur, Aufgabe, Schwert, Boss, Fahrzeug, Doppelsprung (Exitcode 0)
+[Von der Seite] Spielstand: OK Spielstand speichern, fortsetzen und prüfen (Exitcode 0)
+[Von der Seite] Menü: OK Menü: Start, Einstellungen gespeichert, Pause, Weiter (Exitcode 0)
+[Von der Seite] Durchspiel: OK Durchgespielt: von der Seite (laufen, Münze, Wand, Sprung, Ziel), von oben (laufen, Münze, Wand, Ziel), Stacheln (verloren) (Exitcode 0)
+[Gegenprobe kaputtes Skript] FEHLER erkannt (Exitcode 1)
+SHA-256 project.godot: 0cf5a4123ad92f65cf3281386e29b1507b38ebee4e5a61a1b4165ce9c60a2a8c
+SHA-256 level.json: b3e4ff4b8e7f9dbdb301264691a44a94b8a9564abe19ceea850462abeb457234
+SHA-256 trendo_level.gd: 50d41370284e4506c5ca3d451a1217e883da28b876c738fad06d72ebda9b5726
+SHA-256 trendo_player.gd: ec11eeaedd693c94cdfee54020bb3093eac73e940432d9c5eb3e953b0c375771
+SHA-256 tests/selfplay_check.gd: 70b225fea35bcd105a21dd70986518bb38c349b42a055a1ebf19126ec573c39f

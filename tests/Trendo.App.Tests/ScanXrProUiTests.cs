@@ -6,13 +6,13 @@ using Xunit;
 
 namespace Trendo.App.Tests;
 
-/// <summary>VR & AR (Profi 3 + Claude 3) und Einscannen (Profi 4 + Claude 4) in der Oberfläche.</summary>
+/// <summary>3D-Modelle ansehen (Augenhöhe) und Einscannen (Profi 4 + Claude 4) in der Oberfläche.</summary>
 public class ScanXrPro_Ui
 {
     static void Pump() => Avalonia.Threading.Dispatcher.UIThread.RunJobs();
 
-    [AvaloniaFact(DisplayName = "SPEC-04 VR: Vorschau aus Augenhöhe schaltbar (1,60 m), Anzeige der größten Textur, Karte „Für die Brille reparieren“; passt das Modell, gibt es nichts zu reparieren")]
-    public async Task Xr_eye_and_fix()
+    [AvaloniaFact(DisplayName = "3D-Modelle ansehen: Vorschau aus Augenhöhe schaltbar (1,60 m); keine Brillen-Reparatur mehr (T-0722)")]
+    public void Xr_eye()
     {
         var (w, _, _) = Ui.Open();
         try
@@ -22,14 +22,10 @@ public class ScanXrPro_Ui
             Assert.Null(w.Find<MeshView>("xr-view").EyeHeightCm);
             w.Find<Button>("xr-eye").Press(); Pump();
             Assert.Equal(160, w.Find<MeshView>("xr-view").EyeHeightCm);
-            Assert.NotNull(w.TryFind<StackPanel>("xr-fix-card"));
-            var called = false; w.XrFixOverride = (_, _, _) => { called = true; return Task.FromResult(true); };
-            await w.XrFix(); Pump();
-            Assert.False(called); // das Beispiel passt schon – Blender wird nicht bemüht
-            Assert.Contains("Nichts zu reparieren", w.Find<TextBlock>("xr-msg").Text);
+            Assert.Null(w.TryFind<StackPanel>("xr-fix-card")); // T-0722: „Für die Brille reparieren“ entfernt
             w.Find<Button>("xr-eye").Press(); Pump(); Assert.Null(w.Find<MeshView>("xr-view").EyeHeightCm);
         }
-        finally { w.XrFixOverride = null; w.Close(); }
+        finally { w.Close(); }
     }
 
     [AvaloniaFact(DisplayName = "SPEC-09 Scan: Kameras als Marker, beschneiden, Reste entfernen, Löcher schließen, echte Größe direkt und über Kreditkarte, Rückgängig; gute Fotos auswählen und als Kopie verwenden; Texturqualität wählbar")]

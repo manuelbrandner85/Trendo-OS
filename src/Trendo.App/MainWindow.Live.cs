@@ -173,12 +173,12 @@ public partial class MainWindow
     private async Task InstallFfmpeg()
     {
         var comp = DependencyCatalog.Get("ffmpeg");
-        var req = _core.Approvals.Request(Principal.LocalOwner, "deps.install", "FFmpeg für Live streamen installieren", comp.Id);
-        _core.Approvals.Approve(req.Id, Principal.LocalOwner);
-        if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner);
+        // B4 (T-0706): „Ja, installieren“ auf der FFmpeg-Rückfrage ist die Freigabe der angemeldeten Person; installiert wird nur über den Kern
+        if (FreigabeAusRueckfrage(InstallWirkung(comp, "Live streamen")) is not { } id) { Show("sendung"); return; }
+        if (!_deps.HasConsent) _deps.GiveConsent(CurrentPrincipal);
         _liveMsg = "FFmpeg wird installiert …";
         Show("sendung");
-        var ok = await _deps.InstallAsync(Principal.LocalOwner, comp);
+        var ok = await _deps.InstallApprovedAsync(_core.Approvals, id, CurrentPrincipal, comp);
         _liveAskInstall = !ok;
         _ffmpegResolved = null;
         _liveMsg = ok
@@ -317,7 +317,8 @@ public partial class MainWindow
         var ff = await EnsureFfmpeg();
         if (ff is null) { Show("sendung"); return; }
         ReadLiveForm();
-        if (_liveAsk == LiveAskState.Pending) _core.Approvals.Approve(_liveApprovalId, Principal.LocalOwner);
+        // Zweiter, eigener Schritt nach „Live anfragen“ – freigeben darf nur eine erwachsene Person (Kern prüft die Rolle)
+        if (_liveAsk == LiveAskState.Pending && !FreigabeErteilen(_liveApprovalId)) { Show("sendung"); return; }
         var copy = _liveCopy ? NewRecording() : null;
         if (Live.Mode == LiveMode.Broadcasting) Live.Stop(); // Szenenwechsel: alte Sendung endet erst nach dem Ja
         LiveBroadcast.Go(_core.Approvals, _liveApprovalId, Live, _frozenPlatform, _frozenCustom, _core.Secrets, ff, _frozen, PreviewPath, copy, _core.Offline);

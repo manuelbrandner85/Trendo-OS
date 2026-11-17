@@ -77,29 +77,4 @@ public class RoundSix_Ui
         }
         finally { MainWindow.DownloadRunOverride = null; }
     }
-
-    [AvaloniaFact(DisplayName = "Fahrtenbuch (T-0311): Fahrt korrigieren mit Grund, Fahrt stornieren mit Grund, Monat festschreiben – danach keine Änderung mehr möglich")]
-    public void Logbook_fix_void_lock()
-    {
-        var (w, _, _) = Ui.Open();
-        var y = DateTime.Today.Year; var m = DateTime.Today.Month == 1 ? 1 : DateTime.Today.Month - 1;
-        w.Cars.Add("Kombi", "B-EM 123");
-        w.Cars.Log("Kombi", new DateTime(y, m, 3), 1000, 1050, "dienstlich", "Kunde Max Beispiel", "Beratung", "Beispiel GmbH");
-        w.Cars.Log("Kombi", new DateTime(y, m, 4), 1050, 1070, "privat", "Supermarkt");
-        w.CarSel = "Kombi"; w.CarTab = "fahrten"; w.Show("fahrzeug");
-        // neueste zuerst: Zeile 0 = 1050→1070, Zeile 1 = 1000→1050
-        w.Find<Button>("car-t-fix-1").Press();
-        w.Find<TextBox>("car-t-fix-dest").Text = "Kunde Erika Muster"; w.Find<TextBox>("car-t-fix-reason").Text = "Ziel falsch eingetragen";
-        w.Find<Button>("car-t-fix-save").Press();
-        var trip = w.Cars.Get("Kombi").Trips.Single(t => t.StartKm == 1000);
-        Assert.Equal("Kunde Erika Muster", trip.Destination); Assert.Single(trip.Corrections);
-        w.Find<Button>("car-t-void-0").Press();
-        w.Find<TextBox>("car-t-void-reason").Text = "doppelt eingetragen";
-        w.Find<Button>("car-t-void-yes").Press();
-        Assert.True(w.Cars.Get("Kombi").Trips.Single(t => t.StartKm == 1050).Voided);
-        w.Find<Button>($"car-t-lock-{m}").Press();
-        Assert.NotNull(w.TryFind<TextBlock>($"car-t-locked-{m}"));
-        Assert.Null(w.TryFind<Button>("car-t-fix-1")); // festgeschrieben: nicht mehr änderbar
-        Assert.Throws<InvalidOperationException>(() => w.Cars.Correct("Kombi", trip, "nachträglich", end: 1060));
-    }
 }

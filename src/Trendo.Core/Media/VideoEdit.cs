@@ -138,52 +138,96 @@ public static class VideoEdit
 
     static string F(double v) => v.ToString("0.###", Inv);
 
-    /// <summary>FFmpeg-Aufruf für den Export: jedes Stück zugeschnitten, auf gleiche Größe und Bildrate gebracht, aneinandergehängt;
-    /// Stücke ohne Ton bekommen Stille; Musik mit Startzeit und Lautstärke darübergemischt. H.264 + AAC, MP4.</summary>
-    public static List<string> ExportArgs(JsonObject p, string output, VideoExport.Options? o = null)
+    /// <summary>T-0695: Ausschnitt der Zeitleiste für die Vorschau – ab <see cref="From"/> bis <see cref="To"/> (Sekunden, 0 = bis zum Ende).</summary>
+    /// <summary><see cref="Still"/>: nur ein Bild bei From – in einer Überblendung verwerfen die Stücke die Bilder zwischen Blendenbeginn und From früh (schneller, gleiches Bild).</summary>
+    public sealed record Window(double From, double To = 0, bool Still = false);
+
+    static string F6(double v) => v.ToString("0.######", Inv);
+
+    /// <summary>Bildteil des Export-Graphen (Stücke, Farbe, Effekte, Titel, Keyframes, Übergänge) bis zum Etikett „vbase“ – Export und Vorschau (T-0695) bauen ihn hier gemeinsam.
+    /// Mit <paramref name="win"/> nur die Stücke im Ausschnitt: das erste beginnt später, behält aber seine Zeit (setpts), damit Keyframes und Übergänge genau wie im Export rechnen.
+    /// <paramref name="source"/> ersetzt Dateien (Proxy für die Vorschau).</summary>
+    internal static (List<string> Args, List<string> Graph, int Input, int W, int H, int Fps, List<EditClip> Clips, string Base) PictureGraph(JsonObject p, Window? win, Func<string, string>? source)
     {
-        var clips = Clips(p); var music = Clips(p, "music").Where(m => VideoLanes.IsOn(p, "audio", m.Lane)).ToList();
-        if (clips.Count == 0) throw new InvalidOperationException("Die Bildspur ist leer – zuerst Videos oder Bilder hinzufügen.");
-        if (clips.FirstOrDefault(c => !System.IO.File.Exists(c.File)) is { } miss) throw new FileNotFoundException("Datei fehlt: " + Path.GetFileName(miss.File));
+        var all = Clips(p);
+        if (all.Count == 0) throw new InvalidOperationException("Die Bildspur ist leer – zuerst Videos oder Bilder hinzufügen.");
+        if (all.FirstOrDefault(c => !System.IO.File.Exists(c.File)) is { } miss) throw new FileNotFoundException("Datei fehlt: " + Path.GetFileName(miss.File));
         int w = (int)D(p["width"]), h = (int)D(p["height"]), fps = (int)Math.Max(1, D(p["fps"])); if (w < 16) w = 1280; if (h < 16) h = 720;
         var a = new List<string> { "-hide_banner", "-loglevel", "error", "-y" };
         var f = new List<string>(); var input = 0; var concat = ""; var ids = new List<int>();
-        foreach (var c in clips)
+        // T-0695: Ausschnitt – erstes Stück, das bei From noch zu sehen ist; bei einer Überblendung ins nächste beginnt es spätestens mit der Blende
+        int first = 0, last = all.Count - 1; double skip = 0, origin = 0; var st = Starts(all);
+        if (win is not null)
         {
-            if (c.IsImage) a.AddRange(["-loop", "1", "-framerate", fps.ToString(Inv), "-t", F(c.Length), "-i", c.File]);
-            else a.AddRange(["-ss", F(c.In), "-t", F(c.Length), "-i", c.File]);
+            first = all.Count - 1;
+            for (var i = 0; i < all.Count; i++) if (st[i] + all[i].Length > win.From + 1e-9) { first = i; break; }
+            if (win.To > 0) last = Math.Max(first, st.FindLastIndex(s => s < win.To - 1e-9));
+            skip = Math.Clamp(win.From - st[first], 0, Math.Max(0, all[first].Length - MinLength));
+            if (last > first && FadeOf(all, first) > 0) skip = Math.Min(skip, all[first].Length - FadeOf(all, first));
+            origin = st[first];
+        }
+        var clips = all.GetRange(first, last - first + 1);
+        for (var k = 0; k < clips.Count; k++)
+        {
+            var c = clips[k]; var cut = k == 0 ? skip : 0; var file = source?.Invoke(c.File) ?? c.File;
+            if (c.IsImage) a.AddRange(["-loop", "1", "-framerate", fps.ToString(Inv), "-t", cut > 0 ? F6(c.Length - cut) : F(c.Length), "-i", file]);
+            else a.AddRange(["-ss", cut > 0 ? F6(c.In + cut) : F(c.In), "-t", cut > 0 ? F6(c.Length - cut) : F(c.Length), "-i", file]);
             var vi = input++;
             var fx = VideoPro.Fx(p, c.Id); // Profi 23: Farbe, Titellage und -größe je Stück
             var title = c.Title.Length > 0 && FontFile() is { } font
                 ? $",drawtext=fontfile='{font.Replace("\\", "/").Replace(":", "\\:")}':text='{DrawText(c.Title)}':fontcolor=white:fontsize=h/14*{F(fx.TitleSize)}:borderw=3:bordercolor=black@0.6:x=(w-text_w)/2:y={VideoPro.TitleY(fx.TitlePos)}" : "";
-            f.Add($"[{vi}:v]scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps={fps},format=yuv420p{VideoPro.ColorFilter(fx)}{VideoGrade.Filter(p, c.Id)}{VideoAnim.StackFilter(p, c.Id)}{title}[{(VideoAnim.HasTransform(p, c.Id) ? "vt" : "v")}{vi}]"); // V6: Effektstapel nach der Farbe
-            if (VideoAnim.HasTransform(p, c.Id)) f.AddRange(VideoAnim.ClipTransform(p, c.Id, $"vt{vi}", $"v{vi}", w, h, fps, c.Length)); // V5: Bewegung, Größe, Deckkraft
+            var shift = cut > 0 ? $"setpts=PTS+{F6(cut)}/TB," : ""; // T-0695: Zeit im Stück bleibt wie im Export
+            // T-0695: Standbild in einer Überblendung – erstes Bild (setzt den Blendenbeginn) und ab der Stelle; die Bilder dazwischen gehen nicht durch Farbe, Effekte und Keyframes
+            var at = win is { Still: true } && clips.Count > 1 ? win.From - st[first + k] - 0.25 / fps : 0;
+            var pick = at > (k == 0 ? cut : 0) + 0.5 / fps ? $",select='eq(n\\,0)+gte(t\\,{F6(at)})'" : "";
+            f.Add($"[{vi}:v]{shift}scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps={fps}{pick},format=yuv420p{VideoPro.ColorFilter(fx)}{VideoGrade.Filter(p, c.Id)}{VideoAnim.StackFilter(p, c.Id)}{title}[{(VideoAnim.HasTransform(p, c.Id) ? "vt" : "v")}{vi}]"); // V6: Effektstapel nach der Farbe
+            if (VideoAnim.HasTransform(p, c.Id)) f.AddRange(VideoAnim.ClipTransform(p, c.Id, $"vt{vi}", $"v{vi}", w, h, fps, c.Length, cut, pick)); // V5: Bewegung, Größe, Deckkraft
             string ai;
             if (c.HasAudio && !c.IsImage) { ai = $"{vi}:a"; }
-            else { a.AddRange(["-f", "lavfi", "-t", F(c.Length), "-i", "anullsrc=r=48000:cl=stereo"]); ai = $"{input++}:a"; }
+            else { a.AddRange(["-f", "lavfi", "-t", cut > 0 ? F6(c.Length - cut) : F(c.Length), "-i", "anullsrc=r=48000:cl=stereo"]); ai = $"{input++}:a"; }
             f.Add($"[{ai}]aresample=48000,aformat=channel_layouts=stereo{(Math.Abs(c.Volume * VideoLanes.BaseGain(p) - 1) > 0.001 ? $",volume={F(c.Volume * VideoLanes.BaseGain(p))}" : "")}{VideoAnim.VolumeFilter(p, c.Id)}[a{vi}]"); // Tonpegel je Stück, V5: Verlauf
             concat += $"[v{vi}][a{vi}]"; ids.Add(vi);
         }
-        if (clips.Select((_, i) => FadeOf(clips, i)).All(x => x <= 0)) f.Add($"{concat}concat=n={clips.Count}:v=1:a=1[vbase][abase]");
+        double Fade(int k) => FadeOf(all, first + k); // Überblendung nach dem k-ten Stück des Ausschnitts
+        if (Enumerable.Range(0, clips.Count - 1).All(k => Fade(k) <= 0)) f.Add($"{concat}concat=n={clips.Count}:v=1:a=1[vbase][abase]");
         else
         {
             // Überblendungen: paarweise Kette, xfade (Bild) und acrossfade (Ton); ohne Überblendung wird einfach angehängt
             string cv = $"v{ids[0]}", ca = $"a{ids[0]}"; var len = clips[0].Length;
             for (var i = 1; i < clips.Count; i++)
             {
-                var fd = FadeOf(clips, i - 1); var nv = i == clips.Count - 1 ? "vbase" : $"xv{i}"; var na = i == clips.Count - 1 ? "abase" : $"xa{i}";
+                var fd = Fade(i - 1); var nv = i == clips.Count - 1 ? "vbase" : $"xv{i}"; var na = i == clips.Count - 1 ? "abase" : $"xa{i}";
                 if (fd > 0)
                 {
-                    f.Add($"[{cv}][v{ids[i]}]xfade=transition={VideoPro.Fx(p, clips[i - 1].Id).Transition}:duration={F(fd)}:offset={F(len - fd)}[{nv}]"); // Übergangsart je Stück
+                    // T-0695: xfade zählt den Versatz ab dem ersten Bild – im Ausschnitt beginnt das erste Stück um „skip“ später
+                    f.Add($"[{cv}][v{ids[i]}]xfade=transition={VideoPro.Fx(p, clips[i - 1].Id).Transition}:duration={F(fd)}:offset={(skip > 0 ? F6(Math.Max(0, len - fd - skip)) : F(len - fd))}[{nv}]"); // Übergangsart je Stück
                     f.Add($"[{ca}][a{ids[i]}]acrossfade=d={F(fd)}[{na}]");
                     len += clips[i].Length - fd;
                 }
-                else { f.Add($"[{cv}][{ca}][v{ids[i]}][a{ids[i]}]concat=n=2:v=1:a=1[{nv}][{na}]"); len += clips[i].Length; }
+                else
+                {
+                    // T-0693: Folgt nach einem harten Schnitt noch eine Überblendung, braucht xfade wieder die Zeitbasis der Bildrate – concat liefert eine andere, FFmpeg bricht sonst ab
+                    var hard = i == clips.Count - 1 ? nv : "c" + nv;
+                    f.Add($"[{cv}][{ca}][v{ids[i]}][a{ids[i]}]concat=n=2:v=1:a=1[{hard}][{na}]");
+                    if (hard != nv) f.Add($"[{hard}]fps={fps}[{nv}]");
+                    len += clips[i].Length;
+                }
                 cv = nv; ca = na;
             }
             if (clips.Count == 1) { f.Add($"[{cv}]null[vbase]"); f.Add($"[{ca}]anull[abase]"); }
         }
-        a.AddRange(VideoPro.OverlayGraph(p, f, "vbase", "vout", ref input, w, h, fps)); // zweite Bildspur: Bild im Bild, Logos, Einblendungen
+        if (origin <= 0) return (a, f, input, w, h, fps, all, "vbase");
+        f.Add($"[vbase]setpts=PTS+{F6(origin)}/TB[vtl]"); // T-0695: Ausschnitt zurück auf die Zeit der Zeitleiste (Einblendungen zählen ab dort)
+        return (a, f, input, w, h, fps, all, "vtl");
+    }
+
+    /// <summary>FFmpeg-Aufruf für den Export: jedes Stück zugeschnitten, auf gleiche Größe und Bildrate gebracht, aneinandergehängt;
+    /// Stücke ohne Ton bekommen Stille; Musik mit Startzeit und Lautstärke darübergemischt. H.264 + AAC, MP4.</summary>
+    public static List<string> ExportArgs(JsonObject p, string output, VideoExport.Options? o = null)
+    {
+        var music = Clips(p, "music").Where(m => VideoLanes.IsOn(p, "audio", m.Lane)).ToList();
+        var (a, f, input, w, h, fps, clips, vb) = PictureGraph(p, null, null);
+        a.AddRange(VideoPro.OverlayGraph(p, f, vb, "vout", ref input, w, h, fps)); // zweite Bildspur: Bild im Bild, Logos, Einblendungen
         var mix = "[abase]"; var n = 1;
         foreach (var m in music)
         {

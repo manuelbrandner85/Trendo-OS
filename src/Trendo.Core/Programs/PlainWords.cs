@@ -62,7 +62,65 @@ public static class PlainWords
         ["Fehlende Programme von GitHub nachladen"] = "Fehlende Programme nachladen",
         ["+ Persona"] = "+ Stil-Profil",
         ["Exportieren"] = "Als Datei speichern",
+        // V-11 (T-0700): weitere Fachwörter an Knöpfen
+        ["ICS einlesen …"] = "Kalenderdatei einlesen …",
+        ["Alle als vCard sichern"] = "Alle Kontakte als Datei sichern",
+        ["Als vCard"] = "Als Kontaktdatei",
+        ["Kontakte sichern (.vcf)"] = "Kontakte als Datei sichern",
+        ["Störpunkte entfernen"] = "Fehlerhafte Punkte entfernen",
+        ["GPX (Navi, Uhr)"] = "Für Navi oder Uhr",
+        ["GeoJSON (QGIS)"] = "Für Kartenprogramme",
+        ["KML (Google Earth)"] = "Für Google Earth",
+        ["Ergebnisse (CSV)"] = "Ergebnisse als Tabelle",
+        ["CSV (Excel)"] = "Als Tabelle (Excel)",
+        ["Diagramm (SVG)"] = "Diagramm als Zeichnung",
+        ["SVG (Bild)"] = "Als Zeichnung",
+        ["Entwurf als SVG"] = "Entwurf als Zeichnung",
+        ["Entwurf als PNG (Druckgröße)"] = "Druckdatei speichern",
+        ["Eurocode-Nachweis"] = "Nachweis nach Norm",
+        ["On-Air-Uhr"] = "Sendeuhr",
+        ["Etiketten (PDF)"] = "Adress-Etiketten drucken",
+        ["Als ICS"] = "Als Kalenderdatei",
+        ["Gästeliste laden (CSV)"] = "Gästeliste aus Tabelle laden",
     };
+
+    /// <summary>V-11 (T-0700): feste Texte, Überschriften und Platzhalter mit Fachwort – in „Einfach“ in Alltagssprache. Ganze Texte (ein vorangestelltes Zeichen wie „✓ “ darf davorstehen),
+    /// nie Inhalte der Person. In Erweitert und Professionell bleibt das Fachwort; in „Einfach“ steht es im Hinweis.</summary>
+    public static readonly IReadOnlyDictionary<string, string> SimpleTexts = new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["winget (Benutzer)"] = "über Windows, ohne Admin-Rechte",
+        ["Get-PnpDevice"] = "Windows erkennt die Geräte",
+        ["GPIO / Sensoren"] = "Sensoren anschließen",
+        ["GPIO am Pi"] = "Anschlüsse am Raspberry Pi",
+        ["GPX laden"] = "Tour-Datei laden",
+        ["CSV laden"] = "Tabelle laden",
+        ["GPX-Datei (Uhr, Handy, Navi)"] = "Tour-Datei von Uhr, Handy oder Navi",
+        ["CSV-Datei (Excel, Messgerät)"] = "Tabelle aus Excel oder vom Messgerät",
+        ["vCard (.vcf) oder CSV (Google, Outlook) einlesen"] = "Kontakte aus Handy, Google oder Outlook einlesen",
+        ["Prüfsumme (SHA-256) vom Hersteller"] = "Prüfzahl vom Hersteller (steht beim Download)",
+        ["Slicen in Bambu Studio"] = "Für den Drucker vorbereiten (Bambu Studio)",
+        ["Gewählt: COLMAP"] = "Rechenweg: COLMAP (Standard)",
+        ["Gewählt: Meshroom"] = "Rechenweg: Meshroom",
+        ["Texturqualität"] = "Bildqualität der Oberfläche",
+        ["EXIF"] = "Aufnahmedaten",
+    };
+
+    /// <summary>Alltagswort in „Einfach“ für einen festen Text (auch mit einem Zeichen davor, z. B. „✓ GPIO / Sensoren“); null, wenn es keins gibt.</summary>
+    public static string? SimpleText(string text)
+    {
+        var t = text.Trim();
+        if (SimpleTexts.TryGetValue(t, out var p)) return p;
+        var sp = t.IndexOf(' ');
+        if (sp is > 0 and <= 2 && !char.IsLetterOrDigit(t[0]) && SimpleTexts.TryGetValue(t[(sp + 1)..], out var q)) return t[..(sp + 1)] + q;
+        return null;
+    }
+
+    /// <summary>V-11 (T-0700): Tastenkürzel gehört in den Hinweis, nicht in den Knopf: „Teilen (S)“ → („Teilen“, „S“). Sonst null.</summary>
+    public static (string Label, string Key)? WithoutShortcut(string label)
+    {
+        var m = System.Text.RegularExpressions.Regex.Match(label.Trim(), @"^(?<w>.*\p{L}.*?) \((?<k>(Strg|Umschalt|Alt)\+[^()]+|Entf|Leertaste|Esc|Enter|Tab|F\d{1,2}|[A-Z])\)$");
+        return m.Success ? (m.Groups["w"].Value, m.Groups["k"].Value) : null;
+    }
 
     /// <summary>Wörter, die nur an einem bestimmten Knopf ersetzt werden (sonst wäre die Bedeutung falsch, z. B. „GitHub“ beim Hochladen).</summary>
     public static readonly IReadOnlyDictionary<string, string> SimpleByName = new Dictionary<string, string>(StringComparer.Ordinal)

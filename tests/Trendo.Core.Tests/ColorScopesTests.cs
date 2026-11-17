@@ -51,7 +51,7 @@ public class ColorScopesTests
     [Fact(DisplayName = "S3-11-P echt mit FFmpeg: Scopes-Bild (Bild · Waveform · Vektorskop), neutrale LUT gilt als gleichwertig, falsche LUT (Farben vertauscht) nicht; Export mit LUT läuft")]
     public void Real_scopes_and_lut()
     {
-        var ff = Cli.Find("ffmpeg"); if (ff is null) return;
+        var ff = Cli.Find("ffmpeg"); if (ff is null) { Ueberspringen.Weil("FFmpeg fehlt auf diesem PC."); return; }
         var dir = Path.Combine(Path.GetTempPath(), "trendo-lut-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
         try
         {

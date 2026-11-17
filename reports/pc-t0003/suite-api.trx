@@ -2,7 +2,7 @@
 <TestRun id="75480dbc-bf17-47d6-9103-af865c16cd35" name="<user>@<host> 2026-10-22 02:42:13" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:13.7680149+02:00" queuing="2026-10-22T02:42:13.7680150+02:00" start="2026-10-22T02:42:11.5234021+02:00" finish="2026-10-22T02:42:15.8498271+02:00" />
   <TestSettings name="default" id="da23611d-a4e6-477c-87b7-450ddbe695d8">
-    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_13" />
+    <Deployment runDeploymentRoot="<user>_<host>_2026-10-22_02_42_13" />
   </TestSettings>
   <Results>
     <UnitTestResult executionId="7e8d595c-e281-4040-85a6-eeab72a0330c" testId="8835ef88-e3aa-6db1-0e11-fcdf4719796d" testName="RBAC über API: Rechte je Rolle(method: &quot;GET&quot;, url: &quot;api/approvals&quot;, role: User, expect: Forbidden)" computerName="<host>" duration="00:00:00.0009963" startTime="2026-10-22T02:42:13.7434113+02:00" endTime="2026-10-22T02:42:13.7445453+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7e8d595c-e281-4040-85a6-eeab72a0330c" />

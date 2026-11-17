@@ -2,7 +2,7 @@
 <TestRun id="0fc6fee5-3fb2-4cd9-bedc-376e0864fb1d" name="<user>@<host> 2026-10-22 02:42:40" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:40.0866743+02:00" queuing="2026-10-22T02:42:40.0866744+02:00" start="2026-10-22T02:42:39.4650513+02:00" finish="2026-10-22T02:42:40.1245426+02:00" />
   <TestSettings name="default" id="b040fa36-ee3a-4005-b04a-97a5fed01bc9">
-    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_40" />
+    <Deployment runDeploymentRoot="<user>_<host>_2026-10-22_02_42_40" />
   </TestSettings>
   <Results>
     <UnitTestResult executionId="b4c88957-f5fa-4c33-94d5-7f00b71fd576" testId="6f204133-1711-a195-085b-1cc5f5a23705" testName="SPEC-09 F17: XYZ speichern" computerName="<host>" duration="00:00:00.0007452" startTime="2026-10-22T02:42:40.0651711+02:00" endTime="2026-10-22T02:42:40.0652237+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b4c88957-f5fa-4c33-94d5-7f00b71fd576" />

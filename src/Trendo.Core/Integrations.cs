@@ -84,7 +84,7 @@ public sealed class Integrations(ApprovalGate gate, ProjectStore projects, IProc
     public ApprovalRequest PlanOpenProjectFolder(Principal by, string projectId)
     {
         var dir = projects.ProjectFilesRoot(projectId);
-        return gate.Request(by, OpenFolder, $"Projektordner '{projectId}' im Explorer öffnen", dir);
+        return gate.Request(by, OpenFolder, $"Projektordner '{projectId}' im Explorer öffnen", dir, resumable: true); // T-0713: Ziel steht in der Anfrage – überlebt einen Neustart
     }
 
     public ApprovalRequest PlanOpenUrl(Principal by, string url)
@@ -92,7 +92,7 @@ public sealed class Integrations(ApprovalGate gate, ProjectStore projects, IProc
         if (isOffline?.Invoke() == true) throw new OfflineException("Offline-Modus: Browser-/Netzwerkaktionen sind deaktiviert.");
         if (!Uri.TryCreate(url, UriKind.Absolute, out var u) || u.Scheme != Uri.UriSchemeHttps)
             throw new ArgumentException("Nur https-URLs erlaubt.");
-        return gate.Request(by, OpenUrl, $"URL im Standardbrowser öffnen: {u.Host}", u.AbsoluteUri);
+        return gate.Request(by, OpenUrl, $"URL im Standardbrowser öffnen: {u.Host}", u.AbsoluteUri, resumable: true);
     }
 
     /// <summary>Direkter Start durch den lokalen Owner per Klick (Dock/Schnellstart). Kein Agent darf das; wird auditiert.</summary>
@@ -119,8 +119,31 @@ public sealed class Integrations(ApprovalGate gate, ProjectStore projects, IProc
         launcher.OpenWithArgs(exe, args);
     }
 
-    public void Execute(ApprovalRequest r) =>
+    /// <summary>Nur die eigenen Integrationen (Projektordner, https-Adresse). B4 (T-0706): Andere Anfragen (Installieren, Ablauf, Roboter …)
+    /// gehören zu ihrer Seite – ihr Ziel ist kein Startziel und wird hier nie geöffnet.</summary>
+    public static bool Handles(string action) => action is OpenFolder or OpenUrl;
+
+    /// <summary>T-0713: erlaubtes Startziel – bei „URL öffnen“ eine absolute https-Adresse, bei „Projektordner öffnen“ genau der Dateiordner eines Projekts.</summary>
+    public bool IsValidTarget(string action, string target)
+    {
+        if (action == OpenUrl) return Uri.TryCreate(target, UriKind.Absolute, out var u) && u.Scheme == Uri.UriSchemeHttps && u.AbsoluteUri == target;
+        if (action != OpenFolder) return false;
+        try
+        {
+            var full = Path.GetFullPath(target);
+            var id = Path.GetFileName(Path.GetDirectoryName(Path.TrimEndingDirectorySeparator(full)));
+            return id is { Length: > 0 } && string.Equals(Path.GetFullPath(projects.ProjectFilesRoot(id)), Path.TrimEndingDirectorySeparator(full), StringComparison.OrdinalIgnoreCase);
+        }
+        catch (Exception e) when (e is ProjectIsolationException or ArgumentException or IOException or NotSupportedException) { return false; }
+    }
+
+    public void Execute(ApprovalRequest r)
+    {
+        if (!Handles(r.Action)) throw new ApprovalException($"Ausführung blockiert: „{r.Action}“ wird auf der Seite ausgeführt, die gefragt hat.");
+        // T-0713: Ziel vor dem Start erneut prüfen (Anfragen können nach einem Neustart aus der Ablage kommen) – nur https bzw. ein Projektordner
+        if (!IsValidTarget(r.Action, r.Target)) throw new ApprovalException("Ausführung blockiert: Das Ziel ist kein erlaubtes Startziel.");
         gate.Execute(r.Id, r.Action, r.Target, () => { launcher.Open(r.Target); return true; });
+    }
 }
 
 public sealed class OfflineException(string msg) : Exception(msg);

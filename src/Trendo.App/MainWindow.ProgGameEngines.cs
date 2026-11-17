@@ -53,7 +53,8 @@ public partial class MainWindow
     public string GameToEngine(ProgramDocument d, string engine)
     {
         var built = d.Text("built");
-        if (d.Text("browser") != "plattform") throw new InvalidOperationException("Als Engine-Projekt geht bisher der Plattformer (Level, Figur, Regeln).");
+        if (d.Text("browser") != "plattform") throw new InvalidOperationException("Als Engine-Projekt gehen die selbst gemalten Kachelspiele (von der Seite oder von oben) – Schlange, Mauerbrecher und Hüpfspiel gibt es nur im Browser.");
+        if (engine == "unity" && GameDesign.View(d.Data) == "oben") throw new InvalidOperationException("Der Blick von oben ist für Unity noch nicht umgesetzt – als Godot-Projekt geht er.");
         if (built.Length == 0 || !File.Exists(Path.Combine(built, "spiel.json"))) throw new InvalidOperationException("Bitte zuerst „Bauen“ – das Engine-Projekt entsteht aus dem fertigen Spiel.");
         var s = GameStudio.ReadSettings(built); var name = d.Text("title", "Spiel");
         var parent = Path.Combine(WorkFolder("Spiele"), "Engine-Projekte"); Directory.CreateDirectory(parent);
@@ -88,7 +89,7 @@ public partial class MainWindow
         else
         {
             EngineRun(exe, EngineTargets.GodotImportArgs(dir), dir, 600_000);
-            foreach (var (label, args, file) in new[] { ("Level-Prüfung", EngineTargets.GodotCheckArgs(dir), "godot-level.txt"), ("Spiel-Prüfung", EngineTargets.GodotPlayArgs(dir), "godot-spiel.txt"), ("Spielstand-Prüfung", EngineTargets.GodotSaveArgs(dir), "godot-spielstand.txt"), ("Gameplay-Prüfung", EngineTargets.GodotGameplayArgs(dir), "godot-gameplay.txt"), ("Menü-Prüfung", EngineTargets.GodotMenuArgs(dir), "godot-menue.txt") })
+            foreach (var (label, args, file) in new[] { ("Level-Prüfung", EngineTargets.GodotCheckArgs(dir), "godot-level.txt"), ("Spiel-Prüfung", EngineTargets.GodotPlayArgs(dir), "godot-spiel.txt"), ("Spielstand-Prüfung", EngineTargets.GodotSaveArgs(dir), "godot-spielstand.txt"), ("Gameplay-Prüfung", EngineTargets.GodotGameplayArgs(dir), "godot-gameplay.txt"), ("Menü-Prüfung", EngineTargets.GodotMenuArgs(dir), "godot-menue.txt"), ("Durchspiel-Prüfung", EngineTargets.GodotSelfPlayArgs(dir), "godot-durchspiel.txt") })
             {
                 var (exit, output) = EngineRun(exe, args, dir, 300_000);
                 File.WriteAllText(Path.Combine(logs, file), output);
@@ -109,7 +110,7 @@ public partial class MainWindow
     {
         var sp = new StackPanel { Name = "game-engines", Spacing = 6, Margin = new Thickness(0, 10, 0, 0) };
         sp.Children.Add(H("ENGINES", 12.5));
-        sp.Children.Add(P("Dein Spiel auch als echtes Projekt für Unity oder Godot – gleiche Level, Figur und Regeln. Trendo installiert keine Engine; der Zustand kommt aus der Prüfung auf diesem PC.", null, 12));
+        sp.Children.Add(P("Dein Kachelspiel auch als echtes Projekt für Godot (von der Seite und von oben) oder Unity (von der Seite) – gleiche Level, Figur und Regeln. Trendo installiert keine Engine; der Zustand kommt aus der Prüfung auf diesem PC.", null, 12));
         var engines = EngineCheck();
         foreach (var e in engines)
         {
@@ -131,8 +132,8 @@ public partial class MainWindow
         {
             Children =
             {
-                Btn("game-to-unity", "Als Unity-Projekt", () => ProgramRun(GK, () => GameToEngine(d, "unity")), true),
-                Btn("game-to-godot", "Als Godot-Projekt", () => ProgramRun(GK, () => GameToEngine(d, "godot")), true),
+                Btn("game-to-unity", "Als Unity-Projekt", () => ProgramRun(GK, () => GameToEngine(d, "unity"))),
+                Btn("game-to-godot", "Als Godot-Projekt", () => ProgramRun(GK, () => GameToEngine(d, "godot"))),
             }
         };
         if (unityDir.Length > 0) { row.Children.Add(Busy(Btn("game-unity-test", "Unity-Tests (EditMode + PlayMode)", () => ProgramRun(GK, () => GameEngineTest(d, "unity"))))); row.Children.Add(Btn("game-unity-open", "Ordner", () => Launch(unityDir))); }

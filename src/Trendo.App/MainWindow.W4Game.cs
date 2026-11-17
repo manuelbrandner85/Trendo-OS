@@ -51,7 +51,7 @@ public partial class MainWindow
         {
             var uname = new TextBox { Name = "game-ue-name", Text = "MeinUnrealSpiel", Width = 200 };
             ue.Children.Add(P($"Gefunden: Unreal {string.Join(", ", engines.Select(e => e.Version))}"));
-            ue.Children.Add(new WrapPanel { Children = { uname, Act("game-ue-create", "Unreal-Projekt anlegen", () =>
+            ue.Children.Add(new WrapPanel { Children = { uname, Act("game-ue-create", "Leeres Unreal-Projekt anlegen", () =>
             {
                 try
                 {
@@ -80,6 +80,7 @@ public partial class MainWindow
 
         var lib = new StackPanel { Name = "game-library", Spacing = 4 };
         lib.Children.Add(H("Deine Spiele", 14));
+        if (_gameEdit is null && LinkRecoveryCard(GameLink) is { } gameCard) lib.Children.Insert(0, gameCard); // T-0711: nicht gespeicherte Einstellungen
         if (!Directory.EnumerateDirectories(GameFolder).Any()) lib.Children.Add(P("Noch keine Spiele.", Muted, 11.5));
         var i = 0;
         foreach (var d in Directory.GetDirectories(GameFolder).OrderByDescending(Directory.GetLastWriteTime).Take(15))
@@ -96,10 +97,38 @@ public partial class MainWindow
         return FitKreativPage("Spiele-Studio", new Panel(), g);
     }
 
+    /// <summary>T-0711 (B6 Etappe 1b): Einstellungen der Werkstatt (Tempo, Leben, Punkte, Farben, Ton, Level-Raster) an Rückgängig und Notsicherung der Hülle
+    /// (ProgramLink). Der Entwurf gehört zu einem Spielordner; gespeichert wird weiter in spiel.json/config.js (jetzt atomar).</summary>
+    public LinkSlot GameLink => _gameLink ??= Slot("spiele", "LINK-SPIELE", "spiel", "spiele", "game", "Eine Spiel-Einstellung", "Spiel-Einstellungen",
+        () => _gameDraft?.DeepClone(), st => { _gameDraft = st as System.Text.Json.Nodes.JsonObject; if (_gameDraft?["id"]?.GetValue<string>() is { } d && Directory.Exists(d)) { _gameEdit = d; _gamePreview = null; } },
+        () => _gameDraft is not null, () => _gameDraft?["id"]?.GetValue<string>() is { } d ? Path.GetFileName(d) : "Spiel");
+    LinkSlot? _gameLink;
+    System.Text.Json.Nodes.JsonObject? _gameDraft;
+    /// <summary>Für Tests: Entwurf der Werkstatt (Tempo usw.).</summary>
+    public System.Text.Json.Nodes.JsonObject? GameDraft => _gameDraft;
+
+    static System.Text.Json.Nodes.JsonObject GameDraftOf(string dir, GameStudio.GameSettings s, IEnumerable<string> level) => new()
+    {
+        ["id"] = dir, ["speed"] = s.Speed, ["lives"] = s.Lives, ["win"] = s.WinScore, ["player"] = s.Player, ["accent"] = s.Accent, ["bg"] = s.Background, ["sound"] = s.Sound,
+        ["level"] = new System.Text.Json.Nodes.JsonArray(level.Select(r => (System.Text.Json.Nodes.JsonNode)r).ToArray()),
+    };
+
     /// <summary>T-0204: Regeln, Aussehen, Spielfigur/Hintergrund aus Datei, Ton und Level-Raster; Vorschau im Studio, Export als ZIP.</summary>
     private Control GameEditor(string dir)
     {
         var s = GameStudio.ReadSettings(dir); var tpl = GameStudio.TemplateOf(dir);
+        // T-0711: Entwurf dieses Spiels (ungespeicherte Änderungen bleiben beim Neuzeichnen und nach einem Absturz erhalten)
+        var link = GameLink;
+        var fileLevel = s.Level.Length > 0 ? s.Level : tpl == "breakout" ? GameStudio.DefaultBreakout : tpl == "jump" ? GameStudio.DefaultJump : [];
+        if (_gameDraft?["id"]?.GetValue<string>() != dir)
+        {
+            if (_gameDraft is not null && link.Link.Dirty) { LinkCommit(link); try { link.Link.Autosave(ProgBackup, true); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } }
+            _gameDraft = GameDraftOf(dir, s, fileLevel); link.Typing?.Stop(); link.Link.Reset(link.Get(), Path.GetFileName(dir)); // neuer Verlauf; ein ungespeicherter anderer Entwurf bleibt als Sicherung
+        }
+        var dr = _gameDraft!;
+        s = s with { Speed = (int?)dr["speed"] ?? s.Speed, Lives = (int?)dr["lives"] ?? s.Lives, WinScore = (int?)dr["win"] ?? s.WinScore, Player = (string?)dr["player"] ?? s.Player,
+            Accent = (string?)dr["accent"] ?? s.Accent, Background = (string?)dr["bg"] ?? s.Background, Sound = (bool?)dr["sound"] ?? s.Sound,
+            Level = (dr["level"] as System.Text.Json.Nodes.JsonArray)?.Select(x => (string?)x ?? "").ToArray() ?? s.Level };
         var box = new StackPanel { Spacing = 6, Name = "game-editor" };
         box.Children.Add(H($"„{Path.GetFileName(dir)}“ einstellen", 14));
         NumericUpDown Num(string n, int v, int min, int max) => new() { Name = n, Minimum = min, Maximum = max, Value = v, Increment = 1, Width = 110, FormatString = "0" };
@@ -114,7 +143,16 @@ public partial class MainWindow
         box.Children.Add(Row(pimg)); box.Children.Add(Row(bimg));
         if (s.PlayerImage is not null || s.BackgroundImage is not null) box.Children.Add(P($"Im Spiel: {string.Join(", ", new[] { s.PlayerImage, s.BackgroundImage }.Where(x => x is not null))}", null, 11));
         // Level-Raster: Klick schaltet zwischen frei und Stein/Hindernis
-        var level = (s.Level.Length > 0 ? s.Level : tpl == "breakout" ? GameStudio.DefaultBreakout : tpl == "jump" ? GameStudio.DefaultJump : []).Select(r => r.ToCharArray()).ToArray();
+        var level = (s.Level.Length > 0 ? s.Level : fileLevel).Select(r => r.ToCharArray()).ToArray();
+        void Changed(bool typed)
+        {
+            _gameDraft = GameDraftOf(dir, s with { Speed = (int)(speed.Value ?? 5), Lives = (int)(lives.Value ?? 3), WinScore = (int)(win.Value ?? 20), Player = player.Text?.Trim() ?? "", Accent = accent.Text?.Trim() ?? "",
+                Background = back.Text?.Trim() ?? "", Sound = sound.IsChecked == true }, level.Select(r => new string(r)));
+            if (typed) LinkTyped(link); else { LinkCommit(link, "Einstellung geändert"); link.Refresh?.Invoke(); }
+        }
+        foreach (var n in new[] { speed, lives, win }) n.ValueChanged += (_, _) => Changed(false);
+        foreach (var t in new[] { player, accent, back }) t.TextChanged += (_, _) => Changed(true);
+        sound.IsCheckedChanged += (_, _) => Changed(false);
         if (level.Length > 0)
         {
             box.Children.Add(P(tpl == "jump" ? "Level: Hindernisse der Reihe nach (█ = Hindernis)" : "Level: Steine (█ = Stein)", Text, 12));
@@ -126,7 +164,7 @@ public partial class MainWindow
                 {
                     var (rr, cc) = (r, col);
                     var cell = new Button { Name = $"game-cell-{r}-{col}", Width = 22, Height = 22, Padding = new Avalonia.Thickness(0), Content = level[r][col] == '#' ? "█" : "·", FontSize = 11 };
-                    cell.Click += (_, _) => { level[rr][cc] = level[rr][cc] == '#' ? '.' : '#'; cell.Content = level[rr][cc] == '#' ? "█" : "·"; };
+                    cell.Click += (_, _) => { level[rr][cc] = level[rr][cc] == '#' ? '.' : '#'; cell.Content = level[rr][cc] == '#' ? "█" : "·"; Changed(false); }; // T-0711: jeder Klick ein Rückgängig-Schritt
                     row.Children.Add(cell);
                 }
                 grid.Children.Add(row);
@@ -143,17 +181,20 @@ public partial class MainWindow
                     Player = player.Text?.Trim() ?? "", Accent = accent.Text?.Trim() ?? "", Background = back.Text?.Trim() ?? "", Sound = sound.IsChecked == true,
                     Level = level.Select(r => new string(r)).ToArray() }, pimg.Text?.Trim('"', ' '), bimg.Text?.Trim('"', ' '));
                 _core.Audit.Append(Principal.LocalOwner.Name, "game.settings", Path.GetFileName(dir));
+                Changed(false); LinkSaved(link); // T-0711: gespeichert – Notsicherung weg
                 var shot = await WebsitePreview.CaptureAsync(dir, 520, 520, Path.Combine(dir, ".vorschau", "spiel.png"));
                 _gamePreview = shot.Ok ? shot.Path : null; _gamePreviewNote = shot.Ok ? "Vorschau aus dem Browser." : shot.Note;
                 Say("Gespeichert." + (shot.Ok ? " Die Vorschau zeigt den neuen Stand." : " " + shot.Note), "spiele");
             }
             catch (Exception ex) when (ex is ArgumentException or IOException) { Say("Hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex), "spiele"); }
         }
+        var (gUndo, gRedo) = LinkButtons(link); LinkCommit(link);
+        box.Children.Insert(1, new StackPanel { Children = { LinkRecoveryCard(link) ?? new Panel(), (Control?)LinkMsg(link) ?? new Panel() } });
         box.Children.Add(new WrapPanel { Children = {
-            Act("game-save", "Speichern und Vorschau", SaveAndPreview, true),
+            Act("game-save", "Speichern und Vorschau", SaveAndPreview, true), gUndo, gRedo,
             Act("game-play", "Spielen", () => Launch(Path.Combine(dir, "index.html"))),
             Act("game-export", "Als ZIP weitergeben", () => { try { var z = GameStudio.Export(dir, Path.Combine(GameFolder, "Export")); Say("Exportiert: " + Path.GetFileName(z) + " – index.html im ZIP öffnen genügt.", "spiele"); Launch(Path.GetDirectoryName(z)!); } catch (Exception ex) when (ex is IOException or InvalidOperationException) { Say("Export hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex), "spiele"); } }),
-            Act("game-edit-close", "Fertig", () => { _gameEdit = null; Show("spiele"); }) } });
+            Act("game-edit-close", "Fertig", () => { _gameEdit = null; Show("spiele"); }) } }); // ungespeicherte Änderungen bleiben als Entwurf (Notsicherung)
         box.Children.Add(img);
         if (_gamePreviewNote.Length > 0) box.Children.Add(P(_gamePreviewNote, null, 11));
         return Card(box);

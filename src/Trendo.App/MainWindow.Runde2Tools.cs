@@ -18,11 +18,9 @@ public partial class MainWindow
     async Task SetupTool(string id, string what, string view, Action<string> say)
     {
         var comp = DependencyCatalog.Get(id);
-        var req = _core.Approvals.Request(Principal.LocalOwner, "deps.install", $"{comp.Name} ({what}) einrichten", comp.Id);
-        _core.Approvals.Approve(req.Id, Principal.LocalOwner);
-        if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner);
-        say($"{comp.Name} wird eingerichtet (offizieller Download, Prüfsumme wird geprüft) …"); Show(view);
-        var ok = !_opt.Isolated && await Task.Run(() => _deps.InstallAsync(Principal.LocalOwner, comp));
+        // B4 (T-0706): eigene Rückfrage, dann nur über den Kern mit genau dieser Freigabe
+        var res = await InstallMitFreigabe(comp, what, () => { say($"{comp.Name} wird eingerichtet (offizieller Download, Prüfsumme wird geprüft) …"); Show(view); });
+        if (res is not { } ok) { say($"{comp.Name}: abgebrochen – es wurde nichts eingerichtet."); Show(view); return; }
         say(ok ? $"{comp.Name} ist eingerichtet." : _opt.Isolated ? "Testmodus: nichts installiert." : $"{comp.Name} konnte nicht eingerichtet werden – unter Zusatzprogramme erneut versuchen.");
         Show(view);
     }

@@ -60,7 +60,8 @@ public class SPEC14_Ui
         var r = Cnc.Analyse(Job(w).Gcode); Assert.InRange(r.Box.X1 - r.Box.X0, 85, 87); // 80 + Fräser 6
         Press(w, "prog-undo"); Assert.InRange(Cnc.Analyse(Job(w).Gcode).Box.X1, 30, 41); // wieder die Tasche
         var f = Path.Combine(root, "teil.nc"); File.WriteAllText(f, "G21 G90\nG0 Z5\nG0 X10 Y10\nG1 Z-1 F100\nG1 X20 F300\nG0 Z5\n");
-        Get<TextBox>(w, "cnc-file-path").Text = f; Press(w, "cnc-load");
+        // V-07 (T-0700): Pfadfelder sind außer in „Professionell“ ausgeblendet – „Datei wählen …“ trägt die Auswahl, ein Lese-Knopf („Laden“) läuft danach von selbst
+        w.PickOverride = _ => Task.FromResult<string[]?>([f]); Press(w, "cnc-file-path-pick");
         Assert.Contains("G1 X20 F300", Job(w).Gcode);
         Get<TextBox>(w, "cnc-offset").Text = "5 0 0"; Press(w, "cnc-offset-run");
         Assert.Equal(25, Cnc.Analyse(Job(w).Gcode).Box.X1, 6);

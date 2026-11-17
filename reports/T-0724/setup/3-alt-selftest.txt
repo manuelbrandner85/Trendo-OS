@@ -1,0 +1,16 @@
+﻿API gebunden an http://127.0.0.1:58707/
+PASS  health ohne Token: erwartet 200, erhalten 200
+PASS  studios ohne Token: erwartet 401, erhalten 401
+PASS  studios mit falschem Token: erwartet 401, erhalten 401
+PASS  Guest: studios: erwartet 200, erhalten 200
+PASS  Guest: projects: erwartet 403, erhalten 403
+PASS  User: Projekt anlegen: erwartet 201, erhalten 201
+PASS  User: Aktion planen: 202
+PASS  User: freigeben verboten: erwartet 403, erhalten 403
+PASS  Guest: audit verboten: erwartet 403, erhalten 403
+PASS  Owner: ablehnen: erwartet 200, erhalten 200
+PASS  Owner: audit: erwartet 200, erhalten 200
+PASS  Fremder Host-Header: erwartet 421, erhalten 421
+PASS  Token nicht im Audit-Log
+ERGEBNIS: ALLE BESTANDEN
+

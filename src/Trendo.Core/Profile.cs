@@ -139,6 +139,17 @@ public sealed class PersonStore(string baseRoot)
     }
 
     void Save(List<Person> all) { Directory.CreateDirectory(baseRoot); File.WriteAllText(FileOf, JsonSerializer.Serialize(all)); }
+
+    /// <summary>T-0713: Erwachsenen-Profile ohne PIN oder Passwort – nur, solange es auch ein Kinderprofil gibt. Dann kann ein Kind über „Wechseln“
+    /// in ein solches Profil gehen und dort freigeben; die Rollentrennung wirkt nicht. Die Hauptperson hat die Kennung „haupt“. Nur ein Hinweis, nichts wird erzwungen.</summary>
+    public IReadOnlyList<(string Id, string Name)> AdultsWithoutLockBesideChild()
+    {
+        var main = UserSettings.Load(baseRoot);
+        var profiles = new List<(string Id, string Name, bool Child)> { ("haupt", main.Name, main.Child) };
+        foreach (var p in All()) profiles.Add((p.Id, p.Name, p.Child || UserSettings.Load(RootOf(p.Id)).Child));
+        if (!profiles.Any(p => p.Child)) return [];
+        return profiles.Where(p => !p.Child && !new ProfileLock(RootOf(p.Id)).Enabled).Select(p => (p.Id, p.Name)).ToList();
+    }
 }
 
 /// <summary>B3: Wofür nutzt du Trendo? Aus den Antworten werden Studio-Pakete und Desktop-/Handy-Symbole.</summary>
@@ -148,7 +159,7 @@ public static class Interests
     public static readonly IReadOnlyList<Interest> All =
     [
         new("buero", "Büro & Briefe", "📄", ["office"], ["STUDIO-LETTER-01", "SYS-10", "page:handy"]),
-        new("kreativ", "Fotos, Videos & Musik", "🎨", ["kreativ"], ["CORE-08", "CORE-09"]),
+        new("kreativ", "Fotos, Videos & Musik", "🎨", ["kreativ"], ["CORE-08"]),
         new("spiele", "Spiele & 3D", "🎮", ["3d"], ["CORE-05", "CORE-06"]),
         new("lernen", "Lernen & Wissen", "📚", [], ["page:ki-wissen", "page:ki"]),
         new("business", "Business & Geld", "💼", ["office"], ["STUDIO-ONLINE-BUSINESS-01"]),

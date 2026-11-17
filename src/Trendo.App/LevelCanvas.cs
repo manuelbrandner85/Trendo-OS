@@ -19,6 +19,8 @@ public sealed class LevelCanvas : Control
     public const char PickTool = '?';
     /// <summary>Die andere Ebene blass anzeigen (Hintergrund beim Malen des Spiels, Spiel beim Malen des Hintergrunds).</summary>
     public List<string>? Ghost { get; set; }
+    /// <summary>T-0690: Blick von oben – Mauern grau ohne Grasrand.</summary>
+    public bool TopDown { get; set; }
     char[][] _grid = [];
     bool _painting, _changed; char _brush;
 
@@ -66,21 +68,23 @@ public sealed class LevelCanvas : Control
         if (Ghost is { } g)
             using (ctx.PushOpacity(0.35))
                 for (var y = 0; y < g.Count; y++)
-                    for (var x = 0; x < g[y].Length; x++) DrawTile(ctx, g[y][x], new Rect(x * c, y * c, c, c), y == 0 || x >= g[y - 1].Length || g[y - 1][x] != '#');
+                    for (var x = 0; x < g[y].Length; x++) DrawTile(ctx, g[y][x], new Rect(x * c, y * c, c, c), !TopDown && (y == 0 || x >= g[y - 1].Length || g[y - 1][x] != '#'), TopDown);
         for (var y = 0; y < rows.Count; y++)
             for (var x = 0; x < rows[y].Length; x++)
             {
                 var r = new Rect(x * c, y * c, c, c);
-                DrawTile(ctx, rows[y][x], r, y == 0 || x >= rows[y - 1].Length || rows[y - 1][x] != '#');
+                DrawTile(ctx, rows[y][x], r, !TopDown && (y == 0 || x >= rows[y - 1].Length || rows[y - 1][x] != '#'), TopDown);
                 ctx.DrawRectangle(null, grid, r);
             }
         if (Selected is { } sel) ctx.DrawRectangle(null, new Pen(Coin, 2.5), new Rect(sel.X * c + 1, sel.Y * c + 1, c - 2, c - 2));
     }
 
     /// <summary>Eine Kachel zeichnen (auch im Probespiel): Boden mit Gras oben, Münze, Gegner, Stacheln, Start, Ziel-Flagge.</summary>
-    internal static void DrawTile(DrawingContext ctx, char ch, Rect r, bool grassTop)
+    static readonly IBrush Wall = new SolidColorBrush(Color.Parse("#FF4B5563")), WallTop = new SolidColorBrush(Color.Parse("#FF6B7280"));
+    internal static void DrawTile(DrawingContext ctx, char ch, Rect r, bool grassTop, bool topDown = false)
     {
         var c = r.Width;
+        if (topDown && ch == '#') { ctx.FillRectangle(Wall, r); ctx.FillRectangle(WallTop, new Rect(r.X + c * 0.06, r.Y + c * 0.06, c * 0.88, c * 0.66)); return; }
         switch (ch)
         {
             case '#': ctx.FillRectangle(Ground, r); if (grassTop) ctx.FillRectangle(Grass, new Rect(r.X, r.Y, c, c * 0.22)); break;

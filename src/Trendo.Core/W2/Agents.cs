@@ -28,7 +28,7 @@ public sealed class AgentTask
 /// <summary>CORE-03 AI Agent Command Center: 12 Rollen mit eigenem Auftrag und eigenen Rechten, Aufgaben je Projekt getrennt,
 /// Team-Abläufe (Ergebnis einer Rolle ist Eingabe der nächsten), Speichern in Projektdateien nur nach Freigabe,
 /// Übergabe an Claude Code als Auftragsdatei (Claude Code selbst wird nicht vorgetäuscht).</summary>
-public sealed class AgentCenter
+public sealed partial class AgentCenter
 {
     public static readonly IReadOnlyList<AgentRole> Roles =
     [
@@ -108,14 +108,14 @@ public sealed class AgentCenter
         var id = $"eigen.{studio.ToLowerInvariant()}.{(slug.Length == 0 ? "rolle" : slug)}";
         for (var n = 2; list.Any(r => r.Id == id) || Roles.Any(r => r.Id == id); n++) id = $"eigen.{studio.ToLowerInvariant()}.{slug}-{n}";
         var role = new AgentRole(id, name.Trim(), does.Trim(), StudioTeams.Prompt(new StudioRole(id, name.Trim(), does.Trim().TrimEnd('.'), focus.Trim().Length > 0 ? focus.Trim() : "sorgfältig und ehrlich", mayWriteFiles), sn), mayWriteFiles, studio);
-        list.Add(role); File.WriteAllText(CustomFile, JsonSerializer.Serialize(list));
+        list.Add(role); AtomicFile.WriteAllText(CustomFile, JsonSerializer.Serialize(list)); // T-0717: atomar
         _audit.Append(Principal.LocalOwner.Name, "agent.rolle.neu", $"{id} studio={studio}");
         return role;
     }
     public bool RemoveCustomRole(string id)
     {
         var list = CustomRoles().ToList(); var n = list.RemoveAll(r => r.Id == id);
-        if (n > 0) { File.WriteAllText(CustomFile, JsonSerializer.Serialize(list)); _audit.Append(Principal.LocalOwner.Name, "agent.rolle.entfernt", id); }
+        if (n > 0) { AtomicFile.WriteAllText(CustomFile, JsonSerializer.Serialize(list)); _audit.Append(Principal.LocalOwner.Name, "agent.rolle.entfernt", id); }
         return n > 0;
     }
     /// <summary>Rolle mit eigenen Rollen dieser Person.</summary>
@@ -134,7 +134,8 @@ public sealed class AgentCenter
         if (string.IsNullOrWhiteSpace(goal)) throw new ArgumentException("Ziel fehlt");
         if (projectId is not null && _projects.List().All(p => p.Id != projectId)) throw new ProjectIsolationException("Projekt unbekannt");
         var t = new AgentTask { RoleId = roleId, Goal = goal.Trim(), ProjectId = projectId, Input = input, TeamId = teamId };
-        _tasks.Add(t); Save();
+        lock (_tasks) _tasks.Add(t);
+        Save();
         _audit.Append(Principal.LocalOwner.Name, "agent.create", $"{t.Id} rolle={roleId} projekt={projectId ?? "-"}");
         return t;
     }
@@ -242,5 +243,7 @@ public sealed class AgentCenter
     }
 
     public bool Remove(string id) { var n = _tasks.RemoveAll(t => t.Id == id); if (n > 0) Save(); return n > 0; }
-    private void Save() => File.WriteAllText(_file, JsonSerializer.Serialize(_tasks));
+    // T-0698: Team-Rollen laufen teils parallel – Liste nur unter Sperre lesen, atomar schreiben
+    private void Save() { string json; lock (_tasks) json = JsonSerializer.Serialize(_tasks); lock (_saveLock) AtomicFile.WriteAllText(_file, json); }
+    private readonly object _saveLock = new();
 }

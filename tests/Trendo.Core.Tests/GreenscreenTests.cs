@@ -36,7 +36,7 @@ public class GreenscreenTests
     [Fact(DisplayName = "S3-05-P echt mit FFmpeg: rotes Hintergrundvideo, darüber Greenscreen-Aufnahme mit blauer Figur – Grün wird durchsichtig, Figur bleibt; mit Maske links verschwindet die Figur rechts")]
     public void Real_key_render()
     {
-        var ff = Cli.Find("ffmpeg"); if (ff is null) return;
+        var ff = Cli.Find("ffmpeg"); if (ff is null) { Ueberspringen.Weil("FFmpeg fehlt auf diesem PC."); return; }
         var dir = Path.Combine(Path.GetTempPath(), "trendo-key-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
         try
         {

@@ -1,0 +1,37 @@
+# Echtlauf chrome – Webseite als PDF und Editor-Bündel in echtem Chrome
+Datum: 2026-11-16T21:37:15
+Fundort: C:\Program Files\Google\Chrome\Application\chrome.exe
+Suchweg: WebsitePreview.FindBrowser (Chrome/Chromium/Edge), sonst Browsers.Find
+Version: 157.0.8103.51
+
+## Tests (app): „SYS-03-P14: Seite als PDF“ – 1 Ergebnis(se), 5.8 s
+- NotExecuted: SYS-03-P14: Seite als PDF – A4, Prüfsumme im Protokoll (nur wenn Chrome/Edge da)
+  Übersprungen: pdfinfo ist nicht installiert.
+$ C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.exe -method Trendo.App.Tests.Sys03_Pdf.Pdf -trx C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\chrome-0.trx
+Exit 0
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    SYS-03-P14: Seite als PDF – A4, Prüfsumme im Protokoll (nur wenn Chrome/Edge da) [SKIP]
+      Übersprungen: pdfinfo ist nicht installiert.
+  Finished:    Trendo.App.Tests (ID = '1ed2400c9528a0bdb5b4624ef9bad78fe97a37881cdf1d86cd46f0cfea0eab22')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 1, Not Run: 0, Time: 3,467s
+
+## Tests (app): „K1 und K2: Das echte Editor-Bündel in echtem Chrome“ – 1 Ergebnis(se), 4.2 s
+- Passed: K1 und K2: Das echte Editor-Bündel in echtem Chrome: Auswählen, Mehrfachauswahl, Text direkt ändern, KI-Vorschau (übersprungen ohne Chrome oder Node)
+$ C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.exe -method Trendo.App.Tests.WebDesignKi_Browser.K1_K2_real_bundle -trx C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\chrome-1.trx
+Exit 0
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = '1ed2400c9528a0bdb5b4624ef9bad78fe97a37881cdf1d86cd46f0cfea0eab22')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 3,785s
+
+
+ERGEBNIS: ECHT-GRÜN (teilweise) (10.2 s)
+- SYS-03-P14: Seite als PDF: 0 bestanden, 0 fehlgeschlagen, 1 übersprungen (Übersprungen: pdfinfo ist nicht installiert.)
+- K1 und K2: Das echte Editor-Bündel in echtem Chrome: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen

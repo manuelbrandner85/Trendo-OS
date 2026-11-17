@@ -67,6 +67,7 @@ public partial class MainWindow
         Workspace = FrameWorkspace,
         Properties = FrameProperties,
         Status = d => { var m = FrameModel.From(d.Data); var (r, err) = FrameSolve(m); return $"{FrameTools.FirstOrDefault(t => t.Id == FrameState.Tool).Label} · {m.Members.Count} Stäbe · {m.Nodes.Count(n => n.Support != "")} Lager · {m.Loads.Count} Lasten · " + (err is not null ? "⚠ " + err : r is null ? "" : r.Ok ? "✓ alle Stäbe halten" : $"⚠ {r.Members.Count(x => !x.Ok)} Stab/Stäbe reichen nicht"); },
+        PrimaryExport = "pdf", // T-0700: Tragwerk: der PDF-Bericht mit Nachweis ist das Ergebnis
         Help = "Links das Werkzeug wählen. Stab: Punkt für Punkt klicken, Länge in m tippen und Enter. Lager/Last/Gelenk: auf Knoten oder Stab klicken – Art und Wert rechts einstellen. "
              + "Auswahl: Knoten ziehen, Entf löscht. Ergebnisse rechnen sofort mit. Vorbemessung – ersetzt keine geprüfte Statik.",
     }, "technik", "statik", "balken", "träger", "simulation", "biegung", "festigkeit", "einheiten", "umrechnen", "rahmen", "fachwerk", "tragwerk");

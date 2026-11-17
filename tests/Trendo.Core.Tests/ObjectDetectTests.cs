@@ -71,7 +71,7 @@ public class ObjectDetectTests
 /// <summary>Echter Lauf: YOLOX-S mit onnxruntime auf dem YOLOX-Demobild (Prüfumgebung %TEMP%\trendo-tools-b\yolox, Freigabe 08.11.2026).</summary>
 public class ObjectDetectRealTests
 {
-    static string Dir => Path.Combine(Path.GetTempPath(), "trendo-tools-b", "yolox");
+    static string Dir => Path.Combine(global::Trendo.Core.TempDir.SystemTemp, "trendo-tools-b", "yolox");
     static string Py => Path.Combine(Dir, "venv", OperatingSystem.IsWindows() ? Path.Combine("Scripts", "python.exe") : Path.Combine("bin", "python"));
     static string Script()
     {

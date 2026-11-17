@@ -144,7 +144,7 @@ public class T0223_TrendoText
     [Fact(DisplayName = "T-0223 T1: Abgleich – von LibreOffice umgewandelte Dateien liest Trendo mit gleichem Inhalt (nur mit TRENDO_LO_ABGLEICH)")]
     public void LibreOffice_roundtrip()
     {
-        if (Environment.GetEnvironmentVariable("TRENDO_LO_ABGLEICH") is not { Length: > 0 } k) return; // braucht die LibreOffice-Umwandlung aus reports/t0223-office
+        if (Environment.GetEnvironmentVariable("TRENDO_LO_ABGLEICH") is not { Length: > 0 } k) { Ueberspringen.Weil("nur mit TRENDO_LO_ABGLEICH (LibreOffice-Umwandlung aus reports/t0223-office)."); return; } // braucht die LibreOffice-Umwandlung aus reports/t0223-office
         var expected = File.ReadAllText(Path.Combine(k, "erwartet.txt"));
         File.WriteAllText(Path.Combine(k, "trendo-liest-lo-odt.txt"), Describe(OdtFormat.Read(Path.Combine(k, "lo-aus-docx", "probe.odt"))));
         File.WriteAllText(Path.Combine(k, "trendo-liest-lo-docx.txt"), Describe(DocxFormat.Read(Path.Combine(k, "lo-aus-odt", "probe.docx"))));
@@ -207,7 +207,7 @@ public class T0223_TrendoText
     public void Spelling_german()
     {
         var dic = Repo("artifacts/vollpaket/staging/libreoffice/App/libreoffice/share/extensions/dict-de/de_DE_frami.dic");
-        if (!File.Exists(dic)) return; // Wörterbuch kommt aus dem Vollpaket (nicht im Repo) – ohne Vollpaket nichts zu prüfen
+        if (!File.Exists(dic)) { Ueberspringen.Weil("das deutsche Wörterbuch aus dem Vollpaket fehlt."); return; } // Wörterbuch kommt aus dem Vollpaket (nicht im Repo) – ohne Vollpaket nichts zu prüfen
         var d = Tmp();
         try
         {

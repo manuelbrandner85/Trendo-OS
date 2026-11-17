@@ -2,7 +2,7 @@
 <TestRun id="ff06e12e-3b5e-47d3-a20b-253611ee6c6d" name="<user>@<host> 2026-10-22 02:42:15" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:15.9845922+02:00" queuing="2026-10-22T02:42:15.9845923+02:00" start="2026-10-22T02:42:11.5233938+02:00" finish="2026-10-22T02:42:17.2598036+02:00" />
   <TestSettings name="default" id="9dd5a7ee-5416-4d43-b1d4-46f1bc0fe6f7">
-    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_15" />
+    <Deployment runDeploymentRoot="<user>_<host>_2026-10-22_02_42_15" />
   </TestSettings>
   <Results>
     <UnitTestResult executionId="1e17e3c5-ac7b-4f44-abd4-263f81581f5a" testId="d8242953-0a34-fb0e-14da-639f142a7a21" testName="CORE-02: Nur Quellen auf diesem Gerät – Cloud-Adressen werden abgelehnt" computerName="<host>" duration="00:00:00.0045658" startTime="2026-10-22T02:42:15.9252773+02:00" endTime="2026-10-22T02:42:15.9299292+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1e17e3c5-ac7b-4f44-abd4-263f81581f5a" />

@@ -98,9 +98,30 @@ public sealed partial class KnowledgeStore
         }).Where(h => h.Score > 0).OrderByDescending(h => h.Score).Take(max).ToList();
     }
 
+    /// <summary>T-0725 (Audit D7, CORE-10: „kein Export in der Oberfläche“): jede Seite als eigene Markdown-Datei (Dateiname = Titel) in <paramref name="dir"/> –
+    /// lesbar in jedem Editor oder Notizprogramm (z. B. Obsidian, [[Verweise]] bleiben), und über <see cref="Import"/> wieder einlesbar. Schreibt atomar, überschreibt nichts
+    /// (gleiche Titel bekommen „ (2)“). Liefert die Zahl der Dateien.</summary>
+    public int ExportMarkdown(string dir)
+    {
+        Directory.CreateDirectory(dir);
+        var bad = Path.GetInvalidFileNameChars().Concat(['/', '\\', ':', '*', '?', '"', '<', '>', '|']).ToHashSet();
+        var n = 0;
+        foreach (var it in _items.OrderBy(i => i.Created))
+        {
+            var name = new string(it.Title.Trim().Select(c => bad.Contains(c) || char.IsControl(c) ? '_' : c).ToArray()).Trim('.', ' ');
+            if (name.Length == 0) name = "Seite"; if (name.Length > 80) name = name[..80];
+            var f = Path.Combine(dir, name + ".md");
+            for (var i = 2; File.Exists(f); i++) f = Path.Combine(dir, $"{name} ({i}).md");
+            AtomicFile.WriteAllText(f, it.Text + "\n");
+            n++;
+        }
+        _audit.Append(Principal.LocalOwner.Name, "wissen.export", $"{n} Seiten");
+        return n;
+    }
+
     public string ExportJson() => JsonSerializer.Serialize(_items, new JsonSerializerOptions { WriteIndented = true });
 
-    private void Save() => File.WriteAllText(_file, JsonSerializer.Serialize(_items));
+    private void Save() => AtomicFile.WriteAllText(_file, JsonSerializer.Serialize(_items)); // T-0711: atomar
 
     private static readonly HashSet<string> Stop = ["der", "die", "das", "und", "oder", "ein", "eine", "einen", "ist", "sind", "was", "wie", "wo", "wer", "ich", "du", "mit", "von", "zu", "im", "in", "am", "an", "auf", "fuer", "den", "dem", "des", "es", "nicht", "the", "a", "of", "to"];
 

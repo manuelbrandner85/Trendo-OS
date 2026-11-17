@@ -23,6 +23,8 @@ public partial class MainWindow
     public Func<string, string, Task<(string File, string? Sha256)>>? KiDownloadOverride { get; set; }
     /// <summary>Für Tests: ersetzt das Ausführen einer KI-Laufzeit.</summary>
     public Func<string, IReadOnlyList<string>, string?, Task<Cli.Result>>? KiRunOverride { get; set; }
+    /// <summary>Für Tests: ersetzt das Laden über Ollama (Modell, Fortschritt) → (fertig, letzter Zustand).</summary>
+    public Func<string, Action<OllamaPullStep>, Task<(bool Ok, string Last)>>? OllamaPullOverride { get; set; }
     public KiLibraryStore KiStore => new(_deps.ToolsRoot);
 
     private void InitKiLibrary()
@@ -51,11 +53,13 @@ public partial class MainWindow
         var (kindName, _, kindDesc) = KiLibrary.Kinds[_kiLibKind];
         sp.Children.Add(H(kindName, 15));
         sp.Children.Add(P(kindDesc, null, 12));
+        if (_kiLibKind is KiKind.Chat or KiKind.Denken) sp.Children.Add(KiStandardLine("kilib-standard")); // T-0703
         if (_kiLibMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "kilib-msg", Text = _kiLibMsg, Foreground = Accent, TextWrapping = TextWrapping.Wrap });
 
         var store = KiStore;
         var have = LastScan.TryGetValue("ollama", out var ol) && ol.Up ? ol.Models : [];
         var hw = new HardwareInfo(TotalRam, null, 0);
+        var standard = _kiLibKind is KiKind.Chat or KiKind.Denken ? KiModelName : null;
         var runtimes = KiLibrary.OfKind(_kiLibKind).Select(m => m.Runtime).Distinct().Select(KiLibrary.RuntimeInfo);
         foreach (var rt in runtimes)
         {
@@ -74,6 +78,9 @@ public partial class MainWindow
                 (ready ? "✓ eingerichtet." : rt.FromVollpaket ? (rt.Id == KiRuntime.Ollama ? "Startet automatisch, sobald die Trendo KI läuft." : "Kommt aus dem Vollpaket.") : $"Wird beim ersten Laden mit eingerichtet ({rt.Bytes / (1 << 20)} MB, {(rt.Url is null ? $"offizielle GitHub-Seite {rt.Repo}" : $"offizielles Paket {new Uri(rt.Url).Host}, verlinkt auf github.com/{rt.Repo}")})."), null, 11));
         }
         if (!ol.Up && KiLibrary.OfKind(_kiLibKind).Any(m => m.Runtime == KiRuntime.Ollama)) sp.Children.Add(OllamaHint("ki-bibliothek"));
+        // T-0684 (V-06/V-16): Gilt für alle Modelle dieser Art derselbe Satz „So geht's“, steht er einmal über der Liste – nicht auf jeder Karte
+        var sameHowTo = KiLibrary.OfKind(_kiLibKind).Select(m => m.HowTo).Distinct().Count() == 1 && KiLibrary.OfKind(_kiLibKind).Count() > 1;
+        if (sameHowTo) { var how = P("So geht's: " + KiLibrary.OfKind(_kiLibKind).First().HowTo, null, 11); how.Name = "kilib-howto"; sp.Children.Add(how); }
         foreach (var m in KiLibrary.OfKind(_kiLibKind))
         {
             var fits = hw.RamBytes <= 0 || hw.RamBytes >= m.MinRamGb * 1024L * 1024 * 1024 * 0.9;
@@ -112,9 +119,10 @@ public partial class MainWindow
                 buttons.Children.Add(get);
             }
             var info = new StackPanel { Children = {
-                new TextBlock { Text = m.Name + (got ? "  ✓" : ""), Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold },
+                new TextBlock { Text = m.Name + (got ? "  ✓" : "") + (got && m.Runtime == KiRuntime.Ollama && m.Kind is KiKind.Chat or KiKind.Denken && m.Tag == standard ? " · Standard" : ""), Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold },
                 P($"{m.GoodFor} · {(m.Bytes >= 1L << 30 ? $"{m.Bytes / (double)(1L << 30):0.0} GB" : $"{Math.Max(1, m.Bytes / (1 << 20))} MB")} · {(fits ? "passt zu deinem PC" : $"braucht {m.MinRamGb} GB Arbeitsspeicher")} · Lizenz: {m.License}", fits ? null : Brush.Parse("#FACC15"), 10.5),
-                P("So geht's: " + m.HowTo, null, 10.5) } };
+            } };
+            if (!sameHowTo) info.Children.Add(P("So geht's: " + m.HowTo, null, 10.5));
             sp.Children.Add(WCard(new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { info, Pos(buttons, 1) } }));
             if (_kiTry == m.Id && got) sp.Children.Add(KiTryPanel(m));
         }
@@ -136,21 +144,54 @@ public partial class MainWindow
         return b;
     }
 
-    /// <summary>Laden: Ollama-Modell über Ollama, sonst Laufzeit (falls nötig) und Modelldateien von den offiziellen Quellen. Der Klick ist die Zustimmung,
-    /// bei Lizenzen mit eigenen Bedingungen steht das im Knopf. Freigabe und Ergebnis landen im Audit-Log.</summary>
+    /// <summary>Laden: Ollama-Modell über Ollama, sonst Laufzeit (falls nötig) und Modelldateien von den offiziellen Quellen.
+    /// B4 (T-0706): Der Klick allein lädt nichts – erst die eigene Rückfrage (Größe, Lizenz, Herkunft) und das Ja der angemeldeten Person.
+    /// Freigabe und Ergebnis landen im Audit-Log.</summary>
     public async Task KiLibraryInstall(KiLibraryModel m)
     {
         if (_depBusy || !m.Ready) return;
-        var req = _core.Approvals.Request(Principal.LocalOwner, "ki.pull", $"KI „{m.Name}“ laden ({m.License})", m.Id);
-        _core.Approvals.Approve(req.Id, Principal.LocalOwner);
-        if (m.Runtime == KiRuntime.Ollama)
+        if (await FreigabeAsync(KiPullWirkung(m.Id, m.Name, m.Bytes / (double)(1L << 30), m.License)) is not { } approvalId)
+        { _kiLibMsg = $"{m.Name}: abgebrochen – es wurde nichts geladen."; Show("ki-bibliothek"); return; }
+        if (m.Runtime == KiRuntime.Ollama) // T-0703: Freigabe gilt für m.Id – vorher prüfte Execute gegen m.Tag und blockierte jedes Laden über Ollama
         {
+            // T-0703: vorher Speicherplatz prüfen (Modell + 5 GB Reserve), dann mit Fortschritt laden; Ollama prüft jede Schicht gegen ihre SHA-256
+            var free = FreeBytesForModels?.Invoke() ?? FreeBytes(_deps.ToolsRoot);
+            if (free < m.Bytes + 5L * (1 << 30))
+            {
+                _kiLibMsg = $"Zu wenig Speicherplatz für {m.Name}: gebraucht {m.Bytes / (double)(1L << 30):0.0} GB + 5 GB Reserve, frei {free / (double)(1L << 30):0.0} GB.";
+                _core.Audit.Append(Principal.LocalOwner.Name, "ki.model.pull.skip", $"{m.Tag} Speicher");
+                Show("ki-bibliothek"); return;
+            }
             _depBusy = true; _kiLibMsg = $"{m.Name} wird geladen …"; Show("ki-bibliothek");
+            var log = Path.Combine(_core.DataRoot, "ki", "laden", m.Tag.Replace(':', '_') + ".log");
             try
             {
-                var ok = await _core.Approvals.Execute(req.Id, "ki.pull", m.Tag, () => new OllamaBackend().PullAsync(m.Tag));
-                _kiLibMsg = ok ? $"{m.Name} ist jetzt da und in der Trendo KI nutzbar." : $"{m.Name} konnte nicht geladen werden – Internet prüfen und erneut versuchen.";
+                Directory.CreateDirectory(Path.GetDirectoryName(log)!);
+                File.WriteAllText(log, $"{DateTimeOffset.Now:o} Laden {m.Tag} ({m.License}) aus der Ollama-Bibliothek (registry.ollama.ai)\n");
+                var lastPct = -1; string? bigDigest = null; long bigTotal = 0;
+                void Step(OllamaPullStep s)
+                {
+                    if (s.Total > bigTotal) { bigTotal = s.Total; bigDigest = s.Digest; }
+                    var pct = s.Percent;
+                    if (s.Total > 0 && pct == lastPct) return;
+                    lastPct = pct;
+                    try { File.AppendAllText(log, $"{DateTimeOffset.Now:HH:mm:ss} {s.Status}{(s.Total > 0 ? $" {pct} % ({s.Completed / (double)(1L << 20):0} von {s.Total / (double)(1L << 20):0} MB)" : "")}\n"); }
+                    catch (IOException) { }
+                    var text = s.Total > 0 ? $"{m.Name} wird geladen … {pct} % ({s.Completed / (double)(1L << 30):0.0} von {s.Total / (double)(1L << 30):0.0} GB)"
+                        : s.Status.StartsWith("verifying", StringComparison.Ordinal) ? $"{m.Name}: Prüfsumme wird kontrolliert …" : $"{m.Name}: {s.Status} …";
+                    _ui.Post(() => { if (!_depBusy) return; _kiLibMsg = text; if (CurrentView == "ki-bibliothek") Show("ki-bibliothek"); }); // nach dem Ende keine alte Zwischenmeldung mehr
+                }
+                var ok = await _core.Approvals.Execute(approvalId, "ki.pull", m.Id, async () =>
+                {
+                    var (done, last) = OllamaPullOverride is { } o ? await o(m.Tag, Step) : await new OllamaBackend().PullStreamAsync(m.Tag, Step);
+                    File.AppendAllText(log, $"{DateTimeOffset.Now:HH:mm:ss} Ende: {last}\n");
+                    return done;
+                });
+                _core.Audit.Append(Principal.LocalOwner.Name, ok ? "ki.model.pull.ok" : "ki.model.pull.fail", $"{m.Tag} {m.License} quelle=registry.ollama.ai{(bigDigest is null ? "" : " gewichte=" + bigDigest)} {bigTotal}B");
+                if (ok && m.Kind == KiKind.BildVerstehen) _viVlmChecked = false; // „Bilder erkennen“ sucht das Bildmodell neu (sonst erst nach Neustart)
+                _kiLibMsg = ok ? $"{m.Name} ist jetzt da und in Trendo nutzbar (Prüfsumme von Ollama kontrolliert)." : $"{m.Name} konnte nicht geladen werden – Internet prüfen und erneut versuchen.";
             }
+            catch (IOException ex) { _kiLibMsg = $"{m.Name} konnte nicht geladen werden: {ex.Message}"; }
             finally { _depBusy = false; }
             await ScanSourcesAsync(); Show("ki-bibliothek");
             return;
@@ -160,12 +201,15 @@ public partial class MainWindow
         var store = KiStore;
         try
         {
+            // B4 (T-0706): Laden und Einrichten laufen im Freigabe-Tor – ohne gültige Freigabe ApprovalException, Not-Stopp bricht zwischen den Dateien ab
+            await _core.Approvals.Execute(approvalId, KiPullAction, m.Id, async () =>
+            {
             if (KiPyApps.For(m.Runtime) is { } pyApp)
             {
                 await KiPyInstall(m, pyApp);
-                _core.Audit.Append(Principal.LocalOwner.Name, "ki.library.install", $"{m.Id} {m.License}");
+                _core.Audit.Append(CurrentPrincipal.Name, "ki.library.install", $"{m.Id} {m.License}");
                 _kiLibMsg = $"{m.Name} ist eingerichtet. Mit „Ausprobieren“ kannst du es gleich testen."; _kiTry = m.Id;
-                return;
+                return true;
             }
             var rt = KiLibrary.RuntimeInfo(m.Runtime);
             var steps = m.Files.Count + (store.RuntimeReady(m.Runtime) || rt.FromVollpaket ? 0 : 1); var step = 0;
@@ -181,6 +225,7 @@ public partial class MainWindow
             foreach (var f in m.Files)
             {
                 SetupToken.ThrowIfCancellationRequested();
+                if (_core.Approvals.Halted) throw new ApprovalException("Not-Stopp ist aktiv – Laden angehalten.");
                 if (new FileInfo(store.ModelFile(m, f)) is { Exists: true } fi && fi.Length == f.Bytes) { step++; continue; }
                 SetupOverlayProgress(step, steps, $"{f.FileName} wird geladen …");
                 var (file, sha) = await KiDownload(f.Url, f.FileName, f.Bytes, step, steps);
@@ -188,10 +233,13 @@ public partial class MainWindow
                 step++;
             }
             SetupOverlayProgress(steps, steps, "Fertig ✓");
-            _core.Audit.Append(Principal.LocalOwner.Name, "ki.library.install", $"{m.Id} {m.License}");
+            _core.Audit.Append(CurrentPrincipal.Name, "ki.library.install", $"{m.Id} {m.License}");
             _kiLibMsg = $"{m.Name} ist eingerichtet. Mit „Ausprobieren“ kannst du es gleich testen."; _kiTry = m.Id;
+            return true;
+            });
         }
         catch (OperationCanceledException) when (SetupCancelRequested) { _kiLibMsg = $"{m.Name}: Laden abgebrochen."; }
+        catch (ApprovalException ex) { _kiLibMsg = $"{m.Name}: nicht geladen – {ex.Message}"; }
         catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or IOException or UnauthorizedAccessException or TaskCanceledException or InvalidDataException)
         {
             _core.Audit.Append(Principal.LocalOwner.Name, "ki.library.failed", $"{m.Id}: {ex.Message}");

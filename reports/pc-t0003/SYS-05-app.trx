@@ -2,7 +2,7 @@
 <TestRun id="b6d5a062-a58a-41f2-ac7d-f6497d088334" name="<user>@<host> 2026-10-22 02:42:42" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:42.0242667+02:00" queuing="2026-10-22T02:42:42.0242669+02:00" start="2026-10-22T02:42:38.9018410+02:00" finish="2026-10-22T02:42:42.0280896+02:00" />
   <TestSettings name="default" id="9810948c-d522-489d-ba53-8d794d549c86">
-    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_42" />
+    <Deployment runDeploymentRoot="<user>_<host>_2026-10-22_02_42_42" />
   </TestSettings>
   <Results>
     <UnitTestResult executionId="e3e74b52-1413-4a57-809f-2af9554ecf22" testId="17165643-9ae1-f204-5553-8a4f99a4d426" testName="SYS-05 UI: Vorlage anlegen, Probelauf, Freigeben, Ausführen, eigener Ablauf" computerName="<host>" duration="00:00:01.9038718" startTime="2026-10-22T02:42:40.0136363+02:00" endTime="2026-10-22T02:42:41.9268813+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e3e74b52-1413-4a57-809f-2af9554ecf22" />

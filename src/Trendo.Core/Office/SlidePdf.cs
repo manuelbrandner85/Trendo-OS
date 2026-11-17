@@ -84,6 +84,7 @@ public static class SlidePdf
                     var text = shp.Kind == ShapeKind.Medien ? "▶ " + Path.GetFileName(shp.MediaPath ?? "") : shp.Text;
                     if (text.Length == 0) break;
                     var color = new XSolidBrush(Col(shp.Color ?? (shp.Role == "title" ? th.Title : th.Text)));
+                    if (shp.Kind != ShapeKind.Medien && shp.Runs is { } runs) { DrawRuns(g, shp, runs, th, r, k, color); break; }
                     var lines = new List<(string Text, XFont Font, double Indent, bool Bullet)>();
                     foreach (var raw in text.Split('\n'))
                     {
@@ -106,6 +107,54 @@ public static class SlidePdf
                     break;
                 }
             }
+        }
+    }
+
+    /// <summary>T-0701: Textfeld mit mehreren Textformaten – Wort für Wort mit eigener Größe, Fett/Kursiv, Unterstreichung, Farbe und Schrift, umbrochen auf die Feldbreite.</summary>
+    static void DrawRuns(XGraphics g, SlideShape shp, List<TextRun> runs, SlideTheme th, XRect r, double k, XBrush dflt)
+    {
+        var chars = TextRuns.Expand(runs, shp.Text);
+        var lines = new List<(List<(string Text, XFont Font, XBrush Brush, bool Under)> Parts, double Indent, bool Bullet, double Height)>();
+        var pos = 0;
+        foreach (var raw in shp.Text.Split('\n'))
+        {
+            var lvl = raw.StartsWith('\t') ? 1 : 0; var line = raw.TrimStart('\t'); var start = pos + raw.Length - line.Length; pos += raw.Length + 1;
+            var indent = shp.Bullets ? (0.95 + lvl * 1.27) * k : 0; var width = r.Width - 8 - indent;
+            var cur = new List<(string, XFont, XBrush, bool)>(); double x = 0, h = FontPt(shp.FontSize * (lvl == 1 ? 0.85 : 1), k) * 1.2; var first = true;
+            // in Wörter mit Leerzeichen zerlegen, je Wort das Format seines ersten Zeichens
+            for (var i = 0; i < line.Length;)
+            {
+                var j = i; while (j < line.Length && line[j] != ' ') j++; while (j < line.Length && line[j] == ' ') j++;
+                for (var a = i; a < j;)
+                {
+                    var look = chars[start + a]; var b = a; while (b < j && chars[start + b] == look) b++;
+                    var size = FontPt(look.Size ?? shp.FontSize * (lvl == 1 ? 0.85 : 1), k);
+                    var style = (look.Bold ?? shp.Bold, look.Italic == true) switch { (true, true) => XFontStyleEx.BoldItalic, (true, false) => XFontStyleEx.Bold, (false, true) => XFontStyleEx.Italic, _ => XFontStyleEx.Regular };
+                    var font = Font(look.Font is { Length: > 0 } fn && !fn.StartsWith('+') ? fn : th.Font, size, style);
+                    var piece = line[a..b]; var w = g.MeasureString(piece, font).Width;
+                    if (x + w > width && x > 0 && a == i) { lines.Add((cur, indent, shp.Bullets && first, h)); first = false; cur = []; x = 0; h = size * 1.2; }
+                    cur.Add((piece, font, look.Color is { } c ? new XSolidBrush(Col(c)) : dflt, look.Underline is not null)); x += w; h = Math.Max(h, size * 1.2);
+                    a = b;
+                }
+                i = j;
+            }
+            lines.Add((cur, indent, shp.Bullets && first && line.Trim().Length > 0, h));
+        }
+        var total = lines.Sum(l => l.Height);
+        var y = shp.Kind == ShapeKind.Text ? r.Top + 4 : r.Top + Math.Max(4, (r.Height - total) / 2);
+        foreach (var (parts, indent, bullet, height) in lines)
+        {
+            var lineW = parts.Sum(p => g.MeasureString(p.Text, p.Font).Width);
+            var x = r.Left + 4 + indent + shp.Align switch { Align.Center => (r.Width - 8 - indent - lineW) / 2, Align.Right => r.Width - 8 - indent - lineW, _ => 0 };
+            if (bullet && parts.Count > 0) g.DrawString("•", parts[0].Font, dflt, r.Left + 4 + indent - parts[0].Font.Size * 0.8, y + parts[0].Font.Size);
+            foreach (var (t, font, brush, under) in parts)
+            {
+                var w = g.MeasureString(t, font).Width;
+                g.DrawString(t, font, brush, x, y + height * 0.8);
+                if (under) g.DrawLine(new XPen(XColors.Black, Math.Max(0.5, font.Size / 16)), x, y + height * 0.88, x + w, y + height * 0.88);
+                x += w;
+            }
+            y += height;
         }
     }
 

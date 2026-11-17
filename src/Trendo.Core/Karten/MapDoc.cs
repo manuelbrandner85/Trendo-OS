@@ -32,12 +32,37 @@ public sealed class MapDoc
     /// <summary>GPX-Datei übernehmen (Spur + Wegpunkte); die Ansicht springt auf die Spur.</summary>
     public MapTrack? ImportGpx(string path)
     {
-        var (trk, wpt) = Geo.ReadGpx(path);
-        MapTrack? t = null;
-        if (trk.Count > 0) { t = new MapTrack { Name = Path.GetFileNameWithoutExtension(path), Color = Palette[Tracks.Count % Palette.Length], Points = trk.Select(MapPoint.From).ToList() }; Tracks.Add(t); }
+        var (trk, wpt) = Geo.ReadGpx(path); // prüft Datei und Koordinaten
+        // T-0719: jede <trk> und jede <rte> einer fremden Datei (Garmin, Komoot, Strava …) wird eine eigene Linie – vorher lief alles in eine Spur zusammen
+        var parts = new List<(string? Name, bool Planned, List<MapPoint> Pts)>();
+        try
+        {
+            var doc = System.Xml.Linq.XDocument.Load(path);
+            static double D(string? v) => double.Parse(v ?? "", NumberStyles.Float, CultureInfo.InvariantCulture);
+            foreach (var e in doc.Descendants().Where(x => x.Name.LocalName is "trk" or "rte"))
+            {
+                var planned = e.Name.LocalName == "rte";
+                var pts = e.Descendants().Where(x => x.Name.LocalName == (planned ? "rtept" : "trkpt")).Select(x => new MapPoint
+                {
+                    Lat = D(x.Attribute("lat")?.Value), Lon = D(x.Attribute("lon")?.Value),
+                    Ele = x.Elements().FirstOrDefault(y => y.Name.LocalName == "ele") is { } el && double.TryParse(el.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var ev) ? ev : null,
+                    Time = x.Elements().FirstOrDefault(y => y.Name.LocalName == "time") is { } tm && DateTime.TryParse(tm.Value, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out var tv) ? tv : null,
+                }).ToList();
+                if (pts.Count > 0) parts.Add((e.Elements().FirstOrDefault(x => x.Name.LocalName == "name")?.Value.Trim(), planned, pts));
+            }
+        }
+        catch (FormatException) { parts.Clear(); }
+        if (parts.Count == 0 && trk.Count > 0) parts.Add((null, false, trk.Select(MapPoint.From).ToList()));
+        MapTrack? t = null; var file = Path.GetFileNameWithoutExtension(path); var k = 0;
+        foreach (var (name, planned, pts) in parts)
+        {
+            k++;
+            var nt = new MapTrack { Name = name is { Length: > 0 } ? name : parts.Count == 1 ? file : $"{file} ({k})", Color = Palette[Tracks.Count % Palette.Length], Points = pts, Planned = planned };
+            Tracks.Add(nt); t ??= nt;
+        }
         foreach (var w in wpt) Waypoints.Add(new MapWaypoint { Name = w.Name ?? "Wegpunkt", Lat = w.Lat, Lon = w.Lon, Ele = w.Ele });
         if (t is null && wpt.Count == 0) throw new InvalidDataException("In der Datei sind weder Spur noch Wegpunkte.");
-        FitTo(t?.Points.Select(p => (p.Lat, p.Lon)) ?? wpt.Select(w => (w.Lat, w.Lon)));
+        FitTo(parts.Count > 0 ? parts.SelectMany(x => x.Pts).Select(p => (p.Lat, p.Lon)) : wpt.Select(w => (w.Lat, w.Lon)));
         return t;
     }
 
@@ -94,7 +119,7 @@ public sealed class MapDoc
         var I = CultureInfo.InvariantCulture; string E(string s) => System.Security.SecurityElement.Escape(s);
         var sb = new StringBuilder($"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<gpx version=\"1.1\" creator=\"Trendo Karten\" xmlns=\"http://www.topografix.com/GPX/1/1\">\n<metadata><name>{E(Name)}</name></metadata>\n");
         foreach (var w in Waypoints) sb.Append($"<wpt lat=\"{w.Lat.ToString("0.0000000", I)}\" lon=\"{w.Lon.ToString("0.0000000", I)}\">{(w.Ele is { } e ? $"<ele>{e.ToString("0.#", I)}</ele>" : "")}<name>{E(w.Name)}</name></wpt>\n");
-        foreach (var t in Tracks)
+        foreach (var t in Tracks.Where(t => t.Planned).Concat(Tracks.Where(t => !t.Planned))) // T-0719: GPX 1.1 verlangt die Reihenfolge wpt → rte → trk (sonst lehnen strenge Geräte die Datei ab)
         {
             var tag = t.Planned ? "rte" : "trk"; var pt = t.Planned ? "rtept" : "trkpt";
             sb.Append($"<{tag}><name>{E(t.Name)}</name>{(t.Planned ? "" : "<trkseg>")}\n");

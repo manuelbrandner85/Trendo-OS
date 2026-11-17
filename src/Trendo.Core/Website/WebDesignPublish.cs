@@ -72,6 +72,17 @@ public static class WebDesignPublish
         return new(files, files.Sum(f => f.Bytes), files.Count == 0 ? "" : Fingerprint(dir, files), blockers, notes);
     }
 
+    /// <summary>T-0718: Prüfung und Dateiliste für einen beliebigen fertigen Website-Ordner (z. B. Baukasten „fertig“): Startseite vorhanden,
+    /// keine Geheimnisse, nur prüfbare Dateiarten. Grundlage für das Veröffentlichen über das Freigabe-Tor (<see cref="WebPublishing"/>).</summary>
+    public static Plan PrepareFolder(string dir)
+    {
+        var blockers = new List<string>();
+        if (!File.Exists(Path.Combine(dir, "index.html"))) blockers.Add("Im Ordner fehlt die Startseite index.html.");
+        var files = Files(dir);
+        blockers.AddRange(ScanAll(dir, files).Take(15));
+        return new(files, files.Sum(f => f.Bytes), files.Count == 0 ? "" : Fingerprint(dir, files), blockers, []);
+    }
+
     /// <summary>Paket (ZIP) im Projekt anlegen, nur nach bestandener Prüfung. Es wird nichts hochgeladen.</summary>
     public static (string? Zip, string? Error) Package(string projectDir, Plan plan)
     {

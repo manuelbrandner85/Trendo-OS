@@ -29,7 +29,8 @@ public partial class MainWindow
         try
         {
             if (FailNextPage == key) { FailNextPage = null; throw new InvalidOperationException("Testfehler"); }
-            return WithPromptBar(key, InAppShell(key) ? SettingsShell(key, _showMap[key]()) : _showMap[key]()); // E1/E2: Einstellungen wie Windows 11, KI-Zentrale wie LM Studio
+            _titleMenu = null;
+            return WithPromptBar(key, InAppShell(key) ? SettingsShell(key, WithExternalMenu(key, _showMap[key]())) : WithExternalMenu(key, _showMap[key]())); // T-0710: Menüleiste der Programme außerhalb der Hülle // E1/E2: Einstellungen wie Windows 11, KI-Zentrale wie LM Studio
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
@@ -80,7 +81,10 @@ public partial class MainWindow
                 Say("Messung fertig.", V);
             }, true)), new TextBlock { Name = "perf-out", Text = _qualOut, Foreground = Text, TextWrapping = TextWrapping.Wrap }));
         sp.Children.Add(ToolCard("audit-card", Mdi.CheckboxMarkedOutline, "#86EFAC", "#15803D", "Protokoll prüfen", "Jede Aktion steht in einer Kette, in der jeder Eintrag den vorigen absichert. Wird etwas verändert oder gelöscht, fällt es hier auf.",
-            Line(Act("audit-check", "Kette prüfen", () => { var b = _core.Audit.FirstBroken(); Say(b is null ? $"✓ Alle {_core.Audit.ReadAll().Count} Einträge unverändert." : $"✕ Ab Eintrag {b} wurde das Protokoll verändert.", V); }))));
+            Line(Act("audit-check", "Kette prüfen", () => { var c = _core.Audit.Check(); var b = c.Broken; // T-0726: mit Schlüssel auch die Signaturen; Abschnitte ohne Signatur werden genannt
+                Say(b is null ? $"✓ Alle {_core.Audit.ReadAll().Count} Einträge unverändert{(_core.Audit.Keyed ? " und signiert" : "")}."
+                    + (c.Unsigned.Count > 0 ? $" Davon {c.Unsigned.Count} ohne Signatur (ältere Trendo-Fassung oder Tresor beim Start nicht erreichbar) – ab Eintrag {c.Unsigned[0]}, im Protokoll festgehalten." : "")
+                    : $"✕ Ab Eintrag {b} wurde das Protokoll verändert.", V); }))));
         return QualPage("Qualität – Leistung", sp);
     }
 

@@ -6,24 +6,6 @@ namespace Trendo.Core.Tests;
 
 public class ConnectedPromptTests
 {
-    [Fact(DisplayName = "Kamera nennt Geräte und nimmt nichts auf")]
-    public void Kamera_nennt_geraete_ohne_aufnahme()
-    {
-        using var fx = new Box();
-        var root = Path.Combine(fx.Root, "v4l");
-        Directory.CreateDirectory(Path.Combine(root, "video0"));
-        File.WriteAllText(Path.Combine(root, "video0", "name"), "Hofkamera\n");
-        var wf = fx.Flow(new PromptServices { VideoSys = root });
-        var done = fx.Go(wf, "CORE-09", "Lesen: jetzt");
-        Assert.Equal(RunStatus.Verified, done.Status);
-        var text = fx.Read(done);
-        Assert.Contains("Hofkamera", text);
-        Assert.Contains("keine Kamera geöffnet", text);
-        var blocked = fx.Go(fx.Flow(new PromptServices { VideoSys = root }), "CORE-09", "Foto: ja", "kamera-foto");
-        Assert.Equal(RunStatus.Unsupported, blocked.Status);
-        Assert.Empty(blocked.Artifacts);
-        Assert.Contains("nicht angeschlossen", string.Join(" ", blocked.Errors));
-    }
 
     [Fact(DisplayName = "SPEC-07 ist abgelehnt: kein Übersetzungsauftrag, keine KI-Anfrage")]
     public void Uebersetzen_bleibt_gesperrt()

@@ -126,7 +126,7 @@ public class SheetFilesTests
     [Fact(DisplayName = "Tabelle C1: Abgleich mit LibreOffice Calc – Calc öffnet Trendos XLSX, speichert ODS und XLSX, Trendo liest beides gleich (nur mit LibreOffice)")]
     public void LibreOffice_roundtrip()
     {
-        if (Soffice() is not { } soffice) return; // ohne mitgeliefertes LibreOffice nicht prüfbar
+        if (Soffice() is not { } soffice) { Ueberspringen.Weil("LibreOffice fehlt auf diesem PC."); return; } // ohne mitgeliefertes LibreOffice nicht prüfbar
         var dir = Temp();
         try
         {

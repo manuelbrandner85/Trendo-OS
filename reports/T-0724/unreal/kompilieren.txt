@@ -1,0 +1,41 @@
+Using bundled DotNet SDK version: 10.0 win-x64
+Running UnrealBuildTool: dotnet "..\..\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll" EchtlaufSpielEditor Win64 Development -Project=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\unreal\EchtlaufSpiel\EchtlaufSpiel.uproject -WaitMutex -NoHotReload
+Log file: C:\Users\<user>\AppData\Local\UnrealBuildTool\Log.txt
+Determining max actions to execute in parallel (8 physical cores, 16 logical cores)
+  Executing up to 8 processes, one per physical core
+Creating makefile for EchtlaufSpielEditor (no existing makefile)
+UbaServer - Listening on 0.0.0.0:1345
+UHT compiled-in object format Default
+Building EchtlaufSpielEditor...
+===== Toolchain Information =====
+Using ISPC compiler (C:\Program Files\Epic Games\UE_5.8\Engine\Source\ThirdParty\Intel\ISPC\bin\Windows\ispc.exe)
+  Intel(r) Implicit SPMD Program Compiler (Intel(r) ISPC), 1.24.0 (build commit  @ 20250404, LLVM 18.1.2) 
+Using Visual Studio 14.50.35740 toolchain (C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717) and Windows 10.0.22621.0 SDK (C:\Program Files (x86)\Windows Kits\10).
+===== End Toolchain Information =====
+Using Unreal Build Accelerator local executor to run 14 action(s)
+  CPU 8 physical cores, 16 logical cores
+  Memory 31.88 GB physical, 50.84 GB/59.05 GB committed
+  UBA Storage capacity 40 GB
+[1/14] Compile [x64] SharedPCH.UnrealEd.Project.ValApi.ValExpApi.Cpp20.cpp
+[2/14] Compile Resource [x64] Default.rc2
+[3/14] Compile [x64] EchtlaufSpiel.cpp
+[4/14] Compile [x64] PerModuleInline.gen.cpp
+[5/14] Compile [x64] Module.EchtlaufSpiel.gen.cpp
+[6/14] Compile [x64] TrendoCar.cpp
+[7/14] Compile [x64] TrendoCharacter.cpp
+[8/14] Compile [x64] TrendoActors.cpp
+[9/14] Compile [x64] TrendoTests.cpp
+[10/14] Compile [x64] TrendoTypes.cpp
+[11/14] Compile [x64] TrendoGameMode.cpp
+[12/14] Link [x64] UnrealEditor-EchtlaufSpiel.lib
+   Bibliothek "C:\Users\<user>/AppData/Local/Temp/trendo-echtlauf-30792/unreal/EchtlaufSpiel/Intermediate/Build/Win64/x64/UnrealEditor/Development/EchtlaufSpiel/UnrealEditor-EchtlaufSpiel.lib" und Objekt "C:\Users\<user>/AppData/Local/Temp/trendo-echtlauf-30792/unreal/EchtlaufSpiel/Intermediate/Build/Win64/x64/UnrealEditor/Development/EchtlaufSpiel/UnrealEditor-EchtlaufSpiel.exp" werden erstellt.
+[13/14] Link [x64] UnrealEditor-EchtlaufSpiel.dll
+[14/14] WriteMetadata EchtlaufSpielEditor.target [NoUba]
+
+Total time in Unreal Build Accelerator local executor: 58.82 seconds
+Output binary: C:\Program Files\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe
+
+Result: Succeeded
+Total execution time: 85.20 seconds
+Trace written to file C:\Users\<user>\AppData\Local\UnrealBuildTool\Trace.uba with size 14.1kb
+

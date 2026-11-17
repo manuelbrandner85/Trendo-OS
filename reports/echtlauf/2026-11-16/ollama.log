@@ -1,0 +1,14 @@
+# Echtlauf ollama – Lokale KI beantwortet eine Rechenfrage
+Datum: 2026-11-16T21:44:39
+Fundort: C:\Users\<user>\AppData\Local\TrendoWerkzeuge\ollama\ollama.exe
+Suchweg: DependencyManager (Vollpaket ollama/ollama.exe, bekannte Orte, winget, PATH)
+Version: ollama version is 0.40.11
+
+## Fachlauf (Helfer: ollama) – Exit 0, 12.3 s
+21:44:39 Automatisch gewählt: qwen3:14b – Das größte vorhandene allgemeine Sprachmodell (8,6 GB), das in deinen Grafikspeicher (12 GB) passt.
+21:44:40 Ollama-Dienst läuft bereits – wird nur benutzt, nicht beendet.
+21:44:51 Antwort nach 11,6 s: 42
+
+
+ERGEBNIS: ECHT-GRÜN (12.3 s)
+- Fachlauf ollama: ECHT-GRÜN – Antwort nach 11,6 s: 42

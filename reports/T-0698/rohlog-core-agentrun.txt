@@ -1,0 +1,26 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0698\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.01] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.59]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:01.94]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:01.97]   Starting:    Trendo.Core.Tests
+  Bestanden T-0698 Agent −2: Ausbruch aus dem Projektordner wird abgewiesen [264 ms]
+  Bestanden T-0698 Team +1: Rollen geben Dateien weiter, Prüfer laufen parallel, Prüfer gibt einmal zurück, danach OK [2 s]
+  Bestanden T-0698 Stopp: Stopp-Knopf (Abbruch) beendet den Lauf sofort, Zustand „gestoppt“, Ergebnisdatei bleibt [118 ms]
+  Bestanden T-0698 Agent −1: Agent nur mit „lesen“ kann nicht schreiben – Versuch abgewiesen und protokolliert [110 ms]
+  Bestanden T-0698 Ablauf +2: alte Ablaufdateien bleiben lesbar (Schritt-Arten als Zahl, neue Art hinten) [25 ms]
+  Bestanden T-0698 Werkzeuge: E-Mail nur als Entwurf (.eml, nie gesendet), Web nur im Lesemodus – Heimnetz abgewiesen [153 ms]
+  Bestanden T-0698 Grenze: Schrittgrenze beendet einen Agenten, der nie fertig wird; Not-Stopp hält ihn an [161 ms]
+  Bestanden T-0698 Werkzeug Studio: Studio-Aktion über den vorhandenen Studio-Ablauf (echter Adapter SPEC-11) legt eine Rechnung im Projekt an, bucht nichts [250 ms]
+  Bestanden T-0698 Ablauf +1: Schritt „Agent ausführen“ – Neue-Datei-Auslöser startet den Agenten über die Abläufe-Maschine, nur nach Freigabe [228 ms]
+  Bestanden T-0698 Freigabe −1: Wirkung nach außen ohne Zustimmung wird vom Freigabe-Tor blockiert, mit Zustimmung ausgeführt [379 ms]
+[xUnit.net 00:00:07.27]   Finished:    Trendo.Core.Tests
+  Bestanden T-0698 Team +2: Prüfer kann höchstens zweimal zurückgeben; Stopp beendet das Team jederzeit [821 ms]
+  Bestanden T-0698 Definition −1: Pflichtfelder, Werkzeuge nur aus der festen Liste, Grenzen, keine Schlüssel [62 ms]
+  Bestanden T-0698 Agent +1: legt eine echte Datei an, liest sie, verbessert sie – jede Werkzeugnutzung im Protokoll, Ergebnis als Datei im Projekt [152 ms]
+
+Der Testlauf war erfolgreich.
+Gesamtzahl Tests: 13
+     Bestanden: 13
+ Gesamtzeit: 7,8889 Sekunden
+exit=0

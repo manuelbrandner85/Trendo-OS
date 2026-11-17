@@ -1,0 +1,55 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0714\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0714\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.13]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:00.97]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:01.00]   Starting:    Trendo.Core.Tests
+  Bestanden T-0711 Dateiformate: alte Dateien der neu angeschlossenen Programme bleiben lesbar (Spiel-Einstellungen, Wissen, Vorlagen/Skills), Speichern atomar [172 ms]
+  Bestanden T-0714 Absturz: Trendo Text an der Notsicherung der Hülle (DOCX über ProgramLink, mit Sperre) – 10-mal hart beendet, die Sicherung öffnet sich jedes Mal, höchstens der laufende Schritt fehlt [4 s]
+  Standardausgabemeldungen:
+ link-text: 10 harte Abbrüche, 9 mitten im Schreiben, höchstens 1 Schritt verloren.
+
+
+  Bestanden T-0714 Atomar: Briefköpfe, Verkaufen (Ideen, Listen je Idee, Gründungsschritte), Vorhaben (Schrittliste), Adressbuch (Kontakte, Fotos), Kalender-Export schreiben über AtomicFile [113 ms]
+  Bestanden T-0714 CAD: .tcad hat ein Versionsfeld; alte Dateien ohne Angabe bleiben lesbar (Fassung 1), eine neuere Fassung wird verständlich abgelehnt [72 ms]
+  Bestanden T-0714 ProgramLink: Stand als Datei (Base64) hin und zurück, Track legt keinen Rückgängig-Schritt an, kaputte Sicherung wird verständlich abgelehnt [117 ms]
+  Bestanden T-0714 3D: Szene-JSON hat ein Versionsfeld; alte Szenen ohne Angabe bleiben lesbar (Fassung 1), eine neuere Fassung wird verständlich abgelehnt [7 ms]
+  Bestanden T-0714 ProgramLink: Zurückholen einer Sicherung löscht die Sicherung des offenen, ungespeicherten Stands nicht mehr – sie wird danach angeboten [30 ms]
+  Bestanden T-0714 Absturz: Trendo Tabelle an der Notsicherung der Hülle (XLSX über ProgramLink, mit Sperre) – 10-mal hart beendet, die Sicherung öffnet sich jedes Mal, höchstens der laufende Schritt fehlt [5 s]
+  Standardausgabemeldungen:
+ link-tabelle: 10 harte Abbrüche, 10 mitten im Schreiben, höchstens 1 Schritt verloren.
+
+
+  Bestanden T-0691 Absturz: 3D-Szene – 16-mal hart beendet, die Sicherung ist jedes Mal vollständig lesbar, kein fertig gesicherter Stand fehlt [10 s]
+  Standardausgabemeldungen:
+ szene3d: 16 harte Abbrüche, 16 mitten im Schreiben, höchstens 1 Schritt verloren.
+
+
+  Bestanden T-0711 Absturz: Editor der Übersicht über ProgramLink mit Sperre – 12-mal hart beendet, die Sicherung ist jedes Mal lesbar und wird trotz liegengebliebener Sperre zurückgeholt [12 s]
+  Standardausgabemeldungen:
+ link-editor: 12 harte Abbrüche, 9 mitten im Schreiben, höchstens 1 Schritt verloren.
+
+
+  Bestanden T-0711 Zwei Fenster: Schließen eines Fensters gibt seine Sicherungen frei; Verwerfen löst die eigene Sperre [17 ms]
+  Bestanden T-0711 Zwei Fenster: eine Sicherung, die ein anderes laufendes Fenster hält, wird nicht angeboten und nicht übernommen; nach dessen Ende (oder Absturz) schon [23 ms]
+  Bestanden T-0708 Absturz: angeschlossenes Programm – 16-mal hart beendet, die Notsicherung ist jedes Mal lesbar und wird beim Neustart zurückgeholt [13 s]
+  Standardausgabemeldungen:
+ link: 16 harte Abbrüche, 8 mitten im Schreiben, höchstens 1 Schritt verloren.
+
+
+  Bestanden T-0708 Dateiformat: alte Projektdateien (ohne Versionsangabe, ohne meta, mit BOM) bleiben lesbar, eine neuere Fassung wird abgelehnt [30 ms]
+  Bestanden T-0708 Briefe: ein Brief im Format der ersten Fassung des Briefstudios (21.10.2026) lässt sich weiter öffnen [10 ms]
+  Bestanden T-0708 Notsicherung: nächster Start findet den ungespeicherten Stand und holt ihn zurück; nach dem Speichern ist die Sicherung weg [9 ms]
+  Bestanden T-0708 Rückgängig über mehrere Schritte und Wiederholen, höchstens 100 Schritte wie die Hülle [6 ms]
+[xUnit.net 00:00:19.59]   Finished:    Trendo.Core.Tests
+  Bestanden T-0691 Absturz: CAD-Bauteil – 16-mal hart beendet, die Sicherung ist jedes Mal vollständig lesbar, kein fertig gesicherter Stand fehlt [8 s]
+  Standardausgabemeldungen:
+ cad: 16 harte Abbrüche, 16 mitten im Schreiben, höchstens 1 Schritt verloren.
+
+
+
+Der Testlauf war erfolgreich.
+Gesamtzahl Tests: 18
+     Bestanden: 18
+ Gesamtzeit: 20,1017 Sekunden

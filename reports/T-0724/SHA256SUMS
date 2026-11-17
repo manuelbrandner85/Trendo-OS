@@ -1,0 +1,12 @@
+195a3d7fcc254f1897313a3cd8c2528add14e6352c0055bcfb5e562e549d0962 *./README.md
+fa3ae3edd771f891790052275b28a84027aaa626d5fefdf2868937e67f1c43be *./leistung/oeffnen-gross.log
+6ac9d33c13fa9568bcbaa3e8266dbb55593f4c7ac54cf4b1b415ff05acb56c9c *./setup/3-alt-kalt-start.txt
+e184844fab7378abc0e0b529841ac6464aee748a87b0a65f5b0679eb26bbdd12 *./setup/3-alt-selftest.txt
+c56fe3fddbe9a284aefafbe6a3bac9cff91a686c7e330793bf42f325ca923d8a *./setup/3-alt-warm-start.txt
+9e8d880f99e65a9c9cf3fb89c4fd006323ced855da489a63dc597a9a9be0cbc7 *./setup/4-neu-kalt-start.txt
+389f6e1a6bd5500b61038d15f15893c4d41aa3ceec644ab45d3daa08aa9980c8 *./setup/4-neu-selftest.txt
+25005186ccad5531b82e398bdf5a8d6b90fdb8d16ef015f1577e402ad282cf80 *./setup/4-neu-warm-start.txt
+cbf61867116438432b109aac049b231019f3ae09e2ba6f0c9679a76d8870300e *./setup/setup-rundlauf-portabel.log
+29d3c9c983e3305e8b2757618176ea0ccf574c1771fbc82374052312c965bd3a *./unreal/kompilieren.txt
+de025231a42443696a94a3f4829e8774832c28aa022033416e740a2de93725d2 *./unreal/start.txt
+75081c2a5b1b2c095ec551b2057a5dd2c1cf77c95c1b229a587579de1484d9c6 *./unreal/tests.txt

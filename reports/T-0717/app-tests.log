@@ -1,0 +1,30 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0202: Kein Klick auf irgendeiner Seite stürzt ab (Klick-Audit, Bericht der stummen Knöpfe) [SKIP]
+      Langer Klick-Audit über alle Seiten: TRENDO_ALL_BUTTONS=1 setzen
+    Film mit echtem FFmpeg, vom Klick bis zur Datei: Beispiel-Kurzfilm, Clips über die Dateiauswahl, Foto auf eine Einstellung gelegt, Musik, Klick auf „Film rendern“ → MP4 und SRT; ffprobe prüft Dauer, Spuren, Auflösung; danach „Im Videoschnitt weiterbearbeiten“ [FAIL]
+      System.InvalidOperationException : nicht sichtbar: prog-cmd-film-import-music
+      Stack Trace:
+        tests\Trendo.App.Tests\StartMenuUiTests.cs(18,0): at Trendo.App.Tests.StartMenu_Ui.RealClick(Window w, Control c)
+        tests\Trendo.App.Tests\FilmSchnittUiTests.cs(71,0): at Trendo.App.Tests.FilmSchnitt_Ui.Render_click_to_file_real()
+        --- End of stack trace from previous location ---
+    T-0681 Code-Editor: „Ausführen“ läuft im Hintergrund – Klick kehrt sofort zurück, Ausgabe erscheint laufend, die Seite bleibt bedienbar, „Abbrechen“ beendet den eigenen Kindprozess [FAIL]
+      Assert.Contains() Failure: Sub-string not found
+      String:    "■ Abgebrochen – das Programm wurde beendet.\nAbgebr"···
+      Not found: "Zeile eins"
+      Stack Trace:
+        tests\Trendo.App.Tests\T0681FehlerUiTests.cs(217,0): at Trendo.App.Tests.T0681_Ui.CodeEditor_laeuft_im_Hintergrund_und_bricht_ab()
+        --- End of stack trace from previous location ---
+    V10 Übersicht: „Einfach“ verliert keine Funktion – jedes Bedienelement aus „Erweitert“ ist da oder hat einen genannten Ersatzweg [FAIL]
+      Assert.Empty() Failure: Collection was not empty
+      Collection: ["ki-rollen: agent-goal", "ki-rollen: agent-goal-redo", "ki-rollen: agent-goal-undo", "ki-rollen: agent-run", "ki-rollen: team-code", ···]
+      Stack Trace:
+        tests\Trendo.App.Tests\UebersichtEinfachUiTests.cs(160,0): at Trendo.App.Tests.UebersichtEinfach_Ui.Simple_keeps_every_function()
+           at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Finished:    Trendo.App.Tests (ID = '93ffa9b50813dad957b4ce1d05261857d508ae0b1c3a1dbfd66d0c7ba8ad9afe')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 463, Errors: 0, Failed: 3, Skipped: 1, Not Run: 0, Time: 1157,319s

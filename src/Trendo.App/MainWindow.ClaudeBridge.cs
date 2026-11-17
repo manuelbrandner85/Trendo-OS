@@ -185,15 +185,17 @@ public partial class MainWindow
                     var scene = JsonNode.Parse(_scene.ToJson())!.AsObject();
                     if (a["loeschen"].AsBool()) DocPath.Remove(scene, Need(a, "pfad")); else DocPath.Set(scene, Need(a, "pfad"), DocPath.Unwrap(a["wert"]?.DeepClone()));
                     var changed = Scene3D.FromJson(scene.ToJsonString()); // erst prüfen, dann übernehmen
-                    _undo3d.Add(_scene.ToJson()); _scene = changed;
+                    Push(); _scene = changed; // T-0691: wie jede Änderung – Wiederholen leeren, als ungespeichert sichern
                     Show("3d"); await Pump();
                     return BridgeDone(run);
                 }
                 var spec = BridgeSpec(run, a); var doc = BridgeOpenDoc(spec); var path = Need(a, "pfad");
                 if (System.Text.RegularExpressions.Regex.IsMatch(path, "consent|einwillig|freigabe|approved", System.Text.RegularExpressions.RegexOptions.IgnoreCase)) return McpResult.Fail("Einwilligungen und Freigaben trägt nur der Nutzer selbst ein.");
-                run.Page = spec.Key; ClaudeChangeBegin(spec.Key, doc);
                 var remove = a["loeschen"].AsBool();
-                doc.Edit("Claude: " + path, d => { if (remove) DocPath.Remove(d, path); else DocPath.Set(d, path, DocPath.Unwrap(a["wert"]?.DeepClone())); });
+                var value = remove ? null : DocPath.Unwrap(a["wert"]?.DeepClone());
+                if (!remove) try { AssistChain.CheckEdit(doc.Data, path, value); } catch (ArgumentException e) { return McpResult.Fail(e.Message); } // T-0707: dieselbe Prüfung wie der Assistent
+                run.Page = spec.Key; ClaudeChangeBegin(spec.Key, doc);
+                doc.Edit("Claude: " + path, d => { if (remove) DocPath.Remove(d, path); else DocPath.Set(d, path, value); });
                 ClaudeChangeAfter(spec.Key, doc);
                 if (CurrentView == spec.Key) Show(spec.Key);
                 await Pump();
@@ -395,11 +397,13 @@ public partial class MainWindow
     /// <summary>Über die Freigabe-Prüfung des Systems: gilt einmal, läuft ab, steht im Protokoll und endet beim Not-Stopp.</summary>
     async Task<bool> BridgeConsent(BridgeRun run, string what)
     {
-        var request = _core.Approvals.Request(Principal.LocalOwner, "claude.programm", what, CurrentView, TimeSpan.FromMinutes(20));
-        var yes = await BridgeAsk(run, what);
-        if (!yes) { _core.Approvals.Deny(request.Id, Principal.LocalOwner); return false; }
-        _core.Approvals.Approve(request.Id, Principal.LocalOwner);
-        return _core.Approvals.Execute(request.Id, "claude.programm", CurrentView, () => true);
+        // B4/T-0707: freigeben darf nur die angemeldete Person mit Freigaberecht – Kinderprofil: sofort Nein, keine Rückfrage
+        if (!CanApprove) { _core.Audit.Append(CurrentPrincipal.Name, "freigabe.nicht.erlaubt", "claude.programm " + CurrentView); return false; }
+        var target = CurrentView;
+        if (!await BridgeAsk(run, what)) { _core.Audit.Append(CurrentPrincipal.Name, "freigabe.nein", "claude.programm " + target); return false; }
+        // „Ja“ auf der sichtbaren Zustimmungskarte im Claude-Bereich = Rückfrage-Karte: Anfrage im Kern und Freigabe durch die Person (CurrentPrincipal)
+        if (FreigabeAusRueckfrage(new Wirkung("claude.programm", target, what, "Claude möchte: " + what, "Ja")) is not { } id) return false;
+        return _core.Approvals.Execute(id, "claude.programm", target, () => true);
     }
 
     async Task<bool> BridgeAsk(BridgeRun run, string what)

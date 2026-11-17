@@ -36,9 +36,21 @@ public static class Ui
         var core = new TrendoCore(root, new InMemorySecretStore(), l, offline: offline);
         var w = new MainWindow(core, new AppOptions(root, null, 0, offline, Isolated: true), new Probe("browser"));
         w.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Erweitert); // Tests prüfen alle Fachwerkzeuge; neue Nutzer starten „Einfach“ (eigener Test)
+        // B4 (T-0706): Wirkungen fragen in einem eigenen Dialog nach. Hier antwortet die Person „Ja“ – Ablehnen, echter Dialog und
+        // „Klick allein führt nichts aus“ prüft FreigabenKernUi (setzt FreigabeConfirm selbst bzw. auf null).
+        w.FreigabeConfirm = _ => Task.FromResult(true);
         w.Show();
         Dispatcher.UIThread.RunJobs();
         return (w, l, root);
+    }
+    /// <summary>T-0727: Echtläufe mit lokaler KI – das isolierte Testfenster soll dieselben Modelle sehen wie die installierte App. Es fragt dafür das laufende
+    /// Ollama über den Weg der App (<c>MainWindow.InstalledModels → KiModel.Discover → OllamaBackend.InstalledAsync</c>, GET /api/tags) und misst den Grafikspeicher
+    /// dieses PCs. Ohne diese Hilfe kennt das Testfenster absichtlich keine Modelle und wählt wie ein frischer PC das kleine Standardmodell (qwen2.5:0.5b) –
+    /// das ist für normale Tests gewollt (unabhängig vom PC), für Echtläufe aber falsch.</summary>
+    public static void UseRealModels(MainWindow w)
+    {
+        w.OllamaTagsOverride = () => Task.Run(() => new OllamaBackend().InstalledAsync()).GetAwaiter().GetResult();
+        w.VramOverride = () => SystemMetrics.GpuMemory()?.TotalGb ?? 0;
     }
     public static T Find<T>(this Window w, string name) where T : Control =>
         w.GetLogicalDescendants().OfType<T>().First(c => c.Name == name);
@@ -334,6 +346,9 @@ public class W0_SetupWizard
         w.Find<CheckBox>("wiz-pack-office").IsChecked = false; w.Find<CheckBox>("wiz-pack-ki").IsChecked = false;
         w.Find<CheckBox>("wiz-pack-dev").IsChecked = true;
         w.Find<Button>("wiz-install").Press();
+        // T-0713: erst die Sammel-Rückfrage (echter Dialog, „Abbrechen“ vorbelegt) – hier „einrichten“ für alles Gewählte
+        for (var i = 0; i < 50 && w.OwnedWindows.Count == 0; i++) { await Task.Delay(10); Dispatcher.UIThread.RunJobs(); }
+        if (w.OwnedWindows.FirstOrDefault() is { } dlg) dlg.GetLogicalDescendants().OfType<Button>().First(b => b.Name == "sammel-ja").Press();
         for (var i = 0; i < 100 && w.TryFind<Control>("wiz-hello") is null && w.Settings.StudioPacks.Count == 0; i++) { await Task.Delay(20); Dispatcher.UIThread.RunJobs(); }
         // Datenschutz, Handy, Personen: weiter bis „Fertig“
         for (var i = 0; i < 100 && w.TryFind<Button>("wiz-done") is null; i++) { if (w.TryFind<Button>("wiz-next") is { } n) n.Press(); await Task.Delay(20); Dispatcher.UIThread.RunJobs(); }

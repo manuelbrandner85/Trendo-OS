@@ -83,7 +83,7 @@ public class Einfachheit_Ui(ITestOutputHelper log)
         finally { w.Close(); }
         var worst = rows.OrderByDescending(r => r.Score).ThenByDescending(r => r.NavBars).ThenByDescending(r => r.Buttons).ToList();
         var report = string.Join("\n", worst.Select(r => $"{r.Key,-34} Punkte {r.Score,2} · Reiterleisten {r.NavBars} · Aufklapper {r.ExpanderDepth} · Scroll {r.ScrollDepth} · Knöpfe {r.Buttons,3} · Tiefe {r.TreeDepth,3}  [{r.Bars}]"));
-        File.WriteAllText(Path.Combine(Path.GetTempPath(), "trendo-einfachheit.txt"), $"{rows.Count} Ansichten\n" + report);
+        File.WriteAllText(Path.Combine(global::Trendo.Core.TempDir.SystemTemp, "trendo-einfachheit.txt"), $"{rows.Count} Ansichten\n" + report);
         log.WriteLine(report);
         Assert.True(rows.Count > 40, $"nur {rows.Count} Ansichten");
         Assert.Empty(rows.Where(r => r.NavBars > 3 || r.ExpanderDepth > 2 || r.ScrollDepth > 2).Select(r => $"{r.Key}: {r.NavBars} Reiterleisten, Aufklapper {r.ExpanderDepth}, Scroll {r.ScrollDepth} [{r.Bars}]"));

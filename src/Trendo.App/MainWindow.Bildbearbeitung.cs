@@ -34,6 +34,12 @@ public partial class MainWindow
         ("heal", "✚ Reparieren", "Über Fleck, Kratzer oder Staub malen – wird aus der Umgebung aufgefüllt"),
         ("clone", "⎘ Klonen", "Erst klicken = Quelle, dann übermalen – kopiert von der Quelle"),
     ];
+    /// <summary>T-0728 (offen aus T-0710): Werkzeug-Tasten wie in Photoshop/GIMP – stehen im Menü „Werkzeuge“ und wählen das Werkzeug (nicht beim Tippen in Feldern).</summary>
+    static readonly Dictionary<string, string> ImgToolKeys = new()
+    {
+        ["move"] = "V", ["brush"] = "B", ["eraser"] = "E", ["text"] = "T", ["rect"] = "U", ["ellipse"] = "Q", ["crop"] = "C", ["vector"] = "P",
+        ["select"] = "M", ["gradient"] = "G", ["fill"] = "K", ["heal"] = "J", ["clone"] = "S",
+    };
     /// <summary>Auswahl-Rechteck (Leinwand-Pixel) – kein Bearbeitungsschritt, wie in GIMP.</summary>
     public Rect? ImgMarquee { get; set; }
     /// <summary>Lasso-Auswahl (Leinwand-Pixel); schließt Rechteck und Zauberstab aus.</summary>
@@ -70,6 +76,9 @@ public partial class MainWindow
         Sentence = "Fotos und Grafiken mit Ebenen bearbeiten – malen, Text, Formen, Filter, zuschneiden.",
         FillHeight = true,
         Folder = "Medien",
+        // T-0686 (V-02): leere Fläche – „Foto öffnen“ öffnet die Dateiauswahl, auch wenn die Spalte „Bild hinzufügen“ in „Einfach“ eingeklappt ist
+        FirstStep = new("Foto öffnen", "Öffne ein Foto – oder wähle links ein Werkzeug und male direkt los.", _ => ImgPickOpen(), d => ImageDoc.Layers(d.Data).Count == 0),
+        PrimaryExport = "png", // T-0700: nach dem ersten Foto ist „Als Bild speichern“ der nächste Schritt (leer bleibt „Foto öffnen“ golden)
         GroupLevels = new() { ["Ebene"] = 1 },
         Templates =
         [
@@ -80,6 +89,7 @@ public partial class MainWindow
         ],
         Ribbon =
         [
+            ("Bild", [new ProgramCmd("img-open-pick", "Foto öffnen", _ => ImgPickOpen(), Tip: "Ein Foto oder eine Grafik auswählen – es kommt als neue Ebene dazu")]),
             ("Ebene", [
                 new ProgramCmd("img-layer-paint", "＋ Mal-Ebene", d => d.Edit("Mal-Ebene", x => ImageDoc.AddPaint(x))),
                 new ProgramCmd("img-layer-up", "▲ Nach oben", d => ImgSel(d, (x, id) => ImageDoc.Reorder(x, id, 1), "Nach oben")),
@@ -97,11 +107,11 @@ public partial class MainWindow
             new("jpg", "JPG", ".jpg", (d, f) => ImageRender.Export(d.Data, f)),
             new("svg", "SVG (Vektor)", ".svg", (d, f) => { File.WriteAllText(f, Trendo.Core.Media.ImageVector.ToSvg(d.Data)); return f; }), // selbst statt Inkscape
         ],
-        Tools = [.. ImgTools.Select(t => new ProgramTool("img-tool-" + t.Id, t.Label[..t.Label.IndexOf(' ')], t.Label[(t.Label.IndexOf(' ') + 1)..], t.Tip, _ => ImgTool = t.Id, () => ImgTool == t.Id))],
+        Tools = [.. ImgTools.Select(t => new ProgramTool("img-tool-" + t.Id, t.Label[..t.Label.IndexOf(' ')], t.Label[(t.Label.IndexOf(' ') + 1)..], t.Tip, _ => ImgTool = t.Id, () => ImgTool == t.Id) { Shortcut = ImgToolKeys.GetValueOrDefault(t.Id, "") })],
         Workspace = ImgWorkspace,
         Properties = ImgProperties,
         Status = d => $"{(int)d.Number("width")} × {(int)d.Number("height")} px · {ImageDoc.Layers(d.Data).Count} Ebenen · Werkzeug: {ImgTools.First(t => t.Id == ImgTool).Label[2..]}",
-        Help = "Rechts ein Bild hinzufügen. Links ein Werkzeug wählen und auf der Fläche arbeiten. Rechts die Ebenen: anklicken, ein-/ausblenden, Deckkraft, Filter. Speichern als Projekt, Exportieren als PNG oder JPG.",
+        Help = "Mit „Foto öffnen“ ein Bild dazuholen. Ein Werkzeug wählen und auf der Fläche arbeiten. Rechts die Ebenen: anklicken, ein-/ausblenden, Deckkraft, Filter. Speichern als Projekt, Exportieren als PNG oder JPG.",
     }, "bildbearbeitung", "foto bearbeiten", "ebenen", "pinsel", "filter", "zuschneiden", "grafik", "collage", "plakat");
 
     static string? SelId(ProgramDocument d) => d.Text("selected") is { Length: > 0 } s && ImageDoc.Layer(d.Data, s) is not null ? s : null;
@@ -122,6 +132,9 @@ public partial class MainWindow
         _progMsg[BK] = $"„{Path.GetFileName(file)}“ geöffnet: {n} Ebenen" + (skipped > 0 ? $", {skipped} unbekannte Teile übersprungen." : ".");
         return n;
     }
+
+    /// <summary>T-0686 (V-02): Dateiauswahl für ein Foto oder eine Grafik.</summary>
+    public void ImgPickOpen() => _ = ProgramPickThen(BK, "img-open-pick", "Bilder", ["jpg", "jpeg", "png", "webp", "bmp", "svg"], false, files => ImgAddImage(files[0]));
 
     /// <summary>Bild als Ebene hinzufügen (öffentlich für Tests und die KI).</summary>
     public void ImgAddImage(string file)

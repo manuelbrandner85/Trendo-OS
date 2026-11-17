@@ -35,7 +35,26 @@ public partial class MainWindow
     Dictionary<string, StemTools.Channel> MsMixOf(MusicSong s) =>
         _msStemMix.TryGetValue(MsStemRoot(s), out var m) ? m : _msStemMix[MsStemRoot(s)] = [];
 
-    public void MsStemSet(MusicSong s, string stem, StemTools.Channel ch) { MsMixOf(s)[stem] = ch; if (CurrentView == MS) Show(MS); }
+    /// <summary>T-0715 (B6 „Programm-Hülle für alle“, Etappe E3): Einstellungen des Spuren-Mischers (Pegel, Stumm, Solo je Spur und Lied) an Rückgängig (100 Schritte)
+    /// und Notsicherung der Hülle (<see cref="Trendo.Core.Programs.ProgramLink"/>, Takt 20 s, atomar, für das Fenster gesperrt) – vorher nur im Speicher.
+    /// „Gespeichert“ ist die Mischung, sobald sie als Lied gespeichert wurde (WAV jetzt atomar).</summary>
+    public LinkSlot MsStemLink => Slot("musik-spuren", "LINK-MUSIK-SPUREN", "spuren", MS, "ms-stem", "Eine Spuren-Mischung", "Spuren-Mischungen",
+        () => System.Text.Json.JsonSerializer.SerializeToNode(_msStemMix.Where(kv => kv.Value.Count > 0).ToDictionary(kv => kv.Key, kv => kv.Value)),
+        MsStemApply,
+        () => _msStemMix.Values.Any(m => m.Values.Any(c => c != new StemTools.Channel())),
+        () => _msStemMix.Where(kv => kv.Value.Count > 0).Select(kv => Songs.Get(kv.Key)?.Title).OfType<string>().FirstOrDefault() is { } t ? "Mischung „" + t + "“" : "Spuren-Mischung");
+
+    /// <summary>Stand übernehmen (Rückgängig, Zurückholen): das gewählte Lied bleibt, wenn es zur Mischung gehört – sonst wird das gemischte Lied gewählt und „Spuren“ gezeigt.</summary>
+    void MsStemApply(System.Text.Json.Nodes.JsonNode? st)
+    {
+        var mix = st is null ? null : System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, StemTools.Channel>>>(st);
+        _msStemMix.Clear();
+        foreach (var (k, v) in mix ?? []) _msStemMix[k] = v;
+        var cur = _msSel is null ? null : Songs.Get(_msSel);
+        if ((cur is null || !_msStemMix.ContainsKey(MsStemRoot(cur))) && _msStemMix.Keys.FirstOrDefault(k => Songs.Get(k) is not null) is { } id) { _msSel = id; _msDetailTab = "spuren"; }
+    }
+
+    public void MsStemSet(MusicSong s, string stem, StemTools.Channel ch) { MsMixOf(s)[stem] = ch; LinkCommit(MsStemLink, "Mischung geändert"); MsStemLink.Refresh?.Invoke(); if (CurrentView == MS) Show(MS); }
 
     /// <summary>Mischung rendern (Trendo selbst, ohne fremden Player-Fenster) und abspielen.</summary>
     public string? MsStemPlay(MusicSong s)
@@ -60,11 +79,20 @@ public partial class MainWindow
         var dir = MsStemDir(s); if (dir is null) return null;
         var root = Songs.Get(MsStemRoot(s)) ?? s;
         var a = AudioMulti.Mix(StemTools.Project(StemTools.Files(dir), MsMixOf(s)));
-        var f = Path.Combine(dir, $"mischung-{DateTime.Now:HHmmss}.wav"); AudioFile.WriteWav(a, f, 24);
+        var f = Path.Combine(dir, $"mischung-{DateTime.Now:HHmmss}.wav"); MsWavAtomic(a, f, 24); // T-0715: atomar
         var song = Songs.Add(new MusicSong { Title = root.Title + " – eigene Mischung", Style = root.Style, Lyrics = root.Lyrics, Language = root.Language, Seconds = Math.Round(a.Seconds, 2),
             Bpm = root.Bpm, Key = root.Key, TimeSignature = root.TimeSignature, File = f, Kind = "mischung", ParentId = root.Id });
         _msSel = song.Id; _msMsg = $"„{song.Title}“ gespeichert.";
+        LinkSaved(MsStemLink); // T-0715: Mischung als Lied gespeichert – Notsicherung weg
         return song;
+    }
+
+    /// <summary>T-0715: WAV atomar schreiben – erst als Zwischendatei im selben Ordner, dann unter den richtigen Namen schieben (nie eine halbe Datei unter dem Namen).</summary>
+    static void MsWavAtomic(AudioBuf a, string file, int bits)
+    {
+        var tmp = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(file))!, Path.GetFileNameWithoutExtension(file) + ".~" + Guid.NewGuid().ToString("N")[..8] + ".teil.wav");
+        try { AudioFile.WriteWav(a, tmp, bits); SafeFile.Move(tmp, file); }
+        finally { try { if (File.Exists(tmp)) File.Delete(tmp); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } }
     }
 
     /// <summary>V7: Qualität messen – ergeben die Spuren wieder das Original, spricht der Gesang über?</summary>
@@ -88,7 +116,13 @@ public partial class MainWindow
         var sp = new StackPanel { Name = "ms-stem-mixer", Spacing = 3, Margin = new Thickness(0, 6, 0, 0) };
         var dir = MsStemDir(s); if (dir is null) return sp;
         var files = StemTools.Files(dir); var mix = MsMixOf(s);
-        sp.Children.Add(new TextBlock { Text = "SPUREN-MISCHER", Foreground = Muted, FontSize = 10, FontWeight = FontWeight.Bold });
+        // T-0715: Rückgängig · Wiederholen der Mischung (Hülle, 100 Schritte) in der Kopfzeile des Mischers – keine zusätzliche Zeile
+        var stemLink = MsStemLink; LinkCommit(stemLink);
+        var (stemUndo, stemRedo) = LinkButtons(stemLink);
+        foreach (var b in new[] { stemUndo, stemRedo }) { b.Padding = new Thickness(6, 1); b.Margin = new Thickness(6, 0, 0, 0); b.FontSize = 10.5; }
+        sp.Children.Add(new DockPanel { Children = { Dk(new StackPanel { Orientation = Orientation.Horizontal, Children = { stemUndo, stemRedo } }, Avalonia.Controls.Dock.Right),
+            new TextBlock { Text = "SPUREN-MISCHER", Foreground = Muted, FontSize = 10, FontWeight = FontWeight.Bold, VerticalAlignment = VerticalAlignment.Center } } });
+        if (LinkMsg(stemLink) is { } stemMsg) sp.Children.Add(stemMsg);
         foreach (var (id, label) in StemTools.Stems)
         {
             if (!files.ContainsKey(id)) continue;
@@ -123,7 +157,7 @@ public partial class MainWindow
         var root = Songs.Get(MsStemRoot(s)) ?? s; var label = StemTools.Stems.First(x => x.Id == stemId).Label;
         var (alone, rest) = StemTools.Isolate(files, stemId);
         var fa = Path.Combine(dir, $"nur-{stemId}.wav"); var fr = Path.Combine(dir, $"ohne-{stemId}.wav");
-        AudioFile.WriteWav(alone, fa, 24); AudioFile.WriteWav(rest, fr, 24);
+        MsWavAtomic(alone, fa, 24); MsWavAtomic(rest, fr, 24); // T-0715: atomar
         MusicSong Add(string file, string title, string kind, bool voice) => Songs.Add(new MusicSong { Title = $"{root.Title} – {title}", Style = root.Style, Lyrics = voice ? root.Lyrics : "[Instrumental]",
             Language = root.Language, Seconds = Math.Round(alone.Seconds, 2), Bpm = root.Bpm, Key = root.Key, TimeSignature = root.TimeSignature, File = file, Kind = kind, ParentId = root.Id });
         var made = new List<MusicSong> { Add(fa, label, "spur-" + stemId, stemId == "gesang"), Add(fr, "ohne " + label, "ohne-" + stemId, stemId != "gesang" && !string.IsNullOrWhiteSpace(root.Lyrics)) };
@@ -143,14 +177,14 @@ public partial class MainWindow
         if (NotenReady) // Alle Studios, Runde 1: basic-pitch erkennt auch Akkorde; ohne Einrichtung die einstimmige Erkennung
         {
             var json = Path.Combine(dir, $"{stemId}.noten.json");
-            if (NotenRunOverride is { } o) await File.WriteAllTextAsync(json, o(f));
+            if (NotenRunOverride is { } o) AtomicFile.WriteAllText(json, o(f));
             else { var k = await KiPyRun(KiRuntime.Noten, [f, mid, json], 600_000); if (!k.Ok || !File.Exists(json)) { _msMsg = "Noten erkennen (basic-pitch) hat nicht geklappt: " + (k.Err.Length > 0 ? k.Err : k.Out).Trim().Split('\n')[^1]; Show(MS); return null; } }
             r = AudioToMidi.FromBasicPitch(await File.ReadAllTextAsync(json));
         }
         else r = await Task.Run(() => AudioToMidi.Transcribe(AudioFile.Read(f)));
         if (r.Notes.Count == 0) { _msMsg = $"In der Spur „{label}“ wurden keine Noten erkannt."; Show(MS); return null; }
-        await File.WriteAllBytesAsync(mid, PianoRoll.ToMidi(AudioToMidi.ToSong(r, root.Bpm ?? 120, $"{root.Title} – {label}")));
-        await File.WriteAllTextAsync(Path.Combine(dir, $"{stemId} – Unsicherheitsbericht.md"), AudioToMidi.Report($"{root.Title} – {label}", r));
+        AtomicFile.WriteAllBytes(mid, PianoRoll.ToMidi(AudioToMidi.ToSong(r, root.Bpm ?? 120, $"{root.Title} – {label}"))); // T-0715: atomar
+        AtomicFile.WriteAllText(Path.Combine(dir, $"{stemId} – Unsicherheitsbericht.md"), AudioToMidi.Report($"{root.Title} – {label}", r));
         _msMsg = $"✓ MIDI „{label}“: {r.Notes.Count} Noten{(NotenReady ? $" (basic-pitch, {r.PolyphonicShare:P0} mehrstimmig)" : r.Exact ? "" : " (geschätzt – mehrstimmig, siehe Unsicherheitsbericht)")} – {Path.GetFileName(mid)} im Spuren-Ordner.";
         Show(MS);
         return mid;
@@ -170,7 +204,7 @@ public partial class MainWindow
         // Ende einer Zeile nie nach dem Beginn der nächsten (sonst überlappen die Zeilen im Player)
         var cues = timed.Select((l, i) => new TimedText.Cue(l.Start, i + 1 < timed.Count ? Math.Min(l.End, timed[i + 1].Start) : l.End, l.Text)).Where(c => c.End > c.Start).ToList();
         var lrc = Path.ChangeExtension(acc.File, ".lrc");
-        await File.WriteAllTextAsync(lrc, TimedText.ToLrc(cues, root.Title, root.Language.Length > 0 ? root.Language : "de", acc.Seconds));
+        AtomicFile.WriteAllText(lrc, TimedText.ToLrc(cues, root.Title, root.Language.Length > 0 ? root.Language : "de", acc.Seconds)); // T-0715: atomar
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.karaoke", Path.GetFileName(lrc));
         if (play) MusicPlay([acc.File], 0, MS);
         _msMsg = $"Karaoke: {cues.Count} Zeilen mit Zeiten – „{Path.GetFileName(lrc)}“ liegt neben der Begleitung (für jeden Karaoke-Player)." + (play ? " Die Begleitung läuft." : "");

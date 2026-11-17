@@ -1,0 +1,9 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0692\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:01.71]     T-0223 T8: Rechtschreibung Deutsch – Fehler gefunden mit Vorschlägen, richtige Wörter, Zahlen, Adressen und eigene Wörter nicht angestrichen [SKIP]
+[xUnit.net 00:00:01.71]     Briefe F3: Rechtschreibung im Brieftext – Tippfehler mit Stelle und Vorschlag, Platzhalter [Datum] und richtige Wörter nicht angestrichen [SKIP]
+  Übersprungen T-0223 T8: Rechtschreibung Deutsch – Fehler gefunden mit Vorschlägen, richtige Wörter, Zahlen, Adressen und eigene Wörter nicht angestrichen [1 ms]
+  Übersprungen Briefe F3: Rechtschreibung im Brieftext – Tippfehler mit Stelle und Vorschlag, Platzhalter [Datum] und richtige Wörter nicht angestrichen [1 ms]
+
+Bestanden!   : Fehler:     0, erfolgreich:    92, übersprungen:     2, gesamt:    94, Dauer: 58 s - Trendo.Core.Tests.dll (net10.0)
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 5 s - Trendo.Core.Tests.dll (net10.0)

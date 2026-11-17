@@ -13,7 +13,9 @@ namespace Trendo.App.Tests;
 public class Studio3DViewport_Ui
 {
     static CadView Vp(MainWindow w) { Settle(); return V<CadView>(w, "3d-viewport"); }
-    static Point At(MainWindow w, int part) { var vp = Vp(w); vp.InvalidateVisual(); Settle(); var p = vp.ScreenOf(part) ?? throw new Xunit.Sdk.XunitException($"Teil {part} nicht sichtbar"); return vp.TranslatePoint(p, w)!.Value; }
+    // T-0727: Ist das Fenster zu niedrig, lässt sich die 3D-Seite verschieben (Ansicht nie unter 200 px) – wie eine Person zuerst ganz nach unten scrollen, damit die Ansicht ganz zu sehen ist
+    static void ShowStage(MainWindow w) { foreach (var sv in Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(w).OfType<ScrollViewer>().Where(x => x.Name == "page-minfill")) sv.Offset = new Vector(0, Math.Max(0, sv.Extent.Height - sv.Viewport.Height)); Settle(); }
+    static Point At(MainWindow w, int part) { ShowStage(w); var vp = Vp(w); vp.InvalidateVisual(); Settle(); var p = vp.ScreenOf(part) ?? throw new Xunit.Sdk.XunitException($"Teil {part} nicht sichtbar"); return vp.TranslatePoint(p, w)!.Value; }
     static void Key1(MainWindow w, Key k, PhysicalKey ph, RawInputModifiers m = RawInputModifiers.None) { w.KeyPress(k, m, ph, null); w.KeyRelease(k, m, ph, null); Settle(); }
 
     [AvaloniaFact(DisplayName = "3D-Arbeitsfläche: Formen einsetzen (auf dem Boden), Teil anklicken, mit der Maus verschieben (Raster), Pfeiltasten, Verdoppeln, Entf, Rückgängig")]

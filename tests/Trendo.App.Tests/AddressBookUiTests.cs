@@ -66,7 +66,8 @@ public class AddressBook_Ui
             var csv = Path.Combine(root, "google.csv");
             File.WriteAllText(csv, "First Name,Last Name,E-mail 1 - Value,Phone 1 - Value,Address 1 - Street,Address 1 - City,Group Membership\r\n"
                 + "Erika,Muster,erika@example.de,030 1234567,Hauptstraße 1,10115 Berlin,Kunden\r\nMax,Beispiel,,0171 7654321,,,Kunden\r\n");
-            w.Find<TextBox>("ab-vcf-file").Text = csv; Click("ab-vcf-import");
+            // V-07 (T-0700): ein Klick auf „Datei wählen …“ liest sofort ein (Systemdialog ersetzt); das Pfadfeld ist außerhalb von „Professionell“ ausgeblendet
+            w.PickOverride = _ => Task.FromResult<string[]?>([csv]); Click("ab-vcf-file-pick");
             Assert.Equal(2, w.Mail.Contacts().Count);
             Click("ab-fix-phones");
             Assert.Equal("+49 30 1234567", w.Mail.Contacts().Single(c => c.Name == "Erika Muster").Phone);

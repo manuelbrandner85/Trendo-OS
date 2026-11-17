@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd">
+  <channel>
+    <title>Trendo Testpodcast</title>
+    <link>https://example.org/pod/</link>
+    <language>de-de</language>
+    <description></description>
+    <itunes:author>Testsender</itunes:author>
+    <itunes:explicit>false</itunes:explicit>
+    <item>
+      <title>Testfolge 1</title>
+      <description></description>
+      <enclosure url="https://example.org/pod/ersatz-mikrofon-1-fertig.mp3" length="265312" type="audio/mpeg" />
+      <guid isPermaLink="false">033947916f</guid>
+      <pubDate>Mon, 16 Nov 2026 11:51:16 GMT</pubDate>
+      <itunes:duration>16</itunes:duration>
+    </item>
+  </channel>
+</rss>

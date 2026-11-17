@@ -1,0 +1,20 @@
+Browser: chrome.exe
+Seite Wert 0: true
+Seite Wert 1: true
+Seite Wert 2: play|false
+Seite Wert 3: true
+Seite Wert 4: true
+Seite Wert 5: 104|false|true
+Seite Wert 6: true
+Seite Wert 7: true
+Seite Wert 8: true|3|11|Gewonnen! Punkte: 11
+Verlieren Wert 0: true
+Verlieren Wert 1: 1|false
+Verlieren Wert 2: true
+Verlieren Wert 3: true|0|Vorbei – Punkte: 0 (Leertaste: neu)
+Verlieren Wert 4: false|1
+Fehler der Seite: keine
+SHA-256 index.html: 7a966dca09c159bd1f9c4bb94e84b6531460bf8801b2fc3aab44739e707b92fb
+SHA-256 game.js: 68e6075b5408237baf470ec57fc52a35f2dfe197fc656c8dd9a9c2cb458ab7e1
+SHA-256 config.js: f71e015caf928cbc5ecee560e662cb095c1a93a8753511852106e4b1d1fb65c2
+SHA-256 spiel.json: 1b29060d0f64ae0afc94dead3a1ce9d29b749a41a2ddc01e00a8ddf87ca01af3

@@ -1,0 +1,41 @@
+C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0691\reports\T-0691\dateien\affe.glb
+Errors: 0, Warnings: 0, Infos: 0, Hints: 0
+Time: 1ms
+
+{
+    "uri": "dateien/affe.glb",
+    "mimeType": "model/gltf-binary",
+    "validatorVersion": "2.0.0-dev.3.10",
+    "issues": {
+        "numErrors": 0,
+        "numWarnings": 0,
+        "numInfos": 0,
+        "numHints": 0,
+        "messages": [],
+        "truncated": false
+    },
+    "info": {
+        "version": "2.0",
+        "generator": "Trendo OS",
+        "resources": [
+            {
+                "pointer": "/buffers/0",
+                "mimeType": "application/gltf-buffer",
+                "storage": "glb",
+                "byteLength": 81228
+            }
+        ],
+        "animationCount": 0,
+        "materialCount": 1,
+        "hasMorphTargets": false,
+        "hasSkins": false,
+        "hasTextures": false,
+        "hasDefaultScene": true,
+        "drawCallCount": 1,
+        "totalVertexCount": 2901,
+        "totalTriangleCount": 967,
+        "maxUVs": 0,
+        "maxInfluences": 0,
+        "maxAttributes": 2
+    }
+}

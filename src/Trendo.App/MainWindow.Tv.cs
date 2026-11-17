@@ -166,13 +166,12 @@ public partial class MainWindow
 
     List<TvChannel> TvChannels() => _tvChannels ??= Tv.Channels();
 
-    /// <summary>Player mpv einrichten: aus dem Vollpaket – oder ohne Vollpaket aus der offiziellen Quelle (der Klick ist die Zustimmung).</summary>
+    /// <summary>Player mpv einrichten: aus dem Vollpaket – oder ohne Vollpaket aus der offiziellen Quelle (nach eigener Rückfrage, B4).</summary>
     async Task TvSetupPlayer()
     {
         var mpv = DependencyCatalog.Get("mpv");
-        if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner);
         _tvMsg = "Player wird eingerichtet …"; Show("tv");
-        await InstallOne(mpv);
+        if (await InstallOneMitFreigabe(mpv, "Fernsehen abspielen") is null) { _tvMsg = "Abgebrochen – es wurde nichts eingerichtet."; Show("tv"); return; } // B4: eigene Rückfrage
         _tvMsg = MpvExe is not null ? "✓ Player ist eingerichtet – Sender antippen und los." : "✗ Der Player ließ sich nicht einrichten. Ist Internet da? Sonst das Trendo-Vollpaket anschließen.";
         Show("tv");
     }
@@ -452,6 +451,16 @@ public partial class MainWindow
     // ---------- Oberfläche ----------
     static readonly (string Id, string Label)[] TvTabs = [("live", "Live-TV"), ("film", "Filme"), ("serie", "Serien"), ("mediathek", "Mediatheken & Streaming"), ("videos", "Video-Plattformen"), ("guide", "Programmführer"), ("rec", "Aufnahmen"), ("multi", "Mehrfachansicht"), ("quellen", "Quellen")];
 
+    /// <summary>V-15 (T-0700): Hat dieser Reiter etwas zu zeigen? Mediatheken, Video-Plattformen und Quellen gehen immer (dort fängt man an).</summary>
+    public bool TvTabHasContent(string id, int channels, int films, int series) => id switch
+    {
+        "live" or "guide" or "multi" => channels > 0,
+        "film" => films > 0,
+        "serie" => series > 0,
+        "rec" => channels > 0 || Tv.Recordings.Any(),
+        _ => true,
+    };
+
     Control TvView()
     {
         TvRecWatch();
@@ -485,6 +494,8 @@ public partial class MainWindow
         foreach (var (id, label) in TvTabs)
         {
             var on = _tvTab == id;
+            // V-15 (T-0700): Reiter erscheinen erst, wenn sie Inhalt haben – ohne Sender keine leeren Reiter „Live-TV“, „Programmführer“ …
+            var hasContent = TvTabHasContent(id, live, films, series);
             var b = new Button
             {
                 Name = "tv-tab-" + id, Content = new TextBlock { Text = label, FontSize = 13.5, FontWeight = on ? FontWeight.SemiBold : FontWeight.Normal, Foreground = on ? Brush.Parse("#1B1406") : Text },
@@ -493,6 +504,7 @@ public partial class MainWindow
                 BorderThickness = new Thickness(0),
             };
             var tid = id; b.Click += (_, _) => { _tvTab = tid; _tvMsg = ""; Show("tv"); };
+            b.IsVisible = hasContent;
             Hover(b); tabs.Children.Add(b);
         }
         sp.Children.Add(new DockPanel { Children = { DockRight(TvKidsBar()),
@@ -508,7 +520,9 @@ public partial class MainWindow
             sp.Children.Add(Glass2(new StackPanel { Spacing = 10, Children = {
                 new TextBlock { Text = "📡", FontSize = 40 },
                 new TextBlock { Text = "Willkommen bei TV & Live", Foreground = GoldText(), FontSize = 20, FontWeight = FontWeight.Bold },
-                P("Füge deine Senderliste hinzu – eine M3U-Adresse (auch get.php von Xtream), eine M3U-Datei oder deinen Xtream-Zugang. Trendo bringt keine Sender mit; bitte nur legale Quellen nutzen.", Text, 13),
+                P(IsSimple // V-11 (T-0700): in „Einfach“ ohne Fachwörter
+                    ? "Füge deine Senderliste hinzu – als Internet-Adresse, als Datei oder mit dem Zugang deines Anbieters. Trendo bringt keine Sender mit; bitte nur legale Quellen nutzen."
+                    : "Füge deine Senderliste hinzu – eine M3U-Adresse (auch get.php von Xtream), eine M3U-Datei oder deinen Xtream-Zugang. Trendo bringt keine Sender mit; bitte nur legale Quellen nutzen.", Text, 13),
                 TvButton("tv-start-sources", "Senderliste hinzufügen", () => { _tvTab = "quellen"; Show("tv"); }, true),
                 TvButton("tv-start-mediathek", "Ohne Senderliste: Mediatheken & Streaming", () => { _tvTab = "mediathek"; Show("tv"); }),
                 TvButton("tv-start-videos", "YouTube, PeerTube & Co.", () => { _tvTab = "videos"; Show("tv"); }) } }, 18));

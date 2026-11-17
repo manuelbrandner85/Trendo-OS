@@ -3,15 +3,20 @@ using System.Text;
 namespace Trendo.Core;
 
 public sealed class Segment { public string Title { get; set; } = ""; public int Seconds { get; set; } public string Note { get; set; } = ""; }
-public sealed class Rundown { public string Show { get; set; } = "Meine Sendung"; public DateTime Start { get; set; } = DateTime.Today.AddHours(20); public int SlotMinutes { get; set; } = 60; public List<Segment> Segments { get; set; } = []; }
+/// <summary>T-0715: <see cref="Version"/> = Fassung des Dateiformats (fehlt in alten Dateien → 1, siehe <see cref="BroadcastDesk.FormatVersion"/>).</summary>
+public sealed class Rundown { public int Version { get; set; } = BroadcastDesk.FormatVersion; public string Show { get; set; } = "Meine Sendung"; public DateTime Start { get; set; } = DateTime.Today.AddHours(20); public int SlotMinutes { get; set; } = 60; public List<Segment> Segments { get; set; } = []; }
 public sealed record RundownRow(int Index, string Title, DateTime Start, DateTime End, TimeSpan Offset, int Seconds, string Note);
 public sealed record StreamPlan(string Platform, int VideoKbps, int AudioKbps, double NeededUploadMbps, bool Fits, string Advice);
 
 /// <summary>SPEC-15: Sendung & Streaming – Sendeablauf mit Zeiten und Kapitelmarken, Bitraten-Planer, Speicherbedarf.</summary>
 public sealed class BroadcastDesk(string dataRoot)
 {
+    /// <summary>T-0715: Fassung von ablauf.json. Ohne Angabe = 1 (so geschrieben vor T-0715). Eine neuere Fassung wird angezeigt, aber nicht überschrieben (<see cref="Newer"/>).</summary>
+    public const int FormatVersion = 1;
     public Rundown Plan { get; } = Fach.Load<Rundown>(dataRoot, "sendung", "ablauf");
-    public void Save() => Fach.Save(dataRoot, "sendung", "ablauf", Plan);
+    /// <summary>T-0715: Der Ablauf stammt aus einer neueren Trendo-Fassung – Speichern lässt die Datei unverändert, damit nichts verloren geht.</summary>
+    public bool Newer => Plan.Version > FormatVersion;
+    public void Save() { if (Newer) return; if (Plan.Version < 1) Plan.Version = FormatVersion; Fach.Save(dataRoot, "sendung", "ablauf", Plan); }
 
     /// <summary>Dauer als „90“, „1:30“ oder „1:02:00“ → Sekunden.</summary>
     public static int ParseDuration(string s)

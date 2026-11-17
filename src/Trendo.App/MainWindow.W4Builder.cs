@@ -19,8 +19,19 @@ public partial class MainWindow
     public SitePage BuilderPage => _page ??= LoadBuilder();
     public int BuilderSel { get; set; } = -1;
     public bool BuilderPhone { get; set; } = true;
-    readonly Stack<string> _builderUndo = new();
-    public int BuilderUndoCount => _builderUndo.Count;
+    /// <summary>T-0716: Rückgängig über die Hülle (bis 100 Schritte; vorher eigener Stapel ohne Grenze) – Zahl der Schritte, die zurückgehen.</summary>
+    public int BuilderUndoCount => BuilderLink.Link.Doc.History.Count;
+    /// <summary>T-0716: Meldung, wenn <c>seite.json</c> von einer neueren Trendo-Fassung stammt – dann wird nichts überschrieben.</summary>
+    string? _builderProblem;
+
+    /// <summary>T-0716 (B6 Etappe E4): Baukasten an Rückgängig (100 Schritte), Notsicherung (getippte, noch nicht übernommene Eingaben) und Wiederherstellen-Karte
+    /// der Hülle (<see cref="LiveSlot"/>). Gespeichert wird weiter sofort in <c>seite.json</c> – jetzt atomar und mit Versionsfeld.</summary>
+    public LinkSlot BuilderLink => LiveSlot("baukasten", "LINK-BAUKASTEN", "baukasten", "builder", "Eine Baukasten-Seite", "Baukasten-Seiten",
+        () => System.Text.Json.JsonSerializer.SerializeToNode(BuilderPage),
+        n => { _page = n is null ? new SitePage() : SitePage.FromJson(n.ToJsonString()); BuilderSel = Math.Min(BuilderSel, _page.Blocks.Count - 1); PersistBuilder(); },
+        () => BuilderSel.ToString(System.Globalization.CultureInfo.InvariantCulture),
+        o => { if (int.TryParse(o, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var i)) BuilderSel = i; },
+        title: () => BuilderPage.Title.Length > 0 ? BuilderPage.Title : "Seite");
 
     private void InitW4Builder() => RegisterTab(KreativTabs, "baukasten", "Baukasten", "X-03", BuilderView, "no-code", "webseite", "homepage", "baukasten", "ohne programmieren", "app-designer", "app bauen");
 
@@ -28,34 +39,38 @@ public partial class MainWindow
 
     private void ReloadBuilder() => _page = LoadBuilder();
 
+    static SitePage BuilderRead(string file, ref string? problem)
+    {
+        try { return SitePage.Load(file); }
+        catch (InvalidDataException e) { problem = e.Message; return new SitePage(); } // neuere Fassung: nichts überschreiben (siehe BuilderChange)
+    }
+
     private SitePage LoadBuilder()
     {
+        _builderProblem = null;
         var project = NewestProject();
         if (project is not null)
         {
             try
             {
                 var full = _core.Projects.ResolveInProject(project, "baukasten/seite.json");
-                if (File.Exists(full)) return SitePage.Load(full);
+                if (File.Exists(full)) return BuilderRead(full, ref _builderProblem);
             }
             catch (Exception ex) when (ex is ProjectIsolationException or IOException) { }
         }
-        return File.Exists(BuilderFile) ? SitePage.Load(BuilderFile) : new SitePage { Blocks = [new("h1", "Willkommen"), new("p", "Schreib hier etwas über dich.")] };
+        return File.Exists(BuilderFile) ? BuilderRead(BuilderFile, ref _builderProblem) : new SitePage { Blocks = [new("h1", "Willkommen"), new("p", "Schreib hier etwas über dich.")] };
     }
 
     private void PersistBuilder()
     {
+        if (_builderProblem is not null) throw new InvalidOperationException(_builderProblem);
         var page = BuilderPage;
         var project = NewestProject();
         if (project is null) { page.Save(BuilderFile); return; }
-        var tmp = Path.Combine(Path.GetTempPath(), "trendo-seite-" + Guid.NewGuid().ToString("N") + ".json");
-        try
-        {
-            page.Save(tmp);
-            _core.Projects.WriteFile(project, "baukasten/seite.json", File.ReadAllText(tmp));
-            page.Save(BuilderFile);
-        }
-        finally { try { File.Delete(tmp); } catch (IOException) { } }
+        // T-0716: atomar (vorher File.WriteAllText über ProjectStore.WriteFile) – im Projekt und im Baukasten-Ordner
+        AtomicFile.WriteAllText(_core.Projects.ResolveInProject(project, "baukasten/seite.json"), page.ToJson());
+        _core.Audit.Append("user", "file.write", $"{project}:baukasten/seite.json");
+        page.Save(BuilderFile);
     }
 
     public string BuilderPublish()
@@ -66,16 +81,15 @@ public partial class MainWindow
     }
 
     /// <summary>Änderung als ein Schritt im Rückgängig, danach speichern und neu zeichnen.</summary>
+    /// <summary>T-0716: Der Schritt entsteht beim Neuaufbau der Seite (<see cref="LiveSync"/>: gespeicherte Daten anders als im Verlauf).</summary>
     void BuilderChange(Action<SitePage> change)
     {
-        var pg = BuilderPage; _builderUndo.Push(System.Text.Json.JsonSerializer.Serialize(pg));
-        change(pg); BuilderSave();
+        if (_builderProblem is not null) { Say(_builderProblem, "baukasten"); return; }
+        change(BuilderPage); BuilderSave();
     }
-    public void BuilderUndo()
-    {
-        if (!_builderUndo.TryPop(out var json)) return;
-        _page = System.Text.Json.JsonSerializer.Deserialize<SitePage>(json) ?? new(); BuilderSel = Math.Min(BuilderSel, _page.Blocks.Count - 1); BuilderSave();
-    }
+    /// <summary>Rückgängig über die Hülle (bis 100 Schritte) – schreibt den früheren Stand wieder in seite.json.</summary>
+    public void BuilderUndo() { LinkUndo(BuilderLink); Show("baukasten"); }
+    public void BuilderRedo() { LinkRedo(BuilderLink); Show("baukasten"); }
 
     static string BuilderDefault(string kind) => kind switch { "h1" => "Überschrift", "p" => "Neuer Text", "button" => "Mehr erfahren", "list" => "Punkt eins\nPunkt zwei", "contact" => "Schreib mir", "img" => "Bild", _ => "" };
 
@@ -103,6 +117,29 @@ public partial class MainWindow
         return zip;
     }
 
+    /// <summary>T-0718: Ergebnis der letzten Veröffentlichung aus dem Baukasten (Tests, Anzeige).</summary>
+    public WebPublishing.Ergebnis? BuilderPublishResult { get; private set; }
+
+    /// <summary>T-0718: Baukasten-Seite in einen Ordner veröffentlichen – nur über das Freigabe-Tor (Rückfrage mit Ziel, Dateien, Größe),
+    /// ausgeführt vom Kern mit genau dieser Freigabe, danach Link- und Dateiprüfung. Kinderprofil: nichts passiert.</summary>
+    public async Task BuilderPublishToFolder()
+    {
+        const string V = "baukasten";
+        string dir;
+        try { dir = Path.GetDirectoryName(BuilderPublish())!; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { Say("Nicht veröffentlicht: Die fertige Seite ließ sich nicht schreiben (" + e.Message + ").", V); return; }
+        var plan = WebDesignPublish.PrepareFolder(dir);
+        if (!plan.Ok) { Say("Nicht veröffentlicht, die Prüfung hat Fehler: " + plan.Blockers[0] + "\nWas tun: den Fehler in der Seite beheben und noch einmal veröffentlichen.", V); return; }
+        if (await PickFolderPath("Wohin soll die fertige Seite?") is not { } dest) return;
+        if (WebPublishing.FolderError(dir, dest) is { } fe) { BuilderPublishResult = fe; Say(fe.Text, V); return; }
+        var r = await WebPublishViaGate(WebPublishing.Describe(WebPublishing.Weg.Ordner, dest, plan),
+            id => Task.FromResult(WebPublishing.ToFolder(_core.Approvals, id, dir, plan, dest)));
+        if (r is null) { Say(CanApprove ? "Abgebrochen – es wurde nichts veröffentlicht." : "Nicht veröffentlicht: " + NurErwachsene, V); return; }
+        BuilderPublishResult = r;
+        _core.Audit.Append(CurrentPrincipal.Name, r.Dateien > 0 ? "web.veroeffentlicht" : "web.veroeffentlichen.fehler", $"baukasten {r.Dateien} Dateien → {r.Wo}; Befunde={r.Befunde.Count}");
+        Say(r.Text, V);
+    }
+
     /// <summary>Welcher Vorschau-Baustein liegt unter dem Zeiger? -1 = keiner; bei Leerraum unten = Ende.</summary>
     int BuilderHit(PointerEventArgs e)
     {
@@ -115,6 +152,7 @@ public partial class MainWindow
     {
         const string V = "baukasten";
         ReloadBuilder();
+        var link = BuilderLink; LiveSync(link); // T-0716: gespeicherte Änderung → Rückgängig-Schritt
         var pg = BuilderPage;
         if (BuilderSel >= pg.Blocks.Count) BuilderSel = pg.Blocks.Count - 1;
         var acc = Brush.Parse(System.Text.RegularExpressions.Regex.IsMatch(pg.Accent, "^#[0-9A-Fa-f]{6}$") ? pg.Accent : "#2F86F6");
@@ -174,13 +212,14 @@ public partial class MainWindow
         var frame = new Border { Name = "builder-preview-frame", Width = BuilderPhone ? 390 : 760, MinHeight = 520, Background = Brushes.White, CornerRadius = new CornerRadius(BuilderPhone ? 28 : 10),
             BorderBrush = Brush.Parse("#3E3E3E"), BorderThickness = new Thickness(BuilderPhone ? 10 : 2), Padding = new Thickness(18, 22), HorizontalAlignment = HorizontalAlignment.Center, BoxShadow = CardShadow,
             Child = new StackPanel { Spacing = 10, Children = { new TextBlock { Text = pg.Title, Foreground = Brush.Parse("#8A94A6"), FontSize = 11, HorizontalAlignment = HorizontalAlignment.Center }, blocks } } };
-        var undo = Act("builder-undo", "Rückgängig", BuilderUndo); undo.IsEnabled = _builderUndo.Count > 0;
+        var (undo, redo) = LinkButtons(link, "builder-undo", "builder-redo"); // T-0716: Rückgängig/Wiederholen der Hülle, bis 100 Schritte
         var toolbar = new WrapPanel { Children = {
             Act("builder-view-phone", "Handy", () => { BuilderPhone = true; Show(V); }, BuilderPhone), new Border { Width = 4 },
-            Act("builder-view-desk", "Bildschirm", () => { BuilderPhone = false; Show(V); }, !BuilderPhone), new Border { Width = 12 }, undo, new Border { Width = 12 },
+            Act("builder-view-desk", "Bildschirm", () => { BuilderPhone = false; Show(V); }, !BuilderPhone), new Border { Width = 12 }, undo, redo, new Border { Width = 6 },
             Act("builder-preview", "Ausprobieren im Browser", () => { PersistBuilder(); Launch(BuilderPublish()); }, true), new Border { Width = 4 },
             Act("builder-export", "Exportieren (ZIP)", () => Try(V, () => { var z = BuilderExport(); Say("Exportiert: " + z, V); })), new Border { Width = 4 },
-            Act("builder-folder", "Ordner mit fertiger Seite", () => { BuilderPublish(); Launch(Path.Combine(BuilderFolder, "fertig")); }) } };
+            Act("builder-folder", "Ordner mit fertiger Seite", () => { BuilderPublish(); Launch(Path.Combine(BuilderFolder, "fertig")); }), new Border { Width = 4 },
+            Act("builder-veroeffentlichen", "Veröffentlichen …", () => _ = BuilderPublishToFolder()) } };
         var center = new StackPanel { Spacing = 10, Children = { toolbar, new ScrollViewer { Content = frame, MaxHeight = 760, HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto } } };
 
         // ── rechts: Eigenschaften ──
@@ -228,8 +267,17 @@ public partial class MainWindow
 
         Border Col(Control c) => new() { CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(10), VerticalAlignment = VerticalAlignment.Top, Child = c };
         var grid = new Grid { Name = "builder-designer", ColumnDefinitions = new ColumnDefinitions("200,12,*,12,280"), Children = { Col(palette), Pos(center, 2), Pos(Col(props), 4) } };
-        grid.KeyDown += (_, e) => { if (e.Key == Key.Z && e.KeyModifiers == KeyModifiers.Control) { BuilderUndo(); e.Handled = true; } };
-        return KreativPage("Baukasten", new StackPanel { Spacing = 8, Children = { P("Bau deine Webseite oder kleine App aus Bausteinen – ohne Programmieren. Die Vorschau zeigt sofort, wie es aussieht."), grid } });
+        grid.KeyDown += (_, e) =>
+        {
+            if (e.Source is TextBox) return; // im Feld bleibt Strg+Z das zeichenweise Rückgängig des Felds
+            if (e.Key == Key.Z && e.KeyModifiers == KeyModifiers.Control) { BuilderUndo(); e.Handled = true; }
+            else if (e.Key == Key.Y && e.KeyModifiers == KeyModifiers.Control || e.Key == Key.Z && e.KeyModifiers == (KeyModifiers.Control | KeyModifiers.Shift)) { BuilderRedo(); e.Handled = true; }
+        };
+        var head = new StackPanel { Spacing = 0 };
+        if (LinkRecoveryCard(link) is { } card) head.Children.Add(card);
+        if (LinkMsg(link) is { } msg) head.Children.Add(msg);
+        if (_builderProblem is { } problem) head.Children.Add(P("⚠ " + problem, Brush.Parse("#F5A524"), 12));
+        return LiveBind(link, KreativPage("Baukasten", new StackPanel { Spacing = 8, Children = { head, P("Bau deine Webseite oder kleine App aus Bausteinen – ohne Programmieren. Die Vorschau zeigt sofort, wie es aussieht."), grid } }));
     }
 
     Control BuilderImage(Block b)

@@ -84,7 +84,7 @@ public sealed partial class MailCenter
     public Contact SetPhoto(string id, byte[] bytes, string ext)
     {
         var dir = Path.Combine(_root, "kontakte-fotos"); Directory.CreateDirectory(dir);
-        var f = Path.Combine(dir, $"{id}{(ext.StartsWith('.') ? ext : "." + ext).ToLowerInvariant()}"); File.WriteAllBytes(f, bytes);
+        var f = Path.Combine(dir, $"{id}{(ext.StartsWith('.') ? ext : "." + ext).ToLowerInvariant()}"); AtomicFile.WriteAllBytes(f, bytes); // T-0714: Foto nie halb
         return UpdateContact(Get(id) with { Photo = f });
     }
 

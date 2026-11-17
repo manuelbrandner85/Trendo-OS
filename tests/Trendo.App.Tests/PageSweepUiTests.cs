@@ -35,7 +35,7 @@ public class PageSweep_Ui(ITestOutputHelper log)
         }
         finally { w.Close(); }
         var report = string.Join("\n", rows.OrderByDescending(r => r.Error is null ? r.Cold : 1e9).Select(r => $"{r.Key,-24} kalt {r.Cold,6:0} ms  warm {r.Warm,5:0} ms  [{r.Parts}]  {r.Error}"));
-        File.WriteAllText(Path.Combine(Path.GetTempPath(), "trendo-seiten-pruefung.txt"), $"{rows.Count} Seiten\n" + report);
+        File.WriteAllText(Path.Combine(global::Trendo.Core.TempDir.SystemTemp, "trendo-seiten-pruefung.txt"), $"{rows.Count} Seiten\n" + report);
         log.WriteLine(report);
         Assert.True(rows.Count > 40, $"nur {rows.Count} Seiten gefunden");
         Assert.Empty(rows.Where(r => r.Error is not null).Select(r => $"{r.Key}: {r.Error}"));

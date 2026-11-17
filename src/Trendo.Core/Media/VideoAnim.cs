@@ -78,10 +78,12 @@ public static class VideoAnim
     public static bool HasTransform(JsonObject p, string id) => new[] { "x", "y", "scale", "opacity" }.Any(x => Keys(p, id, x).Count > 0);
 
     /// <summary>Bewegt ein Stück der Bildspur auf schwarzem Grund: Filterzeilen von <paramref name="input"/> nach <paramref name="output"/>.</summary>
-    public static IEnumerable<string> ClipTransform(JsonObject p, string id, string input, string output, int w, int h, int fps, double length)
+    public static IEnumerable<string> ClipTransform(JsonObject p, string id, string input, string output, int w, int h, int fps, double length, double from = 0, string pick = "")
     {
         var s = Expr(Keys(p, id, "scale"), 1); var x = Expr(Keys(p, id, "x"), 0); var y = Expr(Keys(p, id, "y"), 0);
-        yield return $"color=c=black:s={w}x{h}:r={fps}:d={F(length)},format=yuv420p[{output}bg]";
+        // T-0695: Vorschau-Ausschnitt – der Hintergrund beginnt wie das Stück erst bei „from“
+        var bg = from > 0 ? $"d={(length - from).ToString("0.######", System.Globalization.CultureInfo.InvariantCulture)},setpts=PTS+{from.ToString("0.######", System.Globalization.CultureInfo.InvariantCulture)}/TB" : $"d={F(length)}";
+        yield return $"color=c=black:s={w}x{h}:r={fps}:{bg}{pick},format=yuv420p[{output}bg]"; // T-0695: dieselbe Bildauswahl wie das Stück
         yield return $"[{input}]scale=w='max(2\\,trunc({w}*({s})/2)*2)':h='max(2\\,trunc({h}*({s})/2)*2)':eval=frame{OpacityFilter(Keys(p, id, "opacity"), "T")}[{output}fg]";
         yield return $"[{output}bg][{output}fg]overlay=x='(W-w)/2+({x})*W':y='(H-h)/2+({y})*H':eval=frame:shortest=1,format=yuv420p,setsar=1[{output}]";
     }

@@ -79,6 +79,8 @@ public sealed class MapViewState
     public string DocId = "";
     public readonly List<(double Lat, double Lon)> Draft = [];
     public string Hint = "";
+    /// <summary>T-0719: nach „Umbenennen“ im Rechtsklick-Menü springt der Cursor ins Namensfeld.</summary>
+    public bool FocusName;
 }
 
 /// <summary>T-0260: Karte des Programms „Karten & Touren“ – Mausrad zoomt, Ziehen verschiebt; Route Punkt für Punkt, Wegpunkt, Strecke messen, Fläche messen;
@@ -87,6 +89,10 @@ public sealed class MapCanvas : Control
 {
     readonly MapDoc _m; readonly MapViewState _s; readonly TileCache _tiles; readonly Action<string, Action<MapDoc>> _commit; readonly Action<string?> _select;
     Point? _drag; Point _dragStart; bool _dragged; (double Lat, double Lon) _mouse; bool _over;
+    // T-0719: direkte Bearbeitung – Wegpunkt ziehen ("wpt"), Punkt einer Route/Fläche ziehen ("vtx"), neuen Punkt aus der Mitte ziehen ("ins")
+    (string Kind, string Id, int Index)? _edit; bool _editMoved; Vector _grab; // _grab: Abstand Zeiger ↔ Punkt beim Greifen (kein Sprung)
+    /// <summary>Mehr Punkte zeigt die Karte nicht als Griffe (aufgezeichnete Spuren haben Tausende).</summary>
+    public const int MaxHandles = 400;
 
     public MapCanvas(MapDoc m, MapViewState s, TileCache tiles, Action<string, Action<MapDoc>> commit, Action<string?> select)
     {
@@ -126,13 +132,72 @@ public sealed class MapCanvas : Control
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e); Focus(); _s.Focus = true;
-        var pt = e.GetCurrentPoint(this); var p = pt.Position; _drag = p; _dragStart = p; _dragged = false; e.Pointer.Capture(this);
-        if (e.ClickCount == 2 && _s.Tool is "route" or "flaeche" or "messen") { Finish(); _drag = null; }
+        var pt = e.GetCurrentPoint(this); var p = pt.Position;
+        if (pt.Properties.IsRightButtonPressed) { _drag = null; _edit = null; ContextMenu = Menu(p); return; } // T-0719: Rechtsklick-Menü an der Stelle
+        if (!pt.Properties.IsLeftButtonPressed) return;
+        _drag = p; _dragStart = p; _dragged = false; e.Pointer.Capture(this);
+        if (e.ClickCount == 2 && _s.Tool is "route" or "flaeche" or "messen") { Finish(); _drag = null; return; }
+        _edit = null; _editMoved = false;
+        if (_s.Tool is "auswahl" or "wegpunkt")
+        {
+            _grab = default;
+            if (VertexAt(p) is { } v) { _edit = ("vtx", v.Id, v.Index); var q = Pts(v.Id)![v.Index]; _grab = p - Screen(q.Lat, q.Lon); }
+            else if (MidAt(p) is { } mid) { _edit = ("ins", mid.Id, mid.Index); var g = Geo(p); Pts(mid.Id)!.Insert(mid.Index, Between(Pts(mid.Id)!, mid.Index, g)); InvalidateVisual(); }
+            else if (WaypointAt(p) is { } w) { _edit = ("wpt", w.Id, -1); _grab = p - Screen(w.Lat, w.Lon); }
+        }
     }
+
+    /// <summary>Punkte einer Route/Spur oder Fläche.</summary>
+    List<MapPoint>? Pts(string id) => _m.Tracks.FirstOrDefault(t => t.Id == id)?.Points ?? _m.Areas.FirstOrDefault(a => a.Id == id)?.Points;
+    /// <summary>Punkte der gewählten Route/Spur oder Fläche, wenn ihre Griffe sichtbar sind.</summary>
+    List<MapPoint>? SelectedPts() => _s.Selected is { } id && Pts(id) is { Count: <= MaxHandles } l ? l : null;
+    bool SelectedIsArea => _s.Selected is { } id && _m.Areas.Any(a => a.Id == id);
+
+    /// <summary>Neuer Punkt zwischen zwei Nachbarn – Höhe gemittelt, falls beide eine haben.</summary>
+    static MapPoint Between(List<MapPoint> pts, int at, (double Lat, double Lon) g)
+    {
+        var a = pts[(at - 1 + pts.Count) % pts.Count]; var b = pts[at % pts.Count];
+        return new MapPoint { Lat = g.Lat, Lon = g.Lon, Ele = a.Ele is { } ea && b.Ele is { } eb ? (ea + eb) / 2 : null };
+    }
+
+    public (string Id, int Index)? VertexAt(Point p)
+    {
+        if (SelectedPts() is not { } pts) return null;
+        for (var i = pts.Count - 1; i >= 0; i--) { var q = Screen(pts[i].Lat, pts[i].Lon); if (Math.Abs(q.X - p.X) <= 8 && Math.Abs(q.Y - p.Y) <= 8) return (_s.Selected!, i); }
+        return null;
+    }
+
+    /// <summary>Mittengriff eines Abschnitts: Ziehen fügt dort einen Punkt ein (Index = Einfügestelle).</summary>
+    public (string Id, int Index)? MidAt(Point p)
+    {
+        if (SelectedPts() is not { } pts || pts.Count < 2) return null;
+        var n = SelectedIsArea ? pts.Count : pts.Count - 1;
+        for (var i = 0; i < n; i++) { var m = MidPoint(pts, i); if (Math.Abs(m.X - p.X) <= 7 && Math.Abs(m.Y - p.Y) <= 7) return (_s.Selected!, i + 1); }
+        return null;
+    }
+
+    Point MidPoint(List<MapPoint> pts, int i) { var a = Screen(pts[i].Lat, pts[i].Lon); var b = Screen(pts[(i + 1) % pts.Count].Lat, pts[(i + 1) % pts.Count].Lon); return new((a.X + b.X) / 2, (a.Y + b.Y) / 2); }
+
+    public MapWaypoint? WaypointAt(Point p)
+    {
+        for (var i = _m.Waypoints.Count - 1; i >= 0; i--) { var w = _m.Waypoints[i]; var q = Screen(w.Lat, w.Lon); if (Math.Abs(q.X - p.X) < 10 && p.Y > q.Y - 26 && p.Y < q.Y + 4) return w; }
+        return null;
+    }
+
+    /// <summary>Bildschirmpunkt des Mittengriffs zwischen Punkt <paramref name="index"/> und dem nächsten (für Tests).</summary>
+    public Point MidOf(string id, int index) => MidPoint(Pts(id)!, index);
 
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         base.OnPointerMoved(e); var p = e.GetPosition(this); _mouse = Geo(p); _over = true;
+        if (_drag is not null && _edit is { } ed && (_editMoved || Math.Abs(p.X - _dragStart.X) + Math.Abs(p.Y - _dragStart.Y) > 3))
+        {
+            // T-0719: Vorschau beim Ziehen nur in dieser Kopie der Karte – ins Dokument (ein Rückgängig-Schritt) erst beim Loslassen
+            _editMoved = true; var g = Geo(p - _grab);
+            if (ed.Kind == "wpt" && _m.Waypoints.FirstOrDefault(w => w.Id == ed.Id) is { } wp) (wp.Lat, wp.Lon) = g;
+            else if (Pts(ed.Id) is { } pts && ed.Index < pts.Count) (pts[ed.Index].Lat, pts[ed.Index].Lon) = g;
+            Cursor = new Cursor(StandardCursorType.SizeAll); InvalidateVisual(); return;
+        }
         if (_drag is { } d && (Math.Abs(p.X - _dragStart.X) + Math.Abs(p.Y - _dragStart.Y) > 4 || _dragged))
         {
             _dragged = true; var (cx, cy) = Center; (_s.Lat, _s.Lon) = WebMercator.ToLatLon(cx - (p.X - d.X), cy - (p.Y - d.Y), _s.Zoom); _drag = p;
@@ -143,8 +208,26 @@ public sealed class MapCanvas : Control
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e); e.Pointer.Capture(null);
-        if (_drag is null) return; var wasDrag = _dragged; _drag = null; if (wasDrag) return;
+        if (_drag is null) return; var wasDrag = _dragged; _drag = null;
         var p = e.GetPosition(this); var g = Geo(p);
+        if (_edit is { } ed)
+        {
+            _edit = null; Cursor = new Cursor(StandardCursorType.Hand);
+            if (_editMoved)
+            {
+                _editMoved = false; var (id, i) = (ed.Id, ed.Index); g = Geo(p - _grab);
+                switch (ed.Kind)
+                {
+                    case "wpt": _commit("Wegpunkt verschoben", m => { var w = m.Waypoints.First(x => x.Id == id); (w.Lat, w.Lon) = g; w.Ele = null; _s.Selected = id; }); break;
+                    case "vtx": _commit("Punkt verschoben", m => { var q = Of(m, id)[i]; (q.Lat, q.Lon) = g; q.Ele = null; q.Time = null; }); break;
+                    default: _commit("Punkt eingefügt", m => { var l = Of(m, id); l.Insert(i, Between(l, i, g)); }); break;
+                }
+                return;
+            }
+            if (ed.Kind == "ins") Pts(ed.Id)?.RemoveAt(ed.Index); // nur geklickt: nichts einfügen
+            if (ed.Kind == "vtx") { InvalidateVisual(); return; } // Klick auf einen Griff ändert die Auswahl nicht
+        }
+        if (wasDrag) return;
         switch (_s.Tool)
         {
             case "route": case "messen": case "flaeche": _s.Draft.Add(g); InvalidateVisual(); return;
@@ -160,8 +243,58 @@ public sealed class MapCanvas : Control
         base.OnKeyDown(e);
         if (e.Key == Key.Escape) { if (_s.Draft.Count > 0) _s.Draft.Clear(); else { _s.Tool = "auswahl"; _s.Selected = null; _select(null); } InvalidateVisual(); e.Handled = true; }
         else if (e.Key == Key.Enter) { Finish(); e.Handled = true; }
+        else if (e.Key == Key.F2 && _s.Selected is { } ren) { _s.FocusName = true; _select(ren); e.Handled = true; }
         else if (e.Key is Key.Delete or Key.Back && _s.Selected is { } sel) { _s.Selected = null; _commit("Löschen", m => m.Remove(sel)); e.Handled = true; }
         else if (e.Key == Key.Back && _s.Draft.Count > 0) { _s.Draft.RemoveAt(_s.Draft.Count - 1); InvalidateVisual(); }
+    }
+
+    static List<MapPoint> Of(MapDoc m, string id) => m.Tracks.FirstOrDefault(t => t.Id == id)?.Points ?? m.Areas.First(a => a.Id == id).Points;
+
+    /// <summary>T-0719: Rechtsklick-Menü an der Stelle – Punkt löschen/einfügen, Wegpunkt umbenennen/löschen, Route umkehren, hier einen Wegpunkt setzen oder eine Route beginnen.</summary>
+    public ContextMenu Menu(Point p)
+    {
+        var g = Geo(p); var m = new ContextMenu { Name = "mk-menu" };
+        void I(string id, string header, Action go, bool on = true, string gesture = "") { var i = new MenuItem { Name = "mk-menu-" + id, Header = header, IsEnabled = on, InputGesture = gesture.Length > 0 ? KeyGesture.Parse(gesture) : null }; i.Click += (_, _) => go(); m.Items.Add(i); }
+        void Pick(string? id) { _s.Selected = id; _select(id); }
+        if (VertexAt(p) is { } v)
+        {
+            var min = SelectedIsArea ? 3 : 2; var (id, i) = v;
+            I("punkt-loeschen", "Punkt löschen", () => _commit("Punkt gelöscht", x => Of(x, id).RemoveAt(i)), Pts(id)!.Count > min);
+            m.Items.Add(new Separator());
+        }
+        else if (WaypointAt(p) is { } w)
+        {
+            var id = w.Id;
+            I("umbenennen", "Umbenennen …", () => { _s.FocusName = true; Pick(id); }, gesture: "F2");
+            I("loeschen", "Wegpunkt löschen", () => { _s.Selected = null; _commit("Löschen", x => x.Remove(id)); }, gesture: "Delete");
+            m.Items.Add(new Separator());
+        }
+        else if (Hit(p) is { } hit)
+        {
+            var tr = _m.Tracks.FirstOrDefault(t => t.Id == hit);
+            if (tr is not null && tr.Points.Count <= MaxHandles)
+                I("einfuegen", "Punkt hier einfügen", () => _commit("Punkt eingefügt", x => { var l = Of(x, hit); var at = Nearest(l, p) + 1; l.Insert(at, Between(l, at, g)); _s.Selected = hit; }));
+            I("umbenennen", "Umbenennen …", () => { _s.FocusName = true; Pick(hit); }, gesture: "F2");
+            if (tr is not null) I("umkehren", "Richtung umkehren", () => _commit("Umkehren", x => x.Tracks.First(t => t.Id == hit).Points.Reverse()));
+            I("loeschen", tr is null ? "Fläche löschen" : tr.Planned ? "Route löschen" : "Spur löschen", () => { _s.Selected = null; _commit("Löschen", x => x.Remove(hit)); }, gesture: "Delete");
+            m.Items.Add(new Separator());
+        }
+        I("wegpunkt-hier", "Wegpunkt hier setzen", () => { var n = $"Wegpunkt {_m.Waypoints.Count + 1}"; _commit("Wegpunkt", x => _s.Selected = x.AddWaypoint(g.Lat, g.Lon, n).Id); });
+        I("route-hier", "Route hier beginnen", () => { _s.Tool = "route"; _s.Draft.Clear(); _s.Draft.Add(g); _s.Hint = ""; Pick(null); });
+        I("alles", "Alles zeigen", FitAll, _m.Tracks.Count + _m.Waypoints.Count + _m.Areas.Count > 0);
+        return m;
+    }
+
+    /// <summary>Abschnitt der Linie, der dem Bildschirmpunkt am nächsten liegt (eingefügt wird nach diesem Index).</summary>
+    int Nearest(List<MapPoint> pts, Point p)
+    {
+        var best = 0; var bd = double.MaxValue;
+        for (var i = 1; i < pts.Count; i++)
+        {
+            var a = Screen(pts[i - 1].Lat, pts[i - 1].Lon); var b = Screen(pts[i].Lat, pts[i].Lon);
+            var dd = Trendo.Core.Arch.Geo.SegDist(p.X, p.Y, a.X, a.Y, b.X, b.Y); if (dd < bd) { bd = dd; best = i - 1; }
+        }
+        return best;
     }
 
     /// <summary>Angefangene Route/Fläche abschließen (Doppelklick oder Enter). Messen bleibt nur Anzeige.</summary>
@@ -176,7 +309,7 @@ public sealed class MapCanvas : Control
 
     string? Hit(Point p)
     {
-        foreach (var w in _m.Waypoints) { var q = Screen(w.Lat, w.Lon); if (Math.Abs(q.X - p.X) < 10 && p.Y > q.Y - 26 && p.Y < q.Y + 4) return w.Id; }
+        if (WaypointAt(p) is { } wp) return wp.Id;
         foreach (var t in _m.Tracks)
             for (var i = 1; i < t.Points.Count; i++)
             {
@@ -234,6 +367,13 @@ public sealed class MapCanvas : Control
             ctx.DrawGeometry(B(sel ? "#F5A524" : "#7C3AED"), new Pen(Brushes.White, 2), pin);
             Label(ctx, w.Name, new Point(q.X + 12, q.Y - 26), "#FFFFFF", "#CC333333");
         }
+        // T-0719: Griffe der gewählten Route/Fläche – Punkte ziehen, aus der Mitte neue Punkte ziehen
+        if (SelectedPts() is { Count: > 0 } hp)
+        {
+            var n = SelectedIsArea ? hp.Count : hp.Count - 1;
+            for (var i = 0; i < n && hp.Count > 1; i++) ctx.DrawEllipse(B("#FFFFFF", 150), new Pen(B("#1C1C1C", 160), 1), MidPoint(hp, i), 3.5, 3.5);
+            foreach (var q in hp) ctx.DrawEllipse(Brushes.White, new Pen(B("#F5A524"), 2.5), Screen(q.Lat, q.Lon), 5, 5);
+        }
         // Entwurf (Route, Messen, Fläche)
         if (_s.Draft.Count > 0)
         {
@@ -259,8 +399,8 @@ public sealed class MapCanvas : Control
         "route" => _s.Draft.Count == 0 ? "Route: Punkt für Punkt klicken – Doppelklick oder Enter beendet, Esc bricht ab." : $"Route: {_s.Draft.Count} Punkt(e) · Doppelklick/Enter = fertig · Rücktaste nimmt den letzten Punkt zurück",
         "messen" => "Strecke messen: Punkte klicken – die Länge steht am Zeiger. Esc löscht die Messung.",
         "flaeche" => "Fläche messen: Eckpunkte klicken – Doppelklick oder Enter speichert die Fläche.",
-        "wegpunkt" => "Wegpunkt: auf die Karte klicken – Name rechts eintragen.",
-        _ => "",
+        "wegpunkt" => "Wegpunkt: auf die Karte klicken – Name rechts eintragen. Vorhandene Wegpunkte lassen sich ziehen.",
+        _ => SelectedPts() is not null ? "Punkte ziehen · aus der Mitte ziehen fügt einen Punkt ein · Rechtsklick: Punkt löschen" : "",
     };
 
     void DrawGraticule(DrawingContext ctx, Size size, bool tilesOn)
@@ -271,7 +411,7 @@ public sealed class MapCanvas : Control
         for (var lon = Math.Floor(tl.Lon / step) * step; lon <= br.Lon; lon += step) { var x = Screen(tl.Lat, lon).X; ctx.DrawLine(pen, new Point(x, 0), new Point(x, size.Height)); }
         for (var lat = Math.Floor(br.Lat / step) * step; lat <= tl.Lat; lat += step) { var y = Screen(lat, tl.Lon).Y; ctx.DrawLine(pen, new Point(0, y), new Point(size.Width, y)); }
         {
-            var msg = _s.Tiles ? "Kartenkacheln werden geladen … (offline: nur Gitter)" : "Kartenhintergrund aus – Gitter in Grad";
+            var msg = !_s.Tiles ? "Kartenhintergrund aus – Gitter in Grad" : _tiles.Online ? "Kartenkacheln werden geladen …" : "Ohne Karte aus dem Internet: Zwischenspeicher oder Gitter"; // T-0726
             var ft = new FormattedText(msg, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, Face, 12, B(tilesOn ? "#4B5563" : "#9FB4D3"));
             ctx.DrawText(ft, new Point(size.Width - ft.Width - 12, 12));
         }

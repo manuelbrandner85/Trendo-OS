@@ -1,0 +1,11 @@
+sd-cli Seed 42: Code 0, 651814 Bytes
+sd-cli Seed 7961: Code 0, 714261 Bytes
+Video-KI: Clip aus früherem Echtlauf übernommen (ki-clip-1-20261116-091820-s42.mp4, Herkunftsnachweis passt, SHA-256 024885313a1814c64327404513c821315ea11d50a5f7f31df42bbd7e687ae48a)
+Piper „Am Meer beginnt der Tag.“: Code 0
+Piper „Guten Morgen.“: Code 0
+ffmpeg → echt.mp4: Code 0 [aac @ 0000026762189f00] Qavg: 8711.215
+Meldung: ✓ Video fertig: C:\Users\<user>\AppData\Local\Temp\trendo-ui-80d56746750747b598d0f1cb9578dd3c\echt.mp4
+ffprobe: {     "programs": [      ],     "stream_groups": [      ],     "streams": [         {             "codec_name": "h264",             "codec_type": "video",             "width": 1280,             "height": 720         },         {             "codec_name": "aac",             "codec_type": "audio"         },         {             "codec_name": "mov_text",             "codec_type": "subtitle"         }     ],     "format": {         "duration": "7.500000"     } } 
+Lautstärke: mean_volume: -23.4 dB
+Bildunterschied Szene 1: 7,3 · Szene 2: 34,3 (0 = gleiches Bild)
+MP4 SHA-256: 8498c92ddfc1665d1b4060605da67c1a765df765797bff7557baf86a66301ef5 (868955 Bytes)

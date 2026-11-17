@@ -1,0 +1,18 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0698 UI +2: Wirkung nach außen fragt in der Lauf-Ansicht – „Ablehnen“ blockiert, „Zustimmen“ führt über das Freigabe-Tor aus [STARTING]
+    T-0698 UI +2: Wirkung nach außen fragt in der Lauf-Ansicht – „Ablehnen“ blockiert, „Zustimmen“ führt über das Freigabe-Tor aus [FINISHED] Time: 8,1690983s
+    T-0698 UI +5: KI-Team – Rollen geben Dateien weiter, Prüfer gibt zurück, Ergebnis-Dateien im Projekt [STARTING]
+    T-0698 UI +5: KI-Team – Rollen geben Dateien weiter, Prüfer gibt zurück, Ergebnis-Dateien im Projekt [FINISHED] Time: 1,363401s
+    T-0698 UI +3: Stopp-Knopf in der Lauf-Ansicht beendet einen laufenden Agenten [STARTING]
+    T-0698 UI +3: Stopp-Knopf in der Lauf-Ansicht beendet einen laufenden Agenten [FINISHED] Time: 1,465072s
+    T-0698 UI +4: Abläufe – Baustein „Agent ausführen“ anhängen und Agent wählen (Zeitplan/Auslöser ohne zweiten Scheduler) [STARTING]
+    T-0698 UI +4: Abläufe – Baustein „Agent ausführen“ anhängen und Agent wählen (Zeitplan/Auslöser ohne zweiten Scheduler) [FINISHED] Time: 0,5088846s
+    T-0698 UI +1: Leerzustand zeigt den ersten Schritt; „Agent starten“ (gold) → Agent legt echte Datei an, liest und verbessert sie, Protokoll live, Agent in der Liste [STARTING]
+    T-0698 UI +1: Leerzustand zeigt den ersten Schritt; „Agent starten“ (gold) → Agent legt echte Datei an, liest und verbessert sie, Protokoll live, Agent in der Liste [FINISHED] Time: 2,7059978s
+  Finished:    Trendo.App.Tests (ID = 'f09ed3c7fc4a7308a05a0ef9f6b364a60e48d8fd25c2732c052c91b09457fa55')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 5, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 14,880s
+exit=0

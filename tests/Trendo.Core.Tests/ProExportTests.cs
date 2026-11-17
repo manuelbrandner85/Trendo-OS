@@ -44,7 +44,7 @@ public class ProExportTests
     [Fact(DisplayName = "S3-18-P echt mit FFmpeg: ProRes 422 HQ (.mov), EXR- und PNG-Sequenz mit WAV – Codec, Profil, Pixelformat, Bildzahl und Tonlänge per ffprobe geprüft")]
     public void Real_pro_exports()
     {
-        var ff = Cli.Find("ffmpeg"); var fp = Cli.Find("ffprobe"); if (ff is null || fp is null) return;
+        var ff = Cli.Find("ffmpeg"); var fp = Cli.Find("ffprobe"); if (ff is null || fp is null) { Ueberspringen.Weil("FFmpeg oder ffprobe fehlt auf diesem PC."); return; }
         var dir = Path.Combine(Path.GetTempPath(), "trendo-pro-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
         try
         {

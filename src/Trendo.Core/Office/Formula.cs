@@ -259,7 +259,17 @@ public static class Formula
         catch (FormulaError) { return raw; }
     }
 
-    sealed record Shift(string Sheet, int RowAt, int RowDelta, int ColAt, int ColDelta, int? OnlyRow);
+    /// <summary>T-0701: Formel (mit „=“) so verschieben, wie sie beim Kopieren um <paramref name="rowDelta"/> Zeilen und <paramref name="colDelta"/> Spalten
+    /// mitwandert – relative Bezüge (auch auf andere Blätter) wandern, mit „$“ festgehaltene nicht. So liest Trendo die gemeinsamen Formeln aus Excel.
+    /// Bezüge, die dabei vor A1 rutschen würden, werden #BEZUG!.</summary>
+    public static string CopyRefs(string raw, int rowDelta, int colDelta)
+    {
+        if (!raw.StartsWith('=') || rowDelta == 0 && colDelta == 0) return raw;
+        try { return "=" + Rewrite(raw[1..], Dialect.De, Dialect.De, new Shift("", 0, rowDelta, 0, colDelta, null, Copy: true)); }
+        catch (FormulaError) { return raw; }
+    }
+
+    sealed record Shift(string Sheet, int RowAt, int RowDelta, int ColAt, int ColDelta, int? OnlyRow, bool Copy = false);
 
     static string Rewrite(string s, Dialect from, Dialect to, Shift? shift)
     {
@@ -284,7 +294,7 @@ public static class Formula
                 T.Bool when from != to => to == Dialect.De ? (t.Text == "1" ? "WAHR" : "FALSCH") : (t.Text == "1" ? "TRUE" : "FALSE"),
                 T.Err when from != to => to == Dialect.En ? ErrDeEn.GetValueOrDefault(t.Text, t.Text) : ErrDeEn.FirstOrDefault(kv => kv.Value == t.Text).Key ?? t.Text,
                 T.Str => "\"" + t.Text.Replace("\"", "\"\"") + "\"",
-                T.Ref or T.Range when shift is not null && (t.Sheet is null || string.Equals(t.Sheet, shift.Sheet, StringComparison.OrdinalIgnoreCase)) => ShiftTok(t, shift),
+                T.Ref or T.Range when shift is not null && (shift.Copy || t.Sheet is null || string.Equals(t.Sheet, shift.Sheet, StringComparison.OrdinalIgnoreCase)) => ShiftTok(t, shift),
                 _ => s.Substring(t.Start, t.Length),
             });
             pos = t.Start + t.Length;
@@ -297,7 +307,8 @@ public static class Formula
         string? Cell((int Row, int Col, bool AR, bool AC) a, bool isEnd)
         {
             var r = a.Row; var c = a.Col;
-            if (sh.OnlyRow is int only) { if (r == only) r += sh.RowDelta; }
+            if (sh.Copy) { if (!a.AR) r += sh.RowDelta; if (!a.AC) c += sh.ColDelta; }
+            else if (sh.OnlyRow is int only) { if (r == only) r += sh.RowDelta; }
             else
             {
                 if (sh.RowDelta != 0 && r >= sh.RowAt)

@@ -42,7 +42,7 @@ public class VideoSubtitleTests
     [Fact(DisplayName = "Echter Export mit eingebrannten Untertiteln (FFmpeg libass)")]
     public void Burn_real()
     {
-        var ff = Cli.Find("ffmpeg"); if (ff is null) return;
+        var ff = Cli.Find("ffmpeg"); if (ff is null) { Ueberspringen.Weil("FFmpeg fehlt auf diesem PC."); return; }
         var dir = Path.Combine(Path.GetTempPath(), "trendo-sub-" + Guid.NewGuid().ToString("N")[..8]); Directory.CreateDirectory(dir);
         try
         {

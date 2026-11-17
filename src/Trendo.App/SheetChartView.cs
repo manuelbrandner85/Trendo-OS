@@ -22,10 +22,13 @@ public sealed class SheetChartView(SheetChart chart, Func<ChartData> data) : Con
         FormattedText T(string s, double size, IBrush b, bool strong = false) => new(s, CultureInfo.GetCultureInfo("de-DE"), FlowDirection.LeftToRight, strong ? bold : face, size, b);
         var title = T(Chart.Title, 14, Brushes.Black, true);
         g.DrawText(title, new Point((area.Width - title.Width) / 2, 6));
-        IBrush Brush(int i) => new SolidColorBrush(Color.Parse(ChartData.Palette[i % ChartData.Palette.Length]));
+        // T-0701: Reihenfarben aus der Datei, sonst Trendos Farben
+        IBrush Brush(int i) => new SolidColorBrush(Color.Parse(Chart.Colors?.ElementAtOrDefault(i) is { Length: 7 } own && Chart.Kind != ChartKind.Kreis ? own : ChartData.Palette[i % ChartData.Palette.Length]));
         var muted = new SolidColorBrush(Color.Parse("#FF5B6B82"));
         if (d.Labels.Count == 0 || d.Series.Count == 0) { g.DrawText(T("Keine Zahlen im Bereich " + Chart.Range, 12, muted), new Point(12, 40)); return; }
-        var plot = new Rect(48, 32, Math.Max(10, area.Width - 64), Math.Max(10, area.Height - (d.Series.Count > 1 ? 72 : 58)));
+        // T-0701: Platz für Achsentitel lassen
+        var yPad = Chart.YTitle is { Length: > 0 } ? 14 : 0; var xPad = Chart.XTitle is { Length: > 0 } ? 16 : 0;
+        var plot = new Rect(48 + yPad, 32, Math.Max(10, area.Width - 64 - yPad), Math.Max(10, area.Height - (d.Series.Count > 1 ? 72 : 58) - xPad));
         if (Chart.Kind == ChartKind.Kreis)
         {
             var vals = d.Series[0].Values.Select(v => Math.Max(0, v)).ToArray(); var sum = vals.Sum(); if (sum <= 0) return;
@@ -72,7 +75,10 @@ public sealed class SheetChartView(SheetChart chart, Func<ChartData> data) : Con
                 for (var i = 0; i < n; i++) { var x = plot.X + i * slot + slot * 0.15 + k * bw; var y0 = Y(Math.Max(0, min)); var y1 = Y(vals[i]); g.FillRectangle(Brush(k), new Rect(x, Math.Min(y0, y1), Math.Max(1, bw - 2), Math.Abs(y0 - y1))); }
             }
         }
-        if (d.Series.Count > 1)
+        if (d.Series.Count > 1 && Chart.Legend != "none")
             for (var k = 0; k < d.Series.Count; k++) { g.FillRectangle(Brush(k), new Rect(plot.X + k * 110, area.Height - 18, 10, 10)); g.DrawText(T(d.Series[k].Name, 11, Brushes.Black), new Point(plot.X + k * 110 + 14, area.Height - 21)); }
+        // T-0701: Achsentitel aus der Datei
+        if (Chart.YTitle is { Length: > 0 } yt) { var t = T(yt, 11, muted); using (g.PushTransform(Matrix.CreateRotation(-Math.PI / 2) * Matrix.CreateTranslation(2, plot.Y + plot.Height / 2 + t.Width / 2))) g.DrawText(t, new Point(0, 0)); }
+        if (Chart.XTitle is { Length: > 0 } xt) { var t = T(xt, 11, muted); g.DrawText(t, new Point(plot.X + (plot.Width - t.Width) / 2, plot.Bottom + 17)); }
     }
 }

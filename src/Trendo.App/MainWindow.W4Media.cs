@@ -22,6 +22,34 @@ public partial class MainWindow
     public IReadOnlyList<string> MediaClips => _clips;
     public string? MediaLastOutput => _mediaLast;
 
+    /// <summary>T-0715 (B6 „Programm-Hülle für alle“, Etappe E3): der Arbeitsstand der Medien-Werkbank (gewählte Datei, Ausschnitt Anfang/Ende, Clipliste,
+    /// Bildeinstellungen) hängt an Rückgängig (100 Schritte) und Notsicherung der Hülle (<see cref="Trendo.Core.Programs.ProgramLink"/>, Takt 20 s, atomar, für das Fenster gesperrt) –
+    /// vorher nur im Speicher. „Gespeichert“ ist er, sobald daraus eine Ergebnisdatei entstanden ist (Ergebnisse jetzt atomar).</summary>
+    public LinkSlot MediaLink => Slot("kreativ-medien", "LINK-MEDIEN", "medien", "kreativ-medien", "media", "Eine Medien-Bearbeitung", "Medien-Bearbeitungen",
+        MediaState, MediaApply, MediaWorth, () => _mediaFile is { } f ? Path.GetFileName(f) : _clips.Count > 0 ? $"Clipliste mit {_clips.Count} Clips" : "Medien-Bearbeitung");
+
+    /// <summary>Stand der Werkbank als JSON (öffentlich für Tests).</summary>
+    public System.Text.Json.Nodes.JsonObject MediaState() => new()
+    {
+        ["datei"] = _mediaFile, ["anfang"] = Math.Round(_mediaStart, 3), ["ende"] = Math.Round(_mediaEnd, 3),
+        ["clips"] = new System.Text.Json.Nodes.JsonArray([.. _clips.Select(c => (System.Text.Json.Nodes.JsonNode?)c)]),
+        ["bild"] = System.Text.Json.JsonSerializer.SerializeToNode(_imgEdit),
+    };
+
+    void MediaApply(System.Text.Json.Nodes.JsonNode? st)
+    {
+        if (st is null) return;
+        var f = (string?)st["datei"];
+        if (f is not null && !File.Exists(f)) f = null; // Datei inzwischen weg: Ausschnitt und Bild gelten nicht mehr, die Clipliste bleibt
+        if (f != _mediaFile) { _mediaFile = f; _mediaDur = f is not null && !MediaStudio.IsImage(f) && FfmpegPath is { } ff ? MediaStudio.Duration(ff, f) : null; }
+        _mediaStart = (double?)st["anfang"] ?? 0; _mediaEnd = (double?)st["ende"] ?? _mediaDur ?? 0;
+        _clips.Clear(); if (st["clips"] is System.Text.Json.Nodes.JsonArray a) _clips.AddRange(a.Select(x => (string?)x).OfType<string>());
+        _imgEdit = (st["bild"] is { } b ? System.Text.Json.JsonSerializer.Deserialize<ImageTools.Edit>(b) : null) ?? new();
+    }
+
+    /// <summary>Sichern lohnt, sobald etwas eingestellt ist (Clipliste, Ausschnitt, Bildeinstellungen) – eine bloß gewählte Datei nicht.</summary>
+    bool MediaWorth() => _clips.Count > 0 || _imgEdit != new ImageTools.Edit() || _mediaFile is not null && _mediaDur is { } d && (_mediaStart > 0.05 || _mediaEnd < d - 0.05);
+
     private void InitW4Media() => RegisterTab(KreativTabs, "kreativ-medien", "Medien bearbeiten", "CORE-08", MediaStudioView, "video", "umwandeln", "mp3", "mp4", "gif", "ffmpeg", "schneiden");
 
     public void MediaPick(string path)
@@ -40,7 +68,7 @@ public partial class MainWindow
         if (_mediaFile is null) { Say("Bitte zuerst eine Datei wählen.", "kreativ-medien"); return (false, ""); }
         var (r, o) = MediaStudio.Run(ff, _mediaFile, jobId, start, length);
         _core.Audit.Append(Principal.LocalOwner.Name, "media.job", $"{jobId} exit={r.Exit}");
-        if (r.Ok) _mediaLast = o;
+        if (r.Ok) { _mediaLast = o; LinkSaved(MediaLink); } // T-0715: Ergebnis entstanden – Notsicherung weg
         Say(r.Ok ? $"Fertig: {Path.GetFileName(o)}" : "Hat nicht geklappt: " + Short(r.Err), "kreativ-medien");
         return (r.Ok, o);
     }
@@ -52,7 +80,7 @@ public partial class MainWindow
         if (_mediaFile is null) { Say("Bitte zuerst eine Datei wählen.", "kreativ-medien"); return (false, ""); }
         var (r, o) = MediaStudio.Cut(ff, _mediaFile, _mediaStart, _mediaEnd);
         _core.Audit.Append(Principal.LocalOwner.Name, "media.cut", $"{Clock(_mediaStart)}-{Clock(_mediaEnd)} exit={r.Exit}");
-        if (r.Ok) _mediaLast = o;
+        if (r.Ok) { _mediaLast = o; LinkSaved(MediaLink); }
         Say(r.Ok ? $"Ausschnitt {Clock(_mediaStart)}–{Clock(_mediaEnd)} gespeichert: {Path.GetFileName(o)}" : "Hat nicht geklappt: " + Short(r.Err), "kreativ-medien");
         return (r.Ok, o);
     }
@@ -63,7 +91,7 @@ public partial class MainWindow
     {
         if (FfmpegPath is not { } ff) { Say("Dafür fehlt FFmpeg. Unter Zusatzprogramme kannst du es installieren.", "kreativ-medien"); return (false, ""); }
         var (r, o) = MediaStudio.Concat(ff, _clips, MediaFolder);
-        if (r.Ok) _mediaLast = o;
+        if (r.Ok) { _mediaLast = o; LinkSaved(MediaLink); }
         Say(r.Ok ? $"{_clips.Count} Clips aneinandergehängt: {Path.GetFileName(o)}" : "Hat nicht geklappt: " + Short(r.Err), "kreativ-medien");
         return (r.Ok, o);
     }
@@ -73,7 +101,7 @@ public partial class MainWindow
         if (_mediaFile is null || !MediaStudio.IsImage(_mediaFile)) { Say("Bitte zuerst ein Bild wählen.", "kreativ-medien"); return null; }
         try
         {
-            _imgEdit = e; var o = ImageTools.Apply(_mediaFile, e); _mediaLast = o;
+            _imgEdit = e; var o = ImageTools.Apply(_mediaFile, e); _mediaLast = o; LinkSaved(MediaLink); // T-0715
             Say("Bild gespeichert: " + Path.GetFileName(o), "kreativ-medien"); return o;
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or IOException) { Say("Hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex), "kreativ-medien"); return null; }
@@ -92,6 +120,7 @@ public partial class MainWindow
         // Umbau 04.11.2026: Medien-Werkbank – links Dateien und Clipliste, Mitte die gewählte Datei mit Werkzeugen, rechts Ergebnis
         var left = new StackPanel { Name = "media-bin", Spacing = 6 };
         var center = new StackPanel { Name = "media-center", Spacing = 8 };
+        center.Children.Add(LinkBar(MediaLink)); // T-0715: Wiederherstellen-Karte, Rückgängig · Wiederholen des Arbeitsstands
         var right = new StackPanel { Name = "media-side", Spacing = 8 };
         if (FfmpegPath is null) center.Children.Add(Card(new StackPanel { Spacing = 4, Children = { P("FFmpeg fehlt noch. Videos und Ton gehen erst damit; Bilder kannst du trotzdem bearbeiten.", Brush.Parse("#FACC15")), Nav2("Einrichten", "components") } }));
         var files = FileShelf.Recent([MediaFolder, UserFolder(Environment.SpecialFolder.MyVideos), UserFolder(Environment.SpecialFolder.MyMusic), UserFolder(Environment.SpecialFolder.MyPictures)], MediaStudio.Inputs);
@@ -144,7 +173,7 @@ public partial class MainWindow
             c.DrawCircle(900, 300, 180, w); c.DrawCircle(380, 480, 110, w);
         }
         using var img = SkiaSharp.SKImage.FromBitmap(bmp); using var data = img.Encode(SkiaSharp.SKEncodedImageFormat.Png, 95);
-        File.WriteAllBytes(f, data.ToArray());
+        AtomicFile.WriteAllBytes(f, data.ToArray()); // T-0715: atomar
         return f;
     }
 
@@ -163,7 +192,7 @@ public partial class MainWindow
             var label = new TextBlock { Name = "media-range", Foreground = Text, Text = $"Ausschnitt {Clock(_mediaStart)} – {Clock(_mediaEnd)} ({Clock(_mediaEnd - _mediaStart)})" };
             var s = new Slider { Name = "media-from", Minimum = 0, Maximum = dur, Value = _mediaStart, Width = 480 };
             var e = new Slider { Name = "media-to", Minimum = 0, Maximum = dur, Value = _mediaEnd, Width = 480 };
-            void Upd() { MediaSetRange(s.Value, Math.Max(s.Value, e.Value)); label.Text = $"Ausschnitt {Clock(_mediaStart)} – {Clock(_mediaEnd)} ({Clock(_mediaEnd - _mediaStart)})"; }
+            void Upd() { MediaSetRange(s.Value, Math.Max(s.Value, e.Value)); label.Text = $"Ausschnitt {Clock(_mediaStart)} – {Clock(_mediaEnd)} ({Clock(_mediaEnd - _mediaStart)})"; LinkTyped(MediaLink); } // T-0715: nach kurzer Pause ein Schritt
             s.ValueChanged += (_, _) => Upd(); e.ValueChanged += (_, _) => Upd();
             box.Children.Add(new StackPanel { Spacing = 2, Children = { Row(P("Anfang"), s), Row(P("Ende"), e), label } });
             box.Children.Add(Row(Act("media-cut", "Ausschnitt speichern", () => MediaCut(), true), Act("media-clip-add", "Zur Clipliste", () => { _clips.Add(mf); Say($"In der Clipliste: {_clips.Count} Clips.", "kreativ-medien"); })));
@@ -194,16 +223,25 @@ public partial class MainWindow
         var text = new TextBox { Name = "img-text", Text = _imgEdit.Text ?? "", PlaceholderText = "Text ins Bild (optional)", Width = 300 };
         var size = Num("img-text-size", _imgEdit.TextSize, 400);
         var fmt = new ComboBox { Name = "img-format", ItemsSource = new[] { "JPG", "PNG" }, SelectedIndex = _imgEdit.Format == ".png" ? 1 : 0 };
+        ImageTools.Edit Read() => new(
+            (int)(cx.Value ?? 0), (int)(cy.Value ?? 0), (int)(cw.Value ?? w), (int)(ch.Value ?? h), (rot.SelectedIndex < 0 ? 0 : rot.SelectedIndex) * 90,
+            (int)bright.Value, (int)contrast.Value, string.IsNullOrWhiteSpace(text.Text) ? null : text.Text, (int)(size.Value ?? 48), fmt.SelectedIndex == 1 ? ".png" : ".jpg");
+        // T-0715: jede Einstellung gehört zum Arbeitsstand (Rückgängig, Notsicherung) – vorher gingen sie beim Neuzeichnen verloren
+        void Changed() { var e = Read(); if (e == ImgFull(_imgEdit, w, h)) return; _imgEdit = e; LinkTyped(MediaLink); }
+        foreach (var n in new[] { cx, cy, cw, ch, size }) n.ValueChanged += (_, _) => Changed();
+        rot.SelectionChanged += (_, _) => Changed(); fmt.SelectionChanged += (_, _) => Changed();
+        bright.ValueChanged += (_, _) => Changed(); contrast.ValueChanged += (_, _) => Changed(); text.TextChanged += (_, _) => Changed();
         box.Children.Add(Row(P("Zuschneiden x/y/Breite/Höhe"), cx, cy, cw, ch));
         box.Children.Add(Row(P("Drehen"), rot, P("Helligkeit"), bright));
         box.Children.Add(Row(P("Kontrast"), contrast));
         box.Children.Add(Row(P("Text"), text, P("Größe"), size));
-        box.Children.Add(Row(P("Speichern als"), fmt, Act("img-save", "Bild speichern", () => MediaSaveImage(new ImageTools.Edit(
-            (int)(cx.Value ?? 0), (int)(cy.Value ?? 0), (int)(cw.Value ?? w), (int)(ch.Value ?? h), (rot.SelectedIndex < 0 ? 0 : rot.SelectedIndex) * 90,
-            (int)bright.Value, (int)contrast.Value, string.IsNullOrWhiteSpace(text.Text) ? null : text.Text, (int)(size.Value ?? 48), fmt.SelectedIndex == 1 ? ".png" : ".jpg")), true)));
+        box.Children.Add(Row(P("Speichern als"), fmt, Act("img-save", "Bild speichern", () => MediaSaveImage(Read()), true)));
         if (_mediaLast is { } last && File.Exists(last) && MediaStudio.IsImage(last)) box.Children.Add(new StackPanel { Name = "img-result", Children = { P("Ergebnis:", null, 11), Thumb(last, 220) } });
         return Card(box);
     }
+
+    /// <summary>Bildeinstellungen mit ausgefüllten Standardwerten (ganzes Bild) – so liest sie der Editor aus seinen Feldern.</summary>
+    static ImageTools.Edit ImgFull(ImageTools.Edit e, int w, int h) => e with { CropX = e.CropX ?? 0, CropY = e.CropY ?? 0, CropW = e.CropW ?? w, CropH = e.CropH ?? h };
 
     private Control ClipList()
     {

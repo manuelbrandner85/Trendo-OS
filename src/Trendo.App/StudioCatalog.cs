@@ -10,7 +10,7 @@ public static class StudioCatalog
     /// <summary>Bereiche in Anzeigereihenfolge.</summary>
     public static readonly string[] Areas =
     [
-        "Arbeiten & Büro", "Business & Geld", "Kreativ & Medien", "3D, Spiele & VR", "Technik & Fachgebiete",
+        "Arbeiten & Büro", "Business & Geld", "Kreativ & Medien", "3D & Spiele", "Technik & Fachgebiete",
         "Wissen & Lernen", "KI & Automatik", "Entwickeln", "System & Sicherheit",
     ];
 
@@ -21,7 +21,14 @@ public static class StudioCatalog
         ["SYS-09"] = new("E-Mails & Termine", "E-Mails, Kontakte und Termine an einem Ort.", "Arbeiten & Büro"),
         ["X-11"] = new("Neues Projekt starten", "Ein Startpunkt für jedes Projekt – vom Dokument bis zum Video.", "Arbeiten & Büro"),
         ["SYS-02"] = new("Kleine Helfer & Musik", "Kleine Helfer: Rechner, Notizen, Bildschirmfoto, Musik und Videos abspielen.", "Arbeiten & Büro"),
+        ["STUDIO-DECKDESIGN-01"] = new("Präsentationen gestalten", "Aus Stichpunkten eine fertig gestaltete Präsentation – Design, passende Folienarten, Sprechernotizen und Zeitplan.", "Arbeiten & Büro"),
+        ["STUDIO-DOCSCAN-01"] = new("Dokumente scannen", "Fotos von Briefen, Rechnungen und Whiteboards zu sauberen Scans – entzerrt, als PDF mit Datum im Namen.", "Arbeiten & Büro"),
         ["STUDIO-DAYPLAN-01"] = new("Tagesplaner", "Aufgaben um feste Termine herum in den Tag legen – mit Pausen und einer Liste für morgen.", "Arbeiten & Büro"),
+        ["STUDIO-CV-01"] = new("Bewerbung & Lebenslauf", "Lebenslauf in mehreren Layouts, Anschreiben zur Stelle, Prüfung auf Lücken und eine fertige Bewerbungsmappe als PDF.", "Arbeiten & Büro"),
+        ["STUDIO-CARDS-01"] = new("Karten & Einladungen", "Klappkarten und Postkarten für Geburtstag, Hochzeit und Feste – mit Gästeliste, Zu- und Absagen und Druck-PDF.", "Arbeiten & Büro"),
+        ["STUDIO-CONTRACTS-01"] = new("Verträge-Ordner", "Alle Verträge mit Kosten und Kündigungsfrist – Ampel, Erinnerung im Kalender und Kündigungsschreiben als Entwurf.", "Arbeiten & Büro"),
+        ["STUDIO-PDFTOOLS-01"] = new("PDF-Werkstatt", "PDFs zusammenfügen, teilen, ordnen, verkleinern, schwärzen und vergleichen – jede Aktion ergibt eine neue Datei.", "Arbeiten & Büro"),
+        ["STUDIO-FORMS-01"] = new("Formulare ausfüllen", "PDF-Formulare ausfüllen und unterschreiben – mit deinen Angaben als Vorschlag und Prüfung der Pflichtfelder.", "Arbeiten & Büro"),
 
         ["STUDIO-ONLINE-BUSINESS-01"] = new("Online verkaufen", "Geschäftsidee planen, gründen und online verkaufen.", "Business & Geld"),
         ["STUDIO-POD-01"] = new("Print on Demand", "Eigene Motive auf Produkte bringen: Druckdatei prüfen, Preis rechnen, Rechtliches klären.", "Business & Geld"),
@@ -49,11 +56,11 @@ public static class StudioCatalog
         ["STUDIO-MODELS-01"] = new("KI-Modelle vergleichen", "Dieselbe Frage an mehrere KIs: Antworten nebeneinander, Zeit messen, blind bewerten, Ergebnis als Tabelle.", "KI & Automatik"),
         ["STUDIO-TRAIN-01"] = new("Eigene KI trainieren", "Eine kleine KI mit eigenen Beispielen trainieren, die Texte in Kategorien sortiert – auf deinem Rechner.", "KI & Automatik"),
 
-        ["CORE-05"] = new("3D-Modelle erstellen", "3D-Modelle bauen und ansehen – Blender optional.", "3D, Spiele & VR"),
-        ["STUDIO-CONSOLE-01"] = new("Konsolenspiele portieren", "Dein eigenes PS2-Spiel als Programm für PC, Steam Deck oder Handy.", "3D, Spiele & VR"),
-        ["CORE-06"] = new("Spiele bauen", "Eigene Spiele bauen – auch mit der Unreal Engine.", "3D, Spiele & VR"),
-        ["SPEC-04"] = new("VR & AR gestalten", "Virtuelle Räume und 3D-Modelle für die Brille vorbereiten.", "3D, Spiele & VR"),
-        ["SPEC-09"] = new("Gegenstände einscannen", "Gegenstände und Räume einscannen und vermessen.", "3D, Spiele & VR"),
+        ["CORE-05"] = new("3D-Modelle erstellen", "3D-Modelle bauen und ansehen – Blender optional.", "3D & Spiele"),
+        ["STUDIO-CONSOLE-01"] = new("Konsolenspiele portieren", "Dein eigenes PS2-Spiel als Programm für PC, Steam Deck oder Handy.", "3D & Spiele"),
+        ["CORE-06"] = new("Spiele bauen", "Eigene Spiele bauen – auch mit der Unreal Engine.", "3D & Spiele"),
+        ["SPEC-04"] = new("3D-Modelle ansehen", "3D-Modelle ansehen, vermessen und auf Fehler prüfen – auch aus freien Quellen.", "3D & Spiele"), // T-0722: früher „VR & AR gestalten“, VR-Teile entfernt
+        ["SPEC-09"] = new("Gegenstände einscannen", "Gegenstände und Räume einscannen und vermessen.", "3D & Spiele"),
 
         ["SPEC-01"] = new("Wohnung planen", "Räume ausmessen, Flächen berechnen und einrichten.", "Technik & Fachgebiete"),
         ["SPEC-02"] = new("Schaltungen berechnen", "Widerstände, LEDs und Schaltungen berechnen.", "Technik & Fachgebiete"),
@@ -134,8 +141,16 @@ public static class StudioCatalog
     /// <summary>Bereich „Einstellungen“ als Ziel einer Zusammenlegung.</summary>
     public const string SettingsHost = "settings";
 
-    /// <summary>Aus der Liste entfernt (SPEC-07 abgelehnt, die übrigen auf Wunsch vom 09.11.2026): nirgends mehr angeboten. Die Kennungen bleiben für Register und Modelle erhalten.</summary>
+    /// <summary>Aus der Liste entfernt (SPEC-07 abgelehnt, die übrigen auf Wunsch vom 09.11.2026): nirgends mehr angeboten. Die Kennungen bleiben für Register und Modelle erhalten.
+    /// T-0720 (Nutzerentscheidung 16.11.2026): SPEC-16 und CORE-09 sind gelöscht (Code, Seiten, KI-Auftrag, Tests); wie bei SPEC-07 bleiben nur Kennung, Name, Symbol und Bild,
+    /// damit Einträge in requirements.yaml, alte Desktop-Symbole, Verläufe und Claude-Gespräche sauber ins Leere laufen. SPEC-04 bleibt entfernt, seine Seiten
+    /// Modell-Prüfer und 3D-Bibliothek bleiben, weil 3D-Druck und Architektur sie nutzen. T-0722 (Nutzerentscheidung 16.11.2026): die VR-Teile sind entfernt,
+    /// die Seitengruppe heißt neutral „3D-Modelle ansehen“; erreichbar aus 3D-Druck, Architektur und über die Suche, nicht aus der Studio-Übersicht.</summary>
     public static readonly IReadOnlySet<string> Removed = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "SPEC-07", "SPEC-04", "SPEC-16", "CORE-09" };
+
+    /// <summary>T-0720: gelöscht (Nutzerentscheidung 16.11.2026) – Teil von <see cref="Removed"/>. Es gibt keinen Code, keine Seite, keinen KI-Auftrag, kein Team, kein Profil und kein Fachwissen mehr;
+    /// nur Kennung, Name, Symbol und Bild bleiben (wie bei SPEC-07).</summary>
+    public static readonly IReadOnlySet<string> Deleted = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "SPEC-16", "CORE-09" };
 
     /// <summary>Zusammengelegt (Freigabe 09.11.2026): Das Studio steht nicht mehr in der Übersicht, bleibt aber über die Suche und die Leiste des aufnehmenden Studios erreichbar. Keine Funktion geht verloren.</summary>
     public static readonly IReadOnlyDictionary<string, string> FoldedInto = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)

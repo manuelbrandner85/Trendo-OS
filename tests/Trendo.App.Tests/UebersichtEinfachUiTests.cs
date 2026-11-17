@@ -85,7 +85,7 @@ public class UebersichtEinfach_Ui(ITestOutputHelper log)
         finally { w.Close(); }
         var report = string.Join("\n", rows.OrderByDescending(r => r.Buttons).Select(r =>
             $"{r.Key}\tKnöpfe {r.Buttons}\tohneWort {r.NoWord}\tWörter {r.Words}\t{string.Join(" · ", r.NoWordNames)}\t{string.Join(" · ", r.All)}"));
-        File.WriteAllText(Path.Combine(Path.GetTempPath(), "trendo-uebersicht.txt"), $"{rows.Count} Ansichten\n" + report);
+        File.WriteAllText(Path.Combine(global::Trendo.Core.TempDir.SystemTemp, "trendo-uebersicht.txt"), $"{rows.Count} Ansichten\n" + report);
         log.WriteLine(report);
         Assert.True(rows.Count > 150, $"nur {rows.Count} Ansichten");
         var bad = rows.Where(r => !Exceptions.ContainsKey(r.Key) && (r.Buttons > MaxButtons || r.NoWord > MaxNoWord || r.Words > MaxWords))
@@ -125,6 +125,8 @@ public class UebersichtEinfach_Ui(ITestOutputHelper log)
         ("hub-install-", "über „Alle … zeigen“ der Gruppe"), ("hub-open-", "über „Alle … zeigen“ der Gruppe"), ("hub-yes-", "über „Alle … zeigen“ der Gruppe"), ("hub-no-", "über „Alle … zeigen“ der Gruppe"),
         ("hub-remove-", "über „Alle … zeigen“ der Gruppe"), ("hub-update-", "über „Alle … zeigen“ der Gruppe"),
         ("text-rib-", "weitere Reiter über „Mehr ▾“ im Menüband"),
+        ("mk-tiles-allow", "T-0726: „Karte aus dem Internet …“ im Menüband (Reiter Start) – dieselbe Rückfrage im Freigabe-Tor"),
+        ("mk-tiles-stop", "T-0726: „Karte aus dem Internet …“ im Menüband (Reiter Start) schaltet wieder aus"),
     ];
 
     /// <summary>Was „Einfach“ schon vor T-0663 bewusst nicht baute (Stand origin/main 1fc842acc) – siehe Kopf der Datei.</summary>
@@ -155,7 +157,7 @@ public class UebersichtEinfach_Ui(ITestOutputHelper log)
                 }
         }
         finally { w.Close(); }
-        File.WriteAllText(Path.Combine(Path.GetTempPath(), "trendo-uebersicht-fehlt.txt"), string.Join(Environment.NewLine, missing));
+        File.WriteAllText(Path.Combine(global::Trendo.Core.TempDir.SystemTemp, "trendo-uebersicht-fehlt.txt"), string.Join(Environment.NewLine, missing));
         if (Environment.GetEnvironmentVariable("TRENDO_UEBERSICHT_NUR_BERICHT") == "1") return;
         Assert.Empty(missing);
     }

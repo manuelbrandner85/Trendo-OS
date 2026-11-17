@@ -2,7 +2,7 @@
 <TestRun id="4d567692-846f-48e0-bd4b-94eaadde3dc7" name="<user>@<host> 2026-10-22 02:42:26" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:26.1601585+02:00" queuing="2026-10-22T02:42:26.1601586+02:00" start="2026-10-22T02:42:25.4294184+02:00" finish="2026-10-22T02:42:26.1649333+02:00" />
   <TestSettings name="default" id="817e5605-72c0-40e4-a42f-aa5499b853f0">
-    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_26" />
+    <Deployment runDeploymentRoot="<user>_<host>_2026-10-22_02_42_26" />
   </TestSettings>
   <Results>
     <UnitTestResult executionId="a3c2c307-fb23-45ff-95b2-fcfa861fc990" testId="0a41fbbe-c7ae-64f4-dbb7-9553a3fa3cc7" testName="CORE-10: Suche findet Wissen trotz Umlauten und Mehrzahl, bleibt nach Neustart erhalten" computerName="<host>" duration="00:00:00.0593432" startTime="2026-10-22T02:42:25.9700354+02:00" endTime="2026-10-22T02:42:26.0350580+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a3c2c307-fb23-45ff-95b2-fcfa861fc990" />

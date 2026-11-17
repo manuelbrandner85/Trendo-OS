@@ -27,7 +27,7 @@ public class VideoEditPlusTests
     [Fact(DisplayName = "Mit echtem FFmpeg: Überblenden + Titel im Hintergrund exportiert (Fortschritt steigt bis 100 %), Abbrechen beendet FFmpeg und löscht die halbe Datei")]
     public async Task Export_async_real()
     {
-        var ff = Cli.Find("ffmpeg"); if (ff is null) return; // ohne FFmpeg nur der Aufruf-Test oben
+        var ff = Cli.Find("ffmpeg"); if (ff is null) { Ueberspringen.Weil("FFmpeg fehlt auf diesem PC."); return; } // ohne FFmpeg nur der Aufruf-Test oben
         var dir = Path.Combine(Path.GetTempPath(), "trendo-ve2-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(dir);
         try
         {
@@ -47,8 +47,10 @@ public class VideoEditPlusTests
             // Abbrechen: langes Stück, sofort abbrechen
             Assert.True(Cli.Run(ff, ["-hide_banner", "-loglevel", "error", "-f", "lavfi", "-i", "testsrc=size=1280x720:rate=30:duration=120", "-c:v", "libx264", "-preset", "ultrafast", "-pix_fmt", "yuv420p", P("lang.mp4")], dir, 300000).Ok);
             var q = VideoEdit.NewProject(1920, 1080); VideoEdit.Add(q, VideoEdit.NewClip(P("lang.mp4"), 120, false));
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1.5));
-            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => VideoEdit.ExportAsync(ff, q, P("abbruch.mp4"), null, cts.Token));
+            // Abbrechen beim ersten Fortschritt (sicher mitten im Export) statt nach fester Zeit – im vollen Testlauf unter Last kam der Zeitgeber erst nach dem Ende
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+            var cancelOnProgress = new SyncProgress(v => { if (v > 0) cts.Cancel(); });
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => VideoEdit.ExportAsync(ff, q, P("abbruch.mp4"), cancelOnProgress, cts.Token));
             Assert.False(File.Exists(P("abbruch.mp4")));
         }
         finally { try { Directory.Delete(dir, true); } catch (IOException) { } }

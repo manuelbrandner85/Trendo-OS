@@ -14,7 +14,7 @@ public partial class MainWindow
     {
         var box = new StackPanel { Spacing = 3 };
         box.Children.Add(new TextBlock { Text = title, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold });
-        var output = new SelectableTextBlock { Name = id + "-out", Foreground = Brush.Parse("#7FD3FF"), FontSize = 12, TextWrapping = TextWrapping.Wrap };
+        var output = new SelectableTextBlock { Name = id + "-out", Foreground = AccentText, /* T-0728: Ergebnis in Gold statt Blau (Dunkel-Gold-Look) */ FontSize = 12, TextWrapping = TextWrapping.Wrap };
         string V(string k) => _calcIn.TryGetValue(id + "-" + k, out var v) ? v : fields.First(f => f.Key == k).Def;
         void Update() { try { output.Text = run(V); } catch (Exception ex) when (ex is ArgumentException or FormatException or InvalidOperationException or KeyNotFoundException or DivideByZeroException or OverflowException) { output.Text = "⚠ " + ex.Message; } }
         foreach (var (key, label, def, options) in fields)

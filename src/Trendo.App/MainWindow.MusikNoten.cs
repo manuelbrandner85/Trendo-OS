@@ -13,11 +13,16 @@ public partial class MainWindow
 {
     bool _msNoten;
     public PianoRoll.Song MsRoll { get; set; } = new(120, 4, [], "");
-    readonly Stack<PianoRoll.Song> _msRollUndo = new();
+    /// <summary>T-0711 (B6 Etappe 1b): Notenrolle an Rückgängig (100 Schritte, jetzt mit Wiederholen) und Notsicherung der Hülle (ProgramLink) –
+    /// ersetzt den eigenen Rückgängig-Stapel. Gespeichert wird weiter als MIDI.</summary>
+    public LinkSlot MsRollLink => Slot("musik-noten", "LINK-MUSIK-NOTEN", "noten", MS, "ms-roll", "Eine Melodie", "Melodien",
+        () => System.Text.Json.JsonSerializer.SerializeToNode(MsRoll),
+        st => { if (System.Text.Json.JsonSerializer.Deserialize<PianoRoll.Song>(st) is { } song) MsRoll = PianoRoll.Validate(song); _msPage = "studio"; _msNoten = true; _msBeat = false; },
+        () => MsRoll.Notes.Count > 0, () => MsRoll.Name.Length > 0 ? MsRoll.Name : $"Melodie mit {MsRoll.Notes.Count} Noten");
     public string MsRollMessage { get; private set; } = "";
     public PianoRollView? MsRollViewForTests { get; private set; }
 
-    void MsRollEdit(PianoRoll.Song s) { _msRollUndo.Push(MsRoll); MsRoll = PianoRoll.Validate(s); }
+    void MsRollEdit(PianoRoll.Song s) { MsRoll = PianoRoll.Validate(s); LinkCommit(MsRollLink, "Noten geändert"); }
 
     public void MsRollToggle(int pitch, int tick) => MsRollEdit(MsRoll with { Notes = PianoRoll.Toggle(MsRoll.Notes, pitch, tick, 240) });
 
@@ -26,7 +31,7 @@ public partial class MainWindow
         var dir = Path.Combine(WorkFolder("Musik"), "Noten"); Directory.CreateDirectory(dir);
         var safe = DevStudio.SafeName(name.Length > 0 ? name : "Melodie");
         var f = Path.Combine(dir, safe + ".mid"); for (var i = 2; File.Exists(f); i++) f = Path.Combine(dir, $"{safe}-{i}.mid");
-        File.WriteAllBytes(f, PianoRoll.ToMidi(MsRoll with { Name = name.Length > 0 ? name : MsRoll.Name }));
+        AtomicFile.WriteAllBytes(f, PianoRoll.ToMidi(MsRoll with { Name = name.Length > 0 ? name : MsRoll.Name })); LinkSaved(MsRollLink); // T-0711: atomar; gespeichert – Notsicherung weg
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.midi.save", Path.GetFileName(f));
         MsRollMessage = $"Gespeichert: {Path.GetFileName(f)} – {MsRoll.Notes.Count} Noten, öffnet in jedem Notenprogramm.";
         return f;
@@ -74,7 +79,8 @@ public partial class MainWindow
         bar.Children.Add(B("ms-roll-quant", "Quantisieren 1/16", () => MsRollEdit(MsRoll with { Notes = PianoRoll.Quantize(MsRoll.Notes, 120) })));
         bar.Children.Add(B("ms-roll-up", "＋1 Halbton", () => MsRollEdit(MsRoll with { Notes = PianoRoll.Transpose(MsRoll.Notes, 1) })));
         bar.Children.Add(B("ms-roll-down", "−1 Halbton", () => MsRollEdit(MsRoll with { Notes = PianoRoll.Transpose(MsRoll.Notes, -1) })));
-        bar.Children.Add(B("ms-roll-undo", "Rückgängig", () => { if (_msRollUndo.Count > 0) MsRoll = _msRollUndo.Pop(); }));
+        var rollLink = MsRollLink; LinkCommit(rollLink);
+        var (rollUndo, rollRedo) = LinkButtons(rollLink, "ms-roll-undo", "ms-roll-redo"); bar.Children.Add(rollUndo); bar.Children.Add(rollRedo);
         bar.Children.Add(B("ms-roll-clear", "Leeren", () => MsRollEdit(MsRoll with { Notes = [] })));
         bar.Children.Add(name);
         bar.Children.Add(B("ms-roll-save", "MIDI speichern", () => MsRollSave((name.Text ?? "").Trim()), true));
@@ -87,6 +93,7 @@ public partial class MainWindow
         bar.Children.Add(hitBar); bar.Children.Add(tc);
         bar.Children.Add(B("ms-roll-fit", "Auf Schnitt einpassen", () => MsRollFit(tc.Text ?? "", (int)(hitBar.Value ?? 9))));
         DockPanel.SetDock(bar, Avalonia.Controls.Dock.Top); sp.Children.Add(bar);
+        foreach (var extra in new[] { LinkRecoveryCard(rollLink), LinkMsg(rollLink) }) if (extra is not null) { DockPanel.SetDock(extra, Avalonia.Controls.Dock.Top); sp.Children.Add(extra); } // T-0711
         if (MsRollMessage.Length > 0) { var m = P(MsRollMessage, Muted, 11.5); DockPanel.SetDock(m, Avalonia.Controls.Dock.Bottom); sp.Children.Add(m); }
         var view = new PianoRollView { Name = "ms-roll-view", Notes = MsRoll.Notes, Numerator = MsRoll.Numerator, Bars = Math.Max(4, (int)Math.Ceiling((MsRoll.Notes.Count == 0 ? 0 : MsRoll.Notes.Max(n => n.Start + n.Length)) / (double)(MsRoll.Numerator * PianoRoll.Ppq))), MinHeight = 420 };
         if (MsRoll.Notes.Count > 0) { view.Low = Math.Min(48, MsRoll.Notes.Min(n => n.Pitch) - 2); view.High = Math.Max(84, MsRoll.Notes.Max(n => n.Pitch) + 2); }

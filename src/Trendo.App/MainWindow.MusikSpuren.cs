@@ -71,13 +71,18 @@ public partial class MainWindow
         }
         if (!StemsReady)
         {
-            sp.Children.Add(P("Gesang, Schlagzeug, Bass und Rest einzeln – z. B. die Begleitung zum Mitsingen. Braucht Demucs (frei, MIT, einmalig ca. 3 GB mit PyTorch).", Muted, 11));
+            // T-0727: Liegen die Spuren schon vor (früher getrennt, z. B. auf einem anderen PC oder vor dem Entfernen von Demucs), gibt es Mischer und Stimme trotzdem –
+            // Demucs braucht nur, wer neu trennen will. Vorher stand hier nur „Einrichten“, obwohl alle Spuren da waren.
+            var have = MsStemDir(s) is not null;
+            sp.Children.Add(P(have ? "Die Spuren dieses Lieds liegen vor – unten im Mischer anhören. Neu trennen braucht Demucs (frei, MIT, einmalig ca. 3 GB mit PyTorch)."
+                : "Gesang, Schlagzeug, Bass und Rest einzeln – z. B. die Begleitung zum Mitsingen. Braucht Demucs (frei, MIT, einmalig ca. 3 GB mit PyTorch).", Muted, 11));
             sp.Children.Add(Act("ms-stems-setup", "Spuren trennen einrichten", async () =>
             {
                 try { await KiPyInstall(StemsModel, KiPyApps.For(KiRuntime.Spuren)!); _msMsg = "✓ Spuren trennen ist eingerichtet."; }
                 catch (Exception e) when (e is InvalidOperationException or IOException or HttpRequestException or OperationCanceledException) { _msMsg = "Einrichten ging nicht: " + Trendo.Core.FriendlyError.Say(e); }
                 Show(MS);
             }));
+            if (have) { sp.Children.Add(MsStemMixer(s)); sp.Children.Add(MsVoicePanel(s)); } // V2, V3/V5/V6 – arbeiten mit den vorhandenen Dateien
             return sp;
         }
         sp.Children.Add(P("Begleitung ohne Gesang und Gesang allein werden eigene Lieder, Schlagzeug, Bass und Rest kommen in den Spuren-Ordner." +

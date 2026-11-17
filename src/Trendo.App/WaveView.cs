@@ -140,7 +140,7 @@ public sealed class WaveView : Control
         }
         else
         {
-            var ft = new FormattedText("Noch kein Ton – rechts eine Datei öffnen", System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, Typeface.Default, 14, new SolidColorBrush(Color.Parse("#AAB4C3")));
+            var ft = new FormattedText("Noch kein Ton", System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, Typeface.Default, 14, new SolidColorBrush(Color.Parse("#AAB4C3")));
             g.DrawText(ft, new Point((w - ft.Width) / 2, mid - 10));
         }
         // Marke / Abspielmarke

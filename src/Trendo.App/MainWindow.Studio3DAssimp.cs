@@ -28,11 +28,9 @@ public partial class MainWindow
     async Task SetupAssimp()
     {
         var comp = DependencyCatalog.Get("assimp");
-        var req = _core.Approvals.Request(Principal.LocalOwner, "deps.install", "assimp (3D-Dateien umwandeln) einrichten", comp.Id);
-        _core.Approvals.Approve(req.Id, Principal.LocalOwner);
-        if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner);
-        _assimpMsg = "assimp wird eingerichtet (offizieller Download, ~18 MB, Prüfsumme wird geprüft) …"; Show("3d");
-        var ok = !_opt.Isolated && await Task.Run(() => _deps.InstallAsync(Principal.LocalOwner, comp));
+        // B4 (T-0706): eigene Rückfrage, dann nur über den Kern mit genau dieser Freigabe
+        var res = await InstallMitFreigabe(comp, "3D-Dateien umwandeln", () => { _assimpMsg = "assimp wird eingerichtet (offizieller Download, ~18 MB, Prüfsumme wird geprüft) …"; Show("3d"); });
+        if (res is not { } ok) { _assimpMsg = "assimp: abgebrochen – es wurde nichts eingerichtet."; Show("3d"); return; }
         _assimpMsg = ok ? "assimp ist eingerichtet." : _opt.Isolated ? "Testmodus: nichts installiert." : "assimp konnte nicht eingerichtet werden – unter Zusatzprogramme erneut versuchen.";
         Show("3d");
     }

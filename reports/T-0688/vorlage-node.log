@@ -1,0 +1,42 @@
+# T-0688 Beleg: Vorlage node (JavaScript-Programm (Node)) – 2026-11-16 07:28:21
+Projekt angelegt: C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-node
+Erkannt: Node-Programm, Programm: C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-node\index.js, Tests: node
+  Datei: .gitignore (70 Bytes, SHA-256 7c9329fd99d6e05849bda52d2cae5a7ad563cfdd87a3e5ea612b59dac1b194c9)
+  Datei: index.js (749 Bytes, SHA-256 a851f7d0e65284b10ee25e4b84ca050836fe63044c9d39082491e8c43ae4772a)
+  Datei: index.test.js (448 Bytes, SHA-256 5580eb6aa95edf4ed934c2cec1dc9c26efd5f05c5e8751ab2065f89464836b4a)
+  Datei: package.json (135 Bytes, SHA-256 f93cfe53de687f12c723ed935341637d98f940b748a3baf33a8bb8c4a0260238)
+  Datei: README.md (254 Bytes, SHA-256 3b4c5ec0c13fe4f50f776b6d371d8756e048f18b48284b83ec52d9e45be74620)
+
+## Bauen
+$ node --check C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-node\index.js
+
+Exit 0 nach 0,1 s
+
+## Testen
+$ node --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=tap --test-reporter-destination=C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\ergebnisse-node\ergebnis.tap
+Ô£ö gruss (0.6826ms)
+Ô£ö zaehle: Woerter, Zeichen, laengstes Wort (0.7111ms)
+Ô£ö zaehle: leerer Text (0.6474ms)
+Ôä╣ tests 3
+Ôä╣ suites 0
+Ôä╣ pass 3
+Ôä╣ fail 0
+Ôä╣ cancelled 0
+Ôä╣ skipped 0
+Ôä╣ todo 0
+Ôä╣ duration_ms 123.5335
+Exit 0 nach 0,2 s
+  BESTANDEN: gruss
+  BESTANDEN: zaehle: leerer Text
+  BESTANDEN: zaehle: Woerter, Zeichen, laengstes Wort
+Auswertung: 3 bestanden, 0 fehlgeschlagen
+
+## Paket bauen und starten
+6 Dateien mit Startskript nach C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-node\trendo-paket\Beleg-node-node
+Paket: C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-node\trendo-paket\Beleg-node-node.zip (1.746 Bytes, SHA-256 326d0a908e0d2a49cc64d8f7ef65a1a296738a2e768a7e9494631913207dccb6)
+Hallo Welt!
+Text: Ein kurzer Satz zum Ausprobieren
+Woerter: 5, Zeichen: 32, laengstes Wort: Ausprobieren
+✓ Startprobe: Startskript aus leerem Ordner gestartet, Exit 0. Ausgabe: Hallo Welt! | Text: Ein kurzer Satz zum Ausprobieren | Woerter: 5, Zeichen: 32, laengstes Wort: Ausprobieren
+Ergebnis: Paket fertig und gestartet. · Art: ZIP mit Startskript (braucht Node.js auf dem Ziel-PC) · Ordner C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-node\trendo-paket\Beleg-node-node (1795 Bytes) · ZIP C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-node\trendo-paket\Beleg-node-node.zip (1746 Bytes) · SHA-256 326d0a908e0d2a49cc64d8f7ef65a1a296738a2e768a7e9494631913207dccb6
+Startprobe: BESTANDEN – Startskript aus leerem Ordner gestartet, Exit 0. Ausgabe: Hallo Welt! | Text: Ein kurzer Satz zum Ausprobieren | Woerter: 5, Zeichen: 32, laengstes Wort: Ausprobieren

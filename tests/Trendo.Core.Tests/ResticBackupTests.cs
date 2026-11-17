@@ -92,7 +92,7 @@ public class ResticBackupTests : IDisposable
 /// <summary>Echter Lauf mit restic 0.19.1 (Prüfordner, Freigabe 08.11.2026), eingerichtet über Trendos eigenen Weg (ExtractExe).</summary>
 public class ResticRealTests
 {
-    static string Zip => Path.Combine(Path.GetTempPath(), "trendo-tools-b", "restic", "restic.zip");
+    static string Zip => Path.Combine(global::Trendo.Core.TempDir.SystemTemp, "trendo-tools-b", "restic", "restic.zip");
     public sealed class ResticFactAttribute : FactAttribute { public ResticFactAttribute() { if (!OperatingSystem.IsWindows() || !File.Exists(Zip)) Skip = "Übersprungen – restic nicht im Prüfordner."; } }
 
     [ResticFact(DisplayName = "restic echt: sichern, Stände, zurückholen (Byte für Byte gleich), Ablage ohne Klartext, zweite Sicherung nur mit der Änderung, falsches Passwort verständlich")]

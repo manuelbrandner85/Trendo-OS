@@ -129,7 +129,7 @@ public partial class MainWindow
     }
 
     public List<GamePro.Report> GameFairness(ProgramDocument d) =>
-        [.. Enumerable.Range(0, GameLevelCount(d)).Select(i => GamePro.Fairness(GameLevelRows(d, i), (int)d.Number("speed", 5)))];
+        [.. Enumerable.Range(0, GameLevelCount(d)).Select(i => GamePro.Fairness(GameLevelRows(d, i), (int)d.Number("speed", 5), GameDesign.View(d.Data) == "oben"))];
 
     private Control GameTestView(ProgramDocument d)
     {
@@ -141,7 +141,7 @@ public partial class MainWindow
         for (var i = 0; i < reports.Count; i++)
         {
             var r = reports[i]; var li = i;
-            list.Children.Add(new TextBlock { Name = $"game-fair-{i + 1}", Text = $"{GameLevelName(d, i)}: " + (r.GoalReachable ? $"✓ Ziel erreichbar ({r.Jumps} Sprünge)" : "✗ Ziel nicht erreichbar"), Foreground = r.GoalReachable ? Brush.Parse("#2FBF71") : Brush.Parse("#F06A6A"), FontSize = 12.5, FontWeight = FontWeight.SemiBold });
+            list.Children.Add(new TextBlock { Name = $"game-fair-{i + 1}", Text = $"{GameLevelName(d, i)}: " + (r.GoalReachable ? (GameDesign.View(d.Data) == "oben" ? "✓ Ziel erreichbar (Weg gefunden)" : $"✓ Ziel erreichbar ({r.Jumps} Sprünge)") : "✗ Ziel nicht erreichbar"), Foreground = r.GoalReachable ? Brush.Parse("#2FBF71") : Brush.Parse("#F06A6A"), FontSize = 12.5, FontWeight = FontWeight.SemiBold });
             for (var k = 0; k < r.Findings.Count; k++)
             {
                 var f = r.Findings[k];

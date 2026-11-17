@@ -458,6 +458,7 @@ public partial class MainWindow
         var btnChange = Act("web-ki-change", _wdSelection.Count == 0 ? "Auswahl ändern" : $"Nur Auswahl ändern ({_wdSelection.Count})", () => WebDesignAiChange(wish.Text ?? ""), _wdSelection.Count > 0);
         var btnCheck = Act("web-ki-check", "Seite prüfen", () => WebDesignCheckNow());
         btnNew.IsEnabled = !_wdAiBusy; btnChange.IsEnabled = !_wdAiBusy && _wdSelection.Count > 0; btnCheck.IsEnabled = !_wdAiBusy;
+        foreach (var kb in new[] { btnNew, btnChange }) if (IsGold(kb)) QuietGold(kb); // V-03/V-22 (T-0709): die eine goldene Fläche der Seite ist „Seite bauen“ – hier ruhig hervorgehoben
         var row = new WrapPanel { Children = { btnNew, new Border { Width = 8 }, btnChange, new Border { Width = 8 }, btnCheck } };
         if (_wdSketch is not null) { row.Children.Add(new Border { Width = 8 }); var bs = Act("web-ki-skizze", "Mit Skizze ändern", () => WebDesignAiSketch(wish.Text ?? ""), true); bs.IsEnabled = !_wdAiBusy; row.Children.Add(bs); } // K3
         if (_wdLastAuto is not null || _wdLastNewPage is not null) { row.Children.Add(new Border { Width = 8 }); row.Children.Add(Act("web-ki-undo", "KI-Änderung rückgängig", WebDesignUndo)); }

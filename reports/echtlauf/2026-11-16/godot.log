@@ -1,0 +1,105 @@
+# Echtlauf godot – Godot-Projekt anlegen, importieren, prüfen, starten, Gegenprobe
+Datum: 2026-11-16T21:41:26
+Fundort: C:\Users\<user>\Godot\Godot_v4.7.2-stable_win64_console.exe
+Suchweg: EngineTargets.FindGodot (Werkzeugordner, Benutzerordner\Godot, Programs, Program Files) – wie MainWindow.EngineDetect
+Version: 4.7.2.stable.official.ed1daf0bf
+
+## Fachlauf (Helfer: godot) – Exit 0, 11.6 s
+21:41:27 Projekt angelegt: Echtlauf-Spiel-Godot
+21:41:27 $ Godot_v4.7.2-stable_win64_console.exe --headless --path C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\godot\Echtlauf-Spiel-Godot --import
+21:41:30   Exit 0 nach 2,9 s
+  | Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+  | [   0% ] first_scan_filesystem | Started Projektinitialisierung (5 steps)
+  | [   0% ] first_scan_filesystem | Lese Dateistrucktur …
+  | [  16% ] first_scan_filesystem | Globale Klassennamen laden …
+  | [  33% ] first_scan_filesystem | Verifiziere GDExtensions…
+  | [  50% ] first_scan_filesystem | Autoload-Skripte erzeugen …
+  | [  66% ] first_scan_filesystem | Plugins initialisieren…
+  | [  83% ] first_scan_filesystem | Dateiscan starten …
+  | [ DONE ] first_scan_filesystem
+  | 
+  | [   0% ] update_scripts_classes | Started Globale Klassen registrieren … (9 steps)
+  | [   0% ] update_scripts_classes | 
+  | [  10% ] update_scripts_classes | 
+  | [  20% ] update_scripts_classes | 
+  | [  30% ] update_scripts_classes | 
+  | [  40% ] update_scripts_classes | 
+  | [  50% ] update_scripts_classes | 
+  | [  60% ] update_scripts_classes | 
+  | [  70% ] update_scripts_classes | 
+  | [  80% ] update_scripts_classes | 
+  | [ DONE ] update_scripts_classes
+  | 
+  | [   0% ] loading_editor_layout | Started Editor laden (5 steps)
+  | [   0% ] loading_editor_layout | Editor-Layout laden …
+  | [  16% ] loading_editor_layout | Docks laden …
+  | [ DONE ] loading_editor_layout
+  | 
+21:41:30 $ Godot_v4.7.2-stable_win64_console.exe --headless --path C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\godot\Echtlauf-Spiel-Godot --script res://tests/check_level.gd
+21:41:30   Exit 0 nach 0,2 s
+  | Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+  | TRENDO-OK 2 Level
+21:41:30 Level-Prüfung: OK – 2 Level
+21:41:30 $ Godot_v4.7.2-stable_win64_console.exe --headless --path C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\godot\Echtlauf-Spiel-Godot --script res://tests/play_check.gd
+21:41:31   Exit 0 nach 1,1 s
+  | Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+  | TRENDO-OK Spiel läuft, Figur steht
+21:41:31 Spiel-Prüfung: OK – Spiel läuft, Figur steht
+21:41:31 $ Godot_v4.7.2-stable_win64_console.exe --headless --path C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\godot\Echtlauf-Spiel-Godot --script res://tests/gameplay_check.gd
+21:41:32   Exit 0 nach 0,6 s
+  | Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+  | TRENDO-OK Gameplay: Inventar, Figur, Aufgabe, Schwert, Boss, Fahrzeug, Doppelsprung
+21:41:32 Spielablauf: OK – Gameplay: Inventar, Figur, Aufgabe, Schwert, Boss, Fahrzeug, Doppelsprung
+21:41:32 $ Godot_v4.7.2-stable_win64_console.exe --headless --path C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\godot\Echtlauf-Spiel-Godot --script res://tests/menu_check.gd
+21:41:32   Exit 0 nach 0,4 s
+  | Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+  | TRENDO-OK Menü: Start, Einstellungen gespeichert, Pause, Weiter
+21:41:32 Menü: OK – Menü: Start, Einstellungen gespeichert, Pause, Weiter
+21:41:32 $ Godot_v4.7.2-stable_win64_console.exe --headless --path C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\godot\Echtlauf-Spiel-Godot --script res://tests/save_check.gd
+21:41:32   Exit 0 nach 0,3 s
+  | Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+  | TRENDO-OK Spielstand speichern, fortsetzen und prüfen
+21:41:32 Spielstand: OK – Spielstand speichern, fortsetzen und prüfen
+21:41:32 $ Godot_v4.7.2-stable_win64_console.exe --headless --path C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\godot\Echtlauf-Spiel-Godot --quit-after 300
+21:41:35   Exit 0 nach 2,3 s
+  | Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+21:41:35 Spiel gestartet und nach 300 Bildern beendet: Exit 0
+21:41:35 $ Godot_v4.7.2-stable_win64_console.exe --headless --path C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\godot\Echtlauf-Gegenprobe-Godot --import
+21:41:37   Exit 0 nach 2,5 s
+  | Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+  | [   0% ] first_scan_filesystem | Started Projektinitialisierung (5 steps)
+  | [   0% ] first_scan_filesystem | Lese Dateistrucktur …
+  | [  16% ] first_scan_filesystem | Globale Klassennamen laden …
+  | [  33% ] first_scan_filesystem | Verifiziere GDExtensions…
+  | [  50% ] first_scan_filesystem | Autoload-Skripte erzeugen …
+  | [  66% ] first_scan_filesystem | Plugins initialisieren…
+  | [  83% ] first_scan_filesystem | Dateiscan starten …
+  | [ DONE ] first_scan_filesystem
+  | 
+  | [   0% ] update_scripts_classes | Started Globale Klassen registrieren … (9 steps)
+  | [   0% ] update_scripts_classes | 
+  | [  10% ] update_scripts_classes | 
+  | [  20% ] update_scripts_classes | 
+  | [  30% ] update_scripts_classes | 
+  | [  40% ] update_scripts_classes | 
+  | [  50% ] update_scripts_classes | 
+  | [  60% ] update_scripts_classes | 
+  | [  70% ] update_scripts_classes | 
+  | [  80% ] update_scripts_classes | 
+  | [ DONE ] update_scripts_classes
+  | 
+  | [   0% ] loading_editor_layout | Started Editor laden (5 steps)
+  | [   0% ] loading_editor_layout | Editor-Layout laden …
+  | [  16% ] loading_editor_layout | Docks laden …
+  | [ DONE ] loading_editor_layout
+  | 
+21:41:37 $ Godot_v4.7.2-stable_win64_console.exe --headless --path C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\godot\Echtlauf-Gegenprobe-Godot --script res://tests/play_check.gd
+21:41:38   Exit 1 nach 1,0 s
+  | Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+  | TRENDO-FEHLER Figur steht nicht auf dem Boden
+21:41:38 Gegenprobe ohne Boden: scheitert wie erwartet – Figur steht nicht auf dem Boden
+21:41:38 Nicht geprüft: Export als Windows-Programm (dafür braucht Godot die Exportvorlagen, die hier nicht eingerichtet sind).
+
+
+ERGEBNIS: ECHT-GRÜN (11.6 s)
+- Fachlauf godot: ECHT-GRÜN – Nicht geprüft: Export als Windows-Programm (dafür braucht Godot die Exportvorlagen, die hier nicht eingerichtet sind).

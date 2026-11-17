@@ -1,0 +1,25 @@
+# Echtlauf briefe – 2026-11-16 23:26:35
+$ LibreOffice öffnet Kuendigung.fodt: soffice.exe -env:UserInstallation=file:///C:\Users\<user>/AppData/Local/Temp/trendo-t0725-lo-prof-1ea30815 --headless --norestore --convert-to docx --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0725-lo-out-02075fa0 C:\Users\<user>\AppData\Local\Temp\trendo-t0725-brief-bc48a53b\Kuendigung.fodt
+Exit 0
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0725-brief-bc48a53b\Kuendigung.fodt as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0725-lo-out-02075fa0\Kuendigung.docx using filter : Office Open XML Text
+[stderr] Could not find platform independent libraries <prefix>
+Datei fremd-Kuendigung.docx: 5905 Bytes, SHA-256 aec0bf030ae7f28ca1566fa6a62c0e91e54e55dd934eb3edb1279d12706f2230
+Erkannt: Betreff „Kündigung meines Stromvertrags 4711“, Anrede „Sehr geehrte Damen und Herren,“, Datum 12.03.2026, Ort „Musterstadt“, Anschrift „Stadtwerke Musterstadt / Kundenservice / Hauptstraße 1 / 12345 Musterstadt“, Gruß „Mit freundlichen Grüßen“, Anlagen „Kopie des Vertrags“
+Datei trendo-Brief.docx: 2619 Bytes, SHA-256 9afeeda64e3a1f4dfabde139cc894ae9daefc87bb9f5f522470d0839ebceae0f
+$ LibreOffice öffnet trendo-Brief.docx: soffice.exe -env:UserInstallation=file:///C:\Users\<user>/AppData/Local/Temp/trendo-t0725-lo-prof-89c1358b --headless --norestore --convert-to pdf --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0725-lo-out-c7bd1f2f C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\briefe\trendo-Brief.docx
+Exit 0
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\briefe\trendo-Brief.docx as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0725-lo-out-c7bd1f2f\trendo-Brief.pdf using filter : writer_pdf_Export
+[stderr] Could not find platform independent libraries <prefix>
+Datei lo-trendo-Brief.pdf: 52899 Bytes, SHA-256 ab22a31a26bff367b3dd496411120d3711adc686156d67ad6b594609a25ad312
+$ qpdf prüft lo-trendo-Brief.pdf: qpdf.exe --check C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\briefe\lo-trendo-Brief.pdf
+Exit 0
+checking C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\briefe\lo-trendo-Brief.pdf
+PDF Version: 1.7
+File is not encrypted
+File is not linearized
+No syntax or stream encoding errors found; the file may still contain
+errors that qpdf cannot detect
+$ qpdf zählt Seiten: qpdf.exe --show-npages C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\briefe\lo-trendo-Brief.pdf
+Exit 0
+1
+Original unverändert (SHA-256 gleich).

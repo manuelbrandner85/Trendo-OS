@@ -173,6 +173,7 @@ public partial class MainWindow
         if (CurrentView != plan.Page) Show(plan.Page);
         var doc = Programs.ContainsKey(plan.Page) ? ProgramActive(plan.Page) : null;
         if (doc is not null) ClaudeChangeBegin(plan.Page, doc);
+        var opMark = doc?.Remember(); // T-0728: dieser Plan wird EIN Rückgängig-Schritt
         var before = doc?.Data.ToJsonString();
         var done = new List<string>(); var failed = new List<string>();
         foreach (var s in plan.Steps)
@@ -192,7 +193,7 @@ public partial class MainWindow
         }
         if (doc is not null)
         {
-            if (doc.Data.ToJsonString() != before) { ClaudeChangeAfter(plan.Page, doc); _progMsg[plan.Page] = ClaudeNoClicks ? "Claude hat im Programm gearbeitet." : "Claude hat im Programm gearbeitet – oben vergleichen, behalten oder verwerfen."; }
+            if (doc.Data.ToJsonString() != before) { ClaudeChangeAfter(plan.Page, doc); if (opMark is { } om) doc.Squash(om, ClaudeUndoLabel); _progMsg[plan.Page] = ClaudeNoClicks ? "Claude hat im Programm gearbeitet." : "Claude hat im Programm gearbeitet – oben vergleichen, behalten oder verwerfen."; }
             else _claudeChanges.Remove(plan.Page);
         }
         _core.Audit.Append(Principal.LocalOwner.Name, "claude.bedient", $"{plan.Page} · {done.Count} Schritte" + (plan.Steps.Any(s => ClaudeActions.StepRisky(s, plan.State)) ? " · mit Wirkung nach außen" : ""));

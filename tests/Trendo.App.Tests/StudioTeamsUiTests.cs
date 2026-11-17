@@ -17,7 +17,7 @@ public class StudioTeams_Ui
     [AvaloniaFact(DisplayName = "Teams: jedes Studio (außer dem abgelehnten SPEC-07) hat ein Profi-Team; „Team“ im 3D-Studio öffnet „KI einsetzen“ mit dem 3D-Team; eigene Rolle nur mit Studio")]
     public void Teams_in_studios()
     {
-        foreach (var (id, _) in StudioCatalog.ById.Where(kv => kv.Key != "SPEC-07")) Assert.True(StudioTeams.For(id) is not null, "Ohne Team: " + id);
+        foreach (var (id, _) in StudioCatalog.ById.Where(kv => kv.Key != "SPEC-07" && !StudioCatalog.Deleted.Contains(kv.Key))) Assert.True(StudioTeams.For(id) is not null, "Ohne Team: " + id); // T-0720: gelöschte Studios ohne Team
         var (w, _, _) = Ui.Open();
         try
         {

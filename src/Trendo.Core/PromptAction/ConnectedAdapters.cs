@@ -11,7 +11,6 @@ static class Intent
     public static bool Filled(IReadOnlyDictionary<string, string> fields, params string[] keys) =>
         keys.Any(key => FieldKit.Has(fields, key));
 
-    public static bool Camera(IReadOnlyDictionary<string, string> fields) => Yes(fields, "starten", "aufnahme", "foto", "bewegen", "greifen");
     public static bool OtherLanguage(IReadOnlyDictionary<string, string> fields)
     {
         if (Yes(fields, "eindeutschen") || Filled(fields, "programm")) return true;
@@ -70,38 +69,6 @@ static class Connected
         if (ask is null) return null;
         return ask(question, system, ct).GetAwaiter().GetResult();
     }
-}
-
-/// <summary>CORE-09: Namen aus sysfs. Es wird keine Kamera geöffnet.</summary>
-public sealed class CameraListAdapter : IStudioActionAdapter
-{
-    public string StudioId => "CORE-09";
-    public string ActionId => "kamera.nennen";
-    public string Label => "Kameras nennen";
-    public SideEffectClass Effect => SideEffectClass.None;
-    public CapabilityLevel DeclaredLevel => CapabilityLevel.Partial;
-    public string Evidence => "ConnectedPromptTests.Kamera_nennt_geraete_ohne_aufnahme";
-    public bool CanPerformSideEffect => false;
-    public IReadOnlyList<string> RequiredFields => [];
-    public IReadOnlyList<string> OutputKinds => ["txt"];
-    public ActionDraft? TryParse(string prompt, IReadOnlyDictionary<string, string> known)
-    {
-        var fields = FieldKit.Read(prompt, known);
-        return Intent.Camera(fields) ? null : new ActionDraft(ActionId, fields);
-    }
-    public IReadOnlyList<ClarificationQuestion> Missing(IReadOnlyDictionary<string, string> parameters) => [];
-    public IReadOnlyList<ValidationFinding> Validate(IReadOnlyDictionary<string, string> parameters) => [];
-    public AdapterOutcome Produce(AdapterCall call)
-    {
-        var cams = WebcamScan.ReadVideo4Linux(Connected.Svc.VideoSys);
-        var sb = new StringBuilder();
-        sb.AppendLine("Kameras, nur gelesen. Es wurde keine Kamera geöffnet, nichts aufgenommen und kein Mikrofon benutzt.");
-        if (cams.Count == 0) sb.AppendLine("Keine Kamera gesehen.");
-        foreach (var cam in cams) sb.Append("- ").Append(cam.Name.Replace('\n', ' ')).Append(" (").Append(cam.Id).AppendLine(")");
-        var body = sb.ToString();
-        return Connected.Text(call, FieldKit.Slot("kamera", call.Version, "liste.txt"), body, cams.Count + " Kameras gelesen", "kamera.liste", "WebcamScan", ["Es wurde keine Kamera geöffnet."]);
-    }
-    public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked("Die Kamera ist nicht angeschlossen. Es gibt keine Bewegung.");
 }
 
 

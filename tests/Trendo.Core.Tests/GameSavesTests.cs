@@ -71,7 +71,7 @@ public class GameSavesTests
     {
         Assert.Contains("saveGame()", GameStudio.GameJs("plattform")); Assert.DoesNotContain("/*SPIELSTAND*/", GameStudio.GameJs("plattform"));
         Assert.DoesNotContain("saveGame", GameStudio.GameJs("snake"));
-        if (Cli.Find("node") is not { } node) return; // ohne Node nur die Textprüfung
+        if (Cli.Find("node") is not { } node) { Ueberspringen.Weil("Node.js fehlt auf diesem PC."); return; } // ohne Node nur die Textprüfung
         var dir = Path.Combine(Path.GetTempPath(), "trendo-save-js-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
         try
         {

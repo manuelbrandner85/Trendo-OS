@@ -2,7 +2,7 @@
 <TestRun id="722cc519-1b46-4043-abd5-4ad28d38239e" name="<user>@<host> 2026-10-22 02:42:23" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:23.4269230+02:00" queuing="2026-10-22T02:42:23.4269232+02:00" start="2026-10-22T02:42:22.5236412+02:00" finish="2026-10-22T02:42:23.4311314+02:00" />
   <TestSettings name="default" id="9393e255-f7ce-4953-8760-436aba23a772">
-    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_23" />
+    <Deployment runDeploymentRoot="<user>_<host>_2026-10-22_02_42_23" />
   </TestSettings>
   <Results>
     <UnitTestResult executionId="09546439-9fbc-41cf-a4aa-04e8ce0d7de0" testId="d5fcd332-e380-9798-6ae0-20d82235937a" testName="CORE-03: 12 Rollen mit eigenem Auftrag, Aufgabe nutzt Rollenanweisung" computerName="<host>" duration="00:00:00.0247002" startTime="2026-10-22T02:42:23.3144283+02:00" endTime="2026-10-22T02:42:23.3383320+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="09546439-9fbc-41cf-a4aa-04e8ce0d7de0" />

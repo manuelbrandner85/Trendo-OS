@@ -2,7 +2,7 @@
 <TestRun id="aa755e71-e0de-4bab-9bec-60e0432af447" name="<user>@<host> 2026-10-22 02:42:42" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:42.9339262+02:00" queuing="2026-10-22T02:42:42.9339264+02:00" start="2026-10-22T02:42:42.1888474+02:00" finish="2026-10-22T02:42:42.9379409+02:00" />
   <TestSettings name="default" id="50ddcd44-3ad8-4799-a66f-d1f23c55059d">
-    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_42" />
+    <Deployment runDeploymentRoot="<user>_<host>_2026-10-22_02_42_42" />
   </TestSettings>
   <Results>
     <UnitTestResult executionId="d5902102-d0d0-4a17-b3f5-d3b49f4859b5" testId="7863e463-dc17-ed9b-db5b-041476f9d844" testName="SPEC-12: Höchstens 120 h, Warnung 24 h vorher, danach vollständig gelöscht" computerName="<host>" duration="00:00:00.0572031" startTime="2026-10-22T02:42:42.7343452+02:00" endTime="2026-10-22T02:42:42.7975197+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d5902102-d0d0-4a17-b3f5-d3b49f4859b5" />

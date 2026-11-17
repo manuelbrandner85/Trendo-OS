@@ -17,32 +17,55 @@ public partial class MainWindow
 
     private void InitSys09()
     {
-        _showMap["post"] = MailView; SysTabs.Add(("post", "E-Mail & Kontakte"));
+        _showMap["post"] = MailView; SysTabs.Add(("post", "Schreiben"));
         StudioPages["SYS-09"] = "post";
         ExtraPages.Add(("E-Mail & Kontakte", "post", ["mail", "email", "kontakt", "adresse", "nachricht", "vcard", "eml", "outlook", "thunderbird"]));
     }
 
+    /// <summary>T-0711: Entwurf „Schreiben“ an Rückgängig und Notsicherung der Hülle (ProgramLink) – Senden/Öffnen bleiben unverändert.</summary>
+    public LinkSlot MailLink => Slot("post", "LINK-MAIL", "mail", "post", "mail", "Eine E-Mail", "E-Mails",
+        () => new System.Text.Json.Nodes.JsonObject { ["to"] = _mailTo, ["subject"] = _mailSubj, ["body"] = _mailBody },
+        st => { _mailTo = st?["to"]?.GetValue<string>() ?? ""; _mailSubj = st?["subject"]?.GetValue<string>() ?? ""; _mailBody = st?["body"]?.GetValue<string>() ?? ""; },
+        () => (_mailTo + _mailSubj + _mailBody).Trim().Length > 0,
+        () => _mailSubj.Trim().Length > 0 ? _mailSubj : _mailBody.Trim().Length > 0 ? _mailBody : "E-Mail");
+    public string MailDraftTo => _mailTo; public string MailDraftSubject => _mailSubj; public string MailDraftBody => _mailBody;
+
     private Control MailView()
     {
-        var sp = new StackPanel { Spacing = 6, Children = { P("Schreib hier in Ruhe. Trendo prüft die Nachricht und öffnet sie in deinem Mailprogramm – abschicken tust du selbst.") } };
+        var sp = new StackPanel { Spacing = 6, Children = { P(MailAccountCfg is null
+            ? "Schreib hier in Ruhe. Mit eigenem Konto sendet Trendo selbst (nach Rückfrage) – ohne Konto öffnet Trendo die Nachricht in deinem Mailprogramm."
+            : $"Schreib hier in Ruhe. „Senden …“ öffnet das Schreibfenster mit Anhängen und Rückfrage – gesendet wird über {MailAccountCfg.Email}.") } };
         sp.Children.Add(H("Neue E-Mail", 14));
         var to = new TextBox { Name = "mail-to", PlaceholderText = "An (E-Mail, mehrere mit Komma)", Text = _mailTo };
         var subj = new TextBox { Name = "mail-subject", PlaceholderText = "Betreff", Text = _mailSubj };
         var body = new TextBox { Name = "mail-body", PlaceholderText = "Nachricht", Text = _mailBody, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 100 };
         MailDraft D() { _mailTo = to.Text ?? ""; _mailSubj = subj.Text ?? ""; _mailBody = body.Text ?? ""; return new(_mailTo, _mailSubj, _mailBody); }
+        var link = MailLink; // T-0711: jede Eingabe wird nach einer Tipp-Pause ein Rückgängig-Schritt, die Hülle sichert alle 20 s
+        to.TextChanged += (_, _) => { if ((to.Text ?? "") == _mailTo) return; _mailTo = to.Text ?? ""; LinkTyped(link); };
+        subj.TextChanged += (_, _) => { if ((subj.Text ?? "") == _mailSubj) return; _mailSubj = subj.Text ?? ""; LinkTyped(link); };
+        body.TextChanged += (_, _) => { if ((body.Text ?? "") == _mailBody) return; _mailBody = body.Text ?? ""; LinkTyped(link); };
         var check = new Button { Name = "mail-check", Content = "Prüfen" };
         check.Click += (_, _) => { var p = MailCenter.Check(D()); _mailMsg = p.Count == 0 ? "✓ Sieht gut aus." : string.Join(" ", p); Show("post"); };
-        var open = new Button { Name = "mail-open", Content = "Im Mailprogramm öffnen", Background = Accent };
+        // T-0689: eine goldene Hauptaktion – mit Konto sendet Trendo selbst (Schreibfenster im Posteingang, Rückfrage vor dem Senden), sonst zuerst das Konto
+        var send = new Button { Name = "mail-send", Content = MailAccountCfg is null ? "Konto einrichten" : "Senden …", Background = Accent };
+        send.Click += (_, _) =>
+        {
+            var d = D();
+            if (MailAccountCfg is null) { _mailWizard = true; _pimMsg = "Trag dein Konto ein – deine Nachricht bleibt im Schreibfenster stehen."; }
+            if (MailAccountCfg is not null) LinkSaved(link); // T-0711: an das Schreibfenster übergeben (das hat eine eigene Entwurfssicherung)
+            MailCompose(d);
+        };
+        var open = new Button { Name = "mail-open", Content = "Im Mailprogramm öffnen" };
         open.Click += (_, _) =>
         {
             var d = D(); var p = MailCenter.Check(d);
             if (p.Any(x => x.Contains("fehlt") || x.Contains("gültige"))) { _mailMsg = string.Join(" ", p); Show("post"); return; }
-            LastDraftFile = Mail.SaveDraft(d, MailDraftFolder, DateTimeOffset.Now); Launch(LastDraftFile);
+            LastDraftFile = Mail.SaveDraft(d, MailDraftFolder, DateTimeOffset.Now); Launch(LastDraftFile); LinkSaved(link); // T-0711: als .eml gespeichert – Notsicherung weg
             _mailMsg = $"Entwurf gespeichert und geöffnet ({Path.GetFileName(LastDraftFile)}). Prüfen und im Mailprogramm auf „Senden“ klicken.";
             Show("post");
         };
-        var link = new Button { Name = "mail-link", Content = "Als Link (Webmail)" };
-        link.Click += (_, _) => { var d = D(); Launch(MailCenter.MailTo(d)); _mailMsg = "Dein Standard-Mailprogramm öffnet sich mit der Nachricht."; Show("post"); };
+        var asLink = new Button { Name = "mail-link", Content = "Als Link (Webmail)" };
+        asLink.Click += (_, _) => { var d = D(); Launch(MailCenter.MailTo(d)); _mailMsg = "Dein Standard-Mailprogramm öffnet sich mit der Nachricht."; Show("post"); };
         var ki = new Button { Name = "mail-ki", Content = "Freundlicher formulieren (KI)" };
         ki.Click += async (_, _) =>
         {
@@ -56,8 +79,9 @@ public partial class MainWindow
         var pick = new ComboBox { Name = "mail-pick", PlaceholderText = "Aus Kontakten", ItemsSource = people.Where(c => c.Email != "").Select(c => $"{c.Name} <{c.Email}>").ToList(), MinWidth = 200 };
         pick.SelectionChanged += (_, _) => { if (pick.SelectedIndex < 0) return; var c = people.Where(x => x.Email != "").ElementAt(pick.SelectedIndex); to.Text = string.IsNullOrWhiteSpace(to.Text) ? c.Email : to.Text.TrimEnd(',', ' ') + ", " + c.Email; };
         sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { pick } });
+        sp.Children.Add(LinkBar(link)); // T-0711: Wiederherstellen-Karte, Rückgängig · Wiederholen über dem Entwurf
         sp.Children.Add(to); sp.Children.Add(subj); sp.Children.Add(body);
-        sp.Children.Add(new WrapPanel { Children = { MSp(check), MSp(open), MSp(link), MSp(ki) } });
+        sp.Children.Add(new WrapPanel { Children = { MSp(send), MSp(check), MSp(open), MSp(asLink), MSp(ki) } });
         sp.Children.Add(new TextBlock { Name = "mail-msg", Text = _mailMsg, Foreground = Text, TextWrapping = TextWrapping.Wrap });
 
         sp.Children.Add(H("Kontakt schnell anlegen", 14));
@@ -78,7 +102,7 @@ public partial class MainWindow
         exp.Click += (_, _) => { Directory.CreateDirectory(MailDraftFolder); var f = Path.Combine(MailDraftFolder, "kontakte.vcf"); File.WriteAllText(f, Mail.ExportVcf()); _mailMsg = $"Gespeichert: {f}"; Show("post"); };
         sp.Children.Add(new WrapPanel { Children = { MSp(cn), MSp(ce), MSp(cp), MSp(add) } });
         sp.Children.Add(new WrapPanel { Children = { MSp(path), MSp(imp), MSp(exp) } });
-        sp.Children.Add(Act("mail-to-addressbook", $"Zum Adressbuch ({people.Count} Kontakte) →", () => Show("kontakte"), true));
+        sp.Children.Add(Act("mail-to-addressbook", $"Zum Adressbuch ({people.Count} Kontakte) →", () => Show("kontakte")));
         if (_mailRead is { } m)
             sp.Children.Add(WCard(new StackPanel { Name = "mail-read", Spacing = 3, Children = { H(m.Subject, 14), P($"Von {m.From} · an {m.To} · {m.Date}", null, 11), new SelectableTextBlock { Text = m.Body, Foreground = Text, TextWrapping = TextWrapping.Wrap } } }));
         return SysPage("E-Mail & Kontakte", sp);

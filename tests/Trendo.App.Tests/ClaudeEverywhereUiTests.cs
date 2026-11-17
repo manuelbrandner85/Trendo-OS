@@ -21,6 +21,9 @@ public class ClaudeEverywhere_Ui
             foreach (var key in w.PageKeys.OrderBy(k => k, StringComparer.Ordinal).ToList())
             {
                 if (w.ModuleOf(key) is not { } studio || !w.ClaudeBelongs(key)) continue;
+                // wie UebersichtEinfach_Ui.MeasureAll: nur die letzten Fenster offen lassen – sonst stehen am Ende 168 Studio-Fenster offen,
+                // jede Anordnung misst alle (im Volltest unter Last > 8 GB und kein Ende mehr)
+                foreach (var old in w.Windows.Stack.Reverse().Skip(3).ToList()) w.CloseWindow(old.Id);
                 try { w.Show(key); Avalonia.Threading.Dispatcher.UIThread.RunJobs(); } catch (Exception ex) { missing.Add($"{key} ({studio}): Seite lädt nicht – {ex.GetType().Name}"); continue; }
                 // E1 (T-0616): Claude steht im Menü „KI ▾“ der Leiste (oder als schlanker Knopf) – sichtbar sein muss der Weg dorthin
                 if (w.TryFind<Button>("auftrag-claude") is null) { missing.Add($"{key} ({studio})"); continue; }
@@ -44,9 +47,9 @@ public class ClaudeEverywhere_Ui
     [Fact(DisplayName = "Claude in jedem Studio: jedes Studio aus dem Studio-Katalog hat ein eigenes Claude-Profil (Rolle, Lieferformat, vier Startideen)")]
     public void Every_studio_has_profile()
     {
-        var missing = StudioCatalog.ById.Keys.Where(id => !Trendo.Core.StudioProfiles.Has(id)).ToList();
+        var missing = StudioCatalog.ById.Keys.Where(id => !StudioCatalog.Deleted.Contains(id) && !Trendo.Core.StudioProfiles.Has(id)).ToList(); // T-0720: gelöschte Studios haben kein Profil mehr
         Assert.True(missing.Count == 0, "Ohne Profil: " + string.Join(", ", missing));
-        foreach (var id in StudioCatalog.ById.Keys)
+        foreach (var id in StudioCatalog.ById.Keys.Where(k => !StudioCatalog.Deleted.Contains(k)))
         {
             var p = Trendo.Core.StudioProfiles.For(id);
             Assert.Equal(4, p.Ideas.Count); Assert.StartsWith("Du ", p.Role); Assert.NotNull(p.Format);

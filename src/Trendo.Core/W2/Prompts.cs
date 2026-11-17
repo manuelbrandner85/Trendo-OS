@@ -122,7 +122,7 @@ public sealed partial class PromptLibrary
         return string.Join("\n\n", parts);
     }
 
-    private void Persist() => File.WriteAllText(_file, JsonSerializer.Serialize(_items));
+    private void Persist() => AtomicFile.WriteAllText(_file, JsonSerializer.Serialize(_items)); // T-0711: atomar (Vorlagen und Skills)
     private static string Slug(string s)
     {
         var t = new string(s.ToLowerInvariant().Replace("ä", "ae").Replace("ö", "oe").Replace("ü", "ue").Replace("ß", "ss").Select(c => char.IsLetterOrDigit(c) ? c : '-').ToArray()).Trim('-');

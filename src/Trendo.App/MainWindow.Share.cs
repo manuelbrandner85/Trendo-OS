@@ -43,18 +43,18 @@ public partial class MainWindow
     public async Task<bool> StartShareAsync(string folder, TimeSpan dur, IPAddress ip)
     {
         await StopShareAsync();
-        var req = _core.Approvals.Request(Principal.LocalOwner, "share.start", $"Ordner {Path.GetFileName(folder)} im Heimnetz teilen (nur lesen, {dur.TotalHours:0} h)", folder);
+        var req = _core.Approvals.Request(CurrentPrincipal, "share.start", $"Ordner {Path.GetFileName(folder)} im Heimnetz teilen (nur lesen, {dur.TotalHours:0} h)", folder);
         LastShareRequest = req;
         var ok = false;
         try { ok = await (ShareConfirm ?? ConfirmShareDialog)(folder, dur); }
         catch { ok = false; }
         if (!ok)
         {
-            _core.Approvals.Deny(req.Id, Principal.LocalOwner);
+            Ablehnen(req.Id); // T-0713: Nein der angemeldeten Person (Kinderprofil zieht zurück)
             _shareMsg = "Freigabe abgelehnt";
             return false;
         }
-        _core.Approvals.Approve(req.Id, Principal.LocalOwner);
+        if (!FreigabeErteilen(req.Id)) { _shareMsg = "Freigabe nicht erteilt – es wird nichts geteilt."; return false; } // B4: Rolle der angemeldeten Person
         ActiveShare = _core.Approvals.Execute(req.Id, "share.start", folder, () => new ShareServer(new FolderShare(folder, dur), ip, _core.Audit));
         _shareMsg = "Freigabe läuft. Öffne den Link auf dem Handy oder einem anderen PC im selben WLAN.";
         return true;

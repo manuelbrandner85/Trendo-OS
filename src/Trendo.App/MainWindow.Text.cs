@@ -16,7 +16,7 @@ using Path = System.IO.Path;
 namespace Trendo.App;
 
 /// <summary>T-0223 Trendo Text (Stufe 1, T1–T10): eigenes Schreibprogramm statt LibreOffice Writer. Vorn das Häufigste, unter „Mehr“ alles Weitere.
-/// Absatzweise bearbeiten: der Absatz mit dem Cursor ist ein Eingabefeld, alle anderen zeigen ihr Format. Formate bleiben beim Tippen erhalten.</summary>
+/// T-0692: durchgehend bearbeiten – ein Schreibfeld über das ganze Dokument (<see cref="TextPageView"/>) mit echten Seiten; Cursor und Auswahl gehen über Absatzgrenzen.</summary>
 public partial class MainWindow
 {
     public TextDoc TextDocument { get; private set; } = TextDoc.Empty();
@@ -24,15 +24,23 @@ public partial class MainWindow
     public string ProjectsRootForTests => ProjectsRoot;
     public string? TextPath { get; private set; }
     public bool TextDirty { get; private set; }
-    public int TextFocusBlock { get; private set; }
-    private int _txSel, _txSelLen;
+    /// <summary>Baustein, in dem der Cursor steht.</summary>
+    public int TextFocusBlock { get => _txView.Caret.Block; private set { if (value != _txView.Caret.Block) _txView.SetQuiet(new TextPos(value, 0), new TextPos(value, 0)); else _txView.ClampSelection(); } }
+    /// <summary>Auswahl im Baustein mit dem Cursor (Anfang, Länge) – geht die Auswahl über mehrere Absätze, der Teil in diesem Absatz.</summary>
+    private int _txSel { get => TextSelHere().Start; set { var c = _txView.Caret with { Offset = Math.Max(0, value) }; _txView.SetQuiet(c, c); } }
+    private int _txSelLen { get => TextSelHere().Length; set { var st = TextSelHere().Start; var c = _txView.Caret; _txView.SetQuiet(c with { Offset = st }, c with { Offset = st + Math.Max(0, value) }); } }
+    private (int Start, int Length) TextSelHere()
+    {
+        var (a, b) = _txView.Range; var c = _txView.Caret;
+        if (a.SameBox(b)) return (a.Offset, b.Offset - a.Offset);
+        return c == b ? (0, c.Offset) : (c.Offset, Math.Max(0, TextEdit.Length(TextDocument, c) - c.Offset));
+    }
     private string _txMsg = "";
     private bool _txMore, _txFind, _txSpellOn;
     private readonly List<TextDoc> _txUndo = [], _txRedo = [];
     private List<Spelling.Mistake> _txMistakes = [];
     private Spelling? _spelling; private bool _spellTried;
     private List<TextDoc.Hit> _txHits = []; private int _txHit = -1;
-    private TextBox? _txActive;
 
     private void InitText()
     {
@@ -44,7 +52,7 @@ public partial class MainWindow
     // ---------- Öffentliche Wege (auch für Tests und die KI) ----------
     public void TextNew(string template = "leer")
     {
-        TextDocument = TextTemplates.Create(template); TextPath = null; TextDirty = false; TextFocusBlock = 0; _txSel = _txSelLen = 0;
+        TextDocument = TextTemplates.Create(template); TextPath = null; TextDirty = false; TextFocusBlock = 0; _txSel = _txSelLen = 0; ImportGuardClear("text");
         _txUndo.Clear(); _txRedo.Clear(); _txMistakes = []; _txHits = [];
         _txMsg = template == "leer" ? "Neues Dokument." : $"Vorlage „{TextTemplates.Builtin.First(t => t.Id == template).Name}“ – Platzhalter in [Klammern] einfach überschreiben.";
     }
@@ -54,46 +62,90 @@ public partial class MainWindow
         TextDocument = TextFiles.Open(path); TextPath = Path.GetExtension(path).Equals(".txt", StringComparison.OrdinalIgnoreCase) || Path.GetExtension(path).Equals(".odt", StringComparison.OrdinalIgnoreCase) || Path.GetExtension(path).Equals(".docx", StringComparison.OrdinalIgnoreCase) ? path : null;
         TextDirty = false; TextFocusBlock = 0; _txSel = _txSelLen = 0; _txUndo.Clear(); _txRedo.Clear(); _txMistakes = []; _txHits = [];
         _txMsg = $"Geöffnet: {Path.GetFileName(path)}";
+        ImportGuardSet("text", path, TextDocument.Import); // T-0682: fremde Inhalte, die Trendo nicht hält – Original vor stillem Überschreiben schützen
         RememberRecent(path);
         _core.Audit.Append(Principal.LocalOwner.Name, "text.open", Path.GetFileName(path));
     }
 
-    public void TextSaveAs(string path)
+    /// <summary>Speichert das Dokument. Liefert false, wenn das Speichern aufgehalten wurde, weil es eine fremde Datei mit nicht übernommenen Inhalten überschriebe (T-0682).</summary>
+    public bool TextSaveAs(string path)
     {
+        if (ImportGuardStops("text", path)) { _txMsg = ImportStopMessage("text"); return false; }
         TextFiles.Save(TextDocument, path);
-        if (!path.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)) { TextPath = path; TextDirty = false; RememberRecent(path); RecoveryClear("text"); }
+        if (!path.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)) { TextPath = path; TextDirty = false; RememberRecent(path); OfficeSaved("text"); ImportGuardClear("text"); }
         _txMsg = $"Gespeichert: {Path.GetFileName(path)}";
         _core.Audit.Append(Principal.LocalOwner.Name, "text.save", Path.GetFileName(path));
+        return true;
     }
 
-    /// <summary>Cursor/Auswahl setzen (wie Klicken und Markieren).</summary>
+    /// <summary>Cursor/Auswahl in einem Absatz setzen (wie Klicken und Markieren).</summary>
     public void TextSelect(int block, int start, int length = 0)
     {
-        var same = TextFocusBlock == block;
-        TextFocusBlock = Math.Clamp(block, 0, TextDocument.Blocks.Count - 1); _txSel = start; _txSelLen = length;
-        // im offenen Eingabefeld sofort markieren (wie mit der Maus) – sonst überschreibt es die Auswahl beim nächsten Zeichnen
-        if (same && _txActive is { } tb && tb.IsAttachedToVisualTree())
-        {
-            var s = Math.Clamp(start, 0, tb.Text?.Length ?? 0); var e = Math.Clamp(start + length, s, tb.Text?.Length ?? 0);
-            tb.SelectionStart = s; tb.SelectionEnd = e; _txSel = start; _txSelLen = length;
-        }
+        _txView.Refresh();
+        _txView.Select(new TextPos(block, start), new TextPos(block, start + length));
     }
 
-    /// <summary>Zeichenformat auf die Auswahl umschalten (Knöpfe F, K, U …).</summary>
-    public void TextToggle(Fmt f) { if (CurPara() is not { } p) return; Snapshot(); TextDoc.Toggle(p, _txSel, _txSelLen, f); Changed(); }
+    /// <summary>T-0692: Auswahl über Absatzgrenzen – von (Baustein, Zeichen) bis (Baustein, Zeichen).</summary>
+    public void TextSelectRange(int fromBlock, int fromOffset, int toBlock, int toOffset)
+    {
+        _txView.Refresh();
+        _txView.Select(new TextPos(fromBlock, fromOffset), new TextPos(toBlock, toOffset));
+    }
+
+    /// <summary>Zeichenformat auf die Auswahl umschalten (Knöpfe F, K, U …) – über alle markierten Absätze und Tabellenzellen.
+    /// Ohne Auswahl wird das Format für das Weitertippen vorgemerkt.</summary>
+    public void TextToggle(Fmt f)
+    {
+        var v = _txView;
+        if (TextEdit.ParaAt(TextDocument, v.Caret) is null) return;
+        var on = !TextIsOn(f);
+        if (!v.HasSelection)
+        {
+            v.PendingOn = on ? v.PendingOn | f : v.PendingOn & ~f; v.PendingOff = on ? v.PendingOff & ~f : v.PendingOff | f;
+            return;
+        }
+        Snapshot(); TextEdit.Apply(TextDocument, v.Anchor, v.Caret, (p, s, l) => TextDoc.Format(p, s, l, f, on)); Changed();
+    }
+
+    /// <summary>Ist das Zeichenformat in der ganzen Auswahl gesetzt – ohne Auswahl: gilt es für das nächste getippte Zeichen?</summary>
+    public bool TextIsOn(Fmt f)
+    {
+        var v = _txView;
+        if (v.HasSelection)
+        {
+            var parts = TextEdit.Parts(TextDocument, v.Anchor, v.Caret).Where(x => x.Length > 0).ToList();
+            return parts.Count > 0 && parts.All(x => TextEdit.ParaAt(TextDocument, x.Box) is { } p && TextDoc.Has(p, x.Start, x.Length, f));
+        }
+        if (v.PendingOn.HasFlag(f)) return true;
+        if (v.PendingOff.HasFlag(f)) return false;
+        return TextEdit.ParaAt(TextDocument, v.Caret) is { Text.Length: > 0 } q && q.At(Math.Max(0, v.Caret.Offset - 1)).Fmt.HasFlag(f);
+    }
+
+    /// <summary>Absatzformat (Absatzart, Ausrichtung, Liste, Abstand) auf alle Absätze der Auswahl anwenden.</summary>
+    private bool TextEachPara(Action<Para> change)
+    {
+        var v = _txView;
+        if (TextEdit.ParaAt(TextDocument, v.Caret) is null) return false;
+        Snapshot(); TextEdit.ApplyParas(TextDocument, v.Anchor, v.Caret, change); Changed();
+        return true;
+    }
+
+    /// <summary>Der Absatz bzw. die Tabellenzelle am Cursor (nur zum Lesen – für die Anzeige in der Werkzeugzeile).</summary>
+    private Para? CurBox() => TextEdit.ParaAt(TextDocument, _txView.Caret);
 
     private Para? CurPara() => TextFocusBlock < TextDocument.Blocks.Count ? TextDocument.Blocks[TextFocusBlock] as Para : null;
 
     private void Snapshot()
     {
-        _txUndo.Add(TextDocument.Copy()); if (_txUndo.Count > 80) _txUndo.RemoveAt(0);
+        _txUndo.Add(TextDocument.Copy()); if (_txUndo.Count > Trendo.Core.Programs.ProgramDocument.MaxUndo) _txUndo.RemoveAt(0); // T-0714: 100 Schritte wie die Hülle (vorher 80)
         _txRedo.Clear();
+        _txLastKind = ""; // jede andere Änderung beendet einen laufenden Tipp-Schritt
     }
 
-    private void Changed() { TextDirty = true; if (_txSpellOn) RunSpelling(); }
+    private void Changed() { TextDirty = true; if (_txSpellOn) RunSpelling(); _txView.Refresh(); }
 
-    public void TextUndo() { if (_txUndo.Count == 0) return; _txRedo.Add(TextDocument); TextDocument = _txUndo[^1]; _txUndo.RemoveAt(_txUndo.Count - 1); TextFocusBlock = Math.Min(TextFocusBlock, TextDocument.Blocks.Count - 1); TextDirty = true; }
-    public void TextRedo() { if (_txRedo.Count == 0) return; _txUndo.Add(TextDocument); TextDocument = _txRedo[^1]; _txRedo.RemoveAt(_txRedo.Count - 1); TextFocusBlock = Math.Min(TextFocusBlock, TextDocument.Blocks.Count - 1); TextDirty = true; }
+    public void TextUndo() { if (_txUndo.Count == 0) return; _txLastKind = ""; _txRedo.Add(TextDocument); TextDocument = _txUndo[^1]; _txUndo.RemoveAt(_txUndo.Count - 1); _txView.Refresh(); _txView.ClampSelection(); TextDirty = true; }
+    public void TextRedo() { if (_txRedo.Count == 0) return; _txLastKind = ""; _txUndo.Add(TextDocument); TextDocument = _txRedo[^1]; _txRedo.RemoveAt(_txRedo.Count - 1); _txView.Refresh(); _txView.ClampSelection(); TextDirty = true; }
 
     private string TextRecentFile => Path.Combine(_core.DataRoot, "text", "zuletzt.txt");
     private List<string> TextRecent() => File.Exists(TextRecentFile) ? File.ReadAllLines(TextRecentFile).Where(File.Exists).Take(10).ToList() : [];
@@ -134,24 +186,26 @@ public partial class MainWindow
     }
 
     // ---------- Oberfläche ----------
-    private Control TextPageView() => new Border { Name = "text-page-root", Background = Brush.Parse(C("#F21A1A1A", "#F7F4F7FC")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = TextShell() };
+    private Control TextPageView() => new Border { Name = "text-page-root", Background = PageSurface, CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = TextShell() };
 
     private Control TextShell()
     {
         var g = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto,Auto,*,Auto"), ColumnDefinitions = new ColumnDefinitions("*,Auto") };
+        _txOverflow.Clear(); // nur Werkzeuge dieses Aufbaus kommen in die Leiste „Mehr …“
         var head = PageHead("Trendo Text"); Grid.SetColumnSpan(head, 2); g.Children.Add(head);
         var ribbon = new StackPanel { Children = { TextRibbonTabs() } };
-        if (_txRibbon == "start") { ribbon.Children.Add(TextToolbar()); ribbon.Children.Add(StyleGallery()); } else ribbon.Children.Add(TextRibbonBody());
+        // V-20 (T-0692): in „Einfach“ genau eine Werkzeugzeile; Formatvorlagen-Kacheln und alles Weitere unter „Mehr …“ bzw. ab „Erweitert“
+        if (_txRibbon == "start") { ribbon.Children.Add(TextToolbar()); if (!TextOneRow) ribbon.Children.Add(StyleGallery()); } else ribbon.Children.Add(TextRibbonBody());
+        if (TextBlockTools() is { } blockTools) ribbon.Children.Add(blockTools);
         if (TextPromptBar() is { } prompt) ribbon.Children.Add(prompt);
         if (TextAiProposalCard() is { } proposal) ribbon.Children.Add(proposal); // 108-49: Vorschlag statt sofort ersetzen
         if (RecoveryBanner("text", TextDirty) is { } recovery) ribbon.Children.Add(recovery); // T-0254
+        if (ImportBanner("text") is { } import) ribbon.Children.Add(import); // T-0682
         Grid.SetRow(ribbon, 1); Grid.SetColumnSpan(ribbon, 2); g.Children.Add(ribbon);
         var more = TextMoreBar(); more.IsVisible = _txMore && _txRibbon == "start"; Grid.SetRow(more, 2); Grid.SetColumnSpan(more, 2); g.Children.Add(more);
         var page = TextPaper(); Grid.SetRow(page, 3); g.Children.Add(page);
         var side = TextSidePanel(); if (side is not null) { Grid.SetRow(side, 3); Grid.SetColumn(side, 1); g.Children.Add(side); }
-        var c = TextDocument.Count();
-        var status = new TextBlock { Name = "text-status", Foreground = Muted, FontSize = 11.5, Margin = new Thickness(4, 6, 0, 0), TextWrapping = TextWrapping.Wrap,
-            Text = $"{(TextPath is null ? "Noch nicht gespeichert" : Path.GetFileName(TextPath))}{(TextDirty ? " · geändert" : "")} · {c.Words} Wörter · {c.Characters} Zeichen · {c.Paragraphs} Absätze{(_txMsg.Length > 0 ? " · " + _txMsg : "")}" };
+        var status = _txStatus = new TextBlock { Name = "text-status", Foreground = Muted, FontSize = 11.5, Margin = new Thickness(4, 6, 0, 0), TextWrapping = TextWrapping.Wrap, Text = TextStatusText() };
         Grid.SetRow(status, 4); Grid.SetColumnSpan(status, 2); g.Children.Add(status);
         return g;
     }
@@ -160,16 +214,23 @@ public partial class MainWindow
     private Button TB(string name, string label, Action go, string tip, bool on = false, bool enabled = true)
     {
         var b = new Button { Name = name, Content = label, Focusable = false, Margin = new Thickness(0, 0, 4, 4), Padding = new Thickness(9, 4), MinWidth = 30, IsEnabled = enabled, HorizontalContentAlignment = HorizontalAlignment.Center };
-        if (on) b.Background = Accent;
+        if (on) { b.Background = Brush.Parse("#33C9A227"); b.BorderBrush = Accent; b.BorderThickness = new Thickness(1); } // eingeschaltet: goldener Rand – die eine goldene Fläche bleibt „Speichern“
         ToolTip.SetTip(b, tip); Avalonia.Automation.AutomationProperties.SetName(b, tip);
         b.Click += (_, _) => { go(); Show("text"); };
         return b;
     }
 
+    /// <summary>V-20 (T-0692): Stufe „Einfach“ zeigt genau eine Werkzeugzeile mit den wichtigsten Formaten; „Mehr …“ öffnet alles Weitere. Ab „Erweitert“ steht alles offen.</summary>
+    private bool TextOneRow => IsSimple && !_txMore;
+    /// <summary>In der einen Zeile nicht gezeigte Werkzeuge – sie stehen in der Leiste „Mehr …“.</summary>
+    private readonly List<Control> _txOverflow = [];
+
     private Control TextToolbar()
     {
-        var bar = new WrapPanel();
-        var p = CurPara();
+        var one = TextOneRow; _txOverflow.Clear();
+        var bar = new WrapPanel { Name = "text-toolbar" };
+        void Add(Control c, bool main) { if (main || !one) bar.Children.Add(c); else _txOverflow.Add(c); }
+        var p = CurBox(); var para = CurPara();
         var newBtn = new Button { Name = "text-new", Content = "Neu", Focusable = false, Margin = new Thickness(0, 0, 4, 4), Padding = new Thickness(9, 4) };
         ToolTip.SetTip(newBtn, "Neues Dokument oder Vorlage");
         var menu = new ContextMenu();
@@ -186,61 +247,82 @@ public partial class MainWindow
             {
                 var tmp = Path.Combine(Path.GetTempPath(), $"trendo-vorlage-{Guid.NewGuid():N}.docx");
                 using (var s = Avalonia.Platform.AssetLoader.Open(new Uri($"avares://TrendoOS/Assets/templates/{file}"))) using (var f = File.Create(tmp)) s.CopyTo(f);
-                TextDocument = TextFiles.Open(tmp); File.Delete(tmp); TextPath = null; TextDirty = false; TextFocusBlock = 0; _txUndo.Clear(); _txMsg = $"Vorlage „{label}“."; Show("text");
+                TextDocument = TextFiles.Open(tmp); File.Delete(tmp); TextPath = null; TextDirty = false; ImportGuardClear("text"); TextFocusBlock = 0; _txUndo.Clear(); _txMsg = $"Vorlage „{label}“."; Show("text");
             };
             menu.Items.Add(mi);
         }
         newBtn.ContextMenu = menu; newBtn.Click += (_, _) => menu.Open(newBtn);
+        var docActions = new StackPanel(); bar.Children.Add(docActions); // V-14 (T-0700): Platzhalter – Speichern · Rückgängig · Wiederholen ganz links
         bar.Children.Add(newBtn);
         var open = new Button { Name = "text-open", Content = "Öffnen …", Focusable = false, Margin = new Thickness(0, 0, 4, 4), Padding = new Thickness(9, 4) };
         open.Click += async (_, _) => { if (await PickText(false, "") is { } f) { try { TextOpen(f); } catch (Exception ex) when (ex is IOException or InvalidDataException or ArgumentException or System.Xml.XmlException) { _txMsg = "Öffnen ging nicht: " + Trendo.Core.FriendlyError.Say(ex); } } Show("text"); };
         bar.Children.Add(open);
         var save = new Button { Name = "text-save", Content = "Speichern", Focusable = false, Background = Accent, Margin = new Thickness(0, 0, 4, 4), Padding = new Thickness(9, 4) };
+        ToolTip.SetTip(save, "Speichern (Strg+S)");
         save.Click += (_, _) => { try { TextSaveAs(TextPath ?? DefaultTextName(".docx")); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _txMsg = "Nicht gespeichert: " + Trendo.Core.FriendlyError.Say(ex); } Show("text"); };
         bar.Children.Add(save);
-        bar.Children.Add(TB("text-pdf", "Als PDF", () => { try { var f = DefaultTextName(".pdf"); var n = TextPdf.Export(TextDocument, f); _txMsg = $"PDF gespeichert: {Path.GetFileName(f)} ({n} Seiten)"; _core.Audit.Append(Principal.LocalOwner.Name, "text.pdf", Path.GetFileName(f)); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException) { _txMsg = "PDF ging nicht: " + Trendo.Core.FriendlyError.Say(ex); } }, "Als PDF speichern"));
-        bar.Children.Add(TB("text-print", "Drucken", TextPrint, "Drucken (über PDF)"));
+        {
+            Add(TB("text-pdf", "Als PDF", () => { try { var f = DefaultTextName(".pdf"); var n = TextPdf.Export(TextDocument, f); _txMsg = $"PDF gespeichert: {Path.GetFileName(f)} ({n} Seiten)"; _core.Audit.Append(Principal.LocalOwner.Name, "text.pdf", Path.GetFileName(f)); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException) { _txMsg = "PDF ging nicht: " + Trendo.Core.FriendlyError.Say(ex); } }, "Als PDF speichern – dieselben Seiten wie am Bildschirm"), false);
+            Add(TB("text-print", "Drucken", TextPrint, "Drucken (über PDF)"), false);
+        }
         bar.Children.Add(new Border { Width = 10 });
-        bar.Children.Add(TB("text-undo", "↶", TextUndo, "Rückgängig (Strg+Z)", enabled: _txUndo.Count > 0));
-        bar.Children.Add(TB("text-redo", "↷", TextRedo, "Wiederholen (Strg+Y)", enabled: _txRedo.Count > 0));
-        bar.Children.Add(new Border { Width = 10 });
-        var style = new ComboBox { Name = "text-style", Focusable = false, Width = 140, Margin = new Thickness(0, 0, 4, 4), IsEnabled = p is not null };
+        // V-14 (T-0700): gemeinsamer Platz für Speichern · Rückgängig · Wiederholen (wie im Menüband der Programm-Hülle)
+        bar.Children[bar.Children.IndexOf(docActions)] = DocActions(save, TB("text-undo", "↶", TextUndo, "Rückgängig (Strg+Z)", enabled: _txUndo.Count > 0), TB("text-redo", "↷", TextRedo, "Wiederholen (Strg+Y)", enabled: _txRedo.Count > 0));
+        var style = new ComboBox { Name = "text-style", Focusable = false, Width = 140, Margin = new Thickness(0, 0, 4, 4), IsEnabled = para is not null };
         foreach (var s in Enum.GetValues<ParaStyle>()) style.Items.Add(TextDoc.StyleName(s));
-        style.SelectedIndex = p is null ? 0 : (int)p.Style;
-        style.SelectionChanged += (_, _) => { if (CurPara() is { } cp && style.SelectedIndex >= 0 && (int)cp.Style != style.SelectedIndex) { Snapshot(); cp.Style = (ParaStyle)style.SelectedIndex; Changed(); Show("text"); } };
+        style.SelectedIndex = para is null ? 0 : (int)para.Style;
+        style.SelectionChanged += (_, _) => { if (CurPara() is { } cp && style.SelectedIndex >= 0 && (int)cp.Style != style.SelectedIndex) { var st = (ParaStyle)style.SelectedIndex; TextEachPara(x => x.Style = st); Show("text"); } };
         ToolTip.SetTip(style, "Absatzart: Titel, Überschriften, Text, Zitat");
         bar.Children.Add(style);
-        foreach (var look in TextLookItems()) bar.Children.Add(look); // Pilot 0.9.47: Schriftart, Größe, Farbe, Hervorhebung, Zeilen- und Absatzabstand
-        bool Has(Fmt f) => p is not null && TextDoc.Has(p, _txSel, _txSelLen, f);
-        bar.Children.Add(TB("text-bold", "F", () => TextToggle(Fmt.Bold), "Fett (Strg+B)", Has(Fmt.Bold)));
-        bar.Children.Add(TB("text-italic", "K", () => TextToggle(Fmt.Italic), "Kursiv (Strg+I)", Has(Fmt.Italic)));
-        bar.Children.Add(TB("text-underline", "U", () => TextToggle(Fmt.Underline), "Unterstrichen (Strg+U)", Has(Fmt.Underline)));
-        bar.Children.Add(TB("text-bullets", "• Liste", () => SetList(ListKind.Bullet), "Aufzählung", p?.List == ListKind.Bullet));
-        bar.Children.Add(TB("text-numbers", "1. Liste", () => SetList(ListKind.Number), "Nummerierung", p?.List == ListKind.Number));
-        // F3: mehrstufige Liste (auch Tab / Umschalt+Tab) und Formatierung löschen
-        bar.Children.Add(TB("text-list-out", "⇤", () => TextListLevel(-1), "Listenebene höher (Umschalt+Tab)", enabled: p is { List: not ListKind.None, ListLevel: > 0 }));
-        bar.Children.Add(TB("text-list-in", "⇥", () => TextListLevel(1), "Listenebene tiefer (Tab) – 1. → a) → i. bzw. • → →", enabled: p is { List: not ListKind.None } && p.ListLevel < TextTools.MaxListLevel));
-        bar.Children.Add(TB("text-clear-format", "A", TextClearFormat, "Formatierung löschen – Markiertes bzw. ganzen Absatz wieder schlicht (Links, Kommentare und Liste bleiben)", enabled: p is not null));
-        foreach (var (a, label, tip) in new[] { (Align.Left, "⯇", "Linksbündig"), (Align.Center, "≡", "Zentriert"), (Align.Right, "⯈", "Rechtsbündig"), (Align.Justify, "☰", "Blocksatz") })
-            bar.Children.Add(TB("text-align-" + a.ToString().ToLowerInvariant(), label, () => { if (CurPara() is { } cp) { Snapshot(); cp.Align = a; Changed(); } }, tip, p?.Align == a));
+        // Pilot 0.9.47: Schriftart, Größe, Farbe, Hervorhebung, Zeilen- und Absatzabstand – in der einen Zeile nur Größe und Farbe
+        var look = TextLookItems().ToList();
+        foreach (var item in look) Add(item, item.Name is "text-size" or "text-color");
+        bar.Children.Add(TB("text-bold", "F", () => TextToggle(Fmt.Bold), "Fett (Strg+B)", TextIsOn(Fmt.Bold), p is not null));
+        bar.Children.Add(TB("text-italic", "K", () => TextToggle(Fmt.Italic), "Kursiv (Strg+I)", TextIsOn(Fmt.Italic), p is not null));
+        bar.Children.Add(TB("text-underline", "U", () => TextToggle(Fmt.Underline), "Unterstrichen (Strg+U)", TextIsOn(Fmt.Underline), p is not null));
+        bar.Children.Add(TB("text-bullets", "• Liste", () => SetList(ListKind.Bullet), "Aufzählung", para?.List == ListKind.Bullet, para is not null));
+        bar.Children.Add(TB("text-numbers", "1. Liste", () => SetList(ListKind.Number), "Nummerierung", para?.List == ListKind.Number, para is not null));
+        {
+            // F3: mehrstufige Liste (auch Tab / Umschalt+Tab) und Formatierung löschen
+            Add(TB("text-list-out", "⇤", () => TextListLevel(-1), "Listenebene höher (Umschalt+Tab)", enabled: para is { List: not ListKind.None, ListLevel: > 0 }), false);
+            Add(TB("text-list-in", "⇥", () => TextListLevel(1), "Listenebene tiefer (Tab) – 1. → a) → i. bzw. • → →", enabled: para is { List: not ListKind.None } && para.ListLevel < TextTools.MaxListLevel), false);
+            Add(TB("text-clear-format", "A", TextClearFormat, "Formatierung löschen – Markiertes bzw. ganzen Absatz wieder schlicht (Links, Kommentare und Liste bleiben)", enabled: p is not null), false);
+        }
+        // T-0700: Ausrichtung mit Ausrichtungs-Symbolen statt Dreiecken („▶ Rechtsbündig“ sah aus wie Abspielen)
+        foreach (var (a, kind, tip) in new[] { (Align.Left, "links", "Linksbündig"), (Align.Center, "mitte", "Zentriert"), (Align.Right, "rechts", "Rechtsbündig"), (Align.Justify, "block", "Blocksatz") })
+        {
+            var ab = TB("text-align-" + a.ToString().ToLowerInvariant(), "", () => TextEachPara(x => x.Align = a), tip, p?.Align == a, p is not null);
+            ab.Content = GlyphIcons.AlignIcon(kind, ab);
+            Add(ab, a != Align.Justify);
+        }
         bar.Children.Add(new Border { Width = 10 });
-        bar.Children.Add(TB("text-find", "Suchen", () => _txFind = !_txFind, "Suchen und Ersetzen (Strg+F)", _txFind));
-        bar.Children.Add(TB("text-assist", "Schreibhilfe", () => _txAssistOn = !_txAssistOn, "Trendo schlägt Verbesserungen vor – du sagst Ja oder Nein", _txAssistOn));
-        bar.Children.Add(TB("text-spell", "Rechtschreibung", () => { _txSpellOn = !_txSpellOn; if (_txSpellOn) RunSpelling(); else _txMistakes = []; }, "Rechtschreibung prüfen", _txSpellOn));
-        bar.Children.Add(TB("text-more", _txMore ? "Weniger" : "Mehr …", () => _txMore = !_txMore, "Alle weiteren Funktionen"));
+        {
+            Add(TB("text-find", "Suchen", () => _txFind = !_txFind, "Suchen und Ersetzen (Strg+F)", _txFind), false);
+            Add(TB("text-assist", "Schreibhilfe", () => _txAssistOn = !_txAssistOn, "Trendo schlägt Verbesserungen vor – du sagst Ja oder Nein", _txAssistOn), false);
+            Add(TB("text-spell", "Rechtschreibung", () => { _txSpellOn = !_txSpellOn; if (_txSpellOn) RunSpelling(); else _txMistakes = []; }, "Rechtschreibung prüfen", _txSpellOn), false);
+        }
+        if (one) _txOverflow.Add(TextPainterButton()); // „Format übertragen“ steht sonst in der Vorlagen-Galerie
+        bar.Children.Add(TB("text-more", _txMore ? "Weniger" : "Mehr …", () => _txMore = !_txMore, one ? "Alle weiteren Werkzeuge: PDF, Drucken, Schriftart, Suchen, Rechtschreibung, Tabelle, Bild …" : "Alle weiteren Funktionen"));
         return bar;
     }
 
     /// <summary>F3: Listenebene des aktuellen Absatzes ändern.</summary>
     public void TextListLevel(int delta) { if (CurPara() is not { } p || p.List == ListKind.None) return; var before = TextDocument.Copy(); if (TextTools.ChangeListLevel(p, delta)) { _txUndo.Add(before); _txRedo.Clear(); Changed(); } }
     /// <summary>F3: Formatierung löschen – Markierung, sonst der ganze Absatz.</summary>
-    public void TextClearFormat() { if (CurPara() is not { } p) return; Snapshot(); TextTools.ClearFormat(p, _txSel, _txSelLen); Changed(); }
+    public void TextClearFormat()
+    {
+        var v = _txView;
+        if (v.HasSelection && !v.Anchor.SameBox(v.Caret)) { Snapshot(); TextEdit.Apply(TextDocument, v.Anchor, v.Caret, (p, s, l) => { if (l > 0) TextTools.ClearFormat(p, s, l); }); Changed(); return; }
+        if (CurBox() is not { } cp) return;
+        Snapshot(); TextTools.ClearFormat(cp, _txSel, _txSelLen); TextEdit.Commit(TextDocument, v.Caret, cp); Changed();
+    }
 
-    private void SetList(ListKind k) { if (CurPara() is not { } p) return; Snapshot(); p.List = p.List == k ? ListKind.None : k; Changed(); }
+    private void SetList(ListKind k) { if (CurPara() is not { } p) return; var to = p.List == k ? ListKind.None : k; TextEachPara(x => x.List = to); }
 
     private Control TextMoreBar()
     {
         var bar = new WrapPanel { IsVisible = _txMore, Name = "text-more-bar" };
+        foreach (var over in _txOverflow) bar.Children.Add(over); // V-20: was in „Einfach“ nicht in der einen Zeile steht
         var p = CurPara();
         var saveAs = new Button { Name = "text-saveas", Content = "Speichern unter …", Focusable = false, Margin = new Thickness(0, 0, 4, 4), Padding = new Thickness(9, 4) };
         saveAs.Click += async (_, _) => { if (await PickText(true, Path.GetFileName(TextPath ?? DefaultTextName(".docx"))) is { } f) { try { TextSaveAs(f); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException) { _txMsg = "Nicht gespeichert: " + Trendo.Core.FriendlyError.Say(ex); } } Show("text"); };
@@ -253,11 +335,11 @@ public partial class MainWindow
             for (var i = 0; i < recent.Count; i++) { var f = recent[i]; var mi = new MenuItem { Header = Path.GetFileName(f), Name = "text-recent-" + i }; mi.Click += (_, _) => { TextOpen(f); Show("text"); }; m.Items.Add(mi); }
             rb.ContextMenu = m; rb.Click += (_, _) => m.Open(rb); bar.Children.Add(rb);
         }
-        bar.Children.Add(TB("text-cut", "Ausschneiden", () => _txActive?.Cut(), "Ausschneiden (Strg+X)"));
-        bar.Children.Add(TB("text-copy", "Kopieren", () => _txActive?.Copy(), "Kopieren (Strg+C)"));
-        bar.Children.Add(TB("text-paste", "Einfügen", () => _txActive?.Paste(), "Einfügen ohne Formatierung (Strg+V)"));
-        bar.Children.Add(TB("text-selectall", "Alles markieren", () => { if (CurPara() is { } cp) TextSelect(TextFocusBlock, 0, cp.Text.Length); }, "Ganzen Absatz markieren"));
-        bool Has(Fmt f) => p is not null && TextDoc.Has(p, _txSel, _txSelLen, f);
+        bar.Children.Add(TB("text-cut", "Ausschneiden", () => _txView.Cut(), "Ausschneiden (Strg+X)"));
+        bar.Children.Add(TB("text-copy", "Kopieren", () => _txView.Copy(), "Kopieren (Strg+C)"));
+        bar.Children.Add(TB("text-paste", "Einfügen", () => _txView.Paste(), "Einfügen (Strg+V) – aus Trendo Text mit Format, von außen als reiner Text"));
+        bar.Children.Add(TB("text-selectall", "Alles markieren", () => _txView.SelectAll(), "Das ganze Dokument markieren (Strg+A)"));
+        bool Has(Fmt f) => TextIsOn(f);
         bar.Children.Add(TB("text-strike", "Durchgestrichen", () => TextToggle(Fmt.Strike), "Durchgestrichen", Has(Fmt.Strike)));
         bar.Children.Add(TB("text-super", "x²", () => TextToggle(Fmt.Super), "Hochgestellt", Has(Fmt.Super)));
         bar.Children.Add(TB("text-sub", "x₂", () => TextToggle(Fmt.Sub), "Tiefgestellt", Has(Fmt.Sub)));
@@ -317,278 +399,170 @@ public partial class MainWindow
     }
 
     // ---------- Seite ----------
+    private TextPageView? _txViewField; private ScrollViewer? _txScrollView; private TextBlock? _txStatus;
+    private string _txLastKind = "", _txBarSig = ""; private DateTime _txLastEdit; private TextPos _txLastCaret;
+    private Avalonia.Threading.DispatcherTimer? _txLater;
+
+    /// <summary>T-0692: Das Schreibfeld – ein Steuerelement über das ganze Dokument. Es bleibt über alle Neuaufbauten der Seite dasselbe (Cursor, Auswahl und Rollstand bleiben).</summary>
+    public TextPageView TextView => _txViewField ??= NewTextView();
+    private TextPageView _txView => TextView;
+
+    private TextPageView NewTextView()
+    {
+        var v = new TextPageView { Name = "text-edit", DocSource = () => TextDocument };
+        v.Changing += kind =>
+        {
+            // Tippen und Löschen am Stück ergeben einen Rückgängig-Schritt; alles andere je einen
+            var run = kind is "tippen" or "rueck" or "entf" && kind == _txLastKind && v.Caret == _txLastCaret && !v.HasSelection && (DateTime.UtcNow - _txLastEdit).TotalSeconds < 2 && _txUndo.Count > 0;
+            if (!run) Snapshot();
+            _txLastKind = kind;
+        };
+        v.Changed += () => { TextDirty = true; _txLastEdit = DateTime.UtcNow; _txLastCaret = v.Caret; TextStatusNow(); TextLater(); };
+        v.Moved += () => { TextStatusNow(); TextLater(); };
+        v.Shortcut = TextShortcut;
+        v.MenuWanted += () => v.ContextMenu = TextParaMenu(TextFocusBlock);
+        v.Mistakes = () => _txMistakes.Select(m => (m.Block, m.Start, m.Length));
+        return v;
+    }
+
+    /// <summary>Tastenkürzel aus dem Schreibfeld, die das Programm ausführt.</summary>
+    private bool TextShortcut(Key key, KeyModifiers mods)
+    {
+        var ctrl = mods.HasFlag(KeyModifiers.Control) || mods.HasFlag(KeyModifiers.Meta);
+        if (key == Key.Tab)
+        {
+            if (ctrl || _txView.Caret.InCell || CurPara() is not { List: not ListKind.None }) return false;
+            TextListLevel(mods.HasFlag(KeyModifiers.Shift) ? -1 : 1); Show("text"); return true;
+        }
+        if (!ctrl) return false;
+        var f = key switch { Key.B => Fmt.Bold, Key.I => Fmt.Italic, Key.U => Fmt.Underline, _ => Fmt.None };
+        if (f != Fmt.None) TextToggle(f);
+        else if (key == Key.Z) TextUndo();
+        else if (key == Key.Y) TextRedo();
+        else if (key == Key.F) _txFind = true;
+        else if (key == Key.S) { try { TextSaveAs(TextPath ?? DefaultTextName(".docx")); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _txMsg = "Nicht gespeichert: " + Trendo.Core.FriendlyError.Say(ex); } }
+        else return false;
+        Show("text"); return true;
+    }
+
+    private string TextStatusText()
+    {
+        var c = TextDocument.Count();
+        return $"{(TextPath is null ? "Noch nicht gespeichert" : Path.GetFileName(TextPath))}{(TextDirty ? " · geändert" : "")} · Seite {_txView.CaretPage} von {_txView.PageCount} · {c.Words} Wörter · {c.Characters} Zeichen · {c.Paragraphs} Absätze{(_txMsg.Length > 0 ? " · " + _txMsg : "")}";
+    }
+
+    private void TextStatusNow() { if (_txStatus is { } s && s.IsAttachedToVisualTree()) s.Text = TextStatusText(); }
+
+    /// <summary>Was die Werkzeugzeile gerade anzeigt (Absatzart, Fett an/aus, Rückgängig möglich …) – ändert es sich, wird die Zeile neu gezeichnet.</summary>
+    private string TextBarSignature()
+    {
+        var v = _txView; var p = TextEdit.ParaAt(TextDocument, v.Caret);
+        var at = p is null ? 0 : Math.Clamp(v.Caret.Offset - 1, 0, Math.Max(0, p.Text.Length - 1));
+        return $"{TextDocument.Blocks.ElementAtOrDefault(v.Caret.Block)?.GetType().Name}|{v.Caret.InCell}|{p?.Style}|{p?.Align}|{p?.List}|{p?.ListLevel}|{p?.LineSpacing}|{TextIsOn(Fmt.Bold)}{TextIsOn(Fmt.Italic)}{TextIsOn(Fmt.Underline)}|{(p is null || p.Text.Length == 0 ? "" : TextDoc.InkAt(p, at, MarkKind.Font) + "/" + p.At(at).Size + "/" + TextDoc.InkAt(p, at, MarkKind.Color))}|{_txUndo.Count > 0}{_txRedo.Count > 0}";
+    }
+
+    /// <summary>Kurz nach dem letzten Tastendruck: Rechtschreibung nachziehen und die Werkzeugzeile auffrischen, wenn sie etwas anderes zeigen müsste.</summary>
+    private void TextLater()
+    {
+        _txLater ??= NewTextLater();
+        _txLater.Stop(); _txLater.Start();
+    }
+
+    private Avalonia.Threading.DispatcherTimer NewTextLater()
+    {
+        var t = new Avalonia.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(260) };
+        t.Tick += (_, _) =>
+        {
+            t.Stop();
+            if (CurrentView != "text") return;
+            if (_txSpellOn && TextDirty) { RunSpelling(); _txView.InvalidateVisual(); }
+            if (TextBarSignature() != _txBarSig && _txPrompt is null) Show("text");
+        };
+        return t;
+    }
+
     private Control TextPaper()
     {
-        var page = new StackPanel { Name = "text-paper", Spacing = 2 };
-        var labels = TextTools.ListLabels(TextDocument); // F3: mehrstufige Listen
+        var v = _txView;
+        v.Zoom = _txZoom; v.Refresh(); v.ClampSelection();
+        v.ContextMenu = TextParaMenu(TextFocusBlock);
         _txFootNos = TextTools.NoteNumbers(TextDocument, MarkKind.Footnote); _txEndNos = TextTools.NoteNumbers(TextDocument, MarkKind.Endnote);
-        for (var i = 0; i < TextDocument.Blocks.Count; i++)
+        _txScrollView ??= new ScrollViewer { Name = "text-scroll", Content = v, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto };
+        if (_txScrollView.Parent is Panel old) old.Children.Remove(_txScrollView);
+        _txBarSig = TextBarSignature();
+        if (_txPrompt is null) _ui.Post(() => { if (v.IsAttachedToVisualTree() && CurrentView == "text") v.Focus(); });
+        return _txScrollView;
+    }
+
+    private void FocusPara(int index, int caret) { TextSelect(index, Math.Max(0, Math.Min(caret, (TextDocument.Blocks.ElementAtOrDefault(index) as Para)?.Text.Length ?? 0))); Show("text"); }
+
+    /// <summary>Cursor in eine Tabellenzelle setzen (wie Hineinklicken) – öffentlich für Tests und Claude.</summary>
+    public void TextSelectCell(int block, int row, int col, int start = 0, int length = 0)
+    {
+        _txView.Refresh();
+        _txView.Select(new TextPos(block, start, row, col), new TextPos(block, start + length, row, col));
+    }
+
+    /// <summary>Die Zelle am Cursor mit Nachbarn verbinden: <paramref name="right"/> Spalten nach rechts und <paramref name="down"/> Zeilen nach unten dazu.</summary>
+    public bool TextMergeCells(int right, int down)
+    {
+        var c = _txView.Caret;
+        if (!c.InCell || TextDocument.Blocks[c.Block] is not Table t) { _txMsg = "Erst in eine Tabellenzelle klicken."; return false; }
+        var (cs, rs) = t.SpanOf(c.Row, c.Col);
+        var before = TextDocument.Copy();
+        // der Nachbar kann selbst schon verbunden sein: dann wird er ganz mitgenommen
+        var addC = 0; for (var k = 0; k < right && c.Col + cs + addC < t.Cols; k++) addC += t.SpanOf(c.Row, c.Col + cs + addC).ColSpan;
+        var addR = 0; for (var k = 0; k < down && c.Row + rs + addR < t.Rows.Count; k++) addR += t.SpanOf(c.Row + rs + addR, c.Col).RowSpan;
+        if (addC == 0 && addR == 0 || !t.Merge(c.Row, c.Col, cs + addC, rs + addR)) { _txMsg = "Das geht hier nicht – daneben ist keine Zelle frei oder sie ist anders verbunden."; return false; }
+        _txUndo.Add(before); _txRedo.Clear(); Changed(); _txView.Refresh(); TextSelectCell(c.Block, c.Row, c.Col, 0);
+        _txMsg = "Zellen verbunden."; return true;
+    }
+
+    /// <summary>Verbundene Zelle am Cursor wieder teilen.</summary>
+    public bool TextUnmergeCell()
+    {
+        var c = _txView.Caret;
+        if (!c.InCell || TextDocument.Blocks[c.Block] is not Table t) return false;
+        var before = TextDocument.Copy();
+        if (!t.Unmerge(c.Row, c.Col)) { _txMsg = "Diese Zelle ist nicht verbunden."; return false; }
+        _txUndo.Add(before); _txRedo.Clear(); Changed(); _txMsg = "Verbindung gelöst."; return true;
+    }
+
+    /// <summary>Werkzeuge zum Baustein am Cursor: Tabelle (Zeilen, Spalten, Zellen verbinden), Bild (Größe, Beschriftung), Seitenumbruch und Verzeichnis (entfernen).</summary>
+    private Control? TextBlockTools()
+    {
+        var index = TextFocusBlock; if (index < 0 || index >= TextDocument.Blocks.Count) return null;
+        var row = new WrapPanel { Name = "text-block-tools" };
+        void Label(string s) => row.Children.Add(new TextBlock { Text = s, Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(2, 0, 8, 4) });
+        Button Delete(string what) => TB("text-block-delete-" + index, "✕ " + what, () => { Snapshot(); TextDocument.Blocks.RemoveAt(index); if (TextDocument.Blocks.Count == 0) TextDocument.Blocks.Add(new Para()); TextFocusBlock = Math.Clamp(index - 1, 0, TextDocument.Blocks.Count - 1); Changed(); }, "Entfernen");
+        switch (TextDocument.Blocks[index])
         {
-            var b = TextDocument.Blocks[i]; var index = i;
-            page.Children.Add(b switch
-            {
-                Para p => ParaControl(p, index, labels[index] ?? ""),
-                Table t => TableControl(t, index),
-                Picture pic => PictureControl(pic, index),
-                PageBreak => BreakControl(index),
-                TocBlock toc => TocControl(toc, index),
-                _ => new Border(),
-            });
-        }
-        // Blatt wie eingerichtet: Breite nach Hoch/Quer, Ränder in cm (33,3 Bildpunkte je cm), Kopf-/Fußzeile, Wasserzeichen, Seitenrand
-        var pg = TextDocument.Page; const double PxCm = 700 / 21.0;
-        var sheet = new Grid { RowDefinitions = new RowDefinitions("Auto,*,Auto") };
-        if (pg.Header.Length > 0) sheet.Children.Add(new TextBlock { Name = "text-header-view", Text = pg.Header, Foreground = Brush.Parse("#7A8591"), FontSize = 11, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 0, 0, 10) });
-        Grid.SetRow(page, 1); sheet.Children.Add(page);
-        var foot = (pg.Footer.Length > 0 ? pg.Footer : "") + (pg.PageNumbers ? (pg.Footer.Length > 0 ? "   ·   " : "") + "Seite 1 von …" : "");
-        if (foot.Length > 0) { var ft = new TextBlock { Name = "text-footer-view", Text = foot, Foreground = Brush.Parse("#7A8591"), FontSize = 11, Margin = new Thickness(0, 14, 0, 0) }; Grid.SetRow(ft, 2); sheet.Children.Add(ft); }
-        var layers = new Panel();
-        if (pg.Watermark.Length > 0)
-            layers.Children.Add(new TextBlock { Name = "text-watermark-view", Text = pg.Watermark, FontSize = 96, FontWeight = FontWeight.Bold, Foreground = new SolidColorBrush(Color.FromArgb(34, 128, 128, 128)), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0, 260, 0, 0), RenderTransform = new RotateTransform(-35), IsHitTestVisible = false });
-        layers.Children.Add(sheet);
-        var paper = new Border { Name = "text-sheet", Background = Brushes.White, Width = (pg.Landscape ? 29.7 : 21) * PxCm, Padding = new Thickness(pg.Left * PxCm, pg.Top * PxCm * 0.75, pg.Right * PxCm, pg.Bottom * PxCm * 0.75), Margin = new Thickness(0, 4, 8, 8), HorizontalAlignment = HorizontalAlignment.Center,
-            BoxShadow = BoxShadows.Parse("0 6 24 0 #66000000"), Child = layers, MinHeight = (pg.Landscape ? 21 : 29.7) * PxCm * 0.98,
-            BorderBrush = pg.PageBorder ? Brush.Parse("#808080") : null, BorderThickness = new Thickness(pg.PageBorder ? 1 : 0) };
-        var zoomed = new LayoutTransformControl { LayoutTransform = new ScaleTransform(_txZoom, _txZoom), Child = paper };
-        return new ScrollViewer { Name = "text-scroll", Content = zoomed, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto };
-    }
-
-    private static readonly IBrush Ink = new SolidColorBrush(Color.Parse("#1A1A1A"));
-    /// <summary>Farbe der Absatzart; Titel und Überschriften in der Farbe des Designs (W3).</summary>
-    private IBrush StyleBrush(ParaStyle s) => s switch
-    {
-        ParaStyle.Title or ParaStyle.Heading1 or ParaStyle.Heading2 or ParaStyle.Heading3 => Brush.Parse(TextDocument.Page.HeadingColor), ParaStyle.Subtitle => Brush.Parse("#595959"), ParaStyle.Quote => Brush.Parse("#404040"), _ => Ink,
-    };
-
-    /// <summary>Eingabefelder auf dem weißen Blatt: das dunkle Design färbt sie sonst beim Bearbeiten schwarz.</summary>
-    private static void PaperBox(TextBox tb, IBrush background)
-    {
-        foreach (var k in new[] { "TextControlBackground", "TextControlBackgroundPointerOver", "TextControlBackgroundFocused" }) tb.Resources[k] = background;
-        foreach (var k in new[] { "TextControlForeground", "TextControlForegroundPointerOver", "TextControlForegroundFocused" }) tb.Resources[k] = tb.Foreground ?? Ink;
-        tb.Resources["TextControlBorderBrushFocused"] = Brush.Parse("#C9A227");
-        tb.Resources["TextControlBorderBrushPointerOver"] = Brush.Parse("#7FA7E0");
-        tb.Resources["TextControlSelectionHighlightColor"] = Brush.Parse("#66C9A227");
-    }
-
-    private static TextAlignment ToAlign(Align a) => a switch { Align.Center => TextAlignment.Center, Align.Right => TextAlignment.Right, Align.Justify => TextAlignment.Justify, _ => TextAlignment.Left };
-
-    private Control ParaControl(Para p, int index, string label)
-    {
-        var size = TextDoc.StyleSize(p.Style) * 1.33; // Punkt → Bildschirm
-        var bold = p.Style is ParaStyle.Title or ParaStyle.Heading1 or ParaStyle.Heading2 or ParaStyle.Heading3;
-        Control body;
-        if (index == TextFocusBlock)
-        {
-            var tb = new TextBox
-            {
-                Name = "text-edit", Text = p.Text, FontSize = size, FontWeight = bold ? FontWeight.Bold : FontWeight.Normal, FontStyle = p.Style == ParaStyle.Quote ? FontStyle.Italic : FontStyle.Normal,
-                Foreground = StyleBrush(p.Style), Background = Brush.Parse("#0FC9A227"), BorderThickness = new Thickness(0, 0, 0, 1), BorderBrush = Brush.Parse("#55C9A227"),
-                TextWrapping = TextWrapping.Wrap, AcceptsReturn = false, TextAlignment = ToAlign(p.Align), Padding = new Thickness(2, 1), MinHeight = 0, FontFamily = new FontFamily("Arial"),
-                CaretBrush = Ink, SelectionBrush = Brush.Parse("#66C9A227"),
-            };
-            PaperBox(tb, Brush.Parse("#F2F6FC"));
-            if (TextDoc.InkAt(p, 0, MarkKind.Font) is { } tf) tb.FontFamily = new FontFamily(tf);
-            if (p.LineSpacing is { } tls) tb.LineHeight = size * 1.2 * tls;
-            tb.ContextFlyout = null; tb.ContextMenu = TextParaMenu(index); // eigenes Menü statt nur Ausschneiden/Kopieren/Einfügen
-            Avalonia.Automation.AutomationProperties.SetName(tb, "Absatz bearbeiten");
-            _txActive = tb;
-            tb.TextChanged += (_, _) =>
-            {
-                if (tb.Text == p.Text) return;
-                if (!TextDirty || _txUndo.Count == 0 || _txUndo[^1].Blocks.Count != TextDocument.Blocks.Count) Snapshot();
-                TextDoc.EditText(p, tb.Text ?? ""); TextDirty = true;
-            };
-            var ready = false; // erst nach dem Wiederherstellen der Auswahl mitschreiben – sonst setzt das neue Feld sie auf 0
-            void Track() { if (!ready || _txActive != tb) return; var a = Math.Min(tb.SelectionStart, tb.SelectionEnd); var e = Math.Max(tb.SelectionStart, tb.SelectionEnd); _txSel = a; _txSelLen = e - a; if (e == a) _txSel = tb.CaretIndex; }
-            tb.PropertyChanged += (_, e) => { if (e.Property == TextBox.SelectionStartProperty || e.Property == TextBox.SelectionEndProperty || e.Property == TextBox.CaretIndexProperty) Track(); };
-            tb.KeyDown += (_, e) =>
-            {
-                if (e.Key == Key.Tab && p.List != ListKind.None) { e.Handled = true; Track(); TextListLevel(e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? -1 : 1); Show("text"); }
-                else if (e.Key == Key.Enter) { e.Handled = true; Snapshot(); TextDocument.SplitAt(index, tb.CaretIndex); TextFocusBlock = index + 1; _txSel = _txSelLen = 0; Changed(); Show("text"); }
-                else if (e.Key == Key.Back && tb.CaretIndex == 0 && tb.SelectionStart == tb.SelectionEnd && index > 0)
-                {
-                    Snapshot(); var at = TextDocument.MergeWithPrevious(index);
-                    if (at >= 0) { e.Handled = true; TextFocusBlock = TextDocument.Blocks[index - 1] is Para ? index - 1 : Math.Max(0, index - 1); _txSel = at; _txSelLen = 0; Changed(); Show("text"); }
-                }
-                else if (e.Key == Key.Up && tb.CaretIndex == 0 && index > 0) { e.Handled = true; FocusPara(index - 1, int.MaxValue); }
-                else if (e.Key == Key.Down && tb.CaretIndex >= (tb.Text?.Length ?? 0) && index + 1 < TextDocument.Blocks.Count) { e.Handled = true; FocusPara(index + 1, 0); }
-                else if (e.KeyModifiers.HasFlag(KeyModifiers.Control))
-                {
-                    Track();
-                    var f = e.Key switch { Key.B => Fmt.Bold, Key.I => Fmt.Italic, Key.U => Fmt.Underline, _ => Fmt.None };
-                    if (f != Fmt.None) { e.Handled = true; TextToggle(f); Show("text"); }
-                    else if (e.Key == Key.Z) { e.Handled = true; TextUndo(); Show("text"); }
-                    else if (e.Key == Key.Y) { e.Handled = true; TextRedo(); Show("text"); }
-                    else if (e.Key == Key.F) { e.Handled = true; _txFind = true; Show("text"); }
-                    else if (e.Key == Key.S) { e.Handled = true; TextSaveAs(TextPath ?? DefaultTextName(".docx")); Show("text"); }
-                }
-            };
-            tb.AttachedToVisualTree += (_, _) => _ui.Post(() =>
-            {
-                tb.Focus();
-                var s = Math.Clamp(_txSel, 0, tb.Text?.Length ?? 0); var l = Math.Clamp(_txSelLen, 0, (tb.Text?.Length ?? 0) - s);
-                tb.SelectionStart = s; tb.SelectionEnd = s + l; tb.CaretIndex = s + l;
-                ready = true;
-            });
-            body = tb;
-        }
-        else
-        {
-            var view = new TextBlock { Name = "text-para-" + index, FontSize = size, FontWeight = bold ? FontWeight.Bold : FontWeight.Normal, FontStyle = p.Style == ParaStyle.Quote ? FontStyle.Italic : FontStyle.Normal,
-                Foreground = StyleBrush(p.Style), TextWrapping = TextWrapping.Wrap, TextAlignment = ToAlign(p.Align), Padding = new Thickness(2, 1), FontFamily = new FontFamily("Arial"), MinHeight = size * 1.2, Background = Brushes.Transparent, Cursor = new Cursor(StandardCursorType.Ibeam) };
-            var errors = _txMistakes.Where(m => m.Block == index).ToList();
-            var pos = 0;
-            foreach (var (t, f, sz) in p.Runs())
-            {
-                // Abschnitt an Fehlergrenzen teilen, Fehler rot unterstreichen
-                var cuts = new SortedSet<int> { 0, t.Length };
-                foreach (var m in errors) { cuts.Add(Math.Clamp(m.Start - pos, 0, t.Length)); cuts.Add(Math.Clamp(m.Start + m.Length - pos, 0, t.Length)); }
-                foreach (var m in p.Marks) { cuts.Add(Math.Clamp(m.Start - pos, 0, t.Length)); cuts.Add(Math.Clamp(m.End - pos, 0, t.Length)); }
-                var list = cuts.ToList();
-                for (var k = 0; k + 1 < list.Count; k++)
-                {
-                    var a = list[k]; var e2 = list[k + 1]; if (e2 <= a) continue;
-                    var wrong = errors.Any(m => pos + a >= m.Start && pos + a < m.Start + m.Length);
-                    if (a == 0 && pos == 0) AddNotes(view, p, index, 0);
-                    var run = new Run(t[a..e2]);
-                    bool In(MarkKind k) => p.Marks.Any(m => m.Kind == k && m.Length > 0 && pos + a >= m.Start && pos + a < m.End);
-                    var isLink = In(MarkKind.Link); var ins = In(MarkKind.Insert); var del = In(MarkKind.Delete);
-                    TextApplyInk(run, p, pos + a);
-                    if (In(MarkKind.Comment)) run.Background = Brush.Parse("#66FFE680");
-                    if (isLink) run.Foreground = Brush.Parse("#0563C1"); if (ins) run.Foreground = Brush.Parse("#15803D"); if (del) run.Foreground = Brush.Parse("#B91C1C");
-                    if (f.HasFlag(Fmt.Bold)) run.FontWeight = FontWeight.Bold;
-                    if (f.HasFlag(Fmt.Italic)) run.FontStyle = FontStyle.Italic;
-                    if (sz is { } s2) run.FontSize = s2 * 1.33;
-                    if (f.HasFlag(Fmt.Super) || f.HasFlag(Fmt.Sub)) { run.FontSize = (sz ?? TextDoc.StyleSize(p.Style)) * 1.33 * 0.62; run.BaselineAlignment = f.HasFlag(Fmt.Super) ? BaselineAlignment.Superscript : BaselineAlignment.Subscript; }
-                    var deco = new TextDecorationCollection();
-                    if (f.HasFlag(Fmt.Underline) || isLink || ins) deco.Add(new TextDecoration { Location = TextDecorationLocation.Underline });
-                    if (f.HasFlag(Fmt.Strike) || del) deco.Add(new TextDecoration { Location = TextDecorationLocation.Strikethrough });
-                    if (wrong) deco.Add(new TextDecoration { Location = TextDecorationLocation.Underline, Stroke = Brushes.Red, StrokeThickness = 1.6, StrokeOffset = 2 });
-                    if (deco.Count > 0) run.TextDecorations = deco;
-                    view.Inlines!.Add(run);
-                    AddNotes(view, p, index, pos + e2);
-                }
-                pos += t.Length;
-            }
-            if (p.Text.Length == 0) AddNotes(view, p, index, 0);
-            if (p.Text.Length == 0) view.Inlines!.Add(new Run(" "));
-            if (p.FirstLineCm > 0) view.Inlines!.Insert(0, new Avalonia.Controls.Documents.InlineUIContainer(new Border { Width = p.FirstLineCm * 33.3, Height = 1 })); // Erstzeileneinzug
-            if (p.LineSpacing is { } vls) view.LineHeight = size * 1.2 * vls;
-            view.ContextMenu = TextParaMenu(index);
-            view.ContextRequested += (_, _) => { if (TextFocusBlock != index) { TextFocusBlock = index; _txSel = 0; _txSelLen = p.Text.Length; } }; // Rechtsklick wirkt auf diesen Absatz
-            view.PointerPressed += (_, e) =>
-            {
-                var at = p.Text.Length;
-                try { at = Math.Clamp(view.TextLayout.HitTestPoint(e.GetPosition(view)).TextPosition, 0, p.Text.Length); } catch (InvalidOperationException) { }
-                e.Handled = true; FocusPara(index, at);
-            };
-            body = view;
-        }
-        if (p.IndentCm > 0) body.Margin = new Thickness(p.IndentCm * 33.3, 0, 0, 0);
-        if (p.SpaceAfterPt is { } sa) body.Margin = new Thickness(body.Margin.Left, 0, 0, sa * 1.33);
-        if (p.SpaceBeforePt is { } sbf) body.Margin = new Thickness(body.Margin.Left, sbf * 1.33, 0, body.Margin.Bottom);
-        if (p.List == ListKind.None) return body;
-        var g = new Grid { ColumnDefinitions = new ColumnDefinitions("34,*"), Margin = new Thickness(p.ListLevel * TextTools.ListLevelCm * 33.3, 0, 0, 0) };
-        g.Children.Add(new TextBlock { Name = $"text-list-label-{index}", Text = label, FontSize = size, Foreground = Ink, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 1, 6, 0), FontFamily = new FontFamily("Arial") });
-        Grid.SetColumn(body, 1); g.Children.Add(body);
-        return g;
-    }
-
-    private void FocusPara(int index, int caret)
-    {
-        TextFocusBlock = index;
-        _txSel = TextDocument.Blocks[index] is Para p ? Math.Clamp(caret, 0, p.Text.Length) : 0; _txSelLen = 0;
-        Show("text");
-    }
-
-    private Control BlockTools(int index, params Control[] extra)
-    {
-        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, HorizontalAlignment = HorizontalAlignment.Right };
-        foreach (var c in extra) row.Children.Add(c);
-        var del = TB("text-block-delete-" + index, "✕", () => { Snapshot(); TextDocument.Blocks.RemoveAt(index); if (TextDocument.Blocks.Count == 0) TextDocument.Blocks.Add(new Para()); TextFocusBlock = Math.Clamp(index - 1, 0, TextDocument.Blocks.Count - 1); Changed(); }, "Entfernen");
-        row.Children.Add(del);
-        return row;
-    }
-
-    private Control TableControl(Table t, int index)
-    {
-        var grid = new Grid { Name = "text-table-" + index };
-        for (var c = 0; c < t.Cols; c++) grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
-        for (var r = 0; r < t.Rows.Count; r++)
-        {
-            grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-            for (var c = 0; c < t.Cols; c++)
-            {
-                var rr = r; var cc = c;
-                while (t.Rows[rr].Count < t.Cols) t.Rows[rr].Add("");
-                var cell = new TextBox { Name = $"text-cell-{index}-{r}-{c}", Text = t.Rows[r][c], Foreground = Ink, Background = Brushes.White, BorderBrush = Brush.Parse("#999999"), BorderThickness = new Thickness(0.5), CornerRadius = new CornerRadius(0), TextWrapping = TextWrapping.Wrap, AcceptsReturn = true, FontSize = 13, FontFamily = new FontFamily("Arial"), CaretBrush = Ink, MinHeight = 0, Padding = new Thickness(4, 2) };
-                PaperBox(cell, Brushes.White);
-                cell.TextChanged += (_, _) => { if (t.Rows[rr][cc] != cell.Text) { t.Rows[rr][cc] = cell.Text ?? ""; TextDirty = true; } };
-                cell.GotFocus += (_, _) => { TextFocusBlock = index; };
-                Grid.SetRow(cell, r); Grid.SetColumn(cell, c); grid.Children.Add(cell);
-            }
-        }
-        var tools = BlockTools(index,
-            TB("text-row-add-" + index, "+ Zeile", () => { Snapshot(); TextDoc.InsertRow(t, t.Rows.Count); Changed(); }, "Zeile anfügen"),
-            TB("text-col-add-" + index, "+ Spalte", () => { Snapshot(); TextDoc.InsertColumn(t, t.Cols); Changed(); }, "Spalte anfügen"),
-            TB("text-row-del-" + index, "− Zeile", () => { Snapshot(); TextDoc.DeleteRow(t, t.Rows.Count - 1); Changed(); }, "Letzte Zeile entfernen"),
-            TB("text-col-del-" + index, "− Spalte", () => { Snapshot(); TextDoc.DeleteColumn(t, t.Cols - 1); Changed(); }, "Letzte Spalte entfernen"));
-        return new StackPanel { Margin = new Thickness(0, 6), Children = { grid, tools } };
-    }
-
-    private Control PictureControl(Picture pic, int index)
-    {
-        Control img;
-        try { using var ms = new MemoryStream(pic.Data); img = new Image { Source = new Bitmap(ms), Width = Math.Min(572, pic.WidthCm * 37.8), Height = Math.Min(572, pic.WidthCm * 37.8) * pic.HeightCm / Math.Max(0.1, pic.WidthCm), Stretch = Stretch.Uniform }; }
-        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or NotSupportedException) { img = new TextBlock { Text = "[Bild]", Foreground = Ink }; }
-        img.Name = "text-picture-" + index;
-        var tools = BlockTools(index,
-            TB("text-img-smaller-" + index, "kleiner", () => { Snapshot(); pic.HeightCm *= Math.Max(2, pic.WidthCm - 2) / pic.WidthCm; pic.WidthCm = Math.Max(2, pic.WidthCm - 2); Changed(); }, "Bild kleiner"),
-            TB("text-img-bigger-" + index, "größer", () => { Snapshot(); var w = Math.Min(16, pic.WidthCm + 2); pic.HeightCm *= w / pic.WidthCm; pic.WidthCm = w; Changed(); }, "Bild größer"),
-            TB("text-img-caption-" + index, "Beschriftung", () => TextAsk("text-prompt", "Bildbeschriftung („Abbildung n:“ setzt Trendo davor):", pic.Caption, v => { Snapshot(); pic.Caption = v.Trim(); Changed(); }), "Beschriftung unter dem Bild"),
-            TB("text-img-alt-" + index, "Alternativtext", () => TextAsk("text-prompt", "Was zeigt das Bild? (für Bildschirmleser):", pic.Alt, v => { Snapshot(); pic.Alt = v.Trim(); Changed(); }), "Alternativtext für Barrierefreiheit", pic.Alt.Length > 0));
-        var figNo = TextDocument.Blocks.Take(index + 1).OfType<Picture>().Count(x => x.Caption.Trim().Length > 0);
-        var stack = new StackPanel { Margin = new Thickness(0, 6), HorizontalAlignment = HorizontalAlignment.Left, Children = { img } };
-        if (pic.Caption.Trim().Length > 0) stack.Children.Add(new TextBlock { Name = "text-caption-" + index, Text = $"Abbildung {figNo}: {pic.Caption.Trim()}", FontStyle = FontStyle.Italic, FontSize = 12, Foreground = Brush.Parse("#595959"), Margin = new Thickness(0, 3, 0, 0) });
-        stack.Children.Add(tools);
-        return stack;
-    }
-
-    /// <summary>W5: Inhaltsverzeichnis im Blatt – Einträge springen zur Überschrift; Seitenzahlen stehen im PDF und in Word.</summary>
-    private Control TocControl(TocBlock toc, int index)
-    {
-        var sp = new StackPanel { Name = "text-toc-" + index, Spacing = 2, Margin = new Thickness(0, 6) };
-        sp.Children.Add(new TextBlock { Text = toc.Title, FontSize = 16 * 1.33, FontWeight = FontWeight.Bold, Foreground = Brush.Parse(TextDocument.Page.HeadingColor), FontFamily = new FontFamily("Arial") });
-        var entries = TextTools.Toc(TextDocument);
-        if (entries.Count == 0) sp.Children.Add(new TextBlock { Text = "(noch keine Überschriften – Absatzart „Überschrift 1–3“ wählen)", Foreground = Brush.Parse("#7A8591"), FontSize = 13 });
-        foreach (var e in entries)
-        {
-            var block = e.Block;
-            var tb = new TextBlock { Text = e.Text, FontSize = 13.5, FontWeight = e.Level == 1 ? FontWeight.SemiBold : FontWeight.Normal, Foreground = Ink, Margin = new Thickness((e.Level - 1) * 18, 1, 0, 1), Cursor = new Cursor(StandardCursorType.Hand), FontFamily = new FontFamily("Arial") };
-            tb.PointerPressed += (_, ev) => { ev.Handled = true; FocusPara(block, 0); };
-            sp.Children.Add(tb);
-        }
-        sp.Children.Add(BlockTools(index));
-        return sp;
-    }
-
-    /// <summary>Fuß- und Endnotenzeichen sowie Kommentarsymbole an der Stelle <paramref name="at"/> einfügen.</summary>
-    private void AddNotes(TextBlock view, Para p, int block, int at)
-    {
-        for (var i = 0; i < p.Marks.Count; i++)
-        {
-            var m = p.Marks[i]; if (m.Length != 0 || m.Start != at) continue;
-            var label = m.Kind switch { MarkKind.Footnote => _txFootNos.TryGetValue((block, i), out var n) ? n.ToString() : "*", MarkKind.Endnote => _txEndNos.TryGetValue((block, i), out var e) ? "e" + e : "e", MarkKind.Comment => "💬", _ => null };
-            if (label is null) continue;
-            view.Inlines!.Add(new Run(label) { FontSize = 10, BaselineAlignment = BaselineAlignment.Superscript, Foreground = Brush.Parse(m.Kind == MarkKind.Comment ? "#B45309" : "#2F5496") });
+            case Table t:
+                var c = _txView.Caret; var merged = c.InCell && t.SpanOf(c.Row, c.Col) != (1, 1);
+                Label("Tabelle");
+                row.Children.Add(TB("text-row-add-" + index, "+ Zeile", () => { Snapshot(); TextDoc.InsertRow(t, t.Rows.Count); Changed(); }, "Zeile anfügen"));
+                row.Children.Add(TB("text-col-add-" + index, "+ Spalte", () => { Snapshot(); TextDoc.InsertColumn(t, t.Cols); Changed(); }, "Spalte anfügen"));
+                row.Children.Add(TB("text-row-del-" + index, "− Zeile", () => { Snapshot(); TextDoc.DeleteRow(t, c.InCell ? c.Row : t.Rows.Count - 1); Changed(); }, "Zeile am Cursor entfernen"));
+                row.Children.Add(TB("text-col-del-" + index, "− Spalte", () => { Snapshot(); TextDoc.DeleteColumn(t, c.InCell ? c.Col : t.Cols - 1); Changed(); }, "Spalte am Cursor entfernen"));
+                row.Children.Add(TB("text-cell-merge-right-" + index, "Verbinden →", () => TextMergeCells(1, 0), "Zelle mit der rechten Nachbarzelle verbinden", enabled: c.InCell));
+                row.Children.Add(TB("text-cell-merge-down-" + index, "Verbinden ↓", () => TextMergeCells(0, 1), "Zelle mit der Zelle darunter verbinden", enabled: c.InCell));
+                row.Children.Add(TB("text-cell-unmerge-" + index, "Verbindung lösen", () => TextUnmergeCell(), "Verbundene Zelle wieder teilen", enabled: merged));
+                row.Children.Add(TB("text-col-even-" + index, "Spalten gleich breit", () => { Snapshot(); t.Widths = []; Changed(); }, "Alle Spalten gleich breit – Breite sonst an der Spaltenlinie ziehen", enabled: t.Widths.Count > 0));
+                row.Children.Add(Delete("Tabelle"));
+                return row;
+            case Picture pic:
+                Label("Bild");
+                row.Children.Add(TB("text-img-smaller-" + index, "kleiner", () => { Snapshot(); pic.HeightCm *= Math.Max(2, pic.WidthCm - 2) / pic.WidthCm; pic.WidthCm = Math.Max(2, pic.WidthCm - 2); Changed(); }, "Bild kleiner"));
+                row.Children.Add(TB("text-img-bigger-" + index, "größer", () => { Snapshot(); var w = Math.Min(16, pic.WidthCm + 2); pic.HeightCm *= w / pic.WidthCm; pic.WidthCm = w; Changed(); }, "Bild größer"));
+                row.Children.Add(TB("text-img-caption-" + index, "Beschriftung", () => TextAsk("text-prompt", "Bildbeschriftung („Abbildung n:“ setzt Trendo davor):", pic.Caption, v => { Snapshot(); pic.Caption = v.Trim(); Changed(); }), "Beschriftung unter dem Bild"));
+                row.Children.Add(TB("text-img-alt-" + index, "Alternativtext", () => TextAsk("text-prompt", "Was zeigt das Bild? (für Bildschirmleser):", pic.Alt, v => { Snapshot(); pic.Alt = v.Trim(); Changed(); }), "Alternativtext für Barrierefreiheit", pic.Alt.Length > 0));
+                row.Children.Add(Delete("Bild"));
+                return row;
+            case PageBreak: Label("Seitenumbruch"); row.Children.Add(Delete("Seitenumbruch")); return row;
+            case TocBlock: Label("Inhaltsverzeichnis – Doppelklick auf einen Eintrag springt zur Überschrift"); row.Children.Add(Delete("Verzeichnis")); return row;
+            default: return null;
         }
     }
-
-    private Control BreakControl(int index) => new Grid
-    {
-        Name = "text-break-" + index, Margin = new Thickness(0, 10), ColumnDefinitions = new ColumnDefinitions("*,Auto"),
-        Children = { new Border { BorderBrush = Brush.Parse("#9AA5B1"), BorderThickness = new Thickness(0, 1, 0, 0), VerticalAlignment = VerticalAlignment.Center, Child = new TextBlock { Text = "Seitenumbruch", Foreground = Brush.Parse("#7A8591"), FontSize = 11, HorizontalAlignment = HorizontalAlignment.Center, Background = Brushes.White, Padding = new Thickness(8, 0) } }, Pos(BlockTools(index), 1) },
-    };
 
     // ---------- Seitenleiste: Suchen/Ersetzen, Rechtschreibung ----------
     private Control? TextSidePanel()
@@ -611,15 +585,16 @@ public partial class MainWindow
                 Grab(); _txHits = TextDocument.Find(_txFindQ, _txFindCase, _txFindWord);
                 if (_txHits.Count == 0) { _txMsg = $"„{_txFindQ}“ nicht gefunden."; Show("text"); return; }
                 _txHit = (_txHit + 1) % _txHits.Count; var h = _txHits[_txHit];
-                if (h.Row < 0) TextSelect(h.Block, h.Start, h.Length); else TextFocusBlock = h.Block;
+                if (h.Row < 0) TextSelect(h.Block, h.Start, h.Length); else TextSelectCell(h.Block, h.Row, h.Col, h.Start, h.Length);
                 _txMsg = $"Treffer {_txHit + 1} von {_txHits.Count}"; Show("text");
             };
             var one = new Button { Name = "text-replace-one", Content = "Ersetzen" };
             one.Click += (_, _) =>
             {
                 Grab();
-                if (CurPara() is { } p && _txSelLen > 0 && string.Equals(p.Text.Substring(_txSel, _txSelLen), _txFindQ, _txFindCase ? StringComparison.Ordinal : StringComparison.CurrentCultureIgnoreCase))
-                { Snapshot(); TextDoc.ReplaceAt(p, _txSel, _txSelLen, _txFindR); _txSelLen = _txFindR.Length; Changed(); _txMsg = "Ersetzt."; }
+                var (fs, fl) = (_txSel, _txSelLen); var fbox = _txView.Caret;
+                if (CurBox() is { } p && fl > 0 && _txView.Anchor.SameBox(fbox) && fs + fl <= p.Text.Length && string.Equals(p.Text.Substring(fs, fl), _txFindQ, _txFindCase ? StringComparison.Ordinal : StringComparison.CurrentCultureIgnoreCase))
+                { Snapshot(); TextDoc.ReplaceAt(p, fs, fl, _txFindR); TextEdit.Commit(TextDocument, fbox, p); Changed(); _txView.Select(fbox with { Offset = fs }, fbox with { Offset = fs + _txFindR.Length }); _txMsg = "Ersetzt."; }
                 else _txMsg = "Zuerst „Weitersuchen“ – dann ersetzen.";
                 Show("text");
             };

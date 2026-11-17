@@ -89,7 +89,8 @@ public sealed partial class ProjectStore
 
     string NotePath(string projectId) { ProjectFilesRoot(projectId); return Path.Combine(_root, projectId, "notiz.txt"); }
     public string Note(string projectId) => File.Exists(NotePath(projectId)) ? File.ReadAllText(NotePath(projectId)) : "";
-    public void SetNote(string projectId, string text) { File.WriteAllText(NotePath(projectId), text); _audit.Append("user", "project.note", projectId); }
+    public void SetNote(string projectId, string text) { AtomicFile.WriteAllText(NotePath(projectId), text); // T-0717: atomar
+        _audit.Append("user", "project.note", projectId); }
 
     /// <summary>Projekt umbenennen (nur der lesbare Name, der Ordner bleibt).</summary>
     public TrendoProject Rename(string projectId, string name)
@@ -97,7 +98,7 @@ public sealed partial class ProjectStore
         if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Bitte einen Namen eingeben.");
         var p = List().FirstOrDefault(x => x.Id == projectId) ?? throw new ProjectIsolationException("Projekt unbekannt.");
         var n = p with { Name = name.Trim() };
-        File.WriteAllText(Path.Combine(_root, projectId, "project.json"), System.Text.Json.JsonSerializer.Serialize(n));
+        AtomicFile.WriteAllText(Path.Combine(_root, projectId, "project.json"), System.Text.Json.JsonSerializer.Serialize(n)); // T-0717: atomar
         _audit.Append("user", "project.rename", projectId);
         return n;
     }

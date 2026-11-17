@@ -1,0 +1,17 @@
+FFmpeg: ffmpeg version 9.0.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers
+Projekt: 1920×1080, 30 Bilder/s – a (Testbild, Look „Schwarzweiß“, Titel, Schieben 1 s) → b (Fraktal, Keyframes Größe+Lage, Vignette) | harter Schnitt → c (Standbild); Logo 5–9 s mit bewegter Lage
+Länge Zeitleiste: 10 s
+Export: 4148 ms → film.mp4, SHA-256 6fe4ab20865ac18e65242ecba8b9b6e143c2e50ca97bcb727b8bbcb442d42d9a (4235433 Bytes)
+t=1.000 s: Vorschau 178 ms (Zwischenspeicher 0 ms) · mittlere Abweichung Vorschau↔Export 0.275 · Gegenprobe Nachbarbild 2.257 · Gegenprobe rohes Stück (alte Vorschau) 108.479 · SHA-256 Vorschau 14cef738ffdf5e4a…
+t=3.500 s: Vorschau 414 ms (Zwischenspeicher 0 ms) · mittlere Abweichung Vorschau↔Export 0.802 · Gegenprobe Nachbarbild 25.762 · Gegenprobe rohes Stück (alte Vorschau) 105.926 · SHA-256 Vorschau 1bf05b6cacea39bc…
+t=5.200 s: Vorschau 285 ms (Zwischenspeicher 0 ms) · mittlere Abweichung Vorschau↔Export 1.258 · Gegenprobe Nachbarbild 5.024 · Gegenprobe rohes Stück (alte Vorschau) 111.598 · SHA-256 Vorschau ea75a394b2187209…
+t=6.600 s: Vorschau 234 ms (Zwischenspeicher 0 ms) · mittlere Abweichung Vorschau↔Export 0.816 · Gegenprobe Nachbarbild 3.583 · Gegenprobe rohes Stück (alte Vorschau) 105.580 · SHA-256 Vorschau fb891f9697987697…
+t=8.000 s: Vorschau 144 ms (Zwischenspeicher 0 ms) · mittlere Abweichung Vorschau↔Export 0.203 · Gegenprobe Nachbarbild 0.371 · Gegenprobe rohes Stück (alte Vorschau) 7.776 · SHA-256 Vorschau d99fb9d2ba316f08…
+Wartezeit Standbild 960 px bei 1.0 s: Median 173 ms, Höchstwert 190 ms (160/168/173/174/190)
+Wartezeit Standbild 960 px bei 3.5 s: Median 416 ms, Höchstwert 503 ms (410/414/416/454/503)
+Wartezeit Standbild 960 px bei 5.2 s: Median 240 ms, Höchstwert 257 ms (238/239/240/248/257)
+Wartezeit Standbild 960 px bei 6.6 s: Median 239 ms, Höchstwert 246 ms (220/230/239/239/246)
+Wartezeit Standbild 960 px bei 8.0 s: Median 164 ms, Höchstwert 166 ms (150/152/164/165/166)
+Abbrechen nach 40 ms: Ausnahme, kein Bild und keine halbe Datei im Zwischenspeicher
+Wiedergabe mit Effekten 640×360 aus 1080p: 300 Bilder in 3694 ms = 81.2 Bilder/s (Ziel 30), erstes Bild nach 301 ms
+Schwelle: mittlere Abweichung je Farbkanal < 2.5 von 255 (H.264-Verlust im Export; ein falsches Bild oder fehlender Effekt liegt deutlich darüber, siehe Gegenproben)

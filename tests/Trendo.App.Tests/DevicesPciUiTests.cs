@@ -13,12 +13,12 @@ public class DevicesPci_Ui
         public Task<(int Exit, string Output)> RunAsync(string file, string args, Action<string>? line = null, CancellationToken ct = default) =>
             Task.FromResult((0, "\"Class\",\"FriendlyName\",\"Status\",\"InstanceId\"\n\"\",\"\",\"Error\",\"PCI\\VEN_10DE&DEV_2204&SUBSYS_1\\4\"\n\"Net\",\"Intel Ethernet\",\"OK\",\"PCI\\VEN_8086&DEV_1533\\9\"\n"));
     }
-    static string Real => Path.Combine(Path.GetTempPath(), "trendo-tools-b", "pciids", "pci.ids");
+    static string Real => Path.Combine(global::Trendo.Core.TempDir.SystemTemp, "trendo-tools-b", "pciids", "pci.ids");
 
     [AvaloniaFact(DisplayName = "Geräte: namenloses PCI-Gerät erscheint mit Kennung und Angebot; „Namen nachschlagen“ lädt die Liste (Prüfsumme) und zeigt Hersteller und Modell; danach kein Angebot mehr")]
     public async Task Names()
     {
-        if (!OperatingSystem.IsWindows() || !File.Exists(Real)) return; // braucht Windows-Weg und pci.ids im Prüfordner
+        if (!OperatingSystem.IsWindows() || !File.Exists(Real)) { Assert.Skip("Übersprungen – braucht Windows und pci.ids im Prüfordner."); return; } // braucht Windows-Weg und pci.ids im Prüfordner
         var (w, _, _) = Ui.Open();
         try
         {

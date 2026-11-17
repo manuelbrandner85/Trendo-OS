@@ -65,6 +65,7 @@ public class SYS04_Ui
     {
         var (w, _, _) = Ui.Open();
         var pkg = new FakePkg(); w.AppBackendOverride = pkg;
+        w.AppConfirm = _ => Task.FromResult(true); // T-0681: Trendo fragt vor jeder Änderung – hier stimmt der Mensch zu (Ablehnen: T0681_Ui)
         w.Show("appcenter");
         await w.AppSearchAsync("vlc"); w.Show("appcenter");
         w.Find<Button>("appc-hit-install-0").Press(); W2Ui.Settle();

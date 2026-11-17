@@ -66,9 +66,9 @@ public partial class MainWindow
         {
             _appAsk.Remove(id);
             if (guided) { if (c?.OfficialUrl is { } u) _core.Integrations.LaunchDirect(Principal.LocalOwner, u, _core.Audit); Say($"{a.Name}: Herstellerseite geöffnet. Nach der Installation erscheint hier „In {a.Name} öffnen“.", page); return; }
-            var req = _core.Approvals.Request(Principal.LocalOwner, "deps.install", $"{a.Name} einrichten", c!.Id);
-            _core.Approvals.Approve(req.Id, Principal.LocalOwner);
-            var ok = InstallOverride is { } fake ? await fake(c) : await InstallOne(c, refresh: false);
+            // B4 (T-0706): „Ja, einrichten“ auf dieser Rückfrage ist die Freigabe; eingerichtet wird nur über den Kern mit genau dieser Freigabe
+            if (FreigabeAusRueckfrage(InstallWirkung(c!, a.Use)) is not { } approvalId) { Show(page); return; }
+            var ok = InstallOverride is { } fake ? await _core.Approvals.Execute(approvalId, DependencyManager.InstallAction, c.Id, () => fake(c)) : await InstallOne(c, refresh: false, approvalId: approvalId);
             Say(ok && AppPath(appId) is not null ? $"{a.Name} ist eingerichtet – „In {a.Name} öffnen“ geht jetzt." : $"{a.Name} konnte nicht eingerichtet werden. Unter „Programme“ kannst du es erneut versuchen.", page);
         }, true);
         var no = Act($"setup-no-{id}", "Abbrechen", () => { _appAsk.Remove(id); _core.Audit.Append(Principal.LocalOwner.Name, "deps.declined", c?.Id ?? appId); Show(page); });
@@ -86,7 +86,7 @@ public partial class MainWindow
                 var b = await PruefenUndMerken(appId);
                 Say(b.Stand == FachprogrammStand.Erreichbar ? b.Hinweis : Gesperrt(b.Hinweis), page);
             });
-            var open = Act($"open-{id}", $"In {a.Name} öffnen", () =>
+            var open = Act($"open-{id}", $"In {a.Name} öffnen", async () =>
             {
                 if (!IstBereit(appId)) { Say(Gesperrt("Zuerst „Verbindung prüfen“."), page); return; }
                 IReadOnlyList<string> args;
@@ -100,7 +100,7 @@ public partial class MainWindow
                     Say("⚠ " + e.Message, page);
                     return;
                 }
-                Say(MitFreigabeOeffnen(appId, a.Name, args).Hinweis, page);
+                Say(await MitFreigabeOeffnen(appId, a.Name, args), page);
             });
             return new WrapPanel { ItemSpacing = 6, LineSpacing = 4, Children = { probe, open } }; // T-0267: bricht in schmalen Spalten um
         }
@@ -127,14 +127,17 @@ public partial class MainWindow
         return b;
     }
 
-    /// <summary>Einmalige Freigabe, dann öffnen. Die Freigabe gilt nur für diesen einen Aufruf.</summary>
-    private FachprogrammBericht MitFreigabeOeffnen(string id, string name, IReadOnlyList<string> args)
+    /// <summary>Einmalige Freigabe, dann öffnen. Die Freigabe gilt nur für diesen einen Aufruf.
+    /// B4 (T-0706): erst eigene Rückfrage (welches Programm, mit welcher Datei), dann Freigabe der angemeldeten Person; gestartet wird im Kern
+    /// (<see cref="FachprogrammAdapter.Aufrufen"/> über das Freigabe-Tor). Abgelehnt: Hinweistext, nichts gestartet.</summary>
+    private async Task<string> MitFreigabeOeffnen(string id, string name, IReadOnlyList<string> args)
     {
-        var req = _core.Approvals.Request(Principal.LocalOwner, FachprogrammAdapter.AufrufAktion, name + " öffnen", id);
-        _core.Approvals.Approve(req.Id, Principal.LocalOwner);
-        var b = FachAdapter().Aufrufen(req.Id, id, args);
+        var mit = args.Count == 0 ? "ohne Datei" : "mit " + string.Join(" ", args.Select(x => Path.IsPathRooted(x) ? Path.GetFileName(x) : x));
+        var w = new Wirkung(FachprogrammAdapter.AufrufAktion, id, $"{name} starten?", $"Programm: {name}\nStart: {mit}\n\nTrendo startet das Programm auf diesem PC. Was es danach tut, liegt bei {name}.", "Starten");
+        if (await FreigabeAsync(w) is not { } approvalId) return $"{name}: abgebrochen – es wurde nichts gestartet.";
+        var b = FachAdapter().Aufrufen(approvalId, id, args);
         _fachStand[id] = b.Angebunden ? b : (_fachStand.TryGetValue(id, out var alt) ? b with { Angebunden = alt.Angebunden } : b);
-        return b;
+        return b.Hinweis;
     }
 
     /// <summary>Für Tests: Installation ersetzen. Der neue Installieren-Knopf nutzt das nicht.</summary>
@@ -227,10 +230,10 @@ public partial class MainWindow
             var path = AppPath(a.Id);
             var line = new TextBlock { Name = $"prog-state-{a.Id}", Text = path is not null ? $"✓ {a.Name} – {a.Use}\n{path}" : $"✗ {a.Name} – {a.Use} – nicht gefunden", Foreground = Text, TextWrapping = Avalonia.Media.TextWrapping.Wrap };
             Control act = path is not null
-                ? Act($"prog-run-{a.Id}", "Starten", () =>
+                ? Act($"prog-run-{a.Id}", "Starten", async () =>
                 {
                     if (!IstBereit(a.Id)) { Say(Gesperrt("Zuerst „Verbindung prüfen“."), V); return; }
-                    Say(MitFreigabeOeffnen(a.Id, a.Name, []).Hinweis, V);
+                    Say(await MitFreigabeOeffnen(a.Id, a.Name, []), V);
                 })
                 : OpenInButton(a.Id, () => null, V);
             sp.Children.Add(Card(Row(line, act)));
@@ -274,14 +277,7 @@ public partial class MainWindow
                 Say(b.Hinweis, view);
             }));
             if (KannOeffnen(stand))
-                buttons.Children.Add(Act("fach-start-" + f.Id, "Jetzt öffnen", () =>
-                {
-                    var req = _core.Approvals.Request(Principal.LocalOwner, FachprogrammAdapter.AufrufAktion, f.Name + " öffnen", f.Id);
-                    _core.Approvals.Approve(req.Id, Principal.LocalOwner);
-                    var b = FachAdapter().Aufrufen(req.Id, f.Id, []);
-                    _fachStand[f.Id] = b.Angebunden ? b : b with { Angebunden = stand!.Angebunden };
-                    Say(b.Hinweis, view);
-                }));
+                buttons.Children.Add(Act("fach-start-" + f.Id, "Jetzt öffnen", async () => Say(await MitFreigabeOeffnen(f.Id, f.Name, []), view)));
             var box = new StackPanel { Spacing = 6 };
             box.Children.Add(text);
             box.Children.Add(buttons);
@@ -361,6 +357,9 @@ public partial class MainWindow
     {
         var installer = ProgramInstaller;
         if (!InstallKnopfAn(InstallierenSichtbar, installer) || maske.Laeuft) return;
+        // B4 (T-0706): „Ja, installieren“ auf der Rückfrage (FrageText) ist die Freigabe der angemeldeten Person
+        if (FreigabeAusRueckfrage(new Wirkung(ProgramInstall.Aktion, programm.Id, programm.Name + " installieren", FrageText(maske.Angebot), "Ja, installieren")) is not { } approvalId)
+        { Show(view); return; }
         var cts = new CancellationTokenSource();
         maske.Abbruch = cts;
         maske.Laeuft = true;
@@ -378,9 +377,7 @@ public partial class MainWindow
         });
         try
         {
-            var req = _core.Approvals.Request(Principal.LocalOwner, ProgramInstall.Aktion, programm.Name + " installieren", programm.Id);
-            _core.Approvals.Approve(req.Id, Principal.LocalOwner);
-            var ergebnis = await _core.Approvals.Execute(req.Id, ProgramInstall.Aktion, programm.Id, () => installer!.InstallAsync(programm.Id, progress, cts.Token));
+            var ergebnis = await _core.Approvals.Execute(approvalId, ProgramInstall.Aktion, programm.Id, () => installer!.InstallAsync(programm.Id, progress, cts.Token));
             _installMaske.Remove(programm.Id);
             if (!ergebnis.Success)
             {

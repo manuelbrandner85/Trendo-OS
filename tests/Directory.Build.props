@@ -1,0 +1,10 @@
+<Project>
+  <!-- T-0729: Befund 17.11.2026: ein Testlauf mit der Option „blame-hang“ legte einen vollen Speicherabzug (22 GB) in TEMP ab.
+       Ohne ausdrückliche Angabe gilt deshalb: bei Hängern KEIN Abzug, bei Abstürzen nur ein kleiner (mini).
+       Wer wirklich einen Abzug braucht, gibt beim Aufruf die Option „blame-hang-dump-type mini“ ausdrücklich an
+       (Ergebnisordner dann mit der Option „results-directory“ begrenzen und danach löschen). -->
+  <PropertyGroup>
+    <VSTestBlameHangDumpType Condition="'$(VSTestBlameHangDumpType)' == ''">none</VSTestBlameHangDumpType>
+    <VSTestBlameCrashDumpType Condition="'$(VSTestBlameCrashDumpType)' == ''">mini</VSTestBlameCrashDumpType>
+  </PropertyGroup>
+</Project>

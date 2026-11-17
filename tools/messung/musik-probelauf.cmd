@@ -2,13 +2,13 @@
 rem Musik-KI echt am PC ausprobieren (T-0227): Paket pruefen, entpacken, Server starten, 30-Sekunden-Probelied erzeugen.
 rem Doppelklick genuegt. Beim ersten Mal 20-40 Minuten. Am Ende oeffnet sich der Ergebnisordner.
 cd /d "%~dp0..\.."
-set "TRENDO_ACE_LIVE=%TEMP%\claude\C--Users-manue-Desktop\61f33b34-8214-4ef6-96fd-dfc769da634a\scratchpad\acestep\ACE-Step-1.5.7z"
+set "TRENDO_ACE_LIVE=%TEMP%\claude\C--Users-%USERNAME%-Desktop\61f33b34-8214-4ef6-96fd-dfc769da634a\scratchpad\acestep\ACE-Step-1.5.7z"
 set "TRENDO_7Z=%LOCALAPPDATA%\TrendoWerkzeuge\7zip\7z.exe"
 if exist "%TRENDO_7Z%" goto sevenok
 for /d %%P in ("%LOCALAPPDATA%\Packages\Claude_*") do if exist "%%~P\LocalCache\Local\TrendoWerkzeuge\7zip\7z.exe" set "TRENDO_7Z=%%~P\LocalCache\Local\TrendoWerkzeuge\7zip\7z.exe"
 :sevenok
 if exist "%TRENDO_ACE_LIVE%" goto paketok
-for /d %%P in ("%LOCALAPPDATA%\Packages\Claude_*") do if exist "%%~P\LocalCache\Local\Temp\claude\C--Users-manue-Desktop\61f33b34-8214-4ef6-96fd-dfc769da634a\scratchpad\acestep\ACE-Step-1.5.7z" set "TRENDO_ACE_LIVE=%%~P\LocalCache\Local\Temp\claude\C--Users-manue-Desktop\61f33b34-8214-4ef6-96fd-dfc769da634a\scratchpad\acestep\ACE-Step-1.5.7z"
+for /d %%P in ("%LOCALAPPDATA%\Packages\Claude_*") do if exist "%%~P\LocalCache\Local\Temp\claude\C--Users-%USERNAME%-Desktop\61f33b34-8214-4ef6-96fd-dfc769da634a\scratchpad\acestep\ACE-Step-1.5.7z" set "TRENDO_ACE_LIVE=%%~P\LocalCache\Local\Temp\claude\C--Users-%USERNAME%-Desktop\61f33b34-8214-4ef6-96fd-dfc769da634a\scratchpad\acestep\ACE-Step-1.5.7z"
 :paketok
 if not exist "%TRENDO_ACE_LIVE%" goto nopaket
 if not exist "%TRENDO_7Z%" goto noseven

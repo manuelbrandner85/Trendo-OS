@@ -250,8 +250,6 @@ public static class SystemActions
 
     public static IReadOnlyList<IStudioActionAdapter> Create() =>
     [
-        new GateAdapter("CORE-09", "kamera.steuern", "Kamera steuern", SideEffectClass.Machine, "Die Kamera ist nicht angeschlossen. Es gibt keine Bewegung.", GateEvidence, Intent.Camera),
-        new CameraListAdapter(),
         new GateAdapter("SPEC-07", "sprache.ausbauen", "Sprache ausbauen", SideEffectClass.ExternalAi, "Texte übersetzen (SPEC-07) ist abgelehnt und nicht angeschlossen. Es wird nichts übersetzt oder eingedeutscht.", GateEvidence),
         new ResearchAdapter(),
         new AskAdapter(),

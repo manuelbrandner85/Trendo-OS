@@ -52,7 +52,8 @@ public partial class MainWindow
         var studioBox = new ComboBox { Name = "agent-studio", MinWidth = 260, ItemsSource = new[] { "Allgemeine Rollen (kein Studio)" }.Concat(studios.Select(kv => kv.Value.Name)).ToArray(),
             SelectedIndex = _agentStudio is null ? 0 : 1 + studios.FindIndex(kv => kv.Key == _agentStudio) };
         studioBox.SelectionChanged += (_, _) => { var i = studioBox.SelectedIndex; var ns = i <= 0 ? null : studios[i - 1].Key; if (ns != _agentStudio) AgentsForStudio(ns); }; // nur echte Wechsel
-        var newRole = Act("agent-role-new", "+ Eigene Rolle", () => { _agentNewRole = !_agentNewRole; Show("ki-rollen"); });
+        var newRole = Act("agent-role-new", "+ Eigene Rolle", () => { _agentNewRole = !_agentNewRole; if (!_agentNewRole) LinkClose(AgentRoleLink); Show("ki-rollen"); }); // T-0717: Schließen verwirft den Entwurf (wie vorher)
+        foreach (var lk in new[] { AgentGoalLink, AgentRoleLink }) if (LinkRecoveryCard(lk) is { } acard) sp.Children.Add(acard); // T-0717: nicht abgeschickter Auftrag / nicht angelegte Rolle
         sp.Children.Add(new WrapPanel { Children = { studioBox, Spacer(newRole) } });
         if (_agentNewRole) sp.Children.Add(AgentNewRoleCard(studios));
         var roleList = _agentStudio is null ? AgentCenter.Roles.ToList() : Agents.RolesFor(_agentStudio).ToList();
@@ -89,19 +90,28 @@ public partial class MainWindow
         proj.SelectionChanged += (_, _) => _agentProject = proj.SelectedIndex <= 0 ? null : projects[proj.SelectedIndex - 1].Id;
         var goal = new TextBox { Name = "agent-goal", PlaceholderText = "Was soll erledigt werden?", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 54 };
         var go = new Button { Name = "agent-run", Content = "Rolle starten", Background = Accent, IsEnabled = !_agentBusy };
-        go.Click += async (_, _) => { if (string.IsNullOrWhiteSpace(goal.Text)) { _agentMsg = "Bitte zuerst ein Ziel eintragen."; Show("ki-rollen"); return; } go.IsEnabled = false; await RunAgentAsync(goal.Text); Show("ki-rollen"); };
+        var gl = AgentGoalLink; LinkForm(gl, "auftrag", ("goal", goal)); // T-0717: Auftrag als Entwurf (Rückgängig, Notsicherung, Karte)
+        go.Click += async (_, _) => { if (string.IsNullOrWhiteSpace(goal.Text)) { _agentMsg = "Bitte zuerst ein Ziel eintragen."; Show("ki-rollen"); return; } go.IsEnabled = false; var g = goal.Text; LinkClose(gl); await RunAgentAsync(g); Show("ki-rollen"); };
         var teams = new WrapPanel();
         List<(string Id, string Name, string[] Roles)> teamList = _agentStudio is { } ts && AgentCenter.Team(AgentCenter.TeamId(ts)) is { } st ? [st] : [.. AgentCenter.Teams];
         foreach (var (id, name, rs) in teamList)
         {
             var b = new Button { Name = "team-" + id, Content = $"Team: {name}", Margin = new Thickness(0, 0, 6, 6), IsEnabled = !_agentBusy };
-            ToolTip.SetTip(b, string.Join(" → ", rs.Select(x => Agents.RoleOf(x).Name)));
-            b.Click += async (_, _) => { if (string.IsNullOrWhiteSpace(goal.Text)) { _agentMsg = "Bitte zuerst ein Ziel eintragen."; Show("ki-rollen"); return; } b.IsEnabled = false; await RunAgentAsync(goal.Text, id); Show("ki-rollen"); };
+            ToolTip.SetTip(b, string.Join(" → ", AgentCenter.Stages(rs).Select(st => string.Join(" + ", st.Select(x => Agents.RoleOf(x).Name)))) + " · jede Rolle arbeitet mit Dateien im Projekt und gibt ihr Ergebnis als Datei weiter; Prüfer können zurückgeben");
+            // T-0698: Team arbeitet mit Werkzeugen und Datei-Übergabe (statt Textkette), Stopp jederzeit
+            b.Click += async (_, _) => { if (string.IsNullOrWhiteSpace(goal.Text)) { _agentMsg = "Bitte zuerst ein Ziel eintragen."; Show("ki-rollen"); return; } b.IsEnabled = false; var g = goal.Text; LinkClose(gl); var run = RunTeamFilesAsync(g, id); Show("ki-rollen"); await run; Show("ki-rollen"); };
             teams.Children.Add(b);
         }
         sp.Children.Add(proj); sp.Children.Add(goal);
-        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { go } });
+        var (gUndo, gRedo) = LinkButtons(gl); // T-0717: neben „Rolle starten“ (keine eigene Zeile – „Einfach“ zeigt so weiter Auftrag und Start direkt)
+        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { go, gUndo, gRedo } });
         sp.Children.Add(teams);
+        if (AgentRunning)
+        {
+            // T-0698: Stopp jederzeit, Fortschritt je Rolle live
+            sp.Children.Add(Act("agent-stop", "■ Stopp", StopAgent));
+            if (AgentLive is { } live) sp.Children.Add(P($"Läuft: {live.AgentName} · Schritt {live.Steps} · {live.Log.LastOrDefault()?.Text}", Muted, 11.5));
+        }
         sp.Children.Add(new TextBlock { Name = "agent-msg", Text = _agentMsg, Foreground = Text, TextWrapping = TextWrapping.Wrap });
         sp.Children.Add(H("Aufgaben", 14));
         var tasks = Agents.Tasks(_agentProject).Take(15).ToList();
@@ -176,11 +186,12 @@ public partial class MainWindow
             {
                 var sid = studio.SelectedIndex < 0 ? "" : all[studio.SelectedIndex].Key;
                 var r = Agents.AddCustomRole(name.Text ?? "", does.Text ?? "", focus.Text ?? "", sid, write.IsChecked == true, id => StudioCatalog.For(id)?.Name);
-                _agentNewRole = false; _agentStudio = sid; _agentRole = r.Id; _agentMsg = $"✓ Rolle „{r.Name}“ gehört jetzt zum Studio „{StudioCatalog.For(sid)?.Name}“.";
+                _agentNewRole = false; LinkClose(AgentRoleLink); _agentStudio = sid; _agentRole = r.Id; _agentMsg = $"✓ Rolle „{r.Name}“ gehört jetzt zum Studio „{StudioCatalog.For(sid)?.Name}“.";
             }
             catch (ArgumentException ex) { _agentMsg = ex.Message; }
             Show("ki-rollen");
         }, true);
-        return WCard(new StackPanel { Name = "agent-role-card", Spacing = 6, Children = { H("Eigene Rolle", 14), name, does, focus, studio, write, save } });
+        var rl = AgentRoleLink; LinkForm(rl, "neu", ("name", name), ("does", does), ("focus", focus)); // T-0717: neue Rolle als Entwurf
+        return WCard(new StackPanel { Name = "agent-role-card", Spacing = 6, Children = { H("Eigene Rolle", 14), LinkUndoRow(rl), name, does, focus, studio, write, save } });
     }
 }

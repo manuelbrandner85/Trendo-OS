@@ -1,0 +1,24 @@
+# Echtlauf 7zip – 7-Zip packt, Trendos Entpacker packt aus, byte-gleich
+Datum: 2026-11-16T21:44:55
+Fundort: C:\Users\<user>\AppData\Local\TrendoWerkzeuge\7zip\7z.exe
+Suchweg: DependencyManager
+Version: 26.05
+
+## Fachlauf (Helfer: 7zip) – Exit 0, 2.4 s
+21:44:55 $ 7z.exe a -t7z -mx=5 C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\7zip\probe.7z .
+21:44:55   Exit 0 nach 0,1 s
+  | 7-Zip 26.05 (x64) : Copyright (c) 1999-2026 Igor Pavlov : 2026-10-21
+  | Scanning the drive:
+  | 1 folder, 2 files, 300061 bytes (294 KiB)
+  | Creating archive: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\7zip\probe.7z
+  | Add new data to archive: 1 folder, 2 files, 300061 bytes (294 KiB)
+  | Files read from disk: 2
+  | Archive size: 300279 bytes (294 KiB)
+  | Everything is Ok
+21:44:57 Archive7z.Extract: 2 Dateien
+21:44:57   brief.txt: gleich
+21:44:57   unter\daten.bin: gleich
+
+
+ERGEBNIS: ECHT-GRÜN (2.4 s)
+- Fachlauf 7zip: ECHT-GRÜN – Archive7z.Extract: 2 Dateien

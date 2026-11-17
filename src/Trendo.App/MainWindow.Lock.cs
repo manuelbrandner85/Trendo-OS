@@ -205,11 +205,39 @@ public partial class MainWindow
     string _personMsg = "", _personName = "";
     bool _personChild;
 
+    /// <summary>T-0713: Hinweis-Karte, wenn neben einem Kinderprofil ein Erwachsenen-Profil ohne PIN besteht (dann kann ein Kind über „Wechseln“
+    /// dort freigeben). Nur Hinweis mit „PIN festlegen“, nichts wird erzwungen. Im Kinderprofil nicht sichtbar. null = kein Hinweis nötig.</summary>
+    internal Control? PinHinweisKarte()
+    {
+        if (_settings.Child) return null;
+        var open = Persons.AdultsWithoutLockBesideChild();
+        if (open.Count == 0) return null;
+        var selfId = PersonStore.IdOf(_core.DataRoot) ?? "haupt";
+        var self = open.Any(p => p.Id == selfId);
+        string Label((string Id, string Name) p) => p.Id == selfId ? "Dein Profil" : $"Das Profil „{(p.Name.Length > 0 ? p.Name : "Hauptprofil")}“";
+        var who = open.Count == 1 ? Label(open[0]) + " hat" : string.Join(", ", open.Select(Label)) + " haben";
+        var set = new Button { Name = "pin-hinweis-festlegen", Content = "PIN festlegen" };
+        ToolTip.SetTip(set, self ? "Für dein Profil eine PIN wählen" : "Zu den Personen – dort in das Profil wechseln und eine PIN festlegen");
+        set.Click += (_, _) =>
+        {
+            if (self) { _wizStep = 1; _wizRecovery = null; _wizChangeLock = true; Show("einrichtung"); return; }
+            _personMsg = "Wechsle in das Profil ohne PIN und lege dort unter „Anmeldung ändern“ eine PIN fest.";
+            Show("personen");
+        };
+        return new Border { Name = "pin-hinweis", Background = Brush.Parse("#33F59E0B"), BorderBrush = Brush.Parse("#66F59E0B"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(12, 10),
+            Child = new StackPanel { Spacing = 6, Children = {
+                new TextBlock { Text = "Kinderschutz: eine PIN fehlt", Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
+                new TextBlock { Name = "pin-hinweis-text", Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap,
+                    Text = $"{who} keine PIN. Ein Kind kann mit „Wechseln“ in dieses Profil gehen und dort Programme einrichten oder andere Dinge freigeben. Mit einer PIN geht das nur mit dir." },
+                new WrapPanel { Children = { set } } } } };
+    }
+
     Control PersonsView()
     {
         var sp = new StackPanel { Spacing = 10 };
         sp.Children.Add(P("Jede Person am PC hat ihr eigenes Trendo: eigene Projekte, Einstellungen und Anmeldung. Beim Start wählt sich jede Person selbst.", Text, 13));
         if (_personMsg.Length > 0) sp.Children.Add(P(_personMsg, _personMsg.StartsWith('✓') ? Brush.Parse("#4ADE80") : Brush.Parse("#FACC15"), 12.5));
+        if (PinHinweisKarte() is { } pinHint) sp.Children.Add(pinHint); // T-0713
         // eigene Anmeldung
         var mine = new StackPanel { Spacing = 6 };
         mine.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { AvatarView(48), new TextBlock { Text = (string.IsNullOrEmpty(_settings.Name) ? "Du" : _settings.Name) + (_settings.Child ? " (Kind)" : ""), Foreground = Text, FontSize = 16, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center } } });

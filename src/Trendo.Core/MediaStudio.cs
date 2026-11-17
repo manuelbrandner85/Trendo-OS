@@ -54,10 +54,36 @@ public static class MediaStudio
         var job = Jobs.First(j => j.Id == jobId);
         if (!File.Exists(input)) return (new(-1, "", "Datei nicht gefunden."), "");
         var outp = OutputPath(input, job);
-        var r = Cli.Run(ffmpeg, Args(input, outp, jobId, start, length), Path.GetDirectoryName(Path.GetFullPath(input)), 600000);
-        if (!r.Ok && File.Exists(outp) && new FileInfo(outp).Length == 0) File.Delete(outp);
+        var r = RunInto(ffmpeg, Args(input, outp, jobId, start, length), outp, Path.GetDirectoryName(Path.GetFullPath(input))!);
         return (r, outp);
     }
+
+    /// <summary>T-0715 (Programm-Hülle E3): Ergebnis atomar – FFmpeg schreibt in eine Zwischendatei neben dem Ziel (gleiche Endung, damit FFmpeg das Format erkennt),
+    /// erst nach Erfolg wird sie unter den richtigen Namen geschoben. Ein Abbruch mitten im Umwandeln hinterlässt nie eine halbe Datei unter dem Ergebnisnamen.
+    /// <paramref name="args"/> endet mit <paramref name="output"/> (wie <see cref="Args"/> und <see cref="ConcatArgs"/> sie bauen).</summary>
+    public static Cli.Result RunInto(string ffmpeg, string[] args, string output, string workDir, int timeoutMs = 600000)
+    {
+        var full = Path.GetFullPath(output);
+        var tmp = TempOf(full);
+        var a = (string[])args.Clone(); a[^1] = tmp;
+        var moved = false;
+        try
+        {
+            var r = Cli.Run(ffmpeg, a, workDir, timeoutMs);
+            if (r.Ok && File.Exists(tmp) && new FileInfo(tmp).Length > 0) { SafeFile.Move(tmp, full); moved = true; }
+            return r;
+        }
+        finally
+        {
+            // Ohne Umbenennen (Fehler, Zeitüberschreitung, Ausnahme) darf die „.~xxxx.teil.<Endung>“ nicht im Ordner des Nutzers liegen bleiben.
+            // Nach einer Zeitüberschreitung wird FFmpeg nur beendet, nicht abgewartet – die Datei ist dann oft noch kurz gesperrt, deshalb mit Wiederholungen.
+            if (!moved) TempDir.Delete(tmp, attempts: 25, delayMs: 200);
+        }
+    }
+
+    /// <summary>Name der Zwischendatei: „&lt;Name&gt;.~&lt;zufällig&gt;.teil&lt;Endung&gt;“ im Zielordner.</summary>
+    public static string TempOf(string output) =>
+        Path.Combine(Path.GetDirectoryName(output)!, Path.GetFileNameWithoutExtension(output) + ".~" + Guid.NewGuid().ToString("N")[..8] + ".teil" + Path.GetExtension(output));
 
     static string Inv(double v) => v.ToString("0.###", CultureInfo.InvariantCulture);
 
@@ -65,7 +91,8 @@ public static class MediaStudio
     public static string[] FrameArgs(string input, double at, string output) =>
         ["-hide_banner", "-loglevel", "error", "-y", "-ss", Inv(Math.Max(0, at)), "-i", input, "-frames:v", "1", "-vf", "scale=160:-2", output];
 
-    /// <summary>Zeitleiste: <paramref name="count"/> Vorschaubilder gleichmäßig verteilt; vorhandene Bilder werden wiederverwendet.</summary>
+    /// <summary>Zeitleiste: <paramref name="count"/> Vorschaubilder gleichmäßig verteilt; vorhandene Bilder werden wiederverwendet.
+    /// T-0726: jedes Bild atomar (<see cref="RunInto"/>) – unter dem Bildnamen liegt nur ein vollständiges Bild.</summary>
     public static IReadOnlyList<string> Frames(string ffmpeg, string input, double duration, int count, string dir)
     {
         Directory.CreateDirectory(dir);
@@ -74,7 +101,8 @@ public static class MediaStudio
         {
             var at = duration <= 0 ? 0 : duration * (i + 0.5) / count;
             var png = Path.Combine(dir, $"bild-{i:00}.png");
-            if (!File.Exists(png)) Cli.Run(ffmpeg, FrameArgs(input, at, png), dir, 30000);
+            // T-0726: atomar wie die Ergebnisse – ein abgebrochenes FFmpeg hinterließ sonst ein halbes Bild unter dem richtigen Namen, das danach für immer wiederverwendet wurde
+            if (!File.Exists(png)) RunInto(ffmpeg, FrameArgs(input, at, png), png, dir, 30000);
             if (File.Exists(png)) list.Add(png);
         }
         return list;
@@ -101,11 +129,10 @@ public static class MediaStudio
         if (files.Count < 2) return (new(-1, "", "Bitte mindestens zwei Clips in die Liste legen."), "");
         if (files.FirstOrDefault(f => !File.Exists(f)) is { } missing) return (new(-1, "", "Datei nicht gefunden: " + Path.GetFileName(missing)), "");
         Directory.CreateDirectory(folder);
-        var list = Path.Combine(folder, "clipliste.txt"); File.WriteAllText(list, ConcatList(files));
+        var list = Path.Combine(folder, "clipliste.txt"); AtomicFile.WriteAllText(list, ConcatList(files)); // T-0715: atomar
         var o = Path.Combine(folder, "zusammen.mp4");
         for (var i = 2; File.Exists(o); i++) o = Path.Combine(folder, $"zusammen-{i}.mp4");
-        var r = Cli.Run(ffmpeg, ConcatArgs(list, o), folder, 600000);
-        if (!r.Ok && File.Exists(o) && new FileInfo(o).Length == 0) File.Delete(o);
+        var r = RunInto(ffmpeg, ConcatArgs(list, o), o, folder); // T-0715: atomar
         return (r, o);
     }
 

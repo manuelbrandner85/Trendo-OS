@@ -1,0 +1,19 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0202: Kein Klick auf irgendeiner Seite stürzt ab (Klick-Audit, Bericht der stummen Knöpfe) [SKIP]
+      Langer Klick-Audit über alle Seiten: TRENDO_ALL_BUTTONS=1 setzen
+    CORE-09 UI: Bild prüfen – zwei rote Teile werden markiert, Maske, Ziel aus dem Bild, Bewegung zwischen zwei Bildern [FAIL]
+      System.InvalidOperationException : Sequence contains no matching element
+      Stack Trace:
+           at System.Linq.ThrowHelper.ThrowNoMatchException()
+           at System.Linq.Enumerable.Last[TSource](IEnumerable`1 source, Func`2 predicate)
+        tests\Trendo.App.Tests\RobotUiTests.cs(16,0): at Trendo.App.Tests.CORE09_Ui.Get[T](MainWindow w, String name)
+        tests\Trendo.App.Tests\RobotUiTests.cs(58,0): at Trendo.App.Tests.CORE09_Ui.Image_check()
+           at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    Trendo.App.Tests (ID = 'e90b9e2df9c421fd64d6d14183ac7fa980762c8a7d7272464933502e554f4394')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 58, Errors: 0, Failed: 1, Skipped: 1, Not Run: 0, Time: 283,123s

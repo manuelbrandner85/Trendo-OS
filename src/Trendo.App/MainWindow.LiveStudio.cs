@@ -27,7 +27,7 @@ public partial class MainWindow
     public string? LiveAudioWarning => _liveWarn;
     string MeterPath(string ch) => Path.Combine(Path.GetTempPath(), LiveCompose.MeterFile(LiveMeterDir, ch).Replace('/', Path.DirectorySeparatorChar));
 
-    void LiveSave() { LiveShowState.Save(LiveDir); }
+    void LiveSave() { LiveShowState.Save(LiveDir); } // T-0715: atomar; eine szenen.json aus einer neueren Fassung bleibt unverändert
 
     /// <summary>Szene wählen: Hauptquelle folgt der Szene. Läuft eine Aufnahme, startet sie mit der neuen Szene neu; bei einer Sendung braucht der Wechsel ein „Ja“.</summary>
     public void LiveSelectScene(string id)

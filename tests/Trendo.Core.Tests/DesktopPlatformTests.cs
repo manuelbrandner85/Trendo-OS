@@ -21,7 +21,7 @@ public class DesktopPlatformTests
     [Fact(DisplayName = "Linux-Wege: Autostart aus ~/.config/autostart (aus/an) und neue Programme aus ~/.local/share/applications (nur unter Linux echt geprüft)")]
     public void Autostart_and_new_apps()
     {
-        if (!OperatingSystem.IsLinux()) return; // unter Windows liest Trendo die Registrierung (nur lesen) – hier nicht nachbildbar
+        if (!OperatingSystem.IsLinux()) { Ueberspringen.Weil("nur unter Linux prüfbar."); return; } // unter Windows liest Trendo die Registrierung (nur lesen) – hier nicht nachbildbar
         var home = Path.Combine(Path.GetTempPath(), "trendo-home-" + Guid.NewGuid().ToString("N")[..8]);
         try
         {
@@ -42,7 +42,7 @@ public class DesktopPlatformTests
     [Fact(DisplayName = "Standardbrowser unter Linux über xdg-settings (Befehl ersetzt)")]
     public void Default_browser()
     {
-        if (OperatingSystem.IsWindows()) return;
+        if (OperatingSystem.IsWindows()) { Ueberspringen.Weil("nur unter Linux prüfbar."); return; }
         DesktopPlatform.XdgOverride = (exe, a) => exe == "xdg-settings" ? "firefox.desktop" : null;
         try { Assert.Equal("Mozilla Firefox", DesktopPlatform.DefaultBrowser()); }
         finally { DesktopPlatform.XdgOverride = null; }

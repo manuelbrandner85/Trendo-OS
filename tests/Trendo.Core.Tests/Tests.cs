@@ -176,7 +176,7 @@ public class QA004_ApprovalGate
     [Fact(DisplayName = "Secrets (nur Windows): Credential Manager Roundtrip")]
     public void Windows_credential_roundtrip()
     {
-        if (!OperatingSystem.IsWindows()) return; // auf Linux nicht anwendbar
+        if (!OperatingSystem.IsWindows()) { Ueberspringen.Weil("nur unter Windows prüfbar."); return; } // auf Linux nicht anwendbar
         var s = new WindowsCredentialStore();
         var key = "selftest-" + Guid.NewGuid().ToString("N");
         s.Set(key, "wert-äöü");
@@ -202,7 +202,7 @@ public class QA015_StudioStatus
     public void Missing_tool_blocked()
     {
         var list = new StudioRegistry().Load(Req, new Probe());
-        Assert.Equal(76, list.Count); // + Künstlerstudio (15.11.2026), + TV & Live (27.10.2026), + Trendo Musik (03.11.2026), + Filme machen und Print on Demand (08.11.2026), + vier + vier Studios Kreativ & KI (11.11.2026), + Teil 3 und 4 (14.11.2026)
+        Assert.Equal(83, list.Count); // + sieben Studios Arbeiten & Büro (15.11.2026), + Künstlerstudio (15.11.2026), + TV & Live (27.10.2026), + Trendo Musik (03.11.2026), + Filme machen und Print on Demand (08.11.2026), + vier + vier Studios Kreativ & KI (11.11.2026), + Teil 3 und 4 (14.11.2026)
         Assert.Equal(Capability.Blocked, list.Single(s => s.Id == "CORE-05").Capability);
         Assert.All(list.Where(s => StudioRegistry.RequiredTools.ContainsKey(s.Id)), s => Assert.NotEqual(Capability.Ready, s.Capability));
     }

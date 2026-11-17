@@ -81,13 +81,17 @@ public partial class MainWindow
         ],
         Ribbon =
         [
+            // T-0725 (Audit D7, STUDIO-SUMMARY-01: „kein Dateiimport“): PDF, Word, OpenDocument, Text und Markdown einlesen
+            ("Datei", [
+                new ProgramCmd("sum-open", "Datei öffnen …", d => _ = SumPick(d), Tip: "PDF, Word (.docx), OpenDocument (.odt), Text oder Markdown – der Text kommt links hinein, die Datei bleibt unverändert."),
+            ]),
             ("Länge", [
                 new ProgramCmd("sum-kurz", "Kurz (3 Sätze)", d => d.Set("length", "kurz", "Länge kurz")),
                 new ProgramCmd("sum-mittel", "Mittel (5 Sätze)", d => d.Set("length", "mittel", "Länge mittel"), Primary: true),
                 new ProgramCmd("sum-lang", "Lang (8 Sätze)", d => d.Set("length", "lang", "Länge lang")),
             ]),
             ("Claude", [
-                new ProgramCmd("sum-claude", "Mit Claude ausführlicher", d => _ = ClaudeFromStudioBar("STUDIO-SUMMARY-01", "Fasse diesen Text auf Deutsch in einfachen Worten zusammen, mit den wichtigsten Punkten als Liste:\n\n" + d.Text("text"), null), Tip: "Nutzt deinen Claude-Zugang. Ohne Anmeldung bleibt es bei der eingebauten Zusammenfassung."),
+                new ProgramCmd("sum-claude", "Mit Claude ausführlicher", d => _ = AssistFromProgram(SumKey, "STUDIO-SUMMARY-01", "Fasse diesen Text auf Deutsch in einfachen Worten zusammen, mit den wichtigsten Punkten als Liste:\n\n" + d.Text("text")), Tip: "Nutzt deinen Claude-Zugang. Ohne Anmeldung bleibt es bei der eingebauten Zusammenfassung."),
             ]),
         ],
         Exports =
@@ -99,6 +103,45 @@ public partial class MainWindow
         Status = d => { var s = SumOf(d); return $"{s.Words} Wörter · etwa {s.ReadMinutes} min Lesezeit · {s.Sentences.Count} Kernsätze"; },
         Help = "Text links einfügen. Rechts stehen sofort die wichtigsten Sätze in der ursprünglichen Reihenfolge. Oben wählst du die Länge. Für eine frei formulierte Fassung „Mit Claude ausführlicher“ nehmen.",
     }, "zusammenfassen", "zusammenfassung", "kurzfassung", "tldr", "protokoll kürzen", "text kürzen", "kernaussagen", "stichwörter");
+
+    public static readonly string[] SumExtensions = ["pdf", "docx", "odt", "txt", "md"];
+
+    /// <summary>T-0725: Text aus einer Datei – PDF über PDFium (Seite für Seite, höchstens 500 Seiten), DOCX/ODT über die Leser von Trendo Text, TXT/MD direkt.
+    /// Ein PDF ohne Textebene (Scan) wird ehrlich gemeldet statt still leer übernommen.</summary>
+    public static string SumReadFile(string path)
+    {
+        var ext = Path.GetExtension(path).ToLowerInvariant();
+        string text = ext switch
+        {
+            ".pdf" => string.Join("\n\n", Enumerable.Range(0, Math.Min(500, PdfView.PageCount(path))).Select(i => PdfView.Text(path, i))),
+            ".md" => File.ReadAllText(path),
+            ".docx" or ".odt" or ".txt" => Trendo.Core.Office.TextFiles.Open(path).PlainText(),
+            _ => throw new ArgumentException($"Das Format {ext} lässt sich hier nicht öffnen – bitte PDF, .docx, .odt, .txt oder .md."),
+        };
+        text = text.Replace("\r", "").Replace("\f", "\n\n").Trim();
+        if (text.Length == 0) throw new InvalidOperationException(ext == ".pdf" ? "Dieses PDF enthält keinen Text (vermutlich ein Scan). Mach es zuerst in „Dokumente scannen“ durchsuchbar." : "Die Datei enthält keinen Text.");
+        return text;
+    }
+
+    async Task SumPick(ProgramDocument d)
+    {
+        var req = new PickRequest("sum-open", false, false, SumExtensions);
+        string[]? got;
+        if (PickOverride is { } fake) got = await fake(req);
+        else got = (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Text zum Zusammenfassen öffnen",
+            FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("PDF, Word, Text") { Patterns = SumExtensions.Select(e => "*." + e).ToList() }] }))
+            .Select(f => Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(f)).OfType<string>().ToArray();
+        if (got is [var f, ..]) ProgramRun(SumKey, () => SumOpenFile(d, f));
+    }
+
+    /// <summary>T-0725: Datei einlesen → Text links (ein Rückgängig-Schritt), Überschrift aus dem Dateinamen, falls leer.</summary>
+    public void SumOpenFile(ProgramDocument d, string path)
+    {
+        var text = SumReadFile(path);
+        d.Edit("Datei öffnen", x => { x["text"] = text; if (string.IsNullOrWhiteSpace(Js(x["title"]))) x["title"] = Path.GetFileNameWithoutExtension(path); });
+        var s = SumOf(d);
+        _progMsg[SumKey] = $"„{Path.GetFileName(path)}“ eingelesen: {s.Words:N0} Wörter → {s.Sentences.Count} Kernsätze. Die Datei bleibt unverändert.";
+    }
 
     Control SumWorkspace(ProgramDocument d)
     {
@@ -119,6 +162,7 @@ public partial class MainWindow
         }
         var title = KrBox(d, "title", "sum-title", "Überschrift (optional)");
         var box = KrBox(d, "text", "sum-text", "Text hier einfügen …", true, Render);
+        BueroFileDrop(box, SumKey, BueroExt(".pdf", ".docx", ".odt", ".txt", ".md"), "ein PDF, eine Word-, OpenDocument- oder Textdatei", (dd, files) => SumOpenFile(dd, files[0])); // T-0725
         box.MinHeight = 380;
         Render(d.Text("text"));
         var left = new StackPanel { Spacing = 8, Children = { title, box } };
@@ -126,88 +170,150 @@ public partial class MainWindow
     }
 
     // ---------------- Logos & Marken ----------------
+    // T-0696: Das Formular (Name, Untertitel, Farben, Form, Schrift) ist nur noch die Hilfe „Vorschlag erzeugen“ –
+    // das Ergebnis ist ein bearbeitbares Vektor-Dokument („vector“), das im gemeinsamen Vektor-Editor frei weitergestaltet wird.
 
-    static JsonObject LogoDoc(string name, string tag, string primary, string accent, string layout) => new() { ["name"] = name, ["tagline"] = tag, ["primary"] = primary, ["accent"] = accent, ["layout"] = layout, ["font"] = LogoKit.Fonts[0] };
+    static JsonObject LogoDoc(string name, string tag, string primary, string accent, string layout)
+    {
+        var o = new JsonObject { ["name"] = name, ["tagline"] = tag, ["primary"] = primary, ["accent"] = accent, ["layout"] = layout, ["font"] = LogoKit.Fonts[0] };
+        o["vector"] = VectorKit.ToJson(VectorKit.FromLogo(new LogoKit.Spec(name, tag, primary, accent, layout, LogoKit.Fonts[0])));
+        return o;
+    }
     static LogoKit.Spec LogoSpec(ProgramDocument d) => new(d.Text("name"), d.Text("tagline"), LogoKit.IsHex(d.Text("primary")) ? d.Text("primary") : "#1E3A8A", LogoKit.IsHex(d.Text("accent")) ? d.Text("accent") : "#D4A017", d.Text("layout"), d.Text("font"));
+
+    /// <summary>Das bearbeitbare Logo. Ältere Dokumente (nur Formularfelder) bekommen es aus dem Vorschlag.</summary>
+    public static VDoc LogoVec(ProgramDocument d) => d.Data["vector"] is JsonObject v ? VectorKit.FromJson(v, 640, 180) : VectorKit.FromLogo(LogoSpec(d));
+    static void LogoSave(ProgramDocument d, VDoc v, string label) => d.Edit(label, x => x["vector"] = VectorKit.ToJson(v));
+
+    /// <summary>„Vorschlag erzeugen“: Logo aus dem Formular neu aufbauen (ersetzt die Zeichnung – Strg+Z holt sie zurück).</summary>
+    static void LogoSuggest(ProgramDocument d, string? layout = null)
+    {
+        if (string.IsNullOrWhiteSpace(d.Text("name"))) throw new ArgumentException("Gib zuerst einen Namen ein.");
+        d.Edit(layout is null ? "Vorschlag erzeugt" : "Vorschlag " + (LogoKit.Layouts.FirstOrDefault(l => l.Id == layout).Label ?? layout), x =>
+        {
+            if (layout is not null) x["layout"] = layout;
+            var s = new LogoKit.Spec(Js(x["name"]), Js(x["tagline"]), LogoKit.IsHex(Js(x["primary"])) ? Js(x["primary"]) : "#1E3A8A", LogoKit.IsHex(Js(x["accent"])) ? Js(x["accent"]) : "#D4A017", Js(x["layout"]), Js(x["font"]));
+            x["vector"] = VectorKit.ToJson(VectorKit.FromLogo(s));
+        });
+    }
+
+    /// <summary>Formularfeld ändern und die Zeichnung mitziehen, ohne Handarbeit zu verlieren: Name/Untertitel/Anfangsbuchstaben ersetzen den Text,
+    /// eine neue Haupt- oder Akzentfarbe färbt alles um, was die alte Farbe hatte. Ein Schritt für Rückgängig.</summary>
+    static void LogoField(ProgramDocument d, string key, string value, string label) => d.Edit(label, x =>
+    {
+        var old = Js(x[key]); x[key] = value;
+        var v = x["vector"] is JsonObject vo ? VectorKit.FromJson(vo, 640, 180) : null;
+        if (v is null) return;
+        switch (key)
+        {
+            case "name":
+                foreach (var s in v.Shapes.Where(s => s.Kind == "text" && s.Id == "name")) s.Text = value.Trim();
+                foreach (var s in v.Shapes.Where(s => s.Kind == "text" && s.Id == "zeichen-text")) s.Text = LogoKit.Initials(value);
+                break;
+            case "tagline": foreach (var s in v.Shapes.Where(s => s.Kind == "text" && s.Id == "untertitel")) s.Text = value.Trim(); break;
+            case "primary" or "accent" when LogoKit.IsHex(value) && LogoKit.IsHex(old):
+                foreach (var s in v.Shapes)
+                {
+                    if (string.Equals(s.Fill, old, StringComparison.OrdinalIgnoreCase)) s.Fill = value.ToUpperInvariant();
+                    if (string.Equals(s.Fill2, old, StringComparison.OrdinalIgnoreCase)) s.Fill2 = value.ToUpperInvariant();
+                    if (string.Equals(s.Stroke, old, StringComparison.OrdinalIgnoreCase)) s.Stroke = value.ToUpperInvariant();
+                }
+                break;
+        }
+        x["vector"] = VectorKit.ToJson(v);
+    });
 
     private void InitLogo() => RegisterProgram(FachTabs, new ProgramSpec(LogoKey, "STUDIO-LOGO-01", "Logos & Marken")
     {
-        Sentence = "Logo, Farben und Schrift für deine Marke – als SVG für Druck und Web, mit Kontrastprüfung.",
+        Sentence = "Logo frei gestalten: Formen, Pfade und Schrift auf der Fläche – mit Vorschlag zum Start, Kontrastprüfung und fertigem Marken-Paket.",
         Folder = "Logos",
+        FillHeight = true,
+        // T-0686 (V-02): Name und Farben stehen in den Eigenschaften, die „Einfach“ einklappt – der erste Schritt holt sie
+        FirstStep = new("Namen eingeben", "Trag den Namen deiner Marke ein – dann gestaltest du das Logo direkt auf der Fläche.", _ => ProgramShowProperties(LogoKey),
+            d => SimpleCollapsed(LogoKey) && d.Text("name") is "Meine Marke" or ""),
         Templates =
         [
-            new("leer", "Neues Logo", "Name eintragen, Form und Farben wählen", () => LogoDoc("Meine Marke", "", "#1E3A8A", "#D4A017", "kreis")),
+            new("leer", "Neues Logo", "Name eintragen, Vorschlag wählen, frei weiterzeichnen", () => LogoDoc("Meine Marke", "", "#1E3A8A", "#D4A017", "kreis")),
             new("cafe", "Beispiel: Café", "Warme Farben, Schild-Form", () => LogoDoc("Café Morgenrot", "Röstet seit heute", "#7A2E1F", "#E0A458", "schild")),
             new("tech", "Beispiel: Technik", "Kühle Farben, Wortmarke", () => LogoDoc("Nordlicht Labs", "Software mit Ruhe", "#0F4C5C", "#5FA8D3", "wort")),
         ],
+        Tools = VecTools(LogoKey),
         Ribbon =
         [
-            ("Form", LogoKit.Layouts.Select((l, i) => new ProgramCmd("logo-form-" + l.Id, l.Label, d => d.Set("layout", l.Id, "Form " + l.Label), Primary: i == 0)).ToList()),
-            ("Schrift", LogoKit.Fonts.Select(f => new ProgramCmd("logo-font-" + f.Replace(' ', '-').ToLowerInvariant(), f, d => d.Set("font", f, "Schrift " + f))).ToList()),
+            ("Vorschlag", [
+                new ProgramCmd("logo-suggest", "Vorschlag erzeugen", d => LogoSuggest(d), Primary: true, Tip: "Baut das Logo aus Name, Farben, Form und Schrift neu auf. Deine Zeichnung holst du mit Strg+Z zurück."),
+                .. LogoKit.Layouts.Select(l => new ProgramCmd("logo-form-" + l.Id, l.Label, d => LogoSuggest(d, l.Id), Tip: "Vorschlag in dieser Form")),
+            ]),
+            ("Schrift", LogoKit.Fonts.Select(f => new ProgramCmd("logo-font-" + f.Replace(' ', '-').ToLowerInvariant(), f, d => d.Edit("Schrift " + f, x =>
+            {
+                x["font"] = f;
+                if (x["vector"] is JsonObject vo) { var v = VectorKit.FromJson(vo, 640, 180); foreach (var s in v.Shapes.Where(s => s.Kind == "text")) s.Font = f; x["vector"] = VectorKit.ToJson(v); }
+            }), Tip: "Alle Texte im Logo bekommen diese Schrift")).ToList()),
+            ("Claude", [
+                new ProgramCmd("logo-claude", "Ideen mit Claude", d => _ = AssistFromProgram(LogoKey, "STUDIO-LOGO-01", $"Mach mir drei Ideen für ein Logo der Marke „{d.Text("name")}“ ({d.Text("tagline")}): Bildzeichen, Farben (#RRGGBB) und Schrift, jeweils mit einem Satz Begründung. Das Logo liegt als bearbeitbare Vektor-Zeichnung im Programm „Logos & Marken“."), Tip: "Nutzt deinen Claude-Zugang."),
+            ]),
         ],
-        GroupLevels = new() { ["Schrift"] = 1 },
+        GroupLevels = new() { ["Schrift"] = 1, ["Claude"] = 1 },
+        SimpleExports = 4, // Einfach: Paket, Bild, Druck, Favicon – SVG und Markenpaket stecken im Paket
         Exports =
         [
-            new("svg", "Logo (.svg)", ".svg", (d, f) => { File.WriteAllText(f, LogoKit.Svg(LogoSpec(d))); return f; }),
-            new("md", "Markenpaket (.md)", ".md", (d, f) => { File.WriteAllText(f, LogoKit.BrandMarkdown(LogoSpec(d))); return f; }),
+            new("paket", "Logo-Paket (.zip)", ".zip", (d, f) => { LogoPackage(LogoVec(d), d.Text("name"), f); return f; }),
+            new("png", "Bild (.png, 1024 px)", ".png", (d, f) => { File.WriteAllBytes(f, VectorRender.Png(LogoVec(d), 1024)); return f; }),
+            new("pdf", "Druck (.pdf)", ".pdf", (d, f) => { File.WriteAllBytes(f, VectorKit.Pdf(LogoVec(d))); return f; }),
+            new("ico", "Favicon (.ico)", ".ico", (d, f) => { File.WriteAllBytes(f, LogoIco(LogoVec(d))); return f; }),
+            new("svg", "Logo (.svg)", ".svg", (d, f) => { File.WriteAllText(f, VectorKit.ToSvg(LogoVec(d))); return f; }),
+            new("md", "Markenpaket (.md)", ".md", (d, f) => { File.WriteAllText(f, VectorKit.BrandMarkdown(LogoVec(d), d.Text("name"))); return f; }),
         ],
         Workspace = LogoWorkspace,
         Properties = LogoProperties,
-        Status = d => { var s = LogoSpec(d); return $"Kontrast Schrift auf Hauptfarbe {LogoKit.Contrast(s.Primary, LogoKit.TextOn(s.Primary)).ToString("0.0", De)}:1"; },
-        Help = "Rechts Namen, Untertitel und Farben eintragen, oben die Form wählen. Die Vorschau zeigt das Logo auf hellem und dunklem Grund. Vor einer Markenanmeldung prüfen, ob es den Namen schon gibt.",
-    }, "logo", "logos", "marke", "branding", "markenzeichen", "wortmarke", "firmenlogo", "corporate design", "markenfarben");
+        Status = d => { var v = LogoVec(d); var pal = VectorKit.Palette(v); var c = pal.Count > 0 ? Math.Max(LogoKit.Contrast(pal[0], "#FFFFFF"), LogoKit.Contrast(pal[0], "#000000")) : 0; return $"{v.Shapes.Count} Formen · {v.W:0} × {v.H:0} · Hauptfarbe {(pal.Count > 0 ? pal[0] : "–")}, Kontrast bis {c.ToString("0.0", De)}:1"; },
+        Help = "Links ein Werkzeug wählen und auf der Fläche ziehen: Rechteck, Ellipse, Vieleck, Stern, Linie, Zeichenstift (Bézier-Pfade) oder Text. Mit „Auswahl“ verschieben, an den Griffen Größe ändern, am runden Griff drehen; Doppelklick auf eine Form zeigt ihre Punkte. Rechtsklick: Anordnen, Gruppieren, Ausrichten. Ein eigenes SVG oder Bild ziehst du einfach auf die Fläche. „Vorschlag erzeugen“ baut aus Name und Farben neu auf. Das Logo-Paket enthält SVG, PNG in drei Größen, PDF, Favicon und hell/dunkel/einfarbig.",
+    }, "logo", "logos", "marke", "branding", "markenzeichen", "wortmarke", "firmenlogo", "corporate design", "markenfarben", "vektor", "svg");
 
-    /// <summary>Zeichnet das Logo nativ, gleiche Maße wie das SVG (640 × 180).</summary>
-    static Control LogoDraw(LogoKit.Spec s, IBrush bg)
-    {
-        var c = new Canvas { Width = 640, Height = 180, Background = bg };
-        IBrush P1 = Brush.Parse(s.Primary), A1 = Brush.Parse(s.Accent), On = Brush.Parse(LogoKit.TextOn(s.Primary));
-        var font = new FontFamily(LogoKit.Fonts.Contains(s.Font) ? s.Font : LogoKit.Fonts[0]);
-        void Add(Control x, double l, double t) { Canvas.SetLeft(x, l); Canvas.SetTop(x, t); c.Children.Add(x); }
-        TextBlock T(string text, double size, IBrush fg, bool bold = true) => new() { Text = text, FontSize = size, Foreground = fg, FontFamily = font, FontWeight = bold ? FontWeight.Bold : FontWeight.Normal };
-        void Ini(IBrush fg, double size, double cy)
-        {
-            var t = T(LogoKit.Initials(s.Name), size, fg); t.Width = 180; t.TextAlignment = TextAlignment.Center; Add(t, 0, cy - size * 0.68);
-        }
-        switch (s.Layout)
-        {
-            case "schild": Add(new Avalonia.Controls.Shapes.Path { Data = Geometry.Parse("M40,20 H140 V90 Q140,140 90,160 Q40,140 40,90 Z"), Fill = P1 }, 0, 0); Ini(On, 52, 84); break;
-            case "quadrat": Add(new Rectangle { Width = 120, Height = 120, RadiusX = 26, RadiusY = 26, Fill = P1 }, 30, 30); Ini(On, 56, 88); break;
-            case "wort": break;
-            case "linie": Add(new Rectangle { Width = 120, Height = 8, Fill = A1 }, 30, 118); Ini(P1, 60, 84); break;
-            default: Add(new Ellipse { Width = 124, Height = 124, Fill = P1, Stroke = A1, StrokeThickness = 6 }, 28, 28); Ini(On, 52, 90); break;
-        }
-        var tx = s.Layout == "wort" ? 30 : 180;
-        Add(T(s.Name.Trim(), 44, P1), tx, 40);
-        if (s.Tagline.Trim().Length > 0) Add(T(s.Tagline.Trim(), 20, A1, false), tx, 104);
-        return new Viewbox { Stretch = Stretch.Uniform, Child = c };
-    }
+    /// <summary>Vorschau des echten Logos (aus dem Vektor-Dokument) – gleiche Darstellung wie der PNG-Export.</summary>
+    static Control LogoDraw(VDoc v, string bg) => new Viewbox { Stretch = Stretch.Uniform, Child = VectorRender.Stage(VectorKit.ForBackground(v, bg), bg) };
 
     Control LogoWorkspace(ProgramDocument d)
     {
-        var s = LogoSpec(d);
+        var v = LogoVec(d);
+        var ed = VecEditor(LogoKey, d, v, (nv, label) => LogoSave(d, nv, label));
         Border Stage(string label, string bg, string name) => new()
         {
-            Name = name, CornerRadius = new CornerRadius(10), Padding = new Thickness(18), Background = Brush.Parse(bg), BoxShadow = BoxShadows.Parse("0 6 20 0 #55000000"),
-            Child = new StackPanel { Spacing = 6, Children = { new TextBlock { Text = label, FontSize = 11, Foreground = Brush.Parse(bg == "#FFFFFF" ? "#6B7280" : "#9CA3AF") }, new Border { MaxHeight = 170, HorizontalAlignment = HorizontalAlignment.Left, Child = LogoDraw(s, Brush.Parse(bg)) } } },
+            Name = name, CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 8), Background = Brush.Parse(bg), Margin = new Thickness(0, 0, 10, 0),
+            Child = new StackPanel { Spacing = 4, Children = { new TextBlock { Text = label, FontSize = 11, Foreground = Brush.Parse(bg == "#FFFFFF" ? "#6B7280" : "#9CA3AF") }, new Border { Height = 80, HorizontalAlignment = HorizontalAlignment.Left, Child = LogoDraw(v, bg) } } },
         };
-        var sp = new StackPanel { Name = "logo-workspace", Spacing = 14, Margin = new Thickness(4, 0, 10, 4) };
-        if (string.IsNullOrWhiteSpace(s.Name)) { sp.Children.Add(P("Trag rechts einen Namen ein.", Muted, 13)); return sp; }
-        sp.Children.Add(Stage("Auf hellem Grund", "#FFFFFF", "logo-light"));
-        sp.Children.Add(Stage("Auf dunklem Grund", "#111827", "logo-dark"));
-        var row = new WrapPanel();
-        foreach (var size in new[] { 48.0, 96, 160 })
-            row.Children.Add(new Border { Margin = new Thickness(0, 0, 12, 0), Background = Brushes.White, CornerRadius = new CornerRadius(6), Padding = new Thickness(6), Child = new Viewbox { Height = size * 0.6, Child = LogoDraw(s, Brushes.White) } });
-        sp.Children.Add(P("Kleine Größen (Briefkopf, App-Symbol, Stempel)", Muted, 11));
-        sp.Children.Add(row);
-        return sp;
+        var strip = new Grid { Name = "logo-workspace", ColumnDefinitions = new ColumnDefinitions("*,*,Auto"), Margin = new Thickness(0, 8, 0, 0) };
+        strip.Children.Add(Stage("Auf hellem Grund", "#FFFFFF", "logo-light"));
+        strip.Children.Add(Pos(Stage("Auf dunklem Grund", "#111827", "logo-dark"), 1));
+        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, VerticalAlignment = VerticalAlignment.Bottom };
+        foreach (var size in new[] { 24.0, 40, 64 })
+            row.Children.Add(new Border { Background = Brushes.White, CornerRadius = new CornerRadius(6), Padding = new Thickness(4), VerticalAlignment = VerticalAlignment.Bottom, Child = new Viewbox { Height = size, Child = VectorRender.Stage(v, "#FFFFFF") } });
+        strip.Children.Add(Pos(new StackPanel { Spacing = 4, VerticalAlignment = VerticalAlignment.Bottom, Children = { P("Klein (Briefkopf, Symbol)", Muted, 11), row } }, 2));
+        DockPanel.SetDock(strip, Avalonia.Controls.Dock.Bottom);
+        var root = new DockPanel { Margin = new Thickness(4, 0, 6, 4), Children = { strip, ed } };
+        // kleines Fenster: die Fläche hat Vorrang, die Vorschau-Leiste kommt erst ab genug Höhe dazu
+        root.SizeChanged += (_, e) => strip.IsVisible = e.NewSize.Height >= 470;
+        return root;
     }
 
     Control LogoProperties(ProgramDocument d)
     {
         var s = LogoSpec(d);
         var sp = new StackPanel { Spacing = 4 };
-        void Txt(string key, string label) { sp.Children.Add(P(label, null, 11)); sp.Children.Add(KrBox(d, key, "logo-p-" + key, label)); }
+        sp.Children.Add(P("Für den Vorschlag – Name und Farben wirken auch auf die Zeichnung.", Muted, 11));
+        void Txt(string key, string label)
+        {
+            sp.Children.Add(P(label, null, 11));
+            var t = new TextBox { Name = "logo-p-" + key, Text = d.Text(key), PlaceholderText = label };
+            var shown = d.Text(key);
+            bool Commit() { var now = t.Text ?? ""; if (now == shown || now == d.Text(key)) return false; shown = now; LogoField(d, key, now, label); return true; }
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            timer.Tick += (_, _) => { timer.Stop(); Commit(); };
+            t.TextChanged += (_, _) => { timer.Stop(); if ((t.Text ?? "") != shown) timer.Start(); };
+            t.LostFocus += (_, _) => { timer.Stop(); if (Commit()) Avalonia.Threading.Dispatcher.UIThread.Post(() => Show(LogoKey)); };
+            t.DetachedFromVisualTree += (_, _) => { timer.Stop(); Commit(); };
+            sp.Children.Add(t);
+        }
         Txt("name", "Name der Marke");
         Txt("tagline", "Untertitel (optional)");
         Txt("primary", "Hauptfarbe (#RRGGBB)");
@@ -217,239 +323,17 @@ public partial class MainWindow
         sp.Children.Add(P($"Hauptfarbe zu Weiß {cw.ToString("0.0", De)}:1 · zu Schwarz {cb.ToString("0.0", De)}:1", Text, 12));
         sp.Children.Add(P(Math.Max(cw, cb) >= 4.5 ? "✓ Gut lesbar auch in kleiner Schrift." : "⚠ Unter 4,5:1 – für kleine Schrift eine kräftigere Farbe wählen.", Math.Max(cw, cb) >= 4.5 ? Brush.Parse("#4ADE80") : Brush.Parse("#F5A524"), 12));
         if (!LogoKit.IsHex(d.Text("primary")) || !LogoKit.IsHex(d.Text("accent"))) sp.Children.Add(P("Farben bitte als #RRGGBB eintragen, z. B. #1E3A8A.", Brush.Parse("#F5A524"), 12));
-        return sp;
-    }
-
-    // ---------------- Podcast aufnehmen ----------------
-
-    static JsonObject PodcDoc(string title, string desc, string chapters) => new() { ["title"] = title, ["description"] = desc, ["chapters"] = chapters, ["audio"] = "", ["show"] = "", ["author"] = "", ["baseUrl"] = "" };
-
-    private void InitPodcast() => RegisterProgram(FachTabs, new ProgramSpec(PodcKey, "STUDIO-PODCAST-01", "Podcast aufnehmen")
-    {
-        Sentence = "Folge aufnehmen oder laden, Lautheit angleichen, Kapitel setzen, Shownotes und Feed schreiben.",
-        Folder = "Podcast",
-        ScrollWorkspace = true,
-        Templates =
-        [
-            new("leer", "Neue Folge", "Titel und Kapitel eintragen", () => PodcDoc("Folge 1", "", "00:00 Begrüßung\n")),
-            new("interview", "Beispiel: Interview", "Vier Kapitel zum Ausprobieren", () => PodcDoc("Folge 7: Gärtnern auf dem Balkon", "Erika Muster erzählt, was auf zwei Quadratmetern wächst.", "00:00 Begrüßung\n02:15 Wie alles anfing\n14:40 Die besten Pflanzen\n31:05 Fragen der Hörer")),
-        ],
-        Ribbon =
-        [
-            ("Ton", [
-                new ProgramCmd("podc-pick", "Aufnahme laden …", d => _ = PodcPick(d), Primary: true, Tip: "MP3, WAV, M4A oder OGG von deinem Rechner."),
-                new ProgramCmd("podc-loud", "Lautheit angleichen", d => _ = PodcLoudness(d), Tip: "-16 LUFS, wie bei den großen Podcast-Plattformen üblich. Schreibt eine neue MP3 mit Kapiteln, das Original bleibt."),
-                new ProgramCmd("podc-record", "Aufnehmen", d => Show("sendung"), Tip: "Öffnet die Aufnahme mit Mikrofon im Studio Live & Sendung."),
-            ]),
-        ],
-        Exports =
-        [
-            new("notes", "Shownotes (.md)", ".md", (d, f) => { File.WriteAllText(f, PodcastKit.ShowNotes(d.Text("title"), d.Text("description"), PodcastKit.ParseChapters(d.Text("chapters")).Chapters)); return f; }),
-            new("meta", "Kapiteldatei für FFmpeg (.txt)", ".txt", (d, f) => { File.WriteAllText(f, PodcastKit.FfMetadata(d.Text("title"), PodcastKit.ParseChapters(d.Text("chapters")).Chapters, PodcLength(d))); return f; }),
-            new("rss", "Podcast-Feed (.xml)", ".xml", PodcRss),
-        ],
-        SimpleExports = 2,
-        Workspace = PodcWorkspace,
-        Properties = PodcProperties,
-        Status = d => { var (c, p) = PodcastKit.ParseChapters(d.Text("chapters")); return $"{c.Count} Kapitel" + (p.Count > 0 ? $" · {p.Count} Hinweis(e)" : "") + (KreativSafe.LocalFile(d.Text("audio")) ? " · Aufnahme: " + Path.GetFileName(d.Text("audio")) : " · keine Aufnahme"); },
-        Help = "Kapitel schreibst du als „Minuten:Sekunden Titel“, eine Zeile je Kapitel. „Lautheit angleichen“ braucht FFmpeg und legt eine neue MP3 neben das Original. Den Feed lädst du selbst zu deinem Webspace hoch – Trendo veröffentlicht nichts.",
-    }, "podcast", "podcasts", "folge", "shownotes", "kapitelmarken", "lautheit", "rss", "hörsendung", "interview aufnehmen");
-
-    static TimeSpan PodcLength(ProgramDocument d)
-    {
-        var c = PodcastKit.ParseChapters(d.Text("chapters")).Chapters;
-        return double.TryParse(d.Text("seconds"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var s) && s > 0
-            ? TimeSpan.FromSeconds(s) : (c.Count > 0 ? c[^1].Start + TimeSpan.FromMinutes(5) : TimeSpan.FromMinutes(5));
-    }
-
-    async Task PodcPick(ProgramDocument d)
-    {
-        if (await PickMediaFile("podc-audio", "Aufnahme", ["*.mp3", "*.wav", "*.m4a", "*.ogg", "*.flac"]) is { } f)
-            ProgramRun(PodcKey, () => { d.Set("audio", f, "Aufnahme"); Show(PodcKey); });
-    }
-
-    bool _podcBusy;
-
-    async Task PodcLoudness(ProgramDocument d)
-    {
-        var src = d.Text("audio");
-        if (!KreativSafe.LocalFile(src)) { _progMsg[PodcKey] = "Lade zuerst eine Aufnahme von diesem Rechner."; Show(PodcKey); return; }
-        if (_podcBusy) { _progMsg[PodcKey] = "Die Lautheit wird schon angeglichen – einen Moment."; Show(PodcKey); return; }
-        _podcBusy = true;
-        if (FfmpegPath is not { } ff) { _progMsg[PodcKey] = "FFmpeg fehlt. Du richtest es im Studio „Videos schneiden“ mit einem Klick ein."; Show(PodcKey); return; }
-        var dir = Path.GetDirectoryName(src)!;
-        var meta = Path.Combine(Path.GetTempPath(), "trendo-podcast-" + Guid.NewGuid().ToString("N") + ".txt");
-        var output = Path.Combine(dir, Path.GetFileNameWithoutExtension(src) + "-fertig.mp3");
-        _progMsg[PodcKey] = "Lautheit wird angeglichen …"; Show(PodcKey);
-        try
+        var pal = VectorKit.Palette(LogoVec(d));
+        if (pal.Count > 0)
         {
-            File.WriteAllText(meta, PodcastKit.FfMetadata(d.Text("title"), PodcastKit.ParseChapters(d.Text("chapters")).Chapters, PodcLength(d)));
-            var args = PodcastKit.LoudnessArgs(src, output).ToList();
-            args.InsertRange(3, ["-i", meta, "-map_metadata", "1", "-map_chapters", "1", "-map", "0:a"]);
-            var psi = new ProcessStartInfo(ff) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardError = true };
-            foreach (var a in args) psi.ArgumentList.Add(a);
-            using var p = Process.Start(psi) ?? throw new InvalidOperationException("FFmpeg ließ sich nicht starten.");
-            var err = await p.StandardError.ReadToEndAsync();
-            await p.WaitForExitAsync();
-            _progMsg[PodcKey] = p.ExitCode == 0 && File.Exists(output) ? "Fertig: " + output : "FFmpeg meldet einen Fehler: " + string.Concat(err.Split('\n').LastOrDefault(l => l.Trim().Length > 0) ?? "");
-            if (p.ExitCode == 0) NotifyFileResult(_progMsg[PodcKey]);
-        }
-        catch (Exception ex) when (ex is IOException or InvalidOperationException or UnauthorizedAccessException or ArgumentException or System.ComponentModel.Win32Exception) { _progMsg[PodcKey] = ex.Message; }
-        finally { _podcBusy = false; try { File.Delete(meta); } catch (IOException) { } }
-        Show(PodcKey);
-    }
-
-    string PodcRss(ProgramDocument d, string file)
-    {
-        var audio = d.Text("audio");
-        var fin = KreativSafe.LocalFile(audio) ? Path.Combine(Path.GetDirectoryName(audio)!, Path.GetFileNameWithoutExtension(audio) + "-fertig.mp3") : "";
-        var use = File.Exists(fin) ? fin : audio;
-        if (!KreativSafe.LocalFile(use)) throw new InvalidOperationException("Für den Feed braucht es eine Aufnahme auf diesem Rechner.");
-        var ep = new PodcastKit.Episode(d.Text("title"), d.Text("description"), Path.GetFileName(use), new FileInfo(use).Length, PodcLength(d), DateTimeOffset.Now, d.Id);
-        File.WriteAllText(file, PodcastKit.Rss(d.Text("show").Length > 0 ? d.Text("show") : d.Text("title"), d.Text("author"), d.Text("description"), d.Text("baseUrl"), [ep]));
-        return file;
-    }
-
-    Control PodcWorkspace(ProgramDocument d)
-    {
-        var sp = new StackPanel { Name = "podc-workspace", Spacing = 12, Margin = new Thickness(4, 0, 10, 4) };
-        var audio = d.Text("audio");
-        var info = new StackPanel { Spacing = 4 };
-        info.Children.Add(H("Aufnahme", 14));
-        var hasAudio = KreativSafe.LocalFile(audio);
-        info.Children.Add(P(hasAudio ? $"{Path.GetFileName(audio)} · {new FileInfo(audio).Length / 1024.0 / 1024.0:0.0} MB" : "Noch keine Aufnahme. Oben „Aufnahme laden …“ oder „Aufnehmen“.", hasAudio ? Text : Muted, 12));
-        info.Children.Add(P("Ziel-Lautheit -16 LUFS, Spitze -1,5 dBTP, MP3 128 kbit/s. Das Original bleibt unverändert.", Muted, 11));
-        sp.Children.Add(KrCard(info, "podc-audio-card"));
-        var notes = new StackPanel { Name = "podc-chapters-view", Spacing = 3 };
-        void Render(string text)
-        {
-            notes.Children.Clear();
-            var (ch, problems) = PodcastKit.ParseChapters(text);
-            foreach (var c in ch)
-                notes.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("70,*"), Children = { new TextBlock { Text = c.Start.TotalHours >= 1 ? c.Start.ToString(@"h\:mm\:ss") : c.Start.ToString(@"mm\:ss"), Foreground = Accent, FontFamily = new FontFamily("Consolas, monospace"), FontSize = 13 }, Pos(new TextBlock { Text = c.Title, Foreground = Text, FontSize = 13 }, 1) } });
-            foreach (var p in problems) notes.Children.Add(P("⚠ " + p, Brush.Parse("#F5A524"), 12));
-        }
-        var box = KrBox(d, "chapters", "podc-chapters", "00:00 Begrüßung", true, Render);
-        box.FontFamily = new FontFamily("Consolas, Courier New, monospace"); box.MinHeight = 200;
-        Render(d.Text("chapters"));
-        sp.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("*,14,*"), Children = { new StackPanel { Spacing = 4, Children = { H("Kapitel", 14), box } }, Pos(KrCard(new StackPanel { Spacing = 6, Children = { H("So sieht es im Player aus", 13), notes } }), 2) } });
-        return sp;
-    }
-
-    Control PodcProperties(ProgramDocument d)
-    {
-        var sp = new StackPanel { Spacing = 4 };
-        void Txt(string key, string label, bool multi = false) { sp.Children.Add(P(label, null, 11)); sp.Children.Add(KrBox(d, key, "podc-p-" + key, label, multi)); }
-        Txt("title", "Titel der Folge");
-        Txt("description", "Beschreibung", true);
-        sp.Children.Add(H("Für den Feed", 13));
-        Txt("show", "Name des Podcasts");
-        Txt("author", "Autorin oder Autor");
-        Txt("baseUrl", "Adresse deines Webspace (https://…)");
-        Txt("seconds", "Länge in Sekunden (optional)");
-        return sp;
-    }
-
-    // ---------------- Comics & Storyboards ----------------
-
-    static JsonObject ComicDoc(string title, string layout, params (string Speech, string Caption)[] panels) => new()
-    {
-        ["title"] = title, ["layout"] = layout,
-        ["panels"] = new JsonArray(panels.Select(p => (JsonNode)new JsonObject { ["speech"] = p.Speech, ["caption"] = p.Caption, ["image"] = "" }).ToArray()),
-    };
-    static List<ComicKit.Panel> ComicPanels(ProgramDocument d) =>
-        d.List("panels").OfType<JsonObject>().Select(o => new ComicKit.Panel(Js(o["speech"]), Js(o["caption"]), Js(o["image"]))).ToList();
-
-    static void ComicFit(JsonObject x)
-    {
-        var need = ComicKit.Boxes(Js(x["layout"]) is { Length: > 0 } l ? l : "2x2").Count;
-        if (x["panels"] is not JsonArray a) x["panels"] = a = [];
-        while (a.Count < need) a.Add(new JsonObject { ["speech"] = "", ["caption"] = "", ["image"] = "" });
-    }
-
-    private void InitComic() => RegisterProgram(FachTabs, new ProgramSpec(ComicKey, "STUDIO-COMIC-01", "Comics & Storyboards")
-    {
-        Sentence = "Comicseiten und Storyboards: Bildaufteilung wählen, Bilder einsetzen, Sprechblasen und Texte schreiben.",
-        Folder = "Comics",
-        FillHeight = true,
-        Templates =
-        [
-            new("leer", "Leere Seite", "Vier Bilder", () => ComicDoc("", "2x2", ("", ""), ("", ""), ("", ""), ("", ""))),
-            new("beispiel", "Beispiel: Der Schlüssel", "Kurze Geschichte in vier Bildern", () => ComicDoc("Der Schlüssel", "2x2",
-                ("Wo ist nur mein Schlüssel?", "Montag, 7:58 Uhr."), ("Nicht in der Jacke …", ""), ("Miau!", "Der Kater weiß mehr."), ("Danke, Kater. Wieder zu spät.", "8:15 Uhr."))),
-        ],
-        Ribbon =
-        [
-            ("Aufteilung", ComicKit.Layouts.Select((l, i) => new ProgramCmd("comic-layout-" + l.Id, l.Label, d => d.Edit("Aufteilung " + l.Label, x => { x["layout"] = l.Id; ComicFit(x); }), Primary: i == 0)).ToList()),
-            ("Claude", [
-                new ProgramCmd("comic-claude", "Geschichte mit Claude", d => _ = ClaudeFromStudioBar("STUDIO-COMIC-01", $"Schreib eine kurze Comic-Geschichte in {ComicKit.Boxes(d.Text("layout")).Count} Bildern, je Bild: „Bild N: Sprechblase | Bildunterschrift“. Thema: {d.Text("title")}", null), Tip: "Nutzt deinen Claude-Zugang."),
-            ]),
-        ],
-        Exports =
-        [
-            new("svg", "Seite (.svg)", ".svg", (d, f) => { File.WriteAllText(f, ComicKit.Svg(d.Text("layout"), ComicPanels(d), d.Text("title"))); return f; }),
-            new("md", "Storyboard-Liste (.md)", ".md", (d, f) => { File.WriteAllText(f, $"# {d.Title}\n\n" + string.Join("\n", ComicPanels(d).Select((p, i) => $"{i + 1}. {p.Speech}{(p.Caption.Length > 0 ? " — " + p.Caption : "")}"))); return f; }),
-        ],
-        Workspace = ComicWorkspace,
-        Properties = ComicProperties,
-        Status = d => $"{ComicKit.Boxes(d.Text("layout")).Count} Bilder · {ComicPanels(d).Count(p => KreativSafe.LocalFile(p.ImagePath))} mit Bild",
-        Help = "Oben die Aufteilung wählen. Rechts für jedes Bild Sprechblase, Bildunterschrift und ein Bild (PNG/JPEG) eintragen. Bilder machst du z. B. im Studio „Bilder mit KI“ oder mit einer Zeichnung.",
-    }, "comic", "comics", "storyboard", "manga", "bildergeschichte", "sprechblase", "panel", "graphic novel");
-
-    Control ComicWorkspace(ProgramDocument d)
-    {
-        var boxes = ComicKit.Boxes(d.Text("layout")); var panels = ComicPanels(d);
-        var c = new Canvas { Width = ComicKit.PageW, Height = ComicKit.PageH, Background = Brushes.White };
-        void Add(Control x, double l, double t) { Canvas.SetLeft(x, l); Canvas.SetTop(x, t); c.Children.Add(x); }
-        if (d.Text("title").Trim().Length > 0) Add(new TextBlock { Text = d.Text("title").Trim(), FontSize = 24, FontWeight = FontWeight.Bold, Foreground = Brushes.Black }, ComicKit.Margin, 4);
-        for (var i = 0; i < boxes.Count; i++)
-        {
-            var b = boxes[i]; var p = i < panels.Count ? panels[i] : new ComicKit.Panel("", "", "");
-            var frame = new Border { Width = b.W, Height = b.H, BorderBrush = Brushes.Black, BorderThickness = new Thickness(4), ClipToBounds = true, Background = Brush.Parse("#F3F4F6") };
-            if (KreativSafe.LocalFile(p.ImagePath, KreativSafe.MaxImageBytes))
-                try { frame.Child = new Image { Source = new Bitmap(p.ImagePath), Stretch = Stretch.UniformToFill }; }
-                catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException) { }
-            else frame.Child = new TextBlock { Text = $"Bild {i + 1}", Foreground = Brush.Parse("#9CA3AF"), FontSize = 28, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
-            Add(frame, b.X, b.Y);
-            if (p.Speech.Trim().Length > 0)
-            {
-                Add(new Border { MaxWidth = Math.Min(b.W - 40, 370), Background = Brushes.White, BorderBrush = Brushes.Black, BorderThickness = new Thickness(3), CornerRadius = new CornerRadius(18), Padding = new Thickness(14, 10),
-                    Child = new TextBlock { Text = p.Speech.Trim(), FontSize = 20, FontFamily = new FontFamily("Comic Sans MS, Segoe UI"), Foreground = Brushes.Black, TextWrapping = TextWrapping.Wrap } }, b.X + 20, b.Y + 20);
-            }
-            if (p.Caption.Trim().Length > 0)
-                Add(new Border { Width = b.W, Height = 44, Background = Brush.Parse("#FFF3B0"), BorderBrush = Brushes.Black, BorderThickness = new Thickness(3), Padding = new Thickness(12, 8),
-                    Child = new TextBlock { Text = p.Caption.Trim(), FontSize = 18, Foreground = Brushes.Black, TextTrimming = TextTrimming.CharacterEllipsis } }, b.X, b.Y + b.H - 44);
-        }
-        var page = new Border { Name = "comic-page", Background = Brushes.White, BoxShadow = BoxShadows.Parse("0 10 30 0 #88000000"), Child = new Viewbox { Stretch = Stretch.Uniform, Child = c }, HorizontalAlignment = HorizontalAlignment.Center };
-        return new Border { Padding = new Thickness(20), Background = Brush.Parse("#0E1420"), CornerRadius = new CornerRadius(8), Child = page };
-    }
-
-    Control ComicProperties(ProgramDocument d)
-    {
-        var sp = new StackPanel { Spacing = 4 };
-        sp.Children.Add(P("Titel der Seite", null, 11)); sp.Children.Add(KrBox(d, "title", "comic-p-title", "Titel"));
-        var list = d.List("panels").OfType<JsonObject>().ToList();
-        var count = ComicKit.Boxes(d.Text("layout")).Count;
-        for (var i = 0; i < Math.Min(count, list.Count); i++)
-        {
-            var index = i;
-            sp.Children.Add(H($"Bild {i + 1}", 13));
-            TextBox Field(string field, string label)
-            {
-                var t = new TextBox { Name = $"comic-{field}-{i}", Text = Js(list[i][field]), PlaceholderText = label, TextWrapping = TextWrapping.Wrap, AcceptsReturn = field == "speech" };
-                t.LostFocus += (_, _) => { if ((t.Text ?? "") != Js(list[index][field])) d.Edit(label + " geändert", x => { if (x["panels"] is JsonArray a && a[index] is JsonObject o) o[field] = t.Text ?? ""; }); };
-                return t;
-            }
-            sp.Children.Add(Field("speech", "Sprechblase"));
-            sp.Children.Add(Field("caption", "Bildunterschrift"));
-            var pick = new Button { Name = $"comic-image-{i}", Content = KreativSafe.LocalFile(Js(list[i]["image"])) ? "Bild: " + Path.GetFileName(Js(list[i]["image"])) : "Bild wählen …", Padding = new Thickness(10, 4) };
-            pick.Click += async (_, _) =>
-            {
-                if (await PickMediaFile("comic-bild", "Bild (PNG oder JPEG)", ["*.png", "*.jpg", "*.jpeg"]) is { } f)
-                    ProgramRun(ComicKey, () => { d.Edit("Bild eingesetzt", x => { if (x["panels"] is JsonArray a && a[index] is JsonObject o) o["image"] = f; }); Show(ComicKey); });
-            };
-            sp.Children.Add(pick);
+            sp.Children.Add(H("Farben im Logo", 13));
+            var wp = new WrapPanel { Name = "logo-palette" };
+            foreach (var c in pal.Take(8)) wp.Children.Add(new Border { Width = 26, Height = 26, Margin = new Thickness(0, 0, 4, 4), CornerRadius = new CornerRadius(5), Background = Brush.Parse(c), [ToolTip.TipProperty] = c });
+            sp.Children.Add(wp);
         }
         return sp;
     }
+
+    // Podcast aufnehmen: MainWindow.PodcastStudio.cs (T-0697)
+    // Comics & Storyboards: MainWindow.ComicStudio.cs (T-0697)
 }

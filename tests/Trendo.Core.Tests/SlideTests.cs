@@ -114,7 +114,7 @@ public class SlideTests
     [Fact(DisplayName = "T-0229 P6: Abgleich mit LibreOffice Impress – Impress öffnet Trendos PPTX, speichert PPTX und ODP, Trendo liest beides (nur mit LibreOffice)")]
     public void Impress_roundtrip()
     {
-        if (Soffice() is not { } soffice) return;
+        if (Soffice() is not { } soffice) { Ueberspringen.Weil("LibreOffice fehlt auf diesem PC."); return; }
         var dir = Temp();
         try
         {

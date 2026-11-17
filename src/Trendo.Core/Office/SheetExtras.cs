@@ -117,7 +117,7 @@ public static class SheetExtras
             for (var c = left; c <= right; c++)
             {
                 var src = r - top < keep.Count ? keep[r - top][c - left] : null;
-                if (src is null) s.Clear(r, c); else { var t = s.GetOrAdd(r, c); t.Raw = src.Raw; t.Bold = src.Bold; t.Fill = src.Fill; t.Border = src.Border; t.Format = src.Format; t.Note = src.Note; }
+                if (src is null) s.Clear(r, c); else { s.Clear(r, c); var t = s.GetOrAdd(r, c); t.CopyFrom(src); }
             }
         return removed;
     }

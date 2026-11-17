@@ -1,0 +1,2 @@
+pdftotext version 4.06 [www.xpdfreader.com]
+10.0.404

@@ -36,8 +36,16 @@ public partial class MainWindow
                 var target = Path.GetFullPath(Path.Combine(dir, f.RelPath));
                 if (!target.StartsWith(Path.GetFullPath(dir) + Path.DirectorySeparatorChar)) throw new InvalidDataException("Unsicherer Pfad");
                 Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-                await AssetDownload(f.Url, target);
-                if (!FreeAssets.Md5Ok(target, f.Md5)) { File.Delete(target); throw new InvalidDataException("Datei beschädigt: " + f.RelPath); }
+                // T-0715 (Hülle E3): erst als Zwischendatei laden und prüfen, dann unter den richtigen Namen schieben – ein Abbruch mitten im Laden
+                // hinterlässt keine halbe Datei, die wie eine fertige aussieht
+                var part = target + ".~" + Guid.NewGuid().ToString("N")[..8] + ".teil";
+                try
+                {
+                    await AssetDownload(f.Url, part);
+                    if (!FreeAssets.Md5Ok(part, f.Md5)) throw new InvalidDataException("Datei beschädigt: " + f.RelPath);
+                    SafeFile.Move(part, target);
+                }
+                finally { try { if (File.Exists(part)) File.Delete(part); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } }
             }
             FreeAssets.WriteLicense(dir, h.Id, h.Name);
             _core.Audit.Append(Principal.LocalOwner.Name, "asset.fetch", $"{h.Id} {plan.Count} Dateien");

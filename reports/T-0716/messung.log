@@ -1,0 +1,10 @@
+  Bestanden T-0716 Baukasten: alte seite.json ohne Version bleibt lesbar, Speichern schreibt Version (vorn) atomar, neuere Fassung wird verständlich abgelehnt [192 ms]
+  Bestanden T-0716 Messung CAD: Rückgängig-Schritt teilt das Netz eines Referenzkörpers (Delta) statt es zu kopieren – 100 Schritte belegen einen Bruchteil, Inhalt gleich [165 ms]
+ CAD, Referenzkörper 20 000 Dreiecke (937 KB): 100 Schritte bisher (Clone) 93.871 KB in 23 ms, Delta (Snapshot) 109 KB in 0 ms.
+  Bestanden T-0716 Absturz: Baukasten (seite.json + Notsicherung der Hülle mit Sperre) – 10-mal hart beendet, Seite und Sicherung öffnen sich jedes Mal, höchstens der laufende Schritt fehlt [4 s]
+ baukasten: 10 harte Abbrüche, 10 mitten im Schreiben, höchstens 0 Schritt verloren.
+  Bestanden T-0716 Messung 3D: Rückgängig als Delta – 100 Schritte an einem kleinen Teil neben einem großen Netz: alle 100 bleiben (vorher Grenze nach wenigen), Speicher ≈ eine Szene, Rückgängig exakt [22 s]
+ Szene: 8.424.934 Zeichen (Netz 40 000 Dreiecke). Bisher: 17 von 100 Schritten behalten, 143.223.895 Zeichen, 4009 ms. Delta: 100 Schritte, 6.546.213 Zeichen, 3890 ms.
+Der Testlauf war erfolgreich.
+Gesamtzahl Tests: 4
+ Gesamtzeit: 29,5572 Sekunden

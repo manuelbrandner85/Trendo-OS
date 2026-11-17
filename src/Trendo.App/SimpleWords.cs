@@ -37,6 +37,10 @@ public static class SimpleWords
     public static readonly AttachedProperty<bool> KeepProperty = AvaloniaProperty.RegisterAttached<Button, bool>("Keep", typeof(SimpleWords));
     public static Button Keep(Button b) { b.SetValue(KeepProperty, true); return b; }
 
+    /// <summary>V-05 (T-0684): Zeichen-Knopf, dessen Wort vom Zusammenhang abhängt (Pfeil = „Nächster Monat“, nicht „Abspielen“):
+    /// Hinweis und Name für Bildschirmleser fest setzen. In „Einfach“ steht dieses Wort am Knopf.</summary>
+    public static Button Named(Button b, string word) { ToolTip.SetTip(b, word); AutomationProperties.SetName(b, word); return b; }
+
     /// <summary>Hinweis setzen und den Knopf zurückgeben (für Zeichen-Knöpfe in Listen).</summary>
     public static T Tip<T>(T c, string tip) where T : Control { ToolTip.SetTip(c, tip); return c; }
 
@@ -84,7 +88,7 @@ public static class SimpleWords
 
     /// <summary>Wort für diesen Knopf: Hinweis, sonst Name für Bildschirmleser, sonst der Name des Linien-Symbols.</summary>
     public static string? WordFor(Button b) =>
-        Short(ToolTip.GetTip(b) as string) ?? Short(AutomationProperties.GetName(b)) ?? (GlyphIcons.GetGlyph(b) is { } g && GlyphIcons.Map.TryGetValue(g, out var gl) ? Short(gl.Name) : null);
+        Short(ToolTip.GetTip(b) as string) ?? Short(AutomationProperties.GetName(b)) ?? (GlyphIcons.GetGlyph(b) is { } g ? Short(GlyphIcons.NameFor(g, b.Name)) : null); // V-05: mehrdeutige Zeichen nie raten
 
     public static void Enable()
     {
@@ -117,12 +121,31 @@ public static class SimpleWords
     public static void Plain(ContentControl c)
     {
         if (!AnySimple || c.GetValue(PlainedProperty) || c.Content is not string s || c.TemplatedParent is not null || PersonContent(c)) return;
-        if (Trendo.Core.Programs.PlainWords.SimpleFor(c.Name!, s) is not { } plain || IsSimple?.Invoke(c) != true) return;
+        // V-11 (T-0700): Tastenkürzel („Teilen (S)“) wandert in den Hinweis
+        var key = Trendo.Core.Programs.PlainWords.WithoutShortcut(s);
+        if ((Trendo.Core.Programs.PlainWords.SimpleFor(c.Name!, s) ?? key?.Label) is not { } plain || IsSimple?.Invoke(c) != true) return;
         var tip = ToolTip.GetTip(c);
         c.SetValue(OriginalProperty, s); c.SetValue(OriginalTipProperty, tip); c.SetValue(PlainedProperty, true);
-        ToolTip.SetTip(c, (tip is string { Length: > 0 } t ? t + Environment.NewLine : "") + "Fachwort: " + s);
+        ToolTip.SetTip(c, (tip is string { Length: > 0 } t ? t + Environment.NewLine : "") + (key is { } k && plain == k.Label ? "Taste: " + k.Key : "Fachwort: " + s));
         if (string.IsNullOrEmpty(AutomationProperties.GetName(c))) AutomationProperties.SetName(c, plain);
         c.Content = plain;
+    }
+
+    /// <summary>V-11 (T-0700): feste Texte und Platzhalter mit Fachwort in „Einfach“ durch Alltagswörter ersetzen (<see cref="Trendo.Core.Programs.PlainWords.SimpleTexts"/>),
+    /// das Fachwort steht im Hinweis. Läuft nach jedem Seitenaufbau; beim Stufenwechsel wird die Seite ohnehin neu gebaut.</summary>
+    public static int PlainTexts(Control root)
+    {
+        if (!AnySimple || IsSimple?.Invoke(root) != true) return 0;
+        var n = 0;
+        foreach (var c in root.GetLogicalDescendants().OfType<Control>().ToList())
+        {
+            if (c.TemplatedParent is not null) continue;
+            if (c is TextBlock { Text: { Length: > 0 } tx } tb && tb.Inlines is not { Count: > 0 } && Trendo.Core.Programs.PlainWords.SimpleText(tx) is { } plain)
+            { if (ToolTip.GetTip(tb) is null) ToolTip.SetTip(tb, "Fachwort: " + tx.Trim()); tb.Text = plain; n++; }
+            else if (c is TextBox { PlaceholderText: { Length: > 0 } ph } box && Trendo.Core.Programs.PlainWords.SimpleText(ph) is { } plainPh)
+            { if (ToolTip.GetTip(box) is null) ToolTip.SetTip(box, "Fachwort: " + ph.Trim()); box.PlaceholderText = plainPh; n++; }
+        }
+        return n;
     }
 
     /// <summary>Setzt das Wort neben das Symbol, wenn die Stufe „Einfach“ gilt und der Knopf im Seiteninhalt steht (nicht Fensterleiste, Hülle oder Claude-Bereich).</summary>

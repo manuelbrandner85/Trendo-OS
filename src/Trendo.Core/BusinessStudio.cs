@@ -127,8 +127,7 @@ public sealed class IdeaStore(string dataRoot)
     {
         var all = All(); var k = all.FindIndex(x => x.Id == i.Id);
         if (k >= 0) all[k] = i; else all.Insert(0, i);
-        Directory.CreateDirectory(Path.GetDirectoryName(_file)!);
-        File.WriteAllText(_file, JsonSerializer.Serialize(all, new JsonSerializerOptions { WriteIndented = true }));
+        AtomicFile.WriteAllText(_file, JsonSerializer.Serialize(all, new JsonSerializerOptions { WriteIndented = true })); // T-0714: nie eine halbe Ideen-Liste
     }
-    public void Delete(string id) { var all = All(); all.RemoveAll(x => x.Id == id); Directory.CreateDirectory(Path.GetDirectoryName(_file)!); File.WriteAllText(_file, JsonSerializer.Serialize(all)); }
+    public void Delete(string id) { var all = All(); all.RemoveAll(x => x.Id == id); AtomicFile.WriteAllText(_file, JsonSerializer.Serialize(all)); } // T-0714: atomar
 }

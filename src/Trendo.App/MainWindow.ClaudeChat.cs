@@ -430,7 +430,7 @@ public partial class MainWindow
         var shell = Programs.ContainsKey(dock.Page) && ProgramActive(dock.Page) is not null;
         string? workFile = null;
         if (shell && ProgramActive(dock.Page) is { } doc)
-            try { workFile = Regex.Replace(doc.Title, @"[\\/:*?""<>|]", "-") + ProgramDocument.Extension; File.WriteAllText(Path.Combine(folder, workFile), doc.Serialize()); }
+            try { workFile = Regex.Replace(doc.Title, @"[\\/:*?""<>|]", "-") + ProgramDocument.Extension; var wf = Path.Combine(folder, workFile); if (!(doc.ReadOnly && doc.Path is { } own && ProgramDocument.SameFile(own, wf))) AtomicFile.WriteAllText(wf, doc.Serialize()); ClaudeDocSeen(doc, wf); } // T-0680: atomar; ein nur zum Lesen offenes Dokument (anderes Fenster) wird nicht überschrieben
             catch (Exception e) when (e is IOException or UnauthorizedAccessException) { workFile = null; }
         // Brief-Studio: der offene Brief ist das Dokument (Text UND Design) – Claude arbeitet darin, Trendo übernimmt jede Änderung live ins Brief-Programm
         var letterDoc = !shell && dock.Studio == LetterStudio;
@@ -491,6 +491,7 @@ public partial class MainWindow
         using var watch = limited ? null : ClaudeWatch(dock, folder, () => workFile); // jede Änderung im Projektordner live im Programm – egal, wie Claude sie macht
         if (!limited)
         {
+            _claudeRunning++; // T-0728: während des Laufs nicht zusammenfassen
             try
             {
                 var mcpFile = chat.FullWith(ClaudeAlways) ? ClaudeStudioMcp(folder, dock.Studio) : null; // C5 (08.11.2026): Blender/Unreal/Godot direkt aus Claude
@@ -500,8 +501,10 @@ public partial class MainWindow
             }
             catch (OperationCanceledException) { error = "Angehalten."; }
             catch (InvalidOperationException e) { error = e.Message; }
+            finally { _claudeRunning--; }
             await _ui.InvokeAsync(() => { }, DispatcherPriority.Background); // ausstehende Ereignisse abarbeiten
             if (pendingFile is { } lastPf) ClaudeLiveChanged(dock, Path.Combine(folder, lastPf), workFile, null);
+            if (bridged) ClaudeRunSquash(); // T-0728: alles, was Claude in diesem Lauf im Programm geändert hat, ist EIN Rückgängig-Schritt
             if (limitRaw is null && (ClaudeCode.IsAuthExpired(error) || !ok && ClaudeCode.IsAuthExpired(say.ToString())))
             {
                 // T-0621: Anmeldung abgelaufen – kein Fehlertext als Antwort; die Ersatz-KI übernimmt, „Claude neu anmelden“ stellt Claude wieder her
@@ -808,12 +811,17 @@ public partial class MainWindow
     }
 
     /// <summary>Studio-Dokument aus der Datei übernehmen, die Claude bearbeitet hat (ein Rückgängig-Schritt im Studio).</summary>
+    /// <summary>T-0680: Die Arbeitsdatei für Claude ist das Dokument selbst. Schreibt Trendo sie für Claude oder übernimmt Trendo Claudes Stand ins Dokument,
+    /// ist das keine „Änderung von außen“ – sonst würde das nächste Speichern nachfragen.</summary>
+    static void ClaudeDocSeen(ProgramDocument doc, string file) { if (doc.Path is { } p && ProgramDocument.SameFile(p, file)) doc.AcceptDisk(); }
+
     void ClaudeSyncProgram(ClaudeDock dock, string file)
     {
         if (ProgramActive(dock.Page) is not { } doc) return;
         try
         {
             var fresh = ProgramDocument.Load(file);
+            ClaudeDocSeen(doc, file);
             if (fresh.Data.ToJsonString() == LiveTarget(dock.Page, doc)) return; // schon übernommen (oder wird gerade live eingespielt)
             ClaudeApplyLive(dock, doc, fresh.Data); // live – viele neue Teile erscheinen nacheinander
         }

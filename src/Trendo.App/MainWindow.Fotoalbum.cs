@@ -219,7 +219,7 @@ public partial class MainWindow
         info.Children.Add(acts);
         var top = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = {
             Act("photo-back", "← Zurück zur Übersicht", () => { _photoOpen = null; Show("medien"); }),
-            Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, HorizontalAlignment = HorizontalAlignment.Center, Children = { Act("photo-prev", "◀", () => Go(-1)), Act("photo-next", "▶", () => Go(1)) } }, 1),
+            Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, HorizontalAlignment = HorizontalAlignment.Center, Children = { SimpleWords.Named(Act("photo-prev", "◀", () => Go(-1)), "Voriges Foto"), SimpleWords.Named(Act("photo-next", "▶", () => Go(1)), "Nächstes Foto") } }, 1),
             Pos(new TextBlock { Text = "← → blättern · Esc schließt", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center }, 2) } };
         var root = new Grid { Name = "photo-viewer", Focusable = true, RowDefinitions = new RowDefinitions("Auto,10,*"), ColumnDefinitions = new ColumnDefinitions("*,14,Auto"), Children = { top, Pos(stage, 0), Pos(Glass2(info, 12), 2) } };
         Grid.SetColumnSpan(top, 3); Grid.SetRow(stage, 2); Grid.SetRow(root.Children[2], 2);

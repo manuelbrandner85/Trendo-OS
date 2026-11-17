@@ -66,7 +66,7 @@ public sealed partial class KnowledgeStore
     public bool Trash(string id)
     {
         var it = Get(id); if (it is null) return false;
-        var t = Trashed().ToList(); t.Add(it); File.WriteAllText(TrashFile, JsonSerializer.Serialize(t));
+        var t = Trashed().ToList(); t.Add(it); AtomicFile.WriteAllText(TrashFile, JsonSerializer.Serialize(t));
         _items.Remove(it); Save(); _audit.Append(Principal.LocalOwner.Name, "wissen.trash", id);
         return true;
     }
@@ -74,7 +74,7 @@ public sealed partial class KnowledgeStore
     public bool Restore(string id)
     {
         var t = Trashed().ToList(); var it = t.FirstOrDefault(x => x.Id == id); if (it is null) return false;
-        t.Remove(it); File.WriteAllText(TrashFile, JsonSerializer.Serialize(t));
+        t.Remove(it); AtomicFile.WriteAllText(TrashFile, JsonSerializer.Serialize(t));
         _items.Add(it); Save(); _audit.Append(Principal.LocalOwner.Name, "wissen.restore", id);
         return true;
     }

@@ -1,0 +1,14 @@
+ffprobe MP4:
+codec_name=h264
+width=1280
+height=720
+nb_frames=61
+duration=2.033333
+Standbild t=0: Mitte der Form (299,5, 359,5), 30643 Bildpunkte; erwartet (300, 360)
+Standbild Ende: Mitte der Form (979,5, 359,5), 30631 Bildpunkte; erwartet (980, 360)
+MP4 8458 B sha256=d52dcc9703d47058a3da6cea99ea2559eebf58d2a5cecc66f49c6ff56c160989
+ffprobe GIF:
+codec_name=gif
+width=1280
+height=720
+GIF 35555 B sha256=9dbb79d61dcb3d1bd212bd42afb731482561a7a414577844b3f949daec0d9383

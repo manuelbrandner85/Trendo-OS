@@ -60,8 +60,12 @@ public sealed class ForensicsLab
         var h = Sha256(file);
         var name = Path.GetFileName(file); var dest = Path.Combine(Dir(c.Id), "beweise", name);
         for (var i = 2; File.Exists(dest); i++) dest = Path.Combine(Dir(c.Id), "beweise", $"{Path.GetFileNameWithoutExtension(name)}_{i}{Path.GetExtension(name)}");
-        File.Copy(file, dest);
-        if (Sha256(dest) != h) { File.Delete(dest); throw new IOException("Kopie weicht vom Original ab."); }
+        // T-0717: erst als Zwischendatei im Fall-Ordner, geprüft, dann unter den richtigen Namen – nach einem Absturz liegt nie eine halbe Kopie unter dem Beweisnamen.
+        // Die Zwischendatei liegt im Fall-Ordner und wird mit dem Fall gelöscht (120-Stunden-Regel unverändert).
+        var part = dest + ".teil";
+        File.Copy(file, part, overwrite: true);
+        if (Sha256(part) != h) { File.Delete(part); throw new IOException("Kopie weicht vom Original ab."); }
+        File.Move(part, dest);
         File.SetAttributes(dest, File.GetAttributes(dest) | FileAttributes.ReadOnly);
         var it = new EvidenceItem(Path.GetFileName(dest), Path.GetFileName(file), h, new FileInfo(dest).Length, _time.GetLocalNow());
         c.Items.Add(it); Save(c);
@@ -84,7 +88,7 @@ public sealed class ForensicsLab
         var lines = new List<string> { $"# Fallbericht: {c.Title}", "", $"- Fall-ID: {c.Id}", $"- Angelegt: {c.Created:dd.MM.yyyy HH:mm}", $"- Löscht sich automatisch: {c.Expires:dd.MM.yyyy HH:mm}", $"- Kette unverändert: {(ok ? "ja" : "NEIN")}", "", "| Datei | SHA-256 | Größe | Zustand |", "|---|---|---|---|" };
         lines.AddRange(items.Select(i => $"| {i.Item.Name} | {i.Item.Sha256} | {i.Item.Bytes} B | {(i.Ok ? "unverändert" : "VERÄNDERT/FEHLT")} |"));
         lines.Add(""); lines.Add("## Kette"); lines.AddRange(Custody(c.Id).ReadAll().Select(e => $"- {e.At:dd.MM.yyyy HH:mm:ss} {e.Action}: {e.Detail}"));
-        var f = Path.Combine(Dir(c.Id), "bericht.md"); File.WriteAllLines(f, lines);
+        var f = Path.Combine(Dir(c.Id), "bericht.md"); AtomicFile.WriteAllText(f, string.Join(Environment.NewLine, lines) + Environment.NewLine); // T-0717: atomar (gleiche Zeilenenden wie WriteAllLines)
         return f;
     }
 
@@ -104,5 +108,7 @@ public sealed class ForensicsLab
         _audit.Append(Principal.LocalOwner.Name, "forensik.deleted", id);
     }
 
-    private void Save(EvidenceCase c) => File.WriteAllText(Meta(c.Id), JsonSerializer.Serialize(c));
+    /// <summary>T-0717: Fall-Datei atomar – nach einem Absturz ist der Fall mit Ablaufzeit lesbar (vorher konnte eine halbe fall.json den Fall unsichtbar machen,
+    /// dann hätte <see cref="PurgeExpired"/> ihn nie gelöscht). Inhalt und Frist unverändert.</summary>
+    private void Save(EvidenceCase c) => AtomicFile.WriteAllText(Meta(c.Id), JsonSerializer.Serialize(c));
 }

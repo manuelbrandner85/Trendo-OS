@@ -1,0 +1,12 @@
+1
+00:00:06,500 --> 00:00:09,450
+Ist er schon weg?
+
+2
+00:00:09,500 --> 00:00:12,950
+Der letzte Zug fährt um Mitternacht.
+
+3
+00:00:17,000 --> 00:00:20,450
+Dann bleibt mir nur noch eins.
+

@@ -1,0 +1,91 @@
+# Echtlauf unreal – Unreal: C++-Spiel anlegen, kompilieren, Unreal-Tests, Startlauf
+Datum: 2026-11-16T21:37:56
+Fundort: C:\Program Files\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe
+Suchweg: GameStudio.FindEngines (LauncherInstalled.dat)
+Version: ++UE5+Release-5.8-CL-58902052
+
+## Fachlauf (Helfer: unreal) – Exit 0, 145.8 s
+21:37:56 Projekt angelegt: EchtlaufSpiel.uproject (Unreal 5.8, eigener Temp-Ordner)
+21:37:56 $ Build.bat EchtlaufSpielEditor Win64 Development -Project=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\unreal\EchtlaufSpiel\EchtlaufSpiel.uproject -WaitMutex -NoHotReload
+21:39:22   Exit 0 nach 85,9 s
+  | Using bundled DotNet SDK version: 10.0 win-x64
+  | Running UnrealBuildTool: dotnet "..\..\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll" EchtlaufSpielEditor Win64 Development -Project=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\unreal\EchtlaufSpiel\EchtlaufSpiel.uproject -WaitMutex -NoHotReload
+  | Log file: C:\Users\<user>\AppData\Local\UnrealBuildTool\Log.txt
+  | Determining max actions to execute in parallel (8 physical cores, 16 logical cores)
+  |   Executing up to 8 processes, one per physical core
+  | Creating makefile for EchtlaufSpielEditor (no existing makefile)
+  | UbaServer - Listening on 0.0.0.0:1345
+  | UHT compiled-in object format Default
+  | Building EchtlaufSpielEditor...
+  | ===== Toolchain Information =====
+  | Using ISPC compiler (C:\Program Files\Epic Games\UE_5.8\Engine\Source\ThirdParty\Intel\ISPC\bin\Windows\ispc.exe)
+  |   Intel(r) Implicit SPMD Program Compiler (Intel(r) ISPC), 1.24.0 (build commit  @ 20250404, LLVM 18.1.2)
+  | Using Visual Studio 14.50.35740 toolchain (C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\MSVC\14.50.35717) and Windows 10.0.22621.0 SDK (C:\Program Files (x86)\Windows Kits\10).
+  | ===== End Toolchain Information =====
+  | Using Unreal Build Accelerator local executor to run 14 action(s)
+  |   CPU 8 physical cores, 16 logical cores
+  |   Memory 31.88 GB physical, 50.84 GB/59.05 GB committed
+  |   UBA Storage capacity 40 GB
+  | [1/14] Compile [x64] SharedPCH.UnrealEd.Project.ValApi.ValExpApi.Cpp20.cpp
+  | [2/14] Compile Resource [x64] Default.rc2
+  | [3/14] Compile [x64] EchtlaufSpiel.cpp
+  | [4/14] Compile [x64] PerModuleInline.gen.cpp
+  | [5/14] Compile [x64] Module.EchtlaufSpiel.gen.cpp
+  | [6/14] Compile [x64] TrendoCar.cpp
+  | [7/14] Compile [x64] TrendoCharacter.cpp
+  | [8/14] Compile [x64] TrendoActors.cpp
+  | [9/14] Compile [x64] TrendoTests.cpp
+  | [10/14] Compile [x64] TrendoTypes.cpp
+  | [11/14] Compile [x64] TrendoGameMode.cpp
+  | [12/14] Link [x64] UnrealEditor-EchtlaufSpiel.lib
+  |    Bibliothek "C:\Users\<user>/AppData/Local/Temp/trendo-echtlauf-30792/unreal/EchtlaufSpiel/Intermediate/Build/Win64/x64/UnrealEditor/Development/EchtlaufSpiel/UnrealEditor-EchtlaufSpiel.lib" und Objekt "C:\Users\<user>/AppData/Local/Temp/trendo-echtlauf-30792/unreal/EchtlaufSpiel/Intermediate/Build/Win64/x64/UnrealEditor/Development/EchtlaufSpiel/UnrealEditor-EchtlaufSpiel.exp" werden erstellt.
+  | [13/14] Link [x64] UnrealEditor-EchtlaufSpiel.dll
+  | [14/14] WriteMetadata EchtlaufSpielEditor.target [NoUba]
+  | Total time in Unreal Build Accelerator local executor: 58.82 seconds
+  | Output binary: C:\Program Files\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor.exe
+  | Result: Succeeded
+  | Total execution time: 85.20 seconds
+  | Trace written to file C:\Users\<user>\AppData\Local\UnrealBuildTool\Trace.uba with size 14.1kb
+21:39:22 Kompilieren: OK (Exit 0, 1,4 min)
+21:39:22 $ UnrealEditor-Cmd.exe C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\unreal\EchtlaufSpiel\EchtlaufSpiel.uproject "-ExecCmds=Automation RunTests Trendo" "-TestExit=Automation Test Queue Empty" -unattended -nullrhi -nosplash -nopause -log -abslog=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\unreal\EchtlaufSpiel\Trendo-Pruefung\tests.txt
+21:40:07   Exit 0 nach 45,4 s
+  | Using bundled DotNet SDK version: 10.0 win-x64
+  | Running UnrealBuildTool: dotnet "..\..\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll" -Mode=ValidatePlatforms -OutputSDKs  -AllPlatforms  -project="C:\Users\<user>/AppData/Local/Temp/trendo-echtlauf-30792/unreal/EchtlaufSpiel/EchtlaufSpiel.uproject" -log="C:\Users\<user>/AppData/Local/Temp/trendo-echtlauf-30792/unreal/EchtlaufSpiel/Saved/Logs/AutoSDKInfo.txt" -verbose -timestamps
+  | Log file: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\unreal\EchtlaufSpiel\Saved\Logs\AutoSDKInfo.txt
+  | ##PlatformValidate: Win64 VALID 10.0.22621.0
+  | ##PlatformValidate: Mac INVALID 26.1.1
+  | ##PlatformValidate: IOS INVALID 26.1.1
+  | ##PlatformValidate: Android INVALID r27c
+  | ##PlatformValidate: Linux INVALID v26_clang-20.1.8-rockylinux8
+  | ##PlatformValidate: LinuxArm64 INVALID <UNKNOWN>
+  | ##PlatformValidate: TVOS INVALID 26.1.1
+  | ##PlatformValidate: VisionOS INVALID <UNKNOWN>
+  | Unable to find required SDK version 'MainVersion' for platform LinuxArm64. Check your SDK.json files
+  | Unable to find required SDK version 'MainVersion' for platform VisionOS. Check your SDK.json files
+  | Trace written to file C:\Users\<user>\AppData\Local\UnrealBuildTool\Trace.uba with size 322b
+21:40:07 Unreal-Tests: 3 von 3 bestanden (Trendo.Daten, Trendo.Regeln, Trendo.Spielstand) – Exit 0, 0,8 min
+21:40:07 $ UnrealEditor.exe C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\unreal\EchtlaufSpiel\EchtlaufSpiel.uproject -game -trendocheck -nullrhi -unattended -nosplash -nopause -log -abslog=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\unreal\EchtlaufSpiel\Trendo-Pruefung\start.txt
+21:40:21   Exit 0 nach 14,2 s
+  | Using bundled DotNet SDK version: 10.0 win-x64
+  | Running UnrealBuildTool: dotnet "..\..\Engine\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll" -Mode=ValidatePlatforms -OutputSDKs  -AllPlatforms  -project="C:\Users\<user>/AppData/Local/Temp/trendo-echtlauf-30792/unreal/EchtlaufSpiel/EchtlaufSpiel.uproject" -log="C:\Users\<user>/AppData/Local/Temp/trendo-echtlauf-30792/unreal/EchtlaufSpiel/Saved/Logs/AutoSDKInfo.txt" -verbose -timestamps
+  | Log file: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\unreal\EchtlaufSpiel\Saved\Logs\AutoSDKInfo.txt
+  | ##PlatformValidate: Win64 VALID 10.0.22621.0
+  | ##PlatformValidate: Mac INVALID 26.1.1
+  | ##PlatformValidate: IOS INVALID 26.1.1
+  | ##PlatformValidate: Android INVALID r27c
+  | ##PlatformValidate: Linux INVALID v26_clang-20.1.8-rockylinux8
+  | ##PlatformValidate: LinuxArm64 INVALID <UNKNOWN>
+  | ##PlatformValidate: TVOS INVALID 26.1.1
+  | ##PlatformValidate: VisionOS INVALID <UNKNOWN>
+  | Unable to find required SDK version 'MainVersion' for platform LinuxArm64. Check your SDK.json files
+  | Unable to find required SDK version 'MainVersion' for platform VisionOS. Check your SDK.json files
+  | Trace written to file C:\Users\<user>\AppData\Local\UnrealBuildTool\Trace.uba with size 322b
+21:40:21 Startlauf: OK – Welt=level Level=0 Objekte=13 Gegner=1 Natur=0 Figur=ja Boden=ja Z=144 (Exit 0, 0,2 min)
+21:40:21   Protokoll kompilieren.txt: 2 KB, SHA256 88bc03b8a689e8e249ef31f03b036b62c01ee0ada60038486797b0b80e08c7fb
+21:40:21   Protokoll start.txt: 209 KB, SHA256 b672be8895d03249bca688490f9f573aee126a74f7f6e22818ea8f7c3bc09ae0
+21:40:21   Protokoll tests.txt: 302 KB, SHA256 95e9f55f1ef0df4f4bb3e48140a6143c39b96f375c7046fefc461e84130bfc95
+21:40:21 Nicht geprüft: Open World (lädt 275 MB Fotomaterial), MetaHuman-Figur, Startlauf mit Grafik/Bildschirmfoto, gepacktes Spiel (BuildCookRun).
+
+
+ERGEBNIS: ECHT-GRÜN (145.8 s)
+- Fachlauf unreal: ECHT-GRÜN – Nicht geprüft: Open World (lädt 275 MB Fotomaterial), MetaHuman-Figur, Startlauf mit Grafik/Bildschirmfoto, gepacktes Spiel (BuildCookRun).

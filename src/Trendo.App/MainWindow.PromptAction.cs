@@ -103,6 +103,11 @@ public partial class MainWindow
         return new DockPanel { LastChildFill = true, Children = { row, view } };
     }
 
+    /// <summary>V-13 (T-0684): Seiten, die selbst ein KI-Gespräch oder eine geführte Beschreibung sind – dort steht keine zweite Eingabe darüber.</summary>
+    public static readonly IReadOnlySet<string> OwnKiInputPages = new HashSet<string> { "ki-fragen", "ki", "dev" };
+    /// <summary>Seiten, auf denen die Person die Auftragszeile ausdrücklich eingeblendet hat (bis Trendo beendet wird).</summary>
+    readonly HashSet<string> _promptBarOpen = [];
+
     /// <summary>Hängt die Leiste an. Der Startbildschirm bleibt unverändert, damit der parallele Desktop-Auftrag dort frei bleibt.</summary>
     private Control WithPromptBar(string key, Control view)
     {
@@ -129,6 +134,28 @@ public partial class MainWindow
             view.HorizontalAlignment = HorizontalAlignment.Stretch; view.VerticalAlignment = VerticalAlignment.Stretch;
             return new DockPanel { LastChildFill = true, Children = { slim, view } };
         }
+        // V-13 (T-0684, freigegeben 16.11.2026): Auf Seiten mit eigenem KI-Gespräch ist die Seite selbst die Eingabe – oben steht nur „KI ▾“.
+        // Die Auftragszeile bleibt einen Klick entfernt („Auftragszeile zeigen“ im Menü), keine Funktion entfällt.
+        if (OwnKiInputPages.Contains(key) && !_promptBarOpen.Contains(key))
+        {
+            var items = new List<Control>();
+            if (ClaudeBelongs(key) && ClaudeStudioOf(key) is { } ks)
+            {
+                var kc = new Button { Name = "auftrag-claude", Content = Windows.Active?.Id is { } kw && ClaudeDockOpen(kw) ? "Claude ✕" : "Claude", Height = 32 };
+                ToolTip.SetTip(kc, $"Claude für „{StudioCatalog.NameOf(ks, ks)}“ öffnen – mit deinem Abo, passend zu diesem Studio");
+                kc.Click += (_, _) => ClaudeDockToggle(ks, null);
+                items.Add(kc); items.AddRange(KiMenuOrder(ClaudeBarExtras(key, ks)));
+            }
+            var showBar = new Button { Name = "auftrag-zeile-zeigen", Content = "Auftragszeile zeigen", Height = 32 };
+            ToolTip.SetTip(showBar, "Die Eingabezeile für Aufträge an dieses Studio über der Seite einblenden");
+            showBar.Click += (_, _) => { _promptBarOpen.Add(key); Show(key); };
+            items.Add(showBar);
+            var only = new StackPanel { Name = "auftrag-nur-ki", Orientation = Orientation.Horizontal, Spacing = 6, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Avalonia.Thickness(8, 6, 8, 2) };
+            only.Children.Add(KiMenu(items, ClaudeBelongs(key) ? ClaudeStudioOf(key) : null));
+            DockPanel.SetDock(only, Avalonia.Controls.Dock.Top);
+            view.HorizontalAlignment = HorizontalAlignment.Stretch; view.VerticalAlignment = VerticalAlignment.Stretch;
+            return new DockPanel { LastChildFill = true, Children = { only, view } };
+        }
         var dock = new DockPanel { LastChildFill = true, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
         var bar = BuildPromptBar(studio, key);
         DockPanel.SetDock(bar, Avalonia.Controls.Dock.Top);
@@ -137,6 +164,21 @@ public partial class MainWindow
         view.VerticalAlignment = VerticalAlignment.Stretch;
         dock.Children.Add(view);
         return dock;
+    }
+
+    /// <summary>T-0700 (offener Punkt aus T-0686): „Los“ der KI-Leiste ist golden, solange die Seite keine eigene goldene Hauptaktion zeigt.
+    /// Sobald eine sichtbar ist (Hülle: die eine aus <see cref="ProgramOneGold"/>, sonst die goldene Aktion der Seite), wird „Los“ neutral – Enter und Klick bleiben gleich.</summary>
+    public void PromptGoLook()
+    {
+        if (ActivePageRoot is not { } root) return;
+        var go = Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(root).OfType<Button>().FirstOrDefault(b => b.Name == "auftrag-pruefen");
+        if (go is null) return;
+        // die KI-Leiste ist das oberste Kind der Seite, in dem „Los“ steckt
+        var bar = Avalonia.LogicalTree.LogicalExtensions.GetLogicalAncestors(go).OfType<Control>().FirstOrDefault(c => ReferenceEquals(c.Parent, root)) ?? go;
+        bool InBar(Button b) => Avalonia.LogicalTree.LogicalExtensions.GetLogicalAncestors(b).Any(a => ReferenceEquals(a, bar)) || b.Name is { } n && n.StartsWith("auftrag-", StringComparison.Ordinal);
+        var pageGold = Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(root).OfType<Button>().Any(b => !ReferenceEquals(b, go) && !InBar(b) && b.IsEffectivelyVisible && IsGold(b));
+        if (pageGold) { go.Background = Brushes.Transparent; go.BorderBrush = Edge; go.BorderThickness = new Avalonia.Thickness(1); go.Foreground = Text; go.Classes.Set("ruhig", true); }
+        else { go.Background = Accent; go.ClearValue(Button.BorderBrushProperty); go.ClearValue(Button.BorderThicknessProperty); go.Foreground = Brushes.White; go.Classes.Set("ruhig", false); }
     }
 
     /// <summary>E1 (T-0616, freigegeben 14.11.2026): ein Knopf „KI ▾“ neben „Los“ statt einer Reihe von KI-Knöpfen – im Klappmenü Claude, Markierung an Claude,
@@ -214,6 +256,7 @@ public partial class MainWindow
         AutomationProperties.SetName(preview, "Vorschau");
         var detail = new TextBlock { Name = "auftrag-detail", Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap, IsVisible = false };
         var pro = new TextBlock { Name = "auftrag-profi", Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap, IsVisible = false };
+        var docNote = new TextBlock { Name = "auftrag-nicht-im-dokument", Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap, IsVisible = false }; // T-0707
         var proOn = false;
         StudioExecutionResult? last = null;
         var ability = P(CapabilityCatalog.UiLine(studio, PromptFlow.Adapters) + " Cloud-KI ist aus.", null, 12);
@@ -274,7 +317,8 @@ public partial class MainWindow
             go.IsVisible = result.Phase == WorkflowPhase.Planned;
             FillPro();
             Sync();
-            if (result.Artifacts.Count > 0) RefreshStudioBody();
+            if (result.Artifacts.Count > 0) { MailTakeArtifacts(_promptProject, result); RefreshStudioBody(); } // T-0689: KI-Entwurf „mail.entwurf“ kommt ins offene Schreibfenster
+            FilmAdoptResult(result); // T-0693: Drehbuch aus dem KI-Auftrag ins offene Dokument von „Filme machen“
         }
 
         void RefreshStudioBody()
@@ -294,12 +338,15 @@ public partial class MainWindow
             }
         }
 
-        StudioExecutionContext Ctx(string project) => new(project, Principal.LocalOwner, CancellationToken.None, ResourceBudget.Default);
+        StudioExecutionContext Ctx(string project) => new(project, CurrentPrincipal, CancellationToken.None, ResourceBudget.Default);
 
         check.Click += async (_, _) =>
         {
+            // T-0707: eine Weiche für alle Einstiege (AssistRouteFor) – Claude-Bereich, Kette ins offene Dokument oder Studio-Ablauf ins Projekt
+            docNote.IsVisible = false;
+            var route = AssistRouteFor(key);
             // C1 (08.11.2026): ist Claude verbunden, setzt Claude den Auftrag um (rechts im Claude-Bereich, im Projekt des Studios); sonst plant Trendo selbst
-            if ((box.Text ?? "").Trim().Length > 0 && ClaudeTakesStudioPrompts)
+            if ((box.Text ?? "").Trim().Length > 0 && route == AssistRoute.ClaudeBereich)
             {
                 var asked = (box.Text ?? "").Trim();
                 check.IsEnabled = false;
@@ -312,12 +359,29 @@ public partial class MainWindow
                 }
                 finally { check.IsEnabled = true; }
             }
-            if (AssistTargetFor(key) is { } at && (box.Text ?? "").Trim().Length > 0)
+            // T-0728 (offen aus T-0723): im Programm „Code mit KI“ ist die Auftragszeile derselbe Weg wie „Mit KI ändern“ – Wunsch ins Dokument,
+            // Plan mit Dateiblöcken, Vorschau als Unterschied, Ja/Nein je Änderung, ein Rückgängig-Schritt, Tests (statt der allgemeinen Kette über Dokumentfelder)
+            if (route != AssistRoute.Projekt && key == CodeAiKey && ProgramActive(CodeAiKey) is { } codeDoc && (box.Text ?? "").Trim().Length > 0)
             {
                 check.IsEnabled = false;
-                try { liveThumb.Content = null; if (await AssistStart(at, box.Text ?? "", assistHost)) return; }
+                try
+                {
+                    var wish = (box.Text ?? "").Trim();
+                    if (wish != codeDoc.Text("wish")) codeDoc.Set("wish", wish, "Wunsch an die KI");
+                    box.Text = "";
+                    await CodeAiKiPropose(codeDoc);
+                    return;
+                }
                 finally { check.IsEnabled = true; }
             }
+            if (route != AssistRoute.Projekt && AssistTargetFor(key) is { } at && (box.Text ?? "").Trim().Length > 0)
+            {
+                check.IsEnabled = false;
+                try { liveThumb.Content = null; if (await AssistStart(at, box.Text ?? "", assistHost, Trendo.Core.Programs.AssistEntry.Auftragszeile)) return; }
+                finally { check.IsEnabled = true; }
+            }
+            // T-0707: Programm außerhalb der Programm-Hülle – sagen, dass das Ergebnis nicht ins offene Dokument kommt (statt still nur eine Projektdatei)
+            if ((box.Text ?? "").Trim().Length > 0 && AssistNotInDocument(key) is { } outside) { docNote.Text = outside; docNote.IsVisible = true; }
             status.Text = "Plan wird erstellt";
             check.IsEnabled = false;
             try
@@ -368,7 +432,7 @@ public partial class MainWindow
             }
             try
             {
-                var result = PromptFlow.Cancel(_promptProject, _promptRun, Principal.LocalOwner, Ctx(_promptProject));
+                var result = PromptFlow.Cancel(_promptProject, _promptRun, CurrentPrincipal, Ctx(_promptProject));
                 ShowResult(result);
             }
             catch (Exception ex)
@@ -384,7 +448,7 @@ public partial class MainWindow
             approve.IsEnabled = false;
             try
             {
-                var result = await Task.Run(() => PromptFlow.Approve(_promptProject, _promptRun, Principal.LocalOwner, Ctx(_promptProject)));
+                var result = await Task.Run(() => PromptFlow.Approve(_promptProject, _promptRun, CurrentPrincipal, Ctx(_promptProject)));
                 await _ui.InvokeAsync(() => ShowResult(result));
             }
             catch (Exception ex)
@@ -543,7 +607,7 @@ public partial class MainWindow
             {
                 Name = "auftrag-leiste", Background = Brush.Parse(_style == "mac" ? (_theme == "hell" ? "#FFECECEC" : "#FF2A2A2C") : (_theme == "hell" ? "#FFEBEBED" : "#FF2E2E32")),
                 BorderBrush = Edge, BorderThickness = new Avalonia.Thickness(0, 0, 0, 1), Padding = new Avalonia.Thickness(10, 6), Margin = new Avalonia.Thickness(0, 0, 0, 6),
-                Child = new StackPanel { Spacing = 4, Children = { row, PromptChipRow(studio, box), preview, liveThumb, AssistAttached(key, assistHost), detail, pro } }
+                Child = new StackPanel { Spacing = 4, Children = { row, PromptChipRow(studio, box), preview, liveThumb, AssistAttached(key, assistHost), docNote, detail, pro } }
             };
             ability.IsVisible = false; // wie im System: keine Zusatzzeile über der Titelleiste (steht im Tooltip)
             ToolTip.SetTip(box, ability.Text);
@@ -562,7 +626,7 @@ public partial class MainWindow
             CornerRadius = new Avalonia.CornerRadius(12),
             Padding = new Avalonia.Thickness(8, 6),
             Margin = new Avalonia.Thickness(0, 0, 0, 6),
-            Child = new StackPanel { Spacing = 4, Children = { ability, row, PromptChipRow(studio, box), preview, liveThumb, AssistAttached(key, assistHost), detail, pro } } // G3: Vorschlags-Chips
+            Child = new StackPanel { Spacing = 4, Children = { ability, row, PromptChipRow(studio, box), preview, liveThumb, AssistAttached(key, assistHost), docNote, detail, pro } } // G3: Vorschlags-Chips
         };
     }
 }

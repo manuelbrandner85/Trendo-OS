@@ -84,35 +84,44 @@ public partial class MainWindow
         }
         var tg = WebApps.TelegramExe();
         yield return new("telegram-desktop", "apps", "Telegram (Windows-Programm)", "Offizielles Programm von telegram.org – installiert ohne Admin ins Benutzerprofil",
-            File.Exists(tg), TelegramInstallAsync,
-            () => { if (File.Exists(tg)) Launch(tg); return Task.CompletedTask; }, null, TelegramInstallAsync, "GPL-3.0");
+            File.Exists(tg), () => TelegramInstallAsync(karte: true),
+            () => { if (File.Exists(tg)) Launch(tg); return Task.CompletedTask; }, null, () => TelegramInstallAsync(karte: false), "GPL-3.0");
     }
 
-    async Task TelegramInstallAsync()
+    /// <param name="karte">B4 (T-0706): true = Aufruf aus „Ja, installieren“ der Rückfrage im Hub; false (Aktualisieren) = eigene Rückfrage.</param>
+    async Task TelegramInstallAsync(bool karte)
     {
         if (_core.Offline) { _hubMsg = "Trendo ist offline – zum Laden braucht es Internet."; return; }
         if (_depBusy) return;
+        var w = new Wirkung("app.install", "telegram-desktop", "Telegram installieren?", $"Programm: Telegram (Windows-Programm, GPL-3.0)\nWoher: {WebApps.TelegramSetupUrl}\n\nTrendo lädt das offizielle Setup und startet es. Telegram installiert sich ohne Admin ins Benutzerprofil.", "Installieren");
+        var approvalId = karte ? FreigabeAusRueckfrage(w) : await FreigabeAsync(w);
+        if (approvalId is null) { _hubMsg = "Telegram: nicht freigegeben – es wurde nichts geladen."; return; }
         _depBusy = true; string? file = null;
         _core.Audit.Append(Principal.LocalOwner.Name, "app.telegram.install.start", WebApps.TelegramSetupUrl);
         BeginSetupOverlay("Telegram wird eingerichtet");
         try
         {
-            SetupOverlayProgress(0, 3, "Offizielles Telegram-Setup wird geladen …");
-            (file, _) = await KiDownload(WebApps.TelegramSetupUrl, "telegram-setup.exe", 0, 1, 3);
-            SetupOverlayProgress(2, 3, "Installation läuft – bitte im Telegram-Setup auf „Weiter“ klicken …");
-            if (TelegramInstallerOverride is { } run) await run(file);
-            else
+            // B4: Laden und Starten des Setups nur im Freigabe-Tor mit genau dieser Freigabe
+            file = await _core.Approvals.Execute(approvalId, "app.install", "telegram-desktop", async () =>
             {
-                using var p = Process.Start(new ProcessStartInfo(file) { UseShellExecute = true });
-                if (p is not null) await p.WaitForExitAsync(SetupToken);
-            }
+                SetupOverlayProgress(0, 3, "Offizielles Telegram-Setup wird geladen …");
+                var (f, _) = await KiDownload(WebApps.TelegramSetupUrl, "telegram-setup.exe", 0, 1, 3);
+                SetupOverlayProgress(2, 3, "Installation läuft – bitte im Telegram-Setup auf „Weiter“ klicken …");
+                if (TelegramInstallerOverride is { } run) await run(f);
+                else
+                {
+                    using var p = Process.Start(new ProcessStartInfo(f) { UseShellExecute = true });
+                    if (p is not null) await p.WaitForExitAsync(SetupToken);
+                }
+                return f;
+            });
             var ok = File.Exists(WebApps.TelegramExe());
             _core.Audit.Append(Principal.LocalOwner.Name, ok ? "app.telegram.install.ok" : "app.telegram.install.failed", "");
             _hubMsg = ok ? "Telegram ist installiert." : "Telegram wurde nicht fertig installiert (abgebrochen?). Einfach noch einmal versuchen.";
             FinishSetupOverlay(ok ? "Telegram ist installiert" : "Telegram ist noch nicht installiert", _hubMsg, ok ? [] : [_hubMsg]);
         }
         catch (OperationCanceledException) when (SetupCancelRequested) { _hubMsg = "Abgebrochen."; }
-        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
+        catch (Exception ex) when (ex is ApprovalException or HttpRequestException or InvalidOperationException or IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
         {
             _hubMsg = "Telegram ließ sich nicht einrichten: " + Trendo.Core.FriendlyError.Say(ex);
             FinishSetupOverlay("Einrichten nicht möglich", _hubMsg, [ex.Message]);

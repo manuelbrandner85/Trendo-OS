@@ -73,7 +73,7 @@ public class LetterQa : IDisposable
     public async Task Qa002_004()
     {
         var soffice = NeedsFactAttribute.Tool("libreoffice");
-        if (soffice is null) return; // auf Rechnern ohne LibreOffice: wird im PC-Lauf belegt
+        if (soffice is null) { Ueberspringen.Weil("LibreOffice fehlt auf diesem PC."); return; } // auf Rechnern ohne LibreOffice: wird im PC-Lauf belegt
         var c = Ready(); var docx = Path.Combine(_store.Dir(c.Id), "brief.docx");
         Letters.WriteDocx(c.Draft, docx);
         var pdf = await PdfExport.ConvertToAsync(new RealProcessRunner(), soffice, docx, "pdf");
@@ -260,7 +260,7 @@ public class LetterOcrReal
     {
         var tess = NeedsFactAttribute.Tool("tesseract");
         var soffice = NeedsFactAttribute.Tool("libreoffice");
-        if (tess is null || soffice is null) return;
+        if (tess is null || soffice is null) { Ueberspringen.Weil("LibreOffice oder Tesseract fehlt auf diesem PC."); return; }
         var root = Path.Combine(Path.GetTempPath(), "trendo-ocr-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(root);
         var audit = new AuditLog(Path.Combine(root, "a.jsonl"));
         var run = new RealProcessRunner();

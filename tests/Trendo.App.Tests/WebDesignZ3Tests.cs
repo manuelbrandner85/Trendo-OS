@@ -244,7 +244,7 @@ public class WebDesignZ3
     public async Task Z3_pc_run()
     {
         if (Environment.GetEnvironmentVariable("TRENDO_PC_LAUF") != "1") { Assert.Skip("Übersprungen – nur mit TRENDO_PC_LAUF=1 (echte Grafikkarte, Blender, Quellen unter %TEMP%\\trendo-z3-quellen)."); return; }
-        var quellen = Path.Combine(Path.GetTempPath(), "trendo-z3-quellen");
+        var quellen = Path.Combine(global::Trendo.Core.TempDir.SystemTemp, "trendo-z3-quellen");
         var chrome = WebsitePreview.FindBrowser()!; var node = Cli.Find("node")!;
         var d = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "trendo-z3-pc-" + Guid.NewGuid().ToString("N"))).FullName;
         var glb = Path.Combine(d, "kamera.glb");

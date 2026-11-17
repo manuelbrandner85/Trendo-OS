@@ -53,7 +53,23 @@ public static partial class Mesh3D
     }
 
     /// <summary>glTF speichert Meter. Wir rechnen Zentimeter um. Jede Farbe wird ein Material.</summary>
-    public static void WriteGlb(Mesh mesh, string path)
+    public static void WriteGlb(Mesh mesh, string path) => File.WriteAllBytes(path, GlbBytes(mesh));
+
+    /// <summary>T-0691: glTF als eine Textdatei (.gltf) – gleicher Inhalt wie GLB, die Daten stecken als Base64 in der Datei (keine Nebendatei).</summary>
+    public static void WriteGltf(Mesh mesh, string path)
+    {
+        var glb = GlbBytes(mesh);
+        var jsonLen = BitConverter.ToInt32(glb, 12);
+        var json = Encoding.UTF8.GetString(glb, 20, jsonLen).TrimEnd(' ');
+        var binLen = BitConverter.ToInt32(glb, 20 + jsonLen);
+        var bin = new byte[binLen]; Array.Copy(glb, 28 + jsonLen, bin, 0, binLen);
+        var marker = "\"buffers\":[{\"byteLength\":" + binLen + "}]";
+        if (!json.Contains(marker, StringComparison.Ordinal)) throw new InvalidOperationException("glTF: Pufferangabe nicht gefunden.");
+        json = json.Replace(marker, "\"buffers\":[{\"byteLength\":" + binLen + ",\"uri\":\"data:application/octet-stream;base64," + Convert.ToBase64String(bin) + "\"}]", StringComparison.Ordinal);
+        File.WriteAllText(path, json, new UTF8Encoding(false));
+    }
+
+    static byte[] GlbBytes(Mesh mesh)
     {
         var bin = new MemoryStream();
         using var bw = new BinaryWriter(bin, Encoding.UTF8, leaveOpen: true);
@@ -102,7 +118,7 @@ public static partial class Mesh3D
                 accessors.Add("{\"bufferView\":" + view + ",\"componentType\":" + comp + ",\"count\":" + count + ",\"type\":\"" + type + "\"" + extra + "}");
                 return i;
             }
-            var pa = Acc(pv, pos.Count / 3, "VEC3", 5126, ",\"min\":[" + F(Min(0)) + "," + F(Min(1)) + "," + F(Min(2)) + "],\"max\":[" + F(Max(0)) + "," + F(Max(1)) + "," + F(Max(2)) + "]");
+            var pa = Acc(pv, pos.Count / 3, "VEC3", 5126, ",\"min\":[" + F32(Min(0)) + "," + F32(Min(1)) + "," + F32(Min(2)) + "],\"max\":[" + F32(Max(0)) + "," + F32(Max(1)) + "," + F32(Max(2)) + "]");
             var na = Acc(nv, norm.Count / 3, "VEC3", 5126);
             var ia = Acc(iv, idx.Count, "SCALAR", 5125);
             var mi = materials.Count;
@@ -118,14 +134,18 @@ public static partial class Mesh3D
         jb.CopyTo(jsonChunk, 0);
         for (var i = 0; i < jpad; i++) jsonChunk[jb.Length + i] = 0x20;
         var total = 12 + 8 + jsonChunk.Length + 8 + binBytes.Length;
-        using var fs = File.Create(path);
+        var fs = new MemoryStream(total);
         using var w = new BinaryWriter(fs);
         w.Write(0x46546C67); w.Write(2); w.Write(total);
         w.Write(jsonChunk.Length); w.Write(0x4E4F534A); w.Write(jsonChunk);
         w.Write(binBytes.Length); w.Write(0x004E4942); w.Write(binBytes);
+        w.Flush();
+        return fs.ToArray();
     }
 
     static string F(double v) => v.ToString("0.######", CultureInfo.InvariantCulture);
+    /// <summary>T-0691: Grenzwerte im glTF genau wie die gespeicherten float-Werte (sonst meldet der Khronos-Validator ACCESSOR_MIN/MAX_MISMATCH).</summary>
+    static string F32(float v) => v.ToString("R", CultureInfo.InvariantCulture);
 
     /// <summary>Liest ein Netz (OBJ, STL, GLB, glTF) in Originaleinheiten. PLY mit Flächen liest der Foto-Scan.</summary>
     public static Mesh ReadMeshFile(string path, int maxTriangles = MaxFileTriangles)

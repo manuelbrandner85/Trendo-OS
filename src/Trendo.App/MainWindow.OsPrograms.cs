@@ -78,7 +78,7 @@ public sealed partial class MainWindow
     }
 
     /// <summary>Kopf eines Programms im Stil des Systems; liefert, was über die Arbeitsfläche kommt.</summary>
-    Control OsProgramChrome(ProgramSpec spec, List<(string Group, List<Control> Items)> groups, Control tabs, int docCount)
+    Control OsProgramChrome(ProgramSpec spec, List<(string Group, List<Control> Items)> groups, Control tabs, int docCount, Control? menuBar = null)
     {
         var model = OsMenuModel(groups);
         _osAppMenus[spec.Key] = (spec.Title, model);
@@ -86,7 +86,7 @@ public sealed partial class MainWindow
         Control Group(string g, List<Control> items, bool label)
         {
             var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2 };
-            foreach (var it in items) { it.Margin = new Thickness(0); it.VerticalAlignment = VerticalAlignment.Center; Flatten(it, _style == "linux" && it.Name == "prog-save"); row.Children.Add(it); }
+            foreach (var it in items) { it.Margin = new Thickness(0); it.VerticalAlignment = VerticalAlignment.Center; Flatten(it, _style == "linux" ? it.Name == "prog-save" : it is Button gb && IsGold(gb)); row.Children.Add(it); } // T-0686 (V-03): Windows und Mac heben die eine Hauptaktion des Programms hervor; GNOME behält seine Gewohnheit (empfohlene Aktion „Speichern“ in der Kopfleiste)
             return label ? new StackPanel { Spacing = 1, Children = { row, new TextBlock { Text = g, FontSize = 10.5, Foreground = Muted, HorizontalAlignment = HorizontalAlignment.Center } } } : row;
         }
         Control Sep(double h) => new Border { Width = 1, Height = h, Background = Edge, Margin = new Thickness(8, 0), VerticalAlignment = VerticalAlignment.Center };
@@ -95,8 +95,15 @@ public sealed partial class MainWindow
         {
             case "windows":
             {
-                var menu = new Menu { Name = "prog-menubar", Margin = new Thickness(0, 0, 0, 2) };
-                foreach (var (g, items) in model) { var top = new MenuItem { Name = "menubar-" + g, Header = g }; foreach (var i in items) top.Items.Add(ToMenuItem(i)); menu.Items.Add(top); }
+                // T-0710: dieselbe Menüleiste wie in allen Programmen (Kürzel rechts, ausgegraute Einträge, Untermenüs, Alt/F10); ohne sie die alte aus den Knöpfen
+                Control menu;
+                if (menuBar is not null) { menuBar.Margin = new Thickness(0, 0, 0, 2); menu = menuBar; }
+                else
+                {
+                    var m = new Menu { Name = "prog-menubar", Margin = new Thickness(0, 0, 0, 2) };
+                    foreach (var (g, items) in model) { var top = new MenuItem { Name = "menubar-" + g, Header = g }; foreach (var i in items) top.Items.Add(ToMenuItem(i)); m.Items.Add(top); }
+                    menu = m;
+                }
                 var band = new StackPanel { Name = "prog-ribbon", Orientation = Orientation.Horizontal };
                 foreach (var (g, items) in groups.Where(x => x.Group is not ("Datei" or "Hilfe")))
                 { if (band.Children.Count > 0) band.Children.Add(Sep(40)); band.Children.Add(Group(g, items, true)); }

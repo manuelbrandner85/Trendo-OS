@@ -2,7 +2,7 @@ using System.Text.Json.Nodes;
 
 namespace Trendo.Core;
 
-/// <summary>Alle Studios, Runde 7 – CORE-09 „Kameras &amp; Roboter steuern“: Objekte im Kamerabild erkennen und zählen mit YOLOX-S
+/// <summary>Alle Studios, Runde 7 (damals im Studio CORE-09, mit T-0720 entfernt; heute genutzt von „Bilder erkennen“): Objekte im Bild erkennen und zählen mit YOLOX-S
 /// (Megvii, Apache-2.0) als ONNX-Modell über onnxruntime (MIT) in Trendos KI-Laufzeit. Das Modell kommt aus dem offiziellen GitHub-Release
 /// und wird nur mit passender Prüfsumme übernommen. Alles läuft lokal – kein Bild verlässt den PC.</summary>
 public static class ObjectDetect

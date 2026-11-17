@@ -6,7 +6,7 @@ namespace Trendo.Core.Tests;
 public static class EchtWerkzeuge
 {
     static string Werkzeuge => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TrendoWerkzeuge");
-    static string Pruef => Path.Combine(Path.GetTempPath(), "trendo-tools-b");
+    static string Pruef => Path.Combine(global::Trendo.Core.TempDir.SystemTemp, "trendo-tools-b");
     static string Py => OperatingSystem.IsWindows() ? Path.Combine("Scripts", "python.exe") : Path.Combine("bin", "python");
 
     static string? Env(string name) => Environment.GetEnvironmentVariable(name) is { Length: > 0 } v ? v : null;

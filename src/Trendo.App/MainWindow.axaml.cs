@@ -620,17 +620,19 @@ public sealed partial class MainWindow : Window
             };
             if (a.Id is "browser" or "mail" && _core.Offline) { b.IsEnabled = false; ToolTip.SetTip(b, $"{a.Label} – offline deaktiviert"); }
             if (!installed) b.IsEnabled = false;
+            DockWord(b, DockWords.GetValueOrDefault(a.Id, a.Label)); // V-19 (T-0684): Wort unter dem Symbol
             DockLift(b); bar.Children.Add(b); _dockButtons[a.Id] = b;
         }
         RefreshDockWebApps(); // WhatsApp, Telegram … mit Original-Symbol
         var trash = new Button { Name = "dock-trash", Width = 48, Height = 48, Padding = new Thickness(0), Background = Brushes.Transparent, BorderThickness = new Thickness(0), Content = DockFace("trash", Ico(Mdi.Delete, 28, Grad("#ECEFF1", "#90A4AE"))) };
+        DockWord(trash, "Papierkorb");
         DockLift(trash); _dockButtons["trash"] = trash;
         ToolTip.SetTip(trash, "Papierkorb"); Avalonia.Automation.AutomationProperties.SetName(trash, "Papierkorb");
         ToolTip.SetPlacement(trash, Avalonia.Controls.PlacementMode.Top); ToolTip.SetVerticalOffset(trash, -6);
         trash.Click += (_, _) => _core.Integrations.LaunchDirect(Principal.LocalOwner, OperatingSystem.IsWindows() ? "shell:RecycleBinFolder" : "trash://", _core.Audit);
         Border Sep() => new() { Width = 1, Height = 32, VerticalAlignment = VerticalAlignment.Center, Background = Brush.Parse(C("#26FFFFFF", "#1F000000")) };
         var webSep = Sep(); webSep.Bind(IsVisibleProperty, _dockWeb.GetObservable(IsVisibleProperty));
-        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { StartButton(), Sep(), bar, webSep, _dockWeb, Sep(), trash } };
+        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { DockWord(StartButton(), "Start"), Sep(), bar, webSep, _dockWeb, Sep(), trash } };
         // S3 (13.11.2026): Leiste als ruhige, fast deckende Fläche – kein Rauchglas-Verlauf, keine Lichtkante, kein Goldrand
         var dockBar = new Border
         {
@@ -680,6 +682,7 @@ public sealed partial class MainWindow : Window
     {
         if (CurrentView == "studio-deps" && _depStudio.Length > 0)
             return StudioCatalog.NameOf(_depStudio, string.IsNullOrWhiteSpace(_depStudioTitle) ? fallback : _depStudioTitle);
+        if (PageOwnName(CurrentView) is { } own) return own; // V-10 (T-0684): Seite mit eigenem Namen heißt im Kopf wie im Fenstertitel
         return StudioIdForPage(CurrentView) is { } id ? StudioCatalog.NameOf(id, fallback) : fallback;
     }
 
@@ -689,13 +692,14 @@ public sealed partial class MainWindow : Window
         || key is "brief" or "akten" or "akte" or "ausgabe" or "briefkoepfe" or "office"
         || StudioPages.Any(kv => string.Equals(kv.Value, key, StringComparison.OrdinalIgnoreCase));
 
-    private Control Page(string title, Control content, Control? dock = null)
+    /// <param name="pageHead">false (T-0686, V-01): ohne Kopfkarte – Programme mit offenem Dokument nennen Namen und Speicherstand in ihrer eigenen schmalen Kopfzeile.</param>
+    private Control Page(string title, Control content, Control? dock = null, bool pageHead = true)
     {
         SimplifyPage(CurrentView, content); // Stufe „Einfach“: Rest hinter „Mehr anzeigen“
-        var sp = new StackPanel { Spacing = 8, Children = { FocusMode ? new Panel() : PageHead(title), Readable(content) } };
+        var sp = new StackPanel { Spacing = 8, Children = { FocusMode || !pageHead ? new Panel() : PageHead(title), Readable(content) } };
         Detach(_hintHost); sp.Children.Insert(1, _hintHost);
         var scroll = new ScrollViewer { Content = sp };
-        if (dock is null) return Panel(scroll, 18);
+        if (dock is null) return Panel(scroll, pageHead ? 18 : 12);
         Detach(dock); dock.Margin = new Thickness(0, 10, 0, 0);
         var grid = new Grid { RowDefinitions = new RowDefinitions("*,Auto") };
         grid.Children.Add(scroll); Grid.SetRow(dock, 1); grid.Children.Add(dock);
@@ -727,13 +731,22 @@ public sealed partial class MainWindow : Window
         };
         var heading = H(title, 22); heading.Name = "page-title";
         var titleCol = new StackPanel { Spacing = 2, VerticalAlignment = VerticalAlignment.Center, Children = { heading } };
+        var related = RelatedPrograms(key); _relatedPlaced = true; // V-13 (T-0684): „Verwandte Programme“ stehen im Menü „Mehr“ des Seitenkopfs
         if (StudioIdForPage(CurrentView) is { } sid && StudioCatalog.For(sid) is { } info)
         {
-            // Kopfkarte (Vorgabe 2026-10-26 „schönere, verständlichere Oberfläche“): großes Studio-Symbol, Name, ein Satz, was man hier tut
-            titleCol.Children.Add(new TextBlock { Name = "page-sentence", Text = info.Sentence, Foreground = Muted, FontSize = 13.5, TextWrapping = TextWrapping.Wrap });
-            var card = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), ColumnSpacing = 14 };
-            if (StudioIcons.For(sid) is { } si) card.Children.Add(new Border { VerticalAlignment = VerticalAlignment.Center, Child = Chip(si.Path, si.C1, si.C2, 46, 0.6) });
-            card.Children.Add(Pos(titleCol, 1));
+            // V-10 (T-0684): Die Titelkarte des Studios (Symbol, Name, Satz) steht nur auf Seiten, die so heißen wie das Studio.
+            // Eine Seite mit eigenem Namen (Lizenz, Hardware, Audio bearbeiten …) bekommt einen schlichten Kopf mit ihrem Namen.
+            var studioCard = title == info.Name;
+            var card = new Grid { ColumnDefinitions = new ColumnDefinitions(studioCard ? "Auto,*,Auto" : "*,Auto"), ColumnSpacing = 14 };
+            if (studioCard)
+            {
+                // Kopfkarte (Vorgabe 2026-10-26 „schönere, verständlichere Oberfläche“): großes Studio-Symbol, Name, ein Satz, was man hier tut
+                titleCol.Children.Add(new TextBlock { Name = "page-sentence", Text = info.Sentence, Foreground = Muted, FontSize = 13.5, TextWrapping = TextWrapping.Wrap });
+                if (StudioIcons.For(sid) is { } si) card.Children.Add(new Border { VerticalAlignment = VerticalAlignment.Center, Child = Chip(si.Path, si.C1, si.C2, 46, 0.6) });
+            }
+            // Programme zeigen ihren Namen schon in der eigenen Kopfzeile – hier nicht ein zweites Mal (der Name bleibt für Bildschirmleser und Tests)
+            if (!studioCard && Programs.ContainsKey(key)) heading.IsVisible = false;
+            card.Children.Add(Pos(titleCol, studioCard ? 1 : 0));
             help.VerticalAlignment = VerticalAlignment.Top;
             // Vorschlag 36: freie KIs rechts oben neben „?“ – ohne den Kopf höher zu machen (sonst rutschen Arbeitsflächen wie die 3D-Ansicht)
             var right = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Top };
@@ -746,9 +759,10 @@ public sealed partial class MainWindow : Window
                 var tsid = sid; tb.Click += (_, _) => AgentsForStudio(tsid);
                 right.Children.Add(tb);
             }
-            SimplifyHeadExtras(right);
+            SimplifyHeadExtras(right, related);
             right.Children.Add(help);
-            card.Children.Add(Pos(right, 2));
+            card.Children.Add(Pos(right, studioCard ? 2 : 1));
+            if (!studioCard) return card;
             return new Border
             {
                 Name = "page-hero", Child = card, CornerRadius = new CornerRadius(14), Padding = new Thickness(14, 12), BorderBrush = Edge, BorderThickness = new Thickness(1),
@@ -760,7 +774,10 @@ public sealed partial class MainWindow : Window
                 },
             };
         }
-        var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { titleCol, Pos(help, 1) } };
+        var plainRight = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Top };
+        SimplifyHeadExtras(plainRight, related);
+        plainRight.Children.Add(help);
+        var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { titleCol, Pos(plainRight, 1) } };
         return head;
     }
 
@@ -770,7 +787,7 @@ public sealed partial class MainWindow : Window
         "Arbeiten & Büro" => "arbeiten",
         "Business & Geld" => "business",
         "Kreativ & Medien" => "kreativ",
-        "3D, Spiele & VR" => "spiele",
+        "3D & Spiele" => "spiele",
         "Technik & Fachgebiete" => "technik",
         "Wissen & Lernen" => "wissen",
         "KI & Automatik" => "ki",
@@ -805,15 +822,24 @@ public sealed partial class MainWindow : Window
             var yes = new Button { Name = "btn-approve-" + r.Id, Content = live ? "Freigeben, noch nicht senden" : "Freigeben und ausführen", Background = Accent };
             var no = new Button { Name = "btn-deny-" + r.Id, Content = "Ablehnen" };
             if (_core.Approvals.Halted) { yes.IsEnabled = false; ToolTip.SetTip(yes, "Not-Stopp ist aktiv"); ToolTip.SetShowOnDisabled(yes, true); }
+            else if (!CanApprove) { yes.IsEnabled = false; ToolTip.SetTip(yes, NurErwachsene); ToolTip.SetShowOnDisabled(yes, true); }
+            // B4 (T-0706): Hier werden nur die eigenen Integrationen (Ordner, https-Adresse) und Livestreams freigegeben. Alles andere
+            // entscheidet die Person in der Rückfrage der Seite, die gefragt hat – deren Ziel ist kein Startziel.
+            var own = live || Integrations.Handles(r.Action);
+            Control yesCtl = own ? yes : new TextBlock { Name = "approval-elsewhere-" + r.Id, Text = "Wird auf der Seite entschieden, die gefragt hat.", Foreground = Muted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center };
             yes.Click += (_, _) =>
             {
-                _core.Approvals.Approve(r.Id, Principal.LocalOwner);
+                if (!FreigabeErteilen(r.Id)) { Show("approvals"); return; }
                 if (live) { NoteLiveApproved(r.Id); Show("sendung"); return; }
-                _core.Integrations.Execute(r); Show("approvals");
+                try { _core.Integrations.Execute(r); }
+                catch (ApprovalException ex) { Toast(ex.Message); }
+                Show("approvals");
             };
             no.Click += (_, _) =>
             {
-                _core.Approvals.Deny(r.Id, Principal.LocalOwner);
+                try { _core.Approvals.Deny(r.Id, CurrentPrincipal); }
+                catch (UnauthorizedAccessException) { Toast(NurErwachsene); return; }
+                catch (ApprovalException ex) { Toast(ex.Message); Show("approvals"); return; }
                 if (live) { NoteLiveDenied(r.Id); Show("sendung"); return; }
                 Show("approvals");
             };
@@ -824,7 +850,7 @@ public sealed partial class MainWindow : Window
                     ? new Border { Name = "approval-preview-" + r.Id, Background = Brush.Parse(C("#661A1A1A", "#F1F5FB")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 6),
                         Child = new StackPanel { Spacing = 2, Children = { new TextBlock { Text = "Was passiert:", Foreground = Muted, FontSize = 11 }, new SelectableTextBlock { Text = pv.Length > 2000 ? pv[..2000] + " …" : pv, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap } } } }
                     : P("Keine Änderungsvorschau für diese Aktion.", null, 11),
-                new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { yes, no } } } } });
+                new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { yesCtl, no } } } } });
         }
         return Page("Freigaben", sp);
     }
@@ -874,33 +900,111 @@ public sealed partial class MainWindow : Window
     private Control SystemView()
     {
         var sp = new StackPanel { Spacing = 4 };
-        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { Nav2("Schutz & Geräte", "schutz"), Nav2("Systemcheck", "systemcheck"), Nav2("Sicherung", "sicherung"), Nav2("Bau-Fortschritt", "fortschritt"), Nav2("Einrichtung erneut", "einrichtung") } });
+        // V-18 (T-0684, freigegeben 16.11.2026): Entwicklerseite „Bau-Fortschritt“ und die rohen Protokollzeilen nur in „Professionell“
+        var pro = ProgramLevel == Trendo.Core.Programs.UserLevel.Profi;
+        var links = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { Nav2("Schutz & Geräte", "schutz"), Nav2("Systemcheck", "systemcheck"), Nav2("Sicherung", "sicherung"), Nav2("Einrichtung erneut", "einrichtung") } };
+        if (pro) links.Children.Insert(3, Nav2("Bau-Fortschritt", "fortschritt"));
+        sp.Children.Add(links);
         var crashes = CrashLog.List(_core.DataRoot);
         sp.Children.Add(P($"Trendo OS {CrashLog.AppVersion()} · Updates kommen nur aus geprüften Versionen (main) · nicht code-signiert", Text));
         sp.Children.Add(P(crashes.Count == 0 ? "Absturzprotokolle: keine – alles stabil." : $"Absturzprotokolle: {crashes.Count}, zuletzt {File.GetLastWriteTime(crashes[0]):dd.MM.yyyy HH:mm} (Ordner logs, ohne Benutzernamen)", crashes.Count == 0 ? null : Brush.Parse("#FACC15")));
-        sp.Children.Add(P($"Benutzerdaten: {_core.DataRoot} (bleiben bei Update und Deinstallation erhalten)"));
-        sp.Children.Add(P($"Passwörter und Schlüssel: sicher gespeichert ({_core.Secrets.BackendName})"));
+        var dataLine = P($"Benutzerdaten: {(pro ? _core.DataRoot : ShortPath(_core.DataRoot))} (bleiben bei Update und Deinstallation erhalten)"); dataLine.Name = "system-data";
+        if (!pro) ToolTip.SetTip(dataLine, _core.DataRoot);
+        sp.Children.Add(dataLine);
+        sp.Children.Add(P(pro ? $"Passwörter und Schlüssel: sicher gespeichert ({_core.Secrets.BackendName})" : "Passwörter und Schlüssel: sicher gespeichert"));
         sp.Children.Add(P($"Protokoll: {_core.Audit.ReadAll().Count} Einträge, {(_core.Audit.Verify() ? "vollständig und unverändert" : "BESCHÄDIGT – bitte prüfen")}"));
-        foreach (var e in _core.Audit.ReadAll().TakeLast(15).Reverse())
-            sp.Children.Add(P($"{e.At:HH:mm:ss}  {e.Actor}  {e.Action}  {e.Detail}", null, 11));
+        if (pro)
+        {
+            var raw = new StackPanel { Name = "system-rawlog", Spacing = 4 };
+            foreach (var e in _core.Audit.ReadAll().TakeLast(15).Reverse())
+                raw.Children.Add(P($"{e.At:HH:mm:ss}  {e.Actor}  {e.Action}  {e.Detail}", null, 11));
+            sp.Children.Add(raw);
+        }
+        else sp.Children.Add(new TextBlock { Name = "system-rawlog-hint", Text = "Die einzelnen Protokollzeilen zeigt die Bedienstufe „Professionell“.", Foreground = Muted, FontSize = 12 });
         return Page("System & Sicherheit", sp);
     }
 
+    /// <summary>V-18 (T-0684): Ordner kurz zeigen – die letzten zwei Teile des Pfads, der ganze Pfad steht im Hinweis.</summary>
+    public static string ShortPath(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path)) return "";
+        var parts = path.Split(['\\', '/'], StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length <= 2 ? path : "…" + Path.DirectorySeparatorChar + string.Join(Path.DirectorySeparatorChar, parts[^2..]);
+    }
+
     private static long TotalRam => GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
-    private string KiModelName => KiModel.Current(_core.DataRoot, TotalRam, _deps.HasModel);
+    /// <summary>T-0703: gesamter Grafikspeicher (NVIDIA, einmal gemessen); 0 = keine messbare Grafikkarte.</summary>
+    private static readonly Lazy<double> GpuTotalGb = new(() => SystemMetrics.GpuMemory()?.TotalGb ?? 0);
+    /// <summary>Für Tests: Grafikspeicher in GB und vorhandene Modelle ersetzen.</summary>
+    public Func<double>? VramOverride { get; set; }
+    public Func<IReadOnlyList<InstalledModel>>? InstalledModelsOverride { get; set; }
+    private double VramGb => VramOverride?.Invoke() ?? (_opt.Isolated ? 0 : GpuTotalGb.Value);
+    /// <summary>T-0712: Ersatz für GET /api/tags in Tests (null = Ollama läuft nicht). Ohne Ersatz fragt nur die echte App (nicht das isolierte Testfenster) das lokale Ollama.</summary>
+    public Func<IReadOnlyList<InstalledModel>?>? OllamaTagsOverride { get => _ollamaTagsOverride; set { _ollamaTagsOverride = value; _modelScan = null; } }
+    private Func<IReadOnlyList<InstalledModel>?>? _ollamaTagsOverride;
+    private KiModel.ModelScan? _modelScan; private DateTime _modelScanAt;
+    /// <summary>Woher die Modellliste zuletzt kam (Beleg, Protokoll).</summary>
+    internal KiModel.ModelScan? LastModelScan => _modelScan;
+    private KiModel.ModelScan ScanModels()
+    {
+        var api = OllamaTagsOverride;
+        if (api is null && !_opt.Isolated)
+            api = () => { var t = Task.Run(() => new OllamaBackend().InstalledAsync()); return t.Wait(TimeSpan.FromSeconds(3)) ? t.Result : null; };
+        return KiModel.Discover(api, KiModel.ModelRoots(_deps.ToolsRoot));
+    }
+    /// <summary>Vorhandene Ollama-Modelle (T-0712): erst das laufende Ollama (/api/tags), sonst die Manifeste an allen bekannten Orten
+    /// (<see cref="KiModel.ModelRoots"/>). 30 s zwischengespeichert; „KI prüfen“ (<see cref="RefreshKi"/>) liest im Hintergrund neu.</summary>
+    internal IReadOnlyList<InstalledModel> InstalledModels
+    {
+        get
+        {
+            if (InstalledModelsOverride is { } o) return o();
+            if (_modelScan is not { } c || DateTime.UtcNow - _modelScanAt >= TimeSpan.FromSeconds(30)) { c = _modelScan = ScanModels(); _modelScanAt = DateTime.UtcNow; }
+            return c.Models;
+        }
+    }
+    /// <summary>T-0703: Standard für Chat und Agenten – eigene Wahl, sonst das beste vorhandene Modell, das zum PC passt (Regel in <see cref="KiModel"/>).</summary>
+    public ModelChoice KiModelChoice => KiModel.Choose(_core.DataRoot, TotalRam, VramGb, InstalledModels);
+    private string KiModelName => KiModelChoice.Model;
+    /// <summary>Kleinere vorhandene Modelle, auf die die KI ausweicht, wenn das gewählte nicht lädt oder zu lange schweigt.</summary>
+    private IReadOnlyList<string> KiFallbacks(string model) => KiModel.Fallbacks(model, InstalledModels);
+    private void KiModelFailed(string model, string reason) { try { KiModel.Demote(_core.DataRoot, model, reason, _core.Audit); } catch (IOException) { } }
+
+    /// <summary>Ein Satz für KI-Quellen und KI-Bibliothek: welches Modell gerade Standard ist und warum.</summary>
+    private Control KiStandardLine(string name)
+    {
+        var c = KiModelChoice;
+        var t = new TextBlock { Name = name, Text = $"Standard für Chat und Agenten: {c.Model}. {c.Reason}", Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap };
+        return t;
+    }
 
     private Control KiModelChooser()
     {
         var sp = new StackPanel { Spacing = 6 };
-        sp.Children.Add(P($"Modell: {KiModelName}. Arbeitsspeicher: {TotalRam / (1024 * 1024 * 1024.0):0} GB – {(KiModel.RecommendLarge(TotalRam) ? "Qwen2.5 7B empfohlen" : "Qwen2.5 0.5B empfohlen")}.", Text));
+        var choice = KiModelChoice;
+        sp.Children.Add(P($"Modell: {choice.Model}. {choice.Reason}", Text));
+        // T-0728 (offen aus T-0703): lange Beschriftungen in der schmalen Spalte brechen um, statt abgeschnitten zu werden – Knopf so breit wie die Spalte
+        static Button Wide(string name, string text, bool enabled) => new() { Name = name, Content = new TextBlock { Text = text, TextWrapping = TextWrapping.Wrap }, IsEnabled = enabled,
+            HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left };
+        var auto = Wide("btn-model-auto", choice.ByUser ? "Automatisch wählen (empfohlen)" : "✓ Automatisch (empfohlen)", choice.ByUser);
+        auto.Click += async (_, _) => { KiModel.SelectAuto(_core.DataRoot, _core.Audit); _kiConnected = false; await RefreshKi(); Show("ki"); };
+        sp.Children.Add(auto);
+        var have = InstalledModels;
+        foreach (var im in have.Where(h => KiModel.IsGeneralChat(h.Tag)).OrderByDescending(h => h.Bytes))
+        {
+            var tag = im.Tag; var on = choice.ByUser && choice.Model == tag;
+            var b = Wide("btn-model-use-" + tag.Replace(':', '-'), on ? $"✓ {tag}" : $"{tag} verwenden ({im.Bytes / (1024.0 * 1024 * 1024):0.0} GB)", !on);
+            b.Click += async (_, _) => { KiModel.SelectInstalled(_core.DataRoot, tag, InstalledModels, _core.Audit); _kiConnected = false; await RefreshKi(); Show("ki"); };
+            sp.Children.Add(b);
+        }
         foreach (var (m, id, label) in new[] { (DependencyCatalog.LocalModel, "model", "Qwen2.5 0.5B (klein, schnell)"), (DependencyCatalog.LargeModel, "model-7b", "Qwen2.5 7B (besseres Deutsch, ~4,7 GB)") })
         {
-            var have = _deps.HasModel(m);
-            var b = new Button { Name = "btn-model-" + id, Content = have ? (KiModelName == m ? $"{label}" : $"{label} verwenden") : $"{label} herunterladen (Zustimmung)", IsEnabled = !_depBusy, Background = KiModelName == m ? Accent : null };
+            if (_deps.HasModel(m)) continue; // vorhandene stehen oben in der Liste
+            var b = Wide("btn-model-" + id, $"{label} herunterladen (Zustimmung)", !_depBusy);
             b.Click += async (_, _) =>
             {
-                if (!_deps.IsInstalled(DependencyCatalog.Get(id))) { _deps.GiveConsent(Principal.LocalOwner); await InstallOne(DependencyCatalog.Get(id), refresh: false); }
-                if (_deps.HasModel(m)) { KiModel.Select(_core.DataRoot, m, _core.Audit); _kiConnected = false; await RefreshKi(); }
+                if (!_deps.IsInstalled(DependencyCatalog.Get(id)) && await InstallOneMitFreigabe(DependencyCatalog.Get(id), "KI auf diesem PC", refresh: false) is null) return; // B4: eigene Rückfrage
+                _kiConnected = false; await RefreshKi();
                 Show("ki");
             };
             sp.Children.Add(b);
@@ -926,8 +1030,9 @@ public sealed partial class MainWindow : Window
         var chat = new Border { Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(14), MinHeight = 160, Child = new ScrollViewer { Content = _kiText } };
         var note = P(_kiConnected ? $"Die KI läuft auf diesem PC (Modell {KiModelName}). Nichts geht ins Internet, nichts kostet extra." : "Die KI ist noch nicht eingerichtet. Unter „Zusatzprogramme“ installiert Trendo sie kostenlos mit einem Klick.", Text);
         var center = new StackPanel { Spacing = 10, Children = { chat, note, Nav2("Zusatzprogramme öffnen", "components") } };
-        var side = new Border { Background = Brush.Parse(C("#55222222", "#CCFFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(12), Child = new StackPanel { Spacing = 8, Children = { H("Modell und Status", 14), state, KiModelChooser() } } };
-        var cols = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,240"), ColumnSpacing = 12 };
+        var side = new Border { Background = Brush.Parse(C("#55222222", "#CCFFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(12),
+            Child = new ScrollViewer { VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, Content = new StackPanel { Spacing = 8, Children = { H("Modell und Status", 14), state, KiModelChooser() } } } }; // T-0728: lange Modell-Liste scrollt statt unter die Eingabe zu rutschen
+        var cols = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,280"), ColumnSpacing = 12 };
         var navBox = new Border { Width = 200, IsVisible = !InAppShell("ki"), Background = Brush.Parse(C("#55222222", "#CCFFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(8), Child = KiNav(vertical: true) };
         cols.Children.Add(navBox); Grid.SetColumn(center, 1); cols.Children.Add(center); Grid.SetColumn(side, 2); cols.Children.Add(side);
         return Page("KI", cols, inputBox);
@@ -967,6 +1072,7 @@ public sealed partial class MainWindow : Window
 
     private async Task RefreshKi()
     {
+        if (InstalledModelsOverride is null) { var scan = await Task.Run(ScanModels); _modelScan = scan; _modelScanAt = DateTime.UtcNow; } // T-0712: Modellliste neu, ohne die Oberfläche anzuhalten
         var ok = !_opt.Isolated && await _ollama.HasModelAsync(KiModelName);
         if (ok == _kiConnected && _kiStatus.Text != "…") return;
         _kiConnected = ok;
@@ -1053,7 +1159,7 @@ public sealed partial class MainWindow : Window
                 else
                 {
                     var b = new Button { Name = "btn-install-" + c.Id, Content = c.Mode switch { DeliveryMode.Included => VollpaketHere || _deps.Offline ? "Aus dem Vollpaket einrichten" : "Installieren (offizielle Quelle)", DeliveryMode.AutoElevated => "Installieren (Admin)", _ => "Installieren" }, IsEnabled = !_depBusy && (c.Mode == DeliveryMode.Included || !_core.Offline) };
-                    b.Click += async (_, _) => await InstallOne(c);
+                    b.Click += async (_, _) => await InstallOneMitFreigabe(c, c.Purpose); // B4: eigene Rückfrage, Kern mit genau dieser Freigabe
                     right = b;
                 }
                 Grid.SetColumn(right, 1); row.Children.Add(right); sp.Children.Add(row);
@@ -1197,12 +1303,16 @@ public sealed partial class MainWindow : Window
                 var y = new Button { Name = "btn-yes-" + comp.Id, Content = comp.Mode switch { DeliveryMode.Included => "Ja, einrichten", DeliveryMode.AutoElevated => "Ja, installieren (Windows fragt nach Admin)", _ => "Ja, installieren" }, Background = Accent, IsEnabled = !_depBusy && (comp.Mode == DeliveryMode.Included || !_core.Offline) };
                 y.Click += async (_, _) =>
                 {
-                    // Freigabe protokolliert über das Approval-Gate (einmalig, zielgebunden)
-                    var req = _core.Approvals.Request(Principal.LocalOwner, "deps.install", $"{comp.Name} für {_depStudioTitle} installieren", comp.Id);
-                    _core.Approvals.Approve(req.Id, Principal.LocalOwner);
-                    if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner);
-                    if (comp.Id == "model" && !_deps.IsInstalled(DependencyCatalog.Get("ollama"))) await InstallOne(DependencyCatalog.Get("ollama"), refresh: false);
-                    await InstallOne(comp, refresh: false);
+                    // B4 (T-0706): „Ja“ auf diese Rückfrage ist die Freigabe der angemeldeten Person; installiert wird nur über den Kern mit genau dieser Freigabe
+                    var wozu = $"für {_depStudioTitle}";
+                    if (comp.Id == "model" && !_deps.IsInstalled(DependencyCatalog.Get("ollama")))
+                    {
+                        var ol = DependencyCatalog.Get("ollama");
+                        if (FreigabeAusRueckfrage(InstallWirkung(ol, wozu)) is not { } olId) return;
+                        await InstallOne(ol, refresh: false, approvalId: olId);
+                    }
+                    if (FreigabeAusRueckfrage(InstallWirkung(comp, wozu)) is not { } id) return;
+                    await InstallOne(comp, refresh: false, approvalId: id);
                     await OpenStudio(_depStudio, _depStudioTitle);
                 };
                 btns.Children.Add(y);
@@ -1261,17 +1371,27 @@ public sealed partial class MainWindow : Window
             get.Click += (_, _) => _core.Integrations.LaunchDirect(Principal.LocalOwner, c.KeyUrl, _core.Audit);
             var save = new Button { Name = "btn-ki-savekey-" + c.Id, Content = "Prüfen & speichern", IsEnabled = !_core.Offline };
             var use = new CheckBox { Name = "ki-cloud-use-" + c.Id, Content = $"Als Ersatz-KI nutzen (Fragen gehen dann an {c.Name})", IsChecked = on, IsEnabled = has, Foreground = Text };
-            use.IsCheckedChanged += (_, _) =>
+            var reverting = false;
+            use.IsCheckedChanged += async (_, _) =>
             {
+                if (reverting) return;
                 var cur = KiSourceSettings.Load(_core.DataRoot);
                 if (use.IsChecked == true && !cur.Cloud.Contains(c.Id))
                 {
-                    // ausdrückliche Zustimmung als Freigabe: ab jetzt dürfen Chat-Fragen im Notfall an diesen Dienst
-                    var req = _core.Approvals.Request(Principal.LocalOwner, "ki.cloud.on", $"{c.Name} als Ersatz-KI: Chat-Fragen dürfen den PC verlassen", c.Id);
-                    _core.Approvals.Approve(req.Id, Principal.LocalOwner);
+                    // B4 (T-0706): Einschalten heißt „Fragen dürfen den PC verlassen“ – eigene Rückfrage, dann nur über den Kern mit genau dieser Freigabe
+                    var w = new Wirkung(KiSourceSettings.CloudOnAction, c.Id, $"{c.Name} als Ersatz-KI einschalten?",
+                        $"Dienst: {c.Name}\n\nAntwortet die KI auf diesem PC nicht, gehen deine Chat-Fragen an {c.Name} – sie verlassen dann den PC. Ausschalten kannst du das jederzeit hier.", "Einschalten");
+                    if (await FreigabeAsync(w) is not { } id) { reverting = true; use.IsChecked = false; reverting = false; return; }
+                    try { KiSourceSettings.EnableCloud(_core.DataRoot, _core.Approvals, id, c.Id); }
+                    catch (ApprovalException ex) { Toast(ex.Message); reverting = true; use.IsChecked = false; reverting = false; return; }
+                    _core.Audit.Append(CurrentPrincipal.Name, "ki.cloud.on", c.Id);
+                    return;
                 }
-                if ((use.IsChecked == true) != cur.Cloud.Contains(c.Id)) KiSourceSettings.Update(_core.DataRoot, s => { if ((use.IsChecked == true) != s.Cloud.Contains(c.Id)) s.ToggleCloud(c.Id); });
-                _core.Audit.Append(Principal.LocalOwner.Name, use.IsChecked == true ? "ki.cloud.on" : "ki.cloud.off", c.Id);
+                if (use.IsChecked != true && cur.Cloud.Contains(c.Id))
+                {
+                    KiSourceSettings.Update(_core.DataRoot, s => { if (s.Cloud.Contains(c.Id)) s.ToggleCloud(c.Id); });
+                    _core.Audit.Append(CurrentPrincipal.Name, "ki.cloud.off", c.Id);
+                }
             };
             save.Click += async (_, _) =>
             {
@@ -1351,21 +1471,28 @@ public sealed partial class MainWindow : Window
         return r;
     }
 
+    /// <summary>T-0713: „Fehlende kostenlose Programme installieren“ – eine Sammel-Rückfrage (je Eintrag abwählbar), je Komponente eine Freigabe,
+    /// Einrichtung nur über das Tor. Bei Abbruch oder Fehler werden die übrigen Freigaben verworfen.</summary>
     private async Task InstallAll()
     {
-        if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner);
-        var todo = DependencyCatalog.All.Where(c => c.Mode is DeliveryMode.AutoUser or DeliveryMode.Included && !_deps.IsInstalled(c)).ToList();
+        var missing = DependencyCatalog.All.Where(c => c.Mode is DeliveryMode.AutoUser or DeliveryMode.Included && !_deps.IsInstalled(c)).ToList();
+        var todo = await SammelFreigabeAsync(missing, "Fehlende Programme einrichten?");
+        if (missing.Count > 0 && todo.Count == 0) _depLog.Text = "Es wurde nichts eingerichtet.";
         if (todo.Count > 0) BeginSetupOverlay("Programme werden installiert");
+        var i = 0;
         try
         {
-            for (var i = 0; i < todo.Count; i++)
+            for (; i < todo.Count; i++)
             {
-                if (SetupCancelRequested) break;
-                SetupOverlayProgress(i, todo.Count, $"{todo[i].Name} wird installiert …");
-                if (!await InstallOne(todo[i], refresh: false)) break;
+                if (SetupCancelRequested || _core.Approvals.Halted) break;
+                SetupOverlayProgress(i, todo.Count, $"{todo[i].C.Name} wird installiert …");
+                bool ok;
+                try { ok = await InstallFreigegebenAsync(todo[i].C, todo[i].Id); }
+                catch (ApprovalException ex) { _depLog.Text = ex.Message; ok = false; }
+                if (!ok && !_opt.Isolated) { i++; break; } // Testmodus richtet nie etwas ein – dort weiter, damit jede Freigabe eingelöst wird
             }
         }
-        finally { EndSetupOverlay(); }
+        finally { SammelVerwerfen(todo.Skip(i).Select(t => t.Id)); EndSetupOverlay(); }
         ReloadStudios(); Show("components");
     }
 
@@ -1382,16 +1509,19 @@ public sealed partial class MainWindow : Window
     }
     DateTime _vpCheckedAt;
 
-    private async Task<bool> InstallOne(Component c, bool refresh = true)
+    /// <param name="approvalId">B4 (T-0706): Freigabe aus einer Rückfrage – der Kern installiert nur mit genau dieser Freigabe und mit der Rolle der angemeldeten Person.
+    /// T-0713: Pflicht. Ersteinrichtung, „alle fehlenden installieren“ und „Reparieren“ holen sie über die Sammel-Rückfrage (<see cref="SammelFreigabeAsync"/>).</param>
+    private async Task<bool> InstallOne(Component c, string approvalId, bool refresh = true)
     {
-        if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner);
+        var by = CurrentPrincipal; // B4: Rolle der angemeldeten Person – ein Kinderprofil installiert nie (Kern lehnt ab)
         _depBusy = true; _depProgress.IsVisible = true; _depProgress.IsIndeterminate = true;
         _depLog.Text = $"Installiere {c.Name} …";
         bool ok;
         try
         {
-            ok = await Task.Run(() => _deps.InstallAsync(Principal.LocalOwner, c, line =>
-                _ui.Post(() => { if (!string.IsNullOrWhiteSpace(line)) _depLog.Text = $"{c.Name}: {line.Trim()}"; })));
+            if (!_deps.HasConsent) _deps.GiveConsent(by);
+            void Line(string line) => _ui.Post(() => { if (!string.IsNullOrWhiteSpace(line)) _depLog.Text = $"{c.Name}: {line.Trim()}"; });
+            ok = await Task.Run(() => _deps.InstallApprovedAsync(_core.Approvals, approvalId, by, c, Line));
             _depLog.Text = ok ? $"{c.Name}: installiert und erkannt" : $"{c.Name}: hat nicht geklappt – im Systemcheck kannst du es erneut versuchen";
         }
         catch (Exception ex) { ok = false; _depLog.Text = $"{c.Name}: {ex.Message}"; }

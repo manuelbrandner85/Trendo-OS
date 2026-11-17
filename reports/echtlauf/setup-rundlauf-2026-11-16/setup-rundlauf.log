@@ -1,0 +1,54 @@
+﻿Setup-Rundlauf 2026-11-16 02:46:06 - Windows Microsoft Windows NT 10.0.26340.0
+Arbeitsordner: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0687-setup - Paketkennung: TrendoOSRundlauf - Versionen 0.0.1 -> 0.0.2
+Baue App 0.0.1 ...
+[02:47:18 INF] Velopack CLI 1.2.161, for distributing applications.
+[02:47:19 INF] Beginning to package Velopack release 0.0.1.
+[02:47:19 INF] Releases Directory: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0687-setup\pakete-0.0.1
+[02:47:19 INF] Starting: Pre-process steps
+[02:47:20 INF] Verified VelopackApp.Run() in 'System.Int32 Trendo.App.Program::Main(System.String)'.
+[02:47:20 INF] Shortcuts: None
+[02:47:21 WRN] No architecture specified with --runtime, defaulting to x86. If this was not intended please specify via the --runtime parameter
+[02:47:21 WRN] No architecture specified with --runtime, defaulting to x86. If this was not intended please specify via the --runtime parameter
+[02:47:22 INF] Complete: Pre-process steps
+[02:47:22 INF] Starting: Code-sign application
+[02:47:22 WRN] No signing parameters provided, 393 file(s) will not be signed.
+[02:47:22 INF] Complete: Code-sign application
+[02:47:22 INF] Starting: Building portable package
+[02:47:22 INF] Starting: Building release 0.0.1
+[02:47:38 INF] Complete: Building portable package
+[02:47:38 INF] Complete: Building release 0.0.1
+[02:47:38 INF] Starting: Building setup package
+[02:47:39 INF] Setup bundle created 'TrendoOSRundlauf-win-Setup.exe'.
+[02:47:39 WRN] No signing parameters provided, 1 file(s) will not be signed.
+[02:47:39 INF] Complete: Building setup package
+[02:47:39 INF] Starting: Post-process steps
+[02:47:40 INF] Complete: Post-process steps
+[02:47:40 INF] Finished in 00:00:20.0829333.
+Baue App 0.0.2 ...
+[02:48:19 INF] Velopack CLI 1.2.161, for distributing applications.
+[02:48:20 INF] Beginning to package Velopack release 0.0.2.
+[02:48:20 INF] Releases Directory: C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0687-setup\pakete-0.0.2
+[02:48:20 INF] Starting: Pre-process steps
+[02:48:20 INF] Verified VelopackApp.Run() in 'System.Int32 Trendo.App.Program::Main(System.String)'.
+[02:48:20 INF] Shortcuts: None
+[02:48:21 WRN] No architecture specified with --runtime, defaulting to x86. If this was not intended please specify via the --runtime parameter
+[02:48:21 WRN] No architecture specified with --runtime, defaulting to x86. If this was not intended please specify via the --runtime parameter
+[02:48:22 INF] Complete: Pre-process steps
+[02:48:22 INF] Starting: Code-sign application
+[02:48:22 WRN] No signing parameters provided, 393 file(s) will not be signed.
+[02:48:22 INF] Complete: Code-sign application
+[02:48:22 INF] Starting: Building portable package
+[02:48:22 INF] Starting: Building release 0.0.2
+[02:48:33 INF] Complete: Building portable package
+[02:48:33 INF] Complete: Building release 0.0.2
+[02:48:33 INF] Starting: Building setup package
+[02:48:34 INF] Setup bundle created 'TrendoOSRundlauf-win-Setup.exe'.
+[02:48:34 WRN] No signing parameters provided, 1 file(s) will not be signed.
+[02:48:34 INF] Complete: Building setup package
+[02:48:34 INF] Starting: Post-process steps
+[02:48:34 INF] Complete: Post-process steps
+[02:48:34 INF] Finished in 00:00:14.8270843.
+PASS  Pakete gebaut: Setup alt und Update-Paket neu - 122 MB / 115 MB
+Hinweis: Setup.exe wird mit "--silent --installto <Ordner>" aufgerufen (Velopack-Option fuer einen eigenen Zielordner); geprueft wird das erst im Rundlauf selbst.
+NICHT AUSGEFUEHRT: Der Rundlauf startet die App nach dem Installieren mit dem echten Datenordner (siehe Kopf des Skripts).
+Bewusst starten mit: powershell -ExecutionPolicy Bypass -File scripts/setup-rundlauf.ps1 -Ausfuehren

@@ -1,0 +1,39 @@
+# Echtlauf praesentation – 2026-11-16 14:18:36
+$ LibreOffice erzeugt verein-libreoffice.pptx: python.exe C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0705\tools\echtlauf\buero\lo_fremd.py praesentation C:\Users\<user>\AppData\Local\TrendoWerkzeuge\libreoffice\App\libreoffice\program\soffice.exe C:\Users\<user>\AppData\Local\Temp\trendo-ui-5690b30faba34ba0b21e846b5c1f470f\verein-libreoffice.pptx C:\Users\<user>\AppData\Local\Temp\trendo-t0705-uno-d91c6959
+Exit 0
+geschrieben: verein-libreoffice.pptx 17456 Bytes
+Datei fremd-verein-libreoffice.pptx: 17456 Bytes, SHA-256 56f4a0e42e53ca5168335c905ca871df775c235af2135417908776e07663a8d6
+Oberfläche: PPTX auf den ersten Schritt gezogen → „verein-libreoffice.pptx“ übernommen (3 Folien) – neu gestaltet. 3 Folien gestaltet (1× Titel, 2× Stichpunkte), 1,9 min.
+Übernommene Gliederung:
+Vereinsjahr 2026
+  > Begrüßen und kurz den Ablauf nennen.
+Was wir geschafft haben
+  - Neues Vereinsheim eröffnet
+  - 120 neue Mitglieder
+  - Sommerfest mit 800 Gästen
+  > Den Helfern danken.
+Was wir vorhaben
+  - Jugendgruppe gründen
+  - Spielplatz erneuern
+
+Oberfläche: Folie 3 vor Folie 2 gezogen.
+Datei gestaltet.pptx: 12982 Bytes, SHA-256 39adb4177d785bbdc3d9741715dcc46a6555d5b5d34569de1c209336c817f8ba
+$ LibreOffice öffnet gestaltet.pptx: soffice.exe -env:UserInstallation=file:///C:\Users\<user>/AppData/Local/Temp/trendo-t0705-lo-444ccc98 --headless --norestore --convert-to pdf --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-4d851405 C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\praesentation\gestaltet.pptx
+Exit 0
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\praesentation\gestaltet.pptx as a Impress document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-4d851405\gestaltet.pdf using filter : impress_pdf_Export
+[stderr] Could not find platform independent libraries <prefix>
+Datei gestaltet-libreoffice.pdf: 43459 Bytes, SHA-256 f73606a9702d1f645738ac5f59088927ec18c84565309c3830f32aa2438f6e9e
+$ qpdf prüft gestaltet.pdf: qpdf.exe --check C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-4d851405\gestaltet.pdf
+Exit 0
+checking C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-4d851405\gestaltet.pdf
+PDF Version: 1.7
+File is not encrypted
+File is not linearized
+No syntax or stream encoding errors found; the file may still contain
+errors that qpdf cannot detect
+$ qpdf zählt Seiten: qpdf.exe --show-npages C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-4d851405\gestaltet.pdf
+Exit 0
+3
+PDFium Text gestaltet.pdf Seite 2: Was wir vorhaben • Jugendgruppe gründen • Spielplatz erneuern
+PDFium Text gestaltet.pdf Seite 3: Was wir geschafft haben • Neues Vereinsheim eröffnet • 120 neue Mitglieder • Sommerfest mit 800 Gästen
+ERGEBNIS: bestanden

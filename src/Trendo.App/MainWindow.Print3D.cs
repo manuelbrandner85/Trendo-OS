@@ -35,7 +35,7 @@ public partial class MainWindow
     string PrintDir { get { var d = Path.Combine(_core.DataRoot, "3d-druck"); Directory.CreateDirectory(d); return d; } }
     BambuPrinter? LoadPrinter() { try { var f = Path.Combine(_core.DataRoot, "3d-druck", "drucker.json"); return File.Exists(f) ? JsonSerializer.Deserialize<BambuPrinter>(File.ReadAllText(f)) : null; } catch (JsonException) { return null; } }
     string? Thumb(BambuPrinter p) { var f = Path.Combine(PrintDir, $"zertifikat-{p.Serial}.txt"); return File.Exists(f) ? File.ReadAllText(f).Trim() : null; }
-    void RememberThumb(BambuPrinter p, string t) => File.WriteAllText(Path.Combine(PrintDir, $"zertifikat-{p.Serial}.txt"), t);
+    void RememberThumb(BambuPrinter p, string t) => AtomicFile.WriteAllText(Path.Combine(PrintDir, $"zertifikat-{p.Serial}.txt"), t);
 
     /// <summary>Datei für den Druck wählen (aus Trendo CAD oder vom PC) und die Seite öffnen.</summary>
     public void Open3dPrint(string file) { PrintFile = file; _prMsg = $"Datei: {Path.GetFileName(file)}"; Show("3d-druck"); }
@@ -46,7 +46,7 @@ public partial class MainWindow
         if (!System.Net.IPAddress.TryParse(ip.Trim(), out var addr) || !PhoneAccessLike(addr)) throw new ArgumentException("Bitte die IP-Adresse des Druckers im Heimnetz eintragen (z. B. 192.168.1.40).");
         if (serial.Trim().Length < 8) throw new ArgumentException("Die Seriennummer steht am Drucker unter Einstellungen → Gerät.");
         Printer = new BambuPrinter(name.Trim().Length > 0 ? name.Trim() : "Bambu-Drucker", ip.Trim(), serial.Trim().ToUpperInvariant());
-        File.WriteAllText(Path.Combine(PrintDir, "drucker.json"), JsonSerializer.Serialize(Printer));
+        AtomicFile.WriteAllText(Path.Combine(PrintDir, "drucker.json"), JsonSerializer.Serialize(Printer)); // T-0716: atomar
         BambuFleet.Upsert(PrintDir, Printer); // mehrere Drucker (B5)
         if (accessCode is { Length: > 0 }) _core.Secrets.Set(Printer.SecretKey, accessCode.Trim());
         _core.Audit.Append(Principal.LocalOwner.Name, "3ddruck.drucker", $"{Printer.Name} {Printer.Ip}");
@@ -234,7 +234,7 @@ public partial class MainWindow
         var work = new Grid { Name = "print-workspace", ColumnDefinitions = new ColumnDefinitions("300,10,*,10,320"), Children = {
             new ScrollViewer { Content = sp }, Pos(center, 2), Pos(Card(new ScrollViewer { Content = right }), 4) } };
         var page = new DockPanel { Children = { Dk(new StackPanel { Spacing = 6, Children = { PageHead("Trendo 3D-Druck"), Card(toolbar) } }, Avalonia.Controls.Dock.Top), work } };
-        return new Border { Name = "print-page-root", Background = Brush.Parse(C("#F21A1A1A", "#F7F4F7FC")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = page };
+        return new Border { Name = "print-page-root", Background = PageSurface, CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = page };
     }
 
     CheckBox TimelapseBox() { var cb = new CheckBox { Name = "print-confirm-timelapse", Content = "Zeitraffer aufnehmen", IsChecked = PrintTimelapse }; cb.IsCheckedChanged += (_, _) => PrintTimelapse = cb.IsChecked == true; return cb; }

@@ -1,0 +1,5 @@
+YOLOX brief.png: Code 0 {"breite": 900, "hoehe": 260, "ms": 304, "objekte": [], "anzahl": {}}
+YOLOX hund-und-rad.jpg: Code 0 {"breite": 768, "hoehe": 576, "ms": 305, "objekte": [{"klasse": "bicycle", "sicherheit": 0.954, "rahmen": [124, 119, 561, 421]}, {"klasse": "dog", "sicherheit": 0.914, "rahmen": [134, 223, 310, 549]}, {"klasse": "truck", "sicherheit": 0.605, "rahmen": [462, 77, 695, 172]}, {"klasse": "potted plant", "sicherheit": 0.431, "rahmen": [684, 111, 716, 154]}], "anzahl": {"bicycle": 1, "dog": 1, "truck": 1, "potted plant": 1}}
+Meldung: ✓ 2 Bilder erkannt. Suche oben, z. B. „zeig alle Fotos mit Hund“.
+brief.png: Schlagworte [Text] · Objekte [] · Text „Rechnung Nummer 4711 Betrag: 128 Euro“ · Quellen YOLOX-S, Tesseract
+hund-und-rad.jpg: Schlagworte [Fahrrad, Hund, Lastwagen, Topfpflanze] · Objekte [Fahrrad 0,95 (124,119,561,421), Hund 0,91 (134,223,310,549), Lastwagen 0,61 (462,77,695,172), Topfpflanze 0,43 (684,111,716,154)] · Text „“ · Quellen YOLOX-S, Tesseract

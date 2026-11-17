@@ -19,7 +19,7 @@ public static class PathFields
         var h = hint.Trim().ToLowerInvariant();
         var nl = n.ToLowerInvariant();
         if (n.Length == 0 && h.Length == 0) return Kind.None;
-        if (nl is "txt-search" or "startmenu-search" or "ki-input" or "txt-studio-search") return Kind.None;
+        if (nl is "txt-search" or "startmenu-search" or "ki-input" or "txt-studio-search" or "auftrag-prompt" || nl.EndsWith("-prompt", StringComparison.Ordinal)) return Kind.None; // V-07 (T-0700): KI-Eingaben sind nie Pfadfelder (auch wenn der Satz „Ordner“ enthält)  // T-0702: Auftragszeile ist Freitext, auch bei „Verträge-Ordner“
         if (nl is "bm-folder" or "sc-args" or "wfe-pattern" or "ren-pattern" or "attachments" or "letter-attachments" or "wfe-text") return Kind.None;
         if (nl.Contains("attachment")) return Kind.None;
         if (Word(h, "suchen") || nl.EndsWith("-search") || nl.EndsWith("-suche") || h.Contains("prüfsumme") || h.Contains("pruefsumme") || h.Contains("muster") || h.Contains("parameter") || h.Contains("ordner (optional)")) return Kind.None;

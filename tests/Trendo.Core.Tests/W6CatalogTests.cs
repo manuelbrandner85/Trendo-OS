@@ -19,7 +19,7 @@ public class W6_Catalog
         var reg = File.ReadAllLines(Path.Combine(root, "docs", "spec", "MODULE_REGISTER.csv")).Skip(1).Select(l => l.Split(",")).Where(c => c.Length > 2 && int.TryParse(c[2], out _)).ToDictionary(c => c[0], c => int.Parse(c[2]));
         var tests = string.Concat(Directory.GetFiles(Path.Combine(root, "tests"), "*.cs", SearchOption.AllDirectories).Select(File.ReadAllText));
         var names = Regex.Matches(tests, "DisplayName = \"([^\"]+)\"").Select(m => m.Groups[1].Value).ToHashSet();
-        string[] ids = ["SPEC-01", "SPEC-02", "SPEC-03", "SPEC-04", "SPEC-05", "SPEC-06", "SPEC-08", "SPEC-09", "SPEC-10", "SPEC-13", "SPEC-14", "SPEC-15", "SPEC-16", "CORE-09"];
+        string[] ids = ["SPEC-01", "SPEC-02", "SPEC-03", "SPEC-04", "SPEC-05", "SPEC-06", "SPEC-08", "SPEC-09", "SPEC-10", "SPEC-13", "SPEC-14", "SPEC-15"]; // SPEC-16 und CORE-09 mit T-0720 entfernt (Nutzerentscheidung 16.11.2026)
         foreach (var id in ids)
         {
             var md = File.ReadAllText(Path.Combine(root, "docs", "w6-katalog", id + ".md")).Replace("\r\n", "\n"); // Windows-Checkout: CRLF

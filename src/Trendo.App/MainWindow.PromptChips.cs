@@ -46,7 +46,14 @@ public partial class MainWindow
         ["STUDIO-CODEAI-01"] = ["Erkläre mir diese Datei", "Schreib einen Test dafür", "Warum schlägt der Test fehl?"],
         ["STUDIO-VISION-01"] = ["Beschreibe dieses Bild", "Finde unscharfe Fotos", "Lies den Text im Bild"],
         ["STUDIO-CITE-01"] = ["Zitiere nach APA", "Belegt die Quelle die Aussage?", "Welche Angaben fehlen?"],
+        ["STUDIO-DECKDESIGN-01"] = ["Gestalte meine Präsentation", "Folien zum Thema entwerfen", "10 Minuten Redezeit planen"],
+        ["STUDIO-DOCSCAN-01"] = ["Rechnung als PDF scannen", "Whiteboard-Foto aufbereiten", "Scan durchsuchbar machen"],
         ["STUDIO-DAYPLAN-01"] = ["Plane meinen Tag", "Was schaffe ich bis Mittag?", "Rest auf morgen schieben"],
+        ["STUDIO-CV-01"] = ["Prüf meinen Lebenslauf auf Lücken", "Anschreiben für diese Stelle", "Lebenslauf für Bewerbungsportale"],
+        ["STUDIO-CARDS-01"] = ["Einladung zur Hochzeit", "Geburtstagskarte für Oma", "Wer hat schon zugesagt?"],
+        ["STUDIO-CONTRACTS-01"] = ["Bis wann kann ich kündigen?", "Was kosten meine Verträge im Jahr?", "Kündigung für den Handyvertrag"],
+        ["STUDIO-PDFTOOLS-01"] = ["PDFs zusammenfügen", "PDF kleiner machen", "Seiten 1-3 herauslösen"],
+        ["STUDIO-FORMS-01"] = ["Formular mit meinen Angaben ausfüllen", "Welche Pflichtfelder fehlen?", "Unterschrift einsetzen"],
     };
 
     /// <summary>Chips für ein Studio (leer = keine Vorschläge hinterlegt).</summary>

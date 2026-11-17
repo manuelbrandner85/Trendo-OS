@@ -1,0 +1,24 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    Z3 PC-Lauf: echtes Modell (Poly Haven, CC0) über Blender nach GLB, HDR-Licht, Grafikkarte, Bilder und gemessene Bildrate unter reports/ (nur mit TRENDO_PC_LAUF=1) [SKIP]
+      Übersprungen – nur mit TRENDO_PC_LAUF=1 (echte Grafikkarte, Blender, Quellen unter %TEMP%\trendo-z3-quellen).
+    SPEC-10 UI: Sensor anlegen, CSV einlesen, ableiten, umbenennen, CSV/SVG speichern, löschen nur mit Bestätigung; PC messen und Live [FAIL]
+      System.InvalidOperationException : Sequence contains no matching element
+      Stack Trace:
+           at System.Linq.ThrowHelper.ThrowNoMatchException()
+           at System.Linq.Enumerable.Last[TSource](IEnumerable`1 source, Func`2 predicate)
+        tests\Trendo.App.Tests\TwinUiTests.cs(15,0): at Trendo.App.Tests.SPEC10_Ui.Get[T](MainWindow w, String name)
+        tests\Trendo.App.Tests\TwinUiTests.cs(63,0): at Trendo.App.Tests.SPEC10_Ui.Manage_and_live()
+           at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+    Z6 PC-Lauf: Prüflauf mit echten lokalen Modellen über Ollama, Protokoll unter reports/ (nur mit TRENDO_PC_LAUF=1) [SKIP]
+      Übersprungen – PC-Lauf nur mit TRENDO_PC_LAUF=1 (braucht Ollama und Zeit).
+    T-0202: Kein Klick auf irgendeiner Seite stürzt ab (Klick-Audit, Bericht der stummen Knöpfe) [SKIP]
+      Langer Klick-Audit über alle Seiten: TRENDO_ALL_BUTTONS=1 setzen
+  Finished:    Trendo.App.Tests (ID = '2eb5c6ff70fffd5a4d599b7cd9c13dae7563209b4012287f14cc6813b04b2f76')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 276, Errors: 0, Failed: 1, Skipped: 3, Not Run: 0, Time: 425,779s
+EXIT 1

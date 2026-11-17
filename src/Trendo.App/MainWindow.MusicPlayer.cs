@@ -323,8 +323,8 @@ public partial class MainWindow
 
     async Task MusicSetupPlayer()
     {
-        if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner);
-        Say("Player wird eingerichtet …", "medien"); await InstallOne(DependencyCatalog.Get("mpv"));
+        Say("Player wird eingerichtet …", "medien");
+        if (await InstallOneMitFreigabe(DependencyCatalog.Get("mpv"), "Musik abspielen") is null) { Say("Abgebrochen – es wurde nichts eingerichtet.", "medien"); return; } // B4: eigene Rückfrage
         Say(MpvExe is not null ? "✓ Player ist eingerichtet." : "✗ Der Player ließ sich nicht einrichten. Ist Internet da? Sonst das Trendo-Vollpaket anschließen.", "medien"); Show("medien");
     }
 }

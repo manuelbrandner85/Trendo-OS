@@ -2,7 +2,7 @@
 <TestRun id="c68d5c7f-fcf6-4945-924e-b071a3831b42" name="<user>@<host> 2026-10-22 02:42:24" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:24.7356767+02:00" queuing="2026-10-22T02:42:24.7356770+02:00" start="2026-10-22T02:42:24.0991820+02:00" finish="2026-10-22T02:42:24.7610886+02:00" />
   <TestSettings name="default" id="efecd589-f37c-4337-b1af-12173e1f2a87">
-    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_24" />
+    <Deployment runDeploymentRoot="<user>_<host>_2026-10-22_02_42_24" />
   </TestSettings>
   <Results>
     <UnitTestResult executionId="37629ab5-94db-4760-8995-15859cc97851" testId="4d94c118-ea8e-8158-c20d-1320793a3261" testName="CORE-09 F17: Greifbahn" computerName="<host>" duration="00:00:00.0050920" startTime="2026-10-22T02:42:24.7135004+02:00" endTime="2026-10-22T02:42:24.7135468+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="37629ab5-94db-4760-8995-15859cc97851" />

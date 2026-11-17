@@ -79,20 +79,4 @@ public class ScanXrProTests
         }
         finally { Directory.Delete(dir, true); }
     }
-
-    [Fact(DisplayName = "SPEC-04 VR: Brillen-Reparatur – Dreiecke auf 90 % des Budgets, Texturen auf die Gerätegrenze, Zentimeter-Modell auf Meter; Blender-Skript mit Dezimieren, Bildverkleinern, GLB-Export; passendes Modell braucht nichts")]
-    public void Xr_fix_plan()
-    {
-        var info = new XrModelInfo("sofa.glb", 50L << 20, 3, 4, 1_000_000, 600_000, 2, 2, 5, 0, "");
-        var det = new XrDetail(info, 2000, 900, 800, [], [], [], [new XrTexture("holz", "image/png", 4096, 4096, 64L << 20), new XrTexture("stoff", "image/png", 1024, 1024, 4L << 20)], new Dictionary<string, int>(), [], []);
-        var plan = XrPro.Plan(info, det, 1); // Quest 2: 400 000 Dreiecke, Texturen bis 1024
-        Assert.Equal(0.36, plan.DecimateRatio, 3); Assert.Equal(1024, plan.MaxTexture); Assert.Equal(0.001, plan.ScaleToMeters); // 2000 „m“ = 2 m in Millimetern
-        Assert.True(plan.Needed); Assert.Contains(plan.Steps, s => s.StartsWith("Texturen verkleinern: 1"));
-        var py = XrPro.FixScript("C:/m/sofa.glb", "C:/m/sofa-brille.glb", plan);
-        Assert.Contains("'DECIMATE'", py); Assert.Contains("m.ratio = max(0.01, r)", py); Assert.Contains("img.scale(", py); Assert.Contains("export_format='GLB'", py); Assert.Contains("s = 0.001", py);
-        var ok = new XrModelInfo("klein.glb", 1L << 20, 1, 1, 10_000, 5_000, 1, 1, 1, 0, "");
-        var okDet = new XrDetail(ok, 0.5, 0.4, 0.3, [], [], [], [new XrTexture("t", "image/png", 1024, 1024, 4L << 20)], new Dictionary<string, int>(), [], []);
-        Assert.False(XrPro.Plan(ok, okDet, 0).Needed);
-        Assert.Equal(4096, XrPro.MaxTextureSide(3));
-    }
 }

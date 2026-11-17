@@ -64,7 +64,7 @@ public class PciIdsTests
 /// <summary>Echte Daten: pci.ids vom gepinnten Stand aus dem Prüfordner – nur gelesen.</summary>
 public class PciIdsRealTests
 {
-    static string F => Path.Combine(Path.GetTempPath(), "trendo-tools-b", "pciids", "pci.ids");
+    static string F => Path.Combine(global::Trendo.Core.TempDir.SystemTemp, "trendo-tools-b", "pciids", "pci.ids");
     public sealed class PciFactAttribute : FactAttribute { public PciFactAttribute() { if (!File.Exists(F)) Skip = "Übersprungen – pci.ids nicht im Prüfordner."; } }
 
     [PciFact(DisplayName = "PCI echt: gepinnte Prüfsumme; 2524 Hersteller, 21 739 Geräte; bekannte Grafikkarte und Netzwerkkarte gefunden; Lesen unter 100 ms")]

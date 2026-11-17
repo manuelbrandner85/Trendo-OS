@@ -1,0 +1,45 @@
+PLAN:
+- In rechner.py die Funktion `multipliziere(a, b)` hinzufügen, die das Produkt von a und b zurückgibt.
+- In test_rechner.py einen Test `test_multipliziere` hinzufügen, der die korrekte Funktionalität der neuen Funktion prüft.
+
+DATEI: rechner.py
+```
+"""Kleiner Rechner zum Ausprobieren."""
+
+def addiere(a, b):
+    return a + b
+
+
+def teile(a, b):
+    if b == 0:
+        raise ValueError("Durch null kann man nicht teilen.")
+    return a / b
+
+
+def multipliziere(a, b):
+    return a * b
+```
+
+DATEI: test_rechner.py
+```
+import unittest
+
+from rechner import addiere, teile, multipliziere
+
+
+class RechnerTest(unittest.TestCase):
+    def test_addiere(self):
+        self.assertEqual(addiere(2, 3), 5)
+
+    def test_teile(self):
+        self.assertEqual(teile(9, 3), 3)
+        with self.assertRaises(ValueError):
+            teile(1, 0)
+
+    def test_multipliziere(self):
+        self.assertEqual(multipliziere(2, 3), 6)
+
+
+if __name__ == "__main__":
+    unittest.main()
+```

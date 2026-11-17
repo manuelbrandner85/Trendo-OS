@@ -8,7 +8,7 @@ using Trendo.Core;
 namespace Trendo.App;
 
 /// <summary>T-0005 / IMP-19: Not-Stopp für alle lokalen Automationen. Ein Klick (oder die Pause-Taste) hält alles an:
-/// Freigaben verfallen, nichts wird mehr ausgeführt, Abläufe brechen ab, Freigabe im Netz, Download, Sendung und Roboterarm stoppen.</summary>
+/// Freigaben verfallen, nichts wird mehr ausgeführt, Abläufe brechen ab, Freigabe im Netz, Download und Sendung stoppen.</summary>
 public partial class MainWindow
 {
     private Button? _haltButton;
@@ -42,7 +42,7 @@ public partial class MainWindow
     public async Task HaltAll(string reason)
     {
         if (_core.Approvals.Halted) return;
-        var dropped = _core.Approvals.Halt(Principal.LocalOwner, reason);
+        var dropped = _core.Approvals.Halt(CurrentPrincipal, reason); // T-0713: im Protokoll steht, wer gestoppt hat (stoppen darf jeder)
         var stopped = new List<string>();
         if (dropped > 0) stopped.Add($"{dropped} Freigaben verworfen");
         if (_dlCts is { IsCancellationRequested: false } dl) { dl.Cancel(); stopped.Add("Download angehalten"); }
@@ -51,7 +51,6 @@ public partial class MainWindow
         if (claudeRuns.Count > 0) stopped.Add("Claude angehalten");
         if (ActiveShare is not null) { await StopShareAsync(); stopped.Add("Freigabe im Netz beendet"); }
         if (_live is { Mode: not LiveMode.Idle } live) { live.Stop(); stopped.Add("Sendung/Aufnahme beendet"); }
-        if (!Bench.Drive.Emergency) { Bench.Drive.EmergencyStop(); stopped.Add("Roboterarm Not-Aus"); }
         HaltSummary = stopped.Count == 0 ? "Nichts lief gerade. Ab jetzt wird nichts ausgeführt." : string.Join(" · ", stopped);
         MarkHalt();
         Show(CurrentView is "" ? "start" : CurrentView);
@@ -61,7 +60,9 @@ public partial class MainWindow
 
     public void ResumeAll()
     {
-        _core.Approvals.Resume(Principal.LocalOwner);
+        // T-0713: Fortsetzen nur mit Freigaberecht der angemeldeten Person – ein Kinderprofil hebt keinen Not-Stopp auf
+        try { _core.Approvals.Resume(CurrentPrincipal); }
+        catch (UnauthorizedAccessException) { Toast(NurErwachsene); return; }
         HaltSummary = "";
         MarkHalt();
         Show(CurrentView is "" ? "start" : CurrentView);

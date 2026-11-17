@@ -37,6 +37,27 @@ public partial class MainWindow
 
     private void PdfSay(string m) { _pdfMsg = m; }
 
+    /// <summary>T-0714 (B6 E2): Formularwerte der offenen PDF – vorher nur im Speicher bis „Ausgefüllt speichern“. Jetzt Rückgängig/Wiederholen (100 Schritte),
+    /// Notsicherung im Takt der Hülle (<c>programme/sicherung/LINK-PDFFORM-*.tdoc</c>, atomar, für das Fenster gesperrt) und Wiederherstellen-Karte, die die PDF wieder öffnet.
+    /// Stand: { "id": voller Pfad der PDF, "feld:&lt;Name&gt;": Wert (Ankreuzfeld „ja“/„nein“) }.</summary>
+    public LinkSlot PdfFormLink
+    {
+        get
+        {
+            LinkSlot? me = null;
+            me = Slot("pdf-form", "LINK-PDFFORM", "pdf-form", "pdf", "pdf-form", "Ein ausgefülltes PDF-Formular", "ausgefüllte PDF-Formulare",
+                () => me?.Live?.DeepClone(),
+                st =>
+                {
+                    me!.Live = st as System.Text.Json.Nodes.JsonObject;
+                    if (me.Live?["id"]?.GetValue<string>() is { } id && File.Exists(id) && (PdfPath is null || !Trendo.Core.Programs.ProgramDocument.SameFile(PdfPath, id))) OpenPdf(id);
+                },
+                () => me?.Live is { } o && o.Any(kv => kv.Key != "id"),
+                () => me?.Live?["id"]?.GetValue<string>() is { } id ? "Formular " + Path.GetFileName(id) : "PDF-Formular");
+            return me;
+        }
+    }
+
     /// <summary>PDF öffnen (auch per Test). Mit Passwortschutz erscheint zuerst die Passwortabfrage.</summary>
     /// <summary>Zuletzt geöffnete PDFs (für die Startseite) – nur Pfade, im eigenen Datenordner.</summary>
     public List<string> PdfRecent()
@@ -124,7 +145,7 @@ public partial class MainWindow
     }
 
     /// <summary>Eigene dunkle Fläche: das Fensterglas lässt sonst den Desktop durchscheinen, Text und Werkzeuge wären schwer lesbar.</summary>
-    private Control PdfPageView() => new Border { Name = "pdf-page-root", Background = Brush.Parse(C("#F21A1A1A", "#F7F4F7FC")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = PdfShell() };
+    private Control PdfPageView() => new Border { Name = "pdf-page-root", Background = PageSurface, CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = PdfShell() };
 
     private Control PdfShell()
     {
@@ -163,6 +184,8 @@ public partial class MainWindow
             PdfTools.NewBlank(f); OpenPdf(f);
         }));
         head.Children.Add(new TextBlock { Name = "pdf-msg", Text = _pdfMsg, Foreground = Text, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 5), TextWrapping = TextWrapping.Wrap, MaxWidth = 760 });
+        if (LinkRecoveryCard(PdfLink) is { } recCard) head.Children.Add(recCard); // T-0711: nicht gespeicherte Seitenfolge aus einer früheren Sitzung
+        if (LinkRecoveryCard(PdfFormLink) is { } formCard) head.Children.Add(formCard); // T-0714: nicht gespeicherte Formularwerte aus einer früheren Sitzung
         Grid.SetColumnSpan(head, 2); root.Children.Add(head);
 
         if (PdfPath is null || !File.Exists(PdfPath))
@@ -199,7 +222,7 @@ public partial class MainWindow
         bar.Children.Add(B("pdf-double", _pdfDouble ? "Einzelseite" : "Doppelseite", () => _pdfDouble = !_pdfDouble));
         bar.Children.Add(B("pdf-rotate-view", "Ansicht drehen ⟳", () => _pdfRot = (_pdfRot + 90) % 360));
         bar.Children.Add(B("pdf-fullscreen", WindowState == WindowState.FullScreen ? "Vollbild aus" : "Vollbild", () => WindowState = WindowState == WindowState.FullScreen ? WindowState.Normal : WindowState.FullScreen));
-        var org = B("pdf-organize-start", _pdfOrg is null ? "Seiten ordnen" : "Ordnen beenden", () => { if (_pdfOrg is null) PdfOrgStart(); else { _pdfOrg = null; _pdfOrgSel.Clear(); } }); if (_pdfOrg is not null) org.Background = Accent;
+        var org = B("pdf-organize-start", _pdfOrg is null ? "Seiten ordnen" : "Ordnen beenden", () => { if (_pdfOrg is null) PdfOrgStart(); else PdfOrgCancel(); }); if (_pdfOrg is not null) org.Background = Accent;
         if (_pdfOrg is not null) bar.Children.Clear(); // beim Ordnen zählen nur die Ordnen-Werkzeuge
         bar.Children.Insert(0, org);
         Grid.SetRow(bar, 1); Grid.SetColumnSpan(bar, 2); root.Children.Add(bar);
@@ -306,17 +329,18 @@ public partial class MainWindow
         {
             var form = new StackPanel { Spacing = 3 };
             var inputs = new Dictionary<string, Func<string>>();
+            var linked = new List<LinkField>(); // T-0714: Formularwerte hängen an Rückgängig und Notsicherung der Hülle
             foreach (var f in fields.Take(80))
             {
                 if (f.Kind == "Ankreuzfeld")
                 {
                     var cb = new CheckBox { Name = "pdf-field-" + f.Name, Content = f.Name, IsChecked = f.Value == "ja", Foreground = Text };
-                    inputs[f.Name] = () => cb.IsChecked == true ? "ja" : "nein"; form.Children.Add(cb);
+                    inputs[f.Name] = () => cb.IsChecked == true ? "ja" : "nein"; form.Children.Add(cb); linked.Add(LinkField.Of("feld:" + f.Name, cb));
                 }
                 else
                 {
                     var tb = new TextBox { Name = "pdf-field-" + f.Name, Text = f.Value, PlaceholderText = f.Name };
-                    inputs[f.Name] = () => tb.Text ?? ""; form.Children.Add(new TextBlock { Text = f.Name, Foreground = Muted, FontSize = 11 }); form.Children.Add(tb);
+                    inputs[f.Name] = () => tb.Text ?? ""; form.Children.Add(new TextBlock { Text = f.Name, Foreground = Muted, FontSize = 11 }); form.Children.Add(tb); linked.Add(LinkField.Of("feld:" + f.Name, tb));
                 }
             }
             var fill = new Button { Name = "pdf-fill-go", Content = "Ausgefüllt speichern", Background = Accent };
@@ -324,10 +348,13 @@ public partial class MainWindow
             {
                 var o = Beside(PdfPath!, "-ausgefuellt");
                 var missing = PdfTools.Fill(PdfPath!, o, inputs.ToDictionary(k => k.Key, k => k.Value()), _core.Audit);
+                LinkClose(PdfFormLink); // T-0714: ausgefüllt gespeichert – Entwurf und Notsicherung weg
                 OpenPdf(o);
                 return $"Formular gespeichert: {Path.GetFileName(o)}" + (missing.Count > 0 ? $" ({missing.Count} Felder unbekannt)" : "");
             });
             form.Children.Add(fill);
+            LinkFormFields(PdfFormLink, Path.GetFullPath(PdfPath!), [.. linked]);
+            form.Children.Insert(0, LinkUndoRow(PdfFormLink));
             side.Children.Add(new Expander { Header = $"Formular ({fields.Count} Felder)", IsExpanded = true, Content = form });
         }
         var sideScroll = new ScrollViewer { Content = side, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };

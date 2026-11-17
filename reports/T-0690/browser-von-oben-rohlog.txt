@@ -1,0 +1,17 @@
+Browser: chrome.exe
+Wert 0: true
+Wert 1: menu|true|36,32
+Wert 2: 36,32
+Wert 3: play
+Wert 4: true
+Wert 5: true
+Wert 6: 168|11|false
+Wert 7: true
+Wert 8: true
+Wert 9: true|3|21|1|Gewonnen! Punkte: 21
+Fehler der Seite: keine
+✓ Im echten Browser geprüft (chrome.exe): Spiel startet, die Figur bewegt sich mit den Tasten, keine Skriptfehler.
+SHA-256 index.html: 7a966dca09c159bd1f9c4bb94e84b6531460bf8801b2fc3aab44739e707b92fb
+SHA-256 game.js: 68e6075b5408237baf470ec57fc52a35f2dfe197fc656c8dd9a9c2cb458ab7e1
+SHA-256 config.js: 74659d46395eb42c39a9a7dcac7e397f7393fd92246ea9a2cf374a8fa31d6aeb
+SHA-256 spiel.json: 517f9e4489189f3443c7bf7bd2b660a0133d95fe52a92f09d29827d9073bbfec

@@ -8,18 +8,37 @@ namespace Trendo.Core;
 public sealed record Contact(string Id, string Name, string Email, string Phone = "", string Note = "", string Mobile = "", string Company = "", string Street = "", string City = "",
     DateOnly? Birthday = null, List<string>? Groups = null, string Photo = "", bool Favorite = false, string Website = "");
 /// <summary>E-Mail-Entwurf. <paramref name="Attachments"/>: Dateien, die als Anhang mitgehen (z. B. der Brief als PDF).</summary>
-public sealed record MailDraft(string To, string Subject, string Body, string Cc = "", IReadOnlyList<string>? Attachments = null);
+public sealed record MailDraft(string To, string Subject, string Body, string Cc = "", IReadOnlyList<string>? Attachments = null)
+{
+    /// <summary>Blindkopie – diese Empfänger bekommen die Nachricht, stehen aber in keiner Kopfzeile.</summary>
+    public string Bcc { get; init; } = "";
+    /// <summary>Formatierte Fassung (HTML). Leer = reine Textnachricht.</summary>
+    public string Html { get; init; } = "";
+    /// <summary>Kennung der Nachricht, auf die geantwortet wird, und die Kette davor (damit Mailprogramme die Unterhaltung erkennen).</summary>
+    public string InReplyTo { get; init; } = "";
+    public string References { get; init; } = "";
+}
 public sealed record ParsedMail(string From, string To, string Subject, string Date, string Body)
 {
     /// <summary>Weitere Empfänger (Kopie) – für „Allen antworten“.</summary>
     public string Cc { get; init; } = "";
     /// <summary>Anhänge (Name, Art, Inhalt) – nur gelesen, nie automatisch geöffnet.</summary>
     public IReadOnlyList<MailAttachment> Attachments { get; init; } = [];
+    /// <summary>HTML-Fassung der Nachricht (roh, ungeprüft – Anzeige nur über <see cref="MailHtml.Sanitize"/>).</summary>
+    public string Html { get; init; } = "";
+    public string MessageId { get; init; } = "";
+    public string References { get; init; } = "";
+    public string InReplyTo { get; init; } = "";
+    /// <summary>Datum als Zeitpunkt, falls lesbar.</summary>
+    public DateTimeOffset? When { get; init; }
 }
 
 public sealed record MailAttachment(string Name, string ContentType, byte[] Data)
 {
     public long Size => Data.LongLength;
+    /// <summary>Kennung eines eingebetteten Bildes („cid:“ in der HTML-Fassung).</summary>
+    public string ContentId { get; init; } = "";
+    public bool Inline { get; init; }
 }
 
 /// <summary>SYS-09 Communication Mail & Collaboration Center: Kontakte (mit vCard), Entwürfe als .eml oder mailto für dein Mailprogramm,
@@ -91,57 +110,13 @@ public sealed partial class MailCenter
         Directory.CreateDirectory(folder);
         var safe = new string(d.Subject.Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c).ToArray()).Trim();
         var f = Path.Combine(folder, $"{now:yyyy-MM-dd_HHmm} {(safe == "" ? "Entwurf" : safe[..Math.Min(60, safe.Length)])}.eml");
-        File.WriteAllText(f, ToEml(d, now));
+        AtomicFile.WriteAllText(f, ToEml(d, now)); // T-0711: atomar
         _audit.Append(Principal.LocalOwner.Name, "mail.draft", $"{Path.GetFileName(f)} an {d.To.Split(',').Length} Empfänger");
         return f;
     }
 
     /// <summary>Liest eine .eml-Datei (Text-Teil, Base64/Quoted-Printable, kodierte Kopfzeilen).</summary>
-    public static ParsedMail ParseEml(string raw)
-    {
-        var (head, body) = SplitPart(raw.Replace("\r\n", "\n"));
-        string Hd(string k) => DecodeWord(HeaderOf(head, k));
-        var texts = new List<(bool Html, string Text)>(); var atts = new List<MailAttachment>();
-        Walk(head, body, texts, atts, 0);
-        var text = texts.FirstOrDefault(t => !t.Html).Text ?? (texts.FirstOrDefault(t => t.Html).Text is { } h ? HtmlToText(h) : "");
-        return new(Hd("From"), Hd("To"), Hd("Subject"), Hd("Date"), text.Trim()) { Cc = Hd("Cc"), Attachments = atts };
-    }
-
-    static (string Head, string Body) SplitPart(string part) { var x = part.Split("\n\n", 2); return (Regex.Replace(x[0], @"\n[ \t]+", " "), x.Length > 1 ? x[1] : ""); }
-    static string HeaderOf(string head, string k) => Regex.Match(head, $@"^{k}:\s*(.*)$", RegexOptions.Multiline | RegexOptions.IgnoreCase).Groups[1].Value.Trim();
-
-    /// <summary>MIME-Teile rekursiv lesen (auch multipart/mixed mit multipart/alternative darin): Texte sammeln, Anhänge mit Name und Inhalt.</summary>
-    static void Walk(string head, string body, List<(bool, string)> texts, List<MailAttachment> atts, int depth)
-    {
-        if (depth > 8) return;
-        var ct = HeaderOf(head, "Content-Type"); var enc = HeaderOf(head, "Content-Transfer-Encoding").ToLowerInvariant();
-        var disp = HeaderOf(head, "Content-Disposition");
-        var bm = Regex.Match(ct, @"boundary=""?([^"";]+)""?", RegexOptions.IgnoreCase);
-        if (ct.StartsWith("multipart/", StringComparison.OrdinalIgnoreCase) && bm.Success)
-        {
-            foreach (var seg in body.Split("--" + bm.Groups[1].Value).Skip(1))
-            {
-                if (seg.StartsWith("--")) break; // Ende
-                var (h, b) = SplitPart(seg.TrimStart('\n'));
-                Walk(h, b.TrimEnd('\n'), texts, atts, depth + 1);
-            }
-            return;
-        }
-        var name = DecodeWord(Regex.Match(disp, @"filename\*?=""?([^"";]+)""?", RegexOptions.IgnoreCase) is { Success: true } fm ? fm.Groups[1].Value
-            : Regex.Match(ct, @"name\*?=""?([^"";]+)""?", RegexOptions.IgnoreCase) is { Success: true } nm ? nm.Groups[1].Value : "");
-        var isText = ct.Length == 0 || ct.StartsWith("text/", StringComparison.OrdinalIgnoreCase);
-        if (disp.StartsWith("attachment", StringComparison.OrdinalIgnoreCase) || name.Length > 0 && !isText || !isText)
-        {
-            var data = enc == "base64" ? TryBytes(body) : enc == "quoted-printable" ? Encoding.UTF8.GetBytes(QP(body)) : Encoding.UTF8.GetBytes(body);
-            var safe = string.Concat((name.Length > 0 ? name : "anhang" + (atts.Count + 1)).Where(c => !Path.GetInvalidFileNameChars().Contains(c)));
-            atts.Add(new MailAttachment(safe.Length > 0 ? safe : "anhang", ct.Split(';')[0].Trim().ToLowerInvariant() is { Length: > 0 } t ? t : "application/octet-stream", data));
-            return;
-        }
-        var txt = enc switch { "base64" => TryB64(body), "quoted-printable" => QP(body), _ => body };
-        texts.Add((ct.StartsWith("text/html", StringComparison.OrdinalIgnoreCase), txt));
-    }
-
-    static byte[] TryBytes(string s) { try { return Convert.FromBase64String(Regex.Replace(s, @"\s", "")); } catch (FormatException) { return Encoding.UTF8.GetBytes(s); } }
+    public static ParsedMail ParseEml(string raw) => MailMime.Parse(raw);
 
     /// <summary>HTML-Mail als lesbarer Text (Skripte und Stile entfernt, Zeilenumbrüche erhalten).</summary>
     public static string HtmlToText(string html)
@@ -152,26 +127,6 @@ public sealed partial class MailCenter
         return Regex.Replace(System.Net.WebUtility.HtmlDecode(t), @"\n{3,}", "\n\n").Trim();
     }
 
-    private static string TryB64(string s) { try { return Encoding.UTF8.GetString(Convert.FromBase64String(Regex.Replace(s, @"\s", ""))); } catch (FormatException) { return s; } }
-    private static string QP(string s)
-    {
-        s = s.Replace("=\n", "");
-        var bytes = new List<byte>();
-        for (var i = 0; i < s.Length; i++)
-            if (s[i] == '=' && i + 2 < s.Length && Uri.IsHexDigit(s[i + 1]) && Uri.IsHexDigit(s[i + 2])) { bytes.Add(Convert.ToByte(s.Substring(i + 1, 2), 16)); i += 2; }
-            else bytes.AddRange(Encoding.UTF8.GetBytes(s[i].ToString()));
-        return Encoding.UTF8.GetString(bytes.ToArray());
-    }
-    private static string DecodeWord(string s) => Regex.Replace(s, @"=\?([^?]+)\?([BbQq])\?([^?]*)\?=", m =>
-    {
-        try
-        {
-            var e = Encoding.GetEncoding(m.Groups[1].Value.Equals("utf8", StringComparison.OrdinalIgnoreCase) ? "utf-8" : m.Groups[1].Value);
-            return m.Groups[2].Value.ToUpperInvariant() == "B" ? e.GetString(Convert.FromBase64String(m.Groups[3].Value)) : QP(m.Groups[3].Value.Replace('_', ' '));
-        }
-        catch { return m.Value; }
-    });
-
     private static string Esc(string s) => s.Replace("\\", "\\\\").Replace(",", "\\,").Replace(";", "\\;").Replace("\n", "\\n");
-    private void Save() => File.WriteAllText(_file, JsonSerializer.Serialize(_contacts));
+    private void Save() => AtomicFile.WriteAllText(_file, JsonSerializer.Serialize(_contacts)); // T-0714: Adressbuch nie halb (vorher File.WriteAllText)
 }

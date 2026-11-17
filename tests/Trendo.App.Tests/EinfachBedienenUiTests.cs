@@ -86,11 +86,11 @@ public class EinfachBedienen_Ui
             var d = w.ProgramActive(MP)!;
             Assert.Equal(0, w.ProgramAutosaveNow()); Assert.Null(d.Path); // leere, unveränderte Vorlage legt nichts an
             w.Find<Button>("prog-cmd-variants").Press(); Settle();
-            Assert.True(d.Dirty); Assert.Equal("Wird gespeichert …", w.Find<TextBlock>("prog-dirty").Text);
+            Assert.True(d.Dirty); Assert.Equal("Wird automatisch gespeichert", w.Find<TextBlock>("prog-dirty").Text); // T-0686 (V-08): neuer Wortlaut
             Assert.Equal(1, w.ProgramAutosaveNow());
             Assert.False(d.Dirty); Assert.NotNull(d.Path); Assert.True(File.Exists(d.Path));
             Assert.StartsWith(root, Path.GetFullPath(d.Path!)); Assert.EndsWith(".tdoc", d.Path);
-            Assert.Equal("✓ Gespeichert", w.Find<TextBlock>("prog-dirty").Text);
+            Assert.Matches(@"^Gespeichert um \d\d:\d\d$", w.Find<TextBlock>("prog-dirty").Text!); // T-0686 (V-08): „Gespeichert um HH:MM“
             Assert.Equal(12, ProgramDocument.Load(d.Path!).List("variants").Count);
             Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "program.autosave");
             // weitere Änderung: gleiche Datei, kein Datei-Wirrwarr

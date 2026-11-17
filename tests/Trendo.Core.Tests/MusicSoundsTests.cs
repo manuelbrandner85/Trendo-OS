@@ -33,7 +33,7 @@ public class MusicSoundsTests
     [Fact(DisplayName = "Suno V8 echt mit FFmpeg: Sprache nach 2 s über der Musik; Musik ist beim Sprechen deutlich leiser (Sidechain) und blendet aus")]
     public void Speech_mix()
     {
-        var ff = Cli.Find("ffmpeg"); if (ff is null) return;
+        var ff = Cli.Find("ffmpeg"); if (ff is null) { Ueberspringen.Weil("FFmpeg fehlt auf diesem PC."); return; }
         var dir = Path.Combine(Path.GetTempPath(), "trendo-sp-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
         try
         {

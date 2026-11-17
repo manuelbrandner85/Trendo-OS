@@ -35,8 +35,9 @@ public partial class MainWindow
         {
             var free = FreeBytesForModels?.Invoke() ?? FreeBytes(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
             if (free < (long)((m.SizeGb + 5) * 1024 * 1024 * 1024)) { _srcMsg = $"Zu wenig Speicherplatz für {m.Name} ({m.SizeGb:0.0} GB + 5 GB Reserve) – übersprungen."; _core.Audit.Append("app", "ki.model.auto.skip", $"{m.Tag} Speicher"); continue; }
-            var req = _core.Approvals.Request(Principal.LocalOwner, "ki.pull", $"KI-Modell {m.Name} ({m.SizeGb:0.0} GB, {m.License}) automatisch laden", m.Tag);
-            _core.Approvals.Approve(req.Id, Principal.LocalOwner); // Vorgabe des Besitzers: freie Modelle automatisch
+            var req = _core.Approvals.Request(CurrentPrincipal, "ki.pull", $"KI-Modell {m.Name} ({m.SizeGb:0.0} GB, {m.License}) automatisch laden", m.Tag);
+            // B4 (T-0706): Dauerfreigabe durch die Einstellung „Freie Modelle automatisch laden“ – nur in einem Erwachsenen-Profil
+            if (!FreigabeAusEinstellung(req.Id, "ki-auto-models")) break;
             _core.Audit.Append("app", "ki.model.auto.start", $"{m.Tag} {m.SizeGb:0.0} GB {m.License}");
             _srcMsg = $"Lade KI-Modell {m.Name} ({m.SizeGb:0.0} GB) …";
             var ok = await _core.Approvals.Execute(req.Id, "ki.pull", m.Tag, () => pull(m.Tag));
@@ -110,6 +111,7 @@ public partial class MainWindow
             Show("ki-quellen");
         };
         sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { scan, srcMsg } });
+        sp.Children.Add(KiStandardLine("src-standard")); // T-0703: welches Modell gerade Standard ist und warum
         sp.Children.Add(H("Reihenfolge", 14));
         var n = 0;
         foreach (var id in set.Order)
@@ -143,10 +145,10 @@ public partial class MainWindow
             if (!b.IsEnabled && !got) ToolTip.SetTip(b, !fits ? $"Braucht {m.MinRamGb} GB Arbeitsspeicher." : _core.Offline ? "Im Offline-Modus wird nichts geladen." : "Zuerst muss Ollama laufen – siehe Hinweis oben.");
             b.Click += async (_, _) =>
             {
-                var req = _core.Approvals.Request(Principal.LocalOwner, "ki.pull", $"KI-Modell {m.Name} ({m.SizeGb:0.0} GB) laden", m.Tag);
-                _core.Approvals.Approve(req.Id, Principal.LocalOwner);
+                // B4 (T-0706): eigene Rückfrage (Größe, Lizenz), Freigabe der angemeldeten Person, Laden nur mit genau dieser Freigabe
+                if (await FreigabeAsync(KiPullWirkung(m.Tag, m.Name, m.SizeGb, m.License)) is not { } id) { _srcMsg = $"{m.Name}: abgebrochen – es wurde nichts geladen."; Show("ki-quellen"); return; }
                 b.IsEnabled = false; b.Content = "Lädt …";
-                var ok = await _core.Approvals.Execute(req.Id, "ki.pull", m.Tag, () => new OllamaBackend().PullAsync(m.Tag));
+                var ok = await _core.Approvals.Execute(id, "ki.pull", m.Tag, () => new OllamaBackend().PullAsync(m.Tag));
                 _srcMsg = ok ? $"{m.Name} ist jetzt da." : $"{m.Name} konnte nicht geladen werden – Internet prüfen und erneut versuchen.";
                 await ScanSourcesAsync(); Show("ki-quellen");
             };

@@ -22,10 +22,13 @@ public class StudiosKreativ3D_Ui
 
     public static TheoryData<string> Studios => new() { "CORE-08", "STUDIO-FILM-01", "STUDIO-MUSIK-01", "CORE-05", "CORE-07" };
 
-    [Theory(DisplayName = "Kreativ und 3D: Fachwissen ist vollständig und verweist nur auf Vorhandenes")]
+    // T-0691: auf dem UI-Thread und mit geöffnetem Fenster – sonst hängt das Ergebnis von der Testreihenfolge ab
+    // (MainWindow.Programs füllt erst ein Fenster; die statischen Farben von MainWindow entstünden sonst auf einem fremden Thread).
+    [AvaloniaTheory(DisplayName = "Kreativ und 3D: Fachwissen ist vollständig und verweist nur auf Vorhandenes")]
     [MemberData(nameof(Studios))]
     public void Knowledge_complete(string id)
     {
+        Ui.Open();
         var k = StudioKnowledgeBase.For(id)!;
         Assert.True(k.Detailed); Assert.InRange(k.Tasks.Count, 3, 5);
         Assert.NotEmpty(k.Purpose); Assert.NotEmpty(k.Inputs); Assert.NotEmpty(k.Outputs); Assert.NotEmpty(k.Formats); Assert.NotEmpty(k.Workflows); Assert.NotEmpty(k.Quality);

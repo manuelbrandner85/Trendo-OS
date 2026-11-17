@@ -26,7 +26,7 @@ public sealed partial class ProjectStore
         if (Directory.Exists(dir)) throw new InvalidOperationException("Projekt existiert bereits.");
         Directory.CreateDirectory(Path.Combine(dir, "files"));
         var p = new TrendoProject(id, name, DateTimeOffset.Now);
-        File.WriteAllText(Path.Combine(dir, "project.json"), JsonSerializer.Serialize(p));
+        AtomicFile.WriteAllText(Path.Combine(dir, "project.json"), JsonSerializer.Serialize(p)); // T-0717: atomar
         _audit.Append("user", "project.create", id);
         return p;
     }
@@ -68,7 +68,7 @@ public sealed partial class ProjectStore
     {
         var p = ResolveInProject(projectId, relativePath);
         Directory.CreateDirectory(Path.GetDirectoryName(p)!);
-        File.WriteAllText(p, content);
+        AtomicFile.WriteAllText(p, content); // T-0717: atomar (z. B. Tafel der Produktion)
         _audit.Append("user", "file.write", $"{projectId}:{relativePath}");
     }
 
@@ -76,7 +76,7 @@ public sealed partial class ProjectStore
     {
         var p = ResolveInProject(projectId, relativePath);
         Directory.CreateDirectory(Path.GetDirectoryName(p)!);
-        File.WriteAllBytes(p, content);
+        AtomicFile.WriteAllBytes(p, content); // T-0717: atomar
         _audit.Append("user", "file.write", $"{projectId}:{relativePath}");
     }
 

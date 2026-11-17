@@ -1,0 +1,202 @@
+[
+  {
+    "werkzeug": "ffmpeg",
+    "fachlauf": "Videoschnitt-Export mit echtem FFmpeg",
+    "version": "ffmpeg version 9.0.2-essentials_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+    "ergebnis": "ECHT-GRÜN",
+    "dauer_s": 11.7,
+    "details": [
+      "Videoschnitt-Export mit echtem FFmpeg: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "Echter Export mit FFmpeg (Software-Encoder): 1 bestanden, 0 fehlgeschlagen, 0 übersprungen"
+    ]
+  },
+  {
+    "werkzeug": "node",
+    "fachlauf": "Browser-Spiele: erzeugtes JavaScript mit node --check",
+    "version": "v24.22.2",
+    "ergebnis": "ECHT-GRÜN",
+    "dauer_s": 5.0,
+    "details": [
+      "CORE-06: Alle Browser-Spiele werden angelegt: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "CORE-06: Gebautes Spiel: 2 bestanden, 0 fehlgeschlagen, 0 übersprungen"
+    ]
+  },
+  {
+    "werkzeug": "git",
+    "fachlauf": "Software-Studio: Git-Stand anlegen und speichern",
+    "version": "git version 2.56.0.windows.3",
+    "ergebnis": "ECHT-GRÜN",
+    "dauer_s": 3.0,
+    "details": [
+      "CORE-07: Git-Stand anlegen: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen"
+    ]
+  },
+  {
+    "werkzeug": "python",
+    "fachlauf": "Python-Vorlage und alle KI-Python-Umgebungen",
+    "version": "Python 3.13.17",
+    "ergebnis": "ECHT-GRÜN",
+    "dauer_s": 8.5,
+    "details": [
+      "Fachlauf python: ECHT-GRÜN – ki/laufzeit/triposr: OK 3.12.16 0bf464f8d802",
+      "CORE-07: Python- und .NET-Vorlage: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen"
+    ]
+  },
+  {
+    "werkzeug": "chrome",
+    "fachlauf": "Webseite als PDF und Editor-Bündel in echtem Chrome",
+    "version": "157.0.8103.51",
+    "ergebnis": "ECHT-GRÜN (teilweise)",
+    "dauer_s": 10.2,
+    "details": [
+      "SYS-03-P14: Seite als PDF: 0 bestanden, 0 fehlgeschlagen, 1 übersprungen (Übersprungen: pdfinfo ist nicht installiert.)",
+      "K1 und K2: Das echte Editor-Bündel in echtem Chrome: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen"
+    ]
+  },
+  {
+    "werkzeug": "blender",
+    "fachlauf": "glTF/OBJ/STL/FBX über Blender, Kreatur mit Rig, Rundlauf FBX/GLB",
+    "version": "Blender 5.2.3 LTS",
+    "ergebnis": "ECHT-GRÜN",
+    "dauer_s": 30.1,
+    "details": [
+      "CORE-05: Echtes Blender: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "Kreatur-Baukasten: echter Blender: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "3D S2-17: echter Rundlauf: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen"
+    ]
+  },
+  {
+    "werkzeug": "unreal",
+    "fachlauf": "Unreal: C++-Spiel anlegen, kompilieren, Unreal-Tests, Startlauf",
+    "version": "++UE5+Release-5.8-CL-58902052",
+    "ergebnis": "ECHT-GRÜN",
+    "dauer_s": 145.8,
+    "details": [
+      "Fachlauf unreal: ECHT-GRÜN – Nicht geprüft: Open World (lädt 275 MB Fotomaterial), MetaHuman-Figur, Startlauf mit Grafik/Bildschirmfoto, gepacktes Spiel (BuildCookRun)."
+    ]
+  },
+  {
+    "werkzeug": "unity",
+    "fachlauf": "Unity-Projekt anlegen, EditMode-Tests",
+    "version": "6000.6.8f1_237b6593792b",
+    "ergebnis": "ECHT-GRÜN",
+    "dauer_s": 65.0,
+    "details": [
+      "Fachlauf unity: ECHT-GRÜN – EditMode: (5, 5, 0)"
+    ]
+  },
+  {
+    "werkzeug": "godot",
+    "fachlauf": "Godot-Projekt anlegen, importieren, prüfen, starten, Gegenprobe",
+    "version": "4.7.2.stable.official.ed1daf0bf",
+    "ergebnis": "ECHT-GRÜN",
+    "dauer_s": 11.6,
+    "details": [
+      "Fachlauf godot: ECHT-GRÜN – Nicht geprüft: Export als Windows-Programm (dafür braucht Godot die Exportvorlagen, die hier nicht eingerichtet sind)."
+    ]
+  },
+  {
+    "werkzeug": "libreoffice",
+    "fachlauf": "LibreOffice öffnet Trendos DOCX/XLSX/PPTX und wandelt nach PDF",
+    "version": "26.2.4.2",
+    "ergebnis": "ECHT-GRÜN",
+    "dauer_s": 49.9,
+    "details": [
+      "LibreOffice öffnet ein von Trendo erzeugtes DOCX: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "DOCX real mit LibreOffice zu PDF und ODT: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "Tabelle C1: Abgleich mit LibreOffice Calc: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "T-0229 P6: Abgleich mit LibreOffice Impress: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "T-0230: Abgleich mit LibreOffice Writer: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "Seitenzahl und A4 eines echten LibreOffice-PDFs: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen"
+    ]
+  },
+  {
+    "werkzeug": "tesseract",
+    "fachlauf": "Tesseract liest einen von Trendo gerenderten Brief",
+    "version": "tesseract v5.4.0.20240606",
+    "ergebnis": "ECHT-GRÜN (teilweise)",
+    "dauer_s": 12.1,
+    "details": [
+      "LETTER-012: Echte Tesseract-Texterkennung: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "Scan → durchsuchbares PDF mit Tesseract: 0 bestanden, 0 fehlgeschlagen, 1 übersprungen (Übersprungen – fehlt auf diesem PC: pdftoppm)"
+    ]
+  },
+  {
+    "werkzeug": "sdcli",
+    "fachlauf": "Bild-KI erzeugt ein Bild (PNG geprüft)",
+    "version": null,
+    "ergebnis": "ECHT-GRÜN",
+    "dauer_s": 15.7,
+    "details": [
+      "Fachlauf sdcli: ECHT-GRÜN – PNG 512×512, 520233 Bytes, SHA-256 747d2a13290699a199dc8e9c7fb31b98a896595bd38a573803e74d00dec79bd8"
+    ]
+  },
+  {
+    "werkzeug": "acestep",
+    "fachlauf": "Musik-KI erzeugt 10 s Lied",
+    "version": null,
+    "ergebnis": "ECHT-GRÜN",
+    "dauer_s": 103.2,
+    "details": [
+      "Fachlauf acestep: ECHT-GRÜN – eigener Server beendet"
+    ]
+  },
+  {
+    "werkzeug": "ollama",
+    "fachlauf": "Lokale KI beantwortet eine Rechenfrage",
+    "version": "ollama version is 0.40.11",
+    "ergebnis": "ECHT-GRÜN",
+    "dauer_s": 12.3,
+    "details": [
+      "Fachlauf ollama: ECHT-GRÜN – Antwort nach 11,6 s: 42"
+    ]
+  },
+  {
+    "werkzeug": "claude",
+    "fachlauf": "Claude Code beantwortet eine Frage über das Abo (nur wenn angemeldet)",
+    "version": "2.1.319 (Claude Code)",
+    "ergebnis": "ECHT-GRÜN",
+    "dauer_s": 6.6,
+    "details": [
+      "Fachlauf claude: ECHT-GRÜN – Anmeldestatus: angemeldet=True, Abo=True, Art=claude.ai"
+    ]
+  },
+  {
+    "werkzeug": "7zip",
+    "fachlauf": "7-Zip packt, Trendos Entpacker packt aus, byte-gleich",
+    "version": "26.05",
+    "ergebnis": "ECHT-GRÜN",
+    "dauer_s": 2.4,
+    "details": [
+      "Fachlauf 7zip: ECHT-GRÜN – Archive7z.Extract: 2 Dateien"
+    ]
+  },
+  {
+    "werkzeug": "weitere",
+    "fachlauf": "Weitere Echtwerkzeuge der Testsuite (assimp, typst, melt, IfcOpenShell, Open3D, glTF-Prüfer …)",
+    "version": null,
+    "ergebnis": "ECHT-GRÜN",
+    "dauer_s": 112.6,
+    "details": [
+      "AssimpFact: 2 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "TypstFact: 2 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "MeltFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "IfcFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "Open3dFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "PmFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "VecFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "ValidatorFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "TransformFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "SewingFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "AxeFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "ResticFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "YrFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "YoloxFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "PytiledFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "ReferenzFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "IconFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "MdFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen",
+      "ToolFact: 3 bestanden, 0 fehlgeschlagen, 0 übersprungen"
+    ]
+  }
+]

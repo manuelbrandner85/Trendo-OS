@@ -22,13 +22,28 @@ public sealed class SlideShape
     public double Y { get; set; }
     public double W { get; set; } = 10;
     public double H { get; set; } = 3;
-    /// <summary>Text; jede Zeile ein Absatz. Bei <see cref="Bullets"/> wird jede Zeile ein Aufzählungspunkt, führende Tabs/zwei Leerzeichen rücken ein.</summary>
-    public string Text { get; set; } = "";
+    string _text = "";
+    double _size = 24; bool _bold; string? _color;
+    /// <summary>Text; jede Zeile ein Absatz. Bei <see cref="Bullets"/> wird jede Zeile ein Aufzählungspunkt, führende Tabs/zwei Leerzeichen rücken ein.
+    /// T-0701: Hat das Feld mehrere Textformate (<see cref="Runs"/>), behält eine Änderung am Text die Formate der unveränderten Stellen.</summary>
+    public string Text { get => _text; set { value ??= ""; if (Runs is { } r && value != _text) Runs = TextRuns.Adjust(r, _text, value); _text = value; } }
     public bool Bullets { get; set; }
-    public double FontSize { get; set; } = 24;
-    public bool Bold { get; set; }
+    /// <summary>Schrift des ganzen Felds. Ändert man sie, gilt sie für den ganzen Text (eigene Größen einzelner Stellen fallen weg).</summary>
+    public double FontSize { get => _size; set { if (value != _size) { if (Runs is { } r) Runs = TextRuns.Normalize(r.Select(x => x with { Size = null })); SizeInherited = false; } _size = value; } }
+    public bool Bold { get => _bold; set { if (value != _bold) { if (Runs is { } r) Runs = TextRuns.Normalize(r.Select(x => x with { Bold = null })); BoldInherited = false; } _bold = value; } }
     /// <summary>Textfarbe #RRGGBB; null = aus dem Design.</summary>
-    public string? Color { get; set; }
+    public string? Color { get => _color; set { if (value != _color && Runs is { } r) Runs = TextRuns.Normalize(r.Select(x => x with { Color = null })); _color = value; } }
+    /// <summary>T-0701: mehrere Textformate in einem Feld – Abschnitte, die aneinandergereiht genau <see cref="Text"/> ergeben. Null = ein Format für alles.</summary>
+    public List<TextRun>? Runs { get; set; }
+    /// <summary>T-0701: Nummer des Objekts in der geöffneten PPTX (damit Animationen der Datei ihr Objekt wiederfinden).</summary>
+    public int? SourceId { get; set; }
+    /// <summary>T-0701: Platzhalter der Folienvorlage („title“, „body“ … und Nummer), damit das fremde Design beim Speichern greift.</summary>
+    public string? PhType { get; set; }
+    public string? PhIdx { get; set; }
+    /// <summary>T-0701: Größe bzw. Fett kommen aus dem Folienmaster der Datei (dann schreibt Trendo sie nicht fest, damit das Design weiter greift).
+    /// Ändert man sie in Trendo, gelten sie fest.</summary>
+    public bool SizeInherited { get; set; }
+    public bool BoldInherited { get; set; }
     /// <summary>Füllfarbe #RRGGBB; null = ohne.</summary>
     public string? Fill { get; set; }
     public Align Align { get; set; } = Align.Left;
@@ -48,8 +63,84 @@ public sealed class SlideShape
     public SlideShape Clone()
     {
         var s = (SlideShape)MemberwiseClone();
-        s.Table = Table?.Select(r => r.ToList()).ToList(); s.ChartLabels = ChartLabels?.ToList(); s.ChartValues = ChartValues?.ToList();
+        s.Table = Table?.Select(r => r.ToList()).ToList(); s.ChartLabels = ChartLabels?.ToList(); s.ChartValues = ChartValues?.ToList(); s.Runs = Runs?.ToList();
         return s;
+    }
+
+    /// <summary>T-0701: Teil des Texts anders formatieren (z. B. ein Wort fett). <paramref name="change"/> bekommt das bisherige Format des Abschnitts.</summary>
+    public void FormatRange(int start, int length, Func<TextRun, TextRun> change)
+    {
+        start = Math.Clamp(start, 0, Text.Length); length = Math.Clamp(length, 0, Text.Length - start);
+        if (length == 0) return;
+        var chars = TextRuns.Expand(Runs ?? [new TextRun(Text)], Text);
+        for (var i = start; i < start + length; i++) chars[i] = change(chars[i]);
+        Runs = TextRuns.Collapse(chars, Text);
+    }
+
+    /// <summary>Format an einer Textstelle (für Knöpfe, die den Zustand zeigen).</summary>
+    public TextRun RunAt(int pos)
+    {
+        if (Runs is null || Text.Length == 0) return new TextRun("");
+        var chars = TextRuns.Expand(Runs, Text);
+        return chars[Math.Clamp(pos, 0, chars.Count - 1)];
+    }
+}
+
+/// <summary>T-0701: Abschnitt eines Textfelds mit eigenem Format. Null = wie das ganze Feld (<see cref="SlideShape.FontSize"/>, <see cref="SlideShape.Bold"/>, <see cref="SlideShape.Color"/>).
+/// Unterstreichung wie in PowerPoint („sng“, „dbl“ …), Schriftart z. B. „Arial“ oder „+mn-lt“ (Schrift des Designs).</summary>
+public sealed record TextRun(string Text, double? Size = null, bool? Bold = null, bool? Italic = null, string? Underline = null, string? Color = null, string? Font = null)
+{
+    /// <summary>Nur das Format (ohne Text). Methode statt Eigenschaft, damit ToString/Vergleich nicht endlos in sich selbst laufen.</summary>
+    public TextRun Bare() => this with { Text = "" };
+    public bool IsPlain() => Bare() == new TextRun("");
+}
+
+/// <summary>T-0701: Hilfen für Textabschnitte: Text ändern und Formate behalten, Abschnitte zusammenfassen.</summary>
+public static class TextRuns
+{
+    /// <summary>Je Zeichen das Format (ohne Text).</summary>
+    public static List<TextRun> Expand(IEnumerable<TextRun> runs, string text)
+    {
+        var list = new List<TextRun>(text.Length);
+        foreach (var r in runs) for (var i = 0; i < r.Text.Length && list.Count < text.Length; i++) list.Add(r.Bare());
+        var last = list.Count > 0 ? list[^1] : new TextRun("");
+        while (list.Count < text.Length) list.Add(last);
+        return list;
+    }
+
+    /// <summary>Gleiche Formate nebeneinander zu einem Abschnitt; null, wenn alles ohne eigenes Format ist.</summary>
+    public static List<TextRun>? Collapse(List<TextRun> chars, string text)
+    {
+        var res = new List<TextRun>();
+        for (var i = 0; i < text.Length;)
+        {
+            var j = i; while (j < text.Length && chars[j] == chars[i]) j++;
+            res.Add(chars[i] with { Text = text[i..j] }); i = j;
+        }
+        return res.All(r => r.IsPlain()) ? null : res;
+    }
+
+    public static List<TextRun>? Normalize(IEnumerable<TextRun> runs)
+    {
+        var list = runs.Where(r => r.Text.Length > 0).ToList();
+        var text = string.Concat(list.Select(r => r.Text));
+        return Collapse(Expand(list, text), text);
+    }
+
+    /// <summary>Text von <paramref name="oldText"/> auf <paramref name="newText"/> ändern: Gleicher Anfang und gleiches Ende behalten ihr Format,
+    /// neu Eingetipptes bekommt das Format der Stelle davor (wie in PowerPoint).</summary>
+    public static List<TextRun>? Adjust(List<TextRun> runs, string oldText, string newText)
+    {
+        var chars = Expand(runs, oldText);
+        var p = 0; while (p < oldText.Length && p < newText.Length && oldText[p] == newText[p]) p++;
+        var s = 0; while (s < oldText.Length - p && s < newText.Length - p && oldText[^(s + 1)] == newText[^(s + 1)]) s++;
+        // Ersetztes übernimmt das Format seines ersten Zeichens, Eingefügtes das Format der Stelle davor (wie in PowerPoint)
+        var tmpl = chars.Count == 0 ? new TextRun("") : oldText.Length - s > p ? chars[p] : p > 0 ? chars[p - 1] : chars[0];
+        var res = new List<TextRun>(newText.Length);
+        res.AddRange(chars.Take(p));
+        for (var i = p; i < newText.Length - s; i++) res.Add(tmpl);
+        res.AddRange(chars.Skip(oldText.Length - s));
+        return Collapse(res, newText);
     }
 }
 
@@ -62,10 +153,23 @@ public sealed class Slide
     public Transition Transition { get; set; }
     /// <summary>Hintergrund #RRGGBB; null = aus dem Design.</summary>
     public string? Background { get; set; }
+    /// <summary>T-0701: Folienlayout der geöffneten PPTX (Teil im Paket), damit Platzhalter und Design der Vorlage erhalten bleiben.</summary>
+    public string? SourceLayout { get; set; }
+    /// <summary>T-0701: Animationen, Übergang und Hintergrund der Datei, wie sie waren – werden unverändert zurückgeschrieben, solange in Trendo daran nichts geändert wurde.</summary>
+    public string? SourceTiming { get; set; }
+    public string? SourceAnimSig { get; set; }
+    public string? SourceTransition { get; set; }
+    public Transition SourceTransitionKind { get; set; }
+    public string? SourceBg { get; set; }
+    public string? SourceBgColor { get; set; }
+
+    /// <summary>Animationen der Folie als Kennung (Objekt-Nummer und Art) – zeigt, ob in Trendo etwas daran geändert wurde.</summary>
+    public string AnimSignature() => string.Join(';', Shapes.Where(s => s.Animation != Animation.Keine).Select(s => $"{s.SourceId}:{s.Animation}"));
 
     public Slide Clone()
     {
-        var s = new Slide { Layout = Layout, Notes = Notes, Transition = Transition, Background = Background };
+        var s = new Slide { Layout = Layout, Notes = Notes, Transition = Transition, Background = Background, SourceLayout = SourceLayout, SourceTiming = SourceTiming, SourceAnimSig = SourceAnimSig,
+            SourceTransition = SourceTransition, SourceTransitionKind = SourceTransitionKind, SourceBg = SourceBg, SourceBgColor = SourceBgColor };
         s.Shapes.AddRange(Shapes.Select(x => x.Clone()));
         return s;
     }
@@ -82,10 +186,17 @@ public sealed class SlideDoc
     public const double WidthCm = 33.867, HeightCm = 19.05;
     public List<Slide> Slides { get; } = [];
     public SlideTheme Theme { get; set; } = SlideThemes.All[0];
+    /// <summary>T-0682: Was beim Öffnen einer fremden Datei nicht übernommen wurde (null = neu angelegt oder nicht geprüft).</summary>
+    public ImportReport? Import { get; set; }
+    /// <summary>T-0701: Design einer geöffneten PPTX (Folienmaster, Layouts, Theme samt Bildern). Solange <see cref="Theme"/> das daraus abgeleitete
+    /// Design ist, schreibt Trendo diese Teile unverändert zurück, statt sie durch ein eigenes Design zu ersetzen.</summary>
+    public PptxDesign? Design { get; set; }
+    /// <summary>Wird das Design der Datei beim Speichern beibehalten?</summary>
+    public bool KeepsDesign => Design is { } d && Theme == d.Theme;
 
     public SlideDoc Clone()
     {
-        var d = new SlideDoc { Theme = Theme };
+        var d = new SlideDoc { Theme = Theme, Design = Design };
         d.Slides.AddRange(Slides.Select(s => s.Clone()));
         return d;
     }
@@ -106,6 +217,30 @@ public sealed class SlideDoc
     }
 
     public static SlideDoc Empty() { var d = new SlideDoc(); d.AddSlide(SlideLayout.Titel); return d; }
+}
+
+/// <summary>T-0701: Design-Teile einer fremden PPTX. Wird nicht verändert; beim Speichern kopiert Trendo die Teile unverändert in die neue Datei.</summary>
+public sealed class PptxDesign
+{
+    /// <summary>Aus den Farben und Schriften der Datei abgeleitetes Design für die Anzeige in Trendo.</summary>
+    public required SlideTheme Theme { get; init; }
+    /// <summary>Teile im Paket (Name ohne „/“ vorn) mit Inhalt: Folienmaster, Layouts, Theme, Bilder der Vorlage und ihre Beziehungen.</summary>
+    public required IReadOnlyDictionary<string, byte[]> Parts { get; init; }
+    /// <summary>Inhaltsart je Teil und je Dateiendung aus [Content_Types].xml.</summary>
+    public required IReadOnlyDictionary<string, string> ContentTypes { get; init; }
+    public required IReadOnlyDictionary<string, string> Defaults { get; init; }
+    /// <summary>Folienmaster mit ihrer Kennung (sldMasterId).</summary>
+    public required IReadOnlyList<(string Id, string Part)> Masters { get; init; }
+    public string? ThemePart { get; init; }
+    /// <summary>Foliengröße in EMU.</summary>
+    public long Cx { get; init; } = 12192000;
+    public long Cy { get; init; } = 6858000;
+    public string? SizeType { get; init; }
+    /// <summary>Standard-Textformate der Präsentation (p:defaultTextStyle) als XML.</summary>
+    public string? DefaultTextStyle { get; init; }
+    /// <summary>Layout je Art („title“, „obj“, „titleOnly“, „blank“, „twoObj“ …) für neue Folien.</summary>
+    public required IReadOnlyDictionary<string, string> LayoutByType { get; init; }
+    public string? FirstLayout { get; init; }
 }
 
 public static class SlideThemes

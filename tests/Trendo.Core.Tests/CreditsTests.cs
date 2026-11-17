@@ -58,7 +58,7 @@ public class CreditsTests
     [Fact(DisplayName = "S3-17-P echt mit FFmpeg: Abspann-Clip 6 s – am Anfang unten, am Ende oben (gemessen), gültiges MP4")]
     public void Real_render()
     {
-        var ff = Cli.Find("ffmpeg"); var font = VideoEdit.FontFile(); if (ff is null || font is null) return;
+        var ff = Cli.Find("ffmpeg"); var font = VideoEdit.FontFile(); if (ff is null || font is null) { Ueberspringen.Weil("FFmpeg oder eine Schriftdatei fehlt auf diesem PC."); return; }
         var dir = Path.Combine(Path.GetTempPath(), "trendo-credits-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
         try
         {

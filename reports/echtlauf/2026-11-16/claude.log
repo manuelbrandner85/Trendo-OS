@@ -1,0 +1,14 @@
+# Echtlauf claude – Claude Code beantwortet eine Frage über das Abo (nur wenn angemeldet)
+Datum: 2026-11-16T22:42:00
+Fundort: C:\Users\<user>\.local\bin\claude.exe
+Suchweg: ClaudeCode.Find (offizieller Installer, npm, PATH)
+Version: 2.1.319 (Claude Code)
+
+## Fachlauf (Helfer: claude) – Exit 0, 6.6 s
+22:42:01 Anmeldestatus: angemeldet=True, Abo=True, Art=claude.ai
+22:42:01 $ claude -p Wie viel ist 17 plus 25? Antworte nur mit der Zahl. --output-format stream-json --verbose --restricted --strict-mcp-config --append-system-prompt Du bist die Haupt-KI in Trendo OS. Antworte auf Deutsch, kla… --disallowedTools Edit Write NotebookEdit MultiEdit
+22:42:07 Exit 0 nach 6,1 s, Antwort: 42
+
+
+ERGEBNIS: ECHT-GRÜN (6.6 s)
+- Fachlauf claude: ECHT-GRÜN – Anmeldestatus: angemeldet=True, Abo=True, Art=claude.ai

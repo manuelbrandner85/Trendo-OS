@@ -1,0 +1,27 @@
+{
+  "Generator": "Trendo OS \u2013 Videos mit KI (FFmpeg: KI-Videoclips Wan 2.2 und Schl\u00FCsselbilder mit Kamerafahrt, Sprecher Piper, Musik, Untertitel)",
+  "Scenes": [
+    {
+      "Prompt": "Ein alter Leuchtturm auf einer Klippe im Morgenlicht",
+      "Seconds": 4,
+      "Motion": "zoom-rein",
+      "Caption": "",
+      "Source": "ki-video",
+      "ImageSha": "024885313A1814C64327404513C821315EA11D50A5F7F31DF42BBD7E687AE48A"
+    },
+    {
+      "Prompt": "Sonnenstrahlen auf ruhigen Wellen",
+      "Seconds": 4,
+      "Motion": "rechts",
+      "Caption": "Guten Morgen",
+      "Source": "ki",
+      "ImageSha": "21DDC80DA35F6E3EBC3C529A56CCDFD8F18BB78C70B4813CAB7CF7D5328C506F"
+    }
+  ],
+  "Width": 1280,
+  "Height": 720,
+  "Seconds": 7.5,
+  "CreatedUtc": "2026-11-16T08:57:45.750905Z",
+  "Sha256": "8498c92ddfc1665d1b4060605da67c1a765df765797bff7557baf86a66301ef5",
+  "AiGenerated": true
+}

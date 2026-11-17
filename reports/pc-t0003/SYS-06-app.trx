@@ -2,7 +2,7 @@
 <TestRun id="85837d33-2965-4966-9403-d6acf17e7ca2" name="<user>@<host> 2026-10-22 02:42:45" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:45.2891870+02:00" queuing="2026-10-22T02:42:45.2891871+02:00" start="2026-10-22T02:42:42.6988458+02:00" finish="2026-10-22T02:42:45.2930311+02:00" />
   <TestSettings name="default" id="9fbd0f3d-2354-4858-8d42-e591b6851b9f">
-    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_45" />
+    <Deployment runDeploymentRoot="<user>_<host>_2026-10-22_02_42_45" />
   </TestSettings>
   <Results>
     <UnitTestResult executionId="b5aaa1ab-ec00-452c-ac9c-81df826f3fe9" testId="52fa1b84-a62c-e316-802e-555a3326440d" testName="SYS-06 UI: Ordner teilen, Datei echt per HTTP laden, falsches Token abgelehnt, beenden" computerName="<host>" duration="00:00:01.3472535" startTime="2026-10-22T02:42:43.8366257+02:00" endTime="2026-10-22T02:42:45.1930086+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b5aaa1ab-ec00-452c-ac9c-81df826f3fe9" />

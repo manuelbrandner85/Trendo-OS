@@ -48,17 +48,43 @@ public sealed class CadBody
 
 public sealed class CadDoc
 {
+    /// <summary>T-0714: Fassung des .tcad-Formats, die dieses Trendo schreibt und versteht. Dateien ohne Angabe (vor T-0714) gelten als Fassung 1;
+    /// eine neuere Fassung wird nicht geöffnet (beim Speichern gingen sonst Inhalte verloren). Migration: <see cref="Upgrade"/> hebt ältere Fassungen Stufe für Stufe an.</summary>
+    public const int FormatVersion = 1;
+    [JsonPropertyOrder(-1)] public int Version { get; set; } = FormatVersion;
     /// <summary>Benannte Maße, z. B. Breite = 40. Formeln in den Bauschritten greifen darauf zu.</summary>
     public Dictionary<string, double> Params { get; set; } = [];
     public List<CadBody> Bodies { get; set; } = [new()];
     public int Segments { get; set; } = 48;
+    /// <summary>T-0691: 2D-Zeichnung (DXF-Import/-Export); null = keine. Ältere .tcad-Dateien ohne diese Angabe bleiben lesbar.</summary>
+    public CadDrawing? Drawing { get; set; }
+    /// <summary>T-0691: Referenzkörper (STL, facettiertes STEP) – angezeigt und vermessen, nicht Teil des Bauplans.</summary>
+    public List<CadReference> References { get; set; } = [];
 
-    public CadDoc Clone() => new() { Params = new(Params), Bodies = Bodies.Select(b => b.Clone()).ToList(), Segments = Segments };
+    public CadDoc Clone() => new() { Version = Version, Params = new(Params), Bodies = Bodies.Select(b => b.Clone()).ToList(), Segments = Segments, Drawing = Drawing?.Clone(), References = References.Select(r => r.Clone()).ToList() };
+
+    /// <summary>T-0716 (B6 Etappe E4, Audit 6.5): Kopie für einen Rückgängig-Schritt – wie <see cref="Clone"/>, aber die Netze der Referenzkörper (eingelesene STL/OBJ …,
+    /// oft viele MB) werden geteilt statt kopiert: Trendo CAD ändert sie nie, es fügt Referenzkörper nur hinzu oder entfernt sie (geprüft im Code, Bericht T-0716).
+    /// Gemessen: 100 Schritte mit einem großen Referenzkörper belegen damit nur noch einen Bruchteil des Speichers.</summary>
+    public CadDoc Snapshot() => new() { Version = Version, Params = new(Params), Bodies = Bodies.Select(b => b.Clone()).ToList(), Segments = Segments, Drawing = Drawing?.Clone(), References = References.Select(r => r.Share()).ToList() };
 
     static readonly JsonSerializerOptions Json = new() { WriteIndented = true, Converters = { new JsonStringEnumConverter() } };
     public string ToJson() => JsonSerializer.Serialize(this, Json);
-    public static CadDoc FromJson(string json) => JsonSerializer.Deserialize<CadDoc>(json, Json) ?? new CadDoc();
-    public void Save(string path) { Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!); File.WriteAllText(path, ToJson()); }
+    public static CadDoc FromJson(string json) { var d = JsonSerializer.Deserialize<CadDoc>(json, Json) ?? new CadDoc(); d.References ??= []; d.Bodies ??= [new()]; return Upgrade(d); }
+
+    /// <summary>T-0714: Fassung prüfen und ältere Fassungen anheben (je Stufe v → v+1 hier eintragen und <see cref="FormatVersion"/> hochzählen).
+    /// Fehlende oder ungültige Angabe (≤ 0) = Fassung 1. Gespeichert wird danach immer in der aktuellen Fassung.</summary>
+    static CadDoc Upgrade(CadDoc d)
+    {
+        if (d.Version <= 0) d.Version = 1;
+        if (d.Version > FormatVersion)
+            throw new InvalidDataException($"Dieses Bauteil wurde mit einer neueren Trendo-Fassung gespeichert (Dateiformat {d.Version}, dieses Trendo kennt {FormatVersion}). Bitte aktualisiere Trendo – die Datei bleibt so lange unverändert.");
+        // Stufen v → v+1: noch keine – Fassung 1 ist die erste mit Angabe; ältere Dateien ohne Angabe haben denselben Aufbau.
+        d.Version = FormatVersion;
+        return d;
+    }
+    /// <summary>T-0691: absturzsicher speichern (erst Zwischendatei, dann austauschen) – nach einem Abbruch liegt die alte oder die neue Fassung da, nie eine halbe.</summary>
+    public void Save(string path) => AtomicFile.WriteAllText(path, ToJson());
     public static CadDoc Load(string path) => FromJson(File.ReadAllText(path));
 
     /// <summary>Formel ausrechnen: Zahlen (Komma oder Punkt), + − × ÷ ^, Klammern, Parameter, sin/cos/tan (Grad), wurzel, min, max, pi.</summary>

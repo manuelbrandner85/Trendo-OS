@@ -15,7 +15,33 @@ namespace Trendo.App;
 /// leere Seite oder andere PDF einfügen, Rückgängig; gespeichert wird in der Arbeitskopie „Name (Trendo).pdf“, das Original bleibt.</summary>
 public partial class MainWindow
 {
-    List<PageOp>? _pdfOrg; readonly Stack<List<PageOp>> _pdfOrgUndo = new(); readonly HashSet<int> _pdfOrgSel = [];
+    List<PageOp>? _pdfOrg; readonly HashSet<int> _pdfOrgSel = [];
+
+    /// <summary>T-0711 (B6 Etappe 1b): „Seiten ordnen“ an Rückgängig (100 Schritte, jetzt auch Wiederholen) und Notsicherung der Hülle (ProgramLink) –
+    /// ersetzt den eigenen Rückgängig-Stapel (kein zweites System). Gespeichert wird weiter als „Name (Trendo).pdf“.</summary>
+    public LinkSlot PdfLink => Slot("pdf", "LINK-PDF", "pdf-ordnen", "pdf", "pdf-org", "Eine neue Seitenfolge", "neue Seitenfolgen", PdfOrgState, PdfOrgApply,
+        () => _pdfOrg is not null, () => (PdfPath is null ? "PDF" : Path.GetFileName(PdfPath)) + " – Seiten ordnen");
+
+    System.Text.Json.Nodes.JsonNode PdfOrgState() => new System.Text.Json.Nodes.JsonObject
+    {
+        ["pdf"] = PdfPath,
+        ["pages"] = _pdfOrg is null ? null : new System.Text.Json.Nodes.JsonArray(_pdfOrg.Select(o => (System.Text.Json.Nodes.JsonNode)new System.Text.Json.Nodes.JsonObject { ["file"] = o.File, ["page"] = o.Page, ["rotate"] = o.Rotate }).ToArray()),
+    };
+
+    void PdfOrgApply(System.Text.Json.Nodes.JsonNode? st)
+    {
+        _pdfOrgSel.Clear();
+        if (st?["pages"] is not System.Text.Json.Nodes.JsonArray a) { _pdfOrg = null; return; }
+        var pdf = st["pdf"]?.GetValue<string>();
+        if (pdf is not null && !string.Equals(pdf, PdfPath, StringComparison.OrdinalIgnoreCase))
+        {
+            if (!File.Exists(pdf)) throw new FileNotFoundException("Die PDF gibt es nicht mehr: " + Path.GetFileName(pdf));
+            OpenPdf(pdf, null);
+        }
+        _pdfOrg = a.OfType<System.Text.Json.Nodes.JsonObject>().Select(o => new PageOp(o["file"]?.GetValue<string>() ?? "", (int?)o["page"] ?? -1, (int?)o["rotate"] ?? 0)).ToList();
+    }
+    /// <summary>Für Tests: Rückgängig über mehrere Schritte im Ordnen-Modus.</summary>
+    public bool PdfOrgCanUndo => PdfLink.Link.CanUndo;
     readonly Dictionary<string, Bitmap?> _pdfThumbs = [];
     public bool PdfOrganizing => _pdfOrg is not null;
     public IReadOnlyList<PageOp> PdfOrgPages => _pdfOrg ?? [];
@@ -56,12 +82,14 @@ public partial class MainWindow
         return sv;
     }
 
-    public void PdfOrgStart() { if (PdfPath is null || PdfPages == 0) return; _pdfOrg = Enumerable.Range(0, PdfPages).Select(i => new PageOp(PdfPath, i)).ToList(); _pdfOrgUndo.Clear(); _pdfOrgSel.Clear(); }
+    public void PdfOrgStart() { if (PdfPath is null || PdfPages == 0) return; _pdfOrg = Enumerable.Range(0, PdfPages).Select(i => new PageOp(PdfPath, i)).ToList(); _pdfOrgSel.Clear(); LinkReset(PdfLink); }
+    /// <summary>Ordnen ohne Speichern beenden (bewusst): Stand und Notsicherung verwerfen.</summary>
+    public void PdfOrgCancel() { _pdfOrg = null; _pdfOrgSel.Clear(); LinkReset(PdfLink); }
     void PdfOrgChange(Func<List<PageOp>, List<PageOp>> f)
     {
         var before = _pdfOrg!.ToList(); var after = f(before.ToList());
         if (after.Count == 0) { PdfSay("Es muss mindestens eine Seite übrig bleiben."); return; }
-        _pdfOrgUndo.Push(before); _pdfOrg = after;
+        _pdfOrg = after; LinkCommit(PdfLink, "Seiten geändert"); // T-0711: ein Rückgängig-Schritt der Hülle
     }
 
     /// <summary>Ausgewählte Seiten vor die Seite <paramref name="target"/> (Index in der jetzigen Reihenfolge; = Anzahl für „ans Ende“) verschieben.</summary>
@@ -96,7 +124,7 @@ public partial class MainWindow
         try
         {
             var n = PdfTools.Rearrange(_pdfOrg, tmp, _pdfPassword, PdfPath, _core.Audit);
-            File.Copy(tmp, target, true); _pdfOrg = null; _pdfOrgUndo.Clear(); _pdfOrgSel.Clear();
+            AtomicFile.WriteAllBytes(target, File.ReadAllBytes(tmp)); _pdfOrg = null; _pdfOrgSel.Clear(); LinkSaved(PdfLink); // T-0711: atomar; gespeichert – Notsicherung weg
             OpenPdf(target, null); PdfSay($"Neue Seitenfolge ({n} Seiten) gespeichert in {Path.GetFileName(target)} – das Original ist unverändert.");
             return target;
         }
@@ -122,9 +150,10 @@ public partial class MainWindow
         selDep.AddRange([left, right, del, back, fwd]);
         var insert = new Button { Name = "pdf-org-insert", Content = "PDF einfügen …", Margin = new Thickness(0, 0, 5, 5), Padding = new Thickness(10, 4) };
         insert.Click += async (_, _) => { if (await PickPdf("pdf-org-insert", false) is [var f, ..]) { try { PdfOrgInsertFile(f); } catch (Exception ex) when (ex is IOException or InvalidOperationException) { PdfSay("Nicht lesbar: " + Trendo.Core.FriendlyError.Say(ex)); } } Show("pdf"); };
-        var undo = B("pdf-org-undo", "Rückgängig", () => { if (_pdfOrgUndo.TryPop(out var b)) { _pdfOrg = b; _pdfOrgSel.Clear(); } }, _pdfOrgUndo.Count > 0);
-        var bar = new WrapPanel { Children = { info, left, right, del, back, fwd, B("pdf-org-blank", "+ Leere Seite", PdfOrgBlank), insert, undo,
-            B("pdf-org-save", "Als Kopie speichern", () => PdfOrgSave(), _pdfOrgUndo.Count > 0, true), B("pdf-org-cancel", "Abbrechen", () => { _pdfOrg = null; _pdfOrgSel.Clear(); }) } };
+        var link = PdfLink; LinkCommit(link);
+        var (undo, redo) = LinkButtons(link, "pdf-org-undo", "pdf-org-redo"); // T-0711: Rückgängig · Wiederholen der Hülle (vorher eigener Stapel ohne Wiederholen)
+        var bar = new WrapPanel { Children = { info, left, right, del, back, fwd, B("pdf-org-blank", "+ Leere Seite", PdfOrgBlank), insert, undo, redo,
+            B("pdf-org-save", "Als Kopie speichern", () => PdfOrgSave(), link.Link.Dirty, true), B("pdf-org-cancel", "Abbrechen", PdfOrgCancel) } };
 
         var wrap = new WrapPanel { Name = "pdf-org-pages" };
         var indicator = new Border { Width = 4, Background = Brush.Parse("#D4A84B"), CornerRadius = new CornerRadius(2), IsVisible = false, IsHitTestVisible = false, BoxShadow = BoxShadows.Parse("0 0 8 0 #AAD4A84B") };
@@ -175,7 +204,7 @@ public partial class MainWindow
         }
         Mark();
         var area = new Grid { Children = { wrap, overlay } };
-        return new StackPanel { Name = "pdf-organize", Spacing = 6, Children = { bar, new ScrollViewer { Content = area, MaxHeight = 640 },
+        return new StackPanel { Name = "pdf-organize", Spacing = 6, Children = { (Control?)LinkMsg(link) ?? new Panel(), bar, new ScrollViewer { Content = area, MaxHeight = 640 },
             P("Gespeichert wird als „Name (Trendo).pdf“ neben dem Original – das Original bleibt unverändert.", Muted, 11.5) } };
     }
 }

@@ -12,6 +12,9 @@ namespace Trendo.App.Tests;
 /// <summary>T-0201: echte Dateiauswahl und Drag &amp; Drop für alle Pfadfelder.</summary>
 public class T0201_Dateiauswahl_Ui
 {
+    /// <summary>Element im logischen Baum der offenen Seite – auch wenn es ausgeblendet ist (Pfadfelder außerhalb von „Professionell“).</summary>
+    static T L<T>(MainWindow w, string name) where T : Control => w.ActivePageRoot!.GetLogicalDescendants().OfType<T>().Last(c => c.Name == name);
+
     [AvaloniaFact(DisplayName = "T-0201: jedes Pfad- oder Ordnerfeld hat „Datei wählen …“ bzw. „Ordner wählen …“")]
     public void EveryPathFieldHasPicker()
     {
@@ -78,7 +81,8 @@ public class T0201_Dateiauswahl_Ui
         w.Show("wissenschaft"); w.ProgramNew("wissenschaft", "leer"); w.Show("wissenschaft");
         if (w.Windows.Active is { Maximized: false } pw) w.Windows.ToggleMaximize(pw.Id); // Programmfenster groß wie im Alltag
         w.Show("wissenschaft"); Settle();
-        var tb = V<TextBox>(w, "ms-csv-path"); tb.BringIntoView(); Settle();
+        // V-07 (T-0700): das Pfadfeld ist in „Einfach“ ausgeblendet (nur in „Professionell“ sichtbar) – es bleibt im Baum und trägt die Auswahl
+        var tb = L<TextBox>(w, "ms-csv-path"); Assert.False(tb.IsVisible);
         Assert.False(V<Button>(w, "ms-csv-path-pick").GetVisualParent()!.GetVisualChildren().OfType<Button>().First(b => b.Name == "ms-csv-path-recent").IsVisible);
         var pick = V<Button>(w, "ms-csv-path-pick"); pick.BringIntoView(); Settle();
         RealClick(w, pick);
@@ -86,7 +90,7 @@ public class T0201_Dateiauswahl_Ui
         Assert.NotNull(asked); Assert.False(asked!.Folder); Assert.Contains("csv", asked.Extensions);
         w.Show("wissenschaft"); Settle();
         Assert.True(w.GetLogicalDescendants().OfType<Button>().First(b => b.Name == "ms-csv-path-recent").IsVisible);
-        tb = V<TextBox>(w, "ms-csv-path"); tb.Text = "/eigener/pfad.csv"; Assert.Equal("/eigener/pfad.csv", tb.Text);
+        tb = L<TextBox>(w, "ms-csv-path"); tb.Text = "/eigener/pfad.csv"; Assert.Equal("/eigener/pfad.csv", tb.Text);
     }
 
     [AvaloniaFact(DisplayName = "T-0201: Ordnerfeld öffnet den Ordner-Dialog")]
@@ -96,7 +100,7 @@ public class T0201_Dateiauswahl_Ui
         bool? folder = null; w.PickOverride = r => { folder = r.Folder; return Task.FromResult<string[]?>([root]); };
         w.Show("alltag-dateien"); Settle();
         RealClick(w, V<Button>(w, "dup-folder-pickdir"));
-        Assert.True(folder); Assert.Equal(root, V<TextBox>(w, "dup-folder").Text);
+        Assert.True(folder); Assert.Equal(root, L<TextBox>(w, "dup-folder").Text);
     }
 
     [AvaloniaFact(DisplayName = "T-0201: Datei aufs Feld oder aufs Studio ziehen füllt das passende Feld")]
@@ -104,8 +108,10 @@ public class T0201_Dateiauswahl_Ui
     {
         var (w, _, root) = Ui.Open();
         var a = Path.Combine(root, "a.csv"); var b = Path.Combine(root, "b.csv"); File.WriteAllText(a, ""); File.WriteAllText(b, "");
+        // V-07 (T-0700): in „Einfach“/„Erweitert“ liest Ablegen sofort ein (Seite wird neu gebaut) – hier geht es ums Füllen des Feldes, darum „Professionell“
+        w.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Profi);
         w.Show("wissenschaft"); w.ProgramNew("wissenschaft", "leer"); w.Show("wissenschaft"); Settle();
-        var fit = V<TextBox>(w, "ms-csv-path");
+        var fit = L<TextBox>(w, "ms-csv-path");
         Assert.True(w.DropPaths(fit, [a])); Assert.Equal(a, fit.Text);
         Assert.True(w.DropPaths(w.ActivePageRoot!, [b]));
         Assert.Equal(b, w.PathFieldsIn(w.ActivePageRoot!).First().Text);

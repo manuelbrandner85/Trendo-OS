@@ -2,7 +2,7 @@
 <TestRun id="91edd430-c7df-4302-b359-23b098fb5112" name="<user>@<host> 2026-10-22 02:42:28" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:28.9419787+02:00" queuing="2026-10-22T02:42:28.9419788+02:00" start="2026-10-22T02:42:28.2210481+02:00" finish="2026-10-22T02:42:28.9465502+02:00" />
   <TestSettings name="default" id="103f8d81-0ca3-4192-bbb9-3de33597bdbf">
-    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_28" />
+    <Deployment runDeploymentRoot="<user>_<host>_2026-10-22_02_42_28" />
   </TestSettings>
   <Results>
     <UnitTestResult executionId="ca25096d-c5a5-4a40-89f1-41ca84e7a21b" testId="0c5e3623-259d-cf43-c7e9-d3339d378c8e" testName="CORE-12: Versionen speichern und zurückholen, Mitgelieferte nicht löschbar" computerName="<host>" duration="00:00:00.0579191" startTime="2026-10-22T02:42:28.7976233+02:00" endTime="2026-10-22T02:42:28.8473921+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ca25096d-c5a5-4a40-89f1-41ca84e7a21b" />

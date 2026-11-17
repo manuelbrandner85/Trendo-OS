@@ -1,0 +1,16 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0681 Code-Editor: „Ausführen“ läuft im Hintergrund – Klick kehrt sofort zurück, Ausgabe erscheint laufend, die Seite bleibt bedienbar, „Abbrechen“ beendet den eigenen Kindprozess [FAIL]
+      Assert.Contains() Failure: Sub-string not found
+      String:    "■ Abgebrochen – das Programm wurde beendet.\nAbgebr"···
+      Not found: "Zeile eins"
+      Stack Trace:
+        tests\Trendo.App.Tests\T0681FehlerUiTests.cs(217,0): at Trendo.App.Tests.T0681_Ui.CodeEditor_laeuft_im_Hintergrund_und_bricht_ab()
+        --- End of stack trace from previous location ---
+  Finished:    Trendo.App.Tests (ID = 'd05bc7ea6090e6e087dabca399d122a4b34b0875cf9360df57d055884be817f4')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 122, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 103,850s
+   Trendo.App.Tests  Total: 6, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 8,863s
+   Trendo.App.Tests  Total: 6, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 8,256s

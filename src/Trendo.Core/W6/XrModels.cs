@@ -4,20 +4,11 @@ using System.Text.Json;
 namespace Trendo.Core;
 
 public sealed record XrModelInfo(string File, long Bytes, int Meshes, int Primitives, long Triangles, long Vertices, int Materials, int Textures, int Nodes, int Animations, string Generator);
-public sealed record XrBudget(string Device, long MaxTriangles, int MaxDrawCalls, int MaxTextures, long MaxBytes, int Fps);
-public sealed record XrCheck(XrBudget Budget, bool Ok, IReadOnlyList<string> Problems);
 
-/// <summary>SPEC-04: VR/AR/MR – 3D-Modelle (glTF/GLB) prüfen, ob sie auf einer Brille flüssig laufen.</summary>
+/// <summary>„3D-Modelle ansehen“ (Kennung SPEC-04, T-0722): 3D-Modelle (glTF/GLB) lesen und auf Fehler prüfen – für 3D-Druck und Architektur.
+/// Die VR-Teile (Zielbrillen mit Richtwerten, Bildzeit) sind mit T-0722 entfernt (Nutzerentscheidung 16.11.2026).</summary>
 public static class XrInspector
 {
-    public static readonly IReadOnlyList<XrBudget> Budgets =
-    [
-        new("Meta Quest 3 / Pico 4 (eigenständig)", 750_000, 150, 40, 100L << 20, 72),
-        new("Meta Quest 2 (eigenständig)", 400_000, 100, 30, 60L << 20, 72),
-        new("Handy-AR (WebXR / Quick Look)", 300_000, 60, 20, 25L << 20, 60),
-        new("PC-VR (Steam VR, starke Grafikkarte)", 3_000_000, 1000, 200, 1L << 30, 90),
-    ];
-
     public static XrModelInfo Inspect(string path)
     {
         var bytes = File.ReadAllBytes(path);
@@ -57,17 +48,12 @@ public static class XrInspector
         }
     }
 
-    public static XrCheck Check(XrModelInfo m, XrBudget b)
+    /// <summary>Fehler im Modell, die man ohne Zielgerät erkennt (für jedes Ziel gleich): fehlendes Material, keine Geometrie.</summary>
+    public static IReadOnlyList<string> Problems(XrModelInfo m)
     {
         var p = new List<string>();
-        if (m.Triangles > b.MaxTriangles) p.Add($"Zu viele Dreiecke: {Fach.F(m.Triangles, 0)} (Grenze {Fach.F(b.MaxTriangles, 0)}). Modell vereinfachen (Decimate).");
-        if (m.Primitives > b.MaxDrawCalls) p.Add($"Zu viele Einzelteile: {m.Primitives} Zeichenaufrufe (Grenze {b.MaxDrawCalls}). Teile mit gleichem Material zusammenfügen.");
-        if (m.Textures > b.MaxTextures) p.Add($"Zu viele Texturen: {m.Textures} (Grenze {b.MaxTextures}). Texturen zu einem Atlas bündeln.");
-        if (m.Bytes > b.MaxBytes) p.Add($"Datei zu groß: {m.Bytes / 1048576.0:0.#} MB (Grenze {b.MaxBytes >> 20} MB). Texturen verkleinern oder komprimieren.");
+        if (m.Triangles == 0) p.Add("Keine Dreiecke – die Datei enthält keine sichtbare Form.");
         if (m.Primitives > 0 && m.Materials == 0) p.Add("Kein Material – das Modell erscheint grau.");
-        return new(b, p.Count == 0, p);
+        return p;
     }
-
-    /// <summary>Zeitbudget pro Bild: bei 72 Hz 13,9 ms. Liegt die Messung darüber, ruckelt es – das macht in VR schnell übel.</summary>
-    public static (double BudgetMs, bool Smooth, double Headroom) FrameBudget(int fps, double measuredMs) { var b = 1000.0 / fps; return (Math.Round(b, 2), measuredMs <= b, Math.Round((b - measuredMs) / b * 100, 1)); }
 }

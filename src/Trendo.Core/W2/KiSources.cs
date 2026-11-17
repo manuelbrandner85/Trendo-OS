@@ -41,13 +41,16 @@ public static class KiCatalog
     ];
 
     /// <summary>KI-Dienste mit Schlüssel (Stand 2026-10-25, offizielle Adressen der Anbieter).</summary>
+    /// <summary>T-0683: Claude gibt es in Trendo nur über das eigene Abo (Claude Code), nie über die kostenpflichtige API – der Dienst steht deshalb nicht in <see cref="Cloud"/>.
+    /// Unter diesem Namen lag früher ein API-Schlüssel; er wird beim Start gelöscht.</summary>
+    public const string ClaudeApiSecret = "TrendoOS:ki-anthropic";
+
     public static readonly IReadOnlyList<KiCloudService> Cloud =
     [
         new("openrouter", "OpenRouter", "https://openrouter.ai/api/v1", "https://openrouter.ai/settings/keys", ":free", true, "Viele Modelle, darunter kostenlose (Endung „:free“). Kostenloses Konto genügt."),
         new("gemini", "Google Gemini", "https://generativelanguage.googleapis.com/v1beta/openai", "https://aistudio.google.com/apikey", "gemini-2.5-flash", true, "Kostenlose Stufe mit Google-Konto; Google darf Eingaben der kostenlosen Stufe auswerten."),
         new("mistral", "Mistral AI", "https://api.mistral.ai/v1", "https://console.mistral.ai/api-keys", "mistral-small-latest", true, "Europäischer Anbieter; kostenlose Stufe „Experiment“ nach Anmeldung."),
         new("huggingface", "Hugging Face", "https://router.huggingface.co/v1", "https://huggingface.co/settings/tokens", "meta-llama/Llama-3.1-8B-Instruct", true, "Kostenloses Konto mit monatlichem Guthaben; Token mit Recht „Inference“ anlegen."),
-        new("anthropic", "Claude (Anthropic)", "https://api.anthropic.com/v1", "https://console.anthropic.com/settings/keys", "claude-haiku-4-5", false, "Kostenpflichtig je Nutzung – nur, wenn du das willst."),
         new("openai", "OpenAI", "https://api.openai.com/v1", "https://platform.openai.com/api-keys", "gpt-4.1-mini", false, "Kostenpflichtig je Nutzung – nur, wenn du das willst."),
     ];
 
@@ -154,6 +157,14 @@ public sealed class KiSourceSettings
     public void Toggle(string id) { if (!Disabled.Remove(id)) Disabled.Add(id); }
 
     public void ToggleCloud(string id) { if (KiCatalog.Cloud.All(c => c.Id != id)) return; if (!Cloud.Remove(id)) Cloud.Add(id); }
+
+    /// <summary>B4 (T-0706): Aktionsname im Freigabe-Tor für „Fragen dürfen an diesen KI-Dienst den PC verlassen“.</summary>
+    public const string CloudOnAction = "ki.cloud.on";
+
+    /// <summary>B4 (T-0706): Einschalten eines Online-KI-Dienstes nur mit gültiger, einmaliger Freigabe genau dieses Dienstes
+    /// (sonst <see cref="ApprovalException"/>, nichts ändert sich). Ausschalten braucht keine Freigabe.</summary>
+    public static KiSourceSettings EnableCloud(string root, ApprovalGate gate, string approvalId, string id) =>
+        gate.Execute(approvalId, CloudOnAction, id, () => Update(root, s => { if (!s.Cloud.Contains(id)) s.ToggleCloud(id); }));
 
     public IReadOnlyList<KiSourceInfo> Active() => Order.Where(id => !Disabled.Contains(id)).Select(id => KiCatalog.Sources.First(s => s.Id == id)).ToList();
 }

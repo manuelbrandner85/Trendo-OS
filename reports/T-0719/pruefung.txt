@@ -1,0 +1,15 @@
+Gegenprobe ausserhalb von Trendo: python -I -X utf8 pruefe_gpx_kml_ics.py (Python 3.13.15, nur Standardbibliothek; gpxpy/icalendar nicht vorhanden, nichts installiert), 2026-11-16T21:01:32+01:00
+OK     karte-export.gpx: 1 Wegpunkte, 1 Routen, 0 Spuren, 3 Punkte, Namen: ['Karte', 'Hütte', 'Route 1']
+OK     karte-export.kml: 2 Placemarks: ['Route 1', 'Hütte']
+OK     tagesplan.ics: 1 Termine: ['16.11.2026 09:00-10:00 Angebot schreiben [Aufgabe]']
+OK     tagesplan-mit-terminen.ics: 2 Termine: ['16.11.2026 09:00-10:00 Angebot schreiben [Aufgabe]', '16.11.2026 13:00-14:15 Zahnarzt [Termin]']
+Ergebnis: alle Pruefungen bestanden
+Exit 0
+
+Negativprobe (so schrieb Trendo vor T-0719 eine Karte mit Spur vor Route – die Prüfung muss das finden):
+FEHLER negativprobe-reihenfolge.gpx: 0 Wegpunkte, 1 Routen, 1 Spuren, 2 Punkte, Namen: ['A', 'B']
+       - gpx: <rte> steht nach <trk> (GPX-1.1-Reihenfolge verletzt)
+Ergebnis: 1 Fehler
+Exit 1 (erwartet 1)
+
+Ical.Net 5.2.4 (fremde Bibliothek, MIT) liest tagesplan.ics und tagesplan-mit-terminen.ics im App-Test T0719_KartenTagesplaner_Ui.Tagesplaner_direkt_bearbeiten (Rohlog app-tests-T0719.log, 4/4 bestanden)

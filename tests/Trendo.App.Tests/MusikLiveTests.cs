@@ -17,7 +17,7 @@ public class MusikLiveTests
         var ct = TestContext.Current.CancellationToken;
         var archive = Environment.GetEnvironmentVariable("TRENDO_ACE_LIVE")!;
         var seven = Environment.GetEnvironmentVariable("TRENDO_7Z")!;
-        var root = Path.Combine(Path.GetTempPath(), "trendo-ace-live");
+        var root = Path.Combine(global::Trendo.Core.TempDir.SystemTemp, "trendo-ace-live");
         var outDir = Path.Combine(root, "ergebnis"); Directory.CreateDirectory(outDir);
         var tools = Path.Combine(root, "TrendoWerkzeuge");
         var log = Path.Combine(outDir, "ablauf.log");

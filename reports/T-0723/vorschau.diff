@@ -1,0 +1,37 @@
+--- a/rechner.py
++++ b/rechner.py
+@@ -1,6 +1,5 @@
+ """Kleiner Rechner zum Ausprobieren."""
+ 
+-
+ def addiere(a, b):
+     return a + b
+ 
+@@ -9,3 +8,7 @@
+     if b == 0:
+         raise ValueError("Durch null kann man nicht teilen.")
+     return a / b
++
++
++def multipliziere(a, b):
++    return a * b
+--- a/test_rechner.py
++++ b/test_rechner.py
+@@ -1,6 +1,6 @@
+ import unittest
+ 
+-from rechner import addiere, teile
++from rechner import addiere, teile, multipliziere
+ 
+ 
+ class RechnerTest(unittest.TestCase):
+@@ -11,6 +11,9 @@
+         self.assertEqual(teile(9, 3), 3)
+         with self.assertRaises(ValueError):
+             teile(1, 0)
++
++    def test_multipliziere(self):
++        self.assertEqual(multipliziere(2, 3), 6)
+ 
+ 
+ if __name__ == "__main__":

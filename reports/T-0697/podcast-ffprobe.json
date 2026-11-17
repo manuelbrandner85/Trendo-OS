@@ -1,0 +1,49 @@
+{
+    "chapters": [
+        {
+            "id": 0,
+            "time_base": "1/1000",
+            "start": 0,
+            "start_time": "0.000000",
+            "end": 12000,
+            "end_time": "12.000000",
+            "tags": {
+                "title": "Begrüßung"
+            }
+        },
+        {
+            "id": 1,
+            "time_base": "1/1000",
+            "start": 12000,
+            "start_time": "12.000000",
+            "end": 16500,
+            "end_time": "16.500000",
+            "tags": {
+                "title": "Teil zwei"
+            }
+        }
+    ],
+    "format": {
+        "filename": "<testordner>\\ersatz-mikrofon-1-fertig.mp3",
+        "nb_streams": 1,
+        "nb_programs": 0,
+        "nb_stream_groups": 0,
+        "format_name": "mp3",
+        "format_long_name": "MP2/3 (MPEG audio layer 2/3)",
+        "start_time": "0.025057",
+        "duration": "16.500000",
+        "size": "265312",
+        "bit_rate": "128636",
+        "probe_score": 52,
+        "tags": {
+            "title": "Testfolge 1",
+            "artist": "Testsender",
+            "album_artist": "Testsender",
+            "album": "Trendo Testpodcast",
+            "encoder": "Lavf63.1.102",
+            "track": "1",
+            "genre": "Podcast",
+            "date": "2026"
+        }
+    }
+}

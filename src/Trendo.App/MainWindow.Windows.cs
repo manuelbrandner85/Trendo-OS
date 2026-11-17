@@ -78,7 +78,9 @@ public partial class MainWindow
             RenderWindows(); return;
         }
         if (_deskHost.Children.Count == 0) _deskHost.Children.Add(SafeView("start"));
-        var content = WithFoldedStrip(key, SafeView(key));
+        _relatedPlaced = false; // V-13: setzt der Seitenkopf, wenn er die verwandten Programme ins Menü „Mehr“ nimmt
+        var view = SafeView(key);
+        var content = WithFoldedStrip(key, view);
         var (win, closed) = Windows.Open(_backWindow ?? TargetWindow(key), key, PresentTitle(key), back: _backWindow is not null);
         if (closed is not null && _frames.Remove(closed.Id, out var old)) { _closeButtons.Remove(closed.Id); DetachFrame(old.Frame); _framePage.Remove(closed.Id); _windowStudio.Remove(closed.Id); ClaudeDockWindowClosed(closed.Id); }
         if (StudioKeyFor(key) is { } sid) _windowStudio[win.Id] = sid;
@@ -86,6 +88,9 @@ public partial class MainWindow
         // Wunsch 03.11.2026: Klick auf einen Knopf baut die Seite neu – die Scrollposition bleibt dabei stehen (vorher sprang sie nach oben)
         var keep = _framePage.TryGetValue(win.Id, out var shown) && shown == key ? ScrollOffsets(fr.Body) : null;
         fr.Title.Text = win.Title; ((DeskFrame)fr.Frame).WindowTitle = win.Title; fr.Body.Content = WithClaudeDock(win.Id, content);
+        // T-0710: Menüleiste der Programme außerhalb der Hülle steht in der Titelleiste des Fensters (keine zusätzliche Zeile über der Arbeitsfläche)
+        if (fr.Frame.GetLogicalDescendants().OfType<ContentControl>().FirstOrDefault(c => c.Name == "win-menu-" + win.Id) is { } menuSlot) { menuSlot.Content = _titleMenu; FitTitleMenu(menuSlot); }
+        _titleMenu = null;
         _framePage[win.Id] = key;
         if (keep is { Count: > 0 }) RestoreScroll(fr.Body, keep);
         if (fr.Frame.GetLogicalDescendants().OfType<ContentControl>().FirstOrDefault(c => c.Name == "win-icon-" + win.Id) is { } icon)
@@ -208,12 +213,12 @@ public partial class MainWindow
         var bar = new Border { Name = "win-title-" + id, Height = WindowManager.TitleBar, Background = _style switch { "windows" or "mac" => GlassStrong, "linux" => Brush.Parse(_theme == "hell" ? "#FFEBEBED" : "#FF2E2E32"), _ => Brush.Parse("#333F3F3F") }, CornerRadius = new CornerRadius(0), Cursor = new Cursor(StandardCursorType.SizeAll),
             Child = mac
                 ? new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,Auto,*,Auto"), Children = { caps, Pos(back, 1), Pos(titleIcon, 2), Pos(title, 3) } } // Mac: Knöpfe links
-                : new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto"), Children = { back, Pos(titleIcon, 1), Pos(title, 2), Pos(caps, 3) } } };
+                : new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,Auto,*,Auto"), Children = { back, Pos(titleIcon, 1), Pos(new ContentControl { Name = "win-menu-" + id, VerticalAlignment = VerticalAlignment.Center }, 2), Pos(title, 3), Pos(caps, 4) } } }; // T-0710: Platz für die Menüleiste der Programme außerhalb der Hülle
         // Verschieben mit der Maus an der Titelleiste; Doppelklick maximiert
         Point? from = null;
         bar.PointerPressed += (_, e) =>
         {
-            if (e.Source is Visual v && v.FindAncestorOfType<Button>(true) is not null) return;
+            if (e.Source is Visual v && (v.FindAncestorOfType<Button>(true) is not null || v.FindAncestorOfType<Menu>(true) is not null)) return; // Knöpfe und Menüleiste (T-0710) behalten ihren Klick
             if (e.ClickCount == 2) { Windows.ToggleMaximize(id); AfterWindowChange(); return; }
             from = e.GetPosition(_winCanvas); e.Pointer.Capture(bar); FocusWindow(id);
         };

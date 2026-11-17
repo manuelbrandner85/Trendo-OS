@@ -1,0 +1,41 @@
+# Echtlauf blender – glTF/OBJ/STL/FBX über Blender, Kreatur mit Rig, Rundlauf FBX/GLB
+Datum: 2026-11-16T21:37:25
+Fundort: C:\Users\<user>\AppData\Local\TrendoWerkzeuge\blender\blender.exe
+Suchweg: DependencyManager, sonst ModelConverter.FindBlender
+Version: Blender 5.2.3 LTS
+
+## Tests (core): „CORE-05: Echtes Blender“ – 1 Ergebnis(se), 16.0 s
+- Passed: CORE-05: Echtes Blender – Modell anlegen, Vorschau rendern, in glTF/OBJ/STL/FBX umwandeln, Inhalt prüfen
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=W4_Core05_3D.Blender_roundtrip --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\blender-0.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\blender-0.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 13 s - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „Kreatur-Baukasten: echter Blender“ – 1 Ergebnis(se), 11.7 s
+- Passed: Kreatur-Baukasten: echter Blender baut einen Drachen mit Rig und schreibt .blend und .glb (übersprungen ohne Blender)
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.KreaturUndRegeln.Dragon_in_blender --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\blender-1.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\blender-1.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 9 s - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „3D S2-17: echter Rundlauf“ – 1 Ergebnis(se), 2.1 s
+- Passed: 3D S2-17: echter Rundlauf FBX (Unity) und GLB (Godot) ohne Verlust – mehr Animationen und andere Punktzahl (Nähte) sind kein Fehler
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.Studio3DEnginesTests.Real_roundtrips_ok --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\blender-2.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\blender-2.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 26 ms - Trendo.Core.Tests.dll (net10.0)
+
+
+ERGEBNIS: ECHT-GRÜN (30.1 s)
+- CORE-05: Echtes Blender: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- Kreatur-Baukasten: echter Blender: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- 3D S2-17: echter Rundlauf: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen

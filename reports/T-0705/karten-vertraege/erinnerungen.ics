@@ -1,0 +1,56 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Kalender//DE
+BEGIN:VEVENT
+UID:vertrag-v1-20261204@vertraege
+DTSTAMP:20261116T131912Z
+DTSTART;VALUE=DATE:20261204
+DTEND;VALUE=DATE:20261205
+SUMMARY:Kündigen bis heute: Handyvertrag
+DESCRIPTION:Vertrag: Handyvertrag bei Beispiel Mobilfunk GmbH\, Kundennummer KD-123456\nDie Kündigung muss bis 04.12.2026 beim Anbieter sein – dann endet der Vertrag am 04.01.2027.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Kündigen bis heute: Handyvertrag
+TRIGGER:-PT20160M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:vertrag-v2-20270930@vertraege
+DTSTAMP:20261116T131912Z
+DTSTART;VALUE=DATE:20270930
+DTEND;VALUE=DATE:20271001
+SUMMARY:Kündigen bis heute: Hausratversicherung
+DESCRIPTION:Vertrag: Hausratversicherung bei Muster Versicherung AG\, Kundennummer HR-778899\nDie Kündigung muss bis 30.09.2027 beim Anbieter sein – dann endet der Vertrag am 31.12.2027.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Kündigen bis heute: Hausratversicherung
+TRIGGER:-PT20160M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:vertrag-v3-20261130@vertraege
+DTSTAMP:20261116T131912Z
+DTSTART;VALUE=DATE:20261130
+DTEND;VALUE=DATE:20261201
+SUMMARY:Kündigen bis heute: Streaming-Abo
+DESCRIPTION:Vertrag: Streaming-Abo bei Beispiel Stream\nDie Kündigung muss bis 30.11.2026 beim Anbieter sein – dann endet der Vertrag am 30.11.2026.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Kündigen bis heute: Streaming-Abo
+TRIGGER:-PT20160M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:vertrag-v4-20270518@vertraege
+DTSTAMP:20261116T131912Z
+DTSTART;VALUE=DATE:20270518
+DTEND;VALUE=DATE:20270519
+SUMMARY:Kündigen bis heute: Fitnessstudio
+DESCRIPTION:Vertrag: Fitnessstudio bei Muster Fitness\, Kundennummer M-4711\nDie Kündigung muss bis 18.05.2027 beim Anbieter sein – dann endet der Vertrag am 15.06.2027.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Kündigen bis heute: Fitnessstudio
+TRIGGER:-PT20160M
+END:VALARM
+END:VEVENT
+END:VCALENDAR

@@ -289,6 +289,8 @@ public partial class MainWindow
             Child = new WrapPanel { Children = { new TextBlock { Text = pr.Label, Foreground = Text, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0), FontSize = 13 }, tb, new Border { Width = 6 }, ok, new Border { Width = 4 }, cancel } } };
     }
 
+    Button TextPainterButton() => XB("text-painter", "🖌", _txPainter is null ? "Format übertragen" : "Format einfügen", TextFormatPainter, "Format übertragen: erst Quelle, dann Ziel", _txPainter is not null);
+
     /// <summary>W1: Formatvorlagen-Galerie mit Vorschau.</summary>
     Control StyleGallery()
     {
@@ -305,7 +307,7 @@ public partial class MainWindow
             b.Click += (_, _) => { if (CurPara() is { } p) { Snapshot(); p.Style = st; Changed(); } Show("text"); };
             row.Children.Add(b);
         }
-        row.Children.Add(XB("text-painter", "🖌", _txPainter is null ? "Format übertragen" : "Format einfügen", TextFormatPainter, "Format übertragen: erst Quelle, dann Ziel", _txPainter is not null));
+        row.Children.Add(TextPainterButton());
         return new ScrollViewer { Content = row, HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled, Margin = new Thickness(0, 0, 0, 4) };
     }
 

@@ -28,6 +28,10 @@ public partial class MainWindow
             Sentence = "Scan öffnen, von allen Seiten ansehen, aufräumen, messen und als PLY oder XYZ weitergeben.",
             Folder = "Punktwolken",
             FillHeight = true,
+            // T-0686 (V-02): noch kein Scan – „Scan-Datei öffnen“ öffnet die Dateiauswahl, auch wenn die Spalte „Scan-Datei“ in „Einfach“ eingeklappt ist
+            FirstStep = new("Scan-Datei öffnen", "Öffne einen Scan (PLY, XYZ, PTS, CSV oder OBJ) – z. B. vom Handy, vom Laserscanner oder aus Fotos.",
+                d => _ = ProgramPickThen(PK, "pc-open-pick", "Scan-Dateien", ["ply", "xyz", "pts", "csv", "obj"], false, files => ScanLoadFile(d, files[0])),
+                d => ScanDoc.From(d.Data).Source.Length == 0),
             Templates =
             [
                 new("datei", "Scan-Datei öffnen", "PLY, XYZ, PTS, CSV oder OBJ von Handy-LiDAR, Laserscanner oder Fotogrammetrie", () => ScanDocJson(new ScanDoc())),
@@ -95,12 +99,20 @@ public partial class MainWindow
     public void ScanPick(P3 p) { if (_pcMarks.Count >= 2) _pcMarks.Clear(); _pcMarks.Add(p); Show(PK); }
     public IReadOnlyList<P3> ScanMarks => _pcMarks;
 
+    /// <summary>Scan-Datei ins Dokument laden: erst prüfen, dann übernehmen (Knopf „Laden“ und erster Schritt „Scan-Datei öffnen“).</summary>
+    public void ScanLoadFile(ProgramDocument d, string p)
+    {
+        if (!File.Exists(p)) throw new FileNotFoundException("Diese Datei gibt es nicht.");
+        var test = new ScanDoc { Source = p }; ScanCloudOf(test); // erst prüfen, dann ins Dokument
+        ScanEditDoc(d, "Datei laden", x => { x.Source = p; x.Ops.Clear(); x.Yaw = -35; x.Pitch = 28; x.Zoom = 1; }); _pcMarks.Clear(); _pcAnalysis = "";
+    }
+
     private Control ScanWorkspace(ProgramDocument d)
     {
         var s = ScanDoc.From(d.Data);
         if (s.Source.Length == 0)
-            return new Border { Name = "pc-empty", Background = Brush.Parse("#212121"), CornerRadius = new CornerRadius(10), Child = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Spacing = 8, Children = {
-                new TextBlock { Text = "Scan-Datei rechts wählen oder hierher ziehen", Foreground = Text, FontSize = 18, HorizontalAlignment = HorizontalAlignment.Center },
+            return new Border { Name = "pc-empty", Background = Brush.Parse("#212121"), CornerRadius = new CornerRadius(10), Child = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(0, 0, 0, 28), Spacing = 6, Children = {
+                new TextBlock { Text = "Du kannst eine Scan-Datei auch hierher ziehen", Foreground = Text, FontSize = 15, HorizontalAlignment = HorizontalAlignment.Center },
                 new TextBlock { Text = "PLY, XYZ, PTS, CSV oder OBJ – z. B. vom iPhone-LiDAR, Laserscanner oder aus Fotos", Foreground = Muted, FontSize = 12, HorizontalAlignment = HorizontalAlignment.Center } } } };
         PointCloud pc;
         try { pc = ScanCloudOf(s); }
@@ -126,12 +138,7 @@ public partial class MainWindow
         // Quelle
         sp.Children.Add(H("Scan-Datei", 12));
         var file = Field("pc-file-path", "Scan-Datei (.ply, .xyz, .pts, .csv, .obj)", 140, s.Source == ScanDoc.DemoSource ? "" : s.Source); sp.Children.Add(file);
-        sp.Children.Add(Act2("pc-load", "Laden", () => ProgramRun(PK, () =>
-        {
-            var p = Need(file, "die Scan-Datei"); if (!File.Exists(p)) throw new FileNotFoundException("Diese Datei gibt es nicht.");
-            var test = new ScanDoc { Source = p }; ScanCloudOf(test); // erst prüfen, dann ins Dokument
-            ScanEditDoc(d, "Datei laden", x => { x.Source = p; x.Ops.Clear(); x.Yaw = -35; x.Pitch = 28; x.Zoom = 1; }); _pcMarks.Clear(); _pcAnalysis = "";
-        })));
+        sp.Children.Add(Act2("pc-load", "Laden", () => ProgramRun(PK, () => ScanLoadFile(d, Need(file, "die Scan-Datei")))));
         PointCloud? pc = null; try { if (s.Source.Length > 0) pc = ScanCloudOf(s); } catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or InvalidDataException or FormatException) { }
         if (pc is not null)
         {

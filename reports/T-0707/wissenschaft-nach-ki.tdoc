@@ -1,0 +1,39 @@
+{
+  "format": "tdoc",
+  "version": 1,
+  "studio": "SPEC-05",
+  "title": "Unbenannt",
+  "created": "2026-11-16T15:22:14.8221176\u002B01:00",
+  "changed": "2026-11-16T15:22:26.0426310\u002B01:00",
+  "data": {
+    "sheet": {
+      "version": 1,
+      "name": "Kellertemperatur Januar",
+      "columns": [
+        {
+          "name": "x",
+          "unit": "",
+          "values": [
+            null
+          ]
+        },
+        {
+          "name": "y",
+          "unit": "",
+          "values": [
+            null
+          ]
+        }
+      ],
+      "chart": {
+        "kind": "streu",
+        "x": 0,
+        "ys": [
+          1
+        ],
+        "fit": "linear"
+      },
+      "rows": 1
+    }
+  }
+}

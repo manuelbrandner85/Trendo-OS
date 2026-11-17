@@ -18,7 +18,7 @@ public class MediaIcons_Ui
     public async Task Icons()
     {
         var (w, _, _) = Ui.Open(); w.Width = 1500; w.Height = 1000; var urls = new List<string>();
-        var real = Path.Combine(Path.GetTempPath(), "trendo-tools-b", "iconify");
+        var real = Path.Combine(global::Trendo.Core.TempDir.SystemTemp, "trendo-tools-b", "iconify");
         var useReal = Environment.GetEnvironmentVariable("TRENDO_ICON_SHOT") is { Length: > 0 } && File.Exists(Path.Combine(real, "mdi.json"));
         MainWindow.IconFetchOverride = u =>
         {
@@ -38,7 +38,7 @@ public class MediaIcons_Ui
             Settle(); Assert.NotNull(w.Find<Button>("mb-icon-0"));
             if (useReal)
             {
-                var frame = w.CaptureRenderedFrame(); frame?.Save(Path.Combine(Path.GetTempPath(), "trendo-symbole-seite.png"));
+                var frame = w.CaptureRenderedFrame(); frame?.Save(Path.Combine(global::Trendo.Core.TempDir.SystemTemp, "trendo-symbole-seite.png"));
                 return;
             }
             w.Find<Button>("mb-icon-0").Press();

@@ -1,0 +1,33 @@
+# Echtlauf tesseract – Tesseract liest einen von Trendo gerenderten Brief
+Datum: 2026-11-16T21:42:28
+Fundort: C:\Users\<user>\AppData\Local\TrendoWerkzeuge\tesseract\tesseract.exe
+Suchweg: DependencyManager
+Version: tesseract v5.4.0.20240606
+
+## Tests (core): „LETTER-012: Echte Tesseract-Texterkennung“ – 1 Ergebnis(se), 9.8 s
+- Passed: LETTER-012: Echte Tesseract-Texterkennung eines gerenderten Briefs (deu), unsichere Wörter markiert, Sprachpaket per Hash geprüft
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.LetterOcrReal.Real_ocr --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\tesseract-0.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\tesseract-0.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 7 s - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „Scan → durchsuchbares PDF mit Tesseract“ – 1 Ergebnis(se), 2.1 s
+- NotExecuted: SYS-10-P08 (T-0244 getrennt): Scan → durchsuchbares PDF mit Tesseract
+  Übersprungen – fehlt auf diesem PC: pdftoppm
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.Sys10_Office.ScanOcr --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\tesseract-1.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.88]     SYS-10-P08 (T-0244 getrennt): Scan → durchsuchbares PDF mit Tesseract [SKIP]
+  Übersprungen SYS-10-P08 (T-0244 getrennt): Scan → durchsuchbares PDF mit Tesseract [1 ms]
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\tesseract-1.trx
+
+Übersprungen!: Fehler:     0, erfolgreich:     0, übersprungen:     1, gesamt:     1, Dauer: 1 ms - Trendo.Core.Tests.dll (net10.0)
+
+
+ERGEBNIS: ECHT-GRÜN (teilweise) (12.1 s)
+- LETTER-012: Echte Tesseract-Texterkennung: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- Scan → durchsuchbares PDF mit Tesseract: 0 bestanden, 0 fehlgeschlagen, 1 übersprungen (Übersprungen – fehlt auf diesem PC: pdftoppm)

@@ -69,7 +69,7 @@ public partial class MainWindow
         }
         var url = new Button { Name = "btn-open-url", Content = "Trendo im Browser öffnen", IsEnabled = !_core.Offline, FontSize = 11, Margin = new Thickness(0, 12, 0, 0) }; ToolTip.SetTip(url, "Trendo-Repository im Browser öffnen (Freigabe nötig)");
         if (_core.Offline) ToolTip.SetTip(url, "Offline-Modus: deaktiviert");
-        url.Click += (_, _) => { try { _core.Integrations.PlanOpenUrl(Principal.LocalOwner, "https://github.com/manuelbrandner85/Trendo-OS"); Show("approvals"); } catch (OfflineException ex) { msg.Text = ex.Message; } };
+        url.Click += (_, _) => { try { _core.Integrations.PlanOpenUrl(CurrentPrincipal, "https://github.com/manuelbrandner85/Trendo-OS"); Show("approvals"); } catch (OfflineException ex) { msg.Text = ex.Message; } };
         left.Children.Add(url);
 
         // ── Mitte: Dateien ──
@@ -123,10 +123,12 @@ public partial class MainWindow
                 right.Children.Add(new DockPanel { Children = { Dk(new TextBlock { Text = v, Foreground = Text, FontSize = 12 }, Avalonia.Controls.Dock.Right), new TextBlock { Text = k, Foreground = Muted, FontSize = 12 } } });
             var note = new TextBox { Name = "proj-note", Text = _core.Projects.Note(pid), AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 90, PlaceholderText = "Notiz zum Projekt – Ziel, Stand, Ideen …", FontSize = 12 };
             note.LostFocus += (_, _) => { if ((note.Text ?? "") != _core.Projects.Note(pid)) _core.Projects.SetNote(pid, note.Text ?? ""); };
+            // T-0726: Getipptes schon nach der Tipp-Pause speichern (vorher erst beim Verlassen des Felds – ein Absturz verlor die ganze Notiz)
+            SaveOnPause(note, () => { if ((note.Text ?? "") != _core.Projects.Note(pid)) _core.Projects.SetNote(pid, note.Text ?? ""); });
             right.Children.Add(H("Notiz", 13)); right.Children.Add(note);
             right.Children.Add(H("Aktionen", 13));
             var open = new Button { Name = "btn-open-folder-" + pid, Content = "Ordner im Explorer öffnen (Freigabe nötig)", FontSize = 12, HorizontalAlignment = HorizontalAlignment.Stretch };
-            open.Click += (_, _) => { _core.Integrations.PlanOpenProjectFolder(Principal.LocalOwner, pid); Show("approvals"); };
+            open.Click += (_, _) => { _core.Integrations.PlanOpenProjectFolder(CurrentPrincipal, pid); Show("approvals"); };
             right.Children.Add(open);
             if (File.Exists(Path.Combine(_core.Projects.ProjectFilesRoot(pid), "3d", "szene.json")))
             {
@@ -141,8 +143,11 @@ public partial class MainWindow
         }
 
         Border Panel(Control c, string name, double? w = null) => new() { Name = name, Child = new ScrollViewer { Content = c }, Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(10), BoxShadow = CardShadow, Width = w ?? double.NaN };
-        var g = new Grid { Name = "proj-workspace", ColumnDefinitions = new ColumnDefinitions("240,*,290"), ColumnSpacing = 10 };
-        g.Children.Add(Panel(left, "proj-left")); g.Children.Add(Pos(Panel(center, "proj-center"), 1)); g.Children.Add(Pos(Panel(right, "proj-right"), 2));
+        // V-16 (T-0684): ohne gewähltes Projekt gibt es keine Details – der leere Kasten rechts wird nicht gezeichnet, die Mitte füllt das Fenster
+        var details = right.Children.Count > 0;
+        var g = new Grid { Name = "proj-workspace", ColumnDefinitions = new ColumnDefinitions(details ? "240,*,290" : "240,*"), ColumnSpacing = 10 };
+        g.Children.Add(Panel(left, "proj-left")); g.Children.Add(Pos(Panel(center, "proj-center"), 1));
+        if (details) g.Children.Add(Pos(Panel(right, "proj-right"), 2));
         return FitPage("Projekte", new Panel(), g);
     }
 }

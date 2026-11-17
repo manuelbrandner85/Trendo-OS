@@ -1,0 +1,63 @@
+# Echtlauf acestep – Musik-KI erzeugt 10 s Lied
+Datum: 2026-11-16T02:42:06
+Fundort: C:\Users\<user>\AppData\Local\TrendoWerkzeuge\ki\laufzeit\acestep
+Suchweg: KiLibraryStore.RuntimeReady(AceStep)
+Version: –
+
+## Fachlauf (Helfer: acestep) – Exit 0, 124.6 s
+02:42:08 Server gestartet (eigener Prozess 79300)
+02:43:40 Server bereit nach 92 s
+02:44:10 Lied fertig nach 30 s: 171600 Bytes, SHA-256 f7a46399e612bc6579ce859f449c7a36a46365036777bcd7f27cf6ed885581fc
+02:44:10 $ ffmpeg.exe -hide_banner -i C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-77924\acestep\lied.mp3 -f null -
+02:44:10   Exit 0 nach 0,1 s
+  | Input #0, mp3, from 'C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-77924\acestep\lied.mp3':
+  |   Duration: 00:00:10.00, start: 0.023021, bitrate: 137 kb/s
+  |   Stream #0:0: Audio: mp3 (mp3float), 48000 Hz, stereo, fltp, 136 kb/s, start 0.023021
+  |     Metadata:
+  |       encoder         : LAME3.100
+  | Stream mapping:
+  |   Stream #0:0 -> #0:0 (mp3 (mp3float) -> pcm_s16le (native))
+  | Press [q] to stop, [?] for help
+  | Output #0, null, to 'pipe:':
+  |   Metadata:
+  |     encoder         : Lavf63.1.102
+  |   Stream #0:0: Audio: pcm_s16le, 48000 Hz, stereo, s16, 1536 kb/s
+  |     Metadata:
+  |       encoder         : Lavc63.1.102 pcm_s16le
+  | [out#0/null @ 00000228deafb540] video:0KiB audio:1875KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown
+  | size=N/A time=00:00:10.00 bitrate=N/A speed=1.01e+03x elapsed=0:00:00.00
+02:44:10 eigener Server beendet
+  srv| 2026-11-16 02:44:06.001 | INFO     | acestep.core.generation.handler.init_service:_load_model_context:414 - [_load_model_context] Offloaded text_encoder to CPU in 0.3784s
+  srv| 2026-11-16 02:44:06.001 | INFO     | acestep.core.generation.handler.service_generate_execute:_execute_service_generate_diffusion:120 - [service_generate] Generating audio... (DiT backend: PyTorch (cuda))
+  srv| 2026-11-16 02:44:06.164 | INFO     | acestep.core.generation.handler.service_generate_execute:_execute_service_generate_diffusion:193 - [service_generate] DiT diffusion via PyTorch (cuda)...
+  srv| 2026-11-16 02:44:07.156 | INFO     | acestep.handler:generate_music:1204 - [generate_music] Model generation completed. Decoding latents...
+  srv| 2026-11-16 02:44:07.157 | DEBUG    | acestep.handler:generate_music:1223 - [generate_music] pred_latents: torch.Size([1, 250, 64]), dtype=torch.bfloat16
+  srv| 2026-11-16 02:44:07.157 | DEBUG    | acestep.handler:generate_music:1224 - [generate_music] time_costs: {'encoder_time_cost': 0.029303789138793945, 'diffusion_time_cost': 0.9625809192657471, 'diffusion_per_step_time_cost': 0.12032261490821838, 'total_time_cost': 0.991884708404541, 'offload_time_cost': 1.399104356765747}
+  srv| 2026-11-16 02:44:07.162 | INFO     | acestep.handler:generate_music:1241 - [generate_music] Decoding latents with VAE...
+  srv| 2026-11-16 02:44:07.162 | INFO     | acestep.core.generation.handler.init_service:_load_model_context:381 - [_load_model_context] Loading vae to cuda
+  srv| 2026-11-16 02:44:07.283 | INFO     | acestep.core.generation.handler.init_service:_load_model_context:394 - [_load_model_context] Loaded vae to cuda in 0.1209s
+  srv| 2026-11-16 02:44:07.285 | DEBUG    | acestep.handler:generate_music:1268 - [generate_music] Before VAE decode: allocated=4.79GB, max=5.85GB
+  srv| 2026-11-16 02:44:07.286 | INFO     | acestep.handler:generate_music:1287 - [generate_music] Effective free VRAM before VAE decode: 1.47 GB
+  srv| 2026-11-16 02:44:07.286 | INFO     | acestep.handler:generate_music:1300 - [generate_music] Using tiled VAE decode to reduce VRAM usage...
+  srv| 2026-11-16 02:44:07.286 | DEBUG    | acestep.core.generation.handler.memory_utils:_get_auto_decode_chunk_size:75 - [_get_auto_decode_chunk_size] Effective free VRAM: 1.47 GB
+  srv| 2026-11-16 02:44:07.286 | DEBUG    | acestep.core.generation.handler.memory_utils:_should_offload_wav_to_cpu:98 - [_should_offload_wav_to_cpu] Effective free VRAM: 1.47 GB
+  srv| 2026-11-16 02:44:07.286 | INFO     | acestep.core.generation.handler.vae_decode:tiled_decode:56 - [tiled_decode] chunk_size=128, offload_wav_to_cpu=True, latents_shape=torch.Size([1, 64, 250])
+  srv| 2026-11-16 02:44:07.287 | WARNING  | acestep.core.generation.handler.vae_decode_chunks:_tiled_decode_inner:35 - [tiled_decode] Reduced overlap from 64 to 32 for chunk_size=128
+  srv| Using precomputed LM hints
+  srv| Using precomputed LM hints
+  srv| INFO:     127.0.0.1:59590 - "POST /query_result HTTP/1.1" 200 OK
+  srv| 2026-11-16 02:44:07.551 | DEBUG    | acestep.handler:generate_music:1323 - [generate_music] After VAE decode: allocated=4.95GB, max=5.85GB
+  srv| 2026-11-16 02:44:07.580 | INFO     | acestep.core.generation.handler.init_service:_load_model_context:400 - [_load_model_context] Offloading vae to CPU
+  srv| 2026-11-16 02:44:07.750 | INFO     | acestep.core.generation.handler.init_service:_load_model_context:414 - [_load_model_context] Offloaded vae to CPU in 0.1689s
+  srv| 2026-11-16 02:44:07.750 | INFO     | acestep.handler:generate_music:1344 - [generate_music] VAE decode completed. Preparing audio tensors...
+  srv| 2026-11-16 02:44:07.750 | INFO     | acestep.handler:generate_music:1359 - [generate_music] Done! Generated 1 audio tensors.
+  srv| 2026-11-16 02:44:07.755 | INFO     | acestep.inference:generate_music:677 - [Normalization] Audio 0 BEFORE: Peak=1.0000, Target=-1.0dB
+  srv| 2026-11-16 02:44:07.756 | INFO     | acestep.inference:generate_music:682 - [Normalization] Audio 0 AFTER: Peak=0.8913
+  srv| 2026-11-16 02:44:07.922 | DEBUG    | acestep.audio_utils:save_audio:207 - [AudioSaver] Fallback soundfile Saved audio to C:\Users\<user>\AppData\Local\TrendoWerkzeuge\ki\laufzeit\acestep\.cache\acestep\tmp\api_audio\a249238b-2b59-041a-54b1-6931d8f4f1e9.mp3 (mp3, 48000Hz)
+  srv| INFO:     127.0.0.1:59590 - "POST /query_result HTTP/1.1" 200 OK
+  srv| INFO:     127.0.0.1:59590 - "GET /v1/audio?path=C%3A%5CUsers%5C<user>%5CAppData%5CLocal%5CTrendoWerkzeuge%5Cki%5Claufzeit%5Cacestep%5C.cache%5Cacestep%5Ctmp%5Capi_audio%5Ca249238b-2b59-041a-54b1-6931d8f4f1e9.mp3 HTTP/1.1" 200 OK
+  srv| 
+
+
+ERGEBNIS: ECHT-GRÜN (124.6 s)
+- Fachlauf acestep: ECHT-GRÜN

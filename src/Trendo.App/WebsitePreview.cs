@@ -56,6 +56,17 @@ public static class WebsitePreview
         return File.Exists(pngPath) ? new(true, pngPath, width < 700 ? "Handy" : "Desktop") : new(false, "", "Die Vorschau hat kein Bild geschrieben.");
     }
 
+    /// <summary>T-0718: Eine schon ausgelieferte Seite (z. B. nach dem Hochladen auf den eigenen Server) unter ihrer Adresse in echtem Chrome öffnen –
+    /// Bild, Skriptfehler und nicht gefundene Dateien wie bei <see cref="CaptureAsync"/>.</summary>
+    public static async Task<WebsitePreviewResult> CaptureUrlAsync(string url, int width, int height, string pngPath, List<string>? errors = null, string? domPath = null, CancellationToken ct = default)
+    {
+        var browser = FindBrowser();
+        if (browser is null) return new(false, "", "Kein Chrome oder Chromium. Die Bildvorschau geht hier nicht.");
+        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(pngPath))!);
+        await ShotAsync(browser, url, width, height, pngPath, ct, errors, domPath);
+        return File.Exists(pngPath) ? new(true, pngPath, width < 700 ? "Handy" : "Desktop") : new(false, "", "Die Vorschau hat kein Bild geschrieben.");
+    }
+
     static Task ShotAsync(string browser, string url, int width, int height, string pngPath, CancellationToken ct, List<string>? errors = null, string? domPath = null) =>
         RunBrowserAsync(browser, width, height, 45, ct, errors is null ? null : e => Collect(e, errors), async (cdp, tok) =>
         {
@@ -146,64 +157,132 @@ public static class WebsitePreview
         return string.IsNullOrEmpty(json) ? (null, "Das HTML ließ sich nicht lesen.") : (json, null);
     }
 
+    /// <summary>T-0690: Eine Seite (z. B. ein gebautes Spiel) in echtem Chrome bedienen – mit echten Tastendrücken über den Debug-Kanal, nicht mit nachgebildeten Ereignissen.
+    /// Schritte: „down“/„up“ (Taste, z. B. ArrowRight, Space, Enter, KeyX), „wait“ (Millisekunden), „eval“ (JavaScript, Wert kommt in die Ergebnisliste),
+    /// „until“ (wartet höchstens <see cref="PlayStep.Ms"/> ms, bis der Ausdruck wahr ist; Ergebnis „true“ oder „false“), „shot“ (Bild als PNG nach <see cref="PlayStep.Arg"/>).</summary>
+    public sealed record PlayStep(string Kind, string Arg = "", int Ms = 0);
+
+    static readonly Dictionary<string, (int Vk, string Key)> PlayKeys = new()
+    {
+        ["ArrowLeft"] = (37, "ArrowLeft"), ["ArrowUp"] = (38, "ArrowUp"), ["ArrowRight"] = (39, "ArrowRight"), ["ArrowDown"] = (40, "ArrowDown"),
+        ["Space"] = (32, " "), ["Enter"] = (13, "Enter"), ["Escape"] = (27, "Escape"), ["KeyX"] = (88, "x"), ["KeyE"] = (69, "e"), ["KeyN"] = (78, "n"), ["KeyP"] = (80, "p"), ["ShiftLeft"] = (16, "Shift"),
+    };
+
+    /// <summary>Liefert die Werte aller „eval“- und „until“-Schritte in Reihenfolge. Ohne Chrome/Edge: Ok = false mit Hinweis (nichts wird nachgebildet).</summary>
+    public static async Task<(bool Ok, string Note, List<string> Values)> PlayAsync(string projectDir, IReadOnlyList<PlayStep> steps, int width = 800, int height = 640, List<string>? errors = null, int seconds = 90, CancellationToken ct = default)
+    {
+        var values = new List<string>();
+        if (!File.Exists(Path.Combine(projectDir, "index.html"))) return (false, "Im Ordner liegt keine index.html.", values);
+        var browser = FindBrowser();
+        if (browser is null) return (false, "Kein Chrome oder Edge auf diesem PC – das Spiel lässt sich hier nicht automatisch im Browser prüfen.", values);
+        using var host = WebsiteHost.Start(projectDir);
+        await RunBrowserAsync(browser, width, height, seconds, ct, errors is null ? null : e => Collect(e, errors), async (cdp, tok) =>
+        {
+            await cdp.Call("Page.enable", new { }, tok);
+            if (errors is not null) { await cdp.Call("Runtime.enable", new { }, tok); await cdp.Call("Log.enable", new { }, tok); }
+            await cdp.Call("Emulation.setDeviceMetricsOverride", new { width, height, deviceScaleFactor = 1, mobile = false }, tok);
+            await cdp.Call("Page.navigate", new { url = host.Origin + "/index.html" }, tok);
+            async Task<string> Eval(string js) => ResultValue(await cdp.Call("Runtime.evaluate", new { expression = js, returnByValue = true }, tok));
+            async Task<bool> Until(string js, int ms)
+            {
+                var end = DateTime.UtcNow.AddMilliseconds(Math.Max(100, ms));
+                while (DateTime.UtcNow < end) { if (await Eval("!!(" + js + ")") is "True" or "true") return true; await Task.Delay(50, tok); }
+                return false;
+            }
+            await Until("document.readyState==='complete'", 8000);
+            foreach (var s in steps)
+            {
+                tok.ThrowIfCancellationRequested();
+                switch (s.Kind)
+                {
+                    case "down" or "up":
+                        if (!PlayKeys.TryGetValue(s.Arg, out var k)) throw new ArgumentException("Unbekannte Taste: " + s.Arg);
+                        await cdp.Call("Input.dispatchKeyEvent", new { type = s.Kind == "down" ? "rawKeyDown" : "keyUp", code = s.Arg, key = k.Key, windowsVirtualKeyCode = k.Vk, nativeVirtualKeyCode = k.Vk }, tok);
+                        if (s.Ms > 0) await Task.Delay(s.Ms, tok);
+                        break;
+                    case "wait": await Task.Delay(s.Ms, tok); break;
+                    case "eval": values.Add(await Eval(s.Arg)); break;
+                    case "until": values.Add(await Until(s.Arg, s.Ms) ? "true" : "false"); break;
+                    case "shot":
+                        var data = ResultString(await cdp.Call("Page.captureScreenshot", new { format = "png" }, tok), "data");
+                        if (!string.IsNullOrWhiteSpace(data)) { Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(s.Arg))!); await File.WriteAllBytesAsync(s.Arg, Convert.FromBase64String(data), tok); }
+                        break;
+                    default: throw new ArgumentException("Unbekannter Schritt: " + s.Kind);
+                }
+            }
+            if (errors is not null) await Eval("1"); // ausstehende Fehlermeldungen abholen
+        });
+        return (true, Path.GetFileName(browser), values);
+    }
+
     /// <summary>Chrome ohne Fenster starten, mit dem Debug-Kanal verbinden und <paramref name="work"/> ausführen. Danach endet Chrome samt Hilfsprozessen sicher.</summary>
     static async Task RunBrowserAsync(string browser, int width, int height, int seconds, CancellationToken ct, Action<JsonElement>? onEvent, Func<Cdp, CancellationToken, Task> work)
     {
-        var profile = Path.Combine(Path.GetTempPath(), "trendo-chrome-" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(profile);
-        var port = FreePort();
-        var psi = new ProcessStartInfo(browser)
-        {
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true
-        };
-        foreach (var arg in new[]
-        {
-            "--headless=new", "--no-sandbox", "--disable-dev-shm-usage", "--hide-scrollbars", "--no-first-run",
-            "--disable-extensions", "--disable-background-networking", "--remote-allow-origins=*",
-            "--remote-debugging-port=" + port, "--user-data-dir=" + profile, "--window-size=" + width + "," + height,
-            "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "about:blank"
-        }) psi.ArgumentList.Add(arg);
-        using var job = new ProcessJob(); // Chrome-Hilfsprozesse enden mit dem Job – Kill(true) erwischt nicht alle
-        using var process = Process.Start(psi) ?? throw new InvalidOperationException("Chrome ließ sich nicht starten.");
-        job.Add(process);
-        _ = process.StandardOutput.ReadToEndAsync();
-        _ = process.StandardError.ReadToEndAsync();
-        using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
-        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        timeout.CancelAfter(TimeSpan.FromSeconds(seconds));
-        ClientWebSocket? socket = null;
-        // ReceiveAsync und GetStringAsync lassen den Abbruch auf diesem Chrome oft liegen. Dann bleibt der Prozess stehen.
-        using var wake = timeout.Token.Register(() => Cut(socket, http, process));
+        // T-0729: eigenes Profil je Lauf; es wird ganz unten genau einmal gelöscht – erst nach dem Ende aller Chrome-Prozesse (Job) und mit Wiederholungen.
+        // Das Löschen läuft ohne den Aufrufer-Thread zu blockieren (DeleteAsync), denn die Vorschau wird oft vom Oberflächen-Thread gestartet.
+        var profile = TempDir.Create("trendo-chrome-").Path;
         try
         {
-            var task = Run();
-            var done = await Task.WhenAny(task, Task.Delay(TimeSpan.FromSeconds(seconds))); // Prüfung 04.11.2026: unter Last (oder auf langsamen PCs) reichten 27 s nicht
-            if (done != task)
+            var port = FreePort();
+            var psi = new ProcessStartInfo(browser)
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            };
+            foreach (var arg in new[]
+            {
+                "--headless=new", "--no-sandbox", "--disable-dev-shm-usage", "--hide-scrollbars", "--no-first-run",
+                "--disable-extensions", "--disable-background-networking", "--remote-allow-origins=*",
+                "--remote-debugging-port=" + port, "--user-data-dir=" + profile, "--window-size=" + width + "," + height,
+                "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "about:blank"
+            }) psi.ArgumentList.Add(arg);
+            using var job = new ProcessJob(); // Chrome-Hilfsprozesse enden mit dem Job – Kill(true) erwischt nicht alle
+            using var process = Process.Start(psi) ?? throw new InvalidOperationException("Chrome ließ sich nicht starten.");
+            job.Add(process);
+            _ = process.StandardOutput.ReadToEndAsync();
+            _ = process.StandardError.ReadToEndAsync();
+            using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            timeout.CancelAfter(TimeSpan.FromSeconds(seconds));
+            ClientWebSocket? socket = null;
+            // ReceiveAsync und GetStringAsync lassen den Abbruch auf diesem Chrome oft liegen. Dann bleibt der Prozess stehen.
+            using var wake = timeout.Token.Register(() => Cut(socket, http, process));
+            try
+            {
+                var task = Run();
+                var done = await Task.WhenAny(task, Task.Delay(TimeSpan.FromSeconds(seconds))); // Prüfung 04.11.2026: unter Last (oder auf langsamen PCs) reichten 27 s nicht
+                if (done != task)
+                {
+                    Cut(socket, http, process);
+                    var again = await Task.WhenAny(task, Task.Delay(TimeSpan.FromSeconds(2)));
+                    if (again != task) throw new TimeoutException("Die Vorschau hat nicht rechtzeitig geantwortet.");
+                }
+                await task;
+            }
+            finally
             {
                 Cut(socket, http, process);
-                var again = await Task.WhenAny(task, Task.Delay(TimeSpan.FromSeconds(2)));
-                if (again != task) throw new TimeoutException("Die Vorschau hat nicht rechtzeitig geantwortet.");
+                try { socket?.Dispose(); } catch { /* schon zu */ }
+                job.Dispose(); // beendet alle übrigen Chrome-Prozesse, danach ist das Profil frei
+                // Warten auf das Prozessende im Thread-Pool, nicht auf dem Oberflächen-Thread
+                await Task.Run(() => { try { process.WaitForExit(3000); } catch (InvalidOperationException) { } }).ConfigureAwait(false);
             }
-            await task;
+
+            async Task Run()
+            {
+                var wsUrl = await PageSocket(http, port, timeout.Token);
+                socket = new ClientWebSocket();
+                await socket.ConnectAsync(new Uri(wsUrl), timeout.Token);
+                await work(new Cdp(socket) { OnEvent = onEvent }, timeout.Token);
+            }
         }
         finally
         {
-            Cut(socket, http, process);
-            try { socket?.Dispose(); } catch { /* schon zu */ }
-            job.Dispose(); // beendet alle übrigen Chrome-Prozesse, danach ist das Profil frei
-            try { process.WaitForExit(3000); } catch (InvalidOperationException) { }
-            try { Directory.Delete(profile, true); } catch { /* Chrome hält die Datei manchmal noch */ }
-        }
-
-        async Task Run()
-        {
-            var wsUrl = await PageSocket(http, port, timeout.Token);
-            socket = new ClientWebSocket();
-            await socket.ConnectAsync(new Uri(wsUrl), timeout.Token);
-            await work(new Cdp(socket) { OnEvent = onEvent }, timeout.Token);
+            // Hier sind job und process schon entsorgt (Ende des using-Blocks oben) – Chrome ist also beendet.
+            // Chrome-Hilfsprozesse geben Dateien nach dem Job-Ende oft erst nach Sekunden frei (Befund: 585 Profile à 70 MB blieben liegen)
+            await TempDir.DeleteAsync(profile, attempts: 25, delayMs: 200).ConfigureAwait(false);
         }
     }
 

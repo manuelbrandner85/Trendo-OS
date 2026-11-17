@@ -92,7 +92,7 @@ public partial class MainWindow
         var (lines, words, sections) = LyricsEditor.Stats(_msLyrics);
         var box = new TextBox { Name = "ms-lyrics-big", Text = _msLyrics, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, FontSize = 15, MinHeight = 420, CaretIndex = Math.Min(_msLyCaret, _msLyrics.Length),
             Watermark = "[Strophe]\nDein Text …\n[Refrain]\n…" };
-        box.TextChanged += (_, _) => _msLyrics = box.Text ?? "";
+        box.TextChanged += (_, _) => { _msLyrics = box.Text ?? ""; LinkTyped(MsLink); }; // T-0711
         box.PropertyChanged += (_, e) => { if (e.Property == TextBox.CaretIndexProperty) _msLyCaret = box.CaretIndex; };
         int CurLine() { _msLyrics = box.Text ?? ""; _msLyCaret = box.CaretIndex; return LyricsEditor.LineAt(_msLyrics, box.CaretIndex); }
         var tags = new WrapPanel();

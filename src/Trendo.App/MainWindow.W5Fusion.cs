@@ -37,9 +37,10 @@ public partial class MainWindow
     {
         if (_fusionApproval is not { } id) return;
         var r = Fusion.Recipes[_fusionRecipe];
-        _core.Approvals.Approve(id, Principal.LocalOwner);
+        if (!FreigabeErteilen(id)) { _fusionApproval = null; Say(CanApprove ? "Nicht freigegeben – es lief nichts." : NurErwachsene, "produktion"); return; } // B4: zweiter, eigener Schritt
         _fusionResult = _core.Approvals.Execute(id, "fusion.run", r.Id, () => Fusion.Run(r, FusionCtx(r), _core.Audit));
         _fusionApproval = null;
+        LinkSaved(FusionLink); // T-0717: die Angaben sind verwendet (Ergebnisse liegen im Ordner) – Notsicherung weg
         Say(_fusionResult.All(x => x.Ok) ? "Fertig. Alle Schritte haben geklappt." : "Angehalten – ein Schritt hat nicht geklappt. Details unten.", "produktion");
     }
 
@@ -56,7 +57,9 @@ public partial class MainWindow
             b.Click += (_, _) => { ProdTab = k; Show("produktion"); };
             tabs.Children.Add(b);
         }
-        return BusinessPage("Großprojekte", new StackPanel { Spacing = 8, Children = { tabs, ProdTab == "ablaeufe" ? FusionFlows() : BigBoardView() } });
+        var page = new StackPanel { Spacing = 8, Children = { tabs, ProdTab == "ablaeufe" ? FusionFlows() : BigBoardView() } };
+        if (LinkRecoveryCard(FusionLink) is { } fcard) page.Children.Insert(0, fcard); // T-0717: nicht verwendete Angaben aus einer früheren Sitzung (in beiden Reitern sichtbar)
+        return BusinessPage("Großprojekte", page);
     }
 
     private Control FusionFlows()
@@ -73,7 +76,8 @@ public partial class MainWindow
         sp.Children.Add(pick);
         var r = Fusion.Recipes[_fusionRecipe];
         var inputs = new StackPanel { Spacing = 4 };
-        TextBox I(string key, string ph) { var t = new TextBox { Name = "fusion-in-" + key, Text = _fusionInput.GetValueOrDefault(key, ""), PlaceholderText = ph, MinWidth = 360 }; t.TextChanged += (_, _) => _fusionInput[key] = t.Text ?? ""; inputs.Children.Add(t); return t; }
+        var fields = new List<(string, TextBox)>();
+        TextBox I(string key, string ph) { var t = new TextBox { Name = "fusion-in-" + key, Text = _fusionInput.GetValueOrDefault(key, ""), PlaceholderText = ph, MinWidth = 360 }; t.TextChanged += (_, _) => _fusionInput[key] = t.Text ?? ""; inputs.Children.Add(t); fields.Add((key, t)); return t; }
         switch (r.Id)
         {
             case "idea-site": I("name", "Name der Idee"); I("problem", "Welches Problem löst du?"); I("solution", "Wie löst du es?"); I("audience", "Für wen?"); I("price", "Preis in €"); I("email", "Deine E-Mail für Anfragen"); break;
@@ -81,7 +85,9 @@ public partial class MainWindow
             case "logo-print": I("text", "Wort für den Schriftzug, z. B. Trendo"); break;
             case "figur-spiel": I("text", "Name des Spiels, z. B. Sternenspringer"); break;
         }
-        sp.Children.Add(Card(new StackPanel { Spacing = 6, Children = { H("1. Angaben", 14), inputs } }));
+        // T-0717: Angaben je Vorlage als Entwurf an der Notsicherung der Hülle (Rückgängig, 20-s-Takt, Wiederherstellen-Karte)
+        var fl = FusionLink; LinkForm(fl, r.Id, [.. fields]);
+        sp.Children.Add(Card(new StackPanel { Spacing = 6, Children = { H("1. Angaben", 14), LinkUndoRow(fl), inputs } }));
         var ctx = FusionCtx(r); var missing = Fusion.Missing(r, ctx);
         var plan = new StackPanel { Spacing = 4, Children = { H("2. Plan", 14), P(Fusion.Plan(r), Text) } };
         foreach (var m in missing) plan.Children.Add(P("• " + m, Brush.Parse("#FACC15")));
@@ -113,8 +119,19 @@ public partial class MainWindow
     void BigChange(Action<BigBoard> change)
     {
         if (BigProject is not { } id) return;
-        var b = BigBoards.Load(_core.Projects, id); change(b); BigBoards.Save(_core.Projects, id, b); Show("produktion");
+        BigChangeQuiet(id, change); Show("produktion");
     }
+
+    /// <summary>T-0717: Tafel ändern und sofort speichern (atomar über den ProjectStore) – mit Rückgängig der Hülle (100 Schritte, vorher gar keins), ohne Neuaufbau der Seite.</summary>
+    void BigChangeQuiet(string id, Action<BigBoard> change, string label = "Tafel geändert")
+    {
+        var b = BigBoards.Load(_core.Projects, id); var before = System.Text.Json.JsonSerializer.Serialize(b);
+        change(b); BigBoards.Save(_core.Projects, id, b);
+        Items(BigLink).Record(label, id, before, System.Text.Json.JsonSerializer.Serialize(b));
+    }
+    /// <summary>T-0717: Rückgängig/Wiederholen der Tafel.</summary>
+    public void BigUndo() { ItemStep(BigLink, true, out var m); _bigMsg = m; }
+    public void BigRedo() { ItemStep(BigLink, false, out var m); _bigMsg = m; }
     /// <summary>Karte in eine Spalte schieben (Ziehen auf der Tafel; öffentlich für Tests).</summary>
     public void BigMove(string cardId, int column) => BigChange(b => { if (b.Cards.FirstOrDefault(c => c.Id == cardId) is { } c) { BigBoards.Move(c, column); _core.Audit.Append(Principal.LocalOwner.Name, "grossprojekt.move", $"{BigProject} {cardId} → {BigBoards.Columns[c.Column]}"); } });
 
@@ -160,6 +177,9 @@ public partial class MainWindow
 
         // ── Mitte: Tafel ──
         var center = new StackPanel { Spacing = 8 };
+        var bigLink = BigLink; // T-0717: Rückgängig · Wiederholen der Tafel
+        var bigUndo = new Button { Name = "big-undo", Content = "Rückgängig", IsEnabled = bigLink.Link.CanUndo }; bigUndo.Click += (_, _) => { BigUndo(); Show(V); };
+        if (BigProject is not null) center.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Children = { bigUndo, ItemRedoButton(bigLink, BigRedo, V) } });
         if (_bigMsg.Length > 0) center.Children.Add(new TextBlock { Name = "big-msg", Text = _bigMsg, Foreground = GoldText(), FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
         var board = BigBoardNow;
         if (board is null) center.Children.Add(P("Leg links ein Großprojekt an – leer oder aus einer Ablauf-Vorlage. Mehrere Studios und KI-Rollen arbeiten dann Karte für Karte daran.", Muted, 12));
@@ -221,8 +241,13 @@ public partial class MainWindow
             var title = new TextBox { Name = "big-c-title", Text = cur.Title };
             void CommitTitle() { if ((title.Text ?? "").Trim() is { Length: > 0 } t && t != cur.Title) Edit(x => x.Title = t); }
             title.LostFocus += (_, _) => CommitTitle(); OnEnter(title, CommitTitle);
+            // T-0717: Getipptes nach der Tipp-Pause speichern (vorher erst beim Verlassen des Felds – ein Absturz verlor alles Getippte)
+            var pid = BigProject!;
+            SaveOnPause(title, () => { if ((title.Text ?? "").Trim() is { Length: > 0 } t) BigChangeQuiet(pid, b => { if (b.Cards.FirstOrDefault(x => x.Id == cid) is { } x) x.Title = t; }, "Titel geschrieben"); });
             var detail = new TextBox { Name = "big-c-detail", Text = cur.Detail, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 60, PlaceholderText = "Was ist zu tun?" };
-            detail.LostFocus += (_, _) => { if ((detail.Text ?? "") != cur.Detail) Edit(x => x.Detail = detail.Text ?? ""); };
+            // T-0717: verglichen mit dem gespeicherten Stand (nach der Tipp-Pause schon gespeichert) – sonst baute das Verlassen die Seite neu auf und schluckte den nächsten Klick
+            detail.LostFocus += (_, _) => { if (BigProject is { } bp && BigBoards.Load(_core.Projects, bp).Cards.FirstOrDefault(x => x.Id == cid) is { } saved && (detail.Text ?? "") != saved.Detail) Edit(x => x.Detail = detail.Text ?? ""); };
+            SaveOnPause(detail, () => BigChangeQuiet(pid, b => { if (b.Cards.FirstOrDefault(x => x.Id == cid) is { } x) x.Detail = detail.Text ?? ""; }, "Aufgabe geschrieben"));
             var roles = BigBoards.Roles.Concat(Fusion.Recipes.SelectMany(r => r.Steps.Select(s => s.Studio))).Append(cur.Role).Distinct().ToList();
             var role = new ComboBox { Name = "big-c-role", ItemsSource = roles, SelectedItem = cur.Role, HorizontalAlignment = HorizontalAlignment.Stretch };
             role.SelectionChanged += (_, _) => { if (role.SelectedItem is string r && r != cur.Role) Edit(x => x.Role = r); };
@@ -261,9 +286,13 @@ public partial class MainWindow
                 _bigDelArmed = false; BigCard = null; BigChange(b => BigBoards.Remove(b, cid));
             }));
         }
-        else right.Children.Add(P(board is null ? "" : "Tippe eine Karte an: Titel, Aufgabe, zuständige KI-Rolle, Fortschritt und Belege.", Muted, 11.5));
+        else if (board is not null) right.Children.Add(P("Tippe eine Karte an: Titel, Aufgabe, zuständige KI-Rolle, Fortschritt und Belege.", Muted, 11.5));
 
         Border Col(Control c) => new() { CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(10), VerticalAlignment = VerticalAlignment.Top, Child = c };
-        return new Grid { Name = "big-window", ColumnDefinitions = new ColumnDefinitions("240,12,*,12,280"), Children = { Col(left), Pos(center, 2), Pos(Col(right), 4) } };
+        // V-16 (T-0684): ohne Großprojekt gibt es rechts nichts zu zeigen – der leere Kasten wird nicht gezeichnet
+        var win = right.Children.Count == 0 ? new Grid { Name = "big-window", ColumnDefinitions = new ColumnDefinitions("240,12,*"), Children = { Col(left), Pos(center, 2) } }
+            : new Grid { Name = "big-window", ColumnDefinitions = new ColumnDefinitions("240,12,*,12,280"), Children = { Col(left), Pos(center, 2), Pos(Col(right), 4) } };
+        ItemKeys(win, BigUndo, BigRedo, () => Show(V)); // T-0717: Strg+Z, Strg+Y
+        return win;
     }
 }

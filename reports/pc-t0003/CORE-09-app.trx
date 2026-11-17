@@ -2,7 +2,7 @@
 <TestRun id="98793a2b-8265-432b-a6c6-b8eee45864ca" name="<user>@<host> 2026-10-22 02:42:24" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:24.5051360+02:00" queuing="2026-10-22T02:42:24.5051362+02:00" start="2026-10-22T02:42:21.1397397+02:00" finish="2026-10-22T02:42:24.9767881+02:00" />
   <TestSettings name="default" id="d3969d84-6253-448b-89cf-a806f739004c">
-    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_24" />
+    <Deployment runDeploymentRoot="<user>_<host>_2026-10-22_02_42_24" />
   </TestSettings>
   <Results>
     <UnitTestResult executionId="a538d3ed-c5da-4949-81cb-3361e4aff26d" testId="45768f05-539f-65a1-6655-70876148f644" testName="CORE-09 UI Ausbau: Bild prüfen und Arm planen" computerName="<host>" duration="00:00:00.9481010" startTime="2026-10-22T02:42:23.9603808+02:00" endTime="2026-10-22T02:42:24.9086172+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a538d3ed-c5da-4949-81cb-3361e4aff26d" />

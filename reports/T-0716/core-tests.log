@@ -1,0 +1,5 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0716\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+
+Bestanden!   : Fehler:     0, erfolgreich:   100, übersprungen:     0, gesamt:   100, Dauer: 40 s - Trendo.Core.Tests.dll (net10.0)
+EXIT 0

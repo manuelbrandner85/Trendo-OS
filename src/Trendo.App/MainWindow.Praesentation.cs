@@ -44,7 +44,7 @@ public partial class MainWindow
             "fotoalbum" => PhotoAlbum(),
             _ => SlideDoc.Empty(),
         };
-        DeckPath = null; DeckDirty = false; ResetDeckState();
+        DeckPath = null; DeckDirty = false; ResetDeckState(); ImportGuardClear("praesentation");
         _dkMsg = template == "leer" ? "Neue Präsentation." : "Vorlage geöffnet – Texte einfach anklicken und überschreiben.";
     }
 
@@ -59,7 +59,7 @@ public partial class MainWindow
     /// <summary>P7: Präsentation aus Stichpunkten (eine Zeile = Folie, eingerückt oder mit „-“ = Punkt, „&gt;“ = Notiz).</summary>
     public void DeckFromOutline(string outline)
     {
-        Deck = SlideOutline.FromOutline(outline, Deck.Theme); DeckPath = null; DeckDirty = true; ResetDeckState();
+        Deck = SlideOutline.FromOutline(outline, Deck.Theme); DeckPath = null; DeckDirty = true; ResetDeckState(); ImportGuardClear("praesentation");
         _dkMsg = $"{Deck.Slides.Count} Folien aus deinen Stichpunkten erstellt.";
     }
 
@@ -68,15 +68,19 @@ public partial class MainWindow
         Deck = SlideFiles.Open(path); ResetDeckState();
         DeckPath = path.EndsWith(".pptx", StringComparison.OrdinalIgnoreCase) ? path : null; DeckDirty = false;
         _dkMsg = $"Geöffnet: {Path.GetFileName(path)}"; RememberDeckRecent(path);
+        ImportGuardSet("praesentation", path, Deck.Import); // T-0682
         _core.Audit.Append(Principal.LocalOwner.Name, "praesentation.open", Path.GetFileName(path));
     }
 
-    public void DeckSaveAs(string path)
+    /// <summary>Speichert die Präsentation. Liefert false, wenn das Speichern aufgehalten wurde, weil es eine fremde Datei mit nicht übernommenen Inhalten überschriebe (T-0682).</summary>
+    public bool DeckSaveAs(string path)
     {
+        if (ImportGuardStops("praesentation", path)) { _dkMsg = ImportStopMessage("praesentation"); return false; }
         SlideFiles.Save(Deck, path);
-        if (path.EndsWith(".pptx", StringComparison.OrdinalIgnoreCase)) { DeckPath = path; DeckDirty = false; RememberDeckRecent(path); RecoveryClear("praesentation"); }
+        if (path.EndsWith(".pptx", StringComparison.OrdinalIgnoreCase)) { DeckPath = path; DeckDirty = false; RememberDeckRecent(path); OfficeSaved("praesentation"); ImportGuardClear("praesentation"); }
         _dkMsg = $"Gespeichert: {Path.GetFileName(path)}";
         _core.Audit.Append(Principal.LocalOwner.Name, "praesentation.save", Path.GetFileName(path));
+        return true;
     }
 
     public void DeckGo(int index) { CloseDeckEditor(true); DeckIndex = Math.Clamp(index, 0, Deck.Slides.Count - 1); _dkSel = -1; }
@@ -125,7 +129,7 @@ public partial class MainWindow
             _ => new SlideShape { Kind = kind, X = 8, Y = 5, W = 16, H = 9 },
         };
         CurrentSlide.Shapes.Add(s); _dkSel = CurrentSlide.Shapes.Count - 1; DeckChanged();
-        _dkMsg = kind switch { ShapeKind.Tabelle => "Tabelle eingefügt – Doppelklick zum Bearbeiten (Zellen mit | trennen, Zeilen mit Enter).", ShapeKind.Diagramm => _dkMsg, _ => "Eingefügt – ziehen zum Verschieben, Ecke unten rechts für die Größe, Doppelklick für Text." };
+        _dkMsg = kind switch { ShapeKind.Tabelle => "Tabelle eingefügt – Doppelklick zum Bearbeiten (Zellen mit | trennen, Zeilen mit Enter).", ShapeKind.Diagramm => _dkMsg, _ => "Eingefügt – ziehen zum Verschieben, an den Griffen die Größe ändern, Doppelklick für Text." };
         return s;
     }
 
@@ -184,7 +188,7 @@ public partial class MainWindow
     // ---------- Innenleben ----------
     void ResetDeckState() { _dkUndo.Clear(); _dkRedo.Clear(); DeckIndex = 0; _dkSel = -1; DeckStartVisible = false; }
     void AfterDeckSwap() { DeckIndex = Math.Min(DeckIndex, Deck.Slides.Count - 1); _dkSel = -1; DeckDirty = true; }
-    void DeckSnapshot() { _dkUndo.Add(Deck.Clone()); if (_dkUndo.Count > 80) _dkUndo.RemoveAt(0); _dkRedo.Clear(); }
+    void DeckSnapshot() { _dkUndo.Add(Deck.Clone()); if (_dkUndo.Count > Trendo.Core.Programs.ProgramDocument.MaxUndo) _dkUndo.RemoveAt(0); _dkRedo.Clear(); } // T-0714: 100 Schritte wie die Hülle (vorher 80)
     void DeckChanged() { DeckDirty = true; DeckCanvas?.InvalidateVisual(); }
 
     string DeckRecentFile => Path.Combine(_core.DataRoot, "praesentation", "zuletzt.txt");
@@ -231,7 +235,7 @@ public partial class MainWindow
     {
         var path = !asNew && DeckPath is not null ? DeckPath : await PickDeck(true);
         if (path is null) return;
-        try { DeckSaveAs(path); Toast($"Gespeichert: {Path.GetFileName(path)}", ("Ordner öffnen", new Action(() => Launch(Path.GetDirectoryName(path)!)))); }
+        try { if (DeckSaveAs(path)) Toast($"Gespeichert: {Path.GetFileName(path)}", ("Ordner öffnen", new Action(() => Launch(Path.GetDirectoryName(path)!)))); }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _dkMsg = "Speichern ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
         Show("praesentation");
     }
@@ -294,7 +298,7 @@ public partial class MainWindow
 
     // ---------- Oberfläche ----------
     Control DeckPageView() => WithRecovery("praesentation", DeckDirty, DeckPageCore());
-    Control DeckPageCore() => new Border { Name = "praesentation-page-root", Background = Brush.Parse(C("#F2081329", "#F7F4F7FC")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = DeckStartVisible ? DeckStartPage() : DeckShell() };
+    Control DeckPageCore() => new Border { Name = "praesentation-page-root", Background = PageSurface, CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = DeckStartVisible ? DeckStartPage() : DeckShell() };
 
     /// <summary>G1: Startseite – Neu, Vorlagen, aus Stichpunkten, mit der KI, Zuletzt, Öffnen.</summary>
     Control DeckStartPage()
@@ -307,7 +311,7 @@ public partial class MainWindow
         {
             var tid = id;
             var b = new Button { Name = "praesentation-tpl-" + id, Width = 190, Height = 132, Margin = new Thickness(0, 0, 12, 12), Padding = new Thickness(12), CornerRadius = new CornerRadius(12), Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1),
-                Content = new StackPanel { Spacing = 6, Children = { new TextBlock { Text = icon, FontSize = 34 }, new TextBlock { Text = name, Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold }, new TextBlock { Text = hint, Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap } } } };
+                Content = new StackPanel { Spacing = 6, Children = { TileIcon(tid, icon), new TextBlock { Text = name, Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold }, new TextBlock { Text = hint, Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap } } } };
             b.Click += (_, _) => { DeckNew(tid); Show("praesentation"); };
             tiles.Children.Add(b);
         }
@@ -375,11 +379,23 @@ public partial class MainWindow
 
     /// <summary>Menüband-Knopf (nimmt der Folie den Fokus nicht weg).</summary>
     Button DB(string name, string icon, string label, Action go, string tip, bool on = false) => SB(name, icon, label, go, tip, on, "praesentation");
+    /// <summary>T-0700: Ausrichtungs-Symbol statt Dreieck über dem Wort („Links“, „Mitte“, „Rechts“).</summary>
+    static Button AlignB(Button b, string kind)
+    {
+        if (b.Content is StackPanel sp && sp.Children.Count > 0) { var ic = GlyphIcons.AlignIcon(kind, b, 17); ic.HorizontalAlignment = HorizontalAlignment.Center; sp.Children[0] = ic; }
+        return b;
+    }
 
     Control DeckRibbon()
     {
         var tabRow = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2, Margin = new Thickness(0, 4, 0, 4) };
-        var file = new Button { Name = "praesentation-file", Content = "Datei", Focusable = false, Padding = new Thickness(10, 4), Background = Accent };
+        // V-14 (T-0709): Speichern · Rückgängig · Wiederholen · Als PDF links oben wie in Trendo Text und Tabelle; „Speichern“ ist die eine goldene Fläche
+        tabRow.Children.Add(DocActions(
+            DocBtn("praesentation-save", "Speichern", () => _ = DeckSaveClick(false), "Speichern (Strg+S)", "praesentation", gold: true),
+            DocBtn("praesentation-undo", "↶", DeckUndo, "Rückgängig (Strg+Z)", "praesentation"),
+            DocBtn("praesentation-redo", "↷", DeckRedo, "Wiederholen (Strg+Y)", "praesentation"),
+            DocBtn("praesentation-export", "Als PDF", () => DeckExportPdf(), "Als PDF speichern (weitere Formate – Handzettel, Bilder, Video – unter „Datei“)", "praesentation")));
+        var file = new Button { Name = "praesentation-file", Content = "Datei", Focusable = false, Padding = new Thickness(10, 4) };
         var fm = new ContextMenu();
         MenuItem Mi(string name, string header, Action a) { var m = new MenuItem { Name = name, Header = header }; m.Click += (_, _) => a(); return m; }
         fm.Items.Add(Mi("praesentation-m-start", "Startseite (Neu, Vorlagen, KI, Zuletzt)", () => { DeckStartVisible = true; Show("praesentation"); }));
@@ -395,7 +411,7 @@ public partial class MainWindow
         foreach (var (id, label) in new[] { ("start", "Start"), ("einfuegen", "Einfügen"), ("entwurf", "Entwurf"), ("uebergaenge", "Übergänge"), ("animationen", "Animationen"), ("vorfuehren", "Vorführen") })
         {
             var key = id;
-            var b = new Button { Name = "praesentation-rib-" + id, Content = label, Focusable = false, Padding = new Thickness(12, 4), Background = _dkRibbon == id ? Brush.Parse("#332F86F6") : Brushes.Transparent, FontWeight = _dkRibbon == id ? FontWeight.SemiBold : FontWeight.Normal };
+            var b = new Button { Name = "praesentation-rib-" + id, Content = label, Focusable = false, Padding = new Thickness(12, 4), Background = _dkRibbon == id ? Brush.Parse("#33C9A227") : Brushes.Transparent, FontWeight = _dkRibbon == id ? FontWeight.SemiBold : FontWeight.Normal };
             b.Click += (_, _) => { _dkRibbon = key; Show("praesentation"); };
             tabRow.Children.Add(b);
         }
@@ -416,6 +432,16 @@ public partial class MainWindow
                 break;
             case "entwurf":
                 var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6 };
+                // T-0701: Design der geöffneten Datei – bleibt beim Speichern erhalten, bis man ein Trendo-Design wählt
+                if (Deck.Design is { } fd)
+                {
+                    var keeps = Deck.KeepsDesign; var dt = fd.Theme;
+                    var own = new Button { Name = "praesentation-theme-datei", Focusable = false, Width = 110, Height = 54, Padding = new Thickness(0), BorderThickness = new Thickness(keeps ? 3 : 1), BorderBrush = keeps ? Accent : Edge,
+                        Content = new Border { Background = Brush.Parse(dt.Background), Child = new StackPanel { Margin = new Thickness(6), Children = { new TextBlock { Text = "Design der Datei", Foreground = Brush.Parse(dt.Title), FontWeight = FontWeight.Bold, FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis }, new Border { Height = 4, Width = 40, HorizontalAlignment = HorizontalAlignment.Left, Background = Brush.Parse(dt.Accent), Margin = new Thickness(0, 4, 0, 0) } } } } };
+                    ToolTip.SetTip(own, $"„{dt.Name}“ aus der geöffneten Datei – Folienmaster, Layouts und Farben bleiben beim Speichern unverändert");
+                    own.Click += (_, _) => { DeckSnapshot(); Deck.Theme = fd.Theme; DeckChanged(); _dkMsg = $"Design der Datei „{dt.Name}“ – bleibt beim Speichern erhalten."; Show("praesentation"); };
+                    row.Children.Add(own);
+                }
                 foreach (var th in SlideThemes.All)
                 {
                     var tid = th.Id;
@@ -459,16 +485,16 @@ public partial class MainWindow
                 groups.Children.Add(RibbonGroup("Schrift",
                     DB("praesentation-bigger", "A+", "Größer", () => ForShape(s => s.FontSize = Math.Min(120, Math.Round(s.FontSize * 1.15))), "Schrift größer"),
                     DB("praesentation-smaller", "A−", "Kleiner", () => ForShape(s => s.FontSize = Math.Max(8, Math.Round(s.FontSize / 1.15))), "Schrift kleiner"),
-                    DB("praesentation-bold", "𝐅", "Fett", () => ForShape(s => s.Bold = !s.Bold), "Fett", sel?.Bold == true),
+                    DB("praesentation-bold", "𝐅", "Fett", () => DeckFormatText("fett"), "Fett – im bearbeiteten Text nur die markierte Stelle (Strg+B)", sel?.Bold == true),
+                    DB("praesentation-italic", "K", "Kursiv", () => DeckFormatText("kursiv"), "Kursiv – im bearbeiteten Text nur die markierte Stelle (Strg+I)", sel?.Runs?.All(r => r.Italic == true) == true),
+                    DB("praesentation-underline", "U", "Unterstr.", () => DeckFormatText("unterstrichen"), "Unterstrichen – im bearbeiteten Text nur die markierte Stelle (Strg+U)", sel?.Runs?.All(r => r.Underline is not null) == true),
                     ColorPicker()));
                 groups.Children.Add(RibbonGroup("Absatz",
                     DB("praesentation-bullets", "•≡", "Aufzählung", () => ForShape(s => s.Bullets = !s.Bullets), "Aufzählungspunkte an/aus", sel?.Bullets == true),
-                    DB("praesentation-left", "⯇", "Links", () => ForShape(s => s.Align = Align.Left), "Linksbündig", sel?.Align == Align.Left && sel is not null),
-                    DB("praesentation-center", "≡", "Mitte", () => ForShape(s => s.Align = Align.Center), "Zentriert", sel?.Align == Align.Center),
-                    DB("praesentation-right", "⯈", "Rechts", () => ForShape(s => s.Align = Align.Right), "Rechtsbündig", sel?.Align == Align.Right)));
-                groups.Children.Add(RibbonGroup("Bearbeiten",
-                    DB("praesentation-undo", "↶", "Zurück", DeckUndo, "Rückgängig (Strg+Z)"),
-                    DB("praesentation-redo", "↷", "Vor", DeckRedo, "Wiederholen (Strg+Y)"),
+                    AlignB(DB("praesentation-left", "", "Links", () => ForShape(s => s.Align = Align.Left), "Linksbündig", sel?.Align == Align.Left && sel is not null), "links"),
+                    AlignB(DB("praesentation-center", "", "Mitte", () => ForShape(s => s.Align = Align.Center), "Zentriert", sel?.Align == Align.Center), "mitte"),
+                    AlignB(DB("praesentation-right", "", "Rechts", () => ForShape(s => s.Align = Align.Right), "Rechtsbündig", sel?.Align == Align.Right), "rechts")));
+                groups.Children.Add(RibbonGroup("Vorführen",
                     DB("praesentation-show", "▶", "Vorführen", () => StartShow(0), "Vorführung starten (F5)")));
                 break;
         }
@@ -574,7 +600,7 @@ public partial class MainWindow
         if (DeckCanvas is not { } v || _dkOverlay is null || index < 0 || index >= CurrentSlide.Shapes.Count) return;
         CloseDeckEditor(true);
         var s = CurrentSlide.Shapes[index];
-        if (s.Kind is ShapeKind.Bild or ShapeKind.Diagramm or ShapeKind.Medien) { _dkMsg = s.Kind == ShapeKind.Diagramm ? "Diagramme übernimmst du am einfachsten aus Trendo Tabelle." : "Ziehen zum Verschieben, Ecke unten rechts für die Größe."; return; }
+        if (s.Kind is ShapeKind.Bild or ShapeKind.Diagramm or ShapeKind.Medien) { _dkMsg = s.Kind == ShapeKind.Diagramm ? "Diagramme übernimmst du am einfachsten aus Trendo Tabelle." : "Ziehen zum Verschieben, an den Griffen die Größe ändern."; return; }
         var r = v.ShapeRect(s); var k = v.Frame().K;
         var tb = new TextBox
         {
@@ -585,8 +611,11 @@ public partial class MainWindow
         Canvas.SetLeft(tb, r.X); Canvas.SetTop(tb, r.Y);
         tb.KeyDown += (_, e) =>
         {
+            var ctrl = e.KeyModifiers.HasFlag(KeyModifiers.Control);
             if (e.Key == Key.Escape) { CloseDeckEditor(false); v.Focus(); e.Handled = true; }
-            else if (e.Key == Key.Enter && e.KeyModifiers.HasFlag(KeyModifiers.Control)) { CloseDeckEditor(true); v.Focus(); e.Handled = true; }
+            else if (e.Key == Key.Enter && ctrl) { CloseDeckEditor(true); v.Focus(); e.Handled = true; }
+            // T-0701: Strg+B/I/U formatiert nur die markierte Stelle – mehrere Textformate in einem Feld
+            else if (ctrl && e.Key is Key.B or Key.I or Key.U && s.Kind != ShapeKind.Tabelle) { DeckFormatText(e.Key == Key.B ? "fett" : e.Key == Key.I ? "kursiv" : "unterstrichen"); e.Handled = true; }
         };
         tb.LostFocus += (_, _) => { if (_dkEditor == tb) { CloseDeckEditor(true); Show("praesentation"); } };
         tb.Tag = index;
@@ -602,6 +631,44 @@ public partial class MainWindow
         var s = CurrentSlide.Shapes[i];
         var old = s.Kind == ShapeKind.Tabelle ? string.Join('\n', (s.Table ?? []).Select(row => string.Join(" | ", row))) : s.Text;
         if ((tb.Text ?? "") != old) DeckSetText(i, tb.Text ?? "");
+    }
+
+    /// <summary>T-0701: Fett, kursiv oder unterstrichen. Ist das Textfeld auf der Folie offen und etwas markiert, gilt es nur für die Markierung
+    /// (der getippte Text wird vorher übernommen, das Feld bleibt offen); sonst für den ganzen Text des gewählten Objekts.</summary>
+    public void DeckFormatText(string what)
+    {
+        if (_dkEditor is { Tag: int i } tb && i < CurrentSlide.Shapes.Count && tb.SelectionStart != tb.SelectionEnd)
+        {
+            var (a, b) = (Math.Min(tb.SelectionStart, tb.SelectionEnd), Math.Max(tb.SelectionStart, tb.SelectionEnd));
+            var s = CurrentSlide.Shapes[i];
+            if ((tb.Text ?? "") != s.Text) DeckSetText(i, tb.Text ?? "");
+            DeckFormatRange(i, a, b - a, what);
+            tb.SelectionStart = a; tb.SelectionEnd = b;
+            return;
+        }
+        if (DeckSelected is not { } sel) { _dkMsg = "Erst ein Objekt auf der Folie anklicken."; return; }
+        if (what == "fett") { ForShape(x => x.Bold = !x.Bold); return; }
+        DeckFormatRange(_dkSel, 0, sel.Text.Length, what);
+    }
+
+    /// <summary>Teil eines Textfelds formatieren („fett“, „kursiv“, „unterstrichen“ schalten um; „groesse:28“, „farbe:#C00000“ setzen). Rückgängig machbar.</summary>
+    public void DeckFormatRange(int index, int start, int length, string what)
+    {
+        if (index < 0 || index >= CurrentSlide.Shapes.Count || length <= 0) return;
+        var s = CurrentSlide.Shapes[index];
+        var at = s.RunAt(start);
+        DeckSnapshot();
+        s.FormatRange(start, length, r => what switch
+        {
+            "fett" => r with { Bold = !(at.Bold ?? s.Bold) },
+            "kursiv" => r with { Italic = at.Italic == true ? null : true },
+            "unterstrichen" => r with { Underline = at.Underline is null ? "sng" : null },
+            _ when what.StartsWith("groesse:", StringComparison.Ordinal) && double.TryParse(what[8..], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var pt) => r with { Size = pt },
+            _ when what.StartsWith("farbe:", StringComparison.Ordinal) => r with { Color = what[6..] },
+            _ => r,
+        });
+        DeckChanged();
+        _dkMsg = $"„{s.Text.Substring(start, Math.Min(length, s.Text.Length - start)).Replace('\n', ' ')}“: {what.Split(':')[0]}.";
     }
 
     /// <summary>Für Tests: Text eines Objekts wie per Doppelklick bearbeiten.</summary>
@@ -625,7 +692,7 @@ public partial class MainWindow
             var del = DB("praesentation-shape-del", "✕", "Entfernen", DeckDeleteShape, "Objekt entfernen (Entf)");
             sp.Children.Add(del);
         }
-        sp.Children.Add(new TextBlock { Text = "So geht's: Objekt anklicken, ziehen zum Verschieben, die blaue Ecke für die Größe. Doppelklick bearbeitet den Text, Tab rückt Punkte ein. F5 startet die Vorführung.", Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 10, 0, 0) });
+        sp.Children.Add(new TextBlock { Text = "So geht's: Objekt anklicken, ziehen zum Verschieben, an den Griffen (Ecken und Kanten) die Größe ändern. Doppelklick bearbeitet den Text – ein Wort markieren und Strg+B/I/U formatiert nur dieses. Tab rückt Punkte ein. F5 startet die Vorführung.", Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 10, 0, 0) });
         return new ScrollViewer { Content = sp };
     }
 }

@@ -1,0 +1,43 @@
+# T-0688 Beleg: Vorlage web (Web-App (HTML, CSS, JavaScript)) – 2026-11-16 07:27:03
+Projekt angelegt: C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-web
+Erkannt: Web-App, Programm: C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-web\index.html, Tests: node
+  Datei: .gitignore (70 Bytes, SHA-256 7c9329fd99d6e05849bda52d2cae5a7ad563cfdd87a3e5ea612b59dac1b194c9)
+  Datei: app.js (1390 Bytes, SHA-256 7f74d9cbe78f7cf75b275d09a384e8a9408c9b0b796dbbb8ebb4053722e0a66a)
+  Datei: index.html (568 Bytes, SHA-256 7062fcac029a6223b8aaf441390c96ab06f3efe3d470ec492146ef93eb089b32)
+  Datei: logik.js (1123 Bytes, SHA-256 417528616ac556dd2720e9bf075269e7731c8f0f2e599de11c412d84a3d56cbe)
+  Datei: package.json (134 Bytes, SHA-256 3f5af1730e2c833b24c25c27e88cf6e796b608f04692e3329cdafa4a8b60a2ad)
+  Datei: README.md (470 Bytes, SHA-256 3063db49e7585d9420e58ff3f8414c5002036cd4c5a3407947934d9e9e2d384d)
+  Datei: server.js (1374 Bytes, SHA-256 e2d70130ca7b14ab3d26a723da494740359a3b344fa63be4cbf70d6ac23a9fc8)
+  Datei: style.css (857 Bytes, SHA-256 4a628807d12a4793865f30bb9eb908a99ca7012f653a0fbbe05c7b29bfc6461d)
+  Datei: test\logik.test.js (1104 Bytes, SHA-256 f03e8e9782464bc65a41c939e979d71bfa85d8ba138343d2b3d3f2fb7782efc7)
+
+## Bauen
+Eine Web-App braucht keinen Bau – „Ausführen“ zeigt sie, „Paket bauen“ verpackt sie.
+
+## Testen
+$ node --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=tap --test-reporter-destination=C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\ergebnisse-web\ergebnis.tap
+Ô£ö dazu: neuer Eintrag kommt ans Ende (2.1177ms)
+Ô£ö dazu: leer und doppelt kommen nicht dazu (0.1765ms)
+Ô£ö umschalten und weg (0.1784ms)
+Ô£ö stand: Texte f├╝r leer, offen und fertig (0.1502ms)
+Ôä╣ tests 4
+Ôä╣ suites 0
+Ôä╣ pass 4
+Ôä╣ fail 0
+Ôä╣ cancelled 0
+Ôä╣ skipped 0
+Ôä╣ todo 0
+Ôä╣ duration_ms 105.5387
+Exit 0 nach 0,2 s
+  BESTANDEN: dazu: leer und doppelt kommen nicht dazu
+  BESTANDEN: dazu: neuer Eintrag kommt ans Ende
+  BESTANDEN: stand: Texte für leer, offen und fertig
+  BESTANDEN: umschalten und weg
+Auswertung: 4 bestanden, 0 fehlgeschlagen
+
+## Paket bauen und starten
+4 Dateien nach C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-web\trendo-paket\Beleg-web-web
+Paket: C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-web\trendo-paket\Beleg-web-web.zip (2.300 Bytes, SHA-256 595a7b4bdf2e11cc9a4ce9ab85045951c431e8239147a305715f5adea1e7ac50)
+✓ Startprobe: aus leerem Ordner über den Server des Projekts ausgeliefert (http://127.0.0.1:63326): Seite „Beleg web“ und 3 verknüpfte Dateien antworten mit 200.
+Ergebnis: Paket fertig und gestartet. · Art: Web-App als Ordner und ZIP (für jeden Webspeicher) · Ordner C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-web\trendo-paket\Beleg-web-web (3938 Bytes) · ZIP C:\Users\<user>\AppData\Local\Temp\trendo-beleg-0688-afd87d28\Beleg-web\trendo-paket\Beleg-web-web.zip (2300 Bytes) · SHA-256 595a7b4bdf2e11cc9a4ce9ab85045951c431e8239147a305715f5adea1e7ac50
+Startprobe: BESTANDEN – aus leerem Ordner über den Server des Projekts ausgeliefert (http://127.0.0.1:63326): Seite „Beleg web“ und 3 verknüpfte Dateien antworten mit 200.

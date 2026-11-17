@@ -7,7 +7,7 @@ public sealed class IdeaList<T>(string dataRoot, string ideaId, string name) whe
 {
     private readonly string _file = Path.Combine(dataRoot, "business", DevStudio.SafeName(ideaId), name + ".json");
     public List<T> All() => File.Exists(_file) ? JsonSerializer.Deserialize<List<T>>(File.ReadAllText(_file)) ?? [] : [];
-    public void Save(List<T> l) { Directory.CreateDirectory(Path.GetDirectoryName(_file)!); File.WriteAllText(_file, JsonSerializer.Serialize(l, new JsonSerializerOptions { WriteIndented = true })); }
+    public void Save(List<T> l) => AtomicFile.WriteAllText(_file, JsonSerializer.Serialize(l, new JsonSerializerOptions { WriteIndented = true })); // T-0714: atomar
     public void Add(T x) { var l = All(); l.Add(x); Save(l); }
     public void RemoveAt(int i) { var l = All(); if (i >= 0 && i < l.Count) { l.RemoveAt(i); Save(l); } }
 }

@@ -59,6 +59,7 @@ public partial class MainWindow
         var side = new Border { Name = "learn-side", Width = 300, CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(12), Child = new ScrollViewer { Content = LearnStats() } };
         var body = new Grid { ColumnDefinitions = new ColumnDefinitions("*,12,Auto"), Children = { mainBox, Pos(side, 2) } };
         var root = new DockPanel { Name = "learn-root" };
+        if (LinkRecoveryCard(LearnLink) is { } lcard) { DockPanel.SetDock(lcard, Avalonia.Controls.Dock.Top); root.Children.Add(lcard); } // T-0717: nicht angelegte Karte aus einer früheren Sitzung
         DockPanel.SetDock(modes, Avalonia.Controls.Dock.Top); root.Children.Add(modes); root.Children.Add(body);
         root.KeyDown += (_, e) =>
         {
@@ -72,6 +73,7 @@ public partial class MainWindow
                 else if (_reveal && e.Key is Key.D4 or Key.NumPad4) { LearnGrade(Grade.Leicht); e.Handled = true; }
             }
             else if (LearnMode == "quiz" && _quiz is { } q && e.Key is >= Key.D1 and <= Key.D4) { LearnQuizAnswer((int)(e.Key - Key.D1)); e.Handled = true; }
+            else if (LearnMode == "karten" && e.Key == Key.Z && e.KeyModifiers == KeyModifiers.Control && _learnDeleted.Count > 0) { LearnUndoDelete(); e.Handled = true; } // T-0726
         };
         root.AttachedToVisualTree += (_, _) => _ui.Post(() => { if (LearnMode == "lernen") root.Focus(); }, Avalonia.Threading.DispatcherPriority.Input);
         root.Focusable = true;
@@ -191,14 +193,22 @@ public partial class MainWindow
         // Neue Karte
         var deck = new TextBox { Name = "learn-new-deck", Text = LearnDeck ?? "Allgemein", Width = 150, PlaceholderText = "Stapel" };
         var front = new TextBox { Name = "learn-new-front", PlaceholderText = "Frage", Width = 240 }; var back = new TextBox { Name = "learn-new-back", PlaceholderText = "Antwort", Width = 240 };
-        void AddCard() { try { Learn.Add(deck.Text ?? "", front.Text ?? "", back.Text ?? ""); _learnMsg = "Karte angelegt."; LearnDeck = deck.Text?.Trim(); } catch (ArgumentException ex) { _learnMsg = "⚠ " + ex.Message; } Show("lernen"); }
+        var ll = LearnLink; LinkForm(ll, "neu", ("front", front), ("back", back)); // T-0717: neue Karte als Entwurf (Rückgängig, Notsicherung, Karte)
+        void AddCard() { try { Learn.Add(deck.Text ?? "", front.Text ?? "", back.Text ?? ""); LinkClose(ll); _learnMsg = "Karte angelegt."; LearnDeck = deck.Text?.Trim(); } catch (ArgumentException ex) { _learnMsg = "⚠ " + ex.Message; } Show("lernen"); }
         OnEnter(back, AddCard);
         var add = new Button { Name = "learn-add", Content = "＋ Karte", Background = Accent, Foreground = Brushes.White, Padding = new Thickness(12, 5) }; add.Click += (_, _) => AddCard();
+        sp.Children.Add(LinkUndoRow(ll));
         sp.Children.Add(new WrapPanel { Children = { deck, new Border { Width = 6 }, front, new Border { Width = 6 }, back, new Border { Width = 6 }, add } });
         if (_learnMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "learn-msg", Text = _learnMsg, Foreground = Brush.Parse(_learnMsg.StartsWith('⚠') ? "#F87171" : "#4ADE80"), FontSize = 12 });
+        Button? undo = null;
+        if (_learnDeleted.Count > 0) // T-0726: Löschen lässt sich rückgängig machen (auch Strg+Z auf der Seite)
+        {
+            undo = new Button { Name = "learn-undo-del", Content = $"↶ Löschen rückgängig ({_learnDeleted.Count})", Padding = new Thickness(10, 3), HorizontalAlignment = HorizontalAlignment.Left };
+            ToolTip.SetTip(undo, $"„{_learnDeleted[^1].Card.Front}“ mit Lernstand zurückholen (Strg+Z)"); undo.Click += (_, _) => LearnUndoDelete();
+        }
         var search = new TextBox { Name = "learn-search", Text = _learnSearch, PlaceholderText = "Suchen …", Width = 240, HorizontalAlignment = HorizontalAlignment.Left };
         search.TextChanged += (_, _) => { if (search.Text != _learnSearch) { _learnSearch = search.Text ?? ""; Show("lernen"); } };
-        sp.Children.Add(search);
+        sp.Children.Add(undo is null ? search : new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { search, undo } }); // in der Suchzeile: die Seite wird nicht höher
         var list = new StackPanel { Name = "learn-list", Spacing = 2 };
         var cards = Learn.Store.Cards.Where(c => (LearnDeck is null || c.Deck == LearnDeck) && (_learnSearch.Length == 0 || c.Front.Contains(_learnSearch, StringComparison.OrdinalIgnoreCase) || c.Back.Contains(_learnSearch, StringComparison.OrdinalIgnoreCase))).OrderBy(c => c.Deck).ThenBy(c => c.Front).Take(300).ToList();
         var k = 0;
@@ -208,19 +218,72 @@ public partial class MainWindow
             var f = new TextBox { Name = $"learn-f-{i}", Text = c.Front }; var b = new TextBox { Name = $"learn-b-{i}", Text = c.Back };
             void Save() { if (f.Text != c.Front || b.Text != c.Back) try { Learn.Edit(id, f.Text ?? "", b.Text ?? ""); } catch (ArgumentException ex) { _learnMsg = "⚠ " + ex.Message; Show("lernen"); } }
             f.LostFocus += (_, _) => Save(); b.LostFocus += (_, _) => Save(); OnEnter(f, Save); OnEnter(b, Save);
+            // T-0726: Getipptes nach der Tipp-Pause speichern (ohne Neuaufbau, Cursor bleibt) – leere Felder erst beim Verlassen (dort mit Hinweis)
+            void SaveQuiet() { if (!string.IsNullOrWhiteSpace(f.Text) && !string.IsNullOrWhiteSpace(b.Text) && (f.Text != c.Front || b.Text != c.Back)) try { Learn.Edit(id, f.Text, b.Text); } catch (ArgumentException) { } }
+            SaveOnPause(f, SaveQuiet); SaveOnPause(b, SaveQuiet);
             var del = new Button { Name = $"learn-del-{i}", Content = "✕", Padding = new Thickness(8, 2) }; ToolTip.SetTip(del, "Karte löschen");
-            del.Click += (_, _) => { Learn.Delete(id); Show("lernen"); };
+            del.Click += (_, _) => LearnDelete(id);
             var due = c.Due <= DateTime.Now ? "fällig" : $"in {(c.Due.Date - DateTime.Now.Date).Days} T.";
             list.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("*,6,*,8,Auto,8,Auto"), Children = { f, Pos(b, 2), Pos(P(due + (c.Lapses >= 3 ? " ⚠" : ""), null, 11), 4), Pos(del, 6) } });
         }
         if (cards.Count == 0) list.Children.Add(P("Keine Karten gefunden.", null, 12));
+        // T-0725/T-0726: gelöschte Karten holt der Knopf „Löschen rückgängig“ in der Suchzeile zurück (auch Strg+Z)
         sp.Children.Add(new ScrollViewer { MaxHeight = 520, Content = list });
         // Liste einfügen
         var paste = new TextBox { Name = "learn-import-text", AcceptsReturn = true, MinHeight = 70, PlaceholderText = "Liste einfügen: eine Karte pro Zeile „Frage;Antwort“ (oder Tab, z. B. aus Excel/Anki)", TextWrapping = TextWrapping.Wrap };
         var imp = new Button { Name = "learn-import", Content = "Liste übernehmen", Padding = new Thickness(12, 5) };
         imp.Click += (_, _) => { var n = Learn.Import(deck.Text?.Trim() is { Length: > 0 } d ? d : "Allgemein", paste.Text ?? ""); _learnMsg = $"{n} Karte(n) übernommen."; Show("lernen"); };
-        sp.Children.Add(new Expander { Name = "learn-import-box", Header = "Liste einfügen (Excel, Anki)", Content = new StackPanel { Spacing = 6, Children = { paste, imp } } });
+        // T-0725 (Audit D7, SPEC-06): Kartenliste als Datei (CSV, Excel-Text, Anki „Notizen als Klartext“) – Dialog oder Ablegen auf dem Feld
+        string Deck() => deck.Text?.Trim() is { Length: > 0 } dd ? dd : "Allgemein";
+        var file = new Button { Name = "learn-import-file", Content = "Datei öffnen …", Padding = new Thickness(12, 5) };
+        ToolTip.SetTip(file, "CSV („Frage;Antwort“), Tabelle mit Tab oder die Textausgabe von Anki („Notizen als Klartext“).");
+        file.Click += async (_, _) =>
+        {
+            var req = new PickRequest("learn-import-file", false, false, ["csv", "txt", "tsv"]);
+            string[]? got;
+            if (PickOverride is { } fake) got = await fake(req);
+            else got = (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Karten öffnen",
+                FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Kartenliste") { Patterns = ["*.csv", "*.txt", "*.tsv"] }] }))
+                .Select(f => Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(f)).OfType<string>().ToArray();
+            if (got is [var f, ..]) LearnImportFile(Deck(), f);
+        };
+        DragDrop.SetAllowDrop(paste, true);
+        paste.AddHandler(DragDrop.DragOverEvent, (_, e) => { e.DragEffects = BueroDropFiles(e).Count > 0 ? DragDropEffects.Copy : DragDropEffects.None; e.Handled = true; }, Avalonia.Interactivity.RoutingStrategies.Bubble | Avalonia.Interactivity.RoutingStrategies.Tunnel);
+        paste.AddHandler(DragDrop.DropEvent, (_, e) => { if (BueroDropFiles(e) is [var f, ..]) { e.Handled = true; LearnImportFile(Deck(), f); } }, Avalonia.Interactivity.RoutingStrategies.Bubble | Avalonia.Interactivity.RoutingStrategies.Tunnel);
+        sp.Children.Add(new Expander { Name = "learn-import-box", Header = "Liste einfügen oder Datei öffnen (Excel, Anki)", Content = new StackPanel { Spacing = 6, Children = { paste, new WrapPanel { Children = { imp, new Border { Width = 6 }, file } } } } });
         return sp;
+    }
+
+    /// <summary>T-0726: gelöschte Karten dieser Sitzung (neueste zuletzt) – „Löschen rückgängig“ holt sie mit Lernstand an ihre Stelle zurück.</summary>
+    private readonly List<(Flashcard Card, int Index)> _learnDeleted = [];
+
+    /// <summary>Karte löschen – mit Rückgängig (vorher ohne).</summary>
+    public void LearnDelete(string id)
+    {
+        if (Learn.Remove(id) is { } gone) { _learnDeleted.Add(gone); if (_learnDeleted.Count > 100) _learnDeleted.RemoveAt(0); _learnMsg = ""; } // Hinweis steht am Knopf „Löschen rückgängig“ in der Suchzeile (keine zusätzliche Zeile)
+        Show("lernen");
+    }
+
+    /// <summary>Zuletzt gelöschte Karte zurückholen. false: nichts zurückzuholen.</summary>
+    public bool LearnUndoDelete()
+    {
+        if (_learnDeleted.Count == 0) return false;
+        var (card, index) = _learnDeleted[^1]; _learnDeleted.RemoveAt(_learnDeleted.Count - 1);
+        Learn.Restore(card, index); _learnMsg = $"Karte „{card.Front}“ wiederhergestellt."; Show("lernen");
+        return true;
+    }
+
+    /// <summary>T-0725: Kartenliste aus einer Datei in den Stapel.</summary>
+    public void LearnImportFile(string deck, string path)
+    {
+        try
+        {
+            var (a, s) = Learn.ImportFile(deck, path);
+            _learnMsg = $"„{Path.GetFileName(path)}“: {a} Karte(n) in „{deck}“ übernommen" + (s > 0 ? $", {s} übersprungen (leer oder schon da)." : ".");
+            LearnDeck = deck;
+        }
+        catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException) { _learnMsg = "⚠ " + ex.Message; }
+        Show("lernen");
     }
 
     Control LearnStats()
@@ -265,7 +328,7 @@ public partial class MainWindow
             var rev = new Button { Name = "learn-reverse", Content = "Umgekehrt lernen", Padding = new Thickness(10, 4) };
             rev.Click += (_, _) => { var n = Learn.AddReversed(dk); _learnMsg = $"{n} umgekehrte Karte(n) im Stapel „{dk} (umgekehrt)“."; Show("lernen"); };
             var exp = new Button { Name = "learn-export", Content = "Als CSV speichern", Padding = new Thickness(10, 4) };
-            exp.Click += (_, _) => { var f = Path.Combine(WorkFolder("Karteikarten"), DevStudio.SafeName(dk) + ".csv"); File.WriteAllText(f, Learn.Export(dk)); _learnMsg = "Gespeichert: " + f; NotifyFileResult(_learnMsg); Show("lernen"); };
+            exp.Click += (_, _) => { var f = Path.Combine(WorkFolder("Karteikarten"), DevStudio.SafeName(dk) + ".csv"); AtomicFile.WriteAllText(f, Learn.Export(dk)); /* T-0717: atomar */ _learnMsg = "Gespeichert: " + f; NotifyFileResult(_learnMsg); Show("lernen"); };
             sp.Children.Add(new WrapPanel { Children = { rev, new Border { Width = 4 }, exp } });
         }
         return sp;

@@ -1,0 +1,25 @@
+# Echtlauf zusammenfassen – 2026-11-16 23:26:19
+$ LibreOffice öffnet Meldung.fodt: soffice.exe -env:UserInstallation=file:///C:\Users\<user>/AppData/Local/Temp/trendo-t0725-lo-prof-8ee4adb7 --headless --norestore --convert-to pdf --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0725-lo-out-2df5f1c1 C:\Users\<user>\AppData\Local\Temp\trendo-t0725-sum-b1530d6f\Meldung.fodt
+Exit 0
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0725-sum-b1530d6f\Meldung.fodt as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0725-lo-out-2df5f1c1\Meldung.pdf using filter : writer_pdf_Export
+[stderr] Could not find platform independent libraries <prefix>
+Datei fremd-Meldung.pdf: 37515 Bytes, SHA-256 8470e5878c5043fcbae8c8eb35ef2833fdb17022b1334f993a45f41bb59c058f
+$ qpdf prüft fremd-Meldung.pdf: qpdf.exe --check C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\zusammenfassen\fremd-Meldung.pdf
+Exit 0
+checking C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\zusammenfassen\fremd-Meldung.pdf
+PDF Version: 1.7
+File is not encrypted
+File is not linearized
+No syntax or stream encoding errors found; the file may still contain
+errors that qpdf cannot detect
+$ qpdf zählt Seiten: qpdf.exe --show-npages C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\zusammenfassen\fremd-Meldung.pdf
+Exit 0
+1
+$ LibreOffice öffnet Meldung.fodt: soffice.exe -env:UserInstallation=file:///C:\Users\<user>/AppData/Local/Temp/trendo-t0725-lo-prof-400933e5 --headless --norestore --convert-to docx --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0725-lo-out-3d07c397 C:\Users\<user>\AppData\Local\Temp\trendo-t0725-sum-b1530d6f\Meldung.fodt
+Exit 0
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0725-sum-b1530d6f\Meldung.fodt as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0725-lo-out-3d07c397\Meldung.docx using filter : Office Open XML Text
+[stderr] Could not find platform independent libraries <prefix>
+Datei fremd-Meldung.docx: 5769 Bytes, SHA-256 3e50e5929c015d15bccb96ff09bd594635263eda02745e548cf6f633683b3fe3
+fremd-Meldung.pdf → 225 Zeichen: „fremd-Meldung.pdf“ eingelesen: 32 Wörter → 4 Kernsätze. Die Datei bleibt unverändert.
+fremd-Meldung.docx → 225 Zeichen: „fremd-Meldung.docx“ eingelesen: 32 Wörter → 4 Kernsätze. Die Datei bleibt unverändert.
+Datei trendo-Zusammenfassung.md: 382 Bytes, SHA-256 dae7f6ae9ab889bf447ff82a1bba96313cf5300ee826ee50932345a31b5bd138

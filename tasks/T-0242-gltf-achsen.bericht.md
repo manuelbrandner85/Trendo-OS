@@ -8,7 +8,7 @@
 - Version 0.9.17, `installer/neuerungen/0.9.17.md`.
 
 ## Nachweise
-- Volltest: Api 15/15, Core 848 bestanden/1 übersprungen, App 434 bestanden/3 übersprungen, Paket-Tests 8/8 OK – `reports/T-0242/volltest.log`, SHA-256 `5ce022fe696d2ad8bf00fc51c3e20c9ecfb933ca628ba0ae58be92adae807b42`
+- Volltest: Api 15/15, Core 848 bestanden/1 übersprungen, App 434 bestanden/3 übersprungen, Paket-Tests 8/8 OK – `reports/T-0242/volltest.log`, SHA-256 `a83145e0a38345f84f5d26f0c27d0e53896b12385e693e09a7d3f428c4c8dee0`
 - Blender 5.2.3 LTS (`--background --factory-startup`, Import per `bpy.ops.import_scene.gltf`): Breite X 0,1 m, Tiefe Y 0,2 m, Höhe Z 0,4 m – `reports/T-0242/blender-gegenprobe.log`, SHA-256 `a584d597fbf30a042b0deab38c5ed95e236befbb509bb77d52b3cde45cdb6dcb`; Skript `blender-pruefen.py`, Datei `quader.glb`
 
 ## Folgen / Risiken

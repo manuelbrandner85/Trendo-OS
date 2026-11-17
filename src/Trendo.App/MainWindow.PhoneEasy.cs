@@ -453,27 +453,34 @@ public partial class MainWindow
     {
         if (_core.Offline) { _phoneMsg = "Trendo ist offline – zum Laden braucht es Internet."; return; }
         if (_depBusy) return;
+        // B4 (T-0706): eigene Rückfrage; Laden und Starten des Setups nur im Freigabe-Tor
+        var w = new Wirkung("app.install", "tailscale", "Tailscale installieren?", "Programm: Tailscale (offizielles Setup)\nWoher: https://pkgs.tailscale.com/stable/\n\nTrendo lädt das Setup und startet es. Windows fragt danach nach Administratorrechten – das ist der Installer von Tailscale.", "Installieren");
+        if (await FreigabeAsync(w) is not { } approvalId) { _phoneMsg = "Tailscale: abgebrochen – es wurde nichts geladen."; return; }
         _depBusy = true; string? file = null;
-        _core.Audit.Append(Principal.LocalOwner.Name, "phonelink.tailscale.install.start", "https://pkgs.tailscale.com/stable/tailscale-setup-latest.exe");
+        _core.Audit.Append(CurrentPrincipal.Name, "phonelink.tailscale.install.start", "https://pkgs.tailscale.com/stable/tailscale-setup-latest.exe");
         BeginSetupOverlay("Tailscale wird eingerichtet");
         try
         {
-            SetupOverlayProgress(0, 3, "Offizielles Tailscale-Setup wird geladen …");
-            (file, _) = await KiDownload("https://pkgs.tailscale.com/stable/tailscale-setup-latest.exe", "tailscale-setup.exe", 0, 1, 3);
-            SetupOverlayProgress(2, 3, "Installation läuft – bitte die Windows-Frage mit „Ja“ bestätigen …");
-            if (KiInstallerRunOverride is { } run) await run(file);
-            else
+            file = await _core.Approvals.Execute(approvalId, "app.install", "tailscale", async () =>
             {
-                using var p = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(file) { UseShellExecute = true });
-                if (p is not null) await p.WaitForExitAsync(SetupToken);
-            }
+                SetupOverlayProgress(0, 3, "Offizielles Tailscale-Setup wird geladen …");
+                var (f, _) = await KiDownload("https://pkgs.tailscale.com/stable/tailscale-setup-latest.exe", "tailscale-setup.exe", 0, 1, 3);
+                SetupOverlayProgress(2, 3, "Installation läuft – bitte die Windows-Frage mit „Ja“ bestätigen …");
+                if (KiInstallerRunOverride is { } run) await run(f);
+                else
+                {
+                    using var p = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(f) { UseShellExecute = true });
+                    if (p is not null) await p.WaitForExitAsync(SetupToken);
+                }
+                return f;
+            });
             var ok = TailscaleInstalled();
             _core.Audit.Append(Principal.LocalOwner.Name, ok ? "phonelink.tailscale.install.ok" : "phonelink.tailscale.install.failed", "");
             _phoneMsg = ok ? "" : "Tailscale wurde nicht fertig installiert (abgebrochen?). Einfach noch einmal versuchen.";
             FinishSetupOverlay(ok ? "Tailscale ist installiert" : "Tailscale ist noch nicht installiert", ok ? "Weiter geht es mit der Anmeldung." : _phoneMsg, ok ? [] : [_phoneMsg]);
         }
         catch (OperationCanceledException) when (SetupCancelRequested) { _phoneMsg = "Abgebrochen."; }
-        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
+        catch (Exception ex) when (ex is ApprovalException or HttpRequestException or InvalidOperationException or IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception)
         {
             _phoneMsg = "Tailscale ließ sich nicht einrichten: " + Trendo.Core.FriendlyError.Say(ex);
             FinishSetupOverlay("Einrichten nicht möglich", _phoneMsg, [ex.Message]);

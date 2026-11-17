@@ -127,14 +127,14 @@ public class PromptBarTests
     [Fact(DisplayName = "Abdeckung und StudioCatalog nennen dieselben Kennungen, Titel und Bereiche")]
     public void Katalog_und_Abdeckung_stimmen()
     {
-        Assert.Equal(StudioCatalog.ById.Count, CapabilityCatalog.Ids.Count);
-        foreach (var (id, info) in StudioCatalog.ById)
+        Assert.Equal(StudioCatalog.ById.Count - StudioCatalog.Deleted.Count, CapabilityCatalog.Ids.Count); // T-0720: gelöschte Studios haben keinen Katalogeintrag mehr
+        foreach (var (id, info) in StudioCatalog.ById.Where(kv => !StudioCatalog.Deleted.Contains(kv.Key)))
         {
             var profile = CapabilityCatalog.Find(id);
             Assert.NotNull(profile);
             Assert.Equal(info.Name, profile.Title);
             Assert.Equal(info.Area, profile.Area);
         }
-        Assert.Equal(76, StudioCatalog.ById.Count); // + Künstlerstudio (15.11.2026), + TV & Live (27.10.2026), + Trendo Musik (03.11.2026), + Filme machen und Print on Demand (08.11.2026), + vier + vier Studios Kreativ & KI (11.11.2026), + Teil 3 und 4 (14.11.2026)
+        Assert.Equal(83, StudioCatalog.ById.Count); // + sieben Studios Arbeiten & Büro (15.11.2026), + Künstlerstudio (15.11.2026), + TV & Live (27.10.2026), + Trendo Musik (03.11.2026), + Filme machen und Print on Demand (08.11.2026), + vier + vier Studios Kreativ & KI (11.11.2026), + Teil 3 und 4 (14.11.2026)
     }
 }

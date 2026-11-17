@@ -8,6 +8,10 @@ namespace Trendo.Core;
 /// <summary>Ein selbst gebautes 3D-Objekt: mehrere Teile, Maße in Zentimetern, Z nach oben.</summary>
 public sealed partial class Scene3D
 {
+    /// <summary>T-0714: Fassung des Szene-JSON, die dieses Trendo schreibt und versteht. Szenen ohne Angabe (vor T-0714) gelten als Fassung 1;
+    /// eine neuere Fassung wird nicht geöffnet (beim Speichern gingen sonst Inhalte verloren). Migration: Stufe für Stufe in <see cref="FromJson"/>.</summary>
+    public const int FormatVersion = 1;
+    [JsonPropertyOrder(-1)] public int Version { get; set; } = FormatVersion;
     public string Name { get; set; } = "Mein Objekt";
     public string? ProjectId { get; set; }
     public List<Part3D> Parts { get; set; } = [];
@@ -40,9 +44,20 @@ public sealed partial class Scene3D
 
     public string ToJson() => JsonSerializer.Serialize(this, Opt);
 
-    public static Scene3D FromJson(string json)
+    /// <summary>T-0691: absturzsicher speichern (Zwischendatei, dann austauschen) – für Speichern und die automatische Sicherung.</summary>
+    public void SaveTo(string path) => AtomicFile.WriteAllText(path, ToJson());
+    public static Scene3D Load(string path) => FromJson(File.ReadAllText(path));
+
+    public static Scene3D FromJson(string json) => Normalize(JsonSerializer.Deserialize<Scene3D>(json, Opt) ?? new Scene3D());
+
+    /// <summary>T-0716: Prüfen und Aufräumen nach dem Einlesen (Fassung, Namen, Farben, Kennungen) – für ganze Szenen und für Schnappschüsse des Rückgängig (<see cref="History"/>).</summary>
+    static Scene3D Normalize(Scene3D s)
     {
-        var s = JsonSerializer.Deserialize<Scene3D>(json, Opt) ?? new Scene3D();
+        if (s.Version <= 0) s.Version = 1; // T-0714: fehlende Angabe = Fassung 1
+        if (s.Version > FormatVersion)
+            throw new InvalidDataException($"Diese Szene wurde mit einer neueren Trendo-Fassung gespeichert (Dateiformat {s.Version}, dieses Trendo kennt {FormatVersion}). Bitte aktualisiere Trendo – die Datei bleibt so lange unverändert.");
+        // Stufen v → v+1: noch keine – Fassung 1 ist die erste mit Angabe; ältere Szenen ohne Angabe haben denselben Aufbau.
+        s.Version = FormatVersion;
         s.Name = string.IsNullOrWhiteSpace(s.Name) ? "Mein Objekt" : s.Name.Trim();
         s.Parts ??= [];
         foreach (var p in s.Parts)

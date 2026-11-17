@@ -92,7 +92,7 @@ public partial class MainWindow
                 new Border { Width = 4 },
                 RemoveButton("chat:" + chat.Id, "ask-chat-del", () => { Chats.Delete(chat.Id); _chatId = null; _chat.Clear(); _askState = "Gespräch gelöscht."; }),
                 new Border { Width = 4 },
-                Act("ask-chat-save", "Als Dokument", () => { var f = Path.Combine(WorkFolder("KI-Gespräche"), DevStudio.SafeName(chat.Title) + ".md"); File.WriteAllText(f, ChatStore.ToMarkdown(chat)); _askState = "Gespeichert: " + f; NotifyFileResult(_askState); Show("ki-fragen"); }) } });
+                Act("ask-chat-save", "Als Dokument", () => { var f = Path.Combine(WorkFolder("KI-Gespräche"), DevStudio.SafeName(chat.Title) + ".md"); AtomicFile.WriteAllText(f, ChatStore.ToMarkdown(chat)); /* T-0717: atomar */ _askState = "Gespeichert: " + f; NotifyFileResult(_askState); Show("ki-fragen"); }) } });
         }
 
         left.Children.Add(KiMemoryPanel());
@@ -110,7 +110,8 @@ public partial class MainWindow
         var log = new StackPanel { Name = "ask-log", Spacing = 8 };
         var input = new TextBox { Name = "ask-input", PlaceholderText = "Nachricht an die Trendo KI … (Enter sendet, Umschalt+Enter neue Zeile)", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 54, MaxHeight = 180 };
         var send = new Button { Name = "ask-send", Content = "Senden", Background = Accent, IsEnabled = _askCts is null };
-        send.Click += async (_, _) => { var q = input.Text ?? ""; if (q.Trim().Length > 0) input.Text = ""; await AskChat(q); };
+        var al = AskLink; LinkForm(al, "eingabe", ("text", input)); // T-0717: noch nicht gesendete Nachricht als Entwurf (Rückgängig, Notsicherung, Karte)
+        send.Click += async (_, _) => { var q = input.Text ?? ""; if (q.Trim().Length > 0) { input.Text = ""; LinkClose(al); } await AskChat(q); };
         input.AddHandler(KeyDownEvent, (_, e) => { if (e.Key == Key.Enter && !e.KeyModifiers.HasFlag(KeyModifiers.Shift)) { e.Handled = true; send.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent)); } }, Avalonia.Interactivity.RoutingStrategies.Tunnel);
         var stop = new Button { Name = "ask-stop", Content = "Stopp", IsVisible = _askCts is not null };
         stop.Click += (_, _) => _askCts?.Cancel();
@@ -135,10 +136,12 @@ public partial class MainWindow
         // neueste Nachricht ins Bild holen
         if (log.Children.Count > 0 && log.Children[^1] is Control lastMsg) lastMsg.AttachedToVisualTree += (_, _) => _ui.Post(() => lastMsg.BringIntoView(), Avalonia.Threading.DispatcherPriority.Background);
         // Eingabe fest am unteren Rand (wie in Chatprogrammen) – der Verlauf rollt darüber
+        var (aUndo, aRedo) = LinkButtons(al);
         var dock = new StackPanel { Name = "ask-dock", Spacing = 6, Children = {
             input,
-            new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { send, stop, clear } },
+            new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { send, stop, clear, aUndo, aRedo } },
             new TextBlock { Name = "ask-state", Text = _askState, Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap } } };
+        if (LinkRecoveryCard(al) is { } askCard) dock.Children.Insert(0, askCard); // T-0717: nicht gesendete Nachricht aus einer früheren Sitzung
         if (_chat.Count >= 2)
         {
             var (lq, la) = (_chat[^2].Content, _chat[^1].Content);

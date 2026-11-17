@@ -254,8 +254,8 @@ public class SPEC01_Ui
 
         // Vorlage-Bild: 400 × 300 Pixel, darin eine 200 Pixel lange Strecke = 5 m
         var png = Img.Png(root, 400, 300, (100, 100, 299, 110));
-        Get<TextBox>(w, "arch-bg-path").BringIntoView(); Get<TextBox>(w, "arch-bg-path").Text = png; Settle();
-        Press(w, "arch-bg-load");
+        // V-07 (T-0700): ein Klick auf „Datei wählen …“ liest sofort ein (Systemdialog ersetzt); das Pfadfeld ist außerhalb von „Professionell“ ausgeblendet
+        w.PickOverride = _ => Task.FromResult<string[]?>([png]); Press(w, "arch-bg-path-pick");
         var bg = Plan(w).Background!; Assert.Equal(400, bg.PxW);
         Press(w, "arch-cal");
         Assert.Equal("kalib", w.ArchState.Tool);

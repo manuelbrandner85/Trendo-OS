@@ -63,7 +63,8 @@ public class SPEC05_Ui
         Assert.Contains("signifikant", Get<StackPanel>(w, "ms-cmp-res").Children.OfType<TextBlock>().First().Text);
         Press(w, "ms-smooth"); Assert.Equal(3, Model(w).Columns.Count); Assert.Contains("geglättet", Model(w).Columns[2].Name);
         var f = Path.Combine(root, "mess.csv"); File.WriteAllText(f, "Zeit [s];Spannung [V]\n0;0\n1;3,2\n2;4,4\n");
-        Get<TextBox>(w, "ms-csv-path").Text = f; Press(w, "ms-csv-load");
+        // V-07 (T-0700): ein Klick auf „Datei wählen …“ – die Tabelle wird sofort geladen (Systemdialog ersetzt)
+        w.PickOverride = _ => Task.FromResult<string[]?>([f]); Press(w, "ms-csv-path-pick");
         Assert.Equal("Spannung", Model(w).Columns[1].Name); Assert.Equal("V", Model(w).Columns[1].Unit); Assert.Equal(3, Model(w).Rows);
         Get<Expander>(w, "ms-calcs").IsExpanded = true; Settle();
         Assert.Contains("Zusammenhang signifikant", Get<SelectableTextBlock>(w, "sci-chi-out").Text);

@@ -1,0 +1,17 @@
+# python -I reports/T-0689/pruefe_eml.py <TRENDO_MAIL_BELEG-Ordner>  (Python 3.13.15)
+OK     Betreff (RFC 2047, gefaltet) | Größere Übersicht für März: Zähler, Maße und Öffnungszeiten – bitte bis Freitag prüfen 😀
+OK     Absender mit Umlaut | Erika Müßig <erika@example.org>
+OK     Empfänger mit Umlaut | Jörg Größe <joerg@example.com>
+OK     Kopie mit Komma im Namen | "Muster, Erika" <kopie@example.com>
+OK     keine Blindkopie in den Kopfzeilen
+OK     Zeilen höchstens 78 Zeichen | 76
+OK     nur ASCII auf der Leitung
+OK     Aufbau multipart/mixed | multipart/mixed
+OK     Textteil
+OK     HTML-Teil
+OK     zwei Anhänge | Übersicht März – Größe.bin, angebot.pdf
+OK     Anhang „Übersicht März – Größe.bin“ bytegleich | sha256=09b7d85307dd66bff87b93a9d0b832b43b13513805bc6a0801acf2c215f3e6e4
+OK     Anhang „angebot.pdf“ bytegleich | sha256=14bcd090baf31edba64e9cbd8cdfc15f943344aa72cb3675ad8e91bfcbce03ad
+sha256(trendo-nachricht.eml)=7522581c3bc14a2c4ddde3abe41207439dcb10b40c107d9677d2cd1e404031b0
+ERGEBNIS: bestanden
+exit=0

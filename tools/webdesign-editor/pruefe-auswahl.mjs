@@ -118,7 +118,7 @@ finally {
   try { ws?.close(); } catch { /* schon zu */ }
   browser.kill(); server.close();
   await sleep(300);
-  try { rmSync(profile, { recursive: true, force: true }); } catch { /* Chrome hält die Datei noch */ }
+  try { rmSync(profile, { recursive: true, force: true, maxRetries: 25, retryDelay: 200 }) /* T-0729: Chrome-Hilfsprozesse geben Dateien erst nach Sekunden frei */; } catch { /* Chrome hält die Datei noch */ }
 }
 process.stdout.write(JSON.stringify({ results, problems }));
 process.exit(problems.length ? 1 : 0);

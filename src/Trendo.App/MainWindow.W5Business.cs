@@ -55,7 +55,7 @@ public partial class MainWindow
         }
         sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = {
             Act("biz-evaluate", "Speichern und bewerten", () => { Read(); Ideas.Save(i); _core.Audit.Append(Principal.LocalOwner.Name, "business.evaluate", i.Id); Show("business"); }, true),
-            Act("biz-blueprint", "Bauplan erstellen", () => { Read(); Ideas.Save(i); var f = Path.Combine(BusinessFolder, DevStudio.SafeName(i.Name) + "-Bauplan.md"); File.WriteAllText(f, BusinessStudio.Blueprint(i)); Launch(f); Say("Bauplan gespeichert: " + Path.GetFileName(f), "business"); }),
+            Act("biz-blueprint", "Bauplan erstellen", () => { Read(); Ideas.Save(i); var f = Path.Combine(BusinessFolder, DevStudio.SafeName(i.Name) + "-Bauplan.md"); AtomicFile.WriteAllText(f, BusinessStudio.Blueprint(i)); Launch(f); Say("Bauplan gespeichert: " + Path.GetFileName(f), "business"); }),
             Act("biz-delete", "Löschen", () => { Ideas.Delete(i.Id); CurrentIdea = null; Show("business"); }) } });
 
         var v = BusinessStudio.Evaluate(i);

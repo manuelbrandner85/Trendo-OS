@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform.Storage;
 using Trendo.Core;
 using Trendo.Core.Media;
 using Trendo.Core.Programs;
@@ -30,6 +31,9 @@ public partial class MainWindow
     {
         Sentence = "Videos, Fotos und Musik auf die Zeitleiste legen, schneiden und als MP4 speichern.",
         FillHeight = true,
+        // T-0686 (V-02): leere Zeitleiste – „Video hinzufügen“ öffnet die Dateiauswahl, auch wenn die Medien-Spalte in „Einfach“ eingeklappt ist
+        FirstStep = new("Video hinzufügen", "Hol Videos, Fotos oder Musik dazu – sie landen unten auf der Zeitleiste.", _ => EditPickMedia(),
+            d => VideoEdit.Clips(d.Data).Count == 0 && VideoEdit.Clips(d.Data, "music").Count == 0),
         Folder = "Medien",
         Templates =
         [
@@ -40,7 +44,8 @@ public partial class MainWindow
         Ribbon =
         [
             ("Schneiden", [
-                new ProgramCmd("ve-split", "Teilen (S)", d => d.Edit("Teilen", x => { if (!VideoEdit.Split(x, d.Number("playhead"))) throw new InvalidOperationException("Am Abspielkopf liegt kein Stück – oder er steht zu nah an einer Schnittkante."); }), true, "Stück am Abspielkopf in zwei teilen"),
+                new ProgramCmd("ve-add-pick", "Video hinzufügen", _ => EditPickMedia(), false, "Videos, Fotos oder Musik auswählen – sie landen auf der Zeitleiste"),
+                new ProgramCmd("ve-split", "Teilen (S)", d => d.Edit("Teilen", x => { if (!VideoEdit.Split(x, d.Number("playhead"))) throw new InvalidOperationException("Am Abspielkopf liegt kein Stück – oder er steht zu nah an einer Schnittkante."); }), false, "Stück am Abspielkopf in zwei teilen"), // T-0695: golden ist nur „Video exportieren“
                 new ProgramCmd("ve-delete", "Löschen (Entf)", d => EditDelete(d), false, "Ausgewähltes Stück entfernen"),
                 new ProgramCmd("ve-play", "Abspielen (Leertaste)", d => EditTogglePlay(d), false, "Im Programm abspielen – noch einmal: anhalten"),
                 new ProgramCmd("ve-silence", "Stille finden", d => EditFindSilences(d), false, "Stille Stellen (mind. 1 s) in Videos mit Ton suchen – Trendo schlägt vor, sie herauszuschneiden", Level: 1),
@@ -70,15 +75,37 @@ public partial class MainWindow
             ]),
         ],
         GroupLevels = new() { ["Ansicht"] = 1, ["Spuren"] = 1, ["Werkzeug"] = 1 },
+        // T-0728 (offen aus T-0710): die Tasten der Zeitleiste stehen auch in der Menüleiste – derselbe Weg wie die Taste (EditKey), in jeder Stufe
+        Menus = d =>
+        [
+            new("Wiedergabe",
+            [
+                new("ve-key-j", "Rückwärts abspielen", () => EditKey(d, Key.J), "J", Tip: "Mehrfach drücken = schneller"),
+                new("ve-key-k", "Anhalten", () => EditKey(d, Key.K), "K"),
+                new("ve-key-l", "Vorwärts abspielen", () => EditKey(d, Key.L), "L", Tip: "Mehrfach drücken = schneller"),
+                MenuCmd.Separator,
+                new("ve-key-i", "Bereich ab hier", () => EditKey(d, Key.I), "I", Tip: "Anfang des Bereichs für „Nur einen Bereich“ exportieren"),
+                new("ve-key-o", "Bereich bis hier", () => EditKey(d, Key.O), "O"),
+                new("ve-key-m", "Marke setzen", () => ProgramRun(VK, () => EditKey(d, Key.M)), "M"),
+                MenuCmd.Separator,
+                new("ve-key-home", "Zum Anfang", () => ProgramRun(VK, () => EditKey(d, Key.Home)), "Pos1"),
+                new("ve-key-end", "Zum Ende", () => ProgramRun(VK, () => EditKey(d, Key.End)), "Ende"),
+                MenuCmd.Separator,
+                new("ve-key-f", "Vorschau im Vollbild", () => EditToggleFullscreen(d), "F"),
+            ]),
+        ],
         Exports = [new("mp4", "Video (MP4) sofort", ".mp4", (d, f) => EditExport(d, f))],
         Workspace = EditWorkspace,
         Properties = EditProperties,
         Status = d => { var p = d.Data; return $"{VideoEdit.Clips(p).Count} Stücke · Musik {VideoEdit.Clips(p, "music").Count} · Länge {Clock(VideoEdit.Duration(p))} · {(int)d.Number("width")} × {(int)d.Number("height")}" + (FfmpegPath is null ? " · FFmpeg fehlt (Vorschau und Export)" : ""); },
-        Help = "Rechts Medien hinzufügen. Unten auf der Zeitleiste: Stück ziehen ordnet um, Kanten ziehen kürzt, Klick ins Lineal setzt den Abspielkopf, S teilt, Entf löscht. Export unter „Exportieren“.",
+        Help = "Mit „Video hinzufügen“ holst du Videos, Fotos oder Musik dazu. Unten auf der Zeitleiste: Stück ziehen ordnet um, Kanten ziehen kürzt, Klick ins Lineal setzt den Abspielkopf, S teilt, Entf löscht. Export unter „Exportieren“.",
     }, "videoschnitt", "video schneiden", "zeitleiste", "timeline", "film", "clip", "musik unterlegen", "mp4", "schnitt");
 
     // ---------- Bearbeiten (öffentlich für Tests und die KI) ----------
     /// <summary>Datei auf die Bild- oder Musikspur legen; Länge und Ton werden mit FFmpeg ermittelt (oder angegeben).</summary>
+    /// <summary>T-0686 (V-02): Dateiauswahl für Videos, Fotos und Musik – Tondateien kommen auf die Musikspur, alles andere auf die Bildspur.</summary>
+    public void EditPickMedia() => _ = ProgramPickThen(VK, "ve-add-pick", "Videos, Fotos und Musik", MediaStudio.Inputs, true, files => { foreach (var f in files) EditAdd(f, music: MediaStudio.IsAudio(f)); });
+
     public void EditAdd(string file, bool music = false, double? length = null, bool? audio = null)
     {
         var d = ProgramActive(VK) ?? ProgramNew(VK);
@@ -184,17 +211,24 @@ public partial class MainWindow
         if (EditSelected is { } s && s.Index >= (s.Track == "music" ? music.Count : clips.Count)) EditSelected = null;
         // Vorschau im Seitenverhältnis des Projekts
         var (pw, ph) = (Math.Max(16, d.Number("width")), Math.Max(16, d.Number("height")));
-        var frame = EditFrame(d);
+        // T-0695: mit FFmpeg zeigt die Vorschau das fertige Bild (gleicher Filtergraph wie der Export), sonst wie bisher das rohe Stück
+        var lookOn = EditFf is not null && clips.Count > 0;
+        var lookPending = false;
+        var frame = lookOn ? EditLook(d, out lookPending) : EditFrame(d);
         Control screen = frame is not null ? new Image { Name = "ve-preview", Source = frame, Stretch = Stretch.Uniform }
-            : new TextBlock { Name = "ve-preview-empty", Text = clips.Count == 0 ? "Rechts Videos, Fotos oder Musik hinzufügen." : FfmpegPath is null ? "Vorschau von Videos braucht FFmpeg." : "Abspielkopf ins Video setzen.", Foreground = Muted, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap, TextAlignment = TextAlignment.Center };
+            : new TextBlock { Name = "ve-preview-empty", Text = clips.Count == 0 ? (music.Count == 0 ? "" : "Noch kein Bild auf der Bildspur.") : FfmpegPath is null ? "Vorschau von Videos braucht FFmpeg." : "Abspielkopf ins Video setzen.", Foreground = Muted, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap, TextAlignment = TextAlignment.Center };
         var titleAt = VideoEdit.At(p, d.Number("playhead")) is { } at0 ? clips[at0.Index].Title : "";
-        var overlay = new TextBlock { Name = "ve-title-overlay", Text = titleAt, Foreground = Brushes.White, FontSize = ph / 14, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(0, 0, 0, ph / 10), IsVisible = titleAt.Length > 0,
+        var overlay = new TextBlock { Name = "ve-title-overlay", Text = titleAt, Foreground = Brushes.White, FontSize = ph / 14, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(0, 0, 0, ph / 10), IsVisible = titleAt.Length > 0 && !lookOn,
             Effect = new DropShadowEffect { BlurRadius = 6, OffsetX = 0, OffsetY = 2, Color = Colors.Black, Opacity = 0.9 } };
         if (screen is Image im0) _vePreview = im0;
         var frameBox = new Grid { Width = pw, Height = ph, Background = Brushes.Black, Children = { new Viewbox { Stretch = Stretch.Uniform, Child = screen is Image ? screen : new Border { Width = 640, Height = 360, Child = screen } }, overlay } };
         _veOverlay = overlay;
         var view = new Viewbox { Stretch = Stretch.Uniform, Child = frameBox };
         if (screen is not Image) { var img = new Image { Name = "ve-play-image", Stretch = Stretch.Uniform, IsVisible = false }; frameBox.Children.Insert(1, img); _vePreview = img; }
+        _veLookBusy = new TextBlock { Name = "ve-look-busy", Text = EditLookError.Length > 0 && lookPending && !(EditLookTask is { IsCompleted: false }) ? "Vorschau nicht möglich: " + EditLookError : "Vorschau wird berechnet …", IsVisible = lookPending, Foreground = Text, FontSize = Math.Max(12, ph / 40),
+            Background = Brush.Parse("#B0000000"), Padding = new Thickness(ph / 90, ph / 160), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(ph / 60) };
+        frameBox.Children.Add(_veLookBusy);
+        EditFullSync();
         var time = new TextBlock { Name = "ve-time", Text = $"{ClockMs(d.Number("playhead"))} / {ClockMs(VideoEdit.Duration(p))}  ·  {VideoTools.TimeCode(d.Number("playhead"), VideoTools.Fps(p))}", Foreground = Text, FontSize = 13, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0) };
         // Abspielleiste unter der Vorschau wie in jedem Schnittprogramm
         Button Tp(string name, string label, string tip, Action a, bool main = false)
@@ -208,7 +242,8 @@ public partial class MainWindow
         var tpMid = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center, Children = {
             Tp("ve-tp-start", "⏮", "Zum Anfang", () => Seek(0)), Tp("ve-tp-back", "⏪", "1 Sekunde zurück (Umschalt+←)", () => Seek(d.Number("playhead") - 1)),
             Tp("ve-tp-play", _vePlay is not null ? "⏸" : "▶", "Abspielen / Anhalten (Leertaste)", () => EditTogglePlay(d), true),
-            Tp("ve-tp-fwd", "⏩", "1 Sekunde vor (Umschalt+→)", () => Seek(d.Number("playhead") + 1)), Tp("ve-tp-end", "⏭", "Zum Ende", () => Seek(VideoEdit.Duration(d.Data))), time } };
+            Tp("ve-tp-fwd", "⏩", "1 Sekunde vor (Umschalt+→)", () => Seek(d.Number("playhead") + 1)), Tp("ve-tp-end", "⏭", "Zum Ende", () => Seek(VideoEdit.Duration(d.Data))),
+            time } };
         var zoom = new StackPanel { Orientation = Orientation.Horizontal, Children = {
             new TextBlock { Text = "Zoom", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) },
             Tp("ve-tp-zoom-out", "－", "Zeitleiste verkleinern", () => EditZoom = Math.Max(4, EditZoom / 1.5)), Tp("ve-tp-zoom-in", "＋", "Zeitleiste vergrößern", () => EditZoom = Math.Min(200, EditZoom * 1.5)) } };
@@ -251,8 +286,20 @@ public partial class MainWindow
                 case Key.Left: ProgramRun(VK, () => d.Set("playhead", Math.Max(0, Math.Round(d.Number("playhead") - (e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? 1 : 1.0 / VideoTools.Fps(d.Data)), 3)), "Abspielkopf")); e.Handled = true; break;
                 case Key.Right: ProgramRun(VK, () => d.Set("playhead", Math.Min(VideoEdit.Duration(d.Data), Math.Round(d.Number("playhead") + (e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? 1 : 1.0 / VideoTools.Fps(d.Data)), 3)), "Abspielkopf")); e.Handled = true; break;
                 case Key.J or Key.K or Key.L or Key.I or Key.O or Key.M or Key.Home or Key.End when e.KeyModifiers == KeyModifiers.None: EditKey(d, e.Key); e.Handled = true; break; // X5: wie in Profi-Schnittprogrammen
+                case Key.F when e.KeyModifiers == KeyModifiers.None: EditToggleFullscreen(d); e.Handled = true; break; // T-0695: Vollbild-Vorschau
             }
         };
+        // T-0695: Dateien aus dem Explorer auf die Zeitleiste ziehen – Bildspur oben, Musikspur unten, an der Abwurfstelle
+        DragDrop.SetAllowDrop(tl, true);
+        tl.AddHandler(DragDrop.DragOverEvent, (_, e) => { e.DragEffects = e.DataTransfer.Contains(DataFormat.File) ? DragDropEffects.Copy : DragDropEffects.None; e.Handled = true; });
+        tl.AddHandler(DragDrop.DropEvent, (_, e) =>
+        {
+            var files = e.DataTransfer.TryGetFiles()?.Select(f => f.TryGetLocalPath()).OfType<string>().ToList() ?? [];
+            if (files.Count == 0) return;
+            var at = e.GetPosition(tl);
+            ProgramRun(VK, () => EditDropFiles(files, VideoTools.Quantize(tl.T(at.X), VideoTools.Fps(d.Data)), at.Y >= EditTimeline.MusicTop - 2));
+            e.Handled = true;
+        });
         var scroll = new ScrollViewer { Content = tl, HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled };
         // Spurnamen links neben der Zeitleiste
         var labels = new Canvas { Width = 92, Height = tl.Height, Background = Brush.Parse("#0E131C") };
@@ -278,7 +325,7 @@ public partial class MainWindow
         });
         var tlBox = new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, BorderBrush = Edge, BorderThickness = new Thickness(1),
             Child = new ScrollViewer { Name = "ve-timeline-scroll", HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, Content = new DockPanel { Children = { Dk(labels, Avalonia.Controls.Dock.Left), scroll } } } };
-        var hint = new TextBlock { Text = "Stück ziehen: umordnen · Kanten ziehen: kürzen · Lineal: Abspielkopf · S teilen · Entf löschen · ←/→ Bild für Bild (Umschalt: Sekunde) · Ton und Einblendungen auf eine andere Spur ziehen", Foreground = Muted, FontSize = 11.5, Margin = new Thickness(2, 4, 0, 0), TextWrapping = TextWrapping.Wrap };
+        var hint = new TextBlock { Text = "Stück ziehen: umordnen · Kanten ziehen: kürzen · Lineal: Abspielkopf · S teilen · Entf löschen · ←/→ Bild für Bild (Umschalt: Sekunde) · F Vollbild · Dateien hierher ziehen · Ton und Einblendungen auf eine andere Spur ziehen", Foreground = Muted, FontSize = 11.5, Margin = new Thickness(2, 4, 0, 0), TextWrapping = TextWrapping.Wrap };
         // Pilot 4.0, V9: Höhe der Zeitleiste ziehen, gemerkt je Person; ohne gespeicherten Wert passt sie sich den Spuren an
         var tlRow = new GridLength(PaneWidths().TryGetValue("schnitt/zeitleiste", out var savedH) && savedH >= 80 ? savedH : Math.Min(tl.Height + 18, 300)); // viele Spuren scrollen innerhalb der Zeitleiste
         var g = new Grid { RowDefinitions = new RowDefinitions { new(GridLength.Star), new(GridLength.Auto), new(new GridLength(6)), new(tlRow), new(GridLength.Auto) } };
@@ -286,7 +333,11 @@ public partial class MainWindow
         ToolTip.SetTip(tlGrip, "Ziehen ändert die Höhe der Zeitleiste");
         tlGrip.DragCompleted += (_, _) => SavePaneWidth("schnitt/zeitleiste", g.RowDefinitions[3].ActualHeight);
         Grid.SetRow(tlGrip, 2); g.Children.Add(tlGrip);
-        g.Children.Add(new Border { Background = Brush.Parse("#05070C"), CornerRadius = new CornerRadius(10), Padding = new Thickness(6), Child = view, MinHeight = 90 });
+        // T-0695: Vollbild-Knopf oben rechts in der Vorschau (wie in Schnittprogrammen), Taste F
+        var full = new Button { Name = "ve-tp-full", Content = "⛶ Vollbild", FontSize = 12, Padding = new Thickness(8, 3), Background = Brush.Parse("#99000000"), Foreground = Text, BorderThickness = new Thickness(0),
+            HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0, 4, 4, 0) };
+        ToolTip.SetTip(full, "Vorschau als Vollbild (F) – F oder Esc kehrt zurück"); full.Click += (_, _) => ProgramRun(VK, () => EditToggleFullscreen(d));
+        g.Children.Add(new Border { Background = Brush.Parse("#05070C"), CornerRadius = new CornerRadius(10), Padding = new Thickness(6), Child = new Grid { Children = { view, full } }, MinHeight = 90 });
         _veTime = time;
         Grid.SetRow(tpWrap, 1); g.Children.Add(tpWrap); Grid.SetRow(tlBox, 3); g.Children.Add(tlBox); Grid.SetRow(hint, 4); g.Children.Add(hint);
         return g;
@@ -507,7 +558,7 @@ public partial class MainWindow
     {
         if (EditTimelineForTests is { } tl) { tl.Playhead = t; tl.InvalidateVisual(); }
         if (_veTime is not null) _veTime.Text = $"{ClockMs(t)} / {ClockMs(VideoEdit.Duration(d.Data))}  ·  {VideoTools.TimeCode(t, VideoTools.Fps(d.Data))}";
-        if (_veOverlay is not null) { _veOverlay.Text = c.Title; _veOverlay.IsVisible = c.Title.Length > 0; }
+        if (_veOverlay is not null) { _veOverlay.Text = c.Title; _veOverlay.IsVisible = c.Title.Length > 0 && (EditFf is null || PreviewSourceOverride is not null); } // T-0695: im fertigen Bild steckt der Titel schon
     }
 
     /// <summary>Bild zur Zeit t zeigen, ohne die Seite neu aufzubauen (Abspielen).</summary>
@@ -530,7 +581,7 @@ public partial class MainWindow
                 if (frames.Count > 0) file = frames[Math.Clamp((int)((at.SourceTime - c.In) * PlayFps), 0, frames.Count - 1)];
             }
             if (file is null) return;
-            using var s = File.OpenRead(file); _vePreview.Source = new Bitmap(s); _vePreview.IsVisible = true;
+            using var s = File.OpenRead(file); _vePreview.Source = new Bitmap(s); _vePreview.IsVisible = true; EditFullSync();
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException) { }
     }
@@ -575,7 +626,7 @@ public partial class MainWindow
         var file = Path.Combine(WorkFolder(Programs[VK].Folder), DevStudio.SafeName(title) + tag + ext);
         for (var i = 2; File.Exists(file) || Directory.Exists(file); i++) file = Path.Combine(WorkFolder(Programs[VK].Folder), $"{DevStudio.SafeName(title)}{tag}-{i}{ext}");
         // Paket 01 S3-18-N: fehlt der Encoder, nichts starten und eine Alternative nennen
-        var encs = EncodersOverride ?? (!_opt.Isolated && FfmpegPath is { } ffe ? await Task.Run(() => VideoExport.Encoders(ffe)) : null);
+        var encs = EncodersOverride ?? (EditFf is { } ffe ? await Task.Run(() => VideoExport.Encoders(ffe)) : null);
         if (encs is not null && VideoExport.Check(opts.Preset, encs) is { Ok: false } chk) { _progMsg[VK] = chk.Text; EditQueueResults.Add(chk.Text); Show(VK); await EditQueueNext(); return; }
         var data = job.Data;
         _veExport = new CancellationTokenSource(); _veExportProgress = 0; EditTab = "export"; _progMsg[VK] = "Export läuft im Hintergrund – du kannst weiterarbeiten."; Show(VK);
@@ -586,8 +637,8 @@ public partial class MainWindow
             if (ExportAsyncOverride is { } fake) o = await fake(data, file, progress, _veExport.Token);
             else
             {
-                var ff = FfmpegPath ?? throw new InvalidOperationException("Für den Export fehlt FFmpeg – unter Zusatzprogramme einrichten.");
-                if (_opt.Isolated) throw new InvalidOperationException("Im abgeschotteten Testmodus startet Trendo kein FFmpeg.");
+                var ff = EditFfmpegPath ?? FfmpegPath ?? throw new InvalidOperationException("Für den Export fehlt FFmpeg – unter Zusatzprogramme einrichten.");
+                if (_opt.Isolated && EditFfmpegPath is null) throw new InvalidOperationException("Im abgeschotteten Testmodus startet Trendo kein FFmpeg."); // Tests geben ein echtes FFmpeg über EditFfmpegPath
                 if (opts.Gpu is null && !opts.Preset.AudioOnly) { _veGpu = await Task.Run(() => VideoExport.GpuEncoders(ff)); opts = opts with { Gpu = _veGpu }; }
                 o = await VideoEdit.ExportAsync(ff, data, file, progress, _veExport.Token, opts);
             }

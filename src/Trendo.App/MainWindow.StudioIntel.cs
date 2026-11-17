@@ -160,6 +160,12 @@ public partial class MainWindow
     {
         var root = ActivePageRoot ?? this;
         var box = root.GetLogicalDescendantsOfType<TextBox>().FirstOrDefault(t => t.Name == "auftrag-prompt" && t.IsVisible);
+        if (box is null && OwnKiInputPages.Contains(CurrentView) && _promptBarOpen.Add(CurrentView))
+        {
+            // V-13 (T-0684): Seite ohne Auftragszeile – für eine gewählte Aufgabe blendet Trendo sie ein
+            Show(CurrentView); root = ActivePageRoot ?? this;
+            box = root.GetLogicalDescendantsOfType<TextBox>().FirstOrDefault(t => t.Name == "auftrag-prompt" && t.IsVisible);
+        }
         if (box is null) return false;
         box.Text = task.Starter; box.Focus(); box.CaretIndex = task.Starter.Length;
         var open = TaskNeeds(task);

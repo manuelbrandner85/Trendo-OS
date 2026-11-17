@@ -1,0 +1,114 @@
+[
+  {
+    "id": "ffmpeg",
+    "name": "FFmpeg",
+    "pfad": "C:\Users\<user>\\AppData\\Local\\TrendoWerkzeuge\\ffmpeg\\bin\\ffmpeg.exe",
+    "version": "ffmpeg version 9.0.2-essentials_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+    "suchweg": "DependencyManager (Vollpaket, bekannte Orte, winget-Ablage, PATH, App Paths), sonst PATH wie Cli.Find"
+  },
+  {
+    "id": "node",
+    "name": "Node.js",
+    "pfad": "C:\Users\<user>\\nodejs\\node.exe",
+    "version": "v24.22.2",
+    "suchweg": "Cli.Find (PATH) wie GameStudio/DevStudio"
+  },
+  {
+    "id": "git",
+    "name": "Git",
+    "pfad": "C:\Users\<user>\\AppData\\Local\\TrendoWerkzeuge\\git\\cmd\\git.exe",
+    "version": "git version 2.56.0.windows.3",
+    "suchweg": "DependencyManager, sonst PATH"
+  },
+  {
+    "id": "python",
+    "name": "Python",
+    "pfad": "C:\Users\<user>\\AppData\\Local\\TrendoWerkzeuge\\python\\python.exe",
+    "version": "Python 3.13.17",
+    "suchweg": "DependencyManager, sonst PATH"
+  },
+  {
+    "id": "chrome",
+    "name": "Chrome/Edge (Chromium)",
+    "pfad": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "version": "157.0.8103.51",
+    "suchweg": "WebsitePreview.FindBrowser (Chrome/Chromium/Edge), sonst Browsers.Find"
+  },
+  {
+    "id": "blender",
+    "name": "Blender",
+    "pfad": "C:\Users\<user>\\AppData\\Local\\TrendoWerkzeuge\\blender\\blender.exe",
+    "version": "Blender 5.2.3 LTS",
+    "suchweg": "DependencyManager, sonst ModelConverter.FindBlender"
+  },
+  {
+    "id": "unreal",
+    "name": "Unreal Engine",
+    "pfad": "C:\\Program Files\\Epic Games\\UE_5.8\\Engine\\Binaries\\Win64\\UnrealEditor.exe",
+    "version": "++UE5+Release-5.8-CL-58902052",
+    "suchweg": "GameStudio.FindEngines (LauncherInstalled.dat)"
+  },
+  {
+    "id": "unity",
+    "name": "Unity",
+    "pfad": "C:\\Program Files\\Unity\\Hub\\Editor\\6000.6.8f1\\Editor\\Unity.exe",
+    "version": "6000.6.8f1_237b6593792b",
+    "suchweg": "EngineTargets.FindUnity (Unity Hub, Program Files) – wie MainWindow.EngineDetect"
+  },
+  {
+    "id": "godot",
+    "name": "Godot",
+    "pfad": "C:\Users\<user>\\Godot\\Godot_v4.7.2-stable_win64_console.exe",
+    "version": "4.7.2.stable.official.ed1daf0bf",
+    "suchweg": "EngineTargets.FindGodot (Werkzeugordner, Benutzerordner\\Godot, Programs, Program Files) – wie MainWindow.EngineDetect"
+  },
+  {
+    "id": "libreoffice",
+    "name": "LibreOffice",
+    "pfad": "C:\Users\<user>\\AppData\\Local\\TrendoWerkzeuge\\libreoffice\\App\\libreoffice\\program\\soffice.exe",
+    "version": "26.2.4.2",
+    "suchweg": "DependencyManager (Vollpaket-Pfad, bekannte Orte, PATH, App Paths)"
+  },
+  {
+    "id": "tesseract",
+    "name": "Tesseract OCR",
+    "pfad": "C:\Users\<user>\\AppData\\Local\\TrendoWerkzeuge\\tesseract\\tesseract.exe",
+    "version": "tesseract v5.4.0.20240606",
+    "suchweg": "DependencyManager"
+  },
+  {
+    "id": "sdcli",
+    "name": "Bild-KI (stable-diffusion.cpp, sd-cli)",
+    "pfad": "C:\Users\<user>\\AppData\\Local\\TrendoWerkzeuge\\ki\\laufzeit\\stablediffusioncpp\\sd-cli.exe",
+    "version": null,
+    "suchweg": "KiLibraryStore.RuntimeExe(StableDiffusionCpp)"
+  },
+  {
+    "id": "acestep",
+    "name": "Musik-KI ACE-Step",
+    "pfad": "C:\Users\<user>\\AppData\\Local\\TrendoWerkzeuge\\ki\\laufzeit\\acestep",
+    "version": null,
+    "suchweg": "KiLibraryStore.RuntimeReady(AceStep)"
+  },
+  {
+    "id": "ollama",
+    "name": "Ollama",
+    "pfad": "C:\Users\<user>\\AppData\\Local\\TrendoWerkzeuge\\ollama\\ollama.exe",
+    "version": "ollama version is 0.40.11",
+    "suchweg": "DependencyManager (Vollpaket ollama/ollama.exe, bekannte Orte, winget, PATH)"
+  },
+  {
+    "id": "claude",
+    "name": "Claude Code",
+    "pfad": "C:\Users\<user>\\.local\\bin\\claude.exe",
+    "version": "2.1.319 (Claude Code)",
+    "suchweg": "ClaudeCode.Find (offizieller Installer, npm, PATH)"
+  },
+  {
+    "id": "7zip",
+    "name": "7-Zip",
+    "pfad": "C:\Users\<user>\\AppData\\Local\\TrendoWerkzeuge\\7zip\\7z.exe",
+    "version": "26.05",
+    "suchweg": "DependencyManager"
+  }
+]

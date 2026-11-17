@@ -100,6 +100,29 @@ public partial class MainWindow
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(target))!);
         TextFileCodec.Save(target, d.Text, d.Info); d.Path = target; d.Dirty = false;
         _core.Audit.Append("app", "editor.save", Path.GetFileName(target));
+        if (EdDocs.Any(x => x.Dirty)) LinkCommit(EditorLink, "Gespeichert"); else LinkSaved(EditorLink); // T-0711: alles gespeichert – Notsicherung weg
+    }
+
+    // T-0711 (B6 Etappe 1b): alle Reiter des Editors an Rückgängig und Notsicherung der Hülle (ProgramLink); Dateien bleiben im eigenen Format (Kodierung, BOM, Zeilenende).
+    public LinkSlot EditorLink => Slot("editor", "LINK-EDITOR", "editor", "editor", "ed", "Ein Text im Editor", "Texte im Editor", EdState, EdApply,
+        () => EdDocs.Any(x => x.Dirty && (x.Path is not null || x.Text.Length > 0)), () => EdCur.Name + (EdCur.Path is null && EdCur.Text.Trim().Length > 0 ? " – " + EdCur.Text.Trim() : ""));
+
+    System.Text.Json.Nodes.JsonNode EdState() => new System.Text.Json.Nodes.JsonObject
+    {
+        ["idx"] = _edIdx,
+        ["docs"] = new System.Text.Json.Nodes.JsonArray(EdDocs.Select(x => (System.Text.Json.Nodes.JsonNode)new System.Text.Json.Nodes.JsonObject
+            { ["path"] = x.Path, ["text"] = x.Text, ["enc"] = x.Info.Encoding, ["bom"] = x.Info.Bom, ["eol"] = x.Info.Eol, ["dirty"] = x.Dirty }).ToArray()),
+    };
+
+    void EdApply(System.Text.Json.Nodes.JsonNode? st)
+    {
+        if (st?["docs"] is not System.Text.Json.Nodes.JsonArray a) return;
+        EdDocs.Clear();
+        foreach (var n in a.OfType<System.Text.Json.Nodes.JsonObject>())
+            EdDocs.Add(new EdDoc { Path = n["path"]?.GetValue<string>(), Text = n["text"]?.GetValue<string>() ?? "", Dirty = n["dirty"]?.GetValue<bool>() ?? true,
+                Info = new TextFileInfo(n["enc"]?.GetValue<string>() ?? "UTF-8", n["bom"]?.GetValue<bool>() ?? false, n["eol"]?.GetValue<string>() ?? (OperatingSystem.IsWindows() ? "CRLF" : "LF")) });
+        if (EdDocs.Count == 0) EdDocs.Add(new EdDoc());
+        _edIdx = Math.Clamp((int?)st["idx"] ?? 0, 0, EdDocs.Count - 1); _edCloseAsk = -1;
     }
 
     private Control EditorView()
@@ -159,7 +182,7 @@ public partial class MainWindow
         void Numbers() { var n = d.Text.Count(c => c == '\n') + 1; if (n == lastCount) return; lastCount = n; lines.Text = string.Join('\n', Enumerable.Range(1, n)); }
         void Status() { var (l, c) = TextFileCodec.LineCol(d.Text, tb.CaretIndex); status.Text = $"Zeile {l}, Spalte {c} · {d.Text.Length:N0} Zeichen · {d.Info.Encoding}{(d.Info.Bom ? " mit BOM" : "")} · {d.Info.Eol}{(d.Dirty ? " · geändert" : "")}"; }
         Numbers(); Status();
-        tb.TextChanged += (_, _) => { if (tb.Text == d.Text) return; d.Text = tb.Text ?? ""; if (!d.Dirty) { d.Dirty = true; if (tabs.Children[_edIdx * 2] is Button cur) cur.Content = d.Name + " •"; } Numbers(); Status(); };
+        tb.TextChanged += (_, _) => { if (tb.Text == d.Text) return; d.Text = tb.Text ?? ""; LinkTyped(EditorLink); if (!d.Dirty) { d.Dirty = true; if (tabs.Children[_edIdx * 2] is Button cur) cur.Content = d.Name + " •"; } Numbers(); Status(); };
         tb.PropertyChanged += (_, e) => { if (e.Property == TextBox.CaretIndexProperty) { d.Caret = tb.CaretIndex; Status(); } };
         tb.AttachedToVisualTree += (_, _) => { tb.CaretIndex = Math.Min(d.Caret, d.Text.Length); };
         tb.KeyDown += (_, e) =>
@@ -199,7 +222,15 @@ public partial class MainWindow
             go, Act("ed-goto-btn", "Gehe zu", () => Try(V, () => { var l = int.Parse(Need(go, "die Zeilennummer")); tb.CaretIndex = TextFileCodec.LineStart(d.Text, l); tb.Focus(); })));
         find.KeyDown += (_, e) => { if (e.Key == Key.Enter) { Try(V, () => FindNext()); e.Handled = true; } };
 
-        return AlltagPage("Editor", new StackPanel { Spacing = 6, Children = { bar, search, tabs, editor, status } });
+        // T-0711: Wiederherstellen-Karte und Rückgängig · Wiederholen (ganze Schritte, bis 100) – Strg+Z im Textfeld wirkt weiter zeichenweise
+        var link = EditorLink; LinkCommit(link);
+        var (undo, redo) = LinkButtons(link);
+        var at = bar.Children.IndexOf(bar.Children.First(c => c.Name == "ed-saveas")); bar.Children.Insert(at, redo); bar.Children.Insert(at, undo);
+        var page = new StackPanel { Spacing = 6 };
+        if (LinkRecoveryCard(link) is { } card) page.Children.Add(card);
+        if (LinkMsg(link) is { } lm) page.Children.Add(lm);
+        foreach (var c in new Control[] { bar, search, tabs, editor, status }) page.Children.Add(c);
+        return AlltagPage("Editor", page);
     }
 
     // =====================================================================

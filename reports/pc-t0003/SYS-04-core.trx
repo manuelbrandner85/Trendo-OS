@@ -2,7 +2,7 @@
 <TestRun id="fa59ac53-108e-4256-9493-4ba713da5c31" name="<user>@<host> 2026-10-22 02:42:30" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:30.3270220+02:00" queuing="2026-10-22T02:42:30.3270221+02:00" start="2026-10-22T02:42:29.6065304+02:00" finish="2026-10-22T02:42:30.3309648+02:00" />
   <TestSettings name="default" id="72d69e34-f797-4eb6-b5a1-d90fad36320d">
-    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_30" />
+    <Deployment runDeploymentRoot="<user>_<host>_2026-10-22_02_42_30" />
   </TestSettings>
   <Results>
     <UnitTestResult executionId="7fa96eae-8edd-4a10-b5ef-96d2fc99975a" testId="0f92cc24-252f-f5af-16ab-20f35a7b4b63" testName="SYS-04: winget- und flatpak-Ausgaben werden korrekt gelesen" computerName="<host>" duration="00:00:00.0058024" startTime="2026-10-22T02:42:30.2428207+02:00" endTime="2026-10-22T02:42:30.2429082+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7fa96eae-8edd-4a10-b5ef-96d2fc99975a" />

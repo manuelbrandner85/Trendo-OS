@@ -2,7 +2,7 @@
 <TestRun id="841ab4f3-d139-4f79-bba6-5a828de0318c" name="<user>@<host> 2026-10-22 02:42:44" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:44.2712062+02:00" queuing="2026-10-22T02:42:44.2712063+02:00" start="2026-10-22T02:42:43.6072520+02:00" finish="2026-10-22T02:42:44.2969325+02:00" />
   <TestSettings name="default" id="5a0159f4-c787-47c1-8ea9-f2cb2ad0813d">
-    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_44" />
+    <Deployment runDeploymentRoot="<user>_<host>_2026-10-22_02_42_44" />
   </TestSettings>
   <Results>
     <UnitTestResult executionId="2acd7b13-89ec-4338-b0e6-5f4b0ffbd747" testId="17bba94c-b109-a674-166a-a3607e6992cd" testName="SPEC-13 F02: GPX-Routen" computerName="<host>" duration="00:00:00.0461666" startTime="2026-10-22T02:42:44.1577572+02:00" endTime="2026-10-22T02:42:44.2089306+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2acd7b13-89ec-4338-b0e6-5f4b0ffbd747" />

@@ -46,7 +46,7 @@ public class CliEncodingTests
     public void Utf8_umlauts()
     {
         var py = Cli.Find("python") ?? Cli.Find("python3");
-        if (py is null) return; // ohne Python nichts zu prüfen
+        if (py is null) { Ueberspringen.Weil("Python fehlt auf diesem PC."); return; } // ohne Python nichts zu prüfen
         var r = Cli.Run(py, ["-I", "-X", "utf8", "-c", "import sys; print('Prüfung äöü'); print('beschädigt ß', file=sys.stderr)"], env: new Dictionary<string, string> { ["PYTHONIOENCODING"] = "utf-8" }, encoding: System.Text.Encoding.UTF8);
         Assert.Equal("Prüfung äöü", r.Out.Trim()); Assert.Equal("beschädigt ß", r.Err.Trim());
     }
@@ -55,7 +55,7 @@ public class CliEncodingTests
 /// <summary>Echter Lauf: markitdown 0.1.9 auf echten Testdokumenten (Prüfumgebung %TEMP%\trendo-tools-b\markitdown, Freigabe 08.11.2026).</summary>
 public class DocMarkdownRealTests
 {
-    static string Dir => Path.Combine(Path.GetTempPath(), "trendo-tools-b", "markitdown");
+    static string Dir => Path.Combine(global::Trendo.Core.TempDir.SystemTemp, "trendo-tools-b", "markitdown");
     static string Py => Path.Combine(Dir, "venv", OperatingSystem.IsWindows() ? Path.Combine("Scripts", "python.exe") : Path.Combine("bin", "python"));
     public sealed class MdFactAttribute : FactAttribute { public MdFactAttribute() { if (!File.Exists(Py) || !Directory.Exists(Path.Combine(Dir, "dokumente"))) Skip = "Übersprungen – markitdown-Prüfumgebung fehlt."; } }
     static string Script()

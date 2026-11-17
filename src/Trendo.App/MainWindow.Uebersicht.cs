@@ -67,7 +67,42 @@ public partial class MainWindow
             if (LongRun(p, SimpleTextPages.Contains(key)) is not { } run) continue;
             CollapseList(p, run, $"{key}:{p.Name ?? (i++).ToString()}");
         }
-        if (SimpleTextPages.Contains(key)) foreach (var t in root.GetLogicalDescendants().OfType<TextBlock>().ToList()) OneLine(t);
+        if (!SimpleTextPages.Contains(key)) return;
+        // V-06 (T-0684): Begrüßung und Leerzustände werden nie gekürzt – der erste lange Satz der Seite ist ihre Einleitung und bleibt ganz lesbar.
+        var texts = root.GetLogicalDescendants().OfType<TextBlock>().ToList();
+        var intro = PageIntro(texts);
+        foreach (var t in texts) if (!ReferenceEquals(t, intro)) OneLine(t);
+    }
+
+    /// <summary>Einleitung einer Seite: der erste lange Satz unter den ersten vier Texten nach dem Seitentitel (Texte von Knöpfen zählen nicht).
+    /// Ein langer Text weiter unten ist keine Einleitung und wird wie bisher gekürzt.</summary>
+    internal static TextBlock? PageIntro(IReadOnlyList<TextBlock> texts)
+    {
+        var start = -1;
+        for (var i = 0; i < texts.Count; i++) if (texts[i].Name == "page-title") start = i;
+        if (start < 0) return null;
+        return texts.Skip(start + 1).Where(t => t.Name != "page-sentence" && !string.IsNullOrWhiteSpace(t.Text) && t.FindLogicalAncestorOfType<Button>() is null).Take(4).FirstOrDefault(CanOneLine);
+    }
+
+    /// <summary>Überschrift, die direkt über einer Liste steht (im selben Feld oder bis zu drei Ebenen darüber) – damit „Alle … zeigen“ sagt, was kommt.</summary>
+    internal static string? ListHeading(Control first)
+    {
+        Control cur = first;
+        for (var depth = 0; depth < 4; depth++)
+        {
+            var up = cur.GetLogicalParent();
+            while (up is not null and not Avalonia.Controls.Panel) { if (up is not (Border or ScrollViewer or ContentControl or Avalonia.Controls.Presenters.ContentPresenter)) return null; up = up.GetLogicalParent(); }
+            if (up is not Avalonia.Controls.Panel parent) return null;
+            for (var k = parent.Children.IndexOf(cur) - 1; k >= 0; k--)
+            {
+                var c = parent.Children[k];
+                if (!c.IsVisible) continue;
+                if (!TextOnly(c)) return null; // dazwischen liegt anderer Inhalt: die Überschrift gehört nicht zu dieser Liste
+                if (SectionName(c) is { } n) return System.Text.RegularExpressions.Regex.Replace(n, @"\s*[–(].*$", "").Trim() is { Length: > 1 and <= 32 } clean ? clean : null;
+            }
+            cur = parent;
+        }
+        return null;
     }
 
     /// <summary>Eintrag einer Liste: Zeile oder Karte mit Knopf, oder ein Knopf mit längerem Text – kein Symbol einer Werkzeugleiste.</summary>
@@ -100,7 +135,8 @@ public partial class MainWindow
         var rest = kids.Skip(SimpleListKeep).ToList();
         foreach (var c in rest) c.IsVisible = open;
         var more = new Button { Name = "einfach-alle-" + (p.Name ?? "liste"), Margin = new Thickness(0, 6, 0, 6), HorizontalAlignment = HorizontalAlignment.Left };
-        void Label(bool o) { more.Content = o ? "Weniger anzeigen" : $"Alle {kids.Count} anzeigen"; ToolTip.SetTip(more, o ? "Nur die ersten Einträge zeigen" : $"Noch {rest.Count} weitere Einträge zeigen"); }
+        var what = ListHeading(kids[0]); // V-06 (T-0684): der Knopf nennt, was folgt („Vorlagen: alle 19 zeigen“)
+        void Label(bool o) { more.Content = o ? "Weniger anzeigen" : what is null ? $"Alle {kids.Count} Einträge zeigen" : $"{what}: alle {kids.Count} zeigen"; ToolTip.SetTip(more, o ? "Nur die ersten Einträge zeigen" : $"Noch {rest.Count} weitere Einträge zeigen"); }
         Label(open);
         more.Click += (_, _) =>
         {
@@ -116,12 +152,19 @@ public partial class MainWindow
     static readonly AttachedProperty<bool> OneLinedProperty = AvaloniaProperty.RegisterAttached<TextBlock, bool>("OneLined", typeof(MainWindow));
     static readonly AttachedProperty<bool> OneLineHookedProperty = AvaloniaProperty.RegisterAttached<TextBlock, bool>("OneLineHooked", typeof(MainWindow));
 
+    /// <summary>Käme dieser Text für die einzeilige Kürzung in Frage? Leerzustände (Name mit „empty“) nie.</summary>
+    internal static bool CanOneLine(TextBlock t)
+    {
+        if (t.GetValue(OneLinedProperty) || t is SelectableTextBlock || t.Text is not { } s || s.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length <= 25) return false;
+        if (t.FindLogicalAncestorOfType<TextBox>() is not null || t.FindLogicalAncestorOfType<Button>() is not null || t.MaxLines == 1 || NeverShorten(t)) return false;
+        return !t.GetLogicalAncestors().OfType<Control>().Prepend(t).Any(a => a.Name is { } n && n.Contains("empty", StringComparison.Ordinal));
+    }
+
     /// <summary>Lange Beschreibung (über 25 Wörter, kein Eingabefeld, kein Knopftext, kein Chat) auf eine Zeile – Klick zeigt alles, der Hinweis auch.
     /// Der Klick wird nicht verschluckt: eine anklickbare Karte darum herum öffnet sich weiter.</summary>
     internal static void OneLine(TextBlock t)
     {
-        if (t.GetValue(OneLinedProperty) || t is SelectableTextBlock || t.Text is not { } s || s.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length <= 25) return;
-        if (t.FindLogicalAncestorOfType<TextBox>() is not null || t.FindLogicalAncestorOfType<Button>() is not null || t.MaxLines == 1 || NeverShorten(t)) return;
+        if (!CanOneLine(t) || t.Text is not { } s) return;
         t.SetValue(OneLinedProperty, true);
         t.MaxLines = 1; t.TextTrimming = TextTrimming.CharacterEllipsis; t.TextWrapping = TextWrapping.Wrap;
         if (ToolTip.GetTip(t) is null) ToolTip.SetTip(t, s);

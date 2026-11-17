@@ -1,0 +1,72 @@
+# Echtlauf buecher – 2026-11-16 23:26:47
+$ LibreOffice öffnet Sturmnacht.fodt: soffice.exe -env:UserInstallation=file:///C:\Users\<user>/AppData/Local/Temp/trendo-t0725-lo-prof-af40cb42 --headless --norestore --convert-to docx --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0725-lo-out-8a6f850e C:\Users\<user>\AppData\Local\Temp\trendo-t0725-buch-3e054a5b\Sturmnacht.fodt
+Exit 0
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0725-buch-3e054a5b\Sturmnacht.fodt as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0725-lo-out-8a6f850e\Sturmnacht.docx using filter : Office Open XML Text
+[stderr] Could not find platform independent libraries <prefix>
+Datei fremd-Sturmnacht.docx: 5768 Bytes, SHA-256 58991f06f3a3ecd93f1f5a99233d3e00b5fe52f83f727eba4613a146f2d99a7d
+Trendo-Manuskript nach dem Öffnen:
+# Ankunft
+
+Die Fähre legte spät an. **Niemand** wartete am Steg.
+
+# Der Leuchtturm
+
+Oben *brannte* noch Licht.
+
+Datei trendo-Sturmnacht.docx: 3868 Bytes, SHA-256 0d937cd4bda5575681d6c61abbadf14e552d2ef1a944e614299497c9cbded3c4
+Datei trendo-Sturmnacht.odt: 2405 Bytes, SHA-256 67449e1faa3e84bfe1f3a3a5b707894b026282e2a9faaddaf30ff929ea7f395e
+Datei trendo-Sturmnacht.pdf: 89138 Bytes, SHA-256 750a088ee9e2d40e411aac5e51a508576f96a52582532d9b084d75646bfd9c2f
+$ qpdf prüft trendo-Sturmnacht.pdf: qpdf.exe --check C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\buecher\trendo-Sturmnacht.pdf
+Exit 3
+checking C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\buecher\trendo-Sturmnacht.pdf
+PDF Version: 1.7
+File is not encrypted
+File is not linearized
+[stderr] WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\buecher\trendo-Sturmnacht.pdf (offset 593): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\buecher\trendo-Sturmnacht.pdf (offset 1374): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\buecher\trendo-Sturmnacht.pdf (offset 2411): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\buecher\trendo-Sturmnacht.pdf (offset 3175): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\buecher\trendo-Sturmnacht.pdf (offset 33017): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\buecher\trendo-Sturmnacht.pdf (offset 66772): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\buecher\trendo-Sturmnacht.pdf (offset 593): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\buecher\trendo-Sturmnacht.pdf (offset 1374): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\buecher\trendo-Sturmnacht.pdf (offset 2411): input stream is complete but output may still be valid
+qpdf: operation succeeded with warnings
+qpdf: gültig, nur Warnung „Flate-Strom ohne Abschluss“ (PDFsharp, bekannt aus T-0705) – keine Fehler.
+$ qpdf zählt Seiten: qpdf.exe --show-npages C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\buecher\trendo-Sturmnacht.pdf
+Exit 0
+3
+$ LibreOffice öffnet trendo-Sturmnacht.docx: soffice.exe -env:UserInstallation=file:///C:\Users\<user>/AppData/Local/Temp/trendo-t0725-lo-prof-7b75c367 --headless --norestore --convert-to pdf --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0725-lo-out-d8fa621b C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\buecher\trendo-Sturmnacht.docx
+Exit 0
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\buecher\trendo-Sturmnacht.docx as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0725-lo-out-d8fa621b\trendo-Sturmnacht.pdf using filter : writer_pdf_Export
+[stderr] Could not find platform independent libraries <prefix>
+Datei lo-trendo-Sturmnacht-docx.pdf: 53035 Bytes, SHA-256 956140fc80df7637475b20ab7f9a3bb1d6b89d59299f814b642c31397f1515a8
+$ qpdf prüft lo-trendo-Sturmnacht-docx.pdf: qpdf.exe --check C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\buecher\lo-trendo-Sturmnacht-docx.pdf
+Exit 0
+checking C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\buecher\lo-trendo-Sturmnacht-docx.pdf
+PDF Version: 1.7
+File is not encrypted
+File is not linearized
+No syntax or stream encoding errors found; the file may still contain
+errors that qpdf cannot detect
+$ qpdf zählt Seiten: qpdf.exe --show-npages C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\buecher\lo-trendo-Sturmnacht-docx.pdf
+Exit 0
+3
+LibreOffice-PDF aus trendo-Sturmnacht.docx: 3 Seiten, Kapitel und Text gefunden.
+$ LibreOffice öffnet trendo-Sturmnacht.odt: soffice.exe -env:UserInstallation=file:///C:\Users\<user>/AppData/Local/Temp/trendo-t0725-lo-prof-2b386f1d --headless --norestore --convert-to pdf --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0725-lo-out-efe8096e C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\buecher\trendo-Sturmnacht.odt
+Exit 0
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\buecher\trendo-Sturmnacht.odt as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0725-lo-out-efe8096e\trendo-Sturmnacht.pdf using filter : writer_pdf_Export
+[stderr] Could not find platform independent libraries <prefix>
+Datei lo-trendo-Sturmnacht-odt.pdf: 53056 Bytes, SHA-256 468ef2f41be06ea2c7b6c836b1722be6ac6bb39b77141d6e6b1e1e68215a5d03
+$ qpdf prüft lo-trendo-Sturmnacht-odt.pdf: qpdf.exe --check C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\buecher\lo-trendo-Sturmnacht-odt.pdf
+Exit 0
+checking C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\buecher\lo-trendo-Sturmnacht-odt.pdf
+PDF Version: 1.7
+File is not encrypted
+File is not linearized
+No syntax or stream encoding errors found; the file may still contain
+errors that qpdf cannot detect
+$ qpdf zählt Seiten: qpdf.exe --show-npages C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\buecher\lo-trendo-Sturmnacht-odt.pdf
+Exit 0
+3
+LibreOffice-PDF aus trendo-Sturmnacht.odt: 3 Seiten, Kapitel und Text gefunden.

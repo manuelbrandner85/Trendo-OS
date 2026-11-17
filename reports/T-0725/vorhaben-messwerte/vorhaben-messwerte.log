@@ -1,0 +1,39 @@
+# Echtlauf vorhaben-messwerte – 2026-11-16 23:26:59
+Datei trendo-Schritte.csv: 607 Bytes, SHA-256 39d8b290d859972f888cbc7dd355a4b7bfa2b226480a6657d63d1b74e1cccc10
+Datei trendo-Zeitplan.ics: 2928 Bytes, SHA-256 6539c01a2c70aebfbe97a03fe04269d6c078a862b8039334847e183b30aee246
+$ LibreOffice öffnet trendo-Schritte.csv: soffice.exe -env:UserInstallation=file:///C:\Users\<user>/AppData/Local/Temp/trendo-t0725-lo-prof-ad279794 --headless --norestore --infilter=CSV:59,34,76,1 --convert-to ods --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0725-lo-out-8231da57 C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\vorhaben-messwerte\trendo-Schritte.csv
+Exit 0
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\vorhaben-messwerte\trendo-Schritte.csv as a Calc document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0725-lo-out-8231da57\trendo-Schritte.ods using filter : calc8
+Datei lo-Schritte.ods: 16550 Bytes, SHA-256 c7b654065c1109c31055249e9207fbf3269679591d9db13c64eeb4237fa15a3d
+$ LibreOffice öffnet lo-Schritte.ods: soffice.exe -env:UserInstallation=file:///C:\Users\<user>/AppData/Local/Temp/trendo-t0725-lo-prof-a2c4d446 --headless --norestore --convert-to pdf --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0725-lo-out-8af38a7e C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\vorhaben-messwerte\lo-Schritte.ods
+Exit 0
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\vorhaben-messwerte\lo-Schritte.ods as a Calc document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0725-lo-out-8af38a7e\lo-Schritte.pdf using filter : calc_pdf_Export
+Datei lo-Schritte.pdf: 52160 Bytes, SHA-256 37918fb3f86471d90d9830fbdba905ebb925c3b15a337f4ee66ca41135373fd0
+$ qpdf prüft lo-Schritte.pdf: qpdf.exe --check C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\vorhaben-messwerte\lo-Schritte.pdf
+Exit 0
+checking C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\vorhaben-messwerte\lo-Schritte.pdf
+PDF Version: 1.7
+File is not encrypted
+File is not linearized
+No syntax or stream encoding errors found; the file may still contain
+errors that qpdf cannot detect
+$ qpdf zählt Seiten: qpdf.exe --show-npages C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\vorhaben-messwerte\lo-Schritte.pdf
+Exit 0
+2
+Ical.Net: 7 Termine, erster „Beispiel-Urlaubsvideo: Idee in einem Satz aufschreiben“
+Datei trendo-Diagramm.png: 39004 Bytes, SHA-256 1d5cdba238320403d5cd9a2c84c3bf0d1e10a5f12eba9d55905e5f2cccbddb3b
+$ LibreOffice öffnet trendo-Diagramm.png: soffice.exe -env:UserInstallation=file:///C:\Users\<user>/AppData/Local/Temp/trendo-t0725-lo-prof-654e64f3 --headless --norestore --convert-to pdf --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0725-lo-out-4cda89c3 C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\vorhaben-messwerte\trendo-Diagramm.png
+Exit 0
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\vorhaben-messwerte\trendo-Diagramm.png as a Draw document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0725-lo-out-4cda89c3\trendo-Diagramm.pdf using filter : draw_pdf_Export
+Datei lo-Diagramm.pdf: 45940 Bytes, SHA-256 56d8d5eaad3106cd7751d6dbf1130f79f31a160650f6abaeef4a0f59783099ca
+$ qpdf prüft lo-Diagramm.pdf: qpdf.exe --check C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\vorhaben-messwerte\lo-Diagramm.pdf
+Exit 0
+checking C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\vorhaben-messwerte\lo-Diagramm.pdf
+PDF Version: 1.7
+File is not encrypted
+File is not linearized
+No syntax or stream encoding errors found; the file may still contain
+errors that qpdf cannot detect
+$ qpdf zählt Seiten: qpdf.exe --show-npages C:\Users\<user>\AppData\Local\Temp\trendo-t0725-roh-t3noft7p\vorhaben-messwerte\lo-Diagramm.pdf
+Exit 0
+1

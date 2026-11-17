@@ -66,7 +66,7 @@ public static partial class CreationSuite
             throw new IOException($"Das Vorhaben „{safe}“ gibt es schon.");
         Directory.Move(dir, target);
         var f = Path.Combine(target, ListFile);
-        if (File.Exists(f)) { var lines = File.ReadAllLines(f); if (lines.Length > 0 && lines[0].StartsWith("# ", StringComparison.Ordinal)) { lines[0] = "# " + name!.Trim(); File.WriteAllLines(f, lines); } }
+        if (File.Exists(f)) { var lines = File.ReadAllLines(f); if (lines.Length > 0 && lines[0].StartsWith("# ", StringComparison.Ordinal)) { lines[0] = "# " + name!.Trim(); WriteLines(f, lines); } } // T-0714: atomar
         return target;
     }
 }

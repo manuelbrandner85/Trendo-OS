@@ -1,0 +1,42 @@
+== T-0701 Beleg 2026-11-16T11:49:06Z
+== LibreOffice (soffice.exe vorhanden: ja), version.ini:
+buildid=0229ac93fcf0d7cbc6376066c6f35021cef002dc
+== Test mit echtem LibreOffice (T0701_TabellePraesentation.LibreOffice_rundreise) und Importbericht-Tests
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0701\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:03.11]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:03.93]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:03.96]   Starting:    Trendo.Core.Tests
+  Bestanden T-0682/T-0701: fremde PPTX – zwei Textformate in einem Feld, die Animation „Drehen“ und das fremde Design bleiben seit T-0701 erhalten; der Bericht ist deshalb leer [121 ms]
+  Bestanden T-0701: gemeinsame Formeln (shared formulas) – jede Folgezelle hat nach dem Öffnen ihre eigene, relativ verschobene Formel ($ bleibt fest), rechnet richtig und steht nach dem Speichern als Formel in der Datei [137 ms]
+  Bestanden T-0701: Farben aus dem Design der Mappe (theme + tint) und der alten Palette (indexed) werden feste Farben – Füllung, Schrift, Rahmen [29 ms]
+  Bestanden T-0682/T-0701: fremde XLSX – verbundene Zellen, Zahlenformat „0.000 kg“, Achsentitel, Reihenfarben und Legende bleiben seit T-0701 erhalten; der Bericht ist deshalb leer, und die gespeicherte Datei enthält alles [42 ms]
+  Bestanden T-0682/T-0692: fremde DOCX – Bericht nennt genau Textfeld und die Besonderheiten der Kopfzeile (beim Speichern gehen sie wirklich verloren); verbundene Zellen bleiben seit T-0692 erhalten und stehen nicht mehr im Bericht [117 ms]
+  Bestanden T-0701: fremde PPTX bearbeiten und speichern – Folienmaster, Layout und Theme der Datei bleiben byte-gleich, Platzhalter bleiben Platzhalter, Animation und Textformate bleiben; mit Trendo-Design wird ersetzt [189 ms]
+  Bestanden T-0701: Formel relativ verschieben wie beim Kopieren – Zeilen, Spalten, $-Bezüge, Bereiche, fremde Blätter, vor A1 = #BEZUG! [< 1 ms]
+  Bestanden T-0701: Animationen der Datei – bleiben unverändert, solange in Trendo nichts daran geändert wird; neue Animation oder gelöschtes Ziel-Objekt: Trendo schreibt seine eigenen [64 ms]
+  Bestanden T-0682: weitere Verluste werden einzeln erkannt – Makros, eingebettete Dateien, Matrixformeln, benannte Bereiche, gruppierte Objekte, unbekannte Bausteine [139 ms]
+  Bestanden T-0701: eigene Diagramme mit Achsentiteln, Reihenfarben und Legende rechts – hin und zurück ohne Verlust [28 ms]
+  Bestanden T-0682/T-0692/T-0701: fremde ODT, ODS und ODP – Bericht nennt Textrahmen, Feld, Textformat und Animation; verbundene Zellen der ODT (T-0692) und Zellformat, Notiz und verbundene Zellen der ODS (T-0701) bleiben erhalten [43 ms]
+  Bestanden T-0682: echte LibreOffice-Dateien (26.2.4, aus reports/t0223-office) und die Word-Briefvorlagen – nur Inhalte, die Trendo kennt: kein falscher Alarm [26 ms]
+  Bestanden T-0682: eigene Dateien bleiben ohne Hinweis – alle Vorlagen und alle Funktionen von Text, Tabelle und Präsentation ergeben einen leeren Bericht [616 ms]
+  Bestanden T-0228 E4: Abgleich mit LibreOffice Calc – Calc rechnet alle Formeln selbst nach (ohne gespeicherte Ergebnisse) (nur mit LibreOffice) [4 s]
+  Bestanden T-0230: Abgleich mit LibreOffice Writer – Writer öffnet Trendos DOCX und speichert DOCX, Trendo liest Seite, Kopf-/Fußzeile, Links, Kommentare, Fußnoten, Änderungen, Verzeichnis (nur mit LibreOffice) [5 s]
+  Bestanden Tabelle C1: Abgleich mit LibreOffice Calc – Calc öffnet Trendos XLSX, speichert ODS und XLSX, Trendo liest beides gleich (nur mit LibreOffice) [8 s]
+  Bestanden T-0229 P6: Abgleich mit LibreOffice Impress – Impress öffnet Trendos PPTX, speichert PPTX und ODP, Trendo liest beides (nur mit LibreOffice) [9 s]
+  Bestanden T-0701: echter Abgleich mit LibreOffice – Trendos gespeicherte Fremd-Tabelle (gemeinsame Formeln, verbundene Zellen, Formatcode) liest Calc gleich zurück; Fremd-Präsentation öffnet Impress und macht ein PDF (nur mit LibreOffice) [15 s]
+[xUnit.net 00:00:20.41]   Finished:    Trendo.Core.Tests
+  Bestanden T-0701: verbundene Zellen – verbinden leert die übrigen Zellen, Überschneidungen verschmelzen, Zeilen/Spalten einfügen und löschen verschieben den Bereich, aufheben [5 ms]
+  Bestanden T-0701: Zahlenformat-Codes wie Excel anzeigen – Einheiten, Abschnitte mit Farbe, Prozent, Tausender, Skalierung, wissenschaftlich, Bruch, Datum/Zeit, Text [5 ms]
+  Bestanden T-0701: Übergang und Hintergrundbild der Datei bleiben unverändert, solange Trendo sie nicht ändert [26 ms]
+  Bestanden T-0701: mehrere Textformate in einem Feld – Text ändern behält die Formate der übrigen Stellen, ein Wort kursiv/größer setzen, ganzes Feld fett setzt alles [3 ms]
+  Bestanden T-0701: Zellaussehen hin und zurück – Schrift (kursiv, doppelt unterstrichen, durchgestrichen, Farbe, Größe, Art), Ausrichtung, Umbruch, Einzug, Drehung, Rahmen je Seite, Zeilenhöhen, verbundene Zellen, fixierte Zeilen, eigener Formatcode [18 ms]
+
+Der Testlauf war erfolgreich.
+Gesamtzahl Tests: 23
+     Bestanden: 23
+ Gesamtzeit: 22,7443 Sekunden
+== Seitenzahl der PDFs (LibreOffice)
+lo-pdf-aus-pptx_trendo.pdf 1 Seite(n) 37797 Bytes
+lo-pdf-aus-xlsx_trendo.pdf 2 Seite(n) 68980 Bytes

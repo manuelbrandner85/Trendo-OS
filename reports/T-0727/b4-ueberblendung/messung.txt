@@ -1,0 +1,38 @@
+# T-0727 B4 – Standbild 3,5 s in der Überblendung (Graph aus VideoLookTests.Preview_equals_export_real, FFmpeg 9.0.2-full_build-www.gyan.dev), 2026-11-17 00:50
+## Graph (Pfade gekürzt)
+(Graph siehe Nachtrag unten)
+
+## Zerlegung (Median/Minimum je 7 Läufe, ms)
+original                   Median    359 ms  min    337
+select_vor_scale           Median    340 ms  min    330
+original             Median    336 ms  min    334
+ohne_b_effekte       Median    277 ms  min    268
+ohne_a_effekte       Median    339 ms  min    328
+ohne_ton             Median    333 ms  min    330
+## Varianten (Bild je Variante mit dem Original verglichen)
+original                     Median    338 ms  min    334  (342/338/336/334/356/336/341)
+filter_threads1              Median    330 ms  min    330  (337/330/330/330/331/330/333)
+hw_d3d11va                   Median    633 ms  min    628  (665/640/632/631/628/633/636)
+hw_cuda                      Median    502 ms  min    493  (526/493/511/508/495/502/502)
+dec_threads_auto_frame       Median    337 ms  min    328  (339/328/335/350/336/341/337)
+Bildvergleich filter_threads1 abweichender Bereich: None
+Bildvergleich hw_d3d11va abweichender Bereich: None
+Bildvergleich hw_cuda abweichender Bereich: None
+Bildvergleich dec_threads_auto_frame abweichender Bereich: None
+Bildvergleich select_vor_scale abweichender Bereich: None
+## PNG-Stufen (960 px)
+png_standard         Median    324 ms  min    322  Datei 289 KB
+png_level1           Median    323 ms  min    315  Datei 439 KB
+png_level0           Median    325 ms  min    317  Datei 1524 KB
+bmp_unkomprimiert    Median    318 ms  min    316  Datei 1518 KB
+## nur Dekodieren einzelner Stücke (5 Läufe, Mittel)
+-ss 3.5 -t 0.034 -i a.mp4: 142 ms
+-ss 1.5 -t 0.034 -i b.mp4: 154 ms
+
+## Nachtrag: Graph (Dateipfade auf Dateinamen gekürzt)
+-hide_banner -loglevel error -y -ss 3.5 -t 1 -i C:\Users\<user>\AppData\Local\Temp\trendo-look-5afd79e51cf84e089cf84975bcd1c27e\a.mp4 -ss 1 -t 4 -i C:\Users\<user>\AppData\Local\Temp\trendo-look-5afd79e51cf84e089cf84975bcd1c27e\b.mp4 -f lavfi -t 4 -i anullsrc=r=48000:cl=stereo -filter_complex [0:v]setpts=PTS+3/TB,scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30,select='eq(n\,0)+gte(t\,3.491667)',format=yuv420p,eq=brightness=0:contrast=1.1:saturation=0,drawtext=fontfile='C\:/Windows/Fonts/arial.ttf':text='Sommer 2026':fontcolor=white:fontsize=h/14*1:borderw=3:bordercolor=black@0.6:x=(w-text_w)/2:y=h-text_h-h/10[v0];[0:a]aresample=48000,aformat=channel_layouts=stereo[a0];[1:v]scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30,select='eq(n\,0)+gte(t\,0.491667)',format=yuv420p,vignette=angle=0.46[vt1];color=c=black:s=1920x1080:r=30:d=4,select='eq(n\,0)+gte(t\,0.491667)',format=yuv420p[v1bg];[vt1]scale=w='max(2\,trunc(1920*(if(lte(t\,0)\,1\,if(lte(t\,4)\,1+(-0.5)*(t-0)/4\,0.5)))/2)*2)':h='max(2\,trunc(1080*(if(lte(t\,0)\,1\,if(lte(t\,4)\,1+(-0.5)*(t-0)/4\,0.5)))/2)*2)':eval=frame[v1fg];[v1bg][v1fg]overlay=x='(W-w)/2+(if(lte(t\,0)\,0\,if(lte(t\,4)\,0+(0.2)*(t-0)/4\,0.2)))*W':y='(H-h)/2+(0)*H':eval=frame:shortest=1,format=yuv420p,setsar=1[v1];[2:a]aresample=48000,aformat=channel_layouts=stereo[a1];[v0][v1]xfade=transition=slideleft:duration=1:offset=0[vbase];[a0][a1]acrossfade=d=1[abase];[vbase]null[vout];[abase]anullsink;[vout]format=yuv420p,trim=start=3.491667,setpts=PTS-STARTPTS[vlook] -map [vlook] -frames:v 1 -update 1 x.png
+
+## Nachtrag: Zerlegung ohne Effekte / nur ein Stück (7 Läufe)
+ohne_effekte_nur_xfade     Median    257 ms  min    255
+nur_a_bis_stelle           Median    139 ms  min    137
+nur_b_bis_stelle           Median    211 ms  min    209

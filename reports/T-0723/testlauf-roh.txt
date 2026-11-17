@@ -1,0 +1,10 @@
+✓ Tests bestanden: 3 bestanden, 0 fehlgeschlagen (Exit 0)
+$ python -m unittest -v
+test_addiere (test_rechner.RechnerTest.test_addiere) ... ok
+test_multipliziere (test_rechner.RechnerTest.test_multipliziere) ... ok
+test_teile (test_rechner.RechnerTest.test_teile) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.000s
+
+OK

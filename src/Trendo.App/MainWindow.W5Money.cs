@@ -82,6 +82,6 @@ public partial class MainWindow
                     var y = int.Parse(Need(year, "das Jahr"));
                     var zip = FinanceExtra.TaxExport(Money.All(), Money.InvoiceDir, y, BusinessFolder);
                     _core.Audit.Append(Principal.LocalOwner.Name, "finance.tax_export", y.ToString()); Say("Gespeichert: " + zip, V);
-                }), true))) } });
+                })))) } }); // T-0694: im Reiter „Auswertung“ ist „Als PDF speichern“ die eine goldene Hauptaktion
     }
 }

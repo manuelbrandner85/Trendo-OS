@@ -1,0 +1,4 @@
+a20fa1134f642be38eac8a18b5052d060516ce98c236e1e526e13841eadbbf0a  claude-einkauf.md
+7f459c9df00b2e9770e78438288787ff7e2b083da845ad2f91e3a2fdd8f259b5  claude-ergebnis.md
+81fdb7080b18bbb7d3b586dfa92e9ca7bd8debf0cff932dbcd4dacb83fb95091  claude-lauf.json
+e82189e639e606fd1199307388ba2a4a372a2281872cd188d0e1e513da9b3fe9  claude-lauf.md

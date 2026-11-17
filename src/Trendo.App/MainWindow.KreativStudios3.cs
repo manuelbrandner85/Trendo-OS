@@ -51,9 +51,18 @@ public partial class MainWindow
 
     const string VideoSample = "Ein alter Leuchtturm auf einer Klippe im Morgenlicht, Zoom rein, 5 s, Text: Ein neuer Tag\nMöwen fliegen über das ruhige Meer, Schwenk nach rechts, 4 s\nEin kleines Fischerboot im Hafen, ruhig, 4 s\nSonnenstrahlen auf den Wellen, Zoom raus, 5 s, Text: Guten Morgen";
 
+    const string VideoSampleVoice = "Ein alter Leuchtturm auf einer Klippe im Morgenlicht, Zoom rein, 5 s, Text: Ein neuer Tag, Sprecher: Am Meer beginnt der Tag ganz leise.\nMöwen fliegen über das ruhige Meer, Schwenk nach rechts, 5 s, Sprecher: Die Möwen sind schon wach.\nSonnenstrahlen auf den Wellen, Zoom raus, 5 s, Sprecher: Guten Morgen.";
+
     static JsonObject VideoDoc(string idea) => new() { ["dir"] = Guid.NewGuid().ToString("N"), ["idea"] = idea, ["format"] = "quer", ["style"] = "foto", ["seed"] = "42", ["scenes"] = new JsonArray(), ["videos"] = new JsonArray() };
 
-    static JsonObject SceneJson(VideoAiKit.Scene s, string source = "", int seed = 0) => new() { ["prompt"] = s.Prompt, ["sec"] = s.Seconds, ["motion"] = s.Motion, ["caption"] = s.Caption, ["image"] = s.Image, ["source"] = source, ["seed"] = seed };
+    static JsonObject SceneJson(VideoAiKit.Scene s, string source = "", int seed = 0) => new() { ["prompt"] = s.Prompt, ["sec"] = s.Seconds, ["motion"] = s.Motion, ["caption"] = s.Caption, ["speech"] = s.Speech, ["image"] = s.Image, ["clip"] = s.Clip, ["source"] = source, ["seed"] = seed };
+
+    /// <summary>Nur eigene Clips und Tondateien im Ordner dieses Dokuments (höchstens 400 MB).</summary>
+    bool VideoOwnMedia(ProgramDocument d, string path)
+    {
+        if (!KreativSafe.LocalFile(path, 400L * 1024 * 1024)) return false;
+        return Path.GetFullPath(path).StartsWith(Path.GetFullPath(VideoDir(d)) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+    }
 
     /// <summary>Eigener Bildordner des Dokuments. Die Kennung steht im Dokument, damit die Bilder nach dem Wiederöffnen dazugehören; fremde Werte (Pfade) zählen nicht.</summary>
     string VideoDir(ProgramDocument d) => Path.Combine(_core.DataRoot, "ki-videos", System.Text.RegularExpressions.Regex.IsMatch(d.Text("dir"), "^[0-9a-f]{32}$") ? d.Text("dir") : d.Id);
@@ -68,9 +77,10 @@ public partial class MainWindow
 
     List<VideoAiKit.Scene> VideoScenes(ProgramDocument d) => d.List("scenes").Select(n => n as JsonObject ?? new JsonObject()).Select(o =>
     {
-        var motion = Js(o["motion"]); var img = Js(o["image"]);
+        var motion = Js(o["motion"]); var img = Js(o["image"]); var clip = Js(o["clip"]);
         return new VideoAiKit.Scene(Js(o["prompt"]), Math.Clamp(ProgramDocument.ToNumber(o["sec"], VideoAiKit.DefaultScene), VideoAiKit.MinScene, VideoAiKit.MaxScene),
-            VideoAiKit.Motions.Any(m => m.Id == motion) ? motion : "zoom-rein", KreativSafe.Cut(Js(o["caption"]), 200), img.Length > 0 && VideoOwn(d, img) ? img : "");
+            VideoAiKit.Motions.Any(m => m.Id == motion) ? motion : "zoom-rein", KreativSafe.Cut(Js(o["caption"]), 200), img.Length > 0 && VideoOwn(d, img) ? img : "",
+            KreativSafe.Cut(Js(o["speech"]), VideoAiKit.MaxSpeech), clip.Length > 0 && Path.GetExtension(clip).Equals(".mp4", StringComparison.OrdinalIgnoreCase) && VideoOwnMedia(d, clip) ? clip : "");
     }).ToList();
 
     static void VideoEditScene(ProgramDocument d, int i, string label, Action<JsonObject> change) =>
@@ -84,9 +94,9 @@ public partial class MainWindow
         var old = d.List("scenes").OfType<JsonObject>().ToList();
         // gleiche Beschreibung an gleicher Stelle: das Bild bleibt
         d.Edit("Szenen geplant", x => x["scenes"] = new JsonArray(scenes.Select((s, i) =>
-            (JsonNode)(i < old.Count && Js(old[i]["prompt"]) == s.Prompt ? SceneJson(s with { Image = Js(old[i]["image"]) }, Js(old[i]["source"]), (int)ProgramDocument.ToNumber(old[i]["seed"], 0)) : SceneJson(s))).ToArray()));
+            (JsonNode)(i < old.Count && Js(old[i]["prompt"]) == s.Prompt ? SceneJson(s with { Image = Js(old[i]["image"]), Clip = Js(old[i]["clip"]) }, Js(old[i]["source"]), (int)ProgramDocument.ToNumber(old[i]["seed"], 0)) : SceneJson(s))).ToArray()));
         var total = VideoAiKit.Total(scenes.Select(s => s.Seconds).ToList());
-        _progMsg[VideoAiKey] = $"{scenes.Count} Szenen geplant, etwa {total.ToString("0.#", De)} Sekunden." + (total > VideoAiKit.MaxTotal ? " Das ist länger als 60 Sekunden – bitte kürzen." : " Jetzt „Bilder malen“ oder eigene Bilder wählen.");
+        _progMsg[VideoAiKey] = $"{scenes.Count} Szenen geplant, etwa {total.ToString("0.#", De)} Sekunden." + (total > VideoAiKit.MaxTotal ? " Das ist länger als 60 Sekunden – bitte kürzen." : " Jetzt „Schlüsselbilder malen“ oder eigene Bilder wählen.");
     }
 
     /// <summary>Tests: Video bauen statt FFmpeg (Argumente, Ziel → erfolgreich?).</summary>
@@ -166,18 +176,31 @@ public partial class MainWindow
     /// <summary>Einblendung als durchsichtiges Bild in Videogröße: dunkler Streifen unten mit weißer Schrift. Bleibt beim Zoomen ruhig stehen.</summary>
     static void VideoCaptionPng(string text, int w, int h, string file)
     {
-        var size = Math.Max(18, Math.Min(w, h) / 16.0);
-        var band = new Border
+        // T-0699: direkt mit SkiaSharp gezeichnet (ohne Oberfläche) – gleiche Wirkung, läuft auch ohne Bildschirm und im Hintergrund
+        var size = (float)Math.Max(18, Math.Min(w, h) / 16.0);
+        using var font = new SkiaSharp.SKFont(SkiaSharp.SKTypeface.FromFamilyName("Segoe UI", SkiaSharp.SKFontStyle.Bold) ?? SkiaSharp.SKTypeface.Default, size);
+        using var white = new SkiaSharp.SKPaint { Color = SkiaSharp.SKColors.White, IsAntialias = true };
+        using var band = new SkiaSharp.SKPaint { Color = new SkiaSharp.SKColor(0, 0, 0, 0xA6), IsAntialias = true };
+        var maxW = w * 0.88f - size * 1.6f;
+        var lines = new List<string>(); var cur = "";
+        foreach (var word in text.Split(' ', StringSplitOptions.RemoveEmptyEntries))
         {
-            Background = Brush.Parse("#A6000000"), CornerRadius = new CornerRadius(size / 3), Padding = new Thickness(size * 0.8, size * 0.4),
-            HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(w * 0.06, 0, w * 0.06, h * 0.08),
-            Child = new TextBlock { Text = text, Foreground = Brushes.White, FontSize = size, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap, TextAlignment = TextAlignment.Center },
-        };
-        var root = new Grid { Width = w, Height = h, Background = Brushes.Transparent, Children = { band } };
-        root.Measure(new Size(w, h)); root.Arrange(new Rect(0, 0, w, h));
-        using var bmp = new RenderTargetBitmap(new PixelSize(w, h));
-        bmp.Render(root);
-        bmp.Save(file);
+            var next = cur.Length == 0 ? word : cur + " " + word;
+            if (cur.Length > 0 && font.MeasureText(next) > maxW) { lines.Add(cur); cur = word; } else cur = next;
+        }
+        if (cur.Length > 0) lines.Add(cur);
+        var lineH = size * 1.25f; var textW = lines.Count == 0 ? 0 : lines.Max(l => font.MeasureText(l));
+        float bw = textW + size * 1.6f, bh = lines.Count * lineH + size * 0.8f, bx = (w - bw) / 2, by = h - h * 0.08f - bh;
+        using var bmp = new SkiaSharp.SKBitmap(w, h, SkiaSharp.SKColorType.Rgba8888, SkiaSharp.SKAlphaType.Premul);
+        using (var c = new SkiaSharp.SKCanvas(bmp))
+        {
+            c.Clear(SkiaSharp.SKColors.Transparent);
+            c.DrawRoundRect(new SkiaSharp.SKRect(bx, by, bx + bw, by + bh), size / 3, size / 3, band);
+            for (var i = 0; i < lines.Count; i++)
+                c.DrawText(lines[i], w / 2f, by + size * 0.4f + lineH * i + size, SkiaSharp.SKTextAlign.Center, font, white);
+        }
+        using var img = SkiaSharp.SKImage.FromBitmap(bmp); using var data = img.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100);
+        using var fs = File.Create(file); data.SaveTo(fs);
     }
 
     /// <summary>Baut das MP4 mit FFmpeg: Kamerafahrt je Szene, Überblendung, Einblendungen. Nie überschreiben, Herkunftsnachweis daneben.</summary>
@@ -204,9 +227,14 @@ public partial class MainWindow
             {
                 string? cap = null;
                 if (scenes[i].Caption.Length > 0) { cap = Path.Combine(tmp, $"text-{i + 1}.png"); VideoCaptionPng(scenes[i].Caption, w, h, cap); }
-                clips.Add(new(scenes[i].Image, scenes[i].Seconds, scenes[i].Motion, cap));
+                clips.Add(new(scenes[i].Image, scenes[i].Seconds, scenes[i].Motion, cap, scenes[i].Clip.Length > 0 ? scenes[i].Clip : null));
             }
-            var args = VideoAiKit.FfmpegArgs(clips, w, h, output);
+            // Ton: Sprecher je Szene (lokale Stimme), Musik darunter; Untertitel aus den Sprechertexten
+            var (voices, voiceNote) = await VideoVoices(d, scenes);
+            var music = d.Text("music") is { Length: > 0 } mu && VideoOwnMedia(d, mu) ? mu : null;
+            string? srt = null;
+            if (scenes.Any(s => s.Speech.Length > 0)) { srt = Path.Combine(tmp, "untertitel.srt"); await File.WriteAllTextAsync(srt, VideoAiKit.Srt(scenes)); }
+            var args = VideoAiKit.FfmpegArgs(clips, w, h, output, voices.Count > 0 || music is not null ? new VideoAiKit.Sound(voices, music) : null, srt);
             bool ok; var err = "";
             if (VideoAiFfmpegOverride is { } o) ok = o(args, output);
             else
@@ -224,11 +252,13 @@ public partial class MainWindow
                 _progMsg[VideoAiKey] = "FFmpeg konnte das Video nicht schreiben." + (last.Length > 0 ? " " + KreativSafe.Cut(last, 200) : "");
                 return null;
             }
-            var src = scenes.Select((s, i) => new VideoAiKit.SceneSource(s.Prompt, s.Seconds, s.Motion, s.Caption, i < sources.Count ? sources[i] : "eigen", Sha256File(s.Image))).ToList();
-            VideoAiKit.WriteProvenance(output, new("Trendo OS – Videos mit KI (FFmpeg)", src, w, h, VideoAiKit.Total(scenes.Select(s => s.Seconds).ToList()), DateTime.UtcNow, "", src.Any(s => s.Source == "ki")));
+            var src = scenes.Select((s, i) => new VideoAiKit.SceneSource(s.Prompt, s.Seconds, s.Motion, s.Caption, s.Clip.Length > 0 ? "ki-video" : i < sources.Count ? sources[i] : "eigen", Sha256File(s.Clip.Length > 0 ? s.Clip : s.Image))).ToList();
+            var gen = "Trendo OS – Videos mit KI (FFmpeg: " + (scenes.Any(s => s.Clip.Length > 0) ? "KI-Videoclips Wan 2.2 und " : "") + "Schlüsselbilder mit Kamerafahrt" + (voices.Count > 0 ? ", Sprecher Piper" : "") + (music is not null ? ", Musik" : "") + (srt is not null ? ", Untertitel" : "") + ")";
+            VideoAiKit.WriteProvenance(output, new(gen, src, w, h, VideoAiKit.Total(scenes.Select(s => s.Seconds).ToList()), DateTime.UtcNow, "", src.Any(s => s.Source is "ki" or "ki-video")));
+            if (srt is not null && !File.Exists(Path.ChangeExtension(output, ".srt"))) File.Copy(srt, Path.ChangeExtension(output, ".srt"));
             d.Edit("Video gebaut", x => { if (x["videos"] is not JsonArray a) x["videos"] = a = []; a.Add(output); });
             _core.Audit.Append(Principal.LocalOwner.Name, "video-ki.video", $"{scenes.Count} Szenen {w}x{h}");
-            _progMsg[VideoAiKey] = "✓ Video fertig: " + output;
+            _progMsg[VideoAiKey] = "✓ Video fertig: " + output + voiceNote;
             NotifyFileResult(_progMsg[VideoAiKey]);
             return output;
         }
@@ -254,21 +284,26 @@ public partial class MainWindow
 
     private void InitVideoAi() => RegisterProgram(FachTabs, new ProgramSpec(VideoAiKey, "STUDIO-VIDEOAI-01", "Videos mit KI")
     {
-        Sentence = "Kurze Videos aus einer Beschreibung: Szenen planen, Bilder lokal malen oder eigene wählen, mit Kamerafahrt und Überblendung als MP4 – höchstens 60 Sekunden.",
+        Sentence = "Kurze Videos aus einer Beschreibung: Szenen planen, Schlüsselbilder lokal malen, daraus eine Bildfolge mit Kamerafahrt und Überblendung – einzelne Szenen auf Wunsch als echtes KI-Video (Wan 2.2) –, mit Sprecher, Musik und Untertiteln als MP4, höchstens 60 Sekunden.",
         Folder = "KI-Videos",
         ScrollWorkspace = true,
         Templates =
         [
             new("leer", "Neues Video", "Szenen selbst beschreiben", () => VideoDoc("")),
             new("beispiel", "Beispiel: Morgen am Meer", "Vier Szenen mit Einblendungen", () => VideoDoc(VideoSample)),
+            new("beispiel-ton", "Beispiel mit Sprecher", "Drei Szenen mit Sprecher und Untertiteln", () => VideoDoc(VideoSampleVoice)),
         ],
         Ribbon =
         [
             ("Video", [
-                new ProgramCmd("video-plan", "Szenen planen", VideoPlan, Primary: true, Tip: "Eine Szene je Zeile (oder je Absatz). Dauer „5 s“, Bewegung „Zoom rein“ und „Text: …“ werden erkannt."),
-                new ProgramCmd("video-images", "Bilder malen", d => _ = VideoImages(d), Tip: "Malt fehlende Bilder mit der lokalen Bild-KI – wie im Studio „Bilder mit KI“."),
-                new ProgramCmd("video-build", "Video bauen", d => _ = VideoBuild(d), Tip: "Braucht FFmpeg. Kamerafahrt, Überblendung und Einblendungen."),
+                new ProgramCmd("video-plan", "Szenen planen", VideoPlan, Primary: true, Tip: "Eine Szene je Zeile (oder je Absatz). Dauer „5 s“, Bewegung „Zoom rein“, „Text: …“ und „Sprecher: …“ werden erkannt."),
+                new ProgramCmd("video-images", "Schlüsselbilder malen", d => _ = VideoImages(d), Tip: "Malt fehlende Schlüsselbilder mit der lokalen Bild-KI – wie im Studio „Bilder mit KI“."),
+                new ProgramCmd("video-build", "Video bauen", d => _ = VideoBuild(d), Tip: "Braucht FFmpeg. Kamerafahrt oder KI-Clip je Szene, Überblendung, Einblendungen, Sprecher, Musik und Untertitel."),
                 new ProgramCmd("video-setup", "Bild-KI einrichten", d => Show("ki-bibliothek"), Tip: "Öffnet die KI-Bibliothek."),
+            ]),
+            ("Ton", [
+                new ProgramCmd("video-music", "Musik wählen …", d => _ = VideoMusicPick(d), Tip: "Eigene Musikdatei – läuft leise unter dem Sprecher."),
+                new ProgramCmd("video-music-off", "Musik entfernen", d => d.Set("music", "", "Musik entfernt")),
             ]),
             ("Format", VideoAiKit.Formats.Select(f => new ProgramCmd("video-format-" + f.Id, f.Label, d => d.Set("format", f.Id, "Format " + f.Label))).ToList()),
             ("Stil", ImageAiKit.Styles.Where(s => s.Id is "foto" or "illustration" or "aquarell" or "3d").Select(s => new ProgramCmd("video-style-" + s.Id, s.Label, d => d.Set("style", s.Id, "Stil " + s.Label))).ToList()),
@@ -285,8 +320,8 @@ public partial class MainWindow
         ],
         Workspace = VideoAiWorkspace,
         Properties = VideoAiProperties,
-        Status = d => { var s = VideoScenes(d); return $"{s.Count} Szenen · {VideoAiKit.Total(s.Select(x => x.Seconds).ToList()).ToString("0.#", De)} s · {s.Count(x => x.Image.Length > 0)} Bilder · " + (FfmpegPath is not null || VideoAiFfmpegOverride is not null ? "FFmpeg bereit" : "FFmpeg fehlt"); },
-        Help = "1. Beschreibe das Video: je Zeile eine Szene, z. B. „Ein Leuchtturm im Morgenlicht, Zoom rein, 5 s, Text: Guten Morgen“. 2. „Szenen planen“. 3. „Bilder malen“ (lokale Bild-KI) oder je Szene ein eigenes Bild wählen. 4. „Video bauen“ – höchstens 60 Sekunden. Keine echten Personen, keine fremden Marken. Neben jedem Bild und Video liegt ein Herkunftsnachweis. Bewegte KI-Clips gibt es über dein eigenes kie.ai-Konto.",
+        Status = d => { var s = VideoScenes(d); return $"{s.Count} Szenen · {VideoAiKit.Total(s.Select(x => x.Seconds).ToList()).ToString("0.#", De)} s · {s.Count(x => x.Image.Length > 0)} Bilder · {s.Count(x => x.Clip.Length > 0)} KI-Clips · " + (FfmpegPath is not null || VideoAiFfmpegOverride is not null ? "FFmpeg bereit" : "FFmpeg fehlt"); },
+        Help = "1. Beschreibe das Video: je Zeile eine Szene, z. B. „Ein Leuchtturm im Morgenlicht, Zoom rein, 5 s, Text: Guten Morgen, Sprecher: Am Meer beginnt der Tag.“ 2. „Szenen planen“. 3. „Schlüsselbilder malen“ (lokale Bild-KI) oder je Szene ein eigenes Bild wählen. 4. Optional je Szene „Mit Video-KI bewegen“: aus dem Schlüsselbild entsteht ein echter KI-Clip (Wan 2.2, lokal, einige Minuten je Szene). Sonst bewegt sich die Kamera über das Bild (Zoom, Schwenk). 5. Optional Musik wählen. 6. „Video bauen“ – mit Sprecher (lokale Stimme), Musik und Untertiteln, höchstens 60 Sekunden. Keine echten Personen, keine fremden Marken. Neben jedem Bild, Clip und Video liegt ein Herkunftsnachweis.",
     }, "video ki", "videos mit ki", "ki video", "video erzeugen", "text zu video", "ken burns", "diashow video", "kurzvideo", "erklärvideo", "kling");
 
     Control VideoAiWorkspace(ProgramDocument d)
@@ -294,7 +329,9 @@ public partial class MainWindow
         var sp = new StackPanel { Name = "video-workspace", Spacing = 12, Margin = new Thickness(4, 0, 10, 4) };
         var idea = KrBox(d, "idea", "video-idea", "Je Zeile eine Szene, z. B. „Ein Leuchtturm im Morgenlicht, Zoom rein, 5 s, Text: Guten Morgen“", true);
         idea.MinHeight = 110;
-        var plan = new Button { Name = "video-go-plan", Content = "Szenen planen", Padding = new Thickness(16, 7), IsEnabled = !_videoBusy }; plan.Classes.Add("accent");
+        var hasScenes = VideoScenes(d).Count > 0;
+        var plan = new Button { Name = "video-go-plan", Content = hasScenes ? "Szenen neu planen" : "Szenen planen", Padding = new Thickness(16, 7), IsEnabled = !_videoBusy };
+        if (!hasScenes) plan.Classes.Add("accent"); // genau eine goldene Hauptaktion: erst planen, danach „Video bauen“
         plan.Click += (_, _) => ProgramRun(VideoAiKey, () => VideoPlan(d));
         sp.Children.Add(KrCard(new StackPanel { Spacing = 8, Children = { H("Was soll im Video zu sehen sein?", 14), idea, plan } }, "video-idea-card"));
 
@@ -325,12 +362,30 @@ public partial class MainWindow
             var motion = new ComboBox { Name = $"video-s{idx}-motion", ItemsSource = VideoAiKit.Motions.Select(m => m.Label).ToList(), SelectedIndex = Math.Max(0, VideoAiKit.Motions.ToList().FindIndex(m => m.Id == s.Motion)), MinWidth = 170 };
             motion.SelectionChanged += (_, _) => { var m = VideoAiKit.Motions[Math.Max(0, motion.SelectedIndex)].Id; if (m != s.Motion) ProgramRun(VideoAiKey, () => VideoEditScene(d, idx, "Bewegung", o => o["motion"] = m)); };
             var caption = KrField(VideoAiKey, $"video-s{idx}-caption", s.Caption, "Einblendung (optional)", v => VideoEditScene(d, idx, "Einblendung", o => o["caption"] = KreativSafe.Cut(v, 200)));
+            var speech = KrField(VideoAiKey, $"video-s{idx}-speech", s.Speech, "Sprechertext (optional) – wird gesprochen und als Untertitel gezeigt", v => VideoEditScene(d, idx, "Sprechertext", o => o["speech"] = KreativSafe.Cut(v, VideoAiKit.MaxSpeech)), multi: true);
             var own = new Button { Name = $"video-s{idx}-own", Content = "Eigenes Bild …", Padding = new Thickness(8, 3) };
             own.Click += (_, _) => _ = VideoOwnImage(d, idx);
             var del = new Button { Name = $"video-s{idx}-del", Content = "Entfernen", Padding = new Thickness(8, 3), IsEnabled = !_videoBusy };
             del.Click += (_, _) => ProgramRun(VideoAiKey, () => d.Edit("Szene entfernt", x => { if (x["scenes"] is JsonArray a && idx < a.Count) a.RemoveAt(idx); }));
             var row2 = new WrapPanel { Children = { sec, new TextBlock { Text = "s", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 12, 0) }, motion, new Border { Width = 8 }, own, new Border { Width = 6 }, del } };
-            var right = new StackPanel { Spacing = 6, Children = { new TextBlock { Text = $"Szene {idx + 1}" + (s.Image.Length > 0 ? Js((d.List("scenes")[idx] as JsonObject)?["source"]) == "eigen" ? " · eigenes Bild" : " · KI-Bild" : ""), Foreground = Text, FontWeight = FontWeight.SemiBold }, prompt, row2, caption } };
+            if (s.Image.Length > 0 && VideoMoveReady)
+            {
+                var mv = new Button { Name = $"video-s{idx}-move", Content = s.Clip.Length > 0 ? "Neu bewegen" : "Mit Video-KI bewegen", Padding = new Thickness(8, 3), IsEnabled = !_videoBusy, Margin = new Thickness(6, 0, 0, 0) };
+                ToolTip.SetTip(mv, "Aus dem Schlüsselbild entsteht ein echter KI-Clip (Wan 2.2, lokal) – einige Minuten.");
+                mv.Click += (_, _) => _ = VideoMoveScene(d, idx);
+                row2.Children.Add(mv);
+            }
+            if (s.Clip.Length > 0)
+            {
+                var still = new Button { Name = $"video-s{idx}-still", Content = "Wieder Kamerafahrt", Padding = new Thickness(8, 3), IsEnabled = !_videoBusy, Margin = new Thickness(6, 0, 0, 0) };
+                still.Click += (_, _) => ProgramRun(VideoAiKey, () => VideoEditScene(d, idx, "Kamerafahrt", o => o["clip"] = ""));
+                var play = new Button { Name = $"video-s{idx}-play", Content = "Clip abspielen", Padding = new Thickness(8, 3), Margin = new Thickness(6, 0, 0, 0) }; var cp = s.Clip;
+                play.Click += (_, _) => Launch(cp);
+                row2.Children.Add(still); row2.Children.Add(play);
+            }
+            var kind = new TextBlock { Name = $"video-s{idx}-kind", Text = $"Szene {idx + 1} · {VideoAiKit.Kind(s)}" + (s.Image.Length > 0 && s.Clip.Length == 0 ? Js((d.List("scenes")[idx] as JsonObject)?["source"]) == "eigen" ? " (eigenes Bild)" : " (KI-Bild)" : ""), Foreground = s.Clip.Length > 0 ? Brush.Parse("#E5B53A") : Text, FontWeight = FontWeight.SemiBold };
+            var right = new StackPanel { Spacing = 6, Children = { kind, prompt, row2, caption, speech } };
+            if (s.Image.Length > 0 && s.Clip.Length == 0) right.Children.Add(VideoMotionStrip(s.Image, s.Motion, idx));
             list.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,14,*"), Children = { thumb, Pos(right, 2) } });
         }
         sp.Children.Add(KrCard(list, "video-scenes-card"));
@@ -342,13 +397,24 @@ public partial class MainWindow
             sp.Children.Add(cp);
         }
         var actions = new WrapPanel();
-        var paint = new Button { Name = "video-go-images", Content = _videoBusy ? "Arbeitet …" : "Bilder malen", Padding = new Thickness(14, 6), IsEnabled = !_videoBusy };
+        var paint = new Button { Name = "video-go-images", Content = _videoBusy ? "Arbeitet …" : "Schlüsselbilder malen", Padding = new Thickness(14, 6), IsEnabled = !_videoBusy };
         paint.Click += (_, _) => _ = VideoImages(d);
         var build = new Button { Name = "video-go-build", Content = _videoBusy ? "Arbeitet …" : "Video bauen", Padding = new Thickness(14, 6), Margin = new Thickness(8, 0, 0, 0), IsEnabled = !_videoBusy };
         build.Classes.Add("accent");
         build.Click += (_, _) => _ = VideoBuild(d);
-        actions.Children.Add(paint); actions.Children.Add(build);
+        var music = new Button { Name = "video-go-music", Content = d.Text("music").Length > 0 ? "Andere Musik …" : "Musik wählen …", Padding = new Thickness(14, 6), Margin = new Thickness(8, 0, 0, 0), IsEnabled = !_videoBusy };
+        music.Click += (_, _) => _ = VideoMusicPick(d);
+        actions.Children.Add(paint); actions.Children.Add(build); actions.Children.Add(music);
         sp.Children.Add(actions);
+        // ehrlich: was bewegt sich wie, was ist für Ton und KI-Video eingerichtet
+        var info = new StackPanel { Name = "video-tools", Spacing = 3 };
+        var voices = scenes.Count(x => x.Speech.Length > 0);
+        info.Children.Add(P((VideoMoveReady ? "✓ Video-KI (Wan 2.2) eingerichtet: Szenen mit „Mit Video-KI bewegen“ werden echte KI-Clips. " : "– Ohne Video-KI-Modell bewegt sich die Kamera über die Schlüsselbilder (Zoom, Schwenk, Überblendung) – das ist eine Bildfolge mit Kamerafahrt, kein KI-Video. ")
+            + $"{scenes.Count(x => x.Clip.Length > 0)} von {scenes.Count} Szenen sind KI-Clips.", VideoMoveReady ? K4Good : Muted, 12));
+        info.Children.Add(P(voices == 0 ? "Sprecher: keiner (je Szene „Sprechertext“ eintragen)." : VideoVoiceReady ? $"✓ Sprecher: {voices} Szene(n) mit lokaler Stimme, dazu Untertitel." : $"– Sprecher: {voices} Szene(n) mit Text, aber keine Stimme eingerichtet (KI-Bibliothek → „Vorlesen“). Untertitel kommen trotzdem.", voices > 0 && VideoVoiceReady ? K4Good : Muted, 12));
+        info.Children.Add(P(d.Text("music") is { Length: > 0 } mu ? "✓ Musik: " + Path.GetFileName(mu) : "Musik: keine (optional).", d.Text("music").Length > 0 ? K4Good : Muted, 12));
+        if (!VideoMoveReady) info.Children.Add(Nav2("Video-KI in der KI-Bibliothek …", "ki-bibliothek"));
+        sp.Children.Add(KrCard(info, "video-tools-card"));
         var videos = VideoList(d);
         if (videos.Count > 0)
         {
@@ -381,11 +447,61 @@ public partial class MainWindow
 
     // ---------------- KI-Agenten bauen ----------------
 
-    static JsonObject AgentDoc(AgentBlueprint a) => new()
+    static JsonObject AgentDoc(AgentBlueprint a, string goal = "") => new()
     {
         ["name"] = a.Name, ["description"] = a.Description, ["instructions"] = a.Instructions, ["tools"] = new JsonArray(a.Tools.Select(t => (JsonNode)t).ToArray()),
         ["examples"] = a.Examples, ["limits"] = a.Limits, ["probe"] = "", ["studio"] = "STUDIO-AGENTS-01",
+        // T-0698: Lauf in Trendo – Ziel, Trendo-Werkzeuge, Modell, Grenzen
+        ["goal"] = goal, ["runtools"] = new JsonArray("lesen", "schreiben"), ["model"] = "", ["maxsteps"] = "12", ["maxmin"] = "10",
     };
+
+    /// <summary>T-0698: Agent für den Lauf in Trendo aus dem Dokument. Ältere Dokumente ohne Lauf-Felder bekommen „lesen + schreiben“, 12 Schritte, 10 Minuten.</summary>
+    static AgentDefinition AgentDefOf(ProgramDocument d)
+    {
+        var old = d.Text("maxsteps").Length == 0;
+        List<string> tools = old ? ["lesen", "schreiben"] : d.List("runtools").Select(Js).Where(t => t.Length > 0).Distinct().ToList();
+        var name = d.Text("name").Trim();
+        var instr = d.Text("instructions").Trim() + (d.Text("limits").Trim() is { Length: > 0 } lim ? "\n\nGrenzen:\n" + lim : "");
+        return new AgentDefinition
+        {
+            Id = AgentBlueprint.Slug(name), Name = name, Goal = d.Text("goal").Trim(), Instructions = instr, Tools = tools, Model = d.Text("model"),
+            MaxSteps = int.TryParse(d.Text("maxsteps", "12"), out var s) ? s : -1, MaxMinutes = int.TryParse(d.Text("maxmin", "10"), out var m) ? m : -1,
+        };
+    }
+
+    /// <summary>T-0698: „Agent starten“ – erst prüfen und speichern (Fehler als Meldung), dann im Hintergrund laufen lassen; das Protokoll erscheint live rechts.</summary>
+    void AgentStart(ProgramDocument d)
+    {
+        if (AgentRunning) throw new InvalidOperationException("Es läuft schon ein Agent. Erst „Stopp“ oder warten.");
+        var def = AgentDefOf(d);
+        if (def.Name.Length == 0) throw new InvalidOperationException("Gib dem Agenten oben einen Kurznamen.");
+        if (def.Goal.Length == 0) throw new InvalidOperationException("Schreib unter „Ziel des Laufs“, was der Agent erreichen soll.");
+        def = Agents.SaveDefinition(def);
+        _progMsg[AgentsKey] = $"Agent „{def.Name}“ läuft – das Protokoll steht rechts. Mit „Stopp“ hältst du ihn an.";
+        AgentTask0 = AgentRunUi(def);
+    }
+
+    /// <summary>Für Tests: der zuletzt gestartete Lauf aus „KI-Agenten bauen“.</summary>
+    public Task? AgentTask0 { get; private set; }
+
+    async Task AgentRunUi(AgentDefinition def)
+    {
+        try
+        {
+            var task = StartAgentAsync(def, AgentsKey); Show(AgentsKey);
+            var r = await task;
+            _progMsg[AgentsKey] = (r.State == AgentRunState.Fertig ? "✓ " : "⚠ ") + $"Agent {AgentCenter.StateLabel(r.State)} nach {r.Steps} Schritten. Ergebnis im Projekt: {r.ResultFile}";
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or ArgumentException or ProjectIsolationException or IOException) { _progMsg[AgentsKey] = "✕ " + FriendlyError.Say(ex); }
+        Show(AgentsKey);
+    }
+
+    /// <summary>Gespeicherten Agenten ins offene Dokument laden (Lauf-Felder und Anweisungen).</summary>
+    static void AgentLoad(ProgramDocument d, AgentDefinition a) => d.Edit($"Agent „{a.Name}“ geladen", x =>
+    {
+        x["name"] = a.Name; x["goal"] = a.Goal; x["instructions"] = a.Instructions; x["model"] = a.Model;
+        x["runtools"] = new JsonArray(a.Tools.Select(t => (JsonNode)t).ToArray()); x["maxsteps"] = a.MaxSteps.ToString(); x["maxmin"] = a.MaxMinutes.ToString();
+    });
 
     static AgentBlueprint AgentOf(ProgramDocument d) => new(d.Text("name").Trim(), d.Text("description").Trim(), d.Text("instructions"), d.List("tools").Select(Js).Where(t => t.Length > 0).Distinct().ToList(), d.Text("examples"), d.Text("limits"));
 
@@ -462,18 +578,22 @@ public partial class MainWindow
 
     private void InitAgentsStudio() => RegisterProgram(FachTabs, new ProgramSpec(AgentsKey, "STUDIO-AGENTS-01", "KI-Agenten bauen")
     {
-        Sentence = "Eigene KI-Helfer entwerfen: Aufgabe, Anweisungen, erlaubte Werkzeuge, Beispiele und Grenzen – als Claude-Code-Agent oder als Rolle im KI-Team.",
+        Sentence = "Eigene KI-Agenten bauen und in Trendo laufen lassen: Ziel, erlaubte Werkzeuge, Modell und Grenzen – mit Protokoll, Stopp und Zustimmung bei allem, was nach außen geht. Auch als Claude-Code-Agent oder Rolle im KI-Team.",
         Folder = "KI-Agenten",
         ScrollWorkspace = true,
         Templates =
         [
             new("leer", "Neuer Helfer", "Alles selbst beschreiben", () => AgentDoc(new("", "", "", ["lesen"]))),
-            new("beispiel", "Beispiel: Briefe prüfen", "Liest Briefe und macht Vorschläge", () => AgentDoc(AgentSample)),
+            new("beispiel", "Beispiel: Briefe prüfen", "Liest Briefe und macht Vorschläge", () => AgentDoc(AgentSample, "Lies brief.md im Projekt und schreib deine Verbesserungsvorschläge als Liste in vorschlaege.md.")),
         ],
         Ribbon =
         [
+            ("Lauf", [
+                new ProgramCmd("agent-start", "Agent starten", AgentStart, Primary: true, Tip: "Speichert den Agenten und lässt ihn in Trendo arbeiten: Plan → Werkzeug → Ergebnis, jeder Schritt im Protokoll."),
+                new ProgramCmd("agent-stop", "Stopp", _ => { if (!AgentRunning) throw new InvalidOperationException("Gerade läuft kein Agent."); StopAgent(); _progMsg[AgentsKey] = "Agent wird angehalten …"; }, Tip: "Hält den laufenden Agenten sofort an. Was er bis dahin geschrieben hat, bleibt."),
+            ]),
             ("Helfer", [
-                new ProgramCmd("agent-check", "Prüfen", AgentCheck, Primary: true, Tip: "Kurzname, Pflichtfelder, Werkzeuge und ob ein Schlüssel im Text steht."),
+                new ProgramCmd("agent-check", "Prüfen", AgentCheck, Tip: "Kurzname, Pflichtfelder, Werkzeuge und ob ein Schlüssel im Text steht."),
                 new ProgramCmd("agent-slug", "Kurzname vorschlagen", d => { var s = AgentBlueprint.Slug(d.Text("name")); if (s.Length < 3) throw new InvalidOperationException("Schreib zuerst einen Namen."); d.Set("name", s, "Kurzname"); }),
                 new ProgramCmd("agent-import", "Agent-Datei öffnen …", d => _ = AgentImport(d), Tip: "Liest einen vorhandenen Claude-Code-Agenten (.md) ein."),
             ]),
@@ -497,7 +617,7 @@ public partial class MainWindow
         Workspace = AgentsWorkspace,
         Properties = AgentsProperties,
         Status = d => { var f = AgentOf(d).Check(); var e = f.Count(x => x.Error); return (e == 0 ? "Vollständig" : $"{e} offen") + $" · {AgentOf(d).Tools.Count} Werkzeuge · {AgentOf(d).ToClaudeMarkdown().Length:N0} Zeichen"; },
-        Help = "Gib dem Helfer einen Kurznamen (klein, mit Bindestrichen), schreib in einem Satz, wofür er da ist, und darunter, wie er arbeiten soll. Wähle nur die Werkzeuge, die er wirklich braucht – „Befehle ausführen“ nur mit Vorsicht. Schreib nie Passwörter oder Schlüssel hinein. „Prüfen“ zeigt, was fehlt. Gespeichert wird erst, wenn du einen Projektordner wählst; vorhandene Dateien bleiben.",
+        Help = "Agent starten: Kurzname und Ziel eintragen, Werkzeuge in Trendo ankreuzen, oben „Agent starten“ – rechts siehst du jeden Schritt; „Stopp“ hält ihn an, das Ergebnis liegt als Datei im Projekt des Agenten. Gib dem Helfer einen Kurznamen (klein, mit Bindestrichen), schreib in einem Satz, wofür er da ist, und darunter, wie er arbeiten soll. Wähle nur die Werkzeuge, die er wirklich braucht – „Befehle ausführen“ nur mit Vorsicht. Schreib nie Passwörter oder Schlüssel hinein. „Prüfen“ zeigt, was fehlt. Gespeichert wird erst, wenn du einen Projektordner wählst; vorhandene Dateien bleiben.",
     }, "agent", "agenten", "ki agent", "subagent", "eigener helfer", "assistent bauen", "claude agent", "ki helfer", "agent erstellen", "agenten bauen");
 
     Control AgentsWorkspace(ProgramDocument d)
@@ -533,7 +653,49 @@ public partial class MainWindow
         Box("examples", "Beispiele (optional)", "Eingabe und gute Antwort", true);
         Box("limits", "Grenzen", "Was der Helfer nie tun soll, z. B. nichts löschen, nichts senden.", true);
 
+        // T-0698: Lauf in Trendo – Ziel, Werkzeuge als Häkchen (feste Liste), Modell, Grenzen
+        var def = AgentDefOf(d);
+        var run = new StackPanel { Name = "agent-run-form", Spacing = 6 };
+        run.Children.Add(H("In Trendo ausführen", 14));
+        if (def.Name.Length == 0 || def.Goal.Length == 0)
+            run.Children.Add(new Border { Name = "agent-first-step", Padding = new Thickness(10, 8), CornerRadius = new CornerRadius(8), BorderBrush = Brush.Parse("#C9A227"), BorderThickness = new Thickness(1), Background = Brush.Parse("#22C9A227"),
+                Child = P(def.Name.Length == 0 ? "Erster Schritt: Gib dem Agenten oben einen Kurznamen und schreib hier sein Ziel – dann oben „Agent starten“." : "Nächster Schritt: Schreib hier das Ziel des Laufs – dann oben „Agent starten“.", Text, 12.5) });
+        run.Children.Add(P("Ziel des Laufs", def.Goal.Length == 0 ? WarnBrush : Text, 12));
+        var goalBox = KrBox(d, "goal", "agent-goal-run", "Was soll der Agent erreichen? z. B. „Lies notizen.md und schreib daraus eine Aufgabenliste aufgaben.md“", true); goalBox.MinHeight = 60;
+        run.Children.Add(goalBox);
+        run.Children.Add(P("Werkzeuge in Trendo (nur diese darf er benutzen)", def.Tools.Count == 0 ? ErrBrush : Text, 12));
+        var rt = new WrapPanel { Name = "agent-runtools" };
+        foreach (var t in AgentTools.All)
+        {
+            var tid = t.Id;
+            var cb = new CheckBox { Name = "agent-runtool-" + t.Id, Content = t.Label + (t.External ? " · nur mit Zustimmung" : ""), IsChecked = def.Tools.Contains(t.Id), Margin = new Thickness(0, 0, 14, 0) };
+            ToolTip.SetTip(cb, t.Help);
+            cb.IsCheckedChanged += (_, _) => ProgramRun(AgentsKey, () => d.Edit("Werkzeuge in Trendo", x =>
+            {
+                var cur = AgentDefOf(d).Tools.ToList();
+                if (cb.IsChecked == true) { if (!cur.Contains(tid)) cur.Add(tid); } else cur.Remove(tid);
+                x["runtools"] = new JsonArray(AgentTools.All.Where(z => cur.Contains(z.Id)).Select(z => (JsonNode)z.Id).ToArray());
+                if (x["maxsteps"] is null) { x["maxsteps"] = "12"; x["maxmin"] = "10"; }
+            }));
+            rt.Children.Add(cb);
+        }
+        run.Children.Add(rt);
+        var models = new[] { ("", "Haupt-KI von Trendo"), ("lokal", "Nur KI auf diesem PC"), ("claude", "Claude (dein Abo)") };
+        var model = new ComboBox { Name = "agent-model", ItemsSource = models.Select(m => m.Item2).ToList(), SelectedIndex = Math.Max(0, Array.FindIndex(models, m => m.Item1 == (def.Model.StartsWith("lokal", StringComparison.Ordinal) ? "lokal" : def.Model))), MinWidth = 200 };
+        model.SelectionChanged += (_, _) => { var v = models[Math.Max(0, model.SelectedIndex)].Item1; if (v != d.Text("model")) ProgramRun(AgentsKey, () => d.Set("model", v, "Modell")); };
+        var steps = KrBox(d, "maxsteps", "agent-maxsteps", "Schritte"); steps.Width = 70;
+        var mins = KrBox(d, "maxmin", "agent-maxmin", "Minuten"); mins.Width = 70;
+        run.Children.Add(new WrapPanel { Children = {
+            new StackPanel { Spacing = 2, Margin = new Thickness(0, 0, 14, 0), Children = { P("Modell", Muted, 11), model } },
+            new StackPanel { Spacing = 2, Margin = new Thickness(0, 0, 14, 0), Children = { P("Höchstens Schritte", Muted, 11), steps } },
+            new StackPanel { Spacing = 2, Children = { P("Höchstens Minuten", Muted, 11), mins } } } });
+        run.Children.Add(P("Der Agent arbeitet nur in seinem eigenen Projekt. Etwas nach außen geben (Datei hinauskopieren, Studio-Aktion mit Wirkung) passiert nur, wenn du im Lauf zustimmst. E-Mails werden nur als Entwurf abgelegt, nie gesendet.", Muted, 11));
+        // Lauf oben, damit der erste Schritt im Leerzustand sofort sichtbar ist; darunter die Beschreibung als Claude-Code-Agent
+        form.Children.Insert(2, run); // nach „Kurzname“
+        form.Children.Insert(3, new Border { Height = 1, Background = Brush.Parse("#33FFFFFF"), Margin = new Thickness(0, 8) });
+
         var right = new StackPanel { Name = "agent-preview", Spacing = 6 };
+        right.Children.Add(AgentRunView(def));
         right.Children.Add(H("Prüfung", 14));
         if (findings.Count == 0) right.Children.Add(P("✓ Alles vollständig.", OkBrush, 12));
         foreach (var f in findings) right.Children.Add(P((f.Error ? "✕ " : "⚠ ") + f.Message, f.Error ? ErrBrush : WarnBrush, 12));
@@ -542,9 +704,73 @@ public partial class MainWindow
         return new Grid { ColumnDefinitions = new ColumnDefinitions("3*,14,2*"), Margin = new Thickness(4, 0, 10, 4), Children = { KrCard(form, "agent-card"), Pos(KrCard(right, "agent-preview-card"), 2) } };
     }
 
+    /// <summary>T-0698: Lauf-Ansicht – Zustand, Stopp, offene Freigabe (Ja/Nein), Protokoll live, Ergebnisdatei.</summary>
+    Control AgentRunView(AgentDefinition def)
+    {
+        var sp = new StackPanel { Name = "agent-run-view", Spacing = 4 };
+        sp.Children.Add(H("Lauf", 14));
+        var live = AgentLive is { } l && l.AgentId == def.Id ? l : null;
+        var last = live ?? (def.Id.Length > 0 ? Agents.Runs(def.Id, 1).FirstOrDefault() : null);
+        if (last is null) { sp.Children.Add(P("Noch kein Lauf. Ziel eintragen, Werkzeuge wählen, dann oben „Agent starten“.", Muted, 12)); return sp; }
+        var running = AgentRunning && live is not null && live.State == AgentRunState.Laeuft;
+        sp.Children.Add(new TextBlock { Name = "agent-run-state", Text = running ? $"läuft · Schritt {last.Steps} von höchstens {def.MaxSteps}" : $"{AgentCenter.StateLabel(last.State)} · {last.Steps} Schritte · {last.Started:dd.MM. HH:mm}" + (last.Backend is null ? "" : $" · {last.Backend}{(last.Model is null ? "" : " (" + last.Model + ")")}"),
+            Foreground = last.State switch { AgentRunState.Fertig => OkBrush, AgentRunState.Fehler => ErrBrush, AgentRunState.Laeuft => Text, _ => WarnBrush }, FontSize = 12.5, TextWrapping = TextWrapping.Wrap });
+        if (running)
+        {
+            var stop = new Button { Name = "agent-run-stop", Content = "■ Stopp", Padding = new Thickness(10, 3) };
+            stop.Click += (_, _) => { StopAgent(); _progMsg[AgentsKey] = "Agent wird angehalten …"; Show(AgentsKey); };
+            sp.Children.Add(stop);
+        }
+        if (running && AgentAsking is { } ask)
+        {
+            var yes = new Button { Name = "agent-approve-yes", Content = "Zustimmen", Padding = new Thickness(10, 3) };
+            var no = new Button { Name = "agent-approve-no", Content = "Ablehnen", Padding = new Thickness(10, 3), Margin = new Thickness(6, 0, 0, 0) };
+            yes.Click += (_, _) => { AnswerAgentApproval(true); Show(AgentsKey); };
+            no.Click += (_, _) => { AnswerAgentApproval(false); Show(AgentsKey); };
+            sp.Children.Add(new Border { Name = "agent-approve", Padding = new Thickness(10, 8), CornerRadius = new CornerRadius(8), BorderBrush = WarnBrush, BorderThickness = new Thickness(1),
+                Child = new StackPanel { Spacing = 4, Children = { P("Der Agent möchte etwas nach außen geben:", Text, 12), P(ask.Description, Text, 12), P(ask.Preview ?? "", Muted, 11), new StackPanel { Orientation = Orientation.Horizontal, Children = { yes, no } } } } });
+        }
+        var log = new StackPanel { Name = "agent-log", Spacing = 2 };
+        List<AgentLogEntry> entries; lock (last) entries = [.. last.Log];
+        var i = 0;
+        foreach (var e in entries.TakeLast(40))
+        {
+            var icon = e.Kind switch { "werkzeug" => "🔧", "ergebnis" => "✓", "blockiert" => "⛔", "freigabe" => "❓", "fehler" => "✕", "fertig" => "🏁", "stopp" => "■", "grenze" => "⏱", "start" => "▶", _ => "💭" };
+            var brush = e.Kind switch { "blockiert" or "fehler" => ErrBrush, "freigabe" or "grenze" or "stopp" => WarnBrush, "fertig" or "ergebnis" => OkBrush, _ => Text };
+            log.Children.Add(new SelectableTextBlock { Name = $"agent-log-{i++}", Text = $"{e.At:HH:mm:ss}  {icon} {e.Text}", Foreground = brush, FontSize = 11.5, TextWrapping = TextWrapping.Wrap, MaxHeight = 120 });
+        }
+        sp.Children.Add(new ScrollViewer { Content = log, MaxHeight = 320 });
+        if (last.ResultFile is { } rf && !running)
+        {
+            string? full = null; try { full = _core.Projects.ResolveInProject(last.ProjectId, rf); } catch (ProjectIsolationException) { }
+            sp.Children.Add(new SelectableTextBlock { Name = "agent-run-result", Text = "Ergebnis: " + (full ?? rf), Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap });
+            if (last.FilesWritten.Count > 0) sp.Children.Add(P("Geschriebene Dateien: " + string.Join(", ", last.FilesWritten.Distinct()), Muted, 11));
+        }
+        return sp;
+    }
+
     Control AgentsProperties(ProgramDocument d)
     {
         var sp = new StackPanel { Spacing = 4 };
+        // T-0698: Liste der gespeicherten Agenten – laden, letzter Lauf, entfernen (Zeitplan/Auslöser: in „Abläufe“ den Baustein „Agent ausführen“ wählen)
+        sp.Children.Add(H("Deine Agenten", 13));
+        var defs = Agents.Definitions();
+        if (defs.Count == 0) sp.Children.Add(P("Noch keiner gespeichert – „Agent starten“ speichert ihn automatisch.", Muted, 11));
+        var k = 0;
+        foreach (var a in defs)
+        {
+            var n = k++; var lastRun = Agents.Runs(a.Id, 1).FirstOrDefault();
+            var load = new Button { Name = $"agent-list-load-{n}", Content = "Laden", Padding = new Thickness(6, 1), FontSize = 11 };
+            load.Click += (_, _) => ProgramRun(AgentsKey, () => { if (ProgramActive(AgentsKey) is { } doc) AgentLoad(doc, a); });
+            var del = new Button { Name = $"agent-list-del-{n}", Content = "Entfernen", Padding = new Thickness(6, 1), FontSize = 11, Margin = new Thickness(4, 0, 0, 0) };
+            del.Click += (_, _) => ProgramRun(AgentsKey, () => { Agents.RemoveDefinition(a.Id); _progMsg[AgentsKey] = $"Agent „{a.Name}“ entfernt. Sein Projekt mit den Ergebnissen bleibt."; });
+            sp.Children.Add(new Border { Name = $"agent-list-{n}", Padding = new Thickness(8, 6), CornerRadius = new CornerRadius(6), Background = Brush.Parse("#18FFFFFF"), Margin = new Thickness(0, 0, 0, 4),
+                Child = new StackPanel { Spacing = 2, Children = {
+                    new TextBlock { Text = a.Name, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold },
+                    P(string.Join(", ", a.Tools.Select(AgentTools.Label)) + (lastRun is null ? " · noch nie gelaufen" : $" · zuletzt {AgentCenter.StateLabel(lastRun.State)} ({lastRun.Started:dd.MM. HH:mm})"), Muted, 10.5),
+                    new StackPanel { Orientation = Orientation.Horizontal, Children = { load, del } } } } });
+        }
+        sp.Children.Add(P("Zeitplan oder „neue Datei“: unter „Abläufe“ den Baustein „Agent ausführen“ anhängen.", Muted, 11));
         sp.Children.Add(H("Ausprobieren", 13));
         var probe = KrBox(d, "probe", "agent-p-probe", "Was soll der Helfer zum Test tun?", true); probe.MinHeight = 70;
         sp.Children.Add(probe);

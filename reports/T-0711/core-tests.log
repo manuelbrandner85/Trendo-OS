@@ -1,0 +1,256 @@
+Testlauf für "C:SERS<USER>\AppData\Local\Temp\trendo-auftrag-T-0711\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+C:SERS<USER>\AppData\Local\Temp\trendo-auftrag-T-0711\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.12]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:00.94]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:00.99]   Starting:    Trendo.Core.Tests
+  Bestanden SYS-08: .onion nur Tor Browser, andere Schemata und Heimnetz abgelehnt, Webseiten im Lesemodus [10 ms]
+  Bestanden V-07 (T-0700): die KI-Eingabe wird nie zum Ordnerfeld, auch wenn ihr Satz „Ordner“ enthält [10 ms]
+  Bestanden Konsole: Aufträge nennen den Schritt und verbieten das Beschaffen von Spielen und das Hochladen; unbekannte Schritte werden abgelehnt [15 ms]
+  Bestanden SYS-09 F2: Datum, Monatsname, Wochentag und morgen erkennen – mit Uhrzeit [16 ms]
+  Bestanden A2: Die KI bekommt passende Techniken aus dem Verzeichnis, gekürzt auf ganze Einträge [20 ms]
+  Bestanden CORE-12: Platzhalter mit Standardwert ausfüllen, fehlende werden genannt [26 ms]
+  Bestanden U4: Prüfschleife – Urteil lesen, Schwelle, Prompt mit Mängeln nachbessern, Abbruch bei bestanden; ohne Bewerter ehrlich ungeprüft [14 ms]
+  Bestanden Ersatz-KI: Auftrag im Agenten-Format mit Werkzeug-Regel; Zusammenfassung aus JSON, sonst der Text [35 ms]
+  Bestanden Mailprogramm: verschachtelte MIME-Mail – Text aus multipart/alternative, Anhang mit Name/Art/Inhalt, Cc und kodierter Betreff [39 ms]
+  Bestanden Neue-Seite-Auftrag: KI soll die ganze Seite über bausteine ohne „in“ liefern [22 ms]
+  Bestanden Nachfrage bei abgelehntem Plan: nennt Meldung und eigenen Plan, kürzt sehr lange Antworten [< 1 ms]
+  Bestanden X-10: Sauberer Nachbau – gleicher Code hat Ähnlichkeit 1, eigener Code mit anderer Struktur niedrig; Vergleich meldet nur Dateien über der Schwelle [41 ms]
+  Bestanden T-0689 MIME lesen: ISO-8859-1/Windows-1252 (Quoted-Printable und 8bit), RFC-2231-Dateiname, geteilte kodierte Wörter, Pfad im Anhangsnamen entschärft, eingebettetes Bild [45 ms]
+  Bestanden S4-04-N: kaputte MIDI-Daten → Warnung statt Absturz; ohne Kopf kein Ergebnis (offenes Stück bleibt), abgeschnittene Datei liefert, was lesbar ist [27 ms]
+[xUnit.net 00:00:01.09]     SYS-09: Entwurf als .eml (Umlaute korrekt, X-Unsent) und mailto; Prüfung findet Fehler [FAIL]
+[xUnit.net 00:00:01.09]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:01.09]                             ↓ (pos 11)
+[xUnit.net 00:00:01.09]       Expected: "Hallo Anna,\r\nanbei das Foto."
+[xUnit.net 00:00:01.09]       Actual:   "Hallo Anna,\nanbei das Foto."
+[xUnit.net 00:00:01.09]                             ↑ (pos 11)
+[xUnit.net 00:00:01.09]       Stack Trace:
+[xUnit.net 00:00:01.09]         C:SERS<USER>\AppData\Local\Temp\trendo-auftrag-T-0711\tests\Trendo.Core.Tests\W3Tests.cs(212,0): at Trendo.Core.Tests.SYS09_Mail.Draft()
+[xUnit.net 00:00:01.09]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:01.09]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler SYS-09: Entwurf als .eml (Umlaute korrekt, X-Unsent) und mailto; Prüfung findet Fehler [4 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+                      ↓ (pos 11)
+Expected: "Hallo Anna,\r\nanbei das Foto."
+Actual:   "Hallo Anna,\nanbei das Foto."
+                      ↑ (pos 11)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.SYS09_Mail.Draft() in C:SERS<USER>\AppData\Local\Temp\trendo-auftrag-T-0711\tests\Trendo.Core.Tests\W3Tests.cs:line 212
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Bestanden SYS-09: Eingegangene E-Mail (multipart, quoted-printable) wird lesbar [1 ms]
+  Bestanden T-0225 Sicherheit: eigene Dokumente („Wissen“) gehen nie an einen KI-Dienst außerhalb des PCs [85 ms]
+  Bestanden CORE-02: Rückfall auf die nächste Quelle, Wissen wird eingebaut, Inhalt nicht ins Protokoll [75 ms]
+  Bestanden U3: Strategien aus dem Auftrag, Plan endet mit Abnahme; Lauf bessert nach Mängeln nach und protokolliert [62 ms]
+  Bestanden U2: Rat-Modus wählt passend zum Auftrag (1/3/6), bevorzugt die eigene Engine und lässt fremde Engine-Spezialisten weg [2 ms]
+  Bestanden Mailprogramm: Entwürfe speichern/ersetzen/löschen (leere nicht), Gesendet ablegen entfernt den Entwurf; alles bleibt nach Neustart [58 ms]
+  Bestanden K1: Ein ausgewählter Bereich schließt seinen Inhalt ein; Auftrag zeigt der KI nur die Auswahl [57 ms]
+  Bestanden U6: Befehle /bild /sprite /modell /musik /sprache /video, mit Start/Ende-Modus; normaler Text ist kein Befehl [1 ms]
+  Bestanden Seitenbeschreibung für Claude: Programm, Markierung, Felder, Auswahl, Knöpfe und die Regel zum Bedienen [4 ms]
+  Bestanden U5: Spritesheet-Raster, Zellen und Prompt für die lokale Bild-KI [14 ms]
+  Bestanden X-10: Ähnlichkeit erkennt kopierten Code trotz Umbenennen, eigener Code bleibt unauffällig [5 ms]
+  Bestanden SYS-08: Lesetext ohne Skripte und Formulare, Links absolut; Sitzung flüchtig [106 ms]
+  Bestanden Mailprogramm: Unterhaltungen ohne Re:/AW:/WG:-Präfixe; Allen antworten ohne eigene Adresse; Zitat und Betreff ohne gestapelte Präfixe [23 ms]
+  Bestanden U1: über 50 Spiele-Fachrollen, eindeutig, jede mit Auftrag, drei Leitlinien, Grenze und Stichwörtern; deutsche Anweisung [11 ms]
+  Bestanden CORE-12: Versionen speichern und zurückholen, Mitgelieferte nicht löschbar [104 ms]
+  Bestanden CORE-12: Qualitätsprüfung erkennt kurze Aufträge, Geheimnisse, offene Platzhalter; Masterprompt hat Regeln [2 ms]
+  Bestanden CORE-10: Suche findet Wissen trotz Umlauten und Mehrzahl, bleibt nach Neustart erhalten [136 ms]
+  Bestanden Suno V6: Anweisungen an die Text-KI enthalten Zeile, Nachbarn, Silbenzahl und Texter-Beispiele; Antworten werden bereinigt [12 ms]
+  Bestanden SYS-09: Kontakte speichern, vCard ein- und ausgeben, ungültige Adresse abgelehnt [79 ms]
+  Bestanden Bibliothek: Jeder Auftrag verbietet den Nachbau bestehender Spiele [4 ms]
+  Bestanden V3: Zuletzt geöffnet je Studio, neueste zuerst, nur vorhandene Dateien [68 ms]
+  Bestanden Trendo.Core.Tests.LicensingTests.Keine_Owner_Mail_und_kein_privater_Schluessel_im_Client [20 ms]
+  Bestanden T-0309: Zitierstile, Literaturliste ohne Doppelte, Zitat mit Quelle, Bericht mit Zitaten und Literatur; Sitzungsende löscht Markierungen [137 ms]
+  Bestanden Claude-Verbindung: Skill-Paket als ZIP mit SKILL.md je Fachregel; ohne Fachregeln klare Meldung [36 ms]
+  Bestanden X-10: Projekt mit Rollen-Ordnern, Tagebuch, Vergleich zweier Ordner und Prüfbericht [68 ms]
+  Bestanden Chat: Auftrag an die KI enthält Spiel, Abschnitt, Verlauf und Wunsch [19 ms]
+  Bestanden V3: Speichern und Öffnen; falsches Studio und kaputte Datei werden abgelehnt; kein Programmname in der Datei [27 ms]
+  Bestanden Song-Cover: Motiv passt zum Genre (Jazz, Rock, Elektro, Hip-Hop, Klassik, Lo-Fi vor Pop), Stimmung kommt dazu, Bildgestaltung wechselt, nie Schrift oder Logos [7 ms]
+  Bestanden S4-04 echt: MIDI-Datei auf Platte, von FFmpeg als MIDI erkannt (wenn vorhanden), SHA-256 gleich nach erneutem Speichern [143 ms]
+  Bestanden E-Mail-Entwurf mit Anhang: multipart/mixed, PDF als base64, Entwurf (X-Unsent) – ohne Anhang bleibt es einfacher Text [9 ms]
+  Bestanden CORE-10: Korrektur wird Wissen und fließt in die nächste KI-Antwort [72 ms]
+  Bestanden Vorschläge: Arbeitsblöcke für fällige Aufgaben (nicht doppelt), Aufgaben aus E-Mail-Betreffen mit Frist oder Bitte [39 ms]
+  Bestanden T-0317: Für Claude Code – passende Skills landen als .claude/skills/trendo-<id>/SKILL.md mit name und description im Projektordner [35 ms]
+  Bestanden T-0317: Skill-Datei lesen – Kopf optional, Name aus der Überschrift, Studios-Liste, Checkliste endet an der nächsten Überschrift [1 ms]
+  Bestanden S4-04-P: Piano-Roll bearbeiten (setzen, löschen, quantisieren, transponieren), als MIDI speichern und identisch wieder öffnen – auch Dateien eines anderen Schreibers [29 ms]
+  Bestanden Notiz-Wiki: Löschen legt die Seite in den Papierkorb des Wissens, Wiederherstellen holt sie zurück – auch nach einem Neustart [42 ms]
+  Bestanden CORE-10: Ordner einlesen nur Textdateien, keine Doppelten [22 ms]
+  Bestanden V3: Automatisches Sichern – neben der Datei bzw. im Sicherungsordner, Wiederherstellen, Speichern räumt auf [42 ms]
+  Bestanden V3: Änderungen rückgängig und wiederholen; keine Änderung = kein Schritt [1 ms]
+  Bestanden T-0317: Skill aus vertrauter Quelle – nur Text bis 100 KB, Herkunft und Lizenz bleiben am Skill, Audit; entfernbar [20 ms]
+  Bestanden Notiz-Wiki: [[Links]] und [[Titel|Anzeige]] erkennen, Text in Stücke zerlegen, Rückverweise und fehlende Seiten [26 ms]
+  Bestanden T-0309: Markieren schneidet Leerzeichen ab, gleiche Stelle ersetzt Farbe/Notiz, falsche Auswahl abgewiesen, Abschnitte für die Anzeige [84 ms]
+  Bestanden T-0689 Seitenweise: 120 Nachrichten in Seiten zu 50 (neueste zuerst), Nachladen ohne Lücke und ohne Doppelte [232 ms]
+  Bestanden Skill als Datei weitergeben: eigener Skill wird SKILL.md-Datei, eine andere Person lädt ihn mit Herkunft; falsche Datei und zu groß werden abgelehnt [40 ms]
+  Bestanden T-0698 Werkzeuge: E-Mail nur als Entwurf (.eml, nie gesendet), Web nur im Lesemodus – Heimnetz abgewiesen [283 ms]
+  Bestanden Skill prüfen wie Claude Skills/GPTs: fehlende Beschreibung, zu kurze Regeln, zu wenig Prüfpunkte, zu langer Name; mitgelieferte Skills sind ohne Hinweis [1 ms]
+  Bestanden Notiz-Wiki: Seite ändern, Umbenennen passt Verweise anderer Seiten an (Anzeige bleibt), doppelter Titel wird abgelehnt [35 ms]
+  Bestanden T-0711 Dateiformate: alte Dateien der neu angeschlossenen Programme bleiben lesbar (Spiel-Einstellungen, Wissen, Vorlagen/Skills), Speichern atomar [89 ms]
+  Bestanden T-0317: Passende Skills je Seite/Studio; Fachregeln für die KI gekürzt; Checkliste ohne Doppelte; eigene Skills zuerst [11 ms]
+  Bestanden T-0689 MIME schreiben: lange Betreffzeile mit Umlauten gefaltet (≤ 76 je Zeile) und verlustfrei; Namen in Adressen kodiert; Ordnernamen (UTF-7) hin und zurück [13 ms]
+  Bestanden T-0317: Mitgelieferte Skills – neun Fachgebiete, jedes mit Beschreibung, Studios und mindestens fünf prüfbaren Checklisten-Punkten [1 ms]
+  Bestanden T-0689 Beleg: gebaute Nachricht für den Fremdleser schreiben (nur mit TRENDO_MAIL_BELEG) [< 1 ms]
+  Bestanden T-0317: Eigene Skills – anlegen, als neue Version ändern, wiederherstellen, löschen (über die vorhandene Prompt-Bibliothek) [38 ms]
+  Bestanden Blender ja startet Blender nicht [217 ms]
+  Bestanden Download ohne Wunsch und offline holt nichts [173 ms]
+  Bestanden Ohne Datei gibt es kein bestandenes Ergebnis [38 ms]
+  Bestanden T-0689 HTML sicher: Skripte, Ereignis-Attribute, javascript:-Links, Rahmen, Formulare und Stilangaben fallen weg; Bilder aus dem Internet erst nach Freigabe [117 ms]
+  Bestanden Ablauf startet auch mit Freigabe im Text nichts [51 ms]
+  Bestanden Recherche liest nur eine erlaubte Seite und offline nichts [114 ms]
+  Bestanden Fahrtkosten rechnen 1.200 Euro und buchen nichts [55 ms]
+  Bestanden Geräte werden gelesen und nicht gestartet [48 ms]
+  Bestanden Zwei Projekte tauschen weder Dateien noch Anhänge [58 ms]
+  Bestanden Scan erzeugt auch mit Freigabe keine Punktwolke [43 ms]
+  Bestanden Prüfung schreibt das Protokoll und öffnet den Explorer nicht [126 ms]
+  Bestanden Hochladen veröffentlicht keine Mediendatei [67 ms]
+  Bestanden T-0689 Rundreise über TLS: senden (STARTTLS, Anhänge, Umlaute, Blindkopie) → abrufen → Anhang bytegleich; gelesen, Stern, verschieben, suchen, Papierkorb, endgültig löschen, ablegen [335 ms]
+  Bestanden T-0689 TLS-Pflicht beim Senden: bietet der Server kein STARTTLS, bricht Trendo ab, bevor das Passwort gesendet wird [8 ms]
+  Bestanden Abgelaufene Freigabe sendet nichts [104 ms]
+  Bestanden Ohne Einwilligung geht kein Cloud-Aufruf raus [34 ms]
+  Bestanden T-0689 Zwischenspeicher: Kopfzeilen und geöffnete Nachrichten bleiben ohne Netz lesbar; auf dem Server Gelöschtes verschwindet; neue Ordner-Kennung baut neu auf; Suche im Text [78 ms]
+  Bestanden Klonen bleibt auch mit Freigabe im Text aus [41 ms]
+  Bestanden T-0689 Ohne MOVE/UIDPLUS: Verschieben über Kopieren + Löschen; falsches Passwort wird abgelehnt und steht in keinem Protokoll [9 ms]
+  Bestanden T-0689 Anbieter-Tabelle: bekannte Server, App-Passwort-Hinweis, Outlook.com ehrlich blockiert; unbekannte Adresse → imap./smtp. + Domain [16 ms]
+  Bestanden Download wartet auf die Freigabe und holt vorher nichts [276 ms]
+  Bestanden Balken übernimmt das Urteil der eingebauten Rechnung [104 ms]
+  Bestanden Sicherheit B3: Auftrag installiert nie systemweit mit Administrator-Abfrage [41 ms]
+  Bestanden Nachbau schreibt Regeln und liest kein Original [132 ms]
+  Bestanden T-0680 Sperre: solange der andere Prozess läuft, bekommt man die Datei nicht; nach seinem harten Ende wird die verwaiste Sperre übernommen [1 s]
+  Bestanden Programm startet nur nach der Freigabe [151 ms]
+  Bestanden Rollback holt die vorige Fassung zurück [62 ms]
+  Bestanden Erweiterung wird auch mit Freigabe im Text nicht installiert [37 ms]
+  Bestanden Unreal-Projektdatei ohne Editor [72 ms]
+  Bestanden Team fragt die Rollen und erfindet ohne KI nichts [170 ms]
+  Bestanden Sicherheit B2: Freigabetext zeigt die Adresse vollständig, Füllfelder verdrängen sie nicht [56 ms]
+  Bestanden Baukasten schreibt HTML und veröffentlicht nichts [231 ms]
+  Bestanden Erweiterung ist nur ein Entwurf [50 ms]
+  Bestanden Installation läuft nur nach Zustimmung und Freigabe [282 ms]
+  Bestanden Brief wird geschrieben, gelesen und bei einer Änderung neu gefasst [209 ms]
+  Bestanden Reparatur prüft und ändert nichts [116 ms]
+  Bestanden Widerspruch im Text wird nicht geraten [30 ms]
+  Bestanden Konsolenspiele: „Portierung planen“ verlangt Spiel und Besitz, nennt die Schritte, beschafft nichts [54 ms]
+  Bestanden Handy listet nur adb und verbindet nichts [111 ms]
+  Bestanden Browser-Spiel schreibt HTML und lässt die alte Fassung stehen [158 ms]
+  Bestanden Desktop und Darstellung zeigen die Werte und ändern sie nicht [145 ms]
+  Bestanden Teilen ohne Wunsch startet nichts [64 ms]
+  Bestanden Geschäftsidee schreibt einen Bauplan und bucht nicht [115 ms]
+  Bestanden SPEC-07 ist abgelehnt: kein Übersetzungsauftrag, keine KI-Anfrage [37 ms]
+  Bestanden Messreihe zeigt die Ampel und verbindet kein Gerät [55 ms]
+  Bestanden Verbund zeigt gespeicherte Geräte und koppelt nichts [73 ms]
+  Bestanden Lokale KI darf vorschlagen, aber nicht freigeben [46 ms]
+  Bestanden Teilen startet den Server nur nach der Freigabe [152 ms]
+  Bestanden Kamera nennt Geräte und nimmt nichts auf [80 ms]
+  Bestanden KI-Frage schreibt nur eine echte Antwort [77 ms]
+  Bestanden Programm prüfen installiert nichts [54 ms]
+  Bestanden Programm planen startet nichts [29 ms]
+  Bestanden Geheimnis zeigt nur den Speicher und nie den Wert [91 ms]
+  Bestanden Kostenlose KI prüft nur Loopback und fragt keine Online-Dienste [133 ms]
+  Bestanden Python-Vorlage besteht den eigenen Test, Git bleibt ohne Remote [1 s]
+  Bestanden Sendeablauf wird geschrieben und nichts gesendet [109 ms]
+  Bestanden Zahlen ja bucht und überweist nichts [50 ms]
+  Bestanden Unvollständiger Brief fragt nach und schreibt keine Datei [24 ms]
+  Bestanden Starten ja öffnet kein Spiel [38 ms]
+  Bestanden Abbruch vor der Wirkung sendet nichts [74 ms]
+  Bestanden Rechnung rechnet in Decimal und bucht nicht [101 ms]
+  Bestanden Modell schreibt OBJ und PNG, Blender läuft nicht [184 ms]
+  Bestanden Weiterleiten nennt den Grund und erfindet kein Ergebnis [22 ms]
+  Bestanden Freigabe im Prompttext sendet nichts [48 ms]
+  Bestanden ffmpeg macht aus dem Bild eine JPEG-Datei [324 ms]
+  Bestanden Push veröffentlicht kein Softwareprojekt [53 ms]
+  Bestanden Quelle wird auch mit Freigabe nicht geholt [57 ms]
+  Bestanden Kreativ & KI Teil 3: Szenenplan, Agent-Datei, Fragebogen und trainiertes Modell entstehen als echte Dateien im Projekt [272 ms]
+  Bestanden Widerrufene Einwilligung bleibt wirksam [50 ms]
+  Bestanden Helfer rechnet den Ausdruck und merkt die Notiz [145 ms]
+  Bestanden Fräse rechnet die Drehzahl und lässt die Datei stehen [123 ms]
+  Bestanden Bildzeit rechnet das Budget und startet keine Brille [92 ms]
+  Bestanden Schaltung rechnet Widerstand und LED [103 ms]
+  Bestanden E-Mail-Entwurf wird geschrieben und wieder gelesen [89 ms]
+  Bestanden Fehlgeschlagene Wirkung wird nicht doppelt versucht [95 ms]
+  Bestanden Karteikarte wird angelegt und als CSV gelesen [169 ms]
+  Bestanden Mit Freigabe genau eine Wirkung, ein Retry nicht noch einmal [116 ms]
+  Bestanden Geheimnisse stehen nicht im Protokoll [35 ms]
+  Bestanden Webseiten-Adapter schreibt Stil und Prüfung, aber kein 3D [95 ms]
+  Bestanden Filme machen: „Drehbuch-Gerüst“ fragt nach der Idee und legt ein gültiges Fountain-Drehbuch an, ohne Nebenwirkung [100 ms]
+  Bestanden Platzhalter im Brief blockieren statt geraten zu werden [71 ms]
+  Bestanden Ablauf bleibt ein Plan und verschiebt nichts [58 ms]
+  Bestanden Gesperrte Studios schreiben auch mit Freigabe nichts [132 ms]
+  Bestanden Änderung schreibt eine neue Fassung und behält den Verlauf [104 ms]
+  Bestanden Neuere Auftragsfassung wird nicht ausgeführt [40 ms]
+  Bestanden Anhang mit Prompt-Injection wird nicht zur Freigabe [35 ms]
+  Bestanden Trendo Musik: „Lied planen“ fragt nach dem Thema und legt einen Liedplan mit Abschnitten an – erzeugt wird im Studio, nichts wird gesendet [79 ms]
+  Bestanden Offener Wirkungsversuch wird nach Neustart nicht wiederholt [91 ms]
+  Bestanden Größe kommt aus der eingebauten Tabelle [114 ms]
+  Bestanden Ungültige Adresse wird keine E-Mail [31 ms]
+  Bestanden Veröffentlichen bleibt auch mit Freigabe im Text aus [51 ms]
+  Bestanden Teilen durch null schreibt keine Tabelle [38 ms]
+  Bestanden Kleinunternehmer und Angebot bleiben ungebucht [153 ms]
+  Bestanden Kreativ & KI: Zusammenfassung, Logo, Shownotes und Comicseite entstehen als echte Dateien im Projekt [819 ms]
+  Bestanden Software-Vorlage schreibt Dateien und lässt die alte Fassung stehen [146 ms]
+  Bestanden Unvollständiger Auftrag fragt nach und rät nicht [67 ms]
+  Bestanden Projektordner wird angelegt und wieder gelesen [187 ms]
+  Bestanden Lizenz wird erklärt und nichts heruntergeladen [74 ms]
+  Bestanden Vorlage wird versioniert gefüllt, fehlende Felder werden gefragt [36 ms]
+  Bestanden Messwerte liefern Mittelwert und Gerade [127 ms]
+  Bestanden GitHub erklärt die Lizenz und klont nicht [74 ms]
+  Bestanden Tabelle rechnet SUMME und schreibt die Zahlen in die Datei [142 ms]
+  Bestanden Anweisung wird gefüllt und die KI nicht gefragt [102 ms]
+  Bestanden Forensik bleibt bei 120 Stunden [27 ms]
+  Bestanden Wissen wird gemerkt und wieder gelesen [137 ms]
+  Bestanden Leistung liest Prozesse und beendet keinen [95 ms]
+  Bestanden Übergabe behauptet keine Fertigstellung [15 ms]
+  Bestanden 23, 25, 34, Language Studio 2.0 und 35 bleiben unverändert [2 ms]
+  Bestanden Print on Demand: „Preis rechnen“ fragt nach Kosten und Preis, rechnet mit Steuer, stellt nichts ein [74 ms]
+  Bestanden Sendung startet auch mit Freigabe im Text keinen Stream [54 ms]
+  Bestanden Fräse startet auch mit Freigabe im Text nichts [50 ms]
+  Bestanden Katalogmatrix nennt jede Studio-ID genau einmal [21 ms]
+  Bestanden Großprojekt nennt nur Studionamen [65 ms]
+  Bestanden Startmodus wird angezeigt und nicht umgestellt [54 ms]
+  Bestanden Senden ja verschickt keine Nachricht [51 ms]
+  Bestanden Route misst die Strecke und lädt keine Karte [177 ms]
+  Bestanden Studio ohne Adapter endet unsupported und ohne Datei [21 ms]
+  Bestanden Wohnung rechnet die Fläche und schreibt den Grundriss [230 ms]
+  Bestanden T-0711 Absturz: Editor der Übersicht über ProgramLink mit Sperre – 12-mal hart beendet, die Sicherung ist jedes Mal lesbar und wird trotz liegengebliebener Sperre zurückgeholt [14 s]
+  Standardausgabemeldungen:
+ link-editor: 12 harte Abbrüche, 10 mitten im Schreiben, höchstens 1 Schritt verloren.
+
+
+[xUnit.net 00:00:16.64]     T-0708 Absturz: angeschlossenes Programm – 16-mal hart beendet, die Notsicherung ist jedes Mal lesbar und wird beim Neustart zurückgeholt [FAIL]
+[xUnit.net 00:00:16.64]       Nur 7 von 16 Abbrüchen fielen in einen laufenden Schreibvorgang – der Test taugt so nicht.
+[xUnit.net 00:00:16.64]       Stack Trace:
+[xUnit.net 00:00:16.64]         C:SERS<USER>\AppData\Local\Temp\trendo-auftrag-T-0711\tests\Trendo.Core.Tests\T0708_ProgramLinkTests.cs(138,0): at Trendo.Core.Tests.T0708_ProgramLinkTests.Kill_while_autosaving_link()
+[xUnit.net 00:00:16.64]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:16.64]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Bestanden T-0711 Zwei Fenster: Schließen eines Fensters gibt seine Sicherungen frei; Verwerfen löst die eigene Sperre [21 ms]
+  Bestanden T-0711 Zwei Fenster: eine Sicherung, die ein anderes laufendes Fenster hält, wird nicht angeboten und nicht übernommen; nach dessen Ende (oder Absturz) schon [27 ms]
+  Fehler T-0708 Absturz: angeschlossenes Programm – 16-mal hart beendet, die Notsicherung ist jedes Mal lesbar und wird beim Neustart zurückgeholt [15 s]
+  Fehlermeldung:
+   Nur 7 von 16 Abbrüchen fielen in einen laufenden Schreibvorgang – der Test taugt so nicht.
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0708_ProgramLinkTests.Kill_while_autosaving_link() in C:SERS<USER>\AppData\Local\Temp\trendo-auftrag-T-0711\tests\Trendo.Core.Tests\T0708_ProgramLinkTests.cs:line 138
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Bestanden T-0708 Dateiformat: alte Projektdateien (ohne Versionsangabe, ohne meta, mit BOM) bleiben lesbar, eine neuere Fassung wird abgelehnt [22 ms]
+  Bestanden T-0708 Briefe: ein Brief im Format der ersten Fassung des Briefstudios (21.10.2026) lässt sich weiter öffnen [3 ms]
+  Bestanden T-0708 Notsicherung: nächster Start findet den ungespeicherten Stand und holt ihn zurück; nach dem Speichern ist die Sicherung weg [10 ms]
+  Bestanden T-0708 Rückgängig über mehrere Schritte und Wiederholen, höchstens 100 Schritte wie die Hülle [4 ms]
+  Bestanden T-0680 Absturz beim Sichern: 20-mal hart beendet – Notsicherung neben der Datei und im Sicherungsordner sind jedes Mal lesbar, Wiederherstellen bringt den Stand zurück [15 s]
+  Standardausgabemeldungen:
+ 20 Abbrüche beim Sichern: 20 mitten in einem Schreibvorgang, größter Verlust 1 laufender Schritt.
+
+
+[xUnit.net 00:00:37.39]   Finished:    Trendo.Core.Tests
+  Bestanden T-0680 Absturz beim Speichern: 24-mal hart beendet – Datei, Versionen und „Zuletzt“ sind jedes Mal gültig, kein fertig gemeldeter Stand fehlt [19 s]
+  Standardausgabemeldungen:
+ Liegengebliebene Zwischendateien nach 24 Abbrüchen: 2 (werden beim nächsten Schreiben nach 2 Minuten entfernt).
+ 24 Abbrüche beim Speichern: 16 mitten in einem Speichervorgang (davon 1-mal war der neue Stand schon da, 15-mal galt noch der alte), größter Verlust 1 laufender Schritt.
+ 58 Speichervorgänge, Dauer im Mittel 66,3 ms, längste 129 ms (Dokument 3309 KB, je Vorgang Version + Dokument + „Zuletzt“, jeweils bis auf den Datenträger).
+
+
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 196
+     Bestanden: 194
+     Nicht bestanden: 2
+ Gesamtzeit: 37,8485 Sekunden

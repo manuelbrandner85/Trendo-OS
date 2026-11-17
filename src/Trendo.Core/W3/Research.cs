@@ -106,7 +106,7 @@ public sealed partial class ResearchDesk
     }
 
     public IReadOnlyList<ResearchSource> SessionSources() { var f = Path.Combine(_dir, "quellen.jsonl"); return !File.Exists(f) ? [] : File.ReadAllLines(f).Where(l => l.Length > 0).Select(l => JsonSerializer.Deserialize<ResearchSource>(l)!).ToList(); }
-    public void SaveNote(string text) => File.WriteAllText(Path.Combine(_dir, "notizen.txt"), text);
+    public void SaveNote(string text) => AtomicFile.WriteAllText(Path.Combine(_dir, "notizen.txt"), text); // T-0711: atomar
     public string Note() { var f = Path.Combine(_dir, "notizen.txt"); return File.Exists(f) ? File.ReadAllText(f) : ""; }
 
     /// <summary>Beendet die Sitzung: Quellenliste und Notizen werden gelöscht (flüchtig). Optional vorher als Bericht exportieren.</summary>
@@ -119,6 +119,6 @@ public sealed partial class ResearchDesk
         var sb = new StringBuilder("# Recherche (Lesemodus)\n\n## Notizen\n").Append(Note()).Append("\n\n## Quellen\n");
         foreach (var s in SessionSources()) sb.Append($"- {s.At:dd.MM.yyyy HH:mm} [{s.Title}]({s.Url}) · SHA-256 {s.Sha256[..16]}…\n");
         sb.Append(MarksMarkdown(style));
-        File.WriteAllText(f, sb.ToString()); return f;
+        AtomicFile.WriteAllText(f, sb.ToString()); return f; // T-0717: atomar
     }
 }

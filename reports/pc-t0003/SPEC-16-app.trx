@@ -2,7 +2,7 @@
 <TestRun id="8a8635c4-43ab-459f-8514-75fe990663a5" name="<user>@<host> 2026-10-22 02:43:28" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:43:28.5407239+02:00" queuing="2026-10-22T02:43:28.5407240+02:00" start="2026-10-22T02:43:25.1835647+02:00" finish="2026-10-22T02:43:29.3344636+02:00" />
   <TestSettings name="default" id="bd1a24ea-947c-446e-a03b-69a3e43952d3">
-    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_43_28" />
+    <Deployment runDeploymentRoot="<user>_<host>_2026-10-22_02_43_28" />
   </TestSettings>
   <Results>
     <UnitTestResult executionId="c9607d54-fd4c-422c-8c7b-8d1758480527" testId="0c0cb820-9373-1f68-4647-92521bc8c5cf" testName="SPEC-16 UI Ausbau: Steuer &amp; Erstattung, Rechner" computerName="<host>" duration="00:00:01.7981930" startTime="2026-10-22T02:43:26.2877433+02:00" endTime="2026-10-22T02:43:28.0934602+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c9607d54-fd4c-422c-8c7b-8d1758480527" />

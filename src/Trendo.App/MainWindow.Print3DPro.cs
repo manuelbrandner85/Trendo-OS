@@ -53,7 +53,7 @@ public partial class MainWindow
     public void SelectPrinter(string serial)
     {
         if (BambuFleet.Load(PrintDir).FirstOrDefault(p => p.Serial == serial) is not { } p) return;
-        Printer = p; File.WriteAllText(Path.Combine(PrintDir, "drucker.json"), System.Text.Json.JsonSerializer.Serialize(p));
+        Printer = p; AtomicFile.WriteAllText(Path.Combine(PrintDir, "drucker.json"), System.Text.Json.JsonSerializer.Serialize(p)); // T-0716: atomar
         _bambu = _fleet.GetValueOrDefault(serial); _prCamera = null;
         _prMsg = $"„{p.Name}“ ausgewählt."; Show("3d-druck");
     }

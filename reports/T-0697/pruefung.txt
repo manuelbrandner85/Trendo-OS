@@ -1,0 +1,27 @@
+# T-0697 Belegprüfung mit fremden Werkzeugen
+PDF comic-3-seiten.pdf: Kopf b'%PDF-1.7', Seiten (Python-Regex /Type /Page) = 3, MediaBox = /MediaBox[0 0 595.276 841.72, Schriften: ['BKLPKL+Comic', 'NXJWTD+Segoe']
+CBZ comic-3-seiten.cbz: Prüfsumme ok = True, Einträge = ['001.png', '002.png', '003.png', 'ComicInfo.xml']
+  001.png: PNG (2000, 2829)
+  002.png: PNG (2000, 2829)
+  003.png: PNG (2000, 2829)
+  ComicInfo.xml: <?xml version="1.0" encoding="utf-8"?> <ComicInfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">   <Title>Unbenannt</Title>   <PageCount>3</PageCount>   <LanguageISO>de</LanguageISO> </ComicInfo> 
+PNG comic-seite-2.png: (2000, 2829)
+PNG comic-seite-3.png: (2000, 2829)
+PNG comic-seite.png: (2000, 2829)
+MP3 ffprobe: Dauer 16.500000 s, Format mp3, Tags {'title': 'Testfolge 1', 'artist': 'Testsender', 'album_artist': 'Testsender', 'album': 'Trendo Testpodcast', 'encoder': 'Lavf63.1.102', 'track': '1', 'genre': 'Podcast', 'date': '2026'}
+  Kapitel 0.000000–12.000000 s: BegrÃ¼ÃŸung
+  Kapitel 12.000000–16.500000 s: Teil zwei
+ffmpeg ebur128 Summary: Integrated loudness: I: -16.4 LUFS Threshold: -26.4 LUFS Loudness range: LRA: 2.2 LU Threshold: -36.4 LUFS LRA low: -17.4 LUFS LRA high: -15.2 LUFS [out#0/null @ 000001da8b03fa80] video:0KiB audio:1421KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown size=N/A time=00:00:16.50 bitrate=N/A speed=1.15e+03x elapsed=0:00:00.01
+
+## SHA-256
+c2c705fe6cfc16b01915783676f983e6d4b1bb498a46646fd0c4f8f514fa89bc  app-tests-T0697.log
+13b20cdc1c066fa031bd700210e8277a7c392b327df25edf7ff77b9584403a21  comic-3-seiten.cbz
+721a6fda3d1b3546972eb929eb8508682c79da8ccc7dba46e12cf4c2149da869  comic-3-seiten.pdf
+4a2c0989ade171d455ac32ff3b72d3dcb6e0a04450bc2540c1884efa6a0ea367  comic-seite-2.png
+9b86dddfc43d5b6ca2739f00ba953f1d5fdf278bc10004515288ed799d1ed24c  comic-seite-3.png
+37c3048e3bd7b69f6b2030ca321646aea5e02774eeb3ef40662d0c5ac9711e60  comic-seite.png
+c15f3e587b2ee5d4ad26cbb812c994b38c83c32ab34601f7cab90e1e175d5650  podcast-ebur128.txt
+e9e6babaccb9c20e2a73940303af20dc841cd832dd8da9dcc5659ccca29e7ce6  podcast-feed.xml
+b10a991ed47710822039560d844704190fce14fd8331a38e7fb7997861934e13  podcast-fertig.mp3
+9ab1a78a4b6680890c5d816d14c96246b915d80dc6bc8ba1101faeb098b4e864  podcast-ffprobe.json
+3d06c5e7416bf93bf89b4c4fb13aecde31e07c242cbf7850ca7d3a600311c8e6  podcast-schnitt.json

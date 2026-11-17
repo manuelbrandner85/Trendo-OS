@@ -2,7 +2,7 @@
 <TestRun id="a8d4fceb-25f4-4ab7-a066-832a8a2f09c1" name="<user>@<host> 2026-10-22 02:42:20" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:20.4575671+02:00" queuing="2026-10-22T02:42:20.4575673+02:00" start="2026-10-22T02:42:17.9192457+02:00" finish="2026-10-22T02:42:20.4616885+02:00" />
   <TestSettings name="default" id="b591de52-97c4-44b5-8a9f-2b1a6c014f45">
-    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_20" />
+    <Deployment runDeploymentRoot="<user>_<host>_2026-10-22_02_42_20" />
   </TestSettings>
   <Results>
     <UnitTestResult executionId="d3ae982b-3b81-4455-a48e-82f212a245b6" testId="1b250713-1256-2d20-47be-39c45bd094d6" testName="CORE-03 UI: Rolle wählen, starten, Team-Ablauf, Speichern über Freigabe" computerName="<host>" duration="00:00:01.3011464" startTime="2026-10-22T02:42:19.0180896+02:00" endTime="2026-10-22T02:42:20.3270143+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d3ae982b-3b81-4455-a48e-82f212a245b6" />

@@ -76,15 +76,17 @@ public class SPEC09_Ui
         }
         // eigene Datei in mm laden und auf Meter umrechnen
         var f = Path.Combine(root, "bauteil.xyz"); File.WriteAllText(f, string.Join("\n", Enumerable.Range(0, 50).Select(i => $"{i * 20} {i % 5 * 30} {i % 7 * 10}")));
-        Get<TextBox>(w, "pc-file-path").Text = f; Press(w, "pc-load");
+        // V-07 (T-0700): Pfadfelder sind außer in „Professionell“ ausgeblendet – „Datei wählen …“ trägt die Auswahl, ein Lese-Knopf („Laden“) läuft danach von selbst
+        var pick = f; w.PickOverride = _ => Task.FromResult<string[]?>([pick]);
+        Press(w, "pc-file-path-pick");
         Assert.Equal(f, Doc(w).Source); Assert.Empty(Doc(w).Ops); Assert.Equal(50, Points(w));
         Assert.Contains("980", Get<SelectableTextBlock>(w, "pc-info").Text);
         Press(w, "prog-cmd-pc-scale");
         Assert.Contains("0,98", Get<SelectableTextBlock>(w, "pc-info").Text);
         Press(w, "pc-a-dens"); Assert.Contains("Punktabstand", Get<SelectableTextBlock>(w, "pc-analysis").Text);
-        Get<TextBox>(w, "pc-cmp-path").Text = f; Press(w, "pc-a-merge");
+        Press(w, "pc-cmp-path-pick"); Press(w, "pc-a-merge"); // „Zusammenführen“ ist kein reiner Lese-Knopf – läuft nur auf Klick
         Assert.Equal(100, Points(w));
-        Get<TextBox>(w, "pc-file-path").Text = Path.Combine(root, "fehlt.ply"); Press(w, "pc-load");
+        pick = Path.Combine(root, "fehlt.ply"); Press(w, "pc-file-path-pick");
         Assert.Contains("gibt es nicht", w.ProgramMessage(PK)); Assert.Equal(f, Doc(w).Source);
         w.Close();
     }

@@ -1,0 +1,119 @@
+{
+  "clips": [
+    {
+      "id": "a",
+      "file": "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-look-<lauf>\\a.mp4",
+      "in": 0.5,
+      "out": 4.5,
+      "len": 6,
+      "audio": true,
+      "start": 0,
+      "vol": 1,
+      "fade": 1,
+      "title": "Sommer 2026"
+    },
+    {
+      "id": "b",
+      "file": "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-look-<lauf>\\b.mp4",
+      "in": 1,
+      "out": 5,
+      "len": 6,
+      "audio": false,
+      "start": 0,
+      "vol": 1,
+      "fade": 0,
+      "title": ""
+    },
+    {
+      "id": "c",
+      "file": "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-look-<lauf>\\c.png",
+      "in": 0,
+      "out": 3,
+      "len": 3600,
+      "audio": false,
+      "start": 0,
+      "vol": 1,
+      "fade": 0,
+      "title": ""
+    }
+  ],
+  "music": [],
+  "playhead": 0,
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "fx": {
+    "a": {
+      "b": 0,
+      "c": 1.1,
+      "s": 0,
+      "w": 0,
+      "t": "slideleft",
+      "tp": "unten",
+      "ts": 1,
+      "lut": null
+    }
+  },
+  "anim": {
+    "b": {
+      "scale": [
+        [
+          0,
+          1
+        ],
+        [
+          4,
+          0.5
+        ]
+      ],
+      "x": [
+        [
+          0,
+          0
+        ],
+        [
+          4,
+          0.2
+        ]
+      ]
+    },
+    "a7370c09": {
+      "x": [
+        [
+          0,
+          0.05
+        ],
+        [
+          4,
+          0.6
+        ]
+      ]
+    }
+  },
+  "fxstack": {
+    "b": [
+      {
+        "id": "06635c",
+        "type": "vignette",
+        "on": true,
+        "amount": 0.3
+      }
+    ]
+  },
+  "overlay": [
+    {
+      "id": "a7370c09",
+      "file": "C:\\Users\\<user>\\AppData\\Local\\Temp\\trendo-look-<lauf>\\logo.png",
+      "start": 5,
+      "len": 4,
+      "x": 0.68,
+      "y": 0.05,
+      "w": 0.28,
+      "op": 1,
+      "key": "",
+      "ksim": 0.15,
+      "kblend": 0.05,
+      "mask": null
+    }
+  ]
+}

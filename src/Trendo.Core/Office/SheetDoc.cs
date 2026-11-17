@@ -8,6 +8,11 @@ namespace Trendo.Core.Office;
 public sealed class SheetDoc
 {
     public List<Sheet> Sheets { get; } = [new Sheet("Tabelle1")];
+    /// <summary>T-0682: Was beim Öffnen einer fremden Datei nicht übernommen wurde (null = neu angelegt oder nicht geprüft).</summary>
+    public ImportReport? Import { get; set; }
+    /// <summary>T-0701: Grundschrift der Mappe (in XLSX die erste Schrift, die jede Zelle ohne eigene Schrift nutzt).</summary>
+    public string FontName { get; set; } = "Calibri";
+    public double FontSize { get; set; } = 11;
 
     public Sheet this[string name] => Sheets.First(s => string.Equals(s.Name, name, StringComparison.OrdinalIgnoreCase));
     public Sheet? Find(string name) => Sheets.FirstOrDefault(s => string.Equals(s.Name, name, StringComparison.OrdinalIgnoreCase));
@@ -23,7 +28,7 @@ public sealed class SheetDoc
     /// <summary>Tiefe Kopie für Rückgängig/Wiederholen.</summary>
     public SheetDoc Clone()
     {
-        var d = new SheetDoc(); d.Sheets.Clear();
+        var d = new SheetDoc { FontName = FontName, FontSize = FontSize }; d.Sheets.Clear();
         foreach (var s in Sheets) d.Sheets.Add(s.Clone());
         return d;
     }
@@ -59,9 +64,55 @@ public sealed class Cell
     public string? Note { get; set; }
     /// <summary>E9: bleibt bei geschütztem Blatt bearbeitbar (in Excel „Gesperrt“ aus).</summary>
     public bool Unlocked { get; set; }
+    /// <summary>T-0701: eigener Zahlenformat-Code wie in Excel (z. B. <c>0.000" kg"</c>). Hat Vorrang vor <see cref="Format"/>
+    /// und wird unverändert zurückgeschrieben; null = Trendos Format aus <see cref="Format"/>.</summary>
+    public string? NumCode { get; set; }
+    /// <summary>T-0701: Schrift – kursiv, Unterstreichung („single“, „double“ …), durchgestrichen, Farbe #RRGGBB, Größe in Punkt, Schriftart (null = Grundschrift der Mappe).</summary>
+    public bool Italic { get; set; }
+    public string? Underline { get; set; }
+    public bool Strike { get; set; }
+    public string? FontColor { get; set; }
+    public double? FontSize { get; set; }
+    public string? FontName { get; set; }
+    /// <summary>T-0701: Ausrichtung wie in Excel: waagerecht „left“, „center“, „right“, „justify“, „fill“, „centerContinuous“, „distributed“; senkrecht „top“, „center“, „justify“, „distributed“ (null = unten).</summary>
+    public string? HAlign { get; set; }
+    public string? VAlign { get; set; }
+    public bool Wrap { get; set; }
+    public int Indent { get; set; }
+    /// <summary>Textdrehung in Grad wie in Excel (0–180, 255 = senkrecht gestapelt).</summary>
+    public int Rotation { get; set; }
+    public bool Shrink { get; set; }
+    /// <summary>T-0701: Rahmen je Seite mit Linienart und Farbe. Null = nur <see cref="Border"/> (dünn rundum) oder kein Rahmen.</summary>
+    public CellBorders? Borders { get; set; }
     public bool IsFormula => Raw.StartsWith('=') && Raw.Length > 1;
-    public bool IsEmpty => Raw.Length == 0 && !Bold && Fill is null && !Border && Format == NumFmt.Standard && Note is null && !Unlocked;
+    public bool HasLook => Bold || Fill is not null || Border || Format != NumFmt.Standard || Unlocked || NumCode is not null || Italic || Underline is not null || Strike || FontColor is not null
+        || FontSize is not null || FontName is not null || HAlign is not null || VAlign is not null || Wrap || Indent != 0 || Rotation != 0 || Shrink || Borders is not null;
+    public bool IsEmpty => Raw.Length == 0 && Note is null && !HasLook;
     public Cell Clone() => (Cell)MemberwiseClone();
+
+    /// <summary>Inhalt, Notiz und Aussehen einer anderen Zelle übernehmen.</summary>
+    public void CopyFrom(Cell o)
+    {
+        Raw = o.Raw; Note = o.Note; Format = o.Format; NumCode = o.NumCode; Bold = o.Bold; Italic = o.Italic; Underline = o.Underline; Strike = o.Strike; FontColor = o.FontColor; FontSize = o.FontSize; FontName = o.FontName;
+        Fill = o.Fill; Border = o.Border; Borders = o.Borders; HAlign = o.HAlign; VAlign = o.VAlign; Wrap = o.Wrap; Indent = o.Indent; Rotation = o.Rotation; Shrink = o.Shrink; Unlocked = o.Unlocked;
+    }
+}
+
+/// <summary>T-0701: eine Rahmenlinie – Art wie in Excel („thin“, „medium“, „thick“, „dashed“, „dotted“, „double“, „hair“ …) und Farbe #RRGGBB (null = automatisch).</summary>
+public sealed record BorderLine(string Style, string? Color = null);
+
+/// <summary>T-0701: Rahmen einer Zelle je Seite.</summary>
+public sealed record CellBorders(BorderLine? Left, BorderLine? Right, BorderLine? Top, BorderLine? Bottom)
+{
+    public bool Any => Left is not null || Right is not null || Top is not null || Bottom is not null;
+}
+
+/// <summary>T-0701: verbundener Bereich (Zeilen/Spalten ab 0). Inhalt und Aussehen stehen in der Zelle oben links.</summary>
+public sealed record MergeRange(int Top, int Left, int Bottom, int Right)
+{
+    public bool Contains(int row, int col) => row >= Top && row <= Bottom && col >= Left && col <= Right;
+    public bool Overlaps(MergeRange o) => o.Top <= Bottom && o.Bottom >= Top && o.Left <= Right && o.Right >= Left;
+    public string Name => Addr.Name(Top, Left) + ":" + Addr.Name(Bottom, Right);
 }
 
 public sealed class Sheet(string name)
@@ -84,6 +135,35 @@ public sealed class Sheet(string name)
     public bool Protected { get; set; }
     /// <summary>F3 Tabelle: Autofilter mit Werteliste je Spalte (null = aus).</summary>
     public SheetAutoFilter? AutoFilter { get; set; }
+    /// <summary>T-0701: verbundene Zellen.</summary>
+    public List<MergeRange> Merges { get; } = [];
+    /// <summary>T-0701: eigene Zeilenhöhen in Punkt (Standard ohne Eintrag).</summary>
+    public Dictionary<int, double> RowHeights { get; } = [];
+
+    /// <summary>Verbundener Bereich, in dem die Zelle liegt (oder null).</summary>
+    public MergeRange? MergeAt(int row, int col) { foreach (var m in Merges) if (m.Contains(row, col)) return m; return null; }
+
+    /// <summary>Zellen verbinden wie in Excel: Bereiche, die sich überschneiden, gehen im neuen auf; Inhalte außer oben links werden geleert.</summary>
+    public MergeRange? Merge(int top, int left, int bottom, int right)
+    {
+        var m = new MergeRange(top, left, bottom, right);
+        foreach (var o in Merges.Where(o => o.Overlaps(m)).ToList())
+        {
+            Merges.Remove(o);
+            m = new MergeRange(Math.Min(m.Top, o.Top), Math.Min(m.Left, o.Left), Math.Max(m.Bottom, o.Bottom), Math.Max(m.Right, o.Right));
+        }
+        if (m.Top == m.Bottom && m.Left == m.Right) return null;
+        foreach (var ((r, c), cell) in _cells) if (m.Contains(r, c) && (r, c) != (m.Top, m.Left)) cell.Raw = "";
+        Merges.Add(m); Compact();
+        return m;
+    }
+
+    /// <summary>Verbund aufheben, wo er die Auswahl berührt; liefert die Zahl der aufgehobenen Bereiche.</summary>
+    public int Unmerge(int top, int left, int bottom, int right)
+    {
+        var sel = new MergeRange(top, left, bottom, right);
+        return Merges.RemoveAll(m => m.Overlaps(sel));
+    }
 
     public IEnumerable<KeyValuePair<(int Row, int Col), Cell>> Cells => _cells;
 
@@ -97,6 +177,8 @@ public sealed class Sheet(string name)
         s.FreezeRows = FreezeRows; s.FreezeCols = FreezeCols; s.Protected = Protected;
         s.CondRules.AddRange(CondRules); s.Validations.AddRange(Validations);
         s.AutoFilter = AutoFilter?.Clone();
+        s.Merges.AddRange(Merges);
+        foreach (var (k, h) in RowHeights) s.RowHeights[k] = h;
         return s;
     }
     public int MaxRow => _cells.Count == 0 ? -1 : _cells.Keys.Max(k => k.Row);
@@ -148,7 +230,27 @@ public sealed class Sheet(string name)
             var w = ColWidths.ToList(); ColWidths.Clear();
             foreach (var (c, v) in w) { if (colDelta < 0 && c >= colAt && c < colAt - colDelta) continue; ColWidths[c >= colAt ? c + colDelta : c] = v; }
         }
+        if (rowDelta != 0)
+        {
+            var h = RowHeights.ToList(); RowHeights.Clear();
+            foreach (var (r, v) in h) { if (rowDelta < 0 && r >= rowAt && r < rowAt - rowDelta) continue; RowHeights[r >= rowAt ? r + rowDelta : r] = v; }
+        }
+        // T-0701: verbundene Bereiche wandern mit, schrumpfen beim Löschen und verschwinden, wenn nur noch eine Zelle übrig ist
+        var merges = Merges.ToList(); Merges.Clear();
+        foreach (var m in merges)
+            if (MergeSpan(m.Top, m.Bottom, rowAt, rowDelta) is { } rs && MergeSpan(m.Left, m.Right, colAt, colDelta) is { } cs && (rs.A != rs.B || cs.A != cs.B))
+                Merges.Add(new MergeRange(rs.A, cs.A, rs.B, cs.B));
         HiddenRows.Clear();
+    }
+
+    static (int A, int B)? MergeSpan(int a, int b, int at, int delta)
+    {
+        if (delta == 0) return (a, b);
+        if (delta > 0) return (a >= at ? a + delta : a, b >= at ? b + delta : b);
+        var end = at - delta; // gelöscht: at … end-1
+        var na = a < at ? a : a >= end ? a + delta : at;
+        var nb = b < at ? b : b >= end ? b + delta : at - 1;
+        return nb < na ? null : (na, nb);
     }
 
     // ---------- C4: Sortieren und Filtern ----------
@@ -194,8 +296,9 @@ public sealed class Sheet(string name)
     public void ClearFilter() { HiddenRows.Clear(); AutoFilter = null; }
 }
 
-/// <summary>C7: Diagramm über einen Bereich. Erste Spalte = Beschriftung, weitere Spalten = Reihen (erste Zeile = Reihennamen).</summary>
-public sealed record SheetChart(ChartKind Kind, string Range, string Title);
+/// <summary>C7: Diagramm über einen Bereich. Erste Spalte = Beschriftung, weitere Spalten = Reihen (erste Zeile = Reihennamen).
+/// T-0701: dazu Achsentitel, Farben der Reihen (#RRGGBB je Reihe, null = automatisch) und die Lage der Legende („b“, „r“, „t“, „l“, „tr“; „none“ = keine).</summary>
+public sealed record SheetChart(ChartKind Kind, string Range, string Title, string? XTitle = null, string? YTitle = null, IReadOnlyList<string?>? Colors = null, string? Legend = null);
 public enum ChartKind { Balken, Linie, Kreis }
 
 static class SheetDocExt

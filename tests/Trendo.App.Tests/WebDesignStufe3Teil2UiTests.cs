@@ -154,7 +154,7 @@ public class WebDesignStufe3Teil2_Ui
         }
     }
 
-    [AvaloniaFact(DisplayName = "K8: ohne Zustimmung kein Hochladen; nach Zustimmung genau einmal, mit ehrlichem Bericht der Dateien; Zustimmung gilt nicht für den nächsten Export")]
+    [AvaloniaFact(DisplayName = "K8/T-0718: ohne Ja im Freigabe-Tor kein Hochladen; nach Ja genau einmal, mit ehrlichem Bericht der Dateien; die Freigabe gilt nicht für den nächsten Lauf")]
     public async Task K8_publish()
     {
         var fake = new FakeNetlify(); MainWindow.NetlifyHandlerOverride = fake;
@@ -166,21 +166,28 @@ public class WebDesignStufe3Teil2_Ui
             w.WebDesignMessage("{\"art\":\"speichern\",\"daten\":" + Page + "}"); Pump();
             Assert.Null(Trendo.Core.WebDesignExport.ExportSite(w.WebDesignDir, MainWindow.WebDesignEditorDir).Error);
             w.Show("dev"); Pump();
+            await w.WebDesignPublishUpload(); Pump(); // ohne Prüfung und Dateiliste: nichts
+            Assert.Equal(0, fake.Calls); Assert.Contains("Erst „Prüfen", w.WebDesignPublishNote);
             w.Find<Button>("web-pub-pruefen").Press(); Pump();
             Assert.Contains("Prüfung bestanden", w.WebDesignPublishNote);
+            var asked = new List<MainWindow.Wirkung>();
+            w.FreigabeConfirm = q => { asked.Add(q); return Task.FromResult(false); }; // die Person sagt „Abbrechen“
             await w.WebDesignPublishUpload(); Pump();
-            Assert.Equal(0, fake.Calls); Assert.Contains("Zustimmung", w.WebDesignPublishNote);
-            w.Find<Button>("web-pub-pruefen").Press(); Pump();
-            w.Find<Button>("web-pub-hochladen").Press(); Pump();
-            Assert.Equal(0, fake.Calls); // erst fragen
-            w.Find<Button>("web-pub-ja").Press();
+            Assert.Equal(0, fake.Calls); Assert.Contains("Abgebrochen", w.WebDesignPublishNote);
+            Assert.Equal(WebPublishing.ActionNetlify, Assert.Single(asked).Action);
+            Assert.Contains("öffentlich", asked[0].Text); Assert.Contains("index.html", asked[0].Preview);
+            w.FreigabeConfirm = q => { asked.Add(q); return Task.FromResult(true); };
+            w.Find<Button>("web-pub-hochladen").Press();
             for (var i = 0; i < 100 && !w.WebDesignPublishNote.StartsWith("Hochgeladen", StringComparison.Ordinal); i++) { await Task.Delay(20); Pump(); }
+            Assert.Equal(2, asked.Count);
             Assert.True(fake.Calls > 0);
             Assert.StartsWith("Hochgeladen zu https://meine-seite.netlify.app", w.WebDesignPublishNote);
             Assert.Contains("index.html", w.WebDesignPublishNote);
+            Assert.Single(w.Core.Audit.ReadAll(), a => a.Action == "execution.start" && a.Detail.Contains(WebPublishing.ActionNetlify));
+            Assert.Throws<ApprovalException>(() => w.Core.Approvals.Execute(w.LastFreigabe!.Id, WebPublishing.ActionNetlify, w.LastFreigabe.Target, () => 0)); // verbraucht
             var after = fake.Calls;
-            await w.WebDesignPublishUpload(); Pump(); // Zustimmung ist verbraucht
-            Assert.Equal(after, fake.Calls);
+            await w.WebDesignPublishUpload(); Pump(); // Prüfung und Freigabe sind verbraucht
+            Assert.Equal(after, fake.Calls); Assert.Equal(2, asked.Count);
         }
         finally { MainWindow.NetlifyHandlerOverride = null; MainWindow.WebDesignEditorDirOverride = null; }
     }

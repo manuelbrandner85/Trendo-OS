@@ -22,20 +22,66 @@ public partial class MainWindow
         ExtraPages.Add(("Programme verwalten", "appcenter", ["installieren", "deinstallieren", "entfernen", "aktualisieren", "update", "winget", "flatpak"]));
     }
 
+    /// <summary>T-0681: Was Trendo gleich an den Programmen dieses PCs ändern will – Inhalt der Rückfrage.</summary>
+    public sealed record AppChange(string Action, PackageInfo Package, string Title, string Text, string YesLabel);
+    /// <summary>Tests: ersetzt den Rückfrage-Dialog. Ohne Zustimmung (false) wird nichts geändert.</summary>
+    public Func<AppChange, Task<bool>>? AppConfirm { get; set; }
+
+    AppChange AppChangeFor(string action, PackageInfo p)
+    {
+        var source = (p.Source.Length > 0 ? p.Source + " – " : "") + AppCenter.Backend.Name;
+        var version = p.Version.Length > 0 ? p.Version : "nicht bekannt";
+        return action switch
+        {
+            "install" => new(action, p, $"„{p.Name}“ installieren?", $"Programm: {p.Name}\nPaket: {p.Id}\nVersion: {version}\nWoher: {source}\nGröße: vorab nicht bekannt – die Paketverwaltung nennt sie erst beim Laden.\n\nTrendo lädt das Programm und installiert es auf diesem PC.", "Installieren"),
+            "upgrade" => new(action, p, $"„{p.Name}“ aktualisieren?", $"Programm: {p.Name}\nPaket: {p.Id}\nVersion: {version}{(p.Available is { } v ? " → " + v : "")}\nWoher: {source}\nGröße: vorab nicht bekannt.\n\nTrendo lädt die neue Version und ersetzt die bisherige.", "Aktualisieren"),
+            _ => new(action, p, $"„{p.Name}“ entfernen?", $"Programm: {p.Name}\nPaket: {p.Id}\nVersion: {version}\nVerwaltet von: {source}\n\nDas Programm wird von diesem PC entfernt. Das lässt sich nur durch erneutes Installieren rückgängig machen.", "Entfernen"),
+        };
+    }
+
+    /// <summary>Rückfrage wie beim Teilen eines Ordners: eigenes Fenster, „Abbrechen“ ist vorbelegt, Esc und Schließen lehnen ab.</summary>
+    async Task<bool> AppConfirmDialog(AppChange c)
+    {
+        var dlg = new Window { Title = c.Title, Width = 480, SizeToContent = SizeToContent.Height, CanResize = false, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+        var yes = new Button { Name = "appc-confirm-yes", Content = c.YesLabel };
+        var no = new Button { Name = "appc-confirm-no", Content = "Abbrechen", IsDefault = true, IsCancel = true };
+        yes.Click += (_, _) => dlg.Close(true);
+        no.Click += (_, _) => dlg.Close(false);
+        dlg.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Escape) { e.Handled = true; dlg.Close(false); } };
+        dlg.Content = new StackPanel { Margin = new Thickness(16), Spacing = 10, Children = {
+            new TextBlock { Text = c.Title, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
+            new TextBlock { Name = "appc-confirm-text", Text = c.Text, TextWrapping = TextWrapping.Wrap },
+            new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right, Children = { no, yes } } } };
+        dlg.Opened += (_, _) => no.Focus();
+        return await dlg.ShowDialog<bool>(this);
+    }
+
     public async Task AppActionAsync(string action, PackageInfo p)
     {
         _appBusy = true;
         try
         {
-            var r = AppCenter.Plan(action, p);
-            _core.Approvals.Approve(r.Id, Principal.LocalOwner);
+            var change = AppChangeFor(action, p);
+            var r = AppCenter.Plan(action, p, CurrentPrincipal); // T-0713: Rolle der angemeldeten Person
+            // T-0681: Die Freigabe erteilt der Mensch, nicht derselbe Klick. Ohne ausdrückliches Ja wird sie abgelehnt und nichts geändert.
+            bool yes;
+            try { yes = await (AppConfirm ?? AppConfirmDialog)(change); }
+            catch (Exception ex) when (ex is InvalidOperationException or OperationCanceledException) { yes = false; }
+            if (!yes)
+            {
+                Ablehnen(r.Id);
+                _core.Audit.Append(CurrentPrincipal.Name, "app.abgelehnt", $"{action} {p.Id}");
+                _appMsg = $"{p.Name}: abgebrochen – es wurde nichts geändert.";
+                return;
+            }
+            if (!FreigabeErteilen(r.Id)) { _appMsg = $"{p.Name}: nicht freigegeben – es wurde nichts geändert."; return; } // B4: Rolle der angemeldeten Person
             var (ok, _) = await AppCenter.ExecuteAsync(r);
             _appMsg = ok ? $"{p.Name}: {(action == "install" ? "installiert" : action == "upgrade" ? "aktualisiert" : "entfernt")}." : $"{p.Name}: hat nicht geklappt. Windows hat vielleicht nach Erlaubnis gefragt – versuch es noch einmal.";
             if (ok && action != "install") _appUpdates = _appUpdates.Where(x => x.Id != p.Id).ToList();
             if (ok && action == "uninstall") _appInstalled = _appInstalled.Where(x => x.Id != p.Id).ToList();
         }
         catch (Exception ex) { _appMsg = "Hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex); }
-        _appBusy = false;
+        finally { _appBusy = false; }
     }
 
     public async Task AppSearchAsync(string q) { _appQuery = q; _appHits = q.Trim().Length < 2 ? [] : await AppCenter.Backend.SearchAsync(q.Trim()); _appMsg = _appHits.Count == 0 ? $"Nichts gefunden für „{q}“." : $"{_appHits.Count} Treffer."; }

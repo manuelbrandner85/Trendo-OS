@@ -364,7 +364,7 @@ public partial class MainWindow
         try { (_, renderNote) = await WebsitePreview.RenderStaticAsync(r.Dir!, r.Pages.Select(p => p.RelPath).ToList()); }
         catch (Exception e) when (e is TimeoutException or InvalidOperationException or IOException or System.Net.WebSockets.WebSocketException or OperationCanceledException) { renderNote = "Vorrendern abgebrochen (" + e.Message + "). Seiten ohne vorgerenderten Inhalt laufen trotzdem, Suchmaschinen sehen den Text dort aber erst nach dem Laden."; }
         var check = Trendo.Core.WebDesignExport.CheckExport(r.Dir!, r.Pages);
-        _wdExportFindings = check; _wdPlan = null; _wdConsent = null; // K8: neue Prüfung nötig
+        _wdExportFindings = check; _wdPlan = null; _wdPubOpen = null; // K8: neue Prüfung nötig
         var lines = new List<string> { $"Fertige Website: {Path.Combine(r.Dir!, "index.html")} – {r.Pages.Count} Seite(n), läuft ohne Internet." };
         if (renderNote is not null) lines.Add(renderNote);
         lines.AddRange(r.Notes.Take(6)); lines.AddRange(check.Take(10));

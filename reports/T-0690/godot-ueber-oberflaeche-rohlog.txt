@@ -1,0 +1,14 @@
+Engine: Godot Engine 4.7.2-stable
+Godot_v4.7.2-stable_win64.exe --headless --path <projekt> --import → Exitcode 0
+Godot_v4.7.2-stable_win64.exe --headless --path <projekt> --script res://tests/check_level.gd → Exitcode 0
+Godot_v4.7.2-stable_win64.exe --headless --path <projekt> --script res://tests/play_check.gd → Exitcode 0
+Godot_v4.7.2-stable_win64.exe --headless --path <projekt> --script res://tests/save_check.gd → Exitcode 0
+Godot_v4.7.2-stable_win64.exe --headless --path <projekt> --script res://tests/gameplay_check.gd → Exitcode 0
+Godot_v4.7.2-stable_win64.exe --headless --path <projekt> --script res://tests/menu_check.gd → Exitcode 0
+Godot_v4.7.2-stable_win64.exe --headless --path <projekt> --script res://tests/selfplay_check.gd → Exitcode 0
+Godot Level-Prüfung: ✓ 1 Level (Exitcode 0)
+Godot Spiel-Prüfung: ✓ Spiel läuft, Figur steht (Blick von oben) (Exitcode 0)
+Godot Spielstand-Prüfung: ✓ Spielstand speichern, fortsetzen und prüfen (Exitcode 0)
+Godot Gameplay-Prüfung: ✓ Gameplay: Inventar, Figur, Aufgabe, Schwert, Boss, Fahrzeug, Doppelsprung (Exitcode 0)
+Godot Menü-Prüfung: ✓ Menü: Start, Einstellungen gespeichert, Pause, Weiter (Exitcode 0)
+Godot Durchspiel-Prüfung: ✓ Durchgespielt: von der Seite (laufen, Münze, Wand, Sprung, Ziel), von oben (laufen, Münze, Wand, Ziel), Stacheln (verloren) (Exitcode 0)

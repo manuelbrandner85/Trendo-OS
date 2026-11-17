@@ -1,0 +1,166 @@
+# Echtlauf bewerbung – 2026-11-16 14:19:19
+$ LibreOffice öffnet zeugnis.fodt: soffice.exe -env:UserInstallation=file:///C:\Users\<user>/AppData/Local/Temp/trendo-t0705-lo-158e1fd7 --headless --norestore --convert-to pdf --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-9443bb56 C:\Users\<user>\AppData\Local\Temp\trendo-ui-956be790af2d4c56b8e34712584cfd34\zeugnis.fodt
+Exit 0
+convert C:\Users\<user>\AppData\Local\Temp\trendo-ui-956be790af2d4c56b8e34712584cfd34\zeugnis.fodt as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-9443bb56\zeugnis.pdf using filter : writer_pdf_Export
+[stderr] Could not find platform independent libraries <prefix>
+Datei fremd-zeugnis-libreoffice.pdf: 26805 Bytes, SHA-256 ce78b531ccc85edc718c36273aad88e6eb461afa1e8ff597c5c14d772cb87e14
+Oberfläche: Zeugnis auf die Arbeitsfläche gezogen → 1 Anlage(n) zur Mappe hinzugefügt – „Mappe als PDF“ fügt sie hinten an.
+Datei lebenslauf.docx: 4601 Bytes, SHA-256 253ff8e7923468669273a7e332a8d9a4c6571cac4afe62b7143e30ab9c41eb26
+$ LibreOffice öffnet lebenslauf.docx: soffice.exe -env:UserInstallation=file:///C:\Users\<user>/AppData/Local/Temp/trendo-t0705-lo-0aa73658 --headless --norestore --convert-to pdf --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-74c8427a C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\lebenslauf.docx
+Exit 0
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\lebenslauf.docx as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-74c8427a\lebenslauf.pdf using filter : writer_pdf_Export
+[stderr] Could not find platform independent libraries <prefix>
+Datei lebenslauf-docx-libreoffice.pdf: 69168 Bytes, SHA-256 fe60faea6e491d59369b25995bc2519869e5b7f444ae63d77b5802e24c000253
+$ qpdf prüft lebenslauf.pdf: qpdf.exe --check C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-74c8427a\lebenslauf.pdf
+Exit 0
+checking C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-74c8427a\lebenslauf.pdf
+PDF Version: 1.7
+File is not encrypted
+File is not linearized
+No syntax or stream encoding errors found; the file may still contain
+errors that qpdf cannot detect
+PDFium Text lebenslauf.pdf Seite 1: Erika Muster Kauffrau für Büromanagement Musterweg 12 · 12345 Musterstadt · 0171 2345678 · erika.muster@example.org Profil Organisierte Bürokauffrau mit fünf Jahren Erfahrung in Buchhaltung und Kundenservice. Ich arbeite gern strukturiert und behalte auch bei vielen Terminen den Überblick. Berufserfahrung 01.2021 – heute Sachbearbeiterin Buchhaltung Beispiel GmbH, Musterstadt • Rechnungen prüfen und buchen • Mahnwesen und Zahlungsverkehr • Monatsabschluss vorbereiten 08.2019 – 12.2020 Kauffrau für Büromanagement Muster & Co. KG, Musterstadt • Kundenanfragen per Telefon und E-Mail • Angebote und Auftragsbestätigungen Ausbildung 08.2016 – 07.2019 Ausbildung Kauffrau für Büromanagement (Note 2,1) Muster & Co. KG / Berufsschule Musterstadt 09.2010 – 07.2016 Mittlere Reife Realschule am Park Kenntnisse • DATEV • Microsoft Excel • Buchhaltung • Mahnwesen • Führerschein Klasse B Sprachen • Deutsch: Muttersprache • Englisch: Sehr gute Kenntnisse (B2)
+Datei lebenslauf.pdf: 109387 Bytes, SHA-256 1f92bfe5704381d56f073b02637023021c9e2c02215f56fb027ccb204f2ee923
+$ qpdf prüft lebenslauf.pdf: qpdf.exe --check C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\lebenslauf.pdf
+Exit 3
+checking C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\lebenslauf.pdf
+PDF Version: 1.7
+File is not encrypted
+File is not linearized
+[stderr] WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\lebenslauf.pdf (offset 610): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\lebenslauf.pdf (offset 2894): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\lebenslauf.pdf (offset 38203): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\lebenslauf.pdf (offset 81848): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\lebenslauf.pdf (offset 610): input stream is complete but output may still be valid
+qpdf: operation succeeded with warnings
+qpdf: gültig, 5 Warnung(en) „Flate-Strom ohne Abschluss“ (PDFsharp) – keine Fehler.
+PDFium Text lebenslauf.pdf Seite 1: Erika Muster Kauffrau für Büromanagement Musterweg 12 · 12345 Musterstadt · 0171 2345678 · erika.muster@example.org PROFIL Organisierte Bürokauffrau mit fünf Jahren Erfahrung in Buchhaltung und Kundenservice. Ich arbeite gern strukturiert und behalte auch bei vielen Terminen den Überblick. BERUFSERFAHRUNG 01.2021 – heute Sachbearbeiterin Buchhaltung Beispiel GmbH, Musterstadt • Rechnungen prüfen und buchen • Mahnwesen und Zahlungsverkehr • Monatsabschluss vorbereiten 08.2019 – 12.2020 Kauffrau für Büromanagement Muster & Co. KG, Musterstadt • Kundenanfragen per Telefon und E-Mail • Angebote und Auftragsbestätigungen AUSBILDUNG 08.2016 – 07.2019 Ausbildung Kauffrau für Büromanagement (Note 2,1) Muster & Co. KG / Berufsschule Musterstadt 09.2010 – 07.2016 Mittlere Reife Realschule am Park KENNTNISSE DATEV · Microsoft Excel · Buchhaltung · Mahnwesen · Führerschein Klasse B SPRACHEN Deutsch Muttersprache Englisch Sehr gute Kenntnisse (B2) INTERESSEN Laufen, Kochen
+Datei mappe.pdf: 283057 Bytes, SHA-256 169655ce4eb6732208884c20e982db213d53376bae5b70e888447453bb103bff
+$ qpdf prüft mappe.pdf: qpdf.exe --check C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\mappe.pdf
+Exit 3
+checking C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\mappe.pdf
+PDF Version: 1.7
+File is not encrypted
+File is not linearized
+[stderr] WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\mappe.pdf (offset 72172): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\mappe.pdf (offset 151961): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\mappe.pdf (offset 258832): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\mappe.pdf (offset 42955): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\mappe.pdf (offset 1765): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\mappe.pdf (offset 105946): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\mappe.pdf (offset 74272): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\mappe.pdf (offset 224376): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\mappe.pdf (offset 180537): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\mappe.pdf (offset 154870): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\mappe.pdf (offset 72172): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\mappe.pdf (offset 151961): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\mappe.pdf (offset 258832): input stream is complete but output may still be valid
+qpdf: operation succeeded with warnings
+qpdf: gültig, 13 Warnung(en) „Flate-Strom ohne Abschluss“ (PDFsharp) – keine Fehler.
+Mappe: 4 Seiten
+PDFium Text mappe.pdf Seite 4: Arbeitszeugnis Frau Erika Muster war bei uns als Bürokauffrau tätig.
+$ pdftotext (Poppler) liest mappe.pdf: pdftotext.exe -layout C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\mappe.pdf -
+Exit 0
+Bewerbung
+
+als Sachbearbeiterin Finanzbuchhaltung (m/w/d)
+
+bei Musterwerke AG
+
+Erika Muster
+
+Musterweg 12
+12345 Musterstadt
+0171 2345678
+erika.muster@example.org
+Inhalt
+- Anschreiben
+- Lebenslauf
+- zeugnis
+                                                                                          Erika Muster
+                                                                                        Musterweg 12
+                                                                                  12345 Musterstadt
+                                                 0171 2345678 � erika.muster@example.org
+
+                                                 Musterstadt, 16. November 2026
+
+Erika Muster � Musterweg 12 � 12345 Musterstadt
+
+Musterwerke AG
+Frau Beispiel
+Industriestra�e 5
+54321 Beispielhausen
+
+Bewerbung als Sachbearbeiterin Finanzbuchhaltung (m/w/d)
+
+Sehr geehrte Frau Beispiel,
+Ihre Stellenanzeige als Sachbearbeiterin Finanzbuchhaltung (m/w/d) hat mich sofort
+angesprochen, denn genau in diesem Bereich m�chte ich mich bei Musterwerke AG einbringen.
+Organisierte B�rokauffrau mit f�nf Jahren Erfahrung in Buchhaltung und Kundenservice.
+
+Seit 01.2021 arbeite ich als Sachbearbeiterin Buchhaltung bei Beispiel GmbH. Dort geh�ren
+dazu: Rechnungen pr�fen und buchen und Mahnwesen und Zahlungsverkehr.
+
+Mitbringen kann ich unter anderem DATEV, Microsoft Excel, Mahnwesen und Buchhaltung.
+Meine Grundlage ist der Abschluss ,,Ausbildung Kauffrau f�r B�romanagement" an der
+Einrichtung Muster & Co. KG / Berufsschule Musterstadt. Au�erdem spreche ich Englisch (B2).
+
+Ich kann ab 01.02.2027 bei Ihnen beginnen. �ber eine Einladung zu einem pers�nlichen
+Gespr�ch freue ich mich.
+Mit freundlichen Gr��en
+
+Erika Muster
+
+Anlagen
+Lebenslauf
+Erika Muster
+
+Kauffrau f�r B�romanagement
+
+Musterweg 12 � 12345 Musterstadt � 0171 2345678 � erika.muster@example.org
+
+PROFIL
+
+Organisierte B�rokauffrau mit f�nf Jahren Erfahrung in Buchhaltung und Kundenservice. Ich arbeite gern
+strukturiert und behalte auch bei vielen Terminen den �berblick.
+
+BERUFSERFAHRUNG
+
+01.2021 - heute    Sachbearbeiterin Buchhaltung
+                   Beispiel GmbH, Musterstadt
+                   � Rechnungen pr�fen und buchen
+                   � Mahnwesen und Zahlungsverkehr
+                   � Monatsabschluss vorbereiten
+
+08.2019 - 12.2020  Kauffrau f�r B�romanagement
+                   Muster & Co. KG, Musterstadt
+                   � Kundenanfragen per Telefon und E-Mail
+                   � Angebote und Auftragsbest�tigungen
+
+AUSBILDUNG         Ausbildung Kauffrau f�r B�romanagement (Note 2,1)
+                   Muster & Co. KG / Berufsschule Musterstadt
+08.2016 - 07.2019
+                   Mittlere Reife
+09.2010 - 07.2016  Realschule am Park
+
+KENNTNISSE
+
+DATEV � Microsoft Excel � Buchhaltung � Mahnwesen � F�hrerschein Klasse B
+
+SPRACHEN
+
+Deutsch            Muttersprache
+
+Englisch           Sehr gute Kenntnisse (B2)
+
+INTERESSEN
+
+Laufen, Kochen
+Arbeitszeugnis
+Frau Erika Muster war bei uns als B�rokauffrau t�tig.
+$ LibreOffice öffnet mappe.pdf: soffice.exe -env:UserInstallation=file:///C:\Users\<user>/AppData/Local/Temp/trendo-t0705-lo-075c4ba3 --headless --norestore --convert-to png --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-68d57c87 C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\mappe.pdf
+Exit 0
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\bewerbung\mappe.pdf as a Draw document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-68d57c87\mappe.png using filter : draw_png_Export
+[stderr] Could not find platform independent libraries <prefix>
+Datei mappe-libreoffice.png: 68271 Bytes, SHA-256 39677be0b1f483b9d7bc778313d316895b104afcb29db2de815155af1c04bb9e
+ERGEBNIS: bestanden

@@ -1,0 +1,9 @@
+    T-0727 B5: Schon getrenntes Lied zeigt ohne Demucs den Spuren-Mischer (nicht nur „Einrichten“) – Stumm wirkt auf die echten Spur-Dateien [FAIL]
+      Mischer fehlt, obwohl die Spuren vorliegen
+    T-0727 B3: 3D-Ansicht im Programmfenster wird nie unter ihre Mindesthöhe gedrückt – die Seite lässt sich stattdessen verschieben(width: 1366, height: 768) [FAIL]
+      1366×768: Ansicht nur 4 px hoch (Mindesthöhe 320)
+    T-0727 B3: 3D-Ansicht im Programmfenster wird nie unter ihre Mindesthöhe gedrückt – die Seite lässt sich stattdessen verschieben(width: 1600, height: 900) [FAIL]
+      1600×900: Ansicht nur 4 px hoch (Mindesthöhe 320)
+    T-0727 B3: 3D-Ansicht im Programmfenster wird nie unter ihre Mindesthöhe gedrückt – die Seite lässt sich stattdessen verschieben(width: 1600, height: 1000) [FAIL]
+      1600×1000: Ansicht nur 90 px hoch (Mindesthöhe 320)
+   Trendo.App.Tests  Total: 4, Errors: 0, Failed: 4, Skipped: 0, Not Run: 0, Time: 7,962s

@@ -2,7 +2,7 @@
 <TestRun id="f97090d8-0333-4e53-8942-12f09ea7b94b" name="<user>@<host> 2026-10-22 02:42:37" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:37.4883334+02:00" queuing="2026-10-22T02:42:37.4883335+02:00" start="2026-10-22T02:42:36.7563886+02:00" finish="2026-10-22T02:42:37.4923370+02:00" />
   <TestSettings name="default" id="34ac915b-27c7-4c47-9de8-5a5b26bb4b0d">
-    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_37" />
+    <Deployment runDeploymentRoot="<user>_<host>_2026-10-22_02_42_37" />
   </TestSettings>
   <Results>
     <UnitTestResult executionId="10e64488-798a-4283-a7be-6bf83fd5ae3a" testId="9162004a-a51a-2e08-0666-dda40ee01a3a" testName="SYS-09: Kontakte speichern, vCard ein- und ausgeben, ungültige Adresse abgelehnt" computerName="<host>" duration="00:00:00.0640218" startTime="2026-10-22T02:42:37.3467684+02:00" endTime="2026-10-22T02:42:37.4026058+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="10e64488-798a-4283-a7be-6bf83fd5ae3a" />

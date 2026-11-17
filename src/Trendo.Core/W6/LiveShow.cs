@@ -23,6 +23,11 @@ public sealed record LiveCue(TimeSpan At, string Scene, string Note);
 
 public sealed class LiveShow
 {
+    /// <summary>T-0715: Fassung von szenen.json. Ohne Angabe = 1 (so geschrieben vor T-0715); eine neuere Fassung wird gezeigt, aber nicht überschrieben (<see cref="Newer"/>).</summary>
+    public const int FormatVersion = 1;
+    public int Version { get; set; } = FormatVersion;
+    /// <summary>T-0715: Die Datei stammt aus einer neueren Trendo-Fassung – <see cref="Save"/> lässt sie unverändert.</summary>
+    [System.Text.Json.Serialization.JsonIgnore] public bool Newer => Version > FormatVersion;
     public List<LiveScene> Scenes { get; set; } = [];
     public string? Active { get; set; }
     public LiveMix Mix { get; set; } = new();
@@ -37,7 +42,14 @@ public sealed class LiveShow
         try { if (File.Exists(f) && JsonSerializer.Deserialize<LiveShow>(File.ReadAllText(f), Opt) is { } s) return s.Normal(); } catch (JsonException) { }
         return Default();
     }
-    public void Save(string dir) { Directory.CreateDirectory(dir); var f = Path.Combine(dir, "szenen.json"); var tmp = f + ".neu"; File.WriteAllText(tmp, JsonSerializer.Serialize(this, Opt)); SafeFile.Move(tmp, f); }
+    /// <summary>Speichern – T-0715 über <see cref="AtomicFile"/> (eigene Zwischendatei je Schreibvorgang, auf den Datenträger geleert; vorher feste „.neu“-Datei,
+    /// zwei Fenster konnten sich in die Quere kommen). Eine Datei aus einer neueren Fassung bleibt unverändert (false).</summary>
+    public bool Save(string dir)
+    {
+        if (Newer) return false;
+        if (Version < 1) Version = FormatVersion;
+        AtomicFile.WriteAllText(Path.Combine(dir, "szenen.json"), JsonSerializer.Serialize(this, Opt)); return true;
+    }
     LiveShow Normal() { if (Scenes.Count == 0) Scenes = Default().Scenes; Active ??= Scenes[0].Id; return this; }
 
     /// <summary>Startbesetzung wie bei Profis: Start-Bild, Kamera, Bildschirm, Pause.</summary>

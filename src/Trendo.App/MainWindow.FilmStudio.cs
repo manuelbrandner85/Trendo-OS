@@ -12,11 +12,14 @@ using Trendo.Core.Programs;
 namespace Trendo.App;
 
 /// <summary>Film-Studio „Filme machen“ (STUDIO-FILM-01, freigegeben 08.11.2026), Teil 1: F1 Ablauf, F2 Drehbuch im offenen Fountain-Format, F3 Figuren, Orte und Shotliste aus dem Drehbuch, F4 Figuren-Mappe.
-/// Kurzfilme und Trailer: Die Länge eines Clips begrenzt die Video-KI, das Studio rechnet deshalb in Einstellungen von höchstens wenigen Sekunden.</summary>
+/// Kurzfilme und Trailer: Die Länge eines Clips begrenzt die Video-KI, das Studio rechnet deshalb in Einstellungen von höchstens wenigen Sekunden.
+/// Teil 2 (T-0693, <c>MainWindow.FilmSchnitt.cs</c>): Material je Einstellung, Rohschnitt und „Film rendern“ – aus dem Drehbuch wird ein MP4.</summary>
 public partial class MainWindow
 {
     const string FilmKey = "film-programm";
     string _filmStep = "drehbuch";
+    /// <summary>Schritt der Arbeitsfläche: „drehbuch“, „figuren“ oder „shots“ (Einstellungen & Film).</summary>
+    public string FilmStep { get => _filmStep; set => _filmStep = value is "figuren" or "shots" ? value : "drehbuch"; }
 
     const string FilmSample = """
 Titel: Der letzte Zug
@@ -46,7 +49,7 @@ Dann bleibt mir nur noch eins.
 
     private void InitFilm() => RegisterProgram(FachTabs, new ProgramSpec(FilmKey, "STUDIO-FILM-01", "Filme machen")
     {
-        Sentence = "Von der Idee zum Kurzfilm oder Trailer: Drehbuch schreiben, Figuren festlegen, Einstellungen planen.",
+        Sentence = "Von der Idee zum fertigen Kurzfilm: Drehbuch schreiben, Einstellungen planen, eigene Clips und Fotos zuweisen, Film rendern.",
         Folder = "Filme",
         FillHeight = true,
         Templates =
@@ -56,9 +59,17 @@ Dann bleibt mir nur noch eins.
         ],
         Ribbon =
         [
+            ("Ausgabe", [
+                new ProgramCmd("film-render", "Film rendern", d => _ = FilmRender(d), Primary: true, Tip: "Macht aus Drehbuch, Clips und Fotos ein MP4 – im Hintergrund, mit Fortschritt und Abbrechen"),
+                new ProgramCmd("film-import", "Clips und Fotos hinzufügen", d => _ = FilmPickMaterial(d), Tip: "Eigene Videos und Fotos wählen – sie füllen der Reihe nach die Einstellungen ohne Material. Du kannst Dateien auch einfach hineinziehen."),
+                new ProgramCmd("film-to-editor", "Im Videoschnitt weiterbearbeiten", d => _ = FilmToEditor(d), Tip: "Öffnet denselben Rohschnitt als Zeitleiste im Videoschnitt – dort frei schneiden, Farbe, Effekte, weitere Formate"),
+            ]),
             ("Planen", [
-                new ProgramCmd("film-shots", "Einstellungen vorschlagen", d => { d.Set("script", Fountain.InsertSuggestedShots(d.Text("script")), "Einstellungen vorgeschlagen"); _filmStep = "shots"; }, Primary: true, Tip: "Füllt nur Szenen ohne Einstellungen, vorhandene bleiben."),
+                new ProgramCmd("film-shots", "Einstellungen vorschlagen", d => { d.Set("script", Fountain.InsertSuggestedShots(d.Text("script")), "Einstellungen vorgeschlagen"); _filmStep = "shots"; }, Tip: "Füllt nur Szenen ohne Einstellungen, vorhandene bleiben."),
                 new ProgramCmd("film-sync", "Figuren & Orte übernehmen", d => { FilmSync(d); _filmStep = "figuren"; }, Tip: "Trägt neue Figuren und Orte aus dem Drehbuch in die Mappe ein."),
+                new ProgramCmd("film-ki-start", "Drehbuch mit KI schreiben", d => _ = FilmWrite(d), Tip: "Die KI schreibt aus deinem Satz („Worum geht es?“) ein Drehbuch mit Einstellungen ins Dokument. Rückgängig holt den alten Stand zurück."),
+                new ProgramCmd("film-open-fountain", "Drehbuch öffnen (.fountain)", d => _ = FilmOpenFountain(d), Tip: "Ein Drehbuch aus einem anderen Programm im offenen Fountain-Format übernehmen"),
+                new ProgramCmd("film-import-music", "Musik wählen", d => _ = FilmPickMusic(d), Tip: "Eine eigene Tondatei unter den ganzen Film legen"),
             ]),
         ],
         Exports =
@@ -70,8 +81,8 @@ Dann bleibt mir nur noch eins.
         ],
         Workspace = FilmWorkspace,
         Properties = FilmProperties,
-        Status = d => { var b = FilmOf(d); return $"{b.Scenes.Count} Szenen · {b.Roles.Count} Figuren · {b.ShotCount} Einstellungen · etwa {(b.Seconds / 60).ToString("0.0", De)} Minuten"; },
-        Help = "Schreib links das Drehbuch: Szenenkopf wie „INNEN. KÜCHE – TAG“, Figurennamen in Großbuchstaben, darunter was sie sagen. Rechts siehst du es als fertige Seite. Einstellungen schreibst du als „- Totale: Beschreibung (4 s)“.",
+        Status = d => { var b = FilmOf(d); var shots = FilmCut.Shots(d.Data); return $"{b.Scenes.Count} Szenen · {b.Roles.Count} Figuren · {b.ShotCount} Einstellungen, {shots.Count(s => s.Kind != "karte")} mit Material · etwa {(b.Seconds / 60).ToString("0.0", De)} Minuten" + (FilmRendering ? " · Film wird gerendert" : ""); },
+        Help = "Schreib links das Drehbuch: Szenenkopf wie „INNEN. KÜCHE – TAG“, Figurennamen in Großbuchstaben, darunter was sie sagen. Rechts siehst du es als fertige Seite. Einstellungen schreibst du als „- Totale: Beschreibung (4 s)“. Unter „3 Einstellungen & Film“ ziehst du deine Clips und Fotos auf die Einstellungen; wo nichts liegt, steht im Film eine Texttafel. „Film rendern“ macht daraus ein MP4.",
     }, "film", "filme", "kurzfilm", "kinofilm", "spielfilm", "trailer", "drehbuch", "storyboard", "shotliste", "fountain", "regie");
 
     string FilmPdf(ProgramDocument d, string file)
@@ -106,15 +117,16 @@ Dann bleibt mir nur noch eins.
     private Control FilmWorkspace(ProgramDocument d)
     {
         var steps = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Margin = new Thickness(4, 4, 4, 10), [DockPanel.DockProperty] = Avalonia.Controls.Dock.Top };
-        foreach (var (id, label) in new[] { ("drehbuch", "1 Drehbuch"), ("figuren", "2 Figuren & Orte"), ("shots", "3 Einstellungen") })
+        foreach (var (id, label) in new[] { ("drehbuch", "1 Drehbuch"), ("figuren", "2 Figuren & Orte"), ("shots", "3 Einstellungen & Film") })
         {
-            var b = new Button { Name = "film-step-" + id, Content = label, Padding = new Thickness(14, 6), FontWeight = _filmStep == id ? FontWeight.SemiBold : FontWeight.Normal };
-            if (_filmStep == id) b.Classes.Add("accent");
+            // der gewählte Schritt ist unterstrichen, nicht golden gefüllt: Gold bleibt der einen Hauptaktion „Film rendern“
+            var b = new Button { Name = "film-step-" + id, Content = label, Padding = new Thickness(14, 6), FontWeight = _filmStep == id ? FontWeight.SemiBold : FontWeight.Normal, Background = Brushes.Transparent, Foreground = _filmStep == id ? Text : Muted,
+                BorderBrush = _filmStep == id ? FilmGold : Brushes.Transparent, BorderThickness = new Thickness(0, 0, 0, 2), CornerRadius = new CornerRadius(0) };
             b.Click += (_, _) => { _filmStep = id; Show(FilmKey); };
             steps.Children.Add(b);
         }
         // Die Schritte bleiben stehen, nur der Inhalt darunter scrollt
-        Control body = _filmStep switch { "figuren" => new ScrollViewer { Content = FilmFigures(d) }, "shots" => new ScrollViewer { Content = FilmShots(d) }, _ => FilmScript(d) };
+        Control body = _filmStep switch { "figuren" => new ScrollViewer { Content = FilmFigures(d) }, "shots" => FilmProduction(d), _ => FilmScript(d) };
         return new DockPanel { Name = "film-workspace", Children = { steps, body } };
     }
 
@@ -143,10 +155,13 @@ Dann bleibt mir nur noch eins.
         var box = new TextBox { Name = "film-script", Text = d.Text("script"), AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, FontFamily = new FontFamily("Consolas, Courier New, monospace"), FontSize = 13, VerticalContentAlignment = VerticalAlignment.Top, PlaceholderText = "INNEN. KÜCHE – TAG" };
         Render(d.Text("script"));
         var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
-        var typed = false; // nur getippten Text übernehmen: Beim Neuzeichnen nach einem Befehl darf das alte Feld den neuen Stand nicht überschreiben
-        void Commit() { timer.Stop(); if (typed && (box.Text ?? "") != d.Text("script")) d.Set("script", box.Text ?? "", "Drehbuch geändert"); typed = false; }
+        // nur getippten Text übernehmen: Beim Neuzeichnen nach einem Befehl darf das alte Feld den neuen Stand nicht überschreiben.
+        // T-0693: „getippt“ heißt anders als der Text, mit dem das Feld entstand – nicht anders als das Dokument. Sonst schreibt ein Feld, das noch den alten Text zeigt,
+        // ihn zurück, sobald das Dokument inzwischen von woanders geändert wurde (KI schreibt das Drehbuch, Fountain-Datei geöffnet): Das Textfeld meldet seine erste Änderung verzögert.
+        var typed = false; var shown = d.Text("script");
+        void Commit() { timer.Stop(); var now = box.Text ?? ""; if (typed && now != d.Text("script")) d.Set("script", now, "Drehbuch geändert"); typed = false; shown = now; }
         timer.Tick += (_, _) => Commit();
-        box.TextChanged += (_, _) => { Render(box.Text ?? ""); typed = (box.Text ?? "") != d.Text("script"); timer.Stop(); if (typed) timer.Start(); };
+        box.TextChanged += (_, _) => { Render(box.Text ?? ""); typed = (box.Text ?? "") != shown; timer.Stop(); if (typed) timer.Start(); };
         box.LostFocus += (_, _) => Commit();
         box.DetachedFromVisualTree += (_, _) => Commit();
         var page = new Border { Background = Brushes.White, CornerRadius = new CornerRadius(6), Padding = new Thickness(26, 20), BoxShadow = BoxShadows.Parse("0 6 24 0 #66000000"), Child = new ScrollViewer { Content = preview } };
@@ -184,28 +199,9 @@ Dann bleibt mir nur noch eins.
         return sp;
     }
 
-    Control FilmShots(ProgramDocument d)
-    {
-        var b = FilmOf(d);
-        var sp = new StackPanel { Name = "film-shots", Spacing = 6, Margin = new Thickness(4, 0, 10, 4) };
-        sp.Children.Add(P($"{b.ShotCount} Einstellungen. Eine KI-Einstellung ist höchstens etwa 5 Sekunden lang. Längere Einstellungen werden aus mehreren Clips zusammengesetzt.", Muted, 12));
-        foreach (var p in b.Problems) sp.Children.Add(P("⚠ " + p, Brush.Parse("#F5A524"), 12));
-        foreach (var s in b.Scenes)
-        {
-            sp.Children.Add(H($"{s.Code} · {s.Place}. {s.Location}{(s.Time.Length > 0 ? " – " + s.Time : "")}", 13));
-            if (s.Shots.Count == 0) { sp.Children.Add(P("Noch keine Einstellungen. Oben auf „Einstellungen vorschlagen“ klicken oder selbst ins Drehbuch schreiben.", Muted, 12)); continue; }
-            foreach (var x in s.Shots)
-                sp.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("90,110,*,60"), Children = {
-                    new TextBlock { Text = x.Id, Foreground = Muted, FontSize = 12 },
-                    Pos(new TextBlock { Text = x.Type, Foreground = Text, FontSize = 12 }, 1),
-                    Pos(new TextBlock { Text = x.Description, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap }, 2),
-                    Pos(new TextBlock { Text = x.Seconds.ToString("0.#", De) + " s", Foreground = Muted, FontSize = 12, HorizontalAlignment = HorizontalAlignment.Right }, 3) } });
-        }
-        return sp;
-    }
-
     private Control FilmProperties(ProgramDocument d)
     {
+        if (_filmStep == "shots") return FilmCutProperties(d);
         var sp = new StackPanel { Spacing = 4 };
         void Txt(string key, string label, bool multi = false)
         {

@@ -1,0 +1,5 @@
+3D-Szene 40000 Dreiecke, OBJ 1032 KB: Import fertig 439 ms, bis Ansicht aufgebaut 1651 ms
+3D-Szene 40000 Dreiecke, OBJ 1032 KB: Import fertig 449 ms, bis Ansicht aufgebaut 1906 ms
+3D-Szene 40000 Dreiecke, OBJ 1032 KB: Import fertig 488 ms, bis Ansicht aufgebaut 1881 ms
+3D-Szene 40000 Dreiecke, OBJ 1032 KB: Import fertig 577 ms, bis Ansicht aufgebaut 1906 ms
+3D-Szene 40000 Dreiecke, OBJ 1032 KB: Import fertig 531 ms, bis Ansicht aufgebaut 2130 ms

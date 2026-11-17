@@ -86,7 +86,7 @@ public class YaraScanTests : IDisposable
 /// <summary>Echte Daten: das Regel-Archiv von ReversingLabs (fester Stand) – nur entpacken und lesen, nichts ausführen.</summary>
 public class YaraRulesRealTests
 {
-    static string Zip => Path.Combine(Path.GetTempPath(), "trendo-tools-b", "yara-regeln", "rl-rules-e0a0be54.zip");
+    static string Zip => Path.Combine(global::Trendo.Core.TempDir.SystemTemp, "trendo-tools-b", "yara-regeln", "rl-rules-e0a0be54.zip");
     public sealed class RulesFactAttribute : FactAttribute { public RulesFactAttribute() { if (!File.Exists(Zip)) Skip = "Übersprungen – Regel-Archiv nicht im Prüfordner."; } }
 
     [RulesFact(DisplayName = "YARA echt: Regel-Archiv hat die gepinnte Prüfsumme; alle 310 Regeln landen flach im Regelordner, jede mit Regelkopf, 309 mit Erkennungsart")]
@@ -111,8 +111,8 @@ public class YaraRulesRealTests
 /// <summary>Echter Lauf von yr 1.22.0 mit allen 310 ReversingLabs-Regeln (Prüfordner, Freigabe 08.11.2026). Eingerichtet über Trendos eigenen Weg (ExtractExe/ExtractRules).</summary>
 public class YaraScanRealTests
 {
-    static string Zip => Path.Combine(Path.GetTempPath(), "trendo-tools-b", "yarax", "yarax.zip");
-    static string Rules => Path.Combine(Path.GetTempPath(), "trendo-tools-b", "yara-regeln", "rl-rules-e0a0be54.zip");
+    static string Zip => Path.Combine(global::Trendo.Core.TempDir.SystemTemp, "trendo-tools-b", "yarax", "yarax.zip");
+    static string Rules => Path.Combine(global::Trendo.Core.TempDir.SystemTemp, "trendo-tools-b", "yara-regeln", "rl-rules-e0a0be54.zip");
     public sealed class YrFactAttribute : FactAttribute { public YrFactAttribute() { if (!OperatingSystem.IsWindows() || !File.Exists(Zip) || !File.Exists(Rules)) Skip = "Übersprungen – yara-x oder Regeln nicht im Prüfordner."; } }
 
     const string TestRule = """

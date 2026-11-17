@@ -2,7 +2,7 @@
 <TestRun id="d635ee7e-78de-4f53-a99b-d47828798745" name="<user>@<host> 2026-10-22 02:43:07" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:43:07.3128695+02:00" queuing="2026-10-22T02:43:07.3128697+02:00" start="2026-10-22T02:43:03.9587749+02:00" finish="2026-10-22T02:43:08.2430689+02:00" />
   <TestSettings name="default" id="42e26a4d-ea7f-4b60-a53b-e3baafd838fc">
-    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_43_07" />
+    <Deployment runDeploymentRoot="<user>_<host>_2026-10-22_02_43_07" />
   </TestSettings>
   <Results>
     <UnitTestResult executionId="3326e0dc-4001-4f71-8a09-0ab0f7a112ad" testId="3f0d7696-e925-d635-751a-64aa0c45e797" testName="SPEC-10 UI: diesen PC live messen, Sensor anlegen, CSV einlesen" computerName="<host>" duration="00:00:01.5728134" startTime="2026-10-22T02:43:05.0742030+02:00" endTime="2026-10-22T02:43:06.6546205+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3326e0dc-4001-4f71-8a09-0ab0f7a112ad" />

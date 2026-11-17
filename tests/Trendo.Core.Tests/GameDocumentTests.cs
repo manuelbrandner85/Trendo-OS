@@ -238,7 +238,7 @@ public class GameDocumentTests
     [InlineData("")]
     public void Rejected_paths(string path)
     {
-        if (path.StartsWith("/\\", StringComparison.Ordinal) && !OperatingSystem.IsWindows()) return; // dort ein gewöhnlicher Pfad
+        if (path.StartsWith("/\\", StringComparison.Ordinal) && !OperatingSystem.IsWindows()) { Ueberspringen.Weil("dieser Pfad ist nur unter Windows ungültig."); return; } // dort ein gewöhnlicher Pfad
         Assert.False(GameDocument.IsLocalImage(path));
     }
 

@@ -6,5 +6,12 @@ reports/t0222-vollpaket/** -text
 reports/t0224-desktop/** -text
 reports/t0223-office/** -text
 reports/r0910-setup/** -text
+reports/T-0724/** -text
+reports/T-0727/** -text
 # Linux-Abbild: Skripte und sudo-Regeln immer mit LF (CRLF bricht bash und sudo)
 linux-image/** text eol=lf
+reports/echtlauf/** -text
+reports/T-0689/** -text
+reports/T-0691/** -text
+tests/fixtures/t0691/** -text
+reports/T-0705/** -text

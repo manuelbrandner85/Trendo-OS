@@ -411,7 +411,7 @@ public class ImportTempoTests
             var f = WithDrawing(d, DrawingOf(["c1", "gibtsnicht", "c2"]), RelList([Rel("c1", "../charts/chart1.xml"), Rel("c1", "../charts/chart2.xml"), Rel("c2", "../charts/chart2.xml")]),
                 ("xl/charts/chart1.xml", ChartXml("<a:p><a:r><a:t>Teil </a:t></a:r><a:r><a:t>zwei</a:t></a:r></a:p>", "'Blatt'!$C$2:$D$9")),
                 ("xl/charts/chart2.xml", ChartXml("", "$A$1")));
-            Assert.Equal([new SheetChart(ChartKind.Balken, "C2:D9", "Teil zwei"), new SheetChart(ChartKind.Balken, "A1:A1", "Diagramm")], SheetFiles.ReadXlsx(f).Sheets[0].Charts);
+            Assert.Equal([new SheetChart(ChartKind.Balken, "C2:D9", "Teil zwei", Legend: "none"), new SheetChart(ChartKind.Balken, "A1:A1", "Diagramm", Legend: "none")], SheetFiles.ReadXlsx(f).Sheets[0].Charts); // T-0701: ohne <c:legend> hat das Diagramm keine Legende – das bleibt so
         }
         finally { Directory.Delete(d, true); }
     }
@@ -524,7 +524,7 @@ public class ImportTempoTests
         try
         {
             var f = WithDrawing(d, $"""<wsDr xmlns:c="{CNs}"><c:chart/></wsDr>""", RelList(["""<Relationship Target="../charts/chart1.xml"/>"""]), ("xl/charts/chart1.xml", ChartXml("<a:t>Ohne Id</a:t>", "$A$1")));
-            Assert.Equal([new SheetChart(ChartKind.Balken, "A1:A1", "Ohne Id")], SheetFiles.ReadXlsx(f).Sheets[0].Charts);
+            Assert.Equal([new SheetChart(ChartKind.Balken, "A1:A1", "Ohne Id", Legend: "none")], SheetFiles.ReadXlsx(f).Sheets[0].Charts);
         }
         finally { Directory.Delete(d, true); }
     }
@@ -567,7 +567,7 @@ public class ImportTempoTests
         {
             var f = WithDrawing(d, DrawingOf(["c1"]), RelList([Rel("c1", "../charts/chart1.xml")]),
                 ("xl/charts/chart1.xml", ChartXml(Nest(Depth, "<a:t>", "</a:t>", "Titel"), Nest(Depth, "<c:f>", "</c:f>", "$B$2:$C$4"))));
-            Assert.Equal([new SheetChart(ChartKind.Balken, "B2:C4", "Titel")], SheetFiles.ReadXlsx(f).Sheets[0].Charts);
+            Assert.Equal([new SheetChart(ChartKind.Balken, "B2:C4", "Titel", Legend: "none")], SheetFiles.ReadXlsx(f).Sheets[0].Charts);
         }
         finally { Directory.Delete(d, true); }
     }

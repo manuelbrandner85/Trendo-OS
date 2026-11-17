@@ -2,7 +2,7 @@
 <TestRun id="67045f2e-1065-4b05-bc97-c3fdb76ee685" name="<user>@<host> 2026-10-22 02:42:48" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:48.3775719+02:00" queuing="2026-10-22T02:42:48.3775720+02:00" start="2026-10-22T02:42:47.6398206+02:00" finish="2026-10-22T02:42:48.3817588+02:00" />
   <TestSettings name="default" id="64b4608d-bb3f-4e76-9d58-0a04f1b6849c">
-    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_48" />
+    <Deployment runDeploymentRoot="<user>_<host>_2026-10-22_02_42_48" />
   </TestSettings>
   <Results>
     <UnitTestResult executionId="b0519753-e9ce-4395-bfe1-0ed8f9214807" testId="3390afa6-b7fd-d06c-7af2-0384817fa8f0" testName="SPEC-16 F16: Kilometergeld" computerName="<host>" duration="00:00:00.0002336" startTime="2026-10-22T02:42:48.2694459+02:00" endTime="2026-10-22T02:42:48.2695826+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b0519753-e9ce-4395-bfe1-0ed8f9214807" />

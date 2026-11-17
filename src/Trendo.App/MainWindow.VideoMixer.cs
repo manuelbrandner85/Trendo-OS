@@ -53,7 +53,7 @@ public partial class MainWindow
     {
         var sp = new StackPanel { Name = "ve-grade", Spacing = 4, Margin = new Thickness(0, 8, 0, 0) };
         sp.Children.Add(H("Farbräder", 13));
-        sp.Children.Add(P("Punkt zum gewünschten Farbton ziehen. Doppelklick stellt zurück. Sichtbar wird es im Export und in den Scopes.", Muted, 11));
+        sp.Children.Add(P("Punkt zum gewünschten Farbton ziehen. Doppelklick stellt zurück. Die Vorschau zeigt es wie im Export, dazu die Scopes.", Muted, 11));
         var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
         PreviewWheelsForTests.Clear();
         foreach (var (id, label, _) in VideoGrade.Wheels)

@@ -10,7 +10,7 @@
 - Version 0.9.21.
 
 ## Nachweise
-- Volltest: Api 15/15, Core 856 bestanden/3 übersprungen, App 437 bestanden/3 übersprungen, Paket-Tests 8/8 OK – `reports/T-0247/volltest.log`, SHA-256 `224aa95e2d013f313d8efa3531f723cf7e2bbfcef732e9007ad2fc1edb63e631`
+- Volltest: Api 15/15, Core 856 bestanden/3 übersprungen, App 437 bestanden/3 übersprungen, Paket-Tests 8/8 OK – `reports/T-0247/volltest.log`, SHA-256 `32bfc41407ab43f46175fe3d5a63b01ffdfc786e3bf138653a47fa06c100cb47`
 
 ## Offen
 - Andere Bearbeitungen nach „Zurück“ könnten ebenfalls eine veraltete Markierung haben – nicht untersucht.

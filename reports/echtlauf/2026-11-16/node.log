@@ -1,0 +1,31 @@
+# Echtlauf node – Browser-Spiele: erzeugtes JavaScript mit node --check
+Datum: 2026-11-16T21:36:59
+Fundort: C:\Users\<user>\nodejs\node.exe
+Suchweg: Cli.Find (PATH) wie GameStudio/DevStudio
+Version: v24.22.2
+
+## Tests (core): „CORE-06: Alle Browser-Spiele werden angelegt“ – 1 Ergebnis(se), 2.5 s
+- Passed: CORE-06: Alle Browser-Spiele werden angelegt, JavaScript ist gültig (node --check)
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=W4_Core06_Game.Browser_games --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\node-0.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\node-0.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 411 ms - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „CORE-06: Gebautes Spiel“ – 2 Ergebnis(se), 2.3 s
+- Passed: CORE-06: Gebautes Spiel mit 2 Leveln, Hintergrund und Lauf-Animation – config.js trägt alles, Bildstreifen liegt im Spielordner, game.js ist gültiges JavaScript (Node)
+- Passed: CORE-06: Gebautes Spiel: config.js trägt Zeitlimit und Regeln, neue Kacheln sind erlaubt, game.js ist gültiges JavaScript (Node)
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.GameRulesTests.Built_game|FullyQualifiedName=Trendo.Core.Tests.GameRulesTests.Built_game_levels --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\node-1.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\node-1.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     2, übersprungen:     0, gesamt:     2, Dauer: 249 ms - Trendo.Core.Tests.dll (net10.0)
+
+
+ERGEBNIS: ECHT-GRÜN (5.0 s)
+- CORE-06: Alle Browser-Spiele werden angelegt: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- CORE-06: Gebautes Spiel: 2 bestanden, 0 fehlgeschlagen, 0 übersprungen

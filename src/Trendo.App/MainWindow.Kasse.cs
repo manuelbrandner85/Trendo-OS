@@ -29,12 +29,31 @@ public partial class MainWindow
     /// <summary>Warenkorb füllen (Vorschaubilder, KI).</summary>
     public void KasseRenderCart(IEnumerable<(string Product, decimal Qty)> items, string given = "") { _cart.Clear(); foreach (var (p, q) in items) CartAdd(p, q); _kasseGiven = given; }
 
+    /// <summary>V-15 (T-0709): Verkaufen hat eine Reiterzeile statt zwei. Die Reiter des Studios („Geschäftsidee“ …) stehen in derselben Zeile hinter „Kasse · Online &amp; Artikel · Auswertung“;
+    /// die Studio-Reiterzeile darüber entfällt auf dieser Seite. Kein Reiter geht verloren, Namen und Ziele bleiben.</summary>
     Control SellTabs()
     {
         var bar = new WrapPanel { Name = "sell-tabs" };
         foreach (var (id, label) in new[] { ("kasse", "Kasse"), ("online", "Online & Artikel"), ("auswertung", "Auswertung") })
         { var b = Act("sell-tab-" + id, label, () => { _sellTab = id; Show("verkaufen"); }, _sellTab == id); b.Margin = new Thickness(0, 0, 6, 6); bar.Children.Add(b); }
+        var first = true;
+        foreach (var (k, l, m) in BusinessTabs.Where(t => t.Key != "verkaufen" && OwnTab(t.Key, t.Module)))
+        {
+            var key = k;
+            var b = Act("business-tab-" + k, l, () => { _w45Msg = ""; Show(key); });
+            b.Margin = new Thickness(first ? 18 : 0, 0, 6, 6); first = false; // kleiner Abstand: ab hier andere Seiten des Studios
+            bar.Children.Add(b);
+        }
         return bar;
+    }
+
+    /// <summary>V-15 (T-0709): Seite „Verkaufen“ ohne eigene Studio-Reiterzeile – die steckt in <see cref="SellTabs"/>.</summary>
+    Control SellPage(string title, Control body)
+    {
+        var sp = new StackPanel { Spacing = 8 };
+        if (_w45Msg.Length > 0) sp.Children.Add(ResultCard(_w45Msg));
+        sp.Children.Add(body);
+        return Page(title, sp);
     }
 
     void CartAdd(string product, decimal qty)

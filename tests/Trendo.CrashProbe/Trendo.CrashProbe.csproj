@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- T-0680: Hilfsprogramm nur für Tests. Es speichert in einer Schleife und wird vom Test hart beendet (Process.Kill) – so wird ein echter Absturz geprüft. Wird nicht ausgeliefert. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>false</IsTestProject>
+    <!-- T-0714: wie die App mit Ländereinstellungen (Trendo Tabelle braucht „de-DE“ für Zahlen und Datumswerte) -->
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Trendo.Core\Trendo.Core.csproj" />
+  </ItemGroup>
+</Project>

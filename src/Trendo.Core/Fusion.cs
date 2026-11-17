@@ -28,7 +28,7 @@ public static class Fusion
             new("Business", "Idee bewerten und Bauplan schreiben", c =>
             {
                 var i = new BusinessIdea { Name = c.In("name"), Problem = c.In("problem"), Audience = c.In("audience"), Solution = c.In("solution"), Price = double.TryParse(c.In("price").Replace(",", "."), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var p) ? p : 0, HoursWeek = 10, CustomersMonth = 10 };
-                var f = Path.Combine(c.WorkDir, "Bauplan.md"); File.WriteAllText(f, BusinessStudio.Blueprint(i)); c.Out["verdict"] = BusinessStudio.Evaluate(i).Decision; c.Out["blueprint"] = f;
+                var f = Path.Combine(c.WorkDir, "Bauplan.md"); AtomicFile.WriteAllText(f, BusinessStudio.Blueprint(i)); c.Out["verdict"] = BusinessStudio.Evaluate(i).Decision; c.Out["blueprint"] = f;
                 return $"Bewertung: {c.Out["verdict"]}";
             }),
             new("Baukasten", "Angebotsseite bauen", c =>
@@ -132,7 +132,7 @@ public static class Fusion
         var sb = new StringBuilder($"Ablauf: {r.Label}\nZeit: {DateTimeOffset.Now:yyyy-MM-dd HH:mm zzz}\n\n");
         foreach (var x in res) sb.AppendLine($"{(x.Ok ? "OK  " : "FEHLER")} {x.Label}: {x.Detail}");
         if (res.Count < r.Steps.Count) sb.AppendLine($"\nAngehalten. {r.Steps.Count - res.Count} Schritte nicht ausgeführt.");
-        File.WriteAllText(Path.Combine(c.WorkDir, "PROTOKOLL.txt"), sb.ToString());
+        AtomicFile.WriteAllText(Path.Combine(c.WorkDir, "PROTOKOLL.txt"), sb.ToString()); // T-0717: atomar
         return res;
     }
 }

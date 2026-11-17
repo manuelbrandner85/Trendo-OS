@@ -1,0 +1,56 @@
+# Echtlauf python – Python-Vorlage und alle KI-Python-Umgebungen
+Datum: 2026-11-16T21:37:07
+Fundort: C:\Users\<user>\AppData\Local\TrendoWerkzeuge\python\python.exe
+Suchweg: DependencyManager, sonst PATH
+Version: Python 3.13.17
+
+## Fachlauf (Helfer: python) – Exit 0, 1.2 s
+21:37:07 ki/laufzeit/piper: keine Python-Umgebung an den bekannten Stellen (kein Fehler – nicht jede Laufzeit ist Python)
+21:37:07 ki/laufzeit/realesrgan: keine Python-Umgebung an den bekannten Stellen (kein Fehler – nicht jede Laufzeit ist Python)
+21:37:07 ki/laufzeit/spuren: keine Python-Umgebung an den bekannten Stellen (kein Fehler – nicht jede Laufzeit ist Python)
+21:37:07 ki/laufzeit/stablediffusioncpp: keine Python-Umgebung an den bekannten Stellen (kein Fehler – nicht jede Laufzeit ist Python)
+21:37:07 ki/laufzeit/uv: keine Python-Umgebung an den bekannten Stellen (kein Fehler – nicht jede Laufzeit ist Python)
+21:37:07 ki/laufzeit/whispercpp: keine Python-Umgebung an den bekannten Stellen (kein Fehler – nicht jede Laufzeit ist Python)
+21:37:07 $ python.exe -I -c "import sys, json, hashlib; print(sys.version.split()[0], hashlib.sha256(json.dumps({'a': [1, 2]}).encode()).hexdigest()[:12])"
+21:37:07   Exit 0 nach 0,2 s
+  | 3.13.17 0bf464f8d802
+21:37:07 Python (allgemein): OK 3.13.17 0bf464f8d802
+21:37:07 $ python.exe -I -c "import sys, json, hashlib; print(sys.version.split()[0], hashlib.sha256(json.dumps({'a': [1, 2]}).encode()).hexdigest()[:12])"
+21:37:07   Exit 0 nach 0,2 s
+  | 3.11.9 0bf464f8d802
+21:37:07 ki/laufzeit/acestep: OK 3.11.9 0bf464f8d802
+21:37:07 $ python.exe -I -c "import sys, json, hashlib; print(sys.version.split()[0], hashlib.sha256(json.dumps({'a': [1, 2]}).encode()).hexdigest()[:12])"
+21:37:08   Exit 0 nach 0,2 s
+  | 3.12.16 0bf464f8d802
+21:37:08 ki/laufzeit/mmaudio: OK 3.12.16 0bf464f8d802
+21:37:08 $ python.exe -I -c "import sys, json, hashlib; print(sys.version.split()[0], hashlib.sha256(json.dumps({'a': [1, 2]}).encode()).hexdigest()[:12])"
+21:37:08   Exit 0 nach 0,1 s
+  | 3.12.16 0bf464f8d802
+21:37:08 ki/laufzeit/musikanalyse: OK 3.12.16 0bf464f8d802
+21:37:08 $ python.exe -I -c "import sys, json, hashlib; print(sys.version.split()[0], hashlib.sha256(json.dumps({'a': [1, 2]}).encode()).hexdigest()[:12])"
+21:37:08   Exit 0 nach 0,1 s
+  | 3.12.16 0bf464f8d802
+21:37:08 ki/laufzeit/pluginhost: OK 3.12.16 0bf464f8d802
+21:37:08 $ python.exe -I -c "import sys, json, hashlib; print(sys.version.split()[0], hashlib.sha256(json.dumps({'a': [1, 2]}).encode()).hexdigest()[:12])"
+21:37:08   Exit 0 nach 0,1 s
+  | 3.12.16 0bf464f8d802
+21:37:08 ki/laufzeit/stimme: OK 3.12.16 0bf464f8d802
+21:37:08 $ python.exe -I -c "import sys, json, hashlib; print(sys.version.split()[0], hashlib.sha256(json.dumps({'a': [1, 2]}).encode()).hexdigest()[:12])"
+21:37:08   Exit 0 nach 0,1 s
+  | 3.12.16 0bf464f8d802
+21:37:08 ki/laufzeit/triposr: OK 3.12.16 0bf464f8d802
+
+## Tests (core): „CORE-07: Python- und .NET-Vorlage“ – 1 Ergebnis(se), 7.1 s
+- Passed: CORE-07: Python- und .NET-Vorlage bestehen ihren eigenen Test (echte Werkzeuge)
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=W4_Core07_DevStudio.Templates_build --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\python-1.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\python-1.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 5 s - Trendo.Core.Tests.dll (net10.0)
+
+
+ERGEBNIS: ECHT-GRÜN (8.5 s)
+- Fachlauf python: ECHT-GRÜN – ki/laufzeit/triposr: OK 3.12.16 0bf464f8d802
+- CORE-07: Python- und .NET-Vorlage: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen

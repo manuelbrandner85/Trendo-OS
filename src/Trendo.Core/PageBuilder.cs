@@ -9,6 +9,10 @@ public sealed record Block(string Kind, string Text = "", string Url = "");
 
 public sealed class SitePage
 {
+    /// <summary>T-0716: Fassung von <c>seite.json</c>, die dieses Trendo schreibt und versteht. Dateien ohne Angabe (vor T-0716) gelten als Fassung 1;
+    /// eine neuere Fassung wird nicht geöffnet (beim Speichern gingen sonst Inhalte verloren). Migration: Stufe für Stufe in <see cref="FromJson"/>.</summary>
+    public const int FormatVersion = 1;
+    [System.Text.Json.Serialization.JsonPropertyOrder(-1)] public int Version { get; set; } = FormatVersion;
     public string Title { get; set; } = "Meine Seite";
     public string Accent { get; set; } = "#2F86F6";
     public List<Block> Blocks { get; set; } = [];
@@ -53,8 +57,24 @@ public sealed class SitePage
         return sb.ToString();
     }
 
-    public void Save(string file) => File.WriteAllText(file, JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true }));
-    public static SitePage Load(string file) => JsonSerializer.Deserialize<SitePage>(File.ReadAllText(file)) ?? new();
+    static readonly JsonSerializerOptions Indented = new() { WriteIndented = true };
+    public string ToJson() => JsonSerializer.Serialize(this, Indented);
+    /// <summary>T-0716: absturzsicher (Zwischendatei, dann austauschen) – ein Abbruch beim Speichern hinterlässt nie eine halbe Seite.</summary>
+    public void Save(string file) => AtomicFile.WriteAllText(file, ToJson());
+    public static SitePage Load(string file) => FromJson(File.ReadAllText(file));
+
+    /// <summary>Seite aus JSON. Fehlende Fassung = 1 (Dateien vor T-0716), neuere Fassung → <see cref="InvalidDataException"/> mit verständlicher Meldung.</summary>
+    public static SitePage FromJson(string json)
+    {
+        var p = JsonSerializer.Deserialize<SitePage>(json) ?? new();
+        if (p.Version <= 0) p.Version = 1;
+        if (p.Version > FormatVersion)
+            throw new InvalidDataException($"Diese Seite wurde mit einer neueren Trendo-Fassung gespeichert (Dateiformat {p.Version}, dieses Trendo kennt {FormatVersion}). Bitte aktualisiere Trendo – die Datei bleibt so lange unverändert.");
+        // Stufen v → v+1: noch keine – Fassung 1 ist die erste mit Angabe; ältere Seiten ohne Angabe haben denselben Aufbau.
+        p.Version = FormatVersion;
+        p.Title ??= ""; p.Accent ??= "#2F86F6"; p.Blocks ??= [];
+        return p;
+    }
 
     /// <summary>Schreibt index.html (und kopiert lokale Bilder mit) in den Ausgabeordner.</summary>
     public string Publish(string outDir, string? assetDir = null)
@@ -66,6 +86,6 @@ public sealed class SitePage
                 var src = Path.Combine(assetDir, b.Url); var dst = Path.Combine(outDir, b.Url);
                 if (File.Exists(src)) { Directory.CreateDirectory(Path.GetDirectoryName(dst)!); File.Copy(src, dst, true); }
             }
-        var p = Path.Combine(outDir, "index.html"); File.WriteAllText(p, ToHtml(), new UTF8Encoding(false)); return p;
+        var p = Path.Combine(outDir, "index.html"); AtomicFile.WriteAllText(p, ToHtml()); return p; // T-0716: atomar (UTF-8 ohne BOM wie vorher)
     }
 }

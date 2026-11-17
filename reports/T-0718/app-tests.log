@@ -1,0 +1,11 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    Z6 PC-Lauf: Prüflauf mit echten lokalen Modellen über Ollama, Protokoll unter reports/ (nur mit TRENDO_PC_LAUF=1) [SKIP]
+      Übersprungen – PC-Lauf nur mit TRENDO_PC_LAUF=1 (braucht Ollama und Zeit).
+    Z3 PC-Lauf: echtes Modell (Poly Haven, CC0) über Blender nach GLB, HDR-Licht, Grafikkarte, Bilder und gemessene Bildrate unter reports/ (nur mit TRENDO_PC_LAUF=1) [SKIP]
+      Übersprungen – nur mit TRENDO_PC_LAUF=1 (echte Grafikkarte, Blender, Quellen unter %TEMP%\trendo-z3-quellen).
+  Finished:    Trendo.App.Tests (ID = '525e22a78ab9f85ca102a3765a127c08f3d27f5aa23e0410b2db9e41bba1312e')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 118, Errors: 0, Failed: 0, Skipped: 2, Not Run: 0, Time: 773,481s

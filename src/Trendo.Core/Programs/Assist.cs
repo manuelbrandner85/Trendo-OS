@@ -280,7 +280,12 @@ public static partial class AssistPlanner
             {
                 if (actions.FirstOrDefault(a => a.Id == (string?)st["action"]) is not { } a) continue;
                 var args = new Dictionary<string, string>();
-                if (st["args"] is JsonObject ao)
+                if (st["args"] is JsonObject eo && a.Id == AssistChain.EditAction) // T-0707: Inhalt fürs Dokument – Text, Liste oder Gruppe; geprüft wird beim Ausführen (AssistChain.CheckEdit)
+                {
+                    foreach (var p in a.Parameters)
+                        if (eo[p.Name] is { } node && (node is JsonValue ev ? ev.ToString() : node.ToJsonString()) is { Length: > 0 } ve && ve.Length <= AssistChain.MaxValue) args[p.Name] = ve;
+                }
+                else if (st["args"] is JsonObject ao)
                     foreach (var p in a.Parameters)
                         if (ao[p.Name] is JsonValue jv && jv.ToString() is { Length: > 0 and < 2000 } v && (p.Kind != AssistKind.Choice || (p.Options ?? []).Contains(v)) && (p.Kind != AssistKind.Number || double.TryParse(v, NumberStyles.Float, CultureInfo.InvariantCulture, out _)))
                             args[p.Name] = p.Kind == AssistKind.YesNo ? (v is "ja" or "true" or "Ja" ? "ja" : "nein") : v;

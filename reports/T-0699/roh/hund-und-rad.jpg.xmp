@@ -1,0 +1,20 @@
+<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Trendo OS">
+ <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:trendo="https://trendo-os.local/ns/erkennung/1.0/" trendo:erkennung="1" trendo:sha256="5a9522051c3cec2bbd2f6323fccba32e8fbf3ddcc2b3e2fd46b04c720bc6f866" trendo:quellen="YOLOX-S, Tesseract" trendo:erstellt="2026-11-16T08:18:41Z">
+   <dc:subject><rdf:Bag>
+    <rdf:li>Fahrrad</rdf:li>
+    <rdf:li>Hund</rdf:li>
+    <rdf:li>Lastwagen</rdf:li>
+    <rdf:li>Topfpflanze</rdf:li>
+   </rdf:Bag></dc:subject>
+   <trendo:objekte><rdf:Seq>
+    <rdf:li>Fahrrad 0.95 124,119,561,421</rdf:li>
+    <rdf:li>Hund 0.91 134,223,310,549</rdf:li>
+    <rdf:li>Lastwagen 0.61 462,77,695,172</rdf:li>
+    <rdf:li>Topfpflanze 0.43 684,111,716,154</rdf:li>
+   </rdf:Seq></trendo:objekte>
+  </rdf:Description>
+ </rdf:RDF>
+</x:xmpmeta>
+<?xpacket end="w"?>

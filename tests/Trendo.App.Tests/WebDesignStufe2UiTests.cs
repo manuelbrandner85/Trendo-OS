@@ -226,7 +226,7 @@ public class WebDesignStufe2_Browser
 
     /// <summary>Kleinstes gültiges PNG (1 × 1 Pixel), damit Galerie und Hero echte Dateien haben.</summary>
     static readonly byte[] Png = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==");
-    static string? AxeFile() { var f = Path.Combine(Path.GetTempPath(), "trendo-axe", "node_modules", "axe-core", "axe.min.js"); return File.Exists(f) ? f : null; }
+    static string? AxeFile() { var f = Path.Combine(global::Trendo.Core.TempDir.SystemTemp, "trendo-axe", "node_modules", "axe-core", "axe.min.js"); return File.Exists(f) ? f : null; }
 
     [Fact(DisplayName = "W5, Z1, W4, Z2 in echtem Chrome: Komponenten mit Überschreibung, Profi-Bausteine folgen den Gestaltungswerten, Tastatur und axe-core je Baustein, Bewegung mit „weniger Bewegung“ und Ersatzweg, Zeitleiste im Export (übersprungen ohne Chrome, Node oder axe-core in %TEMP%\\trendo-axe)")]
     public void Real_browser_teil2()

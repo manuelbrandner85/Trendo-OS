@@ -11,7 +11,7 @@
 - Version 0.9.20.
 
 ## Nachweise
-- Volltest: Api 15/15, Core 848 bestanden/10 übersprungen (vorher 1), App 436 bestanden/3 übersprungen, Paket-Tests 8/8 OK – `reports/T-0244/volltest.log`, SHA-256 `ba5e90494a762485e7ee22ca539338ed0f040860c8ddb31871c623e17db8c8fd`
+- Volltest: Api 15/15, Core 848 bestanden/10 übersprungen (vorher 1), App 436 bestanden/3 übersprungen, Paket-Tests 8/8 OK – `reports/T-0244/volltest.log`, SHA-256 `7a84cab2a26d985e175e134db142218f5ebec9acc719ecce215767dc2794bb78`
 - Übersprungen auf diesem PC (mit Grund im Log): 6× LibreOffice/Tesseract (Sys10), 2× LetterQa, BlueZ (Linux), Blender.
 
 ## Auffällig / offen

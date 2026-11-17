@@ -152,7 +152,8 @@ public sealed class SongPlanAdapter : IStudioActionAdapter
     public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked("Das Lied entsteht im Studio „Trendo Musik“.");
 }
 
-/// <summary>STUDIO-FILM-01: Drehbuch-Gerüst aus einer Idee im Fountain-Format – ohne KI, nur die Struktur. Bilder und Clips entstehen im Studio.</summary>
+/// <summary>STUDIO-FILM-01: Drehbuch-Gerüst aus einer Idee im Fountain-Format mit Shotliste – ohne KI, nur die Struktur (drei Akte, je Szene eine Einstellung).
+/// T-0693: Das Studio „Filme machen“ übernimmt das Ergebnis ins offene Dokument (bearbeitbar, rückgängig). Ein ausgeschriebenes Drehbuch schreibt dort „Drehbuch mit KI schreiben“; gerendert wird nur auf Klick.</summary>
 public sealed class FilmOutlineAdapter : IStudioActionAdapter
 {
     public string StudioId => "STUDIO-FILM-01";
@@ -173,11 +174,11 @@ public sealed class FilmOutlineAdapter : IStudioActionAdapter
         var idee = FieldKit.Text(call.Parameters, "idee").Trim();
         var titel = FieldKit.Text(call.Parameters, "titel").Trim();
         if (titel.Length == 0) titel = idee.Length <= 40 ? idee : idee[..40].TrimEnd() + "…";
-        var body = $"Titel: {titel}\n\n= {idee}\n\n# Anfang\n\nINNEN. ORT – TAG\n\nZeig, wer die Hauptfigur ist und was sie will.\n\n# Mitte\n\nAUSSEN. ORT – TAG\n\nEin Hindernis stellt sich in den Weg.\n\n# Schluss\n\nINNEN. ORT – NACHT\n\nDie Figur entscheidet sich. Was hat sich verändert?\n";
-        var qa = new QaResult(ActionId, true, "Drehbuch-Gerüst erstellt. Die Szenen füllst du im Studio „Filme machen“.", null, titel, "Fountain");
+        var body = Trendo.Core.Film.Fountain.InsertSuggestedShots($"Titel: {titel}\n\n= {idee}\n\n# Anfang\n\nINNEN. ORT – TAG\n\nZeig, wer die Hauptfigur ist und was sie will.\n\n# Mitte\n\nAUSSEN. ORT – TAG\n\nEin Hindernis stellt sich in den Weg.\n\n# Schluss\n\nINNEN. ORT – NACHT\n\nDie Figur entscheidet sich. Was hat sich verändert?\n");
+        var qa = new QaResult(ActionId, true, "Drehbuch-Gerüst mit Shotliste erstellt – es steht im Studio „Filme machen“ im offenen Dokument. Dort füllst du die Szenen, weist Clips und Fotos zu und renderst den Film.", null, titel, "Fountain");
         return FieldKit.Save(call, FieldKit.Slot("film", call.Version, "drehbuch.fountain"), body, titel, qa);
     }
-    public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked("Bilder und Clips entstehen im Studio „Filme machen“.");
+    public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked("Den Film renderst du selbst im Studio „Filme machen“ mit „Film rendern“.");
 }
 
 /// <summary>STUDIO-POD-01: Preis und Gewinn je Stück rechnen. Es ist kein Anbieter angeschlossen, nichts wird eingestellt oder bestellt.</summary>
@@ -342,29 +343,25 @@ public sealed class LicenseNoteAdapter : IStudioActionAdapter
     public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked("Es wurde nichts heruntergeladen.");
 }
 
-/// <summary>SPEC-04: Bildzeit mit XrInspector.FrameBudget. Keine Brille.</summary>
-public sealed class XrBudgetAdapter : IStudioActionAdapter
+/// <summary>„3D-Modelle ansehen“ (Kennung SPEC-04, T-0722): ein 3D-Modell aus dem Projekt prüfen – Maße, Dreiecke, Teile, Fehler im Modell.
+/// Ersetzt den KI-Auftrag „Bildzeit prüfen“ (VR, entfernt auf Nutzerwunsch 16.11.2026). Liest nur; das Modell bleibt unverändert.</summary>
+public sealed class ModelCheckAdapter : IStudioActionAdapter
 {
     public string StudioId => "SPEC-04";
-    public string ActionId => "bildzeit.pruefen";
-    public string Label => "Bildzeit prüfen";
+    public string ActionId => "modell.pruefen";
+    public string Label => "3D-Modell prüfen";
     public SideEffectClass Effect => SideEffectClass.None;
     public CapabilityLevel DeclaredLevel => CapabilityLevel.Partial;
-    public string Evidence => "PromptActionTests.Bildzeit_rechnet_das_Budget";
+    public string Evidence => "PromptActionTests.Modell_pruefen_liest_masse_und_fehler";
     public bool CanPerformSideEffect => false;
-    public IReadOnlyList<string> RequiredFields => ["rate", "messung"];
-    public IReadOnlyList<string> OutputKinds => ["txt"];
+    public IReadOnlyList<string> RequiredFields => ["datei"];
+    public IReadOnlyList<string> OutputKinds => ["md"];
     public ActionDraft? TryParse(string prompt, IReadOnlyDictionary<string, string> known) => new(ActionId, FieldKit.Read(prompt, known));
-    public IReadOnlyList<ClarificationQuestion> Missing(IReadOnlyDictionary<string, string> parameters)
-    {
-        var list = new List<ClarificationQuestion>();
-        if (!FieldKit.Has(parameters, "rate")) list.Add(new("rate", "rate", "Bilder pro Sekunde fehlen. Zum Beispiel „Rate: 72“.", true));
-        if (!FieldKit.Has(parameters, "messung")) list.Add(new("messung", "messung", "Gemessene Bildzeit in Millisekunden fehlt.", true));
-        return list;
-    }
-    public IReadOnlyList<ValidationFinding> Validate(IReadOnlyDictionary<string, string> parameters) => XrFields.Validate(parameters);
-    public AdapterOutcome Produce(AdapterCall call) => XrFields.Write(call);
-    public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked("Es läuft keine Brille.");
+    public IReadOnlyList<ClarificationQuestion> Missing(IReadOnlyDictionary<string, string> parameters) =>
+        FieldKit.Has(parameters, "datei") ? [] : [new("datei", "datei", "Das 3D-Modell fehlt. Schreib den Projektpfad als „Datei: …“ (GLB, glTF, OBJ oder STL).", true)];
+    public IReadOnlyList<ValidationFinding> Validate(IReadOnlyDictionary<string, string> parameters) => ModelCheckFields.Validate(parameters);
+    public AdapterOutcome Produce(AdapterCall call) => ModelCheckFields.Write(call);
+    public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked("Das Modell wird nur gelesen, nicht verändert.");
 }
 
 /// <summary>SPEC-09: kein Scan und keine Punktwolke aus dem Auftrag.</summary>
@@ -590,30 +587,48 @@ static class LicenseFields
     }
 }
 
-static class XrFields
+static class ModelCheckFields
 {
+    static readonly string[] Formats = [".glb", ".gltf", ".obj", ".stl"];
+
     public static IReadOnlyList<ValidationFinding> Validate(IReadOnlyDictionary<string, string> parameters)
     {
-        if (!FieldKit.TryNum(parameters, "rate", out var fps) || fps < 30 || fps > 240 || Math.Abs(fps - Math.Round(fps)) > 0.001)
-            return [new("rate", "Die Rate ist eine ganze Zahl von 30 bis 240.", true)];
-        if (!FieldKit.TryNum(parameters, "messung", out var ms) || ms <= 0 || ms > 1000)
-            return [new("messung", "Die Messung muss in Millisekunden größer als 0 sein.", true)];
+        var file = FieldKit.Text(parameters, "datei");
+        if (file.Length > 0 && !Formats.Contains(Path.GetExtension(file).ToLowerInvariant()))
+            return [new("datei", "Prüfen geht mit GLB, glTF, OBJ und STL.", true)];
         return [];
     }
 
+    /// <summary>Maße in Zentimetern (Trendo-Netz: Z oben) als Breite × Tiefe × Höhe.</summary>
+    static (double W, double D, double H) Size(Mesh m) => m.V.Count == 0 ? (0, 0, 0)
+        : (m.V.Max(v => v.X) - m.V.Min(v => v.X), m.V.Max(v => v.Y) - m.V.Min(v => v.Y), m.V.Max(v => v.Z) - m.V.Min(v => v.Z));
+
     public static AdapterOutcome Write(AdapterCall call)
     {
+        var rel = FieldKit.Text(call.Parameters, "datei");
+        string path;
+        try { path = call.Projects.ResolveInProject(call.ProjectId, rel); }
+        catch (ProjectIsolationException ex) { return FieldKit.Blocked(ex.Message); }
+        if (!File.Exists(path)) return FieldKit.Fail("Die Datei „" + rel + "“ gibt es im Projekt nicht.");
         try
         {
-            var fps = (int)Math.Round(Fach.Num(FieldKit.Text(call.Parameters, "rate"), "rate"));
-            var measured = Fach.Num(FieldKit.Text(call.Parameters, "messung"), "messung");
-            var budget = XrInspector.FrameBudget(fps, measured);
-            var state = budget.Smooth ? "flüssig" : "zu langsam";
-            var body = "Bildzeit " + Fach.F(budget.BudgetMs, 2) + " ms\nMessung " + Fach.F(measured, 2) + " ms\n" + state + "\nKeine Brille ist gelaufen.\n";
-            var again = XrInspector.FrameBudget(fps, measured);
-            var qa = new QaResult("bildzeit.budget", again.BudgetMs == budget.BudgetMs && again.Smooth == budget.Smooth, "Bildzeit gelesen.", "ms", Fach.F(budget.BudgetMs, 2), "XrInspector");
-            return FieldKit.Save(call, FieldKit.Slot("xr", call.Version, "bildzeit.txt"), body, Fach.F(budget.BudgetMs, 2) + " ms · " + state, qa);
+            var mesh = Mesh3D.ReadMeshFile(path);
+            var (w, d, h) = Size(mesh);
+            var gltf = Path.GetExtension(path).ToLowerInvariant() is ".glb" or ".gltf";
+            var detail = gltf ? XrPlus.Detail(path) : null;
+            var problems = new List<string>(detail is null ? (mesh.Triangles == 0 ? ["Keine Dreiecke – die Datei enthält keine sichtbare Form."] : []) : XrInspector.Problems(detail.Info));
+            var body = new System.Text.StringBuilder("# 3D-Modell geprüft: " + Path.GetFileName(path) + "\n\n");
+            body.Append("- Maße: " + Fach.F(w, 1) + " × " + Fach.F(d, 1) + " × " + Fach.F(h, 1) + " cm (Breite × Tiefe × Höhe)\n");
+            body.Append("- Dreiecke: " + Fach.F(mesh.Triangles, 0) + "\n- Punkte: " + Fach.F(mesh.V.Count, 0) + "\n");
+            if (detail is not null) body.Append("- Teile: " + detail.Info.Primitives + " · Materialien: " + detail.Info.Materials + " · Texturen: " + detail.Textures.Count + "\n- Maßstab: " + XrPlus.ScaleVerdict(detail) + "\n");
+            body.Append("\n## Fehler im Modell\n\n").Append(problems.Count == 0 ? "- ✓ keine gefunden\n" : string.Concat(problems.Select(p => "- ⚠ " + p + "\n")));
+            body.Append("\nDas Modell wurde nur gelesen und nicht verändert.\n");
+            var again = Mesh3D.ReadMeshFile(path); var size2 = Size(again);
+            var same = again.Triangles == mesh.Triangles && Math.Abs(size2.W - w) < 1e-6 && Math.Abs(size2.D - d) < 1e-6 && Math.Abs(size2.H - h) < 1e-6;
+            var qa = new QaResult("modell.pruefen", same && mesh.Triangles > 0, mesh.Triangles > 0 ? "Maße und Dreiecke beim zweiten Lesen gleich." : "Die Datei enthält keine Dreiecke.", "cm", Fach.F(w, 1) + " × " + Fach.F(d, 1) + " × " + Fach.F(h, 1), "Mesh3D.ReadMeshFile");
+            var preview = Fach.F(w, 1) + " × " + Fach.F(d, 1) + " × " + Fach.F(h, 1) + " cm · " + Fach.F(mesh.Triangles, 0) + " Dreiecke · " + (problems.Count == 0 ? "keine Fehler" : problems.Count + " Hinweis(e)");
+            return FieldKit.Save(call, FieldKit.Slot("modell", call.Version, "pruefbericht.md"), body.ToString(), preview, qa);
         }
-        catch (Exception ex) when (ex is ArgumentException or FormatException) { return FieldKit.Fail(ex.Message); }
+        catch (Exception ex) when (ex is IOException or InvalidDataException or InvalidOperationException or FormatException or ArgumentException or System.Text.Json.JsonException) { return FieldKit.Fail("Das Modell ist nicht lesbar: " + ex.Message); }
     }
 }

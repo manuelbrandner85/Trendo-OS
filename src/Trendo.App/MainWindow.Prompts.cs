@@ -58,6 +58,7 @@ public partial class MainWindow
         sp.Children.Add(new TextBlock { Name = "prompt-msg", Text = _promptMsg, Foreground = Text, TextWrapping = TextWrapping.Wrap });
         if (LastPromptOutput != "" && t0 is not null && !_promptEdit)
             sp.Children.Add(WCard(new SelectableTextBlock { Name = "prompt-answer", Text = LastPromptOutput, Foreground = Text, TextWrapping = TextWrapping.Wrap }));
+        if (LinkRecoveryCard(PromptLink) is { } pcard) sp.Children.Insert(1, pcard); // T-0711
         return KiPage("Vorlagen", sp);
     }
 
@@ -110,16 +111,23 @@ public partial class MainWindow
     {
         var name = new TextBox { Name = "pedit-name", PlaceholderText = "Name", Text = t?.Name ?? "" };
         var cat = new TextBox { Name = "pedit-cat", PlaceholderText = "Bereich, z. B. Briefe", Text = t?.Category ?? "" };
-        var text = new TextBox { Name = "pedit-text", PlaceholderText = "Auftrag an die KI. Lücken so schreiben: {{Thema}} oder {{Anzahl|3}}", Text = t?.Text ?? "", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 90 };
+        var text = new TextBox { Name = "pedit-text", PlaceholderText = IsSimple ? "Auftrag an die KI. Lücken mit „Lücke einfügen“ setzen." : "Auftrag an die KI. Lücken so schreiben: {{Thema}} oder {{Anzahl|3}}", Text = t?.Text ?? "", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 90 };
         var hints = new ContentControl { Content = Hints(text.Text ?? "") };
         text.TextChanged += (_, _) => hints.Content = Hints(text.Text ?? "");
+        var pl = PromptLink; LinkForm(pl, t?.Id ?? "neu", ("name", name), ("cat", cat), ("text", text)); // T-0711: Entwurf, Rückgängig, Notsicherung
+        hints.Content = Hints(text.Text ?? "");
         var save = new Button { Name = "pedit-save", Content = "Speichern", Background = Accent };
         save.Click += (_, _) =>
         {
             if (string.IsNullOrWhiteSpace(text.Text) || string.IsNullOrWhiteSpace(name.Text)) { _promptMsg = "Name und Text fehlen noch."; Show("ki-vorlagen"); return; }
-            var s = Prompts.Save(t?.Id, name.Text, cat.Text ?? "", text.Text); _promptSel = s.Id; _promptEdit = false; _promptMsg = $"Gespeichert als Version {s.Version}."; Show("ki-vorlagen");
+            var s = Prompts.Save(t?.Id, name.Text, cat.Text ?? "", text.Text); LinkClose(pl); _promptSel = s.Id; _promptEdit = false; _promptMsg = $"Gespeichert als Version {s.Version}."; Show("ki-vorlagen");
         };
-        var sp = new StackPanel { Spacing = 6, Children = { name, cat, text, hints, save } };
+        // V-12 (T-0700): Lücke per Knopf statt „{{…}}“ tippen
+        var marks = WriteMarksBar(text, "pedit", (Trendo.Core.Text.WriteMarks.Kind.Placeholder, "Lücke einfügen", "Markiertes wird zur Lücke, die beim Benutzen ausgefüllt wird (ohne Markierung: „Thema“ zum Überschreiben)"));
+        var sp = new StackPanel { Spacing = 6, Children = { LinkUndoRow(pl), name, cat, marks, text, hints, save } };
+        var stop = new Button { Name = "pedit-cancel", Content = "Abbrechen" }; // T-0711: bewusst verwerfen (sonst bleibt der Entwurf als Sicherung)
+        stop.Click += (_, _) => { LinkClose(pl); _promptEdit = false; Show("ki-vorlagen"); };
+        sp.Children.Add(stop);
         if (t is not null)
         {
             if (!t.BuiltIn) { var del = new Button { Name = "pedit-delete", Content = "Löschen" }; del.Click += (_, _) => { Prompts.Delete(t.Id); _promptSel = null; _promptEdit = false; Show("ki-vorlagen"); }; sp.Children.Add(del); }

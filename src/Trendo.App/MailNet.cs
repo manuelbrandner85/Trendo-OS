@@ -38,13 +38,17 @@ public static class MailNet
         return imap;
     }
 
-    public static async Task SendAsync(MailAccount a, string password, MailDraft d, CancellationToken ct = default)
+    public static Task SendAsync(MailAccount a, string password, MailDraft d, CancellationToken ct = default) =>
+        SendRawAsync(a, password, MailMime.Build(a, d, DateTimeOffset.Now), SmtpSession.Recipients(d), ct);
+
+    /// <summary>Fertige Nachricht senden – immer verschlüsselt: Port 465 mit TLS von Anfang an, sonst STARTTLS (ohne Angebot des Servers wird abgebrochen).</summary>
+    public static async Task SendRawAsync(MailAccount a, string password, byte[] raw, IReadOnlyList<string> recipients, CancellationToken ct = default)
     {
         var stream = a.SmtpImplicitTls ? await Tls(a.SmtpHost, a.SmtpPort, ct) : await Plain(a.SmtpHost, a.SmtpPort, ct);
         await using (stream)
         {
             var smtp = new SmtpSession(stream, a.SmtpImplicitTls ? null : StartTls(a.SmtpHost));
-            await smtp.SendAsync(a.User, password, a.Email, SmtpSession.Recipients(d), SmtpSession.Compose(a, d, DateTimeOffset.Now), ct);
+            await smtp.SendRawAsync(a.User, password, a.Email, recipients, raw, ct);
         }
     }
 }

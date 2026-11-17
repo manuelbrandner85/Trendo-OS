@@ -323,6 +323,9 @@ public class OsStyles_Ui
             // GNOME: Kopfleiste, Speichern als empfohlene Aktion, Hauptmenü
             w = Switch(w, "linux"); w.Show("bild"); Pump(); w.ProgramNew("bild"); w.Show("bild"); Pump();
             Assert.True(Visible(w, "prog-headerbar")); Assert.True(Visible(w, "prog-mainmenu")); Assert.False(Visible(w, "prog-menubar"));
+            // T-0686 (V-02/V-03): im leeren Dokument ist der erste Schritt („Foto öffnen“) die eine hervorgehobene Aktion – „Speichern“ wird es, sobald etwas da ist
+            Assert.True(MainWindow.IsGold(w.Find<Button>("prog-first-step"))); Assert.False(MainWindow.IsGold(w.Find<Button>("prog-save")));
+            w.ProgramActive("bild")!.Edit("Mal-Ebene", x => Trendo.Core.Media.ImageDoc.AddPaint(x)); w.Show("bild"); Pump();
             var save = w.Find<Button>("prog-save"); Assert.Same(Avalonia.Media.Brushes.White, save.Foreground); // empfohlene Aktion: Akzentfläche, weiße Schrift
             Assert.NotNull(w.Find<Button>("prog-mainmenu").Flyout);
             Assert.False(Visible(w, "prog-tabs")); // Reiter erst ab zwei Dokumenten

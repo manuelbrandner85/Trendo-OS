@@ -23,7 +23,6 @@ public class NotStopp_Ui
         w.Show("approvals");
         Assert.NotNull(w.TryFind<Border>("notstopp-banner"));
         Assert.Null(w.TryFind<Button>("btn-approve-" + r.Id)); // verworfen: nicht mehr offen
-        Assert.True(w.Bench.Drive.Emergency);
         w.Find<Button>("btn-notstopp-fortsetzen").Press();
         Assert.False(w.Core.Approvals.Halted);
         Assert.Null(w.TryFind<Border>("notstopp-banner"));

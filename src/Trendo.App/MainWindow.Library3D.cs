@@ -7,7 +7,7 @@ using Trendo.Core.Bibliothek;
 namespace Trendo.App;
 
 /// <summary>T-0279: 3D-Bibliothek – fotorealistische Modelle, Himmel (HDRI) und Materialien live aus freien Quellen (Poly Haven, ambientCG; CC0)
-/// suchen und auf Klick laden, dazu Modelle aus anderen Programmen (FBX, OBJ, USD, Blender …) über Blender übernehmen. Reiter im Fenster des Modell-Prüfers.</summary>
+/// suchen und auf Klick laden, dazu Modelle aus anderen Programmen (FBX, OBJ, USD, Blender …) über Blender übernehmen. Reiter im Fenster „3D-Modelle ansehen“ (Kennung SPEC-04) neben dem Modell-Prüfer.</summary>
 public partial class MainWindow
 {
     const string BIB = "bib3d";

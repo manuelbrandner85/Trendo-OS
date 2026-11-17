@@ -18,7 +18,42 @@ public partial class MainWindow
     /// <summary>Für Tests: ersetzt den System-Dialog.</summary>
     public Func<PickRequest, Task<string[]?>>? PickOverride { get; set; }
 
-    private sealed class PathInfo { public string Page = ""; public PathFields.Kind Kind; public bool Multi; public IReadOnlyList<string> Ext = []; public Button? Recent; }
+    private sealed class PathInfo { public string Page = ""; public PathFields.Kind Kind; public bool Multi; public IReadOnlyList<string> Ext = []; public Button? Recent; public Button? Then; public TextBlock? What; }
+
+    /// <summary>V-07 (T-0700): Ist das Pfadfeld selbst zu sehen? Nur in „Professionell“ – sonst trägt der Knopf „Datei wählen …“ die Auswahl, das Kärtchen zeigt die Datei.</summary>
+    public bool PathTextVisible => ProgramLevel == Trendo.Core.Programs.UserLevel.Profi;
+
+    /// <summary>V-07: Knopf direkt hinter dem Feld, der die gewählte Datei nur einliest, öffnet oder übernimmt – er läuft außerhalb von „Professionell“ gleich nach der Auswahl.
+    /// Prüfen, Entpacken, Löschen, Senden oder Installieren laufen nie von selbst.</summary>
+    public static bool IsReadStep(string? label)
+    {
+        var l = (label ?? "").Trim().TrimEnd('…', '.', ' ').ToLowerInvariant();
+        if (l.Length == 0 || l.Length > 40) return false;
+        if (new[] { "entpack", "lösch", "send", "install", "entfern", "überschreib", "zurücksetz", "start", "drucken", "hochlad" }.Any(l.Contains)) return false;
+        return System.Text.RegularExpressions.Regex.IsMatch(l, @"(^|\s)(einlesen|öffnen|laden|übernehmen|importieren|aufnehmen|hinzufügen|anzeigen)( und prüfen)?$");
+    }
+
+    /// <summary>V-07: Knopf, der nach dem Feld folgt (gleiche Zeile), wenn er nur einliest – sonst null. Zwischen Feld und Knopf darf kein weiteres Eingabefeld stehen.</summary>
+    static Button? ReadStepAfter(Control row)
+    {
+        if (row.Parent is not Panel p) return null;
+        foreach (var c in p.Children.Skip(p.Children.IndexOf(row) + 1))
+        {
+            if (c is Button b) return IsReadStep(SimpleWords.Label(b)) ? b : null;
+            if (c is TextBox or ComboBox) return null;
+            if (c is Panel inner && inner.Children.OfType<Button>().FirstOrDefault() is { } ib && !inner.Children.OfType<TextBox>().Any()) return IsReadStep(SimpleWords.Label(ib)) ? ib : null;
+        }
+        return null;
+    }
+
+    /// <summary>V-07: Feld und Folgeknopf je nach Stufe zeigen. Das Feld bleibt im Baum (Tests, Ziehen und Ablegen, Inhalt für den Folgeknopf).</summary>
+    void PathFieldLook(TextBox tb, PathInfo info)
+    {
+        var pro = PathTextVisible;
+        tb.IsVisible = pro;
+        if (info.Then is { } then) then.IsVisible = pro;
+        if (info.What is { } what) what.IsVisible = !pro && string.IsNullOrWhiteSpace(tb.Text) && what.Text is { Length: > 0 };
+    }
     private readonly ConditionalWeakTable<TextBox, PathInfo> _pathFields = new();
     private bool _dropWired;
 
@@ -44,7 +79,7 @@ public partial class MainWindow
         if (root is null) return;
         foreach (var tb in root.GetLogicalDescendants().OfType<TextBox>().ToList())
         {
-            if (_pathFields.TryGetValue(tb, out _)) continue;
+            if (_pathFields.TryGetValue(tb, out var known)) { PathFieldLook(tb, known); continue; }
             var hint = tb.PlaceholderText;
             var kind = PathFields.Classify(tb.Name, hint);
             if (kind == PathFields.Kind.None) continue;
@@ -66,8 +101,16 @@ public partial class MainWindow
             // G6: Vorschau der gewählten Datei (Symbol, Name, Größe; bei Bildern ein Miniaturbild) statt nur eines langen Pfads
             var chip = new Border { Name = $"{id}-preview", IsVisible = false, VerticalAlignment = VerticalAlignment.Bottom, Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 3), Margin = new Thickness(4, 0, 0, 0) };
             row.Children.Add(chip);
-            tb.TextChanged += (_, _) => FilePreview(tb.Text, chip);
+            // V-07: ohne sichtbares Feld sagt ein kurzer Text, welche Datei gemeint ist (aus dem Platzhalter)
+            var what0 = (hint ?? "").Trim();
+            if (what0.StartsWith("Klicken", StringComparison.Ordinal)) what0 = what0.Contains(" – ") ? what0[(what0.IndexOf(" – ", StringComparison.Ordinal) + 3)..] : "";
+            info.What = new TextBlock { Name = $"{id}-what", Text = what0, Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, MaxWidth = 320, TextTrimming = Avalonia.Media.TextTrimming.CharacterEllipsis, Margin = new Thickness(4, 0, 0, 0) };
+            if (what0.Length > 0) ToolTip.SetTip(info.What, what0);
+            row.Children.Add(info.What);
+            tb.TextChanged += (_, _) => { FilePreview(tb.Text, chip); if (_pathFields.TryGetValue(tb, out var pi)) PathFieldLook(tb, pi); };
             FilePreview(tb.Text, chip);
+            info.Then = ReadStepAfter(row);
+            PathFieldLook(tb, info);
             // Wunsch 27.10.2026: nie einen Pfad eintippen müssen – ein Klick ins Feld öffnet sofort die Auswahl (Ordner bzw. Datei)
             tb.IsReadOnly = true; tb.Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand);
             var pickFolder = kind == PathFields.Kind.Folder;
@@ -180,6 +223,8 @@ public partial class MainWindow
         foreach (var p in paths) list = PathFields.Remember(list, p);
         _settings.RecentFiles[info.Page] = list; SaveSettings();
         foreach (var t in _pathFields) if (t.Value.Page == info.Page) UpdateRecent(t.Key);
+        // V-07: ein Klick genügt – außerhalb von „Professionell“ liest der Folgeknopf („Einlesen“, „Öffnen“ …) die Datei sofort ein
+        if (!PathTextVisible && info.Then is { } then && then.IsEnabled) { then.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); return; }
         tb.Focus();
     }
 

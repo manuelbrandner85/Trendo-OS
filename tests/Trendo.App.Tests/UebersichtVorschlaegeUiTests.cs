@@ -38,7 +38,7 @@ public class UebersichtVorschlaege_Ui
             }
         }
         finally { w.Close(); }
-        File.WriteAllLines(Path.Combine(Path.GetTempPath(), "trendo-leiste.txt"), rows);
+        File.WriteAllLines(Path.Combine(global::Trendo.Core.TempDir.SystemTemp, "trendo-leiste.txt"), rows);
         foreach (var r in rows.Select(r => r.Split('\t')).Where(r => r[0] is not ("side-start" or "side-studios")))
             Assert.True(r[2] == r[1], $"{r[0]}: Leiste „{r[1]}“, Fenster „{r[2]}“");
     }
@@ -176,7 +176,7 @@ public class UebersichtVorschlaege_Ui
         try
         {
             var waves = w.GetLogicalDescendants().OfType<Expander>().Where(e => e.Name?.StartsWith("progress-wave-", StringComparison.Ordinal) == true).ToList();
-            if (waves.Count == 0) return; // ohne Bauplan im Testordner keine Wellen
+            if (waves.Count == 0) { Assert.Skip("Übersprungen – kein Bauplan im Testordner, also keine Wellen zu prüfen."); return; } // ohne Bauplan im Testordner keine Wellen
             Assert.All(waves, e => Assert.False(e.IsExpanded));
         }
         finally { w.Close(); }

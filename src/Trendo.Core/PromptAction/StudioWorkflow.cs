@@ -111,6 +111,8 @@ public sealed class StudioWorkflow
         catch (Exception ex) when (ex is ApprovalException or UnauthorizedAccessException)
         {
             state.Errors.Add(ex.Message);
+            // T-0713: abgelaufen, schon entschieden oder unbekannt – diese Freigabe kommt nie mehr; der Auftrag wartet nicht weiter (neu anstoßen geht über „Ändern“)
+            if (ex is ApprovalException) Mark(state, WorkflowPhase.Failed, "Freigabe", ex.Message);
             return Finish(state);
         }
         state.Errors.Clear();
@@ -400,7 +402,7 @@ public sealed class StudioWorkflow
         }
         try
         {
-            var approval = _core.Approvals.Request(ctx.User, GateAction(adapter), Describe(state, adapter), state.IdempotencyKey!, TimeSpan.FromMinutes(10), state.Preview);
+            var approval = _core.Approvals.Request(ctx.User, GateAction(adapter), Describe(state, adapter), state.IdempotencyKey!, TimeSpan.FromMinutes(10), state.Preview, resumable: true); // T-0713: Auftrag ist gespeichert, Freigabe geht auch nach einem Neustart
             state.ApprovalId = approval.Id;
         }
         catch (UnauthorizedAccessException ex)

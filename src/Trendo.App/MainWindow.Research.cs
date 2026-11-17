@@ -148,11 +148,12 @@ public partial class MainWindow
         if (ReaderShown is not null) right.Children.Add(ResearchMarksSide());
         right.Children.Add(ResearchQuotes());
         var note = new TextBox { Name = "rs-note", PlaceholderText = "Notizen zur Recherche", Text = Desk.Note(), AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 90 };
+        var noteLink = ResearchLink; LinkForm(noteLink, "notiz", ("note", note)); // T-0711: Notiz bleibt beim Neuzeichnen, Rückgängig, Notsicherung
         var save = new Button { Name = "rs-export", Content = "Als Bericht speichern" };
-        save.Click += (_, _) => { Desk.SaveNote(note.Text ?? ""); var f = Desk.ExportReport(ResearchReportFolder ?? Path.Combine(UserFolder(Environment.SpecialFolder.MyDocuments), "Trendo Recherche"), _rsStyle); _rsMsg = "Gespeichert: " + f; Show("recherche"); };
+        save.Click += (_, _) => { Desk.SaveNote(note.Text ?? ""); LinkClose(noteLink); var f = Desk.ExportReport(ResearchReportFolder ?? Path.Combine(UserFolder(Environment.SpecialFolder.MyDocuments), "Trendo Recherche"), _rsStyle); _rsMsg = "Gespeichert: " + f; Show("recherche"); };
         var end = new Button { Name = "rs-end", Content = "Sitzung beenden (alles löschen)" };
-        end.Click += (_, _) => { Desk.EndSession(); ReaderShown = null; _rsUrl = ""; _rsTrans = ""; _rsMsg = "Sitzung beendet. Quellen, Notizen und Markierungen sind gelöscht."; Show("recherche"); };
-        right.Children.Add(H("Notizen", 13)); right.Children.Add(note); right.Children.Add(new WrapPanel { Children = { MSp(save), MSp(end) } });
+        end.Click += (_, _) => { Desk.EndSession(); LinkClose(noteLink); ReaderShown = null; _rsUrl = ""; _rsTrans = ""; _rsMsg = "Sitzung beendet. Quellen, Notizen und Markierungen sind gelöscht."; Show("recherche"); };
+        right.Children.Add(H("Notizen", 13)); right.Children.Add(LinkBar(noteLink)); right.Children.Add(note); right.Children.Add(new WrapPanel { Children = { MSp(save), MSp(end) } });
 
         var browser = new Grid { Name = "rs-browser", ColumnDefinitions = new ColumnDefinitions("250,12,*,12,330"), Children = {
             Card(new ScrollViewer { Content = left }),

@@ -64,6 +64,7 @@ public partial class MainWindow
 
     void CaState(ProgramDocument d)
     {
+        CkHook(d); // T-0723: Rückgängig/Wiederholen der Hülle nimmt KI-Änderungen an den Dateien mit
         if (_caFor == d.Id) return;
         _caFor = d.Id; _caDoc = null; _caDocFile = null; _caSaved = null; _caAsk = false; _caOut = ""; _caChanges = null; _caDiffPath = null; _caCollapsed.Clear();
         if (CaRoot(d) is { } r) foreach (var e in CodeProject.Tree(r).Where(e => e.IsDir)) _caCollapsed.Add(e.Path);
@@ -231,6 +232,140 @@ public partial class MainWindow
         finally { _caBusy = false; Show(CodeAiKey); }
     }
 
+    // ───────────── T-0688: „Mit Claude ändern“ ändert wirklich ─────────────
+    // Claude Code arbeitet mit dem eigenen Abo der Person direkt im geöffneten Projektordner. Vorher merkt sich Trendo alle Dateien
+    // (Schnappschuss für den Zeilen-Diff und eine vollständige Sicherung zum Zurücknehmen), danach zeigt es je Datei, was Claude geändert hat.
+
+    string? _caClaudeStore; bool _caClaudeBusy; CancellationTokenSource? _caClaudeCts; Task<bool>? _caClaudeTask;
+    /// <summary>Läuft gerade ein Claude-Auftrag aus „Code mit KI“? Und der zuletzt gestartete (für Tests zum Abwarten).</summary>
+    public bool CodeAiClaudeBusy => _caClaudeBusy;
+    public Task<bool>? CodeAiClaudeTask => _caClaudeTask;
+    /// <summary>Gibt es Änderungen von Claude, die noch auf „Übernehmen“ oder „Zurücknehmen“ warten?</summary>
+    public bool CodeAiClaudePending => _caClaudeStore is not null;
+    string CaClaudeStore(string root) => Path.Combine(Path.GetDirectoryName(CaSnapFile(root))!, "vor-claude");
+
+    /// <summary>„Mit Claude ändern“: Wunsch rechts, Claude ändert die Dateien im Projektordner. true = Claude hat etwas geändert.</summary>
+    public Task<bool> CodeAiClaudeChange(ProgramDocument d) => _caClaudeTask = CaClaudeChangeRun(d);
+
+    async Task<bool> CaClaudeChangeRun(ProgramDocument d)
+    {
+        CaState(d);
+        if (CaRoot(d) is not { } r) { _progMsg[CodeAiKey] = "Öffne zuerst einen Projektordner."; Show(CodeAiKey); return false; }
+        var wish = d.Text("wish").Trim();
+        if (wish.Length == 0) { _progMsg[CodeAiKey] = "Schreib rechts unter „Was soll Claude ändern?“ deinen Wunsch."; Show(CodeAiKey); return false; }
+        if (_caClaudeBusy) { _progMsg[CodeAiKey] = "Claude arbeitet schon an einem Auftrag."; Show(CodeAiKey); return false; }
+        if (_caClaudeStore is not null) { _progMsg[CodeAiKey] = "Erst die letzten Änderungen von Claude übernehmen oder zurücknehmen."; Show(CodeAiKey); return false; }
+        // nur über das eigene Abo (Claude Code) – nie über einen API-Schlüssel; Trendo meldet niemanden selbst an
+        var status = ClaudeRunOverride is null ? await ClaudeCheck(fresh: true) : null;
+        if (status is { Ready: false })
+        {
+            _progMsg[CodeAiKey] = (status.Installed ? "Claude Code ist auf diesem PC nicht mit deinem Claude-Abo angemeldet." : "Claude Code ist auf diesem PC nicht eingerichtet.")
+                + " Verbinde rechts unter „Claude“ deinen eigenen Zugang – danach ändert Claude hier die Dateien. Trendo nutzt nie einen API-Schlüssel.";
+            Show(CodeAiKey); return false;
+        }
+        try
+        {
+            if (_caDoc is not null && _caDocFile is not null && _caDoc.Text != _caSaved) CodeAiSaveFile(d); // sonst arbeitet Claude an einem alten Stand
+            CodeAiSnapshot(d); // Grundlage für den Zeilen-Diff
+            var store = CaClaudeStore(r); FolderSnapshot.Take(r, store); _caClaudeStore = store; // vollständige Sicherung zum Zurücknehmen
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException) { _caClaudeStore = null; _progMsg[CodeAiKey] = "Die Sicherung vor dem Claude-Lauf ging nicht: " + e.Message; Show(CodeAiKey); return false; }
+        var rel = _caDocFile is { } f ? Path.GetRelativePath(r, f).Replace('\\', '/') : null;
+        var prompt = $"Wunsch: {wish}\n" + (rel is null ? "" : $"Geöffnet ist die Datei „{rel}“.\n")
+            + "Ändere die Dateien direkt in diesem Projektordner (Werkzeuge Edit oder Write). Ändere nur, was für den Wunsch nötig ist, halte den Stil des Projekts ein und führe keine Programme aus. "
+            + "Fasse am Ende in höchstens zwei Sätzen auf Deutsch zusammen, was du geändert hast.";
+        var args = ClaudeCode.Args(prompt, ClaudeCode.Phase.Chat, null, "Du arbeitest im Studio „Code mit KI“ von Trendo OS. Arbeitsordner ist der Projektordner der Person.", null, ClaudeCode.Level.Sicher);
+        var say = new StringBuilder(); string? error = null; bool? doneOk = null;
+        _caClaudeBusy = true; using var cts = _caClaudeCts = new CancellationTokenSource();
+        _caOut = $"Claude arbeitet im Projektordner „{Path.GetFileName(r.TrimEnd(Path.DirectorySeparatorChar))}“ …"; _progMsg[CodeAiKey] = "Claude arbeitet …"; Show(CodeAiKey);
+        _core.Audit.Append(Principal.LocalOwner.Name, "code-ki.claude.start", Path.GetFileName(r.TrimEnd(Path.DirectorySeparatorChar)));
+        try
+        {
+            await Task.Run(() => ClaudeRun(args, r, l =>
+            {
+                if (l.Contains("\"trendo_error\"")) { try { error = System.Text.Json.Nodes.JsonNode.Parse(l)?["text"]?.ToString(); } catch (System.Text.Json.JsonException) { } return; }
+                foreach (var ev in ClaudeCode.Parse(l, r))
+                    if (ev is ClaudeCode.Say s) lock (say) say.AppendLine(s.Text);
+                    else if (ev is ClaudeCode.Done dn) { doneOk = dn.Ok; if (dn.Text.Length > 0 && say.Length == 0) lock (say) say.AppendLine(dn.Text); }
+            }, cts.Token));
+        }
+        catch (OperationCanceledException) { error = "Angehalten."; }
+        catch (InvalidOperationException e) { error = e.Message; }
+        finally { _caClaudeBusy = false; _caClaudeCts = null; }
+        if (ClaudeCode.IsAuthExpired(error) || doneOk is not true && ClaudeCode.IsAuthExpired(say.ToString())) error = ClaudeCode.AuthText;
+        else if (ClaudeCode.IsLimit(error) || doneOk is not true && ClaudeCode.IsLimit(say.ToString())) error = ClaudeCode.LimitText;
+        var changes = CodeAiChanges(d);
+        if (_caDocFile is { } open && File.Exists(open)) try { CaLoad(open); } catch (Exception e) when (e is IOException or InvalidOperationException or UnauthorizedAccessException) { }
+        _core.Audit.Append(Principal.LocalOwner.Name, "code-ki.claude", $"{Path.GetFileName(r.TrimEnd(Path.DirectorySeparatorChar))}: {changes.Count} Dateien geändert{(error is null ? "" : " – " + error)}");
+        if (changes.Count == 0) { try { Directory.Delete(_caClaudeStore!, true); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } _caClaudeStore = null; }
+        _caOut = (error is not null ? "✕ " + error : changes.Count == 0 ? "Claude hat keine Datei geändert." : $"✓ Claude hat {changes.Count} Dateien geändert.") + (say.Length > 0 ? "\n\n" + say.ToString().Trim() : "");
+        _progMsg[CodeAiKey] = changes.Count == 0 ? (error ?? "Claude hat keine Datei geändert.") : $"Claude hat {changes.Count} Dateien geändert. Unten Zeile für Zeile ansehen – dann „Übernehmen“ oder „Zurücknehmen“.";
+        Show(CodeAiKey);
+        return changes.Count > 0;
+    }
+
+    /// <summary>Änderungen von Claude behalten: Sicherung löschen, neuer Schnappschuss als Ausgangspunkt.</summary>
+    public void CodeAiClaudeAccept(ProgramDocument d)
+    {
+        CaState(d);
+        if (_caClaudeStore is not { } store || CaRoot(d) is not { } r) throw new InvalidOperationException("Es gibt keine Änderung von Claude, die auf eine Entscheidung wartet.");
+        var n = FolderSnapshot.Open(r, store).Changes().Count;
+        try { Directory.Delete(store, true); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        _caClaudeStore = null; CodeAiSnapshot(d);
+        _core.Audit.Append(Principal.LocalOwner.Name, "code-ki.claude.uebernommen", n.ToString(CultureInfo.InvariantCulture));
+        _progMsg[CodeAiKey] = $"Übernommen: {n} Dateien bleiben so, wie Claude sie geändert hat.";
+    }
+
+    /// <summary>Änderungen von Claude zurücknehmen – alle oder nur eine Datei (relativer Pfad).</summary>
+    public void CodeAiClaudeRevert(ProgramDocument d, string? rel = null)
+    {
+        CaState(d);
+        if (_caClaudeStore is not { } store || CaRoot(d) is not { } r) throw new InvalidOperationException("Es gibt keine Änderung von Claude, die auf eine Entscheidung wartet.");
+        var snap = FolderSnapshot.Open(r, store);
+        var all = snap.Changes();
+        var todo = rel is null ? all : all.Where(c => string.Equals(c.File, rel.Replace('\\', '/'), StringComparison.OrdinalIgnoreCase)).ToList();
+        foreach (var (file, change) in todo)
+        {
+            var target = Path.Combine(r, file.Replace('/', Path.DirectorySeparatorChar));
+            if (!CodeAiKit.InsideNoLinks(r, target)) continue;
+            if (change == "neu") File.Delete(target);
+            else { Directory.CreateDirectory(Path.GetDirectoryName(target)!); File.Copy(Path.Combine(store, file.Replace('/', Path.DirectorySeparatorChar)), target, true); }
+        }
+        if (snap.Changes().Count == 0) { try { Directory.Delete(store, true); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } _caClaudeStore = null; }
+        CodeAiChanges(d);
+        if (_caDocFile is { } open) { if (File.Exists(open)) CaLoad(open); else { _caDoc = null; _caDocFile = null; } }
+        _core.Audit.Append(Principal.LocalOwner.Name, "code-ki.claude.zurueck", rel ?? "alle");
+        _progMsg[CodeAiKey] = rel is null ? $"Zurückgenommen: {todo.Count} Dateien sind wieder wie vor Claude." : $"„{rel}“ ist wieder wie vor Claude.";
+    }
+
+    Control CaClaudeDecision(ProgramDocument d)
+    {
+        var sp = new StackPanel { Name = "ca-claude", Spacing = 6 };
+        if (_caClaudeBusy)
+        {
+            var stop = new Button { Name = "ca-claude-stop", Content = "Claude anhalten", Padding = new Thickness(10, 4) };
+            stop.Click += (_, _) => { try { _caClaudeCts?.Cancel(); } catch (ObjectDisposedException) { } };
+            sp.Children.Add(new WrapPanel { Children = { new TextBlock { Text = "Claude arbeitet im Projektordner …", Foreground = K4Warn, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 0) }, stop } });
+            return sp;
+        }
+        if (_caClaudeStore is null) return sp;
+        sp.Children.Add(P("Claude hat Dateien geändert. Prüfe unten jede Datei – dann entscheide:", Text, 12));
+        var row = new WrapPanel();
+        var ok = new Button { Name = "ca-claude-accept", Content = "Übernehmen", Padding = new Thickness(12, 4), Margin = new Thickness(0, 0, 6, 6) };
+        ok.Click += (_, _) => ProgramRun(CodeAiKey, () => CodeAiClaudeAccept(d));
+        var back = new Button { Name = "ca-claude-revert", Content = "Alles zurücknehmen", Padding = new Thickness(12, 4), Margin = new Thickness(0, 0, 6, 6) };
+        back.Click += (_, _) => ProgramRun(CodeAiKey, () => CodeAiClaudeRevert(d));
+        row.Children.Add(ok); row.Children.Add(back);
+        if (_caDiffPath is { } dp)
+        {
+            var one = new Button { Name = "ca-claude-revert-file", Content = $"Nur „{Path.GetFileName(dp)}“ zurücknehmen", Padding = new Thickness(12, 4), Margin = new Thickness(0, 0, 6, 6) };
+            one.Click += (_, _) => ProgramRun(CodeAiKey, () => CodeAiClaudeRevert(d, dp));
+            row.Children.Add(one);
+        }
+        sp.Children.Add(row);
+        return sp;
+    }
+
     string CaExcerpt(ProgramDocument d, out string rel)
     {
         CaState(d);
@@ -244,6 +379,7 @@ public partial class MainWindow
 
     void CaClaude(ProgramDocument d, string what)
     {
+        if (what == "aendern") { _ = CodeAiClaudeChange(d); return; } // T-0688: Claude ändert die Dateien selbst, im Projektordner
         string excerpt, rel;
         try { excerpt = CaExcerpt(d, out rel); }
         catch (InvalidOperationException ex) { _progMsg[CodeAiKey] = ex.Message; Show(CodeAiKey); return; }
@@ -251,13 +387,6 @@ public partial class MainWindow
         string prompt;
         switch (what)
         {
-            case "aendern":
-                var wish = d.Text("wish").Trim();
-                if (wish.Length == 0) { _progMsg[CodeAiKey] = "Schreib rechts unter „Was soll Claude ändern?“ deinen Wunsch."; Show(CodeAiKey); return; }
-                // vorher ein Schnappschuss, damit jede Änderung vergleichbar ist
-                if (CaSnapshot(d) is null) CodeAiSnapshot(d);
-                prompt = $"Ändere „{rel}“: {wish}\nÄndere nur, was dafür nötig ist, und halte den Stil des Projekts ein. Führe keine Programme aus. Zeig die Änderung als vollständige Datei oder als Diff.\n\n{excerpt}";
-                break;
             case "test":
                 prompt = $"Schreib Unit-Tests für „{rel}“, passend zum Projekt ({kind?.Label ?? "unbekannte Projektart"}{(cmd is null ? "" : $", Testbefehl „{cmd.Display}“")}). Nenne Dateiname und Inhalt der Testdatei. Führe nichts aus.\n\n{excerpt}";
                 break;
@@ -302,7 +431,7 @@ public partial class MainWindow
 
     private void InitCodeAi() => RegisterProgram(FachTabs, new ProgramSpec(CodeAiKey, "STUDIO-CODEAI-01", "Code mit KI")
     {
-        Sentence = "Projektordner öffnen, Dateien ansehen und bearbeiten, mit Claude erklären und ändern lassen, Tests ausführen und Änderungen vergleichen.",
+        Sentence = "Projektordner öffnen, Dateien ansehen und bearbeiten, mit KI ändern lassen (Vorschau, Ja/Nein je Änderung, Rückgängig), Tests ausführen und Änderungen vergleichen.",
         Folder = "Code mit KI",
         ScrollWorkspace = true,
         Templates =
@@ -317,9 +446,11 @@ public partial class MainWindow
                 new ProgramCmd("ca-save", "Datei speichern", d => CodeAiSaveFile(d), Tip: "Speichert die offene Datei (Zeilenenden bleiben)."),
                 new ProgramCmd("ca-editor", "Im Code-Editor öffnen", d => { var r = CaRoot(d) ?? throw new InvalidOperationException("Öffne zuerst einen Projektordner."); CodeOpenFolder(r); if (CaFile(d) is { } f) CodeOpenFile(f); Show(CEK); }, Tip: "Großer Editor mit Reitern, Suche und Git."),
             ]),
-            ("Claude", [
+            ("KI", [
+                new ProgramCmd("ca-ki", "Mit KI ändern", d => _ = CodeAiKiPropose(d), Tip: "Dein Wunsch steht über dem Editor. Die KI (Claude über dein Abo oder die KI auf diesem PC) plant die Änderung und zeigt sie als Unterschied; du nimmst jede Änderung mit Ja oder Nein an. Danach laufen die Tests (nach deiner Freigabe)."),
+
                 new ProgramCmd("ca-explain", "Mit Claude erklären", d => CaClaude(d, "erklaeren"), Tip: "Schickt die offene Datei an Claude (dein Zugang)."),
-                new ProgramCmd("ca-change", "Mit Claude ändern", d => CaClaude(d, "aendern"), Tip: "Dein Wunsch steht rechts. Vorher entsteht ein Schnappschuss zum Vergleichen."),
+                new ProgramCmd("ca-change", "Mit Claude ändern", d => CaClaude(d, "aendern"), Tip: "Dein Wunsch steht rechts. Claude ändert die Dateien im Projektordner; vorher sichert Trendo alles. Danach Zeile für Zeile prüfen und übernehmen oder zurücknehmen."),
                 new ProgramCmd("ca-testwrite", "Test schreiben mit Claude", d => CaClaude(d, "test")),
             ]),
             ("Prüfen", [
@@ -390,6 +521,7 @@ public partial class MainWindow
 
         // Editor
         var center = new StackPanel { Spacing = 12 };
+        center.Children.Add(CaKiCard(d)); // T-0723: Auftrag → Plan → Diff je Änderung → Ja/Nein → ein Rückgängig-Schritt → Tests
         if (_caDoc is not null && _caDocFile is not null)
         {
             CodeDarkColors();
@@ -444,6 +576,7 @@ public partial class MainWindow
         var snap = CaSnapshot(d);
         var cmp = new StackPanel { Spacing = 6 };
         cmp.Children.Add(H("Änderungen", 14));
+        cmp.Children.Add(CaClaudeDecision(d));
         cmp.Children.Add(P(snap is null ? "Noch kein Schnappschuss. „Schnappschuss“ merkt sich jetzt alle Dateien." : $"Schnappschuss vom {snap.TakenUtc.ToLocalTime().ToString("dd.MM.yyyy HH:mm", De)} mit {snap.Files.Count} Dateien.", Muted, 12));
         var row = new WrapPanel();
         var snapBtn = new Button { Name = "ca-snap-now", Content = snap is null ? "Schnappschuss" : "Neuer Schnappschuss", Padding = new Thickness(10, 4), Margin = new Thickness(0, 0, 6, 6) };
@@ -493,13 +626,13 @@ public partial class MainWindow
     Control CodeAiProperties(ProgramDocument d)
     {
         var sp = new StackPanel { Spacing = 4 };
-        sp.Children.Add(P("Was soll Claude ändern?", null, 11));
+        sp.Children.Add(P("Was soll die KI ändern?", null, 11));
         var wish = KrBox(d, "wish", "ca-p-wish", "z. B. „Teilen durch null soll eine verständliche Meldung geben“", true); wish.MinHeight = 80;
         sp.Children.Add(wish);
         sp.Children.Add(P("Zeitlimit für Tests (Sekunden)", null, 11));
         sp.Children.Add(KrBox(d, "timeout", "ca-p-timeout", "300"));
         sp.Children.Add(H("Sicherheit", 13));
-        sp.Children.Add(P("Trendo führt Befehle nur nach deinem zweiten Klick aus, im Projektordner und mit Zeitlimit. Claude arbeitet mit deinem eigenen Zugang. Geheimnisse (Passwörter, Schlüssel) gehören nicht in Dateien, die du an Claude gibst.", Muted, 11));
+        sp.Children.Add(P("Trendo führt Befehle nur nach deinem zweiten Klick aus, im Projektordner und mit Zeitlimit. Claude arbeitet mit deinem eigenen Zugang im Projektordner; vorher sichert Trendo alle Dateien, danach entscheidest du je Datei. Geheimnisse (Passwörter, Schlüssel) gehören nicht in Dateien, die du an Claude gibst.", Muted, 11));
         return sp;
     }
 
@@ -514,7 +647,7 @@ public partial class MainWindow
     public const long VisionMaxBytes = 60L * 1024 * 1024, VisionMaxPixels = 100_000_000;
     static readonly string[] VisionExt = [".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp", ".tif", ".tiff"];
 
-    static JsonObject VisionDoc(string image = "") => new() { ["image"] = image, ["folder"] = "", ["limit"] = "100", ["text"] = "" };
+    static JsonObject VisionDoc(string image = "") => new() { ["image"] = image, ["folder"] = "", ["limit"] = "100", ["text"] = "", ["query"] = "", ["recog"] = new JsonArray() };
     static double ViLimit(ProgramDocument d) => double.TryParse(d.Text("limit").Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out var l) && l is > 0 and < 100000 ? l : VisionKit.DefaultSharpLimit;
 
     void ViState(ProgramDocument d)
@@ -649,7 +782,7 @@ public partial class MainWindow
 
     private void InitVision() => RegisterProgram(FachTabs, new ProgramSpec(VisionKey, "STUDIO-VISION-01", "Bilder erkennen")
     {
-        Sentence = "Bilder ohne Internet prüfen: Größe, Aufnahmedaten, Hauptfarben, Helligkeit, Schärfe und Text im Bild – auch ganze Ordner.",
+        Sentence = "Bilder auf deinem PC erkennen: Objekte und Personen mit Rahmen, Beschreibung und Schlagworte, Text im Bild – für ganze Ordner, mit Suche („zeig alle Fotos mit Hund“). Dazu Aufnahmedaten, Farben, Helligkeit und Schärfe.",
         Folder = "Bilder erkennen",
         ScrollWorkspace = true,
         Templates =
@@ -660,8 +793,13 @@ public partial class MainWindow
         Ribbon =
         [
             ("Bild", [
-                new ProgramCmd("vi-open", "Bild öffnen …", d => _ = ViPick(d), Primary: true),
+                new ProgramCmd("vi-recognize-folder", "Ordner erkennen …", d => _ = ViPickRecognizeFolder(d), Primary: true, Tip: "Erkennt alle Bilder eines Ordners: Objekte, Beschreibung, Schlagworte, Text. Fotos bleiben unverändert."),
+                new ProgramCmd("vi-open", "Bild öffnen …", d => _ = ViPick(d)),
                 new ProgramCmd("vi-folder", "Ordner prüfen …", d => _ = ViPickFolder(d), Tip: "Findet unscharfe, zu dunkle und zu helle Fotos."),
+            ]),
+            ("Erkennen", [
+                new ProgramCmd("vi-recognize", "Bild erkennen", d => _ = VisionRecognizeCurrent(d), Tip: "Erkennt das geöffnete Bild."),
+                new ProgramCmd("vi-stop", "Anhalten", d => _viCancel?.Cancel(), Tip: "Hält das Erkennen eines Ordners an."),
             ]),
             ("Text", [
                 new ProgramCmd("vi-ocr", "Text im Bild erkennen", d => _ = VisionOcr(d), Tip: "Mit Tesseract, ohne Internet."),
@@ -674,13 +812,16 @@ public partial class MainWindow
         Exports =
         [
             new("md", "Bildbericht (.md)", ".md", (d, f) => { File.WriteAllText(f, VisionKit.Markdown(ViAll(d), "Bildbericht")); return f; }),
-            new("csv", "Liste (.csv)", ".csv", (d, f) => { File.WriteAllText(f, VisionKit.Csv(ViAll(d)), new UTF8Encoding(true)); return f; }),
+            // erkannte Bilder: Liste mit Schlagworten, Beschreibung, Objekten und Text; sonst die Prüfliste
+            new("csv", "Liste (.csv)", ".csv", (d, f) => { var rec = VisionResults(d); File.WriteAllText(f, rec.Count > 0 ? VisionTags.Csv(VisionTags.Search(rec, d.Text("query"))) : VisionKit.Csv(ViAll(d)), new UTF8Encoding(true)); return f; }),
         ],
+        FirstStep = new("Ordner erkennen …", "Wähle einen Bildordner: Trendo erkennt darin Objekte, Personen, Szenen und Text. Danach findest du Fotos mit der Suche, z. B. „zeig alle Fotos mit Hund“.",
+            d => _ = ViPickRecognizeFolder(d), d => d.Text("image").Length == 0 && d.List("recog").Count == 0 && (_viFor != d.Id || _viFolder is null)),
         Workspace = VisionWorkspace,
         Properties = VisionProperties,
-        Status = d => (_viReport is { } r && _viFor == d.Id ? $"{Path.GetFileName(r.File)} · {r.Light.Verdict} · {r.Sharp.Verdict}" : "Noch kein Bild") + (_viFolder is { } f && _viFor == d.Id ? $" · Ordner: {f.Count} Bilder, {f.Count(VisionKit.Problem)} auffällig" : ""),
-        Help = "„Bild öffnen“ zeigt Größe, Aufnahmedatum und Kamera (EXIF), Hauptfarben, Helligkeit und Schärfe. „Ordner prüfen“ listet unscharfe und falsch belichtete Fotos. Text im Bild liest Tesseract, wenn es eingerichtet ist. Alles bleibt auf deinem Rechner; nur „Mit Claude beschreiben“ gibt das Bild an deinen Claude-Zugang.",
-    }, "bilder erkennen", "bild analysieren", "bilderkennung", "exif", "unscharfe fotos", "schärfe prüfen", "hauptfarben", "ocr", "text im bild", "texterkennung", "bild beschreiben");
+        Status = d => (_viReport is { } r && _viFor == d.Id ? $"{Path.GetFileName(r.File)} · {r.Light.Verdict} · {r.Sharp.Verdict}" : "Noch kein Bild") + (_viFolder is { } f && _viFor == d.Id ? $" · Ordner: {f.Count} Bilder, {f.Count(VisionKit.Problem)} auffällig" : "") + (d.List("recog").Count is > 0 and var n ? $" · {n} erkannt" : ""),
+        Help = "„Ordner erkennen“ geht alle Bilder eines Ordners durch: Objekte und Personen mit Rahmen (YOLOX), Beschreibung mit Schlagworten (Bildverstehens-Modell aus der KI-Bibliothek) und Text im Bild (Tesseract). Danach findest du Fotos mit der Suche, z. B. „zeig alle Fotos mit Hund“. Die Schlagworte stehen zusätzlich in einer Seitendatei neben dem Foto (foto.jpg.xmp) – das Foto selbst bleibt unverändert. „Bild öffnen“ zeigt Aufnahmedaten, Hauptfarben, Helligkeit und Schärfe; „Ordner prüfen“ listet unscharfe und falsch belichtete Fotos. Alles läuft auf deinem Rechner; nur wenn du es erlaubst, beschreibt Claude über deinen Zugang.",
+    }, "bilder erkennen", "objekte erkennen", "fotos durchsuchen", "schlagworte", "foto suche", "bild analysieren", "bilderkennung", "exif", "unscharfe fotos", "schärfe prüfen", "hauptfarben", "ocr", "text im bild", "texterkennung", "bild beschreiben");
 
     async Task ViPick(ProgramDocument d)
     {
@@ -708,18 +849,31 @@ public partial class MainWindow
         if (_viReport is null && !_viBusy && KreativSafe.LocalFile(img, VisionMaxBytes))
             try { _viReport = VisionAnalyze(img, ViLimit(d)); } catch (Exception ex) when (ex is IOException or InvalidDataException or InvalidOperationException or UnauthorizedAccessException or ArgumentException) { _progMsg[VisionKey] = ex.Message; }
         var sp = new StackPanel { Name = "vi-workspace", Spacing = 12, Margin = new Thickness(4, 0, 10, 4) };
-        var open = new Button { Name = "vi-open-big", Content = _viBusy ? "Prüft …" : "Bild öffnen …", Padding = new Thickness(14, 6), IsEnabled = !_viBusy }; open.Classes.Add("accent");
+        var results = VisionResults(d);
+        var current = results.FirstOrDefault(x => string.Equals(x.File, img, StringComparison.OrdinalIgnoreCase));
+        // genau eine goldene Hauptaktion: ohne offenes, unerkanntes Bild „Ordner erkennen“, sonst „Dieses Bild erkennen“
+        var imageFirst = KreativSafe.LocalFile(img, VisionMaxBytes) && current is null;
+        var recFolder = new Button { Name = "vi-recognize-folder-big", Content = _viBusy ? "Arbeitet …" : "Ordner erkennen …", Padding = new Thickness(14, 6), IsEnabled = !_viBusy };
+        recFolder.Click += (_, _) => _ = ViPickRecognizeFolder(d);
+        var recOne = new Button { Name = "vi-recognize-now", Content = "Dieses Bild erkennen", Padding = new Thickness(14, 6), Margin = new Thickness(8, 0, 0, 0), IsEnabled = !_viBusy && KreativSafe.LocalFile(img, VisionMaxBytes) };
+        recOne.Click += (_, _) => _ = VisionRecognizeCurrent(d);
+        (imageFirst ? recOne : recFolder).Classes.Add("accent");
+        var open = new Button { Name = "vi-open-big", Content = "Bild öffnen …", Padding = new Thickness(14, 6), Margin = new Thickness(8, 0, 0, 0), IsEnabled = !_viBusy };
         open.Click += (_, _) => _ = ViPick(d);
         var folder = new Button { Name = "vi-folder-big", Content = "Ordner prüfen …", Padding = new Thickness(14, 6), Margin = new Thickness(8, 0, 0, 0), IsEnabled = !_viBusy };
         folder.Click += (_, _) => _ = ViPickFolder(d);
-        sp.Children.Add(new WrapPanel { Children = { open, folder } });
+        var row = new WrapPanel { Children = { recFolder, recOne, open, folder } };
+        if (_viBusy && _viCancel is not null) { var stop = new Button { Name = "vi-stop-big", Content = "Anhalten", Padding = new Thickness(14, 6), Margin = new Thickness(8, 0, 0, 0) }; stop.Click += (_, _) => _viCancel?.Cancel(); row.Children.Add(stop); }
+        sp.Children.Add(row);
+        if (results.Count > 0) sp.Children.Add(ViSearchBox(d));
+        var toolsTop = results.Count == 0 && _viReport is null && !KreativSafe.LocalFile(img, VisionMaxBytes);
+        if (toolsTop) sp.Children.Add(ViToolsCard(d)); // im Leerzustand oben; mit Bild oder Ergebnissen rückt die Werkzeugzeile nach unten
 
         if (_viReport is { } r)
         {
-            var pic = new Image { Name = "vi-preview", Stretch = Stretch.Uniform, MaxHeight = 380 };
-            try { using var fs = File.OpenRead(r.File); pic.Source = Bitmap.DecodeToWidth(fs, 900); }
-            catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or UnauthorizedAccessException) { pic.IsVisible = false; }
+            var pic = ViBoxedPreview(r.File, current);
             var facts = new StackPanel { Name = "vi-facts", Spacing = 5 };
+            if (current is not null) facts.Children.Add(ViRecognitionPanel(current));
             void Row(string k, string v, IBrush? c = null) => facts.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("110,*"), Children = { new TextBlock { Text = k, Foreground = Muted, FontSize = 12 }, Pos(new TextBlock { Text = v, Foreground = c ?? Text, FontSize = 12, TextWrapping = TextWrapping.Wrap }, 1) } });
             facts.Children.Add(H(Path.GetFileName(r.File), 14));
             Row("Format", $"{r.Format}, {r.Width} × {r.Height} Bildpunkte");
@@ -747,7 +901,9 @@ public partial class MainWindow
             if (d.Text("text").Length > 0) facts.Children.Add(new TextBox { Name = "vi-text", Text = d.Text("text"), IsReadOnly = true, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MaxHeight = 200 });
             sp.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("*,14,340"), Children = { new Border { CornerRadius = new CornerRadius(8), ClipToBounds = true, Background = Brush.Parse("#0A0F1A"), Child = pic }, Pos(KrCard(facts, "vi-facts-card"), 2) } });
         }
-        else if (!_viBusy) sp.Children.Add(KrCard(P("Öffne ein Bild oder prüfe einen ganzen Ordner. Alles läuft auf deinem Rechner, ohne Internet.", Muted, 12)));
+        else if (!_viBusy && results.Count == 0) sp.Children.Add(KrCard(P("Erster Schritt: „Ordner erkennen …“ wählt einen Bildordner. Trendo erkennt darin Objekte, Personen, Szenen und Text – danach findest du Fotos mit der Suche, z. B. „zeig alle Fotos mit Hund“. Alles läuft auf deinem Rechner.", Muted, 12), "vi-empty"));
+        if (results.Count > 0) sp.Children.Add(ViGallery(d, results));
+        if (!toolsTop) sp.Children.Add(ViToolsCard(d));
 
         if (_viFolder is { } list)
         {
@@ -1158,15 +1314,25 @@ public partial class MainWindow
     public DayPlanner.Plan DayPlanRun(ProgramDocument d)
     {
         var day = DpDay(d); var o = DpOptions(d);
-        var plan = DayPlanner.Make(day, DpItems(d), DpAppts(d), o, day == DayNow.Date ? DayNow : null);
+        // T-0728 (offen aus T-0719): von Hand gesetzte oder verschobene Blöcke („pin“) bleiben, wo sie sind – sie zählen beim Planen als belegte Zeit,
+        // ihre Aufgaben werden nicht noch einmal eingeplant. Vorher verteilte „Tag planen“ alles neu und überschrieb sie still.
+        static DateTime? At(JsonNode? n) => DateTime.TryParse(Js(n), CultureInfo.InvariantCulture, DateTimeStyles.None, out var t) ? t : null;
+        var pinned = d.List("plan").OfType<JsonObject>().Where(p => Js(p["pin"]) == "ja" && Js(p["kind"]) != DayPlanner.Fixed && At(p["s"]) is { } ps && At(p["e"]) is { } pe && pe > ps).ToList();
+        var pinnedItems = pinned.Select(p => Js(p["item"])).Where(i => i.Length > 0).ToHashSet();
+        var busy = pinned.Select((p, i) => new DayPlanner.Appointment("pin:" + i, Js(p["title"]), At(p["s"])!.Value, At(p["e"])!.Value));
+        var plan = DayPlanner.Make(day, DpItems(d).Where(i => !pinnedItems.Contains(i.Id)), DpAppts(d).Concat(busy), o, day == DayNow.Date ? DayNow : null);
+        var fresh = plan.Blocks.Where(b => !(b.Kind == DayPlanner.Fixed && b.ItemId?.StartsWith("pin:", StringComparison.Ordinal) == true)).ToList();
         d.Edit("Tag geplant", x =>
         {
-            x["plan"] = new JsonArray(plan.Blocks.Select(b => (JsonNode)new JsonObject { ["s"] = b.Start.ToString("s", CultureInfo.InvariantCulture), ["e"] = b.End.ToString("s", CultureInfo.InvariantCulture), ["title"] = b.Title, ["kind"] = b.Kind, ["item"] = b.ItemId ?? "" }).ToArray());
+            var blocks = fresh.Select(b => (S: b.Start, Node: (JsonNode)new JsonObject { ["s"] = b.Start.ToString("s", CultureInfo.InvariantCulture), ["e"] = b.End.ToString("s", CultureInfo.InvariantCulture), ["title"] = b.Title, ["kind"] = b.Kind, ["item"] = b.ItemId ?? "" }))
+                .Concat(pinned.Select(p => (S: At(p["s"])!.Value, Node: p.DeepClone())));
+            x["plan"] = new JsonArray(blocks.OrderBy(b => b.S).Select(b => b.Node).ToArray());
             x["later"] = new JsonArray(plan.Tomorrow.Select(l => (JsonNode)new JsonObject { ["id"] = l.Item.Id, ["why"] = l.Why }).ToArray());
         });
-        var n = plan.Blocks.Count(b => b.Kind == DayPlanner.Work);
-        _progMsg[DayKey] = $"{n} Aufgaben eingeplant" + (plan.Tomorrow.Count > 0 ? $", {plan.Tomorrow.Count} passen nicht mehr – stehen unter „Morgen“." : ".");
-        return plan;
+        var n = fresh.Count(b => b.Kind == DayPlanner.Work);
+        _progMsg[DayKey] = $"{n} Aufgaben eingeplant" + (plan.Tomorrow.Count > 0 ? $", {plan.Tomorrow.Count} passen nicht mehr – stehen unter „Morgen“." : ".")
+            + (pinned.Count == 0 ? "" : pinned.Count == 1 ? " Ein von Hand gesetzter Block bleibt, wo er ist." : $" {pinned.Count} von Hand gesetzte Blöcke bleiben, wo sie sind.");
+        return pinned.Count == 0 ? plan : DpStored(d);
     }
 
     /// <summary>Termine des Tages aus dem eigenen Kalender (SYS-09) übernehmen, ohne ganztägige und ohne doppelte.</summary>
@@ -1233,13 +1399,17 @@ public partial class MainWindow
         _progMsg[DayKey] = $"{day.ToString("dddd, d. MMMM", De)}: {open.Count} offene Aufgaben übernommen. Termine holst du mit „Termine aus dem Kalender“.";
     }
 
-    DayPlanner.Plan DpForExport(ProgramDocument d) => d.List("plan").Count > 0 ? DpStored(d) : DayPlanRun(d);
+    // T-0719: was auf der Zeitleiste steht (auch von Hand verschobene oder angelegte Blöcke); ohne Plan wird erst geplant
+    DayPlanner.Plan DpForExport(ProgramDocument d) => d.List("plan").Count > 0 ? DpView(d) : DayPlanRun(d);
 
     private void InitDayPlan() => RegisterProgram(FachTabs, new ProgramSpec(DayKey, "STUDIO-DAYPLAN-01", "Tagesplaner")
     {
         Sentence = "Aufgaben mit Dauer, Wichtigkeit und Frist um feste Termine herum in den Tag legen – mit Pausen; was nicht passt, kommt auf morgen.",
         Folder = "Tagesplaner",
         ScrollWorkspace = true,
+        // T-0719: erster Schritt im leeren Tag – direkt einen Block in die Zeitleiste legen
+        FirstStep = new("Ersten Block anlegen", "Leg einen Block in die Zeitleiste und gib ihm einen Namen. Danach ziehst du Blöcke mit der Maus, an der Unterkante änderst du die Dauer, Doppelklick legt weitere an.",
+            DayFirstBlock, d => !DayWeek && DpItems(d).Count == 0 && d.List("appts").Count == 0 && d.List("plan").Count == 0), // T-0728: in der Wochenansicht nicht über den Tagen
         Templates =
         [
             new("leer", "Leerer Tag", "Heute planen", () => DayDoc(DayNow.Date)),
@@ -1257,6 +1427,7 @@ public partial class MainWindow
             ("Tag", [
                 new ProgramCmd("dp-today", "Heute", d => { d.Set("day", DayNow.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), "Heute"); }),
                 new ProgramCmd("dp-carry", "Unerledigtes auf morgen", d => DayPlanCarry(d), Tip: "Erledigtes fällt weg, der Rest zieht auf den nächsten Tag."),
+                new ProgramCmd("dp-ics-alle", "Kalenderdatei mit Terminen", d => DayExportWithAppointments(d), Tip: "Wie die Kalenderdatei, aber mit den festen Terminen (auch den hier angelegten) – zum Weitergeben."),
             ]),
         ],
         Exports =
@@ -1267,7 +1438,9 @@ public partial class MainWindow
         Workspace = DayWorkspace,
         Properties = DayProperties,
         Status = d => { var items = DpItems(d); var p = DpStored(d); return $"{DpDay(d).ToString("ddd d. MMM", De)} · {items.Count(i => !i.Done)} offen, {items.Count(i => i.Done)} erledigt" + (p.Blocks.Count > 0 ? $" · {p.Blocks.Count(b => b.Kind == DayPlanner.Work)} eingeplant" : " · noch nicht geplant"); },
-        Help = "Aufgaben links eintragen, z. B. „Angebot schreiben, 90 min, hoch, bis 20.11.“. Feste Termine darunter oder aus dem Kalender holen. „Tag planen“ legt alles in Zeitblöcke zwischen Arbeitsbeginn und -ende, um die Termine herum und mit Pausen. Was nicht passt, steht unter „Morgen“. Abends „Unerledigtes auf morgen“. Die Kalenderdatei öffnet jedes Kalenderprogramm.",
+        Help = "Aufgaben links eintragen, z. B. „Angebot schreiben, 90 min, hoch, bis 20.11.“. Feste Termine darunter oder aus dem Kalender holen. „Tag planen“ legt alles in Zeitblöcke zwischen Arbeitsbeginn und -ende, um die Termine herum und mit Pausen. Was nicht passt, steht unter „Morgen“. "
+             + "In der Zeitleiste: Block ziehen verschiebt, Unterkante ziehen ändert die Dauer, Doppelklick ins Leere legt eine Aufgabe an, Doppelklick auf einen Block benennt ihn um, Rechtsklick für Termin/Pause/Löschen, Pfeiltasten verschieben um 5 Minuten. Jeder Schritt lässt sich rückgängig machen (Strg+Z). „Tag planen“ verteilt neu. "
+             + "Abends „Unerledigtes auf morgen“. Die Kalenderdatei öffnet jedes Kalenderprogramm.",
     }, "tagesplaner", "tag planen", "tagesplan", "zeitblöcke", "timeboxing", "aufgaben planen", "to-do", "todo", "pausen", "morgen", "zeitplan");
 
     Control DayWorkspace(ProgramDocument d)
@@ -1321,7 +1494,7 @@ public partial class MainWindow
 
         // Plan
         var right = new StackPanel { Name = "dp-plan", Spacing = 4 };
-        right.Children.Add(H($"Plan für {day.ToString("dddd, d. MMMM yyyy", De)}", 14));
+        right.Children.Add(new DockPanel { Children = { Dk(DayViewSwitch(), Avalonia.Controls.Dock.Right), H($"Plan für {day.ToString("dddd, d. MMMM yyyy", De)}", 14) } }); // T-0728: Tag oder Woche rechts neben der Überschrift
         if (plan.Blocks.Count == 0)
         {
             var go = new Button { Name = "dp-plan-now", Content = "Tag planen", Padding = new Thickness(14, 6) }; go.Classes.Add("accent");
@@ -1329,30 +1502,16 @@ public partial class MainWindow
             right.Children.Add(P("Noch kein Plan. Trag Aufgaben und Termine ein und klick auf „Tag planen“.", Muted, 12));
             right.Children.Add(go);
         }
-        var byId = items.ToDictionary(i => i.Id);
-        var bi = 0;
-        foreach (var b in plan.Blocks)
+        // T-0719: Zeitleiste zum Anfassen statt Liste (Termine und Plan-Blöcke ziehen, Dauer ändern, Doppelklick, Rechtsklick)
+        if (DayWeek) right.Children.Add(DayWeekView(d));
+        else
         {
-            var color = b.Kind switch { DayPlanner.Fixed => Brush.Parse("#5FA8D3"), DayPlanner.Pause => Brush.Parse("#6B7280"), _ => Accent };
-            var done = b.ItemId is { } iid && byId.TryGetValue(iid, out var item) && item.Done;
-            var label = new TextBlock { Text = b.Kind switch { DayPlanner.Fixed => "Termin: " + b.Title, DayPlanner.Pause => "Pause", _ => b.Title }, Foreground = b.Kind == DayPlanner.Pause ? Muted : done ? Muted : Text, FontSize = 13, TextWrapping = TextWrapping.Wrap,
-                TextDecorations = done ? TextDecorations.Strikethrough : null, VerticalAlignment = VerticalAlignment.Center };
-            Control tail = new Border();
-            if (b.Kind == DayPlanner.Work && b.ItemId is { } tid && byId.ContainsKey(tid))
-            {
-                var cb = new CheckBox { Name = "dp-block-done-" + bi, IsChecked = done }; ToolTip.SetTip(cb, "Erledigt");
-                cb.IsCheckedChanged += (_, _) => { if ((cb.IsChecked == true) != done) ProgramRun(DayKey, () => DayPlanToggle(d, tid, cb.IsChecked == true)); };
-                tail = cb;
-            }
-            bi++;
-            right.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("4,8,100,*,Auto"), MinHeight = Math.Clamp((b.End - b.Start).TotalMinutes * 0.5, 22, 90), Children = {
-                new Border { Background = color, CornerRadius = new CornerRadius(2) },
-                Pos(new TextBlock { Text = $"{b.Start:HH:mm}–{(b.End.Date > day ? "24:00" : b.End.ToString("HH:mm", CultureInfo.InvariantCulture))}", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, FontFamily = new FontFamily("Cascadia Code, Consolas, monospace") }, 2),
-                Pos(label, 3), Pos(tail, 4) } });
+            right.Children.Add(P("Ziehen verschiebt · Unterkante ziehen ändert die Dauer · Doppelklick legt an · Rechtsklick für mehr", Muted, 11));
+            right.Children.Add(DayTimelineView(d));
         }
         if (plan.Blocks.Count > 0)
         {
-            var (pl, br, fr) = DayPlanner.Summary(plan, DpOptionsSafe(d));
+            var (pl, br, fr) = DayPlanner.Summary(DpView(d), DpOptionsSafe(d));
             right.Children.Add(P($"Geplant {pl} min · Pausen {br} min · frei {fr} min", Muted, 11));
         }
         if (plan.Tomorrow.Count > 0)

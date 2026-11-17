@@ -29,7 +29,52 @@ public partial class MainWindow
     /// <summary>Für Tests: Uhrzeit der On-Air-Uhr (null = jetzt).</summary>
     public DateTime? BcClockOverride { get; set; }
 
+    /// <summary>T-0715 (B6 „Programm-Hülle für alle“, Etappe E3): Sendeablauf (ablauf.json) und Studio (Szenen, Einblendungen, Tonmischer, Sendeplan – szenen.json)
+    /// hängen an Rückgängig/Wiederholen der Hülle (100 Schritte, <see cref="Trendo.Core.Programs.ProgramLink"/>) – vorher gab es kein Rückgängig.
+    /// Eine Notsicherung braucht es nicht: beides wird bei jeder Änderung sofort und atomar gespeichert (<c>Worth</c> = false, also auch keine Wiederherstellen-Karte).
+    /// Die gewählte Szene (Umschalten) ist kein Rückgängig-Schritt.</summary>
+    public LinkSlot BcLink => Slot("sendung", "LINK-SENDUNG", "sendung", "sendung", "bc", "Ein Sendeablauf", "Sendeabläufe", BcState, BcApply, () => false, () => Broadcast.Plan.Show);
+
+    System.Text.Json.Nodes.JsonObject BcState() => new()
+    {
+        ["ablauf"] = System.Text.Json.JsonSerializer.SerializeToNode(Broadcast.Plan),
+        ["szenen"] = System.Text.Json.JsonSerializer.SerializeToNode(LiveShowState.Scenes),
+        ["mix"] = System.Text.Json.JsonSerializer.SerializeToNode(LiveShowState.Mix),
+        ["plan"] = System.Text.Json.JsonSerializer.SerializeToNode(LiveShowState.Plan),
+    };
+
+    void BcApply(System.Text.Json.Nodes.JsonNode? st)
+    {
+        if (st is null) return;
+        if (System.Text.Json.JsonSerializer.Deserialize<Rundown>(st["ablauf"]) is { } r)
+        {
+            var p = Broadcast.Plan; p.Show = r.Show; p.Start = r.Start; p.SlotMinutes = r.SlotMinutes; p.Segments = r.Segments; Broadcast.Save();
+        }
+        var show = LiveShowState;
+        if (System.Text.Json.JsonSerializer.Deserialize<List<LiveScene>>(st["szenen"]) is { Count: > 0 } sc) { show.Scenes = sc; if (show.Scenes.All(x => x.Id != show.Active)) show.Active = sc[0].Id; }
+        if (System.Text.Json.JsonSerializer.Deserialize<LiveMix>(st["mix"]) is { } mix) show.Mix = mix;
+        if (System.Text.Json.JsonSerializer.Deserialize<List<LiveCue>>(st["plan"]) is { } plan) show.Plan = plan;
+        LiveSave();
+    }
+
     void BcRun(Action a) { try { a(); } catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or FormatException or UnauthorizedAccessException) { _bcMsg = "⚠ " + ex.Message; } Show("sendung"); }
+
+    /// <summary>T-0726: Feld des Sendeablaufs. Getipptes wird schon nach der Tipp-Pause gespeichert (ohne Neuaufbau, Cursor bleibt) und ist ein Rückgängig-Schritt –
+    /// vorher erst beim Verlassen oder mit Enter, ein Absturz verlor den Text der Zelle mit Fokus. Ungültiges (leerer Titel, „2:x“) wartet bis zum Verlassen
+    /// und meldet sich dann wie bisher. Verglichen wird mit dem gespeicherten Stand, damit das Verlassen nach dem Speichern die Seite nicht neu aufbaut.</summary>
+    TextBox BcField(string name, string text, Func<string> current, Action<string> set, double width = double.NaN, Thickness? margin = null)
+    {
+        var t = new TextBox { Name = name, Text = text, Width = width, Margin = margin ?? new Thickness(2, 0) };
+        void Commit() { if ((t.Text ?? "") != current()) BcRun(() => { set(t.Text ?? ""); Broadcast.Save(); }); }
+        t.LostFocus += (_, _) => Commit(); OnEnter(t, Commit);
+        SaveOnPause(t, () =>
+        {
+            if ((t.Text ?? "") == current()) return;
+            try { set(t.Text ?? ""); } catch (Exception ex) when (ex is ArgumentException or FormatException) { return; } // noch unfertig getippt
+            Broadcast.Save(); var l = BcLink; LinkCommit(l, "Text geschrieben"); l.Refresh?.Invoke(); // Rückgängig sofort möglich
+        });
+        return t;
+    }
 
     /// <summary>On-Air-Uhr nachziehen: was läuft, wie lange noch, was kommt.</summary>
     public void BcTick()
@@ -59,15 +104,20 @@ public partial class MainWindow
             var mid = id; var b = Btn("bc-mode-" + id, label, () => { BcMode = mid; Show("sendung"); }); if (BcMode == id) { b.Background = Accent; b.Foreground = Brushes.White; }
             bar.Children.Add(b);
         }
-        TextBox Head(string name, string text, double w, Action<string> set) { var t = new TextBox { Name = name, Text = text, Width = w, Margin = new Thickness(6, 0, 0, 4) }; void C() { if ((t.Text ?? "") != text) BcRun(() => { set(t.Text ?? ""); Broadcast.Save(); }); } t.LostFocus += (_, _) => C(); OnEnter(t, C); return t; }
+        TextBox Head(string name, Func<string> cur, double w, Action<string> set) => BcField(name, cur(), cur, set, w, new Thickness(6, 0, 0, 4));
         bar.Children.Add(new TextBlock { Text = "Sendung", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0, 0, 4) });
-        bar.Children.Add(Head("bc-show", Broadcast.Plan.Show, 180, v => Broadcast.Plan.Show = v.Trim()));
+        bar.Children.Add(Head("bc-show", () => Broadcast.Plan.Show, 180, v => Broadcast.Plan.Show = v.Trim()));
         bar.Children.Add(new TextBlock { Text = "Beginn", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 0, 4) });
-        bar.Children.Add(Head("bc-start", Broadcast.Plan.Start.ToString("dd.MM.yyyy HH:mm"), 140, v => Broadcast.Plan.Start = DateTime.TryParseExact(v.Trim(), "dd.MM.yyyy HH:mm", Fach.De, System.Globalization.DateTimeStyles.None, out var st) ? st : throw new FormatException("Beginn bitte als „21.10.2026 20:00“.")));
+        bar.Children.Add(Head("bc-start", () => Broadcast.Plan.Start.ToString("dd.MM.yyyy HH:mm"), 140, v => Broadcast.Plan.Start = DateTime.TryParseExact(v.Trim(), "dd.MM.yyyy HH:mm", Fach.De, System.Globalization.DateTimeStyles.None, out var st) ? st : throw new FormatException("Beginn bitte als „21.10.2026 20:00“.")));
         bar.Children.Add(new TextBlock { Text = "Sendeplatz (min)", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 0, 4) });
-        bar.Children.Add(Head("bc-slot", Broadcast.Plan.SlotMinutes.ToString(), 60, v => Broadcast.Plan.SlotMinutes = int.TryParse(v.Trim(), out var m) && m > 0 ? m : throw new FormatException("Sendeplatz bitte in ganzen Minuten.")));
+        bar.Children.Add(Head("bc-slot", () => Broadcast.Plan.SlotMinutes.ToString(), 60, v => Broadcast.Plan.SlotMinutes = int.TryParse(v.Trim(), out var m) && m > 0 ? m : throw new FormatException("Sendeplatz bitte in ganzen Minuten.")));
         bar.Children.Add(Btn("bc-start-now", "Beginn = jetzt", () => BcRun(() => { var n = DateTime.Now; Broadcast.Plan.Start = new DateTime(n.Year, n.Month, n.Day, n.Hour, n.Minute, 0); Broadcast.Save(); BcMode = "onair"; })));
         if (_bcMsg.Length == 0 && _w45Msg.Length > 0) bar.Children.Add(new TextBlock { Name = "bc-app-msg", Text = _w45Msg, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 4), TextWrapping = TextWrapping.Wrap, MaxWidth = 520, FontSize = 12, Foreground = Brush.Parse(_w45Msg.StartsWith('⚠') ? "#F87171" : "#7FD3FF") }); // Meldungen von „In OBS öffnen“
+        // T-0715: Rückgängig · Wiederholen (Hülle, 100 Schritte) in der vorhandenen Zeile hinter den Modi – keine zusätzliche Zeile
+        var bcLink = BcLink; LinkCommit(bcLink);
+        var (bcUndo, bcRedo) = LinkButtons(bcLink); bar.Children.Insert(3, bcRedo); bar.Children.Insert(3, bcUndo);
+        if (LinkMsg(bcLink) is { } bcLm) bar.Children.Add(bcLm);
+        if (Broadcast.Newer || LiveShowState.Newer) bar.Children.Add(new TextBlock { Name = "bc-newer", Text = "⚠ Dieser Ablauf stammt aus einer neueren Trendo-Fassung – Änderungen werden nicht gespeichert, damit nichts verloren geht.", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 4), TextWrapping = TextWrapping.Wrap, MaxWidth = 520, FontSize = 12, Foreground = Brush.Parse("#F87171") });
         if (_bcMsg.Length > 0) bar.Children.Add(new TextBlock { Name = "bc-msg", Text = _bcMsg, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 4), TextWrapping = TextWrapping.Wrap, MaxWidth = 520, FontSize = 12, Foreground = Brush.Parse(_bcMsg.StartsWith('⚠') ? "#F87171" : "#4ADE80") });
 
         Control main = BcMode == "onair" ? BcOnAir() : BcMode == "studio" ? new ScrollViewer { Content = new StackPanel { Spacing = 10, Children = { LiveSection(wide: true), Card(LiveServerCard()) } } } : BcRundown(); // Profi 27: Studio wie OBS
@@ -117,14 +167,14 @@ public partial class MainWindow
         foreach (var r in rows)
         {
             var i = r.Index; var seg = Broadcast.Plan.Segments[i];
-            TextBox Cell(string key, string val, Action<string> set) { var t = new TextBox { Name = $"bc-{key}-{i}", Text = val, Margin = new Thickness(2, 0) }; void C() { if ((t.Text ?? "") != val) BcRun(() => { set(t.Text ?? ""); Broadcast.Save(); }); } t.LostFocus += (_, _) => C(); OnEnter(t, C); return t; }
+            TextBox Cell(string key, Func<string> cur, Action<string> set) => BcField($"bc-{key}-{i}", cur(), cur, set);
             Button Small(string name, string label, string tip, Action go) { var b = new Button { Name = name, Content = label, Padding = new Thickness(6, 2), Margin = new Thickness(1, 0) }; ToolTip.SetTip(b, tip); b.Click += (_, _) => BcRun(go); return b; }
             var g = new Grid { ColumnDefinitions = new ColumnDefinitions("30,80,*,70,*,Auto"), Children = {
                 new TextBlock { Text = (i + 1).ToString(), Foreground = Muted, VerticalAlignment = VerticalAlignment.Center },
                 Pos(new TextBlock { Name = $"bc-row-{i}", Text = r.Start.ToString("HH:mm:ss"), Foreground = Text, VerticalAlignment = VerticalAlignment.Center, FontFamily = new FontFamily("Consolas, monospace") }, 1),
-                Pos(Cell("title", seg.Title, v => seg.Title = v.Trim().Length > 0 ? v.Trim() : throw new ArgumentException("Der Titel darf nicht leer sein.")), 2),
-                Pos(Cell("dur", BroadcastDesk.Clock(TimeSpan.FromSeconds(seg.Seconds)), v => seg.Seconds = BroadcastDesk.ParseDuration(v)), 3),
-                Pos(Cell("note", seg.Note, v => seg.Note = v.Trim()), 4),
+                Pos(Cell("title", () => seg.Title, v => seg.Title = v.Trim().Length > 0 ? v.Trim() : throw new ArgumentException("Der Titel darf nicht leer sein.")), 2),
+                Pos(Cell("dur", () => BroadcastDesk.Clock(TimeSpan.FromSeconds(seg.Seconds)), v => seg.Seconds = BroadcastDesk.ParseDuration(v)), 3),
+                Pos(Cell("note", () => seg.Note, v => seg.Note = v.Trim()), 4),
                 Pos(new StackPanel { Orientation = Orientation.Horizontal, Children = { Small($"bc-up-{i}", "↑", "nach oben", () => Broadcast.Move(i, -1)), Small($"bc-down-{i}", "↓", "nach unten", () => Broadcast.Move(i, 1)), Small($"bc-del-{i}", "✕", "entfernen", () => Broadcast.Remove(i)) } }, 5) } };
             table.Children.Add(g);
         }
@@ -158,9 +208,9 @@ public partial class MainWindow
         sp.Children.Add(H("Weitergeben", 12));
         var d = Fach.StoreDir(_core.DataRoot, "sendung");
         sp.Children.Add(new WrapPanel { Children = {
-            B("bc-export", "Ablaufplan (CSV)", () => { if (Broadcast.Plan.Segments.Count == 0) throw new InvalidOperationException("Bitte zuerst Programmpunkte anlegen."); var p = Path.Combine(d, "ablaufplan.csv"); File.WriteAllText(p, Broadcast.Sheet()); _bcMsg = "Gespeichert: " + p; NotifyFileResult(_bcMsg); }),
-            B("bc-chapters", "YouTube-Kapitel", () => { var ch = Broadcast.Chapters(); var p = Path.Combine(d, "kapitel.txt"); File.WriteAllText(p, ch); _ = Clipboard?.SetTextAsync(ch); _bcMsg = "Kapitelmarken kopiert und gespeichert: " + p; }),
-            B("bc-cards", "Moderationskarten", () => { if (Broadcast.Plan.Segments.Count == 0) throw new InvalidOperationException("Bitte zuerst Programmpunkte anlegen."); var p = Path.Combine(d, "moderationskarten.md"); File.WriteAllText(p, BroadcastPlus.CueCards(Broadcast)); _bcMsg = "Gespeichert: " + p; NotifyFileResult(_bcMsg); }),
+            B("bc-export", "Ablaufplan (CSV)", () => { if (Broadcast.Plan.Segments.Count == 0) throw new InvalidOperationException("Bitte zuerst Programmpunkte anlegen."); var p = Path.Combine(d, "ablaufplan.csv"); AtomicFile.WriteAllText(p, Broadcast.Sheet()); _bcMsg = "Gespeichert: " + p; NotifyFileResult(_bcMsg); }),
+            B("bc-chapters", "YouTube-Kapitel", () => { var ch = Broadcast.Chapters(); var p = Path.Combine(d, "kapitel.txt"); AtomicFile.WriteAllText(p, ch); _ = Clipboard?.SetTextAsync(ch); _bcMsg = "Kapitelmarken kopiert und gespeichert: " + p; }),
+            B("bc-cards", "Moderationskarten", () => { if (Broadcast.Plan.Segments.Count == 0) throw new InvalidOperationException("Bitte zuerst Programmpunkte anlegen."); var p = Path.Combine(d, "moderationskarten.md"); AtomicFile.WriteAllText(p, BroadcastPlus.CueCards(Broadcast)); _bcMsg = "Gespeichert: " + p; NotifyFileResult(_bcMsg); }),
         } });
         sp.Children.Add(P("OBS-Szenen (eine je Programmpunkt):", null, 11)); sp.Children.Add(new WrapPanel { Children = { OpenInButton("obs", () => ObsCollectionFile(), "sendung") } });
         // Rechner (sofort)
@@ -181,12 +231,12 @@ public partial class MainWindow
         sp.Children.Add(H("Wochenplan", 12));
         var week = new TextBox { Name = "bc-week-spec", AcceptsReturn = true, MinHeight = 54, Text = "Mo 20:00 60 Talk\nFr 18:00 45 Musik", TextWrapping = TextWrapping.Wrap };
         sp.Children.Add(P("Eine Sendung pro Zeile: Tag, Beginn, Minuten, Titel", null, 11)); sp.Children.Add(week);
-        sp.Children.Add(B("bc-week", "Zwei Wochen planen", () => { var (sl, c) = BroadcastPlus.Weekly(week.Text ?? "", DateTime.Today, 2); var p = Path.Combine(d, "wochenplan.csv"); File.WriteAllText(p, "Datum;Beginn;Ende;Sendung\n" + string.Concat(sl.Select(x => $"{x.Start:dd.MM.yyyy};{x.Start:HH:mm};{x.End:HH:mm};{x.Title}\n"))); _bcMsg = $"{sl.Count} Termine" + (c.Count == 0 ? " ohne Überschneidung" : " · ⚠ " + string.Join(" · ", c)) + $" – gespeichert: {p}"; }));
+        sp.Children.Add(B("bc-week", "Zwei Wochen planen", () => { var (sl, c) = BroadcastPlus.Weekly(week.Text ?? "", DateTime.Today, 2); var p = Path.Combine(d, "wochenplan.csv"); AtomicFile.WriteAllText(p, "Datum;Beginn;Ende;Sendung\n" + string.Concat(sl.Select(x => $"{x.Start:dd.MM.yyyy};{x.Start:HH:mm};{x.End:HH:mm};{x.Title}\n"))); _bcMsg = $"{sl.Count} Termine" + (c.Count == 0 ? " ohne Überschneidung" : " · ⚠ " + string.Join(" · ", c)) + $" – gespeichert: {p}"; }));
         sp.Children.Add(H("Untertitel verschieben", 12));
         var srt = Field("bc-srt-path", "SRT-Datei (.srt)", 150); sp.Children.Add(srt);
         var shift = new TextBox { Name = "bc-srt-shift", Text = "0", Width = 70 };
         sp.Children.Add(Row(P("Versatz in Sekunden (− = früher)", Text, 12), shift));
-        sp.Children.Add(B("bc-srt", "Kopie verschieben", () => { var f = Need(srt, "die SRT-Datei"); if (!File.Exists(f)) throw new IOException("Diese Datei gibt es nicht."); var (s2, n, p) = BroadcastPlus.ShiftSrt(File.ReadAllText(f), TimeSpan.FromSeconds(Fach.Num(shift.Text ?? "0"))); var o = Path.Combine(Path.GetDirectoryName(f) ?? ".", Path.GetFileNameWithoutExtension(f) + ".versetzt.srt"); File.WriteAllText(o, s2); _bcMsg = $"{n} Untertitel" + (p.Count == 0 ? "" : " · ⚠ " + string.Join(" · ", p)) + $" – gespeichert: {o}"; }));
+        sp.Children.Add(B("bc-srt", "Kopie verschieben", () => { var f = Need(srt, "die SRT-Datei"); if (!File.Exists(f)) throw new IOException("Diese Datei gibt es nicht."); var (s2, n, p) = BroadcastPlus.ShiftSrt(File.ReadAllText(f), TimeSpan.FromSeconds(Fach.Num(shift.Text ?? "0"))); var o = Path.Combine(Path.GetDirectoryName(f) ?? ".", Path.GetFileNameWithoutExtension(f) + ".versetzt.srt"); AtomicFile.WriteAllText(o, s2); _bcMsg = $"{n} Untertitel" + (p.Count == 0 ? "" : " · ⚠ " + string.Join(" · ", p)) + $" – gespeichert: {o}"; }));
         return sp;
     }
     /// <summary>T-0203: schreibt die OBS-Szenensammlung zur aktuellen Sendung.</summary>
@@ -195,7 +245,7 @@ public partial class MainWindow
         if (Broadcast.Plan.Segments.Count == 0) throw new InvalidOperationException("Bitte zuerst Programmpunkte anlegen.");
         var name = "Trendo " + (string.IsNullOrWhiteSpace(Broadcast.Plan.Show) ? "Sendung" : Broadcast.Plan.Show.Trim());
         var f = Path.Combine(Fach.StoreDir(_core.DataRoot, "sendung"), string.Concat(name.Split(Path.GetInvalidFileNameChars())) + ".json");
-        File.WriteAllText(f, ObsScenes.Collection(name, Broadcast.Plan.Segments.Select(s => s.Title)));
+        AtomicFile.WriteAllText(f, ObsScenes.Collection(name, Broadcast.Plan.Segments.Select(s => s.Title))); // T-0715: Exporte atomar
         return f;
     }
 }

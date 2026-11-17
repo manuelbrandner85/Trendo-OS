@@ -15,12 +15,9 @@ public partial class MainWindow
     private (string Title, string Details, string Yes, Func<Task<string>> Run)? _extAsk;
 
     /// <summary>Freigabe für eine Erweiterungsaktion anlegen und erteilen (der Klick auf „Ja“ ist die Zustimmung). Not-Stopp → Ausnahme.</summary>
-    string ExtApprove(string action, string description, string target)
-    {
-        var req = _core.Approvals.Request(Principal.LocalOwner, action, description, target);
-        _core.Approvals.Approve(req.Id, Principal.LocalOwner);
-        return req.Id;
-    }
+    /// B4 (T-0706): Aufruf nur aus dem „Ja“ der Rückfrage-Karte (_extAsk); freigeben darf nur die angemeldete erwachsene Person (Kern prüft die Rolle).
+    string ExtApprove(string action, string description, string target) =>
+        FreigabeAusRueckfrage(new Wirkung(action, target, description, description, "Ja")) ?? throw new ApprovalException(CanApprove ? "Nicht freigegeben." : NurErwachsene);
 
     /// <summary>Angaben aus der Beschreibung einer Erweiterung (Ordner oder ZIP) – für die Rückfrage, ohne etwas zu installieren.</summary>
     static string ExtPeek(string path)

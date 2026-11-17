@@ -62,7 +62,7 @@ public static class StudioNeeds
     {
         ["CORE-05"] = N(PerfProfile.Standard, PerfProfile.Professional, "Vorschau in niedriger Qualität, Rendern über Nacht", "blender"),
         ["CORE-06"] = N(PerfProfile.Standard, PerfProfile.Professional, "kleine 2D- und Retro-Spiele laufen auch auf Standard; Unreal nur mit starker Grafikkarte", "unreal"),
-        ["SPEC-04"] = N(PerfProfile.Professional, PerfProfile.Professional, "Räume planen geht ohne Brille und ohne starke Grafikkarte"),
+        ["SPEC-04"] = N(PerfProfile.Professional, PerfProfile.Professional, "3D-Modelle ansehen geht ohne starke Grafikkarte"),
         ["SPEC-09"] = N(PerfProfile.Standard, PerfProfile.Professional, "weniger Fotos je Scan, Ergebnis dauert länger", "meshroom"),
         ["CORE-08"] = N(PerfProfile.Basic, PerfProfile.Standard, "Vorschau in halber Auflösung, Export dauert länger", "ffmpeg"),
         ["SPEC-15"] = N(PerfProfile.Standard, PerfProfile.Standard, "niedrigere Streamauflösung", "obs"),
@@ -72,7 +72,6 @@ public static class StudioNeeds
         ["STUDIO-PODCAST-01"] = N(PerfProfile.Basic, PerfProfile.Standard, "", "ffmpeg"),
         ["CORE-02"] = N(PerfProfile.Basic, PerfProfile.Standard, "kleines KI-Modell (Qwen2.5 0.5B) statt des großen", "ollama"),
         ["CORE-03"] = N(PerfProfile.Standard, PerfProfile.Professional, "weniger KI-Rollen gleichzeitig", "ollama"),
-        ["CORE-09"] = N(PerfProfile.Standard, PerfProfile.Standard, "niedrigere Bildrate der Kamera"),
         ["SPEC-14"] = N(PerfProfile.Basic, PerfProfile.Standard, "einfachere 3D-Vorschau"),
     };
 

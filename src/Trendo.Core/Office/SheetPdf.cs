@@ -119,18 +119,31 @@ public static class SheetPdf
         var x = Margin; var h = RowH * scale; var grid = new XPen(XColor.FromArgb(255, 200, 205, 214), 0.4);
         for (var c = from; c <= to; c++)
         {
-            var w = widths[c] * scale; var cell = s.Get(r, c);
-            if (cell?.Fill is { } fill && TryColor(fill, out var fc)) g.DrawRectangle(new XSolidBrush(fc), x, y, w, h);
-            g.DrawRectangle(cell?.Border == true ? new XPen(XColors.Black, 0.8) : grid, x, y, w, h);
-            if (cell is { Raw.Length: > 0 })
+            var w = widths[c] * scale; var cell = s.Get(r, c); var (vr, vc) = (r, c); var showText = true; var next = c;
+            // T-0701: verbundene Zellen – ein Feld über die ganze Breite, Inhalt aus der Zelle oben links (in Folgezeilen nur die Fläche)
+            if (s.MergeAt(r, c) is { } m)
             {
-                var v = calc.Value(s, r, c); var text = SheetFormat.Display(v, cell.Format);
-                var font = new XFont("Arial", 9 * scale, cell.Bold ? XFontStyleEx.Bold : XFontStyleEx.Regular);
-                while (text.Length > 1 && g.MeasureString(text, font).Width > w - 4) text = text[..^1];
-                var right = v.IsNumber || v.Kind == CellValue.K.Bool;
-                g.DrawString(text, font, v.IsError ? XBrushes.Firebrick : XBrushes.Black, new XRect(x + 2, y, w - 4, h), right ? XStringFormats.CenterRight : XStringFormats.CenterLeft);
+                next = Math.Min(m.Right, to);
+                for (var k = c + 1; k <= next; k++) w += widths[k] * scale;
+                (vr, vc) = (m.Top, m.Left); cell = s.Get(vr, vc); showText = r == m.Top;
             }
-            x += w;
+            if (cell?.Fill is { } fill && TryColor(fill, out var fc)) g.DrawRectangle(new XSolidBrush(fc), x, y, w, h);
+            g.DrawRectangle(cell?.Border == true || cell?.Borders is not null ? new XPen(XColors.Black, 0.8) : grid, x, y, w, h);
+            if (showText && cell is { Raw.Length: > 0 })
+            {
+                var v = calc.Value(s, vr, vc);
+                string? codeColor = null;
+                var text = cell.NumCode is { } code && v.IsNumber ? SheetNumberFormat.Format(v.Number, code, out codeColor) : SheetFormat.Display(v, cell);
+                var style = (cell.Bold, cell.Italic) switch { (true, true) => XFontStyleEx.BoldItalic, (true, false) => XFontStyleEx.Bold, (false, true) => XFontStyleEx.Italic, _ => XFontStyleEx.Regular };
+                if (cell.Underline is not null) style |= XFontStyleEx.Underline;
+                if (cell.Strike) style |= XFontStyleEx.Strikeout;
+                var font = new XFont("Arial", (cell.FontSize is { } fs ? fs * 9 / 11 : 9) * scale, style);
+                while (text.Length > 1 && g.MeasureString(text, font).Width > w - 4) text = text[..^1];
+                var align = cell.HAlign ?? (v.IsNumber || v.Kind == CellValue.K.Bool ? "right" : "left");
+                XBrush brush = v.IsError ? XBrushes.Firebrick : (codeColor ?? cell.FontColor) is { } col && TryColor(col, out var tc) ? new XSolidBrush(tc) : XBrushes.Black;
+                g.DrawString(text, font, brush, new XRect(x + 2 + cell.Indent * 4 * scale, y, w - 4, h), align switch { "center" or "centerContinuous" or "distributed" => XStringFormats.Center, "right" => XStringFormats.CenterRight, _ => XStringFormats.CenterLeft });
+            }
+            x += w; c = next;
         }
     }
 

@@ -20,7 +20,7 @@ public class Pilot_TextLookUi
         try
         {
             w.TextNew(); w.Show("text");
-            w.Find<TextBox>("text-edit").Text = "Gold glänzt im Dunkeln"; Dispatcher.UIThread.RunJobs();
+            w.TextView.Type("Gold glänzt im Dunkeln"); Dispatcher.UIThread.RunJobs();
             Para P() => (Para)w.TextDocument.Blocks[0];
             w.TextSelect(0, 0, 4); w.Show("text");
             var font = w.Find<ComboBox>("text-font");
@@ -45,8 +45,7 @@ public class Pilot_TextLookUi
             Assert.Equal(1.25, P().FirstLineCm);
             // in der Anzeige (Absatz ohne Fokus) erscheinen Farbe und Schrift
             w.TextSelect(0, 0, 0); w.TextDocument.Blocks.Add(new Para("zweiter")); w.TextSelect(1, 0, 0); w.Show("text");
-            var view = w.Find<TextBlock>("text-para-0");
-            Assert.Contains(view.Inlines!.OfType<Avalonia.Controls.Documents.Run>(), r => r.Text == "Gold" && r.FontFamily.Name == "Georgia" && r.Foreground is Avalonia.Media.ISolidColorBrush { Color: var c } && c == Avalonia.Media.Color.Parse("#C00000"));
+            Assert.Contains(w.TextView.Flow.Pages[0].Items.OfType<FlowText>(), r => r.Text == "Gold" && r.Font.Family == "Georgia" && r.Color == 0xFFC00000); // T-0692: das Blatt (Seitensatz) zeigt Schrift und Farbe
             w.Find<Button>("text-undo").Press(); // Erstzeileneinzug weg
             Assert.Equal(0, ((Para)w.TextDocument.Blocks[0]).FirstLineCm);
         }
@@ -73,7 +72,7 @@ public class Pilot_TextLookUi
             w.TextSelect(150, 0, 6); sw.Restart();
             w.TextSetInk(MarkKind.Font, "Georgia"); w.Show("text"); Dispatcher.UIThread.RunJobs();
             var change = sw.ElapsedMilliseconds;
-            File.AppendAllText(Path.Combine(Path.GetTempPath(), "trendo-leistung-text.txt"), $"{DateTime.Now:s} aufbau={build}ms formatwechsel={change}ms" + Environment.NewLine);
+            File.AppendAllText(Path.Combine(global::Trendo.Core.TempDir.SystemTemp, "trendo-leistung-text.txt"), $"{DateTime.Now:s} aufbau={build}ms formatwechsel={change}ms" + Environment.NewLine);
             Assert.True(build < 3000, $"Seite aufbauen dauerte {build} ms");
             Assert.True(change < 1500, $"Formatwechsel dauerte {change} ms");
         }
@@ -87,17 +86,17 @@ public class Pilot_TextLookUi
         try
         {
             w.TextNew(); w.Show("text");
-            var box = w.Find<TextBox>("text-edit"); box.Text = "Wichtiger Satz"; Dispatcher.UIThread.RunJobs();
+            w.TextView.Type("Wichtiger Satz"); Dispatcher.UIThread.RunJobs();
             w.TextSelect(0, 0, 9); w.Show("text");
-            var menu = w.Find<TextBox>("text-edit").ContextMenu!;
+            var menu = w.Find<TextPageView>("text-edit").ContextMenu!;
             var names = menu.Items.OfType<MenuItem>().Select(m => m.Name).ToList();
             foreach (var n in new[] { "text-context-cut", "text-context-copy", "text-context-paste", "text-context-bold", "text-context-color", "text-context-mark", "text-context-style", "text-context-link", "text-context-comment" })
                 Assert.Contains(n, names);
             Assert.Contains("text-context-claude", names); // Claude gehört in jedes Programm
-            Click(Item(w.Find<TextBox>("text-edit"), "text-context-bold"));
+            Click(Item(w.Find<TextPageView>("text-edit"), "text-context-bold"));
             Assert.True(TextDoc.Has((Para)w.TextDocument.Blocks[0], 0, 9, Fmt.Bold));
             w.TextSelect(0, 0, 9); w.Show("text");
-            Click(Item(w.Find<TextBox>("text-edit"), "text-context-style-heading2"));
+            Click(Item(w.Find<TextPageView>("text-edit"), "text-context-style-heading2"));
             Assert.Equal(ParaStyle.Heading2, ((Para)w.TextDocument.Blocks[0]).Style);
         }
         finally { w.Close(); }

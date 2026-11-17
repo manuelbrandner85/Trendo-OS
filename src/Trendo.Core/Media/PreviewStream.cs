@@ -37,11 +37,14 @@ public sealed class PreviewStream : IPreviewSource
             "-pix_fmt", "bgra", "-f", "rawvideo", "pipe:1"];
     }
 
-    public PreviewStream(string ffmpeg, string file, double start, double length, int width, int height, int fps)
+    public PreviewStream(string ffmpeg, string file, double start, double length, int width, int height, int fps) : this(ffmpeg, Args(file, start, length, width, height, fps), width, height, fps) { }
+
+    /// <summary>T-0695: beliebiger FFmpeg-Aufruf, der BGRA-Bilder in <paramref name="width"/>×<paramref name="height"/> auf die Standardausgabe schreibt (fertiges Bild mit Effekten: <see cref="VideoLook.StreamArgs"/>).</summary>
+    public PreviewStream(string ffmpeg, IReadOnlyList<string> args, int width, int height, int fps)
     {
         (_w, _h, _fps) = (width, height, fps); _size = width * height * 4;
         var psi = new ProcessStartInfo(ffmpeg) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = false };
-        foreach (var a in Args(file, start, length, width, height, fps)) psi.ArgumentList.Add(a);
+        foreach (var a in args) psi.ArgumentList.Add(a);
         try { _proc = Process.Start(psi); }
         catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException) { _failed = true; return; }
         if (_proc is null) { _failed = true; return; }

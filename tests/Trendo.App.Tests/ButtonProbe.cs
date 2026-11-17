@@ -20,6 +20,8 @@ public static class ButtonProbe
         ["print-yes"] = "Schickt einen Auftrag an den echten Drucker.",
         ["auftrag-claude"] = "Öffnet den Claude-Bereich im ganzen Fenster und verdeckt die Seite – eigener Test in ClaudeDock_Ui und ClaudeEverywhere_Ui.",
         ["ki-menu"] = "Klappt nur das Menü „KI ▾“ auf (Popup, im Test ohne Fenster); seine Einträge prüft ButtonProbe einzeln bzw. eigene Tests in EinfachBedienen_Ui, ClaudeOperate_Ui, Kie_Ui.",
+        ["page-head-more"] = "Klappt nur das Menü „Mehr“ im Seitenkopf auf (Klappfeld, im Test ohne Fenster). Seine Einträge „Verwandte Programme“ prüfen StudioFolds_Ui und DesignPaket1_Ui (T-0684 V-13).",
+        ["fold-menu"] = "Klappt nur „Verwandte Programme ▾“ auf Seiten ohne Seitenkopf auf (Klappfeld, im Test ohne Fenster) – dieselben Einträge wie im Menü „Mehr“ (T-0684 V-13).",
         ["auftrag-claude-markierung"] = "Öffnet den Claude-Bereich mit der Markierung – eigener Test in ClaudePrograms_Ui.",
         ["auftrag-claude-weiter"] = "Öffnet den Claude-Bereich mit dem letzten Projekt – eigener Test in ClaudePrograms_Ui.",
         ["auftrag-kie"] = "Öffnet das kie.ai-Klappfeld (eigenes Fenster, im Test ohne Popup) – eigener Test des Feldes in Kie_Ui.",

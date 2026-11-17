@@ -1125,23 +1125,6 @@ public partial class PromptActionTests
         Assert.DoesNotContain(fx.FilesTree(), f => f.EndsWith("drehzahl.txt", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".nc", StringComparison.OrdinalIgnoreCase));
     }
 
-    [Fact(DisplayName = "Fahrtkosten rechnen 1.200 Euro und buchen nichts")]
-    public void Fahrt_rechnet_kosten()
-    {
-        using var fx = new Fixture();
-        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
-        var cost = VehiclePlus.YearCost(10000, 6, 2, 0, 0, 0);
-        Assert.Equal(1200, cost.Year);
-        var done = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-16", "Kilometer: 10000\nVerbrauch: 6\nPreis: 2"), fx.Ctx()).RunId, fx.Ctx());
-        Assert.Equal(RunStatus.Verified, done.Status);
-        var text = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath));
-        Assert.Contains("Im Jahr " + cost.Year.ToString("N2", Fach.De) + " €", text);
-        Assert.Contains("Im Monat " + cost.Month.ToString("N2", Fach.De) + " €", text);
-        Assert.Contains("Nicht gebucht.", text);
-        Assert.Equal("Im Jahr " + cost.Year.ToString("N2", Fach.De) + " €", done.Preview);
-        Assert.False(File.Exists(Path.Combine(fx.Root, "finanzen", "buchungen.json")));
-    }
-
     [Fact(DisplayName = "Messwerte liefern Mittelwert und Gerade")]
     public void Messung_rechnet_mittelwert()
     {
@@ -1304,24 +1287,26 @@ public partial class PromptActionTests
         Assert.DoesNotContain(fx.FilesTree(), f => f.EndsWith("hinweis.txt", StringComparison.OrdinalIgnoreCase));
     }
 
-    [Fact(DisplayName = "Bildzeit rechnet das Budget und startet keine Brille")]
-    public void Bildzeit_rechnet_das_Budget()
+    [Fact(DisplayName = "3D-Modell prüfen liest Maße, Dreiecke und Fehler und lässt das Modell unverändert (T-0722, ersetzt Bildzeit)")]
+    public void Modell_pruefen_liest_masse_und_fehler()
     {
         using var fx = new Fixture();
         var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
-        var budget = XrInspector.FrameBudget(72, 10);
-        Assert.True(budget.Smooth);
-        var done = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-04", "Rate: 72\nMessung: 10"), fx.Ctx()).RunId, fx.Ctx());
+        Directory.CreateDirectory(Path.Combine(fx.Files, "modelle"));
+        var glb = XrSample.Write(Path.Combine(fx.Files, "modelle", "leseecke.glb"));
+        var before = File.ReadAllBytes(glb);
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-04", "Datei: modelle/leseecke.glb"), fx.Ctx()).RunId, fx.Ctx());
         Assert.Equal(RunStatus.Verified, done.Status);
         var text = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath));
-        Assert.Contains("Bildzeit " + Fach.F(budget.BudgetMs, 2) + " ms", text);
-        Assert.Contains("flüssig", text);
-        Assert.Contains("Keine Brille ist gelaufen.", text);
-        Assert.Equal(Fach.F(budget.BudgetMs, 2) + " ms · flüssig", done.Preview);
-        var slow = XrInspector.FrameBudget(72, 20);
-        Assert.False(slow.Smooth);
-        var late = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-04", "Rate: 72\nMessung: 20", id: "langsam-1"), fx.Ctx()).RunId, fx.Ctx());
-        Assert.Contains("zu langsam", File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, late.Artifacts.Single().RelativePath)));
+        var mesh = Mesh3D.ReadMeshFile(glb);
+        Assert.Contains("- Dreiecke: " + Fach.F(mesh.Triangles, 0), text);
+        Assert.Contains("Maße: ", text); Assert.Contains("cm (Breite × Tiefe × Höhe)", text);
+        Assert.Contains("Maßstab plausibel", text); Assert.Contains("keine gefunden", text);
+        Assert.DoesNotContain("Brille", text); Assert.DoesNotContain("Bildzeit", text);
+        Assert.Equal(before, File.ReadAllBytes(glb)); // nur gelesen
+        Assert.Contains("Dreiecke", done.Preview);
+        var missing = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-04", "Datei: modelle/fehlt.glb", id: "fehlt-1"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.NotEqual(RunStatus.Verified, missing.Status); Assert.Empty(missing.Artifacts);
     }
 
     [Fact(DisplayName = "Scan erzeugt auch mit Freigabe keine Punktwolke")]
@@ -1605,7 +1590,7 @@ public partial class PromptActionTests
         Assert.Equal(CapabilityLevel.Blocked, CapabilityCatalog.Level("SPEC-12", adapters));
         Assert.Equal(CapabilityLevel.Blocked, CapabilityCatalog.Level("SPEC-09", adapters));
         Assert.Equal(CapabilityLevel.Blocked, CapabilityCatalog.Level("SPEC-07", adapters));
-        foreach (var id in new[] { "X-02", "CORE-01", "SYS-12", "CORE-09" })
+        foreach (var id in new[] { "X-02", "CORE-01", "SYS-12" }) // CORE-09 mit T-0720 entfernt
             Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level(id, adapters));
         Assert.DoesNotContain(CapabilityCatalog.Ids, id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.NotImplemented);
         Assert.DoesNotContain(CapabilityCatalog.Ids, id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Ready);
@@ -1699,7 +1684,7 @@ public partial class PromptActionTests
         var adapters = PromptActions.CreateDefault();
         var registered = adapters.Select(a => a.StudioId).ToHashSet(StringComparer.OrdinalIgnoreCase);
         Assert.Equal(ids.Count, registered.Count);
-        Assert.Equal(103, adapters.Count); // + Künstlerstudio (15.11.2026), + Kreativ & KI Teil 3 und 4 (14.11.2026), + vier + vier Studios Kreativ & KI (11.11.2026), + TV & Live (27.10.2026), + Trendo Musik (03.11.2026), + Filme machen und Print on Demand (08.11.2026); SPEC-07 abgelehnt: nur die Sperre, kein Übersetzungsadapter
+        Assert.Equal(107, adapters.Count); // − 3 Adapter der mit T-0720 entfernten Studios SPEC-16 (Fahrtkosten) und CORE-09 (Kamera nennen, Kamera steuern); + sieben Studios Arbeiten & Büro, + Künstlerstudio (15.11.2026), + Kreativ & KI Teil 3 und 4 (14.11.2026), + vier + vier Studios Kreativ & KI (11.11.2026), + TV & Live (27.10.2026), + Trendo Musik (03.11.2026), + Filme machen und Print on Demand (08.11.2026); SPEC-07 abgelehnt: nur die Sperre, kein Übersetzungsadapter
         Assert.Equal(adapters.Count, adapters.Select(a => a.ActionId).Distinct(StringComparer.OrdinalIgnoreCase).Count());
         Assert.All(adapters, a => Assert.NotNull(CapabilityCatalog.Find(a.StudioId)));
         Assert.Contains(registered, id => id == "STUDIO-LETTER-01");
@@ -1720,13 +1705,13 @@ public partial class PromptActionTests
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-05", adapters));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-06", adapters));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-08", adapters));
-        foreach (var id in new[] { "SYS-02", "X-11", "SPEC-01", "SPEC-02", "SPEC-03", "SPEC-05", "SPEC-10", "SPEC-13", "SPEC-14", "SPEC-16", "CORE-10", "SPEC-06", "CORE-12", "SPEC-08", "SPEC-15", "X-07", "SPEC-04", "X-03", "X-10", "X-09", "X-01", "X-06", "SYS-01", "SYS-05", "X-04", "CORE-09", "SYS-08", "CORE-02", "CORE-03", "X-05", "CORE-01", "CORE-11", "SYS-03", "SYS-04", "SYS-06", "SYS-07", "SYS-11", "SYS-12", "SYS-13", "X-02", "X-08", "CORE-04" })
+        foreach (var id in new[] { "SYS-02", "X-11", "SPEC-01", "SPEC-02", "SPEC-03", "SPEC-05", "SPEC-10", "SPEC-13", "SPEC-14", "CORE-10", "SPEC-06", "CORE-12", "SPEC-08", "SPEC-15", "X-07", "SPEC-04", "X-03", "X-10", "X-09", "X-01", "X-06", "SYS-01", "SYS-05", "X-04", "SYS-08", "CORE-02", "CORE-03", "X-05", "CORE-01", "CORE-11", "SYS-03", "SYS-04", "SYS-06", "SYS-07", "SYS-11", "SYS-12", "SYS-13", "X-02", "X-08", "CORE-04" })
         {
             Assert.Contains(registered, item => item == id);
             Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level(id, adapters));
         }
         Assert.Equal(CapabilityLevel.Blocked, CapabilityCatalog.Level("SPEC-07", adapters));
-        Assert.Equal(73, ids.Count(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Partial)); // + Künstlerstudio, + TV & Live, + Trendo Musik (03.11.2026), + Filme machen und Print on Demand (08.11.2026)
+        Assert.Equal(78, ids.Count(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Partial)); // − SPEC-16, CORE-09 (T-0720, Nutzerentscheidung 16.11.2026); + sieben Studios Arbeiten & Büro, + Künstlerstudio, + TV & Live, + Trendo Musik (03.11.2026), + Filme machen und Print on Demand (08.11.2026)
         Assert.Equal(3, ids.Count(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Blocked));
         Assert.DoesNotContain(ids, id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.NotImplemented);
         Assert.DoesNotContain(ids, id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Ready);

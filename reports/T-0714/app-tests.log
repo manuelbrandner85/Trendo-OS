@@ -1,0 +1,18 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0279 UI: Modell aus anderem Programm übernehmen (GLB) und im Modell-Prüfer ansehen; fremdes Format klar abgewiesen [FAIL]
+      System.InvalidOperationException : Sequence contains no matching element
+      Stack Trace:
+           at System.Linq.ThrowHelper.ThrowNoMatchException()
+           at System.Linq.Enumerable.Last[TSource](IEnumerable`1 source, Func`2 predicate)
+        tests\Trendo.App.Tests\Library3DUiTests.cs(13,0): at Trendo.App.Tests.Library3D_Ui.Get[T](MainWindow w, String name)
+        tests\Trendo.App.Tests\Library3DUiTests.cs(60,0): at Trendo.App.Tests.Library3D_Ui.Import_and_view()
+        --- End of stack trace from previous location ---
+    SYS-03-P14: Seite als PDF – A4, Prüfsumme im Protokoll (nur wenn Chrome/Edge da) [SKIP]
+      Übersprungen: pdfinfo ist nicht installiert.
+  Finished:    Trendo.App.Tests (ID = '8678a2f85392f0c88f7988590b804c8be5a2c3f56e301412c7eeaa7b10bc961c')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 340, Errors: 0, Failed: 1, Skipped: 1, Not Run: 0, Time: 554,495s
+exit 1

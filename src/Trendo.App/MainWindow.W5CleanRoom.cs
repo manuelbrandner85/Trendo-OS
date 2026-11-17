@@ -58,7 +58,8 @@ public partial class MainWindow
         {
             var specFile = Path.Combine(open, "1-Beschreibung", "BESCHREIBUNG.md");
             var spec = new TextBox { Name = "clean-spec-text", Text = File.Exists(specFile) ? File.ReadAllText(specFile) : "", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 220, FontSize = 13 };
-            var specSave = Act("clean-spec-save", "Beschreibung speichern", () => { Directory.CreateDirectory(Path.GetDirectoryName(specFile)!); File.WriteAllText(specFile, spec.Text ?? ""); CleanRoom.Log(open, CleanRoom.Roles[0], "Beschreibung geändert"); Say("Beschreibung gespeichert.", "nachbau"); }, true);
+            var cl = CleanLink; LinkForm(cl, open, ("spec", spec)); // T-0711: Entwurf, Rückgängig, Notsicherung
+            var specSave = Act("clean-spec-save", "Beschreibung speichern", () => { Directory.CreateDirectory(Path.GetDirectoryName(specFile)!); AtomicFile.WriteAllText(specFile, spec.Text ?? ""); LinkClose(cl); CleanRoom.Log(open, CleanRoom.Roles[0], "Beschreibung geändert"); Say("Beschreibung gespeichert.", "nachbau"); }, true);
             var impl = Path.Combine(open, "2-Umsetzung");
             var implFiles = Directory.Exists(impl) ? Directory.GetFiles(impl, "*", SearchOption.AllDirectories).Length : 0;
             Border Step(string nr, string title, string who, bool done, Control body) => new() { Background = TileBg, BorderBrush = done ? Brush.Parse("#664ADE80") : EdgeLit, BorderThickness = new Avalonia.Thickness(1), CornerRadius = new Avalonia.CornerRadius(14), Padding = new Avalonia.Thickness(14, 10),
@@ -77,7 +78,7 @@ public partial class MainWindow
             center = new ScrollViewer { Content = new StackPanel { Spacing = 10, Children = {
                 new DockPanel { Children = { Dk(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { Act("clean-spec", "Beschreibung als Datei", () => Launch(specFile)), Act("clean-folder", "Ordner", () => Launch(open)) } }, Avalonia.Controls.Dock.Right),
                     new TextBlock { Text = Path.GetFileName(open), Foreground = Text, FontSize = 22, FontWeight = FontWeight.SemiBold } } },
-                Step("1", "Beschreibung", "wer das Original kennt – schreibt nur WAS es tut, kein Code", spec.Text?.Trim().Length > 40, new StackPanel { Spacing = 6, Children = { spec, specSave } }),
+                Step("1", "Beschreibung", "wer das Original kennt – schreibt nur WAS es tut, kein Code", spec.Text?.Trim().Length > 40, new StackPanel { Spacing = 6, Children = { LinkUndoRow(cl), spec, specSave } }),
                 Step("2", "Umsetzung", "wer das Original NICHT gesehen hat – baut nur nach der Beschreibung", implFiles > 0, new StackPanel { Spacing = 4, Children = {
                     P(implFiles == 0 ? "Noch keine Dateien in „2-Umsetzung“. Dort entsteht der eigene Code." : $"{implFiles} Dateien in „2-Umsetzung“.", Text, 12.5), Act("clean-impl-folder", "Umsetzungs-Ordner öffnen", () => { Directory.CreateDirectory(impl); Launch(impl); }) } }),
                 Step("3", "Prüfung", "Ähnlichkeit mit dem Original messen, vor jeder Veröffentlichung", _cleanSims is { Count: 0 }, check) } } };
@@ -97,6 +98,7 @@ public partial class MainWindow
                 P("Baue eine Idee neu, ohne fremden Code zu kopieren: Beschreibung, Umsetzung und Prüfung in getrennten Rollen, mit Tagebuch. Links ein Projekt anlegen.", Muted, 12.5) } };
             right = P("Das Tagebuch erscheint, sobald ein Projekt offen ist.", Muted, 12);
         }
+        if (LinkRecoveryCard(CleanLink) is { } ccard) left.Children.Insert(0, ccard); // T-0711: nicht gespeicherte Beschreibung
         var grid = new Grid { Name = "clean-workspace", ColumnDefinitions = new ColumnDefinitions("280,14,*,14,300"), Children = { Card(new ScrollViewer { Content = left }), Pos(center, 2), Pos(Card(right), 4) } };
         return BusinessPage("Sauberer Nachbau", grid);
     }

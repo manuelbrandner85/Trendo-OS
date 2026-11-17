@@ -1,0 +1,17 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0713\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:01.14]     CORE-09: Aufnahme startet einen Prozess und schreibt die Datei beim Stoppen [SKIP]
+  Übersprungen CORE-09: Aufnahme startet einen Prozess und schreibt die Datei beim Stoppen [1 ms]
+[xUnit.net 00:00:01.34]     QA-019: Kernfunktionen laufen ohne Netzwerk (keine Netz-Abhängigkeit im Core) [FAIL]
+  Fehler QA-019: Kernfunktionen laufen ohne Netzwerk (keine Netz-Abhängigkeit im Core) [159 ms]
+  Fehlermeldung:
+   Assert.DoesNotContain() Failure: Item found in collection
+                                                                      ↓ (pos 15)
+Collection: [···, "Microsoft.Win32.Registry", "System.Xml.XDocument", "System.Net.Http", "s2industries.ZUGFeRD", "Microsoft.Win32.Primitives", ···]
+Found:      "System.Net.Http"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.QA019_Offline.Core_works_offline() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0713\tests\Trendo.Core.Tests\Tests.cs:line 251
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Fehler!      : Fehler:     1, erfolgreich:   227, übersprungen:     1, gesamt:   229, Dauer: 9 s - Trendo.Core.Tests.dll (net10.0)

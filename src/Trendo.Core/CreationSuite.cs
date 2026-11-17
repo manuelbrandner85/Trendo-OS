@@ -48,7 +48,7 @@ public static partial class CreationSuite
         var sb = new StringBuilder($"# {name}\n\nZiel: {k.Goal}\nVorhaben: {k.Label}\n\n");
         for (var i = 0; i < k.Steps.Length; i++)
             sb.Append(Format(new Step(0, false, k.Steps[i], 0, start is { } st ? st.Date.AddDays(Math.Max(1, (int)Math.Round(Days(kitId) * (i + 1.0) / k.Steps.Length))) : null, start is not null && i == k.Steps.Length - 1))).Append('\n');
-        File.WriteAllText(Path.Combine(dir, ListFile), sb.ToString(), new UTF8Encoding(false));
+        AtomicFile.WriteAllText(Path.Combine(dir, ListFile), sb.ToString()); // T-0714: atomar (UTF-8 ohne BOM wie vorher)
         return dir;
     }
 
@@ -74,7 +74,7 @@ public static partial class CreationSuite
         var f = Path.Combine(dir, ListFile); var lines = File.ReadAllLines(f);
         if (line < 0 || line >= lines.Length || StepRx().Match(lines[line]) is not { Success: true } m) return;
         lines[line] = Format(change(Parse(line, m)));
-        File.WriteAllLines(f, lines);
+        WriteLines(f, lines);
     }
 
     /// <summary>Kanban: Schritt nach Offen (0), In Arbeit (1) oder Fertig (2) schieben.</summary>
@@ -101,8 +101,12 @@ public static partial class CreationSuite
     public static void AddStep(string dir, string text)
     {
         if (string.IsNullOrWhiteSpace(text)) return;
-        File.AppendAllText(Path.Combine(dir, ListFile), $"- [ ] {text.Trim().Replace('\n', ' ')}\n");
+        var f = Path.Combine(dir, ListFile);
+        AtomicFile.WriteAllText(f, (File.Exists(f) ? File.ReadAllText(f) : "") + $"- [ ] {text.Trim().Replace('\n', ' ')}\n"); // T-0714: atomar statt Anhängen
     }
+
+    /// <summary>T-0714: Schrittliste atomar schreiben – Zeilen wie <c>File.WriteAllLines</c> (Zeilenende des Systems, UTF-8 ohne BOM).</summary>
+    public static void WriteLines(string file, IEnumerable<string> lines) => AtomicFile.WriteAllText(file, string.Concat(lines.Select(l => l + Environment.NewLine)));
 
     /// <summary>Fälligkeiten wie in Asana/MS Project als Kalendertermine (05.11.2026): je offenem Schritt mit Fälligkeit ein ganztägiger Termin mit Erinnerung am Vortag.
     /// Die Kennung ist je Vorhaben und Zeile fest – erneutes Eintragen ersetzt statt zu verdoppeln; erledigte Schritte liefern eine leere Kennungsliste zum Entfernen.</summary>

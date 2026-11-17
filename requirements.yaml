@@ -153,9 +153,12 @@ modules:
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-t0003/UEBERSICHT.md
-  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-t0003/UEBERSICHT.md
+  evidence_previous_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-24, Code des Studios zuletzt geändert am 2026-11-14; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 12). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: CORE-03
   name: AI Agent Command Center – 12 roles
   approved_expansion_functions: BASE
@@ -178,41 +181,56 @@ modules:
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
-  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_previous_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-21, Code des Studios zuletzt geändert am 2026-11-14. Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: CORE-06
   name: Ultimate Game Development Studio 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
-  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_previous_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-21, Code des Studios zuletzt geändert am 2026-11-14. Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: CORE-07
   name: Ultimate App & Software Development Studio 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
-  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_previous_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-21, Code des Studios zuletzt geändert am 2026-11-16. Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: CORE-08
   name: Ultimate Creative & Media Studio 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
-  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_previous_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-21, Code des Studios zuletzt geändert am 2026-11-15. Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: CORE-09
   name: Vision & Robotics Control Studio 2.0
   approved_expansion_functions: '20'
-  approval_status: APPROVED_SPEC
-  implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-t0003/UEBERSICHT.md
-  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+  approval_status: REJECTED_REMOVED_BY_USER
+  implementation_status: REMOVED
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-t0003/UEBERSICHT.md
+  evidence_previous_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+  note: 'T-0720 (16.11.2026, Nutzerentscheidung „Kameras & Roboter … kannst ruhig löschen“): Studio gelöscht – Code, Seite, KI-Auftrag und Tests entfernt; Kennung, Name, Symbol und Bild bleiben wie bei SPEC-07, damit alte Verweise sauber ins Leere laufen (StudioCatalog.Removed). Vorher: Studio entfernt (StudioCatalog.Removed), nicht mehr angeboten. T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Studio ist aus der Liste entfernt (StudioCatalog.Removed) – nicht mehr angeboten; Beleg vom 2026-10-24, Code des Studios zuletzt geändert am 2026-11-14; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 1). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: CORE-10
   name: Knowledge Memory & Self Improvement Core 2.0
   approved_expansion_functions: '20'
@@ -234,9 +252,12 @@ modules:
   approved_expansion_functions: '50'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-t0003/UEBERSICHT.md
-  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-t0003/UEBERSICHT.md
+  evidence_previous_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-24, Code des Studios zuletzt geändert am 2026-11-05; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 4). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: SYS-01
   implementation_status: IN_PROGRESS
   test_status: PC_VERIFIED
@@ -251,18 +272,24 @@ modules:
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.3/README.md
-  evidence_sha256: dbc3edbe5fed3fdd7bc808c11431b350b91ba8dbd8e863a899504a8319bc2f15
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-0.9.3/README.md
+  evidence_previous_sha256: dbc3edbe5fed3fdd7bc808c11431b350b91ba8dbd8e863a899504a8319bc2f15
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-21, Code des Studios zuletzt geändert am 2026-11-15. Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
   note: 'Alle 25 Funktionen gebaut; PC 0.9.3: echter Papierkorb ($I gelesen, Testdatei gefunden), volle Testsuite grün'
 - id: SYS-03
   name: Ultimate Browser Internet & Download Center
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.3/README.md
-  evidence_sha256: dbc3edbe5fed3fdd7bc808c11431b350b91ba8dbd8e863a899504a8319bc2f15
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-0.9.3/README.md
+  evidence_previous_sha256: dbc3edbe5fed3fdd7bc808c11431b350b91ba8dbd8e863a899504a8319bc2f15
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-21, Code des Studios zuletzt geändert am 2026-11-14. Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
   note: 'Alle 25 Funktionen gebaut; PC 0.9.3: Defender-Scan (exit 0, ohne Admin), Druck als PDF über Chrome, Drucker nur gelistet'
 - id: SYS-04
   name: Ultimate App Installation & System Control Center
@@ -309,93 +336,126 @@ modules:
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-t0003/UEBERSICHT.md
-  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-t0003/UEBERSICHT.md
+  evidence_previous_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-24, Code des Studios zuletzt geändert am 2026-11-14. Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: SYS-10
   name: Office Documents & Productivity Center
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.3/README.md
-  evidence_sha256: dbc3edbe5fed3fdd7bc808c11431b350b91ba8dbd8e863a899504a8319bc2f15
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-0.9.3/README.md
+  evidence_previous_sha256: dbc3edbe5fed3fdd7bc808c11431b350b91ba8dbd8e863a899504a8319bc2f15
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-21, Code des Studios zuletzt geändert am 2026-11-16. Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
   note: 'Alle 25 Funktionen gebaut; PC 0.9.3: qpdf 12.4.2 verwaltet installiert, echt zusammengefügt (2 Seiten) und geteilt (1 Seite)'
 - id: SYS-11
   name: Ready-to-Run & Software Integration
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.3/README.md
-  evidence_sha256: dbc3edbe5fed3fdd7bc808c11431b350b91ba8dbd8e863a899504a8319bc2f15
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-0.9.3/README.md
+  evidence_previous_sha256: dbc3edbe5fed3fdd7bc808c11431b350b91ba8dbd8e863a899504a8319bc2f15
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-21, Code des Studios zuletzt geändert am 2026-11-04. Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
   note: 'Alle 25 Funktionen gebaut; PC 0.9.3: Autostart (Ordner + HKCU-Run nur gelesen, Umschalten im Temp), Dateizuordnungen gelesen, winget export 47 Pakete → ImportIds'
 - id: SYS-12
   name: Adaptive Interface Accessibility & Personalization
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
   implementation_status: IN_PROGRESS
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.3/README.md
-  evidence_sha256: dbc3edbe5fed3fdd7bc808c11431b350b91ba8dbd8e863a899504a8319bc2f15
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-0.9.3/README.md
+  evidence_previous_sha256: dbc3edbe5fed3fdd7bc808c11431b350b91ba8dbd8e863a899504a8319bc2f15
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-21, Code des Studios zuletzt geändert am 2026-11-14; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 1). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
   note: 'Alle 25 Funktionen gebaut; PC 0.9.3: SAPI-Vorlesen (de-DE) in WAV geprüft, Fensterposition mit echtem Bildschirm. OFFEN: Narrator-Bedienung nur manuell prüfbar, Mehrschirm nur mit 1 Bildschirm getestet'
 - id: SYS-13
   name: System Architecture Integration & Release Quality
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.3/README.md
-  evidence_sha256: dbc3edbe5fed3fdd7bc808c11431b350b91ba8dbd8e863a899504a8319bc2f15
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-0.9.3/README.md
+  evidence_previous_sha256: dbc3edbe5fed3fdd7bc808c11431b350b91ba8dbd8e863a899504a8319bc2f15
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-21, Code des Studios zuletzt geändert am 2026-11-13; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 46). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
   note: 'Alle 25 Funktionen gebaut; PC: Rückfall 0.9.3→0.9.2→0.9.3 echt; Start 0.9.4 bis erstes Bild 0,81–0,84 s (erster Start neuer Dateien ~2 s), Seiten 6–70 ms (reports/pc-0.9.4). Codesignatur bleibt offen'
 - id: SPEC-01
   name: Architecture & Interior 2.0
   approved_expansion_functions: '16'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
-  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_previous_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-21, Code des Studios zuletzt geändert am 2026-11-14; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 2). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: SPEC-02
   name: Electronics & PCB 2.0
   approved_expansion_functions: '16'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
-  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_previous_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-21, Code des Studios zuletzt geändert am 2026-11-14; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 0). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: SPEC-03
   name: Engineering & Simulation 2.0
   approved_expansion_functions: '16'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
-  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_previous_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-21, Code des Studios zuletzt geändert am 2026-11-09; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 3). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: SPEC-04
   name: VR/AR/MR 2.0
   approved_expansion_functions: '16'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
-  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_previous_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  note: 'T-0722 (16.11.2026, Nutzerentscheidung): VR-Teile entfernt (Zielbrillen mit Richtwerten, Brillen-Ansicht, „Für die Brille reparieren“, Komfort-Rechner, KI-Auftrag Bildzeit – ersetzt durch „3D-Modell prüfen“); 3D-Bibliothek und Modell-Prüfer bleiben für 3D-Druck und Architektur unter dem neutralen Namen „3D-Modelle ansehen“, Studio bleibt aus den Listen (StudioCatalog.Removed). T-0720 (16.11.2026): Studio bleibt entfernt (StudioCatalog.Removed). Seine Seiten Modell-Prüfer (xr) und 3D-Bibliothek (bib3d) bleiben unverändert, weil 3D-Druck (CORE-05) und Architektur (SPEC-01) sie nutzen – Löschen hätte Funktionen anderer Studios gekostet. Vorher: Studio entfernt (StudioCatalog.Removed), nicht mehr angeboten. T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Studio ist aus der Liste entfernt (StudioCatalog.Removed) – nicht mehr angeboten; Beleg vom 2026-10-21, Code des Studios zuletzt geändert am 2026-11-14; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 2). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: SPEC-05
   name: Science & Research 2.0
   approved_expansion_functions: '16'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
-  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_previous_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-21, Code des Studios zuletzt geändert am 2026-11-02; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 1). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: SPEC-06
   name: Education & Training 2.0
   approved_expansion_functions: '16'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
-  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_previous_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-21, Code des Studios zuletzt geändert am 2026-11-14; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 0). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: SPEC-07
   name: Language & Localization Studio 2.0
   approved_expansion_functions: '16'
@@ -407,33 +467,45 @@ modules:
   approved_expansion_functions: '18'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-t0003/UEBERSICHT.md
-  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-t0003/UEBERSICHT.md
+  evidence_previous_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-24, Code des Studios zuletzt geändert am 2026-11-14; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 5). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: SPEC-09
   name: 3D Scanning & Reconstruction 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-t0003/UEBERSICHT.md
-  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-t0003/UEBERSICHT.md
+  evidence_previous_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-24, Code des Studios zuletzt geändert am 2026-11-02; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 8). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: SPEC-10
   name: Digital Twin 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-t0003/UEBERSICHT.md
-  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-t0003/UEBERSICHT.md
+  evidence_previous_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-24, Code des Studios zuletzt geändert am 2026-11-14; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 0). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: SPEC-11
   name: Business & Finance 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
-  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_previous_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-21, Code des Studios zuletzt geändert am 2026-11-14; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 0). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: SPEC-12
   name: Cybersecurity & Forensics 2.0
   approved_expansion_functions: '20'
@@ -447,25 +519,34 @@ modules:
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-t0003/UEBERSICHT.md
-  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-t0003/UEBERSICHT.md
+  evidence_previous_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-24, Code des Studios zuletzt geändert am 2026-11-14; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 2). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: SPEC-14
   name: Manufacturing & CNC 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-t0003/UEBERSICHT.md
-  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-t0003/UEBERSICHT.md
+  evidence_previous_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-24, Code des Studios zuletzt geändert am 2026-11-14; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 1). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: SPEC-15
   name: Broadcast & Streaming 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-t0003/UEBERSICHT.md
-  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-t0003/UEBERSICHT.md
+  evidence_previous_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-24, Code des Studios zuletzt geändert am 2026-11-15; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 7). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: STUDIO-CODEAI-01
   name: Code mit KI
   approved_expansion_functions: '0'
@@ -487,6 +568,20 @@ modules:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)
+- id: STUDIO-DECKDESIGN-01
+  name: Präsentationen gestalten
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios), 15.11.2026 „Ja, weiter“ (Etappe Arbeiten & Büro, T-0673)
+- id: STUDIO-DOCSCAN-01
+  name: Dokumente scannen
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios), 15.11.2026 „Ja, weiter“ (Etappe Arbeiten & Büro, T-0673)
 - id: STUDIO-DAYPLAN-01
   name: Tagesplaner
   approved_expansion_functions: '0'
@@ -494,13 +589,51 @@ modules:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)
+- id: STUDIO-CV-01
+  name: Bewerbung & Lebenslauf
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Arbeiten & Büro), 15.11.2026 „Ja, weiter“
+- id: STUDIO-CARDS-01
+  name: Karten & Einladungen
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Arbeiten & Büro), 15.11.2026 „Ja, weiter“
+- id: STUDIO-CONTRACTS-01
+  name: Verträge-Ordner
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Arbeiten & Büro), 15.11.2026 „Ja, weiter“
+- id: STUDIO-PDFTOOLS-01
+  name: PDF-Werkstatt
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Arbeiten & Büro), „Ja, weiter“ 15.11.2026
+- id: STUDIO-FORMS-01
+  name: Formulare ausfüllen
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Arbeiten & Büro), „Ja, weiter“ 15.11.2026
 - id: STUDIO-MUSIK-01
   name: Trendo Musik (Lieder mit ACE-Step)
   approved_expansion_functions: '0'
   approval_status: APPROVED_SPEC
   implementation_status: IN_PROGRESS
-  test_status: NOT_RUN
-  evidence: tests/Trendo.App.Tests/MusikStudioUiTests.cs (Auftrag im Chat 03.11.2026)
+  test_status: PC_VERIFIED
+  evidence: reports/echtlauf/2026-11-16/acestep.log
+  evidence_sha256: f662e8ca3d56f53c955b12f01369628d77067388279ec58fa1acca6cdaf99c0a
+  evidence_previous: 'tests/Trendo.App.Tests/MusikStudioUiTests.cs (Auftrag im Chat 03.11.2026)'
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): hochgestuft auf PC_VERIFIED für den belegten Fachlauf der Echtlauf-Station 16.11.2026 (ECHT-GRÜN, Rohlog + reports/echtlauf/2026-11-16/SHA256SUMS). Belegt ist ein Fachlauf, nicht jede Funktion des Studios; implementation_status bleibt IN_PROGRESS. Beleg anonymisiert (T-0730), Inhalt sonst unverändert'
 - id: STUDIO-TV-01
   name: TV & Live (IPTV) Studio
   approved_expansion_functions: '0'
@@ -590,8 +723,11 @@ modules:
   approved_expansion_functions: '0'
   approval_status: APPROVED_SPEC
   implementation_status: IN_PROGRESS
-  test_status: NOT_RUN
-  evidence: Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)
+  test_status: PC_VERIFIED
+  evidence: reports/echtlauf/2026-11-16/sdcli.log
+  evidence_sha256: f449231a514437bffa7eeffc4142531c74e8dd01517ac3b3ff90d67a6d7981f3
+  evidence_previous: 'Freigabe im Chat 09.11.2026 (79 neue Studios, Etappe Kreativ & KI)'
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): hochgestuft auf PC_VERIFIED für den belegten Fachlauf der Echtlauf-Station 16.11.2026 (ECHT-GRÜN, Rohlog + reports/echtlauf/2026-11-16/SHA256SUMS). Belegt ist ein Fachlauf, nicht jede Funktion des Studios; implementation_status bleibt IN_PROGRESS.'
 - id: STUDIO-VIDEOAI-01
   name: Videos mit KI
   approved_expansion_functions: '0'
@@ -623,19 +759,25 @@ modules:
 - id: SPEC-16
   name: Transport & Vehicle 2.0
   approved_expansion_functions: '20'
-  approval_status: APPROVED_SPEC
-  implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-t0003/UEBERSICHT.md
-  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+  approval_status: REJECTED_REMOVED_BY_USER
+  implementation_status: REMOVED
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-t0003/UEBERSICHT.md
+  evidence_previous_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+  note: 'T-0720 (16.11.2026, Nutzerentscheidung „Auto & Fahrten … kannst ruhig löschen“): Studio gelöscht – Code, Seite, KI-Auftrag und Tests entfernt; Kennung, Name, Symbol und Bild bleiben wie bei SPEC-07, damit alte Verweise sauber ins Leere laufen (StudioCatalog.Removed). Vorher: Studio entfernt (StudioCatalog.Removed), nicht mehr angeboten. T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Studio ist aus der Liste entfernt (StudioCatalog.Removed) – nicht mehr angeboten; Beleg vom 2026-10-24, Code des Studios zuletzt geändert am 2026-11-14; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 0). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: X-01
   name: Universal Studio Fusion & Autonomous Production
   approved_expansion_functions: '18'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
-  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_previous_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-21, Code des Studios zuletzt geändert am 2026-11-14. Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: X-02
   name: Zero Touch Setup & Self Healing
   approved_expansion_functions: '20'
@@ -649,41 +791,56 @@ modules:
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
-  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_previous_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-21, Code des Studios zuletzt geändert am 2026-11-14; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 7). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: X-04
   name: Extension Marketplace & Studio Evolution
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
-  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_previous_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-21, Code des Studios zuletzt geändert am 2026-11-14; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 0). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: X-05
   name: Free AI Discovery & Fallback
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-t0003/UEBERSICHT.md
-  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-t0003/UEBERSICHT.md
+  evidence_previous_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-24, Code des Studios zuletzt geändert am 2026-11-14; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 6). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: X-06
   name: GitHub Open-Source Integration
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
-  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_previous_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-21, Code des Studios zuletzt geändert am 2026-11-14. Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: X-07
   name: Global Free Asset Discovery
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
-  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_previous_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-21, Code des Studios zuletzt geändert am 2026-11-14; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 4). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: X-08
   implementation_status: IN_PROGRESS
   test_status: PC_VERIFIED
@@ -706,25 +863,34 @@ modules:
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
-  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_previous_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-21, Code des Studios zuletzt geändert am 2026-11-14; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 1). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: X-11
   name: Universal Creation & Productivity Suite
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
-  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_previous_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-21, Code des Studios zuletzt geändert am 2026-11-15; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 0). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: STUDIO-ONLINE-BUSINESS-01
   name: Ultimate Online Business Creation & Innovation Studio GODMODE (both modes)
   approved_expansion_functions: '30'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
-  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  test_status: NOT_RUN
+  evidence: docs/audit/2026-11-16-profi-audit/requirements-delta.md
+  evidence_sha256: 8bbb6c0f90c1d07c73714a70c2ab2c973514e5f4ccdf86da98af166d7a7d44e4
+  evidence_previous: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_previous_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
+  note: 'T-0702 (17.11.2026, Freigabe „requirements-delta übernehmen“): zurückgestuft von PC_VERIFIED – Beleg vom 2026-10-21, Code des Studios zuletzt geändert am 2026-10-27; kein Test mit echtem Fremdwerkzeug für die Programme des Studios (ersetzt: 0). Neuer Beleg nötig (Rohlog + SHA-256 unter reports/).'
 - id: STUDIO-LETTER-01
   name: Ultimate Letter Business & Legal Correspondence Studio GODMODE
   approved_expansion_functions: '25'

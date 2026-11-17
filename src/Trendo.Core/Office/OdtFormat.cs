@@ -190,12 +190,25 @@ public static class OdtFormat
                     break;
                 case Table t:
                     tableNo++;
-                    body.Append($"<table:table table:name=\"Tabelle{tableNo}\"><table:table-column table:number-columns-repeated=\"{Math.Max(1, t.Cols)}\"/>");
-                    foreach (var row in t.Rows)
+                    // T-0692: Spaltenbreiten, Zellen mit Zeichenformaten und verbundene Zellen (spanned / covered-table-cell)
+                    var fr = t.Fractions(); var bodyCm = (doc.Page.Landscape ? 29.7 : 21) - doc.Page.Left - doc.Page.Right;
+                    body.Append($"<table:table table:name=\"Tabelle{tableNo}\">");
+                    for (var c = 0; c < Math.Max(1, t.Cols); c++)
+                    {
+                        if (t.Widths.Count == 0) { body.Append($"<table:table-column table:number-columns-repeated=\"{Math.Max(1, t.Cols)}\"/>"); break; }
+                        var cn = $"Tabelle{tableNo}.S{c + 1}";
+                        auto.Append($"<style:style style:name=\"{cn}\" style:family=\"table-column\"><style:table-column-properties style:column-width=\"{(fr[c] * bodyCm).ToString("0.###", CultureInfo.InvariantCulture)}cm\" style:rel-column-width=\"{(int)Math.Round(fr[c] * 65535)}*\"/></style:style>");
+                        body.Append($"<table:table-column table:style-name=\"{cn}\"/>");
+                    }
+                    for (var r = 0; r < t.Rows.Count; r++)
                     {
                         body.Append("<table:table-row>");
                         for (var c = 0; c < t.Cols; c++)
-                            body.Append($"<table:table-cell office:value-type=\"string\"><text:p>{Esc(c < row.Count ? row[c] : "")}</text:p></table:table-cell>");
+                        {
+                            if (t.IsCovered(r, c)) { body.Append("<table:covered-table-cell/>"); continue; }
+                            var (cs, rs) = t.SpanOf(r, c);
+                            body.Append($"<table:table-cell office:value-type=\"string\"{(cs > 1 ? $" table:number-columns-spanned=\"{cs}\"" : "")}{(rs > 1 ? $" table:number-rows-spanned=\"{rs}\"" : "")}>{ParaXml(t.CellPara(r, c))}</table:table-cell>");
+                        }
                         body.Append("</table:table-row>");
                     }
                     body.Append("</table:table>");
@@ -424,17 +437,44 @@ public static class OdtFormat
             else if (el.Name == TableNs + "table")
             {
                 var t = new Table();
-                foreach (var row in el.Descendants(TableNs + "table-row"))
+                // T-0692: Zellen mit Zeichenformaten, verbundene Zellen und Spaltenbreiten
+                foreach (var row in el.Descendants(TableNs + "table-row").Where(x => x.Ancestors(TableNs + "table").First() == el))
                 {
-                    var cells = new List<string>();
-                    foreach (var cell in row.Elements(TableNs + "table-cell"))
+                    var r = t.Rows.Count; var cells = new List<string>(); t.Rows.Add(cells);
+                    foreach (var cell in row.Elements().Where(x => x.Name == TableNs + "table-cell" || x.Name == TableNs + "covered-table-cell"))
                     {
-                        var v = string.Join("\n", cell.Elements(Text + "p").Select(p => p.Value));
                         var rep = int.TryParse((string?)cell.Attribute(TableNs + "number-columns-repeated"), out var n) ? Math.Min(n, 64) : 1;
-                        for (var k = 0; k < rep; k++) cells.Add(v);
+                        if (cell.Name == TableNs + "covered-table-cell") { for (var k = 0; k < rep; k++) cells.Add(""); continue; }
+                        var before = doc.Blocks.Count;
+                        foreach (var cp in cell.Elements().Where(x => x.Name == Text + "p" || x.Name == Text + "h")) { var had = doc.Blocks.Count; ParaFrom(cp, ListKind.None); if (!doc.Blocks.Skip(had).Any(x => x is Para)) doc.Blocks.Add(new Para()); }
+                        var got = doc.Blocks.Skip(before).ToList(); doc.Blocks.RemoveRange(before, doc.Blocks.Count - before);
+                        var paras = got.OfType<Para>().ToList(); while (paras.Count > 1 && paras[^1].Text.Length == 0) paras.RemoveAt(paras.Count - 1);
+                        var cellPara = new Para { Align = paras.FirstOrDefault()?.Align ?? Align.Left };
+                        for (var k = 0; k < paras.Count; k++) { if (k > 0) TextDoc.InsertAt(cellPara, cellPara.Text.Length, "\n"); TextDoc.InsertPara(cellPara, cellPara.Text.Length, paras[k]); }
+                        Table.PinComments(cellPara);
+                        int cs = int.TryParse((string?)cell.Attribute(TableNs + "number-columns-spanned"), out var a1) ? Math.Clamp(a1, 1, 63) : 1, rs = int.TryParse((string?)cell.Attribute(TableNs + "number-rows-spanned"), out var a2) ? Math.Clamp(a2, 1, 999) : 1;
+                        for (var k = 0; k < rep; k++)
+                        {
+                            var c = cells.Count; cells.Add(""); t.SetCell(r, c, (Para)cellPara.Copy());
+                            if (cs > 1 || rs > 1) { var f = t.Cells.TryGetValue((r, c), out var cf) ? cf : t.Cells[(r, c)] = new CellFmt(); f.ColSpan = cs; f.RowSpan = rs; }
+                        }
                     }
-                    t.Rows.Add(cells);
                 }
+                t.Pad();
+                foreach (var (k, f) in t.Cells) { f.RowSpan = Math.Min(f.RowSpan, t.Rows.Count - k.Row); f.ColSpan = Math.Min(f.ColSpan, t.Cols - k.Col); }
+                foreach (var k in t.Cells.Where(x => x.Value.IsPlain).Select(x => x.Key).ToList()) t.Cells.Remove(k);
+                var widths = new List<double>();
+                foreach (var col in el.Descendants(TableNs + "table-column").Where(x => x.Ancestors(TableNs + "table").First() == el))
+                {
+                    var rep = int.TryParse((string?)col.Attribute(TableNs + "number-columns-repeated"), out var n) ? Math.Min(n, 64) : 1;
+                    var st = (string?)col.Attribute(TableNs + "style-name");
+                    var props = st is null ? null : content.Descendants(Style + "style").FirstOrDefault(x => (string?)x.Attribute(Style + "name") == st)?.Elements().FirstOrDefault(x => x.Name.LocalName == "table-column-properties");
+                    var raw = (string?)props?.Attributes().FirstOrDefault(x => x.Name.LocalName == "column-width") ?? (string?)props?.Attributes().FirstOrDefault(x => x.Name.LocalName == "rel-column-width") ?? "";
+                    var num = new string(raw.TakeWhile(ch => char.IsDigit(ch) || ch == '.').ToArray());
+                    var w = double.TryParse(num, NumberStyles.Float, CultureInfo.InvariantCulture, out var cw) ? cw * (raw.EndsWith("mm", StringComparison.Ordinal) ? 0.1 : raw.EndsWith("in", StringComparison.Ordinal) ? 2.54 : raw.EndsWith("pt", StringComparison.Ordinal) ? 2.54 / 72 : 1) : 0;
+                    for (var k = 0; k < rep; k++) widths.Add(w);
+                }
+                if (widths.Count == t.Cols && widths.All(x => x > 0)) t.SetWidths(widths);
                 if (t.Rows.Count > 0) doc.Blocks.Add(t);
             }
             else if (el.Name == Text + "section") foreach (var c in el.Elements()) Block(c, list, level, listStyle);
@@ -497,7 +537,10 @@ public static class TextFiles
 {
     public static readonly string[] Extensions = ["docx", "odt", "txt"];
 
-    public static TextDoc Open(string path) => Path.GetExtension(path).ToLowerInvariant() switch
+    /// <summary>Öffnet die Datei und hängt den Importbericht an (T-0682): was die Datei enthält, das Trendo Text nicht hält.</summary>
+    public static TextDoc Open(string path) { var d = Read(path); d.Import = ImportCheck.For(path); return d; }
+
+    static TextDoc Read(string path) => Path.GetExtension(path).ToLowerInvariant() switch
     {
         ".docx" => DocxFormat.Read(path), ".odt" => OdtFormat.Read(path), ".txt" or ".md" => OdtFormat.ReadTxt(path),
         var e => throw new ArgumentException($"Das Format {e} kann Trendo Text (noch) nicht öffnen."),

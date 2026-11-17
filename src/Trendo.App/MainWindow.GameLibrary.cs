@@ -65,7 +65,7 @@ public partial class MainWindow
         var wish = new TextBox { Name = "lib-wish", Text = d.Text("wish"), AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 64, MaxLength = GameLibrary.MaxWish, PlaceholderText = "Zum Beispiel: große Stadt erkunden, Autos fahren, Aufträge und eine Fahndungsstufe" };
         sp.Children.Add(wish);
         var go = new Button { Name = "lib-wish-go", Content = "Spiel daraus erfinden", Padding = new Thickness(14, 6) };
-        go.Classes.Add("accent");
+        go.Classes.Add("accent"); go.Classes.Add("haupt"); // T-0700: Hauptaktion der Spiele-Bibliothek
         go.Click += (_, _) => LibWishPick(d, wish.Text);
         sp.Children.Add(go);
         sp.Children.Add(P("Claude übernimmt aus deinem Wunsch Genre und Spielprinzip. Namen, Figuren, Karten und Grafik bestehender Spiele werden nicht nachgebaut, alles wird neu erfunden.", Muted, 11));
@@ -131,13 +131,13 @@ public partial class MainWindow
         var built = GameLibrary.IsBuilt(project);
         info.Children.Add(new TextBlock { Name = "lib-state", Text = built ? "✓ Projekt vorhanden" : "Noch nicht auf diesem PC", Foreground = Muted, FontSize = 12 });
         var main = new Button { Name = e.Kind == GameLibrary.Kind.Frei ? "lib-fetch" : "lib-build", Content = e.Kind == GameLibrary.Kind.Frei ? (built ? "Neu holen" : "Spiel holen") : (built ? "Weiterbauen lassen" : "Spiel bauen lassen"), Padding = new Thickness(14, 6) };
-        if (!built) main.Classes.Add("accent");
+        if (!built) { main.Classes.Add("accent"); main.Classes.Add("haupt"); }
         main.Click += async (_, _) => { if (e.Kind == GameLibrary.Kind.Frei) await LibFetch(d, e); else await LibSend(GameLibrary.BuildPrompt(e, project), project); };
         info.Children.Add(main);
         if (!built) return;
 
         var play = new Button { Name = "lib-play", Content = "Spielen", Padding = new Thickness(14, 6) };
-        play.Classes.Add("accent");
+        play.Classes.Add("accent"); play.Classes.Add("haupt");
         play.Click += (_, _) => LibPlayGodot(project);
         info.Children.Add(play);
 
@@ -175,7 +175,7 @@ public partial class MainWindow
     {
         info.Children.Add(P($"Beim Klick lädt Trendo dieses frei verteilte Spiel von {new Uri(e.Url!).Host} und, falls nötig, den Emulator mGBA (MPL-2.0, etwa 14 MB). Beide werden über feste Prüfsummen kontrolliert.", Muted, 11));
         var play = new Button { Name = "lib-homebrew-play", Content = "Holen und spielen", Padding = new Thickness(14, 6) };
-        play.Classes.Add("accent");
+        play.Classes.Add("accent"); play.Classes.Add("haupt");
         play.Click += async (_, _) => await LibPlayHomebrew(e);
         info.Children.Add(play);
     }

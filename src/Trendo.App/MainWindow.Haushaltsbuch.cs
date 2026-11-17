@@ -11,20 +11,13 @@ namespace Trendo.App;
 public partial class MainWindow
 {
     int _hbYear = DateTime.Today.Year, _hbMonth = DateTime.Today.Month; string? _hbCat; string _hbFind = ""; int _hbEdit = -1;
-    readonly Stack<(string Label, List<Entry> Before)> _hbUndo = new();
     List<(Entry Entry, bool Duplicate)>? _hbImport; string _hbImportName = "";
     static readonly string[] HbColors = ["#F0644B", "#3D8BFF", "#F5A524", "#2FBF71", "#A855F7", "#14B8A6", "#EC4899", "#EAB308", "#64748B", "#0EA5E9", "#84CC16", "#F97316"];
     public string? HouseholdCategory => _hbCat;
-    public string HouseholdUndoLabel => _hbUndo.TryPeek(out var u) ? u.Label : "";
+    public string HouseholdUndoLabel => GeldUndoLabel;
 
-    /// <summary>Änderung am Haushaltsbuch mit Rückgängig-Schritt.</summary>
-    void HbChange(string label, Action a)
-    {
-        var before = Money.All();
-        try { a(); _hbUndo.Push((label, before)); if (_hbUndo.Count > 30) { var keep = _hbUndo.Take(30).Reverse().ToList(); _hbUndo.Clear(); foreach (var k in keep) _hbUndo.Push(k); } }
-        catch (Exception ex) when (ex is ArgumentException or FormatException or InvalidOperationException or IOException) { Say(ex.Message, "finanzen"); return; }
-        Show("finanzen");
-    }
+    /// <summary>Änderung am Haushaltsbuch mit Rückgängig-Schritt (T-0694: gemeinsamer Stapel mit Rechnungen, auch Wiederholen).</summary>
+    void HbChange(string label, Action a) => GeldChange(label, a);
 
     static string HbColor(string cat) { var i = Array.IndexOf(FinanceExtra.AllCategories, cat); return HbColors[(i < 0 ? StableHash(cat) : i) % HbColors.Length]; }
 
@@ -35,12 +28,12 @@ public partial class MainWindow
         var (inc, exp, left, rate) = HouseholdBook.Sum(month.Select(x => x.Entry));
         var title = new DateTime(_hbYear, _hbMonth, 1).ToString("MMMM yyyy", de);
         void Go(int d) { var t = new DateTime(_hbYear, _hbMonth, 1).AddMonths(d); _hbYear = t.Year; _hbMonth = t.Month; _hbCat = null; _hbEdit = -1; Show("finanzen"); }
-        var undo = Act("hb-undo", _hbUndo.TryPeek(out var u) ? "↶ " + u.Label : "Rückgängig", () => { if (_hbUndo.TryPop(out var x)) { Money.Save(x.Before); Say("Rückgängig: " + x.Label, "finanzen"); Show("finanzen"); } });
-        undo.IsEnabled = _hbUndo.Count > 0;
+        var undo = Act("hb-undo", GeldUndoLabel.Length > 0 ? "↶ " + GeldUndoLabel : "Rückgängig", () => GeldUndo());
+        undo.IsEnabled = GeldUndoLabel.Length > 0;
         var head = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = {
-            new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { Act("hb-prev", "◀", () => Go(-1)),
+            new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { SimpleWords.Named(Act("hb-prev", "◀", () => Go(-1)), "Voriger Monat"),
                 new TextBlock { Name = "hb-month", Text = title, FontSize = 20, FontWeight = FontWeight.SemiBold, Foreground = GoldText(), VerticalAlignment = VerticalAlignment.Center, MinWidth = 170, TextAlignment = TextAlignment.Center },
-                Act("hb-next", "▶", () => Go(1)), Act("hb-today", "Heute", () => { _hbYear = DateTime.Today.Year; _hbMonth = DateTime.Today.Month; _hbCat = null; Show("finanzen"); }) } },
+                SimpleWords.Named(Act("hb-next", "▶", () => Go(1)), "Nächster Monat"), Act("hb-today", "Heute", () => { _hbYear = DateTime.Today.Year; _hbMonth = DateTime.Today.Month; _hbCat = null; Show("finanzen"); }) } },
             Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { undo, Act("fin-to-sheet", "In Trendo Tabelle öffnen", () => Try("finanzen", () =>
             {
                 var f = Path.Combine(BusinessFolder, $"Buchungen-{DateTime.Today:yyyy-MM-dd}.csv");
@@ -48,7 +41,7 @@ public partial class MainWindow
             })) } }, 2) } };
         var kpis = new WrapPanel { Name = "hb-kpis", Children = {
             Kpi("hb-in", "Einnahmen", Eu(inc) + " €", title, "#2FBF71", "#167A45"),
-            Kpi("hb-out", "Ausgaben", Eu(exp) + " €", $"{month.Count(x => x.Entry.Amount < 0)} Buchungen", "#F0644B", "#B2361F"),
+            Kpi("hb-out", "Ausgaben", Eu(exp) + " €", $"{month.Count(x => x.Entry.Amount < 0)} Buchungen", "#C9A227", "#8A6A12"),
             Kpi("hb-left", "Übrig", Eu(left) + " €", inc > 0 ? $"Sparquote {rate * 100:0} %" : "keine Einnahmen", left >= 0 ? "#3D8BFF" : "#F0644B", left >= 0 ? "#1E4FD8" : "#B2361F") } };
 
         // Links: Ring mit Kategorien (Klick filtert), Budget je Kategorie
@@ -117,7 +110,7 @@ public partial class MainWindow
         var body = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,16,*"), Children = { leftCol, Pos(rightCol, 2) } };
         var sp = new StackPanel { Name = "hb", Spacing = 10, Children = { head, kpis, body } };
         var page = new StackPanel { Spacing = 10, Children = { Card(sp) } };
-        if (_hbImport is not null) page.Children.Add(HouseholdImportPreview());
+        if (_hbImport is not null && _geldTab == "uebersicht") page.Children.Add(HouseholdImportPreview());
         page.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("*,12,*"), Children = { HouseholdRecurring(all), Pos(HouseholdRules(), 2) } });
         return page;
     }
@@ -144,9 +137,9 @@ public partial class MainWindow
     /// <summary>Kontoauszug erst ansehen: geratene Kategorie je Zeile änderbar, Doppelte markiert – dann Ja oder Nein.</summary>
     public void HouseholdPreviewImport(string path)
     {
-        try { _hbImport = HouseholdBook.Preview(Money.All(), Finance.ImportCsv(File.ReadAllText(path)), MoneyMemory); _hbImportName = Path.GetFileName(path); }
-        catch (Exception ex) when (ex is IOException or FormatException or UnauthorizedAccessException or ArgumentException or InvalidDataException) { Say("Kontoauszug nicht lesbar: " + Trendo.Core.FriendlyError.Say(ex), "finanzen"); _hbImport = null; }
-        Show("finanzen");
+        // T-0694: CSV (viele Bank-Layouts), CAMT.053 und MT940 – Vorschau im Reiter „Buchungen“; die Übersicht zeigt sie auch
+        var tab = _geldTab; GeldImport(path);
+        if (tab == "uebersicht" && _hbImport is not null) { _geldTab = tab; Show("finanzen"); }
     }
 
     Control HouseholdImportPreview()
@@ -170,16 +163,17 @@ public partial class MainWindow
             var take = _hbImport!.Where(x => !x.Duplicate).Select(x => x.Entry).ToList();
             var guessed = HouseholdBook.Preview([], take, MoneyMemory).Select(x => x.Entry.Category).ToList();
             for (var i = 0; i < take.Count; i++) if (take[i].Amount < 0 && take[i].Category != guessed[i]) MoneyMemory.Learn(take[i].Text, take[i].Category); // vom Nutzer geändert → merken
+            take = GeldZahlungenAnwenden(take);
             var n = Money.Import(take); BudgetWarn();
             _core.Audit.Append(Principal.LocalOwner.Name, "finance.import", $"{n} neu");
-            Say($"{n} Buchungen übernommen.", "finanzen"); _hbImport = null;
+            Say($"{n} Buchungen übernommen.", "finanzen"); _hbImport = null; _geldAuszug = null; _geldMsg = "";
             if (take.Count > 0) { var newest = take.Max(x => x.Date); _hbYear = newest.Year; _hbMonth = newest.Month; }
         }), true);
         yes.IsEnabled = fresh > 0;
-        var no = Act("hb-import-no", "Nein, verwerfen", () => { _hbImport = null; Show("finanzen"); });
+        var no = Act("hb-import-no", "Nein, verwerfen", () => { _hbImport = null; _geldVorschlaege = []; _geldAuszug = null; _geldMsg = ""; Show("finanzen"); });
         return Card(new StackPanel { Name = "hb-import", Spacing = 6, Children = { H($"Kontoauszug „{_hbImportName}“ – {list.Count} Zeilen, {fresh} neu", 14),
             P("Prüfe die geratenen Kategorien. Was du hier änderst, merkt sich Trendo für den nächsten Auszug.", Muted, 11.5),
-            new ScrollViewer { Content = rows, MaxHeight = 320 }, new WrapPanel { Children = { yes, new Border { Width = 6 }, no } } } });
+            new ScrollViewer { Content = rows, MaxHeight = 320 }, (Control?)GeldVorschlagCard() ?? new Border(), new WrapPanel { Children = { yes, new Border { Width = 6 }, no } } } });
     }
 
     Control HouseholdRecurring(List<Entry> all)

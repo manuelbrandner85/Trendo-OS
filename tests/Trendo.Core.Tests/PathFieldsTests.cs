@@ -20,6 +20,8 @@ public class T0201_PathFields
     [InlineData("txt-search", "Studios, Dateien und Einstellungen suchen", K.None)]
     [InlineData("startmenu-search", "Programme, Studios, Dateien und Einstellungen suchen", K.None)]
     [InlineData("txt-studio-search", "Studio suchen", K.None)]
+    // T-0702: die Auftragszeile ist Freitext – auch wenn der Programmname „Ordner“ oder „Datei“ enthält (Verträge-Ordner), kein „Ordner wählen …“
+    [InlineData("auftrag-prompt", "Schreib hier, was in „Verträge-Ordner“ entstehen oder sich ändern soll. Du siehst zuerst den Plan und entscheidest dann.", K.None)]
     [InlineData("backup-search", "🔎  Datei suchen …", K.None)]
     [InlineData("dok-suche", "Dokument suchen", K.None)]
     [InlineData("wissen-folder", "Ordner oder Datei (.txt, .md, .csv)", K.FileOrFolder)]
@@ -61,5 +63,13 @@ public class T0201_PathFields
         Assert.Equal(["b", "a"], l);
         for (var i = 0; i < 20; i++) l = PathFields.Remember(l, "x" + i);
         Assert.Equal(8, l.Count); Assert.Equal("x19", l[0]);
+    }
+
+    [Fact(DisplayName = "V-07 (T-0700): die KI-Eingabe wird nie zum Ordnerfeld, auch wenn ihr Satz „Ordner“ enthält")]
+    public void Prompt_is_never_a_path()
+    {
+        Assert.Equal(PathFields.Kind.None, PathFields.Classify("auftrag-prompt", "Schreib hier, was in „Verträge-Ordner“ entstehen oder sich ändern soll."));
+        Assert.Equal(PathFields.Kind.None, PathFields.Classify("studio-prompt", "Ordner mit Fotos beschreiben"));
+        Assert.Equal(PathFields.Kind.Folder, PathFields.Classify("wissen-folder", "Ordner mit Notizen"));
     }
 }

@@ -327,7 +327,7 @@ public partial class MainWindow
         if (!Ready() || _webApproval is null) { Say("Zuerst „Paket vorbereiten“.", "dev"); return; }
         try
         {
-            _core.Approvals.Approve(_webApproval, Principal.LocalOwner);
+            if (!FreigabeErteilen(_webApproval)) throw new ApprovalException(CanApprove ? "Nicht freigegeben." : NurErwachsene); // B4: zweiter, eigener Schritt
             var zip = WebsiteStudio.Pack(_core.Approvals, _webApproval, _webDir!);
             _webArmed = false;
             _webApproval = null;

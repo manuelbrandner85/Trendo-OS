@@ -243,32 +243,6 @@ public sealed class CncFeedAdapter : IStudioActionAdapter
         FieldKit.Blocked("Die Maschine ist nicht angeschlossen.");
 }
 
-/// <summary>SPEC-16: Jahreskosten aus VehiclePlus. Bucht nichts.</summary>
-public sealed class VehicleCostAdapter : IStudioActionAdapter
-{
-    public string StudioId => "SPEC-16";
-    public string ActionId => "fahrt.kosten";
-    public string Label => "Fahrtkosten";
-    public SideEffectClass Effect => SideEffectClass.None;
-    public CapabilityLevel DeclaredLevel => CapabilityLevel.Partial;
-    public string Evidence => "PromptActionTests.Fahrt_rechnet_kosten";
-    public bool CanPerformSideEffect => false;
-    public IReadOnlyList<string> RequiredFields => ["kilometer", "verbrauch", "preis"];
-    public IReadOnlyList<string> OutputKinds => ["txt"];
-
-    public ActionDraft? TryParse(string prompt, IReadOnlyDictionary<string, string> known) =>
-        new(ActionId, FieldKit.Read(prompt, known));
-
-    public IReadOnlyList<ClarificationQuestion> Missing(IReadOnlyDictionary<string, string> parameters) =>
-        VehicleFields.Missing(parameters);
-
-    public IReadOnlyList<ValidationFinding> Validate(IReadOnlyDictionary<string, string> parameters) =>
-        VehicleFields.Validate(parameters);
-
-    public AdapterOutcome Produce(AdapterCall call) => VehicleFields.Write(call);
-    public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked("Es wurde nichts gebucht.");
-}
-
 /// <summary>SPEC-05: Mittelwert oder Gerade aus Stats.</summary>
 public sealed class StatsAdapter : IStudioActionAdapter
 {
@@ -781,54 +755,6 @@ static class CncFields
         var max = FieldKit.Has(parameters, "grenze") ? Fach.Num(FieldKit.Text(parameters, "grenze"), "grenze") : 24000;
         return Cnc.Feeds(FieldKit.Text(parameters, "material"), Fach.Num(FieldKit.Text(parameters, "durchmesser"), "durchmesser"), flutes, max);
     }
-}
-
-static class VehicleFields
-{
-    public static IReadOnlyList<ClarificationQuestion> Missing(IReadOnlyDictionary<string, string> parameters)
-    {
-        var list = new List<ClarificationQuestion>();
-        if (!FieldKit.Has(parameters, "kilometer")) list.Add(new("kilometer", "kilometer", "Jahreskilometer fehlen.", true));
-        if (!FieldKit.Has(parameters, "verbrauch")) list.Add(new("verbrauch", "verbrauch", "Verbrauch in Liter je 100 km fehlt.", true));
-        if (!FieldKit.Has(parameters, "preis")) list.Add(new("preis", "preis", "Preis je Liter fehlt.", true));
-        return list;
-    }
-
-    public static IReadOnlyList<ValidationFinding> Validate(IReadOnlyDictionary<string, string> parameters)
-    {
-        foreach (var key in new[] { "kilometer", "verbrauch", "preis", "versicherung", "steuer", "wartung" })
-            if (FieldKit.Has(parameters, key) && (!FieldKit.TryNum(parameters, key, out var value) || value < 0))
-                return [new(key, "„" + key + "“ muss eine Zahl ab 0 sein.", true)];
-        try { _ = Cost(parameters); return []; }
-        catch (Exception ex) when (ex is ArgumentException or FormatException) { return [new("kilometer", ex.Message, true)]; }
-    }
-
-    public static AdapterOutcome Write(AdapterCall call)
-    {
-        try
-        {
-            var cost = Cost(call.Parameters);
-            var body = "Im Jahr " + Money(cost.Year) + " €\nIm Monat " + Money(cost.Month) + " €\nJe Kilometer " + cost.PerKm.ToString("N3", Fach.De) + " €\nNicht gebucht.\n";
-            var again = Cost(call.Parameters);
-            var qa = new QaResult("fahrt.kosten", again.Year == cost.Year && again.PerKm == cost.PerKm, "Kosten gelesen.", "EUR", Money(cost.Year), "VehiclePlus");
-            return FieldKit.Save(call, FieldKit.Slot("fahrt", call.Version, "kosten.txt"), body, "Im Jahr " + Money(cost.Year) + " €", qa, ["Nicht gebucht."]);
-        }
-        catch (Exception ex) when (ex is ArgumentException or FormatException) { return FieldKit.Fail(ex.Message); }
-    }
-
-    static (double Year, double Month, double PerKm) Cost(IReadOnlyDictionary<string, string> parameters) =>
-        VehiclePlus.YearCost(
-            Fach.Num(FieldKit.Text(parameters, "kilometer"), "kilometer"),
-            Fach.Num(FieldKit.Text(parameters, "verbrauch"), "verbrauch"),
-            Fach.Num(FieldKit.Text(parameters, "preis"), "preis"),
-            Optional(parameters, "versicherung"),
-            Optional(parameters, "steuer"),
-            Optional(parameters, "wartung"));
-
-    static double Optional(IReadOnlyDictionary<string, string> parameters, string key) =>
-        FieldKit.TryNum(parameters, key, out var value) ? value : 0;
-
-    static string Money(double value) => value.ToString("N2", Fach.De);
 }
 
 static class StatsFields

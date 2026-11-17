@@ -19,7 +19,7 @@ public class T0230_TrendoTextProUi
     {
         var (w, _, _) = Ui.Open();
         w.TextNew(); w.Show("text"); Pump();
-        w.Find<TextBox>("text-edit").Text = "Einleitung"; Pump();
+        w.TextView.Type("Einleitung"); w.Show("text"); Pump();
         w.Find<Button>("text-gallery-heading1").Press(); Pump();
         Assert.Equal(ParaStyle.Heading1, ((Para)w.TextDocument.Blocks[0]).Style);
         w.TextDocument.Blocks.Add(new Para("Mehr bei den Stadtwerken.")); w.TextSelect(1, 9, 15); w.Show("text"); Pump();
@@ -57,17 +57,17 @@ public class T0230_TrendoTextProUi
         w.Find<Button>("text-design-modern").Press(); Pump();
         Menu(w, "text-watermark", "text-watermark-1"); Pump();
         Assert.Equal("modern", w.TextDocument.Page.Design); Assert.Equal("ENTWURF", w.TextDocument.Page.Watermark);
-        Assert.NotNull(w.TryFind<TextBlock>("text-watermark-view"));
+        Assert.Contains(w.TextView.Flow.Pages[0].Items.OfType<FlowWatermark>(), x => x.Text == "ENTWURF"); // T-0692: Wasserzeichen steht auf der Seite des Seitensatzes
         w.Find<Button>("text-rib-layout").Press(); Pump();
         Menu(w, "text-margins", "text-margins-1"); w.Find<Button>("text-orient").Press(); Menu(w, "text-columns", "text-columns-1");
         w.Find<Button>("text-indent-more").Press(); Pump();
         var pg = w.TextDocument.Page;
         Assert.Equal(1.27, pg.Left); Assert.True(pg.Landscape); Assert.Equal(2, pg.Columns);
         Assert.Equal(0.5, ((Para)w.TextDocument.Blocks[0]).IndentCm);
-        Assert.True(w.Find<Border>("text-sheet").Width > 900);
+        Assert.True(w.TextView.PageSize.Width > 900); // Querformat
         w.Find<Button>("text-rib-einfuegen").Press(); Pump();
         w.Find<Button>("text-pagenumbers").Press(); Pump();
-        Assert.Contains("Seite 1", w.Find<TextBlock>("text-footer-view").Text);
+        Assert.Contains(w.TextView.Flow.Pages[0].Items.OfType<FlowAligned>(), x => x.Text == "Seite 1 von 1"); // T-0692: echte Seitenzahl statt „Seite 1 von …“
         var f = Path.Combine(root, "layout.docx"); w.TextSaveAs(f);
         var back = TextFiles.Open(f);
         Assert.True(back.Page.Landscape); Assert.Equal("ENTWURF", back.Page.Watermark); Assert.True(back.Page.PageNumbers);
@@ -81,7 +81,7 @@ public class T0230_TrendoTextProUi
         var csv = Path.Combine(root, "adressen.csv");
         File.WriteAllText(csv, "Vorname;Nachname;Straße;PLZ;Ort\nErika;Muster;Hauptstraße 1;10115;Berlin\nMax;Beispiel;Ringweg 2;20095;Hamburg\n");
         w.TextNew(); w.Show("text"); Pump();
-        w.Find<TextBox>("text-edit").Text = "Hallo "; Pump();
+        w.TextView.Type("Hallo "); Pump();
         w.TextMergeSource(csv); w.TextSelect(0, 6, 0);
         w.TextRibbon = "sendungen"; w.Show("text"); Pump();
         Menu(w, "text-merge-field", "text-merge-field-0"); Pump();

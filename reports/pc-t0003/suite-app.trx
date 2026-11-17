@@ -2,7 +2,7 @@
 <TestRun id="f52c99f4-23c9-4c5d-a782-8f7119d2b2e1" name="<user>@<host> 2026-10-22 02:44:07" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:44:07.1615857+02:00" queuing="2026-10-22T02:44:07.1615858+02:00" start="2026-10-22T02:44:04.8771817+02:00" finish="2026-10-22T02:48:14.8175919+02:00" />
   <TestSettings name="default" id="8671a7e2-f60d-4051-b296-1a9f1d1139b4">
-    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_44_07" />
+    <Deployment runDeploymentRoot="<user>_<host>_2026-10-22_02_44_07" />
   </TestSettings>
   <Results>
     <UnitTestResult executionId="a58fb5cf-8813-44f4-8c3b-af8e63b2cbb9" testId="b7bd5e59-0ee5-163b-c04e-40fa3fa8e832" testName="Schlüssel: ungültig wird nicht gespeichert, gültig landet im Secret-Store, nie im Audit" computerName="<host>" duration="00:00:00.2372139" startTime="2026-10-22T02:47:35.6686749+02:00" endTime="2026-10-22T02:47:35.9059304+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a58fb5cf-8813-44f4-8c3b-af8e63b2cbb9" />

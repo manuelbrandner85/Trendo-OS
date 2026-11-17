@@ -24,7 +24,6 @@ public partial class MainWindow
         ["eng-bolt-grade"] = ["8.8", "10.9", "12.9", "A2-70"], ["eng-bolt-size"] = [.. EngineeringPlus.BoltSizes],
         ["eng-beam-mat"] = [.. Engineering.Materials.Select(m => m.Name)], ["eng-buckle-mat"] = [.. Engineering.Materials.Select(m => m.Name)],
         ["cnc-feeds-mat"] = [.. Cnc.Materials.Keys], ["sci-err-op"] = ["*", "/", "+", "-"],
-        ["rob-see-color"] = [.. Vision.Hues.Keys], ["rob-count-color"] = [.. Vision.Hues.Keys], ["rob-mask-color"] = [.. Vision.Hues.Keys],
     };
 
     static readonly Dictionary<string, string[]> ChoiceByLabel = new(StringComparer.Ordinal)
@@ -66,7 +65,7 @@ public partial class MainWindow
     private void InitWave6()
     {
         LoadFachState();
-        InitSpec01(); InitSpec02(); InitSpec03(); InitSpec04(); InitLibrary3D(); InitSpec05(); InitSpec06(); InitSpec08(); InitSpec09(); InitSpec10(); InitSpec13(); InitSpec14(); InitSpec15(); InitSpec16(); InitCore09(); InitTv(); InitMusikStudio(); InitFilm(); InitConsolePort(); InitPod(); InitKreativStudios(); InitKreativStudios2(); InitKreativStudios3(); InitKreativStudios4(); InitKuenstlerstudio();
+        InitSpec01(); InitSpec02(); InitSpec03(); InitSpec04(); InitLibrary3D(); InitSpec05(); InitSpec06(); InitSpec08(); InitSpec09(); InitSpec10(); InitSpec13(); InitSpec14(); InitSpec15(); InitTv(); InitMusikStudio(); InitFilm(); InitConsolePort(); InitPod(); InitKreativStudios(); InitKreativStudios2(); InitKreativStudios3(); InitKreativStudios4(); InitKuenstlerstudio(); InitBueroStudios(); InitDeckDesign(); InitDocScan(); InitPdfWerkstatt(); InitFormulare();
     }
 
     /// <summary>Aufklappbare Gruppe, damit jedes Studio übersichtlich bleibt.</summary>

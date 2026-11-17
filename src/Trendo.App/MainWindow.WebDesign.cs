@@ -65,10 +65,11 @@ public partial class MainWindow
     {
         var sp = new StackPanel { Spacing = 8, Name = "web-visual" };
         sp.Children.Add(H("Visueller Editor", 15));
+        if (WebDesignLinkHead() is { } head) sp.Children.Add(head); // T-0716: Wiederherstellen-Karte (Notsicherung der Hülle)
         sp.Children.Add(P("Seite wie in einem Profi-Programm gestalten: Bausteine ziehen oder doppelklicken, Eigenschaften rechts, Ebenen, Handy-/Tablet-/Desktop-Ansicht, Rückgängig, 3D-Szene und Bewegungen. „Speichern“ im Editor sichert die Seite im Projekt.", null, 12));
         var editorOk = File.Exists(Path.Combine(WebDesignEditorDir, "index.html"));
         sp.Children.Add(new WrapPanel { Children = {
-            Act("web-visual-open", _wdOpen ? "Editor schließen" : "Editor öffnen", () => { _wdOpen = !_wdOpen; if (!_wdOpen) _wdView = null; Show("dev"); }, true),
+            Act("web-visual-open", _wdOpen ? "Editor schließen" : "Editor öffnen", () => { _wdOpen = !_wdOpen; if (!_wdOpen) _wdView = null; Show("dev"); }), // V-03/V-22 (T-0709): nicht golden – die Hauptaktion der Seite ist „Seite bauen“
             new Border { Width = 8 },
             Act("web-visual-export", "Als fertige Website exportieren", () => { _ = WebDesignExportSiteAsync(); }),
             new Border { Width = 8 },

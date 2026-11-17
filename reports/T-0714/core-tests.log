@@ -1,0 +1,15 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0714\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:02.25]     Briefe F3: Rechtschreibung im Brieftext – Tippfehler mit Stelle und Vorschlag, Platzhalter [Datum] und richtige Wörter nicht angestrichen [SKIP]
+  Übersprungen Briefe F3: Rechtschreibung im Brieftext – Tippfehler mit Stelle und Vorschlag, Platzhalter [Datum] und richtige Wörter nicht angestrichen [1 ms]
+[xUnit.net 00:00:16.85]     T-0708 Absturz: angeschlossenes Programm – 16-mal hart beendet, die Notsicherung ist jedes Mal lesbar und wird beim Neustart zurückgeholt [FAIL]
+  Fehler T-0708 Absturz: angeschlossenes Programm – 16-mal hart beendet, die Notsicherung ist jedes Mal lesbar und wird beim Neustart zurückgeholt [15 s]
+  Fehlermeldung:
+   Nur 6 von 16 Abbrüchen fielen in einen laufenden Schreibvorgang – der Test taugt so nicht.
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0708_ProgramLinkTests.Kill_while_autosaving_link() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0714\tests\Trendo.Core.Tests\T0708_ProgramLinkTests.cs:line 138
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Fehler!      : Fehler:     1, erfolgreich:   288, übersprungen:     1, gesamt:   290, Dauer: 21 s - Trendo.Core.Tests.dll (net10.0)
+exit 1

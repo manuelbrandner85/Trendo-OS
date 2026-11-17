@@ -37,11 +37,21 @@ public static partial class SlideFiles
         double sx = SlideDoc.WidthCm / (((long?)size?.Attribute("cx") ?? 12192000) / (double)Emu), sy = SlideDoc.HeightCm / (((long?)size?.Attribute("cy") ?? 6858000) / (double)Emu);
         var doc = new SlideDoc();
         // Design: Farben aus dem Thema, wenn es zu einem eigenen passt
+        XDocument? themeDoc = null;
         if (presRels.Values.FirstOrDefault(r => r.Type.EndsWith("/theme", StringComparison.Ordinal)) is { Target.Length: > 0 } tr && pkg.Load(tr.Target) is { } theme)
         {
+            themeDoc = theme;
             var name = (string?)theme.Root?.Attribute("name");
             if (SlideThemes.All.FirstOrDefault(t => t.Name == name) is { } known) doc.Theme = known;
         }
+        // T-0701: fremdes Design (Folienmaster, Layouts, Theme) bleibt beim Speichern erhalten, statt durch Trendos Design ersetzt zu werden
+        var colors = SchemeColors(themeDoc);
+        if (themeDoc is null || SlideThemes.All.All(t => t.Name != (string?)themeDoc.Root?.Attribute("name")))
+        {
+            doc.Design = ReadDesign(pkg, pres.Root, presRels, themeDoc, colors);
+            if (doc.Design is not null) doc.Theme = doc.Design.Theme;
+        }
+        var masterStyles = new Dictionary<string, MasterText>();
         foreach (var sid in pres.Root.Element(P + "sldIdLst")?.Elements(P + "sldId") ?? [])
         {
             var rid = (string?)sid.Attribute(R + "id");
@@ -49,14 +59,20 @@ public static partial class SlideFiles
             var sx2 = pkg.Load(rel.Target); if (sx2?.Root is null) continue;
             var rels = pkg.Rels(rel.Target);
             var slide = new Slide { Layout = SlideLayout.Leer };
-            if (sx2.Root.Element(P + "cSld")?.Element(P + "bg")?.Descendants(A + "srgbClr").FirstOrDefault()?.Attribute("val") is { } bgv) slide.Background = "#" + bgv.Value;
+            var bgEl = sx2.Root.Element(P + "cSld")?.Element(P + "bg");
+            if (bgEl?.Descendants(A + "srgbClr").FirstOrDefault()?.Attribute("val") is { } bgv) slide.Background = "#" + bgv.Value;
+            if (bgEl is not null) { slide.SourceBg = Raw(bgEl); slide.SourceBgColor = slide.Background; }
             var layoutShapes = LayoutPlaceholders(pkg, rels);
+            var layoutPart = rels.Values.FirstOrDefault(r => r.Type.EndsWith("/slideLayout", StringComparison.Ordinal)).Target;
+            slide.SourceLayout = layoutPart;
+            var masterPart = layoutPart is null ? null : pkg.Rels(layoutPart).Values.FirstOrDefault(r => r.Type.EndsWith("/slideMaster", StringComparison.Ordinal)).Target;
+            if (!masterStyles.TryGetValue(masterPart ?? "", out var mt)) masterStyles[masterPart ?? ""] = mt = MasterTextOf(masterPart is null ? null : pkg.Load(masterPart));
             var idMap = new Dictionary<string, SlideShape>();
             foreach (var el in sx2.Root.Element(P + "cSld")?.Element(P + "spTree")?.Elements() ?? [])
             {
                 var shape = el.Name.LocalName switch
                 {
-                    "sp" => ReadSp(el, layoutShapes),
+                    "sp" => ReadSp(el, layoutShapes, mt, colors),
                     "pic" => ReadPic(el, rels, pkg),
                     "graphicFrame" => ReadFrame(el, rels, pkg),
                     _ => null,
@@ -64,17 +80,31 @@ public static partial class SlideFiles
                 if (shape is null) continue;
                 shape.X *= sx; shape.W *= sx; shape.Y *= sy; shape.H *= sy;
                 slide.Shapes.Add(shape);
-                if (el.Descendants(P + "cNvPr").FirstOrDefault()?.Attribute("id") is { } idAttr) idMap[idAttr.Value] = shape;
+                if (el.Descendants(P + "cNvPr").FirstOrDefault()?.Attribute("id") is { } idAttr)
+                {
+                    idMap[idAttr.Value] = shape;
+                    if (int.TryParse(idAttr.Value, out var nid) && nid > 1) shape.SourceId = nid;
+                }
             }
             slide.Layout = slide.ByRole("sub") is not null ? SlideLayout.Titel : slide.ByRole("body2") is not null ? SlideLayout.ZweiSpalten : slide.ByRole("body") is not null ? SlideLayout.TitelInhalt : slide.ByRole("title") is not null ? SlideLayout.NurTitel : SlideLayout.Leer;
             var trEl = sx2.Root.Element(P + "transition");
             slide.Transition = trEl?.Elements().FirstOrDefault()?.Name.LocalName switch { "fade" => Transition.Ueberblenden, "push" or "cover" or "pull" => Transition.Schieben, "wipe" or "split" or "wheel" => Transition.Wischen, null => Transition.Keine, _ => Transition.Ueberblenden };
-            foreach (var ctn in sx2.Root.Element(P + "timing")?.Descendants(P + "cTn").Where(c => (string?)c.Attribute("presetClass") == "entr") ?? [])
+            // T-0701: Übergang und Animationen der Datei unverändert merken (auch neuere Übergänge in mc:AlternateContent)
+            XNamespace mc = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+            var trRaw = sx2.Root.Elements(mc + "AlternateContent").FirstOrDefault(a => a.Descendants(P + "transition").Any()) ?? trEl;
+            if (trRaw is not null)
+            {
+                if (trEl is null) slide.Transition = Transition.Ueberblenden;
+                slide.SourceTransition = Raw(trRaw); slide.SourceTransitionKind = slide.Transition;
+            }
+            var timing = sx2.Root.Element(P + "timing");
+            foreach (var ctn in timing?.Descendants(P + "cTn").Where(c => (string?)c.Attribute("presetClass") == "entr") ?? [])
             {
                 var spid = ctn.Descendants(P + "spTgt").FirstOrDefault()?.Attribute("spid")?.Value;
                 if (spid is not null && idMap.TryGetValue(spid, out var target))
                     target.Animation = (string?)ctn.Attribute("presetID") switch { "2" => Animation.Hereinfliegen, "23" or "53" => Animation.Zoomen, _ => Animation.Einblenden };
             }
+            if (timing is not null) { slide.SourceTiming = Raw(timing); slide.SourceAnimSig = slide.AnimSignature(); }
             if (rels.Values.FirstOrDefault(r => r.Type.EndsWith("/notesSlide", StringComparison.Ordinal)) is { Target.Length: > 0 } nr && pkg.Load(nr.Target) is { } notes)
             {
                 var body = notes.Descendants(P + "sp").FirstOrDefault(s => (string?)s.Descendants(P + "ph").FirstOrDefault()?.Attribute("type") == "body");
@@ -84,6 +114,115 @@ public static partial class SlideFiles
         }
         if (doc.Slides.Count == 0) doc.AddSlide(SlideLayout.Titel);
         return doc;
+    }
+
+    // ---------------- T-0701: fremdes Design ----------------
+
+    /// <summary>Teil einer Datei unverändert als Text – mit allen Namensraum-Kürzeln der Datei (p:, a:, r:, p14: …), damit er an anderer Stelle gleich gelesen wird.</summary>
+    static string Raw(XElement el)
+    {
+        var c = new XElement(el);
+        foreach (var a in el.AncestorsAndSelf().Reverse().SelectMany(x => x.Attributes()).Where(a => a.IsNamespaceDeclaration)) c.SetAttributeValue(a.Name, a.Value);
+        return c.ToString(SaveOptions.DisableFormatting);
+    }
+
+    /// <summary>Schriftgröße und Fett aus den Textformaten des Folienmasters (Titel, Inhalt, Sonstiges) – das erben Felder ohne eigene Angabe.</summary>
+    sealed record MasterText(double? Title, double? Body, double? Other, bool? TitleBold, bool? BodyBold, bool? OtherBold);
+
+    static MasterText MasterTextOf(XDocument? master)
+    {
+        var st = master?.Root?.Element(P + "txStyles");
+        XElement? D(string n) => st?.Element(P + n)?.Element(A + "lvl1pPr")?.Element(A + "defRPr");
+        double? Sz(XElement? d) => (int?)d?.Attribute("sz") is int v ? v / 100.0 : null;
+        bool? B(XElement? d) => (string?)d?.Attribute("b") is { } b ? b is "1" or "true" : null;
+        return new(Sz(D("titleStyle")), Sz(D("bodyStyle")), Sz(D("otherStyle")), B(D("titleStyle")), B(D("bodyStyle")), B(D("otherStyle")));
+    }
+
+    /// <summary>Farben des Designs nach Namen (dk1, lt1, accent1 …; tx1/bg1/tx2/bg2 wie in der Standardzuordnung).</summary>
+    static Dictionary<string, string> SchemeColors(XDocument? theme)
+    {
+        var map = new Dictionary<string, string>();
+        foreach (var e in theme?.Root?.Descendants(A + "clrScheme").FirstOrDefault()?.Elements() ?? [])
+        {
+            var c = e.Elements().FirstOrDefault();
+            var v = (string?)c?.Attribute("lastClr") ?? (string?)c?.Attribute("val");
+            if (v is { Length: 6 }) map[e.Name.LocalName] = "#" + v.ToUpperInvariant();
+        }
+        foreach (var (alias, name) in new[] { ("tx1", "dk1"), ("bg1", "lt1"), ("tx2", "dk2"), ("bg2", "lt2") }) if (map.TryGetValue(name, out var c)) map[alias] = c;
+        return map;
+    }
+
+    /// <summary>Farbe einer Füllung als #RRGGBB: feste Farbe, Systemfarbe oder Designfarbe (mit Aufhellen/Abdunkeln über lumMod/lumOff).</summary>
+    static string? FillColor(XElement? solidFill, Dictionary<string, string> scheme)
+    {
+        var c = solidFill?.Elements().FirstOrDefault(); if (c is null) return null;
+        string? hex = c.Name.LocalName switch
+        {
+            "srgbClr" => (string?)c.Attribute("val") is { Length: 6 } v ? "#" + v.ToUpperInvariant() : null,
+            "sysClr" => (string?)c.Attribute("lastClr") is { Length: 6 } l ? "#" + l.ToUpperInvariant() : null,
+            "schemeClr" => scheme.GetValueOrDefault((string?)c.Attribute("val") ?? ""),
+            _ => null,
+        };
+        if (hex is null) return null;
+        var mod = (int?)c.Element(A + "lumMod")?.Attribute("val"); var off = (int?)c.Element(A + "lumOff")?.Attribute("val");
+        if (mod is null && off is null) return hex;
+        double r = Convert.ToInt32(hex[1..3], 16) / 255.0, g = Convert.ToInt32(hex[3..5], 16) / 255.0, b = Convert.ToInt32(hex[5..7], 16) / 255.0;
+        double max = Math.Max(r, Math.Max(g, b)), min = Math.Min(r, Math.Min(g, b)), l2 = (max + min) / 2, h = 0, s = 0;
+        if (max != min) { var d = max - min; s = l2 > 0.5 ? d / (2 - max - min) : d / (max + min); h = (max == r ? (g - b) / d + (g < b ? 6 : 0) : max == g ? (b - r) / d + 2 : (r - g) / d + 4) / 6; }
+        l2 = Math.Clamp(l2 * (mod ?? 100000) / 100000.0 + (off ?? 0) / 100000.0, 0, 1);
+        static double Hue(double p, double q, double t) { if (t < 0) t += 1; if (t > 1) t -= 1; return t < 1 / 6.0 ? p + (q - p) * 6 * t : t < 0.5 ? q : t < 2 / 3.0 ? p + (q - p) * (2 / 3.0 - t) * 6 : p; }
+        if (s == 0) r = g = b = l2; else { var q = l2 < 0.5 ? l2 * (1 + s) : l2 + s - l2 * s; var p = 2 * l2 - q; r = Hue(p, q, h + 1 / 3.0); g = Hue(p, q, h); b = Hue(p, q, h - 1 / 3.0); }
+        static string X(double v) => ((int)Math.Round(v * 255)).ToString("X2", CultureInfo.InvariantCulture);
+        return "#" + X(r) + X(g) + X(b);
+    }
+
+    static readonly string[] NotDesign = ["/slide", "/notesSlide", "/notesMaster", "/handoutMaster", "/presProps", "/viewProps", "/tableStyles", "/comments", "/commentAuthors"];
+
+    /// <summary>Folienmaster samt allem, worauf sie zeigen (Layouts, Theme, Bilder), unverändert einsammeln.</summary>
+    static PptxDesign? ReadDesign(Pkg pkg, XElement pres, Dictionary<string, (string Type, string Target)> presRels, XDocument? theme, Dictionary<string, string> scheme)
+    {
+        var masters = new List<(string Id, string Part)>();
+        foreach (var m in pres.Element(P + "sldMasterIdLst")?.Elements(P + "sldMasterId") ?? [])
+            if ((string?)m.Attribute(R + "id") is { } rid && presRels.TryGetValue(rid, out var rel) && pkg.Zip.GetEntry(rel.Target) is not null)
+                masters.Add(((string?)m.Attribute("id") ?? (2147483648L + masters.Count * 100).ToString(CultureInfo.InvariantCulture), rel.Target));
+        if (masters.Count == 0) return null;
+        var parts = new Dictionary<string, byte[]>(); var queue = new Queue<string>(masters.Select(m => m.Part));
+        static string RelsOf(string part) { var i = part.LastIndexOf('/'); return $"{part[..Math.Max(0, i)]}/_rels/{part[(i + 1)..]}.rels"; }
+        while (queue.Count > 0 && parts.Count < OfficeZip.MaxEntries)
+        {
+            var part = queue.Dequeue(); if (parts.ContainsKey(part) || pkg.Bytes(part) is not { } bytes) continue;
+            parts[part] = bytes;
+            if (pkg.Bytes(RelsOf(part)) is { } rb) parts[RelsOf(part)] = rb;
+            foreach (var (type, target) in pkg.Rels(part).Values)
+                if (!NotDesign.Any(n => type.EndsWith(n, StringComparison.Ordinal)) && !parts.ContainsKey(target) && pkg.Zip.GetEntry(target) is not null) queue.Enqueue(target);
+        }
+        var ct = pkg.Load("[Content_Types].xml")?.Root; XNamespace ctn = "http://schemas.openxmlformats.org/package/2006/content-types";
+        var types = ct?.Elements(ctn + "Override").Where(o => o.Attribute("PartName") is not null && o.Attribute("ContentType") is not null)
+            .GroupBy(o => ((string)o.Attribute("PartName")!).TrimStart('/')).ToDictionary(g => g.Key, g => (string)g.First().Attribute("ContentType")!) ?? [];
+        var defaults = ct?.Elements(ctn + "Default").Where(o => o.Attribute("Extension") is not null && o.Attribute("ContentType") is not null)
+            .GroupBy(o => ((string)o.Attribute("Extension")!).ToLowerInvariant()).ToDictionary(g => g.Key, g => (string)g.First().Attribute("ContentType")!) ?? [];
+        var layouts = new Dictionary<string, string>(); string? first = null;
+        foreach (var lid in pkg.Load(masters[0].Part)?.Root?.Element(P + "sldLayoutIdLst")?.Elements(P + "sldLayoutId") ?? [])
+            if ((string?)lid.Attribute(R + "id") is { } r && pkg.Rels(masters[0].Part).TryGetValue(r, out var lr) && parts.ContainsKey(lr.Target)) { first ??= lr.Target; }
+        foreach (var part in parts.Keys.Where(p => p.Contains("/slideLayouts/", StringComparison.Ordinal) && !p.Contains("/_rels/", StringComparison.Ordinal)).Order(StringComparer.Ordinal))
+            if (pkg.Load(part)?.Root is { } lroot) layouts.TryAdd((string?)lroot.Attribute("type") ?? "cust", part);
+        var themePart = presRels.Values.FirstOrDefault(r => r.Type.EndsWith("/theme", StringComparison.Ordinal)).Target is { } tp && parts.ContainsKey(tp) ? tp
+            : pkg.Rels(masters[0].Part).Values.FirstOrDefault(r => r.Type.EndsWith("/theme", StringComparison.Ordinal)).Target;
+        // Anzeige in Trendo: Hintergrund, Text- und Akzentfarbe sowie Schrift aus Theme und Master
+        var master = pkg.Load(masters[0].Part)?.Root;
+        var clrMap = master?.Element(P + "clrMap");
+        string Map(string key, string dflt) => scheme.GetValueOrDefault((string?)clrMap?.Attribute(key) ?? dflt) ?? scheme.GetValueOrDefault(dflt) ?? (key.StartsWith("bg", StringComparison.Ordinal) ? "#FFFFFF" : "#000000");
+        var bg = master?.Element(P + "cSld")?.Element(P + "bg")?.Element(P + "bgPr")?.Element(A + "solidFill") is { } bf ? FillColor(bf, scheme) : null;
+        var font = (string?)theme?.Root?.Descendants(A + "minorFont").FirstOrDefault()?.Element(A + "latin")?.Attribute("typeface");
+        var size = pres.Element(P + "sldSz");
+        var derived = new SlideTheme("fremd", (string?)theme?.Root?.Attribute("name") is { Length: > 0 } n ? n : "Design der Datei", bg ?? Map("bg1", "lt1"), Map("tx1", "dk1"), Map("tx1", "dk1"),
+            scheme.GetValueOrDefault("accent1") ?? "#4472C4", font is { Length: > 0 } && !font.StartsWith('+') ? font : "Calibri", Map("bg2", "lt2"));
+        return new PptxDesign
+        {
+            Theme = derived, Parts = parts, ContentTypes = types, Defaults = defaults, Masters = masters, ThemePart = themePart,
+            Cx = (long?)size?.Attribute("cx") ?? 12192000, Cy = (long?)size?.Attribute("cy") ?? 6858000, SizeType = (string?)size?.Attribute("type"),
+            DefaultTextStyle = pres.Element(P + "defaultTextStyle") is { } dts ? Raw(dts) : null, LayoutByType = layouts, FirstLayout = first ?? layouts.Values.FirstOrDefault(),
+        };
     }
 
     /// <summary>Lage der Platzhalter aus dem Folienlayout (für Dateien anderer Programme, deren Folien keine eigene Lage angeben).</summary>
@@ -116,11 +255,13 @@ public static partial class SlideFiles
         return (V(off, "x"), V(off, "y"), V(ext, "cx"), V(ext, "cy"));
     }
 
-    static SlideShape ReadSp(XElement sp, Dictionary<string, (double X, double Y, double W, double H)> layout)
+    static SlideShape ReadSp(XElement sp, Dictionary<string, (double X, double Y, double W, double H)> layout, MasterText? master = null, Dictionary<string, string>? scheme = null)
     {
+        scheme ??= [];
         var nv = sp.Element(P + "nvSpPr"); var cnv = nv?.Element(P + "cNvPr");
         var ph = nv?.Element(P + "nvPr")?.Element(P + "ph");
         var phType = ph is null ? null : (string?)ph.Attribute("type") ?? "body";
+        var phTypeRaw = ph is null ? null : (string?)ph.Attribute("type") ?? ""; var phIdx = (string?)ph?.Attribute("idx");
         var role = RoleOf((string?)cnv?.Attribute("name")) ?? phType switch { "title" or "ctrTitle" => "title", "subTitle" => "sub", "body" or "obj" => "body", _ => null };
         var spPr = sp.Element(P + "spPr");
         var geom = (string?)spPr?.Element(A + "prstGeom")?.Attribute("prst");
@@ -150,10 +291,42 @@ public static partial class SlideFiles
         }
         s.Text = s.Kind == ShapeKind.Medien ? "" : string.Join('\n', lines);
         s.Bullets = bullets && s.Kind == ShapeKind.Text;
+        s.PhType = phTypeRaw; s.PhIdx = phIdx;
+        // T-0701: geerbte Schrift aus dem Folienmaster (Titel, Inhalt, Sonstiges)
+        var isTitle = phType is "title" or "ctrTitle"; var isBody = phType is not null && !isTitle && phType is "body" or "obj" or "subTitle";
+        var inheritSize = (isTitle ? master?.Title : isBody ? master?.Body : master?.Other) ?? (role == "title" ? 36 : role == "sub" ? 22 : 20);
+        var inheritBold = (isTitle ? master?.TitleBold : isBody ? master?.BodyBold : master?.OtherBold) ?? (role == "title" && phType is not null && master?.Title is null);
+        // Textabschnitte mit eigenem Format
+        var runs = new List<TextRun>();
+        TextRun Look(XElement? r)
+        {
+            var u = (string?)r?.Attribute("u");
+            return new TextRun("", (int?)r?.Attribute("sz") is int z ? z / 100.0 : null, (string?)r?.Attribute("b") is { } b ? b is "1" or "true" : null, (string?)r?.Attribute("i") is { } i ? i is "1" or "true" : null,
+                u is null or "none" ? null : u, FillColor(r?.Element(A + "solidFill"), scheme), (string?)r?.Element(A + "latin")?.Attribute("typeface"));
+        }
+        for (var pi = 0; pi < paras.Count; pi++)
+        {
+            if (pi > 0) runs.Add((runs.Count > 0 ? runs[^1] : new TextRun("")) with { Text = "\n" });
+            var lvl = (int?)paras[pi].Element(A + "pPr")?.Attribute("lvl") ?? 0;
+            var parts = paras[pi].Elements().Where(e => e.Name.LocalName is "r" or "fld").Select(r => Look(r.Element(A + "rPr")) with { Text = r.Element(A + "t")?.Value ?? "" }).Where(r => r.Text.Length > 0).ToList();
+            if (lvl > 0) runs.Add((parts.FirstOrDefault() ?? new TextRun("")) with { Text = "\t" });
+            runs.AddRange(parts);
+        }
+        var looks = runs.Where(r => r.Text is not ("\n" or "\t")).Select(r => r.Bare()).Distinct().ToList();
+        var mixed = s.Kind != ShapeKind.Medien && (looks.Count > 1 || looks.Any(l => l.Italic is not null || l.Underline is not null || l.Font is not null)) && string.Concat(runs.Select(r => r.Text)) == s.Text;
         var rpr = sp.Descendants(A + "rPr").FirstOrDefault() ?? sp.Descendants(A + "endParaRPr").FirstOrDefault();
-        if ((int?)rpr?.Attribute("sz") is int sz) s.FontSize = sz / 100.0; else s.FontSize = role == "title" ? 36 : role == "sub" ? 22 : 20;
-        s.Bold = (string?)rpr?.Attribute("b") is "1" or "true" || (role == "title" && rpr?.Attribute("b") is null && phType is not null);
-        if (rpr?.Element(A + "solidFill")?.Element(A + "srgbClr")?.Attribute("val") is { } col) s.Color = "#" + col.Value;
+        if (mixed)
+        {
+            // Feld = geerbtes Format, Abschnitte = ihre eigenen Angaben
+            s.FontSize = inheritSize; s.Bold = inheritBold; s.SizeInherited = true; s.BoldInherited = true;
+            s.Runs = TextRuns.Normalize(runs);
+        }
+        else
+        {
+            if ((int?)rpr?.Attribute("sz") is int sz) s.FontSize = sz / 100.0; else { s.FontSize = inheritSize; s.SizeInherited = true; }
+            if ((string?)rpr?.Attribute("b") is { } bv) s.Bold = bv is "1" or "true"; else { s.Bold = inheritBold; s.BoldInherited = true; }
+            if (FillColor(rpr?.Element(A + "solidFill"), scheme) is { } col) s.Color = col;
+        }
         return s;
     }
 
@@ -162,6 +335,7 @@ public static partial class SlideFiles
         var embed = (string?)pic.Descendants(A + "blip").FirstOrDefault()?.Attribute(R + "embed");
         if (embed is null || !rels.TryGetValue(embed, out var r) || pkg.Bytes(r.Target) is not { } bytes) return null;
         var s = new SlideShape { Kind = ShapeKind.Bild, Image = bytes };
+        if (pic.Element(P + "nvPicPr")?.Element(P + "nvPr")?.Element(P + "ph") is { } ph) { s.PhType = (string?)ph.Attribute("type") ?? ""; s.PhIdx = (string?)ph.Attribute("idx"); }
         if (Xfrm(pic.Element(P + "spPr")) is { } x) (s.X, s.Y, s.W, s.H) = x;
         return s;
     }

@@ -42,8 +42,24 @@ public partial class MainWindow
         return add.Count;
     }
 
+    /// <summary>T-0725: Export in die Mappe des Vorhabens (atomar, überschreibt den eigenen letzten Export). Liefert den Pfad.</summary>
+    public string SuiteExport(string dir, string kind)
+    {
+        var name = Path.GetFileName(Path.TrimEndingDirectorySeparator(dir));
+        var (file, text, enc) = kind == "csv"
+            ? (Path.Combine(dir, name + " – Schritte.csv"), CreationSuite.ExportCsv(dir), (System.Text.Encoding)new System.Text.UTF8Encoding(true))
+            : (Path.Combine(dir, name + " – Zeitplan.ics"), CreationSuite.ExportIcs(dir), new System.Text.UTF8Encoding(false));
+        AtomicFile.WriteAllBytes(file, enc.GetPreamble().Concat(enc.GetBytes(text)).ToArray());
+        _core.Audit.Append(Principal.LocalOwner.Name, "vorhaben.export", $"{name} {kind}");
+        Say($"Gespeichert: {file}", "vorhaben");
+        SuiteLastExport = file;
+        return file;
+    }
+    public string? SuiteLastExport { get; private set; }
+
     private Control SuiteView()
     {
+        _ = PlanLink; // T-0717: angeschlossen – „Bearbeiten“ in der Menüleiste (Rückgängig/Wiederholen des Zeitplans)
         const string V = "vorhaben";
         var dirs = Directory.GetDirectories(SuiteFolder).OrderByDescending(Directory.GetLastWriteTime).ToList();
         if (_suiteOpen is not null && !Directory.Exists(_suiteOpen)) _suiteOpen = null;
@@ -82,6 +98,10 @@ public partial class MainWindow
                 side.Children.Add(tb);
             }
             side.Children.Add(Act("suite-folder", "Ordner öffnen", () => Launch(cur)));
+            // T-0725 (Audit D7, X-11: „kein Export des Plans“): Schritte als Tabelle, Zeitplan als Kalenderdatei – landen in der Mappe des Vorhabens
+            side.Children.Add(new TextBlock { Text = "Weitergeben", Foreground = Muted, FontSize = 11, Margin = new Thickness(2, 10, 0, 0) });
+            side.Children.Add(Act("suite-export-csv", "Schritte als Tabelle (.csv)", () => Try(V, () => SuiteExport(cur, "csv"))));
+            side.Children.Add(Act("suite-export-ics", "Zeitplan als Kalenderdatei (.ics)", () => Try(V, () => SuiteExport(cur, "ics"))));
         }
 
         Control main = _suiteNew || _suiteOpen is null ? SuiteNewCard(dirs.Count > 0) : SuiteProject(_suiteOpen);
@@ -280,9 +300,12 @@ public partial class MainWindow
     }
 
     // ---------- Zeitplan (Gantt, Masterprompt 131) ----------
-    double _planDayW = 28; int _planSel = -1; readonly Stack<(string File, string Text, string Label)> _planUndo = new();
+    double _planDayW = 28; int _planSel = -1;
     public GanttCanvas? GanttForTests { get; private set; }
-    public string PlanUndoLabel => _planUndo.TryPeek(out var u) ? u.Label : "";
+    /// <summary>T-0717: Rückgängig/Wiederholen der Hülle (100 Schritte, vorher eigener Stapel ohne Grenze und ohne Wiederholen).</summary>
+    public string PlanUndoLabel => PlanLink.Link.UndoLabel ?? "";
+    public void PlanUndo() { ItemStep(PlanLink, true, out var m); if (!m.StartsWith("Rückgängig") && !m.StartsWith("Es gibt")) Say(m, "vorhaben"); }
+    public void PlanRedo() { ItemStep(PlanLink, false, out var m); if (!m.StartsWith("Wiederholt") && !m.StartsWith("Es gibt")) Say(m, "vorhaben"); }
     /// <summary>Für Vorschaubilder: Vorhaben öffnen, Ansicht und gewählten Schritt setzen.</summary>
     public void SuiteOpenForPreview(string dir, string mode, int sel = -1) { _suiteOpen = dir; SuiteMode = mode; _planSel = sel; }
 
@@ -290,7 +313,7 @@ public partial class MainWindow
     {
         const string V = "vorhaben";
         var f = Path.Combine(open, CreationSuite.ListFile); var before = File.ReadAllText(f);
-        try { var moved = act(); _planUndo.Push((f, before, label)); if (moved > 0) Say($"{moved} abhängige Schritte sind nachgerückt.", V); }
+        try { var moved = act(); Items(PlanLink).Record(label, f, before, File.ReadAllText(f)); if (moved > 0) Say($"{moved} abhängige Schritte sind nachgerückt.", V); }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or IOException) { Say(ex.Message, V); }
         Show(V);
     }
@@ -313,11 +336,13 @@ public partial class MainWindow
             canvas.Linked = (fromNo, toNo) => PlanChange(open, "Abhängigkeit", () => { CreationSuite.AddAfter(open, toNo, fromNo); return CreationSuite.Reschedule(open); });
             canvas.Clicked = row => { _planSel = row; Show(V); };
             var crit = bars.Count(b => b.Critical); var end = bars.Max(b => b.End);
-            var undo = Act("suite-plan-undo", _planUndo.TryPeek(out var u) ? "↶ " + u.Label : "Rückgängig", () => { if (_planUndo.TryPop(out var x)) { File.WriteAllText(x.File, x.Text); Show(V); } });
-            undo.IsEnabled = _planUndo.Count > 0;
+            var planLink = PlanLink;
+            var undo = Act("suite-plan-undo", planLink.Link.UndoLabel is { } u ? "↶ " + u : "Rückgängig", () => { PlanUndo(); Show(V); });
+            undo.IsEnabled = planLink.Link.CanUndo;
+            var redo = Act("suite-plan-redo", "↷ Wiederholen", () => { PlanRedo(); Show(V); }); redo.IsEnabled = planLink.Link.CanRedo; // T-0717
             sp.Children.Add(new WrapPanel { Children = {
                 new TextBlock { Name = "suite-plan-info", Text = $"Fertig am {end:ddd dd.MM.yyyy} · {(end - bars.Min(b => b.Start)).Days + 1} Tage · {crit} Schritte auf dem kritischen Pfad (rot)", Foreground = GoldText(), FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 12, 0) },
-                Act("suite-zoom-days", "Tage", () => { _planDayW = 28; Show(V); }, _planDayW >= 20), Act("suite-zoom-weeks", "Wochen", () => { _planDayW = 12; Show(V); }, _planDayW < 20), new Border { Width = 8 }, undo } });
+                Act("suite-zoom-days", "Tage", () => { _planDayW = 28; Show(V); }, _planDayW >= 20), Act("suite-zoom-weeks", "Wochen", () => { _planDayW = 12; Show(V); }, _planDayW < 20), new Border { Width = 8 }, undo, new Border { Width = 4 }, redo } });
             var labels = new StackPanel { Width = 230, Children = { new Border { Height = GanttCanvas.Head } } };
             for (var r = 0; r < bars.Count; r++)
             {

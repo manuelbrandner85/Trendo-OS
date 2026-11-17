@@ -203,7 +203,7 @@ public class ReferenzStudioSpiele_Ui
         var d = await Game(w, m);
         var before = d.Data.ToJsonString();
         var bad = await Call(m, "dokument_setzen", new JsonObject { ["pfad"] = "levels/99/name", ["wert"] = "X" });
-        Assert.True(Failed(bad)); Assert.Contains("gibt es nicht", Text(bad));
+        Assert.True(Failed(bad)); Assert.Contains("„levels/99/name“ gibt es in diesem Dokument nicht", Text(bad)); // T-0707: gemeinsame Prüfung AssistChain.CheckEdit nennt die Stelle
         Assert.Equal(before, d.Data.ToJsonString());
         Assert.True(Failed(await Call(m, "befehl", new JsonObject { ["name"] = "gibtsnicht" })));
         Assert.True(Failed(await Call(m, "klicken", new JsonObject())));

@@ -44,7 +44,7 @@ public partial class MainWindow
     // ---------- Öffentliche Wege (auch für Tests und die KI) ----------
     public void SheetNew(string template = "leer")
     {
-        SheetDocument = SheetTemplates.Create(template); SheetPath = null; SheetDirty = false; SheetIndex = 0; ResetSheetState();
+        SheetDocument = SheetTemplates.Create(template); SheetPath = null; SheetDirty = false; SheetIndex = 0; ResetSheetState(); ImportGuardClear("tabelle");
         _shMsg = template == "leer" ? "Neue Mappe." : $"Vorlage „{SheetTemplates.Builtin.First(t => t.Id == template).Name}“ – Werte einfach überschreiben, die Formeln rechnen mit.";
     }
 
@@ -53,15 +53,19 @@ public partial class MainWindow
         SheetDocument = SheetFiles.Open(path); SheetIndex = 0; ResetSheetState();
         SheetPath = Path.GetExtension(path).ToLowerInvariant() is ".xlsx" or ".ods" ? path : null; SheetDirty = false;
         _shMsg = $"Geöffnet: {Path.GetFileName(path)}"; RememberSheetRecent(path);
+        ImportGuardSet("tabelle", path, SheetDocument.Import); // T-0682
         _core.Audit.Append(Principal.LocalOwner.Name, "tabelle.open", Path.GetFileName(path));
     }
 
-    public void SheetSaveAs(string path)
+    /// <summary>Speichert die Mappe. Liefert false, wenn das Speichern aufgehalten wurde, weil es eine fremde Datei mit nicht übernommenen Inhalten überschriebe (T-0682).</summary>
+    public bool SheetSaveAs(string path)
     {
+        if (ImportGuardStops("tabelle", path)) { _shMsg = ImportStopMessage("tabelle"); return false; }
         if (path.EndsWith(".csv", StringComparison.OrdinalIgnoreCase)) SheetFiles.WriteCsv(SheetDocument, ActiveSheet, path);
-        else { SheetFiles.Save(SheetDocument, path); if (!path.EndsWith(".ods", StringComparison.OrdinalIgnoreCase)) { SheetPath = path; SheetDirty = false; RecoveryClear("tabelle"); } }
+        else { SheetFiles.Save(SheetDocument, path); if (!path.EndsWith(".ods", StringComparison.OrdinalIgnoreCase)) { SheetPath = path; SheetDirty = false; OfficeSaved("tabelle"); ImportGuardClear("tabelle"); } }
         RememberSheetRecent(path); _shMsg = $"Gespeichert: {Path.GetFileName(path)}";
         _core.Audit.Append(Principal.LocalOwner.Name, "tabelle.save", Path.GetFileName(path));
+        return true;
     }
 
     public void SheetShowStart() => SheetStartVisible = true;
@@ -402,8 +406,8 @@ public partial class MainWindow
     {
         var path = !asNew && SheetPath is not null ? SheetPath : await PickSheet(true);
         if (path is null) return;
-        try { SheetSaveAs(path); Toast($"Gespeichert: {Path.GetFileName(path)}", ("Ordner öffnen", new Action(() => Launch(Path.GetDirectoryName(path)!)))); }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _shMsg = "Speichern ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
+        try { if (SheetSaveAs(path)) Toast($"Gespeichert: {Path.GetFileName(path)}", ("Ordner öffnen", new Action(() => Launch(Path.GetDirectoryName(path)!)))); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException) { _shMsg = "Speichern ging nicht: " + Trendo.Core.FriendlyError.Say(ex); } // ArgumentException: Format, das Trendo Tabelle nicht schreibt (ODS)
         Show("tabelle");
     }
 
@@ -455,9 +459,21 @@ public partial class MainWindow
 
     // ---------- Oberfläche ----------
     private Control SheetPageView() => WithRecovery("tabelle", SheetDirty, SheetPageCore());
-    private Control SheetPageCore() => new Border { Name = "tabelle-page-root", Background = Brush.Parse(C("#F21A1A1A", "#F7F4F7FC")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = SheetStartVisible ? SheetStartPage() : SheetShell() };
+    private Control SheetPageCore() => new Border { Name = "tabelle-page-root", Background = PageSurface, CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = SheetStartVisible ? SheetStartPage() : SheetShell() };
 
     /// <summary>G1: Startseite mit „Neu“, Vorlagen, Zuletzt geöffnet und Öffnen.</summary>
+    /// <summary>V-17 (T-0700): einfarbige Symbole auf den Vorlagen-Kacheln (Tabelle, Präsentation) – in Gold, wie die übrigen Startseiten; unbekannte Vorlagen behalten ihr Zeichen.</summary>
+    Control TileIcon(string id, string fallback)
+    {
+        var path = id switch
+        {
+            "leer" => Mdi.ViewGrid, "haushalt" => Mdi.Home, "rechnung" => Mdi.FileDocument, "stunden" => Mdi.CalendarMonth, "einkauf" => Mdi.Cart,
+            "vortrag" => Mdi.Forum, "projekt" => Mdi.ChartLine, "fotoalbum" or "album" => Mdi.Image, _ => null,
+        };
+        if (path is null) return new TextBlock { Text = fallback, FontSize = 30, Foreground = Accent };
+        var ic = Ico(path, 32, Accent); ic.HorizontalAlignment = HorizontalAlignment.Left; ic.Name = "tile-icon-" + id; return ic;
+    }
+
     private Control SheetStartPage()
     {
         var sp = new StackPanel { Spacing = 14 };
@@ -469,7 +485,7 @@ public partial class MainWindow
             var id = t.Id;
             var b = new Button { Name = "tabelle-tpl-" + id, Width = 180, Height = 132, Margin = new Thickness(0, 0, 12, 12), Padding = new Thickness(12), CornerRadius = new CornerRadius(12), Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1),
                 Content = new StackPanel { Spacing = 6, Children = {
-                    new TextBlock { Text = t.Icon, FontSize = 34 },
+                    TileIcon(id, t.Icon), // V-17 (T-0700): einfarbiges Symbol statt bunter Bildzeichen
                     new TextBlock { Text = t.Name, Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
                     new TextBlock { Text = t.Hint, Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap } } } };
             b.Click += (_, _) => { SheetNew(id); Show("tabelle"); };
@@ -522,6 +538,14 @@ public partial class MainWindow
         return b;
     }
 
+    /// <summary>T-0700/V-17: Ausrichtungs-Knopf mit Ausrichtungs-Symbol statt Dreieck (das nach „Abspielen“ aussieht).</summary>
+    private Button SBAlign(string name, string kind, string label, Action go, string tip, bool on)
+    {
+        var b = SB(name, "", label, go, tip, on);
+        if (b.Content is StackPanel sp && sp.Children.Count > 0) sp.Children[0] = new Border { Height = 22, HorizontalAlignment = HorizontalAlignment.Center, Child = GlyphIcons.AlignIcon(kind, b, 16) };
+        return b;
+    }
+
     private static Control RibbonGroup(string title, params Control[] items)
     {
         var row = new StackPanel { Orientation = Orientation.Horizontal };
@@ -534,7 +558,13 @@ public partial class MainWindow
     private Control SheetRibbon()
     {
         var tabRow = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2, Margin = new Thickness(0, 4, 0, 4) };
-        var file = new Button { Name = "tabelle-file", Content = "Datei", Focusable = false, Padding = new Thickness(10, 4), Background = Accent };
+        // V-14 (T-0709): Speichern · Rückgängig · Wiederholen · Als PDF links oben wie in Trendo Text; „Speichern“ ist die eine goldene Fläche, „Datei“ bleibt das Menü für alles Weitere
+        tabRow.Children.Add(DocActions(
+            DocBtn("tabelle-save", "Speichern", () => _ = SheetSaveClick(false), "Speichern (Strg+S)", "tabelle", gold: true),
+            DocBtn("tabelle-undo", "↶", SheetUndo, "Rückgängig (Strg+Z)", "tabelle"),
+            DocBtn("tabelle-redo", "↷", SheetRedo, "Wiederholen (Strg+Y)", "tabelle"),
+            DocBtn("tabelle-export", "Als PDF", SheetPdfClick, "Als PDF speichern – auf Seitenbreite angepasst, mit Diagrammen (weitere Formate unter „Datei“)", "tabelle")));
+        var file = new Button { Name = "tabelle-file", Content = "Datei", Focusable = false, Padding = new Thickness(10, 4) };
         var fm = new ContextMenu();
         MenuItem Mi(string name, string header, Action a) { var m = new MenuItem { Name = name, Header = header }; m.Click += (_, _) => a(); return m; }
         fm.Items.Add(Mi("tabelle-m-start", "Startseite (Neu, Vorlagen, Zuletzt)", () => { SheetShowStart(); Show("tabelle"); }));
@@ -613,21 +643,31 @@ public partial class MainWindow
                     SB("tabelle-cut", "✂", "Ausschneiden", () => SheetCopy(true), "Ausschneiden (Strg+X)")));
                 groups.Children.Add(RibbonGroup("Schrift",
                     SB("tabelle-bold", "𝐅", "Fett", () => { var on = !(cur?.Bold ?? false); ForSelection(c => c.Bold = on); }, "Fett (Strg+B)", cur?.Bold == true),
-                    SB("tabelle-border", "▢", "Rahmen", () => { var on = !(cur?.Border ?? false); ForSelection(c => c.Border = on); }, "Rahmen um die Zellen", cur?.Border == true),
+                    SB("tabelle-italic", "𝐾", "Kursiv", SheetToggleItalic, "Kursiv (Strg+I)", cur?.Italic == true),
+                    SB("tabelle-underline", "U̲", "Unterstr.", SheetToggleUnderline, "Unterstrichen (Strg+U)", cur?.Underline is not null),
+                    FontColorPicker(),
+                    SB("tabelle-border", "▢", "Rahmen", () => { var on = !(cur?.Border ?? false) && cur?.Borders is null; ForSelection(c => { c.Border = on; c.Borders = null; }); }, "Dünner Rahmen um die Zellen (erneut = ohne Rahmen)", cur?.Border == true || cur?.Borders is not null),
                     FillPicker()));
+                // T-0701: Ausrichtung, Umbruch und verbundene Zellen
+                var merged = ActiveSheet.MergeAt(_shActive.Row, _shActive.Col) is not null;
+                groups.Children.Add(RibbonGroup("Ausrichtung",
+                    SBAlign("tabelle-align-left", "links", "Links", () => SheetSetAlign("left"), "Linksbündig", cur?.HAlign == "left"),
+                    SBAlign("tabelle-align-center", "mitte", "Mitte", () => SheetSetAlign("center"), "Zentriert", cur?.HAlign == "center"),
+                    SBAlign("tabelle-align-right", "rechts", "Rechts", () => SheetSetAlign("right"), "Rechtsbündig", cur?.HAlign == "right"),
+                    SB("tabelle-wrap", "↵", "Umbruch", SheetToggleWrap, "Text in der Zelle umbrechen (mehrere Zeilen)", cur?.Wrap == true),
+                    SB("tabelle-merge", "⊞", merged ? "Verbund lösen" : "Verbinden", SheetToggleMerge, "Markierte Zellen zu einer verbinden – erneut = Verbund aufheben", merged)));
                 var fmt = new ComboBox { Name = "tabelle-format", Width = 130, Focusable = false, ItemsSource = Enum.GetNames<NumFmt>(), SelectedItem = (cur?.Format ?? NumFmt.Standard).ToString() };
-                fmt.SelectionChanged += (_, _) => { if (fmt.SelectedItem is string s && Enum.TryParse<NumFmt>(s, out var f) && f != (ActiveSheet.Get(_shActive.Row, _shActive.Col)?.Format ?? NumFmt.Standard)) { ForSelection(c => c.Format = f); Show("tabelle"); } };
+                fmt.SelectionChanged += (_, _) => { if (fmt.SelectedItem is string s && Enum.TryParse<NumFmt>(s, out var f) && f != (ActiveSheet.Get(_shActive.Row, _shActive.Col)?.Format ?? NumFmt.Standard)) { ForSelection(c => { c.Format = f; c.NumCode = null; }); Show("tabelle"); } };
                 ToolTip.SetTip(fmt, "Zahlenformat: Euro, Prozent, Datum …");
                 groups.Children.Add(RibbonGroup("Zahl", new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = { fmt } },
-                    SB("tabelle-euro", "€", "Euro", () => ForSelection(c => c.Format = NumFmt.Euro), "Als Euro-Betrag"),
-                    SB("tabelle-pct", "%", "Prozent", () => ForSelection(c => c.Format = NumFmt.Prozent), "Als Prozent")));
+                    SB("tabelle-euro", "€", "Euro", () => ForSelection(c => { c.Format = NumFmt.Euro; c.NumCode = null; }), "Als Euro-Betrag"),
+                    SB("tabelle-pct", "%", "Prozent", () => ForSelection(c => { c.Format = NumFmt.Prozent; c.NumCode = null; }), "Als Prozent"),
+                    SB("tabelle-numcode", "#", "Eigenes", () => SheetPrompt("tabelle-prompt", "Eigenes Zahlenformat wie in Excel, z. B. 0,000 \"kg\" oder TT.MM.JJJJ (leer = Trendos Format):", SwapSep(cur?.NumCode ?? ""), SheetSetNumCodeDe), "Eigenes Zahlenformat (Formatcode) – bleibt beim Speichern als XLSX erhalten", cur?.NumCode is not null)));
                 groups.Children.Add(RibbonGroup("Formatvorlagen", CondPicker(),
                     SB("tabelle-astable", "▤", "Als Tabelle", () => SheetFormatAsTable(true), "Kopfzeile, Streifen, Rahmen und Summenzeile")));
                 groups.Children.Add(RibbonGroup("Bearbeiten",
                     SB("tabelle-sum", "Σ", "Summe", SheetAutoSum, "Summe der Zahlen darüber (wie AutoSumme)"),
-                    SB("tabelle-sort", "↑", "Sortieren", () => SheetSort(true), "Liste nach der aktiven Spalte sortieren"),
-                    SB("tabelle-undo", "↶", "Zurück", SheetUndo, "Rückgängig (Strg+Z)"),
-                    SB("tabelle-redo", "↷", "Vor", SheetRedo, "Wiederholen (Strg+Y)")));
+                    SB("tabelle-sort", "↑", "Sortieren", () => SheetSort(true), "Liste nach der aktiven Spalte sortieren")));
                 break;
         }
         return new StackPanel { Children = { tabRow, groups } };
@@ -648,6 +688,63 @@ public partial class MainWindow
         Add("tabelle-cond-clear", "Regeln der Markierung löschen", () => { SheetClearCond(); Show("tabelle"); });
         b.ContextMenu = menu; b.Click += (_, _) => menu.Open(b);
         return b;
+    }
+
+    /// <summary>T-0701: Schriftfarbe der markierten Zellen.</summary>
+    private Control FontColorPicker()
+    {
+        var b = SB("tabelle-fontcolor", "A", "Schriftfarbe", () => { }, "Farbe der Schrift");
+        var menu = new ContextMenu();
+        foreach (var (name, hex) in new[] { ("Automatisch", (string?)null), ("Rot", "#C00000"), ("Dunkelgrün", "#00703C"), ("Dunkelblau", "#1F3864"), ("Orange", "#C55A11"), ("Grau", "#595959") })
+        {
+            var h = hex; var mi = new MenuItem { Name = "tabelle-fontcolor-" + name.ToLowerInvariant(), Header = name };
+            mi.Click += (_, _) => { ForSelection(c => c.FontColor = h); Show("tabelle"); };
+            menu.Items.Add(mi);
+        }
+        b.ContextMenu = menu; b.Click += (_, _) => menu.Open(b);
+        return b;
+    }
+
+    // ---------- T-0701: Zellaussehen und verbundene Zellen ----------
+    public void SheetToggleItalic() { var on = !(ActiveSheet.Get(_shActive.Row, _shActive.Col)?.Italic ?? false); ForSelection(c => c.Italic = on); }
+    public void SheetToggleUnderline() { var on = ActiveSheet.Get(_shActive.Row, _shActive.Col)?.Underline is null; ForSelection(c => c.Underline = on ? "single" : null); }
+    public void SheetToggleWrap() { var on = !(ActiveSheet.Get(_shActive.Row, _shActive.Col)?.Wrap ?? false); ForSelection(c => c.Wrap = on); }
+    /// <summary>Waagerechte Ausrichtung; dieselbe noch einmal = wieder Standard (Zahlen rechts, Text links).</summary>
+    public void SheetSetAlign(string? align) { var same = ActiveSheet.Get(_shActive.Row, _shActive.Col)?.HAlign == align; ForSelection(c => c.HAlign = same ? null : align); }
+
+    /// <summary>Markierung verbinden – liegt die aktive Zelle schon in einem Verbund, wird er aufgehoben.</summary>
+    public void SheetToggleMerge()
+    {
+        var (t, l, b, r) = Sel(); var s = ActiveSheet;
+        if (s.MergeAt(_shActive.Row, _shActive.Col) is not null || s.Merges.Any(m => m.Overlaps(new MergeRange(t, l, b, r))) && t == b && l == r)
+        {
+            SheetSnapshot(); var n = s.Unmerge(t, l, b, r); SheetChanged(); _shMsg = n > 0 ? "Verbund aufgehoben." : "Hier ist nichts verbunden.";
+            return;
+        }
+        if (t == b && l == r) { _shMsg = "Erst mehrere Zellen markieren, dann verbinden."; return; }
+        var lost = Enumerable.Range(t, b - t + 1).SelectMany(i => Enumerable.Range(l, r - l + 1).Select(j => (i, j))).Count(p => p != (t, l) && s.Raw(p.i, p.j).Length > 0);
+        SheetSnapshot(); s.Merge(t, l, b, r); _shActive = _shAnchor = (t, l); SheetChanged();
+        _shMsg = lost > 0 ? $"Verbunden – {lost} weitere Inhalte wurden geleert (wie in Excel). Strg+Z holt sie zurück." : $"Zellen {Addr.Name(t, l)}:{Addr.Name(b, r)} verbunden.";
+    }
+
+    /// <summary>Eigenes Zahlenformat so setzen, wie Excel es ablegt („0.000\" kg\"“); leer = wieder Trendos Format.</summary>
+    public void SheetSetNumCode(string code) { code = code.Trim(); ForSelection(c => c.NumCode = code.Length == 0 ? null : code); _shMsg = code.Length == 0 ? "Eigenes Zahlenformat entfernt." : $"Zahlenformat „{SwapSep(code)}“."; }
+    /// <summary>Wie <see cref="SheetSetNumCode"/>, aber in deutscher Schreibweise eingegeben (Komma = Dezimalzeichen, Punkt = Tausender).</summary>
+    void SheetSetNumCodeDe(string code) => SheetSetNumCode(SwapSep(code));
+
+    /// <summary>Komma und Punkt außerhalb von Anführungszeichen tauschen (deutsche ↔ gespeicherte Schreibweise eines Formatcodes).</summary>
+    static string SwapSep(string code)
+    {
+        if (SheetNumberFormat.IsDate(code)) return code; // Datum/Uhrzeit: „.“ und „:“ sind Trennzeichen und bleiben
+        var sb = new System.Text.StringBuilder(); var quote = false;
+        for (var i = 0; i < code.Length; i++)
+        {
+            var ch = code[i];
+            if (ch == '"') quote = !quote;
+            if (!quote && ch == '\\' && i + 1 < code.Length) { sb.Append(ch).Append(code[++i]); continue; }
+            sb.Append(quote ? ch : ch == ',' ? '.' : ch == '.' ? ',' : ch);
+        }
+        return sb.ToString();
     }
 
     private Control FillPicker()
@@ -690,6 +787,25 @@ public partial class MainWindow
         grid.SelectionChanged += () => { _shActive = grid.Active; _shAnchor = grid.Anchor; _shTop = grid.TopRow; _shLeft = grid.LeftCol; CloseEditor(true); RefreshSheetChrome(); };
         grid.EditRequested += OpenEditor;
         grid.Changed += () => SheetDirty = true;
+        // T-0701: Rechtsklick auf Zellen – die häufigsten Befehle für die Markierung
+        var cm = new ContextMenu { Name = "tabelle-kontext" };
+        MenuItem Cmi(string name, string header, Action a) { var m = new MenuItem { Name = name, Header = header }; m.Click += (_, _) => { a(); Show("tabelle"); }; return m; }
+        cm.Items.Add(Cmi("tabelle-k-cut", "Ausschneiden  (Strg+X)", () => SheetCopy(true)));
+        cm.Items.Add(Cmi("tabelle-k-copy", "Kopieren  (Strg+C)", () => SheetCopy(false)));
+        cm.Items.Add(Cmi("tabelle-k-paste", "Einfügen  (Strg+V)", () => _ = SheetPaste()));
+        cm.Items.Add(new Separator());
+        cm.Items.Add(Cmi("tabelle-k-merge", "Zellen verbinden / Verbund aufheben", SheetToggleMerge));
+        cm.Items.Add(Cmi("tabelle-k-wrap", "Zeilenumbruch an/aus", SheetToggleWrap));
+        cm.Items.Add(Cmi("tabelle-k-numcode", "Eigenes Zahlenformat …", () => SheetPrompt("tabelle-prompt", "Eigenes Zahlenformat wie in Excel, z. B. 0,000 \"kg\" oder TT.MM.JJJJ (leer = Trendos Format):", SwapSep(ActiveSheet.Get(_shActive.Row, _shActive.Col)?.NumCode ?? ""), SheetSetNumCodeDe)));
+        cm.Items.Add(new Separator());
+        cm.Items.Add(Cmi("tabelle-k-row-ins", "Zeile oberhalb einfügen", () => { SheetSnapshot(); ActiveSheet.InsertRows(Sel().Top, Sel().Bottom - Sel().Top + 1); SheetChanged(); }));
+        cm.Items.Add(Cmi("tabelle-k-row-del", "Zeile löschen", () => { SheetSnapshot(); ActiveSheet.DeleteRows(Sel().Top, Sel().Bottom - Sel().Top + 1); SheetChanged(); }));
+        cm.Items.Add(Cmi("tabelle-k-col-ins", "Spalte links einfügen", () => { SheetSnapshot(); ActiveSheet.InsertCols(Sel().Left, Sel().Right - Sel().Left + 1); SheetChanged(); }));
+        cm.Items.Add(Cmi("tabelle-k-col-del", "Spalte löschen", () => { SheetSnapshot(); ActiveSheet.DeleteCols(Sel().Left, Sel().Right - Sel().Left + 1); SheetChanged(); }));
+        cm.Items.Add(new Separator());
+        cm.Items.Add(Cmi("tabelle-k-note", "Notiz …", () => SheetPrompt("tabelle-prompt", $"Notiz zu {Addr.Name(_shActive.Row, _shActive.Col)} (leer = entfernen):", ActiveSheet.Get(_shActive.Row, _shActive.Col)?.Note ?? "", SheetSetNote)));
+        cm.Items.Add(Cmi("tabelle-k-clear", "Inhalt löschen  (Entf)", () => { if (CanWrite(_shActive.Row, _shActive.Col, "")) ForSelection(c => c.Raw = ""); }));
+        grid.ContextMenu = cm;
         grid.Command += e =>
         {
             var ctrl = e.KeyModifiers.HasFlag(KeyModifiers.Control); e.Handled = true;
@@ -703,6 +819,8 @@ public partial class MainWindow
                 case Key.Z when ctrl: SheetUndo(); break;
                 case Key.Y when ctrl: SheetRedo(); break;
                 case Key.B when ctrl: var on = !(ActiveSheet.Get(_shActive.Row, _shActive.Col)?.Bold ?? false); ForSelection(c => c.Bold = on); break;
+                case Key.I when ctrl: SheetToggleItalic(); Show("tabelle"); break;
+                case Key.U when ctrl: SheetToggleUnderline(); Show("tabelle"); break;
                 case Key.S when ctrl: _ = SheetSaveClick(false); break;
                 case Key.A when ctrl: grid.SelectRange(0, 0, Math.Max(0, ActiveSheet.MaxRow), Math.Max(0, ActiveSheet.MaxCol)); break;
                 case Key.D when ctrl: SheetFill(true); break;
@@ -781,8 +899,8 @@ public partial class MainWindow
         var (r, c) = _shActive; var cell = ActiveSheet.Get(r, c); var v = _shCalc.Value(ActiveSheet, r, c);
         sp.Children.Add(new TextBlock { Text = $"Zelle {Addr.Name(r, c)}", Foreground = Text, FontSize = 15, FontWeight = FontWeight.SemiBold });
         var what = cell is null || cell.Raw.Length == 0 ? "Leer – einfach lostippen." :
-            cell.IsFormula ? (v.IsError ? $"Formel mit Fehler {v.Text}: {SheetErrorHelp(v.Text)}" : $"Formel, Ergebnis: {SheetFormat.Display(v, cell.Format)}") :
-            v.IsNumber ? $"Zahl ({cell.Format})" : v.Kind == CellValue.K.Bool ? "Wahrheitswert" : "Text";
+            cell.IsFormula ? (v.IsError ? $"Formel mit Fehler {v.Text}: {SheetErrorHelp(v.Text)}" : $"Formel, Ergebnis: {SheetFormat.Display(v, cell)}") :
+            v.IsNumber ? (cell.NumCode is { } nc ? $"Zahl, eigenes Format „{SwapSep(nc)}“" : $"Zahl ({cell.Format})") : v.Kind == CellValue.K.Bool ? "Wahrheitswert" : "Text";
         sp.Children.Add(new TextBlock { Name = "tabelle-side-what", Text = what, Foreground = v.IsError ? Brush.Parse("#F87171") : Muted, FontSize = 12.5, TextWrapping = TextWrapping.Wrap });
         if (cell?.Note is { } noteText) sp.Children.Add(new Border { Name = "tabelle-side-note", Background = Brush.Parse("#FFFFF7D6"), CornerRadius = new CornerRadius(6), Padding = new Thickness(8, 6), Child = new TextBlock { Text = "" + noteText, Foreground = Brushes.Black, FontSize = 12.5, TextWrapping = TextWrapping.Wrap } });
         if (SheetExtras.ValidationFor(ActiveSheet, r, c) is { } vrule) sp.Children.Add(new TextBlock { Text = "Erlaubt: " + string.Join(", ", vrule.Items), Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap });

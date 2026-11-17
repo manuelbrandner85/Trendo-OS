@@ -18,12 +18,33 @@ public partial class MainWindow
     public const int SimplePageButtons = 14;
 
     private bool IsSimple => ProgramLevel == UserLevel.Einfach;
+    /// <summary>T-0709: Büro-Studios, deren wichtigste Ausgaben (PDF, Word …) in „Einfach“ direkt im Menüband stehen statt hinter „Mehr“ –
+    /// das Ergebnis ist dort der Zweck des Programms. Wert: wie viele der ersten <see cref="ProgramSpec.Exports"/> (höchstens <see cref="ProgramSpec.SimpleExports"/>).
+    /// Zwei nur, wo beide in eine Menüband-Zeile passen (V-01: Arbeitsfläche beginnt im oberen Drittel); der Rest bleibt unter „Mehr“.</summary>
+    internal static readonly Dictionary<string, int> OfficeDirectExports = new(StringComparer.OrdinalIgnoreCase)
+    {
+        [CvKey] = 2,          // Lebenslauf (PDF), Lebenslauf (Word)
+        [DeckDesignKey] = 2,  // PowerPoint, PDF
+        [CardKey] = 1,        // Druck-PDF mit Beschnitt
+        [PwKey] = 1,          // Ergebnis als PDF
+        [ScanKey] = 1,        // PDF (alle Seiten)
+        // Nicht nötig: Verträge („Erinnerungen (Kalender)“ und „Kündigung schreiben“ stehen schon als Befehle direkt da) und
+        // Formulare („Ausgefüllt speichern“ ist schon der PDF-Export) – ein zweiter Knopf würde dort nur das Menüband umbrechen.
+    };
+    /// <summary>T-0700: Markierung (Tag) für Befehle, die in „Einfach“ unter „Mehr“ gehören, z. B. „Bild-KI einrichten“, solange daneben „Jetzt einrichten“ steht.</summary>
+    internal const string SimpleIntoMore = "einfach-mehr";
 
     private List<(string, List<Control>)> SimpleRibbon(List<(string Name, List<Control> Items)> groups, ProgramSpec spec)
     {
         var shown = groups.SelectMany(g => g.Items).Select(i => i.Name).ToHashSet();
-        var direct = spec.Ribbon.SelectMany(g => g.Item2).OrderBy(c => c.Primary ? 0 : 1).Select(c => "prog-cmd-" + c.Name).Where(shown.Contains).Take(SimpleCommands).ToHashSet();
-        direct.Add("prog-save"); direct.Add("prog-undo");
+        var intoMore = groups.SelectMany(g => g.Items).Where(i => Equals(i.Tag, SimpleIntoMore)).Select(i => i.Name).ToHashSet();
+        var prefer = spec.SimplePrefer?.ToList() ?? [];
+        int Rank(ProgramCmd c) => c.Primary ? -1 : prefer.IndexOf(c.Name) is var i && i >= 0 ? i : int.MaxValue; // Hauptaktion, dann Vorrang, dann Reihenfolge
+        var direct = spec.Ribbon.SelectMany(g => g.Item2).OrderBy(Rank).Select(c => "prog-cmd-" + c.Name).Where(n => shown.Contains(n) && !intoMore.Contains(n)).Take(SimpleCommands).ToHashSet();
+        direct.Add("prog-save"); direct.Add("prog-undo"); direct.Add("prog-blocker"); // V-09: der Hinweis „… fehlt – Jetzt einrichten“ bleibt neben der Hauptaktion
+        if (spec.PrimaryExport is { } pe) direct.Add("prog-export-" + pe); // T-0700: Hauptaktion „Ergebnis speichern“ nie unter „Mehr“
+        if (OfficeDirectExports.TryGetValue(spec.Key, out var nDirect)) // T-0709 (aus T-0705): in den Büro-Studios bleiben die wichtigsten Ausgaben direkt sichtbar – ruhig, nicht golden
+            foreach (var x in spec.Exports.Take(Math.Min(nDirect, spec.SimpleExports))) direct.Add("prog-export-" + x.Name);
         var keep = groups.SelectMany(g => g.Items).Where(i => direct.Contains(i.Name ?? "")).ToList();
         var more = new Button { Name = "prog-more", Content = "Mehr", FontSize = 12.5, Padding = new Thickness(12, 6), CornerRadius = new CornerRadius(8), Background = Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(1), Foreground = Text };
         ToolTip.SetTip(more, "Alle weiteren Befehle");
@@ -84,19 +105,24 @@ public partial class MainWindow
     }
 
     /// <summary>„Einfach“: Zusatzknöpfe im Seitenkopf (Freie KI, Team) wandern in ein kleines „Mehr“.</summary>
-    private void SimplifyHeadExtras(Panel right)
+    /// <remarks>V-13 (T-0684): Im selben Menü stehen die „Verwandten Programme“ (früher die Zeile „Gehört hierher:“ über der Seite) – in jeder Stufe.</remarks>
+    private void SimplifyHeadExtras(Avalonia.Controls.Panel right, IReadOnlyList<Button>? related = null)
     {
-        if (!IsSimple || right.Children.Count == 0) return;
-        var extras = right.Children.ToList();
-        var more = new Button { Name = "page-head-more", Content = "Mehr", FontSize = 12, Padding = new Thickness(9, 2), CornerRadius = new CornerRadius(10), Background = Brush.Parse("#22FFFFFF"), Foreground = Text, BorderThickness = new Thickness(0) };
-        var list = new StackPanel { Spacing = 6, MaxWidth = 340 };
+        var extras = IsSimple ? right.Children.ToList() : [];
+        if (extras.Count == 0 && related is not { Count: > 0 }) return;
+        var more = new Button { Name = "page-head-more", Content = "Mehr", FontSize = 12, Padding = new Thickness(9, 2), CornerRadius = new CornerRadius(10), Background = Brush.Parse("#22FFFFFF"), Foreground = Text, BorderThickness = new Thickness(0), VerticalAlignment = VerticalAlignment.Top };
+        ToolTip.SetTip(more, related is { Count: > 0 } ? "Verwandte Programme und weitere Hilfen" : "Weitere Hilfen zu dieser Seite");
+        var list = new StackPanel { Name = "page-head-more-list", Spacing = 6, MaxWidth = 340 };
         foreach (var c in extras) { right.Children.Remove(c); list.Children.Add(c); }
+        if (related is { Count: > 0 }) list.Children.Add(RelatedList(related, more));
         more.Flyout = new Flyout { Content = list };
         right.Children.Add(more);
     }
 
     // ---------- 3D-Modelle erstellen ----------
     private bool _simple3dMore;
+    /// <summary>T-0708: oberste Kopfzeile von „3D-Modelle erstellen“ (V-14-Gruppe, in „Einfach“ dazu die Eingabe).</summary>
+    const string Head3DRow = "3d-head-row";
 
     private void Simplify3D(Control header, Control left, Control right, TextBox objName)
     {
@@ -108,13 +134,15 @@ public partial class MainWindow
         var rsAll = (StackPanel)((ScrollViewer)right).Content!;
         if (header is Panel top && rsAll.Children.Count >= 3) // die Eingabe „Was soll dieses Studio tun?“ braucht die volle Breite
         {
-            var prompt = rsAll.Children[^3]; rsAll.Children.Remove(prompt); top.Children.Add(prompt);
+            var prompt = rsAll.Children[^3]; rsAll.Children.Remove(prompt);
+            if (top.Children.OfType<Grid>().FirstOrDefault(g => g.Name == Head3DRow) is { } row) { Grid.SetColumn(prompt, 1); row.Children.Add(prompt); } // T-0708: neben Speichern · Rückgängig …
+            else top.Children.Add(prompt);
         }
         if (_simple3dMore) return;
         foreach (var c in ls.Children.Skip(3)) c.IsVisible = false; // Gespeichertes, Engine-Export, Vorschaubilder, Umwandeln
         var rs = (StackPanel)((ScrollViewer)right).Content!;
         rs.Children[^1].IsVisible = false; // komplexe Figuren über Blender
-        if (header is Panel hp) foreach (var c in hp.Children.SkipLast(1)) c.IsVisible = false; // Blender-Hinweis, Datei- und Exportzeile
+        if (header is Panel hp) foreach (var c in hp.Children.Where(c => c.Name != Head3DRow)) c.IsVisible = false; // Blender-Hinweis, Datei- und Exportzeile; die Zeile mit Speichern · Rückgängig … und der Eingabe bleibt (T-0708)
     }
 
     /// <summary>Wunsch 08.11.2026: Bambu Studio, Drucker und freie Modellseiten direkt aus dem 3D-Studio, in jeder Stufe.</summary>
@@ -142,7 +170,8 @@ public partial class MainWindow
     // ---------- Übrige Seiten: Rest hinter „Mehr anzeigen“ ----------
     private readonly HashSet<string> _pageMoreOpen = [];
     /// <summary>Seiten, die eine geschlossene Arbeitsfläche sind oder von anderen gepflegt werden; sie bleiben, wie sie sind.</summary>
-    private static readonly HashSet<string> NoPageMore = ["start", "studios"];
+    // T-0717: „ki-rollen“ – Auftrag, „Rolle starten“ und dessen Rückgängig/Wiederholen sind der Hauptinhalt; vorher blieb die Seite knapp unter der Grenze und ganz sichtbar
+    private static readonly HashSet<string> NoPageMore = ["start", "studios", "ki-rollen"];
     private static readonly HashSet<string> NoPageMoreStudios = ["STUDIO-MUSIK-01", "STUDIO-TV-01", "SPEC-15", "CORE-08", "CORE-07"];
 
     private static StackPanel? MainStack(Control c)
@@ -161,6 +190,45 @@ public partial class MainWindow
 
     private static int ButtonsIn(Control c) => (c is Button and not Avalonia.Controls.Primitives.ToggleButton ? 1 : 0) + c.GetLogicalDescendants().OfType<Button>().Count(b => b is not Avalonia.Controls.Primitives.ToggleButton); // Auswahlfelder zählen nicht als Knöpfe
 
+    /// <summary>Block ohne Bedienelement, der nur aus Text besteht (Überschrift, Erklärsatz).</summary>
+    internal static bool TextOnly(Control c) => c is TextBlock || c is Avalonia.Controls.Panel p && p.Children.Count > 0 && p.Children.All(x => x is TextBlock);
+
+    static string? Heading(TextBlock t) => t.FontWeight >= FontWeight.SemiBold && t.Text is { Length: > 0 and <= 48 } s && !s.Contains(". ") ? s.Trim().TrimEnd(':') : null;
+
+    /// <summary>Name eines Abschnitts: seine fette Überschrift oder der Kopf eines Klappbereichs. Null, wenn der Block keinen Namen trägt.</summary>
+    internal static string? SectionName(Control c)
+    {
+        switch (c)
+        {
+            case TextBlock t: return Heading(t);
+            case Expander { Header: string h }: return h;
+            case Expander { Header: TextBlock ht }: return ht.Text;
+            case Border { Child: { } bc }: return SectionName(bc);
+            case Avalonia.Controls.Panel p:
+                foreach (var k in p.Children.Take(2))
+                    if (k is TextBlock or Border or Avalonia.Controls.Panel && SectionName(k) is { } n) return n;
+                return null;
+            default: return null;
+        }
+    }
+
+    /// <summary>Steht direkt vor dem Schnitt eine Überschrift, deren Inhalt sonst ganz verschwände?</summary>
+    static bool SectionHeadBefore(StackPanel main, int cut)
+    {
+        for (var j = cut - 1; j >= 0 && TextOnly(main.Children[j]); j--)
+            if (SectionName(main.Children[j]) is not null) return true;
+        return false;
+    }
+
+    /// <summary>V-06 (T-0684): Der Knopf nennt, was folgt – die Namen der eingeklappten Abschnitte. Ohne Namen bleibt die Zahl der Funktionen.</summary>
+    internal static string MoreLabel(IReadOnlyList<Control> rest, int extra)
+    {
+        var names = rest.Select(SectionName).Where(n => !string.IsNullOrWhiteSpace(n)).Select(n => System.Text.RegularExpressions.Regex.Replace(n!, @"\s*[–(].*$", "").Trim()).Where(n => n.Length > 1).Distinct().ToList();
+        if (names.Count == 0) return $"Mehr anzeigen ({extra} weitere Funktionen)";
+        var shown = names.Take(2).ToList();
+        return "Mehr anzeigen: " + string.Join(", ", shown) + (names.Count > shown.Count ? $" und {names.Count - shown.Count} weitere" : "");
+    }
+
     /// <summary>„Einfach“: Die ersten Bereiche einer Seite bleiben, der Rest erscheint nach einem Klick. Reine Texte (Meldungen, Ergebnisse) bleiben immer sichtbar.</summary>
     private void SimplifyPage(string view, Control content)
     {
@@ -173,12 +241,20 @@ public partial class MainWindow
             if (sum > SimplePageButtons && i > 0) { cut = i; break; }
         }
         if (cut < 0) return;
+        // V-06 (T-0684): „Mehr anzeigen“ versteckt nie den Hauptinhalt. Steht direkt vor dem Schnitt eine Überschrift (mit Erklärtext),
+        // bleibt ihr Abschnitt offen – der Schnitt rückt bis vor die nächste Überschrift.
+        if (SectionHeadBefore(main, cut))
+        {
+            cut++;
+            while (cut < main.Children.Count && !(TextOnly(main.Children[cut]) && SectionName(main.Children[cut]) is not null)) cut++;
+            if (cut >= main.Children.Count) return;
+        }
         static bool IsMessage(Control c) => (c.Name ?? "") is { Length: > 0 } n && (n.EndsWith("-msg") || n.EndsWith("-state") || n.EndsWith("-status") || n.EndsWith("-result")); // Meldungen bleiben sichtbar
         var rest = main.Children.Skip(cut).Where(c => !IsMessage(c)).ToList();
         if (!rest.Any(c => ButtonsIn(c) > 0)) return;
         var open = _pageMoreOpen.Contains(view);
         var extra = rest.Sum(ButtonsIn);
-        var toggle = new Button { Name = "page-more", Content = open ? "Weniger anzeigen" : $"Mehr anzeigen ({extra} weitere Funktionen)", HorizontalAlignment = HorizontalAlignment.Center, Padding = new Thickness(18, 7), CornerRadius = new CornerRadius(10), Foreground = Text, Background = Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(1), Margin = new Thickness(0, 6) };
+        var toggle = new Button { Name = "page-more", Content = open ? "Weniger anzeigen" : MoreLabel(rest, extra), HorizontalAlignment = HorizontalAlignment.Center, Padding = new Thickness(18, 7), CornerRadius = new CornerRadius(10), Foreground = Text, Background = Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(1), Margin = new Thickness(0, 6) };
         toggle.Click += (_, _) => { if (!_pageMoreOpen.Remove(view)) _pageMoreOpen.Add(view); Show(view); };
         main.Children.Insert(cut, toggle);
         if (!open) foreach (var c in rest) main.Children.Remove(c);

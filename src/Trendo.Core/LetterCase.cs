@@ -343,7 +343,7 @@ public sealed class CaseStore(string projectsFolder, AuditLog audit)
         var dir = Dir(c.Id); Directory.CreateDirectory(Path.Combine(dir, "versionen"));
         var json = JsonSerializer.Serialize(c, J);
         var v = Directory.GetFiles(Path.Combine(dir, "versionen"), "v*.json").Length + 1;
-        File.WriteAllText(Path.Combine(dir, "versionen", $"v{v:000}.json"), json);
+        AtomicFile.WriteAllText(Path.Combine(dir, "versionen", $"v{v:000}.json"), json); // T-0714: auch Versionen nie halb
         var tmp = Path.Combine(dir, "akte.json.tmp"); File.WriteAllText(tmp, json); SafeFile.Move(tmp, Path.Combine(dir, "akte.json"));
         audit.Append(by.Name, "letter.case.save", $"{c.Id} v{v} {why}");
     }
@@ -415,7 +415,7 @@ public sealed class CaseStore(string projectsFolder, AuditLog audit)
                 var vc = JsonSerializer.Deserialize<LetterCase>(File.ReadAllText(v), J);
                 if (vc is null) continue;
                 vc.Incoming.RemoveAll(i => purged.Contains(i.Id) && i.Ephemeral);
-                File.WriteAllText(v, JsonSerializer.Serialize(vc, J));
+                AtomicFile.WriteAllText(v, JsonSerializer.Serialize(vc, J)); // T-0714: atomar
             }
             Save(c, by, "forensische Kopien gelöscht: " + string.Join(",", purged));
         }
@@ -433,7 +433,7 @@ public sealed class CaseStore(string projectsFolder, AuditLog audit)
         var nh = h with { Owner = by.Name, Id = h.Id.Length > 0 ? h.Id : Guid.NewGuid().ToString("N")[..8] };
         if (all.FirstOrDefault(x => x.Id == nh.Id) is { } old && old.Owner != by.Name) throw new UnauthorizedAccessException("Fremder Briefkopf");
         all.RemoveAll(x => x.Id == nh.Id); all.Add(nh);
-        Directory.CreateDirectory(Path.GetDirectoryName(HeadsFile)!); File.WriteAllText(HeadsFile, JsonSerializer.Serialize(all, J));
+        AtomicFile.WriteAllText(HeadsFile, JsonSerializer.Serialize(all, J)); // T-0714: nie eine halbe Briefkopf-Liste
         audit.Append(by.Name, "letter.letterhead", $"{nh.Kind} {nh.Id}"); return nh;
     }
     public Letterhead? Letterhead(string id, Principal by) => Letterheads(by).FirstOrDefault(h => h.Id == id);
@@ -445,7 +445,7 @@ public sealed class CaseStore(string projectsFolder, AuditLog audit)
         if (all.FirstOrDefault(x => x.Id == id) is not { } h) return null;
         if (h.Owner != by.Name) throw new UnauthorizedAccessException("Fremder Briefkopf");
         var e = new LetterTrash(projectsFolder).Keep($"Briefkopf {h.Name}", "briefkopf", JsonSerializer.Serialize(h, J));
-        all.Remove(h); File.WriteAllText(HeadsFile, JsonSerializer.Serialize(all, J));
+        all.Remove(h); AtomicFile.WriteAllText(HeadsFile, JsonSerializer.Serialize(all, J)); // T-0714: atomar
         audit.Append(by.Name, "letter.letterhead.delete", h.Id); return e;
     }
 

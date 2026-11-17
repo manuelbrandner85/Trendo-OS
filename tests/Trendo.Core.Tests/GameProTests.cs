@@ -80,7 +80,7 @@ public class GameProTests
 
     [Fact(DisplayName = "CORE-06: Ton-Spur und Treffer-Animation – Geräusch je Ereignis und Musik landen im Spielordner, config.js nennt sie, game.js spielt sie (sonst Piepton); nach einem Treffer ist der Zustand „treffen“")]
     public void Sounds_and_hit_state()
-    {
+    { var nodeFehlt = false;
         var dir = Path.Combine(Path.GetTempPath(), "trendo-ton-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
         try
         {
@@ -93,6 +93,7 @@ public class GameProTests
             var js = File.ReadAllText(Path.Combine(game, "game.js"));
             Assert.Contains("snd('springen',660)", js); Assert.Contains("'treffen'", js);
             if (Cli.Find("node") is { } node) { var r = Cli.Run(node, ["--check", Path.Combine(game, "game.js")], game, 30000); Assert.True(r.Ok, r.Err); }
+            else nodeFehlt = true;
             Assert.Throws<ArgumentException>(() => GameStudio.Validate(new GameStudio.GameSettings { Sounds = new() { ["knall"] = "x.wav" } }));
         }
         finally { Directory.Delete(dir, true); }
@@ -100,5 +101,7 @@ public class GameProTests
         for (var i = 0; i < 200 && sim.Lives == 3; i++) sim.Step(false, true, false);
         Assert.Equal("treffen", sim.State);
         Assert.Contains(PlatformSim.States, x => x.Id == "treffen");
+        // T-0687: ohne Node.js ist das erzeugte JavaScript ungeprüft – ehrlich überspringen statt grün melden
+        if (nodeFehlt) Ueberspringen.Weil("Node.js fehlt auf diesem PC – game.js wurde nicht mit „node --check“ geprüft.");
     }
 }

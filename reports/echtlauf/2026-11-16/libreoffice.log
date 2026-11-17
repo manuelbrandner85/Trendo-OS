@@ -1,0 +1,74 @@
+# Echtlauf libreoffice – LibreOffice öffnet Trendos DOCX/XLSX/PPTX und wandelt nach PDF
+Datum: 2026-11-16T21:41:38
+Fundort: C:\Users\<user>\AppData\Local\TrendoWerkzeuge\libreoffice\App\libreoffice\program\soffice.exe
+Suchweg: DependencyManager (Vollpaket-Pfad, bekannte Orte, PATH, App Paths)
+Version: 26.2.4.2
+
+## Tests (core): „LibreOffice öffnet ein von Trendo erzeugtes DOCX“ – 1 Ergebnis(se), 9.5 s
+- Passed: SYS-10-P01 (T-0244 getrennt): LibreOffice öffnet ein von Trendo erzeugtes DOCX
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.Sys10_Office.NewAndRead_real --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\libreoffice-0.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\libreoffice-0.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 7 s - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „DOCX real mit LibreOffice zu PDF und ODT“ – 1 Ergebnis(se), 9.0 s
+- Passed: LTR-QA-002/004 / LETTER-003/016: DOCX real mit LibreOffice zu PDF und ODT; A4, 1 Seite, Hash im Protokoll
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.LetterQa.Qa002_004 --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\libreoffice-1.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\libreoffice-1.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 6 s - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „Tabelle C1: Abgleich mit LibreOffice Calc“ – 1 Ergebnis(se), 8.0 s
+- Passed: Tabelle C1: Abgleich mit LibreOffice Calc – Calc öffnet Trendos XLSX, speichert ODS und XLSX, Trendo liest beides gleich (nur mit LibreOffice)
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.SheetFilesTests.LibreOffice_roundtrip --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\libreoffice-2.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\libreoffice-2.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 5 s - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „T-0229 P6: Abgleich mit LibreOffice Impress“ – 1 Ergebnis(se), 8.9 s
+- Passed: T-0229 P6: Abgleich mit LibreOffice Impress – Impress öffnet Trendos PPTX, speichert PPTX und ODP, Trendo liest beides (nur mit LibreOffice)
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.SlideTests.Impress_roundtrip --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\libreoffice-3.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\libreoffice-3.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 6 s - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „T-0230: Abgleich mit LibreOffice Writer“ – 1 Ergebnis(se), 5.6 s
+- Passed: T-0230: Abgleich mit LibreOffice Writer – Writer öffnet Trendos DOCX und speichert DOCX, Trendo liest Seite, Kopf-/Fußzeile, Links, Kommentare, Fußnoten, Änderungen, Verzeichnis (nur mit LibreOffice)
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.TextProTests.Writer_roundtrip --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\libreoffice-4.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\libreoffice-4.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 3 s - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „Seitenzahl und A4 eines echten LibreOffice-PDFs“ – 1 Ergebnis(se), 8.4 s
+- Passed: SYS-10-P05/P06: Seitenzahl und A4 eines echten LibreOffice-PDFs
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.Sys10_Office.PdfPages --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\libreoffice-5.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\libreoffice-5.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 6 s - Trendo.Core.Tests.dll (net10.0)
+
+
+ERGEBNIS: ECHT-GRÜN (49.9 s)
+- LibreOffice öffnet ein von Trendo erzeugtes DOCX: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- DOCX real mit LibreOffice zu PDF und ODT: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- Tabelle C1: Abgleich mit LibreOffice Calc: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- T-0229 P6: Abgleich mit LibreOffice Impress: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- T-0230: Abgleich mit LibreOffice Writer: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- Seitenzahl und A4 eines echten LibreOffice-PDFs: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen

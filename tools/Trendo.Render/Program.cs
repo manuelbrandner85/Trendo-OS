@@ -68,6 +68,7 @@ if (shot is "brief" or "fenster" or "seite")
         prepared.ProjectsFolder = Path.Combine(root, "projekte");
     }
     prepared.Save(root);
+    if (Environment.GetEnvironmentVariable("TRENDO_PIN_HINT") is { Length: > 0 }) new PersonStore(root).Add("Kind", "emoji:🐻", child: true); // T-0713: Kinderprofil neben Profil ohne PIN
 }
 var core = new TrendoCore(root, new InMemorySecretStore(), new NoopL());
 if (args.Length > 4) new UserSettings { Theme = args[4], SetupDone = true, Wallpaper = args.Length > 5 ? args[5] : "abendrot" }.Save(root);
@@ -97,19 +98,22 @@ if (Environment.GetEnvironmentVariable("TRENDO_TV_DEMO") is { Length: > 0 }) // 
 { var us = UserSettings.Load(root); if (string.IsNullOrEmpty(us.ProjectsFolder)) { us.ProjectsFolder = Path.Combine(root, "Projekte"); us.Save(root); } }
 // Immer Testmodus: Katalog und Bilder landen im öffentlichen Repository – nie echte Ordner des Nutzers lesen (z. B. „Zuletzt benutzt“ aus Dokumente).
 var win = new MainWindow(core, new AppOptions(root, null, 0, Page: args.Length > 3 ? args[3] : null, Query: Environment.GetEnvironmentVariable("TRENDO_QUERY"), Isolated: true), new DefaultToolProbe()) { Width = w, Height = h, WindowState = Avalonia.Controls.WindowState.Normal };
+if (Environment.GetEnvironmentVariable("TRENDO_AUTOSAVE") is { Length: > 0 }) win.AutoSaveDocs = true; // T-0686: Speicherstand so zeigen, wie ihn Nutzer sehen (im Render-Lauf ist das automatische Speichern sonst aus)
 if (Environment.GetEnvironmentVariable("TRENDO_GAME_LEVELS") is { Length: > 0 }) // Spiele bauen: Level-Reiter, Ebenen, Hintergrund und Figur-Animationen zeigen
 {
     var gd = win.ProgramNew("spiele-programm", "retro-plattform"); win.GameSection = "Level";
     win.GameRenameLevel(gd, 0, "Wiese"); win.GameAddLevel(gd); win.GameRenameLevel(gd, 1, "Höhle"); win.GameLevelIndex = 0;
     gd.Edit("Hintergrund", x => x["decor"] = new System.Text.Json.Nodes.JsonArray("..w.......w.........w.....", "......m.........w.........", "..............t.......t...", ".....t....b.........b....."));
     win.GameLayer = Environment.GetEnvironmentVariable("TRENDO_GAME_LEVELS") == "hintergrund" ? "hintergrund" : "spiel";
+    if (Environment.GetEnvironmentVariable("TRENDO_LEVEL") is { Length: > 0 } glv) win.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Of(glv));
+    if (Environment.GetEnvironmentVariable("TRENDO_GAME_VIEW") == "oben") { win.GameSetView(gd, "oben"); gd.Set("level", new System.Text.Json.Nodes.JsonArray([.. Trendo.Core.Programs.GameDesign.DefaultTopDown.Select(r => (System.Text.Json.Nodes.JsonNode)r)]), "Level"); } // T-0690: Blick von oben
     if (Environment.GetEnvironmentVariable("TRENDO_GAME_LEVELS") is "produktion" or "test") { win.GameSection = Environment.GetEnvironmentVariable("TRENDO_GAME_LEVELS") == "test" ? "Test" : "Produktion"; gd.Edit("Notiz", x => Trendo.Core.Programs.GamePro.AddNote(x, 1, 18, 8, "Gegner kommt zu früh", true)); }
     win.Show("spiele-programm");
 }
 if (Environment.GetEnvironmentVariable("TRENDO_3D_DEMO") is { Length: > 0 } demo3d) // 3D-Modelle erstellen: Beispiel-Lampe mit Gruppe, Chrom und Glas, Anfasser, Arbeitsschritt
 { win.Show("3d"); win.Studio3DAddShape("cylinder"); win.Studio3DAddShape("sphere"); win.Studio3DAddShape("cube"); var ps = win.Studio3DParts; ps[0].Sx = 14; ps[0].Sy = 14; ps[0].Sz = 2; ps[0].X = 0; ps[0].Z = 1; ps[1].Sx = 18; ps[1].Sy = 18; ps[1].Sz = 14; ps[1].X = 0; ps[1].Z = 24; ps[2].Sx = 2; ps[2].Sy = 2; ps[2].Sz = 16; ps[2].X = 0; ps[2].Z = 10; ps[2].Name = "Stange"; ps[0].Name = "Fuß"; ps[1].Name = "Schirm";
   foreach (var i3 in new[] { 0, 1, 2 }) { win.Studio3DSelect(i3); win.Studio3DSetGroup("Lampe"); win.Studio3DSetMaterial(i3 == 1 ? "glas" : "chrom"); } win.Studio3DSelect(0); win.Studio3DStep = demo3d; if (demo3d == "rotate") { win.Studio3DGizmoMode = "rotate"; win.Studio3DStep = "modell"; } win.Show("3d"); }
-if (Environment.GetEnvironmentVariable("TRENDO_XR_EYE") is { Length: > 0 }) { win.Show("xr"); win.XrFile = Trendo.Core.XrSample.Write(Path.Combine(root, "beispiel.glb")); win.XrEye = true; win.Show("xr"); } // VR-Pruefer aus Augenhoehe
+if (Environment.GetEnvironmentVariable("TRENDO_XR_EYE") is { Length: > 0 }) { win.Show("xr"); win.XrFile = Trendo.Core.XrSample.Write(Path.Combine(root, "beispiel.glb")); win.XrEye = true; win.Show("xr"); } // Modell-Pruefer aus Augenhoehe
 if (Environment.GetEnvironmentVariable("TRENDO_N8N_PRO") is { Length: > 0 }) { win.WfPro = true; win.Show("ablaeufe"); } // Abläufe Profi: n8n-Agenten-Arbeitsplatz
 if (Environment.GetEnvironmentVariable("TRENDO_GAME_ENGINES") is { Length: > 0 }) { win.EngineProbeOverride = win.EngineDetect; var ed = win.ProgramNew("spiele-programm", Environment.GetEnvironmentVariable("TRENDO_GAME_ENGINES") == "openworld" ? "openworld" : "retro-plattform"); win.GameSection = "Bauen"; win.Show("spiele-programm"); } // Spiele: Engines (Unreal, Unity, Godot, Blender) im Bereich Bauen
 if (Environment.GetEnvironmentVariable("TRENDO_3D_ENGINE") is { Length: > 0 }) { win.Show("3d"); } // 3D: Knöpfe „Für Engine“
@@ -118,7 +122,6 @@ if (Environment.GetEnvironmentVariable("TRENDO_SCAN_COVERAGE") is { Length: > 0 
   File.WriteAllText(Path.Combine(sd, "modell.obj"), "v -50 -50 0\nv 50 -50 0\nv 50 50 0\nv -50 50 0\nv -50 -50 100\nv 50 -50 100\nv 50 50 100\nv -50 50 100\nf 1 2 3\nf 1 3 4\nf 5 6 7\nf 5 7 8\nf 1 2 6\nf 1 6 5\nf 2 3 7\nf 2 7 6\nf 3 4 8\nf 3 8 7\nf 4 1 5\nf 4 5 8\n");
   File.WriteAllText(Path.Combine(sd, "kameras.json"), "[" + string.Join(",", Enumerable.Range(0, 12).Select(i => i * 30).Where(d => d is not (150 or 180)).Select(d => string.Create(System.Globalization.CultureInfo.InvariantCulture, $"{{\"name\":\"f{d}.jpg\",\"x\":{200 * Math.Cos(d * Math.PI / 180)},\"y\":{200 * Math.Sin(d * Math.PI / 180)},\"z\":200}}"))) + "]");
   win.Show("scan3d"); win.ScanSetModel(Path.Combine(sd, "modell.obj")); }
-if (Environment.GetEnvironmentVariable("TRENDO_XR_HMD") is { Length: > 0 }) { win.Show("xr"); win.XrFile = Trendo.Core.XrSample.Write(Path.Combine(root, "beispiel.glb")); win.XrHeadset = true; win.Show("xr"); } // S3: Brillen-Ansicht
 if (Environment.GetEnvironmentVariable("TRENDO_GAME_BOARD") is { Length: > 0 }) // S2: Spiele-Dashboard mit Vorschau und Aufgaben-Board
 { var gb = win.ProgramNew("spiele-programm", Trendo.Core.Programs.GameDesign.Templates.First(t => t.Scale == "aa").Id);
   gb.Edit("Aufgaben", x => { Trendo.Core.Programs.GameBoard.Add(x, "Boss-Arena bauen", "eigene"); Trendo.Core.Programs.GameBoard.Seed(x); Trendo.Core.Programs.GameBoard.Move(x, 0, 1); Trendo.Core.Programs.GameBoard.Move(x, 1, 2); });
@@ -279,6 +282,42 @@ if (Environment.GetEnvironmentVariable("TRENDO_KATALOG") is { Length: > 0 } repo
     var trx = trxDir is { Length: > 0 } && Directory.Exists(trxDir) ? Directory.GetFiles(trxDir, "*.trx", SearchOption.AllDirectories) : [];
     var outcomes = trx.Length > 0 ? Trendo.Core.Programs.ProgramCatalog.ReadTrx(trx) : null;
     var req = File.ReadAllLines(Path.Combine(repo, "requirements.yaml")); var types = Trendo.Core.Programs.ProgramCatalog.CoreTypes(repo);
+    // T-0687: Allgemeine Einrichtungs-Typen sagen nichts über das Fach. Ihre Quelldateien (z. B. die Liste aller Zusatzprogramme) brachten dem
+    // 3D-Programm fremde Formate (.docx, .mp3, .pdf) und Abhängigkeiten (LibreOffice, OBS …) ein.
+    foreach (var infra in new[] { "DependencyCatalog", "DependencyManager", "DependencyChecks", "StudioTools", "DesktopPlatform", "Vollpaket", "ExternalApps", "DataLocation", "ProgramGuide" }) types.Remove(infra);
+    // T-0687: Tests je Test zuordnen statt je Datei. Abschnitt eines Tests = von seinem Namen bis zum nächsten; davor steht der Kopf der Klasse.
+    // Vorher zählte nur wörtlich Show("seite"); Tests mit „const string K = "buch-programm"; w.Show(K)“ fielen durch (16 Programme mit „Tests: []“),
+    // und eine Datei, die eine Seite irgendwo öffnet, gab alle ihre Tests an dieses Programm.
+    var katalogTestName = new System.Text.RegularExpressions.Regex("DisplayName = \"((?:[^\"\\\\]|\\\\.)*)\"");
+    var katalogTests = new List<(string Head, List<(string Name, string Body)> Tests)>();
+    foreach (var tf in Directory.EnumerateFiles(Path.Combine(repo, "tests"), "*.cs", SearchOption.AllDirectories).Where(f => !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}") && !f.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}")).OrderBy(f => f, StringComparer.Ordinal))
+    {
+        var tt = File.ReadAllText(tf); var tm = katalogTestName.Matches(tt); if (tm.Count == 0) continue;
+        var tl = new List<(string Name, string Body)>();
+        for (var i = 0; i < tm.Count; i++) tl.Add((System.Text.RegularExpressions.Regex.Unescape(tm[i].Groups[1].Value), tt[tm[i].Index..(i + 1 < tm.Count ? tm[i + 1].Index : tt.Length)]));
+        katalogTests.Add((tt[..tm[0].Index], tl));
+    }
+    // Kennungen der Seiten als öffentliche Konstanten des Programms (z. B. ArtKey = "kuenstler-programm"); Tests benutzen sie als MainWindow.ArtKey.
+    // Nur eindeutige Namen – kurze Namen wie „K“ gibt es in vielen Dateien mit verschiedenen Werten.
+    var katalogAppKeys = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+    foreach (var af in Directory.EnumerateFiles(Path.Combine(repo, "src", "Trendo.App"), "*.cs", SearchOption.TopDirectoryOnly))
+        foreach (System.Text.RegularExpressions.Match km in System.Text.RegularExpressions.Regex.Matches(File.ReadAllText(af), "\\b(\\w+Key) = \"([a-z0-9]+(?:-[a-z0-9]+)*)\"[;,]"))
+            (katalogAppKeys.TryGetValue(km.Groups[1].Value, out var ks) ? ks : katalogAppKeys[km.Groups[1].Value] = []).Add(km.Groups[2].Value);
+    List<string> KatalogTestsOf(Trendo.Core.Programs.ProgramEntry pe)
+    {
+        var pid = System.Text.RegularExpressions.Regex.Escape(pe.Id); var pst = System.Text.RegularExpressions.Regex.Escape(pe.Studio);
+        var keyNames = katalogAppKeys.Where(k => k.Value.Count == 1 && k.Value.Contains(pe.Id)).Select(k => System.Text.RegularExpressions.Regex.Escape(k.Key)).ToList();
+        var viaConst = keyNames.Count == 0 ? "" : $"|MainWindow\\.({string.Join("|", keyNames)})\\b";
+        var opens = new System.Text.RegularExpressions.Regex($"Show\\(\"{pid}\"\\)|\\w+ = \"{pid}\"[;,]|StudioPages\\[\"{pst}\"\\]" + viaConst);
+        var named = new System.Text.RegularExpressions.Regex($"(^|[^A-Z0-9-]){pst}([^0-9]|$)");
+        var names = new SortedSet<string>(StringComparer.Ordinal);
+        foreach (var (head, tests) in katalogTests)
+        {
+            var whole = opens.IsMatch(head);
+            foreach (var (name, body) in tests) if (whole || named.IsMatch(name) || opens.IsMatch(body)) names.Add(name);
+        }
+        return names.ToList();
+    }
     var entries = new List<Trendo.Core.Programs.ProgramEntry>();
     foreach (var e in win.ProgramCatalogRuntime())
     {
@@ -296,6 +335,15 @@ if (Environment.GetEnvironmentVariable("TRENDO_KATALOG") is { Length: > 0 } repo
         catch (Exception ex) when (ex is InvalidOperationException or IOException or ArgumentException) { }
         foreach (var old in win.Windows.Stack.Reverse().Skip(3).ToList()) win.CloseWindow(old.Id);
         var full = Trendo.Core.Programs.ProgramCatalog.Enrich(e with { WarmMs = warm, Type = ui, Tools = e.Tools.Count > 0 ? e.Tools : tools, Ui = ui.Concat(e.Shell ? ["Menüband", "Eigenschaften", "Statusleiste", "Dokument-Reiter"] : []).ToList() }, repo, req, types);
+        // T-0687: Tests je Test; Programme der Programm-Hülle, die sich eine Quelldatei mit anderen teilen, nennen nur ihre eigenen Exportformate
+        // (die Formate der ganzen Datei gehören nicht einem Programm); entfernte Studios gelten nicht mehr als geprüft.
+        var sharedFile = e.Shell && full.SourceFiles.Sum(sf => System.Text.RegularExpressions.Regex.Matches(File.ReadAllText(Path.Combine(repo, sf)), @"new ProgramSpec\(").Count) > 1;
+        full = full with
+        {
+            Tests = KatalogTestsOf(full),
+            Formats = sharedFile ? e.Formats.Distinct().OrderBy(x => x, StringComparer.Ordinal).ToList() : full.Formats,
+            Status = Trendo.App.StudioCatalog.Removed.Contains(full.Studio) ? "Studio entfernt, nicht mehr angeboten – kein gültiger Prüfstand (Register: " + full.Status + ")" : full.Status,
+        };
         entries.Add(full);
         var dir = Path.Combine(outDir, full.Id); Directory.CreateDirectory(dir);
         foreach (var (name, text) in Trendo.Core.Programs.ProgramCatalog.Docs(full, outcomes, trx.Length > 0 ? string.Join(", ", trx.Select(Path.GetFileName)) : null)) // nur Dateinamen: keine Pfade mit Benutzer- oder Rechnernamen
@@ -424,10 +472,34 @@ else if (shot == "fenster")
 else if (shot == "seite")
 {
     var page = Environment.GetEnvironmentVariable("TRENDO_STUDIO") is { Length: > 0 } sid ? win.PageForStudio(sid) ?? "studios" : args.Length > 3 ? args[3] : "studios"; // Studio per Katalog-Id
+    if (Environment.GetEnvironmentVariable("TRENDO_RECOVERY_DEMO") == "text") // T-0714: Wiederherstellen-Karte zeigen – eine ältere Sicherung in „wiederherstellen/“ wird übernommen und angeboten
+    {
+        var old = Path.Combine(root, "wiederherstellen"); Directory.CreateDirectory(old);
+        Trendo.Core.Office.TextFiles.Save(new Trendo.Core.Office.TextDoc { Blocks = [new Trendo.Core.Office.Para("Kündigung zum 31.12.")] }, Path.Combine(old, "text.docx"));
+    }
+    if (Environment.GetEnvironmentVariable("TRENDO_PDF_FORM") is { Length: > 0 }) // T-0714: PDF mit Formularfeldern offen (Formularwerte mit Rückgängig/Wiederholen)
+    {
+        var blank = Path.Combine(root, "leer.pdf"); var form = Path.Combine(root, "Antrag.pdf");
+        Trendo.Core.Sys.PdfTools.NewBlank(blank);
+        Trendo.Core.Sys.PdfFormular.AddFields(blank, form, [new("Name", "text", 0, 60, 100, 220, 20), new("Zustimmung", "haken", 0, 60, 140, 12, 12)]);
+        win.OpenPdf(form);
+    }
     win.Show(page);
     if (win.Windows.Active is { Maximized: false } pageWin) win.Windows.ToggleMaximize(pageWin.Id);
     win.Show(page);
+    if (Environment.GetEnvironmentVariable("TRENDO_3D_DEMO") is "bearbeiten") // T-0691: Bearbeitungsmodus zeigen (Würfel, Flächen gewählt und extrudiert)
+    {
+        win.Studio3DAddShape("cube"); win.Studio3DEditMode(true); win.Studio3DSelectMode("flaeche");
+        win.Studio3DMeshSelect("flaeche", 1); win.Studio3DMeshSelect("flaeche", 0, add: true); win.Studio3DMeshExtrude(4);
+        win.Show(page);
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_TEAM_STUDIO") is { Length: > 0 } teamStudio) win.AgentsForStudio(teamStudio); // Profi-Team eines Studios unter „KI einsetzen“
+    if (Environment.GetEnvironmentVariable("TRENDO_OFFICE_OPEN") is { Length: > 0 } officeFile) // T-0701: fremde Office-Datei in Trendo Tabelle/Präsentation geöffnet zeigen (TRENDO_OFFICE_SELECT = Zellbereich bzw. Objekt-Nummer)
+    {
+        var sel = Environment.GetEnvironmentVariable("TRENDO_OFFICE_SELECT");
+        if (Path.GetExtension(officeFile).ToLowerInvariant() is ".pptx" or ".odp") { win.DeckOpen(officeFile); if (int.TryParse(sel, out var si)) win.DeckSelect(si); win.Show("praesentation"); }
+        else { win.SheetOpen(officeFile); if (sel is { Length: > 0 }) win.SheetSelect(sel); win.Show("tabelle"); }
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_ICONS_DIR") is { Length: > 0 } iconDir) // Alle Studios, Runde 8: Reiter „Symbole“ mit Iconify-Daten aus einem Ordner (Name;Suche in TRENDO_ICONS_QUERY)
     {
         MainWindow.IconFetchOverride = u => Task.FromResult(File.ReadAllText(Path.Combine(iconDir, u[(u.LastIndexOf('/') + 1)..])));
@@ -545,6 +617,14 @@ else if (shot == "seite")
         Cli.Run(ffm, ["-y", "-loglevel", "error", "-f", "lavfi", "-i", "sine=frequency=220:duration=20", M("musik.mp3")], md, 120000);
         win.ProgramNew("schnitt"); win.EditAdd(M("titelbild.png")); win.EditAdd(M("ausflug.mp4")); win.EditAdd(M("abendhimmel.mp4")); win.EditAdd(M("musik.mp3"), music: true);
         var doc = win.ProgramActive("schnitt")!; doc.Edit("Überblenden/Text", x => { Trendo.Core.Media.VideoEdit.SetClip(x, 0, 1, "Unser Ausflug"); Trendo.Core.Media.VideoEdit.SetClip(x, 1, 1.5, ""); }); doc.Set("playhead", 2.5); win.EditSelected = ("clips", 0); win.Show("schnitt");
+        if (Environment.GetEnvironmentVariable("TRENDO_SCHNITT") == "look") // T-0695: fertiges Vorschaubild (Look, Titel) mit echtem FFmpeg abwarten
+        {
+            win.EditFfmpegPath = ffm;
+            doc.Edit("Look", x => Trendo.Core.Media.VideoPro.SetFx(x, Trendo.Core.Media.VideoEdit.Clips(x)[0].Id, Trendo.Core.Media.VideoPro.Looks.First(l => l.Id == "warm").Fx));
+            win.Show("schnitt"); var lw0 = DateTime.UtcNow;
+            while ((win.EditLookTask is null || !win.EditLookTask.IsCompleted) && DateTime.UtcNow - lw0 < TimeSpan.FromSeconds(30)) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); Thread.Sleep(30); }
+            win.Show("schnitt");
+        }
     }
     if (Environment.GetEnvironmentVariable("TRENDO_WF") is { Length: > 0 }) // Ablaufplan mit Vorlage
     {
@@ -743,8 +823,29 @@ else if (shot == "seite")
         File.Delete(Path.Combine(broot, "Projekte", "Einkauf.txt")); File.WriteAllText(Path.Combine(broot, "Projekte", "Neu.txt"), "neu");
         win.BackupSelected = z; win.BackupFile = "Projekte/Brief an Erika Muster.txt"; win.Show("sicherung");
     }
+    if (Environment.GetEnvironmentVariable("TRENDO_3D_OBJ") is { Length: > 0 } obj3d && File.Exists(obj3d)) // T-0727: eigene Datei in „3D-Modelle erstellen“ einlesen (Bildvergleich vorher/nachher, große Netze)
+    { win.Show("3d"); var imp = win.Import3DFileAsync(obj3d); while (!imp.IsCompleted) Avalonia.Threading.Dispatcher.UIThread.RunJobs(); imp.GetAwaiter().GetResult(); win.Show("3d"); Console.WriteLine($"3D-Datei eingelesen: {win.Studio3DParts.Count} Teile"); }
     if (Environment.GetEnvironmentVariable("TRENDO_3D") is { Length: > 0 }) { win.Show("3d"); foreach (var sh in new[] { "cube", "sphere", "cylinder", "torus" }) win.Studio3DAddShape(sh); win.Studio3DSelect(1); } // 3D-Modelle erstellen mit Arbeitsfläche
+    if (Environment.GetEnvironmentVariable("TRENDO_PROGTPL") is not { Length: > 0 } && Environment.GetEnvironmentVariable("TRENDO_LEVEL") is { Length: > 0 } lvPage) { win.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Of(lvPage)); win.Show(page); } // T-0700: Stufe auch für Seiten ohne Vorlage
+    if (page == "posteingang" && Environment.GetEnvironmentVariable("TRENDO_MAIL_COMPOSE") is { Length: > 0 }) { win.MailCompose(new Trendo.Core.MailDraft("kunde@example.org", "Angebot", "Guten Tag,\n\nanbei das Angebot.")); win.Show(page); } // T-0709: Schreibfenster zeigen (V-14: Speichern links oben)
     if (Environment.GetEnvironmentVariable("TRENDO_PROGTPL") is { Length: > 0 } tpl) { if (Environment.GetEnvironmentVariable("TRENDO_LEVEL") is { Length: > 0 } lv) win.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Of(lv)); win.ProgramNew(page, tpl); if (Environment.GetEnvironmentVariable("TRENDO_GAMESEC") is { Length: > 0 } gs) win.GameSection = gs; win.Show(page); } // Programm mit Vorlage öffnen
+    if (Environment.GetEnvironmentVariable("TRENDO_DAY_WEEK") == "1") { win.DayWeek = true; win.Show(page); } // T-0728: Tagesplaner in der Wochenansicht
+    if (Environment.GetEnvironmentVariable("TRENDO_PROGDATA") is { Length: > 0 } progData && File.Exists(progData) && win.ProgramActive(page) is { } pdDoc
+        && System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(progData).Replace("{root}", root.Replace("\\", "\\\\"))) is System.Text.Json.Nodes.JsonObject pdJson) // T-0699: Dokumentfelder setzen (z. B. echte Erkennungen, Szenen mit Bildern), um den Arbeitsstand im Bild zu prüfen
+    {
+        if (pdJson["_kopie"] is System.Text.Json.Nodes.JsonObject kp && kp["von"]?.ToString() is { } von && kp["nach"]?.ToString() is { } nach && Directory.Exists(von))
+        { var to = Path.Combine(root, nach); Directory.CreateDirectory(to); foreach (var f in Directory.GetFiles(von)) File.Copy(f, Path.Combine(to, Path.GetFileName(f)), true); }
+        pdJson.Remove("_kopie");
+        pdDoc.Edit("Stand", x => { foreach (var (k, v) in pdJson) x[k] = v?.DeepClone(); }); win.Show(page);
+    }
+    if (Environment.GetEnvironmentVariable("TRENDO_FILM_DEMO") is { } filmDemo && win.ProgramActive("film-programm") is { } filmDoc) // T-0693: „Filme machen“, Schritt 3 – mit Einstellungen und (optional, durch ; getrennt) eigenen Bildern
+    {
+        if (Trendo.Core.Film.FilmCut.Shots(filmDoc.Data).Count == 0 && filmDemo != "leer") filmDoc.Set("script", Trendo.Core.Film.Fountain.InsertSuggestedShots(filmDoc.Text("script")), "Einstellungen vorgeschlagen");
+        win.FilmStep = "shots";
+        var filmFiles = filmDemo.Split(';', StringSplitOptions.RemoveEmptyEntries).Where(File.Exists).ToArray();
+        if (filmFiles.Length > 0) { var imp = win.FilmImport(filmDoc, filmFiles); var t0 = DateTime.UtcNow; while (!imp.IsCompleted && DateTime.UtcNow - t0 < TimeSpan.FromSeconds(20)) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); } }
+        win.Show("film-programm");
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_ART_DEMO") is { Length: > 0 } && win.ProgramActive(Trendo.App.MainWindow.ArtKey) is { } artDoc) // Künstlerstudio mit Beispielstrichen
     {
         win.ArtBrush = "tusche"; win.ArtColor = "#1F2937"; win.ArtSize = 8; win.ArtSmooth = 0;
@@ -827,10 +928,6 @@ else if (shot == "seite")
         foreach (var (t, sec, n) in new[] { ("Begrüßung", 90, "Kamera 1"), ("Nachrichten", 300, "Einspieler"), ("Gast im Studio: Erika Muster", 600, "Kamera 2, Ansteckmikro"), ("Musik", 240, ""), ("Wetter", 120, "Grafik"), ("Verabschiedung", 60, "") }) win.Broadcast.Add(t, sec, n);
         win.BcMode = bcMode; win.Show(page);
     }
-    if (page == "fahrzeug" && Environment.GetEnvironmentVariable("TRENDO_CAR") is { Length: > 0 } carTab) // Fahrzeugbuch mit Beispielfahrzeug
-    {
-        var demo = Trendo.Core.VehiclePlus.SeedDemo(win.Cars, DateTime.Today); win.CarSel = demo.Name; win.CarTab = carTab; win.Show(page);
-    }
     if (page == "bib3d" && Environment.GetEnvironmentVariable("TRENDO_BIB") is { Length: > 0 } bibQ) // 3D-Bibliothek: echte Live-Suche (Internet)
     {
         var parts = bibQ.Split(':'); if (parts.Length > 1) win.BibKind = parts[0]; win.BibQuery = parts[^1];
@@ -843,6 +940,15 @@ else if (shot == "seite")
     if (page == "zwilling" && Environment.GetEnvironmentVariable("TRENDO_TWIN") is { Length: > 0 }) // Anlagen-Monitor mit Beispielanlagen
     {
         Trendo.Core.TwinDemo.Seed(win.Twin, DateTime.Now); win.TwinSelect("Kühlraum", "Temperatur");
+    }
+    if (Environment.GetEnvironmentVariable("TRENDO_RECOVERY_DEMO") == "e4" && page is "baukasten") // T-0716: Wiederherstellen-Karte eines sofort speichernden Programms zeigen (Fahrzeugbuch mit T-0720 entfernt)
+    {
+        var slot = win.BuilderLink;
+        var st = slot.Get()!.AsObject(); st["ort"] = "0";
+        st["eingaben"] = new System.Text.Json.Nodes.JsonObject { ["builder-text-0"] = "Willkommen bei uns" };
+        var old = new Trendo.Core.Programs.ProgramLink("LINK-BAUKASTEN", page, null, "Meine Seite"); // ohne Sperre: wie nach einem Absturz
+        old.Track(st); old.Autosave(Path.Combine(root, "programme", "sicherung"));
+        win.Show(page);
     }
     if (page == "ki-bibliothek" && Enum.TryParse<KiKind>(Environment.GetEnvironmentVariable("TRENDO_KIKIND"), out var kind)) win.KiLibraryShow(kind); // Art der KI-Bibliothek
 }
@@ -1098,10 +1204,34 @@ if (Environment.GetEnvironmentVariable("TRENDO_PHONE") is { Length: > 0 } phoneA
 }
 for (var i = 0; i < (Environment.GetEnvironmentVariable("TRENDO_TILES") == "1" ? 200 : 40); i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(50); } // Kartenkacheln brauchen etwas länger
 var frame = win.CaptureRenderedFrame();
+Avalonia.Media.Imaging.Bitmap? composed = null;
+if (Environment.GetEnvironmentVariable("TRENDO_MENU_OPEN") is { Length: > 0 } menuKey && frame is not null) // T-0710: Menü der Menüleiste aufgeklappt zeigen (Alt+Buchstabe), Klappliste ins Bild setzen
+{
+    win.MenuOpenTop(menuKey[0]);
+    for (var i = 0; i < 10; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(30); }
+    var open = win.ActiveMenuBar()?.GetLogicalDescendants().OfType<MenuItem>().LastOrDefault(m => m.IsSubMenuOpen);
+    var item = open?.Items.OfType<MenuItem>().FirstOrDefault();
+    if (open is not null && item is not null && TopLevel.GetTopLevel(item) is { } pop && !ReferenceEquals(pop, win))
+    {
+        frame = win.CaptureRenderedFrame()!;
+        var popFrame = pop.CaptureRenderedFrame();
+        var at = open.Parent is MenuItem ? open.TranslatePoint(new Point(open.Bounds.Width, 0), win) : open.TranslatePoint(new Point(0, open.Bounds.Height), win);
+        var rtb = new Avalonia.Media.Imaging.RenderTargetBitmap(frame.PixelSize, frame.Dpi);
+        using (var dc = rtb.CreateDrawingContext())
+        {
+            dc.DrawImage(frame, new Rect(frame.Size));
+            if (popFrame is not null && at is { } a) dc.DrawImage(popFrame, new Rect(a, popFrame.Size));
+        }
+        composed = rtb;
+        Console.WriteLine($"Menü offen: {open.Name} an {at}");
+    }
+    else if (open is not null && item is not null) { composed = win.CaptureRenderedFrame(); Console.WriteLine("Menü offen (Überlagerung im Fenster): " + open.Name); }
+    else Console.WriteLine($"Menü konnte nicht aufgeklappt gezeigt werden: open={open?.Name} item={item?.Name} top={(item is null ? null : TopLevel.GetTopLevel(item)?.GetType().Name)} bar={win.ActiveMenuBar()?.Name}");
+}
 if (Environment.GetEnvironmentVariable("TRENDO_DUMP") is { Length: > 0 } dump) // Lage benannter Bausteine ausgeben (Layout-Fehlersuche)
     foreach (var c in Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(win).OfType<Control>().Where(c => c.Name is { } n && dump.Split(',').Any(n.StartsWith)))
         Console.WriteLine($"{c.Name}: {c.Bounds} desired={c.DesiredSize} @ {c.TranslatePoint(new Point(0, 0), win)}");
-frame!.Save(outPath);
+if (composed is not null) composed.Save(outPath); else frame!.Save(outPath);
 Console.WriteLine($"OK {outPath}");
 foreach (var crash in CrashLog.List(root).Take(1)) Console.Error.WriteLine("ABSTURZ beim Rendern:" + Environment.NewLine + File.ReadAllText(crash));
 Directory.Delete(root, true);

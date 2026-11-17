@@ -1,0 +1,4 @@
+- Milch
+- Brot
+- Eier
+- Butter

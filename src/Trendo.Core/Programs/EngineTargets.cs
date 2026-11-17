@@ -115,7 +115,7 @@ public static class EngineTargets
             player = s.Player, accent = s.Accent, background = s.Background, levels,
             props = s.Props.Select(kv => new { key = kv.Key, value = kv.Value }),
             rules = s.Rules.Select(r => new { when = r.When, n = r.N, act = r.Do, title = r.Title ?? "" }),
-            abilities = s.Abilities, weapon = s.Weapon, menu = s.Menu,
+            abilities = s.Abilities, weapon = s.Weapon, menu = s.Menu, view = s.View,
             texts = s.Texts.Select(kv => new { key = kv.Key, value = kv.Value }),
         };
         return JsonSerializer.Serialize(o, new JsonSerializerOptions { WriteIndented = true });
@@ -172,6 +172,7 @@ public static class EngineTargets
         Put(dir, "trendo_shot.gd", GodotShot);
         Put(dir, "tests/gameplay_check.gd", GodotGameplayCheck);
         Put(dir, "tests/menu_check.gd", GodotMenuCheck);
+        Put(dir, "tests/selfplay_check.gd", GodotSelfPlayCheck);
         Put(dir, ".gitignore", ".godot/\nexport/\n");
         Put(dir, "LIESMICH.txt", $"{name} – von Trendo als Godot-4-Projekt angelegt.\nÖffnen: Godot → Importieren → project.godot. Start mit F5.\nPrüfen ohne Fenster: godot --headless --path . --script res://tests/check_level.gd\n");
         return dir;
@@ -184,6 +185,8 @@ public static class EngineTargets
     public static List<string> GodotGameplayArgs(string project) => ["--headless", "--path", project, "--script", "res://tests/gameplay_check.gd"];
     /// <summary>Menü-Prüfung in Godot: Start im Menü, Einstellungen gespeichert, Pause, Weiter.</summary>
     public static List<string> GodotMenuArgs(string project) => ["--headless", "--path", project, "--script", "res://tests/menu_check.gd"];
+    /// <summary>T-0690 Durchspiel-Prüfung in Godot: die Figur wird über Eingabe-Aktionen gesteuert (laufen, Wand, Münze, Sprung, Ziel, Stacheln) – von der Seite und von oben.</summary>
+    public static List<string> GodotSelfPlayArgs(string project) => ["--headless", "--path", project, "--script", "res://tests/selfplay_check.gd"];
     /// <summary>Unity-Tests: -runTests beendet den Editor selbst (deshalb ohne -quit).</summary>
     public static List<string> UnityTestArgs(string project, string platform, string results, string log) =>
         ["-batchmode", "-nographics", "-projectPath", project, "-runTests", "-testPlatform", platform == "PlayMode" ? "PlayMode" : "EditMode", "-testResults", results, "-logFile", log];
@@ -991,6 +994,65 @@ func prop(x: int, y: int, k: String, d: float) -> float:
 func has(ability: String) -> bool:
 	return ability in data.get("abilities", [])
 
+## Blick von oben (aus Trendo): keine Schwerkraft, die Figur läuft in alle vier Richtungen
+func top_down() -> bool:
+	return String(data.get("view", "seite")) == "oben"
+
+## Kachel des aktuellen Levels (außerhalb = Wand; unter dem Level nur von oben eine Wand)
+func tile_at(cx: int, cy: int) -> String:
+	var rows: Array = data["levels"][index]["rows"]
+	if cx < 0 or cy < 0:
+		return "#"
+	if cy >= rows.size():
+		return "#" if top_down() else "."
+	var row: String = rows[cy]
+	if cx >= row.length():
+		return "#"
+	return row[cx]
+
+func is_solid(cx: int, cy: int) -> bool:
+	var ch := tile_at(cx, cy)
+	return ch == "#" or ch == "F" or (ch == "D" and not doors.is_empty())
+
+## Gegner (30 × 30 in der Kachel) stößt an dieser Stelle an eine Wand?
+func foe_blocked(px: float, py: float) -> bool:
+	var l := int(floor((px + 3.0) / T))
+	var r := int(floor((px + T - 4.0) / T))
+	var t := int(floor((py + 3.0) / T))
+	var b := int(floor((py + T - 4.0) / T))
+	return is_solid(l, t) or is_solid(r, t) or is_solid(l, b) or is_solid(r, b)
+
+## Gegner laufen hin und her (kehren an Wand oder Kante um) oder verfolgen die Figur in der Nähe – wie im Browser-Spiel
+func _physics_process(delta: float) -> void:
+	if data.is_empty() or won or lives <= 0 or not playing() or player == null:
+		return
+	for e in enemies():
+		var ex: int = e.get_meta("x", -1)
+		var ey: int = e.get_meta("y", -1)
+		var sp: float = 72.0 * clampf(prop(ex, ey, "speed", 1.0), 0.25, 4.0)
+		var dir: float = e.get_meta("dir", 1.0)
+		var dx: float = player.position.x - e.position.x
+		var dy: float = player.position.y - e.position.y
+		if prop(ex, ey, "chase", 0.0) >= 0.5 and absf(dx) < T * 7 and absf(dy) < T * 7:
+			if absf(dx) > 2.0:
+				var nx: float = e.position.x + signf(dx) * sp * 0.8 * delta
+				var front := int(floor((nx + (T - 4.0 if dx > 0 else 3.0)) / T))
+				if not foe_blocked(nx, e.position.y) and (top_down() or is_solid(front, int(floor((e.position.y + T / 2) / T)) + 1)):
+					e.position.x = nx
+					e.set_meta("dir", signf(dx))
+			if top_down() and absf(dy) > 2.0:
+				var ny: float = e.position.y + signf(dy) * sp * 0.8 * delta
+				if not foe_blocked(e.position.x, ny):
+					e.position.y = ny
+		else:
+			var px: float = e.position.x + dir * sp * delta
+			var cx := int(floor((px + (T - 4.0 if dir > 0 else 3.0)) / T))
+			var cy := int(floor((e.position.y + T / 2) / T))
+			if foe_blocked(px, e.position.y) or (not top_down() and not is_solid(cx, cy + 1)):
+				e.set_meta("dir", -dir)
+			else:
+				e.position.x = px
+
 func tagged(a: Area2D, x: int, y: int) -> Area2D:
 	a.set_meta("x", x)
 	a.set_meta("y", y)
@@ -1106,7 +1168,11 @@ func build(i: int) -> void:
 				"N": tagged(area("Figur", p, Color(0.08, 0.72, 0.65)), x, y)
 				"V": tagged(area("Fahrzeug", p, Color(0.98, 0.45, 0.09)), x, y).set_meta("kind", text(x, y, "kind", "wagen"))
 				"Z": area("Ziel", p, Color(0.2, 0.9, 0.3))
-				"F": area("Sprungfeder", p, Color(1, 0.6, 0.1))
+				"F":
+					if top_down():
+						solid("Sprungfeder", p, Color(1, 0.6, 0.1))
+					else:
+						area("Sprungfeder", p, Color(1, 0.6, 0.1))
 				"C": area("Speicherpunkt", p, Color(0.2, 0.9, 0.9))
 				"K": area("Schluessel", p, Color(1, 0.85, 0.2))
 				"S":
@@ -1173,7 +1239,7 @@ func touch(a: Area2D) -> void:
 	elif n.begins_with("Stacheln"):
 		hit()
 	elif n.begins_with("Gegner"):
-		if player.velocity.y > 0 and player.position.y < a.position.y - 8:
+		if not top_down() and player.velocity.y > 0 and player.position.y < a.position.y - 8:
 			damage(a)
 			player.velocity.y = -400.0
 		else:
@@ -1231,6 +1297,11 @@ func apply(what: String) -> void:
 		"schneller": boost = 80.0
 		"punkte": score += 10
 		"sieg": won = true
+		"verloren":
+			lives = 0
+			note = "Verloren"
+			drop_save()
+			get_tree().paused = true
 
 ## Gegner trifft es: ein Trefferpunkt weniger; besiegt bringt 2 Punkte (Boss 10)
 func damage(a: Area2D) -> void:
@@ -1280,7 +1351,13 @@ func rule_value(r: Dictionary) -> float:
 		"gegner": return defeated
 		"sekunden": return time
 		"gegenstaende": return items
+		"alle_muenzen": return 1.0 if count("o") > 0 and left("Muenze") == 0 else 0.0
+		"alle_gegner": return 1.0 if count("E") > 0 and left("Gegner") == 0 else 0.0
 	return 0.0
+
+## Wie viele Objekte dieser Art sind im Level noch da?
+func left(prefix: String) -> int:
+	return get_children().filter(func(c): return String(c.name).begins_with(prefix) and not c.is_queued_for_deletion()).size()
 
 ## Aufgaben (Regeln mit Titel) mit Fortschritt
 func quests() -> String:
@@ -1542,9 +1619,14 @@ func setup(l, at: Vector2, color: Color, s: float) -> void:
 	sh.size = Vector2(26, 30)
 	c.shape = sh
 	c.position = Vector2(16, 17)
+	if level.top_down(): # von oben: etwas kleiner, damit die Figur durch Gänge von einer Kachel Breite passt
+		sh.size = Vector2(24, 24)
+		c.position = Vector2(16, 16)
 	add_child(c)
 	var cam := Camera2D.new()
 	add_child(cam)
+	if level.top_down():
+		motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
 
 func respawn() -> void:
 	position = checkpoint
@@ -1554,6 +1636,15 @@ func _physics_process(delta: float) -> void:
 	safe = maxf(0.0, safe - delta)
 	no_enter = maxf(0.0, no_enter - delta)
 	cool = maxf(0.0, cool - delta)
+	if level.top_down():
+		# Blick von oben: keine Schwerkraft, laufen in alle vier Richtungen
+		var hx := Input.get_axis("ui_left", "ui_right") if level.playing() else 0.0
+		var hy := Input.get_axis("ui_up", "ui_down") if level.playing() else 0.0
+		if hx != 0:
+			facing = signf(hx)
+		velocity = Vector2(signf(hx) if hx != 0 else 0.0, signf(hy) if hy != 0 else 0.0) * cur_speed(Input.is_key_pressed(KEY_SHIFT))
+		move_and_slide()
+		return
 	if is_on_floor():
 		air = 1 if level.has("doppelsprung") else 0
 	velocity.y += GRAVITY * delta
@@ -1618,6 +1709,9 @@ func _process(_delta: float) -> bool:
 	if p == null:
 		print("TRENDO-FEHLER keine Spielfigur (Start S fehlt?)")
 		quit(1)
+	elif main.top_down():
+		print("TRENDO-OK Spiel läuft, Figur steht (Blick von oben)")
+		quit(0)
 	elif not p.is_on_floor() or p.position.y > 2000:
 		print("TRENDO-FEHLER Figur steht nicht auf dem Boden")
 		quit(1)
@@ -1673,6 +1767,122 @@ func _process(_delta: float) -> bool:
 	print("TRENDO-OK Spielstand speichern, fortsetzen und prüfen")
 	quit(0)
 	return true
+""";
+
+    const string GodotSelfPlayCheck = """
+extends SceneTree
+## Von Trendo: Durchspiel-Prüfung ohne Fenster. Die Figur wird über Eingabe-Aktionen gesteuert (wie Tastendrücke), nichts wird direkt gesetzt:
+## von der Seite laufen, Münze sammeln, an der Wand stoppen, darüber springen, Ziel erreichen; von oben in zwei Richtungen laufen, Wand, Münze, Ziel;
+## zum Schluss in Stacheln laufen und verlieren. Meldet „TRENDO-OK …“ oder „TRENDO-FEHLER …“.
+
+var main: Node
+var step := 0
+var t := 0.0
+var booted := false
+const SIDE := '{"name":"Test","speed":5,"lives":3,"menu":false,"view":"seite","levels":[{"name":"A","rows":[".............",".............","S.o.#.......Z","#############"],"decor":[]}]}'
+const TOP := '{"name":"Test","speed":5,"lives":3,"menu":false,"view":"oben","levels":[{"name":"B","rows":["#####","#S.o#","#.#.#","#..Z#","#####"],"decor":[]}]}'
+const LOSE := '{"name":"Test","speed":5,"lives":1,"menu":false,"view":"oben","levels":[{"name":"C","rows":["####","#S^#","####"],"decor":[]}]}'
+
+func _initialize() -> void:
+	main = load("res://main.tscn").instantiate()
+	root.add_child(main)
+
+func keys_up() -> void:
+	for a in ["ui_left", "ui_right", "ui_up", "ui_down", "ui_accept"]:
+		Input.action_release(a)
+
+func start(json: String) -> void:
+	keys_up()
+	main.data = JSON.parse_string(json)
+	main.lives = int(main.data["lives"])
+	main.score = 0
+	main.coins = 0
+	main.won = false
+	main.fired = []
+	main.build(0)
+	main.menu_mode = "play"
+	t = 0.0
+
+func fail(msg: String) -> bool:
+	keys_up()
+	print("TRENDO-FEHLER " + msg)
+	quit(1)
+	return true
+
+func _process(delta: float) -> bool:
+	t += delta
+	if not booted:
+		if t < 0.3:
+			return false
+		booted = true
+		start(SIDE)
+		return false
+	var p = main.get("player")
+	if p == null:
+		return fail("keine Spielfigur")
+	match step:
+		0: # von der Seite: kurz fallen lassen, dann nach rechts laufen
+			if t > 0.4:
+				Input.action_press("ui_right")
+				step = 1
+				t = 0.0
+		1: # Münze gesammelt und an der Wand gestoppt
+			if t > 1.6:
+				if main.coins != 1:
+					return fail("von der Seite: Münze nicht gesammelt (x=%d)" % int(p.position.x))
+				if p.position.x > 4 * 32.0 - 20.0 or main.won:
+					return fail("von der Seite: Wand hält die Figur nicht auf (x=%d)" % int(p.position.x))
+				if not p.is_on_floor():
+					return fail("von der Seite: Figur steht nicht auf dem Boden")
+				Input.action_press("ui_accept") # springen, rechts bleibt gehalten
+				step = 2
+				t = 0.0
+		2: # über die Wand ins Ziel
+			if t > 0.1:
+				Input.action_release("ui_accept")
+			if main.won:
+				start(TOP)
+				step = 3
+			elif t > 4.0:
+				return fail("von der Seite: Ziel nach dem Sprung nicht erreicht (x=%d y=%d)" % [int(p.position.x), int(p.position.y)])
+		3: # von oben: stehen bleiben – ohne Schwerkraft darf die Figur nicht fallen
+			if t > 0.4:
+				if absf(p.position.y - 32.0) > 2.0:
+					return fail("von oben: Figur fällt (y=%d)" % int(p.position.y))
+				Input.action_press("ui_right")
+				step = 4
+				t = 0.0
+		4: # nach rechts: Münze, dann Wand
+			if t > 1.2:
+				if main.coins != 1:
+					return fail("von oben: Münze nicht gesammelt (x=%d)" % int(p.position.x))
+				if p.position.x > 4 * 32.0 - 20.0:
+					return fail("von oben: Wand hält die Figur nicht auf (x=%d)" % int(p.position.x))
+				Input.action_release("ui_right")
+				Input.action_press("ui_down")
+				step = 5
+				t = 0.0
+		5: # nach unten ins Ziel
+			if main.won:
+				start(LOSE)
+				step = 6
+			elif t > 4.0:
+				return fail("von oben: Ziel nicht erreicht (x=%d y=%d)" % [int(p.position.x), int(p.position.y)])
+		6: # in die Stacheln: mit einem Leben ist das Spiel verloren
+			if t > 0.3:
+				Input.action_press("ui_right")
+				step = 7
+				t = 0.0
+		7:
+			if main.lives <= 0 and not main.won:
+				keys_up()
+				paused = false
+				print("TRENDO-OK Durchgespielt: von der Seite (laufen, Münze, Wand, Sprung, Ziel), von oben (laufen, Münze, Wand, Ziel), Stacheln (verloren)")
+				quit(0)
+				return true
+			elif t > 3.0:
+				return fail("Stacheln: Spiel nicht verloren (Leben=%d)" % int(main.lives))
+	return false
 """;
 
     const string GodotShot = """

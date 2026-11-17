@@ -2,8 +2,8 @@ using System.Text.Json;
 
 namespace Trendo.Core;
 
-/// <summary>Alle Studios, Runde 5 – SPEC-04 „VR & AR gestalten“: offizielle Prüfung mit dem Khronos glTF-Validator (Apache-2.0, 2.0.0-dev.3.10)
-/// und Packen für Web & Brille mit glTF-Transform (MIT, 4.5.1: meshopt + WebP). Beide laufen als eigene Prozesse mit Argumenten als Liste;
+/// <summary>Alle Studios, Runde 5 – „3D-Modelle ansehen“ (Kennung SPEC-04): offizielle Prüfung mit dem Khronos glTF-Validator (Apache-2.0, 2.0.0-dev.3.10)
+/// und Packen für Web-Seiten mit glTF-Transform (MIT, 4.5.1: meshopt + WebP). Beide laufen als eigene Prozesse mit Argumenten als Liste;
 /// glTF-Transform wird mit node direkt gestartet (nicht über die .cmd-Datei, deren cmd.exe Zeichen wie „&amp;“ in Dateinamen auswerten würde).</summary>
 public static class GltfTools
 {
@@ -44,7 +44,7 @@ public static class GltfTools
         catch (Exception e) when (e is JsonException or KeyNotFoundException or InvalidOperationException) { return (null, "Der Validator lieferte keinen lesbaren Bericht: " + (r.Err.Length > 0 ? r.Err : r.Out).Trim().Split('\n')[0]); }
     }
 
-    /// <summary>glTF-Transform-Argumente für „Web &amp; Brille“: meshopt-Geometrie und WebP-Texturen (vom Paket empfohlene Optimierung).</summary>
+    /// <summary>glTF-Transform-Argumente für Web-Seiten: meshopt-Geometrie und WebP-Texturen (vom Paket empfohlene Optimierung).</summary>
     public static IReadOnlyList<string> PackArgs(string cliJs, string input, string output) =>
         [cliJs, "optimize", input, output, "--compress", "meshopt", "--texture-compress", "webp"];
 

@@ -189,7 +189,9 @@ public class StartMenu_StudioFenster
         var win = w.Windows.Get(d3)!;
         var area = V<Canvas>(w, "window-area");
         var bar = V<Border>(w, "win-title-" + d3);
-        var p = bar.TranslatePoint(new Point(80, 15), w)!.Value;
+        // T-0710: links in der Titelleiste sitzt jetzt die Menüleiste (Klicks dort ziehen bewusst nicht) – gegriffen wird am Fenstertitel
+        var titleText = V<TextBlock>(w, "win-titletext-" + d3);
+        var p = titleText.TranslatePoint(new Point(Math.Min(20, titleText.Bounds.Width / 2), titleText.Bounds.Height / 2), w)!.Value;
         var edge = area.TranslatePoint(new Point(2, Math.Min(200, area.Bounds.Height / 2)), w)!.Value;
         w.MouseDown(p, MouseButton.Left);
         w.MouseMove(p + (edge - p) / 2, RawInputModifiers.LeftMouseButton);

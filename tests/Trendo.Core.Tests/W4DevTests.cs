@@ -20,7 +20,7 @@ public class W4_Core07_DevStudio
     [NeedsFact("git", DisplayName = "CORE-07: Git-Stand anlegen, Änderung erkennen, speichern (echtes git)")]
     public void Git_roundtrip()
     {
-        if (Cli.Find("git") is null) return;
+        if (Cli.Find("git") is null) { Trendo.Core.Tests.Ueberspringen.Weil("Git fehlt auf diesem PC."); return; }
         var dir = DevStudio.Create(Tmp(), "web", "g");
         Assert.False(DevStudio.Git(dir).IsRepo);
         Assert.True(DevStudio.GitInit(dir).Ok);
@@ -37,18 +37,27 @@ public class W4_Core07_DevStudio
     public void Templates_build()
     {
         var root = Tmp();
+        var fehlt = new List<string>();
         if (Cli.Find(OperatingSystem.IsWindows() ? "python" : "python3") is not null)
             Assert.True(DevStudio.RunTests(DevStudio.Create(root, "python", "py")).Ok);
+        else fehlt.Add("Python");
         if (Cli.Find("node") is not null)
         {
             var r = DevStudio.RunTests(DevStudio.Create(root, "node", "nd"));
             Assert.True(r.Ok, r.Err + r.Out);
         }
+        else fehlt.Add("Node.js");
         if (Cli.Find("dotnet") is not null)
         {
             var r = DevStudio.RunTests(DevStudio.Create(root, "dotnet-console", "cs"));
             Assert.True(r.Ok, r.Err + r.Out);
         }
-        Assert.False(DevStudio.RunTests(DevStudio.Create(root, "web", "w")).Ok);
+        else fehlt.Add(".NET");
+        // T-0688: die Web-Vorlage bringt jetzt echte Tests mit (node --test) – sie müssen bestehen; ein Ordner ohne Tests hat weiter keinen Test
+        if (Cli.Find("node") is not null) { var w = DevStudio.RunTests(DevStudio.Create(root, "web", "w")); Assert.True(w.Ok, w.Err + w.Out); }
+        var leer = Path.Combine(root, "leer"); Directory.CreateDirectory(leer); File.WriteAllText(Path.Combine(leer, "index.html"), "<p>x</p>");
+        Assert.False(DevStudio.RunTests(leer).Ok);
+        // T-0687: fehlt ein Werkzeug, ist dessen Vorlage ungeprüft – ehrlich überspringen statt grün melden
+        if (fehlt.Count > 0) Trendo.Core.Tests.Ueberspringen.Weil(string.Join(", ", fehlt) + " fehlt auf diesem PC – die Vorlage dazu wurde nicht gebaut und getestet.");
     }
 }

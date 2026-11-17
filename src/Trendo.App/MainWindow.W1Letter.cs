@@ -50,9 +50,15 @@ public partial class MainWindow
         var title = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = {
             new TextBlock { Name = "page-title", Text = "Briefe schreiben", Foreground = Text, FontSize = 18, FontWeight = FontWeight.SemiBold },
             new TextBlock { Text = "Briefe, Vorlagen und Akten", Foreground = Muted, FontSize = 12 } } };
-        var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Margin = new Thickness(0, 0, 0, 10) };
+        var head = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto"), Margin = new Thickness(0, 0, 0, 10) };
         head.Children.Add(title);
-        if (actions is not null) { Grid.SetColumn(actions, 1); head.Children.Add(actions); }
+        if (actions is not null)
+        {
+            // V-14 (T-0700): Speichern und Exportieren am gemeinsamen Platz links oben (gleich neben dem Titel), weitere Aktionen rechts
+            if (actions is Panel ap && ap.Children.OfType<StackPanel>().FirstOrDefault(c => c.Name == DocActionsName) is { } da)
+            { ap.Children.Remove(da); da.Margin = new Thickness(20, 0, 0, 0); Grid.SetColumn(da, 1); head.Children.Add(da); }
+            Grid.SetColumn(actions, 3); head.Children.Add(actions);
+        }
         var grid = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto,Auto,*") };
         grid.Children.Add(head);
         if (_caseMsg.Length > 0) { var m = P(_caseMsg, Text); m.Name = "case-msg"; Grid.SetRow(m, 1); grid.Children.Add(m); }
@@ -242,7 +248,7 @@ public partial class MainWindow
     {
         var ics = Path.Combine(Cases.Dir(c.Id), $"frist-{d.Date:yyyyMMdd}.ics");
         var esc = (string s) => s.Replace("\\", "\\\\").Replace(",", "\\,").Replace(";", "\\;").Replace("\n", "\\n");
-        File.WriteAllText(ics, $"BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Trendo OS//Briefstudio//DE\r\nBEGIN:VEVENT\r\nUID:{c.Id}-{d.Date:yyyyMMdd}@trendo\r\nDTSTAMP:{DateTime.UtcNow:yyyyMMddTHHmmssZ}\r\nDTSTART;VALUE=DATE:{d.Date:yyyyMMdd}\r\nSUMMARY:{esc("Frist: " + c.Title)}\r\nDESCRIPTION:{esc(d.Text + " – Quelle: " + d.ConfirmedSource)}\r\nBEGIN:VALARM\r\nTRIGGER:-P3D\r\nACTION:DISPLAY\r\nDESCRIPTION:Frist in 3 Tagen\r\nEND:VALARM\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n");
+        AtomicFile.WriteAllText(ics, $"BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Trendo OS//Briefstudio//DE\r\nBEGIN:VEVENT\r\nUID:{c.Id}-{d.Date:yyyyMMdd}@trendo\r\nDTSTAMP:{DateTime.UtcNow:yyyyMMddTHHmmssZ}\r\nDTSTART;VALUE=DATE:{d.Date:yyyyMMdd}\r\nSUMMARY:{esc("Frist: " + c.Title)}\r\nDESCRIPTION:{esc(d.Text + " – Quelle: " + d.ConfirmedSource)}\r\nBEGIN:VALARM\r\nTRIGGER:-P3D\r\nACTION:DISPLAY\r\nDESCRIPTION:Frist in 3 Tagen\r\nEND:VALARM\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n");
         _core.Audit.Append(Principal.LocalOwner.Name, "letter.deadline.calendar", $"{c.Id} {d.Date:yyyy-MM-dd}");
         _caseMsg = $"Frist bestätigt. Kalenderdatei angelegt: {Path.GetFileName(ics)} (Doppelklick übernimmt sie in deinen Kalender).";
     }

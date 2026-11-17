@@ -1,0 +1,43 @@
+# Echtlauf scannen – 2026-11-16 14:18:45
+$ Tesseract Version: tesseract.exe --version
+Exit 0
+tesseract v5.4.0.20240606
+ leptonica-1.84.1
+  libgif 5.2.1 : libjpeg 8d (libjpeg-turbo 3.0.1) : libpng 1.6.43 : libtiff 4.6.0 : zlib 1.3 : libwebp 1.4.0 : libopenjp2 2.5.2
+ Found AVX2
+ Found AVX
+ Found FMA
+ Found SSE4.1
+ Found libarchive 3.7.4 zlib/1.3.1 liblzma/5.6.1 bz2lib/1.0.8 liblz4/1.9.4 libzstd/1.5.6
+Tesseract: tesseract v5.4.0.20240606
+$ LibreOffice öffnet rechnung.fodt: soffice.exe -env:UserInstallation=file:///C:\Users\<user>/AppData/Local/Temp/trendo-t0705-lo-ebacb988 --headless --norestore --convert-to png --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-6d0a8f86 C:\Users\<user>\AppData\Local\Temp\trendo-ui-253cdfd959254afeba051022bdf12d61\rechnung.fodt
+Exit 0
+convert C:\Users\<user>\AppData\Local\Temp\trendo-ui-253cdfd959254afeba051022bdf12d61\rechnung.fodt as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-6d0a8f86\rechnung.png using filter : writer_png_Export
+[stderr] Could not find platform independent libraries <prefix>
+Datei fremd-seite-libreoffice.png: 99489 Bytes, SHA-256 d20180072f674dc1efe665bb701370498075cf6c6110e4c58c469416ae9062a2
+Oberfläche: Seitenbild auf den ersten Schritt gezogen → 1 Seite(n) hinzugefügt – Blattkanten bei 0 von 1 gefunden. Bei den anderen bitte im Original die Ecken ziehen.
+Meldung: Durchsuchbare PDF (1 Seiten, Deutsch): C:\Users\<user>\AppData\Local\Temp\trendo-ui-253cdfd959254afeba051022bdf12d61\Projekte\Scans\Scans\2026-11-16 Scan.pdf
+Datei durchsuchbar.pdf: 35168 Bytes, SHA-256 5a1621253c8975f8bf08c8425f6be1638bf5d014f91dd9ab1b40392e541db567
+$ qpdf prüft durchsuchbar.pdf: qpdf.exe --check C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\scannen\durchsuchbar.pdf
+Exit 0
+checking C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\scannen\durchsuchbar.pdf
+PDF Version: 1.5
+File is not encrypted
+File is not linearized
+No syntax or stream encoding errors found; the file may still contain
+errors that qpdf cannot detect
+$ qpdf zählt Seiten: qpdf.exe --show-npages C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\scannen\durchsuchbar.pdf
+Exit 0
+1
+PDFium Text durchsuchbar.pdf Seite 1: Stadtwerke Musterstadt Rechnung Nummer 4711 Betrag 128,40 Euro
+$ pdftotext (Poppler) liest durchsuchbar.pdf: pdftotext.exe -layout C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\scannen\durchsuchbar.pdf -
+Exit 0
+Stadtwerke Musterstadt
+Rechnung Nummer 4711
+Betrag 128,40 Euro
+$ LibreOffice öffnet durchsuchbar.pdf: soffice.exe -env:UserInstallation=file:///C:\Users\<user>/AppData/Local/Temp/trendo-t0705-lo-492ef10f --headless --norestore --convert-to png --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-18d03eb7 C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\scannen\durchsuchbar.pdf
+Exit 0
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\scannen\durchsuchbar.pdf as a Draw document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-18d03eb7\durchsuchbar.png using filter : draw_png_Export
+[stderr] Could not find platform independent libraries <prefix>
+Datei durchsuchbar-libreoffice.png: 55730 Bytes, SHA-256 a8c915dad69a9742d94cb2d622c3414a91622ea8e30167500d4084b670ab5756
+ERGEBNIS: bestanden

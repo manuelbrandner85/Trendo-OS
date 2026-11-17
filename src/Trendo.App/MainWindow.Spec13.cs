@@ -1,8 +1,10 @@
 using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Platform.Storage;
 using Trendo.Core;
 using Trendo.Core.Karten;
 using Trendo.Core.Programs;
@@ -19,9 +21,12 @@ public partial class MainWindow
     private TileCache? _tileCache;
     // Kacheln nur online und nicht im abgeschotteten Testbetrieb; das Screenshot-Werkzeug darf sie mit TRENDO_TILES=1 laden
     TileCache Tiles => _tileCache ??= MakeTiles();
+    /// <summary>T-0726: Kacheln aus dem Internet nur mit Zustimmung der Person über das Freigabe-Tor (<see cref="TileConsent"/>), nie offline.
+    /// Im abgeschotteten Testbetrieb nie – außer das Screenshot-Werkzeug setzt ausdrücklich TRENDO_TILES=1.</summary>
+    bool TilesNet => !_core.Offline && (_opt.Isolated ? Environment.GetEnvironmentVariable("TRENDO_TILES") == "1" : TileConsent.Allowed(_core.DataRoot) && CanApprove); // Kinderprofil: keine Dauerfreigabe
     TileCache MakeTiles()
     {
-        var t = new TileCache(Path.Combine(_core.DataRoot, "karten", "kacheln"), !_core.Offline && (!_opt.Isolated || Environment.GetEnvironmentVariable("TRENDO_TILES") == "1"));
+        var t = new TileCache(Path.Combine(_core.DataRoot, "karten", "kacheln"), TilesNet);
         if (MapPackPath is { Length: > 0 } vp && IsVectorPack(vp)) { try { _vec = new VectorMap(vp); _vecNote = $"Vektorkarte „{_vec.Name}“."; } catch (Exception ex) when (ex is ArgumentException or InvalidDataException or IOException or UnauthorizedAccessException) { } return t; } // Alle Studios, Runde 1
         if (MapPackPath is { Length: > 0 } pp) try { t.Pack = new TilePack(pp); } catch (Exception ex) when (ex is ArgumentException or InvalidDataException or IOException or UnauthorizedAccessException) { } // Paket fehlt inzwischen
         return t;
@@ -51,7 +56,9 @@ public partial class MainWindow
         Ribbon =
         [
             ("Karte", [
+                new ProgramCmd("mk-gpx-open", "GPX-Datei öffnen …", _ => MapPickGpx(), false, "Tour von Uhr, Handy oder Navi laden – oder die Datei auf die Karte ziehen"),
                 new ProgramCmd("mk-tiles", "Hintergrund an/aus", _ => MapState.Tiles = !MapState.Tiles, false, "OpenStreetMap-Karte oder nur Gitter"),
+                new ProgramCmd("mk-tiles-net", "Karte aus dem Internet …", d => { if (TileConsent.Allowed(_core.DataRoot)) MapTilesStop(); else _ = MapTilesAllow(); }, false, "Kartenbilder von OpenStreetMap laden erlauben oder wieder ausschalten"),
                 new ProgramCmd("mk-fit", "Alles zeigen", _ => MapState.Fitted = false, false, "Ansicht auf alle Spuren und Punkte"),
             ]),
         ],
@@ -64,8 +71,10 @@ public partial class MainWindow
         Workspace = MapWorkspace,
         Properties = MapProperties,
         Status = d => { var m = MapDoc.From(d.Data); var km = m.Tracks.Sum(t => t.Stats().DistanceKm); return $"{MapTools.FirstOrDefault(t => t.Id == MapState.Tool).Label} · {m.Tracks.Count} Spuren ({km:0.0} km) · {m.Waypoints.Count} Wegpunkte · {m.Areas.Count} Flächen · Karte {(MapState.Tiles ? (Tiles.Online ? "OpenStreetMap" : "offline (Zwischenspeicher)") : "aus")}"; },
+        PrimaryExport = "gpx", // T-0700: Karte: die Tour als GPX auf Uhr, Handy oder Navi bringen ist das Ziel
         Help = "Mausrad zoomt, Ziehen verschiebt die Karte. Route/Fläche: Punkte klicken, Doppelklick oder Enter beendet. Messen: Punkte klicken, Esc löscht. "
-             + "Spur oder Wegpunkt anklicken für Höhenprofil, Werte und Namen. GPX-Dateien rechts unter „GPX laden“. Kartendaten © OpenStreetMap-Mitwirkende.",
+             + "Wegpunkte und die Punkte einer gewählten Route ziehen; aus der Mitte eines Abschnitts ziehen fügt einen Punkt ein; Rechtsklick: Punkt löschen, umbenennen, Wegpunkt hier setzen. Jeder Schritt lässt sich rückgängig machen (Strg+Z). "
+             + "Spur oder Wegpunkt anklicken für Höhenprofil, Werte und Namen. GPX-Dateien öffnen oder auf die Karte ziehen. Kartendaten © OpenStreetMap-Mitwirkende.",
     }, "karte", "gps", "gpx", "wandern", "route", "strecke", "koordinaten", "utm", "geojson", "höhenmeter", "tour", "kml");
 
     static System.Text.Json.Nodes.JsonObject MapDocNode(MapDoc m) { var o = new System.Text.Json.Nodes.JsonObject(); m.WriteTo(o); return o; }
@@ -78,18 +87,22 @@ public partial class MainWindow
     }
 
     public void MapTool(string tool) { MapState.Tool = tool; MapState.Draft.Clear(); MapState.Hint = ""; if (tool != "auswahl") MapState.Selected = null; Show(MK); }
-    public void MapSelect(string? id) { MapState.Selected = id; Show(MK); }
+    public void MapSelect(string? id) { MapState.Selected = id; if (MapState.FocusName && id is not null) ProgramShowProperties(MK); Show(MK); } // T-0719: „Umbenennen …“ öffnet die Eigenschaften auch in „Einfach“
 
     public void MapImportGpx(string path)
     {
         if (!File.Exists(path)) throw new FileNotFoundException("Diese GPX-Datei gibt es nicht.");
-        MapTrack? t = null;
-        MapEdit("GPX laden", m => { t = m.ImportGpx(path); });
+        MapTrack? t = null; var lines = 0;
+        MapEdit("GPX laden", m => { var before = m.Tracks.Count; t = m.ImportGpx(path); lines = m.Tracks.Count - before; });
         MapState.Fitted = false; // nach dem Laden auf die neue Spur einpassen
+        MapState.Tool = "auswahl"; MapState.Draft.Clear();
         MapState.Selected = t?.Id;
-        _progMsg[MK] = t is null ? "Wegpunkte geladen." : $"„{t.Name}“ geladen – {t.Stats().DistanceKm:0.0} km.";
+        _progMsg[MK] = t is null ? "Wegpunkte geladen." : lines > 1 ? $"{lines} Spuren/Routen geladen, zuerst „{t.Name}“ – {t.Stats().DistanceKm:0.0} km." : $"„{t.Name}“ geladen – {t.Stats().DistanceKm:0.0} km.";
         Show(MK);
     }
+
+    /// <summary>T-0719: GPX über die Dateiauswahl öffnen (Menüband, Menüleiste, erster Schritt).</summary>
+    public void MapPickGpx() => _ = ProgramPickThen(MK, "mk-gpx-open", "GPX-Dateien", ["gpx"], false, files => MapImportGpx(files[0]));
 
     private Control MapWorkspace(ProgramDocument d)
     {
@@ -109,7 +122,30 @@ public partial class MainWindow
             ToolTip.SetTip(b, tip); b.Click += (_, _) => MapTool(tid); tools.Children.Add(b);
         }
         var canvas = new MapCanvas(m, MapState, Tiles, MapEdit, MapSelect) { Name = "mk-canvas", MinHeight = 160 };
-        var frame = new Border { CornerRadius = new CornerRadius(12), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = canvas };
+        // T-0719: GPX-Dateien aus dem Explorer auf die Karte ziehen
+        DragDrop.SetAllowDrop(canvas, true);
+        canvas.AddHandler(DragDrop.DragOverEvent, (_, e) => { e.DragEffects = e.DataTransfer.Contains(Avalonia.Input.DataFormat.File) ? DragDropEffects.Copy : DragDropEffects.None; e.Handled = true; });
+        canvas.AddHandler(DragDrop.DropEvent, (_, e) =>
+        {
+            var files = e.DataTransfer.TryGetFiles()?.Select(f => f.TryGetLocalPath()).OfType<string>().Where(f => File.Exists(f) && f.EndsWith(".gpx", StringComparison.OrdinalIgnoreCase)).ToList() ?? [];
+            if (files.Count == 0) { _progMsg[MK] = "Nur GPX-Dateien lassen sich auf die Karte ziehen."; Show(MK); return; }
+            e.Handled = true;
+            ProgramRun(MK, () => { foreach (var f in files) MapImportGpx(f); });
+        });
+        Control body = canvas;
+        // T-0719: erster Schritt auf der leeren Karte (neutral – die goldene Hauptaktion bleibt „Für Navi oder Uhr“)
+        if (m.Tracks.Count + m.Waypoints.Count + m.Areas.Count == 0 && MapState.Draft.Count == 0 && MapState.Tool == "auswahl")
+        {
+            Button Step(string name, string label, Action go) { var b = new Button { Name = name, Content = label, Padding = new Thickness(14, 6), Margin = new Thickness(0, 0, 8, 0) }; b.Click += (_, _) => go(); return b; }
+            var first = new Border { Name = "mk-first", HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, MaxWidth = 440, Padding = new Thickness(22, 16), CornerRadius = new CornerRadius(14),
+                Background = Brush.Parse("#E61C1C1C"), BorderBrush = Brush.Parse("#66D4A84B"), BorderThickness = new Thickness(1),
+                Child = new StackPanel { Spacing = 10, Children = {
+                    new TextBlock { Text = "Erster Schritt: Route zeichnen", FontSize = 16, FontWeight = FontWeight.SemiBold, Foreground = Brushes.White },
+                    new TextBlock { Text = "Klick Punkt für Punkt auf die Karte, Doppelklick beendet. Oder öffne eine GPX-Datei von Uhr, Handy oder Navi – du kannst sie auch hierher ziehen.", FontSize = 12.5, Foreground = Brush.Parse("#D9D9D9"), TextWrapping = TextWrapping.Wrap },
+                    new WrapPanel { Children = { Step("mk-first-route", "Route zeichnen", () => MapTool("route")), Step("mk-first-gpx", "GPX-Datei öffnen …", MapPickGpx) } } } } };
+            body = new Panel { Children = { canvas, first } };
+        }
+        var frame = new Border { CornerRadius = new CornerRadius(12), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = body };
         return new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,10,*"), Children = { new ScrollViewer { Content = tools }, Pos(frame, 2) } };
     }
 
@@ -121,6 +157,7 @@ public partial class MainWindow
         void NameBox(string current, Action<MapDoc, string> set)
         {
             var t = new TextBox { Name = "mk-p-name", Text = current };
+            if (MapState.FocusName) { MapState.FocusName = false; MapState.Focus = false; Avalonia.Threading.Dispatcher.UIThread.Post(() => { t.Focus(); t.SelectAll(); }, Avalonia.Threading.DispatcherPriority.Background); } // T-0719: „Umbenennen …“ aus dem Rechtsklick-Menü
             void Commit() { if (!string.IsNullOrWhiteSpace(t.Text) && t.Text != current) MapEdit("Umbenennen", x => set(x, t.Text!.Trim())); }
             t.LostFocus += (_, _) => Commit(); OnEnter(t, Commit); sp.Children.Add(t);
         }
@@ -184,18 +221,50 @@ public partial class MainWindow
             LiveCalc(calcs, "geo-time", "Wanderzeit (DIN 33466)", [("km", "Strecke (km)", "12", null), ("up", "Aufstieg (m)", "800", null), ("down", "Abstieg (m)", "800", null)],
                 v => { var t = GeoPlus.HikingTime(Fach.Num(v("km")), Fach.Num(v("up")), Fach.Num(v("down"))); return $"Gehzeit ca. {(int)t.TotalHours}:{t.Minutes:00} h (ohne Pausen)"; });
             sp.Children.Add(new Expander { Name = "mk-calcs", Header = "Rechner (Koordinaten, UTM, Wanderzeit …)", IsExpanded = false, Content = calcs });
-            sp.Children.Add(P(Tiles.Online ? "Kartendaten © OpenStreetMap-Mitwirkende (ODbL). Kacheln werden zwischengespeichert." : "Offline: Karte aus dem Zwischenspeicher, sonst Gitter.", null, 11));
+            sp.Children.Add(P(Tiles.Online ? "Kartendaten © OpenStreetMap-Mitwirkende (ODbL). Kacheln werden zwischengespeichert." : _core.Offline ? "Offline: Karte aus dem Zwischenspeicher, sonst Gitter."
+                : TileConsent.Allowed(_core.DataRoot) ? "Karte aus dem Internet ist erlaubt (im Testbetrieb wird nichts geladen)." : "Karte aus dem Internet ist nicht erlaubt: Zwischenspeicher, Offline-Paket oder Gitter.", null, 11));
+            // T-0726: Kacheln aus dem Internet nur nach Zustimmung über das Freigabe-Tor; jederzeit wieder ausschaltbar
+            if (!_core.Offline)
+                sp.Children.Add(TileConsent.Allowed(_core.DataRoot)
+                    ? Act2("mk-tiles-stop", "Karte nicht mehr aus dem Internet laden", MapTilesStop)
+                    : Act2("mk-tiles-allow", "Karte aus dem Internet erlauben …", () => _ = MapTilesAllow()));
             // T-0274b: Offline-Kartenpaket (Ordner oder ZIP mit z/x/y.png)
             sp.Children.Add(H("Offline-Kartenpaket", 12));
             var pack = Field("mk-pack-path", "Kartenpaket (.mbtiles, .pmtiles, .zip) oder Kachel-Ordner", 150, MapPackPath); sp.Children.Add(pack);
             sp.Children.Add(new WrapPanel { Children = {
                 Act2("mk-pack-load", "Laden", () => { try { MapLoadPack(Need(pack, "das Kartenpaket")); } catch (Exception ex) when (ex is ArgumentException or InvalidDataException or IOException or UnauthorizedAccessException) { _mapNetMsg = "⚠ " + ex.Message; Show(MK); } }),
                 Act2("mk-pack-off", "Entfernen", () => { MapPackPath = ""; Tiles.Pack = null; _mapNetMsg = "Kartenpaket entfernt."; Show(MK); }) } });
-            if (Tiles.Pack is { } tp) sp.Children.Add(new TextBlock { Name = "mk-pack-info", Text = $"{tp.Count} Kacheln, Zoom {tp.MinZoom}–{tp.MaxZoom} · {Path.GetFileName(tp.Source.TrimEnd('/', '\\'))}", Foreground = Brush.Parse("#7FD3FF"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
+            if (Tiles.Pack is { } tp) sp.Children.Add(new TextBlock { Name = "mk-pack-info", Text = $"{tp.Count} Kacheln, Zoom {tp.MinZoom}–{tp.MaxZoom} · {Path.GetFileName(tp.Source.TrimEnd('/', '\\'))}", Foreground = Brush.Parse("#E8C873"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
             if (VectorMapPane() is { } vp) sp.Children.Add(vp); // Alle Studios, Runde 1: Vektorkarte (MapLibre)
-            if (_mapNetMsg.Length > 0 && sel is null) sp.Children.Add(new TextBlock { Name = "mk-net-msg", Text = _mapNetMsg, FontSize = 12, TextWrapping = TextWrapping.Wrap, Foreground = Brush.Parse(_mapNetMsg.StartsWith('⚠') ? "#F87171" : "#7FD3FF") });
+            if (_mapNetMsg.Length > 0 && sel is null) sp.Children.Add(new TextBlock { Name = "mk-net-msg", Text = _mapNetMsg, FontSize = 12, TextWrapping = TextWrapping.Wrap, Foreground = Brush.Parse(_mapNetMsg.StartsWith('⚠') ? "#F87171" : "#E8C873") });
         }
         return sp;
+    }
+
+    /// <summary>T-0726: einmalige Zustimmung „Kartenbilder aus dem Internet laden“ – Anfrage im Freigabe-Tor, eigene Rückfrage, Ausführung (Einstellung speichern)
+    /// mit genau dieser Freigabe. Kinderprofil: keine Zustimmung (der Kern lehnt ab). Offline-Modus: nichts.</summary>
+    public async Task<bool> MapTilesAllow()
+    {
+        if (_core.Offline) { _mapNetMsg = "Offline-Modus: Trendo lädt keine Karte aus dem Internet."; Show(MK); return false; }
+        if (await FreigabeAsync(new Wirkung(TileConsent.Action, TileConsent.Target, "Karte aus dem Internet laden?", TileConsent.Text, "Erlauben")) is not { } id)
+        {
+            _mapNetMsg = CanApprove ? "Nicht erlaubt – die Karte zeigt weiter Zwischenspeicher, Offline-Paket oder Gitter." : NurErwachsene;
+            Show(MK); return false;
+        }
+        try { _core.Approvals.Execute(id, TileConsent.Action, TileConsent.Target, () => { TileConsent.Grant(_core.DataRoot, id); return true; }); }
+        catch (ApprovalException ex) { _mapNetMsg = "⚠ " + ex.Message; Show(MK); return false; } // z. B. Not-Stopp
+        Tiles.Online = TilesNet;
+        _mapNetMsg = "Karte aus dem Internet erlaubt. Ausschalten jederzeit hier oder im Menüband „Karte aus dem Internet …“.";
+        Show(MK); return true;
+    }
+
+    /// <summary>T-0726: Zustimmung zurücknehmen – ab sofort keine Kacheln mehr aus dem Internet.</summary>
+    public void MapTilesStop()
+    {
+        TileConsent.Revoke(_core.DataRoot); Tiles.Online = false;
+        _core.Audit.Append(CurrentPrincipal.Name, "karten.kacheln.aus", "");
+        _mapNetMsg = "Die Karte lädt nichts mehr aus dem Internet (Zwischenspeicher, Offline-Paket oder Gitter).";
+        Show(MK);
     }
 
     // ---------- T-0274: Höhen und Routing (Dienste im Internet – nur nach Zustimmung, offline gesperrt) ----------
@@ -228,11 +297,11 @@ public partial class MainWindow
         if (_mapAsk is { } ask)
         {
             var host = ask == "hoehen" ? ElevationService.Host : (Uri.TryCreate(MapRoutingServer, UriKind.Absolute, out var u) ? u.Host : "(keine Adresse)");
-            sp.Children.Add(new Border { Name = "mk-consent", Background = Brush.Parse("#332F86F6"), CornerRadius = new CornerRadius(8), Padding = new Thickness(8), Margin = new Thickness(0, 6, 0, 0), Child = new StackPanel { Spacing = 6, Children = {
+            sp.Children.Add(new Border { Name = "mk-consent", Background = Brush.Parse("#33C9A227"), CornerRadius = new CornerRadius(8), Padding = new Thickness(8), Margin = new Thickness(0, 6, 0, 0), Child = new StackPanel { Spacing = 6, Children = {
                 new TextBlock { Text = $"Dafür werden die Koordinaten dieser {(tr.Planned ? "Route" : "Spur")} an {host} gesendet. Ohne deine Zustimmung passiert nichts.", Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap },
                 new WrapPanel { Children = { B("mk-consent-yes", "Ja, senden", () => { _mapAsk = null; _ = ask == "hoehen" ? MapFetchElevation(sel) : MapFetchRoute(sel); }), B("mk-consent-no", "Nein", () => { _mapAsk = null; _mapNetMsg = "Nichts gesendet."; Show(MK); }) } } } } });
         }
-        if (_mapNetMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "mk-net-msg", Text = _mapNetMsg, FontSize = 12, TextWrapping = TextWrapping.Wrap, Foreground = Brush.Parse(_mapNetMsg.StartsWith('⚠') ? "#F87171" : "#7FD3FF") });
+        if (_mapNetMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "mk-net-msg", Text = _mapNetMsg, FontSize = 12, TextWrapping = TextWrapping.Wrap, Foreground = Brush.Parse(_mapNetMsg.StartsWith('⚠') ? "#F87171" : "#E8C873") });
     }
 
     /// <summary>Höhen für die Spur/Route holen (nach Zustimmung) und als ein Bearbeitungsschritt übernehmen.</summary>

@@ -294,7 +294,7 @@ public static partial class WebDesignMods
     }
 
     /// <summary>Entpack-Ordner einer ZIP-Datei aufräumen. Ein Mod-Ordner der Person wird nie gelöscht.</summary>
-    public static void Cleanup(Prepared? p) { if (p is { Extracted: true, Folder: { } f } && Path.GetFileName(f).StartsWith("trendo-mod-", StringComparison.Ordinal) && f.StartsWith(Path.GetTempPath(), StringComparison.OrdinalIgnoreCase)) try { Directory.Delete(f, true); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } }
+    public static void Cleanup(Prepared? p) { if (p is { Extracted: true, Folder: { } f } && Path.GetFileName(f).StartsWith("trendo-mod-", StringComparison.Ordinal) && f.StartsWith(Path.GetTempPath(), StringComparison.OrdinalIgnoreCase)) TempDir.Delete(f); }
 
     // ---------- Nutzen ----------
 

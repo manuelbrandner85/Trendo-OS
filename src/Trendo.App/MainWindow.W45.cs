@@ -60,10 +60,13 @@ public partial class MainWindow
     private Control TabNav(List<(string Key, string Label, string Module)> tabs, string prefix, bool compact = false)
     {
         var row = new WrapPanel();
-        foreach (var (k, l, m) in tabs.Where(t => OwnTab(t.Key, t.Module)))
+        var own = tabs.Where(t => OwnTab(t.Key, t.Module)).ToList();
+        // V-17 (T-0700): Ein Symbol am Reiter nur, wenn es diesen Reiter von den anderen unterscheidet – nicht zehnmal dasselbe Studio-Symbol
+        var iconCount = own.Select(t => StudioIcons.For(t.Module)?.Path).Where(p => p is not null).GroupBy(p => p).ToDictionary(g => g.Key!, g => g.Count());
+        foreach (var (k, l, m) in own)
         {
             object content = l;
-            if (StudioIcons.For(m) is { } si)
+            if (StudioIcons.For(m) is { } si && iconCount.GetValueOrDefault(si.Path) == 1)
             {
                 var chip = Chip(si.Path, si.C1, si.C2, compact ? 16 : 20, 0.64); chip.Name = prefix + "-tabicon-" + k;
                 content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { chip, new TextBlock { Text = l, VerticalAlignment = VerticalAlignment.Center } } };

@@ -1,0 +1,30 @@
+# Echtlauf ffmpeg – Videoschnitt-Export mit echtem FFmpeg
+Datum: 2026-11-16T21:36:47
+Fundort: C:\Users\<user>\AppData\Local\TrendoWerkzeuge\ffmpeg\bin\ffmpeg.exe
+Suchweg: DependencyManager (Vollpaket, bekannte Orte, winget-Ablage, PATH, App Paths), sonst PATH wie Cli.Find
+Version: ffmpeg version 9.0.2-essentials_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers
+
+## Tests (core): „Videoschnitt-Export mit echtem FFmpeg“ – 1 Ergebnis(se), 7.9 s
+- Passed: Videoschnitt-Export mit echtem FFmpeg: Testbild mit Ton + Standbild + Musik → MP4 mit Bild und Ton in der erwarteten Länge
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.VideoEditTests.Export_real --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\ffmpeg-0.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\ffmpeg-0.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 992 ms - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „Echter Export mit FFmpeg (Software-Encoder)“ – 1 Ergebnis(se), 3.6 s
+- Passed: Echter Export mit FFmpeg (Software-Encoder): Bereich 1–3 s als Hochformat 1080 × 1920 mit Lautheit; nur Ton als M4A
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.VideoExportTests.Export_real --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\ffmpeg-1.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\ffmpeg-1.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 1 s - Trendo.Core.Tests.dll (net10.0)
+
+
+ERGEBNIS: ECHT-GRÜN (11.7 s)
+- Videoschnitt-Export mit echtem FFmpeg: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- Echter Export mit FFmpeg (Software-Encoder): 1 bestanden, 0 fehlgeschlagen, 0 übersprungen

@@ -443,7 +443,7 @@ public sealed class LetterArchive(string projectsFolder)
         while (File.Exists(Path.Combine(Dir, Name(stem, v) + ".docx"))) v++;
         var docx = Path.Combine(Dir, Name(stem, v) + ".docx"); var json = Path.ChangeExtension(docx, ".trendo-brief.json");
         Letters.WriteDocx(d, docx);
-        File.WriteAllText(json, JsonSerializer.Serialize(d, J));
+        AtomicFile.WriteAllText(json, JsonSerializer.Serialize(d, J)); // T-0708: nie eine halbe Briefdatei
         return (docx, json, v);
     }
     private static string Name(string stem, int v) => v == 1 ? stem : $"{stem}-v{v}";
@@ -482,7 +482,9 @@ public static class PdfExport
             return exit == 0 && File.Exists(pdf) ? (true, $"{format.ToUpperInvariant()} erstellt (SHA-256 {LetterKit.Sha(pdf)[..16]}…)", pdf) : (false, $"LibreOffice meldet Fehler (Exit {exit})", null);
         }
         catch (OperationCanceledException) { return (false, "LibreOffice hat zu lange gebraucht und wurde beendet", null); }
-        finally { try { if (Directory.Exists(profile)) Directory.Delete(profile, true); } catch (IOException) { } catch (UnauthorizedAccessException) { } }
+        // T-0729: LibreOffice gibt das Profil nach dem Beenden oft erst nach Sekunden frei. RunAsync ist hier schon zurück (Prozess beendet bzw. beim
+        // Abbruch beendet); die Wiederholungen warten mit Task.Delay im Thread-Pool und blockieren den Oberflächen-Thread nicht.
+        finally { await TempDir.DeleteAsync(profile, attempts: 25, delayMs: 200).ConfigureAwait(false); }
     }
 }
 
@@ -537,7 +539,7 @@ public static class Ocr
             return (true, text, conf, bad, $"Erkannt ({lang}) mit durchschnittlich {conf:0} % Sicherheit, {bad.Count} unsichere Wörter markiert.");
         }
         catch (OperationCanceledException) { return (false, "", 0, [], "Texterkennung hat zu lange gebraucht."); }
-        finally { foreach (var f in new[] { outBase + ".tsv" }) try { File.Delete(f); } catch { } }
+        finally { TempDir.Delete(outBase + ".tsv"); }
     }
 }
 

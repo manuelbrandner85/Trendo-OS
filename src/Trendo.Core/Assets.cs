@@ -74,5 +74,5 @@ public static class FreeAssets
         md5.Length == 0 || Convert.ToHexString(MD5.HashData(File.ReadAllBytes(file))).Equals(md5, StringComparison.OrdinalIgnoreCase);
 
     public static void WriteLicense(string dir, string id, string name, string source = "Poly Haven", string license = "CC0 1.0")
-        => File.WriteAllText(Path.Combine(dir, "LIZENZ.txt"), $"{name} ({id})\nQuelle: {source} – https://polyhaven.com/a/{id}\nLizenz: {license} – frei nutzbar, auch kommerziell, ohne Namensnennung.\nGeladen: {DateTimeOffset.Now:yyyy-MM-dd HH:mm zzz}\n");
+        => AtomicFile.WriteAllText(Path.Combine(dir, "LIZENZ.txt"), $"{name} ({id})\nQuelle: {source} – https://polyhaven.com/a/{id}\nLizenz: {license} – frei nutzbar, auch kommerziell, ohne Namensnennung.\nGeladen: {DateTimeOffset.Now:yyyy-MM-dd HH:mm zzz}\n");
 }

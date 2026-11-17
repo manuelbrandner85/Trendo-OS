@@ -1,0 +1,23 @@
+# T-0712 Testlauf 2026-11-16 15:58
+## Core: KiModelT0712Tests + KiModelT0703Tests (ohne TRENDO_ECHT_MODELLE)
+Bestanden!   : Fehler:     0, erfolgreich:    16, übersprungen:     0, gesamt:    16, Dauer: 1 s - Trendo.Core.Tests.dll (net10.0)
+## App: KiModelT0712_Ui
+   Trendo.App.Tests  Total: 3, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 2,079s
+## App: KiModelT0703_Ui
+   Trendo.App.Tests  Total: 5, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 4,662s
+## App: KiLibraryUiTests
+   Trendo.App.Tests  Total: 3, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 2,418s
+## App: AssistChain_Ui
+   Trendo.App.Tests  Total: 6, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 5,672s
+## App: T0225_KiUi
+   Trendo.App.Tests  Total: 3, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 3,481s
+## App: OllamaContextTests
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0,176s
+## App: W2_Ui
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 2,046s
+## App: CORE02_Backends
+   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 0,157s
+## App: KiSourceSetupUiTests
+   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 2,697s
+## App: X05_Ui
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 2,112s

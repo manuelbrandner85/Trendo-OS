@@ -51,18 +51,19 @@ public sealed partial class MainWindow
     static (double Top, double Bottom) OsBars => _style switch { "windows" => (0, 48), "mac" => (24, 76), "linux" => (32, 0), _ => (0, 0) };
     static bool OsLight => _theme == "hell";
 
-    /// <summary>Farben wie im Original (Windows 11 Mica, macOS, Adwaita) – hell und dunkel; eigene Akzentfarbe des Nutzers hat Vorrang.</summary>
+    /// <summary>Farben wie im Original (Windows 11 Mica, macOS, Adwaita) – hell und dunkel; eigene Akzentfarbe des Nutzers hat Vorrang.
+    /// T-0700: Akzent in allen Bedienstilen Trendo-Gold statt des blauen System-Akzents (Dunkel-Gold-Look, kein Blau als Akzent).</summary>
     private static void ApplyOsPalette(UserSettings s)
     {
         var l = OsLight;
         (string glass, string strong, string tile, string edge, string muted, string text, string accent, string shadow) p = (_style, l) switch
         {
-            ("windows", false) => ("#F2272727", "#FA202020", "#FF2B2B2B", "#1FFFFFFF", "#FFC5C5C5", "#FFFFFFFF", "#FF005FB8", "0 8 16 0 #42000000"),
-            ("windows", true) => ("#F2F9F9F9", "#FFF3F3F3", "#FFFFFFFF", "#1A000000", "#FF5C5C5C", "#FF1B1B1B", "#FF005FB8", "0 8 16 0 #24000000"),
-            ("mac", false) => ("#E6282828", "#FA1E1E1E", "#FF2C2C2E", "#26FFFFFF", "#FF98989D", "#E5FFFFFF", "#FF0A84FF", "0 22 70 4 #59000000"),
-            ("mac", true) => ("#E6F5F5F5", "#FFECECEC", "#FFFFFFFF", "#1A000000", "#FF6E6E73", "#D9000000", "#FF007AFF", "0 22 70 4 #40000000"),
-            ("linux", false) => ("#FF2E2E32", "#FF222226", "#FF36363A", "#26FFFFFF", "#FF9A9A9E", "#FFFFFFFF", "#FF3584E4", "0 2 8 0 #4D000000"),
-            _ => ("#FFFFFFFF", "#FFFAFAFB", "#FFFFFFFF", "#1F000000", "#FF5E5C64", "#CC000006", "#FF3584E4", "0 2 8 0 #26000000"),
+            ("windows", false) => ("#F2272727", "#FA202020", "#FF2B2B2B", "#1FFFFFFF", "#FFC5C5C5", "#FFFFFFFF", "#FFC9A227", "0 8 16 0 #42000000"),
+            ("windows", true) => ("#F2F9F9F9", "#FFF3F3F3", "#FFFFFFFF", "#1A000000", "#FF5C5C5C", "#FF1B1B1B", "#FFB8901C", "0 8 16 0 #24000000"),
+            ("mac", false) => ("#E6282828", "#FA1E1E1E", "#FF2C2C2E", "#26FFFFFF", "#FF98989D", "#E5FFFFFF", "#FFC9A227", "0 22 70 4 #59000000"),
+            ("mac", true) => ("#E6F5F5F5", "#FFECECEC", "#FFFFFFFF", "#1A000000", "#FF6E6E73", "#D9000000", "#FFB8901C", "0 22 70 4 #40000000"),
+            ("linux", false) => ("#FF2E2E32", "#FF222226", "#FF36363A", "#26FFFFFF", "#FF9A9A9E", "#FFFFFFFF", "#FFC9A227", "0 2 8 0 #4D000000"),
+            _ => ("#FFFFFFFF", "#FFFAFAFB", "#FFFFFFFF", "#1F000000", "#FF5E5C64", "#CC000006", "#FFB8901C", "0 2 8 0 #26000000"),
         };
         Glass = Brush.Parse(p.glass); GlassStrong = Brush.Parse(p.strong); TileBg = Brush.Parse(p.tile); Edge = Brush.Parse(p.edge); EdgeLit = Edge;
         Muted = Brush.Parse(p.muted); Text = Brush.Parse(p.text); CardShadow = BoxShadows.Parse(p.shadow);
@@ -234,7 +235,7 @@ public sealed partial class MainWindow
             b.Click += (_, _) =>
             {
                 if (selected is { } old) { old.Background = Brushes.Transparent; old.BorderBrush = Brushes.Transparent; }
-                selected = b; b.Background = Brush.Parse(_style == "windows" ? "#4D99D9FF" : "#40FFFFFF"); b.BorderBrush = Brush.Parse(_style == "windows" ? "#9999D9FF" : "#00FFFFFF");
+                selected = b; b.Background = Brush.Parse(_style == "windows" ? "#4DC9A227" : "#40FFFFFF"); b.BorderBrush = Brush.Parse(_style == "windows" ? "#99C9A227" : "#00FFFFFF");
             };
             b.DoubleTapped += async (_, _) => await open();
             b.KeyDown += async (_, e) => { if (e.Key == Key.Enter && _style != "mac") await open(); };

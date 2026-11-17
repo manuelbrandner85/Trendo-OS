@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Trendo Karten" xmlns="http://www.topografix.com/GPX/1/1">
+<metadata><name>Karte</name></metadata>
+<wpt lat="49.1959885" lon="17.2818359"><name>Hütte</name></wpt>
+<rte><name>Route 1</name>
+<rtept lat="52.5689350" lon="4.6651367"></rtept>
+<rtept lat="53.6393589" lon="6.9590820"></rtept>
+<rtept lat="50.3474899" lon="10.4000000"></rtept>
+</rte>
+</gpx>

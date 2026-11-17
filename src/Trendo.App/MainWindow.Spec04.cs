@@ -6,18 +6,24 @@ using Trendo.Core;
 
 namespace Trendo.App;
 
-/// <summary>SPEC-04 / T-0269: VR/AR/MR als Programm „Modell-Prüfer“ (Vorbild glTF-Viewer und Leistungsanzeigen der Brillen, nur Funktionsumfang):
-/// Modell (glTF/GLB, OBJ, STL) in 3D ansehen, Richtwerte je Gerät als Ampel und Balken, Maße, Texturen und Grafikspeicher, Prüfbericht,
-/// Rechner für Bildzeit, Detailstufen, Texturschärfe und Bewegungskomfort, die sofort rechnen. Ersetzt die Formularseite.</summary>
+/// <summary>„3D-Modelle ansehen“ (Kennung SPEC-04, früher „VR &amp; AR gestalten“) / T-0269: Programm „Modell-Prüfer“ (Vorbild glTF-Viewer, nur Funktionsumfang):
+/// Modell (glTF/GLB, OBJ, STL) in 3D ansehen, Maße und Maßstab, Dreiecke, Teile, Texturen und Grafikspeicher, Fehler im Modell, Prüfbericht,
+/// Rechner für Detailstufen und Texturschärfe. Erreichbar aus 3D-Druck („Freie 3D-Modelle suchen“), Architektur („3D-Bibliothek öffnen“),
+/// über „Ansehen“ in der 3D-Bibliothek und über die Suche.
+/// T-0722 (Nutzerentscheidung 16.11.2026): VR-Teile entfernt – Zielbrillen mit Richtwerten, Brillen-Ansicht, „Für die Brille reparieren“,
+/// Komfort-Rechner und Bildzeit.</summary>
 public partial class MainWindow
 {
     public string XrFile = "";
-    public int XrDevice;
     private bool _xrWire;
     private string _xrMsg = "";
     private (string Key, Mesh? Mesh, XrModelInfo? Info, XrDetail? Detail, string? Error) _xrCache;
 
-    private void InitSpec04() => RegisterTab(FachTabs, "xr", "Modell-Prüfer", "SPEC-04", XrView, "vr", "ar", "mr", "xr", "brille", "quest", "gltf", "glb", "virtuelle realität", "modell prüfen");
+    /// <summary>Name der Seite (Reiter, Seitentitel, Suche) – zugleich Name der Seitengruppe in StudioCatalog.</summary>
+    public const string XrTitle = "3D-Modelle ansehen";
+
+    private void InitSpec04() => RegisterTab(FachTabs, "xr", XrTitle, "SPEC-04", XrView, "3d-modelle ansehen", "3d modell ansehen", "modell ansehen", "3d ansehen", "modell-prüfer", "modell prüfen",
+        "gltf", "glb", "stl", "maße", "dreiecke", "3d-betrachter");
 
     void XrRun(Action a) { try { a(); } catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or FormatException or UnauthorizedAccessException or InvalidDataException) { _xrMsg = "⚠ " + ex.Message; } Show("xr"); }
 
@@ -43,17 +49,11 @@ public partial class MainWindow
     {
         var (mesh, info, det, err) = XrLoad();
         Button Btn(string name, string label, Action go, bool accent = false) { var b = new Button { Name = name, Content = label, Padding = new Thickness(10, 4), Margin = new Thickness(0, 0, 4, 4) }; if (accent) { b.Background = Accent; b.Foreground = Brushes.White; } b.Click += (_, _) => go(); return b; }
-        // Kopf: Datei und Zielgerät
+        // Kopf: Datei
         var bar = new WrapPanel { Name = "xr-bar" };
         var file = Field("xr-file-path", "3D-Modell (.glb, .gltf, .obj, .stl)", 320, XrFile); bar.Children.Add(file);
         bar.Children.Add(Btn("xr-open", "Öffnen", () => XrRun(() => { var p = Need(file, "das Modell"); if (!File.Exists(p)) throw new FileNotFoundException("Diese Datei gibt es nicht."); XrFile = p; _xrMsg = ""; }), true));
         bar.Children.Add(Btn("xr-sample", "Beispielmodell", () => XrRun(() => { XrFile = XrSample.Write(Path.Combine(WorkFolder("Modell-Prüfer"), "beispiel-leseecke.glb")); _xrMsg = "Beispiel geladen: Leseecke mit Sessel, Pflanze und Teppich in echten Maßen."; })));
-        bar.Children.Add(new TextBlock { Text = "Zielgerät", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0, 6, 4) });
-        for (var k = 0; k < XrInspector.Budgets.Count; k++)
-        {
-            var i = k; var b = Btn($"xr-dev-{k}", XrInspector.Budgets[k].Device.Split(" (")[0], () => { XrDevice = i; Show("xr"); }); if (XrDevice == k) { b.Background = Brush.Parse("#C9A227"); b.Foreground = Brushes.White; }
-            bar.Children.Add(b);
-        }
         if (_xrMsg.Length > 0) bar.Children.Add(new TextBlock { Name = "xr-msg", Text = _xrMsg, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 4), FontSize = 12, Foreground = Brush.Parse(_xrMsg.StartsWith('⚠') ? "#F87171" : "#4ADE80") });
 
         // Mitte: 3D-Ansicht
@@ -63,56 +63,53 @@ public partial class MainWindow
         else
         {
             var view = new MeshView { Name = "xr-view", Model = mesh, Wire = _xrWire, EyeHeightCm = _xrEye ? XrPro.EyeCm : null, EyeDistanceCm = XrPro.ViewDistanceCm, Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.SizeAll) };
-            Control? headset = null;
             var tools = new WrapPanel { Margin = new Thickness(0, 6, 0, 0) };
             foreach (var (id, label) in new[] { ("iso", "Schräg"), ("vorne", "Vorne"), ("seite", "Seite"), ("oben", "Oben") }) { var v = id; tools.Children.Add(Btn("xr-v-" + id, label, () => view.SetView(v))); }
             tools.Children.Add(Btn("xr-wire", _xrWire ? "Drahtgitter aus" : "Drahtgitter an", () => { _xrWire = !_xrWire; Show("xr"); }));
-            tools.Children.Add(Btn("xr-eye", _xrEye ? "Augenhöhe aus" : "Aus Augenhöhe", () => { _xrEye = !_xrEye; Show("xr"); }, _xrEye)); // wie mit der Brille: 1,60 m, 2 m Abstand
-            if (XrPro.HeadsetOf(XrDevice) is { } hs) // S3: beide Augen wie in der Brille (Sichtfeld und Augenabstand des Zielgeräts)
-            {
-                tools.Children.Add(Btn("xr-hmd", _xrHmd ? "Brillen-Ansicht aus" : "Brillen-Ansicht", () => { _xrHmd = !_xrHmd; Show("xr"); }, _xrHmd));
-                if (_xrHmd) { var hv = XrHeadsetView(mesh, hs, view); view = hv.Left; headset = hv.Panel; }
-            }
+            tools.Children.Add(Btn("xr-eye", _xrEye ? "Augenhöhe aus" : "Aus Augenhöhe", () => { _xrEye = !_xrEye; Show("xr"); })); // stehend 1,60 m, 2 m Abstand – wie im Raum
             var size = det is null ? "" : XrPlus.ScaleVerdict(det);
             tools.Children.Add(new TextBlock { Name = "xr-size", Text = size, Foreground = Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 4), TextWrapping = TextWrapping.Wrap, MaxWidth = 520 });
-            var dp = new DockPanel(); DockPanel.SetDock(tools, Avalonia.Controls.Dock.Bottom); dp.Children.Add(tools); dp.Children.Add(headset ?? new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, Child = view });
+            var dp = new DockPanel(); DockPanel.SetDock(tools, Avalonia.Controls.Dock.Bottom); dp.Children.Add(tools); dp.Children.Add(new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, Child = view });
             center = dp;
         }
         var mid = new Border { CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(10), Child = center };
-        var right = new Border { Name = "xr-side", Width = 360, CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(12), Child = new ScrollViewer { Content = XrSide(info, det) } };
+        var right = new Border { Name = "xr-side", Width = 360, CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(12), Child = new ScrollViewer { Content = XrSide(mesh, info, det) } };
         var body = new Grid { ColumnDefinitions = new ColumnDefinitions("*,12,Auto"), Children = { mid, Pos(right, 2) } };
         var root = new DockPanel { Name = "xr-root" }; DockPanel.SetDock(bar, Avalonia.Controls.Dock.Top); root.Children.Add(bar); root.Children.Add(body);
-        return FitPage("Modell-Prüfer", new Panel(), root);
+        return FitPage(XrTitle, new Panel(), root);
     }
 
-    Control XrSide(XrModelInfo? info, XrDetail? det)
+    /// <summary>Fehler im Modell: bei glTF/GLB aus den Modelldaten (Material, leere Datei), bei OBJ/STL nur „keine Dreiecke“ – Material gibt es dort nicht.</summary>
+    static IReadOnlyList<string> XrProblems(Mesh mesh, XrModelInfo info, XrDetail? det) =>
+        det is not null ? XrInspector.Problems(info) : mesh.Triangles == 0 ? ["Keine Dreiecke – die Datei enthält keine sichtbare Form."] : [];
+
+    Control XrSide(Mesh? mesh, XrModelInfo? info, XrDetail? det)
     {
         var sp = new StackPanel { Spacing = 6 };
-        if (info is not null)
+        if (info is not null && mesh is not null)
         {
-            var b = XrInspector.Budgets[Math.Clamp(XrDevice, 0, XrInspector.Budgets.Count - 1)];
             sp.Children.Add(H($"{info.File}", 13));
-            void Meter(string name, string label, double val, double max, string text)
+            void Row(string name, string label, string text) =>
+                sp.Children.Add(new Grid { Name = name, Margin = new Thickness(0, 0, 14, 0), ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { // rechts Platz für die Bildlaufleiste
+                    new TextBlock { Text = label, Foreground = Text, FontSize = 12 }, Pos(new TextBlock { Name = name + "-val", Text = text, Foreground = Text, FontSize = 12, FontWeight = FontWeight.SemiBold }, 1) } });
+            if (mesh.V.Count > 0)
             {
-                var pct = max <= 0 ? 0 : val / max; var col = pct > 1 ? "#F87171" : pct > 0.8 ? "#FACC15" : "#4ADE80";
-                sp.Children.Add(new StackPanel { Name = name, Spacing = 2, Children = {
-                    new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { new TextBlock { Text = label, Foreground = Text, FontSize = 12 }, Pos(new TextBlock { Text = text, Foreground = Brush.Parse(col), FontSize = 12, FontWeight = FontWeight.SemiBold }, 1) } },
-                    new ProgressBar { Minimum = 0, Maximum = 100, Value = Math.Min(100, pct * 100), Height = 6, Foreground = Brush.Parse(col) } } });
+                double Span(Func<Vec3, double> f) => mesh.V.Max(f) - mesh.V.Min(f);
+                Row("xr-m-dims", "Maße (B × T × H)", $"{Fach.F(Span(v => v.X), 1)} × {Fach.F(Span(v => v.Y), 1)} × {Fach.F(Span(v => v.Z), 1)} cm");
             }
-            Meter("xr-m-tris", "Dreiecke", info.Triangles, b.MaxTriangles, $"{Fach.F(info.Triangles, 0)} / {Fach.F(b.MaxTriangles, 0)}");
-            Meter("xr-m-draw", "Zeichenaufrufe", info.Primitives, b.MaxDrawCalls, $"{info.Primitives} / {b.MaxDrawCalls}");
-            Meter("xr-m-tex", "Texturen", info.Textures, b.MaxTextures, $"{info.Textures} / {b.MaxTextures}");
-            Meter("xr-m-size", "Dateigröße", info.Bytes, b.MaxBytes, $"{Fach.F(info.Bytes / 1048576.0, 2)} / {Fach.F(b.MaxBytes / 1048576.0, 0)} MB");
-            if (det is { Textures.Count: > 0 }) { var big = det.Textures.Max(t => Math.Max(t.Width, t.Height)); var lim = XrPro.MaxTextureSide(XrDevice); Meter("xr-m-texsize", "Größte Textur", big, lim, $"{big} / {lim} px"); }
-            sp.Children.Add(XrFixCard(info, det));
-            sp.Children.Add(XrGltfCard()); // Alle Studios, Runde 5: Khronos-Prüfung und Packen für Web & Brille
-            sp.Children.Add(H("Alle Geräte", 12));
-            foreach (var bb in XrInspector.Budgets)
-            {
-                var c = XrInspector.Check(info, bb);
-                sp.Children.Add(new TextBlock { Name = "xr-check-" + XrInspector.Budgets.ToList().IndexOf(bb), Text = $"{(c.Ok ? "✓" : "⚠")} {bb.Device}" + (c.Ok ? "" : ": " + string.Join(" ", c.Problems)), Foreground = Brush.Parse(c.Ok ? "#4ADE80" : "#FACC15"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
-            }
-            sp.Children.Add(P("Richtwerte – ob es wirklich flüssig läuft, zeigt nur ein Test auf dem Gerät.", null, 10.5));
+            Row("xr-m-tris", "Dreiecke", Fach.F(info.Triangles, 0));
+            Row("xr-m-draw", "Teile (Zeichenaufrufe)", info.Primitives.ToString());
+            if (det is not null) { Row("xr-m-mat", "Materialien", info.Materials.ToString()); Row("xr-m-tex", "Texturen", info.Textures.ToString()); }
+            Row("xr-m-size", "Dateigröße", $"{Fach.F(info.Bytes / 1048576.0, 2)} MB");
+            if (det is { Textures.Count: > 0 }) Row("xr-m-texsize", "Größte Textur", $"{det.Textures.Max(t => Math.Max(t.Width, t.Height))} px");
+            // Fehler im Modell – für 3D-Druck und Architektur, unabhängig von einem Zielgerät
+            var problems = XrProblems(mesh, info, det);
+            sp.Children.Add(H("Fehler im Modell", 12));
+            var list = new StackPanel { Name = "xr-problems", Spacing = 2 };
+            if (problems.Count == 0) list.Children.Add(new TextBlock { Name = "xr-problem-0", Text = "✓ Keine Fehler gefunden.", Foreground = Brush.Parse("#4ADE80"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
+            for (var k = 0; k < problems.Count; k++) list.Children.Add(new TextBlock { Name = "xr-problem-" + k, Text = "⚠ " + problems[k], Foreground = Brush.Parse("#FACC15"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
+            sp.Children.Add(list);
+            sp.Children.Add(XrGltfCard()); // Alle Studios, Runde 5: Khronos-Prüfung und Packen für Web-Seiten
             sp.Children.Add(new SelectableTextBlock { Name = "xr-stats", Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap, Text = $"{Fach.F(info.Vertices, 0)} Punkte · {info.Meshes} Netze · {info.Materials} Materialien · {info.Nodes} Knoten · {info.Animations} Animationen" + (info.Generator.Length > 0 ? $" · erstellt mit {info.Generator}" : "") });
             if (det is not null)
             {
@@ -127,15 +124,10 @@ public partial class MainWindow
         }
         // Rechner (sofort)
         var calcs = new StackPanel { Spacing = 6 };
-        var fps = XrInspector.Budgets[Math.Clamp(XrDevice, 0, XrInspector.Budgets.Count - 1)].Fps.ToString();
-        LiveCalc(calcs, "xr-frame", "Bildzeit", [("fps", "Bildwiederholrate (Hz)", fps, ["60", "72", "90", "120"]), ("ms", "Gemessen (ms, aus der Leistungsanzeige)", "12", null)],
-            v => { var (bud, ok, h) = XrInspector.FrameBudget((int)Fach.Num(v("fps")), Fach.Num(v("ms"))); return ok ? $"✓ Im Budget: {Fach.F(bud)} ms je Bild, {Fach.F(h, 1)} % Reserve" : $"⚠ Zu langsam: Budget nur {Fach.F(bud)} ms – Szene vereinfachen"; });
         LiveCalc(calcs, "xr-lod", "Detailstufen planen", [("tris", "Dreiecke (voll)", (info?.Triangles ?? 200000).ToString(), null), ("size", "Objektgröße (m)", det is null ? "2" : Fach.F(Math.Max(det.SizeX, Math.Max(det.SizeY, det.SizeZ)), 2), null)],
             v => string.Join(" · ", XrPlus.LodPlan((long)Fach.Num(v("tris")), Fach.Num(v("size"))).Select(x => $"Stufe {x.Level}: {Fach.F(x.Triangles, 0)} ab {Fach.F(x.FromM, 1)} m")));
         LiveCalc(calcs, "xr-texel", "Textur scharf genug?", [("px", "Textur (px)", det?.Textures.FirstOrDefault()?.Width.ToString() ?? "2048", ["512", "1024", "2048", "4096"]), ("size", "Objekt (m)", "2", null), ("dist", "Abstand (m)", "1", null)],
             v => { var (d, t) = XrPlus.TexelDensity((int)Fach.Num(v("px")), Fach.Num(v("size")), Fach.Num(v("dist"))); return $"{Fach.F(d, 0)} Pixel pro Meter – {t}"; });
-        LiveCalc(calcs, "xr-move", "Wird jemandem übel?", [("move", "Gehtempo (m/s)", "2", null), ("turn", "Drehen (°/s)", "120", null), ("snap", "Schritt-Drehen", "nein", ["nein", "ja"]), ("vig", "Tunnelblick", "nein", ["nein", "ja"]), ("acc", "Beschleunigung (m/s²)", "0", null)],
-            v => { var (sc, tips) = XrPlus.Comfort(Fach.Num(v("move")), Fach.Num(v("turn")), v("snap") == "ja", v("vig") == "ja", Fach.Num(v("acc"))); return $"Komfort {sc}/100" + (tips.Count == 0 ? " – angenehm" : " · " + string.Join(" · ", tips)); });
         sp.Children.Add(H("Rechner", 12)); sp.Children.Add(calcs);
         return sp;
     }

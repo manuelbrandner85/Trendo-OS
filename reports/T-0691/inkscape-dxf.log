@@ -1,0 +1,4 @@
+Inkscape 1.4.4 (dcaf3e7, 2026-05-05)
+
+(org.inkscape.Inkscape:10504): GLib-WARNING **: 07:43:02.797: passing a child setup function to the g_spawn functions is pointless on Windows and it is ignored
+exit=0

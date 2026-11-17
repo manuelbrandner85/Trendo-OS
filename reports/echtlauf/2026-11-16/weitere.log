@@ -1,0 +1,221 @@
+# Echtlauf weitere – Weitere Echtwerkzeuge der Testsuite (assimp, typst, melt, IfcOpenShell, Open3D, glTF-Prüfer …)
+Datum: 2026-11-16T21:44:57
+Fundort: nicht gefunden
+Suchweg: –
+Version: –
+
+## Tests (core): „AssimpFact“ – 2 Ergebnis(se), 3.3 s
+- Passed: assimp echt über TrendoOS --assimp-convert: eigener Prozess schreibt GLB
+- Passed: assimp echt: OBJ → GLB → OBJ (8 Ecken, 12 Dreiecke bleiben), kaputte Datei ergibt Exit 3 ohne Absturz
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.AssimpConvertTests.Real_roundtrip|FullyQualifiedName=Trendo.Core.Tests.AssimpConvertTests.Real_via_trendo_process --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-0.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-0.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     2, übersprungen:     0, gesamt:     2, Dauer: 958 ms - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „TypstFact“ – 2 Ergebnis(se), 2.8 s
+- Passed: DIN 5008 echt: Form A gemessen (Anschrift 44,7 mm, Info 32 mm, Betreff 80,46 mm); langer Text → zweite Seite mit „Seite 2 von 2“
+- Passed: DIN 5008 echt: typst setzt Form B als PDF; gemessen: Anschrift bei 25/62,7 mm, Info bei 125/50 mm, Betreff bei 98,46 mm (±0,5 mm)
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.DinLetterTests.Real_form_a_and_pages|FullyQualifiedName=Trendo.Core.Tests.DinLetterTests.Real_form_b --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-1.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-1.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     2, übersprungen:     0, gesamt:     2, Dauer: 729 ms - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „MeltFact“ – 1 Ergebnis(se), 4.9 s
+- Passed: MLT echt: melt rendert den Trendo-Schnitt – 5,5 s, 1280×720, Bild und Ton, rote Stelle bei 3,5 s
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.MltProjectTests.Real_render --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-2.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-2.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 2 s - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „IfcFact“ – 1 Ergebnis(se), 3.5 s
+- Passed: IFC echt: Vorlage „2-Zimmer-Wohnung“ → IFC4 mit IfcOpenShell, wieder eingelesen, gleiche Anzahl Bauteile
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.IfcExchangeTests.Real_template_roundtrip --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-3.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-3.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 1 s - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „Open3dFact“ – 1 Ergebnis(se), 5.4 s
+- Passed: Open3D echt: Glätten halbiert das Rauschen ohne Schrumpfen, Vereinfachen erreicht die Ziel-Dreieckszahl, Unsinn wird abgelehnt
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.Open3dTests.Real_smooth_and_simplify --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-4.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-4.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 3 s - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „PmFact“ – 1 Ergebnis(se), 10.3 s
+- Passed: PMTiles echt: go-pmtiles wandelt MBTiles um (bis 87 381 Kacheln, mit Blattverzeichnissen) – jede Kachel gleich wie im Original
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.PmTilesTests.Real_convert_compare --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-5.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-5.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 8 s - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „VecFact“ – 1 Ergebnis(se), 2.2 s
+- Passed: Vektorkarte echt: Protomaps-Ausschnitt – alle Kacheln lesbar, entpackt als MVT (Protobuf), Gebiet stimmt
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.VectorMapTests.Real_protomaps --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-6.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-6.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 75 ms - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „ValidatorFact“ – 1 Ergebnis(se), 2.2 s
+- Passed: glTF echt: Khronos-Prüfer – Trendo-Regal fehlerfrei (9840 Dreiecke), abgeschnittene Datei mit GLB_UNEXPECTED_END_OF_CHUNK_DATA
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.GltfToolsTests.Real_validate --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-7.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-7.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 134 ms - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „TransformFact“ – 1 Ergebnis(se), 9.6 s
+- Passed: glTF echt: Packen für Web & Brille – Regal deutlich kleiner, danach weiter fehlerfrei mit meshopt und WebP
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.GltfToolsTests.Real_pack --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-8.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-8.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 7 s - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „SewingFact“ – 1 Ergebnis(se), 3.5 s
+- Passed: Schnitt echt: T-Shirt (Teagan) und Hose (Titan) für Brust 92/Taille 76/Hüfte 100 → SVG in Millimetern, plausible Bogengröße, ergänzte Maße genannt
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.SewingRealTests.Real_draft --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-9.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-9.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 1 s - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „AxeFact“ – 1 Ergebnis(se), 15.2 s
+- Passed: axe echt: fehlerhafte Seite → Bild-Alt, Sprache, Titel, Link, Knopf, Beschriftung, Überschriftenfolge gefunden (Seiten-Skript lief nicht); saubere Seite ohne Fehler
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.AxeCheckTests.Real_run --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-10.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-10.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 13 s - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „ResticFact“ – 1 Ergebnis(se), 10.0 s
+- Passed: restic echt: sichern, Stände, zurückholen (Byte für Byte gleich), Ablage ohne Klartext, zweite Sicherung nur mit der Änderung, falsches Passwort verständlich
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.ResticRealTests.Real_backup --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-11.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-11.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 7 s - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „YrFact“ – 1 Ergebnis(se), 8.6 s
+- Passed: YARA echt: Archiv mit gepinnter Prüfsumme; yr kompiliert alle 310 Regeln; saubere Dateien ohne Befund; Prüfmarke in Unterordner wird als Erpressersoftware gemeldet
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.YaraScanRealTests.Real_scan --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-12.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-12.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 6 s - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „YoloxFact“ – 1 Ergebnis(se), 3.4 s
+- Passed: Objekte echt: Modell mit gepinnter Prüfsumme; Demobild → Fahrrad und Hund sicher erkannt, Fahrzeug nur einmal gezählt, markiertes Bild geschrieben
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.ObjectDetectRealTests.Real_detect --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-13.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-13.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 1 s - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „PytiledFact“ – 1 Ergebnis(se), 2.6 s
+- Passed: Tiled echt: pytiled-parser liest Trendos Karten – Größe, Tileset, Ebenen, Objekte mit Eigenschaften und Welt stimmen
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.TiledReferenzTests.Read_by_pytiled --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-14.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-14.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 276 ms - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „ReferenzFact“ – 1 Ergebnis(se), 2.8 s
+- Passed: ICS echt: jeder Termin im Fenster 08.11.2025–08.11.2028 stimmt mit der unabhängigen Python-Referenz überein (Zeit und Titel)
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.IcsForeignReferenzTests.Same_as_reference --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-15.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-15.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 753 ms - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „IconFact“ – 1 Ergebnis(se), 2.9 s
+- Passed: Symbole echt: 276 Sätze mit Lizenzregel; in 4 echten Sätzen (21 000+ Symbole inkl. Aliasse) wird jedes Symbol sicher und als gültiges XML ausgegeben
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.IconSetsRealTests.Real_sets --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-16.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-16.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 817 ms - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „MdFact“ – 1 Ergebnis(se), 10.2 s
+- Passed: Dokumente echt: Word, Excel (Tabelle), PowerPoint, HTML, PDF → Markdown mit Umlauten und Titel; kaputte Excel-Datei abgelehnt statt Müll
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.DocMarkdownRealTests.Real_convert --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-17.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-17.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     1, übersprungen:     0, gesamt:     1, Dauer: 8 s - Trendo.Core.Tests.dll (net10.0)
+
+## Tests (core): „ToolFact“ – 3 Ergebnis(se), 7.7 s
+- Passed: Trendo.Core.Tests.ToolAdaptersRealTests.Mediamtx_real_local_only
+- Passed: Trendo.Core.Tests.ToolAdaptersRealTests.Typst_real_letter
+- Passed: Trendo.Core.Tests.ToolAdaptersRealTests.Streamlink_real_public_live
+$ dotnet test C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests -c Release --no-build --filter FullyQualifiedName=Trendo.Core.Tests.ToolAdaptersRealTests.Mediamtx_real_local_only|FullyQualifiedName=Trendo.Core.Tests.ToolAdaptersRealTests.Streamlink_real_public_live|FullyQualifiedName=Trendo.Core.Tests.ToolAdaptersRealTests.Typst_real_letter --logger trx;LogFileName=C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-18.trx
+Exit 0
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0724\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\weitere-18.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:     3, übersprungen:     0, gesamt:     3, Dauer: 5 s - Trendo.Core.Tests.dll (net10.0)
+
+
+ERGEBNIS: ECHT-GRÜN (112.6 s)
+- AssimpFact: 2 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- TypstFact: 2 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- MeltFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- IfcFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- Open3dFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- PmFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- VecFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- ValidatorFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- TransformFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- SewingFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- AxeFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- ResticFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- YrFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- YoloxFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- PytiledFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- ReferenzFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- IconFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- MdFact: 1 bestanden, 0 fehlgeschlagen, 0 übersprungen
+- ToolFact: 3 bestanden, 0 fehlgeschlagen, 0 übersprungen

@@ -1,0 +1,250 @@
+# Echtlauf formulare – 2026-11-16 14:18:53
+$ LibreOffice erzeugt antrag-libreoffice.pdf: python.exe C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0705\tools\echtlauf\buero\lo_fremd.py formular C:\Users\<user>\AppData\Local\TrendoWerkzeuge\libreoffice\App\libreoffice\program\soffice.exe C:\Users\<user>\AppData\Local\Temp\trendo-ui-a47f908cb9fe46e6bcf42f1c4d10b817\antrag-libreoffice.pdf C:\Users\<user>\AppData\Local\Temp\trendo-t0705-uno-add9ebed
+Exit 0
+geschrieben: antrag-libreoffice.pdf 42321 Bytes
+Datei fremd-antrag-libreoffice.pdf: 42321 Bytes, SHA-256 4959a631f1a8f17fab90b56fd92273b9965b9818b2686afe114c5a4c2d4c1397
+$ qpdf liest die Formularfelder des Originals: qpdf.exe --json --json-key=acroform C:\Users\<user>\AppData\Local\Temp\trendo-ui-a47f908cb9fe46e6bcf42f1c4d10b817\antrag-libreoffice.pdf
+Exit 0
+{
+  "version": 2,
+  "parameters": {
+    "decodelevel": "generalized"
+  },
+  "acroform": {
+    "fields": [
+      {
+        "alternativename": "Nachname",
+        "annotation": {
+          "annotationflags": 4,
+          "appearancestate": "",
+          "object": "4 0 R"
+        },
+        "choices": [],
+        "defaultvalue": "u:",
+        "fieldflags": 0,
+        "fieldtype": "/Tx",
+        "fullname": "Nachname",
+        "ischeckbox": false,
+        "ischoice": false,
+        "isradiobutton": false,
+        "istext": true,
+        "mappingname": "Nachname",
+        "object": "4 0 R",
+        "pageposfrom1": 1,
+        "parent": null,
+        "partialname": "Nachname",
+        "quadding": 0,
+        "value": "u:"
+      },
+      {
+        "alternativename": "Wohnort",
+        "annotation": {
+          "annotationflags": 4,
+          "appearancestate": "",
+          "object": "7 0 R"
+        },
+        "choices": [],
+        "defaultvalue": "u:",
+        "fieldflags": 0,
+        "fieldtype": "/Tx",
+        "fullname": "Wohnort",
+        "ischeckbox": false,
+        "ischoice": false,
+        "isradiobutton": false,
+        "istext": true,
+        "mappingname": "Wohnort",
+        "object": "7 0 R",
+        "pageposfrom1": 1,
+        "parent": null,
+        "partialname": "Wohnort",
+        "quadding": 0,
+        "value": "u:"
+      },
+      {
+        "alternativename": "Zustimmung",
+        "annotation": {
+          "annotationflags": 4,
+          "appearancestate": "/Off",
+          "object": "8 0 R"
+        },
+        "choices": [],
+        "defaultvalue": "/Off",
+        "fieldflags": 0,
+        "fieldtype": "/Btn",
+        "fullname": "Zustimmung",
+        "ischeckbox": true,
+        "ischoice": false,
+        "isradiobutton": false,
+        "istext": false,
+        "mappingname": "Zustimmung",
+        "object": "8 0 R",
+        "pageposfrom1": 1,
+        "parent": null,
+        "partialname": "Zustimmung",
+        "quadding": 0,
+        "value": "/Off"
+      }
+    ],
+    "hasacroform": true,
+    "needappearances": true
+  }
+}
+Oberfläche: „Formular öffnen …“ → 3 Felder gefunden. Tipp: „Meine Angaben einsetzen“ füllt Name, Anschrift und mehr vor.
+Trendo erkennt Felder: Nachname, Wohnort, Zustimmung
+Oberfläche: Nachname, Wohnort getippt, Ankreuzfeld angeklickt.
+Datei ausgefuellt.pdf: 62758 Bytes, SHA-256 dfceed207793a7091d20c7d2ebc8a3baa15c3826f2b082c52979dbca26b18ba5
+$ qpdf prüft ausgefuellt.pdf: qpdf.exe --check C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\formulare\ausgefuellt.pdf
+Exit 3
+checking C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\formulare\ausgefuellt.pdf
+PDF Version: 1.7
+File is not encrypted
+File is not linearized
+[stderr] WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\formulare\ausgefuellt.pdf (offset 41929): input stream is complete but output may still be valid
+qpdf: operation succeeded with warnings
+qpdf: gültig, 1 Warnung(en) „Flate-Strom ohne Abschluss“ (PDFsharp) – keine Fehler.
+$ qpdf zählt Seiten: qpdf.exe --show-npages C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\formulare\ausgefuellt.pdf
+Exit 0
+1
+$ qpdf liest die Feldwerte: qpdf.exe --json --json-key=acroform C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\formulare\ausgefuellt.pdf
+Exit 0
+{
+  "version": 2,
+  "parameters": {
+    "decodelevel": "generalized"
+  },
+  "acroform": {
+    "fields": [
+      {
+        "alternativename": "Nachname",
+        "annotation": {
+          "annotationflags": 4,
+          "appearancestate": "",
+          "object": "3 0 R"
+        },
+        "choices": [],
+        "defaultvalue": "u:",
+        "fieldflags": 0,
+        "fieldtype": "/Tx",
+        "fullname": "Nachname",
+        "ischeckbox": false,
+        "ischoice": false,
+        "isradiobutton": false,
+        "istext": true,
+        "mappingname": "Nachname",
+        "object": "3 0 R",
+        "pageposfrom1": 1,
+        "parent": null,
+        "partialname": "Nachname",
+        "quadding": 0,
+        "value": "u:Muster"
+      },
+      {
+        "alternativename": "Wohnort",
+        "annotation": {
+          "annotationflags": 4,
+          "appearancestate": "",
+          "object": "6 0 R"
+        },
+        "choices": [],
+        "defaultvalue": "u:",
+        "fieldflags": 0,
+        "fieldtype": "/Tx",
+        "fullname": "Wohnort",
+        "ischeckbox": false,
+        "ischoice": false,
+        "isradiobutton": false,
+        "istext": true,
+        "mappingname": "Wohnort",
+        "object": "6 0 R",
+        "pageposfrom1": 1,
+        "parent": null,
+        "partialname": "Wohnort",
+        "quadding": 0,
+        "value": "u:Musterstadt"
+      },
+      {
+        "alternativename": "Zustimmung",
+        "annotation": {
+          "annotationflags": 4,
+          "appearancestate": "/Yes",
+          "object": "7 0 R"
+        },
+        "choices": [],
+        "defaultvalue": "/Off",
+        "fieldflags": 0,
+        "fieldtype": "/Btn",
+        "fullname": "Zustimmung",
+        "ischeckbox": true,
+        "ischoice": false,
+        "isradiobutton": false,
+        "istext": false,
+        "mappingname": "Zustimmung",
+        "object": "7 0 R",
+        "pageposfrom1": 1,
+        "parent": null,
+        "partialname": "Zustimmung",
+        "quadding": 0,
+        "value": "/Yes"
+      }
+    ],
+    "hasacroform": true,
+    "needappearances": true
+  }
+}
+Datei fertig-geglaettet.pdf: 58611 Bytes, SHA-256 5722571698d1c81c1f69cbd5529a423688010e490846bb85a387f5f302044dc1
+$ qpdf prüft fertig-geglaettet.pdf: qpdf.exe --check C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\formulare\fertig-geglaettet.pdf
+Exit 3
+checking C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\formulare\fertig-geglaettet.pdf
+PDF Version: 1.7
+File is not encrypted
+File is not linearized
+[stderr] WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\formulare\fertig-geglaettet.pdf (offset 56049): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\formulare\fertig-geglaettet.pdf (offset 229): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\formulare\fertig-geglaettet.pdf (offset 56123): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\formulare\fertig-geglaettet.pdf (offset 36118): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\formulare\fertig-geglaettet.pdf (offset 56049): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\formulare\fertig-geglaettet.pdf (offset 229): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\formulare\fertig-geglaettet.pdf (offset 56123): input stream is complete but output may still be valid
+qpdf: operation succeeded with warnings
+qpdf: gültig, 7 Warnung(en) „Flate-Strom ohne Abschluss“ (PDFsharp) – keine Fehler.
+$ qpdf zählt Seiten: qpdf.exe --show-npages C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\formulare\fertig-geglaettet.pdf
+Exit 0
+1
+$ qpdf sucht Formularfelder im geglätteten PDF: qpdf.exe --json --json-key=acroform C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\formulare\fertig-geglaettet.pdf
+Exit 0
+{
+  "version": 2,
+  "parameters": {
+    "decodelevel": "generalized"
+  },
+  "acroform": {
+    "fields": [],
+    "hasacroform": false,
+    "needappearances": false
+  }
+}
+PDFium Text fertig-geglaettet.pdf Seite 1: Antrag auf Musterleistung Nachname Wohnort Ich stimme zu Ich stimme zu Muster Musterstadt ✓
+$ pdftotext (Poppler) liest fertig-geglaettet.pdf: pdftotext.exe -layout C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\formulare\fertig-geglaettet.pdf -
+Exit 0
+Antrag auf Musterleistung
+
+Nachname
+
+Wohnort        Muster
+
+Ich stimme zu
+
+               Musterstadt
+
+                Ich stimme zu
+$ LibreOffice öffnet ausgefuellt.pdf: soffice.exe -env:UserInstallation=file:///C:\Users\<user>/AppData/Local/Temp/trendo-t0705-lo-730faf13 --headless --norestore --convert-to png --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-d6819548 C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\formulare\ausgefuellt.pdf
+Exit 0
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\formulare\ausgefuellt.pdf as a Draw document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-d6819548\ausgefuellt.png using filter : draw_png_Export
+[stderr] Could not find platform independent libraries <prefix>
+Datei ausgefuellt-libreoffice.png: 26848 Bytes, SHA-256 f5290a7c04c781d44fddef78637fac15c5f9e3f8f51bc13b3ffd495dcb8c6eef
+$ LibreOffice öffnet fertig-geglaettet.pdf: soffice.exe -env:UserInstallation=file:///C:\Users\<user>/AppData/Local/Temp/trendo-t0705-lo-abe21ca9 --headless --norestore --convert-to png --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-02c1db50 C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\formulare\fertig-geglaettet.pdf
+Exit 0
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\formulare\fertig-geglaettet.pdf as a Draw document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-02c1db50\fertig-geglaettet.png using filter : draw_png_Export
+[stderr] Could not find platform independent libraries <prefix>
+Datei fertig-libreoffice.png: 26834 Bytes, SHA-256 4c8e21b4dc140cc7f3395ef595e4321ce1305943025ec07ad4c230bcf7537823
+ERGEBNIS: bestanden

@@ -37,15 +37,17 @@ public static class PromptActions
             new RoomPlanAdapter(), new CircuitAdapter(), new BeamCheckAdapter(),
             new TwinSeriesAdapter(), new RouteAdapter(),
             new CncMachineAdapter(), new CncFeedAdapter(),
-            new VehicleCostAdapter(), new StatsAdapter(),
+            new StatsAdapter(),
             new KnowledgeRememberAdapter(), new LearnCardAdapter(), new PromptFillAdapter(), new FashionSizeAdapter(),
             new StreamSendAdapter(), new RundownAdapter(), new TvListAdapter(), new SongPlanAdapter(), new FilmOutlineAdapter(), new PodPriceAdapter(), new ConsolePlanAdapter(),
             new SummaryPromptAdapter(), new LogoPromptAdapter(), new PodcastPromptAdapter(), new ComicPromptAdapter(),
             new BookOutlineAdapter(), new AnimTitleAdapter(), new PhotoPlanAdapter(), new ImageAiPlanAdapter(),
             new VideoAiPlanAdapter(), new AgentDraftAdapter(), new ModelQuestionsAdapter(), new TrainClassifierAdapter(),
             new LicenseFetchAdapter(), new LicenseNoteAdapter(),
-            new XrBudgetAdapter(), new ScanBlockedAdapter(),
-            new CodeProjectAdapter(), new VisionFactsAdapter(), new CiteSourceAdapter(), new DayPlanAdapter(), new KunstVorlageAdapter(),
+            new ModelCheckAdapter(), new ScanBlockedAdapter(),
+            new CodeProjectAdapter(), new VisionFactsAdapter(), new CiteSourceAdapter(), new DayPlanAdapter(), new KunstVorlageAdapter(), new LebenslaufAdapter(), new KarteAdapter(), new VertragFristAdapter(),
+            new DeckDesignAdapter(), new DocScanAdapter(),
+            new PdfWerkstattAdapter(), new FormularZuordnenAdapter(),
             ..SystemActions.Create()
         ];
 }

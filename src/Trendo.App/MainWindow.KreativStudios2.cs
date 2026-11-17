@@ -43,25 +43,56 @@ public partial class MainWindow
         ],
         Ribbon =
         [
+            // T-0725 (Audit D7): fremdes Manuskript (Word, OpenDocument, Text, Markdown) übernehmen – ein Rückgängig-Schritt, Original bleibt unverändert
+            ("Datei", [
+                new ProgramCmd("book-open", "Manuskript öffnen …", d => _ = BookPick(d), Tip: "Word (.docx), OpenDocument (.odt), Text oder Markdown als Manuskript übernehmen – Rückgängig holt den alten Stand zurück."),
+            ]),
             ("Kapitel", [
                 new ProgramCmd("book-chapter", "Neues Kapitel", d => d.Set("text", BookKit.NextChapter(d.Text("text")), "Neues Kapitel"), Primary: true, Tip: "Hängt „# Kapitel N“ ans Ende an."),
             ]),
             ("Claude", [
-                new ProgramCmd("book-claude-next", "Weiterschreiben mit Claude", d => _ = ClaudeFromStudioBar("STUDIO-BOOK-01", "Schreib das letzte Kapitel in meinem Stil weiter, etwa eine Seite, nur erfundene Figuren:\n\n" + BookTail(d.Text("text"))), Tip: "Nutzt deinen Claude-Zugang. Du entscheidest, was übernommen wird."),
-                new ProgramCmd("book-claude-edit", "Lektorat mit Claude", d => _ = ClaudeFromStudioBar("STUDIO-BOOK-01", "Lies dieses Kapitel wie eine Lektorin: Logik, Längen, Wiederholungen, Rechtschreibung. Mach Vorschläge als Liste:\n\n" + BookTail(d.Text("text")))),
+                new ProgramCmd("book-claude-next", "Weiterschreiben mit Claude", d => _ = AssistFromProgram(BookKey, "STUDIO-BOOK-01", "Schreib das letzte Kapitel in meinem Stil weiter, etwa eine Seite, nur erfundene Figuren:\n\n" + BookTail(d.Text("text"))), Tip: "Nutzt deinen Claude-Zugang. Du entscheidest, was übernommen wird."),
+                new ProgramCmd("book-claude-edit", "Lektorat mit Claude", d => _ = AssistFromProgram(BookKey, "STUDIO-BOOK-01", "Lies dieses Kapitel wie eine Lektorin: Logik, Längen, Wiederholungen, Rechtschreibung. Mach Vorschläge als Liste:\n\n" + BookTail(d.Text("text")))),
             ]),
         ],
         Exports =
         [
             new("epub", "E-Book (.epub)", ".epub", (d, f) => { File.WriteAllBytes(f, BookKit.Epub(d.Text("title"), d.Text("author"), d.Text("text"), DateTimeOffset.UtcNow)); return f; }),
+            // T-0725: Word, OpenDocument und Druck-PDF über die Schreiber von Trendo Text (Titelseite, je Kapitel eine neue Seite, fett/kursiv/Aufzählung)
+            new("docx", "Word (.docx)", ".docx", (d, f) => { Trendo.Core.Office.DocxFormat.Write(BookKit.ToTextDoc(d.Text("title"), d.Text("author"), d.Text("text")), f); return f; }),
+            new("pdf", "Druck-PDF (.pdf)", ".pdf", (d, f) => { Trendo.Core.Office.TextPdf.Export(BookKit.ToTextDoc(d.Text("title"), d.Text("author"), d.Text("text")), f); return f; }),
+            new("odt", "OpenDocument (.odt)", ".odt", (d, f) => { Trendo.Core.Office.OdtFormat.Write(BookKit.ToTextDoc(d.Text("title"), d.Text("author"), d.Text("text")), f); return f; }),
             new("md", "Manuskript (.md)", ".md", (d, f) => { File.WriteAllText(f, d.Text("text")); return f; }),
             new("txt", "Nur Text (.txt)", ".txt", (d, f) => { File.WriteAllText(f, string.Join("\n\n", BookKit.Chapters(d.Text("text")).Select(c => c.Title.ToUpperInvariant() + "\n\n" + c.Body))); return f; }),
         ],
         Workspace = BookWorkspace,
         Properties = BookProperties,
+        SimpleExports = 4, // T-0725: E-Book, Word, Druck-PDF und OpenDocument auch in „Einfach“ (keine Funktion nur in „Erweitert“)
         Status = d => { var s = BookKit.Of(d.Text("text"), BookGoal(d)); return $"{s.Words:N0} Wörter · {s.Chapters} Kapitel · etwa {s.Pages} Seiten" + (BookGoal(d) > 0 ? $" · Ziel {s.GoalPercent.ToString("0.#", De)} %" : ""); },
         Help = "Jedes Kapitel beginnt mit „# Titel“, Absätze trennst du mit einer Leerzeile. **fett** und *kursiv* gehen auch. Rechts siehst du Kapitel, Wörter und dein Ziel. Das E-Book öffnet jeder E-Book-Leser.",
     }, "buch", "bücher", "roman", "manuskript", "kapitel", "ebook", "e-book", "epub", "kurzgeschichte", "autorin", "schreiben");
+
+    /// <summary>T-0725: Datei wählen (Dialog; im Test ersetzt) und als Manuskript übernehmen.</summary>
+    async Task BookPick(ProgramDocument d)
+    {
+        var req = new PickRequest("book-open", false, false, BookKit.ImportExtensions);
+        string[]? got;
+        if (PickOverride is { } fake) got = await fake(req);
+        else got = (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Manuskript öffnen",
+            FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Manuskript") { Patterns = ["*.docx", "*.odt", "*.txt", "*.md"] }] }))
+            .Select(f => f.TryGetLocalPath()).OfType<string>().ToArray();
+        if (got is [var f, ..]) ProgramRun(BookKey, () => BookOpenFile(d, f));
+    }
+
+    /// <summary>T-0725: Manuskript aus einer fremden Datei ins offene Buch (ein Rückgängig-Schritt). Was die Datei mehr enthält (Bilder, Kommentare …), steht in der Meldung.</summary>
+    public void BookOpenFile(ProgramDocument d, string path)
+    {
+        var r = BookKit.Import(path);
+        d.Edit("Manuskript öffnen", x => { x["text"] = r.Manuscript; if (r.Title.Length > 0) x["title"] = r.Title; });
+        _progMsg[BookKey] = $"„{Path.GetFileName(path)}“ übernommen: {r.Chapters} Kapitel, {BookKit.Words(r.Manuscript).ToString("N0", De)} Wörter. Das Original bleibt unverändert."
+            + (r.Report is { HasLoss: true } rep ? " Nicht übernommen: " + rep.Kurz() + "." : "");
+        _core.Audit.Append(Principal.LocalOwner.Name, "buch.oeffnen", Path.GetFileName(path));
+    }
 
     static string BookTail(string text) { var ch = BookKit.Chapters(text); return ch.Count == 0 ? "" : $"# {ch[^1].Title}\n\n{KreativSafe.Cut(ch[^1].Body, 12000)}"; }
 
@@ -93,9 +124,16 @@ public partial class MainWindow
             right.Children.Add(P($"{s.Words:N0} Wörter · etwa {s.Pages} Normseiten · {s.ReadMinutes} Minuten Lesezeit", Muted, 11));
         }
         var box = KrBox(d, "text", "book-text", "# Kapitel 1", true, Render);
+        BueroFileDrop(box, BookKey, BueroExt(".docx", ".odt", ".txt", ".md"), "ein Manuskript (.docx, .odt, .txt, .md)", (dd, files) => BookOpenFile(dd, files[0])); // T-0725: Datei aufs Manuskript ziehen
         box.FontFamily = new FontFamily("Georgia, Cambria, serif"); box.FontSize = 15; box.MinHeight = 460;
         Render(d.Text("text"));
-        return new Grid { ColumnDefinitions = new ColumnDefinitions("2*,14,*"), Margin = new Thickness(4, 0, 10, 4), Children = { box, Pos(KrCard(right, "book-card"), 2) } };
+        // V-12 (T-0700): Kapitel, Fett, Kursiv und Liste per Knopf statt „#“ und „**“ tippen
+        var write = WithWriteMarks(box, "book",
+            (Trendo.Core.Text.WriteMarks.Kind.Heading, "Kapitelüberschrift", "Macht die Zeile zur Kapitelüberschrift (noch einmal: wieder normaler Text)"),
+            (Trendo.Core.Text.WriteMarks.Kind.Bold, "Fett", "Markiertes fett – ohne Markierung ein Beispielwort zum Überschreiben"),
+            (Trendo.Core.Text.WriteMarks.Kind.Italic, "Kursiv", "Markiertes schräg"),
+            (Trendo.Core.Text.WriteMarks.Kind.List, "Aufzählung", "Zeilen als Aufzählung"));
+        return new Grid { ColumnDefinitions = new ColumnDefinitions("2*,14,*"), Margin = new Thickness(4, 0, 10, 4), Children = { write, Pos(KrCard(right, "book-card"), 2) } };
     }
 
     Control BookProperties(ProgramDocument d)
@@ -110,8 +148,10 @@ public partial class MainWindow
     }
 
     // ---------------- Animation & Motion ----------------
+    // T-0696: Bühne mit dem gemeinsamen Vektor-Editor (Formen, Pfade, Text, Bilder/SVG anfassen), Zeitleiste mit ziehbaren Schlüsselbildern,
+    // Kurven je Schlüssel. Ältere Animationen (Ebenen rechteck/kreis/text) werden beim Öffnen gelesen und beim nächsten Speichern umgestellt.
 
-    double _animTime; int _animSel; DispatcherTimer? _animPlay;
+    double _animTime; int _animSel; DispatcherTimer? _animPlay; string _animEase = "ein-aus";
 
     static JsonObject AnimLayerJson(AnimKit.Layer l) => new()
     {
@@ -121,7 +161,8 @@ public partial class MainWindow
 
     static double Num(JsonNode? n, double fallback) => n is JsonValue v && v.TryGetValue<double>(out var x) && double.IsFinite(x) ? x : fallback;
 
-    static List<AnimKit.Layer> AnimLayers(ProgramDocument d) => d.List("layers").OfType<JsonObject>().Select(o =>
+    /// <summary>Altes Ebenen-Format (vor T-0696).</summary>
+    static AnimKit.Layer AnimLegacy(JsonObject o)
     {
         var tracks = new Dictionary<string, List<AnimKit.Key>>();
         if (o["tracks"] is JsonObject tr)
@@ -131,12 +172,29 @@ public partial class MainWindow
         var shape = Js(o["shape"]); var color = Js(o["color"]);
         return new AnimKit.Layer(Js(o["id"]), AnimKit.Shapes.Contains(shape) ? shape : "rechteck", Js(o["text"]), LogoKit.IsHex(color) ? color : "#F5C542",
             Math.Clamp(Num(o["w"], 200), 4, 4000), Math.Clamp(Num(o["h"], 120), 4, 4000), tracks);
-    }).ToList();
+    }
 
-    static void AnimSave(ProgramDocument d, List<AnimKit.Layer> layers, string label) =>
-        d.Edit(label, x => x["layers"] = new JsonArray(layers.Select(l => (JsonNode)AnimLayerJson(l)).ToArray()));
+    /// <summary>Die Bühne als Vektor-Dokument (Formen mit ihren Schlüsselbildern).</summary>
+    public static VDoc AnimVec(ProgramDocument d)
+    {
+        var bg = d.Text("background");
+        var v = new VDoc { W = Math.Clamp(d.Number("w", AnimKit.StageW), 64, 3840), H = Math.Clamp(d.Number("h", AnimKit.StageH), 64, 3840), Background = LogoKit.IsHex(bg) ? bg : "#101827" };
+        foreach (var o in d.List("layers").OfType<JsonObject>())
+        {
+            var s = o["kind"] is not null ? VectorKit.ShapeFrom(o) : MotionKit.FromLayer(AnimLegacy(o));
+            if (s.Id.Length == 0 || v.Find(s.Id) is not null) s.Id = VectorKit.NextId(v, s.Kind);
+            v.Shapes.Add(s);
+        }
+        return v;
+    }
 
-    static JsonObject AnimDoc(string bg, params AnimKit.Layer[] layers) => new() { ["background"] = bg, ["layers"] = new JsonArray(layers.Select(l => (JsonNode)AnimLayerJson(l)).ToArray()) };
+    static void AnimSave(ProgramDocument d, VDoc v, string label) => d.Edit(label, x =>
+    {
+        x["layers"] = new JsonArray(v.Shapes.Select(s => (JsonNode)VectorKit.ShapeJson(s)).ToArray());
+        x["w"] = v.W; x["h"] = v.H;
+    });
+
+    static JsonObject AnimDoc(string bg, params AnimKit.Layer[] layers) => new() { ["background"] = bg, ["w"] = AnimKit.StageW, ["h"] = AnimKit.StageH, ["layers"] = new JsonArray(layers.Select(l => (JsonNode)AnimLayerJson(l)).ToArray()) };
 
     static AnimKit.Layer AnimSampleBall()
     {
@@ -146,37 +204,118 @@ public partial class MainWindow
         return l;
     }
 
+    /// <summary>Gewählte Form: Auswahl des Editors, sonst die zuletzt gewählte Ebene.</summary>
+    VShape? AnimCurrent(ProgramDocument d, VDoc v)
+    {
+        var st = VecState(d);
+        if (v.Shapes.FirstOrDefault(s => st.Selected.Contains(s.Id)) is { } s0) { _animSel = v.Shapes.IndexOf(s0); return s0; }
+        if (v.Shapes.Count == 0) return null;
+        var s = v.Shapes[Math.Clamp(_animSel, 0, v.Shapes.Count - 1)];
+        st.Selected.Clear(); st.Selected.Add(s.Id);
+        return s;
+    }
+
     void AnimAdd(ProgramDocument d, string shape)
     {
-        var layers = AnimLayers(d);
-        var id = shape + "-" + (layers.Count + 1);
-        layers.Add(new AnimKit.Layer(id, shape, shape == "text" ? "Titel" : "", shape == "kreis" ? "#5FA8D3" : "#F5C542", shape == "text" ? 0 : 220, shape == "text" ? 90 : 140, []));
-        AnimSave(d, layers, "Ebene hinzugefügt"); _animSel = layers.Count - 1;
+        var v = AnimVec(d);
+        var kind = shape switch { "kreis" => "ellipse", "text" => "text", "rechteck" => "rect", _ => shape };
+        var s = VectorKit.New(kind, 0, 0, kind == "ellipse" ? 140 : 220, 140, VectorKit.NextId(v, kind), kind == "ellipse" ? "#5FA8D3" : "#F5C542");
+        if (kind == "rect") s.Radius = 12;
+        if (kind == "text") { s.Text = "Titel"; s.FontSize = 90; s.Bold = true; s.Anchor = "middle"; VectorRender.FitText(s); }
+        s.X = v.W / 2 - s.W / 2; s.Y = v.H / 2 - s.H / 2;
+        v.Shapes.Add(s);
+        AnimSave(d, v, VectorKit.Label(kind) + " hinzugefügt");
+        var st = VecState(d); st.Selected.Clear(); st.Selected.Add(s.Id); st.Tool = "select"; _animSel = v.Shapes.Count - 1;
+    }
+
+    /// <summary>Schlüssel setzen; ist es der erste Schlüssel einer Eigenschaft nach dem Anfang, hält ein Schlüssel bei 0 s den bisherigen Wert (sonst springt die Form).</summary>
+    void AnimSetKey(VShape s, string prop, double t, double value)
+    {
+        if ((!s.Tracks.TryGetValue(prop, out var k) || k.Count == 0) && t > 0.005) MotionKit.SetKey(s, prop, 0, MotionKit.Base(s, prop), _animEase);
+        MotionKit.SetKey(s, prop, t, value, _animEase);
     }
 
     void AnimPreset(ProgramDocument d, string move)
     {
-        var layers = AnimLayers(d);
-        if (layers.Count == 0) throw new InvalidOperationException("Lege zuerst eine Ebene an.");
-        var i = Math.Clamp(_animSel, 0, layers.Count - 1); var l = layers[i];
-        var p = Trendo.Core.PromptAction.AnimTitleAdapter.Title(l.Text, move, l.Color);
+        var v = AnimVec(d);
+        if (AnimCurrent(d, v) is not { } s) throw new InvalidOperationException("Lege zuerst eine Form an.");
+        var p = Trendo.Core.PromptAction.AnimTitleAdapter.Title(s.Text, move, VectorKit.IsColor(s.Fill) ? s.Fill : "#F5C542");
         var start = _animTime;
-        l.Tracks.Clear();
-        foreach (var (prop, keys) in p.Tracks) foreach (var k in keys) AnimKit.SetKey(l, prop, start + k.T, prop == "x" && k.V == AnimKit.StageW / 2 ? AnimKit.Default("x") : k.V, k.Ease);
-        AnimSave(d, layers, "Bewegung " + move);
+        foreach (var prop in p.Tracks.Keys) s.Tracks.Remove(prop);
+        foreach (var (prop, keys) in p.Tracks)
+            foreach (var k in keys)
+                MotionKit.SetKey(s, prop, start + k.T, prop == "x" ? k.V - AnimKit.StageW / 2 + s.Cx : prop == "y" ? k.V - AnimKit.StageH / 2 + s.Cy : k.V, k.Ease);
+        AnimSave(d, v, "Bewegung " + move);
+    }
+
+    /// <summary>Auf der Bühne gezogen, gedreht, skaliert: mit „Schlüssel automatisch“ (oder wenn die Eigenschaft schon Schlüssel hat) entsteht ein Schlüssel zur aktuellen Zeit, sonst ändert sich die Form selbst.</summary>
+    void AnimTransform(ProgramDocument d, IReadOnlyList<(VShape Before, VShape After)> changes, string label)
+    {
+        var v = AnimVec(d); var st = VecState(d); var t = _animTime; var keyed = false;
+        foreach (var (b, a) in changes)
+        {
+            if (v.Find(a.Id) is not { } s) continue;
+            bool Key(string prop) => st.AutoKey || s.Tracks.ContainsKey(prop);
+            if (Math.Abs(a.Cx - b.Cx) + Math.Abs(a.Cy - b.Cy) > 1e-6)
+            {
+                if (Key("x") || Key("y")) { AnimSetKey(s, "x", t, a.Cx); AnimSetKey(s, "y", t, a.Cy); keyed = true; }
+                else { s.X += a.Cx - b.Cx; s.Y += a.Cy - b.Cy; }
+            }
+            if (Math.Abs(a.Rot - b.Rot) > 1e-6) { if (Key("drehung")) { AnimSetKey(s, "drehung", t, a.Rot); keyed = true; } else s.Rot = a.Rot; }
+            if (Math.Abs(a.Scale - b.Scale) > 1e-6) { if (Key("skalierung")) { AnimSetKey(s, "skalierung", t, a.Scale); keyed = true; } else s.Scale = a.Scale; }
+        }
+        AnimSave(d, v, keyed ? $"{label} – Schlüssel bei {t.ToString("0.00", De)} s" : label);
+    }
+
+    void AnimFill(ProgramDocument d, IReadOnlyList<VShape> sel, string color)
+    {
+        if (!VectorKit.IsColor(color)) throw new ArgumentException("Farbe als #RRGGBB angeben.");
+        var v = AnimVec(d); var st = VecState(d); var keyed = false;
+        foreach (var p in sel)
+        {
+            if (v.Find(p.Id) is not { } s) continue;
+            if (st.AutoKey || s.Tracks.ContainsKey("farbe")) { AnimSetKey(s, "farbe", _animTime, VectorKit.Pack(color)); keyed = true; }
+            else { s.Fill = color; s.Fill2 = ""; }
+        }
+        AnimSave(d, v, keyed ? $"Farbe – Schlüssel bei {_animTime.ToString("0.00", De)} s" : "Farbe");
+    }
+
+    /// <summary>Andere Änderungen auf der Bühne (Form gezeichnet, Punkte, Text, Reihenfolge, Löschen) zurück in die Formen ohne Pose übernehmen.</summary>
+    static VDoc AnimMerge(VDoc baseDoc, VDoc posed, double t)
+    {
+        var res = new VDoc { W = baseDoc.W, H = baseDoc.H, Background = baseDoc.Background };
+        foreach (var p in posed.Shapes)
+        {
+            if (baseDoc.Find(p.Id) is not { } b) { var n = p.Clone(); n.Tracks.Clear(); res.Shapes.Add(n); continue; }
+            var was = MotionKit.Pose(b, t);
+            var m = p.Clone(); m.Tracks = b.Clone().Tracks;
+            double dcx = p.Cx - was.Cx, dcy = p.Cy - was.Cy;
+            var cx = b.Cx + (m.Tracks.ContainsKey("x") ? 0 : dcx); var cy = b.Cy + (m.Tracks.ContainsKey("y") ? 0 : dcy);
+            if (m.Tracks.TryGetValue("x", out var kx)) for (var i = 0; i < kx.Count; i++) kx[i] = kx[i] with { V = kx[i].V + dcx };
+            if (m.Tracks.TryGetValue("y", out var ky)) for (var i = 0; i < ky.Count; i++) ky[i] = ky[i] with { V = ky[i].V + dcy };
+            m.X = cx - m.W / 2; m.Y = cy - m.H / 2;
+            m.Rot = m.Tracks.ContainsKey("drehung") ? b.Rot : p.Rot;
+            m.Scale = m.Tracks.ContainsKey("skalierung") ? b.Scale : p.Scale;
+            m.Opacity = m.Tracks.ContainsKey("deckkraft") ? b.Opacity : p.Opacity;
+            if (m.Tracks.ContainsKey("farbe")) { m.Fill = b.Fill; m.Fill2 = b.Fill2; }
+            res.Shapes.Add(m);
+        }
+        return res;
     }
 
     private void InitAnim() => RegisterProgram(FachTabs, new ProgramSpec(AnimKey, "STUDIO-ANIM-01", "Animation & Motion")
     {
-        Sentence = "Formen und Titel bewegen: Schlüsselbilder setzen, Übergänge wählen, als animiertes SVG oder Video ausgeben.",
+        Sentence = "Formen, Pfade, Texte und Bilder auf der Bühne bewegen: anfassen, Schlüsselbilder in der Zeitleiste ziehen, Kurven wählen – als animiertes SVG, Video oder GIF.",
         Folder = "Animationen",
         FillHeight = true,
+        FirstStep = new("Erste Form auf die Bühne", "Leg eine Form auf die Bühne – oder zeichne links mit Rechteck, Ellipse, Stern oder Text.", d => AnimAdd(d, "rechteck"), d => d.List("layers").Count == 0),
         Templates =
         [
             new("leer", "Leere Bühne", "1280 × 720, dunkler Hintergrund", () => AnimDoc("#101827")),
             new("ball", "Beispiel: Springender Ball", "Ein Ball fällt und federt", () => AnimDoc("#101827", AnimSampleBall())),
             new("titel", "Beispiel: Titel", "Ein Titel fliegt ein", () => AnimDoc("#101827", Trendo.Core.PromptAction.AnimTitleAdapter.Title("Willkommen", "einfliegen", "#F5C542"))),
         ],
+        Tools = VecTools(AnimKey),
         Ribbon =
         [
             ("Ebene", [
@@ -184,183 +323,208 @@ public partial class MainWindow
                 new ProgramCmd("anim-add-kreis", "Kreis", d => AnimAdd(d, "kreis")),
                 new ProgramCmd("anim-add-text", "Text", d => AnimAdd(d, "text"), Primary: true),
             ]),
-            ("Bewegung", Trendo.Core.PromptAction.AnimTitleAdapter.Moves.Select(m => new ProgramCmd("anim-move-" + m, char.ToUpper(m[0], De) + m[1..], d => AnimPreset(d, m), Tip: "Für die gewählte Ebene ab der aktuellen Zeit.")).ToList()),
+            ("Bewegung", Trendo.Core.PromptAction.AnimTitleAdapter.Moves.Select(m => new ProgramCmd("anim-move-" + m, char.ToUpper(m[0], De) + m[1..], d => AnimPreset(d, m), Tip: "Für die gewählte Form ab der aktuellen Zeit.")).ToList()),
             ("Ausgabe", [
-                new ProgramCmd("anim-video", "Video (MP4)", d => _ = AnimVideo(d), Tip: "Braucht FFmpeg. 30 Bilder je Sekunde, 1280 × 720."),
+                new ProgramCmd("anim-video", "Video (MP4)", d => _ = AnimVideo(d), Tip: "Braucht FFmpeg. 30 Bilder je Sekunde in der Größe der Bühne."),
+                new ProgramCmd("anim-gif", "GIF", d => _ = AnimVideo(d, gif: true), Tip: "Braucht FFmpeg. Bewegtes Bild für Chats und Webseiten, 15 Bilder je Sekunde."),
+            ]),
+            ("Claude", [
+                new ProgramCmd("anim-claude", "Bewegung mit Claude planen", d => _ = AssistFromProgram(AnimKey, "STUDIO-ANIM-01", "Plane für meine Animation eine Bewegung in Schritten (Zeit in Sekunden, Position, Größe, Drehung, Deckkraft, Kurve gleichmäßig/weich/federnd). Formen auf der Bühne: " + string.Join(", ", AnimVec(d).Shapes.Select(s => s.Kind == "text" ? "Text „" + s.Text + "“" : VectorKit.Label(s.Kind)))), Tip: "Nutzt deinen Claude-Zugang."),
             ]),
         ],
-        GroupLevels = new() { ["Ausgabe"] = 1 },
+        GroupLevels = new() { ["Ausgabe"] = 1, ["Claude"] = 1 },
         Exports =
         [
-            new("svg", "Animiertes SVG (.svg)", ".svg", (d, f) => { File.WriteAllText(f, AnimKit.Svg(AnimLayers(d), d.Text("background"))); return f; }),
+            new("svg", "Animiertes SVG (.svg)", ".svg", (d, f) => { File.WriteAllText(f, MotionKit.Svg(AnimVec(d))); return f; }),
         ],
         Workspace = AnimWorkspace,
         Properties = AnimProperties,
-        Status = d => { var l = AnimLayers(d); return $"{l.Count} Ebenen · {AnimKit.Duration(l).ToString("0.0", De)} s · Zeit {_animTime.ToString("0.00", De)} s"; },
-        Help = "Ebene wählen, Zeit mit dem Regler einstellen, rechts einen Wert eintragen und „Schlüssel“ klicken. Zwischen zwei Schlüsseln bewegt sich die Ebene mit dem gewählten Übergang. Oben gibt es fertige Bewegungen.",
-    }, "animation", "motion", "motion design", "keyframe", "schlüsselbild", "bewegung", "intro", "titelanimation", "animieren");
+        Bottom = new ProgramPanel("Zeitleiste", AnimTimeline, 176),
+        Status = d => { var v = AnimVec(d); return $"{v.Shapes.Count} Ebenen · {MotionKit.Duration(v).ToString("0.0", De)} s · Zeit {_animTime.ToString("0.00", De)} s · {v.W:0} × {v.H:0}"; },
+        Help = "Links ein Werkzeug wählen und auf der Bühne zeichnen. Mit „Auswahl“ eine Form ziehen, an den Griffen skalieren, am runden Griff drehen: Bei „Schlüssel automatisch“ entsteht dabei ein Schlüsselbild zur aktuellen Zeit. Unten in der Zeitleiste die Zeit setzen, Rauten ziehen, Doppelklick setzt einen Schlüssel, Rechtsklick wählt die Kurve (gleichmäßig, weich, federnd). Bilder und SVG einfach auf die Bühne ziehen.",
+    }, "animation", "motion", "motion design", "keyframe", "schlüsselbild", "bewegung", "intro", "titelanimation", "animieren", "zeitleiste");
 
-    Canvas AnimStage(ProgramDocument d, IReadOnlyList<AnimKit.Layer> layers, double t, int? selected)
-    {
-        var bg = d.Text("background");
-        var c = new Canvas { Width = AnimKit.StageW, Height = AnimKit.StageH, Background = Brush.Parse(LogoKit.IsHex(bg) ? bg : "#101827"), ClipToBounds = true };
-        for (var i = 0; i < layers.Count; i++)
-        {
-            var l = layers[i];
-            Control shape = l.Shape switch
-            {
-                "kreis" => new Ellipse { Width = l.W, Height = l.H, Fill = Brush.Parse(l.Color) },
-                "text" => new TextBlock { Text = l.Text, FontSize = l.H, FontWeight = FontWeight.Bold, Foreground = Brush.Parse(l.Color) },
-                _ => new Rectangle { Width = l.W, Height = l.H, RadiusX = 12, RadiusY = 12, Fill = Brush.Parse(l.Color) },
-            };
-            shape.Measure(Size.Infinity);
-            var w = shape.DesiredSize.Width; var h = shape.DesiredSize.Height;
-            var x = AnimKit.ValueOf(l, "x", t); var y = AnimKit.ValueOf(l, "y", t);
-            shape.Opacity = Math.Clamp(AnimKit.ValueOf(l, "deckkraft", t), 0, 1);
-            shape.RenderTransformOrigin = RelativePoint.Center;
-            var s = AnimKit.ValueOf(l, "skalierung", t);
-            shape.RenderTransform = new TransformGroup { Children = { new ScaleTransform(s, s), new RotateTransform(AnimKit.ValueOf(l, "drehung", t)) } };
-            Canvas.SetLeft(shape, x - w / 2); Canvas.SetTop(shape, y - h / 2);
-            c.Children.Add(shape);
-            if (selected == i)
-            {
-                var mark = new Rectangle { Width = w * s + 12, Height = h * s + 12, Stroke = Brush.Parse("#FFD54F"), StrokeThickness = 2, StrokeDashArray = [4, 3] };
-                Canvas.SetLeft(mark, x - (w * s + 12) / 2); Canvas.SetTop(mark, y - (h * s + 12) / 2); c.Children.Add(mark);
-            }
-        }
-        return c;
-    }
 
     Control AnimWorkspace(ProgramDocument d)
     {
-        var layers = AnimLayers(d);
-        _animSel = Math.Clamp(_animSel, 0, Math.Max(0, layers.Count - 1));
-        var dur = AnimKit.Duration(layers);
-        _animTime = Math.Clamp(_animTime, 0, dur);
-        var view = new Viewbox { Name = "anim-stage", Stretch = Stretch.Uniform, Child = AnimStage(d, layers, _animTime, layers.Count > 0 ? _animSel : null) };
-        var time = new TextBlock { Name = "anim-time", Foreground = Text, FontFamily = new FontFamily("Consolas, monospace"), VerticalAlignment = VerticalAlignment.Center, Width = 90, Text = $"{_animTime:0.00} s" };
-        var slider = new Slider { Name = "anim-slider", Minimum = 0, Maximum = dur, Value = _animTime, VerticalAlignment = VerticalAlignment.Center };
-        void Draw(double t) { _animTime = t; view.Child = AnimStage(d, layers, t, _animPlay is null && layers.Count > 0 ? _animSel : null); time.Text = $"{t:0.00} s"; }
-        slider.PropertyChanged += (_, e) => { if (e.Property == RangeBase.ValueProperty && Math.Abs(slider.Value - _animTime) > 0.0001) Draw(slider.Value); };
-        var play = new Button { Name = "anim-play", Content = _animPlay is null ? "Abspielen" : "Stopp", Padding = new Thickness(12, 5) };
+        var v = AnimVec(d);
+        AnimCurrent(d, v);
+        _animTime = Math.Clamp(_animTime, 0, Math.Max(MotionKit.Duration(v) + 1, 3));
+        var ed = VecEditor(AnimKey, d, MotionKit.PoseDoc(v, _animTime), (nv, label) => AnimSave(d, AnimMerge(AnimVec(d), nv, _animTime), label), scaleMode: true);
+        ed.TransformCommit = (list, label) => ProgramRun(AnimKey, () => AnimTransform(d, list, label));
+        ed.FillCommit = (sel, c) => ProgramRun(AnimKey, () => AnimFill(d, sel, c));
+        ed.DetachedFromVisualTree += (_, _) => { if (VecEditors.GetValueOrDefault(AnimKey) == ed) { _animPlay?.Stop(); _animPlay = null; } };
+        return new Border { Name = "anim-stage", Margin = new Thickness(4, 0, 6, 4), Child = ed };
+    }
+
+    Control AnimTimeline(ProgramDocument d)
+    {
+        var v = AnimVec(d); var st = VecState(d);
+        var dur = MotionKit.Duration(v);
+        var tl = new KeyTimeline(v, st, Math.Max(dur + 1, 3)) { Name = "anim-timeline", Time = _animTime };
+        var time = new TextBlock { Name = "anim-time", Foreground = Text, FontFamily = new FontFamily("Consolas, monospace"), VerticalAlignment = VerticalAlignment.Center, Width = 70, Text = $"{_animTime:0.00} s", Margin = new Thickness(8, 0) };
+        var slider = new Slider { Name = "anim-slider", Minimum = 0, Maximum = dur, Value = Math.Min(_animTime, dur), VerticalAlignment = VerticalAlignment.Center, MinWidth = 160 };
+        ToolTip.SetTip(slider, "Zeit – auch in der Zeitleiste darunter klicken oder ziehen");
+        void Draw(double t)
+        {
+            _animTime = t; time.Text = $"{t:0.00} s"; tl.Time = t; tl.InvalidateVisual();
+            if (VecEditors.GetValueOrDefault(AnimKey) is { } ed) ed.ShowDoc(MotionKit.PoseDoc(AnimVec(d), t));
+        }
+        slider.PropertyChanged += (_, e) => { if (e.Property == RangeBase.ValueProperty && Math.Abs(slider.Value - _animTime) > 0.0001 && _animTime <= dur + 1e-9) Draw(slider.Value); };
+        tl.Scrub = t => { Draw(t); if (Math.Abs(slider.Value - Math.Min(t, dur)) > 0.0001) slider.Value = Math.Min(t, dur); };
+        tl.SelectShape = id => { st.Selected.Clear(); st.Selected.Add(id); Show(AnimKey); };
+        tl.KeysMoved = (id, props, from, to) => ProgramRun(AnimKey, () => { var x = AnimVec(d); if (x.Find(id) is { } s) { MotionKit.MoveKeys(s, props, from, to); AnimSave(d, x, $"Schlüssel nach {to.ToString("0.00", De)} s verschoben"); _animTime = to; } });
+        tl.KeyCommand = (id, props, t, cmd) => ProgramRun(AnimKey, () =>
+        {
+            var x = AnimVec(d); if (x.Find(id) is not { } s) return;
+            if (cmd == "delete") { MotionKit.DeleteKeys(s, props, t); AnimSave(d, x, "Schlüssel gelöscht"); }
+            else if (cmd.StartsWith("ease:", StringComparison.Ordinal)) { MotionKit.SetEase(s, props, t, cmd[5..]); AnimSave(d, x, "Kurve " + AnimKit.Eases.First(e => e.Id == cmd[5..]).Label); }
+        });
+        tl.AddKey = (id, props, t) => ProgramRun(AnimKey, () =>
+        {
+            var x = AnimVec(d); if (x.Find(id) is not { } s) return;
+            foreach (var p in props) AnimSetKey(s, p, t, MotionKit.Value(s, p, t));
+            _animTime = t; AnimSave(d, x, $"Schlüssel bei {t.ToString("0.00", De)} s");
+        });
+        var play = new Button { Name = "anim-play", Content = _animPlay is null ? "▶ Abspielen" : "■ Stopp", Padding = new Thickness(12, 4) };
         play.Click += (_, _) =>
         {
-            if (_animPlay is { } running) { running.Stop(); _animPlay = null; play.Content = "Abspielen"; Draw(_animTime); return; }
-            var start = DateTime.UtcNow; var from = _animTime >= dur ? 0 : _animTime;
+            if (_animPlay is { } running) { running.Stop(); _animPlay = null; play.Content = "▶ Abspielen"; Draw(_animTime); return; }
+            var start = DateTime.UtcNow; var from = _animTime >= dur ? 0 : _animTime; var cur = AnimVec(d);
             _animPlay = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(33) };
-            _animPlay.Tick += (_, _) => { var t = from + (DateTime.UtcNow - start).TotalSeconds; if (t >= dur) { t = dur; _animPlay?.Stop(); _animPlay = null; play.Content = "Abspielen"; } slider.Value = t; Draw(t); };
-            _animPlay.Start(); play.Content = "Stopp";
-        };
-        view.DetachedFromVisualTree += (_, _) => { _animPlay?.Stop(); _animPlay = null; };
-        // Zeitleiste: Schlüssel der gewählten Ebene als Punkte
-        var keys = new Canvas { Name = "anim-keys", Height = 16 };
-        keys.SizeChanged += (_, e) =>
-        {
-            keys.Children.Clear();
-            if (layers.Count == 0) return;
-            foreach (var k in layers[_animSel].Tracks.Values.SelectMany(v => v))
+            _animPlay.Tick += (_, _) =>
             {
-                var dot = new Ellipse { Width = 9, Height = 9, Fill = Accent };
-                Canvas.SetLeft(dot, e.NewSize.Width * k.T / dur - 4.5); Canvas.SetTop(dot, 3); keys.Children.Add(dot);
-            }
+                var t = from + (DateTime.UtcNow - start).TotalSeconds;
+                if (t >= dur) { t = dur; _animPlay?.Stop(); _animPlay = null; play.Content = "▶ Abspielen"; }
+                _animTime = t; time.Text = $"{t:0.00} s"; tl.Time = t; tl.InvalidateVisual(); slider.Value = t;
+                if (VecEditors.GetValueOrDefault(AnimKey) is { } ed) ed.ShowDoc(MotionKit.PoseDoc(cur, t));
+            };
+            _animPlay.Start(); play.Content = "■ Stopp";
         };
-        var bar = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*"), RowDefinitions = new RowDefinitions("Auto,Auto"), Margin = new Thickness(0, 8, 0, 0),
-            Children = { play, Pos(time, 1), Pos(slider, 2), new Border { [Grid.RowProperty] = 1, [Grid.ColumnProperty] = 2, Child = keys } } };
-        Grid.SetColumn(time, 1); time.Margin = new Thickness(10, 0);
-        var stage = new Border { Background = Brush.Parse("#0A0F1A"), CornerRadius = new CornerRadius(8), Padding = new Thickness(10), BoxShadow = BoxShadows.Parse("0 8 24 0 #66000000"), Child = view };
-        return new DockPanel { Margin = new Thickness(4, 0, 10, 4), Children = { new Border { [DockPanel.DockProperty] = Avalonia.Controls.Dock.Bottom, Child = bar }, stage } };
+        var auto = new CheckBox { Name = "anim-autokey", Content = "Schlüssel automatisch", IsChecked = st.AutoKey, FontSize = 12 };
+        ToolTip.SetTip(auto, "An: Ziehen, Drehen, Skalieren oder Umfärben auf der Bühne setzt ein Schlüsselbild zur aktuellen Zeit. Aus: die Form selbst ändert sich.");
+        auto.Click += (_, _) => st.AutoKey = auto.IsChecked == true;
+        var ease = new ComboBox { Name = "anim-ease", ItemsSource = AnimKit.Eases.Select(e => "Kurve: " + e.Label).ToList(), SelectedIndex = Math.Max(0, AnimKit.Eases.ToList().FindIndex(e => e.Id == _animEase)), FontSize = 12, MinWidth = 170 };
+        ToolTip.SetTip(ease, "Kurve für neue Schlüssel – bestehende per Rechtsklick auf die Raute ändern");
+        ease.SelectionChanged += (_, _) => _animEase = AnimKit.Eases[Math.Max(0, ease.SelectedIndex)].Id;
+        var fmt = new ComboBox { Name = "anim-p-format", ItemsSource = MotionKit.Formats.Select(f => f.Label).ToList(), FontSize = 12, MinWidth = 190, Margin = new Thickness(0, 0, 6, 0),
+            SelectedIndex = MotionKit.Formats.ToList().FindIndex(f => f.W == v.W.ToString("0", System.Globalization.CultureInfo.InvariantCulture) && f.H == v.H.ToString("0", System.Globalization.CultureInfo.InvariantCulture)) };
+        fmt.SelectionChanged += (_, _) =>
+        {
+            if (fmt.SelectedIndex < 0) return;
+            var f = MotionKit.Formats[fmt.SelectedIndex]; double nw = double.Parse(f.W, System.Globalization.CultureInfo.InvariantCulture), nh = double.Parse(f.H, System.Globalization.CultureInfo.InvariantCulture);
+            if (Math.Abs(nw - v.W) + Math.Abs(nh - v.H) < 0.5) return;
+            ProgramRun(AnimKey, () =>
+            {
+                // Formen bleiben in der Mitte der Bühne
+                var x = AnimVec(d); double dx = (nw - x.W) / 2, dy = (nh - x.H) / 2;
+                foreach (var s in x.Shapes)
+                {
+                    s.X += dx; s.Y += dy;
+                    if (s.Tracks.TryGetValue("x", out var kx)) for (var i = 0; i < kx.Count; i++) kx[i] = kx[i] with { V = kx[i].V + dx };
+                    if (s.Tracks.TryGetValue("y", out var ky)) for (var i = 0; i < ky.Count; i++) ky[i] = ky[i] with { V = ky[i].V + dy };
+                }
+                x.W = nw; x.H = nh; AnimSave(d, x, f.Label);
+            });
+        };
+        ToolTip.SetTip(fmt, "Bühnengröße – Formen bleiben mittig");
+        var bar = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto,Auto,Auto"), Margin = new Thickness(0, 0, 0, 6), Children = { play, Pos(time, 1), Pos(slider, 2), Pos(auto, 3), Pos(ease, 4), Pos(fmt, 5) } };
+        auto.Margin = new Thickness(10, 0, 6, 0);
+        DockPanel.SetDock(bar, Avalonia.Controls.Dock.Top);
+        ToolTip.SetTip(tl, "Rauten ziehen verschiebt Schlüssel · Doppelklick in eine Spur setzt einen · Rechtsklick: Kurve oder Löschen · Klick auf einen Namen wählt die Form");
+        return new DockPanel { Children = { bar, new ScrollViewer { Content = tl, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled, VerticalScrollBarVisibility = ScrollBarVisibility.Auto } } };
     }
 
     Control AnimProperties(ProgramDocument d)
     {
-        var layers = AnimLayers(d);
+        var v = AnimVec(d);
         var sp = new StackPanel { Spacing = 4 };
         sp.Children.Add(P("Hintergrund (#RRGGBB)", null, 11)); sp.Children.Add(KrBox(d, "background", "anim-p-background", "#101827"));
         sp.Children.Add(H("Ebenen", 13));
-        if (layers.Count == 0) { sp.Children.Add(P("Noch keine Ebene. Oben „Rechteck“, „Kreis“ oder „Text“.", Muted, 12)); return sp; }
-        for (var i = 0; i < layers.Count; i++)
+        var l = AnimCurrent(d, v);
+        if (l is null) { sp.Children.Add(P("Noch keine Form. Links zeichnen oder oben „Rechteck“, „Kreis“ oder „Text“.", Muted, 12)); return sp; }
+        for (var i = 0; i < v.Shapes.Count; i++)
         {
-            var idx = i;
-            var b = new Button { Name = "anim-layer-" + i, Content = $"{layers[i].Shape} · {(layers[i].Text.Length > 0 ? layers[i].Text : layers[i].Id)}", HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(8, 4) };
-            if (i == _animSel) b.Classes.Add("accent");
-            b.Click += (_, _) => { _animSel = idx; Show(AnimKey); };
+            var s = v.Shapes[i]; var id = s.Id;
+            var b = new Button { Name = "anim-layer-" + i, Content = $"{VectorKit.Label(s.Kind)} · {(s.Kind == "text" ? s.Text : s.Name.Length > 0 ? s.Name : s.Id)}", HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(8, 4) };
+            if (s == l) b.Classes.Add("accent");
+            b.Click += (_, _) => { var st = VecState(d); st.Selected.Clear(); st.Selected.Add(id); Show(AnimKey); };
             sp.Children.Add(b);
         }
-        var l = layers[_animSel];
         sp.Children.Add(H("Gewählte Ebene", 13));
-        TextBox Field(string name, string label, string value, Action<string> apply)
+        void Field(string name, string label, string value, Action<string> apply)
         {
             var t = new TextBox { Name = name, Text = value, PlaceholderText = label };
-            t.LostFocus += (_, _) => { if ((t.Text ?? "") != value) ProgramRun(AnimKey, () => { apply(t.Text ?? ""); Show(AnimKey); }); };
+            t.LostFocus += (_, _) => { if ((t.Text ?? "") != value) ProgramRun(AnimKey, () => apply(t.Text ?? "")); };
             sp.Children.Add(P(label, null, 11)); sp.Children.Add(t);
-            return t;
         }
-        if (l.Shape == "text") Field("anim-p-text", "Text", l.Text, v => { var ls = AnimLayers(d); ls[_animSel] = ls[_animSel] with { Text = v }; AnimSave(d, ls, "Text geändert"); });
-        Field("anim-p-color", "Farbe (#RRGGBB)", l.Color, v => { if (!LogoKit.IsHex(v)) throw new ArgumentException("Farbe als #RRGGBB angeben."); var ls = AnimLayers(d); ls[_animSel] = ls[_animSel] with { Color = v }; AnimSave(d, ls, "Farbe geändert"); });
+        var sid = l.Id;
+        if (l.Kind == "text") Field("anim-p-text", "Text", l.Text, val => { var x = AnimVec(d); if (x.Find(sid) is { } s) { s.Text = val; VectorRender.FitText(s); AnimSave(d, x, "Text geändert"); } });
+        Field("anim-p-color", "Farbe (#RRGGBB)", l.Fill, val => { if (!LogoKit.IsHex(val)) throw new ArgumentException("Farbe als #RRGGBB angeben."); var x = AnimVec(d); if (x.Find(sid) is { } s) { s.Fill = val; s.Fill2 = ""; AnimSave(d, x, "Farbe geändert"); } });
         sp.Children.Add(H($"Schlüssel bei {_animTime.ToString("0.00", De)} s", 13));
-        var ease = new ComboBox { Name = "anim-ease", ItemsSource = AnimKit.Eases.Select(e => e.Label).ToList(), SelectedIndex = 3, HorizontalAlignment = HorizontalAlignment.Stretch };
-        sp.Children.Add(P("Übergang zum nächsten Schlüssel", null, 11)); sp.Children.Add(ease);
-        foreach (var prop in AnimKit.Props)
+        foreach (var prop in MotionKit.Props)
         {
             var p = prop;
-            var box = new TextBox { Name = "anim-val-" + p, Text = AnimKit.ValueOf(l, p, _animTime).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture), Width = 90 };
+            var shown = p == "farbe" ? MotionKit.Color(l, _animTime) : MotionKit.Value(l, p, _animTime).ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+            var box = new TextBox { Name = "anim-val-" + p, Text = shown, Width = 90 };
             var set = new Button { Name = "anim-key-" + p, Content = "Schlüssel", Padding = new Thickness(8, 3) };
             set.Click += (_, _) => ProgramRun(AnimKey, () =>
             {
-                if (!double.TryParse((box.Text ?? "").Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v) || !double.IsFinite(v)) throw new FormatException("Bitte eine Zahl eintragen.");
-                var ls = AnimLayers(d); AnimKit.SetKey(ls[_animSel], p, _animTime, v, AnimKit.Eases[Math.Max(0, ease.SelectedIndex)].Id);
-                AnimSave(d, ls, $"Schlüssel {p}"); Show(AnimKey);
+                double val;
+                if (p == "farbe") { if (!LogoKit.IsHex((box.Text ?? "").Trim())) throw new FormatException("Farbe als #RRGGBB eintragen."); val = VectorKit.Pack((box.Text ?? "").Trim()); }
+                else if (!double.TryParse((box.Text ?? "").Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out val) || !double.IsFinite(val)) throw new FormatException("Bitte eine Zahl eintragen.");
+                var x = AnimVec(d); if (x.Find(sid) is not { } s) return;
+                AnimSetKey(s, p, _animTime, val);
+                AnimSave(d, x, $"Schlüssel {p}");
             });
             sp.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("90,*,Auto"), Margin = new Thickness(0, 2), Children = { new TextBlock { Text = p, Foreground = Text, VerticalAlignment = VerticalAlignment.Center }, Pos(box, 1), Pos(set, 2) } });
         }
         var del = new Button { Name = "anim-delete", Content = "Ebene löschen", Padding = new Thickness(8, 3), Margin = new Thickness(0, 8, 0, 0) };
-        del.Click += (_, _) => ProgramRun(AnimKey, () => { var ls = AnimLayers(d); ls.RemoveAt(_animSel); _animSel = Math.Max(0, _animSel - 1); AnimSave(d, ls, "Ebene gelöscht"); Show(AnimKey); });
+        del.Click += (_, _) => ProgramRun(AnimKey, () => { var x = AnimVec(d); x.Shapes.RemoveAll(s => s.Id == sid); _animSel = Math.Max(0, _animSel - 1); VecState(d).Selected.Clear(); AnimSave(d, x, "Ebene gelöscht"); });
         sp.Children.Add(del);
         return sp;
     }
 
     /// <summary>Tests: Bilder zu Video (Bildmuster, Bilder je Sekunde, Ziel) statt FFmpeg.</summary>
     public static Func<string, int, string, bool>? AnimVideoOverride { get; set; }
+    /// <summary>T-0696: FFmpeg für die Animation fest vorgeben (Tests mit dem echten FFmpeg im abgeschotteten Modus) – kein Ersatz für das Werkzeug.</summary>
+    public string? AnimFfmpegPath { get; set; }
     bool _animBusy;
 
-    /// <summary>Jedes Bild zeichnen, dann FFmpeg (H.264). Die Bildfolge liegt nur kurz im Temp-Ordner.</summary>
-    public async Task<string?> AnimVideo(ProgramDocument d, string? output = null)
+    /// <summary>Jedes Bild zeichnen (in der Größe der Bühne), dann FFmpeg: H.264-MP4 oder GIF. Die Bildfolge liegt nur kurz im Temp-Ordner.</summary>
+    public async Task<string?> AnimVideo(ProgramDocument d, string? output = null, bool gif = false)
     {
         if (_animBusy) { _progMsg[AnimKey] = "Das Video entsteht schon – einen Moment."; Show(AnimKey); return null; }
-        var ff = AnimVideoOverride is null ? FfmpegPath : "ffmpeg";
+        var ff = AnimVideoOverride is null ? AnimFfmpegPath ?? FfmpegPath : "ffmpeg";
         if (ff is null) { _progMsg[AnimKey] = "Für das Video fehlt FFmpeg. Du richtest es im Studio „Videos schneiden“ mit einem Klick ein."; Show(AnimKey); return null; }
-        var layers = AnimLayers(d); var dur = AnimKit.Duration(layers);
+        var v = AnimVec(d); var dur = MotionKit.Duration(v);
         if (dur > 60) { _progMsg[AnimKey] = "Videos gehen bis 60 Sekunden."; Show(AnimKey); return null; }
-        const int fps = 30;
+        var fps = gif ? 15 : 30;
+        int pw = (int)Math.Round(v.W / 2) * 2, ph = (int)Math.Round(v.H / 2) * 2; // H.264 braucht gerade Maße
         var dir = Path.Combine(Path.GetTempPath(), "trendo-animation-" + Guid.NewGuid().ToString("N")[..8]);
-        output ??= Path.Combine(_core.DataRoot, "animationen", $"{AnimFileName(d.Title)}-{DateTime.Now:yyyyMMdd-HHmmss}.mp4");
-        _animBusy = true; _progMsg[AnimKey] = "Video entsteht …"; Show(AnimKey);
+        output ??= Path.Combine(_core.DataRoot, "animationen", $"{AnimFileName(d.Title)}-{DateTime.Now:yyyyMMdd-HHmmss}{(gif ? ".gif" : ".mp4")}");
+        _animBusy = true; _progMsg[AnimKey] = gif ? "GIF entsteht …" : "Video entsteht …"; Show(AnimKey);
         try
         {
             Directory.CreateDirectory(dir); Directory.CreateDirectory(Path.GetDirectoryName(output)!);
             var n = (int)Math.Ceiling(dur * fps);
-            for (var i = 0; i <= n; i++)
-            {
-                var stage = AnimStage(d, layers, Math.Min(dur, (double)i / fps), null);
-                stage.Measure(new Size(AnimKit.StageW, AnimKit.StageH)); stage.Arrange(new Rect(0, 0, AnimKit.StageW, AnimKit.StageH));
-                using var bmp = new RenderTargetBitmap(new PixelSize((int)AnimKit.StageW, (int)AnimKit.StageH));
-                bmp.Render(stage);
-                bmp.Save(Path.Combine(dir, $"f{i:00000}.png"));
-                if (i % 3 == 0) await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background); // Oberfläche bleibt bedienbar
-            }
+            // Bilder mit SkiaSharp im Hintergrund zeichnen – die Oberfläche bleibt bedienbar
+            await Task.Run(() => Parallel.For(0, n + 1, new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount / 2) }, i =>
+                File.WriteAllBytes(Path.Combine(dir, $"f{i:00000}.png"), VectorSkia.Png(MotionKit.PoseDoc(v, Math.Min(dur, (double)i / fps)), pw, null, ph))));
             var pattern = Path.Combine(dir, "f%05d.png");
-            bool ok;
+            bool ok; var why = "";
             if (AnimVideoOverride is { } o) ok = o(pattern, fps, output);
             else
             {
                 var psi = new ProcessStartInfo(ff) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardError = true };
-                foreach (var a in AnimKit.VideoArgs(pattern, fps, output)) psi.ArgumentList.Add(a);
+                foreach (var a in gif ? MotionKit.GifArgs(pattern, fps, output) : AnimKit.VideoArgs(pattern, fps, output)) psi.ArgumentList.Add(a);
                 using var p = Process.Start(psi) ?? throw new InvalidOperationException("FFmpeg ließ sich nicht starten.");
-                _ = await p.StandardError.ReadToEndAsync();
+                var err = await p.StandardError.ReadToEndAsync();
                 await p.WaitForExitAsync();
                 ok = p.ExitCode == 0;
+                why = err.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).LastOrDefault() ?? "";
             }
-            _progMsg[AnimKey] = ok && File.Exists(output) ? "Video fertig: " + output : "FFmpeg konnte das Video nicht schreiben.";
+            _progMsg[AnimKey] = ok && File.Exists(output) ? (gif ? "GIF fertig: " : "Video fertig: ") + output : "FFmpeg konnte das Video nicht schreiben." + (why.Length > 0 ? " (" + KreativSafe.Cut(why, 160) + ")" : "");
             if (ok) NotifyFileResult(_progMsg[AnimKey]);
             return ok && File.Exists(output) ? output : null;
         }
@@ -373,6 +537,12 @@ public partial class MainWindow
     // ---------------- Fotos verwalten ----------------
 
     List<Photo>? _photosScan; List<Move>? _photosPlan; bool _photosAsk, _photosBusy;
+    /// <summary>T-0725: im Raster gewähltes Foto (Pfad) – groß mit Angaben über dem Raster.</summary>
+    string? _photosPick;
+    /// <summary>T-0725: Doppelte (zweite und weitere Kopie gleichen Inhalts) des letzten Suchlaufs – einmal je Suche berechnet.</summary>
+    HashSet<string>? _photosDups;
+    /// <summary>T-0725: höchstens so viele Vorschaubilder im Raster (Bilder laden im Hintergrund, verkleinert).</summary>
+    public const int PhotosGridMax = 120;
 
     static JsonObject PhotosDoc() => new() { ["source"] = "", ["target"] = "", ["scheme"] = "jahr-monat", ["rename"] = "nein", ["mode"] = "kopieren", ["lastLog"] = "", ["lastKind"] = "" };
 
@@ -396,6 +566,72 @@ public partial class MainWindow
         Help = "1. Ordner mit den Fotos wählen. 2. Zielordner wählen. 3. „Probelauf“ zeigt, wohin jedes Foto käme. 4. „Einsortieren“ kopiert oder verschiebt erst nach deinem Ja. Doppelte werden übersprungen, nichts wird überschrieben. „Rückgängig“ macht den letzten Lauf rückgängig.",
     }, "fotos verwalten", "fotos sortieren", "fotos ordnen", "bilder sortieren", "exif", "aufnahmedatum", "doppelte fotos", "fotos umbenennen", "fotosammlung");
 
+    /// <summary>T-0725 (Audit D7, STUDIO-PHOTOS-01: „keine Bildansicht im Programm“): Raster mit echten Vorschaubildern der gefundenen Fotos,
+    /// Doppelte markiert, Ziel aus dem Probelauf unter dem Bild. Klick zeigt das Foto groß mit Aufnahmedatum, Größe und Ordner; Doppelklick oder Rechtsklick
+    /// „In Bildbearbeitung öffnen“ übergibt es an die Bildbearbeitung. Es wird nichts verändert.</summary>
+    Control PhotosGrid(ProgramDocument d, List<Photo> shots)
+    {
+        var box = new StackPanel { Name = "photos-grid-card", Spacing = 8 };
+        var dups = _photosDups ?? [];
+        var target = d.Text("target");
+        var dest = (_photosPlan ?? []).ToDictionary(m => m.From, m => m.To, StringComparer.OrdinalIgnoreCase);
+        if (_photosPick is { } pick && shots.FirstOrDefault(x => string.Equals(x.Path, pick, StringComparison.OrdinalIgnoreCase)) is { } sel)
+        {
+            var big = new Image { Name = "photos-big", Width = 420, Height = 300, Stretch = Stretch.Uniform };
+            Thumb(big, sel.Path, 840);
+            var open = new Button { Name = "photos-edit", Content = "In Bildbearbeitung öffnen", Padding = new Thickness(12, 5) };
+            open.Click += (_, _) => PhotosEdit(sel.Path);
+            var close = new Button { Name = "photos-big-close", Content = "Schließen", Padding = new Thickness(12, 5), Margin = new Thickness(8, 0, 0, 0) };
+            close.Click += (_, _) => { _photosPick = null; Show(PhotosKey); };
+            box.Children.Add(new StackPanel { Name = "photos-detail", Orientation = Orientation.Horizontal, Spacing = 14, Children = {
+                big,
+                new StackPanel { Spacing = 4, Width = 320, Children = {
+                    new TextBlock { Name = "photos-detail-name", Text = Path.GetFileName(sel.Path), Foreground = Text, FontSize = 15, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
+                    P($"{(sel.FromExif ? "Aufgenommen" : "Datei vom")} {sel.Taken:dd.MM.yyyy HH:mm}", Text, 12.5),
+                    P(DiskMapView.Size(sel.Bytes) + (!dups.Contains(sel.Path) ? "" : " · doppelt – wird beim Einsortieren übersprungen"), Muted, 12),
+                    P(Path.GetDirectoryName(sel.Path) ?? "", Muted, 11.5),
+                    P(dest.TryGetValue(sel.Path, out var to) && target.Length > 0 ? "Käme nach: " + Path.GetRelativePath(target, to) : "", Muted, 11.5),
+                    new WrapPanel { Margin = new Thickness(0, 6, 0, 0), Children = { open, close } } } } } });
+        }
+        box.Children.Add(H(shots.Count > PhotosGridMax ? $"Vorschau: die ersten {PhotosGridMax} von {shots.Count} Fotos" : $"Vorschau: {shots.Count} Fotos", 14));
+        var grid = new WrapPanel { Name = "photos-grid" };
+        foreach (var (ph, i) in shots.Take(PhotosGridMax).Select((x, i) => (x, i)))
+        {
+            var dup = dups.Contains(ph.Path);
+            var img = new Image { Width = 150, Height = 112, Stretch = Stretch.UniformToFill };
+            Thumb(img, ph.Path, 220);
+            var tile = new Border
+            {
+                Name = "photos-tile-" + i, Width = 160, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(5), CornerRadius = new CornerRadius(6), Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand),
+                Background = string.Equals(_photosPick, ph.Path, StringComparison.OrdinalIgnoreCase) ? Brush.Parse("#4A3D1C") : Brush.Parse("#1E2229"),
+                BorderBrush = dup ? Brush.Parse("#8A6D2B") : null, BorderThickness = new Thickness(dup ? 2 : 0),
+                Child = new StackPanel { Spacing = 2, Children = {
+                    img,
+                    new TextBlock { Text = ph.Taken.ToString("dd.MM.yyyy", De) + (dup ? " · doppelt" : ""), Foreground = dup ? Accent : Text, FontSize = 11.5 },
+                    new TextBlock { Text = dest.TryGetValue(ph.Path, out var t2) && target.Length > 0 ? "→ " + Path.GetDirectoryName(Path.GetRelativePath(target, t2)) : Path.GetFileName(ph.Path), Foreground = Muted, FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis } } },
+            };
+            ToolTip.SetTip(tile, Path.GetFileName(ph.Path));
+            var path = ph.Path;
+            tile.PointerPressed += (_, e) =>
+            {
+                if (!e.GetCurrentPoint(tile).Properties.IsLeftButtonPressed) return;
+                if (e.ClickCount >= 2) { PhotosEdit(path); e.Handled = true; return; }
+                _photosPick = path; e.Handled = true; Show(PhotosKey);
+            };
+            tile.ContextMenu = BueroMenu(PhotosKey, "photos-tile-menu-" + i, () => _photosPick = path,
+                ("photos-m-show", "Groß ansehen", () => { }, true),
+                ("photos-m-edit", "In Bildbearbeitung öffnen", () => PhotosEdit(path), true),
+                ("photos-m-folder", "Im Ordner zeigen", () => Launch(Path.GetDirectoryName(path)!), true));
+            grid.Children.Add(tile);
+        }
+        box.Children.Add(grid);
+        box.Children.Add(P("Klick: groß ansehen · Doppelklick: in der Bildbearbeitung öffnen · Gold umrandet: doppelt, wird beim Einsortieren übersprungen.", Muted, 11.5));
+        return KrCard(box);
+    }
+
+    /// <summary>T-0725: Foto an die Bildbearbeitung übergeben (wie im Fotoalbum).</summary>
+    void PhotosEdit(string path) { ProgramRun(PhotosKey, () => ImgAddImage(path)); if (!_progErr.ContainsKey(PhotosKey)) Show("bild"); }
+
     async Task<string?> PickFolderPath(string title)
     {
         if (FolderPickOverride is { } o) return o(title);
@@ -414,6 +650,8 @@ public partial class MainWindow
         try
         {
             _photosScan = await Task.Run(() => Trendo.Core.Sys.PhotoAlbum.Scan([src], 20000));
+            var scanned = _photosScan; _photosPick = null;
+            _photosDups = await Task.Run(() => Trendo.Core.Sys.PhotoAlbum.Duplicates(scanned.OrderBy(p => p.Taken).ThenBy(p => p.Path, StringComparer.OrdinalIgnoreCase)).SelectMany(g => g.Skip(1)).Select(p => p.Path).ToHashSet(StringComparer.OrdinalIgnoreCase));
             var target = d.Text("target");
             _photosPlan = KreativSafe.LocalPath(target)
                 ? await Task.Run(() => PhotoOrganizer.Plan(_photosScan, target, d.Text("scheme"), d.Text("rename") == "ja")) : null;
@@ -499,6 +737,7 @@ public partial class MainWindow
             sum.Children.Add(P($"{noExif} ohne Aufnahmedatum (dann zählt das Änderungsdatum) · {dups} doppelt (werden übersprungen)", Muted, 12));
             sp.Children.Add(KrCard(sum));
         }
+        if (_photosScan is { Count: > 0 } shots) sp.Children.Add(PhotosGrid(d, shots));
         if (_photosPlan is { } pl)
         {
             var list = new StackPanel { Name = "photos-plan", Spacing = 2 };
@@ -579,6 +818,8 @@ public partial class MainWindow
         Workspace = ImgAiWorkspace,
         Properties = ImgAiProperties,
         Status = d => (CoverModel() is { } m ? "Bild-KI: " + m.Model.Name : ImageAiOverride is not null ? "Bild-KI: Test" : "Bild-KI nicht eingerichtet") + $" · {ImgList(d).Count} Bilder",
+        // V-09 (T-0700): fehlt die Bild-KI, steht das direkt an „Bilder malen“ – nicht nur in der Statuszeile
+        Blocker = _ => ImageAiOverride is null && (CoverModel() is null || _opt.Isolated) ? new ProgramBlocker("Bild-KI fehlt", "Jetzt einrichten", () => Show("ki-bibliothek"), "img-setup") : null,
         Help = "Beschreibe, was auf dem Bild sein soll, wähle oben Stil und Format und klicke „Bilder malen“. Beim ersten Mal richtest du die Bild-KI in der KI-Bibliothek ein. Keine echten Personen, keine fremden Marken oder Figuren. Neben jedem Bild liegt eine Datei mit dem Herkunftsnachweis.",
     }, "bild ki", "bilder mit ki", "ki bild", "bild erzeugen", "bild malen", "text zu bild", "stable diffusion", "sdxl", "ki-kunst", "illustration erzeugen");
 

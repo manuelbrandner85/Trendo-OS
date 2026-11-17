@@ -46,6 +46,46 @@ public static partial class GitHubLink
         return steps;
     }
 
+    /// <summary>T-0726: Wirkung „Projekt als Repo auf GitHub hochladen“ – nur über das Freigabe-Tor (wie Netlify, T-0718).</summary>
+    public const string ActionUpload = "github.repo.hochladen";
+
+    /// <summary>T-0726: Inhalt der Rückfrage im Tor. Ziel = „github.com/&lt;Konto&gt;/&lt;Repo&gt;#privat|öffentlich#Fingerabdruck“: Die Freigabe gilt genau für dieses Repo,
+    /// diese Sichtbarkeit und diese Dateien, genau einmal. Ändert sich vorher eine Datei, passt das Ziel nicht mehr und es braucht eine neue Freigabe.</summary>
+    public sealed record Upload(string Target, string Title, string Text, string Preview, int Files, long Bytes);
+
+    /// <summary>Was hochgeladen würde: alle Dateien des Ordners ohne .git, Trendo-Hilfsdateien und die Einträge aus <see cref="EnsureIgnore"/>
+    /// (.trendo, node_modules, .env, *.key) und ohne Verknüpfungen. Eine eigene .gitignore des Projekts kann weniger hochladen; schon früher in einem eigenen
+    /// Git-Verlauf des Ordners gespeicherte Stände gehen mit hoch (Grenze, steht so nicht in der Liste).</summary>
+    public static Upload DescribeUpload(string folder, string user, string repo, bool isPrivate, string title)
+    {
+        if (!RepoName().IsMatch(repo)) throw new ArgumentException("Ungültiger Repo-Name (nur Buchstaben, Ziffern, . _ -).");
+        var root = Path.GetFullPath(folder).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+        var files = new List<(string Rel, long Bytes)>();
+        using var sha = System.Security.Cryptography.IncrementalHash.CreateHash(System.Security.Cryptography.HashAlgorithmName.SHA256);
+        foreach (var f in Directory.EnumerateFiles(root, "*", new EnumerationOptions { RecurseSubdirectories = true, AttributesToSkip = FileAttributes.ReparsePoint }).OrderBy(f => f, StringComparer.Ordinal))
+        {
+            var rel = Path.GetRelativePath(root, f).Replace('\\', '/');
+            var parts = rel.Split('/');
+            // wie die Einträge aus EnsureIgnore: Ordner .git/.trendo/node_modules, Datei .env, *.key (git unter Windows ohne, sonst mit Groß-/Kleinschreibung)
+            if (parts[..^1].Any(p => p is ".git" or ".trendo" or "node_modules") || parts[^1] == ".env"
+                || parts[^1].EndsWith(".key", OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal)) continue;
+            var bytes = File.ReadAllBytes(f);
+            sha.AppendData(System.Text.Encoding.UTF8.GetBytes(rel + "\n")); sha.AppendData(System.Security.Cryptography.SHA256.HashData(bytes));
+            files.Add((rel, bytes.Length));
+        }
+        var vis = isPrivate ? "privat" : "öffentlich";
+        var target = $"github.com/{user}/{repo}#{vis}#{Convert.ToHexString(sha.GetHashAndReset())}";
+        var total = files.Sum(f => f.Bytes);
+        static string Kb(long b) => $"{b / 1024.0:0.#} KB";
+        var history = Directory.Exists(Path.Combine(root, ".git"));
+        var text = $"Wirkung: Trendo legt mit deinem GitHub-Konto ein neues Repo an und lädt das Projekt „{title}“ hoch. "
+            + (isPrivate ? "Privat: nur du (und wen du einlädst) siehst es." : "Öffentlich: alle im Internet können es sehen und herunterladen.")
+            + (history ? "\nAchtung: Der Ordner hat schon einen eigenen Git-Verlauf – alle darin früher gespeicherten Stände und Dateien gehen mit hoch, auch solche, die hier nicht aufgeführt sind." : "")
+            + $"\nZiel: https://github.com/{user}/{repo}\nDateien: {files.Count} · Größe: {Kb(total)}\n\nFreigegeben werden genau diese Dateien. Ändert sich vorher etwas, fragt Trendo neu.";
+        var preview = string.Join("\n", files.Select(f => $"• {f.Rel} ({Kb(f.Bytes)})"));
+        return new(target, $"„{title}“ auf GitHub hochladen ({vis})?", text, preview, files.Count, total);
+    }
+
     /// <summary>Trendo-interne Ordner (.trendo, Sicherungen) kommen nie ins Repo.</summary>
     public static void EnsureIgnore(string folder)
     {

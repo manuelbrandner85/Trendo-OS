@@ -2,7 +2,7 @@
 <TestRun id="a7a93c66-2e79-4b27-8602-106a2f94cd3e" name="<user>@<host> 2026-10-22 02:42:45" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:45.6506996+02:00" queuing="2026-10-22T02:42:45.6506997+02:00" start="2026-10-22T02:42:44.9780876+02:00" finish="2026-10-22T02:42:45.6554667+02:00" />
   <TestSettings name="default" id="56dfeff5-d056-4f9c-abed-99fb4caa4691">
-    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_45" />
+    <Deployment runDeploymentRoot="<user>_<host>_2026-10-22_02_42_45" />
   </TestSettings>
   <Results>
     <UnitTestResult executionId="377ec260-0003-4fde-a42f-99f4c5976559" testId="dda5e5d9-70c6-29fd-abf1-148e8f17e419" testName="SPEC-14 F18: Zerspanleistung" computerName="<host>" duration="00:00:00.0015152" startTime="2026-10-22T02:42:45.5672679+02:00" endTime="2026-10-22T02:42:45.5687404+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="377ec260-0003-4fde-a42f-99f4c5976559" />

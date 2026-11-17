@@ -2,7 +2,7 @@
 <TestRun id="060986ca-1312-43ae-b9ba-9a942b759a83" name="<user>@<host> 2026-10-22 02:42:31" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:31.8845303+02:00" queuing="2026-10-22T02:42:31.8845305+02:00" start="2026-10-22T02:42:31.0075236+02:00" finish="2026-10-22T02:42:31.8886035+02:00" />
   <TestSettings name="default" id="2c6939de-0e88-4ae3-891d-7775be481ffe">
-    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_31" />
+    <Deployment runDeploymentRoot="<user>_<host>_2026-10-22_02_42_31" />
   </TestSettings>
   <Results>
     <UnitTestResult executionId="6931c453-878c-4b1e-b6ac-51d9918faf7f" testId="ab59ad70-85d8-e0f2-9cc4-bc93cfbc0e27" testName="SYS-05: Nur erlaubte Ordner, Textdatei mit {datum}, ZIP, Datum voranstellen" computerName="<host>" duration="00:00:00.0754670" startTime="2026-10-22T02:42:31.7196598+02:00" endTime="2026-10-22T02:42:31.7946257+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6931c453-878c-4b1e-b6ac-51d9918faf7f" />

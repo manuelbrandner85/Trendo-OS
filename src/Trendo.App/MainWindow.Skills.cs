@@ -90,6 +90,7 @@ public partial class MainWindow
             var pth = path;
             sp.Children.Add(new WrapPanel { Children = { P("• " + name, Text, 12), Act($"skill-src-get-{k++}", "Übernehmen", () => _ = SkillImportRemote(SkillSources[0].Repo, pth)) } });
         }
+        if (LinkRecoveryCard(SkillLink) is { } scard) sp.Children.Insert(0, scard); // T-0711
         return KiPage("Skills", sp);
     }
 
@@ -101,19 +102,20 @@ public partial class MainWindow
         var bodyText = s is null ? "" : System.Text.RegularExpressions.Regex.Replace(s.Body, @"\n## Checkliste[\s\S]*$", "").Trim();
         var body = new TextBox { Name = "skill-body-edit", Text = bodyText, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 160, PlaceholderText = "Fachregeln in Stichpunkten …" };
         var check = new TextBox { Name = "skill-check", Text = s is null ? "" : string.Join("\n", s.Checklist), AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 80, PlaceholderText = "Checkliste – ein Prüfpunkt je Zeile" };
+        var sl = SkillLink; LinkForm(sl, s?.Id ?? "neu", ("name", name), ("desc", desc), ("studios", studios), ("body", body), ("check", check)); // T-0711
         var save = Act("skill-save", "Speichern", () =>
         {
             try
             {
                 var saved = Skills.SaveOwn(s?.Id, name.Text ?? "", desc.Text ?? "", (studios.Text ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
                     body.Text ?? "", (check.Text ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
-                _skillMsg = $"✓ „{saved.Name}“ gespeichert (Version {Prompts.Get(saved.Id)?.Version})."; _skillSel = saved.Id; _skillEdit = false;
+                _skillMsg = $"✓ „{saved.Name}“ gespeichert (Version {Prompts.Get(saved.Id)?.Version})."; _skillSel = saved.Id; _skillEdit = false; LinkClose(sl);
             }
             catch (ArgumentException e) { _skillMsg = e.Message; }
             Show("ki-skills");
         }, true);
-        return Card(new StackPanel { Name = "skill-editor", Spacing = 6, Children = { H(s is null ? "Neuer Skill" : "Skill bearbeiten", 14), name, desc, studios, body, check,
-            new WrapPanel { Children = { save, new Border { Width = 6 }, Act("skill-cancel", "Abbrechen", () => { _skillEdit = false; Show("ki-skills"); }) } } } });
+        return Card(new StackPanel { Name = "skill-editor", Spacing = 6, Children = { H(s is null ? "Neuer Skill" : "Skill bearbeiten", 14), LinkUndoRow(sl), name, desc, studios, body, check,
+            new WrapPanel { Children = { save, new Border { Width = 6 }, Act("skill-cancel", "Abbrechen", () => { LinkClose(sl); _skillEdit = false; Show("ki-skills"); }) } } } });
     }
 
     /// <summary>Liste der Skills in der Sammlung (eine GitHub-Abfrage: Dateibaum, nur SKILL.md).</summary>

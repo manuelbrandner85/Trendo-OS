@@ -157,18 +157,25 @@ public static class VideoPro
     static bool IsImage(string f) => Path.GetExtension(f).ToLowerInvariant() is ".png" or ".jpg" or ".jpeg" or ".webp" or ".bmp" or ".gif";
 
     /// <summary>Zweite Bildspur in den Filtergraph legen: aus „vin“ wird „vout“. Liefert die zusätzlichen Eingaben.</summary>
-    public static List<string> OverlayGraph(JsonObject p, List<string> graph, string vin, string vout, ref int input, int w, int h, int fps)
+    /// <summary>T-0695: <paramref name="from"/>/<paramref name="to"/> (Zeitleiste) begrenzen die Einblendungen auf einen Vorschau-Ausschnitt – Einblendungen davor oder danach entfallen,
+    /// laufende beginnen an der Stelle und behalten ihre Zeit. <paramref name="source"/> ersetzt Dateien (Proxy). Ohne diese Angaben unverändert wie im Export.</summary>
+    public static List<string> OverlayGraph(JsonObject p, List<string> graph, string vin, string vout, ref int input, int w, int h, int fps, double from = 0, double to = 0, Func<string, string>? source = null)
     {
         var args = new List<string>(); var cur = vin; var ov = Overlays(p).Where(o => VideoLanes.IsOn(p, "video", o.Lane)).OrderBy(o => o.Lane).ToList(); // OrderBy ist stabil: ohne Spurangaben bleibt die Reihenfolge
+        if (from > 0 || to > 0) ov = ov.Where(o => o.Start + o.Length > from && (to <= 0 || o.Start < to)).ToList();
+        static string F6(double v) => v.ToString("0.######", Inv);
         for (var i = 0; i < ov.Count; i++)
         {
             var o = ov[i];
             if (!File.Exists(o.File)) throw new FileNotFoundException("Datei fehlt: " + Path.GetFileName(o.File));
-            if (IsImage(o.File)) args.AddRange(["-loop", "1", "-framerate", fps.ToString(Inv), "-t", F(o.Start + o.Length), "-i", o.File]);
-            else args.AddRange(["-t", F(o.Length), "-i", o.File]);
+            // T-0695: im Ausschnitt springt die Eingabe an die Stelle (shift), die Zeit wird danach wieder addiert – Keyframes rechnen wie im Export
+            var shift = IsImage(o.File) ? Math.Max(0, from) : Math.Max(0, from - o.Start); var file = source?.Invoke(o.File) ?? o.File;
+            if (IsImage(o.File)) args.AddRange(["-loop", "1", "-framerate", fps.ToString(Inv), "-t", shift > 0 ? F6(o.Start + o.Length - shift) : F(o.Start + o.Length), "-i", file]);
+            else if (shift > 0) args.AddRange(["-ss", F6(shift), "-t", F6(o.Length - shift), "-i", file]);
+            else args.AddRange(["-t", F(o.Length), "-i", file]);
             var idx = input++; var ow = Math.Max(16, (int)Math.Round(w * o.Width / 2) * 2);
             var local = IsImage(o.File) ? $"(T-{F(o.Start)})" : "T"; var localT = local.ToLowerInvariant(); // V5: Zeit ab dem Start der Einblendung; Bilder laufen ab 0 der Gesamtzeit
-            graph.Add($"[{idx}:v]{KeyAndMask(o)}scale={ow}:-2{VideoAnim.OverlaySize(p, o.Id, localT)},format=rgba{(VideoAnim.Keys(p, o.Id, "opacity").Count > 0 ? "" : $",colorchannelmixer=aa={F(o.Opacity)}")}{VideoAnim.OverlayOpacity(p, o.Id, local)},setpts=PTS-STARTPTS+{F(IsImage(o.File) ? 0 : o.Start)}/TB[ov{i}]");
+            graph.Add($"[{idx}:v]{(shift > 0 ? $"setpts=PTS+{F6(shift)}/TB," : "")}{KeyAndMask(o)}scale={ow}:-2{VideoAnim.OverlaySize(p, o.Id, localT)},format=rgba{(VideoAnim.Keys(p, o.Id, "opacity").Count > 0 ? "" : $",colorchannelmixer=aa={F(o.Opacity)}")}{VideoAnim.OverlayOpacity(p, o.Id, local)},setpts=PTS-STARTPTS+{(shift > 0 ? F6((IsImage(o.File) ? 0 : o.Start) + shift) : F(IsImage(o.File) ? 0 : o.Start))}/TB[ov{i}]");
             var next = i == ov.Count - 1 ? vout : $"ovc{i}";
             var over = $"(t-{F(o.Start)})"; var mx = VideoAnim.OverlayPos(p, o.Id, "x", over); var my = VideoAnim.OverlayPos(p, o.Id, "y", over); // V5: bewegte Lage
             var pos = mx is null && my is null ? $"x={F(o.X)}*W:y={F(o.Y)}*H" : $"x='({mx ?? F(o.X)})*W':y='({my ?? F(o.Y)})*H':eval=frame";

@@ -43,10 +43,11 @@ public partial class MainWindow
             var wrap = new WrapPanel();
             foreach (var c in cats)
             {
+                var chosen = c.Id == d.Category; // V-17 (T-0700): gewählte Kachel mit dunkler Schrift auf Gold
                 var card = new StackPanel { Spacing = 3, Children = {
-                    new TextBlock { Text = c.Label, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
-                    new TextBlock { Text = c.Subject.Length > 0 ? c.Subject : "Ohne Vorlage – du schreibst alles selbst.", Foreground = Muted, FontSize = 10.5, TextWrapping = TextWrapping.Wrap, MaxHeight = 30 } } };
-                if (c.Legal) card.Children.Add(new TextBlock { Text = "Fristen selbst prüfen", Foreground = Brush.Parse("#FACC15"), FontSize = 10 });
+                    new TextBlock { Text = c.Label, Foreground = chosen ? OnGold : Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
+                    new TextBlock { Text = c.Subject.Length > 0 ? c.Subject : "Ohne Vorlage – du schreibst alles selbst.", Foreground = chosen ? OnGoldMuted : Muted, FontSize = 10.5, TextWrapping = TextWrapping.Wrap, MaxHeight = 30 } } };
+                if (c.Legal) card.Children.Add(new TextBlock { Text = "Fristen selbst prüfen", Foreground = chosen ? OnGold : Brush.Parse("#FACC15"), FontSize = 10 });
                 var b = new Button { Name = "letter-gallery-" + c.Id, Width = 172, MinHeight = 74, Margin = new Thickness(0, 0, 6, 6), Padding = new Thickness(10, 8), CornerRadius = new CornerRadius(10),
                     HorizontalContentAlignment = HorizontalAlignment.Left, VerticalContentAlignment = VerticalAlignment.Top, Background = c.Id == d.Category ? Accent : TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), Content = card };
                 b.Click += (_, _) =>
@@ -427,13 +428,13 @@ public partial class MainWindow
             if (_letterSerial is { Count: > 0 } s2)
                 serialBar.Children.Add(new Border { Name = "letter-serial-bar", Background = Brush.Parse("#33C9A227"), BorderBrush = Brush.Parse("#D4A84B"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 4),
                     Child = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = {
-                        Act("letter-serial-prev", "◀", () => { _letterSerialIdx = Math.Max(0, _letterSerialIdx - 1); _letterSync?.Invoke(); }),
+                        SimpleWords.Named(Act("letter-serial-prev", "◀", () => { _letterSerialIdx = Math.Max(0, _letterSerialIdx - 1); _letterSync?.Invoke(); }), "Voriger Brief"),
                         new TextBlock { Name = "letter-serial-pos", Text = $"Serienbrief {_letterSerialIdx + 1} von {s2.Count}: {s2[_letterSerialIdx].Recipient.Split('\n')[0]}", Foreground = Text, VerticalAlignment = VerticalAlignment.Center, FontWeight = FontWeight.SemiBold },
-                        Act("letter-serial-next", "▶", () => { _letterSerialIdx = Math.Min(s2.Count - 1, _letterSerialIdx + 1); _letterSync?.Invoke(); }),
+                        SimpleWords.Named(Act("letter-serial-next", "▶", () => { _letterSerialIdx = Math.Min(s2.Count - 1, _letterSerialIdx + 1); _letterSync?.Invoke(); }), "Nächster Brief"),
                         Act("letter-serial-close", "Zurück zum Entwurf", () => { _letterSerial = null; _letterSerialIdx = 0; _letterSync?.Invoke(); }) } } });
             _letterStepSync?.Invoke();
         }
-        _letterSync = Sync; Sync();
+        _letterSync = () => { Sync(); LetterTyped(); }; Sync(); // T-0708: jede Feldänderung wird nach einer Tipp-Pause ein Rückgängig-Schritt
         var sheet = new Border { Name = "letter-preview", Background = Brush.Parse("#E6EBF0"), CornerRadius = new CornerRadius(8), Padding = new Thickness(10), MinWidth = 180, VerticalAlignment = VerticalAlignment.Stretch,
             Child = new ScrollViewer { Content = pagesHost, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto } };
         var wrap = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto,*") };

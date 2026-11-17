@@ -1,0 +1,247 @@
+# Echtlauf pdf-werkstatt – 2026-11-16 14:19:12
+$ qpdf Version: qpdf.exe --version
+Exit 0
+qpdf version 12.4.2
+Run qpdf --copyright to see copyright and license information.
+Werkzeuge: LibreOffice soffice.exe, qpdf qpdf version 12.4.2
+$ LibreOffice öffnet amtsbrief.fodt: soffice.exe -env:UserInstallation=file:///C:\Users\<user>/AppData/Local/Temp/trendo-t0705-lo-c6c8badd --headless --norestore --convert-to pdf --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-c50dc85e C:\Users\<user>\AppData\Local\Temp\trendo-ui-f12a6a789ca543df891b60956bc9780e\amtsbrief.fodt
+Exit 0
+convert C:\Users\<user>\AppData\Local\Temp\trendo-ui-f12a6a789ca543df891b60956bc9780e\amtsbrief.fodt as a Writer document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-c50dc85e\amtsbrief.pdf using filter : writer_pdf_Export
+[stderr] Could not find platform independent libraries <prefix>
+Datei fremd-amtsbrief-libreoffice.pdf: 24777 Bytes, SHA-256 7b2a30e5ea22bcd81434f1461059dc9903d67e4c83c266cfa1359d6d1070124e
+$ qpdf prüft amtsbrief.pdf: qpdf.exe --check C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-c50dc85e\amtsbrief.pdf
+Exit 0
+checking C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-c50dc85e\amtsbrief.pdf
+PDF Version: 1.7
+File is not encrypted
+File is not linearized
+No syntax or stream encoding errors found; the file may still contain
+errors that qpdf cannot detect
+$ qpdf zählt Seiten: qpdf.exe --show-npages C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-c50dc85e\amtsbrief.pdf
+Exit 0
+3
+Oberfläche: PDF auf den ersten Schritt gezogen (Ablegen-Ereignis des Fensters).
+Oberfläche: Seite 3 mit der Maus an den Anfang gezogen.
+Oberfläche: Rechtsklick Seite 1 → Nach rechts drehen.
+Oberfläche: Rechtsklick Seite 3 → Seite löschen.
+Datei ergebnis-geordnet.pdf: 19653 Bytes, SHA-256 75a1b603342d2f3553e55efff8c7879372392d15866047f21d40b5f13d8d4ffa
+$ qpdf prüft ergebnis-geordnet.pdf: qpdf.exe --check C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\pdf-werkstatt\ergebnis-geordnet.pdf
+Exit 0
+checking C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\pdf-werkstatt\ergebnis-geordnet.pdf
+PDF Version: 1.7
+File is not encrypted
+File is not linearized
+No syntax or stream encoding errors found; the file may still contain
+errors that qpdf cannot detect
+$ qpdf zählt Seiten: qpdf.exe --show-npages C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\pdf-werkstatt\ergebnis-geordnet.pdf
+Exit 0
+2
+$ qpdf liest die Seitenobjekte (Drehung): qpdf.exe --json --json-key=qpdf C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\pdf-werkstatt\ergebnis-geordnet.pdf
+Exit 0
+{
+  "version": 2,
+  "parameters": {
+    "decodelevel": "generalized"
+  },
+  "qpdf": [
+    {
+      "jsonversion": 2,
+      "pdfversion": "1.7",
+      "pushedinheritedpageresources": false,
+      "calledgetallpages": false,
+      "maxobjectid": 14
+    },
+    {
+      "obj:1 0 R": {
+        "value": {
+          "/CreationDate": "u:D:20261116141916+01'00'",
+          "/Creator": "u:PDFsharp 6.2.4 (www.pdfsharp.com)",
+          "/Producer": "u:PDFsharp 6.2.4"
+        }
+      },
+      "obj:2 0 R": {
+        "value": {
+          "/Metadata": "14 0 R",
+          "/Pages": "3 0 R",
+          "/Type": "/Catalog"
+        }
+      },
+      "obj:3 0 R": {
+        "value": {
+          "/Count": 2,
+          "/Kids": [
+            "11 0 R",
+            "13 0 R"
+          ],
+          "/Type": "/Pages"
+        }
+      },
+      "obj:4 0 R": {
+        "value": {
+          "/Font": "5 0 R",
+          "/ProcSet": [
+            "/PDF",
+            "/Text"
+          ]
+        }
+      },
+      "obj:5 0 R": {
+        "value": {
+          "/F1": "6 0 R"
+        }
+      },
+      "obj:6 0 R": {
+        "value": {
+          "/BaseFont": "/BAAAAA+TimesNewRomanPS-BoldMT",
+          "/FirstChar": 0,
+          "/FontDescriptor": "7 0 R",
+          "/LastChar": 15,
+          "/Subtype": "/TrueType",
+          "/ToUnicode": "8 0 R",
+          "/Type": "/Font",
+          "/Widths": [
+            0,
+            556,
+            443,
+            277,
+            333,
+            250,
+            556,
+            389,
+            500,
+            500,
+            833,
+            722,
+            443,
+            722,
+            556,
+            443
+          ]
+        }
+      },
+      "obj:7 0 R": {
+        "value": {
+          "/Ascent": 891,
+          "/CapHeight": 1055,
+          "/Descent": -216,
+          "/Flags": 6,
+          "/FontBBox": [
+            -558,
+            -327,
+            2000,
+            1056
+          ],
+          "/FontFile2": "9 0 R",
+          "/FontName": "/BAAAAA+TimesNewRomanPS-BoldMT",
+          "/ItalicAngle": 0,
+          "/StemV": 80,
+          "/Type": "/FontDescriptor"
+        }
+      },
+      "obj:8 0 R": {
+        "stream": {
+          "dict": {
+            "/Filter": "/FlateDecode",
+            "/Length": 293
+          }
+        }
+      },
+      "obj:9 0 R": {
+        "stream": {
+          "dict": {
+            "/Filter": "/FlateDecode",
+            "/Length": 15703,
+            "/Length1": 30908
+          }
+        }
+      },
+      "obj:10 0 R": {
+        "stream": {
+          "dict": {
+            "/Filter": "/FlateDecode",
+            "/Length": 167
+          }
+        }
+      },
+      "obj:11 0 R": {
+        "value": {
+          "/Contents": "10 0 R",
+          "/Group": {
+            "/CS": "/DeviceRGB",
+            "/S": "/Transparency"
+          },
+          "/MediaBox": [
+            0,
+            0,
+            595.304,
+            841.89
+          ],
+          "/Parent": "3 0 R",
+          "/Resources": "4 0 R",
+          "/Rotate": 90,
+          "/Type": "/Page"
+        }
+      },
+      "obj:12 0 R": {
+        "stream": {
+          "dict": {
+            "/Filter": "/FlateDecode",
+            "/Length": 168
+          }
+        }
+      },
+      "obj:13 0 R": {
+        "value": {
+          "/Contents": "12 0 R",
+          "/Group": {
+            "/CS": "/DeviceRGB",
+            "/S": "/Transparency"
+          },
+          "/MediaBox": [
+            0,
+            0,
+            595.304,
+            841.89
+          ],
+          "/Parent": "3 0 R",
+          "/Resources": "4 0 R",
+          "/Rotate": 0,
+          "/Type": "/Page"
+        }
+      },
+      "obj:14 0 R": {
+        "stream": {
+          "dict": {
+            "/Length": 1396,
+            "/Subtype": "/XML",
+            "/Type": "/Metadata"
+          }
+        }
+      },
+      "trailer": {
+        "value": {
+          "/ID": [
+            "b:68155d67cd72e545947534a3e03bf5a9",
+            "b:68155d67cd72e545947534a3e03bf5a9"
+          ],
+          "/Info": "1 0 R",
+          "/Root": "2 0 R",
+          "/Size": 15
+        }
+      }
+    }
+  ]
+}
+PDFium Text ergebnis-geordnet.pdf Seite 1: Seite drei vom Amt
+PDFium Text ergebnis-geordnet.pdf Seite 2: Seite eins vom Amt
+$ pdftotext (Poppler) liest ergebnis-geordnet.pdf: pdftotext.exe -layout C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\pdf-werkstatt\ergebnis-geordnet.pdf -
+Exit 0
+Seite drei vom Amt
+Seite eins vom Amt
+$ LibreOffice öffnet ergebnis-geordnet.pdf: soffice.exe -env:UserInstallation=file:///C:\Users\<user>/AppData/Local/Temp/trendo-t0705-lo-0d2074db --headless --norestore --convert-to png --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-2041c21d C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\pdf-werkstatt\ergebnis-geordnet.pdf
+Exit 0
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\pdf-werkstatt\ergebnis-geordnet.pdf as a Draw document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-2041c21d\ergebnis-geordnet.png using filter : draw_png_Export
+[stderr] Could not find platform independent libraries <prefix>
+Datei ergebnis-geordnet-libreoffice.png: 22986 Bytes, SHA-256 c3c8675d058d3fb3664177db6008353d4fb4e8fe7db02fddefd3c493e344ca88
+Original unverändert (SHA-256 gleich).
+ERGEBNIS: bestanden

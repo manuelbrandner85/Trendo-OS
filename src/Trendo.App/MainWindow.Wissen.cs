@@ -27,6 +27,23 @@ public partial class MainWindow
         ExtraPages.Add(("Wissen für die KI", "ki-wissen", ["wissen", "gedaechtnis", "merken", "notiz", "lernen", "wiki", "verweise"]));
     }
 
+    /// <summary>T-0725: Zielordner wählen (Dialog; im Test ersetzt), darin „Trendo-Wissen JJJJ-MM-TT“ mit einer .md je Seite.</summary>
+    async Task WissenExport()
+    {
+        if (await PickFolderPath("Wissen sichern nach") is not { } dir) return;
+        try
+        {
+            var target = Path.Combine(dir, "Trendo-Wissen " + DateTime.Now.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture));
+            var n = Wissen.ExportMarkdown(target);
+            _wissenMsg = $"{n} Seiten als Markdown gesichert in „{target}“. Über „Einlesen“ lassen sie sich wieder übernehmen.";
+            WissenLastExport = target;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException) { _wissenMsg = FriendlyError.From(ex).Sentence; }
+        Show("ki-wissen");
+    }
+    /// <summary>T-0725: Ordner des letzten Exports (für Tests und die Meldung).</summary>
+    public string? WissenLastExport { get; private set; }
+
     private IReadOnlyList<(string Title, string Text)> LookupKnowledge(string q, int n) => Wissen.Search(q, n).Where(h => h.Score > 0.5).Select(h => (h.Item.Title, h.Item.Text)).ToList();
 
     /// <summary>Seite öffnen (öffentlich für Tests); gibt es sie nicht, öffnet sich eine neue Seite mit diesem Titel.</summary>
@@ -96,6 +113,8 @@ public partial class MainWindow
         var (good, bad) = Wissen.FeedbackStats();
         left.Children.Add(new Border { Height = 8 });
         left.Children.Add(P("Dateien einlesen", Muted, 11)); left.Children.Add(folder); left.Children.Add(imp); left.Children.Add(WissenDocsButton(folder)); // Alle Studios, Runde 8: markitdown
+        // T-0725 (Audit D7, CORE-10): Export in der Oberfläche – jede Seite als Markdown-Datei, wieder einlesbar über „Einlesen“
+        if (Wissen.All().Count > 0) left.Children.Add(Act("wissen-export", "Als Markdown sichern …", () => _ = WissenExport()));
         left.Children.Add(P($"{Wissen.All().Count} Seiten · Rückmeldungen: {good} gut, {bad} verbesserungswürdig", null, 10.5));
         var trashed = Wissen.Trashed().Count;
         left.Children.Add(Act("wissen-trash", $"Papierkorb ({trashed})", () => { _wikiTrashView = true; _wikiId = null; _wikiEdit = false; Show(V); }));
@@ -120,7 +139,7 @@ public partial class MainWindow
         else if (_wikiEdit || page is null)
         {
             var title = new TextBox { Name = "wissen-title", PlaceholderText = "Titel der Seite", Text = page?.Title ?? _wikiNewTitle, FontSize = 15 };
-            var text = new TextBox { Name = "wissen-text", PlaceholderText = "Was soll Trendo wissen? z. B. „Meine Kundennummer bei den Stadtwerken ist …“ – mit [[Titel]] verweist du auf eine andere Seite.",
+            var text = new TextBox { Name = "wissen-text", PlaceholderText = IsSimple ? "Was soll Trendo wissen? z. B. „Meine Kundennummer bei den Stadtwerken ist …“" : "Was soll Trendo wissen? z. B. „Meine Kundennummer bei den Stadtwerken ist …“ – mit [[Titel]] verweist du auf eine andere Seite.",
                 Text = page?.Text ?? "", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 260 };
             Button save;
             if (page is null)
@@ -138,11 +157,21 @@ public partial class MainWindow
                 save = new Button { Name = "wissen-save", Content = "Speichern", Background = Accent };
                 save.Click += (_, _) => Try(V, () => { Wissen.Update(page.Id, title.Text ?? "", text.Text ?? ""); _wikiEdit = false; _wissenMsg = "Gespeichert."; Show(V); });
             }
-            var cancel = Act("wissen-cancel", "Abbrechen", () => { _wikiEdit = false; _wissenMsg = ""; Show(V); });
+            var wl = WikiLink; LinkForm(wl, page?.Id ?? "neu", ("title", title), ("text", text)); // T-0711: Entwurf, Rückgängig, Notsicherung
+            save.Click += (_, _) => { if (!_wikiEdit) LinkClose(wl); }; // gespeichert (Merken/Speichern hat das Bearbeiten beendet) – Entwurf und Sicherung weg
+            var cancel = Act("wissen-cancel", "Abbrechen", () => { LinkClose(wl); _wikiEdit = false; _wissenMsg = ""; Show(V); });
             if (page is null) center.Children.Add(P("Neue Seite. Was hier steht, liest die KI bei passenden Fragen mit. Alles bleibt auf diesem PC.", Muted, 12));
-            center.Children.Add(title); center.Children.Add(text);
+            center.Children.Add(LinkUndoRow(wl));
+            center.Children.Add(title);
+            // V-12 (T-0700): Verweis, Überschrift, Fett und Liste per Knopf statt „[[…]]“ tippen
+            center.Children.Add(WriteMarksBar(text, "wissen",
+                (Trendo.Core.Text.WriteMarks.Kind.Link, "Verweis auf Seite", "Markiertes wird zum Verweis auf eine andere Wissens-Seite (ohne Markierung: Beispiel zum Überschreiben)"),
+                (Trendo.Core.Text.WriteMarks.Kind.Heading, "Überschrift", "Zeile als Überschrift"),
+                (Trendo.Core.Text.WriteMarks.Kind.Bold, "Fett", "Markiertes fett"),
+                (Trendo.Core.Text.WriteMarks.Kind.List, "Aufzählung", "Zeilen als Aufzählung")));
+            center.Children.Add(text);
             center.Children.Add(new WrapPanel { Children = { save, new Border { Width = 6 }, cancel } });
-            center.Children.Add(P("Tipp: [[Seitentitel]] verlinkt eine Seite, [[Seitentitel|anderer Text]] zeigt einen anderen Text an.", Muted, 11));
+            center.Children.Add(P(IsSimple ? "Tipp: Text markieren und „Verweis auf Seite“ drücken – so verweist du auf eine andere Seite." : "Tipp: [[Seitentitel]] verlinkt eine Seite, [[Seitentitel|anderer Text]] zeigt einen anderen Text an.", Muted, 11));
         }
         else if (page is not null)
         {
@@ -200,6 +229,7 @@ public partial class MainWindow
         Border Col(Control c, bool scroll = false) => new() { CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(10), VerticalAlignment = VerticalAlignment.Top,
             Child = scroll ? new ScrollViewer { Content = c, MaxHeight = 720 } : c };
         var grid = new Grid { Name = "wissen-wiki", ColumnDefinitions = new ColumnDefinitions("250,12,*,12,280"), Children = { Col(left, true), Pos(center, 2), Pos(Col(right), 4) } };
+        if (LinkRecoveryCard(WikiLink) is { } wcard) center.Children.Insert(0, wcard); // T-0711: nicht gespeicherte Seiten aus einer früheren Sitzung
         return KiPage("Wissen", grid);
     }
 }

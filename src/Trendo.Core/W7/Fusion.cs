@@ -67,7 +67,7 @@ public sealed class FusionStore(string dataRoot, AuditLog audit)
     private static readonly JsonSerializerOptions J = new() { WriteIndented = true };
 
     public List<FusionNode> Nodes() { try { return File.Exists(NodesFile) ? JsonSerializer.Deserialize<List<FusionNode>>(File.ReadAllText(NodesFile)) ?? [] : []; } catch (JsonException) { return []; } }
-    private void Save(List<FusionNode> n) { Directory.CreateDirectory(Dir); File.WriteAllText(NodesFile, JsonSerializer.Serialize(n, J)); }
+    private void Save(List<FusionNode> n) { Directory.CreateDirectory(Dir); AtomicFile.WriteAllText(NodesFile, JsonSerializer.Serialize(n, J)); } // T-0717: atomar
 
     /// <summary>Nach erfolgreicher Kopplung mit dem Begleiter (POST /pair) das Gerät speichern. Token gehört in den Schlüsselspeicher, nie in diese Datei.</summary>
     /// <summary>Nur private Netze (LAN) oder .local-Namen – nie das Internet.</summary>

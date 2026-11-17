@@ -57,9 +57,11 @@ public class Library3D_Ui
         var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
         var glb = Trendo.Core.XrSample.Write(Path.Combine(root, "mein-sessel.glb")); var exe = Path.Combine(root, "x.exe"); File.WriteAllText(exe, "x");
         w.Show(BIB); Settle();
-        Get<TextBox>(w, "bib-import-path").Text = exe; Press(w, "bib-import");
+        // V-07 (T-0700): das Pfadfeld ist außer in „Professionell“ ausgeblendet – „Datei wählen …“ trägt die Auswahl, „Übernehmen“ läuft danach von selbst
+        var next = exe; w.PickOverride = _ => Task.FromResult<string[]?>([next]);
+        Press(w, "bib-import-path-pick");
         await Wait(() => Msg(w).StartsWith('⚠')); Assert.Contains("kann Trendo nicht übernehmen", Msg(w));
-        Get<TextBox>(w, "bib-import-path").Text = glb; Press(w, "bib-import");
+        next = glb; Press(w, "bib-import-path-pick");
         await Wait(() => Msg(w).StartsWith('✓'));
         Assert.Contains("mein-sessel", Msg(w)); Assert.Contains("Eigene Datei", Get<Border>(w, "bib-item-0").GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text).Aggregate((a, b) => a + b));
         Press(w, "bib-open-0"); Settle();

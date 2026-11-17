@@ -102,7 +102,7 @@ public class KreativStudios_Ui
         finally { w.Close(); }
     }
 
-    [AvaloniaFact(DisplayName = "Comics: Seite mit Sprechblasen, Aufteilung wechseln ergänzt Bilder, Text bearbeiten, SVG-Export mit eingebettetem Bild")]
+    [AvaloniaFact(DisplayName = "Comics: Seite mit Sprechblasen, Raster-Vorschlag ergänzt Bildfelder und behält die Texte, Text bearbeiten, SVG-Export mit eingebettetem Bild")]
     public void Comic()
     {
         var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
@@ -110,18 +110,20 @@ public class KreativStudios_Ui
         {
             const string K = "comic-programm";
             w.Show(K); Settle(); RealClick(w, w.Find<Button>("prog-tpl-beispiel")); Settle();
-            Assert.Contains(w.Find<Border>("comic-page").GetVisualDescendants().OfType<TextBlock>(), t => t.Text == "Miau!");
-            RealClick(w, w.Find<Button>("prog-cmd-comic-layout-6er")); Settle();
             var d = w.ProgramActive(K)!;
-            Assert.Equal(6, d.List("panels").Count);
-            Assert.Equal("Miau!", (string?)d.List("panels")[2]!["speech"]); // vorhandene Texte bleiben
-            var t = w.Find<TextBox>("comic-speech-5"); t.Focus(); t.Text = "Ende."; w.Find<TextBox>("comic-caption-5").Focus(); Settle();
-            Assert.Equal("Ende.", (string?)d.List("panels")[5]!["speech"]);
+            // T-0697: Blasen liegen frei auf der Seite (nicht mehr als Textfeld je Bild)
+            Assert.NotNull(w.Find<ComicPageView>("comic-view"));
+            Assert.Contains(MainWindow.ComicOf(d).Pages[0].Balloons, b => b.Text == "Miau!");
+            RealClick(w, w.Find<Button>("prog-cmd-comic-layout-6er")); Settle();
+            Assert.Equal(6, MainWindow.ComicOf(d).Pages[0].Panels.Count);
+            Assert.Contains(MainWindow.ComicOf(d).Pages[0].Balloons, b => b.Text == "Miau!"); // vorhandene Texte bleiben
+            var t = w.Find<TextBox>("comic-speech-5"); t.Focus(); t.Text = "Ende."; w.Find<TextBox>("comic-p-title").Focus(); Settle();
+            Assert.Equal("Ende.", MainWindow.ComicOf(d).Pages[0].Balloons[5].Text);
             var png = Path.Combine(root, "bild.png");
             File.WriteAllBytes(png, Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="));
-            d.Edit("Bild", x => ((System.Text.Json.Nodes.JsonObject)((System.Text.Json.Nodes.JsonArray)x["panels"]!)[0]!)["image"] = png);
+            w.ComicSetImage(d, png, MainWindow.ComicOf(d).Pages[0].Panels[0].Id);
             w.Show(K); Settle();
-            Assert.Contains(w.Find<Border>("comic-page").GetVisualDescendants().OfType<Image>(), i => i.Source is not null);
+            Assert.Equal(png, MainWindow.ComicOf(d).Pages[0].Panels[0].Image);
             var svg = File.ReadAllText(Export(w, K, "svg", root));
             Assert.Contains("data:image/png;base64,", svg);
             Assert.Contains("Ende.", XElement.Parse(svg).Value);

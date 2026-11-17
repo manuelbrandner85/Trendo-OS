@@ -62,7 +62,30 @@ public sealed partial class LearnBox(string dataRoot, Func<DateTime>? now = null
         Save(); return n;
     }
 
-    public IReadOnlyList<string> Decks => Store.Cards.Select(c => c.Deck).Distinct().OrderBy(d => d).ToList();
+    /// <summary>T-0725 (Audit D7, SPEC-06: „CSV-Datei-Import per Dialog“): Karten aus einer Datei – eigene CSV („Frage;Antwort“), Excel/Tabelle (Tab oder Semikolon)
+    /// und die Textausgabe von Anki („Notizen als Klartext“: Tab-getrennt, Kopfzeilen mit „#“, weitere Felder wie Schlagwörter werden ignoriert, einfache HTML-Auszeichnung
+    /// wie &lt;br&gt; und &amp;nbsp; wird zu Text). Gleiche Fragen im Stapel werden übersprungen. Liefert (übernommen, übersprungen).</summary>
+    public (int Added, int Skipped) ImportFile(string deck, string path)
+    {
+        var fi = new FileInfo(path);
+        if (!fi.Exists) throw new FileNotFoundException("Diese Datei gibt es nicht.");
+        if (fi.Length > 5 * 1024 * 1024) throw new InvalidDataException("Die Datei ist größer als 5 MB – das ist keine Kartenliste.");
+        var raw = File.ReadAllText(path);
+        if (raw.Contains('\0')) throw new InvalidDataException("Das ist keine Textdatei. Aus Anki bitte „Notizen als Klartext (.txt)“ exportieren – .apkg-Pakete kann Trendo noch nicht lesen.");
+        static string Clean(string s) => System.Net.WebUtility.HtmlDecode(System.Text.RegularExpressions.Regex.Replace(s.Replace("<br>", " ").Replace("<br/>", " ").Replace("<br />", " "), "<[^>]+>", "")).Replace(' ', ' ').Trim().Trim('"').Trim();
+        var lines = new List<string>(); var skipped = 0;
+        foreach (var l in raw.Replace("\r", "").Split('\n'))
+        {
+            if (l.Trim().Length == 0 || l.TrimStart().StartsWith('#')) continue;
+            var p = l.Contains('\t') ? l.Split('\t') : l.Split(';');
+            if (p.Length < 2 || Clean(p[0]).Length == 0 || Clean(p[1]).Length == 0) { skipped++; continue; }
+            lines.Add(Clean(p[0]).Replace('\t', ' ') + "\t" + Clean(p[1]).Replace('\t', ' '));
+        }
+        var added = Import(deck, string.Join("\n", lines));
+        return (added, skipped + lines.Count - added);
+    }
+
+    public IReadOnlyList<string> Decks =>Store.Cards.Select(c => c.Deck).Distinct().OrderBy(d => d).ToList();
     public IReadOnlyList<Flashcard> DueCards(string? deck = null) => Store.Cards.Where(c => (deck is null || c.Deck == deck) && c.Due <= _now()).OrderBy(c => c.Due).ToList();
 
     /// <summary>SM-2: Falsch → morgen nochmal von vorn; sonst 1 → 6 → Intervall × Leichtigkeit.</summary>
@@ -126,6 +149,28 @@ public sealed partial class LearnBox(string dataRoot, Func<DateTime>? now = null
     }
 
     public void Delete(string id) { Store.Cards.RemoveAll(c => c.Id == id); Save(); }
+
+    /// <summary>T-0726: Karte löschen und sie mit ihrer Stelle zurückgeben – für „Rückgängig“ (null: gab es nicht).</summary>
+    public (Flashcard Card, int Index)? Remove(string id)
+    {
+        var i = Store.Cards.FindIndex(c => c.Id == id);
+        if (i < 0) return null;
+        var c = Store.Cards[i]; Store.Cards.RemoveAt(i); Save();
+        return (c, i);
+    }
+
+    /// <summary>T-0726: gelöschte Karte zurückholen – mit ihrem ganzen Lernstand (fällig, Abstand, Wiederholungen, Fehler, FSRS) an ihrer alten Stelle.</summary>
+    public void Restore(Flashcard card, int index)
+    {
+        if (Store.Cards.Any(c => c.Id == card.Id)) return;
+        Store.Cards.Insert(Math.Clamp(index, 0, Store.Cards.Count), card); Save();
+    }
+
+    /// <summary>T-0725: Karte löschen und zurückgeben (ohne Stelle) – nutzt <see cref="Remove"/>.</summary>
+    public Flashcard? Take(string id) => Remove(id)?.Card;
+
+    /// <summary>T-0725: gelöschte Karte samt Lernstand ans Ende zurücklegen (nicht doppelt) – nutzt <see cref="Restore(Flashcard, int)"/>.</summary>
+    public void Restore(Flashcard c) => Restore(c, int.MaxValue);
 
     // ---------- Ausbau ----------
 

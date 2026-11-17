@@ -82,6 +82,10 @@ public sealed class LocalApi : IAsyncDisposable
         app.MapPost("/api/approvals/{id}/approve", (HttpContext c, string id) =>
         {
             var r = core.Approvals.Pending().FirstOrDefault(x => x.Id == id) ?? throw new ApprovalException("Keine offene Freigabe.");
+            // B4 (T-0706): Wirkungen der Studios (Installieren, Ablauf, Roboter …) entscheidet die Person am PC in der Rückfrage der Seite.
+            // Hier freigeben hieße: Ziel als Startziel öffnen – das gibt es nicht mehr.
+            if (r.Action != LiveBroadcast.Action && !Integrations.Handles(r.Action))
+                return Results.Conflict(new { executed = false, approved = false, error = "Diese Freigabe wird am PC auf der Seite entschieden, die gefragt hat." });
             core.Approvals.Approve(id, P(c));
             // Ein Livestream startet nie hier. Die Freigabe gilt, senden tut nur das Studio.
             if (r.Action == LiveBroadcast.Action) return Results.Ok(new { executed = false, approved = true });

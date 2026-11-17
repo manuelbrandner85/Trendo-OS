@@ -156,7 +156,7 @@ public sealed class ExtensionStore(string dataRoot, AuditLog? audit = null, Appr
             audit?.Append("app", "ext.install", $"{m.Id} {m.Version}");
             return (Get(m.Id), []);
         }
-        finally { if (Directory.Exists(tmp)) Directory.Delete(tmp, true); }
+        finally { TempDir.Delete(tmp); }
     }
 
     static void CopyDir(string s, string d)

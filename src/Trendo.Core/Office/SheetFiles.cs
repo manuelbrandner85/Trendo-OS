@@ -17,7 +17,10 @@ public static class SheetFiles
     static readonly XNamespace R = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
     static readonly XNamespace Pr = "http://schemas.openxmlformats.org/package/2006/relationships";
 
-    public static SheetDoc Open(string path) => Path.GetExtension(path).ToLowerInvariant() switch
+    /// <summary>Öffnet die Datei und hängt den Importbericht an (T-0682): was die Datei enthält, das Trendo Tabelle nicht hält.</summary>
+    public static SheetDoc Open(string path) { var d = Read(path); d.Import = ImportCheck.For(path); return d; }
+
+    static SheetDoc Read(string path) => Path.GetExtension(path).ToLowerInvariant() switch
     {
         ".xlsx" => ReadXlsx(path),
         ".ods" => ReadOds(path),
@@ -38,28 +41,15 @@ public static class SheetFiles
     }
 
     // ---------- XLSX schreiben ----------
-    static string NumFmtCode(NumFmt f) => f switch
-    {
-        NumFmt.Euro => "#,##0.00\\ \"€\"", NumFmt.Datum => "DD.MM.YYYY", NumFmt.DatumZeit => "DD.MM.YYYY HH:MM", _ => "",
-    };
-    static int NumFmtId(NumFmt f) => f switch
-    {
-        NumFmt.Ganzzahl => 3, NumFmt.Zahl => 4, NumFmt.Prozent => 10, NumFmt.Text => 49, NumFmt.Euro => 164, NumFmt.Datum => 165, NumFmt.DatumZeit => 166, _ => 0,
-    };
+    static string NumFmtCode(NumFmt f) => SheetStyles.Writer.TrendoCode(f);
 
     public static void WriteXlsx(SheetDoc doc, string path)
     {
-        var styles = new List<(NumFmt F, bool B, string? Fill, bool Border, bool U)> { (NumFmt.Standard, false, null, false, false) };
+        var looks = new SheetStyles.Writer(doc);
         var dxfFills = new List<string>();
         int Dxf(string fill) { var f = fill.ToUpperInvariant(); var i = dxfFills.IndexOf(f); if (i >= 0) return i; dxfFills.Add(f); return dxfFills.Count - 1; }
-        var fills = new List<string>();
         var strings = new List<string>(); var stringIndex = new Dictionary<string, int>();
-        int Style(Cell c)
-        {
-            var key = (c.Format, c.Bold, c.Fill?.ToUpperInvariant(), c.Border, c.Unlocked);
-            var i = styles.IndexOf(key); if (i >= 0) return i;
-            styles.Add(key); if (key.Item3 is { } f && !fills.Contains(f)) fills.Add(f); return styles.Count - 1;
-        }
+        int Style(Cell c) => looks.Style(c);
         int Str(string s) { if (!stringIndex.TryGetValue(s, out var i)) { stringIndex[s] = i = strings.Count; strings.Add(s); } return i; }
 
         var calc = new SheetCalc(doc);
@@ -78,10 +68,12 @@ public static class SheetFiles
                 sb.Append("</cols>");
             }
             sb.Append("<sheetData>");
-            foreach (var row in sh.Cells.Where(kv => !kv.Value.IsEmpty).GroupBy(kv => kv.Key.Row).OrderBy(g => g.Key))
+            var byRow = sh.Cells.Where(kv => !kv.Value.IsEmpty).GroupBy(kv => kv.Key.Row).ToDictionary(g => g.Key, g => g.OrderBy(kv => kv.Key.Col).ToList());
+            foreach (var rowKey in byRow.Keys.Concat(sh.RowHeights.Keys).Distinct().Order())
             {
-                sb.Append($"<row r=\"{row.Key + 1}\"{(sh.HiddenRows.Contains(row.Key) ? " hidden=\"1\"" : "")}>");
-                foreach (var ((r, c), cell) in row.OrderBy(kv => kv.Key.Col))
+                var height = sh.RowHeights.TryGetValue(rowKey, out var ht) ? $" ht=\"{ht.ToString("R", CultureInfo.InvariantCulture)}\" customHeight=\"1\"" : "";
+                sb.Append($"<row r=\"{rowKey + 1}\"{(sh.HiddenRows.Contains(rowKey) ? " hidden=\"1\"" : "")}{height}>");
+                foreach (var ((r, c), cell) in byRow.GetValueOrDefault(rowKey) ?? [])
                 {
                     var s = Style(cell); var sAttr = s > 0 ? $" s=\"{s}\"" : ""; var a = Addr.Name(r, c);
                     var v = calc.Value(sh, r, c);
@@ -109,6 +101,7 @@ public static class SheetFiles
             sb.Append("</sheetData>");
             if (sh.Protected) sb.Append("<sheetProtection sheet=\"1\" objects=\"1\" scenarios=\"1\"/>");
             if (sh.HiddenRows.Count > 0 && sh.MaxRow >= 0) sb.Append($"<autoFilter ref=\"A1:{Addr.Name(sh.MaxRow, Math.Max(0, sh.MaxCol))}\"/>");
+            if (sh.Merges.Count > 0) sb.Append($"<mergeCells count=\"{sh.Merges.Count}\">{string.Concat(sh.Merges.Select(m => $"<mergeCell ref=\"{m.Name}\"/>"))}</mergeCells>");
             var prio = 1;
             foreach (var cr in sh.CondRules) sb.Append(CondXml(cr, prio++, Dxf));
             if (sh.Validations.Count > 0)
@@ -125,25 +118,7 @@ public static class SheetFiles
             sheetXml.Add(sb.ToString());
         }
 
-        var st = new StringBuilder($"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><styleSheet xmlns=\"{S}\">");
-        var custom = styles.Select(x => x.F).Distinct().Where(f => NumFmtId(f) >= 164).ToList();
-        if (custom.Count > 0) st.Append($"<numFmts count=\"{custom.Count}\">{string.Concat(custom.Select(f => $"<numFmt numFmtId=\"{NumFmtId(f)}\" formatCode=\"{SecurityElement.Escape(NumFmtCode(f))}\"/>"))}</numFmts>");
-        st.Append("<fonts count=\"2\"><font><sz val=\"11\"/><name val=\"Calibri\"/></font><font><b/><sz val=\"11\"/><name val=\"Calibri\"/></font></fonts>");
-        st.Append($"<fills count=\"{2 + fills.Count}\"><fill><patternFill patternType=\"none\"/></fill><fill><patternFill patternType=\"gray125\"/></fill>");
-        foreach (var f in fills) st.Append($"<fill><patternFill patternType=\"solid\"><fgColor rgb=\"FF{f.TrimStart('#')}\"/><bgColor indexed=\"64\"/></patternFill></fill>");
-        st.Append("</fills><borders count=\"2\"><border><left/><right/><top/><bottom/><diagonal/></border>");
-        st.Append("<border><left style=\"thin\"><color auto=\"1\"/></left><right style=\"thin\"><color auto=\"1\"/></right><top style=\"thin\"><color auto=\"1\"/></top><bottom style=\"thin\"><color auto=\"1\"/></bottom><diagonal/></border></borders>");
-        st.Append("<cellStyleXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/></cellStyleXfs>");
-        st.Append($"<cellXfs count=\"{styles.Count}\">");
-        foreach (var (f, b, fill, border, unlocked) in styles)
-        {
-            var fillId = fill is null ? 0 : 2 + fills.IndexOf(fill);
-            st.Append($"<xf numFmtId=\"{NumFmtId(f)}\" fontId=\"{(b ? 1 : 0)}\" fillId=\"{fillId}\" borderId=\"{(border ? 1 : 0)}\" xfId=\"0\"{(f != NumFmt.Standard ? " applyNumberFormat=\"1\"" : "")}{(b ? " applyFont=\"1\"" : "")}{(fill is null ? "" : " applyFill=\"1\"")}{(border ? " applyBorder=\"1\"" : "")}");
-            st.Append(unlocked ? " applyProtection=\"1\"><protection locked=\"0\"/></xf>" : "/>");
-        }
-        st.Append("</cellXfs><cellStyles count=\"1\"><cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/></cellStyles>");
-        if (dxfFills.Count > 0) st.Append($"<dxfs count=\"{dxfFills.Count}\">{string.Concat(dxfFills.Select(f => $"<dxf><fill><patternFill><bgColor rgb=\"{(f.TrimStart('#').Length == 6 ? "FF" : "")}{f.TrimStart('#')}\"/></patternFill></fill></dxf>"))}</dxfs>");
-        st.Append("</styleSheet>");
+        var st = new StringBuilder(looks.StylesXml(dxfFills));
 
         var chartParts = ChartParts(doc, calc);
         chartParts.AddRange(NoteParts(doc));
@@ -211,7 +186,7 @@ public static class SheetFiles
         return parts;
     }
 
-    static string ChartXml(Sheet sh, SheetCalc calc, SheetChart ch)
+    internal static string ChartXml(Sheet sh, SheetCalc calc, SheetChart ch)
     {
         var lay = ChartData.Analyze(sh, calc, ch.Range);
         var sb = new StringBuilder($"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><c:chartSpace xmlns:c=\"{C}\" xmlns:a=\"{A}\" xmlns:r=\"{R}\"><c:chart>");
@@ -228,6 +203,7 @@ public static class SheetFiles
         {
             sb.Append($"<c:ser><c:idx val=\"{i}\"/><c:order val=\"{i}\"/>");
             sb.Append(lay.Header ? $"<c:tx><c:strRef><c:f>{XmlText(Ref(sh, lay.Top, c, lay.Top, c))}</c:f></c:strRef></c:tx>" : $"<c:tx><c:v>Reihe {Addr.Col(c)}</c:v></c:tx>");
+            if (ch.Colors?.ElementAtOrDefault(i) is { Length: >= 7 } color) sb.Append($"<c:spPr><a:solidFill><a:srgbClr val=\"{color.TrimStart('#').ToUpperInvariant()[^6..]}\"/></a:solidFill></c:spPr>");
             if (ch.Kind == ChartKind.Linie) sb.Append("<c:marker><c:symbol val=\"circle\"/></c:marker>");
             if (lay.LabelCol) sb.Append($"<c:cat><c:strRef><c:f>{XmlText(Ref(sh, lay.First, lay.Left, lay.Bottom, lay.Left))}</c:f></c:strRef></c:cat>");
             sb.Append($"<c:val><c:numRef><c:f>{XmlText(Ref(sh, lay.First, c, lay.Bottom, c))}</c:f></c:numRef></c:val>");
@@ -238,12 +214,16 @@ public static class SheetFiles
         else
         {
             sb.Append(ch.Kind == ChartKind.Linie ? "<c:marker val=\"1\"/><c:axId val=\"1001\"/><c:axId val=\"1002\"/></c:lineChart>" : "<c:axId val=\"1001\"/><c:axId val=\"1002\"/></c:barChart>");
-            sb.Append("<c:catAx><c:axId val=\"1001\"/><c:scaling><c:orientation val=\"minMax\"/></c:scaling><c:delete val=\"0\"/><c:axPos val=\"b\"/><c:crossAx val=\"1002\"/></c:catAx>");
-            sb.Append("<c:valAx><c:axId val=\"1002\"/><c:scaling><c:orientation val=\"minMax\"/></c:scaling><c:delete val=\"0\"/><c:axPos val=\"l\"/><c:majorGridlines/><c:crossAx val=\"1001\"/></c:valAx>");
+            sb.Append($"<c:catAx><c:axId val=\"1001\"/><c:scaling><c:orientation val=\"minMax\"/></c:scaling><c:delete val=\"0\"/><c:axPos val=\"b\"/>{AxisTitle(ch.XTitle)}<c:crossAx val=\"1002\"/></c:catAx>");
+            sb.Append($"<c:valAx><c:axId val=\"1002\"/><c:scaling><c:orientation val=\"minMax\"/></c:scaling><c:delete val=\"0\"/><c:axPos val=\"l\"/><c:majorGridlines/>{AxisTitle(ch.YTitle)}<c:crossAx val=\"1001\"/></c:valAx>");
         }
-        sb.Append("</c:plotArea><c:legend><c:legendPos val=\"b\"/><c:overlay val=\"0\"/></c:legend><c:plotVisOnly val=\"1\"/></c:chart></c:chartSpace>");
+        sb.Append("</c:plotArea>");
+        if (ch.Legend != "none") sb.Append($"<c:legend><c:legendPos val=\"{(ch.Legend is "r" or "l" or "t" or "tr" ? ch.Legend : "b")}\"/><c:overlay val=\"0\"/></c:legend>");
+        sb.Append("<c:plotVisOnly val=\"1\"/></c:chart></c:chartSpace>");
         return sb.ToString();
     }
+
+    static string AxisTitle(string? t) => string.IsNullOrEmpty(t) ? "" : $"<c:title><c:tx><c:rich><a:bodyPr/><a:p><a:r><a:t>{SecurityElement.Escape(t)}</a:t></a:r></a:p></c:rich></c:tx><c:overlay val=\"0\"/></c:title>";
 
     /// <summary>Diagramme eines Blatts lesen: Art, Titel und den Bereich aus allen Bezügen (Kopf, Beschriftung, Werte).</summary>
     static void ReadCharts(ExtraParts parts, string sheetPath, XElement ws, Sheet sh)
@@ -291,7 +271,14 @@ public static class SheetFiles
         if (b < 0) return null;
         var titleEl = chart.Root.Element(c + "chart")?.Element(c + "title");
         var title = titleEl is null ? "" : string.Concat(titleEl.Outermost(a + "t").Select(x => x.Value));
-        return new SheetChart(kind, $"{Addr.Name(t, l)}:{Addr.Name(b, rr)}", title.Length > 0 ? title : "Diagramm");
+        // T-0701: Achsentitel, Reihenfarben und Legende bleiben erhalten
+        string? Axis(string ax) => plot.Element(c + ax)?.Element(c + "title") is { } at ? string.Concat(at.Outermost(a + "t").Select(x => x.Value)) is { Length: > 0 } s ? s : null : null;
+        var colors = plot.Elements().Where(e => e.Name.LocalName.EndsWith("Chart", StringComparison.Ordinal)).SelectMany(e => e.Elements(c + "ser"))
+            .Select(s => (string?)s.Element(c + "spPr")?.Element(a + "solidFill")?.Element(a + "srgbClr")?.Attribute("val") is { Length: 6 } v ? "#" + v.ToUpperInvariant() : null).ToList();
+        var legendEl = chart.Root.Element(c + "chart")?.Element(c + "legend");
+        var legend = legendEl is null ? "none" : (string?)legendEl.Element(c + "legendPos")?.Attribute("val") is { } lp && lp != "b" ? lp : null;
+        return new SheetChart(kind, $"{Addr.Name(t, l)}:{Addr.Name(b, rr)}", title.Length > 0 ? title : "Diagramm", Axis("catAx") ?? Axis("dateAx"), Axis("valAx"),
+            colors.Any(x => x is not null) ? colors : null, legend);
     }
 
     const string NoId = "\0"; // Beziehung oder Verweis ohne Id: passen wie bisher zueinander
@@ -471,6 +458,19 @@ public static class SheetFiles
     }
 
     // ---------- XLSX lesen ----------
+    /// <summary>T-0701: Trendos Format plus – wenn es nicht genau Trendos eigenes ist – der Code, der unverändert erhalten bleibt.</summary>
+    static (NumFmt, string?) NumFormat(int id, string? custom)
+    {
+        if (custom is null)
+        {
+            if (id is 0 or 3 or 4 or 10 or 49) return (FromNumFmt(id, null), null);
+            return (FromNumFmt(id, null), SheetNumberFormat.Builtin.GetValueOrDefault(id));
+        }
+        foreach (var f in new[] { NumFmt.Euro, NumFmt.Datum, NumFmt.DatumZeit }) if (custom == NumFmtCode(f)) return (f, null);
+        if (SheetNumberFormat.BuiltinId(custom) is int b and (0 or 3 or 4 or 10 or 49)) return (FromNumFmt(b, null), null);
+        return (FromNumFmt(id, custom), custom);
+    }
+
     static NumFmt FromNumFmt(int id, string? code)
     {
         switch (id)
@@ -502,28 +502,25 @@ public static class SheetFiles
         var rels = Load("xl/_rels/workbook.xml.rels");
         var shared = z.GetEntry("xl/sharedStrings.xml") is { } sharedEntry ? ReadSharedStrings(sharedEntry) : [];
         var stDoc = Load("xl/styles.xml");
-        var codes = stDoc?.Root?.Element(S + "numFmts")?.Elements(S + "numFmt").ToDictionary(n => (int)n.Attribute("numFmtId")!, n => (string?)n.Attribute("formatCode")) ?? [];
-        var fontsBold = stDoc?.Root?.Element(S + "fonts")?.Elements(S + "font").Select(f => f.Element(S + "b") is { } b && (string?)b.Attribute("val") is null or "1" or "true").ToList() ?? [];
-        var fillColors = stDoc?.Root?.Element(S + "fills")?.Elements(S + "fill").Select(f => f.Element(S + "patternFill") is { } p && (string?)p.Attribute("patternType") == "solid"
-            && (string?)p.Element(S + "fgColor")?.Attribute("rgb") is { Length: >= 6 } rgb ? "#" + rgb[^6..].ToUpperInvariant() : null).ToList() ?? [];
         var dxfFills = stDoc?.Root?.Element(S + "dxfs")?.Elements(S + "dxf").Select(d => (string?)(d.Descendants(S + "bgColor").FirstOrDefault() ?? d.Descendants(S + "fgColor").FirstOrDefault())?.Attribute("rgb") is { Length: >= 6 } rgb ? "#" + rgb.ToUpperInvariant() : null).ToList() ?? [];
-        var borders = stDoc?.Root?.Element(S + "borders")?.Elements(S + "border").Select(b => b.Elements().Any(side => side.Attribute("style") is not null)).ToList() ?? [];
-        var xfs = stDoc?.Root?.Element(S + "cellXfs")?.Elements(S + "xf").Select(x =>
-        {
-            int I(string a) => (int?)x.Attribute(a) ?? 0;
-            var nf = I("numFmtId");
-            return (Fmt: FromNumFmt(nf, codes.GetValueOrDefault(nf)), Bold: fontsBold.ElementAtOrDefault(I("fontId")), Fill: fillColors.ElementAtOrDefault(I("fillId")), Border: borders.ElementAtOrDefault(I("borderId")), Unlocked: (string?)x.Element(S + "protection")?.Attribute("locked") is "0" or "false");
-        }).ToList() ?? [];
+        var relTargets = RelTargets(rels);
+        var doc = new SheetDoc(); doc.Sheets.Clear();
+        // T-0701: Farben aus dem Design der Mappe (theme) werden feste Farben
+        var themeTarget = rels?.Root?.Elements(Pr + "Relationship").FirstOrDefault(r => ((string?)r.Attribute("Type"))?.EndsWith("/theme", StringComparison.Ordinal) == true)?.Attribute("Target")?.Value;
+        XDocument? theme = null;
+        if (themeTarget is { Length: <= MaxPartName }) { try { theme = Load(themeTarget.StartsWith('/') ? themeTarget[1..] : "xl/" + themeTarget); } catch (System.Xml.XmlException) { } }
+        var xfs = SheetStyles.ReadLooks(stDoc, SheetStyles.ThemeColors(theme), doc, NumFormat);
 
         var escaped = new string?[shared.Count]; // jeder gemeinsame Text wird nur einmal auf Zahl/Datum geprüft, auch wenn er tausendfach vorkommt
         string EscapedShared(int idx) { var text = shared[idx]; return escaped[idx] ??= Escape(text); }
 
+        var sharedF = new Dictionary<string, (string Raw, int Row, int Col)>();
         void ReadCell(XmlReader x, Sheet sh)
         {
             var (r, ci) = Addr.Parse(x.GetAttribute("r")!);
             var t = x.GetAttribute("t") ?? "n";
-            var style = x.GetAttribute("s") is { } sa && XmlConvert.ToInt32(sa) is var si && si < xfs.Count ? xfs[si] : default;
-            string? v = null, f = null; TextParts inline = default;
+            var style = x.GetAttribute("s") is { } sa && XmlConvert.ToInt32(sa) is var si && si < xfs.Count ? xfs[si] : SheetStyles.Look.None;
+            string? v = null, f = null, fType = null, fSi = null; TextParts inline = default;
             if (x.IsEmptyElement) x.Read();
             else
             {
@@ -532,13 +529,19 @@ public static class SheetFiles
                 {
                     if (IsS(x, "t")) inline.Add(ElementText(x));
                     else if (x.Depth == depth + 1 && v is null && IsS(x, "v")) v = ElementText(x);
-                    else if (x.Depth == depth + 1 && f is null && IsS(x, "f")) f = ElementText(x);
+                    else if (x.Depth == depth + 1 && f is null && IsS(x, "f")) { fType = x.GetAttribute("t"); fSi = x.GetAttribute("si"); f = ElementText(x); }
                     else x.Read();
                 }
                 x.Read();
             }
             string raw;
-            if (!string.IsNullOrEmpty(f)) raw = "=" + Formula.FromExcelSafe(f);
+            // T-0701: gemeinsame Formel – die erste Zelle trägt sie, die Folgezellen nur die Nummer; dort wird sie wie beim Kopieren verschoben
+            if (fType == "shared" && fSi is not null && string.IsNullOrEmpty(f) && sharedF.TryGetValue(fSi, out var master)) raw = Formula.CopyRefs(master.Raw, r - master.Row, ci - master.Col);
+            else if (!string.IsNullOrEmpty(f))
+            {
+                raw = "=" + Formula.FromExcelSafe(f);
+                if (fType == "shared" && fSi is not null) sharedF[fSi] = (raw, r, ci);
+            }
             else raw = t switch
             {
                 "s" => int.TryParse(v, out var idx) && idx < shared.Count ? EscapedShared(idx) : "",
@@ -548,20 +551,19 @@ public static class SheetFiles
                 "str" => Escape(v ?? ""),
                 _ => v is null ? "" : NumberRaw(double.Parse(v, CultureInfo.InvariantCulture), style.Fmt),
             };
-            if (raw.Length == 0 && !style.Bold && style.Fill is null && !style.Border && style.Fmt == NumFmt.Standard && !style.Unlocked) return;
+            if (raw.Length == 0 && !style.Any) return;
             var cell = sh.GetOrAdd(r, ci);
-            cell.Raw = raw; cell.Format = style.Fmt; cell.Bold = style.Bold; cell.Fill = style.Fill; cell.Border = style.Border; cell.Unlocked = style.Unlocked;
+            style.Apply(cell); cell.Raw = raw;
         }
 
         void ReadRow(XmlReader x, Sheet sh)
         {
             if (x.GetAttribute("hidden") is "1" or "true" && x.GetAttribute("r") is { } hr) sh.HiddenRows.Add(XmlConvert.ToInt32(hr) - 1);
+            if (x.GetAttribute("customHeight") is "1" or "true" && x.GetAttribute("r") is { } hr2 && double.TryParse(x.GetAttribute("ht"), NumberStyles.Float, CultureInfo.InvariantCulture, out var ht) && ht >= 0)
+                sh.RowHeights[XmlConvert.ToInt32(hr2) - 1] = Math.Round(ht, 2);
             ForEachChild(x, c => { if (IsS(c, "c")) ReadCell(c, sh); else c.Skip(); });
         }
 
-        var relTargets = RelTargets(rels);
-
-        var doc = new SheetDoc(); doc.Sheets.Clear();
         long sheetBytes = 0; var seenParts = new HashSet<string>(); var extras = new ExtraParts(z);
         foreach (var sheetEl in wb.Root!.Element(S + "sheets")!.Elements(S + "sheet"))
         {
@@ -576,7 +578,11 @@ public static class SheetFiles
             sheetBytes += sheetPart.Length;
             if (sheetBytes > OfficeZip.MaxTotalBytes) throw OfficeZip.Bad($"die Blätter wären zusammen über {OfficeZip.MaxTotalBytes / 1048576} MB groß.");
             var firstUse = seenParts.Add(target);
+            sharedF.Clear();
             var ws = ReadWorksheet(sheetPart, x => ReadRow(x, sh));
+            foreach (var mc in ws.Element(S + "mergeCells")?.Elements(S + "mergeCell") ?? [])
+                if (((string?)mc.Attribute("ref"))?.Split(':') is [var a1, var b1] && Addr.TryParse(a1, out var p1) && Addr.TryParse(b1, out var p2) && sh.Merges.Count < OfficeZip.MaxEntries)
+                    sh.Merges.Add(new MergeRange(Math.Min(p1.Row, p2.Row), Math.Min(p1.Col, p2.Col), Math.Max(p1.Row, p2.Row), Math.Max(p1.Col, p2.Col)));
             if (ws.Element(S + "sheetViews")?.Element(S + "sheetView")?.Element(S + "pane") is { } pane && (string?)pane.Attribute("state") is "frozen" or "frozenSplit")
             { sh.FreezeRows = (int?)(double?)pane.Attribute("ySplit") ?? 0; sh.FreezeCols = (int?)(double?)pane.Attribute("xSplit") ?? 0; }
             if (firstUse)
@@ -720,6 +726,7 @@ public static class SheetFiles
         var e = z.GetEntry("content.xml") ?? throw new InvalidDataException("Keine ODS-Datei (content.xml fehlt).");
         XDocument x; x = e.LoadXml();
         var doc = new SheetDoc(); doc.Sheets.Clear();
+        var looks = OdsLooks(x);
         static InvalidDataException TooManyCells(int max) => OfficeZip.Bad($"zu viele Zellen (erlaubt {max:N0}).");
         long created = 0, visited = 0; // „visited“ zählt auch leere und abgeschnittene Zellen: Auch sie kosten Zeit
         foreach (var t in x.Descendants(Table + "table"))
@@ -734,20 +741,26 @@ public static class SheetFiles
                 var hasContent = cells.Any(c => c.Attribute(Office + "value-type") is not null || c.Attribute(Table + "formula") is not null);
                 if (!hasContent) { r += rowRep; continue; }
                 // Jede Zelle einmal auswerten: Wiederholte Zeilen teilen sich den Text, statt ihn je Wiederholung neu anzulegen
-                var parsed = cells.Select(c => (Rep: Math.Min((int?)c.Attribute(Table + "number-columns-repeated") ?? 1, 1024), Raw: OdsRaw(c, out var f), Fmt: f)).ToList();
+                var parsed = cells.Select(c => (Rep: Math.Min((int?)c.Attribute(Table + "number-columns-repeated") ?? 1, 1024), Raw: OdsRaw(c, out var f), Fmt: f, El: c)).ToList();
                 for (var rr = 0; rr < rowRep; rr++, r++)
                 {
                     var col = 0;
-                    foreach (var (rep, raw, fmt) in parsed)
+                    foreach (var (rep, raw, fmt, el) in parsed)
                     {
-                        if (raw.Length == 0) { col += rep; visited++; if (visited > maxCells * 4L) throw TooManyCells(maxCells); continue; }
+                        // T-0701: verbundene Zellen, Notiz und Aussehen der Zelle
+                        var cs = (int?)el.Attribute(Table + "number-columns-spanned") ?? 1; var rs = (int?)el.Attribute(Table + "number-rows-spanned") ?? 1;
+                        if ((cs > 1 || rs > 1) && r < Addr.MaxRows && col < Addr.MaxCols && sh.Merges.Count < OfficeZip.MaxEntries)
+                            sh.Merges.Add(new MergeRange(r, col, Math.Min(Addr.MaxRows - 1, r + Math.Max(1, rs) - 1), Math.Min(Addr.MaxCols - 1, col + Math.Max(1, cs) - 1)));
+                        var note = el.Element(Office + "annotation") is { } an ? string.Join("\n", an.Elements(TextNs + "p").Select(p => p.Value)) : null;
+                        var look = (string?)el.Attribute(Table + "style-name") is { } sn && looks.TryGetValue(sn, out var lk) ? lk : null;
+                        if (raw.Length == 0 && note is null && look is null) { col += rep; visited++; if (visited > maxCells * 4L) throw TooManyCells(maxCells); continue; }
                         visited += rep;
                         if (visited > maxCells * 4L) throw TooManyCells(maxCells);
                         for (var k = 0; k < rep; k++, col++)
                             if (r < Addr.MaxRows && col < Addr.MaxCols)
                             {
                                 if (++created > maxCells) throw TooManyCells(maxCells);
-                                var cell = sh.GetOrAdd(r, col); cell.Raw = raw; cell.Format = fmt;
+                                var cell = sh.GetOrAdd(r, col); look?.Apply(cell); cell.Raw = raw; cell.Format = fmt; if (note is not null) cell.Note = note;
                             }
                     }
                 }
@@ -755,6 +768,55 @@ public static class SheetFiles
         }
         if (doc.Sheets.Count == 0) doc.Sheets.Add(new Sheet("Tabelle1"));
         return doc;
+    }
+
+    static readonly XNamespace StyleNs = "urn:oasis:names:tc:opendocument:xmlns:style:1.0", FoNs = "urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0";
+
+    /// <summary>T-0701: Diese Angaben der Zellvorlagen liest Trendo aus ODS (die Importprüfung meldet nur, was darüber hinausgeht).</summary>
+    internal static readonly HashSet<string> OdsTextKnown = ["font-weight", "font-style", "text-underline-style", "text-underline-type", "text-underline-width", "text-underline-color", "text-underline-mode",
+        "text-line-through-style", "text-line-through-type", "text-line-through-mode", "color", "font-size", "font-name", "font-family", "font-family-generic", "font-pitch", "font-charset", "font-style-name",
+        "use-window-font-color", "language", "country", "script", "hyphenate"];
+    internal static readonly HashSet<string> OdsCellKnown = ["background-color", "wrap-option", "vertical-align", "border", "border-left", "border-right", "border-top", "border-bottom", "rotation-angle", "shrink-to-fit",
+        "cell-protect", "print-content", "text-align-source", "repeat-content", "direction", "glyph-orientation-vertical", "padding", "diagonal-bl-tr", "diagonal-tl-br", "rotation-align", "writing-mode"];
+
+    /// <summary>Automatische Zellvorlagen einer ODS-Datei als Aussehen (Schrift, Füllung, Ausrichtung, Umbruch, Rahmen, Drehung).</summary>
+    static Dictionary<string, SheetStyles.Look> OdsLooks(XDocument x)
+    {
+        var res = new Dictionary<string, SheetStyles.Look>();
+        foreach (var st in x.Root?.Element(Office + "automatic-styles")?.Elements(StyleNs + "style") ?? [])
+        {
+            if ((string?)st.Attribute(StyleNs + "family") != "table-cell" || (string?)st.Attribute(StyleNs + "name") is not { } name) continue;
+            var tp = st.Element(StyleNs + "text-properties"); var cp = st.Element(StyleNs + "table-cell-properties"); var pp = st.Element(StyleNs + "paragraph-properties");
+            string? A(XElement? e, XNamespace ns, string n) => (string?)e?.Attribute(ns + n);
+            double? Pt(string? v) => v is not null && v.EndsWith("pt", StringComparison.Ordinal) && double.TryParse(v[..^2], NumberStyles.Float, CultureInfo.InvariantCulture, out var d) ? d : null;
+            string? Hex(string? v) => v is { Length: 7 } && v[0] == '#' ? v.ToUpperInvariant() : null;
+            BorderLine? Line(string? v)
+            {
+                if (v is null || v == "none") return null;
+                var parts = v.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                var w = parts.Select(p => p.EndsWith("pt", StringComparison.Ordinal) ? Pt(p) : p.EndsWith("cm", StringComparison.Ordinal) && double.TryParse(p[..^2], NumberStyles.Float, CultureInfo.InvariantCulture, out var cm) ? cm * 72 / 2.54 : p.EndsWith("mm", StringComparison.Ordinal) && double.TryParse(p[..^2], NumberStyles.Float, CultureInfo.InvariantCulture, out var mm) ? mm * 72 / 25.4 : null).FirstOrDefault(d => d is not null) ?? 0.75;
+                var kind = parts.FirstOrDefault(p => p is "solid" or "dashed" or "dotted" or "double") ?? "solid";
+                var style = kind switch { "dashed" => "dashed", "dotted" => "dotted", "double" => "double", _ => w >= 2.2 ? "thick" : w >= 1.1 ? "medium" : "thin" };
+                var col = Hex(parts.FirstOrDefault(p => p.StartsWith('#')));
+                return new BorderLine(style, col is "#000000" ? null : col);
+            }
+            var all = Line(A(cp, FoNs, "border"));
+            var cb = new CellBorders(Line(A(cp, FoNs, "border-left")) ?? all, Line(A(cp, FoNs, "border-right")) ?? all, Line(A(cp, FoNs, "border-top")) ?? all, Line(A(cp, FoNs, "border-bottom")) ?? all);
+            var thinAll = new[] { cb.Left, cb.Right, cb.Top, cb.Bottom }.All(b => b is { Style: "thin", Color: null });
+            var size = Pt(A(tp, FoNs, "font-size"));
+            var fontName = A(tp, StyleNs, "font-name");
+            var under = A(tp, StyleNs, "text-underline-style");
+            var color = Hex(A(tp, FoNs, "color"));
+            var align = A(pp, FoNs, "text-align") switch { "center" => "center", "end" or "right" => "right", "justify" => "justify", "left" => "left", _ => null };
+            var valign = A(cp, StyleNs, "vertical-align") switch { "top" => "top", "middle" => "center", _ => null };
+            var rot = int.TryParse(A(cp, StyleNs, "rotation-angle"), NumberStyles.Integer, CultureInfo.InvariantCulture, out var ra) && ra is > 0 and <= 90 ? ra : 0;
+            var look = new SheetStyles.Look(NumFmt.Standard, null, A(tp, FoNs, "font-weight") is "bold" or "700" or "800" or "900", A(tp, FoNs, "font-style") is "italic" or "oblique",
+                under is null or "none" ? null : A(tp, StyleNs, "text-underline-type") == "double" ? "double" : "single", A(tp, StyleNs, "text-line-through-style") is { } lt && lt != "none",
+                color is "#000000" ? null : color, size is { } s && s != 10 ? s : null, fontName, Hex(A(cp, FoNs, "background-color")), thinAll, thinAll || !cb.Any ? null : cb,
+                align, valign, A(cp, FoNs, "wrap-option") == "wrap", 0, rot, A(cp, StyleNs, "shrink-to-fit") == "true", false);
+            if (look.Any) res[name] = look;
+        }
+        return res;
     }
 
     static string OdsRaw(XElement c, out NumFmt fmt)

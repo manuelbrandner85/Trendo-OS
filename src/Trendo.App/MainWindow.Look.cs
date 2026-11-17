@@ -43,11 +43,18 @@ public sealed partial class MainWindow
     /// <summary>Bedienstil: trendo, windows, mac, linux (Fensterknöpfe, Ecken, Titel).</summary>
     private static string _style = "trendo";
     public static string StyleNow => _style;
+    /// <summary>T-0700: aktuelle Akzentfarbe (für Tests: in jedem Bedienstil Gold).</summary>
+    internal static Color AccentColorNow => Accent is ISolidColorBrush a ? a.Color : default;
     private string _settingsSection = "aussehen";
     /// <summary>Nur für den direkten Neuaufbau: die nächste Instanz öffnet denselben Abschnitt. Sonst immer „Aussehen“.</summary>
     private static string? _reopenSection;
     /// <summary>Farbe je Design: im hellen Design die helle Variante.</summary>
     private static string C(string dark, string light) => _theme == "hell" ? light : dark;
+    /// <summary>V-17 (T-0700): eine Flächenfarbe für alle Programmseiten mit eigenem Rahmen (Text, Tabelle, Präsentation, PDF, CAD, 3D-Druck) – neutral grau, nie blau.</summary>
+    internal static IBrush PageSurface => Brush.Parse(C("#F21A1A1A", "#F7F4F7FC"));
+    /// <summary>V-17 (T-0700): Schrift auf einer gewählten (goldenen) Kachel – dunkel, damit sie lesbar bleibt (vorher Gold auf Gold).</summary>
+    internal static readonly IBrush OnGold = new SolidColorBrush(Color.Parse("#FF1B1B1B"));
+    internal static readonly IBrush OnGoldMuted = new SolidColorBrush(Color.Parse("#C21B1B1B"));
 
     /// <summary>Für Tests: statt Windows zu fragen, ob es hell eingestellt ist.</summary>
     public static Func<bool>? SystemLightOverride { get; set; }
@@ -158,6 +165,8 @@ public sealed partial class MainWindow
         _ui.Post(() => { if (!_calmShell) { _calmShell = true; CalmLook.Apply(this); } else if (ActivePageRoot is { } pr) CalmLook.Apply(pr); if (_settings.Density == "kompakt") Density.Apply(this, true); }, DispatcherPriority.Loaded);
         ShowHelp(key, force: false);
         EnhancePathFields(ActivePageRoot, key);
+        if (ActivePageRoot is { } pt) SimpleWords.PlainTexts(pt); // V-11 (T-0700): Fachwörter in „Einfach“ – nach der Dateiauswahl, damit deren Dateityp-Filter aus dem Fachwort stammt
+        PromptGoLook(); // T-0700: „Los“ golden nur, wenn die Seite selbst keine goldene Hauptaktion zeigt
         if (ActivePageRoot is { } sv) SimplifyView(key, sv); // V2 + V8 (T-0663): lange Listen und Beschreibungen in „Einfach“ kürzen
         if (ActivePageRoot is { } c0) ApplyAccessibility(c0);
         ApplyAccessibility(_hintHost);
@@ -364,6 +373,7 @@ public sealed partial class MainWindow
         sections.Children.Add(Section("mehr", "Mehr", new WrapPanel { Children = { Nav2("Zusatzprogramme", "components"), Nav2("Online-Dienste", "keys"), Nav2("Ersteinrichtung", "einrichtung"), Nav2("Systemcheck", "systemcheck") } }));
         sections.Children.Add(new TextBlock { Text = $"Version {CrashLog.AppVersion()} · Trendo-Logo: eigener Entwurf · Hintergründe: KI-erstellt für Trendo OS", Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap, IsVisible = _settingsSection == "mehr" });
 
+        if (PinHinweisKarte() is { } pinHint) sections.Children.Insert(0, pinHint); // T-0713: über jedem Bereich sichtbar
         var nav = new StackPanel { Spacing = 4 };
         void NavItem(string id, string label, string icon)
         {
@@ -396,7 +406,7 @@ public sealed partial class MainWindow
         foreach (var id in cur)
         {
             var label = items.First(x => x.Id == id).Label;
-            Button Arrow(string t, int d) { var b = new Button { Name = $"{prefix}-{id}-{(d < 0 ? "vor" : "zurueck")}", Content = t, Padding = new Thickness(5, 0), FontSize = 11 }; b.Click += (_, _) => { set(UserSettings.Move(cur, id, d)); SaveSettings(); Show("settings"); }; return b; }
+            Button Arrow(string t, int d) { var b = new Button { Name = $"{prefix}-{id}-{(d < 0 ? "vor" : "zurueck")}", Content = t, Padding = new Thickness(5, 0), FontSize = 11 }; b.Click += (_, _) => { set(UserSettings.Move(cur, id, d)); SaveSettings(); Show("settings"); }; return SimpleWords.Named(b, d < 0 ? "Nach vorn" : "Nach hinten"); }
             wrap.Children.Add(new Border { Background = Brush.Parse("#22FFFFFF"), CornerRadius = new CornerRadius(8), Padding = new Thickness(6, 3), Margin = new Thickness(0, 0, 6, 6),
                 Child = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, Children = { Arrow("◀", -1), new TextBlock { Text = label, Foreground = Text, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center }, Arrow("▶", 1) } } });
         }

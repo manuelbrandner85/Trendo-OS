@@ -48,6 +48,13 @@ public sealed class IntelligenceCore
     public KiMemoryStore? Memory { get; set; }
     /// <summary>C4: eine Antwort kam aus dem Internet (Name der Quelle) – für Hinweis und Tageszähler.</summary>
     public Action<string>? RemoteUsed { get; set; }
+    /// <summary>T-0703: kleinere Modelle auf diesem PC, auf die Trendo ausweicht, wenn das gewählte nicht lädt oder bis zur Zeitgrenze nichts sagt (größtes zuerst).
+    /// Null = kein Ausweichen (wie bisher).</summary>
+    public Func<string, IReadOnlyList<string>>? LocalFallbacks { get; set; }
+    /// <summary>Zeitgrenze bis zum ersten Lebenszeichen eines lokalen Modells (Laden + erstes Wort oder Nachdenken), nur wenn es ein Ausweichmodell gibt.</summary>
+    public TimeSpan LocalFirstAnswerTimeout { get; set; } = KiModel.FirstAnswerTimeout;
+    /// <summary>Ein lokales Modell hat nicht geladen oder war zu langsam (Modell, Grund) – die App merkt es sich (<see cref="KiModel.Demote"/>).</summary>
+    public Action<string, string>? LocalModelFailed { get; set; }
 
     public IntelligenceCore(string dataRoot, AuditLog audit, Func<IReadOnlyList<IKiBackend>> backends, Func<string, int, IReadOnlyList<(string Title, string Text)>>? knowledge = null)
     {
@@ -106,21 +113,46 @@ public sealed class IntelligenceCore
             var models = await b.ModelsAsync(ct);
             var first = req.PreferredModel is { } p && models.Contains(p) ? p : models.FirstOrDefault();
             if (first is null) { tried.Add($"{b.Name}: kein Modell"); continue; }
-            IEnumerable<string> candidates = b is IKiFailoverBackend { CanSwitchModel: true } ? new[] { first }.Concat(models.Where(m => m != first)).Take(MaxFreeModelTries) : [first];
+            var local = b is not IRemoteKiBackend;
+            // T-0703: auf diesem PC darf Trendo auf ein kleineres Modell ausweichen, wenn das große nicht lädt oder zu lange schweigt
+            List<string> fallbacks = local && LocalFallbacks?.Invoke(first) is { Count: > 0 } fb ? fb.Where(m => m != first && models.Contains(m)).ToList() : [];
+            IEnumerable<string> candidates = b is IKiFailoverBackend { CanSwitchModel: true } ? new[] { first }.Concat(models.Where(m => m != first)).Take(MaxFreeModelTries) : [first, .. fallbacks];
             foreach (var model in candidates)
             try
             {
                 var remote = b is IRemoteKiBackend;
                 KiActivityHub.Update(act, phase: remote ? $"🌐 Geht ins Internet zu {b.Name} ({model}) …" : $"{model} wird gestartet …", backend: remote ? "🌐 " + b.Name : b.Name, model: model);
-                var text = b is IStreamingKiBackend sb
-                    ? await sb.ChatStreamAsync(model, remote ? remoteMsgs : msgs, d => KiActivityHub.Update(act, delta: d), ct)
-                    : await b.ChatAsync(model, remote ? remoteMsgs : msgs, ct);
+                using var limit = CancellationTokenSource.CreateLinkedTokenSource(ct);
+                var guarded = local && fallbacks.Count > 0 && model != fallbacks[^1]; // das letzte Ausweichmodell darf so lange brauchen, wie es braucht
+                if (guarded) limit.CancelAfter(LocalFirstAnswerTimeout);
+                string text;
+                try
+                {
+                    text = b is IStreamingKiBackend sb
+                        ? await sb.ChatStreamAsync(model, remote ? remoteMsgs : msgs, d =>
+                        {
+                            if (guarded) limit.CancelAfter(Timeout.InfiniteTimeSpan); // erstes Lebenszeichen: keine Zeitgrenze mehr
+                            if (d.Length > 0) KiActivityHub.Update(act, delta: d); else KiActivityHub.Update(act, phase: $"{model} denkt nach …");
+                        }, limit.Token)
+                        : await b.ChatAsync(model, remote ? remoteMsgs : msgs, limit.Token);
+                }
+                catch (OperationCanceledException) when (guarded && limit.IsCancellationRequested && !ct.IsCancellationRequested)
+                {
+                    throw new TimeoutException($"keine Antwort nach {LocalFirstAnswerTimeout.TotalSeconds:0} s");
+                }
                 _audit.Append("ki", "ki.ask", $"quelle={b.Name} modell={model} frage={req.Question.Length}Z antwort={text.Length}Z wissen={(remote ? 0 : sources.Count)}{(remote ? " extern" : "")}");
                 Save(req.Question, text, b.Name, model);
                 if (remote) RemoteUsed?.Invoke(b.Name);
                 return new(true, text, b.Name, model, remote ? [] : sources, sw.Elapsed);
             }
             catch (KiModelBusyException ex) { tried.Add($"{b.Name} ({model}): {ex.Message}"); if (ex.AccountLimit) break; }
+            catch (Exception ex) when (ex is not OperationCanceledException && local && fallbacks.Count > 0 && model != fallbacks[^1])
+            {
+                tried.Add($"{b.Name} ({model}): {ex.Message}");
+                _audit.Append("ki", "ki.model.ausweichen", $"quelle={b.Name} modell={model} grund={ex.GetType().Name}");
+                LocalModelFailed?.Invoke(model, ex.Message);
+                KiActivityHub.Update(act, phase: $"{model} antwortet nicht – Trendo nimmt ein kleineres Modell …");
+            }
             catch (Exception ex) when (ex is not OperationCanceledException) { tried.Add($"{b.Name}: {ex.Message}"); break; }
         }
         _audit.Append("ki", "ki.unavailable", string.Join("; ", tried));

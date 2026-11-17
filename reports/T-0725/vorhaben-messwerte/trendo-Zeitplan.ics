@@ -1,0 +1,95 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Kalender//DE
+BEGIN:VEVENT
+UID:vorhaben-plan-4cb63f8a59-5
+DTSTAMP:20261116T222700Z
+DTSTART;VALUE=DATE:20261118
+DTEND;VALUE=DATE:20261119
+SUMMARY:Beispiel-Urlaubsvideo: Idee in einem Satz aufschreiben
+DESCRIPTION:Schritt 1 im Vorhaben „Beispiel-Urlaubsvideo“ · offen
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Beispiel-Urlaubsvideo: Idee in einem Satz aufschreiben
+TRIGGER:-PT1440M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:vorhaben-plan-4cb63f8a59-6
+DTSTAMP:20261116T222700Z
+DTSTART;VALUE=DATE:20261119
+DTEND;VALUE=DATE:20261121
+SUMMARY:Beispiel-Urlaubsvideo: Drehbuch: Anfang\, Mitte\, Schluss
+DESCRIPTION:Schritt 2 im Vorhaben „Beispiel-Urlaubsvideo“ · offen
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Beispiel-Urlaubsvideo: Drehbuch: Anfang\, Mitte\, Schluss
+TRIGGER:-PT1440M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:vorhaben-plan-4cb63f8a59-7
+DTSTAMP:20261116T222700Z
+DTSTART;VALUE=DATE:20261121
+DTEND;VALUE=DATE:20261123
+SUMMARY:Beispiel-Urlaubsvideo: Aufnahmen in den Ordner „Aufnahmen“ legen
+DESCRIPTION:Schritt 3 im Vorhaben „Beispiel-Urlaubsvideo“ · offen
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Beispiel-Urlaubsvideo: Aufnahmen in den Ordner „Aufnahmen“ legen
+TRIGGER:-PT1440M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:vorhaben-plan-4cb63f8a59-8
+DTSTAMP:20261116T222700Z
+DTSTART;VALUE=DATE:20261123
+DTEND;VALUE=DATE:20261125
+SUMMARY:Beispiel-Urlaubsvideo: Im Medien-Studio in MP4 umwandeln und kürzen
+DESCRIPTION:Schritt 4 im Vorhaben „Beispiel-Urlaubsvideo“ · offen
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Beispiel-Urlaubsvideo: Im Medien-Studio in MP4 umwandeln und kürzen
+TRIGGER:-PT1440M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:vorhaben-plan-4cb63f8a59-9
+DTSTAMP:20261116T222700Z
+DTSTART;VALUE=DATE:20261125
+DTEND;VALUE=DATE:20261127
+SUMMARY:Beispiel-Urlaubsvideo: Vorschaubild erstellen
+DESCRIPTION:Schritt 5 im Vorhaben „Beispiel-Urlaubsvideo“ · offen
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Beispiel-Urlaubsvideo: Vorschaubild erstellen
+TRIGGER:-PT1440M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:vorhaben-plan-4cb63f8a59-10
+DTSTAMP:20261116T222700Z
+DTSTART;VALUE=DATE:20261127
+DTEND;VALUE=DATE:20261129
+SUMMARY:Beispiel-Urlaubsvideo: Titel und Beschreibung schreiben
+DESCRIPTION:Schritt 6 im Vorhaben „Beispiel-Urlaubsvideo“ · offen
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Beispiel-Urlaubsvideo: Titel und Beschreibung schreiben
+TRIGGER:-PT1440M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:vorhaben-plan-4cb63f8a59-11
+DTSTAMP:20261116T222700Z
+DTSTART;VALUE=DATE:20261130
+DTEND;VALUE=DATE:20261201
+SUMMARY:◆ Beispiel-Urlaubsvideo: Hochladen
+DESCRIPTION:Schritt 7 im Vorhaben „Beispiel-Urlaubsvideo“ · offen · kritischer Pfad
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:◆ Beispiel-Urlaubsvideo: Hochladen
+TRIGGER:-PT1440M
+END:VALARM
+END:VEVENT
+END:VCALENDAR

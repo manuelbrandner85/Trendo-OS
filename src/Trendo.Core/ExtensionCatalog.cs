@@ -63,7 +63,7 @@ public static class ExtensionCatalog
             return store.Install(zip, approvalId);
         }
         catch (JsonException) { return (null, ["Beschreibung in der ZIP ist ungültig."]); }
-        finally { Directory.Delete(tmp, true); }
+        finally { TempDir.Delete(tmp); }
     }
 
     /// <summary>Baut den mitgelieferten lokalen Katalog (Beispiel-Erweiterungen als ZIP + katalog.json mit Prüfsummen). Nichts wird veröffentlicht.</summary>

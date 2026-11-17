@@ -66,7 +66,7 @@ public class Deinstallation_Daten
     [Fact(DisplayName = "Deinstallieren: Projekt-Unterordner bleiben, Verknüpfungen werden nie verfolgt (fremde Dateien unverändert)")]
     public void Projekte_und_Verknuepfungen()
     {
-        if (!OperatingSystem.IsWindows()) return;
+        if (!OperatingSystem.IsWindows()) { Ueberspringen.Weil("nur unter Windows prüfbar."); return; }
         var root = Tmp("trendo-del-");
         Directory.CreateDirectory(Path.Combine(root, "projects", "p1")); File.WriteAllText(Path.Combine(root, "projects", "p1", "brief.docx"), "x");
         Directory.CreateDirectory(Path.Combine(root, "projekte")); File.WriteAllText(Path.Combine(root, "projekte", "scan.ply"), "x");

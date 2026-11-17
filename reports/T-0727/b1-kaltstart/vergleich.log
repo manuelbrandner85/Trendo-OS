@@ -1,0 +1,6 @@
+﻿Runde 1 pub-nachher kalt: main 2452 ms | app.init 3508 ms | window.ctor 4275 ms | first.frame 5001 ms || warm: main 91 ms | app.init 515 ms | window.ctor 760 ms | first.frame 1239 ms
+Runde 1 pub-ohne-r2r kalt: main 2769 ms | app.init 4367 ms | window.ctor 5415 ms | first.frame 6830 ms || warm: main 121 ms | app.init 752 ms | window.ctor 1275 ms | first.frame 2437 ms
+Runde 2 pub-nachher kalt: main 2355 ms | app.init 3463 ms | window.ctor 4280 ms | first.frame 4882 ms || warm: main 102 ms | app.init 551 ms | window.ctor 841 ms | first.frame 1337 ms
+Runde 2 pub-ohne-r2r kalt: main 1848 ms | app.init 3089 ms | window.ctor 4089 ms | first.frame 5474 ms || warm: main 128 ms | app.init 760 ms | window.ctor 1247 ms | first.frame 2463 ms
+Runde 3 pub-nachher kalt: main 2560 ms | app.init 3673 ms | window.ctor 4541 ms | first.frame 5113 ms || warm: main 141 ms | app.init 703 ms | window.ctor 1017 ms | first.frame 1598 ms
+Runde 3 pub-ohne-r2r kalt: main 5045 ms | app.init 6948 ms | window.ctor 8863 ms | first.frame 10341 ms || warm: main 153 ms | app.init 840 ms | window.ctor 1392 ms | first.frame 2707 ms

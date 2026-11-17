@@ -1,0 +1,20 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    Musik-KI live: Paket prüfen, entpacken, Server starten, 30 s Lied erzeugen [SKIP]
+      Echter Lauf: TRENDO_ACE_LIVE und TRENDO_7Z setzen
+    Film mit echtem FFmpeg, vom Klick bis zur Datei: Beispiel-Kurzfilm, Clips über die Dateiauswahl, Foto auf eine Einstellung gelegt, Musik, Klick auf „Film rendern“ → MP4 und SRT; ffprobe prüft Dauer, Spuren, Auflösung; danach „Im Videoschnitt weiterbearbeiten“ [FAIL]
+      System.InvalidOperationException : nicht sichtbar: prog-cmd-film-import-music
+      Stack Trace:
+        tests\Trendo.App.Tests\StartMenuUiTests.cs(18,0): at Trendo.App.Tests.StartMenu_Ui.RealClick(Window w, Control c)
+        tests\Trendo.App.Tests\FilmSchnittUiTests.cs(71,0): at Trendo.App.Tests.FilmSchnitt_Ui.Render_click_to_file_real()
+        --- End of stack trace from previous location ---
+    Claude im Menüband jedes Fachprogramms und Rechtsklick „Claude fragen“ auf Elemente der Seite [FAIL]
+      Ereignis kam nicht am Fenster an
+      Stack Trace:
+        tests\Trendo.App.Tests\ClaudeOperateUiTests.cs(94,0): at Trendo.App.Tests.ClaudeOperate_Ui.Ribbon_and_context()
+        --- End of stack trace from previous location ---
+  Finished:    Trendo.App.Tests (ID = 'a92c6ecc8901945a3ff6e00e2525215eb34871c49987c404f06b31f6d4d69195')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 141, Errors: 0, Failed: 2, Skipped: 1, Not Run: 0, Time: 235,101s

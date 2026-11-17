@@ -62,6 +62,11 @@ public class AudioEditor_Ui
             w.AuSel = (3, 3.5); w.Show("ton"); Settle(); RealClick(w, V<Button>(w, "prog-cmd-au-copy")); Settle();
             w.AuSel = (0, 0); w.Show("ton"); Settle(); RealClick(w, V<Button>(w, "prog-cmd-au-paste")); Settle();
             Assert.Equal(4.5, AudioEdit.Render(w.ProgramActive("ton")!.Data).Seconds, 1);
+            // T-0729: der eingefügte Ausschnitt wird als Pfad im Projekt gespeichert – er liegt dauerhaft im Arbeitsordner, nicht in %TEMP%
+            var clipFile = w.ProgramActive("ton")!.List("ops").OfType<System.Text.Json.Nodes.JsonObject>().Select(o => o["file"]?.ToString()).Last(f => f is not null)!;
+            Assert.True(File.Exists(clipFile));
+            Assert.Equal("Ausschnitte", Path.GetFileName(Path.GetDirectoryName(clipFile)));
+            Assert.DoesNotContain("trendo-audio-", clipFile);
             // Anhören lädt eine Datei in den Abspieler
             RealClick(w, V<Button>(w, "au-tp-play")); Settle();
             Assert.Single(fake.Loads); Assert.True(File.Exists(fake.Loads[0]));

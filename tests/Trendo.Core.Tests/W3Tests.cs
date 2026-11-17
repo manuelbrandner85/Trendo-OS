@@ -209,7 +209,7 @@ public class SYS09_Mail
         var eml = MailCenter.ToEml(d, new DateTimeOffset(2026, 10, 21, 20, 0, 0, TimeSpan.FromHours(2)));
         Assert.StartsWith("X-Unsent: 1\r\n", eml); Assert.Contains("+0200", eml);
         var back = MailCenter.ParseEml(eml);
-        Assert.Equal("Grüße aus Köln", back.Subject); Assert.Equal("Hallo Anna,\r\nanbei das Foto.", back.Body);
+        Assert.Equal("Grüße aus Köln", back.Subject); Assert.Equal("Hallo Anna,\nanbei das Foto.", back.Body); // T-0689: Text liegt innen einheitlich mit \n vor (MailRoundtripTests verlangt das), beim Schreiben wird daraus \r\n
         Assert.Contains("subject=Gr%C3%BC%C3%9Fe", MailCenter.MailTo(d));
         Assert.Contains(MailCenter.Check(d), x => x.Contains("Anhang"));
         Assert.Equal(2, MailCenter.Check(new MailDraft("x@", "", "")).Count);

@@ -137,9 +137,36 @@ public partial class MainWindow
     private LetterDraft NewLetter() => new() { SenderName = _settings.Name, SenderStreet = _settings.SenderStreet, SenderCity = _settings.SenderCity, SenderContact = _settings.SenderContact,
         Place = System.Text.RegularExpressions.Regex.Replace(_settings.SenderCity, @"^\s*\d{4,5}\s*", ""), SignatureFile = _settings.LetterSignature };
 
+    async Task LetterPickForeign()
+    {
+        var req = new PickRequest("letter-open-foreign", false, false, LetterImport.Extensions);
+        string[]? got;
+        if (PickOverride is { } fake) got = await fake(req);
+        else got = (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Brief öffnen",
+            FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Brief") { Patterns = ["*.docx", "*.odt", "*.txt"] }] }))
+            .Select(f => Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(f)).OfType<string>().ToArray();
+        if (got is [var f, ..]) LetterOpenForeign(f);
+    }
+
+    /// <summary>T-0725: fremden Brief in die Felder übernehmen. Ein Rückgängig-Schritt (die Hülle merkt den alten Stand beim Neuaufbau); Absender aus den Einstellungen bleibt.</summary>
+    public void LetterOpenForeign(string path)
+    {
+        try
+        {
+            var r = LetterImport.Read(path, NewLetter());
+            _letter = r.Draft; _letterSaved = false; _letterStep = 3; _letterPreview = true;
+            _letterMsg = $"„{Path.GetFileName(path)}“ übernommen – erkannt: {string.Join(", ", r.Found)}. Bitte kurz prüfen; gespeichert wird ein neuer Brief, das Original bleibt unverändert."
+                + (r.Report is { HasLoss: true } rep ? " Nicht übernommen: " + rep.Kurz() + "." : "");
+            _core.Audit.Append(Principal.LocalOwner.Name, "letter.open_foreign", Path.GetFileName(path));
+        }
+        catch (Exception ex) when (ex is IOException or InvalidDataException or ArgumentException or UnauthorizedAccessException or System.Xml.XmlException) { _letterMsg = FriendlyError.From(ex).Sentence; }
+        Show("brief");
+    }
+
     private Control LetterView()
     {
         var d = Letter;
+        LetterCommit(); // T-0708: jede Aktion, nach der die Seite neu aufgebaut wird, ist ein Rückgängig-Schritt (gleicher Stand: nichts)
         var form = new StackPanel { Spacing = 4 };
         var hiddenCats = new StackPanel { Height = 0, Opacity = 0, IsHitTestVisible = false };
         foreach (var c in Letters.Categories)
@@ -187,6 +214,11 @@ public partial class MainWindow
         var galleryToggle = new Button { Name = "letter-gallery-toggle", Content = galleryOpen ? "Vorlagen ausblenden" : $"Vorlage: {Letters.Category(d.Category).Label} – andere wählen …", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left };
         galleryToggle.Click += (_, _) => { _letterGallery = !galleryOpen; Show("brief"); };
         s1.Children.Add(FieldLabel("Vorlage")); s1.Children.Add(galleryToggle);
+        // T-0725 (Audit D7, STUDIO-LETTER-01): fremden Brief (Word, OpenDocument, Text) öffnen – gleich im ersten Schritt, die Felder werden erkannt, das Original bleibt unverändert
+        var foreign = new Button { Name = "letter-open-foreign", Content = "Vorhandenen Brief öffnen (Word, LibreOffice) …", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 4, 0, 0) };
+        ToolTip.SetTip(foreign, "Einen Brief aus Word (.docx), LibreOffice (.odt) oder eine Textdatei übernehmen. Gespeichert wird ein neuer Brief, das Original bleibt, wie es ist. Du kannst die Datei auch auf das Formular ziehen.");
+        foreign.Click += async (_, _) => await LetterPickForeign();
+        s1.Children.Add(foreign);
         if (galleryOpen) s1.Children.Add(LetterGallery(d));
         if (Letters.Category(d.Category).Legal)
             s1.Children.Add(P("Hinweis: Trendo hilft beim Formulieren, ersetzt aber keine Rechtsberatung. Fristen und Ansprüche bitte selbst prüfen oder beraten lassen.", Brush.Parse("#FACC15"), 11));
@@ -263,7 +295,7 @@ public partial class MainWindow
             if (string.IsNullOrWhiteSpace(_settings.Name)) _settings.Name = d.SenderName;
             SaveSettings();
             var (docx, _, v) = new LetterArchive(ProjectsRoot).Save(d);
-            _letterSaved = true; _letterStepSync?.Invoke();
+            _letterSaved = true; _letterStepSync?.Invoke(); LetterSavedNow(); // T-0708: gespeichert – Notsicherung weg
             _core.Audit.Append(Principal.LocalOwner.Name, "letter.save", $"{Path.GetFileName(docx)} v{v}");
             msg.Text = _letterMsg = $"{verb}: {Path.GetFileName(docx)}{(v > 1 ? $" (Version {v})" : "")}";
             if (asPdf)
@@ -332,6 +364,8 @@ public partial class MainWindow
         done.Click += async (_, _) => await SafeSave(pdf.IsEnabled, "Fertig – gespeichert");
         s3.Children.Add(new WrapPanel { Children = { Nav("letter-wiz-back-3", "← Zurück", 2), done } });
         form.Children.Insert(1, msg);
+        if (_letterRecoverMsg.Length > 0) { msg.Text = _letterMsg = _letterRecoverMsg; _letterRecoverMsg = ""; }
+        if (LetterRecoveryCard() is { } recCard) form.Children.Insert(1, recCard); // T-0708: Wiederherstellen-Karte
         if (_letterSendOpen && _letterPdf is { } sentPdf && File.Exists(sentPdf)) form.Children.Insert(2, LetterSendCard(d, sentPdf));
         form.Children.Add(new Expander { Name = "letter-more", Header = "Mehr – Ort, Anlagen, Frist, Serienbrief, Druck", IsExpanded = _letterAll, HorizontalAlignment = HorizontalAlignment.Stretch,
             Content = new StackPanel { Spacing = 4, Children = { more, LetterTools(d) } } });
@@ -344,7 +378,7 @@ public partial class MainWindow
             {
                 var r = (Border)FileRow(new FileInfo(f), i, "letter-arch");
                 var edit = new Button { Name = $"letter-edit-{i}", Content = "Weiterschreiben", FontSize = 11, Padding = new Thickness(10, 2), IsEnabled = LetterArchive.Load(f) is not null };
-                edit.Click += (_, _) => { if (LetterArchive.Load(f) is { } old) { _letter = old; _letter.Date = DateTime.Today; _letterStep = 3; Show("brief"); } };
+                edit.Click += (_, _) => { if (LetterArchive.Load(f) is { } old) { _letter = old; _letter.Date = DateTime.Today; _letterStep = 3; LetterOpened(); Show("brief"); } };
                 var del = new Button { Name = $"letter-del-{i}", Content = "🗑", FontSize = 11, Padding = new Thickness(8, 2) };
                 ToolTip.SetTip(del, "Brief löschen (kommt in den Papierkorb, zurückholbar)");
                 del.Click += (_, _) => LetterTrashed(new LetterArchive(ProjectsRoot).Delete(f), "brief");
@@ -355,7 +389,11 @@ public partial class MainWindow
         }
 
         var preview = LetterPreview(d);
-        var formScroll = new ScrollViewer { Content = new Border { Background = Brush.Parse(C("#44222222", "#B3FFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(12), Margin = new Thickness(0, 0, 8, 0), Child = form } };
+        var formScroll = new ScrollViewer { Name = "letter-form-scroll", Content = new Border { Background = Brush.Parse(C("#44222222", "#B3FFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(12), Margin = new Thickness(0, 0, 8, 0), Child = form } };
+        // T-0725: Word-/OpenDocument-Brief aus dem Explorer auf das Formular ziehen
+        Avalonia.Input.DragDrop.SetAllowDrop(formScroll, true);
+        formScroll.AddHandler(Avalonia.Input.DragDrop.DragOverEvent, (_, e) => { e.DragEffects = BueroDropFiles(e).Any(BueroExt(".docx", ".odt", ".txt")) ? Avalonia.Input.DragDropEffects.Copy : Avalonia.Input.DragDropEffects.None; e.Handled = true; });
+        formScroll.AddHandler(Avalonia.Input.DragDrop.DropEvent, (_, e) => { if (BueroDropFiles(e).FirstOrDefault(BueroExt(".docx", ".odt", ".txt")) is { } f) { e.Handled = true; LetterOpenForeign(f); } });
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("200,*,*") };
         grid.Children.Add(LetterNav());
         Grid.SetColumn(formScroll, 1); grid.Children.Add(formScroll);
@@ -372,7 +410,14 @@ public partial class MainWindow
         }
         toggle.Click += (_, _) => { _letterPreview = !_letterPreview; ApplyNarrow(grid.Bounds.Width); };
         grid.SizeChanged += (_, e) => ApplyNarrow(e.NewSize.Width);
-        var actions = new WrapPanel { Orientation = Orientation.Horizontal, Children = { save, Sp(export), Sp(pdf), Sp(send) } };
+        // T-0708: Rückgängig/Wiederholen über die Hülle (ProgramLink) – V-14-Gruppe Speichern · Rückgängig · Wiederholen · Exportieren
+        var undo = Act("letter-undo", "Rückgängig", Mdi.Undo); var redo = Act("letter-redo", "Wiederholen", Mdi.Redo);
+        ToolTip.SetTip(undo, "Rückgängig (bis 100 Schritte)"); ToolTip.SetTip(redo, "Wiederholen");
+        undo.Click += (_, _) => { if (LetterUndo()) { _letterMsg = "Rückgängig gemacht."; Show("brief"); } };
+        redo.Click += (_, _) => { if (LetterRedo()) { _letterMsg = "Wiederholt."; Show("brief"); } };
+        _letterUndoRefresh = () => { undo.IsEnabled = LetterLink.CanUndo || _letterTyping?.IsEnabled == true; redo.IsEnabled = LetterLink.CanRedo; };
+        _letterUndoRefresh();
+        var actions = new WrapPanel { Orientation = Orientation.Horizontal, Children = { DocActions(save, undo, redo, export), Sp(pdf), Sp(send) } };
         var stack = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto,*") };
         var steps = LetterSteps(d);
         steps.IsVisible = ProgramLevel != Trendo.Core.Programs.UserLevel.Einfach; // V2 (T-0663): in „Einfach“ nur eine Schrittfolge (Was? → An wen? → Text & Design); die Fortschrittsleiste zeigen Erweitert und Profi

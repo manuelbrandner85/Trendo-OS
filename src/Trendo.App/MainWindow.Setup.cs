@@ -309,14 +309,13 @@ public sealed partial class MainWindow
                 sp.Children.Add(P("KI-Empfehlung für diesen PC: " + why, null, 11));
                 var comps = SetupPacks.ComponentsFor(_wizPacks).Where(c => !_deps.IsInstalled(c)).ToList();
                 sp.Children.Add(P(comps.Count == 0 ? "Alles Ausgewählte ist schon vorhanden." :
-                    $"Wird installiert: {string.Join(", ", comps.Select(c => c.Name))} (ca. {comps.Sum(c => c.ApproxMb)} MB). Mit „Zustimmen & installieren“ akzeptierst du die jeweiligen Lizenzen (siehe THIRD_PARTY.md). Programme, die nur systemweit installierbar sind, fragen einmal nach Administratorrechten.", null, 11));
+                    $"Wird installiert: {string.Join(", ", comps.Select(c => c.Name))} (ca. {comps.Sum(c => c.ApproxMb)} MB). Mit „Zustimmen & installieren“ siehst du jedes Programm mit Lizenz, Größe und Herkunft und wählst selbst aus (Lizenzen siehe THIRD_PARTY.md). Programme, die nur systemweit installierbar sind, fragen einmal nach Administratorrechten.", null, 11));
                 var go = new Button { Name = "wiz-install", Content = comps.Count == 0 ? "Weiter" : "Zustimmen & installieren", Background = Accent, Padding = new Thickness(16, 6), IsEnabled = !_depBusy };
                 go.Click += async (_, _) =>
                 {
                     go.IsEnabled = false; back.IsEnabled = false; go.Content = "Wird eingerichtet …"; // ausgegraut, kein zweiter Klick
                     _settings.StudioPacks = _wizPacks.ToList();
-                    if (comps.Count > 0) BeginSetupOverlay("Trendo OS wird eingerichtet");
-                    try { await RunSetupInstall(model); } finally { EndSetupOverlay(); }
+                    try { await RunSetupInstall(model); } finally { EndSetupOverlay(); } // T-0713: erst Sammel-Rückfrage, dann Einrichtung im Vollbild
                     _wizStep = 5; Show("einrichtung");
                 };
                 sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { back, go } });
@@ -395,20 +394,30 @@ public sealed partial class MainWindow
         return c;
     }
 
+    /// <summary>T-0713: Ersteinrichtung – eine Sammel-Rückfrage mit allen fehlenden Programmen der gewählten Pakete (je Eintrag abwählbar), daraus je
+    /// Komponente genau eine Freigabe; eingerichtet wird nur, was freigegeben ist, und nur über das Tor. Abgebrochen: Rest wird verworfen.</summary>
     private async Task RunSetupInstall(string model)
     {
-        if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner);
         var list = SetupPacks.ComponentsFor(_settings.StudioPacks).ToList();
         if (_settings.StudioPacks.Contains("ki") && model == DependencyCatalog.LargeModel) list.Add(DependencyCatalog.Get("model-7b"));
-        var todo = list.Where(c => !_deps.IsInstalled(c) && c.Mode is DeliveryMode.AutoUser or DeliveryMode.AutoElevated or DeliveryMode.Included).ToList();
-        for (var i = 0; i < todo.Count; i++)
+        var missing = list.Where(c => !_deps.IsInstalled(c) && c.Mode is DeliveryMode.AutoUser or DeliveryMode.AutoElevated or DeliveryMode.Included).ToList();
+        var todo = await SammelFreigabeAsync(missing, "Programme für Trendo einrichten?");
+        if (missing.Count > 0 && todo.Count == 0) _depLog.Text = "Es wurde nichts eingerichtet. Fehlende Programme kannst du später unter „Zusatzprogramme“ einrichten.";
+        if (todo.Count > 0) BeginSetupOverlay("Trendo OS wird eingerichtet");
+        var i = 0;
+        try
         {
-            if (SetupCancelRequested) { _depLog.Text = "Einrichtung abgebrochen."; break; }
-            _depLog.Text = $"{i + 1}/{todo.Count}: {todo[i].Name} …";
-            SetupOverlayProgress(i, todo.Count, $"{todo[i].Name} wird eingerichtet …");
-            await InstallOne(todo[i], refresh: false);
+            for (; i < todo.Count; i++)
+            {
+                if (SetupCancelRequested || _core.Approvals.Halted) { _depLog.Text = "Einrichtung abgebrochen."; break; }
+                _depLog.Text = $"{i + 1}/{todo.Count}: {todo[i].C.Name} …";
+                SetupOverlayProgress(i, todo.Count, $"{todo[i].C.Name} wird eingerichtet …");
+                try { await InstallFreigegebenAsync(todo[i].C, todo[i].Id); }
+                catch (ApprovalException ex) { _depLog.Text = ex.Message; i++; break; } // Not-Stopp: Rest nicht mehr einrichten
+            }
         }
-        SetupOverlayProgress(todo.Count, todo.Count, "Fertig ✓");
+        finally { SammelVerwerfen(todo.Skip(i).Select(t => t.Id)); } // nie erteilte Freigaben liegen lassen
+        if (todo.Count > 0) SetupOverlayProgress(todo.Count, todo.Count, "Fertig ✓");
         if (_deps.HasModel(model)) KiModel.Select(_core.DataRoot, model, _core.Audit);
         ReloadStudios();
     }
@@ -441,7 +450,7 @@ public sealed partial class MainWindow
 
     // ---------- Systemcheck: bereit / fehlt / Ein-Klick-Reparatur ----------
     private Control SystemCheckView() => Page("Systemcheck", new StackPanel { Spacing = 8, Children = {
-        P("Was Trendo auf diesem PC braucht – und ob es funktioniert. Fehlt etwas, reicht ein Klick auf „Reparieren“.", Text, 13), SystemCheckPanel() } });
+        P("Was Trendo auf diesem PC braucht – und ob es funktioniert.", Text, 13), SystemCheckPanel() } });
 
     private Control SystemCheckPanel()
     {
@@ -456,6 +465,12 @@ public sealed partial class MainWindow
         return host;
     }
 
+    /// <summary>Ein Satz für den Systemcheck: was fehlt, sonst was nicht stimmt, sonst „alles in Ordnung“.</summary>
+    public static string SystemCheckSentence(int missingPrograms, int trouble, int ready, int all) =>
+        missingPrograms > 0 ? (missingPrograms == 1 ? "1 Zusatzprogramm fehlt." : $"{missingPrograms} Zusatzprogramme fehlen.")
+        : trouble > 0 ? (trouble == 1 ? "Fast alles in Ordnung – 1 Punkt braucht deine Aufmerksamkeit." : $"Fast alles in Ordnung – {trouble} Punkte brauchen deine Aufmerksamkeit.")
+        : $"Alles in Ordnung: {ready} von {all} Punkten bereit.";
+
     private string _repairMsg = "";
     private Control BuildCheckGrid(List<(Component C, ToolCheck R)> checks)
     {
@@ -464,10 +479,12 @@ public sealed partial class MainWindow
         foreach (var (c, ch) in checks)
             rows.Add((c.Name, ch.State switch { ToolState.Working => "Bereit", ToolState.Broken => "Defekt", _ => "Fehlt" }, ch.Version ?? ch.Detail ?? "",
                 ch.State == ToolState.Working || c.Mode is not (DeliveryMode.AutoUser or DeliveryMode.AutoElevated or DeliveryMode.Included) ? null : c));
-        rows.Add(("Benutzerdaten", Directory.Exists(_core.DataRoot) ? "Bereit" : "Fehlt", _core.DataRoot, null));
-        rows.Add(("Projektordner", Directory.Exists(_settings.ProjectsFolder) ? "Bereit" : "Fehlt", _settings.ProjectsFolder, null));
-        var last = Backups.List().FirstOrDefault();
-        rows.Add(("Sicherung", last is null ? "Fehlt" : "Bereit", last is null ? "noch keine" : $"zuletzt {last.LastWriteTime:dd.MM.yyyy HH:mm}", null));
+        // V-18 (T-0684): Pfade gekürzt, der ganze Pfad nur in „Professionell“
+        var proLevel = ProgramLevel == Trendo.Core.Programs.UserLevel.Profi;
+        rows.Add(("Benutzerdaten", Directory.Exists(_core.DataRoot) ? "Bereit" : "Fehlt", proLevel ? _core.DataRoot : ShortPath(_core.DataRoot), null));
+        rows.Add(("Projektordner", Directory.Exists(_settings.ProjectsFolder) ? "Bereit" : "Fehlt", proLevel ? _settings.ProjectsFolder : ShortPath(_settings.ProjectsFolder), null));
+        var last = Backups.Latest(); var lastNote = last is null ? null : Backups.Describe(last.FullName);
+        rows.Add(("Sicherung", last is null ? "Fehlt" : lastNote is { Complete: false } ? "Hinweis" : "Bereit", last is null ? "noch keine" : $"zuletzt {last.LastWriteTime:dd.MM.yyyy HH:mm}" + (lastNote is { Complete: false } ? $" – unvollständig ({lastNote.NotSavedCount} nicht gesichert)" : ""), null));
         rows.Add(("Updates", !_settings.AutoUpdate ? "Aus" : _updateInfo.StartsWith("Aktuell") || _updateInfo.StartsWith("Update") ? "Bereit" : "Hinweis", _updateInfo, null));
         rows.Add(("Protokoll", _core.Audit.Verify() ? "Bereit" : "Defekt", "unverändert und vollständig", null));
         for (var i = 0; i < rows.Count; i++)
@@ -479,7 +496,20 @@ public sealed partial class MainWindow
             for (var k = 0; k < 3; k++) { Grid.SetRow(cells[k], i); Grid.SetColumn(cells[k], k); cells[k].Margin = new Thickness(0, 2); cells[k].VerticalAlignment = VerticalAlignment.Center; grid.Children.Add(cells[k]); }
         }
         var sum = rows.Count(r => r.State == "Bereit");
-        var panel = new StackPanel { Spacing = 6, Children = { P($"{sum} von {rows.Count} Punkten bereit.", Text), grid } };
+        // V-18 (T-0684, freigegeben 16.11.2026): Systemcheck als ein Satz mit einem Knopf – die Liste steht in „Einfach“ zugeklappt unter „Einzelheiten“
+        var missing = rows.Count(r => r.Fix is not null);
+        var trouble = rows.Count(r => r.State is "Fehlt" or "Defekt");
+        var sentence = new TextBlock { Name = "syscheck-summary", FontSize = 15, FontWeight = FontWeight.SemiBold, Foreground = Text, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center,
+            Text = SystemCheckSentence(missing, trouble, sum, rows.Count) };
+        var top = new WrapPanel { Name = "syscheck-top", Children = { sentence } };
+        if (missing > 0)
+        {
+            var setup = Act("syscheck-setup", "Jetzt einrichten", () => Show("components"), true);
+            setup.Margin = new Thickness(12, 0, 0, 0);
+            ToolTip.SetTip(setup, "Zusatzprogramme öffnen – dort richtest du die fehlenden Programme nach deiner Zustimmung mit einem Klick ein");
+            top.Children.Add(setup);
+        }
+        var panel = new StackPanel { Spacing = 8, Children = { top, SimpleFold("syscheck-details", $"Einzelheiten ({sum} von {rows.Count} Punkten bereit)", grid) } };
         if (_repairMsg.Length > 0) panel.Children.Insert(0, new TextBlock { Name = "repair-msg", Text = _repairMsg, Foreground = _repairMsg.Contains('✓') ? Brush.Parse("#4ADE80") : Brush.Parse("#FACC15"), TextWrapping = TextWrapping.Wrap });
         return panel;
         Control MakeFix(Component c)
@@ -488,7 +518,10 @@ public sealed partial class MainWindow
             b.Click += async (_, _) =>
             {
                 _repairMsg = $"{c.Name}: wird repariert …"; Show(CurrentView);
-                bool ok; try { ok = InstallOverride is { } fake ? await fake(c) : await InstallOne(c, refresh: false); } catch (Exception ex) { ok = false; _depLog.Text = ex.Message; }
+                // T-0713: Reparieren fragt wie die Ersteinrichtung (Liste mit Lizenz, Größe, Herkunft) und richtet nur mit dieser einen Freigabe ein
+                var granted = await SammelFreigabeAsync([c], $"„{c.Name}“ reparieren?");
+                if (granted.Count == 0) { _repairMsg = $"{c.Name}: nicht repariert – es wurde nichts geändert."; ReloadStudios(); Show(CurrentView); return; }
+                bool ok; try { ok = await InstallFreigegebenAsync(c, granted[0].Id); } catch (Exception ex) { ok = false; _depLog.Text = ex.Message; SammelVerwerfen([granted[0].Id]); }
                 _repairMsg = ok ? $"{c.Name}: repariert ✓" : $"{c.Name}: hat nicht geklappt{(_core.Offline ? " – keine Internetverbindung" : "")}. {_depLog.Text}".Trim();
                 ReloadStudios(); Show(CurrentView);
             };
@@ -504,9 +537,9 @@ public sealed partial class MainWindow
         var sp = new StackPanel { Spacing = 6 };
         sp.Children.Add(P($"Trendo sichert deine Projekte und Einstellungen automatisch alle {_settings.BackupEveryHours} Stunden (die letzten 10 bleiben). Ablage: {Backups.Folder}", Text));
         var now = new Button { Name = "btn-backup-now", Content = "Jetzt sichern", Background = Accent };
-        now.Click += (_, _) => { try { _backupMsg = "Gesichert: " + Path.GetFileName(Backups.Create(DateTime.Now)); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _backupMsg = "Sichern hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex); } Show("sicherung"); };
+        now.Click += (_, _) => { try { _backupMsg = Backups.CreateChecked(DateTime.Now).Say(); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _backupMsg = "Sichern hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex); } Show("sicherung"); };
         sp.Children.Add(now);
-        if (_backupMsg.Length > 0) sp.Children.Add(P(_backupMsg, Brush.Parse("#4ADE80")));
+        if (_backupMsg.Length > 0) { var bm = P(_backupMsg, Brush.Parse(_backupMsg.StartsWith("Unvollständig") || _backupMsg.Contains("nicht geklappt") || _backupMsg.Contains("beschädigt") ? "#FACC15" : "#4ADE80")); bm.Name = "backup-msg"; sp.Children.Add(bm); }
         var all = Backups.List();
         if (all.Count > 0)
         {
@@ -520,7 +553,12 @@ public sealed partial class MainWindow
         foreach (var f in Backups.List())
         {
             var file = f.FullName; var idx = bi++;
-            var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { P($"{f.LastWriteTime:dd.MM.yyyy HH:mm} · {f.Length / 1024} KB", Text) } };
+            // T-0681: unvollständige und beschädigte Sicherungen stehen als solche in der Liste
+            var note = Backups.Describe(file); var broken = !Backup.Readable(file);
+            var state = broken ? " · beschädigt – nicht verwendbar" : note is { Complete: false } ? $" · unvollständig: {note.NotSavedCount} Datei(en) nicht gesichert" : "";
+            var line = P($"{f.LastWriteTime:dd.MM.yyyy HH:mm} · {f.Length / 1024} KB{state}", state.Length > 0 ? Brush.Parse("#FACC15") : Text); line.Name = $"backup-row-{idx}";
+            if (note is { Complete: false }) ToolTip.SetTip(line, "Nicht gesichert: " + string.Join(", ", note.NotSaved.Take(20)));
+            var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { line } };
             if (_backupConfirm == file)
             {
                 var yes = new Button { Name = $"backup-restore-yes-{idx}", Content = "Ja, wiederherstellen", FontSize = 11, Background = Accent };

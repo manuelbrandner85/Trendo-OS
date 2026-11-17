@@ -106,6 +106,22 @@ public partial class MainWindow
 
     public bool ClaudeChangePending(string page) => _claudeChanges.ContainsKey(page);
 
+    /// <summary>Beschriftung des einen Rückgängig-Schritts eines Claude-Auftrags.</summary>
+    public const string ClaudeUndoLabel = "Claude-Auftrag";
+    /// <summary>Laufende Claude-Aufträge mit Brücke (während des Laufs wird nicht zusammengefasst).</summary>
+    int _claudeRunning;
+
+    /// <summary>T-0728 (offen aus T-0707): Ein Auftrag an Claude ist EIN Rückgängig-Schritt je Dokument – egal, in wie vielen Zügen Claude über die Brücke
+    /// (Dokument setzen, Befehle, Bedienen) gearbeitet hat. Läuft am Ende jedes Claude-Laufs (und vor dem nächsten); während des Laufs bleibt Claudes eigenes
+    /// „rueckgaengig“ schrittweise. Danach nimmt Strg+Z bzw. „Rückgängig“ der Hülle den ganzen Auftrag zurück.</summary>
+    public void ClaudeRunSquash()
+    {
+        if (_claudeRunning > 0) return; // Claude arbeitet noch – am Ende des Laufs
+        foreach (var (page, c) in _claudeChanges.ToList())
+            if (ProgramActive(page) is { } doc && doc.Id == c.DocId && !c.ShowingBefore && !_liveAnim.ContainsKey(page) && doc.Squash(c.Before, ClaudeUndoLabel))
+                _core.Audit.Append(Principal.LocalOwner.Name, "claude.programm.ein-schritt", page);
+    }
+
     /// <summary>Entscheidung im Programm (öffentlich für Tests): „behalten“, „verwerfen“, „vorher“, „nachher“.</summary>
     public void ClaudeChangeDecide(string page, string what)
     {

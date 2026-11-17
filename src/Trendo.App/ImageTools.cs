@@ -10,7 +10,7 @@ public static class ImageTools
     static void Save(SKBitmap bmp, string path)
     {
         using var img = SKImage.FromBitmap(bmp); using var data = img.Encode(SKEncodedImageFormat.Png, 100);
-        using var fs = File.Create(path); data.SaveTo(fs);
+        Trendo.Core.AtomicFile.WriteAllBytes(path, data.ToArray()); // T-0715: atomar (vorher File.Create – ein Abbruch ließ ein halbes Bild zurück)
     }
 
     static SKBitmap Load(string file) => SKBitmap.Decode(file) ?? throw new InvalidOperationException("Das Bild lässt sich nicht öffnen.");
@@ -92,7 +92,7 @@ public static class ImageTools
         for (var n = 2; output is null && File.Exists(o); n++) o = CopyName(file, $"bearbeitet-{n}", e.Format);
         using var img = SKImage.FromBitmap(dst);
         using var data = img.Encode(e.Format == ".png" ? SKEncodedImageFormat.Png : SKEncodedImageFormat.Jpeg, 92);
-        using (var fs = File.Create(o)) data.SaveTo(fs);
+        Trendo.Core.AtomicFile.WriteAllBytes(o, data.ToArray()); // T-0715: atomar
         return o;
     }
 }

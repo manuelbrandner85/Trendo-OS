@@ -1,0 +1,29 @@
+# Präsentationen gestalten – Architektur
+
+Studio: Präsentationen gestalten (STUDIO-DECKDESIGN-01) · Bereich: Arbeiten & Büro · Seite: `praesentation-gestalten-programm` · Stand: 0.9.103 (Stand 0262de0)
+
+## Präsentation (Trendo.App)
+– (nicht erfasst)
+
+## Bedienelemente der Arbeitsfläche
+- Folienansicht
+- Texteditor
+- Menüband
+- Eigenschaften
+- Statusleiste
+- Dokument-Reiter
+
+## Fach-Engine (Trendo.Core)
+– (nicht erfasst)
+
+## Dateiformate (im Code belegt)
+- .pdf
+- .pptx
+- .tdoc
+- .txt
+
+## Externe Programme und Dienste
+– keine
+
+## Bausteine (Masterprompt 131 / 5)
+A Programmfenster mit Menüband und Kürzeln · B Arbeitsfläche · C Werkzeuge ändern das Dokument · D .tdoc-Projektdatei mit Autosave/Wiederherstellen · E Rückgängig/Wiederholen und Verlauf · I Prüfungen · J Startmenü, Suche, Ordner, Bedienstufen

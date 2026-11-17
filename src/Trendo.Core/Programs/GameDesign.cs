@@ -12,10 +12,10 @@ public static class GameDesign
     public static readonly Scale[] Scales =
     [
         new("retro", "Retro (2D-Pixel)", "browser", "Kleines Spiel, sofort im Browser spielbar"),
-        new("indie2d", "Indie 2D", "browser", "Mehrere Level, eigene Grafik und Musik"),
+        new("indie2d", "Indie 2D", "browser", "Mehrere Level, eigene Bilder und Töne, von der Seite oder von oben"),
         new("indie3d", "Indie 3D", "unreal", "3D-Welt in Unreal Engine 5, kleines Team"),
         new("aa", "AA", "unreal", "Größere 3D-Welt, Story, Kampf, eigene Figuren"),
-        new("aaa", "AAA+", "unreal", "Unreal Engine 5 mit Lumen, Nanite, World Partition und Cinematics"),
+        new("aaa", "Großprojekt 3D", "unreal", "Unreal-Projekt mit Spielgerüst und offener Welt; Lumen und virtuelle Schatten sind eingeschaltet – Inhalt und Qualität entstehen in Unreal"),
     ];
     public static Scale ScaleOf(string id) => Scales.FirstOrDefault(s => s.Id == id) ?? Scales[0];
 
@@ -52,6 +52,36 @@ public static class GameDesign
         return d;
     }
 
+    /// <summary>T-0690: Startlevel für Spiele mit Blick von oben – Labyrinth mit Münzen, zwei Gegnern, Schlüssel, Tür und Ziel.</summary>
+    public static readonly string[] DefaultTopDown =
+    [
+        "###################",
+        "#S.....#.....o....#",
+        "#.####.#.###.####.#",
+        "#.#..o.#...#....#.#",
+        "#.#.##.###.#.##.#.#",
+        "#...#..E...#.#..o.#",
+        "###.#.####.#.#.####",
+        "#o..#......#.#...K#",
+        "#.#####.####.######",
+        "#.....E.....o..D.Z#",
+        "###################",
+    ];
+
+    /// <summary>Dokument auf „Blick von oben“ stellen (Level, Schwert) – das Spiel ist sofort spielbar und im Level-Editor änderbar.</summary>
+    public static JsonObject TopDown(JsonObject d)
+    {
+        d["view"] = "oben"; d["weapon"] = "schwert";
+        d["level"] = new JsonArray([.. DefaultTopDown.Select(r => (JsonNode)r)]);
+        return d;
+    }
+
+    /// <summary>Blickrichtung aus dem Dokument („view“): „oben“ oder „seite“ (Standard).</summary>
+    public static string View(JsonObject d) => S(d["view"]) == "oben" ? "oben" : "seite";
+
+    /// <summary>Eigene Bilder je Objektart aus dem Dokument („images“: {gegner: Datei …}) – nur bekannte Arten.</summary>
+    public static Dictionary<string, string> Images(JsonObject d) => (d["images"] as JsonObject ?? []).Where(kv => S(kv.Value).Length > 0 && GameStudio.ImageKinds.Any(i => i.Id == kv.Key)).ToDictionary(kv => kv.Key, kv => S(kv.Value));
+
     public static readonly Template[] Templates =
     [
         new("leer", "Leeres Spiel", "Alles selbst festlegen", "retro", "", "jump", () => Doc("Neues Spiel", "retro", "", "", "", [], "", "", [], [], [], "jump")),
@@ -69,19 +99,19 @@ public static class GameDesign
         new("retro-snake", "Retro-Schlange", "Schnell, einfach, süchtig machend", "retro", "Arcade", "snake", () => Doc("Pixelschlange", "retro", "Arcade",
             "Friss Punkte, werde länger, beiß dich nicht selbst.", "Bewegen → Fressen → Wachsen", ["Lenken", "Wachsen"], "Pfeiltasten", "Klassisch grün auf schwarz",
             [], [("Spielfeld", "Ein Raster mit Rand")], [("Rekord", "Haupt", "Erreiche 20 Punkte", "", "", "")], "snake")),
-        new("topdown", "Top-Down-Abenteuer", "Zelda-artig: Erkunden, Rätsel, Dungeons", "indie2d", "Action-Adventure", "", () => Doc("Hüter des Hains", "indie2d", "Action-Adventure",
+        new("topdown", "Abenteuer von oben", "Blick von oben: Labyrinth, Schlüssel, Gegner – Level selbst malen", "indie2d", "Action-Adventure", "plattform", () => TopDown(Doc("Hüter des Hains", "indie2d", "Action-Adventure",
             "Eine junge Hüterin muss drei Kristalle finden, um den Wald zu heilen.", "Erkunden → Rätsel lösen → Gegenstand finden → neuen Bereich öffnen",
-            ["Erkunden", "Rätsel", "Nahkampf", "Gegenstände"], "WASD bewegen, Leertaste Schwert, E benutzen", "Pixel-Art 32 px, warme Farben",
+            ["Erkunden", "Rätsel", "Nahkampf", "Gegenstände"], "Pfeiltasten bewegen, X Schwert", "Pixel-Art 32 px, warme Farben",
             [("Lina", "Held", "Junge Hüterin mit Laterne", 0), ("Moosgeist", "Boss", "Uralter Waldgeist", 3)],
             [("Hain", "Startgebiet"), ("Dunkler Wald", "Erster Dungeon")],
-            [("Der erste Kristall", "Haupt", "Finde den grünen Kristall", "Laterne", "Grüner Kristall", "Lina"), ("Die Laterne", "Neben", "Hol die Laterne beim Händler", "", "Laterne", "Lina")])),
+            [("Der erste Kristall", "Haupt", "Finde den grünen Kristall", "Laterne", "Grüner Kristall", "Lina"), ("Die Laterne", "Neben", "Hol die Laterne beim Händler", "", "Laterne", "Lina")], "plattform"))),
         new("action3d", "3D-Action (Unreal)", "Third-Person mit Kampf und Bossen", "aa", "Action", "", () => Doc("Ascheklinge", "aa", "Action-RPG",
             "Ein Söldner kämpft sich durch eine zerfallende Festung, um seinen Bruder zu retten.", "Erkunden → Kämpfen → Beute → Verbessern → Boss",
             ["Nahkampf mit Ausweichen", "Fähigkeiten", "Beute", "Verbesserungen"], "Gamepad oder Maus/Tastatur", "Dunkle Fantasy, realistisch",
             [("Kael", "Held", "Söldner mit Zweihänder", 0), ("Der Aschekönig", "Boss", "Herrscher der Festung", 3)],
             [("Vorhof", "Tutorial-Bereich"), ("Thronsaal", "Bossarena")],
             [("Zum Thron", "Haupt", "Besiege den Aschekönig", "Schlüssel der Festung", "", "Kael"), ("Der Schlüssel", "Neben", "Finde den Schlüssel im Vorhof", "", "Schlüssel der Festung", "Kael")])),
-        new("openworld", "Open-World AAA+", "Unreal 5: Lumen, Nanite, World Partition", "aaa", "Open-World-RPG", "", () => Doc("Erbe der Sterne", "aaa", "Open-World-RPG",
+        new("openworld", "Offene Welt (Unreal)", "Unreal 5: Spielgerüst mit offener Welt, Lumen und virtuelle Schatten eingeschaltet", "aaa", "Open-World-RPG", "", () => Doc("Erbe der Sterne", "aaa", "Open-World-RPG",
             "In einer sterbenden Welt sucht eine Kartografin die letzten Sternenkarten, bevor der Himmel erlischt.", "Erkunden → Entdecken → Quest → Kampf/Dialog → Belohnung → Fortschritt der Welt",
             ["Freie Erkundung", "Reiten", "Kampf", "Dialoge mit Entscheidungen", "Crafting", "Tag/Nacht"], "Gamepad zuerst, Maus/Tastatur", "Fotorealistisch, filmische Beleuchtung",
             [("Aria", "Held", "Kartografin", 0), ("Vesh", "Begleiter", "Ehemaliger Söldner", 0), ("Der Sternfresser", "Boss", "Uraltes Wesen am Himmel", 4)],
@@ -129,9 +159,9 @@ public static class GameDesign
         if (!quests.Any(q => S(q["kind"]) == "Haupt")) w.Add("Es gibt noch keine Hauptmission.");
         var scale = ScaleOf(S(d["scale"]));
         if (scale.Engine == "browser" && S(d["browser"]).Length == 0) w.Add("Für ein Browser-Spiel bitte eine Spielart wählen (Hüpfspiel, Mauerbrecher, Schlange oder Plattformer) – oder Unreal-Umfang wählen.");
-        if (scale.Id == "aaa" && Objs(d, "world").Count() < 3) w.Add("AAA+: Plane mindestens drei Regionen – die Welt trägt das Spiel.");
+        if (scale.Id == "aaa" && Objs(d, "world").Count() < 3) w.Add("Großprojekt: Plane mindestens drei Regionen – die Welt trägt das Spiel.");
         if (d["level"] is JsonArray lv && lv.Select(x => S(x)).Any(r => r.Any(ch => !GameStudio.Tiles.Contains(ch)))) w.Add("Im Level nur # . o E ^ S Z F C K D G N.");
-        if (S(d["browser"]) == "plattform") w.AddRange(GameStudio.CheckPlatform((d["level"] as JsonArray ?? []).Select(S).ToList()));
+        if (S(d["browser"]) == "plattform") w.AddRange(GameStudio.CheckPlatform((d["level"] as JsonArray ?? []).Select(S).ToList(), View(d) == "oben"));
         return w;
     }
 
@@ -162,7 +192,7 @@ public static class GameDesign
     public static List<string> Abilities(JsonObject d) => [.. (d["abilities"] as JsonArray ?? []).Select(S).Where(a => GameStudio.Abilities.Any(x => x.Id == a)).Distinct()];
 
     public static List<GameStudio.GameRule> Rules(JsonObject d) =>
-        [.. (d["rules"] as JsonArray ?? []).OfType<JsonObject>().Select(r => new GameStudio.GameRule(S(r["when"]), int.TryParse(r["n"]?.ToString(), out var n) ? n : 0, S(r["do"]), S(r["title"]) is { Length: > 0 } t ? t : null)).Where(r => r.When.Length > 0 && r.Do.Length > 0)];
+        [.. (d["rules"] as JsonArray ?? []).OfType<JsonObject>().Select(r => new GameStudio.GameRule(S(r["when"]), GameStudio.RuleFlags.Contains(S(r["when"])) ? 1 : int.TryParse(r["n"]?.ToString(), out var n) ? n : 0, S(r["do"]), S(r["title"]) is { Length: > 0 } t ? t : null)).Where(r => r.When.Length > 0 && r.Do.Length > 0)];
 
     /// <summary>Bauen: Retro/Indie 2D als spielbares Browser-Spiel (mit Level aus dem Projekt).</summary>
     static string[] Lines(JsonNode? n) => (n as JsonArray ?? []).Select(S).Where(r => r.Length > 0).ToArray();
@@ -179,7 +209,7 @@ public static class GameDesign
         var anims = (d["anims"] as JsonObject ?? []).Where(kv => kv.Value is JsonObject o && S(o["file"]).Length > 0)
             .ToDictionary(kv => kv.Key, kv => (File: S(kv.Value!["file"]), Frames: (int)(N(kv.Value!["frames"]) ?? 1), Fps: (int)(N(kv.Value!["fps"]) ?? 8)));
         var settings = GameStudio.Validate(new GameStudio.GameSettings { Level = level, Props = props, Speed = (int)(N(d["speed"]) ?? 5), Lives = (int)(N(d["lives"]) ?? 3),
-            TimeLimit = (int)(N(d["timeLimit"]) ?? 0), Rules = Rules(d), Saves = d["saves"]?.GetValueKind() != System.Text.Json.JsonValueKind.False, Abilities = Abilities(d), Texts = Texts(d), Weapon = Weapon(d), Menu = d["menu"]?.GetValueKind() != System.Text.Json.JsonValueKind.False,
+            TimeLimit = (int)(N(d["timeLimit"]) ?? 0), Rules = Rules(d), Saves = d["saves"]?.GetValueKind() != System.Text.Json.JsonValueKind.False, Abilities = Abilities(d), Texts = Texts(d), Weapon = Weapon(d), Menu = d["menu"]?.GetValueKind() != System.Text.Json.JsonValueKind.False, View = View(d),
             MoreLevels = [.. more.Select(o => Lines(o["rows"]))], Decor = [Lines(d["decor"]), .. more.Select(o => Lines(o["decor"]))],
             LevelNames = [S(d["levelName"]) is { Length: > 0 } n0 ? n0 : "Level 1", .. more.Select((o, i) => S(o["name"]) is { Length: > 0 } n ? n : $"Level {i + 2}")],
             Anims = anims.ToDictionary(kv => kv.Key, kv => new GameStudio.Anim("figur-" + kv.Key + Path.GetExtension(kv.Value.File), kv.Value.Frames, kv.Value.Fps)) });
@@ -189,9 +219,10 @@ public static class GameDesign
         // Bilder aus der Asset-Liste (Figur, Hintergrund) und der Abspann mit allen Lizenzen
         var player = S(d["playerImage"]) is { Length: > 0 } pi && File.Exists(pi) ? pi : null;
         var back = S(d["backgroundImage"]) is { Length: > 0 } bi && File.Exists(bi) ? bi : null;
+        var images = Images(d).Where(kv => File.Exists(kv.Value)).ToDictionary(kv => kv.Key, kv => kv.Value); // T-0690: eigene Bilder je Objektart
         string Finish(string game)
         {
-            if (files.Count > 0 || sounds.Count > 0 || player is not null || back is not null) GameStudio.Save(game, settings, player, back, files, sounds);
+            if (files.Count > 0 || sounds.Count > 0 || player is not null || back is not null || images.Count > 0) GameStudio.Save(game, settings, player, back, files, sounds, images);
             var credits = GameAssets.Credits(d);
             if (credits.Length > 0) File.WriteAllText(Path.Combine(game, "CREDITS.txt"), credits);
             return game;
@@ -214,7 +245,7 @@ public static class GameDesign
             Speed = (int)(N(d["speed"]) ?? 5), Lives = (int)(N(d["lives"]) ?? 3), TimeLimit = (int)(N(d["timeLimit"]) ?? 0), Rules = Rules(d),
             MoreLevels = [.. more.Select(o => Lines(o["rows"]))],
             LevelNames = [S(d["levelName"]) is { Length: > 0 } n0 ? n0 : "Level 1", .. more.Select((o, i) => S(o["name"]) is { Length: > 0 } n ? n : $"Level {i + 2}")],
-            Abilities = Abilities(d), Texts = Texts(d), Weapon = Weapon(d), Menu = d["menu"]?.GetValueKind() != System.Text.Json.JsonValueKind.False,
+            Abilities = Abilities(d), Texts = Texts(d), Weapon = Weapon(d), Menu = d["menu"]?.GetValueKind() != System.Text.Json.JsonValueKind.False, View = View(d),
         });
     }
 

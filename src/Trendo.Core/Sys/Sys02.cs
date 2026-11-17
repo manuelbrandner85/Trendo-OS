@@ -433,7 +433,7 @@ public sealed class Calendar(string dataRoot)
         if (end < e.Start.AddMinutes(15)) end = e.Start.AddMinutes(15);
         var n = e with { End = end }; Add(n); return n;
     }
-    public void ExportFile(string ics) => File.WriteAllText(ics, Ics.Export(All(), Todos()));
+    public void ExportFile(string ics) => AtomicFile.WriteAllText(ics, Ics.Export(All(), Todos())); // T-0714: atomar
 
     /// <summary>Termine und Aufgaben aus ICS übernehmen (gleiche UID wird ersetzt).</summary>
     public (int Events, int Todos) ImportText(string ics) => ImportText(ics, DateTime.Now);

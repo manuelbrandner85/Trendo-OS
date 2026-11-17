@@ -2,7 +2,7 @@
 <TestRun id="df6d44f8-8787-4667-a812-55ea554eccde" name="<user>@<host> 2026-10-22 02:42:48" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:48.2840553+02:00" queuing="2026-10-22T02:42:48.2840555+02:00" start="2026-10-22T02:42:45.9702620+02:00" finish="2026-10-22T02:42:48.2880920+02:00" />
   <TestSettings name="default" id="fad0d66b-acd4-4fde-ac35-0d255ba4f8af">
-    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_48" />
+    <Deployment runDeploymentRoot="<user>_<host>_2026-10-22_02_42_48" />
   </TestSettings>
   <Results>
     <UnitTestResult executionId="f9d2285f-c943-4fef-a937-2b4ec9d1ffd7" testId="d99218ed-5262-c193-7538-d27d119c11c0" testName="SYS-07 UI: Geräte suchen zeigt Gruppen" computerName="<host>" duration="00:00:01.0550743" startTime="2026-10-22T02:42:47.0809612+02:00" endTime="2026-10-22T02:42:48.1442557+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f9d2285f-c943-4fef-a937-2b4ec9d1ffd7" />

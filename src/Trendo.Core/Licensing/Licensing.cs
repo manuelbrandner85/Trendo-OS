@@ -95,7 +95,7 @@ public static class EditionCatalog
 {
     public static readonly IReadOnlySet<string> FreeStudios = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
-        "STUDIO-LETTER-01", "SYS-10", "SYS-09", "X-11", "SYS-02", "SPEC-06", "SPEC-13", "SPEC-16", "CORE-10", "STUDIO-SUMMARY-01", "X-07",
+        "STUDIO-LETTER-01", "SYS-10", "SYS-09", "X-11", "SYS-02", "SPEC-06", "SPEC-13", "CORE-10", "STUDIO-SUMMARY-01", "X-07",
     };
 
     public static string Label(LicenseType t) => t switch

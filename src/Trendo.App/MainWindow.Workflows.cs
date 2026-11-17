@@ -12,7 +12,10 @@ public partial class MainWindow
 {
     private WorkflowEngine? _wf;
     public static string WorkflowHome { get; set; } = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-    public WorkflowEngine Workflows => _wf ??= new WorkflowEngine(_core.DataRoot, _core.Audit, _core.Approvals, [WorkflowHome]) { Summarize = async t => { var a = await Intel.AskAsync(new KiRequest("Fasse diesen Text in 5 Stichpunkten zusammen:\n\n" + (t.Length > 8000 ? t[..8000] : t), PreferredModel: KiModelName, UseKnowledge: false)); return a.Ok ? a.Text : null; } };
+    public WorkflowEngine Workflows => _wf ??= new WorkflowEngine(_core.DataRoot, _core.Audit, _core.Approvals, [WorkflowHome]) { Summarize = async t => { var a = await Intel.AskAsync(new KiRequest("Fasse diesen Text in 5 Stichpunkten zusammen:\n\n" + (t.Length > 8000 ? t[..8000] : t), PreferredModel: KiModelName, UseKnowledge: false)); return a.Ok ? a.Text : null; },
+        // T-0698: Schritt „Agent ausführen“ – Agent läuft im Takt des Ablaufs, ohne Person (Wirkungen nach außen bleiben blockiert)
+        RunAgent = (id, file, ct) => { var ki = AgentKi(Agents.Definition(id)?.Model ?? "", out var pref); return Agents.RunForWorkflowAsync(id, file, ki, AgentSvc(null), ct, pref); },
+        AgentName = id => Agents.Definition(id)?.Name };
     public WfRun? LastWfRun { get; private set; }
     /// <summary>Letzter Fehler des Zeitplans (null = keiner). Früher wurden Fehler hier stumm verschluckt (Prüfung 04.11.2026).</summary>
     public string? LastWfError { get; private set; }
@@ -73,6 +76,7 @@ public partial class MainWindow
     private Control WorkflowsView()
     {
         var left = new StackPanel { Spacing = 6, Children = { P("Abläufe erledigen Wiederkehrendes von allein. „Probelauf“ zeigt vorher, was passieren würde – ohne etwas zu ändern.", null, 12) } };
+        if (Workflows.LoadProblem is { } lp) left.Children.Add(new TextBlock { Name = "wf-load-problem", Text = "⚠ " + lp, Foreground = Brush.Parse("#FACC15"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
         if (LastWfError is { } err) left.Children.Add(new TextBlock { Name = "wf-error", Text = "⚠ Ein geplanter Ablauf ist fehlgeschlagen – " + err, Foreground = Brush.Parse("#FACC15"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
         var tpl = new WrapPanel();
         foreach (var (id, name, make) in WorkflowEngine.Templates)
@@ -94,7 +98,7 @@ public partial class MainWindow
             tpl.Children.Add(b);
         }
         var nb = new Button { Name = "wf-new", Content = "+ Eigener Ablauf", Margin = new Thickness(0, 0, 6, 6) };
-        nb.Click += (_, _) => { _wfNew = !_wfNew; _wfDraft.Clear(); Show("ablaeufe"); };
+        nb.Click += (_, _) => { _wfNew = !_wfNew; if (!_wfNew) { _wfDraft.Clear(); LinkClose(WfDraftLink); } Show("ablaeufe"); }; // T-0717: Schließen verwirft den Entwurf (wie vorher), samt Notsicherung
         tpl.Children.Add(nb);
         left.Children.Add(tpl);
         if (SuggestionCard("ablaeufe", WorkflowSuggestions()) is { } sugg) left.Children.Add(WCard(sugg));
@@ -108,7 +112,17 @@ public partial class MainWindow
             Button B(string name, string label, Func<Task> act) { var b = new Button { Name = $"wf-{name}-{n}", Content = label, Padding = new Thickness(8, 2), Margin = new Thickness(0, 4, 6, 0), FontSize = 12 }; b.Click += async (_, _) => { WfSelected = w.Id; await act(); Show("ablaeufe"); }; row.Children.Add(b); return b; }
             B("dry", "Probelauf", async () => { LastWfRun = await Workflows.RunAsync(w, true); _wfMsg = ""; });
             B("run", "Ausführen", async () => { LastWfRun = await Workflows.RunAsync(w, false); _wfMsg = ""; });
-            if (!w.IsApproved) B("approve", "Freigeben …", async () => { var dry = await Workflows.RunAsync(w, dryRun: true); var r = Workflows.RequestApproval(w, string.Join("\n", dry.Lines)); _core.Approvals.Approve(r.Id, Principal.LocalOwner); Workflows.ApplyApproval(w, r.Id); _wfMsg = $"„{w.Name}“ ist freigegeben. Änderst du den Ablauf, fragt Trendo erneut."; });
+            // B4 (T-0706): Probelauf zeigt, was passiert; freigegeben wird erst mit dem Ja der angemeldeten Person in der Rückfrage – nicht schon mit diesem Klick
+            if (!w.IsApproved) B("approve", "Freigeben …", async () =>
+            {
+                var dry = await Workflows.RunAsync(w, dryRun: true); var preview = string.Join("\n", dry.Lines);
+                var wk = new Wirkung("workflow.approve", $"{w.Id}:{w.Hash()}", $"Ablauf „{w.Name}“ freigeben?",
+                    $"Ablauf: {w.Name}\nStartet: {TriggerText(w)}\n\nDer Ablauf darf danach von allein Dateien verschieben und umbenennen – so wie im Probelauf unten. Änderst du den Ablauf, fragt Trendo erneut.", "Freigeben", preview);
+                if (await FreigabeAsync(wk, () => Workflows.RequestApproval(w, preview, CurrentPrincipal)) is not { } id) { _wfMsg = $"„{w.Name}“ ist nicht freigegeben – er verschiebt und benennt nichts um."; return; }
+                try { Workflows.ApplyApproval(w, id); }
+                catch (ApprovalException ex) { _wfMsg = $"„{w.Name}“ ist nicht freigegeben: {ex.Message}"; return; }
+                _wfMsg = $"„{w.Name}“ ist freigegeben. Änderst du den Ablauf, fragt Trendo erneut.";
+            });
             B("toggle", w.Enabled ? "Pausieren" : "Einschalten", () => { w.Enabled = !w.Enabled; Workflows.Update(w); return Task.CompletedTask; });
             B("del", "Löschen", () => { Workflows.Remove(w.Id); if (WfSelected == w.Id) WfSelected = null; return Task.CompletedTask; });
             var last = Workflows.History(w.Id, 1).FirstOrDefault();
@@ -116,7 +130,9 @@ public partial class MainWindow
                 Content = new StackPanel { Spacing = 2, Children = {
                     new TextBlock { Text = w.Name + (w.Enabled ? "" : " (pausiert)"), Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold },
                     new TextBlock { Text = $"Startet {TriggerText(w)}{(w.NeedsApproval ? w.IsApproved ? " · freigegeben" : " · braucht Freigabe" : "")}", Foreground = w.IsApproved ? Muted : Brush.Parse("#FACC15"), FontSize = 11, TextWrapping = TextWrapping.Wrap },
-                    new TextBlock { Text = last is null ? "Noch nie gelaufen." : $"Zuletzt {last.At:dd.MM. HH:mm}: {(last.Ok ? "ok" : "mit Fehler")}", Foreground = Muted, FontSize = 10.5 } } } };
+                    new TextBlock { Text = last is null ? "Noch nie gelaufen." : $"Zuletzt {last.At:dd.MM. HH:mm}: {(last.Ok ? "ok" : "mit Fehler")}" + (w.LastRun is { } good && !last.Ok ? $" · zuletzt geklappt {good:dd.MM. HH:mm}" : ""), Foreground = Muted, FontSize = 10.5 } } } };
+            // T-0681: sichtbarer Fehlerstand – ein Fehlschlag gilt nicht als gelaufen
+            if (WorkflowEngine.FailText(w) is { } fail && sel.Content is StackPanel selBox) selBox.Children.Add(new TextBlock { Name = $"wf-fail-{n}", Text = "⚠ " + fail, Foreground = Brush.Parse("#F87171"), FontSize = 10.5, TextWrapping = TextWrapping.Wrap });
             sel.Click += (_, _) => { WfSelected = w.Id; WfNode = -1; _wfNew = false; Show("ablaeufe"); };
             var card = WCard(new StackPanel { Spacing = 2, Children = { sel, row } });
             if (on && card is Border cb) { cb.BorderBrush = Brush.Parse("#FACC15"); cb.BorderThickness = new Thickness(1.5); }
@@ -125,9 +141,14 @@ public partial class MainWindow
         if (all.Count == 0) left.Children.Add(P("Noch keine eigenen Abläufe – oben eine Vorlage antippen.", null, 12)); // Leerzustand groß in der Mitte (G6)
 
         var center = new StackPanel { Spacing = 8 };
-        var undo = new Button { Name = "wf-undo", Content = "Rückgängig", IsEnabled = _wfUndo.Count > 0 }; undo.Click += (_, _) => { WfUndo(); Show("ablaeufe"); };
-        center.Children.Add(new DockPanel { Children = { undo, new TextBlock { Name = "wf-msg", Text = _wfMsg, Foreground = Text, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0) } } });
-        DockPanel.SetDock(undo, Avalonia.Controls.Dock.Left);
+        // T-0717: Rückgängig/Wiederholen der Hülle (100 Schritte, vorher eigener Stapel mit 50 ohne Wiederholen)
+        var wfLink = WfLink;
+        var undo = new Button { Name = "wf-undo", Content = "Rückgängig", IsEnabled = wfLink.Link.CanUndo }; undo.Click += (_, _) => { WfUndo(); Show("ablaeufe"); };
+        var redo = ItemRedoButton(wfLink, WfRedo, "ablaeufe");
+        var undoRow = new StackPanel { Orientation = Orientation.Horizontal, Children = { undo, redo } };
+        if (LinkRecoveryCard(WfDraftLink) is { } wfCard) center.Children.Add(wfCard); // T-0717: nicht gespeicherter neuer Ablauf aus einer früheren Sitzung
+        center.Children.Add(new DockPanel { Children = { undoRow, new TextBlock { Name = "wf-msg", Text = _wfMsg, Foreground = Text, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0) } } });
+        DockPanel.SetDock(undoRow, Avalonia.Controls.Dock.Left);
         var selW = WfSelected is { } sid ? Workflows.Get(sid) : null;
         if (_wfNew) center.Children.Add(WorkflowEditor());
         else if (selW is not null) center.Children.Add(WfFlow(selW));
@@ -141,7 +162,7 @@ public partial class MainWindow
         var right = selW is not null && !_wfNew ? WfInspector(selW) : new Panel();
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("300,12,*,12,320") };
         grid.Children.Add(left); grid.Children.Add(Pos(center, 2)); grid.Children.Add(Pos(right, 4));
-        grid.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Z && e.KeyModifiers == Avalonia.Input.KeyModifiers.Control) { WfUndo(); Show("ablaeufe"); e.Handled = true; } };
+        ItemKeys(grid, WfUndo, WfRedo, () => Show("ablaeufe")); // Strg+Z, Strg+Y
         return KiPage("Abläufe", new DockPanel { Children = { Dk(WfModeBar(), Avalonia.Controls.Dock.Top), WfPro ? N8nWorkspace() : grid } }); // Profi-Ebene n8n/Node-RED
     }
 
@@ -149,7 +170,8 @@ public partial class MainWindow
     private Control WfModeBar()
     {
         var mode = new WrapPanel { Name = "wf-mode", Margin = new Thickness(0, 0, 0, 8) };
-        foreach (var (pro, label) in new[] { (false, "Einfach: Trendo-Abläufe"), (true, "Profi: n8n und Node-RED") })
+        // V-15 (T-0709): „Einfach/Profi“ ist allein die Bedienstufe – hier heißen die beiden Werkzeuge nur noch beim Namen
+        foreach (var (pro, label) in new[] { (false, "Trendo-Abläufe"), (true, "n8n und Node-RED") })
         {
             var on = WfPro == pro; var pp = pro;
             var mb = new Button { Name = pro ? "wf-mode-pro" : "wf-mode-simple", Content = label, Padding = new Thickness(12, 4), Margin = new Thickness(0, 0, 6, 0), CornerRadius = new CornerRadius(14), Background = on ? Accent : Brushes.Transparent, Foreground = on ? Brushes.White : Text };
@@ -169,10 +191,20 @@ public partial class MainWindow
         var to = new TextBox { Name = "wfe-to", PlaceholderText = "Nach (Ordner/Datei), {datum} erlaubt", Width = 220 };
         var pat = new TextBox { Name = "wfe-pattern", PlaceholderText = "Muster, z. B. *.pdf", Width = 120 };
         var text = new TextBox { Name = "wfe-text", PlaceholderText = "Text (für „Textdatei schreiben“)" };
+        // T-0717: der neue Ablauf ist ein Entwurf an der Notsicherung der Hülle (Name, Auslöser, Zeit/Ordner, Schritte) – Rückgängig, 20-s-Takt, Wiederherstellen-Karte
+        var dl = WfDraftLink;
+        var stepsField = new LinkField("steps", () => _wfDraft.Count == 0 ? "" : System.Text.Json.JsonSerializer.Serialize(_wfDraft),
+            v => { _wfDraft.Clear(); if (v.Length > 0) try { _wfDraft.AddRange(System.Text.Json.JsonSerializer.Deserialize<List<WfStep>>(v) ?? []); } catch (System.Text.Json.JsonException) { } }, _ => { });
+        LinkFormFields(dl, "neu", [LinkField.Of("name", name), ComboField("trigger", trig), LinkField.Of("at", at), stepsField]);
         var steps = new StackPanel { Spacing = 2 };
         foreach (var s in _wfDraft) steps.Children.Add(P($"• {WorkflowEngine.StepLabel(s.Kind)} {s.From} {s.To} {s.Pattern}", null, 11));
         var add = new Button { Name = "wfe-add", Content = "Schritt hinzufügen" };
-        add.Click += (_, _) => { _wfDraft.Add(new WfStep { Kind = (StepKind)kind.SelectedIndex, From = from.Text ?? "", To = to.Text ?? "", Pattern = string.IsNullOrWhiteSpace(pat.Text) ? "*" : pat.Text, Text = text.Text ?? "" }); var nm = name.Text; Show("ablaeufe"); };
+        add.Click += (_, _) =>
+        {
+            _wfDraft.Add(new WfStep { Kind = (StepKind)kind.SelectedIndex, From = from.Text ?? "", To = to.Text ?? "", Pattern = string.IsNullOrWhiteSpace(pat.Text) ? "*" : pat.Text, Text = text.Text ?? "" });
+            if (dl.Live is not null) { dl.Live["steps"] = stepsField.Read(); LinkCommit(dl, "Schritt hinzugefügt"); }
+            Show("ablaeufe");
+        };
         var save = new Button { Name = "wfe-save", Content = "Ablauf speichern", Background = Accent };
         save.Click += (_, _) =>
         {
@@ -182,16 +214,15 @@ public partial class MainWindow
             if (w.Trigger == TriggerKind.Taeglich) w.At = TimeOnly.TryParse(a, out var t) ? t.ToString("HH:mm") : "08:00";
             if (w.Trigger == TriggerKind.Intervall) w.EveryMinutes = int.TryParse(a, out var m) && m > 0 ? m : 60;
             if (w.Trigger == TriggerKind.NeueDatei) { w.WatchFolder = a; w.WatchPattern = _wfDraft[0].Pattern; }
-            Workflows.Add(w); _wfDraft.Clear(); _wfNew = false; _wfMsg = $"„{w.Name}“ gespeichert. Mach zuerst einen Probelauf."; Show("ablaeufe");
+            Workflows.Add(w); _wfDraft.Clear(); _wfNew = false; LinkClose(dl); _wfMsg = $"„{w.Name}“ gespeichert. Mach zuerst einen Probelauf."; Show("ablaeufe");
         };
-        return WCard(new StackPanel { Spacing = 6, Children = { name, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { trig, at } },
+        return WCard(new StackPanel { Spacing = 6, Children = { LinkUndoRow(dl), name, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { trig, at } },
             new WrapPanel { Children = { kind, from, to, pat } }, text, steps, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { add, save } } } });
     }
     // ---------- Ablaufplan (Masterprompt 131): Auslöser und Schritte als verbundene Bausteine ----------
     public string? WfSelected { get; set; }
     /// <summary>−1 = Auslöser, sonst Schritt-Nummer.</summary>
     public int WfNode { get; set; } = -1;
-    private readonly List<(string Id, string Json)> _wfUndo = [];
 
     static string WfJson(Workflow w) => System.Text.Json.JsonSerializer.Serialize(new { w.Name, w.Trigger, w.At, w.EveryMinutes, w.WatchFolder, w.WatchPattern, w.Steps });
     void WfRestore(Workflow w, string json)
@@ -209,16 +240,14 @@ public partial class MainWindow
         try { change(w); }
         catch (InvalidOperationException ex) { WfRestore(w, before); _wfMsg = ex.Message; Show("ablaeufe"); return; }
         if (WfJson(w) == before) { Show("ablaeufe"); return; }
-        _wfUndo.Add((w.Id, before)); if (_wfUndo.Count > 50) _wfUndo.RemoveAt(0);
+        Items(WfLink).Record(msg, w.Id, before, WfJson(w)); // T-0717: Rückgängig der Hülle
         Workflows.Update(w); _wfMsg = msg + (w.NeedsApproval && !w.IsApproved ? " Der Ablauf braucht jetzt eine neue Freigabe." : ""); Show("ablaeufe");
     }
 
-    public void WfUndo()
-    {
-        if (_wfUndo.Count == 0) { _wfMsg = "Es gibt nichts rückgängig zu machen."; return; }
-        var (id, json) = _wfUndo[^1]; _wfUndo.RemoveAt(_wfUndo.Count - 1);
-        if (Workflows.Get(id) is { } w) { WfRestore(w, json); Workflows.Update(w); WfSelected = id; WfNode = Math.Min(WfNode, w.Steps.Count - 1); _wfMsg = "Rückgängig gemacht."; }
-    }
+    /// <summary>T-0717: Rückgängig/Wiederholen der Hülle (100 Schritte). Wie vorher: der Ablauf bekommt seinen früheren Inhalt; ändert sich dadurch der Inhalt eines
+    /// freigabepflichtigen Ablaufs, braucht er eine neue Freigabe (Freigabe-Regeln unverändert: sie prüfen den Inhalt).</summary>
+    public void WfUndo() { ItemStep(WfLink, true, out var m); _wfMsg = m; }
+    public void WfRedo() { ItemStep(WfLink, false, out var m); _wfMsg = m; }
 
     /// <summary>Schritt verschieben (Ziehen im Ablaufplan oder ↑/↓).</summary>
     public void WfMoveStep(Workflow w, int from, int to)
@@ -265,10 +294,12 @@ public partial class MainWindow
             var sub = s.Kind switch
             {
                 StepKind.OrdnerAnlegen => HomePath(s.To), StepKind.TextSchreiben => HomePath(s.To), StepKind.Zippen => $"{HomePath(s.From)} → {HomePath(s.To)}",
-                StepKind.DatumVoranstellen => $"{s.Pattern} in {HomePath(s.From)}", _ => $"{s.Pattern} aus {HomePath(s.From)} → {HomePath(s.To)}",
+                StepKind.DatumVoranstellen => $"{s.Pattern} in {HomePath(s.From)}",
+                StepKind.AgentAusfuehren => Agents.Definition(s.Text)?.Name is { } an ? $"Agent „{an}“" : "",
+                _ => $"{s.Pattern} aus {HomePath(s.From)} → {HomePath(s.To)}",
             };
-            var risky = s.Kind is StepKind.Verschieben or StepKind.DatumVoranstellen;
-            var node = Node($"wf-node-{i}", i, s.Kind switch { StepKind.OrdnerAnlegen => "📁", StepKind.Kopieren => "📄", StepKind.Verschieben => "🚚", StepKind.DatumVoranstellen => "📅", StepKind.TextSchreiben => "✏", StepKind.Zippen => "🗜", _ => "✨" },
+            var risky = s.Kind is StepKind.Verschieben or StepKind.DatumVoranstellen or StepKind.AgentAusfuehren;
+            var node = Node($"wf-node-{i}", i, s.Kind switch { StepKind.OrdnerAnlegen => "📁", StepKind.Kopieren => "📄", StepKind.Verschieben => "🚚", StepKind.DatumVoranstellen => "📅", StepKind.TextSchreiben => "✏", StepKind.Zippen => "🗜", StepKind.AgentAusfuehren => "🤖", _ => "✨" },
                 $"{i + 1}. {WorkflowEngine.StepLabel(s.Kind)}" + (risky ? "  · braucht Freigabe" : ""), sub.Length == 0 ? "– noch nicht eingestellt –" : sub, risky ? "#B45309" : "#1D4ED8", WfNode == i, Badge(i).Text, Badge(i).Color, probing && _wfProbeStep == i);
             // ziehen = umsortieren, Klick = auswählen
             Point? from = null; var dragged = false;
@@ -340,9 +371,18 @@ public partial class MainWindow
             var del = new Button { Name = "wf-edit-delete", Content = "Schritt löschen" };
             del.Click += (_, _) => { WfChange(w, x => x.Steps.RemoveAt(idx), $"Schritt {idx + 1} gelöscht."); WfNode = Math.Min(idx, w.Steps.Count - 1); Show("ablaeufe"); };
             sp.Children.Add(H($"Schritt {idx + 1}", 14)); sp.Children.Add(L("Was", kind));
-            if (s.Kind is not (StepKind.OrdnerAnlegen or StepKind.TextSchreiben)) sp.Children.Add(L("Von Ordner", from));
-            if (s.Kind is not StepKind.DatumVoranstellen) sp.Children.Add(L(s.Kind is StepKind.OrdnerAnlegen ? "Ordner" : s.Kind is StepKind.TextSchreiben or StepKind.Zippen ? "Datei" : "Nach", to));
-            if (s.Kind is not (StepKind.OrdnerAnlegen or StepKind.TextSchreiben)) sp.Children.Add(L("Welche Dateien", pat));
+            if (s.Kind is StepKind.AgentAusfuehren)
+            {
+                // T-0698: Agent wählen (aus „KI-Agenten bauen“); die Kennung steht im Textfeld des Schritts
+                var defs = Agents.Definitions().ToList();
+                var pick = new ComboBox { Name = "wf-edit-agent", ItemsSource = defs.Select(x => x.Name).ToList(), SelectedIndex = defs.FindIndex(x => x.Id == s.Text), PlaceholderText = defs.Count == 0 ? "Noch kein Agent – erst unter „KI-Agenten bauen“ anlegen" : "Agent wählen", HorizontalAlignment = HorizontalAlignment.Stretch };
+                pick.SelectionChanged += (_, _) => { if (pick.SelectedIndex >= 0) text.Text = defs[pick.SelectedIndex].Id; };
+                sp.Children.Add(L("Welcher Agent", pick));
+                sp.Children.Add(P("Der Agent arbeitet in seinem eigenen Projekt. Bei „Neue Datei“ bekommt er die Datei in „eingang/“. Etwas nach außen geben kann er hier nicht – dafür fehlt deine Zustimmung im Moment des Laufs.", Muted, 11));
+            }
+            if (s.Kind is not (StepKind.OrdnerAnlegen or StepKind.TextSchreiben or StepKind.AgentAusfuehren)) sp.Children.Add(L("Von Ordner", from));
+            if (s.Kind is not (StepKind.DatumVoranstellen or StepKind.AgentAusfuehren)) sp.Children.Add(L(s.Kind is StepKind.OrdnerAnlegen ? "Ordner" : s.Kind is StepKind.TextSchreiben or StepKind.Zippen ? "Datei" : "Nach", to));
+            if (s.Kind is not (StepKind.OrdnerAnlegen or StepKind.TextSchreiben or StepKind.AgentAusfuehren)) sp.Children.Add(L("Welche Dateien", pat));
             if (s.Kind is StepKind.TextSchreiben) sp.Children.Add(L("Text", text));
             sp.Children.Add(new WrapPanel { Children = { save, new Border { Width = 6 }, up, new Border { Width = 4 }, down, new Border { Width = 6 }, del } });
             sp.Children.Add(P("Erlaubt sind nur Ordner unter deinem Benutzerordner. Verschieben und Umbenennen laufen erst nach deiner Freigabe.", Muted, 11));

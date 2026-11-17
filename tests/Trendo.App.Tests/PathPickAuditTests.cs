@@ -24,7 +24,7 @@ public class PathPickAuditTests
             foreach (var tb in root.GetLogicalDescendants().OfType<TextBox>())
             {
                 var h = ((tb.PlaceholderText ?? "") + " " + (tb.Name ?? "")).ToLowerInvariant();
-                if (!Hints.Any(h.Contains) || h.Contains("http") || h.Contains("prüfsumme") || h.Contains("muster") || h.Contains("name") || h.Contains("parameter") || tb.Name == "bm-folder") continue; // Lesezeichen-Ordner und Startparameter sind keine Pfade
+                if (!Hints.Any(h.Contains) || h.Contains("http") || h.Contains("prüfsumme") || h.Contains("muster") || h.Contains("name") || h.Contains("parameter") || tb.Name == "bm-folder" || tb.Name == "auftrag-prompt") continue; // V-07 (T-0700): die KI-Eingabe ist nie ein Pfadfeld (Audit S-07: „Ordner wählen …“ in der KI-Leiste war ein Fehler) // Lesezeichen-Ordner und Startparameter sind keine Pfade
                 if (!known.Contains(tb)) bad.Add($"{key}: {tb.Name} „{tb.PlaceholderText}“");
                 else if (!tb.IsReadOnly) bad.Add($"{key}: {tb.Name} ist noch zum Eintippen");
             }

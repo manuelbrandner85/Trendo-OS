@@ -13,7 +13,7 @@ public partial class MainWindow
     {
         var sp = new StackPanel { Name = "ve-keys-" + id, Spacing = 4, Margin = new Thickness(0, 6, 0, 0) };
         sp.Children.Add(H("Bewegung (Keyframes)", 13));
-        sp.Children.Add(P($"Abspielkopf steht bei {localTime.ToString("0.00", De)} s in diesem Stück. Sichtbar wird die Bewegung im Export.", Muted, 11));
+        sp.Children.Add(P($"Abspielkopf steht bei {localTime.ToString("0.00", De)} s in diesem Stück. Die Vorschau zeigt die Bewegung am Abspielkopf so wie im Export.", Muted, 11));
         var choice = new ComboBox { Name = "ve-key-param-" + id, HorizontalAlignment = HorizontalAlignment.Stretch, ItemsSource = VideoAnim.Params.Select(p => p.Label).ToList(), SelectedIndex = 0 };
         var slider = new Slider { Name = "ve-key-value-" + id, Minimum = VideoAnim.Params[0].Min, Maximum = VideoAnim.Params[0].Max, Value = VideoAnim.Params[0].Default };
         var list = new StackPanel { Name = "ve-key-list-" + id, Spacing = 2 };
@@ -44,7 +44,7 @@ public partial class MainWindow
     {
         var sp = new StackPanel { Name = "ve-stack-" + clip, Spacing = 4, Margin = new Thickness(0, 6, 0, 0) };
         sp.Children.Add(H("Effekte", 13));
-        sp.Children.Add(P("Die Effekte wirken von oben nach unten. Sichtbar werden sie im Export.", Muted, 11));
+        sp.Children.Add(P("Die Effekte wirken von oben nach unten – die Vorschau zeigt sie wie im Export.", Muted, 11));
         var items = VideoAnim.Stack(d.Data, clip);
         for (var i = 0; i < items.Count; i++)
         {

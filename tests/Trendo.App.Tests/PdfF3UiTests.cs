@@ -83,7 +83,7 @@ public class PdfF3UiTests
             Assert.Contains("nicht installiert", string.Join("|", w.GetLogicalTexts())); // Werkzeugordner der Tests ist leer
 
             var tess = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), DataLocation.ToolsFolderName, "tesseract", "tesseract.exe");
-            if (!File.Exists(tess)) return; // ohne Tesseract auf diesem PC nur der Hinweis
+            if (!File.Exists(tess)) { Assert.Skip("Übersprungen – Tesseract ist auf diesem PC nicht eingerichtet – nur der Hinweis wurde geprüft."); return; } // ohne Tesseract auf diesem PC nur der Hinweis
             MainWindow.TesseractOverride = tess;
             await Run(w.PdfOcrPage());
             Assert.Contains("Rechnung", w.Find<TextBox>("pdf-ocr-text").Text);

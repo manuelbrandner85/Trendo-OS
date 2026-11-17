@@ -12,7 +12,7 @@
 - Version 0.9.19.
 
 ## Nachweise
-- Volltest: Api 15/15, Core 852 bestanden/1 übersprungen, App 436 bestanden/3 übersprungen, Paket-Tests 8/8 OK – `reports/T-0241/volltest.log`, SHA-256 `cf0ae3fe448cc51e89b5de99bd5b2a84cebd36145e52185c31e39a87ee7d2161`
+- Volltest: Api 15/15, Core 852 bestanden/1 übersprungen, App 436 bestanden/3 übersprungen, Paket-Tests 8/8 OK – `reports/T-0241/volltest.log`, SHA-256 `0fbff8abce8a02c1f55c03957628fa67099bed6865dcf8ac81bbdcf60e75189a`
 
 ## Offen
 - Herkunftsnachweis (Signatur, erlaubte Herausgeber) – Entscheidung C10 im Entscheidungs-Delta.

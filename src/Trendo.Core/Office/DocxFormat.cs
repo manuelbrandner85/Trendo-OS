@@ -67,12 +67,21 @@ public static class DocxFormat
                     body.Append("<w:tbl><w:tblPr><w:tblStyle w:val=\"TableGrid\"/><w:tblW w:w=\"5000\" w:type=\"pct\"/><w:tblBorders>");
                     foreach (var side in new[] { "top", "left", "bottom", "right", "insideH", "insideV" }) body.Append($"<w:{side} w:val=\"single\" w:sz=\"4\" w:space=\"0\" w:color=\"808080\"/>");
                     body.Append("</w:tblBorders></w:tblPr><w:tblGrid>");
-                    for (var c = 0; c < t.Cols; c++) body.Append($"<w:gridCol w:w=\"{9000 / Math.Max(1, t.Cols)}\"/>");
+                    // T-0692: Spaltenbreiten, Zellen mit Zeichenformaten und verbundene Zellen (gridSpan / vMerge)
+                    var fr = t.Fractions(); int Wd(int c0, int n) => (int)Math.Round(9000 * fr.Skip(c0).Take(n).Sum());
+                    for (var c = 0; c < t.Cols; c++) body.Append($"<w:gridCol w:w=\"{Wd(c, 1)}\"/>");
                     body.Append("</w:tblGrid>");
-                    foreach (var row in t.Rows)
+                    for (var r = 0; r < t.Rows.Count; r++)
                     {
                         body.Append("<w:tr>");
-                        for (var c = 0; c < t.Cols; c++) body.Append($"<w:tc><w:tcPr><w:tcW w:w=\"{9000 / Math.Max(1, t.Cols)}\" w:type=\"dxa\"/></w:tcPr><w:p><w:r><w:t xml:space=\"preserve\">{Esc(c < row.Count ? row[c] : "")}</w:t></w:r></w:p></w:tc>");
+                        for (var c = 0; c < t.Cols;)
+                        {
+                            var an = t.Anchor(r, c); var (cs, rs) = t.SpanOf(an.Row, an.Col); cs = Math.Clamp(cs - (c - an.Col), 1, t.Cols - c);
+                            var cont = an.Row < r; // Fortsetzung einer nach unten verbundenen Zelle
+                            body.Append($"<w:tc><w:tcPr><w:tcW w:w=\"{Wd(c, cs)}\" w:type=\"dxa\"/>{(cs > 1 ? $"<w:gridSpan w:val=\"{cs}\"/>" : "")}{(cont ? "<w:vMerge/>" : rs > 1 ? "<w:vMerge w:val=\"restart\"/>" : "")}</w:tcPr>");
+                            body.Append(cont ? "<w:p/>" : ParaXml(t.CellPara(r, c), "", ctx)).Append("</w:tc>");
+                            c += cs;
+                        }
                         body.Append("</w:tr>");
                     }
                     body.Append("</w:tbl>");
@@ -385,8 +394,41 @@ public static class DocxFormat
             else if (el.Name == W + "tbl")
             {
                 var t = new Table();
+                // T-0692: Zellen mit Zeichenformaten, verbundene Zellen (gridSpan, vMerge) und Spaltenbreiten
+                var open = new Dictionary<int, (int Row, int Col)>(); // Spalte → Zelle, die gerade nach unten verbunden wird
                 foreach (var tr in el.Elements(W + "tr"))
-                    t.Rows.Add(tr.Elements(W + "tc").Select(tc => string.Join("\n", tc.Elements(W + "p").Select(p => string.Concat(p.Outermost(W + "t").Select(x => x.Value))))).ToList());
+                {
+                    var r = t.Rows.Count; var cells = new List<string>(); t.Rows.Add(cells);
+                    foreach (var tc in tr.Elements(W + "tc"))
+                    {
+                        var c = cells.Count; var pr = tc.Element(W + "tcPr");
+                        var span = int.TryParse((string?)pr?.Element(W + "gridSpan")?.Attribute(W + "val"), out var gs) ? Math.Clamp(gs, 1, 63) : 1;
+                        var vm = pr?.Element(W + "vMerge");
+                        if (vm is not null && (string?)vm.Attribute(W + "val") is not "restart" && open.TryGetValue(c, out var up) && t.Cells.TryGetValue(up, out var upFmt))
+                        {
+                            upFmt.RowSpan = r - up.Row + 1; // Fortsetzung: gehört zur Zelle darüber
+                            for (var k = 0; k < span; k++) cells.Add("");
+                            continue;
+                        }
+                        var tmp = new TextDoc();
+                        foreach (var cp in tc.Elements(W + "p")) { var before = tmp.Blocks.Count; ReadPara(cp, tmp, ctx); if (!tmp.Blocks.Skip(before).Any(x => x is Para)) tmp.Blocks.Add(new Para()); }
+                        var paras = tmp.Blocks.OfType<Para>().ToList(); while (paras.Count > 1 && paras[^1].Text.Length == 0) paras.RemoveAt(paras.Count - 1);
+                        var cell = new Para { Align = paras.FirstOrDefault()?.Align ?? Align.Left };
+                        for (var k = 0; k < paras.Count; k++) { if (k > 0) TextDoc.InsertAt(cell, cell.Text.Length, "\n"); TextDoc.InsertPara(cell, cell.Text.Length, paras[k]); }
+                        Table.PinComments(cell); cells.Add(""); t.SetCell(r, c, cell);
+                        for (var k = 1; k < span; k++) cells.Add("");
+                        open.Remove(c);
+                        if (span > 1 || vm is not null)
+                        {
+                            var f = t.Cells.TryGetValue((r, c), out var cf) ? cf : t.Cells[(r, c)] = new CellFmt();
+                            f.ColSpan = span; if (vm is not null) open[c] = (r, c);
+                        }
+                    }
+                }
+                t.Pad();
+                foreach (var k in t.Cells.Where(x => x.Value.IsPlain).Select(x => x.Key).ToList()) t.Cells.Remove(k);
+                var grid = el.Element(W + "tblGrid")?.Elements(W + "gridCol").Select(g => double.TryParse((string?)g.Attribute(W + "w"), NumberStyles.Float, CultureInfo.InvariantCulture, out var gw) ? gw : 0).ToList() ?? [];
+                if (grid.Count == t.Cols && grid.All(x => x > 0)) t.SetWidths(grid);
                 if (t.Rows.Count > 0) doc.Blocks.Add(t);
             }
             else if (el.Name == W + "sdt")

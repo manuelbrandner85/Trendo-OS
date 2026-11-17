@@ -50,92 +50,14 @@ public partial class MainWindow
         }
         PageModules["post"] = "SYS-09";
         MailAccountCfg = LoadMailAccount();
+        MailLoadCache();
         MailRules = LoadRules();
     }
 
     string PostDir { get { var d = Path.Combine(_core.DataRoot, "post"); Directory.CreateDirectory(d); return d; } }
     MailAccount? LoadMailAccount() { try { var f = Path.Combine(_core.DataRoot, "post", "konto.json"); return File.Exists(f) ? JsonSerializer.Deserialize<MailAccount>(File.ReadAllText(f)) : null; } catch (JsonException) { return null; } }
     List<MailRule> LoadRules() { try { var f = Path.Combine(_core.DataRoot, "post", "regeln.json"); return File.Exists(f) ? JsonSerializer.Deserialize<List<MailRule>>(File.ReadAllText(f)) ?? [] : []; } catch (JsonException) { return []; } }
-    void SaveRules() => File.WriteAllText(Path.Combine(PostDir, "regeln.json"), JsonSerializer.Serialize(MailRules));
-
-    // ---------- Öffentliche Wege (auch für Tests und die KI) ----------
-    /// <summary>Konto einrichten: Servereinstellungen werden aus der Adresse erraten; das Passwort kommt in den Geheimnisspeicher.</summary>
-    public MailAccount SetMailAccount(string email, string name, string? password, string? imapHost = null, string? smtpHost = null, int? smtpPort = null)
-    {
-        if (!MailCenter.ValidEmail(email)) throw new ArgumentException("Bitte eine gültige E-Mail-Adresse eintragen.");
-        var a = MailAccount.Guess(email, name);
-        if (imapHost is { Length: > 0 }) a = a with { ImapHost = imapHost.Trim() };
-        if (smtpHost is { Length: > 0 }) a = a with { SmtpHost = smtpHost.Trim() };
-        if (smtpPort is { } sp) a = a with { SmtpPort = sp, SmtpImplicitTls = sp == 465 };
-        MailAccountCfg = a;
-        File.WriteAllText(Path.Combine(PostDir, "konto.json"), JsonSerializer.Serialize(a));
-        if (password is { Length: > 0 }) _core.Secrets.Set(a.SecretKey, password);
-        _core.Audit.Append(Principal.LocalOwner.Name, "post.konto", a.Email);
-        return a;
-    }
-
-    /// <summary>O1: Posteingang abrufen – nur lesend (EXAMINE/PEEK), es wird nichts auf dem Server verändert.</summary>
-    public async Task<bool> FetchInbox()
-    {
-        if (MailAccountCfg is not { } a) { _pimMsg = "Erst das Konto einrichten."; return false; }
-        var pw = _core.Secrets.Get(a.SecretKey);
-        if (pw is null && ImapStreamOverride is null) { _pimMsg = "Das Passwort fehlt."; return false; }
-        _pimMsg = "Posteingang wird abgerufen …";
-        try
-        {
-            ImapSession imap;
-            if (ImapStreamOverride is { } open) { imap = new ImapSession(await open()); await imap.GreetingAsync(); await imap.LoginAsync(a.User, pw ?? ""); }
-            else imap = await MailNet.OpenImap(a, pw!);
-            var n = await imap.ExamineAsync();
-            Inbox = await imap.HeadersAsync(n, 50);
-            await imap.LogoutAsync();
-            _pimMsg = $"{Inbox.Count} Nachrichten geladen (nur gelesen – auf dem Server ändert sich nichts).";
-            _core.Audit.Append(Principal.LocalOwner.Name, "post.abruf", $"{Inbox.Count}");
-            return true;
-        }
-        catch (Exception ex) when (ex is IOException or InvalidOperationException or System.Net.Sockets.SocketException or System.Security.Authentication.AuthenticationException)
-        { _pimMsg = "Abrufen ging nicht: " + Trendo.Core.FriendlyError.Say(ex); return false; }
-    }
-
-    public async Task OpenInboxMail(long uid)
-    {
-        if (MailAccountCfg is not { } a) return;
-        try
-        {
-            ImapSession imap;
-            if (ImapStreamOverride is { } open) { imap = new ImapSession(await open()); await imap.GreetingAsync(); await imap.LoginAsync(a.User, _core.Secrets.Get(a.SecretKey) ?? ""); }
-            else imap = await MailNet.OpenImap(a, _core.Secrets.Get(a.SecretKey) ?? "");
-            await imap.ExamineAsync();
-            InboxOpen = await imap.MessageAsync(uid); InboxOpenUid = uid;
-            await imap.LogoutAsync();
-        }
-        catch (Exception ex) when (ex is IOException or InvalidOperationException or System.Net.Sockets.SocketException or System.Security.Authentication.AuthenticationException) { _pimMsg = "Öffnen ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
-    }
-
-    /// <summary>O2: Senden vorbereiten – die Nachricht geht erst nach „Ja, jetzt senden“ raus.</summary>
-    public void AskSend(MailDraft d)
-    {
-        var problems = MailCenter.Check(d);
-        if (problems.Any(x => x.Contains("fehlt") || x.Contains("gültige"))) { _pimMsg = string.Join(" ", problems); return; }
-        if (MailAccountCfg is null) { _pimMsg = "Erst das Konto einrichten."; return; }
-        _sendDraft = d; SendConfirmOpen = true;
-    }
-
-    public async Task ConfirmSend(bool yes)
-    {
-        SendConfirmOpen = false;
-        if (!yes || MailAccountCfg is not { } a) { _pimMsg = "Nicht gesendet."; return; }
-        try
-        {
-            if (SendOverride is { } fake) await fake(_sendDraft);
-            else await MailNet.SendAsync(a, _core.Secrets.Get(a.SecretKey) ?? throw new InvalidOperationException("Das Passwort fehlt."), _sendDraft);
-            _pimMsg = $"Gesendet an {_sendDraft.To}.";
-            _core.Audit.Append(Principal.LocalOwner.Name, "post.gesendet", $"{_sendDraft.To} · {_sendDraft.Subject}");
-            MailBoxes.AddSent(_sendDraft, _draftId); _draftId = null;
-            _sendDraft = new("", "", ""); _composeOpen = false;
-        }
-        catch (Exception ex) when (ex is IOException or InvalidOperationException or System.Net.Sockets.SocketException or System.Security.Authentication.AuthenticationException) { _pimMsg = "Senden ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
-    }
+    void SaveRules() => AtomicFile.WriteAllText(Path.Combine(PostDir, "regeln.json"), JsonSerializer.Serialize(MailRules)); // T-0714: atomar
 
     /// <summary>O3: Erinnerungen aus dem Kalender (alle 30 Sekunden geprüft) als Benachrichtigung.</summary>
     public List<(CalEvent Event, DateTime Start)> CheckCalendarReminders(DateTime now)
@@ -146,217 +68,21 @@ public partial class MainWindow
         return due;
     }
 
-    // ---------- Posteingang ----------
-    Control InboxView()
-    {
-        var sp = new StackPanel { Spacing = 8 };
-        var a = MailAccountCfg;
-        // Konto
-        var email = new TextBox { Name = "inbox-email", Text = a?.Email ?? "", PlaceholderText = "E-Mail-Adresse", Width = 240 };
-        var name = new TextBox { Name = "inbox-name", Text = a?.Name ?? "", PlaceholderText = "Dein Name (Absender)", Width = 180 };
-        var pw = new TextBox { Name = "inbox-password", PasswordChar = '•', Text = _pwDraft, PlaceholderText = a is not null && _core.Secrets.Get(a.SecretKey) is not null ? "Passwort gespeichert" : "Passwort / App-Passwort", Width = 200 };
-        pw.TextChanged += (_, _) => _pwDraft = pw.Text ?? "";
-        var save = new Button { Name = "inbox-save", Content = "Konto speichern" };
-        save.Click += (_, _) => { try { SetMailAccount(email.Text ?? "", name.Text ?? "", _pwDraft); _pwDraft = ""; _pimMsg = $"Konto gespeichert ({MailAccountCfg!.ImapHost} / {MailAccountCfg.SmtpHost})."; } catch (ArgumentException ex) { _pimMsg = ex.Message; } Show("posteingang"); };
-        var fetch = new Button { Name = "inbox-fetch", Content = "Abrufen", Background = Accent, IsEnabled = a is not null };
-        fetch.Click += async (_, _) => { await FetchInbox(); Show("posteingang"); };
-        var accountBox = new StackPanel { Spacing = 6, Children = { H("Konto", 14), new WrapPanel { Children = { email, new Border { Width = 4 }, name, new Border { Width = 4 }, pw, new Border { Width = 4 }, save, new Border { Width = 4 }, fetch } },
-            P("Trendo liest nur – auf dem Server wird nichts gelöscht oder als gelesen markiert. Bei Gmail, iCloud und Yahoo brauchst du ein App-Passwort. Das Passwort wird geschützt gespeichert.", null, 12) } };
-        if (a is null) sp.Children.Add(Card(accountBox));
-        else sp.Children.Add(new Expander { Name = "inbox-account", Header = $"Konto: {a.Email}", IsExpanded = _inboxAccountOpen, Content = accountBox, HorizontalAlignment = HorizontalAlignment.Stretch });
-        // U1: drei Spalten – Ordner · Liste · Lesebereich
-        var active = MailRules.Where(r => r.Active).ToList();
-        var folders = new StackPanel { Name = "inbox-folders", Spacing = 2 };
-        Button Folder(string name, string label, bool on, Action go)
-        {
-            var b = new Button { Name = name, Content = label, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(10, 6), CornerRadius = new CornerRadius(6),
-                Background = on ? Accent : Brushes.Transparent, Foreground = Text, FontSize = 12.5 };
-            b.Click += (_, _) => { go(); Show("posteingang"); }; return b;
-        }
-        folders.Children.Add(Folder("inbox-folder-alle", $"Posteingang ({Inbox.Count})", _inboxFolder is null, () => _inboxFolder = null));
-        folders.Children.Add(Folder("inbox-folder-ungelesen", $"Ungelesen ({Inbox.Count(h => !h.Seen)})", _inboxFolder == "\u0001", () => _inboxFolder = "\u0001"));
-        folders.Children.Add(Folder("inbox-folder-entwuerfe", $"Entwürfe ({MailBoxes.Drafts.Count})", _inboxFolder == "\u0003", () => { _inboxFolder = "\u0003"; _sentOpen = null; }));
-        folders.Children.Add(Folder("inbox-folder-gesendet", $"Gesendet ({MailBoxes.Sent.Count})", _inboxFolder == "\u0004", () => { _inboxFolder = "\u0004"; _sentOpen = null; }));
-        folders.Children.Add(Folder("inbox-folder-merker", $"Gemerkt ({Inbox.Count(h => _settings.MailFlagged.Contains(h.Uid))})", _inboxFolder == "\u0002", () => _inboxFolder = "\u0002"));
-        foreach (var (cat, k) in active.Select(r => r.Category).Distinct().Select((c, k) => (c, k)))
-            folders.Children.Add(Folder($"inbox-folder-{k}", $"{cat} ({Inbox.Count(h => active.FirstOrDefault(r => r.Matches(h))?.Category == cat)})", _inboxFolder == cat, () => _inboxFolder = cat));
-        var threads = new CheckBox { Name = "inbox-threads", Content = "Als Unterhaltungen", IsChecked = _inboxThreads, Foreground = Text, Margin = new Thickness(4, 6, 0, 0) };
-        threads.IsCheckedChanged += (_, _) => { _inboxThreads = threads.IsChecked == true; Show("posteingang"); };
-        folders.Children.Add(threads);
-        folders.Children.Add(new Border { Height = 10 });
-        var compose = new Button { Name = "inbox-new", Content = "Neue Nachricht", Background = Accent, IsEnabled = a is not null, HorizontalAlignment = HorizontalAlignment.Stretch };
-        compose.Click += (_, _) => MailCompose(new("", "", ""));
-        folders.Children.Add(compose);
-        folders.Children.Add(Folder("inbox-go-kalender", "Kalender", false, () => { }));
-        ((Button)folders.Children[^1]).Click += (_, _) => Show("kalender");
-        folders.Children.Add(Folder("inbox-go-aufgaben", "Aufgaben", false, () => { }));
-        ((Button)folders.Children[^1]).Click += (_, _) => Show("aufgaben");
-
-        var list = new StackPanel { Name = "inbox-list", Spacing = 2 };
-        var search = new TextBox { Name = "inbox-search", Text = _inboxSearch, PlaceholderText = "Suchen: Absender oder Betreff", Margin = new Thickness(0, 0, 0, 4) };
-        search.KeyUp += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter || (search.Text ?? "").Length == 0) { _inboxSearch = search.Text ?? ""; Show("posteingang"); } };
-        list.Children.Add(search);
-        var shown = 0;
-        var local = _inboxFolder == "\u0003" ? MailBoxes.Drafts : _inboxFolder == "\u0004" ? MailBoxes.Sent : null;
-        if (local is not null)
-        {
-            for (var i = 0; i < local.Count; i++)
-            {
-                var st = local[i]; var isDraft = _inboxFolder == "\u0003";
-                if (_inboxSearch.Trim() is { Length: > 0 } lq && !(st.Subject.Contains(lq, StringComparison.CurrentCultureIgnoreCase) || st.To.Contains(lq, StringComparison.CurrentCultureIgnoreCase))) continue;
-                shown++;
-                var lb = new Button { Name = $"inbox-local-{i}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(8, 5), Background = _sentOpen?.Id == st.Id ? Brush.Parse("#33C9A227") : Brushes.Transparent,
-                    Content = new StackPanel { Children = {
-                        new TextBlock { Text = st.Subject.Length > 0 ? st.Subject : "(ohne Betreff)", Foreground = Text, TextTrimming = TextTrimming.CharacterEllipsis },
-                        new TextBlock { Text = $"An {(st.To.Length > 0 ? st.To : "–")} · {st.At.LocalDateTime.ToString("dd.MM. HH:mm", De)}", Foreground = Muted, FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis } } } };
-                lb.Click += (_, _) => { if (isDraft) { _draftId = st.Id; MailCompose(new MailDraft(st.To, st.Subject, st.Body, st.Cc), keepDraft: true); } else { _sentOpen = st; _composeOpen = false; InboxOpen = null; Show("posteingang"); } };
-                list.Children.Add(lb);
-            }
-        }
-        var threadOf = _inboxThreads && local is null ? MailFolders.Threads(Inbox).ToDictionary(t => t.Mails[0].Uid, t => t.Mails.Count) : null;
-        for (var i = 0; i < Inbox.Count && local is null; i++)
-        {
-            var h = Inbox[i]; var uid = h.Uid;
-            if (threadOf is not null && !threadOf.ContainsKey(uid)) continue; // Unterhaltung: nur die neueste zeigen
-            var cat = active.FirstOrDefault(r => r.Matches(h))?.Category;
-            if (_inboxFolder == "\u0001" ? h.Seen : _inboxFolder == "\u0002" ? !_settings.MailFlagged.Contains(h.Uid) : _inboxFolder is not null && cat != _inboxFolder) continue;
-            if (_inboxSearch.Trim() is { Length: > 0 } q && !(h.Subject.Contains(q, StringComparison.CurrentCultureIgnoreCase) || h.From.Contains(q, StringComparison.CurrentCultureIgnoreCase))) continue;
-            shown++;
-            var b = new Button { Name = $"inbox-item-{i}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(8, 5), Background = InboxOpenUid == uid ? Accent : Brushes.Transparent,
-                Content = new StackPanel { Children = {
-                    new TextBlock { Text = (_settings.MailFlagged.Contains(uid) ? "★ " : "") + (h.Subject.Length > 0 ? h.Subject : "(ohne Betreff)") + (threadOf?.GetValueOrDefault(uid) is > 1 and var tc ? $"  ({tc})" : ""), Foreground = Text, FontWeight = h.Seen ? FontWeight.Normal : FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
-                    new TextBlock { Text = $"{h.From} · {(h.Date is { } d ? d.LocalDateTime.ToString("dd.MM. HH:mm", De) : "")}{(cat is null ? "" : $"  [{cat}]")}", Foreground = Muted, FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis } } } };
-            b.Click += async (_, _) => { await OpenInboxMail(uid); InboxOpenUid = uid; _composeOpen = false; _sentOpen = null; Show("posteingang"); };
-            list.Children.Add(b);
-        }
-        if (Inbox.Count == 0) list.Children.Add(EmptyState("inbox-empty", "📬", "Noch keine Nachrichten geladen", "Konto eintragen und „Abrufen“ drücken."));
-        else if (shown == 0) list.Children.Add(P(_inboxSearch.Length > 0 ? $"Nichts gefunden für „{_inboxSearch}“." : "In diesem Ordner ist nichts.", Text));
-
-        var read = new StackPanel { Spacing = 6 };
-        if (_sentOpen is { } so && !_composeOpen && !SendConfirmOpen)
-        {
-            read.Children.Add(new TextBlock { Name = "inbox-subject", Text = so.Subject, Foreground = Text, FontSize = 16, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
-            read.Children.Add(P($"Gesendet an {so.To}{(so.Cc.Length > 0 ? $", Kopie an {so.Cc}" : "")} · {so.At.LocalDateTime.ToString("dd.MM.yyyy HH:mm", De)}", null, 12));
-            read.Children.Add(new SelectableTextBlock { Name = "inbox-body", Text = so.Body, Foreground = Text, TextWrapping = TextWrapping.Wrap, FontSize = 13 });
-            read.Children.Add(Act("inbox-resend", "Als neue Nachricht verwenden", () => MailCompose(new MailDraft(so.To, so.Subject, so.Body, so.Cc))));
-        }
-        else if (InboxOpen is { } m && !_composeOpen && !SendConfirmOpen)
-        {
-            read.Children.Add(new TextBlock { Name = "inbox-subject", Text = m.Subject, Foreground = Text, FontSize = 16, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
-            read.Children.Add(P($"Von {m.From} · {m.Date}", null, 12));
-            // F2: Termin aus dem Text erkennen
-            var reference = DateTimeOffset.TryParse(m.Date, CultureInfo.InvariantCulture, DateTimeStyles.None, out var md) ? md.LocalDateTime : DateTime.Now;
-            var hints = MailDates.Find(m.Subject + "\n" + m.Body, reference).Take(3).ToList();
-            if (hints.Count > 0)
-            {
-                var hw = new WrapPanel { Name = "inbox-dates" };
-                for (var k = 0; k < hints.Count; k++)
-                {
-                    var hint = hints[k];
-                    var hb = new Button { Name = $"inbox-cal-{k}", Content = $"{(hint.HasTime ? hint.Start.ToString("ddd dd.MM.yyyy, HH:mm", De) : hint.Start.ToString("ddd dd.MM.yyyy", De))} als Termin", FontSize = 12, Margin = new Thickness(0, 0, 6, 4) };
-                    ToolTip.SetTip(hb, $"Gefunden: „{hint.Text}“");
-                    hb.Click += (_, _) =>
-                    {
-                        Cal.Add(new CalEvent(Guid.NewGuid().ToString("N"), hint.Start, hint.HasTime ? hint.Start.AddHours(1) : hint.Start.AddDays(1), m.Subject.Length > 0 ? m.Subject : "Termin", "", "Aus der E-Mail von " + m.From, AllDay: !hint.HasTime));
-                        _pimMsg = $"Termin eingetragen: {hint.Start.ToString(hint.HasTime ? "dddd, dd.MM. HH:mm" : "dddd, dd.MM.", De)}."; Show("posteingang");
-                    };
-                    hw.Children.Add(hb);
-                }
-                read.Children.Add(new Border { Background = Brush.Parse("#22C9A227"), CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 6), Child = new StackPanel { Spacing = 4, Children = { P("Termin in dieser Nachricht gefunden – bitte prüfen:", Text, 12), hw } } });
-            }
-            read.Children.Add(new SelectableTextBlock { Name = "inbox-body", Text = m.Body, Foreground = Text, TextWrapping = TextWrapping.Wrap, FontSize = 13 });
-            // Anhänge: ansehen und speichern – nie automatisch öffnen
-            if (m.Attachments.Count > 0)
-            {
-                var att = new StackPanel { Name = "inbox-attachments", Spacing = 3, Children = { P($"{m.Attachments.Count} Anhang/Anhänge", Text, 12) } };
-                for (var k = 0; k < m.Attachments.Count; k++)
-                {
-                    var at = m.Attachments[k];
-                    var risky = Browsers.Risky(at.Name);
-                    var saveAtt = Act($"inbox-att-{k}", "Speichern", () => MailSaveAttachment(at), !risky);
-                    att.Children.Add(new WrapPanel { Children = { P($"{at.Name} · {(at.Size >= 1 << 20 ? $"{at.Size / (double)(1 << 20):0.0} MB" : $"{Math.Max(1, at.Size / 1024)} KB")}{(risky ? " · ⚠ Programmdatei – nur speichern, wenn du dem Absender vertraust" : "")}", risky ? Brush.Parse("#FACC15") : null, 11.5), new Border { Width = 6 }, saveAtt } });
-                }
-                read.Children.Add(new Border { Background = Brush.Parse("#14FFFFFF"), CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 6), Child = att });
-            }
-            var reply = new Button { Name = "inbox-reply", Content = "Antworten", Background = Accent };
-            var from = System.Text.RegularExpressions.Regex.Match(m.From, @"<([^>]+)>") is { Success: true } mm ? mm.Groups[1].Value : m.From;
-            reply.Click += (_, _) => MailCompose(new MailDraft(from, MailFolders.ReplySubject(m.Subject, false), MailFolders.Quote(m)));
-            var replyAll = new Button { Name = "inbox-reply-all", Content = "Allen antworten" };
-            replyAll.Click += (_, _) => { var (rt, rc) = MailFolders.ReplyAll(m, a?.Email ?? ""); MailCompose(new MailDraft(rt.Length > 0 ? rt : from, MailFolders.ReplySubject(m.Subject, false), MailFolders.Quote(m), rc)); };
-            var uidOpen = InboxOpenUid ?? 0; var flagged = _settings.MailFlagged.Contains(uidOpen);
-            var flag = new Button { Name = "inbox-flag", Content = flagged ? "Gemerkt" : "Merken" };
-            flag.Click += (_, _) => { if (flagged) _settings.MailFlagged.Remove(uidOpen); else _settings.MailFlagged.Add(uidOpen); SaveSettings(); Show("posteingang"); };
-            var fwd = new Button { Name = "inbox-forward", Content = "Weiterleiten" };
-            fwd.Click += (_, _) => { _sendDraft = new MailDraft("", MailFolders.ReplySubject(m.Subject, true), $"\n\n---------- Weitergeleitete Nachricht ----------\nVon: {m.From}\nDatum: {m.Date}\nBetreff: {m.Subject}\n\n{m.Body}"); _composeOpen = true; Show("posteingang"); };
-            var task = new Button { Name = "inbox-task", Content = "Als Aufgabe" };
-            task.Click += (_, _) =>
-            {
-                var due = MailDates.Find(m.Subject + "\n" + m.Body, reference).Select(x => (DateTime?)x.Start.Date).FirstOrDefault();
-                var title = System.Text.RegularExpressions.Regex.Replace(m.Subject, @"^(re|aw|fw|wg):\s*", "", System.Text.RegularExpressions.RegexOptions.IgnoreCase).Trim();
-                Cal.AddTodo(new TodoItem(Guid.NewGuid().ToString("N"), title.Length > 0 ? title : "E-Mail beantworten", due, false, 2, "E-Mail", Notes: $"Aus der E-Mail von {m.From}"));
-                _pimMsg = $"„{title}“ steht in den Aufgaben{(due is { } dd ? $", fällig {dd:dd.MM.}" : "")}."; Show("posteingang");
-            };
-            read.Children.Add(new WrapPanel { Children = { reply, new Border { Width = 6 }, replyAll, new Border { Width = 6 }, fwd, new Border { Width = 6 }, task, new Border { Width = 6 }, flag } });
-            read.Children.Add(P("Tasten: R antworten · Umschalt+R allen antworten · F weiterleiten · N neu · J/K nächste/vorige", Muted, 10.5));
-        }
-        else if (_composeOpen || SendConfirmOpen)
-        {
-            // Schreiben mit Bestätigung
-            var to = new TextBox { Name = "send-to", Text = _sendDraft.To, PlaceholderText = "An" };
-            var cc = new TextBox { Name = "send-cc", Text = _sendDraft.Cc, PlaceholderText = "Kopie an (optional)" };
-            var subj = new TextBox { Name = "send-subject", Text = _sendDraft.Subject, PlaceholderText = "Betreff" };
-            var body = new TextBox { Name = "send-body", Text = _sendDraft.Body, PlaceholderText = "Nachricht", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 180 };
-            var send = new Button { Name = "send-ask", Content = "Senden …", Background = Accent, IsEnabled = a is not null };
-            send.Click += (_, _) => { AskSend(new MailDraft(to.Text ?? "", subj.Text ?? "", body.Text ?? "", cc.Text ?? "")); Show("posteingang"); };
-            var keep = new Button { Name = "send-draft", Content = "Als Entwurf speichern" };
-            keep.Click += (_, _) => { var dd = MailBoxes.SaveDraft(new MailDraft(to.Text ?? "", subj.Text ?? "", body.Text ?? "", cc.Text ?? ""), _draftId); _draftId = null; _composeOpen = false; _sendDraft = new("", "", ""); _pimMsg = dd is null ? "Leerer Entwurf – nichts gespeichert." : $"Entwurf „{(dd.Subject.Length > 0 ? dd.Subject : "(ohne Betreff)")}“ gespeichert."; Show("posteingang"); };
-            var cancel = new Button { Name = "send-discard", Content = "Verwerfen" };
-            cancel.Click += (_, _) => { if (_draftId is { } did) MailBoxes.DeleteDraft(did); _draftId = null; _composeOpen = false; _sendDraft = new("", "", ""); Show("posteingang"); };
-            read.Children.Add(H(_draftId is null ? "Neue Nachricht" : "Entwurf bearbeiten", 15)); read.Children.Add(to); read.Children.Add(cc); read.Children.Add(subj); read.Children.Add(body);
-            read.Children.Add(new WrapPanel { Children = { send, new Border { Width = 6 }, keep, new Border { Width = 6 }, cancel } });
-            if (SendConfirmOpen)
-            {
-                var yes = new Button { Name = "send-confirm-yes", Content = "Ja, jetzt senden", Background = Accent }; yes.Click += async (_, _) => { await ConfirmSend(true); Show("posteingang"); };
-                var no = new Button { Name = "send-confirm-no", Content = "Abbrechen" }; no.Click += async (_, _) => { await ConfirmSend(false); Show("posteingang"); };
-                read.Children.Add(new Border { Name = "send-confirm", Background = Brush.Parse("#33F59E0B"), CornerRadius = new CornerRadius(8), Padding = new Thickness(10), Child = new StackPanel { Spacing = 6, Children = {
-                    new TextBlock { Text = $"An {_sendDraft.To}: „{_sendDraft.Subject}“ jetzt wirklich senden?", Foreground = Text, TextWrapping = TextWrapping.Wrap, FontWeight = FontWeight.SemiBold },
-                    new WrapPanel { Children = { yes, new Border { Width = 6 }, no } } } } });
-            }
-        }
-        else read.Children.Add(EmptyState("inbox-read-empty", "✉", "Keine Nachricht ausgewählt", "Links eine Nachricht anklicken oder eine neue schreiben."));
-        sp.Children.Add(new Grid { Name = "inbox-columns", ColumnDefinitions = new ColumnDefinitions("200,8,380,8,*"), Children = {
-            Card(folders), Pos(Card(new ScrollViewer { Content = list, MaxHeight = 560 }), 2), Pos(Card(new ScrollViewer { Content = read, MaxHeight = 560 }), 4) } });
-        // O6 Regelvorschläge
-        var rules = new StackPanel { Name = "inbox-rules", Spacing = 4, Children = { H("Sortier-Regeln (Vorschläge)", 14), P("Regeln sortieren nur in Trendos Ansicht, nie auf dem Server – und erst, wenn du sie freigibst.", null, 12) } };
-        var suggestBtn = new Button { Name = "inbox-suggest", Content = "Vorschläge aus dem Posteingang", IsEnabled = Inbox.Count > 0 };
-        suggestBtn.Click += (_, _) => { foreach (var r in MailRule.Suggest(Inbox)) if (!MailRules.Any(x => x.FromContains == r.FromContains)) MailRules.Add(r); SaveRules(); Show("posteingang"); };
-        rules.Children.Add(suggestBtn);
-        for (var i = 0; i < MailRules.Count; i++)
-        {
-            var r = MailRules[i]; var idx = i;
-            var tg = new Button { Name = $"inbox-rule-{i}", Content = r.Active ? "Aktiv – ausschalten" : "Freigeben", Background = r.Active ? Accent : null };
-            tg.Click += (_, _) => { MailRules[idx] = r with { Active = !r.Active }; SaveRules(); _core.Audit.Append(Principal.LocalOwner.Name, "post.regel", $"{r.Name} aktiv={!r.Active}"); Show("posteingang"); };
-            var del = new Button { Content = "Entfernen" }; del.Click += (_, _) => { MailRules.RemoveAt(idx); SaveRules(); Show("posteingang"); };
-            rules.Children.Add(Row(P($"{r.Name}: würde {Inbox.Count(r.Matches)} Nachricht(en) als „{r.Category}“ markieren", null, 12.5), new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, Children = { tg, del } }));
-        }
-        sp.Children.Add(Card(rules));
-        if (_pimMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "pim-msg", Text = _pimMsg, Foreground = Muted, FontSize = 13, TextWrapping = TextWrapping.Wrap });
-        sp.KeyDown += (_, e) => { if (e.Source is not TextBox && MailKey(e.Key, e.KeyModifiers)) e.Handled = true; };
-        return SysPage("Posteingang", sp);
-    }
-
     // ---------- Kalender ----------
     Control CalendarView()
     {
         var sp = new StackPanel { Spacing = 8 };
         var nav = new WrapPanel();
-        void Btn(string name, string label, Action a, bool on = false) { var b = new Button { Name = name, Content = label, Margin = new Thickness(0, 0, 4, 0) }; if (on) b.Background = Accent; /* ohne eigenen Hintergrund (null) wäre der Knopf nur auf der Schrift anklickbar */ b.Click += (_, _) => { a(); Show("kalender"); }; nav.Children.Add(b); }
-        Btn("cal-prev", "◀", () => CalDay = CalMode switch { "tag" => CalDay.AddDays(-1), "woche" => CalDay.AddDays(-7), _ => CalDay.AddMonths(-1) });
+        void Btn(string name, string label, Action a, bool on = false, string? tip = null) { var b = new Button { Name = name, Content = label, Margin = new Thickness(0, 0, 4, 0) }; if (tip is not null) SimpleWords.Named(b, tip); if (on) b.Background = Accent; /* ohne eigenen Hintergrund (null) wäre der Knopf nur auf der Schrift anklickbar */ b.Click += (_, _) => { a(); Show("kalender"); }; nav.Children.Add(b); }
+        // V-05 (T-0684): die Pfeile sagen, wohin sie blättern – nicht „Abspielen“
+        Btn("cal-prev", "◀", () => CalDay = CalMode switch { "tag" => CalDay.AddDays(-1), "woche" => CalDay.AddDays(-7), _ => CalDay.AddMonths(-1) }, tip: CalMode switch { "tag" => "Voriger Tag", "woche" => "Vorige Woche", _ => "Voriger Monat" });
         Btn("cal-today", "Heute", () => CalDay = DateTime.Today);
-        Btn("cal-next", "▶", () => CalDay = CalMode switch { "tag" => CalDay.AddDays(1), "woche" => CalDay.AddDays(7), _ => CalDay.AddMonths(1) });
+        Btn("cal-next", "▶", () => CalDay = CalMode switch { "tag" => CalDay.AddDays(1), "woche" => CalDay.AddDays(7), _ => CalDay.AddMonths(1) }, tip: CalMode switch { "tag" => "Nächster Tag", "woche" => "Nächste Woche", _ => "Nächster Monat" });
         foreach (var (m, l) in new[] { ("tag", "Tag"), ("woche", "Woche"), ("monat", "Monat") }) { var mm = m; Btn("cal-mode-" + m, l, () => CalMode = mm, CalMode == m); }
+        var calLink = CalLink; // T-0717: Rückgängig/Wiederholen der Hülle (100 Schritte)
         Btn("cal-undo", "Rückgängig", CalUndo);
-        if (_calUndo.Count == 0) ((Button)nav.Children[^1]).IsEnabled = false;
+        if (!calLink.Link.CanUndo) ((Button)nav.Children[^1]).IsEnabled = false;
+        nav.Children.Add(ItemRedoButton(calLink, CalRedo, "kalender"));
         var title = CalMode switch { "tag" => CalDay.ToString("dddd, d. MMMM yyyy", De), "woche" => $"Woche {ISOWeek.GetWeekOfYear(CalDay)} · {Monday(CalDay):d. MMM} – {Monday(CalDay).AddDays(6):d. MMM yyyy}", _ => CalDay.ToString("MMMM yyyy", De) };
         sp.Children.Add(new DockPanel { Children = { nav, new TextBlock { Name = "cal-title", Text = title, Foreground = Text, FontSize = 18, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0) } } });
         if (_pimMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "cal-msg", Text = _pimMsg, Foreground = Muted, FontSize = 13, TextWrapping = TextWrapping.Wrap });
@@ -366,7 +92,7 @@ public partial class MainWindow
         var split = new Grid { ColumnDefinitions = new ColumnDefinitions("*,12,330") };
         split.Children.Add(view); Grid.SetColumn(side, 2); split.Children.Add(side);
         sp.Children.Add(split);
-        sp.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Z && e.KeyModifiers == Avalonia.Input.KeyModifiers.Control) { CalUndo(); Show("kalender"); e.Handled = true; } }; // Strg+Z
+        ItemKeys(sp, CalUndo, CalRedo, () => Show("kalender")); // Strg+Z, Strg+Y
         return SysPage("Kalender", sp);
     }
 
@@ -401,7 +127,10 @@ public partial class MainWindow
         var occ = Cal.Occurrences(start, start.AddDays(42));
         var g = new Grid { Name = "cal-month", ColumnDefinitions = new ColumnDefinitions("*,*,*,*,*,*,*"), RowDefinitions = new RowDefinitions("Auto,*,*,*,*,*,*") };
         var days = new[] { "Mo", "Di", "Mi", "Do", "Fr", "Sa", "So" };
-        for (var c = 0; c < 7; c++) { var h = new TextBlock { Text = days[c], Foreground = Muted, FontSize = 12, HorizontalAlignment = HorizontalAlignment.Center }; Grid.SetColumn(h, c); g.Children.Add(h); }
+        // V-21 (T-0709): Kalender mit Tageslinien – Wochentag steht über der Tageszahl (links bündig), jede Zelle hat sichtbare Linien wie in jedem Kalenderprogramm
+        var line = Brush.Parse("#33FFFFFF");
+        g.Children.Add(new Border { Name = "cal-month-frame", BorderBrush = line, BorderThickness = new Thickness(1, 1, 0, 0), [Grid.RowProperty] = 1, [Grid.RowSpanProperty] = 6, [Grid.ColumnSpanProperty] = 7, IsHitTestVisible = false });
+        for (var c = 0; c < 7; c++) { var h = new TextBlock { Text = days[c], Foreground = Muted, FontSize = 12, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(5, 0, 0, 4) }; Grid.SetColumn(h, c); g.Children.Add(h); }
         var k = 0;
         for (var i = 0; i < 42; i++)
         {
@@ -409,7 +138,7 @@ public partial class MainWindow
             var cell = new StackPanel { Spacing = 1, Children = { new TextBlock { Text = d.Day.ToString(De), FontSize = 12, FontWeight = d == DateTime.Today ? FontWeight.Bold : FontWeight.Normal, Foreground = d.Month == CalDay.Month ? Text : Muted } } };
             foreach (var o in occ.Where(o => o.Start.Date <= d && o.End > d).Take(3)) cell.Children.Add(EventChip(o, k++));
             var more = occ.Count(o => o.Start.Date <= d && o.End > d) - 3; if (more > 0) cell.Children.Add(new TextBlock { Text = $"+{more} weitere", FontSize = 11, Foreground = Muted });
-            var border = new Border { Name = $"cal-cell-{i}", Tag = d, Child = cell, MinHeight = 86, Padding = new Thickness(4), BorderBrush = Edge, BorderThickness = new Thickness(0.5), Background = d == DateTime.Today ? Brush.Parse("#22C9A227") : Brushes.Transparent };
+            var border = new Border { Name = $"cal-cell-{i}", Tag = d, Child = cell, MinHeight = 86, Padding = new Thickness(4), BorderBrush = line, BorderThickness = new Thickness(0, 0, 1, 1), Background = d == DateTime.Today ? Brush.Parse("#22C9A227") : Brushes.Transparent };
             var day = d; border.PointerPressed += (_, ev) => { if (ev.ClickCount == 2) { CalDay = day; CalMode = "tag"; Show("kalender"); } };
             Grid.SetRow(border, 1 + i / 7); Grid.SetColumn(border, i % 7); g.Children.Add(border);
         }
@@ -419,25 +148,20 @@ public partial class MainWindow
     // ---------- Zeitachse (Woche, Tag): ziehen, Dauer ändern, neu anlegen ----------
     public string? CalSelected { get; set; }
     private bool _calDragged;
-    private readonly List<(string Uid, CalEvent? Before)> _calUndo = [];
     public CalTimeGrid? CalGridForTests { get; private set; }
 
     /// <summary>Kalender-Änderung mit Rückgängig: vorher merken, ändern, melden.</summary>
     void CalChange(string uid, Func<CalEvent> change, string msg)
     {
         var before = Cal.Get(uid);
-        try { var n = change(); _calUndo.Add((n.Uid, before)); if (_calUndo.Count > 50) _calUndo.RemoveAt(0); CalSelected = n.Uid; _pimMsg = msg; }
+        try { var n = change(); Items(CalLink).Record(msg.Length > 0 ? msg : "Termin geändert", n.Uid, Node(before), Node(Cal.Get(n.Uid))); CalSelected = n.Uid; _pimMsg = msg; } // T-0717: Rückgängig der Hülle
         catch (InvalidOperationException ex) { _pimMsg = ex.Message; }
         Show("kalender");
     }
 
-    public void CalUndo()
-    {
-        if (_calUndo.Count == 0) { _pimMsg = "Es gibt nichts rückgängig zu machen."; return; }
-        var (uid, before) = _calUndo[^1]; _calUndo.RemoveAt(_calUndo.Count - 1);
-        if (before is null) { Cal.Delete(uid); CalSelected = null; } else { Cal.Add(before); CalSelected = uid; }
-        _pimMsg = "Rückgängig gemacht.";
-    }
+    /// <summary>T-0717: Rückgängig/Wiederholen der Hülle (100 Schritte, vorher eigener Stapel mit 50 ohne Wiederholen).</summary>
+    public void CalUndo() { ItemStep(CalLink, true, out var m); _pimMsg = m; }
+    public void CalRedo() { ItemStep(CalLink, false, out var m); _pimMsg = m; }
 
     Control CalTimeView(DateTime first, int days, string name)
     {
@@ -512,7 +236,7 @@ public partial class MainWindow
             CalDay = s0.Date; CalChange(e.Uid, () => { Cal.Add(n); return n; }, $"„{n.Title}“ gespeichert.");
         };
         var del = new Button { Name = "cal-edit-delete", Content = "Löschen" };
-        del.Click += (_, _) => { var before = Cal.Get(e.Uid); Cal.Delete(e.Uid); if (before is not null) _calUndo.Add((e.Uid, before)); CalSelected = null; _pimMsg = $"„{e.Title}“ gelöscht – Rückgängig holt ihn zurück."; Show("kalender"); };
+        del.Click += (_, _) => { var before = Cal.Get(e.Uid); Cal.Delete(e.Uid); if (before is not null) Items(CalLink).Record($"„{e.Title}“ gelöscht", e.Uid, Node(before), null); CalSelected = null; _pimMsg = $"„{e.Title}“ gelöscht – Rückgängig holt ihn zurück."; Show("kalender"); };
         var close = new Button { Name = "cal-edit-close", Content = "Fertig" };
         close.Click += (_, _) => { CalSelected = null; Show("kalender"); };
         Control L(string label, Control c) => new StackPanel { Spacing = 2, Children = { new TextBlock { Text = label, Foreground = Muted, FontSize = 11.5 }, c } };
@@ -543,7 +267,8 @@ public partial class MainWindow
             var start = all ? d : d + (TimeSpan.TryParse((time.Text ?? "").Trim(), De, out var ts) ? ts : TimeSpan.FromHours(10));
             var end = all ? d.AddDays(1) : start.AddMinutes(int.TryParse(dur.Text, out var m) && m > 0 ? m : 60);
             var rmin = remind.SelectedIndex switch { 0 => -1, 1 => 5, 3 => 60, 4 => 1440, _ => 15 };
-            Cal.Add(new CalEvent(Guid.NewGuid().ToString("N"), start, end, t.Text!.Trim(), loc.Text?.Trim() ?? "", "", all, rmin, (Repeat)Math.Max(0, rep.SelectedIndex)));
+            var ev = new CalEvent(Guid.NewGuid().ToString("N"), start, end, t.Text!.Trim(), loc.Text?.Trim() ?? "", "", all, rmin, (Repeat)Math.Max(0, rep.SelectedIndex));
+            Cal.Add(ev); Items(CalLink).Record($"„{ev.Title}“ eingetragen", ev.Uid, null, Node(ev)); // T-0717: Eintragen ist jetzt auch rückgängig zu machen
             _pimMsg = $"„{t.Text!.Trim()}“ eingetragen."; CalDay = d; Show("kalender");
         };
         var ics = new Button { Name = "cal-export", Content = "Als ICS speichern" };
@@ -573,25 +298,19 @@ public partial class MainWindow
     // ---------- Aufgaben: Tafel (Offen · In Arbeit · Erledigt) ----------
     public string? TodoSelected { get; set; }
     public string TodoListFilter { get; set; } = "";
-    private readonly List<TodoItem?> _todoUndoBefore = [];
-    private readonly List<string> _todoUndoUid = [];
     static readonly string[] Stages = ["Offen", "In Arbeit", "Erledigt"];
 
     void TodoChange(string uid, Func<TodoItem?> change, string msg)
     {
         var before = Cal.GetTodo(uid);
-        try { change(); _todoUndoUid.Add(uid); _todoUndoBefore.Add(before); _pimMsg = msg; }
+        try { change(); Items(TodoLink).Record(msg.Length > 0 ? msg : "Aufgabe geändert", uid, Node(before), Node(Cal.GetTodo(uid))); _pimMsg = msg; } // T-0717: Rückgängig der Hülle
         catch (InvalidOperationException ex) { _pimMsg = ex.Message; }
         Show("aufgaben");
     }
 
-    public void TodoUndo()
-    {
-        if (_todoUndoUid.Count == 0) { _pimMsg = "Es gibt nichts rückgängig zu machen."; return; }
-        var uid = _todoUndoUid[^1]; var before = _todoUndoBefore[^1]; _todoUndoUid.RemoveAt(_todoUndoUid.Count - 1); _todoUndoBefore.RemoveAt(_todoUndoBefore.Count - 1);
-        if (before is null) Cal.DeleteTodo(uid); else Cal.AddTodo(before);
-        _pimMsg = "Rückgängig gemacht.";
-    }
+    /// <summary>T-0717: Rückgängig/Wiederholen der Hülle (100 Schritte, vorher eigener Stapel ohne Grenze und ohne Wiederholen).</summary>
+    public void TodoUndo() { ItemStep(TodoLink, true, out var m); _pimMsg = m; }
+    public void TodoRedo() { ItemStep(TodoLink, false, out var m); _pimMsg = m; }
 
     /// <summary>Aufgabe in eine Spalte setzen (auch für Tests und die KI).</summary>
     public void TodoMove(string uid, int stage) => TodoChange(uid, () => Cal.SetStage(uid, stage), $"„{Cal.GetTodo(uid)?.Title}“ → {Stages[Math.Clamp(stage, 0, 2)]}.");
@@ -612,9 +331,10 @@ public partial class MainWindow
             TodoChange(t.Uid, () => { Cal.AddTodo(t); return t; }, "");
         };
         title.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) add.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent)); };
-        var undo = new Button { Name = "todo-undo", Content = "Rückgängig", IsEnabled = _todoUndoUid.Count > 0 };
+        var todoLink = TodoLink;
+        var undo = new Button { Name = "todo-undo", Content = "Rückgängig", IsEnabled = todoLink.Link.CanUndo };
         undo.Click += (_, _) => { TodoUndo(); Show("aufgaben"); };
-        sp.Children.Add(Card(new WrapPanel { Children = { title, new Border { Width = 4 }, due, new Border { Width = 4 }, prio, new Border { Width = 4 }, list, new Border { Width = 4 }, add, new Border { Width = 12 }, undo } }));
+        sp.Children.Add(Card(new WrapPanel { Children = { title, new Border { Width = 4 }, due, new Border { Width = 4 }, prio, new Border { Width = 4 }, list, new Border { Width = 4 }, add, new Border { Width = 12 }, undo, ItemRedoButton(todoLink, TodoRedo, "aufgaben") } }));
 
         if (SuggestionCard("aufgaben", TodoSuggestions()) is { } sugg) sp.Children.Add(Card(sugg));
         var todos = Cal.Todos();
@@ -650,13 +370,18 @@ public partial class MainWindow
             var lane = new Border { Name = $"todo-col-{stage}", Tag = stage, MinHeight = 360, Padding = new Thickness(10), CornerRadius = new CornerRadius(12), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = col };
             Grid.SetColumn(lane, stage * 2); board.Children.Add(lane);
         }
-        if (Cal.Todos().Count == 0) sp.Children.Add(EmptyState("todo-empty", "✅", "Keine Aufgaben", "Oben eintragen – mit Fälligkeit und Priorität. Karten zieht man zwischen Offen, In Arbeit und Erledigt."));
+        // V-16 (T-0684): ein Leerzustand je Seite – ohne Aufgaben steht nur der Hinweis da, nicht zusätzlich drei leere Spalten, die dasselbe sagen
+        var noTodos = Cal.Todos().Count == 0;
+        if (noTodos) sp.Children.Add(EmptyState("todo-empty", "✅", "Keine Aufgaben", "Oben eintragen – mit Fälligkeit und Priorität. Danach erscheinen hier die Spalten Offen, In Arbeit und Erledigt."));
         var side = TodoSelected is { } su && Cal.GetTodo(su) is { } sel ? TodoEditPanel(sel) : null;
         var split = new Grid { ColumnDefinitions = new ColumnDefinitions(side is null ? "*" : "*,12,320") };
         split.Children.Add(board); if (side is not null) { Grid.SetColumn(side, 2); split.Children.Add(side); }
-        sp.Children.Add(split);
-        sp.Children.Add(new TextBlock { Text = "Karte ziehen: in eine andere Spalte setzen · Klick: bearbeiten · Häkchen: erledigt", Foreground = Muted, FontSize = 11.5 });
-        sp.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Z && e.KeyModifiers == Avalonia.Input.KeyModifiers.Control) { TodoUndo(); Show("aufgaben"); e.Handled = true; } };
+        if (!noTodos)
+        {
+            sp.Children.Add(split);
+            sp.Children.Add(new TextBlock { Text = "Karte ziehen: in eine andere Spalte setzen · Klick: bearbeiten · Häkchen: erledigt", Foreground = Muted, FontSize = 11.5 });
+        }
+        ItemKeys(sp, TodoUndo, TodoRedo, () => Show("aufgaben")); // Strg+Z, Strg+Y
         return SysPage("Aufgaben", sp);
     }
 
@@ -721,45 +446,5 @@ public partial class MainWindow
             H("Aufgabe", 14), L("Titel", title), new WrapPanel { Children = { L("Fällig", due), new Border { Width = 6 }, L("Priorität", prio) } },
             L("Spalte", stage), L("Liste", list), L("Beschreibung", notes),
             new WrapPanel { Children = { save, new Border { Width = 6 }, del, new Border { Width = 6 }, close } } } });
-    }
-
-    /// <summary>Schreibfeld öffnen (neu, Antwort, Entwurf).</summary>
-    public void MailCompose(MailDraft d, bool keepDraft = false)
-    {
-        if (!keepDraft) _draftId = null;
-        _sendDraft = d; _composeOpen = true; _sentOpen = null; Show("posteingang");
-    }
-
-    /// <summary>Anhang speichern (Ordner „Mail-Anhänge“ im Projektordner; gleicher Name → „Name (2)“). Öffnet nichts.</summary>
-    public string MailSaveAttachment(MailAttachment at)
-    {
-        var dir = MailAttachmentFolder; var target = Path.Combine(dir, at.Name);
-        for (var n = 2; File.Exists(target); n++) target = Path.Combine(dir, $"{Path.GetFileNameWithoutExtension(at.Name)} ({n}){Path.GetExtension(at.Name)}");
-        File.WriteAllBytes(target, at.Data);
-        _core.Audit.Append(Principal.LocalOwner.Name, "post.anhang", Path.GetFileName(target));
-        _pimMsg = $"Gespeichert: {target}"; Show("posteingang");
-        return target;
-    }
-
-    /// <summary>Tastenkürzel im Posteingang wie in Mailprogrammen. True = verarbeitet.</summary>
-    public bool MailKey(Avalonia.Input.Key k, Avalonia.Input.KeyModifiers mod)
-    {
-        var shift = mod.HasFlag(Avalonia.Input.KeyModifiers.Shift);
-        switch (k)
-        {
-            case Avalonia.Input.Key.N: MailCompose(new("", "", "")); return true;
-            case Avalonia.Input.Key.R when InboxOpen is { } m:
-                if (shift) { var (rt, rc) = MailFolders.ReplyAll(m, MailAccountCfg?.Email ?? ""); MailCompose(new MailDraft(rt, MailFolders.ReplySubject(m.Subject, false), MailFolders.Quote(m), rc)); }
-                else MailCompose(new MailDraft(System.Text.RegularExpressions.Regex.Match(m.From, @"<([^>]+)>") is { Success: true } mm ? mm.Groups[1].Value : m.From, MailFolders.ReplySubject(m.Subject, false), MailFolders.Quote(m)));
-                return true;
-            case Avalonia.Input.Key.F when InboxOpen is { } m2:
-                MailCompose(new MailDraft("", MailFolders.ReplySubject(m2.Subject, true), $"\n\n---------- Weitergeleitete Nachricht ----------\nVon: {m2.From}\nDatum: {m2.Date}\nBetreff: {m2.Subject}\n\n{m2.Body}")); return true;
-            case Avalonia.Input.Key.J or Avalonia.Input.Key.K when Inbox.Count > 0:
-                var i = InboxOpenUid is { } u ? Inbox.FindIndex(h => h.Uid == u) : -1;
-                var next = Math.Clamp(k == Avalonia.Input.Key.J ? i + 1 : i - 1, 0, Inbox.Count - 1);
-                var uid = Inbox[next].Uid; _ = OpenInboxMail(uid).ContinueWith(_ => _ui.Post(() => { InboxOpenUid = uid; _composeOpen = false; Show("posteingang"); }));
-                return true;
-        }
-        return false;
     }
 }

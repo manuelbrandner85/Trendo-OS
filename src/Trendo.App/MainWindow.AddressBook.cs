@@ -78,8 +78,8 @@ public partial class MainWindow
             Act("ab-new", "+ Neuer Kontakt", () => { var c = Mail.UpdateContact(new Contact(Guid.NewGuid().ToString("N")[..8], "Neuer Kontakt", "", Groups: _abGroup.StartsWith("g:") ? [_abGroup[2..]] : null)); _abSel = c.Id; _abEdit = true; Show(AB); }, true),
             new Border { Width = 10 }, file,
             Act("ab-vcf-import", "Einlesen", () => Try(AB, () => { var f = (file.Text ?? "").Trim('"', ' '); if (!File.Exists(f)) throw new ArgumentException("Diese Datei gibt es nicht."); var n = Path.GetExtension(f).Equals(".csv", StringComparison.OrdinalIgnoreCase) ? Mail.ImportCsv(File.ReadAllText(f)) : Mail.ImportVcf(File.ReadAllText(f)); Say($"{n} Kontakt(e) eingelesen.", AB); })),
-            Act("ab-vcf-export", "Alle als vCard sichern", () => Try(AB, () => { Directory.CreateDirectory(MailDraftFolder); var f = Path.Combine(MailDraftFolder, "kontakte.vcf"); File.WriteAllText(f, Mail.ExportVcf()); NotifyFileResult("Gespeichert: " + f); Say("Gespeichert: " + f, AB); })),
-            Act("ab-csv-export", "Als CSV (Google, Outlook)", () => Try(AB, () => { Directory.CreateDirectory(MailDraftFolder); var f = Path.Combine(MailDraftFolder, "kontakte.csv"); File.WriteAllText(f, Mail.ExportCsv(), new System.Text.UTF8Encoding(true)); NotifyFileResult("Gespeichert: " + f); Say("Gespeichert: " + f, AB); })),
+            Act("ab-vcf-export", "Alle als vCard sichern", () => Try(AB, () => { Directory.CreateDirectory(MailDraftFolder); var f = Path.Combine(MailDraftFolder, "kontakte.vcf"); AtomicFile.WriteAllText(f, Mail.ExportVcf()); NotifyFileResult("Gespeichert: " + f); Say("Gespeichert: " + f, AB); })),
+            Act("ab-csv-export", "Als CSV (Google, Outlook)", () => Try(AB, () => { Directory.CreateDirectory(MailDraftFolder); var f = Path.Combine(MailDraftFolder, "kontakte.csv"); AtomicFile.WriteAllBytes(f, [.. System.Text.Encoding.UTF8.Preamble, .. System.Text.Encoding.UTF8.GetBytes(Mail.ExportCsv())]); NotifyFileResult("Gespeichert: " + f); Say("Gespeichert: " + f, AB); })),
             Act("ab-fix-phones", "Nummern vereinheitlichen", () => Try(AB, () => { var n = Mail.FixPhones(); Say(n == 0 ? "Alle Nummern sind schon einheitlich." : $"{n} Kontakt(e): Nummern jetzt einheitlich (+49 …).", AB); })),
             sheet,
             Act("ab-labels", "Etiketten (PDF)", () => Try(AB, () =>
@@ -99,6 +99,13 @@ public partial class MainWindow
                 Say(n == 0 ? "Noch kein Kontakt hat einen Geburtstag eingetragen." : $"{n} Geburtstage stehen jährlich im Kalender (mit Erinnerung am Vortag).", AB);
             })) } };
         foreach (var c in head.Children.OfType<Control>()) c.Margin = new Thickness(0, 0, 6, 6);
+        // V-21 (T-0709): vor dem ersten Kontakt nur „+ Neuer Kontakt“ und Einlesen – Sichern, Tabelle, Nummern, Etiketten und Geburtstage erscheinen, sobald es Kontakte gibt.
+        // Die eine goldene Fläche ist dann der Knopf im Leerzustand; der Knopf oben bleibt ruhig hervorgehoben.
+        if (all.Count == 0)
+        {
+            foreach (var c in head.Children.OfType<Control>().Where(c => c.Name is "ab-vcf-export" or "ab-csv-export" or "ab-fix-phones" or "ab-label-sheet" or "ab-labels" or "ab-bday-cal")) c.IsVisible = false;
+            if (head.Children.OfType<Button>().FirstOrDefault(b => b.Name == "ab-new") is { } nb && IsGold(nb)) QuietGold(nb);
+        }
 
         // Mitte: Liste
         var find = new TextBox { Name = "ab-find", Text = _abFind, PlaceholderText = "Name, Firma, Ort, Nummer …" };
@@ -126,12 +133,28 @@ public partial class MainWindow
             list.Children.Add(b);
         }
         if (shown.Count == 0) list.Children.Add(P(_abGroup switch { "dups" => "Keine doppelten Kontakte.", "bday" => "In den nächsten 30 Tagen hat niemand Geburtstag.", _ => all.Count == 0 ? "Noch keine Kontakte. Oben „+ Neuer Kontakt“ oder eine vCard einlesen." : "Niemand passt zur Suche." }, Muted, 12.5));
-        var middle = new StackPanel { Spacing = 6, Width = 330, Children = { find, new ScrollViewer { Content = list, MaxHeight = 560 } } };
+        var middle = new DockPanel { Width = 330, Children = { Dk(find, Avalonia.Controls.Dock.Top), new ScrollViewer { Content = list, Margin = new Thickness(0, 6, 0, 0) } } };
 
         if (_abSel is null && shown.Count > 0 && _abGroup != "dups") _abSel = shown[0].Id; // wie Outlook „Personen“: gleich den ersten Kontakt zeigen
         // rechts: Karte oder Bearbeiten oder Doppelte
-        Control right = _abGroup == "dups" ? AbDuplicates(dups) : _abSel is { } sid && all.FirstOrDefault(c => c.Id == sid) is { } sel ? (_abEdit ? AbEditor(sel) : AbCard(sel, today)) : P("Links einen Kontakt anklicken.", Muted, 13);
-        var body = new Grid { Name = "ab-book", ColumnDefinitions = new ColumnDefinitions("Auto,12,Auto,14,*"), Children = { Glass2(side, 10), Pos(Glass2(middle, 10), 2), Pos(Glass2(new ScrollViewer { Content = right, MaxHeight = 600 }, 18), 4) } };
+        Control right = _abGroup == "dups" ? AbDuplicates(dups) : _abSel is { } sid && all.FirstOrDefault(c => c.Id == sid) is { } sel ? (_abEdit ? AbEditor(sel) : AbCard(sel, today)) : P(all.Count == 0 ? "" : "Links einen Kontakt anklicken.", Muted, 13);
+        // V-16 (T-0684): die drei Spalten füllen die Fensterhöhe (statt nach wenigen Zeilen zu enden); ohne Kontakte steht nur ein Leerzustand da,
+        // der leere Kasten rechts wird nicht gezeichnet
+        var body = new Grid { Name = "ab-book", ColumnDefinitions = new ColumnDefinitions(all.Count == 0 ? "Auto,12,*" : "Auto,12,Auto,14,*"), MinHeight = 320 };
+        FillDown(body);
+        body.Children.Add(Glass2(side, 10));
+        if (all.Count == 0)
+        {
+            var add = Act("ab-empty-new", "+ Neuer Kontakt", () => { var c = Mail.UpdateContact(new Contact(Guid.NewGuid().ToString("N")[..8], "Neuer Kontakt", "")); _abSel = c.Id; _abEdit = true; _abGroup = "alle"; Show(AB); }, true);
+            var empty = EmptyState("ab-empty", "👤", "Noch keine Kontakte", "Leg deinen ersten Kontakt an – oder lies oben eine Kontaktdatei ein.", add);
+            empty.Margin = new Thickness(0);
+            body.Children.Add(Pos(empty, 2));
+        }
+        else
+        {
+            body.Children.Add(Pos(Glass2(middle, 10), 2));
+            body.Children.Add(Pos(Glass2(new ScrollViewer { Content = right }, 18), 4));
+        }
         return SysPage("Adressbuch", new StackPanel { Spacing = 8, Children = { head, body } });
     }
 
@@ -146,7 +169,7 @@ public partial class MainWindow
         if (c.Email.Length > 0) acts.Children.Add(Act("ab-mail", "E-Mail schreiben", () => { _mailTo = c.Email; Show("post"); }, true));
         acts.Children.Add(Act("ab-edit", "Bearbeiten", () => { _abEdit = true; Show(AB); }));
         acts.Children.Add(Act("ab-fav", c.Favorite ? "Favorit" : "Favorit", () => { Mail.UpdateContact(c with { Favorite = !c.Favorite }); Show(AB); }, c.Favorite));
-        acts.Children.Add(Act("ab-vcard", "Als vCard", () => Try(AB, () => { Directory.CreateDirectory(MailDraftFolder); var f = Path.Combine(MailDraftFolder, DevStudio.SafeName(c.Name) + ".vcf"); File.WriteAllText(f, MailCenter.Vcard(c)); NotifyFileResult("Gespeichert: " + f); Say("Gespeichert: " + f, AB); })));
+        acts.Children.Add(Act("ab-vcard", "Als vCard", () => Try(AB, () => { Directory.CreateDirectory(MailDraftFolder); var f = Path.Combine(MailDraftFolder, DevStudio.SafeName(c.Name) + ".vcf"); AtomicFile.WriteAllText(f, MailCenter.Vcard(c)); NotifyFileResult("Gespeichert: " + f); Say("Gespeichert: " + f, AB); })));
         foreach (var b in acts.Children.OfType<Control>()) b.Margin = new Thickness(0, 0, 6, 6);
         sp.Children.Add(acts);
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("120,*"), Name = "ab-fields" };

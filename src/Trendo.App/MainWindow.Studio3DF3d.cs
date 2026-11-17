@@ -28,11 +28,9 @@ public partial class MainWindow
     async Task SetupF3d()
     {
         var comp = DependencyCatalog.Get("f3d");
-        var req = _core.Approvals.Request(Principal.LocalOwner, "deps.install", "f3d (Vorschaubilder für 3D-Dateien) einrichten", comp.Id);
-        _core.Approvals.Approve(req.Id, Principal.LocalOwner);
-        if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner);
-        _f3dMsg = "f3d wird eingerichtet (offizieller Download, ~66 MB, Prüfsumme wird geprüft) …"; Show("3d");
-        var ok = !_opt.Isolated && await Task.Run(() => _deps.InstallAsync(Principal.LocalOwner, comp));
+        // B4 (T-0706): eigene Rückfrage, dann nur über den Kern mit genau dieser Freigabe
+        var res = await InstallMitFreigabe(comp, "Vorschaubilder für 3D-Dateien", () => { _f3dMsg = "f3d wird eingerichtet (offizieller Download, ~66 MB, Prüfsumme wird geprüft) …"; Show("3d"); });
+        if (res is not { } ok) { _f3dMsg = "f3d: abgebrochen – es wurde nichts eingerichtet."; Show("3d"); return; }
         _f3dMsg = ok ? "f3d ist eingerichtet." : _opt.Isolated ? "Testmodus: nichts installiert." : "f3d konnte nicht eingerichtet werden – unter Zusatzprogramme erneut versuchen.";
         Show("3d");
     }

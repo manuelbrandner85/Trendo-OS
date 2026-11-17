@@ -1,0 +1,37 @@
+{
+  "title": "Testfolge 1",
+  "description": "",
+  "chapters": "00:00 Begr\u00FC\u00DFung\n00:12 Teil zwei",
+  "audio": "",
+  "show": "Trendo Testpodcast",
+  "author": "Testsender",
+  "baseUrl": "",
+  "episode": "1",
+  "tracks": [
+    {
+      "id": "tc5797f",
+      "name": "Sprecher 1",
+      "file": "<testordner>\\ersatz-mikrofon-1.wav",
+      "gain": 0,
+      "muted": false
+    },
+    {
+      "id": "t655e10",
+      "name": "Sprecher 2",
+      "file": "<testordner>\\ersatz-mikrofon-2.wav",
+      "gain": 0,
+      "muted": false
+    }
+  ],
+  "cuts": [
+    {
+      "a": 2,
+      "b": 3
+    },
+    {
+      "a": 7.25,
+      "b": 9.75
+    }
+  ],
+  "master": "<testordner>\\ersatz-mikrofon-1-fertig.mp3"
+}

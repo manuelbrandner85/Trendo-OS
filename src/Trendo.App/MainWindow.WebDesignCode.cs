@@ -21,7 +21,7 @@ public partial class MainWindow
     string? _wdCodeText, _wdCodeBase, _wdCodeWhere;
     int _wdCodeLine;
     (byte[] Png, int W, int H)? _wdSketch;
-    WebDesignPublish.Plan? _wdPlan; string? _wdConsent; bool _wdAskConsent;
+    WebDesignPublish.Plan? _wdPlan; string? _wdPubOpen;
     IReadOnlyList<string> _wdExportFindings = [];
 
     /// <summary>Für Tests: HTML lesen ohne Browser (sonst GrapesJS-Kern in Chrome/Edge).</summary>
@@ -304,57 +304,158 @@ public partial class MainWindow
         return result;
     }
 
-    // ---------- K8: Veröffentlichen ----------
+    // ---------- K8 / T-0718: Veröffentlichen nur über das Freigabe-Tor ----------
+
+    /// <summary>Ordner mit dem fertigen Export (Quelle jeder Veröffentlichung).</summary>
+    string WebDesignExportFolder => Path.Combine(WebDesignDir, WebDesign.ExportDir);
+    /// <summary>T-0718: Ergebnis der letzten Veröffentlichung (Ort, Dateien, Prüfergebnis) – für Anzeige und Tests.</summary>
+    public WebPublishing.Ergebnis? WebDesignPublishResult { get; private set; }
+    /// <summary>Eingaben für „eigener Server“ (bleiben beim Neuzeichnen stehen; das Passwort nur bis zum Hochladen, danach im geschützten Speicher).</summary>
+    public string WebDesignServerAddress { get; set; } = "";
+    public string WebDesignServerUser { get; set; } = "";
+    string _wdSrvPass = "";
+    WebDavLink WebDav => new(_core.Secrets, WebDavHandlerOverride);
+    /// <summary>Tests: Netz des WebDAV-Wegs ersetzen (null = echtes Netz, z. B. ein Server auf 127.0.0.1).</summary>
+    public static HttpMessageHandler? WebDavHandlerOverride { get; set; }
 
     /// <summary>K8: Prüfen und Dateiliste zeigen. Grundlage ist der letzte Export samt seiner Prüfung.</summary>
     public void WebDesignPublishPrepare()
     {
         _wdPlan = WebDesignPublish.Prepare(WebDesignDir, _wdExportFindings);
-        _wdConsent = null; _wdAskConsent = false;
-        _wdPublishNote = _wdPlan.Ok ? $"Prüfung bestanden: {_wdPlan.Files.Count} Dateien, {_wdPlan.Bytes / 1024.0:0.#} KB." : "Prüfung nicht bestanden. Erst beheben, dann veröffentlichen.";
+        _wdPubOpen = null; WebDesignPublishResult = null;
+        _wdPublishNote = _wdPlan.Ok ? $"Prüfung bestanden: {_wdPlan.Files.Count} Dateien, {_wdPlan.Bytes / 1024.0:0.#} KB. Wähle, wohin die Website soll." : "Prüfung nicht bestanden. Erst beheben, dann veröffentlichen.";
         Show("dev");
     }
 
-    public void WebDesignPublishPackage()
+    /// <summary>Gibt es eine bestandene, frische Prüfung? Sonst verständlicher Hinweis.</summary>
+    bool WebDesignPublishReady(out WebDesignPublish.Plan plan)
     {
-        if (_wdPlan is null) { WebDesignPublishPrepare(); if (_wdPlan is null) return; }
-        var (zip, err) = WebDesignPublish.Package(WebDesignDir, _wdPlan!);
-        _wdPublishNote = err ?? $"Paket gespeichert: {zip}. Es wurde nichts hochgeladen.";
-        _core.Audit.Append(Principal.LocalOwner.Name, "web.paket", err ?? Path.GetFileName(zip!));
+        plan = _wdPlan!;
+        if (_wdPublishBusy) return false;
+        if (_wdPlan is null) { _wdPublishNote = "Erst „Prüfen und Dateiliste zeigen“ – dann siehst du genau, was veröffentlicht wird."; Show("dev"); return false; }
+        if (!_wdPlan.Ok) { _wdPublishNote = "Nicht veröffentlicht, die Prüfung hat Fehler: " + _wdPlan.Blockers[0]; Show("dev"); return false; }
+        return true;
+    }
+
+    /// <summary>T-0718: gemeinsamer Ablauf aller Wege – Rückfrage im Freigabe-Tor (Wirkung, Ziel, Dateien, Größe; „Abbrechen“ vorbelegt; Kinderprofil darf nicht),
+    /// dann Ausführung über den Kern genau mit dieser Freigabe, dann Rückmeldung. null = abgebrochen bzw. nicht erlaubt (nichts passiert).</summary>
+    internal async Task<WebPublishing.Ergebnis?> WebPublishViaGate(WebPublishing.Rueckfrage q, Func<string, Task<WebPublishing.Ergebnis>> run)
+    {
+        if (await FreigabeAsync(new Wirkung(q.Action, q.Target, q.Title, q.Text, q.Yes, q.Preview)) is not { } id) return null;
+        try { return await run(id); }
+        catch (ApprovalException e) { return WebPublishing.Fehler(e.Message, "Noch einmal veröffentlichen und die Rückfrage bestätigen."); }
+        catch (Exception e) when (e is not OutOfMemoryException) // ein Klick darf nie still im Nichts enden
+        { return WebPublishing.Fehler(Trendo.Core.FriendlyError.Say(e), "Noch einmal versuchen. Wenn es wieder passiert, den Zielordner bzw. die Server-Adresse prüfen."); }
+    }
+
+    /// <summary>Rückmeldung anzeigen und ins Protokoll schreiben. Nach einem Lauf gilt die Prüfung als verbraucht (nächstes Mal neu prüfen).</summary>
+    void WebDesignPublishDone(WebPublishing.Ergebnis? r, string weg, string? open = null)
+    {
+        if (r is null) { _wdPublishNote = CanApprove ? "Abgebrochen – es wurde nichts veröffentlicht." : "Nicht veröffentlicht: " + NurErwachsene; Show("dev"); return; }
+        WebDesignPublishResult = r;
+        _wdPublishNote = r.Text;
+        _wdPubOpen = r.Dateien > 0 ? open : null;
+        _core.Audit.Append(CurrentPrincipal.Name, r.Dateien > 0 ? "web.veroeffentlicht" : "web.veroeffentlichen.fehler", $"{weg} {r.Dateien} Dateien → {r.Wo}; Befunde={r.Befunde.Count}");
+        if (r.Dateien > 0) _wdPlan = null; // Freigabe galt genau einmal
         Show("dev");
     }
 
-    /// <summary>K8: Zustimmung für genau diese Dateien geben (ein Klick, gilt nur für diesen Stand).</summary>
-    public void WebDesignPublishConsent() { if (_wdPlan is { Ok: true } p) { _wdConsent = p.Fingerprint; } }
-
-    /// <summary>K8: Hochladen mit dem eigenen Netlify-Konto. Ohne Zustimmung für genau diese Dateien passiert nichts.</summary>
-    public async Task WebDesignPublishUpload()
+    /// <summary>Weg 1: in einen Ordner (z. B. USB-Stick, Netzlaufwerk, Ordner eines lokalen Webservers) – mit Link- und Dateiprüfung danach.</summary>
+    public async Task WebDesignPublishToFolder()
     {
-        if (_wdPublishBusy) return;
-        if (_wdPlan is null) { _wdPublishNote = "Erst prüfen und die Dateiliste ansehen."; Show("dev"); return; }
-        var plan = _wdPlan;
-        if (WebDesignPublish.CheckConsent(WebDesignDir, plan, _wdConsent) is { } err) { _wdPublishNote = err; _wdConsent = null; Show("dev"); return; }
-        _wdConsent = null; _wdAskConsent = false; // Zustimmung gilt einmal
-        if (!Netlify.Connected) { _wdPublishNote = "Nicht hochgeladen: Erst unter „Verbindungen“ mit deinem Netlify-Konto verbinden."; Show("dev"); return; }
+        if (!WebDesignPublishReady(out var plan)) return;
+        if (await PickFolderPath("Wohin soll die fertige Website?") is not { } dest) return;
+        var src = WebDesignExportFolder;
+        if (WebPublishing.FolderError(src, dest) is { } fe) { WebDesignPublishDone(fe, "ordner"); return; }
+        var r = await WebPublishViaGate(WebPublishing.Describe(WebPublishing.Weg.Ordner, dest, plan),
+            id => Task.FromResult(WebPublishing.ToFolder(_core.Approvals, id, src, plan, dest)));
+        WebDesignPublishDone(r, "ordner", dest);
+    }
+
+    /// <summary>Weg 2: als Paket (ZIP) im Projektordner „pakete“ – zum Hochladen bei einem beliebigen Webhoster.</summary>
+    public async Task WebDesignPublishPackage()
+    {
+        if (!WebDesignPublishReady(out var plan)) return;
+        var zipDir = Path.Combine(WebDesignDir, "pakete");
+        var r = await WebPublishViaGate(WebPublishing.Describe(WebPublishing.Weg.Zip, zipDir, plan),
+            id => Task.FromResult(WebPublishing.ToZip(_core.Approvals, id, WebDesignExportFolder, plan, zipDir)));
+        WebDesignPublishDone(r, "zip", zipDir);
+    }
+
+    /// <summary>Weg 3: auf den eigenen Server per WebDAV (NAS im Heimnetz, Nextcloud, Webhoster). Anmeldung bleibt im geschützten Speicher.
+    /// Im Testmodus nur an diesen PC (127.0.0.1) – nie ins Internet.</summary>
+    public async Task WebDesignPublishToServer()
+    {
+        if (!WebDesignPublishReady(out var plan)) return;
+        var (url, aerr) = WebPublishing.ServerAddress(WebDesignServerAddress);
+        if (url is null) { WebDesignPublishDone(WebPublishing.Fehler(aerr!, "Die Adresse deines WebDAV-Ordners eintragen (steht in der Anleitung deines Servers oder Anbieters)."), "server"); return; }
+        if (_opt.Isolated && !url.IsLoopback) { WebDesignPublishDone(WebPublishing.Fehler("Im Testmodus lädt Trendo nur an diesen PC (127.0.0.1) hoch.", "Trendo normal starten."), "server"); return; }
+        var saved = WebDav.Saved(url);
+        var user = WebDesignServerUser.Trim().Length > 0 ? WebDesignServerUser.Trim() : saved.User ?? "";
+        var pass = _wdSrvPass.Length > 0 ? _wdSrvPass : saved.Password ?? "";
+        var src = WebDesignExportFolder; var where = url.ToString();
         _wdPublishBusy = true;
         try
         {
-            _wdPublishNote = "Lädt hoch …"; Show("dev");
-            var (zip, zerr) = WebDesignPublish.ZipExactly(WebDesignDir, plan); // genau die gezeigten Dateien, Fingerabdruck über dieselben Bytes
-            if (zip is null) { _wdPublishNote = "Nicht hochgeladen: " + zerr; return; }
-            var url = await Netlify.DeployZipAsync(Path.Combine(WebDesignDir, WebDesign.ExportDir), zip, WebDesignSite.TitleOf(WebDesignDir, WebDesignSite.Index));
-            _wdPublishNote = WebDesignPublish.Report(plan, url.Length > 0 ? url : "Netlify");
-            _core.Audit.Append(Principal.LocalOwner.Name, "web.hochladen", $"{plan.Files.Count} Dateien → {url}");
+            var r = await WebPublishViaGate(WebPublishing.Describe(WebPublishing.Weg.Server, where, plan), id =>
+                _core.Approvals.Execute(id, WebPublishing.ActionServer, WebPublishing.Target(where, plan.Fingerprint), async () =>
+                {
+                    var (files, err) = WebPublishing.ReadExactly(src, plan);
+                    if (files is null) return WebPublishing.Fehler(err!, "„Prüfen und Dateiliste zeigen“ wählen und noch einmal hochladen.", where);
+                    if (user.Length > 0) WebDav.Remember(url, user, pass); // erst nach dem Ja, nur im geschützten Speicher
+                    _wdSrvPass = "";
+                    try
+                    {
+                        var same = await WebDav.UploadAsync(url, user, pass, files);
+                        var (n, befunde) = WebPublishing.CheckLinks(src);
+                        var all = befunde.ToList();
+                        if (same < files.Count) all.Insert(0, $"Nur {same} von {files.Count} Dateien kamen nach dem Hochladen gleich zurück.");
+                        return WebPublishing.Bericht(where, plan, n + same, all, $"Hochgeladen zu {where}", $"Nachprüfung: {same} von {files.Count} Dateien vom Server zurückgelesen und gleich.");
+                    }
+                    catch (WebDavLink.ServerException e) { var (m, t) = WebPublishing.ServerFehler(e.Status); return WebPublishing.Fehler(m, t, where); }
+                    catch (Exception e) when (e is HttpRequestException or TaskCanceledException or IOException)
+                    { return WebPublishing.Fehler("Der Server ist nicht erreichbar (" + e.Message + ").", WebPublishing.NichtErreichbarWasTun, where); }
+                }));
+            WebDesignPublishDone(r, "server", where);
         }
-        catch (Exception e) when (e is InvalidOperationException or HttpRequestException or TaskCanceledException or IOException) { _wdPublishNote = "Nicht hochgeladen: " + e.Message; }
-        finally { _wdPublishBusy = false; _wdPlan = null; Show("dev"); }
+        finally { _wdPublishBusy = false; _wdSrvPass = ""; }
+    }
+
+    /// <summary>Weg 4: Netlify mit dem eigenen Konto – nur über das Tor; ohne Verbindung (Konto der Person) BLOCKIERT mit „Was tun“.</summary>
+    public async Task WebDesignPublishUpload()
+    {
+        if (!WebDesignPublishReady(out var plan)) return;
+        if (!Netlify.Connected) { WebDesignPublishDone(WebPublishing.Fehler("Netlify ist nicht verbunden – dafür braucht es dein eigenes Netlify-Konto.", "Unter „Verbindungen“ mit deinem Netlify-Konto verbinden. Ohne Konto: in einen Ordner oder als Paket veröffentlichen."), "netlify"); return; }
+        var src = WebDesignExportFolder;
+        var where = NetlifyLink.SiteOf(src).Url is { Length: > 0 } u ? u : "neue Netlify-Seite";
+        _wdPublishBusy = true;
+        try
+        {
+            var r = await WebPublishViaGate(WebPublishing.Describe(WebPublishing.Weg.Netlify, where, plan), id =>
+                _core.Approvals.Execute(id, WebPublishing.ActionNetlify, WebPublishing.Target(where, plan.Fingerprint), async () =>
+                {
+                    var (zip, zerr) = WebDesignPublish.ZipExactly(WebDesignDir, plan); // genau die gezeigten Dateien, Fingerabdruck über dieselben Bytes
+                    if (zip is null) return WebPublishing.Fehler(zerr!, "„Prüfen und Dateiliste zeigen“ wählen und noch einmal hochladen.", where);
+                    try
+                    {
+                        var url = await Netlify.DeployZipAsync(src, zip, WebDesignSite.TitleOf(WebDesignDir, WebDesignSite.Index));
+                        var (n, befunde) = WebPublishing.CheckLinks(src);
+                        var at = url.Length > 0 ? url : "Netlify";
+                        return WebPublishing.Bericht(at, plan, n, befunde, "Hochgeladen zu " + at, string.Join("\n", WebDesignPublish.Report(plan, at).Split('\n').Skip(1)));
+                    }
+                    catch (Exception e) when (e is InvalidOperationException or HttpRequestException or TaskCanceledException or IOException)
+                    { return WebPublishing.Fehler(e.Message, "Verbindung zu Netlify unter „Verbindungen“ prüfen und noch einmal hochladen.", where); }
+                }));
+            WebDesignPublishDone(r, "netlify", r is { Dateien: > 0 } ok ? ok.Wo : null);
+        }
+        finally { _wdPublishBusy = false; }
     }
 
     Control WebDesignPublishPane()
     {
         var sp = new StackPanel { Spacing = 6, Name = "web-veroeffentlichen" };
         sp.Children.Add(new TextBlock { Text = "Veröffentlichen", FontSize = 15, FontWeight = FontWeight.SemiBold, Foreground = Text });
-        sp.Children.Add(P("Erst exportieren, dann prüfen. Danach als Paket speichern oder mit deinem eigenen Netlify-Konto hochladen. Hochgeladen wird nur nach deiner Zustimmung für genau die gezeigten Dateien.", Muted, 12));
+        sp.Children.Add(P("Erst exportieren, dann prüfen. Danach in einen Ordner, als Paket, auf deinen eigenen Server oder mit deinem Netlify-Konto veröffentlichen. Jeder Weg fragt vorher nach – mit Ziel, Dateien und Größe.", Muted, 12));
         sp.Children.Add(new WrapPanel { Children = { Act("web-pub-pruefen", "Prüfen und Dateiliste zeigen", WebDesignPublishPrepare) } });
         if (_wdPlan is { } plan)
         {
@@ -362,24 +463,32 @@ public partial class MainWindow
             foreach (var n in plan.Notes.Take(5)) sp.Children.Add(P("• " + n, Muted, 12));
             if (plan.Ok)
             {
-                // Alle Dateien sichtbar, für die zugestimmt wird (in einer scrollbaren Liste)
+                // Alle Dateien sichtbar, die veröffentlicht würden (in einer scrollbaren Liste)
                 sp.Children.Add(new ScrollViewer { Name = "web-pub-liste", MaxHeight = 220, Content = P(string.Join("\n", plan.Files.Select(f => $"• {f.Rel} ({f.Bytes / 1024.0:0.#} KB)")), Muted, 11.5) });
-                var row = new WrapPanel();
-                row.Children.Add(Act("web-pub-paket", "Als Paket speichern (ZIP)", WebDesignPublishPackage));
-                row.Children.Add(new Border { Width = 8 });
-                if (!Netlify.Connected) row.Children.Add(P("Hochladen: erst unter „Verbindungen“ mit Netlify verbinden.", Muted, 12));
-                else if (!_wdAskConsent) row.Children.Add(Act("web-pub-hochladen", "Zu Netlify hochladen …", () => { _wdAskConsent = true; Show("dev"); }));
-                else
-                {
-                    var site = NetlifyLink.SiteOf(Path.Combine(WebDesignDir, WebDesign.ExportDir));
-                    row.Children.Add(Act("web-pub-ja", $"Ja, genau diese {plan.Files.Count} Dateien zu {(site.Url is { Length: > 0 } u ? u : "einer neuen Netlify-Seite")} hochladen", () => { WebDesignPublishConsent(); _ = WebDesignPublishUpload(); }, true));
-                    row.Children.Add(new Border { Width = 8 });
-                    row.Children.Add(Act("web-pub-nein", "Abbrechen", () => { _wdAskConsent = false; _wdConsent = null; Show("dev"); }));
-                }
-                sp.Children.Add(row);
+                sp.Children.Add(new WrapPanel { Children = {
+                    Act("web-pub-ordner", "In einen Ordner veröffentlichen …", () => _ = WebDesignPublishToFolder()), new Border { Width = 8 },
+                    Act("web-pub-paket", "Als Paket speichern (ZIP) …", () => _ = WebDesignPublishPackage()) } });
+                // eigener Server (WebDAV)
+                var addr = new TextBox { Name = "web-pub-server-adresse", Text = WebDesignServerAddress, Width = 320, PlaceholderText = "https://mein-server.de/webdav/ oder http://192.168.1.20/site/" };
+                var user = new TextBox { Name = "web-pub-server-benutzer", Text = WebDesignServerUser, Width = 150, PlaceholderText = "Benutzername" };
+                var pass = new TextBox { Name = "web-pub-server-passwort", PasswordChar = '•', Width = 150, PlaceholderText = "Passwort" };
+                addr.TextChanged += (_, _) => WebDesignServerAddress = addr.Text ?? "";
+                user.TextChanged += (_, _) => WebDesignServerUser = user.Text ?? "";
+                pass.TextChanged += (_, _) => _wdSrvPass = pass.Text ?? "";
+                var known = WebPublishing.ServerAddress(WebDesignServerAddress).Url is { } su && WebDav.Saved(su).User is not null;
+                sp.Children.Add(P("Eigener Server (WebDAV, z. B. NAS im Heimnetz, Nextcloud oder Webhoster)" + (known ? " – Anmeldung ist geschützt gespeichert." : ""), Muted, 12));
+                sp.Children.Add(new WrapPanel { Children = { addr, new Border { Width = 6 }, user, new Border { Width = 6 }, pass, new Border { Width = 6 },
+                    Act("web-pub-server", "Auf eigenen Server hochladen …", () =>
+                    {
+                        WebDesignServerAddress = addr.Text ?? ""; WebDesignServerUser = user.Text ?? ""; _wdSrvPass = pass.Text ?? "";
+                        _ = WebDesignPublishToServer();
+                    }) } });
+                if (!Netlify.Connected) sp.Children.Add(P("Netlify: erst unter „Verbindungen“ mit deinem eigenen Netlify-Konto verbinden.", Muted, 12));
+                else sp.Children.Add(new WrapPanel { Children = { Act("web-pub-hochladen", "Zu Netlify hochladen …", () => _ = WebDesignPublishUpload()) } });
             }
         }
         if (_wdPublishNote.Length > 0) sp.Children.Add(new TextBlock { Name = "web-pub-note", Text = _wdPublishNote, FontSize = 12, TextWrapping = TextWrapping.Wrap, Foreground = AccentText });
+        if (_wdPubOpen is { } open) sp.Children.Add(new WrapPanel { Children = { Act("web-pub-oeffnen", open.StartsWith("http", StringComparison.Ordinal) ? "Seite öffnen" : "Ordner öffnen", () => Launch(open)) } });
         return Card("web-veroeffentlichen-card", sp);
     }
 }

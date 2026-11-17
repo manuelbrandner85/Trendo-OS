@@ -3,7 +3,7 @@ using Trendo.Core;
 
 namespace Trendo.App;
 
-/// <summary>Alle Studios, Runde 5 – SPEC-04: Khronos glTF-Validator (offizielle Prüfung) und glTF-Transform (Packen für Web &amp; Brille) im VR-Studio.
+/// <summary>Alle Studios, Runde 5 – „3D-Modelle ansehen“ (Kennung SPEC-04): Khronos glTF-Validator (offizielle Prüfung) und glTF-Transform (Packen für Web-Seiten) im Modell-Prüfer.
 /// Einrichten nur nach Klick: Validator über den Abhängigkeitskatalog (Zip mit Prüfsumme), glTF-Transform per npm (feste Fassung, ohne Installationsskripte).</summary>
 public partial class MainWindow
 {
@@ -27,7 +27,7 @@ public partial class MainWindow
         Show("xr");
     }
 
-    /// <summary>Für Web &amp; Brille packen: neue Datei „…-web.glb“, das Original bleibt; danach gleich wieder geprüft, wenn der Validator da ist.</summary>
+    /// <summary>Für Web-Seiten packen: neue Datei „…-web.glb“, das Original bleibt; danach gleich wieder geprüft, wenn der Validator da ist.</summary>
     public void XrPackWeb()
     {
         if (GltfTransform is not { } t) { _gltfMsg = "⚠ glTF-Transform ist noch nicht eingerichtet."; Show("xr"); return; }
@@ -47,10 +47,9 @@ public partial class MainWindow
         if (which == "validator")
         {
             var comp = DependencyCatalog.Get("gltf-validator");
-            var req = _core.Approvals.Request(Principal.LocalOwner, "deps.install", "glTF-Validator (Khronos) einrichten", comp.Id); _core.Approvals.Approve(req.Id, Principal.LocalOwner);
-            if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner);
-            _gltfMsg = "glTF-Validator wird eingerichtet (offizieller Download, ~2 MB, Prüfsumme wird geprüft) …"; Show("xr");
-            var ok = !_opt.Isolated && await Task.Run(() => _deps.InstallAsync(Principal.LocalOwner, comp));
+            // B4 (T-0706): eigene Rückfrage, dann nur über den Kern mit genau dieser Freigabe
+            var res = await InstallMitFreigabe(comp, "3D-Dateien offiziell prüfen", () => { _gltfMsg = "glTF-Validator wird eingerichtet (offizieller Download, ~2 MB, Prüfsumme wird geprüft) …"; Show("xr"); });
+            if (res is not { } ok) { _gltfMsg = "glTF-Validator: abgebrochen – es wurde nichts eingerichtet."; Show("xr"); return; }
             _gltfMsg = ok ? "✓ glTF-Validator ist eingerichtet." : _opt.Isolated ? "Testmodus: nichts installiert." : "⚠ glTF-Validator konnte nicht eingerichtet werden.";
         }
         else
@@ -60,9 +59,13 @@ public partial class MainWindow
             else if (npm is null) _gltfMsg = "⚠ Node.js mit npm fehlt – zuerst unter Programme „Node.js“ einrichten.";
             else
             {
+                // B4 (T-0706): auch das npm-Paket nur nach eigener Rückfrage und über das Freigabe-Tor
+                var pkg = "@gltf-transform/cli@" + GltfTools.TransformVersion;
+                var w = new Wirkung("deps.npm", pkg, "glTF-Transform einrichten?", $"Paket: {pkg} (MIT)\nWoher: offizielle npm-Quelle, feste Fassung, ohne Installationsskripte\nZiel: Trendo-Ordner für Zusatzprogramme\n\nTrendo lädt das Paket mit npm auf diesen PC.", "Einrichten");
+                if (await FreigabeAsync(w) is not { } npmId) { _gltfMsg = "glTF-Transform: abgebrochen – es wurde nichts eingerichtet."; Show("xr"); return; }
                 _gltfMsg = "glTF-Transform wird aus der offiziellen npm-Quelle geladen (feste Fassung, ohne Installationsskripte) …"; Show("xr");
                 Directory.CreateDirectory(GltfTransformDir);
-                var r = await Task.Run(() => Cli.Run(npm, GltfTools.InstallArgs(GltfTransformDir), GltfTransformDir, 600_000));
+                var r = await _core.Approvals.Execute(npmId, "deps.npm", pkg, () => Task.Run(() => Cli.Run(npm, GltfTools.InstallArgs(GltfTransformDir), GltfTransformDir, 600_000)));
                 var ok = r.Ok && File.Exists(GltfTools.CliJs(GltfTransformDir));
                 _core.Audit.Append(Principal.LocalOwner.Name, "deps.npm", "@gltf-transform/cli@" + GltfTools.TransformVersion + (ok ? "" : " (fehlgeschlagen)"));
                 _gltfMsg = ok ? "✓ glTF-Transform ist eingerichtet." : "⚠ Einrichten ging nicht: " + Short(r.Err.Length > 0 ? r.Err : r.Out);
@@ -79,9 +82,9 @@ public partial class MainWindow
         var row = new WrapPanel();
         row.Children.Add(GltfValidator is null ? Act("xr-gltf-validator-setup", "Khronos-Prüfer einrichten", () => _ = XrGltfSetup("validator")) : Act("xr-gltf-validate", "Offiziell prüfen", XrValidate));
         row.Children.Add(new Border { Width = 4 });
-        row.Children.Add(GltfTransform is null ? Act("xr-gltf-transform-setup", "glTF-Transform einrichten", () => _ = XrGltfSetup("transform")) : Act("xr-gltf-pack", "Für Web & Brille packen", XrPackWeb, true));
+        row.Children.Add(GltfTransform is null ? Act("xr-gltf-transform-setup", "glTF-Transform einrichten", () => _ = XrGltfSetup("transform")) : Act("xr-gltf-pack", "Für Web packen", XrPackWeb, true));
         sp.Children.Add(row);
-        sp.Children.Add(P("Packen: kleinere Datei (meshopt, WebP) für Web-Seiten und Brillen. Blender und Unreal lesen das nicht – dafür das Original nehmen.", Muted, 10.5));
+        sp.Children.Add(P("Packen: kleinere Datei (meshopt, WebP) für Web-Seiten. Blender und Unreal lesen das nicht – dafür das Original nehmen.", Muted, 10.5));
         if (_gltfMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "xr-gltf-msg", Text = _gltfMsg, FontSize = 11, Foreground = Muted, TextWrapping = Avalonia.Media.TextWrapping.Wrap });
         return sp;
     }

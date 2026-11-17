@@ -92,8 +92,9 @@ public sealed class AppCenter(IPackageBackend pm, ApprovalGate gate, AuditLog au
     public IPackageBackend Backend => pm;
     public static IPackageBackend Default(IProcessRunner r) => OperatingSystem.IsWindows() ? new WingetBackend(r) : new FlatpakBackend(r);
 
-    public ApprovalRequest Plan(string action, PackageInfo p) =>
-        gate.Request(Principal.LocalOwner, "app." + action, $"{p.Name} {(action == "install" ? "installieren" : action == "upgrade" ? "aktualisieren" : "entfernen")}", p.Id);
+    /// <param name="by">T-0713: angemeldete Person (Rolle aus dem Profil); ohne Angabe der lokale Besitzer (Kommandozeile, Tests).</param>
+    public ApprovalRequest Plan(string action, PackageInfo p, Principal? by = null) =>
+        gate.Request(by ?? Principal.LocalOwner, "app." + action, $"{p.Name} {(action == "install" ? "installieren" : action == "upgrade" ? "aktualisieren" : "entfernen")}", p.Id);
 
     public async Task<(bool Ok, string Log)> ExecuteAsync(ApprovalRequest r, Action<string>? line = null)
     {

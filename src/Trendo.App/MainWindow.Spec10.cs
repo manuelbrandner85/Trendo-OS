@@ -61,6 +61,23 @@ public partial class MainWindow
     }
     void TwinLiveTick(object? s, EventArgs e) { if (CurrentView != "zwilling") { _twLive?.Stop(); return; } MeasureThisPc(); Show("zwilling"); }
 
+    /// <summary>T-0716 (B6 Etappe E4): Anlagen-Monitor an Rückgängig (100 Schritte), Notsicherung getippter, noch nicht übernommener Eingaben und Wiederherstellen-Karte
+    /// der Hülle (<see cref="LiveSlot"/>). Rückgängig umfasst die Einstellungen der Anlagen und Sensoren (Einheit, Grenzen) – nicht die Messwerte (bis 200 000, sie kommen
+    /// laufend herein; Schnappschüsse davon wären unverhältnismäßig). Wird eine Anlage/ein Sensor angelegt, gelöscht oder umbenannt (das betrifft Messwerte), beginnt der Verlauf neu.</summary>
+    public LinkSlot TwinLink => LiveSlot("zwilling", "LINK-ZWILLING", "zwilling", "twin", "Eine Eingabe im Anlagen-Monitor", "Eingaben im Anlagen-Monitor",
+        () => LiveNode(Twin.Model.Assets),
+        n => { var a = LiveObject<List<TwinAsset>>(n) ?? []; Twin.Model.Assets.Clear(); Twin.Model.Assets.AddRange(a); Twin.Save(); },
+        () => $"{TwinAsset}\u001f{TwinSensor}", o => { var p = o.Split('\u001f'); TwinAsset = p[0].Length > 0 ? p[0] : null; TwinSensor = p.Length > 1 && p[1].Length > 0 ? p[1] : null; },
+        keep: (a, b) => TwinShape(a) == TwinShape(b), title: () => TwinSensor is { } s ? $"{TwinAsset} – {s}" : "Anlagen-Monitor");
+
+    /// <summary>Aufbau: welche Anlagen mit welchen Sensoren (ohne Einstellungen).</summary>
+    static string TwinShape(System.Text.Json.Nodes.JsonNode? assets) =>
+        string.Join("\n", (assets as System.Text.Json.Nodes.JsonArray ?? []).Select(a => (a?["Name"]?.GetValue<string>() ?? "") + ":" + string.Join(",", (a?["Sensors"] as System.Text.Json.Nodes.JsonArray ?? []).Select(s => s?["Name"]?.GetValue<string>() ?? ""))));
+
+    /// <summary>Eingaben, die gesichert werden: Sensor anlegen, Einheit und Grenzen, Ableiten, Umbenennen – nicht Löschbestätigung, Vorhersage-Zeitraum und Rechner.</summary>
+    static bool TwinField(string n) => (n.StartsWith("twin-add-", StringComparison.Ordinal) || n.StartsWith("twin-p-", StringComparison.Ordinal) || n.StartsWith("twin-derive-", StringComparison.Ordinal) || n.StartsWith("twin-rename-", StringComparison.Ordinal))
+        && n != "twin-p-fc";
+
     void TwinRun(Action a) { try { a(); } catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or FormatException or UnauthorizedAccessException) { _twMsg = "⚠ " + ex.Message; } Show("zwilling"); }
 
     static IBrush LevelBrush(TwinLevel l) => Brush.Parse(l switch { TwinLevel.Alarm => "#F87171", TwinLevel.Warnung => "#FACC15", TwinLevel.Ok => "#4ADE80", _ => "#8FA3BF" });
@@ -71,6 +88,7 @@ public partial class MainWindow
         if (TwinAsset is null || !Twin.Model.Assets.Any(a => a.Name == TwinAsset)) { TwinAsset = Twin.Model.Assets.FirstOrDefault()?.Name; TwinSensor = null; }
         var asset = Twin.Model.Assets.FirstOrDefault(a => a.Name == TwinAsset);
         if (asset is not null && (TwinSensor is null || !asset.Sensors.Any(s => s.Name == TwinSensor))) TwinSensor = asset.Sensors.FirstOrDefault()?.Name;
+        var link = TwinLink; LiveSync(link); // T-0716: gespeicherte Änderung → Rückgängig-Schritt
         Button Btn(string name, string label, Action go, bool accent = false) { var b = new Button { Name = name, Content = label, Padding = new Thickness(10, 4), Margin = new Thickness(0, 0, 4, 4) }; if (accent) { b.Background = Accent; b.Foreground = Brushes.White; } b.Click += (_, _) => go(); return b; }
 
         // Kopf: Werkzeugleiste
@@ -147,8 +165,15 @@ public partial class MainWindow
         var right = new Border { Name = "twin-side", Width = 300, CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(12), Child = new ScrollViewer { Content = TwinSide() } };
         var body = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,12,*,12,Auto"), Children = { left, Pos(mid, 2), Pos(right, 4) } };
         var root = new DockPanel { Name = "twin-root" };
+        // T-0716: Rückgängig · Wiederholen vorn in der Werkzeugleiste (keine zusätzliche Zeile), Karte und Hinweis darüber
+        LinkCommit(link);
+        var (undo, redo) = LinkButtons(link); bar.Children.Insert(0, undo); bar.Children.Insert(1, redo);
+        var undoBar = new StackPanel();
+        if (LinkRecoveryCard(link) is { } card) undoBar.Children.Add(card);
+        if (LinkMsg(link) is { } lmsg) undoBar.Children.Add(lmsg);
+        DockPanel.SetDock(undoBar, Avalonia.Controls.Dock.Top); root.Children.Add(undoBar);
         DockPanel.SetDock(bar, Avalonia.Controls.Dock.Top); root.Children.Add(bar); root.Children.Add(body);
-        return FitPage("Anlagen-Monitor", new Panel(), root);
+        return LiveBind(link, FitPage("Anlagen-Monitor", new Panel(), root), TwinField);
     }
 
     Control TwinSide()
@@ -207,9 +232,9 @@ public partial class MainWindow
         var rn = new TextBox { Name = "twin-rename-to", PlaceholderText = "Neuer Name" };
         tools.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("*,4,Auto"), Children = { rn, Pos(B("twin-rename", "Umbenennen", () => { TwinPlus.Rename(Twin, an, sn, rn.Text ?? ""); TwinSensor = rn.Text?.Trim(); _twMsg = "Umbenannt."; }), 2) } });
         tools.Children.Add(new WrapPanel { Children = {
-            B("twin-export", "CSV speichern", () => { if (rs.Count == 0) throw new InvalidOperationException("Dieser Sensor hat noch keine Werte."); var p = Path.Combine(WorkFolder("Anlagen-Monitor"), DevStudio.SafeName($"{an}-{sn}") + ".csv"); File.WriteAllText(p, TwinPlus.ExportCsv(Twin.Model, an, sn)); _twMsg = "Gespeichert: " + p; NotifyFileResult(_twMsg); }),
+            B("twin-export", "CSV speichern", () => { if (rs.Count == 0) throw new InvalidOperationException("Dieser Sensor hat noch keine Werte."); var p = Path.Combine(WorkFolder("Anlagen-Monitor"), DevStudio.SafeName($"{an}-{sn}") + ".csv"); AtomicFile.WriteAllText(p, TwinPlus.ExportCsv(Twin.Model, an, sn)); _twMsg = "Gespeichert: " + p; NotifyFileResult(_twMsg); }),
             new Border { Width = 4 },
-            B("twin-svg", "Diagramm (SVG)", () => { var p = Path.Combine(WorkFolder("Anlagen-Monitor"), DevStudio.SafeName($"{an}-{sn}") + ".svg"); File.WriteAllText(p, TwinChart.Svg(Twin.Model, an, sn, TwinRange, _twForecast)); _twMsg = "Gespeichert: " + p; NotifyFileResult(_twMsg); }) } });
+            B("twin-svg", "Diagramm (SVG)", () => { var p = Path.Combine(WorkFolder("Anlagen-Monitor"), DevStudio.SafeName($"{an}-{sn}") + ".svg"); AtomicFile.WriteAllText(p, TwinChart.Svg(Twin.Model, an, sn, TwinRange, _twForecast)); _twMsg = "Gespeichert: " + p; NotifyFileResult(_twMsg); }) } });
         var conf = new TextBox { Name = "twin-del-confirm", PlaceholderText = $"„{sn}“ zur Bestätigung" };
         tools.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("*,4,Auto"), Children = { conf, Pos(B("twin-del", "Löschen", () => { if (!(conf.Text ?? "").Trim().Equals(sn, StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("Bitte den Sensornamen zur Bestätigung wiederholen."); var n = TwinPlus.Delete(Twin, an, sn); TwinSensor = null; _twMsg = $"Gelöscht ({n} Werte)."; }), 2) } });
         tools.Children.Add(B("twin-trim", "Speicher begrenzen (100 000 Werte)", () => { var n = TwinPlus.Trim(Twin.Model, 100_000); Twin.Save(); _twMsg = n == 0 ? "Nichts zu verwerfen." : $"{Fach.F(n, 0)} alte Werte verworfen."; }));

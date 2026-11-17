@@ -51,7 +51,22 @@ public sealed class SlideView : Control
     public void Select(int i) { Selected = i >= 0 && i < Slide.Shapes.Count ? i : -1; InvalidateVisual(); SelectionChanged?.Invoke(); }
 
     int HitShape(Point p) { for (var i = Slide.Shapes.Count - 1; i >= 0; i--) if (ShapeRect(Slide.Shapes[i]).Inflate(2).Contains(p)) return i; return -1; }
-    bool OnHandle(Point p) => Selected >= 0 && Selected < Slide.Shapes.Count && new Rect(ShapeRect(Slide.Shapes[Selected]).BottomRight - new Point(7, 7), new Size(14, 14)).Contains(p);
+    /// <summary>T-0701: acht Griffe (Ecken und Kantenmitten) – Richtung je Achse: -1 = links/oben, 0 = Mitte, 1 = rechts/unten.</summary>
+    static IEnumerable<(Point P, int X, int Y)> HandlePoints(Rect r)
+    {
+        for (var y = -1; y <= 1; y++)
+            for (var x = -1; x <= 1; x++)
+                if (x != 0 || y != 0) yield return (new Point(r.X + (x + 1) / 2.0 * r.Width, r.Y + (y + 1) / 2.0 * r.Height), x, y);
+    }
+
+    (int X, int Y)? HandleAt(Point p)
+    {
+        if (Selected < 0 || Selected >= Slide.Shapes.Count) return null;
+        foreach (var h in HandlePoints(ShapeRect(Slide.Shapes[Selected]))) if (new Rect(h.P - new Point(7, 7), new Size(14, 14)).Contains(p)) return (h.X, h.Y);
+        return null;
+    }
+
+    (int X, int Y) _handle = (1, 1);
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
@@ -59,7 +74,7 @@ public sealed class SlideView : Control
         if (!Editable) return;
         Focus();
         var p = e.GetPosition(this);
-        if (OnHandle(p)) { _drag = Drag.Resize; }
+        if (HandleAt(p) is { } hd) { _drag = Drag.Resize; _handle = hd; }
         else
         {
             var hit = HitShape(p);
@@ -77,7 +92,8 @@ public sealed class SlideView : Control
         base.OnPointerMoved(e);
         if (!Editable) return;
         var p = e.GetPosition(this);
-        Cursor = OnHandle(p) ? new Cursor(StandardCursorType.BottomRightCorner) : HitShape(p) >= 0 ? new Cursor(StandardCursorType.SizeAll) : Cursor.Default;
+        Cursor = HandleAt(p) is { } hc ? new Cursor(hc switch { (0, _) => StandardCursorType.SizeNorthSouth, (_, 0) => StandardCursorType.SizeWestEast, (-1, -1) => StandardCursorType.TopLeftCorner, (1, -1) => StandardCursorType.TopRightCorner, (-1, 1) => StandardCursorType.BottomLeftCorner, _ => StandardCursorType.BottomRightCorner })
+            : HitShape(p) >= 0 ? new Cursor(StandardCursorType.SizeAll) : Cursor.Default;
         if (_drag == Drag.None || Selected < 0) return;
         var k = Frame().K; var dx = (p.X - _start.X) / k; var dy = (p.Y - _start.Y) / k;
         if (!_begun && Math.Abs(dx) + Math.Abs(dy) < 0.05) return;
@@ -85,7 +101,14 @@ public sealed class SlideView : Control
         var s = Slide.Shapes[Selected];
         static double Snap(double v) => Math.Round(v * 10) / 10;
         if (_drag == Drag.Move) { s.X = Snap(Math.Clamp(_orig.X + dx, -s.W + 0.5, SlideDoc.WidthCm - 0.5)); s.Y = Snap(Math.Clamp(_orig.Y + dy, -s.H + 0.5, SlideDoc.HeightCm - 0.5)); }
-        else { s.W = Snap(Math.Max(0.5, _orig.W + dx)); s.H = Snap(Math.Max(0.5, _orig.H + dy)); }
+        else
+        {
+            // Griff links/oben verschiebt die Kante (Breite/Höhe ändern sich entgegengesetzt), rechts/unten wie bisher
+            if (_handle.X == 1) s.W = Snap(Math.Max(0.5, _orig.W + dx));
+            else if (_handle.X == -1) { var w = Snap(Math.Max(0.5, _orig.W - dx)); s.X = Snap(_orig.X + _orig.W - w); s.W = w; }
+            if (_handle.Y == 1) s.H = Snap(Math.Max(0.5, _orig.H + dy));
+            else if (_handle.Y == -1) { var h = Snap(Math.Max(0.5, _orig.H - dy)); s.Y = Snap(_orig.Y + _orig.H - h); s.H = h; }
+        }
         InvalidateVisual();
     }
 
@@ -120,8 +143,10 @@ public sealed class SlideView : Control
         if (Editable && Selected >= 0 && Selected < Slide.Shapes.Count)
         {
             var r = ShapeRect(Slide.Shapes[Selected]);
-            ctx.DrawRectangle(new Pen(new SolidColorBrush(Color.Parse("#2F86F6")), 1.5, new DashStyle([4, 3], 0)), r.Inflate(2));
-            ctx.FillRectangle(new SolidColorBrush(Color.Parse("#2F86F6")), new Rect(r.BottomRight - new Point(5, 5), new Size(10, 10)));
+            var gold = new SolidColorBrush(Color.Parse("#C9A227"));
+            ctx.DrawRectangle(new Pen(gold, 1.5, new DashStyle([4, 3], 0)), r.Inflate(2));
+            // T-0701: Griffe an allen Ecken und Kanten wie in PowerPoint
+            foreach (var h in HandlePoints(r)) ctx.DrawRectangle(Brushes.White, new Pen(gold, 1.5), new Rect(h.P - new Point(5, 5), new Size(10, 10)));
         }
         if (Laser is { } l) { var c = new Point(area.X + l.X * k, area.Y + l.Y * k); ctx.DrawEllipse(new SolidColorBrush(Color.Parse("#E0FF2020")), new Pen(new SolidColorBrush(Color.Parse("#60FF2020")), 6), c, 6, 6); }
     }
@@ -199,12 +224,29 @@ public sealed class SlideView : Control
                     var color = s.Kind == ShapeKind.Medien ? Brushes.White : B(s.Color ?? (s.Role == "title" ? th.Title : th.Text));
                     var px = s.FontSize * PtCm * k; // Punkt → cm → Pixel
                     var lines = new List<(FormattedText Ft, double Indent, bool Bullet)>();
+                    // T-0701: mehrere Textformate in einem Feld – je Abschnitt eigene Größe, Fett, Kursiv, Unterstreichung, Farbe, Schrift
+                    var chars = s.Kind != ShapeKind.Medien && s.Runs is { } runs ? TextRuns.Expand(runs, text) : null;
+                    var pos = 0;
                     foreach (var raw in text.Split('\n'))
                     {
                         var lvl = raw.StartsWith('\t') ? 1 : 0; var indent = s.Bullets ? (0.95 + lvl * 1.27) * k : 0;
-                        var ft = Text(raw.TrimStart('\t'), font, px * (lvl == 1 ? 0.85 : 1), s.Bold, color, Math.Max(1, r.Width - indent - 0.25 * k * 2));
+                        var line = raw.TrimStart('\t'); var lineStart = pos + raw.Length - line.Length;
+                        var ft = Text(line, font, px * (lvl == 1 ? 0.85 : 1), s.Bold, color, Math.Max(1, r.Width - indent - 0.25 * k * 2));
                         ft.TextAlignment = s.Align switch { Align.Center => TextAlignment.Center, Align.Right => TextAlignment.Right, Align.Justify => TextAlignment.Justify, _ => TextAlignment.Left };
+                        if (chars is not null)
+                            for (var i = 0; i < line.Length;)
+                            {
+                                var look = chars[lineStart + i]; var j = i; while (j < line.Length && chars[lineStart + j] == look) j++;
+                                if (look.Size is { } sz) ft.SetFontSize(Math.Max(1, sz * PtCm * k), i, j - i);
+                                if (look.Bold is { } b) ft.SetFontWeight(b ? FontWeight.Bold : FontWeight.Normal, i, j - i);
+                                if (look.Italic == true) ft.SetFontStyle(FontStyle.Italic, i, j - i);
+                                if (look.Underline is not null) ft.SetTextDecorations(TextDecorations.Underline, i, j - i);
+                                if (look.Color is { } col) ft.SetForegroundBrush(B(col), i, j - i);
+                                if (look.Font is { Length: > 0 } fn && !fn.StartsWith('+')) ft.SetFontFamily(new FontFamily(fn + ", " + th.Font + ", Inter, Arial"), i, j - i);
+                                i = j;
+                            }
                         lines.Add((ft, indent, s.Bullets && raw.Trim().Length > 0));
+                        pos += raw.Length + 1;
                     }
                     var total = lines.Sum(l => Math.Max(l.Ft.Height, l.Ft.Baseline)) ;
                     var y = s.Kind is ShapeKind.Text ? r.Y + 0.13 * k : r.Y + Math.Max(0, (r.Height - total) / 2);

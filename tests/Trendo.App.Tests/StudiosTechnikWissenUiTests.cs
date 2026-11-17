@@ -19,7 +19,7 @@ public class StudiosTechnikWissen_Ui
     static bool Failed(JsonObject r) => (bool)r["isError"]!;
     static string Folder() { var d = Path.Combine(Path.GetTempPath(), "trendo-technik-" + Guid.NewGuid().ToString("N")[..8]); Directory.CreateDirectory(d); return d; }
 
-    public static TheoryData<string> Studios => new() { "SPEC-01", "SPEC-02", "SPEC-03", "SPEC-10", "SPEC-13", "SPEC-14", "SPEC-16", "CORE-09", "SPEC-05", "SPEC-06", "CORE-10", "SYS-08" };
+    public static TheoryData<string> Studios => new() { "SPEC-01", "SPEC-02", "SPEC-03", "SPEC-10", "SPEC-13", "SPEC-14", "SPEC-05", "SPEC-06", "CORE-10", "SYS-08" };
 
     [Theory(DisplayName = "Technik und Wissen: Fachwissen ist vollständig und verweist nur auf Vorhandenes")]
     [MemberData(nameof(Studios))]
@@ -41,7 +41,6 @@ public class StudiosTechnikWissen_Ui
     [InlineData("SPEC-03", "Hält ein IPE 200?", "nachweis")]
     [InlineData("SPEC-13", "Gib mir das als GPX fürs Navi", "gpx")]
     [InlineData("SPEC-14", "Prüfe den G-Code auf Kollisionen", "pruefen")]
-    [InlineData("SPEC-16", "Ich habe 40 Liter getankt", "tanken")]
     [InlineData("SPEC-05", "Zeichne ein Histogramm", "diagramm")]
     [InlineData("SPEC-05", "Leg eine Gerade durch die Punkte", "kurve")]
     [InlineData("SPEC-06", "Frag mich die fälligen Karten ab", "ueben")]
@@ -55,8 +54,6 @@ public class StudiosTechnikWissen_Ui
     [InlineData("zwilling", "SPEC-10")]
     [InlineData("karten", "SPEC-13")]
     [InlineData("cnc", "SPEC-14")]
-    [InlineData("fahrzeug", "SPEC-16")]
-    [InlineData("roboter", "CORE-09")]
     [InlineData("wissenschaft", "SPEC-05")]
     [InlineData("lernen", "SPEC-06")]
     [InlineData("ki-wissen", "CORE-10")]
@@ -91,7 +88,6 @@ public class StudiosTechnikWissen_Ui
     public void Machine_limits()
     {
         Assert.Contains("Keine Fräs- oder Maschinenbefehle", CapabilityCatalog.Find("SPEC-14")!.Blocker);
-        Assert.Contains("Freigabe", string.Join(" ", StudioKnowledgeBase.For("CORE-09")!.Quality));
         Assert.Contains("keine Maschine", string.Join(" ", StudioKnowledgeBase.For("SPEC-14")!.Quality));
     }
 }

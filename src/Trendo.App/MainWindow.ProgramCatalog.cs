@@ -70,7 +70,7 @@ public partial class MainWindow
             if (c switch
             {
                 CadView => "CAD-/3D-Zeichenfläche", MeshView => "3D-Ansicht", FloorPlanView => "Grundriss-Zeichenfläche", CircuitCanvas => "Schaltplan-Zeichenfläche", PcbCanvas => "Platinen-Zeichenfläche",
-                FrameCanvas => "Tragwerks-Zeichenfläche", MapCanvas => "Karte", PointCloudView => "Punktwolken-Ansicht", CncPathView => "Werkzeugbahn-Ansicht", ArmView => "Roboter-Ansicht",
+                FrameCanvas => "Tragwerks-Zeichenfläche", MapCanvas => "Karte", PointCloudView => "Punktwolken-Ansicht", CncPathView => "Werkzeugbahn-Ansicht",
                 SheetGridView or MeasureGrid => "Tabellenraster", CalTimeGrid => "Kalender-Zeitachse", EditTimeline => "Video-Zeitleiste", ShapeView => "Diagramm/Zeichnung", Border { Name: "learn-card" } => "Lernkarte", StackPanel { Name: "wf-flow" } => "Ablaufplan", LevelCanvas => "Level-Editor", ImageCanvas => "Bild-Arbeitsfläche (Ebenen)", Control { Name: "print-3d" } => "Druckplatte (3D) mit Schichten", Control { Name: "text-paper" } => "Dokumentseite (Textverarbeitung)", Control { Name: "pdf-page" } => "PDF-Seite", Grid { Name: "cal-month" } => "Monatskalender", Grid { Name: "todo-board" } => "Aufgabentafel", SlideView => "Folienansicht", GraphView or BarChart => "Diagramm", Avalonia.Controls.Image => "Bildansicht",
                 TextBox { AcceptsReturn: true } t when Math.Max(t.MinHeight, double.IsNaN(t.Height) ? 0 : t.Height) >= 100 => "Texteditor",
                 // Arbeitsflächen der Umbau-Runden 3–6 (Masterprompt 131) – vorher als „keine Arbeitsfläche“ gemeldet

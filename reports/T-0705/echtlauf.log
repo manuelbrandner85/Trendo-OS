@@ -1,0 +1,23 @@
+# T-0705 Echtlauf Büro-Studios (BueroEchtlauf_Ui)
+Start: 2026-11-16T14:18:34  Ende: 2026-11-16T14:19:30
+$ Trendo.App.Tests.exe -class Trendo.App.Tests.BueroEchtlauf_Ui -reporter verbose
+Exit 0
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0705 Echtlauf Präsentation gestalten: PowerPoint von LibreOffice ablegen (Titel, Punkte, Notizen übernommen), Folie umsortieren, als PPTX exportieren – LibreOffice öffnet sie, qpdf zählt die Folien [STARTING]
+    T-0705 Echtlauf Präsentation gestalten: PowerPoint von LibreOffice ablegen (Titel, Punkte, Notizen übernommen), Folie umsortieren, als PPTX exportieren – LibreOffice öffnet sie, qpdf zählt die Folien [FINISHED] Time: 10,1316823s
+    T-0705 Echtlauf Scannen: Seitenbild von LibreOffice ablegen, „Durchsuchbare PDF“ mit dem echten Tesseract – qpdf prüft, die Textebene enthält den Brieftext [STARTING]
+    T-0705 Echtlauf Scannen: Seitenbild von LibreOffice ablegen, „Durchsuchbare PDF“ mit dem echten Tesseract – qpdf prüft, die Textebene enthält den Brieftext [FINISHED] Time: 8,6738896s
+    T-0705 Echtlauf Formulare: AcroForm-PDF von LibreOffice öffnen, Felder auf der Oberfläche ausfüllen, speichern und geglättet speichern – qpdf liest die Feldwerte bzw. findet keine Felder mehr, LibreOffice öffnet beide [STARTING]
+    T-0705 Echtlauf Formulare: AcroForm-PDF von LibreOffice öffnen, Felder auf der Oberfläche ausfüllen, speichern und geglättet speichern – qpdf liest die Feldwerte bzw. findet keine Felder mehr, LibreOffice öffnet beide [FINISHED] Time: 11,3338779s
+    T-0705 Echtlauf Karten und Verträge: Druck-PDF der Karte und Kündigungsschreiben – qpdf prüft, LibreOffice öffnet beide; Kalenderdatei mit Erinnerung protokolliert [STARTING]
+    T-0705 Echtlauf Karten und Verträge: Druck-PDF der Karte und Kündigungsschreiben – qpdf prüft, LibreOffice öffnet beide; Kalenderdatei mit Erinnerung protokolliert [FINISHED] Time: 7,2953808s
+    T-0705 Echtlauf PDF-Werkstatt: LibreOffice-PDF (3 Seiten) ablegen, Seite 3 nach vorn ziehen, drehen, Seite löschen, Ausführen – qpdf prüft Struktur, Seitenzahl und Drehung, LibreOffice öffnet das Ergebnis [STARTING]
+    T-0705 Echtlauf PDF-Werkstatt: LibreOffice-PDF (3 Seiten) ablegen, Seite 3 nach vorn ziehen, drehen, Seite löschen, Ausführen – qpdf prüft Struktur, Seitenzahl und Drehung, LibreOffice öffnet das Ergebnis [FINISHED] Time: 6,9808003s
+    T-0705 Echtlauf Bewerbung: Zeugnis-PDF von LibreOffice als Anlage ablegen, Lebenslauf als Word und PDF, Mappe als PDF – LibreOffice öffnet das DOCX, qpdf prüft PDF und Mappe (Anlage hinten) [STARTING]
+    T-0705 Echtlauf Bewerbung: Zeugnis-PDF von LibreOffice als Anlage ablegen, Lebenslauf als Word und PDF, Mappe als PDF – LibreOffice öffnet das DOCX, qpdf prüft PDF und Mappe (Anlage hinten) [FINISHED] Time: 11,2539593s
+  Finished:    Trendo.App.Tests (ID = '9a5d6bcc5866e59725e0875d4a8f9c1cf37a6f8f4df9b348505b06545d14d129')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 6, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 55,953s

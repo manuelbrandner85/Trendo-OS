@@ -39,7 +39,7 @@ public interface IAssistSession
 public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocument doc) : IAssistTarget
 {
     static readonly string[] SkipGroups = ["Ansicht", "Datei", "Export", "Ausgabe", "Hilfe", "Werkzeug"];
-    [GeneratedRegex(@"(play|run|export|build|zoom|fit|start$|end$|speed|reset|-v-|photo|2d3d|grid|dims|tiles|-100|open|save|print|import|close|share|send)", RegexOptions.IgnoreCase)] private static partial Regex Risky();
+    [GeneratedRegex(@"(play|run|export|build|zoom|fit|start$|end$|speed|reset|-v-|photo|2d3d|grid|dims|tiles|-100|open|save|print|import|close|share|send|claude)", RegexOptions.IgnoreCase)] private static partial Regex Risky(); // T-0707: KI-Befehle („… mit Claude“) sind Einstiege in die Kette, keine Schritte darin
     [GeneratedRegex(@"[^\p{L}\p{N} /-]")] private static partial Regex Symbols();
 
     public string Key => spec.Key;
@@ -49,6 +49,8 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
         .Select(c => new AssistAction(c.Name, Symbols().Replace(c.Label, "").Trim() is { Length: > 0 } l ? l : c.Name, [.. Symbols().Replace(c.Label + " " + g.Group + " " + (c.Tip ?? ""), " ").Split(' ', StringSplitOptions.RemoveEmptyEntries)]))).ToList();
 
     public IAssistSession Begin() => new Session(spec, doc);
+    /// <summary>T-0707: das offene Dokument (für den KI-Plan der einen Kette, <see cref="AssistChain"/>).</summary>
+    public ProgramDocument Document => doc;
     public IEnumerable<AssistSuggestion> Hints() => [];
     public bool Undo() => doc.CanUndo && (doc.UndoLabel?.StartsWith("KI: ", StringComparison.Ordinal) ?? false) && doc.Undo();
 
@@ -61,13 +63,15 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
         Control? _preview;
         public void Run(AssistStep step)
         {
-            var cmd = spec.Ribbon.SelectMany(g => g.Cmds).First(c => c.Name == step.Action.Id);
+            // T-0707: „dokument.setzen“ aus dem KI-Plan schreibt geprüften Inhalt an eine Stelle (dieselbe Prüfung wie bei der Claude-Brücke); sonst ein Befehl des Menübands
+            var cmd = step.Action.Id == AssistChain.EditAction ? null : spec.Ribbon.SelectMany(g => g.Cmds).First(c => c.Name == step.Action.Id);
             var before = doc.Remember();
             MainWindow.AssistQuiet++;
             try
             {
                 doc.Rollback(before with { Data = _after }); // auf den bisherigen Vorschau-Stand setzen
-                for (var i = 0; i < step.Times; i++) cmd.Run(doc);
+                if (cmd is null) doc.Edit(AssistChain.UndoPrefix + "Inhalt", d => AssistChain.ApplyEdit(d, step.Args.GetValueOrDefault("pfad") ?? "", step.Args.GetValueOrDefault("wert") ?? ""));
+                else for (var i = 0; i < step.Times; i++) cmd.Run(doc);
                 _after = doc.Data.ToJsonString();
                 _preview = null;
             }
@@ -84,7 +88,7 @@ public sealed partial class ProgramAssistTarget(ProgramSpec spec, ProgramDocumen
         public void Apply(string label, IReadOnlyList<AssistStep> sideEffects)
         {
             var after = JsonNode.Parse(_after)!.AsObject();
-            doc.Edit("KI: " + label, d => { d.Clear(); foreach (var (k, v) in after.ToList()) { after.Remove(k); d[k] = v; } });
+            doc.Edit(AssistChain.UndoPrefix + label, d => { d.Clear(); foreach (var (k, v) in after.ToList()) { after.Remove(k); d[k] = v; } });
         }
     }
 }
@@ -100,7 +104,7 @@ public partial class MainWindow
     {
         if (key is null) return null;
         if (_assistAdapters.TryGetValue(key, out var f)) return f();
-        if (Programs.TryGetValue(key, out var spec) && ProgramActive(key) is { } doc && new ProgramAssistTarget(spec, doc) is { Actions.Count: > 0 } t) return t;
+        if (Programs.TryGetValue(key, out var spec) && ProgramActive(key) is { } doc) return new ProgramAssistTarget(spec, doc); // T-0707: jedes Programm der Hülle – auch ohne passende Menüband-Befehle schreibt die KI über „dokument.setzen“
         return null;
     }
 
@@ -135,23 +139,54 @@ public partial class MainWindow
     public static int AssistLiveDelayMs { get; set; } = 450;
     /// <summary>Für Tests: letzter Assistent-Lauf (Phase, Schritte, Meldung).</summary>
     public IReadOnlyList<string> AssistLog => _assistRuns.Values.LastOrDefault()?.Log ?? [];
+    /// <summary>Für Tests und Fehlersuche: letzte Antwort der KI an den Assistenten (nur im Speicher, nie im Protokoll).</summary>
+    public string? AssistLastKiAnswer { get; private set; }
+    /// <summary>Für Tests: Programm des letzten Assistent-Laufs.</summary>
+    public string? AssistLastKey => _assistRuns.Values.LastOrDefault()?.Target.Key;
     public (string Phase, IReadOnlyList<string> Steps, string Message)? AssistLast => _assistRuns.Values.LastOrDefault() is { } r ? (r.Phase, r.Plan.Steps.Select(s => s.Text).ToList(), r.Message) : null;
 
     /// <summary>Auftrag an das offene Programm: Plan ohne KI, sonst KI (Claude, wenn verbunden – sonst lokal) mit Rolle des Programms. False = nicht verstanden (dann übernimmt der Studio-Ablauf).</summary>
-    async Task<bool> AssistStart(IAssistTarget t, string prompt, ContentControl host)
+    async Task<bool> AssistStart(IAssistTarget t, string prompt, ContentControl host, AssistEntry entry = AssistEntry.Auftragszeile)
     {
+        // T-0707: Kette – Auftrag prüfen, Rechte prüfen (Rbac, Not-Stopp), dann Plan
+        AssistOrder order;
+        try { order = AssistChain.Validate(t.Key, prompt, entry); }
+        catch (ArgumentException e) { AssistNote(host, e.Message); return true; }
+        if (AssistChain.RightsBlock(CurrentPrincipal, _core.Approvals) is { } denied) { AssistNote(host, denied); _core.Audit.Append(Principal.LocalOwner.Name, "assist.rechte", $"{t.Key} {denied}"); return true; }
+        prompt = order.Prompt;
         var prefs = new AssistPrefs(_core.DataRoot, t.Key);
-        var plan = AssistPlanner.Plan(prompt, t.Actions, prefs.Values);
+        var rules = AssistPlanner.Plan(prompt, t.Actions, prefs.Values);
+        // T-0707: Fachaufgaben („Schreib den Anfang von Kapitel 1 …“) gehen zuerst an die KI – sonst greift der Regel-Planer ein einzelnes Wort („Kapitel“ → „Neues Kapitel“).
+        // Kurze Befehle („Füge 3 Zeilen hinzu“) bleiben ohne KI; KI-Befehle aus dem Menüband sind immer Fachaufgaben. Antwortet keine KI, gilt der Regel-Plan wie bisher.
+        var kiFirst = t is ProgramAssistTarget && (entry == AssistEntry.Programmbefehl || prompt.Split((char[])[' ', '\n', '\t'], StringSplitOptions.RemoveEmptyEntries).Length >= AssistChain.KiFirstWords);
+        var plan = kiFirst ? new AssistPlan { Prompt = prompt } : rules;
+        var kiAnswered = false;
         if (!plan.Understood && !_core.Offline && prompt.Trim().Length > 3)
         {
             var role = t.Role + StudioTeams.Brief(ClaudeBelongs(t.Key) ? ClaudeStudioOf(t.Key) : null, prompt); // T-0630: das Team des Studios arbeitet ohne Auswahl mit
-            var ki = await Intel.AskAsync(new KiRequest(prompt, AssistPlanner.KiPrompt(t.Title, t.Actions, role, SkillsFor(t.Key)), UseKnowledge: false));
-            if (ki.Ok) { var kp = AssistPlanner.FromKi(prompt, ki.Text, t.Actions); kp.Source = $"KI ({ki.Backend})"; if (kp.Understood) plan = kp; }
+            // T-0707: eine KI für alle Einstiege – IntelligenceCore (Claude über das eigene Abo, wenn als Haupt-KI verbunden, sonst das beste Modell auf diesem PC aus T-0703).
+            // Programme der Hülle bekommen die Daten des offenen Dokuments und die Aktion „dokument.setzen“: so landet eine Fachaufgabe direkt im Dokument.
+            var system = t is ProgramAssistTarget pt ? AssistChain.KiPrompt(t.Title, t.Actions, role, SkillsFor(t.Key), pt.Document.Data) : AssistPlanner.KiPrompt(t.Title, t.Actions, role, SkillsFor(t.Key));
+            AssistBusy(host, t.Title);
+            var ki = await Intel.AskAsync(new KiRequest(prompt, system, PreferredModel: KiModelName, UseKnowledge: false));
+            kiAnswered = ki.Ok; AssistLastKiAnswer = ki.Text;
+            // T-0707: kaputtes JSON (echter Fall mit qwen3:14b: eine schließende Klammer fehlte) – genau einmal nachfragen statt raten
+            if (ki.Ok && t is ProgramAssistTarget && !AssistChain.FromKi(prompt, ki.Text, t.Actions).Understood && AssistChain.LooksLikePlan(ki.Text))
+            {
+                _core.Audit.Append(Principal.LocalOwner.Name, "assist.ki.nachfrage", t.Key);
+                var again = await Intel.AskAsync(new KiRequest(AssistChain.RepairPrompt, system, PreferredModel: KiModelName, History: [new KiMessage("user", prompt), new KiMessage("assistant", AssistChain.CleanAnswer(ki.Text))], UseKnowledge: false));
+                if (again.Ok) { ki = again; AssistLastKiAnswer = ki.Text; }
+            }
+            if (ki.Ok) { var kp = t is ProgramAssistTarget ? AssistChain.FromKi(prompt, ki.Text, t.Actions) : AssistPlanner.FromKi(prompt, ki.Text, t.Actions); kp.Source = $"KI ({ki.Backend}{(ki.Model is { Length: > 0 } km ? ", " + km : "")})"; if (kp.Understood) plan = kp; }
+            else { _assistKiError = ki.Text; _core.Audit.Append(Principal.LocalOwner.Name, "assist.ki.fehler", $"{t.Key} {ki.Text}"); }
+            if (!plan.Understood && ki.Ok) _core.Audit.Append(Principal.LocalOwner.Name, "assist.ki.ohneplan", $"{t.Key} antwort={ki.Text.Length} Zeichen");
+            if (!plan.Understood) host.Content = null;
         }
+        if (!plan.Understood && kiFirst && entry != AssistEntry.Programmbefehl && !kiAnswered) plan = rules; // nur ohne KI-Antwort – hat die KI geantwortet, aber nichts Brauchbares, rät der Regel-Planer nicht
         if (!plan.Understood) return false;
         var run = new AssistRun(t, plan, prefs) { Host = host };
         _assistRuns[host] = run; _assistByKey[t.Key] = run;
-        _core.Audit.Append(Principal.LocalOwner.Name, "assist.plan", $"{t.Key} schritte={plan.Steps.Count} fragen={plan.Questions.Count} quelle={plan.Source}");
+        _core.Audit.Append(Principal.LocalOwner.Name, "assist.plan", $"{t.Key} schritte={plan.Steps.Count} fragen={plan.Questions.Count} quelle={plan.Source} einstieg={entry}");
         await AssistAdvance(run, host);
         return true;
     }
@@ -193,6 +228,14 @@ public partial class MainWindow
         catch (Exception ex) when (ex is not OutOfMemoryException) { r.Phase = "fehler"; r.Message = "Übernehmen hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex); AssistRender(r, host); return; }
         _core.Audit.Append(Principal.LocalOwner.Name, "assist.apply", $"{r.Target.Key} „{label}“");
         r.Phase = "fertig"; r.Message = "✓ Behalten. Rückgängig geht hier oder mit Strg+Z.";
+        // T-0707: letzter Schritt der Kette – das Ergebnis steht in einer echten Datei (Speichern der Programm-Hülle; ohne automatisches Speichern und ohne Dateinamen: Notsicherung)
+        if (r.Target is ProgramAssistTarget && Programs.ContainsKey(r.Target.Key) && ProgramActive(r.Target.Key) is { } saved)
+            try
+            {
+                if (saved.Path is not null || AutoSaveDocs) r.Message = $"✓ Behalten und gespeichert: {Path.GetFileName(ProgramSave(r.Target.Key))}. Rückgängig geht hier oder mit Strg+Z.";
+                else { DocBackup(saved); r.Message = "✓ Behalten (Notsicherung ist geschrieben – Strg+S legt die Datei an). Rückgängig geht hier oder mit Strg+Z."; }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException) { r.Message = "✓ Behalten – aber Speichern hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex); }
         r.Suggestions = AssistPlanner.Suggest(r.Plan.Steps.Select(s => s.Action), r.Target.Actions, r.Target.Hints()).ToList();
         var page = CurrentView; Show(page); // neue Leiste übernimmt das Panel (AssistAttach)
     }
@@ -278,7 +321,7 @@ public partial class MainWindow
         {
             var row = new WrapPanel(); var k = 0;
             row.Children.Add(new TextBlock { Text = "Als Nächstes:", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) });
-            foreach (var s in r.Suggestions) { var ss = s; var c = Act($"assist-sug-{k++}", ss.Text, () => _ = AssistStart(r.Target, ss.Prompt, host)); c.Margin = new Thickness(0, 0, 6, 0); row.Children.Add(c); }
+            foreach (var s in r.Suggestions) { var ss = s; var c = Act($"assist-sug-{k++}", ss.Text, () => _ = AssistStart(r.Target, ss.Prompt, host, AssistEntry.Vorschlag)); c.Margin = new Thickness(0, 0, 6, 0); row.Children.Add(c); }
             sp.Children.Add(row);
         }
 

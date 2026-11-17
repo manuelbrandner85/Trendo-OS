@@ -20,7 +20,7 @@ public sealed partial class ResearchDesk
         List<Highlight> all; try { all = File.Exists(MarksFile) ? JsonSerializer.Deserialize<List<Highlight>>(File.ReadAllText(MarksFile)) ?? [] : []; } catch (JsonException) { all = []; }
         return all.Where(h => url is null || h.Url == url).OrderBy(h => h.Url == url ? 0 : 1).ThenBy(h => h.Url).ThenBy(h => h.Start).ToList();
     }
-    void SaveMarks(IEnumerable<Highlight> l) { Directory.CreateDirectory(_dir); File.WriteAllText(MarksFile, JsonSerializer.Serialize(l.ToList())); }
+    void SaveMarks(IEnumerable<Highlight> l) { Directory.CreateDirectory(_dir); AtomicFile.WriteAllText(MarksFile, JsonSerializer.Serialize(l.ToList())); } // T-0717: atomar
 
     /// <summary>Stelle markieren. Leerzeichen am Rand werden abgeschnitten; dieselbe Stelle zweimal ersetzt Farbe/Notiz statt doppelt zu markieren.</summary>
     public Highlight AddHighlight(string url, string title, string fullText, int start, int length, string color = "gelb", string note = "")

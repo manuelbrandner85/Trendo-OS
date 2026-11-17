@@ -1,0 +1,55 @@
+# Echtlauf sdcli – Bild-KI erzeugt ein Bild (PNG geprüft)
+Datum: 2026-11-16T21:42:40
+Fundort: C:\Users\<user>\AppData\Local\TrendoWerkzeuge\ki\laufzeit\stablediffusioncpp\sd-cli.exe
+Suchweg: KiLibraryStore.RuntimeExe(StableDiffusionCpp)
+Version: –
+
+## Fachlauf (Helfer: sdcli) – Exit 0, 15.7 s
+21:42:40 Modell SDXL Turbo (schöner), 512×512, 4 Schritte
+21:42:40 $ sd-cli.exe -m C:\Users\<user>\AppData\Local\TrendoWerkzeuge\ki\modelle\sdxl-turbo\sd_xl_turbo_1.0_fp16.safetensors -p "ein Leuchtturm an der Küste bei Sonnenuntergang, photorealistic photograph, natural light, realistic materials, high detail" -o C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\sdcli\bild.png --steps 4 --cfg-scale 1.0 -W 512 -H 512 -s 42
+21:42:56   Exit 0 nach 15,5 s
+  | [I] vae decoder: ch = 128 --- auto_encoder_kl.hpp:529
+  | [W] No valid VAE specified with --vae or --force-sdxl-vae-conv-scale flag set, using Conv2D scale 0.031 --- sd.cpp:15
+  | [I] flash attention auto: Vulkan0 -> on (Vulkan NVIDIA RTX) --- flash_attn.cpp:78
+  | [I] conv2d direct auto: Vulkan0 -> off (probe: im2col 0.151 ms, direct 0.149 ms) --- conv_direct.cpp:83
+  | [I] conv3d direct auto: Vulkan0 -> off (probe: im2col 0.210 ms, direct 0.207 ms) --- conv_direct.cpp:83
+  | [I] total params memory size = 6624.11MB (VRAM 6624.11MB, RAM 0.00MB): text_encoders 1564.36MB(VRAM), diffusion_model 4900.07MB(VRAM), vae 159.68MB(VRAM), controlnet 0.00MB(N/A), extensions 0.00MB(N/A) --- diffusion_engine.cpp:1438
+  | [I] running in eps-prediction mode --- diffusion_engine.cpp:1467
+  | [I] generate_image 512x512 --- image.cpp:869
+  | [I] get_sigmas with discrete scheduler --- denoiser.hpp:1129
+  | [I] sampling using Euler A method --- request.cpp:477
+  | [I] clip build cached graph cut plan done (taking 0 ms) --- ggml_graph_cut.cpp:1034
+  |   |##################################################| 178/178 -   1.06GB/s
+  | [I] loading tensors completed, taking 0.20s (read: 0.08s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.03s) --- model_loader.cpp:1405
+  | [I] clip build cached graph cut plan done (taking 1 ms) --- ggml_graph_cut.cpp:1034
+  |   |###############                                   | 110/374 -   1.27GB/s  |#########################                         | 182/374 -   1.43GB/s  |##########################################        | 314/374 -   1.62GB/s  |##################################################| 374/374 -   1.56GB/s
+  | [I] loading tensors completed, taking 0.81s (read: 0.56s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.13s) --- model_loader.cpp:1405
+  | [I] clip build cached graph cut plan done (taking 2 ms) --- ggml_graph_cut.cpp:1034
+  |   |##################################################| 15/15 - 200.30MB/s
+  | [I] loading tensors completed, taking 0.20s (read: 0.01s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s) --- model_loader.cpp:1405
+  | [I] get_learned_condition completed, taking 1.28s --- image.cpp:580
+  | [I] generating image: 1/1 - seed 42 --- image.cpp:920
+  | [I] unet build cached graph cut plan done (taking 7 ms) --- ggml_graph_cut.cpp:1034
+  |   |#######                                           |  224/1680 -   1.57GB/s  |#########                                         |  290/1680 -   1.35GB/s  |############                                      |  378/1680 -   1.32GB/s  |###############                                   |  478/1680 -   1.38GB/s  |################                                  |  513/1680 -   1.29GB/s  |#################                                 |  568/1680 -   1.21GB/s  |###################                               |  631/1680 -   1.17GB/s  |#####################                             |  680/1680 -   1.14GB/s  |#########################                         |  818/1680 -   1.21GB/s  |###########################                       |  892/1680 -   1.24GB/s  |#############################                     |  970/1680 -   1.25GB/s  |#################################                 | 1094/1680 -   1.32GB/s  |#####################################             | 1227/1680 -   1.39GB/s  |#########################################         | 1350/1680 -   1.45GB/s  |#############################################     | 1494/1680 -   1.50GB/s  |##################################################| 1680/1680 -   1.49GB/s
+  | [I] loading tensors completed, taking 3.21s (read: 2.10s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.97s) --- model_loader.cpp:1405
+  |   |============>                                     | 1/4 -   3.55s/it  |=========================>                        | 2/4 -   3.89it/s  |=====================================>            | 3/4 -   3.90it/s  |==================================================| 4/4 -   3.90it/s
+  | [I] sampling completed, taking 4.33s --- image.cpp:953
+  | [I] generating 1 latent images completed, taking 4.33s --- image.cpp:967
+  | [I] decoding 1 latents --- image.cpp:605
+  | [I] vae build cached graph cut plan done (taking 0 ms) --- ggml_graph_cut.cpp:1034
+  |   |##################################################| 140/140 - 462.72MB/s
+  | [I] loading tensors completed, taking 0.20s (read: 0.04s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.01s) --- model_loader.cpp:1405
+  | [I] latent 1 decoded, taking 8.72s --- image.cpp:671
+  | [I] decode_first_stage completed, taking 8.72s --- image.cpp:675
+  | [I] generate_image completed in 14.35s --- image.cpp:1140
+  | [I] save result image 0 to 'C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\sdcli\bild.png' (success) --- main.cpp:495
+  | [I] 1/1 images saved --- main.cpp:571
+  | ggml_vulkan: Found 1 Vulkan devices:
+  | ggml_vulkan: 0 = NVIDIA GeForce RTX 5070 (NVIDIA) | uma: 0 | fp16: 1 | bf16: 1 | fp4: 0 | warp size: 32 | shared memory: 49152 | int dot: 1 | matrix cores: NV_coopmat2
+  | load_backend: loaded Vulkan backend from C:\Users\<user>\AppData\Local\TrendoWerkzeuge\ki\laufzeit\stablediffusioncpp\ggml-vulkan.dll
+  | load_backend: loaded CPU backend from C:\Users\<user>\AppData\Local\TrendoWerkzeuge\ki\laufzeit\stablediffusioncpp\ggml-cpu-haswell.dll
+21:42:56 PNG 512×512, 520233 Bytes, SHA-256 747d2a13290699a199dc8e9c7fb31b98a896595bd38a573803e74d00dec79bd8
+
+
+ERGEBNIS: ECHT-GRÜN (15.7 s)
+- Fachlauf sdcli: ECHT-GRÜN – PNG 512×512, 520233 Bytes, SHA-256 747d2a13290699a199dc8e9c7fb31b98a896595bd38a573803e74d00dec79bd8

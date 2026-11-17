@@ -1,0 +1,8 @@
+Datei: Der-letzte-Zug.mp4, 695961 Bytes
+Dauer 24.500 s, geplant 24.500 s (7 Stücke: titel 3, shot 4, shot 3, shot 4, shot 4, shot 4, abspann 4)
+Spuren: h264,video,1280,720 | aac,audio
+Untertitel: 6.50–9.45 Ist er schon weg? | 9.50–12.95 Der letzte Zug fährt um Mitternacht. | 17.00–20.45 Dann bleibt mir nur noch eins.
+Standbild bei 8.00 s (SZ01-E02, erwartet grün): R=0 G=255 B=0
+Videoschnitt: 7 Stücke, 9 Marken, Länge 24.50 s
+SHA-256 Der-letzte-Zug.mp4: 4ce7efd2e8a1664f19fd10990ac94eb6871f5a3f0b9e0c00687ef56a244030fa
+SHA-256 Der-letzte-Zug.srt: 1e71c97b9476758b80d03c6dea24aa9918a51ac8325d9c6ab600dea9706bde59

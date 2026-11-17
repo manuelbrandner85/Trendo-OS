@@ -39,6 +39,18 @@ public sealed class OllamaBackend(string baseUrl = "http://127.0.0.1:11434", Htt
         catch { return []; }
     }
 
+    /// <summary>T-0712: vorhandene Modelle mit Größe von GET /api/tags. Null, wenn Ollama nicht läuft oder nicht antwortet.</summary>
+    public async Task<IReadOnlyList<InstalledModel>?> InstalledAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct); cts.CancelAfter(2000);
+            using var r = await _http.GetAsync("/api/tags", cts.Token);
+            return r.IsSuccessStatusCode ? KiModel.ParseTags(await r.Content.ReadAsStringAsync(cts.Token)) : null;
+        }
+        catch (Exception e) when (e is HttpRequestException or TaskCanceledException or OperationCanceledException) { return null; }
+    }
+
     /// <summary>Modell aus Ollama entfernen (DELETE /api/delete) – gibt den Speicherplatz frei.</summary>
     public async Task<bool> DeleteAsync(string model, CancellationToken ct = default)
     {
@@ -55,6 +67,35 @@ public sealed class OllamaBackend(string baseUrl = "http://127.0.0.1:11434", Htt
     {
         try { using var r = await _http.PostAsJsonAsync("/api/pull", new { model, stream = false }, ct); return r.IsSuccessStatusCode; }
         catch { return false; }
+    }
+
+    /// <summary>T-0703: Laden mit Fortschritt (NDJSON von /api/pull). Ollama prüft jede Schicht selbst gegen ihre SHA-256 („verifying sha256 digest“);
+    /// <paramref name="progress"/> bekommt Zustand und Prozent. Erfolg nur bei „success“ am Ende.</summary>
+    public async Task<(bool Ok, string Last)> PullStreamAsync(string model, Action<OllamaPullStep> progress, CancellationToken ct = default)
+    {
+        try
+        {
+            using var req = new HttpRequestMessage(HttpMethod.Post, "/api/pull") { Content = JsonContent.Create(new { model, stream = true }) };
+            using var r = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
+            if (!r.IsSuccessStatusCode) return (false, $"HTTP {(int)r.StatusCode}");
+            using var rd = new StreamReader(await r.Content.ReadAsStreamAsync(ct));
+            var last = "";
+            while (await rd.ReadLineAsync(ct) is { } line)
+            {
+                if (line.Length == 0) continue;
+                using var doc = JsonDocument.Parse(line);
+                var e = doc.RootElement;
+                if (e.TryGetProperty("error", out var err)) return (false, err.GetString() ?? "Fehler");
+                var st = e.TryGetProperty("status", out var s) ? s.GetString() ?? "" : "";
+                long total = e.TryGetProperty("total", out var t) && t.ValueKind == JsonValueKind.Number ? t.GetInt64() : 0;
+                long done = e.TryGetProperty("completed", out var c) && c.ValueKind == JsonValueKind.Number ? c.GetInt64() : 0;
+                var digest = e.TryGetProperty("digest", out var d) ? d.GetString() : null;
+                last = st;
+                progress(new(st, digest, done, total));
+            }
+            return (last == "success", last);
+        }
+        catch (Exception e) when (e is HttpRequestException or IOException or JsonException) { return (false, e.Message); }
     }
 
     public async Task<string> ChatAsync(string model, IReadOnlyList<KiMessage> messages, CancellationToken ct = default)
@@ -89,6 +130,8 @@ public static class KiStream
             using var doc = JsonDocument.Parse(line);
             if (doc.RootElement.TryGetProperty("error", out var err)) throw new InvalidOperationException(err.GetString());
             if (doc.RootElement.TryGetProperty("message", out var m) && m.TryGetProperty("content", out var c) && c.GetString() is { Length: > 0 } t) { sb.Append(t); onDelta(t); }
+            // T-0703: Denkmodelle (z. B. qwen3) liefern zuerst „thinking“ – ein Lebenszeichen ohne Text, damit die Zeitgrenze fürs Ausweichen nicht greift
+            else if (m.ValueKind == JsonValueKind.Object && m.TryGetProperty("thinking", out var th) && th.GetString() is { Length: > 0 }) onDelta("");
             if (doc.RootElement.TryGetProperty("done", out var done) && done.GetBoolean()) break;
         }
         return sb.ToString().Trim();
@@ -166,7 +209,6 @@ public sealed class CloudKiBackend : IKiFailoverBackend
         _http = new HttpClient(handler ?? new HttpClientHandler { AllowAutoRedirect = false }) { BaseAddress = new Uri(u.GetLeftPart(UriPartial.Authority)), Timeout = TimeSpan.FromSeconds(120) };
         _http.MaxResponseContentBufferSize = 8 * 1024 * 1024;
         _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", key);
-        if (u.Host == "api.anthropic.com") { _http.DefaultRequestHeaders.Add("x-api-key", key); _http.DefaultRequestHeaders.Add("anthropic-version", "2023-06-01"); }
         _http.DefaultRequestHeaders.UserAgent.ParseAdd("TrendoOS/1.0");
     }
 
@@ -253,4 +295,10 @@ public static class KiBackendsShared
     /// lassen dann kaum Platz für die Antwort, sie bricht mitten im JSON ab. Zwei feste Stufen, damit das Modell nicht bei jeder Anfrage neu lädt;
     /// geschätzt mit drei Zeichen je Token und 4096 Token Platz für Antwort und Überlegung.</summary>
     public static int OllamaContext(IEnumerable<KiMessage> messages) => messages.Sum(m => m.Content.Length) / 3 + 4096 <= 8192 ? 8192 : 16384;
+}
+
+/// <summary>Ein Schritt beim Laden eines Ollama-Modells: Zustand („pulling …“, „verifying sha256 digest“, „success“), Schicht und Bytes.</summary>
+public sealed record OllamaPullStep(string Status, string? Digest, long Completed, long Total)
+{
+    public int Percent => Total > 0 ? (int)Math.Clamp(Completed * 100 / Total, 0, 100) : 0;
 }

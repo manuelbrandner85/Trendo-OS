@@ -32,6 +32,8 @@ public partial class MainWindow
         Ribbon =
         [
             ("Daten", [
+                // T-0725 (Audit D7, SPEC-05: „CSV nur über eingetippten Pfad“): Dateiauswahl, Ablegen auf der Tabelle
+                new ProgramCmd("ms-open", "CSV öffnen …", d => _ = SheetPick(), Tip: "Messreihe aus einer CSV-Datei (Excel, Messgerät, Tabelle) – Rückgängig holt die alte zurück. Du kannst die Datei auch auf die Tabelle ziehen."),
                 new ProgramCmd("ms-addcol", "Spalte +", d => SheetEdit("Spalte hinzufügen", s => { s.AddColumn("Spalte"); _msCol = s.Columns.Count - 1; })),
                 new ProgramCmd("ms-addrow", "Zeile +", d => SheetEdit("Zeile hinzufügen", s => { foreach (var c in s.Columns) c.Values.Insert(Math.Min(_msRow + 1, c.Values.Count), null); })),
             ]),
@@ -54,11 +56,15 @@ public partial class MainWindow
         [
             new("csv", "CSV (Excel)", ".csv", (d, f) => { File.WriteAllText(f, MeasureSheet.From(d.Data).ToCsv(), new System.Text.UTF8Encoding(true)); return f; }),
             new("report", "Auswertung", ".md", (d, f) => { File.WriteAllText(f, MeasureSheet.From(d.Data).Report()); return f; }),
+            new("png", "Diagramm als Bild (.png)", ".png", (d, f) => { SheetChartPng(MeasureSheet.From(d.Data), f); return f; }), // T-0725: für Word, Präsentation, Mail
             new("svg", "Diagramm (SVG)", ".svg", (d, f) => { File.WriteAllText(f, ChartDrawing.Svg(MeasureSheet.From(d.Data))); return f; }),
         ],
         Workspace = SheetWorkspace,
         Properties = SheetProperties,
         Status = d => { var s = MeasureSheet.From(d.Data); return $"{s.Columns.Count} Spalten · {s.Rows} Zeilen · Diagramm: {s.Chart.Kind} · Ausgleich: {s.Chart.Fit}"; },
+        SimpleExports = 3, // T-0725: CSV, Auswertung und Diagramm-Bild auch in „Einfach“
+        SimplePrefer = ["ms-open", "ms-k-streu", "ms-k-linie"], // „Einfach“: Datei öffnen und die zwei Grund-Diagramme direkt, Spalte/Zeile unter „Mehr“
+        PrimaryExport = "report", // T-0700: Messdaten: die Auswertung (Kennzahlen, Tests, Ausgleich) ist das Ergebnis
         Help = "Links in die Tabelle tippen (Enter = nächste Zeile, Tab = nächste Spalte, Entf leert). Klick auf einen Spaltenkopf wählt die Spalte – rechts stehen Kennzahlen und Tests, dort legst du auch fest, was ins Diagramm kommt.",
     }, "wissenschaft", "forschung", "statistik", "messwerte", "csv", "mittelwert", "regression", "t-test", "signifikant", "diagramm", "messdaten");
 
@@ -70,6 +76,72 @@ public partial class MainWindow
         ProgramRun(SK, () => d.Edit(label, x => { var s = MeasureSheet.From(x); change(s); s.WriteTo(x); }));
     }
 
+    /// <summary>T-0725: Diagramm aus denselben Formen wie auf dem Bildschirm (<see cref="ChartDrawing.Build"/>) als PNG, 1600 × 1000 Pixel –
+    /// direkt mit SkiaSharp gemalt (unabhängig vom Bildschirm-Renderer), atomar geschrieben.</summary>
+    public static void SheetChartPng(MeasureSheet s, string file, int w = 1600, int h = 1000)
+    {
+        static SkiaSharp.SKColor C(string hex) => SkiaSharp.SKColor.Parse(hex.Length == 9 ? "#" + hex[7..] + hex[1..7] : hex);
+        using var bmp = new SkiaSharp.SKBitmap(w, h);
+        using (var c = new SkiaSharp.SKCanvas(bmp))
+        {
+            c.Clear(SkiaSharp.SKColors.White);
+            using var regular = SkiaSharp.SKTypeface.FromFamilyName("Arial") ?? SkiaSharp.SKTypeface.Default;
+            using var bold = SkiaSharp.SKTypeface.FromFamilyName("Arial", SkiaSharp.SKFontStyle.Bold) ?? SkiaSharp.SKTypeface.Default;
+            foreach (var sh in ChartDrawing.Build(s, w, h))
+                switch (sh)
+                {
+                    case Trendo.Core.Arch.DPoly p when p.Pts.Count > 1:
+                        using (var path = new SkiaSharp.SKPath())
+                        {
+                            path.MoveTo((float)p.Pts[0].X, (float)p.Pts[0].Y);
+                            foreach (var q in p.Pts.Skip(1)) path.LineTo((float)q.X, (float)q.Y);
+                            if (p.Closed) path.Close();
+                            if (p.Fill is not null) { using var f = new SkiaSharp.SKPaint { Color = C(p.Fill), IsAntialias = true, Style = SkiaSharp.SKPaintStyle.Fill }; c.DrawPath(path, f); }
+                            if (p.Stroke is not null) { using var st = new SkiaSharp.SKPaint { Color = C(p.Stroke), IsAntialias = true, Style = SkiaSharp.SKPaintStyle.Stroke, StrokeWidth = (float)p.Width, StrokeJoin = SkiaSharp.SKStrokeJoin.Round }; c.DrawPath(path, st); }
+                        }
+                        break;
+                    case Trendo.Core.Arch.DLine l:
+                        using (var st = new SkiaSharp.SKPaint { Color = C(l.Stroke), IsAntialias = true, StrokeWidth = (float)l.Width }) c.DrawLine((float)l.X1, (float)l.Y1, (float)l.X2, (float)l.Y2, st);
+                        break;
+                    case Trendo.Core.Arch.DText t:
+                        using (var font = new SkiaSharp.SKFont(t.Bold ? bold : regular, (float)t.Size))
+                        using (var paint = new SkiaSharp.SKPaint { Color = C(t.Color), IsAntialias = true })
+                        {
+                            var tw = font.MeasureText(t.Text);
+                            c.Save(); c.Translate((float)t.X, (float)t.Y); c.RotateDegrees((float)t.AngleDeg);
+                            c.DrawText(t.Text, -tw / 2, (float)t.Size * 0.35f, SkiaSharp.SKTextAlign.Left, font, paint);
+                            c.Restore();
+                        }
+                        break;
+                }
+        }
+        using var img = SkiaSharp.SKImage.FromBitmap(bmp); using var data = img.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100);
+        AtomicFile.WriteAllBytes(file, data.ToArray());
+    }
+
+    /// <summary>T-0725: CSV über die Dateiauswahl (im Test ersetzt) laden.</summary>
+    async Task SheetPick()
+    {
+        var req = new PickRequest("ms-open", false, false, ["csv", "txt", "tsv"]);
+        string[]? got;
+        if (PickOverride is { } fake) got = await fake(req);
+        else got = (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Messreihe öffnen",
+            FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("CSV / Text") { Patterns = ["*.csv", "*.txt", "*.tsv"] }] }))
+            .Select(f => Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(f)).OfType<string>().ToArray();
+        if (got is [var f, ..]) SheetLoadCsv(f);
+    }
+
+    /// <summary>CSV laden (ein Rückgängig-Schritt) – gemeinsamer Weg für Dateiauswahl, Ablegen und das Pfadfeld.</summary>
+    public void SheetLoadCsv(string p) => ProgramRun(SK, () =>
+    {
+        if (!File.Exists(p)) throw new FileNotFoundException("Diese Datei gibt es nicht.");
+        var ns = MeasureSheet.FromCsv(File.ReadAllText(p), Path.GetFileNameWithoutExtension(p));
+        if (ns.Columns.Count == 0 || ns.Rows == 0) throw new InvalidDataException("In der Datei stehen keine Messwerte.");
+        var d = ProgramActive(SK) ?? throw new InvalidOperationException("Es ist keine Messreihe offen.");
+        d.Edit("CSV laden", x => { var s = MeasureSheet.From(x); s.Columns = ns.Columns; s.Chart = ns.Chart; s.Name = ns.Name; s.WriteTo(x); });
+        _msCol = 0; _msRow = 0; _progMsg[SK] = $"„{Path.GetFileName(p)}“ geladen – {ns.Columns.Count} Spalten, {ns.Rows} Zeilen. Die Datei bleibt unverändert.";
+    });
+
     public void SheetCell(int col, int row, string text) => SheetEdit("Wert", s => s.Set(col, row, MeasureSheet.Parse(text)));
     public (int Col, int Row) SheetCursor => (_msCol, _msRow);
 
@@ -79,6 +151,7 @@ public partial class MainWindow
         var grid = new MeasureGrid(s, _msCol, Math.Max(0, _msRow), (c, r, t) => { _msCol = c; _msRow = r + 1; SheetCell(c, r, t); }, (c, r) => { var changed = c != _msCol || r < 0 != _msRow < 0; _msCol = c; _msRow = r; if (changed) Show(SK); }) { Name = "ms-grid", Top = Math.Max(0, _msRow - 12) };
         grid.AttachedToVisualTree += (_, _) => _ui.Post(() => { if (grid.IsAttached()) grid.Focus(); }, Avalonia.Threading.DispatcherPriority.Input);
         var chart = new ShapeView((w, h) => ChartDrawing.Build(s, w, h)) { Name = "ms-chart" };
+        BueroFileDrop(grid, SK, BueroExt(".csv", ".txt", ".tsv"), "eine CSV-Datei", (_, files) => SheetLoadCsv(files[0])); // T-0725: CSV aus dem Explorer auf die Tabelle
         Border Box(Control c) => new() { CornerRadius = new CornerRadius(12), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = c };
         return new Grid { ColumnDefinitions = new ColumnDefinitions("5*,10,6*"), Children = { Box(grid), Pos(Box(chart), 2) } };
     }

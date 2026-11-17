@@ -50,7 +50,7 @@ public sealed partial class SheetCalc(SheetDoc doc)
     }
 
     /// <summary>Anzeige wie in der Zelle (C5), deutsch formatiert.</summary>
-    public string Display(Sheet s, int row, int col) => SheetFormat.Display(Value(s, row, col), s.Get(row, col)?.Format ?? NumFmt.Standard);
+    public string Display(Sheet s, int row, int col) => SheetFormat.Display(Value(s, row, col), s.Get(row, col));
 
     /// <summary>Eingabe ohne „=“ deuten: Zahl (deutsch), Prozent, Euro, Datum, WAHR/FALSCH oder Text. Liefert das passende Format als Vorschlag.</summary>
     public static (CellValue Value, NumFmt? Suggest) Literal(string raw, NumFmt fmt = NumFmt.Standard)
@@ -339,6 +339,20 @@ public static class SheetFormat
             NumFmt.Datum => SafeDate(x, "dd.MM.yyyy"),
             NumFmt.DatumZeit => SafeDate(x, "dd.MM.yyyy HH:mm"),
             _ => General(x),
+        };
+    }
+
+    /// <summary>T-0701: Anzeige mit eigenem Formatcode der Zelle (<see cref="Cell.NumCode"/>), sonst mit Trendos Format.</summary>
+    public static string Display(CellValue v, Cell? cell) => Display(v, cell?.Format ?? NumFmt.Standard, cell?.NumCode);
+
+    public static string Display(CellValue v, NumFmt f, string? code)
+    {
+        if (code is null || code.Length == 0) return Display(v, f);
+        return v.Kind switch
+        {
+            CellValue.K.Number => SheetNumberFormat.Format(v.Number, code, out _),
+            CellValue.K.Text => SheetNumberFormat.FormatText(v.Text, code),
+            _ => Display(v, f),
         };
     }
 

@@ -57,6 +57,7 @@ public partial class MainWindow
         ],
         Workspace = PodWorkspace,
         Status = d => { var p = PodPrice.Calc(PodPriceOf(d), PodDec(d, "gross")); return $"{PodProductOf(d).Name} · Preis {p.Gross.ToString("0.00", De)} € · Gewinn je Stück {p.Profit.ToString("0.00", De)} €"; },
+        PrimaryExport = "png", // T-0700: Print on Demand: die Druckdatei für den Anbieter ist das Ergebnis
         Help = "Geh die Schritte oben der Reihe nach durch. Alles bleibt auf deinem PC. Trendo stellt nichts online.",
     }, "print on demand", "pod", "merch", "t-shirt druck", "tasse", "poster", "mockup", "druckdatei", "merchandise");
 

@@ -18,6 +18,8 @@ public class W4_Core06_Game
         }
         Assert.Throws<IOException>(() => GameStudio.CreateBrowserGame(root, "snake", "Spiel snake"));
         Assert.Contains("&lt;x&gt;", File.ReadAllText(Path.Combine(GameStudio.CreateBrowserGame(root, "jump", "<x>"), "index.html")));
+        // T-0687: ohne Node.js ist das erzeugte JavaScript ungeprüft – ehrlich überspringen statt grün melden
+        if (Cli.Find("node") is null) Trendo.Core.Tests.Ueberspringen.Weil("Node.js fehlt auf diesem PC – das JavaScript der Browser-Spiele wurde nicht mit „node --check“ geprüft.");
     }
 
     [Fact(DisplayName = "CORE-06: Unreal-Engines aus Launcher-Liste erkannt, neueste zuerst; .uproject ist gültig")]

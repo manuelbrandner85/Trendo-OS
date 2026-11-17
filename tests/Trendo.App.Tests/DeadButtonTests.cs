@@ -32,7 +32,8 @@ public class DeadButtonTests
         ?? throw new InvalidOperationException("Avalonia-Feld _eventHandlers fehlt");
 
     public static IEnumerable<object[]> KatalogStudios() =>
-        StudioCatalog.ById.Keys.OrderBy(id => id, StringComparer.Ordinal).Select(id => new object[] { id });
+        StudioCatalog.ById.Keys.Where(id => !StudioCatalog.Deleted.Contains(id)) // T-0720: gelöschte Studios haben keine Seite mehr (Nutzerentscheidung 16.11.2026)
+            .OrderBy(id => id, StringComparer.Ordinal).Select(id => new object[] { id });
 
     [AvaloniaFact(DisplayName = "Startseite, Alle Studios und jede Studio-Seite: keine sichtbare Taste ohne Wirkung")]
     public void Keine_tote_Taste()

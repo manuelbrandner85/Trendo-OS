@@ -120,6 +120,8 @@ class Program
             if (e.Exception is not (OutOfMemoryException or StackOverflowException or AccessViolationException)) { e.Handled = true; RaiseUiError(e.Exception); }
         };
         StartupTrace.LogPath = Arg("--startup-log");
+        // T-0729: verwaiste eigene Temp-Ordner (älter als 24 h, nur Trendo-Präfixe) im Hintergrund wegräumen – abschaltbar mit TRENDO_TEMP_AUFRAEUMEN=0
+        _ = TempDir.SweepInBackground();
         StartupTrace.Mark("avalonia.start");
         return BuildAvaloniaApp().StartWithClassicDesktopLifetime(uiArgs);
     }

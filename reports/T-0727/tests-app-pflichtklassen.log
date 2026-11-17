@@ -1,0 +1,16 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+T-0727 B6 echt: 9 Modelle von Ollama, Grafikspeicher 11,9 GB → Standard qwen3:14b
+    Musik-KI live: Paket prüfen, entpacken, Server starten, 30 s Lied erzeugen [SKIP]
+      Echter Lauf: TRENDO_ACE_LIVE und TRENDO_7Z setzen
+    Film mit echtem FFmpeg, vom Klick bis zur Datei: Beispiel-Kurzfilm, Clips über die Dateiauswahl, Foto auf eine Einstellung gelegt, Musik, Klick auf „Film rendern“ → MP4 und SRT; ffprobe prüft Dauer, Spuren, Auflösung; danach „Im Videoschnitt weiterbearbeiten“ [FAIL]
+      System.InvalidOperationException : nicht sichtbar: prog-cmd-film-import-music
+      Stack Trace:
+        tests\Trendo.App.Tests\StartMenuUiTests.cs(18,0): at Trendo.App.Tests.StartMenu_Ui.RealClick(Window w, Control c)
+        tests\Trendo.App.Tests\FilmSchnittUiTests.cs(71,0): at Trendo.App.Tests.FilmSchnitt_Ui.Render_click_to_file_real()
+        --- End of stack trace from previous location ---
+  Finished:    Trendo.App.Tests (ID = 'cce59e6cb1bd76ec9bdea06ea9cff7aaabfd51157c1131c7b78ab6bb18102f37')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 146, Errors: 0, Failed: 1, Skipped: 1, Not Run: 0, Time: 247,624s

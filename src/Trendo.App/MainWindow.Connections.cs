@@ -254,20 +254,38 @@ public partial class MainWindow
         string text;
         try
         {
-            var steps = GitHubLink.PublishSteps(chat.Folder, GitHubLink.SafeRepoName(repo), isPrivate);
+            if (_core.Offline) throw new InvalidOperationException("Offline-Modus: Trendo lädt nichts ins Internet hoch.");
             var gh = GhExe() ?? throw new InvalidOperationException("GitHub CLI fehlt.");
-            var env = GhEnv(); var outp = "";
-            foreach (var (exe, args) in steps)
+            var safe = GitHubLink.SafeRepoName(repo);
+            // T-0726: auch der GitHub-Upload nur über das Freigabe-Tor – Rückfrage mit Repo, Sichtbarkeit, Dateien und Größe; Ausführung mit genau dieser Freigabe
+            GitHubLink.EnsureIgnore(chat.Folder); // .gitignore gehört zum Upload – vor der Rückfrage, damit sie in der Liste steht
+            var up = GitHubLink.DescribeUpload(chat.Folder, _ghUser ?? "", safe, isPrivate, chat.Title);
+            if (await FreigabeAsync(new Wirkung(GitHubLink.ActionUpload, up.Target, up.Title, up.Text, "Hochladen", up.Preview)) is not { } id)
             {
-                var (code, o) = await ConnRun(exe == "gh" ? gh : "git", args, chat.Folder, env); outp = o;
-                if (code != 0) throw new InvalidOperationException($"„{exe} {args[0]}“ hat nicht geklappt: " + string.Join(" ", o.Split('\n').Select(l => l.Trim()).Where(l => l.Length > 0).TakeLast(2)));
+                text = "GitHub: " + (CanApprove ? "Abgebrochen – es wurde nichts hochgeladen." : NurErwachsene);
+                CChats.Add(ChatStudio(dock), chat.Id, new ClaudeChats.Msg("assistant", text, [], DateTimeOffset.Now));
+                if (_chatUis.TryGetValue(dock, out var ui0)) ui0.Panel = null;
+                RenderChat(dock); return;
             }
+            // ändert sich das Projekt zwischen Rückfrage und Hochladen, passt das Ziel nicht mehr – der Kern führt dann nichts aus
+            var now = GitHubLink.DescribeUpload(chat.Folder, _ghUser ?? "", safe, isPrivate, chat.Title).Target;
+            var outp = await _core.Approvals.Execute(id, GitHubLink.ActionUpload, now, async () =>
+            {
+                var steps = GitHubLink.PublishSteps(chat.Folder, safe, isPrivate);
+                var env = GhEnv(); var last = "";
+                foreach (var (exe, args) in steps)
+                {
+                    var (code, o) = await ConnRun(exe == "gh" ? gh : "git", args, chat.Folder, env); last = o;
+                    if (code != 0) throw new InvalidOperationException($"„{exe} {args[0]}“ hat nicht geklappt: " + string.Join(" ", o.Split('\n').Select(l => l.Trim()).Where(l => l.Length > 0).TakeLast(2)));
+                }
+                return last;
+            });
             LastGitHubRepo = System.Text.RegularExpressions.Regex.Match(outp, @"https://github\.com/\S+") is { Success: true } m ? m.Value.TrimEnd('.') : $"https://github.com/{_ghUser}/{GitHubLink.SafeRepoName(repo)}";
             _core.Audit.Append(Principal.LocalOwner.Name, "github.repo.hochgeladen", (isPrivate ? "privat " : "öffentlich ") + GitHubLink.SafeRepoName(repo));
             text = $"Auf GitHub hochgeladen ({(isPrivate ? "privat" : "öffentlich")}): {LastGitHubRepo}";
             var url = LastGitHubRepo; Toast("Auf GitHub hochgeladen", ("Ansehen", () => Launch(url)));
         }
-        catch (Exception e) when (e is InvalidOperationException or ArgumentException or IOException) { text = "GitHub: " + Trendo.Core.FriendlyError.Say(e); }
+        catch (Exception e) when (e is InvalidOperationException or ArgumentException or IOException or UnauthorizedAccessException or ApprovalException) { text = "GitHub: " + Trendo.Core.FriendlyError.Say(e); }
         CChats.Add(ChatStudio(dock), chat.Id, new ClaudeChats.Msg("assistant", text, [], DateTimeOffset.Now));
         if (_chatUis.TryGetValue(dock, out var ui)) ui.Panel = null;
         RenderChat(dock);
@@ -287,7 +305,7 @@ public partial class MainWindow
         }
         var (site, url) = NetlifyLink.SiteOf(chat.Folder);
         sp.Children.Add(new TextBlock { Text = site is null ? $"Trendo legt bei Netlify eine neue Seite an und lädt „{chat.Title}“ hoch. Danach ist sie öffentlich im Internet erreichbar." : $"Trendo lädt den neuen Stand auf deine Seite {url} hoch – sie ist öffentlich erreichbar.", Foreground = ClaudeFg, FontSize = 12.5, TextWrapping = TextWrapping.Wrap });
-        var yes = new Button { Name = "claude-netlify-yes", Content = "✓ Ja, veröffentlichen", FontSize = 12.5, Padding = new Thickness(12, 4), Margin = new Thickness(0, 4, 6, 0), Background = ClaudeAccent, Foreground = Brushes.White, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(0) };
+        var yes = new Button { Name = "claude-netlify-yes", Content = "Veröffentlichen …", FontSize = 12.5, Padding = new Thickness(12, 4), Margin = new Thickness(0, 4, 6, 0), Background = ClaudeAccent, Foreground = Brushes.White, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(0) };
         var no = new Button { Name = "claude-netlify-no", Content = "Abbrechen", FontSize = 12.5, Padding = new Thickness(12, 4), Margin = new Thickness(0, 4, 0, 0), Background = Brushes.Transparent, Foreground = ClaudeFg, BorderBrush = GlassEdge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8) };
         yes.Click += (_, _) => _ = ClaudeNetlifyDeploy(dock, chat);
         no.Click += (_, _) => { if (_chatUis.TryGetValue(dock, out var ui)) { ui.Panel = null; RenderChat(dock); } };
@@ -301,12 +319,25 @@ public partial class MainWindow
         if (_opt.Isolated && NetlifyHandlerOverride is null) text = "Testmodus: es wird nichts hochgeladen.";
         else try
         {
-            var url = await Netlify.DeployAsync(chat.Folder, chat.Title);
-            LastNetlifyUrl = url;
-            _core.Audit.Append(Principal.LocalOwner.Name, "netlify.veroeffentlicht", url);
-            text = $"Veröffentlicht: {url}";
-            Toast("Auf Netlify veröffentlicht", ("Öffnen", () => Launch(url)));
+            // T-0718: auch hier nur über das Freigabe-Tor – Rückfrage mit Ziel, Dateien und Größe, Ausführung im Kern mit genau dieser Freigabe
+            var zip = NetlifyLink.Zip(chat.Folder);
+            var files = new List<WebDesignPublish.FileItem>();
+            using (var z = new System.IO.Compression.ZipArchive(new MemoryStream(zip), System.IO.Compression.ZipArchiveMode.Read))
+                files.AddRange(z.Entries.Select(e => new WebDesignPublish.FileItem(e.FullName, e.Length)));
+            var where = NetlifyLink.SiteOf(chat.Folder).Url is { Length: > 0 } old ? old : "neue Netlify-Seite";
+            var q = WebPublishing.Describe(WebPublishing.Weg.Netlify, where, files, Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(zip)));
+            if (await FreigabeAsync(new Wirkung(q.Action, q.Target, $"„{chat.Title}“ auf Netlify veröffentlichen?", q.Text, q.Yes, q.Preview)) is not { } id)
+                text = "Netlify: " + (CanApprove ? "Abgebrochen – es wurde nichts veröffentlicht." : NurErwachsene);
+            else
+            {
+                var url = await _core.Approvals.Execute(id, q.Action, q.Target, () => Netlify.DeployZipAsync(chat.Folder, zip, chat.Title));
+                LastNetlifyUrl = url;
+                _core.Audit.Append(CurrentPrincipal.Name, "netlify.veroeffentlicht", $"{files.Count} Dateien → {url}");
+                text = $"Veröffentlicht: {url} ({files.Count} Dateien, {zip.Length / 1024.0:0.#} KB gepackt)";
+                Toast("Auf Netlify veröffentlicht", ("Öffnen", () => Launch(url)));
+            }
         }
+        catch (ApprovalException e) { text = "Netlify: Nicht veröffentlicht – " + e.Message + " Was tun: noch einmal „Netlify“ wählen und bestätigen."; }
         catch (Exception e) when (e is InvalidOperationException or HttpRequestException or IOException or TaskCanceledException) { text = "Netlify: " + Trendo.Core.FriendlyError.Say(e); }
         CChats.Add(ChatStudio(dock), chat.Id, new ClaudeChats.Msg("assistant", text, [], DateTimeOffset.Now));
         if (_chatUis.TryGetValue(dock, out var ui)) ui.Panel = null;

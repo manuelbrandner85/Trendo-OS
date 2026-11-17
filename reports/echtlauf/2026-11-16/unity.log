@@ -1,0 +1,37 @@
+# Echtlauf unity – Unity-Projekt anlegen, EditMode-Tests
+Datum: 2026-11-16T21:40:21
+Fundort: C:\Program Files\Unity\Hub\Editor\6000.6.8f1\Editor\Unity.exe
+Suchweg: EngineTargets.FindUnity (Unity Hub, Program Files) – wie MainWindow.EngineDetect
+Version: 6000.6.8f1_237b6593792b
+
+## Fachlauf (Helfer: unity) – Exit 0, 65.0 s
+21:40:22 $ Unity.exe -batchmode -nographics -projectPath C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\unity\EchtlaufSpiel-Unity -runTests -testPlatform EditMode -testResults C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\unity\unity-editmode.xml -logFile C:\Users\<user>\AppData\Local\Temp\trendo-echtlauf-30792\unity\unity-editmode.log
+21:41:26   Exit 0 nach 64,8 s
+  | VBCSCompilerPreWarmer: watching VBCSCompiler (PID 45052)
+  | VBCSCompilerPreWarmer: pre-warm launched (dotnet PID 77196)
+  | VBCSCompiler prewarm took 65.83 ms
+  log| [Licensing::Module] Trying to connect to existing licensing client channel...
+  log| [Licensing::IpcConnector] Channel LicenseClient-<user> doesn't exist
+  log| [Licensing::Module] Successfully launched the LicensingClient (PId: 45132)
+  log| [Licensing::Module] Licensing is not yet initialized.
+  log| [Licensing::IpcConnector] Successfully connected to: "LicenseClient-<user>" at "2026-11-16T20:40:24.9387033Z"
+  log| Waiting for clients to connect on \\.\pipe\Unity-LicenseClient-<user>, press Ctrl-C to exit.
+  log| [Licensing::Client] Code 10 while verifying Licensing Client signature (process Id: 45132, path: "C:/Program Files/Unity/Hub/Editor/6000.6.8f1/Editor/Data/Resources/Licensing/Client/Unity.Licensing.Client.exe")
+  log| [Licensing::Module] LicensingClient has failed validation; ignoring
+  log| [Licensing::Client] Handshaking with LicensingClient:
+  log| [Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-<user>" (connect: 1.93s, validation: 0.44s, handshake: 0.06s)
+  log| [Licensing::IpcConnector] Successfully connected to: "LicenseClient-<user>-notifications" at "2026-11-16T20:40:25.4411242Z"
+  log| [Licensing::Module] Connected to LicensingClient (PId: 45132, launch time: 0.03, total connection time: 2.44s)
+  log| [Licensing::Module] Error: Access token is unavailable; failed to update
+  log| [Licensing::Client] Successfully resolved entitlement details
+  log| [Licensing::Module] License group:
+  log| [Licensing::Client] Successfully updated license, isAsync: True, time: 0.01
+  log| [Licensing::Module] Licensing Background thread has ended after 2.53s
+  log| [Licensing::Module] Licensing is initialized (took 1.37s).
+  log| [Licensing::Client] Successfully resolved entitlement details
+  log| [Licensing::Client] Successfully resolved entitlement details
+21:41:26 EditMode: (5, 5, 0)
+
+
+ERGEBNIS: ECHT-GRÜN (65.0 s)
+- Fachlauf unity: ECHT-GRÜN – EditMode: (5, 5, 0)

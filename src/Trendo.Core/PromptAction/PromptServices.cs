@@ -15,7 +15,6 @@ public sealed class PromptServices
     public Func<string, string?, CancellationToken, Task<KiAnswer>>? Ask { get; init; }
     public Func<string>? SecretBackend { get; init; }
     public Func<bool>? AuditIntact { get; init; }
-    public string VideoSys { get; init; } = "/sys/class/video4linux";
     public Func<IReadOnlyList<DeviceInfo>>? Devices { get; init; }
     public Func<string?>? FindAdb { get; init; }
     public IProcessRunner? Runner { get; init; }
@@ -40,7 +39,6 @@ public sealed class PromptServices
         Ask = given?.Ask,
         SecretBackend = given?.SecretBackend ?? (() => core.Secrets.BackendName),
         AuditIntact = given?.AuditIntact ?? (() => core.Audit.Verify()),
-        VideoSys = given is null || string.IsNullOrWhiteSpace(given.VideoSys) ? "/sys/class/video4linux" : given.VideoSys,
         Devices = given?.Devices,
         FindAdb = given?.FindAdb,
         Runner = given?.Runner,

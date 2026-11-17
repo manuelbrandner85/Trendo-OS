@@ -73,7 +73,8 @@ public class KiLibraryUiTests
         w.Close();
     }
 
-    [Fact(DisplayName = "KI-Bibliothek: nur offizielle Server (GitHub, Hugging Face) über HTTPS")]
+    // T-0703: auf dem UI-Thread – der Aufruf löst die statische Initialisierung von MainWindow (Pinsel) aus; auf einem fremden Thread scheiterten danach je nach Testreihenfolge die anderen Tests der Klasse
+    [AvaloniaFact(DisplayName = "KI-Bibliothek: nur offizielle Server (GitHub, Hugging Face) über HTTPS")]
     public void Hosts()
     {
         Assert.True(MainWindow.KiHostAllowed(new Uri("https://huggingface.co/x")));

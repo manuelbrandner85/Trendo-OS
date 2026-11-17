@@ -62,7 +62,7 @@ public class GameRulesTests
     [Fact(DisplayName = "CORE-06: Gebautes Spiel: config.js trägt Zeitlimit und Regeln, neue Kacheln sind erlaubt, game.js ist gültiges JavaScript (Node)")]
     public void Built_game()
     {
-        var dir = Path.Combine(Path.GetTempPath(), "trendo-spiel-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
+        var dir = Path.Combine(Path.GetTempPath(), "trendo-spiel-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir); var nodeFehlt = false;
         try
         {
             var game = GameStudio.CreateBrowserGame(dir, "plattform", "Schlüsseljagd", new GameStudio.GameSettings { Level = ["S.FKC.D..Z", "##########"], TimeLimit = 90, Rules = [new("gegner", 1, "punkte")] });
@@ -75,8 +75,11 @@ public class GameRulesTests
                 var r = Cli.Run(node, ["--check", Path.Combine(game, "game.js")], game, 30000);
                 Assert.True(r.Ok, r.Err);
             }
+            else nodeFehlt = true;
         }
         finally { Directory.Delete(dir, true); }
+        // T-0687: ohne Node.js ist das erzeugte JavaScript ungeprüft – ehrlich überspringen statt grün melden
+        if (nodeFehlt) Ueberspringen.Weil("Node.js fehlt auf diesem PC – game.js wurde nicht mit „node --check“ geprüft.");
     }
 
     [Fact(DisplayName = "CORE-06: Mehrere Level – Ziel lädt das nächste Level (+10, Hinweis „Level 2 von 2“), Münzen und Eigenschaften je Level („2:x,y:value“), erst das letzte Ziel gewinnt; Nochmal beginnt bei Level 1")]
@@ -122,7 +125,7 @@ public class GameRulesTests
     [Fact(DisplayName = "CORE-06: Gebautes Spiel mit 2 Leveln, Hintergrund und Lauf-Animation – config.js trägt alles, Bildstreifen liegt im Spielordner, game.js ist gültiges JavaScript (Node)")]
     public void Built_game_levels()
     {
-        var dir = Path.Combine(Path.GetTempPath(), "trendo-spiel-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
+        var dir = Path.Combine(Path.GetTempPath(), "trendo-spiel-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir); var nodeFehlt = false;
         try
         {
             var strip = Path.Combine(dir, "lauf.png"); File.WriteAllBytes(strip, Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="));
@@ -147,7 +150,10 @@ public class GameRulesTests
                 var r = Cli.Run(node, ["--check", Path.Combine(game, "game.js")], game, 30000);
                 Assert.True(r.Ok, r.Err);
             }
+            else nodeFehlt = true;
         }
         finally { Directory.Delete(dir, true); }
+        // T-0687: ohne Node.js ist das erzeugte JavaScript ungeprüft – ehrlich überspringen statt grün melden
+        if (nodeFehlt) Ueberspringen.Weil("Node.js fehlt auf diesem PC – game.js wurde nicht mit „node --check“ geprüft.");
     }
 }

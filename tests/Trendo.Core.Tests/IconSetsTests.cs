@@ -99,7 +99,7 @@ public class IconSetsTests : IDisposable
 /// <summary>Echte Daten: Iconify-Sätze vom gepinnten Stand (mdi Apache-2.0, tabler MIT, game-icons CC BY 3.0, fluent-emoji-flat MIT) – nur gelesen.</summary>
 public class IconSetsRealTests
 {
-    static string Dir => Path.Combine(Path.GetTempPath(), "trendo-tools-b", "iconify");
+    static string Dir => Path.Combine(global::Trendo.Core.TempDir.SystemTemp, "trendo-tools-b", "iconify");
     public sealed class IconFactAttribute : FactAttribute { public IconFactAttribute() { if (!File.Exists(Path.Combine(Dir, "collections.json"))) Skip = "Übersprungen – keine Iconify-Daten im Prüfordner."; } }
 
     [IconFact(DisplayName = "Symbole echt: 276 Sätze mit Lizenzregel; in 4 echten Sätzen (21 000+ Symbole inkl. Aliasse) wird jedes Symbol sicher und als gültiges XML ausgegeben")]

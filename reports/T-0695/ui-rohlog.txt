@@ -1,0 +1,7 @@
+Standbild 1,0 s (1080p-Projekt, 960 px): 254 ms bis zum Bild (Messung in Trendo vom Wunsch bis zum fertigen Bild), Test gesamt 257 ms
+Farbige Pixel in der Vorschau bei Schwarzweiß-Look: 0,00 %
+Seitenaufbau je Schritt im Testmodus: 171/108/149/94/76 ms
+Scrubben über 5 Stellen: letzte Stelle nach 252 ms fertig, 4 von 4 Zwischenstellen abgebrochen – im Testmodus dauert jeder Seitenaufbau länger als ein Bild, Abbrechen prüft der Kerntest
+Abspielen mit Effekten: 15 fertige Bilder nach 686 ms gezeigt
+Export über „Video exportieren“: Full-HD--1920---1080.mp4, Dauer 8.500 s, Spuren video,1920,1080 | audio, SHA-256 b492cbd5f482e11101a5d25160df766e7faa30335acccc7904429f0dfecf4518
+Vorschau (gezeigt) ↔ Export bei 1,0 s, 960 px: mittlere Abweichung 0.055 von 255

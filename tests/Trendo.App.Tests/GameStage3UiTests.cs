@@ -114,7 +114,7 @@ public class GameStage3_Ui
         MainWindow.KiToolOverride = (kind, input, target) => { BlackPng(target); return Task.FromResult(kind == "bild"); };
         try
         {
-            w.GameSection = "Produktion"; w.Show(GK); Pump(); // Top-down hat keinen Assets-Bereich, die Dienste stehen unter Produktion
+            w.GameSection = "Assets"; w.Show(GK); Pump(); // T-0690: „Abenteuer von oben“ ist jetzt ein Kachelspiel mit Assets-Bereich – dort steht die gemeinsame Dienste-Auswahl
             Assert.StartsWith("Bilder: Bild-KI auf dem PC", ((TextBlock)w.Find<StackPanel>("game-svc-bild").Children[0]).Text);
             Assert.StartsWith("3D-Modelle: Poly Haven", ((TextBlock)w.Find<StackPanel>("game-svc-3d").Children[0]).Text);
             Assert.Contains("in der KI-Bibliothek", w.Find<TextBlock>("game-svc-sprache-hint").Text);

@@ -48,10 +48,11 @@ public partial class MainWindow
             var comp = c;
             var inc = Vollpaket.Included.TryGetValue(c.Id, out var i) ? i.Package : null;
             items.Add(new(c.Id, "programme", c.Name, c.Purpose, _deps.IsInstalled(c),
-                c.Mode is DeliveryMode.AutoUser or DeliveryMode.AutoElevated or DeliveryMode.Included ? async () => { if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner); await InstallOne(comp); } : null,
+                // B4 (T-0706): Aufruf nur aus „Ja, installieren“ der Rückfrage (hub-yes); installiert wird nur über den Kern mit dieser Freigabe
+                c.Mode is DeliveryMode.AutoUser or DeliveryMode.AutoElevated or DeliveryMode.Included ? async () => { if (FreigabeAusRueckfrage(InstallWirkung(comp, comp.Purpose)) is { } id) await InstallOne(comp, approvalId: id); } : null,
                 () => { Show("components"); return Task.CompletedTask; },
                 inc is null ? null : () => { Vollpaket.Uninstall(_deps.ToolsRoot, inc, _core.Audit); return Task.CompletedTask; },
-                async () => { if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner); await InstallOne(comp); }, c.License));
+                async () => { await InstallOneMitFreigabe(comp, comp.Purpose, refresh: false); }, c.License)); // B4: Aktualisieren mit eigener Rückfrage
         }
         // KI: freie Modelle für die KI auf dem PC
         foreach (var m in KiCatalog.Models)
@@ -60,9 +61,9 @@ public partial class MainWindow
             items.Add(new("ollama:" + tag, "ki", m.Name, $"KI-Modell für den PC · {m.GoodFor} · {m.SizeGb:0.0} GB", _hubOllama.Contains(tag),
                 async () =>
                 {
-                    var req = _core.Approvals.Request(Principal.LocalOwner, "ki.pull", $"KI-Modell {name} laden", tag);
-                    _core.Approvals.Approve(req.Id, Principal.LocalOwner);
-                    var ok = await _core.Approvals.Execute(req.Id, "ki.pull", tag, () => new OllamaBackend().PullAsync(tag));
+                    // B4 (T-0706): Aufruf nur aus „Ja, installieren“ der Rückfrage (hub-yes); geladen wird nur mit genau dieser Freigabe
+                    if (FreigabeAusRueckfrage(KiPullWirkung(tag, name, m.SizeGb, m.License)) is not { } id) { _hubMsg = $"{name}: nicht freigegeben – es wurde nichts geladen."; return; }
+                    var ok = await _core.Approvals.Execute(id, "ki.pull", tag, () => new OllamaBackend().PullAsync(tag));
                     _hubMsg = ok ? $"{name} ist jetzt da." : $"{name} konnte nicht geladen werden (läuft Ollama, ist Internet da?).";
                     _hubOllamaAt = default;
                 },

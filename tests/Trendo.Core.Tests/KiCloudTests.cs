@@ -14,6 +14,9 @@ public class T0225_Ki
         Assert.All(KiCatalog.Cloud, c => { Assert.StartsWith("https://", c.BaseUrl); Assert.StartsWith("https://", c.KeyUrl); Assert.StartsWith("TrendoOS:ki-", c.SecretName); Assert.False(string.IsNullOrWhiteSpace(c.Hint)); });
         Assert.Contains(KiCatalog.Cloud, c => c.FreeTier);
         Assert.Contains(KiCatalog.Cloud, c => !c.FreeTier && c.Hint.Contains("Kostenpflichtig"));
+        // T-0683: Claude nur über das eigene Abo – kein Dienst der Liste führt zu Anthropics kostenpflichtiger API
+        Assert.DoesNotContain(KiCatalog.Cloud, c => c.Id == "anthropic" || c.BaseUrl.Contains("anthropic", StringComparison.OrdinalIgnoreCase) || c.Name.Contains("Claude", StringComparison.OrdinalIgnoreCase));
+        Assert.Equal("TrendoOS:ki-anthropic", KiCatalog.ClaudeApiSecret);
     }
 
     [Fact(DisplayName = "T-0225: Automatisch geladen werden nur freie Lizenzen (Apache-2.0/MIT), passend zum Arbeitsspeicher, kleinste zuerst, Vorhandenes nicht")]

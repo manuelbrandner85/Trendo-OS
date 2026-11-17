@@ -15,19 +15,22 @@ public partial class MainWindow
     private string? _sellRefundFor; // Bestellung, für die gerade eine Erstattung erfasst wird
     private static readonly string[] MonthShort = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 
-    /// <summary>Kennzahl-Karte mit Verlauf, Lichtkante und Schatten.</summary>
+    /// <summary>Kennzahl-Karte. V-17 (T-0700): dunkle Fläche wie alle Karten, Zahl in Gold statt bunter Verlaufskacheln; nur eine Warnung (rot übergeben) bleibt rot.</summary>
     private Border Kpi(string name, string title, string value, string sub, string c1, string c2)
     {
-        var v = new TextBlock { Name = name, Text = value, Foreground = Brushes.White, FontSize = 24, FontWeight = FontWeight.Bold };
+        var warn = KpiWarn(c1);
+        var v = new TextBlock { Name = name, Text = value, Foreground = warn ? Brush.Parse("#F0644B") : Accent, FontSize = 24, FontWeight = FontWeight.Bold };
         return new Border
         {
-            Margin = new Thickness(0, 0, 10, 10), MinWidth = 190, Padding = new Thickness(16, 12), CornerRadius = new CornerRadius(16),
-            Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse(c1), 0), new GradientStop(Color.Parse(c2), 1) } },
-            BorderBrush = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#66FFFFFF"), 0), new GradientStop(Color.Parse("#00FFFFFF"), 1) } },
-            BorderThickness = new Thickness(1), BoxShadow = BoxShadows.Parse("0 10 24 -6 #66000000"),
-            Child = new StackPanel { Spacing = 2, Children = { new TextBlock { Text = title, Foreground = Brush.Parse("#E6FFFFFF"), FontSize = 12, FontWeight = FontWeight.SemiBold }, v, new TextBlock { Text = sub, Foreground = Brush.Parse("#CCFFFFFF"), FontSize = 11 } } },
+            Name = name + "-kachel", Classes = { "kennzahl" },
+            Margin = new Thickness(0, 0, 10, 10), MinWidth = 190, Padding = new Thickness(16, 12), CornerRadius = new CornerRadius(12),
+            Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1),
+            Child = new StackPanel { Spacing = 2, Children = { new TextBlock { Text = title, Foreground = Muted, FontSize = 12, FontWeight = FontWeight.SemiBold }, v, new TextBlock { Text = sub, Foreground = Muted, FontSize = 11 } } },
         };
     }
+
+    /// <summary>Rote Töne der bisherigen Kacheln bedeuten „Achtung“ (Minus, Überzug) – nur sie behalten eine eigene Farbe.</summary>
+    internal static bool KpiWarn(string color) => Color.TryParse(color, out var c) && c.R > 0xC0 && c.G < 0x80 && c.B < 0x70;
 
     /// <summary>Eingaben der Verkaufen-Formulare bleiben nach einer Fehlermeldung stehen (vorher war nach jeder Meldung alles leer);
     /// nach erfolgreichem Anlegen werden sie wie gewohnt geleert.</summary>
@@ -43,8 +46,8 @@ public partial class MainWindow
     private Control SellView()
     {
         const string V = "verkaufen";
-        if (_sellTab == "kasse") return BusinessPage("Verkaufen", new StackPanel { Spacing = 10, Children = { IdeaHeader(V), SellTabs(), KasseView() } });
-        if (_sellTab == "auswertung") return BusinessPage("Verkaufen", new StackPanel { Spacing = 10, Children = { IdeaHeader(V), SellTabs(), SalesStatsView() } });
+        if (_sellTab == "kasse") return SellPage("Verkaufen", new StackPanel { Spacing = 10, Children = { IdeaHeader(V), SellTabs(), KasseView() } });
+        if (_sellTab == "auswertung") return SellPage("Verkaufen", new StackPanel { Spacing = 10, Children = { IdeaHeader(V), SellTabs(), SalesStatsView() } });
         var shop = BizShop; var today = DateOnly.FromDateTime(DateTime.Today);
         var (month, year, customers, open) = shop.Figures(today);
         var y = Finance.Year(Money.All(), today.Year);
@@ -161,9 +164,9 @@ public partial class MainWindow
             })), Act("sell-shop-save", "Als Webseite speichern", () => SellTry(V, () =>
             {
                 var f = Path.Combine(BusinessFolder, DevStudio.SafeName(BizIdea.Name) + "-Shop.html");
-                File.WriteAllText(f, Shop.ShopHtml(BizIdea.Name, shop.Products.All(), _settings.SmallBusiness)); Launch(f); Say("Gespeichert: " + f, V);
+                AtomicFile.WriteAllText(f, Shop.ShopHtml(BizIdea.Name, shop.Products.All(), _settings.SmallBusiness)); Launch(f); Say("Gespeichert: " + f, V);
             }))), shopGrid)));
         sp.Children.Add(Card(Section("Print on Demand im Shop", "Produkte aus Printful, Bezahlung über dein eigenes Stripe-Konto. Bestellungen werden zuerst Entwürfe, Kosten entstehen erst nach deiner Freigabe.", PodShopCard())));
-        return BusinessPage("Online verkaufen", sp);
+        return SellPage("Online verkaufen", sp);
     }
 }

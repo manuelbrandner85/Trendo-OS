@@ -1,0 +1,48 @@
+# Echtlauf karten-vertraege – 2026-11-16 14:19:05
+Datei karte-druck.pdf: 58867 Bytes, SHA-256 9e5bb9f3d9614afb9e82bc9439e6c6085536c00f055e1a5db18b745cd3f6b076
+$ qpdf prüft karte-druck.pdf: qpdf.exe --check C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\karten-vertraege\karte-druck.pdf
+Exit 3
+checking C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\karten-vertraege\karte-druck.pdf
+PDF Version: 1.7
+File is not encrypted
+File is not linearized
+[stderr] WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\karten-vertraege\karte-druck.pdf (offset 707): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\karten-vertraege\karte-druck.pdf (offset 2209): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\karten-vertraege\karte-druck.pdf (offset 3506): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\karten-vertraege\karte-druck.pdf (offset 17242): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\karten-vertraege\karte-druck.pdf (offset 32229): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\karten-vertraege\karte-druck.pdf (offset 43360): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\karten-vertraege\karte-druck.pdf (offset 707): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\karten-vertraege\karte-druck.pdf (offset 2209): input stream is complete but output may still be valid
+qpdf: operation succeeded with warnings
+qpdf: gültig, 8 Warnung(en) „Flate-Strom ohne Abschluss“ (PDFsharp) – keine Fehler.
+$ LibreOffice öffnet karte-druck.pdf: soffice.exe -env:UserInstallation=file:///C:\Users\<user>/AppData/Local/Temp/trendo-t0705-lo-0bdb92ac --headless --norestore --convert-to png --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-40b1ff0b C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\karten-vertraege\karte-druck.pdf
+Exit 0
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\karten-vertraege\karte-druck.pdf as a Draw document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-40b1ff0b\karte-druck.png using filter : draw_png_Export
+[stderr] Could not find platform independent libraries <prefix>
+Datei karte-libreoffice.png: 37169 Bytes, SHA-256 d2a9f4d36734090d175f62e111c5955224a22df41e28b0b77db53cae37967410
+Datei kuendigung.pdf: 76388 Bytes, SHA-256 e75b3076e89c931ba7a3a3935dbd0dad53f883156d668e51a639b3493e0e63cb
+$ qpdf prüft kuendigung.pdf: qpdf.exe --check C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\karten-vertraege\kuendigung.pdf
+Exit 3
+checking C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\karten-vertraege\kuendigung.pdf
+PDF Version: 1.7
+File is not encrypted
+File is not linearized
+[stderr] WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\karten-vertraege\kuendigung.pdf (offset 623): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\karten-vertraege\kuendigung.pdf (offset 2004): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\karten-vertraege\kuendigung.pdf (offset 43455): input stream is complete but output may still be valid
+WARNING: C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\karten-vertraege\kuendigung.pdf (offset 623): input stream is complete but output may still be valid
+qpdf: operation succeeded with warnings
+qpdf: gültig, 4 Warnung(en) „Flate-Strom ohne Abschluss“ (PDFsharp) – keine Fehler.
+$ qpdf zählt Seiten: qpdf.exe --show-npages C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\karten-vertraege\kuendigung.pdf
+Exit 0
+1
+PDFium Text kuendigung.pdf Seite 1: Beispiel Stream 16. November 2026 Kündigung meines Vertrags [Vertragsnummer] (Streaming-Abo) Sehr geehrte Damen und Herren, hiermit kündige ich den oben genannten Vertrag fristgerecht zum 30.11.2026, hilfsweise zum nächstmöglichen Zeitpunkt. Bitte bestätigen Sie mir die Kündigung und das Vertragsende schriftlich. Bitte senden Sie mir keine Angebote zur Vertragsverlängerung und widerrufen Sie eine erteilte Einzugsermächtigung zum Vertragsende. Mit freundlichen Grüßen
+$ LibreOffice öffnet kuendigung.pdf: soffice.exe -env:UserInstallation=file:///C:\Users\<user>/AppData/Local/Temp/trendo-t0705-lo-7f199de9 --headless --norestore --convert-to png --outdir C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-e9d4201c C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\karten-vertraege\kuendigung.pdf
+Exit 0
+convert C:\Users\<user>\AppData\Local\Temp\trendo-t0705-roh-almuqqib\karten-vertraege\kuendigung.pdf as a Draw document -> C:\Users\<user>\AppData\Local\Temp\trendo-t0705-out-e9d4201c\kuendigung.png using filter : draw_png_Export
+[stderr] Could not find platform independent libraries <prefix>
+Datei kuendigung-libreoffice.png: 61941 Bytes, SHA-256 023e93bd2cece853e0c9f97ffe7319f2dadc4f5a56081cc31dea8f8b3f7cd39a
+Datei erinnerungen.ics: 1966 Bytes, SHA-256 585459d6d6e76dc3a381096ce332f837882e298ea68fe2d173a95d2a4c9c52ac
+Kalenderdatei: 4 Termine mit Erinnerung (VALARM). Kein Kalenderprogramm auf diesem PC – Import in einen Kalender NICHT GEPRÜFT.
+ERGEBNIS: bestanden

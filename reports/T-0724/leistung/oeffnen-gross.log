@@ -1,0 +1,7 @@
+# T-0724 Leistung (Avalonia Headless, Trendo.App.Tests -class Trendo.App.Tests.LeistungT0724Ui, 3 Laeufe nacheinander, 2026-11-16 22:55)
+Tabelle 1000 x 100 = 100000 Zellen, XLSX 280 KB: Datei lesen 455 ms, bis Ansicht aufgebaut 959 ms
+3D-Szene 40000 Dreiecke, OBJ 1032 KB: Import fertig 862 ms, bis Ansicht aufgebaut 3041 ms
+Tabelle 1000 x 100 = 100000 Zellen, XLSX 280 KB: Datei lesen 312 ms, bis Ansicht aufgebaut 694 ms
+3D-Szene 40000 Dreiecke, OBJ 1032 KB: Import fertig 578 ms, bis Ansicht aufgebaut 2330 ms
+Tabelle 1000 x 100 = 100000 Zellen, XLSX 280 KB: Datei lesen 262 ms, bis Ansicht aufgebaut 584 ms
+3D-Szene 40000 Dreiecke, OBJ 1032 KB: Import fertig 464 ms, bis Ansicht aufgebaut 2169 ms

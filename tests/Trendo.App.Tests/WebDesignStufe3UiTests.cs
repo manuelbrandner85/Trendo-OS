@@ -93,7 +93,7 @@ public class WebDesignStufe3_Ui
 public class WebDesignStufe3_Browser
 {
     static string Repo() => WebDesignKi_Ui.Repo();
-    static string? AxeFile() { var f = Path.Combine(Path.GetTempPath(), "trendo-axe", "node_modules", "axe-core", "axe.min.js"); return File.Exists(f) ? f : null; }
+    static string? AxeFile() { var f = Path.Combine(global::Trendo.Core.TempDir.SystemTemp, "trendo-axe", "node_modules", "axe-core", "axe.min.js"); return File.Exists(f) ? f : null; }
     static readonly byte[] Png = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==");
 
     /// <summary>Website mit Startseite (Liste), „Über uns“ (de/en), Sammlung mit Vorlage und drei Einträgen.</summary>

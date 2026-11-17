@@ -112,7 +112,7 @@ public class SheetExtrasTests
     [Fact(DisplayName = "T-0228 E5/E6/E9: LibreOffice Calc übernimmt Regeln, Auswahllisten, Notizen und Blattschutz (öffnet XLSX, speichert XLSX) (nur mit LibreOffice)")]
     public void Libreoffice_keeps_extras()
     {
-        if (Soffice() is not { } soffice) return;
+        if (Soffice() is not { } soffice) { Ueberspringen.Weil("LibreOffice fehlt auf diesem PC."); return; }
         var dir = Temp();
         try
         {

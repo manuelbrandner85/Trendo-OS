@@ -1,0 +1,17 @@
+3d-1366x768-einfach.png: abweichende Pixel(>8)=0 Bereich=(5, 32, 1354, 696)
+3d-1366x768-profi.png: abweichende Pixel(>8)=1343 Bereich=(5, 32, 1358, 696)
+3d-1600x1000-einfach.png: abweichende Pixel(>8)=0 Bereich=(6, 37, 1594, 955)
+3d-1600x1000-profi.png: abweichende Pixel(>8)=0 Bereich=(6, 37, 1594, 955)
+3d-1600x900-einfach.png: abweichende Pixel(>8)=0 Bereich=(6, 37, 1594, 815)
+3d-1600x900-profi.png: abweichende Pixel(>8)=0 Bereich=(6, 37, 1594, 815)
+fenster-3d-1366x768.png: abweichende Pixel(>8)=40571 Bereich=(28, 13, 1313, 596)
+fenster-3d-1600x1000.png: abweichende Pixel(>8)=7808 Bereich=(36, 15, 1537, 169)
+fenster-3d-1600x900.png: abweichende Pixel(>8)=55692 Bereich=(33, 15, 1537, 699)
+--- 3D-Bild (Render-Werkzeug, 1600x1000, Seite maximiert): vorher/nachher B2
+demo.png: abweichende Pixel(>8)=0 Bereich=(6, 37, 1594, 955)
+formen.png: abweichende Pixel(>8)=0 Bereich=(6, 37, 1594, 955)
+netz.png: abweichende Pixel(>8)=0 Bereich=(6, 37, 1594, 955)
+--- nur 3D-Ansicht (305..1210 x 352..935)
+demo.png max 0 bbox None
+formen.png max 0 bbox None
+netz.png max 0 bbox None

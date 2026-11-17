@@ -1,0 +1,6 @@
+T-0712 App-Weg 2026-11-16 15:59:11 +01:00
+MainWindow.InstalledModels → KiModel.Discover → OllamaBackend.InstalledAsync (echt)
+Quelle: ollama-api · 9 Modelle von Ollama (GET /api/tags)
+Modelle: mistral:7b, qwen2.5-coder:14b, qwen2.5-coder:7b, qwen2.5:0.5b, qwen2.5:1.5b, qwen2.5:3b, qwen2.5:7b, qwen2.5vl:7b, qwen3:14b
+Grafikspeicher: 11,9 GB
+Standard: qwen3:14b – Das größte vorhandene allgemeine Sprachmodell (8,6 GB), das in deinen Grafikspeicher (12 GB) passt.

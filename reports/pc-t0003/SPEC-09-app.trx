@@ -2,7 +2,7 @@
 <TestRun id="808152ef-b23d-4854-be06-efa7b7fb3861" name="<user>@<host> 2026-10-22 02:43:02" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:43:02.9903979+02:00" queuing="2026-10-22T02:43:02.9903980+02:00" start="2026-10-22T02:42:59.6285659+02:00" finish="2026-10-22T02:43:03.2845018+02:00" />
   <TestSettings name="default" id="102aefe6-ed12-4470-b75f-7dac0c4a02a8">
-    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_43_02" />
+    <Deployment runDeploymentRoot="<user>_<host>_2026-10-22_02_43_02" />
   </TestSettings>
   <Results>
     <UnitTestResult executionId="e7c35852-eef2-4306-afd9-7f0b98622730" testId="b310c8ed-a7e9-85e0-3db1-75b8a8e40b4a" testName="SPEC-09 UI: Scan lesen und bereinigt speichern" computerName="<host>" duration="00:00:00.3825735" startTime="2026-10-22T02:43:02.8362728+02:00" endTime="2026-10-22T02:43:03.2190285+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e7c35852-eef2-4306-afd9-7f0b98622730" />

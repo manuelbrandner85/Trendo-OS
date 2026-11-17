@@ -1,3 +1,4 @@
+using Avalonia.Platform.Storage;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -20,7 +21,7 @@ public partial class MainWindow
     /// <summary>Teil als Körper für die Arbeitsfläche (zwischengespeichert, solange sich das Teil nicht ändert).</summary>
     private Solid PartSolid(Part3D p)
     {
-        var key = System.Text.Json.JsonSerializer.Serialize(p);
+        var key = PartKey(p);
         if (_partSolids.TryGetValue(key, out var s)) return s;
         var m = Mesh3D.BuildWorld(p); s = new Solid { Smooth = p.Shape is "sphere" or "torus" || p.Ops.Any(o => o.Kind == "smooth") };
         for (var t = 0; t + 2 < m.I.Count; t += 3)
@@ -28,6 +29,25 @@ public partial class MainWindow
         if (_partSolids.Count > 200) _partSolids.Clear();
         return _partSolids[key] = s;
     }
+
+    /// <summary>T-0727: Schlüssel für <see cref="_partSolids"/> – alle Werte des Teils als JSON, das Netz (Punkte, Dreiecke) aber nur als SHA-256 seines Inhalts.
+    /// Vorher lief das ganze Netz bei jedem Aufruf durch JsonSerializer (40 000 Dreiecke ≈ 50 ms, mehrmals je Seitenaufbau); gleicher Inhalt = gleicher Schlüssel wie bisher.</summary>
+    internal static string PartKey(Part3D p)
+    {
+        var head = System.Text.Json.JsonSerializer.Serialize(p, PartKeyJson);
+        if (p.Positions is null && p.Indices is null) return head;
+        var sb = new System.Text.StringBuilder(head);
+        if (p.Positions is { } pos) sb.Append("|v").Append(pos.Length).Append(':').Append(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Runtime.InteropServices.MemoryMarshal.AsBytes(pos.AsSpan()))));
+        if (p.Indices is { } idx) sb.Append("|i").Append(idx.Length).Append(':').Append(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Runtime.InteropServices.MemoryMarshal.AsBytes(idx.AsSpan()))));
+        return sb.ToString();
+    }
+    static readonly System.Text.Json.JsonSerializerOptions PartKeyJson = new()
+    {
+        TypeInfoResolver = new System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver
+        {
+            Modifiers = { ti => { if (ti.Type == typeof(Part3D)) foreach (var prop in ti.Properties) if (prop.Name is nameof(Part3D.Positions) or nameof(Part3D.Indices)) prop.ShouldSerialize = (_, _) => false; } }
+        }
+    };
 
     public IReadOnlyList<Part3D> Studio3DParts => _scene.Parts;
     public string? Studio3DSelected => _selId;
@@ -97,10 +117,16 @@ public partial class MainWindow
         }
         vp.PartClicked = i => { SaveCam(vp); _selGroup = null; _selId = i >= 0 ? visible[i].Id : null; Show("3d"); };
         vp.PartMoved = (i, by) => { SaveCam(vp); if (_selGroup is null) Studio3DMove(_scene.Parts.IndexOf(visible[i]), by); else Studio3DMoveTargets(by); };
+        if (MeshEditing) MeshEditToView(vp); // T-0691: Punkte, Kanten, Flächen statt ganzer Teile
+        vp.ContextMenu = Menu3D(vp); // T-0691: Rechtsklick
         vp.PointerWheelChanged += (_, _) => SaveCam(vp);
         vp.PointerReleased += (_, _) => SaveCam(vp);
         vp.KeyDown += (_, e) =>
         {
+            // T-0691: Rückgängig/Wiederholen und der Bearbeitungsmodus haben Vorrang
+            if (e.Key == Key.Z && e.KeyModifiers == KeyModifiers.Control) { SaveCam(vp); UndoScene(); e.Handled = true; return; }
+            if (e.Key == Key.Y && e.KeyModifiers == KeyModifiers.Control || e.Key == Key.Z && e.KeyModifiers == (KeyModifiers.Control | KeyModifiers.Shift)) { SaveCam(vp); RedoScene(); e.Handled = true; return; }
+            if (MeshEditKey(e)) { SaveCam(vp); e.Handled = true; Show("3d"); return; }
             var idx = _scene.Parts.FindIndex(p => p.Id == _selId);
             var step = e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? 10 : 1;
             Vec3? by = e.Key switch { Key.Left => new(-step, 0, 0), Key.Right => new(step, 0, 0), Key.Up => new(0, step, 0), Key.Down => new(0, -step, 0), Key.PageUp => new(0, 0, step), Key.PageDown => new(0, 0, -step), _ => null };
@@ -128,26 +154,103 @@ public partial class MainWindow
             b.Background = _gizmo3d == id ? Accent : Brush.Parse("#CC101826"); b.Foreground = Brushes.White;
             gizmoBar.Children.Add(b);
         }
+        // T-0691: Objektmodus / Bearbeitungsmodus wie in Blender (Tab)
+        var modeObj = Tool("3d-mode-object", "Objekt", "Ganze Teile wählen und verschieben (Tab wechselt)", () => Studio3DEditMode(false));
+        var modeEdit = Tool("3d-mode-edit", "Bearbeiten", "Punkte, Kanten und Flächen des gewählten Teils bearbeiten (Tab)", () => Studio3DEditMode(true));
+        foreach (var mb in new[] { modeObj, modeEdit }) { mb.Background = Brush.Parse("#CC101826"); mb.Foreground = Brushes.White; mb.Margin = new Thickness(0, 0, 3, 0); }
+        (MeshEditing ? modeEdit : modeObj).Background = Accent;
+        // schwebend oben links in der Ansicht (wie der Moduswähler in Blender) – kostet keine Höhe
+        var modeBar = new StackPanel { Name = "3d-mode-bar", Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(8, 8, 0, 0), Children = { modeObj, modeEdit } };
         edit.Children.Add(Tool("3d-dup", "Verdoppeln", "Ausgewähltes Teil kopieren (Strg+D)", Studio3DDuplicate));
         edit.Children.Add(Tool("3d-drop-floor", "Auf den Boden", "Unterkante des ausgewählten Teils auf den Boden setzen", Studio3DDrop));
         edit.Children.Add(Tool("3d-remove", "Löschen", "Ausgewähltes Teil löschen (Entf)", Studio3DDeleteSelected));
+        // T-0704: in „Einfach“ stecken die sechs Ansichten in einem Knopf „Ansicht: … ▾“ (höchstens 40 Knöpfe je Ansicht), in den höheren Stufen stehen sie einzeln da
+        Panel views = IsSimple ? new WrapPanel { Name = "3d-view-list", MaxWidth = 280 } : edit;
+        var viewLabel = "Schräg";
         foreach (var (id, label, view) in new[] { ("angle", "Schräg", "iso"), ("front", "Vorne", "vorne"), ("top", "Oben", "oben"), ("right", "Rechts", "rechts") })
         {
             var b = Tool("3d-view-" + id, label, "Ansicht " + label.ToLowerInvariant(), () => { _view3d = id; vp.SetView(view); SaveCam(vp); Say("Ansicht " + label.ToLowerInvariant() + ".", "3d"); });
-            if (_view3d == id) { b.Background = Accent; b.Foreground = Brushes.White; }
-            edit.Children.Add(b);
+            if (_view3d == id) { b.Background = Accent; b.Foreground = Brushes.White; viewLabel = label; }
+            views.Children.Add(b);
         }
         // weitere Ansichten wie bisher (Bild für Export und Blender)
-        foreach (var (id, label) in new[] { ("back", "Hinten"), ("left", "Links") }) edit.Children.Add(Tool("3d-view-" + id, label, "Ansicht " + label.ToLowerInvariant(), () => SetView(id, "Ansicht von " + (id == "back" ? "hinten." : "links."))));
+        foreach (var (id, label) in new[] { ("back", "Hinten"), ("left", "Links") }) views.Children.Add(Tool("3d-view-" + id, label, "Ansicht " + label.ToLowerInvariant(), () => SetView(id, "Ansicht von " + (id == "back" ? "hinten." : "links."))));
+        if (IsSimple)
+        {
+            var viewMenu = Tool("3d-view-menu", "Ansicht: " + viewLabel + " ▾", "Blickrichtung wählen: schräg, vorne, oben, rechts, hinten, links", () => { });
+            viewMenu.Flyout = new Flyout { Content = views };
+            foreach (var vb in views.Children.OfType<Button>()) vb.Click += (_, _) => viewMenu.Flyout?.Hide();
+            edit.Children.Add(viewMenu);
+        }
         var sel = Selected;
         var info = new TextBlock { Name = "3d-vp-info", Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap,
-            Text = sel is null ? (_scene.Parts.Count == 0 ? "Oben eine Form einsetzen. Klick wählt ein Teil, Ziehen am gewählten Teil verschiebt es, Ziehen daneben dreht die Ansicht, Mausrad zoomt." : "Teil anklicken zum Auswählen · Ziehen dreht die Ansicht · Mausrad zoomt · Doppelklick: Ansicht zurücksetzen")
+            Text = MeshEditing ? "Klick wählt, Umschalt erweitert · 1/2/3 Punkte/Kanten/Flächen · E extrudieren · Rechtsklick: Werkzeuge · Tab: zurück"
+            : sel is null ? (_scene.Parts.Count == 0 ? "Oben eine Form einsetzen. Klick wählt ein Teil, Ziehen am gewählten Teil verschiebt es, Ziehen daneben dreht die Ansicht, Mausrad zoomt." : "Teil anklicken zum Auswählen · Ziehen dreht die Ansicht · Mausrad zoomt · Doppelklick: Ansicht zurücksetzen")
                 : $"{sel.Name}: {Part3D.Num(sel.Sx)} × {Part3D.Num(sel.Sy)} × {Part3D.Num(sel.Sz)} cm bei X {Part3D.Num(sel.X)} · Y {Part3D.Num(sel.Y)} · Z {Part3D.Num(sel.Z)} – ziehen verschiebt (0,5-cm-Raster), Pfeiltasten 1 cm (Umschalt 10 cm), Bild↑/↓ Höhe, Entf löscht" };
-        var stage = new Border { CornerRadius = new CornerRadius(12), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = new Grid { Children = { vp, gizmoBar } } };
+        var stage = new Border { Name = "3d-stage-drop", CornerRadius = new CornerRadius(12), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = new Grid { Children = { vp, gizmoBar, modeBar } } };
+        // T-0691: Datei aus dem Explorer auf die 3D-Fläche ziehen = einlesen (als bearbeitbares Netz)
+        DragDrop.SetAllowDrop(stage, true);
+        stage.AddHandler(DragDrop.DragOverEvent, (_, e) => { e.DragEffects = DragDropEffects.Copy; e.Handled = true; });
+        stage.AddHandler(DragDrop.DropEvent, (_, e) =>
+        {
+            SaveCam(vp);
+            var files = e.DataTransfer.TryGetFiles()?.Select(f => f.TryGetLocalPath()).Where(p => !string.IsNullOrEmpty(p)).ToList() ?? [];
+            if (files.Count == 0) { Say("Diese Angabe ist keine Datei.", "3d"); return; }
+            foreach (var f in files) _ = ImportPath(f!);
+            e.Handled = true;
+        });
         var grid = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto,*,Auto"), Children = { add, Pos2(edit, 1), Pos2(stage, 2), Pos2(info, 3) } };
         return grid;
         static Control Pos2(Control c, int row) { Grid.SetRow(c, row); if (row == 3) c.Margin = new Thickness(2, 6, 0, 0); return c; }
     }
 
     void SaveCam(CadView vp) { _vpYaw = vp.Yaw; _vpPitch = vp.Pitch; _vpZoom = vp.Zoom; }
+
+    /// <summary>T-0727: so viel 3D-Ansicht bleibt mindestens sichtbar (darunter wird die Seite verschiebbar) – 200 px wie die Abnahme in
+    /// W4_Core05_Ui.Preview_and_export_fit („bei üblichen Fenstergrößen ohne Scrollen“, Arbeitsfläche ≥ 200 px). Die Ansicht selbst ist weiter mindestens 320 px hoch
+    /// angeordnet wie bisher; ab 200 px sichtbarer Höhe bleibt alles wie vorher.</summary>
+    internal const double MinStage3D = 200;
+
+    /// <summary>T-0727: Seite, die die Fensterhöhe füllt – bliebe von <paramref name="stage"/> aber weniger als <paramref name="minVisible"/> sichtbar
+    /// wird die Ansicht nicht weiter zusammengedrückt (vorher: 3D-Ansicht im Programmfenster bei 1600 × 900 rund 180 px, bei 1366 × 768 rund 150 px hoch,
+    /// Seitenleisten unten abgeschnitten), sondern die Seite lässt sich senkrecht verschieben. Bei genug Höhe ist alles wie vorher.</summary>
+    static Control MinFill(Control page, Control stage, double minVisible = MinStage3D)
+    {
+        var sv = new ScrollViewer { Name = "page-minfill", HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto };
+        sv.Content = new MinFillHost(sv, stage, minVisible) { Child = page };
+        // Klick in die Ansicht fokussiert sie – die Seite soll dabei nicht springen (Maus-Loslassen läge sonst an anderer Stelle der Ansicht)
+        stage.AddHandler(RequestBringIntoViewEvent, (_, e) => { if (ReferenceEquals(e.TargetObject, stage)) e.Handled = true; });
+        return sv;
+    }
+
+    /// <summary>Misst die Seite mit der sichtbaren Höhe; bekommt <c>stage</c> dabei weniger als <c>minVisible</c>, wird die Seite um genau den Fehlbetrag höher.</summary>
+    sealed class MinFillHost(ScrollViewer owner, Control stage, double minVisible) : Decorator
+    {
+        bool _hooked;
+        public double Needed { get; private set; }
+
+        protected override Size MeasureOverride(Size available)
+        {
+            if (Child is not { } c) return default;
+            var h = owner.Bounds.Height > 1 ? owner.Bounds.Height : double.IsInfinity(available.Height) ? 900 : available.Height;
+            c.Measure(new Size(available.Width, h));
+            // die Ansicht meldet höchstens, was sie bekommt – fehlt ihr etwas bis minVisible, wird die Seite um genau so viel höher
+            Needed = c.DesiredSize.Height + Math.Max(0, minVisible - stage.DesiredSize.Height);
+            if (Needed > h + 0.5) { h = Math.Ceiling(Needed); c.Measure(new Size(available.Width, h)); }
+            return new Size(c.DesiredSize.Width, h);
+        }
+
+        protected override Size ArrangeOverride(Size finalSize)
+        {
+            Child?.Arrange(new Rect(finalSize));
+            return finalSize;
+        }
+
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            if (_hooked) return;
+            _hooked = true; owner.SizeChanged += (_, _) => InvalidateMeasure(); // neue Fensterhöhe → neu verteilen
+        }
+    }
 }

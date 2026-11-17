@@ -43,6 +43,24 @@ public partial class MainWindow
     public void MusicStudioSelect(string id) => _msSel = id;
     public void MusicStudioProMode(bool pro) => _msPro = pro;
 
+    /// <summary>T-0711 (B6 Etappe 1b): Eingaben zum Lied (Beschreibung, Stil, Titel, Liedtext, Tempo …) an Rückgängig und Notsicherung der Hülle (ProgramLink).
+    /// „Gespeichert“ ist der Stand, sobald daraus ein Lied in der Bibliothek entstanden ist.</summary>
+    public LinkSlot MsLink => Slot("musik", "LINK-MUSIK", "lied", MS, "ms-input", "Ein Liedentwurf", "Liedentwürfe",
+        () => new System.Text.Json.Nodes.JsonObject { ["desc"] = _msDesc, ["style"] = _msStyle, ["lyrics"] = _msLyrics, ["title"] = _msTitle, ["bpm"] = _msBpm, ["key"] = _msKey, ["time"] = _msTime,
+            ["lang"] = _msLang, ["len"] = _msLen, ["variants"] = _msVariants, ["instr"] = _msInstr, ["pro"] = _msPro },
+        st =>
+        {
+            if (st is null) return;
+            string S(string k) => st[k]?.GetValue<string>() ?? "";
+            _msDesc = S("desc"); _msStyle = S("style"); _msLyrics = S("lyrics"); _msTitle = S("title"); _msBpm = S("bpm"); _msKey = S("key"); _msTime = S("time");
+            _msLang = (int?)st["lang"] ?? _msLang; _msLen = (int?)st["len"] ?? _msLen; _msVariants = (int?)st["variants"] ?? _msVariants; _msInstr = (bool?)st["instr"] ?? false; _msPro = (bool?)st["pro"] ?? _msPro;
+            _msPage = "erstellen"; _msKind = "lieder";
+        },
+        () => (_msDesc + _msStyle + _msLyrics + _msTitle).Trim().Length > 0,
+        () => _msTitle.Trim().Length > 0 ? _msTitle : _msPro ? (_msStyle.Trim().Length > 0 ? _msStyle : _msLyrics) : _msDesc);
+    /// <summary>Für Tests: Liedbeschreibung.</summary>
+    public string MsDescText => _msDesc;
+
     void InitMusikStudio()
     {
         RegisterTab(KreativTabs, MS, "Trendo Musik", MusikStudio, MusikStudioView, "musik", "lied", "song", "songtext", "komponieren", "musik ki", "ace-step", "gesang", "beat");
@@ -98,6 +116,7 @@ public partial class MainWindow
                     if (CoverImageOverride is not null || (!_opt.Isolated && CoverModel() is not null)) _ = MsMakeCover(made[0].Id, auto: true); // gleich ein passendes Cover dazu
                     _msMsg = (made.Count > 1 ? $"✓ {made.Count} Varianten fertig – anhören und die schönere behalten." : "✓ Fertig.") + (mastered > 0 ? " Gemastert auf −14 LUFS." : "");
                     _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.fertig", $"{kind} {made.Count}");
+                    if (kind == "neu") LinkSaved(MsLink); // T-0711: aus dem Entwurf ist ein Lied in der Bibliothek geworden – Notsicherung weg
                     if (MsSingVoice.Length > 0 && kind is "neu" or "cover") _ = MsApplySingVoice(made); // V4: in der gewählten Stimme singen
                     return made;
                 }
@@ -266,12 +285,13 @@ public partial class MainWindow
         sp.Children.Add(MsDailyIdeaCard()); // V17: Idee des Tages
         sp.Children.Add(MsTasteCard()); // V13: Mein Geschmack
         sp.Children.Add(modes);
+        sp.Children.Add(LinkBar(MsLink)); // T-0711: Wiederherstellen-Karte, Rückgängig · Wiederholen der Eingaben
         if (MsProducerDraftBanner() is { } prod) sp.Children.Add(prod); // Claude 26: offener Produzenten-Entwurf
         var sync = new List<Action>(); // beim Klick die Felder direkt auslesen – nicht auf das Änderungs-Ereignis warten
         TextBox Box(string name, string watermark, string value, Action<string> set, double minH = 0, bool multi = false)
         {
             var t = new TextBox { Name = name, Watermark = watermark, Text = value, AcceptsReturn = multi, TextWrapping = TextWrapping.Wrap, MinHeight = minH };
-            t.TextChanged += (_, _) => set(t.Text ?? ""); sync.Add(() => set(t.Text ?? "")); return t;
+            t.TextChanged += (_, _) => { set(t.Text ?? ""); LinkTyped(MsLink); }; sync.Add(() => set(t.Text ?? "")); return t; // T-0711: Tipp-Pause = Rückgängig-Schritt
         }
         void Sync() { foreach (var a in sync) a(); }
         if (!_msPro)
@@ -469,9 +489,11 @@ public partial class MainWindow
     Control MsDetailPanel()
     {
         var s = _msSel is null ? null : Songs.Get(_msSel);
+        var stemCard = LinkRecoveryCard(MsStemLink); // T-0715: nicht gespeicherte Spuren-Mischung aus einer früheren Sitzung oder einem Absturz
         if (s is null || !File.Exists(s.File))
-            return MsCard("ms-detail", new StackPanel { Spacing = 8, Children = { H("Lied", 16), P("Wähle in der Mitte ein Lied – hier siehst du dann den Liedtext und kannst es weiterbearbeiten.", Muted, 12.5) } });
+            return MsCard("ms-detail", new StackPanel { Spacing = 8, Children = { stemCard ?? new Panel(), H("Lied", 16), P("Wähle in der Mitte ein Lied – hier siehst du dann den Liedtext und kannst es weiterbearbeiten.", Muted, 12.5) } });
         var sp = new StackPanel { Spacing = 8 };
+        if (stemCard is not null) sp.Children.Add(stemCard);
         sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, Children = { MsCover(s, File.Exists(s.CoverFile) ? 120 : 84),
             new StackPanel { VerticalAlignment = VerticalAlignment.Center, Width = 210, Children = { new TextBlock { Name = "ms-detail-title", Text = s.Title, Foreground = Text, FontSize = 16, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
                 new TextBlock { Text = s.Style, Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap } } } } });

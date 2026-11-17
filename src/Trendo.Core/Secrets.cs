@@ -11,6 +11,8 @@ public interface ISecretStore
     void Set(string key, string value);
     string? Get(string key);
     bool Delete(string key);
+    /// <summary>T-0726: bleibt der Inhalt über einen Neustart erhalten? (Nur dann taugt der Speicher für den Schlüssel des Prüfprotokolls.)</summary>
+    bool Persistent => true;
 }
 
 /// <summary>Geheimnisse einer weiteren Trendo-Person: eigener Namensraum im selben Speicher, damit jede Person ihre eigenen Anmeldungen hat
@@ -22,12 +24,16 @@ public sealed class ScopedSecretStore(ISecretStore inner, string scope) : ISecre
     public void Set(string key, string value) => inner.Set(K(key), value);
     public string? Get(string key) => inner.Get(K(key));
     public bool Delete(string key) => inner.Delete(K(key));
+    public bool Persistent => inner.Persistent;
 }
 
 public static class SecretStoreFactory
 {
     public static ISecretStore CreateDefault() =>
-        OperatingSystem.IsWindows() ? new WindowsCredentialStore() : new InMemorySecretStore();
+        TestOverride?.Invoke() ?? (OperatingSystem.IsWindows() ? new WindowsCredentialStore() : new InMemorySecretStore());
+
+    /// <summary>Nur für Testprojekte (per ModuleInitializer gesetzt): Tests dürfen nie die echte Anmeldeinformationsverwaltung der Person anfassen.</summary>
+    public static Func<ISecretStore>? TestOverride { get; set; }
 }
 
 /// <summary>Nur für Tests/Nicht-Windows: hält Geheimnisse ausschließlich im Speicher, nie auf Platte.</summary>
@@ -38,6 +44,7 @@ public sealed class InMemorySecretStore : ISecretStore
     public void Set(string key, string value) => _d[key] = value;
     public string? Get(string key) => _d.TryGetValue(key, out var v) ? v : null;
     public bool Delete(string key) => _d.Remove(key);
+    public bool Persistent => false;
 }
 
 /// <summary>Windows Credential Manager (Generic Credentials) über advapi32, Zielpräfix "TrendoOS:".</summary>

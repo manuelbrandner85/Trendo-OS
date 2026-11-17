@@ -29,7 +29,8 @@ public class SPEC13_Ui
         w.Show(MainWindow.StudioPages["SPEC-13"]); Settle();
         RealClick(w, Get<Button>(w, "prog-tpl-leer"));
         Assert.Null(w.TryFind<Button>("geo-gpx-run")); // kein Formular mehr
-        Get<TextBox>(w, "mk-gpx-path").Text = f; Press(w, "mk-gpx-load");
+        // V-07 (T-0700): ein Klick auf „Datei wählen …“ – die Tour wird sofort geladen (Systemdialog ersetzt)
+        w.PickOverride = _ => Task.FromResult<string[]?>([f]); Press(w, "mk-gpx-path-pick");
         var t = Assert.Single(Model(w).Tracks);
         Assert.Equal(t.Id, w.MapState.Selected);
         Assert.Contains("100 m", string.Join(" ", w.GetVisualDescendants().OfType<TextBlock>().Select(x => x.Text)));
@@ -144,11 +145,12 @@ public class SPEC13_UiPack
         var tiles = Path.Combine(root, "paket");
         foreach (var (x, y) in new[] { (8711, 5683), (8712, 5683) }) { var f = Path.Combine(tiles, "14", x.ToString(), y + ".png"); Directory.CreateDirectory(Path.GetDirectoryName(f)!); File.WriteAllBytes(f, png); }
         w.Show(MK); Settle(); RealClick(w, Get<Button>(w, "prog-tpl-leer")); w.MapSelect(null);
-        Get<TextBox>(w, "mk-pack-path").Text = tiles; Press(w, "mk-pack-load");
+        // V-07 (T-0700): ein Klick auf „Datei wählen …“ liest sofort ein (Systemdialog ersetzt); das Pfadfeld ist außerhalb von „Professionell“ ausgeblendet
+        w.PickOverride = _ => Task.FromResult<string[]?>([tiles]); Press(w, "mk-pack-path-pickdir");
         Assert.Contains("2 Kacheln, Zoom 14–14", Get<TextBlock>(w, "mk-pack-info").Text);
         Assert.Equal(14, w.MapState.Zoom); Assert.InRange(w.MapState.Lat, 48.1, 48.2);
         Assert.Equal(tiles, w.MapPackPath);
-        Get<TextBox>(w, "mk-pack-path").Text = Path.Combine(root, "leer"); Directory.CreateDirectory(Path.Combine(root, "leer")); Press(w, "mk-pack-load");
+        Directory.CreateDirectory(Path.Combine(root, "leer")); w.PickOverride = _ => Task.FromResult<string[]?>([Path.Combine(root, "leer")]); Press(w, "mk-pack-path-pickdir");
         Assert.StartsWith("⚠", Get<TextBlock>(w, "mk-net-msg").Text);
         Press(w, "mk-pack-off"); Assert.Equal("", w.MapPackPath);
         w.Close();

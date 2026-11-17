@@ -10,18 +10,24 @@ namespace Trendo.Core.Kreativ;
 /// Die Standbilder malt die lokale Bild-KI (<see cref="ImageAiKit"/>) oder die Person wählt eigene Bilder.</summary>
 public static partial class VideoAiKit
 {
-    public sealed record Scene(string Prompt, double Seconds, string Motion, string Caption, string Image = "");
-    public sealed record Clip(string Image, double Seconds, string Motion, string? CaptionPng = null);
+    /// <summary>Szene: Bildbeschreibung, Dauer, Kamerabewegung, Einblendung, Schlüsselbild; dazu (T-0699) Sprechertext und ein echter KI-Videoclip, wenn die Szene mit der Video-KI bewegt wurde.</summary>
+    public sealed record Scene(string Prompt, double Seconds, string Motion, string Caption, string Image = "", string Speech = "", string Clip = "");
+    /// <summary>Baustein fürs MP4: Standbild mit Kamerafahrt – oder, wenn <paramref name="Video"/> gesetzt ist, ein echter bewegter Clip (auf Szenenlänge gebracht).</summary>
+    public sealed record Clip(string Image, double Seconds, string Motion, string? CaptionPng = null, string? Video = null);
+    /// <summary>Sprecher einer Szene: WAV, Beginn im Video (s), höchstens so lang wie die Szene.</summary>
+    public sealed record Voice(string Wav, double Start, double MaxSeconds);
+    /// <summary>Ton fürs MP4: Sprecher je Szene und optional Musik darunter.</summary>
+    public sealed record Sound(IReadOnlyList<Voice> Voices, string? Music = null);
 
     public static readonly IReadOnlyList<(string Id, string Label)> Motions = [("zoom-rein", "Zoom rein"), ("zoom-raus", "Zoom raus"), ("links", "Schwenk nach links"), ("rechts", "Schwenk nach rechts"), ("ruhig", "Ruhig")];
     public static readonly IReadOnlyList<(string Id, string Label, int W, int H)> Formats = [("quer", "Quer 16:9", 1280, 720), ("hoch", "Hoch 9:16", 720, 1280), ("quadrat", "Quadrat 1:1", 1080, 1080)];
     public const double MaxTotal = 60, MinScene = 1, MaxScene = 15, DefaultScene = 4, Fade = 0.5;
-    public const int Fps = 30, MaxScenes = 20, MaxCaption = 80;
+    public const int Fps = 30, MaxScenes = 20, MaxCaption = 80, MaxSpeech = 400;
 
     [GeneratedRegex(@"(?<![\p{L}\p{N}])[\(\[]?\s*(\d{1,2}(?:[.,]\d)?)\s*(?:s|sek|sekunden|sec)\b\.?\s*[\)\]]?", RegexOptions.IgnoreCase)]
     private static partial Regex SecRx();
-    [GeneratedRegex(@"\b(?:text|einblendung|untertitel)\s*:\s*(.+)$", RegexOptions.IgnoreCase)]
-    private static partial Regex CaptionRx();
+    [GeneratedRegex(@"\b(text|einblendung|untertitel|sprecher|sprecherin|erzähler|erzählerin|stimme)\s*:\s*", RegexOptions.IgnoreCase)]
+    private static partial Regex LabelRx();
 
     static readonly (string Motion, string[] Words)[] MotionWords =
     [
@@ -49,8 +55,15 @@ public static partial class VideoAiKit
         foreach (var raw in parts.Take(MaxScenes))
         {
             var p = Regex.Replace(raw, @"^\s*(?:\d+[.)]|[-*•])\s+", ""); // Aufzählungszeichen weg
-            var caption = "";
-            if (CaptionRx().Match(p) is { Success: true } cm) { caption = KreativSafe.Cut(cm.Groups[1].Value.Trim().Trim('„', '“', '"'), MaxCaption); p = p[..cm.Index]; }
+            var caption = ""; var speech = "";
+            // „Text: …“ und „Sprecher: …“ dürfen in beliebiger Reihenfolge am Ende stehen: von hinten nach vorn herausnehmen
+            foreach (var lm in LabelRx().Matches(p).Cast<Match>().Reverse())
+            {
+                var value = p[(lm.Index + lm.Length)..].Trim().TrimEnd(',', ';').Trim().Trim('„', '“', '"');
+                p = p[..lm.Index];
+                if (lm.Groups[1].Value.ToLowerInvariant() is "text" or "einblendung" or "untertitel") caption = KreativSafe.Cut(value, MaxCaption);
+                else speech = KreativSafe.Cut(value, MaxSpeech);
+            }
             var sec = DefaultScene;
             if (SecRx().Match(p) is { Success: true } sm && double.TryParse(sm.Groups[1].Value.Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out var s)) { sec = s; p = p.Remove(sm.Index, sm.Length); }
             var motion = "";
@@ -64,8 +77,8 @@ public static partial class VideoAiKit
             // Reste der herausgenommenen Angaben aufräumen: doppelte Satzzeichen, Zeichen am Anfang und Ende
             p = Regex.Replace(Regex.Replace(p, @"\s*([,;])(?:\s*[,;])+", "$1"), @"\s{2,}", " ");
             p = Regex.Replace(p, @"^[\s,;:–\-.]+|[\s,;:–\-.]+$", "");
-            if (p.Length == 0 && caption.Length == 0) continue;
-            list.Add(new(p, Math.Clamp(Math.Round(sec, 1), MinScene, MaxScene), motion, caption));
+            if (p.Length == 0 && caption.Length == 0 && speech.Length == 0) continue;
+            list.Add(new(p, Math.Clamp(Math.Round(sec, 1), MinScene, MaxScene), motion, caption, "", speech));
         }
         return list;
     }
@@ -92,6 +105,8 @@ public static partial class VideoAiKit
             if (s.Caption.Length > MaxCaption) f.Add($"⚠ {n}: Die Einblendung ist lang – höchstens {MaxCaption} Zeichen sind gut lesbar.");
             if (needImages && s.Image.Length == 0) f.Add($"⚠ {n}: Noch kein Bild – „Bilder malen“ oder ein eigenes Bild wählen.");
             if (Motions.All(m => m.Id != s.Motion)) f.Add($"✕ {n}: Unbekannte Bewegung „{s.Motion}“.");
+            if (s.Speech.Length > 0 && SpeechSeconds(s.Speech) > s.Seconds)
+                f.Add($"⚠ {n}: Der Sprechertext braucht etwa {SpeechSeconds(s.Speech).ToString("0.#", CultureInfo.GetCultureInfo("de-DE"))} s, die Szene ist {s.Seconds.ToString("0.#", CultureInfo.GetCultureInfo("de-DE"))} s lang – Szene verlängern oder Text kürzen (sonst wird er abgeschnitten).");
         }
         return f;
     }
@@ -120,8 +135,14 @@ public static partial class VideoAiKit
         for (var i = 0; i < clips.Count; i++)
         {
             var c = clips[i]; var frames = Frames(c.Seconds); var (z, x, y) = ZoomPan(c.Motion, frames);
-            sb.Append(CultureInfo.InvariantCulture, $"[{i}:v]scale={w * 2}:{h * 2}:force_original_aspect_ratio=increase,crop={w * 2}:{h * 2},setsar=1,");
-            sb.Append(CultureInfo.InvariantCulture, $"zoompan=z='{z}':x='{x}':y='{y}':d={frames}:s={w}x{h}:fps={Fps},format=yuv420p,setpts=PTS-STARTPTS");
+            if (c.Video is { Length: > 0 })
+                // echter Clip: auf Bildgröße, 30 Bilder/s, mit dem letzten Bild auf Szenenlänge verlängert und genau abgeschnitten
+                sb.Append(CultureInfo.InvariantCulture, $"[{i}:v]scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h},setsar=1,fps={Fps},tpad=stop_mode=clone:stop_duration={F(c.Seconds)},trim=end_frame={frames},format=yuv420p,setpts=PTS-STARTPTS");
+            else
+            {
+                sb.Append(CultureInfo.InvariantCulture, $"[{i}:v]scale={w * 2}:{h * 2}:force_original_aspect_ratio=increase,crop={w * 2}:{h * 2},setsar=1,");
+                sb.Append(CultureInfo.InvariantCulture, $"zoompan=z='{z}':x='{x}':y='{y}':d={frames}:s={w}x{h}:fps={Fps},format=yuv420p,setpts=PTS-STARTPTS");
+            }
             if (c.CaptionPng is { Length: > 0 }) { sb.Append(CultureInfo.InvariantCulture, $"[b{i}];[b{i}][{cap}:v]overlay=0:0:format=auto,format=yuv420p[s{i}];"); cap++; }
             else sb.Append(CultureInfo.InvariantCulture, $"[s{i}];");
         }
@@ -139,17 +160,112 @@ public static partial class VideoAiKit
     }
 
     /// <summary>FFmpeg-Argumente: Bilder, danach die Einblendungen, ein Filtergraph, H.264 für jeden Player. „-n“: eine vorhandene Datei wird nie überschrieben.</summary>
-    public static IReadOnlyList<string> FfmpegArgs(IReadOnlyList<Clip> clips, int w, int h, string output)
+    public static IReadOnlyList<string> FfmpegArgs(IReadOnlyList<Clip> clips, int w, int h, string output, Sound? sound = null, string? subtitles = null)
     {
         if (clips.Count == 0) throw new ArgumentException("Keine Szene mit Bild.");
         if (Total(clips.Select(c => c.Seconds).ToList()) > MaxTotal) throw new ArgumentException($"Videos gehen bis {MaxTotal:0} Sekunden.");
         if (clips.Any(c => c.Seconds < MinScene || c.Seconds > MaxScene)) throw new ArgumentException($"Jede Szene dauert {MinScene:0} bis {MaxScene:0} Sekunden.");
         var a = new List<string> { "-hide_banner", "-nostdin", "-n" };
-        foreach (var c in clips) { a.Add("-i"); a.Add(c.Image); }
+        foreach (var c in clips) { a.Add("-i"); a.Add(c.Video is { Length: > 0 } v ? v : c.Image); }
         foreach (var c in clips.Where(c => c.CaptionPng is { Length: > 0 })) { a.Add("-i"); a.Add(c.CaptionPng!); }
-        a.AddRange(["-filter_complex", Filter(clips, w, h), "-map", "[vout]", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-r", Fps.ToString(CultureInfo.InvariantCulture), "-movflags", "+faststart", "-an", output]);
+        var next = clips.Count + clips.Count(c => c.CaptionPng is { Length: > 0 });
+        var filter = Filter(clips, w, h);
+        var voices = sound?.Voices ?? []; var music = sound?.Music is { Length: > 0 } m ? m : null;
+        var audio = voices.Count > 0 || music is not null;
+        var total = Total(clips.Select(c => c.Seconds).ToList());
+        if (audio)
+        {
+            var sb = new StringBuilder(filter); var parts = new List<string>();
+            foreach (var v in voices)
+            {
+                a.Add("-i"); a.Add(v.Wav);
+                var ms = (long)Math.Round(Math.Max(0, v.Start) * 1000);
+                sb.Append(CultureInfo.InvariantCulture, $";[{next}:a]aresample=48000,aformat=channel_layouts=stereo,atrim=0:{F(Math.Max(0.1, v.MaxSeconds))},adelay={ms}:all=1[vo{parts.Count}]");
+                parts.Add($"[vo{parts.Count}]"); next++;
+            }
+            if (music is not null)
+            {
+                a.AddRange(["-stream_loop", "-1", "-i", music]);
+                // unter dem Sprecher leise, ohne Sprecher deutlich; sanft ein- und ausblenden
+                var vol = voices.Count > 0 ? "0.18" : "0.6";
+                sb.Append(CultureInfo.InvariantCulture, $";[{next}:a]aresample=48000,aformat=channel_layouts=stereo,volume={vol},atrim=0:{F(total)},afade=t=in:d=1,afade=t=out:st={F(Math.Max(0, total - 1.5))}:d=1.5[mu]");
+                parts.Add("[mu]"); next++;
+            }
+            sb.Append(';').Append(string.Concat(parts)).Append(parts.Count > 1 ? $"amix=inputs={parts.Count}:normalize=0:duration=longest," : "anull,")
+              .Append(CultureInfo.InvariantCulture, $"apad=whole_dur={F(total)},atrim=0:{F(total)}[aout]");
+            filter = sb.ToString();
+        }
+        if (subtitles is { Length: > 0 }) { a.Add("-i"); a.Add(subtitles); }
+        a.AddRange(["-filter_complex", filter, "-map", "[vout]"]);
+        if (audio) a.AddRange(["-map", "[aout]"]);
+        if (subtitles is { Length: > 0 }) a.AddRange(["-map", next.ToString(CultureInfo.InvariantCulture) + ":s"]);
+        a.AddRange(["-c:v", "libx264", "-pix_fmt", "yuv420p", "-r", Fps.ToString(CultureInfo.InvariantCulture)]);
+        if (audio) a.AddRange(["-c:a", "aac", "-b:a", "160k", "-ar", "48000"]); else a.Add("-an");
+        if (subtitles is { Length: > 0 }) a.AddRange(["-c:s", "mov_text", "-metadata:s:s:0", "language=ger"]);
+        a.AddRange(["-movflags", "+faststart", output]);
         return a;
     }
+
+    /// <summary>Beginn jeder Szene im fertigen Video (Überblendungen lassen Szenen überlappen).</summary>
+    public static IReadOnlyList<double> Starts(IReadOnlyList<double> seconds)
+    {
+        var list = new List<double>(); var t = 0.0;
+        for (var i = 0; i < seconds.Count; i++) { list.Add(Math.Round(t - Fade * i, 3)); t += Frames(seconds[i]) / (double)Fps; }
+        return list;
+    }
+
+    /// <summary>Grobe Sprechdauer der deutschen Stimme (etwa 2,4 Wörter je Sekunde) – nur für den Hinweis vor dem Bauen.</summary>
+    public static double SpeechSeconds(string text) => Math.Round(Regex.Matches(text ?? "", @"[\p{L}\p{N}]+").Count / 2.4 + 0.3, 1);
+
+    static string Ts(double s) { var t = TimeSpan.FromSeconds(Math.Max(0, s)); return $"{(int)t.TotalHours:00}:{t.Minutes:00}:{t.Seconds:00},{t.Milliseconds:000}"; }
+
+    /// <summary>Untertitel (SRT) aus den Sprechertexten: je Szene in ihrem Zeitfenster, Zeilen höchstens 42 Zeichen, höchstens zwei Zeilen je Einblendung.</summary>
+    public static string Srt(IReadOnlyList<Scene> scenes)
+    {
+        var starts = Starts(scenes.Select(s => s.Seconds).ToList());
+        var sb = new StringBuilder(); var n = 1;
+        for (var i = 0; i < scenes.Count; i++)
+        {
+            var text = Regex.Replace(scenes[i].Speech ?? "", @"\s+", " ").Trim();
+            if (text.Length == 0) continue;
+            var lines = new List<string>(); var cur = "";
+            foreach (var word in text.Split(' '))
+                if (cur.Length == 0) cur = word; else if (cur.Length + 1 + word.Length <= 42) cur += " " + word; else { lines.Add(cur); cur = word; }
+            if (cur.Length > 0) lines.Add(cur);
+            var chunks = lines.Chunk(2).Select(c => string.Join("\n", c)).ToList();
+            double from = starts[i] + (i > 0 ? Fade : 0), to = starts[i] + Frames(scenes[i].Seconds) / (double)Fps - (i < scenes.Count - 1 ? Fade : 0);
+            var step = Math.Max(0.5, (to - from) / chunks.Count);
+            for (var k = 0; k < chunks.Count; k++)
+                sb.Append(CultureInfo.InvariantCulture, $"{n++}\n{Ts(from + k * step)} --> {Ts(Math.Min(to, from + (k + 1) * step))}\n{chunks[k]}\n\n");
+        }
+        return sb.ToString();
+    }
+
+    /// <summary>Sichtbarer Bildausschnitt der Kamerafahrt zum Zeitpunkt t (0 … 1) als Anteil des Bildes – für die Vorschau ohne FFmpeg (gleiche Rechnung wie <see cref="ZoomPan"/>).</summary>
+    public static (double X, double Y, double W, double H) View(string motion, double t)
+    {
+        t = Math.Clamp(t, 0, 1);
+        double z = motion switch { "zoom-raus" => 1.25 - 0.25 * t, "links" or "rechts" => 1.2, "ruhig" => 1, _ => 1 + 0.25 * t };
+        var s = 1 / z; var free = 1 - s;
+        var x = motion switch { "links" => free * (1 - t), "rechts" => free * t, "ruhig" => 0, _ => free / 2 };
+        var y = motion == "ruhig" ? 0 : free / 2;
+        return (Math.Round(x, 4), Math.Round(y, 4), Math.Round(s, 4), Math.Round(s, 4));
+    }
+
+    /// <summary>Längster KI-Clip, den die Video-KI je Szene erzeugt (Sekunden). Gemessen 16.11.2026 (RTX 5070, Wan 2.2 5B, 1280 × 704, 12 Schritte): 4 s = 97 Bilder brauchen rund 270 s je Schritt (über 50 min) – 1,5 s bleiben im Rahmen.</summary>
+    public const double MaxKiClip = 1.5;
+
+    /// <summary>KI-Clip auf Szenenlänge bringen: bis 2,5-fach verlangsamt (ruhige Bewegung statt Standbild), Rest hält das letzte Bild; Bildgröße, 30 Bilder/s, ohne Ton.</summary>
+    public static string[] ClipFitArgs(string input, double clipSeconds, double sceneSeconds, int w, int h, string output)
+    {
+        var factor = Math.Clamp(sceneSeconds / Math.Max(0.1, clipSeconds), 1, 2.5);
+        return ["-hide_banner", "-loglevel", "error", "-y", "-i", input, "-an",
+            "-vf", $"setpts={F(factor)}*PTS,scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h},setsar=1,fps={Fps},tpad=stop_mode=clone:stop_duration={F(sceneSeconds)}",
+            "-t", F(sceneSeconds), "-c:v", "libx264", "-preset", "medium", "-crf", "17", "-pix_fmt", "yuv420p", output];
+    }
+
+    /// <summary>Was die Szene im Video ist – ehrlich benannt.</summary>
+    public static string Kind(Scene s) => s.Clip.Length > 0 ? "KI-Video (bewegt)" : s.Image.Length > 0 ? "Bild mit Kamerafahrt" : "noch kein Bild";
 
     public sealed record SceneSource(string Prompt, double Seconds, string Motion, string Caption, string Source, string ImageSha);
     public sealed record Provenance(string Generator, IReadOnlyList<SceneSource> Scenes, int Width, int Height, double Seconds, DateTime CreatedUtc, string Sha256, bool AiGenerated = true);

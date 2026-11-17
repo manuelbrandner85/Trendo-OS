@@ -36,38 +36,43 @@ public partial class MainWindow
         return (a, e - a);
     }
 
-    /// <summary>Schriftart, Schriftfarbe oder Hervorhebung auf die Auswahl setzen (null = zurück zum Standard). Öffentlich für Tests und Claude.</summary>
+    /// <summary>Schriftart, Schriftfarbe oder Hervorhebung auf die Auswahl setzen (null = zurück zum Standard) – auch über mehrere Absätze und in Tabellenzellen. Öffentlich für Tests und Claude.</summary>
     public void TextSetInk(MarkKind kind, string? value)
     {
-        if (CurPara() is not { } p) return;
+        var v = _txView;
+        if (v.HasSelection && !v.Anchor.SameBox(v.Caret)) { Snapshot(); TextEdit.Apply(TextDocument, v.Anchor, v.Caret, (q, s0, l0) => { if (l0 > 0) TextDoc.SetInk(q, s0, l0, kind, value); }); Changed(); return; }
+        if (CurBox() is not { } p) return;
         var (s, l) = TextInkRange(p); if (l == 0) { _txMsg = "Erst Text markieren – oder den Cursor in ein Wort setzen."; return; }
-        Snapshot(); TextDoc.SetInk(p, s, l, kind, value); Changed();
+        Snapshot(); TextDoc.SetInk(p, s, l, kind, value); TextEdit.Commit(TextDocument, v.Caret, p); Changed();
     }
 
     /// <summary>Schriftgröße in Punkt auf die Auswahl (bzw. das Wort am Cursor).</summary>
     public void TextSetSize(double pt)
     {
-        if (CurPara() is not { } p) return;
+        var v = _txView;
+        if (v.HasSelection && !v.Anchor.SameBox(v.Caret)) { Snapshot(); TextEdit.Apply(TextDocument, v.Anchor, v.Caret, (q, s0, l0) => { if (l0 > 0) TextDoc.Size(q, s0, l0, pt); }); Changed(); return; }
+        if (CurBox() is not { } p) return;
         var (s, l) = TextInkRange(p); if (l == 0) return;
-        Snapshot(); TextDoc.Size(p, s, l, pt); Changed();
+        Snapshot(); TextDoc.Size(p, s, l, pt); TextEdit.Commit(TextDocument, v.Caret, p); Changed();
     }
 
-    /// <summary>Absatzformat: Zeilenabstand (Faktor), Abstand vor/nach in Punkt, Erstzeileneinzug in cm.</summary>
+    /// <summary>Absatzformat: Zeilenabstand (Faktor), Abstand vor/nach in Punkt, Erstzeileneinzug in cm – für alle Absätze der Auswahl.</summary>
     public void TextSetParagraph(double? lineSpacing = null, double? before = null, double? after = null, double? firstLineCm = null, bool resetLine = false)
     {
-        if (CurPara() is not { } p) return;
-        Snapshot();
-        if (resetLine) p.LineSpacing = null; else if (lineSpacing is { } ls) p.LineSpacing = Math.Clamp(ls, 0.8, 4);
-        if (before is { } b) p.SpaceBeforePt = Math.Clamp(b, 0, 96);
-        if (after is { } a) p.SpaceAfterPt = Math.Clamp(a, 0, 96);
-        if (firstLineCm is { } fl) p.FirstLineCm = Math.Clamp(fl, -5, 5);
-        Changed();
+        if (CurPara() is null) return;
+        TextEachPara(p =>
+        {
+            if (resetLine) p.LineSpacing = null; else if (lineSpacing is { } ls) p.LineSpacing = Math.Clamp(ls, 0.8, 4);
+            if (before is { } b) p.SpaceBeforePt = Math.Clamp(b, 0, 96);
+            if (after is { } a) p.SpaceAfterPt = Math.Clamp(a, 0, 96);
+            if (firstLineCm is { } fl) p.FirstLineCm = Math.Clamp(fl, -5, 5);
+        });
     }
 
     /// <summary>Knöpfe für das Menüband „Start“: Schriftart, Größe, Farbe, Hervorhebung, Zeilen- und Absatzabstand.</summary>
     IEnumerable<Control> TextLookItems()
     {
-        var p = CurPara();
+        var p = CurBox();
         var at = p is null ? 0 : Math.Clamp(_txSel, 0, Math.Max(0, p.Text.Length - 1));
         var font = new ComboBox { Name = "text-font", Focusable = false, Width = 150, Margin = new Thickness(0, 0, 4, 4), IsEnabled = p is not null };
         var fonts = TextFontChoices().ToList(); foreach (var f in fonts) font.Items.Add(new ComboBoxItem { Content = f, FontFamily = new FontFamily(f) });
@@ -123,12 +128,12 @@ public partial class MainWindow
         var m = new ContextMenu { Name = "text-context" };
         MenuItem I(string name, string header, Action go) { var mi = new MenuItem { Name = name, Header = header }; mi.Click += (_, _) => { go(); Show("text"); }; return mi; }
         var p = TextDocument.Blocks.ElementAtOrDefault(index) as Para;
-        string Selected() => p is null ? "" : _txSelLen > 0 && _txSel + _txSelLen <= p.Text.Length ? p.Text.Substring(_txSel, _txSelLen) : p.Text;
+        string Selected() => _txView.HasSelection ? _txView.SelectedText() : CurBox()?.Text ?? p?.Text ?? "";
         if (ClaudeBelongs("text") && ClaudeStudioOf("text") is { } studio)
             m.Items.Add(I("text-context-claude", "Claude fragen", () => ClaudeContextAsk(Selected(), studio)));
-        m.Items.Add(I("text-context-cut", "Ausschneiden", () => _txActive?.Cut()));
-        m.Items.Add(I("text-context-copy", "Kopieren", () => _txActive?.Copy()));
-        m.Items.Add(I("text-context-paste", "Einfügen", () => _txActive?.Paste()));
+        m.Items.Add(I("text-context-cut", "Ausschneiden", () => _txView.Cut()));
+        m.Items.Add(I("text-context-copy", "Kopieren", () => _txView.Copy()));
+        m.Items.Add(I("text-context-paste", "Einfügen", () => _txView.Paste()));
         m.Items.Add(new Separator());
         m.Items.Add(I("text-context-bold", "Fett", () => TextToggle(Fmt.Bold)));
         m.Items.Add(I("text-context-italic", "Kursiv", () => TextToggle(Fmt.Italic)));
@@ -142,19 +147,11 @@ public partial class MainWindow
         marks.Items.Add(I("text-context-mark-none", "Keine", () => TextSetInk(MarkKind.Highlight, null)));
         m.Items.Add(marks);
         var styles = new MenuItem { Name = "text-context-style", Header = "Absatzart" };
-        foreach (var s in Enum.GetValues<ParaStyle>()) { var st = s; styles.Items.Add(I("text-context-style-" + s.ToString().ToLowerInvariant(), TextDoc.StyleName(s), () => { if (CurPara() is { } cp) { Snapshot(); cp.Style = st; Changed(); } })); }
+        foreach (var s in Enum.GetValues<ParaStyle>()) { var st = s; styles.Items.Add(I("text-context-style-" + s.ToString().ToLowerInvariant(), TextDoc.StyleName(s), () => TextEachPara(x => x.Style = st))); }
         m.Items.Add(styles);
         m.Items.Add(new Separator());
         m.Items.Add(I("text-context-link", "Link einfügen …", () => TextAsk("text-link-ask", "Adresse des Links", "https://", v => TextAddMark(MarkKind.Link, v))));
         m.Items.Add(I("text-context-comment", "Kommentar …", () => TextAsk("text-comment-ask", "Kommentar", "", v => TextAddMark(MarkKind.Comment, v))));
         return m;
-    }
-
-    /// <summary>Schrift, Farbe und Hervorhebung eines Abschnitts im Blatt zeigen.</summary>
-    static void TextApplyInk(Avalonia.Controls.Documents.Run run, Para p, int at)
-    {
-        if (TextDoc.InkAt(p, at, MarkKind.Font) is { } f) run.FontFamily = new FontFamily(f);
-        if (TextDoc.InkAt(p, at, MarkKind.Color) is { } c) run.Foreground = Brush.Parse(c);
-        if (TextDoc.InkAt(p, at, MarkKind.Highlight) is { } h) run.Background = Brush.Parse(h);
     }
 }

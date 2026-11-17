@@ -85,10 +85,12 @@ public class ClaudeOperate_Ui
             w.Show(page); w.ProgramNew(page); w.Show(page);
             Assert.NotNull(w.TryFind<Button>("ki-menu")); Assert.NotNull(w.TryFind<Button>("auftrag-claude")); Assert.NotNull(w.TryFind<Button>("auftrag-claude-markierung")); // E1 (T-0616): beides im Menü „KI ▾“
             Assert.Null(w.TryFind<Button>("prog-claude")); // kein zweites „Claude“ im Programmband
-            // Rechtsklick auf einen Text der Seite
-            var tb = w.ActivePageRootForTests!.GetLogicalDescendants().OfType<TextBlock>().First(t => t.Text is { Length: > 3 } && t.FindLogicalAncestorOfType<Button>() is null && !t.GetLogicalAncestors().OfType<Control>().Any(a => a.Name == "auftrag-leiste"));
-            var args = new Avalonia.Input.ContextRequestedEventArgs { RoutedEvent = Control.ContextRequestedEvent };
             w.UpdateLayout(); Avalonia.Threading.Dispatcher.UIThread.RunJobs(); // wie im echten Fenster: Seite angeordnet, Text hängt im Fenster
+            // Rechtsklick auf einen Text der Seite – nur Text, der wirklich im Fenster hängt: seit der Menüleiste (T-0710) liegen in der logischen Seite auch die
+            // Einträge geschlossener Untermenüs („Datei ▸ Neu“); die sind nicht sichtbar und nicht anklickbar, ein Rechtsklick dort ist kein Bedienweg (T-0727)
+            var tb = w.ActivePageRootForTests!.GetLogicalDescendants().OfType<TextBlock>().First(t => t.Text is { Length: > 3 } && t.FindLogicalAncestorOfType<Button>() is null && t.FindLogicalAncestorOfType<MenuItem>() is null
+                && TopLevel.GetTopLevel(t) is not null && !t.GetLogicalAncestors().OfType<Control>().Any(a => a.Name == "auftrag-leiste"));
+            var args = new Avalonia.Input.ContextRequestedEventArgs { RoutedEvent = Control.ContextRequestedEvent };
             var seen = 0; w.AddHandler(Control.ContextRequestedEvent, (_, _) => seen++, Avalonia.Interactivity.RoutingStrategies.Tunnel | Avalonia.Interactivity.RoutingStrategies.Bubble, true);
             tb.RaiseEvent(args);
             Assert.True(seen > 0, "Ereignis kam nicht am Fenster an");

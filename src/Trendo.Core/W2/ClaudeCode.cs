@@ -236,7 +236,7 @@ public static partial class ClaudeCode
 /// Große Ordner (node_modules, .git, bin, obj) und Dateien über 20 MB bleiben außen vor.</summary>
 public sealed class FolderSnapshot
 {
-    static readonly string[] SkipDirs = ["node_modules", ".git", "bin", "obj", ".venv", "__pycache__", "trendo-bin", ".trendo"]; // .trendo: Bildschirmfoto und Hilfsdateien von Trendo
+    static readonly string[] SkipDirs = ["node_modules", ".git", "bin", "obj", ".venv", "__pycache__", "trendo-bin", ".trendo", "trendo-paket", "TestResults"]; // .trendo: Bildschirmfoto und Hilfsdateien von Trendo
     public const long MaxFile = 20L << 20;
     public string Root { get; }
     public string Store { get; }

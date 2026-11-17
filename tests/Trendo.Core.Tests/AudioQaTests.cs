@@ -65,7 +65,7 @@ public class AudioQaTests
     [Fact(DisplayName = "S4-20 echt gegen FFmpeg ebur128: Lautheit und True Peak von Trendo stimmen mit FFmpeg überein (±0,5)")]
     public void Real_crosscheck_ffmpeg()
     {
-        var ff = Cli.Find("ffmpeg"); if (ff is null) return;
+        var ff = Cli.Find("ffmpeg"); if (ff is null) { Ueberspringen.Weil("FFmpeg fehlt auf diesem PC."); return; }
         var dir = Path.Combine(Path.GetTempPath(), "trendo-aqa-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
         try
         {

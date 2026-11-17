@@ -1,0 +1,20 @@
+20:55:00 Chrome: chrome.exe
+20:55:00 (a) Rückmeldung: Veröffentlicht in <zielordner>: 6 Dateien, 2338 KB. | Prüfung: 3 Links und Dateien geprüft – alles gefunden.
+20:55:03 (a) HTTP-Linkprüfung: 3 lokale Verweise abgerufen, alle 200
+20:55:03 (a) Chrome-Fehler: 0; Bild a-ordner-chrome.png (8022 Bytes)
+20:55:05 (b) Rückmeldung: Hochgeladen zu http://127.0.0.1:<port>/site/: 6 Dateien, 2338 KB. | Nachprüfung: 6 von 6 Dateien vom Server zurückgelesen und gleich. | Prüfung: 9 Links und Dateien geprüft – alles gefunden.
+20:55:05 (b) Server: MKCOL /site/assets/ → 201
+20:55:05 (b) Server: PUT /site/assets/LIZENZEN.txt → 201
+20:55:05 (b) Server: PUT /site/assets/editor.js → 201
+20:55:05 (b) Server: PUT /site/assets/style.css → 201
+20:55:05 (b) Server: PUT /site/index.html → 201
+20:55:05 (b) Server: PUT /site/robots.txt → 201
+20:55:05 (b) Server: PUT /site/seite.js → 201
+20:55:05 (b) Server: GET /site/assets/LIZENZEN.txt → 200
+20:55:05 (b) Server: GET /site/assets/editor.js → 200
+20:55:05 (b) Server: GET /site/assets/style.css → 200
+20:55:05 (b) Server: GET /site/index.html → 200
+20:55:05 (b) Server: GET /site/robots.txt → 200
+20:55:05 (b) Server: GET /site/seite.js → 200
+20:55:07 (b) HTTP-Linkprüfung: 3 lokale Verweise abgerufen, alle 200
+20:55:07 (b) Chrome-Fehler: 0; Bild b-webdav-chrome.png (8022 Bytes)

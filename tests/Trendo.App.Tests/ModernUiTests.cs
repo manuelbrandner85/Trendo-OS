@@ -221,7 +221,7 @@ public class Modern_Ui
         finally { w.Close(); }
     }
 
-    [AvaloniaFact(DisplayName = "T4/T7: Geräte überwachen und Auto & Fahrten starten mit Leerzustand; Beispiel-Knopf darin füllt Dashboard bzw. Fahrzeug")]
+    [AvaloniaFact(DisplayName = "T4/T7: Geräte überwachen startet mit Leerzustand; Beispiel-Knopf darin füllt das Dashboard (Auto & Fahrten mit T-0720 entfernt)")]
     public void Tech_empty_states()
     {
         var (w, _, _) = Ui.Open();
@@ -231,10 +231,6 @@ public class Modern_Ui
             Assert.NotNull(w.TryFind<Border>("twin-empty"));
             w.Find<Button>("twin-empty-demo").Press(); Pump();
             Assert.Null(w.TryFind<Border>("twin-empty"));
-            w.Show(w.PageForStudio("SPEC-16")!); Pump();
-            Assert.NotNull(w.TryFind<Border>("car-empty"));
-            w.Find<Button>("car-empty-demo").Press(); Pump();
-            Assert.Null(w.TryFind<Border>("car-empty"));
         }
         finally { w.Close(); }
     }

@@ -21,6 +21,7 @@ public partial class MainWindow
         i.RemoteEverywhere = () => KiSourceSettings.Load(_core.DataRoot).RemoteEverywhere;
         i.RemoteUsed = name => _ui.Post(() => RemoteKiUsed(name));
         i.Memory = KiMemory;
+        i.LocalFallbacks = KiFallbacks; i.LocalModelFailed = KiModelFailed; // T-0703: Ausweichen auf kleinere Modelle
         return i;
     }
 

@@ -67,7 +67,7 @@ public class LiveShowTests
     [Fact(DisplayName = "Echt mit FFmpeg: Szene mit Logo und Bauchbinde, Mikrofon und Musik gemischt – Datei entsteht, Pegel-Datei hat Messwerte, Logo ist im Bild")]
     public void Real_ffmpeg()
     {
-        var ff = Cli.Find("ffmpeg"); if (ff is null || Media.VideoEdit.FontFile() is null) return;
+        var ff = Cli.Find("ffmpeg"); if (ff is null || Media.VideoEdit.FontFile() is null) { Ueberspringen.Weil("FFmpeg oder eine Schriftdatei fehlt auf diesem PC."); return; }
         var dir = Path.Combine(Path.GetTempPath(), "trendo-livereal-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
         try
         {

@@ -21,6 +21,8 @@ public partial class MainWindow
         var all = Ideas.All(); var row = new WrapPanel { Children = { P("Idee:  ") } }; var n = 0;
         foreach (var x in all) { var idea = x; var b = Act($"{view}-idea-{n++}", (idea.Id == BizIdea.Id ? "● " : "") + idea.Name, () => { CurrentIdea = idea; Show(view); }); b.Margin = new Avalonia.Thickness(0, 0, 6, 4); row.Children.Add(b); }
         if (all.Count == 0) row.Children.Add(P(BizIdea.Name, Text));
+        // V-15 (T-0700): Die Ideen-Zeile ist eine eigene Reiterzeile – sie erscheint erst, wenn es mehr als eine Idee zum Umschalten gibt
+        row.Name = view + "-ideas"; row.IsVisible = all.Count > 1;
         return row;
     }
 

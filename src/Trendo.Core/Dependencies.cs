@@ -112,7 +112,7 @@ public static class DependencyCatalog
             null, 18, "https://github.com/assimp/assimp/releases/tag/v6.0.5", [],
             [@"%LOCALAPPDATA%\TrendoWerkzeuge\assimp\Release\assimp-vc143-mt.dll", @"%LOCALAPPDATA%\TrendoWerkzeuge\assimp\*\assimp-vc143-mt.dll", "/usr/lib/x86_64-linux-gnu/libassimp.so.6", "/usr/lib/libassimp.so.6"], null,
             "https://github.com/assimp/assimp/releases/download/v6.0.5/windows-x64-v6.0.5.zip", "1ab3ac83e75e64bf3fb2b67e43c3b8436b49e25a212aa0c65813415a098d7c41"),
-        new("gltf-validator", "glTF-Validator (Khronos)", "VR & AR – 3D-Modelle offiziell prüfen (glTF/GLB)", "Apache-2.0", DeliveryMode.AutoUser,
+        new("gltf-validator", "glTF-Validator (Khronos)", "3D-Modelle ansehen – 3D-Modelle offiziell prüfen (glTF/GLB)", "Apache-2.0", DeliveryMode.AutoUser,
             "Klein – offizieller Download mit fester Prüfsumme, ohne Admin (Alle Studios, Runde 5)",
             null, 3, "https://github.com/KhronosGroup/glTF-Validator/releases/tag/2.0.0-dev.3.10", ["gltf_validator"],
             [@"%LOCALAPPDATA%\TrendoWerkzeuge\gltf-validator\gltf_validator.exe", @"%LOCALAPPDATA%\TrendoWerkzeuge\gltf-validator\*\gltf_validator.exe", "/usr/bin/gltf_validator", "/usr/local/bin/gltf_validator"], null,
@@ -262,6 +262,14 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
             yield return $@"%LOCALAPPDATA%\Microsoft\WinGet\Packages\{c.WingetId}_*\*\{t}.exe";
         }
     }
+
+    /// <summary>B4 (T-0706): Aktionsname im Freigabe-Tor für „Zusatzprogramm installieren“. Ziel ist die Komponenten-Id.</summary>
+    public const string InstallAction = "deps.install";
+
+    /// <summary>B4 (T-0706): Installieren nur mit einer gültigen, einmaligen Freigabe genau dieser Komponente.
+    /// Ohne Freigabe, nach Not-Stopp, abgelaufen, schon benutzt oder für ein anderes Ziel: <see cref="ApprovalException"/>, es wird nichts installiert.</summary>
+    public Task<bool> InstallApprovedAsync(ApprovalGate gate, string approvalId, Principal by, Component c, Action<string>? progress = null, CancellationToken ct = default) =>
+        gate.Execute(approvalId, InstallAction, c.Id, () => InstallAsync(by, c, progress, ct));
 
     /// <summary>Installiert automatisch (AutoUser/AutoElevated). Guided/Bundled werfen.</summary>
     public async Task<bool> InstallAsync(Principal by, Component c, Action<string>? progress = null, CancellationToken ct = default)

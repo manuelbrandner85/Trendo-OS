@@ -6,7 +6,7 @@ namespace Trendo.Core;
 /// Ausführen je Dateityp. Nur Dateien im gewählten Projektordner; Bau-, Paket- und Git-Ordner werden ausgeblendet.</summary>
 public static class CodeProject
 {
-    public static readonly HashSet<string> Hidden = new(StringComparer.OrdinalIgnoreCase) { ".git", "bin", "obj", "node_modules", ".vs", ".idea", "__pycache__", ".venv", "venv", "dist", "build", ".next" };
+    public static readonly HashSet<string> Hidden = new(StringComparer.OrdinalIgnoreCase) { ".git", "bin", "obj", "node_modules", ".vs", ".idea", "__pycache__", ".venv", "venv", "dist", "build", ".next", "trendo-paket", "TestResults", ".trendo" };
     public const long MaxEdit = 5_000_000; // größere Dateien öffnet der Editor nicht (Absturzschutz)
 
     public sealed record Entry(string Path, string Name, int Depth, bool IsDir);

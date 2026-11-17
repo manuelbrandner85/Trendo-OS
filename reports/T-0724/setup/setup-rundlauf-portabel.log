@@ -1,0 +1,153 @@
+﻿Setup-Rundlauf PORTABEL 2026-11-16 22:50:34 - Windows Microsoft Windows NT 10.0.26340.0
+Arbeitsordner: C:\Users\<user>\AppData\Local\Temp\trendo-t0724-setup - Paketkennung: TrendoOSRundlauf - Versionen 0.0.1 -> 0.0.2
+Baue App 0.0.1 ...
+[22:51:37 INF] Velopack CLI 1.2.161, for distributing applications.
+[22:51:38 INF] Beginning to package Velopack release 0.0.1.
+[22:51:38 INF] Releases Directory: C:\Users\<user>\AppData\Local\Temp\trendo-t0724-setup\pakete-0.0.1
+[22:51:38 INF] Starting: Pre-process steps
+[22:51:39 INF] Verified VelopackApp.Run() in 'System.Int32 Trendo.App.Program::Main(System.String)'.
+[22:51:39 INF] Shortcuts: None
+[22:51:40 INF] Complete: Pre-process steps
+[22:51:40 INF] Starting: Code-sign application
+[22:51:40 WRN] No signing parameters provided, 393 file(s) will not be signed.
+[22:51:40 INF] Complete: Code-sign application
+[22:51:40 INF] Starting: Building portable package
+[22:51:40 INF] Starting: Building release 0.0.1
+[22:51:56 INF] Complete: Building portable package
+[22:51:56 INF] Complete: Building release 0.0.1
+[22:51:56 INF] Starting: Building setup package
+[22:51:56 INF] Setup bundle created 'TrendoOSRundlauf-win-Setup.exe'.
+[22:51:56 WRN] No signing parameters provided, 1 file(s) will not be signed.
+[22:51:56 INF] Complete: Building setup package
+[22:51:56 INF] Starting: Post-process steps
+[22:51:57 INF] Complete: Post-process steps
+[22:51:57 INF] Finished in 00:00:18.6283591.
+Baue App 0.0.2 ...
+[22:52:34 INF] Velopack CLI 1.2.161, for distributing applications.
+[22:52:35 INF] Beginning to package Velopack release 0.0.2.
+[22:52:35 INF] Releases Directory: C:\Users\<user>\AppData\Local\Temp\trendo-t0724-setup\pakete-0.0.2
+[22:52:35 INF] Starting: Pre-process steps
+[22:52:35 INF] Verified VelopackApp.Run() in 'System.Int32 Trendo.App.Program::Main(System.String)'.
+[22:52:35 INF] Shortcuts: None
+[22:52:36 INF] Complete: Pre-process steps
+[22:52:36 INF] Starting: Code-sign application
+[22:52:36 WRN] No signing parameters provided, 393 file(s) will not be signed.
+[22:52:36 INF] Complete: Code-sign application
+[22:52:36 INF] Starting: Building portable package
+[22:52:36 INF] Starting: Building release 0.0.2
+[22:52:50 INF] Complete: Building portable package
+[22:52:51 INF] Complete: Building release 0.0.2
+[22:52:51 INF] Starting: Building setup package
+[22:52:53 INF] Setup bundle created 'TrendoOSRundlauf-win-Setup.exe'.
+[22:52:53 WRN] No signing parameters provided, 1 file(s) will not be signed.
+[22:52:53 INF] Complete: Building setup package
+[22:52:53 INF] Starting: Post-process steps
+[22:52:54 INF] Complete: Post-process steps
+[22:52:54 INF] Finished in 00:00:19.3699088.
+PASS  1 Pakete gebaut: Portable-ZIP alt und Update-Paket neu - 119 MB / 119 MB
+  SHA256 eda36e2755c1563c224304e7708ac8965159b7a4b6bcab7eee726d338ad52dc3  TrendoOSRundlauf-win-Portable.zip
+  SHA256 cd1467d695ee167376089a90d8f3e1ee52a99a8458089bc28af512502d50d765  TrendoOSRundlauf-0.0.2-full.nupkg
+PASS  2 Installieren: Version 0.0.1 - 421 Dateien, 262 MB in 9.5 s; Update.exe vorhanden: True
+  | API gebunden an http://127.0.0.1:58707/
+  | PASS  health ohne Token: erwartet 200, erhalten 200
+  | PASS  studios ohne Token: erwartet 401, erhalten 401
+  | PASS  studios mit falschem Token: erwartet 401, erhalten 401
+  | PASS  Guest: studios: erwartet 200, erhalten 200
+  | PASS  Guest: projects: erwartet 403, erhalten 403
+  | PASS  User: Projekt anlegen: erwartet 201, erhalten 201
+  | PASS  User: Aktion planen: 202
+  | PASS  User: freigeben verboten: erwartet 403, erhalten 403
+  | PASS  Guest: audit verboten: erwartet 403, erhalten 403
+  | PASS  Owner: ablehnen: erwartet 200, erhalten 200
+  | PASS  Owner: audit: erwartet 200, erhalten 200
+  | PASS  Fremder Host-Header: erwartet 421, erhalten 421
+  | PASS  Token nicht im Audit-Log
+  | ERGEBNIS: ALLE BESTANDEN
+PASS  3-alt: Selbsttest --api-selftest --offline --no-first-run --data-root <temp> - Exit 0, 23.8 s
+PASS  3-alt-kalt: Fenster startet (eigener Datenordner) - main 112 ms | window.opened 11460 ms | first.frame 11510 ms | Startprotokoll nach 11672 ms (Wanduhr)
+  eigene Test-App beendet (PID 35772)
+PASS  3-alt-warm: Fenster startet (eigener Datenordner) - main 110 ms | window.opened 1938 ms | first.frame 1990 ms | Startprotokoll nach 2045 ms (Wanduhr)
+  eigene Test-App beendet (PID 67356)
+  Datenordner vor dem Update: 7 Dateien (inkl. eigener Notiz)
+  Update.exe --help:
+Velopack Updater (1.2.161) manages packages and installs updates.
+https://velopack.io
+
+Usage: Update.exe [OPTIONS]
+       Update.exe apply [OPTIONS] [-- [EXE_ARGS]...]
+       Update.exe start [OPTIONS] [EXE_NAME] [-- [EXE_ARGS]...]
+       Update.exe patch [OPTIONS] --old <FILE> --delta <FILE> --output <FILE>
+       Update.exe uninstall [OPTIONS]
+
+Options:
+      --verbose            Print debug messages to console / log
+  -s, --silent             Don't show any prompts / dialogs
+      --rootDir <PATH>     Override the default locator root directory
+      --packageDir <PATH>  Override the default packages directory
+  -l, --log <PATH>         Override the default log file location
+  -h, --help               Print help
+  -V, --version            Print version
+
+Update.exe apply:
+Applies a staged / prepared update, installing prerequisite runtimes if necessary
+      --norestart       Do not restart the application after the update
+      --waitPid <PID>   Wait for the specified process to terminate before applying the update
+  -p, --package <FILE>  Update package to apply
+  -h, --help            Print help
+  [EXE_ARGS]...         Arguments to pass to the started executable. Must be preceded by '--'.
+
+Update.exe start:
+Starts the currently installed version of the application
+      --waitPid <PID>  Wait for the specified process to terminate before applying the update
+  -h, --help           Print help
+  [EXE_ARGS]...        Arguments to pass to the started executable. Must be preceded by '--'.
+  [EXE_NAME]           The optional name of the binary to execute
+
+Update.exe patch:
+Applies a series of delta bundles to a base file
+      --old <FILE>     Base / old file to apply the patch to
+      --delta <FILE>   The delta bundle to apply to the base package
+      --output <FILE>  The file to create with the patch applied
+  -h, --help           Print help
+
+Update.exe uninstall:
+Remove all app shortcuts, files, and registry entries.
+  -h, --help  Print help
+
+
+$ Update.exe apply --norestart --package "C:\Users\<user>\AppData\Local\Temp\trendo-t0724-setup\pakete-0.0.2\TrendoOSRundlauf-0.0.2-full.nupkg"
+  Exit 0 nach 11.1 s
+PASS  4 Update: Version 0.0.2 - Exit 0
+PASS  4 Update: App nicht selbst neu gestartet (--norestart)
+PASS  4 Update: Nutzerdaten erhalten - fehlend 0, veraendert 0: 
+  | API gebunden an http://127.0.0.1:53289/
+  | PASS  health ohne Token: erwartet 200, erhalten 200
+  | PASS  studios ohne Token: erwartet 401, erhalten 401
+  | PASS  studios mit falschem Token: erwartet 401, erhalten 401
+  | PASS  Guest: studios: erwartet 200, erhalten 200
+  | PASS  Guest: projects: erwartet 403, erhalten 403
+  | PASS  User: Projekt anlegen: erwartet 201, erhalten 201
+  | PASS  User: Aktion planen: 202
+  | PASS  User: freigeben verboten: erwartet 403, erhalten 403
+  | PASS  Guest: audit verboten: erwartet 403, erhalten 403
+  | PASS  Owner: ablehnen: erwartet 200, erhalten 200
+  | PASS  Owner: audit: erwartet 200, erhalten 200
+  | PASS  Fremder Host-Header: erwartet 421, erhalten 421
+  | PASS  Token nicht im Audit-Log
+  | ERGEBNIS: ALLE BESTANDEN
+PASS  4-neu: Selbsttest --api-selftest --offline --no-first-run --data-root <temp> - Exit 0, 3 s
+PASS  4-neu-kalt: Fenster startet (eigener Datenordner) - main 89 ms | window.opened 2185 ms | first.frame 2228 ms | Startprotokoll nach 2285 ms (Wanduhr)
+  eigene Test-App beendet (PID 59560)
+PASS  4-neu-warm: Fenster startet (eigener Datenordner) - main 102 ms | window.opened 1475 ms | first.frame 1515 ms | Startprotokoll nach 1552 ms (Wanduhr)
+  eigene Test-App beendet (PID 69308)
+PASS  4 Update: Notiz nach Start der neuen Version unveraendert
+PASS  5 Deinstallieren: keine Test-App laeuft mehr
+PASS  5 Deinstallieren: Programmordner entfernt
+  Erlaubter Rest: eigener Datenordner 7 Dateien (wird am Ende mit dem Arbeitsordner geloescht)
+PASS  6 Echtes System unveraendert: registry-uninstall - vorher 9, nachher 9 Eintraege
+PASS  6 Echtes System unveraendert: startmenue-trendo - vorher 1, nachher 1 Eintraege
+PASS  6 Echtes System unveraendert: desktop - vorher 23, nachher 23 Eintraege
+PASS  6 Echtes System unveraendert: localappdata-trendo-velopack - vorher 3, nachher 3 Eintraege
+PASS  6 Echtes System unveraendert: appdata-trendo - vorher 1, nachher 1 Eintraege
+PASS  6 Echtes System unveraendert: appdata-trendoos-dateien - vorher 37806, nachher 37806 Eintraege
+ERGEBNIS: ALLE BESTANDEN

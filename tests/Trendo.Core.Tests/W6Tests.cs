@@ -82,20 +82,18 @@ public static class Glb
 
 public class SPEC04_Xr
 {
-    [Fact(DisplayName = "SPEC-04: GLB lesen, Dreiecke zählen, Geräte-Grenzen und Bildzeit prüfen")]
+    [Fact(DisplayName = "SPEC-04: GLB lesen, Dreiecke zählen, Fehler im Modell finden")]
     public void Inspect()
     {
         using var f = new Fixture(); Directory.CreateDirectory(f.Root);
         var small = XrInspector.Inspect(Glb.Write(f.Root, 1000));
         Assert.Equal(1000, small.Triangles); Assert.Equal(1, small.Primitives); Assert.Equal("Test", small.Generator);
-        Assert.All(XrInspector.Budgets, b => Assert.True(XrInspector.Check(small, b).Ok));
         var big = XrInspector.Inspect(Glb.Write(f.Root, 1_000_000, 50));
-        var q3 = XrInspector.Check(big, XrInspector.Budgets[0]);
-        Assert.False(q3.Ok); Assert.Contains(q3.Problems, p => p.Contains("Dreiecke")); Assert.Contains(q3.Problems, p => p.Contains("Texturen"));
-        Assert.True(XrInspector.Check(big, XrInspector.Budgets[3]).Ok);
+        Assert.Equal(1_000_000, big.Triangles); Assert.Equal(50, big.Textures);
+        Assert.DoesNotContain(XrInspector.Problems(new XrModelInfo("x", 10, 1, 1, 10, 10, 1, 0, 1, 0, "")), p => p.Contains("Kein Material"));
+        Assert.Contains(XrInspector.Problems(new XrModelInfo("leer.glb", 10, 0, 0, 0, 0, 0, 0, 1, 0, "")), p => p.Contains("Keine Dreiecke"));
         var bad = Path.Combine(f.Root, "x.glb"); File.WriteAllText(bad, "kaputt");
         Assert.Throws<InvalidOperationException>(() => XrInspector.Inspect(bad));
-        Assert.Equal((13.89, true, 13.6), XrInspector.FrameBudget(72, 12));
     }
 }
 
@@ -307,25 +305,6 @@ public class SPEC15_Broadcast
 
 public class SPEC16_Vehicle
 {
-    [Fact(DisplayName = "SPEC-16: Tankbuch (Volltank-Methode), Fahrtenbuch mit Lücken, Erinnerungen, CSV")]
-    public void Book()
-    {
-        using var f = new Fixture(); var d = new DateTime(2026, 10, 1);
-        var b = new VehicleBook(f.Root); var v = b.Add("Golf", "m-ab 123");
-        b.Refuel("Golf", d, 10000, 40, 1.80);
-        b.Refuel("Golf", d.AddDays(7), 10500, 20, 1.70, full: false);
-        b.Refuel("Golf", d.AddDays(14), 11000, 15, 1.90);
-        var s = VehicleBook.Stats(v); Assert.Equal(3.5, s.AvgPer100); Assert.Equal(1000, s.Km); Assert.Equal(Math.Round((20 * 1.7 + 15 * 1.9) / 1000, 3), s.CostPerKm);
-        Assert.Throws<ArgumentException>(() => b.Refuel("Golf", d.AddDays(20), 10900, 10, 1.8));
-        b.Drive("Golf", d, 11000, 11100, true, "Kunde Müller, Augsburg");
-        b.Drive("Golf", d, 11150, 11200, false);
-        Assert.Throws<ArgumentException>(() => b.Drive("Golf", d, 11180, 11190, false));
-        Assert.Throws<ArgumentException>(() => b.Drive("Golf", d, 11300, 11400, true));
-        Assert.Equal((100, 50, 66.7), VehicleBook.TripShare(v)); Assert.Equal([(11100.0, 11150.0)], VehicleBook.Gaps(v));
-        v.InspectionDue = new DateTime(2026, 11, 1); v.ServiceDueKm = 12000;
-        var r = VehicleBook.Reminders(v, d); Assert.True(r[0].Urgent); Assert.True(r[1].Urgent); Assert.Contains("800 km", r[1].Text);
-        Assert.Contains("dienstlich;Kunde Müller", VehicleBook.LogCsv(v)); Assert.Equal("M-AB 123", new VehicleBook(f.Root).Get("golf").Plate);
-    }
 }
 
 public static class Img
@@ -346,28 +325,6 @@ public static class Img
 
 public class CORE09_Robotics
 {
-    [Fact(DisplayName = "CORE-09: PNG/BMP lesen, Farbobjekt finden, Kinematik hin und zurück, Fahrprogramm")]
-    public void Vision_and_arm()
-    {
-        using var f = new Fixture(); Directory.CreateDirectory(f.Root);
-        var img = Vision.Load(Img.Png(f.Root, 80, 60, (10, 20, 29, 39)));
-        Assert.Equal((80, 60), (img.Width, img.Height));
-        var b = Vision.Find(img, "rot")!; Assert.Equal(400, b.Pixels); Assert.Equal(19.5, b.CenterX); Assert.Equal(29.5, b.CenterY); Assert.Equal((10, 39), (b.MinX, b.MaxY));
-        Assert.Null(Vision.Find(img, "blau"));
-        var bmp = Path.Combine(f.Root, "b.bmp");
-        using (var w = new BinaryWriter(File.Create(bmp))) { w.Write((byte)'B'); w.Write((byte)'M'); w.Write(54 + 8 * 2); w.Write(0); w.Write(54); w.Write(40); w.Write(2); w.Write(2); w.Write((short)1); w.Write((short)24); w.Write(0); w.Write(16); w.Write(0); w.Write(0); w.Write(0); w.Write(0);
-            w.Write([255, 0, 0, 0, 255, 0, 0, 0]); w.Write([0, 0, 255, 255, 255, 255, 0, 0]); }
-        var bi = Vision.Load(bmp); Assert.Equal(255, bi.Rgb[0]); Assert.Equal(255, bi.Rgb[3 * 2 + 2]); // oben links rot, unten links blau
-        Assert.Equal((100, 75), Vision.PixelToTable(40, 30, 80, 60, 200, 150));
-        var c = new ArmConfig();
-        var j = RobotArm.Inverse(c, 150, 50, 40); var (x, y, z) = RobotArm.Forward(c, j);
-        Assert.Equal(150, x, 2); Assert.Equal(50, y, 2); Assert.Equal(40, z, 2); Assert.Equal(18.435, j.Base, 2);
-        Assert.Throws<ArgumentException>(() => RobotArm.Inverse(c, 300, 0, 60));
-        var p = RobotArm.Program(c, "150 0 100\n# Kommentar\n0 150 100");
-        Assert.Equal(2, p.Count); Assert.Equal(1, p[1].Seconds, 3); // 90° Drehung bei 90°/s
-        Assert.Contains("Basis_Grad", RobotArm.Csv(p));
-        Assert.Contains("Zeile 1", Assert.Throws<ArgumentException>(() => RobotArm.Program(c, "500 0 0")).Message);
-    }
 }
 
 public class SPEC01_Plus
@@ -432,14 +389,13 @@ public static class Gltf
 public class SPEC04_Plus
 {
     [Fact(DisplayName = "SPEC-04 F02: glTF lesen")] public void F02() { using var f = new Fixture(); Directory.CreateDirectory(f.Root); var p = Path.Combine(f.Root, "a.gltf"); File.WriteAllText(p, "{\"asset\":{\"version\":\"2.0\"},\"meshes\":[{\"primitives\":[{\"attributes\":{\"POSITION\":0},\"indices\":1}]}],\"accessors\":[{\"count\":4},{\"count\":6}]}"); var i = XrInspector.Inspect(p); Assert.Equal(2, i.Triangles); Assert.Equal(4, i.Vertices); }
-    [Fact(DisplayName = "SPEC-04 F06: Material-Check")] public void F06() { var i = new XrModelInfo("x", 10, 1, 1, 10, 10, 0, 0, 1, 0, ""); Assert.Contains(XrInspector.Check(i, XrInspector.Budgets[0]).Problems, p => p.Contains("Kein Material")); }
+    [Fact(DisplayName = "SPEC-04 F06: Material-Check")] public void F06() { var i = new XrModelInfo("x", 10, 1, 1, 10, 10, 0, 0, 1, 0, ""); Assert.Contains(XrInspector.Problems(i), p => p.Contains("Kein Material")); }
     [Fact(DisplayName = "SPEC-04 F07: Texturgrößen & Grafikspeicher")] public void F07() { using var f = new Fixture(); Directory.CreateDirectory(f.Root); var d = XrPlus.Detail(Gltf.Write(f.Root)); var t = Assert.Single(d.Textures); Assert.Equal((1024, 512, "Holz_Farbe"), (t.Width, t.Height, t.Name)); Assert.Equal(2796202, t.VramBytes); var jpg = new byte[] { 0xFF, 0xD8, 0xFF, 0xE0, 0, 4, 0, 0, 0xFF, 0xC0, 0, 11, 8, 0, 200, 1, 44, 3, 0, 0, 0 }; Assert.Equal((300, 200), XrPlus.ImageSize(jpg)); }
     [Fact(DisplayName = "SPEC-04 F08: Maßstab prüfen")] public void F08() { using var f = new Fixture(); Directory.CreateDirectory(f.Root); Assert.StartsWith("✓", XrPlus.ScaleVerdict(XrPlus.Detail(Gltf.Write(f.Root)))); Assert.Contains("falsche Einheit", XrPlus.ScaleVerdict(XrPlus.Detail(Gltf.Write(f.Root, 0.002)))); Assert.Contains("mm/cm", XrPlus.ScaleVerdict(XrPlus.Detail(Gltf.Write(f.Root, 2000)))); }
     [Fact(DisplayName = "SPEC-04 F09: Texel-Dichte")] public void F09() { Assert.Equal(1024, XrPlus.TexelDensity(2048, 2).PxPerM); Assert.StartsWith("✓", XrPlus.TexelDensity(2048, 2).Verdict); Assert.StartsWith("⚠", XrPlus.TexelDensity(256, 2).Verdict); }
-    [Fact(DisplayName = "SPEC-04 F10: Bewegungs-Komfort")] public void F10() { Assert.Equal(100, XrPlus.Comfort(1.4, 0, true, true).Score); var c = XrPlus.Comfort(4, 120, false, false, 2); Assert.Equal(25, c.Score); Assert.Equal(4, c.Tips.Count); }
     [Fact(DisplayName = "SPEC-04 F11: Szenenliste")] public void F11() { using var f = new Fixture(); Directory.CreateDirectory(f.Root); var d = XrPlus.Detail(Gltf.Write(f.Root)); Assert.Equal(["Stuhl", "Tisch"], d.Nodes); Assert.Equal(["StuhlMesh"], d.MeshNames); }
     [Fact(DisplayName = "SPEC-04 F12: Animationen")] public void F12() { using var f = new Fixture(); Directory.CreateDirectory(f.Root); Assert.Equal(["Wackeln"], XrPlus.Detail(Gltf.Write(f.Root)).Animations); }
-    [Fact(DisplayName = "SPEC-04 F13: Prüfbericht")] public void F13() { using var f = new Fixture(); Directory.CreateDirectory(f.Root); var r = XrPlus.Report(XrPlus.Detail(Gltf.Write(f.Root))); Assert.Contains("# VR/AR-Prüfbericht: szene.glb", r); Assert.Contains("Holz_Farbe: 1024 × 512", r); Assert.Contains("Meta Quest 3", r); }
+    [Fact(DisplayName = "SPEC-04 F13: Prüfbericht")] public void F13() { using var f = new Fixture(); Directory.CreateDirectory(f.Root); var r = XrPlus.Report(XrPlus.Detail(Gltf.Write(f.Root))); Assert.Contains("# 3D-Modell-Prüfbericht: szene.glb", r); Assert.Contains("Holz_Farbe: 1024 × 512", r); Assert.Contains("## Fehler im Modell", r); Assert.DoesNotContain("Quest", r); }
     [Fact(DisplayName = "SPEC-04 F14: LOD-Plan")] public void F14() { var l = XrPlus.LodPlan(200000, 2); Assert.Equal(4, l.Count); Assert.Equal((3, 25000L, 40.0), l[3]); Assert.Equal(0, l[0].FromM); }
     [Fact(DisplayName = "SPEC-04 F15: Zeichenaufrufe je Material")] public void F15() { using var f = new Fixture(); Directory.CreateDirectory(f.Root); var d = XrPlus.Detail(Gltf.Write(f.Root)).DrawCallsPerMaterial; Assert.Equal(2, d["Holz"]); Assert.Equal(1, d["(ohne Material)"]); }
     [Fact(DisplayName = "SPEC-04 F16: Erweiterungen")] public void F16() { using var f = new Fixture(); Directory.CreateDirectory(f.Root); var n = XrPlus.ExtensionNotes(XrPlus.Detail(Gltf.Write(f.Root))); Assert.Contains("Pflicht: KHR_draco_mesh_compression", Assert.Single(n)); Assert.Contains("unbekannt", XrPlus.ExtensionNotes(XrPlus.Detail(Gltf.Write(f.Root, 2, "VENDOR_x"))).Single()); }
@@ -538,16 +494,6 @@ public class SPEC10_Plus
         Assert.Equal(26, TwinPlus.EnergyKwh(s, TimeSpan.FromHours(24)), 9); // ausdrücklich erlaubte große Lücke
     }
 
-    [Fact(DisplayName = "T-0251 (V109): Kamera-Maße nur mit passender Kalibrierung")]
-    public void Calibration()
-    {
-        Assert.Null(Vision.CalibrationProblem(80, 60, 400, 300));
-        Assert.NotNull(Vision.CalibrationProblem(80, 60, 400, 100));   // Seitenverhältnis passt nicht
-        Assert.NotNull(Vision.CalibrationProblem(80, 60, 0, 300));
-        Assert.Throws<ArgumentException>(() => Vision.PixelToTable(40, 30, 80, 60, 400, 100));
-        Assert.Equal((200, 150), Vision.PixelToTable(40, 30, 80, 60, 400, 300));
-    }
-
     [Fact(DisplayName = "SPEC-10 F20: Energie")] public void F20() { using var f = new Fixture(); var h = Hub(f, 2, 4, 4); Assert.Equal(7, TwinPlus.EnergyKwh(TwinPlus.Series(h.Model, "Heizung", "Vorlauf")), 9); }
 }
 
@@ -590,33 +536,10 @@ public class SPEC15_Plus
     [Fact(DisplayName = "SPEC-15 F20: Timecode")] public void F20() { Assert.Equal("01:00:00:12", BroadcastPlus.ToTimecode(90012, 25)); Assert.Equal(90012, BroadcastPlus.FromTimecode("01:00:00:12", 25)); Assert.Throws<FormatException>(() => BroadcastPlus.FromTimecode("00:00:00:25", 25)); }
 }
 
-public class SPEC16_Plus
+/// <summary>T-0720: Studio CORE-09 entfernt – die Homographie bleibt, weil „Dokumente scannen“ damit entzerrt.</summary>
+public class Homographie_Geteilt
 {
-    [Fact(DisplayName = "SPEC-16 F05: E-Auto")] public void F05() { using var f = new Fixture(); var b = new VehicleBook(f.Root); b.Add("Zoe", "", true); b.Refuel("Zoe", new DateTime(2026, 1, 1), 1000, 40, 0.4); b.Refuel("Zoe", new DateTime(2026, 1, 9), 1200, 36, 0.4); var e = VehiclePlus.Ev(b.Get("Zoe"), 6, 1.8); Assert.Equal((18.0, 7.2, 10.8, 3.6), e); b.Add("Golf"); Assert.Throws<ArgumentException>(() => VehiclePlus.Ev(b.Get("Golf"), 6, 1.8)); }
-    [Fact(DisplayName = "SPEC-16 F14: Pendlerpauschale")] public void F14() { Assert.Equal(2280, VehiclePlus.Commute(30, 200)); Assert.Equal(1960, VehiclePlus.Commute(30.9, 200, 2025)); Assert.Equal(4500, VehiclePlus.Commute(100, 220, 2026, ownCar: false)); Assert.Equal(1900, VehiclePlus.Commute(30, 200, 2021)); Assert.Equal(1800, VehiclePlus.Commute(30, 200, 2020)); }
-    [Fact(DisplayName = "SPEC-16 F15: 1-%-Regel")] public void F15() { var c = VehiclePlus.CompanyCar(40000, "verbrenner", 20, 8000, 30); Assert.Equal((7680.0, 2400.0, "Fahrtenbuch"), c); Assert.Equal(1920, VehiclePlus.CompanyCar(40000, "elektro", 20, 8000, 30).OnePercent); Assert.Equal(12 * (600 + 180.0), VehiclePlus.CompanyCar(120000, "elektro", 10, 1, 1).OnePercent); Assert.Equal(12 * (400 + 120.0), VehiclePlus.CompanyCar(80000, "elektro", 10, 1, 1, new DateOnly(2025, 6, 30)).OnePercent); Assert.Equal(12 * (200 + 60.0), VehiclePlus.CompanyCar(80000, "elektro", 10, 1, 1, new DateOnly(2025, 7, 1)).OnePercent); Assert.Equal(12 * 88.0, VehiclePlus.CompanyCar(35326, "elektro", 0, 1, 1).OnePercent); }
-    [Fact(DisplayName = "SPEC-16 F16: Kilometergeld")] public void F16() { Assert.Equal(37.5, VehiclePlus.Mileage(125)); Assert.Equal(25, VehiclePlus.Mileage(125, true)); Assert.Equal(130, VehiclePlus.Mileage(800, brkg: true)); Assert.Equal(240, VehiclePlus.Mileage(800, brkg: true, significantInterest: true)); }
-    [Fact(DisplayName = "SPEC-16 F17: Reifen")] public void F17() { var t = VehiclePlus.Tire("DOT XX 2319", 2.5, true, new DateTime(2026, 10, 21)); Assert.Equal(new DateTime(2019, 6, 3), t.Made); Assert.Equal(7.4, t.AgeYears); Assert.Equal(2, t.Advice.Count); Assert.Equal(["In Ordnung."], VehiclePlus.Tire("0124", 6, false, new DateTime(2026, 10, 21)).Advice); Assert.Throws<FormatException>(() => VehiclePlus.Tire("6019", 5, false, DateTime.Today)); }
-    [Fact(DisplayName = "SPEC-16 F18: Fahrtkosten teilen")] public void F18() { Assert.Equal((64.0, 16.0), VehiclePlus.Share(500, 6, 1.8, 4, 10)); }
-    [Fact(DisplayName = "SPEC-16 F19: Ladezeit")] public void F19() { var c = VehiclePlus.ChargeTime(60, 10, 80, 11, 22); Assert.Equal(46.7, c.Kwh); Assert.Equal(46.6667 / 11, c.Time.TotalHours, 3); var f = VehiclePlus.ChargeTime(60, 80, 100, 11, 11); Assert.Equal(13.3333 / 5.5, f.Time.TotalHours, 3); }
-    [Fact(DisplayName = "SPEC-16 F20: Jahreskosten")] public void F20() { Assert.Equal((3260.0, 271.67, 0.217), VehiclePlus.YearCost(15000, 6, 1.8, 600, 140, 900)); }
-}
-
-public class CORE09_Plus
-{
-    static RgbImage Make(int w, int h, Func<int, int, (byte, byte, byte)> f) { var b = new byte[w * h * 3]; for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) { var (r, g, bl) = f(x, y); var i = (y * w + x) * 3; b[i] = r; b[i + 1] = g; b[i + 2] = bl; } return new(w, h, b); }
-    static bool In(int x, int y, int x0, int y0, int s) => x >= x0 && x < x0 + s && y >= y0 && y < y0 + s;
-    [Fact(DisplayName = "CORE-09 F11: Objekte zählen")] public void F11() { var img = Make(60, 40, (x, y) => In(x, y, 2, 2, 10) || In(x, y, 30, 5, 6) || In(x, y, 50, 30, 2) ? ((byte)255, (byte)0, (byte)0) : ((byte)20, (byte)20, (byte)20)); var b = VisionPlus.FindAll(img, "rot", 10); Assert.Equal(2, b.Count); Assert.Equal((100, 36), (b[0].Pixels, b[1].Pixels)); Assert.Equal(3, VisionPlus.FindAll(img, "rot", 1).Count); }
-    [Fact(DisplayName = "CORE-09 F12: Belichtung")] public void F12() { Assert.StartsWith("Zu dunkel", VisionPlus.CheckExposure(Make(10, 10, (_, _) => (5, 5, 5))).Verdict); Assert.StartsWith("Überstrahlt", VisionPlus.CheckExposure(Make(10, 10, (x, _) => x < 2 ? ((byte)255, (byte)255, (byte)255) : ((byte)100, (byte)100, (byte)100))).Verdict); var ok = VisionPlus.CheckExposure(Make(10, 10, (_, _) => (128, 128, 128))); Assert.Equal("Belichtung in Ordnung.", ok.Verdict); Assert.Equal(50.2, ok.MeanPct); }
-    [Fact(DisplayName = "CORE-09 F13: Schärfe")] public void F13() { var flat = VisionPlus.Sharpness(Make(20, 20, (_, _) => (100, 100, 100))); var check = VisionPlus.Sharpness(Make(20, 20, (x, y) => (x + y) % 2 == 0 ? ((byte)255, (byte)255, (byte)255) : ((byte)0, (byte)0, (byte)0))); Assert.Equal(0, flat); Assert.True(check > 100000); }
-    [Fact(DisplayName = "CORE-09 F14: Bewegung")] public void F14() { var a = Make(20, 10, (_, _) => (0, 0, 0)); var b = Make(20, 10, (x, y) => In(x, y, 5, 2, 4) ? ((byte)200, (byte)200, (byte)200) : ((byte)0, (byte)0, (byte)0)); var m = VisionPlus.Motion(a, b); Assert.Equal((8.0, 5, 2, 8, 5, true), (m.ChangedPct, m.MinX, m.MinY, m.MaxX, m.MaxY, m.Moved)); Assert.False(VisionPlus.Motion(a, a).Moved); }
-    [Fact(DisplayName = "CORE-09 F15: Maske speichern")] public void F15() { using var f = new Fixture(); Directory.CreateDirectory(f.Root); var img = Make(7, 5, (x, _) => x < 3 ? ((byte)0, (byte)0, (byte)255) : ((byte)250, (byte)250, (byte)250)); var p = Path.Combine(f.Root, "m.png"); File.WriteAllBytes(p, VisionPlus.EncodePng(VisionPlus.MaskImage(img, "blau"))); var back = Vision.Load(p); Assert.Equal((7, 5), (back.Width, back.Height)); Assert.Equal(255, back.Rgb[0]); Assert.Equal(0, back.Rgb[3 * 3]); Assert.Equal(img.Rgb, Vision.Load(WriteAndReturn(f.Root, img)).Rgb); }
-    static string WriteAndReturn(string root, RgbImage i) { var p = Path.Combine(root, "o.png"); File.WriteAllBytes(p, VisionPlus.EncodePng(i)); return p; }
-    [Fact(DisplayName = "CORE-09 F16: Kalibrierung")] public void F16() { (double, double)[] src = [(100, 50), (500, 60), (520, 400), (80, 380)], dst = [(0, 300), (400, 300), (400, 0), (0, 0)]; var h = VisionPlus.Homography(src, dst); for (var i = 0; i < 4; i++) { var (x, y) = VisionPlus.Apply(h, src[i].Item1, src[i].Item2); Assert.Equal(dst[i].Item1, x, 2); Assert.Equal(dst[i].Item2, y, 2); } Assert.Throws<ArgumentException>(() => VisionPlus.Homography([(0, 0), (1, 1), (2, 2), (3, 3)], dst)); }
-    [Fact(DisplayName = "CORE-09 F17: Greifbahn")] public void F17() { var p = ArmPlus.PickPlace((150, 0, 20), (0, 150, 30), 40); Assert.Equal(6, p.Count); Assert.Equal((150.0, 0.0, 60.0, "anfahren"), p[0]); Assert.Equal("loslassen", p[4].Action); var prog = RobotArm.Program(new ArmConfig(), ArmPlus.ProgramText(p)); Assert.Equal(6, prog.Count); }
-    [Fact(DisplayName = "CORE-09 F18: Reichweite")] public void F18() { var r = ArmPlus.Reach(new ArmConfig(), 60, 40); Assert.Contains('#', r.Map); Assert.Equal('O', r.Map.Split('\n')[6][6]); Assert.True(r.MaxRadius <= 240); Assert.True(r.ReachablePct is > 30 and < 80); }
-    [Fact(DisplayName = "CORE-09 F19: Servo-Pulse")] public void F19() { Assert.Equal(1500, ArmPlus.ServoPulse(90)); Assert.Equal(1000, ArmPlus.ServoPulse(-45, -90, 90, 500, 2500)); Assert.Throws<ArgumentException>(() => ArmPlus.ServoPulse(200)); }
-    [Fact(DisplayName = "CORE-09 F20: Fahrprofil")] public void F20() { var t = ArmPlus.Profile(100, 50, 100); Assert.Equal((0.5, 1.5, 2.5, false), (t.AccelTime, t.CruiseTime, t.Total, t.Triangle)); var d = ArmPlus.Profile(10, 50, 100); Assert.True(d.Triangle); Assert.Equal(Math.Round(2 * Math.Sqrt(0.1), 4), d.Total); }
+    [Fact(DisplayName = "Homographie aus 4 Punktpaaren (geteilt, genutzt von Dokumente scannen; früher CORE-09 F16)")] public void F16() { (double, double)[] src = [(100, 50), (500, 60), (520, 400), (80, 380)], dst = [(0, 300), (400, 300), (400, 0), (0, 0)]; var h = VisionPlus.Homography(src, dst); for (var i = 0; i < 4; i++) { var (x, y) = VisionPlus.Apply(h, src[i].Item1, src[i].Item2); Assert.Equal(dst[i].Item1, x, 2); Assert.Equal(dst[i].Item2, y, 2); } Assert.Throws<ArgumentException>(() => VisionPlus.Homography([(0, 0), (1, 1), (2, 2), (3, 3)], dst)); }
 }
 
 public class LegalRatesTests

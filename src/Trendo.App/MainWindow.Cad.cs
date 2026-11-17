@@ -104,10 +104,10 @@ public partial class MainWindow
     public void CadUndo() { if (_cadUndo.Count == 0) return; _cadRedo.Add(Cad); Cad = _cadUndo[^1]; _cadUndo.RemoveAt(_cadUndo.Count - 1); CadAfterSwap(); }
     public void CadRedo() { if (_cadRedo.Count == 0) return; _cadUndo.Add(Cad); Cad = _cadRedo[^1]; _cadRedo.RemoveAt(_cadRedo.Count - 1); CadAfterSwap(); }
     void CadAfterSwap() { CadBodyIndex = Math.Min(CadBodyIndex, Cad.Bodies.Count - 1); CadFeatureIndex = Math.Min(CadFeatureIndex, CurBody.Features.Count - 1); CadDirty = true; _cadBuilt = Cad.Build(); }
-    void CadSnapshot() { _cadUndo.Add(Cad.Clone()); if (_cadUndo.Count > 80) _cadUndo.RemoveAt(0); _cadRedo.Clear(); }
+    void CadSnapshot() { _cadUndo.Add(Cad.Snapshot()); /* T-0716: Netze der Referenzkörper geteilt (Delta) */ if (_cadUndo.Count > Trendo.Core.Programs.ProgramDocument.MaxUndo) _cadUndo.RemoveAt(0); _cadRedo.Clear(); }
     void CadChanged() { CadDirty = true; _cadBuilt = Cad.Build(); }
 
-    public void CadSave(string path) { Cad.Save(path); CadPath = path; CadDirty = false; _cadMsg = $"Gespeichert: {Path.GetFileName(path)}"; _core.Audit.Append(Principal.LocalOwner.Name, "cad.save", Path.GetFileName(path)); }
+    public void CadSave(string path) { Cad.Save(path); CadPath = path; CadDirty = false; OfficeSaved("cad"); _cadMsg = $"Gespeichert: {Path.GetFileName(path)}"; _core.Audit.Append(Principal.LocalOwner.Name, "cad.save", Path.GetFileName(path)); }
     public void CadOpen(string path) { Cad = CadDoc.Load(path); CadPath = path; CadDirty = false; _cadUndo.Clear(); _cadRedo.Clear(); CadBodyIndex = 0; CadFeatureIndex = -1; _cadBuilt = Cad.Build(); _cadMsg = $"Geöffnet: {Path.GetFileName(path)}"; }
 
     string CadFolder { get { var d = Path.Combine(ProjectsRoot, "3D", "CAD"); Directory.CreateDirectory(d); return d; } }
@@ -142,7 +142,7 @@ public partial class MainWindow
         var req = new PickRequest("cad-open", false, false, ["tcad"]);
         var f = PickOverride is { } fake ? (await fake(req))?.FirstOrDefault() : (await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Bauteil öffnen", FileTypeFilter = [new FilePickerFileType("Trendo CAD") { Patterns = ["*.tcad"] }] })).Select(x => x.TryGetLocalPath()).OfType<string>().FirstOrDefault();
         if (f is null) return;
-        try { CadOpen(f); } catch (Exception ex) when (ex is IOException or System.Text.Json.JsonException) { _cadMsg = "Öffnen ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
+        try { CadOpen(f); } catch (Exception ex) when (ex is IOException or InvalidDataException or System.Text.Json.JsonException) { _cadMsg = "Öffnen ging nicht: " + Trendo.Core.FriendlyError.Say(ex); }
         Show("cad");
     }
 
@@ -155,8 +155,10 @@ public partial class MainWindow
         var rib = CadRibbon(); Grid.SetRow(rib, 1); Grid.SetColumnSpan(rib, 3); g.Children.Add(rib);
         var tree = CadTree(); Grid.SetRow(tree, 2); g.Children.Add(tree);
         var view = new CadView { Name = "cad-view", MinHeight = 380, Parts = _cadBuilt.Select(b => (b.Body.Color, b.Solid, ReferenceEquals(b.Body, CurBody))).ToList() };
+        CadDrawingToView(view); // T-0691: DXF-Zeichnung und Referenzkörper
         CadCanvas = view;
-        var stage = new Border { CornerRadius = new CornerRadius(8), ClipToBounds = true, Child = view, Margin = new Thickness(8, 0) }; Grid.SetRow(stage, 2); Grid.SetColumn(stage, 1); g.Children.Add(stage);
+        var stage = new Border { Name = "cad-stage", CornerRadius = new CornerRadius(8), ClipToBounds = true, Child = view, Margin = new Thickness(8, 0) }; Grid.SetRow(stage, 2); Grid.SetColumn(stage, 1); g.Children.Add(stage);
+        CadWireInput(view, stage); // T-0691: Strg+Z/Y/S, Entf, Rechtsklick, Datei hineinziehen
         var side = CadSide(); Grid.SetRow(side, 2); Grid.SetColumn(side, 2); g.Children.Add(side);
         var errors = _cadBuilt.Where(b => b.Error is not null).Select(b => $"{b.Body.Name}: {b.Error}").ToList();
         var cur = Built(CurBody);
@@ -164,7 +166,7 @@ public partial class MainWindow
         var status = new TextBlock { Name = "cad-status", Foreground = errors.Count > 0 ? Brush.Parse("#F87171") : Muted, FontSize = 12, Margin = new Thickness(4, 6, 0, 0), TextWrapping = TextWrapping.Wrap,
             Text = string.Join(" · ", new[] { CadPath is null ? "Noch nicht gespeichert" : Path.GetFileName(CadPath) + (CadDirty ? " · geändert" : ""), info }.Concat(errors).Append(_cadMsg).Where(x => x.Length > 0)) };
         Grid.SetRow(status, 3); Grid.SetColumnSpan(status, 3); g.Children.Add(status);
-        return new Border { Name = "cad-page-root", Background = Brush.Parse(C("#F2081329", "#F7F4F7FC")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = g };
+        return WithRecovery("cad", CadDirty, new Border { Name = "cad-page-root", Background = PageSurface, CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = g }); // T-0691: nach Absturz „Wiederherstellen“
     }
 
     static string Dim(Solid s) { var (mn, mx) = s.Bounds(); return $"{mx.X - mn.X:0.##} × {mx.Y - mn.Y:0.##} × {mx.Z - mn.Z:0.##}"; }
@@ -178,14 +180,24 @@ public partial class MainWindow
         MenuItem Mi(string name, string header, Action a) { var m = new MenuItem { Name = name, Header = header }; m.Click += (_, _) => { a(); Show("cad"); }; return m; }
         fm.Items.Add(Mi("cad-m-new", "Neues Bauteil", CadNew));
         fm.Items.Add(Mi("cad-m-open", "Öffnen …", () => _ = CadOpenClick()));
-        fm.Items.Add(Mi("cad-m-save", "Speichern", () => { try { CadSave(CadPath ?? Mesh3D.Unique(Path.Combine(CadFolder, CadName + ".tcad"))); } catch (IOException ex) { _cadMsg = "Speichern ging nicht: " + Trendo.Core.FriendlyError.Say(ex); } }));
+        fm.Items.Add(Mi("cad-m-import", "Einlesen (DXF, STL, STEP) …", () => _ = CadImportClick()));
+        fm.Items.Add(Mi("cad-m-save", "Speichern", CadSaveHere));
         fm.Items.Add(Mi("cad-m-stl", "Als STL (3D-Druck)", () => CadExportClick("stl")));
         fm.Items.Add(Mi("cad-m-3mf", "Als 3MF (3D-Druck mit Farben, Bambu Studio)", () => CadExportClick("3mf")));
-        fm.Items.Add(Mi("cad-m-step", "Als STEP (andere CAD-Programme)", () => CadExportClick("step")));
+        fm.Items.Add(Mi("cad-m-step", "Als STEP – facettiert (Dreiecksflächen, keine echten Rundungen)", () => CadExportClick("step")));
+        fm.Items.Add(Mi("cad-m-dxf", "Als DXF (Zeichnung und Umriss von oben)", () => { try { var f = CadExportDxf(); Toast(_cadMsg, ("Ordner öffnen", new Action(() => Launch(Path.GetDirectoryName(f)!)))); } catch (Exception ex) when (ex is CadError or IOException or UnauthorizedAccessException) { _cadMsg = "Speichern ging nicht: " + Trendo.Core.FriendlyError.Say(ex); } }));
         fm.Items.Add(Mi("cad-m-pdf", "Technische Zeichnung (PDF)", () => CadExportClick("pdf")));
         file.ContextMenu = fm; file.Click += (_, _) => fm.Open(file);
         var groups = new WrapPanel();
         groups.Children.Add(new Border { Child = file, Margin = new Thickness(0, 0, 8, 0) });
+        // T-0708 (V-14): Speichern · Rückgängig · Wiederholen · Exportieren am gemeinsamen Platz links oben
+        var exp = CB("cad-export", "⇪", "Exportieren", () => { }, "Exportieren: STL, 3MF, STEP, DXF oder technische Zeichnung (PDF)");
+        var em = new ContextMenu();
+        foreach (var (n, h, k) in new[] { ("cad-x-stl", "Als STL (3D-Druck)", "stl"), ("cad-x-3mf", "Als 3MF (3D-Druck mit Farben)", "3mf"), ("cad-x-step", "Als STEP – facettiert", "step"), ("cad-x-pdf", "Technische Zeichnung (PDF)", "pdf") })
+            em.Items.Add(Mi(n, h, () => CadExportClick(k)));
+        em.Items.Add(Mi("cad-x-dxf", "Als DXF (Zeichnung und Umriss von oben)", () => { try { var f = CadExportDxf(); Toast(_cadMsg, ("Ordner öffnen", new Action(() => Launch(Path.GetDirectoryName(f)!)))); } catch (Exception ex) when (ex is CadError or IOException or UnauthorizedAccessException) { _cadMsg = "Speichern ging nicht: " + Trendo.Core.FriendlyError.Say(ex); } }));
+        exp.ContextMenu = em; exp.Click += (_, _) => em.Open(exp);
+        groups.Children.Add(DocActions(CB("cad-save", "⤓", "Speichern", CadSaveHere, "Speichern (Strg+S)"), CB("cad-undo", "↶", "Zurück", CadUndo, "Rückgängig (Strg+Z)"), CB("cad-redo", "↷", "Vor", CadRedo, "Wiederholen (Strg+Y)"), exp));
         groups.Children.Add(RibbonGroup("Grundkörper",
             CB("cad-add-quader", "▣", "Quader", () => CadAdd(CadOp.Quader), "Quader hinzufügen"),
             CB("cad-add-zylinder", "◯", "Zylinder", () => CadAdd(CadOp.Zylinder), "Zylinder hinzufügen"),
@@ -208,8 +220,6 @@ public partial class MainWindow
             CB("cad-view-iso", "◇", "Schräg", () => CadCanvas?.SetView("iso"), "Ansicht schräg von oben"),
             CB("cad-view-front", "▭", "Vorne", () => CadCanvas?.SetView("vorne"), "Vorderansicht"),
             CB("cad-view-top", "▦", "Oben", () => CadCanvas?.SetView("oben"), "Draufsicht"),
-            CB("cad-undo", "↶", "Zurück", CadUndo, "Rückgängig"),
-            CB("cad-redo", "↷", "Vor", CadRedo, "Wiederholen"),
             CB("cad-print", "🖨", "3D-Druck", () => { try { var f = CadExportAs("3mf"); Open3dPrint(f); } catch (CadError ex) { _cadMsg = ex.Message; } }, "Als 3MF speichern und zum 3D-Druck (Bambu Lab) weitergeben")));
         return groups;
     }
@@ -223,7 +233,7 @@ public partial class MainWindow
             var body = Cad.Bodies[bi]; var bIdx = bi;
             var err = _cadBuilt.FirstOrDefault(x => ReferenceEquals(x.Body, body)).Error;
             var head = new Button { Name = $"cad-body-{bi}", Focusable = false, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(6, 4),
-                Background = bi == CadBodyIndex ? Brush.Parse("#332F86F6") : Brushes.Transparent,
+                Background = bi == CadBodyIndex ? Brush.Parse("#33C9A227") : Brushes.Transparent,
                 Content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { new Border { Width = 12, Height = 12, CornerRadius = new CornerRadius(3), Background = Brush.Parse(body.Color) }, new TextBlock { Text = body.Name, Foreground = Text, FontWeight = FontWeight.SemiBold }, new TextBlock { Text = err is null ? "" : "⚠", Foreground = Brush.Parse("#F87171") } } } };
             head.Click += (_, _) => { CadSelect(bIdx, -1); Show("cad"); };
             sp.Children.Add(head);
@@ -317,6 +327,7 @@ public partial class MainWindow
                     pr.VolumeCm3, pr.AreaCm2, pr.MassG, pr.Center.X, pr.Center.Y, pr.Center.Z, CadSectionZ, sec) });
         }
         catch (CadError ex) { sp.Children.Add(new TextBlock { Name = "cad-mass", Text = ex.Message, Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap }); }
+        if (CadDrawingPanel() is { } drawing) sp.Children.Add(drawing); // T-0691: Ebenen der DXF-Zeichnung, Referenzkörper
         // Parameter
         sp.Children.Add(new TextBlock { Text = "Parameter", Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 10, 0, 0) });
         sp.Children.Add(new TextBlock { Text = "Benannte Maße – in jedem Feld als Formel nutzbar, z. B. „Breite/2“.", Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap });

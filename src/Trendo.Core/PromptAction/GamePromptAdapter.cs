@@ -29,12 +29,13 @@ public sealed class GameBrowserAdapter : IStudioActionAdapter
         new(false, [], [], null, [], ["Unreal wurde nicht gestartet."], null);
 }
 
-/// <summary>Leere Unreal-Projektdatei. Der Editor startet nicht.</summary>
+/// <summary>Leere Unreal-Projektdatei (.uproject und zwei Einstellungsdateien), ohne Spielcode und ohne Level. Der Editor startet nicht.
+/// Das spielbare Unreal-Spiel entsteht nur über „Bauen“ im Programm „Spiele bauen“ (GameDesign.BuildUnreal).</summary>
 public sealed class GameUnrealAdapter : IStudioActionAdapter
 {
     public string StudioId => "CORE-06";
     public string ActionId => "spiel.unreal";
-    public string Label => "Unreal-Projekt anlegen";
+    public string Label => "Leeres Unreal-Projekt anlegen (nur Projektdatei, noch kein Spiel)"; // T-0690: Name passend zur Leistung
     public SideEffectClass Effect => SideEffectClass.None;
     public CapabilityLevel DeclaredLevel => CapabilityLevel.Partial;
     public string Evidence => "PromptActionTests.Spiel_schreibt_uprojekt";
