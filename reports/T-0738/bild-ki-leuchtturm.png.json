@@ -1,0 +1,13 @@
+{
+  "Generator": "stable-diffusion.cpp",
+  "Model": "sdxl-turbo",
+  "Prompt": "ein alter Leuchtturm auf einer Klippe bei Sonnenuntergang, Wellen, M\u00F6wen",
+  "Style": "foto",
+  "Negative": "",
+  "Seed": 42,
+  "Width": 1024,
+  "Height": 1024,
+  "CreatedUtc": "2026-11-17T17:46:21.9026296Z",
+  "Sha256": "b354a269dfaed488c5e6850ea1f64387a2421ead729dceefa061d6a962d0607d",
+  "AiGenerated": true
+}

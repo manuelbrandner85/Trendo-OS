@@ -776,6 +776,25 @@ public partial class MainWindow
     /// <summary>Tests: malt statt der Bild-KI (Beschreibung, Startwert, Ziel-PNG, Breite, Höhe → erfolgreich?).</summary>
     public static Func<string, int, string, int, int, Task<bool>>? ImageAiOverride { get; set; }
     bool _imgAiBusy;
+    /// <summary>T-0738 Echtlauf: das isolierte Testfenster darf die echte Bild-KI aus <see cref="DependencyManager.ToolsRoot"/> starten
+    /// (wie <c>CodeRealToolsInTests</c>). Der Weg ist derselbe wie in der App – nichts wird ersetzt.</summary>
+    public bool KiRealToolsInTests { get; set; }
+    /// <summary>Rohausgabe der letzten sd-cli-Läufe (Befehl, Ausgabe, Fehlerausgabe, Exitcode) – für Fehlermeldungen und Belege.</summary>
+    public string ImgAiLastLog { get; private set; } = "";
+
+    /// <summary>T-0738: Was genau fehlt der Bild-KI? null = alles da. Nennt Programm und Modell einzeln, damit die Meldung ehrlich sagt, was einzurichten ist.</summary>
+    public (string Short, string Long)? ImgAiMissing()
+    {
+        if (ImageAiOverride is not null) return null;
+        var store = KiStore;
+        var exe = store.RuntimeReady(KiRuntime.StableDiffusionCpp);
+        var model = KiLibrary.Models.Any(m => m.Id is "sdxl-turbo" or "sd-turbo" && store.ModelReady(m));
+        if (exe && model) return _opt.Isolated && !KiRealToolsInTests ? ("Bild-KI im Testmodus aus", "Im Testmodus startet Trendo keine Bild-KI.") : null;
+        var what = !exe && !model ? "das Programm stable-diffusion.cpp (sd-cli.exe) und ein Bildmodell (SDXL Turbo, 6,9 GB, oder SD Turbo, 5,2 GB)"
+            : !exe ? "das Programm stable-diffusion.cpp (sd-cli.exe)" : "ein Bildmodell (SDXL Turbo, 6,9 GB, oder SD Turbo, 5,2 GB)";
+        var shortText = !exe && !model ? "Bild-KI fehlt" : !exe ? "Bildprogramm fehlt" : "Bildmodell fehlt"; // kurz: der Hinweis steht im Menüband (V-01: Arbeitsfläche oben)
+        return (shortText, $"Die Bild-KI ist noch nicht eingerichtet. Es fehlt {what}. So richtest du sie ein: oben „Bild-KI einrichten“ öffnet die KI-Bibliothek, dort unter „Bilder erzeugen“ SDXL Turbo oder SD Turbo wählen (kostenlos, nur mit deiner Zustimmung).");
+    }
 
     static JsonObject ImgDoc(string prompt, string style) => new() { ["dir"] = Guid.NewGuid().ToString("N"), ["prompt"] = prompt, ["style"] = style, ["format"] = "quadrat", ["count"] = "2", ["seed"] = "42", ["negative"] = "", ["images"] = new JsonArray() };
     /// <summary>Bildordner je Dokument. Die Kennung steht im Dokument („dir“), damit die Bilder nach dem Wiederöffnen da sind (T-0619).</summary>
@@ -817,9 +836,9 @@ public partial class MainWindow
         ],
         Workspace = ImgAiWorkspace,
         Properties = ImgAiProperties,
-        Status = d => (CoverModel() is { } m ? "Bild-KI: " + m.Model.Name : ImageAiOverride is not null ? "Bild-KI: Test" : "Bild-KI nicht eingerichtet") + $" · {ImgList(d).Count} Bilder",
+        Status = d => (ImageAiOverride is not null ? "Bild-KI: Test" : ImgAiMissing() is null && CoverModel() is { } m ? "Bild-KI: " + m.Model.Name : "Bild-KI nicht eingerichtet") + $" · {ImgList(d).Count} Bilder",
         // V-09 (T-0700): fehlt die Bild-KI, steht das direkt an „Bilder malen“ – nicht nur in der Statuszeile
-        Blocker = _ => ImageAiOverride is null && (CoverModel() is null || _opt.Isolated) ? new ProgramBlocker("Bild-KI fehlt", "Jetzt einrichten", () => Show("ki-bibliothek"), "img-setup") : null,
+        Blocker = _ => ImgAiMissing() is { } miss ? new ProgramBlocker(miss.Short, "Jetzt einrichten", () => Show("ki-bibliothek"), "img-setup") : null,
         Help = "Beschreibe, was auf dem Bild sein soll, wähle oben Stil und Format und klicke „Bilder malen“. Beim ersten Mal richtest du die Bild-KI in der KI-Bibliothek ein. Keine echten Personen, keine fremden Marken oder Figuren. Neben jedem Bild liegt eine Datei mit dem Herkunftsnachweis.",
     }, "bild ki", "bilder mit ki", "ki bild", "bild erzeugen", "bild malen", "text zu bild", "stable diffusion", "sdxl", "ki-kunst", "illustration erzeugen");
 
@@ -843,7 +862,7 @@ public partial class MainWindow
         var prompt = d.Text("prompt");
         if (ImageAiKit.Blocked(prompt) is { } why) { _progMsg[ImgAiKey] = why; Show(ImgAiKey); return 0; }
         var cm = ImageAiOverride is null ? CoverModel() : null;
-        if (ImageAiOverride is null && (cm is null || _opt.Isolated)) { _progMsg[ImgAiKey] = "Die Bild-KI ist noch nicht eingerichtet. Oben „Bild-KI einrichten“ öffnet die KI-Bibliothek (SD Turbo oder SDXL Turbo, kostenlos)."; Show(ImgAiKey); return 0; }
+        if (ImgAiMissing() is not null || (ImageAiOverride is null && cm is null)) { _progMsg[ImgAiKey] = ImgAiMissing()?.Long ?? "Die Bild-KI ist noch nicht eingerichtet."; Show(ImgAiKey); return 0; }
         var xl = cm?.Model.Id != "sd-turbo";
         var (w, h) = ImageAiKit.Size(d.Text("format"), xl ? 1024 : 512);
         var count = int.TryParse(d.Text("count"), out var c) ? Math.Clamp(c, 1, 4) : 2;
@@ -851,7 +870,7 @@ public partial class MainWindow
         if (!ImgDirOk(d.Text("dir"))) d.Set("dir", Guid.NewGuid().ToString("N"), "Bildordner"); // ältere Dokumente: Ordner einmal festlegen
         var dir = ImgDir(d);
         Directory.CreateDirectory(dir);
-        _imgAiBusy = true; var made = new List<string>();
+        _imgAiBusy = true; var made = new List<string>(); string? why2 = null; ImgAiLastLog = "";
         try
         {
             for (var i = 0; i < count; i++)
@@ -867,11 +886,13 @@ public partial class MainWindow
                     {
                         var args = ImageAiKit.Args(KiStore.ModelFile(cm!.Value.Model, cm.Value.Model.Files[0]), prompt, d.Text("style"), d.Text("negative"), png, w, h, seed, xl);
                         var r = await Task.Run(() => RunWithInput(cm.Value.Exe, args, null));
-                        if (!r.Ok || !File.Exists(png)) r = await Task.Run(() => RunWithInput(cm.Value.Exe, [.. args, "--offload-to-cpu"], null));
+                        ImgAiLog(cm.Value.Exe, args, r);
+                        if (!r.Ok || !File.Exists(png)) { r = await Task.Run(() => RunWithInput(cm.Value.Exe, [.. args, "--offload-to-cpu"], null)); ImgAiLog(cm.Value.Exe, [.. args, "--offload-to-cpu"], r); }
                         ok = r.Ok;
+                        if (!ok || !File.Exists(png)) why2 = ImageAiKit.ErrorHint(r.Err + "\n" + r.Out);
                     }
                 }
-                if (!ok || !File.Exists(png)) { _progMsg[ImgAiKey] = "Die Bild-KI hat kein Bild geliefert. Ist die Grafikkarte gerade mit etwas anderem beschäftigt?"; break; }
+                if (!ok || !File.Exists(png)) { _progMsg[ImgAiKey] = "Die Bild-KI hat kein Bild geliefert. " + (why2 ?? "Ist die Grafikkarte gerade mit etwas anderem beschäftigt?"); break; }
                 ImageAiKit.WriteProvenance(png, new("stable-diffusion.cpp", cm?.Model.Id ?? "test", prompt, d.Text("style"), d.Text("negative"), seed, w, h, DateTime.UtcNow, ""));
                 made.Add(png);
                 d.Edit("Bild gemalt", x => { if (x["images"] is not JsonArray a) x["images"] = a = []; a.Add(png); });
@@ -882,6 +903,10 @@ public partial class MainWindow
         finally { _imgAiBusy = false; Show(ImgAiKey); }
         return made.Count;
     }
+
+    /// <summary>Rohausgabe eines sd-cli-Laufs festhalten (Befehl mit Argumenten, Exitcode, Ausgabe).</summary>
+    void ImgAiLog(string exe, IReadOnlyList<string> args, Cli.Result r) =>
+        ImgAiLastLog += $"$ {Path.GetFileName(exe)} {string.Join(' ', args.Select(a => a.Contains(' ') ? "\"" + a + "\"" : a))}\n[Exitcode {r.Exit}]\n{r.Out}{(r.Err.Length > 0 ? "\n[Fehlerausgabe]\n" + r.Err : "")}\n";
 
     Control ImgAiWorkspace(ProgramDocument d)
     {
