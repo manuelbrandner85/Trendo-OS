@@ -132,6 +132,8 @@ public class UebersichtEinfach_Ui(ITestOutputHelper log)
         // T-0740: in „Einfach“ über die Menüleiste (geprüft in T0740Gegenpruefung_Ui.Simple_export_via_menu) und den Knopf „Vorhersagen speichern …“ auf der Arbeitsfläche
         ("prog-export-pred", "Menüleiste „Datei ▸ Exportieren ▸ Vorhersagen (.csv)“ und Knopf „Vorhersagen speichern …“ auf der Arbeitsfläche"),
         // T-0739: Fragenreihe im Modellvergleich – Export ebenso über die Menüleiste (alle spec.Exports, jede Stufe)
+        // T-0745: Schnitt-Editor – in „Einfach“ ohne Leiste; dieselben Befehle im Rechtsklick-Menü der Schnittfläche (garment-edit-menu-…) und über Doppelklick/Einfg, Entf, K
+        ("garment-edit-", "Rechtsklick-Menü der Schnittfläche (Punkt einfügen/löschen, Kante als Kurve/Gerade, Teil zurücksetzen) und Kürzel Einfg, Entf, K"),
         ("prog-export-reihe-csv", "Menüleiste „Datei ▸ Exportieren ▸ Fragenreihe (.csv)“"), ("prog-export-reihe-md", "Menüleiste „Datei ▸ Exportieren ▸ Fragenreihe (.md)“"),
     ];
 

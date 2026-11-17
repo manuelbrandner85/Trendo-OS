@@ -214,6 +214,39 @@ public static class GarmentProduction
         return sb.ToString();
     }
 
+    /// <summary>T-0745: Schnittbogen als SVG im Maßstab 1:1 (Einheit mm, viewBox in mm): je Teil eine Gruppe mit Schnittkante, Nahtlinie, Fadenlauf und Beschriftung.
+    /// Öffnet sich in Zeichenprogrammen (Inkscape, Illustrator) und in Blender (SVG-Import).</summary>
+    public static string Svg(Garment g, string title = "Schnitt")
+    {
+        const double pad = 10; // mm Rand
+        var boxes = new List<(PatPart P, List<PatPt> Cut, double Ox, double MinY, double MaxY)>(); var x = pad; var maxH = 0.0;
+        foreach (var p in g.Parts)
+        {
+            var c = WithAllowance(p); double minX = c.Min(q => q.X), maxX = c.Max(q => q.X), minY = c.Min(q => q.Y), maxY = c.Max(q => q.Y);
+            boxes.Add((p, c, x - minX * 10, minY, maxY)); x += (maxX - minX) * 10 + pad; maxH = Math.Max(maxH, (maxY - minY) * 10);
+        }
+        double w = x, h = maxH + 2 * pad + 8;
+        static string Esc(string s) => System.Security.SecurityElement.Escape(s) ?? "";
+        var sb = new StringBuilder();
+        sb.Append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+        sb.Append($"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{F(w)}mm\" height=\"{F(h)}mm\" viewBox=\"0 0 {F(w)} {F(h)}\">\n");
+        sb.Append($"<title>{Esc(title)}</title>\n");
+        foreach (var (p, cut, ox, minY, maxY) in boxes)
+        {
+            // y nach unten: oberste Kante des Teils bei pad + 8 mm (Platz für die Beschriftung)
+            string Pts(IEnumerable<PatPt> pts) => string.Join(" ", pts.Select(q => $"{F(ox + q.X * 10)},{F(pad + 8 + (maxY - q.Y) * 10)}"));
+            sb.Append($"<g id=\"{Esc(p.Role)}\" data-name=\"{Esc(p.Name)}\" data-qty=\"{p.Qty}\">\n");
+            sb.Append($"<polygon class=\"schnitt\" points=\"{Pts(cut)}\" fill=\"none\" stroke=\"#000000\" stroke-width=\"0.5\"/>\n");
+            sb.Append($"<polygon class=\"naht\" points=\"{Pts(p.Outline)}\" fill=\"none\" stroke=\"#808080\" stroke-width=\"0.3\" stroke-dasharray=\"3 2\"/>\n");
+            double lo = p.Outline.Min(q => q.Y) + 6, hi = p.Outline.Max(q => q.Y) - 6;
+            if (hi > lo) sb.Append($"<polyline class=\"fadenlauf\" points=\"{Pts([new PatPt(0, lo), new PatPt(0, hi)])}\" fill=\"none\" stroke=\"#000000\" stroke-width=\"0.3\"/>\n");
+            sb.Append($"<text x=\"{F(ox + 5)}\" y=\"{F(pad + 8 + (maxY - (lo + hi) / 2) * 10)}\" font-family=\"Arial\" font-size=\"5\">{Esc($"{p.Name} · {p.Qty}× zuschneiden")}</text>\n");
+            sb.Append("</g>\n");
+        }
+        sb.Append("</svg>\n");
+        return sb.ToString();
+    }
+
     /// <summary>Schnittbogen 1:1 auf A4 zum Zusammenkleben: 10 mm Überlappung, Klebemarken, Kontrollquadrat 5 × 5 cm. Rückgabe: Seitenzahl.</summary>
     public static int PdfTiled(string path, Garment g, string title)
     {
@@ -279,7 +312,7 @@ public static class GarmentProduction
     }
 
     /// <summary>Technisches Datenblatt: Maße, Teile, Nähte, Stückliste, Verbrauch je Größe.</summary>
-    public static string TechPack(string name, Garment g, BodyMeasures b, FabricInfo f, string color, IReadOnlyList<string> sizes)
+    public static string TechPack(string name, Garment g, BodyMeasures b, FabricInfo f, string color, IReadOnlyList<string> sizes, IReadOnlyList<string>? edited = null)
     {
         var de = CultureInfo.GetCultureInfo("de-DE"); var sb = new StringBuilder();
         sb.AppendLine($"# Technisches Datenblatt: {name}").AppendLine();
@@ -287,6 +320,8 @@ public static class GarmentProduction
         sb.AppendLine("## Körpermaße der Grundgröße (cm)").AppendLine().AppendLine("| Größe | Brust | Taille | Hüfte |").AppendLine("|---|---:|---:|---:|").AppendLine($"| Körper | {b.Chest:0} | {b.Waist:0} | {b.Hip:0} | ").AppendLine();
         sb.AppendLine("## Schnittteile").AppendLine().AppendLine("| Teil | Anzahl | Fläche (cm²) | Nahtzugabe |").AppendLine("|---|---:|---:|---|");
         foreach (var p in g.Parts) sb.AppendLine($"| {p.Name} | {p.Qty} | {p.Area.ToString("0", de)} | {SeamCm.ToString("0.0", de)} cm, Saum {HemCm.ToString("0.0", de)} cm |");
+        if (edited is { Count: > 0 }) // T-0745: frei bearbeitete Teile ehrlich nennen – der Größensatz unten rechnet mit den Grundschnitten
+            sb.AppendLine().AppendLine($"**Frei bearbeitet:** {string.Join(", ", edited)}. Flächen, Nähte und Dateien oben nutzen die bearbeitete Form; Stoffbedarf je Größe rechnet mit den Grundschnitten (die Bearbeitung wird nicht mitgradiert).");
         sb.AppendLine().AppendLine("## Nähte").AppendLine();
         foreach (var s in g.Seams) sb.AppendLine($"- {s.PartA} ({s.EdgeA}) an {s.PartB} ({s.EdgeB})");
         sb.AppendLine().AppendLine("## Stoffbedarf und Materialkosten").AppendLine().AppendLine("| Größe | Meter | Kosten Stoff | Ausnutzung |").AppendLine("|---|---:|---:|---:|");
