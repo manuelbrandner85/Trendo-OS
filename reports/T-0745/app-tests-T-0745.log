@@ -1,0 +1,8 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = 'c49dcb0a13b827319010fa987d8dc2cd0921c00fcf99ef3e319de0ec9349ab3a')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 232, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 676,584s
+Waiting 10 seconds for foreground threads to exit...
