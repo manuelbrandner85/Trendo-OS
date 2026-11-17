@@ -174,6 +174,7 @@ public static class GarmentEdit
     /// <summary>Bearbeitete Punkte zurück in ein Schnittteil mit denselben benannten Kanten (Name, Rolle, Anzahl bleiben).</summary>
     public static PatPart FromNodes(PatPart template, IReadOnlyList<PatNode> n)
     {
+        n = Merge(n);
         Validate(template, n);
         var starts = Enumerable.Range(0, n.Count).Where(i => n[i].Edge is not null).ToList();
         var edges = new List<PatEdge>();
@@ -187,7 +188,74 @@ public static class GarmentEdit
         // in der Reihenfolge der Vorlage (die erste Kante zuerst – der Saum bleibt vorne)
         var order = template.Edges.Select(x => x.Name).ToList();
         edges.Sort((x, y) => order.IndexOf(x.Name).CompareTo(order.IndexOf(y.Name)));
-        return template with { Edges = edges };
+        var part = template with { Edges = edges };
+        // T-0745 Gegenprüfung: ein Teil ohne Fläche (alle Punkte auf einer Linie) lässt sich weder zuschneiden noch nähen
+        if (part.Area < MinAreaCm2) throw new ArgumentException($"Das Teil „{template.Name}“ hätte so keine Fläche mehr. Zieh die Punkte wieder auseinander oder nimm den Schritt mit Strg+Z zurück.");
+        return part;
+    }
+
+    /// <summary>Kleinste Fläche eines Schnittteils in cm².</summary>
+    public const double MinAreaCm2 = 1;
+    /// <summary>Punkte, die näher als dies beieinander liegen (Länge des Stücks dazwischen, cm), werden zu einem Punkt zusammengeführt.</summary>
+    public const double MinGapCm = 0.05;
+
+    static double SegLength(IReadOnlyList<PatNode> n, int seg)
+    {
+        var pts = SegmentPoints(n, seg); var l = 0.0;
+        for (var k = 1; k < pts.Count; k++) l += Dist(pts[k - 1], pts[k]);
+        return l;
+    }
+
+    /// <summary>T-0745 Gegenprüfung: Punkte, die (fast) aufeinander liegen, zu einem zusammenführen – sonst entsteht ein Kantenstück ohne Länge und ohne
+    /// Richtung. Der zusammengeführte Punkt behält den hinteren Griff des ersten und den vorderen Griff des zweiten Punkts und den Kantenbeginn.
+    /// Beginnen an beiden Punkten Kanten, hätte eine benannte Kante keine Länge mehr: dann <see cref="ArgumentException"/> mit Erklärung.</summary>
+    public static List<PatNode> Merge(IReadOnlyList<PatNode> n)
+    {
+        var r = n.ToList();
+        for (var i = 0; r.Count > 3 && i < r.Count;)
+        {
+            var j = (i + 1) % r.Count;
+            if (SegLength(r, i) >= MinGapCm) { i++; continue; }
+            PatNode a = r[i], b = r[j];
+            if (a.Edge is { } ea && b.Edge is not null)
+                throw new ArgumentException($"Die Kante „{EdgeLabel(ea)}“ hätte so keine Länge mehr – zwei Ecken liegen aufeinander. Zieh den Punkt etwas zur Seite oder nimm den Schritt mit Strg+Z zurück.");
+            var keep = a.Edge is null && b.Edge is not null ? b : a;
+            var merged = new PatNode(new VNode(keep.X, keep.Y, a.N.InX + keep.X - a.X, a.N.InY + keep.Y - a.Y, b.N.OutX + keep.X - b.X, b.N.OutY + keep.Y - b.Y), a.Edge ?? b.Edge);
+            r[i] = merged; r.RemoveAt(j);
+            if (j < i) i--; // der erste Punkt der Liste fiel weg
+        }
+        return r;
+    }
+
+    /// <summary>T-0745 Gegenprüfung: Kleinster Abstand zwischen Schnittkante (mit Nahtzugabe) und Nahtlinie in cm. Kleiner als die Nahtzugabe heißt:
+    /// An einer engen Stelle (schmaler Schlitz, spitze Bucht) überlappt die Zugabe der einen Seite die andere.</summary>
+    public static double AllowanceGap(PatPart p)
+    {
+        var cut = GarmentProduction.WithAllowance(p); var seam = p.Outline;
+        static double D(PatPt q, PatPt s, PatPt e)
+        {
+            double dx = e.X - s.X, dy = e.Y - s.Y, l2 = dx * dx + dy * dy;
+            var t = l2 < 1e-12 ? 0 : Math.Clamp(((q.X - s.X) * dx + (q.Y - s.Y) * dy) / l2, 0, 1);
+            return Dist(q, new(s.X + t * dx, s.Y + t * dy));
+        }
+        var best = double.MaxValue;
+        foreach (var (a, b) in new (IReadOnlyList<PatPt> A, IReadOnlyList<PatPt> B)[] { (cut, seam), (seam, cut) })
+            foreach (var q in a)
+                for (var i = 0; i < b.Count; i++) best = Math.Min(best, D(q, b[i], b[(i + 1) % b.Count]));
+        for (var i = 0; i < cut.Count && best > 0; i++)
+            for (var j = 0; j < seam.Count; j++)
+                if (Cross(cut[i], cut[(i + 1) % cut.Count], seam[j], seam[(j + 1) % seam.Count])) { best = 0; break; }
+        return best;
+    }
+
+    /// <summary>T-0745 Gegenprüfung: Hinweise zu einem Teil, das so nicht sauber zugeschnitten werden kann (für die Fläche und beim Export).</summary>
+    public static IReadOnlyList<string> Problems(PatPart p)
+    {
+        if (SelfIntersects(p)) return [$"Der Umriss von „{p.Name}“ überschneidet sich – Fläche, Nahtzugabe und Zuschnitt stimmen so nicht."];
+        var gap = AllowanceGap(p);
+        return gap < GarmentProduction.SeamCm - 0.15
+            ? [$"Bei „{p.Name}“ kommt die Schnittkante an einer engen Stelle bis auf {Cm(gap)} cm an die Naht (Nahtzugabe {Cm(GarmentProduction.SeamCm)} cm) – dort die Form weiten oder die Zugabe beim Zuschneiden von Hand kürzen."]
+            : [];
     }
 
     /// <summary>Prüft, dass jede Kante der Vorlage genau einmal und in derselben Reihenfolge vorkommt (sonst passen Nähte und Anprobe nicht mehr).</summary>
@@ -394,6 +462,19 @@ public static class GarmentEdit
 
     /// <summary>Namen der bearbeiteten Teile dieser Schnittart.</summary>
     public static IReadOnlyList<string> Edited(JsonObject? edits, string kind) => edits?[kind] is JsonObject k ? [.. k.Select(x => x.Key)] : [];
+
+    /// <summary>T-0745 Gegenprüfung: nur die Teile, deren gespeicherte Bearbeitung auch wirklich gilt (ungültige fallen auf die Vorlage zurück und zählen nicht).</summary>
+    public static IReadOnlyList<string> Edited(JsonObject? edits, Garment g)
+    {
+        if (edits?[g.Kind] is not JsonObject k) return [];
+        var res = new List<string>();
+        foreach (var (name, node) in k)
+        {
+            if (g.Parts.FirstOrDefault(p => p.Name == name) is not { } part || FromJson(node) is not { } n) continue;
+            try { FromNodes(part, n); res.Add(name); } catch (ArgumentException) { }
+        }
+        return res;
+    }
 
     /// <summary>Neues Bearbeitungsfeld mit dem Teil <paramref name="part"/> (null = zurücksetzen).</summary>
     public static JsonObject With(JsonObject? edits, string kind, string part, IReadOnlyList<PatNode>? nodes)

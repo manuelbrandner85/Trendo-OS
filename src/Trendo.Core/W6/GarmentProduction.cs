@@ -77,21 +77,36 @@ public sealed record NestResult(IReadOnlyList<NestPlaced> Placed, double LengthC
 public static class GarmentProduction
 {
     public const double SeamCm = 1.2, HemCm = 2.5, CellCm = 0.5;
+    /// <summary>Punkte, die näher als dies beieinander liegen, gelten als doppelt (cm).</summary>
+    const double DegenerateCm = 1e-4;
 
     /// <summary>Außenkontur mit Nahtzugabe; am Saum breiter, weil er umgeschlagen wird.</summary>
     public static List<PatPt> WithAllowance(PatPart part)
     {
-        var pts = new List<(PatPt P, double Off)>();
+        var raw = new List<(PatPt P, double Off)>();
         foreach (var e in part.Edges)
         {
             var off = e.Name == "hem" ? HemCm : SeamCm;
-            pts.AddRange(e.Points.Take(e.Points.Count - 1).Select(p => (p, off)));
+            raw.AddRange(e.Points.Take(e.Points.Count - 1).Select(p => (p, off)));
+        }
+        // T-0745 Gegenprüfung: Stücke ohne Länge (doppelte Punkte) überspringen – sonst fehlt dort die Richtung und die Zugabe fällt auf 0.
+        // Der Punkt vor dem leeren Stück fällt weg; die Zugabe des folgenden Stücks bleibt.
+        var pts = new List<(PatPt P, double Off)>(raw.Count);
+        for (var k = 0; k < raw.Count; k++)
+        {
+            var nx = raw[(k + 1) % raw.Count].P;
+            if (raw.Count > 3 && Math.Abs(raw[k].P.X - nx.X) < DegenerateCm && Math.Abs(raw[k].P.Y - nx.Y) < DegenerateCm && (k < raw.Count - 1 || pts.Count > 2)) continue;
+            pts.Add(raw[k]);
         }
         var n = pts.Count; var res = new List<PatPt>(n);
+        // T-0745 Gegenprüfung: Umlaufrichtung über die vorzeichenbehaftete Fläche – gespiegelte Teile (im Uhrzeigersinn) bekommen die Zugabe trotzdem außen
+        var signed = 0.0;
+        for (var k = 0; k < n; k++) { var a = pts[k].P; var b = pts[(k + 1) % n].P; signed += a.X * b.Y - b.X * a.Y; }
+        var side = signed < 0 ? -1.0 : 1.0;
         (double Dx, double Dy, double Nx, double Ny) Seg(int k)
         {
             var q = pts[k].P; var r = pts[(k + 1) % n].P; double dx = r.X - q.X, dy = r.Y - q.Y, len = Math.Max(1e-9, Math.Sqrt(dx * dx + dy * dy));
-            return (dx / len, dy / len, dy / len, -dx / len); // Außenseite bei Lauf gegen den Uhrzeigersinn
+            return (dx / len, dy / len, side * dy / len, -side * dx / len); // Außenseite (gegen den Uhrzeigersinn: rechts der Laufrichtung)
         }
         for (var i = 0; i < n; i++)
         {

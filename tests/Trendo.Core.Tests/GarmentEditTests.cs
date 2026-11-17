@@ -116,6 +116,107 @@ public class GarmentEditTests
         Assert.False(GarmentEdit.SelfIntersects(front));
     }
 
+    /// <summary>Kleinster Abstand zwischen zwei geschlossenen Linienzügen (Ecken gegen Strecken, in beide Richtungen).</summary>
+    static double MinGap(IReadOnlyList<PatPt> a, IReadOnlyList<PatPt> b)
+    {
+        static double D(PatPt q, PatPt s, PatPt e)
+        {
+            double dx = e.X - s.X, dy = e.Y - s.Y, l2 = dx * dx + dy * dy;
+            var t = l2 < 1e-12 ? 0 : Math.Clamp(((q.X - s.X) * dx + (q.Y - s.Y) * dy) / l2, 0, 1);
+            return Math.Sqrt(Math.Pow(q.X - s.X - t * dx, 2) + Math.Pow(q.Y - s.Y - t * dy, 2));
+        }
+        double M(IReadOnlyList<PatPt> p, IReadOnlyList<PatPt> poly) => p.Min(q => Enumerable.Range(0, poly.Count).Min(i => D(q, poly[i], poly[(i + 1) % poly.Count])));
+        return Math.Min(M(a, b), M(b, a));
+    }
+
+    [Fact(DisplayName = "Gegenprüfung T-0745 (1): Punkt genau auf den Nachbarn gezogen – die Nahtzugabe bleibt überall mindestens 1,2 cm; doppelte Punkte direkt im Teil ebenso; Kante mit Länge 0 wird abgelehnt")]
+    public void DuplicatePoint_keeps_allowance()
+    {
+        var front = Shirt().Parts[0];
+        var n = GarmentEdit.ToNodes(front); var hem = n.FindIndex(q => q.Edge == "hem");
+        Assert.Equal(GarmentProduction.SeamCm, MinGap(GarmentProduction.WithAllowance(front), front.Outline), 2);
+        // Punkt in den Saum setzen und genau auf die Saumecke ziehen (wie mit dem Raster)
+        var (ins, at) = GarmentEdit.Insert(n, hem, 0.5);
+        var dup = GarmentEdit.MoveNode(ins, at, ins[hem].X, ins[hem].Y);
+        var p = GarmentEdit.FromNodes(front, dup);
+        Assert.Equal(GarmentProduction.SeamCm, MinGap(GarmentProduction.WithAllowance(p), p.Outline), 2);
+        // ebenso auf den nächsten Punkt (Beginn der Seitennaht)
+        var side = ins.FindIndex(q => q.Edge == "sideR");
+        var p2 = GarmentEdit.FromNodes(front, GarmentEdit.MoveNode(ins, at, ins[side].X, ins[side].Y));
+        Assert.Equal(GarmentProduction.SeamCm, MinGap(GarmentProduction.WithAllowance(p2), p2.Outline), 2);
+        // doppelter Punkt direkt im Teil (alte Daten): Nahtzugabe darf nicht auf 0 fallen
+        var raw = front with { Edges = [.. front.Edges.Select(e => e.Name == "hem" ? e with { Points = [e.Points[0], e.Points[0], .. e.Points.Skip(1)] } : e)] };
+        Assert.Equal(GarmentProduction.SeamCm, MinGap(GarmentProduction.WithAllowance(raw), raw.Outline), 2);
+        // die Saumecke auf die Seitennaht-Ecke: der Saum hätte keine Länge mehr → abgelehnt mit Erklärung
+        var sideAt = n.FindIndex(q => q.Edge == "sideR");
+        var hemGone = GarmentEdit.MoveNode(n, hem, n[sideAt].X, n[sideAt].Y);
+        var ex = Assert.Throws<ArgumentException>(() => GarmentEdit.FromNodes(front, hemGone));
+        Assert.Contains("Saum", ex.Message);
+    }
+
+    [Fact(DisplayName = "Gegenprüfung T-0745 (3): gespiegelte Manschette (Umlauf im Uhrzeigersinn) bekommt die Nahtzugabe trotzdem nach außen")]
+    public void Mirrored_part_allowance_outside()
+    {
+        var cuff = GarmentBlocks.Kinds.SelectMany(k => GarmentBlocks.Build(k.Id, Body).Parts).First(p => p.Name.StartsWith("Manschette", StringComparison.Ordinal));
+        var mirrored = cuff with { Edges = [.. cuff.Edges.Select(e => e with { Points = [.. e.Points.Select(q => new PatPt(-q.X, q.Y))] })] };
+        foreach (var p in new[] { cuff, mirrored })
+        {
+            var cut = GarmentProduction.WithAllowance(p);
+            double w = p.Outline.Max(q => q.X) - p.Outline.Min(q => q.X), cw = cut.Max(q => q.X) - cut.Min(q => q.X);
+            Assert.Equal(w + 2 * GarmentProduction.SeamCm, cw, 3);
+            Assert.True(cut.Min(q => q.Y) < p.Outline.Min(q => q.Y) - 1, "Zugabe muss außen liegen");
+        }
+    }
+
+    [Fact(DisplayName = "Gegenprüfung T-0745 (4): Teil mit Fläche 0 wird beim Übernehmen abgelehnt")]
+    public void Zero_area_rejected()
+    {
+        var cuff = GarmentBlocks.Kinds.SelectMany(k => GarmentBlocks.Build(k.Id, Body).Parts).First(p => p.Name.StartsWith("Manschette", StringComparison.Ordinal));
+        var n = GarmentEdit.ToNodes(cuff);
+        Assert.Equal(4, n.Count);
+        var w = n[1].X - n[0].X;
+        var flat = GarmentEdit.MoveNode(GarmentEdit.MoveNode(n, 2, n[0].X + w * 0.75, n[0].Y), 3, n[0].X + w * 0.25, n[0].Y);
+        var ex = Assert.Throws<ArgumentException>(() => GarmentEdit.FromNodes(cuff, flat));
+        Assert.Contains("Fläche", ex.Message);
+    }
+
+    [Fact(DisplayName = "Gegenprüfung T-0745 (4, 5): Hinweise – Selbstüberschneidung und schmaler Schlitz werden gemeldet, die Grundschnitte sind ohne Hinweis")]
+    public void Problems_reported()
+    {
+        foreach (var (kind, _) in GarmentBlocks.Kinds)
+            foreach (var part in GarmentBlocks.Build(kind, Body).Parts)
+            {
+                Assert.True(GarmentEdit.AllowanceGap(part) > GarmentProduction.SeamCm - 0.05, $"{kind}/{part.Name}: Abstand {GarmentEdit.AllowanceGap(part)}");
+                Assert.Empty(GarmentEdit.Problems(part));
+            }
+        // Rechteck 20 × 20 cm mit einem 0,6 cm schmalen Schlitz von oben
+        static PatEdge L(string name, params (double X, double Y)[] p) => new(name, [.. p.Select(q => new PatPt(q.X, q.Y))]);
+        var slit = new PatPart("Probe", "probe", [L("hem", (0, 0), (20, 0)), L("sideR", (20, 0), (20, 20), (10.6, 20), (10.6, 5), (10, 5), (10, 20), (0, 20)), L("sideL", (0, 20), (0, 0))]);
+        Assert.True(GarmentEdit.AllowanceGap(slit) < 0.7, $"Abstand {GarmentEdit.AllowanceGap(slit)}");
+        var msg = Assert.Single(GarmentEdit.Problems(slit));
+        Assert.Contains("engen Stelle", msg);
+        // Selbstüberschneidung
+        var front = Shirt().Parts[0]; var n = GarmentEdit.ToNodes(front); var hem = n.FindIndex(q => q.Edge == "hem");
+        var crossed = GarmentEdit.FromNodes(front, GarmentEdit.MoveNode(n, hem, front.Edge("hem").Length / 2 + 10, 30));
+        Assert.Contains("überschneidet", Assert.Single(GarmentEdit.Problems(crossed)));
+    }
+
+    [Fact(DisplayName = "Gegenprüfung T-0745 (1, 8): Zusammenführen doppelter Punkte; ungültige gespeicherte Bearbeitung zählt nicht als „bearbeitet“")]
+    public void Merge_and_edited()
+    {
+        var g = Shirt(); var front = g.Parts[0];
+        var n = GarmentEdit.ToNodes(front); var hem = n.FindIndex(q => q.Edge == "hem");
+        var (ins, at) = GarmentEdit.Insert(n, hem, 0.5);
+        var merged = GarmentEdit.Merge(GarmentEdit.MoveNode(ins, at, ins[hem].X + 0.01, ins[hem].Y));
+        Assert.Equal(n.Count, merged.Count);
+        Assert.Equal("hem", merged[hem].Edge);
+        Assert.Equal(n.Count + 1, GarmentEdit.Merge(GarmentEdit.MoveNode(ins, at, ins[hem].X + 0.2, ins[hem].Y)).Count); // 2 mm daneben bleibt ein eigener Punkt
+        var edits = GarmentEdit.With(null, "tshirt", front.Name, GarmentEdit.MoveNode(n, hem, n[hem].X - 2, n[hem].Y));
+        edits = GarmentEdit.With(edits, "tshirt", g.Parts[1].Name, [.. n.Take(2)]); // kaputt: nur zwei Punkte
+        Assert.Equal(2, GarmentEdit.Edited(edits, "tshirt").Count);
+        Assert.Equal([front.Name], GarmentEdit.Edited(edits, g));
+    }
+
     [Fact(DisplayName = "Export mit bearbeiteten Teilen: DXF und SVG enthalten den neuen Umriss in mm")]
     public void ExportUsesEdits()
     {

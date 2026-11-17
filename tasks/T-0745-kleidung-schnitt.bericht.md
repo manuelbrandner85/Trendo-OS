@@ -53,4 +53,24 @@
 - Ändern der Körpermaße lässt bearbeitete Teile unverändert („Teil zurücksetzen“ holt die Vorlage).
 - Kein Neuzeichnen ganzer Teile, kein Import fremder Schnittformate, keine Nahtzugabe je Kante einstellbar, kein KI-Befehl.
 
+## Gegenprüfung behoben (18.11.2026, zweiter Commit auf diesem Zweig)
+Rot-Grün: die neuen Tests wurden zuerst gegen den alten Stand gefahren (`reports/T-0745/rot-core-T-0745-fix.log`: 3 Kern-Tests rot; `reports/T-0745/rot-ui-T-0745-fix.log`: 3 Oberflächen-Tests rot, alter Editor und alte `MainWindow.ProgModeGarment.cs` eingesetzt, nur die Zeile mit dem ersetzbaren Zeitgeber entfernt), danach grün.
+
+| Befund | Was jetzt | Test (Rot-Probe) |
+|---|---|---|
+| 1 MITTEL doppelter Punkt → Zugabe 0 | `GarmentEdit.Merge` führt Punkte zusammen, deren Stück kürzer als 0,5 mm ist (Griffe und Kantenbeginn bleiben); fielen dabei zwei Kantenanfänge aufeinander, wird mit Erklärung abgelehnt („Die Kante „Saum“ hätte so keine Länge mehr …“). `FromNodes` und das Übernehmen in der Oberfläche führen zusammen; `GarmentProduction.WithAllowance` überspringt zusätzlich Stücke ohne Länge (alte/fremde Daten). | `GarmentEditTests.DuplicatePoint_keeps_allowance` (kleinster Abstand Schnittkante–Naht = 1,2 cm; rot: 0), `Merge_and_edited`, `GarmentEdit_Ui.Reject_and_export_hint` (Ecke per Zahl auf die Nachbarecke → abgelehnt, Dokument unverändert) |
+| 2 MITTEL Tastatur-Falle | `OnKey` verbraucht nur wirksame Tasten; Esc ohne Auswahl tut nichts. `WantFocus` wird nach dem Fokussieren zurückgesetzt; Zahlenfelder setzen es beim Fokus zurück, Enter im Feld behält den Fokus im neu aufgebauten Feld (`FocusField`). | `GarmentEdit_Ui.Keyboard_no_trap` (rot: Tab blieb in der Fläche) |
+| 3 NIEDRIG Umlaufrichtung | `WithAllowance` bestimmt die Richtung über die vorzeichenbehaftete Fläche, die Zugabe liegt immer außen. | `GarmentEditTests.Mirrored_part_allowance_outside` (rot: gespiegelte Manschette 16,0 statt 20,8 cm breit) |
+| 4 NIEDRIG Fläche 0 / Selbstüberschneidung | `FromNodes` lehnt Teile unter 1 cm² ab (Meldung). Selbstüberschneidung bleibt Warnung auf der Fläche und steht jetzt auch in der Export-Meldung („Achtung: …“). | `GarmentEditTests.Zero_area_rejected` (rot: keine Ablehnung), `Problems_reported`, `GarmentEdit_Ui.Reject_and_export_hint` (rot: Export ohne Hinweis) |
+| 5 NIEDRIG schmaler Schlitz | `GarmentEdit.AllowanceGap`/`Problems` melden, wenn die Schnittkante näher als 1,05 cm an die Naht kommt (Fläche: `garment-measure-gap`, Export-Meldung). Nicht beschnitten – Abschneiden der überlappenden Zugabe wäre ein Polygon-Verschnitt, nicht „einfach“. Alle Grundschnitte aller 6 Arten ohne Hinweis. | `GarmentEditTests.Problems_reported` (0,6-cm-Schlitz → Hinweis; neue Funktion, Rot = fehlte) |
+| 6 NIEDRIG Präfix in `Replaced` | statt `garment-edit-` die vier Namen `garment-edit-insert`, `garment-edit-delete`, `garment-edit-toggle`, `garment-edit-reset`. `GarmentEdit_Ui.Levels` öffnet in „Einfach“ per Rechtsklick das Menü und löst „Punkt hier einfügen“ aus (Punkt eingefügt, Rückgängig-Schritt). | `UebersichtEinfach_Ui` grün; `Levels` war schon auf altem Stand grün (Test verschärft, kein Fehler im Code) |
+| 7 NIEDRIG Pfeil-Schritte | Pfeil-Schritte am selben Punkt innerhalb 1 s ohne andere Änderung dazwischen werden mit `ProgramDocument.Squash` EIN Rückgängig-Schritt; Pause, Rückgängig oder andere Änderung trennt. Zeitgeber im Test ersetzbar (`GarmentEditState.Clock`). | `GarmentEdit_Ui.Arrow_steps_grouped` (rot: 3 statt 1 Schritt) |
+| 8 INFO „bearbeitet“ | `GarmentEdit.Edited(edits, Garment)` zählt nur Bearbeitungen, die wirklich gelten (Fläche, Datenblatt, Anprobe-Hinweis, „Teil zurücksetzen“). | `GarmentEditTests.Merge_and_edited` |
+
+Berührte Dateien: `src/Trendo.Core/W6/GarmentEdit.cs`, `src/Trendo.Core/W6/GarmentProduction.cs`, `src/Trendo.App/GarmentPatternEditor.cs`, `src/Trendo.App/MainWindow.ProgModeGarment.cs`, `tests/Trendo.Core.Tests/GarmentEditTests.cs`, `tests/Trendo.App.Tests/GarmentEditUiTests.cs`, `tests/Trendo.App.Tests/UebersichtEinfachUiTests.cs`, neue Protokolle `reports/T-0745/*-T-0745-fix.log` (Prüfsummen in `SHA256SUMS.txt` ergänzt). Bestehende Belege unverändert (Grundschnitte laufen gegen den Uhrzeigersinn ohne doppelte Punkte, Nahtzugabe dort gleich – `dxf-vergleich-T-0745-fix.log`).
+
+Tests: Kern GarmentEditTests + GarmentPatternTests + GarmentProductionTests **41/41** (`core-tests-T-0745-fix.log`); App GarmentEdit_Ui, Garment_Ui, SPEC08_Ui, SchnittEditor_Ui, Marker_Ui, Sewing_Ui, UebersichtEinfach_Ui, DeadButtonTests, T0710_MenuBar_Ui, ProgramCrashUiTests, EveryButton_Alltag **119 Tests, 0 Fehler** (7 + 6 + 2 + 1 + 2 + 1 + 2 + 83 + 8 + 6 + 1) (`app-tests-T-0745-fix.log`). Kein Volltest, kein Blender-Lauf.
+
+Nicht geprüft: kein neues Bild der Oberfläche (der neue Hinweis erscheint nur mit gewähltem, problematischem Teil – das Render-Werkzeug kann keine Auswahl setzen); Tastatur nur headless.
+
 **Status:** umgesetzt und gezielt getestet; Volltest steht aus.

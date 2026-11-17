@@ -50,7 +50,7 @@ public partial class MainWindow
     {
         var st = _garmentEdit.TryGetValue(d.Id, out var s0) ? s0 : _garmentEdit[d.Id] = new GarmentEditState();
         var kind = g.Kind; var edits = GarmentEdits(d);
-        var edited = GarmentEdit.Edited(edits, kind);
+        var edited = GarmentEdit.Edited(edits, g); // nur wirksame Bearbeitungen (Gegenprüfung T-0745)
         var hint = new TextBlock { Name = "garment-edit-hint", Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap, Text = "Klicke ein Schnittteil an, um es zu bearbeiten." };
         var measures = new StackPanel { Name = "garment-measures", Spacing = 3 };
         var tools = new WrapPanel { Name = "garment-edit-tools" };
@@ -61,12 +61,26 @@ public partial class MainWindow
                 try { GarmentEdit.FromNodes(p, n); return n; } catch (ArgumentException) { }
             return GarmentEdit.ToNodes(p);
         }
-        void Commit(int i, List<PatNode>? nodes, string label) => ProgramRun(ModeKey, () =>
+        void Commit(int i, List<PatNode>? nodes, string label, string? group)
         {
-            if (nodes is not null) GarmentEdit.FromNodes(g.Parts[i], nodes); // ungültig → Meldung statt kaputter Daten
-            var all = GarmentEdit.With(GarmentEdits(d), kind, g.Parts[i].Name, nodes);
-            d.Set(GarmentEdit.Field, all.Count == 0 ? null : all, label);
-        });
+            // Gegenprüfung T-0745: Pfeil-Schritte am selben Punkt innerhalb einer Sekunde, ohne andere Änderung dazwischen, werden EIN Rückgängig-Schritt
+            var now = st.Clock(); var cur = d.Remember();
+            var join = group is not null && st.Group == group && now - st.GroupAt <= GarmentEditState.GroupWindow
+                && st.GroupAfter is { } after && after.Seq == cur.Seq && after.Undo == cur.Undo && after.Data == cur.Data;
+            var start = join ? st.GroupStart : cur;
+            ProgramRun(ModeKey, () =>
+            {
+                if (nodes is not null)
+                {
+                    nodes = GarmentEdit.Merge(nodes); // (fast) doppelte Punkte zusammenführen; Kante ohne Länge → Meldung
+                    GarmentEdit.FromNodes(g.Parts[i], nodes); // ungültig (z. B. Fläche 0) → Meldung statt kaputter Daten
+                }
+                var all = GarmentEdit.With(GarmentEdits(d), kind, g.Parts[i].Name, nodes);
+                d.Set(GarmentEdit.Field, all.Count == 0 ? null : all, label);
+                if (join) d.Squash(start, label);
+            });
+            st.Group = group; st.GroupStart = start; st.GroupAt = now; st.GroupAfter = group is null ? null : d.Remember();
+        }
         ed = new GarmentPatternEditor(g, st, NodesOf, Commit, t => { hint.Text = t; }, Text, Muted);
         GarmentEditor = ed;
 
@@ -99,7 +113,9 @@ public partial class MainWindow
             var p = g.Parts[i];
             measures.Children.Add(new TextBlock { Name = "garment-measure-part", Text = $"{p.Name}{(edited.Contains(p.Name) ? " (bearbeitet)" : "")}: Fläche {p.Area:0} cm² · Umfang {GarmentEdit.Cm(p.Edges.Sum(e => e.Length))} cm · {n.Count} Punkte", Foreground = Text, FontSize = 12, FontWeight = FontWeight.SemiBold });
             measures.Children.Add(new TextBlock { Name = "garment-measure-edges", Text = string.Join(" · ", p.Edges.Select(e => $"{GarmentEdit.EdgeLabel(e.Name)} {GarmentEdit.Cm(e.Length)} cm")), Foreground = Text, FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
+            // Gegenprüfung T-0745: Selbstüberschneidung und zu enge Stellen (Zugabe reicht an die Naht) klar melden
             if (GarmentEdit.SelfIntersects(p)) measures.Children.Add(new TextBlock { Name = "garment-measure-cross", Text = "Achtung: Der Umriss überschneidet sich. Fläche, Nahtzugabe und Zuschnitt stimmen so nicht – Punkt zurückziehen oder Strg+Z.", Foreground = Brush.Parse("#FACC15"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
+            else if (GarmentEdit.Problems(p) is { Count: > 0 } probs) measures.Children.Add(new TextBlock { Name = "garment-measure-gap", Text = "Achtung: " + string.Join(" ", probs), Foreground = Brush.Parse("#FACC15"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
             if (!advanced) return;
             // Profi: Nahtlängen gegeneinander prüfen (wie „Nähte abgehen“ in Schnitt-Programmen)
             var seams = GarmentEdit.SeamLengths(g).Where(s => s.Seam.PartA == p.Name || s.Seam.PartB == p.Name).ToList();
@@ -117,17 +133,25 @@ public partial class MainWindow
             {
                 var q = n[st.Node];
                 var bx = new TextBox { Name = "garment-node-x", Width = 80, Text = q.X.ToString("0.##", De) }; var by = new TextBox { Name = "garment-node-y", Width = 80, Text = q.Y.ToString("0.##", De) };
-                void Apply()
+                void Apply(string? field)
                 {
-                    if (double.TryParse(bx.Text, System.Globalization.NumberStyles.Float, De, out var x) && double.TryParse(by.Text, System.Globalization.NumberStyles.Float, De, out var y)) ed.MoveTo(x, y);
+                    if (double.TryParse(bx.Text, System.Globalization.NumberStyles.Float, De, out var x) && double.TryParse(by.Text, System.Globalization.NumberStyles.Float, De, out var y)) ed.MoveTo(x, y, field);
                     else hint.Text = "Bitte Zahlen in Zentimetern eingeben, z. B. 24,5.";
                 }
-                OnEnter(bx, Apply); OnEnter(by, Apply);
+                // Enter im Feld: nach dem Neuaufbau bleibt der Fokus in diesem Feld (Gegenprüfung T-0745), die Fläche holt ihn nicht zurück
+                foreach (var box in new[] { bx, by })
+                {
+                    var b = box;
+                    OnEnter(b, () => Apply(b.Name));
+                    b.GotFocus += (_, _) => st.WantFocus = false;
+                    if (st.FocusField == b.Name)
+                        b.AttachedToVisualTree += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(() => { if (st.FocusField != b.Name || TopLevel.GetTopLevel(b) is null) return; st.FocusField = null; b.Focus(); b.CaretIndex = b.Text?.Length ?? 0; });
+                }
                 measures.Children.Add(new WrapPanel { Children = {
                     MSp(new TextBlock { Text = $"Punkt {st.Node + 1} genau setzen (cm, Fadenlauf = 0):", Foreground = Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }),
                     MSp(new TextBlock { Text = "waagrecht", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center }), MSp(bx),
                     MSp(new TextBlock { Text = "senkrecht", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center }), MSp(by),
-                    MSp(Act("garment-node-set", "Übernehmen", Apply)) } });
+                    MSp(Act("garment-node-set", "Übernehmen", () => Apply(null))) } });
             }
         }
         ed.Changed += Refresh;
@@ -189,7 +213,7 @@ public partial class MainWindow
         var run = Act("garment-tryon", _garmentBusy ? "Rechnet …" : "In 3D anprobieren", () => _ = GarmentTryOn(d), true); run.IsEnabled = !_garmentBusy;
         var actions = new WrapPanel { Children = { MSp(run) } };
         if (BlenderPath is null && GarmentRunOverride is null) actions.Children.Add(new TextBlock { Text = "Dafür braucht Trendo Blender. Es lässt sich im Studio „3D-Modelle erstellen“ einrichten.", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center });
-        if (GarmentEdit.Edited(GarmentEdits(d), g.Kind).Count > 0) actions.Children.Add(new TextBlock { Name = "garment-tryon-edited", Text = "Die Anprobe näht die frei bearbeiteten Teile.", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center });
+        if (GarmentEdit.Edited(GarmentEdits(d), g).Count > 0) actions.Children.Add(new TextBlock { Name = "garment-tryon-edited", Text = "Die Anprobe näht die frei bearbeiteten Teile.", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center });
         sp.Children.Add(actions);
         if (GarmentMessage.Length > 0) sp.Children.Add(new TextBlock { Name = "garment-msg", Text = GarmentMessage, Foreground = Text, TextWrapping = TextWrapping.Wrap });
         if (GarmentImages.Count > 0)
@@ -297,7 +321,10 @@ public partial class MainWindow
             if (ext == ".pdf") note = $" ({GarmentProduction.PdfTiled(file, g, d.Text("name", "Entwurf"))} Seiten, mit 100 % drucken)";
             else if (ext == ".dxf") File.WriteAllText(file, GarmentProduction.Dxf(g));
             else if (ext == ".svg") File.WriteAllText(file, GarmentProduction.Svg(g, d.Text("name", "Entwurf")));
-            else File.WriteAllText(file, GarmentProduction.TechPack(d.Text("name", "Entwurf"), g, GarmentBody(d), Fabrics.Of(d.Text("gFabric")), GarmentColor(d), Strings(d, "sizes"), GarmentEdit.Edited(GarmentEdits(d), g.Kind)));
+            else File.WriteAllText(file, GarmentProduction.TechPack(d.Text("name", "Entwurf"), g, GarmentBody(d), Fabrics.Of(d.Text("gFabric")), GarmentColor(d), Strings(d, "sizes"), GarmentEdit.Edited(GarmentEdits(d), g)));
+            // Gegenprüfung T-0745: Teile, die sich so nicht sauber zuschneiden lassen, beim Export deutlich nennen
+            var warn = g.Parts.SelectMany(GarmentEdit.Problems).ToList();
+            if (warn.Count > 0) note += " · Achtung: " + string.Join(" ", warn);
             GarmentMessage = "Gespeichert: " + file + note;
             _core.Audit.Append(Principal.LocalOwner.Name, "mode.produktion", Path.GetFileName(file));
             NotifyFileResult(GarmentMessage);

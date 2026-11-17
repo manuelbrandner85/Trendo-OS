@@ -1,0 +1,8 @@
+T-0745-fix: Vergleich der Klick-bis-Datei-Ausgabe (GarmentEdit_Ui.Click_to_file mit TRENDO_T0745_OUT) nach der Gegenprüfung mit den Belegen vom 17.11.2026
+SHA-256 (Zeilenenden LF):
+schnitt-bearbeitet.dxf neu=dced49228eb7bcab5f0bd328d370d42fe18e84e5265299368c800cb4b8349006 beleg=dced49228eb7bcab5f0bd328d370d42fe18e84e5265299368c800cb4b8349006 GLEICH
+schnitt-bearbeitet.svg neu=43494fc2daa2943a0717822b5546947ed18a3512bd85d9f634bf3120db585b7d beleg=43494fc2daa2943a0717822b5546947ed18a3512bd85d9f634bf3120db585b7d GLEICH
+erwartet.json neu=2f4258eceb5e1993c441e3110c5847c091303c0dc1201f46d3522b978da56b19 beleg=2f4258eceb5e1993c441e3110c5847c091303c0dc1201f46d3522b978da56b19 GLEICH
+dokument-felder.json neu=e6fcca8bbfea8bc9edbd960ade92464668900e23aa0eafe3e9dcfae61a16b63c beleg=e6fcca8bbfea8bc9edbd960ade92464668900e23aa0eafe3e9dcfae61a16b63c GLEICH
+anprobe-auftrag.json: einziger Unterschied ist der Feldwert /out (Ausgabeordner des Testlaufs im Temp-Ordner); Geometrie gleich
+Ergebnis: bestehende Belege bleiben gültig, nicht neu erzeugt.

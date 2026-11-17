@@ -15,7 +15,19 @@ public sealed class GarmentEditState
     public int Node { get; set; } = -1;
     /// <summary>Gewähltes Kantenstück (vom Punkt <see cref="Seg"/> zum nächsten).</summary>
     public int Seg { get; set; } = -1;
+    /// <summary>Nach dem nächsten Neuaufbau die Fläche fokussieren (wird danach zurückgesetzt).</summary>
     public bool WantFocus { get; set; }
+    /// <summary>T-0745 Gegenprüfung: Name des Zahlenfelds, das nach dem Neuaufbau den Fokus behält (Enter im Feld).</summary>
+    public string? FocusField { get; set; }
+    /// <summary>T-0745 Gegenprüfung: Pfeil-Schritte am selben Punkt kurz hintereinander werden EIN Rückgängig-Schritt – Gruppe, Beginn, Zeit, Stand danach.</summary>
+    public string? Group { get; set; }
+    public Trendo.Core.Programs.ProgramDocument.Mark GroupStart { get; set; }
+    public Trendo.Core.Programs.ProgramDocument.Mark? GroupAfter { get; set; }
+    public DateTime GroupAt { get; set; }
+    /// <summary>Zeitgeber (für Tests ersetzbar).</summary>
+    public Func<DateTime> Clock { get; set; } = () => DateTime.UtcNow;
+    /// <summary>Höchster Abstand zweier Pfeil-Schritte, die zusammengefasst werden.</summary>
+    public static readonly TimeSpan GroupWindow = TimeSpan.FromSeconds(1);
     public void Clear() { Part = Node = Seg = -1; }
 }
 
@@ -31,8 +43,8 @@ public sealed class GarmentPatternEditor : Canvas
     readonly Garment _g;
     readonly GarmentEditState _st;
     readonly Func<int, PatPart, List<PatNode>> _nodesOf;
-    /// <summary>Teil, neue Punkte (null = auf die Vorlage zurücksetzen), Bezeichnung des Schritts.</summary>
-    readonly Action<int, List<PatNode>?, string> _commit;
+    /// <summary>Teil, neue Punkte (null = auf die Vorlage zurücksetzen), Bezeichnung des Schritts, Gruppe (gleiche Gruppe kurz hintereinander = ein Rückgängig-Schritt).</summary>
+    readonly Action<int, List<PatNode>?, string, string?> _commit;
     readonly Action<string> _hint;
     readonly IBrush _text, _muted;
     static readonly IBrush Gold = Brush.Parse("#C9A227"), GoldFill = Brush.Parse("#22C9A227"), GoldSel = Brush.Parse("#33C9A227"), Dark = Brush.Parse("#0B111C"), Handle = Brush.Parse("#E8D9A8");
@@ -49,7 +61,7 @@ public sealed class GarmentPatternEditor : Canvas
     public event Action? Changed;
     public Garment Garment => _g;
 
-    public GarmentPatternEditor(Garment g, GarmentEditState st, Func<int, PatPart, List<PatNode>> nodesOf, Action<int, List<PatNode>?, string> commit, Action<string> hint, IBrush text, IBrush muted)
+    public GarmentPatternEditor(Garment g, GarmentEditState st, Func<int, PatPart, List<PatNode>> nodesOf, Action<int, List<PatNode>?, string, string?> commit, Action<string> hint, IBrush text, IBrush muted)
     {
         _g = g; _st = st; _nodesOf = nodesOf; _commit = commit; _hint = hint; _text = text; _muted = muted;
         Name = "garment-pattern"; HorizontalAlignment = HorizontalAlignment.Left; Focusable = true; Background = Brushes.Transparent;
@@ -70,7 +82,8 @@ public sealed class GarmentPatternEditor : Canvas
         Redraw();
         ContextMenu = Menu(); // Rechtsklick-Menü gibt es immer (auch in „Einfach“, wo die Leiste fehlt)
         PointerPressed += OnPress; PointerMoved += OnMove; PointerReleased += OnRelease; KeyDown += OnKey;
-        if (_st.WantFocus) AttachedToVisualTree += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(() => Focus());
+        // Fokus nur einmal zurückholen (nach eigener Änderung) – sonst zöge jeder Neuaufbau ihn aus Textfeldern ab (Gegenprüfung T-0745)
+        if (_st.WantFocus) AttachedToVisualTree += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(() => { if (!_st.WantFocus) return; _st.WantFocus = false; Focus(); });
     }
 
     /// <summary>Punkte des Teils (bearbeitet oder aus der Vorlage zerlegt).</summary>
@@ -234,10 +247,10 @@ public sealed class GarmentPatternEditor : Canvas
         Commit(n, kind == DragKind.Node ? "Punkt verschoben" : "Kurve geformt");
     }
 
-    void Commit(List<PatNode> n, string label)
+    void Commit(List<PatNode> n, string label, string? group = null, bool focus = true)
     {
-        _nodes[_st.Part] = n; _st.WantFocus = true;
-        _commit(_st.Part, n, label);
+        _nodes[_st.Part] = n; _st.WantFocus = focus;
+        _commit(_st.Part, n, label, group);
     }
 
     // ───────────── Befehle (Menü, Kürzel, Leiste) ─────────────
@@ -245,7 +258,7 @@ public sealed class GarmentPatternEditor : Canvas
     public bool Act(string cmd)
     {
         var i = _st.Part;
-        if (cmd == "clear") { _st.Clear(); Redraw(); _hint("Klicke ein Schnittteil an, um es zu bearbeiten."); return true; }
+        if (cmd == "clear") { if (_st.Part < 0) return false; _st.Clear(); Redraw(); _hint("Klicke ein Schnittteil an, um es zu bearbeiten."); return true; }
         if (i < 0) { _hint("Erst ein Schnittteil anklicken."); return false; }
         var n = Nodes(i);
         switch (cmd)
@@ -275,7 +288,7 @@ public sealed class GarmentPatternEditor : Canvas
             }
             case "reset":
                 _st.Node = _st.Seg = -1; _nodes.Remove(i); _st.WantFocus = true;
-                _commit(i, null, "Teil zurückgesetzt"); return true;
+                _commit(i, null, "Teil zurückgesetzt", null); return true;
             case "next" or "prev":
                 _st.Node = _st.Node < 0 ? 0 : (_st.Node + (cmd == "next" ? 1 : n.Count - 1)) % n.Count; _st.Seg = -1; Redraw(); _hint(HintFor(i)); return true;
         }
@@ -287,14 +300,16 @@ public sealed class GarmentPatternEditor : Canvas
     {
         if (_st.Part < 0 || _st.Node < 0) return false;
         var n = Nodes(_st.Part); var p = n[_st.Node];
-        Commit(GarmentEdit.MoveNode(n, _st.Node, p.X + dx, p.Y + dy), "Punkt verschoben"); return true;
+        // Pfeil-Schritte am selben Punkt kurz hintereinander: ein Rückgängig-Schritt (Gegenprüfung T-0745)
+        Commit(GarmentEdit.MoveNode(n, _st.Node, p.X + dx, p.Y + dy), "Punkt verschoben", $"nudge:{_st.Part}:{_st.Node}"); return true;
     }
 
-    /// <summary>Gewählten Punkt genau an eine Lage (cm) setzen.</summary>
-    public bool MoveTo(double x, double y)
+    /// <summary>Gewählten Punkt genau an eine Lage (cm) setzen. <paramref name="field"/>: Zahlenfeld, das danach den Fokus behält.</summary>
+    public bool MoveTo(double x, double y, string? field = null)
     {
         if (_st.Part < 0 || _st.Node < 0) return false;
-        Commit(GarmentEdit.MoveNode(Nodes(_st.Part), _st.Node, x, y), "Punkt gesetzt"); return true;
+        _st.FocusField = field;
+        Commit(GarmentEdit.MoveNode(Nodes(_st.Part), _st.Node, x, y), "Punkt gesetzt", null, field is null); return true;
     }
 
     void Insert(int seg, double t)
@@ -356,6 +371,6 @@ public sealed class GarmentPatternEditor : Canvas
             Key.Escape => Act("clear"),
             _ => (bool?)null,
         };
-        if (done is not null) e.Handled = true;
+        if (done == true) e.Handled = true; // nur wirksame Tasten verbrauchen – sonst wandert Tab nie aus der Fläche (Gegenprüfung T-0745)
     }
 }

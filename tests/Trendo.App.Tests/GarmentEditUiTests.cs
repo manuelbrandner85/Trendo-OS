@@ -155,9 +155,119 @@ public class GarmentEdit_Ui
             Assert.Equal("Punkt verschoben", w.ProgramActive(Key)!.UndoLabel);
             Assert.Null(w.TryFind<TextBox>("garment-node-x")); Assert.Null(w.TryFind<TextBlock>("garment-measure-seams"));
             Assert.NotNull(w.TryFind<TextBlock>("garment-measure-edges"));
+            // Gegenprüfung T-0745 (6): in „Einfach“ den Rechtsklick-Eintrag wirklich auslösen – Rechtsklick auf die längste Kante, „Punkt hier einfügen“
+            var nn = Nodes(w);
+            static double Len(List<PatPt> p) => Enumerable.Range(1, p.Count - 1).Sum(k => Math.Sqrt(Math.Pow(p[k].X - p[k - 1].X, 2) + Math.Pow(p[k].Y - p[k - 1].Y, 2)));
+            var longest = Enumerable.Range(0, nn.Count).MaxBy(s => Len(GarmentEdit.SegmentPoints(nn, s)));
+            var sp = GarmentEdit.SegmentPoints(nn, longest); var midPt = sp[sp.Count / 2];
+            if (sp.Count == 2) midPt = new PatPt((sp[0].X + sp[1].X) / 2, (sp[0].Y + sp[1].Y) / 2);
+            var at = At(w, 0, midPt.X, midPt.Y);
+            w.MouseMove(at); w.MouseDown(at, MouseButton.Right); w.MouseUp(at, MouseButton.Right); Settle();
+            var menu = Ed(w).ContextMenu!; Assert.True(menu.IsOpen, "Rechtsklick-Menü ist nicht offen");
+            var insert = menu.Items.OfType<MenuItem>().Single(i => i.Name == "garment-edit-menu-insert"); Assert.True(insert.IsEnabled);
+            insert.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(MenuItem.ClickEvent)); Settle(); menu.Close(); Settle();
+            Assert.Equal("Punkt eingefügt", w.ProgramActive(Key)!.UndoLabel);
+            Assert.Equal(nn.Count + 1, Nodes(w).Count);
             w.ProgramSetLevel(UserLevel.Profi); w.Show(Key); Settle();
             Assert.NotNull(w.TryFind<TextBox>("garment-node-x")); Assert.NotNull(w.TryFind<TextBlock>("garment-measure-seams"));
             Assert.NotNull(w.TryFind<Button>("garment-edit-insert"));
+        }
+        finally { w.Close(); }
+    }
+
+    static Control? Focused(MainWindow w) => w.FocusManager?.GetFocusedElement() as Control;
+
+    [AvaloniaFact(DisplayName = "Gegenprüfung T-0745 (2): keine Tastatur-Falle – ohne Auswahl wandert Tab aus der Fläche; nach Enter im Zahlenfeld bleibt der Fokus im Feld")]
+    public void Keyboard_no_trap()
+    {
+        var (w, d) = Open();
+        try
+        {
+            Ed(w).BringIntoView(); Settle(); Ed(w).Focus(); Settle();
+            Assert.Same(Ed(w), Focused(w)); Assert.Equal(-1, Ed(w).State.Part);
+            Key1(w, Avalonia.Input.Key.Tab, PhysicalKey.Tab);
+            Assert.NotNull(Focused(w)); Assert.NotSame(Ed(w), Focused(w));
+            Ed(w).Focus(); Settle();
+            Key1(w, Avalonia.Input.Key.Escape, PhysicalKey.Escape); // Esc ohne Auswahl tut nichts und bleibt frei für die Hülle
+            Key1(w, Avalonia.Input.Key.Down, PhysicalKey.ArrowDown);
+            Assert.Null(d.Data[GarmentEdit.Field]);
+
+            var front0 = Ed(w).Garment.Parts[0];
+            Click(w, At(w, 0, 0, front0.Outline.Max(q => q.Y) / 2));
+            var sh = Nodes(w).FindIndex(q => q.Edge == "shR");
+            Click(w, At(w, 0, Nodes(w)[sh].X, Nodes(w)[sh].Y));
+            Assert.Equal(sh, Ed(w).State.Node);
+            var box = w.Find<TextBox>("garment-node-y"); box.BringIntoView(); box.Focus(); Settle();
+            var y = Nodes(w)[sh].Y + 1;
+            box.Text = y.ToString("0.##", System.Globalization.CultureInfo.GetCultureInfo("de-DE"));
+            Key1(w, Avalonia.Input.Key.Enter, PhysicalKey.Enter);
+            Assert.Equal("Punkt gesetzt", d.UndoLabel);
+            Assert.Equal(y, Nodes(w)[sh].Y, 2);
+            Assert.Equal("garment-node-y", Focused(w)?.Name); // das neu aufgebaute Feld hat den Fokus, nicht die Fläche
+            Assert.NotSame(box, Focused(w));
+            // noch ein Enter: wieder im Feld, die Fläche holt den Fokus nicht
+            Key1(w, Avalonia.Input.Key.Enter, PhysicalKey.Enter);
+            Assert.Equal("garment-node-y", Focused(w)?.Name);
+        }
+        finally { w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "Gegenprüfung T-0745 (7): Pfeil-Schritte am selben Punkt innerhalb 1 s sind EIN Rückgängig-Schritt; Pause oder andere Änderung trennt")]
+    public void Arrow_steps_grouped()
+    {
+        var (w, d) = Open();
+        try
+        {
+            var t = new DateTime(2026, 11, 18, 12, 0, 0, DateTimeKind.Utc);
+            var front0 = Ed(w).Garment.Parts[0];
+            Click(w, At(w, 0, 0, front0.Outline.Max(q => q.Y) / 2));
+            var hem = Nodes(w).FindIndex(q => q.Edge == "hem");
+            Click(w, At(w, 0, Nodes(w)[hem].X, Nodes(w)[hem].Y));
+            Assert.Equal(hem, Ed(w).State.Node);
+            Ed(w).State.Clock = () => t;
+            var y0 = Nodes(w)[hem].Y; var h0 = d.History.Count;
+            void Down() { Ed(w).Focus(); Key1(w, Avalonia.Input.Key.Down, PhysicalKey.ArrowDown, RawInputModifiers.Shift); }
+            void Undo() { Ed(w).Focus(); Key1(w, Avalonia.Input.Key.Z, PhysicalKey.Z, RawInputModifiers.Control); }
+            // drei Schritte kurz hintereinander → ein Schritt
+            for (var k = 0; k < 3; k++) { Down(); t += TimeSpan.FromMilliseconds(300); }
+            Assert.Equal(y0 - 3, Nodes(w)[hem].Y, 3);
+            Assert.Equal(h0 + 1, d.History.Count);
+            Assert.Equal("Punkt verschoben", d.UndoLabel);
+            Undo();
+            Assert.Equal(y0, Nodes(w)[hem].Y, 3); Assert.Null(d.Data[GarmentEdit.Field]);
+            // mit Pause über 1 s: zwei Schritte
+            Down(); t += TimeSpan.FromSeconds(2); Down();
+            Assert.Equal(h0 + 2, d.History.Count);
+            Undo(); Assert.Equal(y0 - 1, Nodes(w)[hem].Y, 3);
+            Undo(); Assert.Equal(y0, Nodes(w)[hem].Y, 3);
+            // andere Änderung dazwischen (K: Kante als Kurve) trennt, auch ohne Pause
+            Down(); Ed(w).Focus(); Key1(w, Avalonia.Input.Key.K, PhysicalKey.K); Down();
+            Assert.Equal(["Punkt verschoben", "Kante als Kurve", "Punkt verschoben"], d.History.Take(3));
+        }
+        finally { w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "Gegenprüfung T-0745 (1, 4): Ecke genau auf die Nachbarecke gesetzt wird mit Erklärung abgelehnt; Export nennt sich überschneidende Teile")]
+    public void Reject_and_export_hint()
+    {
+        var (w, d) = Open();
+        try
+        {
+            var front0 = Ed(w).Garment.Parts[0];
+            Click(w, At(w, 0, 0, front0.Outline.Max(q => q.Y) / 2));
+            var n = Nodes(w); var hem = n.FindIndex(q => q.Edge == "hem"); var side = n.FindIndex(q => q.Edge == "sideR");
+            Click(w, At(w, 0, n[hem].X, n[hem].Y));
+            Assert.Equal(hem, Ed(w).State.Node);
+            var de = System.Globalization.CultureInfo.GetCultureInfo("de-DE");
+            w.Find<TextBox>("garment-node-x").Text = n[side].X.ToString("0.####", de); w.Find<TextBox>("garment-node-y").Text = n[side].Y.ToString("0.####", de);
+            w.Find<Button>("garment-node-set").Press(); Settle();
+            Assert.Null(d.Data[GarmentEdit.Field]); // nichts übernommen
+            Assert.Contains(Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(w.ActivePageRoot!).OfType<TextBlock>(), t => (t.Text ?? "").Contains("keine Länge mehr", StringComparison.Ordinal));
+            // sich überschneidender Umriss: Hinweis auf der Fläche und beim Export
+            var crossed = GarmentEdit.MoveNode(n, hem, front0.Edge("hem").Length / 2 + 10, 30);
+            d.Set(GarmentEdit.Field, GarmentEdit.With(null, "tshirt", front0.Name, crossed), "Probe"); w.Show(Key); Settle();
+            Assert.NotNull(w.GarmentExport(d, ".dxf"));
+            Assert.Contains("überschneidet sich", w.GarmentMessage);
         }
         finally { w.Close(); }
     }
