@@ -1,0 +1,17 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0731 (UI): „Bereich wählen“ – Maus zieht einen Bereich auf, die PNG enthält genau diesen Ausschnitt; Esc bricht ab [STARTING]
+    T-0731 (UI): „Bereich wählen“ – Maus zieht einen Bereich auf, die PNG enthält genau diesen Ausschnitt; Esc bricht ab [FINISHED] Time: 3,6132586s
+    T-0731: MP3 dekodiert Trendo selbst (NLayer) – Rate, Kanäle, Länge, Springen [STARTING]
+    T-0731: MP3 dekodiert Trendo selbst (NLayer) – Rate, Kanäle, Länge, Springen [FINISHED] Time: 0,0381708s
+    T-0731: eingebaute Tonausgabe (echt, Windows-Tonausgabe) – MP3 spielt in Echtzeit, Gerät meldet die Werte, Pause hält, Titelende genau einmal [STARTING]
+    T-0731: eingebaute Tonausgabe (echt, Windows-Tonausgabe) – MP3 spielt in Echtzeit, Gerät meldet die Werte, Pause hält, Titelende genau einmal [FINISHED] Time: 3,1403504s
+    T-0731 (UI): Musik ohne mpv – MP3 spielt eingebaut bis zum Titelende; FLAC ohne Player meldet BLOCKIERT mit „Player einrichten“ [STARTING]
+    T-0731 (UI): Musik ohne mpv – MP3 spielt eingebaut bis zum Titelende; FLAC ohne Player meldet BLOCKIERT mit „Player einrichten“ [FINISHED] Time: 4,0565282s
+    T-0731: Bildschirmfoto ohne ffmpeg (echt, GDI) – nimmt ein fremdes Fenster eines anderen Prozesses auf, PNG enthält dessen Pixel [STARTING]
+    T-0731: Bildschirmfoto ohne ffmpeg (echt, GDI) – nimmt ein fremdes Fenster eines anderen Prozesses auf, PNG enthält dessen Pixel [FINISHED] Time: 1,3396644s
+  Finished:    Trendo.App.Tests (ID = '24fef6c39d62c4e7ddc9c91ee80a8baa9c252fa574a3f77c3f0e33f4f4e68ab0')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 5, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 12,576s

@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input.Platform;
 using Avalonia.Layout;
@@ -182,15 +183,22 @@ public partial class MainWindow
 
         var shotAreas = Field("shot-areas", "Schwärzen: x,y,Breite,Höhe; weitere mit ; trennen", 360);
         var shotFile = Field("shot-file", "oder vorhandenes Bild zum Schwärzen", 340, _lastShot);
-        sp.Children.Add(Card(Section("Bildschirmfoto und Schwärzen", "Nimmt das Trendo-Fenster oder den ganzen Bildschirm auf (Bildschirm braucht ffmpeg). Schwärzen übermalt die Stellen dauerhaft in einer Kopie.",
-            Line(Act("shot-window", "Trendo-Fenster aufnehmen", () => Try(V, () => { var p = ShotPath(); SaveScreenshot(p); _lastShot = p; Say("Gespeichert: " + p, V); })),
-                Act("shot-screen", "Ganzen Bildschirm aufnehmen", () => Try(V, () =>
+        sp.Children.Add(Card(Section("Bildschirmfoto und Schwärzen", ScreenGrab.Available
+                ? "Bereich mit der Maus aufziehen, ganzen Bildschirm oder das Trendo-Fenster aufnehmen – ohne Zusatzprogramm. Schwärzen übermalt die Stellen dauerhaft in einer Kopie."
+                : "Nimmt das Trendo-Fenster oder den ganzen Bildschirm auf (Bildschirm braucht unter Linux ffmpeg). Schwärzen übermalt die Stellen dauerhaft in einer Kopie.",
+            Line(Act("shot-area", "Bereich wählen", () => { _ = ShotAsync(V, pick: true); }),
+                Act("shot-window", "Trendo-Fenster aufnehmen", () => Try(V, () => { var p = ShotPath(); SaveScreenshot(p); _lastShot = p; Say("Gespeichert: " + p, V); })),
+                Act("shot-screen", "Ganzen Bildschirm aufnehmen", () =>
                 {
-                    if (ffmpeg is null) throw new InvalidOperationException("Dafür fehlt ffmpeg. Unter „Zusatzprogramme“ kostenlos installieren.");
-                    var p = ShotPath(); var a = FfmpegJobs.RecordArgs(OperatingSystem.IsWindows(), p, 1); a.RemoveRange(a.IndexOf("-t"), a.Count - a.IndexOf("-t")); a.AddRange(["-frames:v", "1", p]);
-                    var r = Cli.Run(ffmpeg, a, timeoutMs: 20000); if (!r.Ok || !File.Exists(p)) throw new InvalidOperationException("Aufnahme hat nicht geklappt.");
-                    _lastShot = p; Say("Gespeichert: " + p, V);
-                }))),
+                    if (ScreenGrab.Available || ScreenGrabOverride is not null) { _ = ShotAsync(V, pick: false); return; } // T-0731: Windows ohne ffmpeg
+                    Try(V, () =>
+                    {
+                        if (ffmpeg is null) throw new InvalidOperationException("BLOCKIERT: Dafür fehlt ffmpeg. Unter „Zusatzprogramme“ kostenlos installieren.");
+                        var p = ShotPath(); var a = FfmpegJobs.RecordArgs(OperatingSystem.IsWindows(), p, 1); a.RemoveRange(a.IndexOf("-t"), a.Count - a.IndexOf("-t")); a.AddRange(["-frames:v", "1", p]);
+                        var r = Cli.Run(ffmpeg, a, timeoutMs: 20000); if (!r.Ok || !File.Exists(p)) throw new InvalidOperationException("Aufnahme hat nicht geklappt.");
+                        _lastShot = p; Say("Gespeichert: " + p, V);
+                    });
+                })),
             Line(shotFile, shotAreas, Act("shot-redact", "Schwärzen", () => Try(V, () =>
             {
                 var areas = (shotAreas.Text ?? "").Split(';', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Split(',').Select(x => int.Parse(x.Trim())).ToArray()).Where(a => a.Length == 4).Select(a => (a[0], a[1], a[2], a[3])).ToList();
@@ -218,6 +226,45 @@ public partial class MainWindow
                 Say(ok ? $"Fertig: {msg} (Prüfsumme {sha![..12]}…)" : msg, V);
             }))))));
         return AlltagPage("Bilder & Medien", sp);
+    }
+
+    /// <summary>Für Tests: statt des echten Desktops dieses Bild „aufnehmen“ (die Auswahl mit der Maus bleibt echt).</summary>
+    public Func<ScreenGrab.Shot>? ScreenGrabOverride { get; set; }
+    /// <summary>Wartezeit, bis Trendo sich vor der Aufnahme weggeklappt hat (Tests: 0).</summary>
+    public int ShotHideDelayMs { get; set; } = 450;
+    /// <summary>Offene Bereichsauswahl (für Tests).</summary>
+    public ScreenAreaPicker? ScreenPickerOpen { get; private set; }
+    /// <summary>Zuletzt gespeichertes Bildschirmfoto.</summary>
+    public string? LastScreenshot => _lastShot;
+
+    /// <summary>T-0731: Bildschirmfoto ohne ffmpeg – Trendo klappt sich weg, nimmt den Desktop auf (mit fremden Fenstern),
+    /// lässt bei <paramref name="pick"/> einen Bereich mit der Maus aufziehen und speichert die PNG in „bildschirmfotos“.</summary>
+    public async Task<string?> ShotAsync(string view, bool pick)
+    {
+        var prev = WindowState; ScreenGrab.Shot shot;
+        try
+        {
+            if (ShotHideDelayMs > 0) { WindowState = WindowState.Minimized; await Task.Delay(ShotHideDelayMs); }
+            shot = (ScreenGrabOverride ?? ScreenGrab.Desktop)();
+        }
+        catch (Exception x) when (x is InvalidOperationException or ArgumentException)
+        { WindowState = prev; Say("BLOCKIERT: " + x.Message, view); return null; }
+        PixelRect? area = null;
+        if (pick)
+        {
+            var picker = new ScreenAreaPicker(ScreenGrab.ToBitmap(shot), new PixelSize(shot.Width, shot.Height), new PixelPoint(shot.Left, shot.Top));
+            ScreenPickerOpen = picker; picker.Show(); picker.Activate();
+            area = await picker.Result; ScreenPickerOpen = null;
+            if (area is null) { WindowState = prev; Activate(); Say("Abgebrochen – kein Bildschirmfoto gespeichert.", view); return null; }
+        }
+        WindowState = prev; Activate();
+        try
+        {
+            var p = ScreenGrab.SavePng(shot, ShotPath(), area); _lastShot = p;
+            _core.Audit.Append("app", "app.screenshot", $"{Path.GetFileName(p)} ({(area is { } r ? $"{r.Width}×{r.Height}" : $"{shot.Width}×{shot.Height}")})");
+            Say("Gespeichert: " + p, view); return p;
+        }
+        catch (Exception x) when (x is IOException or UnauthorizedAccessException or ArgumentException) { Say("Speichern ging nicht: " + x.Message, view); return null; }
     }
 
     private string ShotPath() => Path.Combine(WorkFolder("bildschirmfotos"), $"bildschirmfoto-{DateTime.Now:yyyyMMdd-HHmmssfff}.png");

@@ -12,7 +12,7 @@ using Trendo.Core.Media;
 namespace Trendo.App;
 
 /// <summary>Medien › Musik & Videos als Player (Masterprompt 131): Bibliothek nach Alben mit Cover, Titel, Künstler, Wiedergabelisten, Videos;
-/// Player-Leiste mit Fortschritt zum Springen, Zufall, Wiederholen, Lautstärke und Warteschlange. Ton über mpv im Hintergrund.</summary>
+/// Player-Leiste mit Fortschritt zum Springen, Zufall, Wiederholen, Lautstärke und Warteschlange. Ton: MP3/WAV spielt Trendo selbst (T-0731, <see cref="AutoAudio"/>), andere Formate über mpv.</summary>
 public partial class MainWindow
 {
     public List<string>? MusicFoldersOverride { get; set; }
@@ -46,8 +46,7 @@ public partial class MainWindow
     {
         if (_audio is not null) return _audio;
         if (AudioOverride is { } o) _audio = o();
-        else if (MpvExe is { } mpv) _audio = new MpvAudio(mpv);
-        else return null;
+        else _audio = new AutoAudio(() => MpvExe); // T-0731: ohne Zusatzprogramm für MP3/WAV, sonst mpv oder ehrliche Sperre
         _audio.Progress += (pos, dur) => _ui.Post(() => { _mPos = pos; _mDur = dur; MusicTick(); });
         _audio.Ended += () => _ui.Post(MusicEnded);
         _audio.SetVolume(_mVol);
@@ -64,10 +63,15 @@ public partial class MainWindow
     {
         if (_queue.Current is not { } cur) { _audio?.Stop(); MusicShow(); return; }
         if (Audio() is not { } a) { Say("Zum Abspielen braucht Trendo den freien Player mpv – unten „Player einrichten“ antippen.", "medien"); Show("medien"); return; }
-        a.Load(cur); _mPaused = false; _mPos = 0; _mDur = double.NaN;
+        try { a.Load(cur); _mBlocked = null; }
+        catch (AudioBlockedException x) { _mBlocked = x.Message; _mPaused = true; _mPos = 0; _mDur = double.NaN; Say("BLOCKIERT: " + x.Message, "medien"); MusicShow(); return; } // T-0731: ehrlich statt still
+        _mPaused = false; _mPos = 0; _mDur = double.NaN;
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.play", Path.GetFileName(cur));
         MusicShow();
     }
+    /// <summary>Grund, warum der letzte Titel nicht spielen konnte (T-0731) – null, wenn alles läuft.</summary>
+    public string? MusicBlocked => _mBlocked;
+    string? _mBlocked;
     /// <summary>Titel zu Ende (vom Player gemeldet) – öffentlich für Tests.</summary>
     public void MusicEnded() { if (_queue.Next(auto: true) is null) { _mPaused = true; _audio?.Stop(); MusicShow(); } else MusicStart(); }
     public void MusicNext() { if (_queue.Next() is not null) MusicStart(); }
@@ -283,7 +287,7 @@ public partial class MainWindow
     Control MusicPlayerBar()
     {
         var cur = _queue.Current is { } p ? TrackOf(p) ?? MusicLibrary.Read(p) : null;
-        var bar = new Grid { Name = "music-player", ColumnDefinitions = new ColumnDefinitions("300,*,300") };
+        var bar = new Grid { Name = "music-player", ColumnDefinitions = new ColumnDefinitions("300,*,Auto") }; // T-0731: rechts so breit wie nötig (Einrichten-Knopf passte nicht)
         // links: Titel
         var info = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, VerticalAlignment = VerticalAlignment.Center };
         if (cur is not null) info.Children.Add(CoverTile(cur.Path, cur.Album, 56));
@@ -306,14 +310,17 @@ public partial class MainWindow
         seek.AddHandler(PointerPressedEvent, (_, _) => _mSeeking = true, Avalonia.Interactivity.RoutingStrategies.Tunnel);
         seek.AddHandler(PointerReleasedEvent, (_, _) => { _mSeeking = false; _mPos = seek.Value; _audio?.Seek(seek.Value); }, Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
         var progress = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = { _mTimeL, Pos(seek, 1), Pos(_mTimeR, 2) } };
-        bar.Children.Add(Pos(new StackPanel { Spacing = 2, Children = { ctl, progress } }, 1));
+        var center = new StackPanel { Spacing = 2, Children = { ctl, progress } };
+        if (_mBlocked is not null) center.Children.Add(new TextBlock { Name = "music-blocked", Text = "BLOCKIERT: " + _mBlocked, Foreground = Brush.Parse("#E8B04B"), FontSize = 11, TextWrapping = TextWrapping.Wrap, TextAlignment = TextAlignment.Center }); // T-0731
+        bar.Children.Add(Pos(center, 1));
         // rechts: Lautstärke, Warteschlange, Player einrichten
         var vol = new Slider { Name = "music-volume", Minimum = 0, Maximum = 100, Value = _mVol, Width = 120, VerticalAlignment = VerticalAlignment.Center };
         vol.PropertyChanged += (_, e) => { if (e.Property == RangeBase.ValueProperty) { _mVol = (int)vol.Value; _audio?.SetVolume(_mVol); } };
         var right = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center, Children = {
             new TextBlock { Text = "🔊", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center }, vol,
             Act("music-queue", (_mQueueOpen ? "• " : "") + $"Warteschlange ({_queue.Items.Count})", () => { _mQueueOpen = !_mQueueOpen; Show("medien"); }, _mQueueOpen) } };
-        if (MpvExe is null && AudioOverride is null) right.Children.Insert(0, Act("music-setup", "Player einrichten", () => _ = MusicSetupPlayer(), true));
+        // T-0731: MP3/WAV laufen eingebaut – „Player einrichten“ (mpv) braucht es nur für weitere Formate (golden bleibt allein „Abspielen“)
+        if (MpvExe is null && AudioOverride is null) right.Children.Insert(0, Act("music-setup", _mBlocked is null ? "Mehr Formate (Player)" : "Player einrichten", () => _ = MusicSetupPlayer()));
         bar.Children.Add(Pos(right, 2));
         return new Border { Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#F0363636"), 0), new GradientStop(Color.Parse("#F01C1C1C"), 1) } },
             BorderBrush = Brush.Parse("#44D4A84B"), BorderThickness = new Thickness(0, 1, 0, 0), CornerRadius = new CornerRadius(14), Padding = new Thickness(14, 10), BoxShadow = BoxShadows.Parse("0 -6 20 -8 #AA000000"), Child = bar };
