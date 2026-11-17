@@ -1,0 +1,26 @@
+[    0,0 s] Echtes Ollama 127.0.0.1:11434, Modell qwen3:14b. Fenster headless, Bedienung über echte Klicks.
+[    1,9 s] Klick: team-text
+[    2,0 s] Fortschritt: Planer: arbeitet – beginnt … | Texter: wartet | Lektor: wartet
+[   12,9 s] Fortschritt: Planer: arbeitet – Fehler: Die Datei „notiz.md“ gibt es im Projekt nicht. | Texter: wartet | Lektor: wartet
+[   21,9 s] Fortschritt: Planer: arbeitet – Fehler: Die Datei „einladung.md“ gibt es im Projekt nicht. | Texter: wartet | Lektor: wartet
+[   47,8 s] Fortschritt: Planer: fertig – Liebe Nachbarn,  am Samstag um 15 Uhr findet im Innenhof unser Nachbarschafts-Sommerfest s … | Texter: arbeitet – beginnt … | Lektor: wartet
+[   47,8 s] Meldung: 
+[   47,8 s] Bildschirm vor Stopp: ✓ Planer – fertig · 4 Schritte | ▶ Texter – arbeitet | ○ Lektor – wartet
+[   48,4 s] Klick: agent-stop
+[   48,4 s] Fortschritt: Planer: fertig – Liebe Nachbarn,  am Samstag um 15 Uhr findet im Innenhof unser Nachbarschafts-Sommerfest s … | Texter: gestoppt – Gestoppt: Der Agent wurde angehalten. Was bis hier geschrieben ist, bleibt. | Lektor: wartet
+[   48,4 s] Meldung: Team gestoppt nach 2 Rollen-Läufen. Was erarbeitet ist, bleibt im Projekt – „Zwischenstand speichern“ oder „Team-Lauf fortsetzen“.
+[   48,4 s] Bildschirm nach Stopp: ✓ Planer – fertig · 4 Schritte | ■ Texter – gestoppt · 1 Schritte | ○ Lektor – wartet
+[   48,5 s] Klick: team-snapshot
+[   48,5 s] Meldung: Zwischenstand gespeichert: team/4c2c03/zwischenstand.md im Projekt „Sommerfest“.
+[   48,9 s] Klick: team-resume
+[   49,0 s] Fortschritt: Planer: fertig – Liebe Nachbarn,  am Samstag um 15 Uhr findet im Innenhof unser Nachbarschafts-Sommerfest s … | Texter: arbeitet – beginnt … | Lektor: wartet
+[   63,2 s] Fortschritt: Planer: fertig – Liebe Nachbarn,  am Samstag um 15 Uhr findet im Innenhof unser Nachbarschafts-Sommerfest s … | Texter: arbeitet – Zwischenergebnis: # Planer  Liebe Nachbarn,  am Samstag um 15 Uhr findet im Innenhof unser … | Lektor: wartet
+[   82,2 s] Fortschritt: Planer: fertig – Liebe Nachbarn,  am Samstag um 15 Uhr findet im Innenhof unser Nachbarschafts-Sommerfest s … | Texter: arbeitet – Zwischenergebnis: Angelegt: einladung.md (306 Zeichen). | Lektor: wartet
+[   86,1 s] Fortschritt: Planer: fertig – Liebe Nachbarn,  am Samstag um 15 Uhr findet im Innenhof unser Nachbarschafts-Sommerfest s … | Texter: fertig – Einladung zum Nachbarschafts-Sommerfest in einladung.md angelegt (306 Zeichen). | Lektor: arbeitet – beginnt …
+[   96,2 s] Fortschritt: Planer: fertig – Liebe Nachbarn,  am Samstag um 15 Uhr findet im Innenhof unser Nachbarschafts-Sommerfest s … | Texter: fertig – Einladung zum Nachbarschafts-Sommerfest in einladung.md angelegt (306 Zeichen). | Lektor: arbeitet – Zwischenergebnis: # Planer  Liebe Nachbarn,  am Samstag um 15 Uhr findet im Innenhof unser …
+[  103,3 s] Fortschritt: Planer: fertig – Liebe Nachbarn,  am Samstag um 15 Uhr findet im Innenhof unser Nachbarschafts-Sommerfest s … | Texter: fertig – Einladung zum Nachbarschafts-Sommerfest in einladung.md angelegt (306 Zeichen). | Lektor: arbeitet – Zwischenergebnis: # Texter  Einladung zum Nachbarschafts-Sommerfest in einladung.md angele …
+[  108,0 s] Fortschritt: Planer: fertig – Liebe Nachbarn,  am Samstag um 15 Uhr findet im Innenhof unser Nachbarschafts-Sommerfest s … | Texter: fertig – Einladung zum Nachbarschafts-Sommerfest in einladung.md angelegt (306 Zeichen). | Lektor: arbeitet – Zwischenergebnis: Liebe Nachbarn, am Samstag um 15 Uhr findet im Innenhof unser Nachbarsch …
+[  118,6 s] Fortschritt: Planer: fertig – Liebe Nachbarn,  am Samstag um 15 Uhr findet im Innenhof unser Nachbarschafts-Sommerfest s … | Texter: fertig – Einladung zum Nachbarschafts-Sommerfest in einladung.md angelegt (306 Zeichen). | Lektor: fertig – Die Einladung ist sprachlich korrekt, mit klarem Aufbau und freundlichem Ton. Keine Änderu …
+[  118,6 s] Meldung: Team fertig: 4 Rollen-Läufe, Übergabe-Dateien unter „team/4c2c03/“ im Projekt „Sommerfest“.
+[  118,6 s] Bildschirm am Ende: ✓ Planer – fertig · 4 Schritte | ✓ Texter – fertig · 3 Schritte · Runde 2 | ✓ Lektor – fertig · 4 Schritte
+[  118,6 s] Endstand: Fertig · Rückgaben 0 · Rollen: Planer fertig (Runden 1, Schritte 4), Texter fertig (Runden 2, Schritte 3), Lektor fertig (Runden 1, Schritte 4)

@@ -1,0 +1,16 @@
+== AgentTeamT0741Tests
+Bestanden!   : Fehler:     0, erfolgreich:     4, übersprungen:     0, gesamt:     4, Dauer: 2 s - Trendo.Core.Tests.dll (net10.0)
+== AgentRunTests
+Bestanden!   : Fehler:     0, erfolgreich:    13, übersprungen:     0, gesamt:    13, Dauer: 5 s - Trendo.Core.Tests.dll (net10.0)
+== AgentResumeTests
+Bestanden!   : Fehler:     0, erfolgreich:     3, übersprungen:     0, gesamt:     3, Dauer: 571 ms - Trendo.Core.Tests.dll (net10.0)
+== CORE03_Agents
+Bestanden!   : Fehler:     0, erfolgreich:     3, übersprungen:     0, gesamt:     3, Dauer: 485 ms - Trendo.Core.Tests.dll (net10.0)
+== StudioTeamsTests
+Bestanden!   : Fehler:     0, erfolgreich:     3, übersprungen:     0, gesamt:     3, Dauer: 161 ms - Trendo.Core.Tests.dll (net10.0)
+== AgentAnswerTests
+Bestanden!   : Fehler:     0, erfolgreich:    10, übersprungen:     0, gesamt:    10, Dauer: 412 ms - Trendo.Core.Tests.dll (net10.0)
+== GameStudioUgsTests
+Bestanden!   : Fehler:     0, erfolgreich:     6, übersprungen:     0, gesamt:     6, Dauer: 132 ms - Trendo.Core.Tests.dll (net10.0)
+== T0005_NotStopp
+Bestanden!   : Fehler:     0, erfolgreich:     2, übersprungen:     0, gesamt:     2, Dauer: 289 ms - Trendo.Core.Tests.dll (net10.0)

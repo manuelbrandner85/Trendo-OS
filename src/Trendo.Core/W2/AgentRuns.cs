@@ -424,6 +424,7 @@ public sealed partial class AgentCenter
             return (false, $"Das Werkzeug „{name}“ ist nicht verfügbar.", "fehler");
         }
         catch (ProjectIsolationException) { return (false, "Abgewiesen: Zugriff außerhalb des Projekts.", "blockiert"); }
+        catch (ApprovalException ex) { return (false, ex.Message, "blockiert"); } // T-0741: Werkzeug mit Freigabe (Web im KI-Team) – ohne Zustimmung blockiert
         catch (OperationCanceledException) { throw; }
         catch (Exception ex) when (ex is not (OperationCanceledException or OutOfMemoryException))
         { return (false, "Hat nicht geklappt: " + FriendlyError.Say(ex), "fehler"); }
@@ -464,83 +465,5 @@ public sealed partial class AgentCenter
         return (r.State == AgentRunState.Fertig, $"Agent „{def.Name}“: {StateText(r.State)} nach {r.Steps} Schritten. Ergebnis: {r.ResultFile ?? "-"}");
     }
 
-    // ───────────── Team mit Datei-Übergabe ─────────────
-    /// <summary>Prüfer-Rollen (können zurückgeben, laufen untereinander parallel).</summary>
-    public static bool IsReviewer(string roleId) => roleId is "pruefer" or "sicherheit" || roleId.EndsWith(".pruefer", StringComparison.Ordinal);
-
-    /// <summary>Stufen eines Teams: aufeinanderfolgende Prüfer bilden eine Stufe und arbeiten parallel (unabhängig voneinander); alle anderen nacheinander.</summary>
-    public static IReadOnlyList<IReadOnlyList<string>> Stages(IReadOnlyList<string> roles)
-    {
-        var stages = new List<List<string>>();
-        foreach (var r in roles)
-            if (IsReviewer(r) && stages.Count > 0 && stages[^1].All(IsReviewer)) stages[^1].Add(r); else stages.Add([r]);
-        return stages;
-    }
-
-    /// <summary>Team-Lauf mit echten Dateien: Jede Rolle arbeitet als Agent im Projekt (lesen, schreiben wenn erlaubt) und gibt ihr Ergebnis als Datei
-    /// unter „team/&lt;lauf&gt;/“ weiter. Prüfer antworten mit „OK …“ oder „ZURÜCK: …“ – dann arbeitet die letzte bearbeitende Stufe mit dem Prüfbericht nach
-    /// (höchstens <see cref="MaxTeamReturns"/>-mal). Stopp über <paramref name="ct"/>.</summary>
-    public async Task<AgentTeamRun> RunTeamFilesAsync(string teamId, string goal, IntelligenceCore ki, string projectId, AgentServices? svc = null, CancellationToken ct = default, string? model = null, int maxStepsPerRole = 8)
-    {
-        var team = Team(teamId) ?? throw new InvalidOperationException("Dieses Team gibt es nicht: " + teamId);
-        if (string.IsNullOrWhiteSpace(goal)) throw new ArgumentException("Ziel fehlt");
-        if (_projects.List().All(p => p.Id != projectId)) throw new ProjectIsolationException("Projekt unbekannt");
-        var run = Guid.NewGuid().ToString("N")[..6]; var dir = $"team/{run}";
-        var stages = Stages(team.Roles); var tasks = new List<AgentTask>(); var handoffs = new List<string>(); var returns = 0; var n = 0;
-        var state = AgentRunState.Fertig; string? review = null;
-        _audit.Append(Principal.LocalOwner.Name, "agent.team.dateien.start", $"{teamId}-{run} stufen={stages.Count}");
-        for (var si = 0; si < stages.Count; si++)
-        {
-            if (ct.IsCancellationRequested || _gate.Halted) { state = AgentRunState.Gestoppt; break; }
-            var stage = stages[si]; var before = handoffs.ToList(); var reviewNow = review; review = null;
-            var jobs = stage.Select(roleId =>
-            {
-                var num = Interlocked.Increment(ref n);
-                return RunTeamRoleAsync(roleId, num, goal, before, reviewNow, dir, projectId, teamId, run, ki, svc, ct, model, maxStepsPerRole);
-            }).ToList();
-            var results = await Task.WhenAll(jobs); // Prüfer einer Stufe parallel, sonst genau eine Rolle
-            foreach (var (task, file, runState) in results) { tasks.Add(task); handoffs.Add(file); }
-            if (results.Any(r => r.State == AgentRunState.Gestoppt)) { state = AgentRunState.Gestoppt; break; }
-            if (results.Any(r => r.State is AgentRunState.Fehler or AgentRunState.Grenze)) { state = AgentRunState.Fehler; break; }
-            if (stage.All(IsReviewer))
-            {
-                var back = results.Where(r => r.Task.Result.TrimStart().StartsWith("ZURÜCK", StringComparison.OrdinalIgnoreCase)).ToList();
-                if (back.Count > 0 && returns < MaxTeamReturns)
-                {
-                    returns++;
-                    review = string.Join(", ", back.Select(b => b.File));
-                    var target = Enumerable.Range(0, si).Reverse().FirstOrDefault(i => !stages[i].All(IsReviewer), -1);
-                    _audit.Append(Principal.LocalOwner.Name, "agent.team.zurueck", $"{teamId}-{run} runde={returns} an={(target < 0 ? "-" : string.Join("+", stages[target]))}");
-                    if (target >= 0) { si = target - 1; continue; }
-                }
-                else if (back.Count > 0) { state = AgentRunState.Grenze; _audit.Append(Principal.LocalOwner.Name, "agent.team.zurueck.grenze", $"{teamId}-{run}"); break; }
-            }
-        }
-        _audit.Append(Principal.LocalOwner.Name, "agent.team.dateien.ende", $"{teamId}-{run} zustand={state} rollen={tasks.Count} zurueck={returns}");
-        return new($"{teamId}-{run}", state, tasks, handoffs, returns, stages);
-    }
-
-    async Task<(AgentTask Task, string File, AgentRunState State)> RunTeamRoleAsync(string roleId, int num, string goal, IReadOnlyList<string> before, string? review, string dir, string projectId,
-        string teamId, string run, IntelligenceCore ki, AgentServices? svc, CancellationToken ct, string? model, int maxSteps)
-    {
-        var role = RoleOf(roleId);
-        var file = $"{dir}/{num:00}-{roleId.Replace('.', '-')}.md";
-        var input = (before.Count > 0 ? "Übergabe-Dateien der Vorgänger (mit datei.lesen öffnen): " + string.Join(", ", before) : "Du beginnst – es gibt noch keine Übergabe-Dateien.")
-            + (review is not null ? $"\nDer Prüfer hat zurückgegeben. Lies seinen Bericht ({review}) und verbessere die Arbeit entsprechend." : "");
-        var t = Create(roleId, goal, projectId, input, $"dateien:{teamId}-{run}");
-        t.State = AgentTaskState.Laeuft; Save();
-        var tools = role.MayWriteFiles ? new List<string> { "lesen", "schreiben" } : ["lesen"];
-        var def = new AgentDefinition
-        {
-            Id = AgentBlueprint.Slug(role.Name) is { Length: >= 2 } s ? s : "rolle", Name = role.Name, Goal = goal, Tools = tools, MaxSteps = maxSteps, MaxMinutes = 15, ProjectId = projectId,
-            Instructions = role.SystemPrompt + "\nDu arbeitest in einem Team. Lies zuerst die Übergabe-Dateien. Dein Ergebnis (das „fertig“-Feld) wird als Übergabe-Datei für die nächste Rolle gespeichert."
-                + (IsReviewer(roleId) ? "\nDu bist Prüfer: Beginne dein „fertig“-Ergebnis mit „OK:“, wenn die Arbeit passt, sonst mit „ZURÜCK:“ und nenne konkret, was verbessert werden muss." : ""),
-        };
-        var r = await RunAgentAsync(def, ki, svc, input, ct, model);
-        var body = $"# {role.Name}\n\n{(r.Result.Length > 0 ? r.Result : "(kein Ergebnis – " + StateText(r.State) + ")")}\n" + (r.FilesWritten.Count > 0 ? $"\nGeschriebene Dateien: {string.Join(", ", r.FilesWritten.Distinct())}\n" : "");
-        _projects.WriteFile(projectId, file, body);
-        t.Result = r.Result; t.SavedAs = file; t.Finished = DateTimeOffset.Now;
-        t.State = r.State == AgentRunState.Fertig ? AgentTaskState.Fertig : AgentTaskState.Fehler; Save();
-        return (t, file, r.State);
-    }
+    // T-0741: Team mit Datei-Übergabe, Fortschritt je Rolle, Stopp/Fortsetzen und Werkzeugen: siehe AgentTeam.cs (gleiche Klasse).
 }

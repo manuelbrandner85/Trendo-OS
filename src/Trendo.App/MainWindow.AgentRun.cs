@@ -83,27 +83,57 @@ public partial class MainWindow
         a.Tcs.TrySetResult(yes);
     }
 
-    /// <summary>T-0698: KI-Team mit Datei-Übergabe (Prüfer kann zurückgeben, Prüfer parallel, Stopp jederzeit). Ohne gewähltes Projekt arbeitet es im Projekt „ki-team“.</summary>
-    public async Task<AgentTeamRun?> RunTeamFilesAsync(string goal, string team)
+    /// <summary>T-0741: Stand des laufenden bzw. zuletzt gestarteten Team-Laufs (Fortschritt je Rolle, live).</summary>
+    public AgentTeamState? TeamLive { get; private set; }
+    /// <summary>Für Tests und die Belegläufe: Modell für das KI-Team (sonst das gewählte Modell der Haupt-KI).</summary>
+    internal string? TeamModelOverride { get; set; }
+
+    /// <summary>T-0698/T-0741: KI-Team mit Datei-Übergabe (Prüfer kann zurückgeben, Prüfer parallel, Stopp jederzeit, Fortschritt je Rolle). Ohne gewähltes Projekt arbeitet es im Projekt „ki-team“.</summary>
+    public Task<AgentTeamRun?> RunTeamFilesAsync(string goal, string team)
     {
-        if (_agentCts is not null) { _agentMsg = "Es läuft schon ein Agent oder Team. Erst stoppen oder warten."; return null; }
         var project = _agentProject;
-        if (project is null)
+        if (project is null && _agentCts is null)
         {
             if (_core.Projects.List().All(p => p.Id != "ki-team")) _core.Projects.Create("ki-team", "KI-Team");
             project = "ki-team";
         }
+        return TeamRunAsync(project ?? "ki-team", (ki, pref, svc, ct, progress) => Agents.RunTeamFilesAsync(team, goal, ki, project ?? "ki-team", svc, ct, pref, onProgress: progress));
+    }
+
+    /// <summary>T-0741: gestoppten Team-Lauf fortsetzen – fertige Rollen und Übergabe-Dateien bleiben, weiter an der offenen Stufe.</summary>
+    public Task<AgentTeamRun?> ResumeTeamFilesAsync(string id) =>
+        TeamRunAsync(Agents.TeamRun(id)?.ProjectId ?? "", (ki, pref, svc, ct, progress) => Agents.ResumeTeamFilesAsync(id, ki, svc, ct, TeamModelOverride ?? pref, progress));
+
+    /// <summary>T-0741: Zwischenstand eines Team-Laufs als Datei im Projekt speichern.</summary>
+    public string? SaveTeamSnapshot(string id)
+    {
+        try
+        {
+            var rel = Agents.SaveTeamSnapshot(id);
+            if (TeamLive?.Id == id) TeamLive = Agents.TeamRun(id);
+            _agentMsg = $"Zwischenstand gespeichert: {rel} im Projekt „{_core.Projects.List().FirstOrDefault(p => p.Id == TeamLive?.ProjectId)?.Name ?? TeamLive?.ProjectId}“.";
+            return rel;
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or IOException or ProjectIsolationException) { _agentMsg = "Hat nicht geklappt: " + FriendlyError.Say(ex); return null; }
+    }
+
+    async Task<AgentTeamRun?> TeamRunAsync(string project, Func<IntelligenceCore, string?, AgentServices, CancellationToken, Action<AgentTeamState>, Task<AgentTeamRun>> start)
+    {
+        if (_agentCts is not null) { _agentMsg = "Es läuft schon ein Agent oder Team. Erst stoppen oder warten."; return null; }
         _agentBusy = true; _agentCts = new CancellationTokenSource();
         try
         {
             var ki = AgentKi("", out var pref);
-            var r = await Agents.RunTeamFilesAsync(team, goal, ki, project, AgentSvc("ki-rollen"), _agentCts.Token, pref);
+            void Progress(AgentTeamState st) => _ui.Post(() => { TeamLive = st; if (CurrentView == "ki-rollen") Show("ki-rollen"); });
+            var r = await start(ki, TeamModelOverride ?? pref, AgentSvc("ki-rollen"), _agentCts.Token, Progress);
+            TeamLive = Agents.TeamRun(r.RunId) ?? TeamLive;
+            var name = _core.Projects.List().FirstOrDefault(p => p.Id == project)?.Name ?? project;
             _agentMsg = r.State switch
             {
-                AgentRunState.Fertig => $"Team fertig: {r.Tasks.Count} Rollen-Läufe, Übergabe-Dateien unter „team/{r.RunId[(r.RunId.LastIndexOf('-') + 1)..]}/“ im Projekt „{_core.Projects.List().First(p => p.Id == project).Name}“" + (r.Returns > 0 ? $" · Prüfer hat {r.Returns}× zurückgegeben." : "."),
-                AgentRunState.Gestoppt => $"Team gestoppt nach {r.Tasks.Count} Rollen-Läufen. Fertige Übergabe-Dateien bleiben im Projekt.",
+                AgentRunState.Fertig => $"Team fertig: {r.Tasks.Count} Rollen-Läufe, Übergabe-Dateien unter „team/{r.RunId[(r.RunId.LastIndexOf('-') + 1)..]}/“ im Projekt „{name}“" + (r.Returns > 0 ? $" · Prüfer hat {r.Returns}× zurückgegeben." : "."),
+                AgentRunState.Gestoppt => $"Team gestoppt nach {r.Tasks.Count} Rollen-Läufen. Was erarbeitet ist, bleibt im Projekt – „Zwischenstand speichern“ oder „Team-Lauf fortsetzen“.",
                 AgentRunState.Grenze => $"Team beendet: Der Prüfer hat {r.Returns}× zurückgegeben – mehr Runden gibt es nicht. Sieh dir die Übergabe-Dateien an.",
-                _ => "Team abgebrochen: " + (r.Tasks.LastOrDefault()?.Result is { Length: > 0 } x ? x : "Eine Rolle hat nicht geklappt (KI nicht erreichbar?)."),
+                _ => "Team abgebrochen: " + (r.Tasks.LastOrDefault()?.Result is { Length: > 0 } x ? x : "Eine Rolle hat nicht geklappt (KI nicht erreichbar?).") + " Du kannst den Lauf später fortsetzen.",
             };
             return r;
         }

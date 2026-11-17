@@ -1,0 +1,79 @@
+{
+  "Id": "text-4c2c03",
+  "TeamId": "text",
+  "TeamName": "Text schreiben \u0026 pr\u00FCfen",
+  "Run": "4c2c03",
+  "Goal": "Schreibe eine kurze Einladung (drei bis f\u00FCnf S\u00E4tze) zum Nachbarschafts-Sommerfest am Samstag um 15 Uhr im Innenhof. Der Texter legt die Einladung als Datei einladung.md im Projekt an.",
+  "ProjectId": "sommerfest",
+  "Model": "qwen3:14b",
+  "MaxStepsPerRole": 8,
+  "State": 1,
+  "Stage": 3,
+  "StageDone": [],
+  "Returns": 0,
+  "Review": null,
+  "Num": 4,
+  "Handoffs": [
+    "team/4c2c03/01-planer.md",
+    "team/4c2c03/03-texter.md",
+    "team/4c2c03/04-lektor.md"
+  ],
+  "TaskIds": [
+    "7d0a4a53",
+    "8e04c067",
+    "77cbdaee",
+    "f3adfae3"
+  ],
+  "Roles": [
+    {
+      "RoleId": "planer",
+      "Name": "Planer",
+      "Stage": 0,
+      "Status": 2,
+      "Note": "Liebe Nachbarn,  am Samstag um 15 Uhr findet im Innenhof unser Nachbarschafts-Sommerfest statt! Es erwartet euch ein Tag voller Spiele, Live-Musik und leckerer Snacks. Alle sind herzlich willkommen \u2013 freut euch auf einen entspannten Nachmittag mit der Gemeinschaft.  Wir sehen uns dort! Euer Sommerfe \u2026",
+      "Result": "Liebe Nachbarn,\n\nam Samstag um 15 Uhr findet im Innenhof unser Nachbarschafts-Sommerfest statt! Es erwartet euch ein Tag voller Spiele, Live-Musik und leckerer Snacks. Alle sind herzlich willkommen \u2013 freut euch auf einen entspannten Nachmittag mit der Gemeinschaft.\n\nWir sehen uns dort!\nEuer Sommerfest-Team",
+      "File": "team/4c2c03/01-planer.md",
+      "AgentRunId": "a4eaae1487",
+      "Steps": 4,
+      "Rounds": 1,
+      "Tools": [
+        "lesen"
+      ]
+    },
+    {
+      "RoleId": "texter",
+      "Name": "Texter",
+      "Stage": 1,
+      "Status": 2,
+      "Note": "Einladung zum Nachbarschafts-Sommerfest in einladung.md angelegt (306 Zeichen).",
+      "Result": "Einladung zum Nachbarschafts-Sommerfest in einladung.md angelegt (306 Zeichen).",
+      "File": "team/4c2c03/03-texter.md",
+      "AgentRunId": "0a51e7e61d",
+      "Steps": 3,
+      "Rounds": 2,
+      "Tools": [
+        "lesen",
+        "schreiben"
+      ]
+    },
+    {
+      "RoleId": "lektor",
+      "Name": "Lektor",
+      "Stage": 2,
+      "Status": 2,
+      "Note": "Die Einladung ist sprachlich korrekt, mit klarem Aufbau und freundlichem Ton. Keine \u00C4nderungen notwendig.",
+      "Result": "Die Einladung ist sprachlich korrekt, mit klarem Aufbau und freundlichem Ton. Keine \u00C4nderungen notwendig.",
+      "File": "team/4c2c03/04-lektor.md",
+      "AgentRunId": "b3eb6c5c20",
+      "Steps": 4,
+      "Rounds": 1,
+      "Tools": [
+        "lesen",
+        "schreiben"
+      ]
+    }
+  ],
+  "Snapshot": "team/4c2c03/zwischenstand.md",
+  "Started": "2026-11-17T19:09:29.4042763+01:00",
+  "Finished": "2026-11-17T19:11:26.6240699+01:00"
+}

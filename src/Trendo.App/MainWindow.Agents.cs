@@ -108,11 +108,14 @@ public partial class MainWindow
         sp.Children.Add(teams);
         if (AgentRunning)
         {
-            // T-0698: Stopp jederzeit, Fortschritt je Rolle live
-            sp.Children.Add(Act("agent-stop", "■ Stopp", StopAgent));
-            if (AgentLive is { } live) sp.Children.Add(P($"Läuft: {live.AgentName} · Schritt {live.Steps} · {live.Log.LastOrDefault()?.Text}", Muted, 11.5));
+            // T-0698: Stopp jederzeit
+            sp.Children.Add(Act("agent-stop", "■ Stopp", () => { StopAgent(); _agentMsg = "Wird angehalten … Was erarbeitet ist, bleibt."; Show("ki-rollen"); }));
+            if (AgentLive is { } live && TeamLive is null) sp.Children.Add(P($"Läuft: {live.AgentName} · Schritt {live.Steps} · {live.Log.LastOrDefault()?.Text}", Muted, 11.5));
         }
         sp.Children.Add(new TextBlock { Name = "agent-msg", Text = _agentMsg, Foreground = Text, TextWrapping = TextWrapping.Wrap });
+        // T-0741: Fortschritt je Rolle (live, nach Stopp und nach Neustart sichtbar), Freigabe-Frage, Zwischenstand speichern, fortsetzen
+        if ((TeamLive is { } tl && (tl.ProjectId == (_agentProject ?? "ki-team") || AgentRunning) ? tl : Agents.TeamRuns(_agentProject ?? "ki-team", 1).FirstOrDefault()) is { } teamRun)
+            sp.Children.Add(TeamProgressCard(teamRun));
         sp.Children.Add(H("Aufgaben", 14));
         var tasks = Agents.Tasks(_agentProject).Take(15).ToList();
         if (tasks.Count == 0) sp.Children.Add(P("Noch keine Aufgaben."));
@@ -168,6 +171,59 @@ public partial class MainWindow
         return KiPage("KI-Rollen", sp);
 
         static Control Spacer(Control c) { c.Margin = new Thickness(8, 0, 0, 0); return c; }
+    }
+
+    /// <summary>T-0741: Karte „Team-Fortschritt“ – je Rolle wartet/arbeitet/fertig/Fehler/gestoppt mit Zwischenergebnis und Übergabe-Datei;
+    /// offene Freigabe (z. B. „im Internet nachlesen“) mit Ja/Nein; nach dem Lauf „Zwischenstand speichern“ und „Team-Lauf fortsetzen“.</summary>
+    Control TeamProgressCard(AgentTeamState st)
+    {
+        var running = AgentRunning && TeamLive?.Id == st.Id && st.State == AgentRunState.Laeuft;
+        var box = new StackPanel { Name = "team-progress", Spacing = 4 };
+        box.Children.Add(H($"Team „{st.TeamName}“", 14));
+        box.Children.Add(P(st.Goal, Text, 12));
+        box.Children.Add(new TextBlock { Name = "team-state", Text = running ? "läuft" : $"{AgentCenter.StateLabel(st.State)} · {st.Started:dd.MM. HH:mm}" + (st.Returns > 0 ? $" · Prüfer hat {st.Returns}× zurückgegeben" : ""),
+            Foreground = st.State switch { AgentRunState.Fertig => OkBrush, AgentRunState.Fehler => ErrBrush, AgentRunState.Laeuft => Text, _ => WarnBrush }, FontSize = 12, TextWrapping = TextWrapping.Wrap });
+        if (running && AgentAsking is { } ask)
+        {
+            var yes = new Button { Name = "team-approve-yes", Content = "Zustimmen", Padding = new Thickness(10, 3) };
+            var no = new Button { Name = "team-approve-no", Content = "Ablehnen", Padding = new Thickness(10, 3), Margin = new Thickness(6, 0, 0, 0) };
+            yes.Click += (_, _) => { AnswerAgentApproval(true); Show("ki-rollen"); };
+            no.Click += (_, _) => { AnswerAgentApproval(false); Show("ki-rollen"); };
+            box.Children.Add(new Border { Name = "team-approve", Padding = new Thickness(10, 8), CornerRadius = new CornerRadius(8), BorderBrush = WarnBrush, BorderThickness = new Thickness(1),
+                Child = new StackPanel { Spacing = 4, Children = { P("Eine Rolle braucht deine Zustimmung:", Text, 12), P(ask.Description, Text, 12), P(ask.Preview ?? "", Muted, 11), new StackPanel { Orientation = Orientation.Horizontal, Children = { yes, no } } } } });
+        }
+        var i = 0;
+        List<TeamRoleProgress> roles; lock (st) roles = [.. st.Roles];
+        foreach (var r in roles)
+        {
+            var n = i++;
+            var (icon, brush) = r.Status switch
+            {
+                TeamRoleStatus.Arbeitet => ("▶", (IBrush)Accent), TeamRoleStatus.Fertig => ("✓", OkBrush), TeamRoleStatus.Fehler => ("✕", ErrBrush), TeamRoleStatus.Gestoppt => ("■", WarnBrush), _ => ("○", Muted),
+            };
+            var head = new TextBlock { Name = $"team-role-{n}", Text = $"{icon} {r.Name} – {AgentCenter.StatusText(r.Status)}" + (r.Steps > 0 ? $" · {r.Steps} Schritte" : "") + (r.Rounds > 1 ? $" · Runde {r.Rounds}" : ""),
+                Foreground = brush, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap };
+            ToolTip.SetTip(head, "Werkzeuge: " + string.Join(", ", r.Tools.Select(AgentTools.Label)));
+            var col = new StackPanel { Spacing = 1, Children = { head } };
+            if (r.Note.Length > 0) col.Children.Add(new SelectableTextBlock { Name = $"team-role-note-{n}", Text = r.Note, Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap, MaxHeight = 60 });
+            if (r.File is { } f) col.Children.Add(new SelectableTextBlock { Name = $"team-role-file-{n}", Text = "Übergabe-Datei: " + f, Foreground = Muted, FontSize = 10.5 });
+            box.Children.Add(new Border { Padding = new Thickness(10, 4), BorderBrush = r.Status == TeamRoleStatus.Arbeitet ? Accent : EdgeLit, BorderThickness = new Thickness(r.Status == TeamRoleStatus.Arbeitet ? 2 : 1, 0, 0, 0), Child = col });
+        }
+        if (!running)
+        {
+            var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+            row.Children.Add(Act("team-snapshot", "Zwischenstand speichern", () => { SaveTeamSnapshot(st.Id); Show("ki-rollen"); }));
+            if (!AgentRunning && Agents.CanResumeTeam(st.Id))
+            {
+                var rb = new Button { Name = "team-resume", Content = "Team-Lauf fortsetzen", Padding = new Thickness(8, 2) };
+                ToolTip.SetTip(rb, "Fertige Rollen und ihre Dateien bleiben – weiter geht es mit der offenen Rolle.");
+                rb.Click += async (_, _) => { rb.IsEnabled = false; _agentMsg = "Team-Lauf wird fortgesetzt …"; var t = ResumeTeamFilesAsync(st.Id); Show("ki-rollen"); await t; Show("ki-rollen"); };
+                row.Children.Add(rb);
+            }
+            if (st.Snapshot is { } snap) row.Children.Add(P("Gespeichert: " + snap, Muted, 11));
+            box.Children.Add(row);
+        }
+        return WCard(box);
     }
 
     /// <summary>Eigene Rolle anlegen – das Studio ist Pflicht (Wunsch 03.11.2026).</summary>
