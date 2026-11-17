@@ -51,6 +51,10 @@ public sealed class ProjectHandoff(string projectFolder)
         return full;
     }
 
+    /// <summary>T-0743: Einträge gezielt umschreiben (Rückgängig/Wiederholen der Großprojekt-Tafel nimmt ihre eigenen Übergaben zurück bzw. bringt sie wieder).
+    /// <paramref name="change"/> bekommt alle Einträge und liefert die neue Liste.</summary>
+    public void Rewrite(Func<IReadOnlyList<HandoffItem>, IEnumerable<HandoffItem>> change) => Save([.. change(All())]);
+
     string Resolve(string relative)
     {
         var root = Path.GetFullPath(projectFolder).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;

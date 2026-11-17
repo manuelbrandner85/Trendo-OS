@@ -224,7 +224,9 @@ public partial class MainWindow
                 var export = spec.Exports.FirstOrDefault(x => x.Name == Need(a, "format") || x.Label.Equals(Need(a, "format"), StringComparison.OrdinalIgnoreCase)) ?? throw new ArgumentException("Dieses Format gibt es nicht.");
                 var path = BridgeInside(run, Need(a, "datei"));
                 Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-                return new McpResult(export.Write(doc, path) is { Length: > 0 } note ? note : "Exportiert: " + path);
+                var note = export.Write(doc, path);
+                BigExported(spec.Key, doc, File.Exists(note) ? note : path); // T-0743: Ergebnis zurück an die Karte eines Großprojekts
+                return new McpResult(note is { Length: > 0 } ? note : "Exportiert: " + path);
             }),
             S("bild_ansehen", "Bildschirmfoto der offenen Trendo-Seite.", TrendoMcp.Schema(), _ => BridgeShot()),
             .. StudioIntelTools(run),

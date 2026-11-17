@@ -102,7 +102,13 @@ public partial class MainWindow
 
     // ───── Produktion: Tafel eines Großprojekts (vorher ohne Rückgängig) ─────
     public LinkSlot BigLink => ItemSlot("produktion", "produktion", "big", "Eine Tafel", "Tafeln",
-        (pid, v) => { if (v is not null && _core.Projects.List().Any(p => p.Id == pid)) BigBoards.Save(_core.Projects, pid, JsonSerializer.Deserialize<BigBoard>(v.GetValue<string>()) ?? new()); });
+        (pid, v) =>
+        {
+            if (v is null || !_core.Projects.List().Any(p => p.Id == pid)) return;
+            var to = JsonSerializer.Deserialize<BigBoard>(v.GetValue<string>()) ?? new();
+            BigBoardHandoff.Reconcile(_core.Projects, pid, BigBoards.Load(_core.Projects, pid), to); // T-0743: Übergaben und Dateien gehen mit zurück bzw. wieder vor
+            BigBoards.Save(_core.Projects, pid, to);
+        });
 
     // ───── Entwürfe (Formulare an der Notsicherung der Hülle) ─────
     /// <summary>Abläufe: neuer Ablauf (Name, Auslöser, Zeit/Ordner, Schritte).</summary>

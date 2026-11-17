@@ -1,0 +1,57 @@
+{
+  "Goal": "Flyer f\u00FCr den Wochenmarkt",
+  "Cards": [
+    {
+      "Id": "b07d0ed4",
+      "Title": "Flyer-Text schreiben",
+      "Detail": "Hofladen am Feldrand: frische Eier, Kartoffeln und Honig. Ge\u00F6ffnet Freitag und Samstag.",
+      "Column": 2,
+      "Role": "Planung",
+      "Progress": 100,
+      "Evidence": [
+        {
+          "Path": "grossprojekt/belege/b07d0ed4-Flyer-Text-schreiben.pdf",
+          "Sha256": "f5fd3d387d253d70f14502ff621875a0c916110b5ceadc5dcf57cad8e473c6df",
+          "Note": "Ergebnis aus B\u00FCcher schreiben",
+          "Added": "2026-11-17T18:58:34.2779469+01:00"
+        }
+      ],
+      "Created": "2026-11-17T18:58:31.5461353+01:00",
+      "Program": "buch-programm",
+      "Studio": "STUDIO-BOOK-01",
+      "Status": "erledigt",
+      "Order": "grossprojekt/auftraege/b07d0ed4.md",
+      "Handoff": "003388a1",
+      "Doc": "grossprojekt/auftraege/b07d0ed4-Flyer-Text-schreiben.tdoc",
+      "Result": "grossprojekt/belege/b07d0ed4-Flyer-Text-schreiben.pdf",
+      "ResultSha": "f5fd3d387d253d70f14502ff621875a0c916110b5ceadc5dcf57cad8e473c6df"
+    },
+    {
+      "Id": "30b204a2",
+      "Title": "Flyer als PDF mit Seitenzahlen",
+      "Detail": "Seitenzahlen unten in die Mitte setzen.",
+      "Column": 2,
+      "Role": "Planung",
+      "Progress": 100,
+      "Evidence": [
+        {
+          "Path": "grossprojekt/belege/30b204a2-Flyer-als-PDF-mit-Seitenzahlen.pdf",
+          "Sha256": "c67bdca489460aca80805615551551c87668d185d16c8105ef72296ee97cffc5",
+          "Note": "Ergebnis aus PDF-Werkstatt",
+          "Added": "2026-11-17T18:58:36.4512179+01:00"
+        }
+      ],
+      "Created": "2026-11-17T18:58:32.4238187+01:00",
+      "Program": "pdf-werkstatt-programm",
+      "Studio": "STUDIO-PDFTOOLS-01",
+      "Status": "erledigt",
+      "Order": "grossprojekt/auftraege/30b204a2.md",
+      "Handoff": "bfbf07a0",
+      "Doc": "grossprojekt/auftraege/30b204a2-Flyer-als-PDF-mit-Seitenzahlen.tdoc",
+      "Result": "grossprojekt/belege/30b204a2-Flyer-als-PDF-mit-Seitenzahlen.pdf",
+      "ResultSha": "c67bdca489460aca80805615551551c87668d185d16c8105ef72296ee97cffc5"
+    }
+  ],
+  "Trash": [],
+  "Percent": 100
+}

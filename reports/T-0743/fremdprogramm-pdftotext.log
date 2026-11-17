@@ -1,0 +1,19 @@
+# pdftotext (xpdf, Fremdprogramm, nicht Teil von Trendo) – pdftotext version 4.06 [www.xpdfreader.com]
+## pdftotext -enc UTF-8 -layout karte1-ergebnis.pdf -
+Flyer-Text schreiben
+[Seitenwechsel]
+Flyer-Text schreiben
+Hofladen am Feldrand: frische Eier, Kartoffeln und Honig. Geöffnet Freitag und Samstag.
+Kommen Sie vorbei!
+[Seitenwechsel]
+exit=0
+## pdftotext -enc UTF-8 -layout karte2-ergebnis.pdf -
+Flyer-Text schreiben
+                                                           Seite 1 von 2
+[Seitenwechsel]
+Flyer-Text schreiben
+Hofladen am Feldrand: frische Eier, Kartoffeln und Honig. Geöffnet Freitag und Samstag.
+Kommen Sie vorbei!
+                                                           Seite 2 von 2
+[Seitenwechsel]
+exit=0
