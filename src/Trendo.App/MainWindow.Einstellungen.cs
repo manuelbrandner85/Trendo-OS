@@ -61,11 +61,18 @@ public partial class MainWindow
         q = q.Trim();
         var groups = AppShells.First(d => d.Name == shell).Groups;
         var pages = groups.SelectMany(g => g.Pages.Select(p => (p.Key, p.Label, g.Group))).Where(p => _showMap.ContainsKey(p.Key)).ToList();
-        if (q.Length == 0) return pages.Select(p => (p.Key, p.Label)).ToList();
+        if (q.Length == 0) return pages.Select(p => (p.Key, ShellLabel(p.Key, p.Label))).ToList();
         bool Hit(string s) => s.Contains(q, StringComparison.CurrentCultureIgnoreCase);
-        return pages.Where(p => Hit(p.Label) || Hit(p.Group) || ExtraPages.Any(e => string.Equals(e.Key, p.Key, StringComparison.OrdinalIgnoreCase) && (Hit(e.Title) || e.Words.Any(Hit))))
-            .Select(p => (p.Key, p.Label)).ToList();
+        // der frühere Leistenname bleibt ein Suchwort, damit gewohnte Begriffe die Seite weiter finden
+        return pages.Where(p => Hit(ShellLabel(p.Key, p.Label)) || Hit(p.Label) || Hit(p.Group) || ExtraPages.Any(e => string.Equals(e.Key, p.Key, StringComparison.OrdinalIgnoreCase) && (Hit(e.Title) || e.Words.Any(Hit))))
+            .Select(p => (p.Key, ShellLabel(p.Key, p.Label))).ToList();
     }
+
+    /// <summary>T-0736 (V-10, Entscheidung des Nutzers 17.11.2026 „Studio-Name überall“): Ist eine Seite der Einstellungen oder der KI-Zentrale
+    /// zugleich die Startseite eines Studios, heißt sie auch in der linken Leiste und in der Suche wie das Studio aus <see cref="StudioCatalog"/> –
+    /// derselbe Name wie im Fenstertitel, im Seitenkopf, im Startmenü und in der Studio-Übersicht. Andere Seiten behalten ihren Leistennamen.</summary>
+    public string ShellLabel(string key, string label) =>
+        ModuleOf(key) is { } m && StudioCatalog.For(m) is { } info && string.Equals(PageForStudio(m), key, StringComparison.OrdinalIgnoreCase) ? info.Name : label;
 
     Control SettingsShell(string key, Control page)
     {
@@ -88,7 +95,7 @@ public partial class MainWindow
                     Background = on ? Brush.Parse("#26D4A84B") : Brushes.Transparent, BorderThickness = new Thickness(0),
                     Content = new DockPanel { Children = {
                         Dk(new Border { Width = 3, Height = 16, CornerRadius = new CornerRadius(2), Background = on ? Accent : Brushes.Transparent, Margin = new Thickness(0, 0, 8, 0) }, Avalonia.Controls.Dock.Left),
-                        new TextBlock { Text = label, Foreground = on ? Text : Brush.Parse(C("#CCFFFFFF", "#CC000000")), FontSize = 13, FontWeight = on ? FontWeight.SemiBold : FontWeight.Normal } } } };
+                        new TextBlock { Text = ShellLabel(k, label), Foreground = on ? Text : Brush.Parse(C("#CCFFFFFF", "#CC000000")), FontSize = 13, FontWeight = on ? FontWeight.SemiBold : FontWeight.Normal } } } };
                 b.Click += (_, _) => { _setQuery = ""; Show(target); };
                 // die geöffnete Seite ist eine Markierung, kein Knopf (ein Klick darauf hätte nichts bewirkt)
                 if (on) { var c = (Control)b.Content!; b.Content = null; nav.Children.Add(new Border { Name = n + "-nav-" + k, Background = b.Background, CornerRadius = b.CornerRadius, Padding = b.Padding, Child = c }); }
