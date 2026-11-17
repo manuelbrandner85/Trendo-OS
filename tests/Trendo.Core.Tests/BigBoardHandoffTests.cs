@@ -46,6 +46,72 @@ public class BigBoardHandoffTests
         Assert.Throws<InvalidOperationException>(() => BigBoardHandoff.HandOver(s, p.Id, b, a, "S1", "Studio 1"));
     }
 
+    static BigBoard Clone(BigBoard b) => System.Text.Json.JsonSerializer.Deserialize<BigBoard>(System.Text.Json.JsonSerializer.Serialize(b))!;
+
+    [Fact(DisplayName = "Gegenprüfung 1: Abgleich beim Rückgängig nimmt Übergaben und Dateien der Tafel zurück und bringt sie beim Wiederholen wieder – fremde Übergaben bleiben")]
+    public void Reconcile_undo_redo()
+    {
+        var s = Store(); var (p, b) = BigBoards.Create(s, "Abgleich", "");
+        var c = new BoardCard { Title = "K" }; b.Cards.Add(c);
+        s.WriteFile(p.Id, "fremd.txt", "x"); var h = BigBoardHandoff.Handoffs(s, p.Id); var foreign = h.Add("STUDIO-A", "STUDIO-B", "fremd.txt", "datei");
+        var s0 = Clone(b);
+        BigBoardHandoff.HandOver(s, p.Id, b, c, "S1", "Studio 1"); var s1 = Clone(b);
+        var f = Path.Combine(Path.GetTempPath(), "trendo-board-r-" + Guid.NewGuid().ToString("N")[..6] + ".txt"); File.WriteAllText(f, "Ergebnis");
+        BigBoardHandoff.Return(s, p.Id, c, "S1", f); var s2 = Clone(b);
+        Assert.Equal(1, BigBoardHandoff.Versions(c));
+
+        BigBoardHandoff.Reconcile(s, p.Id, s2, s1); // Ergebnis zurück
+        Assert.Equal(new[] { c.Handoff!, foreign.Id }.Order(), h.All().Select(x => x.Id).Order());
+        Assert.Null(h.All().Single(x => x.Id == c.Handoff).Received);
+        Assert.False(File.Exists(s.ResolveInProject(p.Id, c.Result!)));
+        Assert.True(File.Exists(s.ResolveInProject(p.Id, BigBoardHandoff.Aside(c.Result!))));
+
+        BigBoardHandoff.Reconcile(s, p.Id, s1, s0); // Übergabe zurück
+        Assert.Equal(foreign.Id, Assert.Single(h.All()).Id);
+        Assert.False(File.Exists(s.ResolveInProject(p.Id, c.Order!)));
+
+        BigBoardHandoff.Reconcile(s, p.Id, s0, s1); BigBoardHandoff.Reconcile(s, p.Id, s1, s2); // wiederholen
+        Assert.Equal(3, h.All().Count); Assert.All(h.All().Where(x => x.Id != foreign.Id), x => Assert.NotNull(x.Received));
+        Assert.True(BigBoardHandoff.ResultIntact(s, p.Id, s2.Cards[0]));
+        Assert.True(File.Exists(s.ResolveInProject(p.Id, c.Order!)));
+    }
+
+    [Fact(DisplayName = "Gegenprüfung 3: erledigte Karte nimmt eine neue Fassung an (alte bleibt Beleg), wieder öffnen gibt einen neuen Auftrag")]
+    public void New_version_and_reopen()
+    {
+        var s = Store(); var (p, b) = BigBoards.Create(s, "Fassung", "");
+        var c = new BoardCard { Title = "K" }; b.Cards.Add(c);
+        BigBoardHandoff.HandOver(s, p.Id, b, c, "S1", "Studio 1");
+        var f = Path.Combine(Path.GetTempPath(), "trendo-board-v-" + Guid.NewGuid().ToString("N")[..6] + ".txt");
+        File.WriteAllText(f, "eins"); var e1 = BigBoardHandoff.Return(s, p.Id, c, "S1", f);
+        File.WriteAllText(f, "zwei"); var e2 = BigBoardHandoff.Return(s, p.Id, c, "S1", f);
+        Assert.NotEqual(e1.Path, e2.Path); Assert.Equal(e2.Path, c.Result); Assert.Equal(2, BigBoardHandoff.Versions(c));
+        Assert.Equal("eins", s.ReadFile(p.Id, e1.Path)); Assert.Contains("Fassung 2", e2.Note);
+        var first = c.Handoff;
+        var again = BigBoardHandoff.Reopen(s, p.Id, b, c, "S1", "Studio 1");
+        Assert.Equal((BigBoardHandoff.Handed, again.Id), (c.Status, c.Handoff));
+        Assert.Equal([first!], c.Earlier);
+        Assert.Throws<InvalidOperationException>(() => BigBoardHandoff.Reopen(s, p.Id, b, c, "S1", "Studio 1"));
+        Assert.Equal(again.Id, Assert.Single(BigBoardHandoff.Handoffs(s, p.Id).OpenFor("S1")).Id);
+    }
+
+    [Fact(DisplayName = "Gegenprüfung 4: zwei Belege mit gleichem Dateinamen überschreiben sich nicht")]
+    public void Evidence_with_same_name_gets_unique_path()
+    {
+        var s = Store(); var (p, b) = BigBoards.Create(s, "Belege", "");
+        var c = new BoardCard { Title = "K" }; b.Cards.Add(c);
+        var d1 = Path.Combine(Path.GetTempPath(), "trendo-ev1-" + Guid.NewGuid().ToString("N")[..6]); var d2 = Path.Combine(Path.GetTempPath(), "trendo-ev2-" + Guid.NewGuid().ToString("N")[..6]);
+        Directory.CreateDirectory(d1); Directory.CreateDirectory(d2);
+        File.WriteAllText(Path.Combine(d1, "foto.txt"), "erste"); File.WriteAllText(Path.Combine(d2, "foto.txt"), "zweite");
+        var e1 = BigBoards.AddEvidence(s, p.Id, c, Path.Combine(d1, "foto.txt"));
+        var e2 = BigBoards.AddEvidence(s, p.Id, c, Path.Combine(d2, "foto.txt"));
+        var e3 = BigBoards.AddEvidence(s, p.Id, c, Path.Combine(d1, "foto.txt"));
+        Assert.Equal(3, new[] { e1.Path, e2.Path, e3.Path }.Distinct().Count());
+        Assert.All(c.Evidence, e => Assert.True(BigBoards.Intact(s, p.Id, e)));
+        Assert.Equal("erste", s.ReadFile(p.Id, e1.Path)); Assert.Equal("zweite", s.ReadFile(p.Id, e2.Path));
+        Assert.EndsWith(".txt", e2.Path);
+    }
+
     [Fact(DisplayName = "Großprojekt-Karte: alte Tafeln ohne die neuen Felder bleiben lesbar")]
     public void Old_board_reads()
     {

@@ -203,4 +203,152 @@ public class GrossprojektUebergabe_Ui
     }
 
     static BoardCard Card2(MainWindow w, string id) => BigBoards.Load(w.Core.Projects, w.BigProject!).Cards.Single(c => c.Id == id);
+
+    // ───── Gegenprüfung T-0743 ─────
+
+    /// <summary>Übergaben der Großprojekte (Absender oder Empfänger X-01) im Projekt.</summary>
+    static List<HandoffItem> BoardHandoffs(MainWindow w, string pid) =>
+        [.. BigBoardHandoff.Handoffs(w.Core.Projects, pid).All().Where(x => x.From == BigBoardHandoff.Board || x.To == BigBoardHandoff.Board)];
+    static string[] FilesIn(MainWindow w, string pid, string rel)
+    {
+        var d = Path.Combine(w.Core.Projects.ProjectFilesRoot(pid), rel);
+        return Directory.Exists(d) ? [.. Directory.GetFiles(d).Select(Path.GetFileName).Order()!] : [];
+    }
+
+    [AvaloniaFact(DisplayName = "Gegenprüfung 1: übergeben → Ergebnis → Rückgängig → Rückgängig → Wiederholen ×2 – Tafel, uebergaben.json und Dateien stimmen bei jedem Schritt überein")]
+    public void Undo_keeps_board_and_register_in_step()
+    {
+        var (w, _) = Open();
+        NewProject(w, "Rueckgaengig", "");
+        AddCard(w, "Kapitel", "Ein Absatz.", "Bücher schreiben");
+        var cid = Card(w, "Kapitel").Id; var pid = w.BigProject!;
+        Click(w, $"big-card-{cid}"); Click(w, "big-handover");
+        Click(w, "prog-export-pdf");
+        var done = Card2(w, cid);
+        Assert.Equal(BigBoardHandoff.Done, done.Status);
+        var resultFile = done.Result!; var orderFile = done.Order!; var docFile = done.Doc!; var order = done.Handoff!;
+        Assert.Equal(2, BoardHandoffs(w, pid).Count);
+
+        // „Rückgängig“ an der Tafel: das Ergebnis geht zurück, die Karte ist wieder „übergeben“
+        w.Show("produktion"); Settle();
+        Click(w, "big-undo");
+        var c = Card2(w, cid);
+        Assert.Equal((BigBoardHandoff.Handed, (string?)null, (string?)order), (c.Status, c.Result, c.Handoff));
+        var a = Assert.Single(BoardHandoffs(w, pid)); // nur noch der Auftrag – das Ergebnis ist aus dem Register
+        Assert.Equal((order, "auftrag", (DateTimeOffset?)null), (a.Id, a.Kind, a.Received)); // Auftrag wieder offen
+        Assert.Single(BigBoardHandoff.Handoffs(w.Core.Projects, pid).OpenFor("STUDIO-BOOK-01"));
+        Assert.Empty(FilesIn(w, pid, "grossprojekt/belege")); // keine verwaiste Ergebnisdatei
+        Assert.False(File.Exists(w.Core.Projects.ResolveInProject(pid, resultFile)));
+
+        // noch einmal: die Übergabe geht zurück
+        w.BigUndo(); Settle();
+        c = Card2(w, cid);
+        Assert.Equal((BigBoardHandoff.Open, (string?)null, (string?)null), (c.Status, c.Handoff, c.Doc));
+        Assert.Empty(BoardHandoffs(w, pid));
+        Assert.Empty(FilesIn(w, pid, "grossprojekt/auftraege"));
+
+        // Wiederholen bringt Übergabe und Ergebnis mit denselben Dateien und Einträgen zurück
+        w.BigRedo(); Settle();
+        c = Card2(w, cid);
+        Assert.Equal((BigBoardHandoff.Handed, (string?)order), (c.Status, c.Handoff));
+        Assert.True(File.Exists(w.Core.Projects.ResolveInProject(pid, orderFile)));
+        Assert.True(File.Exists(w.Core.Projects.ResolveInProject(pid, docFile)));
+        Assert.Null(Assert.Single(BoardHandoffs(w, pid)).Received);
+        w.BigRedo(); Settle();
+        c = Card2(w, cid);
+        Assert.Equal((BigBoardHandoff.Done, (string?)resultFile), (c.Status, c.Result));
+        Assert.True(BigBoardHandoff.ResultIntact(w.Core.Projects, pid, c));
+        var reg = BoardHandoffs(w, pid);
+        Assert.Equal(2, reg.Count); Assert.All(reg, x => Assert.NotNull(x.Received));
+        Assert.Equal(resultFile, reg.Single(x => x.Kind == "ergebnis").File);
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Gegenprüfung 2: eine kaputte Tafel in einem anderen Projekt stört den Export eines normalen Dokuments nicht")]
+    public void Broken_board_elsewhere_does_not_break_export()
+    {
+        var (w, _) = Open();
+        var (bad, _) = BigBoards.Create(w.Core.Projects, "Kaputt", "");
+        w.Core.Projects.WriteFile(bad.Id, BigBoards.File, "{\"Goal\":\"\",\"Cards\":[{\"Id\":\"aa11bb22\",\"Title\":\"T\",\"Doc\":\"../../x\"},{\"Id\":\"cc33dd44\",\"Title\":\"U\",\"Doc\":\"C:/x\"}],\"Trash\":[]}");
+        var d = w.ProgramNew(BookKey); d.Title = "Normaler Brief"; d.Set("text", "Hallo", "Text"); w.Show(BookKey); Settle();
+        Click(w, "prog-export-docx");
+        Assert.StartsWith("Exportiert: ", w.ProgramMessage(BookKey));
+        Assert.True(File.Exists(w.ProgramMessage(BookKey)["Exportiert: ".Length..].Trim()));
+
+        // auch ein Dokument, das im kaputten Projekt bei den Aufträgen liegt: Export klappt, keine Ausnahme
+        Directory.CreateDirectory(w.Core.Projects.ResolveInProject(bad.Id, "grossprojekt/auftraege"));
+        w.ProgramSave(BookKey, w.Core.Projects.ResolveInProject(bad.Id, "grossprojekt/auftraege/aa11bb22-T" + ProgramDocument.Extension));
+        Click(w, "prog-export-docx");
+        Assert.StartsWith("Exportiert: ", w.ProgramMessage(BookKey));
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Gegenprüfung 3: erneuter Export wird neue Fassung (alte bleibt als Beleg), „Karte wieder öffnen“ übergibt erneut")]
+    public void Second_export_is_new_version_and_reopen()
+    {
+        var (w, _) = Open();
+        NewProject(w, "Fassungen", "");
+        AddCard(w, "Kapitel", "Ein Absatz.", "Bücher schreiben");
+        var cid = Card(w, "Kapitel").Id; var pid = w.BigProject!;
+        Click(w, $"big-card-{cid}"); Click(w, "big-handover");
+        var book = w.ProgramActive(BookKey)!;
+        Click(w, "prog-export-pdf");
+        var first = Card2(w, cid).Result!;
+
+        // im Studio weiter, nochmal exportieren: neue Fassung an der Karte
+        book.Set("text", book.Text("text") + "\nZweite Fassung.\n", "Text ergänzt");
+        Click(w, "prog-export-pdf");
+        Assert.Contains("neue Fassung", w.ProgramMessage(BookKey));
+        var c = Card2(w, cid);
+        Assert.NotEqual(first, c.Result);
+        Assert.Contains("Zweite Fassung", AllText(w.Core.Projects.ResolveInProject(pid, c.Result!)));
+        Assert.True(File.Exists(w.Core.Projects.ResolveInProject(pid, first))); // die alte bleibt als Beleg
+        Assert.Contains(c.Evidence, e => e.Path == first);
+        Assert.Equal(2, c.Evidence.Count);
+        Assert.True(BigBoardHandoff.ResultIntact(w.Core.Projects, pid, c));
+        Assert.Equal(2, BoardHandoffs(w, pid).Count(x => x.Kind == "ergebnis"));
+
+        // Großprojekte: „Karte wieder öffnen“ – Studio öffnet das Dokument, Karte läuft wieder
+        w.Show("produktion"); Settle(); Click(w, $"big-card-{cid}");
+        Assert.Contains("Fassung 2", w.Find<TextBlock>("big-c-status").Text);
+        Click(w, "big-reopen");
+        Assert.Equal(BookKey, w.CurrentView);
+        Assert.Contains("Zweite Fassung", w.ProgramActive(BookKey)!.Text("text")); // dasselbe Dokument, nichts verloren
+        c = Card2(w, cid);
+        Assert.Equal((BigBoardHandoff.Handed, 1), (c.Status, c.Column));
+        Assert.Single(BigBoardHandoff.Handoffs(w.Core.Projects, pid).OpenFor("STUDIO-BOOK-01")); // neuer Auftrag
+        Click(w, "prog-export-docx");
+        c = Card2(w, cid);
+        Assert.Equal(BigBoardHandoff.Done, c.Status); Assert.EndsWith(".docx", c.Result);
+        Assert.Equal(3, c.Evidence.Count);
+        Assert.Empty(BigBoardHandoff.Handoffs(w.Core.Projects, pid).OpenFor(null));
+
+        // Rückgängig nimmt die letzte Fassung zurück, Register bleibt passend
+        w.BigUndo(); Settle();
+        c = Card2(w, cid);
+        Assert.Equal(BigBoardHandoff.Handed, c.Status);
+        Assert.Single(BigBoardHandoff.Handoffs(w.Core.Projects, pid).OpenFor("STUDIO-BOOK-01"));
+        Assert.Equal(2, BoardHandoffs(w, pid).Count(x => x.Kind == "ergebnis"));
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Gegenprüfung 5: Alt+↓ in der aufgeklappten Studio-Auswahl sortiert die Kette nicht um")]
+    public void Alt_arrow_in_open_combobox_keeps_chain()
+    {
+        var (w, _) = Open();
+        NewProject(w, "Auswahl", "");
+        AddCard(w, "Eins", "a", "Bücher schreiben");
+        AddCard(w, "Zwei", "b", "PDF-Werkstatt");
+        var first = Card(w, "Eins").Id;
+        Click(w, $"big-card-{first}");
+        var cb = V<ComboBox>(w, "big-c-program");
+        cb.Focus(); cb.IsDropDownOpen = true; Settle();
+        w.KeyPress(Key.Down, RawInputModifiers.Alt, PhysicalKey.ArrowDown, null); w.KeyRelease(Key.Down, RawInputModifiers.Alt, PhysicalKey.ArrowDown, null); Settle();
+        Assert.Equal(first, w.BigBoardNow!.Cards[0].Id);
+        // an der zugeklappten Auswahl ebenso: Alt+↓ gehört der Auswahl, die Kette bleibt
+        cb = V<ComboBox>(w, "big-c-program"); cb.IsDropDownOpen = false; Settle(); cb.Focus(); Settle();
+        w.KeyPress(Key.Down, RawInputModifiers.Alt, PhysicalKey.ArrowDown, null); w.KeyRelease(Key.Down, RawInputModifiers.Alt, PhysicalKey.ArrowDown, null); Settle();
+        Assert.Equal(first, w.BigBoardNow!.Cards[0].Id);
+        w.Close();
+    }
 }

@@ -30,3 +30,11 @@ Test `Trendo.App.Tests.GrossprojektUebergabe_Ui.Text_to_pdf_chain`, gestartet mi
 | `tafel-erledigt.png`, `tafel-offen.png` | Oberfläche (Trendo.Render, `TRENDO_BIG_DEMO`): erledigte Karte mit Ergebnis-Vorschau bzw. offene Karte mit „An Studio übergeben“ |
 
 Die SHA-256 der PDFs in `ablauf.log` stimmen mit den Dateien überein (siehe `SHA256SUMS`). Textdateien mit LF-Zeilenenden.
+
+## Nachtrag Gegenprüfung (17.11.2026)
+
+- `tafel-erledigt.png` und `tafel-offen.png` sind mit dem Stand nach der Gegenprüfung neu gerendert (`TRENDO_BIG_DEMO=1` bzw. `=offen`, `tools/Trendo.Render`, 1600 × 1000).
+  Die erledigte Karte zeigt jetzt „Karte wieder öffnen“; die Notiz des Ergebnis-Belegs lautet im Code „Ergebnis aus Bücher schreiben“ (das alte Bild zeigte noch die Studio-Kennung).
+- Die Dateien des Ende-zu-Ende-Laufs (`ablauf.log`, PDFs, `uebergaben.json`, `tafel.json`, `auftrag-karte1.md`, `fremdprogramm-pdftotext.log`, `testlauf-ende-zu-ende.log`)
+  stammen unverändert aus dem ersten Lauf (Commit c09d4879c); die neuen Felder (`Earlier` der Karte, `Handoff` eines Ergebnis-Belegs) sind dort noch nicht enthalten.
+- `SHA256SUMS` neu berechnet und gegen die Git-Objekte des Commits geprüft.

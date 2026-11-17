@@ -3,8 +3,9 @@ using System.Text.Json;
 
 namespace Trendo.Core;
 
-/// <summary>Beleg zu einer Karte: Datei im Projekt (relativ), SHA-256 beim Hinzufügen, Notiz.</summary>
-public sealed record BoardEvidence(string Path, string Sha256, string Note, DateTimeOffset Added);
+/// <summary>Beleg zu einer Karte: Datei im Projekt (relativ), SHA-256 beim Hinzufügen, Notiz. T-0743: <paramref name="Handoff"/> = Übergabe „ergebnis“, wenn der Beleg
+/// eine zurückgekommene Fassung des Ergebnisses ist (sonst null; ältere Tafeln haben das Feld nicht).</summary>
+public sealed record BoardEvidence(string Path, string Sha256, string Note, DateTimeOffset Added, string? Handoff = null);
 
 /// <summary>Karte auf der Tafel. Column: 0 Offen, 1 Läuft, 2 Fertig. Role: zuständige KI-Rolle bzw. Studio. Progress 0–100.</summary>
 public sealed class BoardCard
@@ -31,6 +32,8 @@ public sealed class BoardCard
     /// <summary>Ergebnisdatei im Projekt (relativ) mit SHA-256.</summary>
     public string? Result { get; set; }
     public string? ResultSha { get; set; }
+    /// <summary>Frühere, schon erledigte Aufträge der Karte (Kennungen der Übergaben), wenn sie wieder geöffnet wurde.</summary>
+    public List<string> Earlier { get; set; } = [];
 }
 
 public sealed class BigBoard
@@ -93,11 +96,17 @@ public static class BigBoards
     {
         if (!System.IO.File.Exists(source)) throw new FileNotFoundException("Diese Datei gibt es nicht.");
         var bytes = System.IO.File.ReadAllBytes(source);
-        var name = System.IO.Path.GetFileName(source); var rel = $"grossprojekt/belege/{c.Id}-{name}";
+        // T-0743 Gegenprüfung: gleicher Dateiname überschreibt keinen Beleg – Zähler vor der Endung (auch nicht einen, den Rückgängig beiseitegelegt hat)
+        var name = System.IO.Path.GetFileName(source); var stem = System.IO.Path.GetFileNameWithoutExtension(name); var ext = System.IO.Path.GetExtension(name);
+        var rel = $"grossprojekt/belege/{c.Id}-{name}";
+        for (var n = 2; Taken(rel); n++) rel = $"grossprojekt/belege/{c.Id}-{stem}-{n}{ext}";
         store.WriteBytes(projectId, rel, bytes);
         var e = new BoardEvidence(rel, Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant(), note.Trim(), DateTimeOffset.Now);
         c.Evidence.Add(e);
         return e;
+
+        bool Taken(string r) => c.Evidence.Any(x => x.Path == r) || System.IO.File.Exists(store.ResolveInProject(projectId, r))
+            || System.IO.File.Exists(store.ResolveInProject(projectId, BigBoardHandoff.Aside(r)));
     }
 
     /// <summary>Stimmt der Beleg noch mit der Prüfsumme überein?</summary>

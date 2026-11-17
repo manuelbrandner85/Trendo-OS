@@ -142,13 +142,21 @@ public partial class MainWindow
         return hit is Control { Tag: int col } ? col : -1;
     }
 
+    /// <summary>Kommt die Taste aus einer Auswahlliste, ihrer aufgeklappten Liste oder einem anderen Aufklapp-Fenster – oder ist irgendwo eine Auswahlliste offen?</summary>
+    bool BigKeyInChoice(object? source)
+    {
+        for (var v = source as Visual; v is not null; v = v.GetVisualParent())
+            if (v is ComboBox or ComboBoxItem or Avalonia.Controls.Primitives.PopupRoot or Avalonia.Controls.Primitives.OverlayPopupHost) return true;
+        return this.GetVisualDescendants().OfType<ComboBox>().Any(c => c.IsDropDownOpen);
+    }
+
     /// <summary>T-0743: Studio und Stand der Karte in einer Zeile.</summary>
     static string BigCardLine(BoardCard c)
     {
         var st = c.Program is { } k && Programs.TryGetValue(k, out var ps) ? ps.Title : null;
         return c.Status switch
         {
-            BigBoardHandoff.Done => "✓ erledigt" + (st is null ? "" : " · " + st),
+            BigBoardHandoff.Done => "✓ erledigt" + (st is null ? "" : " · " + st) + (BigBoardHandoff.Versions(c) > 1 ? $" · Fassung {BigBoardHandoff.Versions(c)}" : ""),
             BigBoardHandoff.Handed => "→ übergeben an " + (st ?? c.Studio),
             _ => st is null ? "" : "Studio: " + st,
         };
@@ -283,6 +291,12 @@ public partial class MainWindow
             right.Children.Add(new TextBlock { Name = "big-c-status", Text = BigCardLine(cur) is { Length: > 0 } line ? line : "Noch kein Studio gewählt.", Foreground = cur.Status == BigBoardHandoff.Done ? GoldText() : Text, FontSize = 12, TextWrapping = TextWrapping.Wrap });
             if (cur.Status == BigBoardHandoff.Open) { var go = Act("big-handover", "An Studio übergeben", () => Try(V, () => BigHandOver(cid)), true); go.IsEnabled = cur.Program is not null; ToolTip.SetTip(go, "Strg+Enter · Öffnet das Studio mit vorbereitetem Dokument. Exportierst du dort, kommt die Datei an diese Karte zurück."); right.Children.Add(go); }
             else if (cur.Status == BigBoardHandoff.Handed) right.Children.Add(Act("big-open-studio", "Im Studio öffnen", () => Try(V, () => BigOpenInStudio(cid)), true));
+            else if (cur.Program is not null) // Gegenprüfung T-0743: erledigt ist nicht endgültig
+            {
+                var again = Act("big-reopen", "Karte wieder öffnen", () => Try(V, () => BigReopen(cid)));
+                ToolTip.SetTip(again, "Öffnet das Dokument wieder im Studio. Der nächste Export kommt als neue Fassung an die Karte, die alte bleibt als Beleg. Strg+Z nimmt es zurück.");
+                right.Children.Add(again);
+            }
             if (cur.Status == BigBoardHandoff.Done && cur.Result is { } res)
             {
                 var resFull = _core.Projects.ResolveInProject(BigProject!, res); var intact = BigBoardHandoff.ResultIntact(_core.Projects, BigProject!, cur);
@@ -341,6 +355,7 @@ public partial class MainWindow
             AddHandler(KeyDownEvent, (_, e) =>
             {
                 if (CurrentView != V || ProdTab != "tafel" || BigCard is not { } kc || BigProject is not { } bp || e.Source is TextBox) return;
+                if (BigKeyInChoice(e.Source)) return; // Gegenprüfung T-0743: Alt+↑/↓ gehört einer Auswahlliste (auch aufgeklappt), nicht der Kette
                 if (e.KeyModifiers == KeyModifiers.Alt && e.Key is Key.Up or Key.Down) { BigReorder(kc, e.Key == Key.Up ? -1 : 1); e.Handled = true; }
                 else if (e.KeyModifiers == KeyModifiers.Control && e.Key == Key.Enter && BigBoards.Load(_core.Projects, bp).Cards.FirstOrDefault(x => x.Id == kc) is { Status: "", Program: not null }) { Try(V, () => BigHandOver(kc)); e.Handled = true; }
             }, Avalonia.Interactivity.RoutingStrategies.Tunnel);

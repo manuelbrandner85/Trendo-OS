@@ -14,6 +14,23 @@
 
 Echtbeleg Text → PDF: `reports/T-0743/` (BELEG.md, Rohlog, SHA256SUMS). Bücher schreiben (TextPdf) → PDF-Werkstatt (Seitenzahlen über PdfTools); beide PDFs mit dem Fremdprogramm `pdftotext` (xpdf 4.06) gelesen: Text der Karte und „Seite 1 von 2 / Seite 2 von 2“, exit=0. Oberfläche im Bild nachgeprüft (`tafel-erledigt.png`, `tafel-offen.png`): eine goldene Hauptaktion je Zustand („An Studio übergeben“ bzw. „Ergebnis öffnen“; „＋ Neues Großprojekt“ ist bei gewählter Karte nicht mehr golden).
 
+## Gegenprüfung behoben (17.11.2026)
+
+| Befund | Was geändert | Test (Rot auf c09d4879c → Grün) |
+|---|---|---|
+| 1 MITTEL Rückgängig zerstört Übergabe/Ergebnis | Übergeben, wieder öffnen und Ergebnis zurück laufen jetzt über `BigChangeQuiet` und sind eigene Rückgängig-Schritte der Tafel. Rückgängig/Wiederholen gleicht über `BigBoardHandoff.Reconcile` ab: Übergaben, die nur der alte Stand kennt, gehen aus `uebergaben.json` in die Ablage `grossprojekt/zurueckgenommen/uebergaben.json`, ihre Dateien (Auftrag, Dokument, Ergebnis, Belege) nach `grossprojekt/zurueckgenommen/`; Wiederholen bringt Einträge (gleiche Kennung) und Dateien zurück; der Auftrag ist je nach Stand offen bzw. angenommen. Fremde Übergaben bleiben unberührt. Neu in `ProjectHandoff`: `Rewrite` (kein neues Register). | `GrossprojektUebergabe_Ui.Undo_keeps_board_and_register_in_step` (Klick „Rückgängig“; rot: Karte sprang auf den ganzen alten Stand `("", null, null)`), `BigBoardHandoffTests.Reconcile_undo_redo` |
+| 2 MITTEL Export scheitert am Rückweg | `BigExported` ganz in `try`, jeder Fehler wird gemeldet und protokolliert (`grossprojekt.rueckweg.fehler`), nie weitergeworfen. `BigBoundByPath` läuft nicht mehr über alle Projekte: nur ein Dokument unter `<Projekt>/files/grossprojekt/auftraege/` (dort legt die Übergabe es ab) wird geprüft, nur in diesem Projekt; kaputte Karten werden übersprungen (`grossprojekt.rueckweg.uebersprungen`). | `Broken_board_elsewhere_does_not_break_export` (rot: `ProjectIsolationException` aus `BigBoundByPath` beim DOCX-Export) |
+| 3 MITTEL „erledigt“ endgültig | Erneuter Export einer erledigten Karte = neue Fassung (alte bleibt Beleg, eigene Übergabe „ergebnis“, Meldung „neue Fassung N“); gleiche Datei noch einmal = „unverändert“. Knopf und Rechtsklick „Karte wieder öffnen“: neuer Auftrag an dasselbe Studio, altes Dokument öffnet sich wieder, alter Auftrag bleibt in `Earlier`. Statuszeile zeigt „Fassung N“. | `Second_export_is_new_version_and_reopen` (rot: kein „neue Fassung“), `BigBoardHandoffTests.New_version_and_reopen` |
+| 4 NIEDRIG Beleg überschrieben | `BigBoards.AddEvidence` hängt bei Namensgleichheit `-2`, `-3` … an (prüft auch die Ablage). | `BigBoardHandoffTests.Evidence_with_same_name_gets_unique_path` (rot: gleicher Pfad) |
+| 5 NIEDRIG Alt+↑/↓ in ComboBox | Fensterhandler übergeht Tasten aus ComboBox/ComboBoxItem/Popup und solange irgendeine Auswahlliste aufgeklappt ist. | `Alt_arrow_in_open_combobox_keeps_chain` (rot: Kette umsortiert) |
+| 6 NIEDRIG Bild passt nicht | `tafel-erledigt.png` und `tafel-offen.png` neu gerendert, `SHA256SUMS` aus den Git-Objekten neu berechnet; Nachtrag in `BELEG.md`. | Hashes = `git cat-file blob` |
+
+Neue Felder bleiben optional (`BoardCard.Earlier`, `BoardEvidence.Handoff`), alte Tafeln bleiben lesbar (`Old_board_reads` grün).
+Nicht ersetzt: die Tests nutzen echte Exporte (Druck-PDF, DOCX). Strg+Z per Tastatur an der Tafel wurde im Test nicht ausgelöst (der Testfokus lag nicht in der Tafel); geprüft ist der Knopf „Rückgängig“, der dieselbe Funktion `BigUndo` aufruft.
+Die Ende-zu-Ende-Belege unter `reports/T-0743` stammen weiter aus dem ersten Lauf; nur die Bilder sind neu.
+
+Tests nach der Gegenprüfung: Build 0 Fehler; Core `~BigBoard|~ProjectHandoff|~Fusion` 15/15 bestanden; App `GrossprojektUebergabe_Ui, W5_X01_Ui, Kanban_Ui, ClaudeBridge_Ui, StudioUebergabe_Ui, T0708_HuelleEtappe1_Ui, T0711_HuelleEtappe1b_Ui, T0714_HuelleE2_Ui, T0716_HuelleE4_Ui, T0717_HuelleE5_Ui, ProgramCrashUiTests, OfficeRecoveryUiTests, EveryButton_Alltag, UebersichtEinfach_Ui, T0710_MenuBar_Ui, DesignPaket1_Ui` → Total 110, Failed 0. Rot-Probe: neue App-Tests gegen die alten `src`-Dateien (c09d4879c) → 4 von 7 rot (die 4 neuen), Core-Test Belegname rot. Kein Volltest.
+
 ## Abnahmekriterien
 
 1. Aus leerer Vorlage echtes Ergebnis über die Oberfläche: **VOLLWERTIG** für dieses Paket – leere Tafel → zwei Karten → zwei echte PDFs, Klickweg im Test.
@@ -41,14 +58,15 @@ Echtbeleg Text → PDF: `reports/T-0743/` (BELEG.md, Rohlog, SHA256SUMS). Büche
 
 ## Offene Punkte
 
-- `ProjectHandoff.Save` schreibt nicht atomar (gemeinsame Datei `src/Trendo.Core/W2/ProjectHandoff.cs`, bewusst nicht angefasst).
+- `ProjectHandoff.Save` schreibt nicht atomar (gemeinsame Datei `src/Trendo.Core/W2/ProjectHandoff.cs`; in der Gegenprüfung nur `Rewrite` ergänzt, Speichern unverändert).
 - Lauf einer ganzen Kette im Hintergrund mit Fortschritt/Abbrechen, KI-Aktion „Ziel → Karten“, Export der Tafel (PDF/CSV) – weiter offen (audit-4 Punkte 3–5).
 - Weitere Programme mit fachlicher Vorbereitung (Bildbearbeitung, Spiele bauen …) über `BigPrepare` ergänzen.
 
 ## Berührte Dateien
 
 - neu: `src/Trendo.Core/BigBoardHandoff.cs`, `src/Trendo.App/MainWindow.GrossprojektUebergabe.cs`, `tests/Trendo.Core.Tests/BigBoardHandoffTests.cs`, `tests/Trendo.App.Tests/GrossprojektUebergabeUiTests.cs`, `reports/T-0743/*`, `tasks/T-0743-grossprojekte*.md`
-- geändert: `src/Trendo.Core/BigBoard.cs` (Felder der Karte), `src/Trendo.App/MainWindow.W5Fusion.cs` (Tafel)
+- geändert: `src/Trendo.Core/BigBoard.cs` (Felder der Karte, eindeutige Belegnamen), `src/Trendo.App/MainWindow.W5Fusion.cs` (Tafel)
+- Gegenprüfung zusätzlich: `src/Trendo.Core/W2/ProjectHandoff.cs` (`Rewrite`), `src/Trendo.App/MainWindow.ItemLinks.cs` (Rückgängig der Tafel gleicht ab)
 - gemeinsam, je eine Zeile: `src/Trendo.App/MainWindow.ProgramShell.cs` (Export → `BigExported`), `src/Trendo.App/MainWindow.ClaudeBridge.cs` (Claude „exportieren“ → `BigExported`), `tools/Trendo.Render/Program.cs` (`TRENDO_BIG_DEMO` für die Bildprüfung)
 
 ## Entwicklungsbericht

@@ -33,29 +33,46 @@ public partial class MainWindow
     /// <summary>Karte in der Kette früher (−1) oder später (+1).</summary>
     public void BigReorder(string cardId, int delta) => BigChange(b => BigBoardHandoff.Reorder(b, cardId, delta));
 
-    /// <summary>Karte an ihr Studio übergeben: Auftrag als Übergabe ins Projekt, Programm öffnet sich mit vorbereitetem Dokument (im Projekt gespeichert).</summary>
-    public ProgramDocument BigHandOver(string cardId)
+    /// <summary>Karte an ihr Studio übergeben: Auftrag als Übergabe ins Projekt, Programm öffnet sich mit vorbereitetem Dokument (im Projekt gespeichert).
+    /// Ein Schritt im Rückgängig der Tafel (Strg+Z nimmt Übergabe, Auftrag und Dokument zusammen zurück).</summary>
+    public ProgramDocument BigHandOver(string cardId) => BigSend(cardId, reopen: false);
+
+    /// <summary>Erledigte Karte wieder öffnen: erneut an dasselbe Studio übergeben, das bisherige Dokument öffnet sich wieder; der nächste Export wird eine neue Fassung.</summary>
+    public ProgramDocument BigReopen(string cardId) => BigSend(cardId, reopen: true);
+
+    ProgramDocument BigSend(string cardId, bool reopen)
     {
         var pid = BigProject ?? throw new InvalidOperationException("Es ist kein Großprojekt offen.");
-        var b = BigBoards.Load(_core.Projects, pid);
-        var c = b.Cards.FirstOrDefault(x => x.Id == cardId) ?? throw new ArgumentException("Diese Karte gibt es nicht.");
-        if (c.Program is not { } key || !Programs.TryGetValue(key, out var spec)) throw new InvalidOperationException("Bitte zuerst ein Studio für die Karte wählen.");
-        var input = BigBoardHandoff.InputFor(_core.Projects, pid, b, c);
-        BigBoardHandoff.HandOver(_core.Projects, pid, b, c, spec.Studio, spec.Title);
-        var d = ProgramNew(key);
-        d.Title = c.Title;
-        BigPrepare(key, d, c, input);
-        var rel = $"grossprojekt/auftraege/{c.Id}-{DevStudio.SafeName(c.Title)}{ProgramDocument.Extension}";
-        var full = _core.Projects.ResolveInProject(pid, rel);
-        Directory.CreateDirectory(Path.GetDirectoryName(full)!);
-        ProgramSave(key, full);
-        c.Doc = rel;
-        BigBoards.Save(_core.Projects, pid, b);
-        _bigBound[d.Id] = (pid, c.Id);
-        _core.Audit.Append(Principal.LocalOwner.Name, "grossprojekt.uebergabe", $"{pid} {c.Id} → {spec.Studio}");
-        BigCard = c.Id; _bigMsg = $"„{c.Title}“ ist an {spec.Title} übergeben.";
-        _progMsg[key] = $"Auftrag aus dem Großprojekt: „{c.Title}“. Exportiere das Ergebnis – es geht von selbst an die Karte zurück.";
-        Show(key);
+        ProgramDocument? d = null; ProgramSpec? spec = null; var title = "";
+        BigChangeQuiet(pid, b =>
+        {
+            var c = b.Cards.FirstOrDefault(x => x.Id == cardId) ?? throw new ArgumentException("Diese Karte gibt es nicht.");
+            if (c.Program is not { } key || !Programs.TryGetValue(key, out var sp)) throw new InvalidOperationException("Bitte zuerst ein Studio für die Karte wählen.");
+            if (!reopen && c.Status == BigBoardHandoff.Handed) throw new InvalidOperationException("Diese Karte ist schon übergeben – „Im Studio öffnen“ zeigt ihr Dokument.");
+            var input = BigBoardHandoff.InputFor(_core.Projects, pid, b, c);
+            if (reopen) BigBoardHandoff.Reopen(_core.Projects, pid, b, c, sp.Studio, sp.Title);
+            else BigBoardHandoff.HandOver(_core.Projects, pid, b, c, sp.Studio, sp.Title);
+            var old = c.Doc is { } rel0 ? _core.Projects.ResolveInProject(pid, rel0) : null;
+            if (reopen && old is not null && File.Exists(old)) d = ProgramOpen(key, old); // dasselbe Dokument – nichts geht verloren
+            else
+            {
+                d = ProgramNew(key);
+                d.Title = c.Title;
+                BigPrepare(key, d, c, input);
+                var rel = $"grossprojekt/auftraege/{c.Id}-{DevStudio.SafeName(c.Title)}{ProgramDocument.Extension}";
+                var full = _core.Projects.ResolveInProject(pid, rel);
+                Directory.CreateDirectory(Path.GetDirectoryName(full)!);
+                ProgramSave(key, full);
+                c.Doc = rel;
+            }
+            spec = sp; title = c.Title;
+        }, reopen ? "Karte wieder geöffnet" : "An Studio übergeben");
+        _bigBound[d!.Id] = (pid, cardId);
+        _core.Audit.Append(Principal.LocalOwner.Name, reopen ? "grossprojekt.wieder" : "grossprojekt.uebergabe", $"{pid} {cardId} → {spec!.Studio}");
+        BigCard = cardId; _bigMsg = reopen ? $"„{title}“ ist wieder offen – {spec.Title} hat das Dokument." : $"„{title}“ ist an {spec.Title} übergeben.";
+        _progMsg[spec.Key] = reopen ? $"Wieder offen aus dem Großprojekt: „{title}“. Der nächste Export kommt als neue Fassung an die Karte zurück."
+            : $"Auftrag aus dem Großprojekt: „{title}“. Exportiere das Ergebnis – es geht von selbst an die Karte zurück.";
+        Show(spec.Key);
         return d;
     }
 
@@ -77,51 +94,74 @@ public partial class MainWindow
         }
     }
 
-    /// <summary>Karte zum Dokument über den gespeicherten Pfad (nach einem Neustart).</summary>
+    /// <summary>Karte zum Dokument über den gespeicherten Pfad (nach einem Neustart). Gegenprüfung T-0743: kein Lauf über alle Projekte – nur ein Dokument, das bei den
+    /// Aufträgen eines Projekts liegt (<c>&lt;Projekt&gt;/files/grossprojekt/auftraege/</c>, dort legt die Übergabe es ab), wird geprüft, und nur in diesem einen Projekt.
+    /// Eine kaputte Karte wird übersprungen (Protokolleintrag), nie eine Ausnahme.</summary>
     (string Project, string Card)? BigBoundByPath(ProgramDocument d)
     {
         if (d.Path is not { } path) return null;
         var p = Path.GetFullPath(path);
-        foreach (var proj in _core.Projects.List())
-        {
-            string tafel; try { tafel = _core.Projects.ResolveInProject(proj.Id, BigBoards.File); } catch (ProjectIsolationException) { continue; }
-            if (!File.Exists(tafel)) continue;
-            foreach (var c in BigBoards.Load(_core.Projects, proj.Id).Cards.Where(x => x.Doc is not null))
-                if (string.Equals(Path.GetFullPath(_core.Projects.ResolveInProject(proj.Id, c.Doc!)), p, StringComparison.OrdinalIgnoreCase)) return (proj.Id, c.Id);
-        }
+        var orders = Path.GetDirectoryName(p); var big = orders is null ? null : Path.GetDirectoryName(orders); var files = big is null ? null : Path.GetDirectoryName(big);
+        var projDir = files is null ? null : Path.GetDirectoryName(files);
+        if (orders is null || big is null || files is null || projDir is null || Path.GetFileName(orders) != "auftraege" || Path.GetFileName(big) != "grossprojekt" || Path.GetFileName(files) != "files") return null;
+        var pid = Path.GetFileName(projDir);
+        try { if (!string.Equals(Path.GetFullPath(_core.Projects.ProjectFilesRoot(pid)).TrimEnd(Path.DirectorySeparatorChar), files.TrimEnd(Path.DirectorySeparatorChar), StringComparison.OrdinalIgnoreCase)) return null; }
+        catch (ProjectIsolationException) { return null; }
+        foreach (var c in BigBoards.Load(_core.Projects, pid).Cards.Where(x => x.Doc is not null))
+            try { if (string.Equals(Path.GetFullPath(_core.Projects.ResolveInProject(pid, c.Doc!)), p, StringComparison.OrdinalIgnoreCase)) return (pid, c.Id); }
+            catch (ProjectIsolationException) { BigLog("grossprojekt.rueckweg.uebersprungen", $"{pid} {c.Id}: Dokumentpfad außerhalb des Projekts"); }
         return null;
     }
 
-    /// <summary>Von der Programm-Hülle (Export-Knopf, Menü, Claude „exportieren“) nach jedem Export: gehört das Dokument zu einer Karte, kommt die Datei an sie zurück.</summary>
+    void BigLog(string what, string detail) { try { _core.Audit.Append(Principal.LocalOwner.Name, what, detail); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { /* Protokoll nicht schreibbar – der Export geht vor */ } }
+
+    /// <summary>Von der Programm-Hülle (Export-Knopf, Menü, Claude „exportieren“) nach jedem Export: gehört das Dokument zu einer Karte, kommt die Datei an sie zurück –
+    /// bei einer erledigten Karte als neue Fassung. Der Export selbst scheitert nie am Rückweg: jeder Fehler hier wird gemeldet und protokolliert, nicht weitergeworfen.</summary>
     void BigExported(string key, ProgramDocument d, string file)
     {
-        if (!File.Exists(file)) return;
-        var bound = _bigBound.TryGetValue(d.Id, out var x) ? x : BigBoundByPath(d);
-        if (bound is not { } at) return;
         try
         {
-            if (BigReturn(at.Project, at.Card, Programs[key].Studio, file) is { } title)
+            if (!File.Exists(file)) return;
+            var bound = _bigBound.TryGetValue(d.Id, out var x) ? x : BigBoundByPath(d);
+            if (bound is not { } at) return;
+            var r = BigReturnCore(at.Project, at.Card, Programs[key].Studio, file);
+            var add = r switch
             {
-                _bigBound.Remove(d.Id);
-                _progMsg[key] = (_progMsg.GetValueOrDefault(key) ?? "") + $" · Zurück an die Karte „{title}“ im Großprojekt.";
-            }
+                null => "",
+                { Unchanged: true } => $" · Schon an der Karte „{r.Value.Title}“ – unverändert.",
+                { Version: > 1 } => $" · Zurück an die Karte „{r.Value.Title}“ im Großprojekt – neue Fassung {r.Value.Version}, die alte bleibt als Beleg.",
+                _ => $" · Zurück an die Karte „{r.Value.Title}“ im Großprojekt.",
+            };
+            _progMsg[key] = (_progMsg.GetValueOrDefault(key) ?? "") + add;
         }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException or ProjectIsolationException)
+        catch (Exception e) // bewusst breit: der Rückweg ist eine Zugabe zum Export und darf ihn nie abbrechen
         {
-            _progMsg[key] = (_progMsg.GetValueOrDefault(key) ?? "") + " · An die Karte zurück ging nicht: " + e.Message;
+            BigLog("grossprojekt.rueckweg.fehler", $"{key} {Path.GetFileName(file)}: {e.GetType().Name} {e.Message}");
+            _progMsg[key] = (_progMsg.GetValueOrDefault(key) ?? "") + " · An die Karte zurück ging nicht: " + FriendlyError.Say(e);
         }
     }
 
-    /// <summary>Ergebnisdatei an die Karte (auch von Hand: gewählte oder abgelegte Datei). Gibt den Kartentitel zurück, null = Karte fehlt oder ist schon erledigt.</summary>
-    public string? BigReturn(string projectId, string cardId, string studio, string file)
+    /// <summary>Ergebnisdatei an die Karte (auch von Hand: gewählte oder abgelegte Datei). Gibt den Kartentitel zurück, null = Karte fehlt oder ist nicht übergeben.
+    /// Bei einer erledigten Karte wird die Datei die neue Fassung (die alte bleibt als Beleg); dieselbe Datei noch einmal ändert nichts.</summary>
+    public string? BigReturn(string projectId, string cardId, string studio, string file) => BigReturnCore(projectId, cardId, studio, file)?.Title;
+
+    (string Title, int Version, bool Unchanged)? BigReturnCore(string projectId, string cardId, string studio, string file)
     {
         var b = BigBoards.Load(_core.Projects, projectId);
-        if (b.Cards.FirstOrDefault(c => c.Id == cardId) is not { } card || card.Status == BigBoardHandoff.Done) return null;
-        BigBoardHandoff.Return(_core.Projects, projectId, card, studio, file, card.Program is { } pk && Programs.TryGetValue(pk, out var ps) ? ps.Title : null);
-        BigBoards.Save(_core.Projects, projectId, b);
-        _core.Audit.Append(Principal.LocalOwner.Name, "grossprojekt.ergebnis", $"{projectId} {cardId} {Path.GetFileName(file)}");
-        if (projectId == BigProject) _bigMsg = $"„{card.Title}“ ist erledigt – das Ergebnis hängt an der Karte.";
-        return card.Title;
+        if (b.Cards.FirstOrDefault(c => c.Id == cardId) is not { } card || card.Status == BigBoardHandoff.Open) return null;
+        if (card.Status == BigBoardHandoff.Done && card.ResultSha is { } sha && File.Exists(file)
+            && Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(file))).Equals(sha, StringComparison.OrdinalIgnoreCase))
+            return (card.Title, BigBoardHandoff.Versions(card), true);
+        var version = 0;
+        BigChangeQuiet(projectId, nb =>
+        {
+            var c = nb.Cards.First(x => x.Id == cardId);
+            BigBoardHandoff.Return(_core.Projects, projectId, c, studio, file, c.Program is { } pk && Programs.TryGetValue(pk, out var ps) ? ps.Title : null);
+            version = BigBoardHandoff.Versions(c);
+        }, card.Status == BigBoardHandoff.Done ? "Neue Fassung zurück" : "Ergebnis zurück");
+        _core.Audit.Append(Principal.LocalOwner.Name, "grossprojekt.ergebnis", $"{projectId} {cardId} {Path.GetFileName(file)} Fassung {version}");
+        if (projectId == BigProject) _bigMsg = version > 1 ? $"„{card.Title}“: neue Fassung {version} des Ergebnisses ist an der Karte – die alte bleibt als Beleg." : $"„{card.Title}“ ist erledigt – das Ergebnis hängt an der Karte.";
+        return (card.Title, version, false);
     }
 
     /// <summary>Vorbereitetes Dokument der Karte wieder im Studio öffnen.</summary>
@@ -166,6 +206,7 @@ public partial class MainWindow
             menu.Items.Add(mi);
         }
         Item("big-m-handover", "An Studio übergeben", () => BigHandOver(cid), c.Program is not null && c.Status == BigBoardHandoff.Open);
+        if (c.Status == BigBoardHandoff.Done) Item("big-m-reopen", "Karte wieder öffnen", () => BigReopen(cid), c.Program is not null);
         Item("big-m-up", "Früher in der Kette", () => BigReorder(cid, -1), index > 0);
         Item("big-m-down", "Später in der Kette", () => BigReorder(cid, 1), index < count - 1);
         menu.Items.Add(new Separator());

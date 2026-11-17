@@ -58,19 +58,109 @@ public static class BigBoardHandoff
     }
 
     /// <summary>Ergebnis zurück an die Karte: Datei ins Projekt kopieren (Beleg mit SHA-256), als Übergabe „ergebnis“ an die Großprojekte eintragen und gleich annehmen,
-    /// den Auftrag als angenommen markieren, Karte „erledigt“ und in „Fertig“.</summary>
+    /// den Auftrag als angenommen markieren, Karte „erledigt“ und in „Fertig“. Ist die Karte schon erledigt, wird die Datei die neue Fassung des Ergebnisses –
+    /// die alte bleibt als Beleg an der Karte.</summary>
     public static BoardEvidence Return(ProjectStore store, string projectId, BoardCard c, string studio, string file, string? studioName = null)
     {
         if (!File.Exists(file)) throw new FileNotFoundException("Die Ergebnisdatei gibt es nicht.");
-        var ev = BigBoards.AddEvidence(store, projectId, c, file, "Ergebnis aus " + (studioName ?? studio));
+        var version = Versions(c) + 1;
+        var ev = BigBoards.AddEvidence(store, projectId, c, file, "Ergebnis aus " + (studioName ?? studio) + (version > 1 ? $", Fassung {version}" : ""));
         var h = Handoffs(store, projectId);
         if (c.Handoff is { } order && h.OpenFor(studio).Any(x => x.Id == order))
             try { h.Take(order, studio); } catch (ArgumentException) { /* Auftrag inzwischen geändert – das Ergebnis zählt trotzdem */ }
         var back = h.Add(studio, Board, ev.Path, "ergebnis", c.Title);
         h.Take(back.Id, Board);
+        ev = ev with { Handoff = back.Id }; c.Evidence[^1] = ev;
         c.Result = ev.Path; c.ResultSha = ev.Sha256; c.Status = Done;
         BigBoards.Move(c, 2);
         return ev;
+    }
+
+    /// <summary>Wie viele Fassungen des Ergebnisses sind an die Karte zurückgekommen?</summary>
+    public static int Versions(BoardCard c) => c.Evidence.Count(e => e.Handoff is not null);
+
+    /// <summary>Erledigte Karte wieder öffnen: neuer Auftrag an dasselbe Studio, der alte bleibt (als angenommen) in <see cref="BoardCard.Earlier"/>,
+    /// das bisherige Ergebnis bleibt an der Karte (und Eingabe der Karte danach). Der nächste Export kommt als neue Fassung zurück.</summary>
+    public static HandoffItem Reopen(ProjectStore store, string projectId, BigBoard b, BoardCard c, string studio, string programTitle)
+    {
+        if (c.Status != Done) throw new InvalidOperationException("Diese Karte ist noch nicht erledigt.");
+        if (c.Handoff is { } old) c.Earlier.Add(old);
+        c.Status = Open;
+        return HandOver(store, projectId, b, c, studio, programTitle);
+    }
+
+    // ───── T-0743 Gegenprüfung: Rückgängig/Wiederholen der Tafel hält Register und Dateien passend ─────
+
+    /// <summary>Ablage für Zurückgenommenes (Dateien und Übergaben), damit Wiederholen sie zurückbringen kann.</summary>
+    public const string AsideFolder = "grossprojekt/zurueckgenommen";
+    const string AsideRegister = AsideFolder + "/uebergaben.json";
+
+    /// <summary>Pfad im Projekt, an dem eine zurückgenommene Datei liegt (<c>grossprojekt/x/y</c> → <c>grossprojekt/zurueckgenommen/x/y</c>).</summary>
+    public static string Aside(string rel) => AsideFolder + "/" + (rel.StartsWith("grossprojekt/", StringComparison.Ordinal) ? rel["grossprojekt/".Length..] : rel);
+
+    static IEnumerable<BoardCard> AllCards(BigBoard b) => b.Cards.Concat(b.Trash);
+
+    /// <summary>Übergaben, die eine Tafel festhält, mit dem Stand, den sie haben müssen (true = angenommen).</summary>
+    public static Dictionary<string, bool> Referenced(BigBoard b)
+    {
+        var d = new Dictionary<string, bool>();
+        foreach (var c in AllCards(b))
+        {
+            if (c.Handoff is { } h) d[h] = c.Status == Done;
+            foreach (var e in c.Earlier) d[e] = true;
+            foreach (var e in c.Evidence) if (e.Handoff is { } eh) d[eh] = true;
+        }
+        return d;
+    }
+
+    /// <summary>Dateien der Tafel im Projekt (Aufträge, vorbereitete Dokumente, Ergebnisse, Belege).</summary>
+    public static HashSet<string> Files(BigBoard b) =>
+        [.. AllCards(b).SelectMany(c => new[] { c.Order, c.Doc, c.Result }.Concat(c.Evidence.Select(e => e.Path))).OfType<string>()];
+
+    /// <summary>Rückgängig/Wiederholen der Tafel: Stand <paramref name="from"/> → <paramref name="to"/>. Was nur <paramref name="from"/> kennt, wird zurückgenommen
+    /// (Übergaben aus <c>uebergaben.json</c> in die Ablage, Dateien nach <see cref="AsideFolder"/>); was <paramref name="to"/> braucht, kommt zurück, und jede Übergabe der
+    /// Tafel bekommt den passenden Stand (Auftrag offen bzw. angenommen). Danach stimmen Tafel, Register und Dateien überein. Fremde Übergaben bleiben unberührt.</summary>
+    public static void Reconcile(ProjectStore store, string projectId, BigBoard from, BigBoard to)
+    {
+        var want = Referenced(to); var had = Referenced(from);
+        var aside = LoadAside(store, projectId);
+        Handoffs(store, projectId).Rewrite(all =>
+        {
+            var list = all.ToList();
+            foreach (var id in had.Keys.Where(k => !want.ContainsKey(k)))
+                if (list.FindIndex(x => x.Id == id) is var i and >= 0) { aside.RemoveAll(x => x.Id == id); aside.Add(list[i]); list.RemoveAt(i); }
+            foreach (var (id, received) in want)
+            {
+                var i = list.FindIndex(x => x.Id == id);
+                if (i < 0 && aside.FirstOrDefault(x => x.Id == id) is { } back) { list.Add(back); aside.Remove(back); i = list.Count - 1; }
+                if (i < 0) continue;
+                if (received && list[i].Received is null) list[i] = list[i] with { Received = DateTimeOffset.Now };
+                else if (!received && list[i].Received is not null) list[i] = list[i] with { Received = null };
+            }
+            return list;
+        });
+        store.WriteFile(projectId, AsideRegister, System.Text.Json.JsonSerializer.Serialize(aside));
+
+        var need = Files(to);
+        foreach (var rel in Files(from).Where(f => !need.Contains(f))) MoveIn(store, projectId, rel, Aside(rel));
+        foreach (var rel in need) MoveIn(store, projectId, Aside(rel), rel, onlyIfMissing: true);
+    }
+
+    static List<HandoffItem> LoadAside(ProjectStore store, string projectId)
+    {
+        try { var f = store.ResolveInProject(projectId, AsideRegister); return File.Exists(f) ? System.Text.Json.JsonSerializer.Deserialize<List<HandoffItem>>(File.ReadAllText(f)) ?? [] : []; }
+        catch (System.Text.Json.JsonException) { return []; }
+    }
+
+    /// <summary>Datei im Projekt verschieben (beide Pfade über die Projekt-Isolation). Pfade außerhalb des Projekts werden übergangen.</summary>
+    static void MoveIn(ProjectStore store, string projectId, string fromRel, string toRel, bool onlyIfMissing = false)
+    {
+        string src, dst;
+        try { src = store.ResolveInProject(projectId, fromRel); dst = store.ResolveInProject(projectId, toRel); }
+        catch (ProjectIsolationException) { return; }
+        if (!File.Exists(src) || onlyIfMissing && File.Exists(dst)) return;
+        Directory.CreateDirectory(Path.GetDirectoryName(dst)!);
+        File.Move(src, dst, overwrite: true);
     }
 
     /// <summary>Stimmt das Ergebnis der Karte noch mit der Prüfsumme überein?</summary>
