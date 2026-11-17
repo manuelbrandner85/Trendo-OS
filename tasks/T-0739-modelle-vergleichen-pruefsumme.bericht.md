@@ -68,7 +68,8 @@ Hinweis zur Messung: Während Durchgang 1 belegte ein anderer, paralleler Lauf O
 ## Ausgeführte Tests (ohne Volltest)
 - Build `dotnet build Trendo.sln -c Release`: 0 Fehler.
 - Core (gefiltert: ModelBatchTests, KiLibraryTests, KreativKits3Tests, KiPyAppsTests, NoFixedUserTests, BasicPitchTests, WebDesignSeiteAnlegenTests): 45/45 bestanden.
-- App-Klassen: siehe Abgabe (alle Klassen, die die geänderten Dateien oder alle Programme berühren).
+- App-Klassen (alle, die die geänderten Dateien oder alle Programme berühren), bestanden: ModelsBatch_Ui 2/2, KreativStudios3_Ui 5/5, KiLibraryUiTests 3/3, KiModelT0703_Ui 5/5, KiPy_Ui 3/3, MusikUiTests 5/5, DesignPaket1_Ui 31/31, DesignPaket3_Ui 14/14, BueroStudios_Ui 5/5, ClaudeBridge_Ui 7/7, ClaudePrograms_Ui 6/6, ClaudeOperate_Ui 3/3, ClaudePolish_Ui 3/3, ClaudeLiveSync_Ui 3/3, ClaudeLive_Ui 3/3, GameDesignDoc_Ui 13/13, GameRelease_Ui 2/2, GameRobust_Ui 3/3, ProgramHeadDesign_Ui 6/6, SimpleMode_Ui 5/5, StudioUebergabe_Ui 4/4, T0710_MenuBar_Ui 8/8.
+- **Ausnahme ClaudeRunFix_Ui 2/3:** Fall „Am Programm vorbei gearbeitet …“ (Studio CORE-06) scheitert mit „The calling thread cannot access this object …“. Gegenprobe auf unverändertem `main` (Änderungen weggestellt, neu gebaut): **derselbe Fehler** – nicht von T-0739, fremder Bereich, nicht angefasst.
 - Echt: `ModelsBatchLive_Ui` 1/1 (766 s, davon ~12 min Warten auf die belegte Grafikkarte), `KiChecksumLive_Ui` 1/1.
 
 ## Berührte Dateien
