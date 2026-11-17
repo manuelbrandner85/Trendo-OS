@@ -55,6 +55,161 @@ public partial class MainWindow
     private string _wfMsg = ""; private bool _wfNew;
     private readonly List<WfStep> _wfDraft = [];
 
+    // ---------- T-0742: Ablauf aus einem Satz (KI legt einen echten Ablauf an) und Windows-Aufgabe ----------
+    private string _wfKiSatz = ""; private bool _wfKiBusy;
+    public bool WfKiBusy => _wfKiBusy;
+    /// <summary>Windows-Aufgabenplanung (schtasks im eigenen Konto). Tests ersetzen <see cref="WorkflowTaskPlan.Run"/>; der Beleg nimmt das echte schtasks.exe.</summary>
+    public WorkflowTaskPlan WfTasks { get; } = new();
+    /// <summary>Programm, das die Windows-Aufgabe startet (Standard: dieses Trendo). Tests/Beleg setzen das gebaute Trendo.App.exe.</summary>
+    public static string? WfTaskExe { get; set; }
+    readonly Dictionary<string, (bool Exists, DateTime At)> _wfTaskSeen = [];
+
+    /// <summary>Gibt es die Windows-Aufgabe zu diesem Ablauf? (kurz zwischengespeichert, damit die Seite nicht bei jedem Neuzeichnen schtasks startet)</summary>
+    public bool WfTaskExists(Workflow w)
+    {
+        if (!WorkflowTaskPlan.Supported) return false;
+        if (_wfTaskSeen.TryGetValue(w.Id, out var s) && DateTime.UtcNow - s.At < TimeSpan.FromSeconds(20)) return s.Exists;
+        var e = WfTasks.Exists(_core.DataRoot, w.Id); _wfTaskSeen[w.Id] = (e, DateTime.UtcNow); return e;
+    }
+
+    /// <summary>Satz → KI → geprüfter Ablauf in der vorhandenen Engine. Der Ablauf ist danach AUS, steht im Editor, „Rückgängig“ entfernt ihn.</summary>
+    public async Task WfFromSentenceAsync(string sentence)
+    {
+        if (_wfKiBusy) return;
+        sentence = (sentence ?? "").Trim();
+        if (sentence.Length < 5) { _wfMsg = "Beschreib in einem Satz, was automatisch passieren soll – zum Beispiel „Jeden Freitag um 17 Uhr meine Dokumente als ZIP sichern“."; Show("ablaeufe"); return; }
+        _wfKiBusy = true; _wfKiSatz = sentence; _wfMsg = "Die KI baut den Ablauf …"; Show("ablaeufe");
+        try
+        {
+            var a = await Intel.AskAsync(new KiRequest(WorkflowSentence.Prompt(sentence), SystemPrompt: WorkflowSentence.System, PreferredModel: KiModelName, UseKnowledge: false));
+            if (!a.Ok) { _wfMsg = "Die KI hat nicht geantwortet – es wurde nichts angelegt. " + a.Text; return; }
+            var r = WorkflowSentence.FromAnswer(a.Text, WorkflowHome, sentence);
+            if (r.Workflow is not { } w) { _wfMsg = "Daraus ließ sich kein sicherer Ablauf bauen – es wurde nichts angelegt. " + string.Join(" ", r.Problems); return; }
+            Workflows.Add(w);
+            Items(WfLink).Record($"„{w.Name}“ von der KI angelegt", w.Id, null, WfJson(w)); // Rückgängig entfernt ihn wieder
+            _core.Audit.Append(CurrentPrincipal.Name, "workflow.ki.angelegt", $"{w.Id} {a.Backend}");
+            WfSelected = w.Id; WfNode = -1; _wfNew = false; _wfKiSatz = "";
+            _wfMsg = $"Die KI ({a.Backend}) hat „{w.Name}“ angelegt. Er ist noch AUS: prüf die Bausteine, mach einen Probelauf und schalte ihn dann ein. „Rückgängig“ entfernt ihn wieder.";
+        }
+        finally { _wfKiBusy = false; Show("ablaeufe"); }
+    }
+
+    /// <summary>Ablauf einschalten. Einen Ablauf aus der KI schaltest erst du ein – mit einer Rückfrage, die zeigt, was er tun würde.</summary>
+    public async Task WfEnableAsync(Workflow w)
+    {
+        if (w.Origin is null) { w.Enabled = true; Workflows.Update(w); return; }
+        var dry = await Workflows.RunAsync(w, dryRun: true); var preview = string.Join("\n", dry.Lines);
+        var wk = new Wirkung("workflow.enable", $"{w.Id}:{w.Hash()}", $"Ablauf „{w.Name}“ einschalten?",
+            $"Die KI hat diesen Ablauf aus deinem Satz angelegt:\n„{w.Origin}“\n\nStartet: {TriggerText(w)}\nSchritte: {string.Join(" → ", w.Steps.Select(s => WorkflowEngine.StepLabel(s.Kind)))}\n\nNach dem Einschalten läuft er von allein – so wie im Probelauf unten.", "Einschalten", preview);
+        if (await FreigabeAsync(wk, () => Workflows.RequestEnable(w, preview, CurrentPrincipal)) is not { } id) { _wfMsg = $"„{w.Name}“ bleibt aus."; return; }
+        try { Workflows.ApplyEnable(w, id); _wfMsg = $"„{w.Name}“ ist eingeschaltet."; }
+        catch (ApprovalException ex) { _wfMsg = $"„{w.Name}“ bleibt aus: {ex.Message}"; }
+    }
+
+    /// <summary>Windows-Aufgabe anlegen – nur nach ausdrücklicher Zustimmung in der Rückfrage.</summary>
+    public async Task WfCreateTaskAsync(Workflow w)
+    {
+        if (WorkflowTaskPlan.WhyNot(w) is { } why) { _wfMsg = why; return; }
+        var exe = WfTaskExe ?? Environment.ProcessPath ?? "";
+        var name = WorkflowTaskPlan.TaskName(_core.DataRoot, w.Id); var key = WorkflowTaskPlan.ScheduleKey(w);
+        var wk = new Wirkung("workflow.windows-aufgabe", $"{w.Id}:{key}", $"„{w.Name}“ auch bei geschlossenem Trendo ausführen?",
+            $"Trendo legt dafür in der Windows-Aufgabenplanung die Aufgabe „{name}“ an – nur für dein Benutzerkonto, ohne Administratorrechte.\n" +
+            $"Sie startet zur geplanten Zeit ({TriggerText(w)}) nur Trendo selbst, ohne Fenster; Trendo führt dann diesen einen Ablauf aus, wenn er dran ist.\n" +
+            "Sie läuft, solange du am PC angemeldet bist. Du siehst sie hier und in der Aufgabenplanung und entfernst sie hier mit einem Klick.", "Aufgabe anlegen",
+            "Befehl der Aufgabe:\n" + WorkflowTaskPlan.Command(exe, w.Id, _core.DataRoot).Replace(Environment.UserName, "<user>"));
+        if (await FreigabeAsync(wk) is not { } id) { _wfMsg = "Keine Windows-Aufgabe angelegt – der Ablauf läuft nur, solange Trendo offen ist."; return; }
+        string? err;
+        try { err = _core.Approvals.Execute(id, wk.Action, wk.Target, () => WfTasks.Create(w, exe, _core.DataRoot, _core.Audit, CurrentPrincipal)); }
+        catch (ApprovalException ex) { err = ex.Message; }
+        _wfTaskSeen.Remove(w.Id);
+        if (err is not null) { _wfMsg = err; return; }
+        Workflows.NoteWinTask(w, key);
+        _wfMsg = $"Windows-Aufgabe „{name}“ angelegt. „{w.Name}“ läuft jetzt auch, wenn Trendo geschlossen ist.";
+    }
+
+    /// <summary>Windows-Aufgabe entfernen (ein Klick; auch beim Löschen des Ablaufs). true = jetzt keine Aufgabe mehr da.</summary>
+    public bool WfRemoveTask(Workflow w)
+    {
+        var ok = WfTasks.Delete(w, _core.DataRoot, _core.Audit, CurrentPrincipal); _wfTaskSeen.Remove(w.Id);
+        if (ok && Workflows.Get(w.Id) is not null) Workflows.NoteWinTask(w, null);
+        _wfMsg = ok ? $"Windows-Aufgabe zu „{w.Name}“ entfernt – der Ablauf läuft nur noch, solange Trendo offen ist." : "Die Windows-Aufgabe ließ sich nicht entfernen – bitte in der Aufgabenplanung nachsehen.";
+        return ok;
+    }
+
+    /// <summary>T-0742: Ablauf löschen – mit seiner Windows-Aufgabe. Lässt die sich nicht entfernen, bleibt der Ablauf (mit Hinweis) bestehen,
+    /// damit keine unsichtbare Aufgabe übrig bleibt; sonst erledigt das Aufräumen beim nächsten Start den Rest.</summary>
+    public void WfDelete(Workflow w)
+    {
+        if ((w.WinTask is not null || WfTaskExists(w)) && !WfRemoveTask(w))
+        {
+            _wfMsg = $"„{w.Name}“ bleibt bestehen: Seine Windows-Aufgabe ließ sich nicht entfernen. Versuch es gleich noch einmal oder entferne „{WorkflowTaskPlan.TaskName(_core.DataRoot, w.Id)}“ in der Aufgabenplanung.";
+            return;
+        }
+        Workflows.Remove(w.Id); if (WfSelected == w.Id) WfSelected = null;
+    }
+
+    /// <summary>Unter dem Ablaufplan: läuft er auch bei geschlossenem Trendo? Deutlich sichtbar, mit Knopf zum Anlegen bzw. Entfernen.</summary>
+    Control WfScheduleCard(Workflow w)
+    {
+        var sp = new StackPanel { Name = "wf-zeitplan", Spacing = 6 };
+        var warn = Brush.Parse("#FACC15");
+        if (WorkflowTaskPlan.WhyNot(w) is { } why)
+        {
+            sp.Children.Add(new TextBlock { Name = "wf-zeitplan-text", Text = (w.Trigger == TriggerKind.Manuell ? "▶ " : "⏸ Läuft nur, solange Trendo offen ist. ") + why, Foreground = w.Trigger == TriggerKind.Manuell ? Muted : warn, FontSize = 12, TextWrapping = TextWrapping.Wrap });
+            if (w.WinTask is not null || (w.Trigger != TriggerKind.Manuell && WfTaskExists(w)))
+            {
+                // T-0742: z. B. nachträglich ein KI-Schritt – die Aufgabe startet ihn nicht mehr (Trendo prüft das vor jedem Lauf); anbieten, sie zu entfernen
+                sp.Children.Add(P("Die Windows-Aufgabe dazu gibt es noch, sie führt diesen Ablauf aber nicht mehr aus. Entferne sie hier.", warn, 11));
+                var rm = new Button { Name = "wf-task-remove", Content = "Windows-Aufgabe entfernen" }; rm.Click += (_, _) => { WfRemoveTask(w); Show("ablaeufe"); }; sp.Children.Add(rm);
+            }
+            return WCard(sp);
+        }
+        var exists = WfTaskExists(w); var name = WorkflowTaskPlan.TaskName(_core.DataRoot, w.Id);
+        var current = exists && w.WinTask == WorkflowTaskPlan.ScheduleKey(w);
+        sp.Children.Add(new TextBlock { Name = "wf-zeitplan-text", TextWrapping = TextWrapping.Wrap, FontSize = 12, Foreground = current ? Text : warn,
+            Text = current ? $"✓ Läuft auch, wenn Trendo geschlossen ist – Windows-Aufgabe „{name}“ (Aufgabenplanung, nur dein Benutzerkonto, solange du angemeldet bist)."
+                : exists ? $"⚠ Der Zeitplan hat sich geändert – die Windows-Aufgabe „{name}“ startet noch nach dem alten. Bitte erneuern."
+                : "⚠ Läuft im Moment nur, solange Trendo offen ist." });
+        var row = new WrapPanel();
+        if (!current)
+        {
+            var mk = new Button { Name = "wf-task-create", Content = exists ? "Windows-Aufgabe erneuern …" : "Auch bei geschlossenem Trendo ausführen …", Margin = new Thickness(0, 0, 6, 0) };
+            mk.Click += async (_, _) => { await WfCreateTaskAsync(w); Show("ablaeufe"); };
+            row.Children.Add(mk);
+        }
+        if (exists) { var rm = new Button { Name = "wf-task-remove", Content = "Windows-Aufgabe entfernen" }; rm.Click += (_, _) => { WfRemoveTask(w); Show("ablaeufe"); }; row.Children.Add(rm); }
+        sp.Children.Add(row);
+        if (!w.Enabled) sp.Children.Add(P("Der Ablauf ist aus – auch die Windows-Aufgabe führt ihn dann nicht aus.", Muted, 11));
+        return WCard(sp);
+    }
+
+    /// <summary>T-0742: Einstieg für „TrendoOS.exe --ablauf-faellig &lt;Id&gt; --data-root …“. Ungültige Id → 2. Gibt es den Datenordner nicht (mehr),
+    /// legt Trendo ihn NICHT neu an, entfernt seine eigene Aufgabe und beendet sich still (0).</summary>
+    public static int RunFromTask(string id, string dataRoot, TextWriter output, WorkflowTaskPlan? plan = null)
+    {
+        if (!WorkflowTaskPlan.IdOk(id)) return 2;
+        plan ??= new WorkflowTaskPlan();
+        if (plan.RemoveIfRootMissing(id, dataRoot)) return 0;
+        var core = new TrendoCore(WorkflowTaskPlan.Root(dataRoot), launcher: new NoopLauncher());
+        try { return RunWorkflowHeadless(core, id, output, plan); }
+        finally { core.Shutdown(); }
+    }
+
+    /// <summary>Start durch die Windows-Aufgabe (ohne Fenster): genau diesen Ablauf ausführen, wenn er dran ist. Ergebnis ins Protokoll der Abläufe
+    /// und in „ablaeufe/windows-aufgabe.log“. Rückgabe 0 = gelaufen, nicht dran oder läuft gerade schon (kein Fehler), 1 = Lauf fehlgeschlagen.
+    /// Mit <paramref name="plan"/> (Start durch die Aufgabe): gibt es den Ablauf nicht mehr, entfernt sie sich selbst.</summary>
+    public static int RunWorkflowHeadless(TrendoCore core, string id, TextWriter output, WorkflowTaskPlan? plan = null)
+    {
+        var engine = new WorkflowEngine(core.DataRoot, core.Audit, core.Approvals, [WorkflowHome]);
+        var (run, why) = engine.RunOneIfDueAsync(id, DateTimeOffset.Now).GetAwaiter().GetResult();
+        if (run is null && why == WorkflowEngine.NotThere && engine.LoadProblem is null && WorkflowTaskPlan.IdOk(id)) plan?.DeleteByName(WorkflowTaskPlan.TaskName(core.DataRoot, id));
+        var line = $"{DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss zzz} {id} {(run is null ? "nicht gestartet: " + why : run.Ok ? "ok: " + string.Join(" | ", run.Lines) : "Fehler: " + string.Join(" | ", run.Lines))}";
+        try { File.AppendAllText(Path.Combine(core.DataRoot, "ablaeufe", "windows-aufgabe.log"), line + "\n"); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        output.WriteLine(line);
+        core.Audit.Append("ablauf", "workflow.windows-aufgabe.start", $"{id} {(run is null ? why : run.Ok ? "ok" : "fehler")}");
+        return run is { Ok: false } ? 1 : 0;
+    }
+
     private void InitSys05()
     {
         _showMap["ablaeufe"] = WorkflowsView; KiTabs.Add(("ablaeufe", "Abläufe"));
@@ -69,7 +224,7 @@ public partial class MainWindow
     static string HomePath(string p) => p.StartsWith(WorkflowHome, StringComparison.OrdinalIgnoreCase) && WorkflowHome.Length > 3 ? "~" + p[WorkflowHome.Length..] : p;
     private static string TriggerText(Workflow w) => w.Trigger switch
     {
-        TriggerKind.Taeglich => $"jeden Tag um {w.At}", TriggerKind.Intervall => w.EveryMinutes % 1440 == 0 ? $"alle {w.EveryMinutes / 1440} Tag(e)" : $"alle {w.EveryMinutes} Minuten",
+        TriggerKind.Taeglich => w.Days.Count > 0 ? $"nur {WorkflowSentence.DaysText(w.Days)} um {w.At}" : $"jeden Tag um {w.At}", TriggerKind.Intervall => w.EveryMinutes % 1440 == 0 ? $"alle {w.EveryMinutes / 1440} Tag(e)" : $"alle {w.EveryMinutes} Minuten",
         TriggerKind.NeueDatei => $"wenn in {HomePath(w.WatchFolder)} eine neue Datei ({w.WatchPattern}) auftaucht", _ => "nur von Hand",
     };
 
@@ -78,6 +233,16 @@ public partial class MainWindow
         var left = new StackPanel { Spacing = 6, Children = { P("Abläufe erledigen Wiederkehrendes von allein. „Probelauf“ zeigt vorher, was passieren würde – ohne etwas zu ändern.", null, 12) } };
         if (Workflows.LoadProblem is { } lp) left.Children.Add(new TextBlock { Name = "wf-load-problem", Text = "⚠ " + lp, Foreground = Brush.Parse("#FACC15"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
         if (LastWfError is { } err) left.Children.Add(new TextBlock { Name = "wf-error", Text = "⚠ Ein geplanter Ablauf ist fehlgeschlagen – " + err, Foreground = Brush.Parse("#FACC15"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
+        // T-0742: ein Satz → die KI legt einen echten Ablauf an (aus, bis du ihn einschaltest). Im Leerzustand ist das die goldene Hauptaktion.
+        var kiSatz = new TextBox { Name = "wf-ki-prompt", Text = _wfKiSatz, AcceptsReturn = false, TextWrapping = TextWrapping.Wrap, IsEnabled = !_wfKiBusy,
+            PlaceholderText = "Zum Beispiel: Jeden Freitag um 17 Uhr meine Dokumente als ZIP sichern" };
+        var kiGo = new Button { Name = "wf-ki-anlegen", Content = _wfKiBusy ? "Die KI baut den Ablauf …" : "Ablauf aus dem Satz anlegen", IsEnabled = !_wfKiBusy, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Center };
+        if (Workflows.All().Count == 0) { kiGo.Background = Accent; kiGo.Foreground = Brushes.White; }
+        kiSatz.TextChanged += (_, _) => _wfKiSatz = kiSatz.Text ?? "";
+        kiSatz.KeyDown += async (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) { e.Handled = true; await WfFromSentenceAsync(kiSatz.Text ?? ""); } };
+        kiGo.Click += async (_, _) => await WfFromSentenceAsync(kiSatz.Text ?? "");
+        ToolTip.SetTip(kiGo, "Die KI legt Auslöser, Bedingung und Schritte an. Der Ablauf ist danach aus – du prüfst ihn und schaltest ihn selbst ein.");
+        left.Children.Add(WCard(new StackPanel { Name = "wf-ki", Spacing = 6, Children = { new TextBlock { Text = "Mit einem Satz beschreiben", Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold }, kiSatz, kiGo } }));
         var tpl = new WrapPanel();
         foreach (var (id, name, make) in WorkflowEngine.Templates)
         {
@@ -123,12 +288,12 @@ public partial class MainWindow
                 catch (ApprovalException ex) { _wfMsg = $"„{w.Name}“ ist nicht freigegeben: {ex.Message}"; return; }
                 _wfMsg = $"„{w.Name}“ ist freigegeben. Änderst du den Ablauf, fragt Trendo erneut.";
             });
-            B("toggle", w.Enabled ? "Pausieren" : "Einschalten", () => { w.Enabled = !w.Enabled; Workflows.Update(w); return Task.CompletedTask; });
-            B("del", "Löschen", () => { Workflows.Remove(w.Id); if (WfSelected == w.Id) WfSelected = null; return Task.CompletedTask; });
+            B("toggle", w.Enabled ? "Pausieren" : w.Origin is null ? "Einschalten" : "Einschalten …", async () => { if (w.Enabled) { w.Enabled = false; Workflows.Update(w); } else await WfEnableAsync(w); });
+            B("del", "Löschen", () => { WfDelete(w); return Task.CompletedTask; }); // T-0742: Windows-Aufgabe geht mit
             var last = Workflows.History(w.Id, 1).FirstOrDefault();
             var sel = new Button { Name = $"wf-sel-{n}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Background = Brushes.Transparent, Padding = new Thickness(0),
                 Content = new StackPanel { Spacing = 2, Children = {
-                    new TextBlock { Text = w.Name + (w.Enabled ? "" : " (pausiert)"), Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold },
+                    new TextBlock { Text = w.Name + (w.Enabled ? "" : w.Origin is not null && w.LastAttempt is null ? " (Entwurf der KI – aus)" : " (pausiert)"), Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold },
                     new TextBlock { Text = $"Startet {TriggerText(w)}{(w.NeedsApproval ? w.IsApproved ? " · freigegeben" : " · braucht Freigabe" : "")}", Foreground = w.IsApproved ? Muted : Brush.Parse("#FACC15"), FontSize = 11, TextWrapping = TextWrapping.Wrap },
                     new TextBlock { Text = last is null ? "Noch nie gelaufen." : $"Zuletzt {last.At:dd.MM. HH:mm}: {(last.Ok ? "ok" : "mit Fehler")}" + (w.LastRun is { } good && !last.Ok ? $" · zuletzt geklappt {good:dd.MM. HH:mm}" : ""), Foreground = Muted, FontSize = 10.5 } } } };
             // T-0681: sichtbarer Fehlerstand – ein Fehlschlag gilt nicht als gelaufen
@@ -151,8 +316,8 @@ public partial class MainWindow
         DockPanel.SetDock(undoRow, Avalonia.Controls.Dock.Left);
         var selW = WfSelected is { } sid ? Workflows.Get(sid) : null;
         if (_wfNew) center.Children.Add(WorkflowEditor());
-        else if (selW is not null) center.Children.Add(WfFlow(selW));
-        else center.Children.Add(EmptyState("wf-empty", "neu-laden", "Noch kein Ablauf", "Abläufe erledigen Wiederkehrendes von allein: Downloads sortieren, Notizen anlegen, Ordner sichern. Links eine Vorlage antippen – du siehst den Ablauf dann hier als Kette aus Auslöser und Schritten."));
+        else if (selW is not null) { center.Children.Add(WfFlow(selW)); center.Children.Add(WfScheduleCard(selW)); }
+        else center.Children.Add(EmptyState("wf-empty", "neu-laden", "Noch kein Ablauf", "Abläufe erledigen Wiederkehrendes von allein: Downloads sortieren, Notizen anlegen, Ordner sichern. Links in einem Satz beschreiben, was passieren soll, oder eine Vorlage antippen – du siehst den Ablauf dann hier als Kette aus Auslöser und Schritten."));
         if (LastWfRun is { } lr)
         {
             var box = new StackPanel { Name = "wf-run", Spacing = 2, Children = { new TextBlock { Text = lr.DryRun ? "Probelauf – nichts wurde geändert:" : lr.Ok ? "Ausgeführt:" : "Nicht ganz geklappt:", Foreground = lr.Ok ? Text : Brush.Parse("#FACC15"), FontWeight = FontWeight.SemiBold } } };
@@ -224,10 +389,13 @@ public partial class MainWindow
     /// <summary>−1 = Auslöser, sonst Schritt-Nummer.</summary>
     public int WfNode { get; set; } = -1;
 
-    static string WfJson(Workflow w) => System.Text.Json.JsonSerializer.Serialize(new { w.Name, w.Trigger, w.At, w.EveryMinutes, w.WatchFolder, w.WatchPattern, w.Steps });
+    static string WfJson(Workflow w) => System.Text.Json.JsonSerializer.Serialize(new { w.Name, w.Trigger, w.At, w.EveryMinutes, w.WatchFolder, w.WatchPattern, w.Steps, w.Days, w.Origin });
     void WfRestore(Workflow w, string json)
     {
         var o = System.Text.Json.Nodes.JsonNode.Parse(json)!.AsObject();
+        // T-0742: Bedingung (Wochentage) und Herkunft – ältere Rückgängig-Einträge ohne diese Felder bleiben lesbar
+        w.Days = o["Days"] is { } dn ? System.Text.Json.JsonSerializer.Deserialize<List<DayOfWeek>>(dn.ToJsonString()) ?? [] : [];
+        if (o.ContainsKey("Origin")) w.Origin = (string?)o["Origin"];
         w.Name = (string?)o["Name"] ?? w.Name; w.Trigger = (TriggerKind)(int)o["Trigger"]!; w.At = (string?)o["At"] ?? "08:00"; w.EveryMinutes = (int)o["EveryMinutes"]!;
         w.WatchFolder = (string?)o["WatchFolder"] ?? ""; w.WatchPattern = (string?)o["WatchPattern"] ?? "*";
         w.Steps = System.Text.Json.JsonSerializer.Deserialize<List<WfStep>>(o["Steps"]!.ToJsonString()) ?? [];
@@ -341,7 +509,9 @@ public partial class MainWindow
         if (WfNode < 0 || WfNode >= w.Steps.Count)
         {
             var trig = new ComboBox { Name = "wf-edit-trigger", ItemsSource = new[] { "Nur von Hand", "Jeden Tag", "Alle X Minuten", "Neue Datei im Ordner" }, SelectedIndex = (int)w.Trigger, HorizontalAlignment = HorizontalAlignment.Stretch };
-            var at = new TextBox { Name = "wf-edit-at", Text = w.At }; var every = new TextBox { Name = "wf-edit-every", Text = w.EveryMinutes.ToString() };
+            var at = new TextBox { Name = "wf-edit-at", Text = w.At };
+            var days = new TextBox { Name = "wf-edit-days", Text = WorkflowSentence.DaysText(w.Days), PlaceholderText = "leer = jeden Tag, sonst z. B. Mo, Fr" }; // T-0742: Bedingung
+            var every = new TextBox { Name = "wf-edit-every", Text = w.EveryMinutes.ToString() };
             var folder = new TextBox { Name = "wf-edit-folder", Text = w.WatchFolder, PlaceholderText = "Ordner, der beobachtet wird" }; var pat = new TextBox { Name = "wf-edit-watch", Text = w.WatchPattern };
             var save = new Button { Name = "wf-edit-save", Content = "Übernehmen", Background = Accent, Foreground = Brushes.White };
             save.Click += (_, _) => WfChange(w, x =>
@@ -349,11 +519,14 @@ public partial class MainWindow
                 if ((name.Text ?? "").Trim().Length == 0) throw new InvalidOperationException("Bitte einen Namen eintragen.");
                 x.Name = name.Text!.Trim(); x.Trigger = (TriggerKind)Math.Max(0, trig.SelectedIndex);
                 if (x.Trigger == TriggerKind.Taeglich) x.At = TimeOnly.TryParse((at.Text ?? "").Trim(), out var t) ? t.ToString("HH:mm") : throw new InvalidOperationException("Uhrzeit bitte als HH:MM.");
+                if (x.Trigger == TriggerKind.Taeglich) x.Days = WorkflowSentence.ParseDays(days.Text) ?? throw new InvalidOperationException("Wochentage bitte als Mo, Di, Mi, Do, Fr, Sa, So – leer heißt jeden Tag.");
                 if (x.Trigger == TriggerKind.Intervall) x.EveryMinutes = int.TryParse(every.Text, out var m) && m > 0 ? m : throw new InvalidOperationException("Minuten bitte als ganze Zahl größer 0.");
                 if (x.Trigger == TriggerKind.NeueDatei) { x.WatchFolder = (folder.Text ?? "").Trim(); x.WatchPattern = string.IsNullOrWhiteSpace(pat.Text) ? "*" : pat.Text.Trim(); }
             }, "Start geändert.");
             sp.Children.Add(H("Start", 14)); sp.Children.Add(L("Name", name)); sp.Children.Add(L("Wann", trig));
-            sp.Children.Add(L("Uhrzeit (jeden Tag)", at)); sp.Children.Add(L("Alle … Minuten", every)); sp.Children.Add(L("Ordner (neue Datei)", folder)); sp.Children.Add(L("Muster", pat));
+            sp.Children.Add(L("Uhrzeit (jeden Tag)", at)); sp.Children.Add(L("Nur an diesen Tagen", days));
+            if (w.Origin is { } origin) sp.Children.Add(P($"Von der KI angelegt aus: „{origin}“", Muted, 11));
+            sp.Children.Add(L("Alle … Minuten", every)); sp.Children.Add(L("Ordner (neue Datei)", folder)); sp.Children.Add(L("Muster", pat));
             sp.Children.Add(save);
         }
         else

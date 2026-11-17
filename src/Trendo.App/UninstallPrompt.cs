@@ -71,11 +71,20 @@ public static class UninstallPrompt
 
     static string Size(long b) => b >= 1L << 30 ? $"{b / (double)(1L << 30):0.0} GB" : b >= 1L << 20 ? $"{b / (double)(1L << 20):0} MB" : $"{Math.Max(1, b / 1024)} KB";
 
+    /// <summary>T-0742: Alle eigenen Windows-Aufgaben der Abläufe („Trendo-Ablauf-…“, die dieses Programm starten) entfernen – sonst bliebe nach dem
+    /// Deinstallieren eine Aufgabe zurück, die ins Leere startet. Fremde Aufgaben bleiben unberührt.</summary>
+    public static int RemoveWorkflowTasks(WorkflowTaskPlan plan, string exe, Action<string>? log)
+    {
+        try { var n = plan.RemoveAllOwn(exe, log); log?.Invoke($"Windows-Aufgaben der Abläufe entfernt: {n}"); return n; }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException) { log?.Invoke("Windows-Aufgaben der Abläufe nicht geprüft: " + ex.Message); return 0; }
+    }
+
     public static void Run(Action<string>? log = null)
     {
         var clock = Stopwatch.StartNew(); // Velopack beendet den Hook nach 30 s
         log?.Invoke("Deinstallation: Programme entfernen, Frage nach Daten.");
         if (!OperatingSystem.IsWindows()) return;
+        if (Environment.ProcessPath is { } self) RemoveWorkflowTasks(new WorkflowTaskPlan(), self, log);
         var root = DataLocation.Default(); // fest: nie ein anderer Ordner
         var tools = DataLocation.ToolsRoot();
         if (DataLocation.ToolsSummary(tools) is { } toolInfo) RemoveTools(tools, toolInfo, log);

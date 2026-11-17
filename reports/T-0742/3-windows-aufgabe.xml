@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo>
+    <Author>Trendo OS</Author>
+    <Description>Von Trendo OS angelegt (mit deiner Zustimmung): startet den Ablauf "Täglicher Tagesbericht" (d87a0c62), auch wenn Trendo geschlossen ist. In Trendo unter "Abläufe" mit einem Klick entfernbar.</Description>
+    <URI>\Trendo-Ablauf-d87a0c62-82CB75</URI>
+  </RegistrationInfo>
+  <Principals>
+    <Principal id="Author">
+      <UserId><sid></UserId>
+      <LogonType>InteractiveToken</LogonType>
+    </Principal>
+  </Principals>
+  <Settings>
+    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+    <ExecutionTimeLimit>PT2H</ExecutionTimeLimit>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <StartWhenAvailable>true</StartWhenAvailable>
+    <IdleSettings>
+      <StopOnIdleEnd>true</StopOnIdleEnd>
+      <RestartOnIdle>false</RestartOnIdle>
+    </IdleSettings>
+  </Settings>
+  <Triggers>
+    <CalendarTrigger>
+      <StartBoundary>2026-11-17T00:01:00</StartBoundary>
+      <ScheduleByDay>
+        <DaysInterval>1</DaysInterval>
+      </ScheduleByDay>
+    </CalendarTrigger>
+  </Triggers>
+  <Actions Context="Author">
+    <Exec>
+      <Command>C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0742\src\Trendo.App\bin\Release\net10.0\TrendoOS.exe</Command>
+      <Arguments>--ablauf-faellig d87a0c62 --data-root "<testordner>"</Arguments>
+    </Exec>
+  </Actions>
+</Task>

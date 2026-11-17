@@ -112,6 +112,10 @@ class Program
             core.Shutdown();
             return rc;
         }
+        if (Arg(WorkflowTaskPlan.Switch) is { } wfId)
+            // T-0742: Start durch die Windows-Aufgabe – genau diesen Ablauf ausführen, wenn er dran ist, ohne Fenster, dann beenden.
+            // Fehlt der Datenordner, wird er nicht neu angelegt; die Aufgabe entfernt sich selbst.
+            return MainWindow.RunFromTask(wfId, Options.DataRoot ?? TrendoCore.DefaultDataRoot(), Console.Out);
         // Absturzschutz (Rückmeldung 03.11.2026 „schließt sich einfach“): Fehler auf der Oberfläche werden protokolliert und abgefangen,
         // statt Trendo zu beenden – außer bei Speichermangel und ähnlichen schweren Fehlern
         Avalonia.Threading.Dispatcher.UIThread.UnhandledException += (_, e) =>
@@ -122,6 +126,13 @@ class Program
         StartupTrace.LogPath = Arg("--startup-log");
         // T-0729: verwaiste eigene Temp-Ordner (älter als 24 h, nur Trendo-Präfixe) im Hintergrund wegräumen – abschaltbar mit TRENDO_TEMP_AUFRAEUMEN=0
         _ = TempDir.SweepInBackground();
+        // T-0742: eigene Windows-Aufgaben, die zu keinem Ablauf mehr passen (Ablauf gelöscht, Datenordner gewechselt/weg), im Hintergrund entfernen
+        if (WorkflowTaskPlan.Supported && Environment.ProcessPath is { } self)
+            _ = Task.Run(() =>
+            {
+                try { new WorkflowTaskPlan().CleanupOrphans(self, l => { try { File.AppendAllText(Path.Combine(crashRoot, "ablaeufe", "windows-aufgabe.log"), $"{DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss zzz} Aufräumen: {l}\n"); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } }); }
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException) { }
+            });
         StartupTrace.Mark("avalonia.start");
         return BuildAvaloniaApp().StartWithClassicDesktopLifetime(uiArgs);
     }
