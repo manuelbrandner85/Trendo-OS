@@ -1161,6 +1161,8 @@ public partial class MainWindow
         var left = new StackPanel { Name = "cite-list", Spacing = 8 };
         left.Children.Add(H($"Quellen ({CiteKit.Styles.First(x => x.Id == style).Label})", 14));
         if (sources.Count == 0) left.Children.Add(P("Noch keine Quellen. Oben „Buch“, „Artikel“ oder „Webseite“ – oder BibTeX einlesen.", Muted, 12));
+        // Sammelstand 0.9.104: In „Einfach“ gibt es die Eigenschaften-Spalte nicht – „Quelle aus DOI“ steht dann hier, keine Funktion geht verloren
+        if (ProgramLevel == Trendo.Core.Programs.UserLevel.Einfach) left.Children.Add(KrCard(CiteDoiBox(d), "cite-doi-card"));
         var n = 0;
         foreach (var s in CiteKit.Sorted(sources))
         {
