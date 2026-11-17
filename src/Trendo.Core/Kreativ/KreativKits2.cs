@@ -372,6 +372,21 @@ public static partial class ImageAiKit
          "--steps", xl ? "4" : "1", "--cfg-scale", "1.0", "-W", w.ToString(CultureInfo.InvariantCulture), "-H", h.ToString(CultureInfo.InvariantCulture),
          "--seed", seed.ToString(CultureInfo.InvariantCulture), "--vae-tiling"];
 
+    /// <summary>T-0738: Fehlerausgabe von sd-cli in einen Was-tun-Satz übersetzen (null = unbekannt). Grundlage sind die Meldungen von
+    /// stable-diffusion.cpp/ggml (Vulkan) bei vollem Grafikspeicher, fehlender/kaputter Modelldatei und Zeitüberschreitung.</summary>
+    public static string? ErrorHint(string? output)
+    {
+        var o = output ?? "";
+        bool Has(string s) => o.Contains(s, StringComparison.OrdinalIgnoreCase);
+        if (Has("OutOfDeviceMemory") || Has("out of memory") || Has("failed to allocate") || Has("OutOfHostMemory"))
+            return "Der Grafikspeicher reicht gerade nicht. Was tun: andere KI-Programme schließen (z. B. die Musik-KI) und noch einmal „Bilder malen“.";
+        if (Has("Zeitüberschreitung") || Has("timed out"))
+            return "Das Malen hat zu lange gedauert. Was tun: kleineres Format oder weniger Varianten wählen.";
+        if (Has("load_from_file") || Has("failed to load") || Has("invalid safetensor") || Has("unknown model"))
+            return "Das Bildmodell ließ sich nicht laden. Was tun: in der KI-Bibliothek unter „Bilder erzeugen“ das Modell entfernen und neu einrichten.";
+        return null;
+    }
+
     public sealed record Provenance(string Generator, string Model, string Prompt, string Style, string Negative, int Seed, int Width, int Height, DateTime CreatedUtc, string Sha256, bool AiGenerated = true);
 
     /// <summary>Herkunftsnachweis neben dem Bild (Datei.png.json): KI-erzeugt, Modell, Beschreibung, Startwert, Prüfsumme.</summary>

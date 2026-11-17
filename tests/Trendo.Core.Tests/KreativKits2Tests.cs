@@ -142,6 +142,12 @@ public class KreativKits2Tests
         Assert.True(ImageAiKit.Seed(int.MinValue, 0) >= 0);
         Assert.Equal(ImageAiKit.Seed(42, 1), ImageAiKit.Seed(42, 1));
         Assert.EndsWith("watercolor painting on textured paper, soft edges, gentle colors", ImageAiKit.FullPrompt("Haus", "aquarell"));
+        // T-0738: Fehlerausgabe von sd-cli wird zu einem Was-tun-Satz
+        Assert.Contains("Grafikspeicher", ImageAiKit.ErrorHint("ggml_vulkan: Device memory allocation of size 123 failed.\nvk::Device::allocateMemory: ErrorOutOfDeviceMemory"));
+        Assert.Contains("Bildmodell", ImageAiKit.ErrorHint("[ERROR] model.cpp:1234 - load_from_file: failed to open 'x.safetensors'"));
+        Assert.Contains("zu lange", ImageAiKit.ErrorHint("Zeitüberschreitung"));
+        Assert.Null(ImageAiKit.ErrorHint("alles gut"));
+        Assert.Null(ImageAiKit.ErrorHint(null));
         Assert.Equal("Haus", ImageAiKit.FullPrompt(" Haus ", "ohne"));
         Assert.NotEqual(ImageAiKit.Seed(42, 0), ImageAiKit.Seed(42, 1));
         Assert.True(ImageAiKit.Seed(int.MinValue + 1, 3) >= 0);

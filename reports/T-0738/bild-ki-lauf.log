@@ -1,0 +1,91 @@
+T-0738 Echtlauf „Bilder mit KI“ 2026-11-17 18:46:01 +01:00
+Werkzeugordner: C:\Users\<user>\AppData\Local\TrendoWerkzeuge
+sd-cli: C:\Users\<user>\AppData\Local\TrendoWerkzeuge\ki\laufzeit\stablediffusioncpp\sd-cli.exe vorhanden=True
+Modell sdxl-turbo: C:\Users\<user>\AppData\Local\TrendoWerkzeuge\ki\modelle\sdxl-turbo\sd_xl_turbo_1.0_fp16.safetensors bereit=True
+Modell sd-turbo: C:\Users\<user>\AppData\Local\TrendoWerkzeuge\ki\modelle\sd-turbo\sd_turbo.safetensors bereit=False
+Meldung der App: 1 Bild(er) fertig. Neben jedem Bild liegt der Herkunftsnachweis.
+Laufzeit vom Klick bis zur Meldung: 20,2 s
+
+--- Rohausgabe sd-cli ---
+$ sd-cli.exe -m C:\Users\<user>\AppData\Local\TrendoWerkzeuge\ki\modelle\sdxl-turbo\sd_xl_turbo_1.0_fp16.safetensors -p "ein alter Leuchtturm auf einer Klippe bei Sonnenuntergang, Wellen, Möwen, photorealistic photograph, natural light, realistic materials, high detail" -n "text, letters, watermark, logo, signature, blurry, deformed, extra fingers, bad anatomy, lowres" -o C:\Users\<user>\AppData\Local\Temp\trendo-testlauf-59252-6afc92d4\trendo-ui-bb860f0f21b848559849d47b1c8daaef\ki-bilder\db6195ec923b4550967624c0b3679b58\bild-20261117-184601-42.png --steps 4 --cfg-scale 1.0 -W 1024 -H 1024 --seed 42 --vae-tiling
+[Exitcode 0]
+[I] loading model from 'C:\Users\<user>\AppData\Local\TrendoWerkzeuge\ki\modelle\sdxl-turbo\sd_xl_turbo_1.0_fp16.safetensors' --- diffusion_engine.cpp:685
+[I] load C:\Users\<user>\AppData\Local\TrendoWerkzeuge\ki\modelle\sdxl-turbo\sd_xl_turbo_1.0_fp16.safetensors using safetensors format --- model_loader.cpp:222
+[I] Version: SDXL  --- diffusion_engine.cpp:975
+[I] auto-fit plan: --- backend_fit.cpp:323
+[I]   devices: --- backend_fit.cpp:324
+[I]     Vulkan0      NVIDIA GeForce RTX 5070          free  11175 MiB, budget  10663 MiB --- backend_fit.cpp:328
+[I]     RAM          free   9145 MiB, params budget   7097 MiB --- backend_fit.cpp:334
+[I]   compute-device weight cache priority: diffusion > te > vae --- backend_fit.cpp:336
+[I]   components (params: compute device -> RAM -> other GPU -> disk): --- backend_fit.cpp:337
+[I]     DiT          params   4897 MiB, compute reserve  2048 MiB -> compute Vulkan0, params Vulkan0 --- backend_fit.cpp:348
+[I]     Conditioner  params   1559 MiB, compute reserve  2048 MiB -> compute Vulkan0, params Vulkan0 --- backend_fit.cpp:348
+[I]     VAE          params    159 MiB, compute reserve  1024 MiB -> compute Vulkan0, params Vulkan0 --- backend_fit.cpp:348
+[I] auto-fit: --backend "diffusion=Vulkan0,te=Vulkan0,vae=Vulkan0" --- backend_fit.cpp:477
+[I] Weight type stat:                      f16: 2515  --- diffusion_engine.cpp:1548
+[I] Conditioner weight type stat:          f16: 586   --- diffusion_engine.cpp:1549
+[I] Diffusion model weight type stat:      f16: 1680  --- diffusion_engine.cpp:1550
+[I] VAE weight type stat:                  f16: 248   --- diffusion_engine.cpp:1551
+[I] using VAE for encoding / decoding --- model_builders.cpp:210
+[I] vae decoder: ch = 128 --- auto_encoder_kl.hpp:529
+[W] No valid VAE specified with --vae or --force-sdxl-vae-conv-scale flag set, using Conv2D scale 0.031 --- sd.cpp:15
+[I] flash attention auto: Vulkan0 -> on (Vulkan NVIDIA RTX) --- flash_attn.cpp:78
+[I] conv2d direct auto: Vulkan0 -> on (probe: im2col 0.169 ms, direct 0.157 ms) --- conv_direct.cpp:83
+[I] conv3d direct auto: Vulkan0 -> off (probe: im2col 0.215 ms, direct 0.212 ms) --- conv_direct.cpp:83
+[I] total params memory size = 6624.11MB (VRAM 6624.11MB, RAM 0.00MB): text_encoders 1564.36MB(VRAM), diffusion_model 4900.07MB(VRAM), vae 159.68MB(VRAM), controlnet 0.00MB(N/A), extensions 0.00MB(N/A) --- diffusion_engine.cpp:1438
+[I] running in eps-prediction mode --- diffusion_engine.cpp:1467
+[I] generate_image 1024x1024 --- image.cpp:869
+[I] get_sigmas with discrete scheduler --- denoiser.hpp:1129
+[I] sampling using Euler A method --- request.cpp:477
+[I] clip build cached graph cut plan done (taking 0 ms) --- ggml_graph_cut.cpp:1034
+  |##################################################| 178/178 -   1.02GB/s
+[I] loading tensors completed, taking 0.21s (read: 0.11s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.04s) --- model_loader.cpp:1405
+[I] clip build cached graph cut plan done (taking 1 ms) --- ggml_graph_cut.cpp:1034
+  |###########                                       |  76/374 - 749.45MB/s  |############                                      |  85/374 - 544.42MB/s  |#################                                 | 120/374 - 466.78MB/s  |#####################                             | 150/374 - 475.92MB/s  |#######################                           | 169/374 - 429.24MB/s  |##############################                    | 222/374 - 597.15MB/s  |##################################                | 253/374 - 568.10MB/s  |#############################################     | 330/374 - 649.33MB/s  |##################################################| 374/374 - 687.89MB/s
+[I] loading tensors completed, taking 1.87s (read: 1.46s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.37s) --- model_loader.cpp:1405
+[I] clip build cached graph cut plan done (taking 3 ms) --- ggml_graph_cut.cpp:1034
+  |##################################################| 15/15 - 193.63MB/s
+[I] loading tensors completed, taking 0.21s (read: 0.01s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.00s) --- model_loader.cpp:1405
+[I] get_learned_condition completed, taking 2.45s --- image.cpp:580
+[I] generating image: 1/1 - seed 42 --- image.cpp:920
+[I] unet build cached graph cut plan done (taking 39 ms) --- ggml_graph_cut.cpp:1034
+  |######                                            |  184/1680 - 872.42MB/s  |#######                                           |  226/1680 - 836.35MB/s  |########                                          |  266/1680 - 777.83MB/s  |##########                                        |  306/1680 - 749.35MB/s  |############                                      |  375/1680 - 776.31MB/s  |##############                                    |  438/1680 - 884.20MB/s  |###############                                   |  484/1680 - 865.48MB/s  |################                                  |  524/1680 - 853.36MB/s  |#################                                 |  569/1680 - 806.13MB/s  |##################                                |  599/1680 - 764.56MB/s  |###################                               |  617/1680 - 717.51MB/s  |####################                              |  642/1680 - 720.96MB/s  |####################                              |  642/1680 - 665.55MB/s  |####################                              |  642/1680 - 618.26MB/s  |####################                              |  642/1680 - 577.06MB/s  |####################                              |  659/1680 - 552.45MB/s  |#####################                             |  677/1680 - 532.59MB/s  |#####################                             |  700/1680 - 534.77MB/s  |######################                            |  723/1680 - 519.43MB/s  |#######################                           |  748/1680 - 504.82MB/s  |#######################                           |  762/1680 - 487.20MB/s  |########################                          |  780/1680 - 478.75MB/s  |########################                          |  804/1680 - 477.24MB/s  |#########################                         |  820/1680 - 462.43MB/s  |#########################                         |  831/1680 - 454.58MB/s  |#########################                         |  838/1680 - 440.13MB/s  |##########################                        |  851/1680 - 436.00MB/s  |###########################                       |  874/1680 - 438.37MB/s  |###########################                       |  892/1680 - 434.05MB/s  |############################                      |  910/1680 - 434.48MB/s  |#############################                     |  949/1680 - 439.77MB/s  |################################                  | 1049/1680 - 476.59MB/s  |##################################                | 1138/1680 - 508.59MB/s  |######################################            | 1270/1680 - 561.86MB/s  |##########################################        | 1394/1680 - 608.06MB/s  |###############################################   | 1546/1680 - 645.20MB/s  |##################################################| 1680/1680 - 654.69MB/s
+[I] loading tensors completed, taking 7.48s (read: 6.07s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 1.20s) --- model_loader.cpp:1405
+  |============>                                     | 1/4 -   9.09s/it - ETA 00:27  |=========================>                        | 2/4 -   1.37s/it - ETA 00:10  |=====================================>            | 3/4 -   1.38s/it - ETA 00:03  |==================================================| 4/4 -   1.46s/it
+[I] sampling completed, taking 13.32s --- image.cpp:953
+[I] generating 1 latent images completed, taking 13.32s --- image.cpp:967
+[I] decoding 1 latents --- image.cpp:605
+[I] vae build cached graph cut plan done (taking 1 ms) --- ggml_graph_cut.cpp:1034
+  |##################################################| 140/140 - 462.72MB/s
+[I] loading tensors completed, taking 0.20s (read: 0.04s, memcpy: 0.00s, convert: 0.00s, copy_to_backend: 0.01s) --- model_loader.cpp:1405
+  |=>                                                |  1/49 -   2.24it/s - ETA 00:21  |==>                                               |  2/49 -  29.41it/s - ETA 00:11  |===>                                              |  3/49 -  27.78it/s - ETA 00:07  |====>                                             |  4/49 -  28.57it/s - ETA 00:06  |=====>                                            |  5/49 -  27.78it/s - ETA 00:05  |======>                                           |  6/49 -  27.78it/s - ETA 00:04  |=======>                                          |  7/49 -  31.25it/s - ETA 00:03  |========>                                         |  8/49 -  28.57it/s - ETA 00:03  |=========>                                        |  9/49 -  27.78it/s - ETA 00:03  |==========>                                       | 10/49 -  26.32it/s - ETA 00:02  |===========>                                      | 11/49 -  27.03it/s - ETA 00:02  |============>                                     | 12/49 -  30.30it/s - ETA 00:02  |=============>                                    | 13/49 -  29.41it/s - ETA 00:02  |==============>                                   | 14/49 -  27.78it/s - ETA 00:02  |===============>                                  | 15/49 -  28.57it/s - ETA 00:02  |================>                                 | 16/49 -  27.03it/s - ETA 00:02  |=================>                                | 17/49 -  27.03it/s - ETA 00:01  |==================>                               | 18/49 -  29.41it/s - ETA 00:01  |===================>                              | 19/49 -  27.03it/s - ETA 00:01  |====================>                             | 20/49 -  27.78it/s - ETA 00:01  |=====================>                            | 21/49 -  30.30it/s - ETA 00:01  |======================>                           | 22/49 -  27.78it/s - ETA 00:01  |=======================>                          | 23/49 -  26.32it/s - ETA 00:01  |========================>                         | 24/49 -  27.03it/s - ETA 00:01  |=========================>                        | 25/49 -  28.57it/s - ETA 00:01  |==========================>                       | 26/49 -  25.64it/s - ETA 00:01  |===========================>                      | 27/49 -  27.78it/s - ETA 00:01  |============================>                     | 28/49 -  27.78it/s - ETA 00:01  |=============================>                    | 29/49 -  27.78it/s - ETA 00:00  |==============================>                   | 30/49 -  27.03it/s - ETA 00:00  |===============================>                  | 31/49 -  27.03it/s - ETA 00:00  |================================>                 | 32/49 -  27.78it/s - ETA 00:00  |=================================>                | 33/49 -  29.41it/s - ETA 00:00  |==================================>               | 34/49 -  27.03it/s - ETA 00:00  |===================================>              | 35/49 -  27.78it/s - ETA 00:00  |====================================>             | 36/49 -  27.78it/s - ETA 00:00  |=====================================>            | 37/49 -  27.78it/s - ETA 00:00  |======================================>           | 38/49 -  27.03it/s - ETA 00:00  |=======================================>          | 39/49 -  31.25it/s - ETA 00:00  |========================================>         | 40/49 -  27.78it/s - ETA 00:00  |=========================================>        | 41/49 -  26.32it/s - ETA 00:00  |==========================================>       | 42/49 -  27.03it/s - ETA 00:00  |===========================================>      | 43/49 -  30.30it/s - ETA 00:00  |============================================>     | 44/49 -  31.25it/s - ETA 00:00  |=============================================>    | 45/49 -  27.78it/s - ETA 00:00  |==============================================>   | 46/49 -  27.78it/s - ETA 00:00  |===============================================>  | 47/49 -  27.03it/s - ETA 00:00  |================================================> | 48/49 -  30.30it/s - ETA 00:00  |==================================================| 49/49 -  31.25it/s
+[I] latent 1 decoded, taking 2.17s --- image.cpp:671
+[I] decode_first_stage completed, taking 2.17s --- image.cpp:675
+[I] generate_image completed in 17.99s --- image.cpp:1140
+[I] save result image 0 to 'C:\Users\<user>\AppData\Local\Temp\trendo-testlauf-59252-6afc92d4\trendo-ui-bb860f0f21b848559849d47b1c8daaef\ki-bilder\db6195ec923b4550967624c0b3679b58\bild-20261117-184601-42.png' (success) --- main.cpp:495
+[I] 1/1 images saved --- main.cpp:571
+
+[Fehlerausgabe]
+ggml_vulkan: Found 1 Vulkan devices:
+ggml_vulkan: 0 = NVIDIA GeForce RTX 5070 (NVIDIA) | uma: 0 | fp16: 1 | bf16: 1 | fp4: 0 | warp size: 32 | shared memory: 49152 | int dot: 1 | matrix cores: NV_coopmat2
+load_backend: loaded Vulkan backend from C:\Users\<user>\AppData\Local\TrendoWerkzeuge\ki\laufzeit\stablediffusioncpp\ggml-vulkan.dll
+load_backend: loaded CPU backend from C:\Users\<user>\AppData\Local\TrendoWerkzeuge\ki\laufzeit\stablediffusioncpp\ggml-cpu-haswell.dll
+
+
+Bild im Projekt: C:\Users\<user>\AppData\Local\Temp\trendo-testlauf-59252-6afc92d4\trendo-ui-bb860f0f21b848559849d47b1c8daaef\ki-bilder\db6195ec923b4550967624c0b3679b58\bild-20261117-184601-42.png
+Größe: 1981524 Bytes
+SHA-256: b354a269dfaed488c5e6850ea1f64387a2421ead729dceefa061d6a962d0607d
+
+--- ffprobe (Fremdwerkzeug) ---
+[STREAM]
+codec_name=png
+codec_type=video
+width=1024
+height=1024
+[/STREAM]
+[FORMAT]
+format_name=png_pipe
+duration=N/A
+size=1981524
+[/FORMAT]
+

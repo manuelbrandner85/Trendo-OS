@@ -1,0 +1,274 @@
+T-0738 Echtlauf „Trendo Musik“ 2026-11-17 18:58:45 +01:00
+Werkzeugordner: C:\Users\<user>\AppData\Local\TrendoWerkzeuge
+ACE-Step: C:\Users\<user>\AppData\Local\TrendoWerkzeuge\ki\laufzeit\acestep
+python: C:\Users\<user>\AppData\Local\TrendoWerkzeuge\ki\laufzeit\acestep\python_embeded\python.exe vorhanden=True
+Modell schnell: True
+Meldung der App: ✓ Fertig.
+Laufzeit vom Klick bis zum Lied in der Bibliothek: 262,2 s
+Lied in der Bibliothek: „Probe T-0738“, 30 s, Sprache de, gemastert=False
+Datei im Projekt: C:\Users\<user>\AppData\Local\Temp\trendo-testlauf-7584-6afc95cf\trendo-ui-b8267166728649898f2dc56e5abf3d6b\Projekte\Musik\Probe-T-0738.mp3
+Größe: 535248 Bytes
+SHA-256: bc16c521ba8cf471594c4916027d9681ccd6aa3680ac18286dd0967476e805b3
+
+--- ffprobe (Fremdwerkzeug) ---
+[STREAM]
+codec_name=mp3
+codec_type=audio
+sample_rate=48000
+channels=2
+[/STREAM]
+[FORMAT]
+format_name=mp3
+duration=30.000000
+size=535248
+[/FORMAT]
+
+
+--- Rohlog ACE-Step-Server (nur dieser Lauf, aus ki\acestep-server.log) ---
+Skipping import of cpp extensions due to incompatible torch version 2.7.1+cu128 for torchao version 0.15.0             Please see https://github.com/pytorch/ao/issues/2919 for more info
+W1117 18:59:24.605000 59336 Lib\site-packages\torch\distributed\elastic\multiprocessing\redirects.py:29] NOTE: Redirects are currently not supported in Windows or MacOs.
+2026-11-17 18:59:32.791 | WARNING  | acestep.training.trainer:<module>:36 - bitsandbytes not installed. Using standard AdamW.
+[API Server] Using LM model: acestep-5Hz-lm-0.6B
+INFO:     Started server process [59336]
+INFO:     Waiting for application startup.
+2026-11-17 18:59:40.571 | INFO     | acestep.gpu_config:get_gpu_memory_gb:360 - CUDA GPU detected: NVIDIA GeForce RTX 5070 (11.9 GB)
+2026-11-17 18:59:40.732 | INFO     | acestep.handler:initialize_service:731 - [initialize_service] Attempting to load model with attention implementation: flash_attention_2
+`torch_dtype` is deprecated! Use `dtype` instead!
+2026-11-17 18:59:41.522 | INFO     | acestep.handler:initialize_service:757 - [initialize_service] Keeping main model on cuda (persistent)
+2026-11-17 19:00:09.299 | INFO     | acestep.llm_inference:initialize:548 - loading 5Hz LM tokenizer... it may take 80~90s
+2026-11-17 19:00:33.145 | INFO     | acestep.llm_inference:initialize:552 - 5Hz LM tokenizer loaded successfully in 23.85 seconds
+2026-11-17 19:00:33.145 | INFO     | acestep.llm_inference:initialize:557 - Initializing constrained decoding processor...
+2026-11-17 19:00:33.145 | INFO     | acestep.llm_inference:initialize:563 - Setting constrained decoding max_duration to 480s based on GPU config (tier: tier4)
+2026-11-17 19:00:34.590 | DEBUG    | acestep.constrained_logits_processor:_precompute_audio_code_tokens:577 - Found 1535 audio code tokens with values outside valid range [0, 63999]
+2026-11-17 19:00:38.011 | INFO     | acestep.llm_inference:initialize:571 - Constrained processor initialized in 4.87 seconds
+2026-11-17 19:00:40.056 | INFO     | acestep.llm_inference:_load_pytorch_model:361 - 5Hz LM initialized successfully using PyTorch backend on cuda
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+
+============================================================
+[API Server] GPU Configuration Detected:
+============================================================
+  GPU Memory: 11.91 GB
+  Configuration Tier: tier4
+  Max Duration (with LM): 480s
+  Max Duration (without LM): 600s
+  Max Batch Size (with LM): 2
+  Max Batch Size (without LM): 4
+  Default LM Init: True
+  Available LM Models: ['acestep-5Hz-lm-0.6B']
+============================================================
+
+[API Server] Initializing models at startup...
+[API Server] Auto-enabling CPU offload (GPU < 16GB)
+[API Server] Auto-setting offload_to_cpu=True based on GPU memory
+[Model Download] Model acestep-v15-turbo already exists at C:\Users\<user>\AppData\Local\TrendoWerkzeuge\ki\laufzeit\acestep\checkpoints\acestep-v15-turbo
+[Model Download] Model vae already exists at C:\Users\<user>\AppData\Local\TrendoWerkzeuge\ki\laufzeit\acestep\checkpoints\vae
+[API Server] Loading primary DiT model: acestep-v15-turbo
+[API Server] Primary model loaded: acestep-v15-turbo
+[API Server] GPU auto-detection: init_llm=True (VRAM: 11.9GB, tier: tier4)
+[API Server] ACESTEP_INIT_LLM=auto, using GPU auto-detection result
+[API Server] Loading LLM model...
+[API Server] Using user-specified LM model: acestep-5Hz-lm-0.6B
+[Model Download] Model acestep-5Hz-lm-0.6B already exists at C:\Users\<user>\AppData\Local\TrendoWerkzeuge\ki\laufzeit\acestep\checkpoints\acestep-5Hz-lm-0.6B
+[API Server] LLM model loaded: acestep-5Hz-lm-0.6B
+[API Server] All models initialized successfully!
+INFO:     127.0.0.1:55299 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /release_task HTTP/1.1" 200 OK
+2026-11-17 19:00:43.131 | INFO     | acestep.inference:generate_music:404 - [generate_music] LLM usage decision: thinking=True, use_cot_caption=True, use_cot_language=True, use_cot_metas=True, need_lm_for_cot=True, llm_initialized=True, use_lm=True
+2026-11-17 19:00:43.131 | INFO     | acestep.inference:generate_music:462 - LM chunk 1/1 (infer_type=llm_dit) (size: 1, seeds: [1638578200])
+2026-11-17 19:00:43.141 | INFO     | acestep.llm_inference:generate_with_stop_condition:1212 - Phase 1: Generating CoT metadata...
+2026-11-17 19:00:43.166 | INFO     | acestep.llm_inference:generate_with_stop_condition:1218 - generate_with_stop_condition: formatted_prompt=<|im_start|>system
+# Instruction
+Generate audio semantic tokens based on the given conditions:
+
+<|im_end|>
+<|im_start|>user
+# Caption
+fröhlicher Pop, Klavier, Akustikgitarre, warme Frauenstimme
+
+# Lyric
+[Verse]
+Heute scheint die Sonne über unsrer Stadt
+[Chorus]
+Wir singen laut, weil jeder Tag ein Anfang hat
+<|im_end|>
+<|im_start|>assistant
+
+2026-11-17 19:00:43.170 | INFO     | acestep.llm_inference:_load_model_context:3867 - Loading LLM to cuda
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+2026-11-17 19:00:48.174 | INFO     | acestep.llm_inference:_load_model_context:3872 - Loaded LLM to cuda in 5.0040s
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+2026-11-17 19:02:38.420 | INFO     | acestep.llm_inference:_load_model_context:3878 - Offloading LLM to CPU
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+2026-11-17 19:02:38.853 | INFO     | acestep.llm_inference:_load_model_context:3890 - Offloaded LLM to CPU in 0.4327s
+2026-11-17 19:02:38.855 | DEBUG    | acestep.llm_inference:parse_lm_output:2556 - Debug output text: <think>
+bpm: 230
+caption: A warm, celebratory Dutch chanson featuring a clear male vocal singing over
+  a simple arrangement of acoustic guitar chords, a basic bassline, and a light drum
+  machine beat. The vocal line is often echoed by a delayed backing track, creating
+  a pleasant, spacious feel. The track concludes abruptly with a loud, energetic, and
+  slightly distorted brass fanfare, possibly a trumpet or saxophone section, which
+  plays a short, melodic sting.
+duration: 30
+keyscale: B♭ major
+language: da
+timesignature: 3
+<|im_end|>
+2026-11-17 19:02:38.855 | INFO     | acestep.llm_inference:generate_with_stop_condition:1260 - Phase 1 completed in 115.71s. Generated metadata: ['bpm', 'caption', 'duration', 'keyscale', 'language', 'timesignature']
+2026-11-17 19:02:38.855 | INFO     | acestep.llm_inference:generate_with_stop_condition:1303 - Phase 2: Generating audio codes...
+2026-11-17 19:02:38.861 | INFO     | acestep.llm_inference:generate_with_stop_condition:1311 - generate_with_stop_condition: formatted_prompt_with_cot=<|im_start|>system
+# Instruction
+Generate audio semantic tokens based on the given conditions:
+
+<|im_end|>
+<|im_start|>user
+# Caption
+fröhlicher Pop, Klavier, Akustikgitarre, warme Frauenstimme
+
+# Lyric
+[Verse]
+Heute scheint die Sonne über unsrer Stadt
+[Chorus]
+Wir singen laut, weil jeder Tag ein Anfang hat
+<|im_end|>
+<|im_start|>assistant
+<think>
+bpm: 230
+caption: A warm, celebratory Dutch chanson featuring a clear male vocal singing over
+  a simple arrangement of acoustic guitar chords, a basic bassline, and a light drum
+  machine beat. The vocal line is often echoed by a delayed backing track, creating
+  a pleasant, spacious feel. The track concludes abruptly with a loud, energetic,
+  and slightly distorted brass fanfare, possibly a trumpet or saxophone section, which
+  plays a short, melodic sting.
+duration: 30
+keyscale: B♭ major
+language: da
+timesignature: 3
+</think>
+
+<|im_end|>
+
+2026-11-17 19:02:38.863 | INFO     | acestep.llm_inference:_load_model_context:3867 - Loading LLM to cuda
+2026-11-17 19:02:39.156 | INFO     | acestep.llm_inference:_load_model_context:3872 - Loaded LLM to cuda in 0.2927s
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+2026-11-17 19:02:52.694 | INFO     | acestep.llm_inference:_load_model_context:3878 - Offloading LLM to CPU
+2026-11-17 19:02:53.015 | INFO     | acestep.llm_inference:_load_model_context:3890 - Offloaded LLM to CPU in 0.3209s
+2026-11-17 19:02:53.016 | DEBUG    | acestep.llm_inference:parse_lm_output:2556 - Debug output text: <|audio_code_32855|><|audio_code_23551|><|audio_code_35431|><|audio_code_23486|><|audio_code_62455|><|audio_code_9328|><|audio_code_28848|><|audio_code_53480|><|audio_code_2176|><|audio_code_44808|><|audio_code_56|><|audio_code_23493|><|audio_code_27659|><|audio_code_63489|><|audio_code_63106|><|audio_code_63490|><|audio_code_12355|><|audio_code_25146|><|audio_code_22529|><|audio_code_57622|><|audio_code_63407|><|audio_code_23879|><|audio_code_18607|><|audio_code_2374|><|audio_code_61015|><|audio_code_49911|><|audio_code_41904|><|audio_code_48936|><|audio_code_16337|><|audio_code_48104|><|audio_code_28116|><|audio_code_13357|><|audio_code_24523|><|audio_code_27975|><|audio_code_11228|><|audio_code_16835|><|audio_code_36290|><|audio_code_51187|><|audio_code_13121|><|audio_code_39250|><|audio_code_11217|><|audio_code_15272|><|audio_code_41419|><|audio_code_13801|><|audio_code_7628|><|audio_code_1842|><|audio_code_50169|><|audio_code_21473|><|audio_code_28152|><|audio_code_11163|><|audio_code_17210|><|audio_code_59330|><|audio_code_31192|><|audio_code_62866|><|audio_code_27584|><|audio_code_8152|><|audio_code_28051|><|audio_code_59330|><|audio_code_15844|><|audio_code_1552|><|audio_code_38581|><|audio_code_52408|><|audio_code_12864|><|audio_code_6896|><|audio_code_128|><|audio_code_57040|><|audio_code_25120|><|audio_code_32912|><|audio_code_19002|><|audio_code_18482|><|audio_code_31291|><|audio_code_58880|><|audio_code_12708|><|audio_code_43065|><|audio_code_49195|><|audio_code_20403|><|audio_code_6879|><|audio_code_13631|><|audio_code_34487|><|audio_code_37239|><|audio_code_30263|><|audio_code_36551|><|audio_code_50888|><|audio_code_17616|><|audio_code_9699|><|audio_code_818|><|audio_code_13778|><|audio_code_34854|><|audio_code_14404|><|audio_code_55310|><|audio_code_30760|><|audio_code_53426|><|audio_code_26802|><|audio_code_61900|><|audio_code_4657|><|audio_code_19976|><|audio_code_1144|><|audio_code_51706|><|audio_code_10707|><|audio_code_47881|><|audio_code_27962|><|audio_code_23281|><|audio_code_53440|><|audio_code_62930|><|audio_code_63928|><|audio_code_25555|><|audio_code_25466|><|audio_code_16826|><|audio_code_52521|><|audio_code_13505|><|audio_code_55802|><|audio_code_39409|><|audio_code_16136|><|audio_code_15225|><|audio_code_22514|><|audio_code_30777|><|audio_code_37604|><|audio_code_23602|><|audio_code_21520|><|audio_code_30232|><|audio_code_25144|><|audio_code_5120|><|audio_code_33808|><|audio_code_40480|><|audio_code_5677|><|audio_code_5684|><|audio_code_7740|><|audio_code_17979|><|audio_code_30210|><|audio_code_531|><|audio_code_3100|><|audio_code_27823|><|audio_code_37391|><|audio_code_14903|><|audio_code_15495|><|audio_code_49239|><|audio_code_35855|><|audio_code_35847|><|audio_code_35847|><|audio_code_35847|><|audio_code_35847|><|audio_code_25359|><|audio_code_35847|><|audio_code_35847|><|audio_code_35847|><|audio_code_35847|><|audio_code_25367|><|audio_code_35847|><|audio_code_25446|><|audio_code_25446|><|im_end|>
+2026-11-17 19:02:53.016 | INFO     | acestep.llm_inference:generate_with_stop_condition:1469 - Phase 2 completed in 14.16s. Generated 150 audio codes
+2026-11-17 19:02:53.016 | INFO     | acestep.handler:generate_music:1138 - [generate_music] Starting generation...
+2026-11-17 19:02:53.016 | INFO     | acestep.handler:generate_music:1141 - [generate_music] Preparing inputs...
+2026-11-17 19:02:53.027 | INFO     | acestep.core.generation.handler.init_service:_load_model_context:381 - [_load_model_context] Loading vae to cuda
+2026-11-17 19:02:53.209 | INFO     | acestep.core.generation.handler.init_service:_load_model_context:394 - [_load_model_context] Loaded vae to cuda in 0.1816s
+2026-11-17 19:02:53.211 | INFO     | acestep.core.generation.handler.conditioning_target:_prepare_target_latents_and_wavs:41 - [generate_music] Decoding audio codes for item 0...
+2026-11-17 19:02:53.697 | INFO     | acestep.core.generation.handler.init_service:_load_model_context:400 - [_load_model_context] Offloading vae to CPU
+2026-11-17 19:02:54.230 | INFO     | acestep.core.generation.handler.init_service:_load_model_context:414 - [_load_model_context] Offloaded vae to CPU in 0.5280s
+2026-11-17 19:02:54.232 | INFO     | acestep.core.generation.handler.conditioning_text:_prepare_precomputed_lm_hints:31 - [generate_music] Decoding audio codes for LM hints for item 0...
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+2026-11-17 19:02:54.240 | INFO     | acestep.core.generation.handler.conditioning_text:_prepare_text_conditioning_inputs:85 - 
+======================================================================
+2026-11-17 19:02:54.240 | INFO     | acestep.core.generation.handler.conditioning_text:_prepare_text_conditioning_inputs:86 - 🔍 [DEBUG] DiT TEXT ENCODER INPUT (Inference)
+2026-11-17 19:02:54.240 | INFO     | acestep.core.generation.handler.conditioning_text:_prepare_text_conditioning_inputs:87 - ======================================================================
+2026-11-17 19:02:54.242 | INFO     | acestep.core.generation.handler.conditioning_text:_prepare_text_conditioning_inputs:88 - text_prompt:
+# Instruction
+Generate audio semantic tokens based on the given conditions:
+
+# Caption
+A warm, celebratory Dutch chanson featuring a clear male vocal singing over a simple arrangement of acoustic guitar chords, a basic bassline, and a light drum machine beat. The vocal line is often echoed by a delayed backing track, creating a pleasant, spacious feel. The track concludes abruptly with a loud, energetic, and slightly distorted brass fanfare, possibly a trumpet or saxophone section, which plays a short, melodic sting.
+
+# Metas
+- bpm: 230
+- timesignature: 3
+- keyscale: B♭ major
+- duration: 30 seconds
+<|endoftext|>
+
+2026-11-17 19:02:54.242 | INFO     | acestep.core.generation.handler.conditioning_text:_prepare_text_conditioning_inputs:89 - ======================================================================
+2026-11-17 19:02:54.242 | INFO     | acestep.core.generation.handler.conditioning_text:_prepare_text_conditioning_inputs:90 - lyrics_text:
+# Languages
+de
+
+# Lyric
+[Verse]
+Heute scheint die Sonne über unsrer Stadt
+[Chorus]
+Wir singen laut, weil jeder Tag ein Anfang hat<|endoftext|>
+2026-11-17 19:02:54.242 | INFO     | acestep.core.generation.handler.conditioning_text:_prepare_text_conditioning_inputs:91 - ======================================================================
+
+2026-11-17 19:02:54.444 | INFO     | acestep.core.generation.handler.init_service:_load_model_context:381 - [_load_model_context] Loading vae to cuda
+2026-11-17 19:02:54.616 | INFO     | acestep.core.generation.handler.init_service:_load_model_context:394 - [_load_model_context] Loaded vae to cuda in 0.1720s
+2026-11-17 19:02:54.620 | INFO     | acestep.core.generation.handler.init_service:_load_model_context:400 - [_load_model_context] Offloading vae to CPU
+2026-11-17 19:02:54.862 | INFO     | acestep.core.generation.handler.init_service:_load_model_context:414 - [_load_model_context] Offloaded vae to CPU in 0.2416s
+2026-11-17 19:02:54.862 | INFO     | acestep.core.generation.handler.conditioning_embed:preprocess_batch:110 - [preprocess_batch] Inferring prompt embeddings...
+2026-11-17 19:02:54.862 | INFO     | acestep.core.generation.handler.init_service:_load_model_context:381 - [_load_model_context] Loading text_encoder to cuda
+`loss_type=None` was set in the config but it is unrecognized. Using the default loss: `ForCausalLMLoss`.
+2026-11-17 19:02:55.190 | INFO     | acestep.core.generation.handler.init_service:_load_model_context:394 - [_load_model_context] Loaded text_encoder to cuda in 0.3282s
+2026-11-17 19:02:55.294 | INFO     | acestep.core.generation.handler.conditioning_embed:preprocess_batch:113 - [preprocess_batch] Inferring lyric embeddings...
+2026-11-17 19:02:55.294 | INFO     | acestep.core.generation.handler.init_service:_load_model_context:400 - [_load_model_context] Offloading text_encoder to CPU
+2026-11-17 19:02:55.740 | INFO     | acestep.core.generation.handler.init_service:_load_model_context:414 - [_load_model_context] Offloaded text_encoder to CPU in 0.4458s
+2026-11-17 19:02:55.740 | INFO     | acestep.core.generation.handler.service_generate_execute:_execute_service_generate_diffusion:120 - [service_generate] Generating audio... (DiT backend: PyTorch (cuda))
+2026-11-17 19:02:56.365 | INFO     | acestep.core.generation.handler.service_generate_execute:_execute_service_generate_diffusion:193 - [service_generate] DiT diffusion via PyTorch (cuda)...
+Using precomputed LM hints
+Using precomputed LM hints
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+2026-11-17 19:03:03.904 | INFO     | acestep.handler:generate_music:1204 - [generate_music] Model generation completed. Decoding latents...
+2026-11-17 19:03:03.908 | DEBUG    | acestep.handler:generate_music:1223 - [generate_music] pred_latents: torch.Size([1, 750, 64]), dtype=torch.bfloat16
+2026-11-17 19:03:03.908 | DEBUG    | acestep.handler:generate_music:1224 - [generate_music] time_costs: {'encoder_time_cost': 0.4081099033355713, 'diffusion_time_cost': 7.130072832107544, 'diffusion_per_step_time_cost': 0.891259104013443, 'total_time_cost': 7.538182735443115, 'offload_time_cost': 1.8972070217132568}
+2026-11-17 19:03:03.912 | INFO     | acestep.handler:generate_music:1241 - [generate_music] Decoding latents with VAE...
+2026-11-17 19:03:03.912 | INFO     | acestep.core.generation.handler.init_service:_load_model_context:381 - [_load_model_context] Loading vae to cuda
+2026-11-17 19:03:04.084 | INFO     | acestep.core.generation.handler.init_service:_load_model_context:394 - [_load_model_context] Loaded vae to cuda in 0.1717s
+2026-11-17 19:03:04.094 | DEBUG    | acestep.handler:generate_music:1268 - [generate_music] Before VAE decode: allocated=4.79GB, max=5.94GB
+2026-11-17 19:03:04.094 | INFO     | acestep.handler:generate_music:1287 - [generate_music] Effective free VRAM before VAE decode: 1.32 GB
+2026-11-17 19:03:04.094 | INFO     | acestep.handler:generate_music:1300 - [generate_music] Using tiled VAE decode to reduce VRAM usage...
+2026-11-17 19:03:04.094 | DEBUG    | acestep.core.generation.handler.memory_utils:_get_auto_decode_chunk_size:75 - [_get_auto_decode_chunk_size] Effective free VRAM: 1.32 GB
+2026-11-17 19:03:04.094 | DEBUG    | acestep.core.generation.handler.memory_utils:_should_offload_wav_to_cpu:98 - [_should_offload_wav_to_cpu] Effective free VRAM: 1.32 GB
+2026-11-17 19:03:04.094 | INFO     | acestep.core.generation.handler.vae_decode:tiled_decode:56 - [tiled_decode] chunk_size=128, offload_wav_to_cpu=True, latents_shape=torch.Size([1, 64, 750])
+2026-11-17 19:03:04.094 | WARNING  | acestep.core.generation.handler.vae_decode_chunks:_tiled_decode_inner:35 - [tiled_decode] Reduced overlap from 64 to 32 for chunk_size=128
+2026-11-17 19:03:04.850 | DEBUG    | acestep.handler:generate_music:1323 - [generate_music] After VAE decode: allocated=4.96GB, max=5.94GB
+2026-11-17 19:03:04.886 | INFO     | acestep.core.generation.handler.init_service:_load_model_context:400 - [_load_model_context] Offloading vae to CPU
+2026-11-17 19:03:05.145 | INFO     | acestep.core.generation.handler.init_service:_load_model_context:414 - [_load_model_context] Offloaded vae to CPU in 0.2587s
+2026-11-17 19:03:05.146 | INFO     | acestep.handler:generate_music:1344 - [generate_music] VAE decode completed. Preparing audio tensors...
+2026-11-17 19:03:05.146 | INFO     | acestep.handler:generate_music:1359 - [generate_music] Done! Generated 1 audio tensors.
+2026-11-17 19:03:05.150 | INFO     | acestep.inference:generate_music:677 - [Normalization] Audio 0 BEFORE: Peak=1.0000, Target=-1.0dB
+2026-11-17 19:03:05.153 | INFO     | acestep.inference:generate_music:682 - [Normalization] Audio 0 AFTER: Peak=0.8913
+2026-11-17 19:03:05.596 | DEBUG    | acestep.audio_utils:save_audio:207 - [AudioSaver] Fallback soundfile Saved audio to C:\Users\<user>\AppData\Local\TrendoWerkzeuge\ki\laufzeit\acestep\.cache\acestep\tmp\api_audio\aa32a7ce-c168-b1b1-f546-1ddc07e6fd62.mp3 (mp3, 48000Hz)
+INFO:     127.0.0.1:55299 - "POST /query_result HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55299 - "GET /v1/audio?path=C%3A%5CUsers%5C%3Cuser%3E%5CAppData%5CLocal%5CTrendoWerkzeuge%5Cki%5Claufzeit%5Cacestep%5C.cache%5Cacestep%5Ctmp%5Capi_audio%5Caa32a7ce-c168-b1b1-f546-1ddc07e6fd62.mp3 HTTP/1.1" 200 OK

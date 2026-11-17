@@ -365,7 +365,7 @@ public partial class MainWindow
         var foot = new StackPanel { Spacing = 4, Margin = new Thickness(0, 6, 0, 0) };
         foot.Children.Add(go);
         foot.Children.Add(P(MusicLengths[Math.Clamp(_msLen, 0, MusicLengths.Length - 1)].Seconds > AceStepClient.ThinkingMaxSeconds
-            ? "Über 8 Minuten plant die KI das Stück nicht mit – sonst würde sie es kürzen." : "Läuft auf deinem PC (ACE-Step). Ein Lied dauert meist unter einer Minute.", Muted, 11));
+            ? "Über 8 Minuten plant die KI das Stück nicht mit – sonst würde sie es kürzen." : "Läuft auf deinem PC (ACE-Step). Beim ersten Lied lädt die Musik-KI erst ihre Modelle (etwa 2 Minuten), ein kurzes Lied braucht dann meist 2 bis 3 Minuten.", Muted, 11));
         if (_msMsg.Length > 0) foot.Children.Add(new TextBlock { Name = "ms-msg", Text = _msMsg, Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap });
         var dock = new DockPanel();
         DockPanel.SetDock(foot, Avalonia.Controls.Dock.Bottom); dock.Children.Add(foot); // „Erstellen“ bleibt unten sichtbar
