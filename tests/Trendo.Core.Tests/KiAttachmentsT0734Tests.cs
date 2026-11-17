@@ -221,4 +221,20 @@ public class KiAttachmentsT0734
         Assert.Contains(m, x => x.Content == "Antwort 2");
         Assert.Contains(m, x => x.Content.StartsWith("Fasse zusammen", StringComparison.Ordinal) && x.Content.Contains("gekürzt"));
     }
+
+    [Fact(DisplayName = "Sammelstand 0.9.104: eine zu lange Frage ohne Anhang wird in der Mitte gekürzt – der Auftrag am Ende bleibt erhalten")]
+    public async Task Long_question_keeps_its_tail()
+    {
+        using var f = new Fixture();
+        var ki = new StreamKi("Lokal", ["ok"]);
+        var ic = new IntelligenceCore(f.Root, f.Core.Audit, () => [ki]);
+        var q = "ANFANG-T0737 " + new string('y', 60_000) + " AUFTRAG-AM-ENDE: fasse das in drei Sätzen zusammen";
+        var a = await ic.AskAsync(new KiRequest(q, SystemPrompt: "SYSTEMREGEL-T0737", UseKnowledge: false));
+        Assert.True(a.Ok);
+        var m = ki.Calls[0];
+        Assert.Contains("SYSTEMREGEL-T0737", m[0].Content);
+        Assert.True(m.Sum(x => x.Content.Length) <= IntelligenceCore.LocalPromptChars, $"{m.Sum(x => x.Content.Length)} Zeichen");
+        Assert.StartsWith("ANFANG-T0737", m[^1].Content, StringComparison.Ordinal);
+        Assert.EndsWith("AUFTRAG-AM-ENDE: fasse das in drei Sätzen zusammen", m[^1].Content, StringComparison.Ordinal);
+    }
 }

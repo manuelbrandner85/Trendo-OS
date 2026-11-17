@@ -84,6 +84,17 @@ public sealed class IntelligenceCore
         return s.Length <= max ? s : s[..Math.Max(0, max - tail.Length)] + tail;
     }
 
+    /// <summary>Sammelstand 0.9.104 (Restpunkt der Gegenprüfung T-0734): eine zu lange Frage in der Mitte kürzen – Anfang und Ende bleiben.
+    /// Steht der eigentliche Auftrag hinter einem langen Text („… fasse das zusammen“), geht er so nicht verloren.</summary>
+    public static string CutMiddle(string s, int max)
+    {
+        if (s.Length <= max) return s;
+        const string mark = "\n[… Mitte gekürzt, damit Anfang, Auftrag und Anweisung vollständig bleiben …]\n";
+        var keep = Math.Max(0, max - mark.Length);
+        var head = keep * 2 / 3;
+        return s[..head] + mark + s[^(keep - head)..];
+    }
+
     /// <summary>Verlauf in den Platz <paramref name="budget"/> einpassen: Passt alles, bleibt alles unverändert. Sonst zählen die neuesten Nachrichten zuerst;
     /// die erste, die nicht mehr ganz passt, wird vorn behalten und gekürzt (z. B. ein großer Anhang), ältere fallen weg.</summary>
     public static List<KiMessage> FitHistory(IEnumerable<KiMessage> history, int budget)
@@ -140,7 +151,7 @@ public sealed class IntelligenceCore
         {
             // Gegenprüfung T-0734: für die KI auf dem PC begrenzen – sonst schneidet Ollama still vorn ab, auch die Systemanweisung
             var room = LocalPromptChars - system.Length - images.Count * ImageChars;
-            var q = question.Length > room - 1000 ? Cut(question, Math.Max(2000, room - 1000), "damit die Anweisung vollständig bleibt") : question;
+            var q = CutMiddle(question, Math.Max(2000, room - 1000));
             var m = new List<KiMessage> { new("system", system) };
             if (req.History is not null) m.AddRange(FitHistory(req.History.TakeLast(10), room - q.Length));
             m.Add(new("user", q, images.Count > 0 ? images : null));

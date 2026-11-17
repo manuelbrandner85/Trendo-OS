@@ -104,6 +104,7 @@ public partial class MainWindow
             catch (InvalidOperationException e) { fail = e.Message + " Deine Frage und die Anhänge sind noch da – entferne die Datei mit ✕ oder hänge eine andere an."; }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException or OutOfMemoryException)
             { fail = $"Eine angehängte Datei lässt sich nicht lesen: {e.Message} Deine Frage und die Anhänge sind noch da."; }
+            catch (Exception e) { fail = $"Eine angehängte Datei lässt sich nicht verarbeiten ({e.GetType().Name}). Deine Frage und die Anhänge sind noch da – entferne die Datei mit ✕."; } // nie gesperrt bis zum Neustart
             if (fail is not null) { _askCts.Dispose(); _askCts = null; _askState = fail; Show("ki-fragen"); return; }
         }
         if (typed.Trim().Length > 0) LinkClose(AskLink); // erst jetzt: die Frage geht wirklich hinaus
