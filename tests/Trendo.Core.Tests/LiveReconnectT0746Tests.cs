@@ -108,6 +108,33 @@ public class T0746_LiveReconnect
         Assert.Equal(4, f.Args.Count);
     }
 
+    [Fact(DisplayName = "Sammelstand 0.9.106: Neuversuch sofort abgewiesen (Server noch nicht zurück) – nächster Versuch nach 4 s, dann 8 s, erst danach Schluss")]
+    public void Refused_retry_keeps_trying()
+    {
+        var (s, f, now, wait, fx) = Live(null);
+        using var _f = fx;
+        wait(10);
+        f.All[^1].Tail = Progress + "\n" + Dropped; f.All[^1].Running = false;
+        s.Tick();
+        Assert.Contains("Neuer Versuch in 2 s (1 von 3)", s.StatusLine());
+        for (var n = 1; n <= LiveSession.MaxRetries; n++)
+        {
+            wait(2 << (n - 1)); s.Tick(); // Versuch n startet …
+            Assert.Equal(n + 1, f.Args.Count);
+            wait(0.5);
+            f.All[^1].Tail = "rtmp://127.0.0.1:19350/live: Connection refused\nCannot open connection"; f.All[^1].Running = false; // … und wird sofort abgewiesen
+            s.Tick();
+            if (n < LiveSession.MaxRetries)
+            {
+                Assert.Equal(LiveMode.Broadcasting, s.Mode);
+                Assert.Contains($"Neuer Versuch in {2 << n} s ({n + 1} von 3)", s.StatusLine());
+            }
+        }
+        Assert.Equal(LiveMode.Idle, s.Mode);
+        Assert.Contains("nach 3 Versuchen nicht wieder", s.Status);
+        Assert.Equal(1 + LiveSession.MaxRetries, f.Args.Count);
+    }
+
     /// <summary>Echtlauf 17.11.2026: Mit „Kopie auf diesem PC speichern“ startete FFmpeg nicht – „[vout]“ war Stream und Kopie zugeordnet.</summary>
     [Theory(DisplayName = "T-0746 Live: Stream mit Kopie – jeder Filterausgang genau einmal zugeordnet und im Filtergraph definiert (einfach, Szene, Tonmischer)")]
     [InlineData("einfach")]

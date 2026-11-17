@@ -632,7 +632,10 @@ public sealed class LiveSession(ICaptureProcessFactory factory)
         }
         var tail = Ingest.Redact(_proc.Tail, _secret).Trim();
         // Nur eine Sendung, die schon lief (≥ 5 s verbunden), wird neu verbunden – ein Ziel, das von Anfang an nicht antwortet, nicht
-        if (Mode == LiveMode.Broadcasting && _bcArgs is not null && LiveStats.ConnectionLost(tail) && now - _started >= TimeSpan.FromSeconds(5))
+        // Sammelstand 0.9.106 (Gegenprüfung T-0746): Während der Neuversuche zählt auch ein sofort abgewiesener Versuch – sonst gab es
+        // bei einem Netzausfall über 2 s nur einen Versuch statt der versprochenen drei (2/4/8 s).
+        var retrying = Retries > 0 && now - _started < TimeSpan.FromSeconds(30);
+        if (Mode == LiveMode.Broadcasting && _bcArgs is not null && (LiveStats.ConnectionLost(tail) || retrying) && (retrying || now - _started >= TimeSpan.FromSeconds(5)))
         {
             if (now - _started >= TimeSpan.FromSeconds(30)) Retries = 0; // lief eine Weile stabil: wieder alle Versuche
             if (Retries < MaxRetries)
