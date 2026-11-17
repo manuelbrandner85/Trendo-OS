@@ -1,0 +1,37 @@
+== T-0732 Beleg 2026-11-17T11:30:23Z
+== ffmpeg: vorhanden
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0732\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:02.24]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:02.74]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:02.78]   Starting:    Trendo.Core.Tests
+  Bestanden T-0732 Stapel: zehn Dateien in einem Lauf – Fortschritt je Datei, Ergebnisse im Ausgabeordner, Unpassendes übersprungen, Originale unverändert [3 s]
+  Bestanden T-0732 Stapel: Fortschrittszeilen, Eignung je Datei, Ausgabedauer [10 ms]
+  Bestanden T-0732 Aufnahme: Argumente ohne Shell, zwei Ausgaben (WAV und Pegelstrom), Mikrofon über DirectShow [3 ms]
+  Bestanden T-0732 Stapel: Abbruch hält mitten in einer Datei an, löscht die halbe Datei, Rest bleibt „abgebrochen“ [7 s]
+  Bestanden T-0732 Aufnahme: läuft bis Stopp (nicht fest 10 s), Pegel sichtbar, WAV sauber abgeschlossen und so lang wie aufgenommen [2 s]
+[xUnit.net 00:00:26.93]   Finished:    Trendo.Core.Tests
+  Bestanden T-0732 Beleg: Windows-Klänge im Stapel, Ton-Kette nach FLAC, Aufnahme – geöffnet mit ffprobe [10 s]
+
+Der Testlauf war erfolgreich.
+Gesamtzahl Tests: 6
+     Bestanden: 6
+ Gesamtzeit: 27,4940 Sekunden
+== beleg.log
+== ffmpeg: ffmpeg version 9.0.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers
+== Stapel „Ton herausholen (MP3)“: 10 Dateien, 3,1 s, 30 Fortschrittsmeldungen
+Alarm01.wav -> Alarm01-mp3.mp3 | fertig | sha256 53B0091AB54094B0… | ffprobe: stream|codec_name=mp3|sample_rate=22050|channels=2 | format|format_name=mp3|duration=5.572245
+Alarm02.wav -> Alarm02-mp3.mp3 | fertig | sha256 1E2EAE5A0557CFB1… | ffprobe: stream|codec_name=mp3|sample_rate=22050|channels=2 | format|format_name=mp3|duration=3.748390
+Alarm03.wav -> Alarm03-mp3.mp3 | fertig | sha256 A9E25284AFA013B1… | ffprobe: stream|codec_name=mp3|sample_rate=22050|channels=2 | format|format_name=mp3|duration=4.029388
+Alarm04.wav -> Alarm04-mp3.mp3 | fertig | sha256 5F61CD85201A3529… | ffprobe: stream|codec_name=mp3|sample_rate=22050|channels=2 | format|format_name=mp3|duration=4.634966
+Alarm05.wav -> Alarm05-mp3.mp3 | fertig | sha256 069217A27D41031E… | ffprobe: stream|codec_name=mp3|sample_rate=22050|channels=2 | format|format_name=mp3|duration=8.256825
+Alarm06.wav -> Alarm06-mp3.mp3 | fertig | sha256 FB89098F82F7C20B… | ffprobe: stream|codec_name=mp3|sample_rate=22050|channels=2 | format|format_name=mp3|duration=6.801633
+Alarm07.wav -> Alarm07-mp3.mp3 | fertig | sha256 CF98BBDB7B625733… | ffprobe: stream|codec_name=mp3|sample_rate=22050|channels=2 | format|format_name=mp3|duration=6.356825
+Alarm08.wav -> Alarm08-mp3.mp3 | fertig | sha256 FD5AA1AF3EB07A09… | ffprobe: stream|codec_name=mp3|sample_rate=22050|channels=2 | format|format_name=mp3|duration=5.732336
+Alarm09.wav -> Alarm09-mp3.mp3 | fertig | sha256 3749ECFB11DD9A28… | ffprobe: stream|codec_name=mp3|sample_rate=22050|channels=2 | format|format_name=mp3|duration=5.483356
+Alarm10.wav -> Alarm10-mp3.mp3 | fertig | sha256 AD9CFA2AE85214D9… | ffprobe: stream|codec_name=mp3|sample_rate=22050|channels=2 | format|format_name=mp3|duration=3.801497
+== Abbruch bei 9 %: Zustand abgebrochen, Dateien im Ausgabeordner: 0
+== Ton-Kette: Alarm01.wav 5,572 s → FLAC 5,572 s, Abweichung 0 Samples | ffprobe: stream|codec_name=flac|sample_rate=22050|channels=2 | format|format_name=flac|duration=5.572245
+== Mikrofon (DirectShow): keines gefunden – Aufnahme mit Tonquelle statt Mikrofon
+== Aufnahme bis Stopp nach 4,3 s: gezählt 4,55 s, Pegel -18,1 dB, -18,1 dB, -18,1 dB, -18,1 dB, -18,1 dB, -18,1 dB, -18,1 dB, -18,1 dB | ffprobe: stream|codec_name=pcm_s16le|sample_rate=44100|channels=1 | format|format_name=wav|duration=4.713651

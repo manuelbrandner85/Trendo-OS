@@ -41,7 +41,7 @@ public sealed class WaveView : Control
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
-        base.OnPointerPressed(e); _down = _now = ToTime(e.GetPosition(this).X); _downY = _nowY = e.GetPosition(this).Y; e.Pointer.Capture(this); e.Handled = true; InvalidateVisual();
+        base.OnPointerPressed(e); if (Focusable) Focus(); _down = _now = ToTime(e.GetPosition(this).X); _downY = _nowY = e.GetPosition(this).Y; e.Pointer.Capture(this); e.Handled = true; InvalidateVisual();
     }
 
     protected override void OnPointerMoved(PointerEventArgs e)

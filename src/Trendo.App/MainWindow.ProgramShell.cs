@@ -320,7 +320,13 @@ public partial class MainWindow
             _progAutosave = new DispatcherTimer { Interval = ProgramAutosaveEvery };
             _progAutosave.Tick += (_, _) => ProgramAutosaveAll();
             _progAutosave.Start();
-            Closing += (_, _) => ProgramAutosaveAll(); // E3: beim Beenden nichts verlieren
+            Closing += (_, e) =>
+            {
+                // Gegenprüfung T-0732: laufende Aufnahme sauber beenden und ins Dokument übernehmen, laufenden Stapel abbrechen –
+                // vor der Sicherung, damit die Aufnahme mitgesichert wird. Nicht, wenn das Schließen gleich abgelehnt wird (Einrichtung läuft).
+                if (!e.Cancel && MayClose(e.IsProgrammatic)) { AuRecordStopOnClose(); MediaBatchStopOnClose(); }
+                ProgramAutosaveAll(); // E3: beim Beenden nichts verlieren
+            };
         }
     }
 
