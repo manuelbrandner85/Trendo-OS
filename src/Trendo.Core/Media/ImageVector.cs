@@ -205,37 +205,113 @@ public static class ImageVector
         return (d, skipped);
     }
 
-    /// <summary>SVG-Pfad in Punkte (Kurven werden abgetastet). Unterstützt M/L/H/V/C/S/Q/T/Z, groß und klein.</summary>
+    /// <summary>SVG-Pfad in Punkte (Kurven werden abgetastet). Unterstützt M/L/H/V/C/S/Q/T/A/Z, groß und klein. Mehrere Teilpfade hängen aneinander –
+    /// getrennt liefert sie <see cref="ParseSubpaths"/>.</summary>
     public static (List<(double X, double Y)> Points, bool Closed) ParsePath(string data)
     {
-        var tokens = Regex.Matches(data, @"[MmLlHhVvCcSsQqTtZzAa]|-?(?:\d+\.?\d*|\.\d+)(?:[eE]-?\d+)?").Select(m => m.Value).ToList();
-        var pts = new List<(double, double)>(); double cx = 0, cy = 0; var closed = false; var i = 0; var cmd = 'M';
+        var subs = ParseSubpaths(data);
+        return (subs.SelectMany(s => s.Points).ToList(), subs.Any(s => s.Closed));
+    }
+
+    /// <summary>T-0747: SVG-Pfad als einzelne Teilpfade (jedes M beginnt einen neuen) – für Konturen in CAD und Fräsen. Bögen (A) werden richtig
+    /// als Ellipsenbogen abgetastet, S/T spiegeln den letzten Kontrollpunkt, Q ist eine echte quadratische Kurve.</summary>
+    public static List<(List<(double X, double Y)> Points, bool Closed)> ParseSubpaths(string data, int curveSteps = 8)
+    {
+        var tokens = Regex.Matches(data, @"[MmLlHhVvCcSsQqTtZzAa]|[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?").Select(m => m.Value).ToList();
+        var res = new List<(List<(double X, double Y)> Points, bool Closed)>();
+        List<(double X, double Y)>? cur = null; var curClosed = false;
+        double cx = 0, cy = 0, sx = 0, sy = 0, lcx = 0, lcy = 0; var i = 0; var cmd = 'M'; var last = ' ';
         double Num() => double.Parse(tokens[i++], Inv);
         bool IsNum() => i < tokens.Count && !char.IsLetter(tokens[i][0]);
+        void Flush() { if (cur is { Count: > 0 }) res.Add((cur, curClosed)); cur = null; curClosed = false; }
+        void Add(double x, double y) { cur ??= [(cx, cy)]; cur.Add((x, y)); }
         while (i < tokens.Count)
         {
             if (char.IsLetter(tokens[i][0])) cmd = tokens[i++][0];
-            var rel = char.IsLower(cmd);
-            switch (char.ToUpperInvariant(cmd))
+            else if (cmd is 'Z' or 'z') { i++; continue; } // Zahl nach Z: überspringen
+            var rel = char.IsLower(cmd); var up = char.ToUpperInvariant(cmd);
+            switch (up)
             {
-                case 'M' or 'L' or 'T': while (IsNum()) { var x = Num(); var y = Num(); if (rel) { x += cx; y += cy; } cx = x; cy = y; pts.Add((cx, cy)); if (char.ToUpperInvariant(cmd) == 'M') cmd = rel ? 'l' : 'L'; } break;
-                case 'H': while (IsNum()) { var x = Num(); cx = rel ? cx + x : x; pts.Add((cx, cy)); } break;
-                case 'V': while (IsNum()) { var y = Num(); cy = rel ? cy + y : y; pts.Add((cx, cy)); } break;
-                case 'C': while (IsNum()) { double x1 = Num(), y1 = Num(), x2 = Num(), y2 = Num(), x = Num(), y = Num(); if (rel) { x1 += cx; y1 += cy; x2 += cx; y2 += cy; x += cx; y += cy; } Bezier(pts, (cx, cy), (x1, y1), (x2, y2), (x, y)); cx = x; cy = y; } break;
-                case 'S' or 'Q': while (IsNum()) { double x1 = Num(), y1 = Num(), x = Num(), y = Num(); if (rel) { x1 += cx; y1 += cy; x += cx; y += cy; } Bezier(pts, (cx, cy), (x1, y1), (x1, y1), (x, y)); cx = x; cy = y; } break;
-                case 'A': while (IsNum()) { for (var k = 0; k < 5; k++) Num(); var x = Num(); var y = Num(); if (rel) { x += cx; y += cy; } cx = x; cy = y; pts.Add((cx, cy)); } break;
-                case 'Z': closed = true; break;
+                case 'M':
+                    if (!IsNum()) break;
+                    { var x = Num(); var y = Num(); if (rel) { x += cx; y += cy; } Flush(); cx = sx = x; cy = sy = y; cur = [(x, y)]; cmd = rel ? 'l' : 'L'; last = 'M'; }
+                    break;
+                case 'L': while (IsNum()) { var x = Num(); var y = Num(); if (rel) { x += cx; y += cy; } Add(x, y); cx = x; cy = y; } last = 'L'; break;
+                case 'H': while (IsNum()) { var x = Num(); x = rel ? cx + x : x; Add(x, cy); cx = x; } last = 'L'; break;
+                case 'V': while (IsNum()) { var y = Num(); y = rel ? cy + y : y; Add(cx, y); cy = y; } last = 'L'; break;
+                case 'C' or 'S':
+                    while (IsNum())
+                    {
+                        double x1, y1;
+                        if (up == 'C') { x1 = Num(); y1 = Num(); if (rel) { x1 += cx; y1 += cy; } }
+                        else if (last == 'C') { x1 = 2 * cx - lcx; y1 = 2 * cy - lcy; } else { x1 = cx; y1 = cy; }
+                        double x2 = Num(), y2 = Num(), x = Num(), y = Num(); if (rel) { x2 += cx; y2 += cy; x += cx; y += cy; }
+                        cur ??= [(cx, cy)]; Bezier(cur, (cx, cy), (x1, y1), (x2, y2), (x, y), curveSteps); lcx = x2; lcy = y2; cx = x; cy = y; last = 'C';
+                    }
+                    break;
+                case 'Q' or 'T':
+                    while (IsNum())
+                    {
+                        double qx, qy;
+                        if (up == 'Q') { qx = Num(); qy = Num(); if (rel) { qx += cx; qy += cy; } }
+                        else if (last == 'Q') { qx = 2 * cx - lcx; qy = 2 * cy - lcy; } else { qx = cx; qy = cy; }
+                        double x = Num(), y = Num(); if (rel) { x += cx; y += cy; }
+                        cur ??= [(cx, cy)];
+                        Bezier(cur, (cx, cy), (cx + 2.0 / 3 * (qx - cx), cy + 2.0 / 3 * (qy - cy)), (x + 2.0 / 3 * (qx - x), y + 2.0 / 3 * (qy - y)), (x, y), curveSteps); // quadratisch = kubisch mit 2/3-Punkten
+                        lcx = qx; lcy = qy; cx = x; cy = y; last = 'Q';
+                    }
+                    break;
+                case 'A':
+                    while (IsNum())
+                    {
+                        double rx = Math.Abs(Num()), ry = Math.Abs(Num()), rot = Num(); var large = Num() != 0; var sweep = Num() != 0; double x = Num(), y = Num(); if (rel) { x += cx; y += cy; }
+                        cur ??= [(cx, cy)];
+                        cur.AddRange(Arc(cx, cy, rx, ry, rot, large, sweep, x, y));
+                        cx = x; cy = y; last = 'A';
+                    }
+                    break;
+                case 'Z':
+                    if (cur is { Count: > 0 }) { if (cur.Count > 1 && Math.Abs(cur[^1].X - sx) < 1e-9 && Math.Abs(cur[^1].Y - sy) < 1e-9) cur.RemoveAt(cur.Count - 1); curClosed = true; Flush(); }
+                    cx = sx; cy = sy; last = 'Z';
+                    break;
                 default: i++; break;
             }
         }
-        return (pts, closed);
+        Flush();
+        return res;
     }
 
-    static void Bezier(List<(double, double)> pts, (double X, double Y) p0, (double X, double Y) p1, (double X, double Y) p2, (double X, double Y) p3)
+    /// <summary>SVG-Ellipsenbogen (Endpunkt-Schreibweise) in Punkte – Umrechnung auf Mittelpunkt und Winkel nach SVG 1.1, Anhang F.6.</summary>
+    static List<(double X, double Y)> Arc(double x1, double y1, double rx, double ry, double rotDeg, bool large, bool sweep, double x2, double y2)
     {
-        for (var s = 1; s <= 8; s++)
+        if (rx < 1e-12 || ry < 1e-12 || Math.Abs(x1 - x2) < 1e-12 && Math.Abs(y1 - y2) < 1e-12) return [(x2, y2)];
+        var phi = rotDeg * Math.PI / 180; double cos = Math.Cos(phi), sin = Math.Sin(phi);
+        double dx = (x1 - x2) / 2, dy = (y1 - y2) / 2, x1p = cos * dx + sin * dy, y1p = -sin * dx + cos * dy;
+        var lam = x1p * x1p / (rx * rx) + y1p * y1p / (ry * ry); if (lam > 1) { var k = Math.Sqrt(lam); rx *= k; ry *= k; }
+        var num = rx * rx * ry * ry - rx * rx * y1p * y1p - ry * ry * x1p * x1p; var den = rx * rx * y1p * y1p + ry * ry * x1p * x1p;
+        var co = Math.Sqrt(Math.Max(0, num / den)) * (large == sweep ? -1 : 1);
+        double cxp = co * rx * y1p / ry, cyp = -co * ry * x1p / rx;
+        double ccx = cos * cxp - sin * cyp + (x1 + x2) / 2, ccy = sin * cxp + cos * cyp + (y1 + y2) / 2;
+        static double Ang(double ux, double uy, double vx, double vy) => Math.Atan2(ux * vy - uy * vx, ux * vx + uy * vy);
+        var t1 = Ang(1, 0, (x1p - cxp) / rx, (y1p - cyp) / ry);
+        var dt = Ang((x1p - cxp) / rx, (y1p - cyp) / ry, (-x1p - cxp) / rx, (-y1p - cyp) / ry);
+        if (!sweep && dt > 0) dt -= 2 * Math.PI; else if (sweep && dt < 0) dt += 2 * Math.PI;
+        var n = Math.Clamp((int)Math.Ceiling(Math.Abs(dt) / (Math.PI / 72)), 2, 288); // höchstens 2,5° je Stück
+        var res = new List<(double X, double Y)>(n);
+        for (var k = 1; k < n; k++)
         {
-            var t = s / 8.0; var u = 1 - t;
+            var t = t1 + dt * k / n; double ex = rx * Math.Cos(t), ey = ry * Math.Sin(t);
+            res.Add((cos * ex - sin * ey + ccx, sin * ex + cos * ey + ccy));
+        }
+        res.Add((x2, y2));
+        return res;
+    }
+
+    static void Bezier(List<(double, double)> pts, (double X, double Y) p0, (double X, double Y) p1, (double X, double Y) p2, (double X, double Y) p3, int steps = 8)
+    {
+        for (var s = 1; s <= steps; s++)
+        {
+            var t = s / (double)steps; var u = 1 - t;
             pts.Add((u * u * u * p0.X + 3 * u * u * t * p1.X + 3 * u * t * t * p2.X + t * t * t * p3.X, u * u * u * p0.Y + 3 * u * u * t * p1.Y + 3 * u * t * t * p2.Y + t * t * t * p3.Y));
         }
     }

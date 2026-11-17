@@ -97,6 +97,13 @@ public sealed class CncJob
     public double W { get; set; } = 40;
     public double H { get; set; } = 20;
     public double Depth { get; set; } = 3;
+    /// <summary>T-0747: Konturen aus einer eingelesenen DXF- oder SVG-Datei (mm, y nach oben, Lage wie in der Datei) und die CAM-Einstellungen dazu.</summary>
+    public List<Cad.CadContour> Contours { get; set; } = [];
+    public string CamSource { get; set; } = "";
+    public string CamMode { get; set; } = "auto";
+    public int CamTabs { get; set; }
+    public double CamTabW { get; set; } = 6;
+    public double CamTabH { get; set; } = 1;
 
     public static CncJob From(JsonObject o)
     {
@@ -105,13 +112,56 @@ public sealed class CncJob
         {
             Gcode = (string?)o["gcode"] ?? "", EnvX = N("envX", 300), EnvY = N("envY", 300), EnvZ = N("envZ", 60), Rapid = N("rapid", 3000), Material = (string?)o["material"] ?? "Aluminium",
             ToolD = N("toolD", 6), Feed = N("feed", 600), Plunge = N("plunge", 200), StepDown = N("stepDown", 1), W = N("w", 40), H = N("h", 20), Depth = N("depth", 3),
+            Contours = o["contours"] is JsonArray ca ? ca.OfType<JsonObject>().Select(ReadContour).Where(c => c.Pts.Count >= 2).ToList() : [],
+            CamSource = (string?)o["camSource"] ?? "", CamMode = (string?)o["camMode"] ?? "auto", CamTabs = (int)N("camTabs", 0), CamTabW = N("camTabW", 6), CamTabH = N("camTabH", 1),
         };
+    }
+
+    static Cad.CadContour ReadContour(JsonObject c)
+    {
+        var xy = c["xy"] is JsonArray a ? a.Select(v => v is JsonValue jv && jv.TryGetValue<double>(out var d) ? d : 0).ToList() : [];
+        var pts = new List<(double X, double Y)>(xy.Count / 2); for (var i = 0; i + 1 < xy.Count; i += 2) pts.Add((xy[i], xy[i + 1]));
+        return new Cad.CadContour(pts, c["closed"] is JsonValue v2 && v2.TryGetValue<bool>(out var b) && b, (string?)c["layer"] ?? "0");
     }
 
     public void WriteTo(JsonObject o)
     {
         o["gcode"] = Gcode; o["envX"] = EnvX; o["envY"] = EnvY; o["envZ"] = EnvZ; o["rapid"] = Rapid; o["material"] = Material;
         o["toolD"] = ToolD; o["feed"] = Feed; o["plunge"] = Plunge; o["stepDown"] = StepDown; o["w"] = W; o["h"] = H; o["depth"] = Depth;
+        if (Contours.Count == 0) { o.Remove("contours"); o.Remove("camSource"); }
+        else
+        {
+            o["contours"] = new JsonArray([.. Contours.Select(c => (JsonNode)new JsonObject { ["layer"] = c.Layer, ["closed"] = c.Closed, ["xy"] = new JsonArray([.. c.Pts.SelectMany(p => new[] { Math.Round(p.X, 9), Math.Round(p.Y, 9) }).Select(v => (JsonNode)JsonValue.Create(v))]) })]);
+            o["camSource"] = CamSource;
+        }
+        o["camMode"] = CamMode; o["camTabs"] = (double)CamTabs; o["camTabW"] = CamTabW; o["camTabH"] = CamTabH; // Stegzahl als double: From liest Zahlen als double
+    }
+
+    /// <summary>T-0747: Einstellungen für Fräsbahnen aus den Konturen (Fräser, Tiefe, Zustellung, Vorschübe, Art, Haltestege; Drehzahl aus Werkstoff und Fräser).</summary>
+    public CamSettings CamSettings()
+    {
+        double rpm = 0; try { rpm = Cnc.Feeds(Material, ToolD, 2).Rpm; } catch (ArgumentException) { }
+        return new CamSettings { ToolD = ToolD, Depth = Depth, StepDown = StepDown, Feed = Feed, Plunge = Plunge, Mode = CamMode, Tabs = CamTabs, TabW = CamTabW, TabH = CamTabH, Rpm = rpm };
+    }
+
+    /// <summary>T-0747: Fräsbahnen aus den eingelesenen Konturen.</summary>
+    public CamResult Cam() => Contours.Count == 0 ? throw new InvalidOperationException("Es ist noch keine Zeichnung eingelesen – unter „Erzeugen“ auf „Aus DXF/SVG …“ klicken.") : CncCam.Generate(Contours, CamSettings());
+
+    /// <summary>T-0747: Zeichnung (DXF oder SVG) einlesen: Konturen übernehmen und die Fräsbahnen erzeugen. Rückgabe: Ergebnis mit Hinweisen.</summary>
+    public CamResult ImportDrawing(string path)
+    {
+        var ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
+        var drawing = ext switch
+        {
+            ".dxf" => Cad.CadDxf.Read(path).Drawing,
+            ".svg" => Cad.CadSvg.Read(path).Drawing,
+            _ => throw new Cad.CadError("Für Fräsbahnen bitte eine DXF- oder SVG-Datei wählen."),
+        };
+        var cs = CncCam.Contours(drawing);
+        if (cs.Count == 0) throw new Cad.CadError("In der Zeichnung sind keine Konturen (Linien, Kreise, Bögen, Pfade).");
+        var old = (Contours, CamSource); Contours = cs; CamSource = System.IO.Path.GetFileName(path);
+        try { var r = Cam(); Gcode = r.Gcode; return r; }
+        catch { (Contours, CamSource) = old; throw; }
     }
 
     public string Pocket() => CncPlus.Pocket(W, H, Depth, ToolD, 50, StepDown, Feed, Plunge);

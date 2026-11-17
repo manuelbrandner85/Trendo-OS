@@ -99,15 +99,46 @@ public static class CadDxf
 {
     static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
-    public sealed record ReadResult(CadDrawing Drawing, Dictionary<string, int> Skipped);
+    /// <summary>Ergebnis des Lesens. T-0747: <see cref="Units"/> ist der DXF-Kopfwert $INSUNITS (0 = ohne Angabe), <see cref="MmPerUnit"/> der Faktor,
+    /// mit dem alle Maße bereits in Millimeter umgerechnet wurden (die Zeichnung ist immer in mm).</summary>
+    public sealed record ReadResult(CadDrawing Drawing, Dictionary<string, int> Skipped)
+    {
+        public int Units { get; init; }
+        public double MmPerUnit { get; init; } = 1;
+        public string UnitName => UnitLabel(Units);
+    }
+
+    /// <summary>T-0747: Millimeter je Zeichnungseinheit für $INSUNITS (AutoCAD-Tabelle). Ohne Angabe (0) gilt mm, wie in Trendo CAD üblich.</summary>
+    public static double MmPerUnitOf(int insunits) => insunits switch
+    {
+        1 => 25.4, 2 => 304.8, 3 => 1_609_344, 4 => 1, 5 => 10, 6 => 1000, 7 => 1_000_000, 8 => 25.4e-6, 9 => 0.0254, 10 => 914.4,
+        11 => 1e-7, 12 => 1e-6, 13 => 1e-3, 14 => 100, 15 => 10_000, 16 => 100_000, 17 => 1e12, 18 => 1.495978707e14, 19 => 9.4607304725808e18, 20 => 3.0856775814913673e19,
+        _ => 1,
+    };
+
+    public static string UnitLabel(int insunits) => insunits switch
+    {
+        0 => "ohne Angabe (als mm gelesen)", 1 => "Zoll", 2 => "Fuß", 4 => "mm", 5 => "cm", 6 => "m", 9 => "mil", 10 => "Yard", 14 => "dm", _ => $"Einheit {insunits}",
+    };
 
     public static ReadResult Read(string path)
     {
         if (new FileInfo(path).Length > 64L * 1024 * 1024) throw new CadError("Die DXF-Datei ist zu groß (über 64 MB).");
-        var text = File.ReadAllText(path, Encoding.Latin1);
+        var text = Decode(File.ReadAllBytes(path));
         if (text.StartsWith("AutoCAD Binary DXF", StringComparison.Ordinal)) throw new CadError("Binäre DXF-Dateien liest Trendo nicht – bitte als ASCII-DXF speichern.");
         return Parse(text);
     }
+
+    /// <summary>T-0747: Text der Datei – UTF-8 (ab AutoCAD 2007 und aus vielen Programmen, auch Trendos eigener Export), sonst Westeuropa wie bisher.</summary>
+    static string Decode(byte[] bytes)
+    {
+        try { return new UTF8Encoding(false, true).GetString(bytes).TrimStart('\uFEFF'); }
+        catch (DecoderFallbackException) { return Encoding.Latin1.GetString(bytes); }
+    }
+
+    /// <summary>T-0747: DXF-Sonderzeichen in Texten: \U+00B2 → ², %%c → Ø, %%d → °, %%p → ±.</summary>
+    static string Unescape(string s) => System.Text.RegularExpressions.Regex.Replace(s, @"\\U\+([0-9A-Fa-f]{4})", m => ((char)Convert.ToInt32(m.Groups[1].Value, 16)).ToString())
+        .Replace("%%c", "Ø", StringComparison.OrdinalIgnoreCase).Replace("%%d", "°", StringComparison.OrdinalIgnoreCase).Replace("%%p", "±", StringComparison.OrdinalIgnoreCase);
 
     public static ReadResult Parse(string text)
     {
@@ -119,13 +150,18 @@ public static class CadDxf
             pairs.Add((code, lines[i + 1].TrimEnd()));
         }
         var d = new CadDrawing(); var skipped = new Dictionary<string, int>();
-        string section = ""; var p = 0;
+        string section = ""; var p = 0; var units = 0;
         while (p < pairs.Count)
         {
             var (code, val) = pairs[p];
             if (code == 0 && val == "SECTION") { section = p + 1 < pairs.Count && pairs[p + 1].Code == 2 ? pairs[p + 1].Value.Trim() : ""; p += 2; continue; }
             if (code == 0 && val == "ENDSEC") { section = ""; p++; continue; }
             if (code == 0 && val == "EOF") break;
+            if (section == "HEADER" && code == 9 && val.Trim() == "$INSUNITS")
+            {
+                if (p + 1 < pairs.Count && pairs[p + 1].Code == 70 && int.TryParse(pairs[p + 1].Value.Trim(), NumberStyles.Integer, Inv, out var u)) units = u;
+                p += 2; continue;
+            }
             if (code != 0) { p++; continue; }
             var start = p; p++;
             var body = new List<(int Code, string Value)>();
@@ -182,13 +218,13 @@ public static class CadDxf
                     // ausgerichteter Text: Ausrichtungspunkt (11/21) gilt, sobald eine Ausrichtung gesetzt ist
                     var aligned = Int(body, 72, 0) != 0 || Int(body, 73, 0) != 0;
                     var x = aligned && Has(body, 11) ? Num(body, 11) : Num(body, 10); var y = aligned && Has(body, 21) ? Num(body, 21) : Num(body, 20);
-                    d.Entities.Add(new CadEntity { Kind = "text", Layer = layer, Points = [[x, y, 0]], Text = Str(body, 1) ?? "", Height = Num(body, 40, 2.5), Rotation = Num(body, 50) });
+                    d.Entities.Add(new CadEntity { Kind = "text", Layer = layer, Points = [[x, y, 0]], Text = Unescape(Str(body, 1) ?? ""), Height = Num(body, 40, 2.5), Rotation = Num(body, 50) });
                     break;
                 }
                 case "MTEXT":
                 {
                     var t = string.Concat(body.Where(b => b.Code == 3).Select(b => b.Value)) + (Str(body, 1) ?? "");
-                    t = System.Text.RegularExpressions.Regex.Replace(t.Replace("\\P", "\n"), @"\\[A-Za-z][^;\\]*;|[{}]", "");
+                    t = System.Text.RegularExpressions.Regex.Replace(Unescape(t).Replace("\\P", "\n"), @"\\[A-Za-z][^;\\]*;|[{}]", "");
                     d.Entities.Add(new CadEntity { Kind = "text", Layer = layer, Points = [[Num(body, 10), Num(body, 20), 0]], Text = t, Height = Num(body, 40, 2.5), Rotation = Num(body, 50) });
                     break;
                 }
@@ -199,13 +235,25 @@ public static class CadDxf
         }
         foreach (var name in d.Entities.Select(e => e.Layer).Distinct().ToList()) d.Layer(name);
         if (d.Entities.Count == 0 && skipped.Count == 0) throw new CadError("In der DXF-Datei ist keine Zeichnung (kein ENTITIES-Abschnitt mit Linien, Kreisen, Bögen oder Text).");
-        return new ReadResult(d, skipped);
+        var k = MmPerUnitOf(units);
+        if (Math.Abs(k - 1) > 1e-12) Scale(d, k); // T-0747: Zoll, cm, m … gleich in mm
+        return new ReadResult(d, skipped) { Units = units, MmPerUnit = k };
 
         static void Count(Dictionary<string, int> s, string k) => s[k] = s.GetValueOrDefault(k) + 1;
         static void SkipVertices(List<(int Code, string Value)> pairs, ref int p)
         {
             while (p < pairs.Count && !(pairs[p].Code == 0 && pairs[p].Value == "SEQEND")) p++;
             if (p < pairs.Count) { p++; while (p < pairs.Count && pairs[p].Code != 0) p++; }
+        }
+    }
+
+    /// <summary>Alle Maße mit <paramref name="k"/> multiplizieren (Ausbuchtungen und Winkel bleiben).</summary>
+    public static void Scale(CadDrawing d, double k)
+    {
+        foreach (var e in d.Entities)
+        {
+            foreach (var pt in e.Points) { pt[0] *= k; pt[1] *= k; }
+            e.Cx *= k; e.Cy *= k; e.R *= k; e.Height *= k;
         }
     }
 

@@ -52,6 +52,8 @@ public partial class MainWindow
                 new ProgramCmd("cnc-g-pocket", "Tasche", d => CncGenerate(d, "Tasche erzeugen", j => j.Pocket())),
                 new ProgramCmd("cnc-g-outline", "Kontur", d => CncGenerate(d, "Kontur erzeugen", j => j.Outline())),
                 new ProgramCmd("cnc-g-bolt", "Lochkreis", d => CncGenerate(d, "Lochkreis erzeugen", j => j.Bolt())),
+                new ProgramCmd("cnc-g-import", "Aus DXF/SVG …", d => _ = CncDrawingPick(), false, "Konturen aus einer Zeichnung (DXF oder SVG) einlesen und Fräsbahnen erzeugen: außen und innen mit Fräserradius-Versatz, in Stufen bis zur Tiefe, auf Wunsch mit Haltestegen. Datei auch einfach auf die Vorschau ziehen."), // T-0747
+                new ProgramCmd("cnc-g-cam", "Bahnen neu", d => CncCamRegenerate(d), false, "Fräsbahnen aus der eingelesenen Zeichnung mit den aktuellen Werten (Fräser, Tiefe, Zustellung, Art, Haltestege) neu berechnen"),
             ]),
         ],
         Exports =
@@ -132,7 +134,24 @@ public partial class MainWindow
         List<CncSeg> segs; GcodeReport? rep = null; string? err = null;
         try { segs = CncSegs(d); rep = CncReport(d); } catch (Exception ex) when (ex is InvalidOperationException or FormatException) { segs = []; err = ex.Message; }
         var view = new CncPathView { Name = "cnc-view", Segs = segs, Iso = _cncIso, ToolD = j.ToolD, Envelope = (j.EnvX, j.EnvY, j.EnvZ), Cursor = new Avalonia.Input.Cursor(_cncIso ? Avalonia.Input.StandardCursorType.SizeAll : Avalonia.Input.StandardCursorType.Arrow) };
+        if (j.Contours.Count > 0) // T-0747: Konturen der Zeichnung dünn unter den Bahnen (so verschoben wie beim Erzeugen)
+        {
+            double sx = -j.Contours.Min(c => c.Pts.Min(p => p.X)), sy = -j.Contours.Min(c => c.Pts.Min(p => p.Y));
+            view.Outlines = j.Contours.Select(c => (c.Pts.Select(p => (p.X + sx, p.Y + sy)).ToList(), c.Closed)).ToList();
+        }
         _cncView = view;
+        FileDrop(view, CK, f => HasExt(f, "dxf", "svg", "nc", "gcode", "ngc", "tap"), f =>
+        {
+            if (HasExt(f, "dxf", "svg")) { CncImportDrawing(f); return; }
+            var g = File.ReadAllText(f); Cnc.Analyse(g); CncEdit(d, "Datei laden", x => x.Gcode = g); CncStop(); _cncT = -1;
+        });
+        var menu = new ContextMenu();
+        void Item(string name, string header, Action go, bool enabled = true) { var mi = new MenuItem { Name = name, Header = header, IsEnabled = enabled }; mi.Click += (_, _) => ProgramRun(CK, go); menu.Items.Add(mi); }
+        Item("cnc-ctx-import", "Zeichnung einlesen (DXF, SVG) …", () => _ = CncDrawingPick());
+        Item("cnc-ctx-cam", "Bahnen neu berechnen", () => CncCamRegenerate(d), j.Contours.Count > 0);
+        Item("cnc-ctx-play", "Abspielen / Pause", CncPlay);
+        Item("cnc-ctx-top", "Ansicht von oben", () => _cncIso = false); Item("cnc-ctx-iso", "Ansicht schräg (3D)", () => _cncIso = true);
+        view.ContextMenu = menu;
         var total = segs.Sum(s => s.Minutes);
         var slider = new Slider { Name = "cnc-sim", Minimum = 0, Maximum = Math.Max(1e-6, total), Value = _cncT < 0 ? total : _cncT, Margin = new Thickness(8, 0) };
         slider.PropertyChanged += (_, e) => { if (e.Property == Slider.ValueProperty && slider.Tag is null) { CncStop(); CncSeek(slider.Value >= total - 1e-9 ? -1 : slider.Value); } };
@@ -183,6 +202,28 @@ public partial class MainWindow
         sp.Children.Add(H("Werkstück & Fräser (für „Erzeugen“)", 12));
         Num("cnc-p-w", "Breite (mm)", j.W, (x, v) => x.W = v); Num("cnc-p-h", "Höhe (mm)", j.H, (x, v) => x.H = v); Num("cnc-p-depth", "Tiefe (mm)", j.Depth, (x, v) => x.Depth = v);
         Num("cnc-p-tool", "Fräser-Ø (mm)", j.ToolD, (x, v) => x.ToolD = v); Num("cnc-p-step", "Zustellung (mm)", j.StepDown, (x, v) => x.StepDown = v); Num("cnc-p-feed", "Vorschub (mm/min)", j.Feed, (x, v) => x.Feed = v); Num("cnc-p-plunge", "Eintauchen (mm/min)", j.Plunge, (x, v) => x.Plunge = v);
+        // T-0747: Fräsbahnen aus einer Zeichnung
+        sp.Children.Add(H("Aus Zeichnung (DXF, SVG)", 12));
+        if (j.Contours.Count == 0) sp.Children.Add(P("Menüband „Erzeugen → Aus DXF/SVG …“, Rechtsklick in die Vorschau oder die Datei einfach auf die Vorschau ziehen.", null, 11));
+        else
+        {
+            sp.Children.Add(P($"{j.CamSource} · {j.Contours.Count} Konturen ({j.Contours.Count(c => c.Closed)} geschlossen)", null, 11));
+            string[] modes = ["auto", "aussen", "innen", "auf"]; string[] modeNames = ["Automatisch (Umriss außen, Löcher innen)", "Alles außen", "Alles innen", "Auf der Linie (Gravur)"];
+            var mode = new ComboBox { Name = "cnc-p-cammode", ItemsSource = modeNames, SelectedIndex = Math.Max(0, Array.IndexOf(modes, j.CamMode)), HorizontalAlignment = HorizontalAlignment.Stretch };
+            mode.SelectionChanged += (_, _) => { if (mode.SelectedIndex >= 0 && modes[mode.SelectedIndex] != j.CamMode) ProgramRun(CK, () => { var m = modes[mode.SelectedIndex]; CncCamApply(d, "Fräsart", x => x.CamMode = m); }); };
+            sp.Children.Add(Row(P("Fräsart", Text, 12), mode));
+            void CamNum(string name, string label, double val, Action<CncJob, double> set, double min = 0)
+            {
+                var t = new TextBox { Name = name, Text = val.ToString("0.###", De), Width = 80 };
+                void Commit() { if (double.TryParse(t.Text, System.Globalization.NumberStyles.Float, De, out var v) && v >= min && Math.Abs(v - val) > 1e-9) ProgramRun(CK, () => CncCamApply(d, label, x => set(x, v))); }
+                t.LostFocus += (_, _) => Commit(); OnEnter(t, Commit);
+                sp.Children.Add(Row(P(label, Text, 12), t));
+            }
+            CamNum("cnc-p-tabs", "Haltestege (Anzahl)", j.CamTabs, (x, v) => x.CamTabs = (int)Math.Round(v));
+            CamNum("cnc-p-tabw", "Steg-Breite (mm)", j.CamTabW, (x, v) => x.CamTabW = v, 0.1);
+            CamNum("cnc-p-tabh", "Steg-Höhe (mm)", j.CamTabH, (x, v) => x.CamTabH = v, 0.1);
+            sp.Children.Add(Act2("cnc-cam-run", "Bahnen neu berechnen", () => ProgramRun(CK, () => CncCamRegenerate(d))));
+        }
         // Datei laden und Nullpunkt
         sp.Children.Add(H("G-Code-Datei", 12));
         var file = Field("cnc-file-path", "G-Code-Datei (.nc, .gcode, .tap, .ngc)", 140); sp.Children.Add(file);
