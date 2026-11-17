@@ -238,7 +238,7 @@ public partial class MainWindow
         var (s, e) = AuSel; if (e <= s) e = a.Seconds; if (s >= a.Seconds) s = 0;
         var f = Path.Combine(AuTemp(), "anhoeren.wav");
         AudioFile.WriteWav(a.Slice((int)(s * a.Rate), (int)(e * a.Rate)), f);
-        var o = Audio() ?? throw new InvalidOperationException("Zum Anhören fehlt der Abspieler (mpv) – unter Werkzeuge mit einem Klick laden.");
+        var o = Audio(); // WAV spielt Trendo selbst (T-0731); ohne Tonausgabe meldet Load eine ehrliche Sperre
         _auPlayFrom = s; _auPlayLen = e - s; _mPos = 0; o.Load(f);
         _auTimer ??= new DispatcherTimer(TimeSpan.FromMilliseconds(80), DispatcherPriority.Background, (_, _) =>
         {

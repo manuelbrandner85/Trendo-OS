@@ -430,9 +430,9 @@ public partial class MainWindow
         {
             if (WindowState == WindowState.Minimized) WindowState = WindowState.Normal;
             Activate();
-            if (ToolPath("mpv") is { } mpv)
-                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(mpv) { ArgumentList = { "--no-video", "--really-quiet", AlarmTone.Ensure(_core.DataRoot) }, UseShellExecute = false, CreateNoWindow = true }); }
-                catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException) { }
+            // Weckton (WAV) spielt Trendo selbst – ohne mpv (T-0731 Gegenprüfung); ohne Tonausgabe bleibt die Mitteilung oben
+            try { var a = SideAudio(); a.SetVolume(AlarmVolume ?? (_opt.Isolated ? 0 : 100)); var tone = AlarmTone.Ensure(_core.DataRoot); a.Load(tone); SidePlaying = tone; }
+            catch (Exception ex) when (ex is AudioBlockedException or IOException or UnauthorizedAccessException) { _core.Audit.Append("app", "clock.ring.stumm", ex.Message); }
         }
     }
 

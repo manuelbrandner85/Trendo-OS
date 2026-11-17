@@ -83,6 +83,24 @@ public class MediaBrowser_Ui
         w.Close();
     }
 
+    [AvaloniaFact(DisplayName = "Medienbrowser (T-0731 Gegenprüfung): Vorhören eines OGG ohne mpv meldet ehrlich BLOCKIERT mit „Player einrichten“ (echter AutoAudio, kein Ersatz-Player)")]
+    public async Task Listen_ogg_without_mpv_is_blocked()
+    {
+        var (w, _, _) = Ui.Open();
+        var fetch = new FakeFetch(url => new WebReply(200, url.Contains("api.php")
+            ? Encoding.UTF8.GetBytes(Answer(Hit(5, "Regen am Fenster.ogg", "CC0", "Max Beispiel", 40_000, 12.5, thumb: false))) : Encoding.UTF8.GetBytes("DATEI")));
+        w.MediaFetchOverride = fetch; w.MediaProvider = "commons"; w.AudioOverride = () => new AutoAudio(() => null); // mpv fehlt
+        w.Show("assets"); w.Find<Button>("mb-tab-klaenge").Press();
+        w.Find<TextBox>("mb-query").Text = "Regen"; w.Find<Button>("mb-search").Press();
+        await Until(() => w.MediaHits.Count == 1 && w.TryFind<Button>("mb-listen") is not null);
+        w.Find<Button>("mb-listen").Press();
+        await Until(() => w.Find<TextBlock>("mb-msg").Text?.StartsWith("BLOCKIERT") == true);
+        var msg = w.Find<TextBlock>("mb-msg").Text!;
+        Assert.Contains(".ogg", msg); Assert.Contains("Player einrichten", msg);
+        Assert.DoesNotContain("braucht Trendo den freien Player mpv – unter Medien", msg); // alter, toter Hinweis ist weg
+        w.Close();
+    }
+
     [AvaloniaFact(DisplayName = "Medienbrowser: Testmodus ohne nachgebildetes Netz sucht nicht im Internet")]
     public async Task No_network_in_test_mode()
     {

@@ -332,7 +332,7 @@ public partial class MainWindow
         var (s, e) = PodcSel; if (e <= s) e = a.Seconds; if (s >= a.Seconds) s = 0;
         var f = Path.Combine(Path.GetTempPath(), "trendo-podcast-anhoeren.wav");
         AudioFile.WriteWav(a.Slice((int)(s * a.Rate), (int)(e * a.Rate)), f);
-        var o = Audio() ?? throw new InvalidOperationException("Zum Anhören fehlt der Abspieler (mpv) – unter Werkzeuge mit einem Klick laden.");
+        var o = Audio(); // WAV spielt Trendo selbst (T-0731); ohne Tonausgabe meldet Load eine ehrliche Sperre
         o.Load(f); _progMsg[PodcKey] = $"Spielt {AudioEdit.Time(s)}–{AudioEdit.Time(e)}.";
     }
 

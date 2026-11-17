@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input.Platform;
 using Avalonia.Layout;
@@ -162,7 +163,7 @@ public partial class MainWindow
         var ffmpeg = ToolPath("ffmpeg") ?? Cli.Find("ffmpeg");
 
         var lib = new StackPanel { Name = "lib-list", Spacing = 2 };
-        sp.Children.Add(Card(Section("Mediathek", "Musik, Videos und Bilder aus deinen Ordnern (bis 2000 Dateien). Klick spielt mit mpv oder VLC ab, sonst mit dem Windows-Programm.",
+        sp.Children.Add(Card(Section("Mediathek", "Musik, Videos und Bilder aus deinen Ordnern (bis 2000 Dateien). Musik spielt Trendo selbst ab (MP3 und WAV eingebaut, weitere Formate mit mpv). Videos und übrige Musik öffnen im Player mpv oder VLC, sonst im Windows-Programm.",
             Line(Act("lib-scan", "Ordner durchsuchen", () =>
             {
                 lib.Children.Clear();
@@ -170,8 +171,8 @@ public partial class MainWindow
                 var items = MediaLibrary.Index([UserFolder(Environment.SpecialFolder.MyMusic), UserFolder(Environment.SpecialFolder.MyVideos), UserFolder(Environment.SpecialFolder.MyPictures), ProjectsRoot]);
                 lib.Children.Add(P($"{items.Count} Dateien gefunden ({items.Count(i => i.Kind == "Musik")} Musik, {items.Count(i => i.Kind == "Video")} Videos, {items.Count(i => i.Kind == "Bild")} Bilder) in {sw.Elapsed.TotalSeconds:0.0} s.", Text));
                 var i = 0;
-                foreach (var m in items.Where(x => x.Kind != "Bild").OrderByDescending(x => x.Changed).Take(25)) { var f = m.Path; lib.Children.Add(Act($"lib-play-{i++}", $"{Path.GetFileName(f)}", () => Play(f))); }
-            })), lib)));
+                foreach (var m in items.Where(x => x.Kind != "Bild").OrderByDescending(x => x.Changed).Take(25)) { var f = m.Path; lib.Children.Add(Act($"lib-play-{i++}", $"{Path.GetFileName(f)}", () => LibraryPlay(f))); }
+            }), Act("lib-stop", "Musik anhalten", () => { _side?.Stop(); SidePlaying = null; Say("Musik angehalten.", V); })), lib)));
 
         var img = Field("img-file", "Bilddatei (PNG, JPG …)");
         var size = Field("img-size", "längste Seite in Pixeln", 160, "1600");
@@ -182,15 +183,22 @@ public partial class MainWindow
 
         var shotAreas = Field("shot-areas", "Schwärzen: x,y,Breite,Höhe; weitere mit ; trennen", 360);
         var shotFile = Field("shot-file", "oder vorhandenes Bild zum Schwärzen", 340, _lastShot);
-        sp.Children.Add(Card(Section("Bildschirmfoto und Schwärzen", "Nimmt das Trendo-Fenster oder den ganzen Bildschirm auf (Bildschirm braucht ffmpeg). Schwärzen übermalt die Stellen dauerhaft in einer Kopie.",
-            Line(Act("shot-window", "Trendo-Fenster aufnehmen", () => Try(V, () => { var p = ShotPath(); SaveScreenshot(p); _lastShot = p; Say("Gespeichert: " + p, V); })),
-                Act("shot-screen", "Ganzen Bildschirm aufnehmen", () => Try(V, () =>
+        sp.Children.Add(Card(Section("Bildschirmfoto und Schwärzen", ScreenGrab.Available
+                ? "Bereich mit der Maus aufziehen, ganzen Bildschirm oder das Trendo-Fenster aufnehmen – ohne Zusatzprogramm. Schwärzen übermalt die Stellen dauerhaft in einer Kopie."
+                : "Nimmt das Trendo-Fenster oder den ganzen Bildschirm auf (Bildschirm braucht unter Linux ffmpeg). Schwärzen übermalt die Stellen dauerhaft in einer Kopie.",
+            Line(Act("shot-area", "Bereich wählen", () => { _ = ShotAsync(V, pick: true); }),
+                Act("shot-window", "Trendo-Fenster aufnehmen", () => Try(V, () => { var p = ShotPath(); SaveScreenshot(p); _lastShot = p; Say("Gespeichert: " + p, V); })),
+                Act("shot-screen", "Ganzen Bildschirm aufnehmen", () =>
                 {
-                    if (ffmpeg is null) throw new InvalidOperationException("Dafür fehlt ffmpeg. Unter „Zusatzprogramme“ kostenlos installieren.");
-                    var p = ShotPath(); var a = FfmpegJobs.RecordArgs(OperatingSystem.IsWindows(), p, 1); a.RemoveRange(a.IndexOf("-t"), a.Count - a.IndexOf("-t")); a.AddRange(["-frames:v", "1", p]);
-                    var r = Cli.Run(ffmpeg, a, timeoutMs: 20000); if (!r.Ok || !File.Exists(p)) throw new InvalidOperationException("Aufnahme hat nicht geklappt.");
-                    _lastShot = p; Say("Gespeichert: " + p, V);
-                }))),
+                    if (ScreenGrab.Available || ScreenGrabOverride is not null) { _ = ShotAsync(V, pick: false); return; } // T-0731: Windows ohne ffmpeg
+                    Try(V, () =>
+                    {
+                        if (ffmpeg is null) throw new InvalidOperationException("BLOCKIERT: Dafür fehlt ffmpeg. Unter „Zusatzprogramme“ kostenlos installieren.");
+                        var p = ShotPath(); var a = FfmpegJobs.RecordArgs(OperatingSystem.IsWindows(), p, 1); a.RemoveRange(a.IndexOf("-t"), a.Count - a.IndexOf("-t")); a.AddRange(["-frames:v", "1", p]);
+                        var r = Cli.Run(ffmpeg, a, timeoutMs: 20000); if (!r.Ok || !File.Exists(p)) throw new InvalidOperationException("Aufnahme hat nicht geklappt.");
+                        _lastShot = p; Say("Gespeichert: " + p, V);
+                    });
+                })),
             Line(shotFile, shotAreas, Act("shot-redact", "Schwärzen", () => Try(V, () =>
             {
                 var areas = (shotAreas.Text ?? "").Split(';', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Split(',').Select(x => int.Parse(x.Trim())).ToArray()).Where(a => a.Length == 4).Select(a => (a[0], a[1], a[2], a[3])).ToList();
@@ -220,13 +228,102 @@ public partial class MainWindow
         return AlltagPage("Bilder & Medien", sp);
     }
 
+    /// <summary>Für Tests: statt des echten Desktops dieses Bild „aufnehmen“ (die Auswahl mit der Maus bleibt echt).</summary>
+    public Func<ScreenGrab.Shot>? ScreenGrabOverride { get; set; }
+    /// <summary>Wartezeit, bis Trendo sich vor der Aufnahme weggeklappt hat (Tests: 0).</summary>
+    public int ShotHideDelayMs { get; set; } = 450;
+    /// <summary>Offene Bereichsauswahl (für Tests).</summary>
+    public ScreenAreaPicker? ScreenPickerOpen { get; private set; }
+    /// <summary>Zuletzt gespeichertes Bildschirmfoto.</summary>
+    public string? LastScreenshot => _lastShot;
+
+    /// <summary>T-0731: Bildschirmfoto ohne ffmpeg – Trendo klappt sich weg, nimmt den Desktop auf (mit fremden Fenstern),
+    /// lässt bei <paramref name="pick"/> einen Bereich mit der Maus aufziehen und speichert die PNG in „bildschirmfotos“.</summary>
+    public async Task<string?> ShotAsync(string view, bool pick)
+    {
+        var prev = WindowState; ScreenGrab.Shot shot;
+        try
+        {
+            if (ShotHideDelayMs > 0) { WindowState = WindowState.Minimized; await Task.Delay(ShotHideDelayMs); }
+            // Sammelstand 0.9.104: im abgeschotteten Testmodus nie den echten Bildschirm aufnehmen – ein neutrales Testbild statt privater Fenster
+            shot = (ScreenGrabOverride ?? (_opt.Isolated ? TestDesktop : ScreenGrab.Desktop))();
+        }
+        catch (Exception x) when (x is InvalidOperationException or ArgumentException)
+        { WindowState = prev; Say("BLOCKIERT: " + x.Message, view); return null; }
+        PixelRect? area = null;
+        if (pick)
+        {
+            Say("Bereich mit der Maus aufziehen – Esc bricht ab.", view); // sichtbar im Hauptfenster, solange die Auswahl offen ist
+            var picker = new ScreenAreaPicker(ScreenGrab.ToBitmap(shot), new PixelSize(shot.Width, shot.Height), new PixelPoint(shot.Left, shot.Top));
+            ScreenPickerOpen = picker; picker.Show(); picker.Activate();
+            area = await picker.Result; ScreenPickerOpen = null;
+            if (area is null) { WindowState = prev; Activate(); Say("Abgebrochen – kein Bildschirmfoto gespeichert.", view); return null; }
+        }
+        WindowState = prev; Activate();
+        try
+        {
+            var p = ScreenGrab.SavePng(shot, ShotPath(), area); _lastShot = p;
+            _core.Audit.Append("app", "app.screenshot", $"{Path.GetFileName(p)} ({(area is { } r ? $"{r.Width}×{r.Height}" : $"{shot.Width}×{shot.Height}")})");
+            Say("Gespeichert: " + p, view); return p;
+        }
+        catch (Exception x) when (x is IOException or UnauthorizedAccessException or ArgumentException) { Say("Speichern ging nicht: " + x.Message, view); return null; }
+    }
+
+    /// <summary>Neutrales Testbild (640 × 400, grau) für den abgeschotteten Testmodus.</summary>
+    static ScreenGrab.Shot TestDesktop()
+    {
+        const int w = 640, h = 400; var px = new byte[w * h * 4];
+        for (var i = 0; i < px.Length; i += 4) { px[i] = 0x40; px[i + 1] = 0x40; px[i + 2] = 0x40; px[i + 3] = 0xFF; }
+        return new ScreenGrab.Shot(px, w, h, 0, 0);
+    }
+
     private string ShotPath() => Path.Combine(WorkFolder("bildschirmfotos"), $"bildschirmfoto-{DateTime.Now:yyyyMMdd-HHmmssfff}.png");
 
-    private void Play(string file)
+    /// <summary>Für Tests: Ersatz für den kleinen Abspieler der Mediathek-Karte und des Weckers.</summary>
+    public Func<IAudioOut>? SideAudioOverride { get; set; }
+    /// <summary>Lautstärke des Wecktons in Prozent; ohne Angabe 100 – im abgeschotteten Testmodus 0, damit Testläufe nicht laut klingeln (der Weg bleibt echt).</summary>
+    public int? AlarmVolume { get; set; }
+    /// <summary>Was der kleine Abspieler gerade spielt (Mediathek oder Weckton) – null, wenn nichts.</summary>
+    public string? SidePlaying { get; private set; }
+    /// <summary>Weg des kleinen Abspielers: „eingebaut“ (ohne Zusatzprogramm), „mpv“ oder null.</summary>
+    public string? SideAudioRoute => (_side as AutoAudio)?.Route;
+    IAudioOut? _side;
+
+    /// <summary>Kleiner Abspieler neben dem Musik-Player (T-0731 Gegenprüfung): MP3/WAV ohne Zusatzprogramm über <see cref="AutoAudio"/>,
+    /// eigene Instanz, damit Mediathek-Klick und Wecker die Warteschlange des Musik-Players nicht verändern.</summary>
+    IAudioOut SideAudio()
+    {
+        if (_side is not null) return _side;
+        _side = SideAudioOverride?.Invoke() ?? new AutoAudio(() => MpvExe);
+        _side.Ended += () => _ui.Post(() => SidePlaying = null);
+        if (_side is IAudioFailure f) f.Failed += m => _ui.Post(() => { SidePlaying = null; Toast("⚠ " + m); });
+        Closed += (_, _) => _side?.Dispose();
+        return _side;
+    }
+
+    /// <summary>Mediathek-Klick (öffentlich für Tests): Musik spielt Trendo selbst (eingebaut bzw. mpv); was der eingebaute Weg nicht kann
+    /// (Videos, Musikformate ohne mpv) öffnet wie bisher im Player mpv oder VLC, sonst im Windows-Programm – ehrlich als fremdes Programm.</summary>
+    public void LibraryPlay(string file)
+    {
+        const string V = "alltag-bilder";
+        if (MediaLibrary.KindOf(file) == "Musik")
+            try
+            {
+                var a = SideAudio(); a.SetVolume(80); a.Load(file); SidePlaying = file;
+                _core.Audit.Append("app", "media.play", Path.GetFileName(file));
+                Say($"Spielt in Trendo: {Path.GetFileName(file)}", V); return;
+            }
+            catch (AudioBlockedException) { /* Format kann Trendo nicht selbst – wie bisher im fremden Player öffnen */ }
+        var by = Play(file);
+        Say(by is null ? $"Öffnet im Windows-Programm: {Path.GetFileName(file)}" : $"Öffnet im Player {by}: {Path.GetFileName(file)}", V);
+    }
+
+    /// <summary>Im fremden Player öffnen: mpv, sonst VLC, sonst das Windows-Programm (null). Liefert den Namen des Players.</summary>
+    private string? Play(string file)
     {
         var p = MediaLibrary.Player(file, ToolPath("mpv"), Cli.Find("vlc"));
-        if (p is { } x) { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(x.Exe) { ArgumentList = { x.Args[0], x.Args[1] }, UseShellExecute = false }); _core.Audit.Append("app", "media.play", Path.GetFileName(file)); }
-        else Launch(file);
+        if (p is { } x) { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(x.Exe) { ArgumentList = { x.Args[0], x.Args[1] }, UseShellExecute = false }); _core.Audit.Append("app", "media.play", Path.GetFileName(file)); return Path.GetFileNameWithoutExtension(x.Exe); }
+        Launch(file); return null;
     }
 
     // ---------- Zeit & Kalender ----------

@@ -69,8 +69,10 @@ public partial class MainWindow
     {
         if (!MediaOnline) throw new InvalidOperationException("Offline – Vorhören braucht Internet.");
         var f = await MediaLib.Preview(h);
-        if (Audio() is not { } a) return "Zum Vorhören braucht Trendo den freien Player mpv – unter Medien › Musik „Player einrichten“.";
-        a.Load(f); MediaListening = f;
+        // MP3/WAV spielt Trendo selbst (T-0731); nur andere Formate (z. B. OGG) brauchen mpv – fehlt er, ehrlich BLOCKIERT mit „Player einrichten“.
+        try { Audio().Load(f); }
+        catch (AudioBlockedException x) { return "BLOCKIERT: " + x.Message; }
+        MediaListening = f;
         return $"„{h.Title}“ ({h.Seconds:0.#} s)";
     });
 

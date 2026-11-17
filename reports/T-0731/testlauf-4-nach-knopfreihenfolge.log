@@ -1,0 +1,27 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    [Test Case Cleanup Failure (T-0731 (UI): Musik ohne mpv – MP3 spielt eingebaut bis zum Titelende; FLAC ohne Player meldet BLOCKIERT mit „Player einrichten“)] System.InvalidOperationException
+      System.InvalidOperationException : The calling thread cannot access this object because a different thread owns it.
+      Stack Trace:
+           at Avalonia.Threading.Dispatcher.<VerifyAccess>g__ThrowVerifyAccess|17_0()
+           at Avalonia.Threading.Dispatcher.VerifyAccess()
+           at Avalonia.Rendering.DefaultRenderLoop.Add(IRenderLoopTask i)
+           at Avalonia.Rendering.Composition.Server.ServerCompositor..ctor(IRenderLoop renderLoop, IPlatformGraphics platformGraphics, CompositionOptions options, BatchStreamObjectPool`1 batchObjectPool, BatchStreamMemoryPool batchMemoryPool)
+           at Avalonia.Rendering.Composition.Compositor..ctor(IRenderLoop loop, IPlatformGraphics gpu, Boolean useUiThreadForSynchronousCommits, ICompositorScheduler scheduler, Boolean reclaimBuffersImmediately, Dispatcher dispatcher, CompositionOptions options)
+           at Avalonia.Rendering.Composition.Compositor..ctor(IRenderLoop loop, IPlatformGraphics gpu, Boolean useUiThreadForSynchronousCommits)
+           at Avalonia.Rendering.Composition.Compositor..ctor(IPlatformGraphics gpu, Boolean useUiThreadForSynchronousCommits)
+           at Avalonia.Headless.AvaloniaHeadlessPlatform.Initialize(AvaloniaHeadlessPlatformOptions opts)
+           at Avalonia.Headless.AvaloniaHeadlessPlatformExtensions.<>c__DisplayClass0_0.<UseHeadless>b__0()
+           at Avalonia.AppBuilder.SetupUnsafe()
+           at Avalonia.Headless.HeadlessUnitTestSession.EnsureIsolatedApplication()
+           at Avalonia.Headless.HeadlessUnitTestSession.<>c__DisplayClass12_0`1.<DispatchCore>b__0()
+        --- End of stack trace from previous location ---
+           at Avalonia.Headless.XUnit.AvaloniaTestRunner.Run(IXunitTest test, IMessageBus messageBus, Object[] constructorArguments, ExplicitOption explicitOption, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, IReadOnlyCollection`1 beforeAfterAttributes, HeadlessUnitTestSession session)
+           at Avalonia.Headless.XUnit.AvaloniaTestRunner.Run(IXunitTest test, IMessageBus messageBus, Object[] constructorArguments, ExplicitOption explicitOption, ExceptionAggregator aggregator, CancellationTokenSource cancellationTokenSource, IReadOnlyCollection`1 beforeAfterAttributes, HeadlessUnitTestSession session)
+    T-0731: Bildschirmfoto ohne ffmpeg (echt, GDI) – nimmt ein fremdes Fenster eines anderen Prozesses auf, PNG enthält dessen Pixel [SKIP]
+      Übersprungen – das Testfenster ist von einem anderen Fenster verdeckt (oben liegt 0x2C20740); der Bildschirm zeigt gerade etwas anderes.
+  Finished:    Trendo.App.Tests (ID = '9b40fc8de34a469043fa3f53fa472e51db5b73bb09cdf0dca4e4c53203beff0f')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 95, Errors: 1, Failed: 0, Skipped: 1, Not Run: 0, Time: 264,087s

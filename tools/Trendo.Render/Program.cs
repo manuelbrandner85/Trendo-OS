@@ -741,13 +741,14 @@ else if (shot == "seite")
                 File.WriteAllBytes(Path.Combine(d, $"{t + 1:00}.mp3"), [.. "ID3"u8.ToArray(), 3, 0, 0, .. Syn(frames.Length), .. frames, .. new byte[200]]);
             }
         }
-        win.MusicFoldersOverride = [mdir]; win.AudioOverride = () => new PreviewAudio();
+        if (musikMode == "gesperrt") File.WriteAllBytes(Path.Combine(mdir, "Klangwerk", "Stadt bei Nacht", "06.flac"), "fLaC"u8.ToArray()); // T-0731: Format ohne eingebaute Wiedergabe
+        win.MusicFoldersOverride = [mdir]; if (musikMode != "gesperrt") win.AudioOverride = () => new PreviewAudio();
         win.Show("medien"); win.MediaTabForPreview("musik");
         var mt = win.MusicLoadAsync(); while (!mt.IsCompleted || win.MusicTracks.Count == 0) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); }
         var morgen = win.MusicTracks.Where(x => x.Album == "Morgenlicht").OrderBy(x => x.No).Select(x => x.Path).ToList();
         if (musikMode == "album") win.MusicViewForPreview("album:Erika Muster|Morgenlicht");
-        win.MusicPlay(morgen, 1); win.MusicProgressForPreview(83, 214);
-        for (var i = 0; i < 50; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); } win.Show("medien"); win.MusicProgressForPreview(83, 214); for (var i = 0; i < 20; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); }
+        if (musikMode == "gesperrt") win.MusicPlay([win.MusicTracks.First(x => x.Path.EndsWith(".flac")).Path]); else { win.MusicPlay(morgen, 1); win.MusicProgressForPreview(83, 214); }
+        for (var i = 0; i < 50; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); } win.Show("medien"); if (musikMode != "gesperrt") win.MusicProgressForPreview(83, 214); for (var i = 0; i < 20; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); }
     }
     if (Environment.GetEnvironmentVariable("TRENDO_KASSE") is { Length: > 0 }) // Kasse mit Beispielartikeln, zwei Verkäufen und gefülltem Warenkorb
     {
