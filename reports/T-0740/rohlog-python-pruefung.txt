@@ -1,0 +1,17 @@
+# Befehl: python -I -X utf8 reports/T-0740/pruefe.py reports/T-0740 (Python 3.13.15)
+OK     Vorhersagen-CSV beginnt mit UTF-8-BOM
+OK     Vorhersagen-CSV: einheitlich LF
+OK     Kopfzeile: nr;text;erwartet;Vorhersage;Sicherheit;Bekannte Wörter
+OK     30 Datenzeilen (erwartet 30)
+      Treffer auf ungesehenen Texten: 29 von 30 (96 %)
+OK     mindestens 24 von 30 richtig
+OK     jede Zeile hat eine Sicherheit 0–100 %
+      daneben: 6: „Zahlungsfrist endet am Freitag, bitte überweisen“ erwartet Rechnung, erkannt Termin (49 %)
+OK     Ordner-Kopfzeile: Datei;Vorhersage;Sicherheit;Bekannte Wörter;Hinweis
+OK     je Datei die erwartete Kategorie: arzttermin.md=Termin, einladung-besprechung.txt=Termin, gewinnspiel.txt=Werbung, mahnung.txt=Rechnung, newsletter.txt=Werbung, rechnung-strom.txt=Rechnung
+OK     Markdown-Kopf: {"format": "trendo-ki-anweisung", "name": "Brief formulieren", "bereich": "Briefe", "version": "1"}
+OK     Anweisungstext mit Lücken unverändert
+OK     JSON-Sammlung mit 7 Vorlagen
+OK     „Brief formulieren“ nach Ersetzen: Version 2 mit geändertem Text
+GESAMT: BESTANDEN
+# Exitcode: 0

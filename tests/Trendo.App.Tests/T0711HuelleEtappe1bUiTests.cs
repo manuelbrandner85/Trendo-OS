@@ -19,6 +19,8 @@ public class T0711_HuelleEtappe1b_Ui
     static bool Has(MainWindow w, string name) { Settle(); return w.GetVisualDescendants().OfType<Control>().Any(c => c.Name == name && c.IsEffectivelyVisible); }
     static void Press(MainWindow w, string name) { var b = Get<Button>(w, name); b.BringIntoView(); Settle(); RealClick(w, Get<Button>(w, name)); Settle(); }
     static void Type(MainWindow w, string name, string text) { var tb = Get<TextBox>(w, name); tb.BringIntoView(); Settle(); RealClick(w, Get<TextBox>(w, name)); tb = Get<TextBox>(w, name); tb.Focus(); tb.CaretIndex = tb.Text?.Length ?? 0; Settle(); foreach (var ch in text) { w.KeyTextInput(ch.ToString()); Settle(); } }
+    /// <summary>T-0740: in den Texteditor (AvaloniaEdit) tippen – wie <see cref="Type"/> für Textfelder.</summary>
+    static void TypeEd(MainWindow w, string name, string text) { var ed = Get<AvaloniaEdit.TextEditor>(w, name); ed.BringIntoView(); Settle(); RealClick(w, ed); ed = Get<AvaloniaEdit.TextEditor>(w, name); ed.TextArea.Focus(); ed.CaretOffset = ed.Document.TextLength; Settle(); foreach (var ch in text) { w.KeyTextInput(ch.ToString()); Settle(); } }
     static void Pause() { var until = DateTime.Now + MainWindow.LinkTypingDelay + TimeSpan.FromMilliseconds(150); while (DateTime.Now < until) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); } Settle(); }
 
     static MainWindow Reopen(string root)
@@ -189,8 +191,8 @@ public class T0711_HuelleEtappe1b_Ui
     public void Prompt_editor()
     {
         Cycle("ki-vorlagen", "pedit", "LINK-VORLAGEN", (w, _) => { w.Show("ki-vorlagen"); Press(w, "prompt-new"); },
-            w => Type(w, "pedit-name", "Kurzfassung"), w => Type(w, "pedit-text", "Fasse in 3 Stichpunkten zusammen: {{Text}}"),
-            w => Has(w, "pedit-name") ? Get<TextBox>(w, "pedit-name").Text + "|" + Get<TextBox>(w, "pedit-text").Text : "-",
+            w => Type(w, "pedit-name", "Kurzfassung"), w => TypeEd(w, "pedit-text", "Fasse in 3 Stichpunkten zusammen: {{Text}}"), // T-0740: Anweisungstext im Texteditor
+            w => Has(w, "pedit-name") ? Get<TextBox>(w, "pedit-name").Text + "|" + Get<AvaloniaEdit.TextEditor>(w, "pedit-text").Text : "-",
             reopen: w => w.Show("ki-vorlagen"),
             also: (w, file) => { Press(w, "pedit-save"); Assert.False(File.Exists(file)); Assert.Contains(w.Prompts.All(), t => t.Name == "Kurzfassung"); });
     }

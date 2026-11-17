@@ -1,0 +1,20 @@
+# T-0740 Beleglauf 2026-11-17T17:53:26Z, Stand: Arbeitskopie auf Basis main a90e697aa
+# Befehl: TRENDO_T0740_BELEG=reports/T-0740/lauf tests/Trendo.App.Tests/bin/Release/net10.0/Trendo.App.Tests.exe -class Trendo.App.Tests.T0740_Ui -verbose
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0740 Eigene KI ohne Modell: Einordnen sagt, was fehlt, statt etwas zu raten [STARTING]
+    T-0740 Eigene KI ohne Modell: Einordnen sagt, was fehlt, statt etwas zu raten [FINISHED] Time: 2,2450275s
+    T-0740 KI-Anweisungen: Texteditor – Tippen, Rückgängig im Feld (Knopf und Rechtsklick), „Lücke einfügen“ als ein Schritt, Lücken hervorgehoben, Speichern [STARTING]
+    T-0740 KI-Anweisungen: Texteditor – Tippen, Rückgängig im Feld (Knopf und Rechtsklick), „Lücke einfügen“ als ein Schritt, Lücken hervorgehoben, Speichern [FINISHED] Time: 1,8511719s
+    T-0740 Eigene KI: „Abbrechen“ hält einen großen Stapel mitten im Lauf an, Fortschritt sichtbar, nichts wird übernommen [STARTING]
+    T-0740 Eigene KI: „Abbrechen“ hält einen großen Stapel mitten im Lauf an, Fortschritt sichtbar, nichts wird übernommen [FINISHED] Time: 3,0035805s
+    T-0740 Eigene KI: Beispiel trainieren, CSV aus dem Repo einordnen (Knopf), Vorschau, Speichern als CSV mit BOM, Rückgängig, Ordner einordnen, Ablegen, Menü und Rechtsklick [STARTING]
+    T-0740 Eigene KI: Beispiel trainieren, CSV aus dem Repo einordnen (Knopf), Vorschau, Speichern als CSV mit BOM, Rückgängig, Ordner einordnen, Ablegen, Menü und Rechtsklick [FINISHED] Time: 5,5349164s
+    T-0740 KI-Anweisungen: Vorlage als .md speichern, ändern, einlesen → Rückfrage → Ersetzen (neue Version) und Als Kopie; Alle als .json; Ablegen [STARTING]
+    T-0740 KI-Anweisungen: Vorlage als .md speichern, ändern, einlesen → Rückfrage → Ersetzen (neue Version) und Als Kopie; Alle als .json; Ablegen [FINISHED] Time: 1,5736579s
+  Finished:    Trendo.App.Tests (ID = 'e419921a5a006067768d4ac031ef04cfab7b23f4094d6b0f25859786a207206d')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 5, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 14,558s
+# Exitcode: 0

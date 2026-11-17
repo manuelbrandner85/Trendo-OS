@@ -1,0 +1,48 @@
+{
+  "format": "trendo-ki-anweisungen",
+  "formatVersion": 1,
+  "vorlagen": [
+    {
+      "name": "Einfach erklären",
+      "bereich": "Alltag",
+      "version": 1,
+      "text": "Erkläre mir {{Thema}} so, dass es ein {{Alter|12}}-jähriges Kind versteht. Nutze höchstens 5 kurze Sätze und ein Beispiel aus dem Alltag."
+    },
+    {
+      "name": "Brief formulieren",
+      "bereich": "Briefe",
+      "version": 2,
+      "text": "Schreibe einen höflichen, klaren Brief an {{Empfänger}}. Anliegen: {{Anliegen}}. Ton: {{Ton|sachlich und freundlich}}. Format: Betreff, Anrede, 2 kurze Absätze, Gruß. Erfinde keine Fakten; markiere fehlende Angaben mit [bitte ergänzen]."
+    },
+    {
+      "name": "Brief formulieren (Kopie)",
+      "bereich": "Briefe",
+      "version": 1,
+      "text": "Schreibe einen höflichen, klaren Brief an {{Empfänger}}. Anliegen: {{Anliegen}}. Ton: {{Ton|sachlich und freundlich}}. Format: Betreff, Anrede, 2 kurze Absätze, Gruß. Erfinde keine Fakten; markiere fehlende Angaben mit [bitte ergänzen]."
+    },
+    {
+      "name": "Ideen sammeln",
+      "bereich": "Kreativ",
+      "version": 1,
+      "text": "Sammle {{Anzahl|10}} unterschiedliche Ideen für {{Thema}}. Gib jede Idee als eine Zeile mit kurzem Nutzen aus."
+    },
+    {
+      "name": "E-Mail freundlicher machen",
+      "bereich": "Texte",
+      "version": 1,
+      "text": "Schreibe diese Nachricht freundlicher und kürzer, ohne den Inhalt zu ändern:\n\n{{Nachricht}}"
+    },
+    {
+      "name": "Rechtschreibung prüfen",
+      "bereich": "Texte",
+      "version": 1,
+      "text": "Prüfe den Text auf Rechtschreibung und Grammatik. Gib zuerst den korrigierten Text aus, danach eine Liste der Änderungen.\n\n{{Text}}"
+    },
+    {
+      "name": "Text zusammenfassen",
+      "bereich": "Texte",
+      "version": 1,
+      "text": "Fasse den folgenden Text in {{Anzahl|3}} Stichpunkten auf Deutsch zusammen. Nenne zuerst das Wichtigste.\n\nText:\n{{Text}}"
+    }
+  ]
+}

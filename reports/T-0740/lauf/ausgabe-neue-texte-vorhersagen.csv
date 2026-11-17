@@ -1,0 +1,31 @@
+﻿nr;text;erwartet;Vorhersage;Sicherheit;Bekannte Wörter
+1;Ihre Rechnung für März steht im Kundenportal bereit;Rechnung;Rechnung;68 %;1
+2;Bitte begleichen Sie den Betrag von 49 Euro bis zum 15.;Rechnung;Rechnung;67 %;5
+3;Zweite Mahnung zur offenen Rechnung;Rechnung;Rechnung;81 %;2
+4;Die Abbuchung von Ihrem Konto erfolgt am Monatsende;Rechnung;Rechnung;77 %;2
+5;Rechnung zur Bestellung 7781 im Anhang;Rechnung;Rechnung;81 %;2
+6;Zahlungsfrist endet am Freitag, bitte überweisen;Rechnung;Termin;49 %;1
+7;Ihre Jahresabrechnung für Strom liegt vor;Rechnung;Rechnung;51 %;1
+8;Gebühr für die Kontoführung im Oktober;Rechnung;Rechnung;33 %;0
+9;Offener Betrag aus der letzten Rechnung;Rechnung;Rechnung;81 %;2
+10;Die Gutschrift wurde Ihrem Konto gutgeschrieben;Rechnung;Rechnung;87 %;3
+11;Können wir das Treffen auf Mittwoch verlegen;Termin;Termin;65 %;2
+12;Einladung: Teambesprechung am Donnerstag um 14 Uhr;Termin;Termin;88 %;3
+13;Ihr Termin beim Zahnarzt ist am Montag um 8 Uhr;Termin;Termin;88 %;4
+14;Erinnerung an das Gespräch morgen um 10 Uhr;Termin;Termin;96 %;5
+15;Wann hast du nächste Woche Zeit für ein Treffen;Termin;Termin;83 %;4
+16;Die Besichtigung findet am Samstag um 11 Uhr statt;Termin;Termin;66 %;1
+17;Bitte bestätigen Sie den neuen Termin;Termin;Termin;84 %;3
+18;Elternsprechtag am Dienstag ab 16 Uhr;Termin;Termin;79 %;2
+19;Der Kurs wurde auf 19 Uhr verschoben;Termin;Termin;79 %;2
+20;Sitzung des Vereins am ersten Montag im Monat;Termin;Termin;55 %;3
+21;Nur dieses Wochenende 50 Prozent Rabatt;Werbung;Werbung;66 %;2
+22;Jetzt Gutschein sichern und beim nächsten Einkauf sparen;Werbung;Werbung;96 %;5
+23;Gratis Versand für alle Bestellungen heute;Werbung;Werbung;50 %;1
+24;Entdecken Sie die neue Herbstkollektion;Werbung;Werbung;66 %;2
+25;Exklusive Angebote nur für Newsletter-Abonnenten;Werbung;Werbung;66 %;2
+26;Gewinnspiel: Jetzt mitmachen und eine Reise gewinnen;Werbung;Werbung;92 %;4
+27;Die besten Angebote der Woche warten auf Sie;Werbung;Werbung;73 %;3
+28;Testen Sie unser Premium-Abo kostenlos;Werbung;Werbung;88 %;4
+29;Großer Ausverkauf mit Rabatt auf alles;Werbung;Werbung;80 %;3
+30;Sichern Sie sich jetzt Ihr exklusives Angebot;Werbung;Werbung;75 %;2

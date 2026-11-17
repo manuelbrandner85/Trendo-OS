@@ -1149,18 +1149,26 @@ public partial class MainWindow
             ("Modell", [
                 new ProgramCmd("train-load", "Modell laden …", d => _ = TrainLoad(d), Tip: "Ein gespeichertes Trendo-Modell (.json) öffnen."),
             ]),
+            // T-0740: das Modell benutzen – im Stapel auf CSV oder Ordner, mit Fortschritt und Abbrechen
+            ("Anwenden", [
+                new ProgramCmd("train-apply-csv", "CSV einordnen …", d => _ = TrainPickCsv(d), Tip: "Jede Zeile einer CSV-Datei bekommt Kategorie und Sicherheit."),
+                new ProgramCmd("train-apply-folder", "Ordner einordnen …", d => _ = TrainPickFolder(d), Tip: "Jede Textdatei eines Ordners bekommt Kategorie und Sicherheit."),
+                new ProgramCmd("train-batch-save-cmd", "Vorhersagen speichern …", d => _ = TrainSaveBatch(d), Tip: "Die Tabelle mit den Vorhersagen als CSV-Datei."),
+            ]),
         ],
         GroupLevels = new() { ["Modell"] = 1 },
+        Menus = TrainMenus,
         Exports =
         [
             new("json", "Modell (.json)", ".json", (d, f) => { File.WriteAllText(f, TrainModel(d)?.ToJson() ?? throw new InvalidOperationException("Noch nicht trainiert.")); return f; }),
             new("md", "Auswertung (.md)", ".md", (d, f) => { var e = TrainEval(d) ?? throw new InvalidOperationException("Erst trainieren (mit Prüfanteil)."); File.WriteAllText(f, TextClassifier.Report(e.Eval, e.Train, TextClassifier.Warnings(TrainExamples(d)), d.Title)); return f; }),
+            new("pred", "Vorhersagen (.csv)", ".csv", (d, f) => TrainWriteBatch(d, f)), // T-0740
             new("csv", "Beispiele (.csv)", ".csv", (d, f) => { File.WriteAllText(f, "text;kategorie\n" + string.Join("\n", TrainExamples(d).Where(e => e.Text.Length > 0 || e.Label.Length > 0).Select(e => $"\"{e.Text.Replace("\"", "\"\"")}\";\"{e.Label.Replace("\"", "\"\"")}\"")) + "\n", new System.Text.UTF8Encoding(true)); return f; }),
         ],
         Workspace = TrainWorkspace,
         Properties = TrainProperties,
         Status = d => { var ex = TrainExamples(d); var e = TrainEval(d); return $"{ex.Count(x => x.Label.Length > 0)} Beispiele · {ex.Select(x => x.Label).Where(l => l.Length > 0).Distinct().Count()} Kategorien · " + (e is { } v ? $"Genauigkeit {(v.Eval.Accuracy * 100).ToString("0.#", De)} %" : TrainModel(d) is not null ? "Modell da" : "noch nicht trainiert"); },
-        Help = "Trag Beispiele ein: links der Text, rechts die Kategorie (z. B. Rechnung, Termin, Werbung) – oder importiere eine CSV. „Trainieren“ lernt mit einem Teil der Beispiele und prüft mit dem Rest: Genauigkeit, Verwechslungen und je Kategorie Präzision und Trefferquote. Rechts kannst du einen neuen Text eingeben und siehst, wie sicher die KI ist. Gut wird es ab etwa 20 Beispielen je Kategorie. Alles bleibt auf deinem Rechner.",
+        Help = "Trag Beispiele ein: links der Text, rechts die Kategorie (z. B. Rechnung, Termin, Werbung) – oder importiere eine CSV. „Trainieren“ lernt mit einem Teil der Beispiele und prüft mit dem Rest: Genauigkeit, Verwechslungen und je Kategorie Präzision und Trefferquote. Rechts kannst du einen neuen Text eingeben und siehst, wie sicher die KI ist. Gut wird es ab etwa 20 Beispielen je Kategorie. Ist das Modell fertig, ordnet „CSV einordnen“ jede Zeile einer CSV-Datei ein und „Ordner einordnen“ jede Textdatei eines Ordners (oder Datei bzw. Ordner auf die Fläche ziehen) – mit Fortschritt und „Abbrechen“; „Vorhersagen speichern“ legt die Tabelle als CSV ab. Alles bleibt auf deinem Rechner.",
     }, "ki trainieren", "eigene ki", "textklassifikator", "klassifizieren", "maschinelles lernen", "machine learning", "naive bayes", "kategorien lernen", "texte sortieren", "modell trainieren");
 
     Control TrainWorkspace(ProgramDocument d)
@@ -1240,7 +1248,10 @@ public partial class MainWindow
             right.Children.Add(probe); right.Children.Add(result);
             Predict(d.Text("probe"));
         }
-        return new Grid { ColumnDefinitions = new ColumnDefinitions("3*,14,2*"), Margin = new Thickness(4, 0, 10, 4), Children = { KrCard(left, "train-card"), Pos(KrCard(right, "train-result-card"), 2) } };
+        if (model is not null) { var batch = TrainBatchCard(d); batch.ContextMenu = TrainBatchMenu(d); right.Children.Add(batch); } // T-0740: Modell anwenden
+        var ws = new Grid { ColumnDefinitions = new ColumnDefinitions("3*,14,2*"), Margin = new Thickness(4, 0, 10, 4), Children = { KrCard(left, "train-card"), Pos(KrCard(right, "train-result-card"), 2) } };
+        TrainDropTarget(ws, d); // T-0740: CSV oder Ordner auf die Arbeitsfläche ziehen
+        return ws;
     }
 
     Control TrainProperties(ProgramDocument d)
