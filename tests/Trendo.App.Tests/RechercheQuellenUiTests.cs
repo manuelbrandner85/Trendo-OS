@@ -14,7 +14,7 @@ namespace Trendo.App.Tests;
 
 /// <summary>T-0735: Recherche mit Quellen (DOI, RIS, CSL-JSON), Sicher recherchieren (Suche mit Trefferliste, Sammlung behalten) und
 /// Freie Bilder &amp; Klänge (Laden nach Freigabe mit Beleg je Datei). Die „…_Echt“-Tests gehen wirklich ins Netz über den echten Lese-Weg
-/// <see cref="ReadOnlyWeb"/>; ohne Internet melden sie sich als übersprungen (nur dann). Mit TRENDO_BELEG_DIR schreiben sie Rohlogs für reports/T-0735.</summary>
+/// <see cref="ReadOnlyWeb"/>; ohne Internet melden sie sich sichtbar als übersprungen (Assert.Skip, nur dann). Mit TRENDO_BELEG_DIR schreiben sie Rohlogs für reports/T-0735.</summary>
 public class RechercheQuellen_Ui
 {
     const string K = "quellen-programm";
@@ -125,6 +125,48 @@ public class RechercheQuellen_Ui
         finally { w.Close(); w2?.Close(); }
     }
 
+    /// <summary>Gegenprüfung T-0735: Abschalten von „Sammlung behalten“ fragt vorher und nennt die Folge; „Abbrechen“ ändert nichts.
+    /// Ein Fehler beim Verschieben erscheint als klare Meldung, der Schalter bleibt an, die Sammlung bleibt behalten.</summary>
+    [AvaloniaFact(DisplayName = "SYS-08: Sammlung behalten ausschalten fragt vorher; Fehler beim Verschieben zeigt eine Meldung ohne halben Zustand")]
+    public async Task Sys08_behalten_aus_mit_rueckfrage()
+    {
+        var (w, _, root) = Ui.Open();
+        try
+        {
+            var asked = new List<string>(); var answer = false;
+            w.ResearchKeepOffConfirm = t => { asked.Add(t); return Task.FromResult(answer); };
+            w.Desk.Record(new Uri("https://example.org/a"), new ReaderPage("A", "Text", []), "Text");
+            w.Show("recherche"); Settle();
+            CheckBox Keep() { var k = w.Find<CheckBox>("rs-keep"); k.BringIntoView(); Settle(); return k; }
+            RealClick(w, Keep()); Settle();
+            Assert.True(w.Desk.Keep); Assert.Empty(asked); // Einschalten braucht keine Rückfrage
+
+            // Ausschalten → Rückfrage nennt die Folge; „Abbrechen“ lässt alles, wie es war
+            RealClick(w, Keep());
+            await Until(() => asked.Count == 1);
+            Assert.Contains("beim nächsten Start", asked[0]); Assert.Contains("gelöscht", asked[0]);
+            await Until(() => w.Find<CheckBox>("rs-keep").IsChecked == true);
+            Assert.True(w.Desk.Keep); Assert.True(w.Find<CheckBox>("rs-keep").IsChecked); Assert.Single(w.Desk.SessionSources());
+
+            // Ja, aber Verschieben scheitert (im flüchtigen Ordner liegt ein Ordner mit dem Namen einer Datei) → klare Meldung, nichts geändert
+            answer = true;
+            var keepDir = Path.Combine(root, "recherche", "sammlung");
+            var name = Directory.GetFiles(keepDir).Select(p => Path.GetFileName(p)).OrderBy(n => n, StringComparer.Ordinal).Last();
+            var block = Path.Combine(root, "tmp", "recherche-sitzung", name); Directory.CreateDirectory(block);
+            RealClick(w, Keep());
+            await Until(() => asked.Count == 2 && w.TryFind<TextBlock>("rs-msg")?.Text?.Contains("nichts geändert") == true);
+            Assert.Contains("nichts geändert", w.Find<TextBlock>("rs-msg").Text);
+            Assert.True(w.Desk.Keep); Assert.True(w.Find<CheckBox>("rs-keep").IsChecked); Assert.Single(w.Desk.SessionSources());
+
+            // Hindernis weg, Ja → jetzt flüchtig
+            Directory.Delete(block);
+            RealClick(w, Keep());
+            await Until(() => asked.Count == 3 && !w.Desk.Keep);
+            Assert.False(w.Desk.Keep); Assert.False(w.Find<CheckBox>("rs-keep").IsChecked); Assert.Single(w.Desk.SessionSources());
+        }
+        finally { w.Close(); }
+    }
+
     // ---------- echter Abruf ----------
 
     static bool NoNet(Exception ex) => ex is HttpRequestException or TaskCanceledException or System.Net.Sockets.SocketException && Beleg is null;
@@ -138,7 +180,7 @@ public class RechercheQuellen_Ui
             var url = CiteKit.CrossrefUrl("10.1038/nature14539");
             (string Type, byte[] Bytes, Uri Final) got;
             try { got = await ReadOnlyWeb.GetAsync(url); }
-            catch (Exception ex) when (NoNet(ex)) { return; }
+            catch (Exception ex) when (NoNet(ex)) { Assert.Skip("Übersprungen – kein Internet: " + ex.Message); return; }
             Raw("crossref-10.1038_nature14539.json", got.Bytes);
             w.CiteFetchOverride = _ => Task.FromResult(got); // dieselbe echte Antwort durch die Oberfläche
             w.Show(K); Settle(); RealClick(w, w.Find<Button>("prog-tpl-leer")); Settle();
@@ -163,7 +205,7 @@ public class RechercheQuellen_Ui
             var url = ResearchSearch.QueryUrl("wikipedia", "Phishing");
             (string Type, byte[] Bytes, Uri Final) got;
             try { got = await ReadOnlyWeb.GetAsync(url); }
-            catch (Exception ex) when (NoNet(ex)) { return; }
+            catch (Exception ex) when (NoNet(ex)) { Assert.Skip("Übersprungen – kein Internet: " + ex.Message); return; }
             Raw("wikipedia-suche-phishing.json", got.Bytes);
             w.ResearchSearchFetchOverride = _ => Task.FromResult(got);
             await w.ResearchSearchAsync("wikipedia", "Phishing");
@@ -205,7 +247,7 @@ public class RechercheQuellen_Ui
                     if (FreeAssets.Plan(files, "hdris").All(f => f.Size is > 0 and < ResearchDesk.MaxBytes)) { pick = h.Id; break; }
                 }
             }
-            catch (Exception ex) when (NoNet(ex)) { return; }
+            catch (Exception ex) when (NoNet(ex)) { Assert.Skip("Übersprungen – kein Internet: " + ex.Message); return; }
             Assert.NotNull(pick);
             var core = new TrendoCore(root, new InMemorySecretStore(), offline: false);
             var project = core.Projects.Create("probe", "Probe").Id;

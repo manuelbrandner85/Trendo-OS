@@ -39,15 +39,42 @@ public sealed partial class ResearchDesk
     /// Aus (Standard): flüchtig wie bisher, jede App-Sitzung beginnt leer.</summary>
     public bool Keep => File.Exists(_keepFlag);
 
-    /// <summary>Schaltet „Sammlung behalten“ um und nimmt die bisherige Sammlung mit.</summary>
+    /// <summary>Schaltet „Sammlung behalten“ um und nimmt die bisherige Sammlung mit. Ganz oder gar nicht (Gegenprüfung T-0735):
+    /// Scheitert ein Schritt (z. B. gesperrte Datei), wandert alles Verschobene zurück, der Schalter bleibt, wie er war, und es kommt
+    /// eine <see cref="IOException"/> mit verständlicher Meldung („… Es wurde nichts geändert.“).</summary>
     public void SetKeep(bool keep)
     {
         if (keep == Keep) return;
         var target = keep ? _keepDir : _tmpDir;
-        Directory.CreateDirectory(target);
-        foreach (var f in Directory.GetFiles(_dir)) File.Move(f, Path.Combine(target, Path.GetFileName(f)), true);
-        if (keep) { Directory.CreateDirectory(Path.GetDirectoryName(_keepFlag)!); AtomicFile.WriteAllText(_keepFlag, "Die Recherche-Sammlung bleibt über einen Neustart erhalten.\n"); }
-        else File.Delete(_keepFlag);
+        var moved = new List<(string From, string To, string? Backup)>();
+        try
+        {
+            Directory.CreateDirectory(target);
+            foreach (var f in Directory.GetFiles(_dir).OrderBy(p => p, StringComparer.Ordinal))
+            {
+                var to = Path.Combine(target, Path.GetFileName(f));
+                string? bak = null;
+                if (File.Exists(to)) { bak = to + ".trendo-alt"; File.Move(to, bak, true); }
+                moved.Add((f, to, bak));
+                File.Move(f, to);
+            }
+            if (keep) { Directory.CreateDirectory(Path.GetDirectoryName(_keepFlag)!); AtomicFile.WriteAllText(_keepFlag, "Die Recherche-Sammlung bleibt über einen Neustart erhalten.\n"); }
+            else File.Delete(_keepFlag);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            for (var i = moved.Count - 1; i >= 0; i--) // zurück an den alten Platz
+            {
+                var (from, to, bak) = moved[i];
+                try { if (File.Exists(to) && !File.Exists(from)) File.Move(to, from); if (bak is not null && File.Exists(bak)) File.Move(bak, to, true); }
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+            }
+            if (keep) { try { File.Delete(_keepFlag); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } }
+            _audit.Append(Principal.LocalOwner.Name, "research.keep.fehler", ex.GetType().Name);
+            throw new IOException((keep ? "Die Sammlung ließ sich nicht dauerhaft ablegen" : "Die Sammlung ließ sich nicht in den flüchtigen Ordner verschieben")
+                + " – eine Datei ist gerade gesperrt oder nicht beschreibbar. Es wurde nichts geändert.", ex);
+        }
+        foreach (var (_, _, bak) in moved) if (bak is not null) { try { File.Delete(bak); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } }
         _dir = target;
         _audit.Append(Principal.LocalOwner.Name, "research.keep", keep ? "an" : "aus");
     }

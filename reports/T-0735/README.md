@@ -15,4 +15,4 @@ Nicht im Repo: die HDR-Datei selbst (1,6 MB, CC0) – ihre SHA-256 steht in `x07
 Fremdprogramm-Prüfung RIS/CSL-JSON: **BLOCKIERT** – auf diesem PC ist weder Zotero, Citavi, EndNote noch Pandoc installiert (geprüft 17.11.2026, nichts installiert).
 Ersatzweise nur Lesen mit Python `json` bzw. Zeilenprüfung: `fremdpruefung-python.log` – das ist kein Nachweis, dass ein Literaturprogramm die Dateien annimmt.
 
-Hinweis Prüfsummen: `SHA256SUMS` gilt für die Dateien mit LF-Zeilenenden, wie sie im Repo liegen. Bei einem Windows-Checkout mit `core.autocrlf=true` vor dem Prüfen `git show HEAD:reports/T-0735/<datei> | sha256sum` nutzen; die JSON-Rohantworten sind einzeilig bzw. unverändert.
+Hinweis Prüfsummen: `SHA256SUMS` gilt für die Bytes, wie sie im Repo liegen. Der Ordner steht in `.gitattributes` mit `-text`, git ändert die Zeilenenden also nicht. RIS (`cite-echt.ris`), CSL-JSON (`cite-echt.csl.json`), `x07-herkunft.json` und `fremdpruefung-python.log` haben CRLF-Zeilenenden, wie sie erzeugt wurden (RIS verlangt CRLF); die übrigen Dateien LF. Prüfen nach einem frischen Klon: `sha256sum -c SHA256SUMS` in diesem Ordner.

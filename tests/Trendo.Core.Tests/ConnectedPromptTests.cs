@@ -56,6 +56,57 @@ public class ConnectedPromptTests
         Assert.NotEqual(RunStatus.AwaitingApproval, r3.Status);
     }
 
+    /// <summary>Gegenprüfung T-0735: Schlägt ein späteres Schreiben fehl, bleibt keine halbe Sammlung liegen – weder beim Ablegen
+    /// (Zwischenordner) noch beim Übernehmen ins Projekt (vorher vorhandene Dateien kommen zurück). Netz ersetzt (ReadBytes).</summary>
+    [Fact(DisplayName = "X-07: Fehler beim Schreiben hinterlässt keine halbe Sammlung, alte Dateien bleiben unverändert (Gegenprüfung T-0735)")]
+    public void Quelle_holen_schreibfehler_ohne_halbe_sammlung()
+    {
+        using var fx = new Box();
+        var gltf = Encoding.UTF8.GetBytes("{\"asset\":{\"version\":\"2.0\"}}");
+        var tex = Encoding.ASCII.GetBytes("PNG-Probe");
+        string Md5(byte[] b) => Convert.ToHexString(System.Security.Cryptography.MD5.HashData(b)).ToLowerInvariant();
+        PromptServices Net(string includeRel) => new()
+        {
+            Offline = false,
+            ReadBytes = (uri, _) => Task.FromResult(uri.Host == "api.polyhaven.com"
+                ? ("application/json", Encoding.UTF8.GetBytes("{\"gltf\":{\"1k\":{\"gltf\":{\"url\":\"https://dl.polyhaven.org/file/stein/stein_1k.gltf\",\"md5\":\"" + Md5(gltf) + "\",\"include\":{\"" + includeRel + "\":{\"url\":\"https://dl.polyhaven.org/file/stein/t.png\",\"md5\":\"" + Md5(tex) + "\"}}}}}}"), uri)
+                : ("application/octet-stream", uri.AbsolutePath.EndsWith(".gltf", StringComparison.Ordinal) ? gltf : tex, uri)),
+        };
+        StudioExecutionResult Run(PromptServices s, string id)
+        {
+            var wf = fx.Flow(s);
+            var planned = wf.Los(fx.Project, wf.Start(fx.Req("X-07", "Holen: ja\nAsset: stein", id), fx.Ctx()).RunId, fx.Ctx());
+            Assert.Equal(RunStatus.AwaitingApproval, planned.Status);
+            return wf.Approve(fx.Project, planned.RunId, Principal.LocalOwner, fx.Ctx());
+        }
+        var assets = Path.Combine(fx.Core.Projects.ProjectFilesRoot(fx.Project), "assets");
+
+        // 1) Fehler beim Ablegen: die zweite Datei soll unter der ersten liegen („stein_1k.gltf/t.png“) – die erste ist aber eine Datei
+        var r1 = Run(Net("stein_1k.gltf/t.png"), "stein-1");
+        Assert.NotEqual(RunStatus.Verified, r1.Status);
+        Assert.False(Directory.Exists(Path.Combine(assets, "stein"))); // keine halbe Sammlung
+        Assert.Empty(Directory.GetFileSystemEntries(assets, "*", SearchOption.AllDirectories).Where(p => p.Contains(".laden-", StringComparison.Ordinal) || p.Contains("stein_1k", StringComparison.Ordinal))); // auch kein Zwischenordner (nur der Plan liegt dort)
+
+        // 2) Fehler beim Übernehmen: es gibt schon eine Sammlung „stein“; „herkunft.json“ ist dort ein Ordner und lässt sich nicht ersetzen
+        var dir = Path.Combine(assets, "stein");
+        Directory.CreateDirectory(Path.Combine(dir, "textures")); Directory.CreateDirectory(Path.Combine(dir, "herkunft.json"));
+        File.WriteAllText(Path.Combine(dir, "stein_1k.gltf"), "alt-gltf"); File.WriteAllText(Path.Combine(dir, "HERKUNFT.txt"), "alt-herkunft");
+        var r2 = Run(Net("textures/t.png"), "stein-2");
+        Assert.NotEqual(RunStatus.Verified, r2.Status);
+        Assert.Equal("alt-gltf", File.ReadAllText(Path.Combine(dir, "stein_1k.gltf"))); // zurückgenommen
+        Assert.Equal("alt-herkunft", File.ReadAllText(Path.Combine(dir, "HERKUNFT.txt")));
+        Assert.False(File.Exists(Path.Combine(dir, "textures", "t.png")));
+        Assert.Empty(Directory.GetFiles(assets, "*", SearchOption.AllDirectories).Where(p => p.Contains(".laden-", StringComparison.Ordinal) || p.EndsWith(".trendo-alt", StringComparison.Ordinal)));
+
+        // 3) Hindernis weg: dieselbe Sammlung lädt vollständig
+        Directory.Delete(Path.Combine(dir, "herkunft.json"));
+        var r3 = Run(Net("textures/t.png"), "stein-3");
+        Assert.Equal(RunStatus.Verified, r3.Status);
+        Assert.Equal(gltf, File.ReadAllBytes(Path.Combine(dir, "stein_1k.gltf"))); Assert.Equal(tex, File.ReadAllBytes(Path.Combine(dir, "textures", "t.png")));
+        Assert.True(File.Exists(Path.Combine(dir, "herkunft.json")));
+        Assert.Empty(Directory.GetFileSystemEntries(assets).Where(p => Path.GetFileName(p).StartsWith('.')));
+    }
+
     [Fact(DisplayName = "SPEC-07 ist abgelehnt: kein Übersetzungsauftrag, keine KI-Anfrage")]
     public void Uebersetzen_bleibt_gesperrt()
     {

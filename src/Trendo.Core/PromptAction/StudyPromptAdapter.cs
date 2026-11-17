@@ -358,21 +358,64 @@ public sealed class LicenseFetchAdapter : IStudioActionAdapter
             data.Add((f.RelPath, bytes));
             fetched.Add(new(f.RelPath, f.Url, bytes.Length, FreeAssets.Sha256(bytes), f.Md5));
         }
-        // erst alles geladen und geprüft, dann ins Projekt – ein Fehler unterwegs hinterlässt keine halbe Sammlung
+        // erst alles geladen und geprüft, dann ins Projekt – ein Fehler unterwegs hinterlässt keine halbe Sammlung (Gegenprüfung T-0735):
+        // alles zuerst in einen Zwischenordner, dort prüfen, dann Datei für Datei übernehmen; scheitert die Übernahme, kommt der alte Stand zurück
         var root = "assets/" + id + "/";
-        foreach (var (rel, bytes) in data) call.Projects.WriteBytes(call.ProjectId, root + rel.Replace('\\', '/'), bytes);
-        var (text, json) = FreeAssets.Provenance(id, id, fetched, DateTimeOffset.Now);
-        call.Projects.WriteFile(call.ProjectId, root + "HERKUNFT.txt", text);
-        call.Projects.WriteFile(call.ProjectId, root + "herkunft.json", json);
-        foreach (var f in fetched)
+        var stage = "assets/.laden-" + id + "-" + Guid.NewGuid().ToString("N")[..8] + "/";
+        var stageFull = call.Projects.ResolveInProject(call.ProjectId, stage.TrimEnd('/'));
+        try
         {
-            var full = call.Projects.ResolveInProject(call.ProjectId, root + f.RelPath.Replace('\\', '/'));
-            if (!File.Exists(full) || FreeAssets.Sha256File(full) != f.Sha256) return FieldKit.Blocked("Die Datei liegt nach dem Laden nicht richtig im Projekt: " + f.RelPath, attempted: true);
+            var (text, json) = FreeAssets.Provenance(id, id, fetched, DateTimeOffset.Now);
+            var rels = data.Select(d => d.Rel.Replace('\\', '/')).Append("HERKUNFT.txt").Append("herkunft.json").ToList();
+            foreach (var (rel, bytes) in data) call.Projects.WriteBytes(call.ProjectId, stage + rel.Replace('\\', '/'), bytes);
+            call.Projects.WriteFile(call.ProjectId, stage + "HERKUNFT.txt", text);
+            call.Projects.WriteFile(call.ProjectId, stage + "herkunft.json", json);
+            foreach (var f in fetched)
+            {
+                var full = call.Projects.ResolveInProject(call.ProjectId, stage + f.RelPath.Replace('\\', '/'));
+                if (!File.Exists(full) || FreeAssets.Sha256File(full) != f.Sha256) return FieldKit.Blocked("Die Datei liegt nach dem Laden nicht richtig im Projekt: " + f.RelPath, attempted: true);
+            }
+            Commit(call, stage, root, rels);
         }
+        finally { try { if (Directory.Exists(stageFull)) Directory.Delete(stageFull, true); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } }
         Connected.Svc.Audit?.Append(Principal.LocalOwner.Name, "asset.fetch", $"{id} {fetched.Count} Dateien (KI-Auftrag)");
         var receipt = $"Geladen: {id}, {fetched.Count} Datei(en), {fetched.Sum(f => f.Size)} Bytes, Lizenz CC0 – Beleg in {root}HERKUNFT.txt";
         return new AdapterOutcome(true, [], [], receipt, [], [], receipt);
     });
+
+    /// <summary>Übernimmt die geprüften Dateien aus dem Zwischenordner ins Projekt. Vorhandene Dateien gleichen Namens werden erst beiseitegelegt;
+    /// scheitert ein Schritt, verschwinden die neuen Dateien wieder und die alten kommen zurück (ganz oder gar nicht).</summary>
+    static void Commit(AdapterCall call, string stage, string root, IReadOnlyList<string> rels)
+    {
+        var rootFull = call.Projects.ResolveInProject(call.ProjectId, root.TrimEnd('/'));
+        var rootExisted = Directory.Exists(rootFull);
+        var done = new List<(string Dst, string? Backup)>();
+        try
+        {
+            foreach (var rel in rels)
+            {
+                var src = call.Projects.ResolveInProject(call.ProjectId, stage + rel);
+                var dst = call.Projects.ResolveInProject(call.ProjectId, root + rel);
+                Directory.CreateDirectory(Path.GetDirectoryName(dst)!);
+                string? bak = null;
+                if (File.Exists(dst)) { bak = dst + ".trendo-alt"; File.Move(dst, bak, true); }
+                done.Add((dst, bak));
+                File.Move(src, dst);
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            for (var i = done.Count - 1; i >= 0; i--)
+            {
+                var (dst, bak) = done[i];
+                try { if (File.Exists(dst)) File.Delete(dst); if (bak is not null && File.Exists(bak)) File.Move(bak, dst); }
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+            }
+            if (!rootExisted) { try { Directory.Delete(rootFull, true); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } }
+            throw new IOException("Die Sammlung ließ sich nicht ins Projekt übernehmen – eine Datei ist gesperrt oder nicht beschreibbar. Es wurde nichts geändert.", ex);
+        }
+        foreach (var (_, bak) in done) if (bak is not null) { try { File.Delete(bak); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } }
+    }
 }
 
 /// <summary>X-07: Lizenz nur mit OpenSource.Explain. Kein Netz.</summary>

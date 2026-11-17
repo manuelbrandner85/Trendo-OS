@@ -73,4 +73,31 @@ public class ResearchSearchTests
         Assert.False(third.Keep); Assert.Empty(third.SessionSources()); Assert.Equal("", third.Note()); Assert.Empty(third.Searches()); Assert.Empty(third.LastHits());
         Assert.Contains(File.ReadAllLines(f.Core.Audit.FilePath), l => l.Contains("research.keep") && l.Contains("an"));
     }
+
+    /// <summary>Gegenprüfung T-0735: Schlägt das Verschieben unterwegs fehl (hier: am Ziel liegt ein Ordner mit dem Namen der letzten Datei),
+    /// kommt eine klare Meldung und alles bleibt, wie es war – kein halber Zustand, Schalter unverändert.</summary>
+    [Fact(DisplayName = "SYS-08: Sammlung behalten – Fehler beim Verschieben meldet sich klar und lässt alles, wie es war")]
+    public void Sammlung_behalten_fehler_ohne_halben_zustand()
+    {
+        using var f = new Fixture();
+        var d = new ResearchDesk(f.Root, f.Core.Audit);
+        d.Record(new Uri("https://example.com/a"), new ReaderPage("Seite", "Text", []), "roh"); d.SaveNote("notiz");
+        var tmp = Path.Combine(f.Root, "tmp", "recherche-sitzung");
+        var names = Directory.GetFiles(tmp).Select(p => Path.GetFileName(p)).OrderBy(n => n, StringComparer.Ordinal).ToList();
+        Assert.True(names.Count >= 2);
+        var before = names.ToDictionary(n => n, n => File.ReadAllBytes(Path.Combine(tmp, n)));
+        var keepDir = Path.Combine(f.Root, "recherche", "sammlung");
+        Directory.CreateDirectory(Path.Combine(keepDir, names[^1])); // Hindernis für die letzte Datei
+
+        var ex = Assert.Throws<IOException>(() => d.SetKeep(true));
+        Assert.Contains("nichts geändert", ex.Message);
+        Assert.False(d.Keep);
+        foreach (var (n, bytes) in before) Assert.Equal(bytes, File.ReadAllBytes(Path.Combine(tmp, n))); // alles wieder am alten Platz
+        Assert.Empty(Directory.GetFiles(keepDir));
+        Assert.Single(d.SessionSources()); Assert.Equal("notiz", d.Note());
+
+        Directory.Delete(Path.Combine(keepDir, names[^1])); // Hindernis weg: jetzt klappt es
+        d.SetKeep(true);
+        Assert.True(d.Keep); Assert.Single(d.SessionSources()); Assert.Equal("notiz", d.Note());
+    }
 }

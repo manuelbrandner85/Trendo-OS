@@ -98,7 +98,56 @@ public partial class MainWindow
     {
         var keep = new CheckBox { Name = "rs-keep", Content = "Sammlung behalten (auch nach Neustart)", IsChecked = Desk.Keep, Foreground = Text, FontSize = 12 };
         ToolTip.SetTip(keep, "Aus: jede Sitzung beginnt leer. An: Quellen, Suchen, Markierungen und Notizen bleiben auf diesem PC.");
-        keep.IsCheckedChanged += (_, _) => { Desk.SetKeep(keep.IsChecked == true); _rsMsg = Desk.Keep ? "Die Sammlung bleibt jetzt auch nach einem Neustart." : "Die Sammlung ist wieder flüchtig – beim nächsten Start ist sie leer."; Show("recherche"); };
+        var reverting = false;
+        keep.IsCheckedChanged += async (_, _) =>
+        {
+            if (reverting) return;
+            var on = keep.IsChecked == true;
+            if (on == Desk.Keep) return;
+            if (!on)
+            {
+                // Gegenprüfung T-0735: Abschalten löscht die Sammlung beim nächsten Start – vorher fragen, „Abbrechen“ ist vorbelegt
+                bool yes;
+                try { yes = await (ResearchKeepOffConfirm ?? ResearchKeepOffDialog)(KeepOffText); }
+                catch (Exception ex) when (ex is InvalidOperationException or OperationCanceledException) { yes = false; }
+                if (!yes) { reverting = true; keep.IsChecked = true; reverting = false; _rsMsg = "Abgebrochen – die Sammlung bleibt behalten."; Show("recherche"); return; }
+            }
+            try
+            {
+                Desk.SetKeep(on);
+                _rsMsg = Desk.Keep ? "Die Sammlung bleibt jetzt auch nach einem Neustart." : "Die Sammlung ist wieder flüchtig – beim nächsten Start ist sie leer.";
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                reverting = true; keep.IsChecked = Desk.Keep; reverting = false;
+                _rsMsg = ex.Message;
+            }
+            Show("recherche");
+        };
         return keep;
+    }
+
+    /// <summary>Text der Rückfrage vor dem Abschalten von „Sammlung behalten“ – nennt die Folge.</summary>
+    public const string KeepOffText = "Wenn du „Sammlung behalten“ ausschaltest, wird die Sammlung wieder flüchtig: Quellen, Suchen, Markierungen und Notizen werden beim nächsten Start gelöscht. Vorher kannst du sie mit „Als Bericht speichern“ sichern.";
+
+    /// <summary>Tests: ersetzt die Rückfrage vor dem Abschalten von „Sammlung behalten“. Ohne ausdrückliches Ja (false) bleibt alles, wie es ist.</summary>
+    public Func<string, Task<bool>>? ResearchKeepOffConfirm { get; set; }
+
+    /// <summary>Rückfrage in einem eigenen Fenster wie beim App-Center: „Abbrechen“ ist vorbelegt, Esc und Schließen lehnen ab.</summary>
+    async Task<bool> ResearchKeepOffDialog(string text)
+    {
+        const string title = "Sammlung nicht mehr behalten?";
+        var dlg = new Window { Title = title, Width = 480, SizeToContent = SizeToContent.Height, CanResize = false, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+        var yes = new Button { Name = "rs-keep-off-yes", Content = "Ausschalten" };
+        var no = new Button { Name = "rs-keep-off-no", Content = "Abbrechen", IsDefault = true, IsCancel = true };
+        yes.Click += (_, _) => dlg.Close(true);
+        no.Click += (_, _) => dlg.Close(false);
+        dlg.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Escape) { e.Handled = true; dlg.Close(false); } };
+        dlg.Content = new StackPanel { Margin = new Thickness(16), Spacing = 10, Children = {
+            new TextBlock { Text = title, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
+            new TextBlock { Name = "rs-keep-off-text", Text = text, TextWrapping = TextWrapping.Wrap },
+            new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right, Children = { no, yes } } } };
+        dlg.Opened += (_, _) => no.Focus();
+        return await dlg.ShowDialog<bool>(this);
     }
 }
