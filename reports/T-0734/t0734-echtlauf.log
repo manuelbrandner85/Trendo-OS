@@ -1,10 +1,10 @@
 Modell: qwen2.5:7b (Ollama 127.0.0.1:11434)
 Hinweis: 🔒 Der Text der Datei bleibt auf diesem PC – nur die KI auf diesem PC liest ihn. An andere KI-Dienste im Internet geht kein Anhang.
-Frage 1 fertig nach 3896 ms, Mitschrift-Stände: 8 (3593 ms:7 Z, 3627 ms:19 Z, 3649 ms:24 Z, 3678 ms:37 Z, 3701 ms:44 Z, 3728 ms:50 Z, 3761 ms:62 Z, 3794 ms:73 Z …)
+Frage 1 fertig nach 5279 ms, Mitschrift-Stände: 7 (5001 ms:7 Z, 5033 ms:19 Z, 5064 ms:27 Z, 5096 ms:41 Z, 5127 ms:50 Z, 5159 ms:62 Z, 5191 ms:73 Z …)
 Antwort 1: 12 Kartons Druckerpapier A4 werden am Donnerstag, 20. November geliefert.
 Antwort 2 (Folgefrage): 4711
-Stopp nach 71 ms, behalten: 97 Zeichen, Ende: …rchterregend in die Täler  (abgebrochen)
-Bild an qwen2.5vl:7b: Antwort von qwen2.5vl:7b (Ollama) in 5,9 s
+Stopp nach 66 ms, behalten: 107 Zeichen, Ende: …chen Küstenortung Capella  (abgebrochen)
+Bild an qwen2.5vl:7b: Antwort von qwen2.5vl:7b (Ollama) in 7,7 s
 Antwort Bild: Rot · qwen2.5vl:7b · Ollama
 Audit ki.ask:
 quelle=Ollama modell=qwen2.5:7b frage=78Z antwort=73Z wissen=0 anhang=1 bild=0

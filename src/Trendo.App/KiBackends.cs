@@ -303,8 +303,17 @@ public static class KiBackendsShared
 
     /// <summary>T-0734: Nachrichten im OpenAI-Format; Bilder als „image_url“ mit data-Adresse (nur lokale Server, siehe <see cref="LocalOnly"/>).</summary>
     public static object[] OpenAiMessages(IEnumerable<KiMessage> messages) => [.. messages.Select(m => m.Images is { Count: > 0 } img
-        ? (object)new { role = m.Role, content = new object[] { new { type = "text", text = m.Content } }.Concat(img.Select(b => (object)new { type = "image_url", image_url = new { url = "data:image/png;base64," + b } })).ToArray() }
+        ? (object)new { role = m.Role, content = new object[] { new { type = "text", text = m.Content } }.Concat(img.Select(b => (object)new { type = "image_url", image_url = new { url = $"data:{ImageMime(b)};base64,{b}" } })).ToArray() }
         : new { role = m.Role, content = m.Content })];
+
+    /// <summary>Gegenprüfung T-0734: Bildtyp aus den ersten Bytes der Base64-Daten (Anhänge sind vorher auf PNG oder JPG gebracht, siehe <see cref="KiAttachments.Load"/>).</summary>
+    public static string ImageMime(string base64)
+    {
+        var head = base64.Length > 24 ? base64[..24] : base64;
+        head = head[..(head.Length / 4 * 4)];
+        try { return KiAttachments.ImageMime(Convert.FromBase64String(head)) ?? "image/png"; }
+        catch (FormatException) { return "image/png"; }
+    }
 }
 
 /// <summary>Ein Schritt beim Laden eines Ollama-Modells: Zustand („pulling …“, „verifying sha256 digest“, „success“), Schicht und Bytes.</summary>

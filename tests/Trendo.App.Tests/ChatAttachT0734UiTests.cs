@@ -118,6 +118,147 @@ public class ChatAttachT0734_Ui
         finally { w.Close(); Directory.Delete(d, true); }
     }
 
+    // ── Gegenprüfung T-0734 ──
+
+    [AvaloniaFact(DisplayName = "T-0734 Gegenprüfung: Anhang beim Senden nicht lesbar (leer, gelöscht) oder Bild ohne Bildmodell → Frage bleibt im Eingabefeld, Anhang bleibt, Meldung nennt die Datei")]
+    public async Task Unreadable_attachment_keeps_question()
+    {
+        var (w, _, _) = Ui.Open(); var d = Tmp();
+        try
+        {
+            var ki = new SlowKi(["Erfunden"], models: ["qwen3:14b"]);
+            w.KiBackendsOverride = () => [ki];
+            w.Show("ki-fragen");
+            // 1) leere Textdatei
+            var leer = Path.Combine(d, "leer.txt"); File.WriteAllText(leer, "   ");
+            w.AskAttach([leer]);
+            w.Find<TextBox>("ask-input").Text = "Was steht in der Notiz?";
+            RealClick(w, w.Find<Button>("ask-send"));
+            await Until(() => w.Find<TextBlock>("ask-state").Text?.Contains("leer.txt") == true && w.Find<Button>("ask-send").IsEnabled);
+            Assert.Contains("kein lesbarer Text", w.Find<TextBlock>("ask-state").Text);
+            Assert.Equal("Was steht in der Notiz?", w.Find<TextBox>("ask-input").Text);
+            Assert.Single(w.AskFiles); Assert.Empty(ki.Calls); Assert.Null(w.CurrentChatId);
+
+            // 2) Datei seit dem Anhängen gelöscht
+            var weg = Path.Combine(d, "weg.txt"); File.WriteAllText(weg, "Inhalt");
+            w.Find<Button>("ask-file-del-0").Press();
+            w.AskAttach([weg]); File.Delete(weg);
+            w.Show("ki-fragen");
+            Assert.Equal("Was steht in der Notiz?", w.Find<TextBox>("ask-input").Text); // Entwurf übersteht das Neuzeichnen
+            RealClick(w, w.Find<Button>("ask-send"));
+            await Until(() => w.Find<TextBlock>("ask-state").Text?.Contains("weg.txt") == true && w.Find<Button>("ask-send").IsEnabled);
+            Assert.Equal("Was steht in der Notiz?", w.Find<TextBox>("ask-input").Text);
+            Assert.Single(w.AskFiles);
+
+            // 3) Bild ohne Bildmodell: Antwort kommt erst von der KI-Suche zurück – auch dann bleibt die Frage stehen
+            w.Find<Button>("ask-file-del-0").Press();
+            var png = Path.Combine(d, "foto.png"); File.WriteAllBytes(png, Png.RedSquare());
+            w.AskAttach([png]);
+            w.Find<TextBox>("ask-input").Text = "Was ist auf dem Foto?";
+            RealClick(w, w.Find<Button>("ask-send"));
+            await Until(() => w.Find<TextBlock>("ask-state").Text == KiAttachments.NoVisionModel && w.Find<Button>("ask-send").IsEnabled);
+            Assert.Equal("Was ist auf dem Foto?", w.Find<TextBox>("ask-input").Text);
+            Assert.Single(w.AskFiles); Assert.Empty(ki.Calls);
+        }
+        finally { w.Close(); Directory.Delete(d, true); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0734 Gegenprüfung: Datei lesen (hier ein langsames pdftotext) läuft neben der Oberfläche; „Stopp“ bricht das Lesen in unter 3 s ab, Frage und Anhang bleiben")]
+    public async Task Reading_off_ui_and_stoppable()
+    {
+        var (w, _, _) = Ui.Open(); var d = Tmp();
+        try
+        {
+            var slow = Path.Combine(d, "pdftotext-langsam.cmd");
+            File.WriteAllText(slow, "@ping -n 12 127.0.0.1 >nul\r\n@echo Text aus dem PDF\r\n");
+            w.AskPdfToTextOverride = slow;
+            var ki = new SlowKi(["ok"]);
+            w.KiBackendsOverride = () => [ki];
+            var pdf = Path.Combine(d, "bericht.pdf"); File.WriteAllText(pdf, "%PDF-1.4");
+            w.Show("ki-fragen");
+            w.AskAttach([pdf]);
+            w.Find<TextBox>("ask-input").Text = "Fasse den Bericht zusammen";
+            var sw = Stopwatch.StartNew();
+            RealClick(w, w.Find<Button>("ask-send"));
+            var clickMs = sw.ElapsedMilliseconds;
+            Assert.True(clickMs < 3000, $"Oberfläche stand {clickMs} ms still, während die Datei gelesen wurde");
+            Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+            Assert.True(w.Find<Button>("ask-stop").IsVisible);
+            Assert.Contains("liest", w.Find<TextBlock>("ask-state").Text);
+            sw.Restart();
+            RealClick(w, w.Find<Button>("ask-stop"));
+            await Until(() => w.Find<Button>("ask-send").IsEnabled, 3000);
+            Assert.True(sw.ElapsedMilliseconds < 3000, $"Stopp beim Lesen dauerte {sw.ElapsedMilliseconds} ms");
+            Assert.Contains("Abgebrochen", w.Find<TextBlock>("ask-state").Text);
+            Assert.Equal("Fasse den Bericht zusammen", w.Find<TextBox>("ask-input").Text);
+            Assert.Single(w.AskFiles); Assert.Empty(ki.Calls);
+        }
+        finally { w.Close(); Directory.Delete(d, true); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0734 Gegenprüfung: während einer laufenden Antwort abgelegte Datei bleibt für die nächste Frage; nur die gesendeten Anhänge verschwinden")]
+    public async Task Drop_during_answer_is_kept()
+    {
+        var (w, _, _) = Ui.Open(); var d = Tmp();
+        try
+        {
+            var a = Path.Combine(d, "erste.txt"); File.WriteAllText(a, "Erste Datei");
+            var b = Path.Combine(d, "zweite.txt"); File.WriteAllText(b, "Zweite Datei");
+            var ki = new SlowKi(["Eins ", "zwei ", "drei ", "vier ", "fünf."]);
+            w.KiBackendsOverride = () => [ki];
+            w.Show("ki-fragen");
+            w.AskAttach([a]);
+            w.Find<TextBox>("ask-input").Text = "Was steht drin?";
+            RealClick(w, w.Find<Button>("ask-send"));
+            await Until(() => w.TryFind<Border>("ask-stream") is not null);
+            w.AskAttach([b]); // wie Ablegen auf dem Chat während die Antwort entsteht
+            await Until(() => w.CurrentChatId is not null && w.Find<Button>("ask-send").IsEnabled);
+            Assert.Equal([b], w.AskFiles);
+            Assert.DoesNotContain("Zweite Datei", ki.Calls[0][^1].Content);
+        }
+        finally { w.Close(); Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0734 Gegenprüfung: OpenAI-kompatibler Server bekommt den richtigen Bildtyp (JPG als image/jpeg, PNG als image/png)")]
+    public void OpenAi_image_mime()
+    {
+        string Json(byte[] img) => System.Text.Json.JsonSerializer.Serialize(KiBackendsShared.OpenAiMessages([new KiMessage("user", "Was ist das?", [Convert.ToBase64String(img)])]));
+        Assert.Contains("data:image/jpeg;base64,", Json([0xFF, 0xD8, 0xFF, 0xE0, 0, 16]));
+        Assert.Contains("data:image/png;base64,", Json(Png.RedSquare(8)));
+    }
+
+    [AvaloniaFact(DisplayName = "T-0734 Gegenprüfung: BMP wird vor dem Senden mit SkiaSharp in PNG umgewandelt – das Bildmodell bekommt ein echtes PNG")]
+    public async Task Bmp_converted_to_png()
+    {
+        var (w, _, _) = Ui.Open(); var d = Tmp();
+        try
+        {
+            var bmp = Path.Combine(d, "skizze.bmp"); File.WriteAllBytes(bmp, Bmp24(4, 4));
+            var ki = new SlowKi(["Ein rotes Quadrat."], models: ["qwen2.5vl:7b"]);
+            w.KiBackendsOverride = () => [ki];
+            w.Show("ki-fragen");
+            w.AskAttach([bmp]);
+            RealClick(w, w.Find<Button>("ask-send"));
+            await Until(() => w.CurrentChatId is not null && w.Find<Button>("ask-send").IsEnabled);
+            var sent = Convert.FromBase64String(Assert.Single(ki.Calls[0][^1].Images!));
+            Assert.Equal("image/png", KiAttachments.ImageMime(sent));
+            Assert.Contains("data:image/png;base64,", System.Text.Json.JsonSerializer.Serialize(KiBackendsShared.OpenAiMessages(ki.Calls[0])));
+        }
+        finally { w.Close(); Directory.Delete(d, true); }
+    }
+
+    /// <summary>Kleines echtes 24-Bit-BMP (rot).</summary>
+    static byte[] Bmp24(int wd, int ht)
+    {
+        var row = (wd * 3 + 3) / 4 * 4; var size = 54 + row * ht;
+        var b = new byte[size];
+        b[0] = (byte)'B'; b[1] = (byte)'M'; BitConverter.GetBytes(size).CopyTo(b, 2); BitConverter.GetBytes(54).CopyTo(b, 10);
+        BitConverter.GetBytes(40).CopyTo(b, 14); BitConverter.GetBytes(wd).CopyTo(b, 18); BitConverter.GetBytes(ht).CopyTo(b, 22);
+        BitConverter.GetBytes((short)1).CopyTo(b, 26); BitConverter.GetBytes((short)24).CopyTo(b, 28); BitConverter.GetBytes(row * ht).CopyTo(b, 34);
+        for (var y = 0; y < ht; y++) for (var x = 0; x < wd; x++) { var o = 54 + y * row + x * 3; b[o] = 20; b[o + 1] = 20; b[o + 2] = 220; }
+        return b;
+    }
+
     [AvaloniaFact(DisplayName = "T-0734 ECHT: Ollama liest eine angehängte Datei, Antwort wächst sichtbar, Folgefrage kennt die Datei; Bildmodell erkennt die Farbe eines Bildes (nur mit TRENDO_ECHT_KIFRAGEN)")]
     public async Task Real_ollama_attachment_and_stream()
     {
@@ -199,9 +340,10 @@ public class ChatAttachT0734_Ui
         finally
         {
             var f = Path.Combine(dir, "t0734-echtlauf.log");
-            File.WriteAllText(f, log.ToString().Replace(Environment.UserName, "<user>").Replace(Environment.MachineName, "<pc>"));
+            // Gegenprüfung T-0734: einheitlich \n (vorher gemischt CRLF/LF – der Hash war nach dem Auschecken nicht nachprüfbar)
+            File.WriteAllText(f, log.ToString().Replace(Environment.UserName, "<user>").Replace(Environment.MachineName, "<pc>").ReplaceLineEndings("\n"));
             var sums = new StringBuilder();
-            foreach (var x in Directory.GetFiles(dir, "t0734-*").Where(x => !x.EndsWith("SHA256.txt")).Order()) sums.AppendLine($"{Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(x)))}  {Path.GetFileName(x)}");
+            foreach (var x in Directory.GetFiles(dir, "t0734-*").Where(x => !x.EndsWith("SHA256.txt")).Order()) sums.Append($"{Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(x)))}  {Path.GetFileName(x)}\n");
             File.WriteAllText(Path.Combine(dir, "t0734-SHA256.txt"), sums.ToString());
             w.Close(); Directory.Delete(d, true);
         }

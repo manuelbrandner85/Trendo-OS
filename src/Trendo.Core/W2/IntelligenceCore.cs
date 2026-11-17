@@ -32,7 +32,8 @@ public interface IMainKiBackend : IRemoteKiBackend { }
 /// <param name="AllowRemote">Nur der freie Chat setzt das: dann darf ein eingeschalteter KI-Dienst außerhalb des PCs einspringen – ohne Verlauf und ohne eigene Dokumente. Abläufe, E-Mail, Agenten und Aufträge bleiben immer lokal.</param>
 /// <param name="Attachments">T-0734: angehängte Dateien. Mit Anhang antworten nur die KI auf diesem PC oder die bewusst gewählte Haupt-KI (Claude über das Abo) – nie ein anderer KI-Dienst;
 /// mit Bild nur ein Bildmodell auf diesem PC.</param>
-/// <param name="OnText">T-0734: bisher geschriebener Antworttext, während die Antwort entsteht (leer, wenn ein neuer Versuch beginnt).</param>
+/// <param name="OnText">T-0734: neue Stücke der Antwort, während sie entsteht; ein leerer Text heißt „neuer Versuch, Bisheriges verwerfen“.
+/// Nur die Stücke, nicht der ganze Text je Stück (Gegenprüfung: sonst wächst die Arbeit quadratisch mit der Länge).</param>
 public sealed record KiRequest(string Question, string? SystemPrompt = null, string? PreferredModel = null, IReadOnlyList<KiMessage>? History = null, bool UseKnowledge = true, bool AllowRemote = false, bool Personal = false,
     IReadOnlyList<KiAttachment>? Attachments = null, Action<string>? OnText = null);
 public sealed record KiAnswer(bool Ok, string Text, string? Backend, string? Model, IReadOnlyList<string> Sources, TimeSpan Took);
@@ -71,6 +72,37 @@ public sealed class IntelligenceCore
     /// <summary>Höchstens so viele kostenlose Modelle je Frage, damit eine Frage das Tageskontingent nicht aufbraucht.</summary>
     public const int MaxFreeModelTries = 3;
 
+    /// <summary>Gegenprüfung T-0734: so viele Zeichen gehen höchstens an eine KI auf diesem PC – (16384 Token Kontext − 4096 für die Antwort) × 3 Zeichen je Token,
+    /// siehe <c>KiBackendsShared.OllamaContext</c>. Darüber schneidet Ollama den Anfang still ab, auch die Systemanweisung.</summary>
+    public const int LocalPromptChars = 36_000;
+    /// <summary>So viel zählt ein Bild (grob 1500 Token).</summary>
+    public const int ImageChars = 4_500;
+
+    static string Cut(string s, int max, string why)
+    {
+        var tail = $"\n[… gekürzt, {why}]";
+        return s.Length <= max ? s : s[..Math.Max(0, max - tail.Length)] + tail;
+    }
+
+    /// <summary>Verlauf in den Platz <paramref name="budget"/> einpassen: Passt alles, bleibt alles unverändert. Sonst zählen die neuesten Nachrichten zuerst;
+    /// die erste, die nicht mehr ganz passt, wird vorn behalten und gekürzt (z. B. ein großer Anhang), ältere fallen weg.</summary>
+    public static List<KiMessage> FitHistory(IEnumerable<KiMessage> history, int budget)
+    {
+        var all = history.ToList();
+        if (all.Sum(x => x.Content.Length) <= budget) return all;
+        var keep = new List<KiMessage>(); var used = 0;
+        for (var i = all.Count - 1; i >= 0; i--)
+        {
+            var x = all[i];
+            if (used + x.Content.Length <= budget) { keep.Add(x); used += x.Content.Length; continue; }
+            if (budget - used >= 500) keep.Add(x with { Content = Cut(x.Content, budget - used, "im Verlauf, damit die Anweisung vollständig bleibt") });
+            break;
+        }
+        keep.Reverse();
+        if (keep.Count > 0 && keep[0].Role == "assistant") keep.RemoveAt(0); // keine Antwort ohne ihre Frage
+        return keep;
+    }
+
     public async Task<KiAnswer> AskAsync(KiRequest req, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(req.Question)) return new(false, "Bitte schreib zuerst eine Frage.", null, null, [], TimeSpan.Zero);
@@ -106,9 +138,12 @@ public sealed class IntelligenceCore
         var question = KiAttachments.Compose(req.Question, files);
         List<KiMessage> Messages(string system)
         {
+            // Gegenprüfung T-0734: für die KI auf dem PC begrenzen – sonst schneidet Ollama still vorn ab, auch die Systemanweisung
+            var room = LocalPromptChars - system.Length - images.Count * ImageChars;
+            var q = question.Length > room - 1000 ? Cut(question, Math.Max(2000, room - 1000), "damit die Anweisung vollständig bleibt") : question;
             var m = new List<KiMessage> { new("system", system) };
-            if (req.History is not null) m.AddRange(req.History.TakeLast(10));
-            m.Add(new("user", question, images.Count > 0 ? images : null));
+            if (req.History is not null) m.AddRange(FitHistory(req.History.TakeLast(10), room - q.Length));
+            m.Add(new("user", q, images.Count > 0 ? images : null));
             return m;
         }
         var msgs = Messages(sys.ToString());
@@ -139,7 +174,6 @@ public sealed class IntelligenceCore
                 var guarded = local && fallbacks.Count > 0 && model != fallbacks[^1]; // das letzte Ausweichmodell darf so lange brauchen, wie es braucht
                 if (guarded) limit.CancelAfter(LocalFirstAnswerTimeout);
                 string text;
-                var sofar = new StringBuilder();
                 req.OnText?.Invoke(""); // neuer Versuch: Mitschrift beginnt neu
                 try
                 {
@@ -147,7 +181,7 @@ public sealed class IntelligenceCore
                         ? await sb.ChatStreamAsync(model, remote ? remoteMsgs : msgs, d =>
                         {
                             if (guarded) limit.CancelAfter(Timeout.InfiniteTimeSpan); // erstes Lebenszeichen: keine Zeitgrenze mehr
-                            if (d.Length > 0) { KiActivityHub.Update(act, delta: d); if (req.OnText is { } on) { sofar.Append(d); on(sofar.ToString()); } }
+                            if (d.Length > 0) { KiActivityHub.Update(act, delta: d); req.OnText?.Invoke(d); }
                             else KiActivityHub.Update(act, phase: $"{model} denkt nach …");
                         }, limit.Token)
                         : await b.ChatAsync(model, remote ? remoteMsgs : msgs, limit.Token);

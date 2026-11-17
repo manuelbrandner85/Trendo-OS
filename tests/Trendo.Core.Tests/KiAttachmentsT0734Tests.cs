@@ -1,3 +1,4 @@
+using System.Text;
 using Trendo.Core;
 using Trendo.Core.Sys;
 using Xunit;
@@ -96,7 +97,7 @@ public class KiAttachmentsT0734
         Assert.StartsWith("Wann ist der Termin?", user.Content);
         Assert.Contains("--- Angehängte Datei: notiz.txt ---\nTermin am Dienstag um 9 Uhr.", user.Content);
         Assert.Null(user.Images);
-        Assert.Equal(["", "Der ", "Der Termin ", "Der Termin ist ", "Der Termin ist Dienstag."], seen);
+        Assert.Equal(["", "Der ", "Termin ", "ist ", "Dienstag."], seen); // Gegenprüfung: nur neue Stücke (kein O(n²) durch den ganzen Text je Stück)
         var log = string.Join("\n", f.Core.Audit.ReadAll().Select(e => e.Detail));
         Assert.Contains("anhang=1 bild=0", log); Assert.DoesNotContain("Dienstag", log);
     }
@@ -141,5 +142,83 @@ public class KiAttachmentsT0734
     {
         foreach (var m in new[] { "llava:7b", "qwen2.5vl:7b", "qwen2-vl:2b", "llama3.2-vision:11b", "gemma3:4b", "moondream:latest", "minicpm-v:8b" }) Assert.True(KiAttachments.IsVisionModel(m), m);
         foreach (var m in new[] { "qwen3:14b", "qwen2.5:7b", "mistral:7b", "gemma3:1b", "qwen2.5-coder:14b" }) Assert.False(KiAttachments.IsVisionModel(m), m);
+    }
+
+    // ── Gegenprüfung T-0734 ──
+
+    [Fact(DisplayName = "T-0734 Gegenprüfung: große Textdatei wird nur am Anfang gelesen (kein Einfrieren, kein Speicherüberlauf) und als gekürzt markiert")]
+    public void Big_text_reads_only_head()
+    {
+        var d = Tmp();
+        try
+        {
+            var big = Path.Combine(d, "gross.log");
+            var line = Encoding.ASCII.GetBytes("Zeile mit Messwert 42\n");
+            using (var fs = new FileStream(big, FileMode.Create, FileAccess.Write, FileShare.None, 1 << 20)) for (var i = 0; i < 40 * 1024 * 1024 / line.Length; i++) fs.Write(line);
+            var before = GC.GetAllocatedBytesForCurrentThread();
+            var a = KiAttachments.Load(big);
+            var used = GC.GetAllocatedBytesForCurrentThread() - before;
+            Assert.True(used < 8L * 1024 * 1024, $"für 40 MB Datei {used / 1024 / 1024} MB Speicher belegt – es wird mehr gelesen als nötig");
+            Assert.StartsWith("Zeile mit Messwert 42", a.Text);
+            Assert.Contains("gekürzt", a.Text);
+            Assert.True(a.Text.Length <= KiAttachments.MaxTextChars + 200);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0734 Gegenprüfung: Kodierung erkannt – ANSI-CSV (Windows-1252) mit richtigen Umlauten, UTF-8 mit BOM ohne BOM-Zeichen, UTF-8 beim Kürzen nicht zerbrochen")]
+    public void Encoding_detected()
+    {
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        var d = Tmp();
+        try
+        {
+            var ansi = Path.Combine(d, "preise.csv");
+            File.WriteAllBytes(ansi, Encoding.GetEncoding(1252).GetBytes("Größe;Maß;Preis €\nÄpfel;5;3,20"));
+            Assert.Contains("Größe;Maß;Preis €", KiAttachments.Load(ansi).Text);
+            var bom = Path.Combine(d, "gruss.txt");
+            File.WriteAllText(bom, "Grüße aus Graz", new UTF8Encoding(true));
+            Assert.Equal("Grüße aus Graz", KiAttachments.Load(bom).Text);
+            var lang = Path.Combine(d, "umlaute.txt"); // länger als die Grenze, damit mitten in einem Zeichen gekürzt werden kann
+            File.WriteAllText(lang, "x" + new string('ä', KiAttachments.MaxTextChars * 3), new UTF8Encoding(false));
+            var t = KiAttachments.Load(lang).Text;
+            Assert.StartsWith("xäää", t); Assert.DoesNotContain("Ã", t);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0734 Gegenprüfung: PNG und JPG gehen unverändert mit; GIF/BMP/WEBP ohne Umwandlung ehrlich abgelehnt statt falsch beschriftet")]
+    public void Image_formats_honest()
+    {
+        var d = Tmp();
+        try
+        {
+            var jpg = Path.Combine(d, "foto.jpg"); File.WriteAllBytes(jpg, [0xFF, 0xD8, 0xFF, 0xE0, 0, 16, 74, 70, 73, 70]);
+            Assert.Equal(10, KiAttachments.Load(jpg).Image!.Length);
+            var gif = Path.Combine(d, "bild.gif"); File.WriteAllBytes(gif, [.. Encoding.ASCII.GetBytes("GIF89a"), 1, 0, 1, 0, 0, 0, 0]);
+            Assert.Contains("PNG oder JPG", Assert.Throws<InvalidOperationException>(() => KiAttachments.Load(gif)).Message);
+            byte[] png = [137, 80, 78, 71, 13, 10, 26, 10, 7];
+            Assert.Equal(png, KiAttachments.Load(gif, toPng: _ => png).Image); // mit Umwandlung geht das PNG mit
+            Assert.Contains("PNG oder JPG", Assert.Throws<InvalidOperationException>(() => KiAttachments.Load(gif, toPng: _ => null)).Message); // nicht umwandelbar: ehrlich ablehnen
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0734 Gegenprüfung: großer Anhangstext im Verlauf wird für die KI auf dem PC begrenzt – die Systemanweisung bleibt vollständig vorn")]
+    public async Task History_capped_system_intact()
+    {
+        using var f = new Fixture();
+        var ki = new StreamKi("Lokal", ["ok"]);
+        var ic = new IntelligenceCore(f.Root, f.Core.Audit, () => [ki]);
+        var big = "Fasse zusammen\n\n--- Angehängte Datei: a.txt ---\n" + new string('x', 200_000) + "\n--- Ende a.txt ---";
+        List<KiMessage> hist = [new("user", big), new("assistant", "Zusammenfassung"), new("user", "Frage 2"), new("assistant", "Antwort 2")];
+        var a = await ic.AskAsync(new KiRequest("Und jetzt?", SystemPrompt: "SYSTEMREGEL-T0734", History: hist, UseKnowledge: false));
+        Assert.True(a.Ok);
+        var m = ki.Calls[0];
+        Assert.Equal("system", m[0].Role); Assert.Contains("SYSTEMREGEL-T0734", m[0].Content);
+        Assert.True(m.Sum(x => x.Content.Length) <= 36_000, $"{m.Sum(x => x.Content.Length)} Zeichen gehen an die KI – Ollama schneidet dann vorn ab (auch die Systemanweisung)");
+        Assert.Equal("Und jetzt?", m[^1].Content);
+        Assert.Contains(m, x => x.Content == "Antwort 2");
+        Assert.Contains(m, x => x.Content.StartsWith("Fasse zusammen", StringComparison.Ordinal) && x.Content.Contains("gekürzt"));
     }
 }

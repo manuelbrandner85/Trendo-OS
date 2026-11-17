@@ -34,9 +34,15 @@ public partial class MainWindow
     /// <summary>T-0734: Dateien, die mit der nächsten Frage mitgehen (Knopf „Datei anhängen“ oder Ablegen auf dem Chat).</summary>
     readonly List<string> _askFiles = [];
     public IReadOnlyList<string> AskFiles => _askFiles;
-    /// <summary>T-0734: bisher geschriebene Antwort, während sie entsteht (wird aus dem KI-Faden gesetzt, die Anzeige folgt über den UI-Faden).</summary>
-    volatile string _streamText = ""; SelectableTextBlock? _streamBlock;
-    public string AskStreamText => _streamText;
+    /// <summary>Für Tests: anderes pdftotext (z. B. ein absichtlich langsames, um „Stopp“ beim Lesen zu prüfen).</summary>
+    public string? AskPdfToTextOverride { get; set; }
+    /// <summary>T-0734: bisher geschriebene Antwort, während sie entsteht. Die KI hängt nur Stücke an (Gegenprüfung: kein O(n²));
+    /// die Anzeige holt sich den Stand höchstens einmal je Durchlauf des UI-Fadens.</summary>
+    readonly System.Text.StringBuilder _streamSb = new(); int _streamPosted; SelectableTextBlock? _streamBlock;
+    string StreamText() { lock (_streamSb) return _streamSb.ToString(); }
+    public string AskStreamText => StreamText();
+    /// <summary>Gegenprüfung T-0734: Frage, die nach einem Fehler wieder ins Eingabefeld kommt (nichts Getipptes geht verloren).</summary>
+    string? _askRestore;
     /// <summary>Für Tests: Text, den die Sprechblase „ask-stream“ gerade zeigt.</summary>
     public string? AskStreamShown => _streamBlock?.Text;
 
@@ -76,48 +82,88 @@ public partial class MainWindow
     }
 
     /// <summary>Frage stellen (auch von außen/Tests). Speichert Frage und Antwort im aktuellen Gespräch.</summary>
-    public async Task AskChat(string q)
+    /// <param name="fromInput">Die Frage kommt aus dem Eingabefeld: Das Feld wird erst geleert, wenn alle Anhänge gelesen sind; kommt keine Antwort zustande, steht die Frage wieder darin.</param>
+    public async Task AskChat(string q, bool fromInput = false)
     {
+        var typed = fromInput ? q : "";
         q = q.Trim();
         if (q.Length == 0 && _askFiles.Count > 0) q = _askFiles.All(KiAttachments.IsImage) ? "Was ist auf dem Bild zu sehen?" : "Fasse die angehängte Datei kurz zusammen.";
         if (q.Length == 0) { _askState = "Bitte schreib zuerst eine Frage."; Show("ki-fragen"); return; }
         if (_askCts is not null) return;
-        // T-0734: Anhänge vor dem Senden lesen – geht etwas nicht, bleibt alles stehen und die Meldung sagt, was fehlt
+        // Gegenprüfung T-0734: genau diese Anhänge gehen mit – was während der Antwort dazukommt, bleibt für die nächste Frage
+        var sending = _askFiles.ToList();
+        _askCts = new CancellationTokenSource(); var ct = _askCts.Token;
         var files = new List<KiAttachment>();
-        foreach (var f in _askFiles)
-            try { files.Add(KiAttachments.Load(f, Tool("pdftotext"))); }
-            catch (Exception e) when (e is InvalidOperationException or IOException or UnauthorizedAccessException) { _askState = e is InvalidOperationException ? e.Message : $"„{Path.GetFileName(f)}“ lässt sich nicht lesen: {e.Message}"; Show("ki-fragen"); return; }
+        if (sending.Count > 0)
+        {
+            // Gegenprüfung T-0734: Lesen neben der Oberfläche, „Stopp“ wirkt schon hier; bei einem Fehler bleiben Frage und Anhänge stehen
+            _askState = $"Trendo liest {(sending.Count == 1 ? "die angehängte Datei" : $"{sending.Count} angehängte Dateien")} … („Stopp“ bricht ab)"; Show("ki-fragen");
+            string? fail = null;
+            try { files = await KiAttachments.LoadAllAsync(sending, AskPdfToTextOverride ?? Tool("pdftotext"), AttachmentToPng, ct); }
+            catch (OperationCanceledException) { fail = "Abgebrochen – deine Frage und die Anhänge sind noch da."; }
+            catch (InvalidOperationException e) { fail = e.Message + " Deine Frage und die Anhänge sind noch da – entferne die Datei mit ✕ oder hänge eine andere an."; }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException or OutOfMemoryException)
+            { fail = $"Eine angehängte Datei lässt sich nicht lesen: {e.Message} Deine Frage und die Anhänge sind noch da."; }
+            if (fail is not null) { _askCts.Dispose(); _askCts = null; _askState = fail; Show("ki-fragen"); return; }
+        }
+        if (typed.Trim().Length > 0) LinkClose(AskLink); // erst jetzt: die Frage geht wirklich hinaus
         var shown = files.Count > 0 ? q + "\n\n📎 " + string.Join(", ", files.Select(f => f.Name)) : q;
-        _askCts = new CancellationTokenSource(); _askState = files.Count > 0 ? "Trendo liest die Datei und denkt nach …" : "Trendo denkt nach …"; _chatPending = shown; _streamText = ""; Show("ki-fragen");
+        _askState = files.Count > 0 ? "Trendo liest die Datei und denkt nach …" : "Trendo denkt nach …"; _chatPending = shown;
+        lock (_streamSb) _streamSb.Clear();
+        Show("ki-fragen");
+        var kept = false;
         try
         {
             using var kiLabel = KiActivityHub.Label("Trendo KI");
-            void OnText(string t) { _streamText = t; _ui.Post(() => { if (_streamBlock is { } sb) sb.Text = _streamText.Length > 0 ? _streamText : "Trendo denkt nach …"; }); }
-            var a = await Intel.AskAsync(new KiRequest(q, PreferredModel: KiModelName, History: _chat.ToList(), AllowRemote: true, Personal: true, Attachments: files, OnText: OnText), _askCts.Token);
+            void OnText(string d)
+            {
+                lock (_streamSb) { if (d.Length == 0) _streamSb.Clear(); else _streamSb.Append(d); }
+                if (Interlocked.Exchange(ref _streamPosted, 1) == 0)
+                    _ui.Post(() => { Volatile.Write(ref _streamPosted, 0); if (_streamBlock is { } sb) { var t = StreamText(); sb.Text = t.Length > 0 ? t : "Trendo denkt nach …"; } });
+            }
+            var a = await Intel.AskAsync(new KiRequest(q, PreferredModel: KiModelName, History: _chat.ToList(), AllowRemote: true, Personal: true, Attachments: files, OnText: OnText), ct);
             LastAnswer = a.Text;
             if (a.Ok)
             {
-                _chat.Add(new("user", KiAttachments.Compose(q, files))); _chat.Add(new("assistant", a.Text)); // Folgefragen kennen den Dateitext
+                _chat.Add(new("user", KiAttachments.Compose(q, files))); _chat.Add(new("assistant", a.Text)); // Folgefragen kennen den Dateitext (die KI auf dem PC bekommt ihn begrenzt, siehe IntelligenceCore.FitHistory)
                 LearnFromChat(q);
                 var c = Chats.Append(CurrentChat(), shown, a.Text, a.Model is null ? null : $"{a.Model} · {a.Backend}"); _chatId = c.Id;
-                _askFiles.Clear();
+                foreach (var s in sending) _askFiles.Remove(s);
+                kept = true;
             }
             _askState = a.Ok ? $"Antwort von {a.Model} ({a.Backend}{(KiCatalog.Cloud.Any(c => c.Name == a.Backend) || a.Backend?.StartsWith("Claude", StringComparison.Ordinal) == true ? ", außerhalb des PCs" : "")}) in {a.Took.TotalSeconds:0.0} s{(a.Sources.Count > 0 ? " · Wissen: " + string.Join(", ", a.Sources) : "")}" : a.Text;
         }
         catch (OperationCanceledException)
         {
             // T-0734: was bis zum Stopp geschrieben war, bleibt im Gespräch stehen (wie in Chat-Programmen)
-            if (_streamText.Trim().Length > 0)
+            var sofar = StreamText().Trim();
+            if (sofar.Length > 0)
             {
-                var part = _streamText.Trim() + "\n\n(abgebrochen)";
+                var part = sofar + "\n\n(abgebrochen)";
                 _chat.Add(new("user", KiAttachments.Compose(q, files))); _chat.Add(new("assistant", part));
-                var c = Chats.Append(CurrentChat(), shown, part, "abgebrochen"); _chatId = c.Id; _askFiles.Clear();
+                var c = Chats.Append(CurrentChat(), shown, part, "abgebrochen"); _chatId = c.Id;
+                foreach (var s in sending) _askFiles.Remove(s);
+                kept = true;
             }
             _askState = "Abgebrochen.";
         }
-        finally { _askCts?.Dispose(); _askCts = null; _chatPending = null; _streamText = ""; _streamBlock = null; Show("ki-fragen"); }
+        finally
+        {
+            if (!kept && typed.Trim().Length > 0) _askRestore = typed; // Gegenprüfung T-0734: keine Antwort → die Frage steht wieder im Eingabefeld
+            _askCts?.Dispose(); _askCts = null; _chatPending = null; lock (_streamSb) _streamSb.Clear(); _streamBlock = null; Show("ki-fragen");
+        }
     }
     string? _chatPending;
+
+    /// <summary>Gegenprüfung T-0734: GIF, BMP, WEBP … für das Bildmodell nach PNG umwandeln (SkiaSharp); null, wenn es kein lesbares Bild ist.</summary>
+    static byte[]? AttachmentToPng(byte[] data)
+    {
+        using var bmp = SkiaSharp.SKBitmap.Decode(data);
+        if (bmp is null) return null;
+        using var img = SkiaSharp.SKImage.FromBitmap(bmp);
+        using var png = img.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100);
+        return png?.ToArray();
+    }
 
     void OpenChat(string? id)
     {
@@ -175,7 +221,12 @@ public partial class MainWindow
         var input = new TextBox { Name = "ask-input", PlaceholderText = "Nachricht an die Trendo KI … (Enter sendet, Umschalt+Enter neue Zeile)", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 54, MaxHeight = 180 };
         var send = new Button { Name = "ask-send", Content = "Senden", Background = Accent, IsEnabled = _askCts is null };
         var al = AskLink; LinkForm(al, "eingabe", ("text", input)); // T-0717: noch nicht gesendete Nachricht als Entwurf (Rückgängig, Notsicherung, Karte)
-        send.Click += async (_, _) => { var q = input.Text ?? ""; if (q.Trim().Length > 0) { input.Text = ""; LinkClose(al); } await AskChat(q); };
+        if (_askRestore is { } back && _askCts is null)
+        {
+            _askRestore = null; // Gegenprüfung T-0734: die Frage kam nicht an – zurück ins Feld, wenn dort nicht schon Neues steht
+            if ((input.Text ?? "").Trim().Length == 0) { input.Text = back; if (al.Live is { } live) live["text"] = back; }
+        }
+        send.Click += async (_, _) => await AskChat(input.Text ?? "", fromInput: true);
         input.AddHandler(KeyDownEvent, (_, e) => { if (e.Key == Key.Enter && !e.KeyModifiers.HasFlag(KeyModifiers.Shift)) { e.Handled = true; send.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent)); } }, Avalonia.Interactivity.RoutingStrategies.Tunnel);
         var stop = new Button { Name = "ask-stop", Content = "Stopp", IsVisible = _askCts is not null };
         stop.Click += (_, _) => _askCts?.Cancel();
@@ -188,7 +239,7 @@ public partial class MainWindow
         {
             log.Children.Add(ChatBubble(new ChatStore.Message("user", pending, DateTimeOffset.Now), -1));
             // T-0734: die Antwort wächst sichtbar in ihrer Sprechblase, während sie entsteht
-            _streamBlock = new SelectableTextBlock { Name = "ask-stream-text", Text = _streamText.Length > 0 ? _streamText : "Trendo denkt nach …", Foreground = Text, FontSize = 13, TextWrapping = TextWrapping.Wrap };
+            _streamBlock = new SelectableTextBlock { Name = "ask-stream-text", Text = StreamText() is { Length: > 0 } st ? st : "Trendo denkt nach …", Foreground = Text, FontSize = 13, TextWrapping = TextWrapping.Wrap };
             log.Children.Add(new Border { Name = "ask-stream", MaxWidth = 760, HorizontalAlignment = HorizontalAlignment.Left, Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1),
                 CornerRadius = new CornerRadius(14, 14, 14, 4), Padding = new Thickness(12, 8), Child = new StackPanel { Spacing = 4, Children = { _streamBlock,
                     new TextBlock { Name = "ask-thinking", Text = "schreibt … – „Stopp“ bricht ab", Foreground = Muted, FontSize = 10.5, FontStyle = FontStyle.Italic } } } });
