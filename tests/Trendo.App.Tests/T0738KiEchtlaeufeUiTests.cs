@@ -41,7 +41,7 @@ public class T0738_KiEchtlaeufe_Ui
         }
         if (machine.Length > 0) s = Repl(s, machine, "<pc>"); // vor dem Benutzernamen: der Rechnername kann ihn enthalten
         if (user.Length > 0)
-            s = System.Text.RegularExpressions.Regex.Replace(s, "(?<![A-Za-z0-9])" + System.Text.RegularExpressions.Regex.Escape(user) + "(?![A-Za-z0-9])",
+            s = System.Text.RegularExpressions.Regex.Replace(s, "(?:(?<![A-Za-z0-9])|(?<=%5C)|(?<=%2F))" + System.Text.RegularExpressions.Regex.Escape(user) + "(?![A-Za-z0-9])",
                 "<user>", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
         return s;
     }
@@ -109,6 +109,7 @@ public class T0738_KiEchtlaeufe_Ui
         const string raw = "INFO: \"GET /v1/audio?path=C%3A%5CUsers%5CErika%5CAppData%5Cx.mp3 HTTP/1.1\" 200\r\n"
             + "q=C%3a%5cusers%5cerika%5cTemp und C%3A%2FUsers%2FErika%2FTemp\n"
             + @"C:\Users\Erika\AppData und C:/Users/erika/AppData, Konto erika, PC ERIKA-PC" + "\n"
+            + "teilkodiert C:%5CUsers%5CErika%5Cx und %2FUsers%2Ferika%2Fy\n" // Sammelstand 0.9.105: Lücke aus der zweiten Prüfung T-0738
             + "erikas Datei bleibt, \u001b[32mgrün\u001b[0m \u001b[Kfortschritt\u001b[2K\u001b[1;5H.";
         var s = Anon(NoAnsi(raw), @"C:\Users\Erika", "ERIKA-PC");
         Assert.False(s.Contains('\u001b'), "ESC-Steuerzeichen übrig: " + s); // Zeichenvergleich: kulturabhängig würde „\u001b“ ignoriert
