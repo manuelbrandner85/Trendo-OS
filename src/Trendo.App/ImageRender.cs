@@ -221,12 +221,15 @@ public static class ImageRender
         using var b = Render(d); using var img = SKImage.FromBitmap(b); using var data = img.Encode(SKEncodedImageFormat.Png, 100); return data.ToArray();
     }
 
-    /// <summary>Als PNG (mit Transparenz, wenn der Hintergrund „transparent“ ist) oder JPG speichern.</summary>
+    /// <summary>Als PNG (mit Transparenz, wenn der Hintergrund „transparent“ ist), JPG oder WebP (T-0733: Qualität 90, mit Transparenz) speichern.</summary>
     public static string Export(JsonObject d, string path)
     {
-        var jpg = Path.GetExtension(path).ToLowerInvariant() is ".jpg" or ".jpeg";
+        var ext = Path.GetExtension(path).ToLowerInvariant();
+        var jpg = ext is ".jpg" or ".jpeg"; var webp = ext == ".webp";
         using var b = Render(d, !jpg && ImageDoc.S(d["background"]) == "transparent");
-        using var img = SKImage.FromBitmap(b); using var data = img.Encode(jpg ? SKEncodedImageFormat.Jpeg : SKEncodedImageFormat.Png, jpg ? 92 : 100);
+        using var img = SKImage.FromBitmap(b);
+        using var data = img.Encode(jpg ? SKEncodedImageFormat.Jpeg : webp ? SKEncodedImageFormat.Webp : SKEncodedImageFormat.Png, jpg ? 92 : webp ? 90 : 100)
+            ?? throw new InvalidOperationException($"Das Bild ließ sich nicht als {ext.TrimStart('.').ToUpperInvariant()} speichern.");
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
         using (var fs = File.Create(path)) data.SaveTo(fs);
         return path;

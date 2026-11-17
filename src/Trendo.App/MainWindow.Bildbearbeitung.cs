@@ -33,13 +33,22 @@ public partial class MainWindow
         ("fill", "▣ Füllen", "Klick füllt die zusammenhängende Fläche mit der gewählten Farbe (Toleranz rechts)"),
         ("heal", "✚ Reparieren", "Über Fleck, Kratzer oder Staub malen – wird aus der Umgebung aufgefüllt"),
         ("clone", "⎘ Klonen", "Erst klicken = Quelle, dann übermalen – kopiert von der Quelle"),
+        ("zoom", "⌕ Zoom", "Klick vergrößert an der Stelle, Alt+Klick oder Rechtsklick verkleinert – „Einpassen“ zeigt wieder alles"), // T-0733
     ];
     /// <summary>T-0728 (offen aus T-0710): Werkzeug-Tasten wie in Photoshop/GIMP – stehen im Menü „Werkzeuge“ und wählen das Werkzeug (nicht beim Tippen in Feldern).</summary>
     static readonly Dictionary<string, string> ImgToolKeys = new()
     {
         ["move"] = "V", ["brush"] = "B", ["eraser"] = "E", ["text"] = "T", ["rect"] = "U", ["ellipse"] = "Q", ["crop"] = "C", ["vector"] = "P",
-        ["select"] = "M", ["gradient"] = "G", ["fill"] = "K", ["heal"] = "J", ["clone"] = "S",
+        ["select"] = "M", ["gradient"] = "G", ["fill"] = "K", ["heal"] = "J", ["clone"] = "S", ["zoom"] = "Z",
     };
+    /// <summary>T-0733: Verschiebung der Leinwand beim Zoomen (Bildschirmpunkte), damit die angeklickte Stelle unter der Maus bleibt.</summary>
+    public Vector ImgPan { get; set; }
+    /// <summary>T-0733: Zoomstufen wie in Photoshop.</summary>
+    static readonly double[] ImgZoomSteps = [1 / 16.0, 1 / 8.0, 1 / 4.0, 1 / 3.0, 1 / 2.0, 2 / 3.0, 1, 2, 3, 4, 6, 8, 12, 16, 32];
+    /// <summary>Nächste Zoomstufe über bzw. unter dem aktuellen Maßstab.</summary>
+    public static double ImgNextZoom(double scale, bool zoomOut) => zoomOut
+        ? ImgZoomSteps.LastOrDefault(z => z < scale - 1e-6, ImgZoomSteps[0])
+        : ImgZoomSteps.FirstOrDefault(z => z > scale + 1e-6, ImgZoomSteps[^1]);
     /// <summary>Auswahl-Rechteck (Leinwand-Pixel) – kein Bearbeitungsschritt, wie in GIMP.</summary>
     public Rect? ImgMarquee { get; set; }
     /// <summary>Lasso-Auswahl (Leinwand-Pixel); schließt Rechteck und Zauberstab aus.</summary>
@@ -97,21 +106,22 @@ public partial class MainWindow
                 new ProgramCmd("img-layer-del", "Ebene löschen", d => ImgSel(d, (x, id) => ImageDoc.Remove(x, id), "Ebene löschen")),
             ]),
             ("Ansicht", [
-                new ProgramCmd("img-zoom-fit", "Einpassen", _ => ImgZoom = 0),
-                new ProgramCmd("img-zoom-100", "100 %", _ => ImgZoom = 1),
+                new ProgramCmd("img-zoom-fit", "Einpassen", _ => { ImgZoom = 0; ImgPan = default; }),
+                new ProgramCmd("img-zoom-100", "100 %", _ => { ImgZoom = 1; ImgPan = default; }),
             ]),
         ],
         Exports =
         [
             new("png", "PNG", ".png", (d, f) => ImageRender.Export(d.Data, f)),
             new("jpg", "JPG", ".jpg", (d, f) => ImageRender.Export(d.Data, f)),
+            new("webp", "WebP (klein, fürs Web)", ".webp", (d, f) => ImageRender.Export(d.Data, f)), // T-0733: über SkiaSharp, mit Transparenz
             new("svg", "SVG (Vektor)", ".svg", (d, f) => { File.WriteAllText(f, Trendo.Core.Media.ImageVector.ToSvg(d.Data)); return f; }), // selbst statt Inkscape
         ],
         Tools = [.. ImgTools.Select(t => new ProgramTool("img-tool-" + t.Id, t.Label[..t.Label.IndexOf(' ')], t.Label[(t.Label.IndexOf(' ') + 1)..], t.Tip, _ => ImgTool = t.Id, () => ImgTool == t.Id) { Shortcut = ImgToolKeys.GetValueOrDefault(t.Id, "") })],
         Workspace = ImgWorkspace,
         Properties = ImgProperties,
         Status = d => $"{(int)d.Number("width")} × {(int)d.Number("height")} px · {ImageDoc.Layers(d.Data).Count} Ebenen · Werkzeug: {ImgTools.First(t => t.Id == ImgTool).Label[2..]}",
-        Help = "Mit „Foto öffnen“ ein Bild dazuholen. Ein Werkzeug wählen und auf der Fläche arbeiten. Rechts die Ebenen: anklicken, ein-/ausblenden, Deckkraft, Filter. Speichern als Projekt, Exportieren als PNG oder JPG.",
+        Help = "Mit „Foto öffnen“ ein Bild dazuholen. Ein Werkzeug wählen und auf der Fläche arbeiten. Rechts die Ebenen: anklicken, ein-/ausblenden, Deckkraft, Filter. Speichern als Projekt, Exportieren als PNG, JPG, WebP oder SVG. Werkzeug-Tasten wie in Photoshop: V Verschieben, B Pinsel, E Radierer, M Auswahl, T Text, Z Zoom.",
     }, "bildbearbeitung", "foto bearbeiten", "ebenen", "pinsel", "filter", "zuschneiden", "grafik", "collage", "plakat");
 
     static string? SelId(ProgramDocument d) => d.Text("selected") is { Length: > 0 } s && ImageDoc.Layer(d.Data, s) is not null ? s : null;
@@ -134,14 +144,20 @@ public partial class MainWindow
     }
 
     /// <summary>T-0686 (V-02): Dateiauswahl für ein Foto oder eine Grafik.</summary>
-    public void ImgPickOpen() => _ = ProgramPickThen(BK, "img-open-pick", "Bilder", ["jpg", "jpeg", "png", "webp", "bmp", "svg"], false, files => ImgAddImage(files[0]));
+    public void ImgPickOpen() => _ = ProgramPickThen(BK, "img-open-pick", "Bilder", ["jpg", "jpeg", "png", "webp", "bmp", "tif", "tiff", "svg"], false, files => ImgAddImage(files[0]));
 
-    /// <summary>Bild als Ebene hinzufügen (öffentlich für Tests und die KI).</summary>
+    /// <summary>Bild als Ebene hinzufügen (öffentlich für Tests und die KI). TIFF wird im Hintergrund umgewandelt (T-0733) –
+    /// die Ebene erscheint dann von selbst; solange gilt <see cref="ImgTiffBusy"/>.</summary>
     public void ImgAddImage(string file)
     {
         if (Path.GetExtension(file).Equals(".svg", StringComparison.OrdinalIgnoreCase)) { ImgOpenSvg(file); return; }
-        var d = ProgramActive(BK) ?? ProgramNew(BK);
         if (!File.Exists(file)) throw new FileNotFoundException("Datei nicht gefunden: " + Path.GetFileName(file));
+        if (Path.GetExtension(file).ToLowerInvariant() is ".tif" or ".tiff") { ImgAddTiff(file); return; }
+        ImgAddDecoded(ProgramActive(BK) ?? ProgramNew(BK), file, Path.GetFileName(file));
+    }
+
+    void ImgAddDecoded(ProgramDocument d, string file, string shown)
+    {
         using var b = SkiaSharp.SKBitmap.Decode(file) ?? throw new InvalidOperationException("Das ist kein Bild, das Trendo öffnen kann.");
         var first = ImageDoc.Layers(d.Data).Count == 0;
         d.Edit("Bild hinzufügen", x =>
@@ -149,13 +165,65 @@ public partial class MainWindow
             if (first) { x["width"] = b.Width; x["height"] = b.Height; } // erstes Bild bestimmt die Leinwand
             ImageDoc.AddImage(x, file, b.Width, b.Height);
         });
-        _progMsg[BK] = $"„{Path.GetFileName(file)}“ ist eine Ebene ({b.Width} × {b.Height}).";
+        _progMsg[BK] = $"„{shown}“ ist eine Ebene ({b.Width} × {b.Height})." + (shown != Path.GetFileName(file) ? " TIFF wurde mit FFmpeg in PNG umgewandelt." : "");
+    }
+
+    bool _imgTiffBusy;
+    /// <summary>T-0733 (Gegenprüfung): Läuft gerade eine TIFF-Umwandlung? Dann startet keine zweite.</summary>
+    public bool ImgTiffBusy => _imgTiffBusy;
+    /// <summary>Faden, auf dem die letzte TIFF-Umwandlung lief – für den Test, dass FFmpeg nicht den Oberflächen-Faden blockiert.</summary>
+    public int ImgTiffThreadForTests { get; private set; }
+
+    /// <summary>T-0733 (Gegenprüfung): FFmpeg läuft im Hintergrund (bis 60 s bei großen Scans) – die Oberfläche bleibt bedienbar und zeigt „wird umgewandelt …“.</summary>
+    void ImgAddTiff(string file)
+    {
+        if (_imgTiffBusy) throw new InvalidOperationException("Ein TIFF wird gerade umgewandelt – bitte kurz warten, dann erscheint es als Ebene.");
+        var ff = FfmpegPath ?? throw new InvalidOperationException("TIFF öffnet Trendo über FFmpeg – bitte FFmpeg unter „Programme“ einrichten oder das Bild als PNG/JPG speichern.");
+        var d = ProgramActive(BK) ?? ProgramNew(BK);
+        var dir = Path.Combine(_core.DataRoot, "bild", "importe"); var shown = Path.GetFileName(file);
+        _imgTiffBusy = true;
+        _progMsg[BK] = $"„{shown}“ wird umgewandelt … (TIFF über FFmpeg, die Ebene erscheint gleich von selbst)";
+        _ = Task.Run(() => { ImgTiffThreadForTests = Environment.CurrentManagedThreadId; return ImgTiffToPng(ff, dir, file); })
+            .ContinueWith(t => _ui.Post(() =>
+            {
+                _imgTiffBusy = false;
+                try
+                {
+                    var png = t.GetAwaiter().GetResult();
+                    ImgAddDecoded(ProgramDocs(BK).Contains(d) ? d : ProgramActive(BK) ?? ProgramNew(BK), png, shown); // Dokument inzwischen geschlossen: ins aktive
+                    _progErr.Remove(BK);
+                }
+                catch (Exception ex) when (ex is IOException or InvalidOperationException or UnauthorizedAccessException)
+                {
+                    var fe = FriendlyError.From(ex); _progMsg[BK] = fe.Sentence; _progErr[BK] = (fe, () => ProgramRun(BK, () => ImgAddImage(file)));
+                }
+                if (CurrentView == BK) Show(BK);
+            }), TaskScheduler.Default);
+    }
+
+    /// <summary>T-0733: TIFF kann SkiaSharp nicht lesen (geprüft: <c>SKBitmap.Decode</c> liefert null). Trendo wandelt es mit dem eingerichteten FFmpeg
+    /// verlustfrei in PNG um und legt es unter „bild/importe“ ab, damit das Projekt die Ebene auch nach dem Neustart findet.
+    /// Läuft im Hintergrund – fasst nichts an der Oberfläche an. Erst in eine Zwischendatei, dann umbenannt: nie eine halbe PNG.</summary>
+    static string ImgTiffToPng(string ff, string dir, string file)
+    {
+        Directory.CreateDirectory(dir);
+        string hash; using (var fs = File.OpenRead(file)) hash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(fs))[..12].ToLowerInvariant();
+        var safe = string.Concat(Path.GetFileNameWithoutExtension(file).Select(c => char.IsLetterOrDigit(c) || c is '-' or '_' ? c : '_'));
+        var png = Path.Combine(dir, $"{safe}-{hash}.png");
+        if (File.Exists(png)) return png;
+        var tmp = png + ".tmp.png";
+        Cli.Result r;
+        try { r = Cli.Run(ff, ["-v", "error", "-y", "-i", file, "-frames:v", "1", "-pix_fmt", "rgba", tmp], timeoutMs: 60000); }
+        catch (System.ComponentModel.Win32Exception ex) { throw new InvalidOperationException("FFmpeg ließ sich nicht starten: " + ex.Message, ex); }
+        if (!r.Ok || !File.Exists(tmp)) { try { File.Delete(tmp); } catch (IOException) { } throw new InvalidOperationException("Das TIFF ließ sich nicht lesen: " + (r.Err.Trim() is { Length: > 0 } e ? e.Split('\n')[0] : "FFmpeg meldet einen Fehler.")); }
+        File.Move(tmp, png, true);
+        return png;
     }
 
     private Control ImgWorkspace(ProgramDocument d)
     {
         var png = ImageRender.Png(d.Data);
-        var canvas = new ImageCanvas { Name = "img-canvas", DocW = (int)d.Number("width", 800), DocH = (int)d.Number("height", 600), Zoom = ImgZoom, Tool = ImgEff, BrushColor = Color.Parse(ImgColor), BrushSize = ImgBrush,
+        var canvas = new ImageCanvas { Name = "img-canvas", DocW = (int)d.Number("width", 800), DocH = (int)d.Number("height", 600), Zoom = ImgZoom, Pan = ImgPan, Tool = ImgEff, BrushColor = Color.Parse(ImgColor), BrushSize = ImgBrush,
             Image = new Bitmap(new MemoryStream(png)), MinHeight = 240 };
         ImgCanvasForTests = canvas; canvas.Marquee = ImgMarquee; canvas.CloneSource = ImgCloneSrc;
         canvas.LassoPath = ImgLasso?.Select(q => new Point(q.X, q.Y)).ToList();
@@ -166,6 +234,14 @@ public partial class MainWindow
             double x0 = pts.Min(q => q.X), y0 = pts.Min(q => q.Y); ImgMarquee = new Rect(x0, y0, pts.Max(q => q.X) - x0, pts.Max(q => q.Y) - y0);
             _progMsg[BK] = $"Lasso-Auswahl mit {pts.Count} Punkten – oben „Maske aus Auswahl“ oder „Inhaltsbasiert füllen“.";
         });
+        // T-0733: Zoom-Werkzeug – die angeklickte Stelle bleibt unter der Maus; kein Bearbeitungsschritt
+        canvas.Zoomed = (at, screen, zoomOut) =>
+        {
+            var z = ImgNextZoom(canvas.CurrentScale, zoomOut);
+            ImgPan = canvas.PanFor(at, screen, z); ImgZoom = z;
+            _progMsg[BK] = $"Zoom {z * 100:0.#} % – „Einpassen“ zeigt wieder das ganze Bild.";
+            Show(BK);
+        };
         canvas.Line = (a, b) => ProgramRun(BK, () => d.Edit("Verlauf", x => ImageDoc.AddGradient(x, a.X, a.Y, b.X, b.Y, ImgColor, "#00" + ImgColor.TrimStart('#')[^6..], ImgGradRadial)));
         if (SelId(d) is { } sid && ImageDoc.Layer(d.Data, sid) is { } sl && ImageDoc.S(sl["kind"]) != "paint")
             canvas.Selection = new Rect(ImageDoc.N(sl["x"]), ImageDoc.N(sl["y"]), ImageDoc.N(sl["w"]), ImageDoc.N(sl["h"]));
@@ -221,7 +297,7 @@ public partial class MainWindow
         // Farbe und Pinselgröße direkt über der Fläche
         var bar = new WrapPanel { Name = "img-toolbar", Margin = new Thickness(0, 0, 0, 6) };
         // Farben nur bei Werkzeugen, die Farbe brauchen – Auswahl, Reparieren, Klonen, Verschieben, Zuschneiden halten die Leiste kurz
-        foreach (var c in ImgTool is "select" or "heal" or "clone" or "move" or "crop" or "eraser" ? [] : ImgColors)
+        foreach (var c in ImgTool is "select" or "heal" or "clone" or "move" or "crop" or "eraser" or "zoom" ? [] : ImgColors)
         {
             var cc = c; var on = string.Equals(ImgColor, c, StringComparison.OrdinalIgnoreCase);
             var b = new Button { Name = "img-color-" + c.TrimStart('#').ToLowerInvariant(), Width = 24, Height = 24, Padding = new Thickness(0), Margin = new Thickness(0, 0, 4, 0), CornerRadius = new CornerRadius(12), Background = Brush.Parse(c), BorderBrush = Brush.Parse(on ? "#FACC15" : "#55FFFFFF"), BorderThickness = new Thickness(on ? 3 : 1) };
@@ -291,7 +367,7 @@ public partial class MainWindow
     {
         var sp = new StackPanel { Spacing = 6 };
         Button B(string name, string label, Action a, bool primary = false) { var b = new Button { Name = name, Content = label, FontSize = 12, Margin = new Thickness(0, 0, 4, 4) }; if (primary) { b.Background = Accent; b.Foreground = Brushes.White; } b.Click += (_, _) => ProgramRun(BK, a); return b; }
-        var path = new TextBox { Name = "img-file", PlaceholderText = "Bilddatei (JPG, PNG, WEBP) oder SVG" };
+        var path = new TextBox { Name = "img-file", PlaceholderText = "Bilddatei (JPG, PNG, WEBP, TIFF) oder SVG" };
         sp.Children.Add(H("Bild hinzufügen", 13)); sp.Children.Add(path);
         sp.Children.Add(B("img-add", "Als Ebene hinzufügen", () => ImgAddImage((path.Text ?? "").Trim().Trim('"') is { Length: > 0 } f ? f : throw new InvalidOperationException("Bitte eine Bilddatei wählen.")), true));
         // Ebenen von oben nach unten

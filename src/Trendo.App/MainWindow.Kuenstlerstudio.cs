@@ -22,8 +22,10 @@ public partial class MainWindow
     public double ArtSize { get; set; } = 6;
     public double ArtOpacity { get; set; } = 1;
     public double ArtSmooth { get; set; } = 0.3;
-    /// <summary>Werkzeug neben den Pinseln: Pipette oder Hilfspunkte setzen.</summary>
+    /// <summary>Werkzeug neben den Pinseln: Pipette, Hilfspunkte setzen oder Auswahl (T-0733).</summary>
     public string ArtMode { get; set; } = "paint";
+    /// <summary>T-0733: Art der Auswahl – „rect“ (Rechteck aufziehen) oder „lasso“ (freihändig umfahren).</summary>
+    public string ArtSelMode { get; set; } = "rect";
     public double ArtZoom { get; set; }
     public bool ArtGrid { get; set; }
     public List<string> ArtRecent { get; } = [];
@@ -102,12 +104,14 @@ public partial class MainWindow
         ],
         SimpleExports = 2,
         Tools = [.. BrushPreset.All.Select(b => new ProgramTool("art-brush-" + b.Id, b.Icon, b.Name, ArtBrushTip(b), _ => ArtPickBrush(b.Id), () => ArtMode == "paint" && ArtBrush == b.Id)),
-                 new ProgramTool("art-tool-pick", "◉", "Pipette", "Farbe aus dem Bild aufnehmen", _ => ArtMode = "pick", () => ArtMode == "pick")],
+                 new ProgramTool("art-tool-pick", "◉", "Pipette", "Farbe aus dem Bild aufnehmen", _ => ArtMode = "pick", () => ArtMode == "pick"),
+                 // T-0733: Auswahl wie in Krita/Procreate – Rechteck oder Lasso, Inhalt verschieben (hineinklicken und ziehen) oder an den Ecken skalieren
+                 new ProgramTool("art-tool-select", "⬚", "Auswahl", "Rechteck aufziehen oder mit dem Lasso umfahren – dann hineinklicken und ziehen verschiebt, die Ecken ziehen skaliert", _ => ArtMode = "select", () => ArtMode == "select") { Shortcut = "M" }],
         Workspace = ArtWorkspace,
         Properties = ArtProperties,
         Status = d => { var m = ArtModel(d); var b = BrushPreset.Get(ArtBrush); return $"{m.Doc.W} × {m.Doc.H} px · {m.Doc.Layers.Count} Ebenen · {b.Name} {ArtSize:0} px · {(int)d.Number("strokes")} Striche" + (ArtSym(d).Mode != "aus" ? " · Spiegeln an" : ""); },
         Help = "Links einen Pinsel wählen und malen – mit Grafiktablett zählt der Stiftdruck. Rechts Farbe (Farbrad, Palette, Harmonien), Ebenen mit Mischarten, Spiegeln und Perspektive. "
-             + "Strg+Mausrad zoomt, mittlere Maustaste oder Leertaste verschiebt. Speichern als Projekt; Export als PNG, ORA oder PSD mit Ebenen, als Druckdatei oder Zeitraffer-Video.",
+             + "Mit „Auswahl“ (Taste M) ein Rechteck aufziehen oder mit dem Lasso umfahren, dann hineinklicken und ziehen oder an den Ecken skalieren. Strg+Mausrad zoomt, mittlere Maustaste oder Leertaste verschiebt. Speichern als Projekt; Export als PNG, ORA oder PSD mit Ebenen, als Druckdatei oder Zeitraffer-Video.",
     }, "künstlerstudio", "zeichnen", "malen", "malprogramm", "pinsel", "skizze", "illustration", "aquarell", "comic", "mandala", "grafiktablett", "krita", "procreate");
 
     public Vector ArtPan { get; set; }
@@ -161,7 +165,7 @@ public partial class MainWindow
     static void ArtCheckLock(PaintLayer l) { if (l.Locked) throw new InvalidOperationException($"Die Ebene „{l.Name}“ ist gesperrt – erst rechts das Schloss lösen."); }
 
     /// <summary>Änderung an Ebenen als ein Rückgängig-Schritt. Unveränderte Ebenen behalten ihr PNG (kein Neu-Kodieren).</summary>
-    void ArtEdit(ProgramDocument d, string label, Action<PaintDoc> change)
+    void ArtEdit(ProgramDocument d, string label, Action<PaintDoc> change, Action<JsonObject>? extra = null)
     {
         var st = ArtModel(d); change(st.Doc);
         var layers = new JsonArray();
@@ -172,7 +176,48 @@ public partial class MainWindow
             layers.Add(new JsonObject { ["id"] = l.Id, ["name"] = l.Name, ["opacity"] = Math.Round(l.Opacity, 3), ["visible"] = l.Visible, ["locked"] = l.Locked, ["alphaLock"] = l.AlphaLock, ["blend"] = l.Blend, ["png"] = png });
         }
         var active = d.Text("active");
-        d.Edit(label, x => { x["layers"] = layers; x["background"] = st.Doc.Background; x["active"] = active; });
+        d.Edit(label, x => { x["layers"] = layers; x["background"] = st.Doc.Background; x["active"] = active; extra?.Invoke(x); });
+        // T-0733: Pixel einer Ebene können sich ohne neue Ebenen-Kennung ändern (Auswahl verschieben, Ebene leeren) – das Gesamtbild sofort neu rechnen
+        st.Refresh();
+    }
+
+    // ---------- T-0733 Auswahl ----------
+
+    /// <summary>Aktuelle Auswahl (Vieleck in Leinwand-Pixeln) oder null. Sie steht im Dokument, damit Rückgängig sie mit dem Inhalt zurücksetzt.</summary>
+    public List<(double X, double Y)>? ArtSelection(ProgramDocument d) =>
+        (d.Data["sel"] as JsonArray)?.OfType<JsonArray>().Select(p => (ProgramDocument.ToNumber(p[0]), ProgramDocument.ToNumber(p[1]))).ToList() is { Count: >= 3 } l ? l : null;
+
+    static JsonArray ArtSelJson(IEnumerable<(double X, double Y)> pts) => new([.. pts.Select(p => (JsonNode)new JsonArray(Math.Round(p.X, 2), Math.Round(p.Y, 2)))]);
+
+    /// <summary>Auswahl setzen (leer = aufheben). Wie in Krita kein eigener Rückgängig-Schritt.</summary>
+    public void ArtSelect(ProgramDocument d, IReadOnlyList<(double X, double Y)> pts)
+    {
+        if (pts.Count < 3) { d.Data.Remove("sel"); _progMsg[ArtKey] = "Auswahl aufgehoben."; return; }
+        var st = ArtModel(d);
+        var n = PaintSelection.Count(PaintSelection.Mask(st.Doc.W, st.Doc.H, pts));
+        if (n == 0) { d.Data.Remove("sel"); throw new InvalidOperationException("Die Auswahl liegt außerhalb der Leinwand."); }
+        d.Data["sel"] = ArtSelJson(pts);
+        _progMsg[ArtKey] = $"Auswahl: {n:N0} Bildpunkte – hineinklicken und ziehen verschiebt, an den Ecken ziehen skaliert.";
+    }
+
+    /// <summary>Inhalt der Auswahl auf der gewählten Ebene verschieben (dx, dy) und skalieren (sx, sy) – ein Rückgängig-Schritt.</summary>
+    public void ArtTransformSelection(ProgramDocument d, double dx, double dy, double sx = 1, double sy = 1)
+    {
+        var sel = ArtSelection(d) ?? throw new InvalidOperationException("Erst einen Bereich auswählen – Rechteck aufziehen oder mit dem Lasso umfahren.");
+        List<(double X, double Y)> moved = sel; var scaled = Math.Abs(sx - 1) > 1e-3 || Math.Abs(sy - 1) > 1e-3;
+        ArtEdit(d, scaled ? "Auswahl skalieren" : "Auswahl verschieben", p =>
+        {
+            var l = ArtActive(d, p); ArtCheckLock(l);
+            var px = l.Px.Clone(); moved = PaintSelection.Transform(px, sel, dx, dy, sx, sy); l.Px = px; // neue Pixmap: ArtEdit kodiert nur geänderte Ebenen neu
+        }, x => x["sel"] = ArtSelJson(moved));
+        _progMsg[ArtKey] = scaled ? $"Auswahl auf {sx * 100:0} % × {sy * 100:0} % skaliert – Strg+Z nimmt es zurück." : $"Auswahl um {dx:0} / {dy:0} px verschoben – Strg+Z nimmt es zurück.";
+    }
+
+    /// <summary>Inhalt der Auswahl auf der gewählten Ebene löschen.</summary>
+    public void ArtClearSelection(ProgramDocument d)
+    {
+        var sel = ArtSelection(d) ?? throw new InvalidOperationException("Erst einen Bereich auswählen.");
+        ArtEdit(d, "Auswahl löschen", p => { var l = ArtActive(d, p); ArtCheckLock(l); var px = l.Px.Clone(); PaintSelection.Clear(px, sel); l.Px = px; });
     }
 
     void ArtLayerProp(ProgramDocument d, string id, string label, Action<JsonObject> set) =>
@@ -447,8 +492,10 @@ public partial class MainWindow
     {
         var st = ArtModel(d);
         var canvas = new PaintCanvas { Name = "art-canvas", State = st, Zoom = ArtZoom, Pan = ArtPan, ShowGrid = ArtGrid, Sym = ArtSym(d), Assist = ArtAssist(d), MinHeight = 300,
-            Mode = ArtMode, BrushRadius = ArtSize / 2 };
+            Mode = ArtMode, BrushRadius = ArtSize / 2, SelPoly = ArtSelection(d), SelShape = ArtSelMode };
         ArtCanvasForTests = canvas;
+        canvas.Selected = pts => ProgramRun(ArtKey, () => ArtSelect(d, pts));
+        canvas.SelTransformed = (dx, dy, sx, sy) => ProgramRun(ArtKey, () => ArtTransformSelection(d, dx, dy, sx, sy));
         canvas.BeginStroke = () =>
         {
             try { return ArtBegin(d); }
@@ -463,32 +510,63 @@ public partial class MainWindow
         // Optionsleiste über der Fläche: Größe, Deckkraft, Glätten, Schnellfarben
         var bar = new WrapPanel { Name = "art-toolbar", Margin = new Thickness(0, 0, 0, 6) };
         var b = BrushPreset.Get(ArtBrush);
-        bar.Children.Add(new TextBlock { Text = (ArtMode == "pick" ? "Pipette" : ArtMode == "points" ? "Hilfspunkte setzen" : b.Name), Foreground = Text, FontWeight = FontWeight.SemiBold, FontSize = 12.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 0) });
+        bar.Children.Add(new TextBlock { Text = (ArtMode == "pick" ? "Pipette" : ArtMode == "points" ? "Hilfspunkte setzen" : ArtMode == "select" ? "Auswahl" : b.Name), Foreground = Text, FontWeight = FontWeight.SemiBold, FontSize = 12.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 0) });
         Slider Sl(string name, string label, double min, double max, double val, Action<double> set, double width = 130)
         {
             var s = new Slider { Name = name, Minimum = min, Maximum = max, Value = val, Width = width, Margin = new Thickness(6, 0, 10, 0) };
             s.PropertyChanged += (_, e) => { if (e.Property == Slider.ValueProperty) { set(s.Value); canvas.BrushRadius = ArtSize / 2; } };
             bar.Children.Add(new TextBlock { Text = label, Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }); bar.Children.Add(s); return s;
         }
-        Sl("art-size", "Größe", 1, 300, ArtSize, v => ArtSize = Math.Round(v), 150);
-        Sl("art-opacity", "Deckkraft", 5, 100, ArtOpacity * 100, v => ArtOpacity = Math.Round(v / 100, 2), 100);
-        Sl("art-smooth", "Glätten", 0, 100, ArtSmooth * 100, v => ArtSmooth = Math.Round(v / 100, 2), 100);
-        var cur = new Border { Name = "art-current-color", Width = 26, Height = 26, CornerRadius = new CornerRadius(13), Background = Brush.Parse(ArtColor), BorderBrush = Edge, BorderThickness = new Thickness(2), Margin = new Thickness(4, 0, 6, 0) };
-        ToolTip.SetTip(cur, "Aktuelle Farbe " + ArtColor); bar.Children.Add(cur);
-        foreach (var c in ArtRecent.Take(8))
+        if (ArtMode == "select")
         {
-            var cc = c; var sw = new Button { Name = "art-recent-" + c.TrimStart('#').ToLowerInvariant(), Width = 20, Height = 20, Padding = new Thickness(0), Margin = new Thickness(0, 0, 3, 0), CornerRadius = new CornerRadius(10), Background = Brush.Parse(c), BorderBrush = Edge, BorderThickness = new Thickness(1) };
-            ToolTip.SetTip(sw, "Zuletzt benutzt: " + c); sw.Click += (_, _) => { ArtUseColor(cc); Show(ArtKey); }; bar.Children.Add(sw);
+            // T-0733: Optionsleiste der Auswahl (wie in Krita): Rechteck/Lasso, genau skalieren, Inhalt löschen, aufheben
+            foreach (var (id, icon, tip) in new[] { ("rect", "▭", "Rechteck aufziehen"), ("lasso", "➰", "Lasso: freihändig umfahren") })
+            {
+                var on = ArtSelMode == id; var mid = id;
+                var mb = new Button { Name = "art-sel-mode-" + id, Content = icon, Width = 30, Height = 28, Padding = new Thickness(0), FontSize = 14, Margin = new Thickness(2, 0, 0, 0), HorizontalContentAlignment = HorizontalAlignment.Center,
+                    Background = on ? Accent : Brushes.Transparent, Foreground = on ? Brushes.White : Text, BorderBrush = Edge, BorderThickness = new Thickness(1) };
+                ToolTip.SetTip(mb, tip); mb.Click += (_, _) => { ArtSelMode = mid; Show(ArtKey); }; bar.Children.Add(mb);
+            }
+            if (ArtSelection(d) is not null)
+            {
+                var pct = new TextBox { Name = "art-sel-scale", Text = "100", Width = 56, Margin = new Thickness(10, 0, 2, 0) };
+                Button Sb(string name, string label, string tip, Action a) { var x = new Button { Name = name, Content = label, FontSize = 12, Margin = new Thickness(6, 0, 0, 0) }; ToolTip.SetTip(x, tip); x.Click += (_, _) => ProgramRun(ArtKey, a); return x; }
+                bar.Children.Add(pct); bar.Children.Add(new TextBlock { Text = "%", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center });
+                bar.Children.Add(Sb("art-sel-scale-ok", "Skalieren", "Auswahl auf diese Größe bringen (Anker oben links)", () =>
+                {
+                    if (!double.TryParse((pct.Text ?? "").Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v) || v < 1 || v > 10000)
+                        throw new FormatException("Bitte eine Größe zwischen 1 und 10 000 % eingeben.");
+                    ArtTransformSelection(d, 0, 0, v / 100, v / 100);
+                }));
+                bar.Children.Add(Sb("art-sel-clear", "Inhalt löschen", "Bildpunkte der Auswahl auf der gewählten Ebene entfernen", () => ArtClearSelection(d)));
+                bar.Children.Add(Sb("art-sel-none", "Auswahl aufheben", "Auswahl entfernen – das Bild bleibt", () => ArtSelect(d, [])));
+            }
+            else bar.Children.Add(new TextBlock { Text = ArtSelMode == "lasso" ? "Mit gedrückter Maustaste umfahren" : "Rechteck aufziehen", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 0, 0) });
         }
-        // Schnellfarben: auch in „Einfach“ (Eigenschaften eingeklappt) sofort eine Farbe wählen
-        bar.Children.Add(new Border { Width = 1, Height = 20, Background = Edge, Margin = new Thickness(6, 0, 8, 0) });
-        foreach (var c in ArtSwatches.Where(x => !ArtRecent.Take(8).Contains(x)).Take(10))
+        // Pinselregler und Farben nur beim Malen – in der Auswahl bleibt die Leiste einzeilig (wie die Optionsleiste in Krita)
+        if (ArtMode != "select")
         {
-            var cc = c; var qs = new Button { Name = "art-quick-" + c.TrimStart('#').ToLowerInvariant(), Width = 20, Height = 20, Padding = new Thickness(0), Margin = new Thickness(0, 0, 3, 0), CornerRadius = new CornerRadius(4), Background = Brush.Parse(c), BorderBrush = Edge, BorderThickness = new Thickness(1) };
-            ToolTip.SetTip(qs, "Farbe " + c + " – mehr Farben unter „Eigenschaften“"); qs.Click += (_, _) => { ArtUseColor(cc); Show(ArtKey); }; bar.Children.Add(qs);
+            Sl("art-size", "Größe", 1, 300, ArtSize, v => ArtSize = Math.Round(v), 150);
+            Sl("art-opacity", "Deckkraft", 5, 100, ArtOpacity * 100, v => ArtOpacity = Math.Round(v / 100, 2), 100);
+            Sl("art-smooth", "Glätten", 0, 100, ArtSmooth * 100, v => ArtSmooth = Math.Round(v / 100, 2), 100);
+            var cur = new Border { Name = "art-current-color", Width = 26, Height = 26, CornerRadius = new CornerRadius(13), Background = Brush.Parse(ArtColor), BorderBrush = Edge, BorderThickness = new Thickness(2), Margin = new Thickness(4, 0, 6, 0) };
+            ToolTip.SetTip(cur, "Aktuelle Farbe " + ArtColor); bar.Children.Add(cur);
+            foreach (var c in ArtRecent.Take(8))
+            {
+                var cc = c; var sw = new Button { Name = "art-recent-" + c.TrimStart('#').ToLowerInvariant(), Width = 20, Height = 20, Padding = new Thickness(0), Margin = new Thickness(0, 0, 3, 0), CornerRadius = new CornerRadius(10), Background = Brush.Parse(c), BorderBrush = Edge, BorderThickness = new Thickness(1) };
+                ToolTip.SetTip(sw, "Zuletzt benutzt: " + c); sw.Click += (_, _) => { ArtUseColor(cc); Show(ArtKey); }; bar.Children.Add(sw);
+            }
+            // Schnellfarben: auch in „Einfach“ (Eigenschaften eingeklappt) sofort eine Farbe wählen
+            bar.Children.Add(new Border { Width = 1, Height = 20, Background = Edge, Margin = new Thickness(6, 0, 8, 0) });
+            foreach (var c in ArtSwatches.Where(x => !ArtRecent.Take(8).Contains(x)).Take(10))
+            {
+                var cc = c; var qs = new Button { Name = "art-quick-" + c.TrimStart('#').ToLowerInvariant(), Width = 20, Height = 20, Padding = new Thickness(0), Margin = new Thickness(0, 0, 3, 0), CornerRadius = new CornerRadius(4), Background = Brush.Parse(c), BorderBrush = Edge, BorderThickness = new Thickness(1) };
+                ToolTip.SetTip(qs, "Farbe " + c + " – mehr Farben unter „Eigenschaften“"); qs.Click += (_, _) => { ArtUseColor(cc); Show(ArtKey); }; bar.Children.Add(qs);
+            }
         }
         var grid = new Grid { RowDefinitions = new RowDefinitions("Auto,*") };
         grid.Children.Add(bar); Grid.SetRow(canvas, 1); grid.Children.Add(canvas);
+        bar.ZIndex = 1; // T-0733: bei wenig Höhe ragt die Malfläche (Mindesthöhe) in die Leiste – die Knöpfe bleiben trotzdem oben und anklickbar
         return grid;
     }
 

@@ -1,0 +1,9 @@
+# T-0733 gezielte Tests (17.11.2026)
+$ Trendo.App.Tests.exe -class Trendo.App.Tests.T0733_BildMalen_Ui
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = '27e375222f2348ed2cefc98773356961e0c10aa1331ed5a2e9354b70cab7a83d')
+   Trendo.App.Tests  Total: 3, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 12,954s
+exit=0
+
+$ dotnet test tests/Trendo.Core.Tests -c Release --no-build --filter KuenstlerAuswahlTests|KuenstlerTests|ImageOps|ProgramMenu|NoFixedUser
+Bestanden!   : Fehler:     0, erfolgreich:    43, übersprungen:     0, gesamt:    43, Dauer: 564 ms - Trendo.Core.Tests.dll (net10.0)
