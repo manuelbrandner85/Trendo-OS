@@ -297,27 +297,82 @@ public sealed class RundownAdapter : IStudioActionAdapter
     public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked("Es wurde nichts gesendet.");
 }
 
-/// <summary>X-07: Herunterladen und Klonen bleiben aus.</summary>
+/// <summary>X-07 (T-0735): Freies Bild/Modell/HDRI von Poly Haven (CC0) ins Projekt laden – erst ein Plan, geladen wird nur nach der
+/// einmaligen Freigabe (ApprovalGate). Abruf ausschließlich über den angeschlossenen Lese-Weg der App (nur öffentliche Adressen, höchstens
+/// 2 MB je Datei), MD5 laut Katalog geprüft; je Datei ein Lizenz- und Quellenbeleg mit SHA-256 (HERKUNFT.txt, herkunft.json).</summary>
 public sealed class LicenseFetchAdapter : IStudioActionAdapter
 {
     public string StudioId => "X-07";
     public string ActionId => "quelle.holen";
     public string Label => "Quelle holen";
-    public SideEffectClass Effect => SideEffectClass.Publish;
-    public CapabilityLevel DeclaredLevel => CapabilityLevel.Blocked;
-    public string Evidence => "PromptActionTests.Quelle_wird_nicht_geholt";
-    public bool CanPerformSideEffect => false;
-    public IReadOnlyList<string> RequiredFields => [];
-    public IReadOnlyList<string> OutputKinds => [];
+    public SideEffectClass Effect => SideEffectClass.Message;
+    public CapabilityLevel DeclaredLevel => CapabilityLevel.Partial;
+    public string Evidence => "ConnectedPromptTests.Quelle_wird_nach_freigabe_geholt";
+    public bool CanPerformSideEffect => true;
+    public IReadOnlyList<string> RequiredFields => ["asset"];
+    public IReadOnlyList<string> OutputKinds => ["txt"];
     public ActionDraft? TryParse(string prompt, IReadOnlyDictionary<string, string> known)
     {
         var fields = FieldKit.Read(prompt, known);
         return LicenseFields.WantsFetch(fields) ? new ActionDraft(ActionId, fields) : null;
     }
-    public IReadOnlyList<ClarificationQuestion> Missing(IReadOnlyDictionary<string, string> parameters) => [];
-    public IReadOnlyList<ValidationFinding> Validate(IReadOnlyDictionary<string, string> parameters) => [];
-    public AdapterOutcome Produce(AdapterCall call) => FieldKit.Blocked("Herunterladen ist nicht angeschlossen. Es wurde nichts geholt.");
-    public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked("Herunterladen ist nicht angeschlossen. Es wurde nichts geholt.");
+    public IReadOnlyList<ClarificationQuestion> Missing(IReadOnlyDictionary<string, string> parameters) =>
+        FieldKit.Has(parameters, "asset") ? [] : [new("asset", "asset", "Welches Stück? Schreib „Asset: rock_09“ (Kennung aus der Adresse polyhaven.com/a/…).", true)];
+    public IReadOnlyList<ValidationFinding> Validate(IReadOnlyDictionary<string, string> parameters) =>
+        FieldKit.Has(parameters, "asset") && !FreeAssets.ValidId(Id(parameters)) ? [new("asset", "Die Kennung besteht nur aus Kleinbuchstaben, Ziffern und _ (z. B. rock_09).", true)] : [];
+
+    static string Id(IReadOnlyDictionary<string, string> p)
+    {
+        var raw = FieldKit.Text(p, "asset").Trim();
+        var i = raw.IndexOf("/a/", StringComparison.OrdinalIgnoreCase);
+        return (i >= 0 ? raw[(i + 3)..] : raw).Trim('/', ' ').ToLowerInvariant();
+    }
+
+    public AdapterOutcome Produce(AdapterCall call)
+    {
+        if (Connected.Svc.Offline) return FieldKit.Blocked("Offline: es wird nichts geladen. Herunterladen braucht Internet.");
+        var id = Id(call.Parameters);
+        if (!FreeAssets.ValidId(id)) return FieldKit.Fail("Die Kennung ist ungültig.");
+        var body = $"Plan: Poly Haven „{id}“ (https://polyhaven.com/a/{id}) · Lizenz CC0 1.0\nNoch nichts geladen. Die Dateien kommen erst nach der Freigabe, in 1k-Auflösung, höchstens 2 MB je Datei.\nZiel im Projekt: assets/{id}/ mit Lizenz- und Quellenbeleg je Datei (HERKUNFT.txt, herkunft.json).\n";
+        return Connected.Text(call, FieldKit.Slot("assets", call.Version, "plan.txt"), body, "Noch nichts geladen", "quelle.plan", "FreeAssets", ["Noch nichts geladen."]);
+    }
+
+    public AdapterOutcome SideEffect(AdapterCall call) => Connected.Run(() =>
+    {
+        if (!call.SideEffectAuthorized) return FieldKit.Blocked("Die Freigabe fehlt. Es wurde nichts geladen.");
+        if (Connected.Svc.Offline) return FieldKit.Blocked("Offline: es wird nichts geladen.");
+        if (Connected.Svc.ReadBytes is not { } read) return FieldKit.Blocked("Es ist kein Lesen angeschlossen. Es wurde nichts geladen.");
+        var id = Id(call.Parameters);
+        if (!FreeAssets.ValidId(id)) return FieldKit.Blocked("Die Kennung ist ungültig.");
+        var (_, listBytes, _) = read(new Uri(FreeAssets.FilesUrl(id)), call.Cancellation).GetAwaiter().GetResult();
+        var listJson = System.Text.Encoding.UTF8.GetString(listBytes);
+        var plan = FreeAssets.Plan(listJson, FreeAssets.TypeOf(listJson));
+        var fetched = new List<FreeAssets.FetchedFile>();
+        var data = new List<(string Rel, byte[] Bytes)>();
+        foreach (var f in plan)
+        {
+            var u = new Uri(f.Url);
+            if (ResearchDesk.Classify(u.ToString()).Kind != UrlKind.Lesemodus) return FieldKit.Blocked("Unsichere Adresse im Katalog: " + f.Url, attempted: true);
+            var (_, bytes, _) = read(u, call.Cancellation).GetAwaiter().GetResult();
+            if (!FreeAssets.Md5Ok(bytes, f.Md5)) return FieldKit.Blocked("Datei beschädigt (Prüfsumme passt nicht): " + f.RelPath, attempted: true);
+            data.Add((f.RelPath, bytes));
+            fetched.Add(new(f.RelPath, f.Url, bytes.Length, FreeAssets.Sha256(bytes), f.Md5));
+        }
+        // erst alles geladen und geprüft, dann ins Projekt – ein Fehler unterwegs hinterlässt keine halbe Sammlung
+        var root = "assets/" + id + "/";
+        foreach (var (rel, bytes) in data) call.Projects.WriteBytes(call.ProjectId, root + rel.Replace('\\', '/'), bytes);
+        var (text, json) = FreeAssets.Provenance(id, id, fetched, DateTimeOffset.Now);
+        call.Projects.WriteFile(call.ProjectId, root + "HERKUNFT.txt", text);
+        call.Projects.WriteFile(call.ProjectId, root + "herkunft.json", json);
+        foreach (var f in fetched)
+        {
+            var full = call.Projects.ResolveInProject(call.ProjectId, root + f.RelPath.Replace('\\', '/'));
+            if (!File.Exists(full) || FreeAssets.Sha256File(full) != f.Sha256) return FieldKit.Blocked("Die Datei liegt nach dem Laden nicht richtig im Projekt: " + f.RelPath, attempted: true);
+        }
+        Connected.Svc.Audit?.Append(Principal.LocalOwner.Name, "asset.fetch", $"{id} {fetched.Count} Dateien (KI-Auftrag)");
+        var receipt = $"Geladen: {id}, {fetched.Count} Datei(en), {fetched.Sum(f => f.Size)} Bytes, Lizenz CC0 – Beleg in {root}HERKUNFT.txt";
+        return new AdapterOutcome(true, [], [], receipt, [], [], receipt);
+    });
 }
 
 /// <summary>X-07: Lizenz nur mit OpenSource.Explain. Kein Netz.</summary>

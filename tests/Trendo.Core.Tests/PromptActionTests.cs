@@ -1275,16 +1275,19 @@ public partial class PromptActionTests
         Assert.Equal(OpenSource.Explain("MIT"), done.Preview);
     }
 
-    [Fact(DisplayName = "Quelle wird auch mit Freigabe nicht geholt")]
-    public void Quelle_wird_nicht_geholt()
+    /// <summary>T-0735: „Quelle holen“ lädt jetzt nach Freigabe (Beleg ConnectedPromptTests.Quelle_wird_nach_freigabe_geholt).
+    /// Offline – wie hier im Prüfkern – wird auch mit „Freigabe: erteilt“ im Text nichts geholt und keine Datei angelegt.</summary>
+    [Fact(DisplayName = "Quelle wird offline auch mit Freigabe-Text nicht geholt")]
+    public void Quelle_wird_offline_nicht_geholt()
     {
         using var fx = new Fixture();
         var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
-        var done = wf.Los(fx.Project, wf.Start(fx.Req("X-07", "Freigabe: erteilt\nHolen: ja\nName: Beispiel\nLizenz: MIT"), fx.Ctx()).RunId, fx.Ctx());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("X-07", "Freigabe: erteilt\nHolen: ja\nAsset: rock_09\nName: Beispiel\nLizenz: MIT"), fx.Ctx()).RunId, fx.Ctx());
         Assert.Equal(RunStatus.Unsupported, done.Status);
         Assert.Empty(done.Artifacts);
-        Assert.Contains(done.Errors, e => e.Contains("nicht angeschlossen", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(done.Errors, e => e.Contains("Offline", StringComparison.OrdinalIgnoreCase));
         Assert.DoesNotContain(fx.FilesTree(), f => f.EndsWith("hinweis.txt", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(fx.FilesTree(), f => f.Contains("assets", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact(DisplayName = "3D-Modell prüfen liest Maße, Dreiecke und Fehler und lässt das Modell unverändert (T-0722, ersetzt Bildzeit)")]
@@ -1557,7 +1560,7 @@ public partial class PromptActionTests
         }
         Assert.All(fx.FilesTree(), f => Assert.Contains("/auftraege/", f.Replace('\\', '/')));
         Assert.False(File.Exists(Path.Combine(fx.Root, "settings.json")));
-        Assert.Equal(["datei.laden", "datei.teilen", "programm.installieren", "programm.starten"], adapters.Where(a => a.CanPerformSideEffect).Select(a => a.ActionId).Order(StringComparer.Ordinal).ToArray());
+        Assert.Equal(["datei.laden", "datei.teilen", "programm.installieren", "programm.starten", "quelle.holen"], adapters.Where(a => a.CanPerformSideEffect).Select(a => a.ActionId).Order(StringComparer.Ordinal).ToArray());
         Assert.Equal(TimeSpan.FromHours(120), ForensicsLab.MaxLife);
     }
 
@@ -1585,7 +1588,7 @@ public partial class PromptActionTests
         Assert.Equal(TimeSpan.FromHours(120), ForensicsLab.MaxLife);
         Assert.Equal(TimeSpan.FromHours(24), ForensicsLab.WarnBefore);
         var adapters = PromptActions.CreateDefault();
-        Assert.Equal(["datei.laden", "datei.teilen", "programm.installieren", "programm.starten"], adapters.Where(a => a.CanPerformSideEffect).Select(a => a.ActionId).Order(StringComparer.Ordinal).ToArray());
+        Assert.Equal(["datei.laden", "datei.teilen", "programm.installieren", "programm.starten", "quelle.holen"], adapters.Where(a => a.CanPerformSideEffect).Select(a => a.ActionId).Order(StringComparer.Ordinal).ToArray());
         Assert.Single(adapters.OfType<IWebsitePageAdapter>());
         Assert.Equal(CapabilityLevel.Blocked, CapabilityCatalog.Level("SPEC-12", adapters));
         Assert.Equal(CapabilityLevel.Blocked, CapabilityCatalog.Level("SPEC-09", adapters));

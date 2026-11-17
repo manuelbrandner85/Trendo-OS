@@ -1,0 +1,34 @@
+[
+  {
+    "id": "lecun2015deep",
+    "type": "article-journal",
+    "title": "Deep learning",
+    "author": [
+      {
+        "family": "LeCun",
+        "given": "Yann"
+      },
+      {
+        "family": "Bengio",
+        "given": "Yoshua"
+      },
+      {
+        "family": "Hinton",
+        "given": "Geoffrey"
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          2015
+        ]
+      ]
+    },
+    "container-title": "Nature",
+    "volume": "521",
+    "issue": "7553",
+    "page": "436-444",
+    "DOI": "10.1038/nature14539",
+    "note": "Herkunft: Crossref · https://api.crossref.org/works/10.1038%2Fnature14539 · abgerufen 17.11.2026 12:46 · SHA-256 e8140c877f8102d7…"
+  }
+]

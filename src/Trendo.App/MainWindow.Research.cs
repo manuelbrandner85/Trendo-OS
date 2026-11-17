@@ -23,7 +23,8 @@ public partial class MainWindow
         _showMap["recherche"] = ResearchView; SysTabs.Add(("recherche", "Recherche (Lesemodus)"));
         StudioPages["SYS-08"] = "recherche";
         ExtraPages.Add(("Recherche im Lesemodus", "recherche", ["recherche", "dark web", "deep web", "tor", "onion", "lesen", "quelle"]));
-        Desk.EndSession(); // flüchtig: jede App-Sitzung beginnt leer
+        Desk.StartSession(); // flüchtig: jede App-Sitzung beginnt leer – außer „Sammlung behalten“ ist an (T-0735)
+        _rsHits = Desk.LastHits().ToList();
     }
 
     private static async Task<(string, string, Uri)> FetchReadOnly(Uri u)
@@ -44,7 +45,7 @@ public partial class MainWindow
             ReaderShown = type == "text/plain" ? new ReaderPage(final.Host, body, []) : ResearchDesk.ToReader(body, final, !_rsWholePage);
             _rsRaw = type == "text/plain" ? "" : body; _rsFinal = final;
             Desk.Record(final, ReaderShown, body); _rsShownUrl = final.ToString();
-            _rsMsg = $"Gelesen: {final.Host} · {ReaderShown.Text.Length} Zeichen · nichts wurde gespeichert außer in dieser Sitzung.";
+            _rsMsg = $"Gelesen: {final.Host} · {ReaderShown.Text.Length} Zeichen · " + (Desk.Keep ? "in der Sammlung festgehalten." : "nichts wurde gespeichert außer in dieser Sitzung.");
         }
         catch (Exception ex) { ReaderShown = null; _rsMsg = "Konnte die Seite nicht lesen: " + Trendo.Core.FriendlyError.Say(ex); }
     }
@@ -73,11 +74,12 @@ public partial class MainWindow
     {
         var top = new StackPanel { Spacing = 6 };
         var url = new TextBox { Name = "rs-url", PlaceholderText = "Adresse, z. B. de.wikipedia.org/wiki/Tor_(Netzwerk)", Text = _rsUrl };
-        var go = new Button { Name = "rs-read", Content = "Lesen", Background = Accent, IsEnabled = !_core.Offline, Margin = new Thickness(8, 0, 0, 0) };
+        var go = new Button { Name = "rs-read", Content = "Lesen", IsEnabled = !_core.Offline, Margin = new Thickness(8, 0, 0, 0) }; // T-0735: goldene Hauptaktion ist jetzt „Suchen“
         go.Click += async (_, _) => { go.IsEnabled = false; await ReadUrlAsync(url.Text ?? ""); Show("recherche"); };
         url.KeyDown += async (_, e) => { if (e.Key == Avalonia.Input.Key.Enter && go.IsEnabled) { go.IsEnabled = false; await ReadUrlAsync(url.Text ?? ""); Show("recherche"); } };
+        top.Children.Add(ResearchSearchBar());
         top.Children.Add(new DockPanel { Children = { Dk(go, Avalonia.Controls.Dock.Right), url } });
-        top.Children.Add(P("Lesemodus: Trendo holt nur den Text einer Seite. Keine Anmeldung, keine Formulare, keine Downloads, keine Käufe. Seiten mit .onion öffnest du nur im offiziellen Tor Browser.", Muted, 11.5));
+        top.Children.Add(P("Lesemodus: Trendo sucht über öffentliche Dienste ohne Konto und holt nur den Text einer Seite. Keine Anmeldung, keine Formulare, keine Downloads, keine Käufe. Seiten mit .onion öffnest du nur im offiziellen Tor Browser.", Muted, 11.5));
         var v = _rsUrl == "" ? null : ResearchDesk.Classify(_rsUrl);
         if (v?.Kind == UrlKind.NurTorBrowser)
         {
@@ -89,6 +91,7 @@ public partial class MainWindow
 
         // links: Startpunkte und Quellen
         var left = new StackPanel { Spacing = 3 };
+        if (ReaderShown is not null) ResearchHitsSide(left);
         left.Children.Add(H("Gute Startpunkte", 13));
         foreach (var (n, u, why) in ResearchDesk.Sources)
         {
@@ -96,7 +99,7 @@ public partial class MainWindow
             ToolTip.SetTip(b, why); b.Click += async (_, _) => { await ReadUrlAsync(u); Show("recherche"); }; Hover(b); left.Children.Add(b);
         }
         left.Children.Add(new Border { Height = 8 });
-        left.Children.Add(H("Diese Sitzung", 13));
+        left.Children.Add(H(Desk.Keep ? "Sammlung" : "Diese Sitzung", 13));
         var srcs = Desk.SessionSources();
         if (srcs.Count == 0) left.Children.Add(P("Noch nichts gelesen.", Muted, 11.5));
         var si = 0;
@@ -138,10 +141,11 @@ public partial class MainWindow
             }
             center = new ScrollViewer { Content = new Border { Padding = new Thickness(26, 18), Child = body } };
         }
+        else if (_rsHits.Count > 0) center = ResearchHitsView();
         else center = new StackPanel { Name = "rs-empty", Spacing = 10, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, Children = {
             new TextBlock { Text = "📖", FontSize = 52, HorizontalAlignment = HorizontalAlignment.Center },
-            new TextBlock { Text = "Ruhig lesen, markieren, zitieren", Foreground = Text, FontSize = 20, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Center },
-            P("Oben eine Adresse eingeben oder links einen Startpunkt wählen. Markierte Stellen werden rechts zu Zitaten mit Quelle.", Muted, 12.5) } };
+            new TextBlock { Text = "Suchen, lesen, markieren, zitieren", Foreground = Text, FontSize = 20, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Center },
+            P("Oben einen Suchbegriff eingeben und „Suchen“ – oder eine Adresse lesen, oder links einen Startpunkt wählen. Markierte Stellen werden rechts zu Zitaten mit Quelle.", Muted, 12.5) } };
 
         // rechts: Markierungen, Zitate, Notizen
         var right = new StackPanel { Spacing = 8 };
@@ -151,9 +155,10 @@ public partial class MainWindow
         var noteLink = ResearchLink; LinkForm(noteLink, "notiz", ("note", note)); // T-0711: Notiz bleibt beim Neuzeichnen, Rückgängig, Notsicherung
         var save = new Button { Name = "rs-export", Content = "Als Bericht speichern" };
         save.Click += (_, _) => { Desk.SaveNote(note.Text ?? ""); LinkClose(noteLink); var f = Desk.ExportReport(ResearchReportFolder ?? Path.Combine(UserFolder(Environment.SpecialFolder.MyDocuments), "Trendo Recherche"), _rsStyle); _rsMsg = "Gespeichert: " + f; Show("recherche"); };
-        var end = new Button { Name = "rs-end", Content = "Sitzung beenden (alles löschen)" };
-        end.Click += (_, _) => { Desk.EndSession(); LinkClose(noteLink); ReaderShown = null; _rsUrl = ""; _rsTrans = ""; _rsMsg = "Sitzung beendet. Quellen, Notizen und Markierungen sind gelöscht."; Show("recherche"); };
+        var end = new Button { Name = "rs-end", Content = Desk.Keep ? "Sammlung leeren (alles löschen)" : "Sitzung beenden (alles löschen)" };
+        end.Click += (_, _) => { Desk.EndSession(); LinkClose(noteLink); ReaderShown = null; _rsHits = []; _rsUrl = ""; _rsTrans = ""; _rsMsg = "Sitzung beendet. Quellen, Suchen, Notizen und Markierungen sind gelöscht."; Show("recherche"); };
         right.Children.Add(H("Notizen", 13)); right.Children.Add(LinkBar(noteLink)); right.Children.Add(note); right.Children.Add(new WrapPanel { Children = { MSp(save), MSp(end) } });
+        right.Children.Add(ResearchKeepToggle());
 
         var browser = new Grid { Name = "rs-browser", ColumnDefinitions = new ColumnDefinitions("250,12,*,12,330"), Children = {
             Card(new ScrollViewer { Content = left }),

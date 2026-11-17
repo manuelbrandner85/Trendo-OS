@@ -6,6 +6,55 @@ namespace Trendo.Core.Tests;
 
 public class ConnectedPromptTests
 {
+    /// <summary>T-0735 (X-07): Plan ohne Netz, Laden erst nach der Freigabe über den angeschlossenen Lese-Weg, MD5 geprüft,
+    /// Lizenz- und Quellenbeleg je Datei mit SHA-256. Netz hier ersetzt (ReadBytes); echter Abruf: App-Test X07_Echt und reports/T-0735.</summary>
+    [Fact(DisplayName = "X-07: Quelle wird erst nach Freigabe geholt, mit Lizenz- und Quellenbeleg je Datei (T-0735)")]
+    public void Quelle_wird_nach_freigabe_geholt()
+    {
+        using var fx = new Box();
+        var hdr = Encoding.ASCII.GetBytes("#?RADIANCE\nFORMAT=32-bit_rle_rgbe\n\n-Y 1 +X 1\nabcd");
+        var md5 = Convert.ToHexString(System.Security.Cryptography.MD5.HashData(hdr)).ToLowerInvariant();
+        var asked = new List<string>();
+        PromptServices Net() => new()
+        {
+            Offline = false,
+            ReadBytes = (uri, _) =>
+            {
+                asked.Add(uri.ToString());
+                var body = uri.Host == "api.polyhaven.com"
+                    ? Encoding.UTF8.GetBytes("{\"hdri\":{\"1k\":{\"hdr\":{\"url\":\"https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/hof_1k.hdr\",\"md5\":\"" + md5 + "\",\"size\":" + hdr.Length + "}}}}")
+                    : hdr;
+                return Task.FromResult((uri.Host == "api.polyhaven.com" ? "application/json" : "application/octet-stream", body, uri));
+            },
+        };
+        var wf = fx.Flow(Net());
+        var planned = wf.Los(fx.Project, wf.Start(fx.Req("X-07", "Holen: ja\nAsset: https://polyhaven.com/a/hof", "holen-1"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.AwaitingApproval, planned.Status);
+        Assert.Empty(asked); // vor der Freigabe kein Netz
+        Assert.Contains("Noch nichts geladen", fx.Read(planned));
+        var done = wf.Approve(fx.Project, planned.RunId, Principal.LocalOwner, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        Assert.Equal(["https://api.polyhaven.com/files/hof", "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/hof_1k.hdr"], asked);
+        Assert.Contains("Geladen: hof, 1 Datei(en)", done.Preview);
+        var file = fx.Files().Single(f => f.EndsWith("hof_1k.hdr", StringComparison.Ordinal));
+        Assert.Equal(hdr, File.ReadAllBytes(file));
+        var dir = Path.GetDirectoryName(file)!;
+        var prov = File.ReadAllText(Path.Combine(dir, "HERKUNFT.txt"));
+        var sha = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(hdr)).ToLowerInvariant();
+        Assert.Contains("Lizenz: CC0 1.0", prov); Assert.Contains("https://polyhaven.com/a/hof", prov); Assert.Contains("SHA-256: " + sha, prov);
+        using var json = System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(dir, "herkunft.json")));
+        var f0 = json.RootElement.GetProperty("files")[0];
+        Assert.Equal(sha, f0.GetProperty("sha256").GetString()); Assert.Equal("CC0 1.0", f0.GetProperty("license").GetString());
+
+        // beschädigte Datei: nichts landet im Projekt
+        var bad = fx.Flow(new PromptServices { Offline = false, ReadBytes = (uri, _) => Task.FromResult(("x", uri.Host == "api.polyhaven.com" ? Encoding.UTF8.GetBytes("{\"hdri\":{\"1k\":{\"hdr\":{\"url\":\"https://dl.polyhaven.org/x/kaputt_1k.hdr\",\"md5\":\"" + md5 + "\"}}}}") : Encoding.ASCII.GetBytes("falsch"), uri)) });
+        var r2 = bad.Approve(fx.Project, bad.Los(fx.Project, bad.Start(fx.Req("X-07", "Holen: ja\nAsset: kaputt", "holen-2"), fx.Ctx()).RunId, fx.Ctx()).RunId, Principal.LocalOwner, fx.Ctx());
+        Assert.NotEqual(RunStatus.Verified, r2.Status);
+        Assert.DoesNotContain(fx.Files(), f => f.EndsWith("kaputt_1k.hdr", StringComparison.Ordinal));
+        // ungültige Kennung wird gar nicht erst geplant
+        var r3 = fx.Go(fx.Flow(Net()), "X-07", "Holen: ja\nAsset: ../../etc", "holen-3");
+        Assert.NotEqual(RunStatus.AwaitingApproval, r3.Status);
+    }
 
     [Fact(DisplayName = "SPEC-07 ist abgelehnt: kein Übersetzungsauftrag, keine KI-Anfrage")]
     public void Uebersetzen_bleibt_gesperrt()

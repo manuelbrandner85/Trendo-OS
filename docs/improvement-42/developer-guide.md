@@ -24,7 +24,7 @@ Eine Klasse implementiert `IStudioActionAdapter`. `TryParse` liest den Auftrag u
 
 `Missing` fragt nur fehlende Pflichtfelder. `Validate` lehnt ungültige Werte ab und rät nichts. `Produce` schreibt nur über `ProjectStore` in das aktuelle Projekt, oder es liefert `FieldKit.Blocked`. `SideEffect` bleibt `FieldKit.Blocked`, außer bei den vier Aktionen mit `CanPerformSideEffect`.
 
-`CanPerformSideEffect` ist nur bei `datei.laden`, `datei.teilen`, `programm.installieren` und `programm.starten` wahr. Der Workflow ruft `ApprovalGate.Execute` nur dann. Sonst endet eine Wirkung mit `Unsupported`. Eine Ablehnung, bevor etwas nach außen lief, gibt den Idempotenzschlüssel frei. Ein angefangener Installations-, Freigabe- oder Programmstart ohne Beleg bleibt `blocked`. Eine Ausnahme lässt den Schlüssel auf `claimed`.
+`CanPerformSideEffect` ist nur bei `datei.laden`, `datei.teilen`, `programm.installieren`, `programm.starten` und `quelle.holen` (X-07, seit T-0735: freies CC0-Stück von Poly Haven mit Lizenz- und Quellenbeleg je Datei) wahr. Der Workflow ruft `ApprovalGate.Execute` nur dann. Sonst endet eine Wirkung mit `Unsupported`. Eine Ablehnung, bevor etwas nach außen lief, gibt den Idempotenzschlüssel frei. Ein angefangener Installations-, Freigabe- oder Programmstart ohne Beleg bleibt `blocked`. Eine Ausnahme lässt den Schlüssel auf `claimed`.
 
 ## Reife
 

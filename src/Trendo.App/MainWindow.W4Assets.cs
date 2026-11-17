@@ -31,6 +31,7 @@ public partial class MainWindow
         try
         {
             var plan = FreeAssets.Plan(await AssetGet(FreeAssets.FilesUrl(h.Id)), h.Type);
+            var fetched = new List<FreeAssets.FetchedFile>(); // T-0735: Lizenz- und Quellenbeleg je Datei
             foreach (var f in plan)
             {
                 var target = Path.GetFullPath(Path.Combine(dir, f.RelPath));
@@ -44,10 +45,13 @@ public partial class MainWindow
                     await AssetDownload(f.Url, part);
                     if (!FreeAssets.Md5Ok(part, f.Md5)) throw new InvalidDataException("Datei beschädigt: " + f.RelPath);
                     SafeFile.Move(part, target);
+                    fetched.Add(new(f.RelPath, f.Url, new FileInfo(target).Length, FreeAssets.Sha256File(target), f.Md5));
                 }
                 finally { try { if (File.Exists(part)) File.Delete(part); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } }
             }
             FreeAssets.WriteLicense(dir, h.Id, h.Name);
+            var (provText, provJson) = FreeAssets.Provenance(h.Id, h.Name, fetched, DateTimeOffset.Now);
+            AtomicFile.WriteAllText(Path.Combine(dir, "HERKUNFT.txt"), provText); AtomicFile.WriteAllText(Path.Combine(dir, "herkunft.json"), provJson);
             _core.Audit.Append(Principal.LocalOwner.Name, "asset.fetch", $"{h.Id} {plan.Count} Dateien");
             Say($"„{h.Name}“ geladen ({plan.Count} Dateien, Lizenz CC0 liegt bei).", "assets");
             return dir;

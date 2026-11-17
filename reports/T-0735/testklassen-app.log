@@ -1,0 +1,24 @@
+== SYS08_Ui
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 2,424s
+== ResearchMarks_Ui
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 4,502s
+== Runde11_Ui
+   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 4,401s
+== MediaBrowser_Ui
+   Trendo.App.Tests  Total: 3, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 6,113s
+== W4_X07_Ui
+   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 9,251s
+== KreativStudios4_Ui
+   Trendo.App.Tests  Total: 5, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 15,690s
+== MediaIcons_Ui
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 2,663s
+== MediaPro_Ui
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 4,279s
+== StudiosTechnikWissen_Ui
+   Trendo.App.Tests  Total: 39, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 9,824s
+== T0711_HuelleEtappe1b_Ui
+   Trendo.App.Tests  Total: 11, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 29,163s
+== T0710_MenuBar_Ui
+   Trendo.App.Tests  Total: 8, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 61,763s
+== RechercheQuellen_Ui
+   Trendo.App.Tests  Total: 6, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 13,963s
