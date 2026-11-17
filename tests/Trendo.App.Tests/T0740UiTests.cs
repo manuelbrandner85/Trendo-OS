@@ -205,6 +205,13 @@ public class T0740_Ui
             w.PromptImportFile(txt);
             Assert.Equal("Erzähle einen kurzen Witz über {{Thema}} in 2 Sätzen.", w.Prompts.FindByName("Witz erzählen")!.Text);
             Assert.StartsWith("✓ 1 Vorlage übernommen", Get<TextBlock>(w, "prompt-msg").Text);
+
+            // Sammelstand 0.9.105: .txt aus dem deutschen Windows-Editor (Windows-1252) – Umlaute kommen richtig an
+            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+            var ansi = Path.Combine(root, "Grüße schreiben.txt");
+            File.WriteAllBytes(ansi, System.Text.Encoding.GetEncoding(1252).GetBytes("Schreibe Grüße an {{Name}} – mit Größe und Stil."));
+            w.PromptImportFile(ansi);
+            Assert.Equal("Schreibe Grüße an {{Name}} – mit Größe und Stil.", w.Prompts.FindByName("Grüße schreiben")!.Text);
         }
         finally { w.PickOverride = null; w.Close(); }
     }

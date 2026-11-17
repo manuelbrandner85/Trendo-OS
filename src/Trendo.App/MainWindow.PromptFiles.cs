@@ -32,7 +32,7 @@ public partial class MainWindow
         {
             if (!File.Exists(file)) throw new FileNotFoundException("Die Datei gibt es nicht.");
             if (new FileInfo(file).Length > PromptLibrary.MaxImportBytes) throw new InvalidDataException("Die Datei ist zu groß (höchstens 2 MB).");
-            var entries = PromptLibrary.ParseFile(Path.GetFileName(file), File.ReadAllText(file));
+            var entries = PromptLibrary.ParseFile(Path.GetFileName(file), Trendo.Core.Sys.TextFileCodec.Decode(File.ReadAllBytes(file)).Text); // Sammelstand 0.9.105: auch Windows-1252/UTF-16
             _promptImportQueue.Clear(); _promptImportQueue.AddRange(entries); _promptImported = 0; _promptImportSkipped = 0;
             PromptImportContinue();
         }
