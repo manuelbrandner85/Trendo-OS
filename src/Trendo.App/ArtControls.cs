@@ -44,7 +44,14 @@ public sealed class PaintCanvas : Control
     /// <summary>0 = einpassen.</summary>
     public double Zoom { get; set; }
     public Vector Pan { get; set; }
-    public string Mode { get; set; } = "paint"; // paint, pick, points
+    public string Mode { get; set; } = "paint"; // paint, pick, points, select
+    /// <summary>T-0733: aktuelle Auswahl als Vieleck (Leinwand-Pixel) und Art des Aufziehens (rect, lasso).</summary>
+    public IReadOnlyList<(double X, double Y)>? SelPoly { get; set; }
+    public string SelShape { get; set; } = "rect";
+    /// <summary>Neue Auswahl aufgezogen bzw. umfahren (leer = Auswahl aufheben).</summary>
+    public Action<List<(double X, double Y)>>? Selected { get; set; }
+    /// <summary>Auswahl verschoben (dx, dy) und/oder skaliert (sx, sy, Anker oben links der Auswahl).</summary>
+    public Action<double, double, double, double>? SelTransformed { get; set; }
     public bool ShowGrid { get; set; }
     public int GridStep { get; set; } = 100;
     public PaintSymmetry Sym { get; set; } = new();
@@ -57,6 +64,44 @@ public sealed class PaintCanvas : Control
     public double BrushRadius { get; set; } = 3;
 
     StrokeEngine? _stroke; Point? _panFrom; Point _hover; bool _space;
+    // Auswahl: 1 = neu aufziehen, 2 = verschieben, 3 = Ecke ziehen (skalieren); Ecke 0..3 = oben links, oben rechts, unten rechts, unten links
+    int _selDrag, _selCorner; (double X, double Y) _selFrom, _selAt; readonly List<(double X, double Y)> _selPts = [];
+    static readonly IPen AntsWhite = new Pen(Brushes.White, 1, new DashStyle([4, 4], 0));
+    static readonly IPen AntsBlack = new Pen(Brushes.Black, 1, new DashStyle([4, 4], 4));
+    const double HandleSize = 9;
+
+    (double X, double Y, double W, double H)? SelBox => SelPoly is { Count: >= 3 } p ? Trendo.Core.Kreativ.PaintSelection.Bounds(p) : null;
+
+    /// <summary>Zielrechteck während Verschieben/Skalieren (Leinwand-Pixel).</summary>
+    (double X, double Y, double W, double H) SelTarget()
+    {
+        var (x, y, w, h) = SelBox!.Value; double mx = _selAt.X - _selFrom.X, my = _selAt.Y - _selFrom.Y;
+        if (_selDrag == 2) return (x + mx, y + my, w, h);
+        double l = x, t = y, r = x + w, b = y + h;
+        if (_selCorner is 0 or 3) l += mx; else r += mx;
+        if (_selCorner is 0 or 1) t += my; else b += my;
+        if (r - l < 2) { if (_selCorner is 0 or 3) l = r - 2; else r = l + 2; }
+        if (b - t < 2) { if (_selCorner is 0 or 1) t = b - 2; else b = t + 2; }
+        return (l, t, r - l, b - t);
+    }
+
+    int CornerAt(Point screen)
+    {
+        if (SelBox is not { } bx) return -1;
+        Point[] c = [ToScreen(bx.X, bx.Y), ToScreen(bx.X + bx.W, bx.Y), ToScreen(bx.X + bx.W, bx.Y + bx.H), ToScreen(bx.X, bx.Y + bx.H)];
+        // Bei kleiner Auswahl auf dem Bildschirm schrumpft der Griff, damit die Mitte zum Verschieben frei bleibt
+        var grip = Math.Max(3, Math.Min(HandleSize, Math.Min(Math.Abs(c[1].X - c[0].X), Math.Abs(c[3].Y - c[0].Y)) / 4));
+        for (var i = 0; i < 4; i++) if (Math.Abs(screen.X - c[i].X) <= grip && Math.Abs(screen.Y - c[i].Y) <= grip) return i;
+        return -1;
+    }
+
+    void DrawAnts(DrawingContext ctx, IReadOnlyList<(double X, double Y)> pts, bool closed)
+    {
+        if (pts.Count < 2) return;
+        var g = new StreamGeometry();
+        using (var c = g.Open()) { c.BeginFigure(ToScreen(pts[0].X, pts[0].Y), false); for (var i = 1; i < pts.Count; i++) c.LineTo(ToScreen(pts[i].X, pts[i].Y)); c.EndFigure(closed); }
+        ctx.DrawGeometry(null, AntsBlack, g); ctx.DrawGeometry(null, AntsWhite, g);
+    }
     static readonly IPen GridPen = new Pen(new SolidColorBrush(Color.Parse("#40808080")), 1);
     static readonly IPen GuidePen = new Pen(new SolidColorBrush(Color.Parse("#B0E0A030")), 1.2, new DashStyle([6, 4], 0));
     static readonly IPen PointPen = new Pen(new SolidColorBrush(Color.Parse("#FFE0A030")), 2);
@@ -68,7 +113,7 @@ public sealed class PaintCanvas : Control
     public double Scale => State is null ? 1 : Zoom > 0 ? Zoom : Math.Max(0.02, Math.Min((Bounds.Width - 16) / State.Doc.W, (Bounds.Height - 16) / State.Doc.H));
     Point Origin => State is null ? default : new Point((Bounds.Width - State.Doc.W * Scale) / 2 + Pan.X, (Bounds.Height - State.Doc.H * Scale) / 2 + Pan.Y);
     public (double X, double Y) ToDoc(Point p) { var o = Origin; var s = Scale; return ((p.X - o.X) / s, (p.Y - o.Y) / s); }
-    Point ToScreen(double x, double y) { var o = Origin; var s = Scale; return new Point(o.X + x * s, o.Y + y * s); }
+    public Point ToScreen(double x, double y) { var o = Origin; var s = Scale; return new Point(o.X + x * s, o.Y + y * s); }
 
     public override void Render(DrawingContext ctx)
     {
@@ -103,6 +148,31 @@ public sealed class PaintCanvas : Control
             if (Assist.Mode.StartsWith("perspektive", StringComparison.Ordinal))
                 for (var k = 0; k < 16; k++) { var a = Math.PI * 2 * k / 16; ctx.DrawLine(GuidePen, c, new Point(c.X + Math.Cos(a) * 4000, c.Y + Math.Sin(a) * 4000)); }
         }
+        // T-0733: Auswahl – gestrichelt, Griffe an den Ecken; beim Verschieben/Skalieren Vorschau des Inhalts am Ziel
+        if (Mode == "select")
+        {
+            if (_selDrag == 1 && _selPts.Count > 0)
+            {
+                if (SelShape == "lasso") DrawAnts(ctx, _selPts, false);
+                else DrawAnts(ctx, Trendo.Core.Kreativ.PaintSelection.Rect(_selFrom.X, _selFrom.Y, _selAt.X, _selAt.Y), true);
+            }
+            else if (SelBox is { } bx && SelPoly is { } sp)
+            {
+                if (_selDrag is 2 or 3)
+                {
+                    var (tx, ty, tw, th) = SelTarget();
+                    var dst = new Rect(ToScreen(tx, ty), ToScreen(tx + tw, ty + th));
+                    using (ctx.PushClip(r)) ctx.DrawImage(bmp, new Rect(bx.X, bx.Y, Math.Max(1, bx.W), Math.Max(1, bx.H)), dst);
+                    ctx.DrawRectangle(null, AntsWhite, dst);
+                }
+                else
+                {
+                    DrawAnts(ctx, sp, true);
+                    Point[] c = [ToScreen(bx.X, bx.Y), ToScreen(bx.X + bx.W, bx.Y), ToScreen(bx.X + bx.W, bx.Y + bx.H), ToScreen(bx.X, bx.Y + bx.H)];
+                    foreach (var p in c) ctx.DrawRectangle(Brushes.White, new Pen(Brushes.Black, 1), new Rect(p.X - HandleSize / 2, p.Y - HandleSize / 2, HandleSize, HandleSize));
+                }
+            }
+        }
         if (Assist.Mode == "lineal" && Assist.Pts.Count >= 2) ctx.DrawLine(PointPen, ToScreen(Assist.Pts[0].X, Assist.Pts[0].Y), ToScreen(Assist.Pts[1].X, Assist.Pts[1].Y));
         // Pinselumriss
         if (Mode == "paint" && IsPointerOver) { var rr = BrushRadius * s; ctx.DrawEllipse(null, CursorPen2, _hover, rr + 1, rr + 1); ctx.DrawEllipse(null, CursorPen, _hover, rr, rr); }
@@ -121,6 +191,13 @@ public sealed class PaintCanvas : Control
         {
             case "pick": Picked?.Invoke(x, y); e.Handled = true; return;
             case "points": PointSet?.Invoke(x, y); e.Handled = true; return;
+            case "select":
+                _selFrom = _selAt = (x, y); _selPts.Clear();
+                var corner = CornerAt(pt.Position);
+                if (corner >= 0) { _selDrag = 3; _selCorner = corner; }
+                else if (SelBox is { } bx && x >= bx.X && x <= bx.X + bx.W && y >= bx.Y && y <= bx.Y + bx.H) _selDrag = 2;
+                else { _selDrag = 1; _selPts.Add((x, y)); }
+                e.Pointer.Capture(this); e.Handled = true; InvalidateVisual(); return;
         }
         _stroke = BeginStroke?.Invoke(); if (_stroke is null) return;
         e.Pointer.Capture(this); _stroke.Add(x, y, PressureOf(pt, e.Pointer.Type)); Flush(); e.Handled = true;
@@ -131,6 +208,7 @@ public sealed class PaintCanvas : Control
         base.OnPointerMoved(e);
         var pt = e.GetCurrentPoint(this); _hover = pt.Position;
         if (_panFrom is { } from) { Pan += pt.Position - from; _panFrom = pt.Position; InvalidateVisual(); return; }
+        if (_selDrag != 0) { _selAt = ToDoc(pt.Position); if (_selDrag == 1 && SelShape == "lasso") _selPts.Add(_selAt); InvalidateVisual(); return; }
         if (_stroke is null) { if (Mode == "paint") InvalidateVisual(); return; }
         foreach (var ip in e.GetIntermediatePoints(this)) { var (x, y) = ToDoc(ip.Position); _stroke.Add(x, y, PressureOf(ip, e.Pointer.Type)); }
         Flush();
@@ -140,8 +218,25 @@ public sealed class PaintCanvas : Control
     {
         base.OnPointerReleased(e);
         if (_panFrom is not null) { _panFrom = null; e.Pointer.Capture(null); return; }
+        if (_selDrag != 0) { _selAt = ToDoc(e.GetPosition(this)); e.Pointer.Capture(null); FinishSelection(); return; }
         if (_stroke is not { } s) return;
         _stroke = null; e.Pointer.Capture(null); Flush(s); EndStroke?.Invoke(s);
+    }
+
+    void FinishSelection()
+    {
+        var kind = _selDrag; var target = kind is 2 or 3 && SelBox is not null ? SelTarget() : default; // vor dem Zurücksetzen: SelTarget hängt an der Zugart
+        _selDrag = 0; var moved = Math.Abs(_selAt.X - _selFrom.X) + Math.Abs(_selAt.Y - _selFrom.Y) > 1 / Scale;
+        InvalidateVisual();
+        if (kind == 1)
+        {
+            if (SelShape == "lasso") { _selPts.Add(_selAt); Selected?.Invoke(_selPts.Count >= 3 && moved ? [.. _selPts] : []); }
+            else Selected?.Invoke(moved ? Trendo.Core.Kreativ.PaintSelection.Rect(_selFrom.X, _selFrom.Y, _selAt.X, _selAt.Y) : []);
+            _selPts.Clear(); return;
+        }
+        if (!moved || SelBox is not { } bx) return;
+        var (tx, ty, tw, th) = target;
+        SelTransformed?.Invoke(tx - bx.X, ty - bx.Y, bx.W > 0 ? tw / bx.W : 1, bx.H > 0 ? th / bx.H : 1);
     }
 
     protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)

@@ -1,0 +1,29 @@
+# T-0733 Rohlog Fremdprüfung (17.11.2026)
+
+Erzeugt vom Test T0733_BildMalen_Ui.Tiff_in_webp_out (T0733_BELEG=reports/T-0733): Quelle PNG 400x200 (links rot, rechts blau) -> TIFF mit echtem FFmpeg -> in Trendo Bildbearbeitung über das Feld „Bild hinzufügen“ geöffnet -> grüner Pinselstrich mit der Maus (20..180, y 100) -> Knopf „WebP (klein, fürs Web)“.
+
+$ ffprobe -version | head -1
+ffprobe version 9.0.2-full_build-www.gyan.dev Copyright (c) 2007-2026 the FFmpeg developers
+
+$ ffprobe -v error -show_entries stream=codec_name,width,height,pix_fmt -show_entries format=format_name,size -of default=nw=1 export.webp
+codec_name=webp
+width=400
+height=200
+pix_fmt=yuv420p
+format_name=webp_pipe
+size=642
+exit=0
+
+$ python -I (Pillow) Image.open(export.webp)
+Pillow 13.0.0 WEBP (400, 200) RGB
+Pixel(100,100) Pinselstrich = (34, 196, 94)
+Pixel(50,20) rot = (255, 1, 0)
+Pixel(300,100) blau = (0, 0, 255)
+Quelle: TIFF (400, 200) RGBA
+exit=0
+
+$ sha256sum
+aefa8d77f9ff6a4bf51903bda70617e7763815390c2d157af122eb966ae288a2 *export.webp
+c2603fbfc13f2bee204e2b22c551d0ab3b0a20c4972ce5f88a4d7126429beb5e *quelle.tif
+
+quelle.tif (320951 Byte) nicht eingecheckt – nur Prüfsumme; jederzeit mit dem Test neu erzeugbar.

@@ -14,6 +14,10 @@ public sealed class ImageCanvas : Control
     public int DocW { get; set; } = 800;
     public int DocH { get; set; } = 600;
     public double Zoom { get; set; } = 0; // 0 = einpassen
+    /// <summary>T-0733: Verschiebung der Leinwand in Bildschirmpunkten (Zoom-Werkzeug hält die angeklickte Stelle unter der Maus).</summary>
+    public Vector Pan { get; set; }
+    /// <summary>T-0733: Zoom-Werkzeug (Taste Z wie in Photoshop): Klick vergrößert, Alt+Klick oder Rechtsklick verkleinert – Stelle in Leinwand-Pixeln, Bildschirmpunkt, verkleinern?</summary>
+    public Action<Point, Point, bool>? Zoomed { get; set; }
     public string Tool { get; set; } = "move";
     public Color BrushColor { get; set; } = Colors.Black;
     public double BrushSize { get; set; } = 12;
@@ -36,12 +40,15 @@ public sealed class ImageCanvas : Control
     /// <summary>Quelle des Kopierstempels.</summary>
     public Point? CloneSource { get; set; }
 
-    Point? _from; Point _at; readonly List<Point> _pts = [];
+    Point? _from; Point _at; readonly List<Point> _pts = []; bool _zoomOut;
 
     public ImageCanvas() { ClipToBounds = true; Cursor = new Cursor(StandardCursorType.Cross); }
 
     double Scale => Zoom > 0 ? Zoom : Math.Max(0.02, Math.Min((Bounds.Width - 24) / DocW, (Bounds.Height - 24) / DocH));
-    Point Origin => new((Bounds.Width - DocW * Scale) / 2, (Bounds.Height - DocH * Scale) / 2);
+    public double CurrentScale => Scale;
+    Point Origin => new((Bounds.Width - DocW * Scale) / 2 + (Zoom > 0 ? Pan.X : 0), (Bounds.Height - DocH * Scale) / 2 + (Zoom > 0 ? Pan.Y : 0));
+    /// <summary>Verschiebung, bei der der Leinwandpunkt <paramref name="doc"/> beim Maßstab <paramref name="zoom"/> am Bildschirmpunkt <paramref name="screen"/> liegt.</summary>
+    public Vector PanFor(Point doc, Point screen, double zoom) => new(screen.X - (Bounds.Width - DocW * zoom) / 2 - doc.X * zoom, screen.Y - (Bounds.Height - DocH * zoom) / 2 - doc.Y * zoom);
     public Point ToDoc(Point p) => new((p.X - Origin.X) / Scale, (p.Y - Origin.Y) / Scale);
     public Point ToScreen(Point d) => new(Origin.X + d.X * Scale, Origin.Y + d.Y * Scale);
 
@@ -49,6 +56,7 @@ public sealed class ImageCanvas : Control
     {
         base.OnPointerPressed(e);
         _from = _at = ToDoc(e.GetPosition(this)); _pts.Clear(); _pts.Add(_from.Value);
+        _zoomOut = (e.KeyModifiers & KeyModifiers.Alt) != 0 || e.GetCurrentPoint(this).Properties.IsRightButtonPressed;
         e.Pointer.Capture(this); e.Handled = true; InvalidateVisual();
     }
     protected override void OnPointerMoved(PointerEventArgs e)
@@ -67,6 +75,7 @@ public sealed class ImageCanvas : Control
             case "rect" or "ellipse" or "crop" or "select" when moved: Dragged?.Invoke(new Rect(a, _at).Normalize()); break;
             case "gradient" when moved: Line?.Invoke(a, _at); break;
             case "move" when moved: Moved?.Invoke(a, _at - a); break;
+            case "zoom": Zoomed?.Invoke(a, ToScreen(a), _zoomOut); break;
             default: Clicked?.Invoke(a); break;
         }
         _pts.Clear(); InvalidateVisual();
