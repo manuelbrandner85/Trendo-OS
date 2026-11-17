@@ -1,0 +1,12 @@
+T-0748 Werkzeugsuche (nichts installiert), 2026-11-17T21:15:33Z
+gerbv: nicht gefunden
+kicad-cli: nicht gefunden
+kicad: nicht gefunden
+C:\Program Files\KiCad: nicht vorhanden
+Python 3.13.15
+ Python-Paket pygerber: nicht vorhanden
+ Python-Paket gerber: nicht vorhanden
+ Python-Paket gerbonara: nicht vorhanden
+ Python-Paket pcb_tools: nicht vorhanden
+Suche nach Ordnern pygerber*/gerbonara*/gerbv*/pcb_tools*/kicad* im Benutzerprofil (Tiefe 7): keine Treffer
+Ergebnis: BLOCKIERT fuer Fremdwerkzeug-Beleg - Voraussetzung: gerbv oder KiCad 7+ (kicad-cli) oder Python-Paket pygerber/gerbonara. Ersatz: eigener Gerber-RS-274X/Excellon-Leser (GerberCheck).

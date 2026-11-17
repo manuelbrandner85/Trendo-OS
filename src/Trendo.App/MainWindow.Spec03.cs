@@ -62,15 +62,27 @@ public partial class MainWindow
             new("pdf", "PDF-Bericht", ".pdf", (d, f) => { var m = FrameModel.From(d.Data); return FrameDrawing.Pdf(m, FrameSolver.Solve(m), f); }),
             new("ec", "Eurocode-Nachweis", ".md", (d, f) => { var m = FrameModel.From(d.Data); File.WriteAllText(f, Eurocode.Report(m, Eurocode.Check(m))); return f; }),
             new("svg", "SVG (Bild)", ".svg", (d, f) => { var m = FrameModel.From(d.Data); File.WriteAllText(f, FrameDrawing.Svg(m, FrameSolver.Solve(m), FrameState.Show)); return f; }),
+            new("gegenprobe", "Gegenprobe (Bericht)", ".md", (d, f) => { var m = FrameModel.From(d.Data); File.WriteAllText(f, FrameCrossCheck.Report(m, FrameCrossCheck.Check(m))); return f; }),
             new("csv", "Ergebnisse (CSV)", ".csv", (d, f) => { var m = FrameModel.From(d.Data); File.WriteAllText(f, FrameDrawing.Csv(m, FrameSolver.Solve(m)), new System.Text.UTF8Encoding(true)); return f; }),
         ],
         Workspace = FrameWorkspace,
         Properties = FrameProperties,
-        Status = d => { var m = FrameModel.From(d.Data); var (r, err) = FrameSolve(m); return $"{FrameTools.FirstOrDefault(t => t.Id == FrameState.Tool).Label} · {m.Members.Count} Stäbe · {m.Nodes.Count(n => n.Support != "")} Lager · {m.Loads.Count} Lasten · " + (err is not null ? "⚠ " + err : r is null ? "" : r.Ok ? "✓ alle Stäbe halten" : $"⚠ {r.Members.Count(x => !x.Ok)} Stab/Stäbe reichen nicht"); },
+        Status = d => { var m = FrameModel.From(d.Data); var (r, err) = FrameSolve(m); return $"{FrameTools.FirstOrDefault(t => t.Id == FrameState.Tool).Label} · {m.Members.Count} Stäbe · {m.Nodes.Count(n => n.Support != "")} Lager · {m.Loads.Count} Lasten · " + (err is not null ? "⚠ " + err : r is null ? "" : r.Ok ? "✓ alle Stäbe halten" : $"⚠ {r.Members.Count(x => !x.Ok)} Stab/Stäbe reichen nicht")
+            + (r is not null && FrameCheckOf(d, m) is { } cc ? " · " + cc.Text : ""); }, // T-0748: Gegenprobe in jeder Stufe sichtbar
         PrimaryExport = "pdf", // T-0700: Tragwerk: der PDF-Bericht mit Nachweis ist das Ergebnis
         Help = "Links das Werkzeug wählen. Stab: Punkt für Punkt klicken, Länge in m tippen und Enter. Lager/Last/Gelenk: auf Knoten oder Stab klicken – Art und Wert rechts einstellen. "
              + "Auswahl: Knoten ziehen, Entf löscht. Ergebnisse rechnen sofort mit. Vorbemessung – ersetzt keine geprüfte Statik.",
     }, "technik", "statik", "balken", "träger", "simulation", "biegung", "festigkeit", "einheiten", "umrechnen", "rahmen", "fachwerk", "tragwerk");
+
+    private (string Key, CrossCheckResult? R) _frameCheck = ("", null);
+    /// <summary>T-0748: Gegenprobe zum offenen Tragwerk (je Stand nur einmal gerechnet); null, wenn sich nichts rechnen lässt.</summary>
+    public CrossCheckResult? FrameCheckOf(ProgramDocument d, FrameModel m)
+    {
+        var key = d.Data.ToJsonString(); if (key == _frameCheck.Key) return _frameCheck.R;
+        CrossCheckResult? r = null;
+        try { if (m.Members.Count > 0) r = FrameCrossCheck.Check(m); } catch (Exception ex) when (ex is InvalidOperationException or ArgumentException) { }
+        _frameCheck = (key, r); return r;
+    }
 
     static System.Text.Json.Nodes.JsonObject FrameDoc(FrameModel m) { var o = new System.Text.Json.Nodes.JsonObject(); m.WriteTo(o); return o; }
 
@@ -259,6 +271,14 @@ public partial class MainWindow
                     var b = new Button { Name = $"tk-member-{idx - 1}", HorizontalAlignment = HorizontalAlignment.Stretch, Background = Brushes.Transparent, Padding = new Thickness(6, 3),
                         Content = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { new TextBlock { Text = $"S{idx} · {m.Member(id)!.Section}", Foreground = Text, FontSize = 12 }, Pos(new TextBlock { Text = $"M {x.MaxM:0.#} · η {(x.Safety > 0 ? 1.5 / x.Safety : 0):0.00}", Foreground = Brush.Parse(x.Ok ? "#4ADE80" : "#F87171"), FontSize = 11 }, 1) } } };
                     b.Click += (_, _) => FrameSelect(id); sp.Children.Add(b);
+                }
+                // T-0748: Gegenprobe – Gleichgewicht, Lehrbuchformel (wenn passend) und zweite Rechnung mit Teilstäben
+                if (FrameCheckOf(d, m) is { } cc)
+                {
+                    var ct = new TextBlock { Name = "tk-crosscheck", Text = cc.Text, Foreground = Brush.Parse(cc.Ok ? "#4ADE80" : "#F87171"), FontSize = 12, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap };
+                    ToolTip.SetTip(ct, "Geprüft mit: " + string.Join(", ", cc.Methods) + (cc.Skipped is null ? "" : ". Nicht geprüft: " + cc.Skipped) + ". Einzelwerte im Export „Gegenprobe (Bericht)“.");
+                    sp.Children.Add(ct);
+                    if (cc.Skipped is not null) sp.Children.Add(P(cc.Skipped, null, 10.5));
                 }
                 sp.Children.Add(H("Lagerkräfte", 12));
                 foreach (var (nid, (rx, ry, rm)) in r.Reactions) { var nn = m.Node(nid)!; Fact($"K{m.Nodes.IndexOf(nn) + 1} {FrameDrawing.SupportName(nn.Support)}", $"{ry:0.##} kN ↑{(Math.Abs(rx) > 1e-6 ? $" · {rx:0.##} kN →" : "")}{(Math.Abs(rm) > 1e-6 ? $" · {rm:0.##} kNm" : "")}"); }

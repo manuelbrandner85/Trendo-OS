@@ -178,7 +178,9 @@ public static class Pcb
 
     public static string Gerber(Circuit c, string layer)
     {
-        var sb = new StringBuilder($"G04 Trendo OS – {c.Name} – {layer}*\n%FSLAX46Y46*%\n%MOMM*%\n%LPD*%\n");
+        // T-0748: „*“ und „%“ beenden in Gerber einen Befehl – im Namen zerbrachen sie den Kommentar (gefunden vom eigenen Gerber-Leser)
+        var title = new string(c.Name.Select(ch => ch is '*' or '%' || char.IsControl(ch) ? ' ' : ch).ToArray());
+        var sb = new StringBuilder($"G04 Trendo OS – {title} – {layer}*\n%FSLAX46Y46*%\n%MOMM*%\n%LPD*%\n");
         double Y(double y) => c.Pcb.H - y; var pads = Pads(c);
         switch (layer)
         {

@@ -133,6 +133,8 @@ public class UebersichtEinfach_Ui(ITestOutputHelper log)
         ("prog-export-pred", "Menüleiste „Datei ▸ Exportieren ▸ Vorhersagen (.csv)“ und Knopf „Vorhersagen speichern …“ auf der Arbeitsfläche"),
         // T-0739: Fragenreihe im Modellvergleich – Export ebenso über die Menüleiste (alle spec.Exports, jede Stufe)
         ("prog-export-reihe-csv", "Menüleiste „Datei ▸ Exportieren ▸ Fragenreihe (.csv)“"), ("prog-export-reihe-md", "Menüleiste „Datei ▸ Exportieren ▸ Fragenreihe (.md)“"),
+        // T-0748: Gegenprobe der Statik – Bericht über die Menüleiste, das Ergebnis („Gegenprobe ✓ Abweichung …“) steht in jeder Stufe in der Statuszeile
+        ("prog-export-gegenprobe", "Menüleiste „Datei ▸ Exportieren ▸ Gegenprobe (Bericht)“ (geprüft in T0748_Ui.Statik_Einfach_Menue); Ergebnis in der Statuszeile"),
     ];
 
     /// <summary>Was „Einfach“ schon vor T-0663 bewusst nicht baute (Stand origin/main 1fc842acc) – siehe Kopf der Datei.</summary>

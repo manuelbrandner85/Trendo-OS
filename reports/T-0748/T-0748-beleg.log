@@ -1,0 +1,62 @@
+T-0748 Beleg: Gerber/Excellon-Pruefung mit eigenem Leser (kein Fremdwerkzeug vorhanden) und Gegenprobe Statik
+Zeit (UTC): 2026-11-17T21:15:25.0779116Z
+
+## Schaltung led: Bahnen verlegt 3, offen 0 -> ✓ Fertigungsdaten gelesen: 5 Dateien, 18 Lötflächen, 23 Bahnstücke, Bohrungen passen auf die Lötflächen
+  LEDmitVorwiderstand-B_Cu.gbr: Gerber, Fehler 0, Belichtungen 6, Bahnstuecke 0, Blenden/Werkzeuge 5, Ausmass 6,42..46,62 x 10,64..15,28 mm
+  LEDmitVorwiderstand-Edge_Cuts.gbr: Gerber, Fehler 0, Belichtungen 0, Bahnstuecke 4, Blenden/Werkzeuge 1, Ausmass -0,05..55,05 x -0,05..22,05 mm
+  LEDmitVorwiderstand-F_Cu.gbr: Gerber, Fehler 0, Belichtungen 6, Bahnstuecke 7, Blenden/Werkzeuge 5, Ausmass 6,42..46,62 x 9,05..15,28 mm
+  LEDmitVorwiderstand-F_SilkS.gbr: Gerber, Fehler 0, Belichtungen 0, Bahnstuecke 12, Blenden/Werkzeuge 1, Ausmass 5,085..47,425 x 8,015..15,705 mm
+  LEDmitVorwiderstand.drl: Excellon, Fehler 0, Belichtungen 6, Bahnstuecke 0, Blenden/Werkzeuge 2, Ausmass 7,62..45,72 x 11,84..14,38 mm
+  ZIP SHA-256 154C1322BBEA86024C8441D575CE49692ECBD87E7DC6EDA206B5530F4B2C2A65
+
+## Schaltung teiler: Bahnen verlegt 3, offen 0 -> ✓ Fertigungsdaten gelesen: 5 Dateien, 18 Lötflächen, 22 Bahnstücke, Bohrungen passen auf die Lötflächen
+  Spannungsteiler-B_Cu.gbr: Gerber, Fehler 0, Belichtungen 6, Bahnstuecke 0, Blenden/Werkzeuge 5, Ausmass 6,42..52,97 x 10,64..15,28 mm
+  Spannungsteiler-Edge_Cuts.gbr: Gerber, Fehler 0, Belichtungen 0, Bahnstuecke 4, Blenden/Werkzeuge 1, Ausmass -0,05..57,05 x -0,05..22,05 mm
+  Spannungsteiler-F_Cu.gbr: Gerber, Fehler 0, Belichtungen 6, Bahnstuecke 6, Blenden/Werkzeuge 5, Ausmass 6,42..52,97 x 9,05..15,28 mm
+  Spannungsteiler-F_SilkS.gbr: Gerber, Fehler 0, Belichtungen 0, Bahnstuecke 12, Blenden/Werkzeuge 1, Ausmass 5,085..50,215 x 8,015..15,705 mm
+  Spannungsteiler.drl: Excellon, Fehler 0, Belichtungen 6, Bahnstuecke 0, Blenden/Werkzeuge 2, Ausmass 7,62..52,07 x 11,84..14,38 mm
+  ZIP SHA-256 EB67718D5EFCA1BF5D94A188357B86D018B34C32DD0BA687389EDA7927DCAB31
+
+## Schaltung rc: Bahnen verlegt 4, offen 0 -> ✓ Fertigungsdaten gelesen: 5 Dateien, 24 Lötflächen, 31 Bahnstücke, Bohrungen passen auf die Lötflächen
+  RC-GliedKondensatorladen-B_Cu.gbr: Gerber, Fehler 0, Belichtungen 8, Bahnstuecke 3, Blenden/Werkzeuge 5, Ausmass 6,42..62,57 x 9,05..15,28 mm
+  RC-GliedKondensatorladen-Edge_Cuts.gbr: Gerber, Fehler 0, Belichtungen 0, Bahnstuecke 4, Blenden/Werkzeuge 1, Ausmass -0,05..69,05 x -0,05..22,05 mm
+  RC-GliedKondensatorladen-F_Cu.gbr: Gerber, Fehler 0, Belichtungen 8, Bahnstuecke 8, Blenden/Werkzeuge 5, Ausmass 6,42..62,57 x 9,05..17,17 mm
+  RC-GliedKondensatorladen-F_SilkS.gbr: Gerber, Fehler 0, Belichtungen 0, Bahnstuecke 16, Blenden/Werkzeuge 1, Ausmass 5,085..61,495 x 8,015..15,705 mm
+  RC-GliedKondensatorladen.drl: Excellon, Fehler 0, Belichtungen 8, Bahnstuecke 0, Blenden/Werkzeuge 2, Ausmass 7,62..61,67 x 11,84..14,38 mm
+  ZIP SHA-256 6066639BFB41C40BDA7B0870CAC052272B05DF5FECC52CA5F301850783CB63F2
+
+## Schaltung gleichrichter: Bahnen verlegt 5, offen 0 -> ✓ Fertigungsdaten gelesen: 5 Dateien, 24 Lötflächen, 33 Bahnstücke, Bohrungen passen auf die Lötflächen
+  EinweggleichrichtermitGlättung-B_Cu.gbr: Gerber, Fehler 0, Belichtungen 8, Bahnstuecke 3, Blenden/Werkzeuge 5, Ausmass 6,42..66,94 x 9,05..15,28 mm
+  EinweggleichrichtermitGlättung-Edge_Cuts.gbr: Gerber, Fehler 0, Belichtungen 0, Bahnstuecke 4, Blenden/Werkzeuge 1, Ausmass -0,05..71,05 x -0,05..22,05 mm
+  EinweggleichrichtermitGlättung-F_Cu.gbr: Gerber, Fehler 0, Belichtungen 8, Bahnstuecke 10, Blenden/Werkzeuge 5, Ausmass 6,42..66,94 x 9,05..18,44 mm
+  EinweggleichrichtermitGlättung-F_SilkS.gbr: Gerber, Fehler 0, Belichtungen 0, Bahnstuecke 16, Blenden/Werkzeuge 1, Ausmass 5,085..63,635 x 8,015..15,705 mm
+  EinweggleichrichtermitGlättung.drl: Excellon, Fehler 0, Belichtungen 8, Bahnstuecke 0, Blenden/Werkzeuge 2, Ausmass 7,62..66,04 x 11,84..14,38 mm
+  ZIP SHA-256 A79FD9A245A42F1944769A9BF084845A10D8B99FAD83C6659967D205BE4989EB
+
+## Schaltung transistor: Bahnen verlegt 7, offen 0 -> ✓ Fertigungsdaten gelesen: 5 Dateien, 39 Lötflächen, 48 Bahnstücke, Bohrungen passen auf die Lötflächen
+  TransistoralsSchalter-B_Cu.gbr: Gerber, Fehler 0, Belichtungen 13, Bahnstuecke 6, Blenden/Werkzeuge 6, Ausmass 5,45..68,92 x 9,97..28,28 mm
+  TransistoralsSchalter-Edge_Cuts.gbr: Gerber, Fehler 0, Belichtungen 0, Bahnstuecke 4, Blenden/Werkzeuge 1, Ausmass -0,05..75,05 x -0,05..35,05 mm
+  TransistoralsSchalter-F_Cu.gbr: Gerber, Fehler 0, Belichtungen 13, Bahnstuecke 14, Blenden/Werkzeuge 6, Ausmass 5,45..68,92 x 9,97..30,17 mm
+  TransistoralsSchalter-F_SilkS.gbr: Gerber, Fehler 0, Belichtungen 0, Bahnstuecke 24, Blenden/Werkzeuge 1, Ausmass 4,645..67,845 x 7,895..28,705 mm
+  TransistoralsSchalter.drl: Excellon, Fehler 0, Belichtungen 13, Bahnstuecke 0, Blenden/Werkzeuge 2, Ausmass 6,35..68,02 x 10,87..27,38 mm
+  ZIP SHA-256 EFCA75EE38994121FCC0499650B9028FC4A725C3FF2AC876FD8BDF0C8A9D0E3D
+
+## Schaltung verstaerker: Bahnen verlegt 9, offen 1 -> ✓ Fertigungsdaten gelesen: 5 Dateien, 60 Lötflächen, 53 Bahnstücke, Bohrungen passen auf die Lötflächen
+  OPV-Verstärker10-B_Cu.gbr: Gerber, Fehler 0, Belichtungen 20, Bahnstuecke 3, Blenden/Werkzeuge 5, Ausmass 5,45..63,13 x 7,7..27,28 mm
+  OPV-Verstärker10-Edge_Cuts.gbr: Gerber, Fehler 0, Belichtungen 0, Bahnstuecke 4, Blenden/Werkzeuge 1, Ausmass -0,05..71,05 x -0,05..34,05 mm
+  OPV-Verstärker10-F_Cu.gbr: Gerber, Fehler 0, Belichtungen 20, Bahnstuecke 18, Blenden/Werkzeuge 5, Ausmass 5,45..63,13 x 5,81..29,17 mm
+  OPV-Verstärker10-F_SilkS.gbr: Gerber, Fehler 0, Belichtungen 0, Bahnstuecke 28, Blenden/Werkzeuge 1, Ausmass 5,085..64,185 x 7,275..27,705 mm
+  OPV-Verstärker10.drl: Excellon, Fehler 0, Belichtungen 20, Bahnstuecke 0, Blenden/Werkzeuge 2, Ausmass 6,35..62,23 x 8,6..26,38 mm
+  ZIP SHA-256 95386A9C14C82E5A0143F9CFB3A00E8D61983693DC12504FB094E52D62A31560
+
+## Tragwerk einfeld: Gegenprobe ✓ Abweichung 0,05 % | Verfahren: Gleichgewicht, Formel Einfeldträger, zweite Rechnung (Teilstäbe)
+
+## Tragwerk kragarm: Gegenprobe ✓ Abweichung < 0,01 % | Verfahren: Gleichgewicht, Formel Kragarm, zweite Rechnung (Teilstäbe)
+
+## Tragwerk durchlauf: Gegenprobe ✓ Abweichung 0,06 % | Verfahren: Gleichgewicht, Formel Zweifeldträger, zweite Rechnung (Teilstäbe)
+
+## Tragwerk rahmen: Gegenprobe ✓ Abweichung 0,14 % | Verfahren: Gleichgewicht, zweite Rechnung (Teilstäbe)
+
+## Tragwerk fachwerk: Gegenprobe ✓ Abweichung < 0,01 % | Verfahren: Gleichgewicht, zweite Rechnung (Teilstäbe)
+
+## KiCad-Import T-0748-kicad-transistor.net: 6 Bauteile und 6 Netze aus KiCad übernommen – nicht übernommen: U1 (NE555P) – Bauteilart gibt es in Trendo nicht. LED-Strom nach 10 ms: 14,626 mA
