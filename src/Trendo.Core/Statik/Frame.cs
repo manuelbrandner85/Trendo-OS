@@ -318,6 +318,33 @@ public static class FrameSolver
         return new(reactions, disp, results, results.All(r => r.Ok));
     }
 
+    /// <summary>T-0748-fix2: Messpunkte am Stab – <paramref name="n"/> gleichmäßige Punkte, dazu jeder Lastort einer Einzellast (Momentenspitze)
+    /// und jede Nullstelle der Querkraft zwischen zwei Lastorten (Extremwert des Moments unter Strecken- und Trapezlast).
+    /// So treffen Anzeige, Exporte und Gegenprobe die Größtwerte genau, statt sie zwischen zwei Punkten zu verfehlen.</summary>
+    static double[] Stations(double L, int n, List<(double A, double Py)> points, double v0, double wy, double dwy)
+    {
+        var xs = new List<double>(n + 3 * points.Count + 2);
+        for (var i = 0; i < n; i++) xs.Add(L * i / (n - 1));
+        var cuts = points.Select(p => p.A).Where(a => a > 0 && a < L).Append(0).Append(L).Distinct().OrderBy(a => a).ToList();
+        xs.AddRange(cuts);
+        for (var k = 0; k + 1 < cuts.Count; k++)
+        {
+            double x0 = cuts[k], x1 = cuts[k + 1], mid = (x0 + x1) / 2;
+            var sy = points.Where(p => p.A < mid).Sum(p => p.Py);
+            // V(x) = v0 + sy + wy·x + dwy·x²/2 = 0
+            double c2 = dwy / 2, c1 = wy, c0 = v0 + sy;
+            var roots = new List<double>();
+            if (Math.Abs(c2) < 1e-14) { if (Math.Abs(c1) > 1e-14) roots.Add(-c0 / c1); }
+            else { var disc = c1 * c1 - 4 * c2 * c0; if (disc >= 0) { var r = Math.Sqrt(disc); roots.Add((-c1 + r) / (2 * c2)); roots.Add((-c1 - r) / (2 * c2)); } }
+            foreach (var x in roots) if (x > x0 && x < x1) xs.Add(x);
+        }
+        xs.Sort();
+        var res = new List<double>(xs.Count); var tol = L * 1e-9;
+        foreach (var x in xs) if (res.Count == 0 || x - res[^1] > tol) res.Add(x);
+        res[^1] = L; // Endpunkt genau
+        return [.. res];
+    }
+
     static MemberResult Member(FrameModel f, El e, double[] U, Dictionary<string, int> idx, int n)
     {
         var T = Rot(e.C, e.S); int ia = 3 * idx[e.A.Id], ib = 3 * idx[e.B.Id];
@@ -328,10 +355,11 @@ public static class FrameSolver
         var wx = -qa * e.S; var wy = -qa * e.C; var dwx = -(qb - qa) * e.S / e.L; var dwy = -(qb - qa) * e.C / e.L; // linear: w(x) = w + dw·x
         var kap = f.Loads.Where(l => l.Kind == "temperatur" && l.Target == e.M.Id).Sum(l => e.Mat.Alpha_perK * l.M / (e.Sec.H_mm / 1000));
         var pts = f.Loads.Where(l => l.Kind == "einzel" && l.Target == e.M.Id).Select(l => (a: l.At * e.L, px: -l.Value * e.S, py: -l.Value * e.C)).ToList();
-        var xs = new double[n]; var N = new double[n]; var V = new double[n]; var M = new double[n];
+        var xs = Stations(e.L, n, pts.Select(p => (p.a, p.py)).ToList(), fe[1], wy, dwy); n = xs.Length;
+        var N = new double[n]; var V = new double[n]; var M = new double[n];
         for (var i = 0; i < n; i++)
         {
-            var x = e.L * i / (n - 1); xs[i] = x;
+            var x = xs[i];
             double sx = 0, sy = 0, sm = 0;
             foreach (var p in pts) if (p.a < x || p.a <= x && i == n - 1) { sx += p.px; sy += p.py; sm += p.py * (x - p.a); }
             N[i] = -(fe[0] + wx * x + dwx * x * x / 2 + sx);
@@ -339,8 +367,17 @@ public static class FrameSolver
             M[i] = -fe[2] + fe[1] * x + wy * x * x / 2 + dwy * x * x * x / 6 + sm;
         }
         // Biegelinie: v'' = M/EI, Endwerte aus den Knotenverschiebungen (Sehne) + Krümmungsanteil
+        // T-0748-fix2: exakt integriert – zwischen zwei Messpunkten ist M ein Polynom bis 3. Grades (jede Einzellast ist ein Messpunkt),
+        // 3-Punkt-Gauß ist bis zum 5. Grad exakt. Vorher Trapezregel: bei einer Einzellast nahe am Stabende bis 1 % Fehler in der Durchbiegung.
+        double Mof(double x) { var sm = 0.0; foreach (var p in pts) if (p.a < x) sm += p.py * (x - p.a); return -fe[2] + fe[1] * x + wy * x * x / 2 + dwy * x * x * x / 6 + sm; }
+        double[] gx = [-Math.Sqrt(0.6), 0, Math.Sqrt(0.6)], gw = [5.0 / 9, 8.0 / 9, 5.0 / 9];
         var I1 = new double[n]; var I2 = new double[n];
-        for (var i = 1; i < n; i++) { var h = xs[i] - xs[i - 1]; I1[i] = I1[i - 1] + ((M[i] + M[i - 1]) / 2 / e.EI + kap) * h; I2[i] = I2[i - 1] + (I1[i] + I1[i - 1]) / 2 * h; }
+        for (var i = 1; i < n; i++)
+        {
+            double x0 = xs[i - 1], h = xs[i] - x0, s1 = 0, s2 = 0;
+            for (var g = 0; g < 3; g++) { var t = x0 + h * (1 + gx[g]) / 2; var k = Mof(t) / e.EI + kap; s1 += gw[g] * k; s2 += gw[g] * (xs[i] - t) * k; }
+            I1[i] = I1[i - 1] + s1 * h / 2; I2[i] = I2[i - 1] + I1[i - 1] * h + s2 * h / 2;
+        }
         var dx = new double[n]; var dy = new double[n]; double maxRel = 0;
         for (var i = 0; i < n; i++)
         {

@@ -48,7 +48,7 @@ public static class FrameCrossCheck
 
     public static CrossCheckResult Check(FrameModel f, CancellationToken ct = default, long maxEnvelope = MaxEnvelope)
     {
-        var r = FrameSolver.Solve(f, 201); // Hauptrechnung, fein abgetastet (sonst läge ein Größtwert zwischen zwei Punkten)
+        var r = FrameSolver.Solve(f); // T-0748-fix2: genau die Rechnung, die Oberfläche und Exporte zeigen (gleiche Messpunkte inkl. Lastorten und Extremstellen)
         var items = new List<CrossCheckItem>(); var methods = new List<string>(); var skipped = new List<string>();
         Equilibrium(f, r, items); methods.Add("Gleichgewicht");
         if (Formula(f, r, items) is { } name) methods.Add("Formel " + name);

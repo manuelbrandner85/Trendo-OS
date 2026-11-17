@@ -187,4 +187,52 @@ public class T0748_CrossCheck
             Assert.DoesNotContain("✓", c.Text); Assert.DoesNotContain("< 0,01", c.Text);
         }
     }
+    // ---------- Zweite Prüfung behoben (T-0748-fix2) ----------
+    static double Rel(double a, double b) => Math.Abs(a - b) / Math.Abs(b) * 100;
+
+    [Theory(DisplayName = "T-0748-fix2: Einfeldträger 5 m, Einzellast 20 kN bei 1/3, 1/6, 0,5025, 0,0125 – angezeigtes max M = F·a·b/L (unter 0,01 %), Gegenprobe ✓")]
+    [InlineData(1.0 / 3)] [InlineData(1.0 / 6)] [InlineData(0.5025)] [InlineData(0.0125)]
+    public void Einfeld_Einzellast_genau(double at)
+    {
+        var f = new FrameModel(); var m = f.AddMember(0, 0, 5, 0, "IPE 200"); f.Node(m.A)!.Support = "fest"; f.Node(m.B)!.Support = "los"; f.AddPointLoad(m.Id, 20, at);
+        double a = at * 5, b = 5 - a, exact = 20 * a * b / 5;
+        var shown = Math.Abs(FrameSolver.Solve(f).Members[0].MaxM); // genau das, was Oberfläche und Exporte zeigen
+        Assert.True(Rel(shown, exact) < 0.01, $"Anzeige {shown} statt {exact}");
+        var c = FrameCrossCheck.Check(f); Assert.True(c.Ok, c.Text); Assert.StartsWith("Gegenprobe ✓", c.Text);
+    }
+
+    [Theory(DisplayName = "T-0748-fix2: beidseitig eingespannter Träger 6 m, 50 kN bei 1/3, 1/6, 0,5025, 0,0125 – max M = max(F·a·b²/L², F·a²·b/L², 2F·a²·b²/L³)")]
+    [InlineData(1.0 / 3)] [InlineData(1.0 / 6)] [InlineData(0.5025)] [InlineData(0.0125)]
+    public void Eingespannt_Einzellast_genau(double at)
+    {
+        var f = new FrameModel(); var m = f.AddMember(0, 0, 6, 0, "IPE 300"); f.Node(m.A)!.Support = "einspannung"; f.Node(m.B)!.Support = "einspannung"; f.AddPointLoad(m.Id, 50, at);
+        double L = 6, a = at * L, b = L - a, F = 50;
+        var exact = new[] { F * a * b * b / (L * L), F * a * a * b / (L * L), 2 * F * a * a * b * b / (L * L * L) }.Max();
+        var shown = Math.Abs(FrameSolver.Solve(f).Members[0].MaxM);
+        Assert.True(Rel(shown, exact) < 0.01, $"Anzeige {shown} statt {exact}");
+        var c = FrameCrossCheck.Check(f); Assert.True(c.Ok, c.Text); Assert.StartsWith("Gegenprobe ✓", c.Text);
+    }
+
+    [Theory(DisplayName = "T-0748-fix2: Rahmen mit eingespannten Füßen (HEA 200/300, Riegel IPE 300, 6 m), 50 kN bei 1/3, 1/6, 0,5025, 0,0125 – angezeigtes max M = zweite Rechnung (unter 0,01 %), Gegenprobe ✓")]
+    [InlineData(1.0 / 3, "HEA 200")] [InlineData(1.0 / 6, "HEA 200")] [InlineData(0.5025, "HEA 200")] [InlineData(0.5025, "HEA 300")] [InlineData(0.0125, "HEA 200")]
+    public void Rahmen_Einzellast_genau(double at, string column)
+    {
+        var f = new FrameModel(); f.AddMember(0, 0, 0, 4, column); var r = f.AddMember(0, 4, 6, 4, "IPE 300"); f.AddMember(6, 4, 6, 0, column);
+        f.NodeAt(0, 0).Support = "einspannung"; f.NodeAt(6, 0).Support = "einspannung"; f.AddPointLoad(r.Id, 50, at);
+        var shown = FrameSolver.Solve(f).Members.Select(x => Math.Abs(x.MaxM)).ToList();
+        var (_, second, _) = FrameCrossCheck.Solve(f);
+        for (var i = 0; i < 3; i++) Assert.True(Rel(shown[i], second[f.Members[i].Id]) < 0.01, $"S{i + 1}: Anzeige {shown[i]} statt {second[f.Members[i].Id]}");
+        var c = FrameCrossCheck.Check(f); Assert.True(c.Ok, c.Text); Assert.StartsWith("Gegenprobe ✓", c.Text);
+    }
+
+    [Fact(DisplayName = "T-0748-fix2: Trapezlast 5 → 15 kN/m auf 5 m – Größtwert liegt nicht auf einem Messpunkt (Querkraft-Nullstelle), Anzeige trifft ihn genau")]
+    public void Trapez_Extremstelle()
+    {
+        var f = FrameModel.Template("einfeld"); f.Loads.Clear(); f.AddTrapezLoad(f.Members[0].Id, 5, 15);
+        double L = 5, qa = 5, dq = 10, RA = qa * L / 2 + dq * L / 6; // Lager links
+        double M(double x) => RA * x - qa * x * x / 2 - dq * x * x * x / (6 * L);
+        var x0 = (-qa + Math.Sqrt(qa * qa + 2 * dq / L * RA)) / (dq / L); // M'(x) = 0
+        var shown = Math.Abs(FrameSolver.Solve(f).Members[0].MaxM);
+        Assert.True(Rel(shown, M(x0)) < 0.01, $"Anzeige {shown} statt {M(x0)} bei x = {x0:0.###} m");
+    }
 }

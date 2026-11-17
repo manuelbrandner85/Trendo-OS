@@ -121,8 +121,8 @@ public static class KiCadNetlist
             Part p;
             switch (kind)
             {
-                case "npn" or "pnp": p = c.Add(kind, x0 + 2, PartY, x0 + 6, PartY, 100); break;
-                default: p = c.Add(kind, x0 + 2, PartY, x0 + 6, PartY); break;
+                case "npn" or "pnp": p = c.Add(kind, x0 + 2, PartY, x0 + 6, PartY, 100, comp.Ref); break;
+                default: p = c.Add(kind, x0 + 2, PartY, x0 + 6, PartY, null, comp.Ref); break; // Name = KiCad-Bezeichner, keine Namenssuche
             }
             p.Name = comp.Ref;
             if (Number(comp.Value, kind) is { } v) p.Value = v;

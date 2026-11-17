@@ -104,6 +104,26 @@ Belege: alte Belege unverändert (SHA-256 gegen `T-0748-SHA256SUMS.txt` geprüft
 
 Offen nach der Behebung: Hauptrechnung (`FrameSolver`) arbeitet weiter mit dichter Matrix im UI-Thread (580 Stäbe 0,09–0,13 s – unkritisch, aber nicht für tausende Stäbe); der importierte große Schaltplan (3000 Teile) wurde nicht in der Oberfläche auf Bedienbarkeit/Simulationszeit geprüft; Gerber-Fremdwerkzeug weiterhin BLOCKIERT. Sprachwahl unverändert C# – Rust nicht eingesetzt: die Engpässe waren Algorithmen (dichte Matrix, kubische Namenssuche), nach der Korrektur liegt alles unter 1 s.
 
+## Zweite Prüfung behoben (T-0748-fix2, 18.11.2026)
+
+Gemeinsame Ursache von M1 und M2: `FrameSolver.Member` tastete jeden Stab nur an gleichmäßigen Punkten ab (Oberfläche/Exporte 41, Gegenprobe 201). Lag eine Einzellast zwischen zwei Punkten, wurde die Momentenspitze verfehlt – angezeigt zu niedrig (bis 3,45 % im Rahmen, 2,5 % im Einfeldträger), in der Gegenprobe ein Fehlalarm (0,55–0,88 %). Messwerte: `reports/T-0748/T-0748-fix2-messung.log`.
+
+| Punkt | Änderung | Test (Rot auf 49cec65d7) |
+|---|---|---|
+| M2 Anzeige/Exporte zu niedrig | `FrameSolver.Stations`: zu den gleichmäßigen Punkten kommen jeder Lastort einer Einzellast und jede Querkraft-Nullstelle zwischen zwei Lastorten (Extremwert unter Strecken-/Trapezlast). Teil-Streckenlasten gibt es im Modell nicht. Dazu Durchbiegung exakt integriert (3-Punkt-Gauß je Abschnitt statt Trapezregel – bei Einzellast nahe dem Stabende war die Durchbiegung um bis 1 % zu klein) | `T0748_CrossCheck.Einfeld_Einzellast_genau` (1/3, 1/6, 0,5025, 0,0125: alle 4 rot), `Rahmen_Einzellast_genau` (5 Fälle, alle rot), `Trapez_Extremstelle` (rot), `Eingespannt_Einzellast_genau` (Größtwert am Einspannrand – war schon vorher richtig, 4 × grün), UI `T0748_Ui.Statik_Einzellast_Anzeige` (Inspektor „M 22,2“, Bericht 22,2222) |
+| M1 Fehlalarm der Gegenprobe | `FrameCrossCheck.Check` prüft jetzt denselben Lauf wie Oberfläche und Exporte (`FrameSolver.Solve(f)`, gleiche Messpunkte) statt eines eigenen 201-Punkte-Laufs | dieselben Tests prüfen „Gegenprobe ✓“; Rot-Probe 10 von 14 neuen Fällen |
+| niedrig: NextName | `Circuit.Add` hat eine Überladung mit festem Namen; der KiCad-Import übergibt den Bezeichner und sucht keinen Namen mehr. `NextName` selbst baut die Menge bei interaktivem Hinzufügen weiter einmal je Aufruf (O(n)) – ein Zwischenspeicher wäre bei von außen umbenannten Bauteilen veraltet | `Import_3000_parts_fast` grün |
+| niedrig: Bericht-Export | „Gegenprobe (Bericht)“ nimmt das Ergebnis der Hintergrund-Rechnung zum selben Stand (`FrameCheckForExport`), rechnet nur ohne vorhandenes Ergebnis selbst | `Statik_Gegenprobe`, `Statik_Einfach_Menue`, `Statik_Einzellast_Anzeige` |
+| niedrig: CancellationTokenSource | wird bei jeder beendeten Rechnung freigegeben, auch bei überholten. Dabei gefunden und behoben: `Cancel()` auf einer schon freigegebenen Quelle warf `ObjectDisposedException` (vom UI-Test `Statik_Hintergrund` erkannt) | `Statik_Hintergrund` |
+
+Bestehende Tests und Belege: Kein bestehender Test erwartete einen anderen Momentwert (alle grün). Die Belege `T-0748-gegenprobe-*.md` und `T-0748-fix-gegenprobe-*.md` bleiben als Stand ihrer Commits unverändert (Prüfsummen gelten); mit dem neuen Code weichen dort nur Durchbiegung (≤ 0,001 mm) und die Gegenprobe-Prozente ab, die Momente der Vorlagen sind gleich (Lasten auf Knoten oder Gleichlast mit Spitze auf einem Messpunkt). Aktueller Stand der fünf Vorlagen: `T-0748-fix2-gegenprobe-*.md`.
+
+Prüfprogramm des Prüfers (pruef2) nach der Behebung: alle Fälle ✓, Moment überall 0 % gegen die zweite Rechnung, größte Abweichung 0,053 % (größte Verschiebung – deren Spitze liegt weiter zwischen Messpunkten), verfälschte Hauptwerte ab 0,6 % werden erkannt.
+
+Tests (kein Volltest): Core SPEC02*, SPEC03*, T0258, T0259, T0271, T0272, T0275, T0277, T0748*, SpiceCrossCheck, dazu CrashGuardTests und RealismToolsTests (berühren `Circuit`/`FrameModel`) – **144/144** (`T-0748-fix2-core-tests.log`). App: SPEC02_Ui 3/3, SPEC02_UiPcb 1/1, SPEC02_UiPlus 1/1, SPEC03_Ui 3/3, SPEC03_UiEc 1/1, SPEC03_UiPlus 1/1, T0748_Ui 7/7, UebersichtEinfach_Ui 2/2, DeadButtonTests 83/83, StudiosTechnikWissen_Ui 39/39, ProgramLevel_Ui 2/2 = **143/143** (`T-0748-fix2-app-tests.log`).
+
+Offen: Die Spitze der Durchbiegung wird weiter abgetastet (Abweichung ≤ 0,06 %, keine Warnschwelle berührt); nicht im Bild geprüft (keine sichtbare Änderung außer genaueren Zahlen).
+
 ## Sprachwahl
 
 C# im bestehenden Kern; Rust nicht eingesetzt (keine Engstelle: die 26 T-0748-Kerntests mit allen Gegenproben und Gerber-Lesungen laufen zusammen in 0,26 s; eine zweite Sprache brächte nur Bindungsaufwand).

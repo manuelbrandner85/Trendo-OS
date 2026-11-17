@@ -171,4 +171,21 @@ public class T0748_Ui
         }
         finally { w.FabVerifyOverride = null; w.Close(); }
     }
+    [AvaloniaFact(DisplayName = "T-0748-fix2 UI: Einzellast bei 1/3 – Inspektor zeigt M = F·a·b/L = 22,2 kNm (vorher 21,7), Gegenprobe ✓, Bericht-Export nutzt das Hintergrund-Ergebnis")]
+    public void Statik_Einzellast_Anzeige()
+    {
+        var (w, _, _) = Ui.Open();
+        try
+        {
+            w.ProgramSetLevel(UserLevel.Profi);
+            w.ProgramNew("technik", "einfeld"); w.Show("technik"); Settle();
+            w.FrameEdit("Einzellast", f => { f.Loads.Clear(); f.AddPointLoad(f.Members[0].Id, 20, 1.0 / 3); }); Settle();
+            Assert.StartsWith("Gegenprobe ✓", Check(w));
+            Assert.Contains(w.GetVisualDescendants().OfType<TextBlock>(), t => t.Text?.StartsWith("M 22,2 ·") == true);
+            Press(w, "prog-export-gegenprobe");
+            var md = File.ReadAllText(w.ProgramMessage("technik")["Exportiert: ".Length..].Trim());
+            Assert.Contains("| größtes Moment S1 | 22,2222 |", md);
+        }
+        finally { w.Close(); }
+    }
 }

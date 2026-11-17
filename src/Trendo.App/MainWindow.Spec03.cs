@@ -62,7 +62,7 @@ public partial class MainWindow
             new("pdf", "PDF-Bericht", ".pdf", (d, f) => { var m = FrameModel.From(d.Data); return FrameDrawing.Pdf(m, FrameSolver.Solve(m), f); }),
             new("ec", "Eurocode-Nachweis", ".md", (d, f) => { var m = FrameModel.From(d.Data); File.WriteAllText(f, Eurocode.Report(m, Eurocode.Check(m))); return f; }),
             new("svg", "SVG (Bild)", ".svg", (d, f) => { var m = FrameModel.From(d.Data); File.WriteAllText(f, FrameDrawing.Svg(m, FrameSolver.Solve(m), FrameState.Show)); return f; }),
-            new("gegenprobe", "Gegenprobe (Bericht)", ".md", (d, f) => { var m = FrameModel.From(d.Data); File.WriteAllText(f, FrameCrossCheck.Report(m, FrameCrossCheck.Check(m))); return f; }),
+            new("gegenprobe", "Gegenprobe (Bericht)", ".md", (d, f) => { var m = FrameModel.From(d.Data); File.WriteAllText(f, FrameCrossCheck.Report(m, FrameCheckForExport(d, m))); return f; }),
             new("csv", "Ergebnisse (CSV)", ".csv", (d, f) => { var m = FrameModel.From(d.Data); File.WriteAllText(f, FrameDrawing.Csv(m, FrameSolver.Solve(m)), new System.Text.UTF8Encoding(true)); return f; }),
         ],
         Workspace = FrameWorkspace,
@@ -87,7 +87,8 @@ public partial class MainWindow
     {
         var key = d.Data.ToJsonString(); if (key == _frameCheck.Key) return _frameCheck.R;
         if (_frameCheckRun is { } run && run.Key == key) return CrossCheckResult.Running;
-        _frameCheckRun?.Cts.Cancel(); _frameCheckRun = null; // überholt
+        if (_frameCheckRun is { } old) { try { old.Cts.Cancel(); } catch (ObjectDisposedException) { } } // überholt (schon fertig: Quelle ist freigegeben)
+        _frameCheckRun = null;
         if (m.Members.Count == 0) { _frameCheck = (key, null); return null; }
         var copy = FrameModel.From(d.Data); var cts = new CancellationTokenSource(); var token = cts.Token;
         var task = Task.Run(() =>
@@ -98,15 +99,27 @@ public partial class MainWindow
         try { if (task.Wait(FrameCheckGrace)) { _frameCheck = (key, task.Result); cts.Dispose(); return task.Result; } }
         catch (AggregateException) { _frameCheck = (key, null); cts.Dispose(); return null; }
         _frameCheckRun = (key, cts, task);
-        task.ContinueWith(t => Avalonia.Threading.Dispatcher.UIThread.Post(() => FrameCheckDone(key, t)), TaskScheduler.Default);
+        // T-0748-fix2: CancellationTokenSource auch bei überholten Rechnungen freigeben, sobald die Rechnung endet
+        task.ContinueWith(t => { cts.Dispose(); Avalonia.Threading.Dispatcher.UIThread.Post(() => FrameCheckDone(key, t)); }, TaskScheduler.Default);
         return CrossCheckResult.Running;
+    }
+
+    /// <summary>T-0748-fix2: Gegenprobe für den Export „Gegenprobe (Bericht)“ – das Ergebnis der Hintergrund-Rechnung zum selben Stand,
+    /// statt im UI-Thread neu zu rechnen. Nur wenn es (noch) keines gibt, wird gerechnet.</summary>
+    public CrossCheckResult FrameCheckForExport(ProgramDocument d, FrameModel m)
+    {
+        var key = d.Data.ToJsonString();
+        if (key == _frameCheck.Key && _frameCheck.R is { } done) return done;
+        try { if (_frameCheckRun is { } run && run.Key == key && run.Task.Wait(TimeSpan.FromSeconds(30)) && run.Task.Result is { } r) return r; }
+        catch (AggregateException) { } // abgebrochen – dann selbst rechnen
+        return FrameCrossCheck.Check(m);
     }
 
     /// <summary>Gegenprobe fertig: merken und nur Statuszeile und Inspektor-Zeile auffrischen – die Seite wird nicht neu gebaut (Eingaben behalten den Fokus).</summary>
     void FrameCheckDone(string key, Task<CrossCheckResult?> t)
     {
         if (_frameCheckRun is not { } run || run.Task != t) return; // inzwischen überholt
-        _frameCheckRun = null; run.Cts.Dispose();
+        _frameCheckRun = null;
         if (t.IsCanceled) return;
         var r = t.IsCompletedSuccessfully ? t.Result : null;
         _frameCheck = (key, r);
