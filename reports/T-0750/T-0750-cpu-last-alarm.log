@@ -1,0 +1,72 @@
+22:18:21.081 Regel: Prozessor (CPU) über 64 % für 3 s, Hysterese 10 (Grundlast 34,3 %, 16 logische Kerne)
+22:18:22.343 Prozessor (CPU) 37,4 % | Arbeitsspeicher belegt 67,4 % | Datenträger aktiv 1,7 % | Netz empfangen 55,2 kB/s | Netz gesendet 498,4 kB/s
+22:18:23.540 Prozessor (CPU) 55,2 % | Arbeitsspeicher belegt 67,7 % | Datenträger aktiv 0,0 % | Netz empfangen 51,8 kB/s | Netz gesendet 167,1 kB/s
+22:18:24.937 Prozessor (CPU) 58,1 % | Arbeitsspeicher belegt 67,7 % | Datenträger aktiv 0,7 % | Netz empfangen 48,4 kB/s | Netz gesendet 103,1 kB/s
+22:18:26.077 Prozessor (CPU) 72,8 % | Arbeitsspeicher belegt 67,1 % | Datenträger aktiv 0,6 % | Netz empfangen 16,8 kB/s | Netz gesendet 7,5 kB/s
+22:18:27.240 Prozessor (CPU) 46,5 % | Arbeitsspeicher belegt 66,4 % | Datenträger aktiv 0,3 % | Netz empfangen 18,8 kB/s | Netz gesendet 10,0 kB/s
+22:18:28.385 Prozessor (CPU) 44,6 % | Arbeitsspeicher belegt 65,6 % | Datenträger aktiv 0,3 % | Netz empfangen 26,2 kB/s | Netz gesendet 33,9 kB/s
+22:18:29.521 Prozessor (CPU) 47,9 % | Arbeitsspeicher belegt 66,2 % | Datenträger aktiv 1,1 % | Netz empfangen 38,2 kB/s | Netz gesendet 657,2 kB/s
+22:18:30.748 Prozessor (CPU) 57,1 % | Arbeitsspeicher belegt 63,2 % | Datenträger aktiv 0,2 % | Netz empfangen 4,2 kB/s | Netz gesendet 15,6 kB/s
+22:18:31.944 Prozessor (CPU) 78,9 % | Arbeitsspeicher belegt 63,0 % | Datenträger aktiv 0,0 % | Netz empfangen 31,3 kB/s | Netz gesendet 143,9 kB/s
+22:18:33.113 Prozessor (CPU) 88,8 % | Arbeitsspeicher belegt 63,8 % | Datenträger aktiv 0,6 % | Netz empfangen 11,8 kB/s | Netz gesendet 7,8 kB/s
+22:18:34.244 Prozessor (CPU) 63,2 % | Arbeitsspeicher belegt 63,6 % | Datenträger aktiv 3,2 % | Netz empfangen 20,6 kB/s | Netz gesendet 156,3 kB/s
+22:18:35.435 Prozessor (CPU) 43,6 % | Arbeitsspeicher belegt 64,9 % | Datenträger aktiv 0,5 % | Netz empfangen 20,5 kB/s | Netz gesendet 14,1 kB/s
+22:18:36.582 Prozessor (CPU) 47,2 % | Arbeitsspeicher belegt 65,6 % | Datenträger aktiv 1,7 % | Netz empfangen 7,6 kB/s | Netz gesendet 31,9 kB/s
+22:18:37.761 Prozessor (CPU) 54,0 % | Arbeitsspeicher belegt 65,8 % | Datenträger aktiv 0,2 % | Netz empfangen 17,8 kB/s | Netz gesendet 13,4 kB/s
+22:18:38.924 Prozessor (CPU) 53,3 % | Arbeitsspeicher belegt 66,1 % | Datenträger aktiv 0,7 % | Netz empfangen 13,6 kB/s | Netz gesendet 138,6 kB/s
+22:18:40.079 Prozessor (CPU) 57,4 % | Arbeitsspeicher belegt 65,9 % | Datenträger aktiv 0,7 % | Netz empfangen 31,2 kB/s | Netz gesendet 149,7 kB/s
+22:18:41.233 Prozessor (CPU) 45,6 % | Arbeitsspeicher belegt 66,5 % | Datenträger aktiv 0,8 % | Netz empfangen 23,7 kB/s | Netz gesendet 139,9 kB/s
+22:18:42.394 Prozessor (CPU) 45,1 % | Arbeitsspeicher belegt 66,8 % | Datenträger aktiv 0,1 % | Netz empfangen 46,9 kB/s | Netz gesendet 7,3 kB/s
+22:18:43.522 Prozessor (CPU) 43,1 % | Arbeitsspeicher belegt 66,9 % | Datenträger aktiv 0,4 % | Netz empfangen 46,8 kB/s | Netz gesendet 16,1 kB/s
+22:18:44.699 Prozessor (CPU) 45,8 % | Arbeitsspeicher belegt 67,3 % | Datenträger aktiv 0,2 % | Netz empfangen 39,0 kB/s | Netz gesendet 10,3 kB/s
+22:18:44.699 künstliche Last an: 16 Rechen-Threads
+22:18:45.900 Prozessor (CPU) 97,2 % | Arbeitsspeicher belegt 66,9 % | Datenträger aktiv 0,6 % | Netz empfangen 46,7 kB/s | Netz gesendet 743,0 kB/s
+22:18:47.149 Prozessor (CPU) 98,4 % | Arbeitsspeicher belegt 67,1 % | Datenträger aktiv 0,6 % | Netz empfangen 37,4 kB/s | Netz gesendet 27,4 kB/s
+22:18:48.303 Prozessor (CPU) 98,5 % | Arbeitsspeicher belegt 67,3 % | Datenträger aktiv 0,2 % | Netz empfangen 83,5 kB/s | Netz gesendet 171,2 kB/s
+22:18:49.535 Prozessor (CPU) 98,3 % | Arbeitsspeicher belegt 67,7 % | Datenträger aktiv 0,3 % | Netz empfangen 43,5 kB/s | Netz gesendet 15,9 kB/s
+22:18:49.535 ALARM AUSGELÖST Prozessor (CPU) über 64 % für 3 s, Hysterese 10: 98,3 %
+22:18:50.891 Prozessor (CPU) 97,8 % | Arbeitsspeicher belegt 67,9 % | Datenträger aktiv 0,0 % | Netz empfangen 27,2 kB/s | Netz gesendet 12,7 kB/s
+22:18:52.369 Prozessor (CPU) 98,7 % | Arbeitsspeicher belegt 67,9 % | Datenträger aktiv 0,3 % | Netz empfangen 35,1 kB/s | Netz gesendet 490,3 kB/s
+22:18:53.615 Prozessor (CPU) 99,2 % | Arbeitsspeicher belegt 67,6 % | Datenträger aktiv 0,4 % | Netz empfangen 3,0 kB/s | Netz gesendet 4,1 kB/s
+22:18:54.751 Prozessor (CPU) 97,8 % | Arbeitsspeicher belegt 67,6 % | Datenträger aktiv 0,7 % | Netz empfangen 19,2 kB/s | Netz gesendet 166,3 kB/s
+22:18:55.927 Prozessor (CPU) 98,7 % | Arbeitsspeicher belegt 67,6 % | Datenträger aktiv 0,1 % | Netz empfangen 58,0 kB/s | Netz gesendet 64,9 kB/s
+22:18:57.139 Prozessor (CPU) 97,8 % | Arbeitsspeicher belegt 67,8 % | Datenträger aktiv 2,1 % | Netz empfangen 14,8 kB/s | Netz gesendet 15,1 kB/s
+22:18:58.360 Prozessor (CPU) 99,4 % | Arbeitsspeicher belegt 68,4 % | Datenträger aktiv 2,8 % | Netz empfangen 11,8 kB/s | Netz gesendet 10,7 kB/s
+22:18:59.523 Prozessor (CPU) 98,7 % | Arbeitsspeicher belegt 68,5 % | Datenträger aktiv 1,5 % | Netz empfangen 3,2 kB/s | Netz gesendet 31,1 kB/s
+22:19:00.694 Prozessor (CPU) 98,9 % | Arbeitsspeicher belegt 67,1 % | Datenträger aktiv 1,8 % | Netz empfangen 10,7 kB/s | Netz gesendet 188,9 kB/s
+22:19:01.831 Prozessor (CPU) 98,3 % | Arbeitsspeicher belegt 67,1 % | Datenträger aktiv 1,1 % | Netz empfangen 15,7 kB/s | Netz gesendet 2,6 kB/s
+22:19:03.017 Prozessor (CPU) 98,6 % | Arbeitsspeicher belegt 67,1 % | Datenträger aktiv 1,4 % | Netz empfangen 25,0 kB/s | Netz gesendet 410,7 kB/s
+22:19:04.200 Prozessor (CPU) 98,7 % | Arbeitsspeicher belegt 67,0 % | Datenträger aktiv 1,3 % | Netz empfangen 17,7 kB/s | Netz gesendet 9,2 kB/s
+22:19:05.405 Prozessor (CPU) 97,8 % | Arbeitsspeicher belegt 67,2 % | Datenträger aktiv 1,4 % | Netz empfangen 11,5 kB/s | Netz gesendet 6,2 kB/s
+22:19:06.580 Prozessor (CPU) 99,0 % | Arbeitsspeicher belegt 67,3 % | Datenträger aktiv 1,5 % | Netz empfangen 1,7 kB/s | Netz gesendet 1,7 kB/s
+22:19:07.773 Prozessor (CPU) 98,7 % | Arbeitsspeicher belegt 67,6 % | Datenträger aktiv 1,1 % | Netz empfangen 5,2 kB/s | Netz gesendet 44,6 kB/s
+22:19:08.930 Prozessor (CPU) 99,0 % | Arbeitsspeicher belegt 67,7 % | Datenträger aktiv 2,2 % | Netz empfangen 12,5 kB/s | Netz gesendet 6,0 kB/s
+22:19:08.931 künstliche Last aus
+22:19:10.280 Prozessor (CPU) 73,0 % | Arbeitsspeicher belegt 67,0 % | Datenträger aktiv 0,8 % | Netz empfangen 17,6 kB/s | Netz gesendet 176,5 kB/s
+22:19:11.451 Prozessor (CPU) 59,2 % | Arbeitsspeicher belegt 66,7 % | Datenträger aktiv 0,3 % | Netz empfangen 20,2 kB/s | Netz gesendet 2,8 kB/s
+22:19:12.672 Prozessor (CPU) 49,6 % | Arbeitsspeicher belegt 66,7 % | Datenträger aktiv 0,0 % | Netz empfangen 11,9 kB/s | Netz gesendet 5,8 kB/s
+22:19:12.672 ALARM AUFGEHOBEN Prozessor (CPU) über 64 % für 3 s, Hysterese 10: 49,6 %
+22:19:13.848 Prozessor (CPU) 59,1 % | Arbeitsspeicher belegt 66,7 % | Datenträger aktiv 0,9 % | Netz empfangen 10,3 kB/s | Netz gesendet 5,0 kB/s
+22:19:15.014 Prozessor (CPU) 49,7 % | Arbeitsspeicher belegt 67,0 % | Datenträger aktiv 0,0 % | Netz empfangen 4,0 kB/s | Netz gesendet 3,2 kB/s
+22:19:16.156 Prozessor (CPU) 46,1 % | Arbeitsspeicher belegt 65,4 % | Datenträger aktiv 0,7 % | Netz empfangen 22,8 kB/s | Netz gesendet 44,9 kB/s
+22:19:17.315 Prozessor (CPU) 55,9 % | Arbeitsspeicher belegt 65,3 % | Datenträger aktiv 2,6 % | Netz empfangen 27,4 kB/s | Netz gesendet 145,3 kB/s
+22:19:18.435 Prozessor (CPU) 43,8 % | Arbeitsspeicher belegt 65,2 % | Datenträger aktiv 0,5 % | Netz empfangen 32,1 kB/s | Netz gesendet 153,9 kB/s
+22:19:19.558 Prozessor (CPU) 32,9 % | Arbeitsspeicher belegt 65,3 % | Datenträger aktiv 1,4 % | Netz empfangen 9,8 kB/s | Netz gesendet 9,7 kB/s
+22:19:20.659 Prozessor (CPU) 31,6 % | Arbeitsspeicher belegt 65,5 % | Datenträger aktiv 0,6 % | Netz empfangen 12,8 kB/s | Netz gesendet 329,6 kB/s
+22:19:21.797 Prozessor (CPU) 32,7 % | Arbeitsspeicher belegt 65,5 % | Datenträger aktiv 0,0 % | Netz empfangen 43,1 kB/s | Netz gesendet 369,5 kB/s
+22:19:22.955 Prozessor (CPU) 38,4 % | Arbeitsspeicher belegt 65,6 % | Datenträger aktiv 0,4 % | Netz empfangen 19,7 kB/s | Netz gesendet 8,8 kB/s
+22:19:24.072 Prozessor (CPU) 31,7 % | Arbeitsspeicher belegt 65,6 % | Datenträger aktiv 1,7 % | Netz empfangen 19,8 kB/s | Netz gesendet 22,3 kB/s
+22:19:25.210 Prozessor (CPU) 28,4 % | Arbeitsspeicher belegt 65,7 % | Datenträger aktiv 0,0 % | Netz empfangen 22,4 kB/s | Netz gesendet 10,3 kB/s
+22:19:26.342 Prozessor (CPU) 42,4 % | Arbeitsspeicher belegt 66,2 % | Datenträger aktiv 0,8 % | Netz empfangen 12,9 kB/s | Netz gesendet 5,3 kB/s
+22:19:27.489 Prozessor (CPU) 33,1 % | Arbeitsspeicher belegt 67,5 % | Datenträger aktiv 0,3 % | Netz empfangen 5,4 kB/s | Netz gesendet 1,9 kB/s
+22:19:28.602 Prozessor (CPU) 36,4 % | Arbeitsspeicher belegt 68,7 % | Datenträger aktiv 0,0 % | Netz empfangen 37,7 kB/s | Netz gesendet 8,9 kB/s
+22:19:29.736 Prozessor (CPU) 54,8 % | Arbeitsspeicher belegt 69,3 % | Datenträger aktiv 1,4 % | Netz empfangen 25,2 kB/s | Netz gesendet 172,5 kB/s
+22:19:31.184 Prozessor (CPU) 75,5 % | Arbeitsspeicher belegt 69,1 % | Datenträger aktiv 0,4 % | Netz empfangen 17,3 kB/s | Netz gesendet 3,7 kB/s
+22:19:32.306 Prozessor (CPU) 74,6 % | Arbeitsspeicher belegt 68,9 % | Datenträger aktiv 0,1 % | Netz empfangen 12,1 kB/s | Netz gesendet 2,2 kB/s
+22:19:32.307 Benachrichtigung: ⚠ Alarm „Prozessor (CPU) über 64 % für 3 s, Hysterese 10“: Dieser PC – Prozessor (CPU) 98,3 %
+22:19:32.307 Benachrichtigung: ✓ Alarm „Prozessor (CPU) über 64 % für 3 s, Hysterese 10“ vorbei: Dieser PC – Prozessor (CPU) 49,6 %
+22:19:32.307 61 CPU-Werte, min 28,4 %, max 99,4 %
+22:19:32.307 Protokoll (CSV):
+Zeit;Regel;Anlage;Sensor;Ereignis;Wert
+2026-11-17 22:18:49;Prozessor (CPU) über 64 % für 3 s, Hysterese 10;Dieser PC;Prozessor (CPU);ausgelöst;98,3
+2026-11-17 22:19:12;Prozessor (CPU) über 64 % für 3 s, Hysterese 10;Dieser PC;Prozessor (CPU);aufgehoben;49,6

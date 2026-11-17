@@ -1,0 +1,60 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    Gegenprüfung: Netzwerkpfad als wachsende Datei wird abgelehnt, ohne darauf zuzugreifen [FAIL]
+      Assert.StartsWith() Failure: String start does not match
+      String:         "⚠ Diese Datei gibt es nicht."
+      Expected start: "⚠ Dateien auf anderen Rechnern"
+      Stack Trace:
+        tests\Trendo.App.Tests\RotProbeT0750FixUi.cs(72,0): at Trendo.App.Tests.RotProbeT0750FixUi.Unc_file_refused()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    Gegenprüfung: Regel-Datei mit leerem Eintrag stürzt nicht ab, sondern meldet es auf Deutsch [FAIL]
+      System.NullReferenceException : Object reference not set to an instance of an object.
+      Stack Trace:
+        src\Trendo.Core\W6\TwinFeeds.cs(66,0): at Trendo.Core.TwinRules.Validate(TwinRule r)
+        src\Trendo.Core\W6\TwinFeeds.cs(128,0): at Trendo.Core.TwinRules.ImportJson(String json, DateTime now)
+        src\Trendo.App\MainWindow.Spec10Alarm.cs(123,0): at Trendo.App.MainWindow.TwinImportRules(String path)
+        src\Trendo.App\MainWindow.Spec10Alarm.cs(237,0): at Trendo.App.MainWindow.<>c__DisplayClass7773_0.<TwinRulesPanel>b__9()
+        src\Trendo.App\MainWindow.Spec10.cs(107,0): at Trendo.App.MainWindow.TwinRun(Action a)
+        src\Trendo.App\MainWindow.Spec10Alarm.cs(207,0): at Trendo.App.MainWindow.<>c__DisplayClass7773_1.<TwinRulesPanel>b__4(Object _, RoutedEventArgs _)
+           at Avalonia.Interactivity.Interactive.<AddHandler>g__InvokeAdapter|8_0[TEventArgs](Delegate baseHandler, Object sender, RoutedEventArgs args)
+           at Avalonia.Interactivity.Interactive.<>c__8`1.<AddHandler>b__8_1(Delegate baseHandler, Object sender, RoutedEventArgs args)
+           at Avalonia.Interactivity.EventRoute.RaiseEventImpl(RoutedEventArgs e)
+           at Avalonia.Interactivity.EventRoute.RaiseEvent(Interactive source, RoutedEventArgs e)
+           at Avalonia.Interactivity.Interactive.RaiseEvent(RoutedEventArgs e)
+        src\Trendo.App\MainWindow.Files.cs(227,0): at Trendo.App.MainWindow.Fill(TextBox tb, String[] paths)
+        src\Trendo.App\MainWindow.Files.cs(194,0): at Trendo.App.MainWindow.PickInto(TextBox tb, Boolean folder)
+        src\Trendo.App\MainWindow.Files.cs(172,0): at Trendo.App.MainWindow.<>c__DisplayClass2005_0.<<PickButton>b__0>d.MoveNext()
+        --- End of stack trace from previous location ---
+           at System.Threading.Tasks.Task.<>c.<ThrowAsync>b__124_0(Object state)
+           at Avalonia.Threading.SendOrPostCallbackDispatcherOperation.InvokeCore()
+           at Avalonia.Threading.DispatcherOperation.<>c.<Execute>b__56_0(Object s)
+           at Avalonia.Threading.CulturePreservingExecutionContext.CallbackWrapper(Object obj)
+           at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+        --- End of stack trace from previous location ---
+           at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+           at Avalonia.Threading.CulturePreservingExecutionContext.Run(CulturePreservingExecutionContext executionContext, ContextCallback callback, Object state)
+           at Avalonia.Threading.DispatcherOperation.Execute()
+           at Avalonia.Threading.Dispatcher.ExecuteJob(DispatcherOperation job)
+           at Avalonia.Threading.Dispatcher.RunJobs(Nullable`1 priority, CancellationToken cancellationToken)
+           at Avalonia.Threading.Dispatcher.RunJobs(Nullable`1 priority)
+           at Avalonia.Headless.HeadlessWindowExtensions.<RunJobsOnImpl>g__RunJobsAndRender|16_0()
+           at Avalonia.Headless.HeadlessWindowExtensions.RunJobsOnImpl(TopLevel topLevel, Action`1 action)
+           at Avalonia.Headless.HeadlessWindowExtensions.MouseUp(TopLevel topLevel, Point point, MouseButton button, RawInputModifiers modifiers)
+        tests\Trendo.App.Tests\StartMenuUiTests.cs(21,0): at Trendo.App.Tests.StartMenu_Ui.RealClick(Window w, Control c)
+        tests\Trendo.App.Tests\RotProbeT0750FixUi.cs(18,0): at Trendo.App.Tests.RotProbeT0750FixUi.Press(MainWindow w, String name)
+        tests\Trendo.App.Tests\RotProbeT0750FixUi.cs(55,0): at Trendo.App.Tests.RotProbeT0750FixUi.Rules_file_null_entry()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    Gegenprüfung: wieder eingeschaltete Regel meldet nichts aus der Zeit, in der sie aus war [FAIL]
+      Assert.Empty() Failure: Collection was not empty
+      Collection: [TwinAlarm { Time = 17.11.2026 23:57:41, RuleId = a14a49a7, Rule = Temperatur über 80 °C, Asset = Ofen, Sensor = Temperatur, Raised = True, Value = 99 }]
+      Stack Trace:
+        tests\Trendo.App.Tests\RotProbeT0750FixUi.cs(38,0): at Trendo.App.Tests.RotProbeT0750FixUi.Reenabled_rule_silent()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    Trendo.App.Tests (ID = 'bb243858a6821a88b7c38a1b6edc7e4deaf49107aa05a1f59a2692fa265b5885')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 3, Errors: 0, Failed: 3, Skipped: 0, Not Run: 0, Time: 23,119s

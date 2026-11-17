@@ -54,7 +54,7 @@ public partial class MainWindow
                     await TwinMqtt.ListenAsync(Twin, host, port, parsed, ct, (topic, n) =>
                     {
                         _mqttCount += n; // läuft im UI-Thread (siehe run)
-                        _mqttMsg = $"Live: {_mqttCount} Werte empfangen (zuletzt „{topic}“, {DateTime.Now:HH:mm:ss})."; if (CurrentView == "zwilling") Show("zwilling");
+                        _mqttMsg = $"Live: {_mqttCount} Werte empfangen (zuletzt „{topic}“, {DateTime.Now:HH:mm:ss})."; TwinCheckRulesThrottled(); if (CurrentView == "zwilling") Show("zwilling");
                     }, user.Length > 0 ? user : null, password.Length > 0 ? password : null, run: a => Dispatcher.UIThread.Post(a));
                 }
                 catch (Exception e) when (e is not OutOfMemoryException)

@@ -7,7 +7,12 @@ public sealed class TwinSensor { public string Name { get; set; } = ""; public s
 public sealed class TwinAsset { public string Name { get; set; } = ""; public string Kind { get; set; } = ""; public List<TwinSensor> Sensors { get; set; } = []; }
 public sealed record Reading(DateTime Time, string Asset, string Sensor, double Value);
 public sealed record SensorState(string Asset, string Sensor, string Unit, double? Last, DateTime? At, TwinLevel Level, double? TrendPerHour, double? HoursToAlarm);
-public sealed class TwinModel { public List<TwinAsset> Assets { get; set; } = []; public List<Reading> Readings { get; set; } = []; }
+/// <summary>Dokument des Anlagen-Monitors. T-0750: dazu Alarmregeln, weitere Quellen und das Alarmprotokoll (nach den Messwerten, ältere Dateien bleiben lesbar).</summary>
+public sealed class TwinModel
+{
+    public List<TwinAsset> Assets { get; set; } = []; public List<Reading> Readings { get; set; } = [];
+    public List<TwinRule> Rules { get; set; } = []; public List<TwinSource> Sources { get; set; } = []; public List<TwinAlarm> Alarms { get; set; } = [];
+}
 
 /// <summary>SPEC-10: Digitaler Zwilling – Anlagen mit Sensoren, Messwerte (CSV oder live), Zustand, Trend, Vorhersage.</summary>
 public sealed class TwinHub(string dataRoot)
