@@ -82,12 +82,22 @@ public partial class MainWindow
             {
                 double? v = null; string err = "";
                 try { v = await TwinHttp.FetchAsync(http, src); }
-                catch (Exception e) when (e is not OutOfMemoryException) { err = FriendlyError.Say(e); }
+                catch (Exception e) when (e is not OutOfMemoryException)
+                {
+                    // Sammelstand 0.9.106 (zweite Prüfung T-0750, N2): die eigene Sperr-Begründung zeigen statt „keine Verbindung zum Internet“,
+                    // und bei lokalen Geräten keine Hinweise auf Zugangsschlüssel oder Guthaben
+                    err = e.Message.Contains("eigenen Netz", StringComparison.Ordinal) || e.InnerException?.Message.Contains("eigenen Netz", StringComparison.Ordinal) == true
+                        ? (e.InnerException?.Message.Contains("eigenen Netz", StringComparison.Ordinal) == true ? e.InnerException!.Message : e.Message)
+                        : e is HttpRequestException { StatusCode: { } code } ? $"Das Gerät antwortet mit Fehler {(int)code} – prüfe die Adresse (Pfad) im Gerät."
+                        : "Das Gerät im eigenen Netz ist nicht erreichbar – ist es eingeschaltet und die Adresse richtig?";
+                }
                 Dispatcher.UIThread.Post(() =>
                 {
                     _twHttpBusy.Remove(src.Id); if (_twClosed) return;
-                    src.LastError = err;
-                    if (v is { } x) { Twin.Record(DateTime.Now, src.Asset, src.Sensor, x, false); }
+                    // Sammelstand 0.9.106 (N1): Quelle inzwischen entfernt oder per Rückgängig ersetzt → Ergebnis verwerfen (wie bei Dateien)
+                    if (Twin.Model.Sources.FirstOrDefault(x => x.Id == src.Id) is not { } cur || cur.Target != src.Target) return;
+                    cur.LastError = err;
+                    if (v is { } x) { Twin.Record(DateTime.Now, cur.Asset, cur.Sensor, x, false); }
                     Twin.Save(); TwinCheckRules();
                     if (CurrentView == "zwilling") Show("zwilling");
                 });
