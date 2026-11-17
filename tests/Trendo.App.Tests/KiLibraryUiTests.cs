@@ -50,7 +50,15 @@ public class KiLibraryUiTests
             using (var s = File.Create(f)) s.SetLength(size);
             return Task.FromResult<(string, string?)>((f, null));
         };
+        // T-0739 (X-05): Die Stimme hat feste SHA-256 im Katalog – Ersatzdateien mit passender Größe, aber falschen Bytes werden verworfen
         await w.KiLibraryInstall(m);
+        Assert.False(w.KiStore.ModelReady(m));
+        Assert.Contains("Prüfsumme passt nicht", w.Find<TextBlock>("kilib-msg").Text);
+        Assert.Contains("nichts installiert", w.Find<TextBlock>("kilib-msg").Text);
+        Assert.False(File.Exists(w.KiStore.ModelFile(m, m.Files[0])));
+        // Für den weiteren Ablauf (Ausprobieren, Entfernen) dieselbe Stimme ohne feste Summe – die Ersatzdateien haben keine echten Bytes
+        var mt = m with { Files = [.. m.Files.Select(f => f with { Sha256 = null, ShaSource = null })] };
+        await w.KiLibraryInstall(mt);
         Assert.True(w.KiStore.ModelReady(m));
         string? stdin = null;
         w.KiRunOverride = (e, args, input) =>

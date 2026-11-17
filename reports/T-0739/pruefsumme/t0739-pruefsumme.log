@@ -1,0 +1,9 @@
+19:03:36 Katalog: piper-eva · de_DE-eva_k-x_low.onnx.json · 4158 Bytes · SHA-256 ef14b3dcb279ab4b18422a7a132877bee7a148821bd91152fb7ae9c4b3d79625
+19:03:36 Herkunft der Summe: selbst berechnet aus der offiziellen Datei bei Hugging Face (rhasspy/piper-voices, Stand 4a409e3c, 17.11.2026)
+19:03:36 Adresse: https://huggingface.co/rhasspy/piper-voices/resolve/main/de/de_DE/eva_k/x_low/de_DE-eva_k-x_low.onnx.json
+19:03:37 Meldung nach echtem Laden: Deutsche Stimme „Eva“ (klein) ist eingerichtet. Mit „Ausprobieren“ kannst du es gleich testen.
+19:03:37 Installiert: 4158 Bytes, SHA-256 ef14b3dcb279ab4b18422a7a132877bee7a148821bd91152fb7ae9c4b3d79625 – Katalog stimmt: ja
+19:03:37 Manipuliert: Byte 100 von 0x0a auf 0x2a, SHA-256 6a4f384e561e1630c202de045410537b1dc9efd2fe78192af0e6457d9feeb1f5
+19:03:38 Meldung nach manipulierter Datei: Deutsche Stimme „Eva“ (klein): Laden hat nicht geklappt – de_DE-eva_k-x_low.onnx.json: Prüfsumme passt nicht (Datei beschädigt oder verändert) – die Datei wurde verworfen, nichts installiert.
+19:03:38 Ergebnis: installierte Datei vorhanden = nein, heruntergeladene Datei verworfen = ja
+19:03:38 Anzeige in der KI-Bibliothek: ✓ Prüfsumme: SHA-256 je Datei fest im Katalog / ✓ Prüfsumme: SHA-256 je Datei fest im Katalog

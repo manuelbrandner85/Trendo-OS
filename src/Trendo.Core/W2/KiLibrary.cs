@@ -17,8 +17,13 @@ public sealed record KiRuntimeInfo(KiRuntime Id, string Name, string Repo, strin
     public bool Is7z => Asset.EndsWith(".7z", StringComparison.OrdinalIgnoreCase);
 }
 
-/// <summary>Eine herunterladbare Datei eines Modells (offizielle Quelle, Größe in Bytes laut Anbieter).</summary>
-public sealed record KiFile(string Url, string FileName, long Bytes);
+/// <summary>Eine herunterladbare Datei eines Modells (offizielle Quelle, Größe in Bytes laut Anbieter).
+/// T-0739 (X-05): <paramref name="Sha256"/> ist die feste Prüfsumme aus offizieller Quelle, <paramref name="ShaSource"/> sagt woher.
+/// Ohne bekannte Summe bleibt beides leer – Trendo zeigt das ehrlich als „ohne Prüfsumme“ und rät nichts.</summary>
+public sealed record KiFile(string Url, string FileName, long Bytes, string? Sha256 = null, string? ShaSource = null)
+{
+    public bool HasSha => Sha256 is { Length: 64 };
+}
 
 /// <summary>Ein Modell der KI-Bibliothek. Bei Ollama ist <see cref="Tag"/> der Name in der Ollama-Bibliothek, sonst steckt der Download in <see cref="Files"/>.</summary>
 public sealed record KiLibraryModel(string Id, KiKind Kind, KiRuntime Runtime, string Name, string Tag, double SizeGb, int MinRamGb, string License,
@@ -27,6 +32,14 @@ public sealed record KiLibraryModel(string Id, KiKind Kind, KiRuntime Runtime, s
     /// <summary>Freie Lizenz ohne Zusatzbedingungen: Trendo darf ohne eigene Lizenz-Rückfrage laden (sonst zeigt Trendo die Bedingungen vorher).</summary>
     public bool OpenLicense => License is "Apache-2.0" or "MIT" or "CC0-1.0" or "BSD-3-Clause";
     public long Bytes => Files.Count > 0 ? Files.Sum(f => f.Bytes) : (long)(SizeGb * (1L << 30));
+
+    /// <summary>T-0739 (X-05): Wie die geladenen Dateien geprüft werden – ehrlich je Modell. <c>Fixed</c> = jede Datei hat eine feste SHA-256 im Katalog.</summary>
+    public (bool Fixed, string Text) Checksum =>
+        Runtime == KiRuntime.Ollama ? (false, "Prüfsumme: Ollama kontrolliert jede Schicht selbst (SHA-256 der Ollama-Bibliothek)")
+        : Files.Count > 0 && Files.All(f => f.HasSha) ? (true, "Prüfsumme: SHA-256 je Datei fest im Katalog")
+        : Files.Count > 0 ? (false, Files.Any(f => f.HasSha) ? "teilweise ohne Prüfsumme – nur Größe wird geprüft" : "ohne Prüfsumme – nur Größe wird geprüft")
+        : KiLibrary.RuntimeInfo(Runtime).Sha256.Length == 64 ? (true, "Prüfsumme: Programmpaket mit fester SHA-256")
+        : (false, "ohne Prüfsumme – lädt seine Modelle beim ersten Start selbst");
 }
 
 /// <summary>KI-Bibliothek: kostenlose Modelle nach Arten sortiert, jeweils mit Laufzeit, Lizenz, Größe, Speicherbedarf und Bedienhinweis.
@@ -107,6 +120,11 @@ public static class KiLibrary
     ];
 
     const string Hf = "https://huggingface.co/";
+    /// <summary>T-0739: Herkunft der festen Prüfsummen. Hugging Face speichert große Dateien als Git-LFS-Objekt – dessen Kennung ist die SHA-256 der Datei
+    /// (abgefragt über die offizielle API „paths-info“, Größe stimmte jeweils mit dem Katalog überein).</summary>
+    const string HfLfs = "Hugging Face, SHA-256 des Git-LFS-Objekts (API paths-info, abgefragt am 17.11.2026)";
+    /// <summary>Kleine Begleitdateien liegen bei Hugging Face ohne LFS (nur Git-SHA-1): SHA-256 selbst aus der offiziellen Datei berechnet.</summary>
+    const string HfSmall = "selbst berechnet aus der offiziellen Datei bei Hugging Face (rhasspy/piper-voices, Stand 4a409e3c, 17.11.2026)";
     static KiLibraryModel O(string id, KiKind k, string name, string tag, double gb, int ram, string lic, string good) =>
         new(id, k, KiRuntime.Ollama, name, tag, gb, ram, lic, good, "Nach dem Laden in der Trendo KI unter „Modell“ auswählbar.", []);
 
@@ -141,30 +159,41 @@ public static class KiLibrary
         // Bilder erzeugen
         new("sd-turbo", KiKind.BildErzeugen, KiRuntime.StableDiffusionCpp, "SD Turbo (schnell)", "", 5.2, 8, "Stability AI Community",
             "Bild in wenigen Sekunden, 512 × 512", "Beschreibung eintippen, „Bild erzeugen“ – fertig in 1 Schritt.",
-            [new(Hf + "stabilityai/sd-turbo/resolve/main/sd_turbo.safetensors", "sd_turbo.safetensors", 5_214_561_328)]),
+            [new(Hf + "stabilityai/sd-turbo/resolve/main/sd_turbo.safetensors", "sd_turbo.safetensors", 5_214_561_328,
+                "3f067a1b943cf162f2b8f8588f6cf5824bd5b4c7d1d88d87164b9ca123616549", HfLfs)]),
         new("sdxl-turbo", KiKind.BildErzeugen, KiRuntime.StableDiffusionCpp, "SDXL Turbo (schöner)", "", 6.9, 16, "Stability AI Community",
             "detailreichere Bilder, 1024 × 1024", "Beschreibung eintippen, „Bild erzeugen“ – 1 bis 4 Schritte.",
-            [new(Hf + "stabilityai/sdxl-turbo/resolve/main/sd_xl_turbo_1.0_fp16.safetensors", "sd_xl_turbo_1.0_fp16.safetensors", 6_938_081_905)]),
+            [new(Hf + "stabilityai/sdxl-turbo/resolve/main/sd_xl_turbo_1.0_fp16.safetensors", "sd_xl_turbo_1.0_fp16.safetensors", 6_938_081_905,
+                "e869ac7d6942cb327d68d5ed83a40447aadf20e0c3358d98b2cc9e270db0da26", HfLfs)]),
         // Bilder verbessern
         new("realesrgan-x4", KiKind.BildVerbessern, KiRuntime.RealEsrgan, "Real-ESRGAN 4× (Fotos und Zeichnungen)", "", 0.05, 4, "BSD-3-Clause",
             "Fotos und Grafiken 4-fach vergrößern", "Bild wählen, „Vergrößern“. Die Modelle stecken schon im Programm.", []),
         // Video
         new("wan2.1-t2v-1.3b", KiKind.Video, KiRuntime.StableDiffusionCpp, "Wan 2.1 – Text zu Video (1,3B)", "", 8.5, 16, "Apache-2.0",
             "kurze Clips (ca. 5 s, 832 × 480)", "Beschreibung eintippen, „Video erzeugen“. Braucht eine Grafikkarte mit mind. 8 GB.",
-            [new(Hf + "Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/diffusion_models/wan2.1_t2v_1.3B_fp16.safetensors", "wan2.1_t2v_1.3B_fp16.safetensors", 2_838_303_560),
-             new(Hf + "city96/umt5-xxl-encoder-gguf/resolve/main/umt5-xxl-encoder-Q8_0.gguf", "umt5-xxl-encoder-Q8_0.gguf", 6_043_068_256),
-             new(Hf + "Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors", "wan_2.1_vae.safetensors", 253_815_318)]),
+            [new(Hf + "Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/diffusion_models/wan2.1_t2v_1.3B_fp16.safetensors", "wan2.1_t2v_1.3B_fp16.safetensors", 2_838_303_560,
+                "be531024cd9018cb5b48c40cfbb6a6191645b1c792eb8bf4f8c1c6e10f924dc5", HfLfs),
+             new(Hf + "city96/umt5-xxl-encoder-gguf/resolve/main/umt5-xxl-encoder-Q8_0.gguf", "umt5-xxl-encoder-Q8_0.gguf", 6_043_068_256,
+                "2521d4de0bf9e1cc6549866463ceae85e4ec3239bc6063f7488810be39033bbc", HfLfs),
+             new(Hf + "Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors", "wan_2.1_vae.safetensors", 253_815_318,
+                "2fc39d31359a4b0a64f55876d8ff7fa8d780956ae2cb13463b0223e15148976b", HfLfs)]),
         // KI-Musikvideo C (04.11.2026): Wan 2.2 (Alibaba, Apache-2.0) über stable-diffusion.cpp – Größen laut Hugging Face
         new("wan2.2-szenen", KiKind.Video, KiRuntime.StableDiffusionCpp, "Wan 2.2 – Filmszenen fürs Musikvideo (5B)", "", 11.7, 16, "Apache-2.0",
             "echte Filmszenen aus Drehbuch und Figurenbild (bis 5 s, 1280 × 704)", "Wird von Trendo Musik im Reiter „Musikvideo“ genutzt. Braucht eine Grafikkarte mit mind. 8 GB.",
-            [new(Hf + "QuantStack/Wan2.2-TI2V-5B-GGUF/resolve/main/Wan2.2-TI2V-5B-Q6_K.gguf", "Wan2.2-TI2V-5B-Q6_K.gguf", 4_211_683_680),
-             new(Hf + "city96/umt5-xxl-encoder-gguf/resolve/main/umt5-xxl-encoder-Q8_0.gguf", "umt5-xxl-encoder-Q8_0.gguf", 6_043_068_256),
-             new(Hf + "Comfy-Org/Wan-2.2/resolve/main/split_files/vae/wan2.2_vae.safetensors", "wan2.2_vae.safetensors", 1_409_400_960)]),
+            [new(Hf + "QuantStack/Wan2.2-TI2V-5B-GGUF/resolve/main/Wan2.2-TI2V-5B-Q6_K.gguf", "Wan2.2-TI2V-5B-Q6_K.gguf", 4_211_683_680,
+                "355f6bee35c4c6cbd0f275112619fe8ac6f7b9b067b885723667b3bde29497c3", HfLfs),
+             new(Hf + "city96/umt5-xxl-encoder-gguf/resolve/main/umt5-xxl-encoder-Q8_0.gguf", "umt5-xxl-encoder-Q8_0.gguf", 6_043_068_256,
+                "2521d4de0bf9e1cc6549866463ceae85e4ec3239bc6063f7488810be39033bbc", HfLfs),
+             new(Hf + "Comfy-Org/Wan-2.2/resolve/main/split_files/vae/wan2.2_vae.safetensors", "wan2.2_vae.safetensors", 1_409_400_960,
+                "e40321bd36b9709991dae2530eb4ac303dd168276980d3e9bc4b6e2b75fed156", HfLfs)]),
         new("wan2.2-singen", KiKind.Video, KiRuntime.StableDiffusionCpp, "Wan 2.2 S2V – Figur singt zur Stimme (14B)", "", 13.7, 32, "Apache-2.0",
             "Sängerin oder Sänger singt sichtbar zum Lied – Mund, Mimik und Körper folgen der Gesangsspur", "Wird von Trendo Musik genutzt (zusätzlich zu „Filmszenen“). Rechnet langsam auf 12 GB Grafikspeicher (Teile im Arbeitsspeicher).",
-            [new(Hf + "QuantStack/Wan2.2-S2V-14B-GGUF/resolve/main/Wan2.2-S2V-14B-Q4_K_M.gguf", "Wan2.2-S2V-14B-Q4_K_M.gguf", 13_861_697_120),
-             new(Hf + "Comfy-Org/Wan-2.2/resolve/main/split_files/audio_encoders/wav2vec2_large_english_fp16.safetensors", "wav2vec2_large_english_fp16.safetensors", 630_997_322),
-             new(Hf + "Comfy-Org/Wan-2.2/resolve/main/split_files/vae/wan_2.1_vae.safetensors", "wan_2.1_vae.safetensors", 253_815_318)]),
+            [new(Hf + "QuantStack/Wan2.2-S2V-14B-GGUF/resolve/main/Wan2.2-S2V-14B-Q4_K_M.gguf", "Wan2.2-S2V-14B-Q4_K_M.gguf", 13_861_697_120,
+                "6a96e304e6d39c7e1d8d2c973f1e5cdd4aa1785dd9a29fdd8274f4a9cb037324", HfLfs),
+             new(Hf + "Comfy-Org/Wan-2.2/resolve/main/split_files/audio_encoders/wav2vec2_large_english_fp16.safetensors", "wav2vec2_large_english_fp16.safetensors", 630_997_322,
+                "f0017a43ea57ef6b3d4866be607844bbd8cada6d30966f7d70044ed0d63d3f9e", HfLfs),
+             new(Hf + "Comfy-Org/Wan-2.2/resolve/main/split_files/vae/wan_2.1_vae.safetensors", "wan_2.1_vae.safetensors", 253_815_318,
+                "2fc39d31359a4b0a64f55876d8ff7fa8d780956ae2cb13463b0223e15148976b", HfLfs)]),
         new("video-pruefung", KiKind.Video, KiRuntime.VideoPruefung, "Artefakt-Prüfung für KI-Videos (MediaPipe)", "", 0.4, 4, "Apache-2.0",
             "findet zusätzliche Arme, Hände oder Gesichter, Bildsprünge und unpassende Lippen", "Wird von Trendo Musik bei jeder Einstellung genutzt – fehlerhafte werden neu erzeugt.",
             // MediaPipe-Modelle (Google, Apache-2.0) liegen in Trendos eigener Ablage, weil die KI-Bibliothek nur Hugging Face und GitHub zulässt
@@ -174,22 +203,29 @@ public static class KiLibrary
         // Sprache zu Text
         new("whisper-base", KiKind.SpracheZuText, KiRuntime.WhisperCpp, "Whisper Base (schnell)", "", 0.14, 4, "MIT",
             "Diktate und klare Aufnahmen", "Audio- oder Videodatei wählen, „Mitschreiben“.",
-            [new(Hf + "ggerganov/whisper.cpp/resolve/main/ggml-base.bin", "ggml-base.bin", 147_951_465)]),
+            [new(Hf + "ggerganov/whisper.cpp/resolve/main/ggml-base.bin", "ggml-base.bin", 147_951_465,
+                "60ed5bc3dd14eea856493d334349b405782ddcaf0028d4b5df4088345fba2efe", HfLfs)]),
         new("whisper-small", KiKind.SpracheZuText, KiRuntime.WhisperCpp, "Whisper Small (genauer)", "", 0.45, 8, "MIT",
             "Interviews, Dialekt, Hintergrundgeräusche", "Audio- oder Videodatei wählen, „Mitschreiben“.",
-            [new(Hf + "ggerganov/whisper.cpp/resolve/main/ggml-small.bin", "ggml-small.bin", 487_601_967)]),
+            [new(Hf + "ggerganov/whisper.cpp/resolve/main/ggml-small.bin", "ggml-small.bin", 487_601_967,
+                "1be3a9b2063867b937e64e2ec7483364a79917e157fa98c5d94b5c1fffea987b", HfLfs)]),
         new("whisper-large-v3-turbo", KiKind.SpracheZuText, KiRuntime.WhisperCpp, "Whisper Large v3 Turbo (beste Qualität)", "", 1.5, 8, "MIT",
             "beste Erkennung, auch Untertitel für Videos", "Audio- oder Videodatei wählen, „Mitschreiben“.",
-            [new(Hf + "ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo.bin", "ggml-large-v3-turbo.bin", 1_624_555_275)]),
+            [new(Hf + "ggerganov/whisper.cpp/resolve/main/ggml-large-v3-turbo.bin", "ggml-large-v3-turbo.bin", 1_624_555_275,
+                "1fc70f774d38eb169993ac391eea357ef47c88757ef72ee5943879b7e8e2bc69", HfLfs)]),
         // Vorlesen
         new("piper-thorsten", KiKind.TextZuSprache, KiRuntime.Piper, "Deutsche Stimme „Thorsten“ (hohe Qualität)", "", 0.11, 4, "Datensatz CC0, Grundstimme lessac (eigene Bedingungen)",
             "natürliche Männerstimme", "Text eingeben oder Datei wählen, „Vorlesen“ oder „Als Audio speichern“.",
-            [new(Hf + "rhasspy/piper-voices/resolve/main/de/de_DE/thorsten/high/de_DE-thorsten-high.onnx", "de_DE-thorsten-high.onnx", 113_895_201),
-             new(Hf + "rhasspy/piper-voices/resolve/main/de/de_DE/thorsten/high/de_DE-thorsten-high.onnx.json", "de_DE-thorsten-high.onnx.json", 4_875)]),
+            [new(Hf + "rhasspy/piper-voices/resolve/main/de/de_DE/thorsten/high/de_DE-thorsten-high.onnx", "de_DE-thorsten-high.onnx", 113_895_201,
+                "9df1c43c61149ef9b39e618e2b861fbe41e1fcea9390b2dac62e8761573ea4f1", HfLfs),
+             new(Hf + "rhasspy/piper-voices/resolve/main/de/de_DE/thorsten/high/de_DE-thorsten-high.onnx.json", "de_DE-thorsten-high.onnx.json", 4_875,
+                "6de734444e4c3f9e33b7ebe2746dbc19b71e85f613e79c65acf623200b99a76a", HfSmall)]),
         new("piper-eva", KiKind.TextZuSprache, KiRuntime.Piper, "Deutsche Stimme „Eva“ (klein)", "", 0.02, 4, "M-AILABS-Datensatz (eigene Bedingungen)",
             "Frauenstimme, sehr sparsam", "Text eingeben, „Vorlesen“.",
-            [new(Hf + "rhasspy/piper-voices/resolve/main/de/de_DE/eva_k/x_low/de_DE-eva_k-x_low.onnx", "de_DE-eva_k-x_low.onnx", 20_628_813),
-             new(Hf + "rhasspy/piper-voices/resolve/main/de/de_DE/eva_k/x_low/de_DE-eva_k-x_low.onnx.json", "de_DE-eva_k-x_low.onnx.json", 4_158)]),
+            [new(Hf + "rhasspy/piper-voices/resolve/main/de/de_DE/eva_k/x_low/de_DE-eva_k-x_low.onnx", "de_DE-eva_k-x_low.onnx", 20_628_813,
+                "e88cf290fbfb768bf111330d2e8a46e376b0d85e3423a28bfebbc863a260dad8", HfLfs),
+             new(Hf + "rhasspy/piper-voices/resolve/main/de/de_DE/eva_k/x_low/de_DE-eva_k-x_low.onnx.json", "de_DE-eva_k-x_low.onnx.json", 4_158,
+                "ef14b3dcb279ab4b18422a7a132877bee7a148821bd91152fb7ae9c4b3d79625", HfSmall)]),
         // Musik
         new("ace-step", KiKind.Musik, KiRuntime.AceStep, "ACE-Step 1.5 (Lieder mit Gesang)", "", 12.0, 16, "MIT",
             "ganze Lieder mit Gesang, 10 s bis 10 min, viele Stile und Sprachen",

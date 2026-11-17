@@ -123,6 +123,11 @@ public partial class MainWindow
                 P($"{m.GoodFor} · {(m.Bytes >= 1L << 30 ? $"{m.Bytes / (double)(1L << 30):0.0} GB" : $"{Math.Max(1, m.Bytes / (1 << 20))} MB")} · {(fits ? "passt zu deinem PC" : $"braucht {m.MinRamGb} GB Arbeitsspeicher")} · Lizenz: {m.License}", fits ? null : Brush.Parse("#FACC15"), 10.5),
             } };
             if (!sameHowTo) info.Children.Add(P("So geht's: " + m.HowTo, null, 10.5));
+            // T-0739 (X-05): ehrlich je Modell, ob die Dateien eine feste Prüfsumme haben
+            var (fixedSha, shaText) = m.Checksum;
+            var shaLine = P((fixedSha ? "✓ " : "⚠ ") + shaText, fixedSha ? null : Brush.Parse("#FACC15"), 10.5); shaLine.Name = "kilib-sha-" + m.Id;
+            if (m.Files.FirstOrDefault(f => f.HasSha)?.ShaSource is { } shaSrc) ToolTip.SetTip(shaLine, "Herkunft: " + shaSrc);
+            info.Children.Add(shaLine);
             sp.Children.Add(WCard(new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { info, Pos(buttons, 1) } }));
             if (_kiTry == m.Id && got) sp.Children.Add(KiTryPanel(m));
         }
@@ -226,7 +231,7 @@ public partial class MainWindow
             {
                 SetupToken.ThrowIfCancellationRequested();
                 if (_core.Approvals.Halted) throw new ApprovalException("Not-Stopp ist aktiv – Laden angehalten.");
-                if (new FileInfo(store.ModelFile(m, f)) is { Exists: true } fi && fi.Length == f.Bytes) { step++; continue; }
+                if (store.ModelFileOk(m, f)) { step++; continue; } // T-0739: mit fester Katalog-Summe auch die SHA-256 der vorhandenen Datei
                 SetupOverlayProgress(step, steps, $"{f.FileName} wird geladen …");
                 var (file, sha) = await KiDownload(f.Url, f.FileName, f.Bytes, step, steps);
                 try { await Task.Run(() => store.InstallModelFile(m, f, file, sha, _core.Audit)); } finally { TryDelete(file); }

@@ -69,19 +69,41 @@ public sealed class KiLibraryStore(string toolsRoot)
         finally { if (Directory.Exists(tmp)) Directory.Delete(tmp, true); }
     }
 
-    /// <summary>Heruntergeladene Modelldatei prüfen (Größe, SHA-256 falls bekannt) und an ihren Platz legen.</summary>
+    /// <summary>Heruntergeladene Modelldatei prüfen und an ihren Platz legen. Maßgeblich ist die feste SHA-256 aus dem Katalog (<see cref="KiFile.Sha256"/>);
+    /// nur ohne sie zählt die Summe, die der Server im Kopf mitschickt (<paramref name="expectedSha256"/>). T-0739 (X-05): Passt Größe oder Summe nicht,
+    /// wird die geladene Datei verworfen (gelöscht) und nichts installiert; widersprechen sich Katalog und Server, ebenso.</summary>
     public void InstallModelFile(KiLibraryModel m, KiFile f, string downloaded, string? expectedSha256, AuditLog? audit = null)
     {
-        if (new FileInfo(downloaded).Length != f.Bytes) throw new InvalidOperationException($"{f.FileName}: Größe passt nicht – nicht übernommen.");
+        void Reject(string why, string detail)
+        {
+            try { if (File.Exists(downloaded)) File.Delete(downloaded); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+            audit?.Append("app", "ki.model.file.rejected", $"{m.Id} {f.FileName} {detail}");
+            throw new InvalidOperationException($"{f.FileName}: {why} – die Datei wurde verworfen, nichts installiert.");
+        }
+        var len = new FileInfo(downloaded).Length;
+        if (len != f.Bytes) Reject("Größe passt nicht", $"bytes={len} erwartet={f.Bytes}");
+        var server = expectedSha256 is { Length: 64 } h && h.All(Uri.IsHexDigit) ? h.ToLowerInvariant() : null;
+        if (f.HasSha && server is not null && !string.Equals(server, f.Sha256, StringComparison.OrdinalIgnoreCase))
+            Reject("Prüfsumme des Servers weicht vom Katalog ab", $"server={server} katalog={f.Sha256}");
+        var expected = f.HasSha ? f.Sha256!.ToLowerInvariant() : server;
         string? sha = null;
-        if (expectedSha256 is { Length: 64 })
+        if (expected is not null)
         {
             sha = Sha256(downloaded);
-            if (!string.Equals(sha, expectedSha256, StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException($"{f.FileName}: Prüfsumme passt nicht – nicht übernommen.");
+            if (!string.Equals(sha, expected, StringComparison.OrdinalIgnoreCase)) Reject("Prüfsumme passt nicht (Datei beschädigt oder verändert)", $"sha256={sha} erwartet={expected}");
         }
         Directory.CreateDirectory(ModelDir(m));
         SafeFile.Move(downloaded, ModelFile(m, f));
-        audit?.Append("app", "ki.model.file", $"{m.Id} {f.FileName} {f.Bytes}{(sha is null ? "" : " sha256=" + sha)}");
+        audit?.Append("app", "ki.model.file", $"{m.Id} {f.FileName} {f.Bytes}{(sha is null ? " ohne-pruefsumme" : " sha256=" + sha + (f.HasSha ? " quelle=katalog" : " quelle=server"))}");
+    }
+
+    /// <summary>T-0739: Liegt die Modelldatei schon vollständig und unverändert da? Größe muss stimmen; mit fester Katalog-Summe wird zusätzlich
+    /// die SHA-256 gerechnet (einmal beim Laden – so überspringt Trendo keine veränderte Datei, die nur zufällig gleich groß ist).</summary>
+    public bool ModelFileOk(KiLibraryModel m, KiFile f)
+    {
+        var fi = new FileInfo(ModelFile(m, f));
+        if (!fi.Exists || fi.Length != f.Bytes) return false;
+        return !f.HasSha || string.Equals(Sha256(fi.FullName), f.Sha256, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>Modell entfernen (nur der eigene Ordner unter „ki/modelle“).</summary>
