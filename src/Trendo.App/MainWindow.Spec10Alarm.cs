@@ -16,58 +16,119 @@ public partial class MainWindow
     string _twSrcMsg = "";
     DateTime _twLastCheck;
     readonly HashSet<string> _twHttpBusy = [];
+    bool _pccBusy, _twFileBusy, _twCloseHooked, _twClosed;
 
     /// <summary>Für Tests und Belege: zuletzt gemeldete Alarme (Text der Benachrichtigung).</summary>
     public List<string> TwinAlarmNotes { get; } = [];
     public string TwinSourceMessage => _twSrcMsg;
+    /// <summary>Gegenprüfung T-0750: läuft gerade eine Messung oder Abfrage im Hintergrund?</summary>
+    public bool TwinBusy => _pccBusy || _twFileBusy || _twHttpBusy.Count > 0;
+    /// <summary>Für Tests: wird im Hintergrund unmittelbar vor dem Lesen aufgerufen („pc“ = Leistungsindikatoren, „datei“ = wachsende Datei).</summary>
+    public Action<string>? TwinBackgroundHook { get; set; }
+    /// <summary>Für Tests: die offenen Leistungsindikatoren (null, wenn freigegeben).</summary>
+    public PcCounters? TwinCounters => _pcc;
 
-    /// <summary>Echte Leistungsindikatoren dieses PCs (CPU, RAM, Datenträger, Netz) als Sensoren von „Dieser PC“ aufzeichnen.</summary>
-    void MeasureCounters(DateTime now)
+    void HookTwinClose() { if (_twCloseHooked) return; _twCloseHooked = true; Closed += (_, _) => TwinRelease(true); }
+
+    /// <summary>Gegenprüfung T-0750: Leistungsindikatoren freigeben, wenn die Seite verlassen oder das Fenster geschlossen wird (HTTP-Verbindung nur beim Schließen).</summary>
+    void TwinRelease(bool closing)
     {
-        _pcc ??= new PcCounters();
-        var vals = _pcc.Read(now);
-        foreach (var (name, unit, warn, alarm) in PcCounters.Sensors)
-        {
-            if (!vals.TryGetValue(name, out var v)) continue;
-            if (!Twin.Model.Assets.Any(a => a.Name == "Dieser PC" && a.Sensors.Any(s => s.Name == name))) Twin.Define("Dieser PC", name, unit, warn, alarm, kind: "Computer");
-            Twin.Record(now, "Dieser PC", name, v, false);
-        }
+        _pcc?.Dispose(); _pcc = null;
+        if (closing) { _twClosed = true; _twHttp?.Dispose(); _twHttp = null; }
     }
 
-    /// <summary>Datei- und HTTP-Quellen einmal abfragen, danach die Alarmregeln prüfen.</summary>
-    public int TwinPollSources()
+    /// <summary>Echte Leistungsindikatoren dieses PCs (CPU, RAM, Datenträger, Netz) als Sensoren von „Dieser PC“ aufzeichnen.
+    /// Gegenprüfung T-0750: die Abfrage (die erste dauert spürbar) läuft im Hintergrund, das Ergebnis kommt auf dem UI-Faden an; kein Doppelstart.</summary>
+    void MeasureCounters()
     {
-        var now = DateTime.Now; var n = 0; var errs = 0;
-        foreach (var s in Twin.Model.Sources.ToList())
+        if (_pccBusy) return;
+        HookTwinClose();
+        var pcc = _pcc ??= new PcCounters();
+        var hook = TwinBackgroundHook;
+        _pccBusy = true;
+        _ = Task.Run(() =>
         {
-            if (s.Kind == "datei")
+            Dictionary<string, double> vals = []; var at = DateTime.Now;
+            try { hook?.Invoke("pc"); at = DateTime.Now; vals = pcc.Read(at); }
+            catch (Exception e) when (e is not OutOfMemoryException) { vals = []; }
+            Dispatcher.UIThread.Post(() =>
             {
-                try { n += TwinFeed.PollFile(Twin, s, now, save: false); s.LastError = ""; }
-                catch (Exception e) when (e is IOException or UnauthorizedAccessException) { s.LastError = FriendlyError.Say(e); errs++; }
-            }
-            else if (s.Kind == "http" && s.Approved && _twHttpBusy.Add(s.Id))
-            {
-                _twHttp ??= TwinFeed.NewHttp();
-                var src = s;
-                _ = Task.Run(async () =>
+                _pccBusy = false;
+                if (_twClosed || vals.Count == 0) return; // Fenster inzwischen zu: nichts mehr anfassen
+                foreach (var (name, unit, warn, alarm) in PcCounters.Sensors)
                 {
-                    double? v = null; string err = "";
-                    try { v = await TwinFeed.FetchHttpAsync(_twHttp, src); }
-                    catch (Exception e) when (e is not OutOfMemoryException) { err = FriendlyError.Say(e); }
-                    Dispatcher.UIThread.Post(() =>
-                    {
-                        _twHttpBusy.Remove(src.Id); src.LastError = err;
-                        if (v is { } x) { Twin.Record(DateTime.Now, src.Asset, src.Sensor, x, false); }
-                        Twin.Save(); TwinCheckRules();
-                        if (CurrentView == "zwilling") Show("zwilling");
-                    });
+                    if (!vals.TryGetValue(name, out var v)) continue;
+                    if (!Twin.Model.Assets.Any(a => a.Name == "Dieser PC" && a.Sensors.Any(s => s.Name == name))) Twin.Define("Dieser PC", name, unit, warn, alarm, kind: "Computer");
+                    Twin.Record(at, "Dieser PC", name, v, false);
+                }
+                Twin.Save(); TwinCheckRules();
+                if (CurrentView == "zwilling") Show("zwilling");
+            });
+        });
+    }
+
+    /// <summary>Datei- und HTTP-Quellen abfragen, danach die Alarmregeln prüfen. Gegenprüfung T-0750: Dateien werden im Hintergrund gelesen
+    /// (bis 1 MB, auch langsame Laufwerke), übernommen wird auf dem UI-Faden; <paramref name="done"/> bekommt dort die Zahl neuer Werte.
+    /// false = eine Abfrage läuft noch (kein Doppelstart).</summary>
+    public bool TwinPollSources(Action<int>? done = null)
+    {
+        foreach (var s in Twin.Model.Sources.Where(s => s.Kind == "http" && s.Approved).ToList())
+        {
+            if (!_twHttpBusy.Add(s.Id)) continue;
+            HookTwinClose();
+            var http = _twHttp ??= TwinHttp.Create();
+            var src = s;
+            _ = Task.Run(async () =>
+            {
+                double? v = null; string err = "";
+                try { v = await TwinHttp.FetchAsync(http, src); }
+                catch (Exception e) when (e is not OutOfMemoryException) { err = FriendlyError.Say(e); }
+                Dispatcher.UIThread.Post(() =>
+                {
+                    _twHttpBusy.Remove(src.Id); if (_twClosed) return;
+                    src.LastError = err;
+                    if (v is { } x) { Twin.Record(DateTime.Now, src.Asset, src.Sensor, x, false); }
+                    Twin.Save(); TwinCheckRules();
+                    if (CurrentView == "zwilling") Show("zwilling");
                 });
-            }
+            });
         }
-        Twin.Save();
-        _twSrcMsg = errs > 0 ? $"⚠ {errs} Quelle(n) gerade nicht lesbar – Hinweis an der Quelle." : $"{n} neue Werte aus Dateien.";
-        TwinCheckRules();
-        return n;
+        var files = Twin.Model.Sources.Where(s => s.Kind == "datei")
+            .Select(s => new TwinSource { Id = s.Id, Kind = s.Kind, Target = s.Target, Asset = s.Asset, Sensor = s.Sensor, JsonField = s.JsonField, Offset = s.Offset, Resync = s.Resync, FileId = s.FileId }).ToList();
+        if (files.Count == 0) { TwinCheckRules(); done?.Invoke(0); return true; }
+        if (_twFileBusy) return false;
+        _twFileBusy = true;
+        var hook = TwinBackgroundHook;
+        _ = Task.Run(() =>
+        {
+            var now = DateTime.Now;
+            var res = new List<(TwinSource Snap, TwinFileChunk? Chunk, string Error)>();
+            foreach (var f in files)
+            {
+                try { hook?.Invoke("datei"); res.Add((f, TwinFeed.ReadFile(f, now), "")); }
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException) { res.Add((f, null, FriendlyError.Say(e))); }
+            }
+            Dispatcher.UIThread.Post(() =>
+            {
+                _twFileBusy = false;
+                if (_twClosed) return;
+                var n = 0; var errs = 0;
+                foreach (var (snap, chunk, err) in res)
+                {
+                    // Quelle inzwischen entfernt, ersetzt oder schon weitergelesen → Ergebnis verwerfen
+                    if (Twin.Model.Sources.FirstOrDefault(x => x.Id == snap.Id) is not { } s || s.Target != snap.Target || s.Offset != snap.Offset) continue;
+                    if (chunk is null) { s.LastError = err; errs++; continue; }
+                    n += TwinFeed.Apply(Twin, s, chunk, save: false);
+                    if (chunk.Warning.Length > 0) errs++;
+                }
+                Twin.Save();
+                _twSrcMsg = errs > 0 ? $"⚠ {n} neue Werte, {errs} Quelle(n) mit Hinweis – siehe Quelle." : $"{n} neue Werte aus Dateien.";
+                TwinCheckRules();
+                done?.Invoke(n);
+                if (CurrentView == "zwilling") Show("zwilling");
+            });
+        });
+        return true;
     }
 
     /// <summary>Alarmregeln prüfen: neue Auslösungen/Aufhebungen ins Protokoll (Modell + Prüfprotokoll von Trendo) und als Benachrichtigung zeigen.</summary>
@@ -105,7 +166,7 @@ public partial class MainWindow
     }
 
     public void TwinRemoveRule(string id) { Twin.Model.Rules.RemoveAll(r => r.Id == id); Twin.Save(); }
-    public void TwinToggleRule(string id, bool on) { if (Twin.Model.Rules.FirstOrDefault(r => r.Id == id) is { } r && r.Enabled != on) { r.Enabled = on; Twin.Save(); } }
+    public void TwinToggleRule(string id, bool on) { if (Twin.Model.Rules.FirstOrDefault(r => r.Id == id) is { } r && TwinRules.SetEnabled(Twin.Model, r, on)) Twin.Save(); } // Gegenprüfung: wieder an = nichts aus der Aus-Zeit melden
 
     /// <summary>Alle Regeln als Datei speichern (Arbeitsordner „Anlagen-Monitor“).</summary>
     public string TwinExportRules(string? path = null)
@@ -120,6 +181,7 @@ public partial class MainWindow
     public int TwinImportRules(string path)
     {
         if (!File.Exists(path)) throw new IOException("Diese Datei gibt es nicht.");
+        if (new FileInfo(path).Length > TwinRules.MaxFileBytes) throw new FormatException($"Die Regel-Datei ist zu groß (höchstens {TwinRules.MaxFileBytes / 1024} KB).");
         var list = TwinRules.ImportJson(File.ReadAllText(path), DateTime.Now);
         var n = 0;
         foreach (var r in list)
@@ -144,6 +206,7 @@ public partial class MainWindow
     public TwinSource TwinAddFileSource(string path, string asset, string sensor, string? jsonField = null)
     {
         path = path.Trim().Trim('"');
+        if (TwinFeed.IsNetworkPath(path) || (path.Length > 0 && TwinFeed.IsNetworkPath(Path.GetFullPath(path)))) throw new ArgumentException(TwinFeed.NetworkPathRefused); // Gegenprüfung: vor jedem Dateizugriff
         if (path.Length == 0 || !File.Exists(path)) throw new IOException("Diese Datei gibt es nicht.");
         if (string.IsNullOrWhiteSpace(asset) || string.IsNullOrWhiteSpace(sensor)) throw new ArgumentException("Bitte Anlage und Sensor für die Werte der Datei eintragen.");
         if (Twin.Model.Sources.Any(s => s.Kind == "datei" && string.Equals(Path.GetFullPath(s.Target), Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase))) throw new ArgumentException("Diese Datei wird schon beobachtet.");
@@ -181,7 +244,7 @@ public partial class MainWindow
         sp.Children.Add(asset); sp.Children.Add(sensor); sp.Children.Add(field);
         var file = new TextBox { Name = "twin-src-file", PlaceholderText = "Wachsende Datei mit Messwerten (.csv, .txt, .jsonl, .log)" };
         sp.Children.Add(file);
-        sp.Children.Add(B("twin-src-file-add", "Datei hinzufügen", () => { var s = TwinAddFileSource(file.Text ?? "", asset.Text ?? "", sensor.Text ?? "", field.Text); var n = TwinPollSources(); TwinAsset = s.Asset; TwinSensor = s.Sensor; _twMsg = $"Datei wird beobachtet – {n} Werte gelesen."; }));
+        sp.Children.Add(B("twin-src-file-add", "Datei hinzufügen", () => { var s = TwinAddFileSource(file.Text ?? "", asset.Text ?? "", sensor.Text ?? "", field.Text); TwinAsset = s.Asset; TwinSensor = s.Sensor; _twMsg = TwinPollSources(n => _twMsg = $"Datei wird beobachtet – {n} Werte gelesen.") ? "Datei wird gelesen …" : "Datei wird beobachtet – sie wird bei der nächsten Abfrage gelesen."; }));
         var url = new TextBox { Name = "twin-src-url", PlaceholderText = "HTTP im eigenen Netz, z. B. http://192.168.1.20/status" };
         var ok = new CheckBox { Name = "twin-src-http-ok", Content = new TextBlock { Text = "Ich erlaube Trendo, diese Adresse regelmäßig zu lesen.", FontSize = 11, TextWrapping = TextWrapping.Wrap, Foreground = Muted } };
         sp.Children.Add(url); sp.Children.Add(ok);
@@ -196,7 +259,7 @@ public partial class MainWindow
             row.Children.Add(new TextBlock { Name = "twin-src-item-" + id, Text = label + (s.LastError.Length > 0 ? "\n⚠ " + s.LastError : ""), FontSize = 11, Foreground = s.LastError.Length > 0 ? Brush.Parse("#F87171") : Text, TextWrapping = TextWrapping.Wrap, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center });
             sp.Children.Add(row);
         }
-        if (Twin.Model.Sources.Count > 0) sp.Children.Add(B("twin-src-poll", "Quellen jetzt abfragen", () => { TwinPollSources(); _twMsg = _twSrcMsg; }));
+        if (Twin.Model.Sources.Count > 0) sp.Children.Add(B("twin-src-poll", "Quellen jetzt abfragen", () => { _twMsg = TwinPollSources(_ => _twMsg = _twSrcMsg) ? "Quellen werden gelesen …" : "Die Quellen werden gerade schon gelesen …"; }));
         return new Expander { Name = "twin-src-box", Header = "Weitere Quellen", IsExpanded = Twin.Model.Sources.Count > 0, Content = sp, Margin = new Thickness(0, 6, 0, 0) };
     }
 
@@ -208,7 +271,7 @@ public partial class MainWindow
         sp.Children.Add(H("Alarmregeln", 12));
         foreach (var r in Twin.Model.Rules.Where(r => r.Asset == an && r.Sensor == sn))
         {
-            var id = r.Id; var active = TwinRules.IsActive(Twin.Model, r);
+            var id = r.Id; var active = TwinRules.IsActive(r); // Gegenprüfung: gespeicherter Zustand, kein Nachrechnen beim Neuzeichnen
             var on = new CheckBox { Name = "twin-rule-on-" + id, IsChecked = r.Enabled, Content = new TextBlock { Text = (active ? "● ausgelöst · " : r.Enabled ? "○ ruhig · " : "aus · ") + r.Describe(unit), FontSize = 11, TextWrapping = TextWrapping.Wrap, Foreground = active ? Brush.Parse("#F87171") : Text } };
             on.IsCheckedChanged += (_, _) => TwinRun(() => TwinToggleRule(id, on.IsChecked == true));
             var row = new DockPanel();

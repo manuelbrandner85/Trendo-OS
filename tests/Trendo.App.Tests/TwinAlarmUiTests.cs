@@ -21,6 +21,9 @@ public class TwinAlarm_Ui
     static void Retype(MainWindow w, string name, string text) { var tb = Get<TextBox>(w, name); tb.BringIntoView(); RealClick(w, tb); tb.Focus(); tb.SelectAll(); Settle(); Key1(w, Key.Back, PhysicalKey.Backspace); foreach (var ch in text) { w.KeyTextInput(ch.ToString()); Settle(); } }
     static void CloseToasts(MainWindow w) { while (Try<Button>(w, "toast-close") is { } c) RealClick(w, c); }
     static void Open(MainWindow w, string expander) { var e = Get<Expander>(w, expander); e.BringIntoView(); e.IsExpanded = true; Settle(); }
+    /// <summary>Gegenprüfung T-0750: Messungen und Datei-Abfragen laufen im Hintergrund – warten, bis ihr Ergebnis auf dem UI-Faden angekommen ist.</summary>
+    static void Idle(MainWindow w) { for (var i = 0; i < 2000 && w.TwinBusy; i++) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); Thread.Sleep(5); } Settle(); Assert.False(w.TwinBusy); }
+    static void PressWait(MainWindow w, string name) { Press(w, name); Idle(w); }
     static void Append(string f, string text) { using var s = new FileStream(f, FileMode.Append, FileAccess.Write, FileShare.ReadWrite); s.Write(Encoding.UTF8.GetBytes(text)); }
 
     [AvaloniaFact(DisplayName = "T-0750 UI: wachsende Datei beobachten, Regel per Klick anlegen, Alarm löst bei echter Datei aus (Benachrichtigung, Protokoll), Regeln speichern/einlesen, Rückgängig")]
@@ -36,7 +39,7 @@ public class TwinAlarm_Ui
             Open(w, "twin-src-box");
             Retype(w, "twin-src-asset", "Kessel"); Retype(w, "twin-src-sensor", "Druck");
             // V-07: Pfad nie tippen – „Datei wählen …“ (Dateiauswahl ersetzt), danach liest „Datei hinzufügen“ sofort
-            w.PickOverride = _ => Task.FromResult<string[]?>([f]); Press(w, "twin-src-file-pick");
+            w.PickOverride = _ => Task.FromResult<string[]?>([f]); PressWait(w, "twin-src-file-pick");
             Assert.Equal(("Kessel", "Druck"), (w.TwinAsset, w.TwinSensor));
             Assert.Contains("1 Werte gelesen", Get<TextBlock>(w, "twin-msg").Text);
             var src = Assert.Single(w.Twin.Model.Sources); Assert.Equal("datei", src.Kind);
@@ -50,17 +53,17 @@ public class TwinAlarm_Ui
 
             // die Datei wächst: erst einmal über 50 (noch zu kurz), dann 3 s lang drüber
             var t = DateTime.Now.AddSeconds(1);
-            Append(f, $"{t:yyyy-MM-dd HH:mm:ss};55\n"); Press(w, "twin-src-poll");
+            Append(f, $"{t:yyyy-MM-dd HH:mm:ss};55\n"); PressWait(w, "twin-src-poll");
             Assert.Empty(w.Twin.Model.Alarms);
-            Append(f, $"{t.AddSeconds(1):yyyy-MM-dd HH:mm:ss};57\n{t.AddSeconds(3):yyyy-MM-dd HH:mm:ss};58\n"); Press(w, "twin-src-poll");
+            Append(f, $"{t.AddSeconds(1):yyyy-MM-dd HH:mm:ss};57\n{t.AddSeconds(3):yyyy-MM-dd HH:mm:ss};58\n"); PressWait(w, "twin-src-poll");
             var alarm = Assert.Single(w.Twin.Model.Alarms); Assert.True(alarm.Raised); Assert.Equal(58, alarm.Value);
             Assert.Contains(w.TwinAlarmNotes, n => n.StartsWith("⚠ Alarm") && n.Contains("Kessel – Druck 58"));
             Assert.NotNull(Try<Border>(w, "toast"));
             Assert.Contains("⚠ ausgelöst (58,0)", Get<SelectableTextBlock>(w, "twin-alarm-log").Text);
             Assert.Contains("ausgelöst", Get<CheckBox>(w, "twin-rule-on-" + rule.Id).Content is TextBlock tb ? tb.Text : "");
             // im Hystereseband (47) bleibt der Alarm, bei 44 endet er
-            Append(f, $"{t.AddSeconds(4):yyyy-MM-dd HH:mm:ss};47\n"); Press(w, "twin-src-poll"); Assert.Single(w.Twin.Model.Alarms);
-            Append(f, $"{t.AddSeconds(5):yyyy-MM-dd HH:mm:ss};44\n"); Press(w, "twin-src-poll");
+            Append(f, $"{t.AddSeconds(4):yyyy-MM-dd HH:mm:ss};47\n"); PressWait(w, "twin-src-poll"); Assert.Single(w.Twin.Model.Alarms);
+            Append(f, $"{t.AddSeconds(5):yyyy-MM-dd HH:mm:ss};44\n"); PressWait(w, "twin-src-poll");
             Assert.Equal(2, w.Twin.Model.Alarms.Count); Assert.False(w.Twin.Model.Alarms[1].Raised);
             Assert.Contains(w.TwinAlarmNotes, n => n.StartsWith("✓ Alarm"));
             Assert.Contains(w.Core.Audit.ReadAll(), e => e.Action == "zwilling.alarm"); Assert.Contains(w.Core.Audit.ReadAll(), e => e.Action == "zwilling.alarm.ende");
@@ -123,8 +126,8 @@ public class TwinAlarm_Ui
         try
         {
             w.Show("zwilling"); Settle();
-            Press(w, "twin-pc"); // erste Messung: Bezug der Leistungsindikatoren
-            Thread.Sleep(1000); Press(w, "twin-pc");
+            PressWait(w, "twin-pc"); // erste Messung: Bezug der Leistungsindikatoren
+            Thread.Sleep(1000); PressWait(w, "twin-pc");
             var cpu0 = TwinPlus.Series(w.Twin.Model, "Dieser PC", PcCounters.Cpu);
             Assert.NotEmpty(cpu0);
             var baseline = cpu0[^1].Value;
@@ -145,7 +148,7 @@ public class TwinAlarm_Ui
                 if (s == loadTo) { Volatile.Write(ref stop, true); foreach (var th in load) th.Join(); L("künstliche Last aus"); }
                 Thread.Sleep(1000);
                 var before = w.Twin.Model.Alarms.Count;
-                Press(w, "twin-pc");
+                PressWait(w, "twin-pc");
                 var v = w.Twin.Model.Readings.Where(r => r.Asset == "Dieser PC").GroupBy(r => r.Sensor).ToDictionary(g => g.Key, g => g.Last().Value);
                 L(string.Join(" | ", PcCounters.Sensors.Where(x => v.ContainsKey(x.Name)).Select(x => $"{x.Name} {v[x.Name]:0.0} {x.Unit}")));
                 foreach (var a in w.Twin.Model.Alarms.Skip(before)) L((a.Raised ? "ALARM AUSGELÖST " : "ALARM AUFGEHOBEN ") + $"{a.Rule}: {a.Value:0.0} %");
@@ -161,5 +164,106 @@ public class TwinAlarm_Ui
             if (!string.IsNullOrEmpty(dir)) { Directory.CreateDirectory(dir); File.WriteAllText(Path.Combine(dir, "T-0750-cpu-last-alarm.log"), log.ToString()); }
         }
         finally { Volatile.Write(ref stop, true); foreach (var th in load) th.Join(); w.Close(); }
+    }
+
+    // ---------- Gegenprüfung T-0750 ----------
+
+    [AvaloniaFact(DisplayName = "Gegenprüfung: Datei lesen und erste PDH-Abfrage laufen nicht auf dem UI-Faden, Ergebnis kommt dort an, kein Doppelstart")]
+    public void Background_reads_off_ui_thread()
+    {
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1100;
+        var gate = new ManualResetEventSlim(false);
+        try
+        {
+            Directory.CreateDirectory(root);
+            var f = Path.Combine(root, "kessel.csv"); File.WriteAllText(f, "1\n");
+            w.TwinAddFileSource(f, "Kessel", "Druck");
+            w.Show("zwilling"); Settle();
+            var ui = Environment.CurrentManagedThreadId;
+            var seen = new System.Collections.Concurrent.ConcurrentQueue<(string Kind, int Thread)>();
+            w.TwinBackgroundHook = k => { seen.Enqueue((k, Environment.CurrentManagedThreadId)); gate.Wait(TimeSpan.FromSeconds(20)); };
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            Press(w, "twin-src-poll"); Press(w, "twin-pc");   // das Lesen hängt (wie bei einem langsamen Netzlaufwerk) – der UI-Faden nicht
+            Press(w, "twin-src-poll"); Press(w, "twin-pc");   // zweiter Klick startet nichts doppelt
+            Assert.Contains("gerade schon gelesen", Get<TextBlock>(w, "twin-msg").Text);
+            for (var i = 0; i < 400 && seen.Count < 2; i++) Thread.Sleep(5);
+            Thread.Sleep(100);
+            Assert.True(sw.ElapsedMilliseconds < 10_000);
+            Assert.True(w.TwinBusy);
+            Assert.Equal(1, seen.Count(x => x.Kind == "datei")); Assert.Equal(1, seen.Count(x => x.Kind == "pc"));
+            Assert.All(seen, x => Assert.NotEqual(ui, x.Thread));
+            Assert.DoesNotContain(w.Twin.Model.Readings, r => r.Sensor == "Druck");
+            gate.Set(); Idle(w);
+            Assert.Equal(1, Assert.Single(w.Twin.Model.Readings, r => r.Sensor == "Druck").Value);
+            Assert.Contains(w.Twin.Model.Readings, r => r.Asset == "Dieser PC" && r.Sensor == PcCounters.Ram);
+        }
+        finally { gate.Set(); w.TwinBackgroundHook = null; w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "Gegenprüfung: Leistungsindikatoren werden beim Schließen des Fensters freigegeben")]
+    public void Counters_disposed_on_close()
+    {
+        var (w, _, _) = Ui.Open();
+        w.Show("zwilling"); Settle();
+        PressWait(w, "twin-pc");
+        var pcc = w.TwinCounters;
+        Assert.NotNull(pcc); Assert.False(pcc.IsDisposed);
+        w.Close(); Settle();
+        Assert.True(pcc.IsDisposed); Assert.Null(w.TwinCounters);
+        Assert.Empty(pcc.Read(DateTime.Now));
+    }
+
+    [AvaloniaFact(DisplayName = "Gegenprüfung: wieder eingeschaltete Regel meldet nichts aus der Zeit, in der sie aus war")]
+    public void Reenabled_rule_silent()
+    {
+        var (w, _, _) = Ui.Open(); w.Width = 1600; w.Height = 1100;
+        try
+        {
+            w.Twin.Define("Ofen", "Temperatur", "°C");
+            var t = DateTime.Now;
+            var r = w.TwinAddRule("Ofen", "Temperatur", true, 80, 0, 0);
+            w.Twin.Record(t.AddSeconds(1), "Ofen", "Temperatur", 50); Assert.Empty(w.TwinCheckRules());
+            w.TwinSelect("Ofen", "Temperatur"); Settle();
+            RealClick(w, Get<CheckBox>(w, "twin-rule-on-" + r.Id)); Settle(); Assert.False(r.Enabled); // per Klick aus
+            w.Twin.Record(t.AddSeconds(2), "Ofen", "Temperatur", 99); Assert.Empty(w.TwinCheckRules());
+            RealClick(w, Get<CheckBox>(w, "twin-rule-on-" + r.Id)); Settle(); Assert.True(r.Enabled);  // wieder an
+            Assert.Empty(w.TwinCheckRules()); Assert.Empty(w.Twin.Model.Alarms);
+            w.Twin.Record(t.AddSeconds(3), "Ofen", "Temperatur", 98);
+            Assert.True(Assert.Single(w.TwinCheckRules()).Raised);
+        }
+        finally { w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "Gegenprüfung: Regel-Datei mit leerem Eintrag stürzt nicht ab, sondern meldet es auf Deutsch")]
+    public void Rules_file_null_entry()
+    {
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1100;
+        try
+        {
+            Directory.CreateDirectory(root);
+            var rf = Path.Combine(root, "kaputt.json"); File.WriteAllText(rf, "{\"Format\":\"trendo-alarmregeln\",\"Version\":1,\"Regeln\":[null]}");
+            w.Twin.Define("Ofen", "Temperatur", "°C"); w.Twin.Record(DateTime.Now, "Ofen", "Temperatur", 20);
+            w.Show("zwilling"); w.TwinSelect("Ofen", "Temperatur"); Settle();
+            w.PickOverride = _ => Task.FromResult<string[]?>([rf]); Press(w, "twin-rules-path-pick");
+            Assert.StartsWith("⚠ Eintrag 1 der Regel-Datei ist leer", Get<TextBlock>(w, "twin-msg").Text);
+            Assert.Empty(w.Twin.Model.Rules);
+        }
+        finally { w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "Gegenprüfung: Netzwerkpfad als wachsende Datei wird abgelehnt, ohne darauf zuzugreifen")]
+    public void Unc_file_refused()
+    {
+        var (w, _, _) = Ui.Open(); w.Width = 1600; w.Height = 1100;
+        try
+        {
+            w.Show("zwilling"); Settle(); Open(w, "twin-src-box");
+            Retype(w, "twin-src-asset", "Kessel"); Retype(w, "twin-src-sensor", "Druck");
+            w.PickOverride = _ => Task.FromResult<string[]?>([@"\\127.0.0.1\trendo-gibt-es-nicht$\werte.csv"]); // „Datei wählen …“ (Auswahl ersetzt)
+            PressWait(w, "twin-src-file-pick");
+            Assert.StartsWith("⚠ Dateien auf anderen Rechnern", Get<TextBlock>(w, "twin-msg").Text);
+            Assert.Empty(w.Twin.Model.Sources);
+        }
+        finally { w.Close(); }
     }
 }

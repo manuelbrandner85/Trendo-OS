@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Sockets;
 using System.Text;
 using Trendo.Core;
 using Xunit;
@@ -134,38 +133,216 @@ public class TwinAlarmTests
     [InlineData("kein url", false)]
     public void Local_only(string url, bool ok) => Assert.Equal(ok, TwinFeed.IsLocalUrl(url, out _));
 
-    [Fact(DisplayName = "HTTP-Quelle mit echtem Server auf 127.0.0.1: Wert aus JSON-Feld, ohne Freigabe kein Abruf, keine Weiterleitung")]
-    public async Task Http_real_server()
+    /// <summary>Gegenprüfung T-0750 (QA-019): der HTTP-Abruf liegt in der App (Test mit echtem Server: <c>Trendo.App.Tests.TwinHttp_Tests</c>).
+    /// Im Kern bleiben Freigabe, Adressprüfung und das Auswerten der Antwort – geprüft mit hineingereichter Abruf-Funktion.</summary>
+    [Fact(DisplayName = "HTTP-Quelle im Kern: ohne Freigabe kein Abruf, nur eigenes Netz, Wert aus JSON-Feld; Abruf-Funktion wird hineingereicht")]
+    public async Task Http_fetch_injected()
     {
-        // kleiner echter HTTP/1.1-Server über TCP (HttpListener bräuchte für 127.0.0.1 eine URL-Freigabe vom Admin)
-        var l = new TcpListener(IPAddress.Loopback, 0); l.Start(); var port = ((IPEndPoint)l.LocalEndpoint).Port;
-        var served = 0;
-        _ = Task.Run(async () =>
-        {
-            while (true)
-            {
-                TcpClient c; try { c = await l.AcceptTcpClientAsync(); } catch (Exception) { return; }
-                using (c)
-                {
-                    var st = c.GetStream(); var buf = new byte[4096]; var n = await st.ReadAsync(buf); var req = Encoding.ASCII.GetString(buf, 0, n);
-                    served++;
-                    var resp = req.StartsWith("GET /weiter ")
-                        ? "HTTP/1.1 302 Found\r\nLocation: http://8.8.8.8/\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
-                        : $"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {Body.Length}\r\nConnection: close\r\n\r\n{Body}";
-                    await st.WriteAsync(Encoding.ASCII.GetBytes(resp));
-                }
-            }
-        });
-        using var http = TwinFeed.NewHttp();
-        var s = new TwinSource { Kind = "http", Target = $"http://127.0.0.1:{port}/cm", Asset = "Aquarium", Sensor = "Wasser", JsonField = "StatusSNS.DS18B20.Temperature" };
-        await Assert.ThrowsAsync<InvalidOperationException>(() => TwinFeed.FetchHttpAsync(http, s));
-        Assert.Equal(0, served);
+        var calls = new List<Uri>();
+        Task<string> Get(Uri u, CancellationToken ct) { calls.Add(u); return Task.FromResult(Body); }
+        var s = new TwinSource { Kind = "http", Target = "http://192.168.1.20/cm", Asset = "Aquarium", Sensor = "Wasser", JsonField = "StatusSNS.DS18B20.Temperature" };
+        await Assert.ThrowsAsync<InvalidOperationException>(() => TwinFeed.FetchHttpAsync(s, Get));
+        Assert.Empty(calls);
         s.Approved = true;
-        Assert.Equal(21.7, await TwinFeed.FetchHttpAsync(http, s));
-        s.Target = $"http://127.0.0.1:{port}/weiter";
-        await Assert.ThrowsAsync<IOException>(() => TwinFeed.FetchHttpAsync(http, s));
-        s.Target = "http://8.8.8.8/"; await Assert.ThrowsAsync<ArgumentException>(() => TwinFeed.FetchHttpAsync(http, s));
-        l.Stop();
+        Assert.Equal(21.7, await TwinFeed.FetchHttpAsync(s, Get));
+        Assert.Equal("http://192.168.1.20/cm", Assert.Single(calls).ToString());
+        s.Target = "http://8.8.8.8/"; await Assert.ThrowsAsync<ArgumentException>(() => TwinFeed.FetchHttpAsync(s, Get));
+        Assert.Single(calls);
+        Assert.Equal(7, TwinFeed.ParseHttpBody("{\"wert\":7}", new TwinSource()));
+        Assert.Equal(3.5, TwinFeed.ParseHttpBody(" 3.5 ", new TwinSource()));
+        Assert.Throws<FormatException>(() => TwinFeed.ParseHttpBody("<html>", new TwinSource { JsonField = "a.b" }));
+    }
+
+    [Theory(DisplayName = "Gegenprüfung: aufgelöste Adresse – nur privat, Loopback oder Link-local")]
+    [InlineData("192.168.178.1", true)] [InlineData("10.1.2.3", true)] [InlineData("172.31.255.1", true)] [InlineData("169.254.3.4", true)] [InlineData("127.0.0.5", true)]
+    [InlineData("::1", true)] [InlineData("fd00::12", true)] [InlineData("fe80::1", true)] [InlineData("::ffff:192.168.1.2", true)]
+    [InlineData("93.184.216.34", false)] [InlineData("8.8.8.8", false)] [InlineData("172.32.0.1", false)] [InlineData("2001:db8::1", false)] [InlineData("::ffff:8.8.8.8", false)] [InlineData("0.0.0.0", false)]
+    public void Local_address(string ip, bool ok) => Assert.Equal(ok, TwinFeed.IsLocalAddress(IPAddress.Parse(ip)));
+
+    // ---------- Gegenprüfung T-0750: Regel-Datei streng prüfen ----------
+
+    [Fact(DisplayName = "Gegenprüfung: Regel-Datei mit leerem Eintrag, ohne/mit falscher Version, zu vielen Regeln, zu langen Texten oder zu groß wird mit deutscher Meldung abgelehnt")]
+    public void Rules_file_limits()
+    {
+        var now = new DateTime(2026, 11, 18);
+        string F(string regeln, string version = "1") => $"{{\"Format\":\"trendo-alarmregeln\",\"Version\":{version},\"Regeln\":[{regeln}]}}";
+        const string ok = "{\"Name\":\"a\",\"Asset\":\"Ofen\",\"Sensor\":\"T\",\"Threshold\":1}";
+        Assert.Single(TwinRules.ImportJson(F(ok), now));
+        var e = Assert.Throws<FormatException>(() => TwinRules.ImportJson(F("null"), now)); Assert.Contains("Eintrag 1", e.Message);
+        Assert.Throws<FormatException>(() => TwinRules.ImportJson(F(ok + ",null"), now));
+        Assert.Throws<FormatException>(() => TwinRules.ImportJson(F(ok, "0"), now));
+        Assert.Throws<FormatException>(() => TwinRules.ImportJson(F(ok, "-3"), now));
+        Assert.Throws<FormatException>(() => TwinRules.ImportJson("{\"Format\":\"trendo-alarmregeln\",\"Regeln\":[" + ok + "]}", now)); // ohne Version
+        Assert.Throws<FormatException>(() => TwinRules.ImportJson(F(string.Join(",", Enumerable.Repeat(ok, TwinRules.MaxRules + 1))), now));
+        Assert.Equal(TwinRules.MaxRules, TwinRules.ImportJson(F(string.Join(",", Enumerable.Repeat(ok, TwinRules.MaxRules))), now).Count);
+        var longName = Assert.Throws<ArgumentException>(() => TwinRules.ImportJson(F(ok.Replace("\"a\"", "\"" + new string('x', TwinRules.MaxNameLength + 1) + "\"")), now));
+        Assert.Contains("höchstens", longName.Message); Assert.Contains("Regel 1", longName.Message);
+        Assert.Throws<ArgumentException>(() => TwinRules.ImportJson(F(ok.Replace("\"Ofen\"", "\"" + new string('o', TwinRules.MaxFieldLength + 1) + "\"")), now));
+        Assert.Throws<ArgumentException>(() => TwinRules.ImportJson(F("{\"Name\":\"a\",\"Asset\":null,\"Sensor\":\"T\",\"Threshold\":1}"), now));
+        Assert.Throws<FormatException>(() => TwinRules.ImportJson(F(ok) + new string(' ', TwinRules.MaxFileBytes), now));
+    }
+
+    // ---------- Gegenprüfung T-0750: genau eine Meldung je Wechsel ----------
+
+    [Fact(DisplayName = "Gegenprüfung: Kürzen des Protokolls oder des Verlaufs erzeugt keine Doppelmeldung; Zustand je Regel")]
+    public void Check_no_duplicates_after_trim()
+    {
+        var m = Series(90, 85);
+        var r = new TwinRule { Id = "a", Name = "heiß", Asset = "Ofen", Sensor = "Temperatur", Threshold = 80, Created = T0 };
+        m.Rules.Add(r);
+        Assert.Single(TwinRules.Check(m));
+        m.Alarms.Clear();                      // Protokoll gekürzt
+        Assert.Empty(TwinRules.Check(m));
+        m.Readings.RemoveAt(0);                // Verlauf gekürzt: der auslösende Wert (90) ist weg, 85 liegt noch drüber
+        Assert.Empty(TwinRules.Check(m));
+        m.Readings.Add(new(T0.AddSeconds(30), "Ofen", "Temperatur", 70));
+        var f = Assert.Single(TwinRules.Check(m)); Assert.False(f.Raised);
+        m.Readings.Add(new(T0.AddSeconds(40), "Ofen", "Temperatur", 95));
+        Assert.True(Assert.Single(TwinRules.Check(m)).Raised);
+        Assert.Equal(T0.AddSeconds(40), r.State!.Reported);
+        Assert.True(TwinRules.IsActive(r));
+    }
+
+    [Fact(DisplayName = "Gegenprüfung: IsActive fürs Neuzeichnen liest nur den gespeicherten Zustand; wieder eingeschaltete Regel meldet nichts aus der Aus-Zeit")]
+    public void State_and_reenable()
+    {
+        var m = Series(50);
+        var r = new TwinRule { Id = "a", Name = "heiß", Asset = "Ofen", Sensor = "Temperatur", Threshold = 80, Created = T0 };
+        m.Rules.Add(r);
+        Assert.Empty(TwinRules.Check(m)); Assert.False(TwinRules.IsActive(r));
+        Assert.True(TwinRules.SetEnabled(m, r, false));
+        m.Readings.Add(new(T0.AddSeconds(10), "Ofen", "Temperatur", 99)); // während die Regel aus ist
+        Assert.Empty(TwinRules.Check(m));
+        Assert.True(TwinRules.SetEnabled(m, r, true));
+        Assert.Empty(TwinRules.Check(m)); Assert.Empty(m.Alarms);
+        Assert.True(TwinRules.IsActive(m, r)); // Nachrechnen über alles sähe den Wert – der Zustand nicht
+        Assert.False(TwinRules.IsActive(r));
+        m.Readings.Add(new(T0.AddSeconds(20), "Ofen", "Temperatur", 98)); // nach dem Einschalten
+        Assert.True(Assert.Single(TwinRules.Check(m)).Raised);
+        // der gespeicherte Zustand übersteht Speichern/Laden und gehört nicht in die Regel-Datei
+        Assert.DoesNotContain("\"State\"", TwinRules.ExportJson(m.Rules).Replace("\"State\": null", ""));
+        var json = System.Text.Json.JsonSerializer.Serialize(m);
+        var back = System.Text.Json.JsonSerializer.Deserialize<TwinModel>(json)!;
+        Assert.Empty(TwinRules.Check(back)); Assert.True(TwinRules.IsActive(back.Rules[0]));
+    }
+
+    [Fact(DisplayName = "Gegenprüfung: Rückgängig übernimmt Regeln mit Zustand; wiederhergestellte oder dabei eingeschaltete Regeln melden nichts Altes")]
+    public void Adopt_keeps_state()
+    {
+        var m = Series(90);
+        var r = new TwinRule { Id = "a", Name = "heiß", Asset = "Ofen", Sensor = "Temperatur", Threshold = 80, Created = T0 };
+        m.Rules.Add(r); Assert.Single(TwinRules.Check(m));
+        var snap = m.Rules.Select(x => x.WithoutState()).ToList();
+        Assert.Null(snap[0].State);
+        TwinRules.Adopt(m, snap); // Stand ohne Zustand zurückholen – Zustand bleibt
+        Assert.Empty(TwinRules.Check(m)); Assert.True(TwinRules.IsActive(m.Rules[0]));
+        m.Rules.Clear();
+        TwinRules.Adopt(m, [r.WithoutState()]); // gelöschte Regel per Wiederholen zurück
+        Assert.Empty(TwinRules.Check(m));
+    }
+
+    // ---------- Gegenprüfung T-0750: wachsende Datei ----------
+
+    [Fact(DisplayName = "Gegenprüfung: Zeile über 1 MB ohne Zeilenende wird übersprungen und gemeldet, danach geht es weiter")]
+    public void Growing_file_overlong_line()
+    {
+        var d = Tmp();
+        try
+        {
+            var hub = new TwinHub(d); var f = Path.Combine(d, "lang.log");
+            File.WriteAllText(f, "1\n");
+            var s = new TwinSource { Target = f, Asset = "A", Sensor = "B" };
+            Assert.Equal(1, TwinFeed.PollFile(hub, s, T0));
+            File.AppendAllText(f, new string('7', TwinFeed.MaxChunk + 500)); // eine riesige Zeile, noch ohne Ende
+            Assert.Equal(0, TwinFeed.PollFile(hub, s, T0));
+            Assert.Contains("übersprungen", s.LastError);
+            File.AppendAllText(f, "777\n2\n3\n"); // Rest der langen Zeile, dann normale Zeilen
+            var n = 0; for (var i = 0; i < 3; i++) n += TwinFeed.PollFile(hub, s, T0);
+            Assert.Equal(2, n);
+            Assert.Equal([1, 2, 3], hub.Model.Readings.Select(r => r.Value));
+            Assert.Equal("", s.LastError);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "Gegenprüfung: riesige Altdatei – nur das letzte MB, die dabei angeschnittene erste Zeile wird verworfen")]
+    public void Growing_file_big_old_file_drops_cut_line()
+    {
+        var d = Tmp();
+        try
+        {
+            var hub = new TwinHub(d); var f = Path.Combine(d, "alt.csv");
+            // lauter Zeilen „1000000000000000000000“; der Sprung auf „Länge − 1 MB“ landet mitten in einer Zeile (angeschnitten wäre z. B. „000000“ = 0)
+            const string line = "1000000000000000000000\n", last = "17.11.2026 10:00;42\n";
+            var count = (TwinFeed.MaxChunk + 100_000) / line.Length;
+            var sb = new StringBuilder();
+            for (var i = 0; i < count; i++) sb.Append(line);
+            sb.Append(last);
+            File.WriteAllText(f, sb.ToString());
+            var cut = (sb.Length - TwinFeed.MaxChunk) % line.Length; Assert.InRange(cut, 2, line.Length - 1); // wirklich mitten in einer Zeile
+            var s = new TwinSource { Target = f, Asset = "A", Sensor = "B" };
+            var n = TwinFeed.PollFile(hub, s, T0);
+            Assert.True(n > 1000);
+            // jede gelesene Zeile ist vollständig – ein angeschnittenes Stück würde einen falschen Wert liefern
+            Assert.All(hub.Model.Readings.Take(n - 1), r => Assert.Equal(1e21, r.Value));
+            Assert.Equal(42, hub.Model.Readings[^1].Value);
+            Assert.Equal(new FileInfo(f).Length, s.Offset);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "Gegenprüfung: UTF-16 mit BOM (Little und Big Endian) und UTF-8 mit BOM werden gelesen")]
+    public void Growing_file_utf16()
+    {
+        var d = Tmp();
+        try
+        {
+            foreach (var enc in new Encoding[] { Encoding.Unicode, Encoding.BigEndianUnicode, new UTF8Encoding(true) })
+            {
+                var hub = new TwinHub(d); hub.Model.Readings.Clear();
+                var f = Path.Combine(d, "w-" + enc.WebName + ".csv");
+                File.WriteAllText(f, "Zeit;Wert\n17.11.2026 10:00;21,5\n17.11.2026 10:01;22", enc);
+                var s = new TwinSource { Target = f, Asset = "Raum", Sensor = "Temperatur" };
+                Assert.Equal(1, TwinFeed.PollFile(hub, s, T0, save: false));
+                using (var w = new FileStream(f, FileMode.Append, FileAccess.Write, FileShare.ReadWrite)) { var b = enc.GetBytes("\n17.11.2026 10:02;23,25\n"); w.Write(b); }
+                Assert.Equal(2, TwinFeed.PollFile(hub, s, T0, save: false));
+                Assert.Equal([21.5, 22, 23.25], hub.Model.Readings.Select(r => r.Value));
+            }
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "Gegenprüfung: gleich lange neue Datei (Rotation) wird an der Dateikennung erkannt und von vorn gelesen")]
+    public void Growing_file_rotation_same_length()
+    {
+        if (!OperatingSystem.IsWindows()) return; // Dateikennung nur unter Windows
+        var d = Tmp();
+        try
+        {
+            var hub = new TwinHub(d); var f = Path.Combine(d, "rot.log");
+            File.WriteAllText(f, "1\n2\n");
+            var s = new TwinSource { Target = f, Asset = "A", Sensor = "B" };
+            Assert.Equal(2, TwinFeed.PollFile(hub, s, T0));
+            File.Move(f, f + ".1"); File.WriteAllText(f, "5\n6\n"); // gleich lang, neue Datei
+            Assert.Equal(2, TwinFeed.PollFile(hub, s, T0));
+            Assert.Equal([1, 2, 5, 6], hub.Model.Readings.Select(r => r.Value));
+            Assert.Equal(0, TwinFeed.PollFile(hub, s, T0));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "Gegenprüfung: Netzwerkpfade (\\\\Rechner\\…) werden nicht gelesen")]
+    public void Growing_file_unc_refused()
+    {
+        var d = Tmp();
+        try
+        {
+            var s = new TwinSource { Target = @"\\127.0.0.1\trendo-gibt-es-nicht$\werte.csv", Asset = "A", Sensor = "B" };
+            var e = Assert.Throws<IOException>(() => TwinFeed.PollFile(new TwinHub(d), s, T0));
+            Assert.Contains("anderen Rechnern", e.Message);
+            Assert.True(TwinFeed.IsNetworkPath("//nas/freigabe/x.csv")); Assert.False(TwinFeed.IsNetworkPath(@"C:\daten\x.csv"));
+        }
+        finally { Directory.Delete(d, true); }
     }
 
     const string Body = "{\"StatusSNS\":{\"DS18B20\":{\"Temperature\":21.7}}}";

@@ -36,7 +36,7 @@ public partial class MainWindow
         var now = DateTime.Now;
         if (!Twin.Model.Assets.Any(a => a.Name == "Dieser PC")) { Twin.Define("Dieser PC", "Festplatte belegt", "%", 85, 95, kind: "Computer"); Twin.Define("Dieser PC", "Trendo-Arbeitsspeicher", "MB", 1500, 3000, kind: "Computer"); }
         var m = PcSampleSource?.Invoke() ?? ReadLivePc(_core.DataRoot);
-        if (PcSampleSource is null) MeasureCounters(now); // T-0750: echte Leistungsindikatoren (CPU, RAM, Datenträger, Netz)
+        if (PcSampleSource is null) MeasureCounters(); // T-0750: echte Leistungsindikatoren (CPU, RAM, Datenträger, Netz)
         Twin.Record(now, "Dieser PC", "Festplatte belegt", m.DiskUsedPercent, false);
         Twin.Record(now, "Dieser PC", "Trendo-Arbeitsspeicher", m.WorkingSetMb);
         TwinCheckRules(); // T-0750: Alarmregeln
@@ -61,7 +61,7 @@ public partial class MainWindow
         _twLive.Tick -= TwinLiveTick; _twLive.Tick += TwinLiveTick; _twLive.Start();
         MeasureThisPc(); TwinAsset = "Dieser PC"; TwinSensor ??= "Trendo-Arbeitsspeicher"; Show("zwilling");
     }
-    void TwinLiveTick(object? s, EventArgs e) { if (CurrentView != "zwilling") { _twLive?.Stop(); return; } MeasureThisPc(); if (Twin.Model.Sources.Count > 0) TwinPollSources(); Show("zwilling"); }
+    void TwinLiveTick(object? s, EventArgs e) { if (CurrentView != "zwilling") { _twLive?.Stop(); TwinRelease(false); return; } MeasureThisPc(); if (Twin.Model.Sources.Count > 0) TwinPollSources(); Show("zwilling"); }
 
     /// <summary>T-0716 (B6 Etappe E4): Anlagen-Monitor an Rückgängig (100 Schritte), Notsicherung getippter, noch nicht übernommener Eingaben und Wiederherstellen-Karte
     /// der Hülle (<see cref="LiveSlot"/>). Rückgängig umfasst die Einstellungen der Anlagen und Sensoren (Einheit, Grenzen) – nicht die Messwerte (bis 200 000, sie kommen
@@ -75,7 +75,7 @@ public partial class MainWindow
     /// <summary>T-0750: Stand für Rückgängig – Anlagen/Sensoren, Alarmregeln und Quellen (ohne Lesestand und Fehlertext der Quellen, ohne Messwerte und Protokoll).</summary>
     System.Text.Json.Nodes.JsonNode TwinDoc() => new System.Text.Json.Nodes.JsonObject
     {
-        ["Assets"] = LiveNode(Twin.Model.Assets), ["Rules"] = LiveNode(Twin.Model.Rules),
+        ["Assets"] = LiveNode(Twin.Model.Assets), ["Rules"] = LiveNode(Twin.Model.Rules.Select(r => r.WithoutState()).ToList()),
         ["Sources"] = LiveNode(Twin.Model.Sources.Select(x => new TwinSource { Id = x.Id, Kind = x.Kind, Target = x.Target, Asset = x.Asset, Sensor = x.Sensor, JsonField = x.JsonField, Approved = x.Approved }).ToList()),
     };
 
@@ -86,10 +86,10 @@ public partial class MainWindow
         Twin.Model.Assets.Clear(); Twin.Model.Assets.AddRange(assets ?? []);
         if (n is System.Text.Json.Nodes.JsonObject)
         {
-            Twin.Model.Rules.Clear(); Twin.Model.Rules.AddRange(LiveObject<List<TwinRule>>(n["Rules"]) ?? []);
+            TwinRules.Adopt(Twin.Model, LiveObject<List<TwinRule>>(n["Rules"]) ?? []); // Gegenprüfung: Auswertungszustand bleibt, keine Doppelmeldung
             var old = Twin.Model.Sources.ToDictionary(x => x.Id);
             var src = LiveObject<List<TwinSource>>(n["Sources"]) ?? [];
-            foreach (var x in src) if (old.TryGetValue(x.Id, out var o)) { x.Offset = o.Offset; x.LastError = o.LastError; }
+            foreach (var x in src) if (old.TryGetValue(x.Id, out var o)) { x.Offset = o.Offset; x.LastError = o.LastError; x.Resync = o.Resync; x.FileId = o.FileId; }
             Twin.Model.Sources.Clear(); Twin.Model.Sources.AddRange(src);
         }
         Twin.Save();
