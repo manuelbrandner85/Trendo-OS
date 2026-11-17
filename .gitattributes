@@ -17,3 +17,6 @@ tests/fixtures/t0691/** -text
 reports/T-0705/** -text
 reports/T-0735/** -text
 reports/T-0732/** -text
+reports/T-0731/** -text
+reports/T-0733/** -text
+reports/T-0734/** -text
