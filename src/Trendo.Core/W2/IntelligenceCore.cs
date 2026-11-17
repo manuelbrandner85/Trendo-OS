@@ -3,7 +3,8 @@ using System.Text.Json;
 
 namespace Trendo.Core;
 
-public sealed record KiMessage(string Role, string Content);
+/// <param name="Images">T-0734: Bilder (Base64) zur Nachricht – nur für ein Bildmodell auf diesem PC.</param>
+public sealed record KiMessage(string Role, string Content, IReadOnlyList<string>? Images = null);
 
 /// <summary>Eine KI-Quelle auf diesem Gerät (Ollama oder ein OpenAI-kompatibler lokaler Server). Nur Loopback-Adressen – keine Cloud, nichts kostet Geld.</summary>
 public interface IKiBackend
@@ -29,7 +30,12 @@ public sealed class KiModelBusyException(string message, bool accountLimit) : Ex
 public interface IMainKiBackend : IRemoteKiBackend { }
 
 /// <param name="AllowRemote">Nur der freie Chat setzt das: dann darf ein eingeschalteter KI-Dienst außerhalb des PCs einspringen – ohne Verlauf und ohne eigene Dokumente. Abläufe, E-Mail, Agenten und Aufträge bleiben immer lokal.</param>
-public sealed record KiRequest(string Question, string? SystemPrompt = null, string? PreferredModel = null, IReadOnlyList<KiMessage>? History = null, bool UseKnowledge = true, bool AllowRemote = false, bool Personal = false);
+/// <param name="Attachments">T-0734: angehängte Dateien. Mit Anhang antworten nur die KI auf diesem PC oder die bewusst gewählte Haupt-KI (Claude über das Abo) – nie ein anderer KI-Dienst;
+/// mit Bild nur ein Bildmodell auf diesem PC.</param>
+/// <param name="OnText">T-0734: neue Stücke der Antwort, während sie entsteht; ein leerer Text heißt „neuer Versuch, Bisheriges verwerfen“.
+/// Nur die Stücke, nicht der ganze Text je Stück (Gegenprüfung: sonst wächst die Arbeit quadratisch mit der Länge).</param>
+public sealed record KiRequest(string Question, string? SystemPrompt = null, string? PreferredModel = null, IReadOnlyList<KiMessage>? History = null, bool UseKnowledge = true, bool AllowRemote = false, bool Personal = false,
+    IReadOnlyList<KiAttachment>? Attachments = null, Action<string>? OnText = null);
 public sealed record KiAnswer(bool Ok, string Text, string? Backend, string? Model, IReadOnlyList<string> Sources, TimeSpan Took);
 
 /// <summary>CORE-02 Trendo Intelligence Core: ein Eingang für alle KI-Fragen in Trendo OS.
@@ -66,6 +72,37 @@ public sealed class IntelligenceCore
     /// <summary>Höchstens so viele kostenlose Modelle je Frage, damit eine Frage das Tageskontingent nicht aufbraucht.</summary>
     public const int MaxFreeModelTries = 3;
 
+    /// <summary>Gegenprüfung T-0734: so viele Zeichen gehen höchstens an eine KI auf diesem PC – (16384 Token Kontext − 4096 für die Antwort) × 3 Zeichen je Token,
+    /// siehe <c>KiBackendsShared.OllamaContext</c>. Darüber schneidet Ollama den Anfang still ab, auch die Systemanweisung.</summary>
+    public const int LocalPromptChars = 36_000;
+    /// <summary>So viel zählt ein Bild (grob 1500 Token).</summary>
+    public const int ImageChars = 4_500;
+
+    static string Cut(string s, int max, string why)
+    {
+        var tail = $"\n[… gekürzt, {why}]";
+        return s.Length <= max ? s : s[..Math.Max(0, max - tail.Length)] + tail;
+    }
+
+    /// <summary>Verlauf in den Platz <paramref name="budget"/> einpassen: Passt alles, bleibt alles unverändert. Sonst zählen die neuesten Nachrichten zuerst;
+    /// die erste, die nicht mehr ganz passt, wird vorn behalten und gekürzt (z. B. ein großer Anhang), ältere fallen weg.</summary>
+    public static List<KiMessage> FitHistory(IEnumerable<KiMessage> history, int budget)
+    {
+        var all = history.ToList();
+        if (all.Sum(x => x.Content.Length) <= budget) return all;
+        var keep = new List<KiMessage>(); var used = 0;
+        for (var i = all.Count - 1; i >= 0; i--)
+        {
+            var x = all[i];
+            if (used + x.Content.Length <= budget) { keep.Add(x); used += x.Content.Length; continue; }
+            if (budget - used >= 500) keep.Add(x with { Content = Cut(x.Content, budget - used, "im Verlauf, damit die Anweisung vollständig bleibt") });
+            break;
+        }
+        keep.Reverse();
+        if (keep.Count > 0 && keep[0].Role == "assistant") keep.RemoveAt(0); // keine Antwort ohne ihre Frage
+        return keep;
+    }
+
     public async Task<KiAnswer> AskAsync(KiRequest req, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(req.Question)) return new(false, "Bitte schreib zuerst eine Frage.", null, null, [], TimeSpan.Zero);
@@ -95,27 +132,38 @@ public sealed class IntelligenceCore
             }
         }
         if (req.Personal && Memory?.PromptBlock() is { Length: > 0 } remembered) sys.Append(remembered);
+        // T-0734: angehängte Dateien – Text wird Teil der Frage, Bilder gehen als Bilddaten nur an ein Bildmodell auf diesem PC
+        var files = req.Attachments ?? [];
+        var images = files.Where(f => f.IsImage && f.Image is not null).Select(f => Convert.ToBase64String(f.Image!)).ToList();
+        var question = KiAttachments.Compose(req.Question, files);
         List<KiMessage> Messages(string system)
         {
+            // Gegenprüfung T-0734: für die KI auf dem PC begrenzen – sonst schneidet Ollama still vorn ab, auch die Systemanweisung
+            var room = LocalPromptChars - system.Length - images.Count * ImageChars;
+            var q = question.Length > room - 1000 ? Cut(question, Math.Max(2000, room - 1000), "damit die Anweisung vollständig bleibt") : question;
             var m = new List<KiMessage> { new("system", system) };
-            if (req.History is not null) m.AddRange(req.History.TakeLast(10));
-            m.Add(new("user", req.Question));
+            if (req.History is not null) m.AddRange(FitHistory(req.History.TakeLast(10), room - q.Length));
+            m.Add(new("user", q, images.Count > 0 ? images : null));
             return m;
         }
         var msgs = Messages(sys.ToString());
-        List<KiMessage> remoteMsgs = [new("system", baseSystem), new("user", req.Question)]; // ohne Verlauf und ohne eigene Dokumente
+        List<KiMessage> remoteMsgs = [new("system", baseSystem), new("user", question)]; // ohne Verlauf und ohne eigene Dokumente (angehängte Dateien hat die Person selbst mitgegeben)
         var tried = new List<string>();
+        var noVision = false;
         KiActivityHub.Update(act, phase: "KI wird gesucht …");
         foreach (var b in _backends())
         {
             if (b is IRemoteKiBackend and not IMainKiBackend && !req.AllowRemote && RemoteEverywhere?.Invoke() != true) continue; // nur der freie Chat – oder überall, wenn eingestellt
+            if (files.Count > 0 && b is IRemoteKiBackend and not IMainKiBackend) continue; // T-0734: Anhänge nie an fremde KI-Dienste
+            if (images.Count > 0 && b is IRemoteKiBackend) continue; // T-0734: Bilder bleiben auf diesem PC
             if (!await b.IsUpAsync(ct)) { tried.Add($"{b.Name}: nicht erreichbar"); continue; }
             var models = await b.ModelsAsync(ct);
+            if (images.Count > 0) { models = models.Where(KiAttachments.IsVisionModel).ToList(); if (models.Count == 0) { tried.Add($"{b.Name}: kein Bildmodell"); noVision = true; continue; } }
             var first = req.PreferredModel is { } p && models.Contains(p) ? p : models.FirstOrDefault();
             if (first is null) { tried.Add($"{b.Name}: kein Modell"); continue; }
             var local = b is not IRemoteKiBackend;
-            // T-0703: auf diesem PC darf Trendo auf ein kleineres Modell ausweichen, wenn das große nicht lädt oder zu lange schweigt
-            List<string> fallbacks = local && LocalFallbacks?.Invoke(first) is { Count: > 0 } fb ? fb.Where(m => m != first && models.Contains(m)).ToList() : [];
+            // T-0703: auf diesem PC darf Trendo auf ein kleineres Modell ausweichen, wenn das große nicht lädt oder zu lange schweigt (bei Bildern nicht: kleinere Modelle sehen keine Bilder)
+            List<string> fallbacks = local && images.Count == 0 && LocalFallbacks?.Invoke(first) is { Count: > 0 } fb ? fb.Where(m => m != first && models.Contains(m)).ToList() : [];
             IEnumerable<string> candidates = b is IKiFailoverBackend { CanSwitchModel: true } ? new[] { first }.Concat(models.Where(m => m != first)).Take(MaxFreeModelTries) : [first, .. fallbacks];
             foreach (var model in candidates)
             try
@@ -126,13 +174,15 @@ public sealed class IntelligenceCore
                 var guarded = local && fallbacks.Count > 0 && model != fallbacks[^1]; // das letzte Ausweichmodell darf so lange brauchen, wie es braucht
                 if (guarded) limit.CancelAfter(LocalFirstAnswerTimeout);
                 string text;
+                req.OnText?.Invoke(""); // neuer Versuch: Mitschrift beginnt neu
                 try
                 {
                     text = b is IStreamingKiBackend sb
                         ? await sb.ChatStreamAsync(model, remote ? remoteMsgs : msgs, d =>
                         {
                             if (guarded) limit.CancelAfter(Timeout.InfiniteTimeSpan); // erstes Lebenszeichen: keine Zeitgrenze mehr
-                            if (d.Length > 0) KiActivityHub.Update(act, delta: d); else KiActivityHub.Update(act, phase: $"{model} denkt nach …");
+                            if (d.Length > 0) { KiActivityHub.Update(act, delta: d); req.OnText?.Invoke(d); }
+                            else KiActivityHub.Update(act, phase: $"{model} denkt nach …");
                         }, limit.Token)
                         : await b.ChatAsync(model, remote ? remoteMsgs : msgs, limit.Token);
                 }
@@ -140,7 +190,7 @@ public sealed class IntelligenceCore
                 {
                     throw new TimeoutException($"keine Antwort nach {LocalFirstAnswerTimeout.TotalSeconds:0} s");
                 }
-                _audit.Append("ki", "ki.ask", $"quelle={b.Name} modell={model} frage={req.Question.Length}Z antwort={text.Length}Z wissen={(remote ? 0 : sources.Count)}{(remote ? " extern" : "")}");
+                _audit.Append("ki", "ki.ask", $"quelle={b.Name} modell={model} frage={req.Question.Length}Z antwort={text.Length}Z wissen={(remote ? 0 : sources.Count)}{(files.Count > 0 ? $" anhang={files.Count} bild={images.Count}" : "")}{(remote ? " extern" : "")}");
                 Save(req.Question, text, b.Name, model);
                 if (remote) RemoteUsed?.Invoke(b.Name);
                 return new(true, text, b.Name, model, remote ? [] : sources, sw.Elapsed);
@@ -156,7 +206,8 @@ public sealed class IntelligenceCore
             catch (Exception ex) when (ex is not OperationCanceledException) { tried.Add($"{b.Name}: {ex.Message}"); break; }
         }
         _audit.Append("ki", "ki.unavailable", string.Join("; ", tried));
-        return new(false, "Gerade ist keine KI auf diesem PC erreichbar. Unter „KI-Quellen“ siehst du, was fehlt, und kannst es einrichten.", null, null, sources, sw.Elapsed);
+        if (noVision) return new(false, KiAttachments.NoVisionModel, null, null, sources, sw.Elapsed);
+        return new(false,"Gerade ist keine KI auf diesem PC erreichbar. Unter „KI-Quellen“ siehst du, was fehlt, und kannst es einrichten.", null, null, sources, sw.Elapsed);
     }
 
     private void Save(string q, string a, string backend, string model) =>
