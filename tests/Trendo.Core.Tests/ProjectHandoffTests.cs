@@ -42,4 +42,21 @@ public class ProjectHandoffTests
         new ProjectHandoff(a).Add("A", "CORE-06", "a.png", "figur");
         Assert.Empty(new ProjectHandoff(b).All());
     }
+
+    [Fact(DisplayName = "Sammelstand 0.9.105: beschädigte Übergabe-Liste wird beim Ändern nicht mit einer leeren Liste überschrieben")]
+    public void Broken_store_is_not_wiped()
+    {
+        var d = Folder();
+        File.WriteAllText(Path.Combine(d, "a.png"), "x");
+        var store = Path.Combine(d, ".trendo", ProjectHandoff.FileName);
+        Directory.CreateDirectory(Path.GetDirectoryName(store)!);
+        const string broken = "[{\"Id\":\"abc\",\"From\":\"A\" kaputt";
+        File.WriteAllText(store, broken);
+        var h = new ProjectHandoff(d);
+        Assert.Empty(h.All()); // Anzeige bleibt nachsichtig
+        Assert.Throws<InvalidOperationException>(() => h.Add("A", "CORE-06", "a.png", "figur"));
+        Assert.Throws<InvalidOperationException>(() => h.Rewrite(x => x));
+        Assert.Equal(broken, File.ReadAllText(store)); // nichts überschrieben
+        Assert.Empty(Directory.GetFiles(Path.GetDirectoryName(store)!, "*.tmp*")); // keine Zwischendatei liegen geblieben
+    }
 }

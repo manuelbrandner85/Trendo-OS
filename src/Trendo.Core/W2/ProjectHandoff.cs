@@ -29,14 +29,14 @@ public sealed class ProjectHandoff(string projectFolder)
         if (!File.Exists(full)) throw new ArgumentException("Diese Datei gibt es im Projekt nicht: " + relativeFile);
         using var stream = File.OpenRead(full);
         var item = new HandoffItem(Guid.NewGuid().ToString("N")[..8], from, to, Path.GetRelativePath(projectFolder, full).Replace('\\', '/'), kind, note, Convert.ToHexString(SHA256.HashData(stream)), DateTimeOffset.Now);
-        Save([.. All(), item]);
+        Save([.. Current(), item]);
         return item;
     }
 
     /// <summary>Annehmen. Wurde die Datei seit der Übergabe verändert, gilt die Übergabe nicht mehr.</summary>
     public string Take(string id, string studio)
     {
-        var items = All().ToList();
+        var items = Current().ToList();
         var i = items.FindIndex(h => h.Id == id);
         if (i < 0) throw new ArgumentException("Diese Übergabe gibt es nicht.");
         var h = items[i];
@@ -53,7 +53,7 @@ public sealed class ProjectHandoff(string projectFolder)
 
     /// <summary>T-0743: Einträge gezielt umschreiben (Rückgängig/Wiederholen der Großprojekt-Tafel nimmt ihre eigenen Übergaben zurück bzw. bringt sie wieder).
     /// <paramref name="change"/> bekommt alle Einträge und liefert die neue Liste.</summary>
-    public void Rewrite(Func<IReadOnlyList<HandoffItem>, IEnumerable<HandoffItem>> change) => Save([.. change(All())]);
+    public void Rewrite(Func<IReadOnlyList<HandoffItem>, IEnumerable<HandoffItem>> change) => Save([.. change(Current())]);
 
     string Resolve(string relative)
     {
@@ -62,9 +62,18 @@ public sealed class ProjectHandoff(string projectFolder)
         return full.StartsWith(root, StringComparison.OrdinalIgnoreCase) ? full : throw new ArgumentException("Übergaben gibt es nur innerhalb des Projekts.");
     }
 
+    /// <summary>Sammelstand 0.9.105 (zweite Prüfung T-0743): Stand zum Ändern lesen. Ist die Datei beschädigt, wird NICHT mit einer leeren
+    /// Liste weitergeschrieben – sonst wären alle übrigen Übergaben des Projekts still weg.</summary>
+    List<HandoffItem> Current()
+    {
+        if (!File.Exists(Store)) return [];
+        try { return JsonSerializer.Deserialize<List<HandoffItem>>(File.ReadAllText(Store)) ?? []; }
+        catch (JsonException) { throw new InvalidOperationException("Die Liste der Übergaben in diesem Projekt ist beschädigt (.trendo/uebergaben.json) – Trendo ändert sie nicht, damit nichts verloren geht."); }
+    }
+
     void Save(List<HandoffItem> items)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(Store)!);
-        File.WriteAllText(Store, JsonSerializer.Serialize(items, Options));
+        AtomicFile.WriteAllText(Store, JsonSerializer.Serialize(items, Options)); // Sammelstand 0.9.105: nie halb geschrieben
     }
 }
