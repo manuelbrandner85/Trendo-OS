@@ -49,8 +49,16 @@ public partial class MainWindow
         nb.Click += (_, _) => { _promptSel = null; _promptEdit = true; Show("ki-vorlagen"); };
         var mb = new Button { Name = "prompt-master", Content = "Masterprompt bauen", Margin = new Thickness(0, 0, 6, 6) };
         mb.Click += (_, _) => { _promptSel = "#master"; Show("ki-vorlagen"); };
-        row.Children.Add(nb); row.Children.Add(mb);
+        // T-0740: Vorlagen als Datei – einlesen (.md/.txt/.json, auch per Ziehen auf die Seite) und alle als Sammlung speichern
+        var ib = new Button { Name = "prompt-import", Content = "Aus Datei …", Margin = new Thickness(0, 0, 6, 6) };
+        ToolTip.SetTip(ib, "Vorlage aus einer Datei übernehmen (.md mit Kopfzeilen, .txt oder .json) – oder die Datei hierher ziehen");
+        ib.Click += (_, _) => _ = PromptPickImport();
+        var eb = new Button { Name = "prompt-export-all", Content = "Alle speichern …", Margin = new Thickness(0, 0, 6, 6) };
+        ToolTip.SetTip(eb, "Alle Vorlagen als eine Datei (.json) – zum Weitergeben oder Sichern");
+        eb.Click += (_, _) => _ = PromptPickExport(null, true);
+        row.Children.Add(nb); row.Children.Add(mb); row.Children.Add(ib); row.Children.Add(eb);
         sp.Children.Add(row);
+        if (PromptImportPending is { } pending) sp.Children.Add(PromptImportCard(pending));
         var t0 = _promptSel is null ? null : Prompts.Get(_promptSel);
         if (_promptSel == "#master") sp.Children.Add(MasterBuilder());
         else if (_promptEdit) sp.Children.Add(PromptEditor(t0));
@@ -59,6 +67,7 @@ public partial class MainWindow
         if (LastPromptOutput != "" && t0 is not null && !_promptEdit)
             sp.Children.Add(WCard(new SelectableTextBlock { Name = "prompt-answer", Text = LastPromptOutput, Foreground = Text, TextWrapping = TextWrapping.Wrap }));
         if (LinkRecoveryCard(PromptLink) is { } pcard) sp.Children.Insert(1, pcard); // T-0711
+        PromptDropTarget(sp); // T-0740
         return KiPage("Vorlagen", sp);
     }
 
@@ -102,7 +111,10 @@ public partial class MainWindow
         copy.Click += async (_, _) => { Grab(); var (text, _) = PromptLibrary.Fill(t.Text, _promptVals); if (Clipboard is { } cb) await cb.SetTextAsync(text); _promptMsg = "Kopiert."; Show("ki-vorlagen"); };
         var edit = new Button { Name = "prompt-edit", Content = "Bearbeiten" };
         edit.Click += (_, _) => { _promptEdit = true; Show("ki-vorlagen"); };
-        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { send, copy, edit } });
+        var save = new Button { Name = "prompt-export", Content = "Als Datei …" }; // T-0740
+        ToolTip.SetTip(save, "Diese Vorlage als Markdown mit Kopfzeilen (.md) oder als .json speichern");
+        save.Click += (_, _) => _ = PromptPickExport(t, false);
+        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { send, copy, edit, save } });
         sp.Children.Add(P(t.Text, null, 11));
         return new StackPanel { Spacing = 8, Children = { WCard(sp), PromptTestCard(t, Grab) } };
     }
@@ -111,11 +123,16 @@ public partial class MainWindow
     {
         var name = new TextBox { Name = "pedit-name", PlaceholderText = "Name", Text = t?.Name ?? "" };
         var cat = new TextBox { Name = "pedit-cat", PlaceholderText = "Bereich, z. B. Briefe", Text = t?.Category ?? "" };
-        var text = new TextBox { Name = "pedit-text", PlaceholderText = IsSimple ? "Auftrag an die KI. Lücken mit „Lücke einfügen“ setzen." : "Auftrag an die KI. Lücken so schreiben: {{Thema}} oder {{Anzahl|3}}", Text = t?.Text ?? "", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 90 };
+        // T-0740: echter Texteditor (AvaloniaEdit) statt Formularfeld – Rückgängig im Feld, Lücken „{{…}}“ golden hervorgehoben, Rechtsklick-Menü
+        var text = PromptTextEditor(t?.Text ?? "");
+        var empty = new TextBlock { Text = IsSimple ? "Auftrag an die KI. Lücken mit „Lücke einfügen“ setzen." : "Auftrag an die KI. Lücken so schreiben: {{Thema}} oder {{Anzahl|3}}", Foreground = Muted, FontSize = 14,
+            Margin = new Thickness(13, 9), IsHitTestVisible = false, TextWrapping = TextWrapping.Wrap };
         var hints = new ContentControl { Content = Hints(text.Text ?? "") };
-        text.TextChanged += (_, _) => hints.Content = Hints(text.Text ?? "");
-        var pl = PromptLink; LinkForm(pl, t?.Id ?? "neu", ("name", name), ("cat", cat), ("text", text)); // T-0711: Entwurf, Rückgängig, Notsicherung
-        hints.Content = Hints(text.Text ?? "");
+        text.TextChanged += (_, _) => { hints.Content = Hints(text.Text ?? ""); empty.IsVisible = text.Document.TextLength == 0; };
+        text.ContextMenu = PromptEditorMenu(text);
+        var pl = PromptLink; LinkFormFields(pl, t?.Id ?? "neu", [LinkField.Of("name", name), LinkField.Of("cat", cat),
+            new LinkField("text", () => text.Text ?? "", v => { if (text.Text != v) text.Document.Text = v; }, h => text.TextChanged += (_, _) => h())]); // T-0711: Entwurf, Rückgängig, Notsicherung
+        hints.Content = Hints(text.Text ?? ""); empty.IsVisible = text.Document.TextLength == 0;
         var save = new Button { Name = "pedit-save", Content = "Speichern", Background = Accent };
         save.Click += (_, _) =>
         {
@@ -123,8 +140,8 @@ public partial class MainWindow
             var s = Prompts.Save(t?.Id, name.Text, cat.Text ?? "", text.Text); LinkClose(pl); _promptSel = s.Id; _promptEdit = false; _promptMsg = $"Gespeichert als Version {s.Version}."; Show("ki-vorlagen");
         };
         // V-12 (T-0700): Lücke per Knopf statt „{{…}}“ tippen
-        var marks = WriteMarksBar(text, "pedit", (Trendo.Core.Text.WriteMarks.Kind.Placeholder, "Lücke einfügen", "Markiertes wird zur Lücke, die beim Benutzen ausgefüllt wird (ohne Markierung: „Thema“ zum Überschreiben)"));
-        var sp = new StackPanel { Spacing = 6, Children = { LinkUndoRow(pl), name, cat, marks, text, hints, save } };
+        var marks = PromptMarksBar(text, "pedit", (Trendo.Core.Text.WriteMarks.Kind.Placeholder, "Lücke einfügen", "Markiertes wird zur Lücke, die beim Benutzen ausgefüllt wird (ohne Markierung: „Thema“ zum Überschreiben)"));
+        var sp = new StackPanel { Spacing = 6, Children = { LinkUndoRow(pl), name, cat, marks, new Panel { Children = { text, empty } }, hints, save } };
         var stop = new Button { Name = "pedit-cancel", Content = "Abbrechen" }; // T-0711: bewusst verwerfen (sonst bleibt der Entwurf als Sicherung)
         stop.Click += (_, _) => { LinkClose(pl); _promptEdit = false; Show("ki-vorlagen"); };
         sp.Children.Add(stop);

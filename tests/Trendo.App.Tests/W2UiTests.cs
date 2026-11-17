@@ -142,7 +142,7 @@ public class CORE12_Ui
         w.Find<Button>("prompt-send").Press(); W2Ui.Settle();
         Assert.Equal("Strom fließt.", w.LastPromptOutput);
         w.Find<Button>("prompt-new").Press();
-        w.Find<TextBox>("pedit-name").Text = "Gedicht"; w.Find<TextBox>("pedit-text").Text = "Schreibe ein Gedicht über {{Tier}} in 4 Zeilen.";
+        w.Find<TextBox>("pedit-name").Text = "Gedicht"; w.Find<AvaloniaEdit.TextEditor>("pedit-text").Text = "Schreibe ein Gedicht über {{Tier}} in 4 Zeilen."; // T-0740: Texteditor
         w.Find<Button>("pedit-save").Press();
         Assert.Contains("Version 1", w.Find<TextBlock>("prompt-msg").Text);
         Assert.NotNull(w.TryFind<TextBox>("pvar-Tier"));
