@@ -93,6 +93,18 @@ public class T0733_BildMalen_Ui
             var last = ImageDoc.S(ImageDoc.Layers(w.ProgramActive("bild")!.Data).OfType<System.Text.Json.Nodes.JsonObject>().Last()["file"]);
             Assert.EndsWith(".png", last); Assert.Empty(Directory.GetFiles(Path.GetDirectoryName(last)!, "*.tmp.png")); // keine halbe Zwischendatei liegen geblieben
             using (var y = SKBitmap.Decode(last)) { Assert.Equal((320, 160), (y.Width, y.Height)); var c = y.GetPixel(10, 10); Assert.True(c.Red > 200 && c.Green > 200 && c.Blue < 80, $"kein Gelb: {c}"); }
+
+            // Sammelstand 0.9.104: Wird das Bild während der Umwandlung geschlossen, landet die Ebene in einem neuen Bild – nie still in einem anderen offenen
+            var other = w.ProgramNew("bild", "leer"); var target = w.ProgramActive("bild")!; Assert.Same(other, target);
+            var otherLayers = ImageDoc.Layers(other.Data).Count;
+            var keep = w.ProgramDocs("bild").First(x => !ReferenceEquals(x, other)); // ein weiteres offenes Bild, das nicht Ziel ist
+            var keepLayers = ImageDoc.Layers(keep.Data).Count;
+            w.ImgAddImage(tif2); Assert.True(w.ImgTiffBusy);
+            w.ProgramClose("bild", w.ProgramDocs("bild").IndexOf(other)); // Ziel schließen, während FFmpeg noch läuft
+            WaitTiff(w);
+            Assert.Equal(keepLayers, ImageDoc.Layers(keep.Data).Count); // das andere offene Bild bleibt unverändert
+            var fresh = w.ProgramActive("bild")!; Assert.NotSame(keep, fresh); Assert.Single(ImageDoc.Layers(fresh.Data));
+            Assert.Contains("schon geschlossen", w.ProgramMessage("bild"));
             if (Environment.GetEnvironmentVariable("T0733_BELEG") is { Length: > 0 } beleg)
             {
                 Directory.CreateDirectory(beleg);

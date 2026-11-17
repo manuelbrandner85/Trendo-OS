@@ -190,10 +190,12 @@ public partial class MainWindow
                 try
                 {
                     var png = t.GetAwaiter().GetResult();
-                    ImgAddDecoded(ProgramDocs(BK).Contains(d) ? d : ProgramActive(BK) ?? ProgramNew(BK), png, shown); // Dokument inzwischen geschlossen: ins aktive
+                    var open = ProgramDocs(BK).Contains(d);
+                    ImgAddDecoded(open ? d : ProgramNew(BK), png, shown); // Sammelstand 0.9.104: Dokument inzwischen geschlossen – neues Bild, nie still in ein fremdes
+                    if (!open) _progMsg[BK] += " Das Bild, in das es sollte, war schon geschlossen – es steht deshalb in einem neuen Bild.";
                     _progErr.Remove(BK);
                 }
-                catch (Exception ex) when (ex is IOException or InvalidOperationException or UnauthorizedAccessException)
+                catch (Exception ex) // Sammelstand 0.9.104: jede Ausnahme wird zur Meldung, nie ungefangen auf dem Dispatcher
                 {
                     var fe = FriendlyError.From(ex); _progMsg[BK] = fe.Sentence; _progErr[BK] = (fe, () => ProgramRun(BK, () => ImgAddImage(file)));
                 }
