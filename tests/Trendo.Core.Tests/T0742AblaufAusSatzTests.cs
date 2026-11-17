@@ -349,5 +349,15 @@ public class T0742_Ablauf_aus_Satz
         Assert.Equal([$"/Delete /TN {N(alterOrdner, "abc123")} /F"], calls);
         Assert.False(plan.RemoveIfRootMissing("abc123", f.Root));
         Assert.False(plan.DeleteByName("Fremde-Aufgabe")); // fremdes Namensmuster wird nie gelöscht
+
+        // Sammelstand 0.9.105: Datenordner auf einem gerade nicht erreichbaren Laufwerk (Ordner darüber fehlt) – die Aufgabe bleibt
+        var weg = Path.Combine(f.Root, "usb-" + Guid.NewGuid().ToString("N"), "TrendoOS");
+        Assert.True(WorkflowTaskPlan.Unreachable(weg));
+        Assert.False(WorkflowTaskPlan.Unreachable(alterOrdner)); // Ordner darüber da: der Datenordner wurde wirklich gelöscht
+        Assert.True(WorkflowTaskPlan.Matches(new WorkflowTaskPlan.OwnTask(N(weg, "abc123"), "abc123", weg)));
+        calls.Clear();
+        Assert.True(plan.RemoveIfRootMissing("abc123", weg));
+        Assert.Empty(calls); // nichts gelöscht
+        Assert.False(Directory.Exists(weg));
     }
 }

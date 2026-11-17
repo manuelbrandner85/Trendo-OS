@@ -165,7 +165,7 @@ public sealed class WorkflowTaskPlan
     /// Ist die Ablaufdatei unlesbar, gilt sie als passend – im Zweifel bleibt die Aufgabe.</summary>
     public static bool Matches(OwnTask t)
     {
-        if (!Directory.Exists(t.DataRoot)) return false;
+        if (!Directory.Exists(t.DataRoot)) return Unreachable(t.DataRoot); // Laufwerk/Ordner darüber fehlt (USB, Netz): im Zweifel bleibt die Aufgabe
         if (TaskName(t.DataRoot, t.Id) != t.Name) return false; // Name passt nicht zu Datenordner/Id (z. B. alter Ordnername)
         var file = Path.Combine(t.DataRoot, "ablaeufe", "ablaeufe.json");
         if (!File.Exists(file)) return false;
@@ -190,8 +190,22 @@ public sealed class WorkflowTaskPlan
     public bool RemoveIfRootMissing(string id, string dataRoot, Action<string>? log = null)
     {
         if (Directory.Exists(Root(dataRoot))) return false;
-        if (Supported && IdOk(id)) DeleteByName(TaskName(dataRoot, id), log);
+        if (!Unreachable(dataRoot) && Supported && IdOk(id)) DeleteByName(TaskName(dataRoot, id), log); // nicht erreichbares Laufwerk: nichts löschen
         return true;
+    }
+
+    /// <summary>Sammelstand 0.9.105 (zweite Prüfung T-0742): Der Datenordner fehlt, weil sein Laufwerk oder der Ordner darüber gerade nicht
+    /// erreichbar ist (USB-Stick, Netzlaufwerk) – nicht, weil er gelöscht wurde. Dann wird keine Aufgabe entfernt.</summary>
+    public static bool Unreachable(string dataRoot)
+    {
+        try
+        {
+            var full = Path.GetFullPath(Root(dataRoot));
+            var parent = Path.GetDirectoryName(full);
+            var drive = Path.GetPathRoot(full);
+            return string.IsNullOrEmpty(parent) || string.IsNullOrEmpty(drive) || !Directory.Exists(drive) || !Directory.Exists(parent);
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or IOException or System.Security.SecurityException) { return true; }
     }
 
     /// <summary>Eigene Aufgabe über ihren Namen entfernen (nur das eigene Namensmuster).</summary>
