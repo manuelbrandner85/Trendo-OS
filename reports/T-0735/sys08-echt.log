@@ -1,0 +1,4 @@
+2026-11-17T12:46:42.7383930+01:00 GET https://de.wikipedia.org/w/api.php?action=query&list=search&format=json&formatversion=2&utf8=1&srlimit=20&srsearch=Phishing -> application/json 6972 Bytes SHA-256 820fe1db494dc92546d320c6ac6c5a55c4ec15261bed3019e04a9e90fe1811e5
+20 Treffer, erster: Phishing https://de.wikipedia.org/wiki/Phishing (Herkunft Wikipedia (Deutsch))
+2026-11-17T12:46:43.0012902+01:00 gelesen https://de.wikipedia.org/wiki/Phishing · 34049 Zeichen · SHA-256 6d424e68dba17398cf8d42fb666a157dc1e847c72f971f3e267eeb7654a515d4
+2026-11-17T12:46:43.6321091+01:00 GET https://html.duckduckgo.com/html/?kl=de-de&q=Phishing erkennen -> text/html 36460 Bytes SHA-256 61eac0b746e9c8a785300c96832e60bbfc31a019a243998033f3fccc966e4642 · 10 Treffer

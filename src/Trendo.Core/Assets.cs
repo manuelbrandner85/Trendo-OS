@@ -73,6 +73,39 @@ public static class FreeAssets
     public static bool Md5Ok(string file, string md5) =>
         md5.Length == 0 || Convert.ToHexString(MD5.HashData(File.ReadAllBytes(file))).Equals(md5, StringComparison.OrdinalIgnoreCase);
 
+    /// <summary>T-0735: Art aus der Dateiliste von Poly Haven – HDRI haben „hdri“, Modelle und Texturen „gltf“.</summary>
+    public static string TypeOf(string filesJson)
+    {
+        using var d = JsonDocument.Parse(filesJson);
+        return d.RootElement.ValueKind == JsonValueKind.Object && d.RootElement.TryGetProperty("hdri", out _) ? "hdris" : "models";
+    }
+
+    /// <summary>Gültige Poly-Haven-Kennung (z. B. „rock_09“): nur Kleinbuchstaben, Ziffern, Unterstrich und Bindestrich.</summary>
+    public static bool ValidId(string? id) => id is { Length: > 0 and <= 80 } && id.All(c => c is >= 'a' and <= 'z' or >= '0' and <= '9' or '_' or '-');
+
+    /// <summary>Ein geladenes Stück mit Beleg: Adresse, Größe, SHA-256 und (falls der Katalog sie nennt) MD5.</summary>
+    public sealed record FetchedFile(string RelPath, string Url, long Size, string Sha256, string Md5);
+
+    /// <summary>T-0735: Lizenz- und Quellenbeleg je Datei – lesbarer Text (HERKUNFT.txt) und maschinenlesbar (herkunft.json).</summary>
+    public static (string Text, string Json) Provenance(string id, string name, IReadOnlyList<FetchedFile> files, DateTimeOffset at, string source = "Poly Haven", string license = "CC0 1.0")
+    {
+        var page = "https://polyhaven.com/a/" + id;
+        var sb = new System.Text.StringBuilder($"Herkunft: {name} ({id})\nQuelle: {source} – {page}\nLizenz: {license} – frei nutzbar, auch kommerziell, ohne Namensnennung (https://creativecommons.org/publicdomain/zero/1.0/deed.de)\nGeladen: {at:yyyy-MM-dd HH:mm zzz}\n\nDateien:\n");
+        foreach (var f in files) sb.Append($"- {f.RelPath}\n  Adresse: {f.Url}\n  Größe: {f.Size} Bytes\n  SHA-256: {f.Sha256}\n  Lizenz: {license} · Quelle: {page}\n" + (f.Md5.Length > 0 ? $"  MD5 laut Katalog: {f.Md5} (geprüft)\n" : ""));
+        var json = JsonSerializer.Serialize(new
+        {
+            asset = id, name, source, page, license, licenseUrl = "https://creativecommons.org/publicdomain/zero/1.0/", loaded = at.ToString("O"),
+            files = files.Select(f => new { path = f.RelPath, url = f.Url, size = f.Size, sha256 = f.Sha256, md5 = f.Md5, license, source = page }),
+        }, new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
+        return (sb.ToString(), json);
+    }
+
+    public static string Sha256(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+    public static string Sha256File(string file) { using var s = File.OpenRead(file); return Convert.ToHexString(SHA256.HashData(s)).ToLowerInvariant(); }
+
+    public static bool Md5Ok(byte[] bytes, string md5) =>
+        md5.Length == 0 || Convert.ToHexString(MD5.HashData(bytes)).Equals(md5, StringComparison.OrdinalIgnoreCase);
+
     public static void WriteLicense(string dir, string id, string name, string source = "Poly Haven", string license = "CC0 1.0")
         => AtomicFile.WriteAllText(Path.Combine(dir, "LIZENZ.txt"), $"{name} ({id})\nQuelle: {source} – https://polyhaven.com/a/{id}\nLizenz: {license} – frei nutzbar, auch kommerziell, ohne Namensnennung.\nGeladen: {DateTimeOffset.Now:yyyy-MM-dd HH:mm zzz}\n");
 }

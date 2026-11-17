@@ -26,8 +26,61 @@ public sealed partial class ResearchDesk
         ("Tor Project", "https://www.torproject.org/de/download/", "Offizieller Tor Browser für .onion-Seiten"),
     ];
 
-    private readonly string _dir; private readonly AuditLog _audit;
-    public ResearchDesk(string dataRoot, AuditLog audit) { _dir = Path.Combine(dataRoot, "tmp", "recherche-sitzung"); _audit = audit; Directory.CreateDirectory(_dir); }
+    private string _dir; private readonly AuditLog _audit;
+    private readonly string _tmpDir, _keepDir, _keepFlag;
+    public ResearchDesk(string dataRoot, AuditLog audit)
+    {
+        _tmpDir = Path.Combine(dataRoot, "tmp", "recherche-sitzung");
+        _keepDir = Path.Combine(dataRoot, "recherche", "sammlung"); _keepFlag = Path.Combine(dataRoot, "recherche", "sammlung-behalten.txt");
+        _audit = audit; _dir = Keep ? _keepDir : _tmpDir; Directory.CreateDirectory(_dir);
+    }
+
+    /// <summary>T-0735: Sammlung behalten – Quellen, Suchen, Markierungen und Notizen bleiben über einen Neustart (Ordner „recherche/sammlung“).
+    /// Aus (Standard): flüchtig wie bisher, jede App-Sitzung beginnt leer.</summary>
+    public bool Keep => File.Exists(_keepFlag);
+
+    /// <summary>Schaltet „Sammlung behalten“ um und nimmt die bisherige Sammlung mit. Ganz oder gar nicht (Gegenprüfung T-0735):
+    /// Scheitert ein Schritt (z. B. gesperrte Datei), wandert alles Verschobene zurück, der Schalter bleibt, wie er war, und es kommt
+    /// eine <see cref="IOException"/> mit verständlicher Meldung („… Es wurde nichts geändert.“).</summary>
+    public void SetKeep(bool keep)
+    {
+        if (keep == Keep) return;
+        var target = keep ? _keepDir : _tmpDir;
+        var moved = new List<(string From, string To, string? Backup)>();
+        try
+        {
+            Directory.CreateDirectory(target);
+            foreach (var f in Directory.GetFiles(_dir).OrderBy(p => p, StringComparer.Ordinal))
+            {
+                var to = Path.Combine(target, Path.GetFileName(f));
+                string? bak = null;
+                if (File.Exists(to)) { bak = to + ".trendo-alt"; File.Move(to, bak, true); }
+                moved.Add((f, to, bak));
+                File.Move(f, to);
+            }
+            if (keep) { Directory.CreateDirectory(Path.GetDirectoryName(_keepFlag)!); AtomicFile.WriteAllText(_keepFlag, "Die Recherche-Sammlung bleibt über einen Neustart erhalten.\n"); }
+            else File.Delete(_keepFlag);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            for (var i = moved.Count - 1; i >= 0; i--) // zurück an den alten Platz
+            {
+                var (from, to, bak) = moved[i];
+                try { if (File.Exists(to) && !File.Exists(from)) File.Move(to, from); if (bak is not null && File.Exists(bak)) File.Move(bak, to, true); }
+                catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+            }
+            if (keep) { try { File.Delete(_keepFlag); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } }
+            _audit.Append(Principal.LocalOwner.Name, "research.keep.fehler", ex.GetType().Name);
+            throw new IOException((keep ? "Die Sammlung ließ sich nicht dauerhaft ablegen" : "Die Sammlung ließ sich nicht in den flüchtigen Ordner verschieben")
+                + " – eine Datei ist gerade gesperrt oder nicht beschreibbar. Es wurde nichts geändert.", ex);
+        }
+        foreach (var (_, _, bak) in moved) if (bak is not null) { try { File.Delete(bak); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } }
+        _dir = target;
+        _audit.Append(Principal.LocalOwner.Name, "research.keep", keep ? "an" : "aus");
+    }
+
+    /// <summary>Beim Start der App: flüchtige Sitzung leeren, eine behaltene Sammlung bleibt.</summary>
+    public void StartSession() { if (!Keep) EndSession(); }
 
     public static UrlVerdict Classify(string input)
     {
@@ -118,6 +171,12 @@ public sealed partial class ResearchDesk
         var f = Path.Combine(folder, $"recherche-{DateTime.Now:yyyy-MM-dd_HHmm}.md");
         var sb = new StringBuilder("# Recherche (Lesemodus)\n\n## Notizen\n").Append(Note()).Append("\n\n## Quellen\n");
         foreach (var s in SessionSources()) sb.Append($"- {s.At:dd.MM.yyyy HH:mm} [{s.Title}]({s.Url}) · SHA-256 {s.Sha256[..16]}…\n");
+        var searches = Searches();
+        if (searches.Count > 0)
+        {
+            sb.Append("\n## Suchen\n");
+            foreach (var q in searches) sb.Append($"- {q.At:dd.MM.yyyy HH:mm} „{q.Query}“ bei {q.Engine} · {q.Hits} Treffer · {q.QueryUrl} · SHA-256 {q.Sha256[..16]}…\n");
+        }
         sb.Append(MarksMarkdown(style));
         AtomicFile.WriteAllText(f, sb.ToString()); return f; // T-0717: atomar
     }

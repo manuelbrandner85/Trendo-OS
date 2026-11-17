@@ -964,14 +964,19 @@ public partial class MainWindow
     {
         Id = Js(o["id"]), Kind = CiteKit.Kinds.Any(k => k.Id == Js(o["kind"])) ? Js(o["kind"]) : "buch", Authors = Js(o["authors"]), Title = Js(o["title"]), Year = Js(o["year"]),
         Publisher = Js(o["publisher"]), Place = Js(o["place"]), Edition = Js(o["edition"]), Journal = Js(o["journal"]), Volume = Js(o["volume"]), Issue = Js(o["issue"]),
-        Pages = Js(o["pages"]), Url = Js(o["url"]), Doi = Js(o["doi"]), Accessed = Js(o["accessed"]),
+        Pages = Js(o["pages"]), Url = Js(o["url"]), Doi = Js(o["doi"]), Accessed = Js(o["accessed"]), Origin = Js(o["origin"]),
     };
 
-    static JsonObject CiJson(CiteKit.Source s) => new()
+    static JsonObject CiJson(CiteKit.Source s)
     {
-        ["id"] = s.Id, ["kind"] = s.Kind, ["authors"] = s.Authors, ["title"] = s.Title, ["year"] = s.Year, ["publisher"] = s.Publisher, ["place"] = s.Place, ["edition"] = s.Edition,
-        ["journal"] = s.Journal, ["volume"] = s.Volume, ["issue"] = s.Issue, ["pages"] = s.Pages, ["url"] = s.Url, ["doi"] = s.Doi, ["accessed"] = s.Accessed,
-    };
+        var o = new JsonObject
+        {
+            ["id"] = s.Id, ["kind"] = s.Kind, ["authors"] = s.Authors, ["title"] = s.Title, ["year"] = s.Year, ["publisher"] = s.Publisher, ["place"] = s.Place, ["edition"] = s.Edition,
+            ["journal"] = s.Journal, ["volume"] = s.Volume, ["issue"] = s.Issue, ["pages"] = s.Pages, ["url"] = s.Url, ["doi"] = s.Doi, ["accessed"] = s.Accessed,
+        };
+        if (s.Origin.Length > 0) o["origin"] = s.Origin; // T-0735: Herkunft nur, wenn es eine gibt – ältere Dateien bleiben gleich
+        return o;
+    }
 
     public static List<CiteKit.Source> CiteSources(ProgramDocument d) => d.List("sources").OfType<JsonObject>().Select(CiSource).Where(s => s.Id.Length > 0).ToList();
     public static List<CiteKit.Quote> CiteQuotes(ProgramDocument d) =>
@@ -1109,7 +1114,8 @@ public partial class MainWindow
                 new ProgramCmd("cite-add-artikel", "Artikel", d => CiteAdd(d, "artikel")),
                 new ProgramCmd("cite-add-webseite", "Webseite", d => CiteAdd(d, "webseite")),
                 new ProgramCmd("cite-research", "Aus der Recherche übernehmen", d => CiteFromResearch(d), Tip: "Gelesene Seiten und Markierungen aus „Sicher recherchieren“."),
-                new ProgramCmd("cite-import", "BibTeX einlesen …", d => _ = CiPickBib(d)),
+                new ProgramCmd("cite-import", "BibTeX/RIS einlesen …", d => _ = CiPickImport(d)),
+                new ProgramCmd("cite-doi", "Aus DOI ergänzen", d => { var s = CiteSources(d).FirstOrDefault(x => x.Id == _ciSel); if (s is null || !CiteKit.ValidDoi(s.Doi)) throw new InvalidOperationException("Trag bei der gewählten Quelle eine DOI ein – oder rechts unter „Quelle aus DOI“."); _ = CiteFromDoiAsync(d, s.Doi); }, Tip: "Füllt die gewählte Quelle aus ihrer DOI (Crossref, öffentlich)."),
             ]),
             ("Stil", CiteKit.Styles.Select((s, i) => new ProgramCmd("cite-style-" + s.Id, s.Label, d => d.Set("style", s.Id, "Stil " + s.Label), Primary: i == 0)).ToList()),
             ("Prüfen", [
@@ -1123,11 +1129,13 @@ public partial class MainWindow
             new("md", "Literaturverzeichnis (.md)", ".md", (d, f) => { File.WriteAllText(f, CiteKit.Markdown(CiNeed(d), CiteQuotes(d), CiStyle(d))); return f; }),
             new("bib", "BibTeX (.bib)", ".bib", (d, f) => { File.WriteAllText(f, CiteKit.BibTex(CiNeed(d)), new UTF8Encoding(false)); return f; }),
             new("txt", "Nur Text (.txt)", ".txt", (d, f) => { File.WriteAllText(f, string.Join("\n\n", CiteKit.Bibliography(CiNeed(d), CiStyle(d)).Select(CiteKit.Plain)) + "\n"); return f; }),
+            new("ris", "RIS für Zotero, Citavi, EndNote (.ris)", ".ris", (d, f) => CiWriteText(f, CiteKit.Ris(CiNeed(d)))),
+            new("csl", "CSL-JSON für Zotero und Pandoc (.json)", ".json", (d, f) => CiWriteText(f, CiteKit.CslJson(CiNeed(d)))),
         ],
         Workspace = CiteWorkspace,
         Properties = CiteProperties,
         Status = d => { var s = CiteSources(d); var style = CiStyle(d); var miss = s.Count(x => CiteKit.Missing(x, style).Count > 0); return $"{s.Count} Quellen · {CiteQuotes(d).Count} Zitate · {CiteKit.Styles.First(x => x.Id == style).Label}" + (miss > 0 ? $" · ⚠ {miss} unvollständig" : ""); },
-        Help = "Oben eine Quelle anlegen (Buch, Artikel, Webseite), rechts die Angaben eintragen und Zitate mit Seite sammeln. Der Stil gilt für alle Quellen; fehlende Angaben stehen mit ⚠ an der Quelle. Webseiten aus „Sicher recherchieren“ übernimmst du mit einem Klick. Export als Literaturverzeichnis oder BibTeX für LaTeX und Zotero.",
+        Help = "Oben eine Quelle anlegen (Buch, Artikel, Webseite), rechts die Angaben eintragen und Zitate mit Seite sammeln. Der Stil gilt für alle Quellen; fehlende Angaben stehen mit ⚠ an der Quelle. Webseiten aus „Sicher recherchieren“ übernimmst du mit einem Klick, Artikel und Bücher füllst du aus ihrer DOI (Crossref). Einlesen aus BibTeX und RIS, Export als Literaturverzeichnis, BibTeX, RIS oder CSL-JSON für LaTeX, Zotero, Citavi und Pandoc.",
     }, "quellen", "zitieren", "literaturverzeichnis", "bibliografie", "apa", "harvard", "din iso 690", "bibtex", "zotero", "hausarbeit", "quellenangabe", "fußnote");
 
     static List<CiteKit.Source> CiNeed(ProgramDocument d) { var s = CiteSources(d); return s.Count > 0 ? s : throw new InvalidOperationException("Noch keine Quellen."); }
@@ -1161,6 +1169,7 @@ public partial class MainWindow
             card.Children.Add(new TextBlock { Text = CiteKit.Kinds.First(k => k.Id == s.Kind).Label + (quotes.Count(q => q.SourceId == s.Id) is var qc and > 0 ? $" · {qc} Zitat(e)" : ""), Foreground = Muted, FontSize = 11 });
             card.Children.Add(CiRich(CiteKit.Format(s, style), "cite-entry-" + n));
             if (missing.Count > 0) card.Children.Add(new TextBlock { Text = "⚠ Fehlt: " + string.Join(", ", missing), Foreground = K4Warn, FontSize = 11, TextWrapping = TextWrapping.Wrap });
+            if (s.Origin.Length > 0) card.Children.Add(new TextBlock { Name = "cite-origin-" + n, Text = "Herkunft: " + s.Origin, Foreground = Muted, FontSize = 10.5, TextWrapping = TextWrapping.Wrap });
             if (dupOf.TryGetValue(s.Id, out var other)) card.Children.Add(new TextBlock { Text = "⚠ Doppelt mit: " + string.Join("; ", other), Foreground = K4Warn, FontSize = 11, TextWrapping = TextWrapping.Wrap });
             var pick = new Button { Name = "cite-pick-" + n++, Content = card, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(10, 8),
                 Background = on ? Brush.Parse("#2A3A55") : Brush.Parse("#151D2B"), BorderBrush = on ? Accent : Brush.Parse("#22FFFFFF"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8) };
@@ -1243,6 +1252,7 @@ public partial class MainWindow
     Control CiteProperties(ProgramDocument d)
     {
         var sp = new StackPanel { Spacing = 4 };
+        sp.Children.Add(CiteDoiBox(d)); // T-0735
         sp.Children.Add(H("Aussage prüfen", 13));
         sp.Children.Add(P("Welche Aussage soll die gewählte Quelle belegen?", null, 11));
         var claim = KrBox(d, "claim", "cite-p-claim", "z. B. „Mulchen spart im Sommer Gießwasser.“", true); claim.MinHeight = 70;

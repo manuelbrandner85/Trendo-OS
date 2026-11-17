@@ -569,6 +569,8 @@ public static partial class CiteKit
         public string Doi { get; init; } = "";
         /// <summary>Abrufdatum JJJJ-MM-TT.</summary>
         public string Accessed { get; init; } = "";
+        /// <summary>T-0735: Herkunft der Angaben (z. B. „Crossref · Adresse · abgerufen … · SHA-256 …“); leer bei eigener Eingabe.</summary>
+        public string Origin { get; init; } = "";
     }
 
     public sealed record Quote(string Id, string SourceId, string Text, string Page, string Note = "");

@@ -1,0 +1,12 @@
+Herkunft: abandoned_hall_01 (abandoned_hall_01)
+Quelle: Poly Haven – https://polyhaven.com/a/abandoned_hall_01
+Lizenz: CC0 1.0 – frei nutzbar, auch kommerziell, ohne Namensnennung (https://creativecommons.org/publicdomain/zero/1.0/deed.de)
+Geladen: 2026-11-17 12:46 +01:00
+
+Dateien:
+- abandoned_hall_01_1k.hdr
+  Adresse: https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/abandoned_hall_01_1k.hdr
+  Größe: 1636687 Bytes
+  SHA-256: f16c526542d633b2be92fcf14d3fe9edb757c99895d772c199b02031d28daa76
+  Lizenz: CC0 1.0 · Quelle: https://polyhaven.com/a/abandoned_hall_01
+  MD5 laut Katalog: d5f7e66438f44dd986876fa1cf90acd9 (geprüft)

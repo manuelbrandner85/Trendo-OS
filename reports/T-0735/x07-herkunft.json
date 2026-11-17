@@ -1,0 +1,20 @@
+{
+  "asset": "abandoned_hall_01",
+  "name": "abandoned_hall_01",
+  "source": "Poly Haven",
+  "page": "https://polyhaven.com/a/abandoned_hall_01",
+  "license": "CC0 1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "loaded": "2026-11-17T12:46:47.3579282+01:00",
+  "files": [
+    {
+      "path": "abandoned_hall_01_1k.hdr",
+      "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/abandoned_hall_01_1k.hdr",
+      "size": 1636687,
+      "sha256": "f16c526542d633b2be92fcf14d3fe9edb757c99895d772c199b02031d28daa76",
+      "md5": "d5f7e66438f44dd986876fa1cf90acd9",
+      "license": "CC0 1.0",
+      "source": "https://polyhaven.com/a/abandoned_hall_01"
+    }
+  ]
+}

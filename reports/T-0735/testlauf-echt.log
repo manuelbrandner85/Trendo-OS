@@ -1,0 +1,31 @@
+# Rohlog T-0735 echter Abruf, 2026-11-17T12:46:32+01:00, Rechner <pc>
+== Cite_Echt
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    STUDIO-CITE-01 echt: DOI 10.1038/nature14539 bei Crossref über den echten Lese-Weg (übersprungen nur ohne Internet) [STARTING]
+    STUDIO-CITE-01 echt: DOI 10.1038/nature14539 bei Crossref über den echten Lese-Weg (übersprungen nur ohne Internet) [FINISHED] Time: 2,9489694s
+  Finished:    Trendo.App.Tests (ID = '67b60163f1272751a2a9239ce79a818aad0fec7fb8433945842cd267324836eb')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 3,272s
+== Sys08_Echt
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    SYS-08 echt: Wikipedia-Suche und Lesen des ersten Treffers über den echten Lese-Weg (übersprungen nur ohne Internet) [STARTING]
+    SYS-08 echt: Wikipedia-Suche und Lesen des ersten Treffers über den echten Lese-Weg (übersprungen nur ohne Internet) [FINISHED] Time: 2,7732923s
+  Finished:    Trendo.App.Tests (ID = '67b60163f1272751a2a9239ce79a818aad0fec7fb8433945842cd267324836eb')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 3,078s
+== X07_Echt
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    X-07 echt: KI-Auftrag „Quelle holen“ lädt nach Freigabe ein HDRI von Poly Haven mit Beleg je Datei (übersprungen nur ohne Internet) [STARTING]
+    X-07 echt: KI-Auftrag „Quelle holen“ lädt nach Freigabe ein HDRI von Poly Haven mit Beleg je Datei (übersprungen nur ohne Internet) [FINISHED] Time: 1,3802888s
+  Finished:    Trendo.App.Tests (ID = '67b60163f1272751a2a9239ce79a818aad0fec7fb8433945842cd267324836eb')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 1,696s

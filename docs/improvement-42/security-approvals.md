@@ -24,7 +24,7 @@ Die Tabelle folgt Abschnitt 7 des Auftrags. „Blockiert“ heißt: der gemeinsa
 
 ## Registrierte Adapter
 
-`PromptActions.CreateDefault()` registriert 82 Aktionen für alle 54 Katalogstudios. `CanPerformSideEffect` ist nur bei `datei.laden`, `datei.teilen`, `programm.installieren` und `programm.starten` wahr. Diese vier laufen nur in `ApprovalGate.Execute`, nach dem Knopf „Einmal freigeben“. Installieren verlangt zusätzlich die Lizenzdatei und ein Programm aus `DependencyCatalog`. Der Auftragstext „Freigabe: erteilt“ setzt das nicht.
+`PromptActions.CreateDefault()` registriert 82 Aktionen für alle 54 Katalogstudios. `CanPerformSideEffect` ist nur bei `datei.laden`, `datei.teilen`, `programm.installieren`, `programm.starten` und `quelle.holen` (X-07, seit T-0735: freies CC0-Stück von Poly Haven mit Lizenz- und Quellenbeleg je Datei) wahr. Diese fünf laufen nur in `ApprovalGate.Execute`, nach dem Knopf „Einmal freigeben“. Installieren verlangt zusätzlich die Lizenzdatei und ein Programm aus `DependencyCatalog`. Der Auftragstext „Freigabe: erteilt“ setzt das nicht.
 
 `SPEC-09` und `SPEC-12` bleiben `blocked`. `Gesperrte_Studios_schreiben_nichts` startet sie mit „Freigabe: erteilt“. Es entsteht keine Datei. Kamera, Mikrofon, Roboter, Handy-Verbindung, Kopplung, Explorer, Reparatur, Theme, Desktop und Geheimniswerte bleiben ohne Wirkung. Lesen (Namen, Liste, Protokoll, Speichername) schreibt nur eine Textdatei.
 
