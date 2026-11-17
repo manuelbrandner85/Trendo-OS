@@ -112,6 +112,13 @@ class Program
             core.Shutdown();
             return rc;
         }
+        if (Arg(WorkflowTaskPlan.Switch) is { } wfId)
+        {
+            // T-0742: Start durch die Windows-Aufgabe – genau diesen Ablauf ausführen, wenn er dran ist, ohne Fenster, dann beenden
+            var core = new TrendoCore(Options.DataRoot ?? TrendoCore.DefaultDataRoot(), launcher: new NoopLauncher());
+            try { return MainWindow.RunWorkflowHeadless(core, wfId, Console.Out); }
+            finally { core.Shutdown(); }
+        }
         // Absturzschutz (Rückmeldung 03.11.2026 „schließt sich einfach“): Fehler auf der Oberfläche werden protokolliert und abgefangen,
         // statt Trendo zu beenden – außer bei Speichermangel und ähnlichen schweren Fehlern
         Avalonia.Threading.Dispatcher.UIThread.UnhandledException += (_, e) =>

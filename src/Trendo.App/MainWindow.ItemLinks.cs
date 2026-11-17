@@ -89,7 +89,14 @@ public partial class MainWindow
     public LinkSlot WfLink => ItemSlot("ablaeufe", "ablaeufe", "wf", "Ein Ablauf", "Abläufe",
         (id, v) =>
         {
-            if (v is null || Workflows.Get(id) is not { } w) return;
+            // T-0742: ein von der KI angelegter Ablauf hat „vorher“ = nichts – Rückgängig entfernt ihn (samt Windows-Aufgabe), Wiederholen legt ihn wieder an (aus)
+            if (v is null)
+            {
+                if (Workflows.Get(id) is not { } gone) return;
+                if (gone.WinTask is not null) WfRemoveTask(gone);
+                Workflows.Remove(id); if (WfSelected == id) WfSelected = null; WfNode = -1; return;
+            }
+            var w = Workflows.Get(id) ?? Workflows.Add(new Workflow { Id = id, Enabled = false });
             WfRestore(w, v.GetValue<string>()); Workflows.Update(w); WfSelected = id; WfNode = Math.Min(WfNode, w.Steps.Count - 1);
         });
 

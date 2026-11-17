@@ -1,0 +1,37 @@
+{
+  "Id": "d87a0c62",
+  "Name": "Täglicher Tagesbericht",
+  "Enabled": false,
+  "Trigger": 1,
+  "At": "00:01",
+  "EveryMinutes": 60,
+  "WatchFolder": "",
+  "WatchPattern": "*",
+  "Steps": [
+    {
+      "Kind": 0,
+      "From": "",
+      "To": "<testordner>\\heim\\Berichte",
+      "Pattern": "*",
+      "Text": ""
+    },
+    {
+      "Kind": 4,
+      "From": "",
+      "To": "<testordner>\\heim\\Berichte\\Tagesbericht_{datum}.txt",
+      "Pattern": "*",
+      "Text": "Tagesbericht – Trendo war hier."
+    }
+  ],
+  "ApprovedHash": null,
+  "LastRun": null,
+  "KnownFiles": [],
+  "FailCount": 0,
+  "LastError": null,
+  "LastAttempt": null,
+  "Days": [],
+  "Origin": "Schreib mir jeden Tag um 0:01 Uhr im Ordner Berichte eine Textdatei mit dem heutigen Datum im Namen, Inhalt: Tagesbericht – Trendo war hier.",
+  "WinTask": null,
+  "NeedsApproval": false,
+  "IsApproved": true
+}

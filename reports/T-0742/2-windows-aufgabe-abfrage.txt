@@ -1,0 +1,30 @@
+
+Ordner: \
+Hostname:                                                    <pc>
+Aufgabenname:                                                \Trendo-Ablauf-d87a0c62-82CB75
+Nächste Laufzeit:                                            18.11.2026 00:01:00
+Status:                                                      Bereit
+Anmeldemodus:                                                Nur interaktiv
+Letzte Laufzeit:                                             30.11.1999 00:00:00
+Letztes Ergebnis:                                            267011
+Autor:                                                       Trendo OS
+Auszuführende Aufgabe:                                       C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0742\src\Trendo.App\bin\Release\net10.0\TrendoOS.exe --ablauf-faellig d87a0c62 --data-root "<testordner>"
+Starten in:                                                  Nicht zutreffend
+Kommentar:                                                   Von Trendo OS angelegt (mit deiner Zustimmung): startet den Ablauf "Täglicher Tagesbericht" (d87a0c62), auch wenn Trendo geschlossen ist. In Trendo unter "Abläufe" mit einem Klick entfernbar.
+Status der geplanten Aufgabe:                                Aktiviert
+Leerlaufzeit:                                                Deaktiviert
+Energieverwaltung:                                           
+Als Benutzer ausführen:                                      <user>
+Aufgabe löschen, falls nicht verlegt:                        Deaktiviert
+Aufgabe beenden, falls sie X St. und X Min. ausgeführt wird: 02:00:00
+Zeitplan:                                                    Zeitplaninformationen sind in diesem Format nicht verfügbar.
+Zeitplantyp:                                                 Täglich 
+Startzeit:                                                   00:01:00
+Startdatum:                                                  17.11.2026
+Enddatum:                                                    Nicht zutreffend
+Tage:                                                        Alle 1 Tag(e)
+Monate:                                                      Nicht zutreffend
+Wiederholung: Jede(n):                                       Deaktiviert
+Wiederholung: Bis: Zeit:                                     Deaktiviert
+Wiederholung: Bis: Dauer:                                    Deaktiviert
+Wiederholung: Beenden, falls immer noch ausgeführt:          Deaktiviert

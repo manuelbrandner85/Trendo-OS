@@ -38,8 +38,17 @@ public sealed class Workflow
     public string? LastError { get; set; }
     /// <summary>T-0681: Zeitpunkt des letzten Versuchs, geglückt oder nicht.</summary>
     public DateTimeOffset? LastAttempt { get; set; }
+    /// <summary>T-0742: Bedingung „nur an diesen Wochentagen“ für tägliche Abläufe (leer = jeden Tag).</summary>
+    public List<DayOfWeek> Days { get; set; } = [];
+    /// <summary>T-0742: Satz, aus dem die KI diesen Ablauf angelegt hat (null = von Hand oder aus einer Vorlage). Einschalten fragt dann nach.</summary>
+    public string? Origin { get; set; }
+    /// <summary>T-0742: Zeitplan, mit dem die Windows-Aufgabe angelegt wurde (null = keine). Weicht er vom aktuellen ab, muss sie erneuert werden.</summary>
+    public string? WinTask { get; set; }
 
-    public string Hash() => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new { Trigger, At, EveryMinutes, WatchFolder, WatchPattern, Steps }))))[..16];
+    /// <summary>Wochentage gehören zum Inhalt – aber nur, wenn gesetzt: so bleiben Freigaben älterer Abläufe gültig.</summary>
+    public string Hash() => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(Days.Count == 0
+        ? JsonSerializer.Serialize(new { Trigger, At, EveryMinutes, WatchFolder, WatchPattern, Steps })
+        : JsonSerializer.Serialize(new { Trigger, At, EveryMinutes, WatchFolder, WatchPattern, Steps, Days = Days.Distinct().Order().ToList() }))))[..16];
     /// <summary>T-0698: Ein Agent handelt selbstständig – ein Ablauf mit „Agent ausführen“ braucht wie Verschieben/Umbenennen deine Freigabe.</summary>
     public bool NeedsApproval => Steps.Any(s => s.Kind is StepKind.Verschieben or StepKind.DatumVoranstellen or StepKind.AgentAusfuehren);
     public bool IsApproved => !NeedsApproval || ApprovedHash == Hash();
@@ -101,6 +110,7 @@ public sealed class WorkflowEngine
         Directory.CreateDirectory(Path.GetDirectoryName(_file)!);
         _allowed = (allowedRoots ?? [Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)]).Where(r => r != "").Select(r => Path.GetFullPath(r).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar).ToList();
         _items = Load();
+        Stamp();
     }
 
     /// <summary>T-0681: Eine beschädigte Datei wird nicht still als „keine Abläufe“ gelesen: Sie wird als „.beschaedigt-&lt;zeit&gt;“ aufgehoben und gemeldet.
@@ -167,6 +177,8 @@ public sealed class WorkflowEngine
     public Workflow Add(Workflow w) { _items.Add(w); Save(); _audit.Append(Principal.LocalOwner.Name, "workflow.add", $"{w.Id} {w.Name}"); return w; }
     public void Update(Workflow w) { w.FailCount = 0; Save(); _audit.Append(Principal.LocalOwner.Name, "workflow.update", $"{w.Id} hash={w.Hash()}"); }
     public bool Remove(string id) { var n = _items.RemoveAll(w => w.Id == id); Save(); return n > 0; }
+    /// <summary>T-0742: Zeitplan der angelegten Windows-Aufgabe merken (null = keine Aufgabe). Ändert nichts am Inhalt, keine neue Freigabe nötig.</summary>
+    public void NoteWinTask(Workflow w, string? schedule) { w.WinTask = schedule; Save(); }
 
     public ApprovalRequest RequestApproval(Workflow w, string? preview = null, Principal? by = null) => _gate.Request(by ?? Principal.LocalOwner, "workflow.approve", $"Ablauf „{w.Name}“ darf Dateien verschieben/umbenennen", $"{w.Id}:{w.Hash()}", TimeSpan.FromHours(1), preview);
 
@@ -177,10 +189,51 @@ public sealed class WorkflowEngine
         Save();
     }
 
+    /// <summary>T-0742: Ein von der KI angelegter Ablauf ist zuerst aus. Er startet erst, wenn du ihn ausdrücklich einschaltest – über diese Freigabe,
+    /// gebunden an genau diesen Inhalt.</summary>
+    public ApprovalRequest RequestEnable(Workflow w, string? preview = null, Principal? by = null) => _gate.Request(by ?? Principal.LocalOwner, "workflow.enable", $"Ablauf „{w.Name}“ einschalten", $"{w.Id}:{w.Hash()}", TimeSpan.FromHours(1), preview);
+
+    public void ApplyEnable(Workflow w, string requestId)
+    {
+        _gate.Execute(requestId, "workflow.enable", $"{w.Id}:{w.Hash()}", () => { w.Enabled = true; return true; });
+        w.FailCount = 0;
+        Save();
+    }
+
     public bool InAllowed(string path)
     {
         var full = Path.GetFullPath(path);
         return _allowed.Any(r => (full + Path.DirectorySeparatorChar).StartsWith(r, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal));
+    }
+
+    /// <summary>T-0742: Ist ein zeitgesteuerter Ablauf (täglich/Intervall) jetzt dran? Gleiche Regel für den Minutentakt und den Start durch die Windows-Aufgabe.</summary>
+    public static bool IsTimeDue(Workflow w, DateTimeOffset now)
+    {
+        if (!w.Enabled) return false;
+        switch (w.Trigger)
+        {
+            case TriggerKind.Taeglich when TimeOnly.TryParse(w.At, out var at):
+                if (w.Days.Count > 0 && !w.Days.Contains(now.DayOfWeek)) return false; // Bedingung: nur an diesen Wochentagen
+                var today = new DateTimeOffset(now.Date + at.ToTimeSpan(), now.Offset);
+                return now >= today && (w.LastRun is null || w.LastRun < today) && !(w.FailCount >= MaxRetries && w.LastAttempt >= today); // nach der Obergrenze erst morgen wieder
+            case TriggerKind.Intervall when w.EveryMinutes > 0:
+                return (w.LastRun is null || now - w.LastRun >= TimeSpan.FromMinutes(w.EveryMinutes))
+                    && !(w.FailCount >= MaxRetries && w.LastAttempt is { } tried && now - tried < TimeSpan.FromMinutes(w.EveryMinutes)); // nach der Obergrenze erst zum nächsten Intervall
+            default: return false;
+        }
+    }
+
+    /// <summary>T-0742: Start durch die Windows-Aufgabe (Trendo geschlossen): genau diesen Ablauf ausführen, wenn er dran ist – sonst nichts.
+    /// Liefert den Lauf oder null mit Grund. Andere Abläufe (z. B. „neue Datei“) werden nicht angefasst.</summary>
+    public async Task<(WfRun? Run, string Why)> RunOneIfDueAsync(string id, DateTimeOffset now)
+    {
+        SyncFromDisk();
+        if (Get(id) is not { } w) return (null, "Diesen Ablauf gibt es nicht (mehr).");
+        if (!w.Enabled) return (null, "Der Ablauf ist ausgeschaltet.");
+        if (w.Trigger is not (TriggerKind.Taeglich or TriggerKind.Intervall)) return (null, "Nur zeitgesteuerte Abläufe starten über die Windows-Aufgabe.");
+        if (_gate.Halted) return (null, "Der Not-Stopp ist aktiv.");
+        if (!IsTimeDue(w, now)) return (null, "Der Ablauf ist gerade nicht dran (schon gelaufen oder andere Uhrzeit/Wochentag).");
+        return (await RunAsync(w, false, null, now), "gelaufen");
     }
 
     /// <summary>Welche Abläufe sind jetzt dran? Neue-Datei-Auslöser merken sich bekannte Dateien.</summary>
@@ -190,13 +243,8 @@ public sealed class WorkflowEngine
         foreach (var w in _items.Where(w => w.Enabled))
             switch (w.Trigger)
             {
-                case TriggerKind.Taeglich when TimeOnly.TryParse(w.At, out var at):
-                    var today = new DateTimeOffset(now.Date + at.ToTimeSpan(), now.Offset);
-                    if (now >= today && (w.LastRun is null || w.LastRun < today) && !(w.FailCount >= MaxRetries && w.LastAttempt >= today)) due.Add((w, null)); // nach der Obergrenze erst morgen wieder
-                    break;
-                case TriggerKind.Intervall when w.EveryMinutes > 0:
-                    if ((w.LastRun is null || now - w.LastRun >= TimeSpan.FromMinutes(w.EveryMinutes))
-                        && !(w.FailCount >= MaxRetries && w.LastAttempt is { } tried && now - tried < TimeSpan.FromMinutes(w.EveryMinutes))) due.Add((w, null)); // nach der Obergrenze erst zum nächsten Intervall
+                case TriggerKind.Taeglich or TriggerKind.Intervall:
+                    if (IsTimeDue(w, now)) due.Add((w, null));
                     break;
                 case TriggerKind.NeueDatei when Directory.Exists(w.WatchFolder):
                     var files = Directory.GetFiles(w.WatchFolder, w.WatchPattern).Select(Path.GetFileName).OfType<string>().ToList();
@@ -304,7 +352,7 @@ public sealed class WorkflowEngine
         var res = new List<WfRun>();
         if (_gate.Halted) return res; // Not-Stopp: zeitgesteuerte Abläufe ruhen
         if (Interlocked.Exchange(ref _dueBusy, 1) == 1) return res; // der vorige Zeitgeber-Durchlauf ist noch nicht fertig
-        try { foreach (var (w, f) in Due(now)) res.Add(await RunAsync(w, false, f, now)); }
+        try { SyncFromDisk(); foreach (var (w, f) in Due(now)) res.Add(await RunAsync(w, false, f, now)); }
         finally { Volatile.Write(ref _dueBusy, 0); }
         return res;
     }
@@ -346,6 +394,7 @@ public sealed class WorkflowEngine
     private void Save()
     {
         if (_saveBlocked) throw new IOException(LoadProblem);
+        SyncFromDisk(); // T-0742: Laufstände eines anderen Trendo-Prozesses nicht überschreiben
         var tmp = _file + "." + Guid.NewGuid().ToString("N")[..8] + ".tmp";
         try
         {
@@ -357,7 +406,30 @@ public sealed class WorkflowEngine
             for (var i = 0; ; i++)
                 try { File.Move(tmp, _file, overwrite: true); break; }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException && i < 20) { Thread.Sleep(25); } // kurz von einem Leser belegt
+            Stamp();
         }
         finally { try { File.Delete(tmp); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { } }
+    }
+
+    // T-0742: Stand der Datei beim letzten eigenen Lesen/Schreiben – ändert ihn ein anderer Prozess (Start durch die Windows-Aufgabe), wird abgeglichen.
+    private DateTime _stamp;
+    private void Stamp() { try { _stamp = File.Exists(_file) ? File.GetLastWriteTimeUtc(_file) : default; } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { } }
+
+    /// <summary>T-0742: Hat ein anderer Trendo-Prozess (z. B. der Start durch die Windows-Aufgabe, während Trendo offen ist) Läufe eingetragen,
+    /// übernimmt dieser Prozess die Laufstände (zuletzt gelaufen, Fehler) – sonst liefe ein Ablauf doppelt oder der Eintrag ginge beim nächsten Speichern verloren.
+    /// Inhalte (Schritte, Auslöser) bleiben, wie sie hier sind.</summary>
+    public void SyncFromDisk()
+    {
+        if (_saveBlocked || !File.Exists(_file)) return;
+        DateTime t;
+        try { t = File.GetLastWriteTimeUtc(_file); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { return; }
+        if (t == _stamp) return;
+        List<Workflow>? disk;
+        try { disk = JsonSerializer.Deserialize<List<Workflow>>(File.ReadAllText(_file)); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException) { return; }
+        _stamp = t;
+        foreach (var d in disk ?? [])
+            if (d is not null && Get(d.Id) is { } m && d.LastAttempt is { } da && (m.LastAttempt is null || da > m.LastAttempt))
+            { m.LastRun = d.LastRun; m.LastAttempt = d.LastAttempt; m.FailCount = d.FailCount; m.LastError = d.LastError; }
     }
 }
