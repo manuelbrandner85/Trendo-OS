@@ -69,6 +69,82 @@ public class TonT0732_Ui
         finally { w.Close(); }
     }
 
+    /// <summary>Prüft, dass FFmpeg die WAV ordentlich abgeschlossen hat: RIFF- und data-Größe stehen im Kopf (bei einem abgebrochenen Lauf bleiben sie 0).</summary>
+    static void AssertFinishedWav(string f)
+    {
+        var b = File.ReadAllBytes(f);
+        Assert.Equal("RIFF", System.Text.Encoding.ASCII.GetString(b, 0, 4));
+        Assert.Equal(b.Length - 8, BitConverter.ToInt32(b, 4));
+        var i = 12;
+        while (i + 8 <= b.Length && System.Text.Encoding.ASCII.GetString(b, i, 4) != "data") i += 8 + BitConverter.ToInt32(b, i + 4);
+        Assert.True(i + 8 <= b.Length, "kein data-Block");
+        Assert.Equal(b.Length - i - 8, BitConverter.ToInt32(b, i + 4));
+    }
+
+    [AvaloniaFact(DisplayName = "T-0732 Gegenprüfung Ton (UI): Fenster schließen während der Aufnahme – WAV sauber abgeschlossen, unter „Aufnahmen“, ins Dokument übernommen und von der Hülle gesichert – echtes FFmpeg")]
+    public async Task Close_during_recording_keeps_it()
+    {
+        if (Cli.Find("ffmpeg") is null) { Assert.Skip("Übersprungen – FFmpeg fehlt auf diesem PC."); return; }
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000; Directory.CreateDirectory(root);
+        try
+        {
+            w.MicInputOverride = () => ["-re", "-f", "lavfi", "-i", "sine=frequency=440:sample_rate=44100:duration=600"];
+            var src = Tone(root, "sprache.wav", 2);
+            w.Show("ton"); Settle();
+            RealClick(w, V<Button>(w, "prog-tpl-leer")); Settle();
+            w.AuOpen(src); w.AuSel = (2, 2); w.Show("ton"); Settle();
+            var d = w.ProgramActive("ton")!;
+            w.AuRecordStart(d); w.Show("ton"); Settle();
+            var t = System.Diagnostics.Stopwatch.StartNew();
+            while (w.AuRecSeconds < 2.2 && t.Elapsed < TimeSpan.FromSeconds(30)) { await Task.Delay(50); Settle(); }
+            Assert.True(w.AuRecording);
+            var closing = System.Diagnostics.Stopwatch.StartNew();
+            w.Close(); // mitten in der Aufnahme, ohne „Stopp“
+            Assert.False(w.AuRecording);
+            Assert.True(closing.Elapsed < TimeSpan.FromSeconds(5), $"Schließen dauerte {closing.Elapsed.TotalSeconds:0.0} s"); // FFmpeg endet auf „q“, kein Warten bis zum Zeitlimit
+            var rec = Assert.Single(Directory.GetFiles(Path.Combine(w.MediaFolder, "Aufnahmen"), "*.wav"));
+            AssertFinishedWav(rec);
+            Assert.InRange(AudioFile.Read(rec).Seconds, 2.0, 5.0);
+            Assert.InRange(MediaStudio.Duration("ffmpeg", rec) ?? 0, 2.0, 5.0); // auch FFmpeg selbst liest die Datei
+            // im Dokument, rückgängig machbar, und die Notsicherung der Hülle enthält sie
+            Assert.Equal("Datei einfügen", d.UndoLabel);
+            var backups = Directory.GetFiles(Path.Combine(root, "programme", "sicherung"), "*.tdoc");
+            var saved = backups.Select(f => Trendo.Core.Programs.ProgramDocument.Load(f)).Single(x => x.List("ops").ToJsonString().Contains("Aufnahmen", StringComparison.Ordinal));
+            Assert.InRange(AudioEdit.Render(saved.Data).Seconds, 2 + 2.0, 2 + 5.0);
+        }
+        finally { if (w.IsVisible) w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0732 Gegenprüfung Ton (UI): Dokument während der Aufnahme gewechselt – die Aufnahme landet im Dokument, in dem sie gestartet wurde – echtes FFmpeg")]
+    public async Task Recording_goes_to_started_document()
+    {
+        if (Cli.Find("ffmpeg") is null) { Assert.Skip("Übersprungen – FFmpeg fehlt auf diesem PC."); return; }
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000; Directory.CreateDirectory(root);
+        try
+        {
+            w.MicInputOverride = () => ["-re", "-f", "lavfi", "-i", "sine=frequency=440:sample_rate=44100:duration=600"];
+            w.Show("ton"); Settle();
+            RealClick(w, V<Button>(w, "prog-tpl-leer")); Settle();
+            w.AuOpen(Tone(root, "erste.wav", 2)); w.AuSel = (2, 2); w.Show("ton"); Settle();
+            var a = w.ProgramActive("ton")!;
+            w.AuRecordStart(a); Settle();
+            var b = w.ProgramNew("ton", "leer"); w.AuOpen(Tone(root, "zweite.wav", 1)); w.Show("ton"); Settle();
+            Assert.Same(b, w.ProgramActive("ton"));
+            var opsB = b.List("ops").ToJsonString();
+            var t = System.Diagnostics.Stopwatch.StartNew();
+            while (w.AuRecSeconds < 1.5 && t.Elapsed < TimeSpan.FromSeconds(30)) { await Task.Delay(50); Settle(); }
+            Assert.NotNull(await w.AuRecordStop()); Settle();
+            Assert.Same(b, w.ProgramActive("ton")); // vorn bleibt, was vorn war
+            Assert.Equal(opsB, b.List("ops").ToJsonString()); // das zweite Dokument ist unberührt
+            Assert.Equal(1, AudioEdit.Render(b.Data).Seconds, 2);
+            Assert.Equal("Datei einfügen", a.UndoLabel);
+            Assert.InRange(AudioEdit.Render(a.Data).Seconds, 2 + 1.4, 2 + 4.5);
+            Assert.Contains("„" + a.Title + "“", w.ProgramMessage("ton"));
+            a.Undo(); Assert.Equal(2, AudioEdit.Render(a.Data).Seconds, 2); // rückgängig im richtigen Dokument
+        }
+        finally { if (w.IsVisible) w.Close(); }
+    }
+
     [AvaloniaFact(DisplayName = "T-0732 Ton (UI): Leertaste startet und hält die Wiedergabe an – auf der Welle, nicht beim Tippen in Feldern")]
     public void Space_plays_and_stops()
     {
@@ -218,5 +294,29 @@ public class MedienStapelT0732_Ui
             Assert.Contains("abgebrochen", ((TextBlock)w.Find<Border>("w45-msg").Child!).Text);
         }
         finally { w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0732 Gegenprüfung Medien (UI): Fenster schließen bricht den laufenden Stapel ab – FFmpeg endet, keine Zwischendatei im Ausgabeordner")]
+    public async Task Close_cancels_batch()
+    {
+        if (Cli.Find("ffmpeg") is null) { Assert.Skip("Übersprungen – FFmpeg fehlt auf diesem PC."); return; }
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000; Directory.CreateDirectory(root);
+        try
+        {
+            var src = Path.Combine(root, "quelle"); Directory.CreateDirectory(src);
+            var files = new[] { Video(src, "lang1.mp4", 40, "1280x720"), Video(src, "lang2.mp4", 40, "1280x720") };
+            var outDir = Path.Combine(root, "fertig"); w.MediaBatchOut = outDir;
+            w.Show("kreativ-medien"); Settle();
+            w.MediaBatchAdd(files); w.MediaBatchJob = "small"; Settle();
+            BueroAusbau_Ui.Click(w, "media-batch-start");
+            await Wait(w, () => w.MediaBatchItems[0].Fraction > 0.02, 60);
+            Assert.True(w.MediaBatchRunning);
+            Assert.NotEmpty(Directory.GetFiles(outDir, "*.teil*")); // die Zwischendatei wird gerade geschrieben
+            w.Close(); // ohne „Abbrechen“
+            Assert.False(w.MediaBatchRunning, "Stapel läuft nach dem Schließen weiter");
+            Assert.All(w.MediaBatchItems, i => Assert.Equal(MediaBatchState.Abgebrochen, i.State));
+            Assert.Empty(Directory.GetFiles(outDir));
+        }
+        finally { if (w.IsVisible) w.Close(); }
     }
 }

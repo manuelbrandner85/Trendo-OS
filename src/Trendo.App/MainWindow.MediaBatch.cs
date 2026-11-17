@@ -20,6 +20,7 @@ public partial class MainWindow
     string? _mbOut;
     CancellationTokenSource? _mbCts;
     Task? _mbTask;
+    string? _mbRunOut;
     readonly List<(MediaBatchItem It, ProgressBar Bar, TextBlock Label)> _mbRows = [];
 
     /// <summary>Dateien im Stapel (öffentlich für Tests).</summary>
@@ -66,7 +67,7 @@ public partial class MainWindow
         foreach (var i in todo) i.Reset();
         var job = MediaStudio.Jobs.First(j => j.Id == _mbJob); var outDir = MediaBatchOut;
         if (File.Exists(outDir)) { Say("Der Ausgabeordner ist eine Datei – bitte unter „Ausgabeordner …“ einen Ordner wählen.", MBK); return Task.CompletedTask; }
-        _mbCts = new CancellationTokenSource(); var ct = _mbCts.Token;
+        _mbCts = new CancellationTokenSource(); var ct = _mbCts.Token; _mbRunOut = outDir;
         _core.Audit.Append(Principal.LocalOwner.Name, "media.batch.start", $"{job.Id} n={todo.Count}");
         _w45Msg = $"Stapel läuft: {job.Label} für {todo.Count} Datei(en) …";
         _mbTask = Task.Run(() => MediaBatch.RunAsync(ff, todo, job.Id, outDir, it => Dispatcher.UIThread.Post(() => MediaBatchPaint(it)), ct, _mediaStart, Math.Max(0.1, _mediaEnd - _mediaStart)))
@@ -77,6 +78,20 @@ public partial class MainWindow
 
     /// <summary>Laufenden Stapel abbrechen: die Datei in Arbeit wird verworfen (keine halbe Datei), die übrigen bleiben „abgebrochen“.</summary>
     public void MediaBatchCancel() { if (MediaBatchRunning) { _mbCts?.Cancel(); _w45Msg = "Wird abgebrochen …"; if (CurrentView == MBK) Show(MBK); } }
+
+    /// <summary>Gegenprüfung T-0732: Beim Schließen von Trendo einen laufenden Stapel abbrechen (FFmpeg wird beendet) und kurz warten, bis die
+    /// Zwischendatei gelöscht ist. Hängt etwas, räumt Trendo die eigenen Zwischendateien (<c>*.~xxxxxxxx.teil.*</c>) im Ausgabeordner selbst weg.
+    /// Fertige Ergebnisse bleiben unberührt.</summary>
+    public void MediaBatchStopOnClose(int waitMs = 15000)
+    {
+        if (!MediaBatchRunning || _mbTask is not { } t) return;
+        var outDir = _mbRunOut;
+        try { _mbCts?.Cancel(); } catch (ObjectDisposedException) { }
+        var done = false;
+        try { done = t.Wait(waitMs); } catch (AggregateException) { done = true; }
+        if (done || outDir is null || !Directory.Exists(outDir)) return;
+        foreach (var f in Directory.GetFiles(outDir, "*.~*.teil*")) TryDelete(f);
+    }
 
     void MediaBatchDone(MediaJob job, List<MediaBatchItem> todo, string outDir, AggregateException? ex)
     {

@@ -98,16 +98,37 @@ public partial class MainWindow
     public async Task<string?> AuRecordStop()
     {
         if (_auRec is not { } r) return null;
+        var (d, secs, max) = AuRecordTake(r);
+        var wav = await Task.Run(() => r.Stop());
+        return AuRecordFinish(r, wav, d, secs, max, redraw: true);
+    }
+
+    /// <summary>Gegenprüfung T-0732: Beim Schließen des Fensters (oder von Trendo) eine laufende Aufnahme nicht verlieren – FFmpeg bekommt wie bei „Stopp“
+    /// ein „q“ und schließt die WAV sauber ab, die Aufnahme kommt nach „Aufnahmen“ und in das Dokument, in dem sie gestartet wurde. Die Hülle sichert
+    /// das Dokument direkt danach (<see cref="ProgramAutosaveAll"/>), beim nächsten Start bietet sie es zum Wiederherstellen an.</summary>
+    public string? AuRecordStopOnClose()
+    {
+        if (_auRec is not { } r) return null;
+        var (d, secs, max) = AuRecordTake(r);
+        var wav = r.Stop(5000);
+        return AuRecordFinish(r, wav, d, secs, max, redraw: false);
+    }
+
+    (ProgramDocument? Doc, double Secs, double Max) AuRecordTake(MicRecorder r)
+    {
         _auRec = null; _auRecTimer?.Stop();
         var d = _auRecDoc; _auRecDoc = null;
-        var secs = r.Seconds; var max = r.MaxLevel;
-        var wav = await Task.Run(() => r.Stop());
+        return (d, r.Seconds, r.MaxLevel);
+    }
+
+    string? AuRecordFinish(MicRecorder r, string? wav, ProgramDocument? d, double secs, double max, bool redraw)
+    {
         var err = r.Errors; r.Dispose();
         if (wav is null || secs < 0.05)
         {
             TryDelete(r.Wav);
             _progMsg[AUK] = "Aufnahme ging nicht" + (err.Length > 0 ? ": " + Short(err) : " – kam vom Mikrofon nichts an?");
-            if (CurrentView == AUK) Show(AUK); return null;
+            if (redraw && CurrentView == AUK) Show(AUK); return null;
         }
         var dir = Path.Combine(WorkFolder("Medien"), "Aufnahmen"); Directory.CreateDirectory(dir);
         var keep = Path.Combine(dir, $"Aufnahme {DateTime.Now:yyyy-MM-dd HH-mm-ss}.wav");
@@ -116,14 +137,32 @@ public partial class MainWindow
         _core.Audit.Append(Principal.LocalOwner.Name, "audio.aufnahme.ende", $"{secs:0.0}s");
         try
         {
-            if (d is not null && AudioMulti.IsMulti(d.Data)) AuAddTrack(keep);
-            else if (d is null || AuRendered(d) is null) AuOpen(keep);
-            else AuInsertFile(keep);
-            _progMsg[AUK] = $"Aufnahme ({AudioEdit.Time(AudioFile.Read(keep).Seconds)}) eingefügt – gespeichert unter „Aufnahmen“." + (max >= 0.99 ? " Achtung: zu laut, stellenweise übersteuert." : "");
+            var where = AuRecordInsert(d, keep);
+            _progMsg[AUK] = $"Aufnahme ({AudioEdit.Time(AudioFile.Read(keep).Seconds)}) eingefügt{where} – gespeichert unter „Aufnahmen“." + (max >= 0.99 ? " Achtung: zu laut, stellenweise übersteuert." : "");
         }
         catch (Exception ex) when (ex is InvalidOperationException or IOException) { _progMsg[AUK] = "Aufnahme gespeichert, aber nicht eingefügt: " + ex.Message; }
-        if (CurrentView == AUK) Show(AUK);
+        if (redraw && CurrentView == AUK) Show(AUK);
         return keep;
+    }
+
+    /// <summary>Gegenprüfung T-0732: Die Aufnahme gehört in das Dokument, in dem sie gestartet wurde – auch wenn inzwischen ein anderes vorn ist.
+    /// Dafür wird das gemerkte Dokument kurz aktiv (Marke, Mehrspur, Rückgängig gelten dort) und danach das vordere wieder hergestellt.
+    /// Wurde es inzwischen geschlossen, entsteht ein neues Dokument mit der Aufnahme. Liefert einen Zusatz für die Meldung.</summary>
+    string AuRecordInsert(ProgramDocument? d, string keep)
+    {
+        var l = ProgramDocs(AUK); var idx = d is null ? -1 : l.IndexOf(d);
+        if (d is null) { AuOpen(keep); return ""; }
+        if (idx < 0) { ProgramNew(AUK, "leer"); AuOpen(keep); return " (als neues Dokument – das alte war geschlossen)"; }
+        var prev = _progActive.GetValueOrDefault(AUK);
+        _progActive[AUK] = idx;
+        try
+        {
+            if (AudioMulti.IsMulti(d.Data)) AuAddTrack(keep);
+            else if (AuRendered(d) is null) AuOpen(keep);
+            else AuInsertFile(keep);
+        }
+        finally { if (prev != idx && prev < l.Count) _progActive[AUK] = prev; }
+        return prev != idx ? $" in „{d.Title}“" : "";
     }
 
     /// <summary>Leiste „Aufnahme läuft“ über der Wellenform: Zeit, Pegel, Stopp.</summary>
