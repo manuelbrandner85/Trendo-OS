@@ -113,7 +113,7 @@ public partial class MainWindow
     // ---------- Großprojekte als Kanban-Tafel ----------
     public string? BigProject { get; set; }
     public string? BigCard { get; set; }
-    bool _bigNew, _bigDelArmed; string _bigMsg = "";
+    bool _bigNew, _bigDelArmed, _bigKeys; string _bigMsg = "";
     public BigBoard? BigBoardNow => BigProject is { } id ? BigBoards.Load(_core.Projects, id) : null;
 
     void BigChange(Action<BigBoard> change)
@@ -142,6 +142,18 @@ public partial class MainWindow
         return hit is Control { Tag: int col } ? col : -1;
     }
 
+    /// <summary>T-0743: Studio und Stand der Karte in einer Zeile.</summary>
+    static string BigCardLine(BoardCard c)
+    {
+        var st = c.Program is { } k && Programs.TryGetValue(k, out var ps) ? ps.Title : null;
+        return c.Status switch
+        {
+            BigBoardHandoff.Done => "✓ erledigt" + (st is null ? "" : " · " + st),
+            BigBoardHandoff.Handed => "→ übergeben an " + (st ?? c.Studio),
+            _ => st is null ? "" : "Studio: " + st,
+        };
+    }
+
     private Control BigBoardView()
     {
         const string V = "produktion";
@@ -151,7 +163,7 @@ public partial class MainWindow
 
         // ── links: Großprojekte ──
         var left = new StackPanel { Name = "big-projects", Spacing = 4 };
-        left.Children.Add(Act("big-new", "＋ Neues Großprojekt", () => { _bigNew = true; Show(V); }, true));
+        left.Children.Add(Act("big-new", "＋ Neues Großprojekt", () => { _bigNew = true; Show(V); }, BigCard is null)); // T-0743: mit gewählter Karte ist „An Studio übergeben“ die goldene Aktion
         if (_bigNew || projects.Count == 0)
         {
             var name = new TextBox { Name = "big-new-name", PlaceholderText = "Name, z. B. Hofladen online" };
@@ -159,7 +171,10 @@ public partial class MainWindow
             var tpl = new ComboBox { Name = "big-new-recipe", ItemsSource = new[] { "Leere Tafel" }.Concat(Fusion.Recipes.Select(r => "Vorlage: " + r.Label)).ToList(), SelectedIndex = 0, HorizontalAlignment = HorizontalAlignment.Stretch };
             left.Children.Add(Card(new StackPanel { Spacing = 4, Children = { name, goal, tpl, Act("big-new-create", "Anlegen", () => Try(V, () =>
             {
-                var (p, _) = BigBoards.Create(_core.Projects, name.Text ?? "", goal.Text ?? "", tpl.SelectedIndex > 0 ? Fusion.Recipes[tpl.SelectedIndex - 1] : null);
+                var (p, nb) = BigBoards.Create(_core.Projects, name.Text ?? "", goal.Text ?? "", tpl.SelectedIndex > 0 ? Fusion.Recipes[tpl.SelectedIndex - 1] : null);
+                // T-0743: die Ablauf-Vorlage wird eine Kette – jeder Schritt bekommt sein Programm (wo es eins mit dem Namen gibt), änderbar je Karte
+                foreach (var nc in nb.Cards) if (BigProgramFor(nc.Role) is { } pk) { nc.Program = pk; nc.Studio = Programs[pk].Studio; }
+                BigBoards.Save(_core.Projects, p.Id, nb);
                 BigProject = p.Id; BigCard = null; _bigNew = false; _bigMsg = $"„{p.Name}“ ist angelegt."; _core.Audit.Append(Principal.LocalOwner.Name, "grossprojekt.create", p.Id); Show(V);
             }), true) } }));
         }
@@ -196,12 +211,14 @@ public partial class MainWindow
                     var cid = c.Id; var on = cid == BigCard;
                     var card = new Border { Name = $"big-card-{cid}", Background = TileBg, BorderBrush = on ? Brush.Parse("#FACC15") : Edge, BorderThickness = new Thickness(on ? 2 : 1), CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 6), Cursor = new Cursor(StandardCursorType.Hand),
                         Child = new StackPanel { Spacing = 4, Children = {
-                            new TextBlock { Text = c.Title, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
+                            new TextBlock { Text = $"{board.Cards.IndexOf(c) + 1}. {c.Title}", Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
+                            new TextBlock { Name = $"big-card-status-{cid}", Text = BigCardLine(c), Foreground = c.Status == BigBoardHandoff.Done ? GoldText() : Muted, FontSize = 10.5, TextWrapping = TextWrapping.Wrap, IsVisible = c.Program is not null || c.Status.Length > 0 },
                             new WrapPanel { Children = { new Border { CornerRadius = new CornerRadius(8), Padding = new Thickness(6, 1), Background = Brush.Parse("#33C9A227"), Margin = new Thickness(0, 0, 6, 0), Child = new TextBlock { Text = "" + c.Role, Foreground = Text, FontSize = 10.5 } },
                                 new TextBlock { Text = c.Evidence.Count > 0 ? $"{c.Evidence.Count}" : "", Foreground = Muted, FontSize = 10.5, VerticalAlignment = VerticalAlignment.Center } } },
                             new ProgressBar { Value = c.Column == 2 ? 100 : c.Progress, Maximum = 100, Height = 4 } } } };
                     Point? from = null; var dragged = false;
-                    card.PointerPressed += (_, e) => { from = e.GetPosition(this); dragged = false; e.Pointer.Capture(card); e.Handled = true; };
+                    card.PointerPressed += (_, e) => { if (!e.GetCurrentPoint(card).Properties.IsLeftButtonPressed) return; from = e.GetPosition(this); dragged = false; e.Pointer.Capture(card); e.Handled = true; }; // T-0743: rechte Taste öffnet das Menü
+                    card.ContextMenu = BigCardMenu(c, board.Cards.IndexOf(c), board.Cards.Count); BigCardDrop(card, cid);
                     card.PointerMoved += (_, e) => { if (from is { } f && (Math.Abs(e.GetPosition(this).X - f.X) > 10 || Math.Abs(e.GetPosition(this).Y - f.Y) > 10)) { dragged = true; card.Opacity = 0.55; } };
                     card.PointerReleased += (_, e) =>
                     {
@@ -222,6 +239,7 @@ public partial class MainWindow
                 Grid.SetColumn(colBox, col * 2); grid.Children.Add(colBox);
             }
             center.Children.Add(grid);
+            if (board.Cards.Count > 0) center.Children.Add(new TextBlock { Name = "big-chain", Text = "Kette: " + string.Join("  →  ", board.Cards.Select((c, i) => $"{i + 1}. {c.Title}" + (c.Program is { } k && Programs.TryGetValue(k, out var ps) ? $" ({ps.Title})" : ""))), Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap });
             center.Children.Add(P("Karte ziehen: in eine andere Spalte · antippen: rechts bearbeiten", Muted, 11));
             if (board.Trash.Count > 0)
             {
@@ -256,6 +274,28 @@ public partial class MainWindow
             prog.LostFocus += (_, _) => CommitProg(); OnEnter(prog, CommitProg);
             right.Children.Add(H("Karte", 13)); right.Children.Add(title); right.Children.Add(detail);
             right.Children.Add(P("Zuständige KI-Rolle", Muted, 11)); right.Children.Add(role);
+            // T-0743: Studio, an das die Karte ihren Auftrag übergibt; die Datei kommt zurück
+            var progs = BigPrograms;
+            var studio = new ComboBox { Name = "big-c-program", ItemsSource = new[] { "– kein Studio –" }.Concat(progs.Select(x => x.Title)).ToList(), HorizontalAlignment = HorizontalAlignment.Stretch,
+                SelectedIndex = cur.Program is { } pk0 ? progs.ToList().FindIndex(x => x.Key == pk0) + 1 : 0, IsEnabled = cur.Status == BigBoardHandoff.Open };
+            studio.SelectionChanged += (_, _) => { var k = studio.SelectedIndex > 0 ? progs[studio.SelectedIndex - 1].Key : null; if (k != cur.Program) Try(V, () => BigSetProgram(cid, k)); };
+            right.Children.Add(P("Studio (bekommt den Auftrag)", Muted, 11)); right.Children.Add(studio);
+            right.Children.Add(new TextBlock { Name = "big-c-status", Text = BigCardLine(cur) is { Length: > 0 } line ? line : "Noch kein Studio gewählt.", Foreground = cur.Status == BigBoardHandoff.Done ? GoldText() : Text, FontSize = 12, TextWrapping = TextWrapping.Wrap });
+            if (cur.Status == BigBoardHandoff.Open) { var go = Act("big-handover", "An Studio übergeben", () => Try(V, () => BigHandOver(cid)), true); go.IsEnabled = cur.Program is not null; ToolTip.SetTip(go, "Strg+Enter · Öffnet das Studio mit vorbereitetem Dokument. Exportierst du dort, kommt die Datei an diese Karte zurück."); right.Children.Add(go); }
+            else if (cur.Status == BigBoardHandoff.Handed) right.Children.Add(Act("big-open-studio", "Im Studio öffnen", () => Try(V, () => BigOpenInStudio(cid)), true));
+            if (cur.Status == BigBoardHandoff.Done && cur.Result is { } res)
+            {
+                var resFull = _core.Projects.ResolveInProject(BigProject!, res); var intact = BigBoardHandoff.ResultIntact(_core.Projects, BigProject!, cur);
+                right.Children.Add(H("Ergebnis", 13));
+                if (File.Exists(resFull)) right.Children.Add(BigPreview(resFull));
+                right.Children.Add(new TextBlock { Name = "big-result-name", Text = (intact ? "✓ " : "⚠ ") + Path.GetFileName(res)[(cid.Length + 1)..] + (intact ? " · Prüfsumme stimmt" : " · Datei verändert oder fehlt"), Foreground = intact ? Text : Brush.Parse("#F97316"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
+                right.Children.Add(Act("big-result-open", "Ergebnis öffnen", () => { if (File.Exists(resFull)) Launch(resFull); }, true));
+            }
+            var idx = board.Cards.FindIndex(x => x.Id == cid);
+            var up = Act("big-up", "↑ Früher", () => BigReorder(cid, -1)); up.IsEnabled = idx > 0;
+            var down = Act("big-down", "↓ Später", () => BigReorder(cid, 1)); down.IsEnabled = idx < board.Cards.Count - 1;
+            ToolTip.SetTip(up, "Alt+↑ · früher in der Kette"); ToolTip.SetTip(down, "Alt+↓ · später in der Kette");
+            right.Children.Add(new WrapPanel { Children = { up, new Border { Width = 4 }, down } });
             right.Children.Add(Row(P("Fortschritt in %", Text, 12), prog));
             right.Children.Add(new WrapPanel { Children = {
                 Act("big-left", "← " + (cur.Column > 0 ? BigBoards.Columns[cur.Column - 1] : "–"), () => { if (cur.Column > 0) BigMove(cid, cur.Column - 1); }), new Border { Width = 4 },
@@ -274,6 +314,8 @@ public partial class MainWindow
             var evPath = new TextBox { Name = "big-ev-path", PlaceholderText = "Datei als Beleg (wird ins Projekt kopiert)" };
             var evNote = new TextBox { Name = "big-ev-note", PlaceholderText = "Notiz (optional)" };
             right.Children.Add(evPath); right.Children.Add(evNote);
+            if (cur.Status == BigBoardHandoff.Handed && cur.Studio is { } rst)
+                right.Children.Add(Act("big-result-take", "Als Ergebnis übernehmen", () => Try(V, () => { BigReturn(BigProject!, cid, rst, (evPath.Text ?? "").Trim().Trim('"')); Show(V); })));
             right.Children.Add(Act("big-ev-add", "Beleg hinzufügen", () => Try(V, () =>
             {
                 var path = (evPath.Text ?? "").Trim().Trim('"'); var note = evNote.Text ?? "";
@@ -293,6 +335,16 @@ public partial class MainWindow
         var win = right.Children.Count == 0 ? new Grid { Name = "big-window", ColumnDefinitions = new ColumnDefinitions("240,12,*"), Children = { Col(left), Pos(center, 2) } }
             : new Grid { Name = "big-window", ColumnDefinitions = new ColumnDefinitions("240,12,*,12,280"), Children = { Col(left), Pos(center, 2), Pos(Col(right), 4) } };
         ItemKeys(win, BigUndo, BigRedo, () => Show(V)); // T-0717: Strg+Z, Strg+Y
+        if (!_bigKeys) // T-0743: Alt+↑/↓ Kette umsortieren, Strg+Enter übergeben – am Fenster, damit es auch ohne Fokus in der Tafel greift (nicht in Textfeldern)
+        {
+            _bigKeys = true;
+            AddHandler(KeyDownEvent, (_, e) =>
+            {
+                if (CurrentView != V || ProdTab != "tafel" || BigCard is not { } kc || BigProject is not { } bp || e.Source is TextBox) return;
+                if (e.KeyModifiers == KeyModifiers.Alt && e.Key is Key.Up or Key.Down) { BigReorder(kc, e.Key == Key.Up ? -1 : 1); e.Handled = true; }
+                else if (e.KeyModifiers == KeyModifiers.Control && e.Key == Key.Enter && BigBoards.Load(_core.Projects, bp).Cards.FirstOrDefault(x => x.Id == kc) is { Status: "", Program: not null }) { Try(V, () => BigHandOver(kc)); e.Handled = true; }
+            }, Avalonia.Interactivity.RoutingStrategies.Tunnel);
+        }
         return win;
     }
 }

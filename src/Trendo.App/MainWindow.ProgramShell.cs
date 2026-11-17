@@ -1028,7 +1028,7 @@ public partial class MainWindow
             var file = Path.Combine(WorkFolder(spec.Folder), DevStudio.SafeName(d.Title) + x.Extension);
             var res = x.Write(d, file);
             _core.Audit.Append(Principal.LocalOwner.Name, "program.export", $"{spec.Studio} {Path.GetFileName(res)}");
-            _progMsg[key] = "Exportiert: " + res; NotifyFileResult(_progMsg[key]);
+            _progMsg[key] = "Exportiert: " + res; BigExported(key, d, res); NotifyFileResult(_progMsg[key]); // T-0743: Ergebnis zurück an die Karte eines Großprojekts
         });
         Action VersionRun((string File, DateTime When) v) => () => ProgramRun(key, () => { d.RestoreVersion(v.File); _progMsg[key] = $"Stand vom {v.When:dd.MM.yyyy HH:mm} zurückgeholt – Strg+Z macht es rückgängig."; });
         var goldGiven = false; // V-03: nur der erste sichtbare Hauptbefehl des Programms ist golden

@@ -1,0 +1,46 @@
+[
+  {
+    "Id": "003388a1",
+    "From": "X-01",
+    "To": "STUDIO-BOOK-01",
+    "File": "grossprojekt/auftraege/b07d0ed4.md",
+    "Kind": "auftrag",
+    "Note": "Flyer-Text schreiben",
+    "Sha256": "45476847FAFD186B603CD471C9AB1C66E8743B2D4C43993A08653E72F9FC7249",
+    "At": "2026-11-17T18:58:33.5487068+01:00",
+    "Received": "2026-11-17T18:58:34.279827+01:00"
+  },
+  {
+    "Id": "0e6d887f",
+    "From": "STUDIO-BOOK-01",
+    "To": "X-01",
+    "File": "grossprojekt/belege/b07d0ed4-Flyer-Text-schreiben.pdf",
+    "Kind": "ergebnis",
+    "Note": "Flyer-Text schreiben",
+    "Sha256": "F5FD3D387D253D70F14502FF621875A0C916110B5CEADC5DCF57CAD8E473C6DF",
+    "At": "2026-11-17T18:58:34.2954317+01:00",
+    "Received": "2026-11-17T18:58:34.3131324+01:00"
+  },
+  {
+    "Id": "bfbf07a0",
+    "From": "X-01",
+    "To": "STUDIO-PDFTOOLS-01",
+    "File": "grossprojekt/auftraege/30b204a2.md",
+    "Kind": "auftrag",
+    "Note": "Flyer als PDF mit Seitenzahlen",
+    "Sha256": "3C504E814442FC0E33A69A71BB687B352200D7E7514D4F278257CD76DEE93E48",
+    "At": "2026-11-17T18:58:35.313268+01:00",
+    "Received": "2026-11-17T18:58:36.4580976+01:00"
+  },
+  {
+    "Id": "0e626148",
+    "From": "STUDIO-PDFTOOLS-01",
+    "To": "X-01",
+    "File": "grossprojekt/belege/30b204a2-Flyer-als-PDF-mit-Seitenzahlen.pdf",
+    "Kind": "ergebnis",
+    "Note": "Flyer als PDF mit Seitenzahlen",
+    "Sha256": "C67BDCA489460ACA80805615551551C87668D185D16C8105EF72296EE97CFFC5",
+    "At": "2026-11-17T18:58:36.4714053+01:00",
+    "Received": "2026-11-17T18:58:36.5025614+01:00"
+  }
+]

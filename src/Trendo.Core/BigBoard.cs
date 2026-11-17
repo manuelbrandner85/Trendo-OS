@@ -17,6 +17,20 @@ public sealed class BoardCard
     public int Progress { get; set; }
     public List<BoardEvidence> Evidence { get; set; } = [];
     public DateTimeOffset Created { get; set; } = DateTimeOffset.Now;
+    // ---- T-0743: Karte übergibt ihren Auftrag an ein Studio, das Ergebnis kommt zurück (siehe BigBoardHandoff) ----
+    /// <summary>Programm der Programm-Hülle, das die Karte bearbeitet (Kennung); null = noch keins gewählt.</summary>
+    public string? Program { get; set; }
+    /// <summary>Studio-Kennung des Empfängers (aus dem Programm).</summary>
+    public string? Studio { get; set; }
+    /// <summary>"" offen, "uebergeben", "erledigt".</summary>
+    public string Status { get; set; } = "";
+    /// <summary>Auftrag im Projekt (relativ), Kennung der Übergabe, vorbereitetes Dokument (relativ).</summary>
+    public string? Order { get; set; }
+    public string? Handoff { get; set; }
+    public string? Doc { get; set; }
+    /// <summary>Ergebnisdatei im Projekt (relativ) mit SHA-256.</summary>
+    public string? Result { get; set; }
+    public string? ResultSha { get; set; }
 }
 
 public sealed class BigBoard

@@ -126,6 +126,13 @@ if (Environment.GetEnvironmentVariable("TRENDO_GAME_BOARD") is { Length: > 0 }) 
 { var gb = win.ProgramNew("spiele-programm", Trendo.Core.Programs.GameDesign.Templates.First(t => t.Scale == "aa").Id);
   gb.Edit("Aufgaben", x => { Trendo.Core.Programs.GameBoard.Add(x, "Boss-Arena bauen", "eigene"); Trendo.Core.Programs.GameBoard.Seed(x); Trendo.Core.Programs.GameBoard.Move(x, 0, 1); Trendo.Core.Programs.GameBoard.Move(x, 1, 2); });
   win.GameSection = "Übersicht"; win.Show("spiele-programm"); }
+if (Environment.GetEnvironmentVariable("TRENDO_BIG_DEMO") is { Length: > 0 }) // T-0743: Großprojekt-Kette – erledigte Karte mit Ergebnis und Vorschau, übergebene Karte, Karte mit Studio
+{ var (bp, bb) = BigBoards.Create(core.Projects, "Hofladen Flyer", "Flyer für den Wochenmarkt"); var bk = MainWindow.BigProgramFor("Bücher schreiben"); var pw = MainWindow.BigProgramFor("PDF-Werkstatt");
+  BoardCard B(string t, string? k) => new() { Title = t, Detail = t, Program = k, Studio = k is null ? null : MainWindow.Programs[k].Studio };
+  var b1 = B("Flyer-Text schreiben", bk); var b2 = B("Flyer als PDF mit Seitenzahlen", pw); var b3 = B("Aushang drucken", pw); bb.Cards.AddRange([b1, b2, b3]);
+  var bf = Path.Combine(root, "flyer.txt"); File.WriteAllText(bf, "Hofladen am Feldrand\n\nFrische Eier, Kartoffeln und Honig.\nGeöffnet Freitag und Samstag.");
+  BigBoardHandoff.HandOver(core.Projects, bp.Id, bb, b1, b1.Studio!, "Bücher schreiben"); BigBoardHandoff.Return(core.Projects, bp.Id, b1, b1.Studio!, bf, "Bücher schreiben"); BigBoardHandoff.HandOver(core.Projects, bp.Id, bb, b2, b2.Studio!, "PDF-Werkstatt");
+  BigBoards.Save(core.Projects, bp.Id, bb); win.BigProject = bp.Id; win.BigCard = Environment.GetEnvironmentVariable("TRENDO_BIG_DEMO") == "offen" ? b3.Id : b1.Id; win.Show("produktion"); }
 if (Environment.GetEnvironmentVariable("TRENDO_PROG_TPL") is { Length: > 0 } progTpl && progTpl.Split(':') is [var tplKey, var tplId]) { win.ProgramNew(tplKey, tplId); win.Show(tplKey); } // beliebiges Studio-Programm mit Vorlage zeigen (Schlüssel:Vorlage)
 if (Environment.GetEnvironmentVariable("TRENDO_TV_TAB") is { Length: > 0 } tvTab) { win.TvTabForTests = tvTab; win.Show("tv"); }
 if (Environment.GetEnvironmentVariable("TRENDO_TV_LEGAL") is { } tvLegal) { win.TvTabForTests = "mediathek"; win.Show("tv"); var lt = win.TvLegalSearchAsync(tvLegal, tvLegal.Length == 0 ? "Filme" : "Alle", null); var lw = DateTime.UtcNow; while (!lt.IsCompleted && DateTime.UtcNow - lw < TimeSpan.FromSeconds(40)) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); Thread.Sleep(30); } win.Show("tv"); } // Mediatheken mit echter Suche zeigen

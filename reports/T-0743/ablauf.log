@@ -1,0 +1,6 @@
+18:58:31.537 Großprojekt angelegt: hofladen-flyer
+18:58:33.275 Kette: 1. Flyer-Text schreiben (Bücher schreiben)  →  2. Flyer als PDF mit Seitenzahlen (PDF-Werkstatt)
+18:58:33.989 Karte 1 übergeben an Bücher schreiben, Dokument b07d0ed4-Flyer-Text-schreiben.tdoc, Auftrag grossprojekt/auftraege/b07d0ed4.md
+18:58:34.623 Karte 1 erledigt: grossprojekt/belege/b07d0ed4-Flyer-Text-schreiben.pdf (67768 Bytes, SHA-256 f5fd3d387d253d70f14502ff621875a0c916110b5ceadc5dcf57cad8e473c6df)
+18:58:36.315 Karte 2 übergeben an PDF-Werkstatt, Eingabe b07d0ed4-Flyer-Text-schreiben.pdf, Werkzeug Seitenzahlen
+18:58:37.228 Karte 2 erledigt: grossprojekt/belege/30b204a2-Flyer-als-PDF-mit-Seitenzahlen.pdf (98723 Bytes, SHA-256 c67bdca489460aca80805615551551c87668d185d16c8105ef72296ee97cffc5)
