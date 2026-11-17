@@ -36,8 +36,10 @@ public partial class MainWindow
         var now = DateTime.Now;
         if (!Twin.Model.Assets.Any(a => a.Name == "Dieser PC")) { Twin.Define("Dieser PC", "Festplatte belegt", "%", 85, 95, kind: "Computer"); Twin.Define("Dieser PC", "Trendo-Arbeitsspeicher", "MB", 1500, 3000, kind: "Computer"); }
         var m = PcSampleSource?.Invoke() ?? ReadLivePc(_core.DataRoot);
+        if (PcSampleSource is null) MeasureCounters(now); // T-0750: echte Leistungsindikatoren (CPU, RAM, Datenträger, Netz)
         Twin.Record(now, "Dieser PC", "Festplatte belegt", m.DiskUsedPercent, false);
         Twin.Record(now, "Dieser PC", "Trendo-Arbeitsspeicher", m.WorkingSetMb);
+        TwinCheckRules(); // T-0750: Alarmregeln
     }
 
     // ---------- T-0265: Programm „Anlagen-Monitor“ (Vorbild Grafana/Home Assistant, nur Funktionsumfang) ----------
@@ -59,19 +61,43 @@ public partial class MainWindow
         _twLive.Tick -= TwinLiveTick; _twLive.Tick += TwinLiveTick; _twLive.Start();
         MeasureThisPc(); TwinAsset = "Dieser PC"; TwinSensor ??= "Trendo-Arbeitsspeicher"; Show("zwilling");
     }
-    void TwinLiveTick(object? s, EventArgs e) { if (CurrentView != "zwilling") { _twLive?.Stop(); return; } MeasureThisPc(); Show("zwilling"); }
+    void TwinLiveTick(object? s, EventArgs e) { if (CurrentView != "zwilling") { _twLive?.Stop(); return; } MeasureThisPc(); if (Twin.Model.Sources.Count > 0) TwinPollSources(); Show("zwilling"); }
 
     /// <summary>T-0716 (B6 Etappe E4): Anlagen-Monitor an Rückgängig (100 Schritte), Notsicherung getippter, noch nicht übernommener Eingaben und Wiederherstellen-Karte
     /// der Hülle (<see cref="LiveSlot"/>). Rückgängig umfasst die Einstellungen der Anlagen und Sensoren (Einheit, Grenzen) – nicht die Messwerte (bis 200 000, sie kommen
     /// laufend herein; Schnappschüsse davon wären unverhältnismäßig). Wird eine Anlage/ein Sensor angelegt, gelöscht oder umbenannt (das betrifft Messwerte), beginnt der Verlauf neu.</summary>
     public LinkSlot TwinLink => LiveSlot("zwilling", "LINK-ZWILLING", "zwilling", "twin", "Eine Eingabe im Anlagen-Monitor", "Eingaben im Anlagen-Monitor",
-        () => LiveNode(Twin.Model.Assets),
-        n => { var a = LiveObject<List<TwinAsset>>(n) ?? []; Twin.Model.Assets.Clear(); Twin.Model.Assets.AddRange(a); Twin.Save(); },
+        () => TwinDoc(),
+        n => TwinSetDoc(n),
         () => $"{TwinAsset}\u001f{TwinSensor}", o => { var p = o.Split('\u001f'); TwinAsset = p[0].Length > 0 ? p[0] : null; TwinSensor = p.Length > 1 && p[1].Length > 0 ? p[1] : null; },
         keep: (a, b) => TwinShape(a) == TwinShape(b), title: () => TwinSensor is { } s ? $"{TwinAsset} – {s}" : "Anlagen-Monitor");
 
+    /// <summary>T-0750: Stand für Rückgängig – Anlagen/Sensoren, Alarmregeln und Quellen (ohne Lesestand und Fehlertext der Quellen, ohne Messwerte und Protokoll).</summary>
+    System.Text.Json.Nodes.JsonNode TwinDoc() => new System.Text.Json.Nodes.JsonObject
+    {
+        ["Assets"] = LiveNode(Twin.Model.Assets), ["Rules"] = LiveNode(Twin.Model.Rules),
+        ["Sources"] = LiveNode(Twin.Model.Sources.Select(x => new TwinSource { Id = x.Id, Kind = x.Kind, Target = x.Target, Asset = x.Asset, Sensor = x.Sensor, JsonField = x.JsonField, Approved = x.Approved }).ToList()),
+    };
+
+    /// <summary>Stand übernehmen und speichern; ältere Stände (nur die Liste der Anlagen) bleiben lesbar. Lesestände der Quellen bleiben erhalten.</summary>
+    void TwinSetDoc(System.Text.Json.Nodes.JsonNode? n)
+    {
+        var assets = n is System.Text.Json.Nodes.JsonArray ? LiveObject<List<TwinAsset>>(n) : LiveObject<List<TwinAsset>>(n?["Assets"]);
+        Twin.Model.Assets.Clear(); Twin.Model.Assets.AddRange(assets ?? []);
+        if (n is System.Text.Json.Nodes.JsonObject)
+        {
+            Twin.Model.Rules.Clear(); Twin.Model.Rules.AddRange(LiveObject<List<TwinRule>>(n["Rules"]) ?? []);
+            var old = Twin.Model.Sources.ToDictionary(x => x.Id);
+            var src = LiveObject<List<TwinSource>>(n["Sources"]) ?? [];
+            foreach (var x in src) if (old.TryGetValue(x.Id, out var o)) { x.Offset = o.Offset; x.LastError = o.LastError; }
+            Twin.Model.Sources.Clear(); Twin.Model.Sources.AddRange(src);
+        }
+        Twin.Save();
+    }
+
     /// <summary>Aufbau: welche Anlagen mit welchen Sensoren (ohne Einstellungen).</summary>
-    static string TwinShape(System.Text.Json.Nodes.JsonNode? assets) =>
+    static string TwinShape(System.Text.Json.Nodes.JsonNode? doc) => TwinShapeOf(doc is System.Text.Json.Nodes.JsonObject o ? o["Assets"] : doc);
+    static string TwinShapeOf(System.Text.Json.Nodes.JsonNode? assets) =>
         string.Join("\n", (assets as System.Text.Json.Nodes.JsonArray ?? []).Select(a => (a?["Name"]?.GetValue<string>() ?? "") + ":" + string.Join(",", (a?["Sensors"] as System.Text.Json.Nodes.JsonArray ?? []).Select(s => s?["Name"]?.GetValue<string>() ?? ""))));
 
     /// <summary>Eingaben, die gesichert werden: Sensor anlegen, Einheit und Grenzen, Ableiten, Umbenennen – nicht Löschbestätigung, Vorhersage-Zeitraum und Rechner.</summary>
@@ -131,6 +157,7 @@ public partial class MainWindow
         var csv = Field("twin-csv-path", "CSV-Datei „Zeit;Anlage;Sensor;Wert“ (.csv)", 150); tree.Children.Add(csv);
         tree.Children.Add(Btn("twin-csv-load", "Einlesen", () => TwinRun(() => { var f = Need(csv, "die CSV-Datei"); if (!File.Exists(f)) throw new IOException("Diese Datei gibt es nicht."); var (ok, bad) = Twin.Import(File.ReadAllText(f)); _twMsg = $"{ok} Messwerte übernommen{(bad > 0 ? $", {bad} Zeilen übersprungen" : "")}."; })));
         tree.Children.Add(TwinMqttPanel()); // Alle Studios, Runde 5: Live-Messwerte über MQTT
+        tree.Children.Add(TwinSourcesPanel()); // T-0750: wachsende Datei, HTTP im eigenen Netz (nach Freigabe)
         var left = new Border { Name = "twin-left", Width = 230, CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(10), Child = new ScrollViewer { Content = tree } };
 
         // Mitte: Kacheln der Anlage + großes Diagramm
@@ -209,6 +236,7 @@ public partial class MainWindow
             sp.Children.Add(H($"Ampelwechsel ({ev.Count})", 12));
             sp.Children.Add(new SelectableTextBlock { Name = "twin-events", Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap, Text = ev.Count == 0 ? "keine" : string.Join("\n", ev.TakeLast(8).Select(x => $"{x.Time:dd.MM. HH:mm}: {x.From} → {x.To} ({Fach.F(x.Value, 1)})")) });
         }
+        sp.Children.Add(TwinRulesPanel(an, sn, s.Unit)); // T-0750: Alarmregeln, Export/Import, Protokoll
         // Prognose
         var fc = new TextBox { Name = "twin-p-fc", Text = _twForecast.ToString("0", De), Width = 80 };
         void FcCommit() { if (double.TryParse(fc.Text, System.Globalization.NumberStyles.Float, De, out var v) && v >= 0 && v != _twForecast) { _twForecast = Math.Min(v, 24 * 30); Show("zwilling"); } }
