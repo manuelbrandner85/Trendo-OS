@@ -131,6 +131,8 @@ public class UebersichtEinfach_Ui(ITestOutputHelper log)
         ("prog-export-webp", "Menüleiste „Datei ▸ Exportieren ▸ WebP“"), ("prog-export-ris", "Menüleiste „Datei ▸ Exportieren ▸ RIS“"), ("prog-export-csl", "Menüleiste „Datei ▸ Exportieren ▸ CSL-JSON“"),
         // T-0740: in „Einfach“ über die Menüleiste (geprüft in T0740Gegenpruefung_Ui.Simple_export_via_menu) und den Knopf „Vorhersagen speichern …“ auf der Arbeitsfläche
         ("prog-export-pred", "Menüleiste „Datei ▸ Exportieren ▸ Vorhersagen (.csv)“ und Knopf „Vorhersagen speichern …“ auf der Arbeitsfläche"),
+        // T-0739: Fragenreihe im Modellvergleich – Export ebenso über die Menüleiste (alle spec.Exports, jede Stufe)
+        ("prog-export-reihe-csv", "Menüleiste „Datei ▸ Exportieren ▸ Fragenreihe (.csv)“"), ("prog-export-reihe-md", "Menüleiste „Datei ▸ Exportieren ▸ Fragenreihe (.md)“"),
     ];
 
     /// <summary>Was „Einfach“ schon vor T-0663 bewusst nicht baute (Stand origin/main 1fc842acc) – siehe Kopf der Datei.</summary>

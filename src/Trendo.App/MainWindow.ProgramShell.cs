@@ -593,8 +593,8 @@ public partial class MainWindow
                 switch (e.Key)
                 {
                     case Key.S when d is not null: ProgramRun(key, () => ProgramSave(key)); e.Handled = true; break;
-                    case Key.Z when d is not null: ProgramRun(key, () => d.Undo()); e.Handled = true; break;
-                    case Key.Y when d is not null: ProgramRun(key, () => d.Redo()); e.Handled = true; break;
+                    case Key.Z when d is not null: ProgramRun(key, () => { ModelsUndoGuard(key); d.Undo(); }); e.Handled = true; break;
+                    case Key.Y when d is not null: ProgramRun(key, () => { ModelsUndoGuard(key); d.Redo(); }); e.Handled = true; break;
                     case Key.N: ProgramRun(key, () => ProgramNew(key)); e.Handled = true; break;
                     case Key.W when d is not null: ProgramRun(key, () => { ProgramKeep(key, d); ProgramClose(key, _progActive.GetValueOrDefault(key)); }); e.Handled = true; break;
                 }
@@ -1020,8 +1020,8 @@ public partial class MainWindow
         Action doSave = () => ProgramRun(key, () => ProgramSave(key));
         Action doSaveAs = () => _ = ProgramSaveAsPick(key);
         Action doClose = () => ProgramRun(key, () => { ProgramKeep(key, d); ProgramClose(key, _progActive.GetValueOrDefault(key)); });
-        Action doUndo = () => ProgramRun(key, () => { if (!d.Undo()) throw new InvalidOperationException("Es gibt nichts rückgängig zu machen."); });
-        Action doRedo = () => ProgramRun(key, () => { if (!d.Redo()) throw new InvalidOperationException("Es gibt nichts zu wiederholen."); });
+        Action doUndo = () => ProgramRun(key, () => { ModelsUndoGuard(key); if (!d.Undo()) throw new InvalidOperationException("Es gibt nichts rückgängig zu machen."); });
+        Action doRedo = () => ProgramRun(key, () => { ModelsUndoGuard(key); if (!d.Redo()) throw new InvalidOperationException("Es gibt nichts zu wiederholen."); });
         Action CmdRun(ProgramCmd c) => () => ProgramRun(key, () => c.Run(d));
         Action ExportRun(ProgramExport x) => () => ProgramRun(key, () =>
         {
@@ -1030,7 +1030,7 @@ public partial class MainWindow
             _core.Audit.Append(Principal.LocalOwner.Name, "program.export", $"{spec.Studio} {Path.GetFileName(res)}");
             _progMsg[key] = "Exportiert: " + res; BigExported(key, d, res); NotifyFileResult(_progMsg[key]); // T-0743: Ergebnis zurück an die Karte eines Großprojekts
         });
-        Action VersionRun((string File, DateTime When) v) => () => ProgramRun(key, () => { d.RestoreVersion(v.File); _progMsg[key] = $"Stand vom {v.When:dd.MM.yyyy HH:mm} zurückgeholt – Strg+Z macht es rückgängig."; });
+        Action VersionRun((string File, DateTime When) v) => () => ProgramRun(key, () => { ModelsUndoGuard(key); d.RestoreVersion(v.File); _progMsg[key] = $"Stand vom {v.When:dd.MM.yyyy HH:mm} zurückgeholt – Strg+Z macht es rückgängig."; });
         var goldGiven = false; // V-03: nur der erste sichtbare Hauptbefehl des Programms ist golden
         // V9: Reiter der offenen Dokumente
         var tabs = new WrapPanel { Name = "prog-tabs" };
@@ -1325,7 +1325,7 @@ public partial class MainWindow
             var b = new Button { Name = $"prog-history-{i}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Background = Brushes.Transparent, Padding = new Thickness(8, 3),
                 Content = new TextBlock { Text = steps[i], Foreground = Text, FontSize = 12.5 } };
             ToolTip.SetTip(b, back == 1 ? "Diesen Schritt rückgängig machen" : $"Bis vor diesen Schritt zurück ({back} Schritte)");
-            b.Click += (_, _) => ProgramRun(key, () => { for (var n = 0; n < back; n++) d.Undo(); _progMsg[key] = $"{back} Schritt(e) zurück – „Wiederholen“ holt sie zurück."; });
+            b.Click += (_, _) => ProgramRun(key, () => { ModelsUndoGuard(key); for (var n = 0; n < back; n++) d.Undo(); _progMsg[key] = $"{back} Schritt(e) zurück – „Wiederholen“ holt sie zurück."; });
             hist.Children.Add(b);
         }
 

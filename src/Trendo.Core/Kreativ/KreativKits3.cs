@@ -528,7 +528,7 @@ public static partial class ModelCompare
         return sb.ToString();
     }
 
-    static string Csv(string s) => s.IndexOfAny([';', '"', '\n', '\r']) >= 0 ? "\"" + s.Replace("\"", "\"\"") + "\"" : s;
+    static string Csv(string s) => KreativSafe.CsvCell(s); // Gegenprüfung T-0739: Formeln entschärft, reine Zahlen bleiben
 
     /// <summary>Eine Zeile je Antwort, Trennzeichen Semikolon (öffnet Excel und LibreOffice auf Deutsch direkt).</summary>
     public static string Csv(IReadOnlyList<Round> rounds)

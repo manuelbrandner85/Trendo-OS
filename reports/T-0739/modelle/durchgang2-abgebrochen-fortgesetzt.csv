@@ -1,0 +1,7 @@
+﻿nr;frage;modell;ok;sekunden;zeichen;woerter;zeichen_je_sekunde;antwort;fehler
+1;Nenne ein Haustier.;Ollama|qwen2.5:1.5b;ja;0.17;26;5;152.9;Ein Haustier ist ein Hund.;
+1;Nenne ein Haustier.;Ollama|qwen2.5:3b;ja;0.24;49;8;204.2;Ein Haustier nennen könnte zum Beispiel ein Hase.;
+2;Wie viele Beine hat eine Spinne?;Ollama|qwen2.5:1.5b;ja;0.20;27;5;135.0;Eine Spinne hat vier Beine.;
+2;Wie viele Beine hat eine Spinne?;Ollama|qwen2.5:3b;ja;0.20;38;6;190.0;Eine Spinne hat normalerweise 8 Beine.;
+3;Was ist das Gegenteil von warm?;Ollama|qwen2.5:1.5b;ja;0.20;32;6;160.0;Das Gegenteil von warm ist kalt.;
+3;Was ist das Gegenteil von warm?;Ollama|qwen2.5:3b;ja;0.20;32;6;160.0;Kalt ist das Gegenteil von warm.;

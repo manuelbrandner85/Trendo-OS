@@ -50,7 +50,15 @@ public class KiLibraryUiTests
             using (var s = File.Create(f)) s.SetLength(size);
             return Task.FromResult<(string, string?)>((f, null));
         };
+        // T-0739 (X-05): Die Stimme hat feste SHA-256 im Katalog – Ersatzdateien mit passender Größe, aber falschen Bytes werden verworfen
         await w.KiLibraryInstall(m);
+        Assert.False(w.KiStore.ModelReady(m));
+        Assert.Contains("Prüfsumme passt nicht", w.Find<TextBlock>("kilib-msg").Text);
+        Assert.Contains("nichts installiert", w.Find<TextBlock>("kilib-msg").Text);
+        Assert.False(File.Exists(w.KiStore.ModelFile(m, m.Files[0])));
+        // Für den weiteren Ablauf (Ausprobieren, Entfernen) dieselbe Stimme ohne feste Summe – die Ersatzdateien haben keine echten Bytes
+        var mt = m with { Files = [.. m.Files.Select(f => f with { Sha256 = null, ShaSource = null })] };
+        await w.KiLibraryInstall(mt);
         Assert.True(w.KiStore.ModelReady(m));
         string? stdin = null;
         w.KiRunOverride = (e, args, input) =>
@@ -83,5 +91,32 @@ public class KiLibraryUiTests
         Assert.False(MainWindow.KiHostAllowed(new Uri("http://huggingface.co/x")));
         Assert.False(MainWindow.KiHostAllowed(new Uri("https://evil-hf.co/x")));
         Assert.False(MainWindow.KiHostAllowed(new Uri("https://huggingface.co.evil.example/x")));
+    }
+
+    [AvaloniaFact(DisplayName = "T-0739 Gegenprüfung: vorhandene Modelldatei wird im Hintergrund gegen die Katalog-SHA-256 geprüft (nicht auf dem Oberflächen-Faden), ohne neuen Download")]
+    public async Task Existing_file_hashed_off_ui_thread()
+    {
+        var (w, _, root) = Ui.Open();
+        try
+        {
+            var eva = KiLibrary.Models.First(x => x.Id == "piper-eva");
+            var bytes = new byte[3 * 1024 * 1024]; new Random(7).NextBytes(bytes);
+            var f = eva.Files[0] with { Bytes = bytes.Length, Sha256 = Convert.ToHexStringLower(SHA256.HashData(bytes)), ShaSource = "Test" };
+            var m = eva with { Files = [f] };
+            var exe = w.KiStore.RuntimeExe(KiRuntime.Piper); // Laufzeit gilt als da
+            Directory.CreateDirectory(Path.GetDirectoryName(exe)!); File.WriteAllText(exe, "MZ");
+            var file = w.KiStore.ModelFile(m, f);
+            Directory.CreateDirectory(Path.GetDirectoryName(file)!); File.WriteAllBytes(file, bytes);
+            var downloads = 0;
+            w.KiDownloadOverride = (url, name) => { downloads++; throw new HttpRequestException("darf nicht laden"); };
+            var ui = Environment.CurrentManagedThreadId;
+            await w.KiLibraryInstall(m);
+            Assert.Equal(0, downloads); // Summe stimmt – nichts neu geladen
+            Assert.Contains("ist eingerichtet", w.Find<TextBlock>("kilib-msg").Text);
+            Assert.NotEqual(0, w.KiFileCheckThreadForTests);
+            Assert.NotEqual(ui, w.KiFileCheckThreadForTests); // SHA-256 lief nicht auf dem Oberflächen-Faden
+            Assert.Contains($"{f.FileName} wird geprüft", w.KiFileCheckStepForTests);
+        }
+        finally { w.Close(); }
     }
 }

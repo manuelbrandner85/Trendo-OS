@@ -792,7 +792,7 @@ public partial class MainWindow
     /// <summary>Gefundene Quellen: Schlüssel „Quelle|Modell“, Anzeige, ob Internet.</summary>
     List<(string Key, string Label, bool Remote)>? _modelsFound; List<string> _modelsMissing = []; bool _modelsBusy;
 
-    static JsonObject ModelsDoc(string question) => new() { ["question"] = question, ["sources"] = new JsonArray(), ["rounds"] = new JsonArray(), ["seed"] = "42", ["system"] = "" };
+    static JsonObject ModelsDoc(string question, string series = "") => new() { ["question"] = question, ["sources"] = new JsonArray(), ["rounds"] = new JsonArray(), ["seed"] = "42", ["system"] = "", ["series"] = series, ["batch"] = new JsonArray() };
 
     static JsonObject RoundJson(ModelCompare.Round r) => new()
     {
@@ -913,6 +913,7 @@ public partial class MainWindow
         [
             new("leer", "Neuer Vergleich", "Eigene Frage stellen", () => ModelsDoc("")),
             new("beispiel", "Beispiel: Alltagsfrage", "Eine Frage zum Einstieg", () => ModelsDoc("Erkläre in drei Sätzen, wie man einen Brief an die Hausverwaltung wegen einer kaputten Heizung schreibt.")),
+            new("reihe", "Beispiel: Fragenreihe", "Fünf Alltagsfragen in einem Durchgang", () => ModelsDoc("", "Was ist die Hauptstadt von Österreich?\nWie viel sind 17 mal 23?\nNenne drei Gemüsesorten, die im Herbst Saison haben.\nFormuliere höflich: „Die Heizung ist schon wieder kaputt.“\nErkläre in einem Satz, was ein Backup ist.")),
         ],
         Ribbon =
         [
@@ -920,6 +921,11 @@ public partial class MainWindow
                 new ProgramCmd("models-ask", "Frage stellen", d => _ = ModelsAsk(d), Primary: true, Tip: "Geht nacheinander an jede gewählte Quelle. KIs auf diesem PC antworten ohne Internet."),
                 new ProgramCmd("models-find", "Quellen suchen", d => _ = ModelsFind(), Tip: "Zeigt die eingerichteten KI-Quellen und ihre Modelle."),
                 new ProgramCmd("models-next", "Nächste Frage", d => d.Set("question", "", "Neue Frage"), Tip: "Feld leeren – die bisherigen Runden bleiben."),
+            ]),
+            ("Fragenreihe", [ // T-0739
+                new ProgramCmd("models-batch", "Fragenreihe starten", d => _ = ModelsBatchRun(d), Tip: "Jede Frage der Liste geht nacheinander an jedes gewählte Modell – Ergebnis als Tabelle."),
+                new ProgramCmd("models-batch-file", "Fragen aus Datei …", d => _ = ModelsBatchImport(d), Tip: "CSV (Spalte „Frage“ oder erste Spalte) oder TXT (eine Frage je Zeile)."),
+                new ProgramCmd("models-batch-stop", "Abbrechen", d => ModelsBatchCancel(), Tip: "Hält den Durchgang an. Erhaltene Antworten bleiben, „Fragenreihe starten“ setzt fort."),
             ]),
             ("KI-Quellen", [
                 new ProgramCmd("models-setup", "KI-Quellen einrichten", d => Show("ki-quellen"), Tip: "KI auf diesem PC einrichten oder Claude verbinden."),
@@ -929,11 +935,13 @@ public partial class MainWindow
         [
             new("md", "Bericht (.md)", ".md", (d, f) => { File.WriteAllText(f, ModelCompare.Markdown(ModelsRounds(d), d.Title)); return f; }),
             new("csv", "Rohdaten (.csv)", ".csv", (d, f) => { File.WriteAllText(f, ModelCompare.Csv(ModelsRounds(d)), new System.Text.UTF8Encoding(true)); return f; }),
+            new("reihe-csv", "Fragenreihe (.csv)", ".csv", (d, f) => { File.WriteAllText(f, ModelBatch.Csv(ModelsBatchResults(d)), new System.Text.UTF8Encoding(true)); return f; }),
+            new("reihe-md", "Fragenreihe (.md)", ".md", (d, f) => { File.WriteAllText(f, ModelBatch.Markdown(ModelsBatchResults(d), d.Title, (int)d.Number("batchQuestions", 0), d.Flag("batchCancelled"))); return f; }),
         ],
         Workspace = ModelsWorkspace,
         Properties = ModelsProperties,
-        Status = d => { var r = ModelsRounds(d); return $"{r.Count} Fragen · {r.Count(x => x.Revealed)} aufgedeckt · {d.List("sources").Count} Quellen gewählt"; },
-        Help = "1. „Quellen suchen“ und mindestens zwei Modelle anhaken. 2. Frage eintragen und „Frage stellen“. 3. Die Antworten stehen gemischt als A, B, C nebeneinander – bewerte jede mit 1 bis 5 Sternen. 4. „Aufdecken“ zeigt, welche KI was geschrieben hat. Unten wächst die Ergebnistabelle über alle Fragen. Claude nutzt deinen eigenen Zugang; KIs auf diesem PC bleiben offline.",
+        Status = d => { var r = ModelsRounds(d); return $"{r.Count} Fragen · {r.Count(x => x.Revealed)} aufgedeckt · {d.List("sources").Count} Quellen gewählt · Fragenreihe: {d.List("batch").Count} Antworten"; },
+        Help = "1. „Quellen suchen“ und mindestens zwei Modelle anhaken. 2. Frage eintragen und „Frage stellen“. 3. Die Antworten stehen gemischt als A, B, C nebeneinander – bewerte jede mit 1 bis 5 Sternen. 4. „Aufdecken“ zeigt, welche KI was geschrieben hat. Unten wächst die Ergebnistabelle über alle Fragen. Viele Fragen auf einmal: unter „Fragenreihe“ eine Frage je Zeile eintragen oder eine CSV-/TXT-Datei laden, „Fragenreihe starten“ – jede Frage geht an jedes gewählte Modell, mit Zeit, Zeichen und Fehlern in einer Tabelle; „Abbrechen“ behält die erhaltenen Antworten. Claude nutzt deinen eigenen Zugang; KIs auf diesem PC bleiben offline.",
     }, "modelle vergleichen", "ki vergleich", "llm vergleich", "blindtest", "ki test", "welche ki ist besser", "modell vergleich", "benchmark", "chatbot vergleich");
 
     Control ModelsWorkspace(ProgramDocument d)
@@ -969,6 +977,7 @@ public partial class MainWindow
         var ask = new Button { Name = "models-go-ask", Content = _modelsBusy ? "Fragt …" : "Frage stellen", Padding = new Thickness(16, 7), IsEnabled = !_modelsBusy }; ask.Classes.Add("accent");
         ask.Click += (_, _) => _ = ModelsAsk(d);
         sp.Children.Add(KrCard(new StackPanel { Spacing = 8, Children = { q, ask } }, "models-question-card"));
+        sp.Children.Add(ModelsBatchCard(d)); // T-0739: Fragenreihe
         // Runden, neueste zuerst
         var rounds = ModelsRounds(d);
         for (var r = rounds.Count - 1; r >= 0; r--)
