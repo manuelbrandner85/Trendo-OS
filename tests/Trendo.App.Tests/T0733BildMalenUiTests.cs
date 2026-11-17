@@ -32,6 +32,8 @@ public class T0733_BildMalen_Ui
     static Point ArtP(MainWindow w, double x, double y) { Pump(); var c = w.ArtCanvasForTests!; return c.TranslatePoint(c.ToScreen(x, y), w)!.Value; }
     /// <summary>Bild der Seite nur auf Wunsch (Umgebungsvariable T0733_SHOT = Ordner) – zum Nachprüfen der Oberfläche.</summary>
     static void Shot(MainWindow w, string name) { if (Environment.GetEnvironmentVariable("T0733_SHOT") is { Length: > 0 } dir) { Directory.CreateDirectory(dir); w.CaptureRenderedFrame()?.Save(Path.Combine(dir, name)); } }
+    /// <summary>Wartet, bis die TIFF-Umwandlung im Hintergrund fertig ist und ihre Rückmeldung auf dem Oberflächen-Faden lief (höchstens 60 s).</summary>
+    static void WaitTiff(MainWindow w) { for (var i = 0; i < 1200 && w.ImgTiffBusy; i++) { Thread.Sleep(50); Pump(); } Assert.False(w.ImgTiffBusy, "TIFF-Umwandlung nach 60 s nicht fertig"); Pump(); }
     static SKColor Px(MainWindow w, int x, int y) { using var b = ImageRender.Render(w.ProgramActive("bild")!.Data); return b.GetPixel(x, y); }
 
     [AvaloniaFact(DisplayName = "T-0733 Bild: TIFF (echtes FFmpeg) als Ebene öffnen, malen, als WebP exportieren – ffprobe liest webp 400×200, WebP wieder als Ebene")]
@@ -52,6 +54,9 @@ public class T0733_BildMalen_Ui
             w.ProgramSetLevel(UserLevel.Profi);
             w.Show("bild"); Pump(); RealClick(w, V<Button>(w, "prog-tpl-leer")); Pump();
             V<TextBox>(w, "img-file").Text = tif; Click(w, "img-add");
+            WaitTiff(w);
+            // Gegenprüfung T-0733: FFmpeg lief nicht auf dem Oberflächen-Faden
+            Assert.NotEqual(0, w.ImgTiffThreadForTests); Assert.NotEqual(Environment.CurrentManagedThreadId, w.ImgTiffThreadForTests);
             var d = w.ProgramActive("bild")!;
             Assert.Equal((400, 200), ((int)d.Number("width"), (int)d.Number("height")));
             Assert.Contains("TIFF", w.ProgramMessage("bild"));
@@ -73,6 +78,21 @@ public class T0733_BildMalen_Ui
             // WebP wieder als Ebene
             var before = ImageDoc.Layers(w.ProgramActive("bild")!.Data).Count;
             w.ImgAddImage(webp); Assert.Equal(before + 1, ImageDoc.Layers(w.ProgramActive("bild")!.Data).Count);
+
+            // Gegenprüfung T-0733: zweites TIFF (anderer Inhalt) – die Umwandlung läuft im Hintergrund, „wird umgewandelt …“ steht sofort da,
+            // ein zweiter Start während der Umwandlung wird abgelehnt (kein Doppelstart), danach genau eine neue Ebene
+            var tif2 = Path.Combine(root, "scan2.tif");
+            Assert.True(Cli.Run(ff, ["-v", "error", "-y", "-f", "lavfi", "-i", "color=c=yellow:s=320x160", "-frames:v", "1", tif2]).Ok, "FFmpeg konnte das zweite TIFF nicht schreiben");
+            var n0 = ImageDoc.Layers(w.ProgramActive("bild")!.Data).Count;
+            w.ImgAddImage(tif2); // kein Pumpen: die Rückmeldung der Umwandlung kann noch nicht da sein
+            Assert.True(w.ImgTiffBusy); Assert.Contains("wird umgewandelt", w.ProgramMessage("bild"));
+            Assert.Equal(n0, ImageDoc.Layers(w.ProgramActive("bild")!.Data).Count);
+            var twice = Assert.Throws<InvalidOperationException>(() => w.ImgAddImage(tif2)); Assert.Contains("gerade umgewandelt", twice.Message);
+            WaitTiff(w);
+            Assert.Equal(n0 + 1, ImageDoc.Layers(w.ProgramActive("bild")!.Data).Count);
+            var last = ImageDoc.S(ImageDoc.Layers(w.ProgramActive("bild")!.Data).OfType<System.Text.Json.Nodes.JsonObject>().Last()["file"]);
+            Assert.EndsWith(".png", last); Assert.Empty(Directory.GetFiles(Path.GetDirectoryName(last)!, "*.tmp.png")); // keine halbe Zwischendatei liegen geblieben
+            using (var y = SKBitmap.Decode(last)) { Assert.Equal((320, 160), (y.Width, y.Height)); var c = y.GetPixel(10, 10); Assert.True(c.Red > 200 && c.Green > 200 && c.Blue < 80, $"kein Gelb: {c}"); }
             if (Environment.GetEnvironmentVariable("T0733_BELEG") is { Length: > 0 } beleg)
             {
                 Directory.CreateDirectory(beleg);
@@ -184,6 +204,131 @@ public class T0733_BildMalen_Ui
             w.MouseUp(p2, MouseButton.Left); Pump();
             Assert.True(w.ArtSelection(d)!.Count > 4);
             Click(w, "art-sel-none"); Assert.Null(w.ArtSelection(d));
+        }
+        finally { w.Close(); }
+    }
+
+    /// <summary>Schwarzes Quadrat 100 × 100 bei (400, 300) und ein Strich außerhalb bei (700, 600) – neues Querformat-Bild im Künstlerstudio, Werkzeug „Auswahl“ per Taste M.</summary>
+    static ProgramDocument ArtWithSquare(MainWindow w)
+    {
+        w.ProgramSetLevel(UserLevel.Profi);
+        while (w.ProgramDocs(MainWindow.ArtKey).Count > 0) w.ProgramClose(MainWindow.ArtKey, 0);
+        w.Show(MainWindow.ArtKey); Pump(); RealClick(w, V<Button>(w, "prog-tpl-quer")); Pump();
+        var d = w.ProgramActive(MainWindow.ArtKey)!;
+        w.ArtBrush = "tusche"; w.ArtSize = 30; w.ArtColor = "#000000"; w.ArtSmooth = 0;
+        for (var y = 310; y <= 390; y += 10) w.ArtPaint(d, [(410, y, 1), (490, y, 1)]);
+        w.ArtPaint(d, [(680, 600, 1), (720, 600, 1)]);
+        w.Show(MainWindow.ArtKey); Pump();
+        V<Button>(w, "prog-undo").Focus(); Pump(); Key_(w, Key.M, PhysicalKey.M); Assert.Equal("select", w.ArtMode);
+        return d;
+    }
+    /// <summary>Anzahl dunkler Bildpunkte (Rot &lt; 60) im Gesamtbild innerhalb eines Rechtecks.</summary>
+    static int Dark(MainWindow w, ProgramDocument d, int x0, int y0, int x1, int y1)
+    {
+        var comp = w.ArtModel(d).Comp; var n = 0;
+        for (var y = y0; y < y1; y++) for (var x = x0; x < x1; x++) if (comp.At(x, y).R < 60) n++;
+        return n;
+    }
+
+    [AvaloniaFact(DisplayName = "T-0733 Gegenprüfung: Künstlerstudio – Lasso umfahren und Inhalt per Maus verschieben, „Inhalt löschen“ per Klick; echte Pixel vorher/nachher, Rückgängig je Schritt")]
+    public void Art_lasso_move_and_clear_by_click()
+    {
+        var (w, _, _) = Ui.Open(); w.Width = 1600; w.Height = 1000;
+        try
+        {
+            var d = ArtWithSquare(w);
+            var square = Dark(w, d, 395, 295, 506, 406); var stroke = Dark(w, d, 660, 580, 740, 620);
+            Assert.True(square > 9000, $"Quadrat zu klein: {square}"); Assert.True(stroke > 500, $"Strich fehlt: {stroke}");
+            Assert.Equal(0, Dark(w, d, 795, 295, 906, 406));
+
+            // Lasso: Achteck um das Quadrat herum mit gedrückter Maustaste umfahren
+            Click(w, "art-sel-mode-lasso"); Assert.Equal("lasso", w.ArtSelMode);
+            (double X, double Y)[] ring = [(370, 300), (400, 265), (500, 265), (535, 300), (535, 400), (500, 435), (400, 435), (370, 400)];
+            var start = ArtP(w, ring[0].X, ring[0].Y); w.MouseDown(start, MouseButton.Left);
+            for (var i = 1; i <= ring.Length; i++)
+            {
+                var (ax, ay) = ring[i - 1]; var (bx, by) = ring[i % ring.Length];
+                for (var k = 1; k <= 3; k++) { w.MouseMove(ArtP(w, ax + (bx - ax) * k / 3.0, ay + (by - ay) * k / 3.0)); Pump(); }
+            }
+            w.MouseUp(start, MouseButton.Left); Pump();
+            var sel = w.ArtSelection(d); Assert.NotNull(sel); Assert.True(sel!.Count > 8, $"Lasso hat nur {sel.Count} Punkte");
+            var steps = d.History.Count;
+
+            // Inhalt der Lasso-Auswahl hineinklicken und um +400 px nach rechts ziehen
+            Drag(w, ArtP(w, 450, 350), ArtP(w, 850, 350));
+            Assert.Equal("Auswahl verschieben", d.UndoLabel); Assert.Equal(steps + 1, d.History.Count);
+            Assert.True(Dark(w, d, 395, 295, 506, 406) < 50, "alte Stelle nicht frei");
+            Assert.InRange(Dark(w, d, 795, 295, 906, 406), square - 300, square + 300); // dasselbe Quadrat am Ziel
+            Assert.Equal(stroke, Dark(w, d, 660, 580, 740, 620)); // außerhalb der Auswahl unverändert
+            Assert.InRange(PaintSelBoundsX(w, d), 765, 775); // Auswahl wandert mit
+
+            // Rückgängig per Knopf: Inhalt und Auswahl zurück
+            RealClick(w, V<Button>(w, "prog-undo")); Pump();
+            Assert.Equal(square, Dark(w, d, 395, 295, 506, 406)); Assert.Equal(0, Dark(w, d, 795, 295, 906, 406));
+            Assert.InRange(PaintSelBoundsX(w, d), 365, 375);
+
+            // „Inhalt löschen“ per Klick in der Optionsleiste
+            Click(w, "art-sel-clear");
+            Assert.Equal("Auswahl löschen", d.UndoLabel);
+            Assert.Equal(0, Dark(w, d, 395, 295, 506, 406));
+            Assert.Equal(stroke, Dark(w, d, 660, 580, 740, 620));
+            var layer = w.ArtModel(d).Doc.Layers.Single(l => l.Id == d.Text("active"));
+            Assert.Equal(0, layer.Px.At(450, 350).A); // wirklich durchsichtig, nicht weiß übermalt
+            RealClick(w, V<Button>(w, "prog-undo")); Pump();
+            Assert.Equal(square, Dark(w, d, 395, 295, 506, 406));
+        }
+        finally { w.Close(); }
+    }
+
+    static double PaintSelBoundsX(MainWindow w, ProgramDocument d) => Trendo.Core.Kreativ.PaintSelection.Bounds(w.ArtSelection(d)!).X;
+
+    [AvaloniaFact(DisplayName = "T-0733 Gegenprüfung: geht die Mauserfassung mitten im Verschieben der Auswahl verloren, ist der Zug abgebrochen – späteres Loslassen verschiebt nichts")]
+    public void Art_capture_lost_cancels_selection_drag()
+    {
+        var (w, _, _) = Ui.Open(); w.Width = 1600; w.Height = 1000;
+        try
+        {
+            var d = ArtWithSquare(w);
+            Drag(w, ArtP(w, 380, 280), ArtP(w, 520, 420)); Assert.NotNull(w.ArtSelection(d));
+            var steps = d.History.Count; var square = Dark(w, d, 395, 295, 506, 406);
+            // Zeiger beim Drücken merken, dann die Erfassung entziehen (wie bei einem Fenster, das sich davorschiebt)
+            IPointer? ptr = null; var canvas = w.ArtCanvasForTests!;
+            canvas.AddHandler(InputElement.PointerPressedEvent, (_, e) => ptr = e.Pointer, Avalonia.Interactivity.RoutingStrategies.Tunnel | Avalonia.Interactivity.RoutingStrategies.Bubble, handledEventsToo: true);
+            var from = ArtP(w, 450, 350); w.MouseDown(from, MouseButton.Left); Pump();
+            Assert.NotNull(ptr); Assert.Same(canvas, ptr!.Captured);
+            Assert.True(canvas.SelDragging);
+            ptr.Capture(null); Pump();
+            Assert.False(canvas.SelDragging);
+            // weiter ziehen und loslassen: kein Verschieben, kein neuer Schritt, Quadrat bleibt
+            for (var i = 1; i <= 6; i++) { w.MouseMove(from + new Vector(60 * i, 30 * i)); Pump(); }
+            w.MouseUp(from + new Vector(360, 180), MouseButton.Left); Pump();
+            Assert.Equal(steps, d.History.Count);
+            Assert.Equal(square, Dark(w, d, 395, 295, 506, 406));
+            Assert.InRange(PaintSelBoundsX(w, d), 375, 385);
+        }
+        finally { w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "T-0733 Gegenprüfung: Zoom-Werkzeug in der Leiste – „Einfach“ mit Symbol und Wort, Hinweis mit Taste Z, gewählt = goldener Rand (nicht golden gefüllt, kein Blau)")]
+    public void Zoom_tool_in_rail()
+    {
+        var (w, _, _) = Ui.Open(); w.Width = 1600; w.Height = 1000;
+        try
+        {
+            w.ProgramSetLevel(UserLevel.Einfach);
+            while (w.ProgramDocs("bild").Count > 0) w.ProgramClose("bild", 0);
+            w.Show("bild"); w.ProgramNew("bild", "leer"); w.Show("bild"); Pump();
+            var b = V<Button>(w, "prog-cmd-img-tool-zoom");
+            var words = b.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text).ToList();
+            Assert.Contains("⌕", words); Assert.Contains("Zoom", words); // Symbol und Wort
+            Assert.StartsWith("Zoom (Z) – ", ToolTip.GetTip(b)?.ToString());
+            Assert.False(b.BorderBrush is Avalonia.Media.ISolidColorBrush { Color: var c0 } && c0.ToHsv().S > 0.5 && c0.ToHsv().H is > 35 and < 55); // noch nicht gewählt: kein goldener Rand
+            Click(w, "prog-cmd-img-tool-zoom"); Assert.Equal("zoom", w.ImgTool); // in „Einfach“ ist die Leiste lang – erst hinscrollen
+            b = V<Button>(w, "prog-cmd-img-tool-zoom");
+            var edge = Assert.IsAssignableFrom<Avalonia.Media.ISolidColorBrush>(b.BorderBrush).Color;
+            var hsv = edge.ToHsv(); Assert.InRange(hsv.H, 35, 55); Assert.True(hsv.S > 0.5, $"kein kräftiges Gold: {edge}"); // Goldton (Akzent je Thema, z. B. #C9A227 oder #B38B22), kein Blau
+            Assert.False(MainWindow.IsGold(b)); // golden gefüllt ist nur die Hauptaktion
+            Shot(w, "bild-zoom-einfach.png");
         }
         finally { w.Close(); }
     }

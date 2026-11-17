@@ -146,14 +146,18 @@ public partial class MainWindow
     /// <summary>T-0686 (V-02): Dateiauswahl für ein Foto oder eine Grafik.</summary>
     public void ImgPickOpen() => _ = ProgramPickThen(BK, "img-open-pick", "Bilder", ["jpg", "jpeg", "png", "webp", "bmp", "tif", "tiff", "svg"], false, files => ImgAddImage(files[0]));
 
-    /// <summary>Bild als Ebene hinzufügen (öffentlich für Tests und die KI).</summary>
+    /// <summary>Bild als Ebene hinzufügen (öffentlich für Tests und die KI). TIFF wird im Hintergrund umgewandelt (T-0733) –
+    /// die Ebene erscheint dann von selbst; solange gilt <see cref="ImgTiffBusy"/>.</summary>
     public void ImgAddImage(string file)
     {
         if (Path.GetExtension(file).Equals(".svg", StringComparison.OrdinalIgnoreCase)) { ImgOpenSvg(file); return; }
-        var d = ProgramActive(BK) ?? ProgramNew(BK);
         if (!File.Exists(file)) throw new FileNotFoundException("Datei nicht gefunden: " + Path.GetFileName(file));
-        var shown = Path.GetFileName(file);
-        if (Path.GetExtension(file).ToLowerInvariant() is ".tif" or ".tiff") file = ImgTiffToPng(file);
+        if (Path.GetExtension(file).ToLowerInvariant() is ".tif" or ".tiff") { ImgAddTiff(file); return; }
+        ImgAddDecoded(ProgramActive(BK) ?? ProgramNew(BK), file, Path.GetFileName(file));
+    }
+
+    void ImgAddDecoded(ProgramDocument d, string file, string shown)
+    {
         using var b = SkiaSharp.SKBitmap.Decode(file) ?? throw new InvalidOperationException("Das ist kein Bild, das Trendo öffnen kann.");
         var first = ImageDoc.Layers(d.Data).Count == 0;
         d.Edit("Bild hinzufügen", x =>
@@ -164,18 +168,53 @@ public partial class MainWindow
         _progMsg[BK] = $"„{shown}“ ist eine Ebene ({b.Width} × {b.Height})." + (shown != Path.GetFileName(file) ? " TIFF wurde mit FFmpeg in PNG umgewandelt." : "");
     }
 
-    /// <summary>T-0733: TIFF kann SkiaSharp nicht lesen (geprüft: <c>SKBitmap.Decode</c> liefert null). Trendo wandelt es mit dem eingerichteten FFmpeg
-    /// verlustfrei in PNG um und legt es unter „bild/importe“ ab, damit das Projekt die Ebene auch nach dem Neustart findet.</summary>
-    string ImgTiffToPng(string file)
+    bool _imgTiffBusy;
+    /// <summary>T-0733 (Gegenprüfung): Läuft gerade eine TIFF-Umwandlung? Dann startet keine zweite.</summary>
+    public bool ImgTiffBusy => _imgTiffBusy;
+    /// <summary>Faden, auf dem die letzte TIFF-Umwandlung lief – für den Test, dass FFmpeg nicht den Oberflächen-Faden blockiert.</summary>
+    public int ImgTiffThreadForTests { get; private set; }
+
+    /// <summary>T-0733 (Gegenprüfung): FFmpeg läuft im Hintergrund (bis 60 s bei großen Scans) – die Oberfläche bleibt bedienbar und zeigt „wird umgewandelt …“.</summary>
+    void ImgAddTiff(string file)
     {
+        if (_imgTiffBusy) throw new InvalidOperationException("Ein TIFF wird gerade umgewandelt – bitte kurz warten, dann erscheint es als Ebene.");
         var ff = FfmpegPath ?? throw new InvalidOperationException("TIFF öffnet Trendo über FFmpeg – bitte FFmpeg unter „Programme“ einrichten oder das Bild als PNG/JPG speichern.");
-        var dir = Path.Combine(_core.DataRoot, "bild", "importe"); Directory.CreateDirectory(dir);
+        var d = ProgramActive(BK) ?? ProgramNew(BK);
+        var dir = Path.Combine(_core.DataRoot, "bild", "importe"); var shown = Path.GetFileName(file);
+        _imgTiffBusy = true;
+        _progMsg[BK] = $"„{shown}“ wird umgewandelt … (TIFF über FFmpeg, die Ebene erscheint gleich von selbst)";
+        _ = Task.Run(() => { ImgTiffThreadForTests = Environment.CurrentManagedThreadId; return ImgTiffToPng(ff, dir, file); })
+            .ContinueWith(t => _ui.Post(() =>
+            {
+                _imgTiffBusy = false;
+                try
+                {
+                    var png = t.GetAwaiter().GetResult();
+                    ImgAddDecoded(ProgramDocs(BK).Contains(d) ? d : ProgramActive(BK) ?? ProgramNew(BK), png, shown); // Dokument inzwischen geschlossen: ins aktive
+                    _progErr.Remove(BK);
+                }
+                catch (Exception ex) when (ex is IOException or InvalidOperationException or UnauthorizedAccessException)
+                {
+                    var fe = FriendlyError.From(ex); _progMsg[BK] = fe.Sentence; _progErr[BK] = (fe, () => ProgramRun(BK, () => ImgAddImage(file)));
+                }
+                if (CurrentView == BK) Show(BK);
+            }), TaskScheduler.Default);
+    }
+
+    /// <summary>T-0733: TIFF kann SkiaSharp nicht lesen (geprüft: <c>SKBitmap.Decode</c> liefert null). Trendo wandelt es mit dem eingerichteten FFmpeg
+    /// verlustfrei in PNG um und legt es unter „bild/importe“ ab, damit das Projekt die Ebene auch nach dem Neustart findet.
+    /// Läuft im Hintergrund – fasst nichts an der Oberfläche an. Erst in eine Zwischendatei, dann umbenannt: nie eine halbe PNG.</summary>
+    static string ImgTiffToPng(string ff, string dir, string file)
+    {
+        Directory.CreateDirectory(dir);
         string hash; using (var fs = File.OpenRead(file)) hash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(fs))[..12].ToLowerInvariant();
         var safe = string.Concat(Path.GetFileNameWithoutExtension(file).Select(c => char.IsLetterOrDigit(c) || c is '-' or '_' ? c : '_'));
         var png = Path.Combine(dir, $"{safe}-{hash}.png");
         if (File.Exists(png)) return png;
         var tmp = png + ".tmp.png";
-        var r = Cli.Run(ff, ["-v", "error", "-y", "-i", file, "-frames:v", "1", "-pix_fmt", "rgba", tmp], timeoutMs: 60000);
+        Cli.Result r;
+        try { r = Cli.Run(ff, ["-v", "error", "-y", "-i", file, "-frames:v", "1", "-pix_fmt", "rgba", tmp], timeoutMs: 60000); }
+        catch (System.ComponentModel.Win32Exception ex) { throw new InvalidOperationException("FFmpeg ließ sich nicht starten: " + ex.Message, ex); }
         if (!r.Ok || !File.Exists(tmp)) { try { File.Delete(tmp); } catch (IOException) { } throw new InvalidOperationException("Das TIFF ließ sich nicht lesen: " + (r.Err.Trim() is { Length: > 0 } e ? e.Split('\n')[0] : "FFmpeg meldet einen Fehler.")); }
         File.Move(tmp, png, true);
         return png;

@@ -218,7 +218,7 @@ public sealed class PaintCanvas : Control
     {
         base.OnPointerReleased(e);
         if (_panFrom is not null) { _panFrom = null; e.Pointer.Capture(null); return; }
-        if (_selDrag != 0) { _selAt = ToDoc(e.GetPosition(this)); e.Pointer.Capture(null); FinishSelection(); return; }
+        if (_selDrag != 0) { _selAt = ToDoc(e.GetPosition(this)); FinishSelection(); e.Pointer.Capture(null); return; } // erst abschließen, dann Erfassung lösen (Erfassungsverlust bricht den Zug sonst ab)
         if (_stroke is not { } s) return;
         _stroke = null; e.Pointer.Capture(null); Flush(s); EndStroke?.Invoke(s);
     }
@@ -230,7 +230,8 @@ public sealed class PaintCanvas : Control
         InvalidateVisual();
         if (kind == 1)
         {
-            if (SelShape == "lasso") { _selPts.Add(_selAt); Selected?.Invoke(_selPts.Count >= 3 && moved ? [.. _selPts] : []); }
+            // Lasso: zählt die Ausdehnung des Wegs, nicht Anfang–Ende – wer die Schleife sauber am Startpunkt schließt, behält seine Auswahl (T-0733 Gegenprüfung)
+            if (SelShape == "lasso") { _selPts.Add(_selAt); var lb = _selPts.Count >= 3 ? Trendo.Core.Kreativ.PaintSelection.Bounds(_selPts) : default; Selected?.Invoke(lb.W + lb.H > 2 / Scale ? [.. _selPts] : []); }
             else Selected?.Invoke(moved ? Trendo.Core.Kreativ.PaintSelection.Rect(_selFrom.X, _selFrom.Y, _selAt.X, _selAt.Y) : []);
             _selPts.Clear(); return;
         }
@@ -244,7 +245,11 @@ public sealed class PaintCanvas : Control
         base.OnPointerCaptureLost(e);
         if (_stroke is { } s) { _stroke = null; Flush(s); EndStroke?.Invoke(s); }
         _panFrom = null;
+        // T-0733 (Gegenprüfung): geht die Mauserfassung mitten im Auswahl-Ziehen verloren, gilt der Zug als abgebrochen – kein spätes Verschieben beim nächsten Loslassen
+        if (_selDrag != 0) { _selDrag = 0; _selPts.Clear(); InvalidateVisual(); }
     }
+    /// <summary>T-0733: läuft gerade ein Auswahl-Zug (aufziehen, verschieben, skalieren)?</summary>
+    public bool SelDragging => _selDrag != 0;
 
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
     {

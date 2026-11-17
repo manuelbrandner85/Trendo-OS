@@ -19,7 +19,10 @@ public class ProfiRahmen_Ui
         {
             w.Show("bild"); w.ProgramNew("bild"); w.Show("bild"); Pump();
             var rail = w.Find<Panel>("prog-tools");
-            Assert.Equal(13, rail.Children.Count); // mit Vektorpinsel, Auswahl, Verlauf, Füllen, Reparieren, Klonen (04.11.2026)
+            Assert.Equal(14, rail.Children.Count); // mit Vektorpinsel, Auswahl, Verlauf, Füllen, Reparieren, Klonen (04.11.2026), Zoom (T-0733)
+            // Zoom (T-0733): Symbol in der Leiste, Wort und Taste Z im Hinweis
+            var zoom = w.Find<Button>("prog-cmd-img-tool-zoom");
+            Assert.Equal("⌕", zoom.Content); Assert.StartsWith("Zoom (Z) – ", ToolTip.GetTip(zoom)?.ToString());
             Assert.Null(w.TryFind<Control>("prog-ribbon")?.GetLogicalDescendants().OfType<Button>().FirstOrDefault(b => b.Name == "prog-cmd-img-tool-brush" && b.Parent is WrapPanel));
             w.Find<Button>("prog-cmd-img-tool-brush").Press(); Pump();
             Assert.Equal("brush", w.ImgTool);
