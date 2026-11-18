@@ -12,3 +12,4 @@
 **Nicht tun:** keine Maschine ansteuern, nichts installieren (ezdxf/LibreCAD/QCAD nur prüfen), kein zweiter DXF-Leser, IFC-Import nur mit vorhandenen Bausteinen.
 **Am Ende:** Branch pushen, Bericht `tasks/T-0747-dxf-wohnung-fraesen.bericht.md`.
 **Nachtrag T-0747-fix (Gegenprüfung):** Nachbarkonturen/Acht, Engstellen, verrauschte Konturen, große DXF (Raster + Hintergrund + Abbrechen), veraltete Bahnen, Kodierung/Sonderzeichen/kaputte SVG – behoben, siehe Bericht „Gegenprüfung behoben“.
+**Nachtrag T-0747-fix2 (zweite Prüfung):** Konturen in abgelehnten Achtern, offene Konturen, Meldung nicht lesbarer Elemente, Bogen-/Kurventoleranz ohne Obergrenze, Rechnen im Hintergrund mit Abbrechen, kurze Engstellen, Einheiten-Hinweis in Trendo CAD – siehe Bericht „Zweite Prüfung behoben“.

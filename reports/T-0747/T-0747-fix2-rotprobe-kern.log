@@ -1,0 +1,183 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\t0747fix2-old\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:15.19]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:15.74]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:15.79]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:16.03]     T-0747-fix2 3: SPLINE, ELLIPSE, Blockverweis, Texte, ausgeblendete Ebene und Zoll werden beim CNC-Import gemeldet [FAIL]
+[xUnit.net 00:00:16.03]       Assert.Contains() Failure: Sub-string not found
+[xUnit.net 00:00:16.03]       String:    ""
+[xUnit.net 00:00:16.03]       Not found: "Maße in mm umgerechnet (Zeichnung in Zoll"···
+[xUnit.net 00:00:16.03]       Stack Trace:
+[xUnit.net 00:00:16.03]         C:\Users\<user>\AppData\Local\Temp\t0747fix2-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix2Tests.cs(103,0): at Trendo.Core.Tests.T0747_Fix2ZweitePruefung.Skipped_elements_reported()
+[xUnit.net 00:00:16.03]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:16.03]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:16.03]       Output:
+[xUnit.net 00:00:16.03]         
+[xUnit.net 00:00:16.20]     T-0747-fix2 4: Kreis R 1000 / 8000 / 20000 – Bahn nie näher als Radius − 0,002 mm am WAHREN Kreis(R: 20000) [FAIL]
+[xUnit.net 00:00:16.20]       2,952352983160381
+[xUnit.net 00:00:16.20]       Stack Trace:
+[xUnit.net 00:00:16.20]         C:\Users\<user>\AppData\Local\Temp\t0747fix2-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix2Tests.cs(125,0): at Trendo.Core.Tests.T0747_Fix2ZweitePruefung.Big_radius_true_circle(Double R)
+[xUnit.net 00:00:16.20]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:16.20]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:16.20]       Output:
+[xUnit.net 00:00:16.20]         R 20000: 1440 Konturpunkte, kleinster Abstand zum wahren Kreis 2,95235 mm (Radius 3), 86 ms
+[xUnit.net 00:00:16.27]     T-0747-fix2 4: Kreis R 1000 / 8000 / 20000 – Bahn nie näher als Radius − 0,002 mm am WAHREN Kreis(R: 8000) [FAIL]
+[xUnit.net 00:00:16.27]       2,9809115329235283
+[xUnit.net 00:00:16.27]       Stack Trace:
+[xUnit.net 00:00:16.27]         C:\Users\<user>\AppData\Local\Temp\t0747fix2-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix2Tests.cs(125,0): at Trendo.Core.Tests.T0747_Fix2ZweitePruefung.Big_radius_true_circle(Double R)
+[xUnit.net 00:00:16.27]            at InvokeStub_T0747_Fix2ZweitePruefung.Big_radius_true_circle(Object, Span`1)
+[xUnit.net 00:00:16.27]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:16.27]       Output:
+[xUnit.net 00:00:16.27]         R 8000: 1440 Konturpunkte, kleinster Abstand zum wahren Kreis 2,98091 mm (Radius 3), 37 ms
+[xUnit.net 00:00:16.36]     T-0747-fix2 4: Kreis R 1000 / 8000 / 20000 – Bahn nie näher als Radius − 0,002 mm am WAHREN Kreis(R: 1000) [FAIL]
+[xUnit.net 00:00:16.36]       2,9975725782678637
+[xUnit.net 00:00:16.36]       Stack Trace:
+[xUnit.net 00:00:16.36]         C:\Users\<user>\AppData\Local\Temp\t0747fix2-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix2Tests.cs(125,0): at Trendo.Core.Tests.T0747_Fix2ZweitePruefung.Big_radius_true_circle(Double R)
+[xUnit.net 00:00:16.36]            at InvokeStub_T0747_Fix2ZweitePruefung.Big_radius_true_circle(Object, Span`1)
+[xUnit.net 00:00:16.36]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:16.36]       Output:
+[xUnit.net 00:00:16.36]         R 1000: 1440 Konturpunkte, kleinster Abstand zum wahren Kreis 2,99757 mm (Radius 3), 36 ms
+[xUnit.net 00:00:16.39]     T-0747-fix2 1: x1/x2/x3 – Insel im Achter-Loch, Loch im Achter-Umriss werden ausgelassen statt auf der falschen Seite gefräst [FAIL]
+[xUnit.net 00:00:16.39]       Assert.Equal() Failure: Collections differ
+[xUnit.net 00:00:16.39]                                        ↓ (pos 0)
+[xUnit.net 00:00:16.39]       Expected: <generated>           [0]
+[xUnit.net 00:00:16.39]       Actual:   DistinctIterator<int> [2, 0]
+[xUnit.net 00:00:16.39]                                        ↑ (pos 0)
+[xUnit.net 00:00:16.39]       Stack Trace:
+[xUnit.net 00:00:16.39]         C:\Users\<user>\AppData\Local\Temp\t0747fix2-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix2Tests.cs(59,0): at Trendo.Core.Tests.T0747_Fix2ZweitePruefung.Contours_inside_rejected_eight()
+[xUnit.net 00:00:16.39]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:16.39]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:16.40]     T-0747-fix2 6: kurze Engstelle (spitze Kerbe 0,2 mm breit) wird gemeldet, auch wenn nur ein Messpunkt sie trifft [FAIL]
+[xUnit.net 00:00:16.40]       Assert.Contains() Failure: Filter not matched in collection
+[xUnit.net 00:00:16.40]       Collection: []
+[xUnit.net 00:00:16.40]       Stack Trace:
+[xUnit.net 00:00:16.40]         C:\Users\<user>\AppData\Local\Temp\t0747fix2-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix2Tests.cs(182,0): at Trendo.Core.Tests.T0747_Fix2ZweitePruefung.Short_narrow_spot_reported()
+[xUnit.net 00:00:16.40]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:16.40]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:16.40]       Output:
+[xUnit.net 00:00:16.40]         
+[xUnit.net 00:00:16.51]     T-0747-fix2 4: lange SVG-Bézierkurve wird nach Pfeilhöhe abgetastet – Bahn nie näher als Radius − 0,002 mm an der wahren Kurve [FAIL]
+[xUnit.net 00:00:16.51]       2,7558887946992643
+[xUnit.net 00:00:16.51]       Stack Trace:
+[xUnit.net 00:00:16.51]         C:\Users\<user>\AppData\Local\Temp\t0747fix2-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix2Tests.cs(154,0): at Trendo.Core.Tests.T0747_Fix2ZweitePruefung.Long_bezier_true_curve()
+[xUnit.net 00:00:16.51]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:16.51]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:16.51]       Output:
+[xUnit.net 00:00:16.51]         Bézier 3000 mm: 97 Konturpunkte, kleinster Abstand Bahn–wahre Kurve 2,75589 mm (Radius 3)
+[xUnit.net 00:00:16.52]     T-0747-fix2 2: Rechteck aus 4 LINE mit 0,05 mm Spalt wird geschlossen; 1 mm Spalt → offen, ausgelassen und gemeldet, nur als Gravur gefräst [FAIL]
+[xUnit.net 00:00:16.52]       Assert.True() Failure
+[xUnit.net 00:00:16.52]       Expected: True
+[xUnit.net 00:00:16.52]       Actual:   False
+[xUnit.net 00:00:16.52]       Stack Trace:
+[xUnit.net 00:00:16.52]         C:\Users\<user>\AppData\Local\Temp\t0747fix2-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix2Tests.cs(78,0): at Trendo.Core.Tests.T0747_Fix2ZweitePruefung.Open_contours()
+[xUnit.net 00:00:16.52]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:16.52]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0747-fix2 3: SPLINE, ELLIPSE, Blockverweis, Texte, ausgeblendete Ebene und Zoll werden beim CNC-Import gemeldet [188 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Sub-string not found
+String:    ""
+Not found: "Maße in mm umgerechnet (Zeichnung in Zoll"···
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix2ZweitePruefung.Skipped_elements_reported() in C:\Users\<user>\AppData\Local\Temp\t0747fix2-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix2Tests.cs:line 103
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+  Fehler T-0747-fix2 4: Kreis R 1000 / 8000 / 20000 – Bahn nie näher als Radius − 0,002 mm am WAHREN Kreis(R: 20000) [171 ms]
+  Fehlermeldung:
+   2,952352983160381
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix2ZweitePruefung.Big_radius_true_circle(Double R) in C:\Users\<user>\AppData\Local\Temp\t0747fix2-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix2Tests.cs:line 125
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ R 20000: 1440 Konturpunkte, kleinster Abstand zum wahren Kreis 2,95235 mm (Radius 3), 86 ms
+
+
+  Fehler T-0747-fix2 4: Kreis R 1000 / 8000 / 20000 – Bahn nie näher als Radius − 0,002 mm am WAHREN Kreis(R: 8000) [71 ms]
+  Fehlermeldung:
+   2,9809115329235283
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix2ZweitePruefung.Big_radius_true_circle(Double R) in C:\Users\<user>\AppData\Local\Temp\t0747fix2-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix2Tests.cs:line 125
+   at InvokeStub_T0747_Fix2ZweitePruefung.Big_radius_true_circle(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ R 8000: 1440 Konturpunkte, kleinster Abstand zum wahren Kreis 2,98091 mm (Radius 3), 37 ms
+
+
+  Fehler T-0747-fix2 4: Kreis R 1000 / 8000 / 20000 – Bahn nie näher als Radius − 0,002 mm am WAHREN Kreis(R: 1000) [89 ms]
+  Fehlermeldung:
+   2,9975725782678637
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix2ZweitePruefung.Big_radius_true_circle(Double R) in C:\Users\<user>\AppData\Local\Temp\t0747fix2-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix2Tests.cs:line 125
+   at InvokeStub_T0747_Fix2ZweitePruefung.Big_radius_true_circle(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ R 1000: 1440 Konturpunkte, kleinster Abstand zum wahren Kreis 2,99757 mm (Radius 3), 36 ms
+
+
+  Fehler T-0747-fix2 1: x1/x2/x3 – Insel im Achter-Loch, Loch im Achter-Umriss werden ausgelassen statt auf der falschen Seite gefräst [28 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Collections differ
+                                 ↓ (pos 0)
+Expected: <generated>           [0]
+Actual:   DistinctIterator<int> [2, 0]
+                                 ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix2ZweitePruefung.Contours_inside_rejected_eight() in C:\Users\<user>\AppData\Local\Temp\t0747fix2-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix2Tests.cs:line 59
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0747-fix2 6: kurze Engstelle (spitze Kerbe 0,2 mm breit) wird gemeldet, auch wenn nur ein Messpunkt sie trifft [6 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Filter not matched in collection
+Collection: []
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix2ZweitePruefung.Short_narrow_spot_reported() in C:\Users\<user>\AppData\Local\Temp\t0747fix2-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix2Tests.cs:line 182
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+  Fehler T-0747-fix2 4: lange SVG-Bézierkurve wird nach Pfeilhöhe abgetastet – Bahn nie näher als Radius − 0,002 mm an der wahren Kurve [116 ms]
+  Fehlermeldung:
+   2,7558887946992643
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix2ZweitePruefung.Long_bezier_true_curve() in C:\Users\<user>\AppData\Local\Temp\t0747fix2-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix2Tests.cs:line 154
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ Bézier 3000 mm: 97 Konturpunkte, kleinster Abstand Bahn–wahre Kurve 2,75589 mm (Radius 3)
+
+
+  Fehler T-0747-fix2 2: Rechteck aus 4 LINE mit 0,05 mm Spalt wird geschlossen; 1 mm Spalt → offen, ausgelassen und gemeldet, nur als Gravur gefräst [1 ms]
+  Fehlermeldung:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix2ZweitePruefung.Open_contours() in C:\Users\<user>\AppData\Local\Temp\t0747fix2-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix2Tests.cs:line 78
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:25.05]     T-0747-fix2 5: Zickzack mit 5000 Punkten – schneller als vorher, Abbrechen wirkt auch mitten im Versatz [FAIL]
+[xUnit.net 00:00:25.05]       3787
+[xUnit.net 00:00:25.05]       Stack Trace:
+[xUnit.net 00:00:25.05]         C:\Users\<user>\AppData\Local\Temp\t0747fix2-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix2Tests.cs(171,0): at Trendo.Core.Tests.T0747_Fix2ZweitePruefung.Zigzag_speed_and_cancel()
+[xUnit.net 00:00:25.05]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:25.05]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:25.05]       Output:
+[xUnit.net 00:00:25.05]         Zickzack 5000 Punkte: 4742 ms; Abbrechen nach 100 ms wirkte nach 3787 ms
+[xUnit.net 00:00:25.05]   Finished:    Trendo.Core.Tests
+  Fehler T-0747-fix2 5: Zickzack mit 5000 Punkten – schneller als vorher, Abbrechen wirkt auch mitten im Versatz [8 s]
+  Fehlermeldung:
+   3787
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix2ZweitePruefung.Zigzag_speed_and_cancel() in C:\Users\<user>\AppData\Local\Temp\t0747fix2-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix2Tests.cs:line 171
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ Zickzack 5000 Punkte: 4742 ms; Abbrechen nach 100 ms wirkte nach 3787 ms
+
+
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 9
+     Nicht bestanden: 9
+ Gesamtzeit: 27,2595 Sekunden

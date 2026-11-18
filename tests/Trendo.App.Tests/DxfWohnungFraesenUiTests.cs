@@ -17,11 +17,13 @@ public class T0747_DxfUi
 {
     const string AK = "architektur", CK = "cnc";
     static T Get<T>(MainWindow w, string name) where T : Control { Settle(); return w.GetVisualDescendants().OfType<T>().Last(c => c.Name == name && c.IsEffectivelyVisible && c.Bounds.Width > 0); }
-    static void Press(MainWindow w, string name) { var b = Get<Button>(w, name); b.BringIntoView(); Settle(); RealClick(w, Get<Button>(w, name)); }
+    static void Press(MainWindow w, string name) { var b = Get<Button>(w, name); b.BringIntoView(); Settle(); RealClick(w, Get<Button>(w, name)); Bg(w); }
+    /// <summary>T-0747-fix2: Einlesen und Bahnberechnung laufen im Hintergrund – auf das Ergebnis warten.</summary>
+    static void Bg(MainWindow w) { var sw = System.Diagnostics.Stopwatch.StartNew(); while (w.DrawingImportBusy && sw.Elapsed < TimeSpan.FromSeconds(120)) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); Thread.Sleep(10); } Assert.False(w.DrawingImportBusy); Settle(); }
     static void Type(MainWindow w, string box, string text)
     {
         var t = Get<TextBox>(w, box); t.BringIntoView(); t.Focus(); t.Text = text; Settle();
-        w.KeyPress(Key.Enter, RawInputModifiers.None, PhysicalKey.Enter, null); w.KeyRelease(Key.Enter, RawInputModifiers.None, PhysicalKey.Enter, null); Settle();
+        w.KeyPress(Key.Enter, RawInputModifiers.None, PhysicalKey.Enter, null); w.KeyRelease(Key.Enter, RawInputModifiers.None, PhysicalKey.Enter, null); Settle(); Bg(w);
     }
     static string Fixture(string name)
     {
@@ -90,7 +92,7 @@ public class T0747_DxfUi
         Press(w, "prog-undo"); // ein Schritt: Wert und Bahnen zusammen
         Assert.Equal(0, Job(w).CamTabs); Assert.DoesNotContain("G1 Z-5\n", Job(w).Gcode);
         // Fräsart: alles auf der Linie
-        Get<ComboBox>(w, "cnc-p-cammode").SelectedIndex = 3; Settle();
+        Get<ComboBox>(w, "cnc-p-cammode").SelectedIndex = 3; Settle(); Bg(w);
         Assert.Equal("auf", Job(w).CamMode); Assert.Contains("auf der Linie", Job(w).Gcode);
         // Export als G-Code-Datei
         Press(w, "prog-export-nc");

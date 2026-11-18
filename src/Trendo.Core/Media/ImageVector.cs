@@ -215,7 +215,9 @@ public static class ImageVector
 
     /// <summary>T-0747: SVG-Pfad als einzelne Teilpfade (jedes M beginnt einen neuen) – für Konturen in CAD und Fräsen. Bögen (A) werden richtig
     /// als Ellipsenbogen abgetastet, S/T spiegeln den letzten Kontrollpunkt, Q ist eine echte quadratische Kurve.</summary>
-    public static List<(List<(double X, double Y)> Points, bool Closed)> ParseSubpaths(string data, int curveSteps = 8)
+    /// <param name="flatTol">T-0747-fix2: größer 0 → Kurven und Bögen werden so fein abgetastet, dass die Sehnen höchstens so weit (in Pfad-Einheiten) vom
+    /// echten Verlauf abweichen (Bézier durch Halbieren bis zur Flachheit, Bögen aus der Pfeilhöhe); <paramref name="curveSteps"/> gilt dann nicht.</param>
+    public static List<(List<(double X, double Y)> Points, bool Closed)> ParseSubpaths(string data, int curveSteps = 8, double flatTol = 0)
     {
         var tokens = Regex.Matches(data, @"[MmLlHhVvCcSsQqTtZzAa]|[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?").Select(m => m.Value).ToList();
         var res = new List<(List<(double X, double Y)> Points, bool Closed)>();
@@ -251,7 +253,7 @@ public static class ImageVector
                         if (up == 'C') { x1 = Num(); y1 = Num(); if (rel) { x1 += cx; y1 += cy; } }
                         else if (last == 'C') { x1 = 2 * cx - lcx; y1 = 2 * cy - lcy; } else { x1 = cx; y1 = cy; }
                         double x2 = Num(), y2 = Num(), x = Num(), y = Num(); if (rel) { x2 += cx; y2 += cy; x += cx; y += cy; }
-                        cur ??= [(cx, cy)]; Bezier(cur, (cx, cy), (x1, y1), (x2, y2), (x, y), curveSteps); lcx = x2; lcy = y2; cx = x; cy = y; last = 'C';
+                        cur ??= [(cx, cy)]; if (flatTol > 0) BezierFlat(cur, (cx, cy), (x1, y1), (x2, y2), (x, y), flatTol); else Bezier(cur, (cx, cy), (x1, y1), (x2, y2), (x, y), curveSteps); lcx = x2; lcy = y2; cx = x; cy = y; last = 'C';
                     }
                     break;
                 case 'Q' or 'T':
@@ -262,7 +264,8 @@ public static class ImageVector
                         else if (last == 'Q') { qx = 2 * cx - lcx; qy = 2 * cy - lcy; } else { qx = cx; qy = cy; }
                         double x = Num(), y = Num(); if (rel) { x += cx; y += cy; }
                         cur ??= [(cx, cy)];
-                        Bezier(cur, (cx, cy), (cx + 2.0 / 3 * (qx - cx), cy + 2.0 / 3 * (qy - cy)), (x + 2.0 / 3 * (qx - x), y + 2.0 / 3 * (qy - y)), (x, y), curveSteps); // quadratisch = kubisch mit 2/3-Punkten
+                        (double X, double Y) q1 = (cx + 2.0 / 3 * (qx - cx), cy + 2.0 / 3 * (qy - cy)), q2 = (x + 2.0 / 3 * (qx - x), y + 2.0 / 3 * (qy - y)); // quadratisch = kubisch mit 2/3-Punkten
+                        if (flatTol > 0) BezierFlat(cur, (cx, cy), q1, q2, (x, y), flatTol); else Bezier(cur, (cx, cy), q1, q2, (x, y), curveSteps);
                         lcx = qx; lcy = qy; cx = x; cy = y; last = 'Q';
                     }
                     break;
@@ -271,7 +274,7 @@ public static class ImageVector
                     {
                         double rx = Math.Abs(Num()), ry = Math.Abs(Num()), rot = Num(); var large = Num() != 0; var sweep = Num() != 0; double x = Num(), y = Num(); if (rel) { x += cx; y += cy; }
                         cur ??= [(cx, cy)];
-                        cur.AddRange(Arc(cx, cy, rx, ry, rot, large, sweep, x, y, curveSteps));
+                        cur.AddRange(Arc(cx, cy, rx, ry, rot, large, sweep, x, y, curveSteps, flatTol));
                         cx = x; cy = y; last = 'A';
                     }
                     break;
@@ -287,7 +290,7 @@ public static class ImageVector
     }
 
     /// <summary>SVG-Ellipsenbogen (Endpunkt-Schreibweise) in Punkte – Umrechnung auf Mittelpunkt und Winkel nach SVG 1.1, Anhang F.6.</summary>
-    static List<(double X, double Y)> Arc(double x1, double y1, double rx, double ry, double rotDeg, bool large, bool sweep, double x2, double y2, int curveSteps = 8)
+    static List<(double X, double Y)> Arc(double x1, double y1, double rx, double ry, double rotDeg, bool large, bool sweep, double x2, double y2, int curveSteps = 8, double flatTol = 0)
     {
         if (rx < 1e-12 || ry < 1e-12 || Math.Abs(x1 - x2) < 1e-12 && Math.Abs(y1 - y2) < 1e-12) return [(x2, y2)];
         var phi = rotDeg * Math.PI / 180; double cos = Math.Cos(phi), sin = Math.Sin(phi);
@@ -301,8 +304,14 @@ public static class ImageVector
         var t1 = Ang(1, 0, (x1p - cxp) / rx, (y1p - cyp) / ry);
         var dt = Ang((x1p - cxp) / rx, (y1p - cyp) / ry, (-x1p - cxp) / rx, (-y1p - cyp) / ry);
         if (!sweep && dt > 0) dt -= 2 * Math.PI; else if (sweep && dt < 0) dt += 2 * Math.PI;
-        var fine = Math.Max(1, curveSteps / 24); // T-0747-fix: feiner für Fräskonturen (CadSvg: 96 → höchstens 0,625° je Stück)
+        var fine = Math.Max(1, curveSteps / 24); // T-0747-fix: feiner für Fräskonturen
         var n = Math.Clamp((int)Math.Ceiling(Math.Abs(dt) / (Math.PI / 72 / fine)), 2, 288 * fine); // sonst höchstens 2,5° je Stück
+        if (flatTol > 0) // T-0747-fix2: aus der Pfeilhöhe (größter Krümmungsradius einer Ellipse: a²/b)
+        {
+            var rMax = Math.Max(rx, ry) * Math.Max(rx, ry) / Math.Max(1e-12, Math.Min(rx, ry));
+            var step = rMax <= flatTol ? Math.PI / 12 : 4 * Math.Asin(Math.Sqrt(flatTol / (2 * rMax)));
+            n = (int)Math.Clamp(Math.Ceiling(Math.Abs(dt) / step), 2, 4_000_000); n += n % 2; // gerade Zahl: Halbkreise treffen ihren äußersten Punkt
+        }
         var res = new List<(double X, double Y)>(n);
         for (var k = 1; k < n; k++)
         {
@@ -311,6 +320,28 @@ public static class ImageVector
         }
         res.Add((x2, y2));
         return res;
+    }
+
+    /// <summary>T-0747-fix2: Bézier so oft halbieren, bis die Kontrollpunkte höchstens <paramref name="tol"/> von der Sehne liegen – die Kurve liegt in der
+    /// konvexen Hülle, weicht also höchstens so weit von der Sehne ab.</summary>
+    static void BezierFlat(List<(double X, double Y)> pts, (double X, double Y) p0, (double X, double Y) p1, (double X, double Y) p2, (double X, double Y) p3, double tol)
+    {
+        var stack = new Stack<((double X, double Y) A, (double X, double Y) B, (double X, double Y) C, (double X, double Y) D, int Depth)>();
+        stack.Push((p0, p1, p2, p3, 0));
+        while (stack.Count > 0)
+        {
+            var (a, b, c, d, depth) = stack.Pop();
+            if (depth >= 40 || Math.Max(SegD(b, a, d), SegD(c, a, d)) <= tol) { pts.Add(d); continue; }
+            (double X, double Y) M((double X, double Y) u, (double X, double Y) v) => ((u.X + v.X) / 2, (u.Y + v.Y) / 2);
+            var ab = M(a, b); var bc = M(b, c); var cd = M(c, d); var abc = M(ab, bc); var bcd = M(bc, cd); var m = M(abc, bcd);
+            stack.Push((m, bcd, cd, d, depth + 1)); stack.Push((a, ab, abc, m, depth + 1)); // erst die linke Hälfte ausgeben
+        }
+    }
+
+    static double SegD((double X, double Y) p, (double X, double Y) a, (double X, double Y) b)
+    {
+        double dx = b.X - a.X, dy = b.Y - a.Y, l2 = dx * dx + dy * dy; var t = l2 < 1e-30 ? 0 : Math.Clamp(((p.X - a.X) * dx + (p.Y - a.Y) * dy) / l2, 0, 1);
+        double x = a.X + dx * t - p.X, y = a.Y + dy * t - p.Y; return Math.Sqrt(x * x + y * y);
     }
 
     static void Bezier(List<(double, double)> pts, (double X, double Y) p0, (double X, double Y) p1, (double X, double Y) p2, (double X, double Y) p3, int steps = 8)

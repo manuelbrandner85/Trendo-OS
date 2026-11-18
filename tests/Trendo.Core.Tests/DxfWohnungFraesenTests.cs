@@ -212,9 +212,13 @@ public class T0747_DxfWohnungFraesen
         List<CadContour> cs = [new([(0, 0), (40, 0), (40, 30), (0, 30)], true, "0"), new([(18, 13), (22, 13), (22, 17), (18, 17)], true, "0"), new([(5, 5), (35, 5)], false, "gravur")];
         var auto = CncCam.Generate(cs, new CamSettings { ToolD = 6, Depth = 1, StepDown = 0.5 });
         Assert.Contains(auto.Warnings, w => w.Contains("zu klein", StringComparison.Ordinal));
-        Assert.Equal(["auf", "aussen"], auto.Paths.Select(p => p.Kind));
-        var engr = auto.Paths[0]; Assert.False(engr.Closed);
-        var segs = CncSim.Segments(auto.Gcode); var atDepth = segs.Where(g => !g.Rapid && Math.Abs(g.Z0 - -1) < 1e-9 && Math.Abs(g.Z1 - -1) < 1e-9 && g.Y0 == 5).ToList();
+        // T-0747-fix2 (zweite Prüfung): offene Linien werden in „auto“ nicht mehr still auf der Linie gefräst, sondern ausgelassen und gemeldet –
+        // auf der Linie nur in der ausdrücklichen Fräsart „auf“ (Gravur)
+        Assert.Equal(["aussen"], auto.Paths.Select(p => p.Kind));
+        Assert.Contains(auto.Warnings, w => w.StartsWith("Kontur 3 (Ebene gravur) ausgelassen: offene Kontur", StringComparison.Ordinal));
+        var gravur = CncCam.Generate(cs, new CamSettings { ToolD = 6, Depth = 1, StepDown = 0.5, Mode = "auf" });
+        var engr = Assert.Single(gravur.Paths, p => !p.Closed); Assert.Equal("auf", engr.Kind);
+        var segs = CncSim.Segments(gravur.Gcode); var atDepth = segs.Where(g => !g.Rapid && Math.Abs(g.Z0 - -1) < 1e-9 && Math.Abs(g.Z1 - -1) < 1e-9 && g.Y0 == 5).ToList();
         Assert.Contains(atDepth, g => g.X1 < g.X0); // zweite Stufe fährt zurück
         var allOut = CncCam.Generate(cs.Take(2).ToList(), new CamSettings { ToolD = 2, Depth = 1, StepDown = 1, Mode = "aussen" });
         Assert.All(allOut.Paths, p => Assert.Equal("aussen", p.Kind));

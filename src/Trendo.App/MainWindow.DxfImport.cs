@@ -15,22 +15,38 @@ namespace Trendo.App;
 
 /// <summary>T-0747: DXF in den Grundriss (SPEC-01) und DXF/SVG zu Fräsbahnen (SPEC-14). Beide lesen über den gemeinsamen Leser
 /// <see cref="CadDxf"/> im Kern; jeder Import ist ein Rückgängig-Schritt im offenen Dokument. Dazu Dateiauswahl und Ziehen und Ablegen.
-/// T-0747-fix: große Dateien (ab <see cref="DrawingBackgroundBytes"/>) werden im Hintergrund gelesen – die Oberfläche bleibt bedienbar, eine Karte
+/// T-0747-fix/-fix2: Einlesen und Fräsbahn-Berechnung laufen immer im Hintergrund – die Oberfläche bleibt bedienbar, eine Karte
 /// zeigt den Fortschritt mit „Abbrechen“; erst das fertige Ergebnis wird in einem Schritt ins Dokument übernommen.</summary>
 public partial class MainWindow
 {
     public static readonly string[] ArchImportExts = ["dxf"];
     public static readonly string[] CncImportExts = ["dxf", "svg"];
 
-    /// <summary>T-0747-fix: ab dieser Dateigröße liest Trendo die Zeichnung im Hintergrund.</summary>
-    public const long DrawingBackgroundBytes = 512 * 1024;
-    CancellationTokenSource? _drawCts; string? _drawKey, _drawFile;
-    /// <summary>T-0747-fix: läuft gerade ein Einlesen im Hintergrund?</summary>
+    CancellationTokenSource? _drawCts; string? _drawKey, _drawWhat;
+    /// <summary>T-0747-fix: läuft gerade ein Einlesen oder eine Bahnberechnung im Hintergrund?</summary>
     public bool DrawingImportBusy => _drawCts is not null;
-    /// <summary>T-0747-fix: Einlesen im Hintergrund abbrechen – das Dokument bleibt unverändert.</summary>
+    /// <summary>T-0747-fix: Arbeit im Hintergrund abbrechen – das Dokument bleibt unverändert.</summary>
     public void DrawingImportCancel() => _drawCts?.Cancel();
-    /// <summary>T-0747-fix (Tests): ist das gesetzt, wartet das Einlesen im Hintergrund vor dem Start darauf – so lässt sich „Abbrechen“ sicher prüfen.</summary>
+    /// <summary>T-0747-fix (Tests): ist das gesetzt, wartet die Arbeit im Hintergrund vor dem Start darauf – so lässt sich „Abbrechen“ sicher prüfen.</summary>
     public ManualResetEventSlim? DrawingImportHold { get; set; }
+
+    /// <summary>T-0747-fix2: Arbeit im Hintergrund (Einlesen, Fräsbahnen) mit Karte und „Abbrechen“. <paramref name="work"/> rechnet ohne die Oberfläche
+    /// und liefert, was danach auf der Oberfläche übernommen wird (ein Rückgängig-Schritt). Fehler werden zur Meldung, Abbrechen ändert nichts.</summary>
+    void RunBackground(string key, string what, Func<CancellationToken, Action> work, Func<Exception, bool>? onError = null)
+    {
+        if (_drawCts is not null) throw new InvalidOperationException($"Es läuft noch: {_drawWhat} – bitte warten oder „Abbrechen“ drücken.");
+        var cts = new CancellationTokenSource(); var ct = cts.Token;
+        _drawCts = cts; _drawKey = key; _drawWhat = what;
+        _progMsg[key] = what + " … Trendo bleibt bedienbar."; _progErr.Remove(key);
+        var hold = DrawingImportHold;
+        _ = Task.Run(() => { hold?.Wait(ct); return work(ct); }, ct).ContinueWith(t => Dispatcher.UIThread.Post(() =>
+        {
+            _drawCts = null; _drawKey = null; _drawWhat = null; cts.Dispose();
+            if (t.IsCanceled || t.Exception?.InnerException is OperationCanceledException) { _progMsg[key] = $"Vorgang abgebrochen – nichts geändert ({what})."; _progErr.Remove(key); Show(key); return; }
+            if (t.Exception?.InnerException is { } ex && onError is not null && onError(ex)) { Show(key); return; }
+            ProgramRun(key, () => { if (t.Exception?.InnerException is { } e2) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw(e2); t.Result(); });
+        }), TaskScheduler.Default);
+    }
 
     /// <summary>DXF-Grundriss in das aktive Geschoss übernehmen (ein Rückgängig-Schritt). Einzellinien bekommen die eingestellte Wandstärke.</summary>
     public string ArchImportDxf(string path)
@@ -75,19 +91,17 @@ public partial class MainWindow
         return msg;
     }
 
-    /// <summary>T-0747-fix: Datei aus Dateiauswahl oder Ziehen und Ablegen einlesen – kleine sofort, große im Hintergrund mit „Abbrechen“.</summary>
+    /// <summary>T-0747-fix2: Datei aus Dateiauswahl oder Ziehen und Ablegen einlesen – immer im Hintergrund mit „Abbrechen“ (auch kleine Dateien
+    /// können lange rechnen, z. B. ein Zickzack mit vielen Punkten).</summary>
     public void ImportDrawingFile(string key, string path)
     {
         if (!File.Exists(path)) throw new FileNotFoundException("Diese Datei gibt es nicht.");
-        if (new FileInfo(path).Length < DrawingBackgroundBytes) { if (key == AK) ArchImportDxf(path); else CncImportDrawing(path); return; }
-        if (_drawCts is not null) throw new InvalidOperationException($"Es wird schon „{_drawFile}“ eingelesen – bitte warten oder „Abbrechen“ drücken.");
         var d = ProgramActive(key) ?? throw new InvalidOperationException(key == AK ? "Es ist kein Grundriss offen." : "Es ist kein CNC-Programm offen.");
-        var cts = new CancellationTokenSource(); var ct = cts.Token; var name = Path.GetFileName(path);
-        Func<Action> work;
+        var name = Path.GetFileName(path);
         if (key == AK)
         {
             var snapshot = d.Data.ToJsonString(); var snap = (System.Text.Json.Nodes.JsonObject)System.Text.Json.Nodes.JsonNode.Parse(snapshot)!; var opts = ArchDxfOptions();
-            work = () =>
+            RunBackground(key, $"„{name}“ wird eingelesen", ct =>
             {
                 var dxf = Readable(() => CadDxf.Read(path, ct));
                 var p = FloorPlan.From(snap); var rep = Readable(() => PlanDxfImport.Import(p, dxf, opts, ct));
@@ -98,22 +112,13 @@ public partial class MainWindow
                     Readable(() => d.Edit($"DXF „{name}“ einlesen", x => { if (x.ToJsonString() == snapshot) p.WriteTo(x); else { var q = FloorPlan.From(x); rep2 = PlanDxfImport.Import(q, dxf, opts); q.WriteTo(x); } }));
                     ArchDxfDone(path, rep2 ?? rep);
                 };
-            };
+            });
         }
         else
         {
             var j = CncJob.From(d.Data);
-            work = () => { var r = Readable(() => j.ImportDrawing(path, ct)); Cnc.Analyse(r.Gcode); return () => CncDrawingApply(d, path, j, r); };
+            RunBackground(key, $"„{name}“ wird eingelesen", ct => { var r = Readable(() => j.ImportDrawing(path, ct)); Cnc.Analyse(r.Gcode); return () => CncDrawingApply(d, path, j, r); });
         }
-        _drawCts = cts; _drawKey = key; _drawFile = name;
-        _progMsg[key] = $"„{name}“ wird eingelesen ({new FileInfo(path).Length / 1024.0 / 1024:0.0} MB) – Trendo bleibt bedienbar.";
-        var hold = DrawingImportHold;
-        _ = Task.Run(() => { hold?.Wait(ct); return work(); }, ct).ContinueWith(t => Dispatcher.UIThread.Post(() =>
-        {
-            _drawCts = null; _drawKey = null; _drawFile = null; cts.Dispose();
-            if (t.IsCanceled || t.Exception?.InnerException is OperationCanceledException) { _progMsg[key] = $"Einlesen von „{name}“ abgebrochen – nichts geändert."; _progErr.Remove(key); Show(key); return; }
-            ProgramRun(key, () => { if (t.Exception?.InnerException is { } ex) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw(ex); t.Result(); });
-        }), TaskScheduler.Default);
     }
 
     /// <summary>T-0747-fix: Karte „wird eingelesen … Abbrechen“ über der Arbeitsfläche, solange das Einlesen im Hintergrund läuft.</summary>
@@ -121,38 +126,52 @@ public partial class MainWindow
     {
         if (_drawCts is null || _drawKey != key) return null;
         var stop = new Button { Name = "draw-import-cancel", Content = "Abbrechen", Padding = new Thickness(12, 4), VerticalAlignment = VerticalAlignment.Center };
-        stop.Click += (_, _) => { DrawingImportCancel(); _progMsg[key] = $"„{_drawFile}“: wird abgebrochen …"; Show(key); };
-        var text = new TextBlock { Text = $"„{_drawFile}“ wird eingelesen … Du kannst weiterarbeiten; das Ergebnis kommt als ein Schritt (Strg+Z nimmt es zurück).", Foreground = Text, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center };
+        stop.Click += (_, _) => { DrawingImportCancel(); _progMsg[key] = $"{_drawWhat}: wird abgebrochen …"; Show(key); };
+        var text = new TextBlock { Text = $"{_drawWhat} … Du kannst weiterarbeiten; das Ergebnis kommt als ein Schritt (Strg+Z nimmt es zurück).", Foreground = Text, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center };
         var row = new DockPanel { LastChildFill = true }; DockPanel.SetDock(stop, Avalonia.Controls.Dock.Right); row.Children.Add(stop); row.Children.Add(text);
         return new Border { Name = "draw-import-card", Background = TileBg, BorderBrush = Accent, BorderThickness = new Thickness(4, 0, 0, 0), CornerRadius = new CornerRadius(8), Padding = new Thickness(14, 10), Child = row };
     }
 
-    /// <summary>Fräsbahnen aus den eingelesenen Konturen mit den aktuellen Werten neu berechnen (ein Rückgängig-Schritt).</summary>
+    /// <summary>Fräsbahnen aus den eingelesenen Konturen mit den aktuellen Werten neu berechnen (ein Rückgängig-Schritt, im Hintergrund).</summary>
     public string CncCamRegenerate(ProgramDocument d) => CncCamApply(d, "Fräsbahnen neu berechnen", _ => { });
 
-    /// <summary>CAM-Wert ändern und die Bahnen gleich neu berechnen – zusammen ein Rückgängig-Schritt; geht die Berechnung nicht, bleibt alles wie es war.</summary>
-    public string CncCamApply(ProgramDocument d, string label, Action<CncJob> change)
+    /// <summary>CAM-Wert ändern und die Bahnen neu berechnen – zusammen ein Rückgängig-Schritt; geht die Berechnung nicht, bleibt alles wie es war.
+    /// T-0747-fix2: die Rechnung läuft im Hintergrund (mit „Abbrechen“), übernommen wird erst das fertige Ergebnis.</summary>
+    public string CncCamApply(ProgramDocument d, string label, Action<CncJob> change) => CncCamApply(d, label, change, null);
+
+    string CncCamApply(ProgramDocument d, string label, Action<CncJob> change, Func<Exception, bool>? onError)
     {
-        var j = CncJob.From(d.Data); change(j); var r = j.Cam(); Cnc.Analyse(r.Gcode); var key = j.CamSettingsKey();
-        CncEdit(d, label, x => { change(x); x.SetCamGcode(r.Gcode, key); });
-        CncStop(); _cncT = -1;
-        return _progMsg[CK] = CncCamMessage(j, r);
+        var j = CncJob.From(d.Data); change(j);
+        if (j.Contours.Count == 0) throw new InvalidOperationException("Es ist noch keine Zeichnung eingelesen – unter „Erzeugen“ auf „Aus DXF/SVG …“ klicken.");
+        var settings = j.CamSettings(); var contours = j.Contours; var key = j.CamSettingsKey();
+        RunBackground(CK, "Fräsbahnen werden berechnet", ct =>
+        {
+            var r = CncCam.Generate(contours, settings, ct); Cnc.Analyse(r.Gcode);
+            return () =>
+            {
+                CncEdit(d, label, x => { change(x); x.SetCamGcode(r.Gcode, key); });
+                CncStop(); _cncT = -1;
+                _progMsg[CK] = CncCamMessage(j, r);
+            };
+        }, onError);
+        return _progMsg[CK];
     }
 
-    /// <summary>T-0747-fix: Fräser-Ø, Tiefe, Zustellung oder Vorschub geändert. Stammt der G-Code aus der Zeichnung, werden die Bahnen gleich neu
-    /// berechnet (ein Rückgängig-Schritt). Geht das nicht (z. B. Fräser zu groß), wird nur der Wert übernommen; der G-Code gilt dann als veraltet und
+    /// <summary>T-0747-fix: Fräser-Ø, Tiefe, Zustellung oder Vorschub geändert. Stammt der G-Code aus der Zeichnung, werden die Bahnen neu berechnet
+    /// (im Hintergrund, ein Rückgängig-Schritt). Geht das nicht (z. B. Fräser zu groß), wird nur der Wert übernommen; der G-Code gilt dann als veraltet und
     /// der Export „G-Code (.nc)“ ist gesperrt, bis „Bahnen neu“ klappt.</summary>
     public void CncSettingChanged(ProgramDocument d, string label, Action<CncJob> change, bool cam)
     {
         if (cam && CncJob.From(d.Data).IsCamGcode)
         {
-            try { CncCamApply(d, label, change); return; }
-            catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
+            CncCamApply(d, label, change, ex =>
             {
+                if (ex is not (InvalidOperationException or ArgumentException)) return false;
                 CncEdit(d, label, change);
                 _progMsg[CK] = $"⚠ Bahnen nicht neu berechnet: {ex.Message} Der G-Code passt nicht mehr zu den Werten – der Export „G-Code (.nc)“ ist gesperrt, bis „Bahnen neu“ klappt.";
-                return;
-            }
+                return true;
+            });
+            return;
         }
         CncEdit(d, label, change);
     }

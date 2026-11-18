@@ -175,17 +175,36 @@ public sealed class CncJob
     public CamResult ImportDrawing(string path, CancellationToken ct = default)
     {
         var ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
-        var drawing = ext switch
+        Cad.CadDrawing drawing; Dictionary<string, int> skipped; string? units = null;
+        switch (ext)
         {
-            ".dxf" => Cad.CadDxf.Read(path, ct).Drawing,
-            ".svg" => Cad.CadSvg.Read(path).Drawing,
-            _ => throw new Cad.CadError("Für Fräsbahnen bitte eine DXF- oder SVG-Datei wählen."),
-        };
+            case ".dxf": { var rd = Cad.CadDxf.Read(path, ct); drawing = rd.Drawing; skipped = rd.Skipped; if (rd.Units is not 0 and not 4) units = rd.UnitName; break; }
+            case ".svg": { var rs = Cad.CadSvg.Read(path); drawing = rs.Drawing; skipped = rs.Skipped; break; }
+            default: throw new Cad.CadError("Für Fräsbahnen bitte eine DXF- oder SVG-Datei wählen.");
+        }
+        var notes = ReadNotes(drawing, skipped, units);
         var cs = CncCam.Contours(drawing, ct: ct);
-        if (cs.Count == 0) throw new Cad.CadError("In der Zeichnung sind keine Konturen (Linien, Kreise, Bögen, Pfade).");
+        if (cs.Count == 0) throw new Cad.CadError("In der Zeichnung sind keine Konturen (Linien, Kreise, Bögen, Pfade)." + (notes.Count > 0 ? " " + string.Join(" ", notes) : ""));
         var old = (Contours, CamSource); Contours = cs; CamSource = System.IO.Path.GetFileName(path);
-        try { var r = Contours.Count == 0 ? Cam() : CncCam.Generate(Contours, CamSettings(), ct); SetCamGcode(r.Gcode); return r; }
+        try { var r = Contours.Count == 0 ? Cam() : CncCam.Generate(Contours, CamSettings(), ct); SetCamGcode(r.Gcode); r.Warnings.InsertRange(0, notes); return r; }
+        catch (InvalidOperationException e) when (notes.Count > 0) { (Contours, CamSource) = old; throw new InvalidOperationException(e.Message + " " + string.Join(" ", notes), e); }
         catch { (Contours, CamSource) = old; throw; }
+    }
+
+    /// <summary>T-0747-fix2: was beim Einlesen nicht in die Fräsbahnen kommt (SPLINE, ELLIPSE, Blockverweise, Texte, ausgeblendete Ebenen) und ob
+    /// die Maße umgerechnet wurden – damit nichts still fehlt.</summary>
+    public static List<string> ReadNotes(Cad.CadDrawing d, IReadOnlyDictionary<string, int> skipped, string? units)
+    {
+        var notes = new List<string>();
+        if (units is not null) notes.Add($"Maße in mm umgerechnet (Zeichnung in {units}).");
+        static string Label(string k) => k switch { "INSERT" => "Blockverweis (INSERT)", "SPLINE" => "SPLINE (Freiformkurve)", "ELLIPSE" => "ELLIPSE", "DIMENSION" => "Bemaßung", "HATCH" => "Schraffur", "text" => "SVG-Text", _ => k };
+        if (skipped.Count > 0) notes.Add("Nicht gelesen: " + string.Join(", ", skipped.OrderByDescending(k => k.Value).Select(k => $"{k.Value}× {Label(k.Key)}")) + " – diese Teile fehlen in den Fräsbahnen.");
+        var texts = d.Entities.Count(e => e.Kind == "text");
+        if (texts > 0) notes.Add($"{texts} Text(e) werden nicht gefräst.");
+        var hidden = d.Layers.Where(l => !l.Visible).Select(l => l.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var onHidden = d.Entities.Where(e => e.Kind != "text" && hidden.Contains(e.Layer)).GroupBy(e => e.Layer).Select(g => $"{g.Key} ({g.Count()})").ToList();
+        if (onHidden.Count > 0) notes.Add("Ausgeblendete Ebenen nicht gefräst: " + string.Join(", ", onHidden) + ".");
+        return notes;
     }
 
     public string Pocket() => CncPlus.Pocket(W, H, Depth, ToolD, 50, StepDown, Feed, Plunge);

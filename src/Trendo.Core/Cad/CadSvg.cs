@@ -59,7 +59,7 @@ public static class CadSvg
                 }
                 case "path":
                     List<(List<(double X, double Y)> Points, bool Closed)> subs;
-                    try { subs = Media.ImageVector.ParseSubpaths(e.Attribute("d")?.Value ?? "", 96); } // T-0747-fix: feiner abgetastet (Bögen 0,625°, Kurven 96 Stücke)
+                    try { subs = Media.ImageVector.ParseSubpaths(e.Attribute("d")?.Value ?? "", 96, Tol / Stretch(me)); } // T-0747-fix2: Kurven und Bögen nach Pfeilhöhe ≤ 0,001 mm
                     catch (FormatException fe) { throw new CadError($"Pfad{(e.Attribute("id")?.Value is { Length: > 0 } pid ? $" „{pid}“" : "")} in der SVG-Datei ist kaputt: {fe.Message} Bitte im Zeichenprogramm neu speichern."); } // T-0747-fix
                     foreach (var (pts, closed) in subs)
                         if (pts.Count >= 2) Poly(d, layer, pts.Select(me.Apply).ToList(), closed);
@@ -73,7 +73,8 @@ public static class CadSvg
                     if (rx <= 0) pts.AddRange([(x, y), (x + w, y), (x + w, y + h), (x, y + h)]);
                     else
                     {
-                        void Corner(double cx, double cy, double a0) { for (var k = 0; k <= 144; k++) { var a = (a0 + 90.0 * k / 144) * Math.PI / 180; pts.Add((cx + rx * Math.Cos(a), cy + ry * Math.Sin(a))); } } // T-0747-fix: 0,625° je Stück (Fräskonturen)
+                        var nq = Pieces(Math.PI / 2, rx, ry, me); // T-0747-fix2: Stückzahl aus der Pfeilhöhe
+                        void Corner(double cx, double cy, double a0) { for (var k = 0; k <= nq; k++) { var a = (a0 + 90.0 * k / nq) * Math.PI / 180; pts.Add((cx + rx * Math.Cos(a), cy + ry * Math.Sin(a))); } } // T-0747-fix: 0,625° je Stück (Fräskonturen)
                         Corner(x + w - rx, y + ry, 270); Corner(x + w - rx, y + h - ry, 0); Corner(x + rx, y + h - ry, 90); Corner(x + rx, y + ry, 180);
                     }
                     Poly(d, layer, pts.Select(me.Apply).ToList(), true); break;
@@ -89,7 +90,7 @@ public static class CadSvg
                     }
                     else
                     {
-                        var n = Math.Clamp((int)Math.Ceiling(Math.Max(rx, ry) * Math.Max(Math.Abs(me.A), Math.Abs(me.D)) * 8), 72, 720);
+                        var n = Math.Max(72, Pieces(2 * Math.PI, rx, ry, me)); // T-0747-fix2: aus der Pfeilhöhe statt höchstens 720
                         Poly(d, layer, Enumerable.Range(0, n).Select(k => me.Apply((cx + rx * Math.Cos(2 * Math.PI * k / n), cy + ry * Math.Sin(2 * Math.PI * k / n)))).ToList(), true);
                     }
                     break;
@@ -173,6 +174,20 @@ public static class CadSvg
     }
 
     /// <summary>Affine 2D-Matrix wie in SVG: x' = A·x + C·y + E, y' = B·x + D·y + F.</summary>
+    /// <summary>T-0747-fix2: höchste Abweichung abgetasteter Kurven vom echten Verlauf (mm).</summary>
+    public const double Tol = 0.001;
+
+    /// <summary>Obergrenze der Streckung durch die Abbildung (Frobenius-Norm ≥ größter Singulärwert) – Toleranz in Benutzereinheiten = Tol / Stretch.</summary>
+    static double Stretch(M m) => Math.Max(1e-12, Math.Sqrt(m.A * m.A + m.B * m.B + m.C * m.C + m.D * m.D));
+
+    /// <summary>Stücke für einen Ellipsenbogen mit dem Winkel <paramref name="sweep"/>, damit die Sehnen höchstens <see cref="Tol"/> abweichen (größter Krümmungsradius a²/b).</summary>
+    static int Pieces(double sweep, double rx, double ry, M m)
+    {
+        var rMax = Math.Max(rx, ry) * Math.Max(rx, ry) / Math.Max(1e-12, Math.Min(rx, ry)); var tol = Tol / Stretch(m);
+        var step = rMax <= tol ? Math.PI / 12 : 4 * Math.Asin(Math.Sqrt(tol / (2 * rMax)));
+        return (int)Math.Clamp(Math.Ceiling(sweep / step), 8, 4_000_000);
+    }
+
     readonly record struct M(double A, double B, double C, double D, double E, double F)
     {
         public static readonly M Id = new(1, 0, 0, 1, 0, 0);

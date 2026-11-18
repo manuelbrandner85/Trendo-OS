@@ -57,7 +57,7 @@ public static class CadContours
                     var r = e.Points.Select(p => p.Length > 2 && Math.Abs(p[2]) > 1e-9 ? BulgeRadius(p, e) : 0).DefaultIfEmpty(0).Max();
                     var pts = Dedupe(e.Outline(r > 0 ? Segments(r, 2 * Math.PI, chord) : 48), tol);
                     var isClosed = e.Closed || pts.Count > 2 && Near(pts[0], pts[^1], tol);
-                    if (isClosed && pts.Count > 2 && Near(pts[0], pts[^1], tol)) pts.RemoveAt(pts.Count - 1);
+                    if (isClosed && pts.Count > 2 && Near(pts[0], pts[^1], DupTol)) pts.RemoveAt(pts.Count - 1); // T-0747-fix2: nur doppelte Punkte weg – ein echter Endpunkt in Spaltnähe bleibt (sonst fehlt ein Bogenstück)
                     if (isClosed && pts.Count >= 3) closed.Add(new CadContour(pts, true, e.Layer)); else if (pts.Count >= 2) open.Add(new CadContour(pts, false, e.Layer));
                     break;
                 }
@@ -115,18 +115,22 @@ public static class CadContours
                 }
                 break;
             }
-            if (chain.Count > 3 && Near(chain[0], chain[^1], tol)) { chain.RemoveAt(chain.Count - 1); res.Add(new CadContour(chain, true, layer)); }
+            if (chain.Count > 3 && Near(chain[0], chain[^1], tol)) { if (Near(chain[0], chain[^1], DupTol)) chain.RemoveAt(chain.Count - 1); res.Add(new CadContour(chain, true, layer)); } // T-0747-fix2: Spalt wird überbrückt, Endpunkt bleibt
             else res.Add(new CadContour(chain, false, layer));
         }
         return res;
     }
 
-    /// <summary>Teilstücke je Vollkreis, damit die Sehne höchstens <paramref name="chord"/> vom Bogen abweicht (24 bis 1440).</summary>
+    /// <summary>Teilstücke je Vollkreis, damit die Sehne höchstens <paramref name="chord"/> vom Bogen abweicht (mindestens 24).
+    /// T-0747-fix2: keine feste Obergrenze mehr (vorher 1440 – dann galt die Toleranz nur bis R ≈ 420 mm bei 0,001 mm); Sicherheitsgrenze nur über die
+    /// Sehnenlänge (nicht kürzer als 0,05 mm) und höchstens 4 Mio. Stücke.</summary>
     public static int Segments(double r, double sweepRad, double chord)
     {
         if (r <= chord) return 24;
-        var step = 2 * Math.Acos(1 - chord / r);
-        return Math.Clamp((int)Math.Ceiling(2 * Math.PI / step), 24, 1440);
+        var step = 4 * Math.Asin(Math.Sqrt(chord / (2 * r))); // = 2·acos(1 − chord/r), genauer bei kleinen Werten
+        var n = Math.Ceiling(2 * Math.PI / step);
+        var byLength = Math.Ceiling(2 * Math.PI * r / 0.05);
+        return (int)Math.Clamp(Math.Min(n, byLength), 24, 4_000_000);
     }
 
     static double BulgeRadius(double[] p, CadEntity e)
@@ -142,6 +146,9 @@ public static class CadContours
         foreach (var p in pts) if (res.Count == 0 || !Near(res[^1], p, tol * 0.01)) res.Add(p);
         return res;
     }
+
+    /// <summary>T-0747-fix2: Punkte, die näher als das beieinanderliegen, gelten als doppelt.</summary>
+    const double DupTol = 1e-6;
 
     public static bool Near((double X, double Y) a, (double X, double Y) b, double tol) => Math.Abs(a.X - b.X) <= tol && Math.Abs(a.Y - b.Y) <= tol;
 }

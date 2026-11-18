@@ -91,6 +91,7 @@ Tests: `Dumbbell_hole` (2 Innenbahnen + Meldung mit Lage im Steg), `Slot_outside
 Tests: `Noisy_circle` (Rauschen 0,05 und 0,5 mm × 500 und 2000 Punkte, je außen und innen) – Bahn vorhanden, unabhängiger Abstand ≥ Radius − 0,0011, mittlerer Abstand ≤ Radius + 2·Rauschen + 0,2. Rot auf altem Stand: 3 von 4 („enger als der Fräser“).
 Messwerte außen (kleinster Abstand, unabhängig über den G-Code / Rechenzeit): 0,05/500 3,0000 mm 26 ms · 0,5/500 3,0003 mm 50 ms · 0,05/2000 3,0000 mm 386 ms · 0,5/2000 3,0009 mm 935 ms; innen kleinster Wert 2,9999 mm (Rundung im G-Code) – Radius 3.
 Dabei gefunden und mit behoben: Bögen und Kreise wurden mit Sehnen *auf* dem Kreis (0,01 mm Toleranz) angenähert – an konvexen Bögen kam die Bahn dem echten Bogen bis 0,01 mm zu nah (Prüfskript jetzt exakt: vorher 1,9903 mm bei Radius 2). Fürs Fräsen werden Bögen jetzt mit 0,001 mm zerlegt (`CncCam.ContourChord`), SVG-Bögen/-Rundungen feiner (0,625° statt 2,5°, Kurven 96 statt 24 Stücke). Neu gemessen: 1,9990 mm (DXF in Zoll), 1,9998 mm (SVG) bei Radius 2.
+  **Berichtigung (zweite Prüfung):** „0,001 mm“ galt nur bis R ≈ 420 mm (Obergrenze 1440 Stücke je Kreis; gemessen R 5000 → −0,0100, R 20000 → −0,0277), SVG-Bézier mit 96 Stücken kam auf −0,0205 mm. Behoben unter „Zweite Prüfung behoben“.
 
 **4. Große DXF (NIEDRIG) – behoben.** Kettenbildung (`CadContours.Chain`) mit Rasterindex der Enden; Wandpaare, Querstriche, Zusammenführen auf einer Linie und Ecken in `PlanDxfImport` mit Rasterindex – Ergebnis unverändert (gleiche Reihenfolge wie das frühere „immer wieder von vorn suchen“; Test prüft 168 Wände/4832 Öffnungen wie vorher). Obergrenze 50 000 Elemente mit Meldung („… zu viele …“) für Grundriss und Fräsen. Abbrechen (`CancellationToken`) im Leser, Import und CAM. In der Oberfläche werden Dateien ab 512 KB im Hintergrund gelesen; Karte „… wird eingelesen …“ mit „Abbrechen“, Ergebnis als **ein** Rückgängig-Schritt, Abbrechen ändert nichts.
 Messwerte (10 000 Linien, Kern): Grundriss-Import **24 678 ms → 1 798–1 952 ms**, Konturen 440 ms → 38–79 ms (je nach Lauf). Oberfläche (12 000 Linien, Headless-Test): Klick bis Oberfläche wieder frei **344 ms** (vorher lief alles im UI-Thread), fertig nach 4,2 s.
@@ -108,6 +109,43 @@ Test: `Encoding_escapes_broken_svg` (rot auf altem Stand).
 
 **Was offen bleibt / nicht geprüft:**
 - Anzeige sehr großer G-Codes ist langsam (vorbestehend, auch beim Laden einer .nc): im Headless-Test 5 000 Zeilen 7,3 s, 20 000 Zeilen 53 s. Eine CNC-Zeichnung mit 12 000 Linien ergibt 72 000 Zeilen G-Code – das Einlesen selbst läuft im Hintergrund (1,1 s), die Anzeige danach friert ein. Braucht einen virtualisierten Editor (eigenes Paket).
+- Offene Konturen wurden ohne Hinweis auf der Linie bis zur vollen Tiefe gefräst; nicht lesbare Elemente fehlten still; Konturen in einer abgelehnten Acht wurden auf der falschen Seite gefräst – von der zweiten Prüfung gefunden, erledigt in „Zweite Prüfung behoben“.
 - Taschen mit Inseln werden nicht gemeinsam ausgeräumt: Loch und zu nahe Insel werden beide ausgelassen und gemeldet (sicher, aber kein Ergebnis).
-- SVG-Bézierkurven: Abweichung der Abtastung (96 Stücke je Kurve) zum echten Kurvenverlauf ist nicht begrenzt berechnet, nur sehr klein; DXF-Bögen/Kreise sind auf 0,001 mm begrenzt.
+- ~~SVG-Bézierkurven … DXF-Bögen/Kreise sind auf 0,001 mm begrenzt.~~ Diese Aussage war zu stark (siehe Berichtigung oben); erledigt in „Zweite Prüfung behoben“.
 - Ziehen und Ablegen per Maus und echte Fremd-CAD-Programme weiterhin nicht geprüft (keine installiert).
+
+## Zweite Prüfung behoben (T-0747-fix2)
+Arbeitskopie `%TEMP%\trendo-auftrag-T-0747-fix2`, Commit obendrauf auf `claude/T-0747-dxf-wohnung-fraesen`. Keine Maschine angesteuert.
+**Prüfprogramm des Prüfers** (Python/numpy, wahre Geometrie, Strecke zu Strecke, liest den G-Code; nur als Kopie benutzt, nicht im Repo): alle Fälle über `CncJob.ImportDrawing` neu erzeugt und geprüft.
+
+| Fallsatz | Fälle | mit G-Code | Befunde vorher | Befunde jetzt | schlechtester Abstand − Radius |
+|---|---|---|---|---|---|
+| Hauptsatz | 143 | 123 | 30 | **0** | −0,0010 mm |
+| x1–x3 (Achter) | 3 | 2 | 3 (Fräsermitte im Material) | **0** | 0,0000 mm |
+| große Radien R 300 … 20 000 | 16 | 16 | 3 (schlechtester −0,0277) | **0** | −0,0010 mm |
+
+Die 20 Fälle ohne G-Code enden mit einer Meldung (Acht im Umriss, Teile zu nah) – nichts wird still ausgelassen.
+Rot-Probe: die neuen Kerntests `T0747_Fix2ZweitePruefung` gegen den Stand 1855224e7 – **9 von 9 rot** (`reports/T-0747/T-0747-fix2-rotprobe-kern.log`).
+
+**1. Konturen in einer abgelehnten Acht (MITTEL) – behoben.** Liegt eine Kontur in einer sich selbst kreuzenden Kontur (gerade/ungerade-Regel) oder berührt/schneidet sie diese, ist ihre Deutung unsicher: sie wird ausgelassen und gemeldet („Kontur 3 ausgelassen: liegt in oder an Kontur 2, die sich selbst kreuzt …“). Konturen außerhalb bleiben unverändert. Test `Contours_inside_rejected_eight` (x1, x2, x3). Prüfprogramm: „IM MATERIAL“ 28 → 0.
+
+**2. Offene Konturen (MITTEL) – behoben.** Verketten schließt Spalten bis 0,1 mm (`CncCam.ChainTol`; der Spalt wird überbrückt, kein Punkt wird verschoben). Bleibt eine Kontur offen, wird sie in den Fräsarten Automatisch/Außen/Innen ausgelassen und gemeldet („offene Kontur (Enden 1 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fräserradius kleiner …“); auf der Linie nur in der Fräsart „Auf der Linie (Gravur)“. Der vorhandene Test `Cam_modes` wurde dafür angepasst (Gravur jetzt ausdrücklich im Modus „auf“, „auto“ meldet die offene Linie). Test `Open_contours` (0,05 mm Spalt → geschlossen, unabhängiger Abstand ≥ 2,998; 1 mm Spalt → Meldung). Dabei gefunden und behoben: die größere Toleranz hatte beim Schließen echte Bogenpunkte nahe dem Anfang entfernt (Prüfprogramm „g_kleine_radien“ −0,0038) – jetzt werden nur doppelte Punkte (≤ 1 µm) entfernt.
+
+**3. Nicht lesbare Elemente (MITTEL) – behoben (Meldung).** Der CNC-Import meldet „Nicht gelesen: 2× SPLINE (Freiformkurve), 1× ELLIPSE, 1× Blockverweis (INSERT) – diese Teile fehlen in den Fräsbahnen.“, nicht gefräste Texte, ausgeblendete Ebenen mit Anzahl und eine Einheiten-Umrechnung. ELLIPSE/SPLINE abtasten und INSERT auflösen wurde **nicht** gebaut (der Leser ist mit Trendo CAD und Grundriss geteilt; das wäre ein eigenes Paket). Test `Skipped_elements_reported`.
+
+**4. Bogen- und Kurventoleranz (MITTEL) – behoben.** `CadContours.Segments` rechnet die Stückzahl aus der Pfeilhöhe ohne feste Obergrenze (Sicherheitsgrenze: Sehnen nicht kürzer als 0,05 mm, höchstens 4 Mio.). SVG: Bézierkurven werden halbiert, bis die Kontrollpunkte höchstens 0,001 mm (umgerechnet in Pfad-Einheiten) von der Sehne liegen; Bögen, Rundungen und Ellipsen aus der Pfeilhöhe (größter Krümmungsradius a²/b). Tests `Big_radius_true_circle` (R 1000/8000/20000: 2,99895/2,99894/2,99894 mm zum wahren Kreis bei Radius 3, 38–294 ms) und `Long_bezier_true_curve` (Bogen über 3000 mm: 2,99996 mm zur wahren Kurve). Prüfprogramm: schlechtester Wert aller 162 Fälle −0,0010 mm (vorher −0,0277).
+Berichtigt: Die frühere Aussage „Bögen auf 0,001 mm“ galt nur bis R ≈ 420 mm; ehrlich gilt jetzt: Abweichung der Kontur vom wahren Bogen ≤ 0,001 mm, Bahn ≥ Radius − 0,001 mm zur Kontur, also ≥ Radius − 0,002 mm zur wahren Geometrie (gemessen −0,0010).
+
+**5. Laufzeit (NIEDRIG) – behoben.** Einlesen (jede Dateigröße), „Bahnen neu“, Fräsart, Haltestege und Änderungen an Fräser-Ø/Tiefe/Zustellung/Vorschub rechnen im Hintergrund mit Karte und „Abbrechen“; übernommen wird ein Rückgängig-Schritt. Abbrechen wirkt auch in `OffsetLoops`, Engstellen-Suche und Abstandsprüfung. Beschleunigt: die teure Seiten-Prüfung (Punkt in Kontur) läuft nur noch für Stücke, die alle anderen Prüfungen bestehen, und die Rasterabfrage bricht beim ersten Treffer ab. Gemessen (Prüfprogramm): Zickzack 5000 Punkte 7 483 → 1 797–2 479 ms, Rauschen 20 000 Punkte 19 092 → 1 608–2 047 ms; Test `Zigzag_speed_and_cancel` (eigener Zickzack 4 742 → ~2 000 ms, Abbrechen nach 100 ms wirkt nach ~130 ms statt 3 787 ms). Die UI-Tests warten jetzt auf das Ergebnis im Hintergrund (Hilfsfunktion, keine Prüfung entfernt).
+
+**6. Kurze Engstellen (NIEDRIG) – behoben.** Messpunkte alle r/8 (0,02–0,25 mm), auch ein einzelner Messpunkt außer Reichweite wird gemeldet. Test `Short_narrow_spot_reported` (spitze Kerbe 0,2 mm). Prüfprogramm: „STILLE LÜCKE“ 5 → 0.
+
+**7. Einheiten in Trendo CAD (Info) – erledigt.** Die Meldung nach dem DXF-Import nennt „Maße in mm umgerechnet aus Zoll (×25,4)“; der CNC-Import meldet die Umrechnung ebenfalls. UI-Test `T0747_FixUi.Cad_import_shows_unit_conversion`.
+
+**Belege:** `teil-fremd-svg.nc` und `fix-faelle-hinweise.txt` neu erzeugt (feinere Abtastung, mehr gemeldete Engstellen), Rohlogs `T-0747-fix2-*.log`, `SHA256SUMS.txt` neu. Prüfskript `pruefe_t0747.py`: BESTANDEN (exakt 1,9990 / 1,9993 / 2,9999 mm).
+
+**Tests (gezielt, kein Volltest):** siehe Abgabe; Rohlogs `T-0747-fix2-kerntests.log`, `T-0747-fix2-apptests.log`.
+
+**Weiterhin offen:** ELLIPSE/SPLINE/INSERT werden gemeldet, aber nicht gefräst · langsame Anzeige sehr großer G-Codes im Editor (vorbestehend) · Taschen mit Inseln nicht gemeinsam ausgeräumt · Laufzeit bei sehr dichten Konturen bleibt im Sekundenbereich (läuft aber im Hintergrund, abbrechbar).
+
+**Testzahlen T-0747-fix2:** Build 0 Fehler. Kern (T0747 alle drei Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests): **93 gesamt, 92 bestanden, 1 übersprungen (vorbestehend „IFC echt“), 0 Fehler**. App: T0747_DxfUi 2/2, T0747_FixUi 3/3, SPEC01_Ui 6/6, SPEC01_UiArc 1/1, SPEC14_Ui 2/2, Bildbearbeitung_Ui 5/5, PlanPhoto_Ui 4/4, N23N24_CadPrintUi 3/3, UebersichtEinfach_Ui 2/2, DeadButtonTests 83/83 – **111/111**. Im ersten Lauf schlug `T0747_FixUi.Big_dxf_background_and_cancel` fehl, weil die neue Abbrechen-Meldung „Abgebrochen“ großschrieb; Meldung auf „Vorgang abgebrochen – nichts geändert …“ geändert (Test unverändert), Wiederholung grün (steht im Rohlog). Prüfskript BESTANDEN. Prüfprogramm des Prüfers: 0 Befunde in 162 Fällen.

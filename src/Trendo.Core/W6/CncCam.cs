@@ -65,13 +65,17 @@ public static class CncCam
     /// des Bogens, der echte Bogen also bis zu dieser Abweichung näher an einer Außenbahn.</summary>
     public const double ContourChord = 0.001;
 
+    /// <summary>T-0747-fix2: Enden, die näher als 0,1 mm beieinanderliegen, gelten beim Verketten als verbunden – kleine Spalten in Umrissen
+    /// (z. B. vier LINE mit 0,05 mm Lücke) schließen sich so; bleibt eine Kontur offen, wird sie nur in der Fräsart „auf der Linie“ gefräst.</summary>
+    public const double ChainTol = 0.1;
+
     /// <summary>Konturen einer Zeichnung (sichtbare Ebenen, Texte bleiben weg).</summary>
     public static List<CadContour> Contours(CadDrawing d, double chord = ContourChord, CancellationToken ct = default)
     {
         var hidden = d.Layers.Where(l => !l.Visible).Select(l => l.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var ents = d.Entities.Where(e => e.Kind != "text" && !hidden.Contains(e.Layer)).ToList();
         if (ents.Count > MaxEntities) throw new CadError($"Die Zeichnung hat {ents.Count.ToString("N0", De)} Elemente – zu viele zum Fräsen (höchstens {MaxEntities.ToString("N0", De)}). Bitte nur die nötigen Teile oder Ebenen exportieren.");
-        return CadContours.Build(ents, 0.01, chord, ct);
+        return CadContours.Build(ents, ChainTol, chord, ct);
     }
 
     public static CamResult Generate(IReadOnlyList<CadContour> source, CamSettings s, CancellationToken ct = default)
@@ -93,6 +97,23 @@ public static class CncCam
                 crossing[i] = true;
                 warn.Add($"{Name(i)} ausgelassen: die Kontur kreuzt sich selbst (z. B. eine Acht) – dann ist nicht klar, was innen und außen ist. Bitte in der Zeichnung in einzelne geschlossene Umrisse auflösen.");
             }
+        // T-0747-fix2: Konturen in oder an einer abgelehnten, sich selbst kreuzenden Kontur – innen/außen ist dort nicht sicher zu deuten (ein Loch würde
+        // sonst als Umriss gefräst und größer). Auslassen und melden.
+        var unsure = new bool[cs.Count];
+        for (var j = 0; j < cs.Count; j++)
+        {
+            if (!crossing[j]) continue;
+            var bj = cs[j].Box;
+            for (var i = 0; i < cs.Count; i++)
+            {
+                if (i == j || crossing[i] || unsure[i]) continue;
+                ct.ThrowIfCancellationRequested();
+                var bi = cs[i].Box; if (bi.MaxX < bj.MinX || bi.MinX > bj.MaxX || bi.MaxY < bj.MinY || bi.MinY > bj.MaxY) continue;
+                if (!cs[j].Contains(cs[i].Pts[0].X, cs[i].Pts[0].Y) && !Touches(cs[i].Pts, cs[i].Closed, cs[j].Pts)) continue;
+                unsure[i] = true;
+                warn.Add($"{Name(i)} ausgelassen: liegt in oder an Kontur {j + 1}, die sich selbst kreuzt – ob sie Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte die Zeichnung bereinigen.");
+            }
+        }
         // Art je Kontur
         var kinds = new string[cs.Count]; var depth = new int[cs.Count];
         for (var i = 0; i < cs.Count; i++)
@@ -107,12 +128,17 @@ public static class CncCam
         for (var i = 0; i < cs.Count; i++)
         {
             ct.ThrowIfCancellationRequested();
-            if (crossing[i]) continue;
+            if (crossing[i] || unsure[i]) continue;
             var c = cs[i];
+            if (!c.Closed && s.Mode != "auf") // T-0747-fix2: offene Kontur nur ausdrücklich als Gravur
+            {
+                warn.Add($"{Name(i)} ausgelassen: offene Kontur (Enden {F(Math.Sqrt(D2(c.Pts[0], c.Pts[^1])), "0.###")} mm auseinander) – auf der Linie gefräst würde ein Teil um den Fräserradius kleiner. Nur in der Fräsart „Auf der Linie (Gravur)“ wird sie gefräst; sonst die Zeichnung schließen.");
+                continue;
+            }
             if (kinds[i] == "auf") { cand[i] = [new CamPath("auf", [.. c.Pts], c.Closed, i, c.Layer)]; continue; }
             var outside = kinds[i] == "aussen";
             var (simp, dev) = Simplify(c.Pts, Math.Min(SimplifyTol, r / 20));
-            var loops = OffsetLoops(simp, (outside ? 1 : -1) * (r + dev), s.Chord);
+            var loops = OffsetLoops(simp, (outside ? 1 : -1) * (r + dev), s.Chord, ct);
             List<CamPath> list = [];
             if (outside)
             {
@@ -128,7 +154,7 @@ public static class CncCam
                 foreach (var l in loops) list.Add(new CamPath("innen", l, true, i, c.Layer));
             }
             // T-0747-fix: Engstellen – Stellen der Kontur, an die der Fräser nicht herankommt
-            var spots = Unreached(c.Pts, loops, r);
+            var spots = Unreached(c.Pts, loops, r, ct);
             if (spots.Count > 0)
                 warn.Add($"{Name(i)}: Bereich enger als der Fräser Ø {F(s.ToolD)} mm – dort bleibt Material stehen ({string.Join("; ", spots.Take(4).Select(p => $"bei X {F(p.X, "0.#")} Y {F(p.Y, "0.#")}"))}{(spots.Count > 4 ? $" und {spots.Count - 4} weitere Stellen" : "")}). Für diese Stellen einen kleineren Fräser wählen.");
             cand[i] = list;
@@ -140,7 +166,7 @@ public static class CncCam
         {
             ct.ThrowIfCancellationRequested();
             if (cand[i] is not { } list) continue;
-            var hit = list.Select(p => Nearest(p.Pts, p.Closed, obstacles, r - Clearance, p.Kind == "auf" ? i : -1)).Where(h => h.Tag >= 0)
+            var hit = list.Select(p => Nearest(p.Pts, p.Closed, obstacles, r - Clearance, p.Kind == "auf" ? i : -1, ct)).Where(h => h.Tag >= 0)
                 .OrderBy(h => h.Tag == i ? 1 : 0).ThenBy(h => h.D).FirstOrDefault((Tag: -1, D: 0.0));
             if (hit.Tag < 0) { paths.AddRange(list); continue; }
             warn.Add(hit.Tag == i
@@ -238,7 +264,7 @@ public static class CncCam
     /// Selbstschnitten geteilt; ein Stück bleibt nur, wenn es im Abstand |dist| zu seiner eigenen Strecke bzw. Ecke liegt, keiner Stelle der Kontur näher
     /// kommt und auf der richtigen Seite liegt. Die Stücke werden zu Schleifen verbunden. Ergebnis: Schleifen gegen den Uhrzeigersinn (Fläche, die der Fräser
     /// erreicht) und – nur nach außen – Schleifen im Uhrzeigersinn um eingeschlossene Buchten.</summary>
-    public static List<List<(double X, double Y)>> OffsetLoops(IReadOnlyList<(double X, double Y)> poly, double dist, double chord = 0.01)
+    public static List<List<(double X, double Y)>> OffsetLoops(IReadOnlyList<(double X, double Y)> poly, double dist, double chord = 0.01, CancellationToken ct = default)
     {
         var pts = Clean(poly);
         if (pts.Count < 3 || Math.Abs(dist) < 1e-9) return [];
@@ -270,16 +296,12 @@ public static class CncCam
         }
         bool Valid((double X, double Y) q, int k)
         {
-            if (dist > 0 == Inside(pts, q)) return false; // falsche Seite der Kontur
             var gi = gen[k];
             var dg = gi >= 0 ? EdgeD(gi, q) : VertexD(-gi - 1, q);
             if (double.IsInfinity(dg) || Math.Abs(dg - ad) > 1e-6) return false; // nicht im Abstand zur eigenen Strecke/Ecke: Stück liegt im Innern
-            foreach (var e in polyGrid.Near(q.X - ad, q.Y - ad, q.X + ad, q.Y + ad))
-            {
-                var te = e; // Strecke e verbindet Punkt e und e + 1
-                if (EdgeD(te, q) < ad - 1e-7 || VertexD(te, q) < ad - 1e-7 || VertexD((te + 1) % np, q) < ad - 1e-7) return false; // käme einer anderen Stelle zu nah
-            }
-            return true;
+            // Strecke e verbindet Punkt e und e + 1; käme das Stück einer anderen Stelle zu nah?
+            if (polyGrid.Any(q.X - ad, q.Y - ad, q.X + ad, q.Y + ad, e => EdgeD(e, q) < ad - 1e-7 || VertexD(e, q) < ad - 1e-7 || VertexD((e + 1) % np, q) < ad - 1e-7)) return false;
+            return dist > 0 != Inside(pts, q); // falsche Seite der Kontur (zuletzt geprüft – teuer, T-0747-fix2)
         }
         // Selbstschnitte der rohen Linie
         var m = raw.Count;
@@ -287,6 +309,7 @@ public static class CncCam
         var splits = new List<(double T, (double X, double Y) P)>?[m];
         for (var k = 0; k < m; k++)
         {
+            if ((k & 1023) == 0) ct.ThrowIfCancellationRequested();
             var a = raw[k]; var b = raw[(k + 1) % m];
             foreach (var j in rawGrid.Near(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y), Math.Max(a.X, b.X), Math.Max(a.Y, b.Y)))
             {
@@ -310,8 +333,10 @@ public static class CncCam
         }
         cur.Add(s0); curSeg.Add(k0); pieces.Add((cur, curSeg));
         var valid = new List<List<(double X, double Y)>>();
+        var pc = 0;
         foreach (var (pp, seg) in pieces)
         {
+            if ((++pc & 1023) == 0) ct.ThrowIfCancellationRequested();
             if (Length(pp, false) < 1e-9) continue;
             var mid = MidOpen(pp, out var at);
             if (Valid(mid, seg[at])) valid.Add(pp);
@@ -395,6 +420,19 @@ public static class CncCam
 
     // ---------------------------------------------------------------- Prüfungen
 
+    /// <summary>T-0747-fix2: berührt oder schneidet der Zug <paramref name="a"/> den geschlossenen Zug <paramref name="b"/>?</summary>
+    static bool Touches(List<(double X, double Y)> a, bool aClosed, List<(double X, double Y)> b)
+    {
+        var grid = BuildGrid([((IReadOnlyList<(double X, double Y)>)b, true, 0)], AvgLen(b, true) * 2);
+        for (var k = 0; k < a.Count - (aClosed ? 0 : 1); k++)
+        {
+            var p = a[k]; var q = a[(k + 1) % a.Count];
+            foreach (var j in grid.Near(Math.Min(p.X, q.X), Math.Min(p.Y, q.Y), Math.Max(p.X, q.X), Math.Max(p.Y, q.Y)))
+                if (SegSeg(p, q, grid.Segs[j].A, grid.Segs[j].B) < 1e-7) return true;
+        }
+        return false;
+    }
+
     /// <summary>T-0747-fix: kreuzt oder berührt sich der geschlossene Zug selbst (nicht benachbarte Strecken)?</summary>
     public static bool SelfIntersects(IReadOnlyList<(double X, double Y)> poly)
     {
@@ -413,16 +451,17 @@ public static class CncCam
     }
 
     /// <summary>T-0747-fix: Stellen der Kontur, an die der Fräser (Mitte auf den Bahnen) nicht herankommt – weiter als Radius + halber Radius
-    /// (mindestens 0,2 mm). Normale Innenecken (90°) liegen darunter. Ergebnis: Mitte jeder zusammenhängenden Stelle.</summary>
-    static List<(double X, double Y)> Unreached(IReadOnlyList<(double X, double Y)> contour, List<List<(double X, double Y)>> loops, double r)
+    /// (mindestens 0,2 mm). Normale Innenecken (90°) liegen darunter. Ergebnis: Mitte jeder zusammenhängenden Stelle (Messpunkte alle r/8, 0,02–0,25 mm).</summary>
+    static List<(double X, double Y)> Unreached(IReadOnlyList<(double X, double Y)> contour, List<List<(double X, double Y)>> loops, double r, CancellationToken ct = default)
     {
         var reach = r + Math.Max(0.5 * r, 0.2);
         var grid = BuildGrid(loops.Select(l => ((IReadOnlyList<(double X, double Y)>)l, true, 0)), r);
-        var total = Length(contour, true); var step = Math.Clamp(r / 4, 0.05, 1.0); if (total / step > 20_000) step = total / 20_000;
+        var total = Length(contour, true); var step = Math.Clamp(r / 8, 0.02, 0.25); if (total / step > 50_000) step = total / 50_000; // T-0747-fix2: feiner, damit auch kurze Engstellen auffallen
         var samples = new List<((double X, double Y) P, bool Ok)>();
         for (var i = 0; i < contour.Count; i++)
         {
             var a = contour[i]; var b = contour[(i + 1) % contour.Count]; var len = Math.Sqrt(D2(a, b)); var k = Math.Max(1, (int)Math.Ceiling(len / step));
+            if ((i & 255) == 0) ct.ThrowIfCancellationRequested();
             for (var j = 0; j < k; j++) { (double X, double Y) q = (a.X + (b.X - a.X) * j / k, a.Y + (b.Y - a.Y) * j / k); samples.Add((q, grid.AnyWithin(q, reach))); }
         }
         var res = new List<(double X, double Y)>(); var ns = samples.Count;
@@ -433,18 +472,19 @@ public static class CncCam
         {
             var idx = (s0 + q) % ns; if (samples[idx].Ok) continue;
             var run = 0; while (!samples[(idx + run) % ns].Ok) run++;
-            if (run >= 2) res.Add(samples[(idx + run / 2) % ns].P); // ein einzelner Messpunkt (Rauschzacke, Ecke) zählt nicht
+            res.Add(samples[(idx + run / 2) % ns].P); // T-0747-fix2: auch ein einzelner Messpunkt zählt (kurze Engstelle)
             q += run;
         }
         return res;
     }
 
     /// <summary>Nächste Kontur, der die Bahn näher als <paramref name="limit"/> kommt (Tag −1 = keine). <paramref name="skip"/>: eigene Kontur bei Bahnen auf der Linie.</summary>
-    static (int Tag, double D) Nearest(List<(double X, double Y)> path, bool closed, SegGrid obstacles, double limit, int skip)
+    static (int Tag, double D) Nearest(List<(double X, double Y)> path, bool closed, SegGrid obstacles, double limit, int skip, CancellationToken ct = default)
     {
         var best = (Tag: -1, D: double.MaxValue); var m = closed ? path.Count : path.Count - 1;
         for (var i = 0; i < m; i++)
         {
+            if ((i & 1023) == 0) ct.ThrowIfCancellationRequested();
             var a = path[i]; var b = path[(i + 1) % path.Count];
             foreach (var j in obstacles.Near(Math.Min(a.X, b.X) - limit, Math.Min(a.Y, b.Y) - limit, Math.Max(a.X, b.X) + limit, Math.Max(a.Y, b.Y) + limit))
             {
@@ -619,11 +659,18 @@ public sealed class SegGrid(double cell)
         return res;
     }
 
-    /// <summary>Gibt es eine Strecke, die dem Punkt näher als <paramref name="d"/> kommt?</summary>
-    public bool AnyWithin((double X, double Y) q, double d)
+    /// <summary>T-0747-fix2: wie <see cref="Near"/>, aber ohne Liste – bricht ab, sobald <paramref name="hit"/> wahr ist.</summary>
+    public bool Any(double minX, double minY, double maxX, double maxY, Func<int, bool> hit)
     {
-        if (d <= 0) return false;
-        foreach (var i in Near(q.X - d, q.Y - d, q.X + d, q.Y + d)) if (CncCam.SegDist(q, Segs[i].A, Segs[i].B) < d) return true;
+        if (_stamp.Length < Segs.Count) Array.Resize(ref _stamp, Math.Max(Segs.Count, _stamp.Length * 2));
+        if (++_query == int.MaxValue) { Array.Clear(_stamp); _query = 1; }
+        for (var x = C(minX); x <= C(maxX); x++)
+            for (var y = C(minY); y <= C(maxY); y++)
+                if (_map.TryGetValue(Key(x, y), out var l))
+                    foreach (var i in l) if (_stamp[i] != _query) { _stamp[i] = _query; if (hit(i)) return true; }
         return false;
     }
+
+    /// <summary>Gibt es eine Strecke, die dem Punkt näher als <paramref name="d"/> kommt?</summary>
+    public bool AnyWithin((double X, double Y) q, double d) => d > 0 && Any(q.X - d, q.Y - d, q.X + d, q.Y + d, i => CncCam.SegDist(q, Segs[i].A, Segs[i].B) < d);
 }

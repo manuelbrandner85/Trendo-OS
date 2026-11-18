@@ -19,11 +19,11 @@ public class T0747_FixUi
 {
     const string AK = "architektur", CK = "cnc";
     static T Get<T>(MainWindow w, string name) where T : Control { Settle(); return w.GetVisualDescendants().OfType<T>().Last(c => c.Name == name && c.IsEffectivelyVisible && c.Bounds.Width > 0); }
-    static void Press(MainWindow w, string name) { var b = Get<Button>(w, name); b.BringIntoView(); Settle(); RealClick(w, Get<Button>(w, name)); }
+    static void Press(MainWindow w, string name) { var b = Get<Button>(w, name); b.BringIntoView(); Settle(); RealClick(w, Get<Button>(w, name)); if (w.DrawingImportHold is null) WaitImport(w); } // T-0747-fix2: Hintergrund abwarten
     static void Type(MainWindow w, string box, string text)
     {
         var t = Get<TextBox>(w, box); t.BringIntoView(); t.Focus(); t.Text = text; Settle();
-        w.KeyPress(Key.Enter, RawInputModifiers.None, PhysicalKey.Enter, null); w.KeyRelease(Key.Enter, RawInputModifiers.None, PhysicalKey.Enter, null); Settle();
+        w.KeyPress(Key.Enter, RawInputModifiers.None, PhysicalKey.Enter, null); w.KeyRelease(Key.Enter, RawInputModifiers.None, PhysicalKey.Enter, null); Settle(); WaitImport(w);
     }
     static string Fixture(string name)
     {
@@ -73,7 +73,7 @@ public class T0747_FixUi
         Press(w, "prog-undo"); Assert.Equal(4, Job(w).ToolD); Assert.Equal(g0, Job(w).Gcode); // Wert und Bahnen in einem Schritt zurück
         Type(w, "cnc-p-feed", "900"); Assert.Contains(" F900\n", Job(w).Gcode); Assert.False(Job(w).CamStale);
         // nur innen fräsen und Fräser größer als jedes Loch → keine Bahn möglich: Wert bleibt, G-Code veraltet, Export gesperrt
-        Get<ComboBox>(w, "cnc-p-cammode").SelectedIndex = 2; Settle(); Assert.Equal("innen", Job(w).CamMode);
+        Get<ComboBox>(w, "cnc-p-cammode").SelectedIndex = 2; Settle(); WaitImport(w); Assert.Equal("innen", Job(w).CamMode);
         var before = Job(w).Gcode;
         Type(w, "cnc-p-tool", "70");
         Assert.Equal(70, Job(w).ToolD); Assert.Equal(before, Job(w).Gcode); Assert.True(Job(w).CamStale);
@@ -93,16 +93,28 @@ public class T0747_FixUi
         w.Close();
     }
 
+    [AvaloniaFact(DisplayName = "T-0747-fix2 UI: Trendo CAD zeigt, dass eine Zoll-DXF in mm umgerechnet wurde")]
+    public void Cad_import_shows_unit_conversion()
+    {
+        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
+        var f = Path.Combine(root, "zoll.dxf");
+        File.WriteAllText(f, "0\nSECTION\n2\nHEADER\n9\n$INSUNITS\n70\n1\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n0\nLINE\n8\n0\n10\n0\n20\n0\n11\n2\n21\n0\n0\nENDSEC\n0\nEOF\n");
+        var msg = w.CadImport(f);
+        Assert.Contains("Maße in mm umgerechnet aus Zoll (×25,4)", msg);
+        var mm = Path.Combine(root, "mm.dxf"); File.WriteAllText(mm, File.ReadAllText(f).Replace("70\n1\n", "70\n4\n"));
+        Assert.DoesNotContain("umgerechnet", w.CadImport(mm));
+        w.Close();
+    }
+
     [AvaloniaFact(DisplayName = "T-0747-fix UI: große DXF (12 000 Linien) im Hintergrund – Karte mit Abbrechen, Ergebnis als ein Schritt; Abbrechen ändert nichts")]
     public void Big_dxf_background_and_cancel()
     {
         var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
         var big = Path.Combine(root, "gross.dxf"); File.WriteAllText(big, BigDxf(12_000));
-        Assert.True(new FileInfo(big).Length >= MainWindow.DrawingBackgroundBytes);
         w.Show(AK); Settle(); RealClick(w, Get<Button>(w, "prog-tpl-leer"));
         w.PickOverride = _ => Task.FromResult<string[]?>([big]);
         var sw = Stopwatch.StartNew();
-        Press(w, "prog-cmd-arch-dxf-import");
+        RealClick(w, Get<Button>(w, "prog-cmd-arch-dxf-import")); // ohne zu warten: die Oberfläche muss sofort frei sein
         var uiMs = sw.ElapsedMilliseconds;
         Assert.True(w.DrawingImportBusy);
         Assert.Empty(Plan(w).Walls); // noch nichts übernommen
