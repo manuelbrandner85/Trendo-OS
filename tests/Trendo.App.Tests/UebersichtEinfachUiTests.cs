@@ -139,6 +139,8 @@ public class UebersichtEinfach_Ui(ITestOutputHelper log)
         ("garment-edit-toggle", "Rechtsklick-Menü der Schnittfläche „Kante als Kurve“ / „Kante als Gerade“, K"),
         ("garment-edit-reset", "Rechtsklick-Menü der Schnittfläche „Teil auf die Vorlage zurücksetzen“"),
         ("prog-export-reihe-csv", "Menüleiste „Datei ▸ Exportieren ▸ Fragenreihe (.csv)“"), ("prog-export-reihe-md", "Menüleiste „Datei ▸ Exportieren ▸ Fragenreihe (.md)“"),
+        // T-0748: Gegenprobe der Statik – Bericht über die Menüleiste, das Ergebnis („Gegenprobe ✓ Abweichung …“) steht in jeder Stufe in der Statuszeile
+        ("prog-export-gegenprobe", "Menüleiste „Datei ▸ Exportieren ▸ Gegenprobe (Bericht)“ (geprüft in T0748_Ui.Statik_Einfach_Menue); Ergebnis in der Statuszeile"),
     ];
 
     /// <summary>Was „Einfach“ schon vor T-0663 bewusst nicht baute (Stand origin/main 1fc842acc) – siehe Kopf der Datei.</summary>
