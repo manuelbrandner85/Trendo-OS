@@ -1,0 +1,209 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:04.81]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:05.32]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:05.35]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:05.44]     T-0747-fix 2: 3-mm-Schlitz außen – Umriss wird gefräst, der Schlitz wird gemeldet; leerer Versatz nennt den Grund [FAIL]
+[xUnit.net 00:00:05.44]       Assert.Single() Failure: The collection was empty
+[xUnit.net 00:00:05.44]       Stack Trace:
+[xUnit.net 00:00:05.44]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\tests\Trendo.Core.Tests\DxfWohnungFraesenFixTests.cs(146,0): at Trendo.Core.Tests.T0747_FixGegenpruefung.Slot_outside_and_empty_reason()
+[xUnit.net 00:00:05.44]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.44]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:05.45]     T-0747-fix 6: Windows-1252 (€), Sonderzeichen nur in fremden DXF, kaputter SVG-Pfad mit verständlicher Meldung [FAIL]
+[xUnit.net 00:00:05.45]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:05.45]                           ↓ (pos 9)
+[xUnit.net 00:00:05.45]       Expected: "Preis 12 € – Küche"
+[xUnit.net 00:00:05.45]       Actual:   "Preis 12   Küche"
+[xUnit.net 00:00:05.45]                           ↑ (pos 9)
+[xUnit.net 00:00:05.45]       Stack Trace:
+[xUnit.net 00:00:05.45]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\tests\Trendo.Core.Tests\DxfWohnungFraesenFixTests.cs(257,0): at Trendo.Core.Tests.T0747_FixGegenpruefung.Encoding_escapes_broken_svg()
+[xUnit.net 00:00:05.45]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.45]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:05.64]     T-0747-fix 3: Kreis R 50 mit Rauschen wird gefräst, Abstand ≥ Radius(noise: 0,5, n: 500) [FAIL]
+[xUnit.net 00:00:05.64]       System.InvalidOperationException : Es blieb keine fräsbare Kontur übrig: Kontur 1: hat Stellen enger als der Fräser (die Bahn käme 1.1037 mm zu nah) – ausgelassen. Kleineren Fräser wählen.
+[xUnit.net 00:00:05.64]       Stack Trace:
+[xUnit.net 00:00:05.64]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\src\Trendo.Core\W6\CncCam.cs(135,0): at Trendo.Core.CncCam.Generate(IReadOnlyList`1 source, CamSettings s)
+[xUnit.net 00:00:05.64]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\tests\Trendo.Core.Tests\DxfWohnungFraesenFixTests.cs(169,0): at Trendo.Core.Tests.T0747_FixGegenpruefung.Noisy_circle(Double noise, Int32 n)
+[xUnit.net 00:00:05.64]            at InvokeStub_T0747_FixGegenpruefung.Noisy_circle(Object, Span`1)
+[xUnit.net 00:00:05.64]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:05.75]     T-0747-fix 3: Kreis R 50 mit Rauschen wird gefräst, Abstand ≥ Radius(noise: 0,050000000000000003, n: 2000) [FAIL]
+[xUnit.net 00:00:05.75]       System.InvalidOperationException : Es blieb keine fräsbare Kontur übrig: Kontur 1: hat Stellen enger als der Fräser (die Bahn käme 0.4206 mm zu nah) – ausgelassen. Kleineren Fräser wählen.
+[xUnit.net 00:00:05.75]       Stack Trace:
+[xUnit.net 00:00:05.75]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\src\Trendo.Core\W6\CncCam.cs(135,0): at Trendo.Core.CncCam.Generate(IReadOnlyList`1 source, CamSettings s)
+[xUnit.net 00:00:05.75]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\tests\Trendo.Core.Tests\DxfWohnungFraesenFixTests.cs(169,0): at Trendo.Core.Tests.T0747_FixGegenpruefung.Noisy_circle(Double noise, Int32 n)
+[xUnit.net 00:00:05.75]            at InvokeStub_T0747_FixGegenpruefung.Noisy_circle(Object, Span`1)
+[xUnit.net 00:00:05.75]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:05.93]     T-0747-fix 3: Kreis R 50 mit Rauschen wird gefräst, Abstand ≥ Radius(noise: 0,5, n: 2000) [FAIL]
+[xUnit.net 00:00:05.93]       System.InvalidOperationException : Es blieb keine fräsbare Kontur übrig: Kontur 1: hat Stellen enger als der Fräser (die Bahn käme 2.4885 mm zu nah) – ausgelassen. Kleineren Fräser wählen.
+[xUnit.net 00:00:05.94]       Stack Trace:
+[xUnit.net 00:00:05.94]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\src\Trendo.Core\W6\CncCam.cs(135,0): at Trendo.Core.CncCam.Generate(IReadOnlyList`1 source, CamSettings s)
+[xUnit.net 00:00:05.94]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\tests\Trendo.Core.Tests\DxfWohnungFraesenFixTests.cs(169,0): at Trendo.Core.Tests.T0747_FixGegenpruefung.Noisy_circle(Double noise, Int32 n)
+[xUnit.net 00:00:05.94]            at InvokeStub_T0747_FixGegenpruefung.Noisy_circle(Object, Span`1)
+[xUnit.net 00:00:05.94]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:05.95]     T-0747-fix 1: Insel 2 mm neben dem Lochrand – die Innenbahn fährt nicht durch die Insel [FAIL]
+[xUnit.net 00:00:05.95]       Assert.Equal() Failure: Collections differ
+[xUnit.net 00:00:05.95]                                                      ↓ (pos 0)
+[xUnit.net 00:00:05.95]       Expected: <generated>                         ["aussen"]
+[xUnit.net 00:00:05.95]       Actual:   ListSelectIterator<CamPath, string> ["innen", "aussen", "aussen"]
+[xUnit.net 00:00:05.95]                                                      ↑ (pos 0)
+[xUnit.net 00:00:05.95]       Stack Trace:
+[xUnit.net 00:00:05.95]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\tests\Trendo.Core.Tests\DxfWohnungFraesenFixTests.cs(95,0): at Trendo.Core.Tests.T0747_FixGegenpruefung.Island_near_hole_edge()
+[xUnit.net 00:00:05.95]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.95]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:05.95]     T-0747-fix 1: Achterform (Kontur kreuzt sich selbst) wird abgelehnt und gemeldet [FAIL]
+[xUnit.net 00:00:05.95]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:05.95]       Expected: typeof(System.InvalidOperationException)
+[xUnit.net 00:00:05.95]       Stack Trace:
+[xUnit.net 00:00:05.95]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\tests\Trendo.Core.Tests\DxfWohnungFraesenFixTests.cs(108,0): at Trendo.Core.Tests.T0747_FixGegenpruefung.Figure_eight_rejected()
+[xUnit.net 00:00:05.95]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:05.95]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0747-fix 2: 3-mm-Schlitz außen – Umriss wird gefräst, der Schlitz wird gemeldet; leerer Versatz nennt den Grund [42 ms]
+  Fehlermeldung:
+   Assert.Single() Failure: The collection was empty
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_FixGegenpruefung.Slot_outside_and_empty_reason() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\tests\Trendo.Core.Tests\DxfWohnungFraesenFixTests.cs:line 146
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0747-fix 6: Windows-1252 (€), Sonderzeichen nur in fremden DXF, kaputter SVG-Pfad mit verständlicher Meldung [18 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+                    ↓ (pos 9)
+Expected: "Preis 12 € – Küche"
+Actual:   "Preis 12   Küche"
+                    ↑ (pos 9)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_FixGegenpruefung.Encoding_escapes_broken_svg() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\tests\Trendo.Core.Tests\DxfWohnungFraesenFixTests.cs:line 257
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Bestanden T-0747-fix 3: Kreis R 50 mit Rauschen wird gefräst, Abstand ≥ Radius(noise: 0,050000000000000003, n: 500) [151 ms]
+  Fehler T-0747-fix 3: Kreis R 50 mit Rauschen wird gefräst, Abstand ≥ Radius(noise: 0,5, n: 500) [25 ms]
+  Fehlermeldung:
+   System.InvalidOperationException : Es blieb keine fräsbare Kontur übrig: Kontur 1: hat Stellen enger als der Fräser (die Bahn käme 1.1037 mm zu nah) – ausgelassen. Kleineren Fräser wählen.
+  Stapelverfolgung:
+     at Trendo.Core.CncCam.Generate(IReadOnlyList`1 source, CamSettings s) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\src\Trendo.Core\W6\CncCam.cs:line 135
+   at Trendo.Core.Tests.T0747_FixGegenpruefung.Noisy_circle(Double noise, Int32 n) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\tests\Trendo.Core.Tests\DxfWohnungFraesenFixTests.cs:line 169
+   at InvokeStub_T0747_FixGegenpruefung.Noisy_circle(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0747-fix 3: Kreis R 50 mit Rauschen wird gefräst, Abstand ≥ Radius(noise: 0,050000000000000003, n: 2000) [113 ms]
+  Fehlermeldung:
+   System.InvalidOperationException : Es blieb keine fräsbare Kontur übrig: Kontur 1: hat Stellen enger als der Fräser (die Bahn käme 0.4206 mm zu nah) – ausgelassen. Kleineren Fräser wählen.
+  Stapelverfolgung:
+     at Trendo.Core.CncCam.Generate(IReadOnlyList`1 source, CamSettings s) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\src\Trendo.Core\W6\CncCam.cs:line 135
+   at Trendo.Core.Tests.T0747_FixGegenpruefung.Noisy_circle(Double noise, Int32 n) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\tests\Trendo.Core.Tests\DxfWohnungFraesenFixTests.cs:line 169
+   at InvokeStub_T0747_FixGegenpruefung.Noisy_circle(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0747-fix 3: Kreis R 50 mit Rauschen wird gefräst, Abstand ≥ Radius(noise: 0,5, n: 2000) [184 ms]
+  Fehlermeldung:
+   System.InvalidOperationException : Es blieb keine fräsbare Kontur übrig: Kontur 1: hat Stellen enger als der Fräser (die Bahn käme 2.4885 mm zu nah) – ausgelassen. Kleineren Fräser wählen.
+  Stapelverfolgung:
+     at Trendo.Core.CncCam.Generate(IReadOnlyList`1 source, CamSettings s) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\src\Trendo.Core\W6\CncCam.cs:line 135
+   at Trendo.Core.Tests.T0747_FixGegenpruefung.Noisy_circle(Double noise, Int32 n) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\tests\Trendo.Core.Tests\DxfWohnungFraesenFixTests.cs:line 169
+   at InvokeStub_T0747_FixGegenpruefung.Noisy_circle(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0747-fix 1: Insel 2 mm neben dem Lochrand – die Innenbahn fährt nicht durch die Insel [11 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Collections differ
+                                               ↓ (pos 0)
+Expected: <generated>                         ["aussen"]
+Actual:   ListSelectIterator<CamPath, string> ["innen", "aussen", "aussen"]
+                                               ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_FixGegenpruefung.Island_near_hole_edge() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\tests\Trendo.Core.Tests\DxfWohnungFraesenFixTests.cs:line 95
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0747-fix 1: Achterform (Kontur kreuzt sich selbst) wird abgelehnt und gemeldet [1 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.InvalidOperationException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_FixGegenpruefung.Figure_eight_rejected() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\tests\Trendo.Core.Tests\DxfWohnungFraesenFixTests.cs:line 108
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:31.11]     T-0747-fix 4: 10 000 Linien – Grundriss-Import und Konturen in wenigen Sekunden; Obergrenze mit Meldung; Abbrechen [FAIL]
+[xUnit.net 00:00:31.11]       168 Wände, 4832 Türen/Fenster (Einheit mm; Wandebenen: WAND).
+[xUnit.net 00:00:31.11]       Stack Trace:
+[xUnit.net 00:00:31.11]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\tests\Trendo.Core.Tests\DxfWohnungFraesenFixTests.cs(207,0): at Trendo.Core.Tests.T0747_FixGegenpruefung.Big_dxf_fast()
+[xUnit.net 00:00:31.11]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:31.11]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:31.11]       Output:
+[xUnit.net 00:00:31.11]         10 000 Linien: Grundriss-Import 24678 ms (168 Wände, 4832 Öffnungen), Konturen 440 ms (5116 Züge)
+  Fehler T-0747-fix 4: 10 000 Linien – Grundriss-Import und Konturen in wenigen Sekunden; Obergrenze mit Meldung; Abbrechen [25 s]
+  Fehlermeldung:
+   168 Wände, 4832 Türen/Fenster (Einheit mm; Wandebenen: WAND).
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_FixGegenpruefung.Big_dxf_fast() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\tests\Trendo.Core.Tests\DxfWohnungFraesenFixTests.cs:line 207
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ 10 000 Linien: Grundriss-Import 24678 ms (168 Wände, 4832 Öffnungen), Konturen 440 ms (5116 Züge)
+
+
+[xUnit.net 00:00:31.11]     T-0747-fix 1: zwei Teile 3 mm auseinander, Fräser Ø 6 – keine Bahn fährt durchs Nachbarteil, beide werden gemeldet [FAIL]
+[xUnit.net 00:00:31.11]       Assert.Equal() Failure: Collections differ
+[xUnit.net 00:00:31.11]                                        ↓ (pos 0)
+[xUnit.net 00:00:31.11]       Expected: <generated>           [2]
+[xUnit.net 00:00:31.11]       Actual:   DistinctIterator<int> [0, 1, 2]
+[xUnit.net 00:00:31.11]                                        ↑ (pos 0)
+[xUnit.net 00:00:31.11]       Stack Trace:
+[xUnit.net 00:00:31.11]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\tests\Trendo.Core.Tests\DxfWohnungFraesenFixTests.cs(83,0): at Trendo.Core.Tests.T0747_FixGegenpruefung.Neighbours_too_close()
+[xUnit.net 00:00:31.11]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:31.11]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:31.11]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:31.15]     T-0747-fix 5: Fräser-Ø/Tiefe/Zustellung geändert → G-Code aus der Zeichnung gilt als veraltet, bis neu gerechnet [FAIL]
+[xUnit.net 00:00:31.15]       Assert.True() Failure
+[xUnit.net 00:00:31.15]       Expected: True
+[xUnit.net 00:00:31.15]       Actual:   False
+[xUnit.net 00:00:31.15]       Stack Trace:
+[xUnit.net 00:00:31.15]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\tests\Trendo.Core.Tests\DxfWohnungFraesenFixTests.cs(227,0): at Trendo.Core.Tests.T0747_FixGegenpruefung.Stale_cam()
+[xUnit.net 00:00:31.15]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:31.15]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:31.15]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:31.15]     T-0747-fix 2: Hantel-Loch mit 3-mm-Steg – beide Kammern werden gefräst, der Steg wird mit Lage gemeldet [FAIL]
+[xUnit.net 00:00:31.15]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:31.15]       Expected: 2
+[xUnit.net 00:00:31.15]       Actual:   1
+[xUnit.net 00:00:31.15]       Stack Trace:
+[xUnit.net 00:00:31.15]         C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\tests\Trendo.Core.Tests\DxfWohnungFraesenFixTests.cs(134,0): at Trendo.Core.Tests.T0747_FixGegenpruefung.Dumbbell_hole()
+[xUnit.net 00:00:31.15]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:00:31.15]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:31.15]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:31.16]   Finished:    Trendo.Core.Tests
+  Fehler T-0747-fix 1: zwei Teile 3 mm auseinander, Fräser Ø 6 – keine Bahn fährt durchs Nachbarteil, beide werden gemeldet [6 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Collections differ
+                                 ↓ (pos 0)
+Expected: <generated>           [2]
+Actual:   DistinctIterator<int> [0, 1, 2]
+                                 ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_FixGegenpruefung.Neighbours_too_close() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\tests\Trendo.Core.Tests\DxfWohnungFraesenFixTests.cs:line 83
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0747-fix 5: Fräser-Ø/Tiefe/Zustellung geändert → G-Code aus der Zeichnung gilt als veraltet, bis neu gerechnet [31 ms]
+  Fehlermeldung:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_FixGegenpruefung.Stale_cam() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\tests\Trendo.Core.Tests\DxfWohnungFraesenFixTests.cs:line 227
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0747-fix 2: Hantel-Loch mit 3-mm-Steg – beide Kammern werden gefräst, der Steg wird mit Lage gemeldet [6 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: 2
+Actual:   1
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_FixGegenpruefung.Dumbbell_hole() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\tests\Trendo.Core.Tests\DxfWohnungFraesenFixTests.cs:line 134
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 12
+     Bestanden: 1
+     Nicht bestanden: 11
+ Gesamtzeit: 42,8416 Sekunden

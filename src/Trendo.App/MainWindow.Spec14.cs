@@ -58,7 +58,7 @@ public partial class MainWindow
         ],
         Exports =
         [
-            new("nc", "G-Code (.nc)", ".nc", (d, f) => { File.WriteAllText(f, CncJob.From(d.Data).Gcode); return f; }),
+            new("nc", "G-Code (.nc)", ".nc", CncExportNc), // T-0747-fix: gesperrt, solange die Bahnen aus der Zeichnung veraltet sind
             new("svg", "Vorschau (SVG)", ".svg", (d, f) => { File.WriteAllText(f, CncReport(d).Svg); return f; }),
             new("report", "Prüfbericht", ".md", (d, f) => { var j = CncJob.From(d.Data); File.WriteAllText(f, CncSim.Report(d.Title, CncReport(d), (j.EnvX, j.EnvY, j.EnvZ))); return f; }),
         ],
@@ -142,7 +142,7 @@ public partial class MainWindow
         _cncView = view;
         FileDrop(view, CK, f => HasExt(f, "dxf", "svg", "nc", "gcode", "ngc", "tap"), f =>
         {
-            if (HasExt(f, "dxf", "svg")) { CncImportDrawing(f); return; }
+            if (HasExt(f, "dxf", "svg")) { ImportDrawingFile(CK, f); return; }
             var g = File.ReadAllText(f); Cnc.Analyse(g); CncEdit(d, "Datei laden", x => x.Gcode = g); CncStop(); _cncT = -1;
         });
         var menu = new ContextMenu();
@@ -190,24 +190,25 @@ public partial class MainWindow
     {
         var j = CncJob.From(d.Data); var sp = new StackPanel { Spacing = 4 };
         Button Act2(string name, string label, Action go) { var b = new Button { Name = name, Content = label, Padding = new Thickness(10, 4), Margin = new Thickness(0, 4, 4, 0) }; b.Click += (_, _) => go(); return b; }
-        void Num(string name, string label, double val, Action<CncJob, double> set)
+        void Num(string name, string label, double val, Action<CncJob, double> set, bool cam = false)
         {
             var t = new TextBox { Name = name, Text = val.ToString("0.###", De), Width = 80 };
-            void Commit() { if (double.TryParse(t.Text, System.Globalization.NumberStyles.Float, De, out var v) && v > 0 && v != val) { CncEdit(d, label, x => set(x, v)); Show(CK); } }
+            void Commit() { if (double.TryParse(t.Text, System.Globalization.NumberStyles.Float, De, out var v) && v > 0 && v != val) { CncSettingChanged(d, label, x => set(x, v), cam); Show(CK); } } // T-0747-fix: Bahnen aus der Zeichnung gleich neu
             t.LostFocus += (_, _) => Commit(); OnEnter(t, Commit);
             sp.Children.Add(Row(P(label, Text, 12), t));
         }
         sp.Children.Add(H("Maschine", 12));
         Num("cnc-p-envx", "Arbeitsraum X (mm)", j.EnvX, (x, v) => x.EnvX = v); Num("cnc-p-envy", "Arbeitsraum Y (mm)", j.EnvY, (x, v) => x.EnvY = v); Num("cnc-p-envz", "Arbeitsraum Z (mm)", j.EnvZ, (x, v) => x.EnvZ = v); Num("cnc-p-rapid", "Eilgang (mm/min)", j.Rapid, (x, v) => x.Rapid = v);
         sp.Children.Add(H("Werkstück & Fräser (für „Erzeugen“)", 12));
-        Num("cnc-p-w", "Breite (mm)", j.W, (x, v) => x.W = v); Num("cnc-p-h", "Höhe (mm)", j.H, (x, v) => x.H = v); Num("cnc-p-depth", "Tiefe (mm)", j.Depth, (x, v) => x.Depth = v);
-        Num("cnc-p-tool", "Fräser-Ø (mm)", j.ToolD, (x, v) => x.ToolD = v); Num("cnc-p-step", "Zustellung (mm)", j.StepDown, (x, v) => x.StepDown = v); Num("cnc-p-feed", "Vorschub (mm/min)", j.Feed, (x, v) => x.Feed = v); Num("cnc-p-plunge", "Eintauchen (mm/min)", j.Plunge, (x, v) => x.Plunge = v);
+        Num("cnc-p-w", "Breite (mm)", j.W, (x, v) => x.W = v); Num("cnc-p-h", "Höhe (mm)", j.H, (x, v) => x.H = v); Num("cnc-p-depth", "Tiefe (mm)", j.Depth, (x, v) => x.Depth = v, true);
+        Num("cnc-p-tool", "Fräser-Ø (mm)", j.ToolD, (x, v) => x.ToolD = v, true); Num("cnc-p-step", "Zustellung (mm)", j.StepDown, (x, v) => x.StepDown = v, true); Num("cnc-p-feed", "Vorschub (mm/min)", j.Feed, (x, v) => x.Feed = v, true); Num("cnc-p-plunge", "Eintauchen (mm/min)", j.Plunge, (x, v) => x.Plunge = v, true);
         // T-0747: Fräsbahnen aus einer Zeichnung
         sp.Children.Add(H("Aus Zeichnung (DXF, SVG)", 12));
         if (j.Contours.Count == 0) sp.Children.Add(P("Menüband „Erzeugen → Aus DXF/SVG …“, Rechtsklick in die Vorschau oder die Datei einfach auf die Vorschau ziehen.", null, 11));
         else
         {
             sp.Children.Add(P($"{j.CamSource} · {j.Contours.Count} Konturen ({j.Contours.Count(c => c.Closed)} geschlossen)", null, 11));
+            if (j.CamStale) sp.Children.Add(new TextBlock { Name = "cnc-cam-stale", Text = "⚠ Bahnen veraltet: Fräser-Ø, Tiefe, Zustellung oder Vorschub wurden geändert. „Bahnen neu berechnen“ drücken – bis dahin ist der G-Code-Export gesperrt.", Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap }); // T-0747-fix
             string[] modes = ["auto", "aussen", "innen", "auf"]; string[] modeNames = ["Automatisch (Umriss außen, Löcher innen)", "Alles außen", "Alles innen", "Auf der Linie (Gravur)"];
             var mode = new ComboBox { Name = "cnc-p-cammode", ItemsSource = modeNames, SelectedIndex = Math.Max(0, Array.IndexOf(modes, j.CamMode)), HorizontalAlignment = HorizontalAlignment.Stretch };
             mode.SelectionChanged += (_, _) => { if (mode.SelectedIndex >= 0 && modes[mode.SelectedIndex] != j.CamMode) ProgramRun(CK, () => { var m = modes[mode.SelectedIndex]; CncCamApply(d, "Fräsart", x => x.CamMode = m); }); };

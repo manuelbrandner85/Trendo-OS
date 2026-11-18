@@ -1,0 +1,7 @@
+Kontur 6 (Ebene F6) ausgelassen: die Kontur kreuzt sich selbst (z. B. eine Acht) – dann ist nicht klar, was innen und außen ist. Bitte in der Zeichnung in einzelne geschlossene Umrisse auflösen.
+Kontur 8 (Ebene F8): Bereich enger als der Fräser Ø 6 mm – dort bleibt Material stehen (bei X 360 Y 28,9; bei X 360 Y 31,9). Für diese Stellen einen kleineren Fräser wählen.
+Kontur 9 (Ebene F9): Bereich enger als der Fräser Ø 6 mm – dort bleibt Material stehen (bei X 480 Y 25,4). Für diese Stellen einen kleineren Fräser wählen.
+Kontur 1 (Ebene F1) ausgelassen: zu nah an Kontur 2 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radius). Teile weiter auseinanderlegen oder kleineren Fräser wählen.
+Kontur 2 (Ebene F2) ausgelassen: zu nah an Kontur 1 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radius). Teile weiter auseinanderlegen oder kleineren Fräser wählen.
+Kontur 4 (Ebene F4) ausgelassen: zu nah an Kontur 5 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radius). Teile weiter auseinanderlegen oder kleineren Fräser wählen.
+Kontur 5 (Ebene F5) ausgelassen: zu nah an Kontur 4 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radius). Teile weiter auseinanderlegen oder kleineren Fräser wählen.

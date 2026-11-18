@@ -546,6 +546,7 @@ public partial class MainWindow
         // Karten über der Arbeit – nur wenn es etwas zu entscheiden gibt (sonst beginnt die Arbeitsfläche direkt unter den Werkzeugen)
         var cards = new List<Control>();
         if (ClaudeProgramExtra(key) is { } cx) cards.Add(cx); // z. B. das spielbare Spiel, das Claude gebaut hat
+        if (DrawingImportCard(key) is { } dic) cards.Add(dic); // T-0747-fix: große Zeichnung wird im Hintergrund eingelesen – mit „Abbrechen“
         if (ClaudeChangeBanner(key, d) is { } cb) cards.Add(cb); // Claude hat geändert: vergleichen, behalten, verwerfen
         cards.AddRange(ProgramSafetyCards(key, d)); // T-0680: Sicherung gefunden, anderes Fenster, von außen geändert, beschädigt
         if (ProgramIntro(key) is { } pi) cards.Add(pi); // E8: kurze Einführung beim ersten Öffnen

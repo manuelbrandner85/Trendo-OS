@@ -58,7 +58,10 @@ public static class CadSvg
                     Walk(e, me, label ?? layer, d, skipped); break;
                 }
                 case "path":
-                    foreach (var (pts, closed) in Media.ImageVector.ParseSubpaths(e.Attribute("d")?.Value ?? "", 24))
+                    List<(List<(double X, double Y)> Points, bool Closed)> subs;
+                    try { subs = Media.ImageVector.ParseSubpaths(e.Attribute("d")?.Value ?? "", 96); } // T-0747-fix: feiner abgetastet (Bögen 0,625°, Kurven 96 Stücke)
+                    catch (FormatException fe) { throw new CadError($"Pfad{(e.Attribute("id")?.Value is { Length: > 0 } pid ? $" „{pid}“" : "")} in der SVG-Datei ist kaputt: {fe.Message} Bitte im Zeichenprogramm neu speichern."); } // T-0747-fix
+                    foreach (var (pts, closed) in subs)
                         if (pts.Count >= 2) Poly(d, layer, pts.Select(me.Apply).ToList(), closed);
                     break;
                 case "rect":
@@ -70,7 +73,7 @@ public static class CadSvg
                     if (rx <= 0) pts.AddRange([(x, y), (x + w, y), (x + w, y + h), (x, y + h)]);
                     else
                     {
-                        void Corner(double cx, double cy, double a0) { for (var k = 0; k <= 36; k++) { var a = (a0 + 90.0 * k / 36) * Math.PI / 180; pts.Add((cx + rx * Math.Cos(a), cy + ry * Math.Sin(a))); } }
+                        void Corner(double cx, double cy, double a0) { for (var k = 0; k <= 144; k++) { var a = (a0 + 90.0 * k / 144) * Math.PI / 180; pts.Add((cx + rx * Math.Cos(a), cy + ry * Math.Sin(a))); } } // T-0747-fix: 0,625° je Stück (Fräskonturen)
                         Corner(x + w - rx, y + ry, 270); Corner(x + w - rx, y + h - ry, 0); Corner(x + rx, y + h - ry, 90); Corner(x + rx, y + ry, 180);
                     }
                     Poly(d, layer, pts.Select(me.Apply).ToList(), true); break;

@@ -169,7 +169,7 @@ public partial class MainWindow
             view = fv;
         }
         var frame = new Border { Name = "arch-frame", CornerRadius = new CornerRadius(12), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = view };
-        FileDrop(frame, AK, f => HasExt(f, "dxf", "png", "jpg", "jpeg", "bmp"), f => { if (HasExt(f, "dxf")) ArchImportDxf(f); else ArchLoadImage(f); }); // T-0747: DXF oder Vorlage-Bild hineinziehen
+        FileDrop(frame, AK, f => HasExt(f, "dxf", "png", "jpg", "jpeg", "bmp"), f => { if (HasExt(f, "dxf")) ImportDrawingFile(AK, f); else ArchLoadImage(f); }); // T-0747: DXF oder Vorlage-Bild hineinziehen
         // Geschoss-Reiter über der Zeichenfläche (oben = höchstes Geschoss steht rechts)
         var tabs = new WrapPanel { Name = "arch-levels", Margin = new Thickness(0, 0, 0, 6) };
         for (var k = 0; k < levels.Count; k++)

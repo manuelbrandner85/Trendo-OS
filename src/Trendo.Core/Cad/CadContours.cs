@@ -38,11 +38,12 @@ public static class CadContours
 {
     /// <summary>Linienzüge bilden. <paramref name="tol"/>: Enden, die näher als das beieinanderliegen, gelten als verbunden;
     /// <paramref name="chord"/>: höchste Abweichung beim Zerlegen von Kreisen und Bögen in gerade Stücke (gleiche Einheit wie die Zeichnung).</summary>
-    public static List<CadContour> Build(IEnumerable<CadEntity> entities, double tol = 0.01, double chord = 0.01)
+    public static List<CadContour> Build(IEnumerable<CadEntity> entities, double tol = 0.01, double chord = 0.01, CancellationToken ct = default)
     {
         var closed = new List<CadContour>(); var open = new List<CadContour>();
         foreach (var e in entities)
         {
+            ct.ThrowIfCancellationRequested();
             switch (e.Kind)
             {
                 case "kreis" when e.R > 0:
@@ -62,34 +63,57 @@ public static class CadContours
                 }
             }
         }
-        closed.AddRange(Chain(open, tol));
+        closed.AddRange(Chain(open, tol, ct));
         return closed.Where(c => c.Closed || c.Pts.Count >= 2).ToList();
     }
 
-    /// <summary>Offene Züge mit gemeinsamen Enden zusammenhängen (auch umgedreht); schließt sich eine Kette, wird sie geschlossen.</summary>
-    public static List<CadContour> Chain(List<CadContour> pieces, double tol)
+    /// <summary>Offene Züge mit gemeinsamen Enden zusammenhängen (auch umgedreht); schließt sich eine Kette, wird sie geschlossen.
+    /// T-0747-fix: Enden liegen in einem Raster (Zellgröße 2 × Toleranz) – gesucht wird nur in den Nachbarzellen statt in allen Stücken
+    /// (10 000 Linien: Millisekunden statt quadratischer Laufzeit). Angehängt wird jeweils das Stück mit dem kleinsten Index, erst am Ende, dann am Anfang.</summary>
+    public static List<CadContour> Chain(List<CadContour> pieces, double tol, CancellationToken ct = default)
     {
         var res = new List<CadContour>(); var used = new bool[pieces.Count];
+        var cell = Math.Max(tol, 1e-9) * 2;
+        (long, long) C((double X, double Y) p) => ((long)Math.Floor(p.X / cell), (long)Math.Floor(p.Y / cell));
+        var map = new Dictionary<(long, long), List<int>>();
+        for (var k = 0; k < pieces.Count; k++)
+            foreach (var c in new[] { C(pieces[k].Pts[0]), C(pieces[k].Pts[^1]) }.Distinct())
+            {
+                if (!map.TryGetValue(c, out var l)) map[c] = l = [];
+                l.Add(k);
+            }
+        int Find((double X, double Y) at, string layer)
+        {
+            var (cx, cy) = C(at); var best = int.MaxValue;
+            for (var dx = -1L; dx <= 1; dx++)
+                for (var dy = -1L; dy <= 1; dy++)
+                    if (map.TryGetValue((cx + dx, cy + dy), out var l))
+                        foreach (var k in l)
+                            if (k < best && !used[k] && pieces[k].Layer == layer && (Near(at, pieces[k].Pts[0], tol) || Near(at, pieces[k].Pts[^1], tol))) best = k;
+            return best == int.MaxValue ? -1 : best;
+        }
         for (var s = 0; s < pieces.Count; s++)
         {
             if (used[s]) continue; used[s] = true;
+            if ((s & 1023) == 0) ct.ThrowIfCancellationRequested();
             var chain = new List<(double X, double Y)>(pieces[s].Pts); var layer = pieces[s].Layer;
-            var grown = true;
-            while (grown && !(chain.Count > 2 && Near(chain[0], chain[^1], tol)))
+            while (!(chain.Count > 2 && Near(chain[0], chain[^1], tol)))
             {
-                grown = false;
-                for (var k = 0; k < pieces.Count; k++)
+                var k = Find(chain[^1], layer);
+                if (k >= 0)
                 {
-                    if (used[k] || pieces[k].Layer != layer) continue;
-                    var p = pieces[k].Pts;
-                    if (Near(chain[^1], p[0], tol)) chain.AddRange(p.Skip(1));
-                    else if (Near(chain[^1], p[^1], tol)) chain.AddRange(Enumerable.Reverse(p).Skip(1));
-                    else if (Near(chain[0], p[^1], tol)) chain.InsertRange(0, p.Take(p.Count - 1));
-                    else if (Near(chain[0], p[0], tol)) chain.InsertRange(0, Enumerable.Reverse(p).Take(p.Count - 1));
-                    else continue;
-                    used[k] = true; grown = true;
-                    if (chain.Count > 2 && Near(chain[0], chain[^1], tol)) break;
+                    var p = pieces[k].Pts; used[k] = true;
+                    if (Near(chain[^1], p[0], tol)) chain.AddRange(p.Skip(1)); else chain.AddRange(Enumerable.Reverse(p).Skip(1));
+                    continue;
                 }
+                k = Find(chain[0], layer);
+                if (k >= 0)
+                {
+                    var p = pieces[k].Pts; used[k] = true;
+                    if (Near(chain[0], p[^1], tol)) chain.InsertRange(0, p.Take(p.Count - 1)); else chain.InsertRange(0, Enumerable.Reverse(p).Take(p.Count - 1));
+                    continue;
+                }
+                break;
             }
             if (chain.Count > 3 && Near(chain[0], chain[^1], tol)) { chain.RemoveAt(chain.Count - 1); res.Add(new CadContour(chain, true, layer)); }
             else res.Add(new CadContour(chain, false, layer));

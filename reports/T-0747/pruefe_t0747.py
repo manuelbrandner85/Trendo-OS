@@ -7,6 +7,10 @@ deshalb liest dieses Skript DXF, SVG und G-Code selbst. Es prüft:
   2. teil-fremd-dxf.nc / teil-fremd-svg.nc gegen die Original-Zeichnung: alle Schnittbewegungen (Z < 0) bleiben mindestens um den
      Fräserradius von jeder Kontur weg (kein Anschneiden), jede Kontur hat eine Bahn im Abstand Radius (Versatz stimmt), die Bahnen
      liegen im Rohteil (Teil ± Radius), tiefste Z = −Tiefe, Stufen −2/−4/−6, Haltestege auf −4,5.
+  T-0747-fix (Gegenprüfung): Der Abstand wird zusätzlich exakt Strecke zu Strecke geprüft (jede Schnittbewegung gegen jede Kontur-Strecke,
+     nicht nur abgetastete Punkte). Neu 3. fix-faelle.dxf / fix-faelle.nc (Fräser Ø 6): zwei Teile 3 mm auseinander, Insel 2 mm neben dem
+     Lochrand, Achterform, Hantel-Loch mit 3-mm-Steg, 3-mm-Schlitz außen, Kreis R 50 mit 0,5 mm Rauschen – kein Schnitt kommt einer Kontur
+     näher als der Radius, die gefährlichen Konturen haben keine Bahn, die Hinweise nennen jeden Fall.
 Aufruf: python pruefe_t0747.py <belegordner> <fixtures-ordner>   Exitcode 0 = alles bestanden.
 """
 import math
@@ -234,6 +238,74 @@ def check_nc(name, nc, segs):
         near = [p for p in pts[::2] if abs(min(seg_dist(p, s[0], s[1]) for s in g) - R) < 0.03]
         hits += 1 if len(near) > 20 else 0
     check(hits >= 3, "Radiusversatz: %d Konturgruppen mit Bahn genau im Abstand %.1f mm (± 0,03)" % (hits, R))
+    exact = min_seg_clearance(cuts, segs)
+    check(exact >= R - 0.0025, "T-0747-fix: exakt Strecke zu Strecke: kleinster Abstand Schnittbewegung–Kontur %.4f mm (Radius %.1f, Toleranz 0,0025 = Bogen 0,001 + Prüfung 0,001 + Rundung)" % (exact, R))
+
+
+# ---------- T-0747-fix: exakter Abstand Strecke zu Strecke ----------
+def orient(o, a, b):
+    return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+
+
+def seg_seg(a, b, c, d):
+    o1, o2, o3, o4 = orient(c, d, a), orient(c, d, b), orient(a, b, c), orient(a, b, d)
+    if ((o1 > 0 > o2) or (o1 < 0 < o2)) and ((o3 > 0 > o4) or (o3 < 0 < o4)):
+        return 0.0
+    return min(seg_dist(a, c, d), seg_dist(b, c, d), seg_dist(c, a, b), seg_dist(d, a, b))
+
+
+def min_seg_clearance(cuts, segs, cell=10.0):
+    """Kleinster Abstand aller Schnittbewegungen (in XY) zu allen Kontur-Strecken – Raster nur zum Beschleunigen, gerechnet wird exakt."""
+    grid = {}
+    for k, (a, b) in enumerate(segs):
+        for gx in range(int(math.floor(min(a[0], b[0]) / cell)), int(math.floor(max(a[0], b[0]) / cell)) + 1):
+            for gy in range(int(math.floor(min(a[1], b[1]) / cell)), int(math.floor(max(a[1], b[1]) / cell)) + 1):
+                grid.setdefault((gx, gy), []).append(k)
+    best = float("inf")
+    for p, q in {((round(a[0], 4), round(a[1], 4)), (round(b[0], 4), round(b[1], 4))) for _, a, b in cuts}:
+        if p == q:
+            continue
+        near = set()
+        for gx in range(int(math.floor((min(p[0], q[0]) - 10) / cell)), int(math.floor((max(p[0], q[0]) + 10) / cell)) + 1):
+            for gy in range(int(math.floor((min(p[1], q[1]) - 10) / cell)), int(math.floor((max(p[1], q[1]) + 10) / cell)) + 1):
+                near.update(grid.get((gx, gy), ()))
+        for k in near:
+            best = min(best, seg_seg(p, q, segs[k][0], segs[k][1]))
+    return best
+
+
+def check_fix(nc, dxf, notes):
+    """3. Gegenprüfungs-Fälle: Fräser Ø 6, Konturen als LINE-Ketten, jede Kontur auf eigener Ebene (F1 … F9)."""
+    print("\n== 3. " + nc + "  (gegen " + dxf + ")")
+    r = 3.0
+    by_layer = {}
+    for t, b in entities(pairs(dxf)):
+        if t == "LINE":
+            by_layer.setdefault(b[8][0], []).append(((num(b, 10), num(b, 20)), (num(b, 11), num(b, 21))))
+    segs = [s for v in by_layer.values() for s in v]
+    minx = min(min(a[0], b[0]) for a, b in segs); miny = min(min(a[1], b[1]) for a, b in segs)
+    segs = [((a[0] - minx, a[1] - miny), (b[0] - minx, b[1] - miny)) for a, b in segs]
+    moves = gcode_moves(nc)
+    cuts = [m for m in moves if m[0] == 1 and m[1][2] < 0 and m[2][2] < 0]
+    check(len(cuts) > 100, "%d Schnittbewegungen unter Z 0" % len(cuts))
+    exact = min_seg_clearance(cuts, segs)
+    check(exact >= r - 0.0025, "kein Anschneiden (exakt Strecke zu Strecke, ALLE Konturen): kleinster Abstand %.4f mm (Radius %.1f, Toleranz 0,0025)" % (exact, r))
+    text = open(nc, encoding="utf-8").read()
+    milled = sorted({int(m) for m in re.findall(r"\(Kontur (\d+):", text)})
+    hint = open(notes, encoding="utf-8").read()
+    print("        gefräste Konturen: %s" % milled)
+    for name, cond in [
+        ("zwei Teile 3 mm auseinander: beide ausgelassen und gemeldet", "zu nah an Kontur" in hint and hint.count("zu nah an Kontur") >= 4),
+        ("Achterform abgelehnt", "kreuzt sich selbst" in hint),
+        ("Hantel-Steg und Schlitz als Engstelle gemeldet (mit Lage)", hint.count("enger als der Fräser") >= 2 and "bei X" in hint),
+    ]:
+        check(cond, name)
+    check(not rapid_into_material(moves), "kein Eilgang (G0) ins Material")
+    return milled
+
+
+def rapid_into_material(moves):
+    return [m for m in moves if m[0] == 0 and min(m[1][2], m[2][2]) < 0 and (m[2][2] < m[1][2] or (m[1][0], m[1][1]) != (m[2][0], m[2][1]))]
 
 
 if __name__ == "__main__":
@@ -241,5 +313,8 @@ if __name__ == "__main__":
     check_plan(beleg + "/wohnung-bearbeitet.dxf")
     check_nc("teil-fremd.dxf (Zoll)", beleg + "/teil-fremd-dxf.nc", dxf_segments(fx + "/teil-fremd.dxf"))
     check_nc("teil-fremd.svg", beleg + "/teil-fremd-svg.nc", svg_segments(fx + "/teil-fremd.svg"))
+    import os
+    if os.path.exists(beleg + "/fix-faelle.nc"):
+        check_fix(beleg + "/fix-faelle.nc", beleg + "/fix-faelle.dxf", beleg + "/fix-faelle-hinweise.txt")
     print("\nERGEBNIS: " + ("BESTANDEN" if not fails else "%d FEHLER" % len(fails)))
     sys.exit(1 if fails else 0)

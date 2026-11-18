@@ -221,7 +221,12 @@ public static class ImageVector
         var res = new List<(List<(double X, double Y)> Points, bool Closed)>();
         List<(double X, double Y)>? cur = null; var curClosed = false;
         double cx = 0, cy = 0, sx = 0, sy = 0, lcx = 0, lcy = 0; var i = 0; var cmd = 'M'; var last = ' ';
-        double Num() => double.Parse(tokens[i++], Inv);
+        // T-0747-fix: fehlt eine Zahl (z. B. „M0 0 L10“), verständliche Meldung statt ArgumentOutOfRangeException
+        double Num()
+        {
+            if (i >= tokens.Count || char.IsLetter(tokens[i][0])) throw new FormatException($"Der SVG-Pfad ist unvollständig: nach „{cmd}“ fehlt eine Zahl{(i < tokens.Count ? $" vor „{tokens[i]}“" : " am Ende")}.");
+            return double.Parse(tokens[i++], Inv);
+        }
         bool IsNum() => i < tokens.Count && !char.IsLetter(tokens[i][0]);
         void Flush() { if (cur is { Count: > 0 }) res.Add((cur, curClosed)); cur = null; curClosed = false; }
         void Add(double x, double y) { cur ??= [(cx, cy)]; cur.Add((x, y)); }
@@ -266,7 +271,7 @@ public static class ImageVector
                     {
                         double rx = Math.Abs(Num()), ry = Math.Abs(Num()), rot = Num(); var large = Num() != 0; var sweep = Num() != 0; double x = Num(), y = Num(); if (rel) { x += cx; y += cy; }
                         cur ??= [(cx, cy)];
-                        cur.AddRange(Arc(cx, cy, rx, ry, rot, large, sweep, x, y));
+                        cur.AddRange(Arc(cx, cy, rx, ry, rot, large, sweep, x, y, curveSteps));
                         cx = x; cy = y; last = 'A';
                     }
                     break;
@@ -282,7 +287,7 @@ public static class ImageVector
     }
 
     /// <summary>SVG-Ellipsenbogen (Endpunkt-Schreibweise) in Punkte – Umrechnung auf Mittelpunkt und Winkel nach SVG 1.1, Anhang F.6.</summary>
-    static List<(double X, double Y)> Arc(double x1, double y1, double rx, double ry, double rotDeg, bool large, bool sweep, double x2, double y2)
+    static List<(double X, double Y)> Arc(double x1, double y1, double rx, double ry, double rotDeg, bool large, bool sweep, double x2, double y2, int curveSteps = 8)
     {
         if (rx < 1e-12 || ry < 1e-12 || Math.Abs(x1 - x2) < 1e-12 && Math.Abs(y1 - y2) < 1e-12) return [(x2, y2)];
         var phi = rotDeg * Math.PI / 180; double cos = Math.Cos(phi), sin = Math.Sin(phi);
@@ -296,7 +301,8 @@ public static class ImageVector
         var t1 = Ang(1, 0, (x1p - cxp) / rx, (y1p - cyp) / ry);
         var dt = Ang((x1p - cxp) / rx, (y1p - cyp) / ry, (-x1p - cxp) / rx, (-y1p - cyp) / ry);
         if (!sweep && dt > 0) dt -= 2 * Math.PI; else if (sweep && dt < 0) dt += 2 * Math.PI;
-        var n = Math.Clamp((int)Math.Ceiling(Math.Abs(dt) / (Math.PI / 72)), 2, 288); // höchstens 2,5° je Stück
+        var fine = Math.Max(1, curveSteps / 24); // T-0747-fix: feiner für Fräskonturen (CadSvg: 96 → höchstens 0,625° je Stück)
+        var n = Math.Clamp((int)Math.Ceiling(Math.Abs(dt) / (Math.PI / 72 / fine)), 2, 288 * fine); // sonst höchstens 2,5° je Stück
         var res = new List<(double X, double Y)>(n);
         for (var k = 1; k < n; k++)
         {

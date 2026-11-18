@@ -121,26 +121,27 @@ public static class CadDxf
         0 => "ohne Angabe (als mm gelesen)", 1 => "Zoll", 2 => "Fuß", 4 => "mm", 5 => "cm", 6 => "m", 9 => "mil", 10 => "Yard", 14 => "dm", _ => $"Einheit {insunits}",
     };
 
-    public static ReadResult Read(string path)
+    /// <summary>T-0747-fix: Kennung in Trendos eigenen DXF-Dateien (DXF-Kommentar 999 am Dateianfang, wie andere CAD-Programme ihren Namen eintragen).
+    /// Texte aus solchen Dateien bleiben wörtlich – die DXF-Sonderzeichen (%%c, \U+…) werden nur in fremden Dateien umgewandelt.</summary>
+    public const string OwnMarker = "Trendo OS";
+
+    public static ReadResult Read(string path, CancellationToken ct = default)
     {
         if (new FileInfo(path).Length > 64L * 1024 * 1024) throw new CadError("Die DXF-Datei ist zu groß (über 64 MB).");
         var text = Decode(File.ReadAllBytes(path));
         if (text.StartsWith("AutoCAD Binary DXF", StringComparison.Ordinal)) throw new CadError("Binäre DXF-Dateien liest Trendo nicht – bitte als ASCII-DXF speichern.");
-        return Parse(text);
+        return Parse(text, ct);
     }
 
-    /// <summary>T-0747: Text der Datei – UTF-8 (ab AutoCAD 2007 und aus vielen Programmen, auch Trendos eigener Export), sonst Westeuropa wie bisher.</summary>
-    static string Decode(byte[] bytes)
-    {
-        try { return new UTF8Encoding(false, true).GetString(bytes).TrimStart('\uFEFF'); }
-        catch (DecoderFallbackException) { return Encoding.Latin1.GetString(bytes); }
-    }
+    /// <summary>T-0747: Text der Datei – UTF-8 (ab AutoCAD 2007 und aus vielen Programmen, auch Trendos eigener Export), UTF-16 mit Kennung,
+    /// sonst Windows-1252 (T-0747-fix: statt Latin-1, damit €, „ “ und – aus älteren deutschen DXF-Dateien richtig ankommen).</summary>
+    static string Decode(byte[] bytes) => Sys.TextFileCodec.Decode(bytes).Text;
 
     /// <summary>T-0747: DXF-Sonderzeichen in Texten: \U+00B2 → ², %%c → Ø, %%d → °, %%p → ±.</summary>
     static string Unescape(string s) => System.Text.RegularExpressions.Regex.Replace(s, @"\\U\+([0-9A-Fa-f]{4})", m => ((char)Convert.ToInt32(m.Groups[1].Value, 16)).ToString())
         .Replace("%%c", "Ø", StringComparison.OrdinalIgnoreCase).Replace("%%d", "°", StringComparison.OrdinalIgnoreCase).Replace("%%p", "±", StringComparison.OrdinalIgnoreCase);
 
-    public static ReadResult Parse(string text)
+    public static ReadResult Parse(string text, CancellationToken ct = default)
     {
         var lines = text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n');
         var pairs = new List<(int Code, string Value)>(lines.Length / 2);
@@ -150,9 +151,12 @@ public static class CadDxf
             pairs.Add((code, lines[i + 1].TrimEnd()));
         }
         var d = new CadDrawing(); var skipped = new Dictionary<string, int>();
+        var own = pairs.Count > 0 && pairs[0].Code == 999 && pairs[0].Value.Trim().StartsWith(OwnMarker, StringComparison.Ordinal); // T-0747-fix: Trendos eigene Datei
+        string Txt(string s) => own ? s : Unescape(s);
         string section = ""; var p = 0; var units = 0;
         while (p < pairs.Count)
         {
+            if ((p & 4095) == 0) ct.ThrowIfCancellationRequested();
             var (code, val) = pairs[p];
             if (code == 0 && val == "SECTION") { section = p + 1 < pairs.Count && pairs[p + 1].Code == 2 ? pairs[p + 1].Value.Trim() : ""; p += 2; continue; }
             if (code == 0 && val == "ENDSEC") { section = ""; p++; continue; }
@@ -218,13 +222,13 @@ public static class CadDxf
                     // ausgerichteter Text: Ausrichtungspunkt (11/21) gilt, sobald eine Ausrichtung gesetzt ist
                     var aligned = Int(body, 72, 0) != 0 || Int(body, 73, 0) != 0;
                     var x = aligned && Has(body, 11) ? Num(body, 11) : Num(body, 10); var y = aligned && Has(body, 21) ? Num(body, 21) : Num(body, 20);
-                    d.Entities.Add(new CadEntity { Kind = "text", Layer = layer, Points = [[x, y, 0]], Text = Unescape(Str(body, 1) ?? ""), Height = Num(body, 40, 2.5), Rotation = Num(body, 50) });
+                    d.Entities.Add(new CadEntity { Kind = "text", Layer = layer, Points = [[x, y, 0]], Text = Txt(Str(body, 1) ?? ""), Height = Num(body, 40, 2.5), Rotation = Num(body, 50) });
                     break;
                 }
                 case "MTEXT":
                 {
                     var t = string.Concat(body.Where(b => b.Code == 3).Select(b => b.Value)) + (Str(body, 1) ?? "");
-                    t = System.Text.RegularExpressions.Regex.Replace(Unescape(t).Replace("\\P", "\n"), @"\\[A-Za-z][^;\\]*;|[{}]", "");
+                    t = System.Text.RegularExpressions.Regex.Replace(Txt(t).Replace("\\P", "\n"), @"\\[A-Za-z][^;\\]*;|[{}]", "");
                     d.Entities.Add(new CadEntity { Kind = "text", Layer = layer, Points = [[Num(body, 10), Num(body, 20), 0]], Text = t, Height = Num(body, 40, 2.5), Rotation = Num(body, 50) });
                     break;
                 }
@@ -270,6 +274,7 @@ public static class CadDxf
         var sb = new StringBuilder();
         void G(int code, object v) => sb.Append(code).Append('\n').Append(Convert.ToString(v, Inv)).Append('\n');
         static string N(double v) => v.ToString("0.############", Inv);
+        G(999, OwnMarker); // T-0747-fix: Kennung (Kommentar), damit Texte beim Wiedereinlesen wörtlich bleiben
         G(0, "SECTION"); G(2, "HEADER"); G(9, "$ACADVER"); G(1, "AC1009"); G(9, "$INSUNITS"); G(70, 4); G(0, "ENDSEC");
         var layers = d.Layers.Select(l => (l.Name, l.Color, l.Visible)).ToList();
         foreach (var name in (extra ?? []).Select(e => e.Layer).Distinct()) if (layers.All(l => !l.Name.Equals(name, StringComparison.OrdinalIgnoreCase))) layers.Add((name, 8, true));
