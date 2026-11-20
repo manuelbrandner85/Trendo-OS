@@ -186,3 +186,35 @@ Zu den Werten unter −0,002 mm (nur in der Gruppe „dritte Prüfung“, innerh
 **Weiterhin offen:** ELLIPSE/SPLINE/INSERT nur gemeldet · Anzeige sehr großer G-Codes langsam (vorbestehend) · Taschen mit Inseln nicht gemeinsam ausgeräumt · Mehrdeutige Spalten werden nicht automatisch aufgelöst, nur gemeldet.
 
 **Testzahlen T-0747-fix3 (auf main 0.9.106 + Zweig):** Build 0 Fehler. Kern (T0747 alle vier Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests): **104 gesamt, 103 bestanden, 1 übersprungen (vorbestehend „IFC echt“), 0 Fehler**. App: T0747_DxfUi 2/2, T0747_FixUi 3/3, T0747_Fix3RaceUi 4/4, SPEC01_Ui 6/6, SPEC01_UiArc 1/1, SPEC14_Ui 2/2, Bildbearbeitung_Ui 5/5, PlanPhoto_Ui 4/4, N23N24_CadPrintUi 3/3, UebersichtEinfach_Ui 2/2, DeadButtonTests 83/83 – **115/115**. Prüfskript BESTANDEN. Prüfprogramme beider Prüfer: 0 Befunde in 217 Fällen.
+
+## Vierte Prüfung behoben (T-0747-fix4)
+Arbeitskopie `%TEMP%\trendo-auftrag-T-0747-fix4`, Commit obendrauf auf 300f50d92. Keine Maschine angesteuert.
+**Prüfprogramme aller drei Prüfer** (nur als Kopie benutzt bzw. Fallgenerator `gen_p4.py` ausgeführt, nichts im Repo), alle Fälle über `CncJob.ImportDrawing`:
+
+| Fallgruppe | Fälle | mit G-Code | Befunde | schlechtester Abstand − Radius |
+|---|---|---|---|---|
+| Prüfer 2 (Haupt, x1–x3, große Radien) | 162 | 141 | 0 | −0,0010 mm |
+| Prüfer 3 (p3, p3b, p3c, p3d) | 55 | 48 | 0; Haltestege 9/9 richtig | −0,0043 mm (Wahrheit des Generators, siehe dritte Prüfung) |
+| Prüfer 4 (v1–v15) | 72 | 58 | **1** (vorher 9) – siehe unten | −0,0010 mm |
+
+Haltestege in Prüfer 4 (v9/v10/v11): 109 Außenbahnen geprüft, Anhebungen = Stege bzw. „zu kurz“ gemeldet, 0 Abweichungen.
+**Der eine verbleibende Befund ist bewusst so:** `v2_platte_doppelt_fast_gleich_d3` – die Platte ist zweimal gezeichnet, die zweite Kopie 0,0005 mm versetzt. Trendo fasst beide als „doppelt gezeichnet“ zusammen (Auftrag H2: „nahezu deckungsgleich … zusammenfassen und melden“) und fräst den Kreis als Loch (Fräsermitte 1,5 mm innen, Test `Duplicate_outlines`). Die Wahrheitsdatei des Generators enthält aber beide Platten als eigene Konturen; das Prüfprogramm zählt gerade/ungerade über alle wahren Umrisse und hält dadurch die Lochfläche für Material („IM MATERIAL“). Nach Fräser-Logik ist das Loch richtig; würde Trendo dem Prüfprogramm folgen, wäre das Loch um den Fräser-Ø zu groß (genau der Fehler aus H2). Vor dem Fix fiel der Fall nicht auf, weil das Loch damals falsch (außen) gefräst wurde.
+**Clearance (Hinweis v8):** Dokumentiert und gemessen gilt: Bahn ≥ Radius − 0,001 mm zu Trendos Kontur; Kontur ≤ 0,001 mm vom wahren Bogen, also ≥ Radius − 0,002 mm zur wahren Geometrie. Gemessen über alle 289 Fälle: −0,0010 mm. Die −0,0043 (v8) und −0,0024 (u6) aus Prüfer 3 stammen aus dessen Wahrheitsdateien (v8 lässt den Bogen-Endpunkt weg, u6 tastet mit 0,001 Zoll ab) und widersprechen dem Wert nicht.
+
+**Rot-Probe gegen 300f50d92:** Kerntests `T0747_Fix4ViertePruefung` 5 von 5 rot, UI-Tests `T0747_Fix4RaceUi` 3 von 3 rot (nach Schärfen von P2a: auch B hat eine Zeichnung, sonst fiel die falsche Zuordnung nicht auf) – `reports/T-0747/T-0747-fix4-rotprobe.log`.
+
+**H1 DXF-Normale – behoben.** Der gemeinsame Leser `CadDxf.Parse` wertet 210/220/230 für CIRCLE, ARC, LWPOLYLINE und 2D-POLYLINE aus: Normale (0,0,−1) → x gespiegelt, Bögen 180−a1 … 180−a0, Ausbuchtungen umgekehrt. Schräge Normalen werden nicht gelesen und gemeldet („CIRCLE nicht in der Zeichenebene“). Gilt damit auch für Trendo CAD und den Grundriss (Test `Ocs_in_floor_plan`). Test `Ocs_normal_minus_z` (v14-Fälle: Kreis bei −50/20, gespiegelte Polylinie als Loch, Rundrechteck aus Linien und gespiegelten Bögen schließt sich und hat die richtige Fläche).
+
+**H2 doppelte Konturen – behoben.** Deckungsgleiche geschlossene Konturen (jeder Punkt und jede Stückmitte ≤ 0,001 mm vom anderen Zug, in beide Richtungen; Richtung und Startecke egal) werden vor der Tiefenbestimmung zusammengefasst und gemeldet („Kontur 2: doppelt gezeichnet (deckungsgleich mit Kontur 1) – einmal verwendet.“). Teilweise überlappende Konturen berühren sich und werden wie bisher als „zu nah“ abgelehnt und gemeldet. Test `Duplicate_outlines` (LWPOLYLINE doppelt, 8 LINE, umgedreht, andere Startecke, 0,0005 mm versetzt, doppeltes Loch, teilweise Überlappung).
+
+**M1 Loch in einem ausgelassenen offenen Umriss – behoben.** Konturen in oder an einem ausgelassenen offenen Umriss (geschlossene Annäherung: Enden verbunden) gelten als unsicher und werden ausgelassen und gemeldet. Test `Hole_inside_open_outline` (v5b).
+
+**M2 Warteschlange an das Dokument gebunden – behoben.** Gemerkte Änderungen tragen ihr Dokument; nachgerechnet wird nur dort, und nur wenn es noch offen ist (sonst verfallen sie). Ergebnisse aus dem Hintergrund werden nur in noch offene Dokumente übernommen (auch Grundriss). Tests `T0747_Fix4RaceUi.P2a_close_doc`, `P2b_switch_tab`.
+
+**N1 – behoben.** Gefrorene Ebenen (Flag 70 Bit 1) gelten wie ausgeschaltete als unsichtbar: nicht gefräst, gemeldet („Ausgeblendete Ebenen nicht gefräst: HILFE (1)“). **N2 – behoben.** Bögen unter 0,00001° und Linien der Länge 0 sind keine eigenen Konturen. Test `Frozen_layer_and_tiny_pieces`. **N4 – behoben.** Eine zweite Datei während eines Einlesens wird gemerkt und danach in ihr Dokument eingelesen (Test `Second_file_is_queued`).
+
+**Tests:** siehe Testzahlen unten; Rohlogs `T-0747-fix4-*.log`. Belege der früheren Runden unverändert (gleiche Ausgaben).
+
+**Weiterhin offen:** ELLIPSE/SPLINE/INSERT nur gemeldet · Anzeige sehr großer G-Codes langsam (vorbestehend) · Taschen mit Inseln nicht gemeinsam · TEXT mit Normale −Z wird nicht gespiegelt (Texte werden ohnehin nicht gefräst) · der oben erklärte Prüfer-4-Fall bleibt bewusst „rot“.
+
+**Testzahlen T-0747-fix4:** Build 0 Fehler. Kern (alle fünf T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests): **109 gesamt, 108 bestanden, 1 übersprungen (vorbestehend „IFC echt“), 0 Fehler**. App: T0747_DxfUi 2/2, T0747_FixUi 3/3, T0747_Fix3RaceUi 4/4, T0747_Fix4RaceUi 3/3, SPEC01_Ui 6/6, SPEC01_UiArc 1/1, SPEC14_Ui 2/2, Bildbearbeitung_Ui 5/5, PlanPhoto_Ui 4/4, N23N24_CadPrintUi 3/3, UebersichtEinfach_Ui 2/2, DeadButtonTests 83/83 – **118/118**. Prüfskript BESTANDEN. Prüfprogramme: 289 Fälle, 1 Befund (oben erklärt).

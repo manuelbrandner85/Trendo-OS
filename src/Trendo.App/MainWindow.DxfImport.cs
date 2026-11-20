@@ -42,10 +42,10 @@ public partial class MainWindow
         _ = Task.Run(() => { hold?.Wait(ct); return work(ct); }, ct).ContinueWith(t => Dispatcher.UIThread.Post(() =>
         {
             _drawCts = null; _drawKey = null; _drawWhat = null; cts.Dispose();
-            if (t.IsCanceled || t.Exception?.InnerException is OperationCanceledException) { _camQueue.Clear(); _progMsg[key] = $"Vorgang abgebrochen – nichts geändert ({what})."; _progErr.Remove(key); Show(key); return; }
-            if (t.Exception?.InnerException is { } ex && onError is not null && onError(ex)) { Show(key); if (key == CK) CncRunQueued(); return; }
+            if (t.IsCanceled || t.Exception?.InnerException is OperationCanceledException) { _camQueue.Clear(); _importQueue.Clear(); _progMsg[key] = $"Vorgang abgebrochen – nichts geändert ({what})."; _progErr.Remove(key); Show(key); return; }
+            if (t.Exception?.InnerException is { } ex && onError is not null && onError(ex)) { Show(key); if (key == CK) CncRunQueued(); else CncRunQueuedImport(); return; }
             ProgramRun(key, () => { if (t.Exception?.InnerException is { } e2) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw(e2); t.Result(); });
-            if (key == CK) CncRunQueued(); // T-0747-fix3: zwischendurch geänderte Werte nachrechnen
+            if (key == CK) CncRunQueued(); else CncRunQueuedImport(); // T-0747-fix3/-fix4: zwischendurch geänderte Werte bzw. gewählte Dateien nachholen
         }), TaskScheduler.Default);
     }
 
@@ -83,6 +83,7 @@ public partial class MainWindow
 
     string CncDrawingApply(ProgramDocument d, string path, CncJob j, CamResult r, string? snapshot = null)
     {
+        if (snapshot is not null && !DocOpen(CK, d)) return _progMsg[CK] = $"„{Path.GetFileName(path)}“: das Dokument wurde inzwischen geschlossen – nichts eingelesen."; // T-0747-fix4
         if (snapshot is not null && d.Data.ToJsonString() != snapshot) // T-0747-fix3: Dokument hat sich während des Einlesens geändert
             return _progMsg[CK] = $"⚠ Während „{Path.GetFileName(path)}“ eingelesen wurde, hat sich das Dokument geändert – das Ergebnis wurde verworfen, damit nichts überschrieben wird. Bitte noch einmal einlesen.";
         var key = j.CamSettingsKey();
@@ -96,10 +97,18 @@ public partial class MainWindow
 
     /// <summary>T-0747-fix2: Datei aus Dateiauswahl oder Ziehen und Ablegen einlesen – immer im Hintergrund mit „Abbrechen“ (auch kleine Dateien
     /// können lange rechnen, z. B. ein Zickzack mit vielen Punkten).</summary>
-    public void ImportDrawingFile(string key, string path)
+    public void ImportDrawingFile(string key, string path) => ImportDrawingFile(key, path, null);
+
+    void ImportDrawingFile(string key, string path, ProgramDocument? target)
     {
         if (!File.Exists(path)) throw new FileNotFoundException("Diese Datei gibt es nicht.");
-        var d = ProgramActive(key) ?? throw new InvalidOperationException(key == AK ? "Es ist kein Grundriss offen." : "Es ist kein CNC-Programm offen.");
+        var d = target ?? ProgramActive(key) ?? throw new InvalidOperationException(key == AK ? "Es ist kein Grundriss offen." : "Es ist kein CNC-Programm offen.");
+        if (_drawCts is not null) // T-0747-fix4: läuft schon etwas, wird die Datei danach eingelesen statt mit Fehler abgewiesen
+        {
+            _importQueue.Add((key, path, d));
+            _progMsg[key] = $"„{Path.GetFileName(path)}“ wird eingelesen, sobald die laufende Arbeit fertig ist.";
+            return;
+        }
         var name = Path.GetFileName(path);
         if (key == AK)
         {
@@ -111,6 +120,7 @@ public partial class MainWindow
                 return () =>
                 {
                     // Ergebnis gilt nur für den Stand beim Start; wurde inzwischen etwas geändert, wird auf dem neuen Stand noch einmal eingesetzt
+                    if (!DocOpen(AK, d)) { _progMsg[AK] = $"„{name}“: der Grundriss wurde inzwischen geschlossen – nichts eingelesen."; return; } // T-0747-fix4
                     PlanDxfReport? rep2 = null;
                     Readable(() => d.Edit($"DXF „{name}“ einlesen", x => { if (x.ToJsonString() == snapshot) p.WriteTo(x); else { var q = FloorPlan.From(x); rep2 = PlanDxfImport.Import(q, dxf, opts); q.WriteTo(x); } }));
                     ArchDxfDone(path, rep2 ?? rep);
@@ -146,7 +156,7 @@ public partial class MainWindow
     {
         if (_drawCts is not null && _drawKey == CK) // T-0747-fix3: läuft schon eine Rechnung, wird die Änderung danach übernommen statt verworfen
         {
-            _camQueue.Add((label, change, viaSetting));
+            _camQueue.Add((d, label, change, viaSetting)); // T-0747-fix4: an das Dokument gebunden
             return _progMsg[CK] = $"„{label}“ wird übernommen, sobald die laufende Rechnung fertig ist.";
         }
         var j = CncJob.From(d.Data); change(j);
@@ -158,25 +168,41 @@ public partial class MainWindow
             var r = CncCam.Generate(contours, settings, ct); Cnc.Analyse(r.Gcode);
             return () =>
             {
+                if (!DocOpen(CK, d)) return; // T-0747-fix4: Dokument inzwischen geschlossen – Ergebnis verfällt
                 if (d.Data.ToJsonString() != snap) { _progMsg[CK] = StaleResultMessage; return; }
                 CncEdit(d, label, x => { change(x); x.SetCamGcode(r.Gcode, key); });
                 CncStop(); _cncT = -1;
                 _progMsg[CK] = CncCamMessage(j, r);
             };
-        }, onError is null ? null : ex => { if (d.Data.ToJsonString() != snap) { _progMsg[CK] = StaleResultMessage; return true; } return onError(ex); });
+        }, onError is null ? null : ex => { if (!DocOpen(CK, d)) return true; if (d.Data.ToJsonString() != snap) { _progMsg[CK] = StaleResultMessage; return true; } return onError(ex); });
         return _progMsg[CK];
     }
 
     const string StaleResultMessage = "⚠ Während der Rechnung wurde die Zeichnung, der G-Code oder ein Wert geändert (z. B. Rückgängig oder von Hand) – das Ergebnis passt nicht mehr und wurde verworfen. Bei Bedarf „Bahnen neu“ drücken.";
 
     /// <summary>T-0747-fix3: Änderungen, die während einer laufenden Bahnberechnung kommen; nach dem Ende als ein Schritt nachgerechnet.</summary>
-    readonly List<(string Label, Action<CncJob> Change, bool ViaSetting)> _camQueue = [];
+    readonly List<(ProgramDocument Doc, string Label, Action<CncJob> Change, bool ViaSetting)> _camQueue = [];
+    /// <summary>T-0747-fix4: Dateien, die während eines laufenden Einlesens gewählt wurden – danach in ihr Dokument eingelesen.</summary>
+    readonly List<(string Key, string Path, ProgramDocument Doc)> _importQueue = [];
+    bool DocOpen(string key, ProgramDocument d) => ProgramDocs(key).Contains(d);
+
+    /// <summary>T-0747-fix4: nächste gemerkte Datei einlesen (nur, wenn ihr Dokument noch offen ist).</summary>
+    void CncRunQueuedImport()
+    {
+        if (_drawCts is not null) return;
+        _importQueue.RemoveAll(it => !DocOpen(it.Key, it.Doc));
+        if (_importQueue.Count == 0) return;
+        var (key, path, doc) = _importQueue[0]; _importQueue.RemoveAt(0);
+        ProgramRun(key, () => ImportDrawingFile(key, path, doc));
+    }
 
     void CncRunQueued()
     {
-        if (_camQueue.Count == 0 || _drawCts is not null) return;
-        var q = _camQueue.ToList(); _camQueue.Clear();
-        if (ProgramActive(CK) is not { } d) return;
+        if (_drawCts is not null) return;
+        _camQueue.RemoveAll(it => !DocOpen(CK, it.Doc)); // T-0747-fix4: geschlossene Dokumente – ihre Änderungen verfallen
+        if (_camQueue.Count == 0) { CncRunQueuedImport(); return; }
+        var d = _camQueue[0].Doc; // T-0747-fix4: nur das Dokument, zu dem die Änderungen gehören – nicht das gerade aktive
+        var q = _camQueue.Where(it => it.Doc == d).ToList(); _camQueue.RemoveAll(it => it.Doc == d);
         void All(CncJob x) { foreach (var it in q) it.Change(x); }
         var label = string.Join(", ", q.Select(it => it.Label).Distinct());
         ProgramRun(CK, () => { if (q.All(it => it.ViaSetting)) CncSettingChanged(d, label, All, true); else CncCamApply(d, label, All); });

@@ -92,10 +92,25 @@ public static class CncCam
         if (s.ToOrigin) { sx = -source.Min(c => c.Pts.Min(p => p.X)); sy = -source.Min(c => c.Pts.Min(p => p.Y)); }
         var cs = source.Select(c => c with { Pts = c.Pts.Select(p => (p.X + sx, p.Y + sy)).ToList() }).ToList();
         string Name(int i) => $"Kontur {i + 1}" + (cs[i].Layer is { Length: > 0 } and not "0" ? $" (Ebene {cs[i].Layer})" : "");
+        // T-0747-fix4: doppelt gezeichnete (deckungsgleiche) geschlossene Konturen – egal welche Richtung oder Startecke – nur einmal verwenden. Sonst zählt
+        // ein Loch in einer doppelten Platte zwei Umrisse und wird als „außen“ gefräst (um den Fräser-Ø zu groß).
+        var dup = new bool[cs.Count];
+        for (var i = 0; i < cs.Count; i++)
+        {
+            if (!cs[i].Closed || dup[i]) continue;
+            for (var j = i + 1; j < cs.Count; j++)
+            {
+                if (!cs[j].Closed || dup[j]) continue;
+                ct.ThrowIfCancellationRequested();
+                if (!Coincident(cs[i].Pts, cs[j].Pts, DupTol)) continue;
+                dup[j] = true;
+                warn.Add($"{Name(j)}: doppelt gezeichnet (deckungsgleich mit Kontur {i + 1}) – einmal verwendet.");
+            }
+        }
         // T-0747-fix: selbst schneidende Konturen (Acht) ablehnen – innen und außen sind dort nicht eindeutig
         var crossing = new bool[cs.Count];
         for (var i = 0; i < cs.Count; i++)
-            if (cs[i].Closed && s.Mode != "auf" && SelfIntersects(cs[i].Pts))
+            if (cs[i].Closed && !dup[i] && s.Mode != "auf" && SelfIntersects(cs[i].Pts))
             {
                 crossing[i] = true;
                 warn.Add($"{Name(i)} ausgelassen: die Kontur kreuzt sich selbst (z. B. eine Acht) – dann ist nicht klar, was innen und außen ist. Bitte in der Zeichnung in einzelne geschlossene Umrisse auflösen.");
@@ -105,17 +120,22 @@ public static class CncCam
         var unsure = new bool[cs.Count];
         for (var j = 0; j < cs.Count; j++)
         {
-            if (!crossing[j]) continue;
+            // T-0747-fix4: auch ein ausgelassener offener Umriss (über seine geschlossene Annäherung: Enden verbunden) macht die Deutung darin unsicher
+            var openOutline = !cs[j].Closed && s.Mode != "auf" && cs[j].Pts.Count >= 3 && Math.Abs(CncCam.SignedArea(cs[j].Pts)) > 1e-6;
+            if (!crossing[j] && !openOutline) continue;
             var bj = cs[j].Box;
             for (var i = 0; i < cs.Count; i++)
             {
-                if (i == j || crossing[i] || unsure[i]) continue;
+                if (i == j || crossing[i] || unsure[i] || dup[i] || !cs[i].Closed && !openOutline) continue;
                 ct.ThrowIfCancellationRequested();
                 var bi = cs[i].Box; if (bi.MaxX < bj.MinX || bi.MinX > bj.MaxX || bi.MaxY < bj.MinY || bi.MinY > bj.MaxY) continue;
                 var pr = cs[i].Pts[0]; // T-0747-fix3: auch doppelt umlaufene Bereiche (Windungszahl ≠ 0, z. B. Limaçon) zählen als „in der Kontur“
                 if (!cs[j].Contains(pr.X, pr.Y) && Winding(cs[j].Pts, pr) == 0 && !Touches(cs[i].Pts, cs[i].Closed, cs[j].Pts)) continue;
+                if (!cs[i].Closed) continue; // offene Konturen werden ohnehin nur als Gravur gefräst
                 unsure[i] = true;
-                warn.Add($"{Name(i)} ausgelassen: liegt in oder an Kontur {j + 1}, die sich selbst kreuzt – ob sie Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte die Zeichnung bereinigen.");
+                warn.Add(crossing[j]
+                    ? $"{Name(i)} ausgelassen: liegt in oder an Kontur {j + 1}, die sich selbst kreuzt – ob sie Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte die Zeichnung bereinigen."
+                    : $"{Name(i)} ausgelassen: liegt in oder an der offenen Kontur {j + 1} – ob sie Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte den Umriss in der Zeichnung schließen.");
             }
         }
         // Art je Kontur
@@ -124,7 +144,7 @@ public static class CncCam
         {
             if (!cs[i].Closed) { kinds[i] = "auf"; continue; }
             var probe = cs[i].Pts[0];
-            depth[i] = cs.Where((c, j) => j != i && c.Closed && !crossing[j] && Math.Abs(c.SignedArea) > Math.Abs(cs[i].SignedArea) && c.Contains(probe.X, probe.Y)).Count();
+            depth[i] = cs.Where((c, j) => j != i && c.Closed && !crossing[j] && !dup[j] && Math.Abs(c.SignedArea) > Math.Abs(cs[i].SignedArea) && c.Contains(probe.X, probe.Y)).Count();
             kinds[i] = s.Mode switch { "aussen" => "aussen", "innen" => "innen", "auf" => "auf", _ => depth[i] % 2 == 0 ? "aussen" : "innen" };
         }
         // Bahnen je Kontur (noch ungeprüft)
@@ -132,7 +152,7 @@ public static class CncCam
         for (var i = 0; i < cs.Count; i++)
         {
             ct.ThrowIfCancellationRequested();
-            if (crossing[i] || unsure[i]) continue;
+            if (crossing[i] || unsure[i] || dup[i]) continue;
             var c = cs[i];
             if (!c.Closed && s.Mode != "auf") // T-0747-fix2: offene Kontur nur ausdrücklich als Gravur
             {
@@ -165,7 +185,7 @@ public static class CncCam
         }
         // T-0747-fix: jede Bahn gegen ALLE geschlossenen Konturen prüfen (Strecke zu Strecke)
         // T-0747-fix3: ALLE Konturen sind Hindernis – auch offene und ausgelassene (ein offener Umriss ist trotzdem ein Teil)
-        var obstacles = BuildGrid(cs.Select((c, i) => ((IReadOnlyList<(double X, double Y)>)c.Pts, c.Closed, i)), r);
+        var obstacles = BuildGrid(cs.Select((c, i) => ((IReadOnlyList<(double X, double Y)>)c.Pts, c.Closed, i)).Where(t => !dup[t.i]), r); // Doppel nur einmal
         var paths = new List<CamPath>();
         for (var i = 0; i < cs.Count; i++)
         {
@@ -442,6 +462,30 @@ public static class CncCam
     }
 
     // ---------------------------------------------------------------- Prüfungen
+
+    /// <summary>T-0747-fix4: Toleranz für „deckungsgleich“ (doppelt gezeichnete Konturen).</summary>
+    public const double DupTol = 0.001;
+
+    /// <summary>T-0747-fix4: Sind zwei geschlossene Züge deckungsgleich (jeder Punkt des einen höchstens <paramref name="tol"/> vom anderen Zug,
+    /// in beide Richtungen, auch Stückmitten)? Richtung und Startecke spielen keine Rolle.</summary>
+    public static bool Coincident(List<(double X, double Y)> a, List<(double X, double Y)> b, double tol)
+    {
+        var (ax0, ay0, ax1, ay1) = (a.Min(p => p.X), a.Min(p => p.Y), a.Max(p => p.X), a.Max(p => p.Y));
+        var (bx0, by0, bx1, by1) = (b.Min(p => p.X), b.Min(p => p.Y), b.Max(p => p.X), b.Max(p => p.Y));
+        if (Math.Abs(ax0 - bx0) > tol || Math.Abs(ay0 - by0) > tol || Math.Abs(ax1 - bx1) > tol || Math.Abs(ay1 - by1) > tol) return false;
+        if (Math.Abs(Math.Abs(SignedArea(a)) - Math.Abs(SignedArea(b))) > tol * (Length(a, true) + Length(b, true))) return false;
+        static bool Covered(List<(double X, double Y)> p, List<(double X, double Y)> q, double tol)
+        {
+            var g = BuildGrid([((IReadOnlyList<(double X, double Y)>)q, true, 0)], Math.Max(tol * 4, AvgLen(q, true)));
+            for (var i = 0; i < p.Count; i++)
+            {
+                var u = p[i]; var v = p[(i + 1) % p.Count]; (double X, double Y) m = ((u.X + v.X) / 2, (u.Y + v.Y) / 2);
+                if (!g.AnyWithin(u, tol + 1e-9) || !g.AnyWithin(m, tol + 1e-9)) return false;
+            }
+            return true;
+        }
+        return Covered(a, b, tol) && Covered(b, a, tol);
+    }
 
     /// <summary>T-0747-fix2: berührt oder schneidet der Zug <paramref name="a"/> den geschlossenen Zug <paramref name="b"/>?</summary>
     static bool Touches(List<(double X, double Y)> a, bool aClosed, List<(double X, double Y)> b)

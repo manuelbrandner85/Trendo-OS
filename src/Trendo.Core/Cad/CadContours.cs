@@ -51,8 +51,10 @@ public static class CadContours
             {
                 case "kreis" when e.R > 0:
                     closed.Add(new CadContour(e.Outline(Segments(e.R, 2 * Math.PI, chord)), true, e.Layer)); break;
+                case "bogen" when e.R > 0 && Sweep(e) < 1e-5: break; // T-0747-fix4: winziger Bogen (< 0,00001°) ist keine eigene Kontur
                 case "bogen" when e.R > 0:
                     open.Add(new CadContour(e.Outline(Segments(e.R, 2 * Math.PI, chord)), false, e.Layer)); break;
+                case "linie" when e.Points.Count >= 2 && Dist((e.Points[0][0], e.Points[0][1]), (e.Points[1][0], e.Points[1][1])) < DupTol: break; // T-0747-fix4: Linie der Länge 0
                 case "linie" when e.Points.Count >= 2:
                     open.Add(new CadContour([(e.Points[0][0], e.Points[0][1]), (e.Points[1][0], e.Points[1][1])], false, e.Layer)); break;
                 case "polylinie" when e.Points.Count >= 2:
@@ -180,6 +182,8 @@ public static class CadContours
         done.AddRange(open.Select(o => new CadContour(o.Pts, false, o.Layer)));
         return done;
     }
+
+    static double Sweep(CadEntity e) { var sw = (e.A1 - e.A0) % 360; if (sw < 0) sw += 360; return sw < 1e-12 ? 360 : sw; } // ARC von a0 nach a1 gegen den Uhrzeigersinn; gleich = Vollkreis
 
     static double Dist((double X, double Y) a, (double X, double Y) b) => Math.Sqrt((a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y));
 

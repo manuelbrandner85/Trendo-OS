@@ -173,12 +173,28 @@ public static class CadDxf
             if (section == "TABLES" && val == "LAYER")
             {
                 var name = Str(body, 2);
-                if (name is { Length: > 0 }) { var l = d.Layer(name); var c = Int(body, 62, 7); l.Color = Math.Abs(c) is >= 1 and <= 255 ? Math.Abs(c) : 7; l.Visible = c >= 0; }
+                if (name is { Length: > 0 }) { var l = d.Layer(name); var c = Int(body, 62, 7); l.Color = Math.Abs(c) is >= 1 and <= 255 ? Math.Abs(c) : 7; l.Visible = c >= 0 && (Int(body, 70, 0) & 1) == 0; } // T-0747-fix4: ausgeschaltet (Farbe < 0) oder gefroren (Flag 1) = unsichtbar
                 continue;
             }
             if (section != "ENTITIES" && section != "BLOCKS") continue;
             if (section == "BLOCKS") { if (val is not ("BLOCK" or "ENDBLK")) Count(skipped, "Element in Blockdefinition"); continue; }
             var layer = Str(body, 8) is { Length: > 0 } ln ? ln : "0";
+            // T-0747-fix4: Extrusionsrichtung (210/220/230). CIRCLE, ARC, LWPOLYLINE und 2D-POLYLINE liegen im Objekt-Koordinatensystem; bei der
+            // Normale (0,0,−1) ist Welt-x = −x (gespiegelt, Bogenrichtung umgekehrt). Schräge Normalen liegen nicht in der Zeichenebene → nicht gelesen, gemeldet.
+            var flip = false;
+            if (val is "CIRCLE" or "ARC" or "LWPOLYLINE" or "POLYLINE" && (Has(body, 210) || Has(body, 220) || Has(body, 230)))
+            {
+                double ex = Num(body, 210), ey = Num(body, 220), ez = Num(body, 230, 1), el = Math.Sqrt(ex * ex + ey * ey + ez * ez);
+                if (el > 1e-12) { ex /= el; ey /= el; ez /= el; }
+                if (el <= 1e-12 || Math.Abs(ex) > 1e-9 || Math.Abs(ey) > 1e-9)
+                {
+                    Count(skipped, $"{val} nicht in der Zeichenebene");
+                    if (val == "POLYLINE") SkipVertices(pairs, ref p);
+                    continue;
+                }
+                flip = ez < 0;
+            }
+            var before = d.Entities.Count;
             switch (val)
             {
                 case "LINE":
@@ -235,6 +251,7 @@ public static class CadDxf
                 case "SEQEND" or "VERTEX": break;
                 default: Count(skipped, val); break;
             }
+            if (flip) for (var i = before; i < d.Entities.Count; i++) Mirror(d.Entities[i]); // T-0747-fix4
             _ = start;
         }
         foreach (var name in d.Entities.Select(e => e.Layer).Distinct().ToList()) d.Layer(name);
@@ -244,6 +261,14 @@ public static class CadDxf
         return new ReadResult(d, skipped) { Units = units, MmPerUnit = k };
 
         static void Count(Dictionary<string, int> s, string k) => s[k] = s.GetValueOrDefault(k) + 1;
+        // Normale (0,0,−1): x spiegeln; Bögen laufen danach in Weltrichtung wieder gegen den Uhrzeigersinn (Winkel 180−a1 … 180−a0), Ausbuchtungen umgekehrt
+        static void Mirror(CadEntity e)
+        {
+            e.Cx = -e.Cx;
+            if (e.Kind == "bogen") { var (a0, a1) = (e.A0, e.A1); e.A0 = Norm(180 - a1); e.A1 = Norm(180 - a0); }
+            foreach (var pt in e.Points) { pt[0] = -pt[0]; if (pt.Length > 2) pt[2] = -pt[2]; }
+        }
+        static double Norm(double a) { a %= 360; return a < 0 ? a + 360 : a; }
         static void SkipVertices(List<(int Code, string Value)> pairs, ref int p)
         {
             while (p < pairs.Count && !(pairs[p].Code == 0 && pairs[p].Value == "SEQEND")) p++;
