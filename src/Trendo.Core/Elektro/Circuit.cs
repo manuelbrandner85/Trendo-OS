@@ -23,15 +23,19 @@ public sealed class Circuit
     public Circuit Clone() => JsonSerializer.Deserialize<Circuit>(JsonSerializer.Serialize(this, Opt), Opt)!;
     public Part? Part(string id) => Parts.FirstOrDefault(p => p.Id == id);
 
-    public Part Add(string kind, int x1, int y1, int x2, int y2, double? value = null)
+    public Part Add(string kind, int x1, int y1, int x2, int y2, double? value = null) => Add(kind, x1, y1, x2, y2, value, null);
+
+    /// <summary>T-0748-fix2: mit festem Namen (z. B. Bezeichner aus KiCad) – dann ohne Namenssuche über alle Bauteile.</summary>
+    public Part Add(string kind, int x1, int y1, int x2, int y2, double? value, string? name)
     {
         var info = PartTypes.Get(kind);
         if (kind != "masse" && x1 == x2 && y1 == y2) throw new ArgumentException("Das Bauteil braucht zwei verschiedene Anschlusspunkte.");
-        var p = new Part { Kind = kind, X1 = x1, Y1 = y1, X2 = x2, Y2 = y2, Value = value ?? info.Default, Name = NextName(info.Prefix) };
+        var p = new Part { Kind = kind, X1 = x1, Y1 = y1, X2 = x2, Y2 = y2, Value = value ?? info.Default, Name = name ?? NextName(info.Prefix) };
         Parts.Add(p); return p;
     }
 
-    string NextName(string prefix) { if (prefix == "") return ""; var n = 1; while (Parts.Any(p => p.Name == prefix + n)) n++; return prefix + n; }
+    // T-0748-fix: Namen einmal in eine Menge – vorher je Versuch eine Suche über alle Bauteile (KiCad-Import mit 3000 Teilen: über eine Minute)
+    string NextName(string prefix) { if (prefix == "") return ""; var used = Parts.Select(p => p.Name).ToHashSet(); var n = 1; while (used.Contains(prefix + n)) n++; return prefix + n; }
 
     public bool Remove(string id) => Parts.RemoveAll(p => p.Id == id) > 0;
 

@@ -1,0 +1,23 @@
+# T-0749 Prüfung Einrichten-Weg COLMAP – 2026-11-17 22:09:26 (nur Metadaten, nichts heruntergeladen)
+## Katalog (src/Trendo.Core/Dependencies.cs)
+85:        new("colmap", "COLMAP", "Gegenstände aus Fotos als 3D-Modell rechnen", "BSD-3-Clause", DeliveryMode.Included,
+86-            "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin",
+87-            null, 122, "https://github.com/colmap/colmap/releases/tag/4.2.1", ["colmap"],
+88-            [@"%LOCALAPPDATA%\TrendoWerkzeuge\colmap\bin\colmap.exe", @"%LOCALAPPDATA%\TrendoWerkzeuge\colmap\*\bin\colmap.exe", @"%ProgramFiles%\COLMAP\bin\colmap.exe", "/usr/bin/colmap", "/usr/local/bin/colmap"],
+89-            null, "https://github.com/colmap/colmap/releases/download/4.2.1/colmap-x64-windows-nocuda.zip", "c493d88cb4a43f21afba42cb55bf786e5434a0420e73db0ba1454c5d8b3686ae"),
+## GitHub-API colmap/colmap Release 4.2.1 (Asset-Digest vom Hersteller-Repo)
+4.2.1 2026-09-29T13:42:54Z
+colmap-arm64-macos.zip 83073913 sha256:1fe9d65bddd61e0598f3087641cb14c4d4d4c74529e9f58911e8a5238a140a04
+colmap-x64-windows-cuda.zip 414666626 sha256:e9c5cbd84c2ea986d2e970a2473fc2d2e6b34a2cdcf5d3df2765c319a63af881
+colmap-x64-windows-nocuda.zip 127731595 sha256:c493d88cb4a43f21afba42cb55bf786e5434a0420e73db0ba1454c5d8b3686ae
+## Trendo-Vollpaket v0.9.15 manifest.json, Eintrag colmap
+{"id": "colmap", "name": "COLMAP", "version": "4.2.1", "license": "BSD-3-Clause", "file": "colmap.zip", "sha256": "991112ffcfc5e762b4fd7cdb1c45b155602a2e29c7e6470d9bf3461ee047969b", "bytes": 124683091, "exe": "bin/colmap.exe", "source_url": "https://github.com/colmap/colmap/releases/download/4.2.1/colmap-x64-windows-nocuda.zip", "source_sha256": "c493d88cb4a43f21afba42cb55bf786e5434a0420e73db0ba1454c5d8b3686ae", "source_sha256_from_vendor": true}
+## GitHub-API Trendo-OS Release v0.9.15 (Asset-Digest)
+colmap.zip 124683091 sha256:991112ffcfc5e762b4fd7cdb1c45b155602a2e29c7e6470d9bf3461ee047969b
+manifest.json 11024 sha256:707bc57a27100b1f038047235d16d13ca6a1eb5ff8bb5729ee65ec191a503ed7
+## latest/download/manifest.json
+HTTP/1.1 302 Found
+Location: https://github.com/manuelbrandner85/Trendo-OS/releases/download/v0.9.105/manifest.json
+HTTP/1.1 404 Not Found
+## Installierte Fassung auf diesem PC
+COLMAP 4.2.1 (Commit bd1fcf6 on 2026-09-29 without GPU support, boost hash maps)

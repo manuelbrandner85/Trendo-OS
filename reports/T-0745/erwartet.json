@@ -1,0 +1,44 @@
+{
+  "parts": [
+    {
+      "name": "Vorderteil",
+      "area_cm2": 3629.742,
+      "perimeter_cm": 254.932,
+      "cut_w_cm": 56.4,
+      "cut_h_cm": 79.362
+    },
+    {
+      "name": "R\u00FCckenteil",
+      "area_cm2": 3476.933,
+      "perimeter_cm": 233.184,
+      "cut_w_cm": 56.4,
+      "cut_h_cm": 74.261
+    },
+    {
+      "name": "\u00C4rmel rechts",
+      "area_cm2": 642.715,
+      "perimeter_cm": 100.21,
+      "cut_w_cm": 35.652,
+      "cut_h_cm": 29.806
+    },
+    {
+      "name": "\u00C4rmel links",
+      "area_cm2": 642.715,
+      "perimeter_cm": 100.21,
+      "cut_w_cm": 35.652,
+      "cut_h_cm": 29.806
+    },
+    {
+      "name": "Halsb\u00FCndchen",
+      "area_cm2": 98.608,
+      "perimeter_cm": 94.044,
+      "cut_w_cm": 47.222,
+      "cut_h_cm": 4.6
+    }
+  ],
+  "template_front": {
+    "area_cm2": 3360.089,
+    "perimeter_cm": 244.932,
+    "cut_h_cm": 74.364
+  }
+}

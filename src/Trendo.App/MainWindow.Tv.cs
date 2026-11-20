@@ -61,11 +61,19 @@ public sealed class MpvView : NativeControlHost
         Kill();
         if (_hwnd == IntPtr.Zero || MpvPath is null || !File.Exists(MpvPath)) return;
         var psi = new ProcessStartInfo(MpvPath) { UseShellExecute = false, CreateNoWindow = true };
-        foreach (var a in ExtraArgs) psi.ArgumentList.Add(a);
-        foreach (var a in new[] { $"--wid={_hwnd}", "--no-terminal", "--force-window=yes", "--keep-open=yes", "--idle=yes", "--osc=yes", "--input-vo-keyboard=no", $"--user-agent={Xtream.UserAgent}", "--cache=yes",
-                     "--demuxer-max-back-bytes=1GiB", "--demuxer-max-bytes=150MiB", "--hwdec=auto-safe", $"--input-ipc-server=\\\\.\\pipe\\{Pipe}", Muted ? "--mute=yes" : "--mute=no", url })
-            psi.ArgumentList.Add(a);
+        foreach (var a in Args(_hwnd.ToString(), Pipe, Muted, url)) psi.ArgumentList.Add(a);
         try { _proc = Process.Start(psi); } catch (System.ComponentModel.Win32Exception) { _proc = null; }
+    }
+
+    /// <summary>T-0746: Aufruf von mpv für eine Adresse – an einer Stelle, damit der Echtlauf genau diese Einstellungen mit dem echten mpv prüft.
+    /// <paramref name="wid"/> = Fenster, in das mpv zeichnet (null: kein eingebettetes Fenster).</summary>
+    public static List<string> Args(string? wid, string pipe, bool muted, string url)
+    {
+        var a = new List<string>(ExtraArgs);
+        if (wid is not null) a.Add($"--wid={wid}");
+        a.AddRange(["--no-terminal", "--force-window=yes", "--keep-open=yes", "--idle=yes", "--osc=yes", "--input-vo-keyboard=no", $"--user-agent={Xtream.UserAgent}", "--cache=yes",
+            "--demuxer-max-back-bytes=1GiB", "--demuxer-max-bytes=150MiB", "--hwdec=auto-safe", $"--input-ipc-server=\\\\.\\pipe\\{pipe}", muted ? "--mute=yes" : "--mute=no", url]);
+        return a;
     }
 
     /// <summary>Befehl an mpv (JSON-IPC). false, wenn mpv nicht läuft.</summary>
@@ -149,6 +157,8 @@ public partial class MainWindow
     /// <summary>Für Tests: letzte Meldung im Studio.</summary>
     public string TvMessage => _tvMsg;
     public string? TvCurrent => _tvChannel;
+    /// <summary>T-0746: Adresse, die der Haupt-Player gerade spielt (null = nichts).</summary>
+    public string? TvPlayerUrl => _tvPlayer?.Url;
 
     void InitTv()
     {
@@ -422,7 +432,8 @@ public partial class MainWindow
             if (Tv.Reveal(c.Url) is not { } recUrl) { Tv.UpdateRecording(r.Id, "Passwort fehlt"); continue; }
             if (TvRecordOverride is { } o) { o(recUrl, file, secs); Tv.UpdateRecording(r.Id, "läuft", file); continue; }
             if (FfmpegExe is null) { Tv.UpdateRecording(r.Id, "ffmpeg fehlt"); continue; }
-            var psi = new ProcessStartInfo(FfmpegExe) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardError = false };
+            // T-0746: Eingabe offen halten – „Beenden“ schickt „q“, damit FFmpeg die Datei sauber abschließt (vorher: hart beendet)
+            var psi = new ProcessStartInfo(FfmpegExe) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardError = false, RedirectStandardInput = true };
             foreach (var a in new[] { "-hide_banner", "-loglevel", "error", "-y", "-user_agent", Xtream.UserAgent, "-i", recUrl, "-c", "copy", "-t", secs.ToString(), file }) psi.ArgumentList.Add(a);
             try
             {
@@ -444,7 +455,16 @@ public partial class MainWindow
 
     public void TvStopRecording(string id)
     {
-        if (_tvRecProcs.Remove(id, out var p)) try { if (!p.HasExited) p.Kill(true); } catch (InvalidOperationException) { }
+        if (_tvRecProcs.Remove(id, out var p))
+            try
+            {
+                if (!p.HasExited)
+                {
+                    try { p.StandardInput.Write("q"); p.StandardInput.Flush(); } catch (Exception e) when (e is IOException or InvalidOperationException) { }
+                    if (!p.WaitForExit(5000)) p.Kill(true);
+                }
+            }
+            catch (Exception e) when (e is InvalidOperationException or System.ComponentModel.Win32Exception) { }
         Tv.UpdateRecording(id, "fertig");
     }
 

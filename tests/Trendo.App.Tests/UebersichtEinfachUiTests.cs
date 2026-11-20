@@ -132,7 +132,15 @@ public class UebersichtEinfach_Ui(ITestOutputHelper log)
         // T-0740: in „Einfach“ über die Menüleiste (geprüft in T0740Gegenpruefung_Ui.Simple_export_via_menu) und den Knopf „Vorhersagen speichern …“ auf der Arbeitsfläche
         ("prog-export-pred", "Menüleiste „Datei ▸ Exportieren ▸ Vorhersagen (.csv)“ und Knopf „Vorhersagen speichern …“ auf der Arbeitsfläche"),
         // T-0739: Fragenreihe im Modellvergleich – Export ebenso über die Menüleiste (alle spec.Exports, jede Stufe)
+        // T-0745: Schnitt-Editor – in „Einfach“ ohne Leiste; dieselben Befehle im Rechtsklick-Menü der Schnittfläche (garment-edit-menu-…) und über Doppelklick/Einfg, Entf, K.
+        // Gegenprüfung: genau die vier Knöpfe der Leiste, kein Präfix (geprüft in GarmentEdit_Ui.Levels, dort wird der Menüeintrag in „Einfach“ wirklich geklickt)
+        ("garment-edit-insert", "Rechtsklick-Menü der Schnittfläche „Punkt hier einfügen“, Doppelklick auf die Kante, Einfg"),
+        ("garment-edit-delete", "Rechtsklick-Menü der Schnittfläche „Punkt löschen“, Entf"),
+        ("garment-edit-toggle", "Rechtsklick-Menü der Schnittfläche „Kante als Kurve“ / „Kante als Gerade“, K"),
+        ("garment-edit-reset", "Rechtsklick-Menü der Schnittfläche „Teil auf die Vorlage zurücksetzen“"),
         ("prog-export-reihe-csv", "Menüleiste „Datei ▸ Exportieren ▸ Fragenreihe (.csv)“"), ("prog-export-reihe-md", "Menüleiste „Datei ▸ Exportieren ▸ Fragenreihe (.md)“"),
+        // T-0748: Gegenprobe der Statik – Bericht über die Menüleiste, das Ergebnis („Gegenprobe ✓ Abweichung …“) steht in jeder Stufe in der Statuszeile
+        ("prog-export-gegenprobe", "Menüleiste „Datei ▸ Exportieren ▸ Gegenprobe (Bericht)“ (geprüft in T0748_Ui.Statik_Einfach_Menue); Ergebnis in der Statuszeile"),
     ];
 
     /// <summary>Was „Einfach“ schon vor T-0663 bewusst nicht baute (Stand origin/main 1fc842acc) – siehe Kopf der Datei.</summary>

@@ -32,34 +32,138 @@ public partial class MainWindow
 
     private Garment? GarmentOf(ProgramDocument d)
     {
-        try { return GarmentBlocks.Build(GarmentKind(d), GarmentBody(d)); }
+        // T-0745: frei bearbeitete Teile ersetzen die Vorlage – für Fläche, Zuschnitt, PDF/DXF/SVG und 3D-Anprobe
+        try { return GarmentEdit.Apply(GarmentBlocks.Build(GarmentKind(d), GarmentBody(d)), GarmentEdits(d)); }
         catch (ArgumentException e) { GarmentMessage = e.Message; return null; }
     }
 
+    private static JsonObject? GarmentEdits(ProgramDocument d) => d.Data[GarmentEdit.Field] as JsonObject;
+
     private static string GarmentColor(ProgramDocument d) => d.Text("gColor") is { Length: > 0 } c ? c : Strings(d, "colors").FirstOrDefault() ?? "Grau";
 
-    private Control GarmentPatternCanvas(Garment g)
+    private readonly Dictionary<string, GarmentEditState> _garmentEdit = [];
+    /// <summary>T-0745: der Schnitt-Editor der zuletzt gezeichneten Seite (für Tests und die Leiste).</summary>
+    public GarmentPatternEditor? GarmentEditor { get; private set; }
+
+    /// <summary>T-0745: Schnittteile frei bearbeiten – Leiste, Arbeitsfläche, Hinweiszeile und Maße. Jede Änderung ist ein Rückgängig-Schritt im Dokument.</summary>
+    private Control GarmentPatternCanvas(ProgramDocument d, Garment g)
     {
-        const double scale = 3.4, gap = 14;
-        var canvas = new Canvas { Name = "garment-pattern", Height = 0, HorizontalAlignment = HorizontalAlignment.Left };
-        var x = 6.0; var maxH = 0.0; var i = 0;
-        foreach (var p in g.Parts)
+        var st = _garmentEdit.TryGetValue(d.Id, out var s0) ? s0 : _garmentEdit[d.Id] = new GarmentEditState();
+        var kind = g.Kind; var edits = GarmentEdits(d);
+        var edited = GarmentEdit.Edited(edits, g); // nur wirksame Bearbeitungen (Gegenprüfung T-0745)
+        var hint = new TextBlock { Name = "garment-edit-hint", Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap, Text = "Klicke ein Schnittteil an, um es zu bearbeiten." };
+        var measures = new StackPanel { Name = "garment-measures", Spacing = 3 };
+        var tools = new WrapPanel { Name = "garment-edit-tools" };
+        GarmentPatternEditor ed = null!;
+        List<PatNode> NodesOf(int i, PatPart p)
         {
-            var cut = GarmentProduction.WithAllowance(p);
-            double minX = cut.Min(q => q.X), maxX = cut.Max(q => q.X), maxY = cut.Max(q => q.Y), minY = cut.Min(q => q.Y);
-            var ox = x - minX * scale; const double top = 6;
-            Point Map(PatPt q) => new(ox + q.X * scale, top + (maxY - q.Y) * scale);
-            canvas.Children.Add(new Polygon { Name = $"garment-part-{i}", Points = new Points(cut.Select(Map)), Fill = Brush.Parse("#22C9A227"), Stroke = Brush.Parse("#C9A227"), StrokeThickness = 1.4 });
-            canvas.Children.Add(new Polygon { Points = new Points(p.Outline.Select(Map)), Stroke = Muted, StrokeThickness = 0.9, StrokeDashArray = [4, 3] });
-            double yLow = p.Outline.Min(q => q.Y) + 6, yHigh = p.Outline.Max(q => q.Y) - 6;
-            canvas.Children.Add(new Line { StartPoint = Map(new PatPt(0, yLow)), EndPoint = Map(new PatPt(0, yHigh)), Stroke = Text, StrokeThickness = 1 });
-            var head = Map(new PatPt(0, yHigh));
-            canvas.Children.Add(new Polygon { Points = new Points([head, head + new Point(-4, 8), head + new Point(4, 8)]), Fill = Text });
-            canvas.Children.Add(new TextBlock { Text = $"{p.Name} ({p.Qty}×)", Foreground = Text, FontSize = 11.5, [Canvas.LeftProperty] = Map(new PatPt(0, 0)).X - 34, [Canvas.TopProperty] = top + (maxY - (maxY + minY) / 2) * scale });
-            x += (maxX - minX) * scale + gap; maxH = Math.Max(maxH, (maxY - minY) * scale + 14); i++;
+            if ((edits?[kind] as JsonObject)?[p.Name] is { } j && GarmentEdit.FromJson(j) is { } n)
+                try { GarmentEdit.FromNodes(p, n); return n; } catch (ArgumentException) { }
+            return GarmentEdit.ToNodes(p);
         }
-        canvas.Width = x; canvas.Height = maxH;
-        return canvas;
+        void Commit(int i, List<PatNode>? nodes, string label, string? group)
+        {
+            // Gegenprüfung T-0745: Pfeil-Schritte am selben Punkt innerhalb einer Sekunde, ohne andere Änderung dazwischen, werden EIN Rückgängig-Schritt
+            var now = st.Clock(); var cur = d.Remember();
+            var join = group is not null && st.Group == group && now - st.GroupAt <= GarmentEditState.GroupWindow
+                && st.GroupAfter is { } after && after.Seq == cur.Seq && after.Undo == cur.Undo && after.Data == cur.Data;
+            var start = join ? st.GroupStart : cur;
+            ProgramRun(ModeKey, () =>
+            {
+                if (nodes is not null)
+                {
+                    nodes = GarmentEdit.Merge(nodes); // (fast) doppelte Punkte zusammenführen; Kante ohne Länge → Meldung
+                    GarmentEdit.FromNodes(g.Parts[i], nodes); // ungültig (z. B. Fläche 0) → Meldung statt kaputter Daten
+                }
+                var all = GarmentEdit.With(GarmentEdits(d), kind, g.Parts[i].Name, nodes);
+                d.Set(GarmentEdit.Field, all.Count == 0 ? null : all, label);
+                if (join) d.Squash(start, label);
+            });
+            st.Group = group; st.GroupStart = start; st.GroupAt = now; st.GroupAfter = group is null ? null : d.Remember();
+        }
+        ed = new GarmentPatternEditor(g, st, NodesOf, Commit, t => { hint.Text = t; }, Text, Muted);
+        GarmentEditor = ed;
+
+        var advanced = ProgramLevel != Trendo.Core.Programs.UserLevel.Einfach;
+        Button T(string name, string label, string tip, string cmd)
+        {
+            var b = Act(name, label, () => ed.Act(cmd));
+            ToolTip.SetTip(b, tip);
+            return b;
+        }
+        var bIns = T("garment-edit-insert", "Punkt einfügen", "Neuer Punkt auf der gewählten Kante (Einfg oder Doppelklick auf die Kante)", "insert");
+        var bDel = T("garment-edit-delete", "Punkt löschen", "Gewählten Punkt entfernen (Entf)", "delete");
+        var bCurve = T("garment-edit-toggle", "Gerade ↔ Kurve", "Gewählte Kante als Gerade oder als Kurve mit Griffen (K)", "toggle");
+        var bReset = T("garment-edit-reset", "Teil zurücksetzen", "Gewähltes Teil wieder aus den Maßen berechnen", "reset");
+        // „Einfach“ bleibt übersichtlich (V10: höchstens 40 Knöpfe je Ansicht): dort geht alles mit der Maus und über den Rechtsklick, die Leiste ab „Erweitert“
+        if (advanced) foreach (var b in new[] { bIns, bDel, bCurve, bReset }) tools.Children.Add(MSp(b));
+
+        void Refresh()
+        {
+            var i = st.Part; var sel = i >= 0 && i < g.Parts.Count;
+            var n = sel ? ed.Nodes(i) : [];
+            bIns.IsEnabled = sel && (st.Seg >= 0 || st.Node >= 0); bDel.IsEnabled = sel && st.Node >= 0;
+            bCurve.IsEnabled = sel && (st.Seg >= 0 || st.Node >= 0); bReset.IsEnabled = sel && edited.Contains(g.Parts[i].Name);
+            measures.Children.Clear();
+            if (!sel)
+            {
+                measures.Children.Add(new TextBlock { Name = "garment-measure-part", Text = $"{g.Parts.Count} Teile · zusammen {g.Parts.Sum(p => p.Area * p.Qty):0} cm² Stoff (ohne Nahtzugabe)", Foreground = Text, FontSize = 12 });
+                return;
+            }
+            var p = g.Parts[i];
+            measures.Children.Add(new TextBlock { Name = "garment-measure-part", Text = $"{p.Name}{(edited.Contains(p.Name) ? " (bearbeitet)" : "")}: Fläche {p.Area:0} cm² · Umfang {GarmentEdit.Cm(p.Edges.Sum(e => e.Length))} cm · {n.Count} Punkte", Foreground = Text, FontSize = 12, FontWeight = FontWeight.SemiBold });
+            measures.Children.Add(new TextBlock { Name = "garment-measure-edges", Text = string.Join(" · ", p.Edges.Select(e => $"{GarmentEdit.EdgeLabel(e.Name)} {GarmentEdit.Cm(e.Length)} cm")), Foreground = Text, FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
+            // Gegenprüfung T-0745: Selbstüberschneidung und zu enge Stellen (Zugabe reicht an die Naht) klar melden
+            if (GarmentEdit.SelfIntersects(p)) measures.Children.Add(new TextBlock { Name = "garment-measure-cross", Text = "Achtung: Der Umriss überschneidet sich. Fläche, Nahtzugabe und Zuschnitt stimmen so nicht – Punkt zurückziehen oder Strg+Z.", Foreground = Brush.Parse("#FACC15"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
+            else if (GarmentEdit.Problems(p) is { Count: > 0 } probs) measures.Children.Add(new TextBlock { Name = "garment-measure-gap", Text = "Achtung: " + string.Join(" ", probs), Foreground = Brush.Parse("#FACC15"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
+            if (!advanced) return;
+            // Profi: Nahtlängen gegeneinander prüfen (wie „Nähte abgehen“ in Schnitt-Programmen)
+            var seams = GarmentEdit.SeamLengths(g).Where(s => s.Seam.PartA == p.Name || s.Seam.PartB == p.Name).ToList();
+            if (seams.Count > 0)
+            {
+                var lines = seams.Select(s =>
+                {
+                    var diff = s.A - s.B; var cap = s.Seam.EdgeA.StartsWith("cap", StringComparison.Ordinal) || s.Seam.EdgeB.StartsWith("cap", StringComparison.Ordinal);
+                    var ok = Math.Abs(diff) <= (cap ? 0.06 * Math.Max(s.A, s.B) : 0.3);
+                    return $"{(ok ? "✓" : "⚠")} {s.Seam.PartA} {GarmentEdit.EdgeLabel(s.Seam.EdgeA)} {GarmentEdit.Cm(s.A)} cm ↔ {s.Seam.PartB} {GarmentEdit.EdgeLabel(s.Seam.EdgeB)} {GarmentEdit.Cm(s.B)} cm" + (ok ? "" : $" (Unterschied {GarmentEdit.Cm(Math.Abs(diff))} cm)");
+                });
+                measures.Children.Add(new TextBlock { Name = "garment-measure-seams", Text = "Nähte:\n" + string.Join("\n", lines), Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
+            }
+            if (st.Node >= 0 && st.Node < n.Count)
+            {
+                var q = n[st.Node];
+                var bx = new TextBox { Name = "garment-node-x", Width = 80, Text = q.X.ToString("0.##", De) }; var by = new TextBox { Name = "garment-node-y", Width = 80, Text = q.Y.ToString("0.##", De) };
+                void Apply(string? field)
+                {
+                    if (double.TryParse(bx.Text, System.Globalization.NumberStyles.Float, De, out var x) && double.TryParse(by.Text, System.Globalization.NumberStyles.Float, De, out var y)) ed.MoveTo(x, y, field);
+                    else hint.Text = "Bitte Zahlen in Zentimetern eingeben, z. B. 24,5.";
+                }
+                // Enter im Feld: nach dem Neuaufbau bleibt der Fokus in diesem Feld (Gegenprüfung T-0745), die Fläche holt ihn nicht zurück
+                foreach (var box in new[] { bx, by })
+                {
+                    var b = box;
+                    OnEnter(b, () => Apply(b.Name));
+                    b.GotFocus += (_, _) => st.WantFocus = false;
+                    if (st.FocusField == b.Name)
+                        b.AttachedToVisualTree += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(() => { if (st.FocusField != b.Name || TopLevel.GetTopLevel(b) is null) return; st.FocusField = null; b.Focus(); b.CaretIndex = b.Text?.Length ?? 0; });
+                }
+                measures.Children.Add(new WrapPanel { Children = {
+                    MSp(new TextBlock { Text = $"Punkt {st.Node + 1} genau setzen (cm, Fadenlauf = 0):", Foreground = Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }),
+                    MSp(new TextBlock { Text = "waagrecht", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center }), MSp(bx),
+                    MSp(new TextBlock { Text = "senkrecht", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center }), MSp(by),
+                    MSp(Act("garment-node-set", "Übernehmen", () => Apply(null))) } });
+            }
+        }
+        ed.Changed += Refresh;
+        Refresh();
+        var sp = new StackPanel { Name = "garment-editor", Spacing = 6 };
+        if (advanced) sp.Children.Add(tools);
+        // eigener waagrechter Bildlauf: die Teile liegen nebeneinander (die Hülle scrollt nur senkrecht)
+        sp.Children.Add(new ScrollViewer { HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled, Content = ed });
+        sp.Children.Add(hint);
+        if (edited.Count > 0) sp.Children.Add(new TextBlock { Name = "garment-edited-note", Text = $"Frei bearbeitet: {string.Join(", ", edited)}. Diese Teile folgen den Körpermaßen nicht mehr – „Teil zurücksetzen“ rechnet sie wieder aus den Maßen.", Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
+        sp.Children.Add(measures);
+        return sp;
     }
 
     private Control GarmentNestCanvas(Garment g, NestResult nest, double fabricWidth)
@@ -93,8 +197,8 @@ public partial class MainWindow
         if (g is null) { sp.Children.Add(P(GarmentMessage, Brush.Parse("#FACC15"), 12)); return WCard(sp); }
 
         sp.Children.Add(H("Schnittteile", 13));
-        sp.Children.Add(P("Durchgezogen: Schnittkante · gestrichelt: Nahtlinie · Pfeil: Fadenlauf", Muted, 11));
-        sp.Children.Add(new ScrollViewer { HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled, Content = GarmentPatternCanvas(g) });
+        sp.Children.Add(P("Durchgezogen: Schnittkante · gestrichelt: Nahtlinie · Pfeil: Fadenlauf. Teil anklicken, Punkte ziehen (Umschalt rastet auf 5 mm), Doppelklick auf eine Kante setzt einen Punkt, Rechtsklick zeigt alle Befehle.", Muted, 11));
+        sp.Children.Add(GarmentPatternCanvas(d, g));
         try
         {
             var nest = GarmentProduction.Nest(g, fabric.WidthCm);
@@ -109,6 +213,7 @@ public partial class MainWindow
         var run = Act("garment-tryon", _garmentBusy ? "Rechnet …" : "In 3D anprobieren", () => _ = GarmentTryOn(d), true); run.IsEnabled = !_garmentBusy;
         var actions = new WrapPanel { Children = { MSp(run) } };
         if (BlenderPath is null && GarmentRunOverride is null) actions.Children.Add(new TextBlock { Text = "Dafür braucht Trendo Blender. Es lässt sich im Studio „3D-Modelle erstellen“ einrichten.", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center });
+        if (GarmentEdit.Edited(GarmentEdits(d), g).Count > 0) actions.Children.Add(new TextBlock { Name = "garment-tryon-edited", Text = "Die Anprobe näht die frei bearbeiteten Teile.", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center });
         sp.Children.Add(actions);
         if (GarmentMessage.Length > 0) sp.Children.Add(new TextBlock { Name = "garment-msg", Text = GarmentMessage, Foreground = Text, TextWrapping = TextWrapping.Wrap });
         if (GarmentImages.Count > 0)
@@ -126,7 +231,7 @@ public partial class MainWindow
             var prod = Act("garment-production", "Für die Produktion speichern …", () => { });
             var list = new StackPanel { Spacing = 2 };
             var fly = new Flyout { Content = list };
-            foreach (var (n, h, ext) in new[] { ("garment-pdf", "Schnitt als PDF (A4, 1:1)", ".pdf"), ("garment-dxf", "Datei für den Schneideplotter (DXF)", ".dxf"), ("garment-techpack", "Technisches Datenblatt", ".md") })
+            foreach (var (n, h, ext) in new[] { ("garment-pdf", "Schnitt als PDF (A4, 1:1)", ".pdf"), ("garment-dxf", "Datei für den Schneideplotter (DXF)", ".dxf"), ("garment-svg", "Schnitt als Zeichnung (SVG, 1:1)", ".svg"), ("garment-techpack", "Technisches Datenblatt", ".md") })
             {
                 var e = ext;
                 var item = new Button { Name = n, Content = h, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left };
@@ -139,6 +244,7 @@ public partial class MainWindow
         else sp.Children.Add(new WrapPanel { Children = {
             MSp(Act("garment-pdf", "Schnitt als PDF (A4, 1:1)", () => GarmentExport(d, ".pdf"))),
             MSp(Act("garment-dxf", "Plotter-Datei (DXF)", () => GarmentExport(d, ".dxf"))),
+            MSp(Act("garment-svg", "Schnitt als SVG (1:1)", () => GarmentExport(d, ".svg"))),
             MSp(Act("garment-techpack", "Technisches Datenblatt", () => GarmentExport(d, ".md"))) } });
         return WCard(sp);
     }
@@ -214,7 +320,11 @@ public partial class MainWindow
             var note = "";
             if (ext == ".pdf") note = $" ({GarmentProduction.PdfTiled(file, g, d.Text("name", "Entwurf"))} Seiten, mit 100 % drucken)";
             else if (ext == ".dxf") File.WriteAllText(file, GarmentProduction.Dxf(g));
-            else File.WriteAllText(file, GarmentProduction.TechPack(d.Text("name", "Entwurf"), g, GarmentBody(d), Fabrics.Of(d.Text("gFabric")), GarmentColor(d), Strings(d, "sizes")));
+            else if (ext == ".svg") File.WriteAllText(file, GarmentProduction.Svg(g, d.Text("name", "Entwurf")));
+            else File.WriteAllText(file, GarmentProduction.TechPack(d.Text("name", "Entwurf"), g, GarmentBody(d), Fabrics.Of(d.Text("gFabric")), GarmentColor(d), Strings(d, "sizes"), GarmentEdit.Edited(GarmentEdits(d), g)));
+            // Gegenprüfung T-0745: Teile, die sich so nicht sauber zuschneiden lassen, beim Export deutlich nennen
+            var warn = g.Parts.SelectMany(GarmentEdit.Problems).ToList();
+            if (warn.Count > 0) note += " · Achtung: " + string.Join(" ", warn);
             GarmentMessage = "Gespeichert: " + file + note;
             _core.Audit.Append(Principal.LocalOwner.Name, "mode.produktion", Path.GetFileName(file));
             NotifyFileResult(GarmentMessage);

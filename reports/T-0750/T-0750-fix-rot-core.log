@@ -1,0 +1,91 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0750-fix-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:04.99]     Gegenprüfung: Kürzen des Protokolls oder des Verlaufs erzeugt keine Doppelmeldung; Zustand je Regel [FAIL]
+[xUnit.net 00:00:05.03]     Gegenprüfung: gleich lange neue Datei (Rotation) wird an der Dateikennung erkannt und von vorn gelesen [FAIL]
+[xUnit.net 00:00:05.05]     Gegenprüfung: UTF-16 mit BOM (Little und Big Endian) und UTF-8 mit BOM werden gelesen [FAIL]
+[xUnit.net 00:00:05.06]     Gegenprüfung: Zeile über 1 MB ohne Zeilenende wird übersprungen und gemeldet, danach geht es weiter [FAIL]
+[xUnit.net 00:00:05.23]     QA-019: Kernfunktionen laufen ohne Netzwerk (keine Netz-Abhängigkeit im Core) [FAIL]
+[xUnit.net 00:00:05.23]     Gegenprüfung: riesige Altdatei – nur das letzte MB, die dabei angeschnittene erste Zeile wird verworfen [FAIL]
+[xUnit.net 00:00:05.25]     Gegenprüfung: Netzwerkpfade (\\Rechner\…) werden nicht gelesen [FAIL]
+[xUnit.net 00:00:05.26]     Rot-Probe: Regel-Datei mit leerem Eintrag oder Version 0 [FAIL]
+  Fehler Gegenprüfung: Kürzen des Protokolls oder des Verlaufs erzeugt keine Doppelmeldung; Zustand je Regel [115 ms]
+  Fehlermeldung:
+   Assert.Empty() Failure: Collection was not empty
+Collection: [TwinAlarm { Time = 17.11.2026 10:00:00, RuleId = a, Rule = heiß, Asset = Ofen, Sensor = Temperatur, Raised = True, Value = 90 }]
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotProbeT0750Fix.Check_no_duplicates_after_trim() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0750-fix-rot\tests\Trendo.Core.Tests\RotProbeT0750Fix.cs:line 128
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler Gegenprüfung: gleich lange neue Datei (Rotation) wird an der Dateikennung erkannt und von vorn gelesen [45 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: 2
+Actual:   0
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotProbeT0750Fix.Growing_file_rotation_same_length() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0750-fix-rot\tests\Trendo.Core.Tests\RotProbeT0750Fix.cs:line 100
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler Gegenprüfung: UTF-16 mit BOM (Little und Big Endian) und UTF-8 mit BOM werden gelesen [10 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: 1
+Actual:   0
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotProbeT0750Fix.Growing_file_utf16() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0750-fix-rot\tests\Trendo.Core.Tests\RotProbeT0750Fix.cs:line 79
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler Gegenprüfung: Zeile über 1 MB ohne Zeilenende wird übersprungen und gemeldet, danach geht es weiter [17 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Sub-string not found
+String:    ""
+Not found: "übersprungen"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotProbeT0750Fix.Growing_file_overlong_line() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0750-fix-rot\tests\Trendo.Core.Tests\RotProbeT0750Fix.cs:line 31
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler QA-019: Kernfunktionen laufen ohne Netzwerk (keine Netz-Abhängigkeit im Core) [396 ms]
+  Fehlermeldung:
+   Assert.DoesNotContain() Failure: Item found in collection
+                                                                      ↓ (pos 23)
+Collection: [···, "System.Net.Primitives", "System.Xml.ReaderWriter", "System.Net.Http", "MQTTnet", "Ical.Net", ···]
+Found:      "System.Net.Http"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.QA019_Offline.Core_works_offline() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0750-fix-rot\tests\Trendo.Core.Tests\Tests.cs:line 251
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler Gegenprüfung: riesige Altdatei – nur das letzte MB, die dabei angeschnittene erste Zeile wird verworfen [171 ms]
+  Fehlermeldung:
+   Assert.All() Failure: 1 out of 45590 items in the collection did not pass.
+[0]: Item:  Reading { Time = 17.11.2026 10:00:00, Asset = A, Sensor = B, Value = 0 }
+     Error: Assert.Equal() Failure: Values differ
+            Expected: 1E+21
+            Actual:   0
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotProbeT0750Fix.Growing_file_big_old_file_drops_cut_line() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0750-fix-rot\tests\Trendo.Core.Tests\RotProbeT0750Fix.cs:line 60
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler Gegenprüfung: Netzwerkpfade (\\Rechner\…) werden nicht gelesen [12 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Sub-string not found
+String:    "Die Datei „werte.csv“ gibt es nicht (mehr"···
+Not found: "anderen Rechnern"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotProbeT0750Fix.Growing_file_unc_refused() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0750-fix-rot\tests\Trendo.Core.Tests\RotProbeT0750Fix.cs:line 115
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler Rot-Probe: Regel-Datei mit leerem Eintrag oder Version 0 [8 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: Exception type was not an exact match
+Expected: typeof(System.FormatException)
+Actual:   typeof(System.NullReferenceException)
+---- System.NullReferenceException : Object reference not set to an instance of an object.
+  Stapelverfolgung:
+     at Trendo.Core.Tests.RotProbeT0750Fix.Rules_file_null_and_version() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0750-fix-rot\tests\Trendo.Core.Tests\RotProbeT0750Fix.cs:line 142
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+----- Inner Stack Trace -----
+   at Trendo.Core.TwinRules.Validate(TwinRule r) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0750-fix-rot\src\Trendo.Core\W6\TwinFeeds.cs:line 66
+   at Trendo.Core.TwinRules.ImportJson(String json, DateTime now) in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0750-fix-rot\src\Trendo.Core\W6\TwinFeeds.cs:line 128
+   at Trendo.Core.Tests.RotProbeT0750Fix.<>c__DisplayClass9_0.<Rules_file_null_and_version>b__0() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0750-fix-rot\tests\Trendo.Core.Tests\RotProbeT0750Fix.cs:line 142
+
+Fehler!      : Fehler:     8, erfolgreich:     0, übersprungen:     0, gesamt:     8, Dauer: 427 ms - Trendo.Core.Tests.dll (net10.0)

@@ -1,0 +1,6 @@
+# T-0749 Echtlauf Einscannen – 2026-11-17 22:02:12
+COLMAP: colmap.exe (Erkennung der App)
+Fotos: 48, 48 Fotos · 2,4 MB · bis 960 × 720 Pixel
+Schritte: Merkmale in den Fotos suchen → Gleiche Stellen in den Fotos finden → Kameras und die grobe Form rechnen → Fotos entzerren → Oberfläche bauen
+Laufzeit über die Oberfläche: 0,4 s
+Status: „Merkmale in den Fotos suchen“ ist fehlgeschlagen. E20261117 22:02:12.798261 42728 base_option_manager.cc:265] Failed to parse options - unrecognised option '--SiftExtraction.use_gpu'.

@@ -1,0 +1,33 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0745-fix\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:10.58]     Gegenprüfung T-0745 (4): Teil mit Fläche 0 wird beim Übernehmen abgelehnt [FAIL]
+[xUnit.net 00:00:10.60]     Gegenprüfung T-0745 (3): gespiegelte Manschette (Umlauf im Uhrzeigersinn) bekommt die Nahtzugabe trotzdem nach außen [FAIL]
+[xUnit.net 00:00:10.63]     Gegenprüfung T-0745 (1): Punkt genau auf den Nachbarn gezogen – die Nahtzugabe bleibt überall mindestens 1,2 cm; doppelte Punkte direkt im Teil ebenso; Kante mit Länge 0 wird abgelehnt [FAIL]
+  Fehler Gegenprüfung T-0745 (4): Teil mit Fläche 0 wird beim Übernehmen abgelehnt [6 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.ArgumentException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.GarmentEditTests.Zero_area_rejected() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0745-fix\tests\Trendo.Core.Tests\GarmentEditTests.cs:line 179
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler Gegenprüfung T-0745 (3): gespiegelte Manschette (Umlauf im Uhrzeigersinn) bekommt die Nahtzugabe trotzdem nach außen [2 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values are not within 3 decimal places
+Expected: 20,800000000000001 (rounded from 20,800000000000001)
+Actual:   16 (rounded from 16,000000000000004)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.GarmentEditTests.Mirrored_part_allowance_outside() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0745-fix\tests\Trendo.Core.Tests\GarmentEditTests.cs:line 166
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler Gegenprüfung T-0745 (1): Punkt genau auf den Nachbarn gezogen – die Nahtzugabe bleibt überall mindestens 1,2 cm; doppelte Punkte direkt im Teil ebenso; Kante mit Länge 0 wird abgelehnt [10 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values are not within 2 decimal places
+Expected: 1,2 (rounded from 1,2)
+Actual:   0 (rounded from 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.GarmentEditTests.DuplicatePoint_keeps_allowance() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0745-fix\tests\Trendo.Core.Tests\GarmentEditTests.cs:line 142
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Fehler!      : Fehler:     3, erfolgreich:     5, übersprungen:     0, gesamt:     8, Dauer: 112 ms - Trendo.Core.Tests.dll (net10.0)

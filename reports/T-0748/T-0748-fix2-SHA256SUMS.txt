@@ -1,0 +1,8 @@
+de04b971dfad12d492b133960e096d2eb4743d38b340a1745e4db35e33243dbd *T-0748-fix2-app-tests.log
+2b49a83227d1ee895ff9d58359a7427d0997fad5c384941c07ad2e37a3dbd579 *T-0748-fix2-core-tests.log
+80ed8b6c52be69c3af63d06792f92e4044d2842bd2e19762296125d39be3c298 *T-0748-fix2-messung.log
+b7251b30c1197e30dbd1c82defcb0e6feb2b7462a23b5baf48e736587fd52685 *T-0748-fix2-gegenprobe-durchlauf.md
+d100db17c25a735c57ca96acd2ee87ebc01df4e5bb18f0045e862be30806f4f3 *T-0748-fix2-gegenprobe-einfeld.md
+ec9c69d4106f85a1b6ab1ac1421af6db92e64c8fe47f6a37fd4c99a4f2fe3ee7 *T-0748-fix2-gegenprobe-fachwerk.md
+29c5c9f60af1d4ab0e4d074fea8cf97c4a24ef61a0b8151645d2cd0ca1624487 *T-0748-fix2-gegenprobe-kragarm.md
+1205d31dd3ab17bcd8705e8c1155d94e0e8d11c08d960ed02c8c99efc4287ee6 *T-0748-fix2-gegenprobe-rahmen.md

@@ -67,26 +67,46 @@ public static class PhotoScan
 
         var db = Path.Combine(req.WorkDir, "datenbank.db");
         var sparse = Path.Combine(req.WorkDir, "sparse");
-        var dense = Path.Combine(req.WorkDir, "dicht");
+        // T-0749: Optionen wie in COLMAP 4 (FeatureExtraction/FeatureMatching). Ältere Fassungen (3.x) kennen nur SiftExtraction/SiftMatching –
+        // dafür schaltet RunAsync bei „unrecognised option“ einmal auf die alten Namen um (Legacy).
         var match = video is null
-            ? "exhaustive_matcher --database_path " + Q(db) + " --SiftMatching.use_gpu 0"
-            : "sequential_matcher --database_path " + Q(db) + " --SiftMatching.use_gpu 0 --SequentialMatching.overlap 10";
+            ? "exhaustive_matcher --database_path " + Q(db) + " --FeatureMatching.use_gpu 0"
+            : "sequential_matcher --database_path " + Q(db) + " --FeatureMatching.use_gpu 0 --SequentialMatching.overlap 10";
         steps.Add(new("Merkmale in den Fotos suchen", tool,
-            "feature_extractor --database_path " + Q(db) + " --image_path " + Q(images) + " --ImageReader.single_camera 1 --SiftExtraction.use_gpu 0 --SiftExtraction.max_image_size 1600"));
+            "feature_extractor --database_path " + Q(db) + " --image_path " + Q(images) + " --ImageReader.single_camera 1 --FeatureExtraction.use_gpu 0 --FeatureExtraction.max_image_size 1600"));
         steps.Add(new("Gleiche Stellen in den Fotos finden", tool, match));
         steps.Add(new("Kameras und die grobe Form rechnen", tool,
             "mapper --database_path " + Q(db) + " --image_path " + Q(images) + " --output_path " + Q(sparse)));
-        steps.Add(new("Fotos entzerren", tool,
-            "image_undistorter --image_path " + Q(images) + " --input_path " + ModelMark + " --output_path " + Q(dense) + " --output_type COLMAP --max_image_size 1600", null, true));
+        // T-0749: Die Oberfläche entsteht aus den Merkmalspunkten (input_type sparse). Der frühere Weg über „dicht“ brauchte eine fused.ply aus
+        // patch_match_stereo (nur mit CUDA) – die rechnet Trendo nie, delaunay_mesher stürzte darum ohne Meldung ab (0xC0000409).
+        // max_side_length_factor 2: lange Dreiecke zu einzelnen Ausreißerpunkten fallen weg (sonst ragt ein Keil aus dem Modell, Beleg reports/T-0749).
         steps.Add(new("Oberfläche bauen", tool,
-            "delaunay_mesher --input_path " + Q(dense) + " --output_path " + Q(Path.Combine(dense, "meshed-delaunay.ply"))));
+            "delaunay_mesher --input_type sparse --input_path " + ModelMark + " --output_path " + Q(Path.Combine(req.WorkDir, "meshed-delaunay.ply")) + " --DelaunayMeshing.max_side_length_factor 2", null, true));
         return steps;
     }
+
+    /// <summary>Datei im Arbeitsordner mit allen Befehlen und der vollen Ausgabe der Werkzeuge (für Fehlersuche und Belege).</summary>
+    public const string LogName = "rechnung-protokoll.txt";
+
+    /// <summary>COLMAP 3.x kennt die Namen aus COLMAP 4 nicht: FeatureExtraction/FeatureMatching → SiftExtraction/SiftMatching.</summary>
+    public static string Legacy(string args) => args
+        .Replace("--FeatureExtraction.use_gpu", "--SiftExtraction.use_gpu", StringComparison.Ordinal)
+        .Replace("--FeatureExtraction.max_image_size", "--SiftExtraction.max_image_size", StringComparison.Ordinal)
+        .Replace("--FeatureMatching.use_gpu", "--SiftMatching.use_gpu", StringComparison.Ordinal);
+
+    static bool UnknownOption(string output) => output.Contains("unrecognised option", StringComparison.OrdinalIgnoreCase) || output.Contains("unrecognized option", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>Exitcode lesbar: Windows-Absturzcodes (negativ) als 0x…, sonst die Zahl.</summary>
+    public static string ExitText(int exit) => exit < 0 ? $"abgestürzt, Code 0x{unchecked((uint)exit):X8}" : $"Rückgabewert {exit}";
 
     public static async Task<PhotoResult> RunAsync(PhotoRequest req, string tool, string? ffmpeg, IProcessRunner runner, Action<string>? progress = null, CancellationToken ct = default)
     {
         Directory.CreateDirectory(req.WorkDir);
+        if (req.Engine == PhotoEngine.Colmap) Directory.CreateDirectory(Path.Combine(req.WorkDir, "sparse")); // T-0749: mapper legt den Ordner nicht selbst an („output_path is not a directory“)
         var log = new List<string>();
+        var protocol = Path.Combine(req.WorkDir, LogName);
+        void Protocol(string text) { try { File.AppendAllText(protocol, text); } catch (IOException) { } catch (UnauthorizedAccessException) { } } // Protokoll ist ein Zusatz
+        var legacy = false;
         foreach (var step in Steps(req, tool, ffmpeg))
         {
             ct.ThrowIfCancellationRequested();
@@ -97,17 +117,32 @@ public static class PhotoScan
                 var model = SparseModel(req.WorkDir) ?? throw new InvalidOperationException("Die Fotos haben kein gemeinsames Modell ergeben. Fotografiere den Gegenstand von allen Seiten, mit Überlappung und gleichbleibendem Licht.");
                 args = args.Replace(ModelMark, Q(model));
             }
+            if (legacy) args = Legacy(args);
             if (step.ImagesAfter is { } dir) Directory.CreateDirectory(dir);
-            var (exit, output) = await Exec(runner, step.File, args, step.WorkDir, line =>
+            var started = DateTime.Now;
+            async Task<(int Exit, string Output)> Go(string a)
             {
-                var t = line.Trim();
-                if (t.Length > 0 && t.Length <= 160) progress?.Invoke(step.Title + ": " + t);
-            }, ct);
+                Protocol($"### {step.Title}{Environment.NewLine}### {Path.GetFileName(step.File)} {a}{Environment.NewLine}");
+                var r = await Exec(runner, step.File, a, step.WorkDir, line =>
+                {
+                    var t = line.Trim();
+                    if (t.Length > 0 && t.Length <= 160) progress?.Invoke(step.Title + ": " + t);
+                }, ct);
+                Protocol(r.Output + $"### Ende: {ExitText(r.Exit)}, {(DateTime.Now - started).TotalSeconds:0.0} s{Environment.NewLine}{Environment.NewLine}");
+                return r;
+            }
+            var (exit, output) = await Go(args);
+            if (exit != 0 && !legacy && req.Engine == PhotoEngine.Colmap && UnknownOption(output) && Legacy(args) != args)
+            {
+                legacy = true; // ältere COLMAP-Fassung: einmal mit den alten Optionsnamen
+                (exit, output) = await Go(Legacy(args));
+            }
             foreach (var line in output.Split('\n').Select(s => s.Trim()).Where(s => s.Length > 0).TakeLast(8)) log.Add(line);
             if (exit != 0)
             {
                 var tail = log.Count == 0 ? "" : " " + string.Join(" ", log.TakeLast(3));
-                throw new InvalidOperationException($"„{step.Title}“ ist fehlgeschlagen.{tail}");
+                var crash = exit < 0 ? " (" + ExitText(exit) + ")" : "";
+                throw new InvalidOperationException($"„{step.Title}“ ist fehlgeschlagen{crash}.{tail} Alles steht in „{LogName}“ im Ordner {req.WorkDir}.");
             }
             if (step.ImagesAfter is { } img)
             {
@@ -121,9 +156,10 @@ public static class PhotoScan
         try { ScanPro.SaveCameras(req.WorkDir, fitCenter, fitScale); } catch (Exception e) when (e is IOException or EndOfStreamException or System.Text.Json.JsonException or FormatException or InvalidOperationException or KeyNotFoundException) { } // Kameras sind ein Zusatz
         var obj = Path.Combine(req.WorkDir, "modell.obj");
         Mesh3D.WriteObj(mesh, obj);
+        var rough = req.Engine == PhotoEngine.Colmap ? " Die Form kommt aus den gefundenen Merkmalspunkten – sie ist grob, feine Details fehlen." : "";
         var note = shell
             ? $"Fertig. {mesh.Triangles} Dreiecke, nur die äußere Hülle, weil keine Fläche in der Datei stand. Die längste Seite steht auf 20 cm."
-            : $"Fertig. {mesh.Triangles} Dreiecke. Die längste Seite steht auf 20 cm, weil Fotos keine echten Maße haben.";
+            : $"Fertig. {mesh.Triangles} Dreiecke. Die längste Seite steht auf 20 cm, weil Fotos keine echten Maße haben." + rough;
         progress?.Invoke(note);
         return new PhotoResult(obj, mesh.Triangles, shell, note);
     }

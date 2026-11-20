@@ -62,15 +62,84 @@ public partial class MainWindow
             new("pdf", "PDF-Bericht", ".pdf", (d, f) => { var m = FrameModel.From(d.Data); return FrameDrawing.Pdf(m, FrameSolver.Solve(m), f); }),
             new("ec", "Eurocode-Nachweis", ".md", (d, f) => { var m = FrameModel.From(d.Data); File.WriteAllText(f, Eurocode.Report(m, Eurocode.Check(m))); return f; }),
             new("svg", "SVG (Bild)", ".svg", (d, f) => { var m = FrameModel.From(d.Data); File.WriteAllText(f, FrameDrawing.Svg(m, FrameSolver.Solve(m), FrameState.Show)); return f; }),
+            new("gegenprobe", "Gegenprobe (Bericht)", ".md", (d, f) => { var m = FrameModel.From(d.Data); File.WriteAllText(f, FrameCrossCheck.Report(m, FrameCheckForExport(d, m))); return f; }),
             new("csv", "Ergebnisse (CSV)", ".csv", (d, f) => { var m = FrameModel.From(d.Data); File.WriteAllText(f, FrameDrawing.Csv(m, FrameSolver.Solve(m)), new System.Text.UTF8Encoding(true)); return f; }),
         ],
         Workspace = FrameWorkspace,
         Properties = FrameProperties,
-        Status = d => { var m = FrameModel.From(d.Data); var (r, err) = FrameSolve(m); return $"{FrameTools.FirstOrDefault(t => t.Id == FrameState.Tool).Label} · {m.Members.Count} Stäbe · {m.Nodes.Count(n => n.Support != "")} Lager · {m.Loads.Count} Lasten · " + (err is not null ? "⚠ " + err : r is null ? "" : r.Ok ? "✓ alle Stäbe halten" : $"⚠ {r.Members.Count(x => !x.Ok)} Stab/Stäbe reichen nicht"); },
+        Status = d => { var m = FrameModel.From(d.Data); var (r, err) = FrameSolve(m); return $"{FrameTools.FirstOrDefault(t => t.Id == FrameState.Tool).Label} · {m.Members.Count} Stäbe · {m.Nodes.Count(n => n.Support != "")} Lager · {m.Loads.Count} Lasten · " + (err is not null ? "⚠ " + err : r is null ? "" : r.Ok ? "✓ alle Stäbe halten" : $"⚠ {r.Members.Count(x => !x.Ok)} Stab/Stäbe reichen nicht")
+            + (r is not null && FrameCheckOf(d, m) is { } cc ? " · " + cc.Text : ""); }, // T-0748: Gegenprobe in jeder Stufe sichtbar
         PrimaryExport = "pdf", // T-0700: Tragwerk: der PDF-Bericht mit Nachweis ist das Ergebnis
         Help = "Links das Werkzeug wählen. Stab: Punkt für Punkt klicken, Länge in m tippen und Enter. Lager/Last/Gelenk: auf Knoten oder Stab klicken – Art und Wert rechts einstellen. "
              + "Auswahl: Knoten ziehen, Entf löscht. Ergebnisse rechnen sofort mit. Vorbemessung – ersetzt keine geprüfte Statik.",
     }, "technik", "statik", "balken", "träger", "simulation", "biegung", "festigkeit", "einheiten", "umrechnen", "rahmen", "fachwerk", "tragwerk");
+
+    private (string Key, CrossCheckResult? R) _frameCheck = ("", null);
+    private (string Key, CancellationTokenSource Cts, Task<CrossCheckResult?> Task)? _frameCheckRun;
+    /// <summary>T-0748-fix: die gerade im Hintergrund laufende Gegenprobe (null = keine) – für Tests, die auf das Ergebnis warten.</summary>
+    public Task? FrameCheckRunning => _frameCheckRun?.Task;
+    /// <summary>So lange wartet die Oberfläche auf eine kurze Gegenprobe, bevor sie „Gegenprobe läuft …“ zeigt (kein Flackern bei kleinen Tragwerken).</summary>
+    public TimeSpan FrameCheckGrace { get; set; } = TimeSpan.FromMilliseconds(60);
+
+    /// <summary>T-0748: Gegenprobe zum offenen Tragwerk (je Stand nur einmal gerechnet); null, wenn sich nichts rechnen lässt.
+    /// T-0748-fix: rechnet im Hintergrund; eine neue Änderung bricht die laufende Rechnung ab. Solange sie läuft: <see cref="CrossCheckResult.Running"/>.</summary>
+    public CrossCheckResult? FrameCheckOf(ProgramDocument d, FrameModel m)
+    {
+        var key = d.Data.ToJsonString(); if (key == _frameCheck.Key) return _frameCheck.R;
+        if (_frameCheckRun is { } run && run.Key == key) return CrossCheckResult.Running;
+        if (_frameCheckRun is { } old) { try { old.Cts.Cancel(); } catch (ObjectDisposedException) { } } // überholt (schon fertig: Quelle ist freigegeben)
+        _frameCheckRun = null;
+        if (m.Members.Count == 0) { _frameCheck = (key, null); return null; }
+        var copy = FrameModel.From(d.Data); var cts = new CancellationTokenSource(); var token = cts.Token;
+        var task = Task.Run(() =>
+        {
+            try { return FrameCrossCheck.Check(copy, token); }
+            catch (Exception ex) when (ex is InvalidOperationException or ArgumentException) { return (CrossCheckResult?)null; }
+        }, token);
+        try { if (task.Wait(FrameCheckGrace)) { _frameCheck = (key, task.Result); cts.Dispose(); return task.Result; } }
+        catch (AggregateException) { _frameCheck = (key, null); cts.Dispose(); return null; }
+        _frameCheckRun = (key, cts, task);
+        // T-0748-fix2: CancellationTokenSource auch bei überholten Rechnungen freigeben, sobald die Rechnung endet
+        task.ContinueWith(t => { cts.Dispose(); Avalonia.Threading.Dispatcher.UIThread.Post(() => FrameCheckDone(key, t)); }, TaskScheduler.Default);
+        return CrossCheckResult.Running;
+    }
+
+    /// <summary>T-0748-fix2: Gegenprobe für den Export „Gegenprobe (Bericht)“ – das Ergebnis der Hintergrund-Rechnung zum selben Stand,
+    /// statt im UI-Thread neu zu rechnen. Nur wenn es (noch) keines gibt, wird gerechnet.</summary>
+    public CrossCheckResult FrameCheckForExport(ProgramDocument d, FrameModel m)
+    {
+        var key = d.Data.ToJsonString();
+        if (key == _frameCheck.Key && _frameCheck.R is { } done) return done;
+        try { if (_frameCheckRun is { } run && run.Key == key && run.Task.Wait(TimeSpan.FromSeconds(30)) && run.Task.Result is { } r) return r; }
+        catch (AggregateException) { } // abgebrochen – dann selbst rechnen
+        return FrameCrossCheck.Check(m);
+    }
+
+    /// <summary>Gegenprobe fertig: merken und nur Statuszeile und Inspektor-Zeile auffrischen – die Seite wird nicht neu gebaut (Eingaben behalten den Fokus).</summary>
+    void FrameCheckDone(string key, Task<CrossCheckResult?> t)
+    {
+        if (_frameCheckRun is not { } run || run.Task != t) return; // inzwischen überholt
+        _frameCheckRun = null;
+        if (t.IsCanceled) return;
+        var r = t.IsCompletedSuccessfully ? t.Result : null;
+        _frameCheck = (key, r);
+        if (CurrentView != TK || ActivePageRoot is not { } root || ProgramActive(TK) is not { } doc || doc.Data.ToJsonString() != key) return;
+        foreach (var tb in Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(root).OfType<TextBlock>().ToList())
+        {
+            if (tb.Name == "prog-status-text") tb.Text = Programs[TK].Status?.Invoke(doc) ?? "";
+            else if (tb.Name == "tk-crosscheck") FrameCheckShow(tb, r);
+            else if (tb.Name == "tk-crosscheck-skip") { tb.Text = r?.Skipped ?? ""; tb.IsVisible = r?.Skipped is not null; }
+        }
+    }
+
+    /// <summary>Text, Farbe und Erklärung der Gegenprobe-Zeile im Inspektor.</summary>
+    static void FrameCheckShow(TextBlock ct, CrossCheckResult? cc)
+    {
+        ct.Text = cc?.Text ?? "Gegenprobe nicht möglich";
+        ct.Foreground = Brush.Parse(cc is { Pending: true } ? "#9CA3AF" : cc is { Ok: true } ? "#4ADE80" : "#F87171");
+        ToolTip.SetTip(ct, cc is null or { Pending: true } ? "Die Gegenprobe rechnet im Hintergrund – jede Änderung startet sie neu." :
+            "Geprüft mit: " + string.Join(", ", cc.Methods) + (cc.Skipped is null ? "" : ". Nicht geprüft: " + cc.Skipped) + ". Einzelwerte im Export „Gegenprobe (Bericht)“.");
+    }
 
     static System.Text.Json.Nodes.JsonObject FrameDoc(FrameModel m) { var o = new System.Text.Json.Nodes.JsonObject(); m.WriteTo(o); return o; }
 
@@ -259,6 +328,14 @@ public partial class MainWindow
                     var b = new Button { Name = $"tk-member-{idx - 1}", HorizontalAlignment = HorizontalAlignment.Stretch, Background = Brushes.Transparent, Padding = new Thickness(6, 3),
                         Content = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { new TextBlock { Text = $"S{idx} · {m.Member(id)!.Section}", Foreground = Text, FontSize = 12 }, Pos(new TextBlock { Text = $"M {x.MaxM:0.#} · η {(x.Safety > 0 ? 1.5 / x.Safety : 0):0.00}", Foreground = Brush.Parse(x.Ok ? "#4ADE80" : "#F87171"), FontSize = 11 }, 1) } } };
                     b.Click += (_, _) => FrameSelect(id); sp.Children.Add(b);
+                }
+                // T-0748: Gegenprobe – Gleichgewicht, Lehrbuchformel (wenn passend) und zweite Rechnung mit Teilstäben
+                if (FrameCheckOf(d, m) is { } cc)
+                {
+                    var ct = new TextBlock { Name = "tk-crosscheck", FontSize = 12, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap };
+                    FrameCheckShow(ct, cc); sp.Children.Add(ct);
+                    // T-0748-fix: eigene Zeile mit Namen, damit das Hintergrund-Ergebnis sie auffrischen kann
+                    sp.Children.Add(new TextBlock { Name = "tk-crosscheck-skip", Text = cc.Skipped ?? "", IsVisible = cc.Skipped is not null, Foreground = Muted, FontSize = 10.5, TextWrapping = TextWrapping.Wrap });
                 }
                 sp.Children.Add(H("Lagerkräfte", 12));
                 foreach (var (nid, (rx, ry, rm)) in r.Reactions) { var nn = m.Node(nid)!; Fact($"K{m.Nodes.IndexOf(nn) + 1} {FrameDrawing.SupportName(nn.Support)}", $"{ry:0.##} kN ↑{(Math.Abs(rx) > 1e-6 ? $" · {rx:0.##} kN →" : "")}{(Math.Abs(rm) > 1e-6 ? $" · {rm:0.##} kNm" : "")}"); }

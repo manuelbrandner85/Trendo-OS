@@ -1,0 +1,3 @@
+Zeit;Regel;Anlage;Sensor;Ereignis;Wert
+2026-11-17 22:19:36;Druck über 50 für 2 s, Hysterese 5;Kessel;Druck;ausgelöst;58
+2026-11-17 22:19:38;Druck über 50 für 2 s, Hysterese 5;Kessel;Druck;aufgehoben;44

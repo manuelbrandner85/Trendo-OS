@@ -1,0 +1,13 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0749 Echtlauf: Fotos → COLMAP → Netz im Scan-Arbeitsplatz → OBJ/STL/GLB [FAIL]
+      Kein Modell: „Merkmale in den Fotos suchen“ ist fehlgeschlagen. E20261117 22:02:12.798261 42728 base_option_manager.cc:265] Failed to parse options - unrecognised option '--SiftExtraction.use_gpu'.
+      Stack Trace:
+        tests\Trendo.App.Tests\T0749EinscannenEchtUiTests.cs(87,0): at Trendo.App.Tests.T0749EinscannenEcht_Ui.Fotos_zu_netz()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    Trendo.App.Tests (ID = '120bc5efcdd5d8a5f507f99d4f56442c9e00d1fe7777ea7c0205ea3d39e12437')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 1, Skipped: 0, Not Run: 0, Time: 13,389s

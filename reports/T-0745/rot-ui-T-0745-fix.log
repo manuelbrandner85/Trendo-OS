@@ -1,0 +1,29 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    Gegenprüfung T-0745 (1, 4): Ecke genau auf die Nachbarecke gesetzt wird mit Erklärung abgelehnt; Export nennt sich überschneidende Teile [FAIL]
+      Assert.Contains() Failure: Sub-string not found
+      String:    "Gespeichert: C:\\Users\\<user>\\AppData\\Local\\Temp\\tre"···
+      Not found: "überschneidet sich"
+      Stack Trace:
+        tests\Trendo.App.Tests\GarmentEditUiTests.cs(270,0): at Trendo.App.Tests.GarmentEdit_Ui.Reject_and_export_hint()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    Gegenprüfung T-0745 (7): Pfeil-Schritte am selben Punkt innerhalb 1 s sind EIN Rückgängig-Schritt; Pause oder andere Änderung trennt [FAIL]
+      Assert.Equal() Failure: Values differ
+      Expected: 1
+      Actual:   3
+      Stack Trace:
+        tests\Trendo.App.Tests\GarmentEditUiTests.cs(234,0): at Trendo.App.Tests.GarmentEdit_Ui.Arrow_steps_grouped()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    Gegenprüfung T-0745 (2): keine Tastatur-Falle – ohne Auswahl wandert Tab aus der Fläche; nach Enter im Zahlenfeld bleibt der Fokus im Feld [FAIL]
+      Assert.NotSame() Failure: Values are the same instance
+      Stack Trace:
+        tests\Trendo.App.Tests\GarmentEditUiTests.cs(189,0): at Trendo.App.Tests.GarmentEdit_Ui.Keyboard_no_trap()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    Trendo.App.Tests (ID = '72e0aaaa5c9beeb48c4d92534698c4c7c236c9f39502abe0c881a15eb231f2a6')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 7, Errors: 0, Failed: 3, Skipped: 0, Not Run: 0, Time: 34,791s

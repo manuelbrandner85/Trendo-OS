@@ -1,0 +1,6 @@
+⚠ Alarm „Druck über 50 für 2 s, Hysterese 5“: Kessel – Druck 58,0
+✓ Alarm „Druck über 50 für 2 s, Hysterese 5“ vorbei: Kessel – Druck 44,0
+Prüfprotokoll: zwilling.quelle.datei | kessel.csv
+Prüfprotokoll: zwilling.regel.neu | Kessel/Druck: über 50 für 2 s, Hysterese 5
+Prüfprotokoll: zwilling.alarm | Druck über 50 für 2 s, Hysterese 5: Kessel/Druck = 58
+Prüfprotokoll: zwilling.alarm.ende | Druck über 50 für 2 s, Hysterese 5: Kessel/Druck = 44

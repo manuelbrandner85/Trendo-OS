@@ -691,7 +691,9 @@ public sealed class TvLibrary(string dataRoot, ISecretStore? secrets = null)
     /// <summary>Dateiname für eine Aufnahme (ohne verbotene Zeichen).</summary>
     public static string RecordingFile(string folder, TvRecording r)
     {
-        var safe = new string($"{r.Start.ToLocalTime():yyyy-MM-dd HH-mm} {r.ChannelName} – {r.Title}".Where(ch => !Path.GetInvalidFileNameChars().Contains(ch)).ToArray()).Trim();
+        // T-0746 (Echtlauf): ohne Programmführer ist der Titel der Sendername – dann nicht zweimal („Sender – Sender“)
+        var name = string.Equals(r.Title.Trim(), r.ChannelName.Trim(), StringComparison.OrdinalIgnoreCase) ? r.ChannelName : $"{r.ChannelName} – {r.Title}";
+        var safe = new string($"{r.Start.ToLocalTime():yyyy-MM-dd HH-mm} {name}".Where(ch => !Path.GetInvalidFileNameChars().Contains(ch)).ToArray()).Trim();
         return Path.Combine(folder, safe.Length > 120 ? safe[..120] : safe) + ".ts";
     }
 }

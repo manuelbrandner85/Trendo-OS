@@ -1,0 +1,19 @@
+# T-0748-fix2 – angezeigtes groesstes Moment (FrameSolver.Solve mit Standard-Abtastung, wie Oberflaeche und PDF/SVG/CSV) und Gegenprobe
+# "vorher" = Stand 49cec65d7, "nachher" = T-0748-fix2. Release, eigener Messaufbau im Temp-Ordner (nicht im Repo).
+# Einfeldtraeger 5 m IPE 200, 20 kN; Referenz Formel M = F*a*b/L.
+# Rahmen: Stiele 4 m (HEA 200) mit eingespannten Fuessen, Riegel IPE 300 6 m, 50 kN; Referenz = zweite Rechnung (eigener Code).
+
+Fall                       vorher Anzeige / Referenz / Abw. / Gegenprobe          nachher Anzeige / Abw. / Gegenprobe
+Einfeld F bei 1/3          21,6667 / 22,2222 / 2,50 % zu niedrig / ✓ 0,25 %        22,2222 / 0 % / ✓ 0,01 %
+Einfeld F bei 1/6          13,7500 / 13,8889 / 1,00 % zu niedrig / ✓ 0,40 %        13,8889 / 0 % / ✓ 0,01 %
+Einfeld F bei 0,5025       24,8750 / 24,9994 / 0,50 % zu niedrig / ✓ 0,50 %        24,9994 / 0 % / ✓ < 0,01 %
+Einfeld F bei 0,0125        1,2188 /  1,2344 / 1,27 % zu niedrig / ✓ 0,25 %         1,2344 / 0 % / ✓ < 0,01 %
+Rahmen F bei 1/3           45,6978 / 47,3282 / 3,45 % zu niedrig / ✓ 0,34 %        47,3282 / 0 % / ✓ 0,04 %
+Rahmen F bei 1/6           28,5149 / 28,9091 / 1,36 % zu niedrig / ⚠ 0,55 % (Fehlalarm)   28,9091 / 0 % / ✓ 0,05 %
+Rahmen F bei 0,5025        53,2775 / 53,6506 / 0,70 % zu niedrig / ⚠ 0,70 % (Fehlalarm)   53,6506 / 0 % / ✓ < 0,01 %
+Rahmen F bei 0,0125         2,4794 /  2,5230 / 1,73 % zu niedrig / ✓ 0,35 %         2,5230 / 0 % / ✓ 0,01 %
+
+Vorher pruefte die Gegenprobe einen eigenen Lauf mit 201 Punkten, nicht die angezeigten 41 Punkte – daher "✓" trotz zu niedriger Anzeige.
+Nachher: Messpunkte = 41 gleichmaessige + jeder Lastort einer Einzellast + jede Querkraft-Nullstelle; Gegenprobe prueft genau diesen Lauf.
+Durchbiegung: vorher Trapezregel (Einzellast nahe Stabende: bis 1,02 % Abweichung), nachher 3-Punkt-Gauss je Abschnitt (exakt fuer M bis 3. Grad).
+Pruefprogramm des Pruefers (pruef2) nachher: alle Faelle ok, groesste Abweichung 0,053 % (Verschiebung, Abtastung des Durchbiegungs-Maximums), Moment ueberall 0 %.

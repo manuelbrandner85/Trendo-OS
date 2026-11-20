@@ -1,0 +1,22 @@
+C:\Users\<user>\AppData\Local\Temp\trendo-T0745-beleg\anprobe\trendo_anprobe.py:822: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  mat.use_nodes = True
+C:\Users\<user>\AppData\Local\Temp\trendo-T0745-beleg\anprobe\trendo_anprobe.py:868: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  thread.use_nodes = True
+C:\Users\<user>\AppData\Local\Temp\trendo-T0745-beleg\anprobe\trendo_anprobe.py:881: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  doll.use_nodes = True
+C:\Users\<user>\AppData\Local\Temp\trendo-T0745-beleg\anprobe\trendo_anprobe.py:908: DeprecationWarning: 'Material.use_nodes' is expected to be removed in Blender 6.0
+  paper.use_nodes = True
+C:\Users\<user>\AppData\Local\Temp\trendo-T0745-beleg\anprobe\trendo_anprobe.py:931: DeprecationWarning: 'World.use_nodes' is expected to be removed in Blender 6.0
+  world.use_nodes = True
+01:50.109  cycles           | WARNING HIPEW initialization failed: Error opening HIP dynamic library
+02:06.469  render           | Saved: 'C:\Users\<user>\AppData\Local\Temp\trendo-T0745-beleg\anprobe\bild-nah.png'
+02:17.453  render           | Saved: 'C:\Users\<user>\AppData\Local\Temp\trendo-T0745-beleg\anprobe\bild-vorn.png'
+02:28.141  render           | Saved: 'C:\Users\<user>\AppData\Local\Temp\trendo-T0745-beleg\anprobe\bild-schraeg.png'
+02:38.516  render           | Saved: 'C:\Users\<user>\AppData\Local\Temp\trendo-T0745-beleg\anprobe\bild-hinten.png'
+TRENDO_FERTIG
+Blender 5.2.3 LTS (hash e13b728c6880 built 2026-10-22 01:37:16)
+
+real	2m38.917s
+user	0m0.060s
+sys	0m0.000s
+exit 0

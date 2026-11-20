@@ -1,0 +1,72 @@
+T-0746 Echtlauf „TV & Live“ (STUDIO-TV-01) 2026-11-17 23:27:26 +01:00
+Quelle: eigener HLS-Teststream (FFmpeg-Testbild, 440-Hz-Ton) auf 127.0.0.1 – kein Sender, kein Internet.
+FFmpeg: C:\Users\<user>\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-9.0.2-full_build\bin\ffmpeg.exe
+mpv: C:\Users\<user>\AppData\Local\TrendoWerkzeuge\mpv\mpv.exe
+mpv v0.41.0-1227-ge471496c5 Copyright © 2000-2026 mpv/MPlayer/mplayer2 projects
+HTTP-Server dieses Tests: http://127.0.0.1:61938/ (Ordner mit index.m3u8, liste.m3u)
+
+Klick „Hinzufügen & laden“ → Meldung: ✓ „Teststream“ geladen: 1 Sender.
+Klick auf „Trendo Teststream“ → Player der App spielt: http://127.0.0.1:61938/index.m3u8
+mpv (--vo=null --ao=null --length=5 --log-file=<temp> --alang=de,deu,ger --slang=de,deu,ger --subs-with-matching-audio=no --sub-auto=fuzzy --no-terminal --osc=yes --input-vo-keyboard=no --user-agent=VLC/3.0.21 LibVLC/3.0.21 --cache=yes --demuxer-max-back-bytes=1GiB --demuxer-max-bytes=150MiB --hwdec=auto-safe --input-ipc-server=\\.\pipe\trendo-t0746-57892 --mute=yes http://127.0.0.1:61938/index.m3u8) Exit 0
+[   0.089][d][ffmpeg/video] h264: Reinit context to 640x368, pix_fmt: yuv420p
+[   0.097][v][cplayer] Opening done: http://127.0.0.1:61938/index.m3u8
+[   0.443][d][ffmpeg/video] h264: Reinit context to 640x368, pix_fmt: d3d11
+[   0.486][i][cplayer] AO: [null] 48000Hz mono 1ch floatp
+[   0.486][v][cplayer] AO: Description: Null audio output
+[   0.487][i][cplayer] VO: [null] 640x360 nv12
+[   0.487][v][cplayer] VO: Description: Null video output
+[   0.489][v][cplayer] playback restart complete @ 0.021333, audio=ready, video=playing
+[   5.423][v][cplayer] EOF code: 1  
+
+Klick „Aufnehmen“ → Aufnahme „Trendo Teststream“: läuft, Datei 2026-11-17 23-27 Trendo Teststream.ts
+Klick „Beenden“ nach 10,5 s → Zustand: fertig
+
+--- ffprobe der Aufnahme (1688804 Bytes, SHA-256 63c19017a39c0a01880d2761012edab373c26b575b71888f8b2ed96446ae8a21) ---
+[PROGRAM]
+[STREAM]
+codec_name=h264
+codec_type=video
+width=640
+height=360
+r_frame_rate=25/1
+[/STREAM]
+[STREAM]
+codec_name=aac
+codec_type=audio
+sample_rate=48000
+channels=1
+r_frame_rate=0/0
+[/STREAM]
+[/PROGRAM]
+[STREAM]
+codec_name=h264
+codec_type=video
+width=640
+height=360
+r_frame_rate=25/1
+[/STREAM]
+[STREAM]
+codec_name=aac
+codec_type=audio
+sample_rate=48000
+channels=1
+r_frame_rate=0/0
+[/STREAM]
+[FORMAT]
+format_name=mpegts
+duration=14.034667
+size=1688804
+bit_rate=962647
+[/FORMAT]
+
+
+--- Anfragen an den HTTP-Server (Auszug) ---
+23:27:31.777 GET /liste.m3u → 200 106 Bytes
+23:27:32.645 GET /index.m3u8 → 200 129 Bytes
+23:27:32.671 GET /index0.ts → 200 220900 Bytes
+23:27:32.673 GET /index1.ts → 200 256996 Bytes
+23:27:34.737 GET /index.m3u8 → 200 157 Bytes
+23:27:34.738 GET /index2.ts → 200 226728 Bytes
+… insgesamt 22 Anfragen
+
+Aufräumen: eigene Prozesse beendet (Teststream (HLS) Exit 0); Port 61938 offen: nein

@@ -1,0 +1,194 @@
+T-0746 Echtlauf „Live streamen“ (SPEC-15) 2026-11-17 23:26:33 +01:00
+Ziel: nur 127.0.0.1 (lokaler Empfänger), kein externer Dienst, kein Konto, Probe-Schlüssel ohne Bedeutung.
+FFmpeg (Empfänger und ffprobe): C:\Users\<user>\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-9.0.2-full_build\bin\ffmpeg.exe
+ffmpeg version 9.0.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers
+Empfänger 1 lauscht auf rtmp://127.0.0.1:54608/live/… (beendet nach 8 s Material, prüft das Neuverbinden)
+Klick „Live anfragen …“ → Status: Wartet auf deine Freigabe. Der Stream startet nicht von allein.
+Klick „Ja, jetzt senden“ → Sendung läuft nach 0,7 s
+Aufruf der App (FFmpeg): -y -hide_banner -thread_queue_size 1024 -f gdigrab -framerate 30 -i desktop -f lavfi -i anullsrc=channel_layout=stereo:sample_rate=44100 -filter_complex [0:v]scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1[b0];[b0]null[vmain];[vmain]split=3[vout][vcopy][p];[p]fps=2,scale=640:-2[prev] -map [prev] -an -q:v 5 -f image2 -update 1 C:\Users\<user>\AppData\Local\Temp\trendo-testlauf-57892-6afcd496\trendo-ui-ccc17b01d0e94e9998b147d246ca83ca\fach\sendung\vorschau.jpg -map [vout] -map 1:a -c:v libx264 -preset veryfast -tune zerolatency -pix_fmt yuv420p -r 30 -b:v 2750k -maxrate 2750k -bufsize 5500k -g 60 -c:a aac -b:a 160k -ar 44100 -f flv rtmp://127.0.0.1:54608/live/trendo-probe-0746 -map [vcopy] -map 1:a -c:v libx264 -preset veryfast -pix_fmt yuv420p -r 30 -b:v 2750k -maxrate 2750k -bufsize 5500k -g 60 -c:a aac -b:a 160k -ar 44100 -f mp4 -movflags frag_keyframe+empty_moov C:\Users\<user>\AppData\Local\Temp\trendo-testlauf-57892-6afcd496\trendo-ui-ccc17b01d0e94e9998b147d246ca83ca\fach\sendung\aufnahme-20261117-232639.mp4
+
+--- Statusanzeige der App (bei jeder Änderung) ---
+   1,0 s  Live auf den Server 127.0.0.1. Mit Stopp beenden.
+   1,2 s  Live auf den Server 127.0.0.1. Gesendet: 0:00. Mit Stopp beenden.
+   1,8 s  Live auf den Server 127.0.0.1. Gesendet: 0:01. Mit Stopp beenden.
+   3,1 s  Live auf den Server 127.0.0.1. Gesendet: 0:02. Mit Stopp beenden.
+   3,9 s  Live auf den Server 127.0.0.1. Gesendet: 0:03. Mit Stopp beenden.
+   4,7 s  Live auf den Server 127.0.0.1. Gesendet: 0:04. Mit Stopp beenden.
+   5,7 s  Live auf den Server 127.0.0.1. Gesendet: 0:05. Mit Stopp beenden.
+   6,8 s  Live auf den Server 127.0.0.1. Gesendet: 0:06. Mit Stopp beenden.
+   7,8 s  Live auf den Server 127.0.0.1. Gesendet: 0:07. Mit Stopp beenden.
+   8,9 s  Live auf den Server 127.0.0.1. Gesendet: 0:08. Mit Stopp beenden.
+   9,7 s  Verbindung zum Sendeserver abgebrochen. Neuer Versuch in 2 s (1 von 3). Mit Stopp beenden.
+  11,8 s  Live auf den Server 127.0.0.1. Wieder verbunden (1 von 3). Mit Stopp beenden.
+  12,6 s  Live auf den Server 127.0.0.1. Gesendet: 0:00. Wieder verbunden (1 von 3). Mit Stopp beenden.
+  13,2 s  Live auf den Server 127.0.0.1. Gesendet: 0:01. Wieder verbunden (1 von 3). Mit Stopp beenden.
+  14,2 s  Live auf den Server 127.0.0.1. Gesendet: 0:02. Wieder verbunden (1 von 3). Mit Stopp beenden.
+  15,3 s  Live auf den Server 127.0.0.1. Gesendet: 0:03. Wieder verbunden (1 von 3). Mit Stopp beenden.
+  16,3 s  Live auf den Server 127.0.0.1. Gesendet: 0:04. Wieder verbunden (1 von 3). Mit Stopp beenden.
+  17,3 s  Live auf den Server 127.0.0.1. Gesendet: 0:05. Wieder verbunden (1 von 3). Mit Stopp beenden.
+  18,4 s  Live auf den Server 127.0.0.1. Gesendet: 0:06. Wieder verbunden (1 von 3). Mit Stopp beenden.
+  19,4 s  Live auf den Server 127.0.0.1. Gesendet: 0:07. Wieder verbunden (1 von 3). Mit Stopp beenden.
+  20,5 s  Live auf den Server 127.0.0.1. Gesendet: 0:08. Wieder verbunden (1 von 3). Mit Stopp beenden.
+  21,1 s  Gestoppt.
+
+Letzte Anzeige vor Stopp: 0:08
+Neuverbindungen: 1
+FFmpeg-Zeilen beim Abbruch (LastLog der App, ohne Schlüssel):
+[out#1/flv @ 000001a4539b7040] Terminating thread with return code -10054 (Error number -10054 occurred)
+[out#1/flv @ 000001a4539b7040] Error writing trailer: Error number -10054 occurred
+[out#1/flv @ 000001a4539b7040] Error closing file: Error number -10054 occurred
+nsform intra:24.0% inter:26.0%
+[libx264 @ 000001a455559bc0] coded y,uvDC,uvAC intra: 73.9% 83.7% 76.9% inter: 6.7% 6.1% 1.6%
+[libx264 @ 000001a455559bc0] i16 v,h,dc,p: 66% 16% 10%  8%
+[libx264 @ 000001a455559bc0] i8 v,h,dc,ddl,ddr,vr,hd,vl,hu: 37% 16% 10%  6%  5%  7%  4%  9%  6%
+[libx264 @ 000001a455559bc0] i4 v,h,dc,ddl,ddr,vr,hd,vl,hu: 29% 19%  9%  7%  8%  7%  7%  8%  6%
+[libx264 @ 000001a455559bc0] i8c dc,h,v,p: 38% 18% 31% 13%
+[libx264 @ 000001a455559bc0] Weighted P-Frames: Y:0.0% UV:0.0%
+[libx264 @ 000001a455559bc0] kb/s:2578.99
+[aac @ 000001a45555bf40] Qavg: 65536.000
+Conversion failed!
+frame=   18 fps=2.0 q=5.0 Lq=17.0 q=-1.0 size=N/A time=00:00:09.13 bitrate=N/A speed=   1x elapsed=0:00:09.12
+
+--- ffprobe der Aufzeichnungen des Empfängers ---
+empfang-1.flv (3053559 Bytes, SHA-256 b1968fddc1728f6c7b5f01337d412afcfda5f71f3bb3e72014195bae665162f7):
+[STREAM]
+codec_name=h264
+codec_type=video
+width=1280
+height=720
+r_frame_rate=30/1
+[/STREAM]
+[STREAM]
+codec_name=aac
+codec_type=audio
+sample_rate=44100
+channels=2
+r_frame_rate=0/0
+[/STREAM]
+[FORMAT]
+format_name=flv
+duration=8.023000
+size=3053559
+bit_rate=3044805
+[/FORMAT]
+
+empfang-2.flv (3223373 Bytes, SHA-256 c4caf030612ea7d12189229ed595b1a41f40be3fe3f8cef0d48880479ef97c71):
+[STREAM]
+codec_name=h264
+codec_type=video
+width=1280
+height=720
+r_frame_rate=30/1
+[/STREAM]
+[STREAM]
+codec_name=aac
+codec_type=audio
+sample_rate=44100
+channels=2
+r_frame_rate=0/0
+[/STREAM]
+[FORMAT]
+format_name=flv
+duration=8.856000
+size=3223373
+bit_rate=2911809
+[/FORMAT]
+
+--- ffprobe der Kopien auf diesem PC (je Verbindung eine Datei) ---
+aufnahme-20261117-232639.mp4 (2963842 Bytes):
+[STREAM]
+codec_name=h264
+codec_type=video
+width=1280
+height=720
+r_frame_rate=30/1
+[/STREAM]
+[STREAM]
+codec_name=aac
+codec_type=audio
+sample_rate=44100
+channels=2
+r_frame_rate=0/0
+[/STREAM]
+[FORMAT]
+format_name=mov,mp4,m4a,3gp,3g2,mj2
+duration=9.233334
+size=2963842
+bit_rate=2567949
+[/FORMAT]
+
+aufnahme-20261117-232639-teil2.mp4 (2904576 Bytes):
+[STREAM]
+codec_name=h264
+codec_type=video
+width=1280
+height=720
+r_frame_rate=30/1
+[/STREAM]
+[STREAM]
+codec_name=aac
+codec_type=audio
+sample_rate=44100
+channels=2
+r_frame_rate=0/0
+[/STREAM]
+[FORMAT]
+format_name=mov,mp4,m4a,3gp,3g2,mj2
+duration=8.900000
+size=2904576
+bit_rate=2610854
+[/FORMAT]
+
+Schlüssel steht in keiner Datei der App (Datenordner geprüft).
+Gesamtdauer vom Klick bis Stopp: 21,1 s
+Bildinhalte (Bildschirmaufnahme) werden nicht als Beleg abgelegt – nur ihre ffprobe-Werte.
+
+--- Empfänger 1 (FFmpeg, Exit 0, letzte Zeilen) ---
+frame=   59 fps=0.0 q=-1.0 size=     512KiB time=00:00:01.99 bitrate=2101.4kbits/s speed= 3.9x elapsed=0:00:00.51    
+frame=   74 fps= 72 q=-1.0 size=     768KiB time=00:00:02.50 bitrate=2509.6kbits/s speed=2.44x elapsed=0:00:01.02    
+frame=   85 fps= 55 q=-1.0 size=     768KiB time=00:00:02.85 bitrate=2202.9kbits/s speed=1.86x elapsed=0:00:01.53    
+frame=  101 fps= 49 q=-1.0 size=    1024KiB time=00:00:03.39 bitrate=2474.5kbits/s speed=1.65x elapsed=0:00:02.05    
+frame=  118 fps= 46 q=-1.0 size=    1280KiB time=00:00:03.95 bitrate=2650.6kbits/s speed=1.54x elapsed=0:00:02.57    
+frame=  132 fps= 43 q=-1.0 size=    1536KiB time=00:00:04.43 bitrate=2837.2kbits/s speed=1.44x elapsed=0:00:03.08    
+frame=  148 fps= 41 q=-1.0 size=    1536KiB time=00:00:04.96 bitrate=2532.3kbits/s speed=1.38x elapsed=0:00:03.60    
+frame=  166 fps= 40 q=-1.0 size=    1792KiB time=00:00:05.57 bitrate=2634.6kbits/s speed=1.35x elapsed=0:00:04.12    
+frame=  182 fps= 39 q=-1.0 size=    2048KiB time=00:00:06.10 bitrate=2747.7kbits/s speed=1.32x elapsed=0:00:04.63    
+frame=  194 fps= 38 q=-1.0 size=    2304KiB time=00:00:06.50 bitrate=2903.3kbits/s speed=1.26x elapsed=0:00:05.15    
+frame=  214 fps= 38 q=-1.0 size=    2560KiB time=00:00:07.15 bitrate=2930.6kbits/s speed=1.26x elapsed=0:00:05.66    
+frame=  226 fps= 37 q=-1.0 size=    2560KiB time=00:00:07.55 bitrate=2775.5kbits/s speed=1.22x elapsed=0:00:06.18    
+[out#0/flv @ 0000014b11bb9500] video:2969KiB audio:2KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.364507%
+frame=  240 fps= 36 q=-1.0 Lsize=    2982KiB time=00:00:08.05 bitrate=3032.3kbits/s speed=1.21x elapsed=0:00:06.63    
+
+--- Empfänger 2 (FFmpeg, Exit 0, letzte Zeilen) ---
+frame=   73 fps= 71 q=-1.0 size=     768KiB time=00:00:02.46 bitrate=2556.5kbits/s speed=2.38x elapsed=0:00:01.03    
+frame=   88 fps= 57 q=-1.0 size=     768KiB time=00:00:02.97 bitrate=2116.9kbits/s speed=1.92x elapsed=0:00:01.55    
+frame=  104 fps= 50 q=-1.0 size=    1024KiB time=00:00:03.48 bitrate=2404.3kbits/s speed=1.69x elapsed=0:00:02.06    
+frame=  118 fps= 46 q=-1.0 size=    1024KiB time=00:00:03.97 bitrate=2113.0kbits/s speed=1.54x elapsed=0:00:02.57    
+frame=  134 fps= 43 q=-1.0 size=    1536KiB time=00:00:04.48 bitrate=2803.1kbits/s speed=1.45x elapsed=0:00:03.09    
+frame=  148 fps= 41 q=-1.0 size=    1536KiB time=00:00:04.96 bitrate=2532.3kbits/s speed=1.38x elapsed=0:00:03.60    
+frame=  164 fps= 40 q=-1.0 size=    1792KiB time=00:00:05.50 bitrate=2667.6kbits/s speed=1.34x elapsed=0:00:04.12    
+frame=  183 fps= 39 q=-1.0 size=    1792KiB time=00:00:06.13 bitrate=2394.8kbits/s speed=1.32x elapsed=0:00:04.63    
+frame=  193 fps= 37 q=-1.0 size=    2048KiB time=00:00:06.47 bitrate=2589.9kbits/s speed=1.26x elapsed=0:00:05.15    
+frame=  209 fps= 37 q=-1.0 size=    2304KiB time=00:00:07.01 bitrate=2691.7kbits/s speed=1.24x elapsed=0:00:05.66    
+frame=  225 fps= 36 q=-1.0 size=    2560KiB time=00:00:07.52 bitrate=2787.7kbits/s speed=1.22x elapsed=0:00:06.19    
+[in#0/flv @ 000001a6c1d1fc00] Error during demuxing: I/O error
+[out#0/flv @ 000001a6c1db5b40] video:3135KiB audio:2KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: 0.358203%
+frame=  265 fps= 41 q=-1.0 Lsize=    3148KiB time=00:00:08.85 bitrate=2911.8kbits/s speed=1.37x elapsed=0:00:06.44    
+
+--- Sender der App beim letzten Ende (LastLog, ohne Schlüssel) ---
+[out#1/flv @ 000001a4539b7040] Terminating thread with return code -10054 (Error number -10054 occurred)
+[out#1/flv @ 000001a4539b7040] Error writing trailer: Error number -10054 occurred
+[out#1/flv @ 000001a4539b7040] Error closing file: Error number -10054 occurred
+nsform intra:24.0% inter:26.0%
+[libx264 @ 000001a455559bc0] coded y,uvDC,uvAC intra: 73.9% 83.7% 76.9% inter: 6.7% 6.1% 1.6%
+[libx264 @ 000001a455559bc0] i16 v,h,dc,p: 66% 16% 10%  8%
+[libx264 @ 000001a455559bc0] i8 v,h,dc,ddl,ddr,vr,hd,vl,hu: 37% 16% 10%  6%  5%  7%  4%  9%  6%
+[libx264 @ 000001a455559bc0] i4 v,h,dc,ddl,ddr,vr,hd,vl,hu: 29% 19%  9%  7%  8%  7%  7%  8%  6%
+[libx264 @ 000001a455559bc0] i8c dc,h,v,p: 38% 18% 31% 13%
+[libx264 @ 000001a455559bc0] Weighted P-Frames: Y:0.0% UV:0.0%
+[libx264 @ 000001a455559bc0] kb/s:2578.99
+[aac @ 000001a45555bf40] Qavg: 65536.000
+Conversion failed!
+frame=   18 fps=2.0 q=5.0 Lq=17.0 q=-1.0 size=N/A time=00:00:09.13 bitrate=N/A speed=   1x elapsed=0:00:09.12
+
+Aufräumen: eigene Prozesse beendet (Empfänger 1 Exit 0, Empfänger 2 Exit 0); Port 54608 offen: nein

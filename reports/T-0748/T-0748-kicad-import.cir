@@ -1,0 +1,12 @@
+* Transistor aus KiCad – Trendo Schaltung
+VBT1 1 0 DC 9E+0
+RR1 1 2 4.7E+2
+DD1 2 3 DLED
+QQ1 3 4 0 QN1E+2
+.model QN1E+2 NPN(IS=1E-14 BF=1E+2 BR=1)
+RSW1 1 5 1E-3
+RR2 5 4 1E+4
+.model DSI D(IS=2.52E-9 N=1.752)
+.model DLED D(IS=1E-19 N=2)
+.tran 1E-4 5E-2
+.end

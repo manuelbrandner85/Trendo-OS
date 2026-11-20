@@ -374,16 +374,23 @@ public partial class MainWindow
     private string StatusText()
     {
         if (_liveMsg.Length > 0) return _liveMsg;
-        if (Live.Mode == LiveMode.Broadcasting) return "Live auf " + LiveBroadcast.Where(_frozenPlatform, _frozenCustom) + ". Mit Stopp beenden.";
+        // T-0746: gesendete Zeit und Bitrate sichtbar; beim Neuverbinden zeigt die Sitzung selbst, was passiert
+        if (Live.Mode == LiveMode.Broadcasting && !Live.Retrying)
+            return "Live auf " + LiveBroadcast.Where(_frozenPlatform, _frozenCustom) + "." + (Live.Stats is { } st ? " Gesendet: " + st + "." : "")
+                + (Live.Retries > 0 ? " Wieder verbunden (" + Live.Retries + " von " + LiveSession.MaxRetries + ")." : "") + " Mit Stopp beenden.";
         return Live.StatusLine();
     }
+
+    /// <summary>T-0746: ein Takt des Live-Zeitgebers (alle 0,5 s) – Vorschau, Status, Ende und Neuverbinden. Öffentlich wie <c>BcTick</c>/<c>TvRecTick</c>,
+    /// weil das Testfenster keinen laufenden Zeitgeber hat.</summary>
+    public void LiveTick() => RefreshLivePreview();
 
     private void RefreshLivePreview()
     {
         try
         {
             if (_live is null) return;
-            if (_live.Exited) _live.NoteExit();
+            _live.Tick(); // T-0746: Ende bemerken, bei Verbindungsabbruch neu verbinden
             LiveMeterTick();
             var img = LiveCtrl<Image>("live-preview");
             var hint = LiveCtrl<TextBlock>("live-preview-hint");

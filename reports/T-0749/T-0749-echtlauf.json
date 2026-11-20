@@ -1,0 +1,15 @@
+{
+  "fotos": 48,
+  "kameras": 48,
+  "punkte3d": 3819,
+  "colmap_netz_punkte": 2135,
+  "colmap_netz_dreiecke": 4165,
+  "trendo_dreiecke": 4165,
+  "laufzeit_s": 15.1,
+  "schritte": [
+    "Merkmale in den Fotos suchen",
+    "Gleiche Stellen in den Fotos finden",
+    "Kameras und die grobe Form rechnen",
+    "Oberfl\u00E4che bauen"
+  ]
+}

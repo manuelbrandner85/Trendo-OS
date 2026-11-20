@@ -1,0 +1,18 @@
+{
+  "Format": "trendo-alarmregeln",
+  "Version": 1,
+  "Regeln": [
+    {
+      "Id": "148f926a",
+      "Name": "Druck \u00FCber 50 f\u00FCr 2 s, Hysterese 5",
+      "Asset": "Kessel",
+      "Sensor": "Druck",
+      "Above": true,
+      "Threshold": 50,
+      "DurationSeconds": 2,
+      "Hysteresis": 5,
+      "Enabled": true,
+      "Created": "2026-11-17T22:19:32.8093885+01:00"
+    }
+  ]
+}
