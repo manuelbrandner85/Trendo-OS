@@ -151,7 +151,21 @@ public sealed class CncJob
     }
 
     /// <summary>T-0747-fix: Werte, die in die Bahnen eingehen, als Text (für den Stempel).</summary>
-    public string CamSettingsKey() { var c = CamSettings(); return string.Join("|", new[] { c.ToolD, c.Depth, c.StepDown, c.Feed, c.Plunge, c.TabW, c.TabH, c.Rpm, c.Tabs }.Select(v => v.ToString("R", System.Globalization.CultureInfo.InvariantCulture))) + "|" + c.Mode; }
+    /// T-0747-fix3: die Konturen gehören mit in den Stempel – G-Code einer anderen Zeichnung gilt so immer als veraltet.
+    public string CamSettingsKey() { var c = CamSettings(); return string.Join("|", new[] { c.ToolD, c.Depth, c.StepDown, c.Feed, c.Plunge, c.TabW, c.TabH, c.Rpm, c.Tabs }.Select(v => v.ToString("R", System.Globalization.CultureInfo.InvariantCulture))) + "|" + c.Mode + "|" + ContoursHash(); }
+
+    /// <summary>T-0747-fix3: Prüfsumme der Konturen (Ebene, offen/geschlossen, Punkte wie gespeichert).</summary>
+    public string ContoursHash()
+    {
+        using var h = System.Security.Cryptography.IncrementalHash.CreateHash(System.Security.Cryptography.HashAlgorithmName.SHA256);
+        foreach (var c in Contours)
+        {
+            h.AppendData(System.Text.Encoding.UTF8.GetBytes(c.Layer + (c.Closed ? "|g|" : "|o|")));
+            var buf = new byte[16];
+            foreach (var (x, y) in c.Pts) { BitConverter.TryWriteBytes(buf.AsSpan(0, 8), Math.Round(x, 9)); BitConverter.TryWriteBytes(buf.AsSpan(8, 8), Math.Round(y, 9)); h.AppendData(buf); }
+        }
+        return Convert.ToHexString(h.GetHashAndReset())[..16];
+    }
 
     static string GcodeHash(string g) => Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(g.Replace("\r", ""))))[..16];
 
@@ -178,12 +192,12 @@ public sealed class CncJob
         Cad.CadDrawing drawing; Dictionary<string, int> skipped; string? units = null;
         switch (ext)
         {
-            case ".dxf": { var rd = Cad.CadDxf.Read(path, ct); drawing = rd.Drawing; skipped = rd.Skipped; if (rd.Units is not 0 and not 4) units = rd.UnitName; break; }
+            case ".dxf": { var rd = Cad.CadDxf.Read(path, ct); drawing = rd.Drawing; skipped = rd.Skipped; if (rd.Units is not 0 and not 4) units = rd.UnitName; else if (rd.Units == 0) units = ""; break; } // T-0747-fix3: "" = keine Angabe
             case ".svg": { var rs = Cad.CadSvg.Read(path); drawing = rs.Drawing; skipped = rs.Skipped; break; }
             default: throw new Cad.CadError("Für Fräsbahnen bitte eine DXF- oder SVG-Datei wählen.");
         }
         var notes = ReadNotes(drawing, skipped, units);
-        var cs = CncCam.Contours(drawing, ct: ct);
+        var cs = CncCam.Contours(drawing, notes, ct: ct); // T-0747-fix3: Hinweise beim Verketten (mehrdeutige Spalten)
         if (cs.Count == 0) throw new Cad.CadError("In der Zeichnung sind keine Konturen (Linien, Kreise, Bögen, Pfade)." + (notes.Count > 0 ? " " + string.Join(" ", notes) : ""));
         var old = (Contours, CamSource); Contours = cs; CamSource = System.IO.Path.GetFileName(path);
         try { var r = Contours.Count == 0 ? Cam() : CncCam.Generate(Contours, CamSettings(), ct); SetCamGcode(r.Gcode); r.Warnings.InsertRange(0, notes); return r; }
@@ -196,7 +210,8 @@ public sealed class CncJob
     public static List<string> ReadNotes(Cad.CadDrawing d, IReadOnlyDictionary<string, int> skipped, string? units)
     {
         var notes = new List<string>();
-        if (units is not null) notes.Add($"Maße in mm umgerechnet (Zeichnung in {units}).");
+        if (units == "") notes.Add("Einheit nicht angegeben – als mm gelesen. Bitte die Maße prüfen."); // T-0747-fix3
+        else if (units is not null) notes.Add($"Maße in mm umgerechnet (Zeichnung in {units}).");
         static string Label(string k) => k switch { "INSERT" => "Blockverweis (INSERT)", "SPLINE" => "SPLINE (Freiformkurve)", "ELLIPSE" => "ELLIPSE", "DIMENSION" => "Bemaßung", "HATCH" => "Schraffur", "text" => "SVG-Text", _ => k };
         if (skipped.Count > 0) notes.Add("Nicht gelesen: " + string.Join(", ", skipped.OrderByDescending(k => k.Value).Select(k => $"{k.Value}× {Label(k.Key)}")) + " – diese Teile fehlen in den Fräsbahnen.");
         var texts = d.Entities.Count(e => e.Kind == "text");

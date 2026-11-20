@@ -149,3 +149,40 @@ Berichtigt: Die frühere Aussage „Bögen auf 0,001 mm“ galt nur bis R ≈ 42
 **Weiterhin offen:** ELLIPSE/SPLINE/INSERT werden gemeldet, aber nicht gefräst · langsame Anzeige sehr großer G-Codes im Editor (vorbestehend) · Taschen mit Inseln nicht gemeinsam ausgeräumt · Laufzeit bei sehr dichten Konturen bleibt im Sekundenbereich (läuft aber im Hintergrund, abbrechbar).
 
 **Testzahlen T-0747-fix2:** Build 0 Fehler. Kern (T0747 alle drei Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests): **93 gesamt, 92 bestanden, 1 übersprungen (vorbestehend „IFC echt“), 0 Fehler**. App: T0747_DxfUi 2/2, T0747_FixUi 3/3, SPEC01_Ui 6/6, SPEC01_UiArc 1/1, SPEC14_Ui 2/2, Bildbearbeitung_Ui 5/5, PlanPhoto_Ui 4/4, N23N24_CadPrintUi 3/3, UebersichtEinfach_Ui 2/2, DeadButtonTests 83/83 – **111/111**. Im ersten Lauf schlug `T0747_FixUi.Big_dxf_background_and_cancel` fehl, weil die neue Abbrechen-Meldung „Abgebrochen“ großschrieb; Meldung auf „Vorgang abgebrochen – nichts geändert …“ geändert (Test unverändert), Wiederholung grün (steht im Rohlog). Prüfskript BESTANDEN. Prüfprogramm des Prüfers: 0 Befunde in 162 Fällen.
+
+## Dritte Prüfung behoben (T-0747-fix3)
+Arbeitskopie `%TEMP%\trendo-auftrag-T-0747-fix3`. Vorher `origin/main` (0.9.106, 2c9ea226f) eingeführt; einziger Konflikt `.gitattributes`, beide Zeilen behalten. Gebaut und getestet auf diesem Stand. Keine Maschine angesteuert.
+**Prüfprogramme beider Prüfer** (nur als Kopie benutzt, nicht im Repo), alle Fälle über `CncJob.ImportDrawing` neu erzeugt:
+
+| Fallgruppe | Fälle | mit G-Code | Befunde | schlechtester Abstand − Radius |
+|---|---|---|---|---|
+| zweite Prüfung, Hauptsatz | 143 | 123 | 0 (vorher 0) | −0,0010 mm |
+| zweite Prüfung, x1–x3 | 3 | 2 | 0 | 0,0000 mm |
+| zweite Prüfung, große Radien | 16 | 16 | 0 | −0,0010 mm |
+| dritte Prüfung, Hauptsatz (p3) | 37 | 31 | **0** (vorher 2: o3, o5) | −0,0043 mm (Erklärung unten) |
+| dritte Prüfung, Spalt mitten / Limaçon (p3b) | 7 | 7 | **0** (vorher 2: o6) | 0,0000 mm |
+| dritte Prüfung, Haltestege (p3c) | 9 | 9 | **0**; Anhebungen = Stege in 9/9 (vorher still falsch) | −0,0001 mm |
+| dritte Prüfung, Ecke diagonal (p3d) | 2 | 1 | 0 | 0,0000 mm |
+
+Haltestege (s12, 9 Fälle): Anhebungen im Durchgang auf voller Tiefe = Anzahl Stege in allen 9 Fällen. Gravur-Abdeckung (g9): jede wahre Kontur höchstens 0,0011 mm von der Gravurbahn.
+Zu den Werten unter −0,002 mm (nur in der Gruppe „dritte Prüfung“, innerhalb der Prüfer-Toleranz 0,01): u6 (Zoll) −0,0024 und v8 (SVG-Bogen gedreht) −0,0043 entstehen in der *Wahrheit* des Fallgenerators – u6 tastet den Kreis in Zoll mit 0,001 Zoll (= 0,0254 mm) Pfeilhöhe ab, v8 lässt den Endpunkt des Bogens weg. Gegen die wahre Geometrie liegt Trendo dort bei ≥ Radius − 0,001 (Bogentoleranz 0,001 mm). Die Bahn gegen Trendos eigene Kontur ist nie näher als Radius − 0,001 mm.
+
+**Rot-Probe:** neue Kerntests `T0747_Fix3DrittePruefung` gegen a9a31b924 – 11 von 11 rot; UI-Tests `T0747_Fix3RaceUi` gegen a9a31b924 – 4 von 4 rot (`reports/T-0747/T-0747-fix3-rotprobe.log`). Danach wurde im Test M2 nur die Mehrdeutigkeits-Geometrie geschärft (die Enden zweier Linien lagen so, dass sie sich zu Recht selbst schlossen).
+
+**M1 Spalt mitten in der Kette – behoben.** `CadContours.Chain` neu: 1. nur exakt passende Enden (≤ 1 µm) verketten, 2. eine Kette mit eigenen Enden ≤ 0,1 mm auseinander schließen, 3. offene Ketten über den kürzesten Spalt verbinden. Beide Endpunkte bleiben, der Spalt ist eine eigene kurze Strecke – die wahre Geometrie wird nie verschoben. Test `Gap_in_the_middle_keeps_both_ends` (o6 mit 0,05/0,09 mm: Kontur enthält (50/0) und (50,05/0), Abstand 3,0000 bei Radius 3). Prüfer o6: vorher −0,05/−0,09 → jetzt 0 Befunde.
+
+**M2/N1 Kandidatenwahl – behoben.** Exakt passende Enden zuerst, sonst der nächste Kandidat nach echtem Abstand (≤ 0,1 + 1e-9, nicht mehr je Achse); geschlossene Ketten werden nie mit anderen verbunden; liegt ein anderes Ende höchstens Abstand + 0,05 mm entfernt, wird nicht überbrückt und gemeldet („Mehrdeutiger Spalt bei X … Y …: … nicht verbunden.“ – erscheint beim CNC-Import unter den Hinweisen). Test `Chaining_nearest_exact_first` (o4, o7, o5, Diagonalspalt 0,113 mm bleibt offen, Spalt 0,1 bei krummen Koordinaten schließt, Mehrdeutigkeit).
+
+**M3 Haltestege – behoben.** `Loop` erkennt Steggrenzen genau auf einem Bahnpunkt (jede Strecke deckt [Anfang, Ende) ab) und zählt die Anhebungen; stimmt die Zahl nicht mit den Stegen überein, gibt es eine Fehlermeldung statt still falschem G-Code. Test `Tabs_on_path_points` (Fräser 2/3/6 mm, Quadrat 20 mm und Seite = Bogenlänge, 2 und 4 Stege: Anhebungen = Stege = Absenkungen).
+
+**M4 Hintergrund-Ergebnis gegen aktuellen Stand – behoben.** Bahnberechnung und CNC-Import merken sich den Dokumentstand beim Start und übernehmen das Ergebnis nur auf genau diesen Stand; sonst wird es verworfen und gemeldet („… wurde verworfen. Bei Bedarf „Bahnen neu“ drücken.“). Die Konturen gehören jetzt mit in den Stempel (`CncJob.ContoursHash`) – G-Code einer anderen Zeichnung gilt immer als veraltet und ist für den Export gesperrt. Hinweis: Dokumente, die mit dem Stand von T-0747-fix2 gestempelt wurden, gelten dadurch einmal als veraltet, bis „Bahnen neu“ gedrückt wird. Tests `T0747_Fix3RaceUi.R2_undo_during_background`, `R3_hand_edit_during_background`.
+
+**M5 offene Konturen als Hindernis – behoben.** Bei der Abstandsprüfung zählen alle Konturen, auch offene und ausgelassene. Test `Open_contour_is_obstacle` (o3: Nachbarteil wird ausgelassen und gemeldet; mit Abstand wird es gefräst, ≥ Radius − 0,002 zum offenen Umriss).
+
+**N2 Limaçon – behoben.** „In der kreuzenden Kontur“ heißt jetzt gerade/ungerade **oder** Windungszahl ≠ 0. Test `Limacon_and_missing_units`. **N3 – behoben.** Eine zweite Wertänderung während der Rechnung wird gemerkt und danach als ein Schritt nachgerechnet, ohne Ausnahme (Test `R1_second_change_is_kept`; Abbrechen verwirft auch die gemerkten Änderungen). **N4 – behoben.** DXF ohne $INSUNITS: „Einheit nicht angegeben – als mm gelesen“ beim CNC-Import und in Trendo CAD (Tests `Limacon_and_missing_units`, `Cad_missing_units`).
+
+**Tests:** siehe Testzahlen unten; Rohlogs `T-0747-fix3-kerntests.log`, `T-0747-fix3-apptests.log`, `T-0747-fix3-pruefskript.log`. Belege der früheren Runden bleiben unverändert (die Ausgaben sind gleich geblieben).
+
+**Weiterhin offen:** ELLIPSE/SPLINE/INSERT nur gemeldet · Anzeige sehr großer G-Codes langsam (vorbestehend) · Taschen mit Inseln nicht gemeinsam ausgeräumt · Mehrdeutige Spalten werden nicht automatisch aufgelöst, nur gemeldet.
+
+**Testzahlen T-0747-fix3 (auf main 0.9.106 + Zweig):** Build 0 Fehler. Kern (T0747 alle vier Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests): **104 gesamt, 103 bestanden, 1 übersprungen (vorbestehend „IFC echt“), 0 Fehler**. App: T0747_DxfUi 2/2, T0747_FixUi 3/3, T0747_Fix3RaceUi 4/4, SPEC01_Ui 6/6, SPEC01_UiArc 1/1, SPEC14_Ui 2/2, Bildbearbeitung_Ui 5/5, PlanPhoto_Ui 4/4, N23N24_CadPrintUi 3/3, UebersichtEinfach_Ui 2/2, DeadButtonTests 83/83 – **115/115**. Prüfskript BESTANDEN. Prüfprogramme beider Prüfer: 0 Befunde in 217 Fällen.

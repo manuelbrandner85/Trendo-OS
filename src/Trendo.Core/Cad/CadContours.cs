@@ -38,7 +38,10 @@ public static class CadContours
 {
     /// <summary>Linienzüge bilden. <paramref name="tol"/>: Enden, die näher als das beieinanderliegen, gelten als verbunden;
     /// <paramref name="chord"/>: höchste Abweichung beim Zerlegen von Kreisen und Bögen in gerade Stücke (gleiche Einheit wie die Zeichnung).</summary>
-    public static List<CadContour> Build(IEnumerable<CadEntity> entities, double tol = 0.01, double chord = 0.01, CancellationToken ct = default)
+    public static List<CadContour> Build(IEnumerable<CadEntity> entities, double tol = 0.01, double chord = 0.01, CancellationToken ct = default) => Build(entities, tol, chord, null, ct);
+
+    /// <summary>Wie oben; <paramref name="notes"/> bekommt Hinweise beim Verketten (mehrdeutige Spalten).</summary>
+    public static List<CadContour> Build(IEnumerable<CadEntity> entities, double tol, double chord, List<string>? notes, CancellationToken ct = default)
     {
         var closed = new List<CadContour>(); var open = new List<CadContour>();
         foreach (var e in entities)
@@ -63,17 +66,24 @@ public static class CadContours
                 }
             }
         }
-        closed.AddRange(Chain(open, tol, ct));
+        closed.AddRange(Chain(open, tol, notes, ct));
         return closed.Where(c => c.Closed || c.Pts.Count >= 2).ToList();
     }
 
-    /// <summary>Offene Züge mit gemeinsamen Enden zusammenhängen (auch umgedreht); schließt sich eine Kette, wird sie geschlossen.
-    /// T-0747-fix: Enden liegen in einem Raster (Zellgröße 2 × Toleranz) – gesucht wird nur in den Nachbarzellen statt in allen Stücken
-    /// (10 000 Linien: Millisekunden statt quadratischer Laufzeit). Angehängt wird jeweils das Stück mit dem kleinsten Index, erst am Ende, dann am Anfang.</summary>
-    public static List<CadContour> Chain(List<CadContour> pieces, double tol, CancellationToken ct = default)
+    /// <summary>Offene Züge mit gemeinsamen Enden zusammenhängen (auch umgedreht); schließt sich eine Kette, wird sie geschlossen.</summary>
+    public static List<CadContour> Chain(List<CadContour> pieces, double tol, CancellationToken ct = default) => Chain(pieces, tol, null, ct);
+
+    /// <summary>T-0747-fix3 (dritte Prüfung): Verketten in drei Schritten, die wahre Geometrie bleibt dabei unverändert –
+    /// 1. nur exakt passende Enden (≤ 1 µm) verbinden; 2. eine Kette, deren eigene Enden höchstens <paramref name="tol"/> auseinanderliegen, schließen
+    /// (der Spalt wird eine eigene kurze Strecke, beide Endpunkte bleiben); 3. offene Ketten untereinander über einen Spalt ≤ <paramref name="tol"/>
+    /// verbinden, kürzester Spalt zuerst (echter Abstand). Liegt ein zweites Ende etwa gleich nah, wird nicht überbrückt und das in
+    /// <paramref name="notes"/> gemeldet. Geschlossene Ketten werden nie mit anderen verbunden.</summary>
+    public static List<CadContour> Chain(List<CadContour> pieces, double tol, List<string>? notes, CancellationToken ct = default)
     {
-        var res = new List<CadContour>(); var used = new bool[pieces.Count];
-        var cell = Math.Max(tol, 1e-9) * 2;
+        var lim = tol + 1e-9;
+        // 1. exakt verbinden (Raster der Enden)
+        var used = new bool[pieces.Count];
+        var cell = Math.Max(tol, 1e-6) * 2;
         (long, long) C((double X, double Y) p) => ((long)Math.Floor(p.X / cell), (long)Math.Floor(p.Y / cell));
         var map = new Dictionary<(long, long), List<int>>();
         for (var k = 0; k < pieces.Count; k++)
@@ -82,44 +92,96 @@ public static class CadContours
                 if (!map.TryGetValue(c, out var l)) map[c] = l = [];
                 l.Add(k);
             }
-        int Find((double X, double Y) at, string layer)
+        int Exact((double X, double Y) at, string layer)
         {
             var (cx, cy) = C(at); var best = int.MaxValue;
             for (var dx = -1L; dx <= 1; dx++)
                 for (var dy = -1L; dy <= 1; dy++)
                     if (map.TryGetValue((cx + dx, cy + dy), out var l))
                         foreach (var k in l)
-                            if (k < best && !used[k] && pieces[k].Layer == layer && (Near(at, pieces[k].Pts[0], tol) || Near(at, pieces[k].Pts[^1], tol))) best = k;
+                            if (k < best && !used[k] && pieces[k].Layer == layer && (Dist(at, pieces[k].Pts[0]) <= DupTol || Dist(at, pieces[k].Pts[^1]) <= DupTol)) best = k;
             return best == int.MaxValue ? -1 : best;
         }
+        var chains = new List<(List<(double X, double Y)> Pts, string Layer, bool Closed)>();
         for (var s = 0; s < pieces.Count; s++)
         {
             if (used[s]) continue; used[s] = true;
             if ((s & 1023) == 0) ct.ThrowIfCancellationRequested();
             var chain = new List<(double X, double Y)>(pieces[s].Pts); var layer = pieces[s].Layer;
-            while (!(chain.Count > 2 && Near(chain[0], chain[^1], tol)))
+            while (!(chain.Count > 2 && Dist(chain[0], chain[^1]) <= DupTol))
             {
-                var k = Find(chain[^1], layer);
+                var k = Exact(chain[^1], layer);
                 if (k >= 0)
                 {
                     var p = pieces[k].Pts; used[k] = true;
-                    if (Near(chain[^1], p[0], tol)) chain.AddRange(p.Skip(1)); else chain.AddRange(Enumerable.Reverse(p).Skip(1));
+                    if (Dist(chain[^1], p[0]) <= DupTol) chain.AddRange(p.Skip(1)); else chain.AddRange(Enumerable.Reverse(p).Skip(1));
                     continue;
                 }
-                k = Find(chain[0], layer);
+                k = Exact(chain[0], layer);
                 if (k >= 0)
                 {
                     var p = pieces[k].Pts; used[k] = true;
-                    if (Near(chain[0], p[^1], tol)) chain.InsertRange(0, p.Take(p.Count - 1)); else chain.InsertRange(0, Enumerable.Reverse(p).Take(p.Count - 1));
+                    if (Dist(chain[0], p[^1]) <= DupTol) chain.InsertRange(0, p.Take(p.Count - 1)); else chain.InsertRange(0, Enumerable.Reverse(p).Take(p.Count - 1));
                     continue;
                 }
                 break;
             }
-            if (chain.Count > 3 && Near(chain[0], chain[^1], tol)) { if (Near(chain[0], chain[^1], DupTol)) chain.RemoveAt(chain.Count - 1); res.Add(new CadContour(chain, true, layer)); } // T-0747-fix2: Spalt wird überbrückt, Endpunkt bleibt
-            else res.Add(new CadContour(chain, false, layer));
+            if (chain.Count > 3 && Dist(chain[0], chain[^1]) <= DupTol) { chain.RemoveAt(chain.Count - 1); chains.Add((chain, layer, true)); }
+            else chains.Add((chain, layer, false));
         }
-        return res;
+        // 2. + 3. Spalten überbrücken, bis sich nichts mehr ändert
+        var open = chains.Where(c => !c.Closed).Select(c => (Pts: c.Pts, c.Layer)).ToList();
+        var done = chains.Where(c => c.Closed).Select(c => new CadContour(c.Pts, true, c.Layer)).ToList();
+        var reported = new HashSet<(long, long)>();
+        for (var round = 0; round < 100_000; round++)
+        {
+            ct.ThrowIfCancellationRequested();
+            // 2. eigene Enden nah beieinander → schließen (Spalt wird Strecke)
+            for (var i = open.Count - 1; i >= 0; i--)
+                if (open[i].Pts.Count >= 3 && Dist(open[i].Pts[0], open[i].Pts[^1]) <= lim) { done.Add(new CadContour(open[i].Pts, true, open[i].Layer)); open.RemoveAt(i); }
+            // 3. kürzester eindeutiger Spalt zwischen zwei offenen Ketten
+            var ends = new List<(int Chain, bool Last, (double X, double Y) P)>();
+            for (var i = 0; i < open.Count; i++) { ends.Add((i, false, open[i].Pts[0])); ends.Add((i, true, open[i].Pts[^1])); }
+            var emap = new Dictionary<(long, long), List<int>>();
+            for (var e = 0; e < ends.Count; e++) { var c = C(ends[e].P); if (!emap.TryGetValue(c, out var l)) emap[c] = l = []; l.Add(e); }
+            IEnumerable<int> Around((double X, double Y) p)
+            {
+                var (cx, cy) = C(p);
+                for (var dx = -1L; dx <= 1; dx++) for (var dy = -1L; dy <= 1; dy++) if (emap.TryGetValue((cx + dx, cy + dy), out var l)) foreach (var e in l) yield return e;
+            }
+            var pairs = new List<(double D, int A, int B)>();
+            for (var a = 0; a < ends.Count; a++)
+                foreach (var b in Around(ends[a].P))
+                    if (b > a && ends[b].Chain != ends[a].Chain && open[ends[a].Chain].Layer == open[ends[b].Chain].Layer && Dist(ends[a].P, ends[b].P) is var d && d <= lim) pairs.Add((d, a, b));
+            if (pairs.Count == 0) break;
+            pairs.Sort((x, y) => x.D.CompareTo(y.D));
+            var merged = false;
+            foreach (var (d, a, b) in pairs)
+            {
+                // etwa gleich nah: ein anderes Ende (andere Kette) liegt an a oder b höchstens d + tol/2 entfernt → nicht raten
+                var amb = Around(ends[a].P).Concat(Around(ends[b].P)).Any(e => e != a && e != b && ends[e].Chain != ends[a].Chain && ends[e].Chain != ends[b].Chain
+                    && open[ends[e].Chain].Layer == open[ends[a].Chain].Layer && Math.Min(Dist(ends[e].P, ends[a].P), Dist(ends[e].P, ends[b].P)) <= d + tol / 2);
+                if (amb)
+                {
+                    var key = ((long)Math.Round(ends[a].P.X * 1000), (long)Math.Round(ends[a].P.Y * 1000));
+                    if (reported.Add(key)) notes?.Add($"Mehrdeutiger Spalt bei X {ends[a].P.X.ToString("0.##", System.Globalization.CultureInfo.GetCultureInfo("de-DE"))} Y {ends[a].P.Y.ToString("0.##", System.Globalization.CultureInfo.GetCultureInfo("de-DE"))}: mehrere Enden liegen etwa gleich nah – nicht verbunden.");
+                    continue;
+                }
+                var (ca, cb) = (open[ends[a].Chain], open[ends[b].Chain]);
+                var pa = ends[a].Last ? ca.Pts : Enumerable.Reverse(ca.Pts).ToList(); // endet am Ende a
+                var pb = ends[b].Last ? Enumerable.Reverse(cb.Pts).ToList() : cb.Pts; // beginnt am Ende b
+                var joined = new List<(double X, double Y)>(pa.Count + pb.Count); joined.AddRange(pa); joined.AddRange(pb); // beide Endpunkte bleiben, der Spalt ist eine Strecke
+                var (hi, lo) = ends[a].Chain > ends[b].Chain ? (ends[a].Chain, ends[b].Chain) : (ends[b].Chain, ends[a].Chain);
+                open.RemoveAt(hi); open.RemoveAt(lo); open.Add((joined, ca.Layer));
+                merged = true; break;
+            }
+            if (!merged) break;
+        }
+        done.AddRange(open.Select(o => new CadContour(o.Pts, false, o.Layer)));
+        return done;
     }
+
+    static double Dist((double X, double Y) a, (double X, double Y) b) => Math.Sqrt((a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y));
 
     /// <summary>Teilstücke je Vollkreis, damit die Sehne höchstens <paramref name="chord"/> vom Bogen abweicht (mindestens 24).
     /// T-0747-fix2: keine feste Obergrenze mehr (vorher 1440 – dann galt die Toleranz nur bis R ≈ 420 mm bei 0,001 mm); Sicherheitsgrenze nur über die
@@ -150,5 +212,6 @@ public static class CadContours
     /// <summary>T-0747-fix2: Punkte, die näher als das beieinanderliegen, gelten als doppelt.</summary>
     const double DupTol = 1e-6;
 
-    public static bool Near((double X, double Y) a, (double X, double Y) b, double tol) => Math.Abs(a.X - b.X) <= tol && Math.Abs(a.Y - b.Y) <= tol;
+    /// <summary>T-0747-fix3: echter Abstand (vorher je Achse) mit kleiner Reserve gegen Rundung (0,1 + 1e-9).</summary>
+    public static bool Near((double X, double Y) a, (double X, double Y) b, double tol) => Dist(a, b) <= tol + 1e-9;
 }

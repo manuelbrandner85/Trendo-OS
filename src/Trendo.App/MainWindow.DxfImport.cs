@@ -42,9 +42,10 @@ public partial class MainWindow
         _ = Task.Run(() => { hold?.Wait(ct); return work(ct); }, ct).ContinueWith(t => Dispatcher.UIThread.Post(() =>
         {
             _drawCts = null; _drawKey = null; _drawWhat = null; cts.Dispose();
-            if (t.IsCanceled || t.Exception?.InnerException is OperationCanceledException) { _progMsg[key] = $"Vorgang abgebrochen – nichts geändert ({what})."; _progErr.Remove(key); Show(key); return; }
-            if (t.Exception?.InnerException is { } ex && onError is not null && onError(ex)) { Show(key); return; }
+            if (t.IsCanceled || t.Exception?.InnerException is OperationCanceledException) { _camQueue.Clear(); _progMsg[key] = $"Vorgang abgebrochen – nichts geändert ({what})."; _progErr.Remove(key); Show(key); return; }
+            if (t.Exception?.InnerException is { } ex && onError is not null && onError(ex)) { Show(key); if (key == CK) CncRunQueued(); return; }
             ProgramRun(key, () => { if (t.Exception?.InnerException is { } e2) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Throw(e2); t.Result(); });
+            if (key == CK) CncRunQueued(); // T-0747-fix3: zwischendurch geänderte Werte nachrechnen
         }), TaskScheduler.Default);
     }
 
@@ -80,8 +81,10 @@ public partial class MainWindow
         return CncDrawingApply(d, path, j, r);
     }
 
-    string CncDrawingApply(ProgramDocument d, string path, CncJob j, CamResult r)
+    string CncDrawingApply(ProgramDocument d, string path, CncJob j, CamResult r, string? snapshot = null)
     {
+        if (snapshot is not null && d.Data.ToJsonString() != snapshot) // T-0747-fix3: Dokument hat sich während des Einlesens geändert
+            return _progMsg[CK] = $"⚠ Während „{Path.GetFileName(path)}“ eingelesen wurde, hat sich das Dokument geändert – das Ergebnis wurde verworfen, damit nichts überschrieben wird. Bitte noch einmal einlesen.";
         var key = j.CamSettingsKey();
         CncEdit(d, $"Zeichnung „{Path.GetFileName(path)}“ einlesen", x => { x.Contours = j.Contours; x.CamSource = j.CamSource; x.SetCamGcode(r.Gcode, key); });
         CncStop(); _cncT = -1;
@@ -116,8 +119,8 @@ public partial class MainWindow
         }
         else
         {
-            var j = CncJob.From(d.Data);
-            RunBackground(key, $"„{name}“ wird eingelesen", ct => { var r = Readable(() => j.ImportDrawing(path, ct)); Cnc.Analyse(r.Gcode); return () => CncDrawingApply(d, path, j, r); });
+            var j = CncJob.From(d.Data); var snap = d.Data.ToJsonString();
+            RunBackground(key, $"„{name}“ wird eingelesen", ct => { var r = Readable(() => j.ImportDrawing(path, ct)); Cnc.Analyse(r.Gcode); return () => CncDrawingApply(d, path, j, r, snap); });
         }
     }
 
@@ -139,22 +142,44 @@ public partial class MainWindow
     /// T-0747-fix2: die Rechnung läuft im Hintergrund (mit „Abbrechen“), übernommen wird erst das fertige Ergebnis.</summary>
     public string CncCamApply(ProgramDocument d, string label, Action<CncJob> change) => CncCamApply(d, label, change, null);
 
-    string CncCamApply(ProgramDocument d, string label, Action<CncJob> change, Func<Exception, bool>? onError)
+    string CncCamApply(ProgramDocument d, string label, Action<CncJob> change, Func<Exception, bool>? onError, bool viaSetting = false)
     {
+        if (_drawCts is not null && _drawKey == CK) // T-0747-fix3: läuft schon eine Rechnung, wird die Änderung danach übernommen statt verworfen
+        {
+            _camQueue.Add((label, change, viaSetting));
+            return _progMsg[CK] = $"„{label}“ wird übernommen, sobald die laufende Rechnung fertig ist.";
+        }
         var j = CncJob.From(d.Data); change(j);
         if (j.Contours.Count == 0) throw new InvalidOperationException("Es ist noch keine Zeichnung eingelesen – unter „Erzeugen“ auf „Aus DXF/SVG …“ klicken.");
         var settings = j.CamSettings(); var contours = j.Contours; var key = j.CamSettingsKey();
+        var snap = d.Data.ToJsonString(); // T-0747-fix3: Stand beim Start – nur auf genau diesen Stand wird das Ergebnis übernommen
         RunBackground(CK, "Fräsbahnen werden berechnet", ct =>
         {
             var r = CncCam.Generate(contours, settings, ct); Cnc.Analyse(r.Gcode);
             return () =>
             {
+                if (d.Data.ToJsonString() != snap) { _progMsg[CK] = StaleResultMessage; return; }
                 CncEdit(d, label, x => { change(x); x.SetCamGcode(r.Gcode, key); });
                 CncStop(); _cncT = -1;
                 _progMsg[CK] = CncCamMessage(j, r);
             };
-        }, onError);
+        }, onError is null ? null : ex => { if (d.Data.ToJsonString() != snap) { _progMsg[CK] = StaleResultMessage; return true; } return onError(ex); });
         return _progMsg[CK];
+    }
+
+    const string StaleResultMessage = "⚠ Während der Rechnung wurde die Zeichnung, der G-Code oder ein Wert geändert (z. B. Rückgängig oder von Hand) – das Ergebnis passt nicht mehr und wurde verworfen. Bei Bedarf „Bahnen neu“ drücken.";
+
+    /// <summary>T-0747-fix3: Änderungen, die während einer laufenden Bahnberechnung kommen; nach dem Ende als ein Schritt nachgerechnet.</summary>
+    readonly List<(string Label, Action<CncJob> Change, bool ViaSetting)> _camQueue = [];
+
+    void CncRunQueued()
+    {
+        if (_camQueue.Count == 0 || _drawCts is not null) return;
+        var q = _camQueue.ToList(); _camQueue.Clear();
+        if (ProgramActive(CK) is not { } d) return;
+        void All(CncJob x) { foreach (var it in q) it.Change(x); }
+        var label = string.Join(", ", q.Select(it => it.Label).Distinct());
+        ProgramRun(CK, () => { if (q.All(it => it.ViaSetting)) CncSettingChanged(d, label, All, true); else CncCamApply(d, label, All); });
     }
 
     /// <summary>T-0747-fix: Fräser-Ø, Tiefe, Zustellung oder Vorschub geändert. Stammt der G-Code aus der Zeichnung, werden die Bahnen neu berechnet
@@ -170,7 +195,7 @@ public partial class MainWindow
                 CncEdit(d, label, change);
                 _progMsg[CK] = $"⚠ Bahnen nicht neu berechnet: {ex.Message} Der G-Code passt nicht mehr zu den Werten – der Export „G-Code (.nc)“ ist gesperrt, bis „Bahnen neu“ klappt.";
                 return true;
-            });
+            }, viaSetting: true);
             return;
         }
         CncEdit(d, label, change);

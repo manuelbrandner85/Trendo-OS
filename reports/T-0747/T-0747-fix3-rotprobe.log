@@ -1,0 +1,292 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\t0747fix3-old\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:11.25]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:11.64]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:11.67]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:11.83]     T-0747-fix3 M3: Haltestege – Quadrat 20 mm mit 2 Stegen und Seite = Bogenlänge: genau so viele Anhebungen wie Stege(tool: 3, side: 20) [FAIL]
+[xUnit.net 00:00:11.83]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:11.83]       Expected: 2
+[xUnit.net 00:00:11.83]       Actual:   1
+[xUnit.net 00:00:11.83]       Stack Trace:
+[xUnit.net 00:00:11.83]         C:\Users\<user>\AppData\Local\Temp\t0747fix3-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix3Tests.cs(138,0): at Trendo.Core.Tests.T0747_Fix3DrittePruefung.Tabs_on_path_points(Double tool, Double side)
+[xUnit.net 00:00:11.83]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:11.83]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:11.83]       Output:
+[xUnit.net 00:00:11.83]         Fräser 3, Seite 20, 2 Stege: 1 Anhebungen, 1 wieder hinunter
+[xUnit.net 00:00:11.84]     T-0747-fix3 M3: Haltestege – Quadrat 20 mm mit 2 Stegen und Seite = Bogenlänge: genau so viele Anhebungen wie Stege(tool: 6, side: 0) [FAIL]
+[xUnit.net 00:00:11.84]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:11.84]       Expected: 2
+[xUnit.net 00:00:11.84]       Actual:   0
+[xUnit.net 00:00:11.84]       Stack Trace:
+[xUnit.net 00:00:11.84]         C:\Users\<user>\AppData\Local\Temp\t0747fix3-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix3Tests.cs(138,0): at Trendo.Core.Tests.T0747_Fix3DrittePruefung.Tabs_on_path_points(Double tool, Double side)
+[xUnit.net 00:00:11.84]            at InvokeStub_T0747_Fix3DrittePruefung.Tabs_on_path_points(Object, Span`1)
+[xUnit.net 00:00:11.84]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:11.84]       Output:
+[xUnit.net 00:00:11.84]         Fräser 6, Seite 4,722, 2 Stege: 0 Anhebungen, 0 wieder hinunter
+[xUnit.net 00:00:11.84]     T-0747-fix3 M3: Haltestege – Quadrat 20 mm mit 2 Stegen und Seite = Bogenlänge: genau so viele Anhebungen wie Stege(tool: 2, side: 0) [FAIL]
+[xUnit.net 00:00:11.84]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:11.84]       Expected: 2
+[xUnit.net 00:00:11.84]       Actual:   0
+[xUnit.net 00:00:11.84]       Stack Trace:
+[xUnit.net 00:00:11.84]         C:\Users\<user>\AppData\Local\Temp\t0747fix3-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix3Tests.cs(138,0): at Trendo.Core.Tests.T0747_Fix3DrittePruefung.Tabs_on_path_points(Double tool, Double side)
+[xUnit.net 00:00:11.84]            at InvokeStub_T0747_Fix3DrittePruefung.Tabs_on_path_points(Object, Span`1)
+[xUnit.net 00:00:11.84]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:11.84]       Output:
+[xUnit.net 00:00:11.84]         Fräser 2, Seite 1,58, 2 Stege: 0 Anhebungen, 0 wieder hinunter
+[xUnit.net 00:00:11.84]     T-0747-fix3 M3: Haltestege – Quadrat 20 mm mit 2 Stegen und Seite = Bogenlänge: genau so viele Anhebungen wie Stege(tool: 2, side: 20) [FAIL]
+[xUnit.net 00:00:11.84]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:11.84]       Expected: 2
+[xUnit.net 00:00:11.84]       Actual:   1
+[xUnit.net 00:00:11.84]       Stack Trace:
+[xUnit.net 00:00:11.84]         C:\Users\<user>\AppData\Local\Temp\t0747fix3-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix3Tests.cs(138,0): at Trendo.Core.Tests.T0747_Fix3DrittePruefung.Tabs_on_path_points(Double tool, Double side)
+[xUnit.net 00:00:11.84]            at InvokeStub_T0747_Fix3DrittePruefung.Tabs_on_path_points(Object, Span`1)
+[xUnit.net 00:00:11.84]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:11.84]       Output:
+[xUnit.net 00:00:11.84]         Fräser 2, Seite 20, 2 Stege: 1 Anhebungen, 1 wieder hinunter
+[xUnit.net 00:00:11.84]     T-0747-fix3 M3: Haltestege – Quadrat 20 mm mit 2 Stegen und Seite = Bogenlänge: genau so viele Anhebungen wie Stege(tool: 3, side: 0) [FAIL]
+[xUnit.net 00:00:11.84]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:11.84]       Expected: 2
+[xUnit.net 00:00:11.84]       Actual:   0
+[xUnit.net 00:00:11.84]       Stack Trace:
+[xUnit.net 00:00:11.84]         C:\Users\<user>\AppData\Local\Temp\t0747fix3-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix3Tests.cs(138,0): at Trendo.Core.Tests.T0747_Fix3DrittePruefung.Tabs_on_path_points(Double tool, Double side)
+[xUnit.net 00:00:11.84]            at InvokeStub_T0747_Fix3DrittePruefung.Tabs_on_path_points(Object, Span`1)
+[xUnit.net 00:00:11.84]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:11.84]       Output:
+[xUnit.net 00:00:11.84]         Fräser 3, Seite 2,366, 2 Stege: 0 Anhebungen, 0 wieder hinunter
+[xUnit.net 00:00:11.84]     T-0747-fix3 M3: Haltestege – Quadrat 20 mm mit 2 Stegen und Seite = Bogenlänge: genau so viele Anhebungen wie Stege(tool: 6, side: 20) [FAIL]
+[xUnit.net 00:00:11.84]       Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:11.84]       Expected: 2
+[xUnit.net 00:00:11.84]       Actual:   1
+[xUnit.net 00:00:11.84]       Stack Trace:
+[xUnit.net 00:00:11.84]         C:\Users\<user>\AppData\Local\Temp\t0747fix3-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix3Tests.cs(138,0): at Trendo.Core.Tests.T0747_Fix3DrittePruefung.Tabs_on_path_points(Double tool, Double side)
+[xUnit.net 00:00:11.84]            at InvokeStub_T0747_Fix3DrittePruefung.Tabs_on_path_points(Object, Span`1)
+[xUnit.net 00:00:11.84]            at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:11.84]       Output:
+[xUnit.net 00:00:11.84]         Fräser 6, Seite 20, 2 Stege: 1 Anhebungen, 1 wieder hinunter
+[xUnit.net 00:00:11.85]     T-0747-fix3 M1: Spalt mitten in der Kette (o6) – beide Endpunkte bleiben, Bahn ≥ Radius − 0,002 zur wahren Geometrie(gap: 0,089999999999999997) [FAIL]
+[xUnit.net 00:00:11.85]       Assert.Contains() Failure: Filter not matched in collection
+[xUnit.net 00:00:11.85]       Collection: [Tuple (0, 0), Tuple (50, 0), Tuple (50,090000000000003, 30), Tuple (0, 30)]
+[xUnit.net 00:00:11.85]       Stack Trace:
+[xUnit.net 00:00:11.85]         C:\Users\<user>\AppData\Local\Temp\t0747fix3-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix3Tests.cs(69,0): at Trendo.Core.Tests.T0747_Fix3DrittePruefung.Gap_in_the_middle_keeps_both_ends(Double gap)
+[xUnit.net 00:00:11.85]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:11.85]            at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+[xUnit.net 00:00:11.85]     T-0747-fix3 M1: Spalt mitten in der Kette (o6) – beide Endpunkte bleiben, Bahn ≥ Radius − 0,002 zur wahren Geometrie(gap: 0,050000000000000003) [FAIL]
+[xUnit.net 00:00:11.85]       Assert.Contains() Failure: Filter not matched in collection
+[xUnit.net 00:00:11.85]       Collection: [Tuple (0, 0), Tuple (50, 0), Tuple (50,049999999999997, 30), Tuple (0, 30)]
+[xUnit.net 00:00:11.85]       Stack Trace:
+[xUnit.net 00:00:11.85]         C:\Users\<user>\AppData\Local\Temp\t0747fix3-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix3Tests.cs(69,0): at Trendo.Core.Tests.T0747_Fix3DrittePruefung.Gap_in_the_middle_keeps_both_ends(Double gap)
+[xUnit.net 00:00:11.85]            at InvokeStub_T0747_Fix3DrittePruefung.Gap_in_the_middle_keeps_both_ends(Object, Span`1)
+[xUnit.net 00:00:11.85]            at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:11.87]     T-0747-fix3 N2/N4: Kreis im doppelt umlaufenen Bereich eines Limaçon wird ausgelassen; DXF ohne Einheit wird gemeldet [FAIL]
+[xUnit.net 00:00:11.87]       Assert.DoesNotContain() Failure: Filter matched in collection
+[xUnit.net 00:00:11.87]                    ↓ (pos 0)
+[xUnit.net 00:00:11.87]       Collection: [CamPath { Kind = innen, Pts = System.Collections.Generic.List`1[System.ValueTuple`2[System.Double,System.Double]], Closed = True, Source = 2, Layer = 0, TabsAllowed = True }, CamPath { Kind = aussen, Pts = System.Collections.Generic.List`1[System.ValueTuple`2[System.Double,System.Double]], Closed = True, Source = 0, Layer = 0, TabsAllowed = True }]
+[xUnit.net 00:00:11.87]       Stack Trace:
+[xUnit.net 00:00:11.87]         C:\Users\<user>\AppData\Local\Temp\t0747fix3-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix3Tests.cs(165,0): at Trendo.Core.Tests.T0747_Fix3DrittePruefung.Limacon_and_missing_units()
+[xUnit.net 00:00:11.87]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:11.87]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0747-fix3 M3: Haltestege – Quadrat 20 mm mit 2 Stegen und Seite = Bogenlänge: genau so viele Anhebungen wie Stege(tool: 3, side: 20) [128 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: 2
+Actual:   1
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix3DrittePruefung.Tabs_on_path_points(Double tool, Double side) in C:\Users\<user>\AppData\Local\Temp\t0747fix3-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix3Tests.cs:line 138
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ Fräser 3, Seite 20, 2 Stege: 1 Anhebungen, 1 wieder hinunter
+
+
+  Fehler T-0747-fix3 M3: Haltestege – Quadrat 20 mm mit 2 Stegen und Seite = Bogenlänge: genau so viele Anhebungen wie Stege(tool: 6, side: 0) [1 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: 2
+Actual:   0
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix3DrittePruefung.Tabs_on_path_points(Double tool, Double side) in C:\Users\<user>\AppData\Local\Temp\t0747fix3-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix3Tests.cs:line 138
+   at InvokeStub_T0747_Fix3DrittePruefung.Tabs_on_path_points(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ Fräser 6, Seite 4,722, 2 Stege: 0 Anhebungen, 0 wieder hinunter
+
+
+  Fehler T-0747-fix3 M3: Haltestege – Quadrat 20 mm mit 2 Stegen und Seite = Bogenlänge: genau so viele Anhebungen wie Stege(tool: 2, side: 0) [< 1 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: 2
+Actual:   0
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix3DrittePruefung.Tabs_on_path_points(Double tool, Double side) in C:\Users\<user>\AppData\Local\Temp\t0747fix3-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix3Tests.cs:line 138
+   at InvokeStub_T0747_Fix3DrittePruefung.Tabs_on_path_points(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ Fräser 2, Seite 1,58, 2 Stege: 0 Anhebungen, 0 wieder hinunter
+
+
+  Fehler T-0747-fix3 M3: Haltestege – Quadrat 20 mm mit 2 Stegen und Seite = Bogenlänge: genau so viele Anhebungen wie Stege(tool: 2, side: 20) [< 1 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: 2
+Actual:   1
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix3DrittePruefung.Tabs_on_path_points(Double tool, Double side) in C:\Users\<user>\AppData\Local\Temp\t0747fix3-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix3Tests.cs:line 138
+   at InvokeStub_T0747_Fix3DrittePruefung.Tabs_on_path_points(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ Fräser 2, Seite 20, 2 Stege: 1 Anhebungen, 1 wieder hinunter
+
+
+  Fehler T-0747-fix3 M3: Haltestege – Quadrat 20 mm mit 2 Stegen und Seite = Bogenlänge: genau so viele Anhebungen wie Stege(tool: 3, side: 0) [< 1 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: 2
+Actual:   0
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix3DrittePruefung.Tabs_on_path_points(Double tool, Double side) in C:\Users\<user>\AppData\Local\Temp\t0747fix3-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix3Tests.cs:line 138
+   at InvokeStub_T0747_Fix3DrittePruefung.Tabs_on_path_points(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ Fräser 3, Seite 2,366, 2 Stege: 0 Anhebungen, 0 wieder hinunter
+
+
+  Fehler T-0747-fix3 M3: Haltestege – Quadrat 20 mm mit 2 Stegen und Seite = Bogenlänge: genau so viele Anhebungen wie Stege(tool: 6, side: 20) [< 1 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: 2
+Actual:   1
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix3DrittePruefung.Tabs_on_path_points(Double tool, Double side) in C:\Users\<user>\AppData\Local\Temp\t0747fix3-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix3Tests.cs:line 138
+   at InvokeStub_T0747_Fix3DrittePruefung.Tabs_on_path_points(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithFewArgs(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ Fräser 6, Seite 20, 2 Stege: 1 Anhebungen, 1 wieder hinunter
+
+
+  Fehler T-0747-fix3 M1: Spalt mitten in der Kette (o6) – beide Endpunkte bleiben, Bahn ≥ Radius − 0,002 zur wahren Geometrie(gap: 0,089999999999999997) [16 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Filter not matched in collection
+Collection: [Tuple (0, 0), Tuple (50, 0), Tuple (50,090000000000003, 30), Tuple (0, 30)]
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix3DrittePruefung.Gap_in_the_middle_keeps_both_ends(Double gap) in C:\Users\<user>\AppData\Local\Temp\t0747fix3-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix3Tests.cs:line 69
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeDirectByRefWithFewArgs(Object obj, Span`1 copyOfArgs, BindingFlags invokeAttr)
+  Fehler T-0747-fix3 M1: Spalt mitten in der Kette (o6) – beide Endpunkte bleiben, Bahn ≥ Radius − 0,002 zur wahren Geometrie(gap: 0,050000000000000003) [< 1 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Filter not matched in collection
+Collection: [Tuple (0, 0), Tuple (50, 0), Tuple (50,049999999999997, 30), Tuple (0, 30)]
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix3DrittePruefung.Gap_in_the_middle_keeps_both_ends(Double gap) in C:\Users\<user>\AppData\Local\Temp\t0747fix3-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix3Tests.cs:line 69
+   at InvokeStub_T0747_Fix3DrittePruefung.Gap_in_the_middle_keeps_both_ends(Object, Span`1)
+   at System.Reflection.MethodBaseInvoker.InvokeWithOneArg(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0747-fix3 N2/N4: Kreis im doppelt umlaufenen Bereich eines Limaçon wird ausgelassen; DXF ohne Einheit wird gemeldet [27 ms]
+  Fehlermeldung:
+   Assert.DoesNotContain() Failure: Filter matched in collection
+             ↓ (pos 0)
+Collection: [CamPath { Kind = innen, Pts = System.Collections.Generic.List`1[System.ValueTuple`2[System.Double,System.Double]], Closed = True, Source = 2, Layer = 0, TabsAllowed = True }, CamPath { Kind = aussen, Pts = System.Collections.Generic.List`1[System.ValueTuple`2[System.Double,System.Double]], Closed = True, Source = 0, Layer = 0, TabsAllowed = True }]
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix3DrittePruefung.Limacon_and_missing_units() in C:\Users\<user>\AppData\Local\Temp\t0747fix3-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix3Tests.cs:line 165
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:11.88]     T-0747-fix3 M2/N1: zwei Teile 0,06–0,08 mm auseinander (o4, o7), U vor Rechteck (o5), Diagonalspalt 0,113 mm, Mehrdeutigkeit [FAIL]
+[xUnit.net 00:00:11.88]       Assert.All() Failure: 1 out of 2 items in the collection did not pass.
+[xUnit.net 00:00:11.88]       [0]: Item:  CadContour { Pts = System.Collections.Generic.List`1[System.ValueTuple`2[System.Double,System.Double]], Closed = True, Layer = 0, SignedArea = 1498,8000000000002, Length = 159,920106666477, Box = (50, 0, 100, 30) }
+[xUnit.net 00:00:11.88]            Error: Assert.Equal() Failure: Values differ
+[xUnit.net 00:00:11.88]                   Expected: 4
+[xUnit.net 00:00:11.88]                   Actual:   5
+[xUnit.net 00:00:11.88]       Stack Trace:
+[xUnit.net 00:00:11.88]         C:\Users\<user>\AppData\Local\Temp\t0747fix3-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix3Tests.cs(84,0): at Trendo.Core.Tests.T0747_Fix3DrittePruefung.Chaining_nearest_exact_first()
+[xUnit.net 00:00:11.88]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:11.88]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:11.89]     T-0747-fix3 M5: offener Umriss 2 mm neben einem Teil (o3) – die Bahn des Nachbarn fährt nicht hindurch [FAIL]
+[xUnit.net 00:00:11.89]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:11.89]       Expected: typeof(System.InvalidOperationException)
+[xUnit.net 00:00:11.89]       Stack Trace:
+[xUnit.net 00:00:11.89]         C:\Users\<user>\AppData\Local\Temp\t0747fix3-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix3Tests.cs(149,0): at Trendo.Core.Tests.T0747_Fix3DrittePruefung.Open_contour_is_obstacle()
+[xUnit.net 00:00:11.89]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:11.89]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:00:11.89]   Finished:    Trendo.Core.Tests
+  Fehler T-0747-fix3 M2/N1: zwei Teile 0,06–0,08 mm auseinander (o4, o7), U vor Rechteck (o5), Diagonalspalt 0,113 mm, Mehrdeutigkeit [8 ms]
+  Fehlermeldung:
+   Assert.All() Failure: 1 out of 2 items in the collection did not pass.
+[0]: Item:  CadContour { Pts = System.Collections.Generic.List`1[System.ValueTuple`2[System.Double,System.Double]], Closed = True, Layer = 0, SignedArea = 1498,8000000000002, Length = 159,920106666477, Box = (50, 0, 100, 30) }
+     Error: Assert.Equal() Failure: Values differ
+            Expected: 4
+            Actual:   5
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix3DrittePruefung.Chaining_nearest_exact_first() in C:\Users\<user>\AppData\Local\Temp\t0747fix3-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix3Tests.cs:line 84
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0747-fix3 M5: offener Umriss 2 mm neben einem Teil (o3) – die Bahn des Nachbarn fährt nicht hindurch [2 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.InvalidOperationException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix3DrittePruefung.Open_contour_is_obstacle() in C:\Users\<user>\AppData\Local\Temp\t0747fix3-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix3Tests.cs:line 149
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 11
+     Nicht bestanden: 11
+ Gesamtzeit: 13,8332 Sekunden
+### App-Rot-Probe (T0747_Fix3RaceUi gegen a9a31b924)
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0747-fix3 R2: A einlesen, B einlesen, Ø ändern, Strg+Z während der Rechnung – G-Code passt danach zur Zeichnung im Dokument [FAIL]
+      Assert.Equal() Failure: Strings differ
+                                                ↓ (pos 173)
+      Expected: ···"\nG0 Z5\nM3 S24000\n(Kontur 2: innen, Ebene loecher)\n"···
+      Actual:   ···"\nG0 Z5\nM3 S24000\n(Kontur 1: innen, Ebene BOHRUNG)\n"···
+                                                ↑ (pos 173)
+      Stack Trace:
+        tests\Trendo.App.Tests\DxfWohnungFraesenFix3UiTests.cs(72,0): at Trendo.App.Tests.T0747_Fix3RaceUi.R2_undo_during_background()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    T-0747-fix3 N4: Trendo CAD meldet eine DXF ohne Einheit („als mm gelesen“) [FAIL]
+      Assert.Contains() Failure: Sub-string not found
+      String:    "DXF „ohne“ eingelesen: 1 Elemente auf 1 Ebenen (1 "···
+      Not found: "Einheit nicht angegeben – als mm gelesen"
+      Stack Trace:
+        tests\Trendo.App.Tests\DxfWohnungFraesenFix3UiTests.cs(97,0): at Trendo.App.Tests.T0747_Fix3RaceUi.Cad_missing_units()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    T-0747-fix3 R1/N3: Wert während der Rechnung noch einmal geändert – keine Ausnahme, der letzte Wert gilt und die Bahnen passen dazu [FAIL]
+      System.InvalidOperationException : Es läuft noch: Fräsbahnen werden berechnet – bitte warten oder „Abbrechen“ drücken.
+      Stack Trace:
+        src\Trendo.App\MainWindow.DxfImport.cs(37,0): at Trendo.App.MainWindow.RunBackground(String key, String what, Func`2 work, Func`2 onError)
+        src\Trendo.App\MainWindow.DxfImport.cs(147,0): at Trendo.App.MainWindow.CncCamApply(ProgramDocument d, String label, Action`1 change, Func`2 onError)
+        src\Trendo.App\MainWindow.DxfImport.cs(167,0): at Trendo.App.MainWindow.CncSettingChanged(ProgramDocument d, String label, Action`1 change, Boolean cam)
+        src\Trendo.App\MainWindow.Spec14.cs(196,0): at Trendo.App.MainWindow.<>c__DisplayClass7894_2.<CncProperties>g__Commit|20()
+        src\Trendo.App\MainWindow.ProgramShell.cs(523,0): at Trendo.App.MainWindow.<>c__DisplayClass6867_0.<OnEnter>b__0(Object _, KeyEventArgs e)
+           at Avalonia.Interactivity.EventRoute.RaiseEventImpl(RoutedEventArgs e)
+           at Avalonia.Interactivity.EventRoute.RaiseEvent(Interactive source, RoutedEventArgs e)
+           at Avalonia.Interactivity.Interactive.RaiseEvent(RoutedEventArgs e)
+           at Avalonia.Input.KeyboardDevice.ProcessRawEvent(RawInputEventArgs e)
+           at Avalonia.Input.InputManager.ProcessInput(RawInputEventArgs e)
+           at Avalonia.Controls.PresentationSource.HandleInputCore(Object state)
+           at Avalonia.Threading.Dispatcher.Send(SendOrPostCallback action, Object arg, Nullable`1 priority)
+           at Avalonia.Controls.PresentationSource.HandleInput(RawInputEventArgs e)
+           at Avalonia.Headless.HeadlessWindowImpl.Avalonia.Headless.IHeadlessWindow.KeyPress(Key key, RawInputModifiers modifiers, PhysicalKey physicalKey, String keySymbol)
+           at Avalonia.Headless.HeadlessWindowExtensions.<>c__DisplayClass2_0.<KeyPress>b__0(IHeadlessWindow w)
+           at Avalonia.Headless.HeadlessWindowExtensions.RunJobsOnImpl(TopLevel topLevel, Action`1 action)
+           at Avalonia.Headless.HeadlessWindowExtensions.KeyPress(TopLevel topLevel, Key key, RawInputModifiers modifiers, PhysicalKey physicalKey, String keySymbol)
+        tests\Trendo.App.Tests\DxfWohnungFraesenFix3UiTests.cs(25,0): at Trendo.App.Tests.T0747_Fix3RaceUi.Type(MainWindow w, String box, String text)
+        tests\Trendo.App.Tests\DxfWohnungFraesenFix3UiTests.cs(49,0): at Trendo.App.Tests.T0747_Fix3RaceUi.R1_second_change_is_kept()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    T-0747-fix3 R3: G-Code von Hand geändert, während „Bahnen neu“ rechnet – die Handänderung bleibt [FAIL]
+      Assert.Contains() Failure: Sub-string not found
+      String:    "(Konturen aus Zeichnung – Trendo OS)\n(Fräser Ø 6 m"···
+      Not found: "(von Hand)"
+      Stack Trace:
+        tests\Trendo.App.Tests\DxfWohnungFraesenFix3UiTests.cs(86,0): at Trendo.App.Tests.T0747_Fix3RaceUi.R3_hand_edit_during_background()
+           at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    Trendo.App.Tests (ID = 'd3faf0215f2e69e76e1e686c780e46c4089a5f685d3506973a76d82faa67f218')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 4, Errors: 0, Failed: 4, Skipped: 0, Not Run: 0, Time: 41,519s

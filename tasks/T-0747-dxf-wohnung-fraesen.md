@@ -13,3 +13,4 @@
 **Am Ende:** Branch pushen, Bericht `tasks/T-0747-dxf-wohnung-fraesen.bericht.md`.
 **Nachtrag T-0747-fix (Gegenprüfung):** Nachbarkonturen/Acht, Engstellen, verrauschte Konturen, große DXF (Raster + Hintergrund + Abbrechen), veraltete Bahnen, Kodierung/Sonderzeichen/kaputte SVG – behoben, siehe Bericht „Gegenprüfung behoben“.
 **Nachtrag T-0747-fix2 (zweite Prüfung):** Konturen in abgelehnten Achtern, offene Konturen, Meldung nicht lesbarer Elemente, Bogen-/Kurventoleranz ohne Obergrenze, Rechnen im Hintergrund mit Abbrechen, kurze Engstellen, Einheiten-Hinweis in Trendo CAD – siehe Bericht „Zweite Prüfung behoben“.
+**Nachtrag T-0747-fix3 (dritte Prüfung):** Verketten ohne Punktverschiebung (nächster Kandidat, Mehrdeutigkeit gemeldet), Haltestege auf Bahnpunkten, Hintergrund-Ergebnisse nur auf den Startstand, offene Konturen als Hindernis, Limaçon, zweite Wertänderung, fehlende Einheit – siehe Bericht „Dritte Prüfung behoben“.

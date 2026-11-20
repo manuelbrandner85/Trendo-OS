@@ -70,12 +70,15 @@ public static class CncCam
     public const double ChainTol = 0.1;
 
     /// <summary>Konturen einer Zeichnung (sichtbare Ebenen, Texte bleiben weg).</summary>
-    public static List<CadContour> Contours(CadDrawing d, double chord = ContourChord, CancellationToken ct = default)
+    public static List<CadContour> Contours(CadDrawing d, double chord = ContourChord, CancellationToken ct = default) => Contours(d, null, chord, ct);
+
+    /// <summary>Wie oben; <paramref name="notes"/> bekommt Hinweise beim Verketten (T-0747-fix3: mehrdeutige Spalten).</summary>
+    public static List<CadContour> Contours(CadDrawing d, List<string>? notes, double chord = ContourChord, CancellationToken ct = default)
     {
         var hidden = d.Layers.Where(l => !l.Visible).Select(l => l.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var ents = d.Entities.Where(e => e.Kind != "text" && !hidden.Contains(e.Layer)).ToList();
         if (ents.Count > MaxEntities) throw new CadError($"Die Zeichnung hat {ents.Count.ToString("N0", De)} Elemente – zu viele zum Fräsen (höchstens {MaxEntities.ToString("N0", De)}). Bitte nur die nötigen Teile oder Ebenen exportieren.");
-        return CadContours.Build(ents, ChainTol, chord, ct);
+        return CadContours.Build(ents, ChainTol, chord, notes, ct);
     }
 
     public static CamResult Generate(IReadOnlyList<CadContour> source, CamSettings s, CancellationToken ct = default)
@@ -109,7 +112,8 @@ public static class CncCam
                 if (i == j || crossing[i] || unsure[i]) continue;
                 ct.ThrowIfCancellationRequested();
                 var bi = cs[i].Box; if (bi.MaxX < bj.MinX || bi.MinX > bj.MaxX || bi.MaxY < bj.MinY || bi.MinY > bj.MaxY) continue;
-                if (!cs[j].Contains(cs[i].Pts[0].X, cs[i].Pts[0].Y) && !Touches(cs[i].Pts, cs[i].Closed, cs[j].Pts)) continue;
+                var pr = cs[i].Pts[0]; // T-0747-fix3: auch doppelt umlaufene Bereiche (Windungszahl ≠ 0, z. B. Limaçon) zählen als „in der Kontur“
+                if (!cs[j].Contains(pr.X, pr.Y) && Winding(cs[j].Pts, pr) == 0 && !Touches(cs[i].Pts, cs[i].Closed, cs[j].Pts)) continue;
                 unsure[i] = true;
                 warn.Add($"{Name(i)} ausgelassen: liegt in oder an Kontur {j + 1}, die sich selbst kreuzt – ob sie Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte die Zeichnung bereinigen.");
             }
@@ -160,7 +164,8 @@ public static class CncCam
             cand[i] = list;
         }
         // T-0747-fix: jede Bahn gegen ALLE geschlossenen Konturen prüfen (Strecke zu Strecke)
-        var obstacles = BuildGrid(cs.Select((c, i) => (c, i)).Where(t => t.c.Closed).Select(t => ((IReadOnlyList<(double X, double Y)>)t.c.Pts, true, t.i)), r);
+        // T-0747-fix3: ALLE Konturen sind Hindernis – auch offene und ausgelassene (ein offener Umriss ist trotzdem ein Teil)
+        var obstacles = BuildGrid(cs.Select((c, i) => ((IReadOnlyList<(double X, double Y)>)c.Pts, c.Closed, i)), r);
         var paths = new List<CamPath>();
         for (var i = 0; i < cs.Count; i++)
         {
@@ -208,7 +213,9 @@ public static class CncCam
                 var z = -Math.Min(s.Depth, k * s.StepDown);
                 var pts = p.Closed || forward ? p.Pts : Enumerable.Reverse(p.Pts).ToList();
                 g.Append($"G1 Z{I(z)} F{I(s.Plunge)}\n");
-                Loop(g, pts, p.Closed, z, tabs.Count > 0 && z < zTab - 1e-9 ? tabs : [], zTab, s);
+                var useTabs = tabs.Count > 0 && z < zTab - 1e-9;
+                var lifts = Loop(g, pts, p.Closed, z, useTabs ? tabs : [], zTab, s);
+                if (useTabs && lifts != tabs.Count) throw new InvalidOperationException($"Haltestege an Kontur {p.Source + 1} ließen sich nicht sicher setzen ({lifts} statt {tabs.Count} Anhebungen) – bitte Anzahl oder Breite der Stege ändern."); // T-0747-fix3
                 if (!p.Closed) forward = !forward;
             }
             g.Append($"G0 Z{I(s.Safe)}\n");
@@ -218,29 +225,45 @@ public static class CncCam
         return new CamResult(g.ToString(), order, warn, sx, sy, cs);
     }
 
-    /// <summary>Eine Runde fahren; in den Stegbereichen auf Steghöhe anheben.</summary>
-    static void Loop(StringBuilder g, List<(double X, double Y)> pts, bool closed, double z, List<(double S, double E)> tabs, double zTab, CamSettings s)
+    /// <summary>Eine Runde fahren; in den Stegbereichen auf Steghöhe anheben. Rückgabe: Anzahl der Anhebungen.
+    /// T-0747-fix3: Steggrenzen genau auf einem Bahnpunkt werden erkannt (jede Strecke deckt [Anfang, Ende) ab), vorher fielen sie still weg.</summary>
+    static int Loop(StringBuilder g, List<(double X, double Y)> pts, bool closed, double z, List<(double S, double E)> tabs, double zTab, CamSettings s)
     {
+        const double e = 1e-7;
         var seq = closed ? [.. pts, pts[0]] : pts;
-        var pos = 0.0; var up = false; var first = true;
+        var pos = 0.0; var up = false; var first = true; var lifts = 0;
         string F() { if (!first) return ""; first = false; return $" F{I(s.Feed)}"; }
         for (var i = 1; i < seq.Count; i++)
         {
             var a = seq[i - 1]; var b = seq[i]; var len = Math.Sqrt(D2(a, b)); if (len < 1e-9) continue;
-            // Grenzen der Stege auf diesem Stück
-            var cuts = tabs.SelectMany(t => new[] { t.S, t.E }).Where(t => t > pos + 1e-9 && t < pos + len - 1e-9).OrderBy(t => t).ToList();
+            // Grenzen der Stege auf diesem Stück (einschließlich einer Grenze genau am Anfangspunkt)
+            var cuts = tabs.SelectMany(t => new[] { t.S, t.E }).Where(t => t >= pos - e && t < pos + len - e).OrderBy(t => t).ToList();
             foreach (var c in cuts)
             {
-                var f = (c - pos) / len; var (x, y) = (a.X + (b.X - a.X) * f, a.Y + (b.Y - a.Y) * f);
-                g.Append($"G1 X{I(x)} Y{I(y)}{F()}\n");
-                var inTab = tabs.Any(t => c + 1e-9 >= t.S && c + 1e-9 < t.E);
-                if (inTab && !up) { g.Append($"G1 Z{I(zTab)}\n"); up = true; }
+                var f = Math.Clamp((c - pos) / len, 0, 1);
+                if (f * len > 1e-9) { var (x, y) = (a.X + (b.X - a.X) * f, a.Y + (b.Y - a.Y) * f); g.Append($"G1 X{I(x)} Y{I(y)}{F()}\n"); }
+                var inTab = tabs.Any(t => c + e >= t.S && c + e < t.E);
+                if (inTab && !up) { g.Append($"G1 Z{I(zTab)}\n"); up = true; lifts++; }
                 else if (!inTab && up) { g.Append($"G1 Z{I(z)} F{I(s.Plunge)}\n"); up = false; first = true; }
             }
             g.Append($"G1 X{I(b.X)} Y{I(b.Y)}{F()}\n");
             pos += len;
         }
         if (up) g.Append($"G1 Z{I(z)} F{I(s.Plunge)}\n");
+        return lifts;
+    }
+
+    /// <summary>T-0747-fix3: Windungszahl des geschlossenen Zugs um den Punkt (0 = außerhalb, auch bei Selbstüberschneidung aussagekräftig).</summary>
+    static int Winding(List<(double X, double Y)> poly, (double X, double Y) q)
+    {
+        var w = 0;
+        for (var i = 0; i < poly.Count; i++)
+        {
+            var a = poly[i]; var b = poly[(i + 1) % poly.Count];
+            if (a.Y <= q.Y) { if (b.Y > q.Y && Orient(a, b, q) > 0) w++; }
+            else if (b.Y <= q.Y && Orient(a, b, q) < 0) w--;
+        }
+        return w;
     }
 
     /// <summary>Stegbereiche entlang der Bahn (Bogenlänge): Stegbreite plus Fräser-Ø, gleichmäßig verteilt, nicht am Startpunkt.</summary>
