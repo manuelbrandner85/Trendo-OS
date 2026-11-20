@@ -1,0 +1,53 @@
+# CI für Trendo OS. Nur der kostenlose GitHub-Runner ubuntu-latest.
+# windows-latest ist nicht nötig: alle Projekte zielen auf net10.0 (nicht net10.0-windows),
+# die Oberfläche testet Avalonia.Headless, und Windows-only-Fakten (WinFact) überspringen sich auf Linux.
+# Kein Release, kein Publish, kein Velopack-Upload, keine Secrets.
+# google-chrome nicht installieren: SYS-03-P14 scheitert, sobald Chrome im PATH liegt.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Build und Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Quelltext holen
+        uses: actions/checkout@v4
+
+      - name: .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: NuGet-Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Linux-Bibliotheken für Avalonia.Headless
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libfontconfig1 libfreetype6 libx11-6 libice6 libsm6
+
+      - name: Restore
+        run: dotnet restore Trendo.sln
+
+      - name: Build
+        run: dotnet build Trendo.sln -c Release --no-restore
+
+      - name: Test
+        run: dotnet test Trendo.sln -c Release --no-build
