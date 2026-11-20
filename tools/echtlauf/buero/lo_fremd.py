@@ -36,6 +36,18 @@ def start(soffice, profile):
     raise SystemExit("LibreOffice antwortet nicht")
 
 
+def close_quietly(doc, target):
+    # Sammelstand 0.9.106: LibreOffice beendet die UNO-Verbindung gelegentlich schon beim Schließen
+    # (DisposedException „Binary URP bridge disposed during call“), obwohl storeToURL fertig ist.
+    # Die Fremddatei ist dann vollständig geschrieben – nur das Schließen schlägt fehl. Ohne Datei bleibt es ein Fehler.
+    try:
+        doc.close(True)
+    except Exception as e:
+        if not (os.path.isfile(target) and os.path.getsize(target) > 0):
+            raise
+        print("Hinweis: LibreOffice beim Schließen beendet (%s) – Datei war schon geschrieben" % type(e).__name__)
+
+
 def formular(desktop, target):
     doc = desktop.loadComponentFromURL("private:factory/swriter", "_blank", 0, (prop("Hidden", True),))
     text = doc.Text
@@ -60,7 +72,7 @@ def formular(desktop, target):
         y += 1500
     data = uno.Any("[]com.sun.star.beans.PropertyValue", (prop("ExportFormFields", True), prop("FormsType", 0)))
     uno.invoke(doc, "storeToURL", (uno.systemPathToFileUrl(os.path.abspath(target)), (prop("FilterName", "writer_pdf_Export"), prop("FilterData", data))))
-    doc.close(True)
+    close_quietly(doc, target)
 
 
 SLIDES = [
@@ -91,7 +103,7 @@ def praesentation(desktop, target):
                 if s.ShapeType.endswith("NotesShape"):
                     s.setString(note)
     doc.storeToURL(uno.systemPathToFileUrl(os.path.abspath(target)), (prop("FilterName", "Impress MS PowerPoint 2007 XML"),))
-    doc.close(True)
+    close_quietly(doc, target)
 
 
 def main(mode, soffice, target, profile):
