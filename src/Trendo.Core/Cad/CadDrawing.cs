@@ -103,6 +103,9 @@ public static class CadDxf
     /// mit dem alle Maße bereits in Millimeter umgerechnet wurden (die Zeichnung ist immer in mm).</summary>
     public sealed record ReadResult(CadDrawing Drawing, Dictionary<string, int> Skipped)
     {
+        /// <summary>T-0747-fix5: Ausdehnung (mm) nicht gelesener Elemente mit Fläche (Blockverweise, SPLINE, Elemente außerhalb der Zeichenebene). Was darin liegt,
+        /// lässt sich nicht sicher als Loch oder Teil deuten. <see cref="Box.All"/> = Ausdehnung unbekannt.</summary>
+        public List<(string What, Box B)> Unread { get; init; } = [];
         public int Units { get; init; }
         public double MmPerUnit { get; init; } = 1;
         public string UnitName => UnitLabel(Units);
@@ -153,7 +156,33 @@ public static class CadDxf
         var d = new CadDrawing(); var skipped = new Dictionary<string, int>();
         var own = pairs.Count > 0 && pairs[0].Code == 999 && pairs[0].Value.Trim().StartsWith(OwnMarker, StringComparison.Ordinal); // T-0747-fix: Trendos eigene Datei
         string Txt(string s) => own ? s : Unescape(s);
-        string section = ""; var p = 0; var units = 0;
+        pairs.RemoveAll(x => x.Code == 999); // T-0747-fix5: Kommentare überall überspringen (z. B. zwischen $INSUNITS und dem Wert)
+        string section = ""; var p = 0; var units = 0; var kUnits = 1.0;
+        string? curBlock = null; var blocks = new Dictionary<string, BlockInfo>(StringComparer.OrdinalIgnoreCase); var unread = new List<(string What, Box B)>();
+        Box BlockBox(string name, int depth)
+        {
+            if (depth > 16) return Box.All; // zu tief (oder im Kreis) verschachtelt → Ausdehnung unbekannt, überall unsicher
+            if (!blocks.TryGetValue(name, out var bi)) return Box.Empty; // Block gibt es nicht: es wird nichts gezeichnet
+            var box = bi.Box;
+            foreach (var ins in bi.Inserts) box = box.Union(InsertBox(ins, depth + 1));
+            return box;
+        }
+        Box InsertBox(List<(int Code, string Value)> ib, int depth)
+        {
+            var name = Str(ib, 2) ?? ""; var bb = BlockBox(name, depth);
+            if (bb.IsEmpty || bb.IsAll) return bb;
+            var bi = blocks[name];
+            double sx = Num(ib, 41, 1), sy = Num(ib, 42, 1), rot = Num(ib, 50) * Math.PI / 180, ix = Num(ib, 10), iy = Num(ib, 20), cs = Num(ib, 44), rs = Num(ib, 45);
+            int cols = Math.Max(1, Int(ib, 70, 1)), rows = Math.Max(1, Int(ib, 71, 1));
+            var res = Box.Empty;
+            foreach (var x in new[] { bb.MinX, bb.MaxX }) foreach (var y in new[] { bb.MinY, bb.MaxY })
+                foreach (var c in new[] { 0, cols - 1 }) foreach (var r in new[] { 0, rows - 1 })
+                {
+                    double lx = (x - bi.BaseX) * sx + c * cs, ly = (y - bi.BaseY) * sy + r * rs;
+                    res = res.With((ix + lx * Math.Cos(rot) - ly * Math.Sin(rot), iy + lx * Math.Sin(rot) + ly * Math.Cos(rot)));
+                }
+            return ApplyNormal(ib, res);
+        }
         while (p < pairs.Count)
         {
             if ((p & 4095) == 0) ct.ThrowIfCancellationRequested();
@@ -163,7 +192,7 @@ public static class CadDxf
             if (code == 0 && val == "EOF") break;
             if (section == "HEADER" && code == 9 && val.Trim() == "$INSUNITS")
             {
-                if (p + 1 < pairs.Count && pairs[p + 1].Code == 70 && int.TryParse(pairs[p + 1].Value.Trim(), NumberStyles.Integer, Inv, out var u)) units = u;
+                if (p + 1 < pairs.Count && pairs[p + 1].Code == 70 && int.TryParse(pairs[p + 1].Value.Trim(), NumberStyles.Integer, Inv, out var u)) { units = u; kUnits = MmPerUnitOf(u); }
                 p += 2; continue;
             }
             if (code != 0) { p++; continue; }
@@ -177,19 +206,43 @@ public static class CadDxf
                 continue;
             }
             if (section != "ENTITIES" && section != "BLOCKS") continue;
-            if (section == "BLOCKS") { if (val is not ("BLOCK" or "ENDBLK")) Count(skipped, "Element in Blockdefinition"); continue; }
+            // T-0747-fix5: unsinnige Zahlen (NaN, unendlich, |Wert| > 1e9 mm) – nur dieses Element verwerfen und melden
+            if (val is not ("BLOCK" or "ENDBLK" or "SEQEND") && !SaneNumbers(body, kUnits))
+            {
+                Count(skipped, $"{val} mit ungültiger Koordinate");
+                if (val == "POLYLINE") SkipVertices(pairs, ref p);
+                continue;
+            }
+            if (section == "BLOCKS")
+            {
+                // T-0747-fix5: Blockinhalt nicht übernehmen, aber seine Ausdehnung merken (für INSERT: wo liegt nicht Gelesenes?)
+                if (val == "BLOCK") { curBlock = Str(body, 2) ?? ""; blocks[curBlock] = new BlockInfo(Num(body, 10), Num(body, 20)); continue; }
+                if (val == "ENDBLK") { curBlock = null; continue; }
+                Count(skipped, "Element in Blockdefinition");
+                if (curBlock is not null && blocks.TryGetValue(curBlock, out var bi))
+                {
+                    if (val == "INSERT") bi.Inserts.Add(body);
+                    else if (val == "POLYLINE") { var vs = ReadVertexBodies(pairs, ref p); foreach (var vb in vs) bi.Add(EntityBox(vb, "VERTEX")); }
+                    else bi.Add(EntityBox(body, val));
+                }
+                else if (val == "POLYLINE") SkipVertices(pairs, ref p);
+                continue;
+            }
             var layer = Str(body, 8) is { Length: > 0 } ln ? ln : "0";
             // T-0747-fix4: Extrusionsrichtung (210/220/230). CIRCLE, ARC, LWPOLYLINE und 2D-POLYLINE liegen im Objekt-Koordinatensystem; bei der
             // Normale (0,0,−1) ist Welt-x = −x (gespiegelt, Bogenrichtung umgekehrt). Schräge Normalen liegen nicht in der Zeichenebene → nicht gelesen, gemeldet.
+            // T-0747-fix5: 3D-Polylinien (Flag 8) und Netze (16/64) liegen in Weltkoordinaten wie LINE – dort gilt die Normale nicht.
             var flip = false;
-            if (val is "CIRCLE" or "ARC" or "LWPOLYLINE" or "POLYLINE" && (Has(body, 210) || Has(body, 220) || Has(body, 230)))
+            var worldPoly = val == "POLYLINE" && (Int(body, 70, 0) & (8 | 16 | 64)) != 0;
+            if (val is "CIRCLE" or "ARC" or "LWPOLYLINE" or "POLYLINE" or "ELLIPSE" && !worldPoly && (Has(body, 210) || Has(body, 220) || Has(body, 230)))
             {
                 double ex = Num(body, 210), ey = Num(body, 220), ez = Num(body, 230, 1), el = Math.Sqrt(ex * ex + ey * ey + ez * ez);
                 if (el > 1e-12) { ex /= el; ey /= el; ez /= el; }
                 if (el <= 1e-12 || Math.Abs(ex) > 1e-9 || Math.Abs(ey) > 1e-9)
                 {
                     Count(skipped, $"{val} nicht in der Zeichenebene");
-                    if (val == "POLYLINE") SkipVertices(pairs, ref p);
+                    var vbs = val == "POLYLINE" ? ReadVertexBodies(pairs, ref p) : [];
+                    unread.Add(($"{val} (nicht in der Zeichenebene)", ObliqueBox(body, vbs, val, el <= 1e-12 ? (0, 0, 1) : (ex, ey, ez))));
                     continue;
                 }
                 flip = ez < 0;
@@ -218,20 +271,51 @@ public static class CadDxf
                     var flags = Int(body, 70, 0);
                     if ((flags & (16 | 64)) != 0) { Count(skipped, "3D-Netz (POLYLINE)"); SkipVertices(pairs, ref p); break; }
                     var e = new CadEntity { Kind = "polylinie", Layer = layer, Closed = (flags & 1) == 1 };
-                    while (p < pairs.Count && pairs[p].Code == 0 && pairs[p].Value == "VERTEX")
+                    var bad = false;
+                    foreach (var vb in ReadVertexBodies(pairs, ref p))
                     {
-                        p++; var vb = new List<(int, string)>(); while (p < pairs.Count && pairs[p].Code != 0) vb.Add(pairs[p++]);
-                        e.Points.Add([Num(vb, 10), Num(vb, 20), Num(vb, 42)]);
+                        if (!SaneNumbers(vb, kUnits)) { bad = true; continue; }
+                        // T-0747-fix5: PEDIT-Spline (Flag 4): Rahmenpunkte (Vertex-Flag 16) sind unsichtbar – nur die Kurvenpunkte zählen
+                        if ((flags & 4) != 0 && (Int(vb, 70, 0) & 16) != 0) continue;
+                        e.Points.Add([Num(vb, 10), Num(vb, 20), (flags & 8) != 0 ? 0 : Num(vb, 42)]);
                     }
-                    if (p < pairs.Count && pairs[p].Code == 0 && pairs[p].Value == "SEQEND") { p++; while (p < pairs.Count && pairs[p].Code != 0) p++; }
+                    if (bad) { Count(skipped, "POLYLINE mit ungültiger Koordinate"); break; }
                     d.Entities.Add(e);
                     break;
                 }
                 case "CIRCLE":
+                    if (!(Num(body, 40) > 0)) { Count(skipped, "CIRCLE mit Radius ≤ 0"); break; } // T-0747-fix5
                     d.Entities.Add(new CadEntity { Kind = "kreis", Layer = layer, Cx = Num(body, 10), Cy = Num(body, 20), R = Num(body, 40) });
                     break;
                 case "ARC":
+                    if (!(Num(body, 40) > 0)) { Count(skipped, "ARC mit Radius ≤ 0"); break; } // T-0747-fix5
                     d.Entities.Add(new CadEntity { Kind = "bogen", Layer = layer, Cx = Num(body, 10), Cy = Num(body, 20), R = Num(body, 40), A0 = Num(body, 50), A1 = Num(body, 51) });
+                    break;
+                case "ELLIPSE":
+                {
+                    // T-0747-fix5: Ellipse abtasten (Weltkoordinaten; Nebenachse = Normale × Hauptachse · Verhältnis), Pfeilhöhe ≤ 0,001 mm
+                    double cx = Num(body, 10), cy = Num(body, 20), ax = Num(body, 11), ay = Num(body, 21), ratio = Num(body, 40, 1), t0 = Num(body, 41), t1 = Num(body, 42, 2 * Math.PI);
+                    var a = Math.Sqrt(ax * ax + ay * ay); var b = a * Math.Abs(ratio);
+                    if (!(a > 0) || !(b > 0)) { Count(skipped, "ELLIPSE ohne Ausdehnung"); break; }
+                    var sgn = flip ? -1 : 1; // Normale −Z: Nebenachse zeigt in die andere Richtung
+                    double bx = -ay * Math.Abs(ratio) * sgn, by = ax * Math.Abs(ratio) * sgn;
+                    while (t1 <= t0) t1 += 2 * Math.PI;
+                    var full = t1 - t0 >= 2 * Math.PI - 1e-9;
+                    var tolU = 0.001 / kUnits; var dt = Math.Sqrt(8 * tolU * b * b / (a * a * a));
+                    var n = (int)Math.Clamp(Math.Ceiling((t1 - t0) / Math.Max(dt, 1e-9)), 16, 2_000_000);
+                    var e = new CadEntity { Kind = "polylinie", Layer = layer, Closed = full };
+                    for (var i = 0; i < (full ? n : n + 1); i++) { var t = t0 + (t1 - t0) * i / n; e.Points.Add([cx + Math.Cos(t) * ax + Math.Sin(t) * bx, cy + Math.Cos(t) * ay + Math.Sin(t) * by, 0]); }
+                    d.Entities.Add(e);
+                    flip = false; // schon in Weltkoordinaten gerechnet
+                    break;
+                }
+                case "INSERT":
+                    Count(skipped, val);
+                    unread.Add(($"Blockverweis „{Str(body, 2)}“", InsertBox(body, 0)));
+                    break;
+                case "SPLINE":
+                    Count(skipped, val);
+                    unread.Add(("SPLINE", EntityBox(body, val)));
                     break;
                 case "TEXT":
                 {
@@ -258,7 +342,7 @@ public static class CadDxf
         if (d.Entities.Count == 0 && skipped.Count == 0) throw new CadError("In der DXF-Datei ist keine Zeichnung (kein ENTITIES-Abschnitt mit Linien, Kreisen, Bögen oder Text).");
         var k = MmPerUnitOf(units);
         if (Math.Abs(k - 1) > 1e-12) Scale(d, k); // T-0747: Zoll, cm, m … gleich in mm
-        return new ReadResult(d, skipped) { Units = units, MmPerUnit = k };
+        return new ReadResult(d, skipped) { Units = units, MmPerUnit = k, Unread = unread.Select(x => (x.What, x.B.Scale(k))).ToList() };
 
         static void Count(Dictionary<string, int> s, string k) => s[k] = s.GetValueOrDefault(k) + 1;
         // Normale (0,0,−1): x spiegeln; Bögen laufen danach in Weltrichtung wieder gegen den Uhrzeigersinn (Winkel 180−a1 … 180−a0), Ausbuchtungen umgekehrt
@@ -277,6 +361,90 @@ public static class CadDxf
     }
 
     /// <summary>Alle Maße mit <paramref name="k"/> multiplizieren (Ausbuchtungen und Winkel bleiben).</summary>
+    /// <summary>T-0747-fix5: achsparalleles Rechteck (leer oder „überall“ möglich).</summary>
+    public readonly record struct Box(double MinX, double MinY, double MaxX, double MaxY)
+    {
+        public static readonly Box Empty = new(double.PositiveInfinity, double.PositiveInfinity, double.NegativeInfinity, double.NegativeInfinity);
+        public static readonly Box All = new(double.NegativeInfinity, double.NegativeInfinity, double.PositiveInfinity, double.PositiveInfinity);
+        public bool IsEmpty => MinX > MaxX || MinY > MaxY;
+        public bool IsAll => double.IsNegativeInfinity(MinX) || double.IsNegativeInfinity(MinY) || double.IsPositiveInfinity(MaxX) || double.IsPositiveInfinity(MaxY);
+        public Box Union(Box o) => IsEmpty ? o : o.IsEmpty ? this : new(Math.Min(MinX, o.MinX), Math.Min(MinY, o.MinY), Math.Max(MaxX, o.MaxX), Math.Max(MaxY, o.MaxY));
+        public Box With((double X, double Y) q) => Union(new Box(q.X, q.Y, q.X, q.Y));
+        public Box Grow(double r) => IsEmpty ? this : new(MinX - r, MinY - r, MaxX + r, MaxY + r);
+        public Box Scale(double k) => IsEmpty ? this : new(MinX * k, MinY * k, MaxX * k, MaxY * k);
+        public Box Shift(double dx, double dy) => IsEmpty ? this : new(MinX + dx, MinY + dy, MaxX + dx, MaxY + dy);
+    }
+
+    sealed class BlockInfo(double bx, double by)
+    {
+        public double BaseX = bx, BaseY = by; public Box Box = Box.Empty; public List<List<(int Code, string Value)>> Inserts = [];
+        public void Add(Box b) => Box = Box.Union(b);
+    }
+
+    /// <summary>T-0747-fix5: alle Zahlen eines Elements brauchbar? (keine NaN/∞, Koordinaten und Radien höchstens 1e9 mm)</summary>
+    static bool SaneNumbers(List<(int Code, string Value)> b, double k)
+    {
+        foreach (var (c, v) in b)
+        {
+            if (!(c is >= 10 and <= 39 or >= 40 and <= 42)) continue;
+            if (!double.TryParse(v.Trim(), NumberStyles.Float, Inv, out var x)) continue; // kein Zahlwert: meldet der Leser wie bisher
+            if (double.IsNaN(x) || double.IsInfinity(x)) return false;
+            if (c is >= 10 and <= 40 && Math.Abs(x) * k > 1e9) return false;
+        }
+        return true;
+    }
+
+    static List<List<(int Code, string Value)>> ReadVertexBodies(List<(int Code, string Value)> pairs, ref int p)
+    {
+        var res = new List<List<(int Code, string Value)>>();
+        while (p < pairs.Count && pairs[p].Code == 0 && pairs[p].Value == "VERTEX")
+        {
+            p++; var vb = new List<(int Code, string Value)>(); while (p < pairs.Count && pairs[p].Code != 0) vb.Add(pairs[p++]); res.Add(vb);
+        }
+        if (p < pairs.Count && pairs[p].Code == 0 && pairs[p].Value == "SEQEND") { p++; while (p < pairs.Count && pairs[p].Code != 0) p++; }
+        return res;
+    }
+
+    /// <summary>T-0747-fix5: Ausdehnung eines Elements aus seinen Punkten (10/20, 11/21), Radius, Hauptachse; Normale −Z gespiegelt, schräg → überall.</summary>
+    static Box EntityBox(List<(int Code, string Value)> b, string val)
+    {
+        var box = Box.Empty; double? px = null, qx = null;
+        foreach (var (c, v) in b)
+        {
+            if (!double.TryParse(v.Trim(), NumberStyles.Float, Inv, out var x)) continue;
+            if (c == 10) px = x; else if (c == 20 && px is { } a) { box = box.With((a, x)); px = null; }
+            else if (val != "ELLIPSE" && c == 11) qx = x; else if (val != "ELLIPSE" && c == 21 && qx is { } q) { box = box.With((q, x)); qx = null; }
+        }
+        if (val is "CIRCLE" or "ARC") box = box.Grow(Math.Abs(Num(b, 40)));
+        if (val == "ELLIPSE") box = box.Grow(Math.Sqrt(Num(b, 11) * Num(b, 11) + Num(b, 21) * Num(b, 21)));
+        if (b.Any(x => x.Code == 42 && double.TryParse(x.Value.Trim(), NumberStyles.Float, Inv, out var g) && Math.Abs(g) > 1e-12) && !box.IsEmpty)
+            box = box.Grow(Math.Max(box.MaxX - box.MinX, box.MaxY - box.MinY) / 2 * 1.5); // Ausbuchtungen: großzügig
+        return val is "LINE" or "ELLIPSE" or "SPLINE" or "VERTEX" ? box : ApplyNormal(b, box);
+    }
+
+    static Box ApplyNormal(List<(int Code, string Value)> b, Box box)
+    {
+        if (box.IsEmpty || !(Has(b, 210) || Has(b, 220) || Has(b, 230))) return box;
+        double ex = Num(b, 210), ey = Num(b, 220), ez = Num(b, 230, 1), el = Math.Sqrt(ex * ex + ey * ey + ez * ez);
+        if (el <= 1e-12 || Math.Abs(ex / el) > 1e-9 || Math.Abs(ey / el) > 1e-9) return Box.All;
+        return ez < 0 ? new Box(-box.MaxX, box.MinY, -box.MinX, box.MaxY) : box;
+    }
+
+    /// <summary>T-0747-fix5: Ausdehnung in Weltkoordinaten (x/y) eines Elements mit schräger Normale – Objekt-Koordinaten nach der DXF-Regel „beliebige Achse“.</summary>
+    static Box ObliqueBox(List<(int Code, string Value)> b, List<List<(int Code, string Value)>> vertices, string val, (double X, double Y, double Z) n)
+    {
+        if (val == "ELLIPSE") return new Box(Num(b, 10), Num(b, 20), Num(b, 10), Num(b, 20)).Grow(Math.Sqrt(Num(b, 11) * Num(b, 11) + Num(b, 21) * Num(b, 21)));
+        static (double X, double Y, double Z) Cross((double X, double Y, double Z) a, (double X, double Y, double Z) c) => (a.Y * c.Z - a.Z * c.Y, a.Z * c.X - a.X * c.Z, a.X * c.Y - a.Y * c.X);
+        var ax = Math.Abs(n.X) < 1.0 / 64 && Math.Abs(n.Y) < 1.0 / 64 ? Cross((0, 1, 0), n) : Cross((0, 0, 1), n);
+        var al = Math.Sqrt(ax.X * ax.X + ax.Y * ax.Y + ax.Z * ax.Z); ax = (ax.X / al, ax.Y / al, ax.Z / al); var ay = Cross(n, ax);
+        (double X, double Y) W(double x, double y, double z) => (x * ax.X + y * ay.X + z * n.X, x * ax.Y + y * ay.Y + z * n.Y);
+        var box = Box.Empty; var elev = Num(b, 38);
+        if (val is "CIRCLE" or "ARC") return box.With(W(Num(b, 10), Num(b, 20), Num(b, 30))).Grow(Math.Abs(Num(b, 40)));
+        var pts = val == "POLYLINE" ? vertices : [b];
+        foreach (var vb in pts) { double? px = null; foreach (var (c, v) in vb) { if (!double.TryParse(v.Trim(), NumberStyles.Float, Inv, out var x)) continue; if (c == 10) px = x; else if (c == 20 && px is { } a) { box = box.With(W(a, x, val == "POLYLINE" ? Num(vb, 30) : elev)); px = null; } } }
+        return box.IsEmpty ? box : box.Grow(Math.Max(box.MaxX - box.MinX, box.MaxY - box.MinY) * 0.75); // Ausbuchtungen großzügig
+    }
+
     public static void Scale(CadDrawing d, double k)
     {
         foreach (var e in d.Entities)

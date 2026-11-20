@@ -218,3 +218,62 @@ Haltestege in Prüfer 4 (v9/v10/v11): 109 Außenbahnen geprüft, Anhebungen = St
 **Weiterhin offen:** ELLIPSE/SPLINE/INSERT nur gemeldet · Anzeige sehr großer G-Codes langsam (vorbestehend) · Taschen mit Inseln nicht gemeinsam · TEXT mit Normale −Z wird nicht gespiegelt (Texte werden ohnehin nicht gefräst) · der oben erklärte Prüfer-4-Fall bleibt bewusst „rot“.
 
 **Testzahlen T-0747-fix4:** Build 0 Fehler. Kern (alle fünf T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests): **109 gesamt, 108 bestanden, 1 übersprungen (vorbestehend „IFC echt“), 0 Fehler**. App: T0747_DxfUi 2/2, T0747_FixUi 3/3, T0747_Fix3RaceUi 4/4, T0747_Fix4RaceUi 3/3, SPEC01_Ui 6/6, SPEC01_UiArc 1/1, SPEC14_Ui 2/2, Bildbearbeitung_Ui 5/5, PlanPhoto_Ui 4/4, N23N24_CadPrintUi 3/3, UebersichtEinfach_Ui 2/2, DeadButtonTests 83/83 – **118/118**. Prüfskript BESTANDEN. Prüfprogramme: 289 Fälle, 1 Befund (oben erklärt).
+
+## Fünfte Prüfung behoben (T-0747-fix5)
+Arbeitskopie `%TEMP%\trendo-auftrag-T-0747-fix5`, Commit obendrauf auf a86f84d55. Keine Maschine angesteuert.
+**Prüfprogramme aller Prüfer** (nur als Kopie benutzt bzw. Fallgeneratoren `gen_p4.py`, `gen_p5.py`, `gen_p5_spline.py` und `check_p5_stege.py` ausgeführt, nichts im Repo), alle Fälle über `CncJob.ImportDrawing`:
+
+| Fallgruppe | Fälle | mit G-Code | Befunde | schlechtester Abstand − Radius | Rechenzeit gesamt (längster Fall) |
+|---|---|---|---|---|---|
+| Prüfer 2 (Haupt, x1–x3, große Radien) | 162 | 141 | 1 – Wahrheitsdatei, siehe unten | −0,0010 mm | 10,2 s (`l_zickzack_5000` 1,5 s) |
+| Prüfer 3 (p3, p3b, p3c, p3d) | 55 | 48 | 0 | −0,0043 mm (Wahrheit des Generators, siehe dritte Prüfung) | 1,2 s |
+| Prüfer 4 (v1–v15) | 72 | 58 | 1 – `v2`, wie in der vierten Prüfung erklärt | −0,0010 mm | 0,8 s |
+| Prüfer 5 (b, f, g, h, k, l, n, q, t, u, z) | 80 | 74 | 4 – alle Wahrheitsdatei bzw. Prüfprogramm, siehe unten; Haltestege 4/4 richtig | −0,0010 mm | 12,7 s (`g2_50000_kreise` 10,6 s, `g1_50000_linien` 1,5 s, `g3_polylinie_50000_punkte` 0,3 s) |
+| Prüfer 5 Spline-Polylinien | 8 | 8 | 0 | −0,0001 mm | 0,1 s |
+
+**Die sechs verbleibenden Befunde – keiner ist eine falsche Bahn:**
+- `v2_platte_doppelt_fast_gleich_d3` (Prüfer 4) und `k1_kreis_in_kreis_0_0005_d3` (Prüfer 5): gleiche Ursache. Zwei Konturen liegen 0,0005 mm auseinander; Trendo fasst sie als „doppelt gezeichnet“ zusammen (Toleranz 0,001 mm, gemeldet) und fräst ein Loch. Die Wahrheitsdatei führt beide als eigene Umrisse, das Prüfprogramm zählt gerade/ungerade und hält die Lochfläche deshalb für Material. Die Fälle `k1_…_0_0011`, `_0_002`, `_0_01`, `_0_5` (über der Toleranz) sind ohne Befund.
+- `p_spline_block_d6` (Prüfer 2): Die ELLIPSE darin wird jetzt gelesen (M2) und als Loch gefräst. Die Wahrheitsdatei stammt aus der Zeit, als ELLIPSE nicht gelesen wurde, und kennt nur die Platte – daher „IM MATERIAL“ genau auf der Ellipse.
+- `n8_ellipse_ocs_als_loch_d3` (Prüfer 5): Laut DXF-Referenz stehen Mittelpunkt (10/20) und Hauptachse (11/21) der ELLIPSE **in Weltkoordinaten**, anders als bei CIRCLE/ARC. Die Normale (0,0,−1) dreht nur die Nebenachse, der Mittelpunkt bleibt bei X 60. Die Wahrheitsdatei spiegelt den Mittelpunkt wie bei einem Kreis nach X −60 und erwartet dort ein Loch. Trendo folgt der Referenz (Test `Ellipse_is_sampled`, Normale −Z).
+- `f6_radius_negativ_und_null_d3` (Prüfer 5): CIRCLE mit Radius −10 bzw. 0 wird nach Auftrag N4 nicht geraten, sondern verworfen und gemeldet („Nicht gelesen: … 1× CIRCLE mit Radius ≤ 0“). Die Wahrheitsdatei nimmt ein Loch mit |r| an (dort selbst mit Fragezeichen versehen). Weil die Meldung nicht mit „Kontur n“ beginnt, zählt das Prüfprogramm eine stille Lücke.
+- `g2_50000_kreise_d1` (Prüfer 5): Die Kreise stehen absichtlich nicht in der Wahrheitsdatei (laut Generator prüft sie ein eigenes `check_p5.py` analytisch, das nicht mitgeliefert wurde). `check.py` hält deshalb alle 49 999 Löcher für Material. Eigene Nachrechnung über den G-Code (Skript nur im Arbeitsordner): 49 999 von 49 999 Löchern gefräst, kleinster Abstand Fräsermitte – Lochkante 0,5004 mm (Radius 0,5), Umriss 0,5000 mm, 0 Punkte im Material.
+
+**Rot-Probe gegen a86f84d55:** Kerntests `T0747_Fix5FuenftePruefung` 7 von 7 rot (für das Übersetzen nur Platzhalter für die neuen Schnittstellen `CadDxf.Box`, `ReadResult.Unread` und `CamSettings.Unread`) – `reports/T-0747/T-0747-fix5-rotprobe.log`.
+
+**M1 3D-Polylinie mit Normale – behoben.** Bei POLYLINE mit Flag 8 (3D-Polylinie) oder 16/64 (Netz) wird die Normale nicht ausgewertet: Diese Punkte stehen in Weltkoordinaten wie bei LINE. Eine schräge Normale macht sie daher nicht mehr „nicht in der Zeichenebene“. Netze werden wie bisher nicht gelesen und gemeldet. Bei 3D-Polylinien werden Ausbuchtungen (42) nicht verwendet. Test `Polyline3d_ignores_normal` (z2-Fall: Platte mit Normale −Z bleibt bei X 0…100, Kreis als Loch).
+
+**M2 Umriss nicht lesbar – behoben, Entscheidung:**
+- **ELLIPSE wird abgetastet** (genaue Mathematik, sicher): volle Ellipse als geschlossene Polylinie, Teilstück offen, Schrittweite aus der Krümmung so gewählt, dass die Pfeilhöhe ≤ 0,001 mm ist (gemessen 0,00044 mm). Bei Normale −Z dreht sich die Nebenachse.
+- **INSERT wird nicht aufgelöst.** Ein falsch platzierter Block (Basispunkt, Drehung, Skalierung, Spiegelung, Felder, Verschachtelung) ergäbe falschen G-Code. Stattdessen rechnet Trendo die **Ausdehnung** jedes Blockverweises vorsichtig aus: Rahmen des Blockinhalts mit Basispunkt, Skalierung, Drehung, MINSERT-Feld, Verschachtelung bis Tiefe 16 und Normale −Z. Rekursiver Block → „unbekannt, überall“, fehlender Block → leer.
+- Das Gleiche gilt für **SPLINE und Elemente mit schräger Normale**.
+- Jede gelesene Kontur, die ganz in der Ausdehnung eines nicht gelesenen Elements liegt, wird **ausgelassen und gemeldet**: „Kontur n ausgelassen: liegt in nicht gelesenem Element Blockverweis „PLATTE“ – ob sie Loch oder Teil ist (die Seite), lässt sich nicht sicher sagen.“ (b2: Löcher nicht mehr außen gefräst.)
+- Liegt umgekehrt ein nicht gelesenes Element in einer Kontur, wird diese gefräst, aber gemeldet: „… enthält nicht gelesenes Element … – dort wird nichts gefräst.“ (b4)
+- HATCH und SOLID werden wie bisher nur gemeldet, ohne Auswirkung auf die Seite.
+- Die Ausdehnungen werden mit dem Auftrag gespeichert (`unread`) und gehen in die Prüfsumme der Konturen ein.
+- Tests `Insert_outline_makes_inside_unsure`, `Insert_extent_transform`, `Oblique_outline_makes_inside_unsure`, `Ellipse_is_sampled` (n7: Ellipse als Platte mit Löchern).
+
+**N1 viele Konturen – behoben.**
+- Doppel-Prüfung mit Vorfilter: nur Paare mit fast gleichem Rahmen (Raster über die linke untere Ecke) und fast gleicher Fläche werden genau verglichen.
+- Die Tiefe wird über ein Raster der Rahmen bestimmt.
+- Versatz, Engstellen und Abstandsprüfung laufen je Kontur parallel; jeder Thread hat einen eigenen Merker, die Meldungen bleiben in Konturreihenfolge.
+- Die Reihenfolge vieler Bahnen wird über eine Nachbarsuche im Raster bestimmt.
+- Höchstzahl Elemente 200 000 (vorher 50 000).
+- Gemessen: 50 001 Kreise 18,8 s im Test (`Many_circles_fast`, vorher geschätzt 45 min), im Prüferfall `g2` 10,6 s. Läuft im Hintergrund wie bisher, Abbrechen nach 0,2 s wirkt in unter 3 s.
+
+**N2 – behoben.** Zahlen NaN/∞ oder Koordinaten ≥ 1e9 mm (nach Einheit) verwerfen nur das betroffene Element und werden gemeldet („CIRCLE mit ungültiger Koordinate“), der Rest wird gelesen. Das gilt auch für POLYLINE-Punkte.
+**N3 – behoben.** 999-Kommentare werden überall entfernt, auch zwischen `$INSUNITS` und dem Wert.
+**N4 – behoben.** CIRCLE/ARC mit Radius ≤ 0 werden verworfen und gemeldet.
+**N5 – behoben.** Bei PEDIT-Splines (Flag 4) werden Rahmenpunkte (Vertex-Flag 16) übersprungen; nur die Kurvenpunkte zählen (z5 und Spline-Fälle ohne Befund).
+**N6 – behoben.** NaN verwirft nur das Element (siehe N2).
+Test zu N2–N6: `Robust_reader`.
+
+**Tests:** siehe Testzahlen unten; Rohlogs `T-0747-fix5-*.log`.
+
+**Weiterhin offen:**
+- INSERT und SPLINE werden nicht aufgelöst; Konturen in ihrer Ausdehnung werden ausgelassen und gemeldet (bewusst).
+- Die Anzeige sehr großer G-Codes ist langsam (vorbestehend).
+- Taschen mit Inseln werden nicht gemeinsam gefräst.
+- TEXT mit Normale −Z wird nicht gespiegelt.
+- Die oben erklärten sechs Prüfer-Fälle bleiben bewusst „rot“.
+
+**Testzahlen T-0747-fix5:** Build 0 Fehler. Kern (alle sechs T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests): **116 gesamt, 115 bestanden, 1 übersprungen (vorbestehend „IFC echt“), 0 Fehler**. App: T0747_DxfUi 2/2, T0747_FixUi 3/3, T0747_Fix3RaceUi 4/4, T0747_Fix4RaceUi 3/3, SPEC01_Ui 6/6, SPEC01_UiArc 1/1, SPEC14_Ui 2/2, Bildbearbeitung_Ui 5/5, PlanPhoto_Ui 4/4, N23N24_CadPrintUi 3/3, UebersichtEinfach_Ui 2/2, DeadButtonTests 83/83 – **118/118**. Prüfskript BESTANDEN. Prüfprogramme: 377 Fälle, 6 Befunde (oben erklärt, keine falsche Bahn). Belege der früheren Runden unverändert (gleiche Ausgaben).

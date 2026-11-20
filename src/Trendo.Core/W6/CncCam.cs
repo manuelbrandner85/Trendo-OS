@@ -25,6 +25,8 @@ public sealed record CamSettings
     public bool ToOrigin { get; init; } = true;
     /// <summary>Höchste Abweichung der Bahn von Bögen (mm).</summary>
     public double Chord { get; init; } = 0.01;
+    /// <summary>T-0747-fix5: Ausdehnung nicht gelesener Elemente (Zeichnungskoordinaten, wie die Konturen) – was darin liegt, wird ausgelassen und gemeldet.</summary>
+    public IReadOnlyList<(string What, CadDxf.Box B)> Unread { get; init; } = [];
 }
 
 /// <summary>Eine Fräsbahn (Fräsermitte) mit Art und Herkunft.</summary>
@@ -56,7 +58,7 @@ public static class CncCam
     /// <summary>T-0747-fix: so viel darf die Fräsermitte näher als der Radius an eine Kontur kommen (Rechenungenauigkeit), sonst wird die Bahn weggelassen.</summary>
     public const double Clearance = 0.001;
     /// <summary>T-0747-fix: höchstens so viele Elemente (ohne Texte) liest das Fräsen aus einer Zeichnung.</summary>
-    public const int MaxEntities = 50_000;
+    public const int MaxEntities = 200_000; // T-0747-fix5: 50 000 Kreise sollen gehen (vorher 50 000)
     /// <summary>T-0747-fix: Glätten vor dem Versatz (Douglas-Peucker). Klein gewählt: das Beschneiden kommt auch mit verrauschten Konturen zurecht, das Glätten
     /// entfernt nur überflüssige Punkte; seine Abweichung wird dem Versatz zugeschlagen, das Teil wird also höchstens um diesen Betrag größer (Loch kleiner).</summary>
     public const double SimplifyTol = 0.001;
@@ -95,13 +97,29 @@ public static class CncCam
         // T-0747-fix4: doppelt gezeichnete (deckungsgleiche) geschlossene Konturen – egal welche Richtung oder Startecke – nur einmal verwenden. Sonst zählt
         // ein Loch in einer doppelten Platte zwei Umrisse und wird als „außen“ gefräst (um den Fräser-Ø zu groß).
         var dup = new bool[cs.Count];
+        // T-0747-fix5: Vorfilter – nur Paare mit fast gleichem Rahmen (Raster über die linke untere Ecke) und fast gleicher Fläche werden genau geprüft
+        var boxes = cs.Select(c => c.Closed ? c.Box : (0.0, 0.0, -1.0, -1.0)).ToArray();
+        var areas = cs.Select(c => c.Closed ? Math.Abs(c.SignedArea) : 0).ToArray();
+        var perims = cs.Select(c => c.Closed ? Length(c.Pts, true) : 0).ToArray();
+        const double dupCell = 0.01;
+        var corner = new Dictionary<(long, long), List<int>>();
+        for (var i = 0; i < cs.Count; i++)
+            if (cs[i].Closed) { var key = ((long)Math.Floor(boxes[i].Item1 / dupCell), (long)Math.Floor(boxes[i].Item2 / dupCell)); if (!corner.TryGetValue(key, out var l)) corner[key] = l = []; l.Add(i); }
         for (var i = 0; i < cs.Count; i++)
         {
             if (!cs[i].Closed || dup[i]) continue;
-            for (var j = i + 1; j < cs.Count; j++)
+            if ((i & 255) == 0) ct.ThrowIfCancellationRequested();
+            var (kx, ky) = ((long)Math.Floor(boxes[i].Item1 / dupCell), (long)Math.Floor(boxes[i].Item2 / dupCell));
+            var near = new List<int>();
+            for (var dx = -1L; dx <= 1; dx++) for (var dy = -1L; dy <= 1; dy++) if (corner.TryGetValue((kx + dx, ky + dy), out var l)) near.AddRange(l.Where(j => j > i));
+            near.Sort();
+            foreach (var j in near)
             {
-                if (!cs[j].Closed || dup[j]) continue;
+                if (dup[j]) continue;
                 ct.ThrowIfCancellationRequested();
+                var (a, b) = (boxes[i], boxes[j]);
+                if (Math.Abs(a.Item1 - b.Item1) > DupTol || Math.Abs(a.Item2 - b.Item2) > DupTol || Math.Abs(a.Item3 - b.Item3) > DupTol || Math.Abs(a.Item4 - b.Item4) > DupTol) continue;
+                if (Math.Abs(areas[i] - areas[j]) > DupTol * (perims[i] + perims[j])) continue;
                 if (!Coincident(cs[i].Pts, cs[j].Pts, DupTol)) continue;
                 dup[j] = true;
                 warn.Add($"{Name(j)}: doppelt gezeichnet (deckungsgleich mit Kontur {i + 1}) – einmal verwendet.");
@@ -138,28 +156,54 @@ public static class CncCam
                     : $"{Name(i)} ausgelassen: liegt in oder an der offenen Kontur {j + 1} – ob sie Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte den Umriss in der Zeichnung schließen.");
             }
         }
-        // Art je Kontur
+        // T-0747-fix5: Konturen in der Ausdehnung eines nicht gelesenen Elements (Blockverweis, SPLINE, schräge Normale) – ob Loch oder Teil, ist nicht sicher.
+        // Liegt umgekehrt ein nicht gelesenes Element in einer Kontur, wird diese gefräst, aber gemeldet (dort fehlt etwas).
+        foreach (var (what, ub) in s.Unread)
+        {
+            if (ub.IsEmpty) continue;
+            var u = ub.Shift(sx, sy);
+            for (var i = 0; i < cs.Count; i++)
+            {
+                if (!cs[i].Closed || dup[i] || crossing[i] || unsure[i]) continue;
+                var bi = boxes[i]; const double e = 1e-6;
+                if (bi.Item1 >= u.MinX - e && bi.Item2 >= u.MinY - e && bi.Item3 <= u.MaxX + e && bi.Item4 <= u.MaxY + e)
+                {
+                    unsure[i] = true;
+                    warn.Add($"{Name(i)} ausgelassen: liegt in nicht gelesenem Element {what} – ob sie Loch oder Teil ist (die Seite), lässt sich nicht sicher sagen.");
+                }
+                else if (!u.IsAll && u.MinX >= bi.Item1 - e && u.MinY >= bi.Item2 - e && u.MaxX <= bi.Item3 + e && u.MaxY <= bi.Item4 + e && cs[i].Contains((u.MinX + u.MaxX) / 2, (u.MinY + u.MaxY) / 2))
+                    warn.Add($"{Name(i)}: enthält nicht gelesenes Element {what} (bei X {F((u.MinX + u.MaxX) / 2, "0.#")} Y {F((u.MinY + u.MaxY) / 2, "0.#")}) – dort wird nichts gefräst.");
+            }
+        }
+        // Art je Kontur (T-0747-fix5: Kandidaten für „liegt in“ aus einem Raster der Rahmen statt aus allen Konturen)
+        var closedBoxes = boxes.Where((_, j) => cs[j].Closed).ToList();
+        var spanAll = closedBoxes.Count == 0 ? 1 : Math.Max(closedBoxes.Max(b => b.Item3) - closedBoxes.Min(b => b.Item1), closedBoxes.Max(b => b.Item4) - closedBoxes.Min(b => b.Item2));
+        var frames = new SegGrid(Math.Max(Math.Max(1e-3, spanAll / 1024), closedBoxes.Count == 0 ? 1 : closedBoxes.Average(b => Math.Max(b.Item3 - b.Item1, b.Item4 - b.Item2))));
+        for (var j = 0; j < cs.Count; j++) if (cs[j].Closed && !crossing[j] && !dup[j]) frames.Add((boxes[j].Item1, boxes[j].Item2), (boxes[j].Item3, boxes[j].Item4), j);
         var kinds = new string[cs.Count]; var depth = new int[cs.Count];
         for (var i = 0; i < cs.Count; i++)
         {
             if (!cs[i].Closed) { kinds[i] = "auf"; continue; }
             var probe = cs[i].Pts[0];
-            depth[i] = cs.Where((c, j) => j != i && c.Closed && !crossing[j] && !dup[j] && Math.Abs(c.SignedArea) > Math.Abs(cs[i].SignedArea) && c.Contains(probe.X, probe.Y)).Count();
+            if ((i & 1023) == 0) ct.ThrowIfCancellationRequested();
+            depth[i] = frames.Near(probe.X, probe.Y, probe.X, probe.Y).Select(e => frames.Segs[e].Tag).Distinct()
+                .Count(j => j != i && boxes[j].Item1 <= probe.X && probe.X <= boxes[j].Item3 && boxes[j].Item2 <= probe.Y && probe.Y <= boxes[j].Item4 && areas[j] > areas[i] && cs[j].Contains(probe.X, probe.Y));
             kinds[i] = s.Mode switch { "aussen" => "aussen", "innen" => "innen", "auf" => "auf", _ => depth[i] % 2 == 0 ? "aussen" : "innen" };
         }
         // Bahnen je Kontur (noch ungeprüft)
         var cand = new List<CamPath>?[cs.Count];
-        for (var i = 0; i < cs.Count; i++)
+        var cw = new List<string>?[cs.Count]; // T-0747-fix5: je Kontur parallel gerechnet, Meldungen danach in Konturreihenfolge
+        Par(cs.Count, ct, i =>
         {
-            ct.ThrowIfCancellationRequested();
-            if (crossing[i] || unsure[i] || dup[i]) continue;
+            var w = cw[i] = [];
+            if (crossing[i] || unsure[i] || dup[i]) return;
             var c = cs[i];
             if (!c.Closed && s.Mode != "auf") // T-0747-fix2: offene Kontur nur ausdrücklich als Gravur
             {
-                warn.Add($"{Name(i)} ausgelassen: offene Kontur (Enden {F(Math.Sqrt(D2(c.Pts[0], c.Pts[^1])), "0.###")} mm auseinander) – auf der Linie gefräst würde ein Teil um den Fräserradius kleiner. Nur in der Fräsart „Auf der Linie (Gravur)“ wird sie gefräst; sonst die Zeichnung schließen.");
-                continue;
+                w.Add($"{Name(i)} ausgelassen: offene Kontur (Enden {F(Math.Sqrt(D2(c.Pts[0], c.Pts[^1])), "0.###")} mm auseinander) – auf der Linie gefräst würde ein Teil um den Fräserradius kleiner. Nur in der Fräsart „Auf der Linie (Gravur)“ wird sie gefräst; sonst die Zeichnung schließen.");
+                return;
             }
-            if (kinds[i] == "auf") { cand[i] = [new CamPath("auf", [.. c.Pts], c.Closed, i, c.Layer)]; continue; }
+            if (kinds[i] == "auf") { cand[i] = [new CamPath("auf", [.. c.Pts], c.Closed, i, c.Layer)]; return; }
             var outside = kinds[i] == "aussen";
             var (simp, dev) = Simplify(c.Pts, Math.Min(SimplifyTol, r / 20));
             var loops = OffsetLoops(simp, (outside ? 1 : -1) * (r + dev), s.Chord, ct);
@@ -167,32 +211,40 @@ public static class CncCam
             if (outside)
             {
                 var main = loops.Where(l => SignedArea(l) > 1e-9).MaxBy(SignedArea);
-                if (main is null) { warn.Add($"{Name(i)} ausgelassen: der Versatz nach außen ergab keine Bahn – die Kontur hat keine Fläche oder ist entartet."); continue; }
+                if (main is null) { w.Add($"{Name(i)} ausgelassen: der Versatz nach außen ergab keine Bahn – die Kontur hat keine Fläche oder ist entartet."); return; }
                 loops = [main, .. loops.Where(l => l != main && SignedArea(l) < 0)]; // eingeschlossene Buchten (im Uhrzeigersinn) bleiben
                 foreach (var l in loops) { var p = new List<(double X, double Y)>(l); p.Reverse(); list.Add(new CamPath("aussen", p, true, i, c.Layer) { TabsAllowed = l == main }); } // im Uhrzeigersinn = Gleichlauf außen
             }
             else
             {
                 loops = loops.Where(l => SignedArea(l) > 1e-9).ToList();
-                if (loops.Count == 0) { warn.Add($"{Name(i)}: Innenkontur ist zu klein für den Fräser Ø {F(s.ToolD)} mm – ausgelassen, dort bleibt Material stehen."); continue; }
+                if (loops.Count == 0) { w.Add($"{Name(i)}: Innenkontur ist zu klein für den Fräser Ø {F(s.ToolD)} mm – ausgelassen, dort bleibt Material stehen."); return; }
                 foreach (var l in loops) list.Add(new CamPath("innen", l, true, i, c.Layer));
             }
             // T-0747-fix: Engstellen – Stellen der Kontur, an die der Fräser nicht herankommt
             var spots = Unreached(c.Pts, loops, r, ct);
             if (spots.Count > 0)
-                warn.Add($"{Name(i)}: Bereich enger als der Fräser Ø {F(s.ToolD)} mm – dort bleibt Material stehen ({string.Join("; ", spots.Take(4).Select(p => $"bei X {F(p.X, "0.#")} Y {F(p.Y, "0.#")}"))}{(spots.Count > 4 ? $" und {spots.Count - 4} weitere Stellen" : "")}). Für diese Stellen einen kleineren Fräser wählen.");
+                w.Add($"{Name(i)}: Bereich enger als der Fräser Ø {F(s.ToolD)} mm – dort bleibt Material stehen ({string.Join("; ", spots.Take(4).Select(p => $"bei X {F(p.X, "0.#")} Y {F(p.Y, "0.#")}"))}{(spots.Count > 4 ? $" und {spots.Count - 4} weitere Stellen" : "")}). Für diese Stellen einen kleineren Fräser wählen.");
             cand[i] = list;
-        }
+        });
+        foreach (var w in cw) if (w is not null) warn.AddRange(w);
         // T-0747-fix: jede Bahn gegen ALLE geschlossenen Konturen prüfen (Strecke zu Strecke)
         // T-0747-fix3: ALLE Konturen sind Hindernis – auch offene und ausgelassene (ein offener Umriss ist trotzdem ein Teil)
         var obstacles = BuildGrid(cs.Select((c, i) => ((IReadOnlyList<(double X, double Y)>)c.Pts, c.Closed, i)).Where(t => !dup[t.i]), r); // Doppel nur einmal
         var paths = new List<CamPath>();
+        using var curs = new ThreadLocal<SegGrid.Cursor>(() => new SegGrid.Cursor()); // ein Merker je Thread (nicht je Kontur – er ist so groß wie das Raster)
+        var hits = new (int Tag, double D)[cs.Count]; // T-0747-fix5: parallel prüfen (Raster nur lesen, Merker je Thread), danach in Reihenfolge übernehmen
+        Par(cs.Count, ct, i =>
+        {
+            if (cand[i] is not { } list) return;
+            var cur = curs.Value!;
+            hits[i] = list.Select(p => Nearest(p.Pts, p.Closed, obstacles, r - Clearance, p.Kind == "auf" ? i : -1, ct, cur)).Where(h => h.Tag >= 0)
+                .OrderBy(h => h.Tag == i ? 1 : 0).ThenBy(h => h.D).FirstOrDefault((Tag: -1, D: 0.0));
+        });
         for (var i = 0; i < cs.Count; i++)
         {
-            ct.ThrowIfCancellationRequested();
             if (cand[i] is not { } list) continue;
-            var hit = list.Select(p => Nearest(p.Pts, p.Closed, obstacles, r - Clearance, p.Kind == "auf" ? i : -1, ct)).Where(h => h.Tag >= 0)
-                .OrderBy(h => h.Tag == i ? 1 : 0).ThenBy(h => h.D).FirstOrDefault((Tag: -1, D: 0.0));
+            var hit = hits[i];
             if (hit.Tag < 0) { paths.AddRange(list); continue; }
             warn.Add(hit.Tag == i
                 ? $"{Name(i)} ausgelassen: die Fräsbahn käme der eigenen Kontur auf {F(hit.D)} mm nahe (Fräserradius {F(r)} mm). Kleineren Fräser wählen."
@@ -203,6 +255,7 @@ public static class CncCam
         foreach (var group in new[] { paths.Where(p => p.Kind == "innen").GroupBy(p => -depth[p.Source]).OrderBy(g => g.Key).SelectMany(g => g).ToList(), paths.Where(p => p.Kind == "auf").ToList(), paths.Where(p => p.Kind == "aussen").ToList() })
         {
             var left = group.ToList();
+            if (left.Count > 200) { order.AddRange(OrderMany(left, ref at, ct)); continue; } // T-0747-fix5: viele Bahnen – Nachbarsuche im Raster
             while (left.Count > 0)
             {
                 var next = left.OrderBy(p => p.Closed ? p.Pts.Min(q => D2(q, at)) : Math.Min(D2(p.Pts[0], at), D2(p.Pts[^1], at))).First(); left.Remove(next);
@@ -243,6 +296,37 @@ public static class CncCam
         g.Append("M5\nM30\n");
         if (n == 0) throw new InvalidOperationException("Es blieb keine fräsbare Kontur übrig: " + string.Join(" ", warn));
         return new CamResult(g.ToString(), order, warn, sx, sy, cs);
+    }
+
+    /// <summary>T-0747-fix5: Reihenfolge vieler Bahnen – jeweils die nächste (über ihren ersten Punkt, Raster), dann am nächstgelegenen Punkt beginnen.</summary>
+    static List<CamPath> OrderMany(List<CamPath> paths, ref (double X, double Y) at, CancellationToken ct)
+    {
+        var res = new List<CamPath>(paths.Count); var used = new bool[paths.Count];
+        double minX = paths.Min(p => p.Pts[0].X), minY = paths.Min(p => p.Pts[0].Y), maxX = paths.Max(p => p.Pts[0].X), maxY = paths.Max(p => p.Pts[0].Y);
+        var cell = Math.Max(1e-3, Math.Sqrt((maxX - minX + 1) * (maxY - minY + 1) / paths.Count));
+        var grid = new Dictionary<(long, long), List<int>>();
+        (long, long) C((double X, double Y) q) => ((long)Math.Floor(q.X / cell), (long)Math.Floor(q.Y / cell));
+        for (var i = 0; i < paths.Count; i++) { var k = C(paths[i].Pts[0]); if (!grid.TryGetValue(k, out var l)) grid[k] = l = []; l.Add(i); }
+        for (var n = 0; n < paths.Count; n++)
+        {
+            if ((n & 1023) == 0) ct.ThrowIfCancellationRequested();
+            var here0 = at; var (cx, cy) = C(here0); var best = -1; var bd = double.MaxValue;
+            void Cell(long gx, long gy) { if (grid.TryGetValue((gx, gy), out var l)) foreach (var i in l) { if (used[i]) continue; var d = D2(paths[i].Pts[0], here0); if (d < bd) { bd = d; best = i; } } }
+            for (var ring = 0L; ring <= 64; ring++)
+            {
+                if (best >= 0 && (ring - 1) * cell > Math.Sqrt(bd)) break; // weiter außen kann nichts Näheres liegen
+                if (ring == 0) { Cell(cx, cy); continue; }
+                for (var t = -ring; t <= ring; t++) { Cell(cx + t, cy - ring); Cell(cx + t, cy + ring); }
+                for (var t = -ring + 1; t <= ring - 1; t++) { Cell(cx - ring, cy + t); Cell(cx + ring, cy + t); }
+            }
+            if (best < 0) for (var i = 0; i < paths.Count; i++) { if (used[i]) continue; var d = D2(paths[i].Pts[0], at); if (d < bd) { bd = d; best = i; } } // weit weg: alle durchsehen
+            if (best < 0) best = Array.FindIndex(used, u => !u);
+            used[best] = true; var p = paths[best]; var pts = p.Pts;
+            if (p.Closed) { var here = at; var k = Enumerable.Range(0, pts.Count).MinBy(j => D2(pts[j], here)); pts = [.. pts.Skip(k), .. pts.Take(k)]; }
+            else if (D2(pts[^1], at) < D2(pts[0], at)) pts = Enumerable.Reverse(pts).ToList();
+            res.Add(p with { Pts = pts }); at = pts[0];
+        }
+        return res;
     }
 
     /// <summary>Eine Runde fahren; in den Stegbereichen auf Steghöhe anheben. Rückgabe: Anzahl der Anhebungen.
@@ -546,14 +630,25 @@ public static class CncCam
     }
 
     /// <summary>Nächste Kontur, der die Bahn näher als <paramref name="limit"/> kommt (Tag −1 = keine). <paramref name="skip"/>: eigene Kontur bei Bahnen auf der Linie.</summary>
-    static (int Tag, double D) Nearest(List<(double X, double Y)> path, bool closed, SegGrid obstacles, double limit, int skip, CancellationToken ct = default)
+    static (int Tag, double D) Nearest(List<(double X, double Y)> path, bool closed, SegGrid obstacles, double limit, int skip, CancellationToken ct = default, SegGrid.Cursor? cur = null)
     {
+        cur ??= obstacles.Own; // ohne eigenen Merker: der des Rasters (nur einfädig)
+        // T-0747-fix5: erst schnell prüfen, ob überhaupt etwas zu nah ist (ohne Listen, Abbruch beim ersten Treffer) – meist nicht
+        var any = false; var mm = closed ? path.Count : path.Count - 1;
+        for (var i = 0; i < mm && !any; i++)
+        {
+            if ((i & 1023) == 0) ct.ThrowIfCancellationRequested();
+            var a0 = path[i]; var b0 = path[(i + 1) % path.Count];
+            any = obstacles.Any(cur, Math.Min(a0.X, b0.X) - limit, Math.Min(a0.Y, b0.Y) - limit, Math.Max(a0.X, b0.X) + limit, Math.Max(a0.Y, b0.Y) + limit,
+                j => obstacles.Segs[j].Tag != skip && SegSeg(a0, b0, obstacles.Segs[j].A, obstacles.Segs[j].B) < limit);
+        }
+        if (!any) return (-1, double.MaxValue);
         var best = (Tag: -1, D: double.MaxValue); var m = closed ? path.Count : path.Count - 1;
         for (var i = 0; i < m; i++)
         {
             if ((i & 1023) == 0) ct.ThrowIfCancellationRequested();
             var a = path[i]; var b = path[(i + 1) % path.Count];
-            foreach (var j in obstacles.Near(Math.Min(a.X, b.X) - limit, Math.Min(a.Y, b.Y) - limit, Math.Max(a.X, b.X) + limit, Math.Max(a.Y, b.Y) + limit))
+            foreach (var j in obstacles.Near(cur, Math.Min(a.X, b.X) - limit, Math.Min(a.Y, b.Y) - limit, Math.Max(a.X, b.X) + limit, Math.Max(a.Y, b.Y) + limit))
             {
                 var (c, d, tag) = obstacles.Segs[j]; if (tag == skip) continue;
                 var dd = SegSeg(a, b, c, d);
@@ -561,6 +656,18 @@ public static class CncCam
             }
         }
         return best;
+    }
+
+    /// <summary>T-0747-fix5: Schleife über 0..n−1 auf allen Kernen, abbrechbar; Fehler kommen unverpackt heraus.</summary>
+    static void Par(int n, CancellationToken ct, Action<int> body)
+    {
+        ct.ThrowIfCancellationRequested();
+        try { Parallel.For(0, n, new ParallelOptions { CancellationToken = ct }, body); }
+        catch (AggregateException ae) when (ae.InnerExceptions.Count > 0)
+        {
+            var e = ae.InnerExceptions.FirstOrDefault(x => x is not OperationCanceledException) ?? ae.InnerExceptions[0];
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(e).Throw();
+        }
     }
 
     // ---------------------------------------------------------------- Glätten
@@ -696,7 +803,10 @@ public sealed class SegGrid(double cell)
 {
     readonly double _cell = Math.Max(cell, 1e-9);
     readonly Dictionary<long, List<int>> _map = [];
-    int[] _stamp = new int[16]; int _query;
+    /// <summary>T-0747-fix5: Merker für „schon gesehen“ – je Thread ein eigener, dann darf das Raster parallel abgefragt werden (nur lesen).</summary>
+    public sealed class Cursor { internal int[] Stamp = new int[16]; internal int Query; }
+    readonly Cursor _own = new();
+    internal Cursor Own => _own;
     public List<((double X, double Y) A, (double X, double Y) B, int Tag)> Segs { get; } = [];
 
     static long Key(long x, long y) => (x << 32) ^ (y & 0xFFFFFFFFL);
@@ -714,10 +824,17 @@ public sealed class SegGrid(double cell)
     }
 
     /// <summary>Strecken, deren Rasterzellen das Rechteck berühren (jede höchstens einmal).</summary>
-    public List<int> Near(double minX, double minY, double maxX, double maxY)
+    public List<int> Near(double minX, double minY, double maxX, double maxY) => Near(_own, minX, minY, maxX, maxY);
+
+    static void Next(Cursor c, int n)
     {
-        if (_stamp.Length < Segs.Count) Array.Resize(ref _stamp, Math.Max(Segs.Count, _stamp.Length * 2));
-        if (++_query == int.MaxValue) { Array.Clear(_stamp); _query = 1; }
+        if (c.Stamp.Length < n) Array.Resize(ref c.Stamp, Math.Max(n, c.Stamp.Length * 2));
+        if (++c.Query == int.MaxValue) { Array.Clear(c.Stamp); c.Query = 1; }
+    }
+
+    public List<int> Near(Cursor cur, double minX, double minY, double maxX, double maxY)
+    {
+        Next(cur, Segs.Count); var _stamp = cur.Stamp; var _query = cur.Query;
         var res = new List<int>();
         for (var x = C(minX); x <= C(maxX); x++)
             for (var y = C(minY); y <= C(maxY); y++)
@@ -727,10 +844,11 @@ public sealed class SegGrid(double cell)
     }
 
     /// <summary>T-0747-fix2: wie <see cref="Near"/>, aber ohne Liste – bricht ab, sobald <paramref name="hit"/> wahr ist.</summary>
-    public bool Any(double minX, double minY, double maxX, double maxY, Func<int, bool> hit)
+    public bool Any(double minX, double minY, double maxX, double maxY, Func<int, bool> hit) => Any(_own, minX, minY, maxX, maxY, hit);
+
+    public bool Any(Cursor cur, double minX, double minY, double maxX, double maxY, Func<int, bool> hit)
     {
-        if (_stamp.Length < Segs.Count) Array.Resize(ref _stamp, Math.Max(Segs.Count, _stamp.Length * 2));
-        if (++_query == int.MaxValue) { Array.Clear(_stamp); _query = 1; }
+        Next(cur, Segs.Count); var _stamp = cur.Stamp; var _query = cur.Query;
         for (var x = C(minX); x <= C(maxX); x++)
             for (var y = C(minY); y <= C(maxY); y++)
                 if (_map.TryGetValue(Key(x, y), out var l))

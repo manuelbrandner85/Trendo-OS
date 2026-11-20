@@ -267,7 +267,7 @@ public class T0747_FixGegenpruefung(ITestOutputHelper log)
         var many = CadDxf.Parse(BigDxf(PlanDxfImport.MaxEntities + 1));
         var e = Assert.Throws<CadError>(() => PlanDxfImport.Import(new FloorPlan(), many));
         Assert.Contains("zu viele", e.Message);
-        Assert.Throws<CadError>(() => CncCam.Contours(many.Drawing));
+        Assert.Throws<CadError>(() => CncCam.Contours(CadDxf.Parse(BigDxf(CncCam.MaxEntities + 1)).Drawing)); // T-0747-fix5: Fräsen hat eine höhere Grenze (50 000 Kreise sollen gehen)
         // Abbrechen
         using var cts = new CancellationTokenSource(); cts.Cancel();
         Assert.ThrowsAny<OperationCanceledException>(() => PlanDxfImport.Import(new FloorPlan(), dxf, null, cts.Token));

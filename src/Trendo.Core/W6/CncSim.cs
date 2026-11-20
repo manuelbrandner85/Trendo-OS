@@ -99,6 +99,8 @@ public sealed class CncJob
     public double Depth { get; set; } = 3;
     /// <summary>T-0747: Konturen aus einer eingelesenen DXF- oder SVG-Datei (mm, y nach oben, Lage wie in der Datei) und die CAM-Einstellungen dazu.</summary>
     public List<Cad.CadContour> Contours { get; set; } = [];
+    /// <summary>T-0747-fix5: Ausdehnung nicht gelesener Elemente (Blockverweise, SPLINE, schräge Normale) – Konturen darin gelten als unsicher.</summary>
+    public List<(string What, Cad.CadDxf.Box B)> Unread { get; set; } = [];
     public string CamSource { get; set; } = "";
     public string CamMode { get; set; } = "auto";
     public int CamTabs { get; set; }
@@ -119,6 +121,7 @@ public sealed class CncJob
             Contours = o["contours"] is JsonArray ca ? ca.OfType<JsonObject>().Select(ReadContour).Where(c => c.Pts.Count >= 2).ToList() : [],
             CamSource = (string?)o["camSource"] ?? "", CamMode = (string?)o["camMode"] ?? "auto", CamTabs = (int)N("camTabs", 0), CamTabW = N("camTabW", 6), CamTabH = N("camTabH", 1),
             CamKey = (string?)o["camKey"] ?? "", CamHash = (string?)o["camHash"] ?? "",
+            Unread = o["unread"] is JsonArray ua ? ua.OfType<JsonObject>().Select(u => ((string?)u["what"] ?? "?", new Cad.CadDxf.Box(UN(u, "x0"), UN(u, "y0"), UN(u, "x1"), UN(u, "y1")))).ToList() : [],
         };
     }
 
@@ -140,6 +143,8 @@ public sealed class CncJob
             o["camSource"] = CamSource;
         }
         if (CamHash.Length == 0) { o.Remove("camKey"); o.Remove("camHash"); } else { o["camKey"] = CamKey; o["camHash"] = CamHash; }
+        if (Unread.Count == 0) o.Remove("unread");
+        else o["unread"] = new JsonArray([.. Unread.Select(u => (JsonNode)new JsonObject { ["what"] = u.What, ["x0"] = US(u.B.MinX), ["y0"] = US(u.B.MinY), ["x1"] = US(u.B.MaxX), ["y1"] = US(u.B.MaxY) })]);
         o["camMode"] = CamMode; o["camTabs"] = (double)CamTabs; o["camTabW"] = CamTabW; o["camTabH"] = CamTabH; // Stegzahl als double: From liest Zahlen als double
     }
 
@@ -147,7 +152,7 @@ public sealed class CncJob
     public CamSettings CamSettings()
     {
         double rpm = 0; try { rpm = Cnc.Feeds(Material, ToolD, 2).Rpm; } catch (ArgumentException) { }
-        return new CamSettings { ToolD = ToolD, Depth = Depth, StepDown = StepDown, Feed = Feed, Plunge = Plunge, Mode = CamMode, Tabs = CamTabs, TabW = CamTabW, TabH = CamTabH, Rpm = rpm };
+        return new CamSettings { ToolD = ToolD, Depth = Depth, StepDown = StepDown, Feed = Feed, Plunge = Plunge, Mode = CamMode, Tabs = CamTabs, TabW = CamTabW, TabH = CamTabH, Rpm = rpm, Unread = Unread };
     }
 
     /// <summary>T-0747-fix: Werte, die in die Bahnen eingehen, als Text (für den Stempel).</summary>
@@ -155,9 +160,13 @@ public sealed class CncJob
     public string CamSettingsKey() { var c = CamSettings(); return string.Join("|", new[] { c.ToolD, c.Depth, c.StepDown, c.Feed, c.Plunge, c.TabW, c.TabH, c.Rpm, c.Tabs }.Select(v => v.ToString("R", System.Globalization.CultureInfo.InvariantCulture))) + "|" + c.Mode + "|" + ContoursHash(); }
 
     /// <summary>T-0747-fix3: Prüfsumme der Konturen (Ebene, offen/geschlossen, Punkte wie gespeichert).</summary>
+    static double UN(JsonObject o, string k) => o[k] is JsonValue v && v.TryGetValue<double>(out var d) ? d : o[k] is JsonValue s && s.TryGetValue<string>(out var t) && double.TryParse(t, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var e) ? e : double.NaN;
+    static JsonNode US(double v) => double.IsFinite(v) ? JsonValue.Create(v) : JsonValue.Create(v.ToString(System.Globalization.CultureInfo.InvariantCulture)); // ∞ als Text (JSON kennt kein Unendlich)
+
     public string ContoursHash()
     {
         using var h = System.Security.Cryptography.IncrementalHash.CreateHash(System.Security.Cryptography.HashAlgorithmName.SHA256);
+        foreach (var u in Unread) h.AppendData(System.Text.Encoding.UTF8.GetBytes($"{u.What}|{u.B}|"));
         foreach (var c in Contours)
         {
             h.AppendData(System.Text.Encoding.UTF8.GetBytes(c.Layer + (c.Closed ? "|g|" : "|o|")));
@@ -189,20 +198,20 @@ public sealed class CncJob
     public CamResult ImportDrawing(string path, CancellationToken ct = default)
     {
         var ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
-        Cad.CadDrawing drawing; Dictionary<string, int> skipped; string? units = null;
+        Cad.CadDrawing drawing; Dictionary<string, int> skipped; string? units = null; List<(string What, Cad.CadDxf.Box B)> unread = [];
         switch (ext)
         {
-            case ".dxf": { var rd = Cad.CadDxf.Read(path, ct); drawing = rd.Drawing; skipped = rd.Skipped; if (rd.Units is not 0 and not 4) units = rd.UnitName; else if (rd.Units == 0) units = ""; break; } // T-0747-fix3: "" = keine Angabe
+            case ".dxf": { var rd = Cad.CadDxf.Read(path, ct); drawing = rd.Drawing; skipped = rd.Skipped; unread = rd.Unread; if (rd.Units is not 0 and not 4) units = rd.UnitName; else if (rd.Units == 0) units = ""; break; } // T-0747-fix3: "" = keine Angabe
             case ".svg": { var rs = Cad.CadSvg.Read(path); drawing = rs.Drawing; skipped = rs.Skipped; break; }
             default: throw new Cad.CadError("Für Fräsbahnen bitte eine DXF- oder SVG-Datei wählen.");
         }
         var notes = ReadNotes(drawing, skipped, units);
         var cs = CncCam.Contours(drawing, notes, ct: ct); // T-0747-fix3: Hinweise beim Verketten (mehrdeutige Spalten)
         if (cs.Count == 0) throw new Cad.CadError("In der Zeichnung sind keine Konturen (Linien, Kreise, Bögen, Pfade)." + (notes.Count > 0 ? " " + string.Join(" ", notes) : ""));
-        var old = (Contours, CamSource); Contours = cs; CamSource = System.IO.Path.GetFileName(path);
+        var old = (Contours, CamSource, Unread); Contours = cs; CamSource = System.IO.Path.GetFileName(path); Unread = unread;
         try { var r = Contours.Count == 0 ? Cam() : CncCam.Generate(Contours, CamSettings(), ct); SetCamGcode(r.Gcode); r.Warnings.InsertRange(0, notes); return r; }
-        catch (InvalidOperationException e) when (notes.Count > 0) { (Contours, CamSource) = old; throw new InvalidOperationException(e.Message + " " + string.Join(" ", notes), e); }
-        catch { (Contours, CamSource) = old; throw; }
+        catch (InvalidOperationException e) when (notes.Count > 0) { (Contours, CamSource, Unread) = old; throw new InvalidOperationException(e.Message + " " + string.Join(" ", notes), e); }
+        catch { (Contours, CamSource, Unread) = old; throw; }
     }
 
     /// <summary>T-0747-fix2: was beim Einlesen nicht in die Fräsbahnen kommt (SPLINE, ELLIPSE, Blockverweise, Texte, ausgeblendete Ebenen) und ob
