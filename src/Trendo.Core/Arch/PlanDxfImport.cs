@@ -67,7 +67,7 @@ public static class PlanDxfImport
         var o = options ?? new PlanDxfOptions();
         var d = dxf.Drawing;
         var visible = d.Layers.Where(l => l.Visible).Select(l => l.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var ents = d.Entities.Where(e => visible.Contains(e.Layer) || d.Layers.All(l => !l.Name.Equals(e.Layer, StringComparison.OrdinalIgnoreCase))).ToList();
+        var ents = d.Entities.Where(e => !e.Invisible && (visible.Contains(e.Layer) || d.Layers.All(l => !l.Name.Equals(e.Layer, StringComparison.OrdinalIgnoreCase)))).ToList(); // T-0747-fix11: unsichtbar (60 = 1) nicht übernehmen
         // T-0747-fix6: Ellipsen (vom Leser abgetastet) übernimmt der Grundriss nicht als Wand – sie werden gemeldet statt still in kurze Stücke zu zerfallen
         var skippedKinds = new Dictionary<string, int>(dxf.Skipped);
         var nEll = ents.Count(e => e.Source == "ELLIPSE");

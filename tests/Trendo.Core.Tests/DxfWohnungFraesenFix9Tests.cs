@@ -113,19 +113,21 @@ public class T0747_Fix9NeuntePruefung(ITestOutputHelper log)
         return t;
     }
 
-    /// <summary>T-0747-fix10: Abbrechen beim Lesen lastrobust – ein schon abgebrochener Token wirft sofort; dann Abbruch nach einem Drittel der gemessenen
-    /// Lesezeit (mindestens 1 ms): Zeit bis zur Abbruch-Ausnahme. Ist das Lesen schneller fertig als der Abbruch, wird mit 1 ms wiederholt; über 3 s einmal wiederholt.</summary>
+    /// <summary>T-0747-fix11: Abbrechen beim Lesen lastrobust – ein eigener Thread bricht ab, sobald das Lesen startet (ManualResetEvent); bis zu drei
+    /// Versuche. Liefert die Zeit bis zur Abbruch-Ausnahme; wirft, wenn das Lesen jedes Mal ohne Abbruch durchlief.</summary>
     static long CancelTime(string dxf)
     {
         using (var pre = new CancellationTokenSource()) { pre.Cancel(); Assert.ThrowsAny<OperationCanceledException>(() => CadDxf.Parse(dxf, pre.Token)); }
-        var normal = Stopwatch.StartNew(); CadDxf.Parse(dxf); var tn = normal.ElapsedMilliseconds;
-        long? Once(int delay)
+        for (var attempt = 0; attempt < 3; attempt++)
         {
-            using var cts = new CancellationTokenSource(); cts.CancelAfter(delay); var sw = Stopwatch.StartNew();
-            try { CadDxf.Parse(dxf, cts.Token); return null; } catch (OperationCanceledException) { return sw.ElapsedMilliseconds; }
+            using var cts = new CancellationTokenSource(); using var go = new ManualResetEventSlim(false); var wait = attempt * 5;
+            var th = new Thread(() => { go.Wait(); if (wait > 0) Thread.Sleep(wait); cts.Cancel(); }) { IsBackground = true }; th.Start();
+            var sw = Stopwatch.StartNew(); go.Set();
+            try { CadDxf.Parse(dxf, cts.Token); }
+            catch (OperationCanceledException) { th.Join(); return sw.ElapsedMilliseconds; }
+            th.Join();
         }
-        var t = Once((int)Math.Max(1, tn / 3)) ?? Once(1) ?? throw new Xunit.Sdk.XunitException("Abbruch wirkte nicht");
-        return t > 3000 ? Math.Min(t, Once(1) ?? t) : t;
+        throw new Xunit.Sdk.XunitException("Abbruch wirkte nicht");
     }
 
     [Fact(DisplayName = "T-0747-fix9 N-2/N-3/N-4: Toleranz je Achse 0,01 mm inkl. Zerlegungsfehler (Kreis r + 0,0099 gleich, r + 0,011 nicht); fallende Knoten keine Form; 2-Punkt-Rand mit gleichen Punkten unbekannt")]

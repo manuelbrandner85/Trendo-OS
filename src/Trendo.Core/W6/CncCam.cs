@@ -78,7 +78,7 @@ public static class CncCam
     public static List<CadContour> Contours(CadDrawing d, List<string>? notes, double chord = ContourChord, CancellationToken ct = default)
     {
         var hidden = d.Layers.Where(l => !l.Visible).Select(l => l.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var ents = d.Entities.Where(e => e.Kind != "text" && !hidden.Contains(e.Layer)).ToList();
+        var ents = d.Entities.Where(e => e.Kind != "text" && !hidden.Contains(e.Layer) && !e.Invisible).ToList(); // T-0747-fix11: unsichtbar (60 = 1) wie ausgeblendet
         if (ents.Count > MaxEntities) throw new CadError($"Die Zeichnung hat {ents.Count.ToString("N0", De)} Elemente – zu viele zum Fräsen (höchstens {MaxEntities.ToString("N0", De)}). Bitte nur die nötigen Teile oder Ebenen exportieren.");
         return CadContours.Build(ents, ChainTol, chord, notes, ct);
     }
