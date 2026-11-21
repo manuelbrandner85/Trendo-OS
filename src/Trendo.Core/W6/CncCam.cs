@@ -162,6 +162,10 @@ public static class CncCam
         {
             if (ub.IsEmpty) continue;
             var u = ub.Shift(sx, sy);
+            // T-0747-fix6: Füllfläche (HATCH, SOLID …), deren Rechteck sich mit einer gelesenen geschlossenen Kontur deckt – ihr Rand ist gezeichnet, sie ändert nichts
+            const double fillTol = 0.01;
+            if (what.StartsWith(CadDxf.FillPrefix, StringComparison.Ordinal) && !u.IsAll && Enumerable.Range(0, cs.Count).Any(j => cs[j].Closed && !dup[j]
+                && Math.Abs(boxes[j].Item1 - u.MinX) <= fillTol && Math.Abs(boxes[j].Item2 - u.MinY) <= fillTol && Math.Abs(boxes[j].Item3 - u.MaxX) <= fillTol && Math.Abs(boxes[j].Item4 - u.MaxY) <= fillTol)) continue;
             for (var i = 0; i < cs.Count; i++)
             {
                 if (!cs[i].Closed || dup[i] || crossing[i] || unsure[i]) continue;
@@ -169,7 +173,9 @@ public static class CncCam
                 if (bi.Item1 >= u.MinX - e && bi.Item2 >= u.MinY - e && bi.Item3 <= u.MaxX + e && bi.Item4 <= u.MaxY + e)
                 {
                     unsure[i] = true;
-                    warn.Add($"{Name(i)} ausgelassen: liegt in nicht gelesenem Element {what} – ob sie Loch oder Teil ist (die Seite), lässt sich nicht sicher sagen.");
+                    warn.Add(u.IsAll
+                        ? $"{Name(i)} ausgelassen: nicht gelesenes Element {what} hat keine bestimmbare Ausdehnung – es könnte diese Kontur umschließen, ob sie Loch oder Teil ist (die Seite), lässt sich nicht sicher sagen."
+                        : $"{Name(i)} ausgelassen: liegt in nicht gelesenem Element {what} – ob sie Loch oder Teil ist (die Seite), lässt sich nicht sicher sagen.");
                 }
                 else if (!u.IsAll && u.MinX >= bi.Item1 - e && u.MinY >= bi.Item2 - e && u.MaxX <= bi.Item3 + e && u.MaxY <= bi.Item4 + e && cs[i].Contains((u.MinX + u.MaxX) / 2, (u.MinY + u.MaxY) / 2))
                     warn.Add($"{Name(i)}: enthält nicht gelesenes Element {what} (bei X {F((u.MinX + u.MaxX) / 2, "0.#")} Y {F((u.MinY + u.MaxY) / 2, "0.#")}) – dort wird nichts gefräst.");

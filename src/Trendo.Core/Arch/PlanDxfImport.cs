@@ -68,6 +68,10 @@ public static class PlanDxfImport
         var d = dxf.Drawing;
         var visible = d.Layers.Where(l => l.Visible).Select(l => l.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var ents = d.Entities.Where(e => visible.Contains(e.Layer) || d.Layers.All(l => !l.Name.Equals(e.Layer, StringComparison.OrdinalIgnoreCase))).ToList();
+        // T-0747-fix6: Ellipsen (vom Leser abgetastet) übernimmt der Grundriss nicht als Wand – sie werden gemeldet statt still in kurze Stücke zu zerfallen
+        var skippedKinds = new Dictionary<string, int>(dxf.Skipped);
+        var nEll = ents.Count(e => e.Source == "ELLIPSE");
+        if (nEll > 0) { ents = ents.Where(e => e.Source != "ELLIPSE").ToList(); skippedKinds["ELLIPSE (nicht als Wand übernommen)"] = nEll; }
         if (ents.Count > MaxEntities) throw new CadError($"Die DXF-Datei hat {ents.Count.ToString("N0", De)} Elemente – zu viele für einen Grundriss (höchstens {MaxEntities.ToString("N0", De)}). Bitte nur die Ebenen mit Wänden, Türen und Räumen exportieren.");
         var layers = ents.Select(e => e.Layer).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         // Ebenen zuordnen
@@ -301,7 +305,7 @@ public static class PlanDxfImport
         // Bericht: nicht verwendete Ebenen
         var skippedLayers = ents.Where(e => !IsWall(e.Layer) && !IsRoom(e.Layer) && !(e.Kind == "text" && IsText(e.Layer)))
             .GroupBy(e => e.Layer, StringComparer.OrdinalIgnoreCase).ToDictionary(g => g.Key, g => g.Count());
-        return new PlanDxfReport(nWalls + nArc, nPair, nSingle, nArc, nOpen, nRooms, nLabels, wallLayers, skippedLayers, dxf.Skipped, dxf.UnitName, Math.Round(ox, 1), Math.Round(oy, 1));
+        return new PlanDxfReport(nWalls + nArc, nPair, nSingle, nArc, nOpen, nRooms, nLabels, wallLayers, skippedLayers, skippedKinds, dxf.UnitName, Math.Round(ox, 1), Math.Round(oy, 1));
 
         static double R(double v) => Math.Round(v, 2);
         static double Dist((double X, double Y) a, (double X, double Y) b) => Math.Sqrt((a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y));

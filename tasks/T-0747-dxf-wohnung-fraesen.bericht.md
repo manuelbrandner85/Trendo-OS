@@ -277,3 +277,70 @@ Test zu N2–N6: `Robust_reader`.
 - Die oben erklärten sechs Prüfer-Fälle bleiben bewusst „rot“.
 
 **Testzahlen T-0747-fix5:** Build 0 Fehler. Kern (alle sechs T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests): **116 gesamt, 115 bestanden, 1 übersprungen (vorbestehend „IFC echt“), 0 Fehler**. App: T0747_DxfUi 2/2, T0747_FixUi 3/3, T0747_Fix3RaceUi 4/4, T0747_Fix4RaceUi 3/3, SPEC01_Ui 6/6, SPEC01_UiArc 1/1, SPEC14_Ui 2/2, Bildbearbeitung_Ui 5/5, PlanPhoto_Ui 4/4, N23N24_CadPrintUi 3/3, UebersichtEinfach_Ui 2/2, DeadButtonTests 83/83 – **118/118**. Prüfskript BESTANDEN. Prüfprogramme: 377 Fälle, 6 Befunde (oben erklärt, keine falsche Bahn). Belege der früheren Runden unverändert (gleiche Ausgaben).
+
+## Sechste Prüfung behoben (T-0747-fix6)
+Arbeitskopie `%TEMP%\trendo-auftrag-T-0747-fix6`, Commit obendrauf auf 7b253bbad. Keine Maschine angesteuert.
+**Prüfprogramme aller Prüfer** (nur als Kopie benutzt bzw. Fallgeneratoren ausgeführt, darunter `gen_p6.py gen` und `gen_p6.py check`; nichts im Repo), alle Fälle über `CncJob.ImportDrawing`:
+
+| Fallgruppe | Fälle | mit G-Code | Befunde | schlechtester Abstand − Radius | Rechenzeit gesamt (längster Fall) |
+|---|---|---|---|---|---|
+| Prüfer 2 | 162 | 141 | 1 (p_spline_block, erklärt) | −0,0010 mm | 10,4 s (`l_zickzack_5000` 1,6 s) |
+| Prüfer 3 | 55 | 48 | 0 | −0,0043 mm (Wahrheit des Generators, erklärt) | 1,3 s |
+| Prüfer 4 | 72 | 58 | 1 (v2, erklärt) | −0,0010 mm | 1,2 s |
+| Prüfer 5 | 80 | 72 (f4, f7 jetzt bewusst ohne) | 4 (f6, g2, k1_0_0005, n8 – erklärt); Haltestege 4/4 richtig | −0,0010 mm | 12,9 s (`g2_50000_kreise` 10,5 s) |
+| Prüfer 5 Spline | 8 | 8 | 0 | −0,0001 mm | 0,1 s |
+| Prüfer 6 (i, e, x, d) | 30 | 9 | 0 (`gen_p6.py check`); `check.py` je Fall: 0 (d1 mit 958 Meldungen und alle Lücken gemeldet) | −0,0010 mm (e7) | 1,9 s (`d1_viele_konturen` 1,8 s) |
+
+Ellipsen (Prüfer 6, `gen_p6.py check`): Pfeilhöhe höchstens 0,00100 mm, Punkt-Abweichung ≤ 9e-12 mm, Teilellipsen an richtiger Stelle und Richtung (Endpunkte ≤ 2e-14 mm). Bei i1–i16 und x1–x5 werden alle Löcher im wahren Umriss ausgelassen und gemeldet. Determinismus d1: unverändert (vom Prüfer bestätigt, Meldungen in Konturreihenfolge).
+
+**Bewertung:** Keine neuen Befunde. Übrig sind nur die sechs in der fünften Prüfung erklärten Fälle (v2, k1_0_0005, p_spline_block, n8, f6, g2), alle Fehler der Wahrheitsdatei bzw. des Prüfprogramms, vom Prüfer bestätigt.
+**Absichtlich ohne G-Code:** f4, f7 (Prüfer 5; Kreis mit NaN bzw. 1e300) sowie i1–i16 und x1–x5 (Prüfer 6). Dort steckt der Umriss in einem nicht gelesenen Element, dessen Ausdehnung unbekannt ist bzw. alle Löcher enthält. Trendo lässt alles aus und meldet es, statt Löcher als Teile außen zu fräsen.
+
+**Rot-Probe gegen 7b253bbad:** `T0747_Fix6SechstePruefung` 7 von 7 rot, ohne Platzhalter übersetzbar. `Ellipse_extreme_parameters` hängt auf dem alten Stand: Abbruch nach 30 s mit `--blame-hang-timeout`. Log: `reports/T-0747/T-0747-fix6-rotprobe.log`.
+
+**M-1 Ausdehnung vorsichtig – behoben.** Ein gemeinsamer Rechner `ShapeBox` ersetzt die alten Rahmen aus Einzelpunkten.
+- **Bögen und Ausbuchtungen:** Für jede Ausbuchtung (beliebig groß, auch 3 und −3) werden Mittelpunkt und Radius des Bogens berechnet. Endpunkte und alle Achsen-Scheitel im Bogenbereich gehen in den Rahmen ein; das gilt für LWPOLYLINE, alte POLYLINE im Block (i9) und ARC.
+- **Normale:** Bei alten POLYLINE wirkt die Normale aus dem Kopf (i10). Normale −Z wird gespiegelt. Schräge Normalen werden über die DXF-Regel „beliebige Achse“ umgerechnet; Kreise und Bögen gehen dann als Raumkreis ein.
+- **ELLIPSE:** Rahmen der vollen Ellipse aus Haupt- und Nebenachse.
+- **SPLINE:** konvexe Hülle der Kontrollpunkte. Ein SPLINE nur mit Fit-Punkten (i16) oder mit Gewicht ≤ 0 gilt als „unbekannt, überall“.
+- **HATCH:** Randpunkte. Dazu kommt ein Zuschlag aus Bogenradien und Ellipsenachsen sowie für Ausbuchtungen höchstens max(1, |b|) · halbe Diagonale (sicherer Zuschlag).
+- Tests: `Block_extent_bulges_and_normal` (Ausbuchtung 0,3 / 1 / 1,5 / 3 / −3 / 12 gegen fein abgetastete wahre Ausdehnung; alte POLYLINE mit Ausbuchtung und mit Normale −Z; Loch außerhalb des Punkt-Rahmens wird ausgelassen) und `Unknown_extents`.
+
+**M-2 alle verworfenen Umrisse – behoben.** Jedes nicht gelesene oder verworfene Element, das allein einen Umriss bilden kann, kommt mit seiner Ausdehnung in dieselbe Auslass-Logik:
+- CIRCLE mit Radius < 0: Ausdehnung |r|.
+- Geschlossene LWPOLYLINE/POLYLINE mit NaN oder ∞, unbekannte Elemente, MLINE, REGION, 3DSOLID, BODY, SURFACE, MESH, WIPEOUT: Ausdehnung „unbekannt, überall“.
+- HATCH, SOLID, TRACE und 3DFACE als Füllfläche.
+- Konturen darin werden ausgelassen und deutlich gemeldet. Bei unbekannter Ausdehnung lautet die Meldung: „… hat keine bestimmbare Ausdehnung – es könnte diese Kontur umschließen …“.
+- Ausnahmen:
+  - Linien, Bögen und offene Züge bilden allein keinen Umriss. Fehlen sie, bleibt eine offene Kontur, und die wird schon ausgelassen und gemeldet.
+  - Eine Füllfläche, deren Rechteck sich mit einer gelesenen Kontur deckt (± 0,01 mm), hat ihren Rand gezeichnet und ändert nichts (h1 bleibt richtig).
+  - Ein Kreis mit Radius 0 ist kein Umriss.
+- Test `Unreadable_outlines_make_inside_unsure` (x1–x5, h1, Radius 0).
+
+**M-3 ELLIPSE ohne Endlosschleife – behoben.** Die Parameter werden per Rest normalisiert, ohne Schleife, die von der Eingabe abhängt. Beträge über 1e6 werden verworfen, gemeldet („ELLIPSE mit unsinnigem Parameter“) und mit ihrer Ausdehnung als nicht gelesen geführt. Test `Ellipse_extreme_parameters`: 1e17 und −1e300 in 3 ms; 4π + 0,3 … 4π + 2,5 ergibt dieselbe Teilellipse wie 0,3 … 2,5.
+
+**N-1 – behoben.** Die Ausdehnung von Blockverweisen wird erst am Ende berechnet, damit BLOCKS auch nach ENTITIES stehen dürfen (i14). Ein Xref-Block (Flag 4 oder 8) gilt als „unbekannt, überall“ (i15).
+
+**N-2 – behoben.** Der Grundriss übernimmt Ellipsen nicht als Wand und meldet sie („Nicht lesbar: 1× ELLIPSE (nicht als Wand übernommen)“), statt dass sie still in kurze Stücke zerfallen. Test `Floor_plan_reports_ellipse`.
+
+**N-3 – behoben.**
+- Neue Schrittweite aus |r''(t)| ≤ max(a, b): Pfeilhöhe ≤ h²/8 · max(a, b) ≤ 0,001 mm, unabhängig vom Verhältnis.
+- Die Scheitel sind immer Stützpunkte. Sonst würden bei sehr flachen Ellipsen zwei Punkte beidseits der Spitze beim Verketten zusammengefasst, und die Spitze würde abgeschnitten (gemessen vorher 0,0011 mm).
+- Punktzahlen: flache Ellipse 0,001 jetzt 704 Punkte (vorher 275 747), 1500/800 mit 0,02: 2 900 Punkte.
+- Höchstens 200 000 Punkte je Ellipse und 2 000 000 je Datei; darüber wird die Ellipse gemeldet und als nicht gelesen mit Ausdehnung geführt.
+
+**N-4 – behoben.**
+- Verhältnis > 1 wird richtig abgetastet (die Schrittweite nimmt die größere Halbachse), e7 ohne Befund.
+- Die Prüfsumme der Konturen schreibt die Ausdehnungen kulturunabhängig (Test `Contours_hash_invariant`).
+- Test zu N-3/N-4: `Ellipse_points_ratio_limit` (Pfeilhöhe auch nach dem Verketten ≤ 0,001 mm).
+
+**Tests:** siehe Testzahlen unten; Rohlogs `T-0747-fix6-*.log`.
+
+**Weiterhin offen:**
+- INSERT, SPLINE, MLINE und REGION werden nicht aufgelöst; Konturen in ihrer Ausdehnung werden ausgelassen und gemeldet (bewusst).
+- Die Anzeige sehr großer G-Codes ist langsam (vorbestehend).
+- Taschen mit Inseln werden nicht gemeinsam gefräst.
+- TEXT mit Normale −Z wird nicht gespiegelt.
+- Die sechs erklärten Prüfer-Fälle bleiben „rot“.
+
+**Testzahlen T-0747-fix6:** Build 0 Fehler. Kern (alle sieben T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests): **123 gesamt, 122 bestanden, 1 übersprungen (vorbestehend „IFC echt“), 0 Fehler**. App: T0747_DxfUi 2/2, T0747_FixUi 3/3, T0747_Fix3RaceUi 4/4, T0747_Fix4RaceUi 3/3, SPEC01_Ui 6/6, SPEC01_UiArc 1/1, SPEC14_Ui 2/2, Bildbearbeitung_Ui 5/5, PlanPhoto_Ui 4/4, N23N24_CadPrintUi 3/3, UebersichtEinfach_Ui 2/2, DeadButtonTests 83/83 – **118/118**. Prüfskript BESTANDEN. Prüfprogramme: 407 Fälle, keine neuen Befunde (sechs erklärte). Belege der früheren Runden unverändert (gleiche Ausgaben).

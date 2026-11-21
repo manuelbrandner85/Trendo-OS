@@ -166,7 +166,7 @@ public sealed class CncJob
     public string ContoursHash()
     {
         using var h = System.Security.Cryptography.IncrementalHash.CreateHash(System.Security.Cryptography.HashAlgorithmName.SHA256);
-        foreach (var u in Unread) h.AppendData(System.Text.Encoding.UTF8.GetBytes($"{u.What}|{u.B}|"));
+        foreach (var u in Unread) h.AppendData(System.Text.Encoding.UTF8.GetBytes(u.What + "|" + string.Join(";", new[] { u.B.MinX, u.B.MinY, u.B.MaxX, u.B.MaxY }.Select(v => v.ToString("R", System.Globalization.CultureInfo.InvariantCulture))) + "|")); // T-0747-fix6: kulturunabhängig
         foreach (var c in Contours)
         {
             h.AppendData(System.Text.Encoding.UTF8.GetBytes(c.Layer + (c.Closed ? "|g|" : "|o|")));

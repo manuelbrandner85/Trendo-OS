@@ -1,0 +1,135 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\t0747fix6-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.24]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:00.60]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:00.63]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:00.69]     T-0747-fix6 M-1: Ausdehnung im Block – alte POLYLINE mit Ausbuchtung (i9) und Normale −Z (i10), LWPOLYLINE mit Ausbuchtung 1,5 und 3 (i7/i8) [FAIL]
+[xUnit.net 00:00:00.69]       Ausdehnung Box { MinX = 0, MinY = 0, MaxX = 100, MaxY = 0, IsEmpty = False, IsAll = False } deckt (0, -50, 100, 50) nicht
+[xUnit.net 00:00:00.69]       Stack Trace:
+[xUnit.net 00:00:00.69]         C:\Users\<user>\AppData\Local\Temp\t0747fix6-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix6Tests.cs(45,0): at Trendo.Core.Tests.T0747_Fix6SechstePruefung.Covers(Box b, ValueTuple`4 t)
+[xUnit.net 00:00:00.69]         C:\Users\<user>\AppData\Local\Temp\t0747fix6-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix6Tests.cs(57,0): at Trendo.Core.Tests.T0747_Fix6SechstePruefung.Block_extent_bulges_and_normal()
+[xUnit.net 00:00:00.69]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:00.69]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:00.70]     T-0747-fix6 N-4: Prüfsumme der Konturen mit nicht gelesenen Elementen ist in jeder Sprache gleich [FAIL]
+[xUnit.net 00:00:00.70]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:00.70]                  ↓ (pos 0)
+[xUnit.net 00:00:00.70]       Expected: "056D6F6E80941ACD"
+[xUnit.net 00:00:00.70]       Actual:   "B3CED002E3D1DD01"
+[xUnit.net 00:00:00.70]                  ↑ (pos 0)
+[xUnit.net 00:00:00.70]       Stack Trace:
+[xUnit.net 00:00:00.70]         C:\Users\<user>\AppData\Local\Temp\t0747fix6-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix6Tests.cs(180,0): at Trendo.Core.Tests.T0747_Fix6SechstePruefung.Contours_hash_invariant()
+[xUnit.net 00:00:00.70]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:00.70]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:00.76]     T-0747-fix6 M-2: Umriss als Kreis r < 0, LWPOLYLINE mit NaN, MLINE, REGION, nur HATCH – lose Löcher werden ausgelassen statt außen gefräst; HATCH auf gezeichneter Platte ändert nichts [FAIL]
+[xUnit.net 00:00:00.76]       Assert.Throws() Failure: No exception was thrown
+[xUnit.net 00:00:00.76]       Expected: typeof(System.InvalidOperationException)
+[xUnit.net 00:00:00.76]       Stack Trace:
+[xUnit.net 00:00:00.76]         C:\Users\<user>\AppData\Local\Temp\t0747fix6-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix6Tests.cs(113,0): at Trendo.Core.Tests.T0747_Fix6SechstePruefung.Unreadable_outlines_make_inside_unsure()
+[xUnit.net 00:00:00.76]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:00.76]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:01.32]     T-0747-fix6 N-2: elliptische Wand im Grundriss wird als nicht gelesen gemeldet statt still zu verschwinden [FAIL]
+[xUnit.net 00:00:01.32]       System.Collections.Generic.KeyNotFoundException : The given key 'ELLIPSE (nicht als Wand übernommen)' was not present in the dictionary.
+[xUnit.net 00:00:01.32]       Stack Trace:
+[xUnit.net 00:00:01.32]            at System.Collections.Generic.Dictionary`2.get_Item(TKey key)
+[xUnit.net 00:00:01.32]         C:\Users\<user>\AppData\Local\Temp\t0747fix6-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix6Tests.cs(193,0): at Trendo.Core.Tests.T0747_Fix6SechstePruefung.Floor_plan_reports_ellipse()
+[xUnit.net 00:00:01.32]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:01.32]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0747-fix6 M-1: Ausdehnung im Block – alte POLYLINE mit Ausbuchtung (i9) und Normale −Z (i10), LWPOLYLINE mit Ausbuchtung 1,5 und 3 (i7/i8) [22 ms]
+  Fehlermeldung:
+   Ausdehnung Box { MinX = 0, MinY = 0, MaxX = 100, MaxY = 0, IsEmpty = False, IsAll = False } deckt (0, -50, 100, 50) nicht
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix6SechstePruefung.Covers(Box b, ValueTuple`4 t) in C:\Users\<user>\AppData\Local\Temp\t0747fix6-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix6Tests.cs:line 45
+   at Trendo.Core.Tests.T0747_Fix6SechstePruefung.Block_extent_bulges_and_normal() in C:\Users\<user>\AppData\Local\Temp\t0747fix6-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix6Tests.cs:line 57
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0747-fix6 N-4: Prüfsumme der Konturen mit nicht gelesenen Elementen ist in jeder Sprache gleich [3 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "056D6F6E80941ACD"
+Actual:   "B3CED002E3D1DD01"
+           ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix6SechstePruefung.Contours_hash_invariant() in C:\Users\<user>\AppData\Local\Temp\t0747fix6-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix6Tests.cs:line 180
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0747-fix6 M-2: Umriss als Kreis r < 0, LWPOLYLINE mit NaN, MLINE, REGION, nur HATCH – lose Löcher werden ausgelassen statt außen gefräst; HATCH auf gezeichneter Platte ändert nichts [64 ms]
+  Fehlermeldung:
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.InvalidOperationException)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix6SechstePruefung.Unreadable_outlines_make_inside_unsure() in C:\Users\<user>\AppData\Local\Temp\t0747fix6-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix6Tests.cs:line 113
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0747-fix6 N-2: elliptische Wand im Grundriss wird als nicht gelesen gemeldet statt still zu verschwinden [562 ms]
+  Fehlermeldung:
+   System.Collections.Generic.KeyNotFoundException : The given key 'ELLIPSE (nicht als Wand übernommen)' was not present in the dictionary.
+  Stapelverfolgung:
+     at System.Collections.Generic.Dictionary`2.get_Item(TKey key)
+   at Trendo.Core.Tests.T0747_Fix6SechstePruefung.Floor_plan_reports_ellipse() in C:\Users\<user>\AppData\Local\Temp\t0747fix6-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix6Tests.cs:line 193
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:01.51]     T-0747-fix6 N-3/N-4: flache Ellipse wenige Punkte und Pfeilhöhe ≤ 0,001 mm auch nach dem Verketten; Verhältnis 1,5 richtig; zu große Ellipse gemeldet [FAIL]
+[xUnit.net 00:00:01.51]       702482
+[xUnit.net 00:00:01.51]       Stack Trace:
+[xUnit.net 00:00:01.51]         C:\Users\<user>\AppData\Local\Temp\t0747fix6-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix6Tests.cs(162,0): at Trendo.Core.Tests.T0747_Fix6SechstePruefung.Ellipse_points_ratio_limit()
+[xUnit.net 00:00:01.51]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:01.51]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:01.51]       Output:
+[xUnit.net 00:00:01.51]         Ellipse 100/0 Verhältnis 0,001: 702482 Punkte, nach Verketten 275747, Pfeilhöhe 0,000329 mm
+[xUnit.net 00:00:01.51]     T-0747-fix6 M-1/N-1: SPLINE nur mit Fit-Punkten (i16) und Xref-Block (i15) → unbekannt, überall; Blöcke nach ENTITIES (i14) werden gefunden [FAIL]
+[xUnit.net 00:00:01.51]       Assert.True() Failure
+[xUnit.net 00:00:01.51]       Expected: True
+[xUnit.net 00:00:01.51]       Actual:   False
+[xUnit.net 00:00:01.51]       Stack Trace:
+[xUnit.net 00:00:01.51]         C:\Users\<user>\AppData\Local\Temp\t0747fix6-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix6Tests.cs(81,0): at Trendo.Core.Tests.T0747_Fix6SechstePruefung.Unknown_extents()
+[xUnit.net 00:00:01.51]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:01.51]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:01.51]   Finished:    Trendo.Core.Tests
+  Fehler T-0747-fix6 N-3/N-4: flache Ellipse wenige Punkte und Pfeilhöhe ≤ 0,001 mm auch nach dem Verketten; Verhältnis 1,5 richtig; zu große Ellipse gemeldet [185 ms]
+  Fehlermeldung:
+   702482
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix6SechstePruefung.Ellipse_points_ratio_limit() in C:\Users\<user>\AppData\Local\Temp\t0747fix6-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix6Tests.cs:line 162
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ Ellipse 100/0 Verhältnis 0,001: 702482 Punkte, nach Verketten 275747, Pfeilhöhe 0,000329 mm
+
+
+  Fehler T-0747-fix6 M-1/N-1: SPLINE nur mit Fit-Punkten (i16) und Xref-Block (i15) → unbekannt, überall; Blöcke nach ENTITIES (i14) werden gefunden [< 1 ms]
+  Fehlermeldung:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix6SechstePruefung.Unknown_extents() in C:\Users\<user>\AppData\Local\Temp\t0747fix6-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix6Tests.cs:line 81
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 6
+     Nicht bestanden: 6
+ Gesamtzeit: 1,9211 Sekunden
+### Ellipse_extreme_parameters mit --blame-hang-timeout 30s (alter Stand hängt)
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\t0747fix6-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.24]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:00.61]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:00.63]   Starting:    Trendo.Core.Tests
+Der aktive Testlauf wurde abgebrochen. Grund: Der Testhostprozess ist abgestürzt.
+Datensammler "Blame" – Meldung: Die angegebene Inaktivitätszeit von 30 Sekunden ist abgelaufen. Vom Testhost und den untergeordneten Prozessen werden Stillstandsicherungen erfasst..
+Datensammlung: Test case event channel failed: Unable to read data from the transport connection: Eine vorhandene Verbindung wurde vom Remotehost geschlossen..
+
+Testlauf abgebrochen.
+
+Der aktive Testlauf wurde abgebrochen, weil der Hostprozess unerwartet beendet wurde. Überprüfen Sie die oben aufgeführte Aufrufliste, falls verfügbar, um weitere Informationen zur Ursache der Ausnahme zu erhalten.
+Beim Absturz ausgeführter Test: 
+Trendo.Core.Tests.T0747_Fix6SechstePruefung.Ellipse_extreme_parameters
+
+Dieser Test kann, muss aber nicht unbedingt die Absturzursache sein.
+
+Anlagen:
+  C:\Users\<user>\AppData\Local\Temp\t0747fix6-rot\tests\Trendo.Core.Tests\TestResults\d37dd1a3-94ce-45a1-8d2d-66e398c8641b\Sequence_48559ec5c57141139b2d6f4a0452bbf8.xml
