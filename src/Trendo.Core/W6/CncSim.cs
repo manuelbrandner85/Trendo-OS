@@ -97,6 +97,19 @@ public sealed class CncJob
     public double W { get; set; } = 40;
     public double H { get; set; } = 20;
     public double Depth { get; set; } = 3;
+    /// <summary>T-0747: Konturen aus einer eingelesenen DXF- oder SVG-Datei (mm, y nach oben, Lage wie in der Datei) und die CAM-Einstellungen dazu.</summary>
+    public List<Cad.CadContour> Contours { get; set; } = [];
+    /// <summary>T-0747-fix5: Ausdehnung nicht gelesener Elemente (Blockverweise, SPLINE, schräge Normale) – Konturen darin gelten als unsicher.</summary>
+    public List<(string What, Cad.CadDxf.Box B)> Unread { get; set; } = [];
+    public string CamSource { get; set; } = "";
+    public string CamMode { get; set; } = "auto";
+    public int CamTabs { get; set; }
+    public double CamTabW { get; set; } = 6;
+    public double CamTabH { get; set; } = 1;
+    /// <summary>T-0747-fix: Stempel der zuletzt aus der Zeichnung erzeugten Bahnen – mit welchen Werten (Fräser, Tiefe, Zustellung, Vorschübe, Art, Stege,
+    /// Drehzahl) und welcher Prüfsumme des G-Codes. Ändert sich ein Wert, ist der G-Code veraltet (<see cref="CamStale"/>).</summary>
+    public string CamKey { get; set; } = "";
+    public string CamHash { get; set; } = "";
 
     public static CncJob From(JsonObject o)
     {
@@ -105,13 +118,117 @@ public sealed class CncJob
         {
             Gcode = (string?)o["gcode"] ?? "", EnvX = N("envX", 300), EnvY = N("envY", 300), EnvZ = N("envZ", 60), Rapid = N("rapid", 3000), Material = (string?)o["material"] ?? "Aluminium",
             ToolD = N("toolD", 6), Feed = N("feed", 600), Plunge = N("plunge", 200), StepDown = N("stepDown", 1), W = N("w", 40), H = N("h", 20), Depth = N("depth", 3),
+            Contours = o["contours"] is JsonArray ca ? ca.OfType<JsonObject>().Select(ReadContour).Where(c => c.Pts.Count >= 2).ToList() : [],
+            CamSource = (string?)o["camSource"] ?? "", CamMode = (string?)o["camMode"] ?? "auto", CamTabs = (int)N("camTabs", 0), CamTabW = N("camTabW", 6), CamTabH = N("camTabH", 1),
+            CamKey = (string?)o["camKey"] ?? "", CamHash = (string?)o["camHash"] ?? "",
+            Unread = o["unread"] is JsonArray ua ? ua.OfType<JsonObject>().Select(u => ((string?)u["what"] ?? "?", new Cad.CadDxf.Box(UN(u, "x0"), UN(u, "y0"), UN(u, "x1"), UN(u, "y1")))).ToList() : [],
         };
+    }
+
+    static Cad.CadContour ReadContour(JsonObject c)
+    {
+        var xy = c["xy"] is JsonArray a ? a.Select(v => v is JsonValue jv && jv.TryGetValue<double>(out var d) ? d : 0).ToList() : [];
+        var pts = new List<(double X, double Y)>(xy.Count / 2); for (var i = 0; i + 1 < xy.Count; i += 2) pts.Add((xy[i], xy[i + 1]));
+        return new Cad.CadContour(pts, c["closed"] is JsonValue v2 && v2.TryGetValue<bool>(out var b) && b, (string?)c["layer"] ?? "0");
     }
 
     public void WriteTo(JsonObject o)
     {
         o["gcode"] = Gcode; o["envX"] = EnvX; o["envY"] = EnvY; o["envZ"] = EnvZ; o["rapid"] = Rapid; o["material"] = Material;
         o["toolD"] = ToolD; o["feed"] = Feed; o["plunge"] = Plunge; o["stepDown"] = StepDown; o["w"] = W; o["h"] = H; o["depth"] = Depth;
+        if (Contours.Count == 0) { o.Remove("contours"); o.Remove("camSource"); }
+        else
+        {
+            o["contours"] = new JsonArray([.. Contours.Select(c => (JsonNode)new JsonObject { ["layer"] = c.Layer, ["closed"] = c.Closed, ["xy"] = new JsonArray([.. c.Pts.SelectMany(p => new[] { Math.Round(p.X, 9), Math.Round(p.Y, 9) }).Select(v => (JsonNode)JsonValue.Create(v))]) })]);
+            o["camSource"] = CamSource;
+        }
+        if (CamHash.Length == 0) { o.Remove("camKey"); o.Remove("camHash"); } else { o["camKey"] = CamKey; o["camHash"] = CamHash; }
+        if (Unread.Count == 0) o.Remove("unread");
+        else o["unread"] = new JsonArray([.. Unread.Select(u => (JsonNode)new JsonObject { ["what"] = u.What, ["x0"] = US(u.B.MinX), ["y0"] = US(u.B.MinY), ["x1"] = US(u.B.MaxX), ["y1"] = US(u.B.MaxY) })]);
+        o["camMode"] = CamMode; o["camTabs"] = (double)CamTabs; o["camTabW"] = CamTabW; o["camTabH"] = CamTabH; // Stegzahl als double: From liest Zahlen als double
+    }
+
+    /// <summary>T-0747: Einstellungen für Fräsbahnen aus den Konturen (Fräser, Tiefe, Zustellung, Vorschübe, Art, Haltestege; Drehzahl aus Werkstoff und Fräser).</summary>
+    public CamSettings CamSettings()
+    {
+        double rpm = 0; try { rpm = Cnc.Feeds(Material, ToolD, 2).Rpm; } catch (ArgumentException) { }
+        return new CamSettings { ToolD = ToolD, Depth = Depth, StepDown = StepDown, Feed = Feed, Plunge = Plunge, Mode = CamMode, Tabs = CamTabs, TabW = CamTabW, TabH = CamTabH, Rpm = rpm, Unread = Unread };
+    }
+
+    /// <summary>T-0747-fix: Werte, die in die Bahnen eingehen, als Text (für den Stempel).</summary>
+    /// T-0747-fix3: die Konturen gehören mit in den Stempel – G-Code einer anderen Zeichnung gilt so immer als veraltet.
+    public string CamSettingsKey() { var c = CamSettings(); return string.Join("|", new[] { c.ToolD, c.Depth, c.StepDown, c.Feed, c.Plunge, c.TabW, c.TabH, c.Rpm, c.Tabs }.Select(v => v.ToString("R", System.Globalization.CultureInfo.InvariantCulture))) + "|" + c.Mode + "|" + ContoursHash(); }
+
+    /// <summary>T-0747-fix3: Prüfsumme der Konturen (Ebene, offen/geschlossen, Punkte wie gespeichert).</summary>
+    static double UN(JsonObject o, string k) => o[k] is JsonValue v && v.TryGetValue<double>(out var d) ? d : o[k] is JsonValue s && s.TryGetValue<string>(out var t) && double.TryParse(t, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var e) ? e : double.NaN;
+    static JsonNode US(double v) => double.IsFinite(v) ? JsonValue.Create(v) : JsonValue.Create(v.ToString(System.Globalization.CultureInfo.InvariantCulture)); // ∞ als Text (JSON kennt kein Unendlich)
+
+    public string ContoursHash()
+    {
+        using var h = System.Security.Cryptography.IncrementalHash.CreateHash(System.Security.Cryptography.HashAlgorithmName.SHA256);
+        foreach (var u in Unread) h.AppendData(System.Text.Encoding.UTF8.GetBytes(u.What + "|" + string.Join(";", new[] { u.B.MinX, u.B.MinY, u.B.MaxX, u.B.MaxY }.Select(v => v.ToString("R", System.Globalization.CultureInfo.InvariantCulture))) + "|")); // T-0747-fix6: kulturunabhängig
+        foreach (var c in Contours)
+        {
+            h.AppendData(System.Text.Encoding.UTF8.GetBytes(c.Layer + (c.Closed ? "|g|" : "|o|")));
+            var buf = new byte[16];
+            foreach (var (x, y) in c.Pts) { BitConverter.TryWriteBytes(buf.AsSpan(0, 8), Math.Round(x, 9)); BitConverter.TryWriteBytes(buf.AsSpan(8, 8), Math.Round(y, 9)); h.AppendData(buf); }
+        }
+        return Convert.ToHexString(h.GetHashAndReset())[..16];
+    }
+
+    static string GcodeHash(string g) => Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(g.Replace("\r", ""))))[..16];
+
+    /// <summary>T-0747-fix: G-Code aus der Zeichnung übernehmen und mit den aktuellen Werten stempeln.</summary>
+    public void SetCamGcode(string g) => SetCamGcode(g, null);
+
+    /// <summary>T-0747-fix: wie oben, aber mit dem Stempel der Werte, mit denen die Bahnen tatsächlich gerechnet wurden (Rechnung im Hintergrund).</summary>
+    public void SetCamGcode(string g, string? key) { Gcode = g; CamKey = key ?? CamSettingsKey(); CamHash = GcodeHash(g); }
+
+    /// <summary>T-0747-fix: Ist der G-Code noch der aus der Zeichnung erzeugte, passen die Werte aber nicht mehr dazu (Fräser-Ø, Tiefe, Zustellung …)?
+    /// Von Hand geänderter oder geladener G-Code gilt nicht als veraltet.</summary>
+    public bool CamStale => IsCamGcode && CamKey != CamSettingsKey();
+
+    /// <summary>T-0747-fix: Stammt der aktuelle G-Code unverändert aus der Zeichnung?</summary>
+    public bool IsCamGcode => Contours.Count > 0 && CamHash.Length > 0 && CamHash == GcodeHash(Gcode);
+
+    /// <summary>T-0747: Fräsbahnen aus den eingelesenen Konturen.</summary>
+    public CamResult Cam() => Contours.Count == 0 ? throw new InvalidOperationException("Es ist noch keine Zeichnung eingelesen – unter „Erzeugen“ auf „Aus DXF/SVG …“ klicken.") : CncCam.Generate(Contours, CamSettings());
+
+    /// <summary>T-0747: Zeichnung (DXF oder SVG) einlesen: Konturen übernehmen und die Fräsbahnen erzeugen. Rückgabe: Ergebnis mit Hinweisen.</summary>
+    public CamResult ImportDrawing(string path, CancellationToken ct = default)
+    {
+        var ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
+        Cad.CadDrawing drawing; Dictionary<string, int> skipped; string? units = null; List<(string What, Cad.CadDxf.Box B)> unread = [];
+        switch (ext)
+        {
+            case ".dxf": { var rd = Cad.CadDxf.Read(path, ct); drawing = rd.Drawing; skipped = rd.Skipped; unread = rd.Unread; if (rd.Units is not 0 and not 4) units = rd.UnitName; else if (rd.Units == 0) units = ""; break; } // T-0747-fix3: "" = keine Angabe
+            case ".svg": { var rs = Cad.CadSvg.Read(path); drawing = rs.Drawing; skipped = rs.Skipped; break; }
+            default: throw new Cad.CadError("Für Fräsbahnen bitte eine DXF- oder SVG-Datei wählen.");
+        }
+        var notes = ReadNotes(drawing, skipped, units);
+        var cs = CncCam.Contours(drawing, notes, ct: ct); // T-0747-fix3: Hinweise beim Verketten (mehrdeutige Spalten)
+        if (cs.Count == 0) throw new Cad.CadError("In der Zeichnung sind keine Konturen (Linien, Kreise, Bögen, Pfade)." + (notes.Count > 0 ? " " + string.Join(" ", notes) : ""));
+        var old = (Contours, CamSource, Unread); Contours = cs; CamSource = System.IO.Path.GetFileName(path); Unread = unread;
+        try { var r = Contours.Count == 0 ? Cam() : CncCam.Generate(Contours, CamSettings(), ct); SetCamGcode(r.Gcode); r.Warnings.InsertRange(0, notes); return r; }
+        catch (InvalidOperationException e) when (notes.Count > 0) { (Contours, CamSource, Unread) = old; throw new InvalidOperationException(e.Message + " " + string.Join(" ", notes), e); }
+        catch { (Contours, CamSource, Unread) = old; throw; }
+    }
+
+    /// <summary>T-0747-fix2: was beim Einlesen nicht in die Fräsbahnen kommt (SPLINE, ELLIPSE, Blockverweise, Texte, ausgeblendete Ebenen) und ob
+    /// die Maße umgerechnet wurden – damit nichts still fehlt.</summary>
+    public static List<string> ReadNotes(Cad.CadDrawing d, IReadOnlyDictionary<string, int> skipped, string? units)
+    {
+        var notes = new List<string>();
+        if (units == "") notes.Add("Einheit nicht angegeben – als mm gelesen. Bitte die Maße prüfen."); // T-0747-fix3
+        else if (units is not null) notes.Add($"Maße in mm umgerechnet (Zeichnung in {units}).");
+        static string Label(string k) => k switch { "INSERT" => "Blockverweis (INSERT)", "SPLINE" => "SPLINE (Freiformkurve)", "ELLIPSE" => "ELLIPSE", "DIMENSION" => "Bemaßung", "HATCH" => "Schraffur", "text" => "SVG-Text", _ => k };
+        if (skipped.Count > 0) notes.Add("Nicht gelesen: " + string.Join(", ", skipped.OrderByDescending(k => k.Value).Select(k => $"{k.Value}× {Label(k.Key)}")) + " – diese Teile fehlen in den Fräsbahnen.");
+        var texts = d.Entities.Count(e => e.Kind == "text");
+        if (texts > 0) notes.Add($"{texts} Text(e) werden nicht gefräst.");
+        var hidden = d.Layers.Where(l => !l.Visible).Select(l => l.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var onHidden = d.Entities.Where(e => e.Kind != "text" && hidden.Contains(e.Layer)).GroupBy(e => e.Layer).Select(g => $"{g.Key} ({g.Count()})").ToList();
+        if (onHidden.Count > 0) notes.Add("Ausgeblendete Ebenen nicht gefräst: " + string.Join(", ", onHidden) + ".");
+        return notes;
     }
 
     public string Pocket() => CncPlus.Pocket(W, H, Depth, ToolD, 50, StepDown, Feed, Plunge);

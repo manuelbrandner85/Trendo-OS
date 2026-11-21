@@ -1,0 +1,129 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\t0747fix5-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.25]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:00.61]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:00.64]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:00.69]     T-0747-fix5 N2–N6: unsinnige Zahlen, NaN, ∞, negativer Radius werden einzeln verworfen und gemeldet; 999 im Kopf; PEDIT-Spline [FAIL]
+[xUnit.net 00:00:00.69]       System.Collections.Generic.KeyNotFoundException : The given key 'CIRCLE mit ungültiger Koordinate' was not present in the dictionary.
+[xUnit.net 00:00:00.69]       Stack Trace:
+[xUnit.net 00:00:00.69]            at System.Collections.Generic.Dictionary`2.get_Item(TKey key)
+[xUnit.net 00:00:00.69]         C:\Users\<user>\AppData\Local\Temp\t0747fix5-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix5Tests.cs(149,0): at Trendo.Core.Tests.T0747_Fix5FuenftePruefung.Robust_reader()
+[xUnit.net 00:00:00.69]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:00.69]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:00.69]       Output:
+[xUnit.net 00:00:00.69]         
+[xUnit.net 00:00:00.88]     T-0747-fix5 N1: 50 000 Kreise – Doppel-Prüfung, Tiefe mit Vorfilter, Bahnen parallel, unter 30 s; Abbrechen wirkt [FAIL]
+[xUnit.net 00:00:00.88]       Trendo.Core.Cad.CadError : Die Zeichnung hat 50.001 Elemente – zu viele zum Fräsen (höchstens 50.000). Bitte nur die nötigen Teile oder Ebenen exportieren.
+[xUnit.net 00:00:00.88]       Stack Trace:
+[xUnit.net 00:00:00.88]         C:\Users\<user>\AppData\Local\Temp\t0747fix5-rot\src\Trendo.Core\W6\CncCam.cs(81,0): at Trendo.Core.CncCam.Contours(CadDrawing d, List`1 notes, Double chord, CancellationToken ct)
+[xUnit.net 00:00:00.88]         C:\Users\<user>\AppData\Local\Temp\t0747fix5-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix5Tests.cs(129,0): at Trendo.Core.Tests.T0747_Fix5FuenftePruefung.Many_circles_fast()
+[xUnit.net 00:00:00.88]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:00.88]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:00.88]     T-0747-fix5 M2: Ausdehnung eines Blockverweises mit Drehung, Skalierung, Spiegelung (−Z), verschachtelt und als Feld (MINSERT) [FAIL]
+[xUnit.net 00:00:00.88]       Assert.Single() Failure: The collection was empty
+[xUnit.net 00:00:00.88]       Stack Trace:
+[xUnit.net 00:00:00.88]         C:\Users\<user>\AppData\Local\Temp\t0747fix5-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix5Tests.cs(93,0): at Trendo.Core.Tests.T0747_Fix5FuenftePruefung.<Insert_extent_transform>g__One|14_0(String blocks, String ins)
+[xUnit.net 00:00:00.88]         C:\Users\<user>\AppData\Local\Temp\t0747fix5-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix5Tests.cs(95,0): at Trendo.Core.Tests.T0747_Fix5FuenftePruefung.Insert_extent_transform()
+[xUnit.net 00:00:00.88]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:00.88]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:00.89]     T-0747-fix5 M1: 3D-Polylinie (Flag 8) mit Normale −Z bleibt in Weltkoordinaten; 3D-Netz mit schräger Normale ist kein „nicht in der Zeichenebene“ [FAIL]
+[xUnit.net 00:00:00.89]       Assert.Equal() Failure: Collections differ
+[xUnit.net 00:00:00.89]                                                          ↓ (pos 1)
+[xUnit.net 00:00:00.89]       Expected: <generated>                          [0, 100, 100, 0]
+[xUnit.net 00:00:00.89]       Actual:   ListSelectIterator<double[], double> [-0, -100, -100, -0]
+[xUnit.net 00:00:00.89]                                                           ↑ (pos 1)
+[xUnit.net 00:00:00.89]       Stack Trace:
+[xUnit.net 00:00:00.89]         C:\Users\<user>\AppData\Local\Temp\t0747fix5-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix5Tests.cs(37,0): at Trendo.Core.Tests.T0747_Fix5FuenftePruefung.Polyline3d_ignores_normal()
+[xUnit.net 00:00:00.89]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:00.90]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:00.90]     T-0747-fix5 M2: Platte im Blockverweis, Löcher lose (b2) – Löcher werden ausgelassen und gemeldet; Loch-Block in Platte wird gemeldet [FAIL]
+[xUnit.net 00:00:00.90]       Assert.Single() Failure: The collection was empty
+[xUnit.net 00:00:00.90]       Stack Trace:
+[xUnit.net 00:00:00.90]         C:\Users\<user>\AppData\Local\Temp\t0747fix5-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix5Tests.cs(76,0): at Trendo.Core.Tests.T0747_Fix5FuenftePruefung.Insert_outline_makes_inside_unsure()
+[xUnit.net 00:00:00.90]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:00.90]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:00.90]     T-0747-fix5 M2: ELLIPSE wird abgetastet (Platte mit Löchern, Normale −Z, Bogenstück) – Abweichung ≤ 0,001 mm [FAIL]
+[xUnit.net 00:00:00.90]       Assert.Single() Failure: The collection did not contain any matching items
+[xUnit.net 00:00:00.90]       Expected:   (predicate expression)
+[xUnit.net 00:00:00.90]       Collection: [CadEntity { A0 = 0, A1 = 0, Closed = False, Cx = 30, Cy = 40, ··· }, CadEntity { A0 = 0, A1 = 0, Closed = False, Cx = 90, Cy = 40, ··· }]
+[xUnit.net 00:00:00.90]       Stack Trace:
+[xUnit.net 00:00:00.90]         C:\Users\<user>\AppData\Local\Temp\t0747fix5-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix5Tests.cs(52,0): at Trendo.Core.Tests.T0747_Fix5FuenftePruefung.Ellipse_is_sampled()
+[xUnit.net 00:00:00.90]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:00.90]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:00.95]     T-0747-fix5 M2: Kreis mit schräger Normale als Umriss – Löcher darin werden ausgelassen statt außen gefräst [FAIL]
+[xUnit.net 00:00:00.95]       Assert.Contains() Failure: Filter not matched in collection
+[xUnit.net 00:00:00.95]       Collection: []
+[xUnit.net 00:00:00.95]       Stack Trace:
+[xUnit.net 00:00:00.95]         C:\Users\<user>\AppData\Local\Temp\t0747fix5-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix5Tests.cs(117,0): at Trendo.Core.Tests.T0747_Fix5FuenftePruefung.Oblique_outline_makes_inside_unsure()
+[xUnit.net 00:00:00.95]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:00.95]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:00.95]       Output:
+[xUnit.net 00:00:00.95]         
+[xUnit.net 00:00:00.96]   Finished:    Trendo.Core.Tests
+  Fehler T-0747-fix5 N2–N6: unsinnige Zahlen, NaN, ∞, negativer Radius werden einzeln verworfen und gemeldet; 999 im Kopf; PEDIT-Spline [12 ms]
+  Fehlermeldung:
+   System.Collections.Generic.KeyNotFoundException : The given key 'CIRCLE mit ungültiger Koordinate' was not present in the dictionary.
+  Stapelverfolgung:
+     at System.Collections.Generic.Dictionary`2.get_Item(TKey key)
+   at Trendo.Core.Tests.T0747_Fix5FuenftePruefung.Robust_reader() in C:\Users\<user>\AppData\Local\Temp\t0747fix5-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix5Tests.cs:line 149
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+  Fehler T-0747-fix5 N1: 50 000 Kreise – Doppel-Prüfung, Tiefe mit Vorfilter, Bahnen parallel, unter 30 s; Abbrechen wirkt [189 ms]
+  Fehlermeldung:
+   Trendo.Core.Cad.CadError : Die Zeichnung hat 50.001 Elemente – zu viele zum Fräsen (höchstens 50.000). Bitte nur die nötigen Teile oder Ebenen exportieren.
+  Stapelverfolgung:
+     at Trendo.Core.CncCam.Contours(CadDrawing d, List`1 notes, Double chord, CancellationToken ct) in C:\Users\<user>\AppData\Local\Temp\t0747fix5-rot\src\Trendo.Core\W6\CncCam.cs:line 81
+   at Trendo.Core.Tests.T0747_Fix5FuenftePruefung.Many_circles_fast() in C:\Users\<user>\AppData\Local\Temp\t0747fix5-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix5Tests.cs:line 129
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0747-fix5 M2: Ausdehnung eines Blockverweises mit Drehung, Skalierung, Spiegelung (−Z), verschachtelt und als Feld (MINSERT) [3 ms]
+  Fehlermeldung:
+   Assert.Single() Failure: The collection was empty
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix5FuenftePruefung.<Insert_extent_transform>g__One|14_0(String blocks, String ins) in C:\Users\<user>\AppData\Local\Temp\t0747fix5-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix5Tests.cs:line 93
+   at Trendo.Core.Tests.T0747_Fix5FuenftePruefung.Insert_extent_transform() in C:\Users\<user>\AppData\Local\Temp\t0747fix5-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix5Tests.cs:line 95
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0747-fix5 M1: 3D-Polylinie (Flag 8) mit Normale −Z bleibt in Weltkoordinaten; 3D-Netz mit schräger Normale ist kein „nicht in der Zeichenebene“ [13 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Collections differ
+                                                   ↓ (pos 1)
+Expected: <generated>                          [0, 100, 100, 0]
+Actual:   ListSelectIterator<double[], double> [-0, -100, -100, -0]
+                                                    ↑ (pos 1)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix5FuenftePruefung.Polyline3d_ignores_normal() in C:\Users\<user>\AppData\Local\Temp\t0747fix5-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix5Tests.cs:line 37
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0747-fix5 M2: Platte im Blockverweis, Löcher lose (b2) – Löcher werden ausgelassen und gemeldet; Loch-Block in Platte wird gemeldet [< 1 ms]
+  Fehlermeldung:
+   Assert.Single() Failure: The collection was empty
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix5FuenftePruefung.Insert_outline_makes_inside_unsure() in C:\Users\<user>\AppData\Local\Temp\t0747fix5-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix5Tests.cs:line 76
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0747-fix5 M2: ELLIPSE wird abgetastet (Platte mit Löchern, Normale −Z, Bogenstück) – Abweichung ≤ 0,001 mm [6 ms]
+  Fehlermeldung:
+   Assert.Single() Failure: The collection did not contain any matching items
+Expected:   (predicate expression)
+Collection: [CadEntity { A0 = 0, A1 = 0, Closed = False, Cx = 30, Cy = 40, ··· }, CadEntity { A0 = 0, A1 = 0, Closed = False, Cx = 90, Cy = 40, ··· }]
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix5FuenftePruefung.Ellipse_is_sampled() in C:\Users\<user>\AppData\Local\Temp\t0747fix5-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix5Tests.cs:line 52
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0747-fix5 M2: Kreis mit schräger Normale als Umriss – Löcher darin werden ausgelassen statt außen gefräst [49 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Filter not matched in collection
+Collection: []
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix5FuenftePruefung.Oblique_outline_makes_inside_unsure() in C:\Users\<user>\AppData\Local\Temp\t0747fix5-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix5Tests.cs:line 117
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 7
+     Nicht bestanden: 7
+ Gesamtzeit: 1,4080 Sekunden

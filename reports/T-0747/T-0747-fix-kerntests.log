@@ -1,0 +1,158 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0747-fix\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:00.69]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:01.21]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:01.27]   Starting:    Trendo.Core.Tests
+  Bestanden SPEC-01 F08: Fliesenbedarf [11 ms]
+  Bestanden SPEC-01 F10: Möbel-Stellprüfung [17 ms]
+  Bestanden SPEC-01 F14: Treppe berechnen [< 1 ms]
+  Bestanden SPEC-14 F16: Lochkreis [37 ms]
+  Bestanden IFC −1: Nullwand, Öffnung ohne Wand, Öffnung außerhalb der Wand und Raum mit 2 Punkten werden ausgelassen [38 ms]
+  Bestanden SPEC-01 F11: Heizlast-Schätzung [3 ms]
+  Bestanden SPEC-01 F12: Licht-Bedarf [< 1 ms]
+  Bestanden T-0747: DXF-Leser rechnet $INSUNITS in mm um (Zoll, m, cm, ohne Angabe = mm) [40 ms]
+  Bestanden SPEC-01 F09: Tapetenrollen [< 1 ms]
+  Bestanden IFC +1: Zentimeter → Meter, y nach oben, Projektname und Geschoss [2 ms]
+  Bestanden T-0266: Segmente – Länge/Zeit stimmen mit Cnc.Analyse überein, jede Bewegung kennt ihre Zeile, Bogen ≈ Viertelkreis [45 ms]
+  Bestanden N23: Boolesche Operationen – Rauminhalt von Quader minus Bohrung, Vereinigung und Schnitt stimmen [46 ms]
+  Bestanden T-0256: Prüfung findet Möbel in der Wand, überlappende Möbel, Raum ohne Tür und blockierte Tür [46 ms]
+  Bestanden SPEC-01 F13: Kostenschätzung Renovierung [5 ms]
+  Bestanden SPEC-01 F15: Wohnfläche nach WoFlV [< 1 ms]
+  Bestanden SPEC-14 F20: Kernloch [9 ms]
+  Bestanden IFC +6: Kurzbericht aus „info“ – Anzahl je Bauteil als Satz [6 ms]
+  Bestanden IFC +4: Räume als Umriss in Metern mit Höhe [< 1 ms]
+  Bestanden SPEC-01 F16: Raumliste als CSV [1 ms]
+  Bestanden SPEC-14: G-Code (G0/G1/G2/G3, G20/G91), Wege, Zeit, Grenzen, Warnungen, Schnittwerte [50 ms]
+  Bestanden SPEC-14 F17: Außenkontur [4 ms]
+  Bestanden SVG-Pfad lesen: M/L/H/V/C/Q/Z, groß und klein; Polygon und Linie [53 ms]
+  Bestanden T-0266: Auftrag speichern/laden, Generatoren liefern prüfbaren G-Code, Prüfbericht nennt Hinweise [9 ms]
+  Bestanden T-0747: DXF-Leser: UTF-8 und Windows-Codepage, \U+-Zeichen und %%c [15 ms]
+  Bestanden IFC +3: Öffnungen – Anfang statt Mitte, Art, Brüstung, Bezug auf die Wandnummer [10 ms]
+  Bestanden IFC +5: Vorlage „2-Zimmer-Wohnung“ – alle Wände, Türen, Fenster und Räume kommen an [< 1 ms]
+  Bestanden SPEC-14 F15: Rechtecktasche [7 ms]
+  Bestanden IFC +2: Wandachse um halbe Dicke verschoben – IfcOpenShell-Körper links davon sitzt mittig auf Trendos Achse [< 1 ms]
+  Bestanden SPEC-14 F04: Bögen R [< 1 ms]
+[xUnit.net 00:00:01.39]     IFC echt: Vorlage „2-Zimmer-Wohnung“ → IFC4 mit IfcOpenShell, wieder eingelesen, gleiche Anzahl Bauteile [SKIP]
+[xUnit.net 00:00:01.39]       Übersprungen – TRENDO_IFC_PYTHON nicht gesetzt (Python mit ifcopenshell).
+  Übersprungen IFC echt: Vorlage „2-Zimmer-Wohnung“ → IFC4 mit IfcOpenShell, wieder eingelesen, gleiche Anzahl Bauteile [1 ms]
+  Fehlermeldung:
+   Übersprungen – TRENDO_IFC_PYTHON nicht gesetzt (Python mit ifcopenshell).
+
+  Bestanden Vektorpfad: Pinselstrich wird vereinfacht, geglättet (Bézier), verschiebbar; Pfaddaten sind gültig [7 ms]
+  Bestanden IFC −2: Dateiname nur aus sicheren Zeichen [< 1 ms]
+  Bestanden T-0256: Fangen an Wandenden und Raster, Achsfang; Wandende ziehen nimmt angeschlossene Wand mit; Länge setzen [15 ms]
+  Bestanden SPEC-14 F14: Nullpunkt verschieben [3 ms]
+  Bestanden SPEC-14 F19: Teilekosten [< 1 ms]
+  Bestanden SPEC-14 F18: Zerspanleistung [< 1 ms]
+  Bestanden SVG: Rechteck, Ellipse, Text und Pfad werden geschrieben und wieder als Ebenen gelesen; Mischmodus steht im SVG [5 ms]
+  Bestanden N23: Skizze extrudieren, Tasche, Drehteil, Rundung, Fase, Muster, Spiegeln, Drehen; Baugruppe mit Lage [30 ms]
+  Bestanden SPEC-01: Raumplaner rechnet Fläche, Farbe, Boden, Leisten und speichert dauerhaft [109 ms]
+  Bestanden T-0273: Nordpfeil steht im Plan und dreht sich mit der Nordrichtung; Bogen bleibt beim Speichern erhalten [118 ms]
+  Bestanden T-0747-fix 2: 3-mm-Schlitz außen – Umriss wird gefräst, der Schlitz wird gemeldet; leerer Versatz nennt den Grund [120 ms]
+  Bestanden T-0273: Halbkreis-Bogen 4 m Sehne, Stich 2 m – Länge π·r, Stücke schließen lückenlos an, Stich ändern und als Ganzes löschen [3 ms]
+  Bestanden CORE-05: Querschnitt: Quader mit Bohrung – Fläche ohne das Loch; über dem Körper 0 [122 ms]
+  Bestanden CORE-05: Eigenschaften: Quader 40×30×10 mm – Volumen 12 cm³, Oberfläche 38 cm², Masse je Werkstoff, Schwerpunkt in der Mitte [4 ms]
+  Bestanden CORE-05: Normbohrungen: M3 Durchgang 3,4 mm, M6 Kernloch 5 mm, M8 Senkschraube 9/16,4 mm; eigenes Maß zuerst [1 ms]
+  Bestanden T-0256: Doppelklick erkennt einen von Wänden umschlossenen Raum (lichte Fläche), offene Fläche nicht [76 ms]
+  Bestanden T-0747: Fremde DXF (mm, LWPOLYLINE, POLYLINE, ARC, Ebenen): Maßstab stimmt, Ecken verbunden, Tür erkannt, Möbel/Maße ausgelassen [83 ms]
+  Bestanden T-0256: Tür und Fenster setzen sich in die nächste Wand; Wandfläche netto, Fensteranteil, Sockelleiste [< 1 ms]
+  Bestanden T-0257: Geschosse – Obergeschoss und Keller anlegen, aktives Geschoss wechseln, Wohnfläche gesamt, löschen [87 ms]
+  Bestanden T-0747: DXF-Import neben einen vorhandenen Plan; Einzellinien mit gewählter Stärke; leere Wandebene meldet die Ebenen [2 ms]
+  Bestanden T-0747: Versatz: Außenkontur genau um den Radius, runde Außenecken; L-Form innen mit Schnittecke [3 ms]
+  Bestanden T-0256: Speichern im Programmdokument (Formatversion), alte Raumliste übernehmen, verwaiste Öffnungen entfernt [5 ms]
+  Bestanden T-0256: Vorlagen sind fehlerfrei (keine Möbel in Wänden oder vor Türen); Wohnfläche nach WoFlV mit Balkon 25 % [2 ms]
+  Bestanden T-0256: Raum aufziehen baut 4 Wände außen herum; Nachbarraum teilt die gemeinsame Wand [< 1 ms]
+  Bestanden T-0747: CNC-Dokument merkt sich Konturen und CAM-Werte (im Speicher und als Datei), Import einer Zeichnung erzeugt den G-Code [147 ms]
+  Bestanden T-0747: Rundreise Grundriss → DXF → Import: gleiche Wände, Stärken, Tür und Fenster, Raum mit Name [5 ms]
+  Bestanden T-0257: OBJ-Export aller Geschosse mit Materialien; PDF mit einer Seite je Geschoss; Raumbuch mit Geschoss-Spalte [180 ms]
+  Bestanden T-0747: Fräsbahnen-Arten: alles außen, alles auf der Linie, offene Linie fährt hin und zurück, zu kleines Loch wird gemeldet [24 ms]
+  Bestanden T-0257: Vorlage-Bild maßstäblich – zwei Punkte, echte Länge; der erste Punkt bleibt liegen [3 ms]
+  Bestanden T-0257: Raum Punkt für Punkt (L-Form), Wand teilen mit Öffnungen, Möbel spiegeln, Winkelfang 15° [2 ms]
+  Bestanden T-0256: Exporte – PDF, SVG, DXF (Ebenen, Wände an Türen unterbrochen), Raumbuch, Materialliste; 3D mit Aussparungen [180 ms]
+  Bestanden T-0257: Bemaßung und Text – anlegen, treffen, in Zeichnung/SVG/DXF, löschen [3 ms]
+  Bestanden T-0257: Dachschräge – Kniestock 1 m, Höhe 2,5 m, Schräge 3 m tief: Streifen 1–2 m zählt halb (WoFlV) [1 ms]
+  Bestanden T-0747: SVG lesen: mm über viewBox, y nach oben, Rundung, Kreis bleibt Kreis, Bogen im Pfad, transform der Gruppe [11 ms]
+  Bestanden N23: Export – STL (mm), 3MF mit Namen (geschlossenes Netz), STEP (facettiert), Zeichnung als PDF; ohne Programmname [323 ms]
+  Bestanden T-0747: Belegdateien – fremde DXF → Plan → bearbeiten → DXF; DXF/SVG → G-Code (Ordner über T0747_BELEG, sonst Temp) [74 ms]
+  Bestanden T-0747: Konturen: lose Linien und Bogen werden ein geschlossener Umriss, Kreise und Langloch bleiben eigene Konturen [1 ms]
+  Bestanden T-0747: Fräsbahnen aus DXF in Zoll: Löcher zuerst, Radiusversatz stimmt, Stufen bis zur Tiefe, Haltestege nur außen [43 ms]
+  Bestanden N23: Parametrisch – Maße als Formeln, Änderung eines Parameters rechnet alles neu; Fehler werden verständlich gemeldet [55 ms]
+  Bestanden T-0747-fix: Belegdateien – alle Gegenprüfungs-Fälle in einer DXF (LINE-Ketten) → G-Code + Hinweise (Ordner über T0747_BELEG) [1 s]
+  Standardausgabemeldungen:
+ gefräst: F10, F3, F7, F8, F9
+ Hinweis: Kontur 6 (Ebene F6) ausgelassen: die Kontur kreuzt sich selbst (z. B. eine Acht) – dann ist nicht klar, was innen und außen ist. Bitte in der Zeichnung in einzelne geschlossene Umrisse auflösen.
+ Hinweis: Kontur 8 (Ebene F8): Bereich enger als der Fräser Ø 6 mm – dort bleibt Material stehen (bei X 360 Y 28,9; bei X 360 Y 31,9). Für diese Stellen einen kleineren Fräser wählen.
+ Hinweis: Kontur 9 (Ebene F9): Bereich enger als der Fräser Ø 6 mm – dort bleibt Material stehen (bei X 480 Y 25,4). Für diese Stellen einen kleineren Fräser wählen.
+ Hinweis: Kontur 1 (Ebene F1) ausgelassen: zu nah an Kontur 2 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radius). Teile weiter auseinanderlegen oder kleineren Fräser wählen.
+ Hinweis: Kontur 2 (Ebene F2) ausgelassen: zu nah an Kontur 1 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radius). Teile weiter auseinanderlegen oder kleineren Fräser wählen.
+ Hinweis: Kontur 4 (Ebene F4) ausgelassen: zu nah an Kontur 5 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radius). Teile weiter auseinanderlegen oder kleineren Fräser wählen.
+ Hinweis: Kontur 5 (Ebene F5) ausgelassen: zu nah an Kontur 4 – die Fräsbahn käme ihr auf 0 mm nahe, der Fräser braucht 3 mm (Radius). Teile weiter auseinanderlegen oder kleineren Fräser wählen.
+
+
+  Bestanden T-0747-fix 6: Windows-1252 (€), Sonderzeichen nur in fremden DXF, kaputter SVG-Pfad mit verständlicher Meldung [5 ms]
+  Bestanden T-0747-fix 3: Kreis R 50 mit Rauschen wird gefräst, Abstand ≥ Radius(noise: 0,050000000000000003, n: 500) [110 ms]
+  Standardausgabemeldungen:
+ Rauschen 0,05 mm, 500 Punkte, auto: 1046 Bahnpunkte, kleinster Abstand 3,0000 mm, 26 ms, Hinweise: 
+ Rauschen 0,05 mm, 500 Punkte, innen: 996 Bahnpunkte, kleinster Abstand 3,0002 mm, 23 ms, Hinweise: 
+
+
+  Bestanden T-0747-fix 3: Kreis R 50 mit Rauschen wird gefräst, Abstand ≥ Radius(noise: 0,5, n: 500) [152 ms]
+  Standardausgabemeldungen:
+ Rauschen 0,5 mm, 500 Punkte, auto: 988 Bahnpunkte, kleinster Abstand 3,0003 mm, 50 ms, Hinweise: 
+ Rauschen 0,5 mm, 500 Punkte, innen: 885 Bahnpunkte, kleinster Abstand 2,9999 mm, 41 ms, Hinweise: 
+
+
+  Bestanden T-0747-fix 3: Kreis R 50 mit Rauschen wird gefräst, Abstand ≥ Radius(noise: 0,050000000000000003, n: 2000) [1 s]
+  Standardausgabemeldungen:
+ Rauschen 0,05 mm, 2000 Punkte, auto: 1806 Bahnpunkte, kleinster Abstand 3,0000 mm, 386 ms, Hinweise: 
+ Rauschen 0,05 mm, 2000 Punkte, innen: 1679 Bahnpunkte, kleinster Abstand 3,0001 mm, 452 ms, Hinweise: 
+
+
+  Bestanden T-0747-fix 3: Kreis R 50 mit Rauschen wird gefräst, Abstand ≥ Radius(noise: 0,5, n: 2000) [1 s]
+  Standardausgabemeldungen:
+ Rauschen 0,5 mm, 2000 Punkte, auto: 1092 Bahnpunkte, kleinster Abstand 3,0009 mm, 935 ms, Hinweise: 
+ Rauschen 0,5 mm, 2000 Punkte, innen: 1021 Bahnpunkte, kleinster Abstand 3,0009 mm, 327 ms, Hinweise: 
+
+
+  Bestanden T-0747-fix 1: Insel 2 mm neben dem Lochrand – die Innenbahn fährt nicht durch die Insel [2 ms]
+  Bestanden T-0747-fix 1: Achterform (Kontur kreuzt sich selbst) wird abgelehnt und gemeldet [1 ms]
+  Bestanden T-0747-fix 4: 10 000 Linien – Grundriss-Import und Konturen in wenigen Sekunden; Obergrenze mit Meldung; Abbrechen [2 s]
+  Standardausgabemeldungen:
+ 10 000 Linien: Grundriss-Import 1798 ms (168 Wände, 4832 Öffnungen), Konturen 79 ms (5116 Züge)
+
+
+  Bestanden T-0747-fix 1: zwei Teile 3 mm auseinander, Fräser Ø 6 – keine Bahn fährt durchs Nachbarteil, beide werden gemeldet [1 ms]
+  Standardausgabemeldungen:
+ kleinster Abstand 3,0000 mm
+
+
+  Bestanden T-0747-fix 1–3: Zufallsformen (Sterne, Zacken, Rauschen), Fräser 1–10 mm – Außenbahn immer da, nie näher als der Radius [635 ms]
+  Standardausgabemeldungen:
+ 40 Zufallsformen: 40 mit Innenbahn, kleinster Abstand minus Radius -0,000068 mm
+
+
+  Bestanden T-0747-fix 5: Fräser-Ø/Tiefe/Zustellung geändert → G-Code aus der Zeichnung gilt als veraltet, bis neu gerechnet [14 ms]
+  Bestanden T-0747-fix 2: Hantel-Loch mit 3-mm-Steg – beide Kammern werden gefräst, der Steg wird mit Lage gemeldet [4 ms]
+  Standardausgabemeldungen:
+ Kontur 2: Bereich enger als der Fräser Ø 6 mm – dort bleibt Material stehen (bei X 60 Y 28,5; bei X 60 Y 31,5). Für diese Stellen einen kleineren Fräser wählen.
+
+
+  Bestanden T-0691 Absturz: 3D-Szene – 16-mal hart beendet, die Sicherung ist jedes Mal vollständig lesbar, kein fertig gesicherter Stand fehlt [9 s]
+  Standardausgabemeldungen:
+ szene3d: 16 harte Abbrüche, 16 mitten im Schreiben, höchstens 1 Schritt verloren.
+
+
+[xUnit.net 00:00:20.26]   Finished:    Trendo.Core.Tests
+  Bestanden T-0691 Absturz: CAD-Bauteil – 16-mal hart beendet, die Sicherung ist jedes Mal vollständig lesbar, kein fertig gesicherter Stand fehlt [9 s]
+  Standardausgabemeldungen:
+ cad: 16 harte Abbrüche, 16 mitten im Schreiben, höchstens 1 Schritt verloren.
+
+
+
+Der Testlauf war erfolgreich.
+Gesamtzahl Tests: 84
+     Bestanden: 83
+    Übersprungen: 1
+ Gesamtzeit: 20,8098 Sekunden

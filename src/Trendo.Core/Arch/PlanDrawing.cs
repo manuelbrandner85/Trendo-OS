@@ -223,6 +223,7 @@ public static class PlanDrawing
         var sb = new StringBuilder();
         void G(int code, object v) => sb.Append(code).Append('\n').Append(Convert.ToString(v, Inv)).Append('\n');
         string N(double v) => v.ToString("0.###", Inv);
+        G(999, Cad.CadDxf.OwnMarker); // T-0747-fix: Kennung (DXF-Kommentar), damit Texte beim Wiedereinlesen wörtlich bleiben
         G(0, "SECTION"); G(2, "HEADER"); G(9, "$ACADVER"); G(1, "AC1009"); G(9, "$INSUNITS"); G(70, 5); G(0, "ENDSEC");
         var layers = new (string Name, int Color)[] { ("WAENDE", 7), ("OEFFNUNGEN", 5), ("RAEUME", 8), ("MOEBEL", 3), ("TEXT", 7), ("MASSE", 2) };
         G(0, "SECTION"); G(2, "TABLES"); G(0, "TABLE"); G(2, "LAYER"); G(70, layers.Length);

@@ -18,6 +18,8 @@ public sealed class CncPathView : Control
     public double Zoom { get; set; } = 1;
     public double ToolD { get; set; } = 6;
     public (double X, double Y, double Z) Envelope { get; set; } = (300, 300, 60);
+    /// <summary>T-0747: Konturen der eingelesenen Zeichnung (auf Z = 0), dünn unter den Bahnen – so sieht man den Fräserversatz.</summary>
+    public IReadOnlyList<(List<(double X, double Y)> Pts, bool Closed)> Outlines { get; set; } = [];
     Point? _last;
 
     public CncPathView() { ClipToBounds = true; Focusable = true; }
@@ -51,6 +53,9 @@ public sealed class CncPathView : Control
         for (var i = 0; i < 4; i++) ctx.DrawLine(env, box[i], box[(i + 1) % 4]);
         ctx.DrawLine(new Pen(Brush.Parse("#F05252"), 2), Project(0, 0, 0), Project(Math.Min(ex, r * 0.3 + 5), 0, 0));
         ctx.DrawLine(new Pen(Brush.Parse("#4ADE80"), 2), Project(0, 0, 0), Project(0, Math.Min(ey, r * 0.3 + 5), 0));
+        var outline = new Pen(new SolidColorBrush(Color.Parse("#B3E5E7EB")), 1);
+        foreach (var (pts, closed) in Outlines)
+            for (var i = 0; i < pts.Count - (closed ? 0 : 1); i++) { var a0 = pts[i]; var b0 = pts[(i + 1) % pts.Count]; ctx.DrawLine(outline, Project(a0.X, a0.Y, 0), Project(b0.X, b0.Y, 0)); }
         if (Segs.Count == 0) return;
         var done = Pos < 0 ? Segs.Count : Pos + 1;
         double z0 = Segs.Min(s => Math.Min(s.Z0, s.Z1)), z1 = Math.Max(z0 + 1e-6, Segs.Max(s => Math.Max(s.Z0, s.Z1)));

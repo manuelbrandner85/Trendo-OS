@@ -1,0 +1,176 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\t0747fix4-old\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:03.40]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:03.79]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:03.81]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:03.95]     T-0747-fix4 H1: CIRCLE, ARC und LWPOLYLINE mit Normale (0,0,−1) liegen gespiegelt richtig; schräge Normale wird gemeldet [FAIL]
+[xUnit.net 00:00:03.95]       Assert.Equal() Failure: Values are not within 9 decimal places
+[xUnit.net 00:00:03.95]       Expected: -50 (rounded from -50)
+[xUnit.net 00:00:03.95]       Actual:   50 (rounded from 50)
+[xUnit.net 00:00:03.95]       Stack Trace:
+[xUnit.net 00:00:03.95]         C:\Users\<user>\AppData\Local\Temp\t0747fix4-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix4Tests.cs(35,0): at Trendo.Core.Tests.T0747_Fix4ViertePruefung.Ocs_normal_minus_z()
+[xUnit.net 00:00:03.96]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:03.96]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:04.02]     T-0747-fix4 M1: Umriss mit Spalt knapp über 0,1 mm (v5b) – Kreis darin wird ausgelassen und gemeldet statt außen gefräst [FAIL]
+[xUnit.net 00:00:04.02]       Assert.Contains() Failure: Filter not matched in collection
+[xUnit.net 00:00:04.02]       Collection: ["Kontur 3 ausgelassen: offene Kontur (Enden 0,1 mm "···]
+[xUnit.net 00:00:04.02]       Stack Trace:
+[xUnit.net 00:00:04.02]         C:\Users\<user>\AppData\Local\Temp\t0747fix4-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix4Tests.cs(112,0): at Trendo.Core.Tests.T0747_Fix4ViertePruefung.Hole_inside_open_outline()
+[xUnit.net 00:00:04.02]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:04.02]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:04.02]       Output:
+[xUnit.net 00:00:04.02]         Kontur 3 ausgelassen: offene Kontur (Enden 0,1 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fräserradius kleiner. Nur in der Fräsart „Auf der Linie (Gravur)“ wird sie gefräst; sonst die Zeichnung schließen.
+[xUnit.net 00:00:04.03]     T-0747-fix4 H1: gemeinsamer Leser – Grundriss übernimmt eine gespiegelte Polylinie an der richtigen Stelle [FAIL]
+[xUnit.net 00:00:04.03]       Assert.Equal() Failure: Collections differ
+[xUnit.net 00:00:04.03]                                                          ↓ (pos 1)
+[xUnit.net 00:00:04.03]       Expected: <generated>                          [0, -4000]
+[xUnit.net 00:00:04.03]       Actual:   ListSelectIterator<double[], double> [0, 4000]
+[xUnit.net 00:00:04.03]                                                          ↑ (pos 1)
+[xUnit.net 00:00:04.03]       Stack Trace:
+[xUnit.net 00:00:04.03]         C:\Users\<user>\AppData\Local\Temp\t0747fix4-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix4Tests.cs(64,0): at Trendo.Core.Tests.T0747_Fix4ViertePruefung.Ocs_in_floor_plan()
+[xUnit.net 00:00:04.03]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:04.03]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:04.04]     T-0747-fix4 H2: doppelt gezeichnete Platte (LWPOLYLINE, 8 LINE, umgedreht, andere Startecke, 0,0005 mm versetzt) – Loch bleibt Loch, gemeldet [FAIL]
+[xUnit.net 00:00:04.04]       Assert.Single() Failure: The collection did not contain any matching items
+[xUnit.net 00:00:04.04]       Expected:   (predicate expression)
+[xUnit.net 00:00:04.04]       Collection: [CamPath { Kind = aussen, Pts = System.Collections.Generic.List`1[System.ValueTuple`2[System.Double,System.Double]], Closed = True, Source = 0, Layer = 0, TabsAllowed = True }, CamPath { Kind = aussen, Pts = System.Collections.Generic.List`1[System.ValueTuple`2[System.Double,System.Double]], Closed = True, Source = 1, Layer = 0, TabsAllowed = True }, CamPath { Kind = aussen, Pts = System.Collections.Generic.List`1[System.ValueTuple`2[System.Double,System.Double]], Closed = True, Source = 2, Layer = 0, TabsAllowed = True }]
+[xUnit.net 00:00:04.04]       Stack Trace:
+[xUnit.net 00:00:04.04]         C:\Users\<user>\AppData\Local\Temp\t0747fix4-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix4Tests.cs(89,0): at Trendo.Core.Tests.T0747_Fix4ViertePruefung.Duplicate_outlines()
+[xUnit.net 00:00:04.04]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:04.04]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:04.04]       Output:
+[xUnit.net 00:00:04.04]         LWPOLYLINE doppelt: aussen, aussen, aussen | 
+[xUnit.net 00:00:04.07]     T-0747-fix4 N1/N2: gefrorene Ebene wird nicht gefräst, aber gemeldet; Bogen < 0,00001° und Linie der Länge 0 sind keine Konturen [FAIL]
+[xUnit.net 00:00:04.07]       Assert.DoesNotContain() Failure: Filter matched in collection
+[xUnit.net 00:00:04.07]                    ↓ (pos 0)
+[xUnit.net 00:00:04.07]       Collection: [CamPath { Kind = innen, Pts = System.Collections.Generic.List`1[System.ValueTuple`2[System.Double,System.Double]], Closed = True, Source = 1, Layer = HILFE, TabsAllowed = True }, CamPath { Kind = aussen, Pts = System.Collections.Generic.List`1[System.ValueTuple`2[System.Double,System.Double]], Closed = True, Source = 0, Layer = 0, TabsAllowed = True }]
+[xUnit.net 00:00:04.07]       Stack Trace:
+[xUnit.net 00:00:04.07]         C:\Users\<user>\AppData\Local\Temp\t0747fix4-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix4Tests.cs(127,0): at Trendo.Core.Tests.T0747_Fix4ViertePruefung.Frozen_layer_and_tiny_pieces()
+[xUnit.net 00:00:04.07]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:04.07]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:04.07]   Finished:    Trendo.Core.Tests
+  Fehler T-0747-fix4 H1: CIRCLE, ARC und LWPOLYLINE mit Normale (0,0,−1) liegen gespiegelt richtig; schräge Normale wird gemeldet [100 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values are not within 9 decimal places
+Expected: -50 (rounded from -50)
+Actual:   50 (rounded from 50)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix4ViertePruefung.Ocs_normal_minus_z() in C:\Users\<user>\AppData\Local\Temp\t0747fix4-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix4Tests.cs:line 35
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0747-fix4 M1: Umriss mit Spalt knapp über 0,1 mm (v5b) – Kreis darin wird ausgelassen und gemeldet statt außen gefräst [65 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Filter not matched in collection
+Collection: ["Kontur 3 ausgelassen: offene Kontur (Enden 0,1 mm "···]
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix4ViertePruefung.Hole_inside_open_outline() in C:\Users\<user>\AppData\Local\Temp\t0747fix4-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix4Tests.cs:line 112
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ Kontur 3 ausgelassen: offene Kontur (Enden 0,1 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fräserradius kleiner. Nur in der Fräsart „Auf der Linie (Gravur)“ wird sie gefräst; sonst die Zeichnung schließen.
+
+
+  Fehler T-0747-fix4 H1: gemeinsamer Leser – Grundriss übernimmt eine gespiegelte Polylinie an der richtigen Stelle [11 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Collections differ
+                                                   ↓ (pos 1)
+Expected: <generated>                          [0, -4000]
+Actual:   ListSelectIterator<double[], double> [0, 4000]
+                                                   ↑ (pos 1)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix4ViertePruefung.Ocs_in_floor_plan() in C:\Users\<user>\AppData\Local\Temp\t0747fix4-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix4Tests.cs:line 64
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0747-fix4 H2: doppelt gezeichnete Platte (LWPOLYLINE, 8 LINE, umgedreht, andere Startecke, 0,0005 mm versetzt) – Loch bleibt Loch, gemeldet [9 ms]
+  Fehlermeldung:
+   Assert.Single() Failure: The collection did not contain any matching items
+Expected:   (predicate expression)
+Collection: [CamPath { Kind = aussen, Pts = System.Collections.Generic.List`1[System.ValueTuple`2[System.Double,System.Double]], Closed = True, Source = 0, Layer = 0, TabsAllowed = True }, CamPath { Kind = aussen, Pts = System.Collections.Generic.List`1[System.ValueTuple`2[System.Double,System.Double]], Closed = True, Source = 1, Layer = 0, TabsAllowed = True }, CamPath { Kind = aussen, Pts = System.Collections.Generic.List`1[System.ValueTuple`2[System.Double,System.Double]], Closed = True, Source = 2, Layer = 0, TabsAllowed = True }]
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix4ViertePruefung.Duplicate_outlines() in C:\Users\<user>\AppData\Local\Temp\t0747fix4-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix4Tests.cs:line 89
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ LWPOLYLINE doppelt: aussen, aussen, aussen | 
+
+
+  Fehler T-0747-fix4 N1/N2: gefrorene Ebene wird nicht gefräst, aber gemeldet; Bogen < 0,00001° und Linie der Länge 0 sind keine Konturen [26 ms]
+  Fehlermeldung:
+   Assert.DoesNotContain() Failure: Filter matched in collection
+             ↓ (pos 0)
+Collection: [CamPath { Kind = innen, Pts = System.Collections.Generic.List`1[System.ValueTuple`2[System.Double,System.Double]], Closed = True, Source = 1, Layer = HILFE, TabsAllowed = True }, CamPath { Kind = aussen, Pts = System.Collections.Generic.List`1[System.ValueTuple`2[System.Double,System.Double]], Closed = True, Source = 0, Layer = 0, TabsAllowed = True }]
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix4ViertePruefung.Frozen_layer_and_tiny_pieces() in C:\Users\<user>\AppData\Local\Temp\t0747fix4-old\tests\Trendo.Core.Tests\DxfWohnungFraesenFix4Tests.cs:line 127
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 5
+     Nicht bestanden: 5
+ Gesamtzeit: 15,7246 Sekunden
+### App-Rot-Probe (T0747_Fix4RaceUi gegen 300f50d92)
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0747-fix4 P2b: Fräsart in A gemerkt, dann Reiter B gewählt – die Änderung landet in A, B bleibt unverändert [FAIL]
+      Assert.Equal() Failure: Strings differ
+                   ↓ (pos 2)
+      Expected: "auf"
+      Actual:   "auto"
+                   ↑ (pos 2)
+      Stack Trace:
+        tests\Trendo.App.Tests\DxfWohnungFraesenFix4UiTests.cs(59,0): at Trendo.App.Tests.T0747_Fix4RaceUi.P2b_switch_tab()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    T-0747-fix4 N4: zweite Datei während eines laufenden Einlesens wird gemerkt und danach eingelesen [FAIL]
+      Assert.Contains() Failure: Sub-string not found
+      String:    "Es läuft noch: „a.svg“ wird eingelesen – bitte war"···
+      Not found: "sobald die laufende Arbeit fertig ist"
+      Stack Trace:
+        tests\Trendo.App.Tests\DxfWohnungFraesenFix4UiTests.cs(85,0): at Trendo.App.Tests.T0747_Fix4RaceUi.Second_file_is_queued()
+           at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    Trendo.App.Tests (ID = 'bd4e7d25a46af88126076474052a73283bb9cf575e1c2b1529b6b3741e1fe99c')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 3, Errors: 0, Failed: 2, Skipped: 0, Not Run: 0, Time: 31,172s
+### App-Rot-Probe Wiederholung (B ebenfalls mit Zeichnung)
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0747-fix4 P2a: Fräsart in A gemerkt, dann A geschlossen – B bekommt nichts, keine Ausnahme [FAIL]
+      Assert.Equal() Failure: Strings differ
+                                               ↓ (pos 213)
+      Expected: ···"0 Z5\\nM3 S13263\\n(Kontur 2: innen, Ebene loecher)\\"···
+      Actual:   ···"0 Z5\\nM3 S13263\\n(Kontur 1: auf der Linie, Ebene u"···
+                                               ↑ (pos 213)
+      Stack Trace:
+        tests\Trendo.App.Tests\DxfWohnungFraesenFix4UiTests.cs(71,0): at Trendo.App.Tests.T0747_Fix4RaceUi.P2a_close_doc()
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    T-0747-fix4 P2b: Fräsart in A gemerkt, dann Reiter B gewählt – die Änderung landet in A, B bleibt unverändert [FAIL]
+      Assert.Equal() Failure: Strings differ
+                                               ↓ (pos 213)
+      Expected: ···"0 Z5\\nM3 S13263\\n(Kontur 2: innen, Ebene loecher)\\"···
+      Actual:   ···"0 Z5\\nM3 S13263\\n(Kontur 1: auf der Linie, Ebene u"···
+                                               ↑ (pos 213)
+      Stack Trace:
+        tests\Trendo.App.Tests\DxfWohnungFraesenFix4UiTests.cs(59,0): at Trendo.App.Tests.T0747_Fix4RaceUi.P2b_switch_tab()
+           at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+    T-0747-fix4 N4: zweite Datei während eines laufenden Einlesens wird gemerkt und danach eingelesen [FAIL]
+      Assert.Contains() Failure: Sub-string not found
+      String:    "Es läuft noch: „a.svg“ wird eingelesen – bitte war"···
+      Not found: "sobald die laufende Arbeit fertig ist"
+      Stack Trace:
+        tests\Trendo.App.Tests\DxfWohnungFraesenFix4UiTests.cs(86,0): at Trendo.App.Tests.T0747_Fix4RaceUi.Second_file_is_queued()
+           at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+           at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+           at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Finished:    Trendo.App.Tests (ID = 'bd4e7d25a46af88126076474052a73283bb9cf575e1c2b1529b6b3741e1fe99c')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 3, Errors: 0, Failed: 3, Skipped: 0, Not Run: 0, Time: 44,337s

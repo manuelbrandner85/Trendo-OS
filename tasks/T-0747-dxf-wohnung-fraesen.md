@@ -1,0 +1,20 @@
+# T-0747: DXF-Import – Wohnung planen und Fräsen
+
+**Ziel:** Restliste `docs/audit/2026-11-16-profi-audit/d7-restliste.md` Rang 22 (SPEC-01: DXF/IFC-Import in den Plan) und Rang 25 (SPEC-14: CAM aus DXF/SVG) schließen – mit genau einem gemeinsamen DXF-Leser im Kern.
+**Branch:** claude/T-0747-dxf-wohnung-fraesen
+**Dateien/Bereich:** `src/Trendo.Core/Cad/` (CadDrawing.cs – gemeinsamer Leser, CadContours.cs, CadSvg.cs), `src/Trendo.Core/Arch/PlanDxfImport.cs`, `src/Trendo.Core/W6/CncCam.cs`, `CncSim.cs` (CncJob), `src/Trendo.Core/Media/ImageVector.cs` (Teilpfade), `src/Trendo.App/MainWindow.DxfImport.cs`, `MainWindow.Spec01.cs`, `MainWindow.Spec14.cs`, `CncPathView.cs`, Tests, `tests/fixtures/t0747/`, `reports/T-0747/`.
+**Fertig, wenn:**
+- [x] DXF-Grundriss (LINE, LWPOLYLINE, POLYLINE, ARC, CIRCLE, Ebenen, $INSUNITS) wird zu bearbeitbaren Wänden (Doppellinien → Stärke), Türen/Fenstern (Lücken), Bogenwänden, Räumen und Texten; Maßstab stimmt; ein Rückgängig-Schritt.
+- [x] Rundreise Import → bearbeiten → Export DXF; Export von einem fremden Leser geprüft (kein Fremd-CAD vorhanden → eigenes Python-Skript, ehrlich benannt).
+- [x] Konturen aus DXF oder SVG → Fräsbahnen außen/innen/auf der Linie mit Radiusversatz, Zustellung in Stufen, Haltestege; G-Code über das vorhandene Dokument/Export; Vorschau mit Konturen.
+- [x] Beleg: G-Code von eigenem Prüfskript gelesen (Bahnen im Rohteil, kein Anschneiden, Versatz = Radius).
+- [x] betroffene Testklassen grün (kein Volltest – macht die Hauptsitzung).
+**Nicht tun:** keine Maschine ansteuern, nichts installieren (ezdxf/LibreCAD/QCAD nur prüfen), kein zweiter DXF-Leser, IFC-Import nur mit vorhandenen Bausteinen.
+**Am Ende:** Branch pushen, Bericht `tasks/T-0747-dxf-wohnung-fraesen.bericht.md`.
+**Nachtrag T-0747-fix (Gegenprüfung):** Nachbarkonturen/Acht, Engstellen, verrauschte Konturen, große DXF (Raster + Hintergrund + Abbrechen), veraltete Bahnen, Kodierung/Sonderzeichen/kaputte SVG – behoben, siehe Bericht „Gegenprüfung behoben“.
+**Nachtrag T-0747-fix2 (zweite Prüfung):** Konturen in abgelehnten Achtern, offene Konturen, Meldung nicht lesbarer Elemente, Bogen-/Kurventoleranz ohne Obergrenze, Rechnen im Hintergrund mit Abbrechen, kurze Engstellen, Einheiten-Hinweis in Trendo CAD – siehe Bericht „Zweite Prüfung behoben“.
+**Nachtrag T-0747-fix3 (dritte Prüfung):** Verketten ohne Punktverschiebung (nächster Kandidat, Mehrdeutigkeit gemeldet), Haltestege auf Bahnpunkten, Hintergrund-Ergebnisse nur auf den Startstand, offene Konturen als Hindernis, Limaçon, zweite Wertänderung, fehlende Einheit – siehe Bericht „Dritte Prüfung behoben“.
+**Nachtrag T-0747-fix4 (vierte Prüfung):** DXF-Normale (0,0,−1) im gemeinsamen Leser, doppelt gezeichnete Konturen einmal verwendet, Löcher in offenen Umrissen ausgelassen, Warteschlange an das Dokument gebunden, gefrorene Ebenen, winzige Stücke, zweite Datei gemerkt – siehe Bericht „Vierte Prüfung behoben“.
+**Nachtrag T-0747-fix5 (fünfte Prüfung):** 3D-Polylinien ohne Normale, ELLIPSE abgetastet, Konturen in nicht gelesenen Blockverweisen/SPLINE/schrägen Elementen ausgelassen und gemeldet, 50 000 Konturen unter 30 s, robuster Leser (NaN, ∞, 1e9, 999-Kommentar, Radius ≤ 0, PEDIT-Spline) – siehe Bericht „Fünfte Prüfung behoben“.
+**Nachtrag T-0747-fix6 (sechste Prüfung):** vorsichtige Ausdehnung nicht gelesener Elemente (Ausbuchtungen, Normale im Block, Fit-Punkt-Spline, Blöcke nach ENTITIES, Xref), alle verworfenen Umrisse (Radius < 0, NaN, MLINE, REGION, HATCH) in derselben Auslass-Logik, ELLIPSE ohne Endlosschleife und mit begrenzter Punktzahl, Verhältnis > 1, kulturunabhängige Prüfsumme, Ellipsen im Grundriss gemeldet – siehe Bericht „Sechste Prüfung behoben“.
+**Nachtrag T-0747-fix7 (siebte Prüfung):** Schraffur-Rahmen nur aus dem Randpfad (nicht Erhebungs-/Saatpunkt), Füllflächen-Ausnahme nur bei formgleicher Randschleife (Inseln einzeln), WIPEOUT/OLE2FRAME/Proxy mit Ausdehnung – siehe Bericht „Siebte Prüfung behoben“.

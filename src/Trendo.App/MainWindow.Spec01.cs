@@ -60,6 +60,9 @@ public partial class MainWindow
             ("Prüfen", [
                 new ProgramCmd("arch-check", "Plan prüfen", d => { _archIssues = FloorPlan.From(d.Data).Check(); _progMsg[AK] = _archIssues.Count == 0 ? "✓ Keine Probleme gefunden: alle Räume mit Tür, genug Fensterfläche, nichts steht im Weg." : $"{_archIssues.Count} Hinweis(e) – rechts unter „Prüfung“."; }, true),
             ]),
+            ("Einlesen", [ // T-0747
+                new ProgramCmd("arch-dxf-import", "DXF einlesen …", d => _ = ArchDxfPick(), false, "Grundriss aus einem CAD-Programm (DXF) übernehmen: Doppellinien werden Wände mit ihrer Stärke, Lücken Türen und Fenster, Umrisse Räume – Strg+Z nimmt es zurück. Datei auch einfach auf den Plan ziehen.", Level: 1),
+            ]),
             ("BIM", [
                 new ProgramCmd("arch-ifc-setup", "IFC einrichten", d => _ = ArchIfcSetup(), false, "Einmalig IfcOpenShell einrichten (kostenlos, LGPL-3.0) – danach Export „IFC (BIM)“ für Architekten- und CAD-Programme", Level: 2),
                 new ProgramCmd("arch-ifc-view", "IFC ansehen", d => { if (_ifcViewFile is null) ArchIfcViewCurrent(d); else ArchIfcViewClose(); }, false, "Grundriss als IFC speichern und in 3D ansehen (web-ifc/ThatOpen) – nochmal klicken schließt die Ansicht", Level: 2),
@@ -165,7 +168,8 @@ public partial class MainWindow
             if (!ArchState.Fitted) fv.AttachedToVisualTree += (_, _) => _ui.Post(() => { if (fv.Bounds.Width > 10) { fv.Fit(); ArchState.Fitted = true; } });
             view = fv;
         }
-        var frame = new Border { CornerRadius = new CornerRadius(12), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = view };
+        var frame = new Border { Name = "arch-frame", CornerRadius = new CornerRadius(12), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = view };
+        FileDrop(frame, AK, f => HasExt(f, "dxf", "png", "jpg", "jpeg", "bmp"), f => { if (HasExt(f, "dxf")) ImportDrawingFile(AK, f); else ArchLoadImage(f); }); // T-0747: DXF oder Vorlage-Bild hineinziehen
         // Geschoss-Reiter über der Zeichenfläche (oben = höchstes Geschoss steht rechts)
         var tabs = new WrapPanel { Name = "arch-levels", Margin = new Thickness(0, 0, 0, 6) };
         for (var k = 0; k < levels.Count; k++)
