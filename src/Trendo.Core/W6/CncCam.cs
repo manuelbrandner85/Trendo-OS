@@ -161,7 +161,7 @@ public static class CncCam
         foreach (var (what, ub) in s.Unread)
         {
             if (ub.IsEmpty) continue;
-            var u = ub.Shift(sx, sy);
+            var u = ub.ToSafe().Shift(sx, sy); // T-0747-fix8: NaN-Rahmen wie „überall“
             // T-0747-fix7: formgleiche Füllflächen-Schleifen entfernt schon der Leser (CadDxf.Parse), hier bleibt nur, was wirklich ungelesen ist
             for (var i = 0; i < cs.Count; i++)
             {

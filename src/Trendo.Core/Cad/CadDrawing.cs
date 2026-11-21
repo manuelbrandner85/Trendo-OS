@@ -108,6 +108,8 @@ public static class CadDxf
         /// <summary>T-0747-fix5: Ausdehnung (mm) nicht gelesener Elemente mit Fläche (Blockverweise, SPLINE, Elemente außerhalb der Zeichenebene). Was darin liegt,
         /// lässt sich nicht sicher als Loch oder Teil deuten. <see cref="Box.All"/> = Ausdehnung unbekannt.</summary>
         public List<(string What, Box B)> Unread { get; init; } = [];
+        /// <summary>T-0747-fix8: Füllflächen, deren Rand ganz formgleich gezeichnet ist – sie sind in <see cref="Skipped"/> gezählt, fehlen beim Fräsen aber nicht.</summary>
+        public Dictionary<string, int> Redundant { get; init; } = [];
         public int Units { get; init; }
         public double MmPerUnit { get; init; } = 1;
         public string UnitName => UnitLabel(Units);
@@ -163,7 +165,8 @@ public static class CadDxf
         string? curBlock = null; var blocks = new Dictionary<string, BlockInfo>(StringComparer.OrdinalIgnoreCase); var unread = new List<(string What, Box B)>();
         var pendingInserts = new List<(int Index, List<(int Code, string Value)> Body)>(); // T-0747-fix6: Ausdehnung erst am Ende (Blöcke dürfen nach ENTITIES stehen)
         long ellipsePoints = 0;
-        var fills = new List<(int Index, List<(double X, double Y)> Shape, string Layer)>(); // T-0747-fix7: Füllflächen-Schleifen mit bestimmbarer Form
+        var fills = new List<(int Index, List<(double X, double Y)>? Shape, string Layer, int Serial)>(); // T-0747-fix7: Füllflächen-Schleifen (fix8: alle, Form wo bestimmbar)
+        var fillKinds = new List<string>(); var redundant = new Dictionary<string, int>(); // T-0747-fix8: je Füllfläche ihre Art – ganz formgleich zählt sie nicht als „fehlt in den Fräsbahnen“
         Box BlockBox(string name, int depth)
         {
             if (depth > 16) return Box.All; // zu tief (oder im Kreis) verschachtelt → Ausdehnung unbekannt, überall unsicher
@@ -383,12 +386,16 @@ public static class CadDxf
                         // T-0747-fix7: je Randschleife ein Eintrag (Inseln einzeln); Schleifen mit bestimmbarer Form werden am Ende mit den gezeichneten Konturen verglichen
                         var loops = FillLoops(val, body, kUnits);
                         if (loops is null) unread.Add((FillPrefix + val, Box.All));
-                        else foreach (var fl in loops)
+                        else
+                        {
+                            var serial = fillKinds.Count; fillKinds.Add(val);
+                            foreach (var fl in loops)
                             {
-                                if (fl.B.IsEmpty) continue;
-                                unread.Add((FillPrefix + val, fl.B));
-                                if (fl.Shape is { Count: >= 3 } sh) fills.Add((unread.Count - 1, sh, layer));
+                                var fb = fl.B.IsEmpty || fl.B.HasNaN ? Box.All : fl.B; // T-0747-fix8: nie still verwerfen
+                                unread.Add((FillPrefix + val, fb));
+                                fills.Add((unread.Count - 1, fb.IsAll ? null : fl.Shape is { Count: >= 3 } ? fl.Shape : null, layer, serial));
                             }
+                        }
                     }
                     else if (!NoOutline.Contains(val)) unread.Add((val, ShapeBox(val, body, [], kUnits)));
                     break;
@@ -400,25 +407,31 @@ public static class CadDxf
         foreach (var name in d.Entities.Select(e => e.Layer).Distinct().ToList()) d.Layer(name);
         if (fills.Count > 0)
         {
-            // T-0747-fix7: Randschleife einer Füllfläche, die formgleich (± 0,01 mm) mit einer gezeichneten geschlossenen Kontur ist, ist schon gezeichnet –
-            // sie ändert nichts. Füllflächen auf ausgeblendeten Ebenen werden wie diese Ebenen nicht gefräst.
+            // T-0747-fix7: Randschleife einer Füllfläche, die formgleich (je Achse ± 0,01 mm) mit einer gezeichneten geschlossenen Kontur ist, ist schon
+            // gezeichnet – sie ändert nichts. T-0747-fix8: Füllflächen auf ausgeblendeten Ebenen zählen nur dort nicht, wo sie ganz in einer gezeichneten
+            // Kontur liegen; außerhalb könnte ihr Rand der (ausgeblendete) Umriss eines Teils sein.
             var hidden = d.Layers.Where(l => !l.Visible).Select(l => l.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
             var tolU = 0.01 / kUnits;
             var drawn = CadContours.Build(d.Entities.Where(e => e.Kind != "text" && !hidden.Contains(e.Layer)), 0.1 / kUnits, 0.001 / kUnits, ct).Where(c => c.Closed).ToList();
             var drop = new HashSet<int>();
-            foreach (var (idx, shape, flayer) in fills)
+            foreach (var (idx, shape, flayer, _) in fills)
             {
-                if (hidden.Contains(flayer)) { drop.Add(idx); continue; }
                 var ub = unread[idx].B;
-                if (drawn.Any(c => { var cb = c.Box; return Math.Abs(cb.MinX - ub.MinX) <= tolU && Math.Abs(cb.MinY - ub.MinY) <= tolU && Math.Abs(cb.MaxX - ub.MaxX) <= tolU && Math.Abs(cb.MaxY - ub.MaxY) <= tolU && SameShape(shape, c.Pts, tolU); }))
+                if (ub.IsAll) continue;
+                var same = shape is not null && drawn.Any(c => { var cb = c.Box; return Math.Abs(cb.MinX - ub.MinX) <= tolU && Math.Abs(cb.MinY - ub.MinY) <= tolU && Math.Abs(cb.MaxX - ub.MaxX) <= tolU && Math.Abs(cb.MaxY - ub.MaxY) <= tolU && SameShape(shape, c.Pts, tolU); });
+                if (same || hidden.Contains(flayer) && drawn.Any(c => new[] { (ub.MinX, ub.MinY), (ub.MaxX, ub.MinY), (ub.MaxX, ub.MaxY), (ub.MinX, ub.MaxY) }.All(q => c.Contains(q.Item1, q.Item2))))
                     drop.Add(idx);
+            }
+            foreach (var grp in fills.GroupBy(f => f.Serial).Where(g => g.All(f => drop.Contains(f.Index))))
+            {
+                var kind = fillKinds[grp.Key]; redundant[kind] = redundant.GetValueOrDefault(kind) + 1;
             }
             unread = unread.Where((_, j) => !drop.Contains(j)).ToList();
         }
         if (d.Entities.Count == 0 && skipped.Count == 0) throw new CadError("In der DXF-Datei ist keine Zeichnung (kein ENTITIES-Abschnitt mit Linien, Kreisen, Bögen oder Text).");
         var k = MmPerUnitOf(units);
         if (Math.Abs(k - 1) > 1e-12) Scale(d, k); // T-0747: Zoll, cm, m … gleich in mm
-        return new ReadResult(d, skipped) { Units = units, MmPerUnit = k, Unread = unread.Select(x => (x.What, x.B.Scale(k))).ToList() };
+        return new ReadResult(d, skipped) { Units = units, MmPerUnit = k, Unread = unread.Select(x => (x.What, x.B.ToSafe().Scale(k))).ToList(), Redundant = redundant };
 
         static void Count(Dictionary<string, int> s, string k) => s[k] = s.GetValueOrDefault(k) + 1;
         // Normale (0,0,−1): x spiegeln; Bögen laufen danach in Weltrichtung wieder gegen den Uhrzeigersinn (Winkel 180−a1 … 180−a0), Ausbuchtungen umgekehrt
@@ -444,8 +457,12 @@ public static class CadDxf
         public static readonly Box All = new(double.NegativeInfinity, double.NegativeInfinity, double.PositiveInfinity, double.PositiveInfinity);
         public bool IsEmpty => MinX > MaxX || MinY > MaxY;
         public bool IsAll => double.IsNegativeInfinity(MinX) || double.IsNegativeInfinity(MinY) || double.IsPositiveInfinity(MaxX) || double.IsPositiveInfinity(MaxY);
-        public Box Union(Box o) => IsEmpty ? o : o.IsEmpty ? this : new(Math.Min(MinX, o.MinX), Math.Min(MinY, o.MinY), Math.Max(MaxX, o.MaxX), Math.Max(MaxY, o.MaxY));
-        public Box With((double X, double Y) q) => Union(new Box(q.X, q.Y, q.X, q.Y));
+        /// <summary>T-0747-fix8: enthält eine Grenze NaN, sagt der Rahmen nichts (jeder Vergleich wäre falsch) – er gilt dann als „überall“.</summary>
+        public bool HasNaN => double.IsNaN(MinX) || double.IsNaN(MinY) || double.IsNaN(MaxX) || double.IsNaN(MaxY);
+        /// <summary>Vorsichtig: NaN → <see cref="All"/>.</summary>
+        public Box ToSafe() => HasNaN ? All : this; // Methode, keine Eigenschaft: sonst druckt ToString sich selbst endlos
+        public Box Union(Box o) => HasNaN || o.HasNaN ? All : IsEmpty ? o : o.IsEmpty ? this : new(Math.Min(MinX, o.MinX), Math.Min(MinY, o.MinY), Math.Max(MaxX, o.MaxX), Math.Max(MaxY, o.MaxY));
+        public Box With((double X, double Y) q) => double.IsFinite(q.X) && double.IsFinite(q.Y) ? Union(new Box(q.X, q.Y, q.X, q.Y)) : All; // T-0747-fix8: nicht endlich → überall
         public Box Grow(double r) => IsEmpty ? this : new(MinX - r, MinY - r, MaxX + r, MaxY + r);
         public Box Scale(double k) => IsEmpty ? this : new(MinX * k, MinY * k, MaxX * k, MaxY * k);
         public Box Shift(double dx, double dy) => IsEmpty ? this : new(MinX + dx, MinY + dy, MaxX + dx, MaxY + dy);
@@ -462,10 +479,12 @@ public static class CadDxf
     {
         foreach (var (c, v) in b)
         {
-            if (!(c is >= 10 and <= 39 or >= 40 and <= 42)) continue;
+            // T-0747-fix8: alle Gleitkomma-Gruppen (Koordinaten, Maße, Winkel, Normale, Faktoren), nicht nur 10 … 42
+            if (!(c is >= 10 and <= 59 or >= 110 and <= 149 or >= 210 and <= 239 or >= 460 and <= 469 or >= 1010 and <= 1059)) continue;
             if (!double.TryParse(v.Trim(), NumberStyles.Float, Inv, out var x)) continue; // kein Zahlwert: meldet der Leser wie bisher
             if (double.IsNaN(x) || double.IsInfinity(x)) return false;
             if (c is >= 10 and <= 40 && Math.Abs(x) * k > 1e9) return false;
+            if (c is >= 50 and <= 59 && Math.Abs(x) > 1e6) return false; // Winkel in Grad
         }
         return true;
     }
@@ -501,6 +520,15 @@ public static class CadDxf
     {
         "TEXT", "MTEXT", "POINT", "DIMENSION", "ATTRIB", "ATTDEF", "LEADER", "MLEADER", "MULTILEADER", "VIEWPORT", "TOLERANCE", "XLINE", "RAY", "IMAGE",
         "ACAD_TABLE", "SEQEND", "VERTEX", "BLOCK", "ENDBLK", "LIGHT", "SUN", "ACAD_PROXY_ENTITY_TEXT", "SHAPE", // SHAPE: Symbol aus einer Formdatei, wie Text
+    };
+
+    /// <summary>T-0747-fix8: deutsche Bezeichnung nicht übernommener DXF-Elemente – dieselbe Tabelle in Grundriss, Trendo CAD und Fräsen.</summary>
+    public static string KindLabel(string k) => k switch
+    {
+        "INSERT" => "Blockverweis (INSERT)", "SPLINE" => "SPLINE (Freiformkurve)", "HATCH" => "Schraffur", "WIPEOUT" => "Abdeckfläche", "DIMENSION" => "Bemaßung",
+        "SOLID" => "Füllfläche (SOLID)", "TRACE" => "Füllfläche (TRACE)", "3DFACE" => "3D-Fläche", "MLINE" => "Mehrfachlinie (MLINE)", "REGION" => "Region",
+        "LEADER" or "MLEADER" or "MULTILEADER" => "Hinweislinie", "POINT" => "Punkt", "VIEWPORT" => "Ansichtsfenster", "ATTRIB" or "ATTDEF" => "Attribut",
+        "IMAGE" => "Bild", "OLE2FRAME" => "OLE-Objekt", "ACAD_TABLE" => "Tabelle", "3DSOLID" => "Volumenkörper", "text" => "SVG-Text", _ => k,
     };
 
     static bool IsFill(string val) => val is "HATCH" or "SOLID" or "TRACE" or "3DFACE" or "WIPEOUT";
@@ -555,6 +583,8 @@ public static class CadDxf
                 double px = Num(b, 10), py = Num(b, 20), ux = Num(b, 11), uy = Num(b, 21), vx = Num(b, 12), vy = Num(b, 22), w = Math.Max(1, Num(b, 13, 1)), h = Math.Max(1, Num(b, 23, 1));
                 var box = Box.Empty;
                 foreach (var su in new[] { -0.5, w + 0.5 }) foreach (var sv in new[] { -0.5, h + 0.5 }) box = box.With((px + su * ux + sv * vx, py + su * uy + sv * vy));
+                // T-0747-fix8: Ausschnitt-Punkte (14/24, Pixel mit ½ Versatz) dürfen über den Rahmen hinausgehen – mit umrechnen
+                foreach (var (cu, cv) in Pairs(b, 14)) box = box.With((px + (cu + 0.5) * ux + (cv + 0.5) * vx, py + (cu + 0.5) * uy + (cv + 0.5) * vy));
                 return box;
             }
             case "OLE2FRAME": return WPts(b, 10, 11); // T-0747-fix7: linke obere und rechte untere Ecke
@@ -667,38 +697,51 @@ public static class CadDxf
     /// ihre Form als geschlossener Zug (für den Vergleich mit gezeichneten Konturen); sonst <c>null</c>.</summary>
     internal sealed record FillLoop(Box B, List<(double X, double Y)>? Shape);
 
-    /// <summary>T-0747-fix7: Randschleifen einer HATCH aus dem Randpfad-Abschnitt (Gruppen 91 … 97). Erhebungspunkt (erstes 10/20) und
-    /// Saatpunkte (nach 98) gehören nicht zum Rand. <c>null</c>, wenn der Abschnitt nicht wie erwartet aufgebaut ist.</summary>
+    /// <summary>T-0747-fix7/fix8: Randschleifen einer HATCH aus dem Randpfad-Abschnitt (Gruppen 91 … 97). Erhebungspunkt (erstes 10/20) und
+    /// Saatpunkte (nach 98) gehören nicht zum Rand. Streng geprüft (fix8): Schleifenzahl 91 muss eine ganze Zahl ≥ 0 sein, jede Schleife und
+    /// jede Kante muss vollständig sein, nach einer Schleife darf nur 97/330 und dann 92 bzw. das Abschnittsende (75/76/98) folgen, Kanten- und
+    /// Punktzahlen ≥ 1 bzw. ≥ 3. Sonst <c>null</c> (= Ausdehnung unbekannt). Eine leere Liste nur bei 91 = 0 ohne Randdaten.</summary>
     static List<FillLoop>? HatchLoops(List<(int Code, string Value)> b, double tolU)
     {
         var o0 = Ocs.Of(b); if (o0 is null) return null;
-        var i = b.FindIndex(x => x.Code == 91); if (i < 0) return [];
+        var i = b.FindIndex(x => x.Code == 91); if (i < 0) return null; // ohne Schleifenzahl: Rand nicht bestimmbar
         bool Is(int code) => i < b.Count && b[i].Code == code;
-        double N(int code) { if (!Is(code)) throw new CadError("HATCH-Rand unvollständig"); return D(b[i++].Value); }
-        int I(int code) => (int)N(code);
+        double N(int code)
+        {
+            if (!Is(code) || !double.TryParse(b[i].Value.Trim(), NumberStyles.Float, Inv, out var v) || !double.IsFinite(v)) throw new CadError("HATCH-Rand unvollständig");
+            i++; return v;
+        }
+        int I(int code, int min, bool count = true)
+        {
+            var v = N(code);
+            if (v != Math.Floor(v) || v < min || v > (count ? b.Count : 1 << 20)) throw new CadError("HATCH-Rand: Zahl ungültig"); // ganzzahlig, nicht negativ, nicht mehr als Daten da sind
+            return (int)v;
+        }
         double Opt(int code, double def) => Is(code) ? N(code) : def;
+        bool BoundaryCode() => i < b.Count && b[i].Code is 92 or 93 or 72 or 73 or 10 or 20 or 11 or 21 or 40 or 42 or 50 or 51 or 94 or 95 or 96 or 97 or 330;
         var loops = new List<FillLoop>(); var z = Num(b, 30);
         try
         {
-            var nLoops = I(91);
+            var nLoops = I(91, 0);
+            if (nLoops == 0) return BoundaryCode() ? null : []; // 91 = 0, aber Randdaten folgen → nicht vertrauen
             for (var l = 0; l < nLoops; l++)
             {
-                var flags = I(92); var o = Ocs.Of(b)!; List<(double X, double Y)>? shape = [];
+                var flags = I(92, 0, false); var o = Ocs.Of(b)!; List<(double X, double Y)>? shape = [];
                 if ((flags & 2) != 0)
                 {
-                    var hasBulge = I(72) != 0; var closed = I(73) != 0; var n = I(93);
+                    var hasBulge = I(72, 0, false) != 0; Opt(73, 1); var n = I(93, 2); // Polylinienrand: mindestens 3 Punkte, oder 2 mit Ausbuchtung (Kreis aus zwei Halbkreisen)
                     var v = new List<(double X, double Y, double B)>();
                     for (var k = 0; k < n; k++) { var x = N(10); var y = N(20); var bl = hasBulge ? Opt(42, 0) : 0; v.Add((x, y, bl)); }
+                    if (v.Count < 3 && v.All(q => Math.Abs(q.B) < 1e-12)) return null;
                     o.Poly(v, true, z); // Randschleifen sind immer geschlossen
                     shape = SamplePoly(v, tolU);
-                    _ = closed;
                 }
                 else
                 {
-                    var n = I(93);
+                    var n = I(93, 1); // Kantenrand: mindestens eine Kante
                     for (var k = 0; k < n; k++)
                     {
-                        var type = I(72);
+                        var type = I(72, 1, false);
                         switch (type)
                         {
                             case 1:
@@ -709,45 +752,73 @@ public static class CadDxf
                             case 2:
                             {
                                 double cx = N(10), cy = N(20), r = Math.Abs(N(40)), a0 = N(50), a1 = N(51); var ccw = Opt(73, 1) != 0;
-                                if (!ccw) { o.Circle(cx, cy, z, r); shape = null; break; } // im Uhrzeigersinn gespeichert: Lage vorsichtig als Vollkreis
-                                var sw = (a1 - a0) % 360; if (sw <= 0) sw += 360;
-                                o.Arc(cx, cy, z, r, a0 * Math.PI / 180, sw * Math.PI / 180);
-                                shape?.AddRange(SampleArc(cx, cy, r, a0 * Math.PI / 180, sw * Math.PI / 180, tolU)); break;
+                                if (Math.Abs(a0) > 1e6 || Math.Abs(a1) > 1e6) throw new CadError("HATCH-Bogen: Winkel ungültig");
+                                // gegen den Uhrzeigersinn: genauer Rahmen; im Uhrzeigersinn (73 = 0) vorsichtig als Vollkreis. Für den Formvergleich abgetastet (73 = 0: negativer Bogen)
+                                var sw = ccw ? (a1 - a0) % 360 : (a0 - a1) % 360; if (sw <= 0) sw += 360;
+                                if (ccw) o.Arc(cx, cy, z, r, a0 * Math.PI / 180, sw * Math.PI / 180); else o.Circle(cx, cy, z, r);
+                                shape?.AddRange(SampleArc(cx, cy, r, a0 * Math.PI / 180, (ccw ? 1 : -1) * sw * Math.PI / 180, tolU)); break;
                             }
                             case 3:
                             {
-                                double cx = N(10), cy = N(20), mx = N(11), my = N(21), ratio = Math.Abs(N(40)); N(50); N(51); Opt(73, 1);
+                                double cx = N(10), cy = N(20), mx = N(11), my = N(21), ratio = Math.Abs(N(40)), p0 = N(50), p1 = N(51); var ccw = Opt(73, 1) != 0;
+                                if (Math.Abs(p0) > 1e6 || Math.Abs(p1) > 1e6) throw new CadError("HATCH-Ellipse: Parameter ungültig");
                                 double hx = Math.Sqrt(mx * mx + my * my * ratio * ratio), hy = Math.Sqrt(my * my + mx * mx * ratio * ratio);
                                 o.Pt(cx - hx, cy - hy, z); o.Pt(cx + hx, cy - hy, z); o.Pt(cx - hx, cy + hy, z); o.Pt(cx + hx, cy + hy, z); // volle Ellipse
-                                shape = null; break;
+                                if (shape is not null)
+                                {
+                                    // abtasten: Pfeilhöhe ≤ h²/8 · max(a, b) ≤ tol/4
+                                    double a = Math.Sqrt(mx * mx + my * my), bb = a * ratio, bxv = -my * ratio, byv = mx * ratio;
+                                    var sw = ccw ? (p1 - p0) % 360 : (p0 - p1) % 360; if (sw <= 0) sw += 360;
+                                    var dt = Math.Sqrt(8 * tolU / 4 / Math.Max(Math.Max(a, bb), 1e-12)); var swr = (ccw ? 1 : -1) * sw * Math.PI / 180;
+                                    var m = (int)Math.Clamp(Math.Ceiling(Math.Abs(swr) / dt), 4, 200_000);
+                                    for (var q = 0; q < m; q++) { var t = p0 * Math.PI / 180 + swr * q / m; shape.Add((cx + Math.Cos(t) * mx + Math.Sin(t) * bxv, cy + Math.Cos(t) * my + Math.Sin(t) * byv)); }
+                                }
+                                break;
                             }
                             case 4:
                             {
-                                I(94); Opt(73, 0); Opt(74, 0); var nk = I(95); var nc = I(96);
-                                for (var q = 0; q < nk; q++) N(40);
+                                var deg = I(94, 1, false); Opt(73, 0); Opt(74, 0); var nk = I(95, 0); var nc = I(96, 1);
+                                var knots = new List<double>(); for (var q = 0; q < nk; q++) knots.Add(N(40));
+                                var ctrl = new List<(double X, double Y)>();
                                 for (var q = 0; q < nc; q++)
                                 {
-                                    double x = N(10), y = N(20); o.Pt(x, y, z);
+                                    double x = N(10), y = N(20); o.Pt(x, y, z); ctrl.Add((x, y));
                                     if (Is(42) && !(N(42) > 0)) return null; // Gewicht ≤ 0: Hülle gilt nicht
                                 }
-                                if (Is(97) && i + 1 < b.Count && b[i + 1].Code == 11) { var nf = I(97); for (var q = 0; q < nf; q++) { o.Pt(N(11), N(21), z); } } // Fit-Punkte (sonst ist 97 schon die Zahl der Quellobjekte)
-                                if (Is(12)) { N(12); N(22); } if (Is(13)) { N(13); N(23); }
-                                shape = null; break;
+                                // T-0747-fix8: 97 nach den Kontrollpunkten ist immer die Zahl der Fit-Punkte (ab R2010, auch 0)
+                                if (Is(97)) { var nf = I(97, 0); for (var q = 0; q < nf; q++) o.Pt(N(11), N(21), z); }
+                                if (Is(12)) { N(12); N(22); }
+                                if (Is(13)) { N(13); N(23); }
+                                // Form nur, wo die Kurve sicher der Kontrollzug ist: Grad 1 oder alle Kontrollpunkte auf einer Geraden, Knoten an den Enden geklemmt
+                                var clamped = knots.Count >= 2 * (deg + 1) && knots.Take(deg + 1).All(k => k == knots[0]) && knots.TakeLast(deg + 1).All(k => k == knots[^1]);
+                                if (shape is not null && clamped && (deg == 1 || Collinear(ctrl))) shape.AddRange(deg == 1 ? ctrl : [ctrl[0], ctrl[^1]]);
+                                else shape = null;
+                                break;
                             }
                             default: return null;
                         }
                     }
                 }
-                if (Is(97)) I(97);
-                while (Is(330)) i++;
-                // Form nur bei Normale ±Z (dann Spiegelung von x), sonst kein Vergleich möglich
+                if (Is(97)) { var ns = I(97, 0); for (var q = 0; q < ns; q++) N(330); }
+                // nach der Schleife: nächste Schleife (92) oder Ende des Randabschnitts – sonst stimmen die Zahlen nicht
+                if (l < nLoops - 1 ? !Is(92) : BoundaryCode()) return null;
                 List<(double X, double Y)>? world = null;
                 if (shape is { Count: >= 3 } && o.Flat) world = shape.Select(p => (o.Sgn * p.X, p.Y)).ToList();
+                if (o.Box.IsEmpty || o.Box.HasNaN) return null;
                 loops.Add(new FillLoop(o.Box, world));
             }
         }
         catch (CadError) { return null; }
+        catch (FormatException) { return null; }
         return loops;
+    }
+
+    static bool Collinear(List<(double X, double Y)> p)
+    {
+        if (p.Count < 2) return false;
+        var (ax, ay) = p[0]; var (bx, by) = p[^1]; var l = Math.Sqrt((bx - ax) * (bx - ax) + (by - ay) * (by - ay)); if (!(l > 0)) return false;
+        return p.All(q => Math.Abs((q.X - ax) * (by - ay) - (q.Y - ay) * (bx - ax)) / l <= 1e-9 * Math.Max(1, l)
+            && ((q.X - ax) * (bx - ax) + (q.Y - ay) * (by - ay)) >= -1e-9 && ((q.X - bx) * (ax - bx) + (q.Y - by) * (ay - by)) >= -1e-9); // auch zwischen den Enden
     }
 
     /// <summary>Bogen als Punkte (ohne Endpunkt), Pfeilhöhe ≤ <paramref name="tol"/>/4.</summary>
@@ -803,14 +874,20 @@ public static class CadDxf
     /// beider Züge höchstens <paramref name="tol"/> vom anderen)?</summary>
     static bool SameShape(List<(double X, double Y)> a, IReadOnlyList<(double X, double Y)> c, double tol)
     {
+        // T-0747-fix8: Abstand je Achse (Chebyshev): größere der beiden Achsabweichungen zum nächsten Punkt des anderen Zugs ≤ tol – wie der Rahmenvergleich
         static double Dist((double X, double Y) p, IReadOnlyList<(double X, double Y)> z)
         {
             var best = double.MaxValue;
             for (var i = 0; i < z.Count; i++)
             {
-                var s = z[i]; var e = z[(i + 1) % z.Count]; double dx = e.X - s.X, dy = e.Y - s.Y, l2 = dx * dx + dy * dy;
-                var t = l2 > 0 ? Math.Clamp(((p.X - s.X) * dx + (p.Y - s.Y) * dy) / l2, 0, 1) : 0;
-                best = Math.Min(best, Math.Sqrt(Math.Pow(p.X - s.X - t * dx, 2) + Math.Pow(p.Y - s.Y - t * dy, 2)));
+                var s = z[i]; var e = z[(i + 1) % z.Count]; double dx = e.X - s.X, dy = e.Y - s.Y, ox = p.X - s.X, oy = p.Y - s.Y;
+                double Cheb(double t) { t = Math.Clamp(t, 0, 1); return Math.Max(Math.Abs(ox - t * dx), Math.Abs(oy - t * dy)); }
+                var m = Math.Min(Cheb(0), Cheb(1)); // konvex und stückweise linear: Minimum an einem Knick oder am Ende
+                if (dx != 0) m = Math.Min(m, Cheb(ox / dx));
+                if (dy != 0) m = Math.Min(m, Cheb(oy / dy));
+                if (dx != dy) m = Math.Min(m, Cheb((ox - oy) / (dx - dy)));
+                if (dx != -dy) m = Math.Min(m, Cheb((ox + oy) / (dx + dy)));
+                best = Math.Min(best, m);
             }
             return best;
         }

@@ -31,7 +31,7 @@ public sealed record PlanDxfReport(int Walls, int DoubleLineWalls, int SingleLin
             if (Labels > 0) parts.Add($"{Labels} Texte");
             var s = string.Join(", ", parts) + $" (Einheit {Units}; Wandebenen: {(WallLayers.Count == 0 ? "–" : string.Join(", ", WallLayers))})";
             if (SkippedLayers.Count > 0) s += ". Nicht als Wand übernommen: " + string.Join(", ", SkippedLayers.Select(k => $"Ebene {k.Key} ({k.Value})"));
-            if (SkippedKinds.Count > 0) s += ". Nicht lesbar: " + string.Join(", ", SkippedKinds.Select(k => $"{k.Value}× {k.Key}"));
+            if (SkippedKinds.Count > 0) s += ". Nicht übernommen: " + string.Join(", ", SkippedKinds.Select(k => $"{k.Value}× {CadDxf.KindLabel(k.Key)}")); // T-0747-fix8
             return s + ".";
         }
     }
@@ -54,7 +54,7 @@ public static class PlanDxfImport
 
     sealed class Seg(double x1, double y1, double x2, double y2)
     {
-        public double X1 = x1, Y1 = y1, X2 = x2, Y2 = y2, T;
+        public double X1 = x1, Y1 = y1, X2 = x2, Y2 = y2;
         public double Len => Math.Sqrt((X2 - X1) * (X2 - X1) + (Y2 - Y1) * (Y2 - Y1));
         public (double X, double Y) U { get { var l = Math.Max(Len, 1e-12); return ((X2 - X1) / l, (Y2 - Y1) / l); } }
     }

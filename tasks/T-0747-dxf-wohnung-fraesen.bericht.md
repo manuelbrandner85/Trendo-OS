@@ -395,3 +395,74 @@ Abstände wie in der sechsten Prüfung (schlechtester −0,0010 mm).
 - Die sechs erklärten Prüfer-Fälle bleiben „rot“.
 
 **Testzahlen T-0747-fix7:** Build 0 Fehler. Kern (alle acht T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests): **126 gesamt, 125 bestanden, 1 übersprungen (vorbestehend „IFC echt“), 0 Fehler**. App: T0747_DxfUi 2/2, T0747_FixUi 3/3, T0747_Fix3RaceUi 4/4, T0747_Fix4RaceUi 3/3, SPEC01_Ui 6/6, SPEC01_UiArc 1/1, SPEC14_Ui 2/2, Bildbearbeitung_Ui 5/5, PlanPhoto_Ui 4/4, N23N24_CadPrintUi 3/3, UebersichtEinfach_Ui 2/2, DeadButtonTests 83/83 – **118/118**. Prüfskript BESTANDEN. Prüfprogramme: 431 Fälle, keine neuen Befunde (sechs erklärte). Belege der früheren Runden unverändert.
+
+## Achte Prüfung behoben (T-0747-fix8)
+Arbeitskopie `%TEMP%\trendo-auftrag-T-0747-fix8`, Commit obendrauf auf d3aa0f251. Keine Maschine angesteuert.
+**Prüfprogramme aller Prüfer** (nur als Kopie benutzt bzw. Fallgeneratoren und Prüfteile ausgeführt, nichts im Repo), alle Fälle über `CncJob.ImportDrawing`:
+
+| Fallgruppe | Fälle | mit G-Code | Befunde | Rechenzeit gesamt |
+|---|---|---|---|---|
+| Prüfer 2 | 162 | 141 | 1 (p_spline_block, erklärt) | 12,1 s |
+| Prüfer 3 | 55 | 48 | 0 | 1,5 s |
+| Prüfer 4 | 72 | 58 | 1 (v2, erklärt) | 1,5 s |
+| Prüfer 5 | 80 | 72 | 4 (f6, g2, k1_0_0005, n8 – erklärt); Haltestege 4/4 richtig | 17,3 s (g2 50 000 Kreise 14,5 s; Rechner nebenbei ausgelastet) |
+| Prüfer 5 Spline | 8 | 8 | 0 | 0,6 s |
+| Prüfer 6 (`gen_p6.py check`) | 30 | 9 | 0 | 2,7 s |
+| Prüfer 7 (`gen_p7.py check`) | 24 | 12 | 0 | 0,4 s |
+| Prüfer 8 Schraffur (`gen_p8.py check`, cases) | 78 | 14 | **0** (vorher 16) | 0,4 s |
+| Prüfer 8 Schraffur (cases2) | 9 | 5 | **0** (vorher 4) | 0,2 s |
+
+Keine neuen Befunde, nur die sechs erklärten. Alle Fälle mit kaputter Schraffur (b01–b19, f02, g06, g07) werden ausgelassen und gemeldet. Alle Fälle, die G-Code verlangen („need“/„mill“, u. a. c01, c02, c04, c05, c16, g01–g05), liefern ihn mit den Löchern innen.
+
+**Rot-Probe gegen d3aa0f251:** `T0747_Fix8AchtePruefung` 5 von 5 rot. Für das Übersetzen gab es nur Platzhalter für `KindLabel`, `ReadResult.Redundant` und `Box.ToSafe`. Log: `reports/T-0747/T-0747-fix8-rotprobe.log`.
+
+**H-1 Schleifenzahl 91 – behoben.** `HatchLoops` gibt jetzt `null` (= Ausdehnung unbekannt, überall) zurück, wenn:
+- 91 fehlt, negativ, nicht ganzzahlig, NaN oder Text ist;
+- 91 = 0 ist, aber Randdaten folgen;
+- nach der letzten Schleife noch Randgruppen stehen (91 zu klein).
+
+Eine leere Liste gibt es nur bei 91 = 0 ohne Randdaten. Das gilt auch für Schraffuren im Block (f02).
+
+**H-2 Kantenzahl 93 – behoben.**
+- Nach jeder Schleife darf nur 97/330 folgen, danach die nächste Schleife (92) bzw. das Abschnittsende; sonst `null`.
+- Kantenrand: 93 ≥ 1. Polylinienrand: mindestens 3 Punkte, oder 2 Punkte mit Ausbuchtung (Kreis aus zwei Halbkreisen).
+- Alle Zahlen müssen ganzzahlig sein und dürfen nicht größer sein als die vorhandenen Daten.
+- Eine Schleife mit leerem oder NaN-Rahmen wird nie mehr verworfen, sondern gilt als „überall“.
+
+**H-3 NaN/∞ – behoben.**
+- `SaneNumbers` prüft jetzt alle Gleitkomma-Gruppen (10–59, 110–149, 210–239, 460–469, 1010–1059) auf NaN/∞; Winkel (50–59) mit Betrag über 1e6 gelten als ungültig.
+- Zentral: `Box.With` macht aus einem nicht endlichen Punkt „überall“, `Box.Union` macht aus NaN „überall“, `ToSafe()` vor Skalierung und in `CncCam`.
+- Gesucht, wo sonst NaN in einen Rahmen gelangen konnte: In Ellipsen-, Kreis- und Blockrahmen wurden Rahmen direkt gebaut. Sie gehen jetzt alle über `Union`/`ToSafe`.
+
+**M-1 Spline-Kante mit „97 0“ – behoben.** Nach Kontrollpunkten und Gewichten wird 97 immer als Fit-Zahl gelesen (auch 0), danach optional 12/22 und 13/23 (c16, g04).
+
+**M-2 WIPEOUT-Ausschnitt – behoben.** Die Ausschnitt-Punkte 14/24 werden mit ½ Pixel Versatz über U/V nach Weltkoordinaten umgerechnet und mit dem Rahmen vereinigt (e02).
+
+**Niedrig – behoben.**
+- **Formvergleich:**
+  - Ellipsenkanten werden abgetastet.
+  - Bögen und Ellipsen mit 73 = 0 werden mit negativem Bogen abgetastet. Ihr Rahmen ist vorsichtig der Vollkreis bzw. die volle Ellipse.
+  - Spline-Kanten mit Grad 1 oder mit Kontrollpunkten auf einer Geraden (geklemmte Knoten) gelten als Zug.
+  - Toleranz dokumentiert: **je Achse ± 0,01 mm (Chebyshev)**, wie beim Rahmenvergleich. 0,009 mm rundum gilt noch als gleich (c05), 0,011 mm nicht (c06, c07). Rein euklidisch wäre die Ecke bei c05 0,0127 mm.
+- **Ausgeblendete Ebenen:** Füllflächen dort zählen nur nicht, wo sie formgleich mit einer gezeichneten Kontur sind oder ganz in einer liegen; außerhalb gelten sie als nicht gelesener Umriss (c15). Groß-/Kleinschreibung der Ebene ist egal.
+- **Zeittest N1:** lastrobust gemacht. Grenze 120 s, Messwert im Log (einzeln etwa 20 s); Abbrechen < 10 s (einzeln unter 1 s).
+- **Meldungen:**
+  - Eine Bezeichnungstabelle `CadDxf.KindLabel` für Grundriss, Trendo CAD und Fräsen: Schraffur, Abdeckfläche, Bemaßung, Mehrfachlinie usw.
+  - Im Grundriss heißt es jetzt „Nicht übernommen“.
+  - Ganz formgleiche Schraffuren zählt `ReadResult.Redundant`, sie erscheinen beim Fräsen nicht mehr unter „fehlen in den Fräsbahnen“.
+- **Warnung CS0649:** `Seg.T` entfernt.
+
+**Tests:** `T0747_Fix8AchtePruefung`:
+- `Hatch_counts_strict`
+- `Nan_never_in_box`
+- `Spline_fit_zero_and_shapes`
+- `Wipeout_clip_outside_frame`
+- `Labels_and_redundant_fill`
+
+Rohlogs: `T-0747-fix8-*.log`.
+
+**Weiterhin offen:**
+- INSERT, SPLINE, MLINE und REGION werden nicht aufgelöst.
+- Die sechs erklärten Prüfer-Fälle bleiben „rot“.
+
+**Testzahlen T-0747-fix8:** Build 0 Fehler, CS0649 in PlanDxfImport weg. Kern (alle neun T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests): **131 gesamt, 130 bestanden, 1 übersprungen (vorbestehend „IFC echt“), 0 Fehler**. App: T0747_DxfUi 2/2, T0747_FixUi 3/3, T0747_Fix3RaceUi 4/4, T0747_Fix4RaceUi 3/3, SPEC01_Ui 6/6, SPEC01_UiArc 1/1, SPEC14_Ui 2/2, Bildbearbeitung_Ui 5/5, PlanPhoto_Ui 4/4, N23N24_CadPrintUi 3/3, UebersichtEinfach_Ui 2/2, DeadButtonTests 83/83 – **118/118**. Prüfskript BESTANDEN. Prüfprogramme: 518 Fälle, keine neuen Befunde (sechs erklärte). Belege der früheren Runden unverändert.

@@ -34,7 +34,7 @@ public partial class MainWindow
                     Cad.Drawing.Entities.AddRange(d.Entities);
                 }
                 CadChanged();
-                var skip = skipped.Count == 0 ? "" : " Nicht übernommen: " + string.Join(", ", skipped.Select(s => $"{s.Value}× {s.Key}")) + ".";
+                var skip = skipped.Count == 0 ? "" : " Nicht übernommen: " + string.Join(", ", skipped.Select(s => $"{s.Value}× {CadDxf.KindLabel(s.Key)}")) + ".";
                 var unit = rd.Units == 4 ? "" : rd.Units == 0 ? " Einheit nicht angegeben – als mm gelesen." : $" Maße in mm umgerechnet aus {rd.UnitName} (×{rd.MmPerUnit.ToString("0.####", System.Globalization.CultureInfo.GetCultureInfo("de-DE"))})."; // T-0747-fix2: Umrechnung sichtbar
                 _cadMsg = $"DXF „{name}“ eingelesen: {CadDxf.Summary(d)}.{unit}{skip}";
                 break;
