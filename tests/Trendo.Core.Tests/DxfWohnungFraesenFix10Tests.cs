@@ -123,7 +123,8 @@ public class T0747_Fix10ZehntePruefung(ITestOutputHelper log)
         Assert.DoesNotContain(nested.Paths, p => p.Kind == "aussen" && p.Pts.All(q => Math.Abs(q.X - nested.ShiftX - 100) < 7 && Math.Abs(q.Y - nested.ShiftY - 50) < 7));
         foreach (var d in new[] { 0.0019, 0.0021, -0.001 })
         {
-            var r = Cam(Dxf(Lw(Rect(0, 0, 100, 60)) + Circle(30, 30, 5) + Circle(70, 30, 5) + Hatch("AUS", PolyLoop([(5, 5), (50, d), (95, 5), (95, 55), (5, 55)])), AusLayer));
+            // T-0747-fix12: Löcher außerhalb des Schraffurrahmens (eine Kontur im Rahmen ließe die Schraffur stehen)
+            var r = Cam(Dxf(Lw(Rect(0, 0, 200, 60)) + Circle(130, 30, 5) + Circle(170, 30, 5) + Hatch("AUS", PolyLoop([(5, 5), (50, d), (95, 5), (95, 55), (5, 55)])), AusLayer));
             Assert.Equal(2, r.Paths.Count(p => p.Kind == "innen"));
         }
     }

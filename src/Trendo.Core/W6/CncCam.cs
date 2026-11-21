@@ -805,6 +805,8 @@ public static class CncCam
 public sealed class SegGrid(double cell)
 {
     readonly double _cell = Math.Max(cell, 1e-9);
+    /// <summary>T-0747-fix12: Zellgröße (für die Wahl Raster-Abfrage oder lineares Durchgehen bei sehr großen Abfragerechtecken).</summary>
+    public double CellSize => _cell;
     readonly Dictionary<long, List<int>> _map = [];
     /// <summary>T-0747-fix5: Merker für „schon gesehen“ – je Thread ein eigener, dann darf das Raster parallel abgefragt werden (nur lesen).</summary>
     public sealed class Cursor { internal int[] Stamp = new int[16]; internal int Query; }
