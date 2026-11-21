@@ -148,41 +148,69 @@ public static class CadContours
             if (chain.Count > 3 && Dist(chain[0], chain[^1]) <= DupTol) { chain.RemoveAt(chain.Count - 1); chains.Add((chain, layer, true)); }
             else chains.Add((chain, layer, false));
         }
-        // T-0747-fix14: offene Ketten, die über einen Spalt ≤ tol an eine Stoß-Gruppe (oder an eine schon angeschlossene Kette) reichen, gehören zur
-        // Gruppe – sonst entsteht aus ihnen kein Umriss, und ein Loch darin bekäme die falsche Tiefe. Ausbreitung über ein Raster der Enden.
+        // T-0747-fix14/15: Stoß-Komponente = Stoß-Gruppen ∪ alles, was über Spalte ≤ tol daran hängt. Offene Ketten werden zugeschlagen, zwei Gruppen,
+        // deren Enden sich über einen Spalt ≤ tol berühren, verschmelzen (T-0747-fix15: Gruppenenden gegen Gruppenenden). Union-Find mit Pfadkürzung
+        // und Größe; Abbruch alle 1024 Schritte.
         if (jgroup is not null && jout.Count > 0)
         {
-            var gpar = new Dictionary<int, int>();
-            int GFind(int g) { while (gpar.TryGetValue(g, out var q) && q != g) g = q; return g; }
-            var openIdx = Enumerable.Range(0, chains.Count).Where(i => !chains[i].Closed).ToList();
-            var cmap = new Dictionary<(long, long), List<(int Chain, (double X, double Y) P)>>();
-            foreach (var i in openIdx) foreach (var e in new[] { chains[i].Pts[0], chains[i].Pts[^1] }) { var c = C(e); if (!cmap.TryGetValue(c, out var l)) cmap[c] = l = []; l.Add((i, e)); }
+            var gpar = new Dictionary<int, int>(); var gsize = new Dictionary<int, int>();
+            int GFind(int g)
+            {
+                var r = g; while (gpar.TryGetValue(r, out var q) && q != r) r = q;
+                while (gpar.TryGetValue(g, out var q2) && q2 != r) { gpar[g] = r; g = q2; } // Pfadkürzung
+                return r;
+            }
+            void GUnion(int a, int b)
+            {
+                a = GFind(a); b = GFind(b); if (a == b) return;
+                var sa = gsize.GetValueOrDefault(a, 1); var sb = gsize.GetValueOrDefault(b, 1);
+                if (sa < sb) (a, b) = (b, a);
+                gpar[b] = a; gsize[a] = sa + sb;
+            }
+            // Raster aller freien Enden: offene Ketten (Kette ≥ 0) und Stoß-Stücke (Kette = −1 − Index in jout)
+            var cmap = new Dictionary<(long, long), List<(int Id, (double X, double Y) P)>>();
+            void Put(int id, (double X, double Y) e) { var c = C(e); if (!cmap.TryGetValue(c, out var l)) cmap[c] = l = []; l.Add((id, e)); }
+            for (var i = 0; i < chains.Count; i++) if (!chains[i].Closed) { Put(i, chains[i].Pts[0]); Put(i, chains[i].Pts[^1]); }
+            for (var q = 0; q < jout.Count; q++) { Put(-1 - q, jout[q].Pts[0]); Put(-1 - q, jout[q].Pts[^1]); }
             var absorbed = new Dictionary<int, int>(); // Kette → Gruppe
             var frontier = new Queue<((double X, double Y) P, string Layer, int G)>();
             foreach (var jp in jout) { frontier.Enqueue((jp.Pts[0], jp.Layer, jp.JunctionGroup)); frontier.Enqueue((jp.Pts[^1], jp.Layer, jp.JunctionGroup)); }
             var steps = 0L;
             while (frontier.Count > 0)
             {
-                if ((++steps & 1023) == 0) ct.ThrowIfCancellationRequested();
                 var (fp, fl, fg) = frontier.Dequeue(); var (cx, cy) = C(fp);
                 for (var dx = -1L; dx <= 1; dx++) for (var dy = -1L; dy <= 1; dy++)
                     {
                         if (!cmap.TryGetValue((cx + dx, cy + dy), out var l)) continue;
-                        foreach (var (ci, ep) in l)
+                        foreach (var (id, ep) in l)
                         {
-                            if (chains[ci].Layer != fl || Dist(ep, fp) > lim) continue;
-                            if (absorbed.TryGetValue(ci, out var og)) { var a = GFind(og); var b = GFind(fg); if (a != b) gpar[a] = b; continue; }
-                            absorbed[ci] = fg;
-                            frontier.Enqueue((chains[ci].Pts[0], fl, fg)); frontier.Enqueue((chains[ci].Pts[^1], fl, fg));
+                            if ((++steps & 1023) == 0) ct.ThrowIfCancellationRequested();
+                            if (Dist(ep, fp) > lim) continue;
+                            if (id < 0)
+                            {
+                                var jp = jout[-1 - id];
+                                if (jp.Layer == fl) GUnion(fg, jp.JunctionGroup); // T-0747-fix15: zwei Stoß-Gruppen über einen Spalt
+                                continue;
+                            }
+                            if (chains[id].Layer != fl) continue;
+                            if (absorbed.TryGetValue(id, out var og)) { GUnion(og, fg); continue; }
+                            absorbed[id] = fg;
+                            frontier.Enqueue((chains[id].Pts[0], fl, fg)); frontier.Enqueue((chains[id].Pts[^1], fl, fg));
                         }
                     }
             }
-            if (absorbed.Count > 0 || gpar.Count > 0)
+            for (var q = 0; q < jout.Count; q++)
             {
-                for (var q = 0; q < jout.Count; q++) jout[q] = jout[q] with { JunctionGroup = GFind(jout[q].JunctionGroup) };
-                foreach (var (ci, g) in absorbed) jout.Add(new CadContour(chains[ci].Pts, false, chains[ci].Layer) { JunctionGroup = GFind(g) });
-                chains = chains.Where((_, i) => !absorbed.ContainsKey(i)).ToList();
+                if ((q & 1023) == 0) ct.ThrowIfCancellationRequested();
+                jout[q] = jout[q] with { JunctionGroup = GFind(jout[q].JunctionGroup) };
             }
+            var nAbs = 0;
+            foreach (var (ci, g) in absorbed)
+            {
+                if ((++nAbs & 1023) == 0) ct.ThrowIfCancellationRequested();
+                jout.Add(new CadContour(chains[ci].Pts, false, chains[ci].Layer) { JunctionGroup = GFind(g) });
+            }
+            if (absorbed.Count > 0) chains = chains.Where((_, i) => !absorbed.ContainsKey(i)).ToList();
         }
         // 2. + 3. Spalten überbrücken, bis sich nichts mehr ändert
         var open = chains.Where(c => !c.Closed).Select(c => (Pts: c.Pts, c.Layer)).ToList();
@@ -237,50 +265,39 @@ public static class CadContours
         return done;
     }
 
-    /// <summary>T-0747-fix13: Knoten der Enden (je Ebene, ≤ 1 µm) bilden; Stücke über gemeinsame Knoten zu Gruppen verbinden. Gruppe mit einem Knoten,
-    /// an dem mehr als zwei Enden liegen, bekommt eine Nummer ≥ 0 (sonst −1). T-0747-fix14: exakte Knoten (1-µm-Schlüssel), Stoß nur bei echter
-    /// Mehrdeutigkeit (zwei Knoten ≤ 1 µm oder Grad &gt; 2) oder wenn das Arbeitsbudget erschöpft ist.</summary>
+    /// <summary>T-0747-fix13/15: Enden (je Ebene) transitiv gruppieren – zwei Enden ≤ 1 µm gehören in denselben Haufen (Union-Find über alle Paare,
+    /// gesucht über Schlüssel in 1-µm-Schritten mit Nachbarn ±1). Ein Haufen ist mehrdeutig (Stoß), wenn sein Rahmen größer als 1 µm ist oder mehr als
+    /// zwei Enden verschiedener Stücke darin liegen (deckungsgleich doppelte Stücke zählen einmal). Stücke über gemeinsame Haufen bilden Gruppen; eine
+    /// Gruppe mit einem mehrdeutigen Haufen bekommt eine Nummer ≥ 0 (sonst −1). Das Ergebnis hängt nicht von der Reihenfolge der Stücke ab.
+    /// Eigenes Arbeitsbudget; ist es erschöpft, gelten die übrigen Stücke als unsicher.</summary>
     static int[] Junctions(List<CadContour> pieces, double cell, List<string>? notes, CancellationToken ct) // cell: ungenutzt (Schlüssel in 1-µm-Schritten)
     {
-        var n = pieces.Count; var parent = new int[n]; for (var i = 0; i < n; i++) parent[i] = i;
-        int Find(int x) { while (parent[x] != x) { parent[x] = parent[parent[x]]; x = parent[x]; } return x; }
-        void Union(int a, int b) { a = Find(a); b = Find(b); if (a != b) parent[a] = b; }
-        var nodes = new List<(double X, double Y, string Layer, int First, List<int> Members)>();
-        // T-0747-fix14: Knoten exakt über Schlüssel in 1-µm-Schritten je Ebene (Nachbarschlüssel ±1 genügen, weil ≤ 1 µm). Dicht liegende, aber
-        // verschiedene Enden (fein zerlegte Kreise aus LINE) sind damit eindeutig. Mehrdeutig ist nur ein Ende, das zu zwei verschiedenen Knoten
-        // ≤ 1 µm hat. Eigenes Arbeitsbudget; ist es erschöpft, gelten die übrigen Stücke als unsicher (eine Sammelmeldung).
-        var nmap = new Dictionary<(string, long, long), List<int>>();
-        var hot = new bool[n]; long work = 0; const long MaxWork = 20_000_000; var budgetOut = false;
-        for (var k = 0; k < n; k++)
+        _ = cell;
+        var n = pieces.Count; var m = 2 * n;
+        (double X, double Y) End(int e) => e % 2 == 0 ? pieces[e / 2].Pts[0] : pieces[e / 2].Pts[^1];
+        var ep = new int[m]; var esz = new int[m]; for (var i = 0; i < m; i++) { ep[i] = i; esz[i] = 1; }
+        int EFind(int x) { var r = x; while (ep[r] != r) r = ep[r]; while (ep[x] != r) { var q = ep[x]; ep[x] = r; x = q; } return r; }
+        void EUnion(int a, int b) { a = EFind(a); b = EFind(b); if (a == b) return; if (esz[a] < esz[b]) (a, b) = (b, a); ep[b] = a; esz[a] += esz[b]; }
+        var emap = new Dictionary<(string, long, long), List<int>>();
+        long work = 0; const long MaxWork = 20_000_000; var budgetOut = false; var hotPiece = new bool[n];
+        for (var e = 0; e < m; e++)
         {
-            if ((k & 1023) == 0) ct.ThrowIfCancellationRequested();
-            if (budgetOut) { hot[k] = true; continue; }
-            foreach (var p in new[] { pieces[k].Pts[0], pieces[k].Pts[^1] })
-            {
-                var lay = pieces[k].Layer; var qx = (long)Math.Floor(p.X / DupTol); var qy = (long)Math.Floor(p.Y / DupTol);
-                var found = -1; var ambiguous = false;
-                for (var dx = -1L; dx <= 1; dx++)
-                    for (var dy = -1L; dy <= 1; dy++)
-                        if (nmap.TryGetValue((lay, qx + dx, qy + dy), out var l))
-                            foreach (var q in l)
-                            {
-                                if (++work > MaxWork) budgetOut = true;
-                                var nd = nodes[q];
-                                if (Dist((nd.X, nd.Y), p) > DupTol || q == found) continue;
-                                if (found < 0) found = q; else ambiguous = true;
-                            }
-                if (ambiguous || budgetOut) hot[k] = true; // zwei verschiedene Knoten ≤ 1 µm: welches Ende wohin gehört, ist nicht eindeutig
-                if (found < 0)
-                {
-                    found = nodes.Count; nodes.Add((p.X, p.Y, lay, k, []));
-                    if (!nmap.TryGetValue((lay, qx, qy), out var l2)) nmap[(lay, qx, qy)] = l2 = []; l2.Add(found);
-                }
-                var nd2 = nodes[found]; nd2.Members.Add(k);
-                Union(k, nd2.First);
-            }
+            if ((e & 1023) == 0) ct.ThrowIfCancellationRequested();
+            if (budgetOut) { hotPiece[e / 2] = true; continue; }
+            var p = End(e); var lay = pieces[e / 2].Layer; var qx = (long)Math.Floor(p.X / DupTol); var qy = (long)Math.Floor(p.Y / DupTol);
+            for (var dx = -1L; dx <= 1; dx++)
+                for (var dy = -1L; dy <= 1; dy++)
+                    if (emap.TryGetValue((lay, qx + dx, qy + dy), out var l))
+                        foreach (var f in l)
+                        {
+                            if (++work > MaxWork) budgetOut = true;
+                            if (Dist(End(f), p) <= DupTol) EUnion(e, f);
+                        }
+            if (!emap.TryGetValue((lay, qx, qy), out var l2)) emap[(lay, qx, qy)] = l2 = []; l2.Add(e);
         }
-        if (budgetOut) notes?.Add("Sehr viele Linienenden liegen dicht beieinander – ein Teil der Linien wird nicht zu Umrissen verkettet, Konturen darin werden ausgelassen. Bitte Umrisse als Polylinie zeichnen.");
-        // Grad = Zahl der verschiedenen Stücke am Knoten; deckungsgleich doppelt gezeichnete Stücke zählen einmal (das prüft später die Doppelt-Erkennung)
+        // Haufen auswerten
+        var members = new Dictionary<int, List<int>>();
+        for (var e = 0; e < m; e++) { var r = EFind(e); if (!members.TryGetValue(r, out var l)) members[r] = l = []; l.Add(e); }
         bool Same(List<(double X, double Y)> a, List<(double X, double Y)> b)
         {
             if (a.Count != b.Count) return false;
@@ -288,30 +305,38 @@ public static class CadContours
             for (var i = 0; i < a.Count && (fw || bw); i++) { fw &= Dist(a[i], b[i]) <= DupTol; bw &= Dist(a[i], b[^(i + 1)]) <= DupTol; }
             return fw || bw;
         }
-        int Degree(List<int> m)
+        var pp = new int[n]; for (var i = 0; i < n; i++) pp[i] = i;
+        int PFind(int x) { var r = x; while (pp[r] != r) r = pp[r]; while (pp[x] != r) { var q = pp[x]; pp[x] = r; x = q; } return r; }
+        void PUnion(int a, int b) { a = PFind(a); b = PFind(b); if (a != b) pp[a] = b; }
+        var hotCluster = new List<int>(); var cnt = 0;
+        foreach (var (root, ends) in members)
         {
-            if (m.Count > 64) return int.MaxValue; // zu viele Enden an einem Punkt: vorsichtshalber Stoß
-            var distinct = new List<int>(); var ends = 0;
-            foreach (var k in m)
+            if ((++cnt & 1023) == 0) ct.ThrowIfCancellationRequested();
+            for (var i = 1; i < ends.Count; i++) PUnion(ends[0] / 2, ends[i] / 2);
+            if (ends.Count <= 2 && (ends.Count < 2 || Dist(End(ends[0]), End(ends[1])) <= DupTol)) continue; // höchstens zwei Enden, eng: eindeutig
+            double x0 = double.MaxValue, y0 = double.MaxValue, x1 = double.MinValue, y1 = double.MinValue;
+            foreach (var e in ends) { var p = End(e); x0 = Math.Min(x0, p.X); y0 = Math.Min(y0, p.Y); x1 = Math.Max(x1, p.X); y1 = Math.Max(y1, p.Y); }
+            var wide = Math.Sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0)) > DupTol; // Haufen breiter als 1 µm: Kette von Nachbarn, nicht eindeutig
+            var degree = int.MaxValue;
+            if (!wide && ends.Count <= 64)
             {
-                if (distinct.Any(q => Same(pieces[q].Pts, pieces[k].Pts))) { if (distinct.Contains(k)) ends++; continue; }
-                distinct.Add(k); ends++;
+                var distinct = new List<int>(); degree = 0;
+                foreach (var e in ends)
+                {
+                    var k = e / 2;
+                    if (distinct.Any(q => q != k && Same(pieces[q].Pts, pieces[k].Pts))) continue; // deckungsgleich doppelt: einmal
+                    if (!distinct.Contains(k)) distinct.Add(k);
+                    degree++;
+                }
             }
-            return ends;
+            if (wide || degree > 2) hotCluster.Add(ends[0]);
         }
-        var degree = nodes.Select(nd => Degree(nd.Members)).ToArray();
         var hotRoots = new HashSet<int>();
-        for (var q = 0; q < nodes.Count; q++) if (degree[q] > 2) hotRoots.Add(Find(nodes[q].First));
-        for (var k = 0; k < n; k++) if (hot[k]) hotRoots.Add(Find(k));
-        var res = new int[n]; var reported = 0;
-        for (var k = 0; k < n; k++) res[k] = hotRoots.Contains(Find(k)) ? Find(k) : -1;
-        if (notes is not null)
-            for (var q = 0; q < nodes.Count; q++)
-            {
-                if (degree[q] <= 2) continue; var nd = nodes[q];
-                if (++reported > 20) break;
-                notes.Add($"Linien-Stoß bei X {nd.X.ToString("0.##", System.Globalization.CultureInfo.GetCultureInfo("de-DE"))} Y {nd.Y.ToString("0.##", System.Globalization.CultureInfo.GetCultureInfo("de-DE"))}: {(degree[q] == int.MaxValue ? nd.Members.Count : degree[q])} Linienenden treffen sich – dieser Linienverbund wird nicht zu Umrissen verkettet, Konturen darin werden ausgelassen.");
-            }
+        foreach (var e in hotCluster) hotRoots.Add(PFind(e / 2));
+        for (var k = 0; k < n; k++) if (hotPiece[k]) hotRoots.Add(PFind(k));
+        var res = new int[n];
+        for (var k = 0; k < n; k++) res[k] = hotRoots.Contains(PFind(k)) ? PFind(k) : -1;
+        if (budgetOut) notes?.Add("Sehr viele Linienenden liegen dicht beieinander – ein Teil der Linien wird nicht zu Umrissen verkettet, Konturen darin werden ausgelassen. Bitte Umrisse als Polylinie zeichnen.");
         return res;
     }
 

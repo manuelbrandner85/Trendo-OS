@@ -178,31 +178,58 @@ public static class CncCam
                     warn.Add($"{Name(i)}: enthält nicht gelesenes Element {what} (bei X {F((u.MinX + u.MaxX) / 2, "0.#")} Y {F((u.MinY + u.MaxY) / 2, "0.#")}) – dort wird nichts gefräst.");
             }
         }
-        // T-0747-fix13: Linienverbund mit Stoß (mehr als zwei Enden an einem Punkt) – nicht verkettet. Ein Umriss daraus könnte jede Kontur in seinem
-        // Rahmen umschließen: ob die Loch oder Teil ist, lässt sich nicht sicher sagen → auslassen und melden.
-        // T-0747-fix14: Kandidaten nach linker Rahmenkante sortiert – je Gruppe nur die Konturen, deren linke Kante im Gruppenrahmen liegt (vorher alle)
-        var byMinX = Enumerable.Range(0, cs.Count).Where(i => cs[i].Closed).OrderBy(i => boxes[i].Item1).ToArray();
-        var minXs = byMinX.Select(i => boxes[i].Item1).ToArray();
+        // T-0747-fix13/14/15: Linienverbund mit Stoß – nicht verkettet. Ein Umriss daraus könnte jede Kontur in seiner Fläche umschließen: ob die Loch
+        // oder Teil ist, lässt sich nicht sicher sagen → auslassen und melden. Schutzbereich je Komponente (Stoß-Gruppen samt über Spalte angeschlossener
+        // Ketten): ihr Rahmen und ihre konvexe Hülle. Ausgelassen wird jede geschlossene Kontur, deren Rahmen im Komponentenrahmen liegt, deren erster
+        // Punkt in der Hülle liegt oder die den Rand der Hülle berührt oder schneidet. Die Hülle enthält jedes Sehnenpolygon, das früher eine offene
+        // Kette aus diesen Stücken als Schutz (openOutline) hatte – was damals geschützt war, ist es weiterhin.
         var jgroups = cs.Select((c, j) => (c, j)).Where(t => t.c.JunctionGroup >= 0).GroupBy(t => t.c.JunctionGroup).ToList();
         if (jgroups.Count > 0)
-            warn.Add($"{jgroups.Count} Linienverbund/-verbünde (zusammen {jgroups.Sum(g => g.Count())} Linien, z. B. ab Kontur {jgroups[0].First().j + 1}) nicht zu Umrissen verkettet: an einem Punkt stoßen mehr als zwei Linien zusammen oder die Enden liegen nicht eindeutig. Diese Linien werden nicht gefräst (außer als Gravur), Konturen darin werden ausgelassen.");
-        foreach (var grp in jgroups)
         {
-            ct.ThrowIfCancellationRequested();
-            double gx0 = double.MaxValue, gy0 = double.MaxValue, gx1 = double.MinValue, gy1 = double.MinValue;
-            foreach (var (c, _) in grp) foreach (var p in c.Pts) { gx0 = Math.Min(gx0, p.X); gy0 = Math.Min(gy0, p.Y); gx1 = Math.Max(gx1, p.X); gy1 = Math.Max(gy1, p.Y); }
-            const double e = 1e-6; var first = grp.First().j;
-            var lo = Array.BinarySearch(minXs, gx0 - e); if (lo < 0) lo = ~lo; while (lo > 0 && minXs[lo - 1] >= gx0 - e) lo--;
-            for (var q = lo; q < byMinX.Length && minXs[q] <= gx1 + e; q++)
+            warn.Add($"{jgroups.Count} Linienverbund/-verbünde (zusammen {jgroups.Sum(g => g.Count())} Linien, z. B. ab Kontur {jgroups[0].First().j + 1}) nicht zu Umrissen verkettet: an einem Punkt stoßen mehr als zwei Linien zusammen oder die Enden liegen nicht eindeutig. Diese Linien werden nicht gefräst (außer als Gravur), Konturen darin werden ausgelassen.");
+            var closedIdx = Enumerable.Range(0, cs.Count).Where(i => cs[i].Closed).ToArray();
+            var byMinX = closedIdx.OrderBy(i => boxes[i].Item1).ToArray(); var minXs = byMinX.Select(i => boxes[i].Item1).ToArray();
+            var byPx = closedIdx.OrderBy(i => cs[i].Pts[0].X).ToArray(); var pxs = byPx.Select(i => cs[i].Pts[0].X).ToArray();
+            var segs = BuildGrid(closedIdx.Select(i => ((IReadOnlyList<(double X, double Y)>)cs[i].Pts, true, i)), r);
+            void Skip(int i, int first)
             {
-                if ((q & 1023) == 0) ct.ThrowIfCancellationRequested();
-                var i = byMinX[q];
-                if (!cs[i].Closed || dup[i] || crossing[i] || unsure[i]) continue;
-                var bi = boxes[i];
-                if (bi.Item1 >= gx0 - e && bi.Item2 >= gy0 - e && bi.Item3 <= gx1 + e && bi.Item4 <= gy1 + e)
+                if (!cs[i].Closed || dup[i] || crossing[i] || unsure[i]) return;
+                unsure[i] = true;
+                warn.Add($"{Name(i)} ausgelassen: liegt im oder am Linienverbund ab Kontur {first + 1}, an dem mehr als zwei Linien zusammenstoßen – welcher Umriss gemeint ist und ob sie Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte die Umrisse in der Zeichnung trennen oder als Polylinie zeichnen.");
+            }
+            static int Lower(double[] a, double v) { var lo = Array.BinarySearch(a, v); if (lo < 0) lo = ~lo; while (lo > 0 && a[lo - 1] >= v) lo--; return lo; }
+            foreach (var grp in jgroups)
+            {
+                ct.ThrowIfCancellationRequested();
+                var pts = new List<(double X, double Y)>();
+                foreach (var (c, _) in grp) pts.AddRange(c.Pts);
+                double gx0 = pts.Min(p => p.X), gy0 = pts.Min(p => p.Y), gx1 = pts.Max(p => p.X), gy1 = pts.Max(p => p.Y);
+                const double e = 1e-6; var first = grp.First().j;
+                // 1. Rahmen ganz im Komponentenrahmen
+                for (var q = Lower(minXs, gx0 - e); q < byMinX.Length && minXs[q] <= gx1 + e; q++)
                 {
-                    unsure[i] = true;
-                    warn.Add($"{Name(i)} ausgelassen: liegt im Linienverbund ab Kontur {first + 1}, an dem mehr als zwei Linien zusammenstoßen – welcher Umriss gemeint ist und ob sie Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte die Umrisse in der Zeichnung trennen oder als Polylinie zeichnen.");
+                    if ((q & 1023) == 0) ct.ThrowIfCancellationRequested();
+                    var i = byMinX[q]; var bi = boxes[i];
+                    if (bi.Item1 >= gx0 - e && bi.Item2 >= gy0 - e && bi.Item3 <= gx1 + e && bi.Item4 <= gy1 + e) Skip(i, first);
+                }
+                var hull = Hull(pts);
+                // 2. erster Punkt in der Hülle
+                if (hull.Count >= 3)
+                    for (var q = Lower(pxs, gx0 - e); q < byPx.Length && pxs[q] <= gx1 + e; q++)
+                    {
+                        if ((q & 1023) == 0) ct.ThrowIfCancellationRequested();
+                        var i = byPx[q]; var p0 = cs[i].Pts[0];
+                        if (p0.Y >= gy0 - e && p0.Y <= gy1 + e && InConvex(hull, p0, e)) Skip(i, first);
+                    }
+                // 3. Rand der Hülle berührt oder geschnitten
+                for (var h = 0; h < hull.Count; h++)
+                {
+                    var a = hull[h]; var b = hull[(h + 1) % hull.Count];
+                    segs.Any(Math.Min(a.X, b.X) - e, Math.Min(a.Y, b.Y) - e, Math.Max(a.X, b.X) + e, Math.Max(a.Y, b.Y) + e, t =>
+                    {
+                        if (SegSeg(a, b, segs.Segs[t].A, segs.Segs[t].B) <= e) Skip(segs.Segs[t].Tag, first);
+                        return false;
+                    });
                 }
             }
         }
@@ -754,6 +781,31 @@ public static class CncCam
     }
 
     static double Orient((double X, double Y) o, (double X, double Y) a, (double X, double Y) b) => (a.X - o.X) * (b.Y - o.Y) - (a.Y - o.Y) * (b.X - o.X);
+
+    /// <summary>T-0747-fix15: konvexe Hülle (Monotone Chain), gegen den Uhrzeigersinn; bei weniger als 3 verschiedenen Punkten die Punkte selbst.</summary>
+    static List<(double X, double Y)> Hull(List<(double X, double Y)> pts)
+    {
+        var p = pts.Distinct().OrderBy(q => q.X).ThenBy(q => q.Y).ToList();
+        if (p.Count < 3) return p;
+        static double Cross((double X, double Y) o, (double X, double Y) a, (double X, double Y) b) => (a.X - o.X) * (b.Y - o.Y) - (a.Y - o.Y) * (b.X - o.X);
+        var h = new List<(double X, double Y)>();
+        foreach (var q in p) { while (h.Count >= 2 && Cross(h[^2], h[^1], q) <= 0) h.RemoveAt(h.Count - 1); h.Add(q); }
+        var lower = h.Count + 1;
+        for (var i = p.Count - 2; i >= 0; i--) { var q = p[i]; while (h.Count >= lower && Cross(h[^2], h[^1], q) <= 0) h.RemoveAt(h.Count - 1); h.Add(q); }
+        h.RemoveAt(h.Count - 1);
+        return h;
+    }
+
+    /// <summary>T-0747-fix15: liegt der Punkt in der konvexen Hülle (gegen den Uhrzeigersinn) oder höchstens <paramref name="e"/> davor?</summary>
+    static bool InConvex(List<(double X, double Y)> h, (double X, double Y) q, double e)
+    {
+        for (var i = 0; i < h.Count; i++)
+        {
+            var a = h[i]; var b = h[(i + 1) % h.Count]; double dx = b.X - a.X, dy = b.Y - a.Y, l = Math.Sqrt(dx * dx + dy * dy);
+            if (l > 0 && (dx * (q.Y - a.Y) - dy * (q.X - a.X)) / l < -e) return false;
+        }
+        return true;
+    }
 
     public static double SignedArea(IReadOnlyList<(double X, double Y)> p)
     {

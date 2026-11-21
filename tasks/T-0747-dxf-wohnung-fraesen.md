@@ -28,3 +28,5 @@
 **Nachtrag T-0747-fix13 (dreizehnte Prüfung):** Linien-Stöße (mehr als zwei Enden an einem Punkt) beim Fräsen nicht gierig verketten, Konturen darin auslassen und melden; Punktgruppen aller Elemente streng gelesen; gemeinsames Formvergleich-Budget mit Vorabtest; R-Baum statt flächigem Rahmen-Raster; Vorauswahl-Raster nur bei Bedarf; Zeittests nicht parallel; Grundriss-Meldung „Ellipse“ – siehe Bericht „Dreizehnte Prüfung behoben“.
 
 **Nachtrag T-0747-fix14 (vierzehnte Prüfung):** Stoß-Gruppe samt über Spalte angeschlossener Ketten unsicher (auch im feinen Füllflächen-Abgleich), offene POLYLINE mit unvollständigem Eckpunkt überall unsicher, Stoß-Schleife beim Fräsen über sortierte Rahmen mit Sammelmeldung, exakte 1-µm-Knoten statt Dichteregel – siehe Bericht „Vierzehnte Prüfung behoben“.
+
+**Nachtrag T-0747-fix15 (fünfzehnte Prüfung):** Stoß-Gruppen verschmelzen über Spalte, Schutzbereich (Rahmen und konvexe Hülle) je Stoß-Komponente, Union-Find mit Pfadkürzung, transitive und reihenfolgeunabhängige Stoß-Erkennung, deutsche Elementnamen in Meldungen – siehe Bericht „Fünfzehnte Prüfung behoben“.

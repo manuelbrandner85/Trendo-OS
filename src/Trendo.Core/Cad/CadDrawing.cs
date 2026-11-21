@@ -231,7 +231,7 @@ public static class CadDxf
                 Count(skipped, $"{val} mit ungültiger Koordinate");
                 // T-0747-fix6: wo das Element liegt, ist unbekannt – kann es einen Umriss bilden, gilt die ganze Zeichnung als unsicher
                 if (section == "BLOCKS") { if (curBlock is not null && blocks.TryGetValue(curBlock, out var bx) && !NoOutline.Contains(val)) bx.Add(Box.All); }
-                else if (OutlineCapable(val, body)) unread.Add(($"{val} mit ungültiger Koordinate", Box.All));
+                else if (OutlineCapable(val, body)) unread.Add(($"{KindLabel(val)} mit ungültiger Koordinate", Box.All)); // T-0747-fix15: deutsche Bezeichnung in Meldungen
                 if (val == "POLYLINE") SkipVertices(pairs, ref p);
                 continue;
             }
@@ -269,7 +269,7 @@ public static class CadDxf
                 {
                     Count(skipped, $"{val} nicht in der Zeichenebene");
                     var vbs = val == "POLYLINE" ? ReadVertexBodies(pairs, ref p) : [];
-                    unread.Add(($"{val} (nicht in der Zeichenebene)", ShapeBox(val, body, vbs, kUnits)));
+                    unread.Add(($"{KindLabel(val)} (nicht in der Zeichenebene)", ShapeBox(val, body, vbs, kUnits)));
                     continue;
                 }
                 flip = ez < 0;
@@ -316,7 +316,7 @@ public static class CadDxf
                         e.Points.Add([vp[0].X, vp[0].Y, (flags & 8) != 0 ? 0 : Num(vb, 42)]);
                     }
                     // T-0747-fix14: auch offen überall unsicher – eine offene Polylinie kann mit anderen Stücken einen Umriss bilden; fehlt sie, bekäme ein Loch die falsche Tiefe
-                    if (bad) { Count(skipped, "POLYLINE mit ungültiger Koordinate"); unread.Add(("POLYLINE mit ungültiger Koordinate", Box.All)); break; }
+                    if (bad) { Count(skipped, "POLYLINE mit ungültiger Koordinate"); unread.Add(("Polylinie mit ungültiger Koordinate", Box.All)); break; }
                     d.Entities.Add(e);
                     break;
                 }
@@ -325,7 +325,7 @@ public static class CadDxf
                     if (!(Num(body, 40) > 0))
                     {
                         Count(skipped, "CIRCLE mit Radius ≤ 0"); // T-0747-fix5
-                        if (Num(body, 40) < 0) unread.Add(("CIRCLE mit Radius ≤ 0", ShapeBox(val, body, [], kUnits))); // T-0747-fix6: könnte ein Umriss mit |r| sein
+                        if (Num(body, 40) < 0) unread.Add(("Kreis mit Radius ≤ 0", ShapeBox(val, body, [], kUnits))); // T-0747-fix6: könnte ein Umriss mit |r| sein
                         break;
                     }
                     d.Entities.Add(new CadEntity { Kind = "kreis", Layer = layer, Cx = Num(body, 10), Cy = Num(body, 20), R = Num(body, 40) });
@@ -423,7 +423,7 @@ public static class CadDxf
                             }
                         }
                     }
-                    else if (!NoOutline.Contains(val)) unread.Add((val, ShapeBox(val, body, [], kUnits)));
+                    else if (!NoOutline.Contains(val)) unread.Add((KindLabel(val), ShapeBox(val, body, [], kUnits)));
                     break;
             }
             if (flip) for (var i = before; i < d.Entities.Count; i++) Mirror(d.Entities[i]); // T-0747-fix4

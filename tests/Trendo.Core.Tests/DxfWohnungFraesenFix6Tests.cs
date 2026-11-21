@@ -102,10 +102,10 @@ public class T0747_Fix6SechstePruefung(ITestOutputHelper log)
             + string.Concat(Rect(0, 0, 100, 60).Select(p => G((10, p.X), (20, p.Y)))) + G((97, 0), (75, 0), (76, 1), (98, 0));
         var outlines = new (string Name, string Dxf, string Expect)[]
         {
-            ("Kreis r −50", Circle(50, 30, -50), "CIRCLE mit Radius ≤ 0"),
-            ("LWPOLYLINE mit NaN", G((0, "LWPOLYLINE"), (8, "0"), (90, 4), (70, 1), (10, 0), (20, 0), (10, 100), (20, 0), (10, 100), (20, "NaN"), (10, 0), (20, 60)), "LWPOLYLINE mit ungültiger Koordinate"),
+            ("Kreis r −50", Circle(50, 30, -50), "Kreis mit Radius ≤ 0"), // T-0747-fix15: deutsche Bezeichnung
+            ("LWPOLYLINE mit NaN", G((0, "LWPOLYLINE"), (8, "0"), (90, 4), (70, 1), (10, 0), (20, 0), (10, 100), (20, 0), (10, 100), (20, "NaN"), (10, 0), (20, 60)), "Polylinie mit ungültiger Koordinate"),
             ("MLINE", mline, "MLINE"),
-            ("REGION", G((0, "REGION"), (8, "0"), (70, 1), (1, "ACIS")), "REGION"),
+            ("REGION", G((0, "REGION"), (8, "0"), (70, 1), (1, "ACIS")), "Region"),
             ("HATCH", hatch, "Schraffur"),
         };
         foreach (var (name, outline, expect) in outlines)
