@@ -124,9 +124,13 @@ public class T0747_Fix10ZehntePruefung(ITestOutputHelper log)
         foreach (var d in new[] { 0.0019, 0.0021, -0.001 })
         {
             // T-0747-fix12: Löcher außerhalb des Schraffurrahmens (eine Kontur im Rahmen ließe die Schraffur stehen)
-            var r = Cam(Dxf(Lw(Rect(0, 0, 200, 60)) + Circle(130, 30, 5) + Circle(170, 30, 5) + Hatch("AUS", PolyLoop([(5, 5), (50, d), (95, 5), (95, 55), (5, 55)])), AusLayer));
+            var dxf = Dxf(Lw(Rect(0, 0, 200, 60)) + Circle(130, 30, 5) + Circle(170, 30, 5) + Hatch("AUS", PolyLoop([(5, 5), (50, d), (95, 5), (95, 55), (5, 55)])), AusLayer);
+            Assert.Empty(CadDxf.Parse(dxf).Unread); // T-0747-fix13: wirklich weggefallen (nicht nur zufällig richtig gefräst)
+            var r = Cam(dxf);
             Assert.Equal(2, r.Paths.Count(p => p.Kind == "innen"));
         }
+        // Gegenprobe: Spitze 0,011 mm unter dem Plattenrand (über der Toleranz) – die Schraffur bleibt stehen
+        Assert.Single(CadDxf.Parse(Dxf(Lw(Rect(0, 0, 200, 60)) + Circle(130, 30, 5) + Circle(170, 30, 5) + Hatch("AUS", PolyLoop([(5, 5), (50, -0.011), (95, 5), (95, 55), (5, 55)])), AusLayer)).Unread);
     }
 
     [Fact(DisplayName = "T-0747-fix10 HOCH 2: Kontur mit 300 000 Punkten und 2000 ausgeblendeten Schraffuren, Sägezahn mit 362 000 Punkten und 50 ausgeblendeten – Sekunden, abbrechbar")]

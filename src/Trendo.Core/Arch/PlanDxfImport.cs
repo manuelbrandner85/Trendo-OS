@@ -71,7 +71,7 @@ public static class PlanDxfImport
         // T-0747-fix6: Ellipsen (vom Leser abgetastet) übernimmt der Grundriss nicht als Wand – sie werden gemeldet statt still in kurze Stücke zu zerfallen
         var skippedKinds = new Dictionary<string, int>(dxf.Skipped);
         var nEll = ents.Count(e => e.Source == "ELLIPSE");
-        if (nEll > 0) { ents = ents.Where(e => e.Source != "ELLIPSE").ToList(); skippedKinds["ELLIPSE (nicht als Wand übernommen)"] = nEll; }
+        if (nEll > 0) { ents = ents.Where(e => e.Source != "ELLIPSE").ToList(); skippedKinds["Ellipse (nicht als Wand übernommen)"] = nEll; /* T-0747-fix13: deutsche Bezeichnung */ }
         if (ents.Count > MaxEntities) throw new CadError($"Die DXF-Datei hat {ents.Count.ToString("N0", De)} Elemente – zu viele für einen Grundriss (höchstens {MaxEntities.ToString("N0", De)}). Bitte nur die Ebenen mit Wänden, Türen und Räumen exportieren.");
         var layers = ents.Select(e => e.Layer).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         // Ebenen zuordnen
