@@ -198,15 +198,14 @@ public sealed class CncJob
     public CamResult ImportDrawing(string path, CancellationToken ct = default)
     {
         var ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
-        Cad.CadDrawing drawing; Dictionary<string, int> skipped; string? units = null; List<(string What, Cad.CadDxf.Box B)> unread = []; Dictionary<string, int> hiddenFills = [];
+        Cad.CadDrawing drawing; Dictionary<string, int> skipped; string? units = null; List<(string What, Cad.CadDxf.Box B)> unread = []; Dictionary<string, Dictionary<string, int>> hiddenFillLayers = [];
         switch (ext)
         {
-            case ".dxf": { var rd = Cad.CadDxf.Read(path, ct); drawing = rd.Drawing; skipped = WithoutRedundant(rd.Skipped, rd.Redundant); unread = rd.Unread; hiddenFills = rd.HiddenFills; if (rd.Units is not 0 and not 4) units = rd.UnitName; else if (rd.Units == 0) units = ""; break; } // T-0747-fix3: "" = keine Angabe
+            case ".dxf": { var rd = Cad.CadDxf.Read(path, ct); drawing = rd.Drawing; skipped = WithoutRedundant(WithoutRedundant(rd.Skipped, rd.Redundant), rd.HiddenFillKinds); unread = rd.Unread; hiddenFillLayers = rd.HiddenFillLayers; if (rd.Units is not 0 and not 4) units = rd.UnitName; else if (rd.Units == 0) units = ""; break; } // T-0747-fix3: "" = keine Angabe
             case ".svg": { var rs = Cad.CadSvg.Read(path); drawing = rs.Drawing; skipped = rs.Skipped; break; }
             default: throw new Cad.CadError("Für Fräsbahnen bitte eine DXF- oder SVG-Datei wählen.");
         }
-        var notes = ReadNotes(drawing, skipped, units);
-        if (hiddenFills.Count > 0) notes.Add("Füllflächen auf ausgeblendeten Ebenen (nicht gefräst; außerhalb gezeichneter Konturen machen sie das Innere unsicher): " + string.Join(", ", hiddenFills.Select(k => $"{k.Value}× {k.Key}")) + "."); // T-0747-fix9
+        var notes = ReadNotes(drawing, skipped, units, hiddenFillLayers); // T-0747-fix10: ausgeblendete Füllflächen einmal, bei ihrer Ebene
         var cs = CncCam.Contours(drawing, notes, ct: ct); // T-0747-fix3: Hinweise beim Verketten (mehrdeutige Spalten)
         if (cs.Count == 0) throw new Cad.CadError("In der Zeichnung sind keine Konturen (Linien, Kreise, Bögen, Pfade)." + (notes.Count > 0 ? " " + string.Join(" ", notes) : ""));
         var old = (Contours, CamSource, Unread); Contours = cs; CamSource = System.IO.Path.GetFileName(path); Unread = unread;
@@ -225,7 +224,7 @@ public sealed class CncJob
         return res;
     }
 
-    public static List<string> ReadNotes(Cad.CadDrawing d, IReadOnlyDictionary<string, int> skipped, string? units)
+    public static List<string> ReadNotes(Cad.CadDrawing d, IReadOnlyDictionary<string, int> skipped, string? units, IReadOnlyDictionary<string, Dictionary<string, int>>? hiddenFills = null)
     {
         var notes = new List<string>();
         if (units == "") notes.Add("Einheit nicht angegeben – als mm gelesen. Bitte die Maße prüfen."); // T-0747-fix3
@@ -235,7 +234,15 @@ public sealed class CncJob
         var texts = d.Entities.Count(e => e.Kind == "text");
         if (texts > 0) notes.Add($"{texts} Text(e) werden nicht gefräst.");
         var hidden = d.Layers.Where(l => !l.Visible).Select(l => l.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var onHidden = d.Entities.Where(e => e.Kind != "text" && hidden.Contains(e.Layer)).GroupBy(e => e.Layer).Select(g => $"{g.Key} ({g.Count()})").ToList();
+        // T-0747-fix10: Füllflächen (Schraffur …) auf ausgeblendeten Ebenen mitzählen und benennen – nicht zusätzlich unter „Nicht gelesen“
+        var perLayer = new Dictionary<string, (int N, List<string> Fills)>(StringComparer.OrdinalIgnoreCase);
+        foreach (var g in d.Entities.Where(e => e.Kind != "text" && hidden.Contains(e.Layer)).GroupBy(e => e.Layer, StringComparer.OrdinalIgnoreCase)) perLayer[g.Key] = (g.Count(), []);
+        foreach (var (layer, kinds) in hiddenFills ?? new Dictionary<string, Dictionary<string, int>>())
+        {
+            var cur = perLayer.TryGetValue(layer, out var v) ? v : (0, new List<string>());
+            perLayer[layer] = (cur.Item1 + kinds.Values.Sum(), [.. cur.Item2, .. kinds.Select(k => $"{k.Value}× {k.Key}")]);
+        }
+        var onHidden = perLayer.Select(kv => kv.Value.Fills.Count == 0 ? $"{kv.Key} ({kv.Value.N})" : $"{kv.Key} ({kv.Value.N}, davon {string.Join(", ", kv.Value.Fills)})").ToList();
         if (onHidden.Count > 0) notes.Add("Ausgeblendete Ebenen nicht gefräst: " + string.Join(", ", onHidden) + ".");
         return notes;
     }

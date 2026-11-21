@@ -106,7 +106,7 @@ public class T0747_Fix6SechstePruefung(ITestOutputHelper log)
             ("LWPOLYLINE mit NaN", G((0, "LWPOLYLINE"), (8, "0"), (90, 4), (70, 1), (10, 0), (20, 0), (10, 100), (20, 0), (10, 100), (20, "NaN"), (10, 0), (20, 60)), "LWPOLYLINE mit ungültiger Koordinate"),
             ("MLINE", mline, "MLINE"),
             ("REGION", G((0, "REGION"), (8, "0"), (70, 1), (1, "ACIS")), "REGION"),
-            ("HATCH", hatch, "Füllfläche HATCH"),
+            ("HATCH", hatch, "Schraffur"),
         };
         foreach (var (name, outline, expect) in outlines)
         {

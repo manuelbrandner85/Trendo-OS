@@ -44,7 +44,7 @@ public class T0747_Fix7SiebtePruefung(ITestOutputHelper log)
         var c2 = Cam(Dxf(plate + Hatch("0", Rect(540, 405, 560, 415))));
         log.WriteLine(string.Join(" | ", c2.Warnings));
         Assert.Equal(2, c2.Paths.Count(p => p.Kind == "innen"));
-        Assert.Contains(c2.Warnings, w => w.Contains("enthält nicht gelesenes Element Füllfläche HATCH", StringComparison.Ordinal));
+        Assert.Contains(c2.Warnings, w => w.Contains("enthält nicht gelesenes Element Schraffur", StringComparison.Ordinal));
         // Randpfad aus Kanten: Linie + Bogen (Halbkreis nach oben) → Rahmen bis y 60, nicht zum Nullpunkt
         var edges = G((0, "HATCH"), (8, "0"), (10, 0), (20, 0), (30, 0), (210, 0), (220, 0), (230, 1), (2, "SOLID"), (70, 1), (71, 0), (91, 1), (92, 1), (93, 2),
             (72, 1), (10, 200), (20, 50), (11, 220), (21, 50), (72, 2), (10, 210), (20, 50), (40, 10), (50, 0), (51, 180), (73, 1), (97, 0), (75, 0), (76, 1), (98, 0));
@@ -57,14 +57,14 @@ public class T0747_Fix7SiebtePruefung(ITestOutputHelper log)
     {
         (double X, double Y)[] l = [(0, 0), (100, 0), (100, 30), (40, 30), (40, 60), (0, 60)];
         var b1 = Assert.Throws<InvalidOperationException>(() => Cam(Dxf(Lw(l) + Hatch("0", Rect(0, 0, 100, 60)) + Circle(70, 45, 4))));
-        Assert.Contains("liegt in nicht gelesenem Element Füllfläche HATCH", b1.Message, StringComparison.Ordinal);
+        Assert.Contains("liegt in nicht gelesenem Element Schraffur", b1.Message, StringComparison.Ordinal);
         // Insel ohne gezeichneten Umriss: äußere Schleife deckt die Platte, Insel nicht → Loch in der Insel wird ausgelassen, die Platte gefräst
         var b2 = Cam(Dxf(Lw(Rect(0, 0, 100, 60)) + Hatch("0", Rect(0, 0, 100, 60), Rect(20, 10, 80, 50)) + Circle(50, 30, 4)));
         log.WriteLine(string.Join(" | ", b2.Warnings));
         Assert.DoesNotContain(b2.Paths, p => p.Kind == "innen"); Assert.Single(b2.Paths, p => p.Kind == "aussen");
-        Assert.Contains(b2.Warnings, w => w.StartsWith("Kontur 2 ausgelassen: liegt in nicht gelesenem Element Füllfläche HATCH", StringComparison.Ordinal));
+        Assert.Contains(b2.Warnings, w => w.StartsWith("Kontur 2 ausgelassen: liegt in nicht gelesenem Element Schraffur", StringComparison.Ordinal));
         var b3 = Assert.Throws<InvalidOperationException>(() => Cam(Dxf(Lw(Rect(0, 0, 100, 60)) + Hatch("0", [(50, 0), (100, 30), (50, 60), (0, 30)]) + Circle(8, 8, 3))));
-        Assert.Contains("Füllfläche HATCH", b3.Message, StringComparison.Ordinal);
+        Assert.Contains("Schraffur", b3.Message, StringComparison.Ordinal);
         // gleiche Form, andere Startecke und Richtung, Rand aus vier LINE gezeichnet → ändert nichts
         var lines = string.Concat(new[] { ((0.0, 0.0), (100.0, 0.0)), ((100.0, 0.0), (100.0, 60.0)), ((100.0, 60.0), (0.0, 60.0)), ((0.0, 60.0), (0.0, 0.0)) }
             .Select(s => G((0, "LINE"), (8, "0"), (10, s.Item1.Item1), (20, s.Item1.Item2), (30, 0), (11, s.Item2.Item1), (21, s.Item2.Item2), (31, 0))));
