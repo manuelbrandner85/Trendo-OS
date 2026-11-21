@@ -277,7 +277,7 @@ public static class CadDxf
             var before = d.Entities.Count;
             // T-0747-fix13: Punktgruppen streng – fehlt ein y, ist ein Punkt doppelt oder steht ein y ohne x, wird nicht still mit 0 gerechnet:
             // das Element wird nicht gelesen und gilt überall als unsicher
-            void Incomplete() { Count(skipped, $"{val} mit unvollständigen Punkten"); unread.Add(($"{KindLabel(val)} mit unvollständigen Punkten", Box.All)); }
+            void Incomplete() { Count(skipped, $"{KindLabel(val)} mit unvollständigen Punkten"); unread.Add(($"{KindLabel(val)} mit unvollständigen Punkten", Box.All)); }
             switch (val)
             {
                 case "LINE":
@@ -315,7 +315,8 @@ public static class CadDxf
                         if (OncePts(vb, 10) is not { } vp) { bad = true; continue; } // T-0747-fix13: Punkt unvollständig
                         e.Points.Add([vp[0].X, vp[0].Y, (flags & 8) != 0 ? 0 : Num(vb, 42)]);
                     }
-                    if (bad) { Count(skipped, "POLYLINE mit ungültiger Koordinate"); if ((flags & 1) != 0) unread.Add(("POLYLINE mit ungültiger Koordinate", Box.All)); break; }
+                    // T-0747-fix14: auch offen überall unsicher – eine offene Polylinie kann mit anderen Stücken einen Umriss bilden; fehlt sie, bekäme ein Loch die falsche Tiefe
+                    if (bad) { Count(skipped, "POLYLINE mit ungültiger Koordinate"); unread.Add(("POLYLINE mit ungültiger Koordinate", Box.All)); break; }
                     d.Entities.Add(e);
                     break;
                 }
@@ -555,7 +556,7 @@ public static class CadDxf
         "INSERT" => "Blockverweis (INSERT)", "SPLINE" => "SPLINE (Freiformkurve)", "HATCH" => "Schraffur", "WIPEOUT" => "Abdeckfläche", "DIMENSION" => "Bemaßung",
         "SOLID" => "Füllfläche (SOLID)", "TRACE" => "Füllfläche (TRACE)", "3DFACE" => "3D-Fläche", "MLINE" => "Mehrfachlinie (MLINE)", "REGION" => "Region",
         "LEADER" or "MLEADER" or "MULTILEADER" => "Hinweislinie", "POINT" => "Punkt", "VIEWPORT" => "Ansichtsfenster", "ATTRIB" or "ATTDEF" => "Attribut",
-        "IMAGE" => "Bild", "OLE2FRAME" => "OLE-Objekt", "ELLIPSE" => "Ellipse", "ACAD_TABLE" => "Tabelle", "3DSOLID" => "Volumenkörper", "text" => "SVG-Text", _ => k,
+        "IMAGE" => "Bild", "OLE2FRAME" => "OLE-Objekt", "ELLIPSE" => "Ellipse", "LINE" => "Linie", "LWPOLYLINE" or "POLYLINE" => "Polylinie", "ARC" => "Bogen", "CIRCLE" => "Kreis", "ACAD_TABLE" => "Tabelle", "3DSOLID" => "Volumenkörper", "text" => "SVG-Text", _ => k,
     };
 
     static bool IsFill(string val) => val is "HATCH" or "SOLID" or "TRACE" or "3DFACE" or "WIPEOUT";
@@ -1317,7 +1318,7 @@ public static class CadDxf
                 var cx = (eb.MinX + eb.MaxX) / 2; var cy = (eb.MinY + eb.MaxY) / 2;
                 if (ag.Any(cx, cy, cx, cy, s => { var a = areas[ag.Segs[s].Tag]; return eb.MinX >= a.MinX && eb.MinY >= a.MinY && eb.MaxX <= a.MaxX && eb.MaxY <= a.MaxY; })) pick.Add(e);
             }
-            var fine = CadContours.Build(pick, 0.1, fineChord, ct).Where(c => c.Closed).ToList();
+            var fine = CadContours.Build(pick, 0.1, fineChord, null, true, ct).Where(c => c.Closed).ToList(); // T-0747-fix14: Linien-Stöße wie beim Grob-Aufbau und beim Fräsen
             var fineBox = fine.Select(c => BoxOf(c.Pts)).ToArray(); var fineIdx = Index(fineBox, fine);
             var shapeTol = tol + 2 * fineChord; // Zerlegungsfehler: Kontur ≤ 0,0001 mm, Schraffur ≤ 0,0001 mm (tol/100)
             var fineGrid = new Dictionary<int, SegGrid>();

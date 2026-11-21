@@ -1,0 +1,45 @@
+
+== 1. reports/T-0747/wohnung-bearbeitet.dxf
+OK      DXF-Aufbau: beginnt mit SECTION, endet mit EOF
+OK      $INSUNITS = 5 (Zentimeter)
+OK      Ebenen WAENDE und OEFFNUNGEN vorhanden: WAENDE, OEFFNUNGEN, RAEUME, MOEBEL, TEXT, MASSE
+OK      Wandkanten als LINE auf WAENDE: 40
+OK      Außenkanten links/rechts: 6,00 m hoch bei x = 0 und x = 800 cm
+OK      Außenkanten oben/unten: 8,00 m breit (4 Linien)
+OK      Innenwand nach Bearbeitung 17,5 cm stark (Kanten bei x = [397.0, 414.5])
+OK      Tür mit Schwenkbogen r = 90 cm auf OEFFNUNGEN
+OK      Raumnamen als TEXT: Wohnen, Schlafen
+OK      Flächenangaben (m²) richtig kodiert
+OK      Lage: links oben bei 0/0 (y nach unten gespiegelt), Erker/Brüstung außerhalb
+
+== 2. reports/T-0747/teil-fremd-dxf.nc  (gegen teil-fremd.dxf (Zoll))
+OK      2178 Schnittbewegungen unter Z 0
+OK      tiefste Z = -6.000 (Tiefe 6.0 mm)
+OK      Stufen −2/−4/−6 und Haltesteg-Höhe −4,5 vorhanden: [-6.0, -4.5, -4.0, -2.0]
+OK      kein Eilgang (G0) ins Material oder seitlich unter Z 0 (nur senkrechter Rückzug)
+OK      kein Anschneiden: kleinster Abstand Fräsermitte–Kontur 1.9998 mm (Radius 2.0, Toleranz 0,02)
+OK      Bahnen im Rohteil: Teil 101.60 × 63.50 mm ± Radius
+OK      Radiusversatz: 5 Konturgruppen mit Bahn genau im Abstand 2.0 mm (± 0,03)
+OK      T-0747-fix: exakt Strecke zu Strecke: kleinster Abstand Schnittbewegung–Kontur 1.9990 mm (Radius 2.0, Toleranz 0,0025 = Bogen 0,001 + Prüfung 0,001 + Rundung)
+
+== 2. reports/T-0747/teil-fremd-svg.nc  (gegen teil-fremd.svg)
+OK      3546 Schnittbewegungen unter Z 0
+OK      tiefste Z = -6.000 (Tiefe 6.0 mm)
+OK      Stufen −2/−4/−6 und Haltesteg-Höhe −4,5 vorhanden: [-6.0, -4.5, -4.0, -2.0]
+OK      kein Eilgang (G0) ins Material oder seitlich unter Z 0 (nur senkrechter Rückzug)
+OK      kein Anschneiden: kleinster Abstand Fräsermitte–Kontur 1.9997 mm (Radius 2.0, Toleranz 0,02)
+OK      Bahnen im Rohteil: Teil 100.00 × 60.00 mm ± Radius
+OK      Radiusversatz: 3 Konturgruppen mit Bahn genau im Abstand 2.0 mm (± 0,03)
+OK      T-0747-fix: exakt Strecke zu Strecke: kleinster Abstand Schnittbewegung–Kontur 1.9993 mm (Radius 2.0, Toleranz 0,0025 = Bogen 0,001 + Prüfung 0,001 + Rundung)
+
+== 3. reports/T-0747/fix-faelle.nc  (gegen reports/T-0747/fix-faelle.dxf)
+OK      3238 Schnittbewegungen unter Z 0
+OK      kein Anschneiden (exakt Strecke zu Strecke, ALLE Konturen): kleinster Abstand 2.9999 mm (Radius 3.0, Toleranz 0,0025)
+        gefräste Konturen: [3, 7, 8, 9, 10]
+OK      zwei Teile 3 mm auseinander: beide ausgelassen und gemeldet
+OK      Achterform abgelehnt
+OK      Hantel-Steg und Schlitz als Engstelle gemeldet (mit Lage)
+OK      kein Eilgang (G0) ins Material
+
+ERGEBNIS: BESTANDEN
+exit 0

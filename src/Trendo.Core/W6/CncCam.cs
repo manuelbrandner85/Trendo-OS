@@ -180,14 +180,23 @@ public static class CncCam
         }
         // T-0747-fix13: Linienverbund mit Stoß (mehr als zwei Enden an einem Punkt) – nicht verkettet. Ein Umriss daraus könnte jede Kontur in seinem
         // Rahmen umschließen: ob die Loch oder Teil ist, lässt sich nicht sicher sagen → auslassen und melden.
-        foreach (var grp in cs.Select((c, j) => (c, j)).Where(t => t.c.JunctionGroup >= 0).GroupBy(t => t.c.JunctionGroup))
+        // T-0747-fix14: Kandidaten nach linker Rahmenkante sortiert – je Gruppe nur die Konturen, deren linke Kante im Gruppenrahmen liegt (vorher alle)
+        var byMinX = Enumerable.Range(0, cs.Count).Where(i => cs[i].Closed).OrderBy(i => boxes[i].Item1).ToArray();
+        var minXs = byMinX.Select(i => boxes[i].Item1).ToArray();
+        var jgroups = cs.Select((c, j) => (c, j)).Where(t => t.c.JunctionGroup >= 0).GroupBy(t => t.c.JunctionGroup).ToList();
+        if (jgroups.Count > 0)
+            warn.Add($"{jgroups.Count} Linienverbund/-verbünde (zusammen {jgroups.Sum(g => g.Count())} Linien, z. B. ab Kontur {jgroups[0].First().j + 1}) nicht zu Umrissen verkettet: an einem Punkt stoßen mehr als zwei Linien zusammen oder die Enden liegen nicht eindeutig. Diese Linien werden nicht gefräst (außer als Gravur), Konturen darin werden ausgelassen.");
+        foreach (var grp in jgroups)
         {
             ct.ThrowIfCancellationRequested();
             double gx0 = double.MaxValue, gy0 = double.MaxValue, gx1 = double.MinValue, gy1 = double.MinValue;
             foreach (var (c, _) in grp) foreach (var p in c.Pts) { gx0 = Math.Min(gx0, p.X); gy0 = Math.Min(gy0, p.Y); gx1 = Math.Max(gx1, p.X); gy1 = Math.Max(gy1, p.Y); }
             const double e = 1e-6; var first = grp.First().j;
-            for (var i = 0; i < cs.Count; i++)
+            var lo = Array.BinarySearch(minXs, gx0 - e); if (lo < 0) lo = ~lo; while (lo > 0 && minXs[lo - 1] >= gx0 - e) lo--;
+            for (var q = lo; q < byMinX.Length && minXs[q] <= gx1 + e; q++)
             {
+                if ((q & 1023) == 0) ct.ThrowIfCancellationRequested();
+                var i = byMinX[q];
                 if (!cs[i].Closed || dup[i] || crossing[i] || unsure[i]) continue;
                 var bi = boxes[i];
                 if (bi.Item1 >= gx0 - e && bi.Item2 >= gy0 - e && bi.Item3 <= gx1 + e && bi.Item4 <= gy1 + e)
@@ -222,6 +231,7 @@ public static class CncCam
             var c = cs[i];
             if (!c.Closed && s.Mode != "auf") // T-0747-fix2: offene Kontur nur ausdrücklich als Gravur
             {
+                if (c.JunctionGroup >= 0) return; // T-0747-fix14: steht in der Sammelmeldung zum Linienverbund
                 w.Add($"{Name(i)} ausgelassen: offene Kontur (Enden {F(Math.Sqrt(D2(c.Pts[0], c.Pts[^1])), "0.###")} mm auseinander) – auf der Linie gefräst würde ein Teil um den Fräserradius kleiner. Nur in der Fräsart „Auf der Linie (Gravur)“ wird sie gefräst; sonst die Zeichnung schließen.");
                 return;
             }

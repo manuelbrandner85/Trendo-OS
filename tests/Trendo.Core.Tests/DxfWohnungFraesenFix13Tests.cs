@@ -128,9 +128,18 @@ public class T0747_Fix13DreizehntePruefung(ITestOutputHelper log)
         log.WriteLine($"Kamm-Formvergleich: {t1} ms ({r1.Unread.Count} nicht gelesen); 1000 große + 60 000 winzige: {t2} ms");
         Assert.True(t1 < 10000, $"Kamm {t1} ms"); Assert.True(t2 < 10000, $"große Rahmen {t2} ms");
         Assert.Equal(117, r1.Unread.Count); // nie formgleich: alle bleiben
-        using var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(Math.Max(20, t1 / 2)));
-        var sw = Stopwatch.StartNew();
-        try { CadDxf.Parse(s1, cts.Token); } catch (OperationCanceledException) { }
-        Assert.True(sw.ElapsedMilliseconds < Math.Max(20, t1 / 2) + 3000, $"Abbruch nach {sw.ElapsedMilliseconds} ms");
+        // T-0747-fix14: der Abbruch muss wirklich mit OperationCanceledException enden (eigener Thread, startet mit dem Lesen; bis zu fünf Versuche)
+        var delay = Math.Max(20, t1 / 2);
+        for (var attempt = 0; ; attempt++)
+        {
+            using var cts = new CancellationTokenSource(); using var go = new ManualResetEventSlim(false); var d = delay;
+            var th = new Thread(() => { go.Wait(); Thread.Sleep((int)d); cts.Cancel(); }) { IsBackground = true }; th.Start();
+            var sw = Stopwatch.StartNew(); go.Set();
+            try { CadDxf.Parse(s1, cts.Token); }
+            catch (OperationCanceledException) { th.Join(); Assert.True(sw.ElapsedMilliseconds < d + 3000, $"Abbruch nach {sw.ElapsedMilliseconds} ms"); break; }
+            th.Join();
+            delay = Math.Max(10, sw.ElapsedMilliseconds / 2);
+            if (attempt == 4) throw new Xunit.Sdk.XunitException("Abbruch wirkte nicht");
+        }
     }
 }
