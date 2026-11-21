@@ -114,7 +114,7 @@ public class T0747_Fix5FuenftePruefung(ITestOutputHelper log)
     {
         var r = Cam(Dxf(Circle(0, 0, 40, "210\n0.0\n220\n0.6\n230\n0.8\n") + Circle(0, 0, 5) + Lw(Rect(200, 0, 220, 20))));
         log.WriteLine(string.Join(" | ", r.Warnings));
-        Assert.Contains(r.Warnings, w => w.Contains("liegt in nicht gelesenem Element CIRCLE (nicht in der Zeichenebene)", StringComparison.Ordinal));
+        Assert.Contains(r.Warnings, w => w.Contains("liegt in nicht gelesenem Element Kreis (nicht in der Zeichenebene)", StringComparison.Ordinal));
         Assert.All(r.Paths, p => Assert.True(Mid(r, p).X > 150));
     }
 

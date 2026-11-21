@@ -981,3 +981,58 @@ Gegen fc2a91ec6: 390 gleich, 22 abweichend. Dazu kommen die bewusst sicheren Fä
 **Rot-Probe gegen c9ea0f03f:** die 4 neuen Fix14-Tests rot, die Fix13-Tests grün – `reports/T-0747/T-0747-fix14-rotprobe.log`.
 
 **Testzahlen T-0747-fix14:** Build 0 Fehler, keine neue Warnung in T-0747-Dateien. Kern (alle fünfzehn T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests) **zweimal hintereinander**: je 161 gesamt, 160 bestanden, 1 übersprungen (vorbestehend), 0 Fehler. App 13 Klassen inklusive Studio3DMeshEditUiTests – **123/123**. Prüfskript BESTANDEN.
+
+## Fünfzehnte Prüfung behoben (T-0747-fix15)
+Arbeitskopie `%TEMP%\trendo-auftrag-T-0747-fix15`, Commit obendrauf auf e400085fd. Keine Maschine angesteuert.
+
+**HOCH 1 – behoben.** Beim Anschließen über Spalte ≤ 0,1 mm stehen jetzt die Enden der offenen Ketten und die Enden aller Stoß-Stücke im selben Raster. Berühren sich zwei Stoß-Gruppen direkt über einen Spalt (gleiche Ebene), verschmelzen sie zu einer Komponente. Ausgelassen wird im Rahmen bzw. Schutzbereich dieser ganzen Komponente. Der feine Aufbau des Füllflächen-Abgleichs nutzt dieselbe Verkettung.
+
+Ergebnis: gg/ggk mit Spalt 0,001 / 0,05 / 0,0999 und j_direkt mit 0,00001 / 0,005 / 0,05 fräsen kein Loch mehr außen (vorher Loch über der Naht außen gefräst).
+
+**HOCH 2 – behoben.** Jede Stoß-Komponente hat einen Schutzbereich aus ihrem Rahmen und ihrer konvexen Hülle. Ausgelassen und gemeldet wird jede geschlossene Kontur, auf die eines zutrifft:
+- ihr Rahmen liegt im Komponentenrahmen,
+- ihr erster Punkt liegt in der Hülle,
+- sie berührt oder schneidet den Rand der Hülle.
+
+Gesucht wird über nach Kante bzw. Punkt sortierte Listen und ein Streckenraster. Die Hülle enthält jedes Sehnenpolygon, mit dem früher eine offene Kette aus diesen Stücken als openOutline geschützt war. Was in fc2a91ec6 geschützt war, ist es also weiterhin. Eine Platte, die die Komponente nur umschließt (ggplatte), wird weiter gefräst.
+
+Ergebnis: gg_spalt_0p11 und ggk_spalt_0p11 fräsen kein Loch mehr außen.
+
+**MITTEL 3 – behoben.**
+- Union-Find mit Pfadkürzung und Größe für die Gruppen, Abbruchprüfung in der Ausbreitung (alle 1024 Schritte) und in den Schlussschleifen.
+- u1 Stoßkette 50 000: Konturen 48,6 s → 1,1 s.
+- u2 rückwärts: 48,7 s → 1,1 s.
+- u5: 8,3 s → 0,7 s.
+- u6 20 000 mit einer Schraffur: Lesen 8,8 s → 1,1 s, Konturen 8,0 s → 0,4 s.
+- Abbruch-Nachlauf beim Lesen u6: höchstens 242 ms (vorher bis 2,2 s).
+- Test `Junction_chain_fast`: unter 10 s, Nachlauf unter 1 s.
+
+**MITTEL 4 – behoben.** Die Enden (Versatz 0,9 × der Verbindungsgrenze 1e-6, paarweise 0,9 bzw. 1,8 ×) werden transitiv gruppiert: Union-Find über alle Paare innerhalb der Verbindungsgrenze, gefunden über Schlüssel in dieser Schrittweite mit Nachbarn ±1. Ein Haufen zählt als Stoß, wenn er breiter als die Verbindungsgrenze ist oder mehr als zwei Enden verschiedener Stücke enthält; deckungsgleich doppelte Stücke zählen einmal. Das Ergebnis hängt nicht von der Reihenfolge ab. Die Verkettung (Exact) findet in nicht mehrdeutigen Haufen genau den einen Partner, verwendet also dieselben Haufen.
+
+Ergebnis:
+- jj_* (drei Enden 0,9 µm versetzt): in allen 36 Prüfer-Reihenfolgen gleich, kein Loch außen.
+- Test `Near_junction_order_independent` mit allen 120 Reihenfolgen × 6 Versätzen.
+
+**Niedrig – behoben.**
+- Die Einzelmeldung „Linien-Stoß bei X …“ entfällt; es bleibt die eine Sammelmeldung je Zeichnung.
+- Nicht gelesene Elemente heißen in Meldungen deutsch, z. B. „Kreis mit Radius ≤ 0“, „Polylinie mit ungültiger Koordinate“, „Kreis (nicht in der Zeichenebene)“, „Region“.
+- Die Zähl-Schlüssel (Skipped) bleiben, wie sie sind.
+
+**Nicht angefasst:** Zeichnungsrahmen/Schriftfeld (casesr15, 3 Fälle ohne G-Code, sicher; Folgeaufgabe). CAM-Laufzeit bei vielen Kreisen ([ALT]).
+
+**Prüferfälle aller Runden** (nur gelesen bzw. als Kopie ausgeführt): **1056 Fälle, 29 mit Befund**:
+- die 26 aus der vierzehnten Prüfung, unverändert,
+- die 3 Rahmenfälle casesr15 (kein G-Code, nicht anfassen).
+
+Prüfung 15: cases15 0 von 80, casesgg15 0 von 15. Die rueck-Fälle j_direkt, fast_stoss und stern_70 fräsen kein Loch außen; die Kontrollfälle ctl_platte_line und fein_kreis_line unverändert mit Löchern innen.
+
+**G-Code-Vergleich** (525 Fälle, Runden 9–15):
+- Gegen e400085fd: 408 gleich, 117 abweichend.
+  - 90 davon nur Meldungstext (deutsche Elementnamen, Sammelmeldung).
+  - 27 mit anderem G-Code, alle beabsichtigt und sicher: jj (8), jk an der 1-µm-Grenze (3), gg/ggk (8), ggplatte (4: Loch an der Naht ausgelassen, Platte und fernes Loch bleiben), j_direkt (3), fast_stoss_abc (1).
+- Gegen c9ea0f03f: 403 gleich (53 mit G-Code-Unterschied, dazu die aus Fix14).
+- Gegen fc2a91ec6: 402 gleich (86 mit G-Code-Unterschied, dazu die aus Fix13/14).
+
+**Rot-Probe gegen e400085fd:** alle 3 neuen Fix15-Tests rot (HOCH 1/2, MITTEL 3, MITTEL 4), Fix14 grün – `reports/T-0747/T-0747-fix15-rotprobe.log`.
+
+**Testzahlen T-0747-fix15:** Build 0 Fehler, keine neue Warnung in T-0747-Dateien. Kern (alle sechzehn T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests) **zweimal hintereinander**: je 164 gesamt, 163 bestanden, 1 übersprungen (vorbestehend), 0 Fehler. App 13 Klassen inklusive Studio3DMeshEditUiTests – **123/123**. Prüfskript BESTANDEN.

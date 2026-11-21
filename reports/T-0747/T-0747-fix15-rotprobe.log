@@ -1,0 +1,48 @@
+### Rot-Probe: Tests des Stands fix15 (Fix14, Fix15) gegen den Quellstand e400085fd
+  Wiederherzustellende Projekte werden ermittelt...
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix15-rot\src\Trendo.Companion\Trendo.Companion.csproj" wiederhergestellt (in 422 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix15-rot\src\Trendo.Core\Trendo.Core.csproj" wiederhergestellt (in 422 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix15-rot\tests\Trendo.CrashProbe\Trendo.CrashProbe.csproj" wiederhergestellt (in 422 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix15-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj" wiederhergestellt (in 422 ms.).
+  Trendo.Core -> C:\Users\<user>\AppData\Local\Temp\t0747fix15-rot\src\Trendo.Core\bin\Release\net10.0\Trendo.Core.dll
+  Trendo.Companion -> C:\Users\<user>\AppData\Local\Temp\t0747fix15-rot\src\Trendo.Companion\bin\Release\net10.0\trendo-companion.dll
+  Trendo.CrashProbe -> C:\Users\<user>\AppData\Local\Temp\t0747fix15-rot\tests\Trendo.CrashProbe\bin\Release\net10.0\Trendo.CrashProbe.dll
+  Trendo.Core.Tests -> C:\Users\<user>\AppData\Local\Temp\t0747fix15-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\t0747fix15-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:02.60]     T-0747-fix15 HOCH 1/2: zwei Stoß-Gruppen direkt über Spalt 0 … 0,11 mm (auch über der Verkettungstoleranz) – kein Loch außen gefräst [FAIL]
+  Fehler T-0747-fix15 HOCH 1/2: zwei Stoß-Gruppen direkt über Spalt 0 … 0,11 mm (auch über der Verkettungstoleranz) – kein Loch außen gefräst [205 ms]
+  Fehlermeldung:
+   Spalt 1E-05, Loch 50/30
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix15FuenfzehntePruefung.Junction_groups_touch_over_gap() in C:\Users\<user>\AppData\Local\Temp\t0747fix15-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix15Tests.cs:line 59
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ Spalt 0: Es blieb keine fräsbare Kontur übrig: 1 Linienverbund/-verbünde (zusammen 10 Linien, z. B. ab Kontur 4) nicht zu Umrissen verkettet: an einem Punkt stoßen mehr als zwei Linien zusammen oder die Enden liegen nicht eindeutig. Diese Linien werden nicht gefräst (außer als Gravur), Konturen darin werden 
+ Spalt 1E-05: 2 Linienverbund/-verbünde (zusammen 10 Linien, z. B. ab Kontur 4) nicht zu Umrissen verkettet: an einem Punkt stoßen mehr als zwei Linien zusammen oder die Enden liegen nicht eindeutig. Diese Linien werden nicht gefräst (außer als Gravur), Konturen darin werden ausgelassen. | Kontur 3 ausgelassen: l
+
+
+[xUnit.net 00:01:57.75]     T-0747-fix15 MITTEL 3: Stoßkette 50 000 und 20 000 mit einer Schraffur – Lesen und Konturen unter 10 s, Abbruch schnell [FAIL]
+  Fehler T-0747-fix15 MITTEL 3: Stoßkette 50 000 und 20 000 mit einer Schraffur – Lesen und Konturen unter 10 s, Abbruch schnell [1 m 55 s]
+  Fehlermeldung:
+   u1 48826 ms
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix15FuenfzehntePruefung.Junction_chain_fast() in C:\Users\<user>\AppData\Local\Temp\t0747fix15-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix15Tests.cs:line 112
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ u1 50 000: 48826 ms; u6 20 000: 8176 ms
+
+
+[xUnit.net 00:01:57.79]     T-0747-fix15 MITTEL 4: drei Enden 0,9 µm versetzt – in allen 120 Reihenfolgen gleiches Ergebnis, kein Loch außen [FAIL]
+  Fehler T-0747-fix15 MITTEL 4: drei Enden 0,9 µm versetzt – in allen 120 Reihenfolgen gleiches Ergebnis, kein Loch außen [33 ms]
+  Fehlermeldung:
+   Reihenfolge 01243 (Versatz 012): nichts statt 1:innen
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix15FuenfzehntePruefung.Near_junction_order_independent() in C:\Users\<user>\AppData\Local\Temp\t0747fix15-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix15Tests.cs:line 89
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Fehler!      : Fehler:     3, erfolgreich:     4, übersprungen:     0, gesamt:     7, Dauer: 1 m 58 s - Trendo.Core.Tests.dll (net10.0)
