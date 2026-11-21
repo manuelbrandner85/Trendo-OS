@@ -661,3 +661,114 @@ Rohlogs: `T-0747-fix10-*.log`.
 - Die sechs erklärten Prüfer-Fälle bleiben „rot“.
 
 **Testzahlen T-0747-fix10:** Build 0 Fehler. Kern (alle elf T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests): **142 gesamt, 141 bestanden, 1 übersprungen (vorbestehend „IFC echt“), 0 Fehler**. App: T0747_DxfUi 2/2, T0747_FixUi 3/3, T0747_Fix3RaceUi 4/4, T0747_Fix4RaceUi 3/3, SPEC01_Ui 6/6, SPEC01_UiArc 1/1, SPEC14_Ui 2/2, Bildbearbeitung_Ui 5/5, PlanPhoto_Ui 4/4, N23N24_CadPrintUi 3/3, UebersichtEinfach_Ui 2/2, DeadButtonTests 83/83, Studio3DMeshEditUiTests 5/5 – **123/123**. Prüfskript BESTANDEN. Prüfprogramme: 744 Fälle, keine neuen Befunde (sechs erklärte). Belege der früheren Runden unverändert.
+
+## Elfte Prüfung behoben (T-0747-fix11)
+Arbeitskopie `%TEMP%\trendo-auftrag-T-0747-fix11`, Commit obendrauf auf f6b58a065. Keine Maschine angesteuert.
+
+**Ursachenklasse statt Einzelfälle.** Alle Befunde dieser Runde kommen aus zwei Klassen:
+1. Das Weglassen ausgeblendeter Schraffuren war zu großzügig (HOCH A) bzw. hatte kein Arbeitsbudget (HOCH B, MITTEL C).
+2. Schleifen über die Datenmenge liefen ohne Abbruch oder Grenze (MITTEL D, E).
+
+Entscheidung (einfacher und sicher): Eine ausgeblendete Schraffur wird nur noch im **eindeutigen Fall** verworfen, sonst bleibt sie stehen und wird gemeldet. Eindeutig heißt:
+- Die Schleife ist nicht mehrdeutig (keine Uhrzeiger-/Ellipsenkanten) und hat höchstens 20 000 Punkte.
+- Unter den 4 kleinsten Konturen, deren Rahmen sie enthalten, ist eine, in der alle Eckpunkte innen oder ≤ 0,01 mm am Rand liegen. Stücke, die den Rand kreuzen, liegen nur in der Toleranz außen; geprüft wird über einen Kanten-Schnitttest, nicht durch dichtes Abtasten.
+- Keine andere gezeichnete Kontur, deren Rahmen in der Schraffur liegt, enthält selbst wieder etwas.
+- Über einem harten Arbeitsbudget (30 Mio. Schritte) wird nichts mehr verworfen.
+
+Jede Schleife über die Datenmenge prüft den Abbruch.
+
+**Prüfprogramme aller Prüfer** (nur als Kopie benutzt bzw. Fallgeneratoren und Prüfteile ausgeführt; Harness-Kopie des Prüfers 11; nichts im Repo). Die Einheiten-Fälle (cases11b, cez1/5/6) wurden mit in mm umgerechneten Erwartungen geprüft, weil der G-Code immer in mm ist:
+
+| Fallgruppe | Fälle | mit G-Code | Befunde | Rechenzeit gesamt |
+|---|---|---|---|---|
+| Prüfer 2 | 162 | 141 | 1 (p_spline_block, erklärt) | 10,8 s |
+| Prüfer 3 | 55 | 48 | 0 | 1,6 s |
+| Prüfer 4 | 72 | 58 | 1 (v2, erklärt) | 1,1 s |
+| Prüfer 5 | 80 | 72 | 4 (f6, g2, k1_0_0005, n8 – erklärt); Haltestege 4/4 richtig | 13,4 s (g2 50 000 Kreise 10,9 s) |
+| Prüfer 5 Spline | 8 | 8 | 0 | 0,1 s |
+| Prüfer 6 | 30 | 9 | 0 | 2,0 s |
+| Prüfer 7 | 24 | 12 | 0 | 0,3 s |
+| Prüfer 8 | 87 | 19 | 0 | 0,4 s |
+| Prüfer 9 (cases9, tol, big, big3) | 160 | 40 | 0 | 2,7 s |
+| Prüfer 10 | 66 | 17 | 0 | 0,7 s |
+| Prüfer 11 (cases11, 11b, 11c) | 80 | 22 | 1 (g_aus_ueber_rand_0p011, sicher, siehe offen); im Lauf des Prüfers auf f6b58a065: 16 | 0,6 s |
+| Prüfer 11 ezdxf (casesez, cez1/5/6) | 44 | 40 | 4 (e_linse_cw_ezdxf_linse_gezeichnet in allen vier Einheiten-Varianten, bewusst, siehe MITTEL F) | 3,5 s |
+
+Keine neuen Befunde außer den sechs erklärten und den zwei bewusst sicheren (kein Loch wird außen gefräst).
+
+**Leistung (Harness des Prüfers 11; Lesen = Einlesen inklusive Füllflächen-Vergleich):**
+
+| Fall | vorher (f6b58a065, laut Prüfung) | jetzt Lesen | jetzt gesamt mit Fräsbahn |
+|---|---|---|---|
+| n1 Cache 200 × 5000 / 25 × 50 000 | – | 1,5 / 1,7 s | 3,5 / 3,0 s |
+| n2 Kamm 50 000 Zähne + 20 versteckt | > 900 s | 0,39 s | 97 s (CAM, offen) |
+| n2 Kamm 100 000 Zähne + 50 versteckt | – | 0,54 s | > 120 s (CAM, offen) |
+| n3 60 000 + 60 000 Kreise | Abbruch-Nachlauf 10,2 s | 1,7 s, Abbruch 0,1–0,3 s danach | 16 s |
+| n3b Vollkreis-Kanten 5000 | – | 0,7 s | 4,5 s |
+| n4 / n4b r 1e7 (bis 1000) | 2,1 GB bzw. Speicherüberlauf | ≤ 0,06 s | ≤ 0,25 s |
+| n5 500 große versteckt | 33 s, 38 GB | 0,12 s | 0,19 s |
+| n6 40 000 Löcher + 2000 versteckt | > 120 s | 1,0 s | – |
+| n7 fast gleich | – | 1,4 s | 1,9 s |
+| n8 Zickzack 100 000 formgleich | – | 6,5 s | 43,8 s (CAM, offen) |
+| q2 / q7 / q3 / q9 (zehnte Prüfung) | 0,5–3,3 s | 0,57–1,6 s | 0,9–5,5 s |
+| pruef9 perf_n8000_hatch | 0,36 s | 0,42 s | 3,5 s |
+
+Abbruch der Fräsbahn bei der CAM-Laufzeit (Harness `--abbruch`):
+- Kamm: 1–63 ms Nachlauf in der Lesephase, aber bis 5,5 s mitten in `CncCam.Generate` (offen).
+- n8: höchstens 67 ms.
+
+Belege (`--fix`): alle 12 Ausgaben hash-gleich mit dem Vorstand, darunter die 4 Referenz-G-Codes.
+
+**Rot-Probe gegen f6b58a065:** `T0747_Fix11ElftePruefung` 6 von 6 rot (für das Übersetzen nur ein Platzhalter für `CadEntity.Invisible`; der Test D/E lief dort 1 min) – `reports/T-0747/T-0747-fix11-rotprobe.log`.
+
+**HOCH A – behoben.** Als innere Kandidaten gelten alle Konturen, deren Rahmen im Schraffurrahmen ± 0,01 mm liegt; ausgenommen ist nur die bestätigte umschließende Kontur. Ein Punkt-im-Zug-Vorfilter entfällt. Damit bleibt die Schraffur bei Inkreis (gap 0 / 0,005 / 0,009) und Raute mit gleichem Rahmen stehen. Test `Hidden_fill_inner_same_box`.
+
+**HOCH B – behoben.** Der Punkt-im-Zug-Index meldet einen Streifen mit mehr als 200 000 Strecken als „unbekannt“; dann wird nicht verworfen. Jede Abfrage geht ins Arbeitsbudget. Kamm mit 50 000 Zähnen: Lesen 0,39 s (vorher > 900 s).
+
+**MITTEL C – behoben.**
+- Enthaltensein über Eckpunkte plus Kanten-Schnitttest statt dichter Abtastung.
+- „Enthält etwas“ wird je Kontur einmal berechnet; gleiche ausgeblendete Schleifen werden nur einmal entschieden.
+- Ergebnis: n5 mit 500 großen Rechtecken 0,12 s (vorher 33 s, 38 GB); n6 mit 40 000 Löchern + 2000 versteckt 1,0 s (vorher > 120 s).
+
+**MITTEL D – behoben.**
+- Vollkreise kommen in Eimer nach (x, y, r) im Toleranzschritt; gleiche Kreise nur einmal; Abbruch alle 1024.
+- Der Rahmen-Index läuft über alle vier Grenzen und nimmt gleiche Konturen nur einmal auf; gleiche Schraffur-Schleifen werden einmal verglichen.
+- Ergebnis: n3 mit 60 000 + 60 000 liest in 1,7 s, Abbruch 0,1–0,3 s danach (vorher 10,2 s).
+
+**MITTEL E – behoben.**
+- Abtastpunkte werden vorher gezählt. Grenze je Schleife 400 000, je Datei 4 000 000; darüber keine Form, der Rahmen bleibt.
+- Abbruch in `HatchLoops`.
+- Dabei gefunden und behoben (Ursachenklasse):
+  - `Ocs.Of` lief je Schleife, `IntSafe(…, 60)` je Füllschleife über den ganzen HATCH-Körper (60 000 Schleifen: 75 s → 0,8 s).
+  - Vollkreise werden auch ohne abgetastete Form analytisch verglichen.
+- Ergebnis: n4b mit 1000 Ausbuchtungen r 1e7 liest in 0,06 s (vorher Speicherüberlauf).
+
+**MITTEL F – behoben.** Bei Uhrzeiger-Kanten wird auch die wörtliche Lesart verkettet. Hängen beide Lesarten zusammen und ergeben verschiedene Formen, gibt es keine Form, also auch keine Formgleichheit; die Schraffur bleibt. Test `Cw_literal_lens_vs_peanut`.
+- Bewusste Folge: Die echte ezdxf-Linse (Prüfer-Fall `e_linse_cw_ezdxf_linse_gezeichnet`) ist geometrisch nicht von der wörtlich geschriebenen zu unterscheiden. Sie liefert deshalb keinen G-Code; das ist die sichere Seite.
+
+**MITTEL G – behoben.** Gezeichnete ARC gehen mit ihrem echten Bogenrahmen (Endpunkte + Scheitel im Winkelbereich) in die Kandidatenwahl ein. Flache Bogenkante r 200 ist formgleich (Test `Arc_box_and_units`).
+
+**MITTEL H – behoben.** Der Formvergleich rechnet in mm: Elemente werden als Kopien skaliert, ebenso Formen und Rahmen. Die 0,05-mm-Untergrenze der Bogenzerlegung gilt damit in mm statt in Zeichnungseinheiten. Runde Ecken in m, cm und mm sind formgleich.
+
+**MITTEL I – behoben.** Abbruch in den Tests lastrobust: ein eigener Thread bricht ab, sobald das Lesen startet (ManualResetEvent), bis zu drei Versuche. Die Ausnahme wird wirklich verlangt (auch in Fix10 `Hidden_fills_in_huge_contour`). Der volle Kernlauf ist zweimal hintereinander grün (siehe Testzahlen).
+
+**NIEDRIG – behoben.**
+- Gruppe 60 = 1 (unsichtbar) wird wie eine ausgeblendete Ebene behandelt: nicht gefräst, nicht in den Grundriss übernommen, gemeldet als „(unsichtbar) (n, …)“.
+- Formgleiche ausgeblendete Schraffuren zählen bei ihrer Ebene mit.
+- Die Ebenenmeldung sagt, wenn ausgeblendete Füllflächen außerhalb gezeichneter Konturen stehen bleiben: „– n Füllfläche(n) außerhalb gezeichneter Konturen: Teile darin werden ausgelassen“.
+- Strenger Nachspann: Punkte 10/20 nur als Saatpunkte direkt nach 98 und genau so viele (Fall `c_saatpunkte_mehr_als_98`).
+- 2-Punkt-Rand mit Ausbuchtungen verschiedenen Vorzeichens gilt als nicht eindeutig (Fall `c_poly_2pkt_bulge_pm`).
+- Test `Invisible_and_notes`.
+
+**Weiterhin offen:**
+- CAM-Laufzeit (`CncCam.Generate`, Vorstand):
+  - Kamm 50 000 Zähne: Fräsbahnen 97 s, Abbruch greift dort erst nach bis zu 5,5 s.
+  - Kamm 100 000: über 120 s.
+  - n8 Zickzack 100 000: Fräsbahnen 43 s.
+  - q4 / q5 / q6: wie in der zehnten Prüfung.
+- `g_aus_ueber_rand_0p011`: Die Schraffur ragt 0,011 mm über den Rand, mehr als die Toleranz von 0,01 mm. Sie bleibt deshalb stehen und das Loch wird nicht gefräst (sichere Seite).
+- `e_linse_cw_ezdxf_linse_gezeichnet` (siehe MITTEL F).
+- INSERT, SPLINE, MLINE und REGION werden nicht aufgelöst.
+- Die sechs erklärten Prüfer-Fälle bleiben „rot“.
+
+**Testzahlen T-0747-fix11:** Build 0 Fehler. Kern (alle zwölf T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests) **zweimal hintereinander**: je 148 gesamt, 147 bestanden, 1 übersprungen (vorbestehend „IFC echt“), 0 Fehler. App: T0747_DxfUi 2/2, T0747_FixUi 3/3, T0747_Fix3RaceUi 4/4, T0747_Fix4RaceUi 3/3, SPEC01_Ui 6/6, SPEC01_UiArc 1/1, SPEC14_Ui 2/2, Bildbearbeitung_Ui 5/5, PlanPhoto_Ui 4/4, N23N24_CadPrintUi 3/3, UebersichtEinfach_Ui 2/2, DeadButtonTests 83/83, Studio3DMeshEditUiTests 5/5 – **123/123**. Prüfskript BESTANDEN. Prüfprogramme: 868 Fälle.

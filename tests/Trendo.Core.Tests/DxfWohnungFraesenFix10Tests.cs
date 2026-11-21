@@ -35,6 +35,23 @@ public class T0747_Fix10ZehntePruefung(ITestOutputHelper log)
     static string PolyLoop((double X, double Y)[] p, int flags = 3) => G((92, flags), (72, 0), (73, 1), (93, p.Length)) + string.Concat(p.Select(q => G((10, q.X), (20, q.Y)))) + G((97, 0));
     static CamResult Cam(string dxf) { var rd = CadDxf.Parse(dxf); return CncCam.Generate(CncCam.Contours(rd.Drawing), new CamSettings { ToolD = 1, Unread = rd.Unread }); }
 
+    /// <summary>T-0747-fix11: Abbrechen beim Lesen lastrobust – ein eigener Thread bricht ab, sobald das Lesen startet (ManualResetEvent); bis zu drei
+    /// Versuche. Liefert die Zeit bis zur Abbruch-Ausnahme; wirft, wenn das Lesen jedes Mal ohne Abbruch durchlief.</summary>
+    static long CancelTime(string dxf)
+    {
+        using (var pre = new CancellationTokenSource()) { pre.Cancel(); Assert.ThrowsAny<OperationCanceledException>(() => CadDxf.Parse(dxf, pre.Token)); }
+        for (var attempt = 0; attempt < 3; attempt++)
+        {
+            using var cts = new CancellationTokenSource(); using var go = new ManualResetEventSlim(false); var wait = attempt * 5;
+            var th = new Thread(() => { go.Wait(); if (wait > 0) Thread.Sleep(wait); cts.Cancel(); }) { IsBackground = true }; th.Start();
+            var sw = Stopwatch.StartNew(); go.Set();
+            try { CadDxf.Parse(dxf, cts.Token); }
+            catch (OperationCanceledException) { th.Join(); return sw.ElapsedMilliseconds; }
+            th.Join();
+        }
+        throw new Xunit.Sdk.XunitException("Abbruch wirkte nicht");
+    }
+
     static long Timed(Action a)
     {
         var sw = Stopwatch.StartNew(); a(); var t = sw.ElapsedMilliseconds;
@@ -135,14 +152,9 @@ public class T0747_Fix10ZehntePruefung(ITestOutputHelper log)
         var r2 = CadDxf.Parse(q2); Assert.Empty(r2.Unread); Assert.Equal(1, r2.HiddenFillKinds["HATCH"]);
         var r7 = CadDxf.Parse(q7); Assert.Empty(r7.Unread);
         var t2 = Timed(() => CadDxf.Parse(q2)); var t7 = Timed(() => CadDxf.Parse(q7));
-        using (var cts = new CancellationTokenSource())
-        {
-            cts.CancelAfter((int)Math.Max(1, t7 / 3)); var sw = Stopwatch.StartNew();
-            try { CadDxf.Parse(q7, cts.Token); } catch (OperationCanceledException) { }
-            var tc = sw.ElapsedMilliseconds;
-            log.WriteLine($"Kontur 300 000 + 2000 ausgeblendet: {t2} ms; Sägezahn 362 054 + 50 ausgeblendet: {t7} ms; Abbrechen nach {Math.Max(1, t7 / 3)} ms: zurück nach {tc} ms");
-            Assert.True(tc < Math.Max(1, t7 / 3) + 3000, $"{tc}");
-        }
+        var tc = CancelTime(q7); // T-0747-fix11: verlangt die Abbruch-Ausnahme wirklich
+        log.WriteLine($"Kontur 300 000 + 2000 ausgeblendet: {t2} ms; Sägezahn 362 054 + 50 ausgeblendet: {t7} ms; Abbrechen: Ausnahme nach {tc} ms");
+        Assert.True(tc < 3000, $"{tc}");
         Assert.True(t2 < 10_000 && t7 < 10_000, $"{t2} / {t7}"); // einzeln je etwa 1 s; Vorstand 16 s bzw. > 120 s
     }
 
