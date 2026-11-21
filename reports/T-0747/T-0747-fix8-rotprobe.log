@@ -1,0 +1,137 @@
+  Wiederherzustellende Projekte werden ermittelt...
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\Trendo.Core.csproj" wiederhergestellt (in 247 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj" wiederhergestellt (in 247 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.CrashProbe\Trendo.CrashProbe.csproj" wiederhergestellt (in 247 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Companion\Trendo.Companion.csproj" wiederhergestellt (in 247 ms.).
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\Kreativ\KreativKits2.cs(50,116): warning CS8604: Mögliches Nullverweisargument für den Parameter "manuscript" in "IReadOnlyList<Chapter> BookKit.Chapters(string manuscript)". [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\Letters.cs(95,51): warning CS8603: Mögliche Nullverweisrückgabe. [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\W2\ClaudeChats.cs(174,140): warning CS8602: Dereferenzierung eines möglichen Nullverweises. [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\Sys\IcsForeign.cs(35,45): warning CS0618: "RecurringComponent.RecurrenceId" ist veraltet: "Use RecurrenceIdentifier instead, which supports the RANGE parameter." [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\Sys\IcsForeign.cs(36,51): warning CS0618: "RecurringComponent.RecurrenceId" ist veraltet: "Use RecurrenceIdentifier instead, which supports the RANGE parameter." [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\Sys\IcsForeign.cs(70,13): warning CS0618: "RecurringComponent.RecurrenceRules" ist veraltet: "Use RecurrenceRule instead. Support for multiple recurrence rules will be removed in a future version." [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\Sys\IcsForeign.cs(71,13): warning CS0618: "RecurringComponent.RecurrenceRules" ist veraltet: "Use RecurrenceRule instead. Support for multiple recurrence rules will be removed in a future version." [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\Sys\IcsForeign.cs(72,17): warning CS0618: "RecurringComponent.RecurrenceRules" ist veraltet: "Use RecurrenceRule instead. Support for multiple recurrence rules will be removed in a future version." [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\Programs\ProgramDocument.cs(178,18): warning CS8604: Mögliches Nullverweisargument für den Parameter "data" in "void ProgramDocument.PushUndo(string data, string label)". [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\W2\MusicScript.cs(145,48): warning CS8619: Die NULL-Zulässigkeit von Verweistypen im Wert vom Typ "List<MusicScript.Figure?>" entspricht nicht dem Zieltyp "IReadOnlyList<MusicScript.Figure>". [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\Arch\PlanDxfImport.cs(57,59): warning CS0649: Dem Feld "PlanDxfImport.Seg.T" wird nie etwas zugewiesen, und es hat immer seinen Standardwert von "0". [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\Trendo.Core.csproj]
+  Trendo.Core -> C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\bin\Release\net10.0\Trendo.Core.dll
+  Trendo.Companion -> C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Companion\bin\Release\net10.0\trendo-companion.dll
+  Trendo.CrashProbe -> C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.CrashProbe\bin\Release\net10.0\Trendo.CrashProbe.dll
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\AssetLibraryTests.cs(30,42): warning CS8604: Mögliches Nullverweisargument für den Parameter "actualArray" in "void Assert.Equal<double>(ReadOnlySpan<double> expectedSpan, double[] actualArray)". [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\WebDesignTeil2Tests.cs(77,41): warning CS8602: Dereferenzierung eines möglichen Nullverweises. [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\KiAttachmentsT0734Tests.cs(11,86): warning CS9113: Der Parameter „remote“ ist ungelesen. [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\SewingTests.cs(40,128): warning CS8604: Mögliches Nullverweisargument für den Parameter "source" in "IEnumerable<string> Enumerable.Skip<string>(IEnumerable<string> source, int count)". [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\T0725FachstudiosTests.cs(78,9): warning CS8631: Der Typ "string?" kann nicht als Typparameter "T" im generischen Typ oder in der generischen Methode "Assert.Equal<T>(ReadOnlySpan<T>, T[])" verwendet werden. Die NULL-Zulässigkeit des Typarguments "string?" entspricht nicht dem Einschränkungstyp "System.IEquatable<string?>". [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\ImportTempoTests.cs(807,38): warning CS0414: Dem Feld "ImportTempoTests.NodeHeader" wurde ein Wert zugewiesen, der aber nie verwendet wird. [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\PdfOrganizeTests.cs(11,24): warning xUnit1013: Public method 'Make' on test class 'PdfOrganizeTests' should be marked as a Theory. Reduce the visibility of the method, or add a Theory attribute to the method. (https://xunit.net/xunit.analyzers/rules/xUnit1013) [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\DevBuildTests.cs(54,96): warning xUnit1031: Test methods should not use blocking task operations, as they can cause deadlocks. Use an async test method and await instead. (https://xunit.net/xunit.analyzers/rules/xUnit1031) [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\ConnectedPromptTests.cs(88,9): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\ConnectedPromptTests.cs(99,9): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\ConnectedPromptTests.cs(107,9): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\GameRulesTests.cs(98,100): warning xUnit2013: Do not use Assert.Equal() to check for collection size. Use Assert.Single instead. (https://xunit.net/xunit.analyzers/rules/xUnit2013) [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\GameFreeTests.cs(105,108): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\GeldRechnungenTests.cs(92,13): warning xUnit2031: Do not use a Where clause to filter before calling Assert.Single. Use the overload of Assert.Single that accepts a filtering function. (https://xunit.net/xunit.analyzers/rules/xUnit2031) [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\LegalSourcesTests.cs(16,52): warning xUnit2030: Do not use Assert.NotEmpty to check if a value exists in a collection. Use Assert.Contains instead. (https://xunit.net/xunit.analyzers/rules/xUnit2030) [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\MailRoundtripTests.cs(71,13): warning xUnit2017: Do not use Assert.False() to check if a value exists in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2017) [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\MixamoTests.cs(127,9): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\ProgramDocumentMarkT0730Tests.cs(60,9): warning xUnit2013: Do not use Assert.Equal() to check for collection size. Use Assert.Single instead. (https://xunit.net/xunit.analyzers/rules/xUnit2013) [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\SafeFileTests.cs(21,20): warning xUnit1031: Test methods should not use blocking task operations, as they can cause deadlocks. Use an async test method and await instead. (https://xunit.net/xunit.analyzers/rules/xUnit1031) [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\SafeFileTests.cs(40,20): warning xUnit1031: Test methods should not use blocking task operations, as they can cause deadlocks. Use an async test method and await instead. (https://xunit.net/xunit.analyzers/rules/xUnit1031) [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\SkillsTests.cs(62,47): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\TrendoAgentTests.cs(42,9): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\UnrealGameTests.cs(37,13): warning xUnit2031: Do not use a Where clause to filter before calling Assert.Single. Use the overload of Assert.Single that accepts a filtering function. (https://xunit.net/xunit.analyzers/rules/xUnit2031) [C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+  Trendo.Core.Tests -> C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:10.32]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:10.86]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:10.89]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:11.09]     T-0747-fix8 M-1/niedrig: Spline-Kante mit „97 0“ mitten im Rand (c16/g04) und als letzte Kante (g03); Ellipsen- und Uhrzeiger-Kanten im Formvergleich [FAIL]
+[xUnit.net 00:00:11.09]       System.InvalidOperationException : Es blieb keine fräsbare Kontur übrig: Kontur 1 ausgelassen: nicht gelesenes Element Füllfläche HATCH hat keine bestimmbare Ausdehnung – es könnte diese Kontur umschließen, ob sie Loch oder Teil ist (die Seite), lässt sich nicht sicher sagen. Kontur 2 ausgelassen: nicht gelesenes Element Füllfläche HATCH hat keine bestimmbare Ausdehnung – es könnte diese Kontur umschließen, ob sie Loch oder Teil ist (die Seite), lässt sich nicht sicher sagen. Kontur 3 ausgelassen: nicht gelesenes Element Füllfläche HATCH hat keine bestimmbare Ausdehnung – es könnte diese Kontur umschließen, ob sie Loch oder Teil ist (die Seite), lässt sich nicht sicher sagen.
+[xUnit.net 00:00:11.09]       Stack Trace:
+[xUnit.net 00:00:11.09]         C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\W6\CncCam.cs(300,0): at Trendo.Core.CncCam.Generate(IReadOnlyList`1 source, CamSettings s, CancellationToken ct)
+[xUnit.net 00:00:11.09]         C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix8Tests.cs(28,0): at Trendo.Core.Tests.T0747_Fix8AchtePruefung.Cam(String dxf)
+[xUnit.net 00:00:11.09]         C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix8Tests.cs(86,0): at Trendo.Core.Tests.T0747_Fix8AchtePruefung.Spline_fit_zero_and_shapes()
+[xUnit.net 00:00:11.09]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:11.09]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:11.11]     T-0747-fix8 M-2: WIPEOUT-Ausschnitt außerhalb des Bildrahmens (e02) gehört zur Ausdehnung [FAIL]
+[xUnit.net 00:00:11.11]       Box { MinX = -50, MinY = -30, MaxX = 150, MaxY = 90, IsEmpty = False, IsAll = False }
+[xUnit.net 00:00:11.11]       Stack Trace:
+[xUnit.net 00:00:11.11]         C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix8Tests.cs(109,0): at Trendo.Core.Tests.T0747_Fix8AchtePruefung.Wipeout_clip_outside_frame()
+[xUnit.net 00:00:11.11]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:11.11]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:11.11]     T-0747-fix8 niedrig: eine Bezeichnungstabelle (Schraffur, Abdeckfläche, Bemaßung); Grundriss „nicht übernommen“; formgleiche Schraffur fehlt nicht in den Fräsbahnen [FAIL]
+[xUnit.net 00:00:11.11]       Assert.Equal() Failure: Strings differ
+[xUnit.net 00:00:11.11]                  ↓ (pos 0)
+[xUnit.net 00:00:11.11]       Expected: "Schraffur"
+[xUnit.net 00:00:11.11]       Actual:   "HATCH"
+[xUnit.net 00:00:11.12]                  ↑ (pos 0)
+[xUnit.net 00:00:11.12]       Stack Trace:
+[xUnit.net 00:00:11.12]         C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix8Tests.cs(116,0): at Trendo.Core.Tests.T0747_Fix8AchtePruefung.Labels_and_redundant_fill()
+[xUnit.net 00:00:11.12]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:11.12]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:11.12]     T-0747-fix8 H-1/H-2: Schleifenzahl 91 fehlt/0 mit Daten/−1/NaN/zu klein, Kantenzahl 93 zu klein/−1/0/1 – Schraffur nie still übergangen [FAIL]
+[xUnit.net 00:00:11.12]       b01 91 fehlt: 
+[xUnit.net 00:00:11.12]       Stack Trace:
+[xUnit.net 00:00:11.12]         C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix8Tests.cs(35,0): at Trendo.Core.Tests.T0747_Fix8AchtePruefung.NeverOutside(String name, String hatch)
+[xUnit.net 00:00:11.12]         C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix8Tests.cs(42,0): at Trendo.Core.Tests.T0747_Fix8AchtePruefung.Hatch_counts_strict()
+[xUnit.net 00:00:11.12]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:11.12]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:11.12]     T-0747-fix8 H-3: Bogenkante mit Winkel NaN/−NaN/∞/1e400/1e300 – Rahmen „überall“; NaN gelangt nie in einen Rahmen [FAIL]
+[xUnit.net 00:00:11.12]       Winkel NaN: Füllfläche HATCH Box { MinX = NaN, MinY = NaN, MaxX = NaN, MaxY = NaN, IsEmpty = False, IsAll = False }
+[xUnit.net 00:00:11.12]       Stack Trace:
+[xUnit.net 00:00:11.12]         C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix8Tests.cs(35,0): at Trendo.Core.Tests.T0747_Fix8AchtePruefung.NeverOutside(String name, String hatch)
+[xUnit.net 00:00:11.12]         C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix8Tests.cs(69,0): at Trendo.Core.Tests.T0747_Fix8AchtePruefung.Nan_never_in_box()
+[xUnit.net 00:00:11.12]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:11.12]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:11.12]   Finished:    Trendo.Core.Tests
+Datensammler "Blame" – Meldung: Alle Tests wurden ausgeführt. Die Datei "Sequence" wird nicht generiert..
+  Fehler T-0747-fix8 M-1/niedrig: Spline-Kante mit „97 0“ mitten im Rand (c16/g04) und als letzte Kante (g03); Ellipsen- und Uhrzeiger-Kanten im Formvergleich [155 ms]
+  Fehlermeldung:
+   System.InvalidOperationException : Es blieb keine fräsbare Kontur übrig: Kontur 1 ausgelassen: nicht gelesenes Element Füllfläche HATCH hat keine bestimmbare Ausdehnung – es könnte diese Kontur umschließen, ob sie Loch oder Teil ist (die Seite), lässt sich nicht sicher sagen. Kontur 2 ausgelassen: nicht gelesenes Element Füllfläche HATCH hat keine bestimmbare Ausdehnung – es könnte diese Kontur umschließen, ob sie Loch oder Teil ist (die Seite), lässt sich nicht sicher sagen. Kontur 3 ausgelassen: nicht gelesenes Element Füllfläche HATCH hat keine bestimmbare Ausdehnung – es könnte diese Kontur umschließen, ob sie Loch oder Teil ist (die Seite), lässt sich nicht sicher sagen.
+  Stapelverfolgung:
+     at Trendo.Core.CncCam.Generate(IReadOnlyList`1 source, CamSettings s, CancellationToken ct) in C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\src\Trendo.Core\W6\CncCam.cs:line 300
+   at Trendo.Core.Tests.T0747_Fix8AchtePruefung.Cam(String dxf) in C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix8Tests.cs:line 28
+   at Trendo.Core.Tests.T0747_Fix8AchtePruefung.Spline_fit_zero_and_shapes() in C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix8Tests.cs:line 86
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0747-fix8 M-2: WIPEOUT-Ausschnitt außerhalb des Bildrahmens (e02) gehört zur Ausdehnung [4 ms]
+  Fehlermeldung:
+   Box { MinX = -50, MinY = -30, MaxX = 150, MaxY = 90, IsEmpty = False, IsAll = False }
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix8AchtePruefung.Wipeout_clip_outside_frame() in C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix8Tests.cs:line 109
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0747-fix8 niedrig: eine Bezeichnungstabelle (Schraffur, Abdeckfläche, Bemaßung); Grundriss „nicht übernommen“; formgleiche Schraffur fehlt nicht in den Fräsbahnen [2 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           ↓ (pos 0)
+Expected: "Schraffur"
+Actual:   "HATCH"
+           ↑ (pos 0)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix8AchtePruefung.Labels_and_redundant_fill() in C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix8Tests.cs:line 116
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0747-fix8 H-1/H-2: Schleifenzahl 91 fehlt/0 mit Daten/−1/NaN/zu klein, Kantenzahl 93 zu klein/−1/0/1 – Schraffur nie still übergangen [2 ms]
+  Fehlermeldung:
+   b01 91 fehlt: 
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix8AchtePruefung.NeverOutside(String name, String hatch) in C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix8Tests.cs:line 35
+   at Trendo.Core.Tests.T0747_Fix8AchtePruefung.Hatch_counts_strict() in C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix8Tests.cs:line 42
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0747-fix8 H-3: Bogenkante mit Winkel NaN/−NaN/∞/1e400/1e300 – Rahmen „überall“; NaN gelangt nie in einen Rahmen [4 ms]
+  Fehlermeldung:
+   Winkel NaN: Füllfläche HATCH Box { MinX = NaN, MinY = NaN, MaxX = NaN, MaxY = NaN, IsEmpty = False, IsAll = False }
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix8AchtePruefung.NeverOutside(String name, String hatch) in C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix8Tests.cs:line 35
+   at Trendo.Core.Tests.T0747_Fix8AchtePruefung.Nan_never_in_box() in C:\Users\<user>\AppData\Local\Temp\t0747fix8-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix8Tests.cs:line 69
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 5
+     Nicht bestanden: 5
+ Gesamtzeit: 13,5116 Sekunden

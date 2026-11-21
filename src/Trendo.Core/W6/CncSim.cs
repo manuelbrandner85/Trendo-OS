@@ -198,14 +198,15 @@ public sealed class CncJob
     public CamResult ImportDrawing(string path, CancellationToken ct = default)
     {
         var ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
-        Cad.CadDrawing drawing; Dictionary<string, int> skipped; string? units = null; List<(string What, Cad.CadDxf.Box B)> unread = [];
+        Cad.CadDrawing drawing; Dictionary<string, int> skipped; string? units = null; List<(string What, Cad.CadDxf.Box B)> unread = []; Dictionary<string, int> hiddenFills = [];
         switch (ext)
         {
-            case ".dxf": { var rd = Cad.CadDxf.Read(path, ct); drawing = rd.Drawing; skipped = rd.Skipped; unread = rd.Unread; if (rd.Units is not 0 and not 4) units = rd.UnitName; else if (rd.Units == 0) units = ""; break; } // T-0747-fix3: "" = keine Angabe
+            case ".dxf": { var rd = Cad.CadDxf.Read(path, ct); drawing = rd.Drawing; skipped = WithoutRedundant(rd.Skipped, rd.Redundant); unread = rd.Unread; hiddenFills = rd.HiddenFills; if (rd.Units is not 0 and not 4) units = rd.UnitName; else if (rd.Units == 0) units = ""; break; } // T-0747-fix3: "" = keine Angabe
             case ".svg": { var rs = Cad.CadSvg.Read(path); drawing = rs.Drawing; skipped = rs.Skipped; break; }
             default: throw new Cad.CadError("Für Fräsbahnen bitte eine DXF- oder SVG-Datei wählen.");
         }
         var notes = ReadNotes(drawing, skipped, units);
+        if (hiddenFills.Count > 0) notes.Add("Füllflächen auf ausgeblendeten Ebenen (nicht gefräst; außerhalb gezeichneter Konturen machen sie das Innere unsicher): " + string.Join(", ", hiddenFills.Select(k => $"{k.Value}× {k.Key}")) + "."); // T-0747-fix9
         var cs = CncCam.Contours(drawing, notes, ct: ct); // T-0747-fix3: Hinweise beim Verketten (mehrdeutige Spalten)
         if (cs.Count == 0) throw new Cad.CadError("In der Zeichnung sind keine Konturen (Linien, Kreise, Bögen, Pfade)." + (notes.Count > 0 ? " " + string.Join(" ", notes) : ""));
         var old = (Contours, CamSource, Unread); Contours = cs; CamSource = System.IO.Path.GetFileName(path); Unread = unread;
@@ -216,12 +217,20 @@ public sealed class CncJob
 
     /// <summary>T-0747-fix2: was beim Einlesen nicht in die Fräsbahnen kommt (SPLINE, ELLIPSE, Blockverweise, Texte, ausgeblendete Ebenen) und ob
     /// die Maße umgerechnet wurden – damit nichts still fehlt.</summary>
+    /// <summary>T-0747-fix8: formgleich gezeichnete Füllflächen fehlen beim Fräsen nicht – nicht als „nicht gelesen“ zählen.</summary>
+    static Dictionary<string, int> WithoutRedundant(Dictionary<string, int> skipped, Dictionary<string, int> redundant)
+    {
+        var res = new Dictionary<string, int>(skipped);
+        foreach (var (kk, n) in redundant) if (res.TryGetValue(kk, out var c)) { if (c - n > 0) res[kk] = c - n; else res.Remove(kk); }
+        return res;
+    }
+
     public static List<string> ReadNotes(Cad.CadDrawing d, IReadOnlyDictionary<string, int> skipped, string? units)
     {
         var notes = new List<string>();
         if (units == "") notes.Add("Einheit nicht angegeben – als mm gelesen. Bitte die Maße prüfen."); // T-0747-fix3
         else if (units is not null) notes.Add($"Maße in mm umgerechnet (Zeichnung in {units}).");
-        static string Label(string k) => k switch { "INSERT" => "Blockverweis (INSERT)", "SPLINE" => "SPLINE (Freiformkurve)", "ELLIPSE" => "ELLIPSE", "DIMENSION" => "Bemaßung", "HATCH" => "Schraffur", "text" => "SVG-Text", _ => k };
+        static string Label(string k) => Cad.CadDxf.KindLabel(k); // T-0747-fix8: eine Tabelle für Grundriss, Trendo CAD und Fräsen
         if (skipped.Count > 0) notes.Add("Nicht gelesen: " + string.Join(", ", skipped.OrderByDescending(k => k.Value).Select(k => $"{k.Value}× {Label(k.Key)}")) + " – diese Teile fehlen in den Fräsbahnen.");
         var texts = d.Entities.Count(e => e.Kind == "text");
         if (texts > 0) notes.Add($"{texts} Text(e) werden nicht gefräst.");

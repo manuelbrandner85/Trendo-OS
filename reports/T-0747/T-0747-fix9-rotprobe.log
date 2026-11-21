@@ -1,0 +1,189 @@
+  Wiederherzustellende Projekte werden ermittelt...
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Trendo.Core.csproj" wiederhergestellt (in 228 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.CrashProbe\Trendo.CrashProbe.csproj" wiederhergestellt (in 228 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Companion\Trendo.Companion.csproj" wiederhergestellt (in 228 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj" wiederhergestellt (in 228 ms.).
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Kreativ\KreativKits2.cs(50,116): warning CS8604: Mögliches Nullverweisargument für den Parameter "manuscript" in "IReadOnlyList<Chapter> BookKit.Chapters(string manuscript)". [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Letters.cs(95,51): warning CS8603: Mögliche Nullverweisrückgabe. [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Programs\ProgramDocument.cs(178,18): warning CS8604: Mögliches Nullverweisargument für den Parameter "data" in "void ProgramDocument.PushUndo(string data, string label)". [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\W2\MusicScript.cs(145,48): warning CS8619: Die NULL-Zulässigkeit von Verweistypen im Wert vom Typ "List<MusicScript.Figure?>" entspricht nicht dem Zieltyp "IReadOnlyList<MusicScript.Figure>". [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\W2\ClaudeChats.cs(174,140): warning CS8602: Dereferenzierung eines möglichen Nullverweises. [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Sys\IcsForeign.cs(35,45): warning CS0618: "RecurringComponent.RecurrenceId" ist veraltet: "Use RecurrenceIdentifier instead, which supports the RANGE parameter." [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Sys\IcsForeign.cs(36,51): warning CS0618: "RecurringComponent.RecurrenceId" ist veraltet: "Use RecurrenceIdentifier instead, which supports the RANGE parameter." [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Sys\IcsForeign.cs(70,13): warning CS0618: "RecurringComponent.RecurrenceRules" ist veraltet: "Use RecurrenceRule instead. Support for multiple recurrence rules will be removed in a future version." [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Sys\IcsForeign.cs(71,13): warning CS0618: "RecurringComponent.RecurrenceRules" ist veraltet: "Use RecurrenceRule instead. Support for multiple recurrence rules will be removed in a future version." [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Sys\IcsForeign.cs(72,17): warning CS0618: "RecurringComponent.RecurrenceRules" ist veraltet: "Use RecurrenceRule instead. Support for multiple recurrence rules will be removed in a future version." [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Trendo.Core.csproj]
+  Trendo.Core -> C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\bin\Release\net10.0\Trendo.Core.dll
+  Trendo.Companion -> C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Companion\bin\Release\net10.0\trendo-companion.dll
+  Trendo.CrashProbe -> C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.CrashProbe\bin\Release\net10.0\Trendo.CrashProbe.dll
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\AssetLibraryTests.cs(30,42): warning CS8604: Mögliches Nullverweisargument für den Parameter "actualArray" in "void Assert.Equal<double>(ReadOnlySpan<double> expectedSpan, double[] actualArray)". [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\WebDesignTeil2Tests.cs(77,41): warning CS8602: Dereferenzierung eines möglichen Nullverweises. [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\KiAttachmentsT0734Tests.cs(11,86): warning CS9113: Der Parameter „remote“ ist ungelesen. [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\SewingTests.cs(40,128): warning CS8604: Mögliches Nullverweisargument für den Parameter "source" in "IEnumerable<string> Enumerable.Skip<string>(IEnumerable<string> source, int count)". [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\T0725FachstudiosTests.cs(78,9): warning CS8631: Der Typ "string?" kann nicht als Typparameter "T" im generischen Typ oder in der generischen Methode "Assert.Equal<T>(ReadOnlySpan<T>, T[])" verwendet werden. Die NULL-Zulässigkeit des Typarguments "string?" entspricht nicht dem Einschränkungstyp "System.IEquatable<string?>". [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\ImportTempoTests.cs(807,38): warning CS0414: Dem Feld "ImportTempoTests.NodeHeader" wurde ein Wert zugewiesen, der aber nie verwendet wird. [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\PdfOrganizeTests.cs(11,24): warning xUnit1013: Public method 'Make' on test class 'PdfOrganizeTests' should be marked as a Theory. Reduce the visibility of the method, or add a Theory attribute to the method. (https://xunit.net/xunit.analyzers/rules/xUnit1013) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\DevBuildTests.cs(54,96): warning xUnit1031: Test methods should not use blocking task operations, as they can cause deadlocks. Use an async test method and await instead. (https://xunit.net/xunit.analyzers/rules/xUnit1031) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\ConnectedPromptTests.cs(88,9): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\ConnectedPromptTests.cs(99,9): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\ConnectedPromptTests.cs(107,9): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\GameFreeTests.cs(105,108): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\GameRulesTests.cs(98,100): warning xUnit2013: Do not use Assert.Equal() to check for collection size. Use Assert.Single instead. (https://xunit.net/xunit.analyzers/rules/xUnit2013) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\GeldRechnungenTests.cs(92,13): warning xUnit2031: Do not use a Where clause to filter before calling Assert.Single. Use the overload of Assert.Single that accepts a filtering function. (https://xunit.net/xunit.analyzers/rules/xUnit2031) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\LegalSourcesTests.cs(16,52): warning xUnit2030: Do not use Assert.NotEmpty to check if a value exists in a collection. Use Assert.Contains instead. (https://xunit.net/xunit.analyzers/rules/xUnit2030) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\MailRoundtripTests.cs(71,13): warning xUnit2017: Do not use Assert.False() to check if a value exists in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2017) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\MixamoTests.cs(127,9): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\ProgramDocumentMarkT0730Tests.cs(60,9): warning xUnit2013: Do not use Assert.Equal() to check for collection size. Use Assert.Single instead. (https://xunit.net/xunit.analyzers/rules/xUnit2013) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\SafeFileTests.cs(21,20): warning xUnit1031: Test methods should not use blocking task operations, as they can cause deadlocks. Use an async test method and await instead. (https://xunit.net/xunit.analyzers/rules/xUnit1031) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\SafeFileTests.cs(40,20): warning xUnit1031: Test methods should not use blocking task operations, as they can cause deadlocks. Use an async test method and await instead. (https://xunit.net/xunit.analyzers/rules/xUnit1031) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\SkillsTests.cs(62,47): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\TrendoAgentTests.cs(42,9): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\UnrealGameTests.cs(37,13): warning xUnit2031: Do not use a Where clause to filter before calling Assert.Single. Use the overload of Assert.Single that accepts a filtering function. (https://xunit.net/xunit.analyzers/rules/xUnit2031) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+  Trendo.Core.Tests -> C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:11.87]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:12.39]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:12.42]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:00:12.60]     T-0747-fix9 N-2/N-3/N-4: Toleranz je Achse 0,01 mm inkl. Zerlegungsfehler (Kreis r + 0,0099 gleich, r + 0,011 nicht); fallende Knoten keine Form; 2-Punkt-Rand mit gleichen Punkten unbekannt [FAIL]
+[xUnit.net 00:00:12.60]       Assert.Empty() Failure: Collection was not empty
+[xUnit.net 00:00:12.60]       Collection: [Tuple ("Füllfläche HATCH", Box { MinX = 19,990099999999998, MinY = 19,990099999999998, MaxX = 80,0099, MaxY = 80,0099, IsEmpty = False, IsAll = False, HasNaN = False })]
+[xUnit.net 00:00:12.60]       Stack Trace:
+[xUnit.net 00:00:12.60]         C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix9Tests.cs(115,0): at Trendo.Core.Tests.T0747_Fix9NeuntePruefung.Tolerance_knots_degenerate()
+[xUnit.net 00:00:12.60]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:12.60]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:12.67]     T-0747-fix9 H-2: ausgeblendete Schraffur über einer Aussparung (U-Platte) macht den Kreis darin unsicher; ganz in der Platte über den Löchern stört sie nicht und wird gemeldet [FAIL]
+[xUnit.net 00:00:12.67]       Assert.Contains() Failure: Filter not matched in collection
+[xUnit.net 00:00:12.67]       Collection: []
+[xUnit.net 00:00:12.67]       Stack Trace:
+[xUnit.net 00:00:12.67]         C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix9Tests.cs(65,0): at Trendo.Core.Tests.T0747_Fix9NeuntePruefung.Hidden_fill_real_containment()
+[xUnit.net 00:00:12.67]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:12.67]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:12.67]       Output:
+[xUnit.net 00:00:12.67]         
+[xUnit.net 00:00:12.67]     T-0747-fix9 H-1/H-3: HATCH als strenge Grammatik – Randdaten nach 75/76, zweites 91, Randgruppe im Vorspann → überall unsicher; 330-Kennungen hexadezimal sind Text [FAIL]
+[xUnit.net 00:00:12.67]       91 = 0, Schleife nach 75/76
+[xUnit.net 00:00:12.67]       Stack Trace:
+[xUnit.net 00:00:12.67]         C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix9Tests.cs(46,0): at Trendo.Core.Tests.T0747_Fix9NeuntePruefung.Hatch_grammar()
+[xUnit.net 00:00:12.67]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:00:12.67]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:12.67]       Output:
+[xUnit.net 00:00:12.67]         91 = 0, Schleife nach 75/76: 
+  Fehler T-0747-fix9 N-2/N-3/N-4: Toleranz je Achse 0,01 mm inkl. Zerlegungsfehler (Kreis r + 0,0099 gleich, r + 0,011 nicht); fallende Knoten keine Form; 2-Punkt-Rand mit gleichen Punkten unbekannt [151 ms]
+  Fehlermeldung:
+   Assert.Empty() Failure: Collection was not empty
+Collection: [Tuple ("Füllfläche HATCH", Box { MinX = 19,990099999999998, MinY = 19,990099999999998, MaxX = 80,0099, MaxY = 80,0099, IsEmpty = False, IsAll = False, HasNaN = False })]
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix9NeuntePruefung.Tolerance_knots_degenerate() in C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix9Tests.cs:line 115
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0747-fix9 H-2: ausgeblendete Schraffur über einer Aussparung (U-Platte) macht den Kreis darin unsicher; ganz in der Platte über den Löchern stört sie nicht und wird gemeldet [66 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Filter not matched in collection
+Collection: []
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix9NeuntePruefung.Hidden_fill_real_containment() in C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix9Tests.cs:line 65
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+  Fehler T-0747-fix9 H-1/H-3: HATCH als strenge Grammatik – Randdaten nach 75/76, zweites 91, Randgruppe im Vorspann → überall unsicher; 330-Kennungen hexadezimal sind Text [2 ms]
+  Fehlermeldung:
+   91 = 0, Schleife nach 75/76
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix9NeuntePruefung.Hatch_grammar() in C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix9Tests.cs:line 46
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ 91 = 0, Schleife nach 75/76: 
+
+
+[xUnit.net 00:02:13.91]     T-0747-fix9 H-4: 8000 Schraffur-Schleifen und 8000 Kreise lesen in Sekunden, Riesenkreis r 300 000 mit gleicher Schraffur, Abbrechen beim Lesen wirkt [FAIL]
+[xUnit.net 00:02:13.91]       64936 / 2497 / 53798
+[xUnit.net 00:02:13.91]       Stack Trace:
+[xUnit.net 00:02:13.91]         C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix9Tests.cs(102,0): at Trendo.Core.Tests.T0747_Fix9NeuntePruefung.Fill_matching_fast_and_cancellable()
+[xUnit.net 00:02:13.91]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:02:13.91]            at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:02:13.91]       Output:
+[xUnit.net 00:02:13.91]         8000 Schleifen + 8000 Kreise: 64936 ms; 8000 formgleiche Paare: 2497 ms; Riesenkreis r 300 000: 53798 ms
+[xUnit.net 00:02:13.91]   Finished:    Trendo.Core.Tests
+Datensammler "Blame" – Meldung: Alle Tests wurden ausgeführt. Die Datei "Sequence" wird nicht generiert..
+  Fehler T-0747-fix9 H-4: 8000 Schraffur-Schleifen und 8000 Kreise lesen in Sekunden, Riesenkreis r 300 000 mit gleicher Schraffur, Abbrechen beim Lesen wirkt [2 m 1 s]
+  Fehlermeldung:
+   64936 / 2497 / 53798
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix9NeuntePruefung.Fill_matching_fast_and_cancellable() in C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix9Tests.cs:line 102
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ 8000 Schleifen + 8000 Kreise: 64936 ms; 8000 formgleiche Paare: 2497 ms; Riesenkreis r 300 000: 53798 ms
+
+
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 4
+     Nicht bestanden: 4
+ Gesamtzeit: 2,3096 Minuten
+### Ergänzung: Fill_matching_worst_cases mit --blame-hang-timeout 120s
+  Wiederherzustellende Projekte werden ermittelt...
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Companion\Trendo.Companion.csproj" wiederhergestellt (in 222 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.CrashProbe\Trendo.CrashProbe.csproj" wiederhergestellt (in 222 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj" wiederhergestellt (in 222 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Trendo.Core.csproj" wiederhergestellt (in 222 ms.).
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Kreativ\KreativKits2.cs(50,116): warning CS8604: Mögliches Nullverweisargument für den Parameter "manuscript" in "IReadOnlyList<Chapter> BookKit.Chapters(string manuscript)". [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Letters.cs(95,51): warning CS8603: Mögliche Nullverweisrückgabe. [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\W2\MusicScript.cs(145,48): warning CS8619: Die NULL-Zulässigkeit von Verweistypen im Wert vom Typ "List<MusicScript.Figure?>" entspricht nicht dem Zieltyp "IReadOnlyList<MusicScript.Figure>". [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\W2\ClaudeChats.cs(174,140): warning CS8602: Dereferenzierung eines möglichen Nullverweises. [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Sys\IcsForeign.cs(35,45): warning CS0618: "RecurringComponent.RecurrenceId" ist veraltet: "Use RecurrenceIdentifier instead, which supports the RANGE parameter." [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Sys\IcsForeign.cs(36,51): warning CS0618: "RecurringComponent.RecurrenceId" ist veraltet: "Use RecurrenceIdentifier instead, which supports the RANGE parameter." [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Sys\IcsForeign.cs(70,13): warning CS0618: "RecurringComponent.RecurrenceRules" ist veraltet: "Use RecurrenceRule instead. Support for multiple recurrence rules will be removed in a future version." [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Sys\IcsForeign.cs(71,13): warning CS0618: "RecurringComponent.RecurrenceRules" ist veraltet: "Use RecurrenceRule instead. Support for multiple recurrence rules will be removed in a future version." [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Sys\IcsForeign.cs(72,17): warning CS0618: "RecurringComponent.RecurrenceRules" ist veraltet: "Use RecurrenceRule instead. Support for multiple recurrence rules will be removed in a future version." [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Trendo.Core.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Programs\ProgramDocument.cs(178,18): warning CS8604: Mögliches Nullverweisargument für den Parameter "data" in "void ProgramDocument.PushUndo(string data, string label)". [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\Trendo.Core.csproj]
+  Trendo.Core -> C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Core\bin\Release\net10.0\Trendo.Core.dll
+  Trendo.Companion -> C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\src\Trendo.Companion\bin\Release\net10.0\trendo-companion.dll
+  Trendo.CrashProbe -> C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.CrashProbe\bin\Release\net10.0\Trendo.CrashProbe.dll
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\AssetLibraryTests.cs(30,42): warning CS8604: Mögliches Nullverweisargument für den Parameter "actualArray" in "void Assert.Equal<double>(ReadOnlySpan<double> expectedSpan, double[] actualArray)". [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\WebDesignTeil2Tests.cs(77,41): warning CS8602: Dereferenzierung eines möglichen Nullverweises. [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\T0725FachstudiosTests.cs(78,9): warning CS8631: Der Typ "string?" kann nicht als Typparameter "T" im generischen Typ oder in der generischen Methode "Assert.Equal<T>(ReadOnlySpan<T>, T[])" verwendet werden. Die NULL-Zulässigkeit des Typarguments "string?" entspricht nicht dem Einschränkungstyp "System.IEquatable<string?>". [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\SewingTests.cs(40,128): warning CS8604: Mögliches Nullverweisargument für den Parameter "source" in "IEnumerable<string> Enumerable.Skip<string>(IEnumerable<string> source, int count)". [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\KiAttachmentsT0734Tests.cs(11,86): warning CS9113: Der Parameter „remote“ ist ungelesen. [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\ImportTempoTests.cs(807,38): warning CS0414: Dem Feld "ImportTempoTests.NodeHeader" wurde ein Wert zugewiesen, der aber nie verwendet wird. [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\PdfOrganizeTests.cs(11,24): warning xUnit1013: Public method 'Make' on test class 'PdfOrganizeTests' should be marked as a Theory. Reduce the visibility of the method, or add a Theory attribute to the method. (https://xunit.net/xunit.analyzers/rules/xUnit1013) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\DevBuildTests.cs(54,96): warning xUnit1031: Test methods should not use blocking task operations, as they can cause deadlocks. Use an async test method and await instead. (https://xunit.net/xunit.analyzers/rules/xUnit1031) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\ConnectedPromptTests.cs(88,9): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\ConnectedPromptTests.cs(99,9): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\ConnectedPromptTests.cs(107,9): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\GameFreeTests.cs(105,108): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\GameRulesTests.cs(98,100): warning xUnit2013: Do not use Assert.Equal() to check for collection size. Use Assert.Single instead. (https://xunit.net/xunit.analyzers/rules/xUnit2013) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\GeldRechnungenTests.cs(92,13): warning xUnit2031: Do not use a Where clause to filter before calling Assert.Single. Use the overload of Assert.Single that accepts a filtering function. (https://xunit.net/xunit.analyzers/rules/xUnit2031) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\TrendoAgentTests.cs(42,9): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\UnrealGameTests.cs(37,13): warning xUnit2031: Do not use a Where clause to filter before calling Assert.Single. Use the overload of Assert.Single that accepts a filtering function. (https://xunit.net/xunit.analyzers/rules/xUnit2031) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\SafeFileTests.cs(21,20): warning xUnit1031: Test methods should not use blocking task operations, as they can cause deadlocks. Use an async test method and await instead. (https://xunit.net/xunit.analyzers/rules/xUnit1031) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\SafeFileTests.cs(40,20): warning xUnit1031: Test methods should not use blocking task operations, as they can cause deadlocks. Use an async test method and await instead. (https://xunit.net/xunit.analyzers/rules/xUnit1031) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\SkillsTests.cs(62,47): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\ProgramDocumentMarkT0730Tests.cs(60,9): warning xUnit2013: Do not use Assert.Equal() to check for collection size. Use Assert.Single instead. (https://xunit.net/xunit.analyzers/rules/xUnit2013) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\LegalSourcesTests.cs(16,52): warning xUnit2030: Do not use Assert.NotEmpty to check if a value exists in a collection. Use Assert.Contains instead. (https://xunit.net/xunit.analyzers/rules/xUnit2030) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\MailRoundtripTests.cs(71,13): warning xUnit2017: Do not use Assert.False() to check if a value exists in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2017) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\MixamoTests.cs(127,9): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+  Trendo.Core.Tests -> C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:01.81]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:02.22]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:02.24]   Starting:    Trendo.Core.Tests
+Der aktive Testlauf wurde abgebrochen. Grund: Der Testhostprozess ist abgestürzt.
+Datensammler "Blame" – Meldung: Die angegebene Inaktivitätszeit von 2 Minuten ist abgelaufen. Vom Testhost und den untergeordneten Prozessen werden Stillstandsicherungen erfasst..
+Datensammlung: Test case event channel failed: Unable to read data from the transport connection: Eine vorhandene Verbindung wurde vom Remotehost geschlossen..
+
+Testlauf abgebrochen.
+
+Der aktive Testlauf wurde abgebrochen, weil der Hostprozess unerwartet beendet wurde. Überprüfen Sie die oben aufgeführte Aufrufliste, falls verfügbar, um weitere Informationen zur Ursache der Ausnahme zu erhalten.
+Beim Absturz ausgeführter Test: 
+Trendo.Core.Tests.T0747_Fix9NeuntePruefung.Fill_matching_worst_cases
+
+Dieser Test kann, muss aber nicht unbedingt die Absturzursache sein.
+
+Anlagen:
+  C:\Users\<user>\AppData\Local\Temp\t0747fix9-rot\tests\Trendo.Core.Tests\TestResults\f1ad495a-e4a8-4c52-9c8a-e5b2c7127685\Sequence_ecd0b3bd524e45e5bdb4f249a76d5746.xml
