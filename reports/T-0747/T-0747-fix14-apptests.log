@@ -1,0 +1,118 @@
+### T0747_DxfUi
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = '392d2b247fd663ffdce66cd2ec8490b24adca2d5a89be1b3607ccb3609f625d1')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 26,768s
+### exit 0
+### T0747_FixUi
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+T-0747-fix: Klick bis Oberfläche wieder frei 49 ms, fertig nach 2491 ms, 180 Wände
+  Finished:    Trendo.App.Tests (ID = '392d2b247fd663ffdce66cd2ec8490b24adca2d5a89be1b3607ccb3609f625d1')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 3, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 39,107s
+### exit 0
+### T0747_Fix3RaceUi
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = '392d2b247fd663ffdce66cd2ec8490b24adca2d5a89be1b3607ccb3609f625d1')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 4, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 36,737s
+### exit 0
+### T0747_Fix4RaceUi
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = '392d2b247fd663ffdce66cd2ec8490b24adca2d5a89be1b3607ccb3609f625d1')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 3, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 47,901s
+### exit 0
+### SPEC01_Ui
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = '392d2b247fd663ffdce66cd2ec8490b24adca2d5a89be1b3607ccb3609f625d1')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 6, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 14,236s
+### exit 0
+### SPEC01_UiArc
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = '392d2b247fd663ffdce66cd2ec8490b24adca2d5a89be1b3607ccb3609f625d1')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 1, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 2,926s
+### exit 0
+### SPEC14_Ui
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = '392d2b247fd663ffdce66cd2ec8490b24adca2d5a89be1b3607ccb3609f625d1')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 6,928s
+### exit 0
+### Bildbearbeitung_Ui
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = '392d2b247fd663ffdce66cd2ec8490b24adca2d5a89be1b3607ccb3609f625d1')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 5, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 12,622s
+### exit 0
+### PlanPhoto_Ui
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = '392d2b247fd663ffdce66cd2ec8490b24adca2d5a89be1b3607ccb3609f625d1')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 4, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 6,830s
+### exit 0
+### N23N24_CadPrintUi
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = '392d2b247fd663ffdce66cd2ec8490b24adca2d5a89be1b3607ccb3609f625d1')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 3, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 6,701s
+### exit 0
+### UebersichtEinfach_Ui
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = '392d2b247fd663ffdce66cd2ec8490b24adca2d5a89be1b3607ccb3609f625d1')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 2, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 68,181s
+### exit 0
+### DeadButtonTests
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = '392d2b247fd663ffdce66cd2ec8490b24adca2d5a89be1b3607ccb3609f625d1')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 83, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 214,591s
+### exit 0
+### Studio3DMeshEditUiTests
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+  Finished:    Trendo.App.Tests (ID = '392d2b247fd663ffdce66cd2ec8490b24adca2d5a89be1b3607ccb3609f625d1')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 5, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 11,288s
+### exit 0

@@ -936,3 +936,48 @@ Belege (`--fix`): alle 12 Ausgaben hash-gleich mit `fix_alt` des Prüfers 13.
 - Die erklärten Prüfer-Fälle bleiben „rot“.
 
 **Testzahlen T-0747-fix13:** Build 0 Fehler, keine neue Warnung in T-0747-Dateien. Kern (alle vierzehn T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests) **zweimal hintereinander**: je 157 gesamt, 156 bestanden, 1 übersprungen (vorbestehend „IFC echt“), 0 Fehler. App 13 Klassen inklusive Studio3DMeshEditUiTests – **123/123**. Prüfskript BESTANDEN.
+
+## Vierzehnte Prüfung behoben (T-0747-fix14)
+Arbeitskopie `%TEMP%\trendo-auftrag-T-0747-fix14`, Commit obendrauf auf c9ea0f03f. Keine Maschine angesteuert.
+
+**HOCH 1 – behoben.** Zur Stoß-Gruppe gehört jetzt die ganze Komponente, die über Spalte ≤ 0,1 mm (Verkettungstoleranz) erreichbar ist. Offene Ketten, deren Ende so nah an einem Ende der Gruppe oder einer schon angeschlossenen Kette liegt, werden nicht mehr weiter verkettet, sondern der Gruppe zugeschlagen; berühren sich zwei Gruppen so, werden sie eine. Der Rahmen, in dem beim Fräsen alles ausgelassen wird, umfasst damit Gruppe und angeschlossene Ketten. Der feine Aufbau im Füllflächen-Abgleich erkennt Stöße jetzt wie Grob-Aufbau und Fräsen. j1 mit Spalt 0 / 0,00001 / 0,005 / 0,05: kein Loch mehr außen gefräst (vorher 3,499 mm außen). Test `Junction_with_gap_chains`.
+
+**HOCH 2 – behoben.** Eine POLYLINE mit unvollständigem oder ungültigem Eckpunkt (20 fehlt, 10/20 doppelt, NaN) gilt jetzt unabhängig vom Schließ-Flag überall als unsicher. p1/p2 ohne_20 und doppelt_10: kein G-Code mehr statt „Loch außen“. Test `Open_polyline_incomplete_vertex` mit Kontrolle (vollständiger Eckpunkt → Loch innen).
+
+**MITTEL 3 – behoben.** Die Stoß-Schleife beim Fräsen fragt nur noch die Konturen ab, deren linke Rahmenkante im Gruppenrahmen liegt (nach linker Kante sortiert, Binärsuche), statt alle Konturen je Gruppe. Statt einer „offene Kontur“-Zeile je Linie gibt es eine Sammelmeldung zu allen Linienverbünden. j3 mit 66 000 Stößen: 2,3 s statt 46,0 s. Test `Many_junction_groups_fast` (50 000 Stoßgruppen + 1 Kreis, unter 10 s, weniger als 20 Meldungen).
+
+**MITTEL 4 – behoben.** Die Dichteregel („mehr als 64 Knoten angesehen“) ist ersetzt:
+- Knoten werden exakt über Schlüssel in 1-µm-Schritten je Ebene gesucht (Nachbarschlüssel ±1).
+- Als Stoß zählt nur echte Mehrdeutigkeit: zwei verschiedene Knoten ≤ 1 µm oder Grad über 2.
+- Ein eigenes Arbeitsbudget (20 Mio. Schritte) mit einer Sammelmeldung, falls es erschöpft ist.
+
+Ergebnisse:
+- f_loch_r1_1500 und f_kreis_r5_500 bis 12 000: je 2 Bahnen und 0 Meldungen (vorher 1 Bahn und 1500 bis 12 000 Meldungen „offene Kontur“).
+- Test `Fine_line_circles`.
+
+**Klein.**
+- Der Abbruchteil von Fix13 `Shape_budget_and_big_frames` verlangt jetzt `OperationCanceledException` (eigener Thread, bis zu fünf Versuche).
+- `KindLabel` kennt Linie, Polylinie, Bogen und Kreis; der Schlüssel „… mit unvollständigen Punkten“ wird über `KindLabel` gebildet.
+- j6 (Grad-1-Stichlinien ab Plattenecken) bleibt bewusst ein Stoß, also auf der sicheren Seite.
+
+**Nicht angefasst:** CAM-Abbruch-Nachlauf ([ALT]). Beim Formvergleich-Budget bleiben im Fall b1 30 000 × 30 000 weiterhin 24 301 Schraffuren stehen (sicher).
+
+**Prüferfälle aller Runden** (Prüfprogramme nur gelesen bzw. als Kopie ausgeführt): **958 Fälle, 26 mit Befund**. Das sind die 23 bekannten und drei aus Prüfung 14, die schon auf c9ea0f03f und fc2a91ec6 genauso ausfallen:
+- p2_platte_poly_loch_offene_polyline_normal: Der Kreis liegt in einem Loch der Platte, ist also ein Teil – das wird richtig außen gefräst.
+- ez_R2000/R2018_spline_daneben: Eine SPLINE ohne bestimmbare Ausdehnung macht die ganze Zeichnung unsicher; es entsteht kein G-Code.
+
+Prüfung 14 ist damit grün: cases14 0 von 12, casespoly14 1 von 6 (p2_normal, siehe oben).
+
+**G-Code-Vergleich** (412 Fälle, Runden 9–14 und Feinfälle):
+
+Gegen c9ea0f03f: 390 gleich, 22 abweichend, alle beabsichtigt:
+- j1 / j2 / j3 / j6 / j7 / j8: jetzt kein Fräsen im Linienverbund samt angeschlossenen Ketten (sicher).
+- p1 / p2 mit unvollständigem Eckpunkt: jetzt überall unsicher.
+- Feinfälle: jetzt 2 Bahnen statt 1.
+- z1–z3: nur Meldungstext (Sammelmeldung).
+
+Gegen fc2a91ec6: 390 gleich, 22 abweichend. Dazu kommen die bewusst sicheren Fälle aus Fix13 (a2–a6 Punktgruppen, z1/z2 Stoß).
+
+**Rot-Probe gegen c9ea0f03f:** die 4 neuen Fix14-Tests rot, die Fix13-Tests grün – `reports/T-0747/T-0747-fix14-rotprobe.log`.
+
+**Testzahlen T-0747-fix14:** Build 0 Fehler, keine neue Warnung in T-0747-Dateien. Kern (alle fünfzehn T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests) **zweimal hintereinander**: je 161 gesamt, 160 bestanden, 1 übersprungen (vorbestehend), 0 Fehler. App 13 Klassen inklusive Studio3DMeshEditUiTests – **123/123**. Prüfskript BESTANDEN.
