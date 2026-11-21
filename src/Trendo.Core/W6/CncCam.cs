@@ -162,10 +162,7 @@ public static class CncCam
         {
             if (ub.IsEmpty) continue;
             var u = ub.Shift(sx, sy);
-            // T-0747-fix6: Füllfläche (HATCH, SOLID …), deren Rechteck sich mit einer gelesenen geschlossenen Kontur deckt – ihr Rand ist gezeichnet, sie ändert nichts
-            const double fillTol = 0.01;
-            if (what.StartsWith(CadDxf.FillPrefix, StringComparison.Ordinal) && !u.IsAll && Enumerable.Range(0, cs.Count).Any(j => cs[j].Closed && !dup[j]
-                && Math.Abs(boxes[j].Item1 - u.MinX) <= fillTol && Math.Abs(boxes[j].Item2 - u.MinY) <= fillTol && Math.Abs(boxes[j].Item3 - u.MaxX) <= fillTol && Math.Abs(boxes[j].Item4 - u.MaxY) <= fillTol)) continue;
+            // T-0747-fix7: formgleiche Füllflächen-Schleifen entfernt schon der Leser (CadDxf.Parse), hier bleibt nur, was wirklich ungelesen ist
             for (var i = 0; i < cs.Count; i++)
             {
                 if (!cs[i].Closed || dup[i] || crossing[i] || unsure[i]) continue;

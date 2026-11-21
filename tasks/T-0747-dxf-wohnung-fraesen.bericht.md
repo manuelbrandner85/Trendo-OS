@@ -344,3 +344,54 @@ Ellipsen (Prüfer 6, `gen_p6.py check`): Pfeilhöhe höchstens 0,00100 mm, Punkt
 - Die sechs erklärten Prüfer-Fälle bleiben „rot“.
 
 **Testzahlen T-0747-fix6:** Build 0 Fehler. Kern (alle sieben T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests): **123 gesamt, 122 bestanden, 1 übersprungen (vorbestehend „IFC echt“), 0 Fehler**. App: T0747_DxfUi 2/2, T0747_FixUi 3/3, T0747_Fix3RaceUi 4/4, T0747_Fix4RaceUi 3/3, SPEC01_Ui 6/6, SPEC01_UiArc 1/1, SPEC14_Ui 2/2, Bildbearbeitung_Ui 5/5, PlanPhoto_Ui 4/4, N23N24_CadPrintUi 3/3, UebersichtEinfach_Ui 2/2, DeadButtonTests 83/83 – **118/118**. Prüfskript BESTANDEN. Prüfprogramme: 407 Fälle, keine neuen Befunde (sechs erklärte). Belege der früheren Runden unverändert (gleiche Ausgaben).
+
+## Siebte Prüfung behoben (T-0747-fix7)
+Arbeitskopie `%TEMP%\trendo-auftrag-T-0747-fix7`, Commit obendrauf auf a49d5c572. Keine Maschine angesteuert.
+**Prüfprogramme aller Prüfer** (nur als Kopie benutzt bzw. Fallgeneratoren ausgeführt, darunter `gen_p7.py gen/check`; nichts im Repo), alle Fälle über `CncJob.ImportDrawing`:
+
+| Fallgruppe | Fälle | mit G-Code | Befunde | Rechenzeit gesamt |
+|---|---|---|---|---|
+| Prüfer 2 | 162 | 141 | 1 (p_spline_block, erklärt) | 10,3 s |
+| Prüfer 3 | 55 | 48 | 0 | 1,2 s |
+| Prüfer 4 | 72 | 58 | 1 (v2, erklärt) | 1,1 s |
+| Prüfer 5 | 80 | 72 | 4 (f6, g2, k1_0_0005, n8 – erklärt); Haltestege 4/4 richtig | 13,8 s (g2 50 000 Kreise 11,6 s) |
+| Prüfer 5 Spline | 8 | 8 | 0 | 0,2 s |
+| Prüfer 6 (`gen_p6.py check`) | 30 | 9 | 0 | 1,9 s |
+| Prüfer 7 (`gen_p7.py check`) | 24 | 12 | 0 | 0,2 s |
+
+**Prüfer 7 im Einzelnen:**
+- c1–c11 liefern G-Code mit beiden Löchern innen gefräst: c1 deckungsgleiche Schraffur weit vom Nullpunkt, c2 kleine Schraffur in der Platte, WIPEOUT im Türblock, OLE2FRAME/Proxy/SHAPE, Ansichtsfenster/XLINE, Bemaßungsblock.
+- b1 und b3 sind sicher (alles ausgelassen und gemeldet). b2 fräst die Platte und lässt das Loch in der nicht gezeichneten Insel aus.
+- a1–a8 (Blöcke mit Ausbuchtungen, Normalen, SPLINE mit Gewichten): alle Löcher im wahren Umriss ausgelassen.
+
+Abstände wie in der sechsten Prüfung (schlechtester −0,0010 mm).
+
+**Rot-Probe gegen a49d5c572:** `T0747_Fix7SiebtePruefung` 3 von 3 rot – `reports/T-0747/T-0747-fix7-rotprobe.log`.
+
+**M-1 Schraffur-Rahmen – behoben.** `HatchLoops` liest den Randpfad-Abschnitt (91 … 97) Schleife für Schleife:
+- Polylinien-Ränder mit Ausbuchtungen, Linien, Bögen (im Uhrzeigersinn gespeichert: vorsichtig als Vollkreis), Ellipsen (volle Ellipse) und Splines (Kontroll- und Fit-Punkte; Gewicht ≤ 0 → unbekannt).
+- Erhebungspunkt und Saatpunkte zählen nicht mehr.
+- Ist der Abschnitt nicht wie erwartet aufgebaut, gilt die Schraffur als „unbekannt, überall“.
+- Test `Hatch_box_from_boundary_only` (c1, c2, Rand aus Linie + Bogen).
+
+**N-1 Füllflächen-Ausnahme nur bei gleicher Form – behoben.**
+- Jede Randschleife ist ein eigener Eintrag; Inseln werden also einzeln behandelt.
+- Eine Schleife fällt nur weg, wenn sie formgleich mit einer gezeichneten, sichtbaren, geschlossenen Kontur ist. Formgleich heißt: jeder Punkt und jede Stückmitte beider Züge höchstens 0,01 mm vom anderen, Richtung und Startecke egal, auch bei einem Rand aus einzelnen LINE.
+- Der Vergleich passiert im Leser `CadDxf.Parse` über die verketteten Konturen. Der bisherige Rechteck-Vergleich in `CncCam` ist entfernt.
+- Schraffuren auf ausgeblendeten Ebenen zählen nicht.
+- SOLID/TRACE/3DFACE werden als Viereck verglichen.
+- Test `Fill_exception_needs_same_shape` (b1, b2, b3, Rand aus LINE mit anderer Startecke, ausgeblendete Ebene).
+
+**N-2 WIPEOUT, OLE2FRAME, Proxy, SHAPE – behoben.**
+- WIPEOUT ist eine Füllfläche mit Ausdehnung: Bildrahmen aus Einfügepunkt + u·U + v·V mit ½ Pixel Reserve; der Ausschnitt liegt darin.
+- OLE2FRAME: Ausdehnung aus den zwei Ecken.
+- ACAD_PROXY_ENTITY ohne Ersatzgrafik (92 = 0, kein 310) zeichnet nichts; mit Ersatzgrafik bleibt sie „unbekannt, überall“.
+- SHAPE (Symbol aus einer Formdatei) zählt wie Text.
+- Test `Wipeout_ole_proxy_shape`.
+
+**Weiterhin offen:**
+- INSERT, SPLINE, MLINE und REGION werden nicht aufgelöst.
+- Schraffur-Bögen im Uhrzeigersinn gehen nur als Vollkreis in den Rahmen ein und nicht in den Formvergleich; solche Schraffuren gelten also nie als „schon gezeichnet“ (vorsichtig).
+- Die sechs erklärten Prüfer-Fälle bleiben „rot“.
+
+**Testzahlen T-0747-fix7:** Build 0 Fehler. Kern (alle acht T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests): **126 gesamt, 125 bestanden, 1 übersprungen (vorbestehend „IFC echt“), 0 Fehler**. App: T0747_DxfUi 2/2, T0747_FixUi 3/3, T0747_Fix3RaceUi 4/4, T0747_Fix4RaceUi 3/3, SPEC01_Ui 6/6, SPEC01_UiArc 1/1, SPEC14_Ui 2/2, Bildbearbeitung_Ui 5/5, PlanPhoto_Ui 4/4, N23N24_CadPrintUi 3/3, UebersichtEinfach_Ui 2/2, DeadButtonTests 83/83 – **118/118**. Prüfskript BESTANDEN. Prüfprogramme: 431 Fälle, keine neuen Befunde (sechs erklärte). Belege der früheren Runden unverändert.
