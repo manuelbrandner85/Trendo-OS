@@ -80,7 +80,7 @@ public static class CncCam
         var hidden = d.Layers.Where(l => !l.Visible).Select(l => l.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var ents = d.Entities.Where(e => e.Kind != "text" && !hidden.Contains(e.Layer) && !e.Invisible).ToList(); // T-0747-fix11: unsichtbar (60 = 1) wie ausgeblendet
         if (ents.Count > MaxEntities) throw new CadError($"Die Zeichnung hat {ents.Count.ToString("N0", De)} Elemente – zu viele zum Fräsen (höchstens {MaxEntities.ToString("N0", De)}). Bitte nur die nötigen Teile oder Ebenen exportieren.");
-        return CadContours.Build(ents, ChainTol, chord, notes, ct);
+        return CadContours.Build(ents, ChainTol, chord, notes, true, ct); // T-0747-fix13: Linien-Stöße nicht gierig verketten
     }
 
     public static CamResult Generate(IReadOnlyList<CadContour> source, CamSettings s, CancellationToken ct = default)
@@ -176,6 +176,25 @@ public static class CncCam
                 }
                 else if (!u.IsAll && u.MinX >= bi.Item1 - e && u.MinY >= bi.Item2 - e && u.MaxX <= bi.Item3 + e && u.MaxY <= bi.Item4 + e && cs[i].Contains((u.MinX + u.MaxX) / 2, (u.MinY + u.MaxY) / 2))
                     warn.Add($"{Name(i)}: enthält nicht gelesenes Element {what} (bei X {F((u.MinX + u.MaxX) / 2, "0.#")} Y {F((u.MinY + u.MaxY) / 2, "0.#")}) – dort wird nichts gefräst.");
+            }
+        }
+        // T-0747-fix13: Linienverbund mit Stoß (mehr als zwei Enden an einem Punkt) – nicht verkettet. Ein Umriss daraus könnte jede Kontur in seinem
+        // Rahmen umschließen: ob die Loch oder Teil ist, lässt sich nicht sicher sagen → auslassen und melden.
+        foreach (var grp in cs.Select((c, j) => (c, j)).Where(t => t.c.JunctionGroup >= 0).GroupBy(t => t.c.JunctionGroup))
+        {
+            ct.ThrowIfCancellationRequested();
+            double gx0 = double.MaxValue, gy0 = double.MaxValue, gx1 = double.MinValue, gy1 = double.MinValue;
+            foreach (var (c, _) in grp) foreach (var p in c.Pts) { gx0 = Math.Min(gx0, p.X); gy0 = Math.Min(gy0, p.Y); gx1 = Math.Max(gx1, p.X); gy1 = Math.Max(gy1, p.Y); }
+            const double e = 1e-6; var first = grp.First().j;
+            for (var i = 0; i < cs.Count; i++)
+            {
+                if (!cs[i].Closed || dup[i] || crossing[i] || unsure[i]) continue;
+                var bi = boxes[i];
+                if (bi.Item1 >= gx0 - e && bi.Item2 >= gy0 - e && bi.Item3 <= gx1 + e && bi.Item4 <= gy1 + e)
+                {
+                    unsure[i] = true;
+                    warn.Add($"{Name(i)} ausgelassen: liegt im Linienverbund ab Kontur {first + 1}, an dem mehr als zwei Linien zusammenstoßen – welcher Umriss gemeint ist und ob sie Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte die Umrisse in der Zeichnung trennen oder als Polylinie zeichnen.");
+                }
             }
         }
         // Art je Kontur (T-0747-fix5: Kandidaten für „liegt in“ aus einem Raster der Rahmen statt aus allen Konturen)

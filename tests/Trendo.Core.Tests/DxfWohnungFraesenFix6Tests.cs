@@ -190,6 +190,6 @@ public class T0747_Fix6SechstePruefung(ITestOutputHelper log)
         var ell = G((0, "ELLIPSE"), (8, "WAND"), (10, 2000), (20, 1500), (30, 0), (11, 800), (21, 0), (31, 0), (40, 0.5), (41, 0), (42, 2 * Math.PI));
         var d = CadDxf.Parse(Dxf(Lw([(0, 0, 0), (4000, 0, 0)], false, layer: "WAND") + Lw([(0, 200, 0), (4000, 200, 0)], false, layer: "WAND") + ell));
         var rep = PlanDxfImport.Import(new FloorPlan(), d);
-        Assert.Equal(1, rep.SkippedKinds["ELLIPSE (nicht als Wand übernommen)"]);
+        Assert.Equal(1, rep.SkippedKinds["Ellipse (nicht als Wand übernommen)"]);
     }
 }

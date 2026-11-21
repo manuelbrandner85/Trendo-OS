@@ -3,6 +3,10 @@ namespace Trendo.Core.Cad;
 /// <summary>T-0747: Ein Linienzug aus einer Zeichnung – geschlossen (Umriss, Loch) oder offen (Gravur, Hilfslinie). Maße wie in der Zeichnung.</summary>
 public sealed record CadContour(List<(double X, double Y)> Pts, bool Closed, string Layer)
 {
+    /// <summary>T-0747-fix13: ≥ 0, wenn das Stück zu einer zusammenhängenden Gruppe mit einem Linien-Stoß (mehr als zwei Enden an einem Punkt) gehört.
+    /// Solche Gruppen werden nicht verkettet (sonst entscheidet die Reihenfolge, welcher Umriss entsteht); alle Stücke einer Gruppe tragen dieselbe Nummer.</summary>
+    public int JunctionGroup { get; init; } = -1;
+
     /// <summary>Fläche mit Vorzeichen (positiv = gegen den Uhrzeigersinn, y nach oben).</summary>
     public double SignedArea
     {
@@ -41,7 +45,11 @@ public static class CadContours
     public static List<CadContour> Build(IEnumerable<CadEntity> entities, double tol = 0.01, double chord = 0.01, CancellationToken ct = default) => Build(entities, tol, chord, null, ct);
 
     /// <summary>Wie oben; <paramref name="notes"/> bekommt Hinweise beim Verketten (mehrdeutige Spalten).</summary>
-    public static List<CadContour> Build(IEnumerable<CadEntity> entities, double tol, double chord, List<string>? notes, CancellationToken ct = default)
+    public static List<CadContour> Build(IEnumerable<CadEntity> entities, double tol, double chord, List<string>? notes, CancellationToken ct = default) => Build(entities, tol, chord, notes, false, ct);
+
+    /// <summary>T-0747-fix13: wie oben; <paramref name="junctions"/> = Gruppen mit Linien-Stoß nicht verketten, sondern als offene Stücke mit
+    /// <see cref="CadContour.JunctionGroup"/> zurückgeben (Fräsen: alles darin ist unsicher).</summary>
+    public static List<CadContour> Build(IEnumerable<CadEntity> entities, double tol, double chord, List<string>? notes, bool junctions, CancellationToken ct = default)
     {
         var closed = new List<CadContour>(); var open = new List<CadContour>();
         foreach (var e in entities)
@@ -68,7 +76,7 @@ public static class CadContours
                 }
             }
         }
-        closed.AddRange(Chain(open, tol, notes, ct));
+        closed.AddRange(Chain(open, tol, notes, junctions, ct));
         return closed.Where(c => c.Closed || c.Pts.Count >= 2).ToList();
     }
 
@@ -80,13 +88,22 @@ public static class CadContours
     /// (der Spalt wird eine eigene kurze Strecke, beide Endpunkte bleiben); 3. offene Ketten untereinander über einen Spalt ≤ <paramref name="tol"/>
     /// verbinden, kürzester Spalt zuerst (echter Abstand). Liegt ein zweites Ende etwa gleich nah, wird nicht überbrückt und das in
     /// <paramref name="notes"/> gemeldet. Geschlossene Ketten werden nie mit anderen verbunden.</summary>
-    public static List<CadContour> Chain(List<CadContour> pieces, double tol, List<string>? notes, CancellationToken ct = default)
+    public static List<CadContour> Chain(List<CadContour> pieces, double tol, List<string>? notes, CancellationToken ct = default) => Chain(pieces, tol, notes, false, ct);
+
+    /// <summary>T-0747-fix13: mit <paramref name="junctions"/> werden zusammenhängende Gruppen, in denen sich an einem Punkt mehr als zwei Enden
+    /// (gleiche Ebene, ≤ 1 µm) treffen, nicht gierig verkettet: Ihre Stücke kommen offen zurück und tragen <see cref="CadContour.JunctionGroup"/>.</summary>
+    public static List<CadContour> Chain(List<CadContour> pieces, double tol, List<string>? notes, bool junctions, CancellationToken ct = default)
     {
         var lim = tol + 1e-9;
         // 1. exakt verbinden (Raster der Enden)
         var used = new bool[pieces.Count];
         var cell = Math.Max(tol, 1e-6) * 2;
         (long, long) C((double X, double Y) p) => ((long)Math.Floor(p.X / cell), (long)Math.Floor(p.Y / cell));
+        var jgroup = junctions ? Junctions(pieces, cell, notes, ct) : null;
+        var jout = new List<CadContour>();
+        if (jgroup is not null)
+            for (var k = 0; k < pieces.Count; k++)
+                if (jgroup[k] >= 0) { used[k] = true; jout.Add(new CadContour(pieces[k].Pts, false, pieces[k].Layer) { JunctionGroup = jgroup[k] }); }
         var map = new Dictionary<(long, long), List<int>>();
         for (var k = 0; k < pieces.Count; k++)
             foreach (var c in new[] { C(pieces[k].Pts[0]), C(pieces[k].Pts[^1]) }.Distinct())
@@ -180,7 +197,80 @@ public static class CadContours
             if (!merged) break;
         }
         done.AddRange(open.Select(o => new CadContour(o.Pts, false, o.Layer)));
+        done.AddRange(jout);
         return done;
+    }
+
+    /// <summary>T-0747-fix13: Knoten der Enden (je Ebene, ≤ 1 µm) bilden; Stücke über gemeinsame Knoten zu Gruppen verbinden. Gruppe mit einem Knoten,
+    /// an dem mehr als zwei Enden liegen, bekommt eine Nummer ≥ 0 (sonst −1). Liegen in der Nähe eines Endes zu viele Knoten (mehr als 64 zu prüfen),
+    /// gilt das Ende vorsichtshalber als Stoß.</summary>
+    static int[] Junctions(List<CadContour> pieces, double cell, List<string>? notes, CancellationToken ct)
+    {
+        var n = pieces.Count; var parent = new int[n]; for (var i = 0; i < n; i++) parent[i] = i;
+        int Find(int x) { while (parent[x] != x) { parent[x] = parent[parent[x]]; x = parent[x]; } return x; }
+        void Union(int a, int b) { a = Find(a); b = Find(b); if (a != b) parent[a] = b; }
+        var nodes = new List<(double X, double Y, string Layer, int First, List<int> Members)>();
+        var nmap = new Dictionary<(long, long), List<int>>();
+        var hot = new bool[n];
+        for (var k = 0; k < n; k++)
+        {
+            if ((k & 1023) == 0) ct.ThrowIfCancellationRequested();
+            foreach (var p in new[] { pieces[k].Pts[0], pieces[k].Pts[^1] })
+            {
+                var cx = (long)Math.Floor(p.X / cell); var cy = (long)Math.Floor(p.Y / cell);
+                var found = -1; var seen = 0;
+                for (var dx = -1L; dx <= 1 && found < 0 && seen <= 64; dx++)
+                    for (var dy = -1L; dy <= 1 && found < 0 && seen <= 64; dy++)
+                        if (nmap.TryGetValue((cx + dx, cy + dy), out var l))
+                            foreach (var q in l)
+                            {
+                                if (++seen > 64) break;
+                                var nd = nodes[q];
+                                if (nd.Layer == pieces[k].Layer && Dist((nd.X, nd.Y), p) <= DupTol) { found = q; break; }
+                            }
+                if (seen > 64) hot[k] = true; // zu dicht: nicht sicher zu entscheiden
+                if (found < 0)
+                {
+                    found = nodes.Count; nodes.Add((p.X, p.Y, pieces[k].Layer, k, []));
+                    if (!nmap.TryGetValue((cx, cy), out var l2)) nmap[(cx, cy)] = l2 = []; l2.Add(found);
+                }
+                var nd2 = nodes[found]; nd2.Members.Add(k);
+                Union(k, nd2.First);
+            }
+        }
+        // Grad = Zahl der verschiedenen Stücke am Knoten; deckungsgleich doppelt gezeichnete Stücke zählen einmal (das prüft später die Doppelt-Erkennung)
+        bool Same(List<(double X, double Y)> a, List<(double X, double Y)> b)
+        {
+            if (a.Count != b.Count) return false;
+            var fw = true; var bw = true;
+            for (var i = 0; i < a.Count && (fw || bw); i++) { fw &= Dist(a[i], b[i]) <= DupTol; bw &= Dist(a[i], b[^(i + 1)]) <= DupTol; }
+            return fw || bw;
+        }
+        int Degree(List<int> m)
+        {
+            if (m.Count > 64) return int.MaxValue; // zu viele Enden an einem Punkt: vorsichtshalber Stoß
+            var distinct = new List<int>(); var ends = 0;
+            foreach (var k in m)
+            {
+                if (distinct.Any(q => Same(pieces[q].Pts, pieces[k].Pts))) { if (distinct.Contains(k)) ends++; continue; }
+                distinct.Add(k); ends++;
+            }
+            return ends;
+        }
+        var degree = nodes.Select(nd => Degree(nd.Members)).ToArray();
+        var hotRoots = new HashSet<int>();
+        for (var q = 0; q < nodes.Count; q++) if (degree[q] > 2) hotRoots.Add(Find(nodes[q].First));
+        for (var k = 0; k < n; k++) if (hot[k]) hotRoots.Add(Find(k));
+        var res = new int[n]; var reported = 0;
+        for (var k = 0; k < n; k++) res[k] = hotRoots.Contains(Find(k)) ? Find(k) : -1;
+        if (notes is not null)
+            for (var q = 0; q < nodes.Count; q++)
+            {
+                if (degree[q] <= 2) continue; var nd = nodes[q];
+                if (++reported > 20) break;
+                notes.Add($"Linien-Stoß bei X {nd.X.ToString("0.##", System.Globalization.CultureInfo.GetCultureInfo("de-DE"))} Y {nd.Y.ToString("0.##", System.Globalization.CultureInfo.GetCultureInfo("de-DE"))}: {(degree[q] == int.MaxValue ? nd.Members.Count : degree[q])} Linienenden treffen sich – dieser Linienverbund wird nicht zu Umrissen verkettet, Konturen darin werden ausgelassen.");
+            }
+        return res;
     }
 
     static double Sweep(CadEntity e) { var sw = (e.A1 - e.A0) % 360; if (sw < 0) sw += 360; return sw < 1e-12 ? 360 : sw; } // ARC von a0 nach a1 gegen den Uhrzeigersinn; gleich = Vollkreis

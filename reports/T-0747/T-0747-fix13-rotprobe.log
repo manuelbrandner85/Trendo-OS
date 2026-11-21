@@ -1,0 +1,60 @@
+### Rot-Probe: Tests des Stands fix13 (Fix6, Fix10, Fix12, Fix13) gegen den Quellstand fc2a91ec6
+  Wiederherzustellende Projekte werden ermittelt...
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix13-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj" wiederhergestellt (in 499 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix13-rot\src\Trendo.Companion\Trendo.Companion.csproj" wiederhergestellt (in 499 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix13-rot\src\Trendo.Core\Trendo.Core.csproj" wiederhergestellt (in 499 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix13-rot\tests\Trendo.CrashProbe\Trendo.CrashProbe.csproj" wiederhergestellt (in 499 ms.).
+  Trendo.Core -> C:\Users\<user>\AppData\Local\Temp\t0747fix13-rot\src\Trendo.Core\bin\Release\net10.0\Trendo.Core.dll
+  Trendo.Companion -> C:\Users\<user>\AppData\Local\Temp\t0747fix13-rot\src\Trendo.Companion\bin\Release\net10.0\trendo-companion.dll
+  Trendo.CrashProbe -> C:\Users\<user>\AppData\Local\Temp\t0747fix13-rot\tests\Trendo.CrashProbe\bin\Release\net10.0\Trendo.CrashProbe.dll
+  Trendo.Core.Tests -> C:\Users\<user>\AppData\Local\Temp\t0747fix13-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\t0747fix13-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:01.86]     T-0747-fix6 N-2: elliptische Wand im Grundriss wird als nicht gelesen gemeldet statt still zu verschwinden [FAIL]
+  Fehler T-0747-fix6 N-2: elliptische Wand im Grundriss wird als nicht gelesen gemeldet statt still zu verschwinden [26 ms]
+  Fehlermeldung:
+   System.Collections.Generic.KeyNotFoundException : The given key 'Ellipse (nicht als Wand übernommen)' was not present in the dictionary.
+  Stapelverfolgung:
+     at System.Collections.Generic.Dictionary`2.get_Item(TKey key)
+   at Trendo.Core.Tests.T0747_Fix6SechstePruefung.Floor_plan_reports_ellipse() in C:\Users\<user>\AppData\Local\Temp\t0747fix13-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix6Tests.cs:line 193
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:20:07.10]     T-0747-fix13 HOCH 3 / MITTEL 4: Formvergleich Kamm 2000 × 64 gezeichnet × 117 Schraffuren und 1000 riesige Rahmen + 60 000 winzige je unter 10 s, abbrechbar [FAIL]
+  Fehler T-0747-fix13 HOCH 3 / MITTEL 4: Formvergleich Kamm 2000 × 64 gezeichnet × 117 Schraffuren und 1000 riesige Rahmen + 60 000 winzige je unter 10 s, abbrechbar [20 m 2 s]
+  Fehlermeldung:
+   Kamm 389127 ms
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix13DreizehntePruefung.Shape_budget_and_big_frames() in C:\Users\<user>\AppData\Local\Temp\t0747fix13-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix13Tests.cs:line 129
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ Kamm-Formvergleich: 389127 ms (117 nicht gelesen); 1000 große + 60 000 winzige: 18336 ms
+
+
+[xUnit.net 00:20:07.11]     T-0747-fix13 HOCH 1: LINE-Rechteck mit zwei Ausläufern an T-Stößen – in jeder Reihenfolge wird kein Loch außen gefräst; Ausläufer auf eigener Ebene bleibt richtig [FAIL]
+[xUnit.net 00:20:07.11]     T-0747-fix13 MITTEL 2: Punktgruppen streng – SOLID/TRACE/3DFACE/LINE mit fehlender oder doppelter Gruppe gelten überall als unsicher; nur umsortiert wird richtig gelesen [FAIL]
+  Fehler T-0747-fix13 HOCH 1: LINE-Rechteck mit zwei Ausläufern an T-Stößen – in jeder Reihenfolge wird kein Loch außen gefräst; Ausläufer auf eigener Ebene bleibt richtig [10 ms]
+  Fehlermeldung:
+   Assert.False() Failure
+Expected: False
+Actual:   True
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix13DreizehntePruefung.T_junction_never_hole_outside() in C:\Users\<user>\AppData\Local\Temp\t0747fix13-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix13Tests.cs:line 67
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ Kontur 2 ausgelassen: liegt in oder an der offenen Kontur 3 – ob sie Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte den Umriss in der Zeichnung schließen. | Kontur 3 ausgelassen: offene Kontur (Enden 223,607 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fräserradius kleiner. Nur in der Fräsart „Auf der Linie (Gravur)“ wird sie gefräst; sonst die Zeichnung schließen. | Kontur 4 ausgelassen: offene Kontur (Enden 141,421 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fräserradius kleiner. Nur in der Fräsart „Auf der Linie (Gravur)“ wird sie gefräst; sonst die Zeichnung schließen.
+
+
+  Fehler T-0747-fix13 MITTEL 2: Punktgruppen streng – SOLID/TRACE/3DFACE/LINE mit fehlender oder doppelter Gruppe gelten überall als unsicher; nur umsortiert wird richtig gelesen [1 ms]
+  Fehlermeldung:
+   Assert.Single() Failure: The collection was empty
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix13DreizehntePruefung.Strict_point_groups() in C:\Users\<user>\AppData\Local\Temp\t0747fix13-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix13Tests.cs:line 84
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Fehler!      : Fehler:     4, erfolgreich:    18, übersprungen:     0, gesamt:    22, Dauer: 20 m 9 s - Trendo.Core.Tests.dll (net10.0)

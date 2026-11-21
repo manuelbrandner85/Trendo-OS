@@ -861,3 +861,78 @@ Belege (`--fix`): alle 12 Ausgaben hash-gleich mit dem Vorstand (fix_alt des Pr�
 - Die erklärten Prüfer-Fälle bleiben „rot“.
 
 **Testzahlen T-0747-fix12:** Build 0 Fehler, keine Warnung in T-0747-Dateien. Kern (alle dreizehn T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests) **zweimal hintereinander**: je 154 gesamt, 153 bestanden, 1 übersprungen (vorbestehend „IFC echt“), 0 Fehler. App: 13 Klassen inklusive Studio3DMeshEditUiTests – **123/123**. Prüfskript BESTANDEN.
+
+## Dreizehnte Prüfung behoben (T-0747-fix13)
+Arbeitskopie `%TEMP%\trendo-auftrag-T-0747-fix13`, Commit obendrauf auf fc2a91ec6. Keine Maschine angesteuert.
+
+**HOCH 1 – behoben (Linien-Stöße).** Beim Verketten für das Fräsen (und für den Füllflächen-Abgleich) werden zuerst Knoten der Linienenden gebildet (gleiche Ebene, ≤ 1 µm). Treffen sich an einem Knoten mehr als zwei verschiedene Stücke, wird die ganze zusammenhängende Gruppe nicht gierig verkettet. Ihre Stücke kommen offen zurück und tragen dieselbe Gruppennummer. Doppelt deckungsgleich gezeichnete Stücke zählen dabei einmal (die doppelte Platte aus 8 LINE bleibt richtig). Liegen an einem Punkt zu viele Enden (über 64 zu prüfen), gilt er vorsichtshalber als Stoß.
+
+Beim Fräsen wird jede geschlossene Kontur im Rahmen einer solchen Gruppe ausgelassen und gemeldet („liegt im Linienverbund …, an dem mehr als zwei Linien zusammenstoßen“). Ein Umriss aus der Gruppe kann nur Konturen in ihrem Rahmen umschließen; Konturen außerhalb behalten ihre Rolle. Der Wohnungsplaner verkettet wie bisher. Test `T_junction_never_hole_outside` mit fünf Reihenfolgen, Ausläufer auf eigener Ebene (z4) und Rechteck ohne Ausläufer als Kontrolle.
+
+**MITTEL 2 – behoben (Punktgruppen streng).** Alle `Pairs()`-Nutzer sind ersetzt:
+- Punkte, die genau einmal vorkommen (LINE, SOLID/TRACE, 3DFACE, OLE2FRAME, POLYLINE-Eckpunkt, Mittelpunkt von CIRCLE/ARC): Jeder Code und sein y genau einmal; die Reihenfolge ist nach DXF frei und eindeutig. Fehlt ein Wert oder ist er doppelt, gilt das Element als nicht bestimmbar (überall unsicher).
+- Wiederholte Punkte (SPLINE-Kontrollpunkte, WIPEOUT 14/24) und LWPOLYLINE: Jedes x muss direkt von seinem y gefolgt sein, ein y ohne x ist ein Fehler.
+- Eine LINE mit fehlender y-Gruppe wird nicht mehr still mit y = 0 gezeichnet, sondern gemeldet.
+- SOLID mit weniger als vier Punkten ergibt nicht mehr still eine leere Liste.
+- Test `Strict_point_groups`.
+
+**HOCH 3 – behoben (Formvergleich-Budget).**
+- Ein gemeinsames Schrittbudget je Datei (100 Mio.) für Raster, Kandidatensuche und alle `Covered`-Aufrufe.
+- Vorabtest an 16 gleichmäßig verteilten Punkten (und dem letzten) beider Züge vor dem vollen Vergleich.
+- Über dem Budget gilt „nicht formgleich“, die Schraffur bleibt.
+- s1-Kämme 2,3–3,4 s statt 77 s bis > 150 s.
+
+**MITTEL 4/5 – behoben (Rahmen-Index).** Das Rahmen-Raster der ausgeblendeten Schraffuren ist durch einen statischen R-Baum ersetzt: 16 Einträge je Knoten, sortiert nach Mittelpunkt in Streifen. Große Rahmen werden nicht mehr flächig eingetragen. Jeder besuchte Knoten und Eintrag geht ins Arbeitsbudget; die Kandidatensuche zählt mit und bricht bei 4096 ab, statt erst eine Liste zu bauen. Ergebnisse:
+- c1 (1000 große + 60 000 winzige): 0,8 s statt 19 s.
+- w1 100 000: 4,6 s statt 36 s, Speicher 1,3 GB statt 82 GB angefordert.
+- l1 (lange dünne Rahmen): 0,8 s, alle 20 000 versteckten Schraffuren richtig verworfen.
+
+**NIEDRIG 6 – behoben.** Das gemeinsame Raster des Formvergleichs wird erst gebaut, wenn eine Schleife mehr als 16 Kandidaten mit gleichem Rahmen hat. Sonst werden die Kandidaten direkt aus dem Rahmen-Index genommen.
+- q9: 1,2 s / 0,5 GB statt 4,5 s / 1,1 GB.
+- k1: 2,0 s / 1,8 GB statt 4,2 s / 3,9 GB Spitze.
+
+**MITTEL 7 – behoben.**
+- Die Zeittests der Klassen Fix12 und Fix13 laufen in einer nicht parallelen Sammlung; die Grenzen liegen bei 10 s.
+- Fix10 `Hidden_fill_nested_and_tolerance` prüft wieder `Assert.Empty(Unread)`, dazu die Gegenprobe d = −0,011 → `Single(Unread)`.
+- Der vorgeschriebene Kernfilter ist zweimal grün.
+
+**NIEDRIG 8 – behoben.** Grundriss-Meldung „Ellipse (nicht als Wand übernommen)“ statt „ELLIPSE“. `KindLabel` kennt „Ellipse“.
+
+**Neue Kürzel und Lochrolle (selbst geprüft):** Keine Änderung dieser Runde macht aus einem Loch ein Teil oder umgekehrt.
+- Der Linien-Stoß lässt nur mehr Konturen aus.
+- Strenge Punktgruppen machen nur mehr Elemente „überall unsicher“.
+- Budgets, Vorabtest und die faule Rasterwahl ergeben nur seltener „formgleich“; die direkte Kandidatenliste ist vollständig.
+- Der R-Baum liefert dieselben Überschneidungen wie das Raster.
+- Im Füllflächen-Abgleich zählen offene Stoß-Gruppen nicht als umschließende Kontur. Eine Schraffur fällt dort also nur weg, wenn ihre umschließende geschlossene Kontur auf gerader Tiefe liegt. Konturen im Stoß-Rahmen lässt das Fräsen ohnehin aus.
+
+**Prüfprogramme aller Prüfer** (nur gelesen bzw. als Kopie ausgeführt; Harness-Kopie des Prüfers 13; Einheiten-Fälle mit mm-Erwartung): **925 Fälle, 23 mit Befund** – dieselben 23 bekannten wie in der zwölften Prüfung; **cases13 (Prüfer 13): 0 von 25**. Prüfer-13-Vakuum-Fälle: Spitze −0,5 / −5 mm bleibt stehen, −0,001 / 0,0019 / 0,0021 fällt weg.
+
+**Leistung (Lesen, Harness des Prüfers 13; alt = fc2a91ec6, eigene Harness-Kopie):**
+
+| Fall | alt | neu | Spitze neu |
+|---|---|---|---|
+| s1 Kamm 500 C64 F117 | 77,7 s | 2,3 s | 0,3 GB |
+| s1 Kamm 2000 C64 F117 / C250 F30 | > 150 s | 2,6 / 3,3 s | 0,5 / 0,7 GB |
+| c1 1000 große + 60 000 winzig / c1e | 19,1 / 19,1 s | 0,8 / 0,7 s | 0,7 GB |
+| c1f 100 große | 3,5 s | 0,7 s | 0,9 GB |
+| c1 4000 + 250 000 | Abbruch Elementgrenze | Elementgrenze nach 2,4 s, 0,9 GB | – |
+| w1 20 000 / 100 000 | 2,4 / 35,6 s | 0,7 / 4,6 s | 0,4 GB (vorher 82 GB angefordert) |
+| l1 lang dünn | 2,2 s | 0,8 s (alle verworfen) | 0,3 GB |
+| q9 20 000 Schleifen | 4,5 s | 1,2 s | 0,5 GB (vorher 1,1 GB) |
+| k1 je6 | 4,2 s | 2,0 s | 1,8 GB (vorher 3,9 GB) |
+| p2 / m1 / r1 | 4,3 / 1,0 / 6,7 s | 1,3 / 0,9 / 5,4 s | – |
+| b1 30 000 × 30 000 | 4,9 s | 3,7 s | 24 301 bleiben (Budget, sicher) |
+
+Abbruch beim Lesen: c1 ≤ 148 ms, s1 ≤ 372 ms, w1 ≤ 288 ms, b1/b2/k2 ≤ 262 ms nach dem Abbrechen. Die übrigen n-, q-, b-, d- und e-Fälle liegen wie in der zwölften Prüfung.
+
+Belege (`--fix`): alle 12 Ausgaben hash-gleich mit `fix_alt` des Prüfers 13.
+
+**Rot-Probe gegen fc2a91ec6:** 4 von 22 rot (die drei Fix13-Tests und Fix6 N-2 „Ellipse“) – `reports/T-0747/T-0747-fix13-rotprobe.log`.
+
+**Weiterhin offen:**
+- CAM-Laufzeit und Abbruch in `CncCam.Generate` (Kamm, große Kreiszahlen, b1/b2 mit Fräsbahn).
+- Das Raster „Art je Kontur“ in `CncCam` trägt große Rahmen weiter flächig ein (nur Fräsbahn-Phase).
+- INSERT, SPLINE, MLINE und REGION werden nicht aufgelöst.
+- Die erklärten Prüfer-Fälle bleiben „rot“.
+
+**Testzahlen T-0747-fix13:** Build 0 Fehler, keine neue Warnung in T-0747-Dateien. Kern (alle vierzehn T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests) **zweimal hintereinander**: je 157 gesamt, 156 bestanden, 1 übersprungen (vorbestehend „IFC echt“), 0 Fehler. App 13 Klassen inklusive Studio3DMeshEditUiTests – **123/123**. Prüfskript BESTANDEN.
