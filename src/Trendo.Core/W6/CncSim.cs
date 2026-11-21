@@ -198,14 +198,15 @@ public sealed class CncJob
     public CamResult ImportDrawing(string path, CancellationToken ct = default)
     {
         var ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
-        Cad.CadDrawing drawing; Dictionary<string, int> skipped; string? units = null; List<(string What, Cad.CadDxf.Box B)> unread = [];
+        Cad.CadDrawing drawing; Dictionary<string, int> skipped; string? units = null; List<(string What, Cad.CadDxf.Box B)> unread = []; Dictionary<string, int> hiddenFills = [];
         switch (ext)
         {
-            case ".dxf": { var rd = Cad.CadDxf.Read(path, ct); drawing = rd.Drawing; skipped = WithoutRedundant(rd.Skipped, rd.Redundant); unread = rd.Unread; if (rd.Units is not 0 and not 4) units = rd.UnitName; else if (rd.Units == 0) units = ""; break; } // T-0747-fix3: "" = keine Angabe
+            case ".dxf": { var rd = Cad.CadDxf.Read(path, ct); drawing = rd.Drawing; skipped = WithoutRedundant(rd.Skipped, rd.Redundant); unread = rd.Unread; hiddenFills = rd.HiddenFills; if (rd.Units is not 0 and not 4) units = rd.UnitName; else if (rd.Units == 0) units = ""; break; } // T-0747-fix3: "" = keine Angabe
             case ".svg": { var rs = Cad.CadSvg.Read(path); drawing = rs.Drawing; skipped = rs.Skipped; break; }
             default: throw new Cad.CadError("Für Fräsbahnen bitte eine DXF- oder SVG-Datei wählen.");
         }
         var notes = ReadNotes(drawing, skipped, units);
+        if (hiddenFills.Count > 0) notes.Add("Füllflächen auf ausgeblendeten Ebenen (nicht gefräst; außerhalb gezeichneter Konturen machen sie das Innere unsicher): " + string.Join(", ", hiddenFills.Select(k => $"{k.Value}× {k.Key}")) + "."); // T-0747-fix9
         var cs = CncCam.Contours(drawing, notes, ct: ct); // T-0747-fix3: Hinweise beim Verketten (mehrdeutige Spalten)
         if (cs.Count == 0) throw new Cad.CadError("In der Zeichnung sind keine Konturen (Linien, Kreise, Bögen, Pfade)." + (notes.Count > 0 ? " " + string.Join(" ", notes) : ""));
         var old = (Contours, CamSource, Unread); Contours = cs; CamSource = System.IO.Path.GetFileName(path); Unread = unread;

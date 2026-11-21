@@ -466,3 +466,111 @@ Rohlogs: `T-0747-fix8-*.log`.
 - Die sechs erklärten Prüfer-Fälle bleiben „rot“.
 
 **Testzahlen T-0747-fix8:** Build 0 Fehler, CS0649 in PlanDxfImport weg. Kern (alle neun T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests): **131 gesamt, 130 bestanden, 1 übersprungen (vorbestehend „IFC echt“), 0 Fehler**. App: T0747_DxfUi 2/2, T0747_FixUi 3/3, T0747_Fix3RaceUi 4/4, T0747_Fix4RaceUi 3/3, SPEC01_Ui 6/6, SPEC01_UiArc 1/1, SPEC14_Ui 2/2, Bildbearbeitung_Ui 5/5, PlanPhoto_Ui 4/4, N23N24_CadPrintUi 3/3, UebersichtEinfach_Ui 2/2, DeadButtonTests 83/83 – **118/118**. Prüfskript BESTANDEN. Prüfprogramme: 518 Fälle, keine neuen Befunde (sechs erklärte). Belege der früheren Runden unverändert.
+
+## Neunte Prüfung behoben (T-0747-fix9)
+Arbeitskopie `%TEMP%\trendo-auftrag-T-0747-fix9`, Commit obendrauf auf 07675b8f3. Keine Maschine angesteuert.
+**Prüfprogramme aller Prüfer** (nur als Kopie benutzt bzw. Fallgeneratoren und Prüfteile ausgeführt; Harness-Kopie des Prüfers 9 mit `--lesen`, `--abbruchlesen`, `--abbruch`; nichts im Repo), alle Fälle über `CncJob.ImportDrawing`:
+
+| Fallgruppe | Fälle | mit G-Code | Befunde | Rechenzeit gesamt |
+|---|---|---|---|---|
+| Prüfer 2 | 162 | 141 | 1 (p_spline_block, erklärt) | 12,4 s |
+| Prüfer 3 | 55 | 48 | 0 | 1,7 s |
+| Prüfer 4 | 72 | 58 | 1 (v2, erklärt) | 1,1 s |
+| Prüfer 5 | 80 | 72 | 4 (f6, g2, k1_0_0005, n8 – erklärt); Haltestege 4/4 richtig | 15,8 s (g2 50 000 Kreise 13,2 s) |
+| Prüfer 5 Spline | 8 | 8 | 0 | 0,2 s |
+| Prüfer 6 | 30 | 9 | 0 | 2,4 s |
+| Prüfer 7 | 24 | 12 | 0 | 0,2 s |
+| Prüfer 8 Schraffur (cases, cases2) | 87 | 19 | 0 | 1,1 s |
+| Prüfer 9 Schraffur (cases9) | 152 | 32 | **0**; Schraffur-Meldungen 4/4 wie erwartet | 1,2 s |
+| Prüfer 9 Toleranz (tol) | 5 | 5 | 0 (r + 0,002 … 0,0099 formgleich) | 0,2 s |
+| Prüfer 9 Riesenkreise (big, big3) | 3 | 3 | 0 | 3,2 s |
+
+Keine neuen Befunde, nur die sechs erklärten.
+
+**Leistung (Harness des Prüfers 9):**
+
+| Fall | Lesen | Fräsbahnen gesamt | Abbrechen |
+|---|---|---|---|
+| perf_n8000_hatch (8000 Schraffur-Schleifen + 8000 Kreise) | 0,37 s (vorher 67,9 s) | 2,1 s (ohne Schraffur 1,6 s) | Lesen nach 0,2 s: 2 ms danach; Fräsbahn nach 0,05/0,2/0,6 s: ≤ 16 ms danach |
+| perf_n4000_hatch_aus | 0,35 s | 1,1 s | – |
+| Riesenkreis r 300 000 mit gleicher Schraffur | – | 0,77 s (vorher 54 s je Paar) | Lesen nach 0,2 s: 3 ms danach |
+| 3 Riesenkreise | – | 1,9 s | – |
+
+**Zusatzfälle des Regressionsprüfers** (selbst nachgebaut, Koordinaten auf 0,001 mm gerundet, damit die Dateien unter 64 MB bleiben; Harness `--lesen`):
+
+| Fall | Lesen jetzt | gemeldet auf d3aa0f251 |
+|---|---|---|
+| h5: 10 000 Kreiszüge (130 Punkte) in nicht formgleicher Schraffur | 2,3 s | 150 s |
+| h2: 10 000 formgleiche Paare (130 Punkte) | 3,4 s | 98 s |
+| h2b: 1 300 Paare mit 1 000 Punkten | 3,3 s | 215 s |
+| CIRCLE r 100 000 + Schraffur-Bogen 0…360 | 0,2 s | 56 s |
+| h4: 100 fast gleiche Schraffuren gegen 100 Züge (1 000 Punkte) | 2,6 s | 802 s |
+
+Abbrechen beim Lesen:
+- h4: 43 ms bzw. 1 ms nach dem Abbruch.
+- h2 (58 MB): 0,7–0,9 s nach dem Abbruch. Das Zerlegen des Textes in Zeilen läuft vor der ersten Prüfung.
+
+Test `Fill_matching_worst_cases`:
+- Kreis r 100 000: 0,22 s.
+- 100 × 100 fast gleich: 2,6 s.
+- Abbrechen: 0,36 s.
+
+Test `Fill_matching_fast_and_cancellable`:
+- 8000 Schleifen + 8000 Kreise: 0,43 s.
+- 8000 formgleiche Paare: 0,45 s.
+- Riesenkreis: 0,37 s.
+- Abbrechen nach 0,1 s: 0,14 s.
+- Grenzen lastrobust: 60 s bzw. 10 s.
+
+**Rot-Probe gegen 07675b8f3:** `T0747_Fix9NeuntePruefung` 5 von 5 rot. Nur `ReadResult.HiddenFills` brauchte einen Platzhalter. Der Leistungstest lief dort 2 min, der Ergänzungstest wurde nach 2 min Stillstand abgebrochen. Log: `reports/T-0747/T-0747-fix9-rotprobe.log`.
+
+**H-1 Randdaten hinter dem Abschnittsende – behoben, Grundsatz umgesetzt.** `HatchLoops` liest den HATCH-Körper als vollständige, strenge Grammatik:
+- **Vorspann:** ohne Randgruppen (92/93/72/73/94–97).
+- **Randabschnitt:** 91 ganzzahlig ≥ 0, dann genau so viele Schleifen.
+  - Jede Schleife beginnt mit 92.
+  - Polylinienrand: 72/73/93, dann n × 10/20 (42 nur bei gesetztem Ausbuchtungs-Flag).
+  - Kantenrand: 93 ≥ 1 Kanten, jede mit ihren festen Gruppen. Linie 10/20/11/21; Bogen 10/20/40/50/51[/73]; Ellipse 10/20/11/21/40/50/51[/73]; Spline 94/73/74/95/96, Knoten, Kontrollpunkte [42], 97 Fit-Punkte, optional 12/22 und 13/23.
+  - Danach 97 und genau so viele 330.
+- **Nachspann:** im ganzen Rest nur erlaubte Gruppen. Das sind 75/76/52/41/77/78/53/43/44/45/46/79/49/47/98/10/20/30/63/421/102, 450–470 und 1000–1071.
+- Jede Abweichung ergibt `null` (überall unsicher). Das gilt auch für ein zweites 91 und für Randdaten nach 75/76 bzw. nach den Saatpunkten.
+
+**H-2 ausgeblendete Schraffur – behoben (echte Enthaltenseinsprüfung).**
+- Eine Schleife auf ausgeblendeter Ebene zählt nur dann nicht, wenn ihre abgetastete Form ganz in einer gezeichneten Kontur liegt. Bedingungen: ein Punkt innen, und kein Stück der Schleife näher als 0,002 mm am Konturrand (Streckenraster). Dann kann sie die Kontur nicht verlassen.
+- Bei der U-Platte überquert die Schraffur den Rand der Aussparung. Sie bleibt deshalb, und der Kreis darin wird ausgelassen.
+- Ohne bestimmbare Form bleibt der Eintrag.
+
+**H-3 assoziative Schraffur – behoben.** 330-Kennungen (z. B. „2A5“, „FF“) werden nur als Gruppe übersprungen und nicht als Zahl gelesen; Zusatzdaten 1000–1071 sind im Nachspann erlaubt.
+
+**H-4 Leistung – behoben.**
+- Rahmen je Kontur einmal vorberechnet; Vorfilter über ein Raster nach der linken unteren Ecke.
+- Formvergleich über ein Streckenraster statt jeder gegen jeden, mit frühem Abbruch und Punktgrenze 400 000 (darüber: nicht formgleich, sicher).
+- Feine Konturen (Bögen auf 0,0001 mm) werden nur für Elemente in Kandidaten-Rahmen neu gebaut.
+- Abbruchprüfung in Formvergleich, Enthaltenseinsprüfung und Füllflächen-Schleife.
+
+**N-1 – behoben.**
+- `Redundant` zählt nur echte Formgleichheit. Eine nur enthaltene, ausgeblendete Schraffur wird weiter als „Nicht gelesen: 1× Schraffur“ gemeldet.
+- Neu: „Füllflächen auf ausgeblendeten Ebenen … : 1× Schraffur auf Ebene AUS“ (`ReadResult.HiddenFills`).
+
+**N-2 Toleranz – behoben.**
+- Schraffur-Bögen und -Ellipsen werden auf 0,00001 mm abgetastet, die Vergleichskonturen auf 0,0001 mm.
+- Verglichen wird mit 0,01 mm je Achse plus diesem Zerlegungsfehler (0,0102 mm).
+- Ergebnis: Kreis r + 0,0099 ist formgleich, r + 0,011 nicht (tol-Fälle 0,002 … 0,0099 alle formgleich).
+
+**N-3 – behoben.** Grad-1- und kollineare Spline-Kanten gelten nur bei nicht fallenden Knoten (Anzahl = Kontrollpunkte + Grad + 1, Enden geklemmt) als Zug.
+
+**N-4 – behoben.** Ein Rand mit Stücken der Länge 0 mit Ausbuchtung oder lauter gleichen Punkten ist nicht bestimmbar und gilt als „überall unsicher“, mit Meldung statt Punkt-Rahmen.
+
+**Tests:** `T0747_Fix9NeuntePruefung`:
+- `Hatch_grammar`
+- `Hidden_fill_real_containment`
+- `Fill_matching_fast_and_cancellable`
+- `Tolerance_knots_degenerate`
+- `Fill_matching_worst_cases`
+
+Rohlogs: `T-0747-fix9-*.log`.
+
+**Weiterhin offen:**
+- INSERT, SPLINE, MLINE und REGION werden nicht aufgelöst.
+- Die sechs erklärten Prüfer-Fälle bleiben „rot“.
+
+**Testzahlen T-0747-fix9:** Build 0 Fehler. Kern (alle zehn T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests): **136 gesamt, 135 bestanden, 1 übersprungen (vorbestehend „IFC echt“), 0 Fehler**. App: T0747_DxfUi 2/2, T0747_FixUi 3/3, T0747_Fix3RaceUi 4/4, T0747_Fix4RaceUi 3/3, SPEC01_Ui 6/6, SPEC01_UiArc 1/1, SPEC14_Ui 2/2, Bildbearbeitung_Ui 5/5, PlanPhoto_Ui 4/4, N23N24_CadPrintUi 3/3, UebersichtEinfach_Ui 2/2, DeadButtonTests 83/83 – **118/118**. Prüfskript BESTANDEN. Prüfprogramme: 678 Fälle, keine neuen Befunde (sechs erklärte). Belege der früheren Runden unverändert.
