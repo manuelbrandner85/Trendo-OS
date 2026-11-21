@@ -574,3 +574,90 @@ Rohlogs: `T-0747-fix9-*.log`.
 - Die sechs erklärten Prüfer-Fälle bleiben „rot“.
 
 **Testzahlen T-0747-fix9:** Build 0 Fehler. Kern (alle zehn T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests): **136 gesamt, 135 bestanden, 1 übersprungen (vorbestehend „IFC echt“), 0 Fehler**. App: T0747_DxfUi 2/2, T0747_FixUi 3/3, T0747_Fix3RaceUi 4/4, T0747_Fix4RaceUi 3/3, SPEC01_Ui 6/6, SPEC01_UiArc 1/1, SPEC14_Ui 2/2, Bildbearbeitung_Ui 5/5, PlanPhoto_Ui 4/4, N23N24_CadPrintUi 3/3, UebersichtEinfach_Ui 2/2, DeadButtonTests 83/83 – **118/118**. Prüfskript BESTANDEN. Prüfprogramme: 678 Fälle, keine neuen Befunde (sechs erklärte). Belege der früheren Runden unverändert.
+
+## Zehnte Prüfung behoben (T-0747-fix10)
+Arbeitskopie `%TEMP%\trendo-auftrag-T-0747-fix10`, Commit obendrauf auf b1dc530fa. Keine Maschine angesteuert.
+**Prüfprogramme aller Prüfer** (nur als Kopie benutzt bzw. Fallgeneratoren und Prüfteile ausgeführt; Harness-Kopie des Prüfers 10 mit `--perf`, `--lesen`, `--abbruchlesen`, `--fix`; nichts im Repo):
+
+| Fallgruppe | Fälle | mit G-Code | Befunde | Rechenzeit gesamt |
+|---|---|---|---|---|
+| Prüfer 2 | 162 | 141 | 1 (p_spline_block, erklärt) | 10,2 s |
+| Prüfer 3 | 55 | 48 | 0 | 1,3 s |
+| Prüfer 4 | 72 | 58 | 1 (v2, erklärt) | 0,8 s |
+| Prüfer 5 | 80 | 72 | 4 (f6, g2, k1_0_0005, n8 – erklärt); Haltestege 4/4 richtig | 12,6 s (g2 50 000 Kreise 10,6 s) |
+| Prüfer 5 Spline | 8 | 8 | 0 | 0,1 s |
+| Prüfer 6 | 30 | 9 | 0 | 1,9 s |
+| Prüfer 7 | 24 | 12 | 0 | 0,2 s |
+| Prüfer 8 Schraffur | 87 | 19 | 0 | 0,4 s |
+| Prüfer 9 (cases9, tol, big, big3) | 160 | 40 | 0; Schraffur-Meldungen 4/4 wie erwartet | 2,8 s |
+| Prüfer 10 Schraffur (cases10, 10b, 10c, 10d) | 66 | 17 | **0** (auf b1dc530fa: 8 – a_runde_ecken_kantenrand_cw, c_bogen_r_0, c_ellipse_ratio_0, c_normale_schraeg, b2_cw_ergaenzungsbogen_aus, i_insel_kontur_in_schraffur, j_spitze_0_0019, j_spitze_m0_001) | 0,7 s |
+
+Keine neuen Befunde, nur die sechs erklärten.
+
+**Leistung (Harness des Prüfers 10, `--lesen` = Einlesen inklusive Füllflächen-Vergleich):**
+
+| Fall | vorher (b1dc530fa, laut Prüfung) | jetzt |
+|---|---|---|
+| q2: Kontur 300 000 Punkte + 200 ausgeblendete Schraffuren | 16 s | 0,50 s |
+| q2: Kontur 300 000 Punkte + 2000 ausgeblendete Schraffuren | > 120 s, 110 GB alloziert | 0,69 s (gesamt mit Fräsbahn 1,6 s, 0,85 GB) |
+| q2: Kontur 30 000 Punkte + 20 000 ausgeblendete | – | 1,3 s |
+| q7: Sägezahn 362 054 Punkte + 50 ausgeblendete | > 120 s | 0,73 s |
+| q7: Sägezahn formgleich | 16 s | 1,1 s |
+| q7: Abbrechen beim Lesen | 5,6 s | 3–124 ms nach dem Abbruch |
+| q4: 2000 Kreise r 1000 formgleich | – | 1,0 s (zwischendurch 20,8 s, siehe Vollkreis-Vergleich) |
+| q3: 3 × 300 000 formgleich | – | 2,1 s |
+| q9: 20 000 Schleifen | – | 3,3 s |
+| pruef9 perf_n8000_hatch / perf_n4000_hatch_aus | 0,37 / 0,35 s | 0,36 / 0,32 s |
+
+Belegdateien (`--fix`): alle 12 Ausgaben (4 G-Codes der Referenzdateien, Job-G-Codes, Hinweise) sind hash-gleich mit dem Vorstand.
+
+**Rot-Probe gegen b1dc530fa:** `T0747_Fix10ZehntePruefung` 6 von 6 rot. Nur `ReadResult.HiddenFillKinds` brauchte einen Platzhalter. Der Leistungstest lief dort 1 min 47 s. Log: `reports/T-0747/T-0747-fix10-rotprobe.log`.
+
+**HOCH 1 Bögen/Ellipsen im Uhrzeigersinn – behoben.**
+- HATCH-Kanten mit 73 = 0 werden wie bei AutoCAD/ezdxf gelesen. Bei Bögen gilt: echter Start 360° − a0, Bogen −((a1 − a0) mod 360°, bei 0 volle 360°). Ellipsenparameter gelten ebenso.
+- Ezdxf ist hier nicht installiert. Geprüft habe ich deshalb gegen die Fälle des Prüfers (gebaut wie ezdxf `ArcEdge`), nicht gegen eine echte ezdxf-Datei.
+- Ältere Prüferfälle (p8 a02/a03) schreiben Uhrzeigerbögen wörtlich bzw. Ellipsenparameter im Bogenmaß. Deshalb ist der Rahmen vorsichtig: bei Bögen im Uhrzeigersinn der Vollkreis, bei Ellipsenkanten die volle Ellipse.
+- Die abgetastete Form dient bei solchen Schleifen nur dem Formvergleich („mehrdeutig“). Für das Weglassen ausgeblendeter Schraffuren wird sie nicht verwendet. Die Kandidaten für den Formvergleich kommen aus dem Rahmen der Form.
+- **Zusammenhang:** Ende einer Kante = Anfang der nächsten (je Achse ± tol), sonst keine Form.
+- **Ungültig:** Bogen-Radius ≤ 0, Ellipsen-Verhältnis ≤ 0 oder > 1. Eine HATCH mit schräger Normale gilt als „überall unsicher“.
+- Tests: `Cw_arc_edges_complement` (runde Ecken im/gegen den Uhrzeigersinn formgleich, G-Code mit Löchern innen), `Cw_arc_into_notch` (b2), `Connectivity_and_invalid`.
+
+**HOCH 2 Leistung – behoben.**
+- Raster und Punkt-im-Zug-Index (waagrechte Streifen, Größe an die Kontur angepasst) werden je grober Kontur einmal und erst bei Bedarf gebaut, ebenso das Raster je feiner Vergleichskontur.
+- Vollkreise vergleiche ich analytisch mit gezeichneten Kreisen: |Δx| + |Δr| und |Δy| + |Δr| ≤ Toleranz genügt.
+- Schraffur-Bögen werden auf tol/100 abgetastet; der Zerlegungsfehler ist eingerechnet.
+- Test `Hidden_fills_in_huge_contour`: 300 000 Punkte + 2000 ausgeblendet 0,7 s; Sägezahn 0,46 s; Grenze 10 s, einmal wiederholt.
+
+**MITTEL Abbruch – behoben.** `Grid()` und der Index prüfen den Token alle 1024 Strecken. Lange Strecken werden in Stücke von höchstens einer Zelle geteilt, damit eine schräge Strecke nicht sehr viele Zellen belegt.
+
+**Ausgeblendete Schraffur (Prüfer-10-Fälle i_insel, j_spitze) – mit behoben.**
+- Weggelassen wird sie, wenn die dicht abgetastete Form (Abstand ≤ 0,01 mm) innen liegt oder höchstens 0,01 mm vom Konturrand. Das ist die gleiche Toleranz wie beim Formvergleich: Spitzen bis 0,01 mm am oder über dem Rand sind erlaubt.
+- Zusätzlich darf in der Schraffur keine gezeichnete Kontur liegen, die selbst wieder etwas enthält (z. B. Loch mit Teil). Sonst änderte ein Umriss der Schraffur die Rolle des Inneren.
+- Test `Hidden_fill_nested_and_tolerance`.
+
+**App-Test – behoben.**
+- `Studio3DMeshEditUiTests.Cad_dxf_import_extrude_export_recover` erwartet jetzt „1× Bemaßung“.
+- Gesucht habe ich nach englischen Typnamen in Meldungen: Füllflächen hießen in den Meldungen „Füllfläche HATCH“. Jetzt heißen sie wie in der Tabelle `KindLabel` (Schraffur, Abdeckfläche …); die sechs Testerwartungen sind angepasst.
+
+**NIEDRIG – behoben.**
+- Ausgeblendete Füllflächen werden einmal gemeldet, bei ihrer Ebene und mitgezählt: „Ausgeblendete Ebenen nicht gefräst: AUS (2, davon 1× Schraffur)“. Unter „Nicht gelesen“ erscheinen sie nicht mehr (`HiddenFillKinds`, `HiddenFillLayers`; Test `Hidden_fill_note_once`).
+- Fix9-Zeittests: Grenze 10 s mit einer Wiederholung. Abbrechen lastrobust: ein schon abgebrochener Token wirft sofort; der Abbruch kommt nach einem Drittel der gemessenen Lesezeit, sonst mit 1 ms wiederholt.
+- Kommentar zu 100 × 100 fast gleich korrigiert.
+
+**Tests:** `T0747_Fix10ZehntePruefung`:
+- `Cw_arc_edges_complement`
+- `Cw_arc_into_notch`
+- `Connectivity_and_invalid`
+- `Hidden_fill_nested_and_tolerance`
+- `Hidden_fills_in_huge_contour`
+- `Hidden_fill_note_once`
+
+Rohlogs: `T-0747-fix10-*.log`.
+
+**Weiterhin offen (nicht Fix10, Vorstand):**
+- CAM-Hänger in `CncCam.Generate` bei q5/q5b (riesige Kontur neben vielen winzigen) und q6/q6b (Streifen mit winzigen Konturen): Abbruch durch die 120-s-Grenze des Harness.
+- q4/q4b: 243 ausgelassene Kreise („Versatz ergab keine Bahn“), CAM 41 s.
+- INSERT, SPLINE, MLINE und REGION werden nicht aufgelöst.
+- Die sechs erklärten Prüfer-Fälle bleiben „rot“.
+
+**Testzahlen T-0747-fix10:** Build 0 Fehler. Kern (alle elf T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests): **142 gesamt, 141 bestanden, 1 übersprungen (vorbestehend „IFC echt“), 0 Fehler**. App: T0747_DxfUi 2/2, T0747_FixUi 3/3, T0747_Fix3RaceUi 4/4, T0747_Fix4RaceUi 3/3, SPEC01_Ui 6/6, SPEC01_UiArc 1/1, SPEC14_Ui 2/2, Bildbearbeitung_Ui 5/5, PlanPhoto_Ui 4/4, N23N24_CadPrintUi 3/3, UebersichtEinfach_Ui 2/2, DeadButtonTests 83/83, Studio3DMeshEditUiTests 5/5 – **123/123**. Prüfskript BESTANDEN. Prüfprogramme: 744 Fälle, keine neuen Befunde (sechs erklärte). Belege der früheren Runden unverändert.

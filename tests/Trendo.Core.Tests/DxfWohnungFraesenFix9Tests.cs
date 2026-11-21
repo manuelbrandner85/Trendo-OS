@@ -62,7 +62,7 @@ public class T0747_Fix9NeuntePruefung(ITestOutputHelper log)
         var hatch = Head("AUS") + G((91, 1)) + RectLoop(10, 10, 90, 50) + Tail;
         var ru = Cam(Dxf(Lw(u) + hatch + Circle(50, 40, 5), AusLayer));
         log.WriteLine(string.Join(" | ", ru.Warnings));
-        Assert.Contains(ru.Warnings, w => w.StartsWith("Kontur 2 ausgelassen: liegt in nicht gelesenem Element Füllfläche HATCH", StringComparison.Ordinal));
+        Assert.Contains(ru.Warnings, w => w.StartsWith("Kontur 2 ausgelassen: liegt in nicht gelesenem Element Schraffur", StringComparison.Ordinal));
         Assert.Single(ru.Paths); Assert.Equal("aussen", ru.Paths[0].Kind); // nur die U-Platte, der Kreis in der Aussparung nicht als Teil
         var inside = Dxf(Lw(Rect(0, 0, 100, 60)) + hatch + Circle(30, 30, 5) + Circle(70, 30, 5), AusLayer);
         var rd = CadDxf.Parse(inside);
@@ -91,21 +91,41 @@ public class T0747_Fix9NeuntePruefung(ITestOutputHelper log)
             for (var k = 0; k < n; k++) sb.Append(RectLoop(10 * (k / m), 10 * (k % m), 10 * (k / m) + 5, 10 * (k % m) + 5));
             return sb.Append(G((75, 0), (76, 1), (98, 0))).ToString();
         }
-        var sw = Stopwatch.StartNew(); var rd = CadDxf.Parse(Dxf(Many(8000))); var t1 = sw.ElapsedMilliseconds;
-        Assert.Equal(8000, rd.Unread.Count);
-        sw.Restart(); var rp = CadDxf.Parse(Dxf(Pairs(8000))); var t2 = sw.ElapsedMilliseconds;
-        Assert.Empty(rp.Unread); Assert.Equal(1, rp.Redundant["HATCH"]);
-        var giant = Circle(0, 0, 3e5) + Head() + G((91, 1), (92, 3), (72, 1), (73, 1), (93, 2), (10, -3e5), (20, 0), (42, 1), (10, 3e5), (20, 0), (42, 1), (97, 0), (75, 0), (76, 1), (98, 0));
-        sw.Restart(); var rg = CadDxf.Parse(Dxf(giant)); var t3 = sw.ElapsedMilliseconds;
-        Assert.Empty(rg.Unread);
+        var many = Dxf(Many(8000)); var pairs = Dxf(Pairs(8000));
+        var giant = Dxf(Circle(0, 0, 3e5) + Head() + G((91, 1), (92, 3), (72, 1), (73, 1), (93, 2), (10, -3e5), (20, 0), (42, 1), (10, 3e5), (20, 0), (42, 1), (97, 0), (75, 0), (76, 1), (98, 0)));
+        Assert.Equal(8000, CadDxf.Parse(many).Unread.Count);
+        var rp = CadDxf.Parse(pairs); Assert.Empty(rp.Unread); Assert.Equal(1, rp.Redundant["HATCH"]);
+        Assert.Empty(CadDxf.Parse(giant).Unread);
+        // T-0747-fix10: Grenze 10 s fängt einen Rückschritt (einzeln je unter 1 s); unter Fremdlast einmal wiederholt, die schnellere Messung zählt
+        var t1 = Timed(() => CadDxf.Parse(many)); var t2 = Timed(() => CadDxf.Parse(pairs)); var t3 = Timed(() => CadDxf.Parse(giant));
         log.WriteLine($"8000 Schleifen + 8000 Kreise: {t1} ms; 8000 formgleiche Paare: {t2} ms; Riesenkreis r 300 000: {t3} ms");
-        Assert.True(t1 < 60_000 && t2 < 60_000 && t3 < 60_000, $"{t1} / {t2} / {t3}"); // lastrobust; einzeln je unter 3 s
-        // Abbrechen beim Lesen
-        var text = Dxf(Pairs(8000));
-        using var cts = new CancellationTokenSource(); cts.CancelAfter(100); sw.Restart();
-        Assert.ThrowsAny<OperationCanceledException>(() => CadDxf.Parse(text, cts.Token));
-        log.WriteLine($"Abbrechen nach 0,1 s: {sw.ElapsedMilliseconds} ms");
-        Assert.True(sw.ElapsedMilliseconds < 10_000, $"{sw.ElapsedMilliseconds}");
+        Assert.True(t1 < 10_000 && t2 < 10_000 && t3 < 10_000, $"{t1} / {t2} / {t3}");
+        var tc = CancelTime(pairs);
+        log.WriteLine($"Abbrechen: {tc} ms bis zur Ausnahme");
+        Assert.True(tc < 10_000, $"{tc}");
+    }
+
+    /// <summary>T-0747-fix10: Laufzeit in ms; liegt sie über 2 s (Fremdlast?), wird einmal wiederholt und die schnellere Messung genommen.</summary>
+    static long Timed(Action a)
+    {
+        var sw = Stopwatch.StartNew(); a(); var t = sw.ElapsedMilliseconds;
+        if (t > 2000) { sw.Restart(); a(); t = Math.Min(t, sw.ElapsedMilliseconds); }
+        return t;
+    }
+
+    /// <summary>T-0747-fix10: Abbrechen beim Lesen lastrobust – ein schon abgebrochener Token wirft sofort; dann Abbruch nach einem Drittel der gemessenen
+    /// Lesezeit (mindestens 1 ms): Zeit bis zur Abbruch-Ausnahme. Ist das Lesen schneller fertig als der Abbruch, wird mit 1 ms wiederholt; über 3 s einmal wiederholt.</summary>
+    static long CancelTime(string dxf)
+    {
+        using (var pre = new CancellationTokenSource()) { pre.Cancel(); Assert.ThrowsAny<OperationCanceledException>(() => CadDxf.Parse(dxf, pre.Token)); }
+        var normal = Stopwatch.StartNew(); CadDxf.Parse(dxf); var tn = normal.ElapsedMilliseconds;
+        long? Once(int delay)
+        {
+            using var cts = new CancellationTokenSource(); cts.CancelAfter(delay); var sw = Stopwatch.StartNew();
+            try { CadDxf.Parse(dxf, cts.Token); return null; } catch (OperationCanceledException) { return sw.ElapsedMilliseconds; }
+        }
+        var t = Once((int)Math.Max(1, tn / 3)) ?? Once(1) ?? throw new Xunit.Sdk.XunitException("Abbruch wirkte nicht");
+        return t > 3000 ? Math.Min(t, Once(1) ?? t) : t;
     }
 
     [Fact(DisplayName = "T-0747-fix9 N-2/N-3/N-4: Toleranz je Achse 0,01 mm inkl. Zerlegungsfehler (Kreis r + 0,0099 gleich, r + 0,011 nicht); fallende Knoten keine Form; 2-Punkt-Rand mit gleichen Punkten unbekannt")]
@@ -140,10 +160,9 @@ public class T0747_Fix9NeuntePruefung(ITestOutputHelper log)
             sb.Append(G((97, 0)));
         }
         var h4 = Dxf(sb.Append(Tail).ToString());
-        sw.Restart(); Assert.Equal(100, CadDxf.Parse(h4).Unread.Count); var t2 = sw.ElapsedMilliseconds;
-        using var cts = new CancellationTokenSource(); cts.CancelAfter(100); sw.Restart();
-        Assert.ThrowsAny<OperationCanceledException>(() => CadDxf.Parse(h4, cts.Token)); var t3 = sw.ElapsedMilliseconds;
-        log.WriteLine($"Kreis r 100 000 + Bogen: {t1} ms; 100 × 100 fast gleich (1 000 Punkte): {t2} ms; Abbrechen nach 0,1 s: {t3} ms");
-        Assert.True(t1 < 60_000 && t2 < 60_000, $"{t1} / {t2}"); Assert.True(t3 < 10_000, $"{t3}"); // lastrobust; einzeln je unter 3 s
+        Assert.Equal(100, CadDxf.Parse(h4).Unread.Count); var t2 = Timed(() => CadDxf.Parse(h4));
+        var t3 = CancelTime(h4);
+        log.WriteLine($"Kreis r 100 000 + Bogen: {t1} ms; 100 × 100 fast gleich (1 000 Punkte): {t2} ms; Abbrechen: {t3} ms bis zur Ausnahme");
+        Assert.True(t1 < 10_000 && t2 < 20_000, $"{t1} / {t2}"); Assert.True(t3 < 10_000, $"{t3}"); // einmal wiederholt; einzeln 0,2 s bzw. 3–4 s (Fix9) und jetzt darunter
     }
 }

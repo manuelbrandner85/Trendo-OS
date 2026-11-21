@@ -154,7 +154,7 @@ public class Studio3DMeshEditUiTests
         var (w, _, root) = Ui.Open();
         w.CadNew(); w.Show("cad"); Settle();
         var msg = w.CadImport(Fixture("fremd-halteplatte.dxf")); w.Show("cad"); Settle();
-        Assert.Contains("1× DIMENSION", msg); // Bemaßung ehrlich gemeldet
+        Assert.Contains("1× Bemaßung", msg); // Bemaßung ehrlich gemeldet (T-0747-fix10: deutscher Wortlaut aus KindLabel)
         Assert.Contains("Elemente auf", V<TextBlock>(w, "cad-drawing-summary").Text);
         Assert.True(w.CadCanvas!.Wires.Count > 50); // Linien der Zeichnung in der Ansicht
         Assert.Contains(w.CadCanvas.Labels, l => l.Text == "Halteplatte A");
