@@ -1,0 +1,108 @@
+### Rot-Probe: Tests des Stands fix12 (Fix9-Fix12) gegen den Quellstand 671fd5dc7
+  Wiederherzustellende Projekte werden ermittelt...
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix12-rot\src\Trendo.Core\Trendo.Core.csproj" wiederhergestellt (in 464 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix12-rot\tests\Trendo.CrashProbe\Trendo.CrashProbe.csproj" wiederhergestellt (in 465 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix12-rot\src\Trendo.Companion\Trendo.Companion.csproj" wiederhergestellt (in 465 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix12-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj" wiederhergestellt (in 464 ms.).
+  Trendo.Core -> C:\Users\<user>\AppData\Local\Temp\t0747fix12-rot\src\Trendo.Core\bin\Release\net10.0\Trendo.Core.dll
+  Trendo.Companion -> C:\Users\<user>\AppData\Local\Temp\t0747fix12-rot\src\Trendo.Companion\bin\Release\net10.0\trendo-companion.dll
+  Trendo.CrashProbe -> C:\Users\<user>\AppData\Local\Temp\t0747fix12-rot\tests\Trendo.CrashProbe\bin\Release\net10.0\Trendo.CrashProbe.dll
+  Trendo.Core.Tests -> C:\Users\<user>\AppData\Local\Temp\t0747fix12-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\t0747fix12-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:02.19]     T-0747-fix12 HOCH 2 Tiefe: umschließende Kontur ist ein Loch (ungerade Tiefe) – ausgeblendete Schraffur bleibt stehen [FAIL]
+[xUnit.net 00:00:02.19]     T-0747-fix12 niedrig: unsichtbare Elemente (60 = 1) bleiben beim Schreiben unsichtbar – Rundreise [FAIL]
+[xUnit.net 00:00:02.19]     T-0747-fix12 HOCH 1: zwei Schraffuren mit gleichem Rahmen, gleicher Punktzahl und gleichem ersten Punkt – nur die formgleiche fällt weg [FAIL]
+[xUnit.net 00:00:02.22]     T-0747-fix9 H-2: ausgeblendete Schraffur über einer Aussparung (U-Platte) macht den Kreis darin unsicher; ganz in der Platte über den Löchern stört sie nicht und wird gemeldet [FAIL]
+  Fehler T-0747-fix12 HOCH 2 Tiefe: umschließende Kontur ist ein Loch (ungerade Tiefe) – ausgeblendete Schraffur bleibt stehen [148 ms]
+  Fehlermeldung:
+   Assert.Single() Failure: The collection was empty
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix12ZwoelftePruefung.Hidden_fill_in_hole_kept() in C:\Users\<user>\AppData\Local\Temp\t0747fix12-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix12Tests.cs:line 94
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0747-fix12 niedrig: unsichtbare Elemente (60 = 1) bleiben beim Schreiben unsichtbar – Rundreise [7 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: 2
+Actual:   0
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix12ZwoelftePruefung.Write_keeps_invisible() in C:\Users\<user>\AppData\Local\Temp\t0747fix12-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix12Tests.cs:line 148
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler T-0747-fix12 HOCH 1: zwei Schraffuren mit gleichem Rahmen, gleicher Punktzahl und gleichem ersten Punkt – nur die formgleiche fällt weg [< 1 ms]
+  Fehlermeldung:
+   Assert.Single() Failure: The collection was empty
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix12ZwoelftePruefung.Same_first_point_not_same_shape() in C:\Users\<user>\AppData\Local\Temp\t0747fix12-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix12Tests.cs:line 49
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ 0 nicht gelesen, Redundant [HATCH, 2]
+
+
+  Fehler T-0747-fix9 H-2: ausgeblendete Schraffur über einer Aussparung (U-Platte) macht den Kreis darin unsicher; ganz in der Platte über den Löchern stört sie nicht und wird gemeldet [47 ms]
+  Fehlermeldung:
+   Assert.Single() Failure: The collection was empty
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix9NeuntePruefung.Hidden_fill_real_containment() in C:\Users\<user>\AppData\Local\Temp\t0747fix12-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix9Tests.cs:line 70
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ Kontur 2 ausgelassen: liegt in nicht gelesenem Element Schraffur – ob sie Loch oder Teil ist (die Seite), lässt sich nicht sicher sagen.
+
+
+[xUnit.net 00:00:07.42]     T-0747-fix11 niedrig: unsichtbare Elemente (Gruppe 60 = 1) wie ausgeblendet – nicht gefräst, gemeldet; ausgeblendete Schraffur außerhalb gezeichneter Konturen gemeldet [FAIL]
+  Fehler T-0747-fix11 niedrig: unsichtbare Elemente (Gruppe 60 = 1) wie ausgeblendet – nicht gefräst, gemeldet; ausgeblendete Schraffur außerhalb gezeichneter Konturen gemeldet [10 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Filter not matched in collection
+Collection: ["Ausgeblendete Ebenen nicht gefräst: (unsichtbar) ("···, "Kontur 3 ausgelassen: liegt in nicht gelesenem Ele"···]
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix11ElftePruefung.Invisible_and_notes() in C:\Users\<user>\AppData\Local\Temp\t0747fix12-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix11Tests.cs:line 160
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ Ausgeblendete Ebenen nicht gefräst: (unsichtbar) (2, davon 1× Schraffur), AUS (1, davon 1× Schraffur) – 1 Füllfläche(n) außerhalb gezeichneter Konturen: Teile darin werden ausgelassen. | Kontur 3 ausgelassen: liegt in nicht gelesenem Element Schraffur – ob sie Loch oder Teil ist (die Seite), lässt sich nicht sicher sagen.
+
+
+[xUnit.net 00:02:32.60]     T-0747-fix12 MITTEL Leistung: Riesenzelle 100 000 Punkte und 20 000 Konturen mit gleichem Rahmen in Sekunden; Abbruch mitten im Abgleich wirkt [FAIL]
+  Fehler T-0747-fix12 MITTEL Leistung: Riesenzelle 100 000 Punkte und 20 000 Konturen mit gleichem Rahmen in Sekunden; Abbruch mitten im Abgleich wirkt [2 m 30 s]
+  Fehlermeldung:
+   Riesenzelle 72899 ms
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix12ZwoelftePruefung.Big_cell_and_same_box_fast() in C:\Users\<user>\AppData\Local\Temp\t0747fix12-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix12Tests.cs:line 125
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ Riesenzelle 100 000: 72899 ms; 20 000 gleiche Rahmen + 2000 Schraffuren: 229 ms, 0 nicht gelesen
+
+
+[xUnit.net 00:02:32.60]     T-0747-fix12 MITTEL: ausgeblendete Schraffuren mit gleichem Rahmen/Punktzahl/ersten Punkt einzeln entschieden (L-Platte: eine liegt drin, eine ragt hinaus) [FAIL]
+[xUnit.net 00:02:32.60]     T-0747-fix12 HOCH 2: ausgeblendete Schraffur bleibt, sobald eine andere Kontur sie berührt, schneidet oder darin liegt – auch ohne Inhalt [FAIL]
+  Fehler T-0747-fix12 MITTEL: ausgeblendete Schraffuren mit gleichem Rahmen/Punktzahl/ersten Punkt einzeln entschieden (L-Platte: eine liegt drin, eine ragt hinaus) [4 ms]
+  Fehlermeldung:
+   Assert.Single() Failure: The collection was empty
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix12ZwoelftePruefung.Hidden_decided_by_full_shape() in C:\Users\<user>\AppData\Local\Temp\t0747fix12-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix12Tests.cs:line 65
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ 0 nicht gelesen
+
+
+  Fehler T-0747-fix12 HOCH 2: ausgeblendete Schraffur bleibt, sobald eine andere Kontur sie berührt, schneidet oder darin liegt – auch ohne Inhalt [< 1 ms]
+  Fehlermeldung:
+   Assert.Single() Failure: The collection was empty
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix12ZwoelftePruefung.Hidden_fill_kept_when_touched() in C:\Users\<user>\AppData\Local\Temp\t0747fix12-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix12Tests.cs:line 84
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ Raute schneidet, mit Loch: 0 nicht gelesen
+
+
+
+Fehler!      : Fehler:     8, erfolgreich:    15, übersprungen:     0, gesamt:    23, Dauer: 2 m 30 s - Trendo.Core.Tests.dll (net10.0)

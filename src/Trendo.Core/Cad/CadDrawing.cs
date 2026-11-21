@@ -1023,15 +1023,20 @@ public static class CadDxf
     /// von höchstens einer Zelle geteilt (sonst belegt eine lange schräge Strecke sehr viele Zellen). Abbruch alle 1024 Strecken.</summary>
     static SegGrid Grid(IReadOnlyList<(double X, double Y)> z, double minCell, CancellationToken ct = default)
     {
-        double len = 0;
-        for (var i = 0; i < z.Count; i++) { var e = z[(i + 1) % z.Count]; len += Math.Sqrt((e.X - z[i].X) * (e.X - z[i].X) + (e.Y - z[i].Y) * (e.Y - z[i].Y)); }
-        var cell = Math.Max(minCell, 2 * len / Math.Max(1, z.Count));
+        // T-0747-fix12: Zellgröße aus dem Median der Stücklängen (ein paar riesige Stücke machen sonst die Zellen riesig und die Abfragen quadratisch)
+        var lens = new double[z.Count];
+        for (var i = 0; i < z.Count; i++) { var e = z[(i + 1) % z.Count]; lens[i] = Math.Sqrt((e.X - z[i].X) * (e.X - z[i].X) + (e.Y - z[i].Y) * (e.Y - z[i].Y)); }
+        var sorted = (double[])lens.Clone(); Array.Sort(sorted);
+        // … aber höchstens etwa 1 Mio. Teilstücke insgesamt (eine Strecke von 1e8 mm würde sonst Milliarden Zellen belegen); darüber wird die Zelle gröber –
+        // dann begrenzt das Schrittbudget in Covered die Arbeit („nicht formgleich“)
+        var total = lens.Sum();
+        var cell = Math.Max(Math.Max(minCell, 2 * (sorted.Length > 0 ? sorted[sorted.Length / 2] : 0)), total / 1_000_000);
         var g = new SegGrid(cell);
         for (var i = 0; i < z.Count; i++)
         {
             if ((i & 1023) == 0) ct.ThrowIfCancellationRequested();
             var a = z[i]; var b = z[(i + 1) % z.Count]; var l = Math.Sqrt((b.X - a.X) * (b.X - a.X) + (b.Y - a.Y) * (b.Y - a.Y));
-            var parts = (int)Math.Clamp(Math.Ceiling(l / cell), 1, 1 << 20);
+            var parts = (int)Math.Clamp(Math.Ceiling(l / cell), 1, 1_000_000);
             if (parts == 1) { g.Add(a, b, i); continue; }
             for (var k = 0; k < parts; k++)
                 g.Add((a.X + (b.X - a.X) * k / parts, a.Y + (b.Y - a.Y) * k / parts), (a.X + (b.X - a.X) * (k + 1) / parts, a.Y + (b.Y - a.Y) * (k + 1) / parts), i);
@@ -1090,7 +1095,8 @@ public static class CadDxf
     /// <summary>Liegt jeder Punkt und jede Stückmitte von <paramref name="p"/> je Achse höchstens <paramref name="tol"/> vom Zug <paramref name="z"/>?</summary>
     static bool Covered(IReadOnlyList<(double X, double Y)> p, SegGrid g, double tol, CancellationToken ct)
     {
-        bool Near((double X, double Y) q) => g.Any(q.X - tol, q.Y - tol, q.X + tol, q.Y + tol, j => Cheb(q, g.Segs[j].A, g.Segs[j].B) <= tol);
+        long steps = 0; const long MaxSteps = 10_000_000; // T-0747-fix12: Schrittbudget – darüber „nicht formgleich“ (sicher)
+        bool Near((double X, double Y) q) => g.Any(q.X - tol, q.Y - tol, q.X + tol, q.Y + tol, j => ++steps > MaxSteps || Cheb(q, g.Segs[j].A, g.Segs[j].B) <= tol) && steps <= MaxSteps;
         for (var i = 0; i < p.Count; i++)
         {
             if ((i & 1023) == 0) ct.ThrowIfCancellationRequested();
@@ -1172,7 +1178,6 @@ public static class CadDxf
         }
         var shapes = new Dictionary<int, List<(double X, double Y)>>();
         foreach (var f in fills) if (f.Shape is not null) shapes[f.Index] = Math.Abs(k - 1) > 1e-12 ? f.Shape.Select(p => (p.X * k, p.Y * k)).ToList() : f.Shape;
-        Box UB(int idx) => unread[idx].B.Scale(k);
         var coarse = CadContours.Build(vis, 0.1, 0.001, ct).Where(c => c.Closed).ToList();
         var coarseBox = coarse.Select(c => BoxOf(c.Pts)).ToArray();
         // T-0747-fix11: Rahmen-Index über alle vier Grenzen (Schritt 0,05 mm, Nachbarn ±1); gleiche Konturen (gleicher Rahmen, gleiche Punktzahl) nur einmal –
@@ -1180,12 +1185,16 @@ public static class CadDxf
         Dictionary<(long, long, long, long), List<int>> Index(Box[] bx, List<CadContour> cs)
         {
             var m = new Dictionary<(long, long, long, long), List<int>>();
+            var exact = new Dictionary<(Box, int, int), List<int>>(); // T-0747-fix12: nur wirklich gleiche Punktfolge zusammenfassen (Prüfsumme, dann Punkt für Punkt)
             for (var j = 0; j < bx.Length; j++)
             {
                 if ((j & 1023) == 0) ct.ThrowIfCancellationRequested();
+                var ek = (bx[j], cs[j].Pts.Count, PointHash(cs[j].Pts));
+                if (!exact.TryGetValue(ek, out var el)) exact[ek] = el = [];
+                if (el.Any(q => cs[q].Pts.SequenceEqual(cs[j].Pts))) continue; // gleiche Kontur schon drin
+                el.Add(j);
                 var key = ((long)Math.Floor(bx[j].MinX / cell), (long)Math.Floor(bx[j].MinY / cell), (long)Math.Floor(bx[j].MaxX / cell), (long)Math.Floor(bx[j].MaxY / cell));
                 if (!m.TryGetValue(key, out var l)) m[key] = l = [];
-                if (l.Any(q => bx[q] == bx[j] && cs[q].Pts.Count == cs[j].Pts.Count && cs[q].Pts[0] == cs[j].Pts[0])) continue; // gleiche Kontur schon drin
                 l.Add(j);
             }
             return m;
@@ -1227,20 +1236,24 @@ public static class CadDxf
 
         // 2) Formvergleich
         var shapeBox = shapes.ToDictionary(kv => kv.Key, kv => BoxOf(kv.Value));
-        // T-0747-fix11: gleiche Schleifen (gleicher Rahmen, gleiche Punktzahl, gleicher erster Punkt) nur einmal vergleichen
-        var groups = fills.Where(f => shapes.ContainsKey(f.Index) && !same.Contains(f.Index) && !unread[f.Index].B.IsAll)
-            .GroupBy(f => (shapeBox[f.Index], shapes[f.Index].Count, shapes[f.Index][0])).ToList();
+        // T-0747-fix11/12: gleiche Schleifen nur einmal vergleichen – „gleich“ heißt dieselbe Punktfolge (Prüfsumme über alle Punkte, dann Punkt für Punkt)
         var want = new List<(int Index, List<(double X, double Y)>? Shape, string Layer, int Serial, bool Ambiguous)>(); var members = new Dictionary<int, List<int>>(); var n3 = 0;
-        foreach (var g in groups)
+        var reps = new Dictionary<(Box, int, int), List<int>>();
+        foreach (var f in fills)
         {
             if ((++n3 & 1023) == 0) ct.ThrowIfCancellationRequested();
-            var f0 = g.First(); if (!Near(coarseIdx, coarseBox, shapeBox[f0.Index], tol + 0.0011).Any()) continue;
-            want.Add(f0); members[f0.Index] = g.Select(f => f.Index).ToList();
+            if (!shapes.ContainsKey(f.Index) || same.Contains(f.Index) || unread[f.Index].B.IsAll) continue;
+            var sh = shapes[f.Index]; var key = (shapeBox[f.Index], sh.Count, PointHash(sh));
+            if (!reps.TryGetValue(key, out var rl)) reps[key] = rl = [];
+            var r0 = rl.Cast<int?>().FirstOrDefault(x => shapes[x!.Value].SequenceEqual(sh));
+            if (r0 is { } rr) { members[rr].Add(f.Index); continue; }
+            rl.Add(f.Index); members[f.Index] = [f.Index];
+            if (Near(coarseIdx, coarseBox, shapeBox[f.Index], tol + 0.0011).Any()) want.Add(f);
         }
         if (want.Count > 0)
         {
             // feine Konturen nur aus Elementen, die ganz in einem Kandidaten-Rahmen liegen (T-0747-fix11: Bögen mit ihrem echten Rahmen)
-            var areas = want.Select(f => shapeBox[f.Index].Grow(0.2)).ToList();
+            var areas = want.Select(f => shapeBox[f.Index].Grow(0.2)).Distinct().ToList(); // T-0747-fix12: gleiche Rahmen nur einmal
             var ag = new SegGrid(Math.Max(Math.Max(cell, areas.Average(a => Math.Max(a.MaxX - a.MinX, a.MaxY - a.MinY))), areas.Max(a => Math.Max(a.MaxX - a.MinX, a.MaxY - a.MinY)) / 256));
             for (var j = 0; j < areas.Count; j++) ag.Add((areas[j].MinX, areas[j].MinY), (areas[j].MaxX, areas[j].MaxY), j);
             var pick = new List<CadEntity>(); var n2 = 0;
@@ -1255,19 +1268,67 @@ public static class CadDxf
                 };
                 if (eb.IsEmpty || eb.HasNaN || eb.IsAll) continue;
                 var cx = (eb.MinX + eb.MaxX) / 2; var cy = (eb.MinY + eb.MaxY) / 2;
-                if (ag.Near(cx, cy, cx, cy).Select(s => areas[ag.Segs[s].Tag]).Any(a => eb.MinX >= a.MinX && eb.MinY >= a.MinY && eb.MaxX <= a.MaxX && eb.MaxY <= a.MaxY)) pick.Add(e);
+                if (ag.Any(cx, cy, cx, cy, s => { var a = areas[ag.Segs[s].Tag]; return eb.MinX >= a.MinX && eb.MinY >= a.MinY && eb.MaxX <= a.MaxX && eb.MaxY <= a.MaxY; })) pick.Add(e);
             }
             var fine = CadContours.Build(pick, 0.1, fineChord, ct).Where(c => c.Closed).ToList();
             var fineBox = fine.Select(c => BoxOf(c.Pts)).ToArray(); var fineIdx = Index(fineBox, fine);
             var shapeTol = tol + 2 * fineChord; // Zerlegungsfehler: Kontur ≤ 0,0001 mm, Schraffur ≤ 0,0001 mm (tol/100)
             var fineGrid = new Dictionary<int, SegGrid>();
+            // T-0747-fix12: viele Konturen mit gleichem Rahmen (nur eine Kerbe woanders). Formgleich verlangt, dass JEDER Eckpunkt der Schleife höchstens
+            // tol von der Kontur liegt. Also: ein gemeinsames Streckenraster aller Kandidaten-Konturen, an einigen Eckpunkten und Stückmitten der Schleife nachsehen, welche
+            // Konturen dort vorbeigehen, und den Eckpunkt mit den wenigsten nehmen – das ist eine vollständige Vorauswahl (keine echte Übereinstimmung fällt
+            // heraus). Gehen überall mehr als 256 Konturen vorbei oder ist das Schrittbudget erschöpft, gilt „nicht formgleich“: die Füllfläche bleibt (sicher).
+            var repList = fineIdx.Values.SelectMany(l0 => l0).ToList();
+            // Zelle in Toleranz-Größe (feine Vorauswahl), höchstens etwa 2 Mio. Teilstücke insgesamt; darüber gröbere Zellen, dann begrenzt das Schrittbudget
+            double allLen = 0;
+            foreach (var j in repList) { var z = fine[j].Pts; for (var i = 0; i < z.Count; i++) { var e = z[(i + 1) % z.Count]; allLen += Math.Sqrt((e.X - z[i].X) * (e.X - z[i].X) + (e.Y - z[i].Y) * (e.Y - z[i].Y)); } }
+            var gcell = Math.Max(shapeTol * 4, allLen / 2_000_000);
+            var all = new SegGrid(gcell); var nAdd = 0;
+            foreach (var j in repList)
+            {
+                var z = fine[j].Pts;
+                for (var i = 0; i < z.Count; i++)
+                {
+                    if ((++nAdd & 4095) == 0) ct.ThrowIfCancellationRequested();
+                    var a = z[i]; var b = z[(i + 1) % z.Count]; var l = Math.Sqrt((b.X - a.X) * (b.X - a.X) + (b.Y - a.Y) * (b.Y - a.Y));
+                    var parts = (int)Math.Clamp(Math.Ceiling(l / gcell), 1, 2_000_000);
+                    for (var kk = 0; kk < parts; kk++)
+                        all.Add((a.X + (b.X - a.X) * kk / parts, a.Y + (b.Y - a.Y) * kk / parts), (a.X + (b.X - a.X) * (kk + 1) / parts, a.Y + (b.Y - a.Y) * (kk + 1) / parts), j);
+                }
+            }
+            long shapeWork = 0, lookWork = 0; const long MaxShapeWork = 60_000_000, MaxLookWork = 150_000_000;
             foreach (var f in want)
             {
                 ct.ThrowIfCancellationRequested();
+                if (shapeWork > MaxShapeWork) break;
                 var sh = shapes[f.Index]; var ub = shapeBox[f.Index]; SegGrid? ga = null;
-                foreach (var j in Near(fineIdx, fineBox, ub, shapeTol))
+                if (sh.Count > MaxShapePoints) continue;
+                Dictionary<int, double>? best = null; var step = Math.Max(1, sh.Count / 32);
+                for (var i2 = 0; i2 < 2 * sh.Count && lookWork <= MaxLookWork; i2 += i2 % 2 == 0 ? 1 : 2 * step - 1)
+                {
+                    // Eckpunkt und Stückmitte (Covered prüft beide) – an einer Kerbenflanke gehen oft nur wenige Konturen vorbei
+                    var i = i2 / 2; var e2 = sh[(i + 1) % sh.Count];
+                    (double X, double Y) v = i2 % 2 == 0 ? sh[i] : ((sh[i].X + e2.X) / 2, (sh[i].Y + e2.Y) / 2); var set = new Dictionary<int, double>(); var over = false; var lim = Math.Min(256, (best?.Count ?? 257) - 1);
+                    all.Any(v.X - shapeTol, v.Y - shapeTol, v.X + shapeTol, v.Y + shapeTol, s =>
+                    {
+                        if (++lookWork > MaxLookWork) { over = true; return true; }
+                        var sg = all.Segs[s]; var dd = Cheb(v, sg.A, sg.B);
+                        if (dd > shapeTol) return false;
+                        if (set.TryGetValue(sg.Tag, out var old)) { if (dd < old) set[sg.Tag] = dd; return false; }
+                        set[sg.Tag] = dd; over = set.Count > lim; return over; // mehr als beim bisher besten Punkt: kann nicht besser werden
+                    });
+                    if (over) continue;
+                    if (best is null || set.Count < best.Count) best = set;
+                    if (best.Count <= 8) break;
+                }
+                if (best is null) continue;
+                var near = best.Where(kv => Math.Abs(fineBox[kv.Key].MinX - ub.MinX) <= shapeTol && Math.Abs(fineBox[kv.Key].MinY - ub.MinY) <= shapeTol
+                    && Math.Abs(fineBox[kv.Key].MaxX - ub.MaxX) <= shapeTol && Math.Abs(fineBox[kv.Key].MaxY - ub.MaxY) <= shapeTol)
+                    .OrderBy(kv => kv.Value).ThenBy(kv => kv.Key).Select(kv => kv.Key).ToList();
+                foreach (var j in near)
                 {
                     if (sh.Count > MaxShapePoints || fine[j].Pts.Count > MaxShapePoints) continue;
+                    shapeWork += sh.Count + fine[j].Pts.Count; if (shapeWork > MaxShapeWork) break;
                     if (!fineGrid.TryGetValue(j, out var gc)) fineGrid[j] = gc = Grid(fine[j].Pts, shapeTol * 4, ct);
                     ga ??= Grid(sh, shapeTol * 4, ct);
                     if (SameShape(sh, fine[j].Pts, shapeTol, ct, ga, gc)) { foreach (var m2 in members[f.Index]) { drop.Add(m2); same.Add(m2); } break; }
@@ -1285,42 +1346,82 @@ public static class CadDxf
             for (var j = 0; j < coarse.Count; j++) cg.Add((coarseBox[j].MinX, coarseBox[j].MinY), (coarseBox[j].MaxX, coarseBox[j].MaxY), j);
             var cache = new Dictionary<int, (SegGrid G, PolyIndex P)>();
             (SegGrid G, PolyIndex P) Idx(int j) { if (!cache.TryGetValue(j, out var v)) { work.Used += coarse[j].Pts.Count; cache[j] = v = (Grid(coarse[j].Pts, tol * 4, ct), new PolyIndex(coarse[j].Pts, ct)); } return v; }
-            var hasChild = new Dictionary<int, bool>();
-            bool HasChild(int x)
+            // T-0747-fix12: einfache, beweisbar sichere Regel. Eine ausgeblendete Schraffur fällt nur weg, wenn
+            //  (a) sie in einer gezeichneten Kontur E liegt, die selbst auf gerader Tiefe liegt (ein Teil, kein Loch), und
+            //  (b) außer E keine gezeichnete Kontur mit einem ihrer Stücke in den Schraffurrahmen (± tol) hineinreicht – also keine Kontur die
+            //      Schraffur berührt, schneidet oder in ihr liegt, egal ob sie Inhalt hat. (Grob: Stückrahmen gegen Schraffurrahmen.)
+            // Dann ist die Fläche der Schraffur leer: ohne Linie darin bleibt jede Kontur, was sie war – keine umschließt, schneidet oder enthält die
+            // Schraffur außer E, und E ist ein Teil. Das Weglassen ändert also an keiner Kontur die Rolle Loch/Teil. Unklare Fälle (Budget) bleiben stehen.
+            var depth = new Dictionary<int, int?>();
+            int? Depth(int x)
             {
-                if (hasChild.TryGetValue(x, out var r)) return r;
-                var bx = coarseBox[x]; r = false;
-                foreach (var y in cg.Near(bx.MinX, bx.MinY, bx.MaxX, bx.MaxY).Select(s => cg.Segs[s].Tag).Distinct())
+                if (depth.TryGetValue(x, out var r)) return r;
+                var bx = coarseBox[x]; var n = 0; r = 0;
+                foreach (var y in cg.Near(bx.MinX, bx.MinY, bx.MaxX, bx.MaxY).Select(t => cg.Segs[t].Tag).Distinct())
                 {
                     if (++work.Used % 1024 == 0) ct.ThrowIfCancellationRequested();
-                    if (work.Over) { r = true; break; } // Budget erschöpft → vorsichtig „enthält etwas“
+                    if (work.Over) { r = null; break; }
                     var by = coarseBox[y];
-                    if (y == x || by.MinX < bx.MinX || by.MinY < bx.MinY || by.MaxX > bx.MaxX || by.MaxY > bx.MaxY) continue;
-                    if (Idx(x).P.Contains(coarse[y].Pts[0].X, coarse[y].Pts[0].Y, work) != false) { r = true; break; } // unbekannt zählt wie „enthält“
+                    if (y == x || by.MinX > bx.MinX || by.MinY > bx.MinY || by.MaxX < bx.MaxX || by.MaxY < bx.MaxY) continue;
+                    var inside = Idx(y).P.Contains(coarse[x].Pts[0].X, coarse[x].Pts[0].Y, work);
+                    if (inside is null) { r = null; break; }
+                    if (inside == true) n++;
                 }
-                return hasChild[x] = r;
+                if (r is not null) r = n;
+                return depth[x] = r;
             }
-            var decided = new Dictionary<(Box, int, (double, double)), bool>(); // T-0747-fix11: gleiche Schleifen nur einmal entscheiden
+            var decided = new Dictionary<(Box, int, int), List<(List<(double X, double Y)> Shape, bool Drop)>>(); // gleiche Punktfolge nur einmal entscheiden
             foreach (var f in hid)
             {
                 ct.ThrowIfCancellationRequested();
                 if (work.Over) break; // Budget erschöpft: nichts mehr verwerfen
-                var sh = shapes[f.Index]; var ub = shapeBox[f.Index]; var cx = (ub.MinX + ub.MaxX) / 2; var cy = (ub.MinY + ub.MaxY) / 2;
-                var sig = (ub, sh.Count, sh[0]);
-                if (decided.TryGetValue(sig, out var known)) { if (known) drop.Add(f.Index); continue; }
-                decided[sig] = false;
-                var cand = cg.Near(cx, cy, cx, cy).Select(s => cg.Segs[s].Tag).Distinct()
-                    .Where(j => coarseBox[j].MinX <= ub.MinX + tol && coarseBox[j].MinY <= ub.MinY + tol && coarseBox[j].MaxX >= ub.MaxX - tol && coarseBox[j].MaxY >= ub.MaxY - tol)
-                    .OrderBy(j => (coarseBox[j].MaxX - coarseBox[j].MinX) * (coarseBox[j].MaxY - coarseBox[j].MinY)).Take(4).ToList();
-                var enclosing = cand.Cast<int?>().FirstOrDefault(j => InsideSimple(sh, j!.Value));
-                if (enclosing is not { } enc) continue;
-                // HOCH A: alle anderen Konturen in der Schraffur (auch mit gleichem Rahmen) auf Inhalt prüfen – nur die bestätigte umschließende ausnehmen
-                var inner = cg.Near(ub.MinX, ub.MinY, ub.MaxX, ub.MaxY).Select(s => cg.Segs[s].Tag).Distinct()
-                    .Where(x => x != enc && coarseBox[x].MinX >= ub.MinX - tol && coarseBox[x].MinY >= ub.MinY - tol && coarseBox[x].MaxX <= ub.MaxX + tol && coarseBox[x].MaxY <= ub.MaxY + tol)
-                    .ToList(); // T-0747-fix11: jede Kontur, deren Rahmen in der Schraffur liegt (auch am Rand, z. B. Inkreis) – vorsichtig, ohne Punkt-im-Zug
-                work.Used += inner.Count;
-                if (work.Over || inner.Any(HasChild)) continue;
-                drop.Add(f.Index); decided[sig] = true;
+                var sh = shapes[f.Index]; var ub = shapeBox[f.Index];
+                var sig = (ub, sh.Count, PointHash(sh));
+                if (!decided.TryGetValue(sig, out var dl)) decided[sig] = dl = [];
+                var prev = dl.FirstOrDefault(x => x.Shape.SequenceEqual(sh));
+                if (prev.Shape is not null) { if (prev.Drop) drop.Add(f.Index); continue; }
+                // (b) zuerst: welche Konturen reichen mit einem Stück in den Schraffurrahmen ± tol? Beim zweiten Treffer ist klar: stehen lassen.
+                var g = ub.Grow(tol); int? touch = null; var many = false; var boxes = 0;
+                cg.Any(g.MinX, g.MinY, g.MaxX, g.MaxY, t =>
+                {
+                    var x = cg.Segs[t].Tag; var b = coarseBox[x];
+                    if (b.MinX > g.MaxX || b.MaxX < g.MinX || b.MinY > g.MaxY || b.MaxY < g.MinY) return false;
+                    if (++boxes > 4096 || work.Over) { many = true; return true; } // zu viele Kandidaten: stehen lassen (sicher)
+                    var (sg, _) = Idx(x);
+                    static bool Hit((double X, double Y) sa, (double X, double Y) sb, Box g) =>
+                        Math.Min(sa.X, sb.X) <= g.MaxX && Math.Max(sa.X, sb.X) >= g.MinX && Math.Min(sa.Y, sb.Y) <= g.MaxY && Math.Max(sa.Y, sb.Y) >= g.MinY;
+                    var cells = ((g.MaxX - g.MinX) / sg.CellSize + 2) * ((g.MaxY - g.MinY) / sg.CellSize + 2);
+                    bool hits;
+                    if (cells <= 4.0 * sg.Segs.Count + 64)
+                        hits = sg.Any(g.MinX, g.MinY, g.MaxX, g.MaxY, q => { work.Used++; var (sa, sb, _) = sg.Segs[q]; return Hit(sa, sb, g); });
+                    else
+                    {
+                        // großes Schraffurrechteck: die Kontur Stück für Stück durchgehen statt Milliarden Rasterzellen
+                        var z = coarse[x].Pts; hits = false;
+                        for (var q = 0; q < z.Count && !hits; q++) { if ((++work.Used & 4095) == 0) ct.ThrowIfCancellationRequested(); hits = Hit(z[q], z[(q + 1) % z.Count], g); }
+                    }
+                    if (!hits) return false;
+                    if (touch is null) { touch = x; return false; }
+                    many = touch != x; return many;
+                });
+                var ok = false;
+                if (!many && !work.Over)
+                {
+                    // (a) die umschließende Kontur: kleinste mit passendem Rahmen, in der die Schraffur liegt; eine berührende Kontur muss genau sie sein
+                    var cx = (ub.MinX + ub.MaxX) / 2; var cy = (ub.MinY + ub.MaxY) / 2;
+                    var near = cg.Near(cx, cy, cx, cy);
+                    if (near.Count <= 4096)
+                    {
+                        var cand = near.Select(t => cg.Segs[t].Tag).Distinct()
+                            .Where(j => coarseBox[j].MinX <= ub.MinX + tol && coarseBox[j].MinY <= ub.MinY + tol && coarseBox[j].MaxX >= ub.MaxX - tol && coarseBox[j].MaxY >= ub.MaxY - tol)
+                            .OrderBy(j => (coarseBox[j].MaxX - coarseBox[j].MinX) * (coarseBox[j].MaxY - coarseBox[j].MinY)).Take(4).ToList();
+                        var enclosing = cand.Cast<int?>().FirstOrDefault(j => InsideSimple(sh, j!.Value));
+                        if (enclosing is { } enc && (touch is null || touch == enc) && Depth(enc) is { } dp && dp % 2 == 0) ok = true;
+                    }
+                }
+                if (work.Over) ok = false;
+                dl.Add((sh, ok));
+                if (ok) drop.Add(f.Index);
             }
 
             // Eckpunkte innen oder am Rand; Stücke, die den Rand kreuzen, nur in der Toleranz außen
@@ -1357,6 +1458,12 @@ public static class CadDxf
             }
         }
         return (drop, same);
+    }
+
+    /// <summary>T-0747-fix12: Prüfsumme über alle Punkte eines Zugs (für das Zusammenfassen wirklich gleicher Schleifen; danach Punkt für Punkt verglichen).</summary>
+    static int PointHash(List<(double X, double Y)> p)
+    {
+        var h = new HashCode(); foreach (var q in p) { h.Add(q.X); h.Add(q.Y); } return h.ToHashCode();
     }
 
     /// <summary>Parameter t (0…1) auf a→b, an dem a→b die Strecke c→d schneidet (oder berührt), sonst <c>null</c>.</summary>
@@ -1415,13 +1522,13 @@ public static class CadDxf
             switch (e.Kind)
             {
                 case "linie" when e.Points.Count >= 2:
-                    G(0, "LINE"); G(8, e.Layer); G(10, N(e.Points[0][0])); G(20, N(e.Points[0][1])); G(30, 0); G(11, N(e.Points[1][0])); G(21, N(e.Points[1][1])); G(31, 0); break;
+                    G(0, "LINE"); G(8, e.Layer); if (e.Invisible) G(60, 1); G(10, N(e.Points[0][0])); G(20, N(e.Points[0][1])); G(30, 0); G(11, N(e.Points[1][0])); G(21, N(e.Points[1][1])); G(31, 0); break;
                 case "polylinie" when e.Points.Count >= 2:
-                    G(0, "POLYLINE"); G(8, e.Layer); G(66, 1); G(10, 0); G(20, 0); G(30, 0); G(70, e.Closed ? 1 : 0);
+                    G(0, "POLYLINE"); G(8, e.Layer); if (e.Invisible) G(60, 1); G(66, 1); G(10, 0); G(20, 0); G(30, 0); G(70, e.Closed ? 1 : 0);
                     foreach (var pt in e.Points) { G(0, "VERTEX"); G(8, e.Layer); G(10, N(pt[0])); G(20, N(pt[1])); G(30, 0); if (pt.Length > 2 && Math.Abs(pt[2]) > 1e-12) G(42, N(pt[2])); }
                     G(0, "SEQEND"); G(8, e.Layer); break;
-                case "kreis": G(0, "CIRCLE"); G(8, e.Layer); G(10, N(e.Cx)); G(20, N(e.Cy)); G(30, 0); G(40, N(e.R)); break;
-                case "bogen": G(0, "ARC"); G(8, e.Layer); G(10, N(e.Cx)); G(20, N(e.Cy)); G(30, 0); G(40, N(e.R)); G(50, N(e.A0)); G(51, N(e.A1)); break;
+                case "kreis": G(0, "CIRCLE"); G(8, e.Layer); if (e.Invisible) G(60, 1); G(10, N(e.Cx)); G(20, N(e.Cy)); G(30, 0); G(40, N(e.R)); break;
+                case "bogen": G(0, "ARC"); G(8, e.Layer); if (e.Invisible) G(60, 1); G(10, N(e.Cx)); G(20, N(e.Cy)); G(30, 0); G(40, N(e.R)); G(50, N(e.A0)); G(51, N(e.A1)); break;
                 case "text" when e.Points.Count >= 1:
                     foreach (var (line, i) in e.Text.Split('\n').Select((l, i) => (l, i)))
                     {

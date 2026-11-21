@@ -243,7 +243,7 @@ public sealed class CncJob
             perLayer[layer] = (cur.Item1 + kinds.Values.Sum(), [.. cur.Item2, .. kinds.Select(k => $"{k.Value}× {k.Key}")]);
         }
         var onHidden = perLayer.Select(kv => (kv.Value.Fills.Count == 0 ? $"{kv.Key} ({kv.Value.N})" : $"{kv.Key} ({kv.Value.N}, davon {string.Join(", ", kv.Value.Fills)})")
-            + (hiddenUnsure is not null && hiddenUnsure.TryGetValue(kv.Key, out var nu) && nu > 0 ? $" – {nu} Füllfläche(n) außerhalb gezeichneter Konturen: Teile darin werden ausgelassen" : "")).ToList();
+            + (hiddenUnsure is not null && hiddenUnsure.TryGetValue(kv.Key, out var nu) && nu > 0 ? $" – {nu} Füllfläche(n) nicht sicher zuzuordnen: Teile darin werden ausgelassen" : "")).ToList();
         if (onHidden.Count > 0) notes.Add("Ausgeblendete Ebenen nicht gefräst: " + string.Join(", ", onHidden) + ".");
         return notes;
     }

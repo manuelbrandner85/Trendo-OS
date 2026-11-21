@@ -772,3 +772,92 @@ Belege (`--fix`): alle 12 Ausgaben hash-gleich mit dem Vorstand, darunter die 4 
 - Die sechs erklärten Prüfer-Fälle bleiben „rot“.
 
 **Testzahlen T-0747-fix11:** Build 0 Fehler. Kern (alle zwölf T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests) **zweimal hintereinander**: je 148 gesamt, 147 bestanden, 1 übersprungen (vorbestehend „IFC echt“), 0 Fehler. App: T0747_DxfUi 2/2, T0747_FixUi 3/3, T0747_Fix3RaceUi 4/4, T0747_Fix4RaceUi 3/3, SPEC01_Ui 6/6, SPEC01_UiArc 1/1, SPEC14_Ui 2/2, Bildbearbeitung_Ui 5/5, PlanPhoto_Ui 4/4, N23N24_CadPrintUi 3/3, UebersichtEinfach_Ui 2/2, DeadButtonTests 83/83, Studio3DMeshEditUiTests 5/5 – **123/123**. Prüfskript BESTANDEN. Prüfprogramme: 868 Fälle.
+
+## Zwölfte Prüfung behoben (T-0747-fix12)
+Arbeitskopie `%TEMP%\trendo-auftrag-T-0747-fix12`, Commit obendrauf auf 671fd5dc7. Keine Maschine angesteuert.
+
+**HOCH 1 – behoben.** Gleiche Schleifen werden nur noch bei wirklich gleicher Punktfolge zusammengefasst: Schlüssel (Rahmen, Punktzahl, Prüfsumme über alle Punkte), danach Punkt für Punkt (`SequenceEqual`). Dasselbe gilt für die Entscheidungen über ausgeblendete Schraffuren (`decided`) und den Konturen-Index (dort über ein Wörterbuch statt „jeder gegen jeden“ in der Zelle). Tests `Same_first_point_not_same_shape` (T1 bleibt, T2 fällt, in beiden Reihenfolgen) und `Hidden_decided_by_full_shape` (L-Platte).
+
+**HOCH 2 und Tiefe – behoben, neue einfache Regel.** Eine ausgeblendete Schraffur fällt nur noch weg, wenn
+- (a) sie in einer gezeichneten Kontur E liegt, die selbst auf gerader Tiefe liegt (Teil, kein Loch), und
+- (b) außer E keine gezeichnete Kontur mit einem ihrer Stücke in den Schraffurrahmen ± 0,01 mm hineinreicht (Stückrahmen gegen Schraffurrahmen) – egal, ob diese Kontur Inhalt hat.
+
+Warum dadurch keine Kontur ihre Rolle wechseln kann: Die Rolle (Loch/Teil) einer Kontur hängt nur davon ab, wie viele Umrisse sie umschließen. Nach (b) gibt es in der Fläche der Schraffur keine Linie außer E; keine Kontur liegt darin, schneidet sie oder berührt sie. Jede andere Kontur liegt also ganz außerhalb oder umschließt die Schraffur samt E, ohne sie zu berühren. Weglassen ändert damit an keiner Zählung etwas, und E selbst ist nach (a) ein Teil. Kurz: nur eine leere Schraffur in einem Teil darf wegfallen. Unklare Fälle (Arbeitsbudget erschöpft, mehr als 4096 Kandidaten, Punkt-im-Zug unbekannt) bleiben stehen. Die Prüfung (b) bricht beim zweiten Treffer ab; bei sehr großen Schraffurrahmen wird die Kontur Stück für Stück durchgegangen statt über Milliarden Rasterzellen.
+
+Tests `Hidden_fill_kept_when_touched` (Raute schneidet mit/ohne Loch, Kreis darin leer, Kreis berührt den Rand → bleibt; leer im Teil → fällt) und `Hidden_fill_in_hole_kept` (Schraffur in einem Loch bleibt; Teil im Loch auf Tiefe 2 → fällt).
+
+**G-Code-Kosten der strengeren Regel** (alle auf der sicheren Seite: die Schraffur bleibt, Löcher darin werden nicht gefräst, nie wird etwas außen gefräst):
+
+| Prüfer | Fall | Folge |
+|---|---|---|
+| 8 | c13_hatch_ausgeblendet, c14_hatch_gefroren | zwei Löcher r 5 unter der ausgeblendeten Schraffur nicht gefräst |
+| 9 | d_platte_hatch_aus_ueber_loechern, d_platte_hatch_aus_mit_insel_um_loch | ebenso |
+| 10 | j_spitze_0_0019, j_spitze_0_0021, j_spitze_m0_001 | ebenso |
+| 11 | g_aus_ueber_rand_0p0019 / 0p0021 / 0p009 / 0p011 | Loch r 5 nicht gefräst |
+
+Die Alltagsfälle der Prüfer 8–12 ohne Löcher unter der Schraffur und alle ezdxf-Fälle außer der Linse bleiben unverändert grün.
+
+**MITTEL Leistung – behoben.**
+- Streckenraster: Zellgröße aus dem Median der Stücklängen, lange Stücke geteilt, aber höchstens etwa 1 Mio. Teilstücke je Zug (eine Strecke von 1e8 mm belegte vorher Milliarden Zellen). Darüber wird die Zelle gröber.
+- Schrittbudget in `Covered` (10 Mio. Schritte) → darüber „nicht formgleich“, die Schraffur bleibt (sicher).
+- Formvergleich mit vollständiger Vorauswahl: Formgleich verlangt, dass jeder Eckpunkt und jede Stückmitte höchstens 0,01 mm von der Kontur liegt. Ein gemeinsames Raster aller Kandidaten-Konturen zeigt an einigen Eckpunkten und Stückmitten, welche Konturen dort vorbeigehen; der Punkt mit den wenigsten gibt die Kandidaten (keine echte Übereinstimmung fällt dabei heraus). Mehr als 256 Kandidaten an jedem Punkt, Such- oder Vergleichsbudget erschöpft → „nicht formgleich“.
+- Rahmen der Kandidaten-Flächen nur einmal je Rahmen; Auswahl der Elemente mit Abbruch beim ersten Treffer.
+
+**MITTEL Tests – behoben.** Abbruch mitten im Abgleich: Abbruch nach der halben gemessenen Laufzeit, die Ausnahme wird verlangt; ist ein Lauf ohne Fremdlast vorher fertig, wird mit der halben Zeit dieses Laufs wiederholt (bis zu fünf Versuche). Riesenzelle 100 000 Punkte < 3 s mit Wiederholung (`Big_cell_and_same_box_fast`).
+
+**NIEDRIG – behoben.**
+- CS8321 (`UB`) entfernt; in den T-0747-Dateien keine Warnung.
+- Meldetext „– N Füllfläche(n) nicht sicher zuzuordnen: Teile darin werden ausgelassen“.
+- `CadDxf.Write` schreibt unsichtbare Elemente mit 60 = 1 (Rundreise-Test `Write_keeps_invisible`).
+- Zeittests in Fix2 (Zickzack) und Fix (10 000 Linien) unter Fremdlast einmal wiederholt, die bessere Zeit zählt.
+- Kreis-Eimer nach r sortieren (optional): nicht gemacht – die Eimer-Fälle e0/e1/e2 lesen 100 000 × 100 000 in 3–4 s.
+
+**Prüfprogramme aller Prüfer** (nur gelesen bzw. Generatoren und Prüfteile als Kopie ausgeführt; Harness-Kopie des Prüfers 12; nichts im Repo; Einheiten-Fälle cases11b, cez1/5/6 mit in mm umgerechneten Erwartungen): **900 Fälle, 23 mit Befund** – alle bekannt und erklärt:
+
+| Fallgruppe | Fälle | Befunde |
+|---|---|---|
+| Prüfer 2 (cases, 2, 3) | 162 | 1 (p_spline_block, wie bisher) |
+| Prüfer 3 | 55 | 0 |
+| Prüfer 4 | 72 | 1 (v2, wie bisher) |
+| Prüfer 5 / Spline | 80 / 8 | 4 (wie bisher); Haltestege 4/4 richtig |
+| Prüfer 6 / 7 | 30 / 24 | 0 |
+| Prüfer 8 | 87 | 2 (c13, c14 – Kosten der strengen Regel) |
+| Prüfer 9 (cases9, tol, big, big3) | 160 | 2 (d_platte_… – Kosten der strengen Regel) |
+| Prüfer 10 | 66 | 3 (j_spitze_… – Kosten der strengen Regel) |
+| Prüfer 11 (11, 11b, 11c) | 80 | 4 (g_aus_ueber_rand_… – Kosten der strengen Regel) |
+| Prüfer 11 ezdxf (ez, cez1/5/6) | 44 | 4 (e_linse_cw_ezdxf, bewusst) |
+| Prüfer 12 (cases12, 12b) | 32 | 2 (v5_platte60_loch_sichtbar, t4_umriss_ausgeblendete_ebene_loch_sichtbar – siehe Verhalten) |
+
+**Verhalten (bewusst, wie besprochen):** Ein ausgeblendeter oder unsichtbarer (60 = 1) Plattenumriss mit sichtbarem Kreis wird wie eine ausgeblendete Ebene behandelt: Der Umriss zählt nicht, der Kreis ist dann ein eigenes Teil und wird außen gefräst.
+
+**Leistung (Harness des Prüfers 12, Lesen = Einlesen inklusive Füllflächen-Vergleich):**
+
+| Fall | vorher* | jetzt Lesen | Ergebnis |
+|---|---|---|---|
+| b1 gleicher Rahmen 5000 × 5000 | 8,2 s | 1,5 s | 182 nicht gelesen (wie vorher) |
+| b1 20 000 × 2000 | 16,0 s | 1,8 s | 73 nicht gelesen (wie vorher) |
+| b1 30 000 × 30 000 | > 200 s | 4,9 s | 21 132 nicht gelesen (Budget, sicher) |
+| b2 versteckt 20 000 / 30 000 | 21 / 38 s | 1,6 / 1,8 s | alle bleiben (Konturen berühren) |
+| d1 Riesenzelle 20 000 / 100 000 / 399 000 | – / 90 s / > 120 s | 1,1 / 1,3 / 2,2 s | nicht formgleich (Budget, sicher) |
+| d2 Riesenzelle versteckt 100 000 / 399 000 | – | 0,7 / 1,1 s | bleibt |
+| d3 Ornament 100 000, Kante 10 000 / 1 000 000 | – | 1,4 / 1,4 s | formgleich / bleibt (Budget) |
+| e0 / e1 / e2 Kreise 100 000 × 100 000 | – | 3,4 / 4,1 / 3,1 s | wie erwartet |
+| k1 Budget-Kombi je2 / je6 | – | 2,0 / 4,1 s | bleibt |
+| k2 Kamm 199 999 × 4 versteckt | – | 1,2 s | 730 bleiben |
+| n5 500 große versteckt | 0,12 s | 0,12 s | – |
+| n6 40 000 Löcher + 2000 versteckt | 1,0 s | 1,0 s | – |
+
+\* d1: laut Prüfung auf 671fd5dc7; b1/b2: erster Fix12-Zwischenstand (nur HOCH 1/2 umgesetzt, Formvergleich noch ohne Vorauswahl); n5/n6: Stand fix11.
+
+Abbruch beim Lesen (Harness `--abbruchlesen`): d1 100 000 höchstens 85 ms, b1 30 000 höchstens 242 ms, b2 30 000 höchstens 207 ms, k2 höchstens 270 ms nach dem Abbrechen.
+
+Belege (`--fix`): alle 12 Ausgaben hash-gleich mit dem Vorstand (fix_alt des Prüfers 12).
+
+**Rot-Probe gegen 671fd5dc7:** 8 von 23 rot (alle 6 neuen Fix12-Tests sowie die angepassten Fix9 H-2 und Fix11 „unsichtbar“) – `reports/T-0747/T-0747-fix12-rotprobe.log`.
+
+**Weiterhin offen (nicht in Fix12):**
+- CAM-Laufzeit und Abbruch in `CncCam.Generate`: Kamm 50 000 Zähne 96 s, Kamm 100 000 über 120 s; mit Fräsbahn außerdem b1/b2 (80–150 s), e0/e1 100 000 Kreise (59–126 s).
+- INSERT, SPLINE, MLINE und REGION werden nicht aufgelöst.
+- Die erklärten Prüfer-Fälle bleiben „rot“.
+
+**Testzahlen T-0747-fix12:** Build 0 Fehler, keine Warnung in T-0747-Dateien. Kern (alle dreizehn T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests) **zweimal hintereinander**: je 154 gesamt, 153 bestanden, 1 übersprungen (vorbestehend „IFC echt“), 0 Fehler. App: 13 Klassen inklusive Studio3DMeshEditUiTests – **123/123**. Prüfskript BESTANDEN.

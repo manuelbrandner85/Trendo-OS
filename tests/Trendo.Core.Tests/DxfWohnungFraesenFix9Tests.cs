@@ -64,11 +64,16 @@ public class T0747_Fix9NeuntePruefung(ITestOutputHelper log)
         log.WriteLine(string.Join(" | ", ru.Warnings));
         Assert.Contains(ru.Warnings, w => w.StartsWith("Kontur 2 ausgelassen: liegt in nicht gelesenem Element Schraffur", StringComparison.Ordinal));
         Assert.Single(ru.Paths); Assert.Equal("aussen", ru.Paths[0].Kind); // nur die U-Platte, der Kreis in der Aussparung nicht als Teil
+        // T-0747-fix12: Schraffur über Löchern bleibt stehen (eine gezeichnete Kontur berührt ihren Rahmen) – Löcher darin werden nicht gefräst, nie außen
         var inside = Dxf(Lw(Rect(0, 0, 100, 60)) + hatch + Circle(30, 30, 5) + Circle(70, 30, 5), AusLayer);
         var rd = CadDxf.Parse(inside);
-        Assert.Empty(rd.Unread); Assert.Empty(rd.Redundant); // nur enthalten, nicht formgleich
+        Assert.Single(rd.Unread); Assert.Empty(rd.Redundant);
         Assert.Equal(1, rd.HiddenFills["Schraffur auf Ebene AUS"]);
-        Assert.Equal(2, Cam(inside).Paths.Count(p => p.Kind == "innen"));
+        var ri = Cam(inside); Assert.DoesNotContain(ri.Paths, p => p.Kind == "innen"); Assert.Single(ri.Paths, p => p.Kind == "aussen");
+        // leere ausgeblendete Schraffur in der Platte, Löcher außerhalb ihres Rahmens: fällt weg, Löcher werden gefräst
+        var empty = Dxf(Lw(Rect(0, 0, 200, 60)) + hatch + Circle(130, 30, 5) + Circle(170, 30, 5), AusLayer);
+        Assert.Empty(CadDxf.Parse(empty).Unread);
+        Assert.Equal(2, Cam(empty).Paths.Count(p => p.Kind == "innen"));
     }
 
     [Fact(DisplayName = "T-0747-fix9 H-4: 8000 Schraffur-Schleifen und 8000 Kreise lesen in Sekunden, Riesenkreis r 300 000 mit gleicher Schraffur, Abbrechen beim Lesen wirkt")]

@@ -145,7 +145,7 @@ public class T0747_Fix11ElftePruefung(ITestOutputHelper log)
     [Fact(DisplayName = "T-0747-fix11 niedrig: unsichtbare Elemente (Gruppe 60 = 1) wie ausgeblendet – nicht gefräst, gemeldet; ausgeblendete Schraffur außerhalb gezeichneter Konturen gemeldet")]
     public void Invisible_and_notes()
     {
-        var dxf = Dxf(Lw(Rect(0, 0, 100, 60)) + Circle(30, 30, 5) + Line(0, 70, 100, 70).Replace("8\n0\n", "8\n0\n60\n1\n")
+        var dxf = Dxf(Lw(Rect(0, 0, 100, 60)) + Circle(95, 5, 2) + Line(0, 70, 100, 70).Replace("8\n0\n", "8\n0\n60\n1\n")
             + Hatch("0", [PolyLoop(Sq(10, 10, 90, 50))], G((60, 1))) + Hatch("AUS", [PolyLoop(Sq(200, 0, 300, 60))]) + Circle(250, 30, 5), AusLayer);
         var rd = CadDxf.Parse(dxf);
         Assert.Contains(rd.Drawing.Entities, e => e.Invisible && e.Kind == "linie");
@@ -157,8 +157,8 @@ public class T0747_Fix11ElftePruefung(ITestOutputHelper log)
             var r = new CncJob { ToolD = 1 }.ImportDrawing(f);
             log.WriteLine(string.Join(" | ", r.Warnings));
             Assert.Contains(r.Warnings, w => w.Contains("(unsichtbar) (2, davon 1× Schraffur)", StringComparison.Ordinal));
-            Assert.Contains(r.Warnings, w => w.Contains("AUS (1, davon 1× Schraffur) – 1 Füllfläche(n) außerhalb gezeichneter Konturen", StringComparison.Ordinal));
-            Assert.Single(r.Paths, p => p.Kind == "innen"); // Loch in der Platte gefräst; Kreis bei 250/30 (in ausgeblendeter Schraffur) ausgelassen
+            Assert.Contains(r.Warnings, w => w.Contains("AUS (1, davon 1× Schraffur) – 1 Füllfläche(n) nicht sicher zuzuordnen", StringComparison.Ordinal));
+            Assert.Single(r.Paths, p => p.Kind == "innen"); // Loch in der Platte (außerhalb der unsichtbaren Schraffur) gefräst; Kreis bei 250/30 (in ausgeblendeter Schraffur) ausgelassen
         }
         finally { File.Delete(f); }
     }
