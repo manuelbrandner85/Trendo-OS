@@ -36,3 +36,5 @@
 **Nachtrag T-0747-fix17 (siebzehnte Prüfung):** Schutzbereich mit Budget je Verbund über ein Eckpunkt-Raster (Nachbarplatte bleibt), Ausweichschleife ohne G×N, Streifen-Index für Punkt-in-Kontur, offener Linienzug mit zwei Enden an einer geschlossenen Kontur (U vor einer Kerbe) macht den eingeschlossenen Bereich und die Kontur unsicher, Budget-Nachbarzellen, BuildGrid abbrechbar – siehe Bericht „Siebzehnte Prüfung behoben“.
 
 **Nachtrag T-0747-fix18 (achtzehnte Prüfung):** „teilweise außerhalb“ je Strecke (Teilung an den Schnitten mit dem Rand – auch eine einzelne Linie über die Kerbe), alle Linienzüge an derselben Kontur gemeinsam mit Kandidaten je Kontur, Gesamtgrenze je Datei, Rahmen der älteren Offen-Umriss-Regel einmal berechnet – siehe Bericht „Achtzehnte Prüfung behoben“.
+
+**Nachtrag T-0747-fix19 (neunzehnte Prüfung):** Teilstücke der Sehne auf ganzer Länge abgetastet (Finger/Zunge knapp davor), zu viele Schnitte oder Abtastpunkte und erschöpfte Gesamtgrenze → sichere Folge, Schnittsuche entlang der Strecke, Grund je Kandidat, Grenze für Tests einstellbar – siehe Bericht „Neunzehnte Prüfung behoben“.

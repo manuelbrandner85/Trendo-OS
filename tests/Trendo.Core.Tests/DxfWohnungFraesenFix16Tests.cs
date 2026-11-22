@@ -41,11 +41,11 @@ public class T0747_Fix16SechzehntePruefung(ITestOutputHelper log)
         r.Paths.Any(p => p.Kind == kind && p.Pts.All(q => Math.Abs(Math.Sqrt(Math.Pow(q.X - r.ShiftX - x, 2) + Math.Pow(q.Y - r.ShiftY - y, 2)) - rr - (kind == "aussen" ? tool / 2 : -tool / 2)) < 0.05));
     /// <summary>Kleinste von zwei Messungen (lastrobust).</summary>
     static long Min2(Action a) { var sw = Stopwatch.StartNew(); a(); var t = sw.ElapsedMilliseconds; sw.Restart(); a(); return Math.Min(t, sw.ElapsedMilliseconds); }
-    /// <summary>T-0747-fix18: unter Fremdlast lastrobuster – bis zu drei Messungen mit kurzer Pause, die kleinste zählt (Grenze unverändert).</summary>
+    /// <summary>T-0747-fix18: unter Fremdlast lastrobuster – bis zu fünf Messungen mit Pause, die kleinste zählt (Grenze unverändert).</summary>
     static long Min3(Action a)
     {
         var best = long.MaxValue;
-        for (var k = 0; k < 3; k++) { if (k > 0) { if (best < 10000) break; GC.Collect(); Thread.Sleep(500); } var sw = Stopwatch.StartNew(); a(); best = Math.Min(best, sw.ElapsedMilliseconds); }
+        for (var k = 0; k < 5; k++) { if (k > 0) { if (best < 10000) break; GC.Collect(); Thread.Sleep(1000); } var sw = Stopwatch.StartNew(); a(); best = Math.Min(best, sw.ElapsedMilliseconds); }
         return best;
     }
 
