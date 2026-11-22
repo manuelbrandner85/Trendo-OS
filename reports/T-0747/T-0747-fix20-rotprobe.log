@@ -1,0 +1,42 @@
+### Rot-Probe: Tests des Stands fix20 (Fix19, Fix20) gegen den Quellstand 137191e37
+  Wiederherzustellende Projekte werden ermittelt...
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix20-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj" wiederhergestellt (in 404 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix20-rot\src\Trendo.Companion\Trendo.Companion.csproj" wiederhergestellt (in 404 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix20-rot\src\Trendo.Core\Trendo.Core.csproj" wiederhergestellt (in 404 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix20-rot\tests\Trendo.CrashProbe\Trendo.CrashProbe.csproj" wiederhergestellt (in 404 ms.).
+  Trendo.Core -> C:\Users\<user>\AppData\Local\Temp\t0747fix20-rot\src\Trendo.Core\bin\Release\net10.0\Trendo.Core.dll
+  Trendo.Companion -> C:\Users\<user>\AppData\Local\Temp\t0747fix20-rot\src\Trendo.Companion\bin\Release\net10.0\trendo-companion.dll
+  Trendo.CrashProbe -> C:\Users\<user>\AppData\Local\Temp\t0747fix20-rot\tests\Trendo.CrashProbe\bin\Release\net10.0\Trendo.CrashProbe.dll
+  Trendo.Core.Tests -> C:\Users\<user>\AppData\Local\Temp\t0747fix20-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\t0747fix20-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:50.19]     T-0747-fix20: 3000 Platten mit Linie auf der Oberkante (unter 12 s; 70d4c6c74 ≈ 9 s, 137191e37 ≈ 17 s), 1000 mit Linie auf der Rechtskante und fein geteilte Kante (200 000 Punkte, große Ausdehnung) – Platten gefräst [FAIL]
+  Fehler T-0747-fix20: 3000 Platten mit Linie auf der Oberkante (unter 12 s; 70d4c6c74 ≈ 9 s, 137191e37 ≈ 17 s), 1000 mit Linie auf der Rechtskante und fein geteilte Kante (200 000 Punkte, große Ausdehnung) – Platten gefräst [45 s]
+  Fehlermeldung:
+   oben: 14985 ms
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix20ZwanzigstePruefung.Edge_lines_fast() in C:\Users\<user>\AppData\Local\Temp\t0747fix20-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix20Tests.cs:line 67
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ oben: 14985 ms
+
+
+[xUnit.net 00:00:50.20]     T-0747-fix20: Linie 0,095 mm über der Oberkante (genau tol, kein Band 0,0875–0,1) und Rauschen ±1e-7 an der Unterkante – Platte und Loch werden gefräst [FAIL]
+  Fehler T-0747-fix20: Linie 0,095 mm über der Oberkante (genau tol, kein Band 0,0875–0,1) und Rauschen ±1e-7 an der Unterkante – Platte und Loch werden gefräst [16 ms]
+  Fehlermeldung:
+   Assert.DoesNotContain() Failure: Sub-string found
+                                ↓ (pos 44)
+String: ···"nienzug ab Kontur 3 stößt mit 2 Enden an "···
+Found:  "stößt mit"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix20ZwanzigstePruefung.Exact_tolerance_and_noise() in C:\Users\<user>\AppData\Local\Temp\t0747fix20-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix20Tests.cs:line 42
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ Kontur 1 ausgelassen: Linienzug ab Kontur 3 stößt mit 2 Enden an Kontur 1 und schließt mit deren Rand einen Bereich ein – welcher Umriss gemeint ist und ob die Kontur Loch oder Teil ist, lässt sich ni
+
+
+
+Fehler!      : Fehler:     2, erfolgreich:     3, übersprungen:     0, gesamt:     5, Dauer: 45 s - Trendo.Core.Tests.dll (net10.0)

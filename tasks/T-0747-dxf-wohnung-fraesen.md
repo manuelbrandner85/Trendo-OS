@@ -38,3 +38,5 @@
 **Nachtrag T-0747-fix18 (achtzehnte Prüfung):** „teilweise außerhalb“ je Strecke (Teilung an den Schnitten mit dem Rand – auch eine einzelne Linie über die Kerbe), alle Linienzüge an derselben Kontur gemeinsam mit Kandidaten je Kontur, Gesamtgrenze je Datei, Rahmen der älteren Offen-Umriss-Regel einmal berechnet – siehe Bericht „Achtzehnte Prüfung behoben“.
 
 **Nachtrag T-0747-fix19 (neunzehnte Prüfung):** Teilstücke der Sehne auf ganzer Länge abgetastet (Finger/Zunge knapp davor), zu viele Schnitte oder Abtastpunkte und erschöpfte Gesamtgrenze → sichere Folge, Schnittsuche entlang der Strecke, Grund je Kandidat, Grenze für Tests einstellbar – siehe Bericht „Neunzehnte Prüfung behoben“.
+
+**Nachtrag T-0747-fix20 (zwanzigste Prüfung):** genaue Abstandsprüfung der Sehne (Kapseln um die nahen Randstrecken, Lücken über die Mitte – genau tol, keine Abtastung), dreiwertig mit „Prüfaufwand zu groß“ bei Grenze, Rauschen am Rand löst nicht aus – siehe Bericht „Zwanzigste Prüfung behoben“.

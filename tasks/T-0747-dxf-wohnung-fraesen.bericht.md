@@ -1283,3 +1283,54 @@ p1_diag_gravur_2000/5000 brauchen in beiden Ständen über 250 s; die Zeit liegt
 **Testzahlen T-0747-fix19:** Build 0 Fehler, keine neue Warnung in T-0747-Dateien. Kern (alle zwanzig T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests) **zweimal hintereinander**: je 173 gesamt, 172 bestanden, 1 übersprungen (vorbestehend), 0 Fehler. App 13 Klassen inklusive Studio3DMeshEditUiTests – **123/123**. Prüfskript BESTANDEN.
 
 **Offen (Folgeaufgabe [ALT]):** Gravur- und CAM-Laufzeit bei vielen Linien von Rand zu Rand, Brücke zwischen zwei Platten, U mit sich kreuzenden Überständen, U bzw. Sehne über zwei Ebenen, `SegGrid.Add` füllt den ganzen Streckenrahmen.
+
+## Zwanzigste Prüfung behoben (T-0747-fix20)
+Arbeitskopie `%TEMP%\trendo-auftrag-T-0747-fix20`, Commit obendrauf auf 137191e37. Keine Maschine angesteuert.
+
+**MITTEL – behoben (genaue Abstandsprüfung statt Abtastung).** `SegOutside` (Teil b, „Linienzug an einer Kontur“) tastet nicht mehr ab:
+- Für jede nahe Randstrecke e von C ist die Menge der Punkte der Strecke mit Abstand ≤ tol zu e ein Intervall: der Schnitt der Geraden mit der Kapsel um e, also Rechteck und zwei Kreise, konvex.
+- Die Vereinigung dieser Intervalle ist der Teil „am Rand“. Jede Lücke dazwischen liegt überall weiter als tol vom Rand und kann die Seite nicht wechseln; ihre Mitte entscheidet (nicht in C → außen).
+- Damit gilt wieder genau tol, ohne Band 0,0875–0,1. Kollinear auf dem Rand liegende Strecken haben keine Lücke und sind sofort „nicht außen“, auch auf der Ober- und Rechtskante.
+- Nahe Randstrecken werden in Zellschritten entlang der Strecke gesucht. Jede besuchte Strecke zählt auf die Gesamtgrenze.
+- Das Ergebnis ist dreiwertig: nicht außen / außen / unbekannt. „Unbekannt“ (Gesamtgrenze, mehr als 4 Mio. Zellschritte) lässt C mit „Prüfaufwand zu groß“ aus, nicht mehr mit der Linienzug-Meldung.
+- Gezählte Schnitte gibt es nicht mehr, damit entfällt auch die 4096-Grenze. Rauschen am Rand löst nicht mehr aus.
+- Tests `Exact_tolerance_and_noise` (Linie 0,095 mm über der Kante, Rauschen ±1e-7) und `Edge_lines_fast` (3000 Platten mit Linie auf der Oberkante unter 12 s, 1000 auf der Rechtskante, fein geteilte Kante mit 200 000 Punkten bei großer Ausdehnung). Beide sind gegen 137191e37 rot.
+
+**Niedrig – behoben.**
+- (a) c_rauschen_5000/20000 und c_rauschen6_*: Die Platte wird wieder gefräst, gleich wie in 70d4c6c74.
+- (b) `Small_file_budget_safe` verlangt jetzt „Prüfaufwand“. Ein eigener Fall, in dem ein späterer Kandidat nach der Erschöpfung einen anderen Grund bekommt, ist nicht dazugekommen. Der Grund wird aber je Kandidat bestimmt (Fix19), und bei „unbekannt“ für C zuerst ein zutreffender, eindeutiger Grund gewählt.
+
+**Messwerte** (`--perf`, Fräser aus der Falldatei, nacheinander gemessen):
+
+| Fall | 70d4c6c74 | 137191e37 | neu |
+|---|---|---|---|
+| f_viele_o_3000 / f_viele_r_3000 | 8,6 / 8,6 s | 17,0 / 17,5 s | 7,6 / 8,7 s |
+| f_viele_kantenlinie_200 / 1000 | 1,3 / 3,7 s | 1,7 / 5,4 s | 1,0 / 3,2 s |
+| f2_feinkante_200000_20000_x1 / x4 | 1,7 / 1,7 s | 52,1 s / > 180 s | 1,4 / 1,7 s |
+| f1_feinkante (5 Fälle) | 0,3–1,7 s | 1,0–13,3 s | 0,3–1,5 s |
+| f3_blech_feinkante_200000 | 1,5 s | 1,9 s | 1,4 s |
+| e1_rand_1000_1000 / 4000_1000 | 4,0 / 12,0 s (4000 Bahnen) | 5,7 / 78,5 s (3749 Bahnen) | 3,5 / 11,5 s (4000 Bahnen) |
+| e2_kante_1000 / 2000 / 3000 / 3700 / 4000 | 4,6 / 7,0 / 10,1 / 12,1 / 13,0 s | 5,9 / 16,7 / 47,0 / 76,9 / 73,6 s | 4,1 / 6,5 / 12,1 / 13,0 / 11,6 s |
+| e2_kante_4000 Bahnen | 8000 | 7498 (251 Platten falsch ausgelassen) | 8000 |
+| e3_innen_1000 / e4_nest_u_doppel_200 | 4,4 / 0,3 s | 4,1 / 0,4 s | 3,9 / 0,2 s |
+| c_rauschen_20000 | 0,7 s (2 Bahnen) | 0,3 s (1 Bahn) | 0,3 s (2 Bahnen) |
+| t1_kerbe_zacken_3000 | 1,9 s (2) | 0,2 s (1) | 0,2 s (1) |
+| x1c / v4 X-Stöße 5000 / w1e | 3,7 / 14,1 / 5,3 s | 3,2 / 11,4 / 4,4 s | 3,5 / 11,1 / 5,2 s |
+
+Alle Fälle liegen auf oder unter 70d4c6c74, bis auf e2_kante_3000 (+20 %) und e2_kante_3700 (+7 %) im Rahmen der Messschwankung. Die schräge Kante mit vielen kollinearen Eckpunkten (cases20b s_diagonal_*) ist [ALT] und wie bisher.
+
+**Prüferfälle aller Runden** (Prüfprogramme nur gelesen bzw. als Kopie ausgeführt):
+- cases19 0 Befunde von 18.
+- cases20 und cases20b: dieselben Befunde wie mit 70d4c6c74 (29 bzw. 3, Fall für Fall gleich) – die strengen „Platte fehlt“-Erwartungen dort betreffen die ältere Regel für offene Umrisse.
+- Sonst dieselben Befunde wie in der neunzehnten Prüfung.
+
+**G-Code-Vergleich** (999 Fälle, Runden 9–20 einschließlich aller Gegenfälle der Prüfer 20):
+- Gegen 70d4c6c74: 995 gleich, 4 abweichend – genau die beabsichtigten Fix19-Fälle (c_zickzack_4096, z_kamm_finger_0p02, z_zunge_spalt_0p05/0p09). Alle Altfälle und Prüfer-20-Gegenfälle sind gleich wie dort.
+- Gegen 137191e37: 986 gleich, 13 abweichend, davon 7 mit anderem G-Code: c_rauschen (4), e1_rand_4000, e2_kante_4000 und f2_x4 – jetzt wieder wie 70d4c6c74.
+- t1_kerbe_zacken_2100/3000 lösen weiter aus (1 Bahn).
+
+**Rot-Probe gegen 137191e37:** beide neuen Fix20-Tests rot, Fix19 grün – `reports/T-0747/T-0747-fix20-rotprobe.log`.
+
+**Testzahlen T-0747-fix20:** Build 0 Fehler, keine neue Warnung in T-0747-Dateien. Kern (alle einundzwanzig T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests) **zweimal hintereinander**: je 175 gesamt, 174 bestanden, 1 übersprungen (vorbestehend), 0 Fehler. App 13 Klassen inklusive Studio3DMeshEditUiTests – **123/123**. Prüfskript BESTANDEN.
+
+**Offen (Folgeaufgabe [ALT]):** schräge Kante mit 3000–10 000 kollinearen Eckpunkten, CAM-Laufzeiten, Abbruch g2_50000, Gravur-Laufzeit bei vielen Linien von Rand zu Rand, Brücke zwischen zwei Platten, kreuzende U, zwei Ebenen.

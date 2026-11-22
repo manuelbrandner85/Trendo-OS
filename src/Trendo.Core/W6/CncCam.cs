@@ -314,51 +314,80 @@ public static class CncCam
                     var bC = boxes[cTag];
                     return v.X >= bC.Item1 && v.X <= bC.Item3 && v.Y >= bC.Item2 && v.Y <= bC.Item4 && Ri(cTag).Contains(v.X, v.Y);
                 }
-                // T-0747-fix18/19: Liegt ein Teil der Strecke a→b außerhalb von C, weiter als tol vom Rand?
-                // 1. Schnitte mit dem Rand von C entlang der Strecke suchen (Zellen entlang der Strecke, nicht ihr ganzer Rahmen; Abbruch prüfbar).
-                // 2. Teilstücke dazwischen liegen ganz innen oder ganz außen: Mitte innen → ganzes Stück innen. Sonst das Stück in Schritten ≤ tol/4
-                //    abtasten; ein Punkt außerhalb, der weiter als tol − Schritt/2 vom Rand liegt, löst aus (so wird kein Punkt mit Abstand > tol übersehen;
-                //    ein Finger oder eine Zunge an der Mitte genügt nicht mehr, um das Stück als „auf dem Rand“ gelten zu lassen).
-                // Zu viele Schnitte (> 4096), zu viele Abtastpunkte oder erschöpfte Gesamtgrenze → sichere Folge: „außerhalb“.
-                bool SegOutside(int cTag, (double X, double Y) a, (double X, double Y) b)
+                // T-0747-fix18/19/20: Liegt ein Teil der Strecke a→b außerhalb von C, weiter als tol vom Rand? Genaue Prüfung (T-0747-fix20):
+                // Für jede nahe Randstrecke e von C ist die Menge der Punkte der Strecke mit Abstand ≤ tol zu e ein Intervall (Schnitt der Geraden mit der
+                // Kapsel um e: Rechteck + zwei Kreise, konvex). Die Vereinigung dieser Intervalle ist der Teil „am Rand“. Jede Lücke dazwischen liegt
+                // überall weiter als tol vom Rand und kann die Seite nicht wechseln – ihre Mitte entscheidet: nicht in C → außen. Genau tol, keine Abtastung;
+                // kollinear auf dem Rand liegende Strecken haben keine Lücke. Nahe Randstrecken werden in Zellschritten entlang der Strecke gesucht; jede
+                // besuchte Strecke zählt auf die Gesamtgrenze. Ergebnis: 0 = nicht außen, 1 = außen, 2 = unbekannt (Grenze erreicht).
+                int SegOutside(int cTag, (double X, double Y) a, (double X, double Y) b)
                 {
-                    var len = Math.Sqrt((b.X - a.X) * (b.X - a.X) + (b.Y - a.Y) * (b.Y - a.Y));
-                    var ts = new List<double> { 0, 1 }; var seen = new HashSet<int>(); var tooMany = false;
-                    var cell = cg.CellSize; var nq = (int)Math.Min(4_000_000, Math.Ceiling(len / cell) + 1);
-                    if (nq >= 4_000_000) return true;
-                    for (var k = 0; k <= nq && !tooMany; k++)
+                    double dx = b.X - a.X, dy = b.Y - a.Y, len2 = dx * dx + dy * dy, R = tolT;
+                    if (len2 < 1e-24) return InC(cTag, a) || NearC(cTag, a, R) ? 0 : 1;
+                    var len = Math.Sqrt(len2); var iv = new List<(double Lo, double Hi)>(); var seen = new HashSet<int>();
+                    var cell = cg.CellSize; var nq = (long)Math.Ceiling(len / cell) + 1;
+                    if (nq > 4_000_000) return 2;
+                    var unknown = false;
+                    // Intervall der Parameter t ∈ [0,1] mit Abstand ≤ R zur Strecke c0→c1
+                    void Capsule((double X, double Y) c0, (double X, double Y) c1)
                     {
-                        Tick(); fileWork++; if (fileWork > FileMax) return true;
-                        double px = a.X + (b.X - a.X) * k / nq, py = a.Y + (b.Y - a.Y) * k / nq, hw = cell / 2 + tolT;
+                        double lo = double.MaxValue, hi = double.MinValue;
+                        void Circle((double X, double Y) c)
+                        {
+                            double fx = a.X - c.X, fy = a.Y - c.Y, B = 2 * (fx * dx + fy * dy), Cc = fx * fx + fy * fy - R * R, disc = B * B - 4 * len2 * Cc;
+                            if (disc < 0) return; var sq = Math.Sqrt(disc);
+                            lo = Math.Min(lo, (-B - sq) / (2 * len2)); hi = Math.Max(hi, (-B + sq) / (2 * len2));
+                        }
+                        Circle(c0); Circle(c1);
+                        double wx = c1.X - c0.X, wy = c1.Y - c0.Y, wl2 = wx * wx + wy * wy;
+                        if (wl2 > 1e-24)
+                        {
+                            var wl = Math.Sqrt(wl2);
+                            // u(t) = ((a + t d − c0)·w)/|w|² ∈ [0,1],  v(t) = cross(w, a + t d − c0)/|w| ∈ [−R, R]
+                            double u0 = ((a.X - c0.X) * wx + (a.Y - c0.Y) * wy) / wl2, u1 = (dx * wx + dy * wy) / wl2;
+                            double v0 = (wx * (a.Y - c0.Y) - wy * (a.X - c0.X)) / wl, v1 = (wx * dy - wy * dx) / wl;
+                            double tl = double.MinValue, th = double.MaxValue;
+                            void Slab(double s0, double s1, double min, double max)
+                            {
+                                if (Math.Abs(s1) < 1e-18) { if (s0 < min || s0 > max) { tl = 1; th = 0; } return; }
+                                var t1 = (min - s0) / s1; var t2 = (max - s0) / s1; if (t1 > t2) (t1, t2) = (t2, t1);
+                                tl = Math.Max(tl, t1); th = Math.Min(th, t2);
+                            }
+                            Slab(u0, u1, 0, 1); Slab(v0, v1, -R, R);
+                            if (tl <= th) { lo = Math.Min(lo, tl); hi = Math.Max(hi, th); }
+                        }
+                        lo = Math.Max(lo, 0); hi = Math.Min(hi, 1);
+                        if (lo <= hi) iv.Add((lo, hi));
+                    }
+                    for (long k = 0; k <= nq && !unknown; k++)
+                    {
+                        Tick(); fileWork++; if (fileWork > FileMax) { unknown = true; break; }
+                        double px = a.X + dx * k / nq, py = a.Y + dy * k / nq, hw = cell / 2 + R;
                         cg.Any(px - hw, py - hw, px + hw, py + hw, t =>
                         {
+                            fileWork++; if (fileWork > FileMax) { unknown = true; return true; }
                             var sg = cg.Segs[t]; if (sg.Tag != cTag || !seen.Add(t)) return false;
-                            fileWork++;
-                            if (Cross(a, b, sg.A, sg.B) is { } u) ts.Add(u);
-                            if (ts.Count > 4096) { tooMany = true; return true; }
+                            Capsule(sg.A, sg.B);
                             return false;
                         });
                     }
-                    if (tooMany) return true;
-                    ts.Sort();
-                    var step = tolT / 4; var thr = tolT - step / 2;
-                    for (var q = 0; q + 1 < ts.Count; q++)
+                    if (unknown) return 2;
+                    iv.Sort((x, y) => x.Lo.CompareTo(y.Lo));
+                    var cur = 0.0; // bis hierhin am Rand abgedeckt
+                    foreach (var (lo, hi) in iv)
                     {
-                        var t0 = ts[q]; var t1 = ts[q + 1]; if (t1 - t0 < 1e-12) continue;
-                        var m = (t0 + t1) / 2;
-                        if (InC(cTag, (a.X + (b.X - a.X) * m, a.Y + (b.Y - a.Y) * m))) continue; // Stück liegt ganz innen
-                        var n = (int)Math.Ceiling((t1 - t0) * len / step);
-                        if (n > 4_000_000) return true;
-                        for (var k = 0; k <= n; k++)
+                        if (lo > cur + 1e-12)
                         {
-                            Tick(); fileWork++; if (fileWork > FileMax) return true;
-                            var tt = t0 + (t1 - t0) * k / Math.Max(1, n); var p = (a.X + (b.X - a.X) * tt, a.Y + (b.Y - a.Y) * tt);
-                            if (!InC(cTag, p) && !NearC(cTag, p, thr)) return true;
+                            var m = (cur + lo) / 2; // Lücke (cur, lo): überall weiter als tol vom Rand
+                            if (!InC(cTag, (a.X + dx * m, a.Y + dy * m))) return 1;
                         }
+                        cur = Math.Max(cur, hi);
+                        if (cur >= 1) return 0;
                     }
-                    return false;
+                    if (cur < 1 - 1e-12) { var m = (cur + 1) / 2; if (!InC(cTag, (a.X + dx * m, a.Y + dy * m))) return 1; }
+                    return 0;
                 }
-                var qual = new Dictionary<int, List<(int First, List<(double X, double Y)> Pts, int Touch)>>();
+                var qual = new Dictionary<int, List<(int First, List<(double X, double Y)> Pts, int Touch, bool Unknown)>>();
                 foreach (var comp in comps)
                 {
                     ct.ThrowIfCancellationRequested();
@@ -378,16 +407,16 @@ public static class CncCam
                     foreach (var (cTag, nTouch) in touches)
                     {
                         if (nTouch < 2) continue;
-                        var outside = false;
+                        var res = 0; // 0 nicht außen, 1 außen, 2 unbekannt (Prüfaufwand zu groß – sichere Folge)
                         foreach (var (c, _) in comp)
                         {
-                            for (var k = 0; k + 1 < c.Pts.Count && !outside; k++) { Tick(); outside = SegOutside(cTag, c.Pts[k], c.Pts[k + 1]); }
-                            if (outside) break;
+                            for (var k = 0; k + 1 < c.Pts.Count && res != 1; k++) { Tick(); res = Math.Max(res, SegOutside(cTag, c.Pts[k], c.Pts[k + 1])); }
+                            if (res == 1) break;
                         }
-                        if (!outside) continue;
+                        if (res == 0) continue;
                         var pts = new List<(double X, double Y)>(); foreach (var (c, _) in comp) pts.AddRange(c.Pts);
                         if (!qual.TryGetValue(cTag, out var ql)) qual[cTag] = ql = [];
-                        ql.Add((comp.First().j, pts, nTouch));
+                        ql.Add((comp.First().j, pts, nTouch, res == 2));
                     }
                 }
                 EnsureIndex();
@@ -395,8 +424,8 @@ public static class CncCam
                 {
                     ct.ThrowIfCancellationRequested();
                     var cc = cs[cTag]; var hc = Hull(cc.Pts);
-                    string Why((int First, List<(double X, double Y)> Pts, int Touch) u) => $"Linienzug ab Kontur {u.First + 1} stößt mit {u.Touch} Enden an Kontur {cTag + 1} und schließt mit deren Rand einen Bereich ein – welcher Umriss gemeint ist und ob die Kontur Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte den Umriss in der Zeichnung schließen oder die Linien auf eine eigene Ebene legen.";
-                    SkipAs(cTag, Why(ql[0]));
+                    string Why((int First, List<(double X, double Y)> Pts, int Touch, bool Unknown) u) => u.Unknown ? Budget : $"Linienzug ab Kontur {u.First + 1} stößt mit {u.Touch} Enden an Kontur {cTag + 1} und schließt mit deren Rand einen Bereich ein – welcher Umriss gemeint ist und ob die Kontur Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte den Umriss in der Zeichnung schließen oder die Linien auf eine eigene Ebene legen.";
+                    SkipAs(cTag, Why(ql.FirstOrDefault(x => !x.Unknown) is { Pts: not null } q0 ? q0 : ql[0])); // T-0747-fix20: zutreffender Grund zuerst
                     // Kandidaten je C einmal: offene Konturen, deren Rahmen den gemeinsamen Rahmen überlappt und die nicht ganz in C liegen
                     double rx0 = boxes[cTag].Item1, ry0 = boxes[cTag].Item2, rx1 = boxes[cTag].Item3, ry1 = boxes[cTag].Item4;
                     foreach (var u in ql) foreach (var p in u.Pts) { rx0 = Math.Min(rx0, p.X); ry0 = Math.Min(ry0, p.Y); rx1 = Math.Max(rx1, p.X); ry1 = Math.Max(ry1, p.Y); }
