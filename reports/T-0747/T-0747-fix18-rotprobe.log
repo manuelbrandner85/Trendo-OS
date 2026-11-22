@@ -1,0 +1,38 @@
+### Rot-Probe: Tests des Stands fix18 (Fix17, Fix18) gegen den Quellstand 5925d5345
+  Wiederherzustellende Projekte werden ermittelt...
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix18-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj" wiederhergestellt (in 216 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix18-rot\src\Trendo.Companion\Trendo.Companion.csproj" wiederhergestellt (in 216 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix18-rot\src\Trendo.Core\Trendo.Core.csproj" wiederhergestellt (in 216 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix18-rot\tests\Trendo.CrashProbe\Trendo.CrashProbe.csproj" wiederhergestellt (in 216 ms.).
+  Trendo.Core -> C:\Users\<user>\AppData\Local\Temp\t0747fix18-rot\src\Trendo.Core\bin\Release\net10.0\Trendo.Core.dll
+  Trendo.Companion -> C:\Users\<user>\AppData\Local\Temp\t0747fix18-rot\src\Trendo.Companion\bin\Release\net10.0\trendo-companion.dll
+  Trendo.CrashProbe -> C:\Users\<user>\AppData\Local\Temp\t0747fix18-rot\tests\Trendo.CrashProbe\bin\Release\net10.0\Trendo.CrashProbe.dll
+  Trendo.Core.Tests -> C:\Users\<user>\AppData\Local\Temp\t0747fix18-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\t0747fix18-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:04.31]     T-0747-fix18 HOCH: einzelne Linie / offene 2-Punkt-Polylinie / 0,05 mm vor der Kante / Sehne bei x 95 / 3-Punkt-Polylinie auf dem Rand schließen die Kerbe – Kreis darin nie außen; Gravur ganz in der Platte löst nicht aus [FAIL]
+  Fehler T-0747-fix18 HOCH: einzelne Linie / offene 2-Punkt-Polylinie / 0,05 mm vor der Kante / Sehne bei x 95 / 3-Punkt-Polylinie auf dem Rand schließen die Kerbe – Kreis darin nie außen; Gravur ganz in der Platte löst nicht aus [198 ms]
+  Fehlermeldung:
+   s1 Linie auf den Ecken: Kreis in der Kerbe außen gefräst
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix18AchtzehntePruefung.Chord_closing_notch() in C:\Users\<user>\AppData\Local\Temp\t0747fix18-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix18Tests.cs:line 55
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ s1 Linie auf den Ecken: Kontur 4 ausgelassen: offene Kontur (Enden 60 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fräserradius kleiner. Nur in der Fräsart „Auf der Linie (Gravur)“ wird sie gefräst; sonst die Zeichnung schließen. | Kontur 1 ausgelassen: zu nah an Kontur 4 – die Fräsbahn käme ihr auf 0 mm n
+
+
+[xUnit.net 00:01:16.76]     T-0747-fix18 MITTEL: Platte mit 5000 Löchern und 5000 U am Rand unter 10 s; Streifen mit vielen Verbünden unter Gesamtgrenze [FAIL]
+  Fehler T-0747-fix18 MITTEL: Platte mit 5000 Löchern und 5000 U am Rand unter 10 s; Streifen mit vielen Verbünden unter Gesamtgrenze [1 m 12 s]
+  Fehlermeldung:
+   23675 ms
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix18AchtzehntePruefung.Many_u_on_one_plate_fast() in C:\Users\<user>\AppData\Local\Temp\t0747fix18-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix18Tests.cs:line 81
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ 5000 Löcher + 5000 U: 23675 ms; Kontur 1 ausgelassen: liegt in oder an der offenen Kontur 5002 – ob sie Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte den Umriss in der Zeichnung schließen. | Kontur 5002 ausgelassen: offen
+
+
+
+Fehler!      : Fehler:     2, erfolgreich:     2, übersprungen:     0, gesamt:     4, Dauer: 1 m 16 s - Trendo.Core.Tests.dll (net10.0)
