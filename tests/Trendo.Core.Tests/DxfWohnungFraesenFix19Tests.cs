@@ -86,6 +86,7 @@ public class T0747_Fix19NeunzehntePruefung(ITestOutputHelper log)
             log.WriteLine(text[..Math.Min(400, text.Length)]);
             Assert.True(r is null || !Around(r, "aussen", 85, 50, 5), "Kreis in der Kerbe außen gefräst");
             Assert.True(r is not null && Around(r, "innen", 250, 50, 5), "Platte daneben samt Loch fehlt"); // nicht im Rahmen – bleibt
+            Assert.Contains("Prüfaufwand", text); // T-0747-fix20: bei erschöpfter Grenze die zutreffende Meldung (nicht „schließt einen Bereich ein“)
         }
         finally { CncCam.ProtectFileBudget = null; }
     }
