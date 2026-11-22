@@ -178,11 +178,15 @@ public static class CncCam
                     warn.Add($"{Name(i)}: enthält nicht gelesenes Element {what} (bei X {F((u.MinX + u.MaxX) / 2, "0.#")} Y {F((u.MinY + u.MaxY) / 2, "0.#")}) – dort wird nichts gefräst.");
             }
         }
-        // T-0747-fix13/14/15: Linienverbund mit Stoß – nicht verkettet. Ein Umriss daraus könnte jede Kontur in seiner Fläche umschließen: ob die Loch
-        // oder Teil ist, lässt sich nicht sicher sagen → auslassen und melden. Schutzbereich je Komponente (Stoß-Gruppen samt über Spalte angeschlossener
-        // Ketten): ihr Rahmen und ihre konvexe Hülle. Ausgelassen wird jede geschlossene Kontur, deren Rahmen im Komponentenrahmen liegt, deren erster
-        // Punkt in der Hülle liegt oder die den Rand der Hülle berührt oder schneidet. Die Hülle enthält jedes Sehnenpolygon, das früher eine offene
-        // Kette aus diesen Stücken als Schutz (openOutline) hatte – was damals geschützt war, ist es weiterhin.
+        // T-0747-fix13/14/15/16: Linienverbund mit Stoß – nicht verkettet. Ein Umriss aus Stücken einer Komponente (Stoß-Gruppen samt über Spalte
+        // angeschlossener Ketten) liegt immer in ihrer konvexen Hülle; er kann also nur Konturen umschließen, die ganz in der Hülle liegen.
+        // Ausgelassen und gemeldet wird deshalb jede geschlossene Kontur,
+        //  1. deren Rahmen im Komponentenrahmen liegt,
+        //  2. deren erster Punkt in der Hülle (± 1e-6) liegt – das trifft jede Kontur, die ganz in der Hülle liegt, auch auf dem Rand,
+        //  3. von deren Eckpunkten einer echt in der Hülle liegt (mehr als 1e-6 vom Rand) – Konturen, die teilweise drin liegen.
+        // T-0747-fix16: Eine Kontur, die die Hülle umschließt oder ihren Rand nur berührt (Gravur-T mit Enden auf dem Plattenrand), wird gefräst – ihre
+        // Tiefe kann sich durch die Komponente nicht ändern. Schon ausgelassene Konturen werden übersprungen; Rahmen-Vortest, Punkt-in-Hülle in
+        // O(log H), gemeinsames Arbeitsbudget (bei Erschöpfung werden die Konturen im Komponentenrahmen ausgelassen und gemeldet), Abbruch alle 1024.
         var jgroups = cs.Select((c, j) => (c, j)).Where(t => t.c.JunctionGroup >= 0).GroupBy(t => t.c.JunctionGroup).ToList();
         if (jgroups.Count > 0)
         {
@@ -190,14 +194,29 @@ public static class CncCam
             var closedIdx = Enumerable.Range(0, cs.Count).Where(i => cs[i].Closed).ToArray();
             var byMinX = closedIdx.OrderBy(i => boxes[i].Item1).ToArray(); var minXs = byMinX.Select(i => boxes[i].Item1).ToArray();
             var byPx = closedIdx.OrderBy(i => cs[i].Pts[0].X).ToArray(); var pxs = byPx.Select(i => cs[i].Pts[0].X).ToArray();
-            var segs = BuildGrid(closedIdx.Select(i => ((IReadOnlyList<(double X, double Y)>)cs[i].Pts, true, i)), r);
+            SegGrid? verts = null; long work = 0; const long MaxWork = 100_000_000; var nOps = 0;
+            var maxW = closedIdx.Length == 0 ? 0 : closedIdx.Max(i => boxes[i].Item3 - boxes[i].Item1);
+            double gAllX0 = closedIdx.Length == 0 ? 0 : closedIdx.Min(i => boxes[i].Item1), gAllY0 = closedIdx.Length == 0 ? 0 : closedIdx.Min(i => boxes[i].Item2);
+            double gAllX1 = closedIdx.Length == 0 ? 1 : closedIdx.Max(i => boxes[i].Item3), gAllY1 = closedIdx.Length == 0 ? 1 : closedIdx.Max(i => boxes[i].Item4);
+            bool Open(int i) => cs[i].Closed && !dup[i] && !crossing[i] && !unsure[i];
             void Skip(int i, int first)
             {
-                if (!cs[i].Closed || dup[i] || crossing[i] || unsure[i]) return;
+                if (!Open(i)) return;
                 unsure[i] = true;
-                warn.Add($"{Name(i)} ausgelassen: liegt im oder am Linienverbund ab Kontur {first + 1}, an dem mehr als zwei Linien zusammenstoßen – welcher Umriss gemeint ist und ob sie Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte die Umrisse in der Zeichnung trennen oder als Polylinie zeichnen.");
+                warn.Add($"{Name(i)} ausgelassen: liegt im Linienverbund ab Kontur {first + 1} (oder teilweise darin), an dem mehr als zwei Linien zusammenstoßen – welcher Umriss gemeint ist und ob sie Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte die Umrisse in der Zeichnung trennen oder als Polylinie zeichnen.");
             }
+            void Tick() { if ((++nOps & 1023) == 0) ct.ThrowIfCancellationRequested(); }
             static int Lower(double[] a, double v) { var lo = Array.BinarySearch(a, v); if (lo < 0) lo = ~lo; while (lo > 0 && a[lo - 1] >= v) lo--; return lo; }
+            // T-0747-fix16: Sprungzeiger über schon ausgelassene Konturen (mit Pfadkürzung) – spätere Gruppen gehen nur noch die offenen durch
+            var jumpA = new int[byMinX.Length + 1]; for (var i = 0; i < jumpA.Length; i++) jumpA[i] = i;
+            var jumpP = new int[byPx.Length + 1]; for (var i = 0; i < jumpP.Length; i++) jumpP[i] = i;
+            int Next(int[] jump, int[] order, int q)
+            {
+                var r = q;
+                while (r < order.Length && (jump[r] != r || !Open(order[r]))) { if (jump[r] == r) jump[r] = r + 1; r = jump[r]; }
+                while (q < r) { var t = jump[q]; jump[q] = r; q = t; }
+                return r;
+            }
             foreach (var grp in jgroups)
             {
                 ct.ThrowIfCancellationRequested();
@@ -205,31 +224,85 @@ public static class CncCam
                 foreach (var (c, _) in grp) pts.AddRange(c.Pts);
                 double gx0 = pts.Min(p => p.X), gy0 = pts.Min(p => p.Y), gx1 = pts.Max(p => p.X), gy1 = pts.Max(p => p.Y);
                 const double e = 1e-6; var first = grp.First().j;
+                var exhausted = work > MaxWork;
                 // 1. Rahmen ganz im Komponentenrahmen
-                for (var q = Lower(minXs, gx0 - e); q < byMinX.Length && minXs[q] <= gx1 + e; q++)
+                for (var q = Next(jumpA, byMinX, Lower(minXs, gx0 - e)); q < byMinX.Length && minXs[q] <= gx1 + e && !exhausted; q = Next(jumpA, byMinX, q + 1))
                 {
-                    if ((q & 1023) == 0) ct.ThrowIfCancellationRequested();
-                    var i = byMinX[q]; var bi = boxes[i];
+                    Tick(); var i = byMinX[q]; work++;
+                    var bi = boxes[i];
                     if (bi.Item1 >= gx0 - e && bi.Item2 >= gy0 - e && bi.Item3 <= gx1 + e && bi.Item4 <= gy1 + e) Skip(i, first);
                 }
                 var hull = Hull(pts);
-                // 2. erster Punkt in der Hülle
-                if (hull.Count >= 3)
-                    for (var q = Lower(pxs, gx0 - e); q < byPx.Length && pxs[q] <= gx1 + e; q++)
-                    {
-                        if ((q & 1023) == 0) ct.ThrowIfCancellationRequested();
-                        var i = byPx[q]; var p0 = cs[i].Pts[0];
-                        if (p0.Y >= gy0 - e && p0.Y <= gy1 + e && InConvex(hull, p0, e)) Skip(i, first);
-                    }
-                // 3. Rand der Hülle berührt oder geschnitten
-                for (var h = 0; h < hull.Count; h++)
+                if (hull.Count >= 3 && !exhausted)
                 {
-                    var a = hull[h]; var b = hull[(h + 1) % hull.Count];
-                    segs.Any(Math.Min(a.X, b.X) - e, Math.Min(a.Y, b.Y) - e, Math.Max(a.X, b.X) + e, Math.Max(a.Y, b.Y) + e, t =>
+                    // 2. erster Punkt in der Hülle (auch auf dem Rand)
+                    for (var q = Next(jumpP, byPx, Lower(pxs, gx0 - e)); q < byPx.Length && pxs[q] <= gx1 + e; q = Next(jumpP, byPx, q + 1))
                     {
-                        if (SegSeg(a, b, segs.Segs[t].A, segs.Segs[t].B) <= e) Skip(segs.Segs[t].Tag, first);
-                        return false;
-                    });
+                        Tick(); var i = byPx[q];
+                        work += 1 + (long)Math.Log2(hull.Count); if (work > MaxWork) { exhausted = true; break; }
+                        var p0 = cs[i].Pts[0];
+                        if (p0.Y >= gy0 - e && p0.Y <= gy1 + e && InConvexLog(hull, p0, -e)) Skip(i, first);
+                    }
+                    // 3. Konturen, die den Hüllenrand berühren oder kreuzen: nur auslassen, wenn ein Eckpunkt echt in der Hülle liegt (teilweise darin).
+                    // Gesucht wird entlang jeder Hüllenkante in Schritten einer Rasterzelle (nicht über den ganzen Kantenrahmen).
+                    // T-0747-fix16: Sind die Kandidaten nach linker Kante (offene Konturen, deren Rahmen den Komponentenrahmen überlappt) weniger als die
+                    // Schritte entlang der Kanten, werden sie direkt geprüft – das spart bei vielen kleinen Konturen die Rasterabfragen.
+                    var lo3 = Lower(minXs, gx0 - maxW - e); var hi3 = Lower(minXs, gx1 + e + 1e-9);
+                    double walk = 0; for (var h = 0; h < hull.Count; h++) { var a0 = hull[h]; var b0 = hull[(h + 1) % hull.Count]; walk += Math.Sqrt((b0.X - a0.X) * (b0.X - a0.X) + (b0.Y - a0.Y) * (b0.Y - a0.Y)); }
+                    var gridCell = Math.Max(r, Math.Sqrt((gAllX1 - gAllX0) * (gAllX1 - gAllX0) + (gAllY1 - gAllY0) * (gAllY1 - gAllY0)) / 2048);
+                    var scanLimit = (long)(8 * (walk / gridCell + hull.Count)) + 1000; var scanned = 0L; var scanDone = false;
+                    if (!exhausted)
+                    {
+                        scanDone = true; // offene Kandidaten (Sprungzeiger über schon ausgelassene); zu viele → doch entlang der Kanten
+                        for (var q = Next(jumpA, byMinX, lo3); q < hi3 && !exhausted; q = Next(jumpA, byMinX, q + 1))
+                        {
+                            if (++scanned > scanLimit) { scanDone = false; break; }
+                            Tick(); var i = byMinX[q]; var bi = boxes[i]; work++;
+                            if (bi.Item3 < gx0 - e || bi.Item2 > gy1 + e || bi.Item4 < gy0 - e) continue;
+                            foreach (var v in cs[i].Pts)
+                            {
+                                Tick(); work += 1 + (long)Math.Log2(hull.Count); if (work > MaxWork) { exhausted = true; break; }
+                                if (v.X > gx0 + e && v.X < gx1 - e && v.Y > gy0 + e && v.Y < gy1 - e && InConvexLog(hull, v, e)) { Skip(i, first); break; }
+                            }
+                        }
+                    }
+                    if (!exhausted && !scanDone)
+                    {
+                        verts ??= BuildGrid(closedIdx.Select(i => ((IReadOnlyList<(double X, double Y)>)cs[i].Pts, true, i)), r);
+                        var checkedHere = new HashSet<int>(); var cell = verts.CellSize;
+                        for (var h = 0; h < hull.Count && !exhausted; h++)
+                        {
+                            var a = hull[h]; var b = hull[(h + 1) % hull.Count];
+                            var len = Math.Sqrt((b.X - a.X) * (b.X - a.X) + (b.Y - a.Y) * (b.Y - a.Y)); var steps = (int)Math.Min(1_000_000, Math.Ceiling(len / cell));
+                            for (var k = 0; k <= steps && !exhausted; k++)
+                            {
+                                var px = a.X + (b.X - a.X) * k / Math.Max(1, steps); var py = a.Y + (b.Y - a.Y) * k / Math.Max(1, steps); var hw = cell / 2 + e;
+                                verts.Any(px - hw, py - hw, px + hw, py + hw, t =>
+                                {
+                                    Tick(); var sg = verts.Segs[t]; work++;
+                                    if (work > MaxWork) { exhausted = true; return true; }
+                                    if (!Open(sg.Tag) || checkedHere.Contains(sg.Tag) || SegSeg(a, b, sg.A, sg.B) > e) return false;
+                                    checkedHere.Add(sg.Tag);
+                                    foreach (var v in cs[sg.Tag].Pts)
+                                    {
+                                        Tick(); work += 1 + (long)Math.Log2(hull.Count); if (work > MaxWork) { exhausted = true; return true; }
+                                        if (v.X > gx0 + e && v.X < gx1 - e && v.Y > gy0 + e && v.Y < gy1 - e && InConvexLog(hull, v, e)) { Skip(sg.Tag, first); break; }
+                                    }
+                                    return false;
+                                });
+                            }
+                        }
+                    }
+                }
+                if (exhausted)
+                {
+                    // sichere Folge: Budget erschöpft – alles, was den Komponentenrahmen berührt, auslassen
+                    for (var q = 0; q < byMinX.Length && minXs[q] <= gx1 + e; q++)
+                    {
+                        Tick(); var i = byMinX[q]; if (!Open(i)) continue;
+                        var bi = boxes[i];
+                        if (bi.Item3 >= gx0 - e && bi.Item2 <= gy1 + e && bi.Item4 >= gy0 - e) Skip(i, first);
+                    }
                 }
             }
         }
@@ -796,9 +869,37 @@ public static class CncCam
         return h;
     }
 
-    /// <summary>T-0747-fix15: liegt der Punkt in der konvexen Hülle (gegen den Uhrzeigersinn) oder höchstens <paramref name="e"/> davor?</summary>
-    static bool InConvex(List<(double X, double Y)> h, (double X, double Y) q, double e)
+    /// <summary>T-0747-fix16: Punkt in konvexer Hülle (gegen den Uhrzeigersinn) in O(log H): Fächer ab h[0], Binärsuche des Keils, dann die Außenkante.
+    /// <paramref name="m"/> ≤ 0: höchstens |m| außerhalb zählt als drin; <paramref name="m"/> &gt; 0: mindestens m innerhalb (Keilkante und die beiden
+    /// Fächerkanten am Rand; nahe anderen Ecken eher „drin“ – also vorsichtig).</summary>
+    static bool InConvexLog(List<(double X, double Y)> h, (double X, double Y) q, double m)
     {
+        var n = h.Count; if (n < 3) return false;
+        if (n <= 64) return InConvex(h, q, -m, m > 0);
+        static double Cr((double X, double Y) o, (double X, double Y) a, (double X, double Y) b) => (a.X - o.X) * (b.Y - o.Y) - (a.Y - o.Y) * (b.X - o.X);
+        static double D((double X, double Y) a, (double X, double Y) b, (double X, double Y) q) { var l = Math.Sqrt((b.X - a.X) * (b.X - a.X) + (b.Y - a.Y) * (b.Y - a.Y)); return l > 0 ? Cr(a, b, q) / l : 0; }
+        var h0 = h[0];
+        if (Cr(h0, h[1], q) < 0 || Cr(h0, h[n - 1], q) > 0)
+            return m <= 0 && (SegDist(q, h0, h[1]) <= -m || SegDist(q, h0, h[n - 1]) <= -m); // außerhalb des Fächers, höchstens knapp am Rand
+        int lo = 1, hi = n - 1;
+        while (hi - lo > 1) { var mid = (lo + hi) / 2; if (Cr(h0, h[mid], q) >= 0) lo = mid; else hi = mid; }
+        var d = D(h[lo], h[lo + 1], q);
+        if (m <= 0) return d >= m;
+        return d >= m && D(h0, h[1], q) >= m && D(h[n - 1], h0, q) >= m;
+    }
+
+    /// <summary>T-0747-fix15: liegt der Punkt in der konvexen Hülle (gegen den Uhrzeigersinn) oder höchstens <paramref name="e"/> davor?</summary>
+    static bool InConvex(List<(double X, double Y)> h, (double X, double Y) q, double e, bool strict = false)
+    {
+        if (strict) // T-0747-fix16: mindestens e innerhalb jeder Kante
+        {
+            for (var i = 0; i < h.Count; i++)
+            {
+                var a = h[i]; var b = h[(i + 1) % h.Count]; double dx = b.X - a.X, dy = b.Y - a.Y, l = Math.Sqrt(dx * dx + dy * dy);
+                if (l > 0 && (dx * (q.Y - a.Y) - dy * (q.X - a.X)) / l < -e) return false;
+            }
+            return true;
+        }
         for (var i = 0; i < h.Count; i++)
         {
             var a = h[i]; var b = h[(i + 1) % h.Count]; double dx = b.X - a.X, dy = b.Y - a.Y, l = Math.Sqrt(dx * dx + dy * dy);

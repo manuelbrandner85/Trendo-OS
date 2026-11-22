@@ -228,7 +228,7 @@ public static class CadDxf
             // T-0747-fix5: unsinnige Zahlen (NaN, unendlich, |Wert| > 1e9 mm) – nur dieses Element verwerfen und melden
             if (val is not ("BLOCK" or "ENDBLK" or "SEQEND") && !SaneNumbers(body, kUnits))
             {
-                Count(skipped, $"{val} mit ungültiger Koordinate");
+                Count(skipped, $"{KindLabel(val)} mit ungültiger Koordinate"); // T-0747-fix16: Schlüssel deutsch wie die Meldung
                 // T-0747-fix6: wo das Element liegt, ist unbekannt – kann es einen Umriss bilden, gilt die ganze Zeichnung als unsicher
                 if (section == "BLOCKS") { if (curBlock is not null && blocks.TryGetValue(curBlock, out var bx) && !NoOutline.Contains(val)) bx.Add(Box.All); }
                 else if (OutlineCapable(val, body)) unread.Add(($"{KindLabel(val)} mit ungültiger Koordinate", Box.All)); // T-0747-fix15: deutsche Bezeichnung in Meldungen
@@ -267,7 +267,7 @@ public static class CadDxf
                 if (el > 1e-12) { ex /= el; ey /= el; ez /= el; }
                 if (el <= 1e-12 || Math.Abs(ex) > 1e-9 || Math.Abs(ey) > 1e-9)
                 {
-                    Count(skipped, $"{val} nicht in der Zeichenebene");
+                    Count(skipped, $"{KindLabel(val)} nicht in der Zeichenebene");
                     var vbs = val == "POLYLINE" ? ReadVertexBodies(pairs, ref p) : [];
                     unread.Add(($"{KindLabel(val)} (nicht in der Zeichenebene)", ShapeBox(val, body, vbs, kUnits)));
                     continue;
@@ -304,7 +304,7 @@ public static class CadDxf
                 case "POLYLINE":
                 {
                     var flags = Int(body, 70, 0);
-                    if ((flags & (16 | 64)) != 0) { Count(skipped, "3D-Netz (POLYLINE)"); SkipVertices(pairs, ref p); break; }
+                    if ((flags & (16 | 64)) != 0) { Count(skipped, "3D-Netz (Polylinie)"); SkipVertices(pairs, ref p); break; }
                     var e = new CadEntity { Kind = "polylinie", Layer = layer, Closed = (flags & 1) == 1 };
                     var bad = false;
                     foreach (var vb in ReadVertexBodies(pairs, ref p))
@@ -316,7 +316,7 @@ public static class CadDxf
                         e.Points.Add([vp[0].X, vp[0].Y, (flags & 8) != 0 ? 0 : Num(vb, 42)]);
                     }
                     // T-0747-fix14: auch offen überall unsicher – eine offene Polylinie kann mit anderen Stücken einen Umriss bilden; fehlt sie, bekäme ein Loch die falsche Tiefe
-                    if (bad) { Count(skipped, "POLYLINE mit ungültiger Koordinate"); unread.Add(("Polylinie mit ungültiger Koordinate", Box.All)); break; }
+                    if (bad) { Count(skipped, "Polylinie mit ungültiger Koordinate"); unread.Add(("Polylinie mit ungültiger Koordinate", Box.All)); break; }
                     d.Entities.Add(e);
                     break;
                 }
@@ -324,7 +324,7 @@ public static class CadDxf
                     if (OncePts(body, 10) is null) { Incomplete(); break; }
                     if (!(Num(body, 40) > 0))
                     {
-                        Count(skipped, "CIRCLE mit Radius ≤ 0"); // T-0747-fix5
+                        Count(skipped, "Kreis mit Radius ≤ 0"); // T-0747-fix5
                         if (Num(body, 40) < 0) unread.Add(("Kreis mit Radius ≤ 0", ShapeBox(val, body, [], kUnits))); // T-0747-fix6: könnte ein Umriss mit |r| sein
                         break;
                     }
@@ -332,7 +332,7 @@ public static class CadDxf
                     break;
                 case "ARC":
                     if (OncePts(body, 10) is null) { Incomplete(); break; }
-                    if (!(Num(body, 40) > 0)) { Count(skipped, "ARC mit Radius ≤ 0"); break; } // T-0747-fix5
+                    if (!(Num(body, 40) > 0)) { Count(skipped, "Bogen mit Radius ≤ 0"); break; } // T-0747-fix5
                     d.Entities.Add(new CadEntity { Kind = "bogen", Layer = layer, Cx = Num(body, 10), Cy = Num(body, 20), R = Num(body, 40), A0 = Num(body, 50), A1 = Num(body, 51) });
                     break;
                 case "ELLIPSE":
@@ -342,10 +342,10 @@ public static class CadDxf
                     // abgetastet; Schrittweite aus |r''(t)| ≤ max(a, b): Pfeilhöhe ≤ h²/8 · max(a, b) ≤ 0,001 mm.
                     double cx = Num(body, 10), cy = Num(body, 20), ax = Num(body, 11), ay = Num(body, 21), ratio = Math.Abs(Num(body, 40, 1)), t0r = Num(body, 41), t1r = Num(body, 42, 2 * Math.PI);
                     var a = Math.Sqrt(ax * ax + ay * ay); var b = a * ratio;
-                    if (!(a > 0) || !(b > 0)) { Count(skipped, "ELLIPSE ohne Ausdehnung"); break; }
+                    if (!(a > 0) || !(b > 0)) { Count(skipped, "Ellipse ohne Ausdehnung"); break; }
                     if (Math.Abs(t0r) > 1e6 || Math.Abs(t1r) > 1e6)
                     {
-                        Count(skipped, "ELLIPSE mit unsinnigem Parameter"); unread.Add(("ELLIPSE (unsinniger Parameter)", ShapeBox(val, body, [], kUnits))); flip = false; break;
+                        Count(skipped, "Ellipse mit unsinnigem Parameter"); unread.Add(("Ellipse (unsinniger Parameter)", ShapeBox(val, body, [], kUnits))); flip = false; break;
                     }
                     var sweep = (t1r - t0r) % (2 * Math.PI); if (sweep < 0) sweep += 2 * Math.PI;
                     var full = sweep < 1e-9 || sweep > 2 * Math.PI - 1e-9; if (full) sweep = 2 * Math.PI;
@@ -356,7 +356,7 @@ public static class CadDxf
                     var nD = Math.Ceiling(sweep / dt);
                     if (!(nD <= MaxEllipsePoints) || ellipsePoints + nD > MaxEllipsePointsTotal)
                     {
-                        Count(skipped, "ELLIPSE zu groß zum Abtasten"); unread.Add(("ELLIPSE (zu groß zum Abtasten)", ShapeBox(val, body, [], kUnits))); flip = false; break;
+                        Count(skipped, "Ellipse zu groß zum Abtasten"); unread.Add(("Ellipse (zu groß zum Abtasten)", ShapeBox(val, body, [], kUnits))); flip = false; break;
                     }
                     // Scheitel (Vielfache von π/2) sind immer Stützpunkte: sonst lägen bei sehr flachen Ellipsen zwei Punkte beidseits der Spitze näher als
                     // 0,001 mm beieinander, würden beim Verketten zusammengefasst, und die Spitze würde abgeschnitten.
@@ -383,7 +383,7 @@ public static class CadDxf
                     break;
                 case "SPLINE":
                     Count(skipped, val);
-                    unread.Add(("SPLINE", ShapeBox(val, body, [], kUnits)));
+                    unread.Add((KindLabel("SPLINE"), ShapeBox(val, body, [], kUnits)));
                     break;
                 case "TEXT":
                 {

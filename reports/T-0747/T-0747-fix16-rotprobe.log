@@ -1,0 +1,40 @@
+### Rot-Probe: Tests des Stands fix16 (Fix15, Fix16) gegen den Quellstand d61d0cfb8
+  Wiederherzustellende Projekte werden ermittelt...
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix16-rot\src\Trendo.Companion\Trendo.Companion.csproj" wiederhergestellt (in 238 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix16-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj" wiederhergestellt (in 238 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix16-rot\src\Trendo.Core\Trendo.Core.csproj" wiederhergestellt (in 238 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix16-rot\tests\Trendo.CrashProbe\Trendo.CrashProbe.csproj" wiederhergestellt (in 238 ms.).
+  Trendo.Core -> C:\Users\<user>\AppData\Local\Temp\t0747fix16-rot\src\Trendo.Core\bin\Release\net10.0\Trendo.Core.dll
+  Trendo.Companion -> C:\Users\<user>\AppData\Local\Temp\t0747fix16-rot\src\Trendo.Companion\bin\Release\net10.0\trendo-companion.dll
+  Trendo.CrashProbe -> C:\Users\<user>\AppData\Local\Temp\t0747fix16-rot\tests\Trendo.CrashProbe\bin\Release\net10.0\Trendo.CrashProbe.dll
+  Trendo.Core.Tests -> C:\Users\<user>\AppData\Local\Temp\t0747fix16-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\t0747fix16-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:01.92]     T-0747-fix16 MITTEL 3: Gravur-T mit Enden auf dem Plattenrand (auch eigene Ebene) – Platte und Loch werden gefräst; teilweise in der Hülle bleibt ausgelassen [FAIL]
+  Fehler T-0747-fix16 MITTEL 3: Gravur-T mit Enden auf dem Plattenrand (auch eigene Ebene) – Platte und Loch werden gefräst; teilweise in der Hülle bleibt ausgelassen [211 ms]
+  Fehlermeldung:
+   Assert.Single() Failure: The collection did not contain any matching items
+Expected:   (predicate expression)
+Collection: [CamPath { Kind = innen, Pts = System.Collections.Generic.List`1[System.ValueTuple`2[System.Double,System.Double]], Closed = True, Source = 1, Layer = 0, TabsAllowed = True }]
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix16SechzehntePruefung.Plate_touching_hull_is_milled() in C:\Users\<user>\AppData\Local\Temp\t0747fix16-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix16Tests.cs:line 53
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ Ebene 0: 1 Linienverbund/-verbünde (zusammen 3 Linien, z. B. ab Kontur 3) nicht zu Umrissen verkettet: an einem Punkt stoßen mehr als zwei Linien zusammen oder die Enden liegen nicht eindeutig. Diese Linien werden nicht gefräst (außer als Gravur), Konturen darin werden ausgelassen. | Kontur 1 ausgelassen: liegt im oder am Linienverbund ab Kontur 3, an dem mehr als zwei Linien zusammenstoßen – welcher Umriss gemeint ist und ob sie Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte die Umrisse in der Zeichnung trennen oder als Polylinie zeichnen.
+
+
+[xUnit.net 00:02:06.70]     T-0747-fix16 MITTEL 1/2: Stern 50 000, Bürste 50 000, Rechteck 8000-fach deckungsgleich, 2000 X-Stöße über 20 000 Quadraten – je unter 10 s; Stoßkette 20 000 + Schraffur unter 4 s [FAIL]
+  Fehler T-0747-fix16 MITTEL 1/2: Stern 50 000, Bürste 50 000, Rechteck 8000-fach deckungsgleich, 2000 X-Stöße über 20 000 Quadraten – je unter 10 s; Stoßkette 20 000 + Schraffur unter 4 s [2 m 4 s]
+  Fehlermeldung:
+   Stern 50 000: 41056 ms
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix16SechzehntePruefung.Junction_cases_fast() in C:\Users\<user>\AppData\Local\Temp\t0747fix16-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix16Tests.cs:line 88
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ Stern 50 000: 41056 ms, 2 Bahnen
+
+
+
+Fehler!      : Fehler:     2, erfolgreich:     3, übersprungen:     0, gesamt:     5, Dauer: 2 m 9 s - Trendo.Core.Tests.dll (net10.0)

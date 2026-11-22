@@ -39,7 +39,7 @@ public class T0747_Fix5FuenftePruefung(ITestOutputHelper log)
         var hole = Assert.Single(r.Paths, p => p.Kind == "innen"); var (hx, hy) = Mid(r, hole); Assert.Equal(50, hx, 1); Assert.Equal(30, hy, 1);
         var mesh = G((0, "POLYLINE"), (8, "0"), (66, 1), (70, 16), (10, 0), (20, 0), (30, 0), (210, 0.6), (220, 0), (230, 0.8)) + G((0, "VERTEX"), (8, "0"), (10, 1), (20, 1), (30, 1)) + G((0, "SEQEND"), (8, "0"));
         var dm = CadDxf.Parse(Dxf(Lw(Rect(0, 0, 10, 10)) + mesh));
-        Assert.Equal(1, dm.Skipped["3D-Netz (POLYLINE)"]); Assert.False(dm.Skipped.ContainsKey("POLYLINE nicht in der Zeichenebene")); Assert.Empty(dm.Unread);
+        Assert.Equal(1, dm.Skipped["3D-Netz (Polylinie)"]); Assert.False(dm.Skipped.ContainsKey("Polylinie nicht in der Zeichenebene")); Assert.Empty(dm.Unread);
     }
 
     // ---------- M2: nicht lesbare Umrisse ----------
@@ -148,8 +148,8 @@ public class T0747_Fix5FuenftePruefung(ITestOutputHelper log)
             + G((0, "CIRCLE"), (8, "0"), (10, "1e300"), (20, 30), (30, 0), (40, 5));
         var rd = CadDxf.Parse(Dxf(Lw(Rect(0, 0, 100, 60)) + Circle(50, 30, 10) + bad));
         log.WriteLine(string.Join(", ", rd.Skipped.Select(k => $"{k.Value}× {k.Key}")));
-        Assert.Equal(3, rd.Skipped["CIRCLE mit ungültiger Koordinate"]); Assert.Equal(1, rd.Skipped["LINE mit ungültiger Koordinate"]);
-        Assert.Equal(1, rd.Skipped["CIRCLE mit Radius ≤ 0"]);
+        Assert.Equal(3, rd.Skipped["Kreis mit ungültiger Koordinate"]); Assert.Equal(1, rd.Skipped["Linie mit ungültiger Koordinate"]);
+        Assert.Equal(1, rd.Skipped["Kreis mit Radius ≤ 0"]);
         Assert.Equal(2, rd.Drawing.Entities.Count); // Platte und gültiger Kreis bleiben
         // Kommentar zwischen $INSUNITS und dem Wert
         var withComment = "0\nSECTION\n2\nHEADER\n9\n$INSUNITS\n999\nZoll\n70\n1\n0\nENDSEC\n0\nSECTION\n2\nENTITIES\n" + Circle(0, 0, 1) + "0\nENDSEC\n0\nEOF\n";

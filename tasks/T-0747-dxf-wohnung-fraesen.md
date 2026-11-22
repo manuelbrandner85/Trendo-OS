@@ -30,3 +30,5 @@
 **Nachtrag T-0747-fix14 (vierzehnte Prüfung):** Stoß-Gruppe samt über Spalte angeschlossener Ketten unsicher (auch im feinen Füllflächen-Abgleich), offene POLYLINE mit unvollständigem Eckpunkt überall unsicher, Stoß-Schleife beim Fräsen über sortierte Rahmen mit Sammelmeldung, exakte 1-µm-Knoten statt Dichteregel – siehe Bericht „Vierzehnte Prüfung behoben“.
 
 **Nachtrag T-0747-fix15 (fünfzehnte Prüfung):** Stoß-Gruppen verschmelzen über Spalte, Schutzbereich (Rahmen und konvexe Hülle) je Stoß-Komponente, Union-Find mit Pfadkürzung, transitive und reihenfolgeunabhängige Stoß-Erkennung, deutsche Elementnamen in Meldungen – siehe Bericht „Fünfzehnte Prüfung behoben“.
+
+**Nachtrag T-0747-fix16 (sechzehnte Prüfung):** Stoß-Komponenten und Enden-Haufen linear vereinigt (Zellen tol/√2 bzw. 1 µm/√2, Budget mit sicherer Folge), Schutzbereich mit Sprungzeigern und Punkt-in-Hülle in O(log H), Kontur am Hüllenrand (umschließend oder nur berührend) wieder gefräst, Zähl-Schlüssel deutsch – siehe Bericht „Sechzehnte Prüfung behoben“.

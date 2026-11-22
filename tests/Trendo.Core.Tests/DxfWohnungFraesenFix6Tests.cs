@@ -133,7 +133,7 @@ public class T0747_Fix6SechstePruefung(ITestOutputHelper log)
         var rd = CadDxf.Parse(Dxf(Ell(1e17, 1) + Ell(0, -1e300)));
         log.WriteLine($"{sw.ElapsedMilliseconds} ms: {string.Join(", ", rd.Skipped.Select(k => $"{k.Value}× {k.Key}"))}");
         Assert.True(sw.ElapsedMilliseconds < 2000);
-        Assert.Equal(2, rd.Skipped["ELLIPSE mit unsinnigem Parameter"]); Assert.Empty(rd.Drawing.Entities);
+        Assert.Equal(2, rd.Skipped["Ellipse mit unsinnigem Parameter"]); Assert.Empty(rd.Drawing.Entities);
         Assert.All(rd.Unread, u => { Assert.Equal(20, u.B.MinX, 6); Assert.Equal(80, u.B.MaxX, 6); Assert.Equal(15, u.B.MinY, 6); Assert.Equal(45, u.B.MaxY, 6); });
         // 4π + 0,3 … 4π + 2,5 ist dieselbe Teilellipse wie 0,3 … 2,5
         var a = Assert.Single(CadDxf.Parse(Dxf(Ell(0.3, 2.5))).Drawing.Entities); var b = Assert.Single(CadDxf.Parse(Dxf(Ell(4 * Math.PI + 0.3, 4 * Math.PI + 2.5))).Drawing.Entities);
@@ -163,7 +163,7 @@ public class T0747_Fix6SechstePruefung(ITestOutputHelper log)
         }
         // Halbachse 5e8 mm bräuchte über 200 000 Punkte → nicht abgetastet, gemeldet, Ausdehnung bekannt
         var big = CadDxf.Parse(Dxf(Ell(5e8, 0, 0.5)));
-        Assert.Equal(1, big.Skipped["ELLIPSE zu groß zum Abtasten"]); Assert.Empty(big.Drawing.Entities); Assert.Equal(-5e8, Assert.Single(big.Unread).B.MinX, 0);
+        Assert.Equal(1, big.Skipped["Ellipse zu groß zum Abtasten"]); Assert.Empty(big.Drawing.Entities); Assert.Equal(-5e8, Assert.Single(big.Unread).B.MinX, 0);
     }
 
     // ---------- N-4: Prüfsumme kulturunabhängig ----------
