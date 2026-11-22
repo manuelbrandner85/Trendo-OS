@@ -34,3 +34,5 @@
 **Nachtrag T-0747-fix16 (sechzehnte Prüfung):** Stoß-Komponenten und Enden-Haufen linear vereinigt (Zellen tol/√2 bzw. 1 µm/√2, Budget mit sicherer Folge), Schutzbereich mit Sprungzeigern und Punkt-in-Hülle in O(log H), Kontur am Hüllenrand (umschließend oder nur berührend) wieder gefräst, Zähl-Schlüssel deutsch – siehe Bericht „Sechzehnte Prüfung behoben“.
 
 **Nachtrag T-0747-fix17 (siebzehnte Prüfung):** Schutzbereich mit Budget je Verbund über ein Eckpunkt-Raster (Nachbarplatte bleibt), Ausweichschleife ohne G×N, Streifen-Index für Punkt-in-Kontur, offener Linienzug mit zwei Enden an einer geschlossenen Kontur (U vor einer Kerbe) macht den eingeschlossenen Bereich und die Kontur unsicher, Budget-Nachbarzellen, BuildGrid abbrechbar – siehe Bericht „Siebzehnte Prüfung behoben“.
+
+**Nachtrag T-0747-fix18 (achtzehnte Prüfung):** „teilweise außerhalb“ je Strecke (Teilung an den Schnitten mit dem Rand – auch eine einzelne Linie über die Kerbe), alle Linienzüge an derselben Kontur gemeinsam mit Kandidaten je Kontur, Gesamtgrenze je Datei, Rahmen der älteren Offen-Umriss-Regel einmal berechnet – siehe Bericht „Achtzehnte Prüfung behoben“.

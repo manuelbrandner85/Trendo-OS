@@ -1166,3 +1166,67 @@ Alle Fälle liegen höchstens bei d61d0cfb8 + 20 %, die meisten darunter. Die Pr
 **Testzahlen T-0747-fix17:** Build 0 Fehler, keine neue Warnung in T-0747-Dateien. Kern (alle achtzehn T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests) **zweimal hintereinander**: je 168 gesamt, 167 bestanden, 1 übersprungen (vorbestehend), 0 Fehler. App 13 Klassen inklusive Studio3DMeshEditUiTests – **123/123**. Prüfskript BESTANDEN.
 
 **Weiterhin offen (Folgeaufgabe):** CAM-Grundlaufzeit (Nearest/Hindernisraster), Bemaßungs-„zu nah“ (d1/m1/m2), Zeichnungsrahmen mit Schriftfeld, n3_kreise_zelle.
+
+## Achtzehnte Prüfung behoben (T-0747-fix18)
+Arbeitskopie `%TEMP%\trendo-auftrag-T-0747-fix18`, Commit obendrauf auf 5925d5345. Keine Maschine angesteuert.
+
+**HOCH – behoben (Sehne über der Kerbe).** „Teilweise außerhalb von C“ wird jetzt je Strecke geprüft: Jede Strecke des Linienzugs wird an ihren Schnitten mit dem Rand von C geteilt. Jedes Teilstück liegt dann ganz innen, ganz außen oder auf dem Rand; von jedem wird die Mitte getestet (außen = nicht in C und weiter als 0,1 mm vom Rand).
+- Damit lösen auch eine einzelne LINE oder offene 2-Punkt-Polylinie über die Kerbe (s1, s2), 0,05 mm vor der Kante (s4), die Sehne bei x 95 (s9) und die 3-Punkt-Polylinie mit allen Punkten auf dem Rand (s10) die Regel aus.
+- Der Kreis in der Kerbe wird nie mehr außen gefräst; das Loch in der Platte bleibt.
+- Eine Gravurlinie ganz in der Platte löst weiterhin nicht aus.
+- s7 (Sehne auf anderer Ebene) bleibt wie bisher ohne Anschluss: Linien über zwei Ebenen sind Folgeaufgabe.
+- Test `Chord_closing_notch`.
+- **G-Code-Verlust:** keiner. Gegen 5925d5345 ändert sich der G-Code nur in den 9 Sehnen-Fällen (s1–s4 aus cases18, s1/s2/s4/s9/s10 aus sehne).
+
+**MITTEL – behoben (Linienzüge an derselben C gemeinsam).**
+- Alle Linienzüge an derselben Kontur C werden zusammen behandelt. Die Kandidaten – offene Konturen, deren Rahmen den gemeinsamen Rahmen überlappt und die nicht ganz in C liegen – werden je C einmal bestimmt.
+- Je Linienzug werden nur noch diese Kandidaten gegen die Hülle aus Hülle(C) ∪ Linienzug geprüft; die vielen Konturen ganz in C kommen gar nicht mehr in die Prüfung.
+- Dabei gefunden: Die ältere Regel für offene Umrisse berechnete den Konturrahmen je Paar neu (LINQ). Die Rahmen werden jetzt einmal berechnet.
+- Ergebnisse:
+
+| Fall | 840d09292 | 5925d5345 | neu |
+|---|---|---|---|
+| x1c (5000 U / 5000 Löcher) | 20,8 s | 88,9 s | 2,9 s |
+| x1e | 29,9 s | 104 s | 3,7 s |
+| p2_u_100_2000 | 10,6 s | 43,8 s | 2,3 s |
+
+- Test `Many_u_on_one_plate_fast` (Platte mit 5000 Löchern und 5000 U, Fräser Ø 6): 7,4 s, Grenze 10 s.
+
+**NIEDRIG/MITTEL – behoben (Gesamtgrenze je Datei).** Für Schutzbereich und Teil b gibt es eine gemeinsame Grenze je Datei (150 Mio. Schritte). Bei Erschöpfung folgt die bestehende sichere Folge: Konturen mit Rahmen-Überlappung auslassen und mit „Prüfaufwand zu groß“ melden. In den Sammlungen wird die Grenze nicht erreicht. p3_streifen_1000 liegt neu bei 61 s (840d09292: 64 s, 5925d5345: 85 s); die Zeit steckt dort in der Fräsbahn-Phase.
+
+**NIEDRIG optional – erledigt.** `Junction_cases_fast` misst bis zu dreimal mit kurzer Pause; die kleinste Messung zählt, die Grenze von 10 s bleibt.
+
+**Messwerte** (`--perf`, Fräser aus der Falldatei; „kein G“ = kein G-Code, alle Konturen sicher ausgelassen – in allen drei Ständen gleich):
+
+| Fall | 840d09292 | 5925d5345 | neu |
+|---|---|---|---|
+| x1a / x1b / x1c / x1d | 2,2 / 4,7 / 20,8 / 1,4 s | 3,0 / 14,8 / 88,9 / 1,4 s | 1,9 / 1,4 / 2,9 / 1,7 s |
+| x1e / x1f | 29,9 / 10,5 s | 104 / 25,3 s | 3,7 / 4,2 s |
+| x2a | 4,9 s | 14,7 s | 1,4 s |
+| x3a (kein G) | 167 s | 167 s | 170 s |
+| x4a / x4b (kein G) | 51,2 / 1,9 s | 59,4 / 1,9 s | 4,4 / 1,9 s |
+| x5a (kein G) | 3,4 s | 3,6 s | 3,7 s |
+| x6a / x6b / x6c (kein G) | 1,7 / 3,5 / 173 s | 2,1 / 4,3 / 196 s | 2,1 / 4,3 / 180 s |
+| p1_gassen_30 / 60 / 100 (kein G) | 0,6 / 10,9 / 106 s | 0,6 / 10,6 / 102 s | 0,6 / 10,6 / 101 s |
+| p2_u_200 / 1000 / 3000 | 0,6 / 2,6 / 0,8 s | 1,4 / 8,2 / 0,8 s | 0,4 / 0,9 / 0,8 s |
+| p2_u_60_2000 / 100_2000 | 4,3 / 10,6 s | 15,0 / 43,8 s | 0,9 / 2,3 s |
+| p3_streifen_500 / 1000 | 4,7 / 63,8 s | 5,8 / 84,9 s | 5,9 / 61,4 s |
+| d_diag_500 (kein G) | 146 s | 152 s | 149 s |
+| v3 Hülle 20 000 / 100 000 | 2,4 / 4,4 s | 2,9 / 5,3 s | 2,8 / 5,4 s |
+| v4 X-Stöße 2000 / 5000 | 3,5 / 8,9 s | 3,9 / 10,3 s | 4,0 / 10,3 s |
+
+x3b/x3c, p3_streifen_1500 und d_diag_2000 brechen in allen drei Ständen schon beim Lesen an der Datei- bzw. Elementgrenze ab.
+
+Alle U-Fälle (Teil b) liegen deutlich unter 840d09292. Bei v3 sowie x6a/x6b und p3_streifen_500 (+15 bis +26 %) bleibt der Fix17-Aufbau des Eckpunkt-Rasters gegenüber 840d09292 sichtbar. Ein Versuch, kleine Konturen nur einmal je Rahmenzelle einzutragen, war langsamer (v4 5000: 15 s) und wurde verworfen.
+
+**Prüferfälle aller Runden** (Prüfprogramme nur gelesen bzw. als Kopie ausgeführt): **1360 Fälle, 36 mit Befund** – die 34 aus der siebzehnten Prüfung und aus cases18 b1_bruecke_zwei_platten und x1_u_ueberstand_kreuzend. Beide sind ausdrücklich nicht Teil dieser Runde (Brücke zwischen zwei Platten, U mit sich kreuzenden Überständen). Die sehne-, diag- und faelle-Sammlungen haben keine Erwartungsdateien; sie wurden über den G-Code-Vergleich bewertet.
+
+**G-Code-Vergleich** (874 Fälle):
+- Gegen 5925d5345: 864 gleich, 10 abweichend. Davon 9 mit anderem G-Code (die Sehnen-Fälle, beabsichtigt) und 1 nur mit anderem Meldungstext.
+- Gegen 840d09292: 840 gleich, 34 abweichend.
+
+**Rot-Probe gegen 5925d5345:** beide neuen Fix18-Tests rot, Fix17 grün – `reports/T-0747/T-0747-fix18-rotprobe.log`.
+
+**Testzahlen T-0747-fix18:** Build 0 Fehler, keine neue Warnung in T-0747-Dateien. Kern (alle neunzehn T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests) **zweimal hintereinander**: je 170 gesamt, 169 bestanden, 1 übersprungen (vorbestehend), 0 Fehler. App 13 Klassen inklusive Studio3DMeshEditUiTests – **123/123**. Prüfskript BESTANDEN.
+
+**Weiterhin offen (Folgeaufgabe [ALT]):** Brücke zwischen zwei Platten, U mit sich kreuzenden Überständen, U bzw. Sehne über zwei Ebenen, `SegGrid.Add` füllt den ganzen Streckenrahmen, Big_dxf_fast ohne Wiederholung, CAM-Grundlaufzeit.
