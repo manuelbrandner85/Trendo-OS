@@ -83,6 +83,9 @@ public static class CncCam
         return CadContours.Build(ents, ChainTol, chord, notes, true, ct); // T-0747-fix13: Linien-Stöße nicht gierig verketten
     }
 
+    /// <summary>T-0747-fix19: Gesamtgrenze je Datei für Schutzbereich und Linienzug-Regel (Schritte). Nur für Tests verstellbar, je Thread; <c>null</c> = 150 Mio.</summary>
+    [ThreadStatic] public static long? ProtectFileBudget;
+
     public static CamResult Generate(IReadOnlyList<CadContour> source, CamSettings s, CancellationToken ct = default)
     {
         if (source.Count == 0) throw new InvalidOperationException("Die Zeichnung hat keine Konturen (Linien, Kreise, Bögen, Pfade).");
@@ -191,7 +194,7 @@ public static class CncCam
         // wirklich überlappt, mit eigener Meldung („Prüfaufwand zu groß“) ausgelassen.
         bool Open(int i) => cs[i].Closed && !dup[i] && !crossing[i] && !unsure[i];
         var nOps = 0; void Tick() { if ((++nOps & 1023) == 0) ct.ThrowIfCancellationRequested(); }
-        long fileWork = 0; const long FileMax = 150_000_000; // T-0747-fix18: Gesamtgrenze je Datei für Schutzbereich und Teil b (sichere Folge bei Erschöpfung)
+        long fileWork = 0; var FileMax = ProtectFileBudget ?? 150_000_000; // T-0747-fix18: Gesamtgrenze je Datei für Schutzbereich und Teil b (sichere Folge bei Erschöpfung)
         Dictionary<(long, long), List<(int Tag, int Idx)>>? vgrid = null; double vcell = 1;
         int[]? byMinX = null; double[]? minXs = null; int[]? jumpA = null; double maxW = 0;
         void EnsureIndex()
@@ -304,34 +307,56 @@ public static class CncCam
                 var cg = BuildGrid(closedOk.Select(i => ((IReadOnlyList<(double X, double Y)>)cs[i].Pts, true, i)), Math.Max(r, tolT), ct);
                 var rowIdx = new Dictionary<int, RowIndex>();
                 RowIndex Ri(int i) { if (!rowIdx.TryGetValue(i, out var ri)) rowIdx[i] = ri = new RowIndex(cs[i].Pts); return ri; }
-                bool NearC(int cTag, (double X, double Y) v) =>
-                    cg.Any(v.X - tolT, v.Y - tolT, v.X + tolT, v.Y + tolT, t => cg.Segs[t].Tag == cTag && SegDist(v, cg.Segs[t].A, cg.Segs[t].B) <= tolT);
-                bool OutsideAt(int cTag, (double X, double Y) v)
+                bool NearC(int cTag, (double X, double Y) v, double d) =>
+                    cg.Any(v.X - d, v.Y - d, v.X + d, v.Y + d, t => cg.Segs[t].Tag == cTag && SegDist(v, cg.Segs[t].A, cg.Segs[t].B) <= d);
+                bool InC(int cTag, (double X, double Y) v)
                 {
                     var bC = boxes[cTag];
-                    var inC = v.X >= bC.Item1 && v.X <= bC.Item3 && v.Y >= bC.Item2 && v.Y <= bC.Item4 && Ri(cTag).Contains(v.X, v.Y);
-                    return !inC && !NearC(cTag, v);
+                    return v.X >= bC.Item1 && v.X <= bC.Item3 && v.Y >= bC.Item2 && v.Y <= bC.Item4 && Ri(cTag).Contains(v.X, v.Y);
                 }
-                // Liegt ein Teil der Strecke a→b außerhalb von C (mehr als tol vom Rand)? Teilung an den Schnitten mit dem Rand von C.
+                // T-0747-fix18/19: Liegt ein Teil der Strecke a→b außerhalb von C, weiter als tol vom Rand?
+                // 1. Schnitte mit dem Rand von C entlang der Strecke suchen (Zellen entlang der Strecke, nicht ihr ganzer Rahmen; Abbruch prüfbar).
+                // 2. Teilstücke dazwischen liegen ganz innen oder ganz außen: Mitte innen → ganzes Stück innen. Sonst das Stück in Schritten ≤ tol/4
+                //    abtasten; ein Punkt außerhalb, der weiter als tol − Schritt/2 vom Rand liegt, löst aus (so wird kein Punkt mit Abstand > tol übersehen;
+                //    ein Finger oder eine Zunge an der Mitte genügt nicht mehr, um das Stück als „auf dem Rand“ gelten zu lassen).
+                // Zu viele Schnitte (> 4096), zu viele Abtastpunkte oder erschöpfte Gesamtgrenze → sichere Folge: „außerhalb“.
                 bool SegOutside(int cTag, (double X, double Y) a, (double X, double Y) b)
                 {
-                    var ts = new List<double> { 0, 1 };
-                    cg.Any(Math.Min(a.X, b.X) - tolT, Math.Min(a.Y, b.Y) - tolT, Math.Max(a.X, b.X) + tolT, Math.Max(a.Y, b.Y) + tolT, t =>
+                    var len = Math.Sqrt((b.X - a.X) * (b.X - a.X) + (b.Y - a.Y) * (b.Y - a.Y));
+                    var ts = new List<double> { 0, 1 }; var seen = new HashSet<int>(); var tooMany = false;
+                    var cell = cg.CellSize; var nq = (int)Math.Min(4_000_000, Math.Ceiling(len / cell) + 1);
+                    if (nq >= 4_000_000) return true;
+                    for (var k = 0; k <= nq && !tooMany; k++)
                     {
-                        Tick(); fileWork++;
-                        var sg = cg.Segs[t]; if (sg.Tag != cTag) return false;
-                        if (Cross(a, b, sg.A, sg.B) is { } u) ts.Add(u);
-                        if (ts.Count > 4096) return true;
-                        return false;
-                    });
+                        Tick(); fileWork++; if (fileWork > FileMax) return true;
+                        double px = a.X + (b.X - a.X) * k / nq, py = a.Y + (b.Y - a.Y) * k / nq, hw = cell / 2 + tolT;
+                        cg.Any(px - hw, py - hw, px + hw, py + hw, t =>
+                        {
+                            var sg = cg.Segs[t]; if (sg.Tag != cTag || !seen.Add(t)) return false;
+                            fileWork++;
+                            if (Cross(a, b, sg.A, sg.B) is { } u) ts.Add(u);
+                            if (ts.Count > 4096) { tooMany = true; return true; }
+                            return false;
+                        });
+                    }
+                    if (tooMany) return true;
                     ts.Sort();
+                    var step = tolT / 4; var thr = tolT - step / 2;
                     for (var q = 0; q + 1 < ts.Count; q++)
                     {
-                        if (ts[q + 1] - ts[q] < 1e-12) continue;
-                        var m = (ts[q] + ts[q + 1]) / 2;
-                        if (OutsideAt(cTag, (a.X + (b.X - a.X) * m, a.Y + (b.Y - a.Y) * m))) return true;
+                        var t0 = ts[q]; var t1 = ts[q + 1]; if (t1 - t0 < 1e-12) continue;
+                        var m = (t0 + t1) / 2;
+                        if (InC(cTag, (a.X + (b.X - a.X) * m, a.Y + (b.Y - a.Y) * m))) continue; // Stück liegt ganz innen
+                        var n = (int)Math.Ceiling((t1 - t0) * len / step);
+                        if (n > 4_000_000) return true;
+                        for (var k = 0; k <= n; k++)
+                        {
+                            Tick(); fileWork++; if (fileWork > FileMax) return true;
+                            var tt = t0 + (t1 - t0) * k / Math.Max(1, n); var p = (a.X + (b.X - a.X) * tt, a.Y + (b.Y - a.Y) * tt);
+                            if (!InC(cTag, p) && !NearC(cTag, p, thr)) return true;
+                        }
                     }
-                    return OutsideAt(cTag, a) || OutsideAt(cTag, b);
+                    return false;
                 }
                 var qual = new Dictionary<int, List<(int First, List<(double X, double Y)> Pts, int Touch)>>();
                 foreach (var comp in comps)
@@ -418,16 +443,16 @@ public static class CncCam
                             var bi = boxes[i];
                             if (bi.Item1 > gx1 + e || bi.Item3 < gx0 - e || bi.Item2 > gy1 + e || bi.Item4 < gy0 - e) continue;
                             if (bi.Item1 >= gx0 - e && bi.Item2 >= gy0 - e && bi.Item3 <= gx1 + e && bi.Item4 <= gy1 + e) { SkipAs(i, why); continue; } // 1.
-                            var pp = cs[i].Pts; var hitIn = false;
+                            var pp = cs[i].Pts; var hitIn = false; var reason = why; // T-0747-fix19: Grund je Kandidat
                             fileWork += lg; if (hull.Count >= 3 && InConvexLog(hull, pp[0], -e)) hitIn = true; // 2.
                             for (var k = 1; k < pp.Count && !hitIn; k++)
                             {
                                 Tick(); var v = pp[k];
                                 if (v.X <= gx0 + e || v.X >= gx1 - e || v.Y <= gy0 + e || v.Y >= gy1 - e) continue;
                                 fileWork += lg; if (hull.Count >= 3 && InConvexLog(hull, v, e)) hitIn = true; // 3.
-                                if (fileWork > FileMax) { hitIn = true; why = Budget; } // sichere Folge
+                                if (fileWork > FileMax) { hitIn = true; reason = Budget; } // sichere Folge
                             }
-                            if (hitIn) SkipAs(i, why);
+                            if (hitIn) SkipAs(i, reason);
                         }
                     }
                 }

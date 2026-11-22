@@ -1,0 +1,41 @@
+### Rot-Probe: Tests des Stands fix19 (Fix18, Fix19; für das Übersetzen ein Platzhalter CncCam.ProtectFileBudget ohne Wirkung) gegen den Quellstand 70d4c6c74
+  Wiederherzustellende Projekte werden ermittelt...
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix19-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj" wiederhergestellt (in 238 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix19-rot\src\Trendo.Core\Trendo.Core.csproj" wiederhergestellt (in 238 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix19-rot\tests\Trendo.CrashProbe\Trendo.CrashProbe.csproj" wiederhergestellt (in 238 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix19-rot\src\Trendo.Companion\Trendo.Companion.csproj" wiederhergestellt (in 238 ms.).
+  Trendo.Core -> C:\Users\<user>\AppData\Local\Temp\t0747fix19-rot\src\Trendo.Core\bin\Release\net10.0\Trendo.Core.dll
+  Trendo.Companion -> C:\Users\<user>\AppData\Local\Temp\t0747fix19-rot\src\Trendo.Companion\bin\Release\net10.0\trendo-companion.dll
+  Trendo.CrashProbe -> C:\Users\<user>\AppData\Local\Temp\t0747fix19-rot\tests\Trendo.CrashProbe\bin\Release\net10.0\Trendo.CrashProbe.dll
+  Trendo.Core.Tests -> C:\Users\<user>\AppData\Local\Temp\t0747fix19-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\t0747fix19-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:20.49]     T-0747-fix19 MITTEL: Sehne mit mehr als 4096 Schnitten (Zickzack am Rand) – sichere Folge, Kreis in der Kerbe nie außen [FAIL]
+  Fehler T-0747-fix19 MITTEL: Sehne mit mehr als 4096 Schnitten (Zickzack am Rand) – sichere Folge, Kreis in der Kerbe nie außen [15 s]
+  Fehlermeldung:
+   Assert.True() Failure
+Expected: True
+Actual:   False
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix19NeunzehntePruefung.Many_crossings_safe() in C:\Users\<user>\AppData\Local\Temp\t0747fix19-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix19Tests.cs:line 73
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ Kontur 4 ausgelassen: offene Kontur (Enden 100 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fräserradius kleiner. Nur in der Fräsart „Auf der Linie (Gravur)“ wird sie gefräst; sonst d
+
+
+[xUnit.net 00:00:20.51]     T-0747-fix19 HOCH: Zunge 0,05 / 0,09 knapp vor der Sehne, Kammfinger 0,02 unter der Abschlusslinie – Kreise in der Lücke nie außen; Zunge 0,11 und 0 weiter ausgelöst [FAIL]
+  Fehler T-0747-fix19 HOCH: Zunge 0,05 / 0,09 knapp vor der Sehne, Kammfinger 0,02 unter der Abschlusslinie – Kreise in der Lücke nie außen; Zunge 0,11 und 0 weiter ausgelöst [9 ms]
+  Fehlermeldung:
+   Zunge 0,05: Kreis außen
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix19NeunzehntePruefung.Tongue_and_finger_near_chord() in C:\Users\<user>\AppData\Local\Temp\t0747fix19-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix19Tests.cs:line 45
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ Zunge 0,05: Kontur 5 ausgelassen: offene Kontur (Enden 60 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fräserradius kleiner. Nur in der Fräsart „Auf der Linie (Gravur)“ wird sie gefräst; sonst di
+
+
+
+Fehler!      : Fehler:     2, erfolgreich:     3, übersprungen:     0, gesamt:     5, Dauer: 20 s - Trendo.Core.Tests.dll (net10.0)

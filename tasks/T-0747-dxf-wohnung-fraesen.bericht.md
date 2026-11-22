@@ -1230,3 +1230,56 @@ Alle U-Fälle (Teil b) liegen deutlich unter 840d09292. Bei v3 sowie x6a/x6b und
 **Testzahlen T-0747-fix18:** Build 0 Fehler, keine neue Warnung in T-0747-Dateien. Kern (alle neunzehn T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests) **zweimal hintereinander**: je 170 gesamt, 169 bestanden, 1 übersprungen (vorbestehend), 0 Fehler. App 13 Klassen inklusive Studio3DMeshEditUiTests – **123/123**. Prüfskript BESTANDEN.
 
 **Weiterhin offen (Folgeaufgabe [ALT]):** Brücke zwischen zwei Platten, U mit sich kreuzenden Überständen, U bzw. Sehne über zwei Ebenen, `SegGrid.Add` füllt den ganzen Streckenrahmen, Big_dxf_fast ohne Wiederholung, CAM-Grundlaufzeit.
+
+## Neunzehnte Prüfung behoben (T-0747-fix19)
+Arbeitskopie `%TEMP%\trendo-auftrag-T-0747-fix19`, Commit obendrauf auf 70d4c6c74. Keine Maschine angesteuert.
+
+**HOCH – behoben (Teilstück auf ganzer Länge geprüft).** In der Prüfung „teilweise außerhalb von C“ (Teil b) gilt ein Teilstück zwischen zwei Schnitten mit dem Rand von C nicht mehr über seine Mitte als „auf dem Rand“:
+- Liegt die Mitte in C, liegt das ganze Stück in C; zwischen zwei Schnitten wechselt es die Seite nicht.
+- Sonst wird das Stück in Schritten von höchstens tol/4 abgetastet. Ein Punkt außerhalb von C, der weiter als tol − Schritt/2 vom Rand liegt, löst aus. So wird kein Punkt mit Abstand > tol übersehen.
+- Eine Linie 0,05 mm entlang der Kante (Abstand 0,05 < 0,0875) löst weiterhin nicht aus.
+- Ergebnis: z_zunge_spalt_0p05 / 0p09 und z_kamm_finger_0p02 fräsen keinen Kreis mehr außen. Zunge 0,11 und 0, 3-Punkt-Polylinie, Bulge, runde Kerbe, zwei U sowie cases18 s1–s4 lösen weiter aus. Kante 0,05, Mittellinien von Rand zu Rand und Hilfslinie in der L-Platte bleiben ohne G-Code-Verlust.
+- Test `Tongue_and_finger_near_chord`.
+
+**MITTEL – behoben (zu viele Schnitte).** Mehr als 4096 Schnitte auf einer Strecke, mehr als 4 Mio. Abtastpunkte oder eine erschöpfte Gesamtgrenze ergeben jetzt „außerhalb“ (sichere Folge: C und Kandidaten auslassen und melden). Ergebnisse:
+- c_zickzack_4096: Der Kreis in der Kerbe wird nicht mehr außen gefräst.
+- t1_kerbe_zacken_2100 / _3000: Die Regel greift (vorher 2 Bahnen, jetzt 1), in 0,2 s statt 1,3–1,6 s.
+- Test `Many_crossings_safe` mit 5000 Schnitten.
+
+Die Schnitte werden in Zellschritten entlang der Strecke gesucht, nicht mehr über ihren ganzen Rahmen; die Abbruchprüfung läuft dabei mit. Lange schräge Strecken laufen damit nicht mehr über Millionen Zellen.
+
+**Niedrig – behoben.**
+- (a) Die Gesamtgrenze wird in SegOutside geprüft.
+- (b) Der Grund wird je Kandidat bestimmt („Prüfaufwand zu groß“ nur für die betroffenen). Die Grenze ist für Tests je Thread einstellbar (`CncCam.ProtectFileBudget`); ein Funktionstest mit sehr kleiner Grenze prüft die sichere Folge und dass die Platte daneben samt Loch bleibt.
+- (c) Der Test mit vielen U prüft jetzt das Ergebnis genau: Die Platte wird ausgelassen, die 5000 Löcher ganz in ihr werden gefräst.
+- (d) `Junction_cases_fast` misst bis zu fünfmal mit 1 s Pause; die Grenze bleibt.
+
+**Messwerte** (`--perf`, Fräser aus der Falldatei; 70d4c6c74 / neu, nacheinander ohne Fremdlast gemessen):
+
+| Fall | 70d4c6c74 | neu |
+|---|---|---|
+| t1_kerbe_zacken_0 / 1000 / 2100 / 3000 | 0,2 / 0,2 / 1,3 / 1,6 s | 0,2 / 0,2 / 0,2 / 0,2 s |
+| t1_ohne_sehne_2100 | 1,3 s | 1,3 s |
+| p1_diag_gravur_200 / 1000 (10 000 Löcher) | 101 / 178 s | 99 / 151 s |
+| p1b_diag_lw50_500 / 2000 | 98 / 107 s | 92 / 87 s |
+| q_diag_200 / 1000 / 3000 (5000) / 1000 (20 000) | 31 / 45 / 96 / 115 s | 28 / 39 / 68 / 109 s |
+| q_diag_500_5000_seg50 | 22 s | 25 s |
+| r2_diag_0 / 200 / 1000 / 3000 | 0,6 / 8,9 / 45 / 128 s | 0,6 / 8,8 / 42 / 121 s |
+| x1c / x1e / p2_u_100_2000 | 3,3 / 4,1 / 2,7 s | 3,0 / 4,2 / 2,4 s |
+| v3 Hülle 100 000 / v4 X-Stöße 5000 | 6,4 / 11,9 s | 5,7 / 11,8 s |
+| w1e / b2_budget_5000 | 4,2 / 2,3 s | 4,2 / 2,6 s |
+
+p1_diag_gravur_2000/5000 brauchen in beiden Ständen über 250 s; die Zeit liegt in der Gravur- und Fräsbahn-Phase ([ALT]). Kleine Unterschiede (b2, q_diag_500) liegen im Rahmen der Messschwankung; zwei Wiederholungen von w1e und b2 lagen je Stand um ±10 % auseinander.
+
+**Prüferfälle aller Runden** (Prüfprogramme nur gelesen bzw. als Kopie ausgeführt): **1375 Fälle**, darunter cases19 **0 Befunde von 18** (check19). Die übrigen Befunde sind dieselben wie in der achtzehnten Prüfung.
+
+**G-Code-Vergleich** (907 Fälle):
+- Gegen 70d4c6c74: 903 gleich, 4 abweichend – genau c_zickzack_4096, z_kamm_finger_0p02, z_zunge_spalt_0p05 und _0p09 (beabsichtigt).
+- Alle Altfälle der Runden 9–18 sind unverändert.
+- Gegen 5925d5345: 885 gleich, 22 abweichend.
+
+**Rot-Probe gegen 70d4c6c74** (für das Übersetzen ein Platzhalter `CncCam.ProtectFileBudget` ohne Wirkung): Die Tests HOCH und MITTEL sind rot. Der Funktionstest zur kleinen Gesamtgrenze ist auf 70d4c6c74 grün – dort war die Grenze fest, die sichere Folge stimmte schon. Fix18 ist grün – `reports/T-0747/T-0747-fix19-rotprobe.log`.
+
+**Testzahlen T-0747-fix19:** Build 0 Fehler, keine neue Warnung in T-0747-Dateien. Kern (alle zwanzig T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests) **zweimal hintereinander**: je 173 gesamt, 172 bestanden, 1 übersprungen (vorbestehend), 0 Fehler. App 13 Klassen inklusive Studio3DMeshEditUiTests – **123/123**. Prüfskript BESTANDEN.
+
+**Offen (Folgeaufgabe [ALT]):** Gravur- und CAM-Laufzeit bei vielen Linien von Rand zu Rand, Brücke zwischen zwei Platten, U mit sich kreuzenden Überständen, U bzw. Sehne über zwei Ebenen, `SegGrid.Add` füllt den ganzen Streckenrahmen.

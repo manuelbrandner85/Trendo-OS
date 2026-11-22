@@ -79,6 +79,10 @@ public class T0747_Fix18AchtzehntePruefung(ITestOutputHelper log)
         var (r, text) = CamOrNothing(dxf, 6);
         log.WriteLine($"5000 Löcher + 5000 U: {t} ms; {text[..Math.Min(200, text.Length)]}");
         Assert.True(t < 10000, $"{t} ms");
-        Assert.True(r is null || r.Paths.Count(p => p.Kind == "innen") <= 5000); // Löcher ganz in der Platte dürfen bleiben – nur keine Endlosrechnung
+        // T-0747-fix19: Ergebnis genau prüfen – die Platte selbst wird ausgelassen (U am Rand), die 5000 Löcher ganz in ihr werden weiter gefräst
+        Assert.NotNull(r);
+        Assert.Equal(5000, r!.Paths.Count(p => p.Kind == "innen"));
+        Assert.DoesNotContain(r.Paths, p => p.Kind == "aussen");
+        Assert.Contains("Kontur 1 ausgelassen", text); // die Platte (schon über die Regel für offene Umrisse am Rand)
     }
 }
