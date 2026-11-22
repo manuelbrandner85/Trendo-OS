@@ -148,69 +148,68 @@ public static class CadContours
             if (chain.Count > 3 && Dist(chain[0], chain[^1]) <= DupTol) { chain.RemoveAt(chain.Count - 1); chains.Add((chain, layer, true)); }
             else chains.Add((chain, layer, false));
         }
-        // T-0747-fix14/15: Stoß-Komponente = Stoß-Gruppen ∪ alles, was über Spalte ≤ tol daran hängt. Offene Ketten werden zugeschlagen, zwei Gruppen,
-        // deren Enden sich über einen Spalt ≤ tol berühren, verschmelzen (T-0747-fix15: Gruppenenden gegen Gruppenenden). Union-Find mit Pfadkürzung
-        // und Größe; Abbruch alle 1024 Schritte.
+        // T-0747-fix14/15/16: Stoß-Komponente = Stoß-Gruppen ∪ alles, was über Spalte ≤ tol daran hängt (offene Ketten und andere Stoß-Gruppen).
+        // T-0747-fix16: linear – Zellen der Größe tol/√2 (zwei Enden in derselben Zelle sind immer ≤ tol), alle Enden einer Zelle werden sofort
+        // vereinigt; zwischen Nachbarzellen (±2) wird nur gesucht, solange ihre Wurzeln verschieden sind, und beim ersten Paar ≤ tol aufgehört.
+        // Eigenes Arbeitsbudget: ist es erschöpft, werden die noch nicht geprüften Zellen vorsichtshalber der Stoß-Komponente zugeschlagen.
         if (jgroup is not null && jout.Count > 0)
         {
-            var gpar = new Dictionary<int, int>(); var gsize = new Dictionary<int, int>();
-            int GFind(int g)
+            var nc = chains.Count; var nObj = nc + jout.Count; // Objekte: Ketten 0…nc−1, Stoß-Stücke nc…
+            var op = new int[nObj]; var osz = new int[nObj]; for (var i = 0; i < nObj; i++) { op[i] = i; osz[i] = 1; }
+            int OFind(int x) { var r = x; while (op[r] != r) r = op[r]; while (op[x] != r) { var q = op[x]; op[x] = r; x = q; } return r; }
+            void OUnion(int a, int b) { a = OFind(a); b = OFind(b); if (a == b) return; if (osz[a] < osz[b]) (a, b) = (b, a); op[b] = a; osz[a] += osz[b]; }
+            // Stoß-Stücke derselben ursprünglichen Gruppe gehören zusammen
+            var firstOfGroup = new Dictionary<int, int>();
+            for (var q = 0; q < jout.Count; q++) { if (firstOfGroup.TryGetValue(jout[q].JunctionGroup, out var f0)) OUnion(f0, nc + q); else firstOfGroup[jout[q].JunctionGroup] = nc + q; }
+            var gs = Math.Max(lim / Math.Sqrt(2), 1e-9);
+            var gmap = new Dictionary<(string, long, long), List<(int Obj, (double X, double Y) P)>>();
+            void PutE(int obj, string lay, (double X, double Y) e) { var k = (lay, (long)Math.Floor(e.X / gs), (long)Math.Floor(e.Y / gs)); if (!gmap.TryGetValue(k, out var l)) gmap[k] = l = []; l.Add((obj, e)); }
+            for (var i = 0; i < nc; i++) if (!chains[i].Closed) { PutE(i, chains[i].Layer, chains[i].Pts[0]); PutE(i, chains[i].Layer, chains[i].Pts[^1]); }
+            for (var q = 0; q < jout.Count; q++) { PutE(nc + q, jout[q].Layer, jout[q].Pts[0]); PutE(nc + q, jout[q].Layer, jout[q].Pts[^1]); }
+            long work = 0; const long MaxWork = 30_000_000; var budgetOut = false; var cnt = 0;
+            foreach (var l in gmap.Values) { if ((++cnt & 1023) == 0) ct.ThrowIfCancellationRequested(); for (var i = 1; i < l.Count; i++) OUnion(l[0].Obj, l[i].Obj); }
+            var unchecked_ = new List<List<(int Obj, (double X, double Y) P)>>();
+            foreach (var (key, l) in gmap)
             {
-                var r = g; while (gpar.TryGetValue(r, out var q) && q != r) r = q;
-                while (gpar.TryGetValue(g, out var q2) && q2 != r) { gpar[g] = r; g = q2; } // Pfadkürzung
-                return r;
-            }
-            void GUnion(int a, int b)
-            {
-                a = GFind(a); b = GFind(b); if (a == b) return;
-                var sa = gsize.GetValueOrDefault(a, 1); var sb = gsize.GetValueOrDefault(b, 1);
-                if (sa < sb) (a, b) = (b, a);
-                gpar[b] = a; gsize[a] = sa + sb;
-            }
-            // Raster aller freien Enden: offene Ketten (Kette ≥ 0) und Stoß-Stücke (Kette = −1 − Index in jout)
-            var cmap = new Dictionary<(long, long), List<(int Id, (double X, double Y) P)>>();
-            void Put(int id, (double X, double Y) e) { var c = C(e); if (!cmap.TryGetValue(c, out var l)) cmap[c] = l = []; l.Add((id, e)); }
-            for (var i = 0; i < chains.Count; i++) if (!chains[i].Closed) { Put(i, chains[i].Pts[0]); Put(i, chains[i].Pts[^1]); }
-            for (var q = 0; q < jout.Count; q++) { Put(-1 - q, jout[q].Pts[0]); Put(-1 - q, jout[q].Pts[^1]); }
-            var absorbed = new Dictionary<int, int>(); // Kette → Gruppe
-            var frontier = new Queue<((double X, double Y) P, string Layer, int G)>();
-            foreach (var jp in jout) { frontier.Enqueue((jp.Pts[0], jp.Layer, jp.JunctionGroup)); frontier.Enqueue((jp.Pts[^1], jp.Layer, jp.JunctionGroup)); }
-            var steps = 0L;
-            while (frontier.Count > 0)
-            {
-                var (fp, fl, fg) = frontier.Dequeue(); var (cx, cy) = C(fp);
-                for (var dx = -1L; dx <= 1; dx++) for (var dy = -1L; dy <= 1; dy++)
+                if ((++cnt & 1023) == 0) ct.ThrowIfCancellationRequested();
+                if (budgetOut) { unchecked_.Add(l); continue; }
+                for (var dx = 0L; dx <= 2; dx++)
+                    for (var dy = -2L; dy <= 2; dy++)
                     {
-                        if (!cmap.TryGetValue((cx + dx, cy + dy), out var l)) continue;
-                        foreach (var (id, ep) in l)
+                        if (dx == 0 && dy <= 0) continue; // jedes Zellenpaar nur einmal
+                        if (!gmap.TryGetValue((key.Item1, key.Item2 + dx, key.Item3 + dy), out var l2)) continue;
+                        if (OFind(l[0].Obj) == OFind(l2[0].Obj)) continue;
+                        var hit = false;
+                        foreach (var a in l)
                         {
-                            if ((++steps & 1023) == 0) ct.ThrowIfCancellationRequested();
-                            if (Dist(ep, fp) > lim) continue;
-                            if (id < 0)
-                            {
-                                var jp = jout[-1 - id];
-                                if (jp.Layer == fl) GUnion(fg, jp.JunctionGroup); // T-0747-fix15: zwei Stoß-Gruppen über einen Spalt
-                                continue;
-                            }
-                            if (chains[id].Layer != fl) continue;
-                            if (absorbed.TryGetValue(id, out var og)) { GUnion(og, fg); continue; }
-                            absorbed[id] = fg;
-                            frontier.Enqueue((chains[id].Pts[0], fl, fg)); frontier.Enqueue((chains[id].Pts[^1], fl, fg));
+                            foreach (var b in l2) { if (++work > MaxWork) { budgetOut = true; break; } if (Dist(a.P, b.P) <= lim) { hit = true; break; } }
+                            if (hit || budgetOut) break;
                         }
+                        if (hit) OUnion(l[0].Obj, l2[0].Obj);
+                        if (budgetOut) break;
                     }
+                if (budgetOut) unchecked_.Add(l);
             }
+            if (budgetOut)
+            {
+                // sichere Folge: alles in nicht fertig geprüften Zellen gehört zur Stoß-Komponente
+                foreach (var l in unchecked_) OUnion(l[0].Obj, nc);
+                notes?.Add("Sehr viele Linienenden liegen dicht beieinander – ein Teil der Linien wird nicht zu Umrissen verkettet, Konturen darin werden ausgelassen. Bitte Umrisse als Polylinie zeichnen.");
+            }
+            var hasJ = new HashSet<int>(); for (var q = 0; q < jout.Count; q++) hasJ.Add(OFind(nc + q));
             for (var q = 0; q < jout.Count; q++)
             {
                 if ((q & 1023) == 0) ct.ThrowIfCancellationRequested();
-                jout[q] = jout[q] with { JunctionGroup = GFind(jout[q].JunctionGroup) };
+                jout[q] = jout[q] with { JunctionGroup = OFind(nc + q) };
             }
-            var nAbs = 0;
-            foreach (var (ci, g) in absorbed)
+            var absorbed = new HashSet<int>();
+            for (var i = 0; i < nc; i++)
             {
-                if ((++nAbs & 1023) == 0) ct.ThrowIfCancellationRequested();
-                jout.Add(new CadContour(chains[ci].Pts, false, chains[ci].Layer) { JunctionGroup = GFind(g) });
+                if ((i & 1023) == 0) ct.ThrowIfCancellationRequested();
+                if (chains[i].Closed || !hasJ.Contains(OFind(i))) continue;
+                absorbed.Add(i); jout.Add(new CadContour(chains[i].Pts, false, chains[i].Layer) { JunctionGroup = OFind(i) });
             }
-            if (absorbed.Count > 0) chains = chains.Where((_, i) => !absorbed.ContainsKey(i)).ToList();
+            if (absorbed.Count > 0) chains = chains.Where((_, i) => !absorbed.Contains(i)).ToList();
         }
         // 2. + 3. Spalten überbrücken, bis sich nichts mehr ändert
         var open = chains.Where(c => !c.Closed).Select(c => (Pts: c.Pts, c.Layer)).ToList();
@@ -266,7 +265,7 @@ public static class CadContours
     }
 
     /// <summary>T-0747-fix13/15: Enden (je Ebene) transitiv gruppieren – zwei Enden ≤ 1 µm gehören in denselben Haufen (Union-Find über alle Paare,
-    /// gesucht über Schlüssel in 1-µm-Schritten mit Nachbarn ±1). Ein Haufen ist mehrdeutig (Stoß), wenn sein Rahmen größer als 1 µm ist oder mehr als
+    /// gesucht über Schlüssel der Größe 1 µm/√2 mit Nachbarn ±2, T-0747-fix16: linear). Ein Haufen ist mehrdeutig (Stoß), wenn sein Rahmen größer als 1 µm ist oder mehr als
     /// zwei Enden verschiedener Stücke darin liegen (deckungsgleich doppelte Stücke zählen einmal). Stücke über gemeinsame Haufen bilden Gruppen; eine
     /// Gruppe mit einem mehrdeutigen Haufen bekommt eine Nummer ≥ 0 (sonst −1). Das Ergebnis hängt nicht von der Reihenfolge der Stücke ab.
     /// Eigenes Arbeitsbudget; ist es erschöpft, gelten die übrigen Stücke als unsicher.</summary>
@@ -280,20 +279,37 @@ public static class CadContours
         void EUnion(int a, int b) { a = EFind(a); b = EFind(b); if (a == b) return; if (esz[a] < esz[b]) (a, b) = (b, a); ep[b] = a; esz[a] += esz[b]; }
         var emap = new Dictionary<(string, long, long), List<int>>();
         long work = 0; const long MaxWork = 20_000_000; var budgetOut = false; var hotPiece = new bool[n];
+        // T-0747-fix16: linear – Schlüssel der Größe DupTol/√2 (zwei Enden mit demselben Schlüssel sind immer ≤ DupTol): alle Enden eines Schlüssels
+        // sofort vereinigen; zwischen Nachbarschlüsseln (±2) nur suchen, solange die Wurzeln verschieden sind, beim ersten Paar ≤ DupTol aufhören.
+        // Das ergibt genau die transitive Hülle aller Paare ≤ DupTol – unabhängig von der Reihenfolge.
+        var ks = DupTol / Math.Sqrt(2);
         for (var e = 0; e < m; e++)
         {
             if ((e & 1023) == 0) ct.ThrowIfCancellationRequested();
-            if (budgetOut) { hotPiece[e / 2] = true; continue; }
-            var p = End(e); var lay = pieces[e / 2].Layer; var qx = (long)Math.Floor(p.X / DupTol); var qy = (long)Math.Floor(p.Y / DupTol);
-            for (var dx = -1L; dx <= 1; dx++)
-                for (var dy = -1L; dy <= 1; dy++)
-                    if (emap.TryGetValue((lay, qx + dx, qy + dy), out var l))
-                        foreach (var f in l)
-                        {
-                            if (++work > MaxWork) budgetOut = true;
-                            if (Dist(End(f), p) <= DupTol) EUnion(e, f);
-                        }
-            if (!emap.TryGetValue((lay, qx, qy), out var l2)) emap[(lay, qx, qy)] = l2 = []; l2.Add(e);
+            var p = End(e); var key = (pieces[e / 2].Layer, (long)Math.Floor(p.X / ks), (long)Math.Floor(p.Y / ks));
+            if (!emap.TryGetValue(key, out var l)) emap[key] = l = [];
+            if (l.Count > 0) EUnion(l[0], e);
+            l.Add(e);
+        }
+        var cnt0 = 0;
+        foreach (var (key, l) in emap)
+        {
+            if ((++cnt0 & 1023) == 0) ct.ThrowIfCancellationRequested();
+            if (budgetOut) { foreach (var e in l) hotPiece[e / 2] = true; continue; }
+            for (var dx = 0L; dx <= 2 && !budgetOut; dx++)
+                for (var dy = -2L; dy <= 2 && !budgetOut; dy++)
+                {
+                    if (dx == 0 && dy <= 0) continue;
+                    if (!emap.TryGetValue((key.Item1, key.Item2 + dx, key.Item3 + dy), out var l2) || EFind(l[0]) == EFind(l2[0])) continue;
+                    var hit = false;
+                    foreach (var a in l)
+                    {
+                        foreach (var b in l2) { if (++work > MaxWork) { budgetOut = true; break; } if (Dist(End(a), End(b)) <= DupTol) { hit = true; break; } }
+                        if (hit || budgetOut) break;
+                    }
+                    if (hit) EUnion(l[0], l2[0]);
+                }
+            if (budgetOut) foreach (var e in l) hotPiece[e / 2] = true;
         }
         // Haufen auswerten
         var members = new Dictionary<int, List<int>>();

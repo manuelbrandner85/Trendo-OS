@@ -104,7 +104,7 @@ public class T0747_Fix2ZweitePruefung(ITestOutputHelper log)
             var r = new CncJob { ToolD = 3 }.ImportDrawing(f);
             var all = string.Join(" | ", r.Warnings); log.WriteLine(all);
             Assert.Contains("Maße in mm umgerechnet (Zeichnung in Zoll)", all);
-            Assert.Contains("Nicht gelesen: 2× SPLINE", all); Assert.Contains("1× ELLIPSE", all); Assert.Contains("1× Blockverweis (INSERT)", all);
+            Assert.Contains("Nicht gelesen: 2× SPLINE", all); Assert.Contains("1× Ellipse", all); Assert.Contains("1× Blockverweis (INSERT)", all);
             Assert.Contains("1 Text(e) werden nicht gefräst", all);
             Assert.Contains("Ausgeblendete Ebenen nicht gefräst: AUS (1)", all);
         }

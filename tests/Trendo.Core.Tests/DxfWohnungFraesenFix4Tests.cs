@@ -51,7 +51,7 @@ public class T0747_Fix4ViertePruefung(ITestOutputHelper log)
         Assert.Equal(100 * 60 - (4 - Math.PI) * 100, Math.Abs(rect.SignedArea), 0);
         // schräge Normale → nicht gelesen, gemeldet
         var skew = CadDxf.Parse(Dxf(Lw(Rect(0, 0, 10, 10), true) + Circle(5, 5, 2, "210\n0.6\n220\n0.0\n230\n0.8\n")));
-        Assert.Equal(1, skew.Skipped["CIRCLE nicht in der Zeichenebene"]);
+        Assert.Equal(1, skew.Skipped["Kreis nicht in der Zeichenebene"]);
         Assert.DoesNotContain(skew.Drawing.Entities, e => e.Kind == "kreis");
         // Normale (0,0,1) ausdrücklich: unverändert
         Assert.Equal(50, CadDxf.Parse(Dxf(Circle(50, 20, 10, "210\n0\n220\n0\n230\n1\n"))).Drawing.Entities[0].Cx, 9);

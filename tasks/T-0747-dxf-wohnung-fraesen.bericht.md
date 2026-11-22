@@ -1036,3 +1036,68 @@ Prüfung 15: cases15 0 von 80, casesgg15 0 von 15. Die rueck-Fälle j_direkt, fa
 **Rot-Probe gegen e400085fd:** alle 3 neuen Fix15-Tests rot (HOCH 1/2, MITTEL 3, MITTEL 4), Fix14 grün – `reports/T-0747/T-0747-fix15-rotprobe.log`.
 
 **Testzahlen T-0747-fix15:** Build 0 Fehler, keine neue Warnung in T-0747-Dateien. Kern (alle sechzehn T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests) **zweimal hintereinander**: je 164 gesamt, 163 bestanden, 1 übersprungen (vorbestehend), 0 Fehler. App 13 Klassen inklusive Studio3DMeshEditUiTests – **123/123**. Prüfskript BESTANDEN.
+
+## Sechzehnte Prüfung behoben (T-0747-fix16)
+Arbeitskopie `%TEMP%\trendo-auftrag-T-0747-fix16`, Commit obendrauf auf d61d0cfb8. Keine Maschine angesteuert.
+
+**MITTEL 1 – behoben (Chain/Build linear).**
+- Verschmelzen der Stoß-Komponenten über Spalte ≤ 0,1 mm über Zellen der Größe tol/√2: Zwei Enden in derselben Zelle sind immer ≤ tol, sie werden sofort vereinigt. Zwischen Nachbarzellen (±2) wird nur gesucht, solange ihre Wurzeln verschieden sind, und beim ersten Paar ≤ tol aufgehört. Union-Find mit Pfadkürzung und Größe.
+- Eigenes Arbeitsbudget (30 Mio.). Bei Erschöpfung kommen die noch nicht geprüften Zellen zur Stoß-Komponente (sicher), dazu eine Sammelmeldung.
+- `Junctions` arbeitet genauso: Schlüssel 1 µm/√2, im Schlüssel sofort vereinigt, Nachbarn ±2 nur bei verschiedener Wurzel. Das ergibt genau die transitive Hülle aller Paare ≤ 1 µm. Das Ergebnis bleibt reihenfolgeunabhängig; die 120-Reihenfolgen-Probe aus Fix15 ist grün.
+- Ein einfacher Stern löst keine Budget-Sammelmeldung mehr aus.
+
+**MITTEL 2 – behoben (Schutzbereich schnell).**
+- Schon ausgelassene Konturen werden über Sprungzeiger mit Pfadkürzung übersprungen.
+- Rahmen-Vortest, dann Punkt in konvexer Hülle in O(log H).
+- Konturen am Hüllenrand prüft der Code direkt als offene Kandidaten nach linker Kante. Nur wenn das mehr Arbeit wäre als der Weg entlang der Kanten, wird in Zellschritten entlang der Hüllenkanten gesucht, nicht mehr über den ganzen Kantenrahmen.
+- Abbruch alle 1024 Schritte, gemeinsames Budget (100 Mio.). Bei Erschöpfung werden die Konturen im Komponentenrahmen ausgelassen und gemeldet.
+
+**MITTEL 3 – behoben (Platte am Hüllenrand wieder gefräst).** Begründung (wie vom Prüfer vorgeschlagen, geprüft): Jeder Umriss aus Stücken einer Komponente liegt in ihrer konvexen Hülle. Er kann also nur Konturen umschließen, die ganz in der Hülle liegen. Ausgelassen wird jetzt jede geschlossene Kontur,
+1. deren Rahmen im Komponentenrahmen liegt,
+2. deren erster Punkt in der Hülle liegt (± 1e-6, auch auf dem Rand) – das trifft jede Kontur, die ganz in der Hülle liegt,
+3. von deren Eckpunkten einer echt in der Hülle liegt (mehr als 1e-6 vom Rand) – Konturen, die teilweise darin liegen.
+
+Eine Kontur, die die Hülle umschließt oder nur berührt, wird gefräst; ihre Tiefe kann sich durch die Komponente nicht ändern. Ergebnisse:
+- t_rand und t_rand_ebene: Platte und Loch wie in e400085fd.
+- Gegenbeispiel-Versuch (Test `Plate_touching_hull_is_milled`): ein Quadrat, das den Hüllenrand kreuzt und teilweise darin liegt, bleibt ausgelassen; Platte und Loch werden gefräst.
+- Die Fix13/14/15-Fälle (cases13/14/15, gg15, r15, Fix15-Tests) bleiben unverändert sicher: kein Loch außen.
+
+**NIEDRIG – behoben.**
+- Neue Zeittests (nicht parallele Sammlung, kleinste von zwei Messungen, Fräser Ø 6 wie in der Prüfung), alle gegen d61d0cfb8 rot:
+  - Stern 50 000, Bürste 50 000, Rechteck 8000-fach deckungsgleich, 2000 X-Stöße über 20 000 Quadraten: je unter 10 s.
+  - Stoßkette 20 000 mit Schraffur: unter 4 s.
+  - Mit Fräser Ø 1 dominiert beim Stern das vorbestehende Hindernis-Raster der Fräsbahn-Prüfung (CAM-Grundlaufzeit, nicht Teil dieser Runde).
+- Zähl-Schlüssel und Meldungstexte einheitlich deutsch: Kreis/Bogen mit Radius ≤ 0, Polylinie/Linie/Kreis mit ungültiger Koordinate, „… nicht in der Zeichenebene“, Ellipse ohne Ausdehnung / mit unsinnigem Parameter / zu groß zum Abtasten, 3D-Netz (Polylinie). Die betroffenen Tests sind nur im Wortlaut angepasst.
+
+**Messwerte** (`--perf` mit Harness der Prüfer, Fräser Ø 6; Zeit für Lesen + Konturen + Fräsbahnen):
+
+| Fall | e400085fd | d61d0cfb8 | neu |
+|---|---|---|---|
+| rechteck_dup_3000 / 8000 | 0,30 / 0,45 s | 3,5 / 22,8 s | 0,31 / 0,43 s |
+| stern_30000 / v1_stern_50000 | 0,85 / 1,2 s | 17,9 / 46,3 s | 0,89 / 1,3 s |
+| v2_buerste_50000 | 1,7 s | 49,1 s | 0,98 s |
+| buendel_10000 | 0,36 s | 7,5 s | 0,36 s |
+| v5_stoss_dicht_30000 | 1,1 s | 31,1 s | 1,1 s |
+| v4_x_stoesse_2000_quadrate_20000 | 3,4 s | 169 s | 3,2–4,3 s (zwei Läufe: 4,3 / 3,4 gegen 3,4 / 3,4) |
+| v4_x_stoesse_5000_quadrate_40000 | 8,9 s | > 240 s | 8,3 s |
+| v3_huelle_100000_kreise_50000 | 4,3 s | 20,2 s | 4,4 s |
+| y_2000_2000 | 30,8 s | 47,3 s | 31,6 s |
+| u6 Stoßkette 20 000 + Schraffur | 17,0 s | 1,9 s | 1,9 s |
+| u1 Stoßkette 50 000 | 49,9 s | 2,4 s | 2,1 s |
+
+**Prüferfälle aller Runden** (Prüfprogramme nur gelesen bzw. als Kopie ausgeführt): **1069 Fälle, 34 mit Befund**. Das sind die 29 aus der fünfzehnten Prüfung und 5 aus cases16, die in den Läufen der Prüfer auf d61d0cfb8 und den älteren Ständen (alt12, alt14) genauso ausfallen:
+- d1_bem_lochabstand_gap0p0/0p625, m1_mittelkreuz, m2_mittellinie: Loch nicht gefräst, sicher. Das sind Bemaßungs- und Mittellinien – Folgeaufgabe.
+- u1_u_stoss_loch_in_kerbe: Der Kreis liegt in der Kerbe außerhalb des U-Umrisses. Er ist dort ein eigenes Teil und wird richtig außen gefräst; der Ausläufer beginnt mitten auf einer Linie und ist kein Stoß.
+
+cases16b: 0 von 2. Die rueck-Sammlungen (faelle16, rand, meld) haben keine Erwartungsdateien; sie wurden über den G-Code-Vergleich bewertet.
+
+**G-Code-Vergleich** (553 Fälle):
+- Gegen d61d0cfb8: 450 gleich, 103 abweichend. Davon haben nur t_rand und t_rand_ebene anderen G-Code (Platte wieder gefräst); die übrigen 101 unterscheiden sich nur im Meldungstext (deutsche Zähl-Schlüssel).
+- Gegen e400085fd: 407 gleich, 146 abweichend, davon 27 mit anderem G-Code – dieselben beabsichtigten aus Fix15.
+- Hinweis: Die Vergleichsausgabe brach bisher auf der Konsole beim Zeichen „≤“ ab, jetzt läuft sie mit UTF-8. Die Summenzeile (Fälle/gleich/abweichend) war schon vorher vollständig.
+
+**Rot-Probe gegen d61d0cfb8:** beide neuen Fix16-Tests rot, Fix15-Tests grün – `reports/T-0747/T-0747-fix16-rotprobe.log`.
+
+**Testzahlen T-0747-fix16:** Build 0 Fehler, keine neue Warnung in T-0747-Dateien. Kern (alle siebzehn T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests) **zweimal hintereinander**: je 166 gesamt, 165 bestanden, 1 übersprungen (vorbestehend), 0 Fehler. App 13 Klassen inklusive Studio3DMeshEditUiTests – **123/123**. Prüfskript BESTANDEN.
+
+**Weiterhin offen (Folgeaufgabe):** CAM-Grundlaufzeit (Nearest/Fräsbahn, Hindernis-Raster bei kleinem Fräser), Bemaßungs-Hilfslinien „zu nah“ an Bohrungen, Zeichnungsrahmen mit Schriftfeld.
