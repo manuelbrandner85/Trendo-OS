@@ -1,0 +1,38 @@
+### Rot-Probe: Tests des Stands fix17 (Fix16, Fix17) gegen den Quellstand 840d09292
+  Wiederherzustellende Projekte werden ermittelt...
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix17-rot\src\Trendo.Companion\Trendo.Companion.csproj" wiederhergestellt (in 242 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix17-rot\src\Trendo.Core\Trendo.Core.csproj" wiederhergestellt (in 242 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix17-rot\tests\Trendo.CrashProbe\Trendo.CrashProbe.csproj" wiederhergestellt (in 242 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\t0747fix17-rot\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj" wiederhergestellt (in 242 ms.).
+  Trendo.Core -> C:\Users\<user>\AppData\Local\Temp\t0747fix17-rot\src\Trendo.Core\bin\Release\net10.0\Trendo.Core.dll
+  Trendo.Companion -> C:\Users\<user>\AppData\Local\Temp\t0747fix17-rot\src\Trendo.Companion\bin\Release\net10.0\trendo-companion.dll
+  Trendo.CrashProbe -> C:\Users\<user>\AppData\Local\Temp\t0747fix17-rot\tests\Trendo.CrashProbe\bin\Release\net10.0\Trendo.CrashProbe.dll
+  Trendo.Core.Tests -> C:\Users\<user>\AppData\Local\Temp\t0747fix17-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\t0747fix17-rot\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:04.07]     T-0747-fix17 HOCH: U aus Linien vor einer Kerbe (mit/ohne Stummel, Ende auf Kante statt Ecke, 0,05 mm Spalt) – Loch in der Kerbe nie außen, Loch in der Platte bleibt [FAIL]
+  Fehler T-0747-fix17 HOCH: U aus Linien vor einer Kerbe (mit/ohne Stummel, Ende auf Kante statt Ecke, 0,05 mm Spalt) – Loch in der Kerbe nie außen, Loch in der Platte bleibt [202 ms]
+  Fehlermeldung:
+   ohne Stummel: Loch in der Kerbe außen gefräst
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix17SiebzehntePruefung.U_in_front_of_notch() in C:\Users\<user>\AppData\Local\Temp\t0747fix17-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix17Tests.cs:line 54
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ ohne Stummel: Kontur 1 ausgelassen: liegt in oder an der offenen Kontur 4 – ob sie Loch oder Teil ist, lässt sich nicht sicher sagen. Bitte den Umriss in der Zeichnung schließen. | Kontur 4 ausgelassen: offene Kontur (Enden 60 mm auseinander) – auf der Linie gefräst würde ein Teil um den Fräserradius kleiner. Nur in der Fräsart „Auf der Linie (Gravur)“ wird sie gefräst; sonst die Zeichnung schließen.
+
+
+[xUnit.net 00:00:12.63]     T-0747-fix17 MITTEL 1/2: 5000 dünne T-Stöße über 10 000 Quadraten, Nachbarplatte mit L-Stoß außerhalb der Hülle – Platte und Loch gefräst, unter 15 s [FAIL]
+  Fehler T-0747-fix17 MITTEL 1/2: 5000 dünne T-Stöße über 10 000 Quadraten, Nachbarplatte mit L-Stoß außerhalb der Hülle – Platte und Loch gefräst, unter 15 s [8 s]
+  Fehlermeldung:
+   Loch der Nachbarplatte fehlt
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0747_Fix17SiebzehntePruefung.Neighbour_plate_survives_many_groups() in C:\Users\<user>\AppData\Local\Temp\t0747fix17-rot\tests\Trendo.Core.Tests\DxfWohnungFraesenFix17Tests.cs:line 80
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Standardausgabemeldungen:
+ 2332 ms; 5001 Linienverbund/-verbünde (zusammen 15003 Linien, z. B. ab Kontur 10003) nicht zu Umrissen verkettet: an einem Punkt stoßen mehr als zwei Linien zusammen oder die Enden liegen nicht eindeutig. Diese Linien werden nicht gefräst (außer als Gravur), Konturen darin werden ausgelassen. | Kontur 10001 
+
+
+
+Fehler!      : Fehler:     2, erfolgreich:     2, übersprungen:     0, gesamt:     4, Dauer: 22 s - Trendo.Core.Tests.dll (net10.0)

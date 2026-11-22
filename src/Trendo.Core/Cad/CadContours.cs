@@ -193,7 +193,16 @@ public static class CadContours
             if (budgetOut)
             {
                 // sichere Folge: alles in nicht fertig geprüften Zellen gehört zur Stoß-Komponente
+                // T-0747-fix17: auch die Nachbarzellen (±2) – ein Zellenpaar wird nur von einer Seite aus geprüft
+                var unset = new HashSet<List<(int Obj, (double X, double Y) P)>>(unchecked_, ReferenceEqualityComparer.Instance);
                 foreach (var l in unchecked_) OUnion(l[0].Obj, nc);
+                foreach (var (key, l) in gmap)
+                {
+                    if ((++cnt & 1023) == 0) ct.ThrowIfCancellationRequested();
+                    if (!unset.Contains(l)) continue;
+                    for (var dx = -2L; dx <= 2; dx++) for (var dy = -2L; dy <= 2; dy++)
+                            if (gmap.TryGetValue((key.Item1, key.Item2 + dx, key.Item3 + dy), out var l2)) OUnion(l2[0].Obj, nc);
+                }
                 notes?.Add("Sehr viele Linienenden liegen dicht beieinander – ein Teil der Linien wird nicht zu Umrissen verkettet, Konturen darin werden ausgelassen. Bitte Umrisse als Polylinie zeichnen.");
             }
             var hasJ = new HashSet<int>(); for (var q = 0; q < jout.Count; q++) hasJ.Add(OFind(nc + q));
@@ -310,6 +319,13 @@ public static class CadContours
                     if (hit) EUnion(l[0], l2[0]);
                 }
             if (budgetOut) foreach (var e in l) hotPiece[e / 2] = true;
+        }
+        if (budgetOut) // T-0747-fix17: Nachbarn (±2) ungeprüfter Schlüssel ebenfalls unsicher – ein Paar wird nur von einer Seite aus geprüft
+        {
+            var hotKeys = emap.Where(kv => kv.Value.Any(e => hotPiece[e / 2])).Select(kv => kv.Key).ToList(); // erst sammeln, dann markieren (kein Fortpflanzen)
+            foreach (var key in hotKeys)
+                for (var dx = -2L; dx <= 2; dx++) for (var dy = -2L; dy <= 2; dy++)
+                        if (emap.TryGetValue((key.Item1, key.Item2 + dx, key.Item3 + dy), out var l2)) foreach (var e in l2) hotPiece[e / 2] = true;
         }
         // Haufen auswerten
         var members = new Dictionary<int, List<int>>();

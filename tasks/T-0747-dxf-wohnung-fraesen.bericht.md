@@ -1101,3 +1101,68 @@ cases16b: 0 von 2. Die rueck-Sammlungen (faelle16, rand, meld) haben keine Erwar
 **Testzahlen T-0747-fix16:** Build 0 Fehler, keine neue Warnung in T-0747-Dateien. Kern (alle siebzehn T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests) **zweimal hintereinander**: je 166 gesamt, 165 bestanden, 1 übersprungen (vorbestehend), 0 Fehler. App 13 Klassen inklusive Studio3DMeshEditUiTests – **123/123**. Prüfskript BESTANDEN.
 
 **Weiterhin offen (Folgeaufgabe):** CAM-Grundlaufzeit (Nearest/Fräsbahn, Hindernis-Raster bei kleinem Fräser), Bemaßungs-Hilfslinien „zu nah“ an Bohrungen, Zeichnungsrahmen mit Schriftfeld.
+
+## Siebzehnte Prüfung behoben (T-0747-fix17)
+Arbeitskopie `%TEMP%\trendo-auftrag-T-0747-fix17`, Commit obendrauf auf 840d09292. Keine Maschine angesteuert.
+
+**MITTEL 1 – behoben (kein globales Budget mehr).** Der Schutzbereich ist jetzt eine gemeinsame Prüfroutine mit Budget je Verbund (20 Mio. Hüllenprüfungen); gezählt werden nur die teuren Punkt-in-Hülle-Tests.
+- Gesucht wird über ein Raster aller Eckpunkte geschlossener Konturen, je Verbund nur in den Zellen seines Rahmens. Einträge schon ausgelassener Konturen werden dabei entfernt. Damit hat jede Regel auch eine y-Überlappung.
+- Ist das Budget eines Verbunds erschöpft, werden nur Konturen ausgelassen, deren Rahmen den Verbundrahmen wirklich überlappt (`Lower(minX − maxW)` + Sprungzeiger), mit eigener Meldung „Prüfaufwand zu groß – … vorsichtshalber ausgelassen“.
+- b2_budget_5000_q10000 und alle b-/b2-Fälle: Nachbarplatte und Loch werden wieder gefräst (Bahnen wie d61d0cfb8).
+- Test `Neighbour_plate_survives_many_groups`.
+
+**MITTEL 2 – behoben (keine G×N-Schleifen).**
+- Die Ausweichschleife beginnt bei `Lower(minX − maxW)` und überspringt ausgelassene Konturen.
+- Eine Zickzack-Kontur, die viele Hüllen ohne Eckpunkt darin kreuzt, wird je Verbund nur noch mit ihren Eckpunkten in dessen Rahmenzellen geprüft.
+- Punkt-in-Kontur für große Konturen über einen Streifen-Index, waagrecht oder senkrecht – je nachdem, was besser verteilt (Zickzack mit hohen Zähnen).
+
+**HOCH – behoben (Altcode, U vor einer Kerbe).** Neu erkannt wird: Ein offener Linienzug oder Stoß-Verbund stößt mit mindestens zwei Enden (≤ 0,1 mm, gleiche Ebene) an dieselbe geschlossene Kontur C und liegt teilweise außerhalb von C. Dann schließt er mit dem Rand von C einen Bereich ein; in welcher Lesart der Umriss gemeint ist, bleibt offen.
+- Ausgelassen und gemeldet werden C selbst (ihr Rand wäre dort kein Außenrand) und alles in der Hülle aus Linienzug ∪ C, das nicht ganz in C liegt.
+- Konturen ganz in C behalten in beiden Lesarten ihre Tiefe und werden weiter gefräst – im Prüffall das Loch (30,50).
+- Ein Linienzug ganz in C (Gravur von Rand zu Rand) erzeugt keinen neuen Bereich und ändert nichts.
+- Linien auf anderen Ebenen (Bemaßung) zählen nicht als Anschluss. Bemaßungen liegen üblich auf eigener Ebene, und die Anschlussregel auf andere Ebenen auszudehnen, würde jede Hilfslinie am Plattenrand zum Problem machen.
+- k1 mit und ohne Stummel, Ende auf einer Kante statt einer Ecke, 0,05 mm Spalt: Loch in der Kerbe nie außen, Loch in der Platte bleibt. Test `U_in_front_of_notch`, mit Kontrollen Gravur-Linie und Bemaßungsebene.
+- **G-Code-Verlust durch diese Regel:** von den bisherigen Prüferfällen (Runden 9–16) verliert keiner G-Code. Im Vergleich gegen 840d09292 ändert sich der G-Code nur bei den beiden k1-Fällen; 19 Fälle unterscheiden sich nur im Meldungstext.
+
+**NIEDRIG.**
+- (a) Chain- und Junctions-Budget: Bei Erschöpfung werden auch die ±2-Nachbarzellen ungeprüfter Zellen der Stoß-Komponente zugeschlagen (bzw. als unsicher markiert), weil ein Zellenpaar nur von einer Seite aus geprüft wird.
+- (b) Der Zeittest „2000 X-Stöße“ (Grenze 10 s) liegt neu bei 3,2–4 s, d61d0cfb8 bei 169 s; ein Prüffall mit noch mehr Abstand wäre der neue Nachbarplatten-Test (neu 1,5 s).
+- (c) Konturen, die eine Hülle ohne Eckpunkt darin kreuzen, werden gefräst. „Zu nah an Kontur N … 0 mm“ trifft dann zu: Die Fräsbahn käme den Linien des Verbunds (Hindernisse) zu nah. Die Meldung bleibt deshalb so.
+- (d) `BuildGrid` prüft den Abbruch alle 4096 Strecken.
+
+**Prüfskript des Prüfers zu u1_u_stoss_loch_in_kerbe:** Unser Prüfskript `reports/T-0747/pruefe_t0747.py` nutzt die Prüferdatei nicht. Die Erwartung dort bleibt Sache des Prüfers; das Fräsen ist sicher.
+
+**Messwerte** (`--perf`, Fräser aus der Falldatei):
+
+| Fall | d61d0cfb8 | 840d09292 | neu |
+|---|---|---|---|
+| b_budget_0 / 1000 / 3000 / 5000 / 20000 | 4,5 / 4,6 / 5,2 / 5,8 / 10,1 s | 4,1 / 5,5 / 6,2 / 6,9 / 11,7 s | 4,5 / 4,4 / 4,7 / 4,6 / 5,1 s |
+| b2_budget_300 / 600 (40 401 Quadrate) | 4,8 / 4,6 s | 4,9 / 5,1 s | 4,3 / 4,7 s |
+| b2_budget_2000 / 5000 / 10000 (10 000) | 2,5 / 2,8 / 3,1 s | 3,1 / 3,7 / 4,1 s (Platte fehlt) | 2,3 / 2,3 / 2,4 s |
+| b2_budget_5000 / 20000 (2500) | 1,6 / 2,3 s | 2,1 / 3,1 s | 1,4 / 1,8 s |
+| g1_gitter_100 / 200 | 1,8 / 5,2 s | 1,7 / 4,4 s | 1,9 / 5,5 s |
+| g2_sterne_2000 / 5000 | 0,86 / 1,8 s | 0,85 / 1,8 s | 0,91 / 1,8 s |
+| g3_lange_T_5000 / 20000 | 4,5 / 8,1 s | 5,3 / 9,2 s | 3,6 / 3,5 s |
+| w1a / w1b / w1c / w1d | 1,2 / 8,0 / 1,6 / 1,6 s | 1,2 / 13,8 / 2,1 / 2,6 s | 1,2 / 8,0 / 2,1 / 1,7 s |
+| w1e / w1f / w1g | 4,0 / 11,7 / 11,5 s | 15,9 / 21,4 / 16,0 s | 4,5 / 12,2 / 12,1 s |
+| w2a / w2b Kettenbudget | > 180 s / – | 1,3 / 3,4 s | 1,4 / 3,5 s |
+| w3a Stoßbudget / w4 lange Linien | 3,6 / 7,9 s | 0,55 / 7,8 s | 0,58 / 8,1 s |
+| Prüfer 16: v1 Stern 5000 / 20 000 / 50 000 | 0,8 / 10,5 / 47,9 s | 0,33 / 0,70 / 1,3 s | 0,35 / 0,68 / 1,3 s |
+| v2 Bürste 20 000 / 50 000 | 9,4 / 50,4 s | 0,51 / 0,95 s | 0,52 / 0,98 s |
+| v3 Hülle 20 000 / 100 000 | 4,0 / 20,2 s | 2,3 / 4,4 s | 2,9 / 5,3 s |
+| v4 X-Stöße 2000 / 5000 | 169 / > 180 s | 3,2 / 8,3 s | 3,9 / 10,3 s |
+| v5 Stoß dicht 10 000 / 30 000 | 8,7 / 31,5 s | 0,57 / 1,2 s | 0,59 / 1,2 s |
+
+Alle Fälle liegen höchstens bei d61d0cfb8 + 20 %, die meisten darunter. Die Prüfer-16-Fälle v3 und v4 sind gegenüber 840d09292 um bis zu 25 % langsamer; das kostet der Aufbau des Eckpunkt-Rasters. Sie bleiben weit unter d61d0cfb8.
+
+**Prüferfälle aller Runden** (Prüfprogramme nur gelesen bzw. als Kopie ausgeführt): **1345 Fälle, 34 mit Befund**, dieselben wie in der sechzehnten Prüfung (u1 und die Bemaßungs-/Mittellinienfälle; Rahmenfälle r15). Prüfung 17: cases17 0 von 10, cases17b 0 von 2 (vorher 2 – k1 behoben), cases17c 0 von 264. budget17, budget17b, cases17s und rueck/faelle haben keine Erwartungsdateien; sie wurden über Bahnen und den G-Code-Vergleich bewertet.
+
+**G-Code-Vergleich** (844 Fälle):
+- Gegen 840d09292: 823 gleich, 21 abweichend. Nur k1 (2) mit anderem G-Code; 19 nur mit zusätzlicher Meldungszeile.
+- Gegen d61d0cfb8: 677 gleich, 167 abweichend, davon 4 mit anderem G-Code: t_rand, t_rand_ebene (Fix16) und k1 (2).
+
+**Rot-Probe gegen 840d09292:** beide neuen Fix17-Tests rot, Fix16-Tests grün – `reports/T-0747/T-0747-fix17-rotprobe.log`.
+
+**Testzahlen T-0747-fix17:** Build 0 Fehler, keine neue Warnung in T-0747-Dateien. Kern (alle achtzehn T0747-Klassen, T0266_CncSim, T0273_Arc, T0256, T0257, IfcExchangeTests, ImageVectorTests, SPEC01_*, SPEC14_*, CadTests, CadMeasureTests, Studio3DCadCrashTests) **zweimal hintereinander**: je 168 gesamt, 167 bestanden, 1 übersprungen (vorbestehend), 0 Fehler. App 13 Klassen inklusive Studio3DMeshEditUiTests – **123/123**. Prüfskript BESTANDEN.
+
+**Weiterhin offen (Folgeaufgabe):** CAM-Grundlaufzeit (Nearest/Hindernisraster), Bemaßungs-„zu nah“ (d1/m1/m2), Zeichnungsrahmen mit Schriftfeld, n3_kreise_zelle.
