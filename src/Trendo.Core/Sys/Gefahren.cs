@@ -186,12 +186,24 @@ public static partial class SystemScan
 
     static readonly string[] ScriptExt = [".js", ".mjs", ".cjs"];
 
-    [GeneratedRegex(@"(?i)(?:^|[\s""'\\/(])(?:powershell|pwsh)(?:\.exe)?(?=[""'\s]|$)")] private static partial Regex InnerPowerShell();
+    /// <summary>T-0757: PowerShell steht an einer Stelle, an der es wirklich gestartet wird – am Anfang der Argumente, direkt nach /c, /k, start
+    /// (mit Schaltern und Fenstertitel), &amp;, |, --headless oder „call create“ (wmic), auch mit Pfad und Anführungszeichen; nicht nach echo
+    /// und nicht als Wert eines Schalters.</summary>
+    [GeneratedRegex(@"(?i)(?:^|[&|]|(?<![^\s""'(])(?:/c|/k|--headless|create|start(?:\s+(?:/\w+(?::\S+)?|""[^""]*""))*)(?=[\s""'(]))[\s""'(]*(?:[^\s""'&|]*[\\/])?(?:powershell|pwsh)(?:\.exe)?(?=[""'\s]|$)")] private static partial Regex InnerPowerShell();
 
-    /// <summary>T-0755 Fix5: Steht in den Argumenten ein Aufruf von PowerShell (mit oder ohne Pfad/Anführungszeichen), wird der Teil danach
-    /// bis zum nächsten Befehlstrenner (&amp; oder |) auf einen verschlüsselten Befehl geprüft.</summary>
-    public static bool EncodedInnerPowerShell(string args)
+    /// <summary>T-0757: Startprogramme, die PowerShell als eigenen Befehl starten können.</summary>
+    static readonly HashSet<string> PsLaunchers = new(["cmd.exe", "conhost.exe", "forfiles.exe", "explorer.exe", "wmic.exe"], StringComparer.OrdinalIgnoreCase);
+
+    static bool IsHost(string host, string name) => Path.GetFileName(host).Equals(name, StringComparison.OrdinalIgnoreCase) || ToolName(host).Equals(name, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>T-0755 Fix5 / T-0757: Startet <paramref name="host"/> (cmd, conhost, forfiles, explorer oder wmic) PowerShell als eigenen Befehl
+    /// (siehe <see cref="InnerPowerShell"/>), wird der Teil danach bis zum nächsten Befehlstrenner (&amp; oder |) auf einen verschlüsselten Befehl geprüft.
+    /// <c>cmd /c echo powershell -e …</c> oder <c>dotnet tool --shell powershell -e …</c> starten kein PowerShell. Startet cmd, werden vorher alle
+    /// <c>^</c> entfernt – cmd verschluckt sie (<c>p^owershell</c>, <c>-e^nc</c>, Base64 mit <c>^</c>).</summary>
+    public static bool EncodedInnerPowerShell(string host, string args)
     {
+        if (!PsLaunchers.Contains(Path.GetFileName(host)) && !PsLaunchers.Contains(ToolName(host))) return false;
+        if (IsHost(host, "cmd.exe") || Regex.IsMatch(args, @"(?i)(?:^|[\s""'\\/&|(])cmd(?:\.exe)?(?=[\s""']|$)")) args = args.Replace("^", "");
         foreach (Match m in InnerPowerShell().Matches(args))
         {
             var rest = args[(m.Index + m.Length)..];
@@ -276,7 +288,7 @@ public static partial class SystemScan
         var shellName = ToolName(hostExe);
         if ((shellName.Equals("powershell.exe", StringComparison.OrdinalIgnoreCase) || shellName.Equals("pwsh.exe", StringComparison.OrdinalIgnoreCase) || shellName.Equals("pwsh.dll", StringComparison.OrdinalIgnoreCase)
              || host.Equals("powershell.exe", StringComparison.OrdinalIgnoreCase) || host.Equals("pwsh.exe", StringComparison.OrdinalIgnoreCase)) && Encoded().IsMatch(args)
-            || EncodedInnerPowerShell(args)) // T-0755 Fix5: PowerShell wird erst in den Argumenten gestartet (cmd /c, start, conhost, forfiles /c)
+            || EncodedInnerPowerShell(hostExe, args)) // T-0755 Fix5: PowerShell wird erst in den Argumenten gestartet (cmd /c, start, conhost, forfiles /c)
             return new(e, s, Ampel.Rot, "Versteckter Befehl",
                 "Der Befehl enthält einen verschlüsselten (Base64-)Befehl für PowerShell. So verstecken Schadprogramme, was sie tun.", fix);
         // T-0755 Fix2: Microsoft-signierte Kopie eines Windows-Werkzeugs außerhalb des Windows-Ordners oder unter anderem Namen

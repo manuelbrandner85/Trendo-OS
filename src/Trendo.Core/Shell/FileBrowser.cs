@@ -207,9 +207,13 @@ public sealed class FileBrowser
         return null;
     }
 
-    /// <summary>Größe einer Datei oder eines Ordners; hört auf zu zählen, sobald <paramref name="stopAbove"/> überschritten ist.</summary>
-    static long ItemBytes(string path, long stopAbove)
+    /// <summary>Größe einer Datei oder eines Ordners; hört auf zu zählen, sobald <paramref name="stopAbove"/> überschritten ist.
+    /// T-0757: Ist das Element selbst ein Reparse-Point (Junction, symbolische Verknüpfung), wandert nur die Verknüpfung in den Papierkorb – Größe 0,
+    /// der Inhalt des Ziels zählt nicht mit.</summary>
+    public static long ItemBytes(string path, long stopAbove = long.MaxValue)
     {
+        try { if ((File.Exists(path) || Directory.Exists(path)) && File.GetAttributes(path).HasFlag(FileAttributes.ReparsePoint)) return 0; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
         if (File.Exists(path)) return new FileInfo(path).Length;
         long sum = 0;
         if (!Directory.Exists(path)) return 0;
@@ -224,13 +228,15 @@ public sealed class FileBrowser
     static extern bool GetVolumeNameForVolumeMountPoint(string mountPoint, char[] volumeName, uint size);
 
     /// <summary>Liest (nur lesend) die Papierkorb-Einstellung des Laufwerks: HKCU\…\Explorer\BitBucket\Volume\{GUID} (NukeOnDelete, MaxCapacity in MB),
-    /// sonst die allgemeine Einstellung unter BitBucket; Richtlinie „NoRecycleFiles“. Ohne MaxCapacity gilt die Windows-Voreinstellung von 5 % des Laufwerks.</summary>
-    static BinPolicy? ReadWindowsPolicy(string path)
+    /// sonst die allgemeine Einstellung unter BitBucket; Richtlinie „NoRecycleFiles“. Ohne MaxCapacity gilt die Windows-Voreinstellung
+    /// <see cref="WindowsDefaultBinBytes"/>. T-0757: Das Laufwerk wird über <see cref="VolumePath"/> bestimmt (auch als Ordner eingehängte Laufwerke);
+    /// lässt sich seine Kennung nicht lesen, gilt die allgemeine Einstellung NukeOnDelete. Ändert nie etwas.</summary>
+    public static BinPolicy? ReadWindowsPolicy(string path)
     {
         if (!OperatingSystem.IsWindows()) return null;
         try
         {
-            var root = System.IO.Path.GetPathRoot(System.IO.Path.GetFullPath(path));
+            var root = VolumePath(path);
             if (string.IsNullOrEmpty(root)) return null;
             const string Bb = @"Software\Microsoft\Windows\CurrentVersion\Explorer\BitBucket";
             int? Dword(string key, string name) { using var k = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(key); return k?.GetValue(name) is int v ? v : null; }
@@ -246,12 +252,41 @@ public sealed class FileBrowser
                     if (Dword(key, "NukeOnDelete") is int n) nuke |= n != 0; else nuke |= (Dword(Bb, "NukeOnDelete") ?? 0) != 0;
                     max = Dword(key, "MaxCapacity");
                 }
+                else nuke |= (Dword(Bb, "NukeOnDelete") ?? 0) != 0;
             }
-            long? maxBytes = max is int mb ? mb * 1024L * 1024L : new DriveInfo(root).TotalSize / 20; // Voreinstellung: 5 %
+            else nuke |= (Dword(Bb, "NukeOnDelete") ?? 0) != 0; // Kennung unbekannt: allgemeine Einstellung
+            long? maxBytes = max is int mb ? mb * 1024L * 1024L : VolumeBytes(root) is long total ? WindowsDefaultBinBytes(total) : null;
             return new BinPolicy(nuke, maxBytes);
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Security.SecurityException or ArgumentException) { return null; }
     }
+
+    /// <summary>T-0757: Voreinstellung von Windows ohne MaxCapacity: 10 % der ersten 40 GB, 5 % vom Rest.</summary>
+    public static long WindowsDefaultBinBytes(long volumeBytes)
+    {
+        const long G40 = 40L << 30;
+        return Math.Min(G40, Math.Max(0, volumeBytes)) / 10 + Math.Max(0, volumeBytes - G40) / 20;
+    }
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true, EntryPoint = "GetVolumePathNameW")]
+    static extern bool GetVolumePathName(string fileName, char[] volumePathName, uint size);
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true, EntryPoint = "GetDriveTypeW")]
+    static extern uint GetDriveType(string rootPathName);
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true, EntryPoint = "GetDiskFreeSpaceExW")]
+    static extern bool GetDiskFreeSpaceEx(string directory, out ulong freeForCaller, out ulong total, out ulong totalFree);
+
+    /// <summary>T-0757: Wurzel des Laufwerks, auf dem der Pfad liegt – mit abschließendem „\“. Bei einem als Ordner eingehängten Laufwerk
+    /// (z. B. <c>C:\Daten\USB\</c>) ist das der Einhängeordner, nicht <c>C:\</c>. Nur Windows; null, wenn Windows es nicht sagen kann.</summary>
+    public static string? VolumePath(string path)
+    {
+        if (!OperatingSystem.IsWindows()) return null;
+        var buf = new char[1024];
+        if (!GetVolumePathName(System.IO.Path.GetFullPath(path), buf, (uint)buf.Length)) return null;
+        var v = new string(buf).TrimEnd('\0');
+        return v.Length == 0 ? null : v.EndsWith('\\') ? v : v + "\\";
+    }
+
+    static long? VolumeBytes(string volume) => GetDiskFreeSpaceEx(volume, out _, out var total, out _) && total > 0 ? (long)total : null;
 
     static bool WindowsHasRecycleBin(string path)
     {
@@ -262,6 +297,9 @@ public sealed class FileBrowser
             var root = System.IO.Path.GetPathRoot(full);
             if (string.IsNullOrEmpty(root) || root.Length < 2 || root[1] != ':') return false;
             if (IsSubst(root[..2])) return false;
+            // T-0757: als Ordner eingehängte Laufwerke – die Art des eingehängten Laufwerks zählt, nicht die von C:
+            if (VolumePath(full) is { } vol && !string.Equals(vol, root.EndsWith('\\') ? root : root + "\\", StringComparison.OrdinalIgnoreCase))
+                return GetDriveType(vol) == 3; // DRIVE_FIXED
             var d = new DriveInfo(root);
             return d.DriveType == DriveType.Fixed; // Zweitprüfung: Wechseldatenträger legen oft nicht ab, auch mit $Recycle.Bin – dort immer nachfragen
         }
@@ -295,7 +333,7 @@ public sealed class FileBrowser
         // Windows: X:\$Recycle.Bin\<SID>\$R…
         var sidDir = System.IO.Path.GetDirectoryName(parent);
         if (name.StartsWith("$R", StringComparison.OrdinalIgnoreCase) && sidDir is not null && System.IO.Path.GetFileName(sidDir).Equals("$Recycle.Bin", StringComparison.OrdinalIgnoreCase)
-            && System.IO.Path.GetDirectoryName(sidDir) is { } drv && System.IO.Path.GetPathRoot(full) is { } r && Same(drv, r)) return true;
+            && System.IO.Path.GetDirectoryName(sidDir) is { } drv && System.IO.Path.GetPathRoot(full) is { } r && (Same(drv, r) || VolumePath(drv) is { } vp && Same(drv, vp))) return true; // T-0757: auch eingehängte Laufwerke
         // Mac
         if (Same(parent, System.IO.Path.Combine(Home, ".Trash"))) return true;
         if (sidDir is not null && System.IO.Path.GetFileName(sidDir) == ".Trashes") return true;
@@ -383,7 +421,7 @@ public sealed class FileBrowser
         if (!OperatingSystem.IsWindows()) return null;
         try
         {
-            var sid = System.Security.Principal.WindowsIdentity.GetCurrent().User?.Value; var root = System.IO.Path.GetPathRoot(originalPath);
+            var sid = System.Security.Principal.WindowsIdentity.GetCurrent().User?.Value; var root = (System.IO.Path.GetDirectoryName(originalPath) is { } dir ? VolumePath(dir) : null) ?? System.IO.Path.GetPathRoot(originalPath); // T-0757: eingehängte Laufwerke
             if (sid is null || string.IsNullOrEmpty(root)) return null;
             var bin = System.IO.Path.Combine(root, "$Recycle.Bin", sid);
             return Trendo.Core.Sys.Trash.List(bin, null)

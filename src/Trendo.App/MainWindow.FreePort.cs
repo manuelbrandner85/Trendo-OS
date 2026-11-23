@@ -31,8 +31,15 @@ public partial class MainWindow
     static FreePort.Title FpTitle(ProgramDocument d) => FreePort.Find(d.Text("fp_title", FreePort.Titles[0].Id)) ?? FreePort.Titles[0];
     static List<string> FpStubs(ProgramDocument d) => (d.Data["fp_stubs"] is null ? string.Join("\n", FpTitle(d).Stubs) : d.Text("fp_stubs")).Split('\n').Select(s => s.Trim()).Where(s => s.Length > 0).ToList();
     string FpWorkDir(ProgramDocument d) => Path.Combine(ConsoleProject(d), "frei", FpTitle(d).Id);
-    FreePort.Job FpJob(ProgramDocument d) => new(FpTitle(d), d.Text("fp_elf"), d.Text("fp_license"), d.Text("fp_recomp"), FpStubs(d), FpWorkDir(d));
-    IReadOnlyList<FreePort.Check> FpChecks(ProgramDocument d) => FreePort.Prerequisites(FpTitle(d), d.Text("fp_license"), d.Text("fp_elf"), d.Text("fp_recomp"), FpProbe);
+    /// <summary>T-0757 R1: Bei „Eigenes Homebrew“ gilt die Bestätigung „Ich habe die Rechte an diesem Programm“ nur für genau die gewählte Datei.</summary>
+    static bool FpRightsOk(ProgramDocument d) => !FreePort.NeedsRights(FpTitle(d)) || d.Text("fp_elf") is { Length: > 0 } e && d.Text("fp_rights") == e;
+    FreePort.Job FpJob(ProgramDocument d) => new(FpTitle(d), d.Text("fp_elf"), d.Text("fp_license"), d.Text("fp_recomp"), FpStubs(d), FpWorkDir(d), FreePort.NeedsRights(FpTitle(d)) && FpRightsOk(d));
+    IReadOnlyList<FreePort.Check> FpChecks(ProgramDocument d)
+    {
+        var l = FreePort.Prerequisites(FpTitle(d), d.Text("fp_license"), d.Text("fp_elf"), d.Text("fp_recomp"), FpProbe).ToList();
+        if (FreePort.NeedsRights(FpTitle(d))) l.Insert(2, new("rechte", "Rechte bestätigt", FpRightsOk(d), FpRightsOk(d) ? FreePort.RightsText : $"Setze den Haken „{FreePort.RightsText}“ (gilt nur für das gewählte Programm)."));
+        return l;
+    }
 
     Control FreePortView(ProgramDocument d)
     {
@@ -77,6 +84,16 @@ public partial class MainWindow
         elf.Click += async (_, _) => { if (await PickMediaFile("fp-elf", "PS2-Programm (.elf)", ["*.elf"]) is { } f) ProgramRun(ConsoleKey, () => d.Set("fp_elf", f, "Programm")); };
         files.Children.Add(lic); files.Children.Add(elf);
         sp.Children.Add(files);
+        if (FreePort.NeedsRights(t))
+        {
+            var rights = new CheckBox { Name = "fp-rights", Content = FreePort.RightsText, Foreground = Text, IsChecked = FpRightsOk(d), IsEnabled = !FreePortBusy && d.Text("fp_elf").Length > 0 };
+            rights.IsCheckedChanged += (_, _) =>
+            {
+                var want = rights.IsChecked == true ? d.Text("fp_elf") : null;
+                if (want != (d.Data["fp_rights"] is null ? null : d.Text("fp_rights"))) ProgramRun(ConsoleKey, () => d.Set("fp_rights", want, "Rechte bestätigt"));
+            };
+            sp.Children.Add(rights);
+        }
 
         sp.Children.Add(H("2 · Voraussetzungen auf diesem PC", 13));
         var cl = new StackPanel { Name = "fp-checks", Spacing = 2 };

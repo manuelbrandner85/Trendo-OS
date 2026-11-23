@@ -128,6 +128,13 @@ public class ConsolePort_Ui
             Tap(w, "fp-pick-elf"); await Until(() => d.Text("fp_elf") == elf);
             Tap(w, "fp-pick-recomp"); await Until(() => d.Text("fp_recomp") == recomp);
             Settle();
+            // T-0757 R1: „Eigenes Homebrew“ startet erst nach der ausdrücklichen Bestätigung
+            Assert.False(w.Find<Button>("fp-start").IsEnabled);
+            Assert.Contains("Rechte bestätigt", w.Find<TextBlock>("fp-blocked").Text);
+            Assert.Equal("blockiert", (await w.FreePortStart(d))!.Status); // auch direkt aufgerufen: nichts startet
+            Assert.Empty(calls);
+            w.Show(K); Settle();
+            w.Find<CheckBox>("fp-rights").IsChecked = true; await Until(() => d.Text("fp_rights") == elf); Settle();
             Assert.Null(w.TryFind<TextBlock>("fp-blocked"));
             Assert.True(w.Find<Button>("fp-start").IsEnabled);
             Tap(w, "fp-start");
@@ -140,6 +147,7 @@ public class ConsolePort_Ui
             Assert.Equal("Portieren fertig", w.Find<TextBlock>("prog-status-text").Text);
             Assert.Contains(calls, c => c.EndsWith("--target ps2EntryRunner"));
             Assert.True(File.Exists(Path.Combine(recomp, "ps2xRuntime", "src", "runner", "game.cpp")));
+            Assert.Contains("\"rechte_bestaetigt\": \"Ich habe die Rechte an diesem Programm\"", File.ReadAllText(Path.Combine(Path.GetDirectoryName(w.FreePortLast.LogPath)!, "ergebnis.json")));
             Tap(w, "fp-trial");
             await Until(() => w.FreePortLastTrial is not null && !w.FreePortBusy);
             Settle();
