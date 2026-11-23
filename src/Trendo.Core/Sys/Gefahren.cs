@@ -186,6 +186,21 @@ public static partial class SystemScan
 
     static readonly string[] ScriptExt = [".js", ".mjs", ".cjs"];
 
+    [GeneratedRegex(@"(?i)(?:^|[\s""'\\/(])(?:powershell|pwsh)(?:\.exe)?(?=[""'\s]|$)")] private static partial Regex InnerPowerShell();
+
+    /// <summary>T-0755 Fix5: Steht in den Argumenten ein Aufruf von PowerShell (mit oder ohne Pfad/Anführungszeichen), wird der Teil danach
+    /// bis zum nächsten Befehlstrenner (&amp; oder |) auf einen verschlüsselten Befehl geprüft.</summary>
+    public static bool EncodedInnerPowerShell(string args)
+    {
+        foreach (Match m in InnerPowerShell().Matches(args))
+        {
+            var rest = args[(m.Index + m.Length)..];
+            var cut = rest.IndexOfAny(['&', '|']); if (cut >= 0) rest = rest[..cut];
+            if (Encoded().IsMatch(rest)) return true;
+        }
+        return false;
+    }
+
     static bool UnderWindows(string path)
     {
         var w = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
@@ -260,7 +275,8 @@ public static partial class SystemScan
         // T-0755 Fix4: „Versteckter Befehl“ nur, wenn PowerShell startet (node -e / dotnet /e: sind etwas anderes)
         var shellName = ToolName(hostExe);
         if ((shellName.Equals("powershell.exe", StringComparison.OrdinalIgnoreCase) || shellName.Equals("pwsh.exe", StringComparison.OrdinalIgnoreCase) || shellName.Equals("pwsh.dll", StringComparison.OrdinalIgnoreCase)
-             || host.Equals("powershell.exe", StringComparison.OrdinalIgnoreCase) || host.Equals("pwsh.exe", StringComparison.OrdinalIgnoreCase)) && Encoded().IsMatch(args))
+             || host.Equals("powershell.exe", StringComparison.OrdinalIgnoreCase) || host.Equals("pwsh.exe", StringComparison.OrdinalIgnoreCase)) && Encoded().IsMatch(args)
+            || EncodedInnerPowerShell(args)) // T-0755 Fix5: PowerShell wird erst in den Argumenten gestartet (cmd /c, start, conhost, forfiles /c)
             return new(e, s, Ampel.Rot, "Versteckter Befehl",
                 "Der Befehl enthält einen verschlüsselten (Base64-)Befehl für PowerShell. So verstecken Schadprogramme, was sie tun.", fix);
         // T-0755 Fix2: Microsoft-signierte Kopie eines Windows-Werkzeugs außerhalb des Windows-Ordners oder unter anderem Namen

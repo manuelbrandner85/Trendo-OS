@@ -1,6 +1,6 @@
-T-0755 SPEC-12 Echtlauf nach der Viertprüfung (Fix4), Windows 11, nur lesend, 23.11.2026 04:39. Nur Zählungen – keine Programmnamen oder Pfade (Datenschutz).
-Verlauf: 8fe0c0a79 Rot 1/Gelb 59/Grün 114 · d810ffd3b Rot 11/Gelb 63/Grün 100 · acda02ef0 Rot 13/Gelb 60/Grün 101 · d09aea8ba Rot 15/Gelb 58/Grün 101 · Fix4 siehe unten (unverändert).
-Systempruefung (nur lesend) - Dauer 3,0 s
+T-0755 SPEC-12 Echtlauf nach der fünften Prüfung (Fix5), Windows 11, nur lesend, 23.11.2026 04:47. Nur Zählungen – keine Programmnamen oder Pfade (Datenschutz).
+Verlauf: 8fe0c0a79 Rot 1/Gelb 59/Grün 114 · d810ffd3b Rot 11/Gelb 63/Grün 100 · acda02ef0 Rot 13/Gelb 60/Grün 101 · d09aea8ba und f129c6aaf Rot 15/Gelb 58/Grün 101 · Fix5 siehe unten.
+Systempruefung (nur lesend) - Dauer 3,4 s
 Eintraege gesamt: 174 - Rot 15 - Gelb 58 - Gruen 101 - Aufgaben ohne Programmstart: 117
   Autostart-Ordner: 1 (Rot 0, Gelb 1, Gruen 0)
   Geplante Aufgabe: 99 (Rot 15, Gelb 13, Gruen 71)

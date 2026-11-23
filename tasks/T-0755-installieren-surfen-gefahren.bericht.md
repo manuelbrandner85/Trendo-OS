@@ -130,4 +130,14 @@ Echter winget-Lauf weiterhin **NICHT GETESTET – braucht Lauf durch den Nutzer.
 **Tests:** Core T0755*, W3, PromptActionTests, DownloadQueue, NoFixedUser, SYS04: 120/120. App `T0755_Ui`, `SPEC12_Ui`, `SYS04_Ui`, `W1_Web`, `ForensikYara_Ui`, `StudiosAlle_Ui`: 110/110.
 **Echtlauf** (nur Zählungen): 174 Einträge, Rot 15, Gelb 58, Grün 101 – unverändert gegenüber d09aea8ba. Keine Windows-Aufgabe rot.
 
+## Fünfte Prüfung behoben (Fix5 auf f129c6aaf)
+
+| Befund | Lösung | Test |
+|---|---|---|
+| MITTEL (Rückschritt aus Fix4): `cmd.exe /c powershell -enc …`, `cmd.exe /c start /min powershell.exe -w hidden -enc …`, `conhost.exe --headless powershell.exe -enc …` nur gelb | Neu `SystemScan.EncodedInnerPowerShell`: Steht in den Argumenten ein Token `powershell`, `powershell.exe`, `pwsh` oder `pwsh.exe` (mit oder ohne Pfad und Anführungszeichen), wird der Teil danach bis zum nächsten Befehlstrenner (`&`, `|`) auf einen verschlüsselten Befehl geprüft → rot „Versteckter Befehl“. `node -e …`, `dotnet /e:…` und `cmd /c echo powershell & node -e …` bleiben ohne diesen Befund. | `T0755_Fix5.Encoded_powershell_inside_arguments` (alle drei Fälle, dazu `forfiles /c "powershell -enc …"`, Pfad in Anführungszeichen mit `-EncodedCommand`, `pwsh -e`) |
+
+**Rot-Grün:** Der neue Test lief zuerst unverändert gegen f129c6aaf und schlug fehl (`cmd /c powershell -enc` → „Gelb Startet ein Skript“), Beleg `reports/T-0755/core-tests-fix5-rot-auf-f129c6aaf.txt`; danach grün.
+**Tests:** Core T0755*, W3, PromptActionTests, DownloadQueue, NoFixedUser, SYS04: 121/121. App `T0755_Ui`, `SPEC12_Ui`, `SYS04_Ui`, `W1_Web`, `ForensikYara_Ui`, `StudiosAlle_Ui`: 110/110.
+**Echtlauf** (nur Zählungen): 174 Einträge, Rot 15, Gelb 58, Grün 101 – unverändert. Keine Windows-Aufgabe rot.
+
 **Status:** Umsetzung fertig und gezielt getestet; SYS-04-Echtlauf offen.
