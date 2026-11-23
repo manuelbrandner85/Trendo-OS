@@ -1,0 +1,108 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0760-main\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:03.19]     T-0760: 10 000 Blockverweise mit je Platte und Loch – lesen unter 10 s, abbrechbar [FAIL]
+[xUnit.net 00:00:03.20]     T-0760 INSERT: Zyklus, Tiefe > 16, Xref, Block fehlt, unsinnige Faktoren und riesige Felder bleiben gemeldet – schnell, ohne Speicherflut [FAIL]
+[xUnit.net 00:00:03.20]     T-0760 INSERT: ungleiche Skalierung macht aus Kreis und Bogen eine Ellipse (fein abgetastet, ≤ 0,001 mm), Ausbuchtungen ebenso [FAIL]
+[xUnit.net 00:00:03.25]     T-0760 SPLINE: rationaler NURBS-Kreis (Gewichte) liegt genau auf dem Kreis, Sehnenfehler ≤ 0,001 mm auch in Zoll; als Loch in einer Platte gefräst [FAIL]
+[xUnit.net 00:00:03.27]     T-0760 INSERT: Sicherheitsregeln nach dem Auflösen – nicht lesbares im Block (REGION) macht die Teile darin unsicher; Schraffur im Block formgleich zum Rand fällt weg [FAIL]
+[xUnit.net 00:00:03.27]     T-0760 INSERT: verschachtelt, Ebene 0 erbt die Ebene des Verweises, gefrorene/ausgeschaltete Ebenen und unsichtbare Verweise werden nicht gefräst, sondern gemeldet [FAIL]
+[xUnit.net 00:00:03.27]     T-0760 MLINE: Wand als geschlossene Mehrfachlinie (Stil ±0,5 × 20) → zwei Rechtecke im Abstand 20; offene Mehrfachlinie mit Linien-Enden wird als ein Teil gefräst [FAIL]
+[xUnit.net 00:00:03.28]     T-0760 MLINE: widersprüchliche Daten (Richtung, Stil-Abstände, Unterbrechungen) bleiben gemeldet; ohne Stil nur die Linien (offene Enden meldet das Fräsen) [FAIL]
+  Fehler T-0760: 10 000 Blockverweise mit je Platte und Loch – lesen unter 10 s, abbrechbar [224 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: 20000
+Actual:   0
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0760_DxfElemente.Many_inserts_fast() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0760-main\tests\Trendo.Core.Tests\DxfElementeT0760Tests.cs:line 314
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ 10 000 Verweise: 175 ms, 0 Elemente
+
+
+  Fehler T-0760 INSERT: Zyklus, Tiefe > 16, Xref, Block fehlt, unsinnige Faktoren und riesige Felder bleiben gemeldet – schnell, ohne Speicherflut [5 ms]
+  Fehlermeldung:
+   Assert.Single() Failure: The collection was empty
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0760_DxfElemente.Insert_limits() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0760-main\tests\Trendo.Core.Tests\DxfElementeT0760Tests.cs:line 120
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0760 INSERT: ungleiche Skalierung macht aus Kreis und Bogen eine Ellipse (fein abgetastet, ≤ 0,001 mm), Ausbuchtungen ebenso [5 ms]
+  Fehlermeldung:
+   Assert.Empty() Failure: Collection was not empty
+Collection: [Tuple ("Blockverweis „K“", Box { MinX = 40, MinY = 30, MaxX = 160, MaxY = 70, IsEmpty = False, IsAll = False, HasNaN = False })]
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0760_DxfElemente.Insert_nonuniform_scale() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0760-main\tests\Trendo.Core.Tests\DxfElementeT0760Tests.cs:line 72
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0760 SPLINE: rationaler NURBS-Kreis (Gewichte) liegt genau auf dem Kreis, Sehnenfehler ≤ 0,001 mm auch in Zoll; als Loch in einer Platte gefräst [3 ms]
+  Fehlermeldung:
+   Assert.Single() Failure: The collection was empty
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0760_DxfElemente.Spline_nurbs_circle() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0760-main\tests\Trendo.Core.Tests\DxfElementeT0760Tests.cs:line 177
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0760 INSERT: Sicherheitsregeln nach dem Auflösen – nicht lesbares im Block (REGION) macht die Teile darin unsicher; Schraffur im Block formgleich zum Rand fällt weg [21 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Sub-string not found
+String:    "Die Zeichnung hat keine Konturen (Linien,"···
+Not found: "Region"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0760_DxfElemente.Insert_safety_after_expansion() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0760-main\tests\Trendo.Core.Tests\DxfElementeT0760Tests.cs:line 146
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0760 INSERT: verschachtelt, Ebene 0 erbt die Ebene des Verweises, gefrorene/ausgeschaltete Ebenen und unsichtbare Verweise werden nicht gefräst, sondern gemeldet [3 ms]
+  Fehlermeldung:
+   Assert.Empty() Failure: Collection was not empty
+Collection: [Tuple ("Blockverweis „PL2“", Box { MinX = 0, MinY = 0, MaxX = 100, MaxY = 60, IsEmpty = False, IsAll = False, HasNaN = False }), Tuple ("Blockverweis „PL2“", Box { MinX = 200, MinY = 0, MaxX = 300, MaxY = 60, IsEmpty = False, IsAll = False, HasNaN = False }), Tuple ("Blockverweis „PL2“", Box { MinX = 400, MinY = 0, MaxX = 500, MaxY = 60, IsEmpty = False, IsAll = False, HasNaN = False }), Tuple ("Blockverweis „PL2“", Box { MinX = 600, MinY = 0, MaxX = 700, MaxY = 60, IsEmpty = False, IsAll = False, HasNaN = False })]
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0760_DxfElemente.Insert_nested_layers_visibility() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0760-main\tests\Trendo.Core.Tests\DxfElementeT0760Tests.cs:line 95
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0760 MLINE: Wand als geschlossene Mehrfachlinie (Stil ±0,5 × 20) → zwei Rechtecke im Abstand 20; offene Mehrfachlinie mit Linien-Enden wird als ein Teil gefräst [2 ms]
+  Fehlermeldung:
+   Assert.Empty() Failure: Collection was not empty
+Collection: [Tuple ("Mehrfachlinie (MLINE)", Box { MinX = -∞, MinY = -∞, MaxX = ∞, MaxY = ∞, IsEmpty = False, IsAll = True, HasNaN = False })]
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0760_DxfElemente.Mline_walls() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0760-main\tests\Trendo.Core.Tests\DxfElementeT0760Tests.cs:line 248
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler T-0760 MLINE: widersprüchliche Daten (Richtung, Stil-Abstände, Unterbrechungen) bleiben gemeldet; ohne Stil nur die Linien (offene Enden meldet das Fräsen) [< 1 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Sub-string not found
+String:    "Mehrfachlinie (MLINE)"
+Not found: "Abstände passen nicht"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0760_DxfElemente.Mline_not_guessed() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0760-main\tests\Trendo.Core.Tests\DxfElementeT0760Tests.cs:line 278
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ Stil 0,5/−0,25: Mehrfachlinie (MLINE)
+
+
+[xUnit.net 00:00:03.28]     T-0760 SPLINE: nicht geraten – geschlossen ohne passende Enden, nur Fitpunkte, Fitpunkte neben der Kurve, fallende Knoten, Gewicht ≤ 0 bleiben gemeldet [FAIL]
+[xUnit.net 00:00:03.29]     T-0760 INSERT: Einfügepunkt, Drehung, Skalierung, Spiegelung (−42 und Normale −Z) und Feld – Platte und Loch landen genau dort und werden gefräst [FAIL]
+  Fehler T-0760 SPLINE: nicht geraten – geschlossen ohne passende Enden, nur Fitpunkte, Fitpunkte neben der Kurve, fallende Knoten, Gewicht ≤ 0 bleiben gemeldet [1 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Sub-string not found
+String:    "SPLINE (Freiformkurve)"
+Not found: "treffen sich nicht"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0760_DxfElemente.Spline_not_guessed() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0760-main\tests\Trendo.Core.Tests\DxfElementeT0760Tests.cs:line 212
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ geschlossen, Enden offen: SPLINE (Freiformkurve) Box { MinX = 0, MinY = -20, MaxX = 100, MaxY = 80, IsEmpty = False, IsAll = False, HasNaN = False }
+
+
+  Fehler T-0760 INSERT: Einfügepunkt, Drehung, Skalierung, Spiegelung (−42 und Normale −Z) und Feld – Platte und Loch landen genau dort und werden gefräst [< 1 ms]
+  Fehlermeldung:
+   Assert.Empty() Failure: Collection was not empty
+Collection: [Tuple ("Blockverweis „PL“", Box { MinX = 440, MinY = 0, MaxX = 500, MaxY = 100, IsEmpty = False, IsAll = False, HasNaN = False })]
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0760_DxfElemente.Insert_transforms() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0760-main\tests\Trendo.Core.Tests\DxfElementeT0760Tests.cs:line 47
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Fehler!      : Fehler:    10, erfolgreich:     1, übersprungen:     0, gesamt:    11, Dauer: 326 ms - Trendo.Core.Tests.dll (net10.0)

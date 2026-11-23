@@ -40,9 +40,12 @@ public class TempDirTests
         // ein einziger Versuch scheitert – genau das alte Verhalten (Directory.Delete einmal, Fehler verschluckt)
         Assert.False(TempDir.Delete(t.Path, attempts: 1));
         Assert.True(Directory.Exists(t.Path));
-        var release = Task.Run(async () => { await Task.Delay(500); await lockStream.DisposeAsync(); });
+        // T-0760: Freigabe auf eigenem Faden statt im Thread-Pool – im Volltest ist der Pool von parallelen Tests belegt, Task.Delay kam dann
+        // erst nach den 30 × 100 ms Versuchen dran. Geprüft wird weiter genau dasselbe: Delete wartet, bis die Sperre fällt (Versuche unverändert).
+        var release = new Thread(() => { Thread.Sleep(500); lockStream.Dispose(); }) { IsBackground = true };
+        release.Start();
         Assert.True(TempDir.Delete(t.Path, attempts: 30, delayMs: 100));
-        await release;
+        release.Join(); await Task.CompletedTask;
         Assert.False(Directory.Exists(t.Path));
     }
 

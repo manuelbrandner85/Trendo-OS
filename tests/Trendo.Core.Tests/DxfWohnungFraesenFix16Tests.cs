@@ -89,10 +89,11 @@ public class T0747_Fix16SechzehntePruefung(ITestOutputHelper log)
         foreach (var (name, dxf) in new[] { ("Stern 50 000", star), ("Bürste 50 000", brush), ("Rechteck 8000-fach", dup), ("2000 X-Stöße", x4) })
         {
             // Fräser Ø 6 wie in der Prüfung (mit Ø 1 dominiert das vorbestehende Hindernis-Raster der Fräsbahn-Prüfung – nicht Teil dieser Runde)
-            var t = Min3(() => CamOrNothing(dxf, 6));
+            // T-0760: Grenze bleibt 10 s – unter Fremdlast um den gemessenen Lastfaktor verlängert (Lastmessung)
+            var t = Lastmessung.Best(3, () => CamOrNothing(dxf, 6), parallel: true);
             var (r, _) = CamOrNothing(dxf, 6);
-            log.WriteLine($"{name}: {t} ms, {r?.Paths.Count ?? 0} Bahnen");
-            Assert.True(t < 10000, $"{name}: {t} ms");
+            log.WriteLine($"{name}: {r?.Paths.Count ?? 0} Bahnen");
+            Lastmessung.Below(log, name, t, 10000);
             if (name != "Rechteck 8000-fach") Assert.True(r is not null && Around(r, "innen", name == "2000 X-Stöße" ? 3050 : 350, 50, 10, 6), name); // Platte daneben samt Loch bleibt
         }
         // Stoßkette 20 000 mit einer Schraffur: Lesen unter 4 s (kleinste von zwei Messungen)
@@ -100,8 +101,7 @@ public class T0747_Fix16SechzehntePruefung(ITestOutputHelper log)
         for (var k = 0; k < 20_000; k++) { var x = 10.0 * k; kette.Append(Line(x, 0, x + 4, 0)).Append(Line(x, 0, x, 5)).Append(Line(x, 0, x, -5)).Append(Line(x + 4.05, 0, x + 9.95, 0)); }
         (double, double)[] sq = [(0, -100), (20, -100), (20, -80), (0, -80)];
         var u6 = Dxf(kette + Lw(sq) + Hatch(sq));
-        var t6 = Min2(() => CadDxf.Parse(u6));
-        log.WriteLine($"Stoßkette 20 000 + Schraffur: {t6} ms");
-        Assert.True(t6 < 4000, $"u6 {t6} ms");
+        var t6 = Lastmessung.Best(2, () => CadDxf.Parse(u6), parallel: false);
+        Lastmessung.Below(log, "Stoßkette 20 000 + Schraffur", t6, 4000);
     }
 }

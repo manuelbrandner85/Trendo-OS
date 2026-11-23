@@ -166,17 +166,14 @@ public class T0747_Fix2ZweitePruefung(ITestOutputHelper log)
         for (var k = 0; k < 2500; k++) { pts.Add((k * 0.2, 0)); pts.Add((k * 0.2 + 0.1, 10)); }
         pts.Add((500, -20)); pts.Add((0, -20));
         var cs = new List<CadContour> { new(pts, true, "0") };
-        var sw = Stopwatch.StartNew(); CncCam.Generate(cs, new CamSettings { ToolD = 6 }); var ms = sw.ElapsedMilliseconds;
-        if (ms > 2000) { sw.Restart(); CncCam.Generate(cs, new CamSettings { ToolD = 6 }); ms = Math.Min(ms, sw.ElapsedMilliseconds); } // T-0747-fix12: unter Fremdlast einmal wiederholt
-        long cancelMs = long.MaxValue;
-        for (var attempt = 0; attempt < 2 && cancelMs >= 1500; attempt++)
+        // T-0747-fix12: unter Fremdlast einmal wiederholt; T-0760: Grenzen unverändert, unter Fremdlast × gemessener Lastfaktor (Lastmessung)
+        var ms = Lastmessung.Best(2, () => CncCam.Generate(cs, new CamSettings { ToolD = 6 }), parallel: true);
+        var cancel = Lastmessung.Best(2, () =>
         {
-            using var cts = new CancellationTokenSource(); cts.CancelAfter(100); sw.Restart();
+            using var cts = new CancellationTokenSource(); cts.CancelAfter(100);
             Assert.ThrowsAny<OperationCanceledException>(() => CncCam.Generate(cs, new CamSettings { ToolD = 6 }, cts.Token));
-            cancelMs = Math.Min(cancelMs, sw.ElapsedMilliseconds);
-        }
-        log.WriteLine($"Zickzack 5000 Punkte: {ms} ms; Abbrechen nach 100 ms wirkte nach {cancelMs} ms");
-        Assert.True(cancelMs < 1500, $"{cancelMs}"); Assert.True(ms < 8000, $"{ms}");
+        }, parallel: true);
+        Lastmessung.Below(log, "Abbrechen nach 100 ms", cancel, 1500); Lastmessung.Below(log, "Zickzack 5000 Punkte", ms, 8000);
     }
 
     // ---------- 6: kurze Engstellen ----------

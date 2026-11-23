@@ -1,0 +1,9 @@
+FreeCAD {'freecad': ['1', '1', '4'], 'export': 'Import.writeDXFObject (C++)'}
+Trendo: nicht gelesen {} []
+  FreeCAD Kreis              1 Kanten: größter Abstand zu Trendo 0.000004 mm → deckt sich
+  FreeCAD Kurve              1 Kanten: größter Abstand zu Trendo 0.000994 mm → deckt sich
+  FreeCAD Ring               1 Kanten: größter Abstand zu Trendo 0.000989 mm → deckt sich
+  Trendo  0 polylinie SPLINE    622 Punkte: größter Abstand zu FreeCAD 0.000003 mm
+  Trendo  1 polylinie SPLINE    702 Punkte: größter Abstand zu FreeCAD 0.000001 mm
+  Trendo  2 kreis              4096 Punkte: größter Abstand zu FreeCAD 0.000000 mm
+ERGEBNIS: größter Abstand Trendo → FreeCAD 0.000003 mm

@@ -68,21 +68,33 @@ public class T0747_Fix5FuenftePruefung(ITestOutputHelper log)
         Assert.All(half.Points, p => Assert.True(p[1] <= 30 + 1e-9, "obere Hälfte gespiegelt nach unten")); // t 0…π mit Nebenachse (0,−10)
     }
 
-    [Fact(DisplayName = "T-0747-fix5 M2: Platte im Blockverweis, Löcher lose (b2) – Löcher werden ausgelassen und gemeldet; Loch-Block in Platte wird gemeldet")]
+    [Fact(DisplayName = "T-0747-fix5 M2 (T-0760: Blöcke werden aufgelöst): Platte im Blockverweis mit losen Löchern – Löcher innen, Platte außen; Loch-Block in Platte gefräst; Xref-Platte bleibt unsicher und gemeldet")]
     public void Insert_outline_makes_inside_unsure()
     {
         var blk = G((0, "BLOCK"), (8, "0"), (2, "PLATTE"), (70, 0), (10, 0), (20, 0), (30, 0)) + Lw(Rect(0, 0, 100, 60)) + G((0, "ENDBLK"), (8, "0"));
         var b2 = Dxf(G((0, "INSERT"), (8, "0"), (2, "PLATTE"), (10, 0), (20, 0), (30, 0)) + Circle(30, 30, 8) + Circle(70, 30, 8) + Lw(Rect(200, 0, 230, 20)), blk);
-        var rd = CadDxf.Parse(b2); var u = Assert.Single(rd.Unread);
-        Assert.Equal((0.0, 0.0, 100.0, 60.0), (u.B.MinX, u.B.MinY, u.B.MaxX, u.B.MaxY));
+        var rd = CadDxf.Parse(b2); Assert.Empty(rd.Unread); Assert.Empty(rd.Skipped);
         var r = Cam(b2);
         log.WriteLine(string.Join(" | ", r.Warnings));
-        Assert.Equal(2, r.Warnings.Count(w => w.Contains("liegt in nicht gelesenem Element Blockverweis „PLATTE“", StringComparison.Ordinal)));
-        Assert.All(r.Paths, p => Assert.True(Mid(r, p).X > 150));
-        // Loch als Block in einer losen Platte: Platte wird gefräst, aber gemeldet
+        Assert.Equal(2, r.Paths.Count(p => p.Kind == "innen" && Mid(r, p).X < 100)); // beide Löcher als Loch der Platte
+        Assert.Single(r.Paths, p => p.Kind == "aussen" && Mid(r, p).X < 100);
+        // Loch als Block in einer Platte: wird als Loch gefräst
         var lochBlk = G((0, "BLOCK"), (8, "0"), (2, "LOCH"), (70, 0), (10, 0), (20, 0), (30, 0)) + Circle(0, 0, 6) + G((0, "ENDBLK"), (8, "0"));
         var r4 = Cam(Dxf(Lw(Rect(0, 0, 120, 80)) + G((0, "INSERT"), (8, "0"), (2, "LOCH"), (10, 30), (20, 40), (30, 0)), lochBlk));
-        Assert.Contains(r4.Warnings, w => w.Contains("enthält nicht gelesenes Element Blockverweis „LOCH“", StringComparison.Ordinal));
+        var h = Assert.Single(r4.Paths, p => p.Kind == "innen"); Assert.Equal(30, Mid(r4, h).X, 1); Assert.Equal(40, Mid(r4, h).Y, 1);
+        // Schutz bleibt, wo der Inhalt nicht lesbar ist: Platte als Xref (Inhalt in anderer Datei) → Löcher ausgelassen und gemeldet
+        var xref = G((0, "BLOCK"), (8, "0"), (2, "PLATTE"), (70, 4), (10, 0), (20, 0), (30, 0)) + G((0, "ENDBLK"), (8, "0"));
+        // (Ausdehnung einer externen Zeichnung unbekannt → überall unsicher: nichts wird gefräst, jede Kontur gemeldet)
+        var rx = Assert.Throws<InvalidOperationException>(() => Cam(Dxf(G((0, "INSERT"), (8, "0"), (2, "PLATTE"), (10, 0), (20, 0), (30, 0)) + Circle(30, 30, 8) + Circle(70, 30, 8) + Lw(Rect(200, 0, 230, 20)), xref)));
+        Assert.Equal(4, rx.Message.Split("ausgelassen: nicht gelesenes Element Blockverweis „PLATTE“ (externe Zeichnung)").Length);
+    }
+
+    /// <summary>T-0760: Ausdehnung der aufgelösten Elemente (fein abgetastet).</summary>
+    static CadDxf.Box Ext(CadDrawing d)
+    {
+        var b = CadDxf.Box.Empty;
+        foreach (var e in d.Entities) foreach (var q in e.Outline(4096)) b = b.With(q);
+        return b;
     }
 
     [Fact(DisplayName = "T-0747-fix5 M2: Ausdehnung eines Blockverweises mit Drehung, Skalierung, Spiegelung (−Z), verschachtelt und als Feld (MINSERT)")]
@@ -91,18 +103,21 @@ public class T0747_Fix5FuenftePruefung(ITestOutputHelper log)
         var blocks = G((0, "BLOCK"), (8, "0"), (2, "A"), (70, 0), (10, 10), (20, 0), (30, 0)) + Lw(Rect(10, 0, 20, 10)) + G((0, "ENDBLK"), (8, "0"))
             + G((0, "BLOCK"), (8, "0"), (2, "B"), (70, 0), (10, 0), (20, 0), (30, 0)) + G((0, "INSERT"), (8, "0"), (2, "A"), (10, 100), (20, 0), (30, 0)) + Circle(0, 0, 5) + G((0, "ENDBLK"), (8, "0"));
         static CadDxf.Box One(string blocks, string ins) => Assert.Single(CadDxf.Parse(Dxf(ins, blocks)).Unread).B;
+        // T-0760: aufgelöste Blöcke – gleiche Lage wie früher die gemeldete Ausdehnung, jetzt als echte Elemente (nichts mehr nicht gelesen)
+        static CadDxf.Box Read(string blocks, string ins) { var rd = CadDxf.Parse(Dxf(ins, blocks)); Assert.Empty(rd.Unread); return Ext(rd.Drawing); }
         // A: Basis (10/0) → Inhalt 0…10 × 0…10 relativ; eingesetzt bei (50/50), Faktor 2, 90° gedreht → x 30…50, y 50…70
-        var a = One(blocks, G((0, "INSERT"), (8, "0"), (2, "A"), (10, 50), (20, 50), (30, 0), (41, 2), (42, 2), (50, 90)));
+        var a = Read(blocks, G((0, "INSERT"), (8, "0"), (2, "A"), (10, 50), (20, 50), (30, 0), (41, 2), (42, 2), (50, 90)));
         Assert.Equal(30, a.MinX, 6); Assert.Equal(50, a.MaxX, 6); Assert.Equal(50, a.MinY, 6); Assert.Equal(70, a.MaxY, 6);
         // gespiegelt (Normale −Z): x → −x
-        var m = One(blocks, G((0, "INSERT"), (8, "0"), (2, "A"), (10, 50), (20, 0), (30, 0)) + MinusZ);
+        var m = Read(blocks, G((0, "INSERT"), (8, "0"), (2, "A"), (10, 50), (20, 0), (30, 0)) + MinusZ);
         Assert.Equal(-60, m.MinX, 6); Assert.Equal(-50, m.MaxX, 6);
         // verschachtelt: B enthält Kreis r 5 um 0/0 und A bei x 100 → x −5…110
-        var n = One(blocks, G((0, "INSERT"), (8, "0"), (2, "B"), (10, 0), (20, 0), (30, 0)));
+        var n = Read(blocks, G((0, "INSERT"), (8, "0"), (2, "B"), (10, 0), (20, 0), (30, 0)));
         Assert.Equal(-5, n.MinX, 6); Assert.Equal(110, n.MaxX, 6);
         // Feld: 3 Spalten im Abstand 30 → x 0…70
-        var f = One(blocks, G((0, "INSERT"), (8, "0"), (2, "A"), (10, 10), (20, 0), (30, 0), (70, 3), (71, 1), (44, 30), (45, 0)));
+        var f = Read(blocks, G((0, "INSERT"), (8, "0"), (2, "A"), (10, 10), (20, 0), (30, 0), (70, 3), (71, 1), (44, 30), (45, 0)));
         Assert.Equal(10, f.MinX, 6); Assert.Equal(80, f.MaxX, 6);
+        Assert.Equal(3, CadDxf.Parse(Dxf(G((0, "INSERT"), (8, "0"), (2, "A"), (10, 10), (20, 0), (30, 0), (70, 3), (71, 1), (44, 30), (45, 0)), blocks)).Drawing.Entities.Count);
         // Block gibt es nicht → nichts gezeichnet (leer); sich selbst enthaltender Block → Ausdehnung unbekannt, überall unsicher
         Assert.True(One(blocks, G((0, "INSERT"), (8, "0"), (2, "FEHLT"), (10, 0), (20, 0), (30, 0))).IsEmpty);
         var self = G((0, "BLOCK"), (8, "0"), (2, "S"), (70, 0), (10, 0), (20, 0), (30, 0)) + G((0, "INSERT"), (8, "0"), (2, "S"), (10, 1), (20, 0), (30, 0)) + G((0, "ENDBLK"), (8, "0"));
@@ -127,15 +142,18 @@ public class T0747_Fix5FuenftePruefung(ITestOutputHelper log)
         for (var i = 0; i < 50_000; i++) sb.Append(Circle(i % 250 * 10, i / 250 * 10, 3));
         sb.Append(Circle(0, 0, 3)); // ein Doppel
         var cs = CncCam.Contours(CadDxf.Parse(Dxf(sb.ToString())).Drawing);
-        var sw = Stopwatch.StartNew(); var r = CncCam.Generate(cs, new CamSettings { ToolD = 1, Depth = 1, StepDown = 1 }); var ms = sw.ElapsedMilliseconds;
-        log.WriteLine($"50 001 Kreise: {ms} ms, {r.Paths.Count} Bahnen, {r.Warnings.Count} Hinweise");
+        CamResult r = null!;
+        var m = Lastmessung.Measure(() => r = CncCam.Generate(cs, new CamSettings { ToolD = 1, Depth = 1, StepDown = 1 }), parallel: true);
+        log.WriteLine($"50 001 Kreise: {r.Paths.Count} Bahnen, {r.Warnings.Count} Hinweise");
         Assert.Equal(50_000, r.Paths.Count); Assert.Contains(r.Warnings, w => w.Contains("doppelt gezeichnet", StringComparison.Ordinal));
-        // T-0747-fix8: unter Fremdlast (Volltest, andere Läufe) dauert es länger – Grenze großzügig, Messwert im Log (einzeln etwa 20 s)
-        Assert.True(ms < 120_000, $"{ms}");
-        using var cts = new CancellationTokenSource(); cts.CancelAfter(200); sw.Restart();
-        Assert.ThrowsAny<OperationCanceledException>(() => CncCam.Generate(cs, new CamSettings { ToolD = 1, Depth = 1, StepDown = 1 }, cts.Token));
-        log.WriteLine($"Abbrechen nach 0,2 s: {sw.ElapsedMilliseconds} ms");
-        Assert.True(sw.ElapsedMilliseconds < 10_000, $"Abbrechen {sw.ElapsedMilliseconds} ms"); // T-0747-fix8: lastrobust (einzeln unter 1 s)
+        // T-0747-fix8: Grenze großzügig (einzeln etwa 20 s); T-0760: unter Fremdlast × gemessener Lastfaktor statt Fehlschlag
+        Lastmessung.Below(log, "50 001 Kreise", m, 120_000);
+        var c = Lastmessung.Measure(() =>
+        {
+            using var cts = new CancellationTokenSource(); cts.CancelAfter(200);
+            Assert.ThrowsAny<OperationCanceledException>(() => CncCam.Generate(cs, new CamSettings { ToolD = 1, Depth = 1, StepDown = 1 }, cts.Token));
+        }, parallel: true);
+        Lastmessung.Below(log, "Abbrechen nach 0,2 s", c, 10_000); // T-0747-fix8: einzeln unter 1 s
     }
 
     // ---------- N2–N6 ----------

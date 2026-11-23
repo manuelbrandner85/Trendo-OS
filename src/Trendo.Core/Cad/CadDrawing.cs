@@ -99,7 +99,7 @@ public sealed class CadEntity
 
 /// <summary>T-0691: DXF lesen und schreiben (ASCII, Gruppencode-Paare). Gelesen werden LINE, LWPOLYLINE, POLYLINE/VERTEX, CIRCLE, ARC, TEXT, MTEXT
 /// samt Ebenentabelle; anderes (Bemaßung, Schraffur, Blöcke, Splines) wird gezählt und gemeldet, nicht still verworfen.</summary>
-public static class CadDxf
+public static partial class CadDxf
 {
     static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
@@ -172,7 +172,11 @@ public static class CadDxf
         pairs.RemoveAll(x => x.Code == 999); // T-0747-fix5: Kommentare überall überspringen (z. B. zwischen $INSUNITS und dem Wert)
         string section = ""; var p = 0; var units = 0; var kUnits = 1.0;
         string? curBlock = null; var blocks = new Dictionary<string, BlockInfo>(StringComparer.OrdinalIgnoreCase); var unread = new List<(string What, Box B)>();
-        var pendingInserts = new List<(int Index, List<(int Code, string Value)> Body)>(); // T-0747-fix6: Ausdehnung erst am Ende (Blöcke dürfen nach ENTITIES stehen)
+        var pendingInserts = new List<List<(int Code, string Value)>>(); // T-0760: Blockverweise erst am Ende auflösen (Blöcke und Ebenen dürfen nach ENTITIES stehen)
+        var frozen = new HashSet<string>(StringComparer.OrdinalIgnoreCase); // T-0760: gefrorene Ebenen – ein Blockverweis darauf zeigt nichts von seinem Inhalt
+        var mlStyles = MlineStyles(pairs); // T-0760: Mehrfachlinien-Stile (OBJECTS steht meist hinter ENTITIES)
+        var boxMemo = new Dictionary<string, Box>(StringComparer.OrdinalIgnoreCase);
+        double insertWork = 0; var costMemo = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
         long ellipsePoints = 0;
         var fills = new List<(int Index, List<(double X, double Y)>? Shape, string Layer, int Serial, bool Ambiguous)>(); // T-0747-fix7: Füllflächen-Schleifen (fix8: alle, Form wo bestimmbar)
         var fillKinds = new List<string>(); var fillCircles = new Dictionary<int, (double Cx, double Cy, double R)>(); var invisibleFills = new HashSet<int>();
@@ -182,9 +186,10 @@ public static class CadDxf
         {
             if (depth > 16) return Box.All; // zu tief (oder im Kreis) verschachtelt → Ausdehnung unbekannt, überall unsicher
             if (!blocks.TryGetValue(name, out var bi)) return Box.Empty; // Block gibt es nicht: es wird nichts gezeichnet
+            if (boxMemo.TryGetValue(name, out var known)) return known; // T-0760: je Block einmal (sonst exponentiell bei 10 × 10 × … verschachtelten Verweisen)
             var box = bi.Box;
             foreach (var ins in bi.Inserts) box = box.Union(InsertBox(ins, depth + 1));
-            return box;
+            return boxMemo[name] = box; // in tiefer Verschachtelung ggf. „überall“ – vorsichtig, auch für flachere Aufrufe
         }
         Box InsertBox(List<(int Code, string Value)> ib, int depth)
         {
@@ -221,41 +226,62 @@ public static class CadDxf
             if (section == "TABLES" && val == "LAYER")
             {
                 var name = Str(body, 2);
-                if (name is { Length: > 0 }) { var l = d.Layer(name); var c = Int(body, 62, 7); l.Color = Math.Abs(c) is >= 1 and <= 255 ? Math.Abs(c) : 7; l.Visible = c >= 0 && (Int(body, 70, 0) & 1) == 0; } // T-0747-fix4: ausgeschaltet (Farbe < 0) oder gefroren (Flag 1) = unsichtbar
+                if (name is { Length: > 0 })
+                {
+                    var l = d.Layer(name); var c = Int(body, 62, 7); l.Color = Math.Abs(c) is >= 1 and <= 255 ? Math.Abs(c) : 7; l.Visible = c >= 0 && (Int(body, 70, 0) & 1) == 0; // T-0747-fix4: ausgeschaltet (Farbe < 0) oder gefroren (Flag 1) = unsichtbar
+                    if ((Int(body, 70, 0) & 1) != 0) frozen.Add(name);
+                }
                 continue;
             }
             if (section != "ENTITIES" && section != "BLOCKS") continue;
-            // T-0747-fix5: unsinnige Zahlen (NaN, unendlich, |Wert| > 1e9 mm) – nur dieses Element verwerfen und melden
+            var sane = val is "BLOCK" or "ENDBLK" or "SEQEND" || SaneNumbers(body, kUnits);
+            if (section == "BLOCKS")
+            {
+                // T-0747-fix5: Ausdehnung des Blockinhalts merken (Ersatz, falls ein Verweis nicht aufgelöst werden kann).
+                // T-0760: zusätzlich jedes Element samt Stützpunkten aufheben – beim Auflösen eines Verweises wird es wie in ENTITIES gelesen.
+                if (val == "BLOCK")
+                {
+                    curBlock = Str(body, 2) ?? ""; blocks[curBlock] = new BlockInfo(Num(body, 10), Num(body, 20));
+                    if ((Int(body, 70, 0) & (4 | 8)) != 0) { blocks[curBlock].Add(Box.All); blocks[curBlock].Xref = true; } // T-0747-fix6: Xref – Inhalt steht in einer anderen Datei, Ausdehnung unbekannt
+                    continue;
+                }
+                if (val == "ENDBLK") { curBlock = null; continue; }
+                List<List<(int Code, string Value)>> bv = [];
+                if (val == "POLYLINE") { if (sane) bv = ReadVertexBodies(pairs, ref p); else SkipVertices(pairs, ref p); }
+                if (curBlock is not null && blocks.TryGetValue(curBlock, out var bi))
+                {
+                    if (!sane) { if (!NoOutline.Contains(val)) bi.Add(Box.All); } // T-0747-fix6: Lage unbekannt
+                    else if (val == "INSERT") bi.Inserts.Add(body);
+                    else bi.Add(ShapeBox(val, body, bv, kUnits)); // T-0747-fix6: mit Ausbuchtungen und Normale
+                    bi.Recs.Add((val, body, bv));
+                }
+                continue;
+            }
+            // T-0747-fix5: unsinnige Zahlen (NaN, unendlich, |Wert| > 1e9 mm) – nur dieses Element verwerfen und melden (in Entity)
+            List<List<(int Code, string Value)>> verts = [];
+            if (val == "POLYLINE") { if (!sane || (Int(body, 70, 0) & (16 | 64)) != 0) SkipVertices(pairs, ref p); else verts = ReadVertexBodies(pairs, ref p); }
+            if (val == "INSERT" && sane) { pendingInserts.Add(body); continue; }
+            Entity(val, body, verts, null);
+        }
+        // T-0760: Blockverweise auflösen – jetzt sind alle Blöcke, Ebenen und Stile bekannt
+        foreach (var ib in pendingInserts) { ct.ThrowIfCancellationRequested(); Insert(ib, null); }
+
+        // ---- ein Element lesen (ENTITIES oder, mit ctx, aus einer Blockdefinition beim Auflösen eines Verweises) ----
+        void Entity(string val, List<(int Code, string Value)> body, List<List<(int Code, string Value)>> verts, InsCtx? ctx)
+        {
             if (val is not ("BLOCK" or "ENDBLK" or "SEQEND") && !SaneNumbers(body, kUnits))
             {
                 Count(skipped, $"{KindLabel(val)} mit ungültiger Koordinate"); // T-0747-fix16: Schlüssel deutsch wie die Meldung
                 // T-0747-fix6: wo das Element liegt, ist unbekannt – kann es einen Umriss bilden, gilt die ganze Zeichnung als unsicher
-                if (section == "BLOCKS") { if (curBlock is not null && blocks.TryGetValue(curBlock, out var bx) && !NoOutline.Contains(val)) bx.Add(Box.All); }
-                else if (OutlineCapable(val, body)) unread.Add(($"{KindLabel(val)} mit ungültiger Koordinate", Box.All)); // T-0747-fix15: deutsche Bezeichnung in Meldungen
-                if (val == "POLYLINE") SkipVertices(pairs, ref p);
-                continue;
+                if (OutlineCapable(val, body)) unread.Add(($"{KindLabel(val)} mit ungültiger Koordinate", Box.All)); // T-0747-fix15: deutsche Bezeichnung in Meldungen
+                return;
             }
-            if (section == "BLOCKS")
-            {
-                // T-0747-fix5: Blockinhalt nicht übernehmen, aber seine Ausdehnung merken (für INSERT: wo liegt nicht Gelesenes?)
-                if (val == "BLOCK")
-                {
-                    curBlock = Str(body, 2) ?? ""; blocks[curBlock] = new BlockInfo(Num(body, 10), Num(body, 20));
-                    if ((Int(body, 70, 0) & (4 | 8)) != 0) blocks[curBlock].Add(Box.All); // T-0747-fix6: Xref – Inhalt steht in einer anderen Datei, Ausdehnung unbekannt
-                    continue;
-                }
-                if (val == "ENDBLK") { curBlock = null; continue; }
-                Count(skipped, "Element in Blockdefinition");
-                if (curBlock is not null && blocks.TryGetValue(curBlock, out var bi))
-                {
-                    if (val == "INSERT") bi.Inserts.Add(body);
-                    else if (val == "POLYLINE") bi.Add(ShapeBox(val, body, ReadVertexBodies(pairs, ref p), kUnits)); // T-0747-fix6: mit Ausbuchtungen und Normale
-                    else bi.Add(ShapeBox(val, body, [], kUnits));
-                }
-                else if (val == "POLYLINE") SkipVertices(pairs, ref p);
-                continue;
-            }
+            if (val == "INSERT") { Insert(body, ctx); return; }
+            if (ctx is not null && val == "ATTDEF") return; // T-0760: Attributdefinition – erscheint im eingefügten Block nicht (Attribute selbst liest Trendo nicht)
+            var ub = unread.Count; var fb0 = fills.Count; var before = d.Entities.Count;
+            var kEff = kUnits * (ctx?.M.SMax ?? 1); // T-0760: Abtast-Toleranz bezogen auf die spätere Größe (Blöcke dürfen vergrößert sein)
             var layer = Str(body, 8) is { Length: > 0 } ln ? ln : "0";
+            if (ctx is not null && layer == "0") layer = ctx.Layer; // T-0760: Elemente auf Ebene 0 nehmen im Block die Ebene des Verweises an
             // T-0747-fix4: Extrusionsrichtung (210/220/230). CIRCLE, ARC, LWPOLYLINE und 2D-POLYLINE liegen im Objekt-Koordinatensystem; bei der
             // Normale (0,0,−1) ist Welt-x = −x (gespiegelt, Bogenrichtung umgekehrt). Schräge Normalen liegen nicht in der Zeichenebene → nicht gelesen, gemeldet.
             // T-0747-fix5: 3D-Polylinien (Flag 8) und Netze (16/64) liegen in Weltkoordinaten wie LINE – dort gilt die Normale nicht.
@@ -268,13 +294,11 @@ public static class CadDxf
                 if (el <= 1e-12 || Math.Abs(ex) > 1e-9 || Math.Abs(ey) > 1e-9)
                 {
                     Count(skipped, $"{KindLabel(val)} nicht in der Zeichenebene");
-                    var vbs = val == "POLYLINE" ? ReadVertexBodies(pairs, ref p) : [];
-                    unread.Add(($"{KindLabel(val)} (nicht in der Zeichenebene)", ShapeBox(val, body, vbs, kUnits)));
-                    continue;
+                    unread.Add(($"{KindLabel(val)} (nicht in der Zeichenebene)", ShapeBox(val, body, verts, kUnits)));
+                    goto done;
                 }
                 flip = ez < 0;
             }
-            var before = d.Entities.Count;
             // T-0747-fix13: Punktgruppen streng – fehlt ein y, ist ein Punkt doppelt oder steht ein y ohne x, wird nicht still mit 0 gerechnet:
             // das Element wird nicht gelesen und gilt überall als unsicher
             void Incomplete() { Count(skipped, $"{KindLabel(val)} mit unvollständigen Punkten"); unread.Add(($"{KindLabel(val)} mit unvollständigen Punkten", Box.All)); }
@@ -304,10 +328,10 @@ public static class CadDxf
                 case "POLYLINE":
                 {
                     var flags = Int(body, 70, 0);
-                    if ((flags & (16 | 64)) != 0) { Count(skipped, "3D-Netz (Polylinie)"); SkipVertices(pairs, ref p); break; }
+                    if ((flags & (16 | 64)) != 0) { Count(skipped, "3D-Netz (Polylinie)"); break; } // Stützpunkte schon übersprungen
                     var e = new CadEntity { Kind = "polylinie", Layer = layer, Closed = (flags & 1) == 1 };
                     var bad = false;
-                    foreach (var vb in ReadVertexBodies(pairs, ref p))
+                    foreach (var vb in verts)
                     {
                         if (!SaneNumbers(vb, kUnits)) { bad = true; continue; }
                         // T-0747-fix5: PEDIT-Spline (Flag 4): Rahmenpunkte (Vertex-Flag 16) sind unsichtbar – nur die Kurvenpunkte zählen
@@ -352,7 +376,7 @@ public static class CadDxf
                     var t0 = t0r % (2 * Math.PI);
                     var sgn = flip ? -1 : 1; // Normale −Z: Nebenachse zeigt in die andere Richtung
                     double bx = -ay * ratio * sgn, by = ax * ratio * sgn;
-                    var dt = Math.Sqrt(8 * (0.001 / kUnits) / Math.Max(a, b));
+                    var dt = Math.Sqrt(8 * (0.001 / kEff) / Math.Max(a, b));
                     var nD = Math.Ceiling(sweep / dt);
                     if (!(nD <= MaxEllipsePoints) || ellipsePoints + nD > MaxEllipsePointsTotal)
                     {
@@ -377,14 +401,28 @@ public static class CadDxf
                     flip = false; // schon in Weltkoordinaten gerechnet
                     break;
                 }
-                case "INSERT":
-                    Count(skipped, val);
-                    unread.Add(($"Blockverweis „{Str(body, 2)}“", Box.Empty)); pendingInserts.Add((unread.Count - 1, body));
-                    break;
                 case "SPLINE":
-                    Count(skipped, val);
-                    unread.Add((KindLabel("SPLINE"), ShapeBox(val, body, [], kUnits)));
+                {
+                    // T-0760: NURBS aus Kontrollpunkten, Knoten und Gewichten abtasten (Sehnenfehler ≤ 0,001 mm); was nicht sicher bestimmbar ist, bleibt gemeldet
+                    var sp = ReadSpline(body, 0.001 / kEff, Math.Min(MaxEllipsePoints, MaxEllipsePointsTotal - ellipsePoints), kUnits);
+                    if (sp.Pts is null)
+                    {
+                        Count(skipped, val);
+                        unread.Add((sp.Why is { } why ? $"{KindLabel("SPLINE")} – {why}" : KindLabel("SPLINE"), sp.Box));
+                        break;
+                    }
+                    ellipsePoints += sp.Pts.Count;
+                    d.Entities.Add(new CadEntity { Kind = "polylinie", Layer = layer, Closed = sp.Closed, Points = sp.Pts, Source = "SPLINE" });
                     break;
+                }
+                case "MLINE":
+                {
+                    // T-0760: Mehrfachlinie – je Linie des Stils ein Zug (Lage aus den Gehrungs-Abständen, gegen die Stil-Abstände geprüft), dazu Enden und Gehrungen
+                    var ml = ReadMline(body, mlStyles, layer, kUnits);
+                    if (ml.Ents is null) { Count(skipped, val); unread.Add(($"{KindLabel("MLINE")} – {ml.Why}", ml.Box)); break; }
+                    d.Entities.AddRange(ml.Ents);
+                    break;
+                }
                 case "TEXT":
                 {
                     // ausgerichteter Text: Ausrichtungspunkt (11/21) gilt, sobald eine Ausrichtung gesetzt ist
@@ -408,7 +446,7 @@ public static class CadDxf
                     {
                         // T-0747-fix7: je Randschleife ein Eintrag (Inseln einzeln); Schleifen mit bestimmbarer Form werden am Ende mit den gezeichneten Konturen verglichen
                         var loops = FillLoops(val, body, kUnits, shapeBudget, ct);
-                        var invisibleFill = IntSafe(body, 60) == 1; // einmal (nicht je Schleife den ganzen Körper durchsuchen)
+                        var invisibleFill = IntSafe(body, 60) == 1 || ctx?.Invisible == true; // einmal (nicht je Schleife den ganzen Körper durchsuchen)
                         if (loops is null) unread.Add((KindLabel(val), Box.All)); // T-0747-fix10: deutsche Bezeichnung (Schraffur, Abdeckfläche …)
                         else
                         {
@@ -427,10 +465,89 @@ public static class CadDxf
                     break;
             }
             if (flip) for (var i = before; i < d.Entities.Count; i++) Mirror(d.Entities[i]); // T-0747-fix4
-            if (IntSafe(body, 60) == 1) for (var i = before; i < d.Entities.Count; i++) d.Entities[i].Invisible = true; // T-0747-fix11: unsichtbar
-            _ = start;
+            done:
+            if (IntSafe(body, 60) == 1 || ctx?.Invisible == true) for (var i = before; i < d.Entities.Count; i++) d.Entities[i].Invisible = true; // T-0747-fix11: unsichtbar
+            if (ctx is not null) Place(ctx, before, ub, fb0);
         }
-        foreach (var (idx, ib) in pendingInserts) unread[idx] = (unread[idx].What, InsertBox(ib, 0));
+
+        // T-0760: Ergebnis eines Elements aus einem Block an seinen Platz bringen (Einfügepunkt, Skalierung, Drehung, Spiegelung, Feld).
+        // Ähnlichkeitsabbildungen behalten Kreise, Bögen und Ausbuchtungen; ungleiche Skalierung tastet sie fein ab (≤ 0,001 mm).
+        void Place(InsCtx ctx, int before, int ub, int fb0)
+        {
+            var m = ctx.M; var tolLocal = 0.001 / (kUnits * m.SMax); var bad = false;
+            for (var i = before; i < d.Entities.Count; i++) if (!MapEntity(d.Entities[i], m, tolLocal, kUnits)) bad = true;
+            if (bad)
+            {
+                d.Entities.RemoveRange(before, d.Entities.Count - before);
+                Count(skipped, "Blockverweis (INSERT) mit ungültiger Koordinate"); unread.Add(($"Blockverweis „{ctx.Block}“ mit ungültiger Koordinate", Box.All));
+            }
+            for (var j = ub; j < unread.Count; j++) unread[j] = (unread[j].What, m.MapBox(unread[j].B));
+            var sim = m.Similar(out var s) && s <= 1 + 1e-9; // Form der Füllfläche bleibt nur bei Ähnlichkeit ohne Vergrößerung (Zerlegungsfehler wächst sonst mit)
+            for (var j = fb0; j < fills.Count; j++)
+            {
+                var f = fills[j];
+                fills[j] = f with { Shape = sim && f.Shape is { } sh ? sh.Select(q => m.Map(q.X, q.Y)).ToList() : null };
+                if (fillCircles.TryGetValue(f.Index, out var c)) { if (sim) { var (x, y) = m.Map(c.Cx, c.Cy); fillCircles[f.Index] = (x, y, c.R * s); } else fillCircles.Remove(f.Index); }
+            }
+        }
+
+        // T-0760: Blockverweis auflösen – verschachtelt (Tiefe ≤ 16, Zyklen erkannt), als Feld (Spalten/Zeilen), mit Arbeitsgrenze.
+        // Was nicht sicher geht (Block fehlt, Xref, schräge Normale, unsinnige Faktoren, zu groß), bleibt wie bisher gemeldet – mit vorsichtiger Ausdehnung.
+        void Insert(List<(int Code, string Value)> ib, InsCtx? parent)
+        {
+            var name = Str(ib, 2) ?? ""; var label = $"Blockverweis „{name}“"; var pm = parent?.M ?? Xf.Id; var depth = parent?.Depth ?? 0;
+            void Fail(string why, Box local) { Count(skipped, "INSERT"); unread.Add((why.Length > 0 ? $"{label} ({why})" : label, pm.MapBox(local))); }
+            if (!blocks.TryGetValue(name, out var bi)) { Count(skipped, "INSERT"); unread.Add((label, Box.Empty)); return; } // Block fehlt: es wird nichts gezeichnet
+            if (bi.Xref) { Fail("externe Zeichnung", Box.All); return; }
+            for (var up = parent; up is not null; up = up.Up) if (up.Block.Equals(name, StringComparison.OrdinalIgnoreCase)) { Fail("im Kreis verschachtelt", Box.All); return; }
+            if (depth >= 16) { Fail("zu tief verschachtelt", Box.All); return; }
+            var fx = 1.0;
+            if (Has(ib, 210) || Has(ib, 220) || Has(ib, 230))
+            {
+                double ex = Num(ib, 210), ey = Num(ib, 220), ez = Num(ib, 230, 1), el = Math.Sqrt(ex * ex + ey * ey + ez * ez);
+                if (!(el > 1e-12) || Math.Abs(ex / el) > 1e-9 || Math.Abs(ey / el) > 1e-9) { Fail("nicht in der Zeichenebene", Box.All); return; }
+                if (ez < 0) fx = -1; // Normale −Z: x gespiegelt
+            }
+            double sx = Num(ib, 41, 1), sy = Num(ib, 42, 1), rot = Num(ib, 50) * Math.PI / 180, ix = Num(ib, 10), iy = Num(ib, 20), cs = Num(ib, 44), rs = Num(ib, 45);
+            int cols = Math.Max(1, Int(ib, 70, 1)), rows = Math.Max(1, Int(ib, 71, 1));
+            if (!(Math.Abs(sx) is >= 1e-9 and <= 1e6) || !(Math.Abs(sy) is >= 1e-9 and <= 1e6) || cols > 32767 || rows > 32767) { Fail("unsinnige Skalierung oder Feldgröße", InsertBox(ib, 0)); return; }
+            var cost = Cost(name, 0) * cols * rows;
+            if (insertWork + cost > MaxInsertWork) { Fail("zu groß zum Auflösen", InsertBox(ib, 0)); return; }
+            insertWork += cost;
+            var il = Str(ib, 8) is { Length: > 0 } l0 ? l0 : "0"; if (parent is not null && il == "0") il = parent.Layer;
+            var inv = parent?.Invisible == true || IntSafe(ib, 60) == 1 || frozen.Contains(il); // gefrorene Ebene: der ganze Inhalt ist unsichtbar
+            double cr = Math.Cos(rot), sr = Math.Sin(rot);
+            for (var c = 0; c < cols; c++)
+                for (var r = 0; r < rows; r++)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    // lokal: (x − Basis)·Faktor + Feldabstand, gedreht, verschoben, bei Normale −Z gespiegelt
+                    double ox = c * cs - bi.BaseX * sx, oy = r * rs - bi.BaseY * sy;
+                    var local = new Xf(fx * cr * sx, -fx * sr * sy, sr * sx, cr * sy, fx * (ix + cr * ox - sr * oy), iy + sr * ox + cr * oy);
+                    var ctx = new InsCtx(pm.After(local), il, inv, depth + 1, name, parent);
+                    foreach (var rec in bi.Recs) Entity(rec.Val, rec.Body, rec.Verts, ctx);
+                }
+        }
+
+        // T-0760: Arbeit (Gruppen) eines Verweises auf den Block, verschachtelt; Kreise zählen einfach (sie werden gemeldet)
+        double Cost(string name, int depth)
+        {
+            if (costMemo.TryGetValue(name, out var v)) return v;
+            if (depth > 17 || !blocks.TryGetValue(name, out var bi)) return 1;
+            costMemo[name] = 1; // vorläufig – schützt vor Zyklen
+            double sum = 0;
+            foreach (var rec in bi.Recs)
+            {
+                if (rec.Val == "INSERT")
+                {
+                    double n = Math.Clamp(Int(rec.Body, 70, 1), 1, 32767) * (double)Math.Clamp(Int(rec.Body, 71, 1), 1, 32767);
+                    sum += 1 + n * Cost(Str(rec.Body, 2) ?? "", depth + 1);
+                }
+                else sum += rec.Body.Count + rec.Verts.Sum(x => x.Count);
+                if (sum > 1e18) { sum = 1e18; break; }
+            }
+            return costMemo[name] = sum;
+        }
         foreach (var name in d.Entities.Select(e => e.Layer).Distinct().ToList()) d.Layer(name);
         var hiddenUnsure = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         var hiddenFills = new Dictionary<string, int>(); var hiddenKinds = new Dictionary<string, int>(); var hiddenLayers = new Dictionary<string, Dictionary<string, int>>(StringComparer.OrdinalIgnoreCase);
@@ -500,6 +617,9 @@ public static class CadDxf
     {
         public double BaseX = bx, BaseY = by; public Box Box = Box.Empty; public List<List<(int Code, string Value)>> Inserts = [];
         public void Add(Box b) => Box = Box.Union(b);
+        /// <summary>T-0760: die Elemente der Blockdefinition (Art, Gruppen, bei POLYLINE die Stützpunkte) – beim Auflösen eines Verweises gelesen.</summary>
+        public List<(string Val, List<(int Code, string Value)> Body, List<List<(int Code, string Value)>> Verts)> Recs = [];
+        public bool Xref;
     }
 
     /// <summary>T-0747-fix5: alle Zahlen eines Elements brauchbar? (keine NaN/∞, Koordinaten und Radien höchstens 1e9 mm)</summary>
