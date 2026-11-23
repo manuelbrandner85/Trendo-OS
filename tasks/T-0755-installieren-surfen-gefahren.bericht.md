@@ -117,4 +117,17 @@ Echter winget-Lauf weiterhin **NICHT GETESTET – braucht Lauf durch den Nutzer.
 **Echtlauf** (nur Zählungen): 174 Einträge, Rot 15, Gelb 58, Grün 101. Neu rot: zwei eigene Aufgaben, die ein Node-Programm aus dem Benutzerordner mit einem Skript daneben starten. Keine Windows-Aufgabe rot.
 **Hinweis für den Nutzer (Ergänzung):** Auch Programme, die selbst im Benutzerordner liegen und ein Skript aus ihrem Ordner starten (z. B. ein dort entpacktes Node), erscheinen rot. Die Systemprüfung ist eine **Hinweis-Ampel, keine Virenprüfung**.
 
+## Viertprüfung behoben (Fix4 auf d09aea8ba)
+
+| Befund | Lösung | Test |
+|---|---|---|
+| MITTEL (Rückschritt): manipulierte Update.exe (Signatur ungültig) mit `--processStart chat.exe` gelb statt rot, auch mit `--process-start-args "http://…"` | „Signatur ungültig“ wird jetzt vor dem Squirrel- und dem Werkzeug-Zweig geprüft → rot. Der Squirrel-Zweig prüft zusätzlich Netzadressen in allen Argumenten → rot „Lädt aus dem Netz“. Ohne Adresse und mit gültiger Signatur bleibt Squirrel gelb. | `T0755_Fix4.Tampered_update_exe_is_red` – echte Kopie der eingebettet signierten dotnet.exe als `Update.exe`, ein Byte verändert, echte Prüfung „Ungueltig“; Kopie danach gelöscht. `Invalid_signature_before_tool_branch` |
+| NIEDRIG: „Versteckter Befehl“ auch bei `node.exe -e …`, `dotnet.exe /e:…` | Gilt nur noch, wenn das gestartete Programm PowerShell ist (powershell.exe/pwsh.exe, erkannt auch über den Originalnamen); geprüft werden die Argumente. | `T0755_Fix4.Encoded_only_for_powershell` |
+| Optional: dotnet ohne Argumente bzw. `--info` | Eigener Text „zeigt nur Informationen über .NET an … lädt keine Bibliothek“. | dieselbe Testmethode |
+| Optional: Kopfhinweis in der CSV | **Nicht gemacht.** Eine `#`-Zeile oder ein Zusatzfeld würde Excel als Datenzeile bzw. Spalte anzeigen; ein Öffnen in Excel und LibreOffice konnte ich hier nicht prüfen. Der Hinweis steht weiter in der HTML-Fassung und auf der Seite. | – |
+
+**Rot-Grün:** Die drei neuen Tests liefen zuerst unverändert gegen d09aea8ba und schlugen fehl (Update.exe: „Gelb“ statt „Rot“), Beleg `reports/T-0755/core-tests-fix4-rot-auf-d09aea8ba.txt`; danach grün.
+**Tests:** Core T0755*, W3, PromptActionTests, DownloadQueue, NoFixedUser, SYS04: 120/120. App `T0755_Ui`, `SPEC12_Ui`, `SYS04_Ui`, `W1_Web`, `ForensikYara_Ui`, `StudiosAlle_Ui`: 110/110.
+**Echtlauf** (nur Zählungen): 174 Einträge, Rot 15, Gelb 58, Grün 101 – unverändert gegenüber d09aea8ba. Keine Windows-Aufgabe rot.
+
 **Status:** Umsetzung fertig und gezielt getestet; SYS-04-Echtlauf offen.

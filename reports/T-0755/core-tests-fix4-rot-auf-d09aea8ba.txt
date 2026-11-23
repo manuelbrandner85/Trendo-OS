@@ -1,0 +1,10 @@
+[xUnit.net 00:00:04.11]     T-0755 Fix4 NIEDRIG: „Versteckter Befehl“ nur bei PowerShell – node -e und dotnet /e: nicht; dotnet --info mit passendem Text [FAIL]
+[xUnit.net 00:00:04.12]     T-0755 Fix4: ungültige Signatur bei einem Windows-Werkzeug ist rot (vor dem Werkzeug-Zweig) [FAIL]
+[xUnit.net 00:00:04.18]     T-0755 Fix4 MITTEL (echte Datei): manipulierte Update.exe (ein Byte verändert, Signatur ungültig) mit --processStart ist rot, auch mit Adresse in --process-start-args [FAIL]
+Expected: Not "Versteckter Befehl"
+Actual:       "Versteckter Befehl"
+Expected: Rot
+Actual:   Gelb
+Expected: Rot
+Actual:   Gelb
+Fehler!      : Fehler:     3, erfolgreich:     0, übersprungen:     0, gesamt:     3, Dauer: 181 ms - Trendo.Core.Tests.dll (net10.0)

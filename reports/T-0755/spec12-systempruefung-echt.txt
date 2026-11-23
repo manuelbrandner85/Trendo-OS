@@ -1,5 +1,5 @@
-T-0755 SPEC-12 Echtlauf nach der Drittprüfung (Fix3), Windows 11, nur lesend, 23.11.2026 04:29. Nur Zählungen – keine Programmnamen oder Pfade (Datenschutz).
-Verlauf: 8fe0c0a79 Rot 1/Gelb 59/Grün 114 · d810ffd3b Rot 11/Gelb 63/Grün 100 · acda02ef0 Rot 13/Gelb 60/Grün 101 · Fix3 siehe unten.
+T-0755 SPEC-12 Echtlauf nach der Viertprüfung (Fix4), Windows 11, nur lesend, 23.11.2026 04:39. Nur Zählungen – keine Programmnamen oder Pfade (Datenschutz).
+Verlauf: 8fe0c0a79 Rot 1/Gelb 59/Grün 114 · d810ffd3b Rot 11/Gelb 63/Grün 100 · acda02ef0 Rot 13/Gelb 60/Grün 101 · d09aea8ba Rot 15/Gelb 58/Grün 101 · Fix4 siehe unten (unverändert).
 Systempruefung (nur lesend) - Dauer 3,0 s
 Eintraege gesamt: 174 - Rot 15 - Gelb 58 - Gruen 101 - Aufgaben ohne Programmstart: 117
   Autostart-Ordner: 1 (Rot 0, Gelb 1, Gruen 0)
@@ -15,4 +15,4 @@ Eintraege gesamt: 174 - Rot 15 - Gelb 58 - Gruen 101 - Aufgaben ohne Programmsta
   Grund Datei fehlt: 1
   Grund Nicht signiert: 1
   Grund Nicht prüfbar: 1
-Neu rot gegenüber acda02ef0: zwei eigene geplante Aufgaben, die ein Node-Programm aus dem Benutzerordner mit einem Skript daneben starten (Ausnahme „eigener Programmordner“ gilt nur noch unter Programme/Windows). Keine Windows-Aufgabe ist rot. Die Ampel ist eine Hinweis-Ampel, keine Virenprüfung.
+Keine Windows-Aufgabe ist rot. Die Ampel ist eine Hinweis-Ampel, keine Virenprüfung.

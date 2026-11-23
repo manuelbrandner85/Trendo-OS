@@ -253,25 +253,35 @@ public static partial class SystemScan
         if (place is not null)
             return new(e, s, Ampel.Rot, "Verdächtiger Ort",
                 $"„{file}“ {place}. Programme, die dauerhaft starten, liegen normalerweise unter „Programme“ oder im Windows-Ordner. Schadprogramme verstecken sich gern an solchen Orten.", fix);
-        if (Encoded().IsMatch(e.Command))
-            return new(e, s, Ampel.Rot, "Versteckter Befehl",
-                "Der Befehl enthält einen verschlüsselten (Base64-)Befehl für PowerShell. So verstecken Schadprogramme, was sie tun.", fix);
         // T-0755 (Gegenprüfung): Werkzeuge, die fremden Code laden oder ausführen – die Argumente entscheiden
         var (hostExe, args) = Split(e.Command);
         var lol = LolbinKind(hostExe, args);
         var host = Path.GetFileName(hostExe);
+        // T-0755 Fix4: „Versteckter Befehl“ nur, wenn PowerShell startet (node -e / dotnet /e: sind etwas anderes)
+        var shellName = ToolName(hostExe);
+        if ((shellName.Equals("powershell.exe", StringComparison.OrdinalIgnoreCase) || shellName.Equals("pwsh.exe", StringComparison.OrdinalIgnoreCase) || shellName.Equals("pwsh.dll", StringComparison.OrdinalIgnoreCase)
+             || host.Equals("powershell.exe", StringComparison.OrdinalIgnoreCase) || host.Equals("pwsh.exe", StringComparison.OrdinalIgnoreCase)) && Encoded().IsMatch(args))
+            return new(e, s, Ampel.Rot, "Versteckter Befehl",
+                "Der Befehl enthält einen verschlüsselten (Base64-)Befehl für PowerShell. So verstecken Schadprogramme, was sie tun.", fix);
         // T-0755 Fix2: Microsoft-signierte Kopie eines Windows-Werkzeugs außerhalb des Windows-Ordners oder unter anderem Namen
         var tool = ToolName(hostExe);
         if (WindowsTools.Contains(tool) && hostExe.Equals(e.File, StringComparison.OrdinalIgnoreCase) && s.State == SigState.Gueltig && s.Publisher is { } pub && pub.StartsWith("Microsoft", StringComparison.OrdinalIgnoreCase)
             && (!UnderWindows(hostExe) || !host.Equals(tool, StringComparison.OrdinalIgnoreCase) && !host.Contains('~')))
             return new(e, s, Ampel.Rot, "Umbenannte Windows-Datei",
                 $"„{host}“ ist in Wahrheit das Windows-Werkzeug „{tool}“, liegt aber {(UnderWindows(hostExe) ? "unter anderem Namen im Windows-Ordner" : "außerhalb des Windows-Ordners")}. Echte Programme kopieren keine Windows-Werkzeuge – so tarnen sich Schadprogramme mit einer gültigen Microsoft-Signatur.", fix);
+        // T-0755 Fix4: eine ungültige Signatur ist immer rot – vor dem Squirrel- und dem Werkzeug-Zweig
+        if (s.State == SigState.Ungueltig)
+            return new(e, s, Ampel.Rot, "Signatur ungültig",
+                $"„{file}“ trägt eine Signatur, die nicht stimmt: {s.Detail} Eine echte Firmen-Datei hat eine gültige Signatur.", fix);
         var hostDir = Path.GetDirectoryName(hostExe) ?? "";
         string Abs(string t) => Path.IsPathRooted(t) || hostDir.Length == 0 ? t : Path.Combine(hostDir, t); // relativ: vom Programmordner aus
         // T-0755 Fix3: Squirrel-Starter („Update.exe --processStart x.exe“) – das eigentliche Programm steht im Argument
         if (host.Equals("update.exe", StringComparison.OrdinalIgnoreCase) && Regex.Match(args, @"(?i)--processStart(?:AndWait)?[\s=]+""?([^""\s]+)") is { Success: true } sq)
         {
             var target = Abs(sq.Groups[1].Value);
+            if (NetTarget().Match(args) is { Success: true } sqNet) // T-0755 Fix4: auch in --process-start-args
+                return new(e, s, Ampel.Rot, "Lädt aus dem Netz",
+                    $"„{host}“ startet „{Path.GetFileName(target)}“ und gibt ihm eine Internet- oder Netzwerkadresse mit ({Short(sqNet.Value)}). So laden Schadprogramme ihren eigentlichen Teil nach.", fix);
             if (SuspiciousPlace(target) is { } sw)
                 return new(e, s, Ampel.Rot, "Verdächtiges Ziel", $"„{host}“ startet „{Path.GetFileName(target)}“, und das {sw}.", fix);
             return new(e, s, Ampel.Gelb, "Startet ein anderes Programm",
@@ -298,7 +308,8 @@ public static partial class SystemScan
                 "Installieren" => "kann Programme installieren oder fremden Code registrieren und ausführen",
                 _ => "startet andere Programme oder Bibliotheken",
             };
-            var tgt = onlyDeletes ? "Der Befehl löscht nur Dateien oder Ordner." : targets.Count == 0 ? "Ein Ziel konnte Trendo nicht ablesen." : "Ziel: " + string.Join(", ", targets.Select(t => (System.IO.File.Exists(t) ? "" : "(nicht gefunden) ") + t)) + ".";
+            var infoOnly = (host.Equals("dotnet.exe", StringComparison.OrdinalIgnoreCase) || shellName.StartsWith("dotnet.", StringComparison.OrdinalIgnoreCase)) && targets.Count == 0 && Regex.IsMatch(args, @"(?i)^\s*(--info|--version|--list-sdks|--list-runtimes|-h|--help)?\s*$");
+            var tgt = onlyDeletes ? "Der Befehl löscht nur Dateien oder Ordner." : infoOnly ? "Der Befehl zeigt nur Informationen über .NET an (z. B. --info) und lädt keine Bibliothek." : targets.Count == 0 ? "Ein Ziel konnte Trendo nicht ablesen." : "Ziel: " + string.Join(", ", targets.Select(t => (System.IO.File.Exists(t) ? "" : "(nicht gefunden) ") + t)) + ".";
             return new(e, s, Ampel.Gelb, lol == "Skript" ? "Startet ein Skript" : "Windows-Werkzeug mit Befehl",
                 $"„{host}“ ist ein echtes Werkzeug, das {what}. Das Werkzeug selbst ist echt – entscheidend ist, was es ausführt. {tgt}",
                 "Befehl lesen: Kennst du das Ziel? Wenn nicht, " + fix[(fix.IndexOf(':') + 2)..]);
