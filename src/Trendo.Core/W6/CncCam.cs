@@ -920,6 +920,36 @@ public static class CncCam
         var starts = new Dictionary<(double, double), List<int>>();
         for (var i = 0; i < valid.Count; i++) { var key = valid[i][0]; if (!starts.TryGetValue(key, out var l)) starts[key] = l = []; l.Add(i); }
         var used = new bool[valid.Count]; var loops = new List<List<(double X, double Y)>>();
+        // T-0758: gleiche Wahl wie „erstes unbenutztes Stück“ – je Startpunkt ein Zeiger hinter die schon benutzten (benutzt bleibt benutzt), und für
+        // „erstes unbenutztes Stück mit Start näher als 1e-7“ ein Raster der Startpunkte (Zelle 2e-7) statt alle Stücke durchzugehen (vorher quadratisch)
+        var head = new Dictionary<(double, double), int>();
+        int FirstUnused((double X, double Y) key, List<int> l)
+        {
+            var h = head.GetValueOrDefault(key); while (h < l.Count && used[l[h]]) h++; head[key] = h;
+            return h < l.Count ? l[h] : -1;
+        }
+        Dictionary<(long, long), List<int>>? near = null; const double nc = 2e-7;
+        static (long, long) NK((double X, double Y) q) => ((long)Math.Floor(q.X / nc), (long)Math.Floor(q.Y / nc));
+        int NearStart((double X, double Y) e)
+        {
+            if (near is null)
+            {
+                near = [];
+                for (var c = 0; c < valid.Count; c++)
+                {
+                    var q = valid[c][0];
+                    if (!double.IsFinite(q.X) || !double.IsFinite(q.Y)) continue; // nie „gleich“ (Abstand NaN oder unendlich)
+                    var k = NK(q); if (!near.TryGetValue(k, out var l)) near[k] = l = []; l.Add(c);
+                }
+            }
+            if (!double.IsFinite(e.X) || !double.IsFinite(e.Y)) return -1;
+            var (kx, ky) = NK(e); var best = -1;
+            for (var dx = -1L; dx <= 1; dx++)
+                for (var dy = -1L; dy <= 1; dy++)
+                    if (near.TryGetValue((kx + dx, ky + dy), out var l))
+                        foreach (var c in l) { if (best >= 0 && c >= best) break; if (!used[c] && Same(valid[c][0], e)) { best = c; break; } }
+            return best;
+        }
         for (var i = 0; i < valid.Count; i++)
         {
             if ((i & 255) == 0) ct.ThrowIfCancellationRequested(); // T-0758
@@ -927,8 +957,8 @@ public static class CncCam
             var chain = new List<(double X, double Y)>(valid[i]); var first = valid[i][0]; var end = valid[i][^1]; var ok = true;
             for (var guard = 0; !Same(end, first) && guard <= valid.Count; guard++)
             {
-                var nx = starts.TryGetValue(end, out var cands) ? cands.FirstOrDefault(c => !used[c], -1) : -1;
-                if (nx < 0) nx = Enumerable.Range(0, valid.Count).FirstOrDefault(c => !used[c] && Same(valid[c][0], end), -1);
+                var nx = starts.TryGetValue(end, out var cands) ? FirstUnused(end, cands) : -1;
+                if (nx < 0) nx = NearStart(end);
                 if (nx < 0) { ok = false; break; }
                 used[nx] = true; chain.AddRange(valid[nx].Skip(1)); end = valid[nx][^1];
             }
