@@ -125,7 +125,7 @@ public partial class MainWindow
             // T-0753: offene Bestellung (nicht geliefert, ohne Rechnung und Zahlung) lässt sich ändern
             var editable = o.Status == "offen" && o.StockOut == false && o.InvoiceNumber.Length == 0 && o.Payments is { Count: 0 } && o.Lines.Count == 1;
             if (editable && _sellEditOrder != oid) right.Children.Add(Act($"sell-order-edit-{i}", "Ändern", () => { _sellEditOrder = oid; Show(V); }));
-            if (live && o.Paid == 0 && o.Status != "bezahlt") right.Children.Add(Act($"sell-cancel-{i}", "Stornieren", () => SellTry(V, () => { shop.Cancel(oid, today); _core.Audit.Append(Principal.LocalOwner.Name, "shop.cancel", oid); Say("Bestellung storniert.", V); })));
+            if (live && o.Paid == 0 && o.Status != "bezahlt") right.Children.Add(Act($"sell-cancel-{i}", "Stornieren", () => SellTry(V, () => { shop.Cancel(oid, today); _core.Audit.Append(Principal.LocalOwner.Name, "shop.cancel", oid); Say(SellCancelText(shop), V); })));
             var orderCard = Card(Row(new StackPanel { Children = { new TextBlock { Text = o.Customer, Foreground = Text, FontWeight = FontWeight.SemiBold },
                 P($"{o.Date:dd.MM.yyyy} · {string.Join(", ", o.Lines.Select(l => $"{l.Qty:0.##} × {l.Product}"))}", null, 11) } }, right));
             if (editable && _sellEditOrder == oid)
@@ -141,7 +141,7 @@ public partial class MainWindow
                         shop.UpdateOrder(oid, c, (p, Finance.ParseAmount(Need(eq, "die Menge")))); _sellEditOrder = null; Say("Bestellung geändert.", V);
                     })), Act("sell-oe-cancel", "Abbrechen", () => { _sellEditOrder = null; Show(V); })) } });
             }
-            if (editable) { var eid = oid; orderCard.ContextMenu = SellMenu(($"sell-order-menu-edit-{i}", "Ändern", () => { _sellEditOrder = eid; Show(V); }), ($"sell-order-menu-cancel-{i}", "Stornieren", () => SellTry(V, () => { shop.Cancel(eid, today); Say("Bestellung storniert.", V); }))); }
+            if (editable) { var eid = oid; orderCard.ContextMenu = SellMenu(($"sell-order-menu-edit-{i}", "Ändern", () => { _sellEditOrder = eid; Show(V); }), ($"sell-order-menu-cancel-{i}", "Stornieren", () => SellTry(V, () => { shop.Cancel(eid, today); Say(SellCancelText(shop), V); }))); }
             orders.Children.Add(orderCard);
             i++;
         }

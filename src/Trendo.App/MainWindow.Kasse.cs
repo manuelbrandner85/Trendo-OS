@@ -182,7 +182,7 @@ public partial class MainWindow
                 if (_kasseCancelAsk != id) row.Children.Add(Pos(Act($"kasse-storno-{i}", "Storno …", () => { _kasseCancelAsk = id; Show(V); }), 4));
                 else row.Children.Add(Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, Children = {
                     new TextBlock { Text = "Wirklich stornieren?", Foreground = Brush.Parse("#F5A524"), VerticalAlignment = VerticalAlignment.Center },
-                    Act($"kasse-storno-yes-{i}", "Ja", () => Try(V, () => { Kasse.Cancel(id, DateTime.Now, Money); _kasseCancelAsk = null; _core.Audit.Append(Principal.LocalOwner.Name, "kasse.storno", s.No); Say($"{s.No} storniert – Bestand und Geld sind zurückgebucht.", V); }), true),
+                    Act($"kasse-storno-yes-{i}", "Ja", () => Try(V, () => { var kc = Kasse; kc.Cancel(id, DateTime.Now, Money); _kasseCancelAsk = null; _core.Audit.Append(Principal.LocalOwner.Name, "kasse.storno", s.No); Say(kc.NotRestocked.Count == 0 ? $"{s.No} storniert – Bestand und Geld sind zurückgebucht." : $"{s.No} storniert – Geld zurückgebucht. Bestand nicht zurückgebucht für {string.Join(", ", kc.NotRestocked.Select(x => "„" + x + "“"))}, den Artikel gibt es nicht mehr.", V); }), true),
                     Act($"kasse-storno-no-{i}", "Nein", () => { _kasseCancelAsk = null; Show(V); }) } }, 4));
             }
             list.Children.Add(row);

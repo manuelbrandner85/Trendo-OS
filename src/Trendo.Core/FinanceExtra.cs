@@ -167,6 +167,8 @@ public sealed partial class Shop(string dataRoot, string ideaId)
     public IdeaList<StockMove> Moves { get; } = new(dataRoot, ideaId, "lagerbewegungen");
     /// <summary>T-0753: Bons der Kasse (dieselbe Datei wie <see cref="CashRegister.Sales"/>) – für Umbenennen und die Sperre von Varianten.</summary>
     public IdeaList<CashSale> CashSales { get; } = new(dataRoot, ideaId, "kasse");
+    /// <summary>T-0753 N-c: Umbenennungen (alt → neu), damit alte Bons unverändert bleiben und beim Storno trotzdem den Artikel finden.</summary>
+    public IdeaList<RenameEntry> Renames { get; } = new(dataRoot, ideaId, "umbenennungen");
 
     /// <summary>Für Bestellungen vorgemerkt, aber noch nicht geliefert.
     /// T-0753: für einen Artikel mit Varianten zählen alle seine Varianten mit („Shirt – M“ gehört zu „Shirt“).</summary>
@@ -227,12 +229,14 @@ public sealed partial class Shop(string dataRoot, string ideaId)
         if (o.Paid > 0 && o.Payments is not null) throw new InvalidOperationException("Für diese Bestellung gibt es schon Zahlungen – bitte zuerst erstatten.");
         if (o.StockOut == true)
         {
-            var prods = Products.All();
-            RequireKnown(prods, o.Lines.Select(l => l.Product)); // T-0753: keine Rücknahme-Bewegung ohne Bestand
+            var prods = Products.All(); LastNotRestocked.Clear();
             foreach (var l in o.Lines)
             {
-                AddStock(prods, l.Product, (int)l.Qty); // T-0753: auch Varianten
-                Moves.Add(new(Guid.NewGuid().ToString("N")[..8], date, l.Product, l.Qty, o.Id, "Rücknahme"));
+                // T-0753 M-B: gibt es den Artikel bzw. die Variante nicht mehr, wird ohne Bestandsänderung storniert – sichtbar über LastNotRestocked
+                var label = Current(l.Product);
+                if (!Known(prods, label)) { LastNotRestocked.Add(l.Product); continue; }
+                AddStock(prods, label, (int)l.Qty);
+                Moves.Add(new(Guid.NewGuid().ToString("N")[..8], date, label, l.Qty, o.Id, "Rücknahme"));
             }
             Products.Save(prods);
         }

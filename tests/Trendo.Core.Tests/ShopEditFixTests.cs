@@ -71,7 +71,9 @@ public class ShopEditFixTests
             var o3 = s.PlaceOrder("Erika Muster", Day, ("Tasse", 1)); s.Deliver(o3.Id, Day);
             s.RemoveProduct("Tasse");
             var moves = s.Moves.All().Count;
-            Assert.Throws<InvalidOperationException>(() => s.Cancel(o3.Id, Day));
+            s.Cancel(o3.Id, Day); // Zweitprüfung M-B: Storno geht, ohne Bestand, sichtbar gemeldet
+            Assert.Equal("storniert", s.Orders().Single(x => x.Id == o3.Id).Status);
+            Assert.Equal(["Tasse"], s.LastNotRestocked);
             Assert.Equal(moves, s.Moves.All().Count); // keine Bewegung „+1“ ohne Bestand
         }
         finally { Directory.Delete(d, true); }
@@ -129,7 +131,7 @@ public class ShopEditFixTests
             // N3
             var f = Path.Combine(d, "z.csv");
             File.WriteAllText(f, "Title,Price\nKerze,\"1,000\"\n");
-            Assert.Contains("mehrdeutig", Assert.Throws<ArgumentException>(() => s.ImportProductsCsv(f)).Message);
+            Assert.Contains("ohne Tausenderpunkt", Assert.Throws<ArgumentException>(() => s.ImportProductsCsv(f)).Message);
             File.WriteAllText(f, "Title,Price\nKerze,1.000\n");
             Assert.Throws<ArgumentException>(() => s.ImportProductsCsv(f));
             // N4

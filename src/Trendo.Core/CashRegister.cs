@@ -30,6 +30,8 @@ public sealed class CashRegister(string dataRoot, string ideaId)
     static readonly CultureInfo De = CultureInfo.GetCultureInfo("de-DE");
     public Shop Shop { get; } = new(dataRoot, ideaId);
     public IdeaList<CashSale> Sales { get; } = new(dataRoot, ideaId, "kasse");
+    /// <summary>T-0753 M-B: Bon-Zeilen des letzten Stornos, deren Artikel es nicht mehr gibt – Geld zurückgebucht, Bestand nicht.</summary>
+    public List<string> NotRestocked { get; } = [];
 
     public static decimal GrossPrice(Product p, bool smallBusiness) => smallBusiness ? (decimal)p.Price : Math.Round((decimal)p.Price * (1 + LegalRates.VatStandard / 100m), 2);
     public static decimal Gross(double net, bool smallBusiness) => smallBusiness ? (decimal)net : Math.Round((decimal)net * (1 + LegalRates.VatStandard / 100m), 2);
@@ -79,12 +81,17 @@ public sealed class CashRegister(string dataRoot, string ideaId)
         var all = Sales.All(); var i = all.FindIndex(s => s.Id == id);
         if (i < 0) throw new InvalidOperationException("Diesen Bon gibt es nicht.");
         var s = all[i]; if (s.Cancelled) throw new InvalidOperationException("Dieser Bon ist schon storniert.");
-        var prods = Shop.Products.All();
-        var items = s.Lines.Where(x => !x.IsDiscount).ToList();
-        Shop.RequireKnown(prods, items.Select(l => l.Product)); // T-0753 M2: erst prüfen, dann buchen
-        foreach (var l in items) Shop.AddStock(prods, l.Product, (int)Math.Ceiling(l.Qty));
+        var prods = Shop.Products.All(); NotRestocked.Clear();
+        foreach (var l in s.Lines.Where(x => !x.IsDiscount))
+        {
+            // T-0753 M-B/N-c: der Bon bleibt wie ausgegeben; umbenannte Artikel werden über die Umbenennungen gefunden,
+            // gelöschte werden ohne Bestandsänderung storniert (sichtbar über NotRestocked)
+            var label = Shop.Current(l.Product);
+            if (!Shop.Known(prods, label)) { NotRestocked.Add(l.Product); continue; }
+            Shop.AddStock(prods, label, (int)Math.Ceiling(l.Qty));
+            Shop.Moves.Add(new(Guid.NewGuid().ToString("N")[..8], DateOnly.FromDateTime(now), label, l.Qty, s.Id, "Kassen-Storno"));
+        }
         Shop.Products.Save(prods);
-        foreach (var l in s.Lines.Where(x => !x.IsDiscount)) Shop.Moves.Add(new(Guid.NewGuid().ToString("N")[..8], DateOnly.FromDateTime(now), l.Product, l.Qty, s.Id, "Kassen-Storno"));
         ledger.Add(new(DateOnly.FromDateTime(now), $"Storno Kasse {s.No}", -s.Gross, "Einnahmen", s.VatRate));
         all[i] = s with { Cancelled = true }; Sales.Save(all);
         return all[i];

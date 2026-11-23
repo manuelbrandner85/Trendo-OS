@@ -85,3 +85,16 @@
 
 **Tests danach:** Kern gezielt 76/76 (`reports/T-0753/core-tests-gegenpruefung.txt`), dazu T0714/T0717/SourceApps 29/29; App 14/14 und 97/97 (`reports/T-0753/app-tests.txt`). `dotnet build Trendo.sln -c Release` 0 Fehler.
 **Weiter offen:** Varianten sind an Bons an die Bezeichnung gebunden – wer eine verkaufte Variante umbenennen will, legt eine neue an.
+
+## Zweitprüfung behoben (dritter Durchgang)
+
+| Befund | Lösung | Test (Rot-Grün: baut auf c3d8f3a3a nicht, fehlende `Current`, `LastNotRestocked`, `NotRestocked`, öffentliches `ParseNum`) |
+|---|---|---|
+| M-A CSV-Import umgeht die Varianten-Sperre | Gemeinsame Prüfung `LockViolation` für `UpdateProduct` und `ImportProductsCsv`; ein Artikel, der dagegen verstößt, wird beim Import mit Hinweis übersprungen | `ShopEditFix2Tests.Import_respects_variant_lock` |
+| M-B Bon-Storno eines gelöschten Artikels abgelehnt | Storno (Bon und Bestellung) bucht Geld bzw. Status, ohne Bestandsänderung für Artikel, die es nicht mehr gibt – sichtbar in der Meldung (`NotRestocked`/`LastNotRestocked`), keine Lagerbewegung; Sperre gilt jetzt für alle nicht stornierten Lieferungen (auch bezahlte) und gültige Bons; der Text „nimm Rückgängig“ ist gestrichen | `Cancel_bon_of_deleted_product`, `Paid_delivery_locks_variant`, angepasst `ShopEditFixTests.Variants_locked_by_history` |
+| N-a Hochkomma geht verloren | Werte mit führendem „'“ bekommen beim Export ein zweites, der Import nimmt eines ab; CSV-Karte erwähnt das sichtbare Hochkomma in Shopify | `Apostrophe_roundtrip` |
+| N-b Zahlen | 1.000,00 · 1,000.50 · 1 000 · 1.234.567,8 werden gelesen; „1.000“/„1,000“ ohne Dezimalteil abgelehnt mit neutraler Meldung „ohne Tausenderpunkt, z. B. 1000 oder 12,50“ | `Numbers_ok`, `Numbers_ambiguous` |
+| N-c Umbenennen ändert alte Bons | Bons bleiben wie ausgegeben; Umbenennungen liegen in `umbenennungen.json` (gehört zu Rückgängig), das Storno folgt ihnen, Rück-Umbenennen ohne Schleife | `Rename_keeps_bons` |
+| N-d Unpassende Meldung | eigener Text „Varianten lassen sich nicht nachträglich hinzufügen“ | `Add_variants_message` |
+
+**Tests danach:** Kern gezielt 90/90 (`reports/T-0753/core-tests-zweitpruefung.txt`), mit T0714/T0717/SourceApps 114/114; App 80/80 (`reports/T-0753/app-tests.txt`). `dotnet build Trendo.sln -c Release` 0 Fehler.

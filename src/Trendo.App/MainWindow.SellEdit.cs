@@ -48,6 +48,10 @@ public partial class MainWindow
 
     void SellUndo() => SellTry(SellV, () => { var what = BizShop.Undo(); _core.Audit.Append(Principal.LocalOwner.Name, "shop.undo", what); _sellEditProd = _sellEditCust = _sellEditOrder = null; Say($"Rückgängig: {what}.", SellV); });
 
+    /// <summary>T-0753 M-B: Storno sagt sichtbar, wenn der Bestand eines gelöschten Artikels nicht zurückgebucht werden konnte.</summary>
+    static string SellCancelText(Shop shop) => shop.LastNotRestocked.Count == 0 ? "Bestellung storniert."
+        : $"Bestellung storniert. Bestand nicht zurückgebucht für {string.Join(", ", shop.LastNotRestocked.Select(x => "„" + x + "“"))} – den Artikel gibt es nicht mehr.";
+
     /// <summary>Strg+Z auf der Seite nimmt die letzte Änderung an Artikeln, Kunden oder Bestellungen zurück (nicht in Textfeldern).</summary>
     void SellKeys(Control page) => page.KeyDown += (_, e) =>
     {
@@ -105,7 +109,7 @@ public partial class MainWindow
             });
         }
         void Export(string kind, Func<string, string> write) => SellTry(SellV, () => { var f = write(SellCsvFile(kind)); Say("Gespeichert: " + f, SellV); });
-        var body = Section("Austausch mit anderen Shops (CSV)", "Spalten wie bei Shopify – so lassen sich Artikel und Kunden mit Shopify, Tabellen und anderen Shop-Programmen tauschen. Du kannst CSV-Dateien auch hier ablegen. Bilder: Shopify nimmt nur Internetadressen, lokale Bilder liegen beim Export im Ordner „bilder“ daneben.",
+        var body = Section("Austausch mit anderen Shops (CSV)", "Spalten wie bei Shopify – so lassen sich Artikel und Kunden mit Shopify, Tabellen und anderen Shop-Programmen tauschen. Du kannst CSV-Dateien auch hier ablegen. Bilder: Shopify nimmt nur Internetadressen, lokale Bilder liegen beim Export im Ordner „bilder“ daneben. Texte, die mit = + - @ beginnen, bekommen zum Schutz vor Formeln ein Hochkomma – Shopify zeigt es sichtbar an.",
             Line(Act("sell-csv-prod-out", "Artikel als CSV", () => Export("Artikel", shop.ExportProductsCsv)),
                 Act("sell-csv-prod-in", "Artikel aus CSV laden …", () => { _ = Import("sell-csv-prod", false); }),
                 Act("sell-csv-cust-out", "Kunden als CSV", () => Export("Kunden", shop.ExportCustomersCsv)),
