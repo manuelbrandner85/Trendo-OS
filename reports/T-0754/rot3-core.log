@@ -1,0 +1,40 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0754-alt\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:05.14]     Trendo.Core.Tests.T0754RotProbe3.Befund1_SystemRecycle_auf_Subst_loescht_nicht [FAIL]
+[xUnit.net 00:00:05.16]     Trendo.Core.Tests.T0754RotProbe3.Befund3_tiefer_RecycleBin_zaehlt_nicht [FAIL]
+[xUnit.net 00:00:05.16]     Trendo.Core.Tests.T0754RotProbe3.Befund3_Papierkorb_ohne_Root_zaehlt_nicht [FAIL]
+[xUnit.net 00:00:05.29]     Trendo.Core.Tests.T0754RotProbe3.Befund2_langer_Pfad_wird_erkannt [FAIL]
+  Fehler Trendo.Core.Tests.T0754RotProbe3.Befund1_SystemRecycle_auf_Subst_loescht_nicht [246 ms]
+  Fehlermeldung:
+   SystemRecycle hat still endgültig gelöscht
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0754RotProbe3.Befund1_SystemRecycle_auf_Subst_loescht_nicht() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0754-alt\tests\Trendo.Core.Tests\T0754RotProbe3.cs:line 14
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler Trendo.Core.Tests.T0754RotProbe3.Befund3_tiefer_RecycleBin_zaehlt_nicht [< 1 ms]
+  Fehlermeldung:
+   Assert.False() Failure
+Expected: False
+Actual:   True
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0754RotProbe3.Befund3_tiefer_RecycleBin_zaehlt_nicht() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0754-alt\tests\Trendo.Core.Tests\T0754RotProbe3.cs:line 27
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler Trendo.Core.Tests.T0754RotProbe3.Befund3_Papierkorb_ohne_Root_zaehlt_nicht [< 1 ms]
+  Fehlermeldung:
+   Assert.False() Failure
+Expected: False
+Actual:   True
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0754RotProbe3.Befund3_Papierkorb_ohne_Root_zaehlt_nicht() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0754-alt\tests\Trendo.Core.Tests\T0754RotProbe3.cs:line 28
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler Trendo.Core.Tests.T0754RotProbe3.Befund2_langer_Pfad_wird_erkannt [151 ms]
+  Fehlermeldung:
+   liegt im Papierkorb, aber nicht erkannt (null)
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0754RotProbe3.Befund2_langer_Pfad_wird_erkannt() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0754-alt\tests\Trendo.Core.Tests\T0754RotProbe3.cs:line 24
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Fehler!      : Fehler:     4, erfolgreich:     0, übersprungen:     0, gesamt:     4, Dauer: 400 ms - Trendo.Core.Tests.dll (net10.0)

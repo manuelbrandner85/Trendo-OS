@@ -1,0 +1,49 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0754-alt\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:02.68]     Trendo.Core.Tests.T0754RotProbe2.Befund3_Rest_bleibt [FAIL]
+[xUnit.net 00:00:02.72]     Trendo.Core.Tests.T0754RotProbe2.Befund4_Studienwissen [FAIL]
+[xUnit.net 00:00:02.73]     Trendo.Core.Tests.T0754RotProbe2.Befund2_nicht_gelandet_liefert_null [FAIL]
+[xUnit.net 00:00:02.92]     Trendo.Core.Tests.T0754RotProbe2.Befund2_subst_loescht_nicht_endgueltig [FAIL]
+[xUnit.net 00:00:02.93]     Trendo.Core.Tests.T0754RotProbe2.Befund1_fremder_Ordner_bleibt [FAIL]
+  Fehler Trendo.Core.Tests.T0754RotProbe2.Befund3_Rest_bleibt [16 ms]
+  Fehlermeldung:
+   Assert.Single() Failure: The collection was empty
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0754RotProbe2.Befund3_Rest_bleibt() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0754-alt\tests\Trendo.Core.Tests\T0754RotProbe2.cs:line 35
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler Trendo.Core.Tests.T0754RotProbe2.Befund4_Studienwissen [37 ms]
+  Fehlermeldung:
+   Assert.DoesNotContain() Failure: Sub-string found
+                ↓ (pos 7)
+String: "Daten, Passwörter und Sicherungen schütze"···
+Found:  "Passwörter und Sicherungen schützen"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0754RotProbe2.Befund4_Studienwissen() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0754-alt\tests\Trendo.Core.Tests\T0754RotProbe2.cs:line 37
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler Trendo.Core.Tests.T0754RotProbe2.Befund2_nicht_gelandet_liefert_null [9 ms]
+  Fehlermeldung:
+   Assert.Null() Failure: Value is not null
+Expected: null
+Actual:   "Papierkorb"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0754RotProbe2.Befund2_nicht_gelandet_liefert_null() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0754-alt\tests\Trendo.Core.Tests\T0754RotProbe2.cs:line 18
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler Trendo.Core.Tests.T0754RotProbe2.Befund2_subst_loescht_nicht_endgueltig [189 ms]
+  Fehlermeldung:
+   ohne Rückfrage endgültig gelöscht
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0754RotProbe2.Befund2_subst_loescht_nicht_endgueltig() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0754-alt\tests\Trendo.Core.Tests\T0754RotProbe2.cs:line 26
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler Trendo.Core.Tests.T0754RotProbe2.Befund1_fremder_Ordner_bleibt [5 ms]
+  Fehlermeldung:
+   fremder Ordner verschoben, Done=True: Rückgängig: Löschen von „geloescht.txt“.
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0754RotProbe2.Befund1_fremder_Ordner_bleibt() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0754-alt\tests\Trendo.Core.Tests\T0754RotProbe2.cs:line 13
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Fehler!      : Fehler:     5, erfolgreich:     0, übersprungen:     0, gesamt:     5, Dauer: 259 ms - Trendo.Core.Tests.dll (net10.0)

@@ -62,6 +62,8 @@ public static class OsBehavior
         {
             return (key, cmd, m.HasFlag(Mods.Shift), m.HasFlag(Mods.Alt)) switch
             {
+                ("Z", true, false, _) => "undo",               // T-0754: ⌘Z widerrufen, ⌘⇧Z wiederholen (wie im Finder)
+                ("Z", true, true, _) => "redo",
                 ("T", true, _, _) => "newtab",                 // Finder-Tabs: ⌘T neu, ⌘W schließen, ⌘⇧] / ⌘⇧[ wechseln
                 ("W", true, _, _) => "closetab",
                 ("OemCloseBrackets", true, true, _) => "nexttab",
@@ -87,6 +89,9 @@ public static class OsBehavior
         var ctrl = m.HasFlag(Mods.Ctrl); var shift = m.HasFlag(Mods.Shift); var alt = m.HasFlag(Mods.Alt);
         return (key, ctrl, shift, alt) switch
         {
+            ("Z", true, false, false) => "undo",               // T-0754: Strg+Z rückgängig; Strg+Y (Explorer) bzw. Strg+Umschalt+Z (GNOME) wiederholen
+            ("Z", true, true, false) => "redo",
+            ("Y", true, false, false) => "redo",
             ("T", true, false, _) => "newtab",                 // Registerkarten: Strg+T neu, Strg+W schließen, Strg+Bild↓/↑ wechseln
             ("W", true, false, _) => "closetab",
             ("PageDown", true, _, _) => "nexttab",

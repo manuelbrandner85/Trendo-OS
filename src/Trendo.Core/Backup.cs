@@ -2,10 +2,17 @@ using System.IO.Compression;
 
 namespace Trendo.Core;
 
-/// <summary>Sicherung der Benutzerdaten (Projekte, Einstellungen, Audit) als ZIP; Wiederherstellung legt vorher eine Sicherheitskopie an.</summary>
+/// <summary>Sicherung der Benutzerdaten (Projekte, Einstellungen, Audit) als ZIP; Wiederherstellung legt vorher eine Sicherheitskopie an.
+/// T-0754 (CORE-11): Die ZIP-Sicherungen sind NICHT verschlüsselt (Entscheidung des Nutzers 23.11.2026: keine Verschlüsselung, deutlicher Hinweis).
+/// Das steht in der Oberfläche, im Ergebnis jeder Sicherung (<see cref="Result.Say"/>) und im Vermerk (Kommentar) jeder ZIP-Datei.</summary>
 public sealed class Backup(string dataRoot, string backupDir, AuditLog audit)
 {
     public string Folder => backupDir;
+
+    /// <summary>Ehrlicher Hinweis: unverschlüsselt, für jeden mit Zugriff auf den Ordner lesbar; Empfehlung verschlüsseltes Laufwerk (nur Text, Trendo ändert nichts am System).</summary>
+    public const string UnencryptedNotice = "Diese Sicherungen sind nicht verschlüsselt. Es sind gewöhnliche ZIP-Dateien: Jeder, der Zugriff auf den Sicherungsordner hat, kann sie öffnen und alles darin lesen – Projekte, Einstellungen und das Protokoll.";
+    /// <summary>Empfehlung zum Hinweis (nur Text).</summary>
+    public const string EncryptAdvice = "Empfehlung: Lege den Sicherungsordner auf ein verschlüsseltes Laufwerk, zum Beispiel ein Laufwerk mit BitLocker (Windows) oder einen verschlüsselten USB-Stick. Trendo ändert dafür nichts an deinem System. Verschlüsselt mit Passwort sichern kannst du unter „Schutz“ mit restic.";
     private static readonly string[] Skip = ["backups", "settings.json.tmp", "web-mixamo"]; // T-0660: Anmeldesitzung bei Mixamo nicht mitsichern
 
     public IReadOnlyList<FileInfo> List() => Directory.Exists(backupDir)
@@ -21,12 +28,12 @@ public sealed class Backup(string dataRoot, string backupDir, AuditLog audit)
     {
         public bool Complete => NotSaved.Count == 0;
         /// <summary>Ein Satz für die Anzeige.</summary>
-        public string Say() => Complete ? $"Gesichert: {Path.GetFileName(Zip)} ({Saved} Dateien, geprüft)."
+        public string Say() => Complete ? $"Gesichert: {Path.GetFileName(Zip)} ({Saved} Dateien, geprüft, nicht verschlüsselt)."
             : $"Unvollständig gesichert: {Path.GetFileName(Zip)} – {Saved} Dateien gesichert, {NotSaved.Count} nicht (gerade von einem anderen Programm belegt oder nicht lesbar): {string.Join(", ", NotSaved.Take(5))}{(NotSaved.Count > 5 ? " …" : "")}. Schließe die Programme und sichere noch einmal.";
     }
 
     /// <summary>Was in einer Sicherung über sie selbst steht (ab T-0681). Ältere Sicherungen haben keinen Vermerk: null.</summary>
-    public sealed record Note(int Saved, int NotSavedCount, IReadOnlyList<string> NotSaved) { public bool Complete => NotSavedCount == 0; }
+    public sealed record Note(int Saved, int NotSavedCount, IReadOnlyList<string> NotSaved, string? Hinweis = null) { public bool Complete => NotSavedCount == 0; }
 
     /// <summary>Prüfergebnis einer Sicherungsdatei: lässt sie sich vollständig lesen, stimmen die Prüfsummen?</summary>
     public sealed record Check(bool Ok, int Files, string Problem);
@@ -94,11 +101,12 @@ public sealed class Backup(string dataRoot, string backupDir, AuditLog audit)
             }
         }
         var list = notSaved.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).Take(150).ToList();
-        z.Comment = NoteHead + System.Text.Json.JsonSerializer.Serialize(new NoteData(sums.Count, notSaved.Count, list));
+        z.Comment = NoteHead + System.Text.Json.JsonSerializer.Serialize(new NoteData(sums.Count, notSaved.Count, list, UnencryptedNotice + " " + EncryptAdvice), NoteJson); // T-0754: Hinweis lesbar (Umlaute nicht als \u-Folgen), z. B. im Kommentar-Feld von 7-Zip
         return null;
     }
 
-    sealed record NoteData(int Saved, int NotSavedCount, List<string> NotSaved);
+    sealed record NoteData(int Saved, int NotSavedCount, List<string> NotSaved, string? Hinweis = null);
+    static readonly System.Text.Json.JsonSerializerOptions NoteJson = new() { Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 
     /// <summary>Prüflesen direkt nach dem Schreiben: jede gesicherte Datei ist in der ZIP, mit derselben Größe und derselben SHA-256-Prüfsumme wie beim Lesen der Quelle.</summary>
     static void VerifyWritten(string tmp, Dictionary<string, (long Bytes, string Sha)> sums)
@@ -138,7 +146,7 @@ public sealed class Backup(string dataRoot, string backupDir, AuditLog audit)
             using var z = ZipFile.OpenRead(zip);
             if (!z.Comment.StartsWith(NoteHead, StringComparison.Ordinal)) return null;
             var d = System.Text.Json.JsonSerializer.Deserialize<NoteData>(z.Comment[NoteHead.Length..]);
-            return d is null ? null : new(d.Saved, d.NotSavedCount, d.NotSaved ?? []);
+            return d is null ? null : new(d.Saved, d.NotSavedCount, d.NotSaved ?? [], d.Hinweis);
         }
         catch (Exception ex) when (ex is InvalidDataException or IOException or UnauthorizedAccessException or System.Text.Json.JsonException) { return null; }
     }

@@ -22,6 +22,9 @@ public static partial class SecurityCenter
         l.Add(last is null ? new("backup", "Sicherung", CheckLevel.Risiko, "Es gibt noch keine Sicherung.", "sicherung")
             : (now - last.LastWriteTime).TotalDays > 7 ? new("backup", "Sicherung", CheckLevel.Hinweis, $"Letzte Sicherung ist {(int)(now - last.LastWriteTime).TotalDays} Tage alt.", "sicherung")
             : new("backup", "Sicherung", CheckLevel.Gut, $"Letzte Sicherung: {last.LastWriteTime:dd.MM.yyyy HH:mm} ({backup.List().Count} vorhanden)."));
+        // T-0754: Die Ampel verspricht keinen Schutz, den es nicht gibt – ZIP-Sicherungen sind unverschlüsselt (gelb, nie grün).
+        if (last is not null)
+            l.Add(new("backup-crypt", "Sicherungen unverschlüsselt", CheckLevel.Hinweis, $"Die Sicherungen sind nicht verschlüsselt und für jeden mit Zugriff auf den Ordner lesbar ({backup.Folder}). Empfehlung: verschlüsseltes Laufwerk, z. B. BitLocker.", "sicherung"));
         var pend = core.Approvals.Pending().Count;
         l.Add(pend == 0 ? new("approvals", "Freigaben", CheckLevel.Gut, "Nichts wartet auf deine Erlaubnis.") : new("approvals", "Freigaben", CheckLevel.Hinweis, $"{pend} Anfrage(n) warten auf dich.", "approvals"));
         l.Add(core.Offline ? new("offline", "Internet", CheckLevel.Gut, "Offline-Modus: Trendo geht nicht ins Internet.") : new("offline", "Internet", CheckLevel.Gut, "Trendo geht nur nach deiner Erlaubnis ins Internet. Die KI läuft auf diesem PC."));

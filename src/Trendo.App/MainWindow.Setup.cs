@@ -532,10 +532,43 @@ public sealed partial class MainWindow
     // ---------- Sicherung & Wiederherstellung ----------
     private string _backupMsg = "";
     private string? _backupConfirm;
+    /// <summary>Für Tests: statt den Sicherungsordner im Dateimanager des Systems zu öffnen.</summary>
+    public static Action<string>? BackupOpenFolderOverride { get; set; }
+
+    /// <summary>T-0754 (CORE-11): Sicherungsordner zeigen – im Dateimanager des Systems (Testmodus: nur Meldung).</summary>
+    public void BackupOpenFolder()
+    {
+        var dir = Backups.Folder;
+        try { Directory.CreateDirectory(dir); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _backupMsg = "Den Ordner gibt es nicht und er lässt sich nicht anlegen: " + Trendo.Core.FriendlyError.Say(ex); Show("sicherung"); return; }
+        if (BackupOpenFolderOverride is { } o) { o(dir); return; }
+        if (_opt.Isolated) { _backupMsg = "Testmodus: Der Ordner wird nicht geöffnet – er liegt unter " + dir; Show("sicherung"); return; }
+        Launch(dir);
+    }
+
+    /// <summary>T-0754 (CORE-11): Deutlicher, ehrlicher Hinweis oben auf der Seite – die ZIP-Sicherungen sind nicht verschlüsselt; Ordner zeigen und öffnen.
+    /// Kurz gehalten, damit Zeitleiste und Dateiliste sichtbar bleiben; der ganze Text mit Empfehlung steht unten (<see cref="BackupUnencryptedDetails"/>). Nur Text, Trendo ändert nichts am System.</summary>
+    Control BackupUnencryptedNotice()
+    {
+        var head = new TextBlock { Name = "backup-unencrypted-head", Text = "Achtung: nicht verschlüsselt – jeder mit Zugriff auf den Ordner kann die Sicherungen lesen. Besser auf ein verschlüsseltes Laufwerk legen (z. B. BitLocker).", Foreground = Brush.Parse("#FACC15"), FontWeight = FontWeight.SemiBold, FontSize = 12.5, TextWrapping = TextWrapping.Wrap };
+        var folder = new TextBlock { Name = "backup-folder", Text = $"Automatisch alle {_settings.BackupEveryHours} Stunden, die letzten 10 bleiben · Ordner: {Backups.Folder}", Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center };
+        var open = new Button { Name = "backup-open-folder", Content = "Ordner öffnen", FontSize = 11, Padding = new Thickness(8, 1) };
+        open.Click += (_, _) => BackupOpenFolder();
+        var row = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), ColumnSpacing = 10, Children = { folder, Pos(open, 1) } };
+        var box = new Border { Name = "backup-unencrypted", Background = Brush.Parse("#1FFACC15"), BorderBrush = Brush.Parse("#80FACC15"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(10, 5), Child = new StackPanel { Spacing = 2, Children = { head, row } } };
+        ToolTip.SetTip(box, Backup.UnencryptedNotice + " " + Backup.EncryptAdvice);
+        return box;
+    }
+
+    /// <summary>T-0754: Ganzer Hinweis mit Empfehlung am Ende der Seite.</summary>
+    Control BackupUnencryptedDetails() => new StackPanel { Name = "backup-unencrypted-details", Spacing = 4, Children = {
+        H("Nicht verschlüsselt – was das heißt", 13),
+        new TextBlock { Name = "backup-unencrypted-text", Text = Backup.UnencryptedNotice, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap },
+        new TextBlock { Name = "backup-unencrypted-advice", Text = Backup.EncryptAdvice, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap } } };
+
     private Control BackupView()
     {
         var sp = new StackPanel { Spacing = 6 };
-        sp.Children.Add(P($"Trendo sichert deine Projekte und Einstellungen automatisch alle {_settings.BackupEveryHours} Stunden (die letzten 10 bleiben). Ablage: {Backups.Folder}", Text));
+        sp.Children.Add(BackupUnencryptedNotice());
         var now = new Button { Name = "btn-backup-now", Content = "Jetzt sichern", Background = Accent };
         now.Click += (_, _) => { try { _backupMsg = Backups.CreateChecked(DateTime.Now).Say(); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _backupMsg = "Sichern hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex); } Show("sicherung"); };
         sp.Children.Add(now);
@@ -590,6 +623,7 @@ public sealed partial class MainWindow
             sp.Children.Add(row);
         }
         sp.Children.Add(P("Beim Wiederherstellen wird der aktuelle Stand vorher gesichert. Das Protokoll, was Trendo getan hat, bleibt immer erhalten.", null, 11));
+        sp.Children.Add(BackupUnencryptedDetails());
         return Page("Sicherung", sp);
     }
 

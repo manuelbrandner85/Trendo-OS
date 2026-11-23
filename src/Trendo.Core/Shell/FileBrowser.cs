@@ -1,4 +1,15 @@
+using System.Runtime.InteropServices;
+
 namespace Trendo.Core.Shell;
+
+/// <summary>T-0754 (Gegenprüfung): Löschen würde hier endgültig löschen statt in den Papierkorb zu legen – kein Papierkorb auf dem Laufwerk
+/// (Netz, SUBST, Wechseldatenträger), Papierkorb auf „sofort löschen“ gestellt oder Element größer als der Papierkorb.
+/// Es wird nichts gelöscht; die Oberfläche fragt ausdrücklich nach.</summary>
+public sealed class NoRecycleBinException(string path, string reason = FileBrowser.NoBinReason) : IOException($"„{System.IO.Path.GetFileName(path.TrimEnd('\\', '/'))}“: {reason} – Löschen wäre dort endgültig.")
+{
+    public string ItemPath { get; } = path;
+    public string Reason { get; } = reason;
+}
 
 /// <summary>Dateimanager-Kern (Explorer, Finder, GNOME-Dateien nachgebaut, 04.11.2026): Ordner auflisten, Laufwerke („Dieser PC“),
 /// bekannte Ordner, neuer Ordner, umbenennen, kopieren/einfügen, in den Papierkorb legen. Löschen geht nie endgültig, sondern immer in den Papierkorb.
@@ -148,28 +159,183 @@ public sealed class FileBrowser
         return target;
     }
 
-    static void CopyDir(string from, string to)
+    internal static void CopyDir(string from, string to)
     {
         Directory.CreateDirectory(to);
         foreach (var f in Directory.GetFiles(from)) File.Copy(f, System.IO.Path.Combine(to, System.IO.Path.GetFileName(f)));
         foreach (var d in Directory.GetDirectories(from)) CopyDir(d, System.IO.Path.Combine(to, System.IO.Path.GetFileName(d)));
     }
 
+    /// <summary>Für Tests: ob es für einen Pfad einen Papierkorb gibt (null = echte Prüfung).</summary>
+    public Func<string, bool>? RecycleBinCheck { get; set; }
+
+    /// <summary>Papierkorb-Einstellung eines Laufwerks: „Dateien sofort löschen“ und größte Papierkorbgröße in Bytes (null = unbekannt).</summary>
+    public sealed record BinPolicy(bool NukeOnDelete, long? MaxBytes);
+    /// <summary>Für Tests: Papierkorb-Einstellung nachbilden (null = echte, nur lesende Abfrage der Windows-Einstellungen).</summary>
+    public Func<string, BinPolicy?>? RecycleBinPolicy { get; set; }
+
+    public const string NoBinReason = "auf diesem Laufwerk gibt es keinen Papierkorb";
+
+    /// <summary>T-0754 (Gegenprüfung): Gibt es für diesen Pfad einen Papierkorb, der das Element wirklich aufnimmt? Siehe <see cref="TrashProblem"/>.</summary>
+    public bool HasTrash(string path) => TrashProblem(path) is null;
+
+    /// <summary>T-0754 (Zweitprüfung): Warum Löschen hier endgültig wäre – oder null, wenn das Element in den Papierkorb geht.
+    /// Testordner, Mac, Linux: Papierkorb vorhanden. Windows: kein Papierkorb für Netzpfade, Netz-/DVD-/RAM-/Wechsel- und SUBST-Laufwerke;
+    /// außerdem endgültig, wenn der Papierkorb des Laufwerks auf „Dateien sofort löschen“ steht oder das Element größer ist als der Papierkorb
+    /// (Einstellungen NukeOnDelete/MaxCapacity werden nur gelesen).</summary>
+    public string? TrashProblem(string path)
+    {
+        if (RecycleBinCheck is { } c && !c(path)) return NoBinReason;
+        if (RecycleBinPolicy is { } pol) return PolicyProblem(path, pol(path));
+        if (RecycleBinCheck is not null || Root is not null || !OperatingSystem.IsWindows()) return null;
+        return WindowsTrashProblem(path);
+    }
+
+    /// <summary>Wie <see cref="TrashProblem"/>, nur mit den echten Windows-Einstellungen (für <see cref="SystemRecycle"/>).</summary>
+    public static string? WindowsTrashProblem(string path)
+    {
+        if (!OperatingSystem.IsWindows()) return null;
+        if (!WindowsHasRecycleBin(path)) return NoBinReason;
+        return PolicyProblem(path, ReadWindowsPolicy(path));
+    }
+
+    static string? PolicyProblem(string path, BinPolicy? p)
+    {
+        if (p is null) return null;
+        if (p.NukeOnDelete) return "der Papierkorb ist auf „Dateien sofort löschen“ gestellt";
+        if (p.MaxBytes is long max && ItemBytes(path, max) > max) return $"das Element ist größer als der Papierkorb ({SizeText(max)})";
+        return null;
+    }
+
+    /// <summary>Größe einer Datei oder eines Ordners; hört auf zu zählen, sobald <paramref name="stopAbove"/> überschritten ist.</summary>
+    static long ItemBytes(string path, long stopAbove)
+    {
+        if (File.Exists(path)) return new FileInfo(path).Length;
+        long sum = 0;
+        if (!Directory.Exists(path)) return 0;
+        foreach (var f in new DirectoryInfo(path).EnumerateFiles("*", new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true, AttributesToSkip = FileAttributes.ReparsePoint }))
+        {
+            sum += f.Length; if (sum > stopAbove) break;
+        }
+        return sum;
+    }
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true, EntryPoint = "GetVolumeNameForVolumeMountPointW")]
+    static extern bool GetVolumeNameForVolumeMountPoint(string mountPoint, char[] volumeName, uint size);
+
+    /// <summary>Liest (nur lesend) die Papierkorb-Einstellung des Laufwerks: HKCU\…\Explorer\BitBucket\Volume\{GUID} (NukeOnDelete, MaxCapacity in MB),
+    /// sonst die allgemeine Einstellung unter BitBucket; Richtlinie „NoRecycleFiles“. Ohne MaxCapacity gilt die Windows-Voreinstellung von 5 % des Laufwerks.</summary>
+    static BinPolicy? ReadWindowsPolicy(string path)
+    {
+        if (!OperatingSystem.IsWindows()) return null;
+        try
+        {
+            var root = System.IO.Path.GetPathRoot(System.IO.Path.GetFullPath(path));
+            if (string.IsNullOrEmpty(root)) return null;
+            const string Bb = @"Software\Microsoft\Windows\CurrentVersion\Explorer\BitBucket";
+            int? Dword(string key, string name) { using var k = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(key); return k?.GetValue(name) is int v ? v : null; }
+            var nuke = (Dword(@"Software\Microsoft\Windows\CurrentVersion\Policies\Explorer", "NoRecycleFiles") ?? 0) != 0;
+            int? max = null;
+            var buf = new char[64];
+            if (GetVolumeNameForVolumeMountPoint(root.EndsWith('\\') ? root : root + "\\", buf, (uint)buf.Length))
+            {
+                var vol = new string(buf).TrimEnd('\0'); var a = vol.IndexOf('{'); var b = vol.IndexOf('}');
+                if (a >= 0 && b > a)
+                {
+                    var key = Bb + @"\Volume\" + vol[a..(b + 1)];
+                    if (Dword(key, "NukeOnDelete") is int n) nuke |= n != 0; else nuke |= (Dword(Bb, "NukeOnDelete") ?? 0) != 0;
+                    max = Dword(key, "MaxCapacity");
+                }
+            }
+            long? maxBytes = max is int mb ? mb * 1024L * 1024L : new DriveInfo(root).TotalSize / 20; // Voreinstellung: 5 %
+            return new BinPolicy(nuke, maxBytes);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Security.SecurityException or ArgumentException) { return null; }
+    }
+
+    static bool WindowsHasRecycleBin(string path)
+    {
+        try
+        {
+            var full = System.IO.Path.GetFullPath(path);
+            if (full.StartsWith(@"\\", StringComparison.Ordinal)) return false; // Netzpfad
+            var root = System.IO.Path.GetPathRoot(full);
+            if (string.IsNullOrEmpty(root) || root.Length < 2 || root[1] != ':') return false;
+            if (IsSubst(root[..2])) return false;
+            var d = new DriveInfo(root);
+            return d.DriveType == DriveType.Fixed; // Zweitprüfung: Wechseldatenträger legen oft nicht ab, auch mit $Recycle.Bin – dort immer nachfragen
+        }
+        catch (Exception e) when (e is IOException or ArgumentException or UnauthorizedAccessException) { return false; }
+    }
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true, EntryPoint = "QueryDosDeviceW")]
+    static extern uint QueryDosDevice(string lpDeviceName, char[] lpTargetPath, uint ucchMax);
+
+    /// <summary>SUBST-Laufwerke zeigen auf einen Ordner („\??\C:\…“) und haben keinen eigenen Papierkorb.</summary>
+    static bool IsSubst(string drive)
+    {
+        if (!OperatingSystem.IsWindows()) return false;
+        var buf = new char[1024];
+        var n = QueryDosDevice(drive, buf, (uint)buf.Length);
+        return n > 0 && new string(buf, 0, (int)n).StartsWith(@"\??\", StringComparison.Ordinal);
+    }
+
+    /// <summary>T-0754: Liegt dieser Pfad direkt in einem echten Papierkorb? Nur absolute Pfade, nie ein Wort oder ein relativer Pfad (Gegenprüfung),
+    /// und nur an den Stellen, an denen die Systeme ihren Papierkorb führen (Zweitprüfung):
+    /// <c>X:\$Recycle.Bin\&lt;SID&gt;\$R…</c> direkt unter der Laufwerkswurzel; <c>~/.Trash/…</c> bzw. <c>/Volumes/X/.Trashes/…</c> (Mac);
+    /// <c>$XDG_DATA_HOME/Trash/files/…</c> bzw. <c>&lt;Wurzel&gt;/.Trash-&lt;uid&gt;/files/…</c> (Linux); Test-Papierkorb nur <c>&lt;Root&gt;/.Papierkorb/…</c>.</summary>
+    public bool IsTrashLocation(string? p)
+    {
+        if (string.IsNullOrWhiteSpace(p) || !System.IO.Path.IsPathFullyQualified(p)) return false;
+        var full = System.IO.Path.GetFullPath(p).TrimEnd('\\', '/');
+        var parent = System.IO.Path.GetDirectoryName(full); if (parent is null) return false;
+        bool Same(string a, string b) => string.Equals(System.IO.Path.GetFullPath(a).TrimEnd('\\', '/'), System.IO.Path.GetFullPath(b).TrimEnd('\\', '/'), OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+        if (Root is not null) return Same(parent, TestTrash);
+        var name = System.IO.Path.GetFileName(full);
+        // Windows: X:\$Recycle.Bin\<SID>\$R…
+        var sidDir = System.IO.Path.GetDirectoryName(parent);
+        if (name.StartsWith("$R", StringComparison.OrdinalIgnoreCase) && sidDir is not null && System.IO.Path.GetFileName(sidDir).Equals("$Recycle.Bin", StringComparison.OrdinalIgnoreCase)
+            && System.IO.Path.GetDirectoryName(sidDir) is { } drv && System.IO.Path.GetPathRoot(full) is { } r && Same(drv, r)) return true;
+        // Mac
+        if (Same(parent, System.IO.Path.Combine(Home, ".Trash"))) return true;
+        if (sidDir is not null && System.IO.Path.GetFileName(sidDir) == ".Trashes") return true;
+        // Linux/freedesktop
+        if (System.IO.Path.GetFileName(parent) == "files" && sidDir is not null)
+        {
+            var data = Environment.GetEnvironmentVariable("XDG_DATA_HOME") is { Length: > 0 } x ? x : System.IO.Path.Combine(Home, ".local", "share");
+            if (Same(sidDir, System.IO.Path.Combine(data, "Trash"))) return true;
+            if (System.IO.Path.GetFileName(sidDir).StartsWith(".Trash-", StringComparison.Ordinal)) return true;
+        }
+        return false;
+    }
+
+    /// <summary>Endgültig löschen – nur nach ausdrücklichem „Ja“ der Person (Laufwerk ohne Papierkorb).</summary>
+    public void DeletePermanently(string path)
+    {
+        Guard(path);
+        if (Directory.Exists(path)) Directory.Delete(path, true); else File.Delete(path);
+    }
+
     /// <summary>Papierkorb-Ordner im Testmodus (sonst der des Systems).</summary>
     public string TestTrash => System.IO.Path.Combine(Root ?? Home, ".Papierkorb");
 
     /// <summary>In den Papierkorb legen – nie endgültig löschen. Windows: Papierkorb des Systems; Linux: freedesktop-Papierkorb (~/.local/share/Trash);
-    /// Mac: ~/.Trash; Testmodus: Ordner „.Papierkorb“ im Testordner.</summary>
-    public string Trash(string path, Action<string>? windowsRecycle = null)
+    /// Mac: ~/.Trash; Testmodus: Ordner „.Papierkorb“ im Testordner.
+    /// T-0754 (Gegenprüfung): Rückgabe ist die Lage im Papierkorb – oder null, wenn das Element dort nicht zu finden ist (dann ist es endgültig weg).
+    /// Hat das Laufwerk keinen Papierkorb, wird nichts gelöscht: <see cref="NoRecycleBinException"/>.</summary>
+    public string? Trash(string path, Action<string>? windowsRecycle = null)
     {
         Guard(path);
         if (!File.Exists(path) && !Directory.Exists(path)) throw new FileNotFoundException("Nicht gefunden: " + System.IO.Path.GetFileName(path));
+        if (TrashProblem(path) is { } why) throw new NoRecycleBinException(path, why);
         string dir;
         if (Root is not null) dir = TestTrash;
         else if (OperatingSystem.IsWindows())
         {
             if (windowsRecycle is null) throw new InvalidOperationException("Papierkorb nicht verfügbar.");
-            windowsRecycle(path); return "Papierkorb";
+            var full = System.IO.Path.GetFullPath(path); var since = DateTime.Now.AddSeconds(-2);
+            windowsRecycle(path);
+            return FindInWindowsRecycleBin(full, since); // T-0754: Lage im Papierkorb merken; null = nicht im Papierkorb (endgültig gelöscht)
         }
         else if (OperatingSystem.IsMacOS()) dir = System.IO.Path.Combine(Home, ".Trash");
         else
@@ -185,6 +351,68 @@ public sealed class FileBrowser
         var t = Unique(dir, System.IO.Path.GetFileName(path)); MoveAny(path, t); return t;
     }
 
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    struct ShFileOp
+    {
+        public IntPtr Hwnd; public uint Func; public string From; public string? To; public ushort Flags;
+        [MarshalAs(UnmanagedType.Bool)] public bool Aborted; public IntPtr NameMappings; public string? Title;
+    }
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode, EntryPoint = "SHFileOperationW")]
+    static extern int SHFileOperation(ref ShFileOp op);
+
+    /// <summary>T-0754: Windows-Papierkorb des Systems (wie „Löschen“ im Explorer). Nur Windows.
+    /// Zweitprüfung: Windows fragt mit FOF_NOCONFIRMATION|FOF_SILENT NICHT nach, auch nicht mit FOF_WANTNUKEWARNING – es würde still endgültig löschen.
+    /// Deshalb prüft Trendo vorher selbst (<see cref="WindowsTrashProblem"/>: kein Papierkorb, „sofort löschen“, zu groß) und löscht dann gar nicht,
+    /// sondern wirft <see cref="NoRecycleBinException"/>; die Oberfläche fragt.</summary>
+    public static void SystemRecycle(string p)
+    {
+        if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Der Windows-Papierkorb gibt es nur unter Windows.");
+        if (WindowsTrashProblem(p) is { } why) throw new NoRecycleBinException(p, why);
+        const uint FoDelete = 3; const ushort Silent = 0x4, NoConfirmation = 0x10, AllowUndo = 0x40, WantNukeWarning = 0x4000;
+        var op = new ShFileOp { Func = FoDelete, From = System.IO.Path.GetFullPath(p) + "\0\0", Flags = (ushort)(AllowUndo | NoConfirmation | WantNukeWarning | Silent) };
+        var rc = SHFileOperation(ref op);
+        if (op.Aborted) throw new IOException("Löschen abgebrochen – es wurde nichts gelöscht.");
+        if (rc != 0) throw new IOException($"Löschen ging nicht (Fehler 0x{rc:X}): {System.IO.Path.GetFileName(p)}");
+    }
+
+    /// <summary>T-0754: Wo liegt ein gerade gelöschtes Element im Windows-Papierkorb? Liest die $I-Vermerke im Papierkorb-Ordner der Person
+    /// auf dem Laufwerk der Datei (<c>X:\$Recycle.Bin\&lt;SID&gt;</c>) und liefert die passende $R-Datei – null, wenn es dort nicht liegt
+    /// (Laufwerk ohne Papierkorb, zu groß, Papierkorb geleert).</summary>
+    public static string? FindInWindowsRecycleBin(string originalPath, DateTime deletedAfter)
+    {
+        if (!OperatingSystem.IsWindows()) return null;
+        try
+        {
+            var sid = System.Security.Principal.WindowsIdentity.GetCurrent().User?.Value; var root = System.IO.Path.GetPathRoot(originalPath);
+            if (sid is null || string.IsNullOrEmpty(root)) return null;
+            var bin = System.IO.Path.Combine(root, "$Recycle.Bin", sid);
+            return Trendo.Core.Sys.Trash.List(bin, null)
+                .Where(t => string.Equals(StripLongPrefix(t.OriginalPath), StripLongPrefix(originalPath), StringComparison.OrdinalIgnoreCase) && t.Deleted >= deletedAfter && (File.Exists(t.DataFile) || Directory.Exists(t.DataFile)))
+                .OrderByDescending(t => t.Deleted).Select(t => t.DataFile).FirstOrDefault();
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Security.SecurityException) { return null; }
+    }
+
+    /// <summary>Zweitprüfung: Lange Pfade stehen im $I-Vermerk als <c>\\?\C:\…</c> bzw. <c>\\?\UNC\server\…</c> – vor dem Vergleich abschneiden.</summary>
+    public static string StripLongPrefix(string p) =>
+        p.StartsWith(@"\\?\UNC\", StringComparison.OrdinalIgnoreCase) ? @"\\" + p[8..] : p.StartsWith(@"\\?\", StringComparison.Ordinal) ? p[4..] : p;
+
+    /// <summary>T-0754: Ein Element aus dem Papierkorb an seinen alten Platz zurücklegen. Überschreibt nie: liegt dort schon etwas, passiert nichts (Fehler).
+    /// Räumt den Vermerk mit auf (Windows <c>$I…</c>, freedesktop <c>info/*.trashinfo</c>).</summary>
+    public void Restore(string trashPath, string original)
+    {
+        Guard(original);
+        if (!File.Exists(trashPath) && !Directory.Exists(trashPath)) throw new FileNotFoundException($"„{System.IO.Path.GetFileName(original)}“ ist nicht mehr im Papierkorb (geleert oder schon zurückgeholt).");
+        if (File.Exists(original) || Directory.Exists(original)) throw new InvalidOperationException($"Am alten Platz liegt inzwischen wieder „{System.IO.Path.GetFileName(original)}“ – Trendo überschreibt nichts.");
+        var parent = System.IO.Path.GetDirectoryName(original);
+        if (parent is null || !Directory.Exists(parent)) throw new DirectoryNotFoundException($"Den Ordner „{parent}“ gibt es nicht mehr – zurücklegen geht nicht.");
+        MoveAny(trashPath, original);
+        var name = System.IO.Path.GetFileName(trashPath); var dir = System.IO.Path.GetDirectoryName(trashPath)!;
+        string? info = name.StartsWith("$R", StringComparison.Ordinal) ? System.IO.Path.Combine(dir, "$I" + name[2..])
+            : System.IO.Path.GetFileName(dir) == "files" ? System.IO.Path.Combine(System.IO.Path.GetDirectoryName(dir)!, "info", name + ".trashinfo") : null;
+        if (info is not null) try { File.Delete(info); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+    }
+
     static string Unique(string dir, string name)
     {
         var t = System.IO.Path.Combine(dir, name);
@@ -192,9 +420,9 @@ public sealed class FileBrowser
         return t;
     }
 
-    static void MoveAny(string from, string to) { if (Directory.Exists(from)) Directory.Move(from, to); else File.Move(from, to); }
+    internal static void MoveAny(string from, string to) { if (Directory.Exists(from)) Directory.Move(from, to); else File.Move(from, to); }
 
-    void Guard(string p)
+    internal void Guard(string p)
     {
         if (Root is null) return;
         var full = System.IO.Path.GetFullPath(p); var root = System.IO.Path.GetFullPath(Root).TrimEnd('\\', '/');
