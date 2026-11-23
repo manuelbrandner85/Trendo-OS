@@ -76,6 +76,54 @@ public class FreePortTests(ITestOutputHelper output)
         Assert.Equal((true, "MIT"), FreePort.CheckLicense(Lic(Mit), Own, elf));
     }
 
+    /// <summary>MIT-Lizenz wie in dotnet/runtime (LICENSE.TXT): „All rights reserved.“ steht zur Copyright-Zeile.</summary>
+    const string DotnetMit = "The MIT License (MIT)\n\nCopyright (c) .NET Foundation and Contributors\n\nAll rights reserved.\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.\n";
+
+    /// <summary>BSD-3-Lizenz im Stil von ANGLE: als Quelltext-Kommentar, „All rights reserved.“ in der Copyright-Zeile.</summary>
+    const string AngleBsd = "// Copyright 2018 The ANGLE Project Authors.\n// All rights reserved.\n//\n// Redistribution and use in source and binary forms, with or without\n// modification, are permitted provided that the following conditions\n// are met:\n//\n//     Redistributions of source code must retain the above copyright\n//     notice, this list of conditions and the following disclaimer.\n//\n//     Neither the name of TransGaming Inc., Google Inc., 3DLabs Inc.\n//     Ltd., nor the names of their contributors may be used to endorse\n//     or promote products derived from this software without specific\n//     prior written permission.\n//\n// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\n// \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES ... ARE DISCLAIMED.\n";
+
+    [Fact(DisplayName = "Freies Spiel Zweitprüfung N-M1: echte MIT- und BSD-3-Texte mit „All rights reserved“ in der Copyright-Zeile gelten als frei")]
+    public void Real_licenses_with_rights_reserved_are_free()
+    {
+        var r = Root(); var elf = Elf(r);
+        Assert.Equal((true, "MIT"), FreePort.CheckLicense(License(r, DotnetMit), Own, elf));
+        Assert.Equal((true, "BSD"), FreePort.CheckLicense(License(r, AngleBsd), Own, elf));
+        Assert.Equal((true, "BSD"), FreePort.CheckLicense(License(r, AngleBsd.Replace("// ", "").Replace("//", "")), Own, elf));
+        Assert.Equal((true, "MIT"), FreePort.CheckLicense(License(r, Mit.Replace("Copyright (c) 2026 Erika Muster", "Copyright (c) 2026 Erika Muster. Alle Rechte vorbehalten.")), Own, elf));
+        // EULA, proprietary und GPL bleiben Ausschlussgründe, auch neben einem vollständigen Text
+        Assert.False(FreePort.CheckLicense(License(r, DotnetMit + "\nThis EULA applies."), Own, elf).Ok);
+        Assert.False(FreePort.CheckLicense(License(r, AngleBsd + "\nProprietary components."), Own, elf).Ok);
+        Assert.Contains("keine vollständige freie Lizenz", FreePort.CheckLicense(License(r, "Copyright 2026 Erika Muster. All rights reserved."), Own, elf).Text);
+    }
+
+    [Fact(DisplayName = "Freies Spiel Zweitprüfung N-N2: Lizenz höchstens 3 Ebenen über dem Programm, nie Laufwerksstamm oder Benutzerordner")]
+    public void License_not_too_far_up()
+    {
+        var r = Root();
+        var lic = License(r, Mit);
+        Assert.True(FreePort.SameProject(lic, Path.Combine(r, "a", "b", "c", "x.elf")));
+        Assert.False(FreePort.SameProject(lic, Path.Combine(r, "a", "b", "c", "d", "x.elf")));
+        var drive = Path.GetPathRoot(r)!;
+        Assert.False(FreePort.SameProject(Path.Combine(drive, "LICENSE"), Path.Combine(drive, "spiel.elf")));
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        Assert.False(FreePort.SameProject(Path.Combine(home, "LICENSE"), Path.Combine(home, "spiel", "x.elf")));
+        Assert.False(FreePort.SameProject(Path.Combine(Path.GetDirectoryName(home)!, "LICENSE"), Path.Combine(home, "x.elf")));
+    }
+
+    [Fact(DisplayName = "Freies Spiel Zweitprüfung N-N3/N-N4: nur echte Disc-Kennungen gelten als Kaufspiel; SYSTEM.CNF auch weiter oben")]
+    public void Disc_ids_and_system_cnf_further_up()
+    {
+        var r = Root();
+        Assert.Null(FreePort.CheckElf(Elf(r, "PONG_123.45.elf")));
+        Assert.Null(FreePort.CheckElf(Elf(r, "TEST-12345.elf")));
+        foreach (var n in new[] { "SLPM_652.34", "SCAJ-200.01", "PAPX_900.10", "PCPX_960.01", "TCES_123.45", "TCPS_101.01", "SCED_510.01" })
+            Assert.Contains("Spiel-Disc", FreePort.CheckElf(Elf(r, n)));
+        var disc = Path.Combine(r, "disc");
+        Directory.CreateDirectory(disc);
+        File.WriteAllText(Path.Combine(disc, "SYSTEM.CNF"), "BOOT2 = cdrom0:\\SLES_500.01;1\n");
+        Assert.Contains("SYSTEM.CNF", FreePort.CheckElf(Elf(Path.Combine(disc, "A", "B", "C"), "x.elf")));
+    }
+
     [Fact(DisplayName = "Freies Spiel M1: Lizenz muss im selben Projekt wie die ELF liegen; beim Katalogtitel genau die bekannte LICENSE")]
     public void License_same_project_and_hash()
     {
@@ -224,6 +272,27 @@ public class FreePortTests(ITestOutputHelper output)
         Assert.Equal("fehler", c.Status);
         Assert.Contains("gehört zu PS2Recomp", c.Message);
         Assert.Equal("// gehört PS2Recomp", File.ReadAllText(Path.Combine(runner, "main.cpp")));
+    }
+
+    [Fact(DisplayName = "Freies Spiel Zweitprüfung N-N1: die Liste löscht nichts außerhalb und nichts, was Trendo nicht genau so hingelegt hat")]
+    public void Manifest_cannot_delete_foreign_files()
+    {
+        var r = Root(); var recomp = Recomp(r);
+        var rt = Path.Combine(recomp, "ps2xRuntime");
+        var victim = Path.Combine(recomp, "ps2xRuntimeAlt", "opfer.txt"); Directory.CreateDirectory(Path.GetDirectoryName(victim)!); File.WriteAllText(victim, "x");
+        var own = Path.Combine(rt, "src", "runner", "eigene-datei.cpp"); Directory.CreateDirectory(Path.GetDirectoryName(own)!); File.WriteAllText(own, "// eigene");
+        var zero = new string('0', 64);
+        File.WriteAllText(Path.Combine(rt, FreePort.Manifest), $"../ps2xRuntimeAlt/opfer.txt\t{FreePort.Sha256(victim)}\nsrc/runner/eigene-datei.cpp\nsrc/runner/eigene-datei.cpp\t{zero}\nsrc/runner/../../x.cpp\t{zero}\n");
+        var outDir = Path.Combine(r, "aus"); Directory.CreateDirectory(outDir); File.WriteAllText(Path.Combine(outDir, "game.cpp"), "// neu");
+        var placed = FreePort.Distribute(outDir, recomp);
+        Assert.Equal(["src/runner/game.cpp"], placed);
+        Assert.True(File.Exists(victim));
+        Assert.True(File.Exists(own));
+        // eigene Datei nachträglich geändert: wird nicht gelöscht und nicht still überschrieben
+        File.WriteAllText(Path.Combine(rt, "src", "runner", "game.cpp"), "// von Hand geändert");
+        Assert.Throws<IOException>(() => FreePort.Distribute(outDir, recomp));
+        Assert.Equal("// von Hand geändert", File.ReadAllText(Path.Combine(rt, "src", "runner", "game.cpp")));
+        Assert.Contains("\t", File.ReadAllText(Path.Combine(rt, FreePort.Manifest)));
     }
 
     [Fact(DisplayName = "Freies Spiel N2: Protokoll wird während eines langen Schritts gesichert")]

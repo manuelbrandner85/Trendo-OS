@@ -83,4 +83,21 @@ Einschränkungen:
 
 Der echte Portierlauf bleibt BLOCKIERT (PS2Recomp und CMake fehlen). Die echte `cubes_demo.elf` und `LICENSE.txt` wurden einmalig von der Original-Quelle geholt, um die Prüfsummen festzulegen, und danach gelöscht.
 
+## Zweitprüfung behoben (Stand nach 3827c131f)
+
+| Befund | Lösung | Test (Rot auf 3827c131f: 4 Fehler, Grün jetzt) |
+|---|---|---|
+| N-M1 echte MIT/BSD mit „All rights reserved“ abgewiesen | „All rights reserved“ und „Alle Rechte vorbehalten“ zählen nur noch, wenn keine vollständige freie Lizenz im Text steht. EULA, proprietary und GPL bleiben harte Ausschlussgründe. Kommentarzeichen am Zeilenanfang (// # * ;) werden vor dem Vergleich entfernt, sonst würde die ANGLE-Lizenz als Quelltext-Kommentar nicht erkannt | `FreePortTests.Real_licenses_with_rights_reserved_are_free` (.NET-MIT-Text, BSD-3 im ANGLE-Stil mit und ohne //); alte Angriffe weiter in `License_bypass_rejected` |
+| N-N1 Liste löscht außerhalb bzw. fremde Dateien | Einträge nur der Form `src/runner/<name>.cpp` bzw. `include/<name>.h|.hpp` ohne weitere Trenner, jeweils mit SHA-256. Präfixvergleich mit Trennzeichen. Gelöscht wird nur, was noch dieselbe Prüfsumme hat; eine geänderte oder fremde Datei wird weder gelöscht noch überschrieben (Fehler) | `Manifest_cannot_delete_foreign_files` (`../ps2xRuntimeAlt/opfer.txt`, `eigene-datei.cpp` ohne bzw. mit falscher SHA, `src/runner/../../x.cpp`, von Hand geänderte Datei) |
+| N-N2 LICENSE weit oben akzeptiert | Höchstens 3 Ebenen über dem Ordner des Programms (glampert: LICENSE.txt → source/demos/bin). Nie Laufwerksstamm, Benutzerordner oder ein Ordner darüber | `License_not_too_far_up` |
+| N-N3 Regex zu breit | Nur noch Disc-Kennungen `S[CL][AEKPU][ASMJDH]`, `P[ABC]PX`, `T[CL][EPU]S` | `Disc_ids_and_system_cnf_further_up` (PONG_123.45 und TEST-12345 sind frei; SLPM, SCAJ, PAPX, PCPX, TCES, TCPS, SCED sind Disc) |
+| N-N4 SYSTEM.CNF nur zwei Ebenen | Suche im Ordner der Datei und in allen Ordnern darüber bis zum Laufwerksstamm (höchstens 16 Ebenen) | wie oben (SYSTEM.CNF drei Ebenen höher) |
+
+Rot-Grün:
+- Die neuen 4 Tests gegen `FreePort.cs` aus 3827c131f: 4 Fehler, 18 bestanden (`reports/T-0752/rot-zweitpruefung.log`).
+- Mit der Korrektur: Core `FreePortTests|ConsolePortTests|NoFixedUserTests` 28/28 (Rohlog `reports/T-0752/test-core.log`).
+- App: ConsolePort_Ui 4/4, GameLibrary_Ui 8/8, DesignPaket3_Ui 14/14, UebersichtEinfach_Ui 2/2. Ein erster ConsolePort_Ui-Lauf blieb ohne Rechenlast hängen und wurde nach 3 min abgebrochen (eigener Prozess); die Wiederholung lief in 41 s durch.
+
+Unverändert: Der echte Portierlauf bleibt BLOCKIERT (PS2Recomp und CMake fehlen).
+
 **Status:** Ablauf im Studio fertig und getestet (Werkzeuge ersetzt); echter Portierlauf BLOCKIERT.

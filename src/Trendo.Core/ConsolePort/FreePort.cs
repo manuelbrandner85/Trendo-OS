@@ -47,19 +47,35 @@ public static class FreePort
     ];
 
     /// <summary>Hinweise auf unfreie oder fremde Lizenzbedingungen: dann gilt die Datei nicht als Beleg.</summary>
-    static readonly string[] NotFree = ["all rights reserved", "alle rechte vorbehalten", "eula", "proprietary", "proprietär", "gpl", "general public license"];
+    static readonly string[] NotFree = ["eula", "proprietary", "proprietär", "gpl", "general public license"];
 
-    static string Norm(string s) => Regex.Replace(s, @"\s+", " ").Trim();
+    /// <summary>Stehen oft in der Copyright-Zeile echter MIT- und BSD-Lizenzen. Sie zählen nur, wenn keine vollständige freie Lizenz im Text steht.</summary>
+    static readonly string[] Reserved = ["all rights reserved", "alle rechte vorbehalten"];
+
+    /// <summary>So weit darf die Lizenzdatei über dem Ordner des Programms liegen (z. B. LICENSE.txt im Projekt, Programm in source/demos/bin).</summary>
+    public const int MaxLicenseUp = 3;
+
+    /// <summary>Kommentarzeichen am Zeilenanfang (// # * ;) entfernen – Lizenzen wie die von ANGLE stehen als Quelltext-Kommentar – und Leerraum zusammenfassen.</summary>
+    static string Norm(string s) => Regex.Replace(Regex.Replace(s, @"(?m)^[ \t]*(//+|#+|\*+|;+)[ \t]?", ""), @"\s+", " ").Trim();
 
     /// <summary>SHA-256 einer Textdatei mit Zeilenenden LF (unabhängig davon, ob Git sie mit CRLF ausgecheckt hat).</summary>
     public static string TextSha256(string path) => Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(path).Where(b => b != (byte)'\r').ToArray()));
 
-    /// <summary>Liegt die Lizenzdatei im selben Projekt wie das Programm? Ihr Ordner muss das Programm enthalten (auch in Unterordnern).</summary>
+    static StringComparison PathCmp => OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+    static string Dir(string p) => Path.GetFullPath(p).TrimEnd('\\', '/') + Path.DirectorySeparatorChar;
+
+    /// <summary>Liegt die Lizenzdatei im selben Projekt wie das Programm? Ihr Ordner ist der des Programms oder höchstens <see cref="MaxLicenseUp"/> Ebenen
+    /// darüber – nie der Laufwerksstamm, der Benutzerordner oder ein Ordner darüber.</summary>
     public static bool SameProject(string license, string elf)
     {
-        var l = Path.GetFullPath(Path.GetDirectoryName(Path.GetFullPath(license))!).TrimEnd('\\', '/') + Path.DirectorySeparatorChar;
-        var e = Path.GetFullPath(Path.GetDirectoryName(Path.GetFullPath(elf))!).TrimEnd('\\', '/') + Path.DirectorySeparatorChar;
-        return e.StartsWith(l, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+        var l = Dir(Path.GetDirectoryName(Path.GetFullPath(license))!);
+        var e = Dir(Path.GetDirectoryName(Path.GetFullPath(elf))!);
+        if (!e.StartsWith(l, PathCmp)) return false;
+        if (string.Equals(l, Dir(Path.GetPathRoot(l)!), PathCmp)) return false;
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        if (home.Length > 0 && Dir(home).StartsWith(l, PathCmp)) return false;
+        var up = e[l.Length..].Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries).Length;
+        return up <= MaxLicenseUp;
     }
 
     /// <summary>Lizenzdatei lesen und die freie Lizenz erkennen. Ok=false: Grund in Klartext.</summary>
@@ -69,18 +85,21 @@ public static class FreePort
         if (path.Contains("://", StringComparison.Ordinal)) return (false, "Nur eine Datei auf diesem PC.");
         if (!File.Exists(path)) return (false, "Die Lizenzdatei wurde nicht gefunden.");
         if (new FileInfo(path).Length > 256 * 1024) return (false, "Das ist keine Lizenzdatei (zu groß).");
-        if (!string.IsNullOrWhiteSpace(elf) && !SameProject(path, elf)) return (false, "Die Lizenzdatei muss im selben Projekt liegen wie das Programm (im Ordner des Programms oder darüber).");
+        if (!string.IsNullOrWhiteSpace(elf) && !SameProject(path, elf)) return (false, $"Die Lizenzdatei muss im selben Projekt liegen wie das Programm: im Ordner des Programms oder höchstens {MaxLicenseUp} Ebenen darüber, nicht im Laufwerksstamm oder Benutzerordner.");
         var text = Norm(File.ReadAllText(path));
         if (NotFree.FirstOrDefault(w => text.Contains(w, StringComparison.OrdinalIgnoreCase)) is { } bad)
             return (false, $"In der Lizenzdatei steht „{bad}“. Das ist keine freie Lizenz für dieses Vorhaben – Trendo portiert nur MIT, BSD, zlib, Apache 2.0, Unlicense oder CC0.");
         var hit = FreeLicenses.FirstOrDefault(l => l.Markers.All(m => text.Contains(Norm(m), StringComparison.OrdinalIgnoreCase)));
+        if (hit.Id is null && Reserved.FirstOrDefault(w => text.Contains(w, StringComparison.OrdinalIgnoreCase)) is { } res)
+            return (false, $"In der Lizenzdatei steht „{res}“, aber keine vollständige freie Lizenz. Trendo portiert nur MIT, BSD, zlib, Apache 2.0, Unlicense oder CC0.");
         if (hit.Id is null) return (false, "In der Datei steht keine vollständige freie Lizenz (MIT, BSD, zlib, Apache 2.0, Unlicense, CC0). Ohne belegte Lizenz portiert Trendo nichts.");
         if (t.License.Length > 0 && !string.Equals(hit.Id, t.License, StringComparison.OrdinalIgnoreCase)) return (false, $"Erwartet war {t.License}, die Datei enthält {hit.Id}.");
         if (t.LicenseSha256 is { } want && TextSha256(path) != want) return (false, $"Das ist nicht die Lizenzdatei von {t.Source} (Prüfsumme weicht ab).");
         return (true, hit.Id);
     }
 
-    static readonly Regex Retail = new(@"^[SPT][A-Z]{3}[_-]\d{3}\.?\d{2}", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    /// <summary>Kennungen von PS2-Discs: S[CL] + Region + Art (SLUS, SCES, SLPM, SCAJ …) sowie Demo- und Testdiscs (PBPX, PAPX, PCPX, TCES, TLES, TCPS …).</summary>
+    static readonly Regex Retail = new(@"^(S[CL][AEKPU][ASMJDH]|P[ABC]PX|T[CL][EPU]S)[_-]\d{3}\.?\d{2}", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
     static readonly Regex Boot2 = new(@"BOOT2\s*=\s*cdrom0:", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
     /// <summary>Prüft, ob die Datei ein PS2-Programm (ELF, 32 Bit, MIPS, Little Endian) ist und nicht von einer Spiel-Disc stammt. null = passt.
@@ -97,10 +116,10 @@ public static class FreePort
             try { if (new DriveInfo(root).DriveType == DriveType.CDRom) return "Die Datei liegt auf einer Disc oder einem eingebundenen Abbild. Hier gehen nur eigene oder frei lizenzierte Programme."; }
             catch (ArgumentException) { }
         }
-        var here = Path.GetDirectoryName(full);
-        foreach (var dir in new[] { here, here is null ? null : Path.GetDirectoryName(here) })
+        // SYSTEM.CNF liegt im Stamm der Disc: im Ordner der Datei und in allen Ordnern darüber suchen (bis zum Laufwerksstamm, höchstens 16 Ebenen)
+        var level = 0;
+        for (var dir = Path.GetDirectoryName(full); dir is not null && level < 16; dir = Path.GetDirectoryName(dir), level++)
         {
-            if (dir is null) continue;
             var cnf = Path.Combine(dir, "SYSTEM.CNF");
             if (File.Exists(cnf) && new FileInfo(cnf).Length < 64 * 1024 && Boot2.IsMatch(File.ReadAllText(cnf))) return "Neben der Datei liegt die SYSTEM.CNF einer Spiel-Disc. Hier gehen nur eigene oder frei lizenzierte Programme.";
         }
@@ -228,6 +247,8 @@ public static class FreePort
     /// <summary>Liste der zuletzt von Trendo in PS2Recomp einsortierten Dateien (relativ zu ps2xRuntime).</summary>
     public const string Manifest = "trendo-einsortiert.txt";
 
+    static readonly Regex ManifestEntry = new(@"^(src/runner/[A-Za-z0-9_][A-Za-z0-9_.\-]*\.cpp|include/[A-Za-z0-9_][A-Za-z0-9_.\-]*\.(h|hpp))$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
     public static IReadOnlyList<Step> Plan(string recompDir)
     {
         var build = Path.Combine(recompDir, "build");
@@ -259,26 +280,33 @@ public static class FreePort
     public static IReadOnlyList<string> Distribute(string outDir, string recompDir)
     {
         var rt = Path.Combine(recompDir, "ps2xRuntime");
+        var root = Dir(rt);
         var manifest = Path.Combine(rt, Manifest);
-        var old = File.Exists(manifest) ? File.ReadAllLines(manifest).Where(l => l.Length > 0).ToHashSet(StringComparer.OrdinalIgnoreCase) : [];
+        // Nur gültige Einträge (src/runner/<name>.cpp, include/<name>.h|.hpp, ohne weitere Trenner) mit Prüfsumme gelten als von Trendo einsortiert;
+        // gelöscht wird nur, was noch genau so aussieht, wie Trendo es hingelegt hat.
+        var old = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (File.Exists(manifest))
+            foreach (var line in File.ReadAllLines(manifest))
+                if (line.Split('\t') is [var rel, var sha] && ManifestEntry.IsMatch(rel) && Regex.IsMatch(sha, "^[0-9a-f]{64}$")) old[rel] = sha;
+        string Full(string rel) => Path.GetFullPath(Path.Combine(rt, rel));
+        var owned = old.Where(kv => Full(kv.Key).StartsWith(root, PathCmp) && (!File.Exists(Full(kv.Key)) || Sha256(Full(kv.Key)) == kv.Value)).Select(kv => kv.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var plan = new List<(string From, string Rel)>();
         foreach (var f in Directory.EnumerateFiles(outDir, "*", SearchOption.AllDirectories))
         {
             var ext = Path.GetExtension(f).ToLowerInvariant();
-            if (ext == ".cpp") plan.Add((f, "src/runner/" + Path.GetFileName(f)));
-            else if (ext is ".h" or ".hpp") plan.Add((f, "include/" + Path.GetFileName(f)));
+            var rel = ext == ".cpp" ? "src/runner/" + Path.GetFileName(f) : ext is ".h" or ".hpp" ? "include/" + Path.GetFileName(f) : null;
+            if (rel is null) continue;
+            if (!ManifestEntry.IsMatch(rel)) throw new IOException($"Der Recompiler hat eine Datei mit ungewöhnlichem Namen erzeugt: {Path.GetFileName(f)}");
+            plan.Add((f, rel));
         }
         foreach (var (_, rel) in plan)
-            if (!old.Contains(rel) && File.Exists(Path.Combine(rt, rel))) throw new IOException($"{rel} gehört zu PS2Recomp und würde überschrieben. Bitte PS2Recomp frisch einrichten.");
-        foreach (var rel in old)
-        {
-            var p = Path.GetFullPath(Path.Combine(rt, rel));
-            if (p.StartsWith(Path.GetFullPath(rt), StringComparison.OrdinalIgnoreCase) && File.Exists(p)) File.Delete(p);
-        }
+            if (!owned.Contains(rel) && File.Exists(Full(rel))) throw new IOException($"{rel} gehört zu PS2Recomp (nicht von Trendo einsortiert) und würde überschrieben. Bitte PS2Recomp frisch einrichten.");
+        foreach (var rel in owned)
+            if (File.Exists(Full(rel))) File.Delete(Full(rel));
         Directory.CreateDirectory(Path.Combine(rt, "src", "runner")); Directory.CreateDirectory(Path.Combine(rt, "include"));
         foreach (var (from, rel) in plan) File.Copy(from, Path.Combine(rt, rel), true);
         var placed = plan.Select(p => p.Rel).ToList();
-        AtomicFile.WriteAllText(manifest, string.Join("\n", placed) + "\n");
+        AtomicFile.WriteAllText(manifest, string.Join("\n", placed.Select(r => r + "\t" + Sha256(Full(r)))) + "\n");
         var build = Path.Combine(recompDir, "build");
         if (Directory.Exists(build))
             foreach (var d in Directory.EnumerateDirectories(build, "*" + RunnerTarget + "*.dir", SearchOption.AllDirectories).ToList())

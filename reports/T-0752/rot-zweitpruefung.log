@@ -1,0 +1,5 @@
+  Fehler Freies Spiel Zweitprüfung N-M1: echte MIT- und BSD-3-Texte mit „All rights reserved“ in der Copyright-Zeile gelten als frei [8 ms]
+  Fehler Freies Spiel Zweitprüfung N-N2: Lizenz höchstens 3 Ebenen über dem Programm, nie Laufwerksstamm oder Benutzerordner [2 ms]
+  Fehler Freies Spiel Zweitprüfung N-N1: die Liste löscht nichts außerhalb und nichts, was Trendo nicht genau so hingelegt hat [21 ms]
+  Fehler Freies Spiel Zweitprüfung N-N3/N-N4: nur echte Disc-Kennungen gelten als Kaufspiel; SYSTEM.CNF auch weiter oben [1 ms]
+Fehler!      : Fehler:     4, erfolgreich:    18, übersprungen:     0, gesamt:    22, Dauer: 3 s - Trendo.Core.Tests.dll (net10.0)

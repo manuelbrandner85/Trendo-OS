@@ -2,6 +2,14 @@ xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
   Discovering: Trendo.App.Tests
   Discovered:  Trendo.App.Tests
   Starting:    Trendo.App.Tests
+    Konsole T-0752: Freies Spiel – ohne PS2Recomp und CMake BLOCKIERT vor dem ersten Schritt, Start gesperrt, nichts wird aufgerufen [STARTING]
+    Konsole T-0752: Freies Spiel – ohne PS2Recomp und CMake BLOCKIERT vor dem ersten Schritt, Start gesperrt, nichts wird aufgerufen [FINISHED] Time: 21,7416073s
+    Konsole: Einrichten holt die feste Fassung, legt die Skills ins Projekt und meldet Fehler verständlich [STARTING]
+    Konsole: Einrichten holt die feste Fassung, legt die Skills ins Projekt und meldet Fehler verständlich [FINISHED] Time: 2,9333729s
+    Konsole: Ohne Besitz-Bestätigung bleiben die Schritte gesperrt; danach geht der richtige Auftrag an Claude [STARTING]
+    Konsole: Ohne Besitz-Bestätigung bleiben die Schritte gesperrt; danach geht der richtige Auftrag an Claude [FINISHED] Time: 3,6352384s
+    Konsole T-0752: Freies Spiel – Klick auf Lizenz, Programm, Ordner und „Portieren starten“ bis zur Ergebnisdatei, dann Probelauf [STARTING]
+    Konsole T-0752: Freies Spiel – Klick auf Lizenz, Programm, Ordner und „Portieren starten“ bis zur Ergebnisdatei, dann Probelauf [FINISHED] Time: 9,7819217s
   Finished:    Trendo.App.Tests (ID = '3b596269402199c193d2b23536f22eeebd64f2cd0f338e551b295c40618f2057')
 === TEST EXECUTION SUMMARY ===
-   Trendo.App.Tests  Total: 4, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 9,649s
+   Trendo.App.Tests  Total: 4, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 40,818s
