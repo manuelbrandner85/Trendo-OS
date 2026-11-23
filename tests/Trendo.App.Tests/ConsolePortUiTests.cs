@@ -102,7 +102,7 @@ public class ConsolePort_Ui
         var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1500;
         w.Show(K); Settle(); RealClick(w, w.Find<Button>("prog-tpl-neu")); Settle();
         var d = w.ProgramActive(K)!;
-        var lic = Path.Combine(root, "LICENSE"); File.WriteAllText(lic, "MIT License\nPermission is hereby granted, free of charge, to any person ...");
+        var lic = Path.Combine(root, "LICENSE"); File.WriteAllText(lic, "MIT License\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software ...\n");
         var elf = MipsElf(root);
         var recomp = Path.Combine(root, "ps2recomp"); Directory.CreateDirectory(Path.Combine(recomp, "ps2xRuntime")); File.WriteAllText(Path.Combine(recomp, "CMakeLists.txt"), "project(x)");
         w.PickOverride = r => Task.FromResult<string[]?>(r.Field == "fp-license" ? [lic] : [elf]);
@@ -122,6 +122,8 @@ public class ConsolePort_Ui
         try
         {
             Tap(w, "con-step-frei");
+            Assert.Contains("BLOCKIERT", w.Find<TextBlock>("prog-status-text").Text);
+            Tap(w, "fp-title-eigen"); await Until(() => d.Text("fp_title") == "eigen");
             Tap(w, "fp-pick-license"); await Until(() => d.Text("fp_license") == lic);
             Tap(w, "fp-pick-elf"); await Until(() => d.Text("fp_elf") == elf);
             Tap(w, "fp-pick-recomp"); await Until(() => d.Text("fp_recomp") == recomp);
@@ -134,7 +136,8 @@ public class ConsolePort_Ui
             Settle();
             Assert.StartsWith("✓ Fertig", w.Find<TextBlock>("fp-outcome").Text);
             Assert.Contains("ps2EntryRunner.exe · SHA-256 " + w.FreePortLast.ProgramSha256, w.Find<TextBlock>("fp-result").Text);
-            Assert.Contains("Schritt 7/7", w.Find<TextBox>("fp-log").Text);
+            Assert.Contains("Schritt 8/8", w.Find<TextBox>("fp-log").Text);
+            Assert.Equal("Portieren fertig", w.Find<TextBlock>("prog-status-text").Text);
             Assert.Contains(calls, c => c.EndsWith("--target ps2EntryRunner"));
             Assert.True(File.Exists(Path.Combine(recomp, "ps2xRuntime", "src", "runner", "game.cpp")));
             Tap(w, "fp-trial");
@@ -144,6 +147,21 @@ public class ConsolePort_Ui
             Assert.Contains("ohne Absturz", w.Find<TextBlock>("fp-trial-state").Text);
             Assert.Contains(calls, c => c.StartsWith("ps2EntryRunner.exe ") && c.EndsWith("cubes_demo.elf"));
             Assert.True(d.CanUndo); // Auswahl von Lizenz, Programm und Ordner ist rückgängig machbar
+            // M3: fremdes Programm in der Ergebnisdatei – Probelauf gesperrt, nichts wird gestartet
+            var result = Path.Combine(Path.GetDirectoryName(w.FreePortLast.LogPath)!, "ergebnis.json");
+            var node = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(result))!;
+            node["programm"] = Path.Combine(Environment.SystemDirectory, "cmd.exe");
+            File.WriteAllText(result, node.ToJsonString());
+            w.Show(K); Settle();
+            Assert.False(w.Find<Button>("fp-trial").IsEnabled);
+            Assert.StartsWith("✕", w.Find<TextBlock>("fp-trial-blocked").Text);
+            var before = calls.Count;
+            Assert.Null(await w.FreePortTrial(d));
+            Assert.Equal(before, calls.Count);
+            // N1: kaputte Ergebnisdatei – Ansicht baut trotzdem auf
+            File.WriteAllText(result, "{ kaputt");
+            w.Show(K); Settle();
+            Assert.Contains("beschädigt", w.Find<TextBlock>("fp-result").Text);
         }
         finally { MainWindow.FolderPickOverride = null; w.Close(); }
     }

@@ -1,31 +1,45 @@
-Testlauf für "C:SERS<USER>\AppData\Local\Temp\trendo-auftrag-T-0752\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0752\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
 Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
-C:SERS<USER>\AppData\Local\Temp\trendo-auftrag-T-0752\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0752\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
 [xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
-[xUnit.net 00:00:00.26]   Discovering: Trendo.Core.Tests
-[xUnit.net 00:00:00.69]   Discovered:  Trendo.Core.Tests
-[xUnit.net 00:00:00.71]   Starting:    Trendo.Core.Tests
-  Bestanden Freies Spiel: ELF-Prüfung erkennt PS2-Programme und weist Kaufspiele und Fremdformate ab [16 ms]
-  Bestanden Freies Spiel: Voraussetzungen nennen fehlendes PS2Recomp, CMake, Compiler und zu lange Pfade [11 ms]
+[xUnit.net 00:00:00.41]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:00.99]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:01.02]   Starting:    Trendo.Core.Tests
+  Bestanden Konsole: Nur ein gültiges lokales ISO-Abbild wird angenommen; Adressen, andere Formate und kaputte Dateien nicht [30 ms]
+  Bestanden Konsole: Aufträge nennen den Schritt und verbieten das Beschaffen von Spielen und das Hochladen; unbekannte Schritte werden abgelehnt [2 ms]
+  Bestanden Konsole: Skills kommen in fester Fassung aus dem genannten Repository [4 ms]
+  Bestanden Konsole: Fortschritt kommt aus STATE.md und wird gekürzt; ohne Datei null [3 ms]
+  Bestanden Freies Spiel M1: Lizenzprüfung lässt Umgehungen nicht durch [47 ms]
+  Bestanden Konsole: Ohne Name, Besitz-Bestätigung und gültiges Abbild startet nichts [9 ms]
+  Bestanden Freies Spiel: ELF-Prüfung erkennt PS2-Programme und weist Disc-Startprogramme, SYSTEM.CNF und Fremdformate ab [30 ms]
+  Bestanden Freies Spiel N4: CMake nur als .exe, eine .cmd im Suchpfad zählt nicht [3 ms]
+  Bestanden Freies Spiel: Voraussetzungen nennen fehlendes PS2Recomp, CMake, Compiler und zu lange Pfade [19 ms]
   Bestanden Freies Spiel: Abbrechen während eines Schritts beendet den Lauf und vermerkt es [17 ms]
+  Bestanden Freies Spiel N3: Probelauf ohne [run:tick] gilt nicht als Erfolg [4 ms]
+  Bestanden Kein fester Nutzername in src, installer und linux-image [251 ms]
   Bestanden Freies Spiel: Probelauf startet einen echten Prozess, beendet ihn nach dem Zeitlimit und erkennt den Hänger [3 s]
-[xUnit.net 00:00:04.22]   Finished:    Trendo.Core.Tests
-  Bestanden Freies Spiel: Lizenzdatei muss eine freie Lizenz belegen, beim Katalogtitel genau die erwartete [8 ms]
+  Bestanden Freies Spiel N1: gesperrte ELF-Datei wird als ✕-Zeile gemeldet statt zu werfen [37 ms]
+  Bestanden Freies Spiel M4: zweiter Lauf entfernt die Code-Dateien des ersten, löscht .obj und lässt Dateien von PS2Recomp in Ruhe [136 ms]
+  Bestanden Freies Spiel N2: Protokoll wird während eines langen Schritts gesichert [59 ms]
+  Bestanden Freies Spiel M1: Lizenz muss im selben Projekt wie die ELF liegen; beim Katalogtitel genau die bekannte LICENSE [18 ms]
   Bestanden Freies Spiel: Hänger heißt [run:tick] mit stehender pc [< 1 ms]
-  Bestanden Freies Spiel: echte Prüfung auf diesem PC stimmt mit dem Suchpfad überein [69 ms]
+  Bestanden Freies Spiel M3: Probelauf startet nur das gebaute, unveränderte Programm aus dem Build-Ordner mit der ELF aus dem Lauf [72 ms]
+  Bestanden Freies Spiel: echte Prüfung auf diesem PC stimmt mit dem Suchpfad überein [26 ms]
   Standardausgabemeldungen:
  [prüfung] OK  Lizenz belegt: MIT – LICENSE
  [prüfung] OK  Programm des Spiels: cubes_demo.elf · SHA-256 409876a2732d501d…
  [prüfung] FEHLT PS2Recomp eingerichtet: Der Ordner fehlt. PS2Recomp (GPL-3.0) selbst von github.com/ran-j/PS2Recomp holen und den Ordner hier wählen. Trendo liefert es nicht mit.
- [prüfung] FEHLT CMake 3.20 oder neuer: fehlt – CMake von cmake.org einrichten (portable ZIP genügt) und in den Suchpfad legen.
+ [prüfung] FEHLT CMake 3.20 oder neuer: fehlt – CMake von cmake.org einrichten (portable ZIP genügt) und cmake.exe in den Suchpfad legen.
  [prüfung] OK  C++20-Compiler: gefunden
 
 
-  Bestanden Freies Spiel: fehlt ein Werkzeug, startet nichts und das Protokoll sagt BLOCKIERT [17 ms]
-  Bestanden Freies Spiel: config.toml enthält Eingabe, Ausgabe und die Bindungen; falsche Bindungen werden benannt [3 ms]
-  Bestanden Freies Spiel: Ablauf mit nachgebildeten Werkzeugen bis zur Ergebnisdatei mit SHA-256 und Protokoll [147 ms]
+  Bestanden Freies Spiel: fehlt ein Werkzeug, startet nichts und das Protokoll sagt BLOCKIERT [16 ms]
+  Bestanden Freies Spiel: config.toml enthält Eingabe, Ausgabe und die Bindungen; falsche Bindungen werden benannt [2 ms]
+[xUnit.net 00:00:04.92]   Finished:    Trendo.Core.Tests
+  Bestanden Freies Spiel M2: Katalogtitel ist an die bekannte cubes_demo.elf gebunden (SHA-256) [5 ms]
+  Bestanden Freies Spiel: Ablauf mit nachgebildeten Werkzeugen bis zur Ergebnisdatei mit SHA-256, Liste der Dateien und Protokoll [50 ms]
 
 Der Testlauf war erfolgreich.
-Gesamtzahl Tests: 10
-     Bestanden: 10
- Gesamtzeit: 4,7204 Sekunden
+Gesamtzahl Tests: 24
+     Bestanden: 24
+ Gesamtzeit: 5,4775 Sekunden

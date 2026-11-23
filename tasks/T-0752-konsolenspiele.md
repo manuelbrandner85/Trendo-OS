@@ -6,8 +6,9 @@
 **Fertig, wenn:**
 - [x] Quelle und Lizenz sichtbar, Lizenzdatei wird geprüft (MIT/BSD/zlib/Apache/Unlicense/CC0), Kaufspiel-ELF und Fremdformate werden abgewiesen
 - [x] Voraussetzungen (PS2Recomp, kurzer Pfad, CMake, Compiler) werden vor dem ersten Schritt geprüft; fehlt etwas: BLOCKIERT mit Einrichten-Hinweis, nichts wird aufgerufen
-- [x] 7 Schritte mit Fortschritt, Protokoll (`protokoll.txt`), Ergebnisdatei (`ergebnis.json` mit SHA-256), Abbrechen, Probelauf mit Hänger-Erkennung
+- [x] 8 Schritte mit Fortschritt, Protokoll (`protokoll.txt`), Ergebnisdatei (`ergebnis.json` mit SHA-256), Abbrechen, Probelauf mit Hänger-Erkennung
 - [x] Tests vom Klick bis zur Ergebnisdatei (Werkzeuge ersetzt), dazu echte Prüfung auf diesem PC und Probelauf mit einem echten Prozess
 - [ ] echter Portierlauf – BLOCKIERT: PS2Recomp, CMake und cubes_demo.elf fehlen auf diesem PC
+- [x] Gegenprüfung M1–M4, N1–N4 behoben (siehe Bericht)
 **Nicht tun:** PS2Recomp oder GPL-Code ins Repo/Setup; Kaufspiele, BIOS; Installationen; Volltest.
 **Am Ende:** Branch pushen, Bericht `tasks/T-0752-konsolenspiele.bericht.md`.

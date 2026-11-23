@@ -40,6 +40,23 @@ public partial class MainWindow
         var sp = new StackPanel { Name = "fp-view", Spacing = 8, Margin = new Thickness(4, 0, 14, 4), MaxWidth = 820, HorizontalAlignment = HorizontalAlignment.Left };
         sp.Children.Add(P("Übersetzt ein frei lizenziertes PS2-Programm mit dem Recompiler PS2Recomp zu einem Windows-Programm. PS2Recomp, CMake und einen Compiler für C++ richtest du selbst ein – Trendo liefert sie nicht mit und startet nichts, solange etwas fehlt. Kaufspiele und BIOS-Dateien gehen hier nicht.", Muted, 12));
 
+        var checks = FpChecks(d);
+        var blocked = checks.FirstOrDefault(c => !c.Ok);
+        var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+        var go = new Button { Name = "fp-start", Content = "Portieren starten", Padding = new Thickness(16, 6), IsEnabled = blocked is null && !FreePortBusy };
+        go.Classes.Add("accent"); go.Classes.Add("haupt");
+        go.Click += async (_, _) => await FreePortStart(d);
+        actions.Children.Add(go);
+        if (FreePortBusy)
+        {
+            var stop = new Button { Name = "fp-cancel", Content = "Abbrechen", Padding = new Thickness(14, 6) };
+            stop.Click += (_, _) => FreePortCancel();
+            actions.Children.Add(stop);
+        }
+        sp.Children.Add(actions);
+        if (blocked is not null && !FreePortBusy) sp.Children.Add(new TextBlock { Name = "fp-blocked", Text = "BLOCKIERT – " + blocked.Label + ": " + blocked.Detail, TextWrapping = TextWrapping.Wrap, Foreground = Brush.Parse("#F5A524"), FontSize = 12 });
+        if (FreePortLast is { } last) sp.Children.Add(new TextBlock { Name = "fp-outcome", Text = (last.Status switch { "fertig" => "✓ Fertig: ", "abgebrochen" => "Abgebrochen: ", "blockiert" => "BLOCKIERT: ", _ => "✕ Fehler: " }) + last.Message, TextWrapping = TextWrapping.Wrap, FontSize = 12, Foreground = last.Status == "fertig" ? Brush.Parse("#3DDC84") : Brush.Parse("#F5A524") });
+
         sp.Children.Add(H("1 · Quelle und Lizenz", 13));
         var titles = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6 };
         foreach (var x in FreePort.Titles)
@@ -62,7 +79,6 @@ public partial class MainWindow
         sp.Children.Add(files);
 
         sp.Children.Add(H("2 · Voraussetzungen auf diesem PC", 13));
-        var checks = FpChecks(d);
         var cl = new StackPanel { Name = "fp-checks", Spacing = 2 };
         foreach (var c in checks)
             cl.Children.Add(new TextBlock { Name = "fp-check-" + c.Id, Text = $"{(c.Ok ? "✓" : "✕")} {c.Label}: {c.Detail}", TextWrapping = TextWrapping.Wrap, FontSize = 12, Foreground = c.Ok ? Text : Brush.Parse("#F5A524") });
@@ -79,9 +95,7 @@ public partial class MainWindow
             if (FreePort.CheckStubs(FpStubs(d)) is { } bad) sp.Children.Add(new TextBlock { Name = "fp-stubs-bad", Text = bad, Foreground = Brush.Parse("#F5A524"), FontSize = 12 });
         }
 
-        sp.Children.Add(H("3 · Portieren", 13));
-        var blocked = checks.FirstOrDefault(c => !c.Ok);
-        if (blocked is not null && !FreePortBusy) sp.Children.Add(new TextBlock { Name = "fp-blocked", Text = "BLOCKIERT – " + blocked.Label + ": " + blocked.Detail, TextWrapping = TextWrapping.Wrap, Foreground = Brush.Parse("#F5A524"), FontSize = 12 });
+        sp.Children.Add(H("3 · Schritte", 13));
         var plan = FreePort.Plan(d.Text("fp_recomp"));
         var stepList = new StackPanel { Name = "fp-steps", Spacing = 1 };
         for (var i = 0; i < plan.Count; i++)
@@ -91,22 +105,8 @@ public partial class MainWindow
         }
         sp.Children.Add(stepList);
         if (FreePortBusy) sp.Children.Add(new ProgressBar { Name = "fp-progress", Minimum = 0, Maximum = plan.Count, Value = Math.Max(0, _fpStep), Height = 6 });
-        var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
-        var go = new Button { Name = "fp-start", Content = "Portieren starten", Padding = new Thickness(16, 6), IsEnabled = blocked is null && !FreePortBusy };
-        go.Classes.Add("accent"); go.Classes.Add("haupt");
-        go.Click += async (_, _) => await FreePortStart(d);
-        actions.Children.Add(go);
-        if (FreePortBusy)
-        {
-            var stop = new Button { Name = "fp-cancel", Content = "Abbrechen", Padding = new Thickness(14, 6) };
-            stop.Click += (_, _) => FreePortCancel();
-            actions.Children.Add(stop);
-        }
-        sp.Children.Add(actions);
-        if (FreePortLast is { } last) sp.Children.Add(new TextBlock { Name = "fp-outcome", Text = (last.Status switch { "fertig" => "✓ Fertig: ", "abgebrochen" => "Abgebrochen: ", "blockiert" => "BLOCKIERT: ", _ => "✕ Fehler: " }) + last.Message, TextWrapping = TextWrapping.Wrap, FontSize = 12, Foreground = last.Status == "fertig" ? Brush.Parse("#3DDC84") : Brush.Parse("#F5A524") });
-
         var logFile = Path.Combine(FpWorkDir(d), "protokoll.txt");
-        string[] shown; lock (_fpLines) shown = _fpLines.Count > 0 ? [.. _fpLines.TakeLast(80)] : File.Exists(logFile) ? File.ReadLines(logFile).TakeLast(80).ToArray() : [];
+        string[] shown; lock (_fpLines) shown = _fpLines.Count > 0 ? [.. _fpLines.TakeLast(80)] : File.Exists(logFile) ? FpReadLog(logFile) : [];
         sp.Children.Add(H("Protokoll", 13));
         sp.Children.Add(new TextBox { Name = "fp-log", Text = shown.Length > 0 ? string.Join("\n", shown) : "Noch kein Lauf.", IsReadOnly = true, AcceptsReturn = true, TextWrapping = TextWrapping.NoWrap, MaxHeight = 260, FontFamily = new FontFamily("Consolas, Courier New, monospace"), FontSize = 11 });
 
@@ -114,19 +114,36 @@ public partial class MainWindow
         if (File.Exists(result) && !FreePortBusy)
         {
             sp.Children.Add(H("Ergebnis", 13));
-            var info = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(result));
-            var prog = info?["programm"]?.GetValue<string>() ?? "";
-            sp.Children.Add(new TextBlock { Name = "fp-result", Text = $"{Path.GetFileName(prog)} · SHA-256 {info?["programm_sha256"]?.GetValue<string>()} · Datei: ergebnis.json", Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap });
+            var target = FreePort.ResolveTrial(result, d.Text("fp_recomp"));
+            string resultText;
+            try { var info = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(result)); resultText = $"{Path.GetFileName(info?["programm"]?.ToString() ?? "")} · SHA-256 {info?["programm_sha256"]} · Datei: ergebnis.json"; }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Text.Json.JsonException) { resultText = "✕ Die Ergebnisdatei ist beschädigt: " + FriendlyError.Say(ex); }
+            sp.Children.Add(new TextBlock { Name = "fp-result", Text = resultText, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap });
+            if (target.Error is { } terr) sp.Children.Add(new TextBlock { Name = "fp-trial-blocked", Text = "✕ " + terr, Foreground = Brush.Parse("#F5A524"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
             var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
-            var trial = new Button { Name = "fp-trial", Content = "Probelauf (20 s)", Padding = new Thickness(12, 5), IsEnabled = File.Exists(prog) && !FreePortBusy };
+            var trial = new Button { Name = "fp-trial", Content = "Probelauf (20 s)", Padding = new Thickness(12, 5), IsEnabled = target.Error is null && !FreePortBusy };
             trial.Click += async (_, _) => await FreePortTrial(d);
             var open = new Button { Name = "fp-open", Content = "Ordner öffnen", Padding = new Thickness(12, 5) };
             open.Click += (_, _) => Launch(FpWorkDir(d));
             row.Children.Add(trial); row.Children.Add(open);
             sp.Children.Add(row);
-            if (FreePortLastTrial is { } tr) sp.Children.Add(new TextBlock { Name = "fp-trial-state", Text = tr.Message, Foreground = tr.Status == "läuft" || tr.Status == "beendet" ? Brush.Parse("#3DDC84") : Brush.Parse("#F5A524"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
+            if (FreePortLastTrial is { } tr) sp.Children.Add(new TextBlock { Name = "fp-trial-state", Text = tr.Message, Foreground = tr.Status is "läuft" or "beendet" ? Brush.Parse("#3DDC84") : Brush.Parse("#F5A524"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
         }
         return sp;
+    }
+
+    static string[] FpReadLog(string f)
+    {
+        try { return File.ReadLines(f).TakeLast(80).ToArray(); }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return ["✕ Protokoll lässt sich gerade nicht lesen: " + FriendlyError.Say(e)]; }
+    }
+
+    /// <summary>Statuszeile im Schritt „Freies Spiel portieren“.</summary>
+    string FreePortStatus(ProgramDocument d)
+    {
+        if (FreePortBusy) return _fpStep >= 0 ? $"Portieren läuft – Schritt {_fpStep + 1} von {FreePort.Plan(d.Text("fp_recomp")).Count}" : "Probelauf läuft";
+        if (FreePortLast is { } l) return l.Status == "fertig" ? "Portieren fertig" : l.Message;
+        return FpChecks(d).FirstOrDefault(c => !c.Ok) is { } b ? "BLOCKIERT – " + b.Label : "Bereit zum Portieren";
     }
 
     void FpRefresh() { if (Dispatcher.UIThread.CheckAccess()) Show(ConsoleKey); else Dispatcher.UIThread.Post(() => Show(ConsoleKey)); }
@@ -160,11 +177,10 @@ public partial class MainWindow
     {
         var result = Path.Combine(FpWorkDir(d), "ergebnis.json");
         if (!File.Exists(result) || _fpCts is not null) return null;
-        var info = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(result));
-        var prog = info?["programm"]?.GetValue<string>() ?? "";
-        if (!File.Exists(prog)) { _progMsg[ConsoleKey] = "Das fertige Programm ist nicht mehr da. Starte das Portieren neu."; FpRefresh(); return null; }
+        var target = FreePort.ResolveTrial(result, d.Text("fp_recomp"));
+        if (target.Error is { } err) { _progMsg[ConsoleKey] = err; FpRefresh(); return null; }
         _fpCts = new CancellationTokenSource();
-        try { FreePortLastTrial = await Task.Run(() => FreePort.TrialAsync(prog, d.Text("fp_elf"), FpWorkDir(d), FpRunner, seconds, _fpCts.Token)); }
+        try { FreePortLastTrial = await Task.Run(() => FreePort.TrialAsync(target.Program!, target.Elf!, FpWorkDir(d), FpRunner, seconds, _fpCts.Token)); }
         finally { _fpCts.Dispose(); _fpCts = null; }
         FpRefresh();
         return FreePortLastTrial;
