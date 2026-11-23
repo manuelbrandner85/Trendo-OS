@@ -875,7 +875,7 @@ public static class StudioKnowledgeBase
             ["SYS-12"],
             true),
         ["CORE-11"] = new("CORE-11",
-            "Daten, Passwörter und Sicherungen schützen.",
+            "Schutz prüfen, Daten sichern und offen liegende Passwörter finden.", // T-0754: keine Passwortverwaltung versprechen
             [
                 T("sicherung", "Sicherung erstellen", "Sicherung erstellen", "Erstelle eine Sicherung von ", ["sicherung", "backup", "sichern"], "Was gesichert wird"),
                 T("schutz", "Schutz prüfen", "Schutz prüfen", "Prüfe den Schutz von ", ["schutz", "datenschutz", "prüf"]),

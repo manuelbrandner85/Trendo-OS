@@ -49,7 +49,8 @@ public partial class MainWindow
         var good = checks.Count(c => c.Level == CheckLevel.Gut); var warn = checks.Count(c => c.Level != CheckLevel.Gut && c.Level != CheckLevel.Hinweis);
         var summary = new StackPanel { Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Children = {
             new TextBlock { Name = "sec-score", Text = $"Schutz: {score} von 100", FontSize = 24, FontWeight = FontWeight.Bold, Foreground = Brush.Parse(scoreCol) },
-            P(score >= 80 ? "Gut geschützt. Die Punkte unten zeigen, was noch besser geht." : score >= 50 ? "Brauchbar – ein paar Punkte unten solltest du ansehen." : "Hier ist Handlungsbedarf – fang mit den roten Karten an.", Text, 13),
+            P(checks.Any(c => c.Id == "backup-crypt") && score >= 50 ? "Brauchbar – aber deine Sicherungen sind nicht verschlüsselt (gelbe Karte unten). Die Punkte unten zeigen, was noch besser geht." // T-0754: nicht „gut geschützt“ nennen, solange die Sicherungen offen lesbar sind
+              : score >= 80 ? "Gut geschützt. Die Punkte unten zeigen, was noch besser geht." : score >= 50 ? "Brauchbar – ein paar Punkte unten solltest du ansehen." : "Hier ist Handlungsbedarf – fang mit den roten Karten an.", Text, 13),
             P($"{good} von {checks.Count} Prüfungen in Ordnung{(warn > 0 ? $" · {warn} mit Warnung" : "")}", null, 12) } };
         sp.Children.Add(WCard(new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), ColumnSpacing = 24, Children = { ring, Pos(summary, 1) } }));
         var cards = new Avalonia.Controls.Primitives.UniformGrid { Name = "sec-checks", Columns = 3 };

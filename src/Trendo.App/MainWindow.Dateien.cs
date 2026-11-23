@@ -215,16 +215,49 @@ public partial class MainWindow
             _fbSel.Clear(); _fbSel.AddRange(r); if (c.Move) _fbClip = null; FilesMessage = Count(r.Count) + " eingefügt";
         });
     }
+    /// <summary>T-0754 (Gegenprüfung): Elemente auf einem Laufwerk ohne Papierkorb, die auf ein ausdrückliches „Ja, endgültig löschen“ warten.</summary>
+    public IReadOnlyList<string>? FilesNukeAsk => _fbNukeAsk;
+    List<string>? _fbNukeAsk;
+
     public void FilesTrash()
     {
         if (_fbSel.Count == 0) return;
         var all = _fbSel.ToList();
+        // Laufwerk ohne Papierkorb (Netz, SUBST, mancher USB-Stick): Löschen wäre endgültig – erst ausdrücklich fragen, vorher nichts anfassen
+        var noBin = all.Where(p => !Files.HasTrash(p)).ToList();
+        if (noBin.Count > 0) { _fbNukeAsk = all; FilesMessage = ""; Show(FK); return; }
+        FilesTrashNow(all, permanentOk: false);
+    }
+
+    /// <summary>Antwort auf die Rückfrage „endgültig löschen?“. Nein: nichts passiert.</summary>
+    public void FilesNukeAnswer(bool yes)
+    {
+        var all = _fbNukeAsk; _fbNukeAsk = null;
+        if (all is null) return;
+        if (!yes) { FilesMessage = "Abgebrochen – es wurde nichts gelöscht."; Show(FK); return; }
+        FilesTrashNow(all, permanentOk: true);
+    }
+
+    void FilesTrashNow(List<string> all, bool permanentOk)
+    {
         FilesDo(() =>
         {
-            var done = new List<(string, string?)>();
-            try { foreach (var s in all) done.Add((s, Files.Trash(s, OperatingSystem.IsWindows() ? FileBrowser.SystemRecycle : null))); }
+            var done = new List<(string, string?)>(); var gone = new List<string>(); var binned = 0;
+            try
+            {
+                foreach (var s in all)
+                {
+                    if (permanentOk && !Files.HasTrash(s)) { Files.DeletePermanently(s); gone.Add(s); continue; } // nach ausdrücklichem Ja
+                    var t = Files.Trash(s, OperatingSystem.IsWindows() ? FileBrowser.SystemRecycle : null);
+                    done.Add((s, t));
+                    if (FileBrowser.IsTrashLocation(t)) binned++; else if (!File.Exists(s) && !Directory.Exists(s)) gone.Add(s);
+                }
+            }
             finally { FilesHistory.Record(FileUndo.Kind.Papierkorb, done); } // T-0754: Lage im Papierkorb merken – „Rückgängig“ holt es von dort zurück
-            FilesMessage = all.Count == 1 ? $"„{Path.GetFileName(all[0])}“ liegt im Papierkorb." : $"{all.Count} Elemente liegen im Papierkorb."; FilesSelected = null;
+            // ehrlich: was nicht im Papierkorb gelandet ist, ist endgültig gelöscht
+            var inBin = binned == 0 ? "" : binned == 1 && all.Count == 1 ? $"„{Path.GetFileName(all[0])}“ liegt im Papierkorb." : binned == 1 ? $"1 Element liegt im Papierkorb." : $"{binned} Elemente liegen im Papierkorb.";
+            var lost = gone.Count == 0 ? "" : gone.Count == 1 ? $"„{Path.GetFileName(gone[0])}“ wurde endgültig gelöscht (nicht im Papierkorb)." : $"{gone.Count} Elemente wurden endgültig gelöscht (nicht im Papierkorb).";
+            FilesMessage = (inBin + " " + lost).Trim(); FilesSelected = null;
         });
     }
 
@@ -346,7 +379,7 @@ public partial class MainWindow
         var viewBtn = Tb("fb-view", G(view == "liste" ? "▦" : "☰", 14), view == "liste" ? "Ansicht: Symbole" : "Ansicht: Liste", () => { FilesView = view == "liste" ? "symbole" : "liste"; Show(FK); });
         var hidden = new CheckBox { Name = "fb-hidden", Content = "Ausgeblendete Elemente", IsChecked = Files.ShowHidden, FontSize = 12, Foreground = Text, VerticalAlignment = VerticalAlignment.Center };
         hidden.IsCheckedChanged += (_, _) => { if (Files.ShowHidden != (hidden.IsChecked == true)) { Files.ShowHidden = hidden.IsChecked == true; Show(FK); } };
-        var sysOpen = Tb("fb-system", G("⇱", 14), "Im Dateimanager des Systems öffnen", () => { if (!_opt.Isolated) _core.Integrations.LaunchDirect(Principal.LocalOwner, CurDir, _core.Audit); }, true);
+        var sysOpen = Tb("fb-system", G("⇱", 14), "Im System öffnen", () => { if (!_opt.Isolated) _core.Integrations.LaunchDirect(Principal.LocalOwner, CurDir, _core.Audit); }, true);
 
         // Seitenleiste
         var side = new StackPanel { Name = "fb-side", Spacing = 1 };
@@ -491,6 +524,18 @@ public partial class MainWindow
                 if (btn.TranslatePoint(new Point(0, 0), layer) is { } tl && new Rect(tl, btn.Bounds.Size).Intersects(r)) hit.Add(path);
             FilesBand(hit, bandAdd);
         }, Avalonia.Interactivity.RoutingStrategies.Tunnel);
+        if (_fbNukeAsk is { Count: > 0 } nuke) // T-0754 (Gegenprüfung): Rückfrage vor endgültigem Löschen
+        {
+            var yesN = new Button { Name = "fb-nuke-yes", Content = "Ja, endgültig löschen", FontSize = 12 }; yesN.Click += (_, _) => FilesNukeAnswer(true);
+            var noN = new Button { Name = "fb-nuke-no", Content = "Abbrechen", FontSize = 12, Background = Accent }; noN.Click += (_, _) => FilesNukeAnswer(false);
+            var what = nuke.Count == 1 ? $"„{Path.GetFileName(nuke[0])}“" : $"{nuke.Count} Elemente";
+            var bar = new Border { Name = "fb-nuke-ask", Background = Brush.Parse("#33F87171"), BorderBrush = Brush.Parse("#F87171"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 6), Margin = new Thickness(8, 6),
+                Child = new StackPanel { Spacing = 6, Children = {
+                    new TextBlock { Name = "fb-nuke-text", Text = $"{what}: Auf diesem Laufwerk gibt es keinen Papierkorb. Wird endgültig gelöscht und lässt sich nicht rückgängig machen – fortfahren?", Foreground = Text, TextWrapping = TextWrapping.Wrap },
+                    new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { noN, yesN } } } } };
+            DockPanel.SetDock(bar, Avalonia.Controls.Dock.Top);
+            content = new DockPanel { Children = { bar, content } };
+        }
         var area = new Border { Name = "fb-area", Background = Brush.Parse(_style switch { "mac" => light ? "#FFFFFFFF" : "#FF1E1E1E", "linux" => light ? "#FFFFFFFF" : "#FF1D1D20", "windows" => light ? "#FFF9F9F9" : "#FF191919", _ => "#00000000" }), Child = content };
         if (FilesDir != PcPlace) DropTarget(area, areaDir);
         var areaMenu = new ContextMenu { Name = "fb-area-menu" }; foreach (var hm in HistoryItems()) areaMenu.Items.Add(hm); areaMenu.Items.Add(new Separator());
@@ -546,7 +591,7 @@ public partial class MainWindow
                 var addr = new Border { Height = 32, CornerRadius = new CornerRadius(4), Background = Brush.Parse(light ? "#FFFFFFFF" : "#FF2D2D2D"), BorderBrush = Edge, BorderThickness = new Thickness(1), Padding = new Thickness(6, 0), Margin = new Thickness(6, 0), Child = crumbs };
                 var addrRow = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Margin = new Thickness(6, 6, 6, 4), Children = {
                     new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2, Children = { back, fwd, up, refresh } }, Pos(addr, 1), Pos(search, 2) } };
-                var cmd = new StackPanel { Name = "fb-commands", Orientation = Orientation.Horizontal, Spacing = 2, Margin = new Thickness(10, 2, 10, 6), Children = {
+                var cmd = new WrapPanel { Name = "fb-commands", Orientation = Orientation.Horizontal, ItemSpacing = 2, LineSpacing = 2, Margin = new Thickness(10, 2, 10, 6), Children = { // T-0754: bricht um statt abzuschneiden
                     newBtn, new Border { Width = 1, Height = 22, Background = Edge, Margin = new Thickness(6, 0) }, cut, copy, paste, ren, del, undoBtn, redoBtn,
                     new Border { Width = 1, Height = 22, Background = Edge, Margin = new Thickness(6, 0) }, sortBox, viewBtn, hidden, sysOpen } };
                 top = new StackPanel { Background = Brush.Parse(_style == "windows" ? (light ? "#FFF3F3F3" : "#FF202020") : "#00000000"), Children = { addrRow, new Border { BorderBrush = Edge, BorderThickness = new Thickness(0, 1, 0, 1), Child = cmd } } };

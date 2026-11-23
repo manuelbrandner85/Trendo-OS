@@ -94,4 +94,34 @@ public class T0754DateienSchutzUi
         }
         finally { MainWindow.BackupOpenFolderOverride = null; w.Close(); }
     }
+
+    [AvaloniaFact(DisplayName = "T-0754 Gegenprüfung UI: Laufwerk ohne Papierkorb – Entf fragt „endgültig löschen?“, Abbrechen lässt alles stehen, Ja löscht und sagt „endgültig gelöscht“; Schutzseite nennt sich nicht „gut geschützt“")]
+    public void Kein_Papierkorb_fragt_nach()
+    {
+        var (w, _, _) = Ui.Open();
+        try
+        {
+            w.Show("dateien"); Pump();
+            var docs = w.Files.KnownFolders().First(k => k.Id == "dokumente").Path;
+            var f = Path.Combine(docs, "Netz.txt"); File.WriteAllText(f, "wichtig");
+            w.FilesGo(docs); Pump();
+            w.Files.RecycleBinCheck = _ => false; // wie ein Netz- oder SUBST-Laufwerk
+            w.FilesSelected = f; Assert.True(w.FilesKey(Key.Delete, KeyModifiers.None)); Pump();
+            Assert.True(File.Exists(f)); Assert.NotNull(w.FilesNukeAsk);
+            Assert.Contains("keinen Papierkorb", w.Find<TextBlock>("fb-nuke-text").Text); Assert.Contains("endgültig", w.Find<TextBlock>("fb-nuke-text").Text);
+            w.Find<Button>("fb-nuke-no").Press(); Pump();
+            Assert.True(File.Exists(f)); Assert.Null(w.FilesNukeAsk); Assert.Contains("nichts gelöscht", w.FilesMessage);
+            w.FilesSelected = f; w.FilesTrash(); Pump();
+            w.Find<Button>("fb-nuke-yes").Press(); Pump();
+            Assert.False(File.Exists(f)); Assert.Contains("endgültig gelöscht", w.FilesMessage); Assert.DoesNotContain("liegt im Papierkorb", w.FilesMessage);
+            w.Files.RecycleBinCheck = null;
+            // Schutzseite: mit unverschlüsselten Sicherungen nicht „Gut geschützt“
+            w.BackupStore.Create(DateTime.Now);
+            w.Show("schutz"); Pump();
+            var texts = w.GetLogicalDescendants().OfType<TextBlock>().Select(t => t.Text ?? "").ToList();
+            Assert.DoesNotContain(texts, t => t.StartsWith("Gut geschützt"));
+            Assert.Contains(texts, t => t.Contains("Sicherungen sind nicht verschlüsselt"));
+        }
+        finally { w.Close(); }
+    }
 }

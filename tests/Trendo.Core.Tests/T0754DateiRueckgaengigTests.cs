@@ -132,4 +132,103 @@ public class T0754DateiRueckgaengigTests
         }
         finally { Directory.Delete(root, true); }
     }
+
+    // ---------- Gegenprüfung (Befunde 1–3) ----------
+
+    /// <summary>Befund 1: Ein Element „Papierkorb“ im Arbeitsordner des Prozesses darf nie als Lage im Papierkorb gelten.</summary>
+    [Fact(DisplayName = "T-0754 Gegenprüfung 1: Nicht im Papierkorb gelandet – ein fremder Ordner „Papierkorb“ im Arbeitsordner wird weder beim Rückgängig noch beim Wiederholen verschoben")]
+    public void Fremder_Ordner_Papierkorb_bleibt()
+    {
+        var root = NewRoot(); var cwd = Environment.CurrentDirectory;
+        try
+        {
+            Environment.CurrentDirectory = root;
+            var fremd = Directory.CreateDirectory(Path.Combine(root, "Papierkorb")).FullName; File.WriteAllText(Path.Combine(fremd, "fremd.txt"), "gehört jemand anderem");
+            var fb = new FileBrowser();
+            var u = new FileUndo(fb, p => File.Delete(p)); // wie ein Laufwerk, auf dem Windows endgültig löscht
+            var g = Path.Combine(root, "geloescht.txt"); File.WriteAllText(g, "weg");
+            // a) Aufzeichnen mit dem Wort „Papierkorb“ (so lieferte Trash es früher)
+            u.Record(FileUndo.Kind.Papierkorb, g, "Papierkorb"); File.Delete(g);
+            var r = u.Undo();
+            Assert.False(r.Done); Assert.Contains("endgültig gelöscht", r.Message);
+            Assert.True(File.Exists(Path.Combine(fremd, "fremd.txt"))); Assert.False(File.Exists(g)); Assert.False(Directory.Exists(g));
+            // b) Wiederholen: Lage im Test-Papierkorb, zurückholen, wiederholen löscht „endgültig“ – Trash liefert dann null, nicht das Wort
+            File.WriteAllText(g, "weg"); var bin = Directory.CreateDirectory(Path.Combine(root, ".Papierkorb")).FullName; var inBin = Path.Combine(bin, "geloescht.txt");
+            File.Move(g, inBin); u.Record(FileUndo.Kind.Papierkorb, g, inBin);
+            Assert.True(u.Undo().Done); Assert.True(File.Exists(g));
+            if (OperatingSystem.IsWindows())
+            {
+                r = u.Redo(); Assert.True(r.Done, r.Message); Assert.False(File.Exists(g));
+                Assert.Null(fb.Trash(CreateFile(Path.Combine(root, "ohne.txt")), p => File.Delete(p))); // nicht im Papierkorb gelandet: null statt des Worts
+                r = u.Undo();
+                Assert.False(r.Done); Assert.Contains("endgültig gelöscht", r.Message);
+                Assert.True(File.Exists(Path.Combine(fremd, "fremd.txt"))); Assert.False(File.Exists(g)); Assert.False(Directory.Exists(g));
+            }
+            Assert.False(FileBrowser.IsTrashLocation("Papierkorb")); Assert.False(FileBrowser.IsTrashLocation(fremd)); Assert.True(FileBrowser.IsTrashLocation(inBin));
+        }
+        finally { Environment.CurrentDirectory = cwd; Directory.Delete(root, true); }
+    }
+
+    static string CreateFile(string p) { File.WriteAllText(p, "x"); return p; }
+
+    /// <summary>Befund 2: Laufwerk ohne Papierkorb – es wird nichts gelöscht, sondern abgelehnt (die Oberfläche fragt dann ausdrücklich). Echt mit SUBST.</summary>
+    [Fact(DisplayName = "T-0754 Gegenprüfung 2: SUBST-Laufwerk hat keinen Papierkorb – Löschen bricht ohne Wirkung ab; Rückgängig nach endgültigem Löschen sagt „endgültig gelöscht“")]
+    public void Kein_Papierkorb_wird_erkannt()
+    {
+        var root = NewRoot();
+        try
+        {
+            // nachgebildet (alle Systeme)
+            var fbT = new FileBrowser { Root = root, RecycleBinCheck = _ => false };
+            var f = Path.Combine(root, "netz.txt"); File.WriteAllText(f, "bleibt");
+            Assert.Throws<NoRecycleBinException>(() => fbT.Trash(f)); Assert.Equal("bleibt", File.ReadAllText(f));
+            Assert.True(new FileBrowser { Root = root }.HasTrash(f));
+            if (!OperatingSystem.IsWindows()) return;
+            // echt: eigenes SUBST-Laufwerk auf den Temp-Ordner
+            var letter = "PONMLKJIHGFEDZYXWVUTSRQ".Select(c => c + ":").FirstOrDefault(d => !Directory.Exists(d + "\\"));
+            Assert.NotNull(letter);
+            Assert.Equal(0, Run("subst", $"{letter} \"{root}\""));
+            try
+            {
+                var viaSubst = letter + "\\netz.txt";
+                Assert.True(File.Exists(viaSubst));
+                var fb = new FileBrowser();
+                Assert.False(fb.HasTrash(viaSubst));
+                Assert.Throws<NoRecycleBinException>(() => fb.Trash(viaSubst, FileBrowser.SystemRecycle));
+                Assert.True(File.Exists(viaSubst)); Assert.Equal("bleibt", File.ReadAllText(f));
+                Assert.True(fb.HasTrash(f)); // dieselbe Datei über C: hat einen Papierkorb
+            }
+            finally { Run("subst", $"{letter} /D"); }
+        }
+        finally { Directory.Delete(root, true); }
+    }
+
+    static int Run(string exe, string args)
+    {
+        using var p = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(exe, args) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true })!;
+        p.WaitForExit(20000); return p.ExitCode;
+    }
+
+    /// <summary>Befund 3: Teilfehler bei Mehrfachauswahl – der Rest bleibt als eigener Schritt, das Erledigte lässt sich wiederholen.</summary>
+    [Fact(DisplayName = "T-0754 Gegenprüfung 3: Mehrfachauswahl, eine Datei gesperrt – Rest bleibt als eigener Rückgängig-Schritt, Erledigtes als Wiederholen-Schritt")]
+    public void Teilfehler_bleibt_in_der_Liste()
+    {
+        if (!OperatingSystem.IsWindows()) return; // Sperre beim Verschieben nur unter Windows
+        var root = NewRoot();
+        try
+        {
+            var fb = new FileBrowser { Root = root }; var u = new FileUndo(fb);
+            var dst = Directory.CreateDirectory(Path.Combine(root, "Ziel")).FullName;
+            var x = Path.Combine(root, "x.txt"); var y = Path.Combine(root, "y.txt"); File.WriteAllText(x, "1"); File.WriteAllText(y, "2");
+            var mx = fb.Paste(x, dst, true); var my = fb.Paste(y, dst, true); u.Record(K.Verschieben, [(x, mx), (y, my)]);
+            FileUndo.Result r;
+            using (new FileStream(mx, FileMode.Open, FileAccess.Read, FileShare.None)) r = u.Undo(); // x gesperrt; rückwärts: erst y, dann x
+            Assert.False(r.Done); Assert.Contains("nur teilweise", r.Message); Assert.Contains("eigener Schritt", r.Message);
+            Assert.True(File.Exists(y)); Assert.True(File.Exists(mx));
+            Assert.Equal(["Verschieben von „x.txt“"], u.UndoList); Assert.Equal(["Verschieben von „y.txt“"], u.RedoList);
+            r = u.Undo(); Assert.True(r.Done, r.Message); Assert.True(File.Exists(x)); Assert.False(File.Exists(mx));
+            r = u.Redo(); Assert.True(r.Done, r.Message); Assert.True(File.Exists(mx));
+        }
+        finally { Directory.Delete(root, true); }
+    }
 }

@@ -42,7 +42,8 @@ public sealed class FileUndo(FileBrowser fb, Action<string>? windowsRecycle = nu
         foreach (var (from, to) in pairs)
         {
             if (to is not null && kind != Kind.Papierkorb && string.Equals(Path.GetFullPath(from), Path.GetFullPath(to), StringComparison.Ordinal)) continue;
-            var target = kind == Kind.Papierkorb && to is not null && !File.Exists(to) && !Directory.Exists(to) ? null : to; // „Papierkorb“ ohne Lage: nicht wiederzufinden
+            // Gegenprüfung T-0754: bei „Papierkorb“ zählt nur ein absoluter Pfad in einem echten Papierkorb – nie ein Wort oder ein relativer Pfad
+            var target = kind == Kind.Papierkorb && !(FileBrowser.IsTrashLocation(to) && Exists(to)) ? null : to;
             ops.Add(new Op(Path.GetFullPath(from), target is null ? null : Path.GetFullPath(target)) { After = target is null ? null : Take(target) });
         }
         if (ops.Count == 0) return;
@@ -60,14 +61,18 @@ public sealed class FileUndo(FileBrowser fb, Action<string>? windowsRecycle = nu
         var s = _undo[^1]; _undo.RemoveAt(_undo.Count - 1);
         // Erst alles prüfen, dann handeln – so bleibt bei einem Hindernis alles, wie es ist.
         foreach (var op in s.Ops) if (UndoProblem(s.Kind, op) is { } why) return new(false, $"„{s.Label}“ lässt sich nicht rückgängig machen: {why} Es wurde nichts geändert; der Schritt ist aus der Liste genommen.", []);
-        var done = new List<string>();
+        var done = new List<string>(); var doneOps = new List<Op>();
         try
         {
-            foreach (var op in Enumerable.Reverse(s.Ops)) { DoUndo(s.Kind, op); done.Add(op.From); }
+            foreach (var op in Enumerable.Reverse(s.Ops)) { DoUndo(s.Kind, op); done.Add(op.From); doneOps.Add(op); }
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException)
         {
-            return new(false, $"„{s.Label}“ nur teilweise rückgängig ({done.Count} von {s.Ops.Count}): {e.Message}", done);
+            // Gegenprüfung T-0754: Teilerfolg – Erledigtes kann wiederholt werden, der Rest bleibt als eigener Rückgängig-Schritt in der Liste
+            var rest = s.Ops.Where(o => !doneOps.Contains(o)).ToList();
+            if (rest.Count > 0) _undo.Add(new Step(s.Kind, rest, Label(s.Kind, rest)));
+            if (doneOps.Count > 0) { doneOps.Reverse(); _redo.Add(new Step(s.Kind, doneOps, Label(s.Kind, doneOps))); }
+            return new(false, $"„{s.Label}“ nur teilweise rückgängig ({done.Count} von {s.Ops.Count}): {e.Message} Der Rest bleibt als eigener Schritt in der Liste.", done);
         }
         _redo.Add(s);
         return new(true, $"Rückgängig: {s.Label}.", s.Kind is Kind.Kopieren or Kind.NeuerOrdner ? [] : done);
@@ -87,13 +92,16 @@ public sealed class FileUndo(FileBrowser fb, Action<string>? windowsRecycle = nu
         if (_redo.Count == 0) return new(false, "Es gibt nichts zu wiederholen.", []);
         var s = _redo[^1]; _redo.RemoveAt(_redo.Count - 1);
         foreach (var op in s.Ops) if (RedoProblem(s.Kind, op) is { } why) return new(false, $"„{s.Label}“ lässt sich nicht wiederholen: {why} Es wurde nichts geändert; der Schritt ist aus der Liste genommen.", []);
-        var done = new List<string>();
+        var done = new List<string>(); var doneOps = new List<Op>();
         try
         {
-            foreach (var op in s.Ops) { DoRedo(s.Kind, op); if (op.To is { } t) done.Add(t); }
+            foreach (var op in s.Ops) { DoRedo(s.Kind, op); doneOps.Add(op); if (op.To is { } t) done.Add(t); }
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException)
         {
+            var rest = s.Ops.Where(o => !doneOps.Contains(o)).ToList();
+            if (rest.Count > 0) _redo.Add(new Step(s.Kind, rest, Label(s.Kind, rest)));
+            if (doneOps.Count > 0) _undo.Add(new Step(s.Kind, doneOps, Label(s.Kind, doneOps)));
             return new(false, $"„{s.Label}“ nur teilweise wiederholt ({done.Count} von {s.Ops.Count}): {e.Message}", done);
         }
         _undo.Add(s);
@@ -129,7 +137,8 @@ public sealed class FileUndo(FileBrowser fb, Action<string>? windowsRecycle = nu
                 if (Directory.EnumerateFileSystemEntries(op.To!).Any()) return $"Der Ordner „{N(op.To!)}“ ist nicht mehr leer – Trendo entfernt ihn nicht. Leg ihn selbst in den Papierkorb, wenn du ihn nicht brauchst.";
                 return null;
             case Kind.Papierkorb:
-                if (op.To is null || !Exists(op.To)) return $"„{N(op.From)}“ ist nicht mehr im Papierkorb (Papierkorb geleert, schon zurückgeholt oder endgültig gelöscht).";
+                if (op.To is null) return $"„{N(op.From)}“ wurde endgültig gelöscht (nicht im Papierkorb gelandet) – zurückholen geht nicht.";
+                if (!Exists(op.To)) return $"„{N(op.From)}“ ist nicht mehr im Papierkorb (Papierkorb geleert oder schon zurückgeholt).";
                 if (Take(op.To) != op.After) return $"„{N(op.From)}“ im Papierkorb ist nicht mehr dasselbe Element.";
                 if (Exists(op.From)) return $"Am alten Platz liegt inzwischen wieder „{N(op.From)}“ – Trendo überschreibt nichts.";
                 if (!ParentOk(op.From)) return $"Den Ordner „{Path.GetDirectoryName(op.From)}“ gibt es nicht mehr.";
@@ -158,6 +167,7 @@ public sealed class FileUndo(FileBrowser fb, Action<string>? windowsRecycle = nu
                 if (!ParentOk(op.To!)) return $"Den Ordner „{Path.GetDirectoryName(op.To)}“ gibt es nicht mehr.";
                 return null;
             case Kind.Papierkorb:
+                if (!fb.HasTrash(op.From)) return $"„{N(op.From)}“ liegt auf einem Laufwerk ohne Papierkorb – Wiederholen würde endgültig löschen.";
                 return Same(op.From, op.After);
         }
         return "Unbekannte Aktion.";
@@ -186,7 +196,7 @@ public sealed class FileUndo(FileBrowser fb, Action<string>? windowsRecycle = nu
             case Kind.NeuerOrdner: Directory.CreateDirectory(op.To!); op.After = Take(op.To!); break;
             case Kind.Papierkorb:
                 var r = fb.Trash(op.From, windowsRecycle);
-                op.To = Exists(r) ? Path.GetFullPath(r) : null; op.After = op.To is null ? null : Take(op.To); break;
+                op.To = FileBrowser.IsTrashLocation(r) && Exists(r) ? Path.GetFullPath(r!) : null; op.After = op.To is null ? null : Take(op.To); break;
         }
     }
 

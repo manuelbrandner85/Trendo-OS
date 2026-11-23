@@ -34,4 +34,12 @@ public class T0754SicherungHinweisTests
         Assert.Equal(CheckLevel.Hinweis, c.Level); Assert.Contains("nicht verschlüsselt", c.Detail); Assert.Contains(b.Folder, c.Detail); Assert.Contains("BitLocker", c.Detail);
         Assert.Equal("sicherung", c.FixPage);
     }
+
+    [Fact(DisplayName = "T-0754 Gegenprüfung 4: Studienwissen CORE-11 verspricht keine Passwortverwaltung")]
+    public void Studienwissen_ehrlich()
+    {
+        var k = Trendo.Core.PromptAction.StudioKnowledgeBase.For("CORE-11")!;
+        Assert.DoesNotContain("Passwörter und Sicherungen schützen", k.Purpose);
+        Assert.Contains("Passwörter finden", k.Purpose);
+    }
 }
