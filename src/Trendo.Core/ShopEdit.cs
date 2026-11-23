@@ -11,7 +11,7 @@ namespace Trendo.Core;
 // Rückgängig für diese Stammdaten und CSV im Shopify-Spaltensatz (Artikel und Kunden ein/aus, Bestellungen aus).
 
 /// <summary>Ergebnis eines CSV-Imports: neu angelegt, aktualisiert und Hinweise (z. B. doppelte Artikelnummern).</summary>
-public sealed record ShopImport(int Added, int Updated, IReadOnlyList<string> Warnings, int Skipped = 0);
+public sealed record ShopImport(int Added, int Updated, IReadOnlyList<string> Warnings, int Skipped = 0, int Unchanged = 0);
 
 public sealed partial class Shop
 {
@@ -163,7 +163,8 @@ public sealed partial class Shop
     sealed record UndoEntry(string Step, string What, Dictionary<string, string> After);
     string UndoDir => Path.Combine(IdeaDir, "rueckgaengig");
     string UndoIndex => Path.Combine(UndoDir, "index.json");
-    string[] Files => [Products.FilePath, Customers.FilePath, OrderList.FilePath, CashSales.FilePath];
+    // T-0753 M-G: auch die Lagerbewegungen – ein Storno, das nur Bons/Bestellungen und Bewegungen ändert, sperrt Rückgängig
+    string[] Files => [Products.FilePath, Customers.FilePath, OrderList.FilePath, CashSales.FilePath, Moves.FilePath];
     static string? ReadOrNull(string f) => File.Exists(f) ? File.ReadAllText(f) : null;
     /// <summary>T-0753 H-1: Fingerabdruck ist der Inhalt (SHA-256) – unabhängig von der Schreibzeit (auch FAT/exFAT), damit mehrere Rückgängig-Schritte hintereinander gehen.</summary>
     static string Print(byte[]? bytes) => bytes is null ? "-" : Convert.ToHexString(SHA256.HashData(bytes));
@@ -184,11 +185,10 @@ public sealed partial class Shop
         var changed = new Dictionary<string, string?>(); var after = new Dictionary<string, string>();
         foreach (var f in Files)
         {
-            var now = ReadBytes(f); var was = before[f];
-            if (now is null && was is null || now is not null && was is not null && now.AsSpan().SequenceEqual(was)) continue; // unverändert: weder sichern noch prüfen
-            var name = Path.GetFileName(f);
+            var now = ReadBytes(f); var was = before[f]; var name = Path.GetFileName(f);
+            after[name] = Print(now); // T-0753 M-G: Fingerabdruck „danach“ über alle Dateien (Inhalt, nicht Schreibzeit – H-1 bleibt)
+            if (now is null && was is null || now is not null && was is not null && now.AsSpan().SequenceEqual(was)) continue; // unverändert: nicht sichern
             changed[name] = was is null ? null : Encoding.UTF8.GetString(was);
-            after[name] = Print(now); // nur die Dateien dieses Schritts
         }
         if (changed.Count == 0) return r;
         Directory.CreateDirectory(UndoDir);
@@ -558,7 +558,7 @@ public sealed partial class Shop
             parsed.Add(new(name, hasVendor ? c.Get(head, "Vendor") : null, Num(c.Get(head, "Cost per item"), "Einkaufspreis", line0),
                 hasDesc ? PlainText(c.Get(head, "Description", "Body (HTML)")) : null, image, single || !hasOptions ? null : vars, single || !hasOptions ? vars.FirstOrDefault() : null, line0));
         }
-        var added = 0; var updated = 0; var skipped = 0;
+        var added = 0; var updated = 0; var skipped = 0; var unchanged = 0;
         Undoable($"{parsed.Count} Artikel aus CSV laden", () =>
         {
             var all = Products.All();
@@ -578,11 +578,12 @@ public sealed partial class Shop
                 if (i >= 0 && LockViolation(all[i], p, live) is { } why) { warnings.Add($"„{p.Name}“ nicht aktualisiert: {why}"); skipped++; continue; } // T-0753 M-A
                 try { CheckProduct(p, all.Where((_, k) => k != i), i >= 0 ? all[i].Name : null); } // T-0753 N-f: z. B. negativer Preis
                 catch (ArgumentException e) { warnings.Add($"„{p.Name}“ nicht übernommen: {e.Message}"); skipped++; continue; }
+                if (i >= 0 && JsonSerializer.Serialize(p) == JsonSerializer.Serialize(all[i])) { unchanged++; continue; } // nichts geändert
                 if (i >= 0) { all[i] = p; updated++; } else { index[p.Name] = all.Count; all.Add(p); added++; }
             }
             Products.Save(all); return true;
         });
-        return new(added, updated, warnings, skipped);
+        return new(added, updated, warnings, skipped, unchanged);
     }
 
     /// <summary>Eine Zeile bzw. Variante aus der CSV; null heißt „Zelle leer oder Spalte fehlt – behalten“ (T-0753 M-E/M-F).</summary>

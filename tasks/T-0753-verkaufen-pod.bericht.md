@@ -148,3 +148,16 @@ Rotlauf der neuen Tests auf 29f577a65: `reports/T-0753/rotlauf-29f577a65.txt` (4
 **Leistung (M-D) danach** (`reports/T-0753/leistung-rueckgaengig.txt`): 20× Artikel anlegen 454 ms (23 ms je Schritt), Import 100 Artikel 281 ms, Rückgängig-Daten 1,21 MB – vorher (d9057d90f) 27 898 ms / 7 028 ms / 207,95 MB.
 
 **Tests danach:** Kern 127/127 inkl. `ShopEditPerfTests` (`reports/T-0753/core-tests-fuenftpruefung.txt`), App 81/81. `dotnet build Trendo.sln -c Release` 0 Fehler.
+
+## Sechste Prüfung behoben (siebter Durchgang)
+
+Rotlauf auf 8c2ec30d6: `reports/T-0753/rotlauf-8c2ec30d6.txt` (M-G Fall 1 und 2 sowie „unverändert“ rot; der H-1-Wächtertest war dort schon grün).
+
+| Befund | Lösung | Test |
+|---|---|---|
+| M-G Rückgängig nach Storno stellt falschen Bestand her | Der Fingerabdruck „danach“ wird wieder über alle Dateien gebildet (SHA-256 über den Inhalt); gesichert werden weiter nur die geänderten. Die Lagerbewegungen (`lagerbewegungen.json`) gehören jetzt zu den Dateien. Ein Storno (Bon oder Bestellung) ändert Bons/Bestellungen und Bewegungen → Rückgängig des Löschens wird abgelehnt. H-1 bleibt: gleicher Inhalt mit neuer Schreibzeit sperrt nicht. | `ShopEditFix6Tests.Undo_after_bon_storno`, `Undo_after_order_storno`, `Same_content_rewrite_does_not_block`; weiter grün `ShopEditFix5Tests` (20 Schritte zurück) |
+| Niedrig: reine Titelzeile zählt als „aktualisiert“ | Gleicher Inhalt zählt als „unverändert“ (`ShopImport.Unchanged`), die Meldung nennt es | `Import_counts_unchanged`; `ShopEditTests.Products_csv_roundtrip` erwartet beim zweiten Laden derselben Datei jetzt „2 unverändert“ statt „2 aktualisiert“ (geforderte neue Zählung, nicht abgeschwächt) |
+
+**Leistung danach** (`reports/T-0753/leistung-rueckgaengig.txt`, 10 000 Bons): 20× Artikel anlegen 586 ms (29 ms je Schritt), Import 100 Artikel 268 ms, Rückgängig-Daten 1,21 MB.
+
+**Tests danach:** Kern 131/131 inkl. ShopEditPerf und Fix5 (`reports/T-0753/core-tests-sechstpruefung.txt`), App 81/81. `dotnet build Trendo.sln -c Release` 0 Fehler.

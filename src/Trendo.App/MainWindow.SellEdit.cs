@@ -54,7 +54,7 @@ public partial class MainWindow
 
     /// <summary>T-0753 N-e: Ergebnis eines Imports mit Anzahl „nicht übernommen“ und der vollständigen Liste der Hinweise (je eine Zeile).</summary>
     public static string SellImportText(string file, ShopImport r) =>
-        $"{file}: {r.Added} neu, {r.Updated} aktualisiert" + (r.Skipped > 0 ? $", {r.Skipped} nicht übernommen" : "") +
+        $"{file}: {r.Added} neu, {r.Updated} aktualisiert" + (r.Unchanged > 0 ? $", {r.Unchanged} unverändert" : "") + (r.Skipped > 0 ? $", {r.Skipped} nicht übernommen" : "") +
         (r.Warnings.Count > 0 ? $". Hinweise ({r.Warnings.Count}):\n• " + string.Join("\n• ", r.Warnings) : ".");
 
     /// <summary>Strg+Z auf der Seite nimmt die letzte Änderung an Artikeln, Kunden oder Bestellungen zurück (nicht in Textfeldern).</summary>

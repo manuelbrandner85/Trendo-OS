@@ -142,8 +142,9 @@ public class ShopEditTests
             Assert.Equal(Png, File.ReadAllBytes(t.ImagePath(a[0])!));
             Assert.Equal(["M", "L"], a[1].Variants!.Select(v => v.Name));
             Assert.Equal((22.0, 1, "SH-L"), (a[1].Variants![1].Price, a[1].Variants[1].Stock, a[1].Variants[1].Sku));
-            // erneut laden: aktualisiert statt doppelt
-            Assert.Equal((0, 2), (t.ImportProductsCsv(csv).Added, t.ImportProductsCsv(csv).Updated));
+            // erneut laden: nicht doppelt; seit der sechsten Prüfung zählt gleicher Inhalt als „unverändert“ statt „aktualisiert“
+            var again = t.ImportProductsCsv(csv);
+            Assert.Equal((0, 0, 2), (again.Added, again.Updated, again.Unchanged));
             Assert.Equal(2, t.Products.All().Count);
         }
         finally { Directory.Delete(d, true); }
