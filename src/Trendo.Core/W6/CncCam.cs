@@ -575,7 +575,7 @@ public static class CncCam
         foreach (var w in cw) if (w is not null) warn.AddRange(w);
         // T-0747-fix: jede Bahn gegen ALLE geschlossenen Konturen prüfen (Strecke zu Strecke)
         // T-0747-fix3: ALLE Konturen sind Hindernis – auch offene und ausgelassene (ein offener Umriss ist trotzdem ein Teil)
-        var obstacles = new RefGrid(cs.Select((c, i) => ((IReadOnlyList<(double X, double Y)>)c.Pts, c.Closed, i)).Where(t => !dup[t.i]), r, ct); // Doppel nur einmal; T-0758: feineres Raster, gleiche Treffer
+        var obstacles = new RefGrid(cs.Select((c, i) => ((IReadOnlyList<(double X, double Y)>)c.Pts, c.Closed, i)).Where(t => !dup[t.i]), r, ct, r); // Doppel nur einmal; T-0758: feineres Raster, gleiche Treffer (Abfragen reichen den Radius über die Bahn hinaus)
         var paths = new List<CamPath>();
         using var curs = new ThreadLocal<SegGrid.Cursor>(() => new SegGrid.Cursor()); // ein Merker je Thread (nicht je Kontur – er ist so groß wie das Raster)
         var hits = new (int Tag, double D)[cs.Count]; // T-0747-fix5: parallel prüfen (Raster nur lesen, Merker je Thread), danach in Reihenfolge übernehmen
@@ -1097,13 +1097,11 @@ public static class CncCam
         {
             if ((i & 1023) == 0) ct.ThrowIfCancellationRequested();
             var a = path[i]; var b = path[(i + 1) % path.Count];
-            foreach (var j in obstacles.Near(Math.Min(a.X, b.X) - limit, Math.Min(a.Y, b.Y) - limit, Math.Max(a.X, b.X) + limit, Math.Max(a.Y, b.Y) + limit, 1e-6,
-                j => obstacles.Segs[j].Tag != skip && SegSeg(a, b, obstacles.Segs[j].A, obstacles.Segs[j].B) < limit, cur))
-            {
-                var (c, d, tag) = obstacles.Segs[j]; if (tag == skip) continue;
-                var dd = SegSeg(a, b, c, d);
-                if (dd < limit && dd < best.D) best = (tag, dd);
-            }
+            // T-0758: kleinster Abstand dieser Strecke; bei Gleichstand gewinnt, was das bisherige Raster zuerst geliefert hätte – wie die Schleife
+            // „dd < bisher“ über die Trefferliste, nur ohne Liste und Sortierung
+            var (bj, bd) = obstacles.Min(Math.Min(a.X, b.X) - limit, Math.Min(a.Y, b.Y) - limit, Math.Max(a.X, b.X) + limit, Math.Max(a.Y, b.Y) + limit, 1e-6,
+                j => { var (c, d, tag) = obstacles.Segs[j]; if (tag == skip) return double.NaN; var dd = SegSeg(a, b, c, d); return dd < limit ? dd : double.NaN; }, cur);
+            if (bj >= 0 && bd < best.D) best = (obstacles.Segs[bj].Tag, bd);
         }
         return best;
     }
@@ -1455,6 +1453,7 @@ public static class CncCam
     sealed class RefGrid
     {
         readonly double _ref; public readonly SegGrid Fine;
+        readonly bool _same; // nicht verfeinert: das Raster ist das bisherige – Abfragen genau wie vorher (ohne Erweiterung und Bezugsprüfung)
         public List<((double X, double Y) A, (double X, double Y) B, int Tag)> Segs => Fine.Segs;
         public RefGrid(IEnumerable<(IReadOnlyList<(double X, double Y)> Pts, bool Closed, int Tag)> polys, double cell, CancellationToken ct = default, double pointQuery = 0)
         {
@@ -1499,13 +1498,13 @@ public static class CncCam
                 for (var k = 1; k <= 10; k++)
                 {
                     var c = _ref / (1 << k);
-                    if (pointQuery > 0 && c < pointQuery / 2) break;
+                    if (pointQuery > 0 && c < pointQuery) break; // kleinere Zellen als die halbe Abfragebreite bringen kaum weniger Kandidaten, aber viel mehr Zellen
                     if (Cost(c) > limit) break;
                     fine = c;
                     if (occ * (c / _ref) <= 4) break; // vorsichtige Schätzung der Belegung (wie bei Linien: halbe Zelle, halbe Belegung)
                 }
             }
-            Fine = new SegGrid(fine);
+            Fine = new SegGrid(fine); _same = fine == _ref;
             var m = 0;
             foreach (var (pts, closed, tag) in list) for (var i = 0; i < pts.Count - (closed ? 0 : 1); i++) { if ((++m & 4095) == 0) ct.ThrowIfCancellationRequested(); Fine.Add(pts[i], pts[(i + 1) % pts.Count], tag); }
         }
@@ -1517,15 +1516,35 @@ public static class CncCam
         }
         public bool Any(double minX, double minY, double maxX, double maxY, double expand, Func<int, bool> pred, SegGrid.Cursor? cur = null)
         {
+            if (_same) return Fine.Any(cur ?? Fine.Own, minX, minY, maxX, maxY, pred);
             long qx0 = R(minX), qy0 = R(minY), qx1 = R(maxX), qy1 = R(maxY);
             return Fine.Any(cur ?? Fine.Own, minX - expand, minY - expand, maxX + expand, maxY + expand, j => InRef(j, qx0, qy0, qx1, qy1) && pred(j));
         }
         public bool AnyWithin((double X, double Y) q, double d) => d > 0 && Any(q.X - d, q.Y - d, q.X + d, q.Y + d, 0, i => SegDist(q, Segs[i].A, Segs[i].B) < d);
+        /// <summary>Strecke mit dem kleinsten Wert (NaN = nicht zählen); bei Gleichstand die, die das bisherige Raster zuerst geliefert hätte.</summary>
+        public (int J, double D) Min(double minX, double minY, double maxX, double maxY, double expand, Func<int, double> score, SegGrid.Cursor? cur = null)
+        {
+            long qx0 = R(minX), qy0 = R(minY), qx1 = R(maxX), qy1 = R(maxY);
+            var bj = -1; var bd = double.MaxValue; (long X, long Y) bk = default;
+            (long X, long Y) Key(int j) { var (a, b, _) = Fine.Segs[j]; return (Math.Max(R(Math.Min(a.X, b.X)), qx0), Math.Max(R(Math.Min(a.Y, b.Y)), qy0)); }
+            if (_same) expand = 0;
+            Fine.Any(cur ?? Fine.Own, minX - expand, minY - expand, maxX + expand, maxY + expand, j =>
+            {
+                if (!_same && !InRef(j, qx0, qy0, qx1, qy1)) return false;
+                var d = score(j); if (double.IsNaN(d) || d > bd) return false;
+                if (d < bd || bj < 0) { bj = j; bd = d; bk = Key(j); return false; }
+                var k = Key(j); // Gleichstand: frühere Stelle im bisherigen Raster gewinnt
+                if (k.X < bk.X || k.X == bk.X && (k.Y < bk.Y || k.Y == bk.Y && j < bj)) { bj = j; bk = k; }
+                return false;
+            });
+            return (bj, bd);
+        }
         /// <summary>Strecken mit <paramref name="keep"/>, in der Reihenfolge, in der das bisherige Raster sie geliefert hätte.</summary>
         public List<int> Near(double minX, double minY, double maxX, double maxY, double expand, Func<int, bool> keep, SegGrid.Cursor? cur = null)
         {
             long qx0 = R(minX), qy0 = R(minY), qx1 = R(maxX), qy1 = R(maxY);
             var res = new List<(long X, long Y, int I)>();
+            if (_same) return Fine.Near(cur ?? Fine.Own, minX, minY, maxX, maxY).Where(keep).ToList();
             foreach (var j in Fine.Near(cur ?? Fine.Own, minX - expand, minY - expand, maxX + expand, maxY + expand))
             {
                 if (!InRef(j, qx0, qy0, qx1, qy1) || !keep(j)) continue;
