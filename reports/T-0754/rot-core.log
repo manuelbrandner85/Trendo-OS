@@ -1,0 +1,61 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0754\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:14.62]     Trendo.Core.Tests.T0754RotProbe.Tasten [FAIL]
+[xUnit.net 00:00:14.63]     Trendo.Core.Tests.T0754RotProbe.Tasten_Redo [FAIL]
+[xUnit.net 00:00:14.75]     Trendo.Core.Tests.T0754RotProbe.Ampel [FAIL]
+[xUnit.net 00:00:14.94]     Trendo.Core.Tests.T0754RotProbe.Windows_Papierkorb_Lage [FAIL]
+[xUnit.net 00:00:14.96]     Trendo.Core.Tests.T0754RotProbe.Hinweis [FAIL]
+[xUnit.net 00:00:14.98]     Trendo.Core.Tests.T0754RotProbe.Vermerk [FAIL]
+  Fehler Trendo.Core.Tests.T0754RotProbe.Tasten [97 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+Expected: "undo"
+Actual:   null
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0754RotProbe.Tasten() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0754\tests\Trendo.Core.Tests\T0754RotProbe.cs:line 9
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler Trendo.Core.Tests.T0754RotProbe.Tasten_Redo [< 1 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+Expected: "redo"
+Actual:   null
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0754RotProbe.Tasten_Redo() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0754\tests\Trendo.Core.Tests\T0754RotProbe.cs:line 10
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler Trendo.Core.Tests.T0754RotProbe.Ampel [125 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Filter not matched in collection
+Collection: [SecurityCheck { Id = audit, Title = Protokoll, Level = Gut, Detail = Vollständig und unverändert., FixPage =  }, SecurityCheck { Id = secrets, Title = Sicher gespeicherte Schlüssel, Level = Hinweis, Detail = Schlüssel werden nur bis zum Beenden gemerkt (kein sicherer Speicher gefunden)., FixPage =  }, SecurityCheck { Id = backup, Title = Sicherung, Level = Gut, Detail = Letzte Sicherung: 23.11.2026 02:31 (1 vorhanden)., FixPage =  }, SecurityCheck { Id = approvals, Title = Freigaben, Level = Gut, Detail = Nichts wartet auf deine Erlaubnis., FixPage =  }, SecurityCheck { Id = offline, Title = Internet, Level = Gut, Detail = Trendo geht nur nach deiner Erlaubnis ins Internet. Die KI läuft auf diesem PC., FixPage =  }, ···]
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0754RotProbe.Ampel() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0754\tests\Trendo.Core.Tests\T0754RotProbe.cs:line 13
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler Trendo.Core.Tests.T0754RotProbe.Windows_Papierkorb_Lage [191 ms]
+  Fehlermeldung:
+   Lage im Papierkorb unbekannt: Papierkorb
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0754RotProbe.Windows_Papierkorb_Lage() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0754\tests\Trendo.Core.Tests\T0754RotProbe.cs:line 16
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler Trendo.Core.Tests.T0754RotProbe.Hinweis [23 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Sub-string not found
+String:    "Gesichert: trendo-sicherung-20261123-0231"···
+Not found: "nicht verschlüsselt"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0754RotProbe.Hinweis() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0754\tests\Trendo.Core.Tests\T0754RotProbe.cs:line 11
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Fehler Trendo.Core.Tests.T0754RotProbe.Vermerk [16 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Sub-string not found
+String:    "trendo-sicherung-v1 {"Saved":2,"NotSavedC"···
+Not found: "BitLocker"
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0754RotProbe.Vermerk() in C:\Users\<user>\AppData\Local\Temp\trendo-auftrag-T-0754\tests\Trendo.Core.Tests\T0754RotProbe.cs:line 12
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+
+Fehler!      : Fehler:     6, erfolgreich:     0, übersprungen:     0, gesamt:     6, Dauer: 454 ms - Trendo.Core.Tests.dll (net10.0)

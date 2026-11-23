@@ -424,7 +424,7 @@ public sealed partial class MainWindow
         _macDefaultMenus.Clear();
         _macDefaultMenus.AddRange([
             Menu("ablage", T("Ablage"), Mi("Neues Projekt", () => Show("projects")), Mi("Neues Finder-Fenster", () => Show("dateien")), Mi("Fenster schließen", () => { if (Windows.Active is { } w) CloseWindow(w.Id); })),
-            Menu("bearbeiten", T("Bearbeiten"), Mi("Suchen …", () => ToggleOsLauncher("spotlight"))),
+            Menu("bearbeiten", T("Bearbeiten"), Mi("Dateiaktion widerrufen", () => FilesUndo()), Mi("Dateiaktion wiederholen", FilesRedo), Mi("Suchen …", () => ToggleOsLauncher("spotlight"))), // T-0754
             Menu("darstellung", T("Darstellung"), Mi("Mitteilungen und Widgets", ToggleOsWidgets), Mi("Launchpad", () => ToggleOsLauncher("start")), Mi("Aussehen …", () => Show("settings"))),
             Menu("gehezu", T("Gehe zu"), [.. SideNav.Select(n => Mi(n.Label, () => Show(n.Key))), Mi("Dateien", () => Show("dateien"))]),
             Menu("fenster", T("Fenster"), Mi("Minimieren", () => { if (Windows.Active is { } w) { Windows.Minimize(w.Id); AfterWindowChange(); } }), Mi("Zoomen", () => { if (Windows.Active is { } w) { Windows.ToggleMaximize(w.Id); AfterWindowChange(); } })),

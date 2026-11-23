@@ -148,7 +148,7 @@ public sealed class FileBrowser
         return target;
     }
 
-    static void CopyDir(string from, string to)
+    internal static void CopyDir(string from, string to)
     {
         Directory.CreateDirectory(to);
         foreach (var f in Directory.GetFiles(from)) File.Copy(f, System.IO.Path.Combine(to, System.IO.Path.GetFileName(f)));
@@ -169,7 +169,9 @@ public sealed class FileBrowser
         else if (OperatingSystem.IsWindows())
         {
             if (windowsRecycle is null) throw new InvalidOperationException("Papierkorb nicht verfügbar.");
-            windowsRecycle(path); return "Papierkorb";
+            var full = System.IO.Path.GetFullPath(path); var since = DateTime.Now.AddSeconds(-2);
+            windowsRecycle(path);
+            return FindInWindowsRecycleBin(full, since) ?? "Papierkorb"; // T-0754: Lage im Papierkorb merken, damit „Rückgängig“ sie wiederfindet
         }
         else if (OperatingSystem.IsMacOS()) dir = System.IO.Path.Combine(Home, ".Trash");
         else
@@ -185,6 +187,48 @@ public sealed class FileBrowser
         var t = Unique(dir, System.IO.Path.GetFileName(path)); MoveAny(path, t); return t;
     }
 
+    /// <summary>T-0754: Windows-Papierkorb des Systems (wie „Löschen“ im Explorer, nie endgültig). Nur Windows.</summary>
+    public static void SystemRecycle(string p)
+    {
+        if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Der Windows-Papierkorb gibt es nur unter Windows.");
+        if (Directory.Exists(p)) Microsoft.VisualBasic.FileIO.FileSystem.DeleteDirectory(p, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
+        else Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(p, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
+    }
+
+    /// <summary>T-0754: Wo liegt ein gerade gelöschtes Element im Windows-Papierkorb? Liest die $I-Vermerke im Papierkorb-Ordner der Person
+    /// auf dem Laufwerk der Datei (<c>X:\$Recycle.Bin\&lt;SID&gt;</c>) und liefert die passende $R-Datei – null, wenn es dort nicht liegt
+    /// (Laufwerk ohne Papierkorb, zu groß, Papierkorb geleert).</summary>
+    public static string? FindInWindowsRecycleBin(string originalPath, DateTime deletedAfter)
+    {
+        if (!OperatingSystem.IsWindows()) return null;
+        try
+        {
+            var sid = System.Security.Principal.WindowsIdentity.GetCurrent().User?.Value; var root = System.IO.Path.GetPathRoot(originalPath);
+            if (sid is null || string.IsNullOrEmpty(root)) return null;
+            var bin = System.IO.Path.Combine(root, "$Recycle.Bin", sid);
+            return Trendo.Core.Sys.Trash.List(bin, null)
+                .Where(t => string.Equals(t.OriginalPath, originalPath, StringComparison.OrdinalIgnoreCase) && t.Deleted >= deletedAfter && (File.Exists(t.DataFile) || Directory.Exists(t.DataFile)))
+                .OrderByDescending(t => t.Deleted).Select(t => t.DataFile).FirstOrDefault();
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Security.SecurityException) { return null; }
+    }
+
+    /// <summary>T-0754: Ein Element aus dem Papierkorb an seinen alten Platz zurücklegen. Überschreibt nie: liegt dort schon etwas, passiert nichts (Fehler).
+    /// Räumt den Vermerk mit auf (Windows <c>$I…</c>, freedesktop <c>info/*.trashinfo</c>).</summary>
+    public void Restore(string trashPath, string original)
+    {
+        Guard(original);
+        if (!File.Exists(trashPath) && !Directory.Exists(trashPath)) throw new FileNotFoundException($"„{System.IO.Path.GetFileName(original)}“ ist nicht mehr im Papierkorb (geleert oder schon zurückgeholt).");
+        if (File.Exists(original) || Directory.Exists(original)) throw new InvalidOperationException($"Am alten Platz liegt inzwischen wieder „{System.IO.Path.GetFileName(original)}“ – Trendo überschreibt nichts.");
+        var parent = System.IO.Path.GetDirectoryName(original);
+        if (parent is null || !Directory.Exists(parent)) throw new DirectoryNotFoundException($"Den Ordner „{parent}“ gibt es nicht mehr – zurücklegen geht nicht.");
+        MoveAny(trashPath, original);
+        var name = System.IO.Path.GetFileName(trashPath); var dir = System.IO.Path.GetDirectoryName(trashPath)!;
+        string? info = name.StartsWith("$R", StringComparison.Ordinal) ? System.IO.Path.Combine(dir, "$I" + name[2..])
+            : System.IO.Path.GetFileName(dir) == "files" ? System.IO.Path.Combine(System.IO.Path.GetDirectoryName(dir)!, "info", name + ".trashinfo") : null;
+        if (info is not null) try { File.Delete(info); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+    }
+
     static string Unique(string dir, string name)
     {
         var t = System.IO.Path.Combine(dir, name);
@@ -192,9 +236,9 @@ public sealed class FileBrowser
         return t;
     }
 
-    static void MoveAny(string from, string to) { if (Directory.Exists(from)) Directory.Move(from, to); else File.Move(from, to); }
+    internal static void MoveAny(string from, string to) { if (Directory.Exists(from)) Directory.Move(from, to); else File.Move(from, to); }
 
-    void Guard(string p)
+    internal void Guard(string p)
     {
         if (Root is null) return;
         var full = System.IO.Path.GetFullPath(p); var root = System.IO.Path.GetFullPath(Root).TrimEnd('\\', '/');

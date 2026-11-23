@@ -94,7 +94,7 @@ public static class StudioCatalog
 
         ["CORE-01"] = new("Desktop einrichten", "Fenster, Startmenü und Arbeitsfläche von Trendo.", "System & Sicherheit"),
         ["SYS-01"] = new("Startmodus wählen", "Erkennt das Gerät und startet Trendo passend (PC).", "System & Sicherheit"),
-        ["CORE-11"] = new("Daten schützen", "Schützt deine Daten, Passwörter und Sicherungen.", "System & Sicherheit"),
+        ["CORE-11"] = new("Daten schützen", "Prüft deinen Schutz, sichert deine Daten und findet offen liegende Passwörter.", "System & Sicherheit"), // T-0754: keine Passwortverwaltung – nichts versprechen, was es nicht gibt
         ["SPEC-12"] = new("System auf Gefahren prüfen", "Prüft das System auf Gefahren und sichert Hinweise.", "System & Sicherheit"),
         ["SYS-03"] = new("Surfen & Herunterladen", "Im Internet surfen und Dateien laden.", "System & Sicherheit"),
         ["SYS-04"] = new("Programme installieren", "Programme installieren, aktualisieren und entfernen.", "System & Sicherheit"),

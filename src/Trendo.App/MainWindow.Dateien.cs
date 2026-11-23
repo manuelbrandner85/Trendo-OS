@@ -92,6 +92,10 @@ public partial class MainWindow
     public string FilesMessage { get; private set; } = "";
     /// <summary>Für Tests: statt das Programm des Systems zu starten.</summary>
     public Action<string>? FilesOpenOverride { get; set; }
+    FileUndo? _fbUndo;
+    /// <summary>T-0754: Rückgängig/Wiederholen der Dateiaktionen dieser Sitzung (Verschieben, Umbenennen, Kopieren, Neuer Ordner, Löschen).
+    /// Löschen geht in den Papierkorb des Systems (Testmodus: Papierkorb im Testordner) und kommt von dort zurück; nichts wird überschrieben.</summary>
+    public FileUndo FilesHistory => _fbUndo ??= new FileUndo(Files, OperatingSystem.IsWindows() ? FileBrowser.SystemRecycle : null);
 
     private void InitDateien()
     {
@@ -134,7 +138,7 @@ public partial class MainWindow
         var same = string.Equals(Path.GetPathRoot(Path.GetFullPath(source)), Path.GetPathRoot(Path.GetFullPath(targetDir)), StringComparison.OrdinalIgnoreCase);
         var copy = OsBehavior.DropCopies(_style, same, mods, OperatingSystem.IsMacOS());
         string? r = null;
-        FilesDo(() => { r = Files.Paste(source, targetDir, !copy); FilesSelected = r; FilesMessage = (copy ? "Kopiert nach „" : "Verschoben nach „") + PlaceName(targetDir) + "“"; });
+        FilesDo(() => { r = Files.Paste(source, targetDir, !copy); FilesHistory.Record(copy ? FileUndo.Kind.Kopieren : FileUndo.Kind.Verschieben, source, r); FilesSelected = r; FilesMessage = (copy ? "Kopiert nach „" : "Verschoben nach „") + PlaceName(targetDir) + "“"; });
         return r;
     }
 
@@ -160,7 +164,9 @@ public partial class MainWindow
             case "cut": FilesCopy(true); break;
             case "paste": FilesPaste(); break;
             case "move-here": if (_fbClip is { } c) { _fbClip = (c.Paths, true); FilesPaste(); } break;
-            case "duplicate": FilesDo(() => { var r = _fbSel.Select(d => Files.Paste(d, CurDir, false)).ToList(); _fbSel.Clear(); _fbSel.AddRange(r); }); break;
+            case "duplicate": FilesDo(() => { var src = _fbSel.ToList(); var r = new List<string>(); try { foreach (var d in src) r.Add(Files.Paste(d, CurDir, false)); } finally { FilesHistory.Record(FileUndo.Kind.Kopieren, src.Zip(r, (a, b) => (a, (string?)b))); } _fbSel.Clear(); _fbSel.AddRange(r); }); break;
+            case "undo": FilesUndo(); break;   // T-0754
+            case "redo": FilesRedo(); break;
             case "selectall": FilesSelectAll(); break;
             case "newtab": FilesNewTab(); break;
             case "closetab": if (!FilesCloseTab() && Windows.Active is { } aw && aw.Page == FK) CloseWindow(aw.Id); break; // letzte Registerkarte: Fenster zu
@@ -184,14 +190,30 @@ public partial class MainWindow
 
     void FilesDo(Action a) { try { a(); } catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException) { FilesMessage = e.Message; } Show(FK); }
     string CurDir => FilesDir == PcPlace ? Files.Home : FilesDir;
-    public string FilesNewFolder() { string p = ""; FilesDo(() => { p = Files.NewFolder(CurDir); FilesSelected = p; _fbRenaming = true; }); return p; }
-    public void FilesRename(string newName) { if (_fbSel.Count != 1 || FilesSelected is not { } s) return; FilesDo(() => { FilesSelected = Files.Rename(s, newName); _fbRenaming = false; }); }
+    public string FilesNewFolder() { string p = ""; FilesDo(() => { p = Files.NewFolder(CurDir); FilesHistory.Record(FileUndo.Kind.NeuerOrdner, CurDir, p); FilesSelected = p; _fbRenaming = true; }); return p; }
+    public void FilesRename(string newName) { if (_fbSel.Count != 1 || FilesSelected is not { } s) return; FilesDo(() => { var t = Files.Rename(s, newName); FilesHistory.Record(FileUndo.Kind.Umbenennen, s, t); FilesSelected = t; _fbRenaming = false; }); }
+
+    /// <summary>T-0754: Letzte Dateiaktion(en) zurücknehmen (Strg+Z / ⌘Z, Menü, Rechtsklick). Geht es nicht mehr, steht der Grund in der Statuszeile.</summary>
+    public void FilesUndo(int steps = 1) => AfterHistory(steps > 1 ? FilesHistory.UndoMany(steps) : FilesHistory.Undo());
+    /// <summary>T-0754: Zurückgenommene Dateiaktion wieder ausführen (Strg+Y, Strg+Umschalt+Z, ⌘⇧Z).</summary>
+    public void FilesRedo() => AfterHistory(FilesHistory.Redo());
+    void AfterHistory(FileUndo.Result r)
+    {
+        _fbRenaming = false; _fbSel.Clear(); _fbSel.AddRange(r.Paths.Where(p => File.Exists(p) || Directory.Exists(p))); _fbAnchor = _fbSel.FirstOrDefault();
+        FilesMessage = r.Message; Show(FK);
+    }
     static string Count(int n) => n == 1 ? "1 Element" : $"{n} Elemente";
     public void FilesCopy(bool cut) { if (_fbSel.Count == 0) return; _fbClip = ([.. _fbSel], cut); FilesMessage = (cut ? "Ausgeschnitten: " : "Kopiert: ") + (_fbSel.Count == 1 ? Path.GetFileName(_fbSel[0]) : Count(_fbSel.Count)); Show(FK); }
     public void FilesPaste()
     {
         if (_fbClip is not { } c) return;
-        FilesDo(() => { var r = new List<string>(); foreach (var p in c.Paths) r.Add(Files.Paste(p, CurDir, c.Move)); _fbSel.Clear(); _fbSel.AddRange(r); if (c.Move) _fbClip = null; FilesMessage = Count(r.Count) + " eingefügt"; });
+        FilesDo(() =>
+        {
+            var r = new List<string>(); var done = new List<(string, string?)>();
+            try { foreach (var p in c.Paths) { var t = Files.Paste(p, CurDir, c.Move); r.Add(t); done.Add((p, t)); } }
+            finally { FilesHistory.Record(c.Move ? FileUndo.Kind.Verschieben : FileUndo.Kind.Kopieren, done); } // auch bei Abbruch: was erledigt ist, lässt sich zurücknehmen
+            _fbSel.Clear(); _fbSel.AddRange(r); if (c.Move) _fbClip = null; FilesMessage = Count(r.Count) + " eingefügt";
+        });
     }
     public void FilesTrash()
     {
@@ -199,11 +221,9 @@ public partial class MainWindow
         var all = _fbSel.ToList();
         FilesDo(() =>
         {
-            foreach (var s in all) Files.Trash(s, OperatingSystem.IsWindows() ? p =>
-            {
-                if (Directory.Exists(p)) Microsoft.VisualBasic.FileIO.FileSystem.DeleteDirectory(p, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
-                else Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(p, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
-            } : null);
+            var done = new List<(string, string?)>();
+            try { foreach (var s in all) done.Add((s, Files.Trash(s, OperatingSystem.IsWindows() ? FileBrowser.SystemRecycle : null))); }
+            finally { FilesHistory.Record(FileUndo.Kind.Papierkorb, done); } // T-0754: Lage im Papierkorb merken – „Rückgängig“ holt es von dort zurück
             FilesMessage = all.Count == 1 ? $"„{Path.GetFileName(all[0])}“ liegt im Papierkorb." : $"{all.Count} Elemente liegen im Papierkorb."; FilesSelected = null;
         });
     }
@@ -307,6 +327,20 @@ public partial class MainWindow
         var paste = Tb("fb-paste", G("📋", 13), "Einfügen", FilesPaste, _fbClip is not null && FilesDir != PcPlace);
         var ren = Tb("fb-rename", G("✎", 14), "Umbenennen", () => { _fbRenaming = true; Show(FK); }, _fbSel.Count == 1);
         var del = Tb("fb-delete", G("🗑", 13), "Löschen (in den Papierkorb)", FilesTrash, sel);
+        // T-0754: Rückgängig / Wiederholen für Dateiaktionen (Befehlsleiste, Menüs, Rechtsklick)
+        var undoList = FilesHistory.UndoList; var redoList = FilesHistory.RedoList; var mac = _style == "mac";
+        var undoBtn = Tb("fb-undo", G("↶", 15), (undoList.Count > 0 ? "Rückgängig: " + undoList[0] : "Rückgängig") + (mac ? " (⌘Z)" : " (Strg+Z)"), () => FilesUndo(), undoList.Count > 0);
+        var redoBtn = Tb("fb-redo", G("↷", 15), (redoList.Count > 0 ? "Wiederholen: " + redoList[0] : "Wiederholen") + (mac ? " (⌘⇧Z)" : _style == "linux" ? " (Strg+Umschalt+Z)" : " (Strg+Y)"), FilesRedo, redoList.Count > 0);
+        MenuItem[] HistoryItems()
+        {
+            var u = Mi(undoList.Count > 0 ? "Rückgängig: " + undoList[0] : "Rückgängig", () => FilesUndo()); u.Name = "fb-mi-undo"; u.IsEnabled = undoList.Count > 0;
+            var r = Mi(redoList.Count > 0 ? "Wiederholen: " + redoList[0] : "Wiederholen", FilesRedo); r.Name = "fb-mi-redo"; r.IsEnabled = redoList.Count > 0;
+            if (!mac) { u.InputGesture = new KeyGesture(Key.Z, KeyModifiers.Control); r.InputGesture = _style == "linux" ? new KeyGesture(Key.Z, KeyModifiers.Control | KeyModifiers.Shift) : new KeyGesture(Key.Y, KeyModifiers.Control); }
+            if (undoList.Count < 2) return [u, r];
+            var list = new MenuItem { Name = "fb-mi-history", Header = "Letzte Dateiaktionen" };
+            for (var i = 0; i < Math.Min(10, undoList.Count); i++) { var n = i + 1; var m = Mi((n == 1 ? "" : $"bis hier ({n} Schritte): ") + undoList[i], () => FilesUndo(n)); m.Name = "fb-mi-history-" + i; list.Items.Add(m); }
+            return [u, r, list];
+        }
         var sortBox = new ComboBox { Name = "fb-sort", ItemsSource = new[] { "Name", "Änderungsdatum", "Typ", "Größe" }, SelectedIndex = Array.IndexOf(new[] { "name", "datum", "typ", "groesse" }, _fbSort), Height = 32, FontSize = 12 };
         sortBox.SelectionChanged += (_, _) => { var v = new[] { "name", "datum", "typ", "groesse" }[Math.Max(0, sortBox.SelectedIndex)]; if (v != _fbSort) { _fbSort = v; Show(FK); } };
         var viewBtn = Tb("fb-view", G(view == "liste" ? "▦" : "☰", 14), view == "liste" ? "Ansicht: Symbole" : "Ansicht: Liste", () => { FilesView = view == "liste" ? "symbole" : "liste"; Show(FK); });
@@ -459,7 +493,9 @@ public partial class MainWindow
         }, Avalonia.Interactivity.RoutingStrategies.Tunnel);
         var area = new Border { Name = "fb-area", Background = Brush.Parse(_style switch { "mac" => light ? "#FFFFFFFF" : "#FF1E1E1E", "linux" => light ? "#FFFFFFFF" : "#FF1D1D20", "windows" => light ? "#FFF9F9F9" : "#FF191919", _ => "#00000000" }), Child = content };
         if (FilesDir != PcPlace) DropTarget(area, areaDir);
-        area.ContextMenu = new ContextMenu { Items = { Mi("Neuer Ordner", () => FilesNewFolder()), Mi("Einfügen", FilesPaste), Mi("Aktualisieren", () => Show(FK)), Mi(view == "liste" ? "Als Symbole" : "Als Liste", () => { FilesView = view == "liste" ? "symbole" : "liste"; Show(FK); }) } };
+        var areaMenu = new ContextMenu { Name = "fb-area-menu" }; foreach (var hm in HistoryItems()) areaMenu.Items.Add(hm); areaMenu.Items.Add(new Separator());
+        area.ContextMenu = areaMenu;
+        foreach (var am in new[] { Mi("Neuer Ordner", () => FilesNewFolder()), Mi("Einfügen", FilesPaste), Mi("Aktualisieren", () => Show(FK)), Mi(view == "liste" ? "Als Symbole" : "Als Liste", () => { FilesView = view == "liste" ? "symbole" : "liste"; Show(FK); }) }) areaMenu.Items.Add(am);
 
         var count = FilesDir == PcPlace ? $"{Files.Drives().Count} Laufwerke" : $"{items.Count} {(items.Count == 1 ? "Element" : "Elemente")}" + (_fbSel.Count == 1 ? " · 1 Element ausgewählt" : _fbSel.Count > 1 ? $" · {_fbSel.Count} Elemente ausgewählt" : "");
         var status = new TextBlock { Name = "fb-status", Text = FilesMessage.Length > 0 ? count + "   ·   " + FilesMessage : count, FontSize = 11.5, Foreground = Muted, Margin = new Thickness(12, 4), VerticalAlignment = VerticalAlignment.Center };
@@ -474,7 +510,8 @@ public partial class MainWindow
             {
                 var title = new TextBlock { Text = PlaceName(FilesDir), FontWeight = FontWeight.Bold, FontSize = 14, Foreground = Text, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0) };
                 var more = Tb("fb-more", G("⋯", 15), "Aktionen", () => { });
-                more.Flyout = new MenuFlyout { Items = { Mi("Neuer Ordner", () => FilesNewFolder()), Mi("Umbenennen", () => { _fbRenaming = true; Show(FK); }), Mi("Kopieren", () => FilesCopy(false)), Mi("Ausschneiden", () => FilesCopy(true)), Mi("Einfügen", FilesPaste), Mi("In den Papierkorb legen", FilesTrash), Mi("Im System-Finder zeigen", () => { if (!_opt.Isolated) _core.Integrations.LaunchDirect(Principal.LocalOwner, CurDir, _core.Audit); }) } };
+                var macMenu = new MenuFlyout(); foreach (var hm in HistoryItems()) macMenu.Items.Add(hm); macMenu.Items.Add(new Separator()); more.Flyout = macMenu;
+                foreach (var am in new[] { Mi("Neuer Ordner", () => FilesNewFolder()), Mi("Umbenennen", () => { _fbRenaming = true; Show(FK); }), Mi("Kopieren", () => FilesCopy(false)), Mi("Ausschneiden", () => FilesCopy(true)), Mi("Einfügen", FilesPaste), Mi("In den Papierkorb legen", FilesTrash), Mi("Im System-Finder zeigen", () => { if (!_opt.Isolated) _core.Integrations.LaunchDirect(Principal.LocalOwner, CurDir, _core.Audit); }) }) macMenu.Items.Add(am);
                 var left = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2, VerticalAlignment = VerticalAlignment.Center, Children = { back, fwd, title } };
                 if (WinCaps() is { } mcaps) { var sc = sideBox.Child; sideBox.Child = null; sideBox.Child = new DockPanel { Children = { DockTop(new Border { Height = 38, Child = mcaps }), sc! } }; Draggable(sideBox); } // Finder: Ampel oben in der Seitenleiste
                 var right = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center, Children = { viewBtn, sortBox, more, del, search } };
@@ -492,7 +529,8 @@ public partial class MainWindow
                 Control SearchPill() { search.Width = double.NaN; search.Height = 34; search.CornerRadius = new CornerRadius(8); return search; }
                 var pathPill = new Border { CornerRadius = new CornerRadius(8), Background = Brush.Parse(light ? "#14000000" : "#1AFFFFFF"), Padding = new Thickness(4, 0), Height = 34, Child = crumbs, VerticalAlignment = VerticalAlignment.Center };
                 var menu = Tb("fb-more", G("☰", 15), "Hauptmenü", () => { });
-                menu.Flyout = new MenuFlyout { Items = { Mi("Neuer Ordner", () => FilesNewFolder()), Mi("Umbenennen …", () => { _fbRenaming = true; Show(FK); }), Mi("Kopieren", () => FilesCopy(false)), Mi("Ausschneiden", () => FilesCopy(true)), Mi("Einfügen", FilesPaste), Mi("In den Papierkorb verschieben", FilesTrash), Mi("Verborgene Dateien anzeigen", () => { Files.ShowHidden = !Files.ShowHidden; Show(FK); }) } };
+                var gMenu = new MenuFlyout(); foreach (var hm in HistoryItems()) gMenu.Items.Add(hm); gMenu.Items.Add(new Separator()); menu.Flyout = gMenu;
+                foreach (var am in new[] { Mi("Neuer Ordner", () => FilesNewFolder()), Mi("Umbenennen …", () => { _fbRenaming = true; Show(FK); }), Mi("Kopieren", () => FilesCopy(false)), Mi("Ausschneiden", () => FilesCopy(true)), Mi("Einfügen", FilesPaste), Mi("In den Papierkorb verschieben", FilesTrash), Mi("Verborgene Dateien anzeigen", () => { Files.ShowHidden = !Files.ShowHidden; Show(FK); }) }) gMenu.Items.Add(am);
                 var head = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = {
                     new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, VerticalAlignment = VerticalAlignment.Center, Children = { back, fwd } },
                     Pos(new Border { Margin = new Thickness(8, 0), Child = FilesSearchOpen || _fbQuery.Length > 0 ? SearchPill() : pathPill, HorizontalAlignment = HorizontalAlignment.Stretch }, 1),
@@ -509,7 +547,7 @@ public partial class MainWindow
                 var addrRow = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Margin = new Thickness(6, 6, 6, 4), Children = {
                     new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2, Children = { back, fwd, up, refresh } }, Pos(addr, 1), Pos(search, 2) } };
                 var cmd = new StackPanel { Name = "fb-commands", Orientation = Orientation.Horizontal, Spacing = 2, Margin = new Thickness(10, 2, 10, 6), Children = {
-                    newBtn, new Border { Width = 1, Height = 22, Background = Edge, Margin = new Thickness(6, 0) }, cut, copy, paste, ren, del,
+                    newBtn, new Border { Width = 1, Height = 22, Background = Edge, Margin = new Thickness(6, 0) }, cut, copy, paste, ren, del, undoBtn, redoBtn,
                     new Border { Width = 1, Height = 22, Background = Edge, Margin = new Thickness(6, 0) }, sortBox, viewBtn, hidden, sysOpen } };
                 top = new StackPanel { Background = Brush.Parse(_style == "windows" ? (light ? "#FFF3F3F3" : "#FF202020") : "#00000000"), Children = { addrRow, new Border { BorderBrush = Edge, BorderThickness = new Thickness(0, 1, 0, 1), Child = cmd } } };
                 var body = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = { sideBox, Pos(area, 1) } };

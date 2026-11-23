@@ -56,7 +56,7 @@ public partial class MainWindow
         foreach (var c in checks)
         {
             Button? fix = null;
-            if (c.FixPage is { } fp && c.Level != CheckLevel.Gut) { fix = new Button { Name = "sec-fix-" + c.Id, Content = c.Id == "backup" ? "Jetzt sichern" : "Ansehen", Padding = new Thickness(10, 3), Margin = new Thickness(0, 6, 0, 0), HorizontalAlignment = HorizontalAlignment.Left }; fix.Click += (_, _) => { if (c.Id == "backup") { Backups.Create(DateTime.Now); _secMsg = "Sicherung erstellt."; Show("schutz"); } else Show(fp); }; }
+            if (c.FixPage is { } fp && c.Level != CheckLevel.Gut) { fix = new Button { Name = "sec-fix-" + c.Id, Content = c.Id == "backup" ? "Jetzt sichern" : "Ansehen", Padding = new Thickness(10, 3), Margin = new Thickness(0, 6, 0, 0), HorizontalAlignment = HorizontalAlignment.Left }; fix.Click += (_, _) => { if (c.Id == "backup") { try { _secMsg = Backups.CreateChecked(DateTime.Now).Say(); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _secMsg = "Sichern hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex); } Show("schutz"); } else Show(fp); }; }
             var (dot, col) = c.Level == CheckLevel.Gut ? ("✓", "#4ADE80") : c.Level == CheckLevel.Hinweis ? ("•", "#FACC15") : ("!", "#F87171");
             var body = new StackPanel { Spacing = 3, Children = {
                 new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = {
@@ -93,7 +93,7 @@ public partial class MainWindow
             sp.Children.Add(Row2(new StackPanel { Children = { new TextBlock { Text = $"{f.Kind}: {f.Masked}", Foreground = Text, FontSize = 12.5 }, P($"{Path.GetFileName(f.File)}, Zeile {f.Line}", null, 10.5) } }, open));
         }
         sp.Children.Add(H("Wiederherstellen", 14));
-        sp.Children.Add(P($"{Backups.List().Count} Sicherung(en) vorhanden. Damit holst du Einstellungen, Projekte und Protokoll zurück."));
+        sp.Children.Add(P($"{Backups.List().Count} Sicherung(en) vorhanden. Damit holst du Einstellungen, Projekte und Protokoll zurück. Die Sicherungen sind nicht verschlüsselt – lesbar für jeden mit Zugriff auf {Backups.Folder}."));
         sp.Children.Add(Nav2("Zur Sicherung", "sicherung"));
         return SysPage("Schutz", sp);
     }
