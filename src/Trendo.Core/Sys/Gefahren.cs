@@ -186,26 +186,28 @@ public static partial class SystemScan
 
     static readonly string[] ScriptExt = [".js", ".mjs", ".cjs"];
 
-    /// <summary>T-0757: PowerShell steht an einer Stelle, an der es wirklich gestartet wird – am Anfang der Argumente, direkt nach /c, /k, start
-    /// (mit Schaltern und Fenstertitel), &amp;, |, --headless oder „call create“ (wmic), auch mit Pfad und Anführungszeichen; nicht nach echo
-    /// und nicht als Wert eines Schalters.</summary>
-    [GeneratedRegex(@"(?i)(?:^|[&|]|(?<![^\s""'(])(?:/c|/k|--headless|create|start(?:\s+(?:/\w+(?::\S+)?|""[^""]*""))*)(?=[\s""'(]))[\s""'(]*(?:[^\s""'&|]*[\\/])?(?:powershell|pwsh)(?:\.exe)?(?=[""'\s]|$)")] private static partial Regex InnerPowerShell();
+    /// <summary>T-0755 Fix5 / T-0757 Fix1: Aufruf von PowerShell irgendwo in den Argumenten – mit oder ohne Pfad (auch in Anführungszeichen mit Leerzeichen),
+    /// nach Leerraum, Anführungszeichen, Pfadtrenner, Befehlstrennern (&amp; |) und den cmd-Trennern @ , ; = ( ), auch direkt hinter /c, /k, /r.</summary>
+    [GeneratedRegex(@"(?i)(?:(?<=^|[\s""'\\/(@,;=)&|])|(?<=(?:^|[\s""'])/[ckr]))(?:powershell|pwsh)(?:\.exe)?(?=[""'\s)&|,;]|$)")] private static partial Regex InnerPowerShell();
 
-    /// <summary>T-0757: Startprogramme, die PowerShell als eigenen Befehl starten können.</summary>
-    static readonly HashSet<string> PsLaunchers = new(["cmd.exe", "conhost.exe", "forfiles.exe", "explorer.exe", "wmic.exe"], StringComparer.OrdinalIgnoreCase);
+    /// <summary>T-0757 Fix1: echte Nicht-Ausführung im selben Befehlsabschnitt – <c>echo</c> oder <c>rem</c> davor.</summary>
+    [GeneratedRegex(@"(?i)(?:^|[\s@(,;=""'])(?:echo|rem)(?=$|[\s.(:;,=/\\""'])")] private static partial Regex NotRun();
 
-    static bool IsHost(string host, string name) => Path.GetFileName(host).Equals(name, StringComparison.OrdinalIgnoreCase) || ToolName(host).Equals(name, StringComparison.OrdinalIgnoreCase);
+    /// <summary>T-0757 Fix1: PowerShell als Wert eines Schalters (<c>--shell powershell</c>, <c>-shell=pwsh</c>, <c>/shell:powershell</c>).</summary>
+    [GeneratedRegex(@"(?i)(?:^|\s)(?:--?|/)shell[\s=:]+[""']?$")] private static partial Regex ShellValue();
 
-    /// <summary>T-0755 Fix5 / T-0757: Startet <paramref name="host"/> (cmd, conhost, forfiles, explorer oder wmic) PowerShell als eigenen Befehl
-    /// (siehe <see cref="InnerPowerShell"/>), wird der Teil danach bis zum nächsten Befehlstrenner (&amp; oder |) auf einen verschlüsselten Befehl geprüft.
-    /// <c>cmd /c echo powershell -e …</c> oder <c>dotnet tool --shell powershell -e …</c> starten kein PowerShell. Startet cmd, werden vorher alle
-    /// <c>^</c> entfernt – cmd verschluckt sie (<c>p^owershell</c>, <c>-e^nc</c>, Base64 mit <c>^</c>).</summary>
-    public static bool EncodedInnerPowerShell(string host, string args)
+    /// <summary>T-0755 Fix5 / T-0757 Fix1: Steht in den Argumenten – gleich welches Programm sie bekommt (cmd, start, conhost, forfiles, wmic, mshta,
+    /// pcalua, rundll32, bash, node …) – ein Aufruf von PowerShell, wird der Teil danach bis zum nächsten Befehlstrenner (&amp; oder |) auf einen
+    /// verschlüsselten Befehl geprüft. Vorher werden alle <c>^</c> entfernt (cmd verschluckt sie: <c>p^owershell</c>, <c>-e^nc</c>, Base64 mit <c>^</c>).
+    /// Ausgenommen ist nur, was PowerShell nicht startet: <c>echo</c>/<c>rem</c> im selben Befehlsabschnitt und <c>--shell powershell</c> als Schalterwert.</summary>
+    public static bool EncodedInnerPowerShell(string args)
     {
-        if (!PsLaunchers.Contains(Path.GetFileName(host)) && !PsLaunchers.Contains(ToolName(host))) return false;
-        if (IsHost(host, "cmd.exe") || Regex.IsMatch(args, @"(?i)(?:^|[\s""'\\/&|(])cmd(?:\.exe)?(?=[\s""']|$)")) args = args.Replace("^", "");
+        args = args.Replace("^", "");
         foreach (Match m in InnerPowerShell().Matches(args))
         {
+            var seg = args.LastIndexOfAny(['&', '|'], Math.Max(0, m.Index - 1)) is var sep && sep >= 0 && sep < m.Index ? sep + 1 : 0;
+            var before = args[seg..m.Index];
+            if (NotRun().IsMatch(before) || ShellValue().IsMatch(before)) continue;
             var rest = args[(m.Index + m.Length)..];
             var cut = rest.IndexOfAny(['&', '|']); if (cut >= 0) rest = rest[..cut];
             if (Encoded().IsMatch(rest)) return true;
@@ -288,7 +290,7 @@ public static partial class SystemScan
         var shellName = ToolName(hostExe);
         if ((shellName.Equals("powershell.exe", StringComparison.OrdinalIgnoreCase) || shellName.Equals("pwsh.exe", StringComparison.OrdinalIgnoreCase) || shellName.Equals("pwsh.dll", StringComparison.OrdinalIgnoreCase)
              || host.Equals("powershell.exe", StringComparison.OrdinalIgnoreCase) || host.Equals("pwsh.exe", StringComparison.OrdinalIgnoreCase)) && Encoded().IsMatch(args)
-            || EncodedInnerPowerShell(hostExe, args)) // T-0755 Fix5: PowerShell wird erst in den Argumenten gestartet (cmd /c, start, conhost, forfiles /c)
+            || EncodedInnerPowerShell(args)) // T-0755 Fix5: PowerShell wird erst in den Argumenten gestartet (cmd /c, start, conhost, forfiles /c)
             return new(e, s, Ampel.Rot, "Versteckter Befehl",
                 "Der Befehl enthält einen verschlüsselten (Base64-)Befehl für PowerShell. So verstecken Schadprogramme, was sie tun.", fix);
         // T-0755 Fix2: Microsoft-signierte Kopie eines Windows-Werkzeugs außerhalb des Windows-Ordners oder unter anderem Namen

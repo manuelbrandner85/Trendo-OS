@@ -49,7 +49,12 @@ public static class FreePort
     /// <summary>Hinweise auf unfreie oder fremde Lizenzbedingungen: dann gilt die Datei nicht als Beleg.</summary>
     /// T-0757 R1: auch Weitergabe- und Kopierverbote und Vertraulichkeit – sonst gälte ein angehängter MIT-Satz in einer sonst unfreien Datei als MIT.
     static readonly string[] NotFree = ["eula", "proprietary", "proprietär", "gpl", "general public license",
-        "nicht weitergegeben", "darf nicht weitergegeben", "confidential", "vertraulich", "all copying prohibited", "kopieren verboten"];
+        "nicht weitergegeben", "darf nicht weitergegeben", "confidential", "vertraulich", "all copying prohibited", "kopieren verboten",
+        // T-0757 Fix1
+        "weitergabe verboten", "do not distribute", "not for redistribution", "redistribution prohibited", "for internal use only", "vervielfältigung untersagt", "end user license agreement"];
+
+    /// <summary>T-0757 Fix1: Verneinung vor einem Lizenzkennzeichen („NOT CC0“, „nicht unter CC0“, „not under the MIT License“, „keine BSD“).</summary>
+    static readonly Regex Negated = new(@"\b(?:not|nicht|kein[a-z]*|no)\s+(?:(?:unter|under|licensed\s+under)\s+)?(?:(?:der|die|the|a|an)\s+)?(?:cc0|(?-i:MIT)|bsd|apache|zlib|unlicense)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
     /// <summary>Stehen oft in der Copyright-Zeile echter MIT- und BSD-Lizenzen. Sie zählen nur, wenn keine vollständige freie Lizenz im Text steht.</summary>
     static readonly string[] Reserved = ["all rights reserved", "alle rechte vorbehalten"];
@@ -91,6 +96,8 @@ public static class FreePort
         var text = Norm(File.ReadAllText(path));
         if (NotFree.FirstOrDefault(w => text.Contains(w, StringComparison.OrdinalIgnoreCase)) is { } bad)
             return (false, $"In der Lizenzdatei steht „{bad}“. Das ist keine freie Lizenz für dieses Vorhaben – Trendo portiert nur MIT, BSD, zlib, Apache 2.0, Unlicense oder CC0.");
+        if (Negated.Match(text) is { Success: true } neg)
+            return (false, $"In der Lizenzdatei steht „{neg.Value}“ – die Lizenz wird dort ausdrücklich verneint. Trendo portiert nur MIT, BSD, zlib, Apache 2.0, Unlicense oder CC0.");
         var hit = FreeLicenses.FirstOrDefault(l => l.Markers.All(m => text.Contains(Norm(m), StringComparison.OrdinalIgnoreCase)));
         if (hit.Id is null && Reserved.FirstOrDefault(w => text.Contains(w, StringComparison.OrdinalIgnoreCase)) is { } res)
             return (false, $"In der Lizenzdatei steht „{res}“, aber keine vollständige freie Lizenz. Trendo portiert nur MIT, BSD, zlib, Apache 2.0, Unlicense oder CC0.");
@@ -104,7 +111,8 @@ public static class FreePort
     static readonly Regex Retail = new(@"^(S[CL][AEKPU][ASMJDH]|P[ABC]PX|T[CL][EPU]S)[_-]\d{3}\.?\d{2}", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
     /// <summary>T-0757 R2: Nur eine SYSTEM.CNF, deren BOOT2 auf eine Disc-Kennung zeigt, gilt als Spiel-Disc. Ein eigenes Homebrew-Projekt hat oft eine
     /// SYSTEM.CNF mit <c>BOOT2 = cdrom0:\MEINSPIEL.ELF;1</c> – die ist erlaubt.</summary>
-    static readonly Regex Boot2 = new(@"BOOT2\s*=\s*cdrom0:\\?(S[CL][AEKPU][ASMJDH]|P[ABC]PX|T[CL][EPU]S)[_-]", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    /// T-0757 Fix1: auch mit Unterordner (<c>cdrom0:\DATA\SLUS_200.62;1</c>) und doppeltem Backslash.
+    static readonly Regex Boot2 = new(@"BOOT2\s*=\s*cdrom0:[\\/]*(?:[^\\/;\r\n]*[\\/]+)*(S[CL][AEKPU][ASMJDH]|P[ABC]PX|T[CL][EPU]S)[_-]", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
     /// <summary>Prüft, ob die Datei ein PS2-Programm (ELF, 32 Bit, MIPS, Little Endian) ist und nicht von einer Spiel-Disc stammt. null = passt.
     /// Bei Katalogtiteln muss die Datei genau die bekannte sein (SHA-256).</summary>
@@ -192,7 +200,7 @@ public static class FreePort
     }
 
     /// <summary>Alle Voraussetzungen vor dem ersten Schritt. Was fehlt, steht im Klartext mit Einrichten-Hinweis. Wirft nicht.</summary>
-    public static IReadOnlyList<Check> Prerequisites(Title t, string license, string elf, string recompDir, Probe probe)
+    public static IReadOnlyList<Check> Prerequisites(Title t, string license, string elf, string recompDir, Probe probe, string? listDir = null)
     {
         var list = new List<Check>
         {
@@ -200,6 +208,11 @@ public static class FreePort
             Safe("elf", "Programm des Spiels", () => { var e = CheckElf(elf, t); return new("elf", "Programm des Spiels", e is null, e ?? Path.GetFileName(elf) + " · SHA-256 " + Sha256(elf)[..16] + "…"); }),
             Safe("recomp", "PS2Recomp eingerichtet", () => RecompCheck(recompDir, probe.MaxPath)),
         };
+        // T-0757 Fix1: fremde Reste früherer Läufe schon hier melden, nicht erst nach der langen Übersetzung
+        if (listDir is not null && list[^1].Ok)
+            list.Add(Safe("reste", "PS2Recomp ohne fremde Reste", () => Inspect(recompDir, listDir) is { Foreign.Count: > 0 } l
+                ? new("reste", "PS2Recomp ohne fremde Reste", false, ForeignText(l.Foreign))
+                : new("reste", "PS2Recomp ohne fremde Reste", true, "keine fremden Code-Dateien früherer Läufe")));
         var cmake = probe.Find("cmake");
         list.Add(new("cmake", "CMake 3.20 oder neuer", cmake is not null, cmake is not null ? "gefunden" : "fehlt – CMake von cmake.org einrichten (portable ZIP genügt) und cmake.exe in den Suchpfad legen."));
         var cc = probe.Compiler();
@@ -278,37 +291,75 @@ public static class FreePort
             .OrderByDescending(File.GetLastWriteTimeUtc).FirstOrDefault();
     }
 
-    /// <summary>Erzeugte .cpp nach ps2xRuntime/src/runner, .h nach ps2xRuntime/include. Vorher werden die beim letzten Mal von Trendo einsortierten Dateien
-    /// entfernt (sonst mischt ein zweiter Lauf alten und neuen Code), Dateien von PS2Recomp selbst werden nie überschrieben. Danach werden die
-    /// Zwischendateien (.obj) von ps2EntryRunner gelöscht. Liefert die einsortierten Dateien (relativ zu ps2xRuntime).
-    /// T-0757 R3: Die Liste steht zusätzlich als Kopie in <paramref name="workDir"/> (Arbeitsordner des Projekts, nur Trendo schreibt dort).
-    /// Als von Trendo einsortiert gilt nur, was in beiden Listen mit derselben Prüfsumme steht – eine im PS2Recomp-Ordner untergeschobene Liste
-    /// löscht damit nichts. Steht eine Datei nur in der Liste im PS2Recomp-Ordner und liegt noch dort (Lauf aus einem anderen Arbeitsordner),
-    /// wird nichts gelöscht und nichts gemischt: Fehler mit Hinweis.</summary>
-    public static IReadOnlyList<string> Distribute(string outDir, string recompDir, string workDir)
+    /// <summary>T-0757 Fix1: Trendos eigene Kopie der Liste für genau diesen PS2Recomp-Ordner – im Datenordner von Trendo, Name aus dem SHA-256 des Pfads.
+    /// So gilt sie für jeden Titel und jedes Projekt, das denselben PS2Recomp-Ordner nutzt.</summary>
+    public static string ListCopy(string listDir, string recompDir)
+    {
+        var key = Path.GetFullPath(recompDir).TrimEnd('\\', '/');
+        if (OperatingSystem.IsWindows()) key = key.ToLowerInvariant();
+        return Path.Combine(listDir, "einsortiert-" + Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(key)))[..16] + ".txt");
+    }
+
+    /// <summary>Nur gültige Einträge (src/runner/&lt;name&gt;.cpp, include/&lt;name&gt;.h|.hpp, ohne weitere Trenner) mit Prüfsumme.</summary>
+    static Dictionary<string, string> ReadList(string file)
+    {
+        var d = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (File.Exists(file))
+            foreach (var line in File.ReadAllLines(file))
+                if (line.Split('\t') is [var rel, var sha] && ManifestEntry.IsMatch(rel) && Regex.IsMatch(sha, "^[0-9a-f]{64}$")) d[rel] = sha;
+        return d;
+    }
+
+    /// <summary>T-0757 Fix1: Was liegt von früheren Läufen im PS2Recomp-Ordner? <paramref name="Owned"/>: in beiden Listen mit derselben Prüfsumme und unverändert
+    /// – darf Trendo entfernen. <paramref name="Foreign"/>: nur in der Liste im PS2Recomp-Ordner, liegt aber noch unverändert dort – Trendo löscht sie nicht.</summary>
+    public sealed record Leftovers(IReadOnlyList<string> Owned, IReadOnlyList<string> Foreign);
+
+    public static Leftovers Inspect(string recompDir, string listDir)
     {
         var rt = Path.Combine(recompDir, "ps2xRuntime");
         var root = Dir(rt);
-        var manifest = Path.Combine(rt, Manifest);
-        var copy = Path.Combine(workDir, Manifest);
-        // Nur gültige Einträge (src/runner/<name>.cpp, include/<name>.h|.hpp, ohne weitere Trenner) mit Prüfsumme gelten als von Trendo einsortiert;
-        // gelöscht wird nur, was noch genau so aussieht, wie Trendo es hingelegt hat.
-        static Dictionary<string, string> ReadList(string file)
-        {
-            var d = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            if (File.Exists(file))
-                foreach (var line in File.ReadAllLines(file))
-                    if (line.Split('\t') is [var rel, var sha] && ManifestEntry.IsMatch(rel) && Regex.IsMatch(sha, "^[0-9a-f]{64}$")) d[rel] = sha;
-            return d;
-        }
-        var old = ReadList(manifest);
-        var mine = ReadList(copy);
+        var old = ReadList(Path.Combine(rt, Manifest));
+        var mine = ReadList(ListCopy(listDir, recompDir));
         string Full(string rel) => Path.GetFullPath(Path.Combine(rt, rel));
+        // gelöscht wird nur, was noch genau so aussieht, wie Trendo es hingelegt hat (Präfix mit Trennzeichen, Prüfsumme)
         bool Unchanged(KeyValuePair<string, string> kv) => Full(kv.Key).StartsWith(root, PathCmp) && (!File.Exists(Full(kv.Key)) || Sha256(Full(kv.Key)) == kv.Value);
-        var owned = old.Where(kv => mine.TryGetValue(kv.Key, out var s2) && s2 == kv.Value && Unchanged(kv)).Select(kv => kv.Key).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var foreign = old.Where(kv => !owned.Contains(kv.Key) && File.Exists(Full(kv.Key)) && Unchanged(kv)).Select(kv => kv.Key).ToList();
-        if (foreign.Count > 0)
-            throw new IOException($"Im PS2Recomp-Ordner liegen noch {foreign.Count} Code-Dateien, die dieser Arbeitsordner nicht selbst einsortiert hat (z. B. {foreign[0]}). Trendo löscht sie nicht und mischt keinen Code. Bitte PS2Recomp frisch einrichten oder im ursprünglichen Projekt portieren.");
+        var owned = old.Where(kv => mine.TryGetValue(kv.Key, out var s2) && s2 == kv.Value && Unchanged(kv)).Select(kv => kv.Key).ToList();
+        var foreign = old.Where(kv => !owned.Contains(kv.Key, StringComparer.OrdinalIgnoreCase) && File.Exists(Full(kv.Key)) && Unchanged(kv)).Select(kv => kv.Key).ToList();
+        return new(owned, foreign);
+    }
+
+    static string ForeignText(IReadOnlyList<string> foreign) =>
+        $"Im PS2Recomp-Ordner liegen {foreign.Count} Code-Dateien eines früheren Laufs, die Trendo nicht als eigene belegen kann (z. B. {foreign[0]}). Trendo löscht sie nicht und mischt keinen Code. Lege PS2Recomp frisch an oder entferne die Dateien selbst.";
+
+    /// <summary>T-0757 Fix1: Aktion „Alte Trendo-Dateien aus PS2Recomp entfernen“ (nach Rückfrage). Entfernt nur Dateien, deren SHA-256 in beiden Listen steht
+    /// und die unverändert sind; beide Listen werden danach ohne sie geschrieben. Liefert die entfernten Dateien.</summary>
+    public static IReadOnlyList<string> RemoveOld(string recompDir, string listDir)
+    {
+        var rt = Path.Combine(recompDir, "ps2xRuntime");
+        var l = Inspect(recompDir, listDir);
+        foreach (var rel in l.Owned) { var f = Path.GetFullPath(Path.Combine(rt, rel)); if (File.Exists(f)) File.Delete(f); }
+        var rest = ReadList(Path.Combine(rt, Manifest)).Where(kv => !l.Owned.Contains(kv.Key, StringComparer.OrdinalIgnoreCase)).Select(kv => kv.Key + "\t" + kv.Value).ToList();
+        AtomicFile.WriteAllText(Path.Combine(rt, Manifest), rest.Count > 0 ? string.Join("\n", rest) + "\n" : "");
+        Directory.CreateDirectory(listDir);
+        AtomicFile.WriteAllText(ListCopy(listDir, recompDir), "");
+        return l.Owned;
+    }
+
+    /// <summary>Erzeugte .cpp nach ps2xRuntime/src/runner, .h nach ps2xRuntime/include. Vorher werden die beim letzten Mal von Trendo einsortierten Dateien
+    /// entfernt (sonst mischt ein zweiter Lauf alten und neuen Code), Dateien von PS2Recomp selbst werden nie überschrieben. Danach werden die
+    /// Zwischendateien (.obj) von ps2EntryRunner gelöscht. Liefert die einsortierten Dateien (relativ zu ps2xRuntime).
+    /// T-0757: Die Liste steht zusätzlich als Kopie in Trendos Datenordner <paramref name="listDir"/> (<see cref="ListCopy"/>, je PS2Recomp-Ordner).
+    /// Als von Trendo einsortiert gilt nur, was in beiden Listen mit derselben Prüfsumme steht – eine im PS2Recomp-Ordner untergeschobene Liste
+    /// löscht damit nichts. Fremde Reste (<see cref="Leftovers.Foreign"/>): nichts löschen, nichts mischen, Fehler mit Hinweis.</summary>
+    public static IReadOnlyList<string> Distribute(string outDir, string recompDir, string listDir)
+    {
+        var rt = Path.Combine(recompDir, "ps2xRuntime");
+        var manifest = Path.Combine(rt, Manifest);
+        var copy = ListCopy(listDir, recompDir);
+        string Full(string rel) => Path.GetFullPath(Path.Combine(rt, rel));
+        var l = Inspect(recompDir, listDir);
+        if (l.Foreign.Count > 0) throw new IOException(ForeignText(l.Foreign));
+        var owned = l.Owned.ToHashSet(StringComparer.OrdinalIgnoreCase);
         var plan = new List<(string From, string Rel)>();
         foreach (var f in Directory.EnumerateFiles(outDir, "*", SearchOption.AllDirectories))
         {
@@ -326,7 +377,7 @@ public static class FreePort
         foreach (var (from, rel) in plan) File.Copy(from, Path.Combine(rt, rel), true);
         var placed = plan.Select(p => p.Rel).ToList();
         var listText = string.Join("\n", placed.Select(r => r + "\t" + Sha256(Full(r)))) + "\n";
-        Directory.CreateDirectory(workDir);
+        Directory.CreateDirectory(listDir);
         AtomicFile.WriteAllText(copy, listText);
         AtomicFile.WriteAllText(manifest, listText);
         var build = Path.Combine(recompDir, "build");
@@ -353,7 +404,11 @@ public static class FreePort
     public static readonly Runner RealRunner = (exe, args, cwd, onLine, ct, timeout) => Cli.RunStreamAsync(exe, args, cwd, onLine, ct, timeout);
 
     /// <summary><paramref name="RightsConfirmed"/>: T-0757 R1 – bei „Eigenes Homebrew“ hat die Person ausdrücklich bestätigt: <see cref="RightsText"/>.</summary>
-    public sealed record Job(Title Title, string Elf, string License, string RecompDir, IReadOnlyList<string> Stubs, string WorkDir, bool RightsConfirmed = false);
+    public sealed record Job(Title Title, string Elf, string License, string RecompDir, IReadOnlyList<string> Stubs, string WorkDir, bool RightsConfirmed = false, string? ListDir = null)
+    {
+        /// <summary>T-0757 Fix1: Ordner für Trendos Kopie der Liste (Datenordner von Trendo); ohne Angabe der Arbeitsordner.</summary>
+        public string Lists => ListDir ?? WorkDir;
+    }
 
     /// <summary>T-0757 R1: Bestätigung vor dem Start bei „Eigenes Homebrew“; sie steht in ergebnis.json.</summary>
     public const string RightsText = "Ich habe die Rechte an diesem Programm";
@@ -390,7 +445,7 @@ public static class FreePort
         Outcome Done(string status, string msg, string? exe = null, string? sha = null, string? result = null) { Log($"== {status.ToUpperInvariant()}: {msg}"); Flush(); return new(status, msg, exe, sha, log, result); }
 
         Log($"Trendo OS · Freies Spiel portieren · {job.Title.Name} · Beginn {started:yyyy-MM-dd HH:mm:ss} UTC");
-        var checks = Prerequisites(job.Title, job.License, job.Elf, job.RecompDir, probe);
+        var checks = Prerequisites(job.Title, job.License, job.Elf, job.RecompDir, probe, job.Lists);
         foreach (var c in checks) Log($"[prüfung] {(c.Ok ? "OK " : "FEHLT")} {c.Label}: {c.Detail}");
         if (CheckStubs(job.Stubs) is { } bad) return Done("blockiert", bad);
         if (checks.FirstOrDefault(c => !c.Ok) is { } miss) return Done("blockiert", miss.Label + ": " + miss.Detail);
@@ -444,7 +499,7 @@ public static class FreePort
                         Log("  config.toml geschrieben, " + job.Stubs.Count(x => x.Trim().Length > 0) + " Bindungen");
                         break;
                     case Kind.Sort:
-                        placed = Distribute(outDir, job.RecompDir, job.WorkDir);
+                        placed = Distribute(outDir, job.RecompDir, job.Lists);
                         Log($"  {placed.Count(p => p.EndsWith(".cpp", StringComparison.OrdinalIgnoreCase))} .cpp nach ps2xRuntime/src/runner, {placed.Count(p => !p.EndsWith(".cpp", StringComparison.OrdinalIgnoreCase))} .h nach ps2xRuntime/include; alte Dateien früherer Läufe und Zwischendateien von {RunnerTarget} entfernt");
                         break;
                     case Kind.Result:

@@ -130,11 +130,11 @@ public class ConsolePort_Ui
             Settle();
             // T-0757 R1: „Eigenes Homebrew“ startet erst nach der ausdrücklichen Bestätigung
             Assert.False(w.Find<Button>("fp-start").IsEnabled);
-            Assert.Contains("Rechte bestätigt", w.Find<TextBlock>("fp-blocked").Text);
+            Assert.Contains("Rechte am Programm: noch nicht bestätigt", w.Find<TextBlock>("fp-blocked").Text);
             Assert.Equal("blockiert", (await w.FreePortStart(d))!.Status); // auch direkt aufgerufen: nichts startet
             Assert.Empty(calls);
             w.Show(K); Settle();
-            w.Find<CheckBox>("fp-rights").IsChecked = true; await Until(() => d.Text("fp_rights") == elf); Settle();
+            w.Find<CheckBox>("fp-rights").IsChecked = true; await Until(() => d.Text("fp_rights") == Trendo.Core.ConsolePort.FreePort.Sha256(elf)); Settle(); // Fix1: an die SHA-256 der ELF gebunden
             Assert.Null(w.TryFind<TextBlock>("fp-blocked"));
             Assert.True(w.Find<Button>("fp-start").IsEnabled);
             Tap(w, "fp-start");
@@ -170,6 +170,23 @@ public class ConsolePort_Ui
             File.WriteAllText(result, "{ kaputt");
             w.Show(K); Settle();
             Assert.Contains("beschädigt", w.Find<TextBlock>("fp-result").Text);
+            // T-0757 Fix1: „Alte Trendo-Dateien aus PS2Recomp entfernen“ fragt erst nach und entfernt nur Trendos eigene Dateien
+            var own = Path.Combine(recomp, "ps2xRuntime", "src", "runner", "game.cpp");
+            var foreign = Path.Combine(recomp, "ps2xRuntime", "src", "runner", "main.cpp"); File.WriteAllText(foreign, "// PS2Recomp");
+            Tap(w, "fp-clean"); Settle();
+            Assert.Contains("Wirklich entfernen?", w.Find<TextBlock>("fp-clean-ask").Text);
+            Assert.True(File.Exists(own)); // erst nach „Ja“
+            Tap(w, "fp-clean-no"); Settle();
+            Assert.Null(w.TryFind<TextBlock>("fp-clean-ask"));
+            Assert.True(File.Exists(own));
+            Tap(w, "fp-clean"); Settle(); Tap(w, "fp-clean-yes"); Settle();
+            Assert.False(File.Exists(own));
+            Assert.True(File.Exists(foreign));
+            // Fix1 NIEDRIG 5: geänderte ELF braucht eine neue Bestätigung
+            File.AppendAllText(elf, "x");
+            w.Show(K); Settle();
+            Assert.Contains("geändert", w.Find<TextBlock>("fp-blocked").Text);
+            Assert.False(w.Find<Button>("fp-start").IsEnabled);
         }
         finally { MainWindow.FolderPickOverride = null; w.Close(); }
     }
