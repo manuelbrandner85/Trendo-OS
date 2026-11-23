@@ -24,7 +24,6 @@ public sealed partial class Shop
     string IdeaDir => Path.GetDirectoryName(Products.FilePath)!;
     /// <summary>Ordner der Artikelbilder dieser Geschäftsidee.</summary>
     public string ImageDir => Path.Combine(IdeaDir, "bilder");
-    string UndoFile => Path.Combine(IdeaDir, "rueckgaengig.json");
 
     public static string Label(Product p, ItemVariant v) => p.Name + VariantSep + v.Name;
 
@@ -49,7 +48,7 @@ public sealed partial class Shop
 
     /// <summary>T-0753 M-C: Artikel und Variante einer Zeile – mit fester Kennung über diese (Umbenennen egal, Neuanlage gleichen Namens zählt nicht),
     /// bei Altdaten über die Bezeichnung. (−1, −1), wenn es ihn nicht (mehr) in dieser Form gibt.</summary>
-    internal static (int Product, int Variant) Resolve(List<Product> prods, string label, string itemId, string variant)
+    internal static (int Product, int Variant) Resolve(List<Product> prods, string label, string itemId, string variant, DateTime? at = null)
     {
         int i, v;
         if (itemId.Length > 0)
@@ -59,8 +58,19 @@ public sealed partial class Shop
             v = variant.Length == 0 ? -1 : prods[i].Variants?.FindIndex(x => x.Name == variant) ?? -1;
             if (variant.Length > 0 && v < 0) return (-1, -1);
         }
-        else (i, v) = FindItem(prods, label);
+        else (i, v) = LegacyFind(prods, label, at);
         return i < 0 || (v < 0 && prods[i].Variants is { Count: > 0 }) ? (-1, -1) : (i, v);
+    }
+
+    /// <summary>T-0753 N-g: Altzeile ohne Kennung über die Bezeichnung – aber nicht, wenn der Name doppelt vergeben ist oder der Artikel erst nach dem Beleg angelegt wurde.</summary>
+    static (int Product, int Variant) LegacyFind(List<Product> prods, string label, DateTime? at)
+    {
+        var (i, v) = FindItem(prods, label);
+        if (i < 0) return (-1, -1);
+        var same = v < 0 ? prods.Count(p => p.Name == label) : prods.Count(p => p.Variants?.Any(x => Label(p, x) == label) == true);
+        if (same > 1) return (-1, -1);
+        if (at is { } t && prods[i].Created is { } c && c > t) return (-1, -1);
+        return (i, v);
     }
 
     /// <summary>Bezeichnungen der Zeilen, die beim letzten Storno ohne Bestandsänderung blieben (Artikel gelöscht).</summary>
@@ -81,16 +91,22 @@ public sealed partial class Shop
     void StampLegacy(List<Product> prods)
     {
         if (EnsureIds(prods)) Products.Save(prods);
-        (string, string) Tag(string label) { var (i, v) = FindItem(prods, label); return i < 0 ? ("", "") : (prods[i].Id, v >= 0 ? prods[i].Variants![v].Name : ""); }
+        (string, string) Tag(string label, DateTime at) { var (i, v) = LegacyFind(prods, label, at); return i < 0 ? ("", "") : (prods[i].Id, v >= 0 ? prods[i].Variants![v].Name : ""); }
         var sales = CashSales.All(); var sChanged = false;
         for (var k = 0; k < sales.Count; k++)
-            if (!sales[k].Cancelled && sales[k].Lines.Any(l => !l.IsDiscount && l.ItemId.Length == 0 && Tag(l.Product).Item1.Length > 0))
-            { sales[k] = sales[k] with { Lines = sales[k].Lines.Select(l => l.IsDiscount || l.ItemId.Length > 0 || Tag(l.Product) is not { Item1.Length: > 0 } t ? l : l with { ItemId = t.Item1, Variant = t.Item2 }).ToList() }; sChanged = true; }
+        {
+            var at = sales[k].At;
+            if (!sales[k].Cancelled && sales[k].Lines.Any(l => !l.IsDiscount && l.ItemId.Length == 0 && Tag(l.Product, at).Item1.Length > 0))
+            { sales[k] = sales[k] with { Lines = sales[k].Lines.Select(l => l.IsDiscount || l.ItemId.Length > 0 || Tag(l.Product, at) is not { Item1.Length: > 0 } t ? l : l with { ItemId = t.Item1, Variant = t.Item2 }).ToList() }; sChanged = true; }
+        }
         if (sChanged) CashSales.Save(sales);
         var orders = OrderList.All(); var oChanged = false;
         for (var k = 0; k < orders.Count; k++)
-            if (orders[k].Status != "storniert" && orders[k].StockOut is not null && orders[k].Lines.Any(l => l.ItemId.Length == 0 && Tag(l.Product).Item1.Length > 0))
-            { orders[k] = orders[k] with { Lines = orders[k].Lines.Select(l => l.ItemId.Length > 0 || Tag(l.Product) is not { Item1.Length: > 0 } t ? l : l with { ItemId = t.Item1, Variant = t.Item2 }).ToList() }; oChanged = true; }
+        {
+            var at = orders[k].Date.ToDateTime(TimeOnly.MaxValue);
+            if (orders[k].Status != "storniert" && orders[k].StockOut is not null && orders[k].Lines.Any(l => l.ItemId.Length == 0 && Tag(l.Product, at).Item1.Length > 0))
+            { orders[k] = orders[k] with { Lines = orders[k].Lines.Select(l => l.ItemId.Length > 0 || Tag(l.Product, at) is not { Item1.Length: > 0 } t ? l : l with { ItemId = t.Item1, Variant = t.Item2 }).ToList() }; oChanged = true; }
+        }
         if (oChanged) OrderList.Save(orders);
     }
 
@@ -141,21 +157,44 @@ public sealed partial class Shop
         return name;
     }
 
-    // ---------- Rückgängig: Stand vorher plus Prüfsumme danach; dazwischen verkauft/geliefert/bezahlt → nicht mehr möglich ----------
-    sealed record UndoStep(string What, Dictionary<string, string?> Before, string After);
+    // ---------- Rückgängig (T-0753 M-D): je Schritt nur die Dateien, die sich wirklich geändert haben, und je Datei ein Fingerabdruck „danach“ ----------
+    // Ablage: rueckgaengig/index.json (klein: Bezeichnung, Fingerabdrücke) und je Schritt eine Datei mit dem Stand vorher der geänderten Dateien.
+    // Wurde seitdem an einer der Dateien etwas geändert (verkauft, geliefert, bezahlt), wird Rückgängig abgelehnt.
+    sealed record UndoEntry(string Step, string What, Dictionary<string, string> After);
+    string UndoDir => Path.Combine(IdeaDir, "rueckgaengig");
+    string UndoIndex => Path.Combine(UndoDir, "index.json");
     string[] Files => [Products.FilePath, Customers.FilePath, OrderList.FilePath, CashSales.FilePath];
     static string? ReadOrNull(string f) => File.Exists(f) ? File.ReadAllText(f) : null;
-    string Hash() => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(string.Join("\u0001", Files.Select(f => ReadOrNull(f) ?? "∅")))));
-    List<UndoStep> LoadUndo() { try { return File.Exists(UndoFile) ? JsonSerializer.Deserialize<List<UndoStep>>(File.ReadAllText(UndoFile)) ?? [] : []; } catch (JsonException) { return []; } }
+    /// <summary>Fingerabdruck ohne Inhalt zu lesen: Länge und Schreibzeit (jedes Speichern ersetzt die Datei atomar und setzt die Zeit neu).</summary>
+    static string Print(string f) { var i = new FileInfo(f); return i.Exists ? $"{i.Length}:{i.LastWriteTimeUtc.Ticks}" : "-"; }
+    List<UndoEntry> LoadUndo() { try { return File.Exists(UndoIndex) ? JsonSerializer.Deserialize<List<UndoEntry>>(File.ReadAllText(UndoIndex)) ?? [] : []; } catch (JsonException) { return []; } }
+    void SaveUndo(List<UndoEntry> l)
+    {
+        AtomicFile.WriteAllText(UndoIndex, JsonSerializer.Serialize(l));
+        var keep = l.Select(e => e.Step).ToHashSet();
+        foreach (var f in Directory.EnumerateFiles(UndoDir, "s-*.json")) if (!keep.Contains(Path.GetFileName(f))) File.Delete(f);
+    }
 
-    /// <summary>Führt eine Änderung der Stammdaten aus und merkt den Stand davor.</summary>
+    /// <summary>Führt eine Änderung der Stammdaten aus und merkt den Stand davor – nur der Dateien, die sie wirklich ändert.</summary>
     T Undoable<T>(string what, Func<T> change)
     {
-        var before = Files.ToDictionary(f => Path.GetFileName(f), ReadOrNull);
+        var before = Files.ToDictionary(f => f, f => (Print: Print(f), Bytes: File.Exists(f) ? File.ReadAllBytes(f) : null));
         var r = change();
-        var l = LoadUndo(); l.Add(new(what, before, Hash()));
+        var changed = new Dictionary<string, string?>(); var after = new Dictionary<string, string>();
+        foreach (var f in Files)
+        {
+            var name = Path.GetFileName(f); var now = Print(f);
+            after[name] = now;
+            if (now != before[f].Print) changed[name] = before[f].Bytes is { } b ? Encoding.UTF8.GetString(b) : null; // nur geänderte Dateien
+        }
+        if (changed.Count == 0) return r;
+        Directory.CreateDirectory(UndoDir);
+        var old = Path.Combine(IdeaDir, "rueckgaengig.json"); if (File.Exists(old)) File.Delete(old); // Ablage der Vorversion, wird nicht mehr gelesen
+        var step = $"s-{DateTime.UtcNow.Ticks}-{Guid.NewGuid().ToString("N")[..6]}.json";
+        AtomicFile.WriteAllText(Path.Combine(UndoDir, step), JsonSerializer.Serialize(changed));
+        var l = LoadUndo(); l.Add(new(step, what, after));
         if (l.Count > UndoDepth) l.RemoveRange(0, l.Count - UndoDepth);
-        AtomicFile.WriteAllText(UndoFile, JsonSerializer.Serialize(l));
+        SaveUndo(l);
         return r;
     }
 
@@ -168,14 +207,17 @@ public sealed partial class Shop
     {
         var l = LoadUndo();
         if (l.Count == 0) throw new InvalidOperationException("Es gibt nichts rückgängig zu machen.");
-        var step = l[^1];
-        if (step.After != Hash()) { AtomicFile.WriteAllText(UndoFile, "[]"); throw new InvalidOperationException("Seitdem wurde verkauft, geliefert oder bezahlt – „Rückgängig“ ist dafür nicht mehr möglich."); }
+        var e = l[^1];
+        if (Files.Any(f => e.After.TryGetValue(Path.GetFileName(f), out var p) && p != Print(f)))
+        { SaveUndo([]); throw new InvalidOperationException("Seitdem wurde verkauft, geliefert oder bezahlt – „Rückgängig“ ist dafür nicht mehr möglich."); }
+        var stepFile = Path.Combine(UndoDir, e.Step);
+        var before = File.Exists(stepFile) ? JsonSerializer.Deserialize<Dictionary<string, string?>>(File.ReadAllText(stepFile)) ?? [] : throw new InvalidOperationException("Der gemerkte Stand fehlt – „Rückgängig“ ist nicht mehr möglich.");
         foreach (var f in Files)
-            if (step.Before.TryGetValue(Path.GetFileName(f), out var text) && text is not null) AtomicFile.WriteAllText(f, text);
-            else if (File.Exists(f)) File.Delete(f);
+            if (before.TryGetValue(Path.GetFileName(f), out var text))
+            { if (text is not null) AtomicFile.WriteAllText(f, text); else if (File.Exists(f)) File.Delete(f); }
         l.RemoveAt(l.Count - 1);
-        AtomicFile.WriteAllText(UndoFile, JsonSerializer.Serialize(l));
-        return step.What;
+        SaveUndo(l);
+        return e.What;
     }
 
     // ---------- Artikel ----------
@@ -202,7 +244,7 @@ public sealed partial class Shop
     /// <summary>Hat ein Artikel Varianten, ist sein Bestand die Summe und sein Preis der der ersten Variante (für Kasse und Listen).</summary>
     static Product Normalize(Product p)
     {
-        p = p with { Name = p.Name.Trim(), Sku = SalesStats.CheckSku(p.Sku), Description = p.Description.Trim(), Id = p.Id.Length > 0 ? p.Id : Guid.NewGuid().ToString("N")[..12] };
+        p = p with { Name = p.Name.Trim(), Sku = SalesStats.CheckSku(p.Sku), Description = p.Description.Trim(), Created = p.Id.Length > 0 ? p.Created : DateTime.Now, Id = p.Id.Length > 0 ? p.Id : Guid.NewGuid().ToString("N")[..12] };
         if (p.Variants is not { Count: > 0 } vs) return p with { Variants = null };
         vs = vs.Select(v => v with { Name = v.Name.Trim(), Sku = SalesStats.CheckSku(v.Sku) }).ToList();
         return p with { Variants = vs, Stock = vs.Sum(v => v.Stock), Price = vs[0].Price };
@@ -217,13 +259,18 @@ public sealed partial class Shop
     /// <summary>T-0753 M2/M-A/M-B/M-C: Zeilen, die noch an diesem Artikel hängen – vorgemerkte Bestellungen, alle nicht stornierten Lieferungen
     /// (auch bezahlte) und gültige Bons, über die feste Kennung –, müssen nach der Änderung ihre Variante bzw. „ohne Variante“ behalten.
     /// Vorher <see cref="StampLegacy"/> aufrufen. Liefert die Meldung oder null.</summary>
-    string? LockViolation(Product old, Product changed)
+    /// <summary>T-0753 M-D: alle Zeilen, die an Artikeln hängen, einmal geladen und nach Kennung gruppiert.</summary>
+    ILookup<string, (string Product, string Variant, bool Open)> LiveLines() =>
+        OrderList.All().Where(o => o.Status != "storniert" && o.StockOut is not null)
+                .SelectMany(o => o.Lines.Select(l => (l.ItemId, Line: (l.Product, l.Variant, Open: o.StockOut == false))))
+            .Concat(CashSales.All().Where(x => !x.Cancelled).SelectMany(x => x.Lines.Where(l => !l.IsDiscount).Select(l => (l.ItemId, Line: (l.Product, l.Variant, Open: false)))))
+            .Where(x => x.ItemId.Length > 0).ToLookup(x => x.ItemId, x => x.Line);
+
+    string? LockViolation(Product old, Product changed, ILookup<string, (string Product, string Variant, bool Open)>? live = null)
     {
         var names = changed.Variants is { Count: > 0 } nv ? nv.Select(v => v.Name).ToHashSet() : null;
-        var live = OrderList.All().Where(o => o.Status != "storniert" && o.StockOut is not null)
-                .SelectMany(o => o.Lines.Select(l => (l.Product, l.ItemId, l.Variant, Open: o.StockOut == false)))
-            .Concat(CashSales.All().Where(x => !x.Cancelled).SelectMany(x => x.Lines.Where(l => !l.IsDiscount).Select(l => (l.Product, l.ItemId, l.Variant, Open: false))));
-        foreach (var (label, id, variant, open) in live.Where(x => x.ItemId == old.Id))
+        live ??= LiveLines();
+        foreach (var (label, variant, open) in live[old.Id].Distinct())
         {
             if (variant.Length > 0 ? names?.Contains(variant) == true : names is null) continue;
             if (open) return $"„{label}“ ist noch für eine offene Bestellung vorgemerkt – erst liefern oder stornieren.";
@@ -240,7 +287,7 @@ public sealed partial class Shop
         var all = Products.All(); var i = all.FindIndex(p => p.Name == name);
         if (i < 0) throw new ArgumentException($"Den Artikel „{name}“ gibt es nicht.");
         StampLegacy(all);
-        changed = Normalize(changed with { Id = all[i].Id });
+        changed = Normalize(changed with { Id = all[i].Id, Created = all[i].Created });
         CheckProduct(changed, all.Where((_, k) => k != i), name);
         if (LockViolation(all[i], changed) is { } why) throw new InvalidOperationException(why);
         if (changed.Name != name)
@@ -474,6 +521,9 @@ public sealed partial class Shop
         }
         var warnings = new List<string>();
         var parsed = new List<Product>();
+        // T-0753 M-E: nur vorhandene Spalten überschreiben – was fehlt, bleibt beim bestehenden Artikel
+        var has = new ImportCols(c.Has("Price", "Variant Price"), c.Has("Inventory quantity", "Variant Inventory Qty"), c.Has("Cost per item"), c.Has("Description", "Body (HTML)"),
+            c.Has("SKU", "Variant SKU"), c.Has("Vendor"), c.Has("Option1 value", "Option1 Value"));
         var seenSku = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         string Sku(string s, int line) { try { s = SalesStats.CheckSku(s); } catch (ArgumentException e) { warnings.Add($"Zeile {line}: {e.Message} – ohne Nummer übernommen."); return ""; } if (s.Length == 0) return ""; if (seenSku.Add(s)) return s; warnings.Add($"Zeile {line}: Artikelnummer „{s}“ kommt doppelt vor – beim zweiten Mal weggelassen."); return ""; }
         foreach (var (_, g) in groups)
@@ -495,11 +545,12 @@ public sealed partial class Shop
                     else warnings.Add($"Zeile {line}: Bild „{img}“ nicht gefunden – ohne Bild übernommen.");
                 }
                 var val = c.Get(row, "Option1 value", "Option1 Value");
-                if (val.Length == 0 && c.Get(row, "Price", "Variant Price").Length == 0) continue; // reine Bildzeile
+                if (val.Length == 0 && c.Get(row, "Price", "Variant Price").Length == 0 && c.Get(row, "Inventory quantity", "Variant Inventory Qty").Length == 0
+                    && c.Get(row, "SKU", "Variant SKU").Length == 0 && !(row == head && !has.Price)) continue; // reine Bildzeile
                 vars.Add(new(val.Length == 0 ? "Default Title" : val, ParseNum(c.Get(row, "Price", "Variant Price"), "Preis", line),
                     (int)Math.Max(0, ParseNum(c.Get(row, "Inventory quantity", "Variant Inventory Qty"), "Bestand", line)), Sku(c.Get(row, "SKU", "Variant SKU"), line)));
             }
-            if (vars.Count == 0) { warnings.Add($"Zeile {line0}: „{name}“ ohne Preis – übersprungen."); continue; }
+            if (vars.Count == 0) { warnings.Add($"Zeile {line0}: „{name}“ ohne Preis und Bestand – übersprungen."); continue; }
             var single = vars.Count == 1 && vars[0].Name == "Default Title";
             parsed.Add(new Product(name, c.Get(head, "Vendor"), ParseNum(c.Get(head, "Cost per item"), "Einkaufspreis", line0), vars[0].Price, single ? vars[0].Stock : vars.Sum(v => v.Stock), 0, 0,
                 single ? vars[0].Sku : "", PlainText(c.Get(head, "Description", "Body (HTML)")), image, single ? null : vars));
@@ -509,23 +560,51 @@ public sealed partial class Shop
         {
             var all = Products.All();
             StampLegacy(all); // T-0753 M-C
+            var live = LiveLines(); // T-0753 M-D: einmal laden statt je Artikel
+            var index = all.Select((x, k) => (x.Name, k)).GroupBy(x => x.Name).ToDictionary(g => g.Key, g => g.First().k);
             foreach (var raw in parsed)
             {
-                var p0 = Normalize(raw); var i = all.FindIndex(x => x.Name == p0.Name);
-                var p = i >= 0 ? p0 with { Id = all[i].Id } : p0;
+                var p0 = Normalize(raw); var i = index.TryGetValue(p0.Name, out var hit) ? hit : -1;
                 var keep = i >= 0 ? all[i] : null;
-                if (keep is not null) p = p with { LeadDays = keep.LeadDays, DailySales = keep.DailySales, Image = p.Image.Length > 0 ? p.Image : keep.Image };
+                var p = keep is null ? p0 : Merge(keep, p0, has);
                 var others = all.Where((_, k) => k != i).ToList();
                 var taken = others.SelectMany(Skus).ToHashSet(StringComparer.OrdinalIgnoreCase);
                 if (Skus(p).FirstOrDefault(taken.Contains) is { } t) { warnings.Add($"„{p.Name}“: Artikelnummer „{t}“ hat schon „{others.First(o => Skus(o).Contains(t, StringComparer.OrdinalIgnoreCase)).Name}“ – ohne Nummer übernommen."); p = p with { Sku = taken.Contains(p.Sku) ? "" : p.Sku, Variants = p.Variants?.Select(v => taken.Contains(v.Sku) ? v with { Sku = "" } : v).ToList() }; }
-                if (i >= 0 && LockViolation(all[i], p) is { } why) { warnings.Add($"„{p.Name}“ nicht aktualisiert: {why}"); skipped++; continue; } // T-0753 M-A
+                if (i >= 0 && LockViolation(all[i], p, live) is { } why) { warnings.Add($"„{p.Name}“ nicht aktualisiert: {why}"); skipped++; continue; } // T-0753 M-A
                 try { CheckProduct(p, all.Where((_, k) => k != i), i >= 0 ? all[i].Name : null); } // T-0753 N-f: z. B. negativer Preis
                 catch (ArgumentException e) { warnings.Add($"„{p.Name}“ nicht übernommen: {e.Message}"); skipped++; continue; }
-                if (i >= 0) { all[i] = p; updated++; } else { all.Add(p); added++; }
+                if (i >= 0) { all[i] = p; updated++; } else { index[p.Name] = all.Count; all.Add(p); added++; }
             }
             Products.Save(all); return true;
         });
         return new(added, updated, warnings, skipped);
+    }
+
+    sealed record ImportCols(bool Price, bool Qty, bool Cost, bool Desc, bool Sku, bool Vendor, bool Options);
+
+    /// <summary>T-0753 M-E: Import über einen bestehenden Artikel – nur Spalten, die in der CSV stehen, ersetzen den Wert; Varianten werden nach Namen
+    /// zusammengeführt. Ohne Optionsspalte bleiben vorhandene Varianten; ein Preis gilt dann für alle, ihr Bestand bleibt.</summary>
+    static Product Merge(Product keep, Product p, ImportCols has)
+    {
+        var r = keep with
+        {
+            Supplier = has.Vendor ? p.Supplier : keep.Supplier, Cost = has.Cost ? p.Cost : keep.Cost, Description = has.Desc ? p.Description : keep.Description,
+            Image = p.Image.Length > 0 ? p.Image : keep.Image,
+        };
+        var pVariants = has.Options && p.Variants is { Count: > 0 };
+        if (pVariants)
+        {
+            var vs = p.Variants!.Select(v => keep.Variants?.FirstOrDefault(o => o.Name == v.Name) is { } o
+                ? new ItemVariant(v.Name, has.Price ? v.Price : o.Price, has.Qty ? v.Stock : o.Stock, has.Sku ? v.Sku : o.Sku)
+                : new ItemVariant(v.Name, has.Price ? v.Price : keep.Price, has.Qty ? v.Stock : 0, has.Sku ? v.Sku : "")).ToList();
+            return r with { Variants = vs, Stock = vs.Sum(v => v.Stock), Price = vs[0].Price, Sku = has.Sku ? "" : keep.Sku };
+        }
+        if (keep.Variants is { Count: > 0 } kv && !has.Options)
+        {
+            var vs = kv.Select(v => has.Price ? v with { Price = p.Price } : v).ToList();
+            return r with { Variants = vs, Price = vs[0].Price, Stock = vs.Sum(v => v.Stock) };
+        }
+        return r with { Variants = has.Options ? null : keep.Variants, Price = has.Price ? p.Price : keep.Price, Stock = has.Qty ? p.Stock : keep.Stock, Sku = has.Sku ? p.Sku : keep.Sku };
     }
 
     /// <summary>Kunden als Shopify-Kunden-CSV. „Straße, PLZ Ort“ wird in Adresse, PLZ und Ort aufgeteilt, das Land ist DE.</summary>

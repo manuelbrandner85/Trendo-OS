@@ -1,0 +1,2 @@
+ALT (d9057d90f): Bons: 10000, kasse.json: 6,4 MB | 20× Artikel anlegen: 27898 ms (1395 ms je Schritt) | Import 100 Artikel: 7028 ms | Rückgängig-Daten: 207,95 MB
+NEU: Bons: 10000, kasse.json: 6,4 MB | 20× Artikel anlegen: 429 ms (21 ms je Schritt) | Import 100 Artikel: 290 ms | Rückgängig-Daten: 1,21 MB

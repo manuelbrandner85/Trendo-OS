@@ -88,7 +88,7 @@ public sealed class CashRegister(string dataRoot, string ideaId)
         {
             // T-0753 M-B/M-C: der Bon bleibt wie ausgegeben; der Artikel wird über die feste Kennung gefunden (auch umbenannt),
             // gelöschte werden ohne Bestandsänderung storniert (sichtbar über NotRestocked) – ein neuer gleichnamiger Artikel bekommt nichts
-            var (pi, vi) = Shop.Resolve(prods, l.Product, l.ItemId, l.Variant);
+            var (pi, vi) = Shop.Resolve(prods, l.Product, l.ItemId, l.Variant, s.At);
             if (pi < 0) { NotRestocked.Add(l.Product); continue; }
             Shop.AddStockAt(prods, pi, vi, (int)Math.Ceiling(l.Qty));
             Shop.Moves.Add(new(Guid.NewGuid().ToString("N")[..8], DateOnly.FromDateTime(now), vi >= 0 ? Shop.Label(prods[pi], prods[pi].Variants![vi]) : prods[pi].Name, l.Qty, s.Id, "Kassen-Storno"));

@@ -116,3 +116,21 @@ Die Umbenennungs-Liste aus N-c ist ersetzt durch eine **feste Artikel-Kennung**:
 `ShopEditFix2Tests.Rename_keeps_bons` prüfte die entfernte Namenskette (`Current`); er prüft jetzt dasselbe Verhalten über die Kennung (Bon unverändert, Storno trifft den umbenannten Artikel, Rück-Umbenennen geht).
 
 **Tests danach:** Kern 96/96, mit T0714/T0717/SourceApps 120/120 (`reports/T-0753/core-tests-drittpruefung.txt`); App 81/81 (`reports/T-0753/app-tests.txt`). `dotnet build Trendo.sln -c Release` 0 Fehler.
+
+## Viertprüfung behoben (fünfter Durchgang)
+
+| Befund | Lösung | Test |
+|---|---|---|
+| M-D Rückgängig groß und langsam bei vielen Bons | Ablage `rueckgaengig/`: kleine `index.json` plus je Schritt eine Datei nur mit den Dateien, die sich wirklich geändert haben (die Bon-Datei nur bei der Bindung von Altzeilen). „Danach“ je Datei als Fingerabdruck aus Länge und Schreibzeit statt gemeinsamem Hash über alles. Der Import lädt Bestellungen und Bons einmal (`LiveLines`) statt je Artikel. Die alte `rueckgaengig.json` wird beim nächsten Schritt entfernt. | `ShopEditPerfTests.Undo_scales_with_many_bons` (rot auf d9057d90f, grün jetzt) |
+| M-E fehlende CSV-Spalten löschen Bestand und eigene Angaben | Nur Spalten, die in der CSV stehen, überschreiben (Preis, Bestand, Einkaufspreis, Beschreibung, Art.-Nr., Hersteller); Varianten werden nach Namen zusammengeführt; ohne Optionsspalte bleiben vorhandene Varianten, ein Preis gilt dann für alle; eine CSV ohne Preisspalte („Title,Inventory quantity“) wird gelesen. | `ShopEditFix4Tests.Only_prices` |
+| N-g alter Bon, Artikel später angelegt / Name doppelt | `Product.Created` (neu, leer bei Altdaten); Altzeilen ohne Kennung werden nur an einen Artikel gebunden, der vor dem Beleg bestand und dessen Name eindeutig ist – sonst Storno ohne Bestand, gemeldet | `ShopEditFix4Tests.Legacy_bon_guards` |
+
+**Messwerte** (`reports/T-0753/leistung-rueckgaengig.txt`, 100 Artikel, 10 000 Bons, kasse.json 6,4 MB, derselbe Test):
+
+| | alt (d9057d90f) | neu |
+|---|---|---|
+| 20× Artikel anlegen | 27 898 ms (1 395 ms je Schritt) | 429 ms (21 ms je Schritt) |
+| Import 100 Artikel | 7 028 ms | 290 ms |
+| Rückgängig-Daten | 207,95 MB | 1,21 MB |
+
+**Tests danach:** Kern 123/123 (`reports/T-0753/core-tests-viertpruefung.txt`), App 81/81 (`reports/T-0753/app-tests.txt`). `dotnet build Trendo.sln -c Release` 0 Fehler.

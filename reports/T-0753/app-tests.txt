@@ -13,3 +13,6 @@ Zweitprüfung (23.11.2026, nach M-A, M-B, N-a bis N-d):
 
 Drittprüfung (23.11.2026, nach M-C, N-e, N-f):
 -class SellEditFix3_Ui SellEditFix_Ui SellEdit_Ui Kasse_Ui PodShop_Ui W5_Business_Ui Teil4BusinessUiTests PodPrintful_Ui PodPrintify_Ui PodDesign_Ui PodStudio_Ui StudiosBueroGeld_Ui DesignHonesty FreigabenKernUi   Total: 81, Errors: 0, Failed: 0
+
+Viertprüfung (23.11.2026, nach M-D, M-E, N-g):
+-class SellEditFix3_Ui SellEditFix_Ui SellEdit_Ui Kasse_Ui PodShop_Ui W5_Business_Ui Teil4BusinessUiTests PodPrintful_Ui PodPrintify_Ui PodDesign_Ui PodStudio_Ui StudiosBueroGeld_Ui DesignHonesty FreigabenKernUi   Total: 81, Errors: 0, Failed: 0

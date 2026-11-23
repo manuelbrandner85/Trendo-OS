@@ -209,7 +209,7 @@ public sealed partial class Shop(string dataRoot, string ideaId)
         if (o.Status == "storniert") throw new InvalidOperationException("Diese Bestellung ist storniert.");
         if (o.StockOut != false) throw new InvalidOperationException("Diese Bestellung ist schon geliefert.");
         var prods = Products.All();
-        var at = o.Lines.Select(l => (Line: l, Pos: Resolve(prods, l.Product, l.ItemId, l.Variant))).ToList(); // T-0753 M-C: über die feste Kennung
+        var at = o.Lines.Select(l => (Line: l, Pos: Resolve(prods, l.Product, l.ItemId, l.Variant, o.Date.ToDateTime(TimeOnly.MaxValue)))).ToList(); // T-0753 M-C: über die feste Kennung
         if (at.FirstOrDefault(x => x.Pos.Product < 0) is { Line: { } gone }) throw new InvalidOperationException($"Den Artikel „{gone.Product}“ gibt es nicht mehr (oder nicht mehr in dieser Form) – die Bestellung lässt sich nur stornieren.");
         foreach (var (l, pos) in at)
         {
@@ -234,7 +234,7 @@ public sealed partial class Shop(string dataRoot, string ideaId)
             foreach (var l in o.Lines)
             {
                 // T-0753 M-B/M-C: über die feste Kennung; gibt es den Artikel bzw. die Variante nicht mehr, wird ohne Bestandsänderung storniert – sichtbar über LastNotRestocked
-                var (pi, vi) = Resolve(prods, l.Product, l.ItemId, l.Variant);
+                var (pi, vi) = Resolve(prods, l.Product, l.ItemId, l.Variant, o.Date.ToDateTime(TimeOnly.MaxValue));
                 if (pi < 0) { LastNotRestocked.Add(l.Product); continue; }
                 AddStockAt(prods, pi, vi, (int)l.Qty);
                 Moves.Add(new(Guid.NewGuid().ToString("N")[..8], date, vi >= 0 ? Label(prods[pi], prods[pi].Variants![vi]) : prods[pi].Name, l.Qty, o.Id, "Rücknahme"));
