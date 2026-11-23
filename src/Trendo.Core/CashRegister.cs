@@ -32,6 +32,7 @@ public sealed class CashRegister(string dataRoot, string ideaId)
     public IdeaList<CashSale> Sales { get; } = new(dataRoot, ideaId, "kasse");
 
     public static decimal GrossPrice(Product p, bool smallBusiness) => smallBusiness ? (decimal)p.Price : Math.Round((decimal)p.Price * (1 + LegalRates.VatStandard / 100m), 2);
+    public static decimal Gross(double net, bool smallBusiness) => smallBusiness ? (decimal)net : Math.Round((decimal)net * (1 + LegalRates.VatStandard / 100m), 2);
 
     /// <summary>Kassieren: prüft Bestand und (bei bar) den gegebenen Betrag, senkt den Bestand, bucht die Einnahme und legt den Bon an.</summary>
     /// <summary>Rabatt wie bei SumUp/Square: Prozent auf den ganzen Bon oder fester Betrag (nicht beides, nie mehr als die Summe).</summary>
@@ -51,17 +52,20 @@ public sealed class CashRegister(string dataRoot, string ideaId)
         var prods = Shop.Products.All(); var lines = new List<CashLine>();
         foreach (var g in cart.GroupBy(c => c.Product))
         {
-            var p = prods.FirstOrDefault(x => x.Name == g.Key) ?? throw new ArgumentException($"Den Artikel „{g.Key}“ gibt es nicht.");
-            var qty = g.Sum(x => x.Qty); var free = Shop.Available(p.Name);
-            if (qty > free) throw new InvalidOperationException(free <= 0 ? $"„{p.Name}“ ist nicht mehr vorrätig." : $"Von „{p.Name}“ sind nur noch {free:0.##} vorrätig.");
-            lines.Add(new(p.Name, qty, GrossPrice(p, smallBusiness)));
+            // T-0753 M1: Varianten („Shirt – M“) mit eigenem Preis und Bestand; ein Artikel mit Varianten wird nur über eine Variante verkauft
+            var (pi, vi) = Shop.FindItem(prods, g.Key);
+            if (pi < 0) throw new ArgumentException($"Den Artikel „{g.Key}“ gibt es nicht.");
+            if (vi < 0 && prods[pi].Variants is { Count: > 0 }) throw new ArgumentException($"Bitte bei „{g.Key}“ die Variante wählen.");
+            var qty = g.Sum(x => x.Qty); var free = Shop.Available(g.Key);
+            if (qty > free) throw new InvalidOperationException(free <= 0 ? $"„{g.Key}“ ist nicht mehr vorrätig." : $"Von „{g.Key}“ sind nur noch {free:0.##} vorrätig.");
+            lines.Add(new(g.Key, qty, Gross(vi >= 0 ? prods[pi].Variants![vi].Price : prods[pi].Price, smallBusiness)));
         }
         if (DiscountLine(lines.Sum(l => l.Sum), discountPercent, discountEuro) is { } disc) lines.Add(disc);
         var gross = lines.Sum(l => l.Sum);
         if (payment == "bar" && given < gross) throw new ArgumentException($"Es fehlen noch {(gross - given).ToString("N2", De)} €.");
         var today = DateOnly.FromDateTime(now); var n = Sales.All().Count(s => DateOnly.FromDateTime(s.At) == today) + 1;
         var sale = new CashSale(Guid.NewGuid().ToString("N")[..8], $"BON-{now:yyyyMMdd}-{n:0000}", now, lines, payment, payment == "bar" ? given : gross, smallBusiness ? 0 : LegalRates.VatStandard);
-        for (var i = 0; i < prods.Count; i++) if (lines.FirstOrDefault(l => l.Product == prods[i].Name) is { } l) prods[i] = prods[i] with { Stock = Math.Max(0, prods[i].Stock - (int)Math.Ceiling(l.Qty)) };
+        foreach (var l in lines.Where(x => !x.IsDiscount)) Shop.AddStock(prods, l.Product, -(int)Math.Ceiling(l.Qty)); // T-0753 M1: auch Varianten
         Shop.Products.Save(prods);
         foreach (var l in lines.Where(x => !x.IsDiscount)) Shop.Moves.Add(new(Guid.NewGuid().ToString("N")[..8], today, l.Product, -l.Qty, sale.Id, "Kasse"));
         ledger.Add(new(today, $"Kasse {sale.No} ({(payment == "bar" ? "bar" : "Karte")})", gross, "Einnahmen", sale.VatRate));
@@ -76,7 +80,9 @@ public sealed class CashRegister(string dataRoot, string ideaId)
         if (i < 0) throw new InvalidOperationException("Diesen Bon gibt es nicht.");
         var s = all[i]; if (s.Cancelled) throw new InvalidOperationException("Dieser Bon ist schon storniert.");
         var prods = Shop.Products.All();
-        for (var k = 0; k < prods.Count; k++) if (s.Lines.FirstOrDefault(l => l.Product == prods[k].Name) is { } l) prods[k] = prods[k] with { Stock = prods[k].Stock + (int)Math.Ceiling(l.Qty) };
+        var items = s.Lines.Where(x => !x.IsDiscount).ToList();
+        Shop.RequireKnown(prods, items.Select(l => l.Product)); // T-0753 M2: erst prüfen, dann buchen
+        foreach (var l in items) Shop.AddStock(prods, l.Product, (int)Math.Ceiling(l.Qty));
         Shop.Products.Save(prods);
         foreach (var l in s.Lines.Where(x => !x.IsDiscount)) Shop.Moves.Add(new(Guid.NewGuid().ToString("N")[..8], DateOnly.FromDateTime(now), l.Product, l.Qty, s.Id, "Kassen-Storno"));
         ledger.Add(new(DateOnly.FromDateTime(now), $"Storno Kasse {s.No}", -s.Gross, "Einnahmen", s.VatRate));

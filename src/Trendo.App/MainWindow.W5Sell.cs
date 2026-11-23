@@ -85,7 +85,7 @@ public partial class MainWindow
             {
                 var (inv, file) = shop.Invoice(oid, Money, _settings.Name.Trim().Length > 0 ? _settings.Name + "\n" + _settings.SenderStreet + "\n" + _settings.SenderCity : "Dein Name und Adresse", _settings.SmallBusiness, _settings.InvoiceLogo);
                 _core.Audit.Append(Principal.LocalOwner.Name, "shop.invoice", inv.Number); Launch(file); Say($"Rechnung {inv.Number} erstellt. Die Einnahme wird gebucht, sobald du die Zahlung erfasst.", V);
-            }), true));
+            }))); // T-0753: nur eine goldene Hauptaktion je Ansicht („Bestellung eintragen“)
             else if (o.InvoiceNumber.Length > 0) right.Children.Add(P(o.InvoiceNumber + (o.Open > 0 ? $" · offen {Eu(o.Open)} €" : ""), null, 11));
             // Umsatz zählt erst bei Zahlung (105-05): Betrag und Referenz, gleiche Referenz bucht nichts doppelt
             if (live && o.Payments is not null && o.InvoiceNumber.Length > 0 && o.Open > 0)

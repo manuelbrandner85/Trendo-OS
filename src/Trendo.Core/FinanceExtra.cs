@@ -165,12 +165,21 @@ public sealed partial class Shop(string dataRoot, string ideaId)
     public IdeaList<Product> Products { get; } = new(dataRoot, ideaId, "ware");
     public IdeaList<ShopOrder> OrderList { get; } = new(dataRoot, ideaId, "bestellungen");
     public IdeaList<StockMove> Moves { get; } = new(dataRoot, ideaId, "lagerbewegungen");
+    /// <summary>T-0753: Bons der Kasse (dieselbe Datei wie <see cref="CashRegister.Sales"/>) – für Umbenennen und die Sperre von Varianten.</summary>
+    public IdeaList<CashSale> CashSales { get; } = new(dataRoot, ideaId, "kasse");
 
     /// <summary>Für Bestellungen vorgemerkt, aber noch nicht geliefert.
     /// T-0753: für einen Artikel mit Varianten zählen alle seine Varianten mit („Shirt – M“ gehört zu „Shirt“).</summary>
     public decimal Reserved(string product) => OrderList.All().Where(o => o.StockOut == false && o.Status != "storniert").SelectMany(o => o.Lines).Where(l => l.Product == product || l.Product.StartsWith(product + VariantSep, StringComparison.Ordinal)).Sum(l => l.Qty);
-    /// <summary>Frei verfügbar = Bestand − vorgemerkt.</summary>
-    public decimal Available(string product) => (Products.All().FirstOrDefault(p => p.Name == product)?.Stock ?? 0) - Reserved(product);
+    /// <summary>Frei verfügbar = Bestand − vorgemerkt.
+    /// T-0753: auch für eine Variante („Shirt – M“): deren Bestand minus genau dafür vorgemerkt.</summary>
+    public decimal Available(string product)
+    {
+        var prods = Products.All(); var (i, v) = FindItem(prods, product);
+        if (i < 0) return 0;
+        if (v < 0) return prods[i].Stock - Reserved(product);
+        return prods[i].Variants![v].Stock - OrderList.All().Where(o => o.StockOut == false && o.Status != "storniert").SelectMany(o => o.Lines).Where(l => l.Product == product).Sum(l => l.Qty);
+    }
     public List<ShopOrder> Orders() => OrderList.All().OrderByDescending(o => o.Date).ToList();
 
     /// <summary>Bestellung anlegen; Preis wird festgehalten, die Menge wird nur vorgemerkt (Bestand sinkt erst bei Lieferung), Interessenten werden zu Kunden.</summary>
@@ -198,6 +207,7 @@ public sealed partial class Shop(string dataRoot, string ideaId)
         if (o.Status == "storniert") throw new InvalidOperationException("Diese Bestellung ist storniert.");
         if (o.StockOut != false) throw new InvalidOperationException("Diese Bestellung ist schon geliefert.");
         var prods = Products.All();
+        RequireKnown(prods, o.Lines.Select(l => l.Product)); // T-0753: erst prüfen, dann schreiben
         foreach (var l in o.Lines)
         {
             AddStock(prods, l.Product, -(int)l.Qty); // T-0753: auch Varianten
@@ -218,6 +228,7 @@ public sealed partial class Shop(string dataRoot, string ideaId)
         if (o.StockOut == true)
         {
             var prods = Products.All();
+            RequireKnown(prods, o.Lines.Select(l => l.Product)); // T-0753: keine Rücknahme-Bewegung ohne Bestand
             foreach (var l in o.Lines)
             {
                 AddStock(prods, l.Product, (int)l.Qty); // T-0753: auch Varianten

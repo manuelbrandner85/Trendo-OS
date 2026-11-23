@@ -3,3 +3,7 @@ Trendo.App.Tests (gezielt, Release, 23.11.2026):
 -class Teil4BusinessUiTests Kasse_Ui PodShop_Ui PodDesign_Ui PodPrintful_Ui PodPrintify_Ui W5_Business_Ui StudiosBueroGeld_Ui DesignPaket3_Ui DesignPaket4_Ui   Total: 86, Errors: 0, Failed: 0
 -class Kuenstlerstudio_Ui PodStudio_Ui                               Total: 7, Errors: 0, Failed: 0
 -class W0b_Look FreigabenKernUi DesignHonesty QA019_OfflineUi QA017_Keyboard   Total: 17, Errors: 0, Failed: 0
+
+Gegenprüfung (23.11.2026, nach den Korrekturen M1–M4, N1–N7):
+-class SellEditFix_Ui SellEdit_Ui Kasse_Ui PodShop_Ui W5_Business_Ui                Total: 14, Errors: 0, Failed: 0
+-class Teil4BusinessUiTests PodPrintful_Ui PodPrintify_Ui PodDesign_Ui PodStudio_Ui StudiosBueroGeld_Ui DesignPaket3_Ui DesignPaket4_Ui Kuenstlerstudio_Ui DesignHonesty W0b_Look FreigabenKernUi   Total: 97, Errors: 0, Failed: 0

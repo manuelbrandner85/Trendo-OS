@@ -39,15 +39,46 @@ public sealed partial class Shop
         return (-1, -1);
     }
 
-    /// <summary>Bestand ändern (nicht unter 0); bei einer Variante wird die Summe des Artikels nachgeführt.</summary>
-    static void AddStock(List<Product> prods, string label, int delta)
+    /// <summary>Wirft, wenn eine Bezeichnung keinem Artikel bzw. keiner Variante mehr entspricht – sonst ginge eine Bestandsänderung still verloren.</summary>
+    internal static void RequireKnown(List<Product> prods, IEnumerable<string> labels)
     {
+        foreach (var l in labels)
+        {
+            var (i, v) = FindItem(prods, l);
+            if (i < 0) throw new InvalidOperationException($"Den Artikel „{l}“ gibt es nicht mehr – lege ihn wieder an oder nimm „Rückgängig“, dann geht es weiter.");
+            if (v < 0 && prods[i].Variants is { Count: > 0 }) throw new InvalidOperationException($"„{l}“ hat inzwischen Varianten – der Bestand lässt sich keiner Variante zuordnen.");
+        }
+    }
+
+    /// <summary>Bestand ändern (nicht unter 0); bei einer Variante wird die Summe des Artikels nachgeführt. Unbekannte Bezeichnung → Fehler (T-0753 M2).</summary>
+    internal static void AddStock(List<Product> prods, string label, int delta)
+    {
+        RequireKnown(prods, [label]);
         var (i, v) = FindItem(prods, label);
-        if (i < 0) return;
         if (v < 0) { prods[i] = prods[i] with { Stock = Math.Max(0, prods[i].Stock + delta) }; return; }
         var vs = new List<ItemVariant>(prods[i].Variants!);
         vs[v] = vs[v] with { Stock = Math.Max(0, vs[v].Stock + delta) };
         prods[i] = prods[i] with { Variants = vs, Stock = vs.Sum(x => x.Stock) };
+    }
+
+    /// <summary>Ein verkaufbarer Eintrag: Artikel ohne Varianten oder eine Variante (Bezeichnung „Artikel – Variante“).</summary>
+    public sealed record SaleItem(string Label, Product Product, ItemVariant? Variant)
+    {
+        public double Price => Variant?.Price ?? Product.Price;
+        public int Stock => Variant?.Stock ?? Product.Stock;
+        public string Sku => Variant?.Sku ?? Product.Sku;
+    }
+
+    /// <summary>Für Kasse und Bestellungen: jede Variante einzeln, Artikel ohne Varianten mit Namen.</summary>
+    public List<SaleItem> SaleItems() => Products.All().SelectMany(p => p.Variants is { Count: > 0 } vs ? vs.Select(v => new SaleItem(Label(p, v), p, v)) : [new SaleItem(p.Name, p, null)]).ToList();
+
+    /// <summary>Scanner/Eingabe: genaue Artikelnummer (auch einer Variante), sonst genaue Bezeichnung (Groß/klein egal).</summary>
+    public SaleItem? FindSaleItem(string input)
+    {
+        var q = input.Trim(); if (q.Length == 0) return null;
+        var items = SaleItems();
+        return items.FirstOrDefault(x => x.Sku.Length > 0 && string.Equals(x.Sku, q, StringComparison.OrdinalIgnoreCase))
+            ?? items.FirstOrDefault(x => string.Equals(x.Label, q, StringComparison.CurrentCultureIgnoreCase));
     }
 
     /// <summary>Was sich bestellen lässt: Artikel ohne Varianten mit Namen, sonst jede Variante einzeln.</summary>
@@ -79,7 +110,7 @@ public sealed partial class Shop
 
     // ---------- Rückgängig: Stand vorher plus Prüfsumme danach; dazwischen verkauft/geliefert/bezahlt → nicht mehr möglich ----------
     sealed record UndoStep(string What, Dictionary<string, string?> Before, string After);
-    string[] Files => [Products.FilePath, Customers.FilePath, OrderList.FilePath];
+    string[] Files => [Products.FilePath, Customers.FilePath, OrderList.FilePath, CashSales.FilePath];
     static string? ReadOrNull(string f) => File.Exists(f) ? File.ReadAllText(f) : null;
     string Hash() => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(string.Join("\u0001", Files.Select(f => ReadOrNull(f) ?? "∅")))));
     List<UndoStep> LoadUndo() { try { return File.Exists(UndoFile) ? JsonSerializer.Deserialize<List<UndoStep>>(File.ReadAllText(UndoFile)) ?? [] : []; } catch (JsonException) { return []; } }
@@ -115,10 +146,10 @@ public sealed partial class Shop
     }
 
     // ---------- Artikel ----------
-    static void CheckProduct(Product p, IEnumerable<Product> others)
+    static void CheckProduct(Product p, IEnumerable<Product> others, string? oldName = null)
     {
         if (string.IsNullOrWhiteSpace(p.Name)) throw new ArgumentException("Bitte einen Artikelnamen eintragen.");
-        if (p.Name.Contains(VariantSep, StringComparison.Ordinal)) throw new ArgumentException($"Der Name darf „{VariantSep.Trim()}“ nicht enthalten, das trennt die Variante.");
+        if (p.Name.Contains(VariantSep, StringComparison.Ordinal) && p.Name != oldName) throw new ArgumentException($"Der Name darf „{VariantSep.Trim()}“ nicht enthalten, das trennt die Variante.");
         if (p.Price < 0 || p.Variants?.Any(v => v.Price < 0) == true) throw new ArgumentException("Der Preis darf nicht negativ sein.");
         if (p.Stock < 0 || p.Variants?.Any(v => v.Stock < 0) == true) throw new ArgumentException("Der Bestand darf nicht negativ sein.");
         var list = others.ToList();
@@ -150,27 +181,35 @@ public sealed partial class Shop
         all.Add(p); Products.Save(all); return p;
     });
 
-    /// <summary>Ändert einen Artikel. Bei neuem Namen tragen offene und gelieferte Bestellungen den neuen Namen,
-    /// ihr Preis bleibt der beim Bestellen festgehaltene. Eine Variante, die noch vorgemerkt ist, lässt sich nicht entfernen.</summary>
+    /// <summary>Ändert einen Artikel. Bei neuem Namen tragen Bestellungen und Bons den neuen Namen, ihr Preis bleibt der festgehaltene.
+    /// T-0753 M2: Eine Bezeichnung, auf die eine vorgemerkte, eine gelieferte (noch stornierbare) Bestellung oder ein gültiger Bon zeigt, muss erhalten bleiben –
+    /// sonst ginge bei Lieferung oder Storno Bestand verloren. Solche Varianten lassen sich nicht umbenennen oder entfernen, und ein verkaufter Artikel
+    /// bekommt nachträglich keine Varianten (dafür einen neuen Artikel anlegen). Alte Namen mit „ – “ bleiben änderbar, nur nicht neu vergeben (N2).</summary>
     public Product UpdateProduct(string name, Product changed) => Undoable($"Artikel „{name}“ ändern", () =>
     {
         var all = Products.All(); var i = all.FindIndex(p => p.Name == name);
         if (i < 0) throw new ArgumentException($"Den Artikel „{name}“ gibt es nicht.");
         changed = Normalize(changed);
-        CheckProduct(changed, all.Where((_, k) => k != i));
-        var oldLabels = all[i].Variants is { } ov ? ov.Select(v => Label(all[i], v)).ToList() : [name];
+        CheckProduct(changed, all.Where((_, k) => k != i), name);
         var newLabels = changed.Variants is { } nv ? nv.Select(v => Label(changed, v)).ToHashSet() : [changed.Name];
-        var orders = OrderList.All();
+        var orders = OrderList.All(); var sales = CashSales.All();
+        bool Mine(string label) => label == name || label.StartsWith(name + VariantSep, StringComparison.Ordinal);
         string Map(string label) => label == name ? changed.Name : label.StartsWith(name + VariantSep, StringComparison.Ordinal) ? changed.Name + label[name.Length..] : label;
-        foreach (var o in orders.Where(o => o.StockOut == false && o.Status != "storniert"))
-            foreach (var l in o.Lines.Where(l => oldLabels.Contains(l.Product) || l.Product == name))
-                if (!newLabels.Contains(Map(l.Product))) throw new InvalidOperationException($"„{l.Product}“ ist noch für eine offene Bestellung vorgemerkt – erst liefern oder stornieren.");
+        var live = orders.Where(o => o.Status != "storniert" && (o.StockOut == false || (o.StockOut == true && o.Payments is not null && o.Paid == 0)))
+                .SelectMany(o => o.Lines.Select(l => (l.Product, Open: o.StockOut == false)))
+            .Concat(sales.Where(x => !x.Cancelled).SelectMany(x => x.Lines.Where(l => !l.IsDiscount).Select(l => (l.Product, Open: false))));
+        foreach (var (label, open) in live.Where(x => Mine(x.Product)))
+            if (!newLabels.Contains(Map(label)))
+                throw new InvalidOperationException(open ? $"„{label}“ ist noch für eine offene Bestellung vorgemerkt – erst liefern oder stornieren."
+                    : $"„{label}“ steht in einer gelieferten Bestellung oder auf einem Bon, die noch storniert werden können – diese Variante bitte nicht umbenennen oder entfernen (für Neues eine weitere Variante oder einen neuen Artikel anlegen).");
         if (changed.Name != name)
         {
             for (var k = 0; k < orders.Count; k++)
                 if (orders[k].Status != "storniert" && orders[k].StockOut is not null && orders[k].Lines.Any(l => Map(l.Product) != l.Product))
                     orders[k] = orders[k] with { Lines = orders[k].Lines.Select(l => l with { Product = Map(l.Product) }).ToList() };
             OrderList.Save(orders);
+            if (sales.Any(x => !x.Cancelled && x.Lines.Any(l => Map(l.Product) != l.Product)))
+                CashSales.Save(sales.Select(x => x.Cancelled ? x : x with { Lines = x.Lines.Select(l => l.IsDiscount ? l : l with { Product = Map(l.Product) }).ToList() }).ToList());
         }
         all[i] = changed; Products.Save(all); return changed;
     });
@@ -253,7 +292,8 @@ public sealed partial class Shop
     public static readonly string[] OrderColumns = ["Name", "Email", "Financial Status", "Fulfillment Status", "Currency", "Subtotal", "Total", "Created at",
         "Lineitem quantity", "Lineitem name", "Lineitem price", "Lineitem sku", "Billing Name", "Id"];
 
-    static string Cell(string s) => s.IndexOfAny([',', '"', '\n', '\r']) >= 0 ? "\"" + s.Replace("\"", "\"\"") + "\"" : s;
+    /// <summary>T-0753 M3: jede Zelle wird gegen Formel-Einschleusung entschärft (OWASP, <see cref="Kreativ.ClassifierBatch.Safe"/>; reine Zahlen bleiben).</summary>
+    static string Cell(string raw) { var s = Kreativ.ClassifierBatch.Safe(raw); return s.IndexOfAny([',', '"', '\n', '\r']) >= 0 ? "\"" + s.Replace("\"", "\"\"") + "\"" : s; }
     static string Row(IEnumerable<string> cells) => string.Join(',', cells.Select(Cell)) + "\n";
     static string Num(double d) => d.ToString("0.00", Inv);
 
@@ -279,7 +319,8 @@ public sealed partial class Shop
             if (img.Length == 0 && ImagePath(p) is { } local)
             {
                 Directory.CreateDirectory(Path.Combine(dir, "bilder"));
-                File.Copy(local, Path.Combine(dir, "bilder", Path.GetFileName(local)), true);
+                var target = Path.GetFullPath(Path.Combine(dir, "bilder", Path.GetFileName(local)));
+                if (!string.Equals(target, Path.GetFullPath(local), StringComparison.OrdinalIgnoreCase)) File.Copy(local, target, true); // T-0753 N5: Ziel im Ideenordner
                 img = "bilder/" + Path.GetFileName(local);
             }
             var body = WebUtility.HtmlEncode(p.Description).Replace("\r\n", "\n").Replace("\n", "<br>");
@@ -334,15 +375,29 @@ public sealed partial class Shop
         public bool Has(params string[] names) => names.Any(_i.ContainsKey);
         public string Get(string[] row, params string[] names)
         {
-            foreach (var n in names) if (_i.TryGetValue(n, out var i) && i < row.Length) return row[i].Trim();
+            foreach (var n in names) if (_i.TryGetValue(n, out var i) && i < row.Length) return Unsafe(row[i].Trim());
             return "";
         }
     }
+
+    /// <summary>T-0753 N4: relativer Pfad, der unterhalb von <paramref name="dir"/> bleibt – sonst null (keine absoluten Pfade, kein „../“).</summary>
+    static string? Inside(string dir, string rel)
+    {
+        if (Path.IsPathRooted(rel) || rel.Contains(':')) return null;
+        var root = Path.GetFullPath(dir).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+        var full = Path.GetFullPath(Path.Combine(root, rel.Replace('/', Path.DirectorySeparatorChar)));
+        return full.StartsWith(root, StringComparison.OrdinalIgnoreCase) ? full : null;
+    }
+
+    /// <summary>Hochkomma der Entschärfung beim Einlesen wieder abnehmen („'=1+1“ → „=1+1“ als Text).</summary>
+    static string Unsafe(string s) => s.Length > 1 && s[0] == '\'' && s[1] is '=' or '+' or '-' or '@' or '\t' or '\r' ? s[1..] : s;
 
     static double ParseNum(string s, string what, int line)
     {
         if (s.Length == 0) return 0;
         var t = s.Replace("€", "").Trim();
+        // T-0753 N3: „1,000“ oder „1.000“ ist mehrdeutig (Tausender oder Dezimal?) – nicht still raten
+        if (Regex.IsMatch(t, "^[+-]?\\d{1,3}[.,]\\d{3}$")) throw new ArgumentException($"Zeile {line}: „{s}“ ist mehrdeutig ({what}) – bitte z. B. 1000 oder 1.00 schreiben.");
         if (t.Contains(',') && !t.Contains('.')) t = t.Replace(',', '.'); // deutsche Tabelle: 12,50
         if (double.TryParse(t, NumberStyles.Number, Inv, out var d)) return d;
         throw new ArgumentException($"Zeile {line}: „{s}“ ist keine Zahl ({what}).");
@@ -386,7 +441,9 @@ public sealed partial class Shop
                 if (image.Length == 0 && img.Length > 0)
                 {
                     if (img.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) image = img;
-                    else if (!img.Contains("://", StringComparison.Ordinal) && Path.Combine(dir, img.Replace('/', Path.DirectorySeparatorChar)) is var local && File.Exists(local)) image = ImportImage(local);
+                    else if (img.Contains("://", StringComparison.Ordinal)) warnings.Add($"Zeile {line}: Bild „{img}“ nicht gefunden – nur https-Adressen oder Dateien neben der CSV.");
+                    else if (Inside(dir, img) is not { } local) warnings.Add($"Zeile {line}: Bild „{img}“ liegt außerhalb des CSV-Ordners – ohne Bild übernommen.");
+                    else if (File.Exists(local)) image = ImportImage(local);
                     else warnings.Add($"Zeile {line}: Bild „{img}“ nicht gefunden – ohne Bild übernommen.");
                 }
                 var val = c.Get(row, "Option1 value", "Option1 Value");
@@ -517,10 +574,14 @@ public sealed partial class Shop
     public Product TakeOverPod(Pod.PodShopItem item, bool smallBusiness)
     {
         var net = Net(item.Price, smallBusiness);
-        var vars = item.Variants.Count > 1 || item.Variants is [{ Name.Length: > 0 }] ? item.Variants.Select(v => new ItemVariant(v.Name, net, 0)).ToList() : null;
-        var p = new Product(item.Name, "Print on Demand · " + (item.Provider == "printify" ? "Printify" : "Printful"), 0, net, 0, 0, 0, "",
-            "Wird nach deiner Bestellung gedruckt und versandt.", item.Image.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ? item.Image : "", vars);
-        return Products.All().Any(x => x.Name == p.Name) ? UpdateProduct(p.Name, p) : AddProduct(p);
+        var old = Products.All().FirstOrDefault(x => x.Name == item.Name);
+        // T-0753 M4: eigene Angaben (Beschreibung, Einkaufspreis, Artikelnummer, Nummern und Bestand der Varianten) bleiben beim Aktualisieren erhalten
+        var vars = item.Variants.Count > 1 || item.Variants is [{ Name.Length: > 0 }]
+            ? item.Variants.Select(v => old?.Variants?.FirstOrDefault(o => o.Name == v.Name) is { } ov ? ov with { Price = net } : new ItemVariant(v.Name, net, 0)).ToList() : null;
+        var p = new Product(item.Name, "Print on Demand · " + (item.Provider == "printify" ? "Printify" : "Printful"), old?.Cost ?? 0, net, old?.Stock ?? 0, old?.LeadDays ?? 0, old?.DailySales ?? 0, old?.Sku ?? "",
+            old?.Description is { Length: > 0 } desc ? desc : "Wird nach deiner Bestellung gedruckt und versandt.",
+            item.Image.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ? item.Image : old?.Image ?? "", vars);
+        return old is null ? AddProduct(p) : UpdateProduct(p.Name, p);
     }
 
     /// <summary>T-0753: Einen eigenen Entwurf aus dem Studio „Print on Demand“ als Artikel übernehmen: die Druckdatei wird das Artikelbild.</summary>

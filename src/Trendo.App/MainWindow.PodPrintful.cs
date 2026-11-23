@@ -13,7 +13,8 @@ namespace Trendo.App;
 /// <summary>Print on Demand: eigenes Printful-Konto verbinden, Katalog, echte Mockups, Produkt anlegen. Designs liegen dafür kurz im eigenen Netlify-Konto. Bestellungen löst dieser Teil nicht aus.</summary>
 public partial class MainWindow
 {
-    const string PfKey = "pod-printful-token", NfKey = "pod-netlify-token", NfSite = "pod-netlify-site", NfUrl = "pod-netlify-url";
+    const string PfKey = PodTestRun.PrintfulKey, NfKey = PodTestRun.NetlifyKey, // T-0753 N7: Schlüsselnamen nur in PodTestRun
+         NfSite = "pod-netlify-site", NfUrl = "pod-netlify-url";
     static readonly HttpFetch PodHttp = new(new HttpClient { Timeout = TimeSpan.FromMinutes(3) });
     IReadOnlyList<PfProduct> _pfCatalog = [];
     PfProduct? _pfProduct;

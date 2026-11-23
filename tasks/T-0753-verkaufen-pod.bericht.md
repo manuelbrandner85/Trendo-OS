@@ -56,12 +56,32 @@
 - Import der CSV in ein echtes Shopify; LibreOffice/Excel.
 - Echtes Ziehen und Ablegen mit der Maus; Bildschirmbild im Einfach-Modus nur mit eingeklappten Karten.
 - Die Druckdatei bei „In den Shop übernehmen“ ist im Test ersetzt (`PodPngOverride`), weil die Headless-Umgebung ohne Skia leere PNG schreibt; der echte Weg nutzt `PodExportPng` wie der vorhandene PNG-Export.
-- Kasse verkauft weiter nur Artikel ohne Varianten (Varianten gelten für Bestellungen/Shop).
+- (Im zweiten Durchgang behoben: die Kasse verkauft jetzt Varianten, siehe unten.)
 
 ## Offene Punkte
 - Gelato anbinden (fehlt im Code).
 - KI-Aktion für Artikel/Kunden (Kriterium 4).
-- Varianten an der Kasse; Bestellungen aus fremden Shops lesen (VK-11).
+- Bestellungen aus fremden Shops lesen (VK-11).
 - Echtlauf mit einem Printful-Testshop und Stripe-Testschlüssel der Person, sobald vorhanden (Testlauf-Knopf ist bereit).
 
 **Status:** gepusht auf `claude/T-0753-verkaufen-pod`, kein Merge, kein Release.
+
+## Gegenprüfung behoben (zweiter Durchgang)
+
+| Befund | Lösung | Test (Rot-Grün: baut auf altem Stand nicht, fehlende `SaleItems`/`FindSaleItem`) |
+|---|---|---|
+| M1 Kasse kennt keine Varianten | Kasse arbeitet mit `Shop.SaleItems()` (jede Variante eine Kachel, eigener Preis), Scanner findet Varianten-Nummern (`FindSaleItem`), Bestand über `Shop.AddStock`; Artikel mit Varianten nur über eine Variante verkaufbar | `ShopEditFixTests.Kasse_variants`, `SellEditFix_Ui.Kasse_variant_tiles` |
+| M2 Storno nach Varianten-Änderung verliert Rücknahme | `UpdateProduct` sperrt Umbenennen/Entfernen von Bezeichnungen, auf die vorgemerkte, gelieferte (noch stornierbare) Bestellungen oder gültige Bons zeigen, auch nachträgliche Varianten an verkauften Artikeln; Artikel-Umbenennen zieht Bestellungen und Bons mit; `AddStock`/`RequireKnown` werfen bei unbekannter Bezeichnung, bevor eine Lagerbewegung geschrieben wird | `ShopEditFixTests.Variants_locked_by_history` |
+| M3 Formel-Einschleusung im CSV | Jede Zelle aller drei Exporte läuft durch `ClassifierBatch.Safe` (reine Zahlen bleiben); der Import nimmt das Hochkomma wieder ab | `ShopEditFixTests.Csv_formula_injection` |
+| M4 POD-Aktualisieren überschreibt eigene Angaben | `TakeOverPod` übernimmt Beschreibung, Einkaufspreis, Art.-Nr., Varianten-Nummern und -Bestand des bestehenden Artikels | `ShopEditFixTests.Pod_update_keeps_own_data` |
+| N1 Meldung geht an globalen Fänger | Klick fängt auch `InvalidOperationException`, Meldung in `shop-msg` | `SellEditFix_Ui.Pod_update_message` |
+| N2 alte Namen mit „ – “ nicht änderbar | unveränderter Altname ist erlaubt, nur neu vergeben nicht | `ShopEditFixTests.Low_findings` |
+| N3 „1,000“ wird still 1 | `^\d{1,3}[.,]\d{3}$` wird als mehrdeutig abgelehnt | `ShopEditFixTests.Low_findings` |
+| N4 absolute Pfade / „../“ in der Bildspalte | nur Pfade unterhalb des CSV-Ordners, sonst Hinweis | `ShopEditFixTests.Low_findings` |
+| N5 Export in den Ideenordner wirft IOException | keine Kopie auf sich selbst | `ShopEditFixTests.Low_findings` |
+| N6 Text „ohne fremde Dienste“ falsch | Hinweis nennt jetzt, dass POD-Bilder von der Adresse des Anbieters geladen werden | Sichtprüfung im Code |
+| N7 Schlüsselnamen doppelt | `PfKey/PfyKey/StKey/NfKey` verweisen auf die Konstanten in `PodTestRun` | Build; `Requests_match_docs` nutzt beide Wege |
+| optional: zwei goldene Knöpfe | „Rechnung“ nicht mehr golden, nur „Bestellung eintragen“ | – |
+
+**Tests danach:** Kern gezielt 76/76 (`reports/T-0753/core-tests-gegenpruefung.txt`), dazu T0714/T0717/SourceApps 29/29; App 14/14 und 97/97 (`reports/T-0753/app-tests.txt`). `dotnet build Trendo.sln -c Release` 0 Fehler.
+**Weiter offen:** Varianten sind an Bons an die Bezeichnung gebunden – wer eine verkaufte Variante umbenennen will, legt eine neue an.

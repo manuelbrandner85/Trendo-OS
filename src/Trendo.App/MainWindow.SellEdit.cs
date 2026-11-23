@@ -229,7 +229,7 @@ public partial class MainWindow
         };
         if (_sellEditProd is { } en && products.FirstOrDefault(x => x.Name == en) is { } ep) parts.Add(SellProductEditor(shop, ep));
         parts.Add(grid);
-        return Card(Section("Artikel und Webshop-Vorschau", "So sieht dein Shop mit dem aktuellen Stand aus. Ändern, Löschen per Knopf oder Rechtsklick; ein Bild lässt sich auch auf die Karte ziehen. „Als Webseite speichern“ legt eine HTML-Seite mit Bildern an – ohne Bezahlfunktion und ohne fremde Dienste.", [.. parts]));
+        return Card(Section("Artikel und Webshop-Vorschau", "So sieht dein Shop mit dem aktuellen Stand aus. Ändern, Löschen per Knopf oder Rechtsklick; ein Bild lässt sich auch auf die Karte ziehen. „Als Webseite speichern“ legt eine HTML-Seite an – ohne Bezahlfunktion. Eigene Bilder stecken in der Seite, Bilder aus Print on Demand lädt sie von der Adresse des Anbieters.", [.. parts]));
     }
 
     Control SellProductEditor(Shop shop, Product p)
