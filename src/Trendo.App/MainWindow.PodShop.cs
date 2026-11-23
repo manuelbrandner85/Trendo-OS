@@ -11,7 +11,7 @@ namespace Trendo.App;
 /// <summary>Shop im Studio „Online verkaufen“: Produkte aus Printful, Bezahl-Links über das eigene Stripe-Konto, Pflichtseiten, Veröffentlichen und Bestellungen als Entwurf mit Freigabe je Bestellung.</summary>
 public partial class MainWindow
 {
-    const string StKey = "pod-stripe-key", ShopSite = "pod-shop-site", ShopUrl = "pod-shop-url";
+    const string StKey = PodTestRun.StripeKey, ShopSite = "pod-shop-site", ShopUrl = "pod-shop-url";
     string _shopMsg = "", _shopArmed = "";
     bool _shopBusy, _shopChecked;
     IReadOnlyList<PodPaidOrder> _shopOrders = [];
@@ -175,8 +175,15 @@ public partial class MainWindow
         var sp = new StackPanel { Name = "shop-pod", Spacing = 6 };
         if (_shopMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "shop-msg", Text = _shopMsg, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap });
         var items = PodShopItems.All();
+        var ix = 0;
         foreach (var i in items)
-            sp.Children.Add(P($"{i.Name} · {i.Price:0.00} € inkl. Versand · {i.Variants.Count(v => v.PayUrl is { Length: > 0 })} von {i.Variants.Count} Varianten bestellbar", Text, 12));
+        {
+            var id = i.Id; var known = BizShop.Products.All().Any(p => p.Name == i.Name);
+            var take = new Button { Name = $"shop-takeover-{ix++}", Content = known ? "Artikel aktualisieren" : "Als Artikel übernehmen", Padding = new Thickness(8, 2), FontSize = 11 };
+            take.Click += (_, _) => { try { var p = PodShopItemToShop(id); _shopMsg = $"„{p.Name}“ steht jetzt in der Artikelliste."; } catch (Exception e) when (e is ArgumentException or InvalidOperationException) { _shopMsg = e.Message; } /* T-0753 N1 */ Show(CurrentView); };
+            sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = {
+                P($"{i.Name} · {i.Price:0.00} € inkl. Versand · {i.Variants.Count(v => v.PayUrl is { Length: > 0 })} von {i.Variants.Count} Varianten bestellbar", Text, 12), take } }); // T-0753
+        }
         if (items.Count == 0) sp.Children.Add(P("Noch keine Produkte. Lege sie im Studio „Print on Demand“ über Printful oder Printify an.", Muted, 12));
 
         if (!PodStripeOn)

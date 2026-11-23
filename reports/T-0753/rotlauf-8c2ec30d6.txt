@@ -1,0 +1,12 @@
+Rotlauf ShopEditFix6Tests auf unverändertem Stand 8c2ec30d6 (für den Lauf ist r.Unchanged durch -1 ersetzt, weil es die Eigenschaft dort nicht gibt), 2026-11-23 04:44
+[xUnit.net 00:00:06.16]     M-G Fall 1: Bon verkauft, Artikel gelöscht, Bon storniert – Rückgängig des Löschens wird abgelehnt statt Bestand 3 herzustellen [FAIL]
+[xUnit.net 00:00:06.27]     M-G Fall 2: gelieferte Bestellung, Artikel gelöscht, Bestellung storniert – Rückgängig des Löschens wird abgelehnt [FAIL]
+[xUnit.net 00:00:06.31]     Niedrig: Import mit reiner Titelzeile zählt „unverändert“ statt „aktualisiert“ [FAIL]
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.InvalidOperationException)
+   Assert.Throws() Failure: No exception was thrown
+Expected: typeof(System.InvalidOperationException)
+   Assert.Equal() Failure: Values differ
+Expected: Tuple (0, 0, 1)
+Actual:   Tuple (0, 1, -1)
+Fehler!      : Fehler:     3, erfolgreich:     1, übersprungen:     0, gesamt:     4, Dauer: 456 ms - Trendo.Core.Tests.dll (net10.0)

@@ -142,7 +142,8 @@ public sealed class BudgetStore(string dataRoot)
 }
 
 // ---------- Online verkaufen: nutzt Kunden (BizContact) und Ware (Product) der Geschäftsidee aus „Betrieb“ ----------
-public sealed record OrderLine(string Product, decimal Qty, decimal PriceNet);
+/// <remarks>T-0753 M-C: <see cref="ItemId"/> und <see cref="Variant"/> binden die Zeile fest an den Artikel (leer bei Altdaten).</remarks>
+public sealed record OrderLine(string Product, decimal Qty, decimal PriceNet, string ItemId = "", string Variant = "");
 /// <summary>Zahlung zu einer Bestellung; <see cref="Ref"/> (z. B. Kontoauszug-Zeile) macht doppelte Erfassung unmöglich.</summary>
 public sealed record ShopPayment(string Ref, DateOnly Date, decimal Amount);
 /// <summary>Bestellung. 105 (Entscheidung 31.10.2026): Bestand sinkt erst bei Lieferung, Umsatz zählt erst bei Zahlung.
@@ -159,17 +160,27 @@ public sealed record ShopOrder(string Id, DateOnly Date, string Customer, List<O
 /// <summary>Lagerbewegung (Abgang bei Lieferung, Zugang bei Rücknahme) mit Bezug zur Bestellung.</summary>
 public sealed record StockMove(string Id, DateOnly Date, string Product, decimal Qty, string OrderId, string Kind);
 
-public sealed class Shop(string dataRoot, string ideaId)
+public sealed partial class Shop(string dataRoot, string ideaId)
 {
     public IdeaList<BizContact> Customers { get; } = new(dataRoot, ideaId, "kontakte");
     public IdeaList<Product> Products { get; } = new(dataRoot, ideaId, "ware");
     public IdeaList<ShopOrder> OrderList { get; } = new(dataRoot, ideaId, "bestellungen");
     public IdeaList<StockMove> Moves { get; } = new(dataRoot, ideaId, "lagerbewegungen");
+    /// <summary>T-0753: Bons der Kasse (dieselbe Datei wie <see cref="CashRegister.Sales"/>) – für Umbenennen und die Sperre von Varianten.</summary>
+    public IdeaList<CashSale> CashSales { get; } = new(dataRoot, ideaId, "kasse");
 
-    /// <summary>Für Bestellungen vorgemerkt, aber noch nicht geliefert.</summary>
-    public decimal Reserved(string product) => OrderList.All().Where(o => o.StockOut == false && o.Status != "storniert").SelectMany(o => o.Lines).Where(l => l.Product == product).Sum(l => l.Qty);
-    /// <summary>Frei verfügbar = Bestand − vorgemerkt.</summary>
-    public decimal Available(string product) => (Products.All().FirstOrDefault(p => p.Name == product)?.Stock ?? 0) - Reserved(product);
+    /// <summary>Für Bestellungen vorgemerkt, aber noch nicht geliefert.
+    /// T-0753: für einen Artikel mit Varianten zählen alle seine Varianten mit („Shirt – M“ gehört zu „Shirt“).</summary>
+    public decimal Reserved(string product) => OrderList.All().Where(o => o.StockOut == false && o.Status != "storniert").SelectMany(o => o.Lines).Where(l => l.Product == product || l.Product.StartsWith(product + VariantSep, StringComparison.Ordinal)).Sum(l => l.Qty);
+    /// <summary>Frei verfügbar = Bestand − vorgemerkt.
+    /// T-0753: auch für eine Variante („Shirt – M“): deren Bestand minus genau dafür vorgemerkt.</summary>
+    public decimal Available(string product)
+    {
+        var prods = Products.All(); var (i, v) = FindItem(prods, product);
+        if (i < 0) return 0;
+        if (v < 0) return prods[i].Stock - Reserved(product);
+        return prods[i].Variants![v].Stock - OrderList.All().Where(o => o.StockOut == false && o.Status != "storniert").SelectMany(o => o.Lines).Where(l => l.Product == product).Sum(l => l.Qty);
+    }
     public List<ShopOrder> Orders() => OrderList.All().OrderByDescending(o => o.Date).ToList();
 
     /// <summary>Bestellung anlegen; Preis wird festgehalten, die Menge wird nur vorgemerkt (Bestand sinkt erst bei Lieferung), Interessenten werden zu Kunden.</summary>
@@ -181,8 +192,9 @@ public sealed class Shop(string dataRoot, string ideaId)
         var prods = Products.All(); var res = new List<OrderLine>();
         foreach (var (name, qty) in lines)
         {
-            var i = prods.FindIndex(p => p.Name == name); if (i < 0) throw new ArgumentException($"Den Artikel „{name}“ gibt es nicht.");
-            res.Add(new(name, qty, (decimal)prods[i].Price));
+            var (i, v) = FindItem(prods, name); if (i < 0) throw new ArgumentException($"Den Artikel „{name}“ gibt es nicht.");
+            if (EnsureIds(prods)) Products.Save(prods); // T-0753 M-C: feste Kennung
+            res.Add(new(name, qty, (decimal)(v >= 0 ? prods[i].Variants![v].Price : prods[i].Price), prods[i].Id, v >= 0 ? prods[i].Variants![v].Name : "")); // T-0753: Variante mit eigenem Preis
         }
         if (contacts[ci].Stage is "Interessent" or "Angebot") { contacts[ci] = contacts[ci] with { Stage = "Kunde" }; Customers.Save(contacts); }
         var o = new ShopOrder(Guid.NewGuid().ToString("N")[..8], date, customer, res, StockOut: false, Payments: []); OrderList.Add(o); return o;
@@ -197,10 +209,11 @@ public sealed class Shop(string dataRoot, string ideaId)
         if (o.Status == "storniert") throw new InvalidOperationException("Diese Bestellung ist storniert.");
         if (o.StockOut != false) throw new InvalidOperationException("Diese Bestellung ist schon geliefert.");
         var prods = Products.All();
-        foreach (var l in o.Lines)
+        var at = o.Lines.Select(l => (Line: l, Pos: Resolve(prods, l.Product, l.ItemId, l.Variant, o.Date.ToDateTime(TimeOnly.MaxValue)))).ToList(); // T-0753 M-C: über die feste Kennung
+        if (at.FirstOrDefault(x => x.Pos.Product < 0) is { Line: { } gone }) throw new InvalidOperationException($"Den Artikel „{gone.Product}“ gibt es nicht mehr (oder nicht mehr in dieser Form) – die Bestellung lässt sich nur stornieren.");
+        foreach (var (l, pos) in at)
         {
-            var i = prods.FindIndex(p => p.Name == l.Product);
-            if (i >= 0) prods[i] = prods[i] with { Stock = Math.Max(0, prods[i].Stock - (int)l.Qty) };
+            AddStockAt(prods, pos.Product, pos.Variant, -(int)l.Qty);
             Moves.Add(new(Guid.NewGuid().ToString("N")[..8], date, l.Product, -l.Qty, o.Id, "Lieferung"));
         }
         Products.Save(prods);
@@ -217,12 +230,14 @@ public sealed class Shop(string dataRoot, string ideaId)
         if (o.Paid > 0 && o.Payments is not null) throw new InvalidOperationException("Für diese Bestellung gibt es schon Zahlungen – bitte zuerst erstatten.");
         if (o.StockOut == true)
         {
-            var prods = Products.All();
+            var prods = Products.All(); LastNotRestocked.Clear();
             foreach (var l in o.Lines)
             {
-                var i = prods.FindIndex(p => p.Name == l.Product);
-                if (i >= 0) prods[i] = prods[i] with { Stock = prods[i].Stock + (int)l.Qty };
-                Moves.Add(new(Guid.NewGuid().ToString("N")[..8], date, l.Product, l.Qty, o.Id, "Rücknahme"));
+                // T-0753 M-B/M-C: über die feste Kennung; gibt es den Artikel bzw. die Variante nicht mehr, wird ohne Bestandsänderung storniert – sichtbar über LastNotRestocked
+                var (pi, vi) = Resolve(prods, l.Product, l.ItemId, l.Variant, o.Date.ToDateTime(TimeOnly.MaxValue));
+                if (pi < 0) { LastNotRestocked.Add(l.Product); continue; }
+                AddStockAt(prods, pi, vi, (int)l.Qty);
+                Moves.Add(new(Guid.NewGuid().ToString("N")[..8], date, vi >= 0 ? Label(prods[pi], prods[pi].Variants![vi]) : prods[pi].Name, l.Qty, o.Id, "Rücknahme"));
             }
             Products.Save(prods);
         }
@@ -303,18 +318,37 @@ public sealed class Shop(string dataRoot, string ideaId)
     /// <summary>U1: Umsatz netto je Monat eines Jahres (nach Zahlungseingang).</summary>
     public decimal[] MonthRevenue(int year) { var r = new decimal[12]; foreach (var (d, n) in Received().Where(x => x.Date.Year == year)) r[d.Month - 1] += n; return r; }
 
-    /// <summary>F3: Webshop-Vorschau als eigenständige HTML-Seite (ohne Bezahlfunktion, ohne Fremddienste).</summary>
-    public static string ShopHtml(string shopName, IEnumerable<Product> products, bool smallBusiness)
+    /// <summary>F3: Webshop-Vorschau als eigenständige HTML-Seite (ohne Bezahlfunktion, ohne Fremddienste).
+    /// T-0753: mit Beschreibung, Varianten (Preis und Bestand je Variante) und Bild – lokale Bilder aus <paramref name="imageDir"/> werden eingebettet,
+    /// damit die eine Datei überall vollständig ist.</summary>
+    public static string ShopHtml(string shopName, IEnumerable<Product> products, bool smallBusiness, string? imageDir = null)
     {
         string E(string s) => WebUtility.HtmlEncode(s);
         var de = CultureInfo.GetCultureInfo("de-DE");
+        string Gross(double net) => (smallBusiness ? (decimal)net : Math.Round((decimal)net * (1 + LegalRates.VatStandard / 100m), 2, MidpointRounding.AwayFromZero)).ToString("N2", de) + " €";
+        string Stock(int n) => n > 0 ? $"{n} vorrätig" : "derzeit nicht vorrätig";
         var sb = new StringBuilder($"<!doctype html><html lang=\"de\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>{E(shopName)}</title>");
-        sb.Append("<style>body{font-family:system-ui,sans-serif;margin:0;background:#f5f7fa;color:#1f2933}header{background:#1f2933;color:#fff;padding:24px 16px}main{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;padding:16px;max-width:1100px;margin:auto}.c{background:#fff;border-radius:12px;padding:16px;box-shadow:0 2px 8px #0001}.p{font-size:1.3em;font-weight:600}.s{color:#667}footer{text-align:center;color:#667;padding:16px;font-size:.9em}</style></head><body>");
+        sb.Append("<style>body{font-family:system-ui,sans-serif;margin:0;background:#f5f7fa;color:#1f2933}header{background:#1f2933;color:#fff;padding:24px 16px}main{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;padding:16px;max-width:1100px;margin:auto}.c{background:#fff;border-radius:12px;padding:16px;box-shadow:0 2px 8px #0001}.c img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px}.p{font-size:1.3em;font-weight:600}.s{color:#667}.v{width:100%;border-collapse:collapse;font-size:.9em}.v td{padding:3px 0;border-top:1px solid #eee}footer{text-align:center;color:#667;padding:16px;font-size:.9em}</style></head><body>");
         sb.Append($"<header><h1>{E(shopName)}</h1></header><main>");
         foreach (var a in products)
         {
-            var gross = smallBusiness ? (decimal)a.Price : Math.Round((decimal)a.Price * (1 + LegalRates.VatStandard / 100m), 2, MidpointRounding.AwayFromZero);
-            sb.Append($"<div class=c><h3>{E(a.Name)}</h3><p class=p>{gross.ToString("N2", de)} €</p><p class=s>{(a.Stock > 0 ? $"{a.Stock} vorrätig" : "derzeit nicht vorrätig")}</p></div>");
+            var img = "";
+            if (a.Image.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) img = a.Image;
+            else if (a.Image.Length > 0 && imageDir is not null && Path.Combine(imageDir, Path.GetFileName(a.Image)) is var f && File.Exists(f))
+                img = "data:" + (Path.GetExtension(f).ToLowerInvariant() switch { ".png" => "image/png", ".webp" => "image/webp", _ => "image/jpeg" }) + ";base64," + Convert.ToBase64String(File.ReadAllBytes(f));
+            sb.Append("<div class=c>");
+            if (img.Length > 0) sb.Append($"<img alt=\"{E(a.Name)}\" src=\"{E(img)}\">");
+            sb.Append($"<h3>{E(a.Name)}</h3>");
+            if (a.Description.Length > 0) sb.Append($"<p>{E(a.Description).Replace("\n", "<br>")}</p>");
+            if (a.Variants is { Count: > 0 } vs)
+            {
+                var min = vs.Min(v => v.Price);
+                sb.Append($"<p class=p>{(vs.Any(v => v.Price != min) ? "ab " : "")}{Gross(min)}</p><table class=v>");
+                foreach (var v in vs) sb.Append($"<tr><td>{E(v.Name)}</td><td>{Gross(v.Price)}</td><td class=s>{(MadeToOrder(a) ? "auf Bestellung" : Stock(v.Stock))}</td></tr>");
+                sb.Append("</table>");
+            }
+            else sb.Append($"<p class=p>{Gross(a.Price)}</p><p class=s>{(MadeToOrder(a) ? "wird auf Bestellung gefertigt" : Stock(a.Stock))}</p>");
+            sb.Append("</div>");
         }
         sb.Append($"</main><footer>{(smallBusiness ? "Gemäß § 19 UStG wird keine Umsatzsteuer berechnet." : "Preise inkl. MwSt.")} Vorschau – Bestellung und Bezahlung sind hier nicht eingerichtet.</footer></body></html>");
         return sb.ToString();

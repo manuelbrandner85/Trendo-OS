@@ -1,0 +1,35 @@
+T-0753 Beleg ERSETZT: lokaler Testserver nach offizieller API-Dokumentation (Printful v1, Printify v1, Stripe, Netlify), kein echter Dienst, kein Schlüssel der Person.
+Zeit: 2026-11-23 02:53:11 +01:00 · Transport: echter HTTP-Weg der App (HttpFetch/HttpClient) an localhost
+Anfragen: 32 · Abweichungen: 0 · kostenpflichtige Aufrufe: 0
+GET printful/oauth/scopes -> 200 | ok Authorization: Bearer <Schlüssel>
+GET printful/products -> 200 | ok Authorization: Bearer <Schlüssel>
+GET printful/products/71 -> 200 | ok Authorization: Bearer <Schlüssel>
+GET printful/mockup-generator/printfiles/71 -> 200 | ok Authorization: Bearer <Schlüssel>
+POST printful/mockup-generator/create-task/71 -> 200 | ok Authorization: Bearer <Schlüssel>; ok Inhalt als JSON; ok variant_ids: Liste von Zahlen; ok format jpg oder png; ok files[].placement und files[].image_url (https)
+GET printful/mockup-generator/task?task_key=… -> 200 | ok Authorization: Bearer <Schlüssel>; ok task_key als Abfrageparameter
+POST printful/store/products -> 200 | ok Authorization: Bearer <Schlüssel>; ok sync_product.name; ok sync_variants[].variant_id, retail_price, files[].url
+GET printful/store/products/5551 -> 200 | ok Authorization: Bearer <Schlüssel>
+GET printful/store/products/5551 -> 200 | ok Authorization: Bearer <Schlüssel>
+GET printful/orders/@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa -> 404 | ok Authorization: Bearer <Schlüssel>; ok external_id höchstens 32 Zeichen
+POST printful/orders -> 200 | ok Authorization: Bearer <Schlüssel>; ok ohne confirm=true – Bestellung bleibt Entwurf (kostenlos); ok external_id 1–32 Zeichen; ok recipient.name, address1, city, country_code, zip; ok items[].sync_variant_id und quantity
+GET printify/v1/shops.json -> 200 | ok Authorization: Bearer <Schlüssel>; ok User-Agent gesetzt (Printify verlangt ihn)
+GET printify/v1/catalog/blueprints.json -> 200 | ok Authorization: Bearer <Schlüssel>; ok User-Agent gesetzt (Printify verlangt ihn)
+GET printify/v1/catalog/blueprints/6/print_providers.json -> 200 | ok Authorization: Bearer <Schlüssel>; ok User-Agent gesetzt (Printify verlangt ihn)
+GET printify/v1/catalog/blueprints/6/print_providers/29/variants.json -> 200 | ok Authorization: Bearer <Schlüssel>; ok User-Agent gesetzt (Printify verlangt ihn)
+POST printify/v1/uploads/images.json -> 200 | ok Authorization: Bearer <Schlüssel>; ok User-Agent gesetzt (Printify verlangt ihn); ok file_name und contents (Base64) oder url; ok contents ist gültiges Base64
+POST printify/v1/shops/1820/products.json -> 200 | ok Authorization: Bearer <Schlüssel>; ok User-Agent gesetzt (Printify verlangt ihn); ok title, description, blueprint_id, print_provider_id; ok variants[].id und price als ganze Zahl (Cent); ok print_areas[].variant_ids, placeholders[].position, images[].id/x/y/scale/angle
+POST printify/v1/shops/1820/orders.json -> 200 | ok Authorization: Bearer <Schlüssel>; ok User-Agent gesetzt (Printify verlangt ihn); ok external_id; ok line_items[].product_id, variant_id, quantity; ok shipping_method und send_shipping_notification; ok address_to.first_name, last_name, email, country, address1, city, zip
+GET printify/v1/shops/1820/orders/5a96f649b2439217d070f507.json -> 200 | ok Authorization: Bearer <Schlüssel>; ok User-Agent gesetzt (Printify verlangt ihn)
+GET netlify/api/v1/user -> 200 | ok Authorization: Bearer <Schlüssel>
+POST netlify/api/v1/sites -> 200 | ok Authorization: Bearer <Schlüssel>
+POST netlify/api/v1/sites/3970e0fe-8564-4903-9a55-c5f8de49fb8b/deploys -> 200 | ok Authorization: Bearer <Schlüssel>; ok Content-Type application/zip; ok Inhalt ist ein ZIP mit index.html
+GET stripe/v1/balance -> 200 | ok Authorization: Bearer <Schlüssel>; ok Testschlüssel (sk_test_/rk_test_)
+POST stripe/v1/prices -> 200 | ok Authorization: Bearer <Schlüssel>; ok Testschlüssel (sk_test_/rk_test_); ok Inhalt form-codiert; ok currency, unit_amount (ganze Cent), product_data[name]
+POST stripe/v1/payment_links -> 200 | ok Authorization: Bearer <Schlüssel>; ok Testschlüssel (sk_test_/rk_test_); ok line_items[0][price] und [quantity]; ok shipping_address_collection[allowed_countries][]
+GET stripe/v1/checkout/sessions?status=…&limit=… -> 200 | ok Authorization: Bearer <Schlüssel>; ok Testschlüssel (sk_test_/rk_test_); ok status=complete und limit 1–100
+GET printful/oauth/scopes -> 200 | ok Authorization: Bearer <Schlüssel>
+GET printify/v1/shops.json -> 200 | ok Authorization: Bearer <Schlüssel>; ok User-Agent gesetzt (Printify verlangt ihn)
+GET printful/oauth/scopes -> 200 | ok Authorization: Bearer <Schlüssel>
+GET printify/v1/shops.json -> 200 | ok Authorization: Bearer <Schlüssel>; ok User-Agent gesetzt (Printify verlangt ihn)
+GET stripe/v1/balance -> 200 | ok Authorization: Bearer <Schlüssel>; ok Testschlüssel (sk_test_/rk_test_)
+GET stripe/v1/checkout/sessions?status=…&limit=… -> 200 | ok Authorization: Bearer <Schlüssel>; ok Testschlüssel (sk_test_/rk_test_); ok status=complete und limit 1–100

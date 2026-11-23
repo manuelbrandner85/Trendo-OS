@@ -87,20 +87,21 @@ public partial class MainWindow
         // Links: Artikel
         var find = new TextBox { Name = "kasse-find", Text = _kasseFind, PlaceholderText = "Artikel suchen …", Width = 260, HorizontalAlignment = HorizontalAlignment.Left, CornerRadius = new CornerRadius(8) };
         // Scanner oder Artikelnummer: genauer Treffer landet sofort im Korb (wie an jeder Ladenkasse), sonst wird gefiltert
-        find.KeyDown += (_, e) => { if (e.Key != Avalonia.Input.Key.Enter) return; var hit = SalesStats.Find(products, find.Text ?? ""); if (hit is not null) { CartAdd(hit.Name, 1); _kasseFind = ""; } else _kasseFind = find.Text ?? ""; Show(V); };
+        find.KeyDown += (_, e) => { if (e.Key != Avalonia.Input.Key.Enter) return; var hit = kasse.Shop.FindSaleItem(find.Text ?? ""); if (hit is not null) { CartAdd(hit.Label, 1); _kasseFind = ""; } else _kasseFind = find.Text ?? ""; Show(V); }; // T-0753: auch Varianten
         find.PlaceholderText = "Artikel suchen oder Strichcode scannen …";
         var tiles = new WrapPanel { Name = "kasse-articles" };
-        var shown = products.Where(p => _kasseFind.Length == 0 || p.Name.Contains(_kasseFind, StringComparison.CurrentCultureIgnoreCase)).ToList();
+        var saleItems = kasse.Shop.SaleItems(); // T-0753 M1: jede Variante als eigene Kachel
+        var shown = saleItems.Where(p => _kasseFind.Length == 0 || p.Label.Contains(_kasseFind, StringComparison.CurrentCultureIgnoreCase)).ToList();
         for (var i = 0; i < shown.Count; i++)
         {
-            var p = shown[i]; var inCart = _cart.Where(c => c.Product == p.Name).Sum(c => c.Qty); var free = kasse.Shop.Available(p.Name) - inCart; var name = p.Name;
+            var p = shown[i]; var inCart = _cart.Where(c => c.Product == p.Label).Sum(c => c.Qty); var free = kasse.Shop.Available(p.Label) - inCart; var name = p.Label;
             var b = new Button { Name = $"kasse-art-{i}", Width = 170, Height = 104, Padding = new Thickness(12, 10), CornerRadius = new CornerRadius(14), IsEnabled = free > 0,
                 HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalContentAlignment = VerticalAlignment.Stretch,
                 Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#FF4A4A4A"), 0), new GradientStop(Color.Parse("#FF303030"), 1) } },
                 BorderBrush = Brush.Parse(inCart > 0 ? "#D4A84B" : "#33FFFFFF"), BorderThickness = new Thickness(inCart > 0 ? 2 : 1),
                 Content = new Grid { RowDefinitions = new RowDefinitions("*,Auto,Auto"), Children = {
-                    new TextBlock { Text = p.Name, Foreground = Brushes.White, FontSize = 14, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap, MaxLines = 2 },
-                    Row1(new TextBlock { Text = Eu(CashRegister.GrossPrice(p, small)) + " €", Foreground = GoldText(), FontSize = 18, FontWeight = FontWeight.Bold }, 1),
+                    new TextBlock { Text = p.Label, Foreground = Brushes.White, FontSize = 14, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap, MaxLines = 2 },
+                    Row1(new TextBlock { Text = Eu(CashRegister.Gross(p.Price, small)) + " €", Foreground = GoldText(), FontSize = 18, FontWeight = FontWeight.Bold }, 1),
                     Row1(new TextBlock { Text = free > 0 ? $"{free:0.##} vorrätig" + (inCart > 0 ? $" · {inCart:0.##} im Korb" : "") : "nicht vorrätig", Foreground = Brush.Parse(free > 0 ? "#9FE3BC" : "#F0A08F"), FontSize = 11 }, 2) } } };
             b.Click += (_, _) => { CartAdd(name, 1); Show(V); }; Hover(b);
             tiles.Children.Add(new Border { Margin = new Thickness(0, 0, 10, 10), CornerRadius = new CornerRadius(14), BoxShadow = BoxShadows.Parse("0 6 16 -6 #88000000"), Child = b });
@@ -114,7 +115,7 @@ public partial class MainWindow
         var total = 0m;
         for (var i = 0; i < _cart.Count; i++)
         {
-            var (prod, qty) = _cart[i]; var pr = products.FirstOrDefault(x => x.Name == prod); var price = pr is null ? 0 : CashRegister.GrossPrice(pr, small); var sum = Math.Round(qty * price, 2); total += sum; var pn = prod;
+            var (prod, qty) = _cart[i]; var pr = saleItems.FirstOrDefault(x => x.Label == prod); var price = pr is null ? 0 : CashRegister.Gross(pr.Price, small); var sum = Math.Round(qty * price, 2); total += sum; var pn = prod;
             cart.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto,Auto,90,Auto"), Children = {
                 new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = { new TextBlock { Text = prod, Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis }, new TextBlock { Text = Eu(price) + " € je Stück", Foreground = Muted, FontSize = 11 } } },
                 Pos(Act($"kasse-minus-{i}", "−", () => { CartAdd(pn, -1); Show(V); }), 1),
@@ -181,7 +182,7 @@ public partial class MainWindow
                 if (_kasseCancelAsk != id) row.Children.Add(Pos(Act($"kasse-storno-{i}", "Storno …", () => { _kasseCancelAsk = id; Show(V); }), 4));
                 else row.Children.Add(Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, Children = {
                     new TextBlock { Text = "Wirklich stornieren?", Foreground = Brush.Parse("#F5A524"), VerticalAlignment = VerticalAlignment.Center },
-                    Act($"kasse-storno-yes-{i}", "Ja", () => Try(V, () => { Kasse.Cancel(id, DateTime.Now, Money); _kasseCancelAsk = null; _core.Audit.Append(Principal.LocalOwner.Name, "kasse.storno", s.No); Say($"{s.No} storniert – Bestand und Geld sind zurückgebucht.", V); }), true),
+                    Act($"kasse-storno-yes-{i}", "Ja", () => Try(V, () => { var kc = Kasse; kc.Cancel(id, DateTime.Now, Money); _kasseCancelAsk = null; _core.Audit.Append(Principal.LocalOwner.Name, "kasse.storno", s.No); Say(kc.NotRestocked.Count == 0 ? $"{s.No} storniert – Bestand und Geld sind zurückgebucht." : $"{s.No} storniert – Geld zurückgebucht. Bestand nicht zurückgebucht für {string.Join(", ", kc.NotRestocked.Select(x => "„" + x + "“"))}, den Artikel gibt es nicht mehr.", V); }), true),
                     Act($"kasse-storno-no-{i}", "Nein", () => { _kasseCancelAsk = null; Show(V); }) } }, 4));
             }
             list.Children.Add(row);

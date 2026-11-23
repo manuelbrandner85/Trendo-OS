@@ -1,0 +1,1 @@
+Bestanden!   : Fehler:     0, erfolgreich:    50, übersprungen:     0, gesamt:    50, Dauer: 868 ms - Trendo.Core.Tests.dll (net10.0)

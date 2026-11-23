@@ -1,0 +1,30 @@
+T-0753 Beleg: exportierte CSV (Shopify-Spaltensatz) in Fremdprogrammen geoeffnet, 2026-11-23 02:53:43 +0100
+LibreOffice: BLOCKIERT – auf diesem PC nicht installiert (Ordner C:\Program Files\LibreOffice\program enthaelt nur 'logs', keine soffice.exe); Excel ebenfalls nicht vorhanden.
+
+== Windows PowerShell Import-Csv ==
+Werkzeug: Windows PowerShell 5.1.26100.9843 Import-Csv
+artikel.csv : 2 Datenzeilen, 21 Spalten
+  Title='Shirt Waldlauf' Handle='shirt-waldlauf' Option1='M' Price=21.00 Qty=3 SKU=SW-M Desc='Bio-Baumwolle, bedruckt' Bild='bilder/c414cd0e204d-foto.png'
+  Title='' Handle='shirt-waldlauf' Option1='L' Price=22.50 Qty=1 SKU=SW-L Desc='' Bild=''
+kunden.csv : 1 Datenzeilen, 20 Spalten
+  'Erika Muster' Adresse='Hauptstraße 1' PLZ=10115 Ort='Berlin' Land=DE
+bestellungen.csv : 1 Datenzeilen, 14 Spalten
+  #89c74006 pending 2 x 'Shirt Waldlauf – M' 20.00 EUR
+Exitcode 0
+
+== Python csv ==
+Werkzeug: Python 3.13.15 csv-Modul
+artikel.csv: 2 Datenzeilen, 21 Spalten, alle Zeilen gleich breit: True
+  Shopify-Pflichtspalten vorhanden: True
+  Artikel (Handles): ['shirt-waldlauf']; Varianten-Zeilen: 2
+  Bild bilder/c414cd0e204d-foto.png liegt daneben: True
+kunden.csv: 1 Datenzeilen, 20 Spalten, alle Zeilen gleich breit: True
+bestellungen.csv: 1 Datenzeilen, 14 Spalten, alle Zeilen gleich breit: True
+ERGEBNIS: BESTANDEN
+Exitcode 0
+
+== SHA-256 ==
+c7f9075a0f049f9de0a71f210d2fee8de45f49b33a1fcf2d8b73a02071e42e82 *csv/artikel.csv
+11c5c70553a23d71309e8848362f856310b5427abf2dbbdf69f96675396af3a4 *csv/kunden.csv
+3a18f8d817fb6855400b823c175eff297b8e70d0d012a8355813c9857b538cec *csv/bestellungen.csv
+c414cd0e204de974f73753c7e28d7638e7b3691bb8b1a2bab6b25bb7fed7ce77 *csv/bilder/c414cd0e204d-foto.png

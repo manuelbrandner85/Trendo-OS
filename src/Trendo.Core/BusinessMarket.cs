@@ -6,6 +6,8 @@ namespace Trendo.Core;
 public sealed class IdeaList<T>(string dataRoot, string ideaId, string name) where T : class
 {
     private readonly string _file = Path.Combine(dataRoot, "business", DevStudio.SafeName(ideaId), name + ".json");
+    /// <summary>T-0753: Datei der Liste (für Rückgängig im Shop).</summary>
+    public string FilePath => _file;
     public List<T> All() => File.Exists(_file) ? JsonSerializer.Deserialize<List<T>>(File.ReadAllText(_file)) ?? [] : [];
     public void Save(List<T> l) => AtomicFile.WriteAllText(_file, JsonSerializer.Serialize(l, new JsonSerializerOptions { WriteIndented = true })); // T-0714: atomar
     public void Add(T x) { var l = All(); l.Add(x); Save(l); }

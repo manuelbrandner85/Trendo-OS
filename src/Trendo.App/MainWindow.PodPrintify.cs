@@ -12,7 +12,7 @@ namespace Trendo.App;
 /// <summary>Print on Demand: Printify als zweiter Anbieter. Bestellungen nur mit bestätigter manueller Freigabe im Printify-Shop, weil Printify sonst selbst in die Fertigung gibt.</summary>
 public partial class MainWindow
 {
-    const string PfyKey = "pod-printify-token", PfyShopKey = "pod-printify-shop";
+    const string PfyKey = PodTestRun.PrintifyKey, PfyShopKey = "pod-printify-shop";
     IReadOnlyList<PfyBlueprint> _pfyCatalog = [];
     PfyBlueprint? _pfyBlueprint;
     IReadOnlyList<PfyProvider> _pfyProviders = [];
