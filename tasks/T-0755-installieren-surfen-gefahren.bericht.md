@@ -101,4 +101,20 @@ Echter winget-Lauf weiterhin **NICHT GETESTET – braucht Lauf durch den Nutzer.
 
 **Hinweis für den Nutzer:** Eigene versteckt startende Hilfsaufgaben, deren Skript im Benutzerordner liegt (z. B. PowerShell mit `-WindowStyle Hidden -ExecutionPolicy Bypass -File C:\Users\…\skript.ps1` oder Blender mit `-P C:\Users\…\skript.py`), erscheinen **absichtlich rot** – genau so tarnen sich Schadprogramme. Die Erklärung im Eintrag sagt das; wenn du die Aufgabe selbst angelegt hast, ist alles in Ordnung. Trendo ändert daran nichts.
 
+## Drittprüfung behoben (Fix3 auf acda02ef0)
+
+| Befund | Lösung | Test |
+|---|---|---|
+| MITTEL: `"C:\Program Files\dotnet\dotnet.exe" C:\ProgramData\x\evil.dll` grün | `dotnet.exe` ist Code-Lader (höchstens gelb, nicht in der Liste der Windows-eigenen Werkzeuge). Programm- und Skriptdateien in den Argumenten unter `C:\ProgramData` ergeben mindestens gelb („Ziel in ProgramData“). | `T0755_Fix3.Dotnet_programdata_not_green` |
+| MITTEL: Ausnahme „eigener Programmordner“ greift auch im Benutzerordner (MS-signierte Kopie mit `x\evil.ps1` bzw. `dotnet.exe x\evil.dll`) | Die Ausnahme gilt nur, wenn das Programm unter Program Files, Program Files (x86) oder `%SystemRoot%` liegt. Relative Ziele werden vom Programmordner aus aufgelöst. | `T0755_Fix3.Own_folder_exception_only_in_program_files` – echte Kopien von PING.EXE und dotnet.exe unter `%LOCALAPPDATA%\Programs\trendo-t0755-test-*`, danach gelöscht |
+| MITTEL: `Update.exe --processStart evil.exe` grün | Squirrel-Starter: Ziel aus `--processStart`/`--processStartAndWait` relativ zum Programmordner aufgelöst. Ziel an verdächtigem Ort → rot, sonst gelb „Startet ein anderes Programm“ mit Ziel. Entscheidung: nicht pauschal rot, weil Squirrel-Programme (z. B. Chat-Programme) regulär im Benutzerordner liegen. | `T0755_Fix3.Squirrel_scripts_and_enc_variants` (echte Kopie, danach gelöscht) |
+| MITTEL: Electron/node-artige Programme mit Skript-Argument | `.js`, `.mjs`, `.cjs` in den Argumenten ergeben mindestens gelb („Startet ein Skript“). | dieselbe Testmethode |
+| Ehrliche Ampel | Seite und Bericht sagen: „Hinweis-Ampel, keine Virenprüfung – Grün heißt ‚keine bekannte Auffälligkeit gefunden‘“. Grün-Text entsprechend; „Das Werkzeug selbst ist harmlos“ ersetzt durch „ist echt“. Kein „sicher“/„sauber“ in den Texten der Prüfung. | `T0755_Fix3.Honest_wording` |
+| NIEDRIG: `"-enc"`, `-enc:` | Muster erlaubt Anführungszeichen vor und nach dem Schalter und `:` oder Leerraum als Trenner. | `T0755_Fix3.Squirrel_scripts_and_enc_variants` |
+
+**Rot-Grün:** Die vier neuen Tests liefen zuerst unverändert gegen acda02ef0 und schlugen fehl (`reports/T-0755/core-tests-fix3-rot-auf-acda02ef0.txt`); danach grün.
+**Tests:** Core T0755*, W3, PromptActionTests, DownloadQueue, NoFixedUser, SYS04: 117/117. App `T0755_Ui`, `SPEC12_Ui`, `SYS04_Ui`, `W1_Web`, `Sys03_Netz_Ui`, `ForensikYara_Ui`, `StudiosAlle_Ui`: 112/112.
+**Echtlauf** (nur Zählungen): 174 Einträge, Rot 15, Gelb 58, Grün 101. Neu rot: zwei eigene Aufgaben, die ein Node-Programm aus dem Benutzerordner mit einem Skript daneben starten. Keine Windows-Aufgabe rot.
+**Hinweis für den Nutzer (Ergänzung):** Auch Programme, die selbst im Benutzerordner liegen und ein Skript aus ihrem Ordner starten (z. B. ein dort entpacktes Node), erscheinen rot. Die Systemprüfung ist eine **Hinweis-Ampel, keine Virenprüfung**.
+
 **Status:** Umsetzung fertig und gezielt getestet; SYS-04-Echtlauf offen.

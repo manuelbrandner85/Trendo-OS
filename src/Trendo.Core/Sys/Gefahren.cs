@@ -56,10 +56,11 @@ public static partial class SystemScan
         ["odbcconf.exe"] = "Installieren", ["mavinject.exe"] = "Installieren", ["presentationhost.exe"] = "Skript", ["ieexec.exe"] = "Laden", ["msxsl.exe"] = "Skript",
         ["pcalua.exe"] = "Starten", ["syncappvpublishingserver.exe"] = "Skript", ["hh.exe"] = "Skript", ["dnscmd.exe"] = "Installieren", ["diskshadow.exe"] = "Skript",
         ["esentutl.exe"] = "Laden", ["expand.exe"] = "Laden", ["extrac32.exe"] = "Laden", ["replace.exe"] = "Laden", ["ftp.exe"] = "Laden", ["finger.exe"] = "Laden",
+        ["dotnet.exe"] = "Skript", // T-0755 Fix3: lädt beliebige .NET-Bibliotheken
     };
 
     /// <summary>T-0755 Fix2: Werkzeuge, die Windows selbst mitbringt (liegen im Windows-Ordner). Eine Microsoft-signierte Kopie davon woanders oder unter anderem Namen ist rot.</summary>
-    static readonly HashSet<string> WindowsTools = new(Lolbins.Keys.Except(["python.exe", "pythonw.exe", "py.exe", "pyw.exe", "node.exe", "java.exe", "javaw.exe", "wget.exe", "pwsh.exe", "msbuild.exe", "msxsl.exe"], StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase);
+    static readonly HashSet<string> WindowsTools = new(Lolbins.Keys.Except(["python.exe", "pythonw.exe", "py.exe", "pyw.exe", "node.exe", "java.exe", "javaw.exe", "wget.exe", "pwsh.exe", "msbuild.exe", "msxsl.exe", "dotnet.exe"], StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase);
 
     static readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> ToolNames = new(StringComparer.OrdinalIgnoreCase);
 
@@ -168,6 +169,23 @@ public static partial class SystemScan
         return null;
     }
 
+    static bool Under(string path, Environment.SpecialFolder f)
+    {
+        var d = Environment.GetFolderPath(f);
+        try { return d.Length > 3 && Path.GetFullPath(path).StartsWith(d.TrimEnd('\\') + "\\", StringComparison.OrdinalIgnoreCase); }
+        catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { return false; }
+    }
+
+    /// <summary>T-0755 Fix3: Programme, die unter „Programme“ oder im Windows-Ordner liegen – nur dort darf ein Programm Dateien aus seinem eigenen Ordner laden, ohne aufzufallen
+    /// (normale Benutzer können dort nichts ablegen).</summary>
+    static bool InProtectedPlace(string path) =>
+        Under(path, Environment.SpecialFolder.ProgramFiles) || Under(path, Environment.SpecialFolder.ProgramFilesX86) || Under(path, Environment.SpecialFolder.Windows);
+
+    /// <summary>T-0755 Fix3: C:\ProgramData – dort dürfen alle Benutzer schreiben.</summary>
+    static bool InProgramData(string path) => Under(path, Environment.SpecialFolder.CommonApplicationData);
+
+    static readonly string[] ScriptExt = [".js", ".mjs", ".cjs"];
+
     static bool UnderWindows(string path)
     {
         var w = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
@@ -177,7 +195,7 @@ public static partial class SystemScan
 
     static string Short(string s) => s.Length > 60 ? s[..57] + "…" : s;
 
-    [GeneratedRegex(@"[-/–—](e|ec|en|enc|enco[a-z]*)\s+[A-Za-z0-9+/=]{16,}", RegexOptions.IgnoreCase)] private static partial Regex Encoded();
+    [GeneratedRegex(@"""?[-/–—](e|ec|en|enc|enco[a-z]*)""?[:\s]\s*""?[A-Za-z0-9+/=]{16,}", RegexOptions.IgnoreCase)] private static partial Regex Encoded();
 
     /// <summary>Welche Datei startet ein Befehl? Mit Anführungszeichen, Umgebungsvariablen, Leerzeichen im Pfad ohne Anführungszeichen,
     /// rundll32 (die Bibliothek zählt) und Programmen ohne Ordner (Suche im Windows-Ordner und im PATH).</summary>
@@ -248,6 +266,18 @@ public static partial class SystemScan
             && (!UnderWindows(hostExe) || !host.Equals(tool, StringComparison.OrdinalIgnoreCase) && !host.Contains('~')))
             return new(e, s, Ampel.Rot, "Umbenannte Windows-Datei",
                 $"„{host}“ ist in Wahrheit das Windows-Werkzeug „{tool}“, liegt aber {(UnderWindows(hostExe) ? "unter anderem Namen im Windows-Ordner" : "außerhalb des Windows-Ordners")}. Echte Programme kopieren keine Windows-Werkzeuge – so tarnen sich Schadprogramme mit einer gültigen Microsoft-Signatur.", fix);
+        var hostDir = Path.GetDirectoryName(hostExe) ?? "";
+        string Abs(string t) => Path.IsPathRooted(t) || hostDir.Length == 0 ? t : Path.Combine(hostDir, t); // relativ: vom Programmordner aus
+        // T-0755 Fix3: Squirrel-Starter („Update.exe --processStart x.exe“) – das eigentliche Programm steht im Argument
+        if (host.Equals("update.exe", StringComparison.OrdinalIgnoreCase) && Regex.Match(args, @"(?i)--processStart(?:AndWait)?[\s=]+""?([^""\s]+)") is { Success: true } sq)
+        {
+            var target = Abs(sq.Groups[1].Value);
+            if (SuspiciousPlace(target) is { } sw)
+                return new(e, s, Ampel.Rot, "Verdächtiges Ziel", $"„{host}“ startet „{Path.GetFileName(target)}“, und das {sw}.", fix);
+            return new(e, s, Ampel.Gelb, "Startet ein anderes Programm",
+                $"„{host}“ ist ein Starter (Squirrel), der beim Anmelden „{Path.GetFileName(target)}“ startet{(System.IO.File.Exists(target) ? "" : " – diese Datei hat Trendo nicht gefunden")}. Ziel: {target}. Viele Programme im Benutzerordner (z. B. Chat-Programme) starten so – Trendo prüft das eigentliche Programm hier nicht.",
+                "Kennst du das Programm? Wenn nicht, " + fix[(fix.IndexOf(':') + 2)..]);
+        }
         if (lol is not null)
         {
             if (NetTarget().Match(args) is { Success: true } net)
@@ -255,7 +285,7 @@ public static partial class SystemScan
                     $"„{host}“ holt beim Start etwas aus dem Internet oder von einem fremden Rechner ({Short(net.Value)}). So laden Schadprogramme ihren eigentlichen Teil nach – ein normales Programm braucht das beim Start nicht.", fix);
             // „cmd /c del …“ / „rmdir …“ löscht nur – das Ziel wird nicht ausgeführt (z. B. Aufräum-Einträge von OneDrive)
             var onlyDeletes = host.Equals("cmd.exe", StringComparison.OrdinalIgnoreCase) && Regex.IsMatch(args, @"(?i)^(/\w\s+)*/c\s+(del|erase|rmdir|rd)\b") && !Regex.IsMatch(args, @"[&|]");
-            var targets = onlyDeletes ? [] : ArgTargets(args).Where(t => !t.Equals(e.File, StringComparison.OrdinalIgnoreCase) || !host.Equals("rundll32.exe", StringComparison.OrdinalIgnoreCase)).ToList();
+            var targets = onlyDeletes ? [] : ArgTargets(args).Select(Abs).Where(t => !t.Equals(e.File, StringComparison.OrdinalIgnoreCase) || !host.Equals("rundll32.exe", StringComparison.OrdinalIgnoreCase)).ToList();
             if (host.Equals("rundll32.exe", StringComparison.OrdinalIgnoreCase) && e.File is { } dll) targets.Insert(0, dll);
             foreach (var t in targets)
                 if (SuspiciousTarget(t) is { } where)
@@ -270,12 +300,14 @@ public static partial class SystemScan
             };
             var tgt = onlyDeletes ? "Der Befehl löscht nur Dateien oder Ordner." : targets.Count == 0 ? "Ein Ziel konnte Trendo nicht ablesen." : "Ziel: " + string.Join(", ", targets.Select(t => (System.IO.File.Exists(t) ? "" : "(nicht gefunden) ") + t)) + ".";
             return new(e, s, Ampel.Gelb, lol == "Skript" ? "Startet ein Skript" : "Windows-Werkzeug mit Befehl",
-                $"„{host}“ ist ein echtes Werkzeug, das {what}. Das Werkzeug selbst ist harmlos – entscheidend ist, was es ausführt. {tgt}",
+                $"„{host}“ ist ein echtes Werkzeug, das {what}. Das Werkzeug selbst ist echt – entscheidend ist, was es ausführt. {tgt}",
                 "Befehl lesen: Kennst du das Ziel? Wenn nicht, " + fix[(fix.IndexOf(':') + 2)..]);
         }
-        // T-0755 Fix2: für jeden Eintrag – Programm- oder Skriptdatei in den Argumenten an verdächtigem Ort (nicht im eigenen Programmordner)
-        var own = Path.GetDirectoryName(hostExe) ?? "";
-        foreach (var t in ArgTargets(args).Where(t => CodeExt.Any(x => t.EndsWith(x, StringComparison.OrdinalIgnoreCase))))
+        // T-0755 Fix2/Fix3: für jeden Eintrag – Programm- oder Skriptdatei in den Argumenten an verdächtigem Ort. Ausnahme „eigener Programmordner“
+        // nur, wenn das Programm selbst unter „Programme“ oder im Windows-Ordner liegt.
+        var own = InProtectedPlace(hostExe) ? hostDir : "";
+        var codeTargets = ArgTargets(args).Select(Abs).Where(t => CodeExt.Any(x => t.EndsWith(x, StringComparison.OrdinalIgnoreCase))).ToList();
+        foreach (var t in codeTargets)
             if (!(own.Length > 3 && t.StartsWith(own.TrimEnd('\\') + "\\", StringComparison.OrdinalIgnoreCase)) && SuspiciousTarget(t) is { } where2)
                 return new(e, s, Ampel.Rot, "Verdächtiges Ziel",
                     $"„{host}“ bekommt beim Start „{Path.GetFileName(t)}“ mit, und das {where2}. Dort liegen normalerweise keine Programme, die bei jedem Start laufen.", fix);
@@ -286,9 +318,17 @@ public static partial class SystemScan
             return new(e, s, Ampel.Gelb, "Adresse im Befehl",
                 $"„{host}“ bekommt beim Start eine Internet- oder Netzwerkadresse mit ({Short(net2.Value)}). Das kann harmlos sein (z. B. eine Web-App), kann aber auch Nachladen bedeuten.",
                 "Kennst du die Adresse? Wenn nicht, " + fix[(fix.IndexOf(':') + 2)..]);
+        if (codeTargets.FirstOrDefault(InProgramData) is { } pd) // T-0755 Fix3: dort dürfen alle Benutzer schreiben
+            return new(e, s, Ampel.Gelb, "Ziel in ProgramData",
+                $"„{host}“ lädt beim Start „{Path.GetFileName(pd)}“ aus C:\\ProgramData. In diesen Ordner darf jeder Benutzer schreiben – deshalb kann Trendo nicht sagen, wer die Datei abgelegt hat. Ziel: {pd}.",
+                "Kennst du die Datei? Wenn nicht, " + fix[(fix.IndexOf(':') + 2)..]);
+        if (codeTargets.FirstOrDefault(t => ScriptExt.Any(x => t.EndsWith(x, StringComparison.OrdinalIgnoreCase))) is { } js) // T-0755 Fix3: Electron/node-artig
+            return new(e, s, Ampel.Gelb, "Startet ein Skript",
+                $"„{host}“ bekommt beim Start ein Skript mit („{Path.GetFileName(js)}“) und führt es aus. Das Programm selbst ist echt – entscheidend ist das Skript. Ziel: {js}.",
+                "Kennst du das Skript? Wenn nicht, " + fix[(fix.IndexOf(':') + 2)..]);
         if (s.State == SigState.Gueltig && KnownPublisher(s.Publisher))
             return new(e, s, Ampel.Gruen, "Gültig signiert",
-                $"„{file}“ ist gültig signiert von {s.Publisher}. Die Datei ist seit dem Signieren unverändert.", "Nichts zu tun. Wenn du das Programm beim Start nicht brauchst, kannst du es unter Einstellungen → Apps → Autostart ausschalten.");
+                $"„{file}“ ist gültig signiert von {s.Publisher} und seit dem Signieren unverändert. Keine bekannte Auffälligkeit gefunden – das ist eine Hinweis-Ampel, keine Virenprüfung.", "Nichts zu tun. Wenn du das Programm beim Start nicht brauchst, kannst du es unter Einstellungen → Apps → Autostart ausschalten.");
         if (s.State == SigState.Gueltig)
             return new(e, s, Ampel.Gelb, "Herausgeber unbekannt",
                 $"„{file}“ ist gültig signiert von „{who ?? "unbekannt"}“. Diesen Herausgeber kennt Trendo nicht – das heißt nicht, dass er schlecht ist.", "Kennst du den Herausgeber? Wenn ja, ist alles in Ordnung. " + fix);
@@ -485,6 +525,7 @@ public static partial class SystemScan
             .Append("body{font-family:Segoe UI,Arial,sans-serif;background:#14110c;color:#eee;margin:24px}h1{color:#e8c26a}table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #3a3326;padding:6px;text-align:left;vertical-align:top;font-size:13px}")
             .Append(".Rot{color:#f87171;font-weight:bold}.Gelb{color:#facc15;font-weight:bold}.Grün{color:#4ade80;font-weight:bold}small{color:#aaa}</style></head><body>")
             .Append($"<h1>System auf Gefahren geprüft</h1><p>{r.At:dd.MM.yyyy HH:mm} · {r.Findings.Count} Einträge · Rot {r.Count(Ampel.Rot)} · Gelb {r.Count(Ampel.Gelb)} · Grün {r.Count(Ampel.Gruen)}</p>")
+            .Append("<p><strong>Hinweis-Ampel, keine Virenprüfung:</strong> Grün heißt „keine bekannte Auffälligkeit gefunden“, nicht, dass ein Programm harmlos ist. Für eine Virenprüfung den Virenschutz (z. B. Microsoft Defender) nutzen.</p>")
             .Append("<p><small>Trendo hat nur gelesen und nichts geändert. Grün = gültig signiert von bekanntem Herausgeber. Gelb = nicht signiert, Herausgeber unbekannt oder Windows-Werkzeug mit Befehl. Rot = Datei fehlt, Signatur ungültig, verdächtiger Ort oder Laden aus dem Netz.</small></p>")
             .Append("<table><tr><th>Ampel</th><th>Art</th><th>Name</th><th>Datei</th><th>Herausgeber</th><th>Signatur</th><th>Erklärung</th><th>Was du tun kannst</th></tr>");
         foreach (var f in r.Findings)
