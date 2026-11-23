@@ -66,12 +66,13 @@ public class T0757Fix1Tests(ITestOutputHelper output)
             $"{Sys("bash.exe")} -c \"powershell -enc {B64}\"",
             $"\"C:\\Program Files\\nodejs\\node.exe\" -e \"require('child_process').exec('powershell -enc {B64}')\"",
         }) Red(c);
-        // Nicht-Ausführung bleibt ausgenommen
+        // T-0757 Fix3: echo/rem sind keine Ausnahme mehr – bewusster Fehlalarm, sichere Seite
+        Red($"{Sys("cmd.exe")} /c echo powershell -enc {B64}");
+        Red($"{Sys("cmd.exe")} /c rem powershell -enc {B64}");
+        // nicht als PowerShell-Aufruf erkannt bzw. --shell-Schalterwert: nicht „Versteckter Befehl“
         foreach (var c in new[]
         {
-            $"{Sys("cmd.exe")} /c echo powershell -enc {B64}",
             $"{Sys("cmd.exe")} /c echo.powershell -enc {B64} > x.txt",
-            $"{Sys("cmd.exe")} /c rem powershell -enc {B64}",
             $"\"C:\\Program Files\\dotnet\\dotnet.exe\" tool --shell powershell -e {B64}",
             $"\"C:\\Program Files\\nodejs\\node.exe\" -e {B64}",
         }) Assert.NotEqual("Versteckter Befehl", SystemScan.Assess(E(c), Ms).Reason);

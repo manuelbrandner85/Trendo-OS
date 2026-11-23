@@ -235,12 +235,13 @@ public class T0757RestpunkteTests(ITestOutputHelper output)
         }
     }
 
-    [Fact(DisplayName = "T-0757 C: kein Fehlalarm – cmd /c echo powershell -e … und dotnet tool --shell powershell -e … sind nicht „Versteckter Befehl“")]
+    [Fact(DisplayName = "T-0757 C: dotnet tool --shell powershell -e … ist kein „Versteckter Befehl“; cmd /c echo powershell -e … seit Fix3 bewusst rot")]
     public void C_kein_fehlalarm()
     {
         if (!OperatingSystem.IsWindows()) return;
-        Assert.NotEqual("Versteckter Befehl", SystemScan.Assess(Run($"{Sys("cmd.exe")} /c echo powershell -e {B64}"), Ms).Reason);
-        Assert.NotEqual("Versteckter Befehl", SystemScan.Assess(Run($"{Sys("cmd.exe")} /c echo powershell -enc {B64} > notiz.txt"), Ms).Reason);
+        // T-0757 Fix3: echo ist keine Ausnahme mehr – bewusster Fehlalarm, sichere Seite
+        Assert.Equal("Versteckter Befehl", SystemScan.Assess(Run($"{Sys("cmd.exe")} /c echo powershell -e {B64}"), Ms).Reason);
+        Assert.Equal("Versteckter Befehl", SystemScan.Assess(Run($"{Sys("cmd.exe")} /c echo powershell -enc {B64} > notiz.txt"), Ms).Reason);
         var dotnet = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet", "dotnet.exe");
         var file = File.Exists(dotnet) ? dotnet : Sys("kernel32.dll");
         var e = new StartEntry(SystemScan.KindRun, "Test", "HKCU", $"\"{dotnet}\" tool --shell powershell -e {B64}", file);

@@ -152,7 +152,7 @@ public class T0757NeuTests(ITestOutputHelper output)
         finally { Directory.Delete(r, true); }
     }
 
-    [Fact(DisplayName = "T-0757 Fix1 C: breite Erkennung ohne Liste der Startprogramme, nur echte Nicht-Ausführung (echo, rem, --shell) ausgenommen")]
+    [Fact(DisplayName = "T-0757 Fix1/Fix3 C: breite Erkennung ohne Liste der Startprogramme, nur --shell powershell ausgenommen (echo/rem seit Fix3 rot)")]
     public void C_breit_mit_ausnahmen()
     {
         const string B64 = "SQBFAFgAIAAoAE4AZQB3AC0ATwBiAGoAZQBjAHQAIABOAGUAdAAuAFcAZQBiAEMAbABpAGUAbgB0ACkA";
@@ -163,9 +163,10 @@ public class T0757NeuTests(ITestOutputHelper output)
         Assert.True(SystemScan.EncodedInnerPowerShell($"/c echo x & powershell -enc {B64}"));
         Assert.True(SystemScan.EncodedInnerPowerShell($"/c \"C:\\Program Files\\PowerShell\\7\\pwsh.exe\" -enc {B64}"));
         Assert.False(SystemScan.EncodedInnerPowerShell($"tool --shell powershell -e {B64}"));
-        Assert.False(SystemScan.EncodedInnerPowerShell($"/c echo powershell -e {B64}"));
-        Assert.False(SystemScan.EncodedInnerPowerShell($"/c rem powershell -enc {B64}"));
-        Assert.False(SystemScan.EncodedInnerPowerShell($"/c echo powershell -enc {B64} | more"));
+        // T-0757 Fix3: echo/rem sind keine Ausnahme mehr (bewusster Fehlalarm, sichere Seite)
+        Assert.True(SystemScan.EncodedInnerPowerShell($"/c echo powershell -e {B64}"));
+        Assert.True(SystemScan.EncodedInnerPowerShell($"/c rem powershell -enc {B64}"));
+        Assert.True(SystemScan.EncodedInnerPowerShell($"/c echo powershell -enc {B64} | more"));
         Assert.False(SystemScan.EncodedInnerPowerShell("/c powershell -File script.ps1"));
     }
 }

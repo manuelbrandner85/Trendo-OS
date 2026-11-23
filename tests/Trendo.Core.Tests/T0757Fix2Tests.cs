@@ -19,7 +19,7 @@ public class T0757Fix2Tests(ITestOutputHelper output)
     }
     static string Reason(string cmd) => SystemScan.Assess(E(cmd), Ms) is var f ? $"{f.Light} {f.Reason}" : "";
 
-    [Fact(DisplayName = "T-0757 Fix2 MITTEL: „echo“/„rem“ nur als erstes Befehlswort ausgenommen – als Fenstertitel, Variable oder vor ; bleibt es rot")]
+    [Fact(DisplayName = "T-0757 Fix2/Fix3 MITTEL: „echo“/„rem“ verhindern den Fund nicht – als Fenstertitel, Variable, vor ; und (Fix3) auch als erstes Befehlswort rot")]
     public void Mittel_echo_nur_als_erstes_wort()
     {
         if (!OperatingSystem.IsWindows()) return;
@@ -36,7 +36,8 @@ public class T0757Fix2Tests(ITestOutputHelper output)
             $"{cmd} /c echo x\npowershell -enc {B64}",
         })
             Assert.True(Reason(c) == "Rot Versteckter Befehl", $"{c} → {Reason(c)}");
-        // Schutz vor Fehlalarm bleibt: echo/rem als erstes Befehlswort, auch im inneren cmd /c und in Klammern/Anführungszeichen
+        // T-0757 Fix3: Die echo/rem-Ausnahme ist entfallen. Diese Fälle starten PowerShell nicht, sind aber bewusst rot (Fehlalarm auf der sicheren Seite,
+        // weil sich die Ausnahme wiederholt umgehen ließ).
         foreach (var c in new[]
         {
             $"{cmd} /c echo powershell -e {B64}",
@@ -48,7 +49,7 @@ public class T0757Fix2Tests(ITestOutputHelper output)
             $"{cmd} /c echo \"powershell -enc {B64}\" > notiz.txt",
             $"{Sys("forfiles.exe")} /p C:\\Windows /m win.ini /c \"cmd /c echo powershell -enc {B64}\"",
         })
-            Assert.False(Reason(c) == "Rot Versteckter Befehl", $"{c} → {Reason(c)}");
+            Assert.True(Reason(c) == "Rot Versteckter Befehl", $"{c} → {Reason(c)}");
     }
 
     [Fact(DisplayName = "T-0757 Fix2 NIEDRIG 2: Verschleierung mit Anführungszeichen und „/“ am Programmnamen ist rot")]

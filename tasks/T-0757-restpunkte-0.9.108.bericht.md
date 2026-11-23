@@ -91,3 +91,26 @@ Rot-Grün:
 - App T0755_Ui, SPEC12_Ui, ConsolePort_Ui: 8/8 (`fix2-gruen-app.log`).
 
 Geändert in Fix2: `src/Trendo.Core/Sys/Gefahren.cs`, `src/Trendo.Core/ConsolePort/FreePort.cs`, `tests/Trendo.Core.Tests/T0757Fix2Tests.cs` (neu), `reports/T-0757/fix2-*`, dieser Bericht.
+
+## Drittprüfung behoben (Stand nach fbedfc5f0)
+
+Entscheidung des Koordinators: Die echo/rem-Ausnahme fällt ganz weg.
+
+| Befund | Lösung | Test (Rot auf fbedfc5f0, grün jetzt) |
+|---|---|---|
+| Umgehungen der echo/rem-Ausnahme: `cmd /c echo\..\WindowsPowerShell\v1.0\powershell.exe -enc …`, dasselbe mit `rem\..\` und nach `cd /d … &&`, `for %a in ( cmd /c echo ) do powershell -enc …`, `if 1==0 ( cmd /c echo ) else powershell -enc …` | `NotRun`/`IsEchoed` entfernt. Bei echo und rem gilt wieder das Verhalten von main: `powershell … -enc` irgendwo im Befehl ist rot | `T0757Fix3Tests.Echo_umgehungen_rot` (5 Fälle) |
+| `--shell`-Ausnahme zu weit (`-shell`, `/shell:`, mit Pfad) | Nur noch `--shell powershell` bzw. `--shell=powershell` (auch `pwsh`), ohne Pfad und ohne `.exe`, und danach kein weiterer Befehl (kein `& \| ;` oder Zeilenumbruch) | `T0757Fix3Tests.Shell_ausnahme_eng` |
+| Echtlauf | 174 Einträge, Rot 15 · Gelb 58 · Grün 101, Gründe gleich – kein neuer roter Eintrag | `reports/T-0757/fix3-spec12-systempruefung-echt.txt` (echt, nur Zählungen) |
+
+**Bewusster Fehlalarm, sichere Seite:** `cmd /c echo powershell -enc …`, `cmd /c rem powershell -enc …`, `@echo`, `(echo …)`, `"echo …"`, `echo "powershell …" > datei` und `forfiles /c "cmd /c echo powershell -enc …"` starten PowerShell nicht, sind aber jetzt rot „Versteckter Befehl“. Die Ausnahme ließ sich in drei Prüfrunden immer wieder umgehen (Fenstertitel, Variablen, `;`, Pfad `echo\..\`, `for`/`if` mit innerem `cmd /c echo`); ein seltener Fehlalarm bei einem Autostart-Eintrag, der nur Text ausgibt, ist das kleinere Risiko. Die bisherigen Fehlalarm-Schutz-Tests sind deshalb ehrlich umgestellt (jetzt Erwartung rot): `T0757Fix1Tests.Mittel_andere_startprogramme_rot` (echo, rem), `T0757Fix2Tests.Mittel_echo_nur_als_erstes_wort` (8 Fälle), `T0757NeuTests.C_breit_mit_ausnahmen` (3 Fälle), `T0757RestpunkteTests.C_kein_fehlalarm` (2 Fälle). Kein anderer Test wurde abgeschwächt. Weiter nicht rot bleiben `dotnet tool --shell powershell -e …`, `node -e <Base64>`, `cmd /c echo.powershell …` (kein PowerShell-Aufruf erkannt, wie auf main) und `cmd /c echo powershell & node -e …` (T0755 Fix5, kein verschlüsselter Befehl nach PowerShell).
+
+Unverändert aus Fix1/Fix2: breite Erkennung ohne Liste der Startprogramme, cmd-Trenner `@ , ; = ( )`, `^`-Entfernung, Verschleierung (`""`, Anführungszeichen im Wort, `/` als Namensende, `/q/cpowershell`), Lizenzregeln, R3.
+
+Nicht aufgenommen: `/shell:powershell -enc …` ist weiter nicht rot – `:` ist (wie auf main) keine Grenze für die Erkennung; das ist kein Rückschritt gegenüber main.
+
+Rot-Grün:
+- `T0757Fix3Tests` auf fbedfc5f0: 2 Tests, 2 Fehler (`reports/T-0757/fix3-rot-auf-fbedfc5f0-core.log`).
+- Core (T0757*, FreePortTests, ConsolePortTests, T0754*, T0755*, NoFixedUser, OsBehaviorTests, W7Tests): 115, bestanden 111, übersprungen 4 (nur Linux), Fehler 0 (`fix3-gruen-core.log`).
+- App T0755_Ui, SPEC12_Ui: 4/4 (`fix3-gruen-app.log`).
+
+Geändert in Fix3: `src/Trendo.Core/Sys/Gefahren.cs`, `tests/Trendo.Core.Tests/T0757Fix3Tests.cs` (neu), `T0757Fix1Tests.cs`, `T0757Fix2Tests.cs`, `T0757NeuTests.cs`, `T0757RestpunkteTests.cs` (Erwartungen echo/rem → rot), `reports/T-0757/fix3-*`, dieser Bericht.

@@ -1,0 +1,22 @@
+T-0757 Fix3 SPEC-12 Echtlauf (Systemprüfung „Gefahren prüfen“), Windows 11, nur lesend, 24.11.2026 00:07. Nur Zählungen – keine Programmnamen oder Pfade.
+Kein winget, msiexec oder choco gestartet; die Registry wurde nur gelesen.
+Vorher (main 24bb4f70e, d456edd43, a9135704d, fbedfc5f0): 174 Einträge, Rot 15 · Gelb 58 · Grün 101.
+
+== nachher: Trendo.Core mit Fix3 (ohne echo/rem-Ausnahme) ==
+Systempruefung (nur lesend) - Dauer 9,4 s
+Eintraege gesamt: 174 - Rot 15 - Gelb 58 - Gruen 101 - Aufgaben ohne Programmstart: 117
+  Autostart-Ordner: 1 (Rot 0, Gelb 1, Gruen 0)
+  Geplante Aufgabe: 99 (Rot 15, Gelb 13, Gruen 71)
+  Installiertes Programm: 66 (Rot 0, Gelb 39, Gruen 27)
+  Run-Schlüssel: 8 (Rot 0, Gelb 5, Gruen 3)
+  Grund Gültig signiert: 101
+  Grund Datei nicht bestimmbar: 33
+  Grund Verdächtiges Ziel: 14
+  Grund Windows-Werkzeug mit Befehl: 11
+  Grund Herausgeber unbekannt: 6
+  Grund Startet ein Skript: 6
+  Grund Datei fehlt: 1
+  Grund Nicht signiert: 1
+  Grund Nicht prüfbar: 1
+
+Ergebnis: alle Zählungen gleich – kein neuer roter Eintrag.
