@@ -152,19 +152,30 @@ public class T0754DateiRueckgaengigTests
             var r = u.Undo();
             Assert.False(r.Done); Assert.Contains("endgültig gelöscht", r.Message);
             Assert.True(File.Exists(Path.Combine(fremd, "fremd.txt"))); Assert.False(File.Exists(g)); Assert.False(Directory.Exists(g));
-            // b) Wiederholen: Lage im Test-Papierkorb, zurückholen, wiederholen löscht „endgültig“ – Trash liefert dann null, nicht das Wort
-            File.WriteAllText(g, "weg"); var bin = Directory.CreateDirectory(Path.Combine(root, ".Papierkorb")).FullName; var inBin = Path.Combine(bin, "geloescht.txt");
-            File.Move(g, inBin); u.Record(FileUndo.Kind.Papierkorb, g, inBin);
-            Assert.True(u.Undo().Done); Assert.True(File.Exists(g));
+            // b) Wiederholen: erst echt in den Windows-Papierkorb, zurückholen; Wiederholen löscht dann „endgültig“ – Trash liefert null, nicht das Wort
             if (OperatingSystem.IsWindows())
             {
+                File.WriteAllText(g, "weg"); var inBin = fb.Trash(g, FileBrowser.SystemRecycle); Assert.True(fb.IsTrashLocation(inBin), "nicht im Papierkorb: " + inBin);
+                u.Record(FileUndo.Kind.Papierkorb, g, inBin);
+                Assert.True(u.Undo().Done); Assert.True(File.Exists(g)); // eigene Datei ist wieder aus dem Papierkorb heraus
                 r = u.Redo(); Assert.True(r.Done, r.Message); Assert.False(File.Exists(g));
                 Assert.Null(fb.Trash(CreateFile(Path.Combine(root, "ohne.txt")), p => File.Delete(p))); // nicht im Papierkorb gelandet: null statt des Worts
                 r = u.Undo();
                 Assert.False(r.Done); Assert.Contains("endgültig gelöscht", r.Message);
                 Assert.True(File.Exists(Path.Combine(fremd, "fremd.txt"))); Assert.False(File.Exists(g)); Assert.False(Directory.Exists(g));
             }
-            Assert.False(FileBrowser.IsTrashLocation("Papierkorb")); Assert.False(FileBrowser.IsTrashLocation(fremd)); Assert.True(FileBrowser.IsTrashLocation(inBin));
+            // Zweitprüfung 3: nur die echten Papierkorb-Stellen zählen
+            var echt = new FileBrowser(); var test = new FileBrowser { Root = root };
+            Assert.False(echt.IsTrashLocation("Papierkorb")); Assert.False(echt.IsTrashLocation(fremd));
+            Assert.True(test.IsTrashLocation(Path.Combine(root, ".Papierkorb", "a.txt"))); Assert.False(echt.IsTrashLocation(Path.Combine(root, ".Papierkorb", "a.txt")));
+            Assert.False(test.IsTrashLocation(Path.Combine(root, "x", ".Papierkorb", "a.txt")));
+            if (OperatingSystem.IsWindows())
+            {
+                Assert.True(echt.IsTrashLocation(@"C:\$Recycle.Bin\S-X\$RABC.txt"));
+                Assert.False(echt.IsTrashLocation(Path.Combine(root, "$Recycle.Bin", "S-X", "$RABC.txt"))); // nicht unter der Laufwerkswurzel
+                Assert.False(echt.IsTrashLocation(@"C:\$Recycle.Bin\S-X\ABC.txt"));
+                Assert.False(echt.IsTrashLocation(Path.Combine(root, ".Trash", "a.txt")));
+            }
         }
         finally { Environment.CurrentDirectory = cwd; Directory.Delete(root, true); }
     }
@@ -228,6 +239,82 @@ public class T0754DateiRueckgaengigTests
             Assert.Equal(["Verschieben von „x.txt“"], u.UndoList); Assert.Equal(["Verschieben von „y.txt“"], u.RedoList);
             r = u.Undo(); Assert.True(r.Done, r.Message); Assert.True(File.Exists(x)); Assert.False(File.Exists(mx));
             r = u.Redo(); Assert.True(r.Done, r.Message); Assert.True(File.Exists(mx));
+        }
+        finally { Directory.Delete(root, true); }
+    }
+
+    // ---------- Zweitprüfung ----------
+
+    /// <summary>Zweitprüfung 1: Papierkorb auf „sofort löschen“ gestellt oder Element zu groß – nachgebildet über die einstellbare Abfrage.</summary>
+    [Fact(DisplayName = "T-0754 Zweitprüfung 1: „Dateien sofort löschen“ oder größer als der Papierkorb – nichts wird gelöscht, Grund wird genannt")]
+    public void Wuerde_endgueltig_loeschen_nachgebildet()
+    {
+        var root = NewRoot();
+        try
+        {
+            var f = Path.Combine(root, "gross.bin"); File.WriteAllBytes(f, new byte[10]);
+            var nuke = new FileBrowser { Root = root, RecycleBinPolicy = _ => new FileBrowser.BinPolicy(true, null) };
+            var e = Assert.Throws<NoRecycleBinException>(() => nuke.Trash(f)); Assert.Contains("sofort löschen", e.Reason); Assert.True(File.Exists(f));
+            var klein = new FileBrowser { Root = root, RecycleBinPolicy = _ => new FileBrowser.BinPolicy(false, 5) };
+            e = Assert.Throws<NoRecycleBinException>(() => klein.Trash(f)); Assert.Contains("größer als der Papierkorb", e.Reason); Assert.True(File.Exists(f));
+            var ordner = Directory.CreateDirectory(Path.Combine(root, "Ordner")).FullName; File.WriteAllBytes(Path.Combine(ordner, "a.bin"), new byte[4]); File.WriteAllBytes(Path.Combine(ordner, "b.bin"), new byte[4]);
+            Assert.NotNull(klein.TrashProblem(ordner)); // 8 Bytes im Ordner > 5
+            var passt = new FileBrowser { Root = root, RecycleBinPolicy = _ => new FileBrowser.BinPolicy(false, 100) };
+            Assert.Null(passt.TrashProblem(f)); Assert.True(passt.IsTrashLocation(passt.Trash(f))); Assert.False(File.Exists(f));
+            // Rückfrage nennt Grund; Wiederholen wird abgelehnt, wenn es endgültig löschen würde
+            var g = Path.Combine(root, "g.txt"); File.WriteAllText(g, "g");
+            var u = new FileUndo(passt); var t = passt.Trash(g); u.Record(K.Papierkorb, g, t); Assert.True(u.Undo().Done);
+            passt.RecycleBinPolicy = _ => new FileBrowser.BinPolicy(true, null);
+            var r = u.Redo(); Assert.False(r.Done); Assert.Contains("sofort löschen", r.Message); Assert.True(File.Exists(g));
+            if (OperatingSystem.IsWindows()) Assert.Null(FileBrowser.WindowsTrashProblem(Path.Combine(root, "g.txt"))); // echte, nur lesende Abfrage für C: (Voreinstellung)
+        }
+        finally { Directory.Delete(root, true); }
+    }
+
+    /// <summary>Zweitprüfung 1 echt: SystemRecycle direkt auf einem SUBST-Laufwerk löscht nichts mehr still.</summary>
+    [Fact(DisplayName = "T-0754 Zweitprüfung 1: SystemRecycle direkt auf einem echten SUBST-Laufwerk – kein stilles Löschen, Datei bleibt")]
+    public void SystemRecycle_auf_Subst_loescht_nicht()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        var root = NewRoot();
+        var letter = "PONMLKJIHGFEDZYXWVUTSRQ".Select(c => c + ":").First(d => !Directory.Exists(d + "\\"));
+        try
+        {
+            File.WriteAllText(Path.Combine(root, "netz.txt"), "bleibt");
+            Assert.Equal(0, Run("subst", $"{letter} \"{root}\""));
+            try
+            {
+                var viaSubst = Path.Combine(letter + Path.DirectorySeparatorChar, "netz.txt");
+                Assert.True(File.Exists(viaSubst));
+                var e = Assert.Throws<NoRecycleBinException>(() => FileBrowser.SystemRecycle(viaSubst));
+                Assert.Contains("keinen Papierkorb", e.Reason);
+                Assert.True(File.Exists(viaSubst)); Assert.Equal("bleibt", File.ReadAllText(Path.Combine(root, "netz.txt")));
+            }
+            finally { Run("subst", $"{letter} /D"); }
+        }
+        finally { Directory.Delete(root, true); }
+    }
+
+    /// <summary>Zweitprüfung 2: Pfad über 260 Zeichen – im $I-Vermerk steht er mit „\\?\“; Trendo findet ihn trotzdem und holt zurück.</summary>
+    [Fact(DisplayName = "T-0754 Zweitprüfung 2: Langer Pfad (328 Zeichen) – echt in den Papierkorb, als „im Papierkorb“ erkannt, Rückgängig holt zurück")]
+    public void Langer_Pfad_echt()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        var root = NewRoot();
+        try
+        {
+            var dir = root; var i = 0;
+            while (dir.Length < 300) dir = Path.Combine(dir, $"Unterordner-mit-langem-Namen-{i++:00}");
+            Directory.CreateDirectory(dir);
+            var name = new string('d', 328 - dir.Length - 1 - 4) + ".txt"; var f = Path.Combine(dir, name);
+            Assert.Equal(328, f.Length);
+            File.WriteAllText(f, "lang");
+            var fb = new FileBrowser(); var u = new FileUndo(fb, FileBrowser.SystemRecycle);
+            var t = fb.Trash(f, FileBrowser.SystemRecycle);
+            Assert.False(File.Exists(f)); Assert.NotNull(t); Assert.True(fb.IsTrashLocation(t), "nicht erkannt: " + t);
+            u.Record(K.Papierkorb, f, t);
+            var r = u.Undo(); Assert.True(r.Done, r.Message); Assert.Equal("lang", File.ReadAllText(f)); // eigene Datei wieder heraus
+            Assert.Equal(@"C:\a\b.txt", FileBrowser.StripLongPrefix(@"\\?\C:\a\b.txt")); Assert.Equal(@"\\srv\x\b.txt", FileBrowser.StripLongPrefix(@"\\?\UNC\srv\x\b.txt"));
         }
         finally { Directory.Delete(root, true); }
     }

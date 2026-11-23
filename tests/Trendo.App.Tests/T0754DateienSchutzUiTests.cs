@@ -124,4 +124,29 @@ public class T0754DateienSchutzUi
         }
         finally { w.Close(); }
     }
+
+    [AvaloniaFact(DisplayName = "T-0754 Zweitprüfung 4: Gemischte Auswahl – Rückfrage nennt, was endgültig gelöscht wird und was in den Papierkorb geht")]
+    public void Gemischte_Auswahl_wird_genannt()
+    {
+        var (w, _, _) = Ui.Open();
+        try
+        {
+            w.Show("dateien"); Pump();
+            var docs = w.Files.KnownFolders().First(k => k.Id == "dokumente").Path;
+            var netz = Path.Combine(docs, "Netz.txt"); var lokal = Path.Combine(docs, "Lokal.txt"); File.WriteAllText(netz, "n"); File.WriteAllText(lokal, "l");
+            w.FilesGo(docs); Pump();
+            w.Files.RecycleBinCheck = p => !p.EndsWith("Netz.txt", StringComparison.Ordinal);
+            w.FilesClick(netz, KeyModifiers.None); w.FilesClick(lokal, KeyModifiers.Control); Assert.Equal(2, w.FilesSelection.Count);
+            w.FilesTrash(); Pump();
+            var text = w.Find<TextBlock>("fb-nuke-text").Text!;
+            Assert.Contains("1 Element wird endgültig gelöscht", text); Assert.Contains("„Netz.txt“", text); Assert.Contains("keinen Papierkorb", text);
+            Assert.Contains("1 Element geht normal in den Papierkorb", text); Assert.DoesNotContain("„Lokal.txt“", text);
+            Assert.True(File.Exists(netz) && File.Exists(lokal)); // vor dem Ja passiert nichts
+            w.Find<Button>("fb-nuke-yes").Press(); Pump();
+            Assert.False(File.Exists(netz)); Assert.False(File.Exists(lokal));
+            Assert.Contains("liegt im Papierkorb", w.FilesMessage); Assert.Contains("„Netz.txt“ wurde endgültig gelöscht", w.FilesMessage);
+            w.FilesUndo(); Pump(); Assert.True(File.Exists(lokal)); Assert.False(File.Exists(netz)); // nur das Abgelegte kommt zurück
+        }
+        finally { w.Files.RecycleBinCheck = null; w.Close(); }
+    }
 }

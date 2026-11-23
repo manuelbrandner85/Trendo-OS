@@ -43,7 +43,7 @@ public sealed class FileUndo(FileBrowser fb, Action<string>? windowsRecycle = nu
         {
             if (to is not null && kind != Kind.Papierkorb && string.Equals(Path.GetFullPath(from), Path.GetFullPath(to), StringComparison.Ordinal)) continue;
             // Gegenprüfung T-0754: bei „Papierkorb“ zählt nur ein absoluter Pfad in einem echten Papierkorb – nie ein Wort oder ein relativer Pfad
-            var target = kind == Kind.Papierkorb && !(FileBrowser.IsTrashLocation(to) && Exists(to)) ? null : to;
+            var target = kind == Kind.Papierkorb && !(fb.IsTrashLocation(to) && Exists(to)) ? null : to;
             ops.Add(new Op(Path.GetFullPath(from), target is null ? null : Path.GetFullPath(target)) { After = target is null ? null : Take(target) });
         }
         if (ops.Count == 0) return;
@@ -167,7 +167,7 @@ public sealed class FileUndo(FileBrowser fb, Action<string>? windowsRecycle = nu
                 if (!ParentOk(op.To!)) return $"Den Ordner „{Path.GetDirectoryName(op.To)}“ gibt es nicht mehr.";
                 return null;
             case Kind.Papierkorb:
-                if (!fb.HasTrash(op.From)) return $"„{N(op.From)}“ liegt auf einem Laufwerk ohne Papierkorb – Wiederholen würde endgültig löschen.";
+                if (fb.TrashProblem(op.From) is { } why) return $"„{N(op.From)}“: {why} – Wiederholen würde endgültig löschen.";
                 return Same(op.From, op.After);
         }
         return "Unbekannte Aktion.";
@@ -196,7 +196,7 @@ public sealed class FileUndo(FileBrowser fb, Action<string>? windowsRecycle = nu
             case Kind.NeuerOrdner: Directory.CreateDirectory(op.To!); op.After = Take(op.To!); break;
             case Kind.Papierkorb:
                 var r = fb.Trash(op.From, windowsRecycle);
-                op.To = FileBrowser.IsTrashLocation(r) && Exists(r) ? Path.GetFullPath(r!) : null; op.After = op.To is null ? null : Take(op.To); break;
+                op.To = fb.IsTrashLocation(r) && Exists(r) ? Path.GetFullPath(r!) : null; op.After = op.To is null ? null : Take(op.To); break;
         }
     }
 

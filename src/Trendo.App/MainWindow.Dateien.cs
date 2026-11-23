@@ -223,10 +223,21 @@ public partial class MainWindow
     {
         if (_fbSel.Count == 0) return;
         var all = _fbSel.ToList();
-        // Laufwerk ohne Papierkorb (Netz, SUBST, mancher USB-Stick): Löschen wäre endgültig – erst ausdrücklich fragen, vorher nichts anfassen
+        // Löschen wäre endgültig (kein Papierkorb, „sofort löschen“, zu groß) – erst ausdrücklich fragen, vorher nichts anfassen
         var noBin = all.Where(p => !Files.HasTrash(p)).ToList();
         if (noBin.Count > 0) { _fbNukeAsk = all; FilesMessage = ""; Show(FK); return; }
         FilesTrashNow(all, permanentOk: false);
+    }
+
+    /// <summary>T-0754 (Zweitprüfung): Text der Rückfrage – welche Elemente endgültig gelöscht werden (mit Grund) und wie viele in den Papierkorb gehen.</summary>
+    public string FilesNukeText(IReadOnlyList<string> all)
+    {
+        var lost = all.Select(p => (p, why: Files.TrashProblem(p))).Where(x => x.why is not null).ToList();
+        var bin = all.Count - lost.Count;
+        string Names(IEnumerable<string> l) { var n = l.Select(x => $"„{Path.GetFileName(x.TrimEnd('\\', '/'))}“").ToList(); return string.Join(", ", n.Take(5)) + (n.Count > 5 ? $" und {n.Count - 5} weitere" : ""); }
+        var reasons = string.Join("; ", lost.GroupBy(x => x.why).Select(g => $"{g.Key}: {Names(g.Select(x => x.p))}"));
+        var head = lost.Count == 1 ? "1 Element wird endgültig gelöscht und lässt sich nicht rückgängig machen" : $"{lost.Count} Elemente werden endgültig gelöscht und lassen sich nicht rückgängig machen";
+        return $"{head} – {reasons}." + (bin > 0 ? $" {(bin == 1 ? "1 Element geht" : $"{bin} Elemente gehen")} normal in den Papierkorb." : "") + " Fortfahren?";
     }
 
     /// <summary>Antwort auf die Rückfrage „endgültig löschen?“. Nein: nichts passiert.</summary>
@@ -250,7 +261,7 @@ public partial class MainWindow
                     if (permanentOk && !Files.HasTrash(s)) { Files.DeletePermanently(s); gone.Add(s); continue; } // nach ausdrücklichem Ja
                     var t = Files.Trash(s, OperatingSystem.IsWindows() ? FileBrowser.SystemRecycle : null);
                     done.Add((s, t));
-                    if (FileBrowser.IsTrashLocation(t)) binned++; else if (!File.Exists(s) && !Directory.Exists(s)) gone.Add(s);
+                    if (Files.IsTrashLocation(t)) binned++; else if (!File.Exists(s) && !Directory.Exists(s)) gone.Add(s);
                 }
             }
             finally { FilesHistory.Record(FileUndo.Kind.Papierkorb, done); } // T-0754: Lage im Papierkorb merken – „Rückgängig“ holt es von dort zurück
@@ -528,10 +539,10 @@ public partial class MainWindow
         {
             var yesN = new Button { Name = "fb-nuke-yes", Content = "Ja, endgültig löschen", FontSize = 12 }; yesN.Click += (_, _) => FilesNukeAnswer(true);
             var noN = new Button { Name = "fb-nuke-no", Content = "Abbrechen", FontSize = 12, Background = Accent }; noN.Click += (_, _) => FilesNukeAnswer(false);
-            var what = nuke.Count == 1 ? $"„{Path.GetFileName(nuke[0])}“" : $"{nuke.Count} Elemente";
+            var ask = FilesNukeText(nuke);
             var bar = new Border { Name = "fb-nuke-ask", Background = Brush.Parse("#33F87171"), BorderBrush = Brush.Parse("#F87171"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 6), Margin = new Thickness(8, 6),
                 Child = new StackPanel { Spacing = 6, Children = {
-                    new TextBlock { Name = "fb-nuke-text", Text = $"{what}: Auf diesem Laufwerk gibt es keinen Papierkorb. Wird endgültig gelöscht und lässt sich nicht rückgängig machen – fortfahren?", Foreground = Text, TextWrapping = TextWrapping.Wrap },
+                    new TextBlock { Name = "fb-nuke-text", Text = ask, Foreground = Text, TextWrapping = TextWrapping.Wrap },
                     new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { noN, yesN } } } } };
             DockPanel.SetDock(bar, Avalonia.Controls.Dock.Top);
             content = new DockPanel { Children = { bar, content } };
