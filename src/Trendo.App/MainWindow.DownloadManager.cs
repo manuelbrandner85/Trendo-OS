@@ -118,22 +118,26 @@ public partial class MainWindow
         if (_dlMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "dlm-msg", Text = _dlMsg, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap });
 
         var (run, wait, done, fail) = Downloads.Counts;
+        var hist = Downloads.History.Load();
         var tabs = new WrapPanel();
-        foreach (var (id, label) in new[] { ("alle", $"Alle ({Downloads.Jobs.Count})"), ("laeuft", $"Läuft/wartet ({run + wait})"), ("fertig", $"Fertig ({done})"), ("fehler", $"Fehler ({fail})") })
+        foreach (var (id, label) in new[] { ("alle", $"Alle ({Downloads.Jobs.Count})"), ("laeuft", $"Läuft/wartet ({run + wait})"), ("fertig", $"Fertig ({done})"), ("fehler", $"Fehler ({fail})"), ("verlauf", $"Verlauf ({hist.Count})") })
         {
-            var b = Act("dlm-tab-" + id, label, () => { _dlFilter = id; Show("downloads"); }, _dlFilter == id); b.Margin = new Thickness(0, 0, 6, 0); tabs.Children.Add(b);
+            // T-0755: Reiter sind keine Hauptaktion – gewählt = umrandet, nicht gold
+            var b = Act("dlm-tab-" + id, (_dlFilter == id ? "● " : "") + label, () => { _dlFilter = id; Show("downloads"); }); b.Margin = new Thickness(0, 0, 6, 0); tabs.Children.Add(b);
         }
-        if (done > 0) tabs.Children.Add(Act("dlm-clear", "Fertige aus der Liste nehmen", () => { Downloads.ClearFinished(); Show("downloads"); }));
-        if (Downloads.Jobs.Count > 0) sp.Children.Add(tabs);
+        if (done > 0 && _dlFilter != "verlauf") tabs.Children.Add(Act("dlm-clear", "Fertige aus der Liste nehmen", () => { Downloads.ClearFinished(); Show("downloads"); }));
+        if (_dlFilter == "verlauf" && hist.Count > 0) tabs.Children.Add(Act("dlm-hist-clear", "Verlauf leeren", () => { Downloads.History.Clear(); Show("downloads"); }));
+        if (Downloads.Jobs.Count > 0 || hist.Count > 0) sp.Children.Add(tabs);
+        if (_dlFilter == "verlauf") { sp.Children.Add(DownloadHistoryList(hist)); return sp; }
 
         var list = Downloads.Jobs.Where(j => _dlFilter switch { "laeuft" => j.Status is S.Lädt or S.Wartet or S.Angehalten, "fertig" => j.Status == S.Fertig, "fehler" => j.Status == S.Fehler, _ => true }).ToList();
-        if (Downloads.Jobs.Count == 0) sp.Children.Add(P("Noch keine Downloads. Link oben einfügen – Trendo lädt im Hintergrund, auch mehrere gleichzeitig, und macht nach einer Unterbrechung dort weiter.", Muted, 11.5));
+        if (Downloads.Jobs.Count == 0) sp.Children.Add(P("Noch keine Downloads. Link oben einfügen – Trendo lädt im Hintergrund, auch mehrere gleichzeitig, und macht nach einer Unterbrechung dort weiter. Am Ende zeigt Trendo die Prüfsumme (SHA-256).", Muted, 11.5));
         var i = 0;
         foreach (var j in list)
         {
             var id = j.Id; var k = i++;
             var bar = new ProgressBar { Name = $"dlm-bar-{k}", Minimum = 0, Maximum = 100, Value = j.Fraction * 100, Height = 6, IsIndeterminate = j.Status == S.Lädt && j.Total <= 0,
-                Foreground = Brush.Parse(j.Status switch { S.Fertig => "#4ADE80", S.Fehler => "#F87171", S.Angehalten => "#FACC15", _ => "#60A5FA" }) };
+                Foreground = Brush.Parse(j.Status switch { S.Fertig => "#4ADE80", S.Fehler => "#F87171", S.Angehalten => "#FACC15", _ => "#E8C26A" }) };
             var info = new TextBlock { Name = $"dlm-info-{k}", Text = DownloadInfo(j), Foreground = j.Status == S.Fehler ? Brush.Parse("#F87171") : Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap };
             _dlViews[id] = (bar, info);
             var btn = new WrapPanel { HorizontalAlignment = HorizontalAlignment.Right };
@@ -152,8 +156,78 @@ public partial class MainWindow
             var risky = j.Status == S.Fertig && Browsers.Risky(j.Name);
             sp.Children.Add(Card(new StackPanel { Name = $"dlm-job-{k}", Spacing = 4, Children = {
                 Row(new StackPanel { Children = { new TextBlock { Text = j.Name, Foreground = Text, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis }, P(new Uri(j.Url).Host, Muted, 10.5) } }, btn),
-                bar, info,
+                bar, info, DownloadHashView(j, $"dlm-sha-{k}"),
                 risky ? P("⚠ Programmdatei – nur öffnen, wenn du der Quelle vertraust.", Brush.Parse("#FACC15"), 10.5) : new Panel() } }));
+        }
+        return sp;
+    }
+
+    /// <summary>T-0755: SHA-256 der fertigen Datei zum Markieren und Kopieren, dazu der Vergleich mit der angegebenen Prüfsumme.</summary>
+    Control DownloadHashView(DownloadQueue.Job j, string name)
+    {
+        if (j.Sha256 is not { } sha) return new Panel();
+        var sp = new StackPanel { Spacing = 2, Children = { new SelectableTextBlock { Name = name, Text = "SHA-256: " + sha, FontFamily = Mono, FontSize = 11, Foreground = Text, TextWrapping = TextWrapping.Wrap } } };
+        if (j.ExpectedHash is { } exp)
+        {
+            var ok = j.HashResult?.EndsWith("stimmt") == true;
+            sp.Children.Add(new SelectableTextBlock { Name = name + "-vergleich", Text = ok ? $"✓ Stimmt mit deiner Angabe überein ({j.HashResult![..j.HashResult.IndexOf(' ')]})." : $"✗ Stimmt NICHT mit deiner Angabe überein – Datei nicht öffnen.\nAngegeben: {exp}",
+                Foreground = Brush.Parse(ok ? "#4ADE80" : "#F87171"), FontSize = 11, TextWrapping = TextWrapping.Wrap });
+        }
+        else sp.Children.Add(P("Vergleiche diese Prüfsumme mit der Angabe auf der Herstellerseite – oder gib sie beim nächsten Mal oben mit ein.", Muted, 10.5));
+        return sp;
+    }
+
+    /// <summary>T-0755: Verlauf – auch Downloads, die schon aus der Liste genommen sind.</summary>
+    Control DownloadHistoryList(List<DownloadHistory.Entry> hist)
+    {
+        var sp = new StackPanel { Name = "dlm-history", Spacing = 4 };
+        if (hist.Count == 0) { sp.Children.Add(P("Der Verlauf ist leer. Hier steht jeder beendete Download mit Datum, Größe und Prüfsumme.", Muted, 11.5)); return sp; }
+        var i = 0;
+        foreach (var h in hist.Take(100))
+        {
+            var k = i++; var e = h; var exists = File.Exists(h.Target);
+            var btn = new WrapPanel { HorizontalAlignment = HorizontalAlignment.Right };
+            if (exists) { var o = Act($"dlm-hist-open-{k}", "Ordner", () => Launch(Path.GetDirectoryName(e.Target)!)); o.FontSize = 11; btn.Children.Add(o); }
+            if (!_core.Offline) { var a = Act($"dlm-hist-again-{k}", "Erneut laden", () => { DownloadAdd(e.Url, e.Expected); _dlFilter = "alle"; Show("downloads"); }); a.FontSize = 11; a.Margin = new Thickness(4, 0, 0, 0); btn.Children.Add(a); }
+            string Host() { try { return new Uri(e.Url).Host; } catch (UriFormatException) { return e.Url; } }
+            sp.Children.Add(Card(new StackPanel { Name = $"dlm-hist-{k}", Spacing = 2, Children = {
+                Row(new StackPanel { Children = { new TextBlock { Text = (h.Ok ? "✓ " : "✗ ") + h.Name, Foreground = Text, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
+                    P($"{h.At:dd.MM.yyyy HH:mm} · {Host()} · {ResourceMonitor.Size(h.Bytes)}{(exists ? "" : " · Datei nicht mehr im Ordner")}", Muted, 10.5) } }, btn),
+                h.Sha256 is { } s ? new SelectableTextBlock { Text = "SHA-256: " + s, FontFamily = Mono, FontSize = 10.5, Foreground = Muted, TextWrapping = TextWrapping.Wrap } : new Panel(),
+                h.Ok ? new Panel() : P(h.Message, Brush.Parse("#F87171"), 10.5) } }));
+        }
+        return sp;
+    }
+
+    // ---------- T-0755: Links sammeln ----------
+    string _linksMsg = "";
+
+    /// <summary>Links aus eingefügtem Text sammeln (z. B. aus einer Mail oder Webseite), im Standard-Browser öffnen oder herunterladen.
+    /// Gespeichert in den Lesezeichen (Ordner „Gesammelt“) – Export als HTML wie bisher unter „Links & Webseiten“.</summary>
+    Control LinksPanel()
+    {
+        var sp = new StackPanel { Name = "links", Spacing = 6, Margin = new Thickness(0, 8, 0, 0), Children = { H("Links sammeln", 15) } };
+        var box = new TextBox { Name = "links-text", PlaceholderText = "Text mit Links einfügen – Trendo holt alle Adressen heraus", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 34, MaxHeight = 90, Width = 520 };
+        var go = Act("links-collect", "Links sammeln", () =>
+        {
+            var n = Bookmarks.Collect(_core.DataRoot, box.Text ?? "");
+            _linksMsg = n == 0 ? (DownloadQueue.ParseLinks(box.Text ?? "").Count == 0 ? "Keine http- oder https-Adresse gefunden." : "Diese Links sind schon gesammelt.") : n == 1 ? "1 Link gesammelt." : $"{n} Links gesammelt.";
+            if (n > 0) _core.Audit.Append(Principal.LocalOwner.Name, "links.collect", $"{n} Link(s)");
+            Show("downloads");
+        });
+        sp.Children.Add(new WrapPanel { Children = { box, new Border { Width = 6 }, go } });
+        if (_linksMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "links-msg", Text = _linksMsg, Foreground = Text, FontSize = 12 });
+        var links = Bookmarks.Load(_core.DataRoot).Where(b => b.Folder == Bookmarks.Collected).ToList();
+        if (links.Count == 0) sp.Children.Add(P("Noch keine gesammelten Links.", Muted, 11));
+        var i = 0;
+        foreach (var l in links.AsEnumerable().Reverse().Take(50))
+        {
+            var k = i++; var url = l.Url;
+            var btn = new WrapPanel { HorizontalAlignment = HorizontalAlignment.Right };
+            void B(string n, string t, Action a) { var b = Act($"links-{n}-{k}", t, a); b.FontSize = 11; b.Margin = new Thickness(0, 0, 4, 0); btn.Children.Add(b); }
+            if (!_core.Offline) { B("open", "Im Browser öffnen", () => Launch(url)); B("load", "Herunterladen", () => { DownloadAdd(url); Show("downloads"); }); }
+            B("remove", "✕", () => { Bookmarks.Remove(_core.DataRoot, url); Show("downloads"); });
+            sp.Children.Add(Row(new StackPanel { Name = $"links-row-{k}", Children = { new TextBlock { Text = l.Title, Foreground = Text, FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis }, new SelectableTextBlock { Text = url, Foreground = Muted, FontSize = 10.5 } } }, btn));
         }
         return sp;
     }

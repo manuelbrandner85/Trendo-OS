@@ -1,0 +1,39 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    SYS-03 (UI): Tabs; Prüfsumme rot/grün; Link-Warnung; Suchmaschine wirkt in Strg+K; Webnotiz in der Suche [STARTING]
+    SYS-03 (UI): Tabs; Prüfsumme rot/grün; Link-Warnung; Suchmaschine wirkt in Strg+K; Webnotiz in der Suche [FINISHED] Time: 1,6597193s
+    SPEC-12 UI: Prüfsumme vergleichen, Fall anlegen, Beweis sichern, Bericht [STARTING]
+    SYS-03-P07: Download abbrechen und fortsetzen ergibt dieselbe Prüfsumme (lokaler Testserver) [STARTING]
+    SYS-03-P07: Download abbrechen und fortsetzen ergibt dieselbe Prüfsumme (lokaler Testserver) [FINISHED] Time: 0,1382138s
+    SPEC-12 UI: Prüfsumme vergleichen, Fall anlegen, Beweis sichern, Bericht [FINISHED] Time: 0,7526891s
+    T-0681 Abläufe UI: fehlgeschlagener Lauf steht mit Fehlerstand am Ablauf; beschädigte Ablaufdatei wird auf der Seite gemeldet [STARTING]
+    T-0681 Abläufe UI: fehlgeschlagener Lauf steht mit Fehlerstand am Ablauf; beschädigte Ablaufdatei wird auf der Seite gemeldet [FINISHED] Time: 0,4644452s
+    SYS-04 UI: Suchen, installieren, Updates anzeigen und aktualisieren, entfernen [STARTING]
+    SYS-04 UI: Suchen, installieren, Updates anzeigen und aktualisieren, entfernen [FINISHED] Time: 1,1585223s
+    Download-Manager: mehrere Links auf einmal, höchstens N gleichzeitig, Fortschritt, Anhalten/Fortsetzen, Prüfsumme falsch → Fehler; ohne Netz (nachgebildet) [STARTING]
+    Download-Manager: mehrere Links auf einmal, höchstens N gleichzeitig, Fortschritt, Anhalten/Fortsetzen, Prüfsumme falsch → Fehler; ohne Netz (nachgebildet) [FINISHED] Time: 3,3208285s
+    SYS-03: Dock-Browser öffnet Browser & Downloads; Adresse wird geöffnet, javascript: abgelehnt; offline gesperrt [STARTING]
+    SYS-03: Dock-Browser öffnet Browser & Downloads; Adresse wird geöffnet, javascript: abgelehnt; offline gesperrt [FINISHED] Time: 0,6847014s
+    T-0755 SYS-03 UI: „Downloads & Links“ – echter HTTP-Download (lokaler Testserver) zeigt SHA-256, vergleicht mit der Angabe, Anhalten/Fortsetzen, Verlauf bleibt; Links sammeln und im Standard-Browser öffnen [STARTING]
+    T-0755 SYS-03 UI: „Downloads & Links“ – echter HTTP-Download (lokaler Testserver) zeigt SHA-256, vergleicht mit der Angabe, Anhalten/Fortsetzen, Verlauf bleibt; Links sammeln und im Standard-Browser öffnen [FINISHED] Time: 4,6560758s
+    T-0681 App-Center: auch Entfernen und Aktualisieren fragen vorher; die Rückfrage nennt Programm und Vorgang; Nein ändert nichts [STARTING]
+    T-0681 App-Center: auch Entfernen und Aktualisieren fragen vorher; die Rückfrage nennt Programm und Vorgang; Nein ändert nichts [FINISHED] Time: 0,6171905s
+    Lernplan: Plan mit Prüfungstermin anlegen → Tagesplan mit Ziel, Kalender mit Prüfungstag; „Jetzt lernen“ lernt in Plan-Reihenfolge und hält das Tempo [STARTING]
+    Lernplan: Plan mit Prüfungstermin anlegen → Tagesplan mit Ziel, Kalender mit Prüfungstag; „Jetzt lernen“ lernt in Plan-Reihenfolge und hält das Tempo [FINISHED] Time: 0,5292608s
+    T-0755 SYS-04 UI (ERSETZT: Testprogramm statt winget): Rückfrage zeigt den Befehl; Lauf zeigt Befehl, Fortschritt und Ausgabe live, schreibt ein Protokoll und prüft nach; Abbrechen beendet den Lauf [STARTING]
+    T-0755 SYS-04 UI (ERSETZT: Testprogramm statt winget): Rückfrage zeigt den Befehl; Lauf zeigt Befehl, Fortschritt und Ausgabe live, schreibt ein Protokoll und prüft nach; Abbrechen beendet den Lauf [FINISHED] Time: 1,812022s
+    T-0681 Sicherung UI: gesperrte Datei → „Unvollständig“ in Meldung und Liste; beschädigte Sicherung steht als solche da und wird beim Wiederherstellen übersprungen [STARTING]
+    T-0681 Sicherung UI: gesperrte Datei → „Unvollständig“ in Meldung und Liste; beschädigte Sicherung steht als solche da und wird beim Wiederherstellen übersprungen [FINISHED] Time: 0,4122505s
+    T-0755 SPEC-12 UI (echte Dateien, echte Signaturprüfung): „System prüfen“ zeigt Ampel, Datei, Herausgeber, Erklärung; Filter; Bericht als HTML/CSV; nichts wird verändert [STARTING]
+    T-0755 SPEC-12 UI (echte Dateien, echte Signaturprüfung): „System prüfen“ zeigt Ampel, Datei, Herausgeber, Erklärung; Filter; Bericht als HTML/CSV; nichts wird verändert [FINISHED] Time: 0,9895355s
+    T-0681 Code-Editor: „Ausführen“ läuft im Hintergrund – Klick kehrt sofort zurück, Ausgabe erscheint laufend, die Seite bleibt bedienbar, „Abbrechen“ beendet den eigenen Kindprozess [STARTING]
+    T-0681 Code-Editor: „Ausführen“ läuft im Hintergrund – Klick kehrt sofort zurück, Ausgabe erscheint laufend, die Seite bleibt bedienbar, „Abbrechen“ beendet den eigenen Kindprozess [FINISHED] Time: 0,8369126s
+    T-0681 App-Center: Installieren fragt in einem eigenen Fenster nach (was, woher, Größe) – ohne Bestätigung passiert nichts, Ablehnen steht im Protokoll, erst „Installieren“ installiert [STARTING]
+    T-0681 App-Center: Installieren fragt in einem eigenen Fenster nach (was, woher, Größe) – ohne Bestätigung passiert nichts, Ablehnen steht im Protokoll, erst „Installieren“ installiert [FINISHED] Time: 0,9099677s
+    T-0681 Podcast: fehlt FFmpeg, nennt die Meldung den Einrichten-Weg – und „Lautheit angleichen“ geht danach weiter (Merker nicht hängen geblieben) [STARTING]
+    T-0681 Podcast: fehlt FFmpeg, nennt die Meldung den Einrichten-Weg – und „Lautheit angleichen“ geht danach weiter (Merker nicht hängen geblieben) [FINISHED] Time: 1,102904s
+  Finished:    Trendo.App.Tests (ID = '55e4a41658602614e0303e126ea9137a8c59d89c7a9067162d9f76cfa1c20751')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 16, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 20,170s

@@ -212,7 +212,7 @@ public sealed partial class MainWindow
         ["produktion"] = "Ein Ablauf verbindet mehrere Studios. Du siehst zuerst den Plan und gibst ihn frei, bevor Trendo etwas ausführt.",
         ["ki-bibliothek"] = "Kostenlose KI nach Arten: Chat, Bilder, Videos, Sprache, Vorlesen und mehr. Laden mit einem Klick, ausprobieren direkt hier.",
         ["ki-quellen"] = "Trendo sucht kostenlose KI auf diesem PC. Die Reihenfolge bestimmst du. Ein Modell wird nur geladen, wenn du zustimmst.",
-        ["downloads"] = "Gib eine Adresse oder einen Suchbegriff ein und wähle den Browser. Darunter siehst du deine neuesten Downloads – Programmdateien sind markiert.",
+        ["downloads"] = "Link einfügen und herunterladen – Trendo zeigt die Prüfsumme (SHA-256) und vergleicht sie mit deiner Angabe. Links sammelst du unten; Webseiten öffnen sich in deinem Standard-Browser.",
         ["akten"] = "Eine Akte hält alles zu einer Sache zusammen: Fakten, Ablauf, Anlagen, Fristen, Quellen und Eingangspost. Lege für jede Angelegenheit eine an.",
         ["akte"] = "Trag hier ein, was belegt ist, was du nur vermutest und was offen ist. Trendo fragt nach, statt etwas zu erfinden. Fristen gelten erst, wenn du sie mit Quelle bestätigst.",
         ["ausgabe"] = "Prüfen, Ton wählen, als Word/ODT/PDF ausgeben und freigeben. Trendo verschickt nie selbst – du sendest, und trägst danach den Nachweis ein.",
@@ -396,7 +396,7 @@ public sealed partial class MainWindow
     }
 
     private static readonly List<(string Id, string Label)> DockIds =
-        [("start", "Start"), ("files", "Dateien"), ("browser", "Browser"), ("mail", "E-Mail"), ("ki", "Trendo KI"), ("media", "Medien"), ("settings", "Einstellungen"),
+        [("start", "Start"), ("files", "Dateien"), ("browser", "Downloads & Links"), ("mail", "E-Mail"), ("ki", "Trendo KI"), ("media", "Medien"), ("settings", "Einstellungen"),
          ("blender", "Blender"), ("unreal", "Unreal"), ("components", "Hinzufügen"), ("code", "Web & App"), ("office", "Office"), ("security", "Sicherheit")];
 
     private Control OrderList(string prefix, List<(string Id, string Label)> items, List<string> order, Action<List<string>> set)

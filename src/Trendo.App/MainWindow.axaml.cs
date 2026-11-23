@@ -569,7 +569,7 @@ public sealed partial class MainWindow : Window
         var apps = new List<DockApp>
         {
             new("files", Mdi.Folder, "#FFD54F", "#F9A825", "Dateien", () => Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)),
-            new("browser", Mdi.Web, "#4FC3F7", "#1565C0", "Browser", () => _core.Offline ? null : "https://github.com/manuelbrandner85/Trendo-OS"),
+            new("browser", Mdi.Web, "#4FC3F7", "#1565C0", "Downloads & Links", () => _core.Offline ? null : "https://github.com/manuelbrandner85/Trendo-OS"),
             new("mail", Mdi.Email, "#42A5F5", "#1565C0", "E-Mail", () => _core.Offline ? null : "mailto:"),
             new("ki", Mdi.StarFourPoints, "#5C9DFF", "#283593", "Trendo KI", () => null),
             new("media", Mdi.Image, "#64B5F6", "#1E40AF", "Medien", () => null),

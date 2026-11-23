@@ -18,7 +18,7 @@ public partial class MainWindow
     {
         _showMap["forensik"] = ForensicsView; SysTabs.Add(("forensik", "Sicherheits-Werkzeuge"));
         StudioPages["SPEC-12"] = "forensik";
-        ExtraPages.Add(("Sicherheits-Werkzeuge & Beweise", "forensik", ["forensik", "pruefsumme", "hash", "sha256", "beweis", "port", "hacker", "virus"]));
+        ExtraPages.Add(("Sicherheits-Werkzeuge & Beweise", "forensik", ["forensik", "pruefsumme", "hash", "sha256", "beweis", "port", "hacker", "virus", "autostart", "signatur", "gefahren", "systemprüfung", "geplante aufgaben"]));
         var n = Lab.PurgeExpired(); if (n > 0) _forMsg = $"{n} abgelaufene(r) Fall/Fälle wurde(n) gelöscht (nach 120 Stunden).";
     }
 
@@ -30,7 +30,7 @@ public partial class MainWindow
     {
         var sp = new StackPanel { Spacing = 6 };
         var file = new TextBox { Name = "for-file", PlaceholderText = "Datei", Width = 320 }; var exp = new TextBox { Name = "for-expected", PlaceholderText = "Prüfsumme vom Hersteller (optional)", Width = 320 };
-        var calc = new Button { Name = "for-hash", Content = "Prüfen", Background = Accent };
+        var calc = new Button { Name = "for-hash", Content = "Prüfen" }; // T-0755: goldene Hauptaktion der Seite ist „System prüfen“
         calc.Click += async (_, _) =>
         {
             var f = file.Text?.Trim().Trim('"') ?? ""; var e = exp.Text ?? "";
@@ -39,6 +39,7 @@ public partial class MainWindow
             _hashOut = e.Trim() == "" ? $"SHA-256: {h}" : string.Equals(h, e.Trim().Replace(" ", ""), StringComparison.OrdinalIgnoreCase) ? $"✓ Stimmt überein. Die Datei ist unverändert.\n{h}" : $"⚠ Stimmt NICHT überein. Datei nicht öffnen und neu laden.\n{h}";
             Show("forensik");
         };
+        sp.Children.Add(SystemScanCard()); // T-0755: Autostart, Aufgaben, Programme mit Signatur und Ampel – nur lesen
         // Y4 (07.11.2026): drei Werkzeug-Karten statt Überschriften-Liste
         sp.Children.Add(ToolCard("for-card-file", Mdi.ShieldSearch, "#8FC2FF", "#2F6FE0", "Datei prüfen", "Vergleiche die Prüfsumme (SHA-256) eines Downloads mit der Angabe des Herstellers. Stimmt sie, ist die Datei unverändert.",
             new WrapPanel { Children = { MSp(file), MSp(exp), MSp(calc) } }, new SelectableTextBlock { Name = "for-hash-out", Text = _hashOut, Foreground = Text, TextWrapping = TextWrapping.Wrap }));

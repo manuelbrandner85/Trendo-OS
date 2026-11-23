@@ -6,7 +6,7 @@ using Trendo.Core;
 
 namespace Trendo.App;
 
-/// <summary>Welle 1: SYS-03 Browser & Downloads.</summary>
+/// <summary>Welle 1: SYS-03 Downloads & Links (T-0755: ehrlicher Name – Trendo hat keinen eigenen Browser).</summary>
 public partial class MainWindow
 {
     private Control DownloadsView()
@@ -27,15 +27,17 @@ public partial class MainWindow
             msg.Text = $"Geöffnet: {u.Host}";
         }
         url.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) Go(null); };
-        var std = new Button { Name = "web-open", Content = "Im Standardbrowser öffnen", Background = Accent, Margin = new Thickness(0, 0, 6, 6), IsEnabled = !_core.Offline };
+        // T-0755: genau eine goldene Hauptaktion je Ansicht – das ist „Herunterladen“; Webseiten öffnen sich im installierten Browser
+        var std = new Button { Name = "web-open", Content = "Im Standard-Browser öffnen", Margin = new Thickness(0, 0, 6, 6), IsEnabled = !_core.Offline };
         std.Click += (_, _) => Go(null); row.Children.Add(std);
         foreach (var b in browsers)
         {
-            var btn = new Button { Name = "web-" + b.Id, Content = b.Name, Margin = new Thickness(0, 0, 6, 6), IsEnabled = !_core.Offline };
+            var btn = new Button { Name = "web-" + b.Id, Content = "In " + b.Name, Margin = new Thickness(0, 0, 6, 6), IsEnabled = !_core.Offline };
             btn.Click += (_, _) => Go(b.Path); row.Children.Add(btn);
         }
-        sp.Children.Add(new StackPanel { Spacing = 6, Children = { H("Internet", 15), url, row, msg,
-            P(browsers.Count == 0 ? "Kein bekannter Browser gefunden – der Windows-Standard wird benutzt." : $"Gefunden: {string.Join(", ", browsers.Select(b => b.Name))}. Suchbegriffe gehen an {Trendo.Core.Sys.Web.Engines.First(e => e.Id == Trendo.Core.Sys.Web.Engine(_core.DataRoot)).Name} (änderbar unter „Netz & Sicherheit“).", null, 11) } });
+        sp.Children.Add(new StackPanel { Spacing = 6, Children = { H("Webseite öffnen", 15), P("Trendo hat keinen eigenen Browser: Die Seite öffnet sich in deinem installierten Browser.", Muted, 11), url, row, msg,
+            P(browsers.Count == 0 ? "Kein bekannter Browser gefunden – der Windows-Standard wird benutzt." : $"Gefunden: {string.Join(", ", browsers.Select(b => b.Name))}. Suchbegriffe gehen an {Trendo.Core.Sys.Web.Engines.First(e => e.Id == Trendo.Core.Sys.Web.Engine(_core.DataRoot)).Name} (änderbar unter „Links & Webseiten“).", null, 11) } });
+        sp.Children.Add(LinksPanel()); // T-0755: Links sammeln
 
         var dl = Browsers.DownloadsFolder();
         var files = FileShelf.Recent([dl], null, 30, depth: 0);
@@ -53,6 +55,6 @@ public partial class MainWindow
             else if (Browsers.Risky(f.Name)) sp.Children.Add(new StackPanel { Children = { r, P("   ⚠ Programmdatei – nur öffnen, wenn du der Quelle vertraust", Brush.Parse("#FACC15"), 10.5) } });
             else sp.Children.Add(r);
         }
-        return AppsPage("Browser & Downloads", sp);
+        return AppsPage("Downloads & Links", sp);
     }
 }

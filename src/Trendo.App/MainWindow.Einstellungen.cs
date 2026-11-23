@@ -14,7 +14,7 @@ public partial class MainWindow
     [
         ("System", "⚙", [("settings", "Darstellung & Sprache"), ("personen", "Personen & Konten"), ("bedien-sehen", "Sehen & Bedienhilfen"), ("updates", "Trendo-Updates"), ("lizenz", "Konto, Lizenz & Vollversion"), ("modus", "Betriebsmodus")]),
         ("Geräte", "🖥", [("geraete", "Geräte & Laufwerke"), ("handy", "Handy verbinden"), ("verbund", "Geräteverbund"), ("teilen", "Im Heimnetz teilen")]),
-        ("Programme", "▦", [("apps", "Apps"), ("appcenter", "Programme verwalten"), ("hinzufuegen", "Hinzufügen"), ("prog-pflege", "Pflegen & Aktualisieren"), ("components", "Zusatzprogramme"), ("downloads", "Downloads")]),
+        ("Programme", "▦", [("apps", "Apps"), ("appcenter", "Programme verwalten"), ("hinzufuegen", "Hinzufügen"), ("prog-pflege", "Pflegen & Aktualisieren"), ("components", "Zusatzprogramme"), ("downloads", "Downloads & Links")]),
         ("Datenschutz & Sicherheit", "🛡", [("schutz", "Schutz & Datenschutz"), ("approvals", "Freigaben"), ("sicherung", "Sicherung"), ("heilung", "Selbstheilung"), ("netz-pruefen", "Sicher prüfen"), ("forensik", "Sicherheits-Werkzeuge"), ("system", "Protokoll & Abstürze")]),
         ("Zustand & Leistung", "📈", [("hardware", "Hardware & Leistung"), ("ressourcen", "Speicher & Leistung"), ("qual-leistung", "Leistung messen"), ("systemcheck", "Systemcheck"), ("qualitaet", "Qualitäts-Ampel"), ("fortschritt", "Bau-Fortschritt")]),
     ];

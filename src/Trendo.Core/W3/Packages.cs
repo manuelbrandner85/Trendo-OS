@@ -1,3 +1,6 @@
+using System.Globalization;
+using System.Text.RegularExpressions;
+
 namespace Trendo.Core;
 
 public sealed record PackageInfo(string Name, string Id, string Version, string? Available = null, string Source = "");
@@ -13,7 +16,15 @@ public interface IPackageBackend
     Task<(bool Ok, string Log)> InstallAsync(string id, Action<string>? line = null, CancellationToken ct = default);
     Task<(bool Ok, string Log)> UpgradeAsync(string id, Action<string>? line = null, CancellationToken ct = default);
     Task<(bool Ok, string Log)> UninstallAsync(string id, Action<string>? line = null, CancellationToken ct = default);
+    /// <summary>T-0755: der genaue Befehl, den Trendo für diese Änderung startet – wird vorher und während des Laufs angezeigt.</summary>
+    string CommandLine(string action, string id) => $"{Exe} {action} {id}";
+    /// <summary>T-0755: Nachprüfung nach dem Lauf – steht das Paket in der Liste der installierten Programme? null = nicht prüfbar.</summary>
+    async Task<bool?> IsInstalledAsync(string id, CancellationToken ct = default) =>
+        (await InstalledAsync(ct)).Any(p => string.Equals(p.Id, id, StringComparison.OrdinalIgnoreCase));
 }
+
+/// <summary>T-0755: Paketverwaltung, die den Rückgabewert (Exitcode) des letzten Laufs nennt.</summary>
+public interface IPackageExitCode { int? LastExitCode { get; } }
 
 public static class PackageParsers
 {
@@ -47,42 +58,108 @@ public static class PackageParsers
 
     private static string? NullIfEmpty(string s) => s.Length == 0 ? null : s;
 
+    /// <summary>T-0755: Steht die Paket-ID in einer winget-Liste (Ausgabe von „winget list --id … -e“)? „Nichts gefunden“ → false.</summary>
+    public static bool ListedIn(string wingetListOutput, string id) =>
+        ParseWinget(wingetListOutput).Any(p => string.Equals(p.Id, id, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>T-0755: Fortschritt aus einer Ausgabezeile von winget (0–1) – „12.0 MB / 40.0 MB“ oder „45%“. Zeilen mit \r: das letzte Stück zählt.</summary>
+    public static double? Progress(string line)
+    {
+        var l = CleanLine(line);
+        var m = Regex.Match(l, @"(\d+(?:[.,]\d+)?)\s*(B|KB|MB|GB)\s*/\s*(\d+(?:[.,]\d+)?)\s*(B|KB|MB|GB)", RegexOptions.IgnoreCase);
+        static double Bytes(string n, string u) => double.Parse(n.Replace(',', '.'), CultureInfo.InvariantCulture) * u.ToUpperInvariant() switch { "KB" => 1e3, "MB" => 1e6, "GB" => 1e9, _ => 1 };
+        if (m.Success) { var t = Bytes(m.Groups[3].Value, m.Groups[4].Value); return t <= 0 ? null : Math.Clamp(Bytes(m.Groups[1].Value, m.Groups[2].Value) / t, 0, 1); }
+        var p = Regex.Match(l, @"(?<![\d.,])(\d{1,3})\s*%");
+        return p.Success && int.Parse(p.Groups[1].Value, CultureInfo.InvariantCulture) is var v and <= 100 ? v / 100.0 : null;
+    }
+
+    /// <summary>T-0755: Ausgabezeile lesbar machen – nur das Stück nach dem letzten \r, ohne Rückschritt-Zeichen (Drehsymbol).</summary>
+    public static string CleanLine(string line)
+    {
+        var l = line.TrimEnd('\r', '\n');
+        var r = l.LastIndexOf('\r'); if (r >= 0) l = l[(r + 1)..];
+        var b = l.LastIndexOf('\b'); if (b >= 0) l = l[(b + 1)..];
+        return l.TrimEnd();
+    }
+
+    /// <summary>T-0755: bekannte Rückgabewerte von winget in Alltagssprache (sonst nur die Zahl).</summary>
+    public static string ExitText(int code) => code switch
+    {
+        0 => "0 – fertig ohne Fehler",
+        unchecked((int)0x8A150014) => "0x8A150014 – kein Paket mit dieser Kennung gefunden",
+        unchecked((int)0x8A15002B) => "0x8A15002B – keine passende Aktualisierung gefunden",
+        unchecked((int)0x8A150011) => "0x8A150011 – die Prüfsumme des Installationsprogramms stimmt nicht",
+        _ => $"{code} (0x{code:X8})",
+    };
+
     /// <summary>Nur sichere Paket-IDs (keine Leerzeichen/Shell-Zeichen).</summary>
     public static bool SafeId(string id) => id.Length is > 1 and < 200 && id.All(c => char.IsLetterOrDigit(c) || c is '.' or '-' or '_' or '+');
 }
 
-public sealed class WingetBackend(IProcessRunner run) : IPackageBackend
+/// <param name="exe">T-0755: Programmdatei, Standard „winget“. Tests setzen hier ein eigenes Testprogramm ein, das winget-Ausgaben nachahmt (ersetzt, kein echter Lauf).</param>
+public sealed class WingetBackend(IProcessRunner run, string exe = "winget") : IPackageBackend, IPackageExitCode
 {
     public string Name => "Windows-Paketverwaltung (winget)";
-    public string Exe => "winget";
+    public string Exe => exe;
+    public int? LastExitCode { get; private set; }
     const string Agree = "--accept-source-agreements --disable-interactivity";
     public async Task<IReadOnlyList<PackageInfo>> SearchAsync(string q, CancellationToken ct = default) => PackageParsers.ParseWinget((await run.RunAsync(Exe, $"search \"{q.Replace("\"", "")}\" {Agree}", null, ct)).Output);
     public async Task<IReadOnlyList<PackageInfo>> InstalledAsync(CancellationToken ct = default) => PackageParsers.ParseWinget((await run.RunAsync(Exe, $"list {Agree}", null, ct)).Output);
     public async Task<IReadOnlyList<PackageInfo>> UpgradesAsync(CancellationToken ct = default) => PackageParsers.ParseWinget((await run.RunAsync(Exe, $"upgrade {Agree}", null, ct)).Output).Where(p => p.Available is not null).ToList();
-    public Task<(bool, string)> InstallAsync(string id, Action<string>? l = null, CancellationToken ct = default) => Do($"install --id {id} -e --scope user --accept-package-agreements {Agree}", id, l, ct);
-    public Task<(bool, string)> UpgradeAsync(string id, Action<string>? l = null, CancellationToken ct = default) => Do($"upgrade --id {id} -e --accept-package-agreements {Agree}", id, l, ct);
-    public Task<(bool, string)> UninstallAsync(string id, Action<string>? l = null, CancellationToken ct = default) => Do($"uninstall --id {id} -e {Agree}", id, l, ct);
-    private async Task<(bool, string)> Do(string args, string id, Action<string>? l, CancellationToken ct)
+    public Task<(bool, string)> InstallAsync(string id, Action<string>? l = null, CancellationToken ct = default) => Do("install", id, l, ct);
+    public Task<(bool, string)> UpgradeAsync(string id, Action<string>? l = null, CancellationToken ct = default) => Do("upgrade", id, l, ct);
+    public Task<(bool, string)> UninstallAsync(string id, Action<string>? l = null, CancellationToken ct = default) => Do("uninstall", id, l, ct);
+
+    /// <summary>T-0755: Argumente je Vorgang – dieselben für Anzeige und Lauf.</summary>
+    public static string Args(string action, string id) => action switch
     {
+        "install" => $"install --id {id} -e --scope user --accept-package-agreements {Agree}",
+        "upgrade" => $"upgrade --id {id} -e --accept-package-agreements {Agree}",
+        "uninstall" => $"uninstall --id {id} -e {Agree}",
+        _ => throw new ArgumentException(action),
+    };
+    /// <summary>Genau das, was gestartet wird: Programmdatei (bei einem Ersatz-Testprogramm dessen Pfad) und Argumente.</summary>
+    public string CommandLine(string action, string id) => $"{(Exe.Contains(' ') ? $"\"{Exe}\"" : Exe)} {Args(action, id)}";
+
+    /// <summary>T-0755: nur lesend „winget list --id … -e“ – steht das Paket danach in der Liste?</summary>
+    public async Task<bool?> IsInstalledAsync(string id, CancellationToken ct = default)
+    {
+        if (!PackageParsers.SafeId(id)) return null;
+        var (_, o) = await run.RunAsync(Exe, $"list --id {id} -e {Agree}", null, ct);
+        return PackageParsers.ListedIn(o, id);
+    }
+
+    private async Task<(bool, string)> Do(string action, string id, Action<string>? l, CancellationToken ct)
+    {
+        LastExitCode = null;
         if (!PackageParsers.SafeId(id)) return (false, "Ungültige Paket-ID");
-        var (e, o) = await run.RunAsync(Exe, args, l, ct); return (e == 0, o);
+        var (e, o) = await run.RunAsync(Exe, Args(action, id), l, ct); LastExitCode = e; return (e == 0, o);
     }
 }
 
-public sealed class FlatpakBackend(IProcessRunner run) : IPackageBackend
+public sealed class FlatpakBackend(IProcessRunner run) : IPackageBackend, IPackageExitCode
 {
     public string Name => "Flatpak (Flathub)";
     public string Exe => "flatpak";
+    public int? LastExitCode { get; private set; }
     public async Task<IReadOnlyList<PackageInfo>> SearchAsync(string q, CancellationToken ct = default) => PackageParsers.ParseFlatpak((await run.RunAsync(Exe, $"search --columns=name,application,version \"{q.Replace("\"", "")}\"", null, ct)).Output);
     public async Task<IReadOnlyList<PackageInfo>> InstalledAsync(CancellationToken ct = default) => PackageParsers.ParseFlatpak((await run.RunAsync(Exe, "list --app --columns=name,application,version", null, ct)).Output);
     public async Task<IReadOnlyList<PackageInfo>> UpgradesAsync(CancellationToken ct = default) => PackageParsers.ParseFlatpak((await run.RunAsync(Exe, "remote-ls --updates --app --columns=name,application,version", null, ct)).Output);
-    public Task<(bool, string)> InstallAsync(string id, Action<string>? l = null, CancellationToken ct = default) => Do($"install --user -y --noninteractive flathub {id}", id, l, ct);
-    public Task<(bool, string)> UpgradeAsync(string id, Action<string>? l = null, CancellationToken ct = default) => Do($"update --user -y --noninteractive {id}", id, l, ct);
-    public Task<(bool, string)> UninstallAsync(string id, Action<string>? l = null, CancellationToken ct = default) => Do($"uninstall --user -y --noninteractive {id}", id, l, ct);
+    public Task<(bool, string)> InstallAsync(string id, Action<string>? l = null, CancellationToken ct = default) => Do(Args("install", id), id, l, ct);
+    public Task<(bool, string)> UpgradeAsync(string id, Action<string>? l = null, CancellationToken ct = default) => Do(Args("upgrade", id), id, l, ct);
+    public Task<(bool, string)> UninstallAsync(string id, Action<string>? l = null, CancellationToken ct = default) => Do(Args("uninstall", id), id, l, ct);
+    static string Args(string action, string id) => action switch
+    {
+        "install" => $"install --user -y --noninteractive flathub {id}",
+        "upgrade" => $"update --user -y --noninteractive {id}",
+        _ => $"uninstall --user -y --noninteractive {id}",
+    };
+    public string CommandLine(string action, string id) => $"flatpak {Args(action, id)}";
     private async Task<(bool, string)> Do(string args, string id, Action<string>? l, CancellationToken ct)
     {
+        LastExitCode = null;
         if (!PackageParsers.SafeId(id)) return (false, "Ungültige Paket-ID");
-        var (e, o) = await run.RunAsync(Exe, args, l, ct); return (e == 0, o);
+        var (e, o) = await run.RunAsync(Exe, args, l, ct); LastExitCode = e; return (e == 0, o);
     }
 }
 
@@ -96,16 +173,62 @@ public sealed class AppCenter(IPackageBackend pm, ApprovalGate gate, AuditLog au
     public ApprovalRequest Plan(string action, PackageInfo p, Principal? by = null) =>
         gate.Request(by ?? Principal.LocalOwner, "app." + action, $"{p.Name} {(action == "install" ? "installieren" : action == "upgrade" ? "aktualisieren" : "entfernen")}", p.Id);
 
-    public async Task<(bool Ok, string Log)> ExecuteAsync(ApprovalRequest r, Action<string>? line = null)
+    public async Task<(bool Ok, string Log)> ExecuteAsync(ApprovalRequest r, Action<string>? line = null, CancellationToken ct = default)
     {
         var action = r.Action["app.".Length..];
         Func<Task<(bool, string)>> job = action switch
         {
-            "install" => () => pm.InstallAsync(r.Target, line), "upgrade" => () => pm.UpgradeAsync(r.Target, line), "uninstall" => () => pm.UninstallAsync(r.Target, line),
+            "install" => () => pm.InstallAsync(r.Target, line, ct), "upgrade" => () => pm.UpgradeAsync(r.Target, line, ct), "uninstall" => () => pm.UninstallAsync(r.Target, line, ct),
             _ => throw new ArgumentException(action),
         };
         var res = await gate.Execute(r.Id, r.Action, r.Target, job);
         audit.Append(Principal.LocalOwner.Name, res.Item1 ? "app.done" : "app.failed", $"{action} {r.Target}");
+        return res;
+    }
+
+    /// <summary>T-0755: Ergebnis eines Laufs mit Nachprüfung. <see cref="Installed"/>: danach in der Liste (null = nicht prüfbar).</summary>
+    public sealed record RunResult(string Action, string Id, string Command, bool ExitOk, int? ExitCode, bool Cancelled, bool? Installed, string LogFile, string Output)
+    {
+        /// <summary>Der gewünschte Zustand ist nachgeprüft erreicht (installiert bzw. entfernt).</summary>
+        public bool Verified => Installed is { } i && i == (Action != "uninstall");
+    }
+
+    /// <summary>T-0755: ein freigegebener Lauf mit Protokolldatei – Befehl, jede Ausgabezeile, Rückgabewert, Abbruch und die Nachprüfung,
+    /// ob das Programm danach installiert ist. Das Protokoll wird Zeile für Zeile geschrieben und bleibt auch nach einem Absturz lesbar.</summary>
+    public async Task<RunResult> RunAsync(ApprovalRequest r, string logDir, Action<string>? line = null, CancellationToken ct = default)
+    {
+        var action = r.Action["app.".Length..]; var id = r.Target;
+        var cmd = pm.CommandLine(action, id);
+        Directory.CreateDirectory(logDir);
+        var log = Path.Combine(logDir, $"{DateTime.Now:yyyyMMdd-HHmmss-fff}-{action}-{(PackageParsers.SafeId(id) ? id : "ungueltig")}.log");
+        var sb = new System.Text.StringBuilder(); var lk = new object();
+        await using var w = new StreamWriter(log, append: false, new System.Text.UTF8Encoding(false)) { AutoFlush = true };
+        void W(string s) { lock (lk) w.WriteLine(s); }
+        W($"Trendo – Programme verwalten · {DateTime.Now:dd.MM.yyyy HH:mm:ss}");
+        W($"Vorgang: {action} · Paket: {id} · Paketverwaltung: {pm.Name}");
+        W($"Befehl: {cmd}");
+        W("--- Ausgabe ---");
+        bool ok = false, cancelled = false; var output = "";
+        try
+        {
+            (ok, output) = await ExecuteAsync(r, s => { var c = PackageParsers.CleanLine(s); lock (lk) { sb.AppendLine(c); w.WriteLine(c); } line?.Invoke(s); }, ct);
+        }
+        catch (OperationCanceledException)
+        {
+            cancelled = true;
+            audit.Append(Principal.LocalOwner.Name, "app.abgebrochen", $"{action} {id}");
+        }
+        var exit = cancelled ? null : (pm as IPackageExitCode)?.LastExitCode;
+        W("--- Ende der Ausgabe ---");
+        W(cancelled ? "Ergebnis: abgebrochen – Trendo hat den Lauf beendet." : $"Rückgabewert: {(exit is { } e ? PackageParsers.ExitText(e) : ok ? "erfolgreich" : "Fehler")}");
+        bool? installed;
+        try { installed = await pm.IsInstalledAsync(id, CancellationToken.None); }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or System.ComponentModel.Win32Exception) { installed = null; W("Nachprüfung nicht möglich: " + ex.Message); }
+        W($"Nachprüfung: {(installed is null ? "nicht prüfbar" : installed.Value ? "steht in der Liste der installierten Programme" : "steht nicht in der Liste der installierten Programme")}");
+        string text; lock (lk) text = sb.ToString();
+        var res = new RunResult(action, id, cmd, ok && !cancelled, exit, cancelled, installed, log, text.Length > 0 ? text : output);
+        W($"Ziel erreicht: {(res.Verified ? "ja" : "nein")}");
+        audit.Append(Principal.LocalOwner.Name, "app.pruefung", $"{action} {id} {(res.Verified ? "bestätigt" : "nicht bestätigt")}");
         return res;
     }
 }

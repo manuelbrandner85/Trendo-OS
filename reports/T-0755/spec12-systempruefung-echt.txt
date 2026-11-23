@@ -1,0 +1,18 @@
+T-0755 SPEC-12 Echtlauf auf dem Entwicklungs-PC (Windows 11), nur lesend, 23.11.2026 03:09. Nur Zaehlungen – keine Programmnamen oder Pfade (Datenschutz).
+Systempruefung (nur lesend) – Dauer 3,0 s
+Eintraege gesamt: 174 · Rot 1 · Gelb 59 · Gruen 114 · Aufgaben ohne Programmstart: 117
+  Autostart-Ordner: 1 (Rot 0, Gelb 1, Gruen 0)
+  Geplante Aufgabe: 99 (Rot 1, Gelb 12, Gruen 86)
+  Installiertes Programm: 66 (Rot 0, Gelb 41, Gruen 25)
+  Run-Schlüssel: 8 (Rot 0, Gelb 5, Gruen 3)
+  Grund „Gültig signiert“: 114
+  Grund „Datei nicht bestimmbar“: 33
+  Grund „Startet ein Skript“: 16
+  Grund „Datei fehlt“: 1
+  Grund „Nicht signiert“: 1
+  Grund „Nicht prüfbar“: 1
+  Signatur Gueltig: 138
+  Signatur Unsigniert: 1
+  Signatur Fehlt: 1
+  Signatur NichtPruefbar: 34
+Stichprobe System32-kernel32.dll: Gueltig · Herausgeber Microsoft Corporation · Katalog False

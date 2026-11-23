@@ -6,7 +6,7 @@ using Trendo.Core.Sys;
 
 namespace Trendo.App;
 
-/// <summary>SYS-03 Netz & Sicherheit (freigegebener Katalog, 21.10.2026).</summary>
+/// <summary>SYS-03 Downloads & Links – Werkzeug-Reiter (freigegebener Katalog, 21.10.2026; Name seit T-0755).</summary>
 public partial class MainWindow
 {
     public static readonly List<(string Key, string Label, string Module)> NetzTabs = [];
@@ -19,7 +19,7 @@ public partial class MainWindow
     {
         RegisterTab(NetzTabs, "netz-pruefen", "Sicher prüfen", "SYS-03", NetCheckView, "prüfsumme", "sha256", "phishing", "link prüfen", "kurzlink", "quarantäne", "defender", "virus", "formular");
         RegisterTab(NetzTabs, "netz-laden", "Laden & Speichern", "SYS-03", NetLoadView, "download manager", "fortsetzen", "lesemodus", "als pdf", "offline", "webseite speichern", "downloads sortieren");
-        RegisterTab(NetzTabs, "netz-browser", "Browser", "SYS-03", NetBrowserView, "lesezeichen", "inkognito", "privat", "tor", "standardbrowser", "suchmaschine", "verlauf löschen", "proxy", "netzwerk");
+        RegisterTab(NetzTabs, "netz-browser", "Links & Webseiten", "SYS-03", NetBrowserView, "lesezeichen", "inkognito", "privat", "tor", "standardbrowser", "suchmaschine", "verlauf löschen", "proxy", "netzwerk");
     }
     private Control NetzPage(string title, Control body) => W45Page(title, NetzTabs, "netz", body);
     private Control Hints(string name, List<string> h, string ok) => new StackPanel { Name = name, Children = { h.Count == 0 ? P(ok, Text) : P("⚠ " + string.Join("\n⚠ ", h), Warn) } };
@@ -131,7 +131,7 @@ public partial class MainWindow
         return $"PDF gespeichert: {pdf} (Prüfsumme {sha[..12]}…)";
     }
 
-    // ---------- Browser ----------
+    // ---------- Links & Webseiten (T-0755: kein eigener Browser – Trendo öffnet installierte Browser) ----------
     private Control NetBrowserView()
     {
         var sp = new StackPanel { Spacing = 10 }; const string V = "netz-browser";
@@ -151,13 +151,13 @@ public partial class MainWindow
 
         var priv = Line(); foreach (var b in browsers) if (Web.PrivateArg(b.Id) is { } arg) { var path = b.Path; priv.Children.Add(Act("priv-" + b.Id, b.Name + " privat", () => { if (!_core.Offline) _core.Integrations.LaunchDirect(Principal.LocalOwner, path, _core.Audit, arg); })); }
         var tor = Web.TorPaths.Select(Environment.ExpandEnvironmentVariables).FirstOrDefault(File.Exists);
-        sp.Children.Add(Card(Section("Privat surfen", "Ein privates Fenster speichert keinen Verlauf. Der Tor-Browser verschleiert zusätzlich deinen Standort – Trendo öffnet nur die offizielle Seite.",
+        sp.Children.Add(Card(Section("Privates Fenster in deinem Browser", "Trendo öffnet ein privates Fenster deines installierten Browsers – es speichert keinen Verlauf. Der Tor-Browser verschleiert zusätzlich deinen Standort – Trendo öffnet nur die offizielle Seite.",
             browsers.Count == 0 ? P("Kein bekannter Browser gefunden.") : priv,
             Line(tor is not null ? Act("tor-open", "Tor-Browser starten", () => _core.Integrations.LaunchDirect(Principal.LocalOwner, tor, _core.Audit)) : Act("tor-get", "Tor-Browser offiziell holen", () => { if (_core.Offline) { Say("Offline-Modus: Die Tor-Seite kann nicht geöffnet werden.", V); return; } Launch(Web.TorOfficial); Say("Offizielle Tor-Seite geöffnet – nach der Installation hier „Tor-Browser starten“.", V); })))));
 
         var eng = Line(); var cur = Web.Engine(_core.DataRoot);
         foreach (var (id, name, _) in Web.Engines) eng.Children.Add(Act("engine-" + id, (cur == id ? "✓ " : "") + name, () => { Web.SetEngine(_core.DataRoot, id); Show(V); }, cur == id));
-        sp.Children.Add(Card(Section("Suchmaschine", "Gilt für die Trendo-Suche (Strg+K → „Im Internet suchen“) und das Adressfeld unter Browser & Downloads.", eng)));
+        sp.Children.Add(Card(Section("Suchmaschine", "Gilt für die Trendo-Suche (Strg+K → „Im Internet suchen“) und das Adressfeld unter Downloads & Links.", eng)));
 
         var steps = new StackPanel { Spacing = 4 };
         foreach (var (id, name, st) in Web.ClearHistory.Where(c => browsers.Count == 0 || browsers.Any(b => b.Id == c.Id))) steps.Children.Add(P($"{name}: " + string.Join(" → ", st), null, 11.5));
@@ -173,7 +173,7 @@ public partial class MainWindow
                 var (dns, web) = await WebTools.NetworkCheckAsync();
                 _netStatus = (dns ? "✓ Namensauflösung klappt" : "✗ Namensauflösung klappt nicht") + " · " + (web ? "✓ Internet erreichbar" : "✗ Internet nicht erreichbar"); Show(V);
             }), P(_netStatus, Text)), P("Proxy: " + proxy, null, 11.5))));
-        return NetzPage("Browser", sp);
+        return NetzPage("Links & Webseiten", sp);
     }
 
     private static string DefaultBrowser() => DesktopPlatform.DefaultBrowser(); // Windows Registrierung, Linux xdg-settings
