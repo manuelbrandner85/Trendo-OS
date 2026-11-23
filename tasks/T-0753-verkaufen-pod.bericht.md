@@ -98,3 +98,21 @@
 | N-d Unpassende Meldung | eigener Text „Varianten lassen sich nicht nachträglich hinzufügen“ | `Add_variants_message` |
 
 **Tests danach:** Kern gezielt 90/90 (`reports/T-0753/core-tests-zweitpruefung.txt`), mit T0714/T0717/SourceApps 114/114; App 80/80 (`reports/T-0753/app-tests.txt`). `dotnet build Trendo.sln -c Release` 0 Fehler.
+
+## Drittprüfung behoben (vierter Durchgang)
+
+Die Umbenennungs-Liste aus N-c ist ersetzt durch eine **feste Artikel-Kennung**: `Product.Id`, `CashLine.ItemId/Variant`, `OrderLine.ItemId/Variant` (alle optional, alte Dateien bleiben lesbar; `umbenennungen.json` wird nicht mehr gelesen). Verkauf, Bestellung, Lieferung, Storno und Sperre arbeiten über die Kennung. Altzeilen ohne Kennung (Bons, nicht stornierte Bestellungen) werden vor Umbenennen, Löschen oder Import an den heute gleichnamigen Artikel gebunden; Text, Menge und Preis des Belegs bleiben unverändert.
+
+| Befund | Lösung | Test (Rot-Grün: baut auf 6b351c379 nicht, fehlende `Product.Id`, `CashLine.ItemId`, `ShopImport.Skipped`) |
+|---|---|---|
+| M-C Fall 1 (umbenannt, neuer gleichnamiger Artikel) | Bon hängt an der Kennung; neuer „Keks“ hat eine eigene; Sperre läuft über die Kennung | `ShopEditFix3Tests.Rename_then_new_same_name` (Keks 5, Cookie 8; Varianten am neuen Keks gesperrt) |
+| M-C Fall 2 (Kette) | keine Namenskette mehr nötig | `Rename_chain` (Storno bucht auf X) |
+| M-C Fall 3 (gelöscht, neu angelegt) | Kennung des gelöschten Artikels gibt es nicht mehr → Storno ohne Bestand, `NotRestocked` | `Delete_then_new_same_name` |
+| M-C Bestellungen | `Shop.Cancel`/`Deliver` ohne `Current()`, über die Kennung | `Orders_bound_to_item` |
+| M-C Altdaten | Bon und Artikel ohne Kennung lesbar, Bindung vor dem Umbenennen | `Legacy_files` |
+| N-e nur 5 bzw. 3 Hinweise | Meldung nennt „N nicht übernommen“ und alle Hinweise, je eine Zeile | `SellEditFix3_Ui.Import_shows_all_warnings` (8 von 8) |
+| N-f negativer Preis aus CSV | Import prüft jeden Artikel mit `CheckProduct`, Verstöße werden mit Hinweis übersprungen | `Negative_price_and_all_warnings` |
+
+`ShopEditFix2Tests.Rename_keeps_bons` prüfte die entfernte Namenskette (`Current`); er prüft jetzt dasselbe Verhalten über die Kennung (Bon unverändert, Storno trifft den umbenannten Artikel, Rück-Umbenennen geht).
+
+**Tests danach:** Kern 96/96, mit T0714/T0717/SourceApps 120/120 (`reports/T-0753/core-tests-drittpruefung.txt`); App 81/81 (`reports/T-0753/app-tests.txt`). `dotnet build Trendo.sln -c Release` 0 Fehler.

@@ -5,7 +5,8 @@ using PdfSharp.Pdf;
 namespace Trendo.Core;
 
 /// <summary>Eine Bon-Zeile: Artikel, Menge, Preis brutto (zum Zeitpunkt des Verkaufs).</summary>
-public sealed record CashLine(string Product, decimal Qty, decimal PriceGross)
+/// <remarks>T-0753 M-C: <see cref="ItemId"/> und <see cref="Variant"/> binden die Zeile fest an den Artikel (leer bei Altdaten); der Bon bleibt sonst wie ausgegeben.</remarks>
+public sealed record CashLine(string Product, decimal Qty, decimal PriceGross, string ItemId = "", string Variant = "")
 {
     /// <summary>Rabattzeile („Rabatt …“, negativer Betrag) – kein Artikel, kein Bestand.</summary>
     public bool IsDiscount => Product.StartsWith("Rabatt", StringComparison.Ordinal) && PriceGross < 0;
@@ -60,14 +61,15 @@ public sealed class CashRegister(string dataRoot, string ideaId)
             if (vi < 0 && prods[pi].Variants is { Count: > 0 }) throw new ArgumentException($"Bitte bei „{g.Key}“ die Variante wählen.");
             var qty = g.Sum(x => x.Qty); var free = Shop.Available(g.Key);
             if (qty > free) throw new InvalidOperationException(free <= 0 ? $"„{g.Key}“ ist nicht mehr vorrätig." : $"Von „{g.Key}“ sind nur noch {free:0.##} vorrätig.");
-            lines.Add(new(g.Key, qty, Gross(vi >= 0 ? prods[pi].Variants![vi].Price : prods[pi].Price, smallBusiness)));
+            Shop.EnsureIds(prods);
+            lines.Add(new(g.Key, qty, Gross(vi >= 0 ? prods[pi].Variants![vi].Price : prods[pi].Price, smallBusiness), prods[pi].Id, vi >= 0 ? prods[pi].Variants![vi].Name : ""));
         }
         if (DiscountLine(lines.Sum(l => l.Sum), discountPercent, discountEuro) is { } disc) lines.Add(disc);
         var gross = lines.Sum(l => l.Sum);
         if (payment == "bar" && given < gross) throw new ArgumentException($"Es fehlen noch {(gross - given).ToString("N2", De)} €.");
         var today = DateOnly.FromDateTime(now); var n = Sales.All().Count(s => DateOnly.FromDateTime(s.At) == today) + 1;
         var sale = new CashSale(Guid.NewGuid().ToString("N")[..8], $"BON-{now:yyyyMMdd}-{n:0000}", now, lines, payment, payment == "bar" ? given : gross, smallBusiness ? 0 : LegalRates.VatStandard);
-        foreach (var l in lines.Where(x => !x.IsDiscount)) Shop.AddStock(prods, l.Product, -(int)Math.Ceiling(l.Qty)); // T-0753 M1: auch Varianten
+        foreach (var l in lines.Where(x => !x.IsDiscount)) { var (pi, vi) = Shop.Resolve(prods, l.Product, l.ItemId, l.Variant); Shop.AddStockAt(prods, pi, vi, -(int)Math.Ceiling(l.Qty)); } // T-0753 M1/M-C
         Shop.Products.Save(prods);
         foreach (var l in lines.Where(x => !x.IsDiscount)) Shop.Moves.Add(new(Guid.NewGuid().ToString("N")[..8], today, l.Product, -l.Qty, sale.Id, "Kasse"));
         ledger.Add(new(today, $"Kasse {sale.No} ({(payment == "bar" ? "bar" : "Karte")})", gross, "Einnahmen", sale.VatRate));
@@ -84,12 +86,12 @@ public sealed class CashRegister(string dataRoot, string ideaId)
         var prods = Shop.Products.All(); NotRestocked.Clear();
         foreach (var l in s.Lines.Where(x => !x.IsDiscount))
         {
-            // T-0753 M-B/N-c: der Bon bleibt wie ausgegeben; umbenannte Artikel werden über die Umbenennungen gefunden,
-            // gelöschte werden ohne Bestandsänderung storniert (sichtbar über NotRestocked)
-            var label = Shop.Current(l.Product);
-            if (!Shop.Known(prods, label)) { NotRestocked.Add(l.Product); continue; }
-            Shop.AddStock(prods, label, (int)Math.Ceiling(l.Qty));
-            Shop.Moves.Add(new(Guid.NewGuid().ToString("N")[..8], DateOnly.FromDateTime(now), label, l.Qty, s.Id, "Kassen-Storno"));
+            // T-0753 M-B/M-C: der Bon bleibt wie ausgegeben; der Artikel wird über die feste Kennung gefunden (auch umbenannt),
+            // gelöschte werden ohne Bestandsänderung storniert (sichtbar über NotRestocked) – ein neuer gleichnamiger Artikel bekommt nichts
+            var (pi, vi) = Shop.Resolve(prods, l.Product, l.ItemId, l.Variant);
+            if (pi < 0) { NotRestocked.Add(l.Product); continue; }
+            Shop.AddStockAt(prods, pi, vi, (int)Math.Ceiling(l.Qty));
+            Shop.Moves.Add(new(Guid.NewGuid().ToString("N")[..8], DateOnly.FromDateTime(now), vi >= 0 ? Shop.Label(prods[pi], prods[pi].Variants![vi]) : prods[pi].Name, l.Qty, s.Id, "Kassen-Storno"));
         }
         Shop.Products.Save(prods);
         ledger.Add(new(DateOnly.FromDateTime(now), $"Storno Kasse {s.No}", -s.Gross, "Einnahmen", s.VatRate));

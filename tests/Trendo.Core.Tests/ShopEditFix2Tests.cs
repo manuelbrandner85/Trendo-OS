@@ -83,14 +83,15 @@ public class ShopEditFix2Tests
             var bon = k.Checkout([("Keks", 3)], "bar", 10, DateTime.Now, ledger, true);
             k.Shop.UpdateProduct("Keks", k.Shop.Products.All()[0] with { Name = "Butterkeks" });
             k.Shop.UpdateProduct("Butterkeks", k.Shop.Products.All()[0] with { Name = "Dinkelkeks" });
-            Assert.Equal("Keks", k.Sales.All()[0].Lines[0].Product); // Beleg bleibt wie ausgegeben
-            Assert.Equal("Dinkelkeks", k.Shop.Current("Keks"));
+            var line = k.Sales.All()[0].Lines[0];
+            Assert.Equal(("Keks", 3m, 2m), (line.Product, line.Qty, line.PriceGross)); // Beleg bleibt wie ausgegeben (Drittprüfung: Bindung über die feste Kennung)
+            Assert.Equal(k.Shop.Products.All()[0].Id, line.ItemId);
             k.Cancel(bon.Id, DateTime.Now, ledger);
             Assert.Empty(k.NotRestocked);
             Assert.Equal(10, k.Shop.Products.All()[0].Stock);
-            // zurück auf den alten Namen: keine Schleife
+            // zurück auf den alten Namen
             k.Shop.UpdateProduct("Dinkelkeks", k.Shop.Products.All()[0] with { Name = "Keks" });
-            Assert.Equal("Keks", k.Shop.Current("Keks")); Assert.Equal("Keks", k.Shop.Current("Butterkeks"));
+            Assert.Equal("Keks", k.Shop.Products.All()[0].Name);
         }
         finally { Directory.Delete(d, true); }
     }

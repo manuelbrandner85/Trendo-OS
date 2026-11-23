@@ -1,0 +1,1 @@
+Bestanden!   : Fehler:     0, erfolgreich:    96, gesamt:    96 (ShopEdit*, CashRegister, SalesStats, Teil4Business, Pod*, Printful, Printify, W5Business, NoFixedUser); mit T0714/T0717/SourceApps 120/120

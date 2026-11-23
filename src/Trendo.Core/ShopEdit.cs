@@ -11,9 +11,7 @@ namespace Trendo.Core;
 // Rückgängig für diese Stammdaten und CSV im Shopify-Spaltensatz (Artikel und Kunden ein/aus, Bestellungen aus).
 
 /// <summary>Ergebnis eines CSV-Imports: neu angelegt, aktualisiert und Hinweise (z. B. doppelte Artikelnummern).</summary>
-public sealed record ShopImport(int Added, int Updated, IReadOnlyList<string> Warnings);
-/// <summary>T-0753 N-c: Umbenennung einer Bezeichnung (Artikel oder „Artikel – Variante“).</summary>
-public sealed record RenameEntry(string From, string To);
+public sealed record ShopImport(int Added, int Updated, IReadOnlyList<string> Warnings, int Skipped = 0);
 
 public sealed partial class Shop
 {
@@ -41,45 +39,59 @@ public sealed partial class Shop
         return (-1, -1);
     }
 
-    /// <summary>Wirft, wenn eine Bezeichnung keinem Artikel bzw. keiner Variante mehr entspricht – sonst ginge eine Bestandsänderung still verloren.</summary>
-    internal static void RequireKnown(List<Product> prods, IEnumerable<string> labels)
+    /// <summary>T-0753 M-C: vergibt fehlende feste Kennungen (Altdaten). Liefert, ob sich etwas geändert hat.</summary>
+    internal static bool EnsureIds(List<Product> prods)
     {
-        foreach (var l in labels)
+        var changed = false;
+        for (var i = 0; i < prods.Count; i++) if (prods[i].Id.Length == 0) { prods[i] = prods[i] with { Id = Guid.NewGuid().ToString("N")[..12] }; changed = true; }
+        return changed;
+    }
+
+    /// <summary>T-0753 M-C: Artikel und Variante einer Zeile – mit fester Kennung über diese (Umbenennen egal, Neuanlage gleichen Namens zählt nicht),
+    /// bei Altdaten über die Bezeichnung. (−1, −1), wenn es ihn nicht (mehr) in dieser Form gibt.</summary>
+    internal static (int Product, int Variant) Resolve(List<Product> prods, string label, string itemId, string variant)
+    {
+        int i, v;
+        if (itemId.Length > 0)
         {
-            var (i, v) = FindItem(prods, l);
-            if (i < 0) throw new InvalidOperationException($"Den Artikel „{l}“ gibt es nicht mehr – lege ihn wieder an, dann lässt sich liefern.");
-            if (v < 0 && prods[i].Variants is { Count: > 0 }) throw new InvalidOperationException($"„{l}“ hat inzwischen Varianten – der Bestand lässt sich keiner Variante zuordnen.");
+            i = prods.FindIndex(p => p.Id == itemId);
+            if (i < 0) return (-1, -1);
+            v = variant.Length == 0 ? -1 : prods[i].Variants?.FindIndex(x => x.Name == variant) ?? -1;
+            if (variant.Length > 0 && v < 0) return (-1, -1);
         }
+        else (i, v) = FindItem(prods, label);
+        return i < 0 || (v < 0 && prods[i].Variants is { Count: > 0 }) ? (-1, -1) : (i, v);
     }
 
-    /// <summary>Gibt es die Bezeichnung als Artikel ohne Varianten bzw. als Variante?</summary>
-    internal static bool Known(List<Product> prods, string label)
-    {
-        var (i, v) = FindItem(prods, label);
-        return i >= 0 && (v >= 0 || prods[i].Variants is not { Count: > 0 });
-    }
-
-    /// <summary>Bezeichnungen der Bon-Zeilen, die beim letzten Storno ohne Bestandsänderung blieben (Artikel gelöscht).</summary>
+    /// <summary>Bezeichnungen der Zeilen, die beim letzten Storno ohne Bestandsänderung blieben (Artikel gelöscht).</summary>
     public List<string> LastNotRestocked { get; } = [];
 
-    /// <summary>T-0753 N-c: heutige Bezeichnung zu einer alten (Umbenennungen werden verfolgt).</summary>
-    public string Current(string label)
+    /// <summary>Bestand ändern (nicht unter 0); bei einer Variante wird die Summe des Artikels nachgeführt.</summary>
+    internal static void AddStockAt(List<Product> prods, int i, int v, int delta)
     {
-        var map = Renames.All().GroupBy(r => r.From).ToDictionary(g => g.Key, g => g.Last().To);
-        var seen = new HashSet<string>();
-        while (map.TryGetValue(label, out var to) && seen.Add(label)) label = to;
-        return label;
-    }
-
-    /// <summary>Bestand ändern (nicht unter 0); bei einer Variante wird die Summe des Artikels nachgeführt. Unbekannte Bezeichnung → Fehler (T-0753 M2).</summary>
-    internal static void AddStock(List<Product> prods, string label, int delta)
-    {
-        RequireKnown(prods, [label]);
-        var (i, v) = FindItem(prods, label);
+        if (i < 0) throw new InvalidOperationException("Diesen Artikel gibt es nicht mehr.");
         if (v < 0) { prods[i] = prods[i] with { Stock = Math.Max(0, prods[i].Stock + delta) }; return; }
         var vs = new List<ItemVariant>(prods[i].Variants!);
         vs[v] = vs[v] with { Stock = Math.Max(0, vs[v].Stock + delta) };
         prods[i] = prods[i] with { Variants = vs, Stock = vs.Sum(x => x.Stock) };
+    }
+
+    /// <summary>T-0753 M-C: Altzeilen ohne Kennung (Bons, nicht stornierte Bestellungen) bekommen vor Umbenennen, Löschen oder Import die Kennung
+    /// des heute gleichnamigen Artikels – danach hängen sie fest an ihm. Text, Menge und Preis des Belegs bleiben unverändert.</summary>
+    void StampLegacy(List<Product> prods)
+    {
+        if (EnsureIds(prods)) Products.Save(prods);
+        (string, string) Tag(string label) { var (i, v) = FindItem(prods, label); return i < 0 ? ("", "") : (prods[i].Id, v >= 0 ? prods[i].Variants![v].Name : ""); }
+        var sales = CashSales.All(); var sChanged = false;
+        for (var k = 0; k < sales.Count; k++)
+            if (!sales[k].Cancelled && sales[k].Lines.Any(l => !l.IsDiscount && l.ItemId.Length == 0 && Tag(l.Product).Item1.Length > 0))
+            { sales[k] = sales[k] with { Lines = sales[k].Lines.Select(l => l.IsDiscount || l.ItemId.Length > 0 || Tag(l.Product) is not { Item1.Length: > 0 } t ? l : l with { ItemId = t.Item1, Variant = t.Item2 }).ToList() }; sChanged = true; }
+        if (sChanged) CashSales.Save(sales);
+        var orders = OrderList.All(); var oChanged = false;
+        for (var k = 0; k < orders.Count; k++)
+            if (orders[k].Status != "storniert" && orders[k].StockOut is not null && orders[k].Lines.Any(l => l.ItemId.Length == 0 && Tag(l.Product).Item1.Length > 0))
+            { orders[k] = orders[k] with { Lines = orders[k].Lines.Select(l => l.ItemId.Length > 0 || Tag(l.Product) is not { Item1.Length: > 0 } t ? l : l with { ItemId = t.Item1, Variant = t.Item2 }).ToList() }; oChanged = true; }
+        if (oChanged) OrderList.Save(orders);
     }
 
     /// <summary>Ein verkaufbarer Eintrag: Artikel ohne Varianten oder eine Variante (Bezeichnung „Artikel – Variante“).</summary>
@@ -131,7 +143,7 @@ public sealed partial class Shop
 
     // ---------- Rückgängig: Stand vorher plus Prüfsumme danach; dazwischen verkauft/geliefert/bezahlt → nicht mehr möglich ----------
     sealed record UndoStep(string What, Dictionary<string, string?> Before, string After);
-    string[] Files => [Products.FilePath, Customers.FilePath, OrderList.FilePath, CashSales.FilePath, Renames.FilePath];
+    string[] Files => [Products.FilePath, Customers.FilePath, OrderList.FilePath, CashSales.FilePath];
     static string? ReadOrNull(string f) => File.Exists(f) ? File.ReadAllText(f) : null;
     string Hash() => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(string.Join("\u0001", Files.Select(f => ReadOrNull(f) ?? "∅")))));
     List<UndoStep> LoadUndo() { try { return File.Exists(UndoFile) ? JsonSerializer.Deserialize<List<UndoStep>>(File.ReadAllText(UndoFile)) ?? [] : []; } catch (JsonException) { return []; } }
@@ -190,7 +202,7 @@ public sealed partial class Shop
     /// <summary>Hat ein Artikel Varianten, ist sein Bestand die Summe und sein Preis der der ersten Variante (für Kasse und Listen).</summary>
     static Product Normalize(Product p)
     {
-        p = p with { Name = p.Name.Trim(), Sku = SalesStats.CheckSku(p.Sku), Description = p.Description.Trim() };
+        p = p with { Name = p.Name.Trim(), Sku = SalesStats.CheckSku(p.Sku), Description = p.Description.Trim(), Id = p.Id.Length > 0 ? p.Id : Guid.NewGuid().ToString("N")[..12] };
         if (p.Variants is not { Count: > 0 } vs) return p with { Variants = null };
         vs = vs.Select(v => v with { Name = v.Name.Trim(), Sku = SalesStats.CheckSku(v.Sku) }).ToList();
         return p with { Variants = vs, Stock = vs.Sum(v => v.Stock), Price = vs[0].Price };
@@ -202,57 +214,55 @@ public sealed partial class Shop
         all.Add(p); Products.Save(all); return p;
     });
 
-    /// <summary>T-0753 M2/M-A/M-B: Bezeichnungen, auf die noch etwas zeigt – vorgemerkte Bestellungen, alle nicht stornierten Lieferungen
-    /// (auch bezahlte) und gültige Bons (über die Umbenennungen) –, müssen nach der Änderung weiter bestehen. Liefert die Meldung oder null.</summary>
-    string? LockViolation(string name, Product changed)
+    /// <summary>T-0753 M2/M-A/M-B/M-C: Zeilen, die noch an diesem Artikel hängen – vorgemerkte Bestellungen, alle nicht stornierten Lieferungen
+    /// (auch bezahlte) und gültige Bons, über die feste Kennung –, müssen nach der Änderung ihre Variante bzw. „ohne Variante“ behalten.
+    /// Vorher <see cref="StampLegacy"/> aufrufen. Liefert die Meldung oder null.</summary>
+    string? LockViolation(Product old, Product changed)
     {
-        var newLabels = changed.Variants is { Count: > 0 } nv ? nv.Select(v => Label(changed, v)).ToHashSet() : [changed.Name];
-        bool Mine(string label) => label == name || label.StartsWith(name + VariantSep, StringComparison.Ordinal);
-        string Map(string label) => label == name ? changed.Name : label.StartsWith(name + VariantSep, StringComparison.Ordinal) ? changed.Name + label[name.Length..] : label;
+        var names = changed.Variants is { Count: > 0 } nv ? nv.Select(v => v.Name).ToHashSet() : null;
         var live = OrderList.All().Where(o => o.Status != "storniert" && o.StockOut is not null)
-                .SelectMany(o => o.Lines.Select(l => (Label: l.Product, Open: o.StockOut == false)))
-            .Concat(CashSales.All().Where(x => !x.Cancelled).SelectMany(x => x.Lines.Where(l => !l.IsDiscount).Select(l => (Label: Current(l.Product), Open: false))));
-        foreach (var (label, open) in live.Where(x => Mine(x.Label)))
+                .SelectMany(o => o.Lines.Select(l => (l.Product, l.ItemId, l.Variant, Open: o.StockOut == false)))
+            .Concat(CashSales.All().Where(x => !x.Cancelled).SelectMany(x => x.Lines.Where(l => !l.IsDiscount).Select(l => (l.Product, l.ItemId, l.Variant, Open: false))));
+        foreach (var (label, id, variant, open) in live.Where(x => x.ItemId == old.Id))
         {
-            if (newLabels.Contains(Map(label))) continue;
+            if (variant.Length > 0 ? names?.Contains(variant) == true : names is null) continue;
             if (open) return $"„{label}“ ist noch für eine offene Bestellung vorgemerkt – erst liefern oder stornieren.";
-            if (label == name) return $"„{name}“ wurde schon ohne Variante verkauft oder geliefert – Varianten lassen sich nicht nachträglich hinzufügen. Lege dafür einen neuen Artikel an."; // N-d
-            return $"„{label}“ steht in einer Lieferung oder auf einem Bon – diese Variante bitte nicht umbenennen oder entfernen (für Neues eine weitere Variante oder einen neuen Artikel anlegen).";
+            if (variant.Length == 0) return $"„{old.Name}“ wurde schon ohne Variante verkauft oder geliefert – Varianten lassen sich nicht nachträglich hinzufügen. Lege dafür einen neuen Artikel an."; // N-d
+            return $"„{Label(old, new ItemVariant(variant, 0, 0))}“ steht in einer Lieferung oder auf einem Bon – diese Variante bitte nicht umbenennen oder entfernen (für Neues eine weitere Variante oder einen neuen Artikel anlegen).";
         }
         return null;
     }
 
-    /// <summary>Ändert einen Artikel. Bei neuem Namen tragen Bestellungen den neuen Namen (ihr Preis bleibt der festgehaltene); Bons bleiben wie ausgegeben,
-    /// die Umbenennung wird gemerkt (N-c). Gesperrt ist, was <see cref="LockViolation"/> meldet. Alte Namen mit „ – “ bleiben änderbar, nur nicht neu vergeben (N2).</summary>
+    /// <summary>Ändert einen Artikel. Bei neuem Namen tragen Bestellungen den neuen Namen (ihr Preis bleibt der festgehaltene); Bons bleiben wie ausgegeben
+    /// und finden den Artikel über die feste Kennung (M-C). Gesperrt ist, was <see cref="LockViolation"/> meldet. Alte Namen mit „ – “ bleiben änderbar (N2).</summary>
     public Product UpdateProduct(string name, Product changed) => Undoable($"Artikel „{name}“ ändern", () =>
     {
         var all = Products.All(); var i = all.FindIndex(p => p.Name == name);
         if (i < 0) throw new ArgumentException($"Den Artikel „{name}“ gibt es nicht.");
-        changed = Normalize(changed);
+        StampLegacy(all);
+        changed = Normalize(changed with { Id = all[i].Id });
         CheckProduct(changed, all.Where((_, k) => k != i), name);
-        if (LockViolation(name, changed) is { } why) throw new InvalidOperationException(why);
+        if (LockViolation(all[i], changed) is { } why) throw new InvalidOperationException(why);
         if (changed.Name != name)
         {
             string Map(string label) => label == name ? changed.Name : label.StartsWith(name + VariantSep, StringComparison.Ordinal) ? changed.Name + label[name.Length..] : label;
             var orders = OrderList.All();
             for (var k = 0; k < orders.Count; k++)
-                if (orders[k].Status != "storniert" && orders[k].StockOut is not null && orders[k].Lines.Any(l => Map(l.Product) != l.Product))
-                    orders[k] = orders[k] with { Lines = orders[k].Lines.Select(l => l with { Product = Map(l.Product) }).ToList() };
+                if (orders[k].Status != "storniert" && orders[k].StockOut is not null && orders[k].Lines.Any(l => l.ItemId == changed.Id && Map(l.Product) != l.Product))
+                    orders[k] = orders[k] with { Lines = orders[k].Lines.Select(l => l.ItemId == changed.Id ? l with { Product = Map(l.Product) } : l).ToList() };
             OrderList.Save(orders);
-            var olds = new List<string> { name }; if (all[i].Variants is { } ov) olds.AddRange(ov.Select(v => Label(all[i], v)));
-            var news = olds.Select(Map).ToHashSet();
-            var ren = Renames.All().Where(r => !news.Contains(r.From)).ToList(); // Rück-Umbenennung: keine Schleife
-            ren.AddRange(olds.Select(o => new RenameEntry(o, Map(o))));
-            Renames.Save(ren);
         }
         all[i] = changed; Products.Save(all); return changed;
     });
 
+    /// <summary>Löscht einen Artikel. Alte Bons und Lieferungen hängen vorher fest an ihm (Kennung) – ein später gleichnamig angelegter Artikel
+    /// bekommt deshalb beim Storno keinen Bestand; das Storno meldet dann „Bestand nicht zurückgebucht“ (M-C).</summary>
     public void RemoveProduct(string name) => Undoable($"Artikel „{name}“ löschen", () =>
     {
         var all = Products.All(); var i = all.FindIndex(p => p.Name == name);
         if (i < 0) throw new ArgumentException($"Den Artikel „{name}“ gibt es nicht.");
         if (Reserved(name) > 0) throw new InvalidOperationException($"„{name}“ ist noch für eine offene Bestellung vorgemerkt – erst liefern oder stornieren.");
+        StampLegacy(all);
         all.RemoveAt(i); Products.Save(all); return true;
     });
 
@@ -306,7 +316,8 @@ public sealed partial class Shop
         foreach (var (name, qty) in lines)
         {
             var (pi, v) = FindItem(prods, name); if (pi < 0) throw new ArgumentException($"Den Artikel „{name}“ gibt es nicht.");
-            res.Add(new(name, qty, (decimal)(v >= 0 ? prods[pi].Variants![v].Price : prods[pi].Price)));
+            if (EnsureIds(prods)) Products.Save(prods);
+            res.Add(new(name, qty, (decimal)(v >= 0 ? prods[pi].Variants![v].Price : prods[pi].Price), prods[pi].Id, v >= 0 ? prods[pi].Variants![v].Name : ""));
         }
         orders[i] = o with { Customer = customer, Lines = res }; OrderList.Save(orders); return orders[i];
     });
@@ -493,24 +504,28 @@ public sealed partial class Shop
             parsed.Add(new Product(name, c.Get(head, "Vendor"), ParseNum(c.Get(head, "Cost per item"), "Einkaufspreis", line0), vars[0].Price, single ? vars[0].Stock : vars.Sum(v => v.Stock), 0, 0,
                 single ? vars[0].Sku : "", PlainText(c.Get(head, "Description", "Body (HTML)")), image, single ? null : vars));
         }
-        var added = 0; var updated = 0;
+        var added = 0; var updated = 0; var skipped = 0;
         Undoable($"{parsed.Count} Artikel aus CSV laden", () =>
         {
             var all = Products.All();
+            StampLegacy(all); // T-0753 M-C
             foreach (var raw in parsed)
             {
-                var p = Normalize(raw); var i = all.FindIndex(x => x.Name == p.Name);
+                var p0 = Normalize(raw); var i = all.FindIndex(x => x.Name == p0.Name);
+                var p = i >= 0 ? p0 with { Id = all[i].Id } : p0;
                 var keep = i >= 0 ? all[i] : null;
                 if (keep is not null) p = p with { LeadDays = keep.LeadDays, DailySales = keep.DailySales, Image = p.Image.Length > 0 ? p.Image : keep.Image };
                 var others = all.Where((_, k) => k != i).ToList();
                 var taken = others.SelectMany(Skus).ToHashSet(StringComparer.OrdinalIgnoreCase);
                 if (Skus(p).FirstOrDefault(taken.Contains) is { } t) { warnings.Add($"„{p.Name}“: Artikelnummer „{t}“ hat schon „{others.First(o => Skus(o).Contains(t, StringComparer.OrdinalIgnoreCase)).Name}“ – ohne Nummer übernommen."); p = p with { Sku = taken.Contains(p.Sku) ? "" : p.Sku, Variants = p.Variants?.Select(v => taken.Contains(v.Sku) ? v with { Sku = "" } : v).ToList() }; }
-                if (i >= 0 && LockViolation(all[i].Name, p) is { } why) { warnings.Add($"„{p.Name}“ nicht aktualisiert: {why}"); continue; } // T-0753 M-A
+                if (i >= 0 && LockViolation(all[i], p) is { } why) { warnings.Add($"„{p.Name}“ nicht aktualisiert: {why}"); skipped++; continue; } // T-0753 M-A
+                try { CheckProduct(p, all.Where((_, k) => k != i), i >= 0 ? all[i].Name : null); } // T-0753 N-f: z. B. negativer Preis
+                catch (ArgumentException e) { warnings.Add($"„{p.Name}“ nicht übernommen: {e.Message}"); skipped++; continue; }
                 if (i >= 0) { all[i] = p; updated++; } else { all.Add(p); added++; }
             }
             Products.Save(all); return true;
         });
-        return new(added, updated, warnings);
+        return new(added, updated, warnings, skipped);
     }
 
     /// <summary>Kunden als Shopify-Kunden-CSV. „Straße, PLZ Ort“ wird in Adresse, PLZ und Ort aufgeteilt, das Land ist DE.</summary>

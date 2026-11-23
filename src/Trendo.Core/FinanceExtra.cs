@@ -142,7 +142,8 @@ public sealed class BudgetStore(string dataRoot)
 }
 
 // ---------- Online verkaufen: nutzt Kunden (BizContact) und Ware (Product) der Geschäftsidee aus „Betrieb“ ----------
-public sealed record OrderLine(string Product, decimal Qty, decimal PriceNet);
+/// <remarks>T-0753 M-C: <see cref="ItemId"/> und <see cref="Variant"/> binden die Zeile fest an den Artikel (leer bei Altdaten).</remarks>
+public sealed record OrderLine(string Product, decimal Qty, decimal PriceNet, string ItemId = "", string Variant = "");
 /// <summary>Zahlung zu einer Bestellung; <see cref="Ref"/> (z. B. Kontoauszug-Zeile) macht doppelte Erfassung unmöglich.</summary>
 public sealed record ShopPayment(string Ref, DateOnly Date, decimal Amount);
 /// <summary>Bestellung. 105 (Entscheidung 31.10.2026): Bestand sinkt erst bei Lieferung, Umsatz zählt erst bei Zahlung.
@@ -167,8 +168,6 @@ public sealed partial class Shop(string dataRoot, string ideaId)
     public IdeaList<StockMove> Moves { get; } = new(dataRoot, ideaId, "lagerbewegungen");
     /// <summary>T-0753: Bons der Kasse (dieselbe Datei wie <see cref="CashRegister.Sales"/>) – für Umbenennen und die Sperre von Varianten.</summary>
     public IdeaList<CashSale> CashSales { get; } = new(dataRoot, ideaId, "kasse");
-    /// <summary>T-0753 N-c: Umbenennungen (alt → neu), damit alte Bons unverändert bleiben und beim Storno trotzdem den Artikel finden.</summary>
-    public IdeaList<RenameEntry> Renames { get; } = new(dataRoot, ideaId, "umbenennungen");
 
     /// <summary>Für Bestellungen vorgemerkt, aber noch nicht geliefert.
     /// T-0753: für einen Artikel mit Varianten zählen alle seine Varianten mit („Shirt – M“ gehört zu „Shirt“).</summary>
@@ -194,7 +193,8 @@ public sealed partial class Shop(string dataRoot, string ideaId)
         foreach (var (name, qty) in lines)
         {
             var (i, v) = FindItem(prods, name); if (i < 0) throw new ArgumentException($"Den Artikel „{name}“ gibt es nicht.");
-            res.Add(new(name, qty, (decimal)(v >= 0 ? prods[i].Variants![v].Price : prods[i].Price))); // T-0753: Variante mit eigenem Preis
+            if (EnsureIds(prods)) Products.Save(prods); // T-0753 M-C: feste Kennung
+            res.Add(new(name, qty, (decimal)(v >= 0 ? prods[i].Variants![v].Price : prods[i].Price), prods[i].Id, v >= 0 ? prods[i].Variants![v].Name : "")); // T-0753: Variante mit eigenem Preis
         }
         if (contacts[ci].Stage is "Interessent" or "Angebot") { contacts[ci] = contacts[ci] with { Stage = "Kunde" }; Customers.Save(contacts); }
         var o = new ShopOrder(Guid.NewGuid().ToString("N")[..8], date, customer, res, StockOut: false, Payments: []); OrderList.Add(o); return o;
@@ -209,10 +209,11 @@ public sealed partial class Shop(string dataRoot, string ideaId)
         if (o.Status == "storniert") throw new InvalidOperationException("Diese Bestellung ist storniert.");
         if (o.StockOut != false) throw new InvalidOperationException("Diese Bestellung ist schon geliefert.");
         var prods = Products.All();
-        RequireKnown(prods, o.Lines.Select(l => l.Product)); // T-0753: erst prüfen, dann schreiben
-        foreach (var l in o.Lines)
+        var at = o.Lines.Select(l => (Line: l, Pos: Resolve(prods, l.Product, l.ItemId, l.Variant))).ToList(); // T-0753 M-C: über die feste Kennung
+        if (at.FirstOrDefault(x => x.Pos.Product < 0) is { Line: { } gone }) throw new InvalidOperationException($"Den Artikel „{gone.Product}“ gibt es nicht mehr (oder nicht mehr in dieser Form) – die Bestellung lässt sich nur stornieren.");
+        foreach (var (l, pos) in at)
         {
-            AddStock(prods, l.Product, -(int)l.Qty); // T-0753: auch Varianten
+            AddStockAt(prods, pos.Product, pos.Variant, -(int)l.Qty);
             Moves.Add(new(Guid.NewGuid().ToString("N")[..8], date, l.Product, -l.Qty, o.Id, "Lieferung"));
         }
         Products.Save(prods);
@@ -232,11 +233,11 @@ public sealed partial class Shop(string dataRoot, string ideaId)
             var prods = Products.All(); LastNotRestocked.Clear();
             foreach (var l in o.Lines)
             {
-                // T-0753 M-B: gibt es den Artikel bzw. die Variante nicht mehr, wird ohne Bestandsänderung storniert – sichtbar über LastNotRestocked
-                var label = Current(l.Product);
-                if (!Known(prods, label)) { LastNotRestocked.Add(l.Product); continue; }
-                AddStock(prods, label, (int)l.Qty);
-                Moves.Add(new(Guid.NewGuid().ToString("N")[..8], date, label, l.Qty, o.Id, "Rücknahme"));
+                // T-0753 M-B/M-C: über die feste Kennung; gibt es den Artikel bzw. die Variante nicht mehr, wird ohne Bestandsänderung storniert – sichtbar über LastNotRestocked
+                var (pi, vi) = Resolve(prods, l.Product, l.ItemId, l.Variant);
+                if (pi < 0) { LastNotRestocked.Add(l.Product); continue; }
+                AddStockAt(prods, pi, vi, (int)l.Qty);
+                Moves.Add(new(Guid.NewGuid().ToString("N")[..8], date, vi >= 0 ? Label(prods[pi], prods[pi].Variants![vi]) : prods[pi].Name, l.Qty, o.Id, "Rücknahme"));
             }
             Products.Save(prods);
         }

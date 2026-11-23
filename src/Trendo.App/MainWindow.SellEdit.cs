@@ -52,6 +52,11 @@ public partial class MainWindow
     static string SellCancelText(Shop shop) => shop.LastNotRestocked.Count == 0 ? "Bestellung storniert."
         : $"Bestellung storniert. Bestand nicht zurückgebucht für {string.Join(", ", shop.LastNotRestocked.Select(x => "„" + x + "“"))} – den Artikel gibt es nicht mehr.";
 
+    /// <summary>T-0753 N-e: Ergebnis eines Imports mit Anzahl „nicht übernommen“ und der vollständigen Liste der Hinweise (je eine Zeile).</summary>
+    public static string SellImportText(string file, ShopImport r) =>
+        $"{file}: {r.Added} neu, {r.Updated} aktualisiert" + (r.Skipped > 0 ? $", {r.Skipped} nicht übernommen" : "") +
+        (r.Warnings.Count > 0 ? $". Hinweise ({r.Warnings.Count}):\n• " + string.Join("\n• ", r.Warnings) : ".");
+
     /// <summary>Strg+Z auf der Seite nimmt die letzte Änderung an Artikeln, Kunden oder Bestellungen zurück (nicht in Textfeldern).</summary>
     void SellKeys(Control page) => page.KeyDown += (_, e) =>
     {
@@ -70,7 +75,7 @@ public partial class MainWindow
             {
                 var head = File.ReadLines(f).FirstOrDefault() ?? "";
                 var r = head.Contains("First Name", StringComparison.OrdinalIgnoreCase) ? shop.ImportCustomersCsv(f) : shop.ImportProductsCsv(f);
-                said.Add($"{Path.GetFileName(f)}: {r.Added} neu, {r.Updated} aktualisiert" + (r.Warnings.Count > 0 ? " · " + string.Join(" · ", r.Warnings.Take(3)) : ""));
+                said.Add(SellImportText(Path.GetFileName(f), r));
             }
             else if (Shop.ImageTypes.Contains(ext) && product is not null && shop.Products.All().FirstOrDefault(p => p.Name == product) is { } p)
             {
@@ -105,7 +110,7 @@ public partial class MainWindow
             {
                 var r = customers ? shop.ImportCustomersCsv(f) : shop.ImportProductsCsv(f);
                 _core.Audit.Append(Principal.LocalOwner.Name, customers ? "shop.csv.kunden" : "shop.csv.artikel", $"{r.Added} neu, {r.Updated} aktualisiert");
-                Say($"{Path.GetFileName(f)}: {r.Added} neu, {r.Updated} aktualisiert." + (r.Warnings.Count > 0 ? " Hinweise: " + string.Join(" · ", r.Warnings.Take(5)) : ""), SellV);
+                Say(SellImportText(Path.GetFileName(f), r), SellV);
             });
         }
         void Export(string kind, Func<string, string> write) => SellTry(SellV, () => { var f = write(SellCsvFile(kind)); Say("Gespeichert: " + f, SellV); });
