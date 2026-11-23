@@ -134,3 +134,17 @@ Die Umbenennungs-Liste aus N-c ist ersetzt durch eine **feste Artikel-Kennung**:
 | Rückgängig-Daten | 207,95 MB | 1,21 MB |
 
 **Tests danach:** Kern 123/123 (`reports/T-0753/core-tests-viertpruefung.txt`), App 81/81 (`reports/T-0753/app-tests.txt`). `dotnet build Trendo.sln -c Release` 0 Fehler.
+
+## Fünfte Prüfung behoben (sechster Durchgang)
+
+Rotlauf der neuen Tests auf 29f577a65: `reports/T-0753/rotlauf-29f577a65.txt` (4 von 4 rot: zweimal „Seitdem wurde verkauft …“, „m“ statt „M“ ohne Art.-Nr., Preis 0 statt 6).
+
+| Befund | Lösung | Test |
+|---|---|---|
+| H-1 Rückgängig nur noch ein Schritt | Fingerabdruck ist der Inhalt (SHA-256) und nur über die Dateien, die der Schritt geändert hat; geänderte Dateien werden per Bytevergleich erkannt. Damit stört die neue Schreibzeit nach einem Rückgängig nicht mehr (auch FAT/exFAT, N-i). Eine echte fremde Änderung an einer Datei des Schritts wird weiter erkannt. | `ShopEditFix5Tests.Undo_twenty_steps` (20× anlegen mit 20 ms Abstand, 20× zurück), `Undo_fast_mixed` (5 gemischte Schritte schnell hintereinander, danach Kassenverkauf → Meldung) |
+| M-F leere Preiszelle setzt 0 € | Leere Zelle bei Preis, Einkaufspreis, Bestand, Art.-Nr. und Variantenwerten heißt „behalten“; 0 nur bei „0“; eine leere Beschreibung leert (wie Shopify). Ein neuer Artikel oder eine neue Variante ohne Preis wird nicht angelegt, mit Hinweis. | `Empty_cells_keep` |
+| N-h Groß-/Kleinschreibung, entfernte Varianten | Varianten werden ohne Groß-/Kleinschreibung zugeordnet, Name und Art.-Nr. bleiben; entfernte Varianten werden mit Name und Bestand gemeldet | `Variant_case_and_removed` |
+
+**Leistung (M-D) danach** (`reports/T-0753/leistung-rueckgaengig.txt`): 20× Artikel anlegen 454 ms (23 ms je Schritt), Import 100 Artikel 281 ms, Rückgängig-Daten 1,21 MB – vorher (d9057d90f) 27 898 ms / 7 028 ms / 207,95 MB.
+
+**Tests danach:** Kern 127/127 inkl. `ShopEditPerfTests` (`reports/T-0753/core-tests-fuenftpruefung.txt`), App 81/81. `dotnet build Trendo.sln -c Release` 0 Fehler.

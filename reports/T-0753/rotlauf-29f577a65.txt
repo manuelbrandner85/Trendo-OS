@@ -1,0 +1,15 @@
+Rotlauf der neuen Tests (ShopEditFix5Tests) auf dem unveränderten Stand 29f577a65, 2026-11-23 04:35
+[xUnit.net 00:00:04.72]     H-1: 20× anlegen, 20× Rückgängig – jeder Schritt geht zurück, ohne „seitdem verkauft“ [FAIL]
+[xUnit.net 00:00:04.82]     H-1: 5 schnell hintereinander (Artikel, Kunde, Änderung) – 5× Rückgängig klappt; echte fremde Änderung wird weiter erkannt [FAIL]
+[xUnit.net 00:00:04.87]     N-h: Variante „m“ trifft „M“ (Name und Art.-Nr. bleiben); entfernte Variante wird mit Name und Bestand gemeldet [FAIL]
+[xUnit.net 00:00:04.92]     M-F: leere Zelle bei Preis, Einkaufspreis, Bestand und Variante bedeutet behalten; „0“ setzt 0; leere Beschreibung leert; neuer Artikel ohne Preis wird nicht angelegt [FAIL]
+   System.InvalidOperationException : Seitdem wurde verkauft, geliefert oder bezahlt – „Rückgängig“ ist dafür nicht mehr möglich.
+   System.InvalidOperationException : Seitdem wurde verkauft, geliefert oder bezahlt – „Rückgängig“ ist dafür nicht mehr möglich.
+  Fehler N-h: Variante „m“ trifft „M“ (Name und Art.-Nr. bleiben); entfernte Variante wird mit Name und Bestand gemeldet [51 ms]
+   Assert.Equal() Failure: Values differ
+Expected: Tuple ("M", 21, 5, "SH-M")
+Actual:   Tuple ("m", 21, 5, "")
+   Assert.Equal() Failure: Values differ
+Expected: Tuple (6, 8, 2, "Steingut")
+Actual:   Tuple (0, 8, 0, "Steingut")
+Fehler!      : Fehler:     4, erfolgreich:     0, übersprungen:     0, gesamt:     4, Dauer: 1 s - Trendo.Core.Tests.dll (net10.0)

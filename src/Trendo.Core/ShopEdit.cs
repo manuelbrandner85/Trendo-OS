@@ -165,8 +165,9 @@ public sealed partial class Shop
     string UndoIndex => Path.Combine(UndoDir, "index.json");
     string[] Files => [Products.FilePath, Customers.FilePath, OrderList.FilePath, CashSales.FilePath];
     static string? ReadOrNull(string f) => File.Exists(f) ? File.ReadAllText(f) : null;
-    /// <summary>Fingerabdruck ohne Inhalt zu lesen: Länge und Schreibzeit (jedes Speichern ersetzt die Datei atomar und setzt die Zeit neu).</summary>
-    static string Print(string f) { var i = new FileInfo(f); return i.Exists ? $"{i.Length}:{i.LastWriteTimeUtc.Ticks}" : "-"; }
+    /// <summary>T-0753 H-1: Fingerabdruck ist der Inhalt (SHA-256) – unabhängig von der Schreibzeit (auch FAT/exFAT), damit mehrere Rückgängig-Schritte hintereinander gehen.</summary>
+    static string Print(byte[]? bytes) => bytes is null ? "-" : Convert.ToHexString(SHA256.HashData(bytes));
+    static byte[]? ReadBytes(string f) => File.Exists(f) ? File.ReadAllBytes(f) : null;
     List<UndoEntry> LoadUndo() { try { return File.Exists(UndoIndex) ? JsonSerializer.Deserialize<List<UndoEntry>>(File.ReadAllText(UndoIndex)) ?? [] : []; } catch (JsonException) { return []; } }
     void SaveUndo(List<UndoEntry> l)
     {
@@ -178,14 +179,16 @@ public sealed partial class Shop
     /// <summary>Führt eine Änderung der Stammdaten aus und merkt den Stand davor – nur der Dateien, die sie wirklich ändert.</summary>
     T Undoable<T>(string what, Func<T> change)
     {
-        var before = Files.ToDictionary(f => f, f => (Print: Print(f), Bytes: File.Exists(f) ? File.ReadAllBytes(f) : null));
+        var before = Files.ToDictionary(f => f, ReadBytes);
         var r = change();
         var changed = new Dictionary<string, string?>(); var after = new Dictionary<string, string>();
         foreach (var f in Files)
         {
-            var name = Path.GetFileName(f); var now = Print(f);
-            after[name] = now;
-            if (now != before[f].Print) changed[name] = before[f].Bytes is { } b ? Encoding.UTF8.GetString(b) : null; // nur geänderte Dateien
+            var now = ReadBytes(f); var was = before[f];
+            if (now is null && was is null || now is not null && was is not null && now.AsSpan().SequenceEqual(was)) continue; // unverändert: weder sichern noch prüfen
+            var name = Path.GetFileName(f);
+            changed[name] = was is null ? null : Encoding.UTF8.GetString(was);
+            after[name] = Print(now); // nur die Dateien dieses Schritts
         }
         if (changed.Count == 0) return r;
         Directory.CreateDirectory(UndoDir);
@@ -208,7 +211,7 @@ public sealed partial class Shop
         var l = LoadUndo();
         if (l.Count == 0) throw new InvalidOperationException("Es gibt nichts rückgängig zu machen.");
         var e = l[^1];
-        if (Files.Any(f => e.After.TryGetValue(Path.GetFileName(f), out var p) && p != Print(f)))
+        if (Files.Any(f => e.After.TryGetValue(Path.GetFileName(f), out var p) && p != Print(ReadBytes(f))))
         { SaveUndo([]); throw new InvalidOperationException("Seitdem wurde verkauft, geliefert oder bezahlt – „Rückgängig“ ist dafür nicht mehr möglich."); }
         var stepFile = Path.Combine(UndoDir, e.Step);
         var before = File.Exists(stepFile) ? JsonSerializer.Deserialize<Dictionary<string, string?>>(File.ReadAllText(stepFile)) ?? [] : throw new InvalidOperationException("Der gemerkte Stand fehlt – „Rückgängig“ ist nicht mehr möglich.");
@@ -520,18 +523,18 @@ public sealed partial class Shop
             else groups.Add((h, [(rows[r], r + 1)]));
         }
         var warnings = new List<string>();
-        var parsed = new List<Product>();
-        // T-0753 M-E: nur vorhandene Spalten überschreiben – was fehlt, bleibt beim bestehenden Artikel
-        var has = new ImportCols(c.Has("Price", "Variant Price"), c.Has("Inventory quantity", "Variant Inventory Qty"), c.Has("Cost per item"), c.Has("Description", "Body (HTML)"),
-            c.Has("SKU", "Variant SKU"), c.Has("Vendor"), c.Has("Option1 value", "Option1 Value"));
+        var parsed = new List<CsvItem>();
+        var hasDesc = c.Has("Description", "Body (HTML)"); var hasVendor = c.Has("Vendor"); var hasOptions = c.Has("Option1 value", "Option1 Value");
         var seenSku = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        string Sku(string s, int line) { try { s = SalesStats.CheckSku(s); } catch (ArgumentException e) { warnings.Add($"Zeile {line}: {e.Message} – ohne Nummer übernommen."); return ""; } if (s.Length == 0) return ""; if (seenSku.Add(s)) return s; warnings.Add($"Zeile {line}: Artikelnummer „{s}“ kommt doppelt vor – beim zweiten Mal weggelassen."); return ""; }
+        string? Sku(string s, int line) { if (s.Length == 0) return null; try { s = SalesStats.CheckSku(s); } catch (ArgumentException e) { warnings.Add($"Zeile {line}: {e.Message} – ohne Nummer übernommen."); return null; } if (seenSku.Add(s)) return s; warnings.Add($"Zeile {line}: Artikelnummer „{s}“ kommt doppelt vor – beim zweiten Mal weggelassen."); return null; }
+        // T-0753 M-F: eine leere Zelle heißt „behalten“ (null), 0 gilt nur, wenn „0“ dasteht
+        double? Num(string cell, string what, int line) => cell.Length == 0 ? null : ParseNum(cell, what, line);
         foreach (var (_, g) in groups)
         {
             var (head, line0) = g.FirstOrDefault(x => c.Get(x.Row, "Title").Length > 0);
             if (head is null) { warnings.Add($"Zeile {g[0].Line}: Variante ohne Artikelzeile mit „Title“ – übersprungen."); continue; }
             var name = c.Get(head, "Title").Replace(VariantSep, " - ");
-            var vars = new List<ItemVariant>();
+            var vars = new List<CsvVariant>();
             var image = "";
             foreach (var (row, line) in g)
             {
@@ -545,15 +548,15 @@ public sealed partial class Shop
                     else warnings.Add($"Zeile {line}: Bild „{img}“ nicht gefunden – ohne Bild übernommen.");
                 }
                 var val = c.Get(row, "Option1 value", "Option1 Value");
-                if (val.Length == 0 && c.Get(row, "Price", "Variant Price").Length == 0 && c.Get(row, "Inventory quantity", "Variant Inventory Qty").Length == 0
-                    && c.Get(row, "SKU", "Variant SKU").Length == 0 && !(row == head && !has.Price)) continue; // reine Bildzeile
-                vars.Add(new(val.Length == 0 ? "Default Title" : val, ParseNum(c.Get(row, "Price", "Variant Price"), "Preis", line),
-                    (int)Math.Max(0, ParseNum(c.Get(row, "Inventory quantity", "Variant Inventory Qty"), "Bestand", line)), Sku(c.Get(row, "SKU", "Variant SKU"), line)));
+                var price = Num(c.Get(row, "Price", "Variant Price"), "Preis", line);
+                var qty = Num(c.Get(row, "Inventory quantity", "Variant Inventory Qty"), "Bestand", line);
+                var sku = Sku(c.Get(row, "SKU", "Variant SKU"), line);
+                if (row != head && val.Length == 0 && price is null && qty is null && sku is null) continue; // reine Bildzeile
+                vars.Add(new(val.Length == 0 ? "Default Title" : val, price, qty is { } q ? (int)Math.Max(0, q) : null, sku));
             }
-            if (vars.Count == 0) { warnings.Add($"Zeile {line0}: „{name}“ ohne Preis und Bestand – übersprungen."); continue; }
             var single = vars.Count == 1 && vars[0].Name == "Default Title";
-            parsed.Add(new Product(name, c.Get(head, "Vendor"), ParseNum(c.Get(head, "Cost per item"), "Einkaufspreis", line0), vars[0].Price, single ? vars[0].Stock : vars.Sum(v => v.Stock), 0, 0,
-                single ? vars[0].Sku : "", PlainText(c.Get(head, "Description", "Body (HTML)")), image, single ? null : vars));
+            parsed.Add(new(name, hasVendor ? c.Get(head, "Vendor") : null, Num(c.Get(head, "Cost per item"), "Einkaufspreis", line0),
+                hasDesc ? PlainText(c.Get(head, "Description", "Body (HTML)")) : null, image, single || !hasOptions ? null : vars, single || !hasOptions ? vars.FirstOrDefault() : null, line0));
         }
         var added = 0; var updated = 0; var skipped = 0;
         Undoable($"{parsed.Count} Artikel aus CSV laden", () =>
@@ -562,11 +565,13 @@ public sealed partial class Shop
             StampLegacy(all); // T-0753 M-C
             var live = LiveLines(); // T-0753 M-D: einmal laden statt je Artikel
             var index = all.Select((x, k) => (x.Name, k)).GroupBy(x => x.Name).ToDictionary(g => g.Key, g => g.First().k);
-            foreach (var raw in parsed)
+            foreach (var item in parsed)
             {
-                var p0 = Normalize(raw); var i = index.TryGetValue(p0.Name, out var hit) ? hit : -1;
+                var i = index.TryGetValue(item.Name.Trim(), out var hit) ? hit : -1;
                 var keep = i >= 0 ? all[i] : null;
-                var p = keep is null ? p0 : Merge(keep, p0, has);
+                Product p;
+                try { p = Normalize(keep is null ? Create(item) : Merge(keep, item, warnings)); }
+                catch (ArgumentException e) { warnings.Add($"„{item.Name}“ nicht übernommen: {e.Message}"); skipped++; continue; }
                 var others = all.Where((_, k) => k != i).ToList();
                 var taken = others.SelectMany(Skus).ToHashSet(StringComparer.OrdinalIgnoreCase);
                 if (Skus(p).FirstOrDefault(taken.Contains) is { } t) { warnings.Add($"„{p.Name}“: Artikelnummer „{t}“ hat schon „{others.First(o => Skus(o).Contains(t, StringComparer.OrdinalIgnoreCase)).Name}“ – ohne Nummer übernommen."); p = p with { Sku = taken.Contains(p.Sku) ? "" : p.Sku, Variants = p.Variants?.Select(v => taken.Contains(v.Sku) ? v with { Sku = "" } : v).ToList() }; }
@@ -580,31 +585,50 @@ public sealed partial class Shop
         return new(added, updated, warnings, skipped);
     }
 
-    sealed record ImportCols(bool Price, bool Qty, bool Cost, bool Desc, bool Sku, bool Vendor, bool Options);
+    /// <summary>Eine Zeile bzw. Variante aus der CSV; null heißt „Zelle leer oder Spalte fehlt – behalten“ (T-0753 M-E/M-F).</summary>
+    sealed record CsvVariant(string Name, double? Price, int? Qty, string? Sku);
+    sealed record CsvItem(string Name, string? Vendor, double? Cost, string? Description, string Image, List<CsvVariant>? Variants, CsvVariant? Single, int Line);
 
-    /// <summary>T-0753 M-E: Import über einen bestehenden Artikel – nur Spalten, die in der CSV stehen, ersetzen den Wert; Varianten werden nach Namen
-    /// zusammengeführt. Ohne Optionsspalte bleiben vorhandene Varianten; ein Preis gilt dann für alle, ihr Bestand bleibt.</summary>
-    static Product Merge(Product keep, Product p, ImportCols has)
+    /// <summary>Neuer Artikel aus der CSV: ohne Preis wird nichts angelegt (sonst stünde er still für 0 € in der Kasse).</summary>
+    static Product Create(CsvItem it)
+    {
+        if (it.Variants is { Count: > 0 } vs)
+        {
+            if (vs.FirstOrDefault(v => v.Price is null) is { } np) throw new ArgumentException($"Zeile {it.Line}: Variante „{np.Name}“ ohne Preis.");
+            var list = vs.Select(v => new ItemVariant(v.Name, v.Price!.Value, v.Qty ?? 0, v.Sku ?? "")).ToList();
+            return new Product(it.Name, it.Vendor ?? "", it.Cost ?? 0, list[0].Price, list.Sum(v => v.Stock), 0, 0, "", it.Description ?? "", it.Image, list);
+        }
+        if (it.Single?.Price is not { } price) throw new ArgumentException($"Zeile {it.Line}: ohne Preis – ein neuer Artikel braucht einen Preis.");
+        return new Product(it.Name, it.Vendor ?? "", it.Cost ?? 0, price, it.Single.Qty ?? 0, 0, 0, it.Single.Sku ?? "", it.Description ?? "", it.Image);
+    }
+
+    /// <summary>T-0753 M-E/M-F/N-h: Import über einen bestehenden Artikel – nur gefüllte Zellen ersetzen den Wert (die Beschreibung darf geleert werden).
+    /// Varianten werden nach Namen ohne Groß-/Kleinschreibung zusammengeführt, ihr bisheriger Name bleibt; Varianten, die die CSV nicht mehr nennt,
+    /// fallen weg und werden gemeldet. Ohne Variantenzeilen bleiben vorhandene Varianten; ein Preis gilt dann für alle, ihr Bestand bleibt.</summary>
+    static Product Merge(Product keep, CsvItem it, List<string> warnings)
     {
         var r = keep with
         {
-            Supplier = has.Vendor ? p.Supplier : keep.Supplier, Cost = has.Cost ? p.Cost : keep.Cost, Description = has.Desc ? p.Description : keep.Description,
-            Image = p.Image.Length > 0 ? p.Image : keep.Image,
+            Supplier = it.Vendor ?? keep.Supplier, Cost = it.Cost ?? keep.Cost, Description = it.Description ?? keep.Description,
+            Image = it.Image.Length > 0 ? it.Image : keep.Image,
         };
-        var pVariants = has.Options && p.Variants is { Count: > 0 };
-        if (pVariants)
+        if (it.Variants is { Count: > 0 } csv)
         {
-            var vs = p.Variants!.Select(v => keep.Variants?.FirstOrDefault(o => o.Name == v.Name) is { } o
-                ? new ItemVariant(v.Name, has.Price ? v.Price : o.Price, has.Qty ? v.Stock : o.Stock, has.Sku ? v.Sku : o.Sku)
-                : new ItemVariant(v.Name, has.Price ? v.Price : keep.Price, has.Qty ? v.Stock : 0, has.Sku ? v.Sku : "")).ToList();
-            return r with { Variants = vs, Stock = vs.Sum(v => v.Stock), Price = vs[0].Price, Sku = has.Sku ? "" : keep.Sku };
+            var vs = csv.Select(v => keep.Variants?.FirstOrDefault(o => string.Equals(o.Name, v.Name, StringComparison.CurrentCultureIgnoreCase)) is { } o
+                ? new ItemVariant(o.Name, v.Price ?? o.Price, v.Qty ?? o.Stock, v.Sku ?? o.Sku)
+                : new ItemVariant(v.Name, v.Price ?? throw new ArgumentException($"Zeile {it.Line}: neue Variante „{v.Name}“ ohne Preis."), v.Qty ?? 0, v.Sku ?? "")).ToList();
+            foreach (var gone in keep.Variants?.Where(o => !vs.Any(v => v.Name == o.Name)) ?? [])
+                warnings.Add($"„{keep.Name}“: Variante „{gone.Name}“ (Bestand {gone.Stock}) steht nicht mehr in der CSV und wurde entfernt.");
+            return r with { Variants = vs, Stock = vs.Sum(v => v.Stock), Price = vs[0].Price, Sku = "" };
         }
-        if (keep.Variants is { Count: > 0 } kv && !has.Options)
+        var one = it.Single ?? new CsvVariant("Default Title", null, null, null);
+        if (keep.Variants is { Count: > 0 } kv)
         {
-            var vs = kv.Select(v => has.Price ? v with { Price = p.Price } : v).ToList();
+            if (one.Qty is not null) warnings.Add($"„{keep.Name}“: Bestand ohne Variante lässt sich keiner Variante zuordnen – Bestand der Varianten bleibt.");
+            var vs = kv.Select(v => one.Price is { } np ? v with { Price = np } : v).ToList();
             return r with { Variants = vs, Price = vs[0].Price, Stock = vs.Sum(v => v.Stock) };
         }
-        return r with { Variants = has.Options ? null : keep.Variants, Price = has.Price ? p.Price : keep.Price, Stock = has.Qty ? p.Stock : keep.Stock, Sku = has.Sku ? p.Sku : keep.Sku };
+        return r with { Price = one.Price ?? keep.Price, Stock = one.Qty ?? keep.Stock, Sku = one.Sku ?? keep.Sku };
     }
 
     /// <summary>Kunden als Shopify-Kunden-CSV. „Straße, PLZ Ort“ wird in Adresse, PLZ und Ort aufgeteilt, das Land ist DE.</summary>
