@@ -53,8 +53,8 @@ public static class FreePort
         // T-0757 Fix1
         "weitergabe verboten", "do not distribute", "not for redistribution", "redistribution prohibited", "for internal use only", "vervielfältigung untersagt", "end user license agreement"];
 
-    /// <summary>T-0757 Fix1: Verneinung vor einem Lizenzkennzeichen („NOT CC0“, „nicht unter CC0“, „not under the MIT License“, „keine BSD“).</summary>
-    static readonly Regex Negated = new(@"\b(?:not|nicht|kein[a-z]*|no)\s+(?:(?:unter|under|licensed\s+under)\s+)?(?:(?:der|die|the|a|an)\s+)?(?:cc0|(?-i:MIT)|bsd|apache|zlib|unlicense)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    /// <summary>T-0757 Fix1: Verneinung vor einem Lizenzkennzeichen („NOT CC0“, „nicht unter CC0“, „not under the MIT License“, „keine BSD“; Fix2: „not released under CC0“, „NOT available under the MIT License“).</summary>
+    static readonly Regex Negated = new(@"\b(?:not|nicht|kein[a-z]*|no)\s+(?:(?:released|available|licensed|distributed|offered|provided|published|veröffentlicht|lizenziert|verfügbar)\s+)?(?:(?:unter|under)\s+)?(?:(?:der|die|the|a|an)\s+)?(?:cc0|(?-i:MIT)|bsd|apache|zlib|unlicense)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
     /// <summary>Stehen oft in der Copyright-Zeile echter MIT- und BSD-Lizenzen. Sie zählen nur, wenn keine vollständige freie Lizenz im Text steht.</summary>
     static readonly string[] Reserved = ["all rights reserved", "alle rechte vorbehalten"];

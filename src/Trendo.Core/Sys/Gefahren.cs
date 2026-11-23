@@ -186,28 +186,44 @@ public static partial class SystemScan
 
     static readonly string[] ScriptExt = [".js", ".mjs", ".cjs"];
 
-    /// <summary>T-0755 Fix5 / T-0757 Fix1: Aufruf von PowerShell irgendwo in den Argumenten – mit oder ohne Pfad (auch in Anführungszeichen mit Leerzeichen),
-    /// nach Leerraum, Anführungszeichen, Pfadtrenner, Befehlstrennern (&amp; |) und den cmd-Trennern @ , ; = ( ), auch direkt hinter /c, /k, /r.</summary>
-    [GeneratedRegex(@"(?i)(?:(?<=^|[\s""'\\/(@,;=)&|])|(?<=(?:^|[\s""'])/[ckr]))(?:powershell|pwsh)(?:\.exe)?(?=[""'\s)&|,;]|$)")] private static partial Regex InnerPowerShell();
+    /// <summary>T-0755 Fix5 / T-0757 Fix1/Fix2: Aufruf von PowerShell irgendwo in den Argumenten – mit oder ohne Pfad (auch in Anführungszeichen mit Leerzeichen),
+    /// nach Leerraum, Anführungszeichen, Pfadtrenner, Befehlstrennern (&amp; |) und den cmd-Trennern @ , ; = ( ), auch direkt hinter /c, /k, /r
+    /// (<c>/q/cpowershell</c>). Ende des Namens auch an „/“ (<c>powershell.exe/NoP</c>).</summary>
+    [GeneratedRegex(@"(?i)(?:(?<=^|[\s""'\\/(@,;=)&|])|(?<=/[ckr]))(?:powershell|pwsh)(?:\.exe)?(?=[""'\s)&|,;/]|$)")] private static partial Regex InnerPowerShell();
 
-    /// <summary>T-0757 Fix1: echte Nicht-Ausführung im selben Befehlsabschnitt – <c>echo</c> oder <c>rem</c> davor.</summary>
-    [GeneratedRegex(@"(?i)(?:^|[\s@(,;=""'])(?:echo|rem)(?=$|[\s.(:;,=/\\""'])")] private static partial Regex NotRun();
+    /// <summary>T-0757 Fix2: echte Nicht-Ausführung – <c>echo</c> oder <c>rem</c> ist das ERSTE Befehlswort des Abschnitts: am Anfang, nach Schaltern wie
+    /// /q /d /c /k /r, nach ( oder @ – auch in einem inneren <c>cmd /c</c>. Ein „echo“ als Fenstertitel, Variablenname oder Text weiter hinten zählt nicht.</summary>
+    [GeneratedRegex(@"(?i)^(?:.*?(?:^|[\s""'\\/])cmd(?:\.exe)?[""']?(?=[\s/]))?[\s""'@(]*(?:/[a-z]+(?::\S+)?[\s""'@(]*)*(?:echo|rem)(?=$|[\s.(:,=/\\""'])")] private static partial Regex NotRun();
+
+    /// <summary>T-0757 Fix2: Ist PowerShell hier nur Text von echo/rem? Das echo muss das erste Befehlswort sein (<see cref="NotRun"/>), und zwischen echo und
+    /// PowerShell darf kein Anführungszeichen offen enden (sonst stand „cmd /c echo“ z. B. nur im Fenstertitel von start).</summary>
+    static bool IsEchoed(string before)
+    {
+        if (NotRun().Match(before) is not { Success: true } m) return false;
+        var tail = before[(m.Index + m.Length)..];
+        if (tail.EndsWith('"') || tail.EndsWith('\'')) tail = tail[..^1]; // Anführungszeichen direkt vor dem Programmnamen: echo "powershell …"
+        return tail.Count(c => c == '"') % 2 == 0;
+    }
 
     /// <summary>T-0757 Fix1: PowerShell als Wert eines Schalters (<c>--shell powershell</c>, <c>-shell=pwsh</c>, <c>/shell:powershell</c>).</summary>
     [GeneratedRegex(@"(?i)(?:^|\s)(?:--?|/)shell[\s=:]+[""']?$")] private static partial Regex ShellValue();
 
-    /// <summary>T-0755 Fix5 / T-0757 Fix1: Steht in den Argumenten – gleich welches Programm sie bekommt (cmd, start, conhost, forfiles, wmic, mshta,
+    /// <summary>T-0757 Fix2: Verschleierung durch Anführungszeichen entfernen – <c>""</c> und ein <c>"</c> mitten im Wort (<c>pow""ershell</c>, <c>"power"shell</c>).</summary>
+    static string Unquote(string s) => Regex.Replace(s.Replace("\"\"", ""), @"(?<=\w)""(?=\w)", "");
+
+    /// <summary>T-0755 Fix5 / T-0757 Fix1/Fix2: Steht in den Argumenten – gleich welches Programm sie bekommt (cmd, start, conhost, forfiles, wmic, mshta,
     /// pcalua, rundll32, bash, node …) – ein Aufruf von PowerShell, wird der Teil danach bis zum nächsten Befehlstrenner (&amp; oder |) auf einen
-    /// verschlüsselten Befehl geprüft. Vorher werden alle <c>^</c> entfernt (cmd verschluckt sie: <c>p^owershell</c>, <c>-e^nc</c>, Base64 mit <c>^</c>).
-    /// Ausgenommen ist nur, was PowerShell nicht startet: <c>echo</c>/<c>rem</c> im selben Befehlsabschnitt und <c>--shell powershell</c> als Schalterwert.</summary>
+    /// verschlüsselten Befehl geprüft. Vorher werden alle <c>^</c> und verschleiernde Anführungszeichen entfernt.
+    /// Ausgenommen ist nur, was PowerShell nicht startet: <c>echo</c>/<c>rem</c> als erstes Befehlswort des Abschnitts (Grenzen &amp; | ; und Zeilenumbruch)
+    /// und <c>--shell powershell</c> als Schalterwert.</summary>
     public static bool EncodedInnerPowerShell(string args)
     {
-        args = args.Replace("^", "");
+        args = Unquote(args.Replace("^", ""));
         foreach (Match m in InnerPowerShell().Matches(args))
         {
-            var seg = args.LastIndexOfAny(['&', '|'], Math.Max(0, m.Index - 1)) is var sep && sep >= 0 && sep < m.Index ? sep + 1 : 0;
+            var seg = m.Index > 0 && args.LastIndexOfAny(['&', '|', ';', '\n', '\r'], m.Index - 1) is var sep && sep >= 0 ? sep + 1 : 0;
             var before = args[seg..m.Index];
-            if (NotRun().IsMatch(before) || ShellValue().IsMatch(before)) continue;
+            if (IsEchoed(before) || ShellValue().IsMatch(before)) continue;
             var rest = args[(m.Index + m.Length)..];
             var cut = rest.IndexOfAny(['&', '|']); if (cut >= 0) rest = rest[..cut];
             if (Encoded().IsMatch(rest)) return true;

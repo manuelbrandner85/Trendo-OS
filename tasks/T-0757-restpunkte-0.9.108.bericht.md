@@ -70,3 +70,24 @@ Offen nach Fix1:
 - Der Offene Punkt „R3 … Fehler mit Hinweis“ oben ist überholt: Ein zweiter Titel oder ein zweites Projekt im selben PS2Recomp-Ordner läuft jetzt durch. Gesperrt bleibt nur, was Trendo nicht über beide Listen belegen kann (z. B. nach Löschen des Datenordners) – dann schon vor dem ersten Schritt, mit Hinweis.
 - Die breite Erkennung kann ein `powershell -enc` in reinem Text, der kein echo/rem ist (z. B. ein Schalterwert außer `--shell`), weiter rot machen; im Echtlauf gab es keinen solchen Fall.
 - `T0757NeuTests.C_nur_startprogramme` aus d456edd43 ist durch `C_breit_mit_ausnahmen` ersetzt (die alte Erwartung „nur 5 Startprogramme“ war der Rückschritt).
+
+## Zweitprüfung behoben (Stand nach a9135704d)
+
+| Befund | Lösung | Test (Rot auf a9135704d, grün jetzt) |
+|---|---|---|
+| MITTEL 1 echo/rem-Ausnahme zu breit: `cmd /c start "echo" powershell -enc …`, `start "rem" /min …`, `if not defined echo powershell …`, `bash -c "echo start; powershell -enc …"`, mshta mit `echo=1:`, `node -e "var echo=1;…"` waren gelb/grün | echo/rem zählt nur noch als ERSTES Befehlswort des Abschnitts: am Anfang, nach Schaltern (`/q /d /c /k /r`, auch `/q/c`), nach `(` oder `@` – auch in einem inneren `cmd /c` (forfiles). Abschnittsgrenzen jetzt `& \| ;` und Zeilenumbruch. Zusätzlich darf zwischen echo und PowerShell kein Anführungszeichen offen enden (`start "cmd /c echo" powershell` ist rot). Fehlalarm-Schutz bleibt für `cmd /c echo powershell -e …`, `@echo`, `(echo …)`, `"echo …"`, `rem`, `echo "powershell …" > datei` und `forfiles /c "cmd /c echo powershell …"` | `T0757Fix2Tests.Mittel_echo_nur_als_erstes_wort` (8 rot, 8 nicht rot) |
+| NIEDRIG 2 Verschleierung (auch auf main gelb) | Vor der Prüfung werden `""` und Anführungszeichen mitten im Wort entfernt; `/` beendet den Programmnamen (`powershell.exe/NoP`); `/c` `/k` `/r` direkt vor dem Namen auch ohne Leerraum davor (`/q/cpowershell`) | `T0757Fix2Tests.Niedrig_verschleierung` (`pow""ershell`, `"power"shell`, `powershell.exe/NoP /enc`, `/q/cpowershell`) |
+| NIEDRIG 5 Lizenz-Verneinung | Zwischen Verneinung und Lizenz dürfen jetzt released/available/licensed/distributed/offered/provided/published bzw. veröffentlicht/lizenziert/verfügbar und unter/under stehen | `T0757Fix2Tests.Niedrig_lizenz_verneinung`; echte Dateien: `Niedrig_alle_nuget_lizenzen` – alle 52 Lizenzdateien im NuGet-Cache (MIT 50, BSD 1, 1 MPL/GPL) plus die Apache- und zlib-Abschnitte aus `R1_echte_lizenzen_aus_nuget`: keine durch Fix1/Fix2-Regeln abgewiesen |
+| Echtlauf | 174 Einträge, Rot 15 · Gelb 58 · Grün 101, Gründe gleich – keine neuen Fehlalarme | `reports/T-0757/fix2-spec12-systempruefung-echt.txt` (echt, nur Zählungen) |
+| NIEDRIG 4 R3 (nur Doku) | siehe unten | – |
+
+R3 – Grenzen (dokumentiert, nicht geändert):
+- Beide Listen sind vom Nutzer beschreibbar: `ps2xRuntime/trendo-einsortiert.txt` im PS2Recomp-Ordner und Trendos Kopie unter `<Daten>/konsolenspiele/ps2recomp-listen/`. Wer beide gleich ändert, kann Trendo dazu bringen, eine Datei im Ordner `ps2xRuntime/src/runner` bzw. `include` zu löschen, deren Prüfsumme er kennt. Pfad-Regel, Prüfsumme und Präfix bleiben die Schranken (kein Löschen außerhalb, nichts Verändertes).
+- Reste aus 0.9.108 (Liste nur im PS2Recomp-Ordner, ohne Kopie im Datenordner) gelten als fremd: Die Voraussetzung „PS2Recomp ohne fremde Reste“ sperrt, bis PS2Recomp frisch eingerichtet oder die Dateien von Hand entfernt sind. Die Aktion „Alte Trendo-Dateien aus PS2Recomp entfernen“ greift dort nicht, weil die Dateien nicht in beiden Listen stehen.
+
+Rot-Grün:
+- `T0757Fix2Tests` auf a9135704d: 4 Tests, 3 Fehler, 1 bestanden (der Regressionsschutz über alle NuGet-Lizenzen) – `reports/T-0757/fix2-rot-auf-a9135704d-core.log`.
+- Core (T0757*, FreePortTests, ConsolePortTests, T0754*, T0755*, NoFixedUser, OsBehaviorTests, W7Tests): 113, bestanden 109, übersprungen 4 (nur Linux), Fehler 0 (`fix2-gruen-core.log`).
+- App T0755_Ui, SPEC12_Ui, ConsolePort_Ui: 8/8 (`fix2-gruen-app.log`).
+
+Geändert in Fix2: `src/Trendo.Core/Sys/Gefahren.cs`, `src/Trendo.Core/ConsolePort/FreePort.cs`, `tests/Trendo.Core.Tests/T0757Fix2Tests.cs` (neu), `reports/T-0757/fix2-*`, dieser Bericht.
