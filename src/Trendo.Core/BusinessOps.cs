@@ -7,8 +7,13 @@ namespace Trendo.Core;
 public sealed record Member(string Name, string Email, string Plan, string Team, string Role, DateOnly Since, bool Active = true);
 public sealed record PlanTier(string Name, double PriceMonth);
 public sealed record BizContact(string Name, string Company, string Email, string Stage, DateOnly? Next, double Value, string Notes = "", string Address = "");
-/// <remarks><see cref="Sku"/>: Artikelnummer oder EAN-Strichcode (seit 04.11.2026, für Scanner an der Kasse).</remarks>
-public sealed record Product(string Name, string Supplier, double Cost, double Price, int Stock, int LeadDays, double DailySales, string Sku = "");
+/// <remarks><see cref="Sku"/>: Artikelnummer oder EAN-Strichcode (seit 04.11.2026, für Scanner an der Kasse).
+/// T-0753: <see cref="Description"/>, <see cref="Image"/> (Dateiname im Bilderordner der Idee oder https-Adresse) und <see cref="Variants"/> sind optional;
+/// ältere Dateien ohne diese Felder bleiben lesbar. Hat ein Artikel Varianten, ist <see cref="Stock"/> die Summe ihrer Bestände.</remarks>
+public sealed record Product(string Name, string Supplier, double Cost, double Price, int Stock, int LeadDays, double DailySales, string Sku = "",
+    string Description = "", string Image = "", List<ItemVariant>? Variants = null);
+/// <summary>T-0753: Variante eines Artikels (z. B. Größe M) mit eigenem Preis netto, Bestand und Artikelnummer.</summary>
+public sealed record ItemVariant(string Name, double Price, int Stock, string Sku = "");
 public sealed record Ticket(string Title, string Customer, string Priority, DateTimeOffset Created, string State = "offen", string Answer = "");
 public sealed record DayStats(DateOnly Date, int Visits, int Signups, int Sales);
 

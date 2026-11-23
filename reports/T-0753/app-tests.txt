@@ -1,0 +1,5 @@
+Trendo.App.Tests (gezielt, Release, 23.11.2026):
+-class SellEdit_Ui                                                   Total: 3, Errors: 0, Failed: 0
+-class Teil4BusinessUiTests Kasse_Ui PodShop_Ui PodDesign_Ui PodPrintful_Ui PodPrintify_Ui W5_Business_Ui StudiosBueroGeld_Ui DesignPaket3_Ui DesignPaket4_Ui   Total: 86, Errors: 0, Failed: 0
+-class Kuenstlerstudio_Ui PodStudio_Ui                               Total: 7, Errors: 0, Failed: 0
+-class W0b_Look FreigabenKernUi DesignHonesty QA019_OfflineUi QA017_Keyboard   Total: 17, Errors: 0, Failed: 0

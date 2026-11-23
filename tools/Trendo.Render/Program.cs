@@ -767,6 +767,25 @@ else if (shot == "seite")
         win.Show("verkaufen"); win.KasseRenderCart([("Cappuccino", 2), ("Apfelkuchen", 1)], "10");
         win.Show("verkaufen");
     }
+    if (Environment.GetEnvironmentVariable("TRENDO_SELL") is { Length: > 0 }) // T-0753: Online verkaufen, Reiter „Online & Artikel“ mit Artikeln (Bild, Varianten), Kunden und offener Bestellung
+    {
+        var sh = win.BizShop;
+        var imgFile = Path.Combine(root, "artikelbild.png");
+        var art = new Avalonia.Controls.Border { Width = 400, Height = 300, Background = new Avalonia.Media.LinearGradientBrush { StartPoint = new Avalonia.RelativePoint(0, 0, Avalonia.RelativeUnit.Relative), EndPoint = new Avalonia.RelativePoint(1, 1, Avalonia.RelativeUnit.Relative), GradientStops = { new(Avalonia.Media.Color.Parse("#2E4A3A"), 0), new(Avalonia.Media.Color.Parse("#C9A227"), 1) } },
+            Child = new Avalonia.Controls.TextBlock { Text = "Wald", FontSize = 72, FontWeight = Avalonia.Media.FontWeight.Bold, Foreground = Avalonia.Media.Brushes.White, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center } };
+        art.Measure(new Avalonia.Size(400, 300)); art.Arrange(new Avalonia.Rect(0, 0, 400, 300));
+        using (var rtb = new Avalonia.Media.Imaging.RenderTargetBitmap(new Avalonia.PixelSize(400, 300))) { rtb.Render(art); rtb.Save(imgFile); }
+        sh.AddCustomer(new Trendo.Core.BizContact("Erika Muster", "", "erika@example.org", "Kunde", null, 0, "", "Hauptstraße 1, 10115 Berlin"));
+        sh.AddCustomer(new Trendo.Core.BizContact("Max Beispiel", "Beispiel GmbH", "max@example.org", "Interessent", null, 0, "", "Ringstraße 5, 80331 München"));
+        sh.AddProduct(new Trendo.Core.Product("Shirt Wald", "", 0, 0, 0, 0, 0, "", "Bio-Baumwolle, Siebdruck", sh.ImportImage(imgFile), [new("M", 20, 3, "SW-M"), new("L", 22.5, 1, "SW-L")]));
+        sh.AddProduct(new Trendo.Core.Product("Kaffeebohnen 1 kg", "Rösterei", 9, 18.9, 4, 0, 0, "4006381333931", "Ganze Bohne, mittlere Röstung"));
+        sh.PlaceOrder("Erika Muster", DateOnly.FromDateTime(DateTime.Today), ("Shirt Wald – M", 2));
+        win.Show("verkaufen");
+        for (var i = 0; i < 10; i++) Dispatcher.UIThread.RunJobs();
+        if (Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(win).OfType<Avalonia.Controls.Button>().FirstOrDefault(x => x.Name == "sell-tab-online") is { } tab) tab.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Avalonia.Controls.Button.ClickEvent));
+        for (var i = 0; i < 10; i++) Dispatcher.UIThread.RunJobs();
+        page = "verkaufen";
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_FOTOS") is { Length: > 0 } fotoMode) // Fotoalbum mit erzeugten Beispielbildern (Verläufe, Horizont, Sonne)
     {
         var fdir = Path.Combine(root, "beispielfotos"); Directory.CreateDirectory(fdir); var rnd = new Random(11);

@@ -145,6 +145,9 @@ public sealed class NetlifyDesignHost(IWebSend web, string token)
         try { return JsonNode.Parse(r.Body); } catch (JsonException) { return null; }
     }
 
+    /// <summary>T-0753: Prüft den Schlüssel nur lesend (GET /user), legt nichts an.</summary>
+    public async Task CheckAsync(CancellationToken ct = default) => await Call("GET", "/user", null, null, ct);
+
     /// <summary>Legt die eigene Ablage an und liefert ihre Kennung und Adresse.</summary>
     public async Task<(string Id, string Url)> CreateSiteAsync(CancellationToken ct = default)
     {

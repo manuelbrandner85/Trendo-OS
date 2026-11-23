@@ -1,0 +1,2 @@
+Name,Email,Financial Status,Fulfillment Status,Currency,Subtotal,Total,Created at,Lineitem quantity,Lineitem name,Lineitem price,Lineitem sku,Billing Name,Id
+#89c74006,,pending,unfulfilled,EUR,40.00,40.00,2026-11-23 00:00:00 +0100,2,Shirt Waldlauf – M,20.00,SW-M,Erika Muster,89c74006

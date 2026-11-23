@@ -38,7 +38,7 @@ public partial class MainWindow
     TextBox SellField(string name, string hint, double w = 340, string? text = null)
     {
         var t = Field(name, hint, w, _sellDrafts.TryGetValue(name, out var d) ? d : text);
-        t.TextChanged += (_, _) => _sellDrafts[name] = t.Text ?? "";
+        t.TextChanged += (_, _) => { if (Avalonia.VisualTree.VisualExtensions.IsAttachedToVisualTree(t)) _sellDrafts[name] = t.Text ?? ""; }; // T-0753: abgelöste alte Felder schreiben keinen Entwurf zurück
         return t;
     }
     void SellTry(string view, Action a) => Try(view, () => { a(); if (_sellDrafts.Count > 0) { _sellDrafts.Clear(); Show(view); } }); // erst leeren, dann neu zeichnen (die Meldung bleibt)
@@ -52,6 +52,8 @@ public partial class MainWindow
         var (month, year, customers, open) = shop.Figures(today);
         var y = Finance.Year(Money.All(), today.Year);
         var sp = new StackPanel { Spacing = 10, Children = { IdeaHeader(V), SellTabs() } };
+        if (SellUndoBar() is { } undo) sp.Children.Add(undo);
+        SellKeys(sp);
         sp.Children.Add(new WrapPanel { Name = "sell-kpis", Children = {
             Kpi("sell-kpi-month", "Umsatz " + MonthShort[today.Month - 1], Eu(month) + " €", "netto, nach Zahlungseingang", "#3D8BFF", "#1E4FD8"),
             Kpi("sell-kpi-year", "Umsatz " + today.Year, Eu(year) + " €", "netto", "#7C4DFF", "#4B2BC2"),
@@ -65,7 +67,7 @@ public partial class MainWindow
         // Bestellungen
         var contacts = shop.Customers.All(); var products = shop.Products.All();
         var cust = new ComboBox { Name = "sell-order-customer", ItemsSource = contacts.Select(c => c.Name).ToList(), PlaceholderText = "Kunde", MinWidth = 180 };
-        var prod = new ComboBox { Name = "sell-order-product", ItemsSource = products.Select(p => p.Name).ToList(), PlaceholderText = "Artikel", MinWidth = 180 };
+        var prod = new ComboBox { Name = "sell-order-product", ItemsSource = shop.OrderableItems(), PlaceholderText = "Artikel", MinWidth = 180 }; // T-0753: Varianten einzeln
         var qty = SellField("sell-order-qty", "Menge", 70, "1");
         var orders = new StackPanel { Name = "sell-orders", Spacing = 4 };
         var i = 0;
@@ -120,9 +122,27 @@ public partial class MainWindow
                 else right.Children.Add(Act($"sell-refund-{i}", "Erstatten", () => { _sellRefundFor = oid; Show(V); }));
             }
             if (o.Payments is null && o.Status != "bezahlt") right.Children.Add(Act($"sell-paid-{i}", "Bezahlt", () => { shop.SetStatus(oid, "bezahlt"); Show(V); })); // Altdaten
+            // T-0753: offene Bestellung (nicht geliefert, ohne Rechnung und Zahlung) lässt sich ändern
+            var editable = o.Status == "offen" && o.StockOut == false && o.InvoiceNumber.Length == 0 && o.Payments is { Count: 0 } && o.Lines.Count == 1;
+            if (editable && _sellEditOrder != oid) right.Children.Add(Act($"sell-order-edit-{i}", "Ändern", () => { _sellEditOrder = oid; Show(V); }));
             if (live && o.Paid == 0 && o.Status != "bezahlt") right.Children.Add(Act($"sell-cancel-{i}", "Stornieren", () => SellTry(V, () => { shop.Cancel(oid, today); _core.Audit.Append(Principal.LocalOwner.Name, "shop.cancel", oid); Say("Bestellung storniert.", V); })));
-            orders.Children.Add(Card(Row(new StackPanel { Children = { new TextBlock { Text = o.Customer, Foreground = Text, FontWeight = FontWeight.SemiBold },
-                P($"{o.Date:dd.MM.yyyy} · {string.Join(", ", o.Lines.Select(l => $"{l.Qty:0.##} × {l.Product}"))}", null, 11) } }, right)));
+            var orderCard = Card(Row(new StackPanel { Children = { new TextBlock { Text = o.Customer, Foreground = Text, FontWeight = FontWeight.SemiBold },
+                P($"{o.Date:dd.MM.yyyy} · {string.Join(", ", o.Lines.Select(l => $"{l.Qty:0.##} × {l.Product}"))}", null, 11) } }, right));
+            if (editable && _sellEditOrder == oid)
+            {
+                var ec = new ComboBox { Name = "sell-oe-customer", ItemsSource = contacts.Select(c => c.Name).ToList(), SelectedItem = o.Customer, MinWidth = 180 };
+                var ep = new ComboBox { Name = "sell-oe-product", ItemsSource = shop.OrderableItems(), SelectedItem = o.Lines[0].Product, MinWidth = 180 };
+                var eq = Field("sell-oe-qty", "Menge", 70, o.Lines[0].Qty.ToString("0.##", System.Globalization.CultureInfo.GetCultureInfo("de-DE")));
+                orderCard = Card(new StackPanel { Spacing = 4, Children = { H("Bestellung ändern", 13), Line(ec, ep, eq,
+                    Act("sell-oe-save", "Speichern", () => SellTry(V, () =>
+                    {
+                        if (ec.SelectedItem is not string c) throw new ArgumentException("Bitte einen Kunden wählen.");
+                        if (ep.SelectedItem is not string p) throw new ArgumentException("Bitte einen Artikel wählen.");
+                        shop.UpdateOrder(oid, c, (p, Finance.ParseAmount(Need(eq, "die Menge")))); _sellEditOrder = null; Say("Bestellung geändert.", V);
+                    })), Act("sell-oe-cancel", "Abbrechen", () => { _sellEditOrder = null; Show(V); })) } });
+            }
+            if (editable) { var eid = oid; orderCard.ContextMenu = SellMenu(($"sell-order-menu-edit-{i}", "Ändern", () => { _sellEditOrder = eid; Show(V); }), ($"sell-order-menu-cancel-{i}", "Stornieren", () => SellTry(V, () => { shop.Cancel(eid, today); Say("Bestellung storniert.", V); }))); }
+            orders.Children.Add(orderCard);
             i++;
         }
         if (i == 0) orders.Children.Add(P("Noch keine Bestellungen.", Text));
@@ -131,41 +151,13 @@ public partial class MainWindow
             {
                 if (cust.SelectedItem is not string c) throw new ArgumentException("Bitte einen Kunden wählen (oder unten anlegen).");
                 if (prod.SelectedItem is not string p) throw new ArgumentException("Bitte einen Artikel wählen (oder unten anlegen).");
-                shop.AddOrder(c, DateOnly.FromDateTime(DateTime.Today), (p, Finance.ParseAmount(Need(qty, "die Menge")))); Say("Bestellung eingetragen.", V);
+                shop.PlaceOrder(c, DateOnly.FromDateTime(DateTime.Today), (p, Finance.ParseAmount(Need(qty, "die Menge")))); Say("Bestellung eingetragen.", V);
             }), true)), orders)));
 
-        // Kunden und Artikel (gemeinsam mit „Betrieb“)
-        var cn = SellField("sell-cust-name", "Name", 160); var ca = SellField("sell-cust-address", "Straße, PLZ Ort", 220); var ce = SellField("sell-cust-email", "E-Mail (optional)", 180);
-        var custList = new WrapPanel();
-        foreach (var c in contacts.Take(30)) custList.Children.Add(new Border { Margin = new Thickness(0, 0, 6, 6), Padding = new Thickness(10, 6), CornerRadius = new CornerRadius(10), Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1),
-            Child = new StackPanel { Children = { new TextBlock { Text = c.Name, Foreground = Text, FontSize = 12.5 }, P($"{c.Stage}{(c.Address.Length > 0 ? " · " + c.Address : "")}", null, 10.5) } } });
-        var pn = SellField("sell-prod-name", "Artikel", 180); var pp = SellField("sell-prod-price", "Preis netto €", 110); var ps = SellField("sell-prod-stock", "Bestand", 80, "0"); var psku = SellField("sell-prod-sku", "Artikelnr./EAN", 150);
-        sp.Children.Add(Card(Section("Kunden", "Dieselbe Liste wie unter „Betrieb“.",
-            Line(cn, ca, ce, Act("sell-cust-add", "Kunde anlegen", () => SellTry(V, () =>
-            {
-                var name = Need(cn, "den Namen"); if (contacts.Any(x => x.Name == name)) throw new ArgumentException("Diesen Kunden gibt es schon.");
-                shop.Customers.Add(new BizContact(name, "", ce.Text?.Trim() ?? "", "Kunde", null, 0, "", ca.Text?.Trim() ?? "")); Say($"Kunde „{name}“ angelegt.", V);
-            }))), custList)));
-        var shopGrid = new WrapPanel { Name = "sell-shop" };
-        foreach (var p in products)
-            shopGrid.Children.Add(new Border { Width = 190, Margin = new Thickness(0, 0, 10, 10), Padding = new Thickness(12), CornerRadius = new CornerRadius(14), Background = Brushes.White, BoxShadow = BoxShadows.Parse("0 6 16 -4 #55000000"),
-                Child = new StackPanel { Spacing = 4, Children = {
-                    new TextBlock { Text = p.Name, Foreground = Brush.Parse("#1F2933"), FontSize = 14, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
-                    new TextBlock { Text = Eu(_settings.SmallBusiness ? (decimal)p.Price : Math.Round((decimal)p.Price * (1 + LegalRates.VatStandard / 100m), 2)) + " €", Foreground = Brush.Parse("#1E4FD8"), FontSize = 18, FontWeight = FontWeight.Bold },
-                    new TextBlock { Text = (p.Stock > 0 ? $"{p.Stock} vorrätig" : "nicht vorrätig") + (shop.Reserved(p.Name) is var rs && rs > 0 ? $" · {rs:0.##} vorgemerkt" : ""), Foreground = Brush.Parse(p.Stock > 0 ? "#167A45" : "#B2361F"), FontSize = 11 } } } });
-        if (products.Count == 0) shopGrid.Children.Add(P("Noch keine Artikel.", Text));
-        sp.Children.Add(Card(Section("Artikel und Webshop-Vorschau", "So sähe dein Shop aus. „Als Webseite speichern“ legt eine HTML-Seite an – ohne Bezahlfunktion und ohne fremde Dienste.",
-            Line(pn, pp, ps, psku, Act("sell-prod-add", "Artikel anlegen", () => SellTry(V, () =>
-            {
-                var name = Need(pn, "den Artikelnamen"); if (products.Any(x => x.Name == name)) throw new ArgumentException("Diesen Artikel gibt es schon.");
-                var price = (double)Finance.ParseAmount(Need(pp, "den Preis")); if (price < 0) throw new ArgumentException("Der Preis darf nicht negativ sein.");
-                var sku = SalesStats.CheckSku(psku.Text ?? ""); if (sku.Length > 0 && products.Any(x => string.Equals(x.Sku, sku, StringComparison.OrdinalIgnoreCase))) throw new ArgumentException($"Die Artikelnummer „{sku}“ hat schon ein anderer Artikel.");
-                shop.Products.Add(new Product(name, "", 0, price, int.TryParse(ps.Text, out var st) ? Math.Max(0, st) : 0, 0, 0, sku)); Say($"Artikel „{name}“ angelegt.", V);
-            })), Act("sell-shop-save", "Als Webseite speichern", () => SellTry(V, () =>
-            {
-                var f = Path.Combine(BusinessFolder, DevStudio.SafeName(BizIdea.Name) + "-Shop.html");
-                AtomicFile.WriteAllText(f, Shop.ShopHtml(BizIdea.Name, shop.Products.All(), _settings.SmallBusiness)); Launch(f); Say("Gespeichert: " + f, V);
-            }))), shopGrid)));
+        // Kunden und Artikel (gemeinsam mit „Betrieb“) – T-0753: ändern, löschen, Bilder, Varianten, CSV
+        sp.Children.Add(SellCustomersCard(shop, contacts));
+        sp.Children.Add(SellProductsCard(shop, products));
+        sp.Children.Add(SellCsvCard());
         sp.Children.Add(Card(Section("Print on Demand im Shop", "Produkte aus Printful, Bezahlung über dein eigenes Stripe-Konto. Bestellungen werden zuerst Entwürfe, Kosten entstehen erst nach deiner Freigabe.", PodShopCard())));
         return SellPage("Online verkaufen", sp);
     }

@@ -213,6 +213,7 @@ public partial class MainWindow
         sp.Children.Add(P("Schreib selbst oder sag oben in der Zeile, was der Text sagen soll. Über „Exportieren“ bekommst du ihn als Datei für deinen Shop.", Muted, 12));
         sp.Children.Add(P("Beschreibung", null, 11)); sp.Children.Add(PodField(d, "description", "Beschreibung für die Verkaufsseite", true));
         sp.Children.Add(P("Schlagwörter, mit Komma getrennt", null, 11)); sp.Children.Add(PodField(d, "tags", "z. B. Geschenk, Natur, Wandern"));
+        sp.Children.Add(PodToShopRow(d)); // T-0753
         return sp;
     }
 }
