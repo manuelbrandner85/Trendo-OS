@@ -103,7 +103,8 @@ public static class PackageParsers
     public static bool SameVersion(string? a, string? b)
     {
         static string N(string v) { v = v.Trim().TrimStart('v', 'V'); while (v.EndsWith(".0") && v.Count(c => c == '.') > 0) v = v[..^2]; return v; }
-        return a is { Length: > 0 } && b is { Length: > 0 } && string.Equals(N(a), N(b), StringComparison.OrdinalIgnoreCase);
+        static bool Vague(string v) => v.Contains('<') || v.Contains('>') || v.Contains("unknown", StringComparison.OrdinalIgnoreCase); // T-0755 Fix2: „< 2.0“, „Unknown“ = nicht bestätigt
+        return a is { Length: > 0 } && b is { Length: > 0 } && !Vague(a) && !Vague(b) && string.Equals(N(a), N(b), StringComparison.OrdinalIgnoreCase);
     }
 }
 

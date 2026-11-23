@@ -1,0 +1,10 @@
+[xUnit.net 00:00:22.66]     T-0755 Fix2 MITTEL: Werkzeuge außerhalb der alten Liste – odbcconf, pcalua, SyncAppvPublishingServer, hh – nie grün; URL macht jeden Eintrag mindestens gelb [FAIL]
+[xUnit.net 00:00:23.01]     T-0755 Fix2 HOCH (echte Datei): umbenannte Kopie von regsvr32.exe unter %LOCALAPPDATA%\Programs mit /i:http-Aufruf ist rot, auch ohne Netz-Adresse [FAIL]
+[xUnit.net 00:00:23.01]     T-0755 Fix2 NIEDRIG: /enc und Gedankenstrich-Varianten als versteckter Befehl; Versionen mit < > oder Unknown nicht bestätigt; genaue Herausgeber-Varianten [FAIL]
+Expected: Rot
+Actual:   Gruen
+Expected: Rot
+Actual:   Gruen
+Expected: Rot
+Actual:   Gelb
+Fehler!      : Fehler:     3, erfolgreich:     0, übersprungen:     0, gesamt:     3, Dauer: 661 ms - Trendo.Core.Tests.dll (net10.0)

@@ -30,9 +30,12 @@ public static partial class SystemScan
         "Samsung Electronics Co., Ltd.", "Brave Software, Inc.", "Opera Norway AS", "Python Software Foundation", "GitHub, Inc.", "Docker Inc", "JetBrains s.r.o.",
         "Autodesk, Inc.", "Blender Foundation", "Electronic Arts, Inc.", "Riot Games, Inc.", "TeamViewer Germany GmbH", "Anthropic, PBC", "OpenJS Foundation",
         "VideoLAN", "Malwarebytes Inc", "Unity Technologies SF",
+        // T-0755 Fix2: gängige Namensvarianten, weiterhin nur genaue Namen
+        "Zoom Communications, Inc.", "Google Inc", "Advanced Micro Devices", "Dell Technologies Inc.", "Lenovo (Beijing) Limited", "UBISOFT ENTERTAINMENT INC.",
+        "Microsoft Windows Hardware Compatibility Publisher",
     ];
 
-    static string NormOrg(string s) => string.Join(' ', Regex.Replace(s.ToLowerInvariant(), @"[.,""]", " ").Split(' ', StringSplitOptions.RemoveEmptyEntries));
+    static string NormOrg(string s) => string.Join(' ', Regex.Replace(s.ToLowerInvariant(), @"[.,""()]", " ").Split(' ', StringSplitOptions.RemoveEmptyEntries));
     static readonly HashSet<string> KnownOrgs = KnownPublishers.Select(NormOrg).ToHashSet();
 
     /// <summary>Genau einer der bekannten Organisationsnamen (nach Vereinheitlichung), kein Teilwort.</summary>
@@ -49,13 +52,49 @@ public static partial class SystemScan
         ["msiexec.exe"] = "Installieren", ["regsvr32.exe"] = "Installieren", ["regasm.exe"] = "Installieren", ["regsvcs.exe"] = "Installieren", ["installutil.exe"] = "Installieren",
         ["cmstp.exe"] = "Installieren", ["msbuild.exe"] = "Installieren",
         ["rundll32.exe"] = "Starten", ["forfiles.exe"] = "Starten", ["schtasks.exe"] = "Starten", ["wmic.exe"] = "Starten", ["explorer.exe"] = "Starten",
+        // T-0755 Fix2 (Zweitprüfung)
+        ["odbcconf.exe"] = "Installieren", ["mavinject.exe"] = "Installieren", ["presentationhost.exe"] = "Skript", ["ieexec.exe"] = "Laden", ["msxsl.exe"] = "Skript",
+        ["pcalua.exe"] = "Starten", ["syncappvpublishingserver.exe"] = "Skript", ["hh.exe"] = "Skript", ["dnscmd.exe"] = "Installieren", ["diskshadow.exe"] = "Skript",
+        ["esentutl.exe"] = "Laden", ["expand.exe"] = "Laden", ["extrac32.exe"] = "Laden", ["replace.exe"] = "Laden", ["ftp.exe"] = "Laden", ["finger.exe"] = "Laden",
     };
 
-    /// <summary>Welche Rolle spielt das Startprogramm? null = gewöhnliches Programm. explorer.exe zählt nur mit Argumenten.</summary>
-    public static string? LolbinKind(string exe, string args) =>
-        Lolbins.TryGetValue(Path.GetFileName(exe), out var k) && !(k == "Starten" && Path.GetFileName(exe).Equals("explorer.exe", StringComparison.OrdinalIgnoreCase) && args.Trim().Length == 0) ? k : null;
+    /// <summary>T-0755 Fix2: Werkzeuge, die Windows selbst mitbringt (liegen im Windows-Ordner). Eine Microsoft-signierte Kopie davon woanders oder unter anderem Namen ist rot.</summary>
+    static readonly HashSet<string> WindowsTools = new(Lolbins.Keys.Except(["python.exe", "pythonw.exe", "py.exe", "pyw.exe", "node.exe", "java.exe", "javaw.exe", "wget.exe", "pwsh.exe", "msbuild.exe", "msxsl.exe"], StringComparer.OrdinalIgnoreCase), StringComparer.OrdinalIgnoreCase);
 
-    [GeneratedRegex(@"(?i)\b(?:https?|ftp)://[^\s""']+|\\\\[^\\\s""']+\\[^\s""']*")] private static partial Regex NetTarget();
+    static readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> ToolNames = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>T-0755 Fix2: der echte Name eines Programms aus seiner Versionsangabe (OriginalFilename, sonst InternalName) – erkennt umbenannte
+    /// Kopien und 8.3-Kurznamen. Ohne lesbare Datei: der Dateiname.</summary>
+    public static string ToolName(string exe)
+    {
+        if (exe.Length == 0) return "";
+        return ToolNames.GetOrAdd(exe, x =>
+        {
+            try
+            {
+                if (System.IO.File.Exists(x))
+                {
+                    var v = System.Diagnostics.FileVersionInfo.GetVersionInfo(x);
+                    var n = (v.OriginalFilename ?? "").Trim();
+                    if (n.EndsWith(".mui", StringComparison.OrdinalIgnoreCase)) n = n[..^4];
+                    if (n.Length == 0 && (v.InternalName ?? "").Trim() is { Length: > 0 } i) n = Path.HasExtension(i) ? i : i + ".exe";
+                    if (n.Length > 0) return n;
+                }
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException) { }
+            return Path.GetFileName(x);
+        });
+    }
+
+    /// <summary>Welche Rolle spielt das Startprogramm? null = gewöhnliches Programm. explorer.exe zählt nur mit Argumenten.</summary>
+    public static string? LolbinKind(string exe, string args)
+    {
+        var name = ToolName(exe); // T-0755 Fix2: echter Name statt Dateiname
+        if (!Lolbins.TryGetValue(name, out var k) && !Lolbins.TryGetValue(Path.GetFileName(exe), out k)) return null;
+        return name.Equals("explorer.exe", StringComparison.OrdinalIgnoreCase) && args.Trim().Length == 0 ? null : k;
+    }
+
+    [GeneratedRegex(@"(?i)\b(?:https?|ftp)://[^\s""']+|\bfile:[^\s""']+|\\\\[^\\\s""']+\\[^\s""']*")] private static partial Regex NetTarget();
     [GeneratedRegex(@"""([^""]+)""|(\S+)")] private static partial Regex Token();
     static readonly string[] CodeExt = [".exe", ".dll", ".sct", ".js", ".jse", ".vbs", ".vbe", ".wsf", ".ps1", ".psm1", ".py", ".pyw", ".jar", ".hta", ".bat", ".cmd", ".msi", ".cpl", ".ocx", ".mjs", ".cjs"];
 
@@ -69,7 +108,7 @@ public static partial class SystemScan
             var t = m.Groups[1].Success ? m.Groups[1].Value : m.Groups[2].Value;
             foreach (var raw in t.Split(','))
             {
-                var v = raw.Trim().Trim('"', '\'');
+                var v = raw.Trim().Trim('"', '\'', '{', '}', '(', ')', ';');
                 if ((v.StartsWith('/') || v.StartsWith('-')) && v.IndexOf(':') is var c and > 1) v = v[(c + 1)..]; // „/i:C:\x.sct“
                 if (v.Length < 3 || v.Contains("://")) continue;
                 var rooted = v.Length > 2 && v[1] == ':' && v[2] is '\\' or '/' || v.StartsWith(@"\\");
@@ -129,9 +168,16 @@ public static partial class SystemScan
         return null;
     }
 
+    static bool UnderWindows(string path)
+    {
+        var w = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+        try { return w.Length > 3 && Path.GetFullPath(path).StartsWith(w.TrimEnd('\\') + "\\", StringComparison.OrdinalIgnoreCase); }
+        catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { return false; }
+    }
+
     static string Short(string s) => s.Length > 60 ? s[..57] + "…" : s;
 
-    [GeneratedRegex(@"-(e|ec|en|enc|encodedcommand)\s+[A-Za-z0-9+/=]{16,}", RegexOptions.IgnoreCase)] private static partial Regex Encoded();
+    [GeneratedRegex(@"[-/–—](e|ec|en|enc|enco[a-z]*)\s+[A-Za-z0-9+/=]{16,}", RegexOptions.IgnoreCase)] private static partial Regex Encoded();
 
     /// <summary>Welche Datei startet ein Befehl? Mit Anführungszeichen, Umgebungsvariablen, Leerzeichen im Pfad ohne Anführungszeichen,
     /// rundll32 (die Bibliothek zählt) und Programmen ohne Ordner (Suche im Windows-Ordner und im PATH).</summary>
@@ -196,6 +242,12 @@ public static partial class SystemScan
         var (hostExe, args) = Split(e.Command);
         var lol = LolbinKind(hostExe, args);
         var host = Path.GetFileName(hostExe);
+        // T-0755 Fix2: Microsoft-signierte Kopie eines Windows-Werkzeugs außerhalb des Windows-Ordners oder unter anderem Namen
+        var tool = ToolName(hostExe);
+        if (WindowsTools.Contains(tool) && hostExe.Equals(e.File, StringComparison.OrdinalIgnoreCase) && s.State == SigState.Gueltig && s.Publisher is { } pub && pub.StartsWith("Microsoft", StringComparison.OrdinalIgnoreCase)
+            && (!UnderWindows(hostExe) || !host.Equals(tool, StringComparison.OrdinalIgnoreCase) && !host.Contains('~')))
+            return new(e, s, Ampel.Rot, "Umbenannte Windows-Datei",
+                $"„{host}“ ist in Wahrheit das Windows-Werkzeug „{tool}“, liegt aber {(UnderWindows(hostExe) ? "unter anderem Namen im Windows-Ordner" : "außerhalb des Windows-Ordners")}. Echte Programme kopieren keine Windows-Werkzeuge – so tarnen sich Schadprogramme mit einer gültigen Microsoft-Signatur.", fix);
         if (lol is not null)
         {
             if (NetTarget().Match(args) is { Success: true } net)
@@ -221,9 +273,19 @@ public static partial class SystemScan
                 $"„{host}“ ist ein echtes Werkzeug, das {what}. Das Werkzeug selbst ist harmlos – entscheidend ist, was es ausführt. {tgt}",
                 "Befehl lesen: Kennst du das Ziel? Wenn nicht, " + fix[(fix.IndexOf(':') + 2)..]);
         }
+        // T-0755 Fix2: für jeden Eintrag – Programm- oder Skriptdatei in den Argumenten an verdächtigem Ort (nicht im eigenen Programmordner)
+        var own = Path.GetDirectoryName(hostExe) ?? "";
+        foreach (var t in ArgTargets(args).Where(t => CodeExt.Any(x => t.EndsWith(x, StringComparison.OrdinalIgnoreCase))))
+            if (!(own.Length > 3 && t.StartsWith(own.TrimEnd('\\') + "\\", StringComparison.OrdinalIgnoreCase)) && SuspiciousTarget(t) is { } where2)
+                return new(e, s, Ampel.Rot, "Verdächtiges Ziel",
+                    $"„{host}“ bekommt beim Start „{Path.GetFileName(t)}“ mit, und das {where2}. Dort liegen normalerweise keine Programme, die bei jedem Start laufen.", fix);
         if (s.State == SigState.Ungueltig)
             return new(e, s, Ampel.Rot, "Signatur ungültig",
                 $"„{file}“ trägt eine Signatur, die nicht stimmt: {s.Detail} Eine echte Firmen-Datei hat eine gültige Signatur.", fix);
+        if (NetTarget().Match(args) is { Success: true } net2) // T-0755 Fix2: Adresse im Befehl → mindestens gelb
+            return new(e, s, Ampel.Gelb, "Adresse im Befehl",
+                $"„{host}“ bekommt beim Start eine Internet- oder Netzwerkadresse mit ({Short(net2.Value)}). Das kann harmlos sein (z. B. eine Web-App), kann aber auch Nachladen bedeuten.",
+                "Kennst du die Adresse? Wenn nicht, " + fix[(fix.IndexOf(':') + 2)..]);
         if (s.State == SigState.Gueltig && KnownPublisher(s.Publisher))
             return new(e, s, Ampel.Gruen, "Gültig signiert",
                 $"„{file}“ ist gültig signiert von {s.Publisher}. Die Datei ist seit dem Signieren unverändert.", "Nichts zu tun. Wenn du das Programm beim Start nicht brauchst, kannst du es unter Einstellungen → Apps → Autostart ausschalten.");
