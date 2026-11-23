@@ -1,0 +1,113 @@
+## pruef19-T-0747-hatchgram/perf19c/p_diag_20_l_0_h_t6.dxf
+Generate ok 6975 ms G D8A829928B6903CB W 10B65237BFC305D9 Bahnen 1
+PeakWS vor 35 MB nach 130 MB, alloziert 100 MB
+  exit 0
+## pruef19-T-0747-hatchgram/perf19c/p_diag_50_l_0_h_t6.dxf
+Generate ok 20683 ms G D8A829928B6903CB W C2C6E9DEE8D17589 Bahnen 1
+PeakWS vor 35 MB nach 176 MB, alloziert 164 MB
+  exit 0
+## pruef19-T-0747-hatchgram/perf19c/p_diag_100_l_0_h_t6.dxf
+Generate ok 40058 ms G D8A829928B6903CB W A685C4382EBAF03A Bahnen 1
+PeakWS vor 35 MB nach 241 MB, alloziert 258 MB
+  exit 0
+## pruef19-T-0747-hatchgram/perf19b/p_diag_200_l_0_h_t6.dxf
+Generate ok 105258 ms G D8A829928B6903CB W D604C29F973AE24D Bahnen 1
+PeakWS vor 35 MB nach 311 MB, alloziert 435 MB
+  exit 0
+## pruef19-T-0747-hatchgram/perf19b/p_diag_1000_l_0_h_t1.dxf
+  exit 124
+## pruef19-T-0747-hatchgram/perf19/p_diag_500_l_2000_h_t6.dxf
+  exit 124
+## pruef19-T-0747-hatchgram/perf19/p_diag_2000_l_2000_h_t6.dxf
+  exit 124
+## pruef19-T-0747-leistung/cases19/p1_diag_gravur_200_10000.dxf
+Generate ok 147740 ms G 8224ECE584DFEA20 W 8565ECB94376D8C2 Bahnen 1
+PeakWS vor 87 MB nach 8293 MB, alloziert 81560 MB
+  exit 0
+## pruef19-T-0747-leistung/cases19/p1_diag_gravur_1000_10000.dxf
+  exit 124
+## pruef19-T-0747-leistung/cases19/p1b_diag_lw50_500_10000.dxf
+Generate ok 129991 ms G 8224ECE584DFEA20 W 84D407B5B5984FCE Bahnen 1
+PeakWS vor 96 MB nach 10640 MB, alloziert 81385 MB
+  exit 0
+## pruef20-T-0747-hatchgram/perf20/q_diag_500_5000_seg50.dxf
+Generate ok 33249 ms G 8224ECE584DFEA20 W 2AE67F3BB1406469 Bahnen 1
+PeakWS vor 75 MB nach 3063 MB, alloziert 18111 MB
+  exit 0
+## pruef20-T-0747-hatchgram/perf20/r2_diag_1000_loch25x4000.dxf
+Generate ok 44584 ms G B2287608756EBDC5 W 4E19B7FD6D8B3F73 Bahnen 26
+PeakWS vor 104 MB nach 535 MB, alloziert 894 MB
+  exit 0
+## pruef20-T-0747-hatchgram/cases20b/s_diagonal_kollinear_3000.dxf
+Generate ok 23855 ms G 7B7449415D5106D2 W 2A6581E77994EDFC Bahnen 2
+PeakWS vor 37 MB nach 281 MB, alloziert 492 MB
+  exit 0
+## pruef20-T-0747-hatchgram/cases20b/s_diagonal_kollinear_10000.dxf
+Generate ok 24043 ms G 7B7449415D5106D2 W 2A6581E77994EDFC Bahnen 2
+PeakWS vor 51 MB nach 221 MB, alloziert 499 MB
+  exit 0
+## pruef20-T-0747-hatchgram/perf20/f_viele_o_3000.dxf
+Generate ok 8825 ms G 7DC83B081785A9E0 W 9F2959A74B2163BC Bahnen 6000
+PeakWS vor 81 MB nach 324 MB, alloziert 16972 MB
+  exit 0
+## pruef21-T-0747-leistung/c21small/k2s_neben_60_60_4.0.dxf
+Generate ok 6381 ms G CCCB7493E5626D50 W E66D57FB3F799482 Bahnen 3601
+PeakWS vor 75 MB nach 351 MB, alloziert 8774 MB
+  exit 0
+## pruef21-T-0747-leistung/cases21/k2_lochblech_200_200.dxf
+Generate OperationCanceledException nach 157421 ms
+PeakWS vor 186 MB nach 11637 MB, alloziert 96562 MB
+  exit 0
+## pruef11-T-0747-leistung/cases11/n2_kamm_50000_zaehne_20_versteckt.dxf
+Generate ok 115979 ms G 69C7B81DA004B016 W C6710B9DA629464B Bahnen 1
+PeakWS vor 206 MB nach 524 MB, alloziert 20232 MB
+  exit 0
+## pruef11-T-0747-leistung/cases11/n8_zickzack_formgleich_100000.dxf
+Generate ok 3984 ms G 44019D535DCFEB2F W 778A363677F5F02D Bahnen 1
+PeakWS vor 165 MB nach 178 MB, alloziert 1644 MB
+  exit 0
+## pruef21-T-0747-leistung/cases21/k1_kamm_innen_50000_1.dxf
+Generate ok 107232 ms G DFFF3F84286E0B48 W 60B5EA65E3968C43 Bahnen 2
+PeakWS vor 128 MB nach 1234 MB, alloziert 11433 MB
+  exit 0
+## pruef10-T-0747-leistung/cases10/q4_kreise_2000_r1000_gleich.dxf
+Generate ok 22961 ms G 2532434803041DA1 W 018EFEDD1ED8056E Bahnen 1758
+PeakWS vor 319 MB nach 2552 MB, alloziert 39714 MB
+  exit 0
+## pruef10-T-0747-leistung/cases10/q5_riesig_neben_30000_winzig.dxf
+Generate OperationCanceledException nach 174663 ms
+PeakWS vor 344 MB nach 803 MB, alloziert 46129 MB
+  exit 0
+## pruef10-T-0747-leistung/cases10/q6_streifen_400_winzig_20000.dxf
+  exit 124
+## pruef12-T-0747-leistung/cases12/b1_gleicher_rahmen_5000_konturen_5000_schraffuren.dxf
+Generate InvalidOperationException nach 20941 ms
+PeakWS vor 278 MB nach 359 MB, alloziert 34810 MB
+  exit 0
+## pruef12-T-0747-leistung/cases12/b2_gleicher_rahmen_versteckt_20000x20000.dxf
+  exit 124
+## pruef12-T-0747-leistung/cases12/e1_eimer_kreise_20000x20000.dxf
+Generate ok 6171 ms G 011CD5CB3DBF2930 W 3533CB8762002775 Bahnen 1
+PeakWS vor 292 MB nach 292 MB, alloziert 4655 MB
+  exit 0
+## pruef12-T-0747-leistung/cases12b/e0_kontrolle_verteilt_100000x100000.dxf
+  exit 124
+## pruef13-T-0747-leistung/cases13/z1_zickzack_senkrecht_100000_versteckt_2000.dxf
+  exit 124
+## pruef9-T-0747-schraffur/altcases/p5/g2_50000_kreise_d1.dxf
+Generate ok 25591 ms G 3EF7E751499720AE W E3B0C44298FC1C14 Bahnen 50000
+PeakWS vor 209 MB nach 1299 MB, alloziert 24059 MB
+  exit 0
+## pruef18-T-0747-leistung/cases18/x3a_stoss2000_q20000.dxf
+Generate OperationCanceledException nach 196613 ms
+PeakWS vor 121 MB nach 1455 MB, alloziert 2295 MB
+  exit 0
+## pruef18-T-0747-leistung/cases18b/x6c_g10000_q50000.dxf
+Generate OperationCanceledException nach 157274 ms
+PeakWS vor 338 MB nach 1024 MB, alloziert 1497 MB
+  exit 0
+## pruef21-T-0747-leistung/cases21/k4_viele_c_500.dxf
+Generate ok 2954 ms G 56BD1BF9C9A454AB W 6A3DCAC8E534B91A Bahnen 1000
+PeakWS vor 471 MB nach 610 MB, alloziert 1965 MB
+  exit 0
+FERTIG

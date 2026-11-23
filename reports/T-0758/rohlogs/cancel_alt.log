@@ -1,0 +1,25 @@
+## pruef9-T-0747-schraffur/altcases/p5/g2_50000_kreise_d1.dxf
+Abbruch 300 ms: OperationCanceledException nach 809 ms
+Abbruch 1000 ms: OperationCanceledException nach 14457 ms
+Abbruch 3000 ms: OperationCanceledException nach 12195 ms
+Nachlauf hoechstens 14457 ms
+## pruef11-T-0747-leistung/cases11/n2_kamm_50000_zaehne_20_versteckt.dxf
+Abbruch 300 ms: OperationCanceledException nach 10800 ms
+Abbruch 1000 ms: OperationCanceledException nach 11505 ms
+Abbruch 3000 ms: OperationCanceledException nach 6250 ms
+Nachlauf hoechstens 11505 ms
+## pruef19-T-0747-hatchgram/perf19/p_diag_500_l_2000_h_t6.dxf
+Abbruch 300 ms: OperationCanceledException nach 2 ms
+Abbruch 1000 ms: OperationCanceledException nach 197423 ms
+  exit 124
+## pruef10-T-0747-leistung/cases10/q4_kreise_2000_r1000_gleich.dxf
+Abbruch 300 ms: OperationCanceledException nach 1462 ms
+Abbruch 1000 ms: OperationCanceledException nach 2108 ms
+Abbruch 3000 ms: OperationCanceledException nach 559 ms
+Nachlauf hoechstens 2108 ms
+## pruef10-T-0747-leistung/cases10/q6_streifen_400_winzig_20000.dxf
+Abbruch 300 ms: OperationCanceledException nach 349 ms
+Abbruch 1000 ms: OperationCanceledException nach 874 ms
+Abbruch 3000 ms: OperationCanceledException nach 2581 ms
+Nachlauf hoechstens 2582 ms
+FERTIG

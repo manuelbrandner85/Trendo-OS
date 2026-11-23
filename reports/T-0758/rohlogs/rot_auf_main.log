@@ -1,0 +1,94 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\claude\<sitzung>\scratchpad\t0758\main\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:02.56]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:03.47]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:03.53]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:01:09.44]     T-0758: Platte 2000 × 2000 mit 200 schrägen Linien von Rand zu Rand – Fräsbahn unter 3 s (0.9.108: 44 s) [FAIL]
+[xUnit.net 00:01:09.44]       Fräsbahn brauchte 65595 ms
+[xUnit.net 00:01:09.44]       Stack Trace:
+[xUnit.net 00:01:09.44]         C:\Users\<user>\AppData\Local\Temp\claude\<sitzung>\scratchpad\t0758\main\tests\Trendo.Core.Tests\CncCamTempoTests.cs(207,0): at Trendo.Core.Tests.T0758_CncCamTempo.Diagonal_lines_fast()
+[xUnit.net 00:01:09.44]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:01:09.44]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:01:09.44]       Output:
+[xUnit.net 00:01:09.44]         200 Linien: 65595 ms, 1 Bahnen
+  Fehler T-0758: Platte 2000 × 2000 mit 200 schrägen Linien von Rand zu Rand – Fräsbahn unter 3 s (0.9.108: 44 s) [1 m 5 s]
+  Fehlermeldung:
+   Fräsbahn brauchte 65595 ms
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0758_CncCamTempo.Diagonal_lines_fast() in C:\Users\<user>\AppData\Local\Temp\claude\<sitzung>\scratchpad\t0758\main\tests\Trendo.Core.Tests\CncCamTempoTests.cs:line 207
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ 200 Linien: 65595 ms, 1 Bahnen
+
+
+[xUnit.net 00:01:35.90]     T-0758: 2500 zu kleine Löcher (Ø 1 mm, Fräser 6 mm) unter 3 s (0.9.108: quadratisch viele Schnittpunkte je Loch) [FAIL]
+[xUnit.net 00:01:35.90]       26357 ms
+[xUnit.net 00:01:35.90]       Stack Trace:
+[xUnit.net 00:01:35.90]         C:\Users\<user>\AppData\Local\Temp\claude\<sitzung>\scratchpad\t0758\main\tests\Trendo.Core.Tests\CncCamTempoTests.cs(266,0): at Trendo.Core.Tests.T0758_CncCamTempo.Small_holes_fast()
+[xUnit.net 00:01:35.90]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:01:35.90]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:01:35.90]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:01:35.90]       Output:
+[xUnit.net 00:01:35.90]         2500 Löcher: 26357 ms
+  Fehler T-0758: 2500 zu kleine Löcher (Ø 1 mm, Fräser 6 mm) unter 3 s (0.9.108: quadratisch viele Schnittpunkte je Loch) [26 s]
+  Fehlermeldung:
+   26357 ms
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0758_CncCamTempo.Small_holes_fast() in C:\Users\<user>\AppData\Local\Temp\claude\<sitzung>\scratchpad\t0758\main\tests\Trendo.Core.Tests\CncCamTempoTests.cs:line 266
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ 2500 Löcher: 26357 ms
+
+
+[xUnit.net 00:01:43.52]     T-0758: Selbstschnitt-Prüfung – gleiches Ergebnis wie bisher (Kamm, berührende Zähne, Schnitt knapp unter/über 1e-7 an Zellgrenzen) und schnell beim Kamm mit 50 000 Zähnen [FAIL]
+[xUnit.net 00:01:43.52]       7272 ms
+[xUnit.net 00:01:43.52]       Stack Trace:
+[xUnit.net 00:01:43.52]         C:\Users\<user>\AppData\Local\Temp\claude\<sitzung>\scratchpad\t0758\main\tests\Trendo.Core.Tests\CncCamTempoTests.cs(179,0): at Trendo.Core.Tests.T0758_CncCamTempo.SelfIntersects_same_as_before()
+[xUnit.net 00:01:43.52]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:01:43.52]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:01:43.52]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:01:43.52]       Output:
+[xUnit.net 00:01:43.52]         Kamm 50 000: 7272 ms
+  Fehler T-0758: Selbstschnitt-Prüfung – gleiches Ergebnis wie bisher (Kamm, berührende Zähne, Schnitt knapp unter/über 1e-7 an Zellgrenzen) und schnell beim Kamm mit 50 000 Zähnen [7 s]
+  Fehlermeldung:
+   7272 ms
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0758_CncCamTempo.SelfIntersects_same_as_before() in C:\Users\<user>\AppData\Local\Temp\claude\<sitzung>\scratchpad\t0758\main\tests\Trendo.Core.Tests\CncCamTempoTests.cs:line 179
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ Kamm 50 000: 7272 ms
+
+
+[xUnit.net 00:01:46.66]     T-0758: Abbrechen der Fräsbahn-Erzeugung wirkt in unter 2 s (Kamm 20 000 Zähne, 20 000 Kreise, schräge Linien mit Löchern) [FAIL]
+[xUnit.net 00:01:46.66]       kamm: Nachlauf 2819 ms
+[xUnit.net 00:01:46.66]       Stack Trace:
+[xUnit.net 00:01:46.66]         C:\Users\<user>\AppData\Local\Temp\claude\<sitzung>\scratchpad\t0758\main\tests\Trendo.Core.Tests\CncCamTempoTests.cs(283,0): at Trendo.Core.Tests.T0758_CncCamTempo.Cancel_quickly()
+[xUnit.net 00:01:46.66]            at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+[xUnit.net 00:01:46.66]            at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+[xUnit.net 00:01:46.66]            at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:01:46.66]       Output:
+[xUnit.net 00:01:46.66]         kamm: Abbruch nach 50 ms, Nachlauf 2819 ms
+[xUnit.net 00:01:46.66]   Finished:    Trendo.Core.Tests
+  Fehler T-0758: Abbrechen der Fräsbahn-Erzeugung wirkt in unter 2 s (Kamm 20 000 Zähne, 20 000 Kreise, schräge Linien mit Löchern) [3 s]
+  Fehlermeldung:
+   kamm: Nachlauf 2819 ms
+  Stapelverfolgung:
+     at Trendo.Core.Tests.T0758_CncCamTempo.Cancel_quickly() in C:\Users\<user>\AppData\Local\Temp\claude\<sitzung>\scratchpad\t0758\main\tests\Trendo.Core.Tests\CncCamTempoTests.cs:line 283
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+  Standardausgabemeldungen:
+ kamm: Abbruch nach 50 ms, Nachlauf 2819 ms
+
+
+
+Fehler beim Testlauf.
+Gesamtzahl Tests: 4
+     Nicht bestanden: 4
+ Gesamtzeit: 1,9859 Minuten

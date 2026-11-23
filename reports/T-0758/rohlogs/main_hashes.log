@@ -1,0 +1,24 @@
+Testlauf für "C:\Users\<user>\AppData\Local\Temp\claude\<sitzung>\scratchpad\t0758\main\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+C:\Users\<user>\AppData\Local\Temp\claude\<sitzung>\scratchpad\t0758\main\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+[xUnit.net 00:00:00.02] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.15)
+[xUnit.net 00:00:02.59]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:03.43]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:03.46]   Starting:    Trendo.Core.Tests
+[xUnit.net 00:10:34.24]   Finished:    Trendo.Core.Tests
+  Bestanden T-0758: G-Code und Meldungen byte-gleich wie 0.9.108 (schräge Linien, Gravur, zu kleine Löcher mit Stegen, Kamm, kollineare Kante, riesig neben 3000 winzigen, zu nah, doppelt) [10 m 30 s]
+  Standardausgabemeldungen:
+ diagonal_60_loecher_50: F3FA464007ADBCFF/60DFE8BEE53513F9 (18708 ms)
+ gravur_schraeg_240: 4F41F7023E8BB8CE/E3B0C44298FC1C14 (438223 ms)
+ kleine_loecher_900: 9A591491A566466F/BF1BB72117774CE9 (12072 ms)
+ kamm_3000: 34EA06CCFE6AC37D/46FBB822B5DE7B63 (7467 ms)
+ kollinear_1000: 48369B293ACFF2F9/48CF96F34F65338F (151604 ms)
+ riesig_neben_3000: ED1E6F3FEFAB6276/E3B0C44298FC1C14 (1889 ms)
+ zu_nah_und_doppelt: 2C1963644457C817/9B82409687993D64 (254 ms)
+
+
+
+Der Testlauf war erfolgreich.
+Gesamtzahl Tests: 1
+     Bestanden: 1
+ Gesamtzeit: 10,6073 Minuten
