@@ -1,0 +1,2 @@
+   Trendo.App.Tests  Total: 641, Errors: 0, Failed: 0, Skipped: 3, Not Run: 0, Time: 1302,472s
+Gezielter Lauf: 82 Testklassen, die die geänderten Dateien beruehren (Studio-Katalog, Dock, Downloads, App-Center, Forensik, Design).

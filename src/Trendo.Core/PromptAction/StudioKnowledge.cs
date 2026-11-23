@@ -903,7 +903,7 @@ public static class StudioKnowledgeBase
             ["CORE-11"],
             true),
         ["SYS-03"] = new("SYS-03",
-            "Im Internet surfen und Dateien sicher laden.",
+            "Dateien sicher laden, Prüfsummen vergleichen und Links sammeln. Webseiten öffnen sich im Standard-Browser.",
             [
                 T("laden", "Datei laden", "Datei laden", "Lade diese Datei: ", ["lade", "download", "herunter"], "Adresse"),
                 T("pruefen", "Adresse prüfen", "Adresse prüfen", "Prüfe diese Adresse: ", ["prüf", "adresse", "sicher"], "Adresse"),

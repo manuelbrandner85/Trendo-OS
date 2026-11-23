@@ -22,6 +22,8 @@ public sealed partial class DownloadQueue
         public long Total { get; set; } = -1;
         public string? ExpectedHash { get; set; }
         public string? HashResult { get; set; }
+        /// <summary>T-0755: SHA-256 der fertigen Datei – wird immer berechnet und angezeigt, auch ohne angegebene Prüfsumme.</summary>
+        public string? Sha256 { get; set; }
         public string Message { get; set; } = "";
         public DateTimeOffset Added { get; set; } = DateTimeOffset.Now;
         public DateTimeOffset? Finished { get; set; }
@@ -37,9 +39,13 @@ public sealed partial class DownloadQueue
     public List<Job> Jobs { get; } = [];
     public int MaxParallel { get; set; } = 3;
 
+    /// <summary>T-0755: Verlauf aller beendeten Downloads – bleibt, auch wenn Einträge aus der Liste genommen werden.</summary>
+    public DownloadHistory History { get; }
+
     public DownloadQueue(string dataRoot)
     {
         _file = Path.Combine(dataRoot, "downloads", "warteschlange.json");
+        History = new DownloadHistory(Path.Combine(dataRoot, "downloads", "verlauf.json"));
         try
         {
             if (File.Exists(_file) && JsonSerializer.Deserialize<Saved>(File.ReadAllText(_file)) is { } s)
@@ -91,21 +97,35 @@ public sealed partial class DownloadQueue
     public void Pause(string id) { var j = Get(id); if (j.Status is State.Lädt or State.Wartet) { j.Status = State.Angehalten; j.Message = "Angehalten."; Save(); } }
     /// <summary>Fortsetzen bzw. erneut versuchen: wieder in die Warteschlange (lädt ab der vorhandenen .part-Datei weiter).</summary>
     public void Resume(string id) { var j = Get(id); if (j.Status is State.Angehalten or State.Fehler) { j.Status = State.Wartet; j.Message = ""; Save(); } }
-    public void Failed(Job j, string why) { j.Status = State.Fehler; j.Message = why; j.BytesPerSecond = 0; Save(); }
+    public void Failed(Job j, string why) { j.Status = State.Fehler; j.Message = why; j.BytesPerSecond = 0; Save(); History.Add(j); }
 
     /// <summary>Fertig: Prüfsumme vergleichen (wenn angegeben). Stimmt sie nicht, gilt der Download als Fehler – die Datei bleibt zur Prüfung liegen.</summary>
-    public void Completed(Job j)
+    public void Completed(Job j) => Completed(j, File.Exists(j.Target) ? J.Sha(j.Target) : null);
+
+    /// <summary>T-0755 (Gegenprüfung): Prüfsumme im Hintergrund rechnen – große Dateien halten die Oberfläche nicht an. Danach wie <see cref="Completed(Job)"/>.</summary>
+    public async Task CompletedAsync(Job j)
+    {
+        var target = j.Target;
+        var sha = await Task.Run(() => File.Exists(target) ? J.Sha(target) : null);
+        Completed(j, sha);
+    }
+
+    /// <param name="sha256">schon berechnete SHA-256 – wird für den Vergleich wiederverwendet, statt die Datei ein zweites Mal zu lesen.</param>
+    public void Completed(Job j, string? sha256)
     {
         j.Done = File.Exists(j.Target) ? new FileInfo(j.Target).Length : j.Done; if (j.Total <= 0) j.Total = j.Done;
         j.BytesPerSecond = 0; j.Finished = DateTimeOffset.Now;
+        j.Sha256 = sha256;
         if (j.ExpectedHash is { } h && File.Exists(j.Target))
         {
-            var (ok, algo, actual) = Web.VerifyHash(j.Target, h);
+            var (ok, algo) = sha256 is not null && Web.AlgoFor(h) == "SHA-256" ? (string.Equals(sha256, h, StringComparison.OrdinalIgnoreCase), "SHA-256") : VerifyOther(j.Target, h);
             j.HashResult = $"{algo} {(ok ? "stimmt" : "stimmt NICHT")}";
-            if (!ok) { j.Status = State.Fehler; j.Message = $"Prüfsumme ({algo}) stimmt nicht – die Datei ist beschädigt oder nicht die erwartete. Nicht öffnen."; Save(); return; }
+            if (!ok) { j.Status = State.Fehler; j.Message = $"Prüfsumme ({algo}) stimmt nicht – die Datei ist beschädigt oder nicht die erwartete. Nicht öffnen."; Save(); History.Add(j); return; }
         }
-        j.Status = State.Fertig; j.Message = ""; Save();
+        j.Status = State.Fertig; j.Message = ""; Save(); History.Add(j);
     }
+
+    static (bool, string) VerifyOther(string file, string h) { var (ok, algo, _) = Web.VerifyHash(file, h); return (ok, algo); }
 
     /// <summary>Aus der Liste nehmen. Unfertige Teil-Dateien werden mit entfernt (sie gehören nur dem Download); fertige Dateien bleiben im Ordner.</summary>
     public void Remove(string id)
@@ -134,4 +154,33 @@ public sealed partial class DownloadQueue
     public (int Running, int Waiting, int Done, int Failed) Counts => (Jobs.Count(j => j.Status == State.Lädt), Jobs.Count(j => j.Status is State.Wartet or State.Angehalten), Jobs.Count(j => j.Status == State.Fertig), Jobs.Count(j => j.Status == State.Fehler));
 
     public static string Duration(double s) => s < 0 ? "–" : s < 60 ? $"{Math.Ceiling(s)} s" : s < 3600 ? $"{Math.Floor(s / 60)} min {Math.Ceiling(s % 60)} s" : $"{Math.Floor(s / 3600)} h {Math.Floor(s % 3600 / 60)} min";
+}
+
+/// <summary>T-0755: Verlauf der Downloads (neueste zuerst, höchstens 500): Adresse, Datei, Größe, SHA-256, Ergebnis der Prüfsumme.</summary>
+public sealed class DownloadHistory(string file)
+{
+    public const int Max = 500;
+    public sealed record Entry(DateTimeOffset At, string Url, string Name, string Target, long Bytes, string? Sha256, string? Expected, bool Ok, string Message);
+
+    public List<Entry> Load()
+    {
+        try { return File.Exists(file) ? JsonSerializer.Deserialize<List<Entry>>(File.ReadAllText(file)) ?? [] : []; }
+        catch (Exception e) when (e is JsonException or IOException) { return []; }
+    }
+
+    public void Add(DownloadQueue.Job j)
+    {
+        var l = Load();
+        l.Insert(0, new(DateTimeOffset.Now, j.Url, j.Name, j.Target, j.Done, j.Sha256, j.ExpectedHash, j.Status == DownloadQueue.State.Fertig, j.Status == DownloadQueue.State.Fertig ? (j.HashResult ?? "fertig") : j.Message));
+        if (l.Count > Max) l.RemoveRange(Max, l.Count - Max);
+        Save(l);
+    }
+
+    public void Clear() => Save([]);
+
+    void Save(List<Entry> l)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(file)!);
+        AtomicFile.WriteAllText(file, JsonSerializer.Serialize(l, new JsonSerializerOptions { WriteIndented = true }));
+    }
 }

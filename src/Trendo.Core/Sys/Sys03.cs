@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace Trendo.Core.Sys;
 
-/// <summary>SYS-03 (Katalog freigegeben 21.10.2026): Browser & Downloads. Core rechnet und prüft nur – alles mit Netz läuft in der App (QA-019).</summary>
+/// <summary>SYS-03 (Katalog freigegeben 21.10.2026): Downloads & Links (seit T-0755; früher „Surfen & Herunterladen“ – Trendo hat keinen eigenen Browser). Core rechnet und prüft nur – alles mit Netz läuft in der App (QA-019).</summary>
 public static partial class Web
 {
     // P06 Prüfsumme
@@ -211,6 +211,25 @@ public static partial class Bookmarks
         if (!Uri.TryCreate(b.Url, UriKind.Absolute, out var u) || u.Scheme is not ("http" or "https")) throw new ArgumentException("Nur http- und https-Adressen.");
         var l = Load(dataRoot); l.RemoveAll(x => x.Url == b.Url); l.Add(b); Save(dataRoot, l);
     }
+    /// <summary>T-0755 „Links sammeln“: Ordner der gesammelten Links (in der Lesezeichen-Datei, damit Export/Import wie bisher geht).</summary>
+    public const string Collected = "Gesammelt";
+
+    /// <summary>T-0755: alle http(s)-Links aus eingefügtem Text sammeln (ohne Doppelte). Gibt die Zahl der neuen Links zurück.</summary>
+    public static int Collect(string dataRoot, string text)
+    {
+        var l = Load(dataRoot); var n = 0;
+        foreach (var u in DownloadQueue.ParseLinks(text))
+        {
+            if (l.Any(b => b.Url == u.AbsoluteUri)) continue;
+            var path = u.AbsolutePath.Trim('/'); var title = u.Host + (path.Length > 0 ? " – " + Uri.UnescapeDataString(path.Split('/')[^1]) : "");
+            l.Add(new(title, u.AbsoluteUri, Collected)); n++;
+        }
+        if (n > 0) Save(dataRoot, l);
+        return n;
+    }
+
+    public static void Remove(string dataRoot, string url) { var l = Load(dataRoot); if (l.RemoveAll(b => b.Url == url) > 0) Save(dataRoot, l); }
+
     /// <summary>Netscape-Lesezeichen-HTML (Export aus Chrome, Edge, Firefox) lesen – mit Ordnern.</summary>
     public static List<Bookmark> ImportHtml(string html)
     {

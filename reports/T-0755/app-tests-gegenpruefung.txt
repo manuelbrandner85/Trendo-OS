@@ -1,0 +1,269 @@
+xUnit.net v3 In-Process Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.15)
+  Discovering: Trendo.App.Tests
+  Discovered:  Trendo.App.Tests
+  Starting:    Trendo.App.Tests
+    T-0681 Abläufe UI: fehlgeschlagener Lauf steht mit Fehlerstand am Ablauf; beschädigte Ablaufdatei wird auf der Seite gemeldet [STARTING]
+    T-0681 Abläufe UI: fehlgeschlagener Lauf steht mit Fehlerstand am Ablauf; beschädigte Ablaufdatei wird auf der Seite gemeldet [FINISHED] Time: 1,7754676s
+    CORE-11 UI: Schutz-Seite über System erreichbar, Sichern, Ordner prüfen [STARTING]
+    CORE-11 UI: Schutz-Seite über System erreichbar, Sichern, Ordner prüfen [FINISHED] Time: 0,7760506s
+    SYS-07 UI: Geräte suchen zeigt Gruppen [STARTING]
+    SYS-07 UI: Geräte suchen zeigt Gruppen [FINISHED] Time: 0,2565966s
+    SYS-09 UI: Kontakt anlegen, Entwurf prüfen und im Mailprogramm öffnen (nichts wird gesendet) [STARTING]
+    SYS-09 UI: Kontakt anlegen, Entwurf prüfen und im Mailprogramm öffnen (nichts wird gesendet) [FINISHED] Time: 0,5929888s
+    Download-Manager: mehrere Links auf einmal, höchstens N gleichzeitig, Fortschritt, Anhalten/Fortsetzen, Prüfsumme falsch → Fehler; ohne Netz (nachgebildet) [STARTING]
+    Download-Manager: mehrere Links auf einmal, höchstens N gleichzeitig, Fortschritt, Anhalten/Fortsetzen, Prüfsumme falsch → Fehler; ohne Netz (nachgebildet) [FINISHED] Time: 2,3445709s
+    SYS-08 UI: Seite im Lesemodus lesen, .onion wird nicht abgerufen, Sitzung beenden [STARTING]
+    SYS-08 UI: Seite im Lesemodus lesen, .onion wird nicht abgerufen, Sitzung beenden [FINISHED] Time: 0,4261594s
+    X-02 UI: Beim Start automatisch geprüft, Seite zeigt Ergebnis, erneut prüfen [STARTING]
+    X-02 UI: Beim Start automatisch geprüft, Seite zeigt Ergebnis, erneut prüfen [FINISHED] Time: 0,4383348s
+    SPEC-12 UI: Prüfsumme vergleichen, Fall anlegen, Beweis sichern, Bericht [STARTING]
+    SPEC-12 UI: Prüfsumme vergleichen, Fall anlegen, Beweis sichern, Bericht [FINISHED] Time: 0,7752827s
+    T-0755 SYS-03 UI: „Downloads & Links“ – echter HTTP-Download (lokaler Testserver) zeigt SHA-256, vergleicht mit der Angabe, Anhalten/Fortsetzen, Verlauf bleibt; Links sammeln und im Standard-Browser öffnen [STARTING]
+    T-0755 SYS-03 UI: „Downloads & Links“ – echter HTTP-Download (lokaler Testserver) zeigt SHA-256, vergleicht mit der Angabe, Anhalten/Fortsetzen, Verlauf bleibt; Links sammeln und im Standard-Browser öffnen [FINISHED] Time: 6,5915929s
+    SYS-06 Freigabe-Dialog: Klick auf „Ablehnen“ lehnt ab [STARTING]
+    SYS-06 Freigabe-Dialog: Klick auf „Ablehnen“ lehnt ab [FINISHED] Time: 0,2334093s
+    Nutzerweg: Claude bekommt den Zugang samt Freigabe und ist bei „fertig“ am Ende, ohne das Wort in der Antwort [STARTING]
+    Nutzerweg: Claude bekommt den Zugang samt Freigabe und ist bei „fertig“ am Ende, ohne das Wort in der Antwort [FINISHED] Time: 1,2361826s
+    SYS-04 UI: Suchen, installieren, Updates anzeigen und aktualisieren, entfernen [STARTING]
+    SYS-04 UI: Suchen, installieren, Updates anzeigen und aktualisieren, entfernen [FINISHED] Time: 0,9186476s
+    YARA-Karte: ohne Einrichtung Einrichten-Knopf; mit yara-x Treffer als Warnung mit deutscher Art; nichts wird verändert; fehlender Ordner verständlich [STARTING]
+    YARA-Karte: ohne Einrichtung Einrichten-Knopf; mit yara-x Treffer als Warnung mit deutscher Art; nichts wird verändert; fehlender Ordner verständlich [FINISHED] Time: 0,3608944s
+    SYS-03 (UI): Tabs; Prüfsumme rot/grün; Link-Warnung; Suchmaschine wirkt in Strg+K; Webnotiz in der Suche [STARTING]
+    SYS-03 (UI): Tabs; Prüfsumme rot/grün; Link-Warnung; Suchmaschine wirkt in Strg+K; Webnotiz in der Suche [FINISHED] Time: 0,3291161s
+    SYS-03: Dock-Symbol öffnet „Downloads & Links“; Adresse öffnet im Standard-Browser, javascript: abgelehnt; offline gesperrt [STARTING]
+    SYS-03-P07: Download abbrechen und fortsetzen ergibt dieselbe Prüfsumme (lokaler Testserver) [STARTING]
+    SYS-03-P07: Download abbrechen und fortsetzen ergibt dieselbe Prüfsumme (lokaler Testserver) [FINISHED] Time: 0,1064816s
+    SYS-03: Dock-Symbol öffnet „Downloads & Links“; Adresse öffnet im Standard-Browser, javascript: abgelehnt; offline gesperrt [FINISHED] Time: 0,4651047s
+    T-0681 App-Center: auch Entfernen und Aktualisieren fragen vorher; die Rückfrage nennt Programm und Vorgang; Nein ändert nichts [STARTING]
+    T-0681 App-Center: auch Entfernen und Aktualisieren fragen vorher; die Rückfrage nennt Programm und Vorgang; Nein ändert nichts [FINISHED] Time: 0,6549799s
+    Lernplan: Plan mit Prüfungstermin anlegen → Tagesplan mit Ziel, Kalender mit Prüfungstag; „Jetzt lernen“ lernt in Plan-Reihenfolge und hält das Tempo [STARTING]
+    Lernplan: Plan mit Prüfungstermin anlegen → Tagesplan mit Ziel, Kalender mit Prüfungstag; „Jetzt lernen“ lernt in Plan-Reihenfolge und hält das Tempo [FINISHED] Time: 0,5690875s
+    T-0755 SYS-04 UI (ERSETZT: Testprogramm statt winget): Rückfrage zeigt den Befehl; Lauf zeigt Befehl, Fortschritt und Ausgabe live, schreibt ein Protokoll und prüft nach; Abbrechen beendet den Lauf [STARTING]
+    T-0755 SYS-04 UI (ERSETZT: Testprogramm statt winget): Rückfrage zeigt den Befehl; Lauf zeigt Befehl, Fortschritt und Ausgabe live, schreibt ein Protokoll und prüft nach; Abbrechen beendet den Lauf [FINISHED] Time: 1,8288737s
+    SYS-06 Freigabe-Dialog: nennt Ordner und Dauer, Esc lehnt ab [STARTING]
+    SYS-06 Freigabe-Dialog: nennt Ordner und Dauer, Esc lehnt ab [FINISHED] Time: 0,1592602s
+    Schutz: Die Freigaben-Seite bleibt für Claude gesperrt, auch mit Zustimmung [STARTING]
+    Schutz: Die Freigaben-Seite bleibt für Claude gesperrt, auch mit Zustimmung [FINISHED] Time: 0,2952304s
+    T-0681 Sicherung UI: gesperrte Datei → „Unvollständig“ in Meldung und Liste; beschädigte Sicherung steht als solche da und wird beim Wiederherstellen übersprungen [STARTING]
+    T-0681 Sicherung UI: gesperrte Datei → „Unvollständig“ in Meldung und Liste; beschädigte Sicherung steht als solche da und wird beim Wiederherstellen übersprungen [FINISHED] Time: 0,38489s
+    T-0755 SPEC-12 UI (echte Dateien, echte Signaturprüfung): „System prüfen“ zeigt Ampel, Datei, Herausgeber, Erklärung; Filter; Bericht als HTML/CSV; nichts wird verändert [STARTING]
+    T-0755 SPEC-12 UI (echte Dateien, echte Signaturprüfung): „System prüfen“ zeigt Ampel, Datei, Herausgeber, Erklärung; Filter; Bericht als HTML/CSV; nichts wird verändert [FINISHED] Time: 1,141646s
+    SYS-06 Freigabe-Dialog: Fenster schließen (X) lehnt ab [STARTING]
+    SYS-06 Freigabe-Dialog: Fenster schließen (X) lehnt ab [FINISHED] Time: 0,2257937s
+    Nutzerweg: Ohne „fertig“ arbeitet Claude weiter, aber höchstens acht Durchgänge [STARTING]
+    Nutzerweg: Ohne „fertig“ arbeitet Claude weiter, aber höchstens acht Durchgänge [FINISHED] Time: 2,4901882s
+    T-0681 Code-Editor: „Ausführen“ läuft im Hintergrund – Klick kehrt sofort zurück, Ausgabe erscheint laufend, die Seite bleibt bedienbar, „Abbrechen“ beendet den eigenen Kindprozess [STARTING]
+    T-0681 Code-Editor: „Ausführen“ läuft im Hintergrund – Klick kehrt sofort zurück, Ausgabe erscheint laufend, die Seite bleibt bedienbar, „Abbrechen“ beendet den eigenen Kindprozess [FINISHED] Time: 1,0350231s
+    SYS-06 Freigabe-Dialog: Klick auf „Erlauben“ startet die Freigabe; Schließen des Hauptfensters beendet sie [STARTING]
+    SYS-06 Freigabe-Dialog: Klick auf „Erlauben“ startet die Freigabe; Schließen des Hauptfensters beendet sie [FINISHED] Time: 2,3422079s
+    Schutz: Zustimmung gilt je Lauf einmal, ein neuer Lauf fragt wieder [STARTING]
+    Schutz: Zustimmung gilt je Lauf einmal, ein neuer Lauf fragt wieder [FINISHED] Time: 0,5415426s
+    T-0681 App-Center: Installieren fragt in einem eigenen Fenster nach (was, woher, Größe) – ohne Bestätigung passiert nichts, Ablehnen steht im Protokoll, erst „Installieren“ installiert [STARTING]
+    T-0681 App-Center: Installieren fragt in einem eigenen Fenster nach (was, woher, Größe) – ohne Bestätigung passiert nichts, Ablehnen steht im Protokoll, erst „Installieren“ installiert [FINISHED] Time: 0,9528559s
+    SYS-06 UI: Ordner teilen, Datei echt per HTTP laden, falsches Token abgelehnt, beenden [STARTING]
+    SYS-06 UI: Ordner teilen, Datei echt per HTTP laden, falsches Token abgelehnt, beenden [FINISHED] Time: 0,5145308s
+    Schutz: Fachwissen bleibt ohne Zustimmung abrufbar, es enthält keine privaten Daten [STARTING]
+    Schutz: Fachwissen bleibt ohne Zustimmung abrufbar, es enthält keine privaten Daten [FINISHED] Time: 0,225156s
+    T-0681 Podcast: fehlt FFmpeg, nennt die Meldung den Einrichten-Weg – und „Lautheit angleichen“ geht danach weiter (Merker nicht hängen geblieben) [STARTING]
+    T-0681 Podcast: fehlt FFmpeg, nennt die Meldung den Einrichten-Weg – und „Lautheit angleichen“ geht danach weiter (Merker nicht hängen geblieben) [FINISHED] Time: 1,2836081s
+    SYS-06 Freigabe-Gate: ohne Zustimmung keine Freigabe, Anfrage abgelehnt [STARTING]
+    SYS-06 Freigabe-Gate: ohne Zustimmung keine Freigabe, Anfrage abgelehnt [FINISHED] Time: 0,2766772s
+    Nutzerweg: Mit ausgeschaltetem „ohne Klicks“ bleiben Plan, Vergleich und Behalten wie zuvor [STARTING]
+    Nutzerweg: Mit ausgeschaltetem „ohne Klicks“ bleiben Plan, Vergleich und Behalten wie zuvor [FINISHED] Time: 0,7217397s
+    Not-Stopp: Bricht laufende Claude-Arbeit ab und lässt keinen neuen Durchgang starten [STARTING]
+    Not-Stopp: Bricht laufende Claude-Arbeit ab und lässt keinen neuen Durchgang starten [FINISHED] Time: 0,745659s
+    Schutz: Claude kann seine eigenen Rechte nicht ändern, auch nicht mit Zustimmung [STARTING]
+    Schutz: Claude kann seine eigenen Rechte nicht ändern, auch nicht mit Zustimmung [FINISHED] Time: 0,2646635s
+    Nutzerweg: Ein harmloser Plan läuft von selbst, bei offener Freigabe bleibt er stehen [STARTING]
+    Nutzerweg: Ein harmloser Plan läuft von selbst, bei offener Freigabe bleibt er stehen [FINISHED] Time: 0,7535836s
+    Schutz: Private Seiten öffnen nur nach Zustimmung; Nein lässt die Seite zu(page: "keys") [STARTING]
+    Schutz: Private Seiten öffnen nur nach Zustimmung; Nein lässt die Seite zu(page: "keys") [FINISHED] Time: 0,1357421s
+    Schutz: Private Seiten öffnen nur nach Zustimmung; Nein lässt die Seite zu(page: "forensik") [STARTING]
+    Schutz: Private Seiten öffnen nur nach Zustimmung; Nein lässt die Seite zu(page: "forensik") [FINISHED] Time: 0,1374854s
+    Schutz: Private Seiten öffnen nur nach Zustimmung; Nein lässt die Seite zu(page: "posteingang") [STARTING]
+    Schutz: Private Seiten öffnen nur nach Zustimmung; Nein lässt die Seite zu(page: "posteingang") [FINISHED] Time: 0,2641919s
+    Schutz: Private Seiten öffnen nur nach Zustimmung; Nein lässt die Seite zu(page: "finanzen") [STARTING]
+    Schutz: Private Seiten öffnen nur nach Zustimmung; Nein lässt die Seite zu(page: "finanzen") [FINISHED] Time: 0,1388207s
+    Schutz: Einwilligungen im Dokument setzt nur der Nutzer [STARTING]
+    Schutz: Einwilligungen im Dokument setzt nur der Nutzer [FINISHED] Time: 0,20215s
+    Letztes Paket: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "SPEC-08", request: "Zeig mir das in 3D auf der Puppe", task: "anprobe") [STARTING]
+    Letztes Paket: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "SPEC-08", request: "Zeig mir das in 3D auf der Puppe", task: "anprobe") [FINISHED] Time: 0,0083427s
+    Letztes Paket: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "SPEC-15", request: "Richte eine Szene mit Kamera ein", task: "szene") [STARTING]
+    Letztes Paket: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "SPEC-15", request: "Richte eine Szene mit Kamera ein", task: "szene") [FINISHED] Time: 0,0002825s
+    Letztes Paket: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "STUDIO-TV-01", request: "Nimm den Film heute Abend auf", task: "aufnahme") [STARTING]
+    Letztes Paket: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "STUDIO-TV-01", request: "Nimm den Film heute Abend auf", task: "aufnahme") [FINISHED] Time: 0,0000313s
+    Letztes Paket: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "CORE-02", request: "Fasse diesen Text zusammen", task: "zusammenfassen") [STARTING]
+    Letztes Paket: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "CORE-02", request: "Fasse diesen Text zusammen", task: "zusammenfassen") [FINISHED] Time: 0,0000237s
+    Letztes Paket: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "SYS-05", request: "Jeden Morgen Wetter und Termine zeigen", task: "ablauf") [STARTING]
+    Letztes Paket: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "SYS-05", request: "Jeden Morgen Wetter und Termine zeigen", task: "ablauf") [FINISHED] Time: 0,0000286s
+    Letztes Paket: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "X-03", request: "App für Einkaufslisten", task: "app") [STARTING]
+    Letztes Paket: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "X-03", request: "App für Einkaufslisten", task: "app") [FINISHED] Time: 0,0000235s
+    Letztes Paket: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "SYS-04", request: "Bring die Programme auf den neuesten Stand per Upd"···, task: "aktualisieren") [STARTING]
+    Letztes Paket: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "SYS-04", request: "Bring die Programme auf den neuesten Stand per Upd"···, task: "aktualisieren") [FINISHED] Time: 0,0002549s
+    Letztes Paket: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "CORE-11", request: "Mach ein Backup", task: "sicherung") [STARTING]
+    Letztes Paket: Auftrag in Alltagssprache führt zur passenden Aufgabe(studio: "CORE-11", request: "Mach ein Backup", task: "sicherung") [FINISHED] Time: 0,0000329s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-LETTER-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-LETTER-01") [FINISHED] Time: 0,0014254s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-10") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-10") [FINISHED] Time: 0,00021s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-09") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-09") [FINISHED] Time: 0,0000373s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "X-11") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "X-11") [FINISHED] Time: 0,0000393s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-02") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-02") [FINISHED] Time: 0,000026s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-DECKDESIGN-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-DECKDESIGN-01") [FINISHED] Time: 0,0000289s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-DOCSCAN-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-DOCSCAN-01") [FINISHED] Time: 0,0000264s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-DAYPLAN-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-DAYPLAN-01") [FINISHED] Time: 0,0000312s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-CV-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-CV-01") [FINISHED] Time: 0,000027s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-CARDS-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-CARDS-01") [FINISHED] Time: 0,0000275s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-CONTRACTS-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-CONTRACTS-01") [FINISHED] Time: 0,0000239s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-PDFTOOLS-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-PDFTOOLS-01") [FINISHED] Time: 0,0000267s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-FORMS-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-FORMS-01") [FINISHED] Time: 0,0000269s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-ONLINE-BUSINESS-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-ONLINE-BUSINESS-01") [FINISHED] Time: 0,0000264s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-POD-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-POD-01") [FINISHED] Time: 0,000035s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-11") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-11") [FINISHED] Time: 0,0000283s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "CORE-08") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "CORE-08") [FINISHED] Time: 0,0000332s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-MUSIK-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-MUSIK-01") [FINISHED] Time: 0,000026s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-FILM-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-FILM-01") [FINISHED] Time: 0,0000253s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-LOGO-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-LOGO-01") [FINISHED] Time: 0,0000256s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-PODCAST-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-PODCAST-01") [FINISHED] Time: 0,00003s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-COMIC-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-COMIC-01") [FINISHED] Time: 0,0000251s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-BOOK-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-BOOK-01") [FINISHED] Time: 0,0000271s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-ANIM-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-ANIM-01") [FINISHED] Time: 0,0000258s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-ART-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-ART-01") [FINISHED] Time: 0,0000408s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-PHOTOS-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-PHOTOS-01") [FINISHED] Time: 0,0000248s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-TV-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-TV-01") [FINISHED] Time: 0,0000274s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-15") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-15") [FINISHED] Time: 0,0000313s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-08") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-08") [FINISHED] Time: 0,0000241s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "X-07") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "X-07") [FINISHED] Time: 0,0000255s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "CORE-12") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "CORE-12") [FINISHED] Time: 0,0000206s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "CORE-05") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "CORE-05") [FINISHED] Time: 0,0000251s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-CONSOLE-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-CONSOLE-01") [FINISHED] Time: 0,0000259s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-SUMMARY-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-SUMMARY-01") [FINISHED] Time: 0,0000199s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-IMAGEAI-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-IMAGEAI-01") [FINISHED] Time: 0,000019s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-VIDEOAI-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-VIDEOAI-01") [FINISHED] Time: 0,0000293s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-AGENTS-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-AGENTS-01") [FINISHED] Time: 0,0000247s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-MODELS-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-MODELS-01") [FINISHED] Time: 0,0000264s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-TRAIN-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-TRAIN-01") [FINISHED] Time: 0,0000241s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "CORE-06") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "CORE-06") [FINISHED] Time: 0,0009209s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-04") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-04") [FINISHED] Time: 0,0000287s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-09") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-09") [FINISHED] Time: 0,0000217s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-01") [FINISHED] Time: 0,0000216s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-02") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-02") [FINISHED] Time: 0,0000201s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-03") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-03") [FINISHED] Time: 0,0000608s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-10") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-10") [FINISHED] Time: 0,0000224s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-13") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-13") [FINISHED] Time: 0,000017s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-14") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-14") [FINISHED] Time: 0,0000207s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-05") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-05") [FINISHED] Time: 0,0000177s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-06") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-06") [FINISHED] Time: 0,0000205s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "CORE-10") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "CORE-10") [FINISHED] Time: 0,0000198s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-08") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-08") [FINISHED] Time: 0,0000182s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-CITE-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-CITE-01") [FINISHED] Time: 0,0000184s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "CORE-02") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "CORE-02") [FINISHED] Time: 0,0000174s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "CORE-03") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "CORE-03") [FINISHED] Time: 0,0000176s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "X-05") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "X-05") [FINISHED] Time: 0,0000169s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-05") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-05") [FINISHED] Time: 0,0000167s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "X-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "X-01") [FINISHED] Time: 0,0000164s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-CODEAI-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-CODEAI-01") [FINISHED] Time: 0,000022s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-VISION-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "STUDIO-VISION-01") [FINISHED] Time: 0,0000216s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "CORE-07") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "CORE-07") [FINISHED] Time: 0,0000201s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "X-03") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "X-03") [FINISHED] Time: 0,0000183s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "X-06") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "X-06") [FINISHED] Time: 0,000019s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "X-04") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "X-04") [FINISHED] Time: 0,00002s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "X-10") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "X-10") [FINISHED] Time: 0,0000182s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "CORE-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "CORE-01") [FINISHED] Time: 0,0000172s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-01") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-01") [FINISHED] Time: 0,0001313s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "CORE-11") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "CORE-11") [FINISHED] Time: 0,0000198s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-12") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SPEC-12") [FINISHED] Time: 0,000017s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-03") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-03") [FINISHED] Time: 0,0000205s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-04") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-04") [FINISHED] Time: 0,00002s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-06") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-06") [FINISHED] Time: 0,0000188s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-07") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-07") [FINISHED] Time: 0,0000175s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-11") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-11") [FINISHED] Time: 0,0000174s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-12") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-12") [FINISHED] Time: 0,0000172s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-13") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "SYS-13") [FINISHED] Time: 0,0000203s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "X-02") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "X-02") [FINISHED] Time: 0,0000163s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "X-08") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "X-08") [FINISHED] Time: 0,0000206s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "CORE-04") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "CORE-04") [FINISHED] Time: 0,0000218s
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "X-09") [STARTING]
+    Alle Studios: ausführliches Fachwissen, gültige Helfer und Programme, mindestens eine Aufgabe(id: "X-09") [FINISHED] Time: 0,0000162s
+    Abgelehnt bleibt abgelehnt: SPEC-07 bekommt keine ausführliche Beschreibung [STARTING]
+    Abgelehnt bleibt abgelehnt: SPEC-07 bekommt keine ausführliche Beschreibung [FINISHED] Time: 0,0002096s
+  Finished:    Trendo.App.Tests (ID = '55e4a41658602614e0303e126ea9137a8c59d89c7a9067162d9f76cfa1c20751')
+=== TEST EXECUTION SUMMARY ===
+   Trendo.App.Tests  Total: 131, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0, Time: 45,633s

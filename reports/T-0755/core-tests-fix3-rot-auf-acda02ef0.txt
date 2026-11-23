@@ -1,0 +1,12 @@
+[xUnit.net 00:00:07.95]     T-0755 Fix3 MITTEL: dotnet.exe mit Bibliothek aus C:\ProgramData ist nie grün (Code-Lader, ProgramData mindestens gelb) [FAIL]
+[xUnit.net 00:00:08.08]     T-0755 Fix3 MITTEL (echte Datei): Squirrel-Update.exe --processStart, Skript-Argument (.js) und "-enc"/-enc: sind nie grün [FAIL]
+[xUnit.net 00:00:08.09]     T-0755 Fix3: Ampel ist ehrlich – „Hinweis-Ampel, keine Virenprüfung“, grün heißt „keine bekannte Auffälligkeit“, nirgends „sicher“ oder „sauber“ [FAIL]
+[xUnit.net 00:00:08.16]     T-0755 Fix3 MITTEL (echte Dateien): Microsoft-signierte Kopien im Benutzerordner mit Skript daneben sind rot – „eigener Programmordner“ gilt nur unter Programme/Windows [FAIL]
+Expected: Not Gruen
+Actual:       Gruen
+Expected: Not Gruen
+Actual:       Gruen
+Not found: "keine bekannte Auffälligkeit"
+Expected: Rot
+Actual:   Gruen
+Fehler!      : Fehler:     4, erfolgreich:     0, übersprungen:     0, gesamt:     4, Dauer: 406 ms - Trendo.Core.Tests.dll (net10.0)

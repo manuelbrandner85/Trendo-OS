@@ -586,7 +586,7 @@
  },
  {
   "id": "SYS-03",
-  "name": "Surfen & Herunterladen",
+  "name": "Downloads & Links",
   "quelldateien": 10,
   "testdateien": 2,
   "tests": 105,

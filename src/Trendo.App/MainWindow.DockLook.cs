@@ -46,7 +46,7 @@ public partial class MainWindow
     /// Der ausführliche Name bleibt im Hinweis und für Bildschirmleser.</summary>
     public static readonly IReadOnlyDictionary<string, string> DockWords = new Dictionary<string, string>
     {
-        ["files"] = "Dateien", ["browser"] = "Browser", ["mail"] = "E-Mail", ["ki"] = "Trendo KI", ["media"] = "Medien", ["settings"] = "Einstellungen",
+        ["files"] = "Dateien", ["browser"] = "Downloads", ["mail"] = "E-Mail", ["ki"] = "Trendo KI", ["media"] = "Medien", ["settings"] = "Einstellungen",
         ["blender"] = "Blender", ["unreal"] = "Unreal", ["components"] = "Hinzufügen", ["code"] = "Webseite", ["office"] = "Texte", ["security"] = "Schutz",
     };
 

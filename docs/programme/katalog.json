@@ -18701,7 +18701,7 @@
     "Id": "downloads",
     "Name": "Downloads",
     "Studio": "SYS-03",
-    "StudioName": "Surfen & Herunterladen",
+    "StudioName": "Downloads & Links",
     "Area": "System & Sicherheit",
     "Type": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
@@ -18935,7 +18935,7 @@
     "Id": "netz-pruefen",
     "Name": "Sicher prüfen",
     "Studio": "SYS-03",
-    "StudioName": "Surfen & Herunterladen",
+    "StudioName": "Downloads & Links",
     "Area": "System & Sicherheit",
     "Type": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"

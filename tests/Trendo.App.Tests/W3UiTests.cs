@@ -51,11 +51,13 @@ public sealed class FakePkg : IPackageBackend
     public List<string> Done { get; } = [];
     public string Name => "Test-Paketverwaltung"; public string Exe => "x";
     public Task<IReadOnlyList<PackageInfo>> SearchAsync(string q, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<PackageInfo>>([new("VLC", "VideoLAN.VLC", "3.0")]);
-    public Task<IReadOnlyList<PackageInfo>> InstalledAsync(CancellationToken ct = default) => Task.FromResult<IReadOnlyList<PackageInfo>>([new("Git", "Git.Git", "2.45")]);
+    /// <summary>T-0755: Die Ersatz-Paketverwaltung merkt sich, was installiert ist – Trendo prüft nach jedem Lauf nach.</summary>
+    public List<PackageInfo> Installed { get; } = [new("Git", "Git.Git", "2.45")];
+    public Task<IReadOnlyList<PackageInfo>> InstalledAsync(CancellationToken ct = default) => Task.FromResult<IReadOnlyList<PackageInfo>>([.. Installed]);
     public Task<IReadOnlyList<PackageInfo>> UpgradesAsync(CancellationToken ct = default) => Task.FromResult<IReadOnlyList<PackageInfo>>([new("Git", "Git.Git", "2.45", "2.47")]);
-    public Task<(bool Ok, string Log)> InstallAsync(string id, Action<string>? l = null, CancellationToken ct = default) { Done.Add("i " + id); return Task.FromResult((true, "")); }
-    public Task<(bool Ok, string Log)> UpgradeAsync(string id, Action<string>? l = null, CancellationToken ct = default) { Done.Add("u " + id); return Task.FromResult((true, "")); }
-    public Task<(bool Ok, string Log)> UninstallAsync(string id, Action<string>? l = null, CancellationToken ct = default) { Done.Add("x " + id); return Task.FromResult((true, "")); }
+    public Task<(bool Ok, string Log)> InstallAsync(string id, Action<string>? l = null, CancellationToken ct = default) { Done.Add("i " + id); if (!Installed.Any(p => p.Id == id)) Installed.Add(new(id, id, "")); return Task.FromResult((true, "")); }
+    public Task<(bool Ok, string Log)> UpgradeAsync(string id, Action<string>? l = null, CancellationToken ct = default) { Done.Add("u " + id); var i = Installed.FindIndex(p => p.Id == id); if (i >= 0) Installed[i] = Installed[i] with { Version = "2.47" }; return Task.FromResult((true, "")); }
+    public Task<(bool Ok, string Log)> UninstallAsync(string id, Action<string>? l = null, CancellationToken ct = default) { Done.Add("x " + id); Installed.RemoveAll(p => p.Id == id); return Task.FromResult((true, "")); }
 }
 
 public class SYS04_Ui
