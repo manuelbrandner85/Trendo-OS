@@ -1,0 +1,17 @@
+Quelle des freien Titels, geladen am 2026-11-23 02:39:13 UTC nur zur Prüfsummen-Festlegung (nicht im Repo, danach gelöscht)
+$ git clone --depth 1 https://github.com/glampert/ps2-homebrew.git
+$ git log -1 --format='%H %ci'
+602441a6877a3136709d6320664340d52e3027a1 2026-08-23 16:31:15 +1000
+$ head -2 LICENSE.txt
+
+The MIT License <from http://opensource.org/licenses/MIT> :
+$ sha256sum source/demos/bin/cubes_demo.elf  (Blob aus Git)
+5af35384a6ed7ea880a0370a6490bd178a7e53a9b1a6179c75638c406613a8e8 *-
+$ Größe
+243288
+$ sha256 LICENSE.txt mit LF (Zeilenenden normalisiert)
+45b4891f1852bf3d3f4425fa1ff60398afd703675841d902ee7f8aaf4ba950d3 *-
+$ ELF-Kopf
+00000000: 7f45 4c46 0101 0100 0000 0000 0000 0000  .ELF............
+00000010: 0200 0800                                ....
+Ergebnis in Trendo (Bild freies-spiel-echte-dateien.png): Lizenz belegt: MIT – LICENSE.txt; Programm des Spiels: cubes_demo.elf · SHA-256 5af35384a6ed7ea8…

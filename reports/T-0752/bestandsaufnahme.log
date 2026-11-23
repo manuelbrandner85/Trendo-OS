@@ -1,0 +1,17 @@
+Bestandsaufnahme 2026-11-23 01:36:11 UTC – nur gelesen, nichts installiert
+$ Test-Path %TEMP%\trendo-ps2 (Arbeitsordner vom 09.11.2026)
+False
+$ where cmake
+nicht gefunden
+$ where ninja
+nicht gefunden
+$ cmake.exe in Visual Studio 18 Community (CMake-Komponente)
+ls: cannot access '/c/Program Files/Microsoft Visual Studio/18/Community/Common7/IDE/CommonExtensions/Microsoft/CMake': No such file or directory
+$ MSVC-Werkzeuge
+14.50.35717
+14.51.36231
+$ clang-cl
+/c/Program Files/Microsoft Visual Studio/18/Community/VC/Tools/Llvm/x64/bin/clang-cl.exe
+$ PS2Recomp-Ordner C:\ps2recomp
+fehlt
+$ Suche nach cubes_demo.elf und ps2recomp*.exe im Benutzerordner (Tiefe 6/7): keine Treffer

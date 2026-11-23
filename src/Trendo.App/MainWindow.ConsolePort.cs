@@ -14,6 +14,8 @@ public partial class MainWindow
 {
     const string ConsoleKey = "konsole-programm";
     string _conStep = "bibliothek";
+    /// <summary>Gewählter Schritt (für Vorschaubilder: TRENDO_CONSTEP).</summary>
+    public string ConsoleStep { get => _conStep; set => _conStep = value; }
     /// <summary>Für Tests: Auftrag an Claude nachbilden.</summary>
     public Func<string, bool>? ConsoleSendOverride { get; set; }
     /// <summary>Für Tests: Git-Aufruf nachbilden (Argumente, Ordner).</summary>
@@ -25,26 +27,26 @@ public partial class MainWindow
 
     private void InitConsolePort() => RegisterProgram(FachTabs, new ProgramSpec(ConsoleKey, "STUDIO-CONSOLE-01", "Konsolenspiele portieren")
     {
-        Sentence = "Spiele aus der Bibliothek bauen, spielen und umbauen, frei verteilte Spiele im Emulator starten oder ein eigenes PS2-Spiel portieren.",
+        Sentence = "Spiele aus der Bibliothek bauen, spielen und umbauen, frei verteilte Spiele im Emulator starten, ein frei lizenziertes PS2-Programm mit PS2Recomp portieren oder ein eigenes PS2-Spiel portieren.",
         Folder = "Konsolenspiele",
         FillHeight = true,
         Templates = [new("neu", "Neues Spiel", "Aus der Bibliothek, nach deinem Wunsch oder von deiner eigenen Disc", () => new JsonObject { ["game"] = "", ["image"] = "", ["owned"] = false, ["lib"] = "", ["wish"] = "" })],
         Workspace = ConsoleWorkspace,
-        Status = d => LibEntry(d) is { } e ? e.Title : d.Text("game").Length == 0 && d.Text("image").Length == 0 ? "Wähle ein Spiel aus der Bibliothek" : ConsolePortKit.ReadyToStart(d.Text("game"), d.Text("image"), d.Flag("owned")) ?? "Bereit zum Portieren",
+        Status = d => _conStep == "frei" ? FreePortStatus(d) : LibEntry(d) is { } e ? e.Title : d.Text("game").Length == 0 && d.Text("image").Length == 0 ? "Wähle ein Spiel aus der Bibliothek" : ConsolePortKit.ReadyToStart(d.Text("game"), d.Text("image"), d.Flag("owned")) ?? "Bereit zum Portieren",
         Help = "Die Bibliothek enthält eigene Spielideen, frei lizenzierte Projekte und frei verteilte Homebrew-Spiele. Bestehende Kaufspiele werden nicht nachgebaut. Trendo lädt keine ROMs, ISOs oder BIOS-Dateien von Kaufspielen.",
     }, "konsolenspiele", "konsole", "ps2", "playstation 2", "portieren", "recompiler", "steam deck");
 
     Control ConsoleWorkspace(ProgramDocument d)
     {
         var steps = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Margin = new Thickness(4, 4, 4, 10), [DockPanel.DockProperty] = Avalonia.Controls.Dock.Top };
-        foreach (var (id, label) in new[] { ("bibliothek", "Bibliothek"), ("spiel", "Eigene Disc"), ("werkzeuge", "Werkzeuge"), ("portieren", "Portieren"), ("geraete", "Geräte") })
+        foreach (var (id, label) in new[] { ("bibliothek", "Bibliothek"), ("frei", "Freies Spiel portieren"), ("spiel", "Eigene Disc"), ("werkzeuge", "Werkzeuge"), ("portieren", "Portieren"), ("geraete", "Geräte") })
         {
             var b = new Button { Name = "con-step-" + id, Content = label, Padding = new Thickness(14, 6) };
             if (_conStep == id) b.Classes.Add("accent");
             b.Click += (_, _) => { _conStep = id; Show(ConsoleKey); };
             steps.Children.Add(b);
         }
-        Control body = _conStep switch { "bibliothek" => LibraryView(d), "werkzeuge" => ConsoleTools(d), "portieren" => ConsoleRun(d), "geraete" => ConsoleDevices(d), _ => ConsoleGame(d) };
+        Control body = _conStep switch { "bibliothek" => LibraryView(d), "frei" => FreePortView(d), "werkzeuge" => ConsoleTools(d), "portieren" => ConsoleRun(d), "geraete" => ConsoleDevices(d), _ => ConsoleGame(d) };
         return new DockPanel { Name = "con-workspace", Children = { steps, new ScrollViewer { Content = body } } };
     }
 

@@ -69,4 +69,100 @@ public class ConsolePort_Ui
         w.Close();
         _ = root;
     }
+
+    static async Task Until(Func<bool> ok, int ms = 10000) { for (var i = 0; i < ms / 20 && !ok(); i++) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); await Task.Delay(20); } Assert.True(ok()); }
+
+    static string MipsElf(string dir) { var b = new byte[64]; b[0] = 0x7F; b[1] = (byte)'E'; b[2] = (byte)'L'; b[3] = (byte)'F'; b[4] = 1; b[5] = 1; b[18] = 8; var f = Path.Combine(dir, "cubes_demo.elf"); File.WriteAllBytes(f, b); return f; }
+
+    static void Tap(MainWindow w, string name) { var b = w.Find<Button>(name); b.BringIntoView(); Settle(); RealClick(w, w.Find<Button>(name)); Settle(); }
+
+    [AvaloniaFact(DisplayName = "Konsole T-0752: Freies Spiel – ohne PS2Recomp und CMake BLOCKIERT vor dem ersten Schritt, Start gesperrt, nichts wird aufgerufen")]
+    public async Task Free_port_blocked()
+    {
+        var (w, _, _) = Ui.Open(); w.Width = 1600; w.Height = 1500;
+        w.Show(K); Settle(); RealClick(w, w.Find<Button>("prog-tpl-neu")); Settle();
+        var d = w.ProgramActive(K)!;
+        var calls = 0; w.FreePortRunnerOverride = (_, _, _, _, _, _) => { calls++; return Task.FromResult(new Trendo.Core.Cli.Result(0, "", "")); };
+        Tap(w, "con-step-frei");
+        Assert.Contains("github.com/glampert/ps2-homebrew", w.Find<TextBlock>("fp-source").Text);
+        Assert.StartsWith("BLOCKIERT", w.Find<TextBlock>("fp-blocked").Text);
+        Assert.StartsWith("✕", w.Find<TextBlock>("fp-check-recomp").Text);
+        Assert.StartsWith("✕", w.Find<TextBlock>("fp-check-cmake").Text);
+        Assert.False(w.Find<Button>("fp-start").IsEnabled);
+        Assert.True(w.Find<Button>("fp-start").Classes.Contains("haupt"));
+        var o = await w.FreePortStart(d);
+        Assert.Equal("blockiert", o!.Status);
+        Assert.Equal(0, calls);
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Konsole T-0752: Freies Spiel – Klick auf Lizenz, Programm, Ordner und „Portieren starten“ bis zur Ergebnisdatei, dann Probelauf")]
+    public async Task Free_port_click_to_result()
+    {
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1500;
+        w.Show(K); Settle(); RealClick(w, w.Find<Button>("prog-tpl-neu")); Settle();
+        var d = w.ProgramActive(K)!;
+        var lic = Path.Combine(root, "LICENSE"); File.WriteAllText(lic, "MIT License\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software ...\n");
+        var elf = MipsElf(root);
+        var recomp = Path.Combine(root, "ps2recomp"); Directory.CreateDirectory(Path.Combine(recomp, "ps2xRuntime")); File.WriteAllText(Path.Combine(recomp, "CMakeLists.txt"), "project(x)");
+        w.PickOverride = r => Task.FromResult<string[]?>(r.Field == "fp-license" ? [lic] : [elf]);
+        MainWindow.FolderPickOverride = _ => recomp;
+        w.FreePortProbeOverride = new(n => n == "cmake" ? "cmake.exe" : null, () => "cl.exe", 4096);
+        var calls = new List<string>();
+        w.FreePortRunnerOverride = (exe, args, cwd, onLine, ct, timeout) =>
+        {
+            lock (calls) calls.Add(Path.GetFileName(exe) + " " + string.Join(' ', args));
+            var a = args.ToList();
+            if (exe == "cmake.exe" && a[0] == "--build") { var rel = Path.Combine(a[1], "Release"); Directory.CreateDirectory(rel); File.WriteAllText(Path.Combine(rel, a.Contains("--target") ? "ps2EntryRunner.exe" : "ps2recomp.exe"), "MZ"); }
+            if (Path.GetFileName(exe) == "ps2recomp.exe") { var outDir = Path.Combine(cwd, "ausgabe"); File.WriteAllText(Path.Combine(outDir, "game.cpp"), "//"); File.WriteAllText(Path.Combine(outDir, "game.h"), "//"); }
+            if (Path.GetFileName(exe) == "ps2EntryRunner.exe") { for (var i = 0; i < 5; i++) onLine($"[run:tick] pc=0x0010{i:X4}"); return Task.FromResult(new Trendo.Core.Cli.Result(-2, "", "Zeitüberschreitung")); }
+            onLine("fertig: " + a[0]);
+            return Task.FromResult(new Trendo.Core.Cli.Result(0, "", ""));
+        };
+        try
+        {
+            Tap(w, "con-step-frei");
+            Assert.Contains("BLOCKIERT", w.Find<TextBlock>("prog-status-text").Text);
+            Tap(w, "fp-title-eigen"); await Until(() => d.Text("fp_title") == "eigen");
+            Tap(w, "fp-pick-license"); await Until(() => d.Text("fp_license") == lic);
+            Tap(w, "fp-pick-elf"); await Until(() => d.Text("fp_elf") == elf);
+            Tap(w, "fp-pick-recomp"); await Until(() => d.Text("fp_recomp") == recomp);
+            Settle();
+            Assert.Null(w.TryFind<TextBlock>("fp-blocked"));
+            Assert.True(w.Find<Button>("fp-start").IsEnabled);
+            Tap(w, "fp-start");
+            await Until(() => w.FreePortLast is not null && !w.FreePortBusy);
+            Assert.Equal("fertig", w.FreePortLast!.Status);
+            Settle();
+            Assert.StartsWith("✓ Fertig", w.Find<TextBlock>("fp-outcome").Text);
+            Assert.Contains("ps2EntryRunner.exe · SHA-256 " + w.FreePortLast.ProgramSha256, w.Find<TextBlock>("fp-result").Text);
+            Assert.Contains("Schritt 8/8", w.Find<TextBox>("fp-log").Text);
+            Assert.Equal("Portieren fertig", w.Find<TextBlock>("prog-status-text").Text);
+            Assert.Contains(calls, c => c.EndsWith("--target ps2EntryRunner"));
+            Assert.True(File.Exists(Path.Combine(recomp, "ps2xRuntime", "src", "runner", "game.cpp")));
+            Tap(w, "fp-trial");
+            await Until(() => w.FreePortLastTrial is not null && !w.FreePortBusy);
+            Settle();
+            Assert.Equal("läuft", w.FreePortLastTrial!.Status);
+            Assert.Contains("ohne Absturz", w.Find<TextBlock>("fp-trial-state").Text);
+            Assert.Contains(calls, c => c.StartsWith("ps2EntryRunner.exe ") && c.EndsWith("cubes_demo.elf"));
+            Assert.True(d.CanUndo); // Auswahl von Lizenz, Programm und Ordner ist rückgängig machbar
+            // M3: fremdes Programm in der Ergebnisdatei – Probelauf gesperrt, nichts wird gestartet
+            var result = Path.Combine(Path.GetDirectoryName(w.FreePortLast.LogPath)!, "ergebnis.json");
+            var node = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(result))!;
+            node["programm"] = Path.Combine(Environment.SystemDirectory, "cmd.exe");
+            File.WriteAllText(result, node.ToJsonString());
+            w.Show(K); Settle();
+            Assert.False(w.Find<Button>("fp-trial").IsEnabled);
+            Assert.StartsWith("✕", w.Find<TextBlock>("fp-trial-blocked").Text);
+            var before = calls.Count;
+            Assert.Null(await w.FreePortTrial(d));
+            Assert.Equal(before, calls.Count);
+            // N1: kaputte Ergebnisdatei – Ansicht baut trotzdem auf
+            File.WriteAllText(result, "{ kaputt");
+            w.Show(K); Settle();
+            Assert.Contains("beschädigt", w.Find<TextBlock>("fp-result").Text);
+        }
+        finally { MainWindow.FolderPickOverride = null; w.Close(); }
+    }
 }

@@ -1,0 +1,9 @@
+1b25325938be89d24abb75975245d08eadbd17157640a4e0443c0d35e3b1d89e *bestandsaufnahme.log
+6bfba557f160476e59df99be31e2af66ff3df77794f0bf5e166fe5ddaa35a0bb *quelle-cubes-demo.log
+2e3b7d5dd57a5e0aca6add04ae5883dbe2d965f777fe9269f326981a028a8311 *test-core.log
+574db1997ba138c7b5191ebcf7d75d14f4520a8fb38a9badd37e59d851d586c3 *test-app.log
+8334c3fce33fb2e2d39eb7371ae66e4605b659de7701e35a32238eea45dfdfa8 *rot-zweitpruefung.log
+87ed789d91504b10f01731d44ead84acb773faf19b1e95ec0ce11afbdfccf1c5 *freies-spiel-einfach.png
+9b046220e0268f7b7d08c98723f50bc111d1d6e80fce7582d20c215d6b0c29bd *freies-spiel-profi.png
+0a0178017cbb912e12a360aec816ca68de5bdb7578e341d71c59cbe3c434ea3f *freies-spiel-echte-dateien.png
+# Textdateien: SHA-256 mit Zeilenenden LF (Stand im Repo)
