@@ -100,19 +100,32 @@ public sealed partial class DownloadQueue
     public void Failed(Job j, string why) { j.Status = State.Fehler; j.Message = why; j.BytesPerSecond = 0; Save(); History.Add(j); }
 
     /// <summary>Fertig: Prüfsumme vergleichen (wenn angegeben). Stimmt sie nicht, gilt der Download als Fehler – die Datei bleibt zur Prüfung liegen.</summary>
-    public void Completed(Job j)
+    public void Completed(Job j) => Completed(j, File.Exists(j.Target) ? J.Sha(j.Target) : null);
+
+    /// <summary>T-0755 (Gegenprüfung): Prüfsumme im Hintergrund rechnen – große Dateien halten die Oberfläche nicht an. Danach wie <see cref="Completed(Job)"/>.</summary>
+    public async Task CompletedAsync(Job j)
+    {
+        var target = j.Target;
+        var sha = await Task.Run(() => File.Exists(target) ? J.Sha(target) : null);
+        Completed(j, sha);
+    }
+
+    /// <param name="sha256">schon berechnete SHA-256 – wird für den Vergleich wiederverwendet, statt die Datei ein zweites Mal zu lesen.</param>
+    public void Completed(Job j, string? sha256)
     {
         j.Done = File.Exists(j.Target) ? new FileInfo(j.Target).Length : j.Done; if (j.Total <= 0) j.Total = j.Done;
         j.BytesPerSecond = 0; j.Finished = DateTimeOffset.Now;
-        if (File.Exists(j.Target)) j.Sha256 = J.Sha(j.Target);
+        j.Sha256 = sha256;
         if (j.ExpectedHash is { } h && File.Exists(j.Target))
         {
-            var (ok, algo, actual) = Web.VerifyHash(j.Target, h);
+            var (ok, algo) = sha256 is not null && Web.AlgoFor(h) == "SHA-256" ? (string.Equals(sha256, h, StringComparison.OrdinalIgnoreCase), "SHA-256") : VerifyOther(j.Target, h);
             j.HashResult = $"{algo} {(ok ? "stimmt" : "stimmt NICHT")}";
             if (!ok) { j.Status = State.Fehler; j.Message = $"Prüfsumme ({algo}) stimmt nicht – die Datei ist beschädigt oder nicht die erwartete. Nicht öffnen."; Save(); History.Add(j); return; }
         }
         j.Status = State.Fertig; j.Message = ""; Save(); History.Add(j);
     }
+
+    static (bool, string) VerifyOther(string file, string h) { var (ok, algo, _) = Web.VerifyHash(file, h); return (ok, algo); }
 
     /// <summary>Aus der Liste nehmen. Unfertige Teil-Dateien werden mit entfernt (sie gehören nur dem Download); fertige Dateien bleiben im Ordner.</summary>
     public void Remove(string id)

@@ -21,6 +21,9 @@ public interface IPackageBackend
     /// <summary>T-0755: Nachprüfung nach dem Lauf – steht das Paket in der Liste der installierten Programme? null = nicht prüfbar.</summary>
     async Task<bool?> IsInstalledAsync(string id, CancellationToken ct = default) =>
         (await InstalledAsync(ct)).Any(p => string.Equals(p.Id, id, StringComparison.OrdinalIgnoreCase));
+    /// <summary>T-0755 (Gegenprüfung): installierte Version nach dem Lauf – null = nicht installiert oder nicht prüfbar.</summary>
+    async Task<string?> InstalledVersionAsync(string id, CancellationToken ct = default) =>
+        (await InstalledAsync(ct)).FirstOrDefault(p => string.Equals(p.Id, id, StringComparison.OrdinalIgnoreCase))?.Version;
 }
 
 /// <summary>T-0755: Paketverwaltung, die den Rückgabewert (Exitcode) des letzten Laufs nennt.</summary>
@@ -93,7 +96,15 @@ public static class PackageParsers
     };
 
     /// <summary>Nur sichere Paket-IDs (keine Leerzeichen/Shell-Zeichen).</summary>
-    public static bool SafeId(string id) => id.Length is > 1 and < 200 && id.All(c => char.IsLetterOrDigit(c) || c is '.' or '-' or '_' or '+');
+    /// <remarks>T-0755: Das erste Zeichen muss Buchstabe oder Ziffer sein – sonst würde „--override“ als Schalter gelesen.</remarks>
+    public static bool SafeId(string id) => id.Length is > 1 and < 200 && char.IsLetterOrDigit(id[0]) && id.All(c => char.IsLetterOrDigit(c) || c is '.' or '-' or '_' or '+');
+
+    /// <summary>T-0755: Versionen gleich (ohne Leerzeichen, „v“ vorne, nachgestellte „.0“)?</summary>
+    public static bool SameVersion(string? a, string? b)
+    {
+        static string N(string v) { v = v.Trim().TrimStart('v', 'V'); while (v.EndsWith(".0") && v.Count(c => c == '.') > 0) v = v[..^2]; return v; }
+        return a is { Length: > 0 } && b is { Length: > 0 } && string.Equals(N(a), N(b), StringComparison.OrdinalIgnoreCase);
+    }
 }
 
 /// <param name="exe">T-0755: Programmdatei, Standard „winget“. Tests setzen hier ein eigenes Testprogramm ein, das winget-Ausgaben nachahmt (ersetzt, kein echter Lauf).</param>
@@ -125,8 +136,19 @@ public sealed class WingetBackend(IProcessRunner run, string exe = "winget") : I
     public async Task<bool?> IsInstalledAsync(string id, CancellationToken ct = default)
     {
         if (!PackageParsers.SafeId(id)) return null;
-        var (_, o) = await run.RunAsync(Exe, $"list --id {id} -e {Agree}", null, ct);
-        return PackageParsers.ListedIn(o, id);
+        var (e, o) = await run.RunAsync(Exe, $"list --id {id} -e {Agree}", null, ct);
+        // T-0755 (Gegenprüfung): nur Exit 0 (Liste) oder „nichts gefunden“ (0x8A150014) sind eine Antwort – jeder andere Fehler (z. B. Quelle kaputt) = nicht prüfbar
+        return e == 0 ? PackageParsers.ListedIn(o, id) : e == NotFound ? false : null;
+    }
+
+    public const int NotFound = unchecked((int)0x8A150014);
+
+    /// <summary>T-0755: installierte Version laut „winget list --id … -e“; null, wenn nicht gelistet oder nicht prüfbar.</summary>
+    public async Task<string?> InstalledVersionAsync(string id, CancellationToken ct = default)
+    {
+        if (!PackageParsers.SafeId(id)) return null;
+        var (e, o) = await run.RunAsync(Exe, $"list --id {id} -e {Agree}", null, ct);
+        return e == 0 ? PackageParsers.ParseWinget(o).FirstOrDefault(p => string.Equals(p.Id, id, StringComparison.OrdinalIgnoreCase))?.Version : null;
     }
 
     private async Task<(bool, string)> Do(string action, string id, Action<string>? l, CancellationToken ct)
@@ -187,15 +209,23 @@ public sealed class AppCenter(IPackageBackend pm, ApprovalGate gate, AuditLog au
     }
 
     /// <summary>T-0755: Ergebnis eines Laufs mit Nachprüfung. <see cref="Installed"/>: danach in der Liste (null = nicht prüfbar).</summary>
-    public sealed record RunResult(string Action, string Id, string Command, bool ExitOk, int? ExitCode, bool Cancelled, bool? Installed, string LogFile, string Output)
+    public sealed record RunResult(string Action, string Id, string Command, bool ExitOk, int? ExitCode, bool Cancelled, bool? Installed, string LogFile, string Output,
+        string? ExpectedVersion = null, string? VersionAfter = null)
     {
-        /// <summary>Der gewünschte Zustand ist nachgeprüft erreicht (installiert bzw. entfernt).</summary>
-        public bool Verified => Installed is { } i && i == (Action != "uninstall");
+        /// <summary>Der gewünschte Zustand ist nachgeprüft erreicht: installiert, entfernt – beim Aktualisieren steht danach die erwartete Version da.
+        /// Ohne bekannte Zielversion gilt eine Aktualisierung als „nicht bestätigt“ (T-0755, Gegenprüfung).</summary>
+        public bool Verified => Action switch
+        {
+            "uninstall" => Installed == false,
+            "upgrade" => Installed == true && PackageParsers.SameVersion(VersionAfter, ExpectedVersion),
+            _ => Installed == true,
+        };
     }
 
     /// <summary>T-0755: ein freigegebener Lauf mit Protokolldatei – Befehl, jede Ausgabezeile, Rückgabewert, Abbruch und die Nachprüfung,
     /// ob das Programm danach installiert ist. Das Protokoll wird Zeile für Zeile geschrieben und bleibt auch nach einem Absturz lesbar.</summary>
-    public async Task<RunResult> RunAsync(ApprovalRequest r, string logDir, Action<string>? line = null, CancellationToken ct = default)
+    /// <param name="expectVersion">Beim Aktualisieren: die angekündigte neue Version (winget „Available“).</param>
+    public async Task<RunResult> RunAsync(ApprovalRequest r, string logDir, Action<string>? line = null, CancellationToken ct = default, string? expectVersion = null)
     {
         var action = r.Action["app.".Length..]; var id = r.Target;
         var cmd = pm.CommandLine(action, id);
@@ -221,12 +251,17 @@ public sealed class AppCenter(IPackageBackend pm, ApprovalGate gate, AuditLog au
         var exit = cancelled ? null : (pm as IPackageExitCode)?.LastExitCode;
         W("--- Ende der Ausgabe ---");
         W(cancelled ? "Ergebnis: abgebrochen – Trendo hat den Lauf beendet." : $"Rückgabewert: {(exit is { } e ? PackageParsers.ExitText(e) : ok ? "erfolgreich" : "Fehler")}");
-        bool? installed;
-        try { installed = await pm.IsInstalledAsync(id, CancellationToken.None); }
+        bool? installed; string? after = null;
+        try
+        {
+            installed = await pm.IsInstalledAsync(id, CancellationToken.None);
+            if (action == "upgrade" && installed == true) after = await pm.InstalledVersionAsync(id, CancellationToken.None);
+        }
         catch (Exception ex) when (ex is IOException or InvalidOperationException or System.ComponentModel.Win32Exception) { installed = null; W("Nachprüfung nicht möglich: " + ex.Message); }
         W($"Nachprüfung: {(installed is null ? "nicht prüfbar" : installed.Value ? "steht in der Liste der installierten Programme" : "steht nicht in der Liste der installierten Programme")}");
+        if (action == "upgrade") W($"Version danach: {after ?? "unbekannt"} · erwartet: {expectVersion ?? "unbekannt"}");
         string text; lock (lk) text = sb.ToString();
-        var res = new RunResult(action, id, cmd, ok && !cancelled, exit, cancelled, installed, log, text.Length > 0 ? text : output);
+        var res = new RunResult(action, id, cmd, ok && !cancelled, exit, cancelled, installed, log, text.Length > 0 ? text : output, expectVersion, after);
         W($"Ziel erreicht: {(res.Verified ? "ja" : "nein")}");
         audit.Append(Principal.LocalOwner.Name, "app.pruefung", $"{action} {id} {(res.Verified ? "bestätigt" : "nicht bestätigt")}");
         return res;

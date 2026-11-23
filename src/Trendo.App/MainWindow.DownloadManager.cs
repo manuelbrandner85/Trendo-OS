@@ -70,7 +70,7 @@ public partial class MainWindow
             if (DownloadRunOverride is { } o) await o(j, prog, cts.Token);
             else if (_opt.Isolated) throw new IOException("Testmodus – es wird nichts aus dem Internet geladen.");
             else await WebTools.DownloadAsync(j.Url, j.Target, prog, cts.Token);
-            Downloads.Completed(j);
+            await Downloads.CompletedAsync(j); // T-0755: Prüfsumme im Hintergrund
             _core.Audit.Append(Principal.LocalOwner.Name, j.Status == S.Fertig ? "download.ok" : "download.hash_fail", $"{new Uri(j.Url).Host} {j.Name}");
         }
         catch (OperationCanceledException) { if (j.Status == S.Lädt) { j.Status = S.Angehalten; j.Message = "Angehalten."; } j.BytesPerSecond = 0; Downloads.Save(); }
@@ -225,7 +225,7 @@ public partial class MainWindow
             var k = i++; var url = l.Url;
             var btn = new WrapPanel { HorizontalAlignment = HorizontalAlignment.Right };
             void B(string n, string t, Action a) { var b = Act($"links-{n}-{k}", t, a); b.FontSize = 11; b.Margin = new Thickness(0, 0, 4, 0); btn.Children.Add(b); }
-            if (!_core.Offline) { B("open", "Im Browser öffnen", () => Launch(url)); B("load", "Herunterladen", () => { DownloadAdd(url); Show("downloads"); }); }
+            if (!_core.Offline) { B("open", "Im Browser öffnen", () => { if (Uri.TryCreate(url, UriKind.Absolute, out var u) && u.Scheme is "http" or "https") Launch(u.AbsoluteUri); else { _linksMsg = "Nur http- und https-Adressen werden geöffnet."; Show("downloads"); } }); B("load", "Herunterladen", () => { DownloadAdd(url); Show("downloads"); }); }
             B("remove", "✕", () => { Bookmarks.Remove(_core.DataRoot, url); Show("downloads"); });
             sp.Children.Add(Row(new StackPanel { Name = $"links-row-{k}", Children = { new TextBlock { Text = l.Title, Foreground = Text, FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis }, new SelectableTextBlock { Text = url, Foreground = Muted, FontSize = 10.5 } } }, btn));
         }

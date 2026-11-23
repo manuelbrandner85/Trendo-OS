@@ -19,21 +19,101 @@ public static partial class SystemScan
 {
     public const string KindStartup = "Autostart-Ordner", KindRun = "Run-Schlüssel", KindTask = "Geplante Aufgabe", KindProgram = "Installiertes Programm";
 
-    /// <summary>Herausgeber, die Trendo als bekannte Firmen einstuft (Teil des Zertifikatsnamens). Gültig signiert + bekannt = grün.</summary>
+    /// <summary>Herausgeber, die Trendo als bekannte Firmen einstuft – genaue Organisationsnamen aus dem Zertifikat (O=), verglichen ohne
+    /// Groß-/Kleinschreibung, Satzzeichen und doppelte Leerzeichen. T-0755 (Gegenprüfung): kein Teilwort-Vergleich mehr („Not Microsoft Ltd“ ist nicht Microsoft).</summary>
     public static readonly string[] KnownPublishers =
     [
-        "Microsoft", "Google", "Mozilla", "Apple", "Adobe", "NVIDIA", "Intel", "Advanced Micro Devices", "AMD", "Realtek", "Logitech", "Valve", "Epic Games",
-        "Oracle", "Dropbox", "Zoom", "Spotify", "Discord", "Corsair", "Razer", "Dell", "HP Inc", "Hewlett", "Lenovo", "ASUSTeK", "Micro-Star", "Samsung",
-        "Brave Software", "Opera", "Python Software Foundation", "GitHub", "Docker", "JetBrains", "Autodesk", "Blender Foundation", "Ubisoft", "Electronic Arts",
-        "Riot Games", "TeamViewer", "Anthropic", "OpenJS Foundation", "Node.js", "VideoLAN", "Notepad++", "Elgato", "Steelseries", "Malwarebytes",
+        "Microsoft Corporation", "Microsoft Windows", "Microsoft Windows Publisher", "Microsoft 3rd Party Application Component", "Google LLC", "Mozilla Corporation",
+        "Apple Inc.", "Adobe Inc.", "Adobe Systems Incorporated", "NVIDIA Corporation", "Intel Corporation", "Advanced Micro Devices, Inc.", "Realtek Semiconductor Corp.",
+        "Logitech Inc", "Valve Corp.", "Valve Corporation", "Epic Games, Inc.", "Oracle America, Inc.", "Dropbox, Inc", "Zoom Video Communications, Inc.", "Spotify AB",
+        "Discord Inc.", "Corsair Memory, Inc.", "Razer USA Ltd.", "Dell Inc", "HP Inc.", "Lenovo", "ASUSTeK COMPUTER INC.", "Micro-Star International CO., LTD.",
+        "Samsung Electronics Co., Ltd.", "Brave Software, Inc.", "Opera Norway AS", "Python Software Foundation", "GitHub, Inc.", "Docker Inc", "JetBrains s.r.o.",
+        "Autodesk, Inc.", "Blender Foundation", "Electronic Arts, Inc.", "Riot Games, Inc.", "TeamViewer Germany GmbH", "Anthropic, PBC", "OpenJS Foundation",
+        "VideoLAN", "Malwarebytes Inc", "Unity Technologies SF",
     ];
 
-    /// <summary>Programme, die nur Skripte oder Bibliotheken starten – die eigentliche Wirkung steckt in den Argumenten.</summary>
-    static readonly string[] ScriptHosts = ["cmd.exe", "powershell.exe", "pwsh.exe", "wscript.exe", "cscript.exe", "mshta.exe", "conhost.exe"];
+    static string NormOrg(string s) => string.Join(' ', Regex.Replace(s.ToLowerInvariant(), @"[.,""]", " ").Split(' ', StringSplitOptions.RemoveEmptyEntries));
+    static readonly HashSet<string> KnownOrgs = KnownPublishers.Select(NormOrg).ToHashSet();
 
-    /// <summary>Ganzes Wort, nicht nur Teil davon: „Intel“ passt zu „Intel Corporation“, nicht zu „Intelligent Software“.</summary>
-    public static bool KnownPublisher(string? publisher) => publisher is { Length: > 0 } p &&
-        KnownPublishers.Any(k => Regex.IsMatch(p, @"(?<![\p{L}\p{N}])" + Regex.Escape(k) + @"(?![\p{L}\p{N}])", RegexOptions.IgnoreCase));
+    /// <summary>Genau einer der bekannten Organisationsnamen (nach Vereinheitlichung), kein Teilwort.</summary>
+    public static bool KnownPublisher(string? publisher) => publisher is { Length: > 0 } p && KnownOrgs.Contains(NormOrg(p));
+
+    /// <summary>T-0755 (Gegenprüfung): Windows-Werkzeuge und Interpreter, die fremden Code laden oder ausführen („LOLBins“).
+    /// Sie sind selbst echt signiert – entscheidend ist, was in den Argumenten steht. Deshalb nie grün.</summary>
+    static readonly Dictionary<string, string> Lolbins = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["cmd.exe"] = "Skript", ["powershell.exe"] = "Skript", ["pwsh.exe"] = "Skript", ["wscript.exe"] = "Skript", ["cscript.exe"] = "Skript", ["mshta.exe"] = "Skript",
+        ["conhost.exe"] = "Skript", ["python.exe"] = "Skript", ["pythonw.exe"] = "Skript", ["py.exe"] = "Skript", ["pyw.exe"] = "Skript", ["node.exe"] = "Skript",
+        ["java.exe"] = "Skript", ["javaw.exe"] = "Skript",
+        ["certutil.exe"] = "Laden", ["bitsadmin.exe"] = "Laden", ["curl.exe"] = "Laden", ["wget.exe"] = "Laden",
+        ["msiexec.exe"] = "Installieren", ["regsvr32.exe"] = "Installieren", ["regasm.exe"] = "Installieren", ["regsvcs.exe"] = "Installieren", ["installutil.exe"] = "Installieren",
+        ["cmstp.exe"] = "Installieren", ["msbuild.exe"] = "Installieren",
+        ["rundll32.exe"] = "Starten", ["forfiles.exe"] = "Starten", ["schtasks.exe"] = "Starten", ["wmic.exe"] = "Starten", ["explorer.exe"] = "Starten",
+    };
+
+    /// <summary>Welche Rolle spielt das Startprogramm? null = gewöhnliches Programm. explorer.exe zählt nur mit Argumenten.</summary>
+    public static string? LolbinKind(string exe, string args) =>
+        Lolbins.TryGetValue(Path.GetFileName(exe), out var k) && !(k == "Starten" && Path.GetFileName(exe).Equals("explorer.exe", StringComparison.OrdinalIgnoreCase) && args.Trim().Length == 0) ? k : null;
+
+    [GeneratedRegex(@"(?i)\b(?:https?|ftp)://[^\s""']+|\\\\[^\\\s""']+\\[^\s""']*")] private static partial Regex NetTarget();
+    [GeneratedRegex(@"""([^""]+)""|(\S+)")] private static partial Regex Token();
+    static readonly string[] CodeExt = [".exe", ".dll", ".sct", ".js", ".jse", ".vbs", ".vbe", ".wsf", ".ps1", ".psm1", ".py", ".pyw", ".jar", ".hta", ".bat", ".cmd", ".msi", ".cpl", ".ocx", ".mjs", ".cjs"];
+
+    /// <summary>Dateien, auf die die Argumente zeigen (Pfade mit Laufwerk/UNC oder mit Programm-/Skript-Endung), aufgelöst wie das Startprogramm.</summary>
+    public static IReadOnlyList<string> ArgTargets(string args, Func<string, bool>? exists = null)
+    {
+        exists ??= System.IO.File.Exists;
+        var res = new List<string>();
+        foreach (Match m in Token().Matches(Environment.ExpandEnvironmentVariables(args)))
+        {
+            var t = m.Groups[1].Success ? m.Groups[1].Value : m.Groups[2].Value;
+            foreach (var raw in t.Split(','))
+            {
+                var v = raw.Trim().Trim('"', '\'');
+                if ((v.StartsWith('/') || v.StartsWith('-')) && v.IndexOf(':') is var c and > 1) v = v[(c + 1)..]; // „/i:C:\x.sct“
+                if (v.Length < 3 || v.Contains("://")) continue;
+                var rooted = v.Length > 2 && v[1] == ':' && v[2] is '\\' or '/' || v.StartsWith(@"\\");
+                if (!rooted && !CodeExt.Any(x => v.EndsWith(x, StringComparison.OrdinalIgnoreCase))) continue;
+                if (v.StartsWith('/') || v.StartsWith('-')) continue;
+                res.Add(rooted ? v : Resolve(v, exists));
+            }
+        }
+        return res.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    /// <summary>Für Ziele in den Argumenten: Benutzerordner zählt zusätzlich als verdächtig (Skripte und Bibliotheken gehören nicht dorthin).</summary>
+    public static string? SuspiciousTarget(string path)
+    {
+        if (!Path.IsPathRooted(path)) return null; // relativer Name ohne bekannten Arbeitsordner: Ort unbekannt
+        if (SuspiciousPlace(path) is { } p) return p;
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        try { if (home.Length > 3 && Path.GetFullPath(path).StartsWith(home.TrimEnd('\\') + "\\", StringComparison.OrdinalIgnoreCase)) return "liegt im Benutzerordner"; }
+        catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { }
+        return null;
+    }
+
+    /// <summary>Startprogramm und Argumente eines Befehls (ohne rundll32-Sonderfall).</summary>
+    public static (string Exe, string Args) Split(string command, Func<string, bool>? exists = null)
+    {
+        exists ??= System.IO.File.Exists;
+        var c = Environment.ExpandEnvironmentVariables(command.Trim());
+        if (c.Length == 0) return ("", "");
+        string first, rest;
+        if (c[0] == '"') { var e = c.IndexOf('"', 1); first = e > 0 ? c[1..e] : c[1..]; rest = e > 0 ? c[(e + 1)..].Trim() : ""; }
+        else
+        {
+            var parts = c.Split(' '); first = parts[0]; rest = string.Join(' ', parts.Skip(1)); var found = false;
+            for (var i = 1; i <= parts.Length && !found; i++) // „C:\Program Files\X\x.exe -a“ ohne Anführungszeichen
+            {
+                var cand = string.Join(' ', parts.Take(i));
+                if (exists(cand)) { first = cand; rest = string.Join(' ', parts.Skip(i)); found = true; }
+                else if (!cand.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) && exists(cand + ".exe")) { first = cand + ".exe"; rest = string.Join(' ', parts.Skip(i)); found = true; }
+            }
+            if (!found && Resolve(parts[0], exists) is var r0 && Path.IsPathRooted(r0) && exists(r0)) { first = r0; found = true; } // „forfiles /p …“: Programm ohne Ordner
+            if (!found && Path.IsPathRooted(parts[0]) && c.IndexOf(".exe", StringComparison.OrdinalIgnoreCase) is var x and > 0) { first = c[..(x + 4)]; rest = c[(x + 4)..].Trim(); } // Datei fehlt: bis „.exe“
+        }
+        return (Resolve(first, exists), rest);
+    }
 
     /// <summary>Orte, an denen dauerhaft startende Programme normalerweise nichts zu suchen haben.</summary>
     public static string? SuspiciousPlace(string path)
@@ -49,6 +129,8 @@ public static partial class SystemScan
         return null;
     }
 
+    static string Short(string s) => s.Length > 60 ? s[..57] + "…" : s;
+
     [GeneratedRegex(@"-(e|ec|en|enc|encodedcommand)\s+[A-Za-z0-9+/=]{16,}", RegexOptions.IgnoreCase)] private static partial Regex Encoded();
 
     /// <summary>Welche Datei startet ein Befehl? Mit Anführungszeichen, Umgebungsvariablen, Leerzeichen im Pfad ohne Anführungszeichen,
@@ -56,22 +138,8 @@ public static partial class SystemScan
     public static string? FileFromCommand(string command, Func<string, bool>? exists = null)
     {
         exists ??= System.IO.File.Exists;
-        var c = Environment.ExpandEnvironmentVariables(command.Trim());
-        if (c.Length == 0) return null;
-        string first, rest;
-        if (c[0] == '"') { var e = c.IndexOf('"', 1); first = e > 0 ? c[1..e] : c[1..]; rest = e > 0 ? c[(e + 1)..].Trim() : ""; }
-        else
-        {
-            var parts = c.Split(' '); first = parts[0]; rest = string.Join(' ', parts.Skip(1)); var found = false;
-            for (var i = 1; i <= parts.Length && !found; i++) // „C:\Program Files\X\x.exe -a“ ohne Anführungszeichen
-            {
-                var cand = string.Join(' ', parts.Take(i));
-                if (exists(cand)) { first = cand; rest = string.Join(' ', parts.Skip(i)); found = true; }
-                else if (!cand.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) && exists(cand + ".exe")) { first = cand + ".exe"; rest = string.Join(' ', parts.Skip(i)); found = true; }
-            }
-            if (!found && c.IndexOf(".exe", StringComparison.OrdinalIgnoreCase) is var x and > 0) { first = c[..(x + 4)]; rest = c[(x + 4)..].Trim(); } // Datei fehlt: bis „.exe“
-        }
-        first = Resolve(first, exists);
+        var (first, rest) = Split(command, exists);
+        if (first.Length == 0) return null;
         if (Path.GetFileName(first).Equals("rundll32.exe", StringComparison.OrdinalIgnoreCase) && rest.Length > 0)
         {
             while (rest.Length > 1 && rest[0] is '/' or '-') { var sp = rest.IndexOf(' '); rest = sp < 0 ? "" : rest[(sp + 1)..].TrimStart(); } // Schalter wie „/d“ überspringen
@@ -94,7 +162,7 @@ public static partial class SystemScan
     /// <summary>Bewertet einen Eintrag (reine Regel, ohne Systemzugriff – die Signatur kommt von außen).</summary>
     public static Finding Assess(StartEntry e, SignatureInfo s)
     {
-        var who = s.Publisher ?? e.DeclaredPublisher;
+        var who = s.Publisher ?? e.DeclaredPublisher; // nur zur Anzeige – grün nur mit dem Namen aus der Signatur
         if (e.File is null)
             return new(e, s, Ampel.Gelb, "Datei nicht bestimmbar",
                 e.Kind == KindProgram ? "Der Eintrag nennt keine Programmdatei. Trendo kann deshalb nicht prüfen, wer das Programm gemacht hat." : "Trendo kann aus dem Befehl keine Programmdatei ablesen und ihn deshalb nicht prüfen.",
@@ -124,16 +192,41 @@ public static partial class SystemScan
         if (Encoded().IsMatch(e.Command))
             return new(e, s, Ampel.Rot, "Versteckter Befehl",
                 "Der Befehl enthält einen verschlüsselten (Base64-)Befehl für PowerShell. So verstecken Schadprogramme, was sie tun.", fix);
+        // T-0755 (Gegenprüfung): Werkzeuge, die fremden Code laden oder ausführen – die Argumente entscheiden
+        var (hostExe, args) = Split(e.Command);
+        var lol = LolbinKind(hostExe, args);
+        var host = Path.GetFileName(hostExe);
+        if (lol is not null)
+        {
+            if (NetTarget().Match(args) is { Success: true } net)
+                return new(e, s, Ampel.Rot, "Lädt aus dem Netz",
+                    $"„{host}“ holt beim Start etwas aus dem Internet oder von einem fremden Rechner ({Short(net.Value)}). So laden Schadprogramme ihren eigentlichen Teil nach – ein normales Programm braucht das beim Start nicht.", fix);
+            // „cmd /c del …“ / „rmdir …“ löscht nur – das Ziel wird nicht ausgeführt (z. B. Aufräum-Einträge von OneDrive)
+            var onlyDeletes = host.Equals("cmd.exe", StringComparison.OrdinalIgnoreCase) && Regex.IsMatch(args, @"(?i)^(/\w\s+)*/c\s+(del|erase|rmdir|rd)\b") && !Regex.IsMatch(args, @"[&|]");
+            var targets = onlyDeletes ? [] : ArgTargets(args).Where(t => !t.Equals(e.File, StringComparison.OrdinalIgnoreCase) || !host.Equals("rundll32.exe", StringComparison.OrdinalIgnoreCase)).ToList();
+            if (host.Equals("rundll32.exe", StringComparison.OrdinalIgnoreCase) && e.File is { } dll) targets.Insert(0, dll);
+            foreach (var t in targets)
+                if (SuspiciousTarget(t) is { } where)
+                    return new(e, s, Ampel.Rot, "Verdächtiges Ziel",
+                        $"„{host}“ startet „{Path.GetFileName(t)}“, und das {where}. Dort liegen normalerweise keine Programme, die bei jedem Start laufen – Schadprogramme verstecken sich gern so hinter einem echten Windows-Werkzeug.", fix);
+            var what = lol switch
+            {
+                "Skript" => "führt ein Skript oder Programm aus, das im Befehl steht",
+                "Laden" => "kann Dateien aus dem Internet holen oder umwandeln",
+                "Installieren" => "kann Programme installieren oder fremden Code registrieren und ausführen",
+                _ => "startet andere Programme oder Bibliotheken",
+            };
+            var tgt = onlyDeletes ? "Der Befehl löscht nur Dateien oder Ordner." : targets.Count == 0 ? "Ein Ziel konnte Trendo nicht ablesen." : "Ziel: " + string.Join(", ", targets.Select(t => (System.IO.File.Exists(t) ? "" : "(nicht gefunden) ") + t)) + ".";
+            return new(e, s, Ampel.Gelb, lol == "Skript" ? "Startet ein Skript" : "Windows-Werkzeug mit Befehl",
+                $"„{host}“ ist ein echtes Werkzeug, das {what}. Das Werkzeug selbst ist harmlos – entscheidend ist, was es ausführt. {tgt}",
+                "Befehl lesen: Kennst du das Ziel? Wenn nicht, " + fix[(fix.IndexOf(':') + 2)..]);
+        }
         if (s.State == SigState.Ungueltig)
             return new(e, s, Ampel.Rot, "Signatur ungültig",
                 $"„{file}“ trägt eine Signatur, die nicht stimmt: {s.Detail} Eine echte Firmen-Datei hat eine gültige Signatur.", fix);
-        var host = ScriptHosts.Contains(file, StringComparer.OrdinalIgnoreCase);
-        if (s.State == SigState.Gueltig && KnownPublisher(who) && !host)
+        if (s.State == SigState.Gueltig && KnownPublisher(s.Publisher))
             return new(e, s, Ampel.Gruen, "Gültig signiert",
-                $"„{file}“ ist gültig signiert von {who}. Die Datei ist seit dem Signieren unverändert.", "Nichts zu tun. Wenn du das Programm beim Start nicht brauchst, kannst du es unter Einstellungen → Apps → Autostart ausschalten.");
-        if (host)
-            return new(e, s, Ampel.Gelb, "Startet ein Skript",
-                $"„{file}“ ist ein Windows-Werkzeug, das Befehle oder Skripte ausführt. Was genau passiert, steht im Befehl – das kann Trendo nicht sicher bewerten.", "Befehl lesen: Kennst du das Skript oder den Ordner? Wenn nicht, " + fix[(fix.IndexOf(':') + 2)..]);
+                $"„{file}“ ist gültig signiert von {s.Publisher}. Die Datei ist seit dem Signieren unverändert.", "Nichts zu tun. Wenn du das Programm beim Start nicht brauchst, kannst du es unter Einstellungen → Apps → Autostart ausschalten.");
         if (s.State == SigState.Gueltig)
             return new(e, s, Ampel.Gelb, "Herausgeber unbekannt",
                 $"„{file}“ ist gültig signiert von „{who ?? "unbekannt"}“. Diesen Herausgeber kennt Trendo nicht – das heißt nicht, dass er schlecht ist.", "Kennst du den Herausgeber? Wenn ja, ist alles in Ordnung. " + fix);
@@ -330,7 +423,7 @@ public static partial class SystemScan
             .Append("body{font-family:Segoe UI,Arial,sans-serif;background:#14110c;color:#eee;margin:24px}h1{color:#e8c26a}table{border-collapse:collapse;width:100%}td,th{border-bottom:1px solid #3a3326;padding:6px;text-align:left;vertical-align:top;font-size:13px}")
             .Append(".Rot{color:#f87171;font-weight:bold}.Gelb{color:#facc15;font-weight:bold}.Grün{color:#4ade80;font-weight:bold}small{color:#aaa}</style></head><body>")
             .Append($"<h1>System auf Gefahren geprüft</h1><p>{r.At:dd.MM.yyyy HH:mm} · {r.Findings.Count} Einträge · Rot {r.Count(Ampel.Rot)} · Gelb {r.Count(Ampel.Gelb)} · Grün {r.Count(Ampel.Gruen)}</p>")
-            .Append("<p><small>Trendo hat nur gelesen und nichts geändert. Grün = gültig signiert von bekanntem Herausgeber. Gelb = nicht signiert oder Herausgeber unbekannt. Rot = Datei fehlt, Signatur ungültig oder verdächtiger Ort.</small></p>")
+            .Append("<p><small>Trendo hat nur gelesen und nichts geändert. Grün = gültig signiert von bekanntem Herausgeber. Gelb = nicht signiert, Herausgeber unbekannt oder Windows-Werkzeug mit Befehl. Rot = Datei fehlt, Signatur ungültig, verdächtiger Ort oder Laden aus dem Netz.</small></p>")
             .Append("<table><tr><th>Ampel</th><th>Art</th><th>Name</th><th>Datei</th><th>Herausgeber</th><th>Signatur</th><th>Erklärung</th><th>Was du tun kannst</th></tr>");
         foreach (var f in r.Findings)
         {
@@ -346,7 +439,8 @@ public static partial class SystemScan
     /// <summary>Bericht als CSV (Semikolon, für Tabellenprogramme).</summary>
     public static string ReportCsv(Result r)
     {
-        static string C(string? s) => "\"" + (s ?? "").Replace("\"", "\"\"") + "\"";
+        // T-0755 (Gegenprüfung): Felder, die eine Tabelle als Formel lesen würde (= + - @ Tab CR), bekommen ein ' vorangestellt
+        static string C(string? s) { s ??= ""; if (s.Length > 0 && s[0] is '=' or '+' or '-' or '@' or '\t' or '\r') s = "'" + s; return "\"" + s.Replace("\"", "\"\"") + "\""; }
         var sb = new StringBuilder("Ampel;Grund;Art;Name;Ort;Datei;Befehl;Herausgeber;Signatur;Erklärung;Tipp\r\n");
         foreach (var f in r.Findings)
             sb.Append(string.Join(';', C(LightText(f.Light)), C(f.Reason), C(f.Entry.Kind), C(f.Entry.Name), C(f.Entry.Where), C(f.Entry.File), C(f.Entry.Command), C(f.Signature.Publisher ?? f.Entry.DeclaredPublisher), C(SigText(f.Signature)), C(f.Explanation), C(f.Tip))).Append("\r\n");

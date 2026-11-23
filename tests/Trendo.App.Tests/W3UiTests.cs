@@ -56,7 +56,7 @@ public sealed class FakePkg : IPackageBackend
     public Task<IReadOnlyList<PackageInfo>> InstalledAsync(CancellationToken ct = default) => Task.FromResult<IReadOnlyList<PackageInfo>>([.. Installed]);
     public Task<IReadOnlyList<PackageInfo>> UpgradesAsync(CancellationToken ct = default) => Task.FromResult<IReadOnlyList<PackageInfo>>([new("Git", "Git.Git", "2.45", "2.47")]);
     public Task<(bool Ok, string Log)> InstallAsync(string id, Action<string>? l = null, CancellationToken ct = default) { Done.Add("i " + id); if (!Installed.Any(p => p.Id == id)) Installed.Add(new(id, id, "")); return Task.FromResult((true, "")); }
-    public Task<(bool Ok, string Log)> UpgradeAsync(string id, Action<string>? l = null, CancellationToken ct = default) { Done.Add("u " + id); return Task.FromResult((true, "")); }
+    public Task<(bool Ok, string Log)> UpgradeAsync(string id, Action<string>? l = null, CancellationToken ct = default) { Done.Add("u " + id); var i = Installed.FindIndex(p => p.Id == id); if (i >= 0) Installed[i] = Installed[i] with { Version = "2.47" }; return Task.FromResult((true, "")); }
     public Task<(bool Ok, string Log)> UninstallAsync(string id, Action<string>? l = null, CancellationToken ct = default) { Done.Add("x " + id); Installed.RemoveAll(p => p.Id == id); return Task.FromResult((true, "")); }
 }
 

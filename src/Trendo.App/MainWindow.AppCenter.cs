@@ -81,7 +81,7 @@ public partial class MainWindow
 
     static string AppRunStatus(AppRunState run) => run.Result is not { } r
         ? (run.Cts.IsCancellationRequested ? "Wird abgebrochen …" : run.Progress is { } p ? $"Läuft … {Math.Round(p * 100)} %" : "Läuft …")
-        : r.Cancelled ? "Abgebrochen" : r.Verified ? "Fertig – nachgeprüft" : r.ExitOk ? "Fertig – Nachprüfung passt nicht" : "Fehlgeschlagen";
+        : r.Cancelled ? "Abgebrochen" : r.Verified ? "Fertig – nachgeprüft" : r.Installed is null ? "Nicht bestätigt – Nachprüfung nicht möglich" : r.ExitOk ? "Fertig – Nachprüfung passt nicht" : "Fehlgeschlagen";
 
     /// <summary>T-0755: Ergebnis in Alltagssprache – der Rückgabewert allein reicht nicht, entscheidend ist die Nachprüfung.</summary>
     public static string AppRunText(PackageInfo p, AppCenter.RunResult r)
@@ -90,7 +90,9 @@ public partial class MainWindow
         var exit = r.ExitCode is { } e ? PackageParsers.ExitText(e) : "unbekannt";
         if (r.Cancelled) return $"{p.Name}: abgebrochen. " + (r.Installed is { } i ? (i ? "Das Programm ist installiert." : "Das Programm ist nicht installiert.") : "Ob das Programm installiert ist, ließ sich nicht prüfen.") + " Einzelheiten im Protokoll.";
         if (r.ExitOk && r.Verified) return $"{p.Name}: {verb} – nachgeprüft: {(un ? "steht nicht mehr in der Liste der installierten Programme" : "steht in der Liste der installierten Programme")}.";
-        if (r.ExitOk && r.Installed is null) return $"{p.Name}: {verb} laut Paketverwaltung – die Nachprüfung war nicht möglich.";
+        if (r.Action == "upgrade" && r.Installed == true && !r.Verified) // T-0755 (Gegenprüfung): Version danach zählt
+            return $"{p.Name}: Aktualisierung nicht bestätigt – installiert ist {r.VersionAfter ?? "eine unbekannte Version"}, erwartet war {r.ExpectedVersion ?? "eine unbekannte Version"}. " + (r.ExitOk ? "Sieh ins Protokoll." : $"Die Paketverwaltung meldet einen Fehler ({exit}).");
+        if (r.Installed is null) return $"{p.Name}: " + (r.ExitOk ? $"{verb} laut Paketverwaltung" : $"Fehler ({exit})") + " – die Nachprüfung war nicht möglich, Ergebnis nicht bestätigt. Einzelheiten im Protokoll.";
         if (r.ExitOk) return $"{p.Name}: Die Paketverwaltung meldet Erfolg, aber Trendo findet das Programm {(un ? "noch" : "nicht")} in der Liste der installierten Programme. Sieh ins Protokoll.";
         if (r.Verified) return $"{p.Name}: Die Paketverwaltung meldet einen Fehler ({exit}), das Programm ist aber {verb}.";
         return $"{p.Name}: hat nicht geklappt ({exit}). Windows hat vielleicht nach Erlaubnis gefragt – versuch es noch einmal. Einzelheiten im Protokoll.";
@@ -160,12 +162,12 @@ public partial class MainWindow
             _appMsg = $"{p.Name}: läuft …";
             if (CurrentView == "appcenter") Show("appcenter");
             AppCenter.RunResult res;
-            try { res = await AppCenter.RunAsync(r, AppRunLogFolder, l => AppRunLine(run, l), run.Cts.Token); }
+            try { res = await AppCenter.RunAsync(r, AppRunLogFolder, l => AppRunLine(run, l), run.Cts.Token, action == "upgrade" ? p.Available : null); }
             finally { run.Running = false; }
             run.Result = res;
             _appMsg = AppRunText(p, res);
-            if ((res.ExitOk || res.Verified) && action != "install") _appUpdates = _appUpdates.Where(x => x.Id != p.Id).ToList();
-            if (action == "uninstall" && (res.Verified || res.ExitOk && res.Installed is null)) _appInstalled = _appInstalled.Where(x => x.Id != p.Id).ToList();
+            if (res.Verified && action != "install") _appUpdates = _appUpdates.Where(x => x.Id != p.Id).ToList();
+            if (action == "uninstall" && res.Verified) _appInstalled = _appInstalled.Where(x => x.Id != p.Id).ToList();
         }
         catch (Exception ex) { _appMsg = "Hat nicht geklappt: " + Trendo.Core.FriendlyError.Say(ex); }
         finally { _appBusy = false; }

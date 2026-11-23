@@ -96,7 +96,7 @@ public partial class MainWindow
             if (r.TasksWithoutProgram > 0) body.Children.Add(P($"{r.TasksWithoutProgram} geplante Aufgaben starten kein Programm (z. B. Windows-interne Dienste) und wurden nicht bewertet.", Muted, 10.5));
         }
         return ToolCard("for-card-scan", Mdi.ShieldSearch, "#F5D27A", "#9C7419", "System auf Gefahren prüfen",
-            "Trendo liest, was beim Start und als Programm auf diesem PC steht – Autostart-Ordner, Run-Schlüssel, geplante Aufgaben, installierte Programme – und prüft die Signatur jeder Datei. Grün: gültig signiert von bekannter Firma. Gelb: nicht signiert oder unbekannt. Rot: Datei fehlt, Signatur ungültig oder verdächtiger Ort. Trendo ändert nichts.",
+            "Trendo liest, was beim Start und als Programm auf diesem PC steht – Autostart-Ordner, Run-Schlüssel, geplante Aufgaben, installierte Programme – und prüft die Signatur jeder Datei. Grün: gültig signiert von bekannter Firma. Gelb: nicht signiert, unbekannt oder ein Windows-Werkzeug, das einen Befehl ausführt. Rot: Datei fehlt, Signatur ungültig, verdächtiger Ort oder Laden aus dem Netz. Trendo ändert nichts.",
             body);
     }
 }

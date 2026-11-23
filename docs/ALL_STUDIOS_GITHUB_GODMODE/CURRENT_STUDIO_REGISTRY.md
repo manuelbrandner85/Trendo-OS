@@ -50,7 +50,7 @@ Korrektur 08.11.2026: Die Zählung sucht nur die Studio-Kennung – „TV & Live
 | SYS-01 | Startmodus wählen | 8 | 1 | bewertet (Runde 14) |
 | CORE-11 | Daten schützen | 11 | 6 | bewertet (Runde 8) |
 | SPEC-12 | System auf Gefahren prüfen | 8 | 1 | bewertet (Runde 8) |
-| SYS-03 | Surfen & Herunterladen | 10 | 2 | bewertet (Runde 10) |
+| SYS-03 | Downloads & Links | 10 | 2 | bewertet (Runde 10) |
 | SYS-04 | Programme installieren | 8 | 2 | bewertet (Runde 10) |
 | SYS-06 | Dateien teilen | 8 | 2 | bewertet (Runde 9) |
 | SYS-07 | Geräte erkennen | 9 | 2 | bewertet (Runde 9) |

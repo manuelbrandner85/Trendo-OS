@@ -15,6 +15,9 @@ public static class FakeWinget
         string Table(string id) => "Name               Id                   Version  Source\r\n" + new string('-', 56) + "\r\n" + $"VLC media player   {id.PadRight(21)}3.0.21   winget\r\n";
         foreach (var id in new[] { "VideoLAN.VLC", "Langsam.Paket" }) File.WriteAllText(Path.Combine(dir, $"list-{id}.txt"), Table(id));
         File.WriteAllText(Path.Combine(dir, "search.txt"), Table("VideoLAN.VLC"));
+        // T-0755 (Gegenprüfung): Git mit verfügbarer Aktualisierung 2.45 → 2.47
+        string Up(string v) => "Name  Id                   Version  Available  Source\r\n" + new string('-', 56) + "\r\n" + $"Git   {"Git.Git".PadRight(21)}{v.PadRight(9)}{(v == "2.45" ? "2.47" : "").PadRight(11)}winget\r\n";
+        File.WriteAllText(Path.Combine(dir, "list-Git.Git.txt"), Up("2.45")); File.WriteAllText(Path.Combine(dir, "list-Git.Git-neu.txt"), Up("2.47"));
         var cmd = Path.Combine(dir, "winget-ersatz.cmd");
         File.WriteAllText(cmd, string.Join("\r\n",
             "@echo off",
@@ -23,6 +26,7 @@ public static class FakeWinget
             "if /I \"%1\"==\"list\" goto list",
             "if /I \"%1\"==\"install\" goto install",
             "if /I \"%1\"==\"uninstall\" goto uninstall",
+            "if /I \"%1\"==\"upgrade\" goto upgrade",
             "echo Unbekannter Befehl",
             "exit /b 1",
             ":install",
@@ -46,7 +50,13 @@ public static class FakeWinget
             "del \"%STATE%\"",
             "echo Successfully uninstalled",
             "exit /b 0",
+            ":upgrade",
+            "if not exist \"%~dp0upgrade-geht.txt\" (echo An unexpected error occurred while executing the command & exit /b 1)",
+            "copy /y \"%~dp0list-%3-neu.txt\" \"%~dp0list-%3.txt\" >nul",
+            "echo Successfully installed",
+            "exit /b 0",
             ":list",
+            "if exist \"%~dp0quelle-kaputt.txt\" (echo Failed when opening source^(s^); try the 'source reset' command if the problem persists. & exit /b -1978335217)",
             "if not exist \"%STATE%\" (echo No installed package found matching input criteria. & exit /b -1978335212)",
             "type \"%~dp0list-%3.txt\"",
             "exit /b 0", ""));

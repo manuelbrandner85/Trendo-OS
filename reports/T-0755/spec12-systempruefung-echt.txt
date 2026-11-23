@@ -1,18 +1,18 @@
-T-0755 SPEC-12 Echtlauf auf dem Entwicklungs-PC (Windows 11), nur lesend, 23.11.2026 03:09. Nur Zaehlungen – keine Programmnamen oder Pfade (Datenschutz).
-Systempruefung (nur lesend) – Dauer 3,0 s
-Eintraege gesamt: 174 · Rot 1 · Gelb 59 · Gruen 114 · Aufgaben ohne Programmstart: 117
+T-0755 SPEC-12 Echtlauf nach der Gegenprüfung (Windows 11, nur lesend), 23.11.2026 03:48. Nur Zählungen – keine Programmnamen oder Pfade (Datenschutz).
+Vorher (8fe0c0a79): 174 Einträge, Rot 1, Gelb 59, Grün 114.
+Systempruefung (nur lesend) - Dauer 3,8 s
+Eintraege gesamt: 174 - Rot 11 - Gelb 63 - Gruen 100 - Aufgaben ohne Programmstart: 117
   Autostart-Ordner: 1 (Rot 0, Gelb 1, Gruen 0)
-  Geplante Aufgabe: 99 (Rot 1, Gelb 12, Gruen 86)
+  Geplante Aufgabe: 99 (Rot 11, Gelb 16, Gruen 72)
   Installiertes Programm: 66 (Rot 0, Gelb 41, Gruen 25)
   Run-Schlüssel: 8 (Rot 0, Gelb 5, Gruen 3)
-  Grund „Gültig signiert“: 114
-  Grund „Datei nicht bestimmbar“: 33
-  Grund „Startet ein Skript“: 16
-  Grund „Datei fehlt“: 1
-  Grund „Nicht signiert“: 1
-  Grund „Nicht prüfbar“: 1
-  Signatur Gueltig: 138
-  Signatur Unsigniert: 1
-  Signatur Fehlt: 1
-  Signatur NichtPruefbar: 34
-Stichprobe System32-kernel32.dll: Gueltig · Herausgeber Microsoft Corporation · Katalog False
+  Grund Gültig signiert: 100
+  Grund Datei nicht bestimmbar: 33
+  Grund Windows-Werkzeug mit Befehl: 11
+  Grund Verdächtiges Ziel: 10
+  Grund Herausgeber unbekannt: 9
+  Grund Startet ein Skript: 8
+  Grund Datei fehlt: 1
+  Grund Nicht signiert: 1
+  Grund Nicht prüfbar: 1
+Die 10 „Verdächtiges Ziel“ sind versteckt startende PowerShell-Skripte aus dem Benutzerordner (geplante Aufgaben dieses PCs) – nach der Regel der Gegenprüfung rot.

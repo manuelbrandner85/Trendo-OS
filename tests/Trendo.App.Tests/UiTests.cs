@@ -536,7 +536,7 @@ public class W1_Letter
 
 public class W1_Web
 {
-    [AvaloniaFact(DisplayName = "SYS-03: Dock-Browser öffnet Browser & Downloads; Adresse wird geöffnet, javascript: abgelehnt; offline gesperrt")]
+    [AvaloniaFact(DisplayName = "SYS-03: Dock-Symbol öffnet „Downloads & Links“; Adresse öffnet im Standard-Browser, javascript: abgelehnt; offline gesperrt")]
     public void Browser_page()
     {
         var (w, l, _) = Ui.Open();
